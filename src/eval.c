@@ -2236,13 +2236,33 @@ get_lval(
 
     if (*p == '.')
     {
-	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, TRUE);
-	if (import != NULL)
+	// In legacy script, when a local variable and import exists with this name,
+	// prioritize local variable over imports to avoid conflicts.
+	int var_exists = FALSE;
+	if (!vim9script)
 	{
-	    p++;	// skip '.'
-	    p = get_lval_imported(lp, import->imp_sid, p, &v, fne_flags);
-	    if (p == NULL)
-		return NULL;
+	    cc = *p;
+	    *p = NUL;
+	    hashtab_T *local_ht = get_funccal_local_ht();
+	    if (local_ht != NULL)
+	    {
+		hashitem_T *hi = hash_find(local_ht, lp->ll_name);
+		if (!HASHITEM_EMPTY(hi))
+		    var_exists = TRUE;
+	    }
+	    *p = cc;
+	}
+
+	if (!var_exists)
+	{
+	    imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, TRUE);
+	    if (import != NULL)
+	    {
+		p++;	// skip '.'
+		p = get_lval_imported(lp, import->imp_sid, p, &v, fne_flags);
+		if (p == NULL)
+		    return NULL;
+	    }
 	}
     }
 

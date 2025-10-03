@@ -3694,4 +3694,29 @@ def Test_import_member_initializer()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_import_name_conflict_with_local_variable()
+  var lines =<< trim END
+    vim9script
+
+    export class Foo
+      def Method(): string
+        return 'Method'
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9.vim'
+
+    function! s:Main() abort
+      let Xvim9 = s:Xvim9.Foo.new()
+      call assert_equal('Method', Xvim9.Method())
+    endfunction
+
+    call s:Main()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
