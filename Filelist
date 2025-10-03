@@ -641,7 +641,6 @@ SRC_DOS =	\
 		src/xxd/Make_mvc.mak \
 		nsis/auxiliary.nsh \
 		nsis/gvim.nsi \
-		nsis/gvim_version.nsh \
 		nsis/Makefile \
 		nsis/Make_mvc.mak \
 		nsis/README.txt \

@@ -73,11 +73,18 @@ Unicode true  ; !include defaults to UTF-8 after Unicode True since 3.0 Alpha 2
   !define INCLUDE_LIBGCC 1
 !endif
 
-!include .\gvim_version.nsh	; for version numbers
+# Get version numbers
+!getdllversion "${VIMSRC}\gvim_ole.exe" VimVer_
+!echo "Vim version MAJOR=${VimVer_1} MINOR=${VimVer_2} PATCHLEVEL=${VimVer_3}"
 
-# Definition of Patch for Vim.
+!ifndef VER_MAJOR
+  !define VER_MAJOR  ${VimVer_1}
+!endif
+!ifndef VER_MINOR
+  !define VER_MINOR  ${VimVer_2}
+!endif
 !ifndef PATCHLEVEL
-  !define PATCHLEVEL 0
+  !define PATCHLEVEL ${VimVer_3}
 !endif
 
 # ----------- No configurable settings below this line -----------
