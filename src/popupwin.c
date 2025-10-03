@@ -1219,8 +1219,10 @@ popup_adjust_position(win_T *wp)
     int		center_hor = FALSE;
     int		allow_adjust_left = !wp->w_popup_fixed;
     int		top_extra = popup_top_extra(wp);
-    int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1];
-    int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2];
+    int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1]
+		    + (wp->w_popup_shadow ? 2 : 0);
+    int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2]
+		    + wp->w_popup_shadow;
     int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
     int		extra_height = top_extra + bot_extra;
     int		extra_width = left_extra + right_extra;
@@ -1795,6 +1797,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	!is_preview ? p_cpp :
 #endif
 	p_pvp;
+    int	    border_enabled = FALSE;
 
     if (wp != NULL)
 	wp->w_popup_flags &= ~POPF_INFO_MENU;
@@ -1847,8 +1850,23 @@ parse_popup_option(win_T *wp, int is_preview)
 
 		*p = NUL;
 		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-						s + 10, OPT_FREE|OPT_LOCAL, 0);
+			s + 10, OPT_FREE|OPT_LOCAL, 0);
 		*p = c;
+	    }
+	}
+	else if (STRNCMP(s, "borderhighlight:", 16) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		char_u	*arg = s + 16;
+
+		if (*arg == NUL || *arg == ',')
+		    return FAIL;
+		for (int i = 0; i < 4; ++i)
+		{
+		    VIM_CLEAR(wp->w_border_highlight[i]);
+		    wp->w_border_highlight[i] = vim_strnsave(arg, p - arg);
+		}
 	    }
 	}
 	else if (STRNCMP(s, "border:", 7) == 0)
@@ -1868,7 +1886,71 @@ parse_popup_option(win_T *wp, int is_preview)
 		if (off)
 		    // only show the X for close when there is a border
 		    wp->w_popup_close = POPCLOSE_NONE;
+		else
+		    border_enabled = TRUE;
 	    }
+	}
+	else if (STRNCMP(s, "borderchars:", 12) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		char_u	*arg = s + 12;
+
+		for (int i = 0; i < 8; i++)
+		{
+		    if (*arg == NUL || *arg == ',')
+			goto error;
+		    wp->w_border_char[i] = mb_ptr2char(arg);
+		    mb_ptr2char_adv(&arg);
+		    if (i < 7)
+		    {
+			if (*arg != ';')
+			    goto error;  // must be semicolon
+			arg++;
+		    }
+		}
+		if (*arg != NUL && *arg != ',')
+		    goto error;
+	    }
+	}
+	else if (STRNCMP(s, "close:", 6) == 0)
+	{
+	    char_u	*arg = s + 6;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    on = on && mouse_has(MOUSE_INSERT) && border_enabled;
+	    if (wp != NULL)
+		wp->w_popup_close = on ? POPCLOSE_BUTTON : POPCLOSE_NONE;
+	}
+	else if (STRNCMP(s, "resize:", 7) == 0)
+	{
+	    char_u	*arg = s + 7;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    if (wp != NULL)
+	    {
+		if (on && mouse_has(MOUSE_INSERT))
+		    wp->w_popup_flags |= POPF_RESIZE;
+		else
+		    wp->w_popup_flags &= ~POPF_RESIZE;
+	    }
+	}
+	else if (STRNCMP(s, "shadow:", 7) == 0)
+	{
+	    char_u	*arg = s + 7;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    if (wp != NULL)
+		wp->w_popup_shadow = on ? 1 : 0;
 	}
 	else if (STRNCMP(s, "align:", 6) == 0)
 	{
@@ -1886,6 +1968,11 @@ parse_popup_option(win_T *wp, int is_preview)
 	    return FAIL;
     }
     return OK;
+
+error:
+    for (int i = 0; i < 8; ++i)
+	wp->w_border_char[i] = 0;
+    return FAIL;
 }
 
 /*
@@ -2297,6 +2384,12 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	parse_previewpopup(wp);
 	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
     }
+
+    for (i = 0; i < 4; ++i)
+	VIM_CLEAR(wp->w_border_highlight[i]);
+    for (i = 0; i < 8; ++i)
+	wp->w_border_char[i] = 0;
+
 # ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)
     {
@@ -2311,10 +2404,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     }
 # endif
 
-    for (i = 0; i < 4; ++i)
-	VIM_CLEAR(wp->w_border_highlight[i]);
-    for (i = 0; i < 8; ++i)
-	wp->w_border_char[i] = 0;
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
     wp->w_filter_mode = MODE_ALL;
@@ -4374,6 +4463,18 @@ update_popups(void (*win_update)(win_T *wp))
 			popup_attr);
 	}
 
+	// right shadow
+	if (wp->w_popup_shadow)
+	{
+	    int col = wincol + total_width;
+	    for (i = 0; i < total_height; ++i)
+	    {
+		row = wp->w_winrow + i + 1;
+		put_shadow_char(row, col);
+		put_shadow_char(row, col + 1);
+	    }
+	}
+
 	if (wp->w_popup_padding[2] > 0)
 	{
 	    // bottom padding
@@ -4387,7 +4488,7 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    // bottom border
 	    row = wp->w_winrow + total_height - 1;
-	    screen_fill(row , row + 1,
+	    screen_fill(row, row + 1,
 		    wincol < 0 ? 0 : wincol,
 		    wincol + total_width,
 		    wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
@@ -4398,6 +4499,15 @@ update_popups(void (*win_update)(win_T *wp))
 		buf[mb_char2bytes(border_char[6], buf)] = NUL;
 		screen_puts(buf, row, wincol + total_width - 1, border_attr[2]);
 	    }
+	}
+
+	if (wp->w_popup_shadow)
+	{
+	    // bottom shadow
+	    row = wp->w_winrow + total_height;
+	    for (int col = 2 + (wincol < 0 ? 0 : wincol);
+		    col < wincol + total_width; col++)
+		put_shadow_char(row, col);
 	}
 
 	if (wp->w_popup_close == POPCLOSE_BUTTON)
