@@ -3853,6 +3853,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  foldopen	'-'		mark the beginning of a fold
 	  foldclose	'+'		show a closed fold
 	  foldsep	'|'		open fold middle character
+	  foldinner	none		character to show instead of the
+					numeric foldlevel when it would be
+					repeated in a narrow 'foldcolumn'
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate

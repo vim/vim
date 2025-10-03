@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 29
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,6 +322,8 @@ Improvements in 'fillchars':
   "eob" in 'fillchars'.
 - Support for using multibyte items with the "stl", "stlnc", "foldopen",
   "foldclose" and "foldsep" items in the 'fillchars' option.
+- Support for configuring the character used inside a fold level region using
+  "foldinner" in 'fillchars'.
 
 Support for the XChaCha20 encryption method. 'cryptmethod'
 
@@ -41702,7 +41704,9 @@ Options: ~
 - new option values for 'fillchars':
 	"trunc"		- configure truncation indicator, 'pummaxwidth'
 	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
-	"tpl_vert"	- separators for the 'tabpanel'
+	"tpl_vert"	- vertical separators for the 'tabpanel'
+	"foldinner"	- character used inside the 'foldcolumn' for nested
+			  fold levels
 - 'grepformat' is now a |global-local| option.
 - adjust for GTK3 dropping some mouse cursors 'mouseshape'
 - 'nrformats' accepts the new "blank" suboption, to determine a signed or
