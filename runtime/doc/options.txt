@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 01
+*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2292,8 +2292,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	   noselect Same as "noinsert", except that no menu item is
 		    pre-selected.  If both "noinsert" and "noselect" are
-		    present, "noselect" takes precedence.  This options is
-		    enabled automatically when 'autocomplete' is on, unless
+		    present, "noselect" takes precedence.  This is enabled
+		    automatically when 'autocomplete' is on, unless
 		    "preinsert" is also enabled.
 
 	   nosort   Disable sorting of completion candidates based on fuzzy
