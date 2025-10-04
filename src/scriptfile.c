@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 // The names of packages that once were loaded are remembered.
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 #endif
@@ -70,7 +70,7 @@ estack_push(etype_T type, char_u *name, long lnum)
     return entry;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add a user function to the execution stack.
  */
@@ -758,7 +758,7 @@ source_in_path(char_u *path, char_u *name, int flags, int *ret_sid)
     return do_in_path_and_pp(path, name, flags, source_callback, ret_sid);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Find "name" in 'runtimepath'. If found a new scriptitem is created for it
@@ -1419,7 +1419,7 @@ ex_source(exarg_T *eap)
 	cmd_source(eap->arg, eap);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * ":options"
  */
@@ -1442,7 +1442,7 @@ ex_options(
  * ":source" and associated commands.
  */
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the address holding the next breakpoint line for a source cookie.
  */
@@ -2048,7 +2048,7 @@ do_source(
 }
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * ":scriptnames"
@@ -2106,7 +2106,7 @@ ex_scriptnames(exarg_T *eap)
     }
 }
 
-# if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+# if defined(BACKSLASH_IN_FILENAME)
 /*
  * Fix slashes in the list of script names for 'shellslash'.
  */
@@ -2143,7 +2143,7 @@ get_scriptname(scid_T id)
     return SCRIPT_ITEM(id)->sn_name;
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_scriptnames(void)
 {
@@ -2677,7 +2677,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * ":finish": Mark a sourced file as finished.
  */

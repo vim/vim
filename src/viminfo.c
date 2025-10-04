@@ -41,7 +41,7 @@ typedef struct {
     int		bv_allocated;	// bv_string was allocated
 } bval_T;
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 
 static int  viminfo_errcnt;
 
@@ -1242,7 +1242,7 @@ viminfo_encoding(vir_T *virp)
     return viminfo_readline(virp);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Restore global vars that start with a capital from the viminfo file
  */

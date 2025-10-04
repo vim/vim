@@ -478,7 +478,7 @@ regcomp_start(
     regsize = 0L;
     reg_toolong = FALSE;
     regflags = 0;
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
     had_eol = FALSE;
 #endif
 }
@@ -1261,7 +1261,7 @@ regatom(int *flagp)
 
       case Magic('$'):
 	ret = regnode(EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 	had_eol = TRUE;
 #endif
 	break;
@@ -1284,7 +1284,7 @@ regatom(int *flagp)
 	if (c == '$')		// "\_$" is end-of-line
 	{
 	    ret = regnode(EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 	    had_eol = TRUE;
 #endif
 	    break;
@@ -2595,7 +2595,7 @@ bt_regcomp(char_u *expr, int re_flags)
     return (regprog_T *)r;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 /*
  * Check if during the previous call to vim_regcomp the EOL item "$" has been
  * found.  This is messy, but it works fine.

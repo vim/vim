@@ -344,7 +344,7 @@ plines_win(
     linenr_T	lnum,
     int		limit_winheight)	// when TRUE limit to window height
 {
-#if defined(FEAT_DIFF) || defined(PROTO)
+#if defined(FEAT_DIFF)
     // Check for filler lines above this buffer line.  When folded the result
     // is one line anyway.
     return plines_win_nofill(wp, lnum, limit_winheight)
@@ -675,7 +675,7 @@ ask_yesno(char_u *str, int direct)
     return r;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Returns the current mode as a string in "buf[MODE_MAX_LENGTH]", NUL
@@ -1349,7 +1349,7 @@ init_homedir(void)
     }
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_homedir(void)
 {
@@ -1363,7 +1363,7 @@ free_users(void)
 }
 #endif
 
-#if defined(MSWIN) || defined(PROTO)
+#if defined(MSWIN)
 /*
  * Initialize $VIM and $VIMRUNTIME when 'enc' is updated.
  */
@@ -2044,7 +2044,7 @@ vim_unsetenv_ext(char_u *var)
 	didset_vimruntime = FALSE;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Set environment variable "name" and take care of side effects.
  */
@@ -2372,7 +2372,7 @@ fast_breakcheck(void)
     }
 }
 
-# if defined(FEAT_SPELL) || defined(PROTO)
+# if defined(FEAT_SPELL)
 /*
  * Like line_breakcheck() but check 100 times less often.
  */
@@ -2388,8 +2388,7 @@ veryfast_breakcheck(void)
 #endif
 
 #if defined(VIM_BACKTICK) || defined(FEAT_EVAL) \
-	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	|| defined(PROTO)
+	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 
 #ifndef SEEK_SET
 # define SEEK_SET 0
@@ -2497,7 +2496,7 @@ done:
     return buffer;
 }
 
-# if defined(FEAT_EVAL) || defined(PROTO)
+# if defined(FEAT_EVAL)
 
     static void
 get_cmd_output_as_rettv(
@@ -2802,7 +2801,7 @@ path_with_url(char_u *fname)
     return path_is_url(p);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the dictionary of v:event.
  * Save and clear the value in case it already has items.

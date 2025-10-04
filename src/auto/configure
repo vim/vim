@@ -6969,7 +6969,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 	PERL_LIBS=$perllibs
 	PERL_SRC="auto/if_perl.c if_perlsfio.c"
 	PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o"
-	PERL_PRO="if_perl.pro if_perlsfio.pro"
+	PERL_PRO="proto/if_perl.pro proto/if_perlsfio.pro"
 	printf "%s\n" "#define FEAT_PERL 1" >>confdefs.h
 
       fi
@@ -8461,7 +8461,7 @@ printf "%s\n" "<not found>" >&6; }
 
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
-	  TCL_PRO=if_tcl.pro
+	  TCL_PRO=proto/if_tcl.pro
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
 	fi
       fi

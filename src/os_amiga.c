@@ -23,9 +23,6 @@
 #undef TRUE		// will be redefined by exec/types.h
 #undef FALSE
 
-// cproto fails on missing include files, skip them
-#ifndef PROTO
-
 #ifndef LATTICE
 # include <exec/exec.h>
 # include <intuition/intuition.h>
@@ -56,8 +53,6 @@
 #if defined(LATTICE) && !defined(SASC) && defined(FEAT_ARP)
 # include <libraries/arp_pragmas.h>
 #endif
-
-#endif // PROTO
 
 /*
  * Set stack size to 1 MiB on NG systems. This should be enough even for
@@ -302,9 +297,7 @@ mch_init(void)
 #endif
 }
 
-#ifndef PROTO
-# include <workbench/startup.h>
-#endif
+#include <workbench/startup.h>
 
 /*
  * Check_win checks whether we have an interactive window.
@@ -1040,9 +1033,7 @@ mch_settmode(tmode_T tmode)
  * Heavely modified by mool.
  */
 
-#ifndef PROTO
-# include <devices/conunit.h>
-#endif
+#include <devices/conunit.h>
 
 /*
  * Get console size in a system friendly way on AROS and MorphOS.
@@ -1215,11 +1206,9 @@ out_num(long n)
  * say 'oml lib:amiga.lib -r sendpacket.o'
  */
 
-#ifndef PROTO
-// #include <proto/exec.h>
-// #include <proto/dos.h>
-# include <exec/memory.h>
-#endif
+//#include <proto/exec.h>
+//#include <proto/dos.h>
+#include <exec/memory.h>
 
 /*
  * Function - dos_packet written by Phil Lindsay, Carolyn Scheppner, and Andy

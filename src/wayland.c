@@ -748,7 +748,7 @@ wayland_update(void)
     return vwl_connection_roundtrip(wayland_ct);
 }
 
-#if !defined(HAVE_SELECT) || defined(PROTO)
+#if !defined(HAVE_SELECT)
 
     void
 wayland_poll_check(int revents)
@@ -777,7 +777,7 @@ wayland_poll_check(int revents)
 }
 
 #endif
-#if defined(HAVE_SELECT) || defined(PROTO)
+#if defined(HAVE_SELECT)
 
     void
 wayland_select_check(bool is_set)
@@ -862,7 +862,7 @@ ex_wlrestore(exarg_T *eap)
     choose_clipmethod();
 }
 
-#if defined(FEAT_WAYLAND_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_WAYLAND_CLIPBOARD)
 
 /*
  * Get a suitable data device manager from connection. "supported" should be

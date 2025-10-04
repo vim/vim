@@ -3742,7 +3742,7 @@ gui_mch_create_scrollbar(
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(FEAT_GUI_HAIKU) || defined(PROTO)
+#if defined(FEAT_WINDOWS) || defined(FEAT_GUI_HAIKU)
 void
 gui_mch_destroy_scrollbar(
 	scrollbar_T *sb)
@@ -4225,7 +4225,7 @@ gui_mch_iconify()
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -4476,7 +4476,7 @@ gui_mch_insert_lines(
     gui.vimTextArea->mchInsertLines(row, num_lines);
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Menu stuff.
  */
@@ -5024,7 +5024,7 @@ gui_mch_set_toolbar_pos(int x, int y, int w, int h)
     }
 }
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 
 /*
  * Show or hide the tabline.
