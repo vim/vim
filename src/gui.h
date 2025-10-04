@@ -422,6 +422,9 @@ typedef struct Gui
     guicolor_T	currFgColor;	    // Current foreground text color
     guicolor_T	currBgColor;	    // Current background text color
     guicolor_T	currSpColor;	    // Current special text color
+
+    guicolor_T	title_bg_pixel;	    // window title bar color
+    guicolor_T	title_fg_pixel;	    // window title bar's text color
 #endif
 
 #ifdef FEAT_GUI_HAIKU

@@ -1617,6 +1617,41 @@ load_dwm_func(void)
 extern BOOL win11_or_later; // this is in os_win32.c
 
 /*
+ * Set TitleBar's color. Handle hi-TitleBar.
+ *
+ * Only enabled when 'guioptions' has 'C'.
+ * if "TitleBar guibg=NONE guifg=NONE" reset the window back to using the
+ * system's default behavior for the border color.
+ */
+    void
+gui_mch_new_titlebar_colors(void)
+{
+    if (pDwmSetWindowAttribute == NULL)
+	return;
+
+    if (win11_or_later)
+    {
+	guicolor_T captionColor = gui.title_bg_pixel;
+	guicolor_T textColor = gui.title_fg_pixel;
+
+	if (vim_strchr(p_go, GO_TITLEBAR) == NULL)
+	    captionColor = textColor = 0xFFFFFFFF;
+	else
+	{
+	    if (captionColor == INVALCOLOR)
+		captionColor = 0xFFFFFFFF;
+	    if (textColor == INVALCOLOR)
+		textColor = 0xFFFFFFFF;
+	}
+
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
+		&captionColor, sizeof(captionColor));
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
+		&textColor, sizeof(textColor));
+    }
+}
+
+/*
  * Called when the foreground or background color has been changed.
  */
     void
@@ -1629,21 +1664,6 @@ gui_mch_new_colors(void)
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
     InvalidateRect(s_hwnd, NULL, TRUE);
     DeleteObject(prevBrush);
-
-    // Set The Caption Bar
-
-    if (pDwmSetWindowAttribute == NULL)
-	return;
-
-    if (win11_or_later)
-    {
-	const COLORREF captionColor = gui.back_pixel;
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
-		&captionColor, sizeof(captionColor));
-	const COLORREF textColor = gui.norm_pixel;
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
-		&textColor, sizeof(textColor));
-    }
 }
 
 /*

@@ -6092,6 +6092,10 @@ TabPanelSel	TabPanel, active tab page label.
 Terminal	|terminal| window (see |terminal-size-color|).
 							*hl-Title*
 Title		Titles for output from ":set all", ":autocmd" etc.
+							*hl-TitleBar*
+TitleBar	Gui title bar (sometimes also called the caption bar).
+		Only MS-Windows Gui supports this.  See |gui-w32-title-bar|.
+		Only guibg and guifg highlight arguments have effect here.
 							*hl-Visual*
 Visual		Visual mode selection.
 							*hl-VisualNOS*
