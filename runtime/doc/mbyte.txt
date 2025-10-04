@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Aug 10
+*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Oct 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -969,6 +969,36 @@ of Windows you use.  For example, on my Windows 2000 box:
 3. Input Locales Tab
 4. Add Installed input locales -> Chinese(PRC)
    The default is still English (United Stated)
+
+
+MS-Windows IME Compatibility			*multibyte-ime-compatibility*
+
+Vim manages input methods on Windows systems via the `imm32.dll` (Input Method
+Manager).  The implementation, dating back to the Windows 2000 era, may not be
+fully compatible with modern input methods.  Modern input method processing
+has shifted to the Text Services Framework (TSF), whose behavior may not fully
+align with the traditional IME interface.  For details about IME and TSF,
+refer to the Microsoft documentation website (link is omitted since MS
+documentation URLs often change).
+
+In some cases Vim might incorrectly enable the Input Method (IM) in Normal
+mode upon startup when the Windows display language is set to a CJK language.
+To work around this issue, try adding the following configuration to your
+|gvimrc| file: >
+
+	autocmd VimEnter * set imdisable | set noimdisable
+<
+If you make any progress in diagnosing or resolving these issues, feedback is
+welcome.
+
+Note: IME behavior can vary due to differences in implementations by different
+vendors.  If you encounter issues with a specific input method, it is
+recommended to test with an alternative one.
+
+For proper integration with Vim's |+multi_byte_ime| system, changes in the
+input method's status must be detectable by the `ImmGetOpenStatus()` function
+in Vims source code.  Currently, some input methods that support multi-language
+input may have internal state changes that gVim cannot capture.
 
 
 Cursor color when IME or XIM is on				*CursorIM*
