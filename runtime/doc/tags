@@ -857,6 +857,7 @@ $quote	eval.txt	/*$quote*
 'patchexpr'	options.txt	/*'patchexpr'*
 'patchmode'	options.txt	/*'patchmode'*
 'path'	options.txt	/*'path'*
+'pb'	options.txt	/*'pb'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
 'perldll'	options.txt	/*'perldll'*
@@ -886,6 +887,7 @@ $quote	eval.txt	/*$quote*
 'printoptions'	options.txt	/*'printoptions'*
 'prompt'	options.txt	/*'prompt'*
 'pt'	options.txt	/*'pt'*
+'pumborder'	options.txt	/*'pumborder'*
 'pumheight'	options.txt	/*'pumheight'*
 'pummaxwidth'	options.txt	/*'pummaxwidth'*
 'pumwidth'	options.txt	/*'pumwidth'*
@@ -8382,6 +8384,7 @@ hl-MsgArea	syntax.txt	/*hl-MsgArea*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
 hl-Pmenu	syntax.txt	/*hl-Pmenu*
+hl-PmenuBorder	syntax.txt	/*hl-PmenuBorder*
 hl-PmenuExtra	syntax.txt	/*hl-PmenuExtra*
 hl-PmenuExtraSel	syntax.txt	/*hl-PmenuExtraSel*
 hl-PmenuKind	syntax.txt	/*hl-PmenuKind*
@@ -8390,6 +8393,7 @@ hl-PmenuMatch	syntax.txt	/*hl-PmenuMatch*
 hl-PmenuMatchSel	syntax.txt	/*hl-PmenuMatchSel*
 hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
+hl-PmenuShadow	syntax.txt	/*hl-PmenuShadow*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
 hl-PopupNotification	syntax.txt	/*hl-PopupNotification*
 hl-PopupSelected	syntax.txt	/*hl-PopupSelected*

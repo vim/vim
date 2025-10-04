@@ -820,7 +820,7 @@ endfunc
 " Test for 'highlight' option
 func Test_highlight_opt()
   let save_hl = &highlight
-  call assert_fails('set highlight=j:b', 'E474:')
+  call assert_fails('set highlight=K:b', 'E474:')
   set highlight=f\ r
   call assert_equal('f r', &highlight)
   set highlight=fb
