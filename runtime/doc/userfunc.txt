@@ -65,7 +65,7 @@ define a global function.
 <
 							*:function-verbose*
 When 'verbose' is non-zero, listing a function will also display where it was
-last defined. Example: >
+last defined.  Example: >
 
     :verbose function SetFileTypeSH
 	function SetFileTypeSH(name)
