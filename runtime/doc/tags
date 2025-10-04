@@ -9097,6 +9097,7 @@ multi-lang	mlang.txt	/*multi-lang*
 multi-repeat	repeat.txt	/*multi-repeat*
 multibyte	mbyte.txt	/*multibyte*
 multibyte-ime	mbyte.txt	/*multibyte-ime*
+multibyte-ime-compatibility	mbyte.txt	/*multibyte-ime-compatibility*
 multibyte-input	mbyte.txt	/*multibyte-input*
 multilang	mlang.txt	/*multilang*
 multilang-menus	mlang.txt	/*multilang-menus*
