@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 03
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,8 +322,6 @@ Improvements in 'fillchars':
   "eob" in 'fillchars'.
 - Support for using multibyte items with the "stl", "stlnc", "foldopen",
   "foldclose" and "foldsep" items in the 'fillchars' option.
-- Support for configuring the character used inside a fold level region using
-  "foldinner" in 'fillchars'.
 
 Support for the XChaCha20 encryption method. 'cryptmethod'
 

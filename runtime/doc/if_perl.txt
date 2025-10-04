@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 9.1.  Last change: 2025 Apr 27
+*if_perl.txt*   For Vim version 9.1.  Last change: 2025 Oct 04
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -33,10 +33,8 @@ features than Exuberant ctags' Perl support.
 ==============================================================================
 2. Compiling Vim with Perl interface			*perl-compiling*
 
-To compile Vim with Perl interface, you need Perl 5.004 (or later).  Perl must
-be installed before you compile Vim.  Vim's Perl interface does NOT work with
-the 5.003 version that has been officially released!  It will probably work
-with Perl 5.003_05 and later.
+To compile Vim with the Perl interface, you need a recent Perl version.  Perl
+must be installed before you compile Vim.
 
 The Perl patches for Vim were made by:
 	Sven Verdoolaege <skimo@breughel.ufsia.ac.be>
