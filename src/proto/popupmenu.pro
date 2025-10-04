@@ -17,4 +17,5 @@ void ui_post_balloon(char_u *mesg, list_T *list);
 void ui_may_remove_balloon(void);
 void pum_show_popupmenu(vimmenu_T *menu);
 void pum_make_popup(char_u *path_name, int use_mouse_pos);
+void put_shadow_char(int row, int col);
 /* vim: set ft=c : */
