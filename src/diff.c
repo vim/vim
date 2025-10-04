@@ -2254,7 +2254,7 @@ calculate_topfill_and_topline(
 
     // move the same amount of virtual lines in the target buffer to find the
     // cursor's line number
-    if (thistopdiff != NULL)
+    if (thistopdiff != NULL) // this should not be null, but just for safety
 	curlinenum_to = thistopdiff->df_lnum[toidx];
 
     int virt_lines_left = virtual_lines_passed;
@@ -2681,7 +2681,7 @@ diff_check_fill(win_T *wp, linenr_T lnum)
 diff_set_topline(win_T *fromwin, win_T *towin)
 {
     buf_T	*frombuf = fromwin->w_buffer;
-    linenr_T	lnum = fromwin->w_topline;
+    linenr_T	lnum;
     int		fromidx;
     int		toidx;
     diff_T	*dp;
@@ -2693,6 +2693,7 @@ diff_set_topline(win_T *fromwin, win_T *towin)
     if (curtab->tp_diff_invalid)
 	ex_diffupdate(NULL);		// update after a big change
 
+    lnum = fromwin->w_topline;
     towin->w_topfill = 0;
 
     // search for a change that includes "lnum" in the list of diffblocks.
