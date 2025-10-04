@@ -214,6 +214,7 @@ runtime/ftplugin/julia.vim				@carlobaldassi
 runtime/ftplugin/just.vim				@pbnj
 runtime/ftplugin/kconfig.vim				@chrisbra
 runtime/ftplugin/kdl.vim				@imsnif @jiangyinzuo
+runtime/ftplugin/kerml.vim			    @daumantas-kavolis-sensmetry
 runtime/ftplugin/kivy.vim				@ribru17
 runtime/ftplugin/kotlin.vim				@udalov
 runtime/ftplugin/lc.vim					@ribru17
@@ -296,6 +297,7 @@ runtime/ftplugin/sshdconfig.vim				@jiangyinzuo
 runtime/ftplugin/svelte.vim				@igorlfs
 runtime/ftplugin/sway.vim				@ribru17
 runtime/ftplugin/swayconfig.vim				@jamespeapen
+runtime/ftplugin/sysml.vim			    @daumantas-kavolis-sensmetry
 runtime/ftplugin/systemverilog.vim			@Kocha
 runtime/ftplugin/swig.vim				@jmarrec
 runtime/ftplugin/tap.vim				@petdance
