@@ -3634,7 +3634,7 @@ did_set_pumborder(optset_T *args)
 
     PUM_BORDER_CLEAR();
 
-    if (**varp == NUL || *varp == NULL)
+    if (*varp == NULL || **varp == NUL)
 	return NULL;
 
     for (p = *varp; p != NULL && *p != NUL; )
