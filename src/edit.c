@@ -693,7 +693,8 @@ edit(
 			&& stop_arrow() == OK)
 		{
 		    ins_compl_delete();
-		    if (ins_compl_preinsert_longest())
+		    if (ins_compl_preinsert_longest()
+			    && !ins_compl_is_match_selected())
 		    {
 			ins_compl_insert(FALSE, TRUE);
 			ins_compl_init_get_longest();

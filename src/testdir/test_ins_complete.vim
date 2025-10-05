@@ -6048,7 +6048,7 @@ func Test_longest_preinsert_accept()
 
   set completeopt+=longest autocomplete
   call feedkeys("Sf\<Down>\<C-Y>", 'tx')
-  call assert_equal('func', getline('.'))
+  call assert_equal('func2', getline('.'))
   call feedkeys("Sf\<C-Y>", 'tx')
   call assert_equal('func', getline('.'))
 
