@@ -32,7 +32,7 @@ static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
 static void frame_add_statusline(frame_T *frp);
 static void frame_new_width(frame_T *topfrp, int width, int leftfirst, int wfw);
-static void frame_add_vsep(frame_T *frp);
+static void frame_set_vsep(frame_T *frp, int add);
 static int frame_minwidth(frame_T *topfrp, win_T *next_curwin);
 static void frame_fix_width(win_T *wp);
 static int win_alloc_firstwin(win_T *oldwin);
@@ -1363,7 +1363,7 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    if (flags & WSP_BOT)
-		frame_add_vsep(curfrp);
+		frame_set_vsep(curfrp, TRUE);
 	    // Set width of neighbor frame
 	    frame_new_width(curfrp, curfrp->fr_width
 		     - (new_size + ((flags & WSP_TOP) != 0)), flags & WSP_TOP,
@@ -3577,6 +3577,11 @@ winframe_remove(
     frp2 = win_altframe(win, tp);
     wp = frame2win(frp2);
 
+    // If this is a rightmost window, remove vertical separators to the left.
+    if (win->w_vsep_width == 0 && frp_close->fr_parent->fr_layout == FR_ROW &&
+	    frp_close->fr_prev != NULL)
+	frame_set_vsep(frp_close->fr_prev, FALSE);
+
     // Remove this frame from the list of frames.
     frame_remove(frp_close);
 
@@ -3742,7 +3747,7 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
     // Vertical separators to the left may have been lost.  Restore them.
     if (wp->w_vsep_width == 0
 	    && frp->fr_parent->fr_layout == FR_ROW && frp->fr_prev != NULL)
-	frame_add_vsep(frp->fr_prev);
+	frame_set_vsep(frp->fr_prev, TRUE);
 
     // Statuslines above may have been lost.  Restore them.
     if (wp->w_status_height == 0
@@ -4223,29 +4228,34 @@ frame_new_width(
 }
 
 /*
- * Add the vertical separator to windows at the right side of "frp".
+ * Add or remove the vertical separator of windows to the right side of "frp".
  * Note: Does not check if there is room!
  */
     static void
-frame_add_vsep(frame_T *frp)
+frame_set_vsep(frame_T *frp, int add)
 {
     win_T	*wp;
 
     if (frp->fr_layout == FR_LEAF)
     {
 	wp = frp->fr_win;
-	if (wp->w_vsep_width == 0)
+	if (add && wp->w_vsep_width == 0)
 	{
 	    if (wp->w_width > 0)	// don't make it negative
-		--wp->w_width;
+		win_new_width(wp, wp->w_width - 1);
 	    wp->w_vsep_width = 1;
+	}
+	else if (!add && wp->w_vsep_width == 1)
+	{
+	    win_new_width(wp, wp->w_width + 1);
+	    wp->w_vsep_width = 0;
 	}
     }
     else if (frp->fr_layout == FR_COL)
     {
 	// Handle all the frames in the column.
 	FOR_ALL_FRAMES(frp, frp->fr_child)
-	    frame_add_vsep(frp);
+	    frame_set_vsep(frp, add);
     }
     else // frp->fr_layout == FR_ROW
     {
@@ -4253,7 +4263,7 @@ frame_add_vsep(frame_T *frp)
 	frp = frp->fr_child;
 	while (frp->fr_next != NULL)
 	    frp = frp->fr_next;
-	frame_add_vsep(frp);
+	frame_set_vsep(frp, add);
     }
 }
 
