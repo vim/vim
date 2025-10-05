@@ -3558,15 +3558,30 @@ func Test_complete_opt_fuzzy()
   call feedkeys("S\<C-X>\<C-O>c\<C-Y>", 'tx')
   call assert_equal('cp_str', getline('.'))
 
+  " Issue 18488: sort after collection when "fuzzy" (unless "nosort")
+  %d
+  set completeopt&
+  set completeopt+=fuzzy,noselect completefuzzycollect=keyword
+  func! PrintMenuWords()
+    let info = complete_info(["selected", "items"])
+    call map(info.items, {_, v -> v.word})
+    return info
+  endfunc
+  call setline(1, ['func1', 'xfunc', 'func2'])
+  call feedkeys("Gof\<C-N>\<C-R>=PrintMenuWords()\<CR>\<Esc>0", 'tx')
+  call assert_equal('f{''selected'': -1, ''items'': [''func1'', ''func2'', ''xfunc'']}',
+        \ getline('.'))
+
   " clean up
   set omnifunc=
   bw!
-  set complete& completeopt&
+  set complete& completeopt& completefuzzycollect&
   autocmd! AAAAA_Group
   augroup! AAAAA_Group
   delfunc OnPumChange
   delfunc Omni_test
   delfunc Comp
+  delfunc PrintMenuWords
   unlet g:item
   unlet g:word
   unlet g:abbr

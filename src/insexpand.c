@@ -2463,6 +2463,30 @@ ins_compl_has_autocomplete(void)
 }
 
 /*
+ * Cacluate fuzzy score and sort completion matches unless sorting is disabled.
+ */
+    static void
+ins_compl_fuzzy_sort(void)
+{
+    int	    cur_cot_flags = get_cot_flags();
+
+    // set the fuzzy score in cp_score
+    set_fuzzy_score();
+    // Sort the matches linked list based on fuzzy score
+    if (!(cur_cot_flags & COT_NOSORT))
+    {
+	sort_compl_match_list(cp_compare_fuzzy);
+	if ((cur_cot_flags & (COT_NOINSERT | COT_NOSELECT)) == COT_NOINSERT
+		&& compl_first_match)
+	{
+	    compl_shown_match = compl_first_match;
+	    if (compl_shows_dir_forward() && !compl_autocomplete)
+		compl_shown_match = compl_first_match->cp_next;
+	}
+    }
+}
+
+/*
  * Called after changing "compl_leader".
  * Show the popup menu with a different set of matches.
  * May also search for matches again if the previous search was interrupted.
@@ -2470,7 +2494,6 @@ ins_compl_has_autocomplete(void)
     static void
 ins_compl_new_leader(void)
 {
-    int	    cur_cot_flags = get_cot_flags();
     int	    save_w_wrow = curwin->w_wrow;
     int	    save_w_leftcol = curwin->w_leftcol;
 
@@ -2490,6 +2513,8 @@ ins_compl_new_leader(void)
 	ins_compl_set_original_text(compl_leader.string, compl_leader.length);
 	if (is_cpt_func_refresh_always())
 	    cpt_compl_refresh();
+	if (get_cot_flags() & COT_FUZZY)
+	    ins_compl_fuzzy_sort();
     }
     else
     {
@@ -2518,24 +2543,6 @@ ins_compl_new_leader(void)
 	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
-    }
-
-    // When 'cot' contains "fuzzy" set the cp_score and maybe sort
-    if (cur_cot_flags & COT_FUZZY)
-    {
-	set_fuzzy_score();
-	// Sort the matches linked list based on fuzzy score
-	if (!(cur_cot_flags & COT_NOSORT))
-	{
-	    sort_compl_match_list(cp_compare_fuzzy);
-	    if ((cur_cot_flags & (COT_NOINSERT | COT_NOSELECT)) == COT_NOINSERT
-		    && compl_first_match)
-	    {
-		compl_shown_match = compl_first_match;
-		if (compl_shows_dir_forward() && !compl_autocomplete)
-		    compl_shown_match = compl_first_match->cp_next;
-	    }
-	}
     }
 
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
@@ -5667,6 +5674,9 @@ ins_compl_get_exp(pos_T *ini)
 
     if (is_nearest_active() && !ins_compl_has_preinsert())
 	sort_compl_match_list(cp_compare_nearest);
+
+    if ((get_cot_flags() & COT_FUZZY) && ins_compl_leader_len() > 0)
+	ins_compl_fuzzy_sort();
 
     return match_count;
 }
