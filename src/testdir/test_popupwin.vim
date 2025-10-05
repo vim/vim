@@ -3931,7 +3931,7 @@ func Test_popupwin_cancel_with_without_filter()
 
   call feedkeys("\<C-C>", 'xt')
   call assert_equal({}, popup_getpos(win1))
-  call assert_equal({}, popup_getpos(win2))
+  call assert_equal(10, popup_getpos(win2).line)
 
   call popup_clear()
 endfunc

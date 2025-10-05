@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 04
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41760,7 +41760,6 @@ Others: ~
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
 - improve the |vimtutor| and add a second chapter for more advanced tips
-- |CTRL-C| always closes the active |popup-window|.
 - the configure script will favor using GTK3 over GTK2 when auto-detecting the
   gui toolkit
 - |gv| works in operator pending mode and does not abort
