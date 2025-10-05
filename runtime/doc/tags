@@ -8299,6 +8299,7 @@ help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
+help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
@@ -11126,6 +11127,7 @@ type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 type-parameter-naming	vim9.txt	/*type-parameter-naming*
+type-variable-naming	vim9.txt	/*type-variable-naming*
 typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
 typescript.vim	syntax.txt	/*typescript.vim*
