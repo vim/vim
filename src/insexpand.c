@@ -1551,24 +1551,41 @@ theend:
 }
 
 /*
- * Set fuzzy score.
+ * Set fuzzy score for completion matches.
  */
     static void
 set_fuzzy_score(void)
 {
     compl_T *compl;
+    char_u  *pattern;
+    int	    use_leader;
 
-    if (!compl_first_match
-	    || compl_leader.string == NULL || compl_leader.length == 0)
+    if (compl_first_match == NULL)
 	return;
 
-    (void)get_leader_for_startcol(NULL, TRUE); // Clear the cache
+    /* Determine the pattern to match against */
+    use_leader = (compl_leader.string != NULL && compl_leader.length > 0);
+    if (!use_leader)
+    {
+	if (compl_orig_text.string == NULL || compl_orig_text.length == 0)
+	    return;
+	pattern = compl_orig_text.string;
+    }
+    else
+    {
+	/* Clear the leader cache once before the loop */
+	(void)get_leader_for_startcol(NULL, TRUE);
+	pattern = NULL;  /* Will be computed per-completion */
+    }
 
+    /* Score all completion matches */
     compl = compl_first_match;
     do
     {
-	compl->cp_score = fuzzy_match_str(compl->cp_str.string,
-		get_leader_for_startcol(compl, TRUE)->string);
+	if (use_leader)
+	    pattern = get_leader_for_startcol(compl, TRUE)->string;
+
+	compl->cp_score = fuzzy_match_str(compl->cp_str.string, pattern);
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
 }
@@ -6437,7 +6454,9 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    check_elapsed_time();
     }
 
-    if (compl_pending && !got_int && !(cot_flags & COT_NOINSERT)
+    if (compl_pending
+	    && !got_int
+	    && !(cot_flags & (COT_NOINSERT | COT_FUZZY))
 	    && (!compl_autocomplete || ins_compl_has_preinsert()))
     {
 	// Insert the first match immediately and advance compl_shown_match,

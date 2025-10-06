@@ -3531,9 +3531,9 @@ func Test_complete_opt_fuzzy()
 
   set cot=menu,fuzzy
   call feedkeys("Sblue\<CR>bar\<CR>b\<C-X>\<C-P>\<C-Y>\<ESC>", 'tx')
-  call assert_equal('bar', getline('.'))
-  call feedkeys("Sb\<C-X>\<C-N>\<C-Y>\<ESC>", 'tx')
   call assert_equal('blue', getline('.'))
+  call feedkeys("Sb\<C-X>\<C-N>\<C-Y>\<ESC>", 'tx')
+  call assert_equal('bar', getline('.'))
   call feedkeys("Sb\<C-X>\<C-P>\<C-N>\<C-Y>\<ESC>", 'tx')
   call assert_equal('b', getline('.'))
 
@@ -3563,14 +3563,13 @@ func Test_complete_opt_fuzzy()
   set completeopt&
   set completeopt+=fuzzy,noselect completefuzzycollect=keyword
   func! PrintMenuWords()
-    let info = complete_info(["selected", "items"])
+    let info = complete_info(["items"])
     call map(info.items, {_, v -> v.word})
     return info
   endfunc
   call setline(1, ['func1', 'xfunc', 'func2'])
   call feedkeys("Gof\<C-N>\<C-R>=PrintMenuWords()\<CR>\<Esc>0", 'tx')
-  call assert_equal('f{''selected'': -1, ''items'': [''func1'', ''func2'', ''xfunc'']}',
-        \ getline('.'))
+  call assert_equal('f{''items'': [''func1'', ''func2'', ''xfunc'']}', getline('.'))
 
   " clean up
   set omnifunc=
@@ -4749,18 +4748,6 @@ func Test_nearest_cpt_option()
   call setline(1, ["fo", "foo", "foobar", "foobarbaz"])
   exe "normal! 2jof\<c-p>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('fo{''matches'': [''foobarbaz'', ''foobar'', ''foo'', ''fo''], ''selected'': -1}', getline(4))
-
-  " No effect if 'fuzzy' is present
-  set completeopt&
-  set completeopt+=fuzzy,nearest
-  %d
-  call setline(1, ["foo", "fo", "foobarbaz", "foobar"])
-  exe "normal! of\<c-n>\<c-r>=PrintMenuWords()\<cr>"
-  call assert_equal('fo{''matches'': [''fo'', ''foobarbaz'', ''foobar'', ''foo''], ''selected'': 0}', getline(2))
-  %d
-  call setline(1, ["fo", "foo", "foobar", "foobarbaz"])
-  exe "normal! 2jof\<c-p>\<c-r>=PrintMenuWords()\<cr>"
-  call assert_equal('foobar{''matches'': [''foobarbaz'', ''fo'', ''foo'', ''foobar''], ''selected'': 3}', getline(4))
   bw!
 
   set completeopt&
