@@ -437,7 +437,7 @@ def IsGdbStarted(): bool
 enddef
 
 # Check if the debugger is running remotely and return a suitable command to pty remotely
-def GetRemotePty(gdb_cmd: list<string>): list<string>
+def GetRemotePtyCmd(gdb_cmd: list<string>): list<string>
   # Check if the user provided a command to launch the program window
   var term_cmd = null_list
   if exists('g:termdebug_config') && has_key(g:termdebug_config, 'remote_window')
@@ -458,9 +458,9 @@ def GetRemotePty(gdb_cmd: list<string>): list<string>
           Echowarn('Install socat on the remote machine for a program window better experience')
         else
           # create a devoted tty slave device and link to stdin/stdout
-          term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
+          term_cmd += ['socat', '-dd', '-', 'PTY,raw,echo=0']
+          ch_log($'launching remote ttys using "{join(term_cmd)}"')
         endif
-        ch_log($'launching program windows as "{join(term_cmd)}"')
       endif
     endif
   endif
@@ -488,12 +488,11 @@ def GetRemotePtyDev(bufnr: number, interact: bool): string
       term_wait(bufnr, 100)
     endfor # i
 
-    # Clear the terminal window
-    if interact
-      term_sendkeys(bufnr, "clear\<CR>")
-    endif
-
     if pty != null_string
+      # Clear the terminal window
+      if interact
+        term_sendkeys(bufnr, "clear\<CR>")
+      endif
       break
     endif
 
@@ -503,7 +502,7 @@ def GetRemotePtyDev(bufnr: number, interact: bool): string
 enddef
 
 def CreateProgramPty(cmd: list<string> = null_list): string
-  ptybufnr = term_start(cmd != null ? cmd : 'NONE', {
+  ptybufnr = term_start(!cmd ? 'NONE' : cmd, {
     term_name: ptybufname,
     vertical: vvertical})
   if ptybufnr == 0
@@ -521,20 +520,72 @@ def CreateProgramPty(cmd: list<string> = null_list): string
     endif
   endif
 
-  return job_info(term_getjob(ptybufnr))['tty_out']
+  if !cmd
+    return job_info(term_getjob(ptybufnr))['tty_out']
+  else
+    var interact = indexof(cmd, 'v:val =~? "^socat"') < 0
+    var pty = GetRemotePtyDev(ptybufnr, interact)
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the program window tty')
+      exe $'bwipe! {ptybufnr}'
+      pty = null_string
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
+    endif
+
+    return pty
+  endif
 enddef
 
 def CreateCommunicationPty(cmd: list<string> = null_list): string
   # Create a hidden terminal window to communicate with gdb
-  commbufnr = term_start(cmd != null ? cmd : 'NONE', {
+  commbufnr = term_start(!cmd ? 'NONE' : cmd, {
     term_name: commbufname,
     out_cb: CommOutput,
+    term_cols: 500, # avoid message wrapping that prevents proper parsing
     hidden: 1
   })
   if commbufnr == 0
     return null_string
   endif
-  return job_info(term_getjob(commbufnr))['tty_out']
+
+  if !cmd
+    return job_info(term_getjob(commbufnr))['tty_out']
+  else
+    # CommunicationPty only will be reliable with socat
+    if indexof(cmd, 'v:val =~? "^socat"') < 0
+      Echoerr('Communication window should be started with socat')
+      exe $'bwipe! {commbufnr}'
+      return null_string
+    endif
+
+    var pty = GetRemotePtyDev(commbufnr, false)
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the communication window tty')
+      exe $'bwipe! {commbufnr}'
+      pty = null_string
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
+    endif
+
+    return pty
+  endif
+enddef
+
+# Convenient filter to workaround remote escaping issues.
+# For example, ssh doesn't escape spaces for the gdb arguments.
+# Workaround doing:
+# let g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
+def g:Termdebug_escape_whitespace(args: list<string>): list<string>
+  var new_args: list<string> = []
+  for arg in args
+    new_args += [substitute(arg, ' ', '\\ ', 'g')]
+  endfor
+  return new_args
 enddef
 
 def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
@@ -562,6 +613,12 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
     # Command executed _after_ startup is done, provides us with the necessary
     # feedback
     gdb_cmd += ['-ex', 'echo startupdone\n']
+  endif
+
+  # Escape whitespaces in the gdb arguments for ssh remoting
+  if exists('g:termdebug_config') && !has_key(g:termdebug_config, 'command_filter') &&
+      gdb_cmd[0] =~? '^ssh'
+    g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
   endif
 
   if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_filter')
@@ -666,14 +723,18 @@ enddef
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
 
-  var programpty = CreateProgramPty()
+  # Retrieve command if remote pty is needed
+  var gdb_cmd = GetCommand()
+  var term_cmd = GetRemotePtyCmd(gdb_cmd)
+
+  var programpty = CreateProgramPty(term_cmd)
   if programpty is null_string
     Echoerr('Failed to open the program terminal window')
     CloseBuffers()
     return
   endif
 
-  var commpty = CreateCommunicationPty()
+  var commpty = CreateCommunicationPty(term_cmd)
   if commpty is null_string
     Echoerr('Failed to open the communication terminal window')
     CloseBuffers()
@@ -727,13 +788,23 @@ def StartDebug_prompt(dict: dict<any>)
   # interpretation.
   gdb_cmd += ['--interpreter=mi2']
   # Disable pagination, it causes everything to stop at the gdb, needs to be run early
-  gdb_cmd += ['-iex', '"set pagination off"']
+  gdb_cmd += ['-iex', 'set pagination off']
   # Interpret commands while the target is running.  This should usually only
   # be exec-interrupt, since many commands don't work properly while the
   # target is running (so execute during startup).
-  gdb_cmd += ['-iex', '"set mi-async on"']
+  gdb_cmd += ['-iex', 'set mi-async on']
   # Add -quiet to avoid the intro message causing a hit-enter prompt.
   gdb_cmd += ['-quiet']
+
+  # Escape whitespaces in the gdb arguments for ssh remoting
+  if exists('g:termdebug_config') && !has_key(g:termdebug_config, 'command_filter') &&
+      gdb_cmd[0] =~? '^ssh'
+    g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
+  endif
+
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_filter')
+    gdb_cmd = g:termdebug_config.command_filter(gdb_cmd)
+  endif
 
   # Adding arguments requested by the user
   gdb_cmd += gdb_args
@@ -755,7 +826,7 @@ def StartDebug_prompt(dict: dict<any>)
   gdb_channel = job_getchannel(gdbjob)
 
   # Retrieve command if remote pty is needed
-  var term_cmd = GetRemotePty(gdb_cmd)
+  var term_cmd = GetRemotePtyCmd(gdb_cmd)
 
   # If we are not using socat maybe is a shell:
   var interact = indexof(term_cmd, 'v:val =~? "^socat"') < 0
