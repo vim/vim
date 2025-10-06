@@ -294,7 +294,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 7.1.3   feature_OBJ = code1.obj code2.obj
 
      Lists objects created from source codes listed in feature_SRC
-     Example: PERL_OBJ = if_perlsfio.obj if_perl.obj
+     Example: PERL_OBJ = if_perl.obj
 
 7.1.4  feature_LIB = ,OS_VMS_TCL.OPT/OPT
 

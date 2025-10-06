@@ -1620,7 +1620,7 @@ SRC =	$(BASIC_SRC) \
 	$(RUBY_SRC) \
 	$(WAYLAND_SRC)
 
-EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
+EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
 	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
@@ -3397,9 +3397,6 @@ mzscheme_base.c:
 objects/if_perl.o: auto/if_perl.c
 	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) $(PERL_CFLAGS_EXTRA) -o $@ auto/if_perl.c
 
-objects/if_perlsfio.o: if_perlsfio.c
-	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) $(PERL_CFLAGS_EXTRA) -o $@ if_perlsfio.c
-
 objects/if_python.o: if_python.c if_py_both.h
 	$(CCC_NF) $(PYTHON_CFLAGS) $(ALL_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
@@ -4509,11 +4506,6 @@ objects/if_mzsch.o: if_mzsch.c vim.h protodef.h auto/config.h feature.h os_unix.
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h if_mzsch.h
 objects/if_perl.o: auto/if_perl.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
- beval.h proto/gui_beval.pro structs.h regexp.h gui.h \
- libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
- ex_cmds.h spell.h proto.h globals.h errors.h
-objects/if_perlsfio.o: if_perlsfio.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h proto/gui_beval.pro structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \

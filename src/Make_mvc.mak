@@ -1129,7 +1129,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"$(PERL_DLL)\"
 
 PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
-PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
+PERL_OBJ = $(OUTDIR)\if_perl.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
 ! IF exist($(XSUBPP))
 XSUBPP = $(PERL_EXE) $(XSUBPP)
@@ -1646,9 +1646,6 @@ auto/if_perl.c: if_perl.xs typemap
 
 $(OUTDIR)/if_perl.obj: $(OUTDIR) auto/if_perl.c $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) auto/if_perl.c
-
-$(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c $(INCL)
-	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perlsfio.c
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c $(MZSCHEME_INCL) $(INCL) \
 			$(MZSCHEME_EXTRA_DEP)

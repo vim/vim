@@ -1246,9 +1246,9 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
 	  fi
 	fi
 	PERL_LIBS=$perllibs
-	PERL_SRC="auto/if_perl.c if_perlsfio.c"
-	PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o"
-	PERL_PRO="if_perl.pro if_perlsfio.pro"
+	PERL_SRC="auto/if_perl.c"
+	PERL_OBJ="objects/if_perl.o"
+	PERL_PRO="if_perl.pro"
 	AC_DEFINE(FEAT_PERL)
       fi
      fi
@@ -1274,7 +1274,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
     if test -n "$PERL"; then
       PERL_DIR="$dir"
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
-      PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
+      PERL_OBJ="objects/if_perl.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
     dnl Perl on Mac OS X 10.5 adds "-arch" flags but these should only

@@ -359,9 +359,8 @@ LIBS	 =
 # Perl related setup.
 PERL	 = perl
 PERL_DEF = ,"FEAT_PERL"
-PERL_SRC = if_perlsfio.c if_perl.xs
+PERL_SRC = if_perl.xs
 PERL_OBJ = \
-[.$(DEST)]if_perlsfio.obj \
 [.$(DEST)]if_perl.obj
 
 PERL_LIB = ,OS_VMS_PERL.OPT/OPT
@@ -1503,10 +1502,6 @@ lua_env :
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
 [.$(DEST)]if_perl.obj : [.auto]if_perl.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
- ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
- gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
- errors.h globals.h
-[.$(DEST)]if_perlsfio.obj : if_perlsfio.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h

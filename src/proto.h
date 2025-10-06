@@ -337,7 +337,6 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 # if defined(FEAT_PERL) && !defined(IN_PERL_FILE)
 #  define CV void
 #  include "if_perl.pro"
-#  include "if_perlsfio.pro"
 # endif
 
 # ifdef MACOS_CONVERT
