@@ -1560,24 +1560,41 @@ theend:
 }
 
 /*
- * Set fuzzy score.
+ * Set fuzzy score for completion matches.
  */
     static void
 set_fuzzy_score(void)
 {
     compl_T *compl;
+    char_u  *pattern;
+    int	    use_leader;
 
-    if (!compl_first_match
-	    || compl_leader.string == NULL || compl_leader.length == 0)
+    if (compl_first_match == NULL)
 	return;
 
-    (void)get_leader_for_startcol(NULL, TRUE); // Clear the cache
+    /* Determine the pattern to match against */
+    use_leader = (compl_leader.string != NULL && compl_leader.length > 0);
+    if (!use_leader)
+    {
+	if (compl_orig_text.string == NULL || compl_orig_text.length == 0)
+	    return;
+	pattern = compl_orig_text.string;
+    }
+    else
+    {
+	/* Clear the leader cache once before the loop */
+	(void)get_leader_for_startcol(NULL, TRUE);
+	pattern = NULL;  /* Will be computed per-completion */
+    }
 
+    /* Score all completion matches */
     compl = compl_first_match;
     do
     {
-	compl->cp_score = fuzzy_match_str(compl->cp_str.string,
-		get_leader_for_startcol(compl, TRUE)->string);
+	if (use_leader)
+	    pattern = get_leader_for_startcol(compl, TRUE)->string;
+
+	compl->cp_score = fuzzy_match_str(compl->cp_str.string, pattern);
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
 }
@@ -2472,6 +2489,30 @@ ins_compl_has_autocomplete(void)
 }
 
 /*
+ * Cacluate fuzzy score and sort completion matches unless sorting is disabled.
+ */
+    static void
+ins_compl_fuzzy_sort(void)
+{
+    int	    cur_cot_flags = get_cot_flags();
+
+    // set the fuzzy score in cp_score
+    set_fuzzy_score();
+    // Sort the matches linked list based on fuzzy score
+    if (!(cur_cot_flags & COT_NOSORT))
+    {
+	sort_compl_match_list(cp_compare_fuzzy);
+	if ((cur_cot_flags & (COT_NOINSERT | COT_NOSELECT)) == COT_NOINSERT
+		&& compl_first_match)
+	{
+	    compl_shown_match = compl_first_match;
+	    if (compl_shows_dir_forward() && !compl_autocomplete)
+		compl_shown_match = compl_first_match->cp_next;
+	}
+    }
+}
+
+/*
  * Called after changing "compl_leader".
  * Show the popup menu with a different set of matches.
  * May also search for matches again if the previous search was interrupted.
@@ -2479,7 +2520,6 @@ ins_compl_has_autocomplete(void)
     static void
 ins_compl_new_leader(void)
 {
-    int	    cur_cot_flags = get_cot_flags();
     int	    save_w_wrow = curwin->w_wrow;
     int	    save_w_leftcol = curwin->w_leftcol;
 
@@ -2499,6 +2539,8 @@ ins_compl_new_leader(void)
 	ins_compl_set_original_text(compl_leader.string, compl_leader.length);
 	if (is_cpt_func_refresh_always())
 	    cpt_compl_refresh();
+	if (get_cot_flags() & COT_FUZZY)
+	    ins_compl_fuzzy_sort();
     }
     else
     {
@@ -2527,24 +2569,6 @@ ins_compl_new_leader(void)
 	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
-    }
-
-    // When 'cot' contains "fuzzy" set the cp_score and maybe sort
-    if (cur_cot_flags & COT_FUZZY)
-    {
-	set_fuzzy_score();
-	// Sort the matches linked list based on fuzzy score
-	if (!(cur_cot_flags & COT_NOSORT))
-	{
-	    sort_compl_match_list(cp_compare_fuzzy);
-	    if ((cur_cot_flags & (COT_NOINSERT | COT_NOSELECT)) == COT_NOINSERT
-		    && compl_first_match)
-	    {
-		compl_shown_match = compl_first_match;
-		if (compl_shows_dir_forward() && !compl_autocomplete)
-		    compl_shown_match = compl_first_match->cp_next;
-	    }
-	}
     }
 
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
@@ -5677,6 +5701,9 @@ ins_compl_get_exp(pos_T *ini)
     if (is_nearest_active() && !ins_compl_has_preinsert())
 	sort_compl_match_list(cp_compare_nearest);
 
+    if ((get_cot_flags() & COT_FUZZY) && ins_compl_leader_len() > 0)
+	ins_compl_fuzzy_sort();
+
     return match_count;
 }
 
@@ -6436,7 +6463,9 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    check_elapsed_time();
     }
 
-    if (compl_pending && !got_int && !(cot_flags & COT_NOINSERT)
+    if (compl_pending
+	    && !got_int
+	    && !(cot_flags & (COT_NOINSERT | COT_FUZZY))
 	    && (!compl_autocomplete || ins_compl_has_preinsert()))
     {
 	// Insert the first match immediately and advance compl_shown_match,
