@@ -436,8 +436,74 @@ def IsGdbStarted(): bool
   return true
 enddef
 
-def CreateProgramPty(): string
-  ptybufnr = term_start('NONE', {
+# Check if the debugger is running remotely and return a suitable command to pty remotely
+def GetRemotePty(gdb_cmd: list<string>): list<string>
+  # Check if the user provided a command to launch the program window
+  var term_cmd = null_list
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'remote_window')
+    term_cmd = g:termdebug_config['remote_window']
+    term_cmd = type(term_cmd) == v:t_list ? copy(term_cmd) : [term_cmd]
+  else
+    # Check if it is a remote gdb, the program terminal should be started
+    # on the remote machine.
+    const remote_pattern = '^\(ssh\|wsl\)'
+    if gdb_cmd[0] =~? remote_pattern
+      var gdb_pos = indexof(gdb_cmd, $'v:val =~? "^{GetCommand()[-1]}"')
+      if gdb_pos > 0
+        # strip debugger call
+        term_cmd = gdb_cmd[0 : gdb_pos - 1]
+        # roundtrip to check if socat is available on the remote side
+        silent call system(join(term_cmd, ' ') .. ' socat -h')
+        if v:shell_error
+          Echowarn('Install socat on the remote machine for a program window better experience')
+        else
+          # create a devoted tty slave device and link to stdin/stdout
+          term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
+        endif
+        ch_log($'launching program windows as "{join(term_cmd)}"')
+      endif
+    endif
+  endif
+  return term_cmd
+enddef
+
+# Retrieve the remote pty device from a remote terminal
+# If interact is true, use remote tty command to get the pty device
+def GetRemotePtyDev(bufnr: number, interact: bool): string
+  var pty: string = null_string
+  var line = null_string
+
+  for j in range(5)
+
+    if interact
+      term_sendkeys(bufnr, "tty\<CR>")
+    endif
+
+    for i in range(0, term_getsize(bufnr)[0])
+      line = term_getline(bufnr, i)
+      if line =~? "/dev/pts"
+          pty = line
+          break
+      endif
+      term_wait(bufnr, 100)
+    endfor # i
+
+    # Clear the terminal window
+    if interact
+      term_sendkeys(bufnr, "clear\<CR>")
+    endif
+
+    if pty != null_string
+      break
+    endif
+
+  endfor # j
+
+  return pty
+enddef
+
+def CreateProgramPty(cmd: list<string> = null_list): string
+  ptybufnr = term_start(cmd != null ? cmd : 'NONE', {
     term_name: ptybufname,
     vertical: vvertical})
   if ptybufnr == 0
@@ -458,9 +524,9 @@ def CreateProgramPty(): string
   return job_info(term_getjob(ptybufnr))['tty_out']
 enddef
 
-def CreateCommunicationPty(): string
+def CreateCommunicationPty(cmd: list<string> = null_list): string
   # Create a hidden terminal window to communicate with gdb
-  commbufnr = term_start('NONE', {
+  commbufnr = term_start(cmd != null ? cmd : 'NONE', {
     term_name: commbufname,
     out_cb: CommOutput,
     hidden: 1
@@ -688,32 +754,11 @@ def StartDebug_prompt(dict: dict<any>)
   set modified
   gdb_channel = job_getchannel(gdbjob)
 
-  # Check if the user provided a command to launch the program window
-  var term_cmd = null_list
-  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'remote_window')
-    term_cmd = g:termdebug_config['remote_window']
-    term_cmd = type(term_cmd) == v:t_list ? copy(term_cmd) : [term_cmd]
-  else
-    # Check if it is a remote gdb, the program terminal should be started
-    # on the remote machine.
-    const remote_pattern = '^\(ssh\|wsl\)'
-    if gdb_cmd[0] =~? remote_pattern
-      var gdb_pos = indexof(gdb_cmd, $'v:val =~? "^{GetCommand()[-1]}"')
-      if gdb_pos > 0
-        # strip debugger call
-        term_cmd = gdb_cmd[0 : gdb_pos - 1]
-        # roundtrip to check if socat is available on the remote side
-        silent call system(join(term_cmd, ' ') .. ' socat -h')
-        if v:shell_error
-          Echowarn('Install socat on the remote machine for a program window better experience')
-        else
-          # create a devoted tty slave device and link to stdin/stdout
-          term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
-        endif
-        ch_log($'launching program windows as "{join(term_cmd)}"')
-      endif
-    endif
-  endif
+  # Retrieve command if remote pty is needed
+  var term_cmd = GetRemotePty(gdb_cmd)
+
+  # If we are not using socat maybe is a shell:
+  var interact = indexof(term_cmd, 'v:val =~? "^socat"') < 0
 
   if has('terminal') && (term_cmd != null || !has('win32'))
 
@@ -743,33 +788,8 @@ def StartDebug_prompt(dict: dict<any>)
       if term_cmd is null
         pty = job_info(term_getjob(ptybufnr))['tty_out']
       else
-        # If we are not using socat maybe is a shell:
-        # Retrieve remote pty value iteratively as above with gdb term
-        var interact = indexof(term_cmd, 'v:val =~? "^socat"') < 0
-
-        var line = null_string
-        for j in range(5)
-          if pty != null
-            break
-          elseif interact
-            term_sendkeys(ptybufnr, "tty\<CR>")
-          endif
-
-          for i in range(0, term_getsize(ptybufnr)[0])
-            line = term_getline(ptybufnr, i)
-            if line =~? "/dev/pts"
-                pty = line
-                break
-            endif
-            term_wait(ptybufnr, 100)
-          endfor # i
-
-          # Clear the terminal window
-          if interact
-            term_sendkeys(ptybufnr, "clear\<CR>")
-          endif
-
-        endfor # j
+        # Retrieve remote pty value
+        pty = GetRemotePtyDev(ptybufnr, interact)
       endif
 
       if pty !~? "/dev/pts"
