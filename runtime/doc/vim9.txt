@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Sep 30
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Oct 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -18,8 +18,28 @@ features in Vim9 script.
 5.  Generic functions			|generic-functions|
 6.  Namespace, Import and Export	|vim9script|
 7.  Classes and interfaces		|vim9-classes|
-
 8.  Rationale				|vim9-rationale|
+
+
+------------------------------------------------------------------------------
+
+  NOTE: In this vim9.txt help file, the Vim9 script code blocks beginning
+	with `vim9script` are Vim9 script syntax highlighted.  Also, they are
+	sourceable, meaning you can run them to see what they output.  To
+	source them, use `:'<,'>source` (see |:source-range|), which is done
+	by visually selecting the line(s) with |V| and typing `:so`.
+	For example, try it on the following Vim9 script: >vim9
+
+		vim9script
+		echowindow "Welcome to Vim9 script!"
+<
+	There are also code examples that should not be sourced - they
+	explain concepts that don't require a sourceable example.  Such code
+	blocks appear in generic code syntax highlighting, like this: >
+
+		def ThisFunction()          # script-local
+		def g:ThatFunction()        # global
+		export def Function()       # for import and import autoload
 
 ==============================================================================
 
@@ -1903,126 +1923,240 @@ A generic function allows using the same function with different type
 arguments, while retaining type checking for arguments and the return value.
 This provides type safety and code reusability.
 
+
 Declaration~
 						*generic-function-declaration*
-						*E1553* *E1554* *E1559*
-The type parameters for a generic function are declared in angle brackets "<"
-and ">" directly after the function name.  Multiple type names are separated
-by commas: >
+						*E1553* *E1554*
+The type variables for a generic function are declared as its type parameters
+within angle brackets ("<" and ">"), directly after the function name.
+Multiple type parameters are separated by commas: >
 
-    def[!] {funcname}<{type} [, {types}]>([arguments])[: {return-type}]
-	{function body}
-    enddef
-<
-These type parameters can then be used like any other type within the function
-signature and body.  Example: >
+	def[!] {funcname}<{type} [, {types}]>([arguments])[: {return-type}]
+	    {function body}
+	enddef
+<						*generic-function-example*
+These type parameters may then be used, like any other type, within the
+function signature and its body.  The following example combines two lists
+into a list of tuples: >vim9
 
-    def MyFunc<T, A, B>(param1: T): T
-	var f: A
-	var x = param1
-	return x
-    enddef
+	vim9script
+	def Zip<T, U>(first: list<T>, second: list<U>): list<tuple<T, U>>
+	    const LEN: number = ([first->len(), second->len()])->min()
+	    final result: list<tuple<T, U>> = []
+	    for i in range(LEN)
+	        result->add((first[i], second[i]))
+	    endfor
+	    return result
+	enddef
+	var n: list<number> = [61, 62, 63]
+	var s: list<string> = ['a', 'b', 'c']
+	echo $"Zip example #1: {Zip<number, string>(n, s)}"
+	echo $"Zip example #2: {Zip<string, number>(s, n)}"
 <
 						*type-variable-naming* *E1552*
-The convention is to use a single uppercase letter for a type variable (e.g.,
-T, A, X), although longer names are allowed.  The name must start with an
-uppercase letter.
+						*type-parameter-naming*
+As in the preceding example, the convention is to use a single capital letter
+for a name (e.g., T, U, A, etc.).  Although they may comprise more than one
+letter, names must start with a capital letter.  In this example, "Ok" is
+valid whereas "n" is not: >vim9
 
+	vim9script
+	def MyFail<Ok, n>(): void
+	enddef
+	# E1552: Type variable name must start with an uppercase letter: n...
+<
 						*E1558* *E1560*
-A function must be declared and used either as generic or as a regular
-function - but not both.
+A function must be declared and used either as a generic function or as a
+regular function, but not both.  The following Vim9 scripts demonstrate these
+errors: >vim9
 
+	vim9script
+	My1558<number>()
+	# Vim(eval):E1558: Unknown generic function: My1558
+< >vim9
+	vim9script
+	def My1560(): void
+	enddef
+	My1560<string>()
+	# Vim(echo):E1560: Not a generic function: My1560
+<
 						*E1561*
-A type variable name must not conflict with other defined names, such as class
-names, type aliases, enum names, function names or other type variable names.
+Type parameter names must not clash with other identifiers: >vim9
+
+	vim9script
+	def My1561<D, E, D>(): D
+	enddef
+	# E1561: Duplicate type variable name: D
+
+	vim9script
+	enum E
+	  Yes, No
+	endenum
+	def My1041<E>(): E
+	enddef
+	# E0141: Redefining script item "E"
+<
 
 Calling a generic function~
 						*generic-function-call*
 To call a generic function, specify the concrete types in "<" and ">"
 between the function name and the argument list: >
 
-    MyFunc<number, string, list<number>>()
+	MyFunc<number, string, list<number>>()
 <
-						*E1555* *E1556* *E1557*
-The number of concrete types provided when calling a generic function must
-match the number of type variables in the function.  An empty type list is not
-allowed.  Any Vim9 type (|vim9-types|) can be used as a concrete type in a
-generic function.
+	NOTE: There are several working examples in this section, which may
+	      be sourced, including |generic-function-example|.
 
-Spaces are not allowed between the function name and "<", or between ">" and
-the opening "(".
+					*E1555* *E1556* *E1557* *E1559*
+The number of passed type arguments to the function must match the number
+of its declared type parameters.  An empty type list is not allowed.
+Examples: >vim9
+
+	vim9script
+	def My1555<>(): void
+	enddef
+	# E1555: Empty type list specified for generic function ...
+< >vim9
+	vim9script
+	def My1556<T>(): void
+	enddef
+	My1556<bool, bool>()
+	# E1556: Too many types specified for generic function ...
+< >vim9
+	vim9script
+	def My1557<T, U>(): void
+	enddef
+	My1557<bool>()
+	# E1557: Not enough types specified for generic function ...
+< >vim9
+	vim9script
+	def My1559<T>(): T
+	enddef
+	My1559()
+	# Vim(eval):E1559: Type arguments missing for generic function ...
+<
+Any Vim9 type (|vim9-types|) can be used as a concrete type in a generic
+function.
+
+Spaces are not allowed:
+- Between the function name and "<" (|E1068|)
+- Between ">" and the opening "(" (|E1068|), or
+- Within the "<" and ">", except where required after the comma separating
+  the types (|E1202|).
 
 A generic function can be exported and imported like a regular function.
 See |:export| and |:import|.
 
 A generic function can be defined inside another regular or generic function.
-
-Referencing type variables in generic types~
-
-Instead of concrete types, type variables can be used with generic types.
-This is useful for complex data structures like lists of dictionaries or
-dictionaries of lists.  Example: >
-
-    vim9script
-
-    def Flatten<T>(x: list<list<T>>): list<T>
-	var result: list<T> = []
-	for inner in x
-	    result += inner
-	endfor
-	return result
-    enddef
-
-    echo Flatten<number>([[1, 2], [3]])
+Example: >vim9
+	vim9script
+	def Outer(): void
+	  # Returns either the first item of a list or a default value
+	  def FirstOrDefault<T, U>(lst: list<T>, default: U): any
+	    return lst->len() > 0 ? lst[0] : default
+	  enddef
+	  echo FirstOrDefault<string, bool>(['B', 'C'], false)	# echos B
+	  echo FirstOrDefault<number, number>([], 42)		# echos 42
+	enddef
+	Outer()
 <
+
+Using a type variable as a type argument ~
+
+A type variable may also be passed as a type argument.  For example: >vim9
+
+	vim9script
+	# T is declared as a type parameter
+	# It is used for the 'value' parameter and the return type
+	def Id<T>(value: T): T
+	    return value
+	enddef
+	# U is declared as a type parameter
+	# It is used for the 'value' parameter and the return type
+	def CallId<U>(value: U): U
+	    # U is a type variable passed/used as a type argument
+	    return Id<U>(value)
+	enddef
+	echo CallId<string>('I am') .. ' ' .. CallId<number>(42)
+
+This is useful for complex data structures like dictionaries of lists or,
+as in the following example, lists of dictionaries: >vim9
+
+	vim9script
+	def Flatten<T>(x: list<list<T>>): list<T>
+	    final result: list<T> = []
+	    for inner in x
+	        result->extend(inner)
+	    endfor
+	    return result
+	enddef
+	const ENGLISH: list<dict<string>> = [{1: 'one'}, {2: 'two'}]
+	const MANDARIN: list<dict<string>> = [{1: '壹'}, {2: '贰'}]
+	const ARABIC_N: list<dict<number>> = [{1: 1}, {2: 2}]
+	echo Flatten<dict<string>>([ENGLISH, MANDARIN])
+	echo Flatten<dict<any>>([ENGLISH, ARABIC_N])
+<
+In "Flatten<T>", "T" is a declared type parameter.  Everywhere else in
+the function, "T" is a type variable referencing that type parameter.
+
 
 Generic class method~
 
-A Vim9 class method can be a generic function: >
+A Vim9 class method can be a generic function: >vim9
 
-    class A
-	def Foo<X, Y>()
-	enddef
-    endclass
-    var a = A.new()
-    a.Foo<number, string>()
+	vim9script
+	class Config
+	    var settings: dict<any>
+	    def Get<T>(key: string): T
+	        return this.settings[key]
+	    enddef
+	endclass
+	var c: Config = Config.new({timeout: 30, debug: true})
+	echo c.Get<number>('timeout')
+	echo c.Get<bool>('debug')
 <
 						*E1432* *E1433* *E1434*
 A generic class method in a base class can be overridden by a generic method
-in a child class. The number of type variables must match between both
+in a child class.  The number of type variables must match between both
 methods.  A concrete class method cannot be overridden by a generic method,
 and vice versa.
+
 
 Generic function reference~
 
 A function reference (|Funcref|) can be a generic function.  This allows for
-creating factories of functions that operate on specific types: >
+creating factories of functions that operate on specific types: >vim9
 
-    vim9script
-
-    def MakeEcho<T>(): func(T): T
-	return (x: T): T => x
-    enddef
-
-    var EchoNumber = MakeEcho<number>()
-    echo EchoNumber(123)
-
-    var EchoString = MakeEcho<string>()
-    echo EchoString('abc')
+	vim9script
+	# Match a specified character in a string or the decimal value of the
+	# character in a list.  Note: '*' is decimal 42 (U+002A)
+	var c: string = "*"
+	var char_dec: tuple<string, string> = (c, c->char2nr()->string())
+	def Matcher<T>(pattern: string): func(T): bool
+	    return (value: T): bool => match(value, pattern) >= 0
+	enddef
+	var StringMatch = Matcher<string>(char_dec[0])
+	echo "*+"->StringMatch()			    # true (has *)
+	echo ",-"->StringMatch()			    # false
+	var ListMatch = Matcher<list<number>>(char_dec[1])
+	echo [42, 43]->ListMatch()			    # true (has 42)
+	echo [44, 45]->ListMatch()			    # false
 <
+
 Compiling and Disassembling Generic functions~
 
 The |:defcompile| command can be used to compile a generic function with a
 specific list of concrete types: >
 
-    defcompile MyFunc<number, list<number>, dict<string>>
+	defcompile MyFunc<number, list<number>, dict<string>>
 <
 The |:disassemble| command can be used to list the instructions generated for
 a generic function: >
 
-    disassemble MyFunc<string, dict<string>>
-    disassemble MyFunc<number, list<blob>>
+	disassemble MyFunc<string, dict<string>>
+	disassemble MyFunc<number, list<blob>>
 <
+
 Limitations and Future Work~
 
 Currently, Vim does not support:
@@ -2085,26 +2219,39 @@ In the |vimrc| file sourced on startup this does not happen.
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file: >vim9
 
-	" legacy Vim script comments may go here
+	" _legacy Vim script_ comments here
 	if !has('vim9script')
-	   " legacy Vim script commands go here
+	   " _legacy Vim script_ comments/commands here
 	   finish
 	endif
 	vim9script
-	# Vim9 script commands go here
-
+	# _Vim9 script_ commands/commands from here onwards
+	echowindow $"has('vim9script') == {has('vim9script')}"
+<
 This allows for writing a script that takes advantage of the Vim9 script
-syntax if possible, but will also work on a Vim version without it.
+syntax if possible, and prevents the vim9script command from throwing an
+error if used in a version of Vim without 'vim9script'.
 
 Note that Vim9 syntax changed before Vim 9 so that scripts using the current
 syntax (such as "import from" instead of "import") might throw errors.
-To prevent these, a safer check could be for |v:version| >= 900 instead.
+To prevent these, a safer check may be |v:version| >= 900 instead (because
+"has('vim9script')" will return `v:true` back to Vim 8.2 with patch 3965).
+Sometimes it is prudent to cut off even later.  Vim9 script's feature set
+continues to grow so, for example, if tuples are used (introduced in Vim 9.1
+patch 1232), a better condition is: >vim9
 
-This can only work in two ways:
-1. The "if" statement evaluates to false, the commands up to `endif` are
-   skipped and `vim9script` is then the first command actually executed.
-2. The "if" statement evaluates to true, the commands up to `endif` are
-   executed and `finish` bails out before reaching `vim9script`.
+	if !has('patch-9.1.1232')
+	  echowindow $"Fail: Vim does not have patch 9.1.1232"
+	  finish
+	endif
+	vim9script
+	echowindow $"Pass: version {v:versionlong}.  Continuing ..."
+<
+Whichever vim-mix condition is used, it only works in one of two ways:
+    1. The "if" statement evaluates to false, the commands up to `endif` are
+       skipped and `vim9script` is then the first command actually executed.
+    2. The "if" statement evaluates to true, the commands up to `endif` are
+       executed and `finish` bails out before reaching `vim9script`.
 
 
 Export ~
@@ -2129,13 +2276,13 @@ interfaces and enums can be exported.
 Import ~
 				*:import* *:imp* *E1094* *E1047* *E1262*
 				*E1048* *E1049* *E1053* *E1071* *E1088* *E1236*
-The exported items can be imported in another script. The import syntax has
-two forms. The simple form: >
+The exported items can be imported in another script.  The import syntax has
+two forms.  The simple form: >
 	import {filename}
 <
 Where {filename} is an expression that must evaluate to a string.  In this
 form the filename should end in ".vim" and the portion before ".vim" will
-become the script local name of the namespace. For example: >
+become the script local name of the namespace.  For example: >
 	import "myscript.vim"
 <
 This makes each exported item in "myscript.vim" available as "myscript.item".
@@ -2211,7 +2358,7 @@ Note that this does not work for variables, only for functions.
 
 					    *import-legacy* *legacy-import*
 `:import` can also be used in legacy Vim script.  The imported namespace still
-becomes script-local, even when the "s:" prefix is not given. For example: >
+becomes script-local, even when the "s:" prefix is not given.  For example: >
 	import "myfile.vim"
 	call s:myfile.MyFunc()
 
@@ -2226,8 +2373,8 @@ However, the namespace cannot be resolved on its own: >
 <
 This also affects the use of |<SID>| in the legacy mapping context.  Since
 |<SID>| is only a valid prefix for a function and NOT for a namespace, you
-cannot use it to scope a function in a script local namespace. Instead of
-prefixing the function with |<SID>| you should use|<ScriptCmd>|. For example:
+cannot use it to scope a function in a script local namespace.  Instead of
+prefixing the function with |<SID>| you should use |<ScriptCmd>|.  For example:
 >
 	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
@@ -2245,43 +2392,47 @@ Importing an autoload script ~
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
 							*E1264*
-1. In the plugin define user commands, functions and/or mappings that refer to
-   items imported from an autoload script. >
+     1. In the plugin, define user commands, functions and/or mappings
+        referring to items imported from an autoload script. >
+
 	import autoload 'for/search.vim'
 	command -nargs=1 SearchForStuff search.Stuff(<f-args>)
 
-<   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
-   The "SearchForStuff" command is now available to the user.
+<        This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely
+        chosen.  The "SearchForStuff" command is now available to the user.
 
-   The "autoload" argument to `:import` means that the script is not loaded
-   until one of the items is actually used.  The script will be found under
-   the "autoload" directory in 'runtimepath' instead of the "import"
-   directory.  Alternatively a relative or absolute name can be used, see
-   below.
+        The "autoload" argument to `:import` means that the script is not
+        loaded until one of the items is actually used.  The script will be
+        found under the "autoload" directory in 'runtimepath' instead of the
+        "import" directory.  Alternatively, either a relative or absolute
+        name can be used - see below.
 
-2. In the autoload script put the bulk of the code. >
+     2. In the autoload script put the bulk of the code. >
+
 	vim9script
-	export def Stuff(arg: string)
+	export def Stuff(arg: string): void
 	  ...
 
-<   This goes in .../autoload/for/search.vim.
+<       This goes in .../autoload/for/search.vim.
 
-   Putting the "search.vim" script under the "/autoload/for/" directory has
-   the effect that "for#search#" will be prefixed to every exported item.  The
-   prefix is obtained from the file name, as you would to manually in a
-   legacy autoload script.  Thus the exported function can be found with
-   "for#search#Stuff", but you would normally use `import autoload` and not
-   use the prefix (which has the side effect of loading the autoload script
-   when compiling a function that encounters this name).
+       Putting the "search.vim" script under the "/autoload/for/" directory
+       has the effect that "for#search#" will be prefixed to every exported
+       item.  The prefix is obtained from the file name, just as you would
+       add it manually in a legacy autoload script.  Thus the exported
+       function can be found with "for#search#Stuff", but you would normally
+       use `import autoload` and not use the prefix (which has the side effect
+       of loading the autoload script when compiling a function that
+       encounters this name).
 
-   You can split up the functionality and import other scripts from the
-   autoload script as you like.  This way you can share code between plugins.
+       You can split up the functionality and import other scripts from the
+       autoload script as you like.  This way you can share code between
+       plugins.
 
 Searching for the autoload script in all entries in 'runtimepath' can be a bit
 slow.  If the plugin knows where the script is located, quite often a relative
 path can be used.  This avoids the search and should be quite a bit faster.
-Another advantage is that the script name does not need to be unique.  An
-absolute path is also possible.  Examples: >
+Another advantage is that the script name does not need to be unique.  Also,
+an absolute path is possible.  Examples: >
 	import autoload '../lib/implement.vim'
 	import autoload MyScriptsDir .. '/lib/implement.vim'
 
@@ -2318,14 +2469,14 @@ Or: >
 
 7. Classes and interfaces				*vim9-classes*
 
-In legacy script a Dictionary could be used as a kind-of object, by adding
+In legacy Vim script, a Dictionary could be used as a kind-of object by adding
 members that are functions.  However, this is quite inefficient and requires
 the writer to do the work of making sure all the objects have the right
 members.  See |Dictionary-function|.
 
-In |Vim9| script you can have classes, objects and interfaces like in most
-popular object-oriented programming languages.  Since this is a lot of
-functionality it is located in a separate help file: |vim9class.txt|.
+In |Vim9| script you can have classes, objects, interfaces, and enums like
+in most popular object-oriented programming languages.  Since this is a lot
+of functionality, it is located in a separate help file: |vim9class.txt|.
 
 
 ==============================================================================
@@ -2347,7 +2498,7 @@ which allows for a function with different semantics.  Most things still work
 as before, but some parts do not.  A new way to define a function was
 considered the best way to separate the legacy style code from Vim9 style code.
 
-Using "def" to define a function comes from Python. Other languages use
+Using "def" to define a function comes from Python.  Other languages use
 "function" which clashes with legacy Vim script.
 
 
@@ -2362,11 +2513,19 @@ arguments and decide what kind of addition to do.  And when the type is
 dictionary throw an error.  If the types are known to be numbers then an "add
 number" instruction can be used, which is faster.  The error can be given at
 compile time, no error handling is needed at runtime, since adding two numbers
-cannot fail.
+almost never fails.
 
-The syntax for types, using <type> for compound types, is similar to Java.  It
-is easy to understand and widely used.  The type names are what were used in
-Vim before, with some additions such as "void" and "bool".
+    NOTE: As a tangential point, the exception is integer overflow, where the
+    result exceeds the maximum integer value.  For example, adding to a 64-bit
+    signed integer where the result is greater than 2^63: >vim9
+
+	vim9script
+	echo 9223372036854775807 + 1     # -9223372036854775808
+	echo 2->pow(63)->float2nr() + 1  # -9223372036854775808
+<
+The syntax for types, using <type> for compound types, is similar to Java.
+It is easy to understand and widely used.  The type names are what were used
+in Vim before, with some additions such as "void" and "bool".
 
 
 Removing clutter and weirdness ~
@@ -2477,11 +2636,11 @@ This is how we put types in a declaration: >
 	def Func(arg1: number, arg2: string): bool
 
 Two alternatives were considered:
-1. Put the type before the name, like Dart: >
+    1. Put the type before the name, like Dart: >
 	var list<string> mylist
 	final list<string> mylist = ['foo']
 	def Func(number arg1, string arg2) bool
-2. Put the type after the variable name, but do not use a colon, like Go: >
+<    2. Put the type after the variable name, but do not use a colon, like Go: >
 	var mylist list<string>
 	final mylist list<string> = ['foo']
 	def Func(arg1 number, arg2 string) bool
@@ -2521,17 +2680,21 @@ functions return these values, and changing that causes more problems than it
 solves.  After using this for a while it turned out to work well.
 
 If you have any type of value and want to use it as a boolean, use the `!!`
-operator:
-	true: `!!'text'`   `!![99]`   `!!{'x': 1}`   `!!99`
-	false: `!!''`   `!![]`   `!!{}`
+operator (see |expr-!|): >vim9
 
+	vim9script
+	# The following are all true:
+	echo [!!'text', !![1], !!{'x': 1}, !!1, !!1.1]
+	# And these are all false:
+	echo [!!'', !![], !!{}, !!0, !!0.0]
+<
 From a language like JavaScript we have this handy construct: >
 	GetName() || 'unknown'
 However, this conflicts with only allowing a boolean for a condition.
 Therefore the "??" operator was added: >
 	GetName() ?? 'unknown'
 Here you can explicitly express your intention to use the value as-is and not
-result in a boolean. This is called the |falsy-operator|.
+result in a boolean.  This is called the |falsy-operator|.
 
 
 Import and Export ~
@@ -2556,9 +2719,9 @@ that works like one would expect:
   not needed.
 - The Vim-specific use of "s:" to make things script-local can be dropped.
 
-When sourcing a Vim9 script (from a Vim9 or legacy script), only the items
-defined globally can be used, not the exported items.  Alternatives
-considered:
+When sourcing a Vim9 script (from either a Vim9 script or legacy Vim script),
+only the items defined globally can be used, not the exported items.
+Alternatives considered:
 - All the exported items become available as script-local items.  This makes
   it uncontrollable what items get defined and likely soon leads to trouble.
 - Use the exported items and make them global.  Disadvantage is that it's then
@@ -2609,8 +2772,8 @@ and channels.  We can try to make this easier somehow.
 Using an external tool also has disadvantages.  An alternative is to convert
 the tool into Vim script.  For that to be possible without too much
 translation, and keeping the code fast at the same time, the constructs of the
-tool need to be supported.  Since most languages support classes the lack of
-support for classes in Vim is then a problem.
+tool need to be supported.  Since Vim9 script now includes support for
+classes, objects, interfaces, and enums, that is increasingly feasible.
 
 
 

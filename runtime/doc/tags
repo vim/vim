@@ -8049,6 +8049,7 @@ ge	motion.txt	/*ge*
 gender-neutral	helphelp.txt	/*gender-neutral*
 generic-function-call	vim9.txt	/*generic-function-call*
 generic-function-declaration	vim9.txt	/*generic-function-declaration*
+generic-function-example	vim9.txt	/*generic-function-example*
 generic-functions	vim9.txt	/*generic-functions*
 get()	builtin.txt	/*get()*
 get()-blob	builtin.txt	/*get()-blob*
@@ -11125,6 +11126,7 @@ type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
+type-parameter-naming	vim9.txt	/*type-parameter-naming*
 type-variable-naming	vim9.txt	/*type-variable-naming*
 typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
