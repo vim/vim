@@ -6967,9 +6967,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 	  fi
 	fi
 	PERL_LIBS=$perllibs
-	PERL_SRC="auto/if_perl.c if_perlsfio.c"
-	PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o"
-	PERL_PRO="if_perl.pro if_perlsfio.pro"
+	PERL_SRC="auto/if_perl.c"
+	PERL_OBJ="objects/if_perl.o"
+	PERL_PRO="if_perl.pro"
 	printf "%s\n" "#define FEAT_PERL 1" >>confdefs.h
 
       fi
@@ -6995,7 +6995,7 @@ printf "%s\n" ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
     if test -n "$PERL"; then
       PERL_DIR="$dir"
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
-      PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
+      PERL_OBJ="objects/if_perl.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
                 PERL_LIBS=`echo "$PERL_LIBS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`

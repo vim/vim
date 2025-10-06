@@ -550,7 +550,6 @@ SRC_DOS_UNIX =	\
 		src/if_mzsch.c \
 		src/if_mzsch.h \
 		src/if_perl.xs \
-		src/if_perlsfio.c \
 		src/if_python.c \
 		src/if_python3.c \
 		src/if_py_both.h \
@@ -561,7 +560,6 @@ SRC_DOS_UNIX =	\
 		src/proto/if_lua.pro \
 		src/proto/if_mzsch.pro \
 		src/proto/if_perl.pro \
-		src/proto/if_perlsfio.pro \
 		src/proto/if_python.pro \
 		src/proto/if_python3.pro \
 		src/proto/if_ruby.pro \
