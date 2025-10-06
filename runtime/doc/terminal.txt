@@ -1647,7 +1647,8 @@ Vim debuggee on a remote Linux machine accessible via `ssh`.
 
 - Build Vim as explained in the local example.
 
-- Set up |termdebug_use_prompt|: >
+- If 'socat' is not available in the remote machine 'terminal' mode will not
+  work properly. Fall back to |termdebug_use_prompt|: >
     :let g:termdebug_config = {}
     :let g:termdebug_config['use_prompt'] = v:true
 
@@ -1685,9 +1686,6 @@ For example:
 < Note: that several mappings are required: one for each drive unit
   and one for the linux filesystem (queried via `wslpath`).
 
-The plugin "program window" is linked to `gdb` using `pty slave devices`.
-Those must be local to the `gdb` instance, thus remote debugging only works
-on `prompt mode` (see |termdebug_use_prompt|).
 In this mode any `ssh` or `wsl` command would be detected and a similar
 command would be used to launch `socat` in a remote `tty` terminal session
 and connect it to `gdb`.
@@ -1696,17 +1694,34 @@ fallback.
 The next session shows how to override this default behaviour.
 
 						*termdebug-remote-window*
-In order to use another remote terminal client, set "remote_window" entry
-in g:termdebug_config variable before invoking `:Termdebug`. For example: >
+In order to use another remote terminal client, set 'remote_window' entry
+in `g:termdebug_config` variable before invoking `:Termdebug`. For example:
+- Debugging inside a docker container on 'prompt' mode: >
     let g:termdebug_config['use_prompt'] = v:true
     let g:termdebug_config['command'] = ['docker', 'run', '-i',
 	\ '--rm', '--name', 'container-name', 'image-name', 'gdb']
     let g:termdebug_config['remote_window'] =
-	\ ['docker', 'exec', '-it', 'container-name', 'bash']
+	\ ['docker', 'exec', '-ti', 'container-name'
+	\ ,'socat', '-dd', '-', 'PTY,raw,echo=0']
 
-Note: 'command' cannot use `-t` because the |prompt-buffer| cannot use `tty`.
-'remote_window' must use `-t` because otherwise it will lack a
-`pty slave device` for gdb linking.
+- Debugging inside a docker container on a 'terminal buffer'.
+  The container should be already running because unlike the previous
+  case for `terminal mode` 'program' and 'communication' ptys are created
+  before the gdb one: >
+    $ docker run -ti --rm --name container-name immage-name
+<  Then, launch the debugger: >
+    let g:termdebug_config['use_prompt'] = v:false " default
+    let g:termdebug_config['command'] =
+	\ ['docker', 'exec', '-ti', 'container-name', 'gdb']
+    let g:termdebug_config['remote_window'] =
+	\ ['docker', 'exec', '-ti', 'container-name'
+	\ ,'socat', '-dd', '-', 'PTY,raw,echo=0']
+
+Note: 'command' cannot use `-t` on |termdebug-prompt| mode because prompt
+buffers cannot handle `tty` connections.
+The 'remote_window' command must use `-t` because otherwise it will lack
+a `pty slave device` for gdb to connect.
+Note: 'socat' must be available in the remote machine on 'terminal' mode.
 Note: docker container sources can be accessible combining `volumes`
 with mappings (see |termdebug-substitute-path|).
 
@@ -1729,6 +1744,13 @@ If there is no g:termdebug_config you can use: >
 Several arguments will be added to make gdb work well for the debugger.
 If you want to modify them, add a function to filter the argument list: >
 	let g:termdebug_config['command_filter'] = MyDebugFilter
+
+A 'command_filter' scenario is solving escaping issues on remote debugging
+over 'ssh'. For convenience a default filter is provided for escaping
+whitespaces inside the arguments. It is automatically configured for 'ssh',
+but can be employed in other use cases like this: >
+	let g:termdebug_config['command_filter'] =
+	/   function('g:Termdebug_escape_whitespace')
 
 If you do not want the arguments to be added, but you do need to set the
 "pty", use a function to add the necessary arguments: >
