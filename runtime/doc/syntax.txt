@@ -6494,8 +6494,8 @@ as 'relativenumber' and |folding|.
 Note: This is only available when compiled with the |+profile| feature.
 You may need to build Vim with "huge" features.
 
-To find out what patterns are consuming the most time, get an overview with this
-sequence: >
+To find out what patterns are consuming the most time, get an overview with
+this sequence: >
 	:syntime on
 	[ redraw the text at least once with CTRL-L ]
 	:syntime report
