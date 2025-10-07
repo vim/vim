@@ -541,12 +541,16 @@ enddef
 
 def CreateCommunicationPty(cmd: list<string> = null_list): string
   # Create a hidden terminal window to communicate with gdb
-  commbufnr = term_start(!cmd ? 'NONE' : cmd, {
-    term_name: commbufname,
-    out_cb: CommOutput,
-    term_cols: 500, # avoid message wrapping that prevents proper parsing
-    hidden: 1
-  })
+  var options: dict<any> = { term_name: commbufname, out_cb: CommOutput, hidden: 1 }
+
+  if !cmd
+    commbufnr = term_start('NONE', options)
+  else
+    # avoid message wrapping that prevents proper parsing
+    options['term_cols'] = 500
+    commbufnr = term_start(cmd, options)
+  endif
+
   if commbufnr == 0
     return null_string
   endif
