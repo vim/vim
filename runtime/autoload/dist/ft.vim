@@ -1598,29 +1598,31 @@ export def Detect_UCI_statements(): bool
   \         )
 enddef
 
-export def DetectByName()
+export def DetectFromName()
   const amatch = expand("<amatch>")
   const name = fnamemodify(amatch, ':p:t')
-  const ft = get(byname, name, '')
+  const ft = get(ft_from_name, name, '')
   if ft != ''
     execute "setf " .. ft
   endif
 enddef
 
-export def DetectByExt()
+export def DetectFromExt()
   const amatch = expand("<amatch>")
   var ext = fnamemodify(amatch, ':e')
   const name = fnamemodify(amatch, ':p:t')
   if ext == '' && name[0] == '.'
     ext = name[1 : ]
   endif
-  const ft =  get(byextesion, ext, '')
+  const ft =  get(ft_from_ext, ext, '')
   if ft != ''
     execute "setf " .. ft
   endif
 enddef
 
-const byextesion = {
+# Key: extension of the file name. without `.`
+# Value: filetype
+const ft_from_ext = {
   # 8th (Firth-derivative)
   "8th": "8th",
   # A-A-P recipe
@@ -2978,7 +2980,9 @@ const byextesion = {
   # Blueprint build system file
   "bp": "bp",
 }
-const byname = {
+# Key: file name (the final path component, excluding the drive and root)
+# Value: filetype
+const ft_from_name = {
   # Ant
   "build.xml": "ant",
   # Ash of busybox

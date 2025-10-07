@@ -4,6 +4,10 @@
 " Last Change:		2025 Oct 05
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
+" If the filetype can be detected from extension or file name(the final path component),
+" please update `ft_from_name` and `ft_from_ext` in `runtime/autoload/dist/ft.vim`.
+" Otherwise add a new autocmd in this file.
+
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
   finish
@@ -58,7 +62,7 @@ au BufNewFile,BufRead */doc/*.txt
 	\| endif
 
 " Detect by name
-au BufNewFile,BufRead *				call dist#ft#DetectByName()
+au BufNewFile,BufRead *				call dist#ft#DetectFromName()
 
 " Abaqus or Trasys
 au BufNewFile,BufRead *.inp			call dist#ft#Check_inp()
@@ -1300,7 +1304,7 @@ au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call dist#ft#FThtml()
 au BufNewFile,BufRead *.zsql			call dist#ft#SQL()
 
 " Detect by extention
-au BufNewFile,BufRead *				call dist#ft#DetectByExt()
+au BufNewFile,BufRead *				call dist#ft#DetectFromExt()
 augroup END
 
 
