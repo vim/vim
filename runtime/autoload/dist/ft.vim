@@ -2189,6 +2189,7 @@ const byextesion = {
   "jl": "julia",
   # KAREL
   "kl": "karel",
+  "KL": "karel",
   # KDL
   "kdl": "kdl",
   # KerML

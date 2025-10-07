@@ -589,11 +589,6 @@ au BufNewFile,BufRead \c{,*.}justfile,\c*.just setf just
 " Kitty
 au BufNewFile,BufRead kitty.conf,*/kitty/*.conf setf kitty
 
-" KAREL
-if has("fname_case")
-   au BufNewFile,BufRead *.KL setf karel
-endif
-
 " Kuka Robot Language
 au BufNewFile,BufRead *.src			call dist#ft#FTsrc()
 au BufNewFile,BufRead *.dat			call dist#ft#FTdat()
