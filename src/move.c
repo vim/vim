@@ -194,6 +194,20 @@ redraw_for_cursorcolumn(win_T *wp)
 #endif
 
 /*
+ * Set wp->w_virtcol to a value ("vcol") that is already valid.
+ * Handles redrawing if wp->w_virtcol was previously invalid.
+ */
+    void
+set_valid_virtcol(win_T *wp, colnr_T vcol)
+{
+    wp->w_virtcol = vcol;
+#ifdef FEAT_SYN_HL
+    redraw_for_cursorcolumn(wp);
+#endif
+    wp->w_valid |= VALID_VIRTCOL;
+}
+
+/*
  * Calculates how much the 'listchars' "precedes" or 'smoothscroll' "<<<"
  * marker overlaps with buffer text for window "wp".
  * Parameter "extra2" should be the padding on the 2nd line, not the first

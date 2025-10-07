@@ -7077,7 +7077,7 @@ set_fraction(win_T *wp)
  * calculate the new scroll position.
  * TODO: Ensure this also works with wrapped lines.
  * Requires a not fully visible cursor line to be allowed at the bottom of
- * a window("zb"), probably only when 'smoothscroll' is also set.
+ * a window ("zb"), probably only when 'smoothscroll' is also set.
  */
     static void
 win_fix_scroll(int resize)
