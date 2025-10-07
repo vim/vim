@@ -2128,17 +2128,6 @@ update-po:
 #   s/^tags TAGS: notags/tags: notags/
 PYTHON=python3
 
-# The preprocessor directive parsing algorithm is explained below:
-# - `#include` does not result in an error even if the file is unreadable.
-#    (The include directory path specifies only `.`)
-# - Standalone `#if 0`, `#ifdef _DEBUG`, `#ifndef PROTO` and
-#   `#if !defined(PROTO)` are treated as false.
-#   (Parse something like `#else`, if present)
-# - If the condition of `#if <expr>` contains `defined(PROTO)`, evaluate it
-#   and parse it if it is true.
-#   (If false, parse something like `#else`, if present)
-# - Parse any other `#if <expr>` as true.
-
 .PHONY: proto protoclean
 proto: $(PROTO_FILES)
 

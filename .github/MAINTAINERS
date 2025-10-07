@@ -689,6 +689,7 @@ src/po/ru.po						@RestorerZ
 src/po/sr.po						@eevan78
 src/po/tr.po						@bitigchi
 src/po/uk.po						@sakhnik
+src/proto/gen_prototypes.py				@h-east
 src/xxd/						@jnweiger
 
 # vim:ft=codeowners

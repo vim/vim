@@ -1,6 +1,36 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+#
+# gen_prototypes.py : Generate function prototypes (.pro files) for Vim source
+#
+# This script scans C source files, extracts non-static function definitions
+# using libclang, and writes corresponding prototypes to files under proto/.
+# It is intended to be run via `make proto` in the Vim source directory.
+#
+# The following specifications are used for processing.
+# 1. Preprocessor directives in C files are selected and discarded based on
+#    the following criteria:
+#    - Standalone `#if 0`, `#ifdef _DEBUG`, `#ifndef PROTO`, and
+#      `#if !defined(PROTO)` are treated as false, and the block is discarded.
+#      (If a block like `#else` exists, that block is adopted.)
+#    - If the condition of `#if <expr>` includes `defined(PROTO)`, it is
+#      evaluated, and if it is true, that block is adopted.
+#      (If it is false, if a block like `#else` exists, that block is adopted)
+#    - Other `#if <expr>` and `#if !<expr>` are treated as true, and that
+#      block is adopted.
+# 2. The above results are passed to libclang for AST analysis.
+#    - `#include` does not result in an error even if the file cannot be found.
+#      (The include file search path specifies only `.`.)
+#    - Generates a prototype declaration file (proto/*.pro) based on
+#      non-static function definition information.
+#
+# Notes:
+# - Execute `make proto` only after confirming that the build was successful
+#   with `make`.
+#
+# Author: Hirohito Higashi (@h-east)
+# Copyright: Vim license applies, see ":help license"
+# Last Change: 2025 Oct 08
+#
 import os
 import re
 import sys
@@ -35,7 +65,8 @@ def _has_proto_defined_from_argv(argv: List[str]) -> bool:
 
 def _eval_condition_with_defined_proto(cond: str, proto_is_defined: bool) -> bool:
     """
-    Evaluate a simple C preprocessor condition only when it contains defined(PROTO).
+    Evaluate a simple C preprocessor condition only when it contains
+    defined(PROTO).
     - Replace defined(PROTO)/!defined(PROTO) based on proto_is_defined
     - Map C logical operators (&&, ||, !) to Python (and, or, not)
     - Treat unknown identifiers as 0 (false)
@@ -82,7 +113,8 @@ def _eval_condition_with_defined_proto(cond: str, proto_is_defined: bool) -> boo
     # Keep True/False and numbers as-is; also keep Python logical keywords
     s = re.sub(r'\b(?!True\b|False\b|and\b|or\b|not\b)[A-Za-z_]\w*', "0", s)
 
-    # Prevent literals followed by '(' from looking like a call: True(  False(  0(
+    # Prevent literals followed by '(' from looking like a call: True(  False(
+    # 0(
     s = re.sub(r'\b(True|False|0)\s*\(', r'(\1) and (', s)
 
     # Safety: collapse excessive whitespace
@@ -103,15 +135,16 @@ def rewrite_conditionals_first_branch(text: str) -> str:
       - Drop whole group for #if 0.
       - Drop whole group for #ifndef PROTO and #if !defined(PROTO).
       - If an '#if <expr>' contains defined(PROTO) anywhere in the expression,
-        evaluate the condition: if False, drop the whole group; if True, keep only
-        the first branch (same as legacy behavior).
+        evaluate the condition: if False, drop the whole group; if True, keep
+        only the first branch (same as legacy behavior).
     """
     lines = text.splitlines(keepends=True)
     out: List[str] = []
     i, n = 0, len(lines)
 
     def _collect_group(start: int) -> Tuple[int, List[Tuple[str, int, int]]]:
-        """Collect a full #if...#endif group and return (end_index, bodies).
+        """
+        Collect a full #if...#endif group and return (end_index, bodies).
         bodies is a list of (tag, body_s, body_e) for each if/elif/else branch.
         """
         h = start
@@ -142,9 +175,9 @@ def rewrite_conditionals_first_branch(text: str) -> str:
 
         def _after_header_line(pos: int) -> int:
             """
-            Return the first index after a possibly backslash-continued header line
-            starting at `pos`. It consumes all continuation lines that belong to
-            the directive header.
+            Return the first index after a possibly backslash-continued header
+            line starting at `pos`. It consumes all continuation lines that
+            belong to the directive header.
             """
             k = pos + 1
             # Consume lines as long as the previous line ends with a backslash
@@ -154,9 +187,9 @@ def rewrite_conditionals_first_branch(text: str) -> str:
 
         def _after_header_line(pos: int) -> int:
             """
-            Return the first index after a possibly backslash-continued header line
-            starting at `pos`. It consumes all continuation lines that belong to
-            the directive header.
+            Return the first index after a possibly backslash-continued header
+            line starting at `pos`. It consumes all continuation lines that
+            belong to the directive header.
             """
             k = pos + 1
             # Consume lines as long as the previous line ends with a backslash
@@ -176,7 +209,8 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             bodies.append((tag, body_s, body_e))
         return j + 1, bodies
 
-    # Detect whether PROTO is defined from argv (clang args passed after src path)
+    # Detect whether PROTO is defined from argv (clang args passed after src
+    # path)
     proto_is_defined = _has_proto_defined_from_argv(sys.argv[2:])
 
     while i < n:
@@ -195,7 +229,8 @@ def rewrite_conditionals_first_branch(text: str) -> str:
                 i = group_end
                 continue
 
-            # If '#if <expr>' contains defined(PROTO), evaluate; otherwise, legacy behavior
+            # If '#if <expr>' contains defined(PROTO), evaluate; otherwise,
+            # legacy behavior
             evaluate = (kw == "if") and (
                 _DEFINED_CALL_RE.search(line) is not None
             )
@@ -223,7 +258,8 @@ def rewrite_conditionals_first_branch(text: str) -> str:
 
             if DEBUG_LOG:
                 print(f"[group] first body lines {keep_s}:{keep_e}", file=sys.stderr)
-                # Print the first non-empty line of the kept body for quick context
+                # Print the first non-empty line of the kept body for quick
+                # context
                 for ln in kept_text.splitlines():
                     if ln.strip():
                         print(f"[group] kept starts with: {ln.strip()}", file=sys.stderr)
@@ -232,7 +268,8 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             out.append(kept_rewritten)
             i = group_end
         else:
-            # For 'elif/else/endif' lines encountered directly, output a blank line to preserve line count
+            # For 'elif/else/endif' lines encountered directly, output a blank
+            # line to preserve line count
             out.append("\n" if line.endswith("\n") else "")
             i += 1
 
@@ -302,8 +339,8 @@ def join_tokens(tokens: List[str]) -> str:
 def header_from_cursor(cur) -> str:
     """
     Fallback header builder for cases where get_tokens() returns empty
-    (e.g., macro-expanded function definitions). Uses cursor spelling and
-    type information to construct "ret name(param, ...)".
+    (e.g., macro-expanded function definitions). Uses cursor spelling and type
+    information to construct "ret name(param, ...)".
     """
     try:
         ret = getattr(cur, "result_type", None)
@@ -341,7 +378,8 @@ def in_this_file(cur, src_path: Path) -> bool:
         f = (loc.file or cur.location.file)
         if not f:
             # Macro-expanded function definitions may lack an attached file.
-            # Allow them only if we can actually extract a concrete function header.
+            # Allow them only if we can actually extract a concrete function
+            # header.
             try:
                 toks = tokens_for_function_header(cur)
                 return bool(toks)
