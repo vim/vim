@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Sep 30
+" Last Change:	2025 Oct 07
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -900,6 +900,8 @@ if has("insert_expand")
   call <SID>OptionG("pw", &pw)
   call <SID>AddOption("pummaxwidth", gettext("maximum width of the popup menu"))
   call <SID>OptionG("pmw", &pmw)
+  call <SID>AddOption("pumborder", gettext("popup border style"))
+  call <SID>OptionG("pb", &pb)
   call <SID>AddOption("completefunc", gettext("user defined function for Insert mode completion"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("cfu")

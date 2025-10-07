@@ -41838,9 +41838,11 @@ Highlighting: ~
 |hl-ComplMatchIns|	matched text of the currently inserted completion
 |hl-DiffTextAdd|	added text within a changed line
 |hl-MsgArea|		highlighting of the Command-line and messages area
+|hl-PmenuBorder|	Popup menu: highlighting of popup border characters
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
+|hl-PmenuShadow|	Popup menu: highlighting of the popup shadow
 |hl-PreInsert|		highlighting for completion preinserted text
 |hl-TabPanel|		|tabpanel|: not active tab page label
 |hl-TabPanelFill|	|tabpanel|: filler space
@@ -41880,6 +41882,7 @@ Options: ~
 'lhistory'		Size of the location list stack |quickfix-stack|
 'maxsearchcount'	Set the maximum number for search-stat |shm-S|
 'messagesopt'		configure |:messages| and |hit-enter| prompt
+'pumborder'		define popup border and decorations
 'pummaxwidth'		maximum width for the completion popup menu
 'showtabpanel'		When to show the |tabpanel|
 'tabclose'		Which tab page to focus after closing a tab page

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-10-06 19:09+0000\n"
+"POT-Creation-Date: 2025-10-07 20:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -10010,6 +10010,9 @@ msgid "minimum width of the popup menu"
 msgstr ""
 
 msgid "maximum width of the popup menu"
+msgstr ""
+
+msgid "popup border style"
 msgstr ""
 
 msgid "user defined function for Insert mode completion"

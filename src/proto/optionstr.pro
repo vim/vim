@@ -209,4 +209,6 @@ int check_ff_value(char_u *p);
 void save_clear_shm_value(void);
 void restore_shm_value(void);
 void export_myvimdir(void);
+char *did_set_pumborder(optset_T *args);
+int expand_set_pumborder(optexpand_T *args, int *numMatches, char_u ***matches);
 /* vim: set ft=c : */

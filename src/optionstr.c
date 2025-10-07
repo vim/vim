@@ -70,7 +70,8 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #ifdef FEAT_PROP_POPUP
 // Note: Keep this in sync with parse_popup_option()
-static char *(p_popup_option_values[]) = {"height:", "width:", "highlight:", "border:", "align:", NULL};
+static char *(p_popup_option_values[]) = { "align:", "border:", "height:",
+    "highlight:", "shadow:", "width:", NULL};
 static char *(p_popup_option_border_values[]) = {"on", "off", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
@@ -3604,6 +3605,144 @@ expand_set_rightleftcmd(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 #endif
+
+#define PUM_BORDER_CLEAR()   \
+    do {                     \
+	pum_set_border(FALSE); \
+	pum_set_shadow(FALSE); \
+	pum_set_margin(FALSE); \
+    } while (0)
+
+/*
+ * The 'pumborder' option is changed.
+ * Rules:
+ *   - One of { single, double, round, ascii, custom:XXXXXXXX } may appear.
+ *   - "margin" may appear, but only together with exactly one border style.
+ *   - "shadow" is independent and can be combined freely.
+ */
+    char *
+did_set_pumborder(optset_T *args)
+{
+    char_u  **varp = (char_u **)args->os_varp;
+    // Use box-drawing characters only when 'encoding' is "utf-8" and
+    // 'ambiwidth' is "single".
+    int	    can_use_box_chars = (enc_utf8 && *p_ambw == 's');
+    char_u  *p, *token;
+    int	    len;
+    int	    have_border = FALSE;
+    int	    have_margin = FALSE;
+
+    PUM_BORDER_CLEAR();
+
+    if (*varp == NULL || **varp == NUL)
+	return NULL;
+
+    for (p = *varp; p != NULL && *p != NUL; )
+    {
+	// end of token is either ',' or NUL
+	char_u *comma = vim_strchr(p, ',');
+	if (comma != NULL)
+	    len = (int)(comma - p);
+	else
+	    len = (int)STRLEN(p);
+
+	token = vim_strnsave(p, len);
+	if (token == NULL)
+	    goto error;
+
+	if ((can_use_box_chars && (STRCMP(token, "single") == 0
+			|| STRCMP(token, "double") == 0
+			|| STRCMP(token, "round") == 0))
+		|| STRCMP(token, "ascii") == 0
+		|| (STRNCMP(token, "custom:", 7) == 0))
+	{
+	    if (have_border)
+	    {
+		// multiple border styles not allowed
+		vim_free(token);
+		goto error;
+	    }
+	    have_border = TRUE;
+
+	    if (STRCMP(token, "single") == 0)
+		pum_set_border_chars(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			0x250c, 0x2510, 0x2518, 0x2514); // ┌ ┐ ┘ └
+	    else if (STRCMP(token, "double") == 0)
+		pum_set_border_chars(0x2550, 0x2551, 0x2550, 0x2551, // ═ ║ ═ ║
+			0x2554, 0x2557, 0x255D, 0x255A); // ╔ ╗ ╝  ╚
+	    else if (STRCMP(token, "round") == 0)
+		pum_set_border_chars(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			0x256d, 0x256e, 0x256f, 0x2570); // ╭ ╮ ╯ ╰
+	    else if (STRCMP(token, "ascii") == 0)
+		pum_set_border_chars('-', '|', '-', '|', '+', '+', '+', '+');
+	    else if (STRNCMP(token, "custom:", 7) == 0)
+	    {
+		char_u	*q = token + 7;
+		int	out[8];
+
+		for (int i = 0; i < 8; i++)
+		{
+		    if (*q == NUL || *q == ',')
+			goto error;
+		    out[i] = mb_ptr2char(q);
+		    mb_ptr2char_adv(&q);
+		    if (i < 7)
+		    {
+			if (*q != ';')
+			    goto error;  // must be semicolon
+			q++;
+		    }
+		}
+		if (*q != NUL && *q != ',') // must end exactly after the 8th char
+		    goto error;
+		pum_set_border_chars(out[0], out[1], out[2], out[3], out[4], out[5],
+			out[6], out[7]);
+	    }
+	}
+	else if (STRCMP(token, "shadow") == 0)
+	    pum_set_shadow(TRUE);
+	else if (STRCMP(token, "margin") == 0)
+	{
+	    have_margin = TRUE;
+	    pum_set_margin(TRUE);
+	}
+	else
+	{
+	    vim_free(token);
+	    goto error;
+	}
+
+	vim_free(token);
+
+	if (comma != NULL)
+	    p = comma + 1; // move to next token (skip comma)
+	else
+	    break;
+    }
+
+    if (have_margin && !have_border)
+	goto error; // margin must be combined with border
+
+    return NULL;
+
+error:
+    PUM_BORDER_CLEAR();
+    pum_set_border_chars(0, 0, 0, 0, 0, 0, 0, 0);
+    return e_invalid_argument;
+}
+
+    int
+expand_set_pumborder(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_rlc_values[]) = {"single", "double", "round", "ascii",
+	"custom", "shadow", "margin", NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_rlc_values,
+	    ARRAY_LENGTH(p_rlc_values) - 1,
+	    numMatches,
+	    matches);
+}
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
 /*
