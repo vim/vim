@@ -5,9 +5,10 @@
 " Last Change:	Apr 22, 2022
 "   2024 Feb 19 by Vim Project: announce adoption
 "   2025 Jan 18 by Vim Project: add texEmphStyle to texMatchGroup, #16228
-"   2025 Feb 08 by Vim Project: improve macro option, \providecommand, 
+"   2025 Feb 08 by Vim Project: improve macro option, \providecommand,
 "                               \newcommand and \newenvironment #16543
 "   2025 Sep 29 by Vim Project: add amsmath support #18433
+"   2025 Oct 06 by Vim Project: link texBoldStyle to Bold, etc #18505
 " Version:	121
 " Former URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
@@ -1317,10 +1318,10 @@ if !exists("skip_tex_syntax_inits")
    hi def link texError			Error
   endif
 
-  hi texBoldStyle		gui=bold	cterm=bold
-  hi texItalStyle		gui=italic	cterm=italic
-  hi texBoldItalStyle		gui=bold,italic cterm=bold,italic
-  hi texItalBoldStyle		gui=bold,italic cterm=bold,italic
+  hi def link texBoldStyle	Bold
+  hi def link texItalStyle	Italic
+  hi def link texBoldItalStyle	BoldItalic
+  hi def link texItalBoldStyle	BoldItalic
   hi def link texEmphStyle	texItalStyle
   hi def link texCite		texRefZone
   hi def link texDefCmd		texDef
