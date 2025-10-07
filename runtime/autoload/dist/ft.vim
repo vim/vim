@@ -1600,7 +1600,7 @@ enddef
 
 export def DetectFromName()
   const amatch = expand("<amatch>")
-  const name = fnamemodify(amatch, ':p:t')
+  const name = fnamemodify(amatch, ':t')
   const ft = get(ft_from_name, name, '')
   if ft != ''
     execute "setf " .. ft
@@ -1610,7 +1610,7 @@ enddef
 export def DetectFromExt()
   const amatch = expand("<amatch>")
   var ext = fnamemodify(amatch, ':e')
-  const name = fnamemodify(amatch, ':p:t')
+  const name = fnamemodify(amatch, ':t')
   if ext == '' && name[0] == '.'
     ext = name[1 : ]
   endif
