@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9011532.090725\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 20:28+0300\n"
-"PO-Revision-Date: 2025-07-10 22:21+0300\n"
+"Project-Id-Version: RuVim_0.9011833.071025\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2025-10-07 12:36+0300\n"
+"PO-Revision-Date: 2025-10-07 12:43+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -35,12 +35,12 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-# #Restorer: выводится при анализе (профилировании) программы, функции и т. п.
+# Restorer: выводится при анализе (профилировании) программы, функции и т. п.
 # ~!: earlier
 msgid "ERROR: "
 msgstr "ОШИБКА: "
 
-# #Restorer: выводится при анализе (профилировании) программы, функции и т. п.
+# Restorer: выводится при анализе (профилировании) программы, функции и т. п.
 #, c-format
 msgid ""
 "\n"
@@ -49,7 +49,7 @@ msgstr ""
 "\n"
 "всего байт: выделено — освобождено %lu — %lu; рабочий набор %lu; пик %lu\n"
 
-# #Restorer: выводится при анализе (профилировании) программы, функции и т. п.
+# Restorer: выводится при анализе (профилировании) программы, функции и т. п.
 #, c-format
 msgid ""
 "[calls] total re/malloc()'s %lu, total free()'s %lu\n"
@@ -58,7 +58,7 @@ msgstr ""
 "всего вызовов: realloc() или malloc() %lu; free() %lu\n"
 "\n"
 
-# #Restorer: выводится при просмотре списка автокоманд
+# Restorer: выводится при просмотре списка автокоманд
 # ~!: earlier
 msgid "--Deleted--"
 msgstr "-- Удалено --"
@@ -70,7 +70,7 @@ msgstr "автоматическое отключение автокоманд для события %s в <буфер=%d>"
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Удаление активной группы автокоманд"
 
-# #Restorer: отображается, например, по команде `:autocmd`
+# Restorer: отображается, например, по команде `:autocmd`
 # ~!: earlier
 msgid ""
 "\n"
@@ -79,7 +79,7 @@ msgstr ""
 "\n"
 "--- Автокоманды ---"
 
-# #Restorer: выводится, например, для команды `:doautocmd`
+# Restorer: выводится, например, для команды `:doautocmd`
 #, c-format
 msgid "No matching autocommands: %s"
 msgstr "Отсутствуют автокоманды для события или файла %s"
@@ -88,31 +88,31 @@ msgstr "Отсутствуют автокоманды для события или файла %s"
 msgid "%s Autocommands for \"%s\""
 msgstr "автокоманд по событию %s применимых к \"%s\""
 
-# #Restorer: выводится при значении 'verbose'>=8
+# Restorer: выводится при значении 'verbose'>=8
 # ~!: earlier
 #, c-format
 msgid "Executing %s"
 msgstr "Выполнение %s"
 
-# #Restorer: выводится при значении 'verbose'>=9
+# Restorer: выводится при значении 'verbose'>=9
 # ~!: earlier
 #, c-format
 msgid "autocommand %s"
 msgstr "автокоманда %s"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "add() argument"
 msgstr "аргумента функции add()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "insert() argument"
 msgstr "аргумента функции insert()"
 
-# #Restorer: в строке состояния (ruler)
+# Restorer: в строке состояния (ruler)
 msgid "[Location List]"
 msgstr "[локальный список результатов]"
 
-# #Restorer: в строке состояния (ruler)
+# Restorer: в строке состояния (ruler)
 msgid "[Quickfix List]"
 msgstr "[список результатов]"
 
@@ -140,36 +140,36 @@ msgstr[2] "%d буферов удалено из памяти и списка буферов"
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Внимание! Перечень наименований файлов заполнен полностью"
 
-# #Restorer: в списке буферов, отображаемом по `:buffers`; `:files`; `:ls`
+# Restorer: в списке буферов, отображаемом по `:buffers`; `:files`; `:ls`
 #, c-format
 msgid "line %ld"
 msgstr "каретка на строке %ld"
 
-# #Restorer: например, по команде `CTRL+G`
+# Restorer: например, по команде `CTRL+G`
 msgid " [Modified]"
 msgstr " [есть изменения]"
 
-# #Restorer: например, по команде `CTRL+G`
+# Restorer: например, по команде `CTRL+G`
 msgid "[Not edited]"
 msgstr "[нет изменений]"
 
-# #Restorer: например, по команде `CTRL+G`
+# Restorer: например, по команде `CTRL+G`
 # ~!: earlier
 msgid "[Read errors]"
 msgstr "[ошибки считывания]"
 
-# #Restorer: например, по команде `CTRL+G` или в строке состояния
-# #Restorer: в командной строке при операциях с файлом и при 'shm' = r
+# Restorer: например, по команде `CTRL+G` или в строке состояния
+# Restorer: в командной строке при операциях с файлом и при 'shm' = r
 msgid "[RO]"
 msgstr "[ТДЧ]"
 
-# #Restorer: например, по команде `CTRL+G`
-# #Restorer: в командной строке при операциях с файлом
+# Restorer: например, по команде `CTRL+G`
+# Restorer: в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[readonly]"
 msgstr "[только для чтения]"
 
-# #Restorer: например, по команде `CTRL+G`
+# Restorer: например, по команде `CTRL+G`
 #, c-format
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
@@ -177,42 +177,42 @@ msgstr[0] "%ld строка -- %d %% --"
 msgstr[1] "%ld строки -- %d %% --"
 msgstr[2] "%ld строк -- %d %% --"
 
-# #Restorer: например, по команде `CTRL+G`
+# Restorer: например, по команде `CTRL+G`
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
 msgstr "строка %ld из %ld -- %d %% -- колонка "
 
-# #Restorer: в заголовке окна
+# Restorer: в заголовке окна
 msgid "[No Name]"
 msgstr "[безымянный]"
 
-# #Restorer: в заголовке окна
+# Restorer: в заголовке окна
 # ~!: earlier
 msgid "help"
 msgstr "справка"
 
-# #Restorer: в строке состояния
+# Restorer: в строке состояния
 # ~!: earlier
 msgid "[Help]"
 msgstr "[справка]"
 
-# #Restorer: в строке состояния
+# Restorer: в строке состояния
 msgid "[Preview]"
 msgstr "[просмотр]"
 
-# #Restorer: позиция буфера
+# Restorer: позиция буфера
 msgid "All"
 msgstr "Весь текст"
 
-# #Restorer: позиция буфера
+# Restorer: позиция буфера
 msgid "Bot"
 msgstr "Окончание"
 
-# #Restorer: позиция буфера
+# Restorer: позиция буфера
 msgid "Top"
 msgstr "Начало"
 
-# #Restorer: локализуемое значение процента
+# Restorer: локализуемое значение процента
 #, c-format
 msgid "%d%%"
 msgstr "%d %%"
@@ -221,26 +221,26 @@ msgstr "%d %%"
 msgid "%2s"
 msgstr "%2s"
 
-# #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# #Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
+# Restorer: редактировании нескольких файлов
 #, c-format
 msgid " (%d of %d)"
 msgstr " (%d из %d)"
 
-# #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# #Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
+# Restorer: редактировании нескольких файлов
 #, c-format
 msgid " ((%d) of %d)"
 msgstr " ((%d) из %d)"
 
-# #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# #Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
+# Restorer: редактировании нескольких файлов
 #, c-format
 msgid " (file %d of %d)"
 msgstr " (файл %d из %d)"
 
-# #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# #Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
+# Restorer: редактировании нескольких файлов
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (файл (%d) из %d)"
@@ -248,31 +248,31 @@ msgstr " (файл (%d) из %d)"
 msgid "[Command Line]"
 msgstr "[командная строка]"
 
-# #Restorer: в строке состояния для буфера с окном запроса и уведомления
+# Restorer: в строке состояния для буфера с окном запроса и уведомления
 msgid "[Prompt]"
 msgstr "[запрос]"
 
-# #Restorer: в строке состояния для буфера, ассоциированного со всплывающим
-# #Restorer: окном
+# Restorer: в строке состояния для буфера, ассоциированного со всплывающим
+# Restorer: окном
 # ~!: earlier
 msgid "[Popup]"
 msgstr "[всплывающий]"
 
-# #Restorer: в строке состояния для временного буфера
+# Restorer: в строке состояния для временного буфера
 # ~!: earlier
 msgid "[Scratch]"
 msgstr "[временный]"
 
-# #Restorer: при записи изменённого извне файла
+# Restorer: при записи изменённого извне файла
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "Внимание! Файл был изменён уже после того, как считан в буфер"
 
-# #Restorer: дописывается после сообщения «WARNING: The file has been changed
-# #Restorer: since reading it!!!»
+# Restorer: дописывается после сообщения «WARNING: The file has been changed
+# Restorer: since reading it!!!»
 msgid "Do you really want to write to it"
 msgstr "Уверены, что хотите записать этот файл?"
 
-# #Restorer: скорее всего в командной строке при операциях с файлом
+# Restorer: скорее всего в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[New]"
 msgstr "[новый]"
@@ -281,44 +281,44 @@ msgstr "[новый]"
 msgid "[New File]"
 msgstr "[новый файл]"
 
-# #Restorer: скорее всего в командной строке при операциях с файлом
+# Restorer: скорее всего в командной строке при операциях с файлом
 msgid " CONVERSION ERROR"
 msgstr " ОШИБКА ИЗМЕНЕНИЯ КОДИРОВКИ"
 
-# #Restorer: скорее всего в командной строке при операциях с файлом
+# Restorer: скорее всего в командной строке при операциях с файлом
 # ~!: earlier
 #, c-format
 msgid " in line %ld;"
 msgstr " в строке %ld;"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[NOT converted]"
 msgstr "[без изменения кодировки]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[converted]"
 msgstr "[изменена кодировка]"
 
-# #Restorer: скорее всего в командной строке при операциях с файлом
+# Restorer: скорее всего в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[Device]"
 msgstr "[устройство]"
 
-# #Restorer: в командной строке при операциях добавления в файл и при 'shm' = w
+# Restorer: в командной строке при операциях добавления в файл и при 'shm' = w
 msgid " [a]"
 msgstr " [доб.]"
 
-# #Restorer: в командной строке при операциях добавления в файл
+# Restorer: в командной строке при операциях добавления в файл
 # ~!: earlier
 msgid " appended"
 msgstr " добавлено"
 
-# #Restorer: в командной строке при операциях записи файла и при 'shm' = w
+# Restorer: в командной строке при операциях записи файла и при 'shm' = w
 msgid " [w]"
 msgstr " [зап.]"
 
-# #Restorer: в командной строке при операциях записи файла
+# Restorer: в командной строке при операциях записи файла
 # ~!: earlier
 msgid " written"
 msgstr " записано"
@@ -345,11 +345,14 @@ msgstr " Сбой передачи\n"
 msgid ": Send failed. Trying to execute locally\n"
 msgstr " Сбой передачи. Попытка выполнить локально\n"
 
-# #Restorer: для ОС Windows, сообщение выводится в заголовке окна
+# Restorer: для ОС Windows, сообщение выводится в заголовке окна
 # ~!: earlier
 #, c-format
 msgid "%d of %d edited"
 msgstr "отредактировано %d из %d"
+
+msgid "Socket server not online:Send expression failed"
+msgstr "Сбой при отправке выражения. Не подключен сервер сокетов"
 
 msgid "No display: Send expression failed.\n"
 msgstr "Сбой при отправке выражения. Отсутствует подключение\n"
@@ -357,7 +360,7 @@ msgstr "Сбой при отправке выражения. Отсутствует подключение\n"
 msgid ": Send expression failed.\n"
 msgstr " Сбой при отправке выражения\n"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Содержимое буфера обмена получено из буфера CUT_BUFFER0"
 
@@ -368,16 +371,16 @@ msgstr "Не удалось получить доступ к буферу обмена"
 msgid "Switched to clipboard method '%s'."
 msgstr "Переключение на метод доступа к буферу обмена '%s'"
 
-# #Restorer: отображается по команде `i_CTRL+X`, если отключен вид «окно меню»
+# Restorer: отображается по команде `i_CTRL+X`, если отключен вид «окно меню»
 msgid "tagname"
 msgstr "индекс"
 
-# #Restorer: отображается по команде `i_CTRL+X`, если отключен вид «окно меню»
+# Restorer: отображается по команде `i_CTRL+X`, если отключен вид «окно меню»
 # ~!: earlier
 msgid " kind file\n"
 msgstr " тип файла\n"
 
-# #Restorer: отображается по команде `:history`
+# Restorer: отображается по команде `:history`
 msgid "'history' option is zero"
 msgstr "Значение параметра 'history' равно нулю"
 
@@ -400,45 +403,45 @@ msgstr "Повторите ввод пароля: "
 msgid "Keys don't match!"
 msgstr "Введённые пароли не совпадают!"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[crypted]"
 msgstr "[шифровано]"
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
 msgstr ""
 "XChaCha20v2: для получения ключа применено нестандартное значение opslimit "
 "\"%llu\""
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
 msgstr ""
 "XChaCha20v2: для получения ключа применено стандартное значение opslimit "
 "\"%llu\""
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
 msgstr ""
 "XChaCha20v2: для получения ключа применено нестандартное значение memlimit "
 "\"%lu\""
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
 msgstr ""
 "XChaCha20v2: для получения ключа применено стандартное значение memlimit "
 "\"%lu\""
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
 msgstr ""
 "XChaCha20v2: для получения ключа применён нестандартный алгоритм \"%d\""
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 #, c-format
 msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
 msgstr "XChaCha20v2: для получения ключа применён стандартный алгоритм \"%d\""
@@ -448,22 +451,22 @@ msgstr ""
 "Выполнено переключение в режим диагностики. Чтобы продолжить, наберите "
 "\"cont\""
 
-# #Restorer: команды `:debug`; выводится при изменении в точке останова
+# Restorer: команды `:debug`; выводится при изменении в точке останова
 #, c-format
 msgid "Oldval = \"%s\""
 msgstr "прежнее значение = \"%s\""
 
-# #Restorer: команды `:debug`; выводится при изменении в точке останова
+# Restorer: команды `:debug`; выводится при изменении в точке останова
 #, c-format
 msgid "Newval = \"%s\""
 msgstr "новое значение = \"%s\""
 
-# #Restorer: команды `:debug`
+# Restorer: команды `:debug`
 #, c-format
 msgid "line %ld: %s"
 msgstr "строка %ld, команда %s"
 
-# #Restorer: команды `:debug`
+# Restorer: команды `:debug`
 #, c-format
 msgid "cmd: %s"
 msgstr "команда %s"
@@ -479,144 +482,144 @@ msgstr "Это вершина стека вызовов. Кадр стека %d"
 msgid "Breakpoint in \"%s%s\" line %ld"
 msgstr "Точка останова в \"%s%s\", строка %ld"
 
-# #Restorer: команды `:breaklist`
+# Restorer: команды `:breaklist`
 msgid "No breakpoints defined"
 msgstr "Точки останова не определены"
 
-# #Restorer: команды `:breaklist`
-# #Restorer: %3d - номер точки останова; %s заменяется на «func» или «file»; %s
-# #Restorer: %s заменяется на наименование функции или буфера, соответственно;
-# #Restorer: %ld - номер строки
+# Restorer: команды `:breaklist`
+# Restorer: %3d - номер точки останова; %s заменяется на «func» или «file»; %s
+# Restorer: %s заменяется на наименование функции или буфера, соответственно;
+# Restorer: %ld - номер строки
 #, c-format
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s строка %ld"
 
-# #Restorer: %3d - номер точки останова; %s заменяется на выражение, переменную
+# Restorer: %3d - номер точки останова; %s заменяется на выражение, переменную
 #, c-format
 msgid "%3d  expr %s"
 msgstr "%3d  выражение %s"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "extend() argument"
 msgstr "аргумента функции extend()"
 
-# #Restorer: 'verbose'>0
+# Restorer: 'verbose'>0
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
 "Встроенному механизму сравнения недостаточно памяти на считывание буфера "
 "\"%s\""
 
-# #Restorer: выводится в заголовке окна выбора файла
+# Restorer: выводится в заголовке окна выбора файла
 msgid "Patch file"
 msgstr "Файл с исправлениями"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Custom"
 msgstr "Частная область"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Latin supplement"
 msgstr "Дополнение к латинице"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Greek and Coptic"
 msgstr "Греческое и коптское письмо"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Cyrillic"
 msgstr "Кириллица"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Hebrew"
 msgstr "Еврейское письмо"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Arabic"
 msgstr "Арабское письмо"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Latin extended"
 msgstr "Расширенная латиница"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Greek extended"
 msgstr "Расширенное греческое письмо"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Punctuation"
 msgstr "Основная пунктуация"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Super- and subscripts"
 msgstr "Надстрочные и подстрочные знаки"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Currency"
 msgstr "Символы валют"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Other"
 msgstr "Прочие символы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Roman numbers"
 msgstr "Римские цифры"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Arrows"
 msgstr "Стрелки"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Mathematical operators"
 msgstr "Математические операторы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Technical"
 msgstr "Разные технические символы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Box drawing"
 msgstr "Псевдографика"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Block elements"
 msgstr "Блочные элементы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Geometric shapes"
 msgstr "Геометрические фигуры"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Symbols"
 msgstr "Разные символы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "Dingbats"
 msgstr "Декоративные символы"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 msgid "CJK symbols and punctuation"
 msgstr "Китайские, корейские и японские символы и пунктуация"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Hiragana"
 msgstr "Хирагана"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Katakana"
 msgstr "Катакана"
 
-# #Restorer: выводится в таблице символов по команде `:digraphs!`
+# Restorer: выводится в таблице символов по команде `:digraphs!`
 # ~!: earlier
 msgid "Bopomofo"
 msgstr "Чжуинь (бопомофо)"
@@ -625,7 +628,7 @@ msgstr "Чжуинь (бопомофо)"
 msgid "%ld,"
 msgstr "%ld, "
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 msgid ""
 "\n"
 "\tLast set from "
@@ -633,12 +636,12 @@ msgstr ""
 "\n"
 "\tЗначение было изменено в "
 
-# #Restorer: используется в функции confirm() если не заданы аргумент buttons
-# #Restorer: используется как кнопка по умолчанию в окнах сообщений ГИП
+# Restorer: используется в функции confirm() если не заданы аргумент buttons
+# Restorer: используется как кнопка по умолчанию в окнах сообщений ГИП
 msgid "&Ok"
 msgstr "&OK"
 
-# #Restorer: используется в функции inputdialog()
+# Restorer: используется в функции inputdialog()
 msgid ""
 "&OK\n"
 "&Cancel"
@@ -651,36 +654,36 @@ msgstr ""
 "Количество вызовов функции inputrestore() превышает вызовы функции "
 "inputsave()"
 
-# #Restorer: например, команда `:ascii` и `ga`
-# #Restorer: если подключен компонент +digraphs и для символа есть диграф
+# Restorer: например, команда `:ascii` и `ga`
+# Restorer: если подключен компонент +digraphs и для символа есть диграф
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
 msgstr ""
 "<%s>%s%s десятичное %d; шестнадцатеричное %02x; восьмеричное %03o; диграф %s"
 
-# #Restorer: например, команда `:ascii` и `ga`
+# Restorer: например, команда `:ascii` и `ga`
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s десятичное %d; шестнадцатеричное %02x; восьмеричное %03o"
 
-# #Restorer: например, команда `:ascii` и `ga`
-# #Restorer: если подключен компонент +digraphs и для символа есть диграф
+# Restorer: например, команда `:ascii` и `ga`
+# Restorer: если подключен компонент +digraphs и для символа есть диграф
 #, c-format
 msgid "> %d, Hex %04x, Oct %o, Digr %s"
 msgstr "> десятичное %d; шестнадцатеричное %04x; восьмеричное %o; диграф %s"
 
-# #Restorer: например, команда `:ascii` и `ga`
-# #Restorer: если подключен компонент +digraphs и для символа есть диграф
+# Restorer: например, команда `:ascii` и `ga`
+# Restorer: если подключен компонент +digraphs и для символа есть диграф
 #, c-format
 msgid "> %d, Hex %08x, Oct %o, Digr %s"
 msgstr "> десятичное %d; шестнадцатеричное %08x; восьмеричное %o; диграф %s"
 
-# #Restorer: например, команда `:ascii` и `ga`
+# Restorer: например, команда `:ascii` и `ga`
 #, c-format
 msgid "> %d, Hex %04x, Octal %o"
 msgstr "> десятичное %d; шестнадцатеричное %04x; восьмеричное %o"
 
-# #Restorer: например, команда `:ascii` и `ga`
+# Restorer: например, команда `:ascii` и `ga`
 #, c-format
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> десятичное %d; шестнадцатеричное %08x; восьмеричное %o"
@@ -700,17 +703,17 @@ msgstr "Строк, отправленных на обработку внешней программе: %ld"
 msgid "[No write since last change]\n"
 msgstr "[изменения не сохранены]\n"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 # ~!: earlier
 msgid "Save As"
 msgstr "Сохранить как"
 
-# #Restorer: выводится в диалоговом окне при перезаписи существующего файла
-# #Restorer: см. E140
+# Restorer: выводится в диалоговом окне при перезаписи существующего файла
+# Restorer: см. E140
 msgid "Write partial file?"
 msgstr "Сохранить только часть файла?"
 
-# #Restorer: выводится в диалоговом окне при перезаписи существующего файла
+# Restorer: выводится в диалоговом окне при перезаписи существующего файла
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
 msgstr "Заменить существующий файл \"%s\"?"
@@ -737,11 +740,11 @@ msgstr ""
 "Возможно, что удастся выполнить запись в файл.\n"
 "Сохранить изменения?"
 
-# #Restorer: заголовок окна открытия файла
+# Restorer: заголовок окна открытия файла
 msgid "Edit File"
 msgstr "Открыть файл"
 
-# #Restorer: выводится, например, при исполнении команды `:substitute`
+# Restorer: выводится, например, при исполнении команды `:substitute`
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
 msgstr "заменить словом %s ? (y; n; a; q; l; CTRL+E; CTRL+Y)"
@@ -749,7 +752,7 @@ msgstr "заменить словом %s ? (y; n; a; q; l; CTRL+E; CTRL+Y)"
 msgid "(Interrupted) "
 msgstr "(прервано) "
 
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
@@ -757,7 +760,7 @@ msgstr[0] "Найдено %ld совпадение в %ld строке"
 msgstr[1] "Найдено %ld совпадения в %ld строке"
 msgstr[2] "Найдено %ld совпадений в %ld строке"
 
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
@@ -765,7 +768,7 @@ msgstr[0] "Выполнена %ld замена в %ld строке"
 msgstr[1] "Выполнено %ld замены в %ld строке"
 msgstr[2] "Выполнено %ld замен в %ld строке"
 
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld match on %ld lines"
 msgid_plural "%ld matches on %ld lines"
@@ -773,7 +776,7 @@ msgstr[0] "Найдено %ld совпадение в %ld строках"
 msgstr[1] "Найдено %ld совпадения в %ld строках"
 msgstr[2] "Найдено %ld совпадений в %ld строках"
 
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
@@ -789,11 +792,11 @@ msgstr "Во всех строках найдены совпадения с образцом %s"
 msgid "Pattern not found: %s"
 msgstr "Не найдены совпадения с образцом %s"
 
-# #Restorer: выводится по команде `:oldfiles` и `echo v:oldfiles`
+# Restorer: выводится по команде `:oldfiles` и `echo v:oldfiles`
 msgid "No old files"
 msgstr "Список ранее редактируемых файлов пуст"
 
-# #Restorer: выводится при обрыве редактирования, если несохранённые изменения
+# Restorer: выводится при обрыве редактирования, если несохранённые изменения
 # ~!: earlier
 #, c-format
 msgid "Save changes to \"%s\"?"
@@ -818,17 +821,17 @@ msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
 "Переключение в Ex-режим. Чтобы переключить в режим команд, наберите visual"
 
-# #Restorer: выводится при значении 'verbose'>=9
+# Restorer: выводится при значении 'verbose'>=9
 # ~!: earlier
 #, c-format
 msgid "Executing: %s"
 msgstr "Выполнение %s"
 
-# #Restorer: выводится в режиме отладки
+# Restorer: выводится в режиме отладки
 msgid "End of sourced file"
 msgstr "Достигнуто окончание обрабатываемого командного файла"
 
-# #Restorer: выводится в режиме отладки
+# Restorer: выводится в режиме отладки
 msgid "End of function"
 msgstr "Достигнуто окончание обрабатываемой функции"
 
@@ -843,7 +846,7 @@ msgstr[0] "Остался не отредактированным %d файл. Завершить работу?"
 msgstr[1] "Остались не отредактированными %d файла. Завершить работу?"
 msgstr[2] "Остались не отредактированными %d файлов. Завершить работу?"
 
-# #Restorer: выводится по команде `:colorscheme`, если отключен компонент +eval
+# Restorer: выводится по команде `:colorscheme`, если отключен компонент +eval
 # ~!: earlier
 msgid "unknown"
 msgstr "неизвестно"
@@ -854,123 +857,123 @@ msgstr "Приветствуем Вас, пользователь программы Vim!"
 msgid "Already only one tab page"
 msgstr "Команда не выполнена. Открыта только одна вкладка"
 
-# #Restorer: заголовок модального окна открытия файла
+# Restorer: заголовок модального окна открытия файла
 msgid "Edit File in new tab page"
 msgstr "Открыть файл в новой вкладке"
 
-# #Restorer: заголовок модального окна открытия файла
+# Restorer: заголовок модального окна открытия файла
 msgid "Edit File in new window"
 msgstr "Открыть файл в новом окне"
 
-# #Restorer: выводится по команде `:tabs`
+# Restorer: выводится по команде `:tabs`
 # ~!: earlier
 #, c-format
 msgid "Tab page %d"
 msgstr "Вкладка %d"
 
-# #Restorer: выводится по команде `:swapname`
+# Restorer: выводится по команде `:swapname`
 msgid "No swap file"
 msgstr "Нет файла подкачки"
 
-# #Restorer: заголовок окна, выводится по команде `:browse read`
+# Restorer: заголовок окна, выводится по команде `:browse read`
 msgid "Append File"
 msgstr "Вставить файл"
 
-# #Restorer: выводится по команде `:winpos`
+# Restorer: выводится по команде `:winpos`
 #, c-format
 msgid "Window position: X %d, Y %d"
 msgstr ""
 "Координаты верхнего левого угла окна программы по оси X %d; по оси Y %d"
 
-# #Restorer: заголовок окна, выводится по команде `:browse redir >`
+# Restorer: заголовок окна, выводится по команде `:browse redir >`
 msgid "Save Redirection"
 msgstr "Сохранить файл с сообщениями программы"
 
-# #Restorer: в диалоге при обрыве редактирования, если буфер не связан с файлом
+# Restorer: в диалоге при обрыве редактирования, если буфер не связан с файлом
 msgid "Untitled"
 msgstr "безымянный"
 
-# #Restorer: выводится при 'verbose'>=13
+# Restorer: выводится при 'verbose'>=13
 # ~!: earlier
 #, c-format
 msgid "Exception thrown: %s"
 msgstr "Исключительная ситуация %s"
 
-# #Restorer: выводится при 'verbose'>=13
+# Restorer: выводится при 'verbose'>=13
 # ~!: earlier
 #, c-format
 msgid "Exception finished: %s"
 msgstr "Завершена обработка исключительной ситуации %s"
 
-# #Restorer: выводится при 'verbose'>=13
+# Restorer: выводится при 'verbose'>=13
 # ~!: earlier
 #, c-format
 msgid "Exception discarded: %s"
 msgstr "Исключительная ситуация проигнорирована %s"
 
-# #Restorer: %s --- определение «брошенного» исключения
+# Restorer: %s --- определение «брошенного» исключения
 # ~!: earlier
 #, c-format
 msgid "%s, line %ld"
 msgstr "%s, строка %ld"
 
-# #Restorer: выводится при 'verbose'>=13
+# Restorer: выводится при 'verbose'>=13
 # ~!: earlier
 #, c-format
 msgid "Exception caught: %s"
 msgstr "Обработка исключительной ситуации %s"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
-# #Restorer: или Error and interrupt, или Interrupt
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
+# Restorer: или Error and interrupt, или Interrupt
 #, c-format
 msgid "%s made pending"
 msgstr "%s приостановлено"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
-# #Restorer: или Error and interrupt, или Interrupt
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
+# Restorer: или Error and interrupt, или Interrupt
 # ~!: earlier
 #, c-format
 msgid "%s resumed"
 msgstr "%s возобновлено"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
-# #Restorer: или Error and interrupt, или Interrupt
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение. %s замещается на :continnue, :break, :finish
+# Restorer: или Error and interrupt, или Interrupt
 # ~!: earlier
 #, c-format
 msgid "%s discarded"
 msgstr "%s пропущено"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение.
-# #Restorer: к сообщению дописывается : и значение value из структуры except_T
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение.
+# Restorer: к сообщению дописывается : и значение value из структуры except_T
 # ~!: earlier
 msgid "Exception"
 msgstr "Исключительная ситуация"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение.
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение.
 # ~!: earlier
 msgid "Error and interrupt"
 msgstr "Ошибка и прерывание"
 
-# #Restorer: заголовок окна в ГИП и подставляемый текст в сообщение ex_eval.c
-# #Restorer: выводится при 'verbose'>=14 для ex_eval.c
-# #Restorer: составное сообщение в ex_eval.c.
+# Restorer: заголовок окна в ГИП и подставляемый текст в сообщение ex_eval.c
+# Restorer: выводится при 'verbose'>=14 для ex_eval.c
+# Restorer: составное сообщение в ex_eval.c.
 # ~!: earlier
 msgid "Error"
 msgstr "Ошибка"
 
-# #Restorer: выводится при 'verbose'>=14
-# #Restorer: составное сообщение.
+# Restorer: выводится при 'verbose'>=14
+# Restorer: составное сообщение.
 # ~!: earlier
 msgid "Interrupt"
 msgstr "Прерывание"
 
-# #Restorer: в UNIX-подобных системах
-# #Restorer: и ещё ошибка E502:
+# Restorer: в UNIX-подобных системах
+# Restorer: и ещё ошибка E502:
 # ~!: earlier
 msgid "is a directory"
 msgstr "является каталогом"
@@ -978,12 +981,12 @@ msgstr "является каталогом"
 msgid "Illegal file name"
 msgstr "Обнаружены недопустимые символы или превышена длина наименования файла"
 
-# #Restorer: в UNIX-подобных системах
+# Restorer: в UNIX-подобных системах
 # ~!: earlier
 msgid "is not a file"
 msgstr "не является файлом"
 
-# #Restorer: в MS Windows системах
+# Restorer: в MS Windows системах
 msgid "is a device (disabled with 'opendevice' option)"
 msgstr ""
 "является устройством (чтение и запись отключены через параметр 'opendevice')"
@@ -1006,23 +1009,23 @@ msgstr "Программа Vim. Считывание из стандартного потока ввода...\n"
 msgid "Reading from stdin..."
 msgstr "Считывание из стандартного потока ввода..."
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[fifo]"
 msgstr "[именованный канал]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[socket]"
 msgstr "[локальное соединение]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[character special]"
 msgstr "[специальный файл устройства]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[CR missing]"
 msgstr "[отсутствует символ возврата каретки]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[long lines split]"
 msgstr "[разбиение строк]"
 
@@ -1035,7 +1038,7 @@ msgstr "[ОШИБКА ИЗМЕНЕНИЯ КОДИРОВКИ в строке %ld]"
 msgid "[ILLEGAL BYTE in line %ld]"
 msgstr "[НЕДОПУСТИМЫЙ БАЙТ в строке %ld]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[READ ERRORS]"
 msgstr "[ОШИБКИ СЧИТЫВАНИЯ]"
 
@@ -1051,30 +1054,30 @@ msgstr ""
 msgid "can't read output of 'charconvert'"
 msgstr "Не удалось считать результат изменения кодировки текста"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[dos]"
 msgstr "[dos]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[dos format]"
 msgstr "[в формате dos]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[mac]"
 msgstr "[mac]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[mac format]"
 msgstr "[в формате mac]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 # ~!: earlier
 msgid "[unix]"
 msgstr "[unix]"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[unix format]"
 msgstr "[в формате unix]"
 
@@ -1082,7 +1085,7 @@ msgstr "[в формате unix]"
 msgid "%s%ldL, %lldB"
 msgstr "%s%ldс, %lldБ"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 #, c-format
 msgid "%s%ld line, "
 msgid_plural "%s%ld lines, "
@@ -1090,7 +1093,7 @@ msgstr[0] "%s%ld строка, "
 msgstr[1] "%s%ld строки, "
 msgstr[2] "%s%ld строк, "
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 #, c-format
 msgid "%lld byte"
 msgid_plural "%lld bytes"
@@ -1098,11 +1101,11 @@ msgstr[0] "%lld байт"
 msgstr[1] "%lld байта"
 msgstr[2] "%lld байт"
 
-# #Restorer: добавляется к сообщению в командной строке при операциях с файлом
+# Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[noeol]"
 msgstr "[нет сзс]"
 
-# #Restorer: дописывается к сообщению в командной строке при операциях с файлом
+# Restorer: дописывается к сообщению в командной строке при операциях с файлом
 msgid "[Incomplete last line]"
 msgstr "[нет символа завершения строки]"
 
@@ -1137,11 +1140,11 @@ msgstr "Чтобы получить дополнительную информацию, наберите `:help W16`"
 msgid "W13: Warning: File \"%s\" has been created after editing started"
 msgstr "W13: Внимание! При редактировании нового буфера обнаружен файл \"%s\""
 
-# #Restorer: заголовок модального окна
+# Restorer: заголовок модального окна
 msgid "Warning"
 msgstr "Внимание"
 
-# #Restorer: наименование кнопок в окне диалога о внешних изменениях файла
+# Restorer: наименование кнопок в окне диалога о внешних изменениях файла
 msgid ""
 "&OK\n"
 "&Load File\n"
@@ -1154,23 +1157,23 @@ msgstr ""
 msgid "<empty>"
 msgstr "<не указан>"
 
-# #Restorer: дописывается к сообщению «E475: Invalid argument: %s»
+# Restorer: дописывается к сообщению «E475: Invalid argument: %s»
 msgid "writefile() first argument must be a List or a Blob"
 msgstr "в функции writefile(). Тип аргумента номер 1 должен быть List или BLOB"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Select Directory dialog"
 msgstr "Выбрать каталог"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Save File dialog"
 msgstr "Сохранить файл"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Open File dialog"
 msgstr "Открыть файл"
 
-# #Restorer: передаётся в случае, если не удалось найти файлы по маске
+# Restorer: передаётся в случае, если не удалось найти файлы по маске
 msgid "no matches"
 msgstr "ничего не найдено"
 
@@ -1181,9 +1184,9 @@ msgstr[0] "+--%3ld строка свёрнута "
 msgstr[1] "+--%3ld строки свёрнуто "
 msgstr[2] "+--%3ld строк свёрнуто "
 
-# #Restorer: отображается в свёрнутой строке; %s заменяется на - указывающая
-# #Restorer: уровень вложенности; %3ld на кол-во свёрнутых строк; после
-# #Restorer: двоеточия, первый найденный в строках непробельный текст
+# Restorer: отображается в свёрнутой строке; %s заменяется на - указывающая
+# Restorer: уровень вложенности; %3ld на кол-во свёрнутых строк; после
+# Restorer: двоеточия, первый найденный в строках непробельный текст
 # ~!: earlier
 #, c-format
 msgid "+-%s%3ld line: "
@@ -1220,19 +1223,19 @@ msgstr ""
 "Нет (&N)\n"
 "Отмена (&C)"
 
-# #Restorer: наименование кнопки в диалоговом окне
+# Restorer: наименование кнопки в диалоговом окне
 msgid "OK"
 msgstr "OK"
 
-# #Restorer: наименование кнопки в диалоговом окне
+# Restorer: наименование кнопки в диалоговом окне
 msgid "Yes"
 msgstr "Да"
 
-# #Restorer: наименование кнопки в диалоговом окне
+# Restorer: наименование кнопки в диалоговом окне
 msgid "No"
 msgstr "Нет"
 
-# #Restorer: наименование кнопки в диалоговом окне
+# Restorer: наименование кнопки в диалоговом окне
 # ~!: earlier
 msgid "Cancel"
 msgstr "Отмена"
@@ -1240,59 +1243,59 @@ msgstr "Отмена"
 msgid "Input _Methods"
 msgstr "Метод _ввода"
 
-# #Restorer: заголовок окна поиска и замены по команде `:promptrepl`
+# Restorer: заголовок окна поиска и замены по команде `:promptrepl`
 msgid "VIM - Search and Replace..."
 msgstr "Заменить"
 
-# #Restorer: заголовок окна поиска по команде `:promptfind`
+# Restorer: заголовок окна поиска по команде `:promptfind`
 msgid "VIM - Search..."
 msgstr "Найти"
 
-# #Restorer: заголовок поля поиска в окне поиска и окне поиска и замены
+# Restorer: заголовок поля поиска в окне поиска и окне поиска и замены
 msgid "Find what:"
 msgstr "Что:"
 
-# #Restorer: заголовок поля замены в окне поиска и замены
+# Restorer: заголовок поля замены в окне поиска и замены
 msgid "Replace with:"
 msgstr "Чем:"
 
-# #Restorer: заголовок переключателя в окне поиска и замены
+# Restorer: заголовок переключателя в окне поиска и замены
 msgid "Match whole word only"
 msgstr "Только слово целиком"
 
-# #Restorer: заголовок переключателя в окне поиска и замены
+# Restorer: заголовок переключателя в окне поиска и замены
 msgid "Match case"
 msgstr "С учётом регистра"
 
-# #Restorer: заголовок группы в окне поиска и замены
+# Restorer: заголовок группы в окне поиска и замены
 # ~!: earlier
 msgid "Direction"
 msgstr "Направление"
 
-# #Restorer: заголовок переключателя в окне поиска и замены
+# Restorer: заголовок переключателя в окне поиска и замены
 # ~!: earlier
 msgid "Up"
 msgstr "Вверх"
 
-# #Restorer: заголовок переключателя в окне поиска и замены
+# Restorer: заголовок переключателя в окне поиска и замены
 # ~!: earlier
 msgid "Down"
 msgstr "Вниз"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 msgid "Find Next"
 msgstr "Найти далее"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 msgid "Replace"
 msgstr "Заменить"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 # ~!: earlier
 msgid "Replace All"
 msgstr "Заменить все"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 msgid "_Close"
 msgstr "О_тмена"
 
@@ -1300,17 +1303,17 @@ msgid "Vim: Received \"die\" request from session manager\n"
 msgstr ""
 "Программа Vim. От диспетчера сеансов получен запрос на прекращение работы\n"
 
-# #Restorer: пункт контекстного меню на вкладке и панели вкладок
+# Restorer: пункт контекстного меню на вкладке и панели вкладок
 # ~!: earlier
 msgid "Close tab"
 msgstr "Закрыть вкладку"
 
-# #Restorer: пункт контекстного меню на вкладке и панели вкладок
+# Restorer: пункт контекстного меню на вкладке и панели вкладок
 # ~!: earlier
 msgid "New tab"
 msgstr "Новая вкладка"
 
-# #Restorer: пункт контекстного меню на вкладке и панели вкладок
+# Restorer: пункт контекстного меню на вкладке и панели вкладок
 # ~!: earlier
 msgid "Open Tab..."
 msgstr "Открыть вкладку..."
@@ -1318,87 +1321,87 @@ msgstr "Открыть вкладку..."
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Программа Vim. Непредвиденное закрытие основного окна\n"
 
-# #Restorer: наименование кнопки в окне выбора файлов
+# Restorer: наименование кнопки в окне выбора файлов
 # ~!: earlier
 msgid "&Filter"
 msgstr "Ф&ильтр"
 
-# #Restorer: наименование кнопки в диалоговом окне
+# Restorer: наименование кнопки в диалоговом окне
 # ~!: earlier
 msgid "&Cancel"
 msgstr "О&тмена"
 
-# #Restorer: заголовок поля в окне выбора файлов
+# Restorer: заголовок поля в окне выбора файлов
 # ~!: earlier
 msgid "Directories"
 msgstr "Каталоги"
 
-# #Restorer: заголовок поля в окне выбора файлов
+# Restorer: заголовок поля в окне выбора файлов
 # ~!: earlier
 msgid "Filter"
 msgstr "Фильтр"
 
-# #Restorer: наименование кнопки в окне выбора файлов
+# Restorer: наименование кнопки в окне выбора файлов
 # ~!: earlier
 msgid "&Help"
 msgstr "&Справка"
 
-# #Restorer: заголовок поля в окне выбора файлов
+# Restorer: заголовок поля в окне выбора файлов
 # ~!: earlier
 msgid "Files"
 msgstr "Файлы"
 
-# #Restorer: наименование кнопки в окне выбора файлов
+# Restorer: наименование кнопки в окне выбора файлов
 # ~!: earlier
 msgid "&OK"
 msgstr "Д&а"
 
-# #Restorer: заголовок поля в окне выбора файлов
+# Restorer: заголовок поля в окне выбора файлов
 msgid "Selection"
 msgstr "Выбрано"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Vim dialog"
 msgstr "Программа Vim"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 msgid "Find &Next"
 msgstr "&Найти далее"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 msgid "&Replace"
 msgstr "&Заменить"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 # ~!: earlier
 msgid "Replace &All"
 msgstr "Заменить &все"
 
-# #Restorer: наименование кнопки в окне поиска и замены
+# Restorer: наименование кнопки в окне поиска и замены
 # ~!: earlier
 msgid "&Undo"
 msgstr "В&ернуть"
 
-# #Restorer: пункт контекстного меню на вкладке и панели вкладок
+# Restorer: пункт контекстного меню на вкладке и панели вкладок
 # ~!: earlier
 msgid "Open tab..."
 msgstr "Открыть вкладку..."
 
-# #Restorer: наименование заголовка окна
+# Restorer: наименование заголовка окна
 msgid "Find string"
 msgstr "Найти"
 
-# #Restorer: наименование заголовка окна
+# Restorer: наименование заголовка окна
 msgid "Find & Replace"
 msgstr "Заменить"
 
-# #Restorer: заголовок окна
-# #Restorer: это только заполнитель
+# Restorer: заголовок окна
+# Restorer: это только заполнитель
 msgid "Not Used"
 msgstr "Not Used"
 
-# #Restorer: выпадающий список с типами файлов (фильтр)
-# #Restorer: это только заполнитель
+# Restorer: выпадающий список с типами файлов (фильтр)
+# Restorer: это только заполнитель
 msgid "Directory\t*.nothing\n"
 msgstr "Directory\t*.nothing\n"
 
@@ -1423,47 +1426,47 @@ msgstr "ширина символов в font0 %d"
 msgid "Font%d width: %d"
 msgstr "ширина символов в font%d %d"
 
-# #Restorer: выводится в информационном окне
+# Restorer: выводится в информационном окне
 msgid "Invalid font specification"
 msgstr "Указано недопустимое наименование шрифта"
 
-# #Restorer: наименование кнопки информационного окна
+# Restorer: наименование кнопки информационного окна
 # ~!: earlier
 msgid "&Dismiss"
 msgstr "О&тменить"
 
-# #Restorer: отображается, если шрифт не совпадает
+# Restorer: отображается, если шрифт не совпадает
 msgid "no specific match"
 msgstr "отсутствуют совпадения"
 
-# #Restorer: заголовок окна выбора шрифта
+# Restorer: заголовок окна выбора шрифта
 msgid "Vim - Font Selector"
 msgstr "Шрифт"
 
-# #Restorer: наименование поля выбранного шрифта
+# Restorer: наименование поля выбранного шрифта
 msgid "Name:"
 msgstr "Шрифт:"
 
-# #Restorer: наименование переключателя в окне выбора шрифта
+# Restorer: наименование переключателя в окне выбора шрифта
 # ~!: earlier
 msgid "Show size in Points"
 msgstr "Показывать размер в пунктах"
 
-# #Restorer: наименование поля выбора кодировки в окне выбора шрифта
+# Restorer: наименование поля выбора кодировки в окне выбора шрифта
 # ~!: earlier
 msgid "Encoding:"
 msgstr "Кодировка:"
 
-# #Restorer: наименование поля с перечнем шрифтов в окне выбора шрифта
+# Restorer: наименование поля с перечнем шрифтов в окне выбора шрифта
 # ~!: earlier
 msgid "Font:"
 msgstr "Шрифт:"
 
-# #Restorer: наименование поля с перечнем начертаний в окне выбора шрифта
+# Restorer: наименование поля с перечнем начертаний в окне выбора шрифта
 msgid "Style:"
 msgstr "Начертание:"
 
-# #Restorer: наименование поля с перечнем размеров в окне выбора шрифта
+# Restorer: наименование поля с перечнем размеров в окне выбора шрифта
 # ~!: earlier
 msgid "Size:"
 msgstr "Размер:"
@@ -1527,7 +1530,7 @@ msgstr "показать подключённые базы данных cscope"
 msgid "This cscope command does not support splitting the window.\n"
 msgstr "Для команды не предусмотрен вывод результата в отдельном окне\n"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "Added cscope database %s"
 msgstr "Выполнено подключение к базе данных cscope %s"
@@ -1582,7 +1585,7 @@ msgstr ""
 "       s: поиск указанного идентификатора\n"
 "       t: поиск указанной текстовой строки\n"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "cscope connection %s closed"
 msgstr "Выполнено отключение базы данных cscope %s"
@@ -1601,7 +1604,7 @@ msgstr ""
 msgid "filename / context / line\n"
 msgstr " файл;  контекст;  строка, содержащая индекс\n"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 msgid "All cscope databases reset"
 msgstr "Повторное подключение всех ранее подключённых баз данных cscope"
 
@@ -1669,7 +1672,7 @@ msgstr "номер строки выходит за пределы значений диапазона"
 msgid "not allowed in the Vim sandbox"
 msgstr "запрещено выполнение в изолированной среде программы Vim"
 
-# #Restorer: Check! Is error number duble!
+# Restorer: Check! Is error number duble!
 #, c-format
 msgid "E370: Could not load library %s"
 msgstr "E370: Не удалось подключить файл библиотеки %s"
@@ -1733,12 +1736,12 @@ msgstr "не удалось получить содержимое первой строки из диапазона"
 msgid "Unable to register a command server name"
 msgstr "Не удалось зарегистрировать наименование сервера команд"
 
-# #Restorer: выводится при значении 'report' < %ld
+# Restorer: выводится при значении 'report' < %ld
 #, c-format
 msgid "%ld lines to indent... "
 msgstr "Выполняется изменение отступа в %ld строках... "
 
-# #Restorer: выводится при значении 'report' < %ld
+# Restorer: выводится при значении 'report' < %ld
 #, c-format
 msgid "%ld line indented "
 msgid_plural "%ld lines indented "
@@ -1829,7 +1832,7 @@ msgstr "-- Поиск..."
 msgid "Hit end of paragraph"
 msgstr "Конец абзаца"
 
-# #Restorer: выводится при автоподстановке
+# Restorer: выводится при автоподстановке
 msgid "Pattern not found"
 msgstr "Отсутствуют варианты для подстановки"
 
@@ -1852,54 +1855,54 @@ msgstr "вариант %d из %d"
 msgid "match %d"
 msgstr "вариантов %d"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "flatten() argument"
 msgstr "аргумента функции flatten()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "sort() argument"
 msgstr "аргумента функции sort()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "uniq() argument"
 msgstr "аргумента функции uniq()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "map() argument"
 msgstr "аргумента функции map()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "mapnew() argument"
 msgstr "аргумента функции mapnew()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "filter() argument"
 msgstr "аргумента функции filter()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "foreach() argument"
 msgstr "аргумента функции foreach()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "extendnew() argument"
 msgstr "аргумента функции extendnew()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "remove() argument"
 msgstr "аргумента функции remove()"
 
-# #Restorer: дописывается, например, к сообщению E741 или E742
+# Restorer: дописывается, например, к сообщению E741 или E742
 msgid "reverse() argument"
 msgstr "аргумента функции reverse()"
 
-# #Restorer: выводится по команде `:language`
-# #Restorer: первый %s заменяется на «messages », «ctype » или «time »
+# Restorer: выводится по команде `:language`
+# Restorer: первый %s заменяется на «messages », «ctype » или «time »
 #, c-format
 msgid "Current %slanguage: \"%s\""
 msgstr "Региональные настройки %s: \"%s\""
 
-# #Restorer: после сообщения дописывается символ : и ошибочный аргумент
-# #Restorer: в кавычках
+# Restorer: после сообщения дописывается символ : и ошибочный аргумент
+# Restorer: в кавычках
 msgid "Unknown option argument"
 msgstr "Не распознан аргумент командной строки"
 
@@ -1963,7 +1966,7 @@ msgstr "Программа Vim. Внимание! Ввод осуществляется не с терминала\n"
 msgid "pre-vimrc command line"
 msgstr "команды, выполняемые перед обработкой файла .vimrc"
 
-# #Restorer: выводится при ошибках, например, в аргументах командной строки
+# Restorer: выводится при ошибках, например, в аргументах командной строки
 msgid ""
 "\n"
 "More info with: \"vim -h\"\n"
@@ -1974,20 +1977,20 @@ msgstr ""
 msgid "[file ..]       edit specified file(s)"
 msgstr "[файл ...]   редактировать указанные файлы"
 
-# #Restorer: чтобы перевод поместился в 80 символов, разбил на две строки
+# Restorer: чтобы перевод поместился в 80 символов, разбил на две строки
 msgid "-               read text from stdin"
 msgstr ""
 "-            считывать текст из стандартного потока\n"
 "\t\t\t\t\t\t\t\t\t  ввода"
 
-# #Restorer: чтобы перевод поместился в 80 символов, разбил на две строки
+# Restorer: чтобы перевод поместился в 80 символов, разбил на две строки
 msgid "-t tag          edit file where tag is defined"
 msgstr ""
 "-t индекс    редактировать файл, для которого создан\n"
 "\t\t\t\t\t\t\t\t  данный индекс"
 
 # \n\t\t.. для умещения в 80 столбцов (С. Алёшин)
-# #Restorer: изменил количество символов табуляции и пробелов, дабы было хорошо
+# Restorer: изменил количество символов табуляции и пробелов, дабы было хорошо
 msgid "-q [errorfile]  edit file with first error"
 msgstr ""
 "-q [файл результатов]   редактировать файл, содержащий\n"
@@ -2002,11 +2005,11 @@ msgstr ""
 "\n"
 "Образец:"
 
-# #Restorer: чтобы было выравнивание, пробелы не убирать
+# Restorer: чтобы было выравнивание, пробелы не убирать
 msgid " vim [arguments] "
 msgstr " vim [аргументы] "
 
-# #Restorer: чтобы было выравнивание, пробелы не убирать
+# Restorer: чтобы было выравнивание, пробелы не убирать
 msgid ""
 "\n"
 "   or:"
@@ -2014,15 +2017,25 @@ msgstr ""
 "\n"
 "     или"
 
-# #Restorer: в main.c есть следующее:
-# #Restorer: * VMS only uses upper case command lines.  Interpret "-X" as "-x"
-# #Restorer: * and "-/X" as "-X".
+# Restorer: в main.c есть следующее:
+# Restorer: * VMS only uses upper case command lines.  Interpret "-X" as "-x"
+# Restorer: * and "-/X" as "-X".
 msgid ""
 "\n"
-"Where case is ignored prepend / to make flag upper case"
+"Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
+"case."
 msgstr ""
 "\n"
-"Чтобы распознавался аргумент в верхнем регистре, добавьте перед ним символ /"
+"Чтобы аргумент распознавался в верхнем регистре, добавьте перед ним символ / "
+"(прим. -/R)"
+
+msgid ""
+"\n"
+"Or, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."
+msgstr ""
+"\n"
+"Или, если доступно, SET PROC/PARSE=EXT, либо заключите в кавычки то, что "
+"должно быть в верхнем регистре"
 
 msgid ""
 "\n"
@@ -2109,7 +2122,7 @@ msgstr "-n\t\t\tРабота без создания файла подкачки на ГМД или ЖМД"
 msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\tВывод перечня файлов подкачки и завершение работы"
 
-# #Restorer: добавил ещё один \t, чтобы выглядело единообразно
+# Restorer: добавил ещё один \t, чтобы выглядело единообразно
 msgid "-r (with file name)\tRecover crashed session"
 msgstr "-r <файл>\t\tВосстановление аварийно завершённого сеанса"
 
@@ -2117,12 +2130,12 @@ msgstr "-r <файл>\t\tВосстановление аварийно завершённого сеанса"
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tТо же, что и аргумент командной строки -r"
 
-# #Restorer: это только для Amiga-like
+# Restorer: это только для Amiga-like
 msgid "-f\t\t\tDon't use newcli to open window"
 msgstr "-f\t\t\tНе использовать команду newcli для открытия окна"
 
-# #Restorer: это только для Amiga-like
-# #Restorer: убрал один \t, чтобы выглядело единообразно
+# Restorer: это только для Amiga-like
+# Restorer: убрал один \t, чтобы выглядело единообразно
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <устройство>\tИспользовать для операций ввода-вывода <устройство>"
 
@@ -2207,6 +2220,9 @@ msgstr "-X\t\t\tЗапуск программы без подключения к X-серверу"
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\tЗапуск программы без подключения к Wayland Compositor"
 
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr "--clientserver <socket|x11> Тип подключение между клиентом и сервером"
+
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
 "--remote <файлы>\tРедактирование <файлов> на Vim-сервере, если доступен"
@@ -2215,7 +2231,7 @@ msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
 "--remote-silent <файлы>   То же, но не сообщать о недоступности сервера"
 
-# #Restorer: добавил пару пробельных символов, дабы подравнять сообщение
+# Restorer: добавил пару пробельных символов, дабы подравнять сообщение
 # ~!: earlier
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -2288,7 +2304,7 @@ msgstr "-background <цвет>\tНазначить указанный <цвет> цветом фона (или -bg)"
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-foreground <цвет>\tНазначить указанный <цвет> цветом текста (или -fg)"
 
-# #Restorer: убрал один \t, чтобы выглядело единообразно
+# Restorer: убрал один \t, чтобы выглядело единообразно
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr ""
 "-font <шрифт>\tНазначить указанный <шрифт> для обычного текста (или -fn)"
@@ -2348,7 +2364,7 @@ msgstr "-P <заголовок окна>\tОткрыть программу в многодокументном приложении"
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tОткрыть программу внутри другого компонента win32"
 
-# #Restorer: отображается при 'verbose'>0
+# Restorer: отображается при 'verbose'>0
 msgid "Seen modifyOtherKeys: true\n"
 msgstr "Для терминала установлен режим modifyOtherKeys\n"
 
@@ -2367,7 +2383,7 @@ msgstr "недоступно"
 msgid "Cleared"
 msgstr "сброшено"
 
-# #Restorer: отображается при 'verbose'>0
+# Restorer: отображается при 'verbose'>0
 #, c-format
 msgid "modifyOtherKeys detected: %s\n"
 msgstr "Состояние режима modifyOtherKeys: %s\n"
@@ -2376,19 +2392,19 @@ msgstr "Состояние режима modifyOtherKeys: %s\n"
 msgid "Kitty keyboard protocol: %s\n"
 msgstr "Состояние протокола «kitty» обмена данными с клавиатурой: %s\n"
 
-# #Restorer: выводится, например, по команде `:abbreviata`
+# Restorer: выводится, например, по команде `:abbreviata`
 msgid "No abbreviation found"
 msgstr "Отсутствуют сокращения"
 
-# #Restorer: выводится, например, по команде `:map`
+# Restorer: выводится, например, по команде `:map`
 msgid "No mapping found"
 msgstr "Отсутствуют клавиатурные команды"
 
-# #Restorer: выводится по команде `:marks`
+# Restorer: выводится по команде `:marks`
 msgid "No marks set"
 msgstr "Закладки не установлены"
 
-# #Restorer: выводится по команде `:marks`
+# Restorer: выводится по команде `:marks`
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -2396,7 +2412,7 @@ msgstr ""
 "\n"
 "Закл. Стр.  Кол.   Файл или текст"
 
-# #Restorer: выводится по команде `:jumps`
+# Restorer: выводится по команде `:jumps`
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -2404,7 +2420,7 @@ msgstr ""
 "\n"
 "Перех. Стр.  Кол.   Файл или текст"
 
-# #Restorer: выводится по команде `:changes`
+# Restorer: выводится по команде `:changes`
 msgid ""
 "\n"
 "change line  col text"
@@ -2412,7 +2428,7 @@ msgstr ""
 "\n"
 " Изм.  Стр.  Кол.   Текст"
 
-# #Restorer: выводится по команде `:recover`
+# Restorer: выводится по команде `:recover`
 msgid "Enter number of swap file to use (0 to quit): "
 msgstr ""
 "Укажите номер файла подкачки, который следует использовать (0 для отмены): "
@@ -2520,8 +2536,8 @@ msgstr ""
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
-"Строки, которые были вставлены или удалены, помещены между метками ??? и ???"
-"END"
+"Строки, которые были вставлены или удалены, помещены между метками ??? и "
+"???END"
 
 msgid "??? lines may be missing"
 msgstr "??? эти строки, возможно, утрачены"
@@ -2674,23 +2690,23 @@ msgstr "         [не удалось считать]"
 msgid "         [cannot be opened]"
 msgstr "         [не удалось открыть]"
 
-# #Restorer: выводится по команде `:preserve`
+# Restorer: выводится по команде `:preserve`
 msgid "File preserved"
 msgstr "Файл подкачки обновлён"
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "stack_idx should be 0"
 msgstr "Внутренняя функция ml_append_int(). Значение stack_idx должно быть 0"
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "deleted block 1?"
 msgstr "Внутренняя функция ml_delete(). Возможно, удалён блок 1"
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "pe_line_count is zero"
 msgstr "Внутренняя функция ml_find_line(). Значение pe_line_count равно нулю"
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "Stack size increases"
 msgstr "Внутренняя функция ml_add_stack(). Размер стека увеличился"
 
@@ -2710,12 +2726,12 @@ msgstr "при открытии файла: \""
 msgid "      CANNOT BE FOUND"
 msgstr " НЕ УДАЛОСЬ НАЙТИ"
 
-# #Restorer:
+# Restorer:
 msgid "      NEWER than swap file!\n"
 msgstr "Который имеет более позднюю дату, чем обнаруженный файл подкачки\n"
 
-# #Restorer: добавлен второй "\n" и сдвинут к границе экрана,
-# #Restorer: чтобы выделить текст визуально
+# Restorer: добавлен второй "\n" и сдвинут к границе экрана,
+# Restorer: чтобы выделить текст визуально
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
@@ -2732,7 +2748,7 @@ msgstr ""
 "Будьте внимательны и ещё раз всё проверьте.\n"
 "\n"
 
-# #Restorer: добавлен "\n"
+# Restorer: добавлен "\n"
 msgid "(2) An edit session for this file crashed.\n"
 msgstr ""
 "(2) Либо предыдущий сеанс работы программы с этим файлом был завершён "
@@ -2740,7 +2756,7 @@ msgstr ""
 "    и данные могут быть повреждены.\n"
 "\n"
 
-# #Restorer: сдвинут к границе экрана
+# Restorer: сдвинут к границе экрана
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "В этом случае используйте команду :recover или `vim -r "
 
@@ -2761,7 +2777,7 @@ msgstr ""
 "\",\n"
 "чтобы в дальнейшем это сообщение больше не отображалось.\n"
 
-# #Restorer: отображается при 'verbose'>0
+# Restorer: отображается при 'verbose'>0
 msgid "Found a swap file that is not useful, deleting it"
 msgstr "Обнаруженный файл подкачки не требуется и будет удалён"
 
@@ -2771,14 +2787,14 @@ msgstr "Обнаружен файл подкачки \""
 msgid "\" already exists!"
 msgstr "\"!"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "VIM - ATTENTION"
 msgstr "Внимание"
 
 msgid "Swap file already exists!"
 msgstr "Обнаружен файл подкачки!"
 
-# #Restorer: кнопки окно диалога при обнаружении существующего файла подкачки
+# Restorer: кнопки окно диалога при обнаружении существующего файла подкачки
 msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
@@ -2792,7 +2808,7 @@ msgstr ""
 "Выход (&Q)\n"
 "Прервать (&A)"
 
-# #Restorer: кнопки окно диалога при обнаружении существующего файла подкачки
+# Restorer: кнопки окно диалога при обнаружении существующего файла подкачки
 msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
@@ -2808,7 +2824,7 @@ msgstr ""
 "Выход (&Q)\n"
 "Прервать (&A)"
 
-# #Restorer: отображается, например, по команде `:menu`
+# Restorer: отображается, например, по команде `:menu`
 # ~!: earlier
 msgid ""
 "\n"
@@ -2820,35 +2836,35 @@ msgstr ""
 msgid "Tear off this menu"
 msgstr "Открепить это меню"
 
-# #Restorer: шаблон %s заменяется на наименование скрипта
+# Restorer: шаблон %s заменяется на наименование скрипта
 #, c-format
 msgid "Error detected while compiling %s:"
 msgstr "Обнаружена ошибка при компиляции %s"
 
-# #Restorer: шаблон %s заменяется на наименование скрипта, автокоманды и т. п.
+# Restorer: шаблон %s заменяется на наименование скрипта, автокоманды и т. п.
 #, c-format
 msgid "Error detected while processing %s:"
 msgstr "Обнаружена ошибка при обработке %s"
 
-# #Restorer: шаблон %4ld заменяется на номер строки в скрипте и это сообщение
-# #Restorer: дописывается к «Error detected while processing %s:»
+# Restorer: шаблон %4ld заменяется на номер строки в скрипте и это сообщение
+# Restorer: дописывается к «Error detected while processing %s:»
 #, c-format
 msgid "line %4ld:"
 msgstr "строка %4ld:"
 
-# #Restorer: выводится, например, по команде `:messages`
+# Restorer: выводится, например, по команде `:messages`
 msgid "Messages maintainer: The Vim Project"
 msgstr "Restorer, перевод на русский язык, 2020, <restorer@mail2k.ru>"
 
-# #Restorer: отображается если нажаты CTRL+C (CTRL+BREAK) и далее
-# #Restorer: про продолжение
+# Restorer: отображается если нажаты CTRL+C (CTRL+BREAK) и далее
+# Restorer: про продолжение
 msgid "Interrupt: "
 msgstr "Прервано. "
 
 msgid "Press ENTER or type command to continue"
 msgstr "Чтобы продолжить, нажмите клавишу <ENTER> или введите команду"
 
-# #Restorer: при прокрутке сообщения. Название скрипта и номер строки
+# Restorer: при прокрутке сообщения. Название скрипта и номер строки
 # ~!: earlier
 #, c-format
 msgid "%s line %ld"
@@ -2860,17 +2876,27 @@ msgstr "-- Далее --"
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " SPACE/d/j - вниз, b/u/k - вверх на экран/страницу/строку; q - отбой "
 
-msgid "W23: Clipboard register not available, using register 0"
-msgstr "W23: Регистр буфера обмена недоступен. Будет использован регистр 0"
-
 msgid "W24: Clipboard register not available. See :h W24"
 msgstr "W24: Регистр буфера обмена недоступен. Подробнее см. :h W24"
 
-# #Restorer: заголовок окна
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Регистр буфера обмена недоступен. Будет использован регистр 0"
+
+msgid "W23: Clipboard register + not available, using register 0"
+msgstr ""
+"W23: Регистр + в качестве буфера обмена недоступен. Будет использован "
+"регистр 0"
+
+msgid "W23: Clipboard register * not available, using register 0"
+msgstr ""
+"W23: Регистр * в качестве буфера обмена недоступен. Будет использован "
+"регистр 0"
+
+# Restorer: заголовок окна
 msgid "Question"
 msgstr "Запрос"
 
-# #Restorer: кнопки общего окна диалога используемого в Vim
+# Restorer: кнопки общего окна диалога используемого в Vim
 msgid ""
 "&Yes\n"
 "&No"
@@ -2878,7 +2904,7 @@ msgstr ""
 "Да (&Y)\n"
 "Нет (&N)"
 
-# #Restorer: кнопки общего окна диалога используемого в Vim
+# Restorer: кнопки общего окна диалога используемого в Vim
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -2892,16 +2918,16 @@ msgstr ""
 "Удалить все (&D)\n"
 "Отмена (&C)"
 
-# #Restorer: выводится, например, по команде `z=`
+# Restorer: выводится, например, по команде `z=`
 msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
 msgstr ""
 "Введите номер и нажмите <ENTER> или выберите мышью (если не указан, отмена): "
 
-# #Restorer: выводится, например, по команде `:tselect` или `:browse oldfiles`
+# Restorer: выводится, например, по команде `:tselect` или `:browse oldfiles`
 msgid "Type number and <Enter> (q or empty cancels): "
 msgstr "Введите номер и нажмите клавишу <ENTER> (если не указан, отмена): "
 
-# #Restorer: выводится, например, по команде `:copy`, `:paste`, `:delete`
+# Restorer: выводится, например, по команде `:copy`, `:paste`, `:delete`
 #, c-format
 msgid "%ld more line"
 msgid_plural "%ld more lines"
@@ -2909,7 +2935,7 @@ msgstr[0] "%ld строка добавлена"
 msgstr[1] "%ld строки добавлено"
 msgstr[2] "%ld строк добавлено"
 
-# #Restorer: выводится, например, по команде `:copy`, `:paste`, `:delete`
+# Restorer: выводится, например, по команде `:copy`, `:paste`, `:delete`
 #, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
@@ -2917,17 +2943,17 @@ msgstr[0] "%ld строка удалена"
 msgstr[1] "%ld строки удалено"
 msgstr[2] "%ld строк удалено"
 
-# #Restorer: выводится если при вставке, удалении строк нажаты CTRL+C
-# #Restorer: (CTRL+Break)
+# Restorer: выводится если при вставке, удалении строк нажаты CTRL+C
+# Restorer: (CTRL+Break)
 msgid " (Interrupted)"
 msgstr " (эта операция прервана)"
 
-# #Restorer: выводится при 'verbose'>0 и 'debug' = beep
+# Restorer: выводится при 'verbose'>0 и 'debug' = beep
 # ~!: earlier
 msgid "Beep!"
 msgstr "Би-би!"
 
-# #Restorer: выводится при значении 'verbose'>3
+# Restorer: выводится при значении 'verbose'>3
 #, c-format
 msgid "Calling shell to execute: \"%s\""
 msgstr "Вызов командной оболочки для исполнения \"%s\""
@@ -2944,8 +2970,8 @@ msgid "Type  :qa  and press <Enter> to exit Vim"
 msgstr ""
 "Чтобы завершить работу программы, наберите  :qa  и нажмите клавишу <ENTER>"
 
-# #Restorer: выводится при исполнении операторов `<`, `>` и т. п.
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при исполнении операторов `<`, `>` и т. п.
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld line %sed %d time"
 msgid_plural "%ld line %sed %d times"
@@ -2953,8 +2979,8 @@ msgstr[0] "Сдвиг %ld строки в направлении -%s- выполнен %d раз"
 msgstr[1] "Сдвиг %ld строк в направлении -%s- выполнен %d раза"
 msgstr[2] "Сдвиг %ld строк в направлении -%s- выполнен %d раз"
 
-# #Restorer: выводится при исполнении операторов `<`, `>` и т. п.
-# #Restorer: выводится при значении 'report' <= %ld
+# Restorer: выводится при исполнении операторов `<`, `>` и т. п.
+# Restorer: выводится при значении 'report' <= %ld
 #, c-format
 msgid "%ld lines %sed %d time"
 msgid_plural "%ld lines %sed %d times"
@@ -2962,12 +2988,12 @@ msgstr[0] "Сдвиг %ld строки в направлении -%s- выполнен %d раз"
 msgstr[1] "Сдвиг %ld строк в направлении -%s- выполнен %d раза"
 msgstr[2] "Сдвиг %ld строк в направлении -%s- выполнен %d раз"
 
-# #Restorer: выводится при исполнении оператора `d` с большим кол-вом текста
+# Restorer: выводится при исполнении оператора `d` с большим кол-вом текста
 msgid "cannot yank; delete anyway"
 msgstr "Не удалось сохранить текст во временный регистр. Выполнить удаление?"
 
-# #Restorer: выводится при исполнении операторов `gU`, `~` и т. п.
-# #Restorer: выводится при значении 'report' < %ld
+# Restorer: выводится при исполнении операторов `gU`, `~` и т. п.
+# Restorer: выводится при значении 'report' < %ld
 #, c-format
 msgid "%ld line changed"
 msgid_plural "%ld lines changed"
@@ -2975,8 +3001,8 @@ msgstr[0] "%ld строка изменена"
 msgstr[1] "%ld строки изменено"
 msgstr[2] "%ld строк изменено"
 
-# #Restorer: выводится при исполнении операторов добавления и вычитания
-# #Restorer: выводится при значении 'report' < %ld
+# Restorer: выводится при исполнении операторов добавления и вычитания
+# Restorer: выводится при значении 'report' < %ld
 #, c-format
 msgid "%d line changed"
 msgid_plural "%d lines changed"
@@ -2984,19 +3010,19 @@ msgstr[0] "%d строка изменена"
 msgstr[1] "%d строки изменено"
 msgstr[2] "%d строк изменено"
 
-# #Restorer: добавляется к сообщению о позиции каретки при выделении блока
+# Restorer: добавляется к сообщению о позиции каретки при выделении блока
 #, c-format
 msgid "%ld Cols; "
 msgstr "колонок %ld; "
 
-# #Restorer: выводится при, например, исполнении оператора `g CTRL+g`
-# #Restorer: шаблон %s здесь заменяется на «колонок %ld;» из предыдущего msgid
+# Restorer: выводится при, например, исполнении оператора `g CTRL+g`
+# Restorer: шаблон %s здесь заменяется на «колонок %ld;» из предыдущего msgid
 #, c-format
 msgid "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"
 msgstr "Выделено: %sстрок %ld из %ld; слов %lld из %lld; байт %lld из %lld"
 
-# #Restorer: выводится при, например, исполнении оператора `g CTRL+g`
-# #Restorer: шаблон %s здесь заменяется на «колонок %ld;» из предыдущего msgid
+# Restorer: выводится при, например, исполнении оператора `g CTRL+g`
+# Restorer: шаблон %s здесь заменяется на «колонок %ld;» из предыдущего msgid
 #, c-format
 msgid ""
 "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
@@ -3005,13 +3031,13 @@ msgstr ""
 "Выделено: %sстрок %ld из %ld; слов %lld из %lld; литер %lld из %lld; байт "
 "%lld из %lld"
 
-# #Restorer: выводится при, например, исполнении оператора `g CTRL+g`
+# Restorer: выводится при, например, исполнении оператора `g CTRL+g`
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
 msgstr ""
 "Колонка %s из %s; строка %ld из %ld; слово %lld из %lld; байт %lld из %lld"
 
-# #Restorer: выводится при, например, исполнении оператора `g CTRL+g`
+# Restorer: выводится при, например, исполнении оператора `g CTRL+g`
 #, c-format
 msgid ""
 "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
@@ -3020,20 +3046,20 @@ msgstr ""
 "Колонка %s из %s; строка %ld из %ld; слово %lld из %lld; литера %lld из "
 "%lld; байт %lld из %lld"
 
-# #Restorer: добавляется к сообщению о позиции каретки из предыдущих msgid
-# #Restorer: вставил пробел перед скобкой, посмотрим, как будет выглядеть
+# Restorer: добавляется к сообщению о позиции каретки из предыдущих msgid
+# Restorer: вставил пробел перед скобкой, посмотрим, как будет выглядеть
 # ~!: earlier
 #, c-format
 msgid "(+%lld for BOM)"
 msgstr " (+%lld с учётом МПБ)"
 
-# #Restorer: может сразу написать это по-арабски
+# Restorer: может сразу написать это по-арабски
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr ""
 "W17: Для работы с арабской письменностью введите команду `:set "
 "encoding=utf-8`"
 
-# #Restorer: выводится по команде `:set termcap`
+# Restorer: выводится по команде `:set termcap`
 msgid ""
 "\n"
 "--- Terminal codes ---"
@@ -3041,7 +3067,7 @@ msgstr ""
 "\n"
 "--- Параметры терминала ---"
 
-# #Restorer: выводится по команде `:setglobal [all]`
+# Restorer: выводится по команде `:setglobal [all]`
 msgid ""
 "\n"
 "--- Global option values ---"
@@ -3049,7 +3075,7 @@ msgstr ""
 "\n"
 "--- Значения общих параметров ---"
 
-# #Restorer: выводится по команде `:setlocal [all]`
+# Restorer: выводится по команде `:setlocal [all]`
 msgid ""
 "\n"
 "--- Local option values ---"
@@ -3057,7 +3083,7 @@ msgstr ""
 "\n"
 "--- Значения локальных параметров ---"
 
-# #Restorer: выводится по команде `:set [all]`
+# Restorer: выводится по команде `:set [all]`
 msgid ""
 "\n"
 "--- Options ---"
@@ -3065,7 +3091,7 @@ msgstr ""
 "\n"
 "--- Параметры ---"
 
-# #Restorer: отображается как `не удалось открыть intuition.library!?\n`
+# Restorer: отображается как `не удалось открыть intuition.library!?\n`
 msgid "cannot open "
 msgstr "Не удалось подключить библиотеку "
 
@@ -3112,13 +3138,13 @@ msgstr "Значение ANCHOR_BUF_SIZE очень малое"
 msgid "I/O ERROR"
 msgstr "Ошибка ввода-вывода"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 # ~!: earlier
 msgid "Message"
 msgstr "Сообщение"
 
-# #Restorer: первый %s - наименование принтера, второй %s - наименование порта,
-# #Restorer: к которому он подключен
+# Restorer: первый %s - наименование принтера, второй %s - наименование порта,
+# Restorer: к которому он подключен
 #, c-format
 msgid "to %s on %s"
 msgstr "%s к %s"
@@ -3220,7 +3246,7 @@ msgstr ""
 msgid "XSMP lost ICE connection"
 msgstr "Потеряно соединение XSMP по протоколу ICE"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "Could not load gpm library: %s"
 msgstr "Не удалось подключить файл библиотеки gpm, ошибка %s"
@@ -3235,7 +3261,7 @@ msgstr "Произошла ошибка при подключении к X-серверу"
 msgid "XSMP handling save-yourself request"
 msgstr "XSMP обрабатывается запрос на сохранение сессии"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 msgid "XSMP opening connection"
 msgstr "Открыто соединение по XSMP"
 
@@ -3243,10 +3269,14 @@ msgid "XSMP ICE connection watch failed"
 msgstr ""
 "Произошла ошибка при установке слежения за подключением по протоколу ICE"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "Функция SmcOpenConnection() вернула ошибку %s"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Произошёл сбой при создании каталога сокета %s"
 
 # ~!: earlier
 msgid "At line"
@@ -3256,24 +3286,24 @@ msgstr "на строке"
 msgid "Vim: Caught %s event\n"
 msgstr "Программой Vim было перехвачено событие %s\n"
 
-# #Restorer: подставляется в сообщение «Vim: Caught %s event».
-# #Restorer: Это и есть событие
+# Restorer: подставляется в сообщение «Vim: Caught %s event».
+# Restorer: Это и есть событие
 msgid "close"
 msgstr "закрытия"
 
-# #Restorer: подставляется в сообщение «Vim: Caught %s event».
-# #Restorer: Это и есть событие
+# Restorer: подставляется в сообщение «Vim: Caught %s event».
+# Restorer: Это и есть событие
 msgid "logoff"
 msgstr "завершения сеанса"
 
-# #Restorer: подставляется в сообщение «Vim: Caught %s event».
-# #Restorer: Это и есть событие
+# Restorer: подставляется в сообщение «Vim: Caught %s event».
+# Restorer: Это и есть событие
 msgid "shutdown"
 msgstr "выключения"
 
-# #Restorer: всё-таки заключил слово «PATH» в знак процента, пока использую
-# #Restorer: перевод только для себя. Добваил #, no-c-format
-# #Restorer: см. https://github.com/vim/vim/pull/6762#issuecomment-678662463
+# Restorer: всё-таки заключил слово «PATH» в знак процента, пока использую
+# Restorer: перевод только для себя. Добваил #, no-c-format
+# Restorer: см. https://github.com/vim/vim/pull/6762#issuecomment-678662463
 #, no-c-format
 msgid ""
 "VIMRUN.EXE not found in your $PATH.\n"
@@ -3287,7 +3317,7 @@ msgstr ""
 "Чтобы получить дополнительную информацию,\n"
 "наберите  :help win32-vimrun"
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Vim Warning"
 msgstr "Внимание"
 
@@ -3295,64 +3325,64 @@ msgstr "Внимание"
 msgid "shell returned %d"
 msgstr "От командной оболочки получен код возврата %d"
 
-# #Restorer: выводится при переходе по индексу списка результатов
+# Restorer: выводится при переходе по индексу списка результатов
 # ~!: earlier
 #, c-format
 msgid "(%d of %d)%s%s: "
 msgstr "(%d из %d)%s%s: "
 
-# #Restorer: подставляется в (%d of %d)%s%s: вместо первого %s, если требуется
+# Restorer: подставляется в (%d of %d)%s%s: вместо первого %s, если требуется
 # ~!: earlier
 msgid " (line deleted)"
 msgstr " (строка удалена)"
 
-# #Restorer: выводится, например, по команде `:cnewer`, `:chistory` и т. п.
-# #Restorer: вместо %s подставляется >, если в текущем списке результатов
+# Restorer: выводится, например, по команде `:cnewer`, `:chistory` и т. п.
+# Restorer: вместо %s подставляется >, если в текущем списке результатов
 #, c-format
 msgid "%serror list %d of %d; %d errors "
 msgstr "%sсписок результатов %d из %d; записей: %d "
 
-# #Restorer: при исполнении команды `:chistory`
+# Restorer: при исполнении команды `:chistory`
 msgid "No entries"
 msgstr "Нет записей"
 
-# #Restorer: заголовок окна выбора файла
+# Restorer: заголовок окна выбора файла
 msgid "Error file"
 msgstr "Файл списка результатов"
 
-# #Restorer: при исполнении команды `:vimgrep`, `:lgrep` и т. п.
+# Restorer: при исполнении команды `:vimgrep`, `:lgrep` и т. п.
 #, c-format
 msgid "Cannot open file \"%s\""
 msgstr "Не удалось открыть файл \"%s\""
 
-# #Restorer: дописывается к сообщению «E475: Invalid argument:»
+# Restorer: дописывается к сообщению «E475: Invalid argument:»
 msgid "cannot have both a list and a \"what\" argument"
 msgstr ""
 "в функции setqflist(). Должен быть указан либо первый, либо последний "
 "аргумент"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 msgid "Switching to backtracking RE engine for pattern: "
 msgstr "Переключение на механизм «поиск с возвратом» для поискового шаблона: "
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "External submatches:\n"
 msgstr "Внешние подвыражение:\n"
 
-# #Restorer: это сообщение для отладки. Надо ли...
+# Restorer: это сообщение для отладки. Надо ли...
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Не удалось открыть на запись файл журнала. Вывод в стандартный поток ошибок"
 
-# #Restorer: если указан регистр, дописывается к сообщениям вида
-# #Restorer: «1 line yanked%s»
+# Restorer: если указан регистр, дописывается к сообщениям вида
+# Restorer: «1 line yanked%s»
 #, c-format
 msgid " into \"%c"
 msgstr " в регистр \"%c"
 
-# #Restorer: выводится при значении 'report' < %ld
-# #Restorer: если при операции указывается конкретный регистр,
-# #Restorer: то %s заменяется на сообщение « into \"%c»
+# Restorer: выводится при значении 'report' < %ld
+# Restorer: если при операции указывается конкретный регистр,
+# Restorer: то %s заменяется на сообщение « into \"%c»
 #, c-format
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
@@ -3360,9 +3390,9 @@ msgstr[0] "Выделенная область из %ld строки скопирована%s"
 msgstr[1] "Выделенная область из %ld строк скопирована%s"
 msgstr[2] "Выделенная область из %ld строк скопирована%s"
 
-# #Restorer: выводится при значении 'report' < %ld
-# #Restorer: если при операции указывается конкретный регистр,
-# #Restorer: то %s заменяется на сообщение « into \"%c»
+# Restorer: выводится при значении 'report' < %ld
+# Restorer: если при операции указывается конкретный регистр,
+# Restorer: то %s заменяется на сообщение « into \"%c»
 #, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
@@ -3370,7 +3400,7 @@ msgstr[0] "%ld строка скопирована%s"
 msgstr[1] "%ld строки скопировано%s"
 msgstr[2] "%ld строк скопировано%s"
 
-# #Restorer: выводится, например, по команде `:registers` или `:display`
+# Restorer: выводится, например, по команде `:registers` или `:display`
 msgid ""
 "\n"
 "Type Name Content"
@@ -3378,170 +3408,170 @@ msgstr ""
 "\n"
 "Тип  Рег.  Содержимое"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `g shift+r`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `g shift+r`
 msgid " VREPLACE"
 msgstr " РЕЖИМ ВИРТУАЛЬНОЙ ЗАМЕНЫ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `shift+r`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `shift+r`
 msgid " REPLACE"
 msgstr " РЕЖИМ ЗАМЕНЫ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `i`,`a`,`I` и т. п.
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `i`,`a`,`I` и т. п.
 msgid " REVERSE"
 msgstr " ЗЕРКАЛЬНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `i`,`a`,`I` и т. п.
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `i`,`a`,`I` и т. п.
 msgid " INSERT"
 msgstr " РЕЖИМ ВСТАВКИ"
 
-# #Restorer: наименование режима. При временном переключении из этого режима
+# Restorer: наименование режима. При временном переключении из этого режима
 msgid " (insert)"
 msgstr " (режим вставки)"
 
-# #Restorer: наименование режима. При временном переключении из этого режима
+# Restorer: наименование режима. При временном переключении из этого режима
 msgid " (replace)"
 msgstr " (режим замены)"
 
-# #Restorer: наименование режима. При временном переключении из этого режима
+# Restorer: наименование режима. При временном переключении из этого режима
 msgid " (vreplace)"
 msgstr " (режим виртуальной замены)"
 
-# #Restorer: наименование языка ввода, дописывается к наименованию режима
+# Restorer: наименование языка ввода, дописывается к наименованию режима
 msgid " Hebrew"
 msgstr " иврит"
 
-# #Restorer: наименование языка ввода, дописывается к наименованию режима
+# Restorer: наименование языка ввода, дописывается к наименованию режима
 msgid " Arabic"
 msgstr " арабский"
 
-# #Restorer: наименование режима.
+# Restorer: наименование режима.
 # ~!: earlier
 msgid " (paste)"
 msgstr " (вклейка)"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде `v`
+# Restorer: наименование режима. Выводится в командной строке по команде `v`
 msgid " VISUAL"
 msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ ПОСИМВОЛЬНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `shift+v`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `shift+v`
 msgid " VISUAL LINE"
 msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ ПОСТРОЧНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `ctrl+v`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `ctrl+v`
 msgid " VISUAL BLOCK"
 msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ БЛОЧНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде `g h`
+# Restorer: наименование режима. Выводится в командной строке по команде `g h`
 msgid " SELECT"
 msgstr " РЕЖИМ ВЫБОРКИ ПОСИМВОЛЬНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `g shitf+h`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `g shitf+h`
 msgid " SELECT LINE"
 msgstr " РЕЖИМ ВЫБОРКИ ПОСТРОЧНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде
-# #Restorer: `g ctrl+h`
+# Restorer: наименование режима. Выводится в командной строке по команде
+# Restorer: `g ctrl+h`
 msgid " SELECT BLOCK"
 msgstr " РЕЖИМ ВЫБОРКИ БЛОЧНЫЙ"
 
-# #Restorer: наименование режима. Выводится в командной строке по команде `q`
+# Restorer: наименование режима. Выводится в командной строке по команде `q`
 msgid "recording"
 msgstr "ЗАПИСЬ В РЕГИСТР"
 
-# #Restorer: при поиске файла в заданном каталоге, если 'verbose'>10
+# Restorer: при поиске файла в заданном каталоге, если 'verbose'>10
 #, c-format
 msgid "Searching for \"%s\" under \"%s\" in \"%s\""
 msgstr "Поиск \"%s\" в подкаталоге \"%s\" каталогов из \"%s\""
 
-# #Restorer: при поиске файла в заданном каталоге, если 'verbose'>10
+# Restorer: при поиске файла в заданном каталоге, если 'verbose'>10
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Поиск \"%s\" в каталогах из \"%s\""
 
-# #Restorer: при поиске файла по маске, если 'verbose'>2
+# Restorer: при поиске файла по маске, если 'verbose'>2
 # ~!: earlier
 #, c-format
 msgid "Searching for \"%s\""
 msgstr "Поиск \"%s\""
 
-# #Restorer: если не нашли в каталогах из runtimepath или packpath
-# #Restorer: и 'verbose'>0
+# Restorer: если не нашли в каталогах из runtimepath или packpath
+# Restorer: и 'verbose'>0
 #, c-format
 msgid "not found in '%s': \"%s\""
 msgstr "В каталогах из '%s' не найдено \"%s\""
 
-# #Restorer: заголовок окна
+# Restorer: заголовок окна
 msgid "Source Vim script"
 msgstr "Файл команд программы Vim"
 
-# #Restorer: при обработке командного файла программы Vim
+# Restorer: при обработке командного файла программы Vim
 #, c-format
 msgid "Cannot source a directory: \"%s\""
 msgstr "В качестве командного файла указан каталог \"%s\""
 
-# #Restorer: при обработке командного файла программы Vim в режиме отладки,
-# #Restorer: 'verbose'>0
+# Restorer: при обработке командного файла программы Vim в режиме отладки,
+# Restorer: 'verbose'>0
 #, c-format
 msgid "could not source \"%s\""
 msgstr "Ошибка при обработке командного файла \"%s\""
 
-# #Restorer: при обработке командного файла программы Vim, 'verbose'>0
+# Restorer: при обработке командного файла программы Vim, 'verbose'>0
 #, c-format
 msgid "line %ld: could not source \"%s\""
 msgstr "Ошибка в строке %ld при обработке командного файла \"%s\""
 
-# #Restorer: при обработке командного файла программы Vim в режиме отладки,
-# #Restorer: 'verbose'>1
+# Restorer: при обработке командного файла программы Vim в режиме отладки,
+# Restorer: 'verbose'>1
 #, c-format
 msgid "sourcing \"%s\""
 msgstr "Обработка командного файла \"%s\""
 
-# #Restorer: при обработке командного файла программы Vim, 'verbose'>1
+# Restorer: при обработке командного файла программы Vim, 'verbose'>1
 #, c-format
 msgid "line %ld: sourcing \"%s\""
 msgstr "В строке %ld вызов командного файла \"%s\""
 
-# #Restorer: при обработке командного файла программы Vim, 'verbose'>1
+# Restorer: при обработке командного файла программы Vim, 'verbose'>1
 #, c-format
 msgid "finished sourcing %s"
 msgstr "Завершена обработка командного файла %s"
 
-# #Restorer: при обработке командного файла программы Vim в режиме отладки,
-# #Restorer: 'verbose'>1
-# #Restorer: и при обработке пользовательской функции в режиме отладки,
-# #Restorer: 'verbose'>12
+# Restorer: при обработке командного файла программы Vim в режиме отладки,
+# Restorer: 'verbose'>1
+# Restorer: и при обработке пользовательской функции в режиме отладки,
+# Restorer: 'verbose'>12
 #, c-format
 msgid "continuing in %s"
 msgstr "Начинается обработка %s"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "modeline"
 msgstr "режимной строке"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "--cmd argument"
 msgstr "аргументе командной строки --cmd"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "-c argument"
 msgstr "аргументе командной строки -c"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "environment variable"
 msgstr "переменной окружения"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "error handler"
 msgstr "результате возникшей ошибки"
 
-# #Restorer: дописывается к «Last set from» по команде `:verbose set`
+# Restorer: дописывается к «Last set from» по команде `:verbose set`
 msgid "changed window size"
 msgstr "результате изменения размера окна"
 
@@ -3552,16 +3582,16 @@ msgstr ""
 msgid " (includes previously listed match)"
 msgstr " (включает раннее показанные)"
 
-# #Restorer: выводится, например, по команде `:checkpath` и `:checkpath!`
+# Restorer: выводится, например, по команде `:checkpath` и `:checkpath!`
 msgid "--- Included files "
 msgstr "--- Подключаемые файлы"
 
-# #Restorer: дописывается к «--- Included files » только для `:checkpath`
+# Restorer: дописывается к «--- Included files » только для `:checkpath`
 msgid "not found "
 msgstr ", не найденные"
 
-# #Restorer: дописывается к «--- Included files» по `:checkpath` и
-# #Restorer: `:checkpath!`
+# Restorer: дописывается к «--- Included files» по `:checkpath` и
+# Restorer: `:checkpath!`
 msgid "in path ---\n"
 msgstr " в каталогах заданных в параметре 'path' ---\n"
 
@@ -3576,29 +3606,29 @@ msgstr " НЕ НАЙДЕН"
 msgid "Scanning included file: %s"
 msgstr "Просмотр в подключаемом файле %s"
 
-# #Restorer: выводится при verbose >= 5
+# Restorer: выводится при verbose >= 5
 #, c-format
 msgid "Searching included file %s"
 msgstr "Поиск подключаемого файла %s"
 
-# #Restorer: выводится, например, по команде `:checkpath`
+# Restorer: выводится, например, по команде `:checkpath`
 msgid "All included files were found"
 msgstr "Все подключаемые файлы были просмотрены"
 
-# #Restorer: выводится, например, по команде `:checkpath!`
+# Restorer: выводится, например, по команде `:checkpath!`
 msgid "No included files"
 msgstr "Отсутствуют подключаемые файлы"
 
-# #Restorer: заголовок окна, выводится по команде `:browse mkview`
+# Restorer: заголовок окна, выводится по команде `:browse mkview`
 msgid "Save View"
 msgstr "Сохранить файл представления"
 
-# #Restorer: заголовок окна, выводится по команде `:browse mksession`
+# Restorer: заголовок окна, выводится по команде `:browse mksession`
 msgid "Save Session"
 msgstr "Сохранить файл сеанса"
 
-# #Restorer: заголовок окна, выводится по команде `:browse mkexrc` и
-# #Restorer: `:browse mkvimrc`
+# Restorer: заголовок окна, выводится по команде `:browse mkexrc` и
+# Restorer: `:browse mkvimrc`
 msgid "Save Setup"
 msgstr "Сохранить файл инициализации"
 
@@ -3606,7 +3636,7 @@ msgstr "Сохранить файл инициализации"
 msgid "[Deleted]"
 msgstr "[удалено]"
 
-# #Restorer: например, по команде `:sign list`
+# Restorer: например, по команде `:sign list`
 # ~!: earlier
 msgid ""
 "\n"
@@ -3615,39 +3645,39 @@ msgstr ""
 "\n"
 "--- Значки ---"
 
-# #Restorer: например, по команде `:sign list`
+# Restorer: например, по команде `:sign list`
 # ~!: earlier
 #, c-format
 msgid "Signs for %s:"
 msgstr "Значки для %s:"
 
-# #Restorer: например, по команде `:sign list`
+# Restorer: например, по команде `:sign list`
 # ~!: earlier
 #, c-format
 msgid "  group=%s"
 msgstr "  группа=%s"
 
-# #Restorer: например, по команде `:sign list`
+# Restorer: например, по команде `:sign list`
 #, c-format
 msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
 msgstr "    строка=%ld;  id=%d%s;  наименование=%s приоритет=%d"
 
-# #Restorer: команда sign list {name}, icon
+# Restorer: команда sign list {name}, icon
 # ~!: earlier
 msgid " (NOT FOUND)"
 msgstr " (не найдено)"
 
-# #Restorer: команда sign list {name}, icon
+# Restorer: команда sign list {name}, icon
 # ~!: earlier
 msgid " (not supported)"
 msgstr " (не поддерживается)"
 
-# #Restorer: шаблоны %s заменяются на язык, кодировка, язык, соответственно
+# Restorer: шаблоны %s заменяются на язык, кодировка, язык, соответственно
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
 msgstr "Внимание! Не найден файл \"%s_%s.spl\" или \"%s_ascii.spl\""
 
-# #Restorer: шаблоны %s заменяются на язык, кодировка, язык, соответственно
+# Restorer: шаблоны %s заменяются на язык, кодировка, язык, соответственно
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr "Внимание! Не найден файл \"%s.%s.spl\" или \"%s.ascii.spl\""
@@ -3790,7 +3820,7 @@ msgid "Too many postponed prefixes and/or compound flags"
 msgstr ""
 "Большое количество как отложенных префиксов, так и признаков составных слов"
 
-# #Restorer: шаблон %s в SOFO заменяется или на «FROM», или на «TO»
+# Restorer: шаблон %s в SOFO заменяется или на «FROM», или на «TO»
 #, c-format
 msgid "Missing SOFO%s line in %s"
 msgstr "Не указана строка с правилом SOFO%s в файле %s"
@@ -3820,7 +3850,7 @@ msgstr "Считывание файла словаря %s..."
 msgid "line %6d, word %6ld - %s"
 msgstr "строка %6d, слово %6ld - %s"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "Duplicate word in %s line %d: %s"
 msgstr "В файле %s на строке %d повтор слова %s"
@@ -3881,7 +3911,7 @@ msgstr "В файле %s на строке %ld обнаружен нераспознанный признак %s"
 msgid "Ignored %d words with non-ASCII characters"
 msgstr "Не обработано слов с символами, не входящими в кодировку ASCII: %d"
 
-# #Restorer: с версии 8.2 подставляется наименования сжимаемого «дерева» - %s
+# Restorer: с версии 8.2 подставляется наименования сжимаемого «дерева» - %s
 #, c-format
 msgid "Compressed %s: %ld of %ld nodes; %ld (%ld%%) remaining"
 msgstr "Сжато узлов %s: %ld из %ld. Осталось %ld (%ld %%)"
@@ -3942,19 +3972,19 @@ msgstr "Отсутствуют варианты написания"
 msgid "Sorry, only %ld suggestions"
 msgstr "Вариантов написания %ld"
 
-# #Restorer: выводится, например, по команде `z=`
+# Restorer: выводится, например, по команде `z=`
 # ~!: earlier
 #, c-format
 msgid "Change \"%.*s\" to:"
 msgstr "Заменить \"%.*s\" словом "
 
-# #Restorer: выводится, например, по команде `z=`
+# Restorer: выводится, например, по команде `z=`
 # ~!: earlier
 #, c-format
 msgid " < \"%.*s\""
 msgstr " < \"%.*s\""
 
-# #Restorer: выводится, например, по команде `:syntax`
+# Restorer: выводится, например, по команде `:syntax`
 msgid "No Syntax items defined for this buffer"
 msgstr "Для текущего буфера не определены элементы синтаксиса"
 
@@ -3963,31 +3993,31 @@ msgstr ""
 "Превышено указанное в параметре 'redrawtime' время обновления экрана. "
 "Подсветка синтаксиса отключена"
 
-# #Restorer: выводится, например, по команде `:syntax iskeyword`
+# Restorer: выводится, например, по команде `:syntax iskeyword`
 msgid "syntax iskeyword not set"
 msgstr "Значение 'iskeyword', используемое при подсветке синтаксиса, не задано"
 
-# #Restorer: выводится, например, по команде `:syntax sync`
+# Restorer: выводится, например, по команде `:syntax sync`
 msgid "syncing on C-style comments"
 msgstr "Ретроспективная синхронизация по строкам комментариев в стиле языка Си"
 
-# #Restorer: выводится, например, по команде `:syntax sync`
+# Restorer: выводится, например, по команде `:syntax sync`
 msgid "no syncing"
 msgstr "Ретроспективная синхронизация подсветки текста не выполняется"
 
-# #Restorer: выводится, например, по команде `:syntax sync`
+# Restorer: выводится, например, по команде `:syntax sync`
 msgid "syncing starts at the first line"
 msgstr "Ретроспективная синхронизация подсветки выполняется с первой строки"
 
-# #Restorer: выводится, например, по команде `:syntax sync`
+# Restorer: выводится, например, по команде `:syntax sync`
 msgid "syncing starts "
 msgstr "Для ретроспективной синхронизации считано строк: "
 
-# #Restorer: дописывается к сообщениям «syncing starts» и «minimal», «maximal»
+# Restorer: дописывается к сообщениям «syncing starts» и «minimal», «maximal»
 msgid " lines before top line"
 msgstr " от верхней строки на экране"
 
-# #Restorer: выводится, например, по команде `:syntax sync`
+# Restorer: выводится, например, по команде `:syntax sync`
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -3995,10 +4025,10 @@ msgstr ""
 "\n"
 "--- Элементы синтаксиса для синхронизации подсветки ---"
 
-# #Restorer: выводится следующей строкой после сообщения
-# #Restorer: «--- Syntax sync items ---»
-# #Restorer: если задано хотя бы минимальное, максимальное, соседнее
-# #Restorer: кол-во строк
+# Restorer: выводится следующей строкой после сообщения
+# Restorer: «--- Syntax sync items ---»
+# Restorer: если задано хотя бы минимальное, максимальное, соседнее
+# Restorer: кол-во строк
 msgid ""
 "\n"
 "syncing on items"
@@ -4006,7 +4036,7 @@ msgstr ""
 "\n"
 "Ретроспективная синхронизация по элементам синтаксиса"
 
-# #Restorer: выводится, например, по команде `:syntax`
+# Restorer: выводится, например, по команде `:syntax`
 msgid ""
 "\n"
 "--- Syntax items ---"
@@ -4014,32 +4044,32 @@ msgstr ""
 "\n"
 "--- Элементы синтаксиса ---"
 
-# #Restorer: выводится, например, по команде `:syntax sync`, дописывается к
-# #Restorer: сообщению «syncing on C-style comments», «syncing on items»
+# Restorer: выводится, например, по команде `:syntax sync`, дописывается к
+# Restorer: сообщению «syncing on C-style comments», «syncing on items»
 msgid "from the first line"
 msgstr "из первой строки"
 
-# #Restorer: выводится, например, по команде `:syntax sync`, дописывается к
-# #Restorer: сообщению «syncing on C-style comments», «syncing on items»
+# Restorer: выводится, например, по команде `:syntax sync`, дописывается к
+# Restorer: сообщению «syncing on C-style comments», «syncing on items»
 msgid "minimal "
 msgstr "минимально строк: "
 
-# #Restorer: выводится, например, по команде `:syntax sync`, дописывается к
-# #Restorer: сообщению «syncing on C-style comments», «syncing on items»
+# Restorer: выводится, например, по команде `:syntax sync`, дописывается к
+# Restorer: сообщению «syncing on C-style comments», «syncing on items»
 msgid "maximal "
 msgstr "максимально строк: "
 
-# #Restorer: выводится, например, по команде `:syntax sync`, дописывается к
-# #Restorer: сообщению «syncing starts» и «syncing on C-style comments»
+# Restorer: выводится, например, по команде `:syntax sync`, дописывается к
+# Restorer: сообщению «syncing starts» и «syncing on C-style comments»
 msgid "; match "
 msgstr "; учитывается соседних строк: "
 
-# #Restorer: объединяется с сообщением «; match» и дописывается к
-# #Restorer: сообщению «syncing starts» и «syncing on C-style comments»
+# Restorer: объединяется с сообщением «; match» и дописывается к
+# Restorer: сообщению «syncing starts» и «syncing on C-style comments»
 msgid " line breaks"
 msgstr " "
 
-# #Restorer: выводится, например, по команде `:syntime report`
+# Restorer: выводится, например, по команде `:syntime report`
 msgid ""
 "  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
 msgstr ""
@@ -4049,12 +4079,12 @@ msgstr ""
 msgid "File \"%s\" does not exist"
 msgstr "Не существует файл индексов \"%s\""
 
-# #Restorer: шаблон %s заменяется на «or more», если есть другие файлы индексов
+# Restorer: шаблон %s заменяется на «or more», если есть другие файлы индексов
 #, c-format
 msgid "tag %d of %d%s"
 msgstr "индексов %d из %d%s"
 
-# #Restorer: дописывается к сообщению «tag %d of %d%s», при условии, что
+# Restorer: дописывается к сообщению «tag %d of %d%s», при условии, что
 # ~!: earlier
 msgid " or more"
 msgstr " и более"
@@ -4062,16 +4092,16 @@ msgstr " и более"
 msgid "  Using tag with different case!"
 msgstr " В наименование индекса символы с различающимся регистром!"
 
-# #Restorer: выводится, например, по команде `:tselect`
+# Restorer: выводится, например, по команде `:tselect`
 msgid "  # pri kind tag"
 msgstr "  № Пр. Тип  Индекс"
 
-# #Restorer: дописывается к сообщению «# pri kind tag»
+# Restorer: дописывается к сообщению «# pri kind tag»
 # ~!: earlier
 msgid "file\n"
 msgstr "Файл\n"
 
-# #Restorer: выводится, например, по команде `:tags`
+# Restorer: выводится, например, по команде `:tags`
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -4079,7 +4109,7 @@ msgstr ""
 "\n"
 " №  На индекс      Из строки   В файле или тексте"
 
-# #Restorer: выводится при 'verbose'>=5
+# Restorer: выводится при 'verbose'>=5
 msgid "Ignoring long line in tags file"
 msgstr ""
 "Строка в файле индексов превышает допустимую длину. Обработка не выполнена"
@@ -4089,12 +4119,12 @@ msgstr ""
 msgid "Before byte %ld"
 msgstr "Перед байтом %ld"
 
-# #Restorer: выводится при 'verbose'>=5
+# Restorer: выводится при 'verbose'>=5
 #, c-format
 msgid "Searching tags file %s"
 msgstr "Поиск в файле индексов %s"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "Duplicate field name: %s"
 msgstr "Поле с таким наименованием уже существует %s"
@@ -4106,7 +4136,7 @@ msgstr "' терминал не распознан. Доступны следующие встроенные терминалы:"
 msgid "defaulting to '"
 msgstr "по умолчанию '"
 
-# #Restorer: выводится, например, по команде `:set termcap`
+# Restorer: выводится, например, по команде `:set termcap`
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -4114,31 +4144,31 @@ msgstr ""
 "\n"
 "--- Клавиши, доступные в терминале ---"
 
-# #Restorer: диалог при остановке работы команды, программы в окне терминала
+# Restorer: диалог при остановке работы команды, программы в окне терминала
 #, c-format
 msgid "Kill job in \"%s\"?"
 msgstr "Завершить задание в \"%s\"?"
 
-# #Restorer: выводится в строке статуса и заголовке окна
+# Restorer: выводится в строке статуса и заголовке окна
 # ~!: earlier
 msgid "Terminal"
 msgstr "Терминал"
 
-# #Restorer: выводится в строке статуса и заголовке окна
+# Restorer: выводится в строке статуса и заголовке окна
 msgid "Terminal-finished"
 msgstr "Терминал; завершено"
 
-# #Restorer: например, при подключении к терминалу по команде `:term NONE`
-# #Restorer: выводится в строке статуса и заголовке окна
+# Restorer: например, при подключении к терминалу по команде `:term NONE`
+# Restorer: выводится в строке статуса и заголовке окна
 # ~!: earlier
 msgid "active"
 msgstr "активирован"
 
-# #Restorer: выводится в строке статуса и заголовке окна
+# Restorer: выводится в строке статуса и заголовке окна
 msgid "running"
 msgstr "работает"
 
-# #Restorer: выводится в строке статуса и заголовке окна
+# Restorer: выводится в строке статуса и заголовке окна
 # ~!: earlier
 msgid "finished"
 msgstr "завершено"
@@ -4146,15 +4176,15 @@ msgstr "завершено"
 msgid "(Invalid)"
 msgstr "(недопустимое значение)"
 
-# #Restorer: в переводе формат был
-# #Restorer: "число месяц год день недели час:минуты:секунды"
-# #Restorer: изменил формат на "день недели число месяц год час:минуты:секунды"
+# Restorer: в переводе формат был
+# Restorer: "число месяц год день недели час:минуты:секунды"
+# Restorer: изменил формат на "день недели число месяц год час:минуты:секунды"
 #, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
 msgstr "%a %d %b %Y %H:%M:%S"
 
-# #Restorer: добавляется к сообщению в командной строке при, например,
-# #Restorer: отмене или возврате изменений или таблице undolist
+# Restorer: добавляется к сообщению в командной строке при, например,
+# Restorer: отмене или возврате изменений или таблице undolist
 # ~!: earlier
 #, c-format
 msgid "%ld second ago"
@@ -4163,7 +4193,7 @@ msgstr[0] "%ld секунду назад"
 msgstr[1] "%ld секунды назад"
 msgstr[2] "%ld секунд назад"
 
-# #Restorer: я так понимаю, что это только для BeOS и иже с ней
+# Restorer: я так понимаю, что это только для BeOS и иже с ней
 msgid "new shell started\n"
 msgstr "Запуск командной оболочки\n"
 
@@ -4174,56 +4204,56 @@ msgstr ""
 msgid "No undo possible; continue anyway"
 msgstr "Отмена изменений недоступна. Продолжить?"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 msgid "Cannot write undo file in any directory in 'undodir'"
 msgstr ""
 "Не удалось записать файл изменений ни в один из каталогов из параметра "
 "'udodir'"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"
 msgstr "Не удалось считать и записать файл изменений %s"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 #, c-format
 msgid "Will not overwrite, this is not an undo file: %s"
 msgstr "Не удалось записать файл. Файл не является файлом изменений %s"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 msgid "Skipping undo file write, nothing to undo"
 msgstr "Изменения отсутствуют. Запись файла изменений не выполнена"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 #, c-format
 msgid "Writing undo file: %s"
 msgstr "Запись файла изменений %s"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 #, c-format
 msgid "Not reading undo file, owner differs: %s"
 msgstr ""
 "Владельцем файла является другой пользователь. Не удалось считать файл "
 "изменений %s"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 #, c-format
 msgid "Reading undo file: %s"
 msgstr "Считывание файла изменений %s"
 
-# #Restorer: выводится, например, для команд `:wundo` и `:rundo`
-# #Restorer: при 'verbose'>0
+# Restorer: выводится, например, для команд `:wundo` и `:rundo`
+# Restorer: при 'verbose'>0
 msgid "File contents changed, cannot use undo info"
 msgstr "Содержимое файла было изменено. Информация об изменениях неприменима"
 
-# #Restorer: выводится, например, при исполнении команд `:wundo` и `:rundo`
+# Restorer: выводится, например, при исполнении команд `:wundo` и `:rundo`
 #, c-format
 msgid "Finished reading undo file %s"
 msgstr "Завершено считывание файла изменений %s"
@@ -4234,65 +4264,65 @@ msgstr "Достигнута первая запись изменений"
 msgid "Already at newest change"
 msgstr "Достигнута последняя запись изменений"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "more line"
 msgstr "строка возвращена"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "more lines"
 msgstr "строки возвращено"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "line less"
 msgstr "строка убрана"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "fewer lines"
 msgstr "строки убрано"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "change"
 msgstr "возвращено или убрано"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: из-за того, что сначала выводится число, надо как-то извернуться
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: из-за того, что сначала выводится число, надо как-то извернуться
 msgid "changes"
 msgstr "возвращено или убрано"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: выводится как «1 строка убрана; изменение № 75 10 с назад» или
-# #Restorer: «25 возвращено или убрано; изменение № 750 98 с назад» или
-# #Restorer: «4 строки возвращено; изменение № 175 23:33:07»
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: выводится как «1 строка убрана; изменение № 75 10 с назад» или
+# Restorer: «25 возвращено или убрано; изменение № 750 98 с назад» или
+# Restorer: «4 строки возвращено; изменение № 175 23:33:07»
 #, c-format
 msgid "%ld %s; %s #%ld  %s"
 msgstr "%ld %s; %s № %ld  %s"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: по большому счёту это не имеет смысла, так как показывает какой
-# #Restorer: абсолютный номер изменения был использован, но он не всегда точен
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: по большому счёту это не имеет смысла, так как показывает какой
+# Restorer: абсолютный номер изменения был использован, но он не всегда точен
 msgid "before"
 msgstr "изменение"
 
-# #Restorer: выводится в командной строке при отмене или возврате изменений
-# #Restorer: по большому счёту это не имеет смысла, так как показывает какой
-# #Restorer: абсолютный номер изменения был использован, но он не всегда точен
+# Restorer: выводится в командной строке при отмене или возврате изменений
+# Restorer: по большому счёту это не имеет смысла, так как показывает какой
+# Restorer: абсолютный номер изменения был использован, но он не всегда точен
 msgid "after"
 msgstr "изменение"
 
-# #Restorer: выводится по команде `:undolist` при пустом перечне изменений
+# Restorer: выводится по команде `:undolist` при пустом перечне изменений
 msgid "Nothing to undo"
 msgstr "Изменения отсутствуют"
 
-# #Restorer: заголовок таблицы по команде `:undolist`
+# Restorer: заголовок таблицы по команде `:undolist`
 msgid "number changes  when               saved"
 msgstr "№ абс.  № отн.   Когда               Сохранено"
 
-# #Restorer: выводится по команде `:command`
+# Restorer: выводится по команде `:command`
 msgid ""
 "\n"
 "    Name              Args Address Complete    Definition"
@@ -4300,37 +4330,37 @@ msgstr ""
 "\n"
 "   Команда      Параметры  Действует Подстановка      Что делает"
 
-# #Restorer: выводится по команде `:command`
+# Restorer: выводится по команде `:command`
 msgid "No user-defined commands found"
 msgstr "Созданные пользователем команды не найдены"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "W22: Text found after :endfunction: %s"
 msgstr "W22: Посторонний текст после команды :endfunction %s"
 
-# #Restorer: выводится при 'verbose'>=12
-# #Restorer: шаблон %s заменяется наименованием функции
+# Restorer: выводится при 'verbose'>=12
+# Restorer: шаблон %s заменяется наименованием функции
 # ~!: earlier
 #, c-format
 msgid "calling %s"
 msgstr "вызов %s"
 
-# #Restorer: выводится при 'verbose'>=12
-# #Restorer: шаблон %s заменяется наименованием функции
+# Restorer: выводится при 'verbose'>=12
+# Restorer: шаблон %s заменяется наименованием функции
 # ~!: earlier
 #, c-format
 msgid "%s aborted"
 msgstr "%s прервана"
 
-# #Restorer: выводится при 'verbose'>=12
-# #Restorer: шаблон %s заменяется наименованием функции, #%ld --- значением
+# Restorer: выводится при 'verbose'>=12
+# Restorer: шаблон %s заменяется наименованием функции, #%ld --- значением
 #, c-format
 msgid "%s returning #%ld"
 msgstr "%s вернула #%ld"
 
-# #Restorer: выводится при 'verbose'>=12
-# #Restorer: шаблон %s заменяется наименованием функции, %s --- значением
+# Restorer: выводится при 'verbose'>=12
+# Restorer: шаблон %s заменяется наименованием функции, %s --- значением
 #, c-format
 msgid "%s returning %s"
 msgstr "%s вернула %s"
@@ -4339,10 +4369,10 @@ msgstr "%s вернула %s"
 msgid "Function %s%s%s does not need compiling"
 msgstr "Не требуется компиляция функции %s%s%s"
 
-# #Restorer: первый %s заменяется на VIM_VERSION_LONG_ONLY (только наименование
-# #Restorer: программы), второй %s - VIM_VERSION_DATE_ONLY
-# #Restorer: (дата первого выпуска), третий %s - датой текущей сборки
-# #Restorer: выводится по команде vim.exe -h или `:version`
+# Restorer: первый %s заменяется на VIM_VERSION_LONG_ONLY (только наименование
+# Restorer: программы), второй %s - VIM_VERSION_DATE_ONLY
+# Restorer: (дата первого выпуска), третий %s - датой текущей сборки
+# Restorer: выводится по команде vim.exe -h или `:version`
 #, c-format
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, сборка от %s)"
@@ -4354,7 +4384,7 @@ msgstr ""
 "\n"
 "Версия для MS Windows ARM64 с графическим и консольным интерфейсом"
 
-# #Restorer: см. VIMDLL в Make_mvc.mak
+# Restorer: см. VIMDLL в Make_mvc.mak
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
@@ -4362,7 +4392,7 @@ msgstr ""
 "\n"
 "Версия для MS Windows 64-разрядная с графическим и консольным интерфейсом"
 
-# #Restorer: см. VIMDLL в Make_mvc.mak
+# Restorer: см. VIMDLL в Make_mvc.mak
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
@@ -4431,13 +4461,12 @@ msgstr ""
 "\n"
 "Версия для macOS без системы Darwin"
 
-# ~!: earlier
 msgid ""
 "\n"
-"OpenVMS version"
+"OpenVMS (build) arch, version"
 msgstr ""
 "\n"
-"Версия для OpenVMS"
+"Версия для OpenVMS (build) arch"
 
 msgid ""
 "\n"
@@ -4457,7 +4486,7 @@ msgstr ""
 msgid "Modified by "
 msgstr "С изменениями, внесёнными "
 
-# #Restorer: убрал пробел, т. к. будет добавлен вместо «by»
+# Restorer: убрал пробел, т. к. будет добавлен вместо «by»
 msgid ""
 "\n"
 "Compiled "
@@ -4465,7 +4494,7 @@ msgstr ""
 "\n"
 "Скомпилирована"
 
-# #Restorer: дописывается к сообщению «Compiled »
+# Restorer: дописывается к сообщению «Compiled »
 msgid "by "
 msgstr " "
 
@@ -4476,7 +4505,7 @@ msgstr ""
 "\n"
 "Максимальная версия "
 
-# #Restorer: После объединения Big и Normal версий
+# Restorer: После объединения Big и Normal версий
 msgid ""
 "\n"
 "Normal version "
@@ -4484,7 +4513,7 @@ msgstr ""
 "\n"
 "Расширенная версия "
 
-# #Restorer: После объединения Tiny и Small версий
+# Restorer: После объединения Tiny и Small версий
 msgid ""
 "\n"
 "Tiny version "
@@ -4527,10 +4556,10 @@ msgstr " В этой версии включены (+) и отключены (-) следующие компоненты:\n"
 
 # ~!: earlier
 msgid "   system vimrc file: \""
-msgstr "          общесистемный файл vimrc: \""
+msgstr "         общесистемный файл vimrc: \""
 
 msgid "     user vimrc file: \""
-msgstr "   1-й пользовательский файл vimrc: \""
+msgstr "  1-й пользовательский файл vimrc: \""
 
 msgid " 2nd user vimrc file: \""
 msgstr "  2-й пользовательский файл vimrc: \""
@@ -4597,10 +4626,10 @@ msgstr "VIM — Vi IMproved (улучшенный Vi)"
 msgid "version "
 msgstr "версия "
 
-# #Restorer: фамилию написал как в ru.wikipedia.org. Посмотрел. Согласно
-# #Restorer: книге "Имена собственные на стыке языков и культур" так и пишется.
-# #Restorer: фамилия переводится на русский как «Мельников»
-# #Restorer: (см. www.moolenaar.net)
+# Restorer: фамилию написал как в ru.wikipedia.org. Посмотрел. Согласно
+# Restorer: книге "Имена собственные на стыке языков и культур" так и пишется.
+# Restorer: фамилия переводится на русский как «Мельников»
+# Restorer: (см. www.moolenaar.net)
 msgid "by Bram Moolenaar et al."
 msgstr "Брам Моленар и другие"
 
@@ -4611,26 +4640,26 @@ msgstr ""
 msgid "Help poor children in Uganda!"
 msgstr "Несчастным детям Уганды требуется ваша помощь!"
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help iccf<Enter>       for information "
 msgstr ""
 "наберите :help iccf<ENTER>              чтобы узнать об этом подробнее       "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
 "наберите :q<ENTER>                      чтобы завершить работу с программой  "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
 "наберите :help<ENTER> или нажмите <F1>  чтобы ознакомиться с документацией   "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help version9<Enter>   for version info"
 msgstr ""
 "наберите :help version9<ENTER>          чтобы узнать подробнее об этой версии"
@@ -4638,47 +4667,47 @@ msgstr ""
 msgid "Running in Vi compatible mode"
 msgstr "Программа работает в режиме совместимости с редактором Vi"
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
 "наберите :set nocp<ENTER>               чтобы активировать возможности Vim   "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
 "наберите :help cp-default<ENTER>        чтобы узнать об этом подробнее       "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
 "меню Справка->Благотворительность       чтобы узнать об этом подробнее       "
 
-# #Restorer: выводится только в ГИП при запуске gVim Easy
+# Restorer: выводится только в ГИП при запуске gVim Easy
 msgid "Running modeless, typed text is inserted"
 msgstr ""
 "Упрощённый вариант. Всё что набирается, считается текстом и заносится в буфер"
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
 "меню Правка->Общие параметры->Режим вставки    чтобы переключать между       "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
 msgid "                              for two modes      "
 msgstr ""
 "                                             режимом вставки в режимом команд"
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
 "меню Правка->Общие параметры->Совместимость с Vi   чтобы активировать        "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
 msgid "                              for Vim defaults   "
 msgstr ""
 "                                                   возможности редактора Vim "
@@ -4689,57 +4718,57 @@ msgstr "Поддержите разработку программы «Редактор Vim»!"
 msgid "Become a registered Vim user!"
 msgstr "Станьте зарегистрированным пользователем программы «Редактор Vim»!"
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 "наберите :help sponsor<ENTER>           чтобы узнать об этом подробнее       "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help register<Enter>   for information "
 msgstr ""
 "наберите :help register<ENTER>          чтобы узнать об этом подробнее       "
 
-# #Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# #Restorer: выравнивается по самому длинному подобному сообщению
+# Restorer: пробелы не убирать, сделано для выравнивания сообщений
+# Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr ""
 "меню Справка->Содействие и регистрация  чтобы узнать об этом подробнее       "
 
-# #Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
-# #Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
-# #Restorer: E1016: Для области действия «глобальная» не может быть объявлена
-# #Restorer: переменная %s
+# Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
+# Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
+# Restorer: E1016: Для области действия «глобальная» не может быть объявлена
+# Restorer: переменная %s
 msgid "global"
 msgstr "«общий»"
 
-# #Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
-# #Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так:
-# #Restorer: E1016: Для области действия «буфер» не может быть объявлена
-# #Restorer: переменная %s
+# Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
+# Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так:
+# Restorer: E1016: Для области действия «буфер» не может быть объявлена
+# Restorer: переменная %s
 msgid "buffer"
 msgstr "«буфер»"
 
-# #Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
-# #Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
-# #Restorer: E1016: Для области действия «окно» не может быть объявлена
-# #Restorer: переменная %s
+# Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
+# Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
+# Restorer: E1016: Для области действия «окно» не может быть объявлена
+# Restorer: переменная %s
 msgid "window"
 msgstr "«окно»"
 
-# #Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
-# #Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
-# #Restorer: E1016: Для области действия «вкладка» не может быть объявлена
-# #Restorer: переменная %s
+# Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
+# Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
+# Restorer: E1016: Для области действия «вкладка» не может быть объявлена
+# Restorer: переменная %s
 msgid "tab"
 msgstr "«вкладка»"
 
-# #Restorer: дописывается в сообщение «E723: Missing end of Dictionary '}': %s»
+# Restorer: дописывается в сообщение «E723: Missing end of Dictionary '}': %s»
 msgid "[end of lines]"
 msgstr "и обнаружено окончание строки"
 
-# #Restorer: в файле viminfo
+# Restorer: в файле viminfo
 # ~!: earlier
 msgid ""
 "\n"
@@ -4748,7 +4777,7 @@ msgstr ""
 "\n"
 "# Перечень буферов:\n"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 #, c-format
 msgid ""
 "\n"
@@ -4757,23 +4786,23 @@ msgstr ""
 "\n"
 "# Журнал %s (от новых к старым):\n"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 msgid "Command Line"
 msgstr "командной строки"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 msgid "Search String"
 msgstr "поисковой строки"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 msgid "Expression"
 msgstr "вычислений"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 msgid "Input Line"
 msgstr "строки ввода"
 
-# #Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
+# Restorer: запись в viminfo-файл журнала (history) команд, поиска и проч.
 msgid "Debug Line"
 msgstr "команд диагностики"
 
@@ -4784,13 +4813,13 @@ msgstr ""
 "\n"
 "# Строки, начинающиеся с вертикальной линии, копируются как есть\n"
 
-# #Restorer: первый %s заменяется на E575:, второй %s
-# #Restorer: на «Illegal starting char»
+# Restorer: первый %s заменяется на E575:, второй %s
+# Restorer: на «Illegal starting char»
 #, c-format
 msgid "%sviminfo: %s in line: "
 msgstr "%s%s в viminfo-файле на строке "
 
-# #Restorer: в viminfo-файле
+# Restorer: в viminfo-файле
 msgid ""
 "\n"
 "# global variables:\n"
@@ -4798,7 +4827,7 @@ msgstr ""
 "\n"
 "# Общие переменные:\n"
 
-# #Restorer: запись в viminfo-файле
+# Restorer: запись в viminfo-файле
 msgid ""
 "\n"
 "# Last Substitute String:\n"
@@ -4808,7 +4837,7 @@ msgstr ""
 "# Строка замены, использованная в предыдущий раз:\n"
 "$"
 
-# #Restorer: шаблоны %s заменяются на слово «Substitute »
+# Restorer: шаблоны %s заменяются на слово «Substitute »
 #, c-format
 msgid ""
 "\n"
@@ -4819,11 +4848,11 @@ msgstr ""
 "# Поисковый шаблон%s, использованный в предыдущий раз:\n"
 "~"
 
-# #Restorer: подставляется в «# Last %sSearch Pattern:»
+# Restorer: подставляется в «# Last %sSearch Pattern:»
 msgid "Substitute "
 msgstr " замены"
 
-# #Restorer: в viminfo-файле
+# Restorer: в viminfo-файле
 # ~!: earlier
 msgid ""
 "\n"
@@ -4832,7 +4861,7 @@ msgstr ""
 "\n"
 "# Регистры:\n"
 
-# #Restorer: в viminfo-файле
+# Restorer: в viminfo-файле
 msgid ""
 "\n"
 "# History of marks within files (newest to oldest):\n"
@@ -4840,7 +4869,7 @@ msgstr ""
 "\n"
 "# Журнал локальных закладок (от новых к старым):\n"
 
-# #Restorer: в viminfo-файле
+# Restorer: в viminfo-файле
 msgid ""
 "\n"
 "# File marks:\n"
@@ -4848,7 +4877,7 @@ msgstr ""
 "\n"
 "# Журнал общих закладок:\n"
 
-# #Restorer: в viminfo-файле
+# Restorer: в viminfo-файле
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -4868,34 +4897,34 @@ msgstr ""
 "# Его можно (осторожно!) редактировать.\n"
 "\n"
 
-# #Restorer: пишется в viminfo-файл
+# Restorer: пишется в viminfo-файл
 msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Значение параметра 'encoding' в момент записи файла\n"
 
-# #Restorer: отображается при 'verbose'>0
-# #Restorer: первый %s наименование файла, остальные на «info», «marks»,
-# #Restorer:  «oldfiles», «FAILED»
+# Restorer: отображается при 'verbose'>0
+# Restorer: первый %s наименование файла, остальные на «info», «marks»,
+# Restorer:  «oldfiles», «FAILED»
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s%s"
 msgstr "Считывание из viminfo-файла \"%s\":%s%s%s%s"
 
-# #Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
+# Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
 msgid " info"
 msgstr " общей информации;"
 
-# #Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
+# Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
 msgid " marks"
 msgstr " данных о закладках;"
 
-# #Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
+# Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
 msgid " oldfiles"
 msgstr " данных о ранее редактируемых файлах"
 
-# #Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
+# Restorer: подставляется в сообщение «Reading viminfo file \"%s\"%s%s%s»
 msgid " FAILED"
 msgstr " НЕ ВЫПОЛНЕНО"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Запись viminfo-файла \"%s\""
@@ -4910,7 +4939,7 @@ msgstr "восстановление подключения к Wayland серверу %s"
 msgid "failed restoring, lost connection to Wayland display"
 msgstr "сбой восстановления, потеряно подключение к Wayland серверу"
 
-# #Restorer: выводится при исполнении команд `CTRL+W SHIFT+T` или `CTRL+W o`
+# Restorer: выводится при исполнении команд `CTRL+W SHIFT+T` или `CTRL+W o`
 msgid "Already only one window"
 msgstr "В рабочей области присутствует только одно окно"
 
@@ -4935,13 +4964,13 @@ msgstr "Открыть в работающей программе Vim - "
 msgid "Edits the selected file(s) with Vim"
 msgstr "Открыть отмеченные файлы в программе Vim"
 
-# #Restorer: текст окна сообщений
+# Restorer: текст окна сообщений
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
 "Сбой при создании процесса. Проверьте, что программа gVim установлена в "
 "соответствующий каталог"
 
-# #Restorer: заголовок окна сообщения
+# Restorer: заголовок окна сообщения
 msgid "gvimext.dll error"
 msgstr "Ошибка в gvimext.dll"
 
@@ -5049,7 +5078,7 @@ msgstr ""
 msgid "E39: Number expected"
 msgstr "E39: В качестве аргумента должно быть указано число"
 
-# #Restorer: а также для команд `:cfile` и т. п.
+# Restorer: а также для команд `:cfile` и т. п.
 #, c-format
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: Не удалось открыть файл со списком результатов %s"
@@ -5597,7 +5626,7 @@ msgid "E189: \"%s\" exists (add ! to override)"
 msgstr ""
 "E189: Файл \"%s\" уже существует (чтобы заменить, укажите модификатор !)"
 
-# #Restorer: см. E212
+# Restorer: см. E212
 #, c-format
 msgid "E190: Cannot open \"%s\" for writing"
 msgstr "E190: Не удалось открыть на запись файл \"%s\""
@@ -5822,7 +5851,7 @@ msgstr "E249: Действия автокоманд вызвали изменение расположения окон"
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
 msgstr "E250: В наборе шрифтов %s отсутствуют шрифты со следующими символами:"
 
-# #Restorer: отображается только при специфических условиях
+# Restorer: отображается только при специфических условиях
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr ""
 "E251: Удалено зарегистрированное программой Vim свойство недопустимого "
@@ -5853,11 +5882,11 @@ msgstr "E258: Не удалось отправить сообщение клиенту"
 msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: В базах данных cscope по запросу %s не найден %s"
 
-# #Restorer: выводится при значении 'verbose'>0
+# Restorer: выводится при значении 'verbose'>0
 msgid "E260: Missing name after ->"
 msgstr "E260: Не указан вызываемый метод в записи ->"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "E261: Cscope connection %s not found"
 msgstr "E261: Отсутствует подключение к базе данных cscope номер %s"
@@ -5908,7 +5937,7 @@ msgstr "E272: Необработанное исключение"
 msgid "E273: Unknown longjmp status %d"
 msgstr "E273: Неопределённое состояние %d"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 msgid "E274: No white space allowed before parenthesis"
 msgstr "E274: Не допускается пробельный символ перед круглыми скобками"
 
@@ -5930,7 +5959,7 @@ msgstr "E279: Аргумент ++shell не поддерживается в данной операционной системе"
 msgid "E282: Cannot read from \"%s\""
 msgstr "E282: Не удалось считать файл \"%s\""
 
-# #Restorer: выводится по команде `:marks`
+# Restorer: выводится по команде `:marks`
 #, c-format
 msgid "E283: No marks matching \"%s\""
 msgstr "E283: Отсутствуют закладки, совпадающие с \"%s\""
@@ -5942,7 +5971,7 @@ msgstr "E284: Не удалось назначить значения контекста ввода"
 msgid "E285: Failed to create input context"
 msgstr "E285: Ошибка при создании контекста ввода"
 
-# #Restorer: выводится при значении параметра 'verbose'>0
+# Restorer: выводится при значении параметра 'verbose'>0
 msgid "E286: Failed to open input method"
 msgstr "E286: Ошибка при запуске службы метода ввода"
 
@@ -5954,12 +5983,12 @@ msgstr ""
 msgid "E288: Input method doesn't support any style"
 msgstr "E288: Служба метода ввода не поддерживает стили отображения"
 
-# #Restorer: выводится только при значении параметра 'verbose'>0
+# Restorer: выводится только при значении параметра 'verbose'>0
 msgid "E289: Input method doesn't support my preedit type"
 msgstr ""
 "E289: Служба метода ввода не поддерживает назначенный стиль отображения"
 
-# #Restorer: выводится для функции matchaddpos()
+# Restorer: выводится для функции matchaddpos()
 msgid "E290: List or number required"
 msgstr "E290: Значением аргумента {поз} должно быть число либо перечень чисел"
 
@@ -6211,7 +6240,7 @@ msgstr "E368: Полученный через функцию libcall() сигнал SIG%s"
 msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: Недопустимый метасимвол в классе факультативных элементов %s%%[]"
 
-# #Restorer: Check! Is error number duble!
+# Restorer: Check! Is error number duble!
 #, c-format
 msgid "E370: Could not load library %s: %s"
 msgstr "E370: Не удалось подключить файл библиотеки %s, ошибка %s"
@@ -6491,7 +6520,7 @@ msgstr "E447: Не найден в предопределённых каталогах файл \"%s\""
 msgid "E448: Could not load library function %s"
 msgstr "E448: Файл библиотеки не подключен. Не удалось вызвать функцию %s"
 
-# #Restorer: после этого сообщения дописывается : и потом само выражение
+# Restorer: после этого сообщения дописывается : и потом само выражение
 msgid "E449: Invalid expression received"
 msgstr "E449: Не удалось вычислить полученное выражение"
 
@@ -6553,7 +6582,7 @@ msgid "E463: Region is guarded, cannot modify"
 msgstr ""
 "E463: В среде разработки NetBeans данная область помечена как неизменяемая"
 
-# #Restorer: после сообщения дописывается символ : и ошибочная команда
+# Restorer: после сообщения дописывается символ : и ошибочная команда
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Не распознана созданная пользователем команда"
 
@@ -6646,7 +6675,7 @@ msgstr "E484: Не удалось открыть файл %s"
 msgid "E485: Can't read file %s"
 msgstr "E485: Не удалось считать файл %s"
 
-# #Restorer: выводится при автоподстановке
+# Restorer: выводится при автоподстановке
 msgid "E486: Pattern not found"
 msgstr "E486: Отсутствуют варианты для подстановки"
 
@@ -6680,11 +6709,11 @@ msgstr "E490: Не обнаружено блоков со свёрнутым текстом"
 msgid "E491: JSON decode error at '%s'"
 msgstr "E491: Ошибка при декодировании '%s'"
 
-# #Restorer: после сообщения дописывается символ : и ошибочная команда
+# Restorer: после сообщения дописывается символ : и ошибочная команда
 msgid "E492: Not an editor command"
 msgstr "E492: Не удалось распознать команду"
 
-# #Restorer: выводится только при обработке командных файлов и в Ex-режиме
+# Restorer: выводится только при обработке командных файлов и в Ex-режиме
 msgid "E493: Backwards range given"
 msgstr "E493: Диапазон указан в обратной последовательности"
 
@@ -6719,7 +6748,7 @@ msgstr "E500: В результате замещения спецсимвола была получена пустая строка"
 msgid "E501: At end-of-file"
 msgstr "E501: Достигнуто окончание файла"
 
-# #Restorer: ошибка E503:
+# Restorer: ошибка E503:
 # ~!: earlier
 msgid "is not a file or writable device"
 msgstr "не является файлом или доступным на запись устройством"
@@ -6731,12 +6760,12 @@ msgstr "E503: \"%s\" не является файлом или доступным на запись устройством"
 msgid "E503: Coffee is currently not available"
 msgstr "E503: Кофе ещё не готов"
 
-# #Restorer: ошибка E504:
+# Restorer: ошибка E504:
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr ""
 "файл только для чтения (чтобы записать, уберите флаг 'W' в 'cpoptions')"
 
-# #Restorer: ошибка E505:
+# Restorer: ошибка E505:
 msgid "is read-only (add ! to override)"
 msgstr "файл только для чтения (чтобы записать, укажите модификатор !)"
 
@@ -6801,11 +6830,11 @@ msgstr "E516: Не удалось удалить буферы из списка буферов"
 msgid "E517: No buffers were wiped out"
 msgstr "E517: Не удалось удалить буферы из памяти и списка буферов"
 
-# #Restorer: `E518: Не распознан параметр: <указанный параметр>`
+# Restorer: `E518: Не распознан параметр: <указанный параметр>`
 msgid "E518: Unknown option"
 msgstr "E518: Не распознан параметр"
 
-# #Restorer: `E519: Не поддерживается параметр: <указанный параметр>`
+# Restorer: `E519: Не поддерживается параметр: <указанный параметр>`
 msgid "E519: Option not supported"
 msgstr "E519: Не поддерживается параметр"
 
@@ -6819,7 +6848,7 @@ msgstr "E521: Требуется числовое значение сразу после знака равенства"
 msgid "E521: Number required: &%s = '%s'"
 msgstr "E521: Требуется задать числовое значение &%s = '%s'"
 
-# #Restorer: `E522: В базе termcap не обнаружен параметр: <указанный параметр>`
+# Restorer: `E522: В базе termcap не обнаружен параметр: <указанный параметр>`
 msgid "E522: Not found in termcap"
 msgstr "E522: В базе termcap отсутствует запись"
 
@@ -6877,7 +6906,7 @@ msgstr ""
 msgid "E538: Pattern found in every line: %s"
 msgstr "E538: Во всех строках найдены совпадения с шаблоном %s"
 
-# #Restorer: `E539: Недопустимый символ <%s>: <указанный параметр>`
+# Restorer: `E539: Недопустимый символ <%s>: <указанный параметр>`
 # ~!: earlier
 #, c-format
 msgid "E539: Illegal character <%s>"
@@ -6952,12 +6981,12 @@ msgstr "E561: Не распознан запрос к базе данных cscope"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Образец: cstag <индекс>"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "E563: stat(%s) error: %d"
 msgstr "E563: Системная функция stat() для файла %s вернула код ошибки %d"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "E564: %s is not a directory or a valid cscope database"
 msgstr ""
@@ -6972,7 +7001,7 @@ msgstr "E566: Не удалось создать канал подключения к программе cscope"
 msgid "E567: No cscope connections"
 msgstr "E567: Отсутствует подключение к базе данных cscope"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Указанная база данных cscope уже подключена"
 
@@ -6993,17 +7022,17 @@ msgstr "E573: Недопустимый идентификатор сервера %s"
 msgid "E574: Unknown register type %d"
 msgstr "E574: В регистре нераспознанный тип данных %d"
 
-# #Restorer: ошибка E575, подставляется в сообщение «%sviminfo: %s in line:»
+# Restorer: ошибка E575, подставляется в сообщение «%sviminfo: %s in line:»
 # ~!: earlier
 msgid "Illegal starting char"
 msgstr "недопустимый начальный символ"
 
-# #Restorer: выводится как ошибка E576:
+# Restorer: выводится как ошибка E576:
 msgid "Missing '>'"
 msgstr ""
 "отсутствует символ закрывающей угловой скобки в записи журнала закладок"
 
-# #Restorer: выводится как ошибка E577:
+# Restorer: выводится как ошибка E577:
 msgid "Illegal register name"
 msgstr "недопустимое наименование регистра"
 
@@ -7117,7 +7146,7 @@ msgstr ""
 msgid "E609: Cscope error: %s"
 msgstr "E609: Программа cscope вернула ошибку %s"
 
-# #Restorer: выводится по команде `:argdelete`
+# Restorer: выводится по команде `:argdelete`
 msgid "E610: No argument to delete"
 msgstr "E610: Нет соответствующих файлов для удаления из списка аргументов"
 
@@ -7135,8 +7164,8 @@ msgstr "E613: Не распознан шрифт в параметре 'printfont' %s"
 msgid "E616: Object required for argument %d"
 msgstr "E616: Тип данных аргумента номер %d должен быть Object"
 
-# #Restorer: должен, по идее, отображаться также
-# #Restorer: `сообщение: <указанный параметр>`
+# Restorer: должен, по идее, отображаться также
+# Restorer: `сообщение: <указанный параметр>`
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: В графическом интерфейсе GTK не может быть изменён параметр"
 
@@ -7168,12 +7197,12 @@ msgstr "E623: Не удалось создание нового процесса программы cscope"
 msgid "E624: Can't open file \"%s\""
 msgstr "E624: Не удалось открыть файл \"%s\""
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 #, c-format
 msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: Не удалось открыть базу данных программы cscope %s"
 
-# #Restorer: отображается при установленном параметре 'cscopeverbose'
+# Restorer: отображается при установленном параметре 'cscopeverbose'
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: Не удалось получить информацию о базе данных программы cscope"
 
@@ -7262,11 +7291,11 @@ msgstr "E654: Не указан разделитель после поискового запроса %s"
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Циклические переходы по символическим ссылкам"
 
-# #Restorer: ошибка E656:
+# Restorer: ошибка E656:
 msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "в ИСР NetBeans запрещена запись буферов, в которых нет изменений"
 
-# #Restorer: ошибка E657:
+# Restorer: ошибка E657:
 msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "не допускается частичная запись буферов среды разработки NetBeans"
 
@@ -7300,7 +7329,7 @@ msgstr ""
 msgid "E666: Compiler not supported: %s"
 msgstr "E666: Не поддерживается компилятор %s"
 
-# #Restorer: в UNIX-подобных системах. См. параметр 'fsync'
+# Restorer: в UNIX-подобных системах. См. параметр 'fsync'
 msgid "E667: Fsync failed"
 msgstr "E667: Произошла ошибка при вызове системной функции fsync()"
 
@@ -7352,7 +7381,7 @@ msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr ""
 "E678: Недопустимый символ в сокращённом символьном классе цифр %s%%[dxouU]"
 
-# #Restorer: выводится, например, при значении рекурсии >= 5
+# Restorer: выводится, например, при значении рекурсии >= 5
 msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: Бесконечная повторная загрузка командного файла syncolor.vim"
 
@@ -7803,7 +7832,7 @@ msgstr "E795: Не допускается удаление неизменяемой переменной"
 msgid "E795: Cannot delete variable %s"
 msgstr "E795: Не допускается удаление неизменяемой переменной %s"
 
-# #Restorer: ошибка E796:
+# Restorer: ошибка E796:
 msgid "writing to device disabled with 'opendevice' option"
 msgstr "запись на устройство отключена через значение параметра 'opendevice'"
 
@@ -7995,7 +8024,7 @@ msgstr "E844: Недопустимое значение параметра cchar"
 msgid "E845: Insufficient memory, word list will be incomplete"
 msgstr "E845: Список слов заполнен частично. Недостаточно оперативной памяти"
 
-# #Restorer: `E846: Не указан код клавиши для параметра: <указанный параметр>`
+# Restorer: `E846: Не указан код клавиши для параметра: <указанный параметр>`
 msgid "E846: Key code not set"
 msgstr "E846: Не указан код клавиши для параметра"
 
@@ -8014,13 +8043,13 @@ msgid "E850: Invalid register name"
 msgstr ""
 "E850: Не поддерживается системный буфер обмена. Регистры * и + недопустимы"
 
-# #Restorer: для UNIX-подобных систем
+# Restorer: для UNIX-подобных систем
 msgid "E851: Failed to create a new process for the GUI"
 msgstr ""
 "E851: Сбой при создании нового процесса программы для запуска графического "
 "интерфейса"
 
-# #Restorer: для UNIX-подобных систем
+# Restorer: для UNIX-подобных систем
 msgid "E852: The child process failed to start the GUI"
 msgstr ""
 "E852: Дочерним процессом программы не выполнен запуск графического интерфейса"
@@ -8231,17 +8260,17 @@ msgstr ""
 msgid "E902: Cannot connect to port"
 msgstr "E902: Не удалось выполнить подключение через порт"
 
-# #Restorer: выводится при 'verbose'>3
+# Restorer: выводится при 'verbose'>3
 msgid "E903: Received command with non-string argument"
 msgstr "E903: Аргументы полученной команды не заключены в двойные кавычки"
 
-# #Restorer: выводится при 'verbose'>3
+# Restorer: выводится при 'verbose'>3
 msgid "E904: Last argument for expr/call must be a number"
 msgstr ""
 "E904: Тип данных последнего параметра команды expr или call должен быть "
 "Number"
 
-# #Restorer: выводится при 'verbose'>3
+# Restorer: выводится при 'verbose'>3
 msgid "E904: Third argument for call must be a list"
 msgstr "E904: Тип данных второго параметра команды call должен быть List"
 
@@ -8400,7 +8429,7 @@ msgstr ""
 msgid "E949: File changed while writing"
 msgstr "E949: В процессе записи файл был изменён"
 
-# #Restorer: первый %s заменяется на значение из 'tenc', второй %s из 'enc'
+# Restorer: первый %s заменяется на значение из 'tenc', второй %s из 'enc'
 #, c-format
 msgid "E950: Cannot convert between %s and %s"
 msgstr "E950: Не удалось выполнить изменение кодировки %s на %s"
@@ -8435,7 +8464,7 @@ msgstr "E958: Задание в буфере терминала уже завершено"
 msgid "E959: Invalid diff format."
 msgstr "E959: Недопустимый формат результирующего файла программы сравнения"
 
-# #Restorer: если правильно понял, чтобы увидеть это сообщение 'verbose'>0
+# Restorer: если правильно понял, чтобы увидеть это сообщение 'verbose'>0
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: Ошибка при активации встроенного механизма сравнения"
 
@@ -9030,8 +9059,7 @@ msgstr ""
 
 #, c-format
 msgid "E1117: Cannot use ! with nested %s"
-msgstr ""
-"E1117: Не допускается указание модификатора ! для вложенных команд %s"
+msgstr "E1117: Не допускается указание модификатора ! для вложенных команд %s"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Изменение списка не выполнено. Установлена блокировка списка"
@@ -9238,7 +9266,7 @@ msgid "E1172: Cannot use default values in a lambda"
 msgstr ""
 "E1172: Не допускается использование значения по умолчанию в лямбда-функции"
 
-# #Restorer: выводится при 'verbose'>0
+# Restorer: выводится при 'verbose'>0
 #, c-format
 msgid "E1173: Text found after %s: %s"
 msgstr "E1173: Посторонний текст после команды %s %s"
@@ -9612,7 +9640,7 @@ msgstr ""
 "E1264: Указан абсолютный или относительный маршрут при импорте "
 "автозагружаемого файла %s"
 
-# #Restorer: выводится только при установленном параметре 'verbose'
+# Restorer: выводится только при установленном параметре 'verbose'
 msgid "E1265: Cannot use a partial here"
 msgstr "E1265: Не допускается указание частичной функции"
 
@@ -9859,8 +9887,8 @@ msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: Недопустимое объявление переменной класса %s"
 
 #, c-format
-msgid "E1330: Invalid type for object variable: %s"
-msgstr "E1330: Недопустимый тип данных переменной объекта %s"
+msgid "E1330: Invalid type used in variable declaration: %s"
+msgstr "E1330: Указан недопустимый тип данных в объявлении переменной %s"
 
 msgid ""
 "E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
@@ -10169,8 +10197,7 @@ msgid "E1413: Builtin class method not supported"
 msgstr "E1413: В классе не доступны встроенные методы"
 
 msgid "E1414: Enum can only be defined in Vim9 script"
-msgstr ""
-"E1414: Тип данных Enum может быть определён только в командных файлах Vim9"
+msgstr "E1414: Тип Enum может быть определён только в командных файлах Vim9"
 
 #, c-format
 msgid "E1415: Enum name must start with an uppercase letter: %s"
@@ -10180,15 +10207,15 @@ msgid "E1416: Enum cannot extend a class or enum"
 msgstr "E1416: Тип Enum не может наследоваться в классах или других типах Enum"
 
 msgid "E1417: Abstract cannot be used in an Enum"
-msgstr "E1417: Интерфейсы не поддерживают типы данных Enum"
+msgstr "E1417: Интерфейсы не поддерживают типы Enum"
 
 #, c-format
 msgid "E1418: Invalid enum value declaration: %s"
-msgstr "E1418: Недопустимое объявление переменной типа данных Enum %s"
+msgstr "E1418: Недопустимое объявление значения в типе Enum %s"
 
 #, c-format
 msgid "E1419: Not a valid command in an Enum: %s"
-msgstr "E1419: Недопустимая команда в объявлении типа данных Enum %s"
+msgstr "E1419: Недопустимая команда в объявлении типа Enum %s"
 
 msgid "E1420: Missing :endenum"
 msgstr "E1420: Не указана команда :endenum"
@@ -10199,7 +10226,7 @@ msgstr "E1421: Не допускается в качестве значения указывать тип Enum \"%s\""
 
 #, c-format
 msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
-msgstr "E1422: У типа данных Enum \"%2$s\" отсутствует переменная \"%1$s\""
+msgstr "E1422: У типа Enum \"%2$s\" отсутствует значение \"%1$s\""
 
 #, c-format
 msgid "E1423: Enum value \"%s.%s\" cannot be modified"
@@ -10207,20 +10234,19 @@ msgstr "E1423: Не допускается изменение значения типа Enum \"%s.%s\""
 
 #, c-format
 msgid "E1424: Using an Enum \"%s\" as a Number"
-msgstr "E1424: Ожидался тип данных Number, а получен тип данных Enum \"%s\""
+msgstr "E1424: Ожидался тип данных Number, а получен тип Enum \"%s\""
 
 #, c-format
 msgid "E1425: Using an Enum \"%s\" as a String"
-msgstr "E1425: Ожидался тип данных String, а получен тип данных Enum \"%s\""
+msgstr "E1425: Ожидался тип данных String, а получен тип Enum \"%s\""
 
 #, c-format
 msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
-msgstr ""
-"E1426: Не допускается изменение порядка значений в типе данных Enum \"%s\""
+msgstr "E1426: Не допускается изменение порядка значений в типе Enum \"%s\""
 
 #, c-format
 msgid "E1427: Enum \"%s\" name cannot be modified"
-msgstr "E1427: Не допускается изменение наименования типа данных Enum \"%s\""
+msgstr "E1427: Не допускается изменение наименования типа Enum \"%s\""
 
 #, c-format
 msgid "E1428: Duplicate enum value: %s"
@@ -10241,6 +10267,36 @@ msgid ""
 msgstr ""
 "E1431: Не допускается прямое обращение к абстрактному методу \"%s\" класса "
 "\"%s\""
+
+#, c-format
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+"E1432: Переопределение обобщённого метода \"%s\" конкретным методом в классе "
+"\"%s\""
+
+#, c-format
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+"E1433: Переопределение конкретного метода \"%s\" обобщённым методом в классе "
+"\"%s\""
+
+#, c-format
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+"E1434: Несоответствующее количество переменных типа для обобщённого метода "
+"\"%s\" в классе \"%s\""
+
+msgid "E1435: Enum can only be used in a script"
+msgstr "E1435: Тип Enum может быть использован только в командном файле"
+
+msgid "E1436: Interface can only be used in a script"
+msgstr "E1436: Тип Interface может быть использован только в командном файле"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
@@ -10429,7 +10485,91 @@ msgstr "E1547: Данная версия программы не поддерживает команду :redrawtabpanel"
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Подключение к Wayland серверу отсутствует"
 
-# #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
+#, c-format
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: Привязок сравнения не может быть больше чем %d"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: Не удалось найти все привязки сравнения"
+
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr "E1551: Невозможно открыть всплывающее окно для закрывающегося буфера"
+
+#, c-format
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr ""
+"E1552: Наименование переменной типа должно начинаться с прописной буквы %s"
+
+#, c-format
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr "E1553: Отсутствует запятая после типа в обобщённой функции %s"
+
+#, c-format
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr "E1554: Не указана угловая скобка в обобщённой функции %s"
+
+#, c-format
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr "E1555: Указан пустой список типов для обобщённой функции '%s'"
+
+#, c-format
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr "E1556: Указано слишком много типов для обобщённой функции '%s'"
+
+#, c-format
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr ""
+"E1557: Указано недостаточное количество типов для обобщённой функции '%s'"
+
+#, c-format
+msgid "E1558: Unknown generic function: %s"
+msgstr "E1558: Не распознана обобщённая функция %s"
+
+#, c-format
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr "E1559: Не указан тип аргументов для обобщённой функции '%s'"
+
+#, c-format
+msgid "E1560: Not a generic function: %s"
+msgstr "E1560: Не удалось распознать как обобщённую функцию %s"
+
+#, c-format
+msgid "E1561: Duplicate type variable name: %s"
+msgstr "E1561: Повтор наименования переменной типа %s"
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr ""
+"E1562: Не допускается использовать привязки сравнения при наличии скрытых "
+"буферов в режиме сверки различий"
+
+msgid "E1563: Socket path is too big"
+msgstr "E1563: Маршрут к сокету слишком длинный"
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr ""
+"E1564: В наименовании сокета не должно быть косой черты, если это не маршрут"
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr ""
+"E1565: Сервер сокетов не подключен, вызовите функцию remote_startserver()"
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr "E1566: Произошёл сбой при подключении к сокету %s: %s"
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgstr ""
+"E1567: Не удалось запустить сервер сокетов, маршрут к сокету недействителен"
+
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr "E1568: Время ожидания ответа на команду OSC истекло: %.*s"
+
+msgid "E1569: Cannot use listener_add in a listener callback"
+msgstr ""
+"E1569: Функция listener_add() запрещена в самом обработчике обратного вызова"
+
+# Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
 msgstr "-- Буфер не содержит текст --"
 
@@ -10472,8 +10612,8 @@ msgstr "Поиск будет продолжен от НИЖНЕЙ ГРАНИЦЫ документа"
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "Поиск будет продолжен от ВЕРХНЕЙ ГРАНИЦЫ документа"
 
-# #Restorer: дописывается к сообщению «Last set from» если изменения были в
-# #Restorer: командном файле, пользовательской функции или режмной строке
+# Restorer: дописывается к сообщению «Last set from» если изменения были в
+# Restorer: командном файле, пользовательской функции или режмной строке
 msgid " line "
 msgstr " строка "
 
@@ -10714,7 +10854,7 @@ msgstr "ожидался объект vim.TabPage, а получен %s"
 msgid "did not switch to the specified tab page"
 msgstr "не удалось переключиться на указанную вкладку"
 
-# #Restorer: например, команда `:pydo`
+# Restorer: например, команда `:pydo`
 msgid "failed to run the code"
 msgstr "произошёл сбой при исполнении кода функции"
 
@@ -10800,25 +10940,25 @@ msgstr ""
 "Файлы языка Си++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Файлы редактора Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
-# #Restorer: используется для файла desktop
+# Restorer: используется для файла desktop
 msgid "GVim"
 msgstr "gVim"
 
-# #Restorer: используется для файла desktop
+# Restorer: используется для файла desktop
 # ~!: earlier
 msgid "Text Editor"
 msgstr "Текстовый редактор"
 
-# #Restorer: используется для файла desktop
+# Restorer: используется для файла desktop
 msgid "Edit text files"
 msgstr "Редактировать текстовые файлы"
 
-# #Restorer: используется для файла desktop
+# Restorer: используется для файла desktop
 # ~!: earlier
 msgid "Text;editor;"
 msgstr "текст;текстовый редактор;"
 
-# #Restorer: используется для файла desktop
+# Restorer: используется для файла desktop
 # ~!: earlier
 msgid "Vim"
 msgstr "Vim"
@@ -10852,8 +10992,7 @@ msgid ""
 "\"            For other options you can edit the value before hitting "
 "<Enter>."
 msgstr ""
-"\"     для других параметров необходимо перед этим отредактировать их "
-"значения"
+"\"   для других параметров необходимо перед этим отредактировать их значения"
 
 msgid "\" Hit <Enter> on a help line to open a help window on this option."
 msgstr ""
@@ -10959,6 +11098,11 @@ msgid "override 'ignorecase' when pattern has upper case characters"
 msgstr ""
 "не учитывать значение параметра 'ignorecase' при наличии\n"
 "в поисковом запросе прописных букв"
+
+msgid "maximum number for the search count feature"
+msgstr ""
+"максимальное количество совпадений, отображамое\n"
+"в результатах поиска"
 
 msgid "what method to use for changing case of letters"
 msgstr "метод интерпретации регистра символов в клавиатурных командах"
@@ -11087,8 +11231,8 @@ msgstr ""
 "\"uhex\" — непечатаемые символы как шестнадцатеричное значение"
 
 msgid ""
-"characters to use for the status line, folds, diffs, buffer text, filler "
-"lines and truncation in the completion menu"
+"characters to use for the status line, folds, diffs,\n"
+"buffer text, filler lines and truncation in the completion menu"
 msgstr ""
 "заполнители для строки состояния, свёрнутых строк,\n"
 "разделителей окон и усечения в меню подстановки"
@@ -11411,6 +11555,9 @@ msgstr ""
 "восстановить содержимое экрана после завершения работы\n"
 "редактора Vim"
 
+msgid "timeout used for terminal OSC responses"
+msgstr "задержка, используемая для ответов терменала на OSC запросы"
+
 msgid "using the mouse"
 msgstr "Манипулятор «мышь»"
 
@@ -11478,7 +11625,9 @@ msgstr "размер значков на панели инструментов"
 msgid "room (in pixels) left above/below the window"
 msgstr "область экрана (в пикселях), остающаяся не занятой окном программы"
 
-msgid "list of ASCII characters that can be combined into complex shapes"
+msgid ""
+"list of ASCII characters that can be combined into complex\n"
+"shapes"
 msgstr ""
 "перечень символов кодировки ASCII, используемых\n"
 "в составных символах"
@@ -11492,8 +11641,8 @@ msgstr ""
 "с командной оболочкой системы"
 
 msgid ""
-"\"last\", \"buffer\" or \"current\": which directory used for the file "
-"browser"
+"\"last\", \"buffer\" or \"current\": which directory used for\n"
+"the file browser"
 msgstr ""
 "каталог, используемый для окон открытия и сохранения файлов\n"
 "Возможные значения: \"last\", \"buffer\" или \"current\""
@@ -11518,7 +11667,9 @@ msgstr "задержка в мс перед отображением всплывающей выноски"
 msgid "use balloon evaluation in the GUI"
 msgstr "включение всплывающих выносок в графическом интерфейсе"
 
-msgid "use balloon evaluation in the terminal"
+msgid ""
+" \n"
+"use balloon evaluation in the terminal"
 msgstr ""
 " \n"
 "включение всплывающих выносок в окне терминала"
@@ -11704,20 +11855,51 @@ msgid "expression used for \"gq\" to format lines"
 msgstr "функция, используемая для форматирования строк по команде `gq`"
 
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
-msgstr "работа команд CTRL+N и CTRL+P при подстановке в режиме вставки"
+msgstr ""
+"как выполняется подстановка в режиме вставки по команде\n"
+"CTRL+N и CTRL+P"
 
-msgid "use fuzzy collection for specific completion modes"
+msgid "automatic completion in insert mode"
+msgstr "автоматическая подставновка в режиме вставки"
+
+msgid ""
+" \n"
+"initial decay timeout for 'autocomplete' algorithm"
 msgstr ""
 " \n"
-"применять неполные коллекции для указанных режимов подстановки"
+"начальное время (в мс) ожидания для алгоритма 'autocmplte'"
+
+msgid ""
+" \n"
+"initial decay timeout for CTRL-N and CTRL-P completion"
+msgstr ""
+" \n"
+"начальная задержка (в мс) при подстановке по команде\n"
+"CTRL+N и CTRL+P"
+
+msgid ""
+" \n"
+"delay in msec before menu appears after typing"
+msgstr ""
+" \n"
+"задержка (в мс) перед появлением меню после начала печати"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "использовать всплывающее меню при подстановке в режиме вставки"
 
-msgid "popup menu item align order"
+msgid ""
+" \n"
+"popup menu item align order"
 msgstr ""
 " \n"
 "порядок показа элементов во всплывающем меню при подстановке"
+
+msgid ""
+" \n"
+"use fuzzy collection for specific completion modes"
+msgstr ""
+" \n"
+"применять неполные коллекции для указанных режимов подстановки"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "информация во всплывающем меню при подстановке в режиме вставки"
@@ -11811,7 +11993,7 @@ msgstr "количество пробелов, вставляемых при нажатии клавиши <TAB>"
 msgid "round to 'shiftwidth' for \"<<\" and \">>\""
 msgstr ""
 "приводить к значению, заданному в параметре 'shiftwidth'\n"
-"для команд :<< и :>>"
+"для команд `<<` и `>>`"
 
 msgid "expand <Tab> to spaces in Insert mode"
 msgstr "замена в режиме вставки символа табуляции на пробелы"
@@ -11937,6 +12119,9 @@ msgstr "настройки, используемые для режима сверки различий"
 
 msgid "expression used to obtain a diff file"
 msgstr "функция, используемая для создания файла различий"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "список адресов для привязок сравнения"
 
 msgid "expression used to patch a file"
 msgstr "функция, используемая для внесения исправлений в файл"
@@ -12202,9 +12387,11 @@ msgstr ""
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "кодировка символов вывода внешних команд для :make и :grep"
 
-# #Matvey Tarasov: <space>\n из-за того, что имя опции 'quickfixtextfunc'
-# #Matvey Tarasov: слишком длинное
-msgid "function to display text in the quickfix window"
+# Matvey Tarasov: <space>\n из-за того, что имя опции 'quickfixtextfunc'
+# Matvey Tarasov: слишком длинное
+msgid ""
+" \n"
+"function to display text in the quickfix window"
 msgstr ""
 " \n"
 "функция для отображения текста в окне списка результатов"
@@ -12455,9 +12642,11 @@ msgstr "домашний каталог для файлов языка Python версии 2"
 msgid "name of the Python 3 dynamic library"
 msgstr "подключаемый файл динамической библиотеки языка Python версии 3"
 
-# #Matvey Tarasov: <space>\n из-за того, что имя опции 'pythonthreehome'
-# #Matvey Tarasov: слишком длинное
-msgid "name of the Python 3 home directory"
+# Matvey Tarasov: <space>\n из-за того, что имя опции 'pythonthreehome'
+# Matvey Tarasov: слишком длинное
+msgid ""
+" \n"
+"name of the Python 3 home directory"
 msgstr ""
 " \n"
 "домашний каталог для файлов языка Python версии 3"
