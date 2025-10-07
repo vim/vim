@@ -1304,6 +1304,8 @@ au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call dist#ft#FThtml()
 "   zsql (zope sql method)
 au BufNewFile,BufRead *.zsql			call dist#ft#SQL()
 
+" Detect by extention
+au BufNewFile,BufRead *				call dist#ft#DetectByExt()
 augroup END
 
 
@@ -1585,8 +1587,7 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
-" Detect by extention
-au BufNewFile,BufRead *				call dist#ft#DetectByExt()
+
 
 " Generic log file
 " Disabled cause it is too distracting
