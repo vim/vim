@@ -351,7 +351,7 @@ func Test_termdebug_evaluate_in_popup()
   call TermWait(buf, 400)
   call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_01', {})
 
-  call term_sendkeys(buf, ":Evaluate p_ptr\<CR>")
+  call term_sendkeys(buf, ":Evaluate *p_ptr\<CR>")
   call TermWait(buf, 400)
   call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_02', {})
 
