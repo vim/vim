@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Oct 07
+" Last Change:	   2025 Oct 08
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1368,7 +1368,7 @@ syn region	vimEval
       \ end="\ze|"
       \ excludenl end="$"
       \ nextgroup=vimCmdSep
-      \ contains=@vimContinue,@vimExprList,vim9Comment
+      \ contains=@vimContinue,@vimExprList,vim9Comment,vimComment
       \ transparent
 
 " Filter: {{{2
