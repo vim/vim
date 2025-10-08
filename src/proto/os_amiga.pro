@@ -37,7 +37,6 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int mch_call_shell(char_u *cmd, int options);
 void mch_breakcheck(int force);
-long Chk_Abort(void);
 int mch_expandpath(garray_T *gap, char_u *pat, int flags);
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
