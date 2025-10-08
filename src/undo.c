@@ -138,7 +138,7 @@ static int	undo_undoes = FALSE;
 
 static int	lastmark = 0;
 
-#if defined(U_DEBUG) || defined(PROTO)
+#if defined(U_DEBUG)
 /*
  * Check the undo structures for being valid.  Print a warning when something
  * looks wrong.
@@ -760,7 +760,7 @@ nomem:
     return FAIL;
 }
 
-#if defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_PERSISTENT_UNDO)
 
 # define UF_START_MAGIC	    "Vim\237UnDo\345"  // magic at start of undofile
 # define UF_START_MAGIC_LEN	9
@@ -3634,7 +3634,7 @@ curbufIsChanged(void)
     return bufIsChanged(curbuf);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * For undotree(): Append the list of undo blocks at "first_uhp" to "list".

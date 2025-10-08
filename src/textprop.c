@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 
 /*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
@@ -2130,7 +2130,7 @@ clear_ht_prop_types(hashtab_T *ht)
     vim_free(ht);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free all global property types.
  */

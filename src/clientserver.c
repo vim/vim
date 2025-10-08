@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if defined(FEAT_CLIENTSERVER)
 
 #ifdef FEAT_SOCKETSERVER
 # include <sys/socket.h>
@@ -182,7 +182,7 @@ serverConvert(
 }
 #endif
 
-#if (defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)) || defined(PROTO)
+#if defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)
 
 /*
  * Common code for the X command server and the Win32 command server.
@@ -975,7 +975,7 @@ fail:
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "remote_expr()" function
  */

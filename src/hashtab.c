@@ -95,7 +95,7 @@ hash_clear(hashtab_T *ht)
 	vim_free(ht->ht_array);
 }
 
-#if defined(FEAT_SPELL) || defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_TERMINAL)
 /*
  * Free the array of a hash table and all the keys it contains.  The keys must
  * have been allocated.  "off" is the offset from the start of the allocate
@@ -194,7 +194,7 @@ hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 /*
  * Print the efficiency of hashtable lookups.
  * Useful when trying different hash algorithms.
@@ -309,7 +309,7 @@ hash_lock(hashtab_T *ht)
     ++ht->ht_locked;
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Lock a hashtable at the specified number of entries.
  * Caller must make sure no more than "size" entries will be added.

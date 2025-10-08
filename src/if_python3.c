@@ -135,7 +135,7 @@ typedef PySliceObject PySliceObject_T;
 static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 #endif
 
-#if defined(DYNAMIC_PYTHON3) || defined(PROTO)
+#if defined(DYNAMIC_PYTHON3)
 
 # ifdef MSWIN
 #  define load_dll vimLoadLib
@@ -1218,7 +1218,7 @@ python3_end(void)
     --recurse;
 }
 
-#if (defined(DYNAMIC_PYTHON3) && defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON) && defined(UNIX)) || defined(PROTO)
+#if defined(DYNAMIC_PYTHON3) && defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON) && defined(UNIX)
     int
 python3_loaded(void)
 {

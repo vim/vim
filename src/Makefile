@@ -1290,7 +1290,7 @@ HAIKUGUI_BUNDLE =
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
 
@@ -1337,27 +1337,6 @@ XDIFF_INCL = \
 ### Need to change "-I /<path>" to "-isystem /<path>" for GCC 3.x.
 CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 		`echo "$(DEPEND_CFLAGS)" $(DEPEND_CFLAGS_FILTER)`
-
-# flags for cproto
-#     This is for cproto 3 patchlevel 8 or below
-#     __inline, __attribute__ and __extension__ are not recognized by cproto
-#     G_IMPLEMENT_INLINES is to avoid functions defined in glib/gutils.h.
-#NO_ATTR = -D__inline= -D__inline__= -DG_IMPLEMENT_INLINES \
-#	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
-#	  -D__extension__= -D__restrict="" \
-#	  -D__gnuc_va_list=char -D__builtin_va_list=char
-#
-#     This is for cproto 3 patchlevel 9 or above (currently 4.6, 4.7g)
-#     __inline and __attribute__ are now recognized by cproto
-#     __attribute() is not recognized and used in X11/Intrinsic.h
-#     -D"foo()=" is not supported by all compilers so do not use it
-NO_ATTR = -D"__attribute\\(x\\)="
-#
-# Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
-# PROTO_FLAGS = -f4 -d -E"$(CPP)" $(NO_ATTR)
-#
-# Use this for cproto 3 patchlevel 7 or above (use "cproto -V" to check):
-PROTO_FLAGS = -d -E"$(CPP)" $(NO_ATTR)
 
 
 ################################################
@@ -1848,145 +1827,148 @@ ALL_OBJ = $(OBJ_COMMON) \
 	  $(OBJ_MESSAGE_TEST)
 
 
-PRO_AUTO = \
-	alloc.pro \
-	arabic.pro \
-	arglist.pro \
-	autocmd.pro \
-	beval.pro \
-	blob.pro \
-	blowfish.pro \
-	buffer.pro \
-	bufwrite.pro \
-	change.pro \
-	channel.pro \
-	charset.pro \
-	cindent.pro \
-	clientserver.pro \
-	clipboard.pro \
-	cmdexpand.pro \
-	cmdhist.pro \
-	crypt.pro \
-	crypt_zip.pro \
-	debugger.pro \
-	dict.pro \
-	diff.pro \
-	linematch.pro \
-	digraph.pro \
-	drawline.pro \
-	drawscreen.pro \
-	edit.pro \
-	eval.pro \
-	evalbuffer.pro \
-	evalfunc.pro \
-	evalvars.pro \
-	evalwindow.pro \
-	ex_cmds.pro \
-	ex_cmds2.pro \
-	ex_docmd.pro \
-	ex_eval.pro \
-	ex_getln.pro \
-	fileio.pro \
-	filepath.pro \
-	findfile.pro \
-	float.pro \
-	fold.pro \
-	fuzzy.pro \
-	getchar.pro \
-	gc.pro \
-	gui_xim.pro \
-	gui_beval.pro \
-	hardcopy.pro \
-	hashtab.pro \
-	help.pro \
-	highlight.pro \
-	if_cscope.pro \
-	if_lua.pro \
-	if_mzsch.pro \
-	if_python.pro \
-	if_python3.pro \
-	if_ruby.pro \
-	if_xcmdsrv.pro \
-	indent.pro \
-	insexpand.pro \
-	job.pro \
-	json.pro \
-	list.pro \
-	locale.pro \
-	logfile.pro \
-	main.pro \
-	map.pro \
-	mark.pro \
-	match.pro \
-	mbyte.pro \
-	memfile.pro \
-	memline.pro \
-	menu.pro \
-	message.pro \
-	misc1.pro \
-	misc2.pro \
-	mouse.pro \
-	move.pro \
-	netbeans.pro \
-	normal.pro \
-	ops.pro \
-	option.pro \
-	optionstr.pro \
-	os_mac_conv.pro \
-	os_unix.pro \
-	popupmenu.pro \
-	popupwin.pro \
-	profiler.pro \
-	pty.pro \
-	quickfix.pro \
-	regexp.pro \
-	register.pro \
-	screen.pro \
-	scriptfile.pro \
-	search.pro \
-	session.pro \
-	sha256.pro \
-	sign.pro \
-	sound.pro \
-	spell.pro \
-	spellfile.pro \
-	spellsuggest.pro \
-	strings.pro \
-	syntax.pro \
-	tabpanel.pro \
-	tag.pro \
-	term.pro \
-	terminal.pro \
-	termlib.pro \
-	testing.pro \
-	textformat.pro \
-	textobject.pro \
-	textprop.pro \
-	time.pro \
-	tuple.pro \
-	typval.pro \
-	ui.pro \
-	undo.pro \
-	usercmd.pro \
-	userfunc.pro \
-	version.pro \
-	vim9class.pro \
-	vim9cmds.pro \
-	vim9compile.pro \
-	vim9execute.pro \
-	vim9expr.pro \
-	vim9generics.pro \
-	vim9instr.pro \
-	vim9script.pro \
-	vim9type.pro \
-	viminfo.pro \
-	wayland.pro \
-	window.pro \
-	$(ALL_GUI_PRO) \
-	$(TCL_PRO)
-
-PRO_MANUAL = os_amiga.pro os_win32.pro \
-	os_mswin.pro winclip.pro os_vms.pro $(PERL_PRO)
+PROTO_FILES = \
+	proto/alloc.pro \
+	proto/arabic.pro \
+	proto/arglist.pro \
+	proto/autocmd.pro \
+	proto/beval.pro \
+	proto/blob.pro \
+	proto/blowfish.pro \
+	proto/buffer.pro \
+	proto/bufwrite.pro \
+	proto/change.pro \
+	proto/channel.pro \
+	proto/charset.pro \
+	proto/cindent.pro \
+	proto/clientserver.pro \
+	proto/clipboard.pro \
+	proto/cmdexpand.pro \
+	proto/cmdhist.pro \
+	proto/crypt.pro \
+	proto/crypt_zip.pro \
+	proto/debugger.pro \
+	proto/dict.pro \
+	proto/diff.pro \
+	proto/digraph.pro \
+	proto/drawline.pro \
+	proto/drawscreen.pro \
+	proto/edit.pro \
+	proto/eval.pro \
+	proto/evalbuffer.pro \
+	proto/evalfunc.pro \
+	proto/evalvars.pro \
+	proto/evalwindow.pro \
+	proto/ex_cmds.pro \
+	proto/ex_cmds2.pro \
+	proto/ex_docmd.pro \
+	proto/ex_eval.pro \
+	proto/ex_getln.pro \
+	proto/fileio.pro \
+	proto/filepath.pro \
+	proto/findfile.pro \
+	proto/float.pro \
+	proto/fold.pro \
+	proto/fuzzy.pro \
+	proto/gc.pro \
+	proto/getchar.pro \
+	proto/gui_beval.pro \
+	proto/gui_xim.pro \
+	proto/hardcopy.pro \
+	proto/hashtab.pro \
+	proto/help.pro \
+	proto/highlight.pro \
+	proto/if_cscope.pro \
+	proto/if_lua.pro \
+	proto/if_mzsch.pro \
+	proto/if_python.pro \
+	proto/if_python3.pro \
+	proto/if_ruby.pro \
+	proto/if_tcl.pro \
+	proto/if_xcmdsrv.pro \
+	proto/indent.pro \
+	proto/insexpand.pro \
+	proto/job.pro \
+	proto/json.pro \
+	proto/linematch.pro \
+	proto/list.pro \
+	proto/locale.pro \
+	proto/logfile.pro \
+	proto/main.pro \
+	proto/map.pro \
+	proto/mark.pro \
+	proto/match.pro \
+	proto/mbyte.pro \
+	proto/memfile.pro \
+	proto/memline.pro \
+	proto/menu.pro \
+	proto/message.pro \
+	proto/misc1.pro \
+	proto/misc2.pro \
+	proto/mouse.pro \
+	proto/move.pro \
+	proto/netbeans.pro \
+	proto/normal.pro \
+	proto/ops.pro \
+	proto/option.pro \
+	proto/optionstr.pro \
+	proto/os_amiga.pro \
+	proto/os_mac_conv.pro \
+	proto/os_mswin.pro \
+	proto/os_qnx.pro \
+	proto/os_unix.pro \
+	proto/os_vms.pro \
+	proto/os_win32.pro \
+	proto/popupmenu.pro \
+	proto/popupwin.pro \
+	proto/profiler.pro \
+	proto/pty.pro \
+	proto/quickfix.pro \
+	proto/regexp.pro \
+	proto/register.pro \
+	proto/screen.pro \
+	proto/scriptfile.pro \
+	proto/search.pro \
+	proto/session.pro \
+	proto/sha256.pro \
+	proto/sign.pro \
+	proto/sound.pro \
+	proto/spell.pro \
+	proto/spellfile.pro \
+	proto/spellsuggest.pro \
+	proto/strings.pro \
+	proto/syntax.pro \
+	proto/tabpanel.pro \
+	proto/tag.pro \
+	proto/term.pro \
+	proto/terminal.pro \
+	proto/termlib.pro \
+	proto/testing.pro \
+	proto/textformat.pro \
+	proto/textobject.pro \
+	proto/textprop.pro \
+	proto/time.pro \
+	proto/tuple.pro \
+	proto/typval.pro \
+	proto/ui.pro \
+	proto/undo.pro \
+	proto/usercmd.pro \
+	proto/userfunc.pro \
+	proto/version.pro \
+	proto/vim9class.pro \
+	proto/vim9cmds.pro \
+	proto/vim9compile.pro \
+	proto/vim9execute.pro \
+	proto/vim9expr.pro \
+	proto/vim9generics.pro \
+	proto/vim9instr.pro \
+	proto/vim9script.pro \
+	proto/vim9type.pro \
+	proto/viminfo.pro \
+	proto/wayland.pro \
+	proto/winclip.pro \
+	proto/window.pro \
+	$(ALL_GUI_PRO)
 
 # Default target is making the executable and tools
 all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)
@@ -2119,67 +2101,45 @@ languages:
 update-po:
 	cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) update-po
 
-# Generate function prototypes.  This is not needed to compile vim, but if
-# you want to use it, cproto is out there on the net somewhere -- Webb
+# Generate function prototypes.  Previously, cproto was used, but since there
+# was a lot of fiddling to do to generate them correctly, so we switched to a
+# Python script using libclang.  It has the following features:
+# - Only the bare minimum of macro definitions is required.
+# - Generates the same .pro file even across different operating systems.
+#   (maybe)
 #
-# When generating os_amiga.pro and os_win32.pro there will be a
-# few include files that can not be found, that's OK.
+# How to set up environment to run `make proto`
+# On Ubuntu 24.04:
+# - Install libclang
+#   Use the package provided by Ubuntu.
+#     $ sudo apt install python3-clang
+#   Or, Create venv (if you want to use it freely with pip)
+#     $ python3 -m venv ~/venv
+#     $ source ~/venv/bin/activate
+#     $ pip install --upgrade pip
+#     $ pip install libclang
+# On Windows 11 (using Git Bash):
+# - Install GNU Make 3.81 or later.
+# - Download and install Python from the Python official website.
+# - Install libclang
+#   $ python -m pip install libclang
+# - Change the following lines in this file:
+#   s/^PYTHON=python3/PYTHON=python/
+#   s/^tags TAGS: notags/tags: notags/
+PYTHON=python3
 
-proto: $(PRO_AUTO) $(PRO_MANUAL)
+.PHONY: proto protoclean
+proto: $(PROTO_FILES)
 
-# Filter out arguments that cproto doesn't support.
-# Don't pass "-pthread", "-fwrapv" and similar arguments to cproto, it sees
-# them as a list of individual flags.
-# The -E"gcc -E" argument must be separate to avoid problems with shell
-# quoting.
-# Strip -O2, it may cause cproto to write stderr to the file "2".
-CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
+protoclean:
+	-rm -f $(PROTO_FILES)
 
-### Would be nice if this would work for "normal" make.
-### Currently it only works for (Free)BSD make.
-#$(PRO_AUTO): $$(*F).c
-#	$(CPROTO) -DFEAT_GUI $(*F).c > $@
+GEN_PROTO_CMD = proto/gen_prototypes.py
+GEN_PROTO_ARG = -DPROTO -DFEAT_GUI -DFEAT_WAYLAND -DFEAT_WAYLAND_CLIPBOARD -I.
 
-# Always define FEAT_GUI.  This may generate a few warnings if it's also
-# defined in auto/config.h, you can ignore that.
-.c.pro:
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_amiga.pro: os_amiga.c
-	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_win32.pro: os_win32.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-winclip.pro: winclip.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_vms.pro: os_vms.c
-# must use os_vms_conf.h for auto/config.h
-	mv auto/config.h auto/config.h.save
-	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-	rm auto/config.h
-	mv auto/config.h.save auto/config.h
-
-# if_perl.pro is special: Use the generated if_perl.c for input and remove
-# prototypes for local functions.
-if_perl.pro: auto/if_perl.c
-	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
-
-gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+# Add `GENPROTO_DEBUG=1` before $(PYTHON) to get debug output.
+proto/%.pro: %.c
+	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
 
 notags:
 	-rm -f tags
@@ -3102,6 +3062,9 @@ depend:
 	-for i in $(XDIFF_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
 		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
+	-for i in $(PROTO_FILES); do \
+		base=`basename $$i .pro`; \
+		echo "$$i: $$base.c" >> tmp_make; done
 	mv tmp_make Makefile
 
 # Run lint.  Clean up the *.ln files that are sometimes left behind.
@@ -4655,3 +4618,151 @@ objects/xpatience.o: xdiff/xpatience.c xdiff/xinclude.h auto/config.h \
  ex_cmds.h spell.h proto.h globals.h \
  errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
  xdiff/xdiffi.h xdiff/xemit.h
+proto/alloc.pro: alloc.c
+proto/arabic.pro: arabic.c
+proto/arglist.pro: arglist.c
+proto/autocmd.pro: autocmd.c
+proto/beval.pro: beval.c
+proto/blob.pro: blob.c
+proto/blowfish.pro: blowfish.c
+proto/buffer.pro: buffer.c
+proto/bufwrite.pro: bufwrite.c
+proto/change.pro: change.c
+proto/channel.pro: channel.c
+proto/charset.pro: charset.c
+proto/cindent.pro: cindent.c
+proto/clientserver.pro: clientserver.c
+proto/clipboard.pro: clipboard.c
+proto/cmdexpand.pro: cmdexpand.c
+proto/cmdhist.pro: cmdhist.c
+proto/crypt.pro: crypt.c
+proto/crypt_zip.pro: crypt_zip.c
+proto/debugger.pro: debugger.c
+proto/dict.pro: dict.c
+proto/diff.pro: diff.c
+proto/digraph.pro: digraph.c
+proto/drawline.pro: drawline.c
+proto/drawscreen.pro: drawscreen.c
+proto/edit.pro: edit.c
+proto/eval.pro: eval.c
+proto/evalbuffer.pro: evalbuffer.c
+proto/evalfunc.pro: evalfunc.c
+proto/evalvars.pro: evalvars.c
+proto/evalwindow.pro: evalwindow.c
+proto/ex_cmds.pro: ex_cmds.c
+proto/ex_cmds2.pro: ex_cmds2.c
+proto/ex_docmd.pro: ex_docmd.c
+proto/ex_eval.pro: ex_eval.c
+proto/ex_getln.pro: ex_getln.c
+proto/fileio.pro: fileio.c
+proto/filepath.pro: filepath.c
+proto/findfile.pro: findfile.c
+proto/float.pro: float.c
+proto/fold.pro: fold.c
+proto/fuzzy.pro: fuzzy.c
+proto/gc.pro: gc.c
+proto/getchar.pro: getchar.c
+proto/gui_beval.pro: gui_beval.c
+proto/gui_xim.pro: gui_xim.c
+proto/hardcopy.pro: hardcopy.c
+proto/hashtab.pro: hashtab.c
+proto/help.pro: help.c
+proto/highlight.pro: highlight.c
+proto/if_cscope.pro: if_cscope.c
+proto/if_lua.pro: if_lua.c
+proto/if_mzsch.pro: if_mzsch.c
+proto/if_python.pro: if_python.c
+proto/if_python3.pro: if_python3.c
+proto/if_ruby.pro: if_ruby.c
+proto/if_tcl.pro: if_tcl.c
+proto/if_xcmdsrv.pro: if_xcmdsrv.c
+proto/indent.pro: indent.c
+proto/insexpand.pro: insexpand.c
+proto/job.pro: job.c
+proto/json.pro: json.c
+proto/linematch.pro: linematch.c
+proto/list.pro: list.c
+proto/locale.pro: locale.c
+proto/logfile.pro: logfile.c
+proto/main.pro: main.c
+proto/map.pro: map.c
+proto/mark.pro: mark.c
+proto/match.pro: match.c
+proto/mbyte.pro: mbyte.c
+proto/memfile.pro: memfile.c
+proto/memline.pro: memline.c
+proto/menu.pro: menu.c
+proto/message.pro: message.c
+proto/misc1.pro: misc1.c
+proto/misc2.pro: misc2.c
+proto/mouse.pro: mouse.c
+proto/move.pro: move.c
+proto/netbeans.pro: netbeans.c
+proto/normal.pro: normal.c
+proto/ops.pro: ops.c
+proto/option.pro: option.c
+proto/optionstr.pro: optionstr.c
+proto/os_amiga.pro: os_amiga.c
+proto/os_mac_conv.pro: os_mac_conv.c
+proto/os_mswin.pro: os_mswin.c
+proto/os_qnx.pro: os_qnx.c
+proto/os_unix.pro: os_unix.c
+proto/os_vms.pro: os_vms.c
+proto/os_win32.pro: os_win32.c
+proto/popupmenu.pro: popupmenu.c
+proto/popupwin.pro: popupwin.c
+proto/profiler.pro: profiler.c
+proto/pty.pro: pty.c
+proto/quickfix.pro: quickfix.c
+proto/regexp.pro: regexp.c
+proto/register.pro: register.c
+proto/screen.pro: screen.c
+proto/scriptfile.pro: scriptfile.c
+proto/search.pro: search.c
+proto/session.pro: session.c
+proto/sha256.pro: sha256.c
+proto/sign.pro: sign.c
+proto/sound.pro: sound.c
+proto/spell.pro: spell.c
+proto/spellfile.pro: spellfile.c
+proto/spellsuggest.pro: spellsuggest.c
+proto/strings.pro: strings.c
+proto/syntax.pro: syntax.c
+proto/tabpanel.pro: tabpanel.c
+proto/tag.pro: tag.c
+proto/term.pro: term.c
+proto/terminal.pro: terminal.c
+proto/termlib.pro: termlib.c
+proto/testing.pro: testing.c
+proto/textformat.pro: textformat.c
+proto/textobject.pro: textobject.c
+proto/textprop.pro: textprop.c
+proto/time.pro: time.c
+proto/tuple.pro: tuple.c
+proto/typval.pro: typval.c
+proto/ui.pro: ui.c
+proto/undo.pro: undo.c
+proto/usercmd.pro: usercmd.c
+proto/userfunc.pro: userfunc.c
+proto/version.pro: version.c
+proto/vim9class.pro: vim9class.c
+proto/vim9cmds.pro: vim9cmds.c
+proto/vim9compile.pro: vim9compile.c
+proto/vim9execute.pro: vim9execute.c
+proto/vim9expr.pro: vim9expr.c
+proto/vim9generics.pro: vim9generics.c
+proto/vim9instr.pro: vim9instr.c
+proto/vim9script.pro: vim9script.c
+proto/vim9type.pro: vim9type.c
+proto/viminfo.pro: viminfo.c
+proto/wayland.pro: wayland.c
+proto/winclip.pro: winclip.c
+proto/window.pro: window.c
+proto/gui.pro: gui.c
+proto/gui_gtk.pro: gui_gtk.c
+proto/gui_motif.pro: gui_motif.c
+proto/gui_xmdlg.pro: gui_xmdlg.c
+proto/gui_gtk_x11.pro: gui_gtk_x11.c
+proto/gui_x11.pro: gui_x11.c
+proto/gui_w32.pro: gui_w32.c
+proto/gui_photon.pro: gui_photon.c

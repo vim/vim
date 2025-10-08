@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_PRINTER) || defined(PROTO)
+#if defined(FEAT_PRINTER)
 /*
  * To implement printing on a platform, the following functions must be
  * defined:
@@ -149,7 +149,7 @@ parse_printoptions(optset_T *args UNUSED)
     return parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 }
 
-#if defined(FEAT_POSTSCRIPT) || defined(PROTO)
+#if defined(FEAT_POSTSCRIPT)
 /*
  * Parse 'printmbfont' and set the flags in "mbfont_opts".
  * Returns an error message or NULL;
@@ -939,7 +939,7 @@ hardcopy_line(
     return col;
 }
 
-# if defined(FEAT_POSTSCRIPT) || defined(PROTO)
+# if defined(FEAT_POSTSCRIPT)
 
 /*
  * PS printer stuff.

@@ -14,15 +14,10 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 #ifdef VMS
 # include <float.h>
-#endif
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
 #endif
 
 /*

@@ -4232,7 +4232,7 @@ do_c_expr_indent(void)
 	fixthisline(get_c_indent);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "cindent(lnum)" function
  */

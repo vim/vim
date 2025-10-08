@@ -794,7 +794,7 @@ bomb_size(void)
     return n;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
@@ -1346,7 +1346,7 @@ static struct interval ambiguous[] =
     {0x100000, 0x10fffd}
 };
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * utf_char2cells() with different argument type for libvterm.
  */
@@ -1921,7 +1921,7 @@ mb_cptr2char_adv(char_u **pp)
     return c;
 }
 
-#if defined(FEAT_ARABIC) || defined(PROTO)
+#if defined(FEAT_ARABIC)
 /*
  * Check if the character pointed to by "p2" is a composing character when it
  * comes after "p1".  For Arabic sometimes "ab" is replaced with "c", which
@@ -2296,7 +2296,7 @@ utf_char2bytes(int c, char_u *buf)
     return 6;
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * utf_iscomposing() with different argument type for libvterm.
  */
@@ -4321,7 +4321,7 @@ theend:
     convert_setup(&vimconv, NULL, NULL);
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(FEAT_EVAL)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
  * When "end" is NULL stop at the first NUL.  Otherwise stop at "end".
@@ -4348,7 +4348,7 @@ utf_valid_string(char_u *s, char_u *end)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Special version of mb_tail_off() for use in ScreenLines[].
  */
@@ -4764,7 +4764,7 @@ enc_locale(void)
 #endif
 }
 
-# if defined(MSWIN) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+# if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /*
  * Convert an encoding name to an MS-Windows codepage.
  * Returns zero if no codepage can be figured out.
@@ -4793,7 +4793,7 @@ encname2codepage(char_u *name)
 }
 # endif
 
-# if defined(USE_ICONV) || defined(PROTO)
+# if defined(USE_ICONV)
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -4951,7 +4951,7 @@ iconv_string(
     return result;
 }
 
-#  if defined(DYNAMIC_ICONV) || defined(PROTO)
+#  if defined(DYNAMIC_ICONV)
 /*
  * Dynamically load the "iconv.dll" on Win32.
  */
@@ -5062,7 +5062,7 @@ iconv_end(void)
 #  endif // DYNAMIC_ICONV
 # endif // USE_ICONV
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "getimstatus()" function
  */
@@ -5241,8 +5241,7 @@ convert_setup_ext(
     return OK;
 }
 
-#if defined(FEAT_GUI) || defined(AMIGA) || defined(MSWIN) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI) || defined(AMIGA) || defined(MSWIN)
 /*
  * Do conversion on typed input characters in-place.
  * The input and output are not NUL terminated!
@@ -5570,7 +5569,7 @@ get_cellwidth(int c UNUSED)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Table set by setcellwidths().

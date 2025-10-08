@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 #ifdef VMS
 # include <float.h>
@@ -97,7 +97,7 @@ eval_init(void)
     func_init();
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 eval_clear(void)
 {
@@ -1005,7 +1005,7 @@ call_func_retlist(
     return rettv.vval.v_list;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Evaluate "arg", which is 'foldexpr'.
  * Note: caller must set "curwin" to match "arg".

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 
 typedef struct {
     char	*pp_name;
@@ -3422,7 +3422,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 # endif
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
 /*
  * Return TRUE if the current window is running a terminal in a popup window.
  * Return FALSE when the job has ended.
@@ -4479,7 +4479,7 @@ popup_is_popup(win_T *wp)
     return wp->w_popup_flags != 0;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Find an existing popup used as the preview window, in the current tab page.
  * Return NULL if not found.
@@ -4547,7 +4547,7 @@ f_popup_findpreview(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Create a popup to be used as the preview or info window.
  * NOTE: this makes the popup the current window, so that the file can be
@@ -4630,7 +4630,7 @@ popup_overlaps_cmdline(void)
     return popup_on_cmdline;
 }
 
-#if defined(HAS_MESSAGE_WINDOW) || defined(PROTO)
+#if defined(HAS_MESSAGE_WINDOW)
 
 /*
  * Get the message window.
@@ -4813,7 +4813,7 @@ popup_set_title(win_T *wp)
     redraw_win_later(wp, UPD_VALID);
 }
 
-# if defined(FEAT_QUICKFIX) || defined(PROTO)
+# if defined(FEAT_QUICKFIX)
 /*
  * If there is a preview window, update the title.
  * Used after changing directory.

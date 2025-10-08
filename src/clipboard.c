@@ -29,7 +29,7 @@
 // versions of these for the 'clipboard' selection, as Visual mode has no use
 // for them.
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_CLIPBOARD)
 
 #if defined(FEAT_WAYLAND_CLIPBOARD)
 
@@ -128,7 +128,7 @@ static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
 static void clip_wl_set_selection(Clipboard_T *cbd);
 
-# if defined(USE_SYSTEM) || defined(PROTO)
+# if defined(USE_SYSTEM)
 static bool clip_wl_owner_exists(Clipboard_T *cbd);
 # endif
 
@@ -1053,7 +1053,7 @@ clip_process_selection(
 #endif
 }
 
-# if defined(FEAT_GUI) || defined(PROTO)
+# if defined(FEAT_GUI)
 /*
  * Redraw part of the selection if character at "row,col" is inside of it.
  * Only used for the GUI.
@@ -1408,7 +1408,7 @@ clip_gen_request_selection(Clipboard_T *cbd UNUSED)
 }
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
-	|| defined(PROTO)
+
     static int
 clip_x11_owner_exists(Clipboard_T *cbd)
 {
@@ -1416,8 +1416,8 @@ clip_x11_owner_exists(Clipboard_T *cbd)
 }
 #endif
 
-#if ((defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)) \
-	&& defined(USE_SYSTEM)) || defined(PROTO)
+#if (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)) \
+	&& defined(USE_SYSTEM)
     int
 clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 {
@@ -1548,7 +1548,7 @@ did_set_clipboard(optset_T *args UNUSED)
  * Stuff for the X clipboard.  Shared between VMS and Unix.
  */
 
-#if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11)
 # include <X11/Xatom.h>
 # include <X11/Intrinsic.h>
 
@@ -1740,7 +1740,7 @@ clip_x11_notify_cb(Widget w UNUSED, Atom *sel_atom UNUSED, Atom *target UNUSED)
 /*
  * Property callback to get a timestamp for XtOwnSelection.
  */
-# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
+# if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     static void
 clip_x11_timestamp_cb(
     Widget	w,
@@ -2035,8 +2035,7 @@ clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 
 #endif
 
-#if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) \
-    || defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
 /*
  * Get the contents of the X CUT_BUFFER0 and put it in "cbd".
  */
@@ -2112,7 +2111,7 @@ yank_cut_buffer0(Display *dpy, Clipboard_T *cbd)
  * 'permanent' of the two), otherwise the PRIMARY one.
  * For now, use a hard-coded sanity limit of 1Mb of data.
  */
-#if (defined(FEAT_X11) && defined(FEAT_CLIPBOARD)) || defined(PROTO)
+#if defined(FEAT_X11) && defined(FEAT_CLIPBOARD)
     void
 x11_export_final_selection(void)
 {
@@ -3416,7 +3415,7 @@ clip_wl_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
-#if defined(USE_SYSTEM) || defined(PROTO)
+#if defined(USE_SYSTEM)
 /*
  * Return true if we own the selection corresponding to cbd or another client
  * does.

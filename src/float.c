@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 #ifdef VMS
 # include <float.h>
@@ -338,7 +338,7 @@ f_fmod(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 
-# if defined(HAVE_MATH_H) || defined(PROTO)
+# if defined(HAVE_MATH_H)
 /*
  * "isinf()" function
  */

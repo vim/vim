@@ -309,7 +309,7 @@ restore_search_patterns(void)
 #endif
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_search_patterns(void)
 {
@@ -492,7 +492,7 @@ pat_has_uppercase(char_u *pat)
     return FALSE;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     char_u *
 last_csearch(void)
 {
@@ -3366,7 +3366,7 @@ update_search_stat(
     p_ws = save_ws;
 }
 
-#if defined(FEAT_FIND_ID) || defined(PROTO)
+#if defined(FEAT_FIND_ID)
 
 /*
  * Get line "lnum" and copy it into "buf[LSIZE]".

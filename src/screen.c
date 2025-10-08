@@ -59,7 +59,7 @@ static void recording_mode(int attr);
 // Ugly global: overrule attribute used by screen_char()
 static int screen_char_attr = 0;
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_CONCEAL)
 /*
  * Return TRUE if the cursor line in window "wp" may be concealed, according
  * to the 'concealcursor' option.
@@ -229,7 +229,7 @@ win_draw_end(
     set_empty_rows(wp, row);
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Compute the width of the foldcolumn.  Based on 'foldcolumn' and how much
  * space is available for window "wp", minus "col".
@@ -371,7 +371,7 @@ char_needs_redraw(int off_from, int off_to, int cols)
     return FALSE;
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * Return the index in ScreenLines[] for the current screen line.
  */
@@ -887,7 +887,7 @@ screen_line(
     }
 }
 
-#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
+#if defined(FEAT_RIGHTLEFT)
 /*
  * Mirror text "str" for right-left displaying.
  * Only works for single-byte characters (e.g., numbers).
@@ -1006,7 +1006,7 @@ get_keymap_str(
     return plen;
 }
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
 /*
  * Redraw the status line or ruler of window "wp".
  * When "wp" is NULL redraw the tab pages line from 'tabline'.
@@ -1550,7 +1550,7 @@ screen_puts_len(
     }
 }
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 /*
  * Prepare for 'hlsearch' highlighting.
  */
@@ -4622,7 +4622,7 @@ comp_col(void)
 #endif
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Return the width of the 'number' and 'relativenumber' column.
  * Caller may need to check if 'number' or 'relativenumber' is set.
@@ -4670,7 +4670,7 @@ number_width(win_T *wp)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the current cursor column. This is the actual position on the
  * screen. First column is 0.

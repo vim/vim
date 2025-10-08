@@ -167,7 +167,7 @@ read_buffer(
     return retval;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Ensure buffer "buf" is loaded.  Does not trigger the swap-exists action.
  */
@@ -2066,7 +2066,7 @@ enter_buffer(buf_T *buf)
     redraw_later(UPD_NOT_VALID);
 }
 
-#if defined(FEAT_AUTOCHDIR) || defined(PROTO)
+#if defined(FEAT_AUTOCHDIR)
 /*
  * Change to the directory of the current buffer.
  * Don't do this while still starting up.
@@ -3768,7 +3768,7 @@ buflist_add(char_u *fname, int flags)
     return 0;
 }
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * Adjust slashes in file names.  Called after 'shellslash' was set.
  */
@@ -3856,7 +3856,7 @@ otherfile_buf(
     return TRUE;
 }
 
-#if defined(UNIX) || defined(PROTO)
+#if defined(UNIX)
 /*
  * Set inode and device number for a buffer.
  * Must always be called when b_fname is changed!.
@@ -4295,7 +4295,7 @@ resettitle(void)
     mch_settitle(lasttitle, lasticon);
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_titles(void)
 {
@@ -4305,7 +4305,7 @@ free_titles(void)
 # endif
 
 
-#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE)
 
 /*
  * Used for building in the status line.
@@ -5986,7 +5986,7 @@ bt_prompt(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'r';
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Return TRUE if "buf" is a buffer for a popup window.
  */
@@ -6025,7 +6025,7 @@ bt_nofileread(buf_T *buf)
 	    || buf->b_p_bt[0] == 'p');
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Return TRUE if "buf" has 'buftype' set to "nofile".
  */

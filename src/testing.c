@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Prepare "gap" for an assert error and add the sourcing position.
@@ -1201,7 +1201,7 @@ f_test_null_blob(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_blob = NULL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1216,7 +1216,7 @@ f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv)
     rettv_dict_set(rettv, NULL);
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv)
 {

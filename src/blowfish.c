@@ -22,7 +22,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 
 #define BF_BLOCK    8
 #define BF_BLOCK_MASK 7

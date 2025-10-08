@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 static class_T *first_class = NULL;
 static class_T *next_nonref_class = NULL;

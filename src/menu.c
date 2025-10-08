@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
 #define MENUDEPTH   10		// maximum depth of menus
 
@@ -1772,7 +1772,7 @@ popup_mode_name(char_u *name, int idx)
     return p;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Return the index into the menu->strings or menu->noremap arrays for the
  * current state.  Returns MENU_INDEX_INVALID if there is no mapping for the
@@ -1889,7 +1889,7 @@ menu_is_popup(char_u *name)
     return (STRNCMP(name, "PopUp", 5) == 0);
 }
 
-#if (defined(FEAT_GUI_MOTIF) && (XmVersion <= 1002)) || defined(PROTO)
+#if defined(FEAT_GUI_MOTIF) && (XmVersion <= 1002)
 /*
  * Return TRUE if "name" is part of a popup menu.
  */
@@ -1943,7 +1943,7 @@ menu_is_tearoff(char_u *name UNUSED)
 #endif
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU)
 
     static int
 get_menu_mode(void)
@@ -2029,7 +2029,7 @@ show_popupmenu(void)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 
 /*
  * Check that a pointer appears in the menu tree.  Used to protect from using
@@ -2140,7 +2140,7 @@ gui_update_menus(int modes)
 }
 
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(PROTO)
+    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
 /*
  * Check if a key is used as a mnemonic for a toplevel menu.
  * Case of the key is ignored.
@@ -2161,7 +2161,7 @@ gui_is_menu_shortcut(int key)
 # endif
 #endif // FEAT_GUI
 
-#if (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF)) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF)
 
 /*
  * Deal with tearoff items that are added like a menu item.
@@ -2595,7 +2595,7 @@ winbar_click(win_T *wp, int col)
 
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_TERM_POPUP_MENU) || defined(FEAT_GUI_HAIKU) \
-	|| defined(FEAT_BEVAL_TIP) || defined(PROTO)
+	|| defined(FEAT_BEVAL_TIP)
 /*
  * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy.
  */

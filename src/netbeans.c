@@ -25,7 +25,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG)
 
 #ifndef MSWIN
 # include <netdb.h>
@@ -2449,7 +2449,7 @@ netbeans_keyname(int key, char *buf)
     strcat(buf, name);
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL)
 /*
  * Function to be called for balloon evaluation.  Grabs the text under the
  * cursor and sends it to the debugger for evaluation.  The debugger should
@@ -2552,7 +2552,7 @@ netbeans_send_disconnect(void)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     int
 set_ref_in_nb_channel(int copyID)
 {
@@ -2569,7 +2569,7 @@ set_ref_in_nb_channel(int copyID)
 }
 #endif
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN)
 /*
  * Tell netbeans that the window was moved or resized.
  */
@@ -3004,7 +3004,7 @@ netbeans_is_guarded(linenr_T top, linenr_T bot)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_X11)
 /*
  * We have multiple signs to draw at the same location. Draw the
  * multi-sign indicator instead. This is the Motif version.

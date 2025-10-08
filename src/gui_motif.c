@@ -674,7 +674,7 @@ manage_centered(Widget dialog_child)
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
-#if defined(FEAT_MENU) || defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_MENU) || defined(FEAT_GUI_DIALOG)
 
 /*
  * Encapsulate the way an XmFontList is created.
@@ -699,7 +699,7 @@ gui_motif_create_fontlist(XFontStruct *font)
     return font_list;
 }
 
-# if ((XmVersion > 1001) && defined(FEAT_XFONTSET)) || defined(PROTO)
+# if ((XmVersion > 1001) && defined(FEAT_XFONTSET))
     XmFontList
 gui_motif_fontset2fontlist(XFontSet *fontset)
 {
@@ -719,7 +719,7 @@ gui_motif_fontset2fontlist(XFontSet *fontset)
 
 #endif
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Menu stuff.
  */
@@ -1363,7 +1363,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     }
 }
 
-#if (XmVersion <= 1002) || defined(PROTO)
+#if (XmVersion <= 1002)
 /*
  * This function will destroy/create the popup menus dynamically,
  * according to the value of 'mousemodel'.
@@ -1450,7 +1450,7 @@ gui_mch_new_menu_font(void)
     ui_new_shellsize();
 }
 
-#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI)
     void
 gui_mch_new_tooltip_font(void)
 {
@@ -2097,7 +2097,7 @@ set_fontlist(Widget id)
 }
 #endif
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 
 /*
  * file selector related stuff
@@ -2353,7 +2353,7 @@ DialogAcceptCB(
 
 #endif // FEAT_BROWSE
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 
 static int	dialogStatus;
 
@@ -2832,7 +2832,7 @@ gui_mch_dialog(
 }
 #endif // FEAT_GUI_DIALOG
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_show_toolbar(int showit)
 {
@@ -3058,7 +3058,7 @@ motif_get_toolbar_colors(
 }
 #endif
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 /*
  * Show or hide the tabline.
  */
