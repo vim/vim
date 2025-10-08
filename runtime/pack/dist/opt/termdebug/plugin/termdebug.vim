@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2025 Sep 15
+# Last Change: 2025 Oct 08
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -34,6 +34,7 @@ vim9script
 # Gdb is run as a job with callbacks for I/O.
 # On Unix another terminal window is opened to run the debugged program
 # On MS-Windows a separate console is opened to run the debugged program
+# but a terminal window is used to run remote debugged programs.
 
 # The communication with gdb uses GDB/MI.  See:
 # https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html
@@ -435,8 +436,73 @@ def IsGdbStarted(): bool
   return true
 enddef
 
-def CreateProgramPty(): string
-  ptybufnr = term_start('NONE', {
+# Check if the debugger is running remotely and return a suitable command to pty remotely
+def GetRemotePtyCmd(gdb_cmd: list<string>): list<string>
+  # Check if the user provided a command to launch the program window
+  var term_cmd = null_list
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'remote_window')
+    term_cmd = g:termdebug_config['remote_window']
+    term_cmd = type(term_cmd) == v:t_list ? copy(term_cmd) : [term_cmd]
+  else
+    # Check if it is a remote gdb, the program terminal should be started
+    # on the remote machine.
+    const remote_pattern = '^\(ssh\|wsl\)'
+    if gdb_cmd[0] =~? remote_pattern
+      var gdb_pos = indexof(gdb_cmd, $'v:val =~? "^{GetCommand()[-1]}"')
+      if gdb_pos > 0
+        # strip debugger call
+        term_cmd = gdb_cmd[0 : gdb_pos - 1]
+        # roundtrip to check if socat is available on the remote side
+        silent call system(join(term_cmd, ' ') .. ' socat -h')
+        if v:shell_error
+          Echowarn('Install socat on the remote machine for a program window better experience')
+        else
+          # create a devoted tty slave device and link to stdin/stdout
+          term_cmd += ['socat', '-dd', '-', 'PTY,raw,echo=0']
+          ch_log($'launching remote ttys using "{join(term_cmd)}"')
+        endif
+      endif
+    endif
+  endif
+  return term_cmd
+enddef
+
+# Retrieve the remote pty device from a remote terminal
+# If interact is true, use remote tty command to get the pty device
+def GetRemotePtyDev(bufnr: number, interact: bool): string
+  var pty: string = null_string
+  var line = null_string
+
+  for j in range(5)
+
+    if interact
+      term_sendkeys(bufnr, "tty\<CR>")
+    endif
+
+    for i in range(0, term_getsize(bufnr)[0])
+      line = term_getline(bufnr, i)
+      if line =~? "/dev/pts"
+          pty = line
+          break
+      endif
+      term_wait(bufnr, 100)
+    endfor # i
+
+    if pty != null_string
+      # Clear the terminal window
+      if interact
+        term_sendkeys(bufnr, "clear\<CR>")
+      endif
+      break
+    endif
+
+  endfor # j
+
+  return pty
+enddef
+
+def CreateProgramPty(cmd: list<string> = null_list): string
+  ptybufnr = term_start(!cmd ? 'NONE' : cmd, {
     term_name: ptybufname,
     vertical: vvertical})
   if ptybufnr == 0
@@ -454,20 +520,76 @@ def CreateProgramPty(): string
     endif
   endif
 
-  return job_info(term_getjob(ptybufnr))['tty_out']
+  if !cmd
+    return job_info(term_getjob(ptybufnr))['tty_out']
+  else
+    var interact = indexof(cmd, 'v:val =~? "^socat"') < 0
+    var pty = GetRemotePtyDev(ptybufnr, interact)
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the program window tty')
+      exe $'bwipe! {ptybufnr}'
+      pty = null_string
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
+    endif
+
+    return pty
+  endif
 enddef
 
-def CreateCommunicationPty(): string
+def CreateCommunicationPty(cmd: list<string> = null_list): string
   # Create a hidden terminal window to communicate with gdb
-  commbufnr = term_start('NONE', {
-    term_name: commbufname,
-    out_cb: CommOutput,
-    hidden: 1
-  })
+  var options: dict<any> = { term_name: commbufname, out_cb: CommOutput, hidden: 1 }
+
+  if !cmd
+    commbufnr = term_start('NONE', options)
+  else
+    # avoid message wrapping that prevents proper parsing
+    options['term_cols'] = 500
+    commbufnr = term_start(cmd, options)
+  endif
+
   if commbufnr == 0
     return null_string
   endif
-  return job_info(term_getjob(commbufnr))['tty_out']
+
+  if !cmd
+    return job_info(term_getjob(commbufnr))['tty_out']
+  else
+    # CommunicationPty only will be reliable with socat
+    if indexof(cmd, 'v:val =~? "^socat"') < 0
+      Echoerr('Communication window should be started with socat')
+      exe $'bwipe! {commbufnr}'
+      return null_string
+    endif
+
+    var pty = GetRemotePtyDev(commbufnr, false)
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the communication window tty')
+      exe $'bwipe! {commbufnr}'
+      pty = null_string
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
+    endif
+
+    return pty
+  endif
+enddef
+
+# Convenient filter to workaround remote escaping issues.
+# For example, ssh doesn't escape spaces for the gdb arguments.
+# Workaround doing:
+# let g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
+def g:Termdebug_escape_whitespace(args: list<string>): list<string>
+  var new_args: list<string> = []
+  for arg in args
+    new_args += [substitute(arg, ' ', '\\ ', 'g')]
+  endfor
+  return new_args
 enddef
 
 def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
@@ -495,6 +617,12 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
     # Command executed _after_ startup is done, provides us with the necessary
     # feedback
     gdb_cmd += ['-ex', 'echo startupdone\n']
+  endif
+
+  # Escape whitespaces in the gdb arguments for ssh remoting
+  if exists('g:termdebug_config') && !has_key(g:termdebug_config, 'command_filter') &&
+      gdb_cmd[0] =~? '^ssh'
+    g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
   endif
 
   if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_filter')
@@ -599,14 +727,18 @@ enddef
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
 
-  var programpty = CreateProgramPty()
+  # Retrieve command if remote pty is needed
+  var gdb_cmd = GetCommand()
+  var term_cmd = GetRemotePtyCmd(gdb_cmd)
+
+  var programpty = CreateProgramPty(term_cmd)
   if programpty is null_string
     Echoerr('Failed to open the program terminal window')
     CloseBuffers()
     return
   endif
 
-  var commpty = CreateCommunicationPty()
+  var commpty = CreateCommunicationPty(term_cmd)
   if commpty is null_string
     Echoerr('Failed to open the communication terminal window')
     CloseBuffers()
@@ -656,16 +788,27 @@ def StartDebug_prompt(dict: dict<any>)
   var gdb_args = get(dict, 'gdb_args', [])
   var proc_args = get(dict, 'proc_args', [])
 
-  # Add -quiet to avoid the intro message causing a hit-enter prompt.
-  gdb_cmd += ['-quiet']
+  # directly communicate via mi2. This option must precede any -iex options for proper
+  # interpretation.
+  gdb_cmd += ['--interpreter=mi2']
   # Disable pagination, it causes everything to stop at the gdb, needs to be run early
   gdb_cmd += ['-iex', 'set pagination off']
   # Interpret commands while the target is running.  This should usually only
   # be exec-interrupt, since many commands don't work properly while the
   # target is running (so execute during startup).
   gdb_cmd += ['-iex', 'set mi-async on']
-  # directly communicate via mi2
-  gdb_cmd += ['--interpreter=mi2']
+  # Add -quiet to avoid the intro message causing a hit-enter prompt.
+  gdb_cmd += ['-quiet']
+
+  # Escape whitespaces in the gdb arguments for ssh remoting
+  if exists('g:termdebug_config') && !has_key(g:termdebug_config, 'command_filter') &&
+      gdb_cmd[0] =~? '^ssh'
+    g:termdebug_config['command_filter'] = function('g:Termdebug_escape_whitespace')
+  endif
+
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_filter')
+    gdb_cmd = g:termdebug_config.command_filter(gdb_cmd)
+  endif
 
   # Adding arguments requested by the user
   gdb_cmd += gdb_args
@@ -686,24 +829,61 @@ def StartDebug_prompt(dict: dict<any>)
   set modified
   gdb_channel = job_getchannel(gdbjob)
 
-  ptybufnr = 0
-  if has('win32')
-    # MS-Windows: run in a new console window for maximum compatibility
-    SendCommand('set new-console on')
-  elseif has('terminal')
-    # Unix: Run the debugged program in a terminal window.  Open it below the
-    # gdb window.
-    belowright ptybufnr = term_start('NONE', {
-      term_name: 'debugged program',
-      vertical: vvertical
-    })
-    if ptybufnr == 0
-      Echoerr('Failed to open the program terminal window')
+  # Retrieve command if remote pty is needed
+  var term_cmd = GetRemotePtyCmd(gdb_cmd)
+
+  # If we are not using socat maybe is a shell:
+  var interact = indexof(term_cmd, 'v:val =~? "^socat"') < 0
+
+  if has('terminal') && (term_cmd != null || !has('win32'))
+
+    # Try open terminal twice because sync with gdbjob may not succeed
+    # the first time (docker daemon for example)
+    var trials: number = 2
+    var pty: string = null_string
+
+    while trials > 0
+
+      # Run the debugged program in a window.  Open it below the
+      # gdb window.
+      belowright ptybufnr = term_start(
+        term_cmd != null ? term_cmd : 'NONE', {
+        term_name: 'debugged program',
+        vertical: vvertical
+      })
+
+      if ptybufnr == 0
+        Echoerr('Failed to open the program terminal window')
+        job_stop(gdbjob)
+        return
+      endif
+
+      ptywin = win_getid()
+
+      if term_cmd is null
+        pty = job_info(term_getjob(ptybufnr))['tty_out']
+      else
+        # Retrieve remote pty value
+        pty = GetRemotePtyDev(ptybufnr, interact)
+      endif
+
+      if pty !~? "/dev/pts"
+        exe $'bwipe! {ptybufnr}'
+        --trials
+        pty = null_string
+      else
+        break
+      endif
+    endwhile
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the program windows tty')
       job_stop(gdbjob)
-      return
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
     endif
-    ptywin = win_getid()
-    var pty = job_info(term_getjob(ptybufnr))['tty_out']
+
     SendCommand($'tty {pty}')
 
     # Since GDB runs in a prompt window, the environment has not been set to
@@ -714,6 +894,9 @@ def StartDebug_prompt(dict: dict<any>)
     SendCommand($'set env COLUMNS = {winwidth(ptywin)}')
     SendCommand($'set env COLORS = {&t_Co}')
     SendCommand($'set env VIM_TERMINAL = {v:version}')
+  elseif has('win32')
+    # MS-Windows: run in a new console window for maximum compatibility
+    SendCommand('set new-console on')
   else
     # TODO: open a new terminal, get the tty name, pass on to gdb
     SendCommand('show inferior-tty')
@@ -930,7 +1113,7 @@ enddef
 const NullRepl = 'XXXNULLXXX'
 
 # Extract the "name" value from a gdb message with fullname="name".
-def GetFullname(msg: string): string
+def GetLocalFullname(msg: string): string
   if msg !~ 'fullname'
     return ''
   endif
@@ -942,6 +1125,50 @@ def GetFullname(msg: string): string
   endif
 
   return name
+enddef
+
+# Turn a remote machine local path into a remote one.
+def Local2RemotePath(path: string): string
+  # If no mappings are provided keep the path.
+  if !exists('g:termdebug_config') || !has_key(g:termdebug_config, 'substitute_path')
+    return path
+  endif
+
+  var mappings: list<any> = items(g:termdebug_config['substitute_path'])
+
+  # Try to match the longest local path first.
+  sort(mappings, (a, b) => len(b[0]) - len(a[0]))
+
+  for [local, remote] in mappings
+    const pattern = '^' .. escape(local, '\.*~()')
+    if path =~ pattern
+      return substitute(path, pattern, escape(remote, '\.*~()'), '')
+    endif
+  endfor
+
+  return path
+enddef
+
+# Turn a remote path into a local one to the remote machine.
+def Remote2LocalPath(path: string): string
+  # If no mappings are provided keep the path.
+  if !exists('g:termdebug_config') || !has_key(g:termdebug_config, 'substitute_path')
+    return path
+  endif
+
+  var mappings: list<any> = items(g:termdebug_config['substitute_path'])
+
+  # Try to match the longest remote path first.
+  sort(mappings, (a, b) => len(b[1]) - len(a[1]))
+
+  for [local, remote] in mappings
+    const pattern = '^' .. escape(substitute(remote, '[\/]', '[\\/]', 'g'), '.*~()')
+    if path =~ pattern
+      return substitute(path, pattern, local, '')
+    endif
+  endfor
+
+  return path
 enddef
 
 # Extract the "addr" value from a gdb message with addr="0x0001234".
@@ -1159,7 +1386,7 @@ def CommOutput(chan: channel, message: string)
 enddef
 
 def GotoProgram()
-  if has('win32')
+  if has('win32') && !ptywin
     if executable('powershell')
       system(printf('powershell -Command "add-type -AssemblyName microsoft.VisualBasic;[Microsoft.VisualBasic.Interaction]::AppActivate(%d);"', pid))
     endif
@@ -1374,7 +1601,8 @@ def Until(at: string)
     ch_log('assume that program is running after this command')
 
     # Use the fname:lnum format
-    var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
+    var fname = Remote2LocalPath(expand('%:p'))
+    var AT = empty(at) ? QuoteArg($"{fname}:{line('.')}") : at
     SendCommand($'-exec-until {AT}')
   else
     ch_log('dropping command, program is running: exec-until')
@@ -1393,7 +1621,8 @@ def SetBreakpoint(at: string, tbreak=false)
   endif
 
   # Use the fname:lnum format, older gdb can't handle --source.
-  var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
+  var fname = Remote2LocalPath(expand('%:p'))
+  var AT = empty(at) ? QuoteArg($"{fname}:{line('.')}") : at
   var cmd = ''
   if tbreak
     cmd = $'-break-insert -t {AT}'
@@ -1407,7 +1636,8 @@ def SetBreakpoint(at: string, tbreak=false)
 enddef
 
 def ClearBreakpoint()
-  var fname = fnameescape(expand('%:p'))
+  var fname = Remote2LocalPath(expand('%:p'))
+  fname = fnameescape(fname)
   var lnum = line('.')
   var bploc = printf('%s:%d', fname, lnum)
   var nr = 0
@@ -1444,7 +1674,8 @@ def ClearBreakpoint()
 enddef
 
 def ToggleBreak()
-  var fname = fnameescape(expand('%:p'))
+  var fname = Remote2LocalPath(expand('%:p'))
+  fname = fnameescape(fname)
   var lnum = line('.')
   var bploc = printf('%s:%d', fname, lnum)
   if has_key(breakpoint_locations, bploc)
@@ -1859,7 +2090,7 @@ def HandleCursor(msg: string)
 
   var fname = ''
   if msg =~ 'fullname='
-    fname = GetFullname(msg)
+    fname = GetLocalFullname(msg)
   endif
 
   if msg =~ 'addr='
@@ -1887,12 +2118,15 @@ def HandleCursor(msg: string)
     SendCommand('-stack-list-variables 2')
   endif
 
-  if msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
+  # Translate to remote file name if needed.
+  const fremote = Local2RemotePath(fname)
+
+  if msg =~ '^\(\*stopped\|=thread-selected\)' && (fremote != fname || filereadable(fname))
     var lnum = substitute(msg, '.*line="\([^"]*\)".*', '\1', '')
     if lnum =~ '^[0-9]*$'
       GotoSourcewinOrCreateIt()
-      if expand('%:p') != fnamemodify(fname, ':p')
-        echomsg $"different fname: '{expand('%:p')}' vs '{fnamemodify(fname, ':p')}'"
+      if expand('%:p') != fnamemodify(fremote, ':p')
+        echomsg $"different fname: '{expand('%:p')}' vs '{fnamemodify(fremote, ':p')}'"
         augroup Termdebug
           # Always open a file read-only instead of showing the ATTENTION
           # prompt, since it is unlikely we want to edit the file.
@@ -1904,11 +2138,11 @@ def HandleCursor(msg: string)
         augroup END
         if &modified
           # TODO: find existing window
-          exe $'split {fnameescape(fname)}'
+          exe $'split {fnameescape(fremote)}'
           sourcewin = win_getid()
           InstallWinbar(false)
         else
-          exe $'edit {fnameescape(fname)}'
+          exe $'edit {fnameescape(fremote)}'
         endif
         augroup Termdebug
           au! SwapExists
@@ -1917,7 +2151,7 @@ def HandleCursor(msg: string)
       exe $":{lnum}"
       normal! zv
       sign_unplace('TermDebug', {id: pc_id})
-      sign_place(pc_id, 'TermDebug', 'debugPC', fname,
+      sign_place(pc_id, 'TermDebug', 'debugPC', fremote,
         {lnum: str2nr(lnum), priority: 110})
       if !exists('b:save_signcolumn')
         b:save_signcolumn = &signcolumn
@@ -1991,10 +2225,11 @@ def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
   endif
 
   for mm in SplitMsg(msg)
-    var fname = GetFullname(mm)
+    var fname = GetLocalFullname(mm)
     if empty(fname)
       continue
     endif
+    var fremote = Local2RemotePath(fname)
     nr = substitute(mm, '.*number="\([0-9.]*\)\".*', '\1', '')
     if empty(nr)
       return
@@ -2034,11 +2269,11 @@ def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
     endif
 
     var posMsg = ''
-    if bufloaded(fname)
+    if bufloaded(fremote)
       PlaceSign(id, subid, entry)
       posMsg = $' at line {lnum}.'
     else
-      posMsg = $' in {fname} at line {lnum}.'
+      posMsg = $' in {fremote} at line {lnum}.'
     endif
     var actionTaken = ''
     if !modifiedFlag
@@ -2055,8 +2290,9 @@ enddef
 
 def PlaceSign(id: number, subid: number, entry: dict<any>)
   var nr = printf('%d.%d', id, subid)
+  var remote = Local2RemotePath(entry['fname'])
   sign_place(Breakpoint2SignNumber(id, subid), 'TermDebug',
-    $'debugBreakpoint{nr}', entry['fname'],
+    $'debugBreakpoint{nr}', remote,
     {lnum: entry['lnum'], priority: 110})
   entry['placed'] = 1
 enddef

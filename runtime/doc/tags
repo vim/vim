@@ -10952,8 +10952,12 @@ termdebug-example	terminal.txt	/*termdebug-example*
 termdebug-frames	terminal.txt	/*termdebug-frames*
 termdebug-mappings	terminal.txt	/*termdebug-mappings*
 termdebug-prompt	terminal.txt	/*termdebug-prompt*
+termdebug-remote	terminal.txt	/*termdebug-remote*
+termdebug-remote-example	terminal.txt	/*termdebug-remote-example*
+termdebug-remote-window	terminal.txt	/*termdebug-remote-window*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
+termdebug-substitute-path	terminal.txt	/*termdebug-substitute-path*
 termdebug-timeout	terminal.txt	/*termdebug-timeout*
 termdebug-variables	terminal.txt	/*termdebug-variables*
 termdebug_contributing	terminal.txt	/*termdebug_contributing*

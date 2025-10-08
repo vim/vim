@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Oct 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,6 +44,7 @@ If the result is "1" you have it.
       Prompt mode				|termdebug-prompt|
       Mappings					|termdebug-mappings|
       Communication				|termdebug-communication|
+      Remote Debugging				|termdebug-remote|
       Customizing				|termdebug-customizing|
 
 {only available when compiled with the |+terminal| feature}
@@ -1635,12 +1636,103 @@ interrupt the running program.  But after using the MI command
 communication channel.
 
 
+Remote debugging ~
+							*termdebug-remote*
+One of the main issues of remote debugging is the access to the debuggee's
+source files.  The plugin can profit from system and vim's networking
+capabilities to workaround this.
+						*termdebug-remote-example*
+The |termdebug-example| can be replicated by running the `gdb` debugger to
+debug Vim on a remote Linux machine accessible via `ssh`.
+
+- Build Vim as explained in the local example.
+
+- If "socat" is not available in the remote machine 'terminal' mode will not
+  work properly. Fall back to |termdebug_use_prompt|: >
+    :let g:termdebug_config = {}
+    :let g:termdebug_config['use_prompt'] = v:true
+
+- Specify the command line to run the remote `gdb` instance: >
+    :let g:termdebug_config['command'] = ['ssh', 'hostname', 'gdb']
+<  Explaining `ssh` is beyond the scope of this example, but notice the
+  command line can be greatly simplified by specifying the user, keys and
+  other options into the `$HOME/.ssh/config` file.
+
+- Provide a hint for translating remote paths into |netrw| paths: >
+    :let g:termdebug_config['substitute_path'] = { '/': 'scp://hostname//' }
+
+- Load the termdebug plugin and start debugging Vim: >
+    :packadd termdebug
+    :Termdebug vim
+
+You now have the same three windows of the local example and can follow the
+very same steps.  The only difference is that the source windows displays a
+netrw buffer instead of a local one.
+
+						*termdebug-substitute-path*
+Use the `g:termdebug_config['substitute_path']` entry to map remote to local
+files using the same strategy that gdb's `substitute-path` command uses.
+For example:
+- Use |netrw| to access files remoting via ssh: >
+    let g:termdebug_config['command'] = ['ssh', 'hostname', 'gdb']
+    let g:termdebug_config['substitute_path'] = { '/': 'scp://hostname//' }
+< Note: that the key specifies the remote machine root path and the value
+ the local one.
+- Use Windows' `UNC` paths to access `WSL2` sources: >
+    let g:termdebug_config['command'] = ['wsl', 'gdb']
+    let g:termdebug_config['substitute_path'] = {
+	\ '/': '\\wsl.localhost\Ubuntu-22.04\',
+	\ '/mnt/c/': 'C:/' }
+< Note: that several mappings are required: one for each drive unit
+ and one for the linux filesystem (queried via `wslpath`).
+
+In this mode any `ssh` or `wsl` command would be detected and a similar
+command would be used to launch `socat` in a remote `tty` terminal session
+and connect it to `gdb`.
+If `socat` is not available a plain remote terminal would be used as
+fallback.
+The next session shows how to override this default behaviour.
+
+						*termdebug-remote-window*
+In order to use another remote terminal client, set "remote_window" entry
+in `g:termdebug_config` variable before invoking `:Termdebug`.  For example:
+- Debugging inside a docker container using "prompt" mode: >
+    let g:termdebug_config['use_prompt'] = v:true
+    let g:termdebug_config['command'] = ['docker', 'run', '-i',
+	\ '--rm', '--name', 'container-name', 'image-name', 'gdb']
+    let g:termdebug_config['remote_window'] =
+	\ ['docker', 'exec', '-ti', 'container-name'
+	\ ,'socat', '-dd', '-', 'PTY,raw,echo=0']
+
+- Debugging inside a docker container using a "terminal buffer".
+  The container should be already running because unlike the previous
+  case for `terminal mode` "program" and "communication" ptys are created
+  before the gdb one: >
+    $ docker run -ti --rm --name container-name immage-name
+
+<  Then, launch the debugger: >
+    let g:termdebug_config['use_prompt'] = v:false " default
+    let g:termdebug_config['command'] =
+	\ ['docker', 'exec', '-ti', 'container-name', 'gdb']
+    let g:termdebug_config['remote_window'] =
+	\ ['docker', 'exec', '-ti', 'container-name'
+	\ ,'socat', '-dd', '-', 'PTY,raw,echo=0']
+
+Note: "command" cannot use `-t` on |termdebug-prompt| mode because prompt
+buffers cannot handle `tty` connections.
+The "remote_window" command must use `-t` because otherwise it will lack
+a `pty slave device` for gdb to connect.
+Note: "socat" must be available in the remote machine on "terminal" mode.
+Note: docker container sources can be accessible combining `volumes`
+with mappings (see |termdebug-substitute-path|).
+
 GDB command ~
 							*g:termdebugger*
 To change the name of the gdb command, set "debugger" entry in
 g:termdebug_config or the "g:termdebugger" variable before invoking
 `:Termdebug`: >
 	let g:termdebug_config['command'] = "mygdb"
+
 If there is no g:termdebug_config you can use: >
 	let g:termdebugger = "mygdb"
 
@@ -1648,12 +1740,20 @@ However, the latter form will be deprecated in future releases.
 
 If the command needs an argument use a List: >
 	let g:termdebug_config['command'] = ['rr', 'replay', '--']
+
 If there is no g:termdebug_config you can use: >
 	let g:termdebugger = ['rr', 'replay', '--']
 
 Several arguments will be added to make gdb work well for the debugger.
 If you want to modify them, add a function to filter the argument list: >
 	let g:termdebug_config['command_filter'] = MyDebugFilter
+
+A "command_filter" scenario is solving escaping issues on remote debugging
+over "ssh".  For convenience a default filter is provided for escaping
+whitespaces inside the arguments.  It is automatically configured for "ssh",
+but can be employed in other use cases like this: >
+	let g:termdebug_config['command_filter'] =
+	/   function('g:Termdebug_escape_whitespace')
 
 If you do not want the arguments to be added, but you do need to set the
 "pty", use a function to add the necessary arguments: >
@@ -1717,7 +1817,8 @@ than 99 will be displayed as "9+".
 If you want to customize the breakpoint signs to show `>>` in the signcolumn: >
 	let g:termdebug_config['sign'] = '>>'
 You can also specify individual signs for the first several breakpoints: >
-	let g:termdebug_config['signs'] = ['>1', '>2', '>3', '>4', '>5', '>6', '>7', '>8', '>9']
+	let g:termdebug_config['signs'] = ['>1', '>2', '>3', '>4', '>5',
+         \ '>6', '>7', '>8', '>9']
 	let g:termdebug_config['sign'] = '>>'
 If you would like to use decimal (base 10) breakpoint signs: >
 	let g:termdebug_config['sign_decimal'] = 1
