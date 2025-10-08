@@ -4992,7 +4992,7 @@ leave_tabpage(
     tp->tp_prevwin = prevwin;
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
-    tp->tp_old_Rows = Rows;
+    tp->tp_old_Rows = ROWS_AVAIL;
     if (tp->tp_old_Columns != -1)
     {
 	tp->tp_old_Columns = topframe->fr_width;
@@ -5054,7 +5054,7 @@ enter_tabpage(
     // The tabpage line may have appeared or disappeared, may need to resize
     // the frames for that.  When the Vim window was resized need to update
     // frame sizes too.
-    if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
+    if (curtab->tp_old_Rows != ROWS_AVAIL || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
 			    && !gui_use_tabline()
 #endif
