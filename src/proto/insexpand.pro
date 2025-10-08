@@ -26,6 +26,7 @@ int has_compl_option(int dict_opt);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_accept_char(int c);
 int ins_compl_add_infercase(char_u *str_arg, int len, int icase, char_u *fname, int dir, int cont_s_ipos, int score);
+int ins_compl_is_match_selected(void);
 int ins_compl_preinsert_longest(void);
 char_u *ins_compl_leader(void);
 int ins_compl_col_range_attr(linenr_T lnum, int col);
@@ -77,5 +78,4 @@ int ins_complete(int c, int enable_pum);
 void ins_compl_enable_autocomplete(void);
 void free_insexpand_stuff(void);
 void f_preinserted(typval_T *argvars, typval_T *rettv);
-int ins_compl_is_match_selected(void);
 /* vim: set ft=c : */
