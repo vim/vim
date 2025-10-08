@@ -3524,6 +3524,7 @@ $quote	eval.txt	/*$quote*
 :syntax-off	syntax.txt	/*:syntax-off*
 :syntax-on	syntax.txt	/*:syntax-on*
 :syntax-reset	syntax.txt	/*:syntax-reset*
+:synti	syntax.txt	/*:synti*
 :syntime	syntax.txt	/*:syntime*
 :t	change.txt	/*:t*
 :tN	tagsrch.txt	/*:tN*
