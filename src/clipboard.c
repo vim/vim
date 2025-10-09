@@ -3866,7 +3866,7 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
     typval_T	rettv;
     int		ret;
     char_u	*reg_type;
-    char_u	*contents;
+    list_T	*lines;
 
     if (clip_provider_get_callback(
 		(char_u *)(cbd == &clip_star ? "*" : "+"),
@@ -3886,18 +3886,18 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
     else if (rettv.v_type == VAR_TUPLE
 	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
-	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_STRING)
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
     {
 	reg_type = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
-	contents = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_string;
+	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
     }
     else if (rettv.v_type == VAR_LIST
 	    && rettv.vval.v_list->lv_len == 2
 	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
-	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_STRING)
+	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
     {
 	reg_type = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
-	contents = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_string;
+	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
     }
     else
     {
@@ -3906,11 +3906,32 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
     }
 
     {
-	char_u	    yank_type;
+	char_u	    yank_type = MAUTO;
 	long	    block_len = -1;
 	yankreg_T   *y_ptr;
+	char_u	    **contents;
+	listitem_T  *li;
+	int	    i = 0;
 
-	if (get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
+	contents = ALLOC_MULT(char_u *, lines->lv_len + 1); // Ends with a NULL
+
+	if (contents == NULL)
+	    goto exit;
+
+	// Convert strings in list to type char_u **
+	FOR_ALL_LIST_ITEMS(lines, li)
+	{
+	    char_u *str = tv_get_string_chk(&li->li_tv);
+
+	    if (str == NULL)
+		goto exit;
+
+	    contents[i++] = vim_strsave(str);
+	}
+	contents[i] = NULL;
+
+	if (STRLEN(reg_type) > 0
+		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	    goto exit;
 
 	if (cbd == &clip_plus)
@@ -3920,7 +3941,16 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
 
 	clip_free_selection(cbd);
 
-	str_to_reg(y_ptr, yank_type, contents, STRLEN(contents), block_len, FALSE);
+	str_to_reg(y_ptr,
+		yank_type,
+		(char_u *)contents,
+		STRLEN(contents),
+		block_len,
+		TRUE);
+
+	for (int k = 0; k < i; k++)
+	    vim_free(contents[k]);
+	vim_free(contents);
     }
 
 exit:
