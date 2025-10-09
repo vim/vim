@@ -341,7 +341,8 @@ const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
 patterns =<< trim eval END
     {'\'}<argd\%[elete]\s\+\*\s*$
     \<[lt]\=cd!\=\s\+-\s*$
-    \<norm\%[al]!\=\s*\S\+$
+    \<norm\%[al]!\=\s\+.*$
+    \<reg\%[isters]\%(\s\+\S\+\)\+$
     \%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)\=map!\=\s
     \<set\%(\%[global]\|\%[local]\)\>.*,$
     {PLUS_MINUS_COMMAND}
