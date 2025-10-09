@@ -3797,7 +3797,3 @@ EXTERN char e_osc_response_timed_out[]
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
 #endif
-#ifdef FEAT_CLIPBOARD_PROVIDER
-EXTERN char e_clip_provider_failed_calling_paste_callback[]
-	INIT(= N_("E1570: Failed calling paste callback for clipboard provider"));
-#endif

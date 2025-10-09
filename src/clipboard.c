@@ -3900,10 +3900,7 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
 	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
     }
     else
-    {
-	emsg(_(e_clip_provider_failed_calling_paste_callback));
 	goto exit;
-    }
 
     {
 	char_u	    yank_type = MAUTO;
