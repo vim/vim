@@ -375,10 +375,7 @@ only function prototypes.
 
 The `make proto` target in `src/Makefile` automates updating most of the .pro
 files using the Python script proto/gen_prototypes.py, which relies on the
-python3-clangd module.  Note that a few proto files are hand edited.
-
-This system has been in place since at least v1.24, when Vim's functions were
-still written in K&R style.
+python3-clang module.  Note that a few proto files are hand edited.
 
 ==============================================================================
 4. Coding style						*coding-style*
