@@ -3055,13 +3055,13 @@ depend:
 	sed -e '/\#\#\# Dependencies/q' < Makefile > tmp_make
 	-for i in $(ALL_LOCAL_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
 	-for i in $(TERM_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
 	-for i in $(XDIFF_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' -e 's+xdiff/\.\./++g' >> tmp_make; done
 	-for i in $(PROTO_FILES); do \
 		base=`basename $$i .pro`; \
 		echo "$$i: $$base.c" >> tmp_make; done
