@@ -140,7 +140,8 @@ parse_member(
 	if (*init_arg != NUL && !vim9_comment_start(init_arg))
 	{
 	    semsg(_(e_trailing_characters_str), init_arg);
-	    return FAIL;
+            clear_evalarg(&evalarg, NULL);
+            return FAIL;
 	}
 
 	// No type specified for the member.  Set it to "any" and the correct
