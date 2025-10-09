@@ -3641,16 +3641,6 @@ choose_clipmethod(void)
 	clip_init_single(&clip_star, primary);
     }
 
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-    if (method == CLIPMETHOD_PROVIDER)
-    {
-	// If we are on a system that has the plus register, use that. Otherwise
-	// use the the star register. But we can never use both for clipboard
-	// provider functionality.
-	clip_star.available = FALSE;
-    }
-#endif
-
     clipmethod = method;
 
 #ifdef FEAT_EVAL
@@ -3746,40 +3736,48 @@ clip_provider_get_callback(
     typval_T	provider_tv;
     typval_T	action_tv;
     typval_T	func_tv;
+    callback_T	cb;
 
     if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL)
-        return FAIL;
+	return FAIL;
     else if (provider_tv.v_type != VAR_DICT)
     {
-        clear_tv(&provider_tv);
-        return FAIL;
+	clear_tv(&provider_tv);
+	return FAIL;
     }
-    else if (dict_get_tv(provider_tv.vval.v_dict, "copy", &action_tv) == FAIL)
+    else if (dict_get_tv(
+		provider_tv.vval.v_dict,
+		(char *)function,
+		&action_tv) == FAIL)
     {
-        clear_tv(&provider_tv);
+	clear_tv(&provider_tv);
 	return FAIL;
     }
     else if (action_tv.v_type != VAR_DICT)
     {
-        clear_tv(&provider_tv);
+	clear_tv(&provider_tv);
 	clear_tv(&action_tv);
 	return FAIL;
     }
     else if (dict_get_tv(action_tv.vval.v_dict, (char *)reg, &func_tv) == FAIL)
     {
-        clear_tv(&provider_tv);
+	clear_tv(&provider_tv);
 	clear_tv(&action_tv);
 	return FAIL;
     }
-    else if ((*callback = get_callback(&func_tv)).cb_name == NULL)
+    else if ((cb = get_callback(&func_tv)).cb_name == NULL)
     {
-        clear_tv(&provider_tv);
+	clear_tv(&provider_tv);
 	clear_tv(&action_tv);
 	clear_tv(&func_tv);
 	return FAIL;
     }
     clear_tv(&provider_tv);
     clear_tv(&action_tv);
+
+    // func_tv owns the function name, so we must make a copy for the callback
+    set_callback(callback, &cb);
+    free_callback(&cb);
     clear_tv(&func_tv);
     return OK;
 }
@@ -3787,25 +3785,21 @@ clip_provider_get_callback(
     static void
 clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
 {
-    char	*reg = (cbd == &clip_star) ? "*" : "+";
     callback_T	callback;
     typval_T	rettv;
-    typval_T	argvars[4];
+    typval_T	argvars[3];
     yankreg_T	*y_ptr;
     char_u	type[2 + NUMBUFLEN];
     list_T	*list = NULL;
 
     if (clip_provider_get_callback(
-		(char_u *)reg,
+		(char_u *)(cbd == &clip_star ? "*" : "+"),
 		provider,
 		(char_u *)"copy",
 		&callback) == FAIL)
 	return;
 
-    argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = (char_u *)reg;
-    
-    // Get register type
+    // Convert register type into a string
     if (cbd == &clip_plus)
 	y_ptr = get_y_register(PLUS_REGISTER);
     else
@@ -3827,8 +3821,8 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
 	    break;
     }
 
-    argvars[1].v_type = VAR_STRING;
-    argvars[1].vval.v_string = type;
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = type;
 
     /* // Get register contents by creating a list of lines */
     list = list_alloc();
@@ -3849,14 +3843,14 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
 
     list->lv_refcount++;
 
-    argvars[2].v_type = VAR_LIST;
-    argvars[2].v_lock = VAR_FIXED;
-    argvars[2].vval.v_list = list;
+    argvars[1].v_type = VAR_LIST;
+    argvars[1].v_lock = VAR_FIXED;
+    argvars[1].vval.v_list = list;
 
-    argvars[3].v_type = VAR_UNKNOWN;
+    argvars[2].v_type = VAR_UNKNOWN;
 
     textlock++;
-    call_callback(&callback, -1, &rettv, 3, argvars);
+    call_callback(&callback, -1, &rettv, 2, argvars);
     clear_tv(&rettv);
     textlock--;
 
@@ -3867,28 +3861,24 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
     static void
 clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
 {
-    char	*reg = (cbd == &clip_star) ? "*" : "+";
     callback_T	callback;
-    typval_T	argvars[2];
+    typval_T	argvars[1];
     typval_T	rettv;
-    int		reg_type;
     int		ret;
-    list_T	*lines;
-    char_u	*regtype;
-    yankreg_T	*y_ptr;
+    char_u	*reg_type;
+    char_u	*contents;
 
     if (clip_provider_get_callback(
-		(char_u *)reg,
+		(char_u *)(cbd == &clip_star ? "*" : "+"),
 		provider,
 		(char_u *)"paste",
 		&callback) == FAIL)
 	return;
 
-    argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = (char_u *)reg;
+    argvars[0].v_type = VAR_UNKNOWN;
 
     textlock++;
-    ret = call_callback(&callback, -1, &rettv, 1, argvars);
+    ret = call_callback(&callback, -1, &rettv, 0, argvars);
     textlock--;
 
     if (ret == FAIL)
@@ -3896,51 +3886,42 @@ clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
     else if (rettv.v_type == VAR_TUPLE
 	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
-	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_STRING)
     {
-	regtype = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
-	lines = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_list;
+	reg_type = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
+	contents = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_string;
     }
     else if (rettv.v_type == VAR_LIST
 	    && rettv.vval.v_list->lv_len == 2
 	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
-	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
+	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_STRING)
     {
-	regtype = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
-	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
+	reg_type = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
+	contents = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_string;
     }
     else
     {
-	textlock--;
 	emsg(_(e_clip_provider_failed_calling_paste_callback));
 	goto exit;
     }
-    textlock--;
 
-    switch (*regtype)
     {
-	case 'v':
-	case 'c':
-	    reg_type = MCHAR;
-	    break;
-	case 'V':
-	case 'l':
-	    reg_type = MLINE;
-	    break;
-	case Ctrl_V:
-	case 'b':
-	    reg_type = MBLOCK;
-	    break;
-	default:
+	char_u	    yank_type;
+	long	    block_len = -1;
+	yankreg_T   *y_ptr;
+
+	if (get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	    goto exit;
-    };
 
-    if (cbd == &clip_plus)
-	y_ptr = get_y_register(PLUS_REGISTER);
-    else
-	y_ptr = get_y_register(STAR_REGISTER);
+	if (cbd == &clip_plus)
+	    y_ptr = get_y_register(PLUS_REGISTER);
+	else
+	    y_ptr = get_y_register(STAR_REGISTER);
 
-    clip_free_selection(cbd);
+	clip_free_selection(cbd);
+
+	str_to_reg(y_ptr, yank_type, contents, STRLEN(contents), block_len, FALSE);
+    }
 
 exit:
     free_callback(&callback);
