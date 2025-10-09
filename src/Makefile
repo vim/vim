@@ -1873,6 +1873,7 @@ PROTO_FILES = \
 	proto/gc.pro \
 	proto/getchar.pro \
 	proto/gui_beval.pro \
+	proto/gui_gtk_gresources.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
@@ -2107,6 +2108,11 @@ update-po:
 # - Only the bare minimum of macro definitions is required.
 # - Generates the same .pro file even across different operating systems.
 #   (maybe)
+# Note: the following proto files need to be manually updated:
+# proto/gui_haiku.pro
+# proto/if_ole.pro
+# proto/if_perl.pro
+# proto/os_macosx.pro
 #
 # How to set up environment to run `make proto`
 # On Ubuntu 24.04:
@@ -2139,6 +2145,9 @@ GEN_PROTO_ARG = -DPROTO -DFEAT_GUI -DFEAT_WAYLAND -DFEAT_WAYLAND_CLIPBOARD -I.
 
 # Add `GENPROTO_DEBUG=1` before $(PYTHON) to get debug output.
 proto/%.pro: %.c
+	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
+
+proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
 
 notags:
@@ -3055,13 +3064,13 @@ depend:
 	sed -e '/\#\#\# Dependencies/q' < Makefile > tmp_make
 	-for i in $(ALL_LOCAL_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
 	-for i in $(TERM_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
 	-for i in $(XDIFF_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' -e 's+xdiff/\.\./++g' >> tmp_make; done
 	-for i in $(PROTO_FILES); do \
 		base=`basename $$i .pro`; \
 		echo "$$i: $$base.c" >> tmp_make; done
@@ -4663,6 +4672,7 @@ proto/fuzzy.pro: fuzzy.c
 proto/gc.pro: gc.c
 proto/getchar.pro: getchar.c
 proto/gui_beval.pro: gui_beval.c
+proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 proto/gui_xim.pro: gui_xim.c
 proto/hardcopy.pro: hardcopy.c
 proto/hashtab.pro: hashtab.c
