@@ -3555,7 +3555,7 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 		*regular = reg == 1;
 		*primary = pri == 1;
 	    }
-	    else if (reg == -1)
+	    else if (reg == -1 || pri == -1)
 #endif
 	    {
 		ret = CLIPMETHOD_FAIL;
