@@ -2284,10 +2284,18 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
-	clip_free_selection(cbd);
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	// We will choose if we want to the free the selection if using provider
+	if (clipmethod != CLIPMETHOD_PROVIDER)
+	    clip_free_selection(cbd);
+#endif
 
 	// Try to get selected text from another window
 	clip_gen_request_selection(cbd);
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	if (clipmethod == CLIPMETHOD_PROVIDER)
+	    clip_access_type = CLIP_ACCESS_IMPLICIT;
+#endif
     }
 }
 
@@ -3630,15 +3638,25 @@ choose_clipmethod(void)
 	clip_plus.did_warn = false;
 	clip_star.did_warn = false;
     }
-    // Disown clipboard if we are switching to a new method
-    else if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
+    else if ((clipmethod != CLIPMETHOD_NONE && method != clipmethod))
     {
+	// Disown clipboard if we are switching to a new method
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
+
 	clip_init_single(&clip_plus, regular);
 	clip_init_single(&clip_star, primary);
+    }
+    else
+    {
+	// If availability of a clipboard changed, then update the clipboard
+	// structure.
+	if (regular != clip_plus.available)
+	    clip_init_single(&clip_plus, regular);
+	if (primary != clip_star.available)
+	    clip_init_single(&clip_star, primary);
     }
 
     clipmethod = method;
@@ -3693,6 +3711,7 @@ clip_provider_is_available(Clipboard_T *cbd, char_u *provider)
     if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
     {
 	clear_tv(&provider_tv);
+	// If "available" functon not specified assume always TRUE
 	return 1;
     }
 
@@ -3706,7 +3725,7 @@ clip_provider_is_available(Clipboard_T *cbd, char_u *provider)
     avail = rettv.vval.v_string;
 
     if ((vim_strchr(avail, '+') != NULL && cbd == &clip_plus)
-	    || (vim_strchr(avail, '+') != NULL && cbd == &clip_star))
+	    || (vim_strchr(avail, '*') != NULL && cbd == &clip_star))
 	res = 1;
 
     if (FALSE)
@@ -3785,19 +3804,25 @@ clip_provider_get_callback(
     static void
 clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
 {
+    char_u	*reg = (char_u *)(cbd == &clip_star ? "*" : "+");
     callback_T	callback;
     typval_T	rettv;
-    typval_T	argvars[3];
+    typval_T	argvars[4];
     yankreg_T	*y_ptr;
     char_u	type[2 + NUMBUFLEN];
     list_T	*list = NULL;
 
     if (clip_provider_get_callback(
-		(char_u *)(cbd == &clip_star ? "*" : "+"),
+		reg,
 		provider,
 		(char_u *)"copy",
 		&callback) == FAIL)
 	return;
+
+    // Possibly get selected text, if using autoselect for 'clipboard'
+    cbd->owned = TRUE;
+    clip_get_selection(cbd);
+    cbd->owned = FALSE;
 
     // Convert register type into a string
     if (cbd == &clip_plus)
@@ -3822,7 +3847,10 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
     }
 
     argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = type;
+    argvars[0].vval.v_string = reg;
+
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = type;
 
     /* // Get register contents by creating a list of lines */
     list = list_alloc();
@@ -3843,14 +3871,14 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
 
     list->lv_refcount++;
 
-    argvars[1].v_type = VAR_LIST;
-    argvars[1].v_lock = VAR_FIXED;
-    argvars[1].vval.v_list = list;
+    argvars[2].v_type = VAR_LIST;
+    argvars[2].v_lock = VAR_FIXED;
+    argvars[2].vval.v_list = list;
 
-    argvars[2].v_type = VAR_UNKNOWN;
+    argvars[3].v_type = VAR_UNKNOWN;
 
     textlock++;
-    call_callback(&callback, -1, &rettv, 2, argvars);
+    call_callback(&callback, -1, &rettv, 3, argvars);
     clear_tv(&rettv);
     textlock--;
 
@@ -3861,27 +3889,44 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
     static void
 clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
 {
+    char_u	*reg = (char_u *)(cbd == &clip_star ? "*" : "+");
     callback_T	callback;
-    typval_T	argvars[1];
+    typval_T	argvars[3];
     typval_T	rettv;
     int		ret;
     char_u	*reg_type;
     list_T	*lines;
 
     if (clip_provider_get_callback(
-		(char_u *)(cbd == &clip_star ? "*" : "+"),
+		reg,
 		provider,
 		(char_u *)"paste",
 		&callback) == FAIL)
 	return;
 
-    argvars[0].v_type = VAR_UNKNOWN;
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = reg;
+
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = (char_u *)
+	(clip_access_type == CLIP_ACCESS_EXPLICIT ? "explicit" : "implicit");
+
+    argvars[2].v_type = VAR_UNKNOWN;
 
     textlock++;
-    ret = call_callback(&callback, -1, &rettv, 0, argvars);
+    ret = call_callback(&callback, -1, &rettv, 2, argvars);
     textlock--;
 
     if (ret == FAIL)
+	goto exit;
+    else if (rettv.v_type == VAR_STRING
+	    && STRCMP(rettv.vval.v_string, "clear") == 0)
+    {
+	clip_free_selection(cbd);
+	goto exit;
+    }
+    else if (rettv.v_type == VAR_STRING
+	    && STRCMP(rettv.vval.v_string, "previous") == 0)
 	goto exit;
     else if (rettv.v_type == VAR_TUPLE
 	    && TUPLE_LEN(rettv.vval.v_tuple) == 2

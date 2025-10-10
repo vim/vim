@@ -972,7 +972,8 @@ EXTERN int	gui_win_y INIT(= -1);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11/Wayland
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD) \
+    || ((defined(UNIX) || defined(VMS)) && defined(FEAT_CLIPBOARD_PROVIDER))
 EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland
 # else
 #  define clip_plus clip_star	// there is only one clipboard
@@ -2118,4 +2119,18 @@ INIT(= CLIENTSERVER_METHOD_NONE);
 #ifdef FEAT_SOCKETSERVER
 // Path to socket of last client that communicated with us
 EXTERN char_u *client_socket INIT(= NULL);
+#endif
+
+#ifdef FEAT_CLIPBOARD_PROVIDER
+typedef enum
+{
+    CLIP_ACCESS_IMPLICIT,
+    CLIP_ACCESS_EXPLICIT,
+} clip_access_T;
+
+// Only relevant for the clipboard provider feature. This indicates if the
+// clipboard request is implicit (ex. access when doing :registers),
+// explicit (ex. typing "+p). Always defaults to implicit.
+EXTERN clip_access_T clip_access_type INIT(= CLIP_ACCESS_IMPLICIT);
+EXTERN bool clip_dont_clear INIT(= FALSE);
 #endif

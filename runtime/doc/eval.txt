@@ -5278,9 +5278,15 @@ only the "*" register will be available for use.
 To add a provider, add a new entry in the |v:clipproviders| dictionary, in the
 format of: >
 	let v:clipproviders["name"] = {
-            \   "available": 'Available',
-            \   "paste": 'Paste',
-            \   "copy": 'Copy'
+            \   "available": function("Available"),
+            \   "paste": {
+            \       '+': function("Paste"), " For the + register
+            \       '*': function("Paste"), " For the * register
+            \   },
+            \   "copy": {
+            \       '+': function("Copy"), " Same thing as above
+            \       '*': function("Copy"),
+            \   },
             \ }
 
 The key is the provider name, which should be used in 'clipmethod', for
@@ -5291,56 +5297,101 @@ it. >
 Each callback can either be a name of a function in a string, a |Funcref|, or
 a |lambda| expression.
 
+Note that these dictionary entries are optional, for example, if you don't
+care about the "copy" functions, then you can simply exclude them. When Vim
+yanks/copies something, then simply nothing will be done.
+
 						*clipboard-provider-available*
-The "available" callback should return a boolean, either true if the clipboard
-provider is available to be used, or false if it is not.  If this callback is
-not specified, then it is assumed the provider is always available (always
-returns true).
+The "available" callback should return a string, which should contain which
+clipboard registers are available. For example, if the "+" register is only
+available, then the function would return "+", or if both "+" and "*" are
+available, then return "+*".
 
 						*clipboard-provider-paste*
-The "paste" callback returns nothing, and takes one argument which is the
-register being accessed  The callback should use |setreg()| to change the text
-being accessed.  Before the start of the callback, the register will be
-cleared first.  If this callback is not specified, then accessing the
-clipboard registers will return nothing.
+The "paste" callback takes a first argument which is the register being put
+(string), and a second argument which is the type of access (string).  It
+should return either a tuple/list or string.  If a tuple/list is returned, it
+should have two elements:
+	- The register type conforming to |setreg()|.
+	- A list of strings
+If the register type is an empty string, then the type is automatically
+chosen, see |setreg()|.  If a string is returned, then it can either be "clear"
+or "previous".  "clear" makes Vim clear the register, and "previous" makes Vim
+use the previous register contents (or current depending on how you view it).
+
+The second argument, the access type, can either be "explicit" or "implicit".
+"explicit" means that the user is directly accessing the clipboard, such as
+putting text, or calling |getreg()|.  "implicit" means that the clipboard is
+being accessed indirectly, such when |:registers| is called, or when an
+unrelated operation causes Vim to access the clipboard.
+
+This is useful since many operations in Vim implicity access the clipboard
+without the user knowing.  For example, if when you want to create a provider
+for the OSC52 command (accessing the clipboard via an escape code).  Many
+terminals show a confirmation if you want Vim to access the clipboard.  This
+can be very annoying with the terminal asking for permission everytime you do
+something that accesses the clipboard behind the scenes.  A good way to handle
+implicit access is to return "previous", which leaves the register contents
+unchanged.
 
 						*clipboard-provider-copy*
-The "copy" callback returns nothing, and takes one argument which the register
-being put.  The callback should use |getreg()| to get the contents of the
-given register so it can be used.  If this callback is not specified, then
-nothing is done when the clipboard registers are changed.
+The "copy" callback returns nothing, and takes the given arguments in order:
+	- The register being yanked
+	- The register type
+	- A list of strings that were yanked.
 
+The provider can do whatever it wants with the given information.  This
+function is called on every request to change the clipboard register(s).
+
+						*clipboard-provider-textlock*
 In both the "paste" and "copy" callbacks, it is not allowed to change the
-buffer text, see |textlock|.  Additionally, the register in question will act
-like a normal register, meaning that no "paste" or "copy" callbacks will be
-called on it when it is modified/accessed.
+buffer text, see |textlock|.
 
-The "copy" callback is called whenever the register is modified, and the
-"paste" callback is called whenever the register is accessed, such as when
-calling |:registers|
-
-Here is an example script that uses the clipboard provider feature: >
+						*clipboard-provider-example*
+Here is an example script that uses the clipboard provider feature through the
+OSC52 command: >
 	:func! Available()
-	:  return v:true
+	:    return "+"
 	:endfunc
 	:
-	:func! Paste(reg)
-	:  call setreg(a:reg, g:stuff)
+	:func! Paste(reg, type)
+	:    if a:type == "implicit"
+	:	return "previous"
+	:    endif
+	:
+	:    augroup OSC
+	:	autocmd!
+	:	autocmd TermResponseAll osc ++once call feedkeys("\<F30>", '!')
+	:    augroup END
+	:
+	:    " Send command
+	:    call echoraw("\<Esc>]52;c;?\<Esc>\\")
+	:
+	:    " Wait until autocmd is triggered
+	:    while getchar(-1) != "\<F30>"
+	:    endwhile
+	:
+	:    autocmd! OSC
+	:
+	:    " Extract the base64 stuff
+	:    let l:stuff = matchstr(v:termosc, '52;c;\zs[A-Za-z0-9+/=]\+')
+	:
+	:    return ("", blob2str(base64_decode(l:stuff)))
 	:endfunc
-	:
-	:func! Copy(reg)
-	:  let g:stuff = getreg(a:reg)
-	:  " This causes a recursive loop if both registers are available!
-	:  " call setreg(a:reg == '*' ? '+' : '*', g:stuff)
+	:func! Copy(reg, type, lines)
+	:    call echoraw("\<Esc>]52;c;" ..
+	:	    \ base64_encode(str2blob(a:lines)) .. "\<Esc>\\")
 	:endfunc
-	:
-	:let v:clipproviders["test"] = {
-	:	\   "available": "Available",
-	:	\   "paste": function("Paste"),
-	:	\   "copy": function("Copy")
-	:	\ }
-	:
-	:set clipmethod=test
+	:let v:clipproviders["myosc"] = {
+	:	    \   "available": function("Available"),
+	:	    \   "paste": {
+	:	    \       '+': function("Paste"),
+	:	    \   },
+	:	    \   "copy": {
+	:	    \       '+': function("Copy"),
+	:	    \   },
+	:	    \ }
+	:set clipmethod=myosc
 <
 
  vim:tw=78:ts=8:noet:ft=help:norl:

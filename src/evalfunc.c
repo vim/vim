@@ -6500,6 +6500,9 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	clip_access_type = CLIP_ACCESS_EXPLICIT;
+
     if (return_list)
     {
 	rettv->v_type = VAR_LIST;
