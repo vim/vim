@@ -5325,14 +5325,13 @@ putting text, or calling |getreg()|.  "implicit" means that the clipboard is
 being accessed indirectly, such when |:registers| is called, or when an
 unrelated operation causes Vim to access the clipboard.
 
-This is useful since many operations in Vim implicity access the clipboard
-without the user knowing.  For example, if when you want to create a provider
-for the OSC52 command (accessing the clipboard via an escape code).  Many
-terminals show a confirmation if you want Vim to access the clipboard.  This
-can be very annoying with the terminal asking for permission everytime you do
-something that accesses the clipboard behind the scenes.  A good way to handle
-implicit access is to return "previous", which leaves the register contents
-unchanged.
+This is useful since some operations in Vim implicity access the clipboard
+indirectly.  For example, if when you want to create a provider for the OSC52
+command (accessing the clipboard via an escape code).  Many terminals show a
+confirmation if you want Vim to access the clipboard.  This can be very
+annoying with the terminal asking for permission everytime you do something
+that accesses the clipboard behind the scenes.  A good way to handle implicit
+access is to return "previous", which leaves the register contents unchanged.
 
 						*clipboard-provider-copy*
 The "copy" callback returns nothing, and takes the given arguments in order:
@@ -5355,6 +5354,7 @@ OSC52 command: >
 	:endfunc
 	:
 	:func! Paste(reg, type)
+	:    " If implicit access, don't do anything
 	:    if a:type == "implicit"
 	:	return "previous"
 	:    endif
