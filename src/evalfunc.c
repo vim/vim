@@ -7925,7 +7925,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
-	    n = clip_star != clip_plus;
+	    n = &clip_star != &clip_plus;
 #endif
 	}
 	else if (STRICMP(name, "clipboard_star_avail") == 0)
@@ -7939,7 +7939,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
-	    n = clip_plus.available && clip_star != clip_plus;
+	    n = clip_plus.available && &clip_star != &clip_plus;
 #endif
 	}
     }
