@@ -2132,5 +2132,4 @@ typedef enum
 // clipboard request is implicit (ex. access when doing :registers),
 // explicit (ex. typing "+p). Always defaults to implicit.
 EXTERN clip_access_T clip_access_type INIT(= CLIP_ACCESS_IMPLICIT);
-EXTERN bool clip_dont_clear INIT(= FALSE);
 #endif

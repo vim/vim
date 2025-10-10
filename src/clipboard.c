@@ -3809,7 +3809,7 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
     typval_T	rettv;
     typval_T	argvars[4];
     yankreg_T	*y_ptr;
-    char_u	type[2 + NUMBUFLEN];
+    char_u	type[2 + NUMBUFLEN] = {0};
     list_T	*list = NULL;
 
     if (clip_provider_get_callback(
