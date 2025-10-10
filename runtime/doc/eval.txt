@@ -5298,7 +5298,7 @@ Each callback can either be a name of a function in a string, a |Funcref|, or
 a |lambda| expression.
 
 Note that these dictionary entries are optional, for example, if you don't
-care about the "copy" functions, then you can simply exclude them. When Vim
+care about the "copy" functions, then you can simply exclude them.  When Vim
 yanks/copies something, then simply nothing will be done.
 
 						*clipboard-provider-available*
@@ -5335,9 +5335,9 @@ access is to return "previous", which leaves the register contents unchanged.
 
 						*clipboard-provider-copy*
 The "copy" callback returns nothing, and takes the given arguments in order:
-	- The register being yanked
-	- The register type
-	- A list of strings that were yanked.
+	- The register being operated on
+	- The register type, conforming to |getregtype()|
+	- A list of strings to copy
 
 The provider can do whatever it wants with the given information.  This
 function is called on every request to change the clipboard register(s).

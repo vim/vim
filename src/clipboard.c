@@ -3852,7 +3852,7 @@ clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
     argvars[1].v_type = VAR_STRING;
     argvars[1].vval.v_string = type;
 
-    /* // Get register contents by creating a list of lines */
+    // Get register contents by creating a list of lines
     list = list_alloc();
 
     if (list == NULL)
