@@ -278,13 +278,16 @@ func Test_message_more()
   call WaitForAssert({-> assert_equal(':%p#', term_getline(buf, 1))})
   call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
 
-  " All the way down. Pressing f should do nothing but pressing
+  " All the way down. Pressing f or Ctrl-F should do nothing but pressing
   " space should end the more prompt.
   call term_sendkeys(buf, 'G')
   call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
   call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
   call term_sendkeys(buf, 'f')
   call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<C-F>")
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
   call term_sendkeys(buf, ' ')
   call WaitForAssert({-> assert_equal('100', term_getline(buf, 5))})
 
