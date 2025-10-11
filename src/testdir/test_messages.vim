@@ -343,6 +343,11 @@ func Test_message_more_scrollback()
   call term_sendkeys(buf, 'b')
   call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
 
+  call term_sendkeys(buf, "\<C-F>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<C-B>")
+  call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
+
   call term_sendkeys(buf, 'q')
   call TermWait(buf)
   call StopVimInTerminal(buf)
