@@ -485,14 +485,16 @@ static void (*dll_scheme_set_config_path)(Scheme_Object *p);
 #  define scheme_set_config_path dll_scheme_set_config_path
 # endif
 
-# if MZSCHEME_VERSION_MAJOR >= 500
-#  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
+# ifndef PROTO
+#  if MZSCHEME_VERSION_MAJOR >= 500
+#   if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
 // define as function for macro in schthread.h
 Thread_Local_Variables *
 scheme_external_get_thread_local_variables(void)
 {
     return dll_scheme_external_get_thread_local_variables();
 }
+#   endif
 #  endif
 # endif
 

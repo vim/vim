@@ -11,6 +11,7 @@ src/objects
 src/po/big5corr
 src/po/sjiscorr
 src/types.vim
+src/tmp_make
 
 # We do need src/auto/configure.
 src/auto/config.cache

@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2025 Sep 11
+# Last Change:  2025 Oct 09
 #
 # Includes changes from The Vim Project:
 
@@ -341,7 +341,8 @@ const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
 patterns =<< trim eval END
     {'\'}<argd\%[elete]\s\+\*\s*$
     \<[lt]\=cd!\=\s\+-\s*$
-    \<norm\%[al]!\=\s*\S\+$
+    \<norm\%[al]!\=\s\+.*$
+    \<reg\%[isters]\%(\s\+\S\+\)\+$
     \%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)\=map!\=\s
     \<set\%(\%[global]\|\%[local]\)\>.*,$
     {PLUS_MINUS_COMMAND}
