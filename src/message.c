@@ -1356,7 +1356,7 @@ wait_return(int redraw)
 		*/
 		if (p_more && !p_cp)
 		{
-		    if (c == 'b' || c == 'k' || c == 'u' || c == 'g'
+		    if (c == 'b' || c == Ctrl_B || c == 'k' || c == 'u' || c == 'g'
 						|| c == K_UP || c == K_PAGEUP)
 		    {
 			if (msg_scrolled > Rows)
@@ -1385,7 +1385,7 @@ wait_return(int redraw)
 			}
 		    }
 		    else if (msg_scrolled > Rows - 2
-			    && (c == 'j' || c == 'd' || c == 'f'
+			    && (c == 'j' || c == 'd' || c == 'f' || c == Ctrl_F
 					    || c == K_DOWN || c == K_PAGEDOWN))
 			c = K_IGNORE;
 		}
