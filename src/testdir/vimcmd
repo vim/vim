@@ -1,2 +1,0 @@
-../vim
-VIMRUNTIME=../../runtime  ../vim -f  -u util/unix.vim --gui-dialog-file guidialog
