@@ -74,8 +74,8 @@ example to get white text on a blue background: >
 
 When using multiple commands with a filter command, e.g. >
   :r! echo this; echo that
-Only the output of the last command is used.  To fix this you have to group the
-commands.  This depends on the shell you use (that is why it is not done
+Only the output of the last command is used.  To fix this you have to group
+the commands.  This depends on the shell you use (that is why it is not done
 automatically in Vim).  Examples: >
   :r! (echo this; echo that)
   :r! {echo this; echo that}
