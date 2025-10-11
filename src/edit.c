@@ -100,6 +100,14 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+#define TRIGGER_AUTOCOMPLETE()			\
+    do {					\
+        update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
+        out_flush();				\
+        ins_compl_enable_autocomplete();	\
+        goto docomplete;			\
+    } while (0)
+
 /*
  * edit(): Start inserting text.
  *
@@ -996,12 +1004,7 @@ doESCkey:
 	    {
 		c = char_before_cursor();
 		if (vim_isprintc(c))
-		{
-		    update_screen(UPD_VALID); // Show char deletion immediately
-		    out_flush();
-		    ins_compl_enable_autocomplete();
-		    goto docomplete; // Trigger autocompletion
-		}
+		    TRIGGER_AUTOCOMPLETE();
 	    }
 	    break;
 
@@ -1020,6 +1023,13 @@ doESCkey:
 #endif
 	    did_backspace = ins_bs(c, BACKSPACE_WORD, &inserted_space);
 	    auto_format(FALSE, TRUE);
+	    if (did_backspace && ins_compl_has_autocomplete() && !char_avail()
+		    && curwin->w_cursor.col > 0)
+	    {
+		c = char_before_cursor();
+		if (vim_isprintc(c))
+		    TRIGGER_AUTOCOMPLETE();
+	    }
 	    break;
 
 	case Ctrl_U:	// delete all inserted text in current line
@@ -1424,12 +1434,7 @@ normalchar:
 	    // Trigger autocompletion
 	    if (ins_compl_has_autocomplete() && !char_avail()
 		    && vim_isprintc(c))
-	    {
-		update_screen(UPD_VALID); // Show character immediately
-		out_flush();
-		ins_compl_enable_autocomplete();
-		goto docomplete;
-	    }
+		TRIGGER_AUTOCOMPLETE();
 
 	    break;
 	}   // end of switch (c)
