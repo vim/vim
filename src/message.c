@@ -3318,12 +3318,14 @@ do_more_prompt(int typed_char)
 	    break;
 
 	case 'b':		// one page back
+	case Ctrl_B:
 	case K_PAGEUP:
 	    toscroll = -(Rows - 1);
 	    break;
 
 	case ' ':		// one extra page
 	case 'f':
+	case Ctrl_F:
 	case K_PAGEDOWN:
 	case K_LEFTMOUSE:
 	    toscroll = Rows - 1;
