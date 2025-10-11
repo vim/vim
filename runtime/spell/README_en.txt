@@ -709,7 +709,7 @@ English.
 ---
 
 This is a locally hosted copy of the English dictionaries with fixed dash handling and new ligature and phonetic suggestion support extension:
-http://extensions.openoffice.org/en/node/3785
+https://web.archive.org/web/20250830102911/http://extensions.openoffice.org/en/node/3785
 
 Original version of the en_GB dictionary:
 http://www.openoffice.org/issues/show_bug.cgi/id=72145
