@@ -379,6 +379,13 @@ T  *+cindent*		'cindent', C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
+   *+clipboard_plus*	|clipboard| support compiled-in and plus register exists
+   *+clipboard_star_avail*
+			|clipboard| support compiled-in and star "*" register
+			available
+   *+clipboard_plus_avail*
+			|clipboard| support compiled-in and plus "+" register
+			available
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
 T  *+cmdline_info*	'showcmd' and 'ruler'; Always enabled since
