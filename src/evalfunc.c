@@ -6500,6 +6500,11 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	clip_access_type = CLIP_ACCESS_EXPLICIT;
+#endif
+
     if (return_list)
     {
 	rettv->v_type = VAR_LIST;
@@ -6863,6 +6868,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"clipboard",
 #ifdef FEAT_CLIPBOARD
+		1
+#else
+		0
+#endif
+		},
+	{"clipboard_provider",
+#ifdef FEAT_CLIPBOARD_PROVIDER
 		1
 #else
 		0
@@ -11493,7 +11505,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 /*
  * Translate a register type string to the yank type and block length
  */
-    static int
+    int
 get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
 {
     char_u *stropt = *pp;
