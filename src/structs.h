@@ -4054,6 +4054,7 @@ struct window_S
     int		w_popup_border[4];  // popup border top/right/bot/left
     char_u	*w_border_highlight[4];  // popup border highlight
     int		w_border_char[8];   // popup border characters
+    int		w_popup_shadow;     // popup shadow (right and bottom edges)
 
     int		w_popup_leftoff;    // columns left of the screen
     int		w_popup_rightoff;   // columns right of the screen

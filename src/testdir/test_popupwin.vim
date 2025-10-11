@@ -3701,6 +3701,12 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, "a\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_8', {})
 
+  " Test shadow
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":set completepopup=border:off,shadow:on\<CR>")
+  call term_sendkeys(buf, "Sa\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_9', {})
+
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
