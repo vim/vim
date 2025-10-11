@@ -3533,7 +3533,7 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 	}
 	else if (STRCMP(buf, "other") == 0)
 	{
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+#ifndef UNIX
 		method = CLIPMETHOD_OTHER;
 		*regular = *primary = true;
 #endif
