@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 9.1.  Last change: 2025 Oct 07
+*gui_w32.txt*   For Vim version 9.1.  Last change: 2025 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -235,7 +235,7 @@ The "* register reflects the contents of the clipboard.  |quotestar|
 
 When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same.  Thus you can yank to and paste from the clipboard
-without prepending "* to commands. If this doesn't work use the "unnamedplus"
+without prepending "* to commands.  If this doesn't work use the "unnamedplus"
 string in the 'clipboard' option.
 
 The 'a' flag in 'guioptions' is not included by default.  This means that text
@@ -458,17 +458,17 @@ Keycode translation strategy    *w32-experimental-keycode-trans-strategy*
 
 In Patch v8.2.4807 W32 GVIM was changed over to experimental keycode
 translation method with the aim to be able to use more keyboard shortcuts and
-especially supporting non-standard keyboard layouts. In order to implement
+especially supporting non-standard keyboard layouts.  In order to implement
 this support Win API TranslateMessage() call was dropped, and instead the
-recognition of keycode was changed over to ToUnicode() Win API call. This
+recognition of keycode was changed over to ToUnicode() Win API call.  This
 approach uncovered numerous corner cases, which are apparently covered by
 TranslateMessage() implementation, each of it is necessary to be dealt with on
-an individual basis. Therefore the decision was taken to declare this
+an individual basis.  Therefore the decision was taken to declare this
 functionality experimental for the time being and to recover "classic" keycode
 translation method as default again.
 
 Discussion about use of "experimental" keycode translation method will
-probably last some time yet. In the meantime, if you are impacted by this
+probably last some time yet.  In the meantime, if you are impacted by this
 change over back to "classic" keycode translation method in W32 GVIM, you can
 enable "experimental" translation method again in your vimrc using following
 snippet:
@@ -503,5 +503,5 @@ To use the system's default title bar colors, set highlighting groups to
 
 	hi TitleBar guibg=NONE guifg=NONE
 	hi TitleBarNC guibg=NONE guifg=NONE
-
+<
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
