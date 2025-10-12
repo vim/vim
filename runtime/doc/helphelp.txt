@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Sep 29
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -297,9 +297,9 @@ the following pattern is used: >
 
 	^\w\+@\w\+:\f\+\$\s
 
-This is meant to match a default bash prompt.  If it doesn't match your prompt,
-you can change the regex with the `shell_prompt` key from the `g:helptoc`
-dictionary variable: >
+This is meant to match a default bash prompt.  If it doesn't match your
+prompt, you can change the regex with the `shell_prompt` key from the
+`g:helptoc` dictionary variable: >
 
 	let g:helptoc = {'shell_prompt': 'regex matching your shell prompt'}
 
@@ -456,8 +456,8 @@ This will highlight the column heading in a different color.  E.g.
 Column heading~
 
 To separate sections in a help file, place a series of '=' characters in a
-line starting from the first column.  The section separator line is highlighted
-differently.
+line starting from the first column.  The section separator line is
+highlighted differently.
 
 To quote a block of ex-commands verbatim, place a greater than (>) character
 at the end of the line before the block and a less than (<) character as the

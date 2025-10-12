@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.1.  Last change: 2025 Oct 11
+*intro.txt*     For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -99,7 +99,8 @@ There are several mailing lists for Vim:
 	For discussions about using and improving the Macintosh version of
 	Vim.
 <vim-security@googlegroups.com>			*vim-security*
-	This list is for (privately) discussing security relevant issues of Vim.
+	This list is for (privately) discussing security relevant issues of
+	Vim.
 
 See http://www.vim.org/maillist.php for the latest information.
 
@@ -236,7 +237,8 @@ Vim would never have become what it is now, without the help of these people!
 	Felix von Leitner	Previous maintainer of Vim Mailing Lists
 	David Leonard		Port of Python extensions to Unix
 	Avner Lottem		Edit in right-to-left windows
-	Flemming Madsen		X11 client-server, various features and patches
+	Flemming Madsen		X11 client-server, various features and
+				patches
 	Tony Mechelynck		answers many user questions
 	Paul Moore		Python interface extensions, many patches
 	Katsuhito Nagano	Work on multibyte versions
@@ -606,8 +608,8 @@ Operator-pending mode	This is like Normal mode, but after an operator
 
 Replace mode		Replace mode is a special case of Insert mode.  You
 			can do the same things as in Insert mode, but for
-			each character you enter, one character of the existing
-			text is deleted.  See |Replace-mode|.
+			each character you enter, one character of the
+			existing text is deleted.  See |Replace-mode|.
 			If the 'showmode' option is on "-- REPLACE --" is
 			shown at the bottom of the window.
 

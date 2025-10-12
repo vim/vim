@@ -1,4 +1,4 @@
-*wayland.txt*   For Vim version 9.1.  Last change: 2025 Sep 22
+*wayland.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26,7 +26,8 @@ should equal to "gui" when running the GUI.
 
 Wayland commands:
 							*:wlrestore* *:wl*
-:wl[restore] [display]	Reinitializes the connection to the Wayland compositor.
+:wl[restore] [display]	Reinitializes the connection to the Wayland
+			compositor.
 			Useful when running Vim in a screen/tmux session that
 			continues running after the Wayland compositor
 			restarts.
@@ -105,7 +106,7 @@ To solve this problem, Vim implements a way of gaining focus in order to
 access the clipboard, by creating a temporary transparent top-level surface.
 This is by default disabled and can be enabled via the 'wlsteal' option.
 Moreover, a seat that has a keyboard is also required, see 'wlseat', and the
-xdg-shell protocol must be available. Additionally, Vim must be compiled with
+xdg-shell protocol must be available.  Additionally, Vim must be compiled with
 the |+wayland_focus_steal| feature.
 
 Note that this method can have several side effects from the result of focus

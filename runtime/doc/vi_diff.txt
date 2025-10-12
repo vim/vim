@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Sep 29
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -174,7 +174,8 @@ Multiple windows and buffers.				|windows.txt|
 	is called a hidden buffer.  Many commands and options have been added
 	for this facility.
 	Vim can also use multiple tab pages, each with one or more windows.  A
-	line with tab labels can be used to quickly switch between these pages.
+	line with tab labels can be used to quickly switch between these
+	pages.
 	|tab-page|
 
 Terminal window.					|:terminal|
@@ -1373,7 +1374,7 @@ Vim tries to support some old operating systems, however support for older
 operating systems might be dropped if maintenance becomes a burden or can no
 longer be verified.
 
-Here is the status of some operating systems. Note fully supported means,
+Here is the status of some operating systems.  Note fully supported means,
 support is verified as part of the CI test suite.
 
 System				| Status:~

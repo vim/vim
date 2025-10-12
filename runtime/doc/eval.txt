@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 25
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -86,7 +86,7 @@ Job		Used for a job, see |job_start()|. *Job* *Jobs*
 
 Channel		Used for a channel, see |ch_open()|. *Channel* *Channels*
 
-Blob		Binary Large Object. Stores any sequence of bytes.  See |Blob|
+Blob		Binary Large Object.  Stores any sequence of bytes.  See |Blob|
 		for details
 		Example: 0zFF00ED015DAF
 		0z is an empty Blob.
@@ -1020,7 +1020,7 @@ Blob modification ~
 To change a specific byte of a blob use |:let| this way: >
 	:let blob[4] = 0x44
 
-When the index is just one beyond the end of the Blob, it is appended. Any
+When the index is just one beyond the end of the Blob, it is appended.  Any
 higher index is an error.
 
 To change a sequence of bytes the [:] notation can be used: >
@@ -1536,8 +1536,8 @@ byte under the cursor: >
 
 In |Vim9| script:					*E1147* *E1148*
 If expr10 is a String this results in a String that contains the expr1'th
-single character (including any composing characters) from expr10.  To use byte
-indexes use |strpart()|.
+single character (including any composing characters) from expr10.  To use
+byte indexes use |strpart()|.
 
 Index zero gives the first byte or character.  Careful: text column numbers
 start with one!
@@ -1595,7 +1595,7 @@ Examples: >
 							*slice*
 If expr10 is a |List| this results in a new |List| with the items indicated by
 the indexes expr1a and expr1b.  This works like with a String, as explained
-just above. Also see |sublist| below.  Examples: >
+just above.  Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
@@ -1786,8 +1786,8 @@ A string constant accepts these special characters:
 	Don't use <Char-xxxx> to get a UTF-8 character, use \uxxxx as
 	mentioned above.
 \<*xxx>	Like \<xxx> but prepends a modifier instead of including it in the
-	character.  E.g. "\<C-w>" is one character 0x17 while "\<*C-w>" is four
-	bytes: 3 for the CTRL modifier and then character "W".
+	character.  E.g. "\<C-w>" is one character 0x17 while "\<*C-w>" is
+	four bytes: 3 for the CTRL modifier and then character "W".
 
 Note that "\xff" is stored as the byte 255, which may be invalid in some
 encodings.  Use "\u00ff" to store character 255 according to the current value
@@ -2185,7 +2185,7 @@ variables for each buffer.  Use local buffer variables instead |b:var|.
 PREDEFINED VIM VARIABLES			*vim-variable* *v:var* *v:*
 							*E963* *E1063*
 Most variables are read-only, when a variable can be set by the user, it will
-be mentioned at the variable description below. The type cannot be changed.
+be mentioned at the variable description below.  The type cannot be changed.
 
 					*v:argv* *argv-variable*
 v:argv		The command line arguments Vim was invoked with.  This is a
@@ -2198,11 +2198,11 @@ v:beval_col	The number of the column, over which the mouse pointer is.
 		Only valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_bufnr* *beval_bufnr-variable*
-v:beval_bufnr	The number of the buffer, over which the mouse pointer is. Only
-		valid while evaluating the 'balloonexpr' option.
+v:beval_bufnr	The number of the buffer, over which the mouse pointer is.
+		Only valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_lnum* *beval_lnum-variable*
-v:beval_lnum	The number of the line, over which the mouse pointer is. Only
+v:beval_lnum	The number of the line, over which the mouse pointer is.  Only
 		valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_text* *beval_text-variable*
@@ -2215,9 +2215,9 @@ v:beval_text	The text under or after the mouse pointer.  Usually a word as
 		Only valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_winnr* *beval_winnr-variable*
-v:beval_winnr	The number of the window, over which the mouse pointer is. Only
-		valid while evaluating the 'balloonexpr' option.  The first
-		window has number zero (unlike most other places where a
+v:beval_winnr	The number of the window, over which the mouse pointer is.
+		Only valid while evaluating the 'balloonexpr' option.  The
+		first window has number zero (unlike most other places where a
 		window gets a number).
 
 					*v:beval_winid* *beval_winid-variable*
@@ -2280,8 +2280,8 @@ v:collate	The current locale setting for collation order of the runtime
 		See |multi-lang|.
 
 								*v:colornames*
-v:colornames    A dictionary that maps color names to hex color strings. These
-		color names can be used with the |highlight-guifg|,
+v:colornames	A dictionary that maps color names to hex color strings.
+		These color names can be used with the |highlight-guifg|,
 		|highlight-guibg|, and |highlight-guisp| parameters.
 
 		The key values in the dictionary (the color names) should be
@@ -2289,20 +2289,20 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		name.
 
 		Updating an entry in v:colornames has no immediate effect on
-		the syntax highlighting. The highlight commands (probably in a
-		colorscheme script) need to be re-evaluated in order to use
-		the updated color values. For example: >
+		the syntax highlighting.  The highlight commands (probably in
+		a colorscheme script) need to be re-evaluated in order to use
+		the updated color values.  For example: >
 
 		    :let v:colornames['fuscia'] = '#cf3ab4'
 		    :let v:colornames['mauve'] = '#915f6d'
 		    :highlight Normal guifg=fuscia guibg=mauve
 <
 		This cannot be used to override the |cterm-colors| but it can
-		be used to override other colors. For example, the X11 colors
+		be used to override other colors.  For example, the X11 colors
 		defined in the `colors/lists/default.vim` (previously defined
-		in |rgb.txt|). When defining new color names in a plugin, the
+		in |rgb.txt|).  When defining new color names in a plugin, the
 		recommended practice is to set a color entry only when it does
-		not already exist. For example: >
+		not already exist.  For example: >
 
 		    :call extend(v:colornames, {
 			\ 'fuscia': '#cf3ab4',
@@ -2310,20 +2310,20 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 			\ }, 'keep')
 <
 		Using |extend()| with the 'keep' option updates each color only
-		if it did not exist in |v:colornames|. Doing so allows the
+		if it did not exist in |v:colornames|.  Doing so allows the
 		user to choose the precise color value for a common name
 		by setting it in their |.vimrc|.
 
 		It is possible to remove entries from this dictionary but
 		doing so is NOT recommended, because it is disruptive to
-		other scripts. It is also unlikely to achieve the desired
+		other scripts.  It is also unlikely to achieve the desired
 		result because the |:colorscheme| and |:highlight| commands
 		will both automatically load all `colors/lists/default.vim`
 		color scripts.
 
 		You can make changes to that file, but make sure to add new
-		keys instead of updating existing ones, otherwise Vim will skip
-		loading the file (thinking it hasn't been changed).
+		keys instead of updating existing ones, otherwise Vim will
+		skip loading the file (thinking it hasn't been changed).
 
 				*v:completed_item* *completed_item-variable*
 v:completed_item
@@ -2426,7 +2426,7 @@ v:exception	The value of the exception most recently caught and not
 <		Output: "caught oops".
 
 					*v:false* *false-variable*
-v:false		A Number with value zero. Used to put "false" in JSON.  See
+v:false		A Number with value zero.  Used to put "false" in JSON.  See
 		|json_encode()|.
 		When used as a string this evaluates to "v:false". >
 			echo v:false
@@ -2519,7 +2519,7 @@ v:foldstart	Used for 'foldtext': first line of closed fold.
 					*v:hlsearch* *hlsearch-variable*
 v:hlsearch	Variable that indicates whether search highlighting is on.
 		Setting it makes sense only if 'hlsearch' is enabled which
-		requires |+extra_search|. Setting this variable to zero acts
+		requires |+extra_search|.  Setting this variable to zero acts
 		like the |:nohlsearch| command, setting it to one acts like >
 			let &hlsearch = &hlsearch
 <		Note that the value is restored when returning from a
@@ -2587,7 +2587,7 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 		value is zero when there was no mouse button click.
 
 					*v:none* *none-variable* *None*
-v:none		An empty String. Used to put an empty item in JSON.  See
+v:none		An empty String.  Used to put an empty item in JSON.  See
 		|json_encode()|.
 		This can also be used as a function argument to use the
 		default value, see |none-function_argument|.
@@ -2601,7 +2601,7 @@ v:none		An empty String. Used to put an empty item in JSON.  See
 		an error.  Instead, use `is v:none` and `isnot v:none` .
 
 					*v:null* *null-variable*
-v:null		An empty String. Used to put "null" in JSON.  See
+v:null		An empty String.  Used to put "null" in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
 		When used as a string this evaluates to "v:null". >
@@ -2637,27 +2637,27 @@ v:oldfiles	List of file names that is loaded from the |viminfo| file on
 		{only when compiled with the |+viminfo| feature}
 
 						    *v:option_new*
-v:option_new    New value of the option. Valid while executing an |OptionSet|
+v:option_new    New value of the option.  Valid while executing an |OptionSet|
 		autocommand.
 						    *v:option_old*
-v:option_old    Old value of the option. Valid while executing an |OptionSet|
-		autocommand. Depending on the command used for setting and the
-		kind of option this is either the local old value or the
+v:option_old    Old value of the option.  Valid while executing an |OptionSet|
+		autocommand.  Depending on the command used for setting and
+		the kind of option this is either the local old value or the
 		global old value.
 						    *v:option_oldlocal*
 v:option_oldlocal
-		Old local value of the option. Valid while executing an
+		Old local value of the option.  Valid while executing an
 		|OptionSet| autocommand.
 						    *v:option_oldglobal*
 v:option_oldglobal
-		Old global value of the option. Valid while executing an
+		Old global value of the option.  Valid while executing an
 		|OptionSet| autocommand.
 						    *v:option_type*
-v:option_type   Scope of the set command. Valid while executing an
-		|OptionSet| autocommand. Can be either "global" or "local"
+v:option_type   Scope of the set command.  Valid while executing an
+		|OptionSet| autocommand.  Can be either "global" or "local"
 						    *v:option_command*
 v:option_command
-		Command used to set the option. Valid while executing an
+		Command used to set the option.  Valid while executing an
 		|OptionSet| autocommand.
 			value		option was set via   ~
 			"setlocal"	|:setlocal| or ":let l:xxx"
@@ -2704,7 +2704,7 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		To get the full path use: >
 			echo exepath(v:progpath)
 <		If the command has a relative path it will be expanded to the
-		full path, so that it still works after `:cd`. Thus starting
+		full path, so that it still works after `:cd`.  Thus starting
 		"./vim" results in "/home/user/path/to/vim/src/vim".
 		On Linux and other systems it will always be the full path.
 		On Mac it may just be "vim" and using exepath() as mentioned
@@ -2871,9 +2871,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		terminal.  The TermResponseAll event is also fired, with
 		<amatch> set to "version".  You can use |terminalprops()| to
 		see what Vim figured out about the terminal.
-		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
-		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
-		patch level (since this was introduced in patch 95, it's
+		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".
+		Pp is the terminal type: 0 for vt100 and 1 for vt220.  Pv is
+		the patch level (since this was introduced in patch 95, it's
 		always 95 or higher).  Pc is always zero.
 		If Pv is 141 or higher then Vim will try to request terminal
 		codes.  This only works with xterm |xterm-codes|.
@@ -2882,7 +2882,7 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 				    *v:termblinkresp* *termblinkresp-variable*
 v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
 		termcap entry.  This is used to find out whether the terminal
-		cursor is blinking. This is used by |term_getcursor()|.  When
+		cursor is blinking.  This is used by |term_getcursor()|.  When
 		this variable is set, the TermResponseAll autocommand event is
 		fired, with <amatch> set to "cursorblink".
 
@@ -2951,7 +2951,7 @@ v:throwpoint	The point where the exception most recently caught and not
 <		Output: "Exception from test.vim, line 2"
 
 						*v:true* *true-variable*
-v:true		A Number with value one. Used to put "true" in JSON.  See
+v:true		A Number with value one.  Used to put "true" in JSON.  See
 		|json_encode()|.
 		When used as a string this evaluates to "v:true". >
 			echo v:true
@@ -2991,7 +2991,8 @@ v:vim_did_enter	Zero until most of startup is done.  It is set to one just
 		before |VimEnter| autocommands are triggered.
 
 					*v:warningmsg* *warningmsg-variable*
-v:warningmsg	Last given warning message.  It's allowed to set this variable.
+v:warningmsg	Last given warning message.  It's allowed to set this
+		variable.
 
 				*v:wayland_display* *wayland_display-variable*
 v:wayland_display
@@ -3289,7 +3290,8 @@ text...
 				END
 <			There can be multiple Vim expressions in a single line
 			but an expression cannot span multiple lines.  If any
-			expression evaluation fails, then the assignment fails.
+			expression evaluation fails, then the assignment
+			fails.
 
 			{endmarker} must not contain white space.
 			{endmarker} cannot start with a lower case character.
@@ -5212,7 +5214,7 @@ $VIMRUNTIME/plugin/openPlugin.vim
 dist#vim9#Open(file: string) ~
 
 Opens `path` with the system default handler (macOS `open`, Windows
-`explorer.exe`, Linux `xdg-open`, …). If the variable |g:Openprg| exists the
+`explorer.exe`, Linux `xdg-open`, …).  If the variable |g:Openprg| exists the
 string specified in the variable is used instead.
 
 The |:Open| user command uses file completion for its argument.
@@ -5224,11 +5226,11 @@ This function is by default called using the gx mapping.  In visual mode
 tries to open the visually selected text.
 
 Associated setting variables:
-`g:gx_word`: control how gx picks up the text under the cursor. Uses
+`g:gx_word`: control how gx picks up the text under the cursor.  Uses
 	     `g:netrw_gx` as a fallback for backward compatibility.
 	     (default: `<cfile>`)
 
-`g:nogx`: disables the gx mapping. Uses `g:netrw_nogx` as a fallback for
+`g:nogx`: disables the gx mapping.  Uses `g:netrw_nogx` as a fallback for
 	  backward compatibility. (default: `unset`)
 
 
@@ -5242,7 +5244,7 @@ Usage: >vim
 						*dist#vim9#Launch()* *:Launch*
 dist#vim9#Launch(file: string) ~
 
-Launches <args> with the appropriate system programs. Intended for launching
+Launches <args> with the appropriate system programs.  Intended for launching
 GUI programs within Vim.
 
 The |:Launch| user command uses shell completion for its first argument.

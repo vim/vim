@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
+*os_vms.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL
@@ -80,9 +80,9 @@ See the file [.SRC]INSTALLVMS.TXT.
 4. Problems						*vms-problems*
 
 The code has been tested under Open VMS 6.2 - 9.2 on Alpha, VAX, IA64 and
-X86_64 platforms with the DEC C compiler. It should work without major problems.
-If your system does not have some include libraries you can tune in the
-OS_VMS_CONF.H file.
+X86_64 platforms with the DEC C compiler.  It should work without major
+problems.  If your system does not have some include libraries you can tune in
+the OS_VMS_CONF.H file.
 
 If you decided to build Vim with +perl, +python, etc. options, first you need
 to download OpenVMS distributions of Perl and Python.  Build and deploy the
@@ -96,7 +96,8 @@ VAX C compiler is not fully ANSI C compatible in pre-processor directives
 semantics, therefore you have to use a converter program that will do the lion
 part of the job.  For detailed instructions read file INSTALLvms.txt
 
-To build XXD.EXE, you should change to the subdirectory and build it separately.
+To build XXD.EXE, you should change to the subdirectory and build it
+separately.
 
 CTAGS is not part of the Vim source distribution anymore, however the OpenVMS
 specific source might contain CTAGS source files as described above.
@@ -216,8 +217,8 @@ Example LOGIN.COM: >
 	$ set term/inq/ins ! inquire the terminal capabilities
 	$ set disp/create/node=192.168.10.202/trans=tcpip
 
-Note: This set-up should be enough, if you are working on a standalone server or
-clustered environment, but if you want to use Vim as an internode editor in
+Note: This set-up should be enough, if you are working on a standalone server
+or clustered environment, but if you want to use Vim as an internode editor in
 DECNET environment, it will satisfy as well.
 You just have to define the "whole" path: >
 
@@ -291,8 +292,8 @@ can be downloaded from http://www.polarhome.com/vim/).
 
 	$ set disp/create/node=<your IP address>/trans=<transport-name>
 <
-   and start Vim as in point 1.  You can find more help in VMS documentation or
-   type: help set disp in VMS prompt.
+   and start Vim as in point 1.  You can find more help in VMS documentation
+   or type: help set disp in VMS prompt.
    Examples: >
 
 	$ set disp/create/node=192.168.5.159		 ! default trans is DECnet
@@ -456,7 +457,8 @@ Try to force to inquire the terminal capabilities with: >
 
 	$ set term/inquire
 
-If the inquire did not help, the solutions is to define the default terminal name: >
+If the inquire did not help, the solutions is to define the default terminal
+name: >
 
 	$ ! unknown terminal name.  Let us use vt320 or ansi instead.
 	$ ! Note: it's case sensitive
@@ -487,9 +489,9 @@ special commands to execute executables: >
 
 OpenVMS users always have to be aware that the Vim command :! "just" drop them
 to DCL prompt.  This feature is possible to use without any problem with all
-DCL commands, but if we want to execute some programs such as XXD, CTAGS, JTAGS,
-etc.  we're running into trouble if we follow the Vim documentation (see: help
-xxd).
+DCL commands, but if we want to execute some programs such as XXD, CTAGS,
+JTAGS, etc.  we're running into trouble if we follow the Vim documentation
+(see: help xxd).
 
 Solution: Execute with the MC command and add the full path to the executable.
 Example: Instead of :%!xxd command use: >
@@ -707,7 +709,7 @@ console mode can avoid performance problems.
 In a cluster that contains nodes with different architectures like below:
 
 $show cluster
-View of Cluster from system ID 11655  node: TOR                                                                     18-AUG-2008 11:58:31
+View of Cluster from system ID 11655  node: TOR  18-AUG-2008 11:58:31
 +---------------------------------+
 |        SYSTEMS        | MEMBERS |
 +-----------------------+---------|
@@ -773,17 +775,20 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 Version 9.0 (2023 Nov 27)
 - Vim is ported to the X86_64 architecture
-	- IMPORTANT: because of the getline function name used in structs like in ex_cmds.h
-	on X86_64 the CRTL_VER is kept under 80500000 level. The proper solution would be
-	to rename the getline function to something else in the struct (and in all places
-	it is used) - and avoiding to use POSIX functions in structs, but this change would
-	impact on all other operating systems. (added to the VMS TODO list)
-	Read more about at https://forum.vmssoftware.com/viewtopic.php?f=38&t=8914&p=20049
+	- IMPORTANT: because of the getline function name used in structs like
+	in ex_cmds.h on X86_64 the CRTL_VER is kept under 80500000 level. The
+	proper solution would be to rename the getline function to something
+	else in the struct (and in all places it is used) - and avoiding to
+	use POSIX functions in structs, but this change would impact on all
+	other operating systems. (added to the VMS TODO list)
+	Read more about at:
+	    https://forum.vmssoftware.com/viewtopic.php?f=38&t=8914&p=20049
 - os_vms_conf.h includes have been reviewed for all architectures
 - added support for the MODIFIED_BY define
 
 Version 8.2 (2020 Feb 6)
-- make all changes needed for clean compile build of v8.2 on VMS on all platforms
+- make all changes needed for clean compile build of v8.2 on VMS on all
+  platforms
 - fix the call mkdir bug (vicente_polo@yahoo.es)
 - test on VSI OpenVMS Alpha and Itanium platforms
 - added LUA support
@@ -797,21 +802,23 @@ Version 8.1 (2019 Jan 9)
 
 Version 8.0 (2016 Nov 21)
 - solve the 100% cpu usage issue while waiting for a keystroke
-- correct the VMS warnings and errors around handling the INFINITY (used in json.c)
+- correct the VMS warnings and errors around handling the INFINITY (used in
+  json.c)
 - minor VMS port related changes
 - correct the make_vms.mms file for 8.0
 - fix [.TESTDIR]make_vms.mms for 8.0
 
 Version 7.4 (2013 Aug 10)
-- Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name"
+- Undo: VMS can not handle more than one dot in the filenames use
+  "dir/name" -> "dir/_un_name"
   add _un_ at the beginning to keep the extension
 - correct swap file name wildcard handling
 - handle iconv usage correctly
 - do not optimize on vax - otherwise it hangs compiling crypto files
 - fileio.c fix the comment
 - correct RealWaitForChar
-- after 7.4-119 use different functions lib$cvtf_to_internal_time because Alpha and VAX have
-  G_FLOAT but IA64 uses IEEE float otherwise Vim crashes
+- after 7.4-119 use different functions lib$cvtf_to_internal_time because
+  Alpha and VAX have G_FLOAT but IA64 uses IEEE float otherwise Vim crashes
 - guard against crashes that are caused by mixed filenames
 - [TESTDIR]make_vms.mms changed to see the output files
 - Improve tests, update known issues
@@ -820,7 +827,8 @@ Version 7.4 (2013 Aug 10)
 
 Version 7.3 (2010 Aug 15)
 - CTAGS 5.8 included
-- VMS compile warnings fixed - floating-point overflow warning corrected on VAX
+- VMS compile warnings fixed - floating-point overflow warning corrected on
+  VAX
 - filepath completion corrected - too many chars were escaped in filename
   and shell commands
 - the following plugins are included into VMS runtime:

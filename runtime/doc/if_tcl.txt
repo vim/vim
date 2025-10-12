@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 9.1.  Last change: 2025 Aug 29
+*if_tcl.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -234,8 +234,8 @@ The ::vim::current(window) variable contains the name of the window command
 for the current window.  A window command is automatically deleted when the
 corresponding vim window is closed.
 
-Let's assume the name of the window command is stored in the Tcl variable "win",
-i.e. "$win" calls the command.  The following options are available: >
+Let's assume the name of the window command is stored in the Tcl variable
+"win", i.e. "$win" calls the command.  The following options are available: >
 
 	$win buffer		# Create Tcl command for window's buffer.
 	$win command {cmd}	# Execute Ex command in windows context.
@@ -264,7 +264,8 @@ Options:
 		array set here [$win cursor]
 <	"here(row)" and "here(column)" now contain the cursor position.
 	With a single argument, the argument is interpreted as the name of a
-	Tcl array variable, which must contain two elements "row" and "column".
+	Tcl array variable, which must contain two elements "row" and
+	"column".
 	These are used to set the cursor to the new position: >
 		$win cursor here	;# not $here !
 <	With two arguments, sets the cursor to the specified row and column: >
@@ -313,8 +314,8 @@ changed, all marks in the buffer are automatically adjusted.  Any changes to
 the buffer's contents made by Tcl commands can be undone with the "undo" vim
 command (see |undo|).
 
-Let's assume the name of the buffer command is stored in the Tcl variable "buf",
-i.e. "$buf" calls the command.  The following options are available: >
+Let's assume the name of the buffer command is stored in the Tcl variable
+"buf", i.e. "$buf" calls the command.  The following options are available: >
 
 	$buf append {n} {str}	# Append a line to buffer, after line {n}.
 	$buf command {cmd}	# Execute Ex command in buffers context.
@@ -404,8 +405,8 @@ Options:
 	deleted from the buffer.
 
 	$buf windows					*tcl-buffer-windows*
-	Creates a window command for each window that displays this buffer, and
-	returns a list of the command names as the result.
+	Creates a window command for each window that displays this buffer,
+	and returns a list of the command names as the result.
 	Example: >
 		set winlist [$buf windows]
 		foreach win $winlist { $win height 4 }

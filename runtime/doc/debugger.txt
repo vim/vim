@@ -1,4 +1,4 @@
-*debugger.txt*  For Vim version 9.1.  Last change: 2019 Dec 21
+*debugger.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -51,9 +51,9 @@ Many debuggers mark specific lines by placing a small sign or color highlight
 on the line.  The |:sign| command lets the debugger set this graphic mark.  Some
 examples where this feature would be used would be a debugger showing an arrow
 representing the Program Counter (PC) of the program being debugged.  Another
-example would be a small stop sign for a line with a breakpoint.  These visible
-highlights let the user keep track of certain parts of the state of the
-debugger.
+example would be a small stop sign for a line with a breakpoint.  These
+visible highlights let the user keep track of certain parts of the state of
+the debugger.
 
 This feature can be used with more than debuggers, too.  An IPE can use a sign
 to highlight build errors, searched text, or other things.  The sign feature

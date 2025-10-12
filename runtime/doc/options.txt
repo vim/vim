@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 07
+*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,8 +32,8 @@ achieve special effects.  These options come in three forms:
 
 :se[t] termcap		Show all terminal options.  Note that in the GUI the
 			key codes are not shown, because they are generated
-			internally and can't be changed.  Changing the terminal
-			codes in the GUI is not useful either...
+			internally and can't be changed.  Changing the
+			terminal codes in the GUI is not useful either...
 			The options have the form t_AB, see
 			|terminal-options|.
 
@@ -1493,8 +1493,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+linebreak|
 			feature}
 	Every wrapped line will continue visually indented (same amount of
-	space as the beginning of that line), thus preserving horizontal blocks
-	of text.
+	space as the beginning of that line), thus preserving horizontal
+	blocks of text.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'breakindentopt'* *'briopt'*
@@ -1839,13 +1839,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			register '*' for all yank, delete, change and put
 			operations which would normally go to the unnamed
 			register.  When "unnamed" is also included to the
-			option, yank operations (but not delete, change or put)
-			will additionally copy the text into register '*'.  If
-			Wayland is being used and the compositor does not
-			support the primary-selection-unstable-v1 protocol,
-			then the regular selection is used in its place.  Only
-			available with the |+X11| or |+wayland_clipboard|
-			feature.  Availability can be checked with: >
+			option, yank operations (but not delete, change or
+			put) will additionally copy the text into register
+			'*'.  If Wayland is being used and the compositor does
+			not support the primary-selection-unstable-v1
+			protocol, then the regular selection is used in its
+			place.  Only available with the |+X11| or
+			|+wayland_clipboard| feature.  Availability can be
+			checked with: >
 			if has('unnamedplus')
 <
 						*clipboard-autoselect*
@@ -2147,12 +2148,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|i_CTRL-X_CTRL-D|
 	]	tag completion
 	t	same as "]"
-	F{func}	call the function {func}.  Multiple "F" flags may be specified.
-		Refer to |complete-functions| for details on how the function
-		is invoked and what it should return.  The value can be the
-		name of a function or a |Funcref|.  For |Funcref| values,
-		spaces must be escaped with a backslash ('\'), and commas with
-		double backslashes ('\\') (see |option-backslash|).
+	F{func}	call the function {func}.  Multiple "F" flags may be
+		specified.  Refer to |complete-functions| for details on how
+		the function is invoked and what it should return.  The value
+		can be the name of a function or a |Funcref|.  For |Funcref|
+		values, spaces must be escaped with a backslash ('\'), and
+		commas with double backslashes ('\\') (see |option-backslash|).
 		Unlike other sources, functions can provide completions
 		starting from a non-keyword character before the cursor, and
 		their start position for replacing text may differ from other
@@ -2354,7 +2355,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  completion in insert mode.  This is useful when editing HTML tag, or
 	  Makefile with 'noshellslash' on MS-Windows.
 	- When this option is set to "backslash", backslash is used.  This is
-	  useful when editing a batch file with 'shellslash' set on MS-Windows.
+	  useful when editing a batch file with 'shellslash' set on
+	  MS-Windows.
 	- When this option is empty, same character is used as for
 	  'shellslash'.
 	For Insert mode completion the buffer-local value is used.  For
@@ -5575,8 +5577,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{only available when compiled with the |+langmap|
 			feature}
-	When off, setting 'langmap' does not apply to characters resulting from
-	a mapping.  This basically means, if you noticed that setting
+	When off, setting 'langmap' does not apply to characters resulting
+	from a mapping.  This basically means, if you noticed that setting
 	'langmap' disables some of your mappings, try resetting this option.
 	This option defaults to on for backwards compatibility.  Set it off if
 	that works for you to avoid mappings to break.
@@ -5599,8 +5601,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	executing macros, registers and other commands that have not been
 	typed.  Also, updating the window title is postponed.  To force an
 	update use |:redraw|.
-	This may occasionally cause display errors.  It is only meant to be set
-	temporarily when performing an operation where redrawing may cause
+	This may occasionally cause display errors.  It is only meant to be
+	set temporarily when performing an operation where redrawing may cause
 	flickering or cause a slowdown.
 
 						*'lhistory'* *'lhi'*
@@ -6517,10 +6519,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	some text from one window and paste it in Vim.  This will avoid
 	unexpected effects.
 	Setting this option is useful when using Vim in a terminal, where Vim
-	cannot distinguish between typed text and pasted text.  In the GUI, Vim
-	knows about pasting and will mostly do the right thing without 'paste'
-	being set.  The same is true for a terminal where Vim handles the
-	mouse clicks itself.
+	cannot distinguish between typed text and pasted text.  In the GUI,
+	Vim knows about pasting and will mostly do the right thing without
+	'paste' being set.  The same is true for a terminal where Vim handles
+	the mouse clicks itself.
 	This option is reset when starting the GUI.  Thus if you set it in
 	your .vimrc it will work in a terminal, but not in the GUI.  Setting
 	'paste' in the GUI has side effects: e.g., the Paste toolbar button
@@ -6566,8 +6568,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'pastetoggle' works in Insert mode and Normal mode, but not in
 	Command-line mode.
 	Mappings are checked first, thus overrule 'pastetoggle'.  However,
-	when 'paste' is on mappings are ignored in Insert mode, thus you can do
-	this: >
+	when 'paste' is on mappings are ignored in Insert mode, thus you can
+	do this: >
 	    :map <F10> :set paste<CR>
 	    :map <F11> :set nopaste<CR>
 	    :imap <F10> <C-O>:set paste<CR>

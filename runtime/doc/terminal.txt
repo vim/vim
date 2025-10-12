@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Oct 08
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,7 +54,7 @@ The terminal feature requires the |+job| and |+channel| features.
 1. Basic use						*terminal-use*
 
 This feature is for running a terminal emulator in a Vim window.  A job can be
-started connected to the terminal emulator. For example, to run a shell: >
+started connected to the terminal emulator.  For example, to run a shell: >
      :term bash
 
 Or to run build command: >
@@ -71,7 +71,8 @@ the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
 
 						*t_CTRL-W_CTRL-W* *t_CTRL-W_:*
-CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
+CTRL-W can be used to navigate between windows and other CTRL-W commands,
+e.g.:
 	CTRL-W CTRL-W	move focus to the next window
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
@@ -271,12 +272,12 @@ Command syntax ~
 					the terminal window) the command line
 					height will be reduced as needed.
 			++cols={width}  Use {width} for the terminal window
-					width. If the terminal uses the full
+					width.  If the terminal uses the full
 					Vim width (no window left or right of
 					the terminal window) this value is
 					ignored.
 			++eof={text}	When using [range]: text to send after
-					the last line was written. Cannot
+					the last line was written.  Cannot
 					contain white space.  A CR is
 					appended.  For MS-Windows the default
 					is to send CTRL-D.
@@ -322,13 +323,13 @@ fails, use ! to force, as usual.
 							*terminal-close*
 When the terminal job finishes and no [command] was given (e.g. the 'shell'
 command was executed), the terminal window will be closed by default (unless
-the buffer in next window receiving the space has the 'nobuflisted' option set,
-in which case the terminal window would not be closed automatically, but a new
-empty buffer would be opened in that window).
+the buffer in next window receiving the space has the 'nobuflisted' option
+set, in which case the terminal window would not be closed automatically, but
+a new empty buffer would be opened in that window).
 
 When the terminal window is closed, e.g. when the shell exits and "++close"
 argument was used, and this is the last normal Vim window, then Vim will exit.
-This is like using |:quit| in a normal window. Help and preview windows are
+This is like using |:quit| in a normal window.  Help and preview windows are
 not counted.
 
 To have a background job run without a window, and open the window when it's
@@ -384,7 +385,7 @@ Use CTRL-W N (or 'termwinkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
 
-Terminal-Job mode is where |:tmap| mappings are applied. Keys sent by
+Terminal-Job mode is where |:tmap| mappings are applied.  Keys sent by
 |term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
 
 It is not possible to enter Insert mode from Terminal-Job mode.
@@ -394,7 +395,7 @@ In Terminal-Normal mode you can move the cursor around with the usual Vim
 commands, Visually mark text, yank text, etc.  But you cannot change the
 contents of the buffer.  The commands that would start insert mode, such as
 'i' and 'a', return to Terminal-Job mode.  The window will be updated to show
-the contents of the terminal. |:startinsert| is ineffective.
+the contents of the terminal.  |:startinsert| is ineffective.
 
 In Terminal-Normal mode the statusline and window title show "(Terminal)".  If
 the job ends while in Terminal-Normal mode this changes to
@@ -402,7 +403,7 @@ the job ends while in Terminal-Normal mode this changes to
 
 When the job outputs lines in the terminal, such that the contents scrolls off
 the top, those lines are remembered and can be seen in Terminal-Normal mode.
-The number of lines is limited by the 'termwinscroll' option. When going over
+The number of lines is limited by the 'termwinscroll' option.  When going over
 this limit, the first 10% of the scrolled lines are deleted and are lost.
 
 
@@ -486,10 +487,10 @@ version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
 							*ConPTY* *E982*
 On more recent versions of MS-Windows 10 (beginning with the "October 2018
-Update"), winpty is no longer required. On those versions, |:terminal| will use
+Update"), winpty is no longer required.  On those versions, |:terminal| will use
 Windows' built-in support for hosting terminal applications, "ConPTY".  When
 ConPTY is in use, there may be rendering artifacts regarding ambiguous-width
-characters. If you encounter any such issues, install "winpty".  Until the
+characters.  If you encounter any such issues, install "winpty".  Until the
 ConPTY problems have been fixed "winpty" will be preferred.
 
 Environment variables are used to pass information to the running job:
@@ -540,7 +541,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "norestore"	     do not add the terminal window to a
 				     session file
 
-		Each character in the middle part indicates a difference. If
+		Each character in the middle part indicates a difference.  If
 		there are multiple differences only the first in this list is
 		used:
 			X	different character
@@ -641,8 +642,8 @@ term_getattr({attr}, {what})				*term_getattr()*
 
 
 term_getcursor({buf})					*term_getcursor()*
-		Get the cursor position of terminal {buf}. Returns a list with
-		two numbers and a dictionary: [row, col, dict].
+		Get the cursor position of terminal {buf}.  Returns a list
+		with two numbers and a dictionary: [row, col, dict].
 
 		"row" and "col" are one based, the first screen cell is row
 		1, column 1.  This is the cursor position of the terminal
@@ -657,7 +658,7 @@ term_getcursor({buf})					*term_getcursor()*
 				for a vertical bar.
 		   "color"	color of the cursor, e.g. "green"
 
-		{buf} must be the buffer number of a terminal window. If the
+		{buf} must be the buffer number of a terminal window.  If the
 		buffer does not exist or is not a terminal window, an empty
 		list is returned.
 
@@ -670,7 +671,7 @@ term_getcursor({buf})					*term_getcursor()*
 term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
-		Returns |v:null| when there is no job. In Vim9 script, return
+		Returns |v:null| when there is no job.  In Vim9 script, return
 		|null_job| when there is no job.
 
 		Can also be used as a |method|: >
@@ -713,7 +714,7 @@ term_getscrolled({buf})					*term_getscrolled()*
 
 
 term_getsize({buf})					*term_getsize()*
-		Get the size of terminal {buf}. Returns a list with two
+		Get the size of terminal {buf}.  Returns a list with two
 		numbers: [rows, cols].  This is the size of the terminal, not
 		the window containing the terminal.
 
@@ -728,14 +729,14 @@ term_getsize({buf})					*term_getsize()*
 
 
 term_getstatus({buf})					*term_getstatus()*
-		Get the status of terminal {buf}. This returns a String with
+		Get the status of terminal {buf}.  This returns a String with
 		a comma-separated list of these items:
 			running		job is running
 			finished	job has finished
 			normal		in Terminal-Normal mode
 		One of "running" or "finished" is always present.
 
-		{buf} must be the buffer number of a terminal window. If the
+		{buf} must be the buffer number of a terminal window.  If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
 
@@ -746,10 +747,10 @@ term_getstatus({buf})					*term_getstatus()*
 
 
 term_gettitle({buf})					*term_gettitle()*
-		Get the title of terminal {buf}. This is the title that the
+		Get the title of terminal {buf}.  This is the title that the
 		job in the terminal has set.
 
-		{buf} must be the buffer number of a terminal window. If the
+		{buf} must be the buffer number of a terminal window.  If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
 
@@ -764,8 +765,8 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 		terminal window {buf}.  {buf} is used as with |term_getsize()|.
 
 		When {input} is omitted or 0, return the name for writing
-		(stdout). When {input} is 1 return the name for reading
-		(stdin). On UNIX, both return same name.
+		(stdout).  When {input} is 1 return the name for reading
+		(stdin).  On UNIX, both return same name.
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_gettty()
@@ -808,7 +809,7 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		Send keystrokes {keys} to terminal {buf}.
 		{buf} is used as with |term_getsize()|.
 
-		{keys} are translated as key sequences. For example, "\<c-x>"
+		{keys} are translated as key sequences.  For example, "\<c-x>"
 		means the character CTRL-X.
 
 		Can also be used as a |method|: >
@@ -904,7 +905,7 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 
 
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
-		Set the size of terminal {buf}. The size of the window
+		Set the size of terminal {buf}.  The size of the window
 		containing the terminal will also be adjusted, if possible.
 		If {rows} or {cols} is zero or negative, that dimension is not
 		changed.
@@ -922,7 +923,7 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 term_start({cmd} [, {options}])			*term_start()*
 		Open a terminal window and run {cmd} in it.
 
-		{cmd} can be a string or a List, like with |job_start()|. The
+		{cmd} can be a string or a List, like with |job_start()|.  The
 		string "NONE" can be used to open a terminal window without
 		starting a job, the pty of the terminal can be used by a
 		command like gdb.
@@ -969,17 +970,17 @@ term_start({cmd} [, {options}])			*term_start()*
 					"open": open window if needed
 				     Note that "open" can be interruptive.
 				     See |term++close| and |term++open|.
-		   "term_opencmd"    command to use for opening the window when
-				     "open" is used for "term_finish"; must
-				     have "%d" where the buffer number goes,
-				     e.g. "10split|buffer %d"; when not
+		   "term_opencmd"    command to use for opening the window
+				     when "open" is used for "term_finish";
+				     must have "%d" where the buffer number
+				     goes, e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
 		   "term_highlight"  highlight group to use instead of
 				     "Terminal"
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
-				     CTRL-D is used on MS-Windows. For Python
-				     use CTRL-Z or "exit()". For a shell use
+				     CTRL-D is used on MS-Windows.  For Python
+				     use CTRL-Z or "exit()".  For a shell use
 				     "exit".  A CR is always added.
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
@@ -1014,7 +1015,7 @@ term_wait({buf} [, {time}])					*term_wait()*
 There are several ways to communicate with the job running in a terminal:
 - Use |term_sendkeys()| to send text and escape sequences from Vim to the job.
 - Use the JSON API to send encoded commands from the job to Vim.
-- Use the |client-server| mechanism. This works on machines with an X server
+- Use the |client-server| mechanism.  This works on machines with an X server
   and on MS-Windows.
 
 
@@ -1180,7 +1181,7 @@ Writing a screen dump test for Vim ~
 							*terminal-dumptest*
 For an example see the Test_syntax_c() function in
 src/testdir/test_syntax.vim.  The main parts are:
-- Write a file you want to test with. This is useful for testing syntax
+- Write a file you want to test with.  This is useful for testing syntax
   highlighting.  You can also start Vim with an empty buffer.
 - Run Vim in a terminal with a specific size.  The default is 20 lines of 75
   characters.  This makes sure the dump is always this size.  The function
@@ -1258,7 +1259,7 @@ kind of difference:
 	+	character missing in first
 	-	character missing in second
 
-Alternatively, press "s" to swap the first and second dump. Do this several
+Alternatively, press "s" to swap the first and second dump.  Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
@@ -1313,7 +1314,7 @@ Only one debugger can be active at a time.
 						*termdebug-timeout*
 Depending on how gdb is launched, termdebug startup time may vary.
 To avoid termdebug to get stuck if the startup process of gdb takes too long,
-a configurable timeout is included. Such time out is configurable in terms of
+a configurable timeout is included.  Such time out is configurable in terms of
 multiple of 10ms: >
     let g:termdebug_config['timeout'] = 500 # 500 * 10ms = 5 seconds.
 
@@ -1360,7 +1361,7 @@ You can use CTRL-W CTRL-W or the mouse to move focus between windows.
 Put focus on the gdb window and type: >
 	break ex_help
 	run
-Vim will start running in the program window. Put focus there and type: >
+Vim will start running in the program window.  Put focus there and type: >
 	:help gui
 Gdb will run into the ex_help breakpoint.  The source window now shows the
 ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
@@ -1388,7 +1389,7 @@ executed.
 
 You can type more advanced commands in the gdb window.  For example, type: >
 	watch curbuf
-Now click "Cont" in the toolbar (or type "cont" in the gdb window). Execution
+Now click "Cont" in the toolbar (or type "cont" in the gdb window).  Execution
 will now continue until the value of "curbuf" changes, which is in do_ecmd().
 To remove this watchpoint again type in the gdb window: >
 	delete 3
@@ -1500,7 +1501,7 @@ Other commands ~
  *:Asm*	     jump to the window with the disassembly, create it if there
 	     isn't one
  *:Var*	     jump to the window with the local and argument variables,
-	     create it if there isn't one. This window updates whenever the
+	     create it if there isn't one.  This window updates whenever the
 	     program is stopped
 
 Events ~
@@ -1809,8 +1810,8 @@ However, the latter form will be deprecated in future releases.
 Change default signs ~
 							*termdebug_signs*
 Termdebug uses the hex number of the breakpoint ID in the signcolumn to
-represent breakpoints. If it is greater than "0xFF", then it will be displayed
-as "F+", due to we really only have two screen cells for the sign.
+represent breakpoints.  If it is greater than "0xFF", then it will be
+displayed as "F+", due to we really only have two screen cells for the sign.
 You may also use decimal breakpoint signs instead, in which case IDs greater
 than 99 will be displayed as "9+".
 
@@ -1857,7 +1858,7 @@ Set the wide value to 1 to use a vertical split without ever changing
 
 Evaluate in Popup Window at Cursor ~
 						*termdebug_evaluate_in_popup*
-By default |:Evaluate| will simply echo its output. For larger entities this
+By default |:Evaluate| will simply echo its output.  For larger entities this
 might become difficult to read or even truncated.
 Alternatively, the evaluation result may be output into a popup window at the
 current cursor position: >

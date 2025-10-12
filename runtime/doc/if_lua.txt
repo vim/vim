@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 9.1.  Last change: 2021 Aug 06
+*if_lua.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -71,7 +71,7 @@ If you use LuaJIT you can also use this: >
 			argument being set to the text of each line in turn,
 			without a trailing <EOL>, and the current line number.
 			If the value returned by the function is a string it
-			becomes the text of the line in the current turn. The
+			becomes the text of the line in the current turn.  The
 			default for [range] is the whole file: "1,$".
 
 Examples:
@@ -96,14 +96,14 @@ Examples:
 <
 
 All these commands execute a Lua chunk from either the command line (:lua and
-:luado) or a file (:luafile) with the given line [range]. Similarly to the Lua
-interpreter, each chunk has its own scope and so only global variables are
-shared between command calls. All Lua default libraries are available. In
+:luado) or a file (:luafile) with the given line [range].  Similarly to the
+Lua interpreter, each chunk has its own scope and so only global variables are
+shared between command calls.  All Lua default libraries are available.  In
 addition, Lua "print" function has its output redirected to the Vim message
 area, with arguments separated by a white space instead of a tab.
 
 Lua uses the "vim" module (see |lua-vim|) to issue commands to Vim
-and manage buffers (|lua-buffer|) and windows (|lua-window|). However,
+and manage buffers (|lua-buffer|) and windows (|lua-window|).  However,
 procedures that alter buffer content, open new buffers, and change cursor
 position are restricted when the command is executed in the |sandbox|.
 
@@ -111,18 +111,18 @@ position are restricted when the command is executed in the |sandbox|.
 ==============================================================================
 2. The vim module					*lua-vim*
 
-Lua interfaces Vim through the "vim" module. The first and last line of the
-input range are stored in "vim.firstline" and "vim.lastline" respectively. The
-module also includes routines for buffer, window, and current line queries,
-Vim evaluation and command execution, and others.
+Lua interfaces Vim through the "vim" module.  The first and last line of the
+input range are stored in "vim.firstline" and "vim.lastline" respectively.
+The module also includes routines for buffer, window, and current line
+queries, Vim evaluation and command execution, and others.
 
 	vim.list([arg])		Returns an empty list or, if "arg" is a Lua
 				table with numeric keys 1, ..., n (a
 				"sequence"), returns a list l such that l[i] =
 				arg[i] for i = 1, ..., n (see |List|).
 				Non-numeric keys are not used to initialize
-				the list. See also |lua-eval| for conversion
-				rules. Example: >
+				the list.  See also |lua-eval| for conversion
+				rules.  Example: >
 				    :lua t = {math.pi, false, say = 'hi'}
 				    :echo luaeval('vim.list(t)')
 				    :" [3.141593, v:false], 'say' is ignored
@@ -130,10 +130,10 @@ Vim evaluation and command execution, and others.
 	vim.dict([arg])		Returns an empty dictionary or, if "arg" is a
 				Lua table, returns a dict d such that d[k] =
 				arg[k] for all string keys k in "arg" (see
-				|Dictionary|). Number keys are converted to
-				strings. Keys that are not strings are not
-				used to initialize the dictionary. See also
-				|lua-eval| for conversion rules. Example: >
+				|Dictionary|).  Number keys are converted to
+				strings.  Keys that are not strings are not
+				used to initialize the dictionary.  See also
+				|lua-eval| for conversion rules.  Example: >
 				    :lua t = {math.pi, false, say = 'hi'}
 				    :echo luaeval('vim.dict(t)')
 				    :" {'1': 3.141593, '2': v:false,
@@ -148,29 +148,29 @@ Vim evaluation and command execution, and others.
 				    :" 0z31326162.0080FEFF
 <
 	vim.funcref({name})	Returns a Funcref to function {name} (see
-				|Funcref|). It is equivalent to Vim's
+				|Funcref|).  It is equivalent to Vim's
 				function().
 
 	vim.buffer([arg])	If "arg" is a number, returns buffer with
 				number "arg" in the buffer list or, if "arg"
-				is a string, returns buffer whose full or short
-				name is "arg". In both cases, returns 'nil'
-				(nil value, not string) if the buffer is not
-				found. Otherwise, if "toboolean(arg)" is
+				is a string, returns buffer whose full or
+				short name is "arg".  In both cases, returns
+				'nil' (nil value, not string) if the buffer is
+				not found.  Otherwise, if "toboolean(arg)" is
 				'true' returns the first buffer in the buffer
 				list or else the current buffer.
 
 	vim.window([arg])	If "arg" is a number, returns window with
 				number "arg" or 'nil' (nil value, not string)
-				if not found. Otherwise, if "toboolean(arg)"
+				if not found.  Otherwise, if "toboolean(arg)"
 				is 'true' returns the first window or else the
 				current window.
 
-	vim.type({arg})		Returns the type of {arg}. It is equivalent to
-				Lua's "type" function, but returns "list",
+	vim.type({arg})		Returns the type of {arg}.  It is equivalent
+				to Lua's "type" function, but returns "list",
 				"dict", "funcref", "buffer", or "window" if
 				{arg} is a list, dictionary, funcref, buffer,
-				or window, respectively. Examples: >
+				or window, respectively.  Examples: >
 					:lua l = vim.list()
 					:lua print(type(l), vim.type(l))
 					:" list
@@ -190,7 +190,7 @@ Vim evaluation and command execution, and others.
 	vim.eval({expr})	Evaluates expression {expr} (see |expression|),
 				converts the result to Lua, and returns it.
 				Vim strings and numbers are directly converted
-				to Lua strings and numbers respectively. Vim
+				to Lua strings and numbers respectively.  Vim
 				lists and dictionaries are converted to Lua
 				userdata (see |lua-list| and |lua-dict|).
 				Examples: >
@@ -203,16 +203,16 @@ Vim evaluation and command execution, and others.
 	vim.beep()		Beeps.
 
 	vim.open({fname})	Opens a new buffer for file {fname} and
-				returns it. Note that the buffer is not set as
-				current.
+				returns it.  Note that the buffer is not set
+				as current.
 
 	vim.call({name} [, {args}])
 				Proxy to call Vim function named {name} with
 				arguments {args}.  Example: >
 					:lua print(vim.call('has', 'timers'))
 <
-	vim.fn			Proxy to call Vim functions. Proxy methods are
-				created on demand.  Example: >
+	vim.fn			Proxy to call Vim functions.  Proxy methods
+				are created on demand.  Example: >
 					:lua print(vim.fn.has('timers'))
 <
 	vim.lua_version		The Lua version Vim was compiled with, in the
@@ -227,7 +227,7 @@ Vim evaluation and command execution, and others.
                                                         *lua-vim-variables*
 The Vim editor global dictionaries |g:| |w:| |b:| |t:| |v:| can be accessed
 from Lua conveniently and idiomatically by referencing the `vim.*` Lua tables
-described below. In this way you can easily read and modify global Vim script
+described below.  In this way you can easily read and modify global Vim script
 variables from Lua.
 
 Example: >
@@ -260,8 +260,8 @@ vim.v                                                   *vim.v*
 3. List userdata					*lua-list*
 
 List userdata represent vim lists, and the interface tries to follow closely
-Vim's syntax for lists. Since lists are objects, changes in list references in
-Lua are reflected in Vim and vice-versa. A list "l" has the following
+Vim's syntax for lists.  Since lists are objects, changes in list references
+in Lua are reflected in Vim and vice-versa.  A list "l" has the following
 properties and methods:
 
 NOTE: In patch 8.2.1066 array indexes were changed from zero-based to
@@ -274,23 +274,23 @@ Properties
 	    in Vim.
 	o "l[k]" returns the k-th item in "l"; "l" is one-indexed, as in Lua.
 	    To modify the k-th item, simply do "l[k] = newitem"; in
-	    particular, "l[k] = nil" removes the k-th item from "l". Item can
+	    particular, "l[k] = nil" removes the k-th item from "l".  Item can
 	    be added to the end of the list by "l[#l + 1] = newitem"
 	o "l()" returns an iterator for "l".
 	o "table.insert(l, newitem)" inserts an item at the end of the list.
 	    (only Lua 5.3 and later)
 	o "table.insert(l, position, newitem)" inserts an item at the
-	    specified position. "position" is one-indexed.  (only Lua 5.3 and
+	    specified position.  "position" is one-indexed.  (only Lua 5.3 and
 	    later)
 	o "table.remove(l, position)" removes an item at the specified
-	    position. "position" is one-indexed.
+	    position.  "position" is one-indexed.
 
 
 Methods
 -------
 	o "l:add(item)" appends "item" to the end of "l".
 	o "l:insert(item[, pos])" inserts "item" at (optional)
-	    position "pos" in the list. The default value for "pos" is 0.
+	    position "pos" in the list.  The default value for "pos" is 0.
 
 Examples:
 >
@@ -312,8 +312,8 @@ Examples:
 4. Dict userdata					*lua-dict*
 
 Similarly to list userdata, dict userdata represent vim dictionaries; since
-dictionaries are also objects, references are kept between Lua and Vim. A dict
-"d" has the following properties:
+dictionaries are also objects, references are kept between Lua and Vim.  A
+dict "d" has the following properties:
 
 Properties
 ----------
@@ -340,7 +340,7 @@ Examples:
 ==============================================================================
 5. Blob userdata					*lua-blob*
 
-Blob userdata represent vim blobs. A blob "b" has the following properties:
+Blob userdata represent vim blobs.  A blob "b" has the following properties:
 
 Properties
 ----------
@@ -367,7 +367,7 @@ Examples:
 ==============================================================================
 6. Funcref userdata					*lua-funcref*
 
-Funcref userdata represent funcref variables in Vim. Funcrefs that were
+Funcref userdata represent funcref variables in Vim.  Funcrefs that were
 defined with a "dict" attribute need to be obtained as a dictionary key
 in order to have "self" properly assigned to the dictionary (see examples
 below.) A funcref "f" has the following properties:
@@ -408,8 +408,8 @@ can be accessed in Vim scripts.  Example:
 ==============================================================================
 7. Buffer userdata					*lua-buffer*
 
-Buffer userdata represent vim buffers. A buffer userdata "b" has the following
-properties and methods:
+Buffer userdata represent vim buffers.  A buffer userdata "b" has the
+following properties and methods:
 
 Properties
 ----------
@@ -425,8 +425,8 @@ Properties
 Methods
 -------
 	o "b:insert(newline[, pos])" inserts string "newline" at (optional)
-	    position "pos" in the buffer. The default value for "pos" is
-	    "#b + 1". If "pos == 0" then "newline" becomes the first line in
+	    position "pos" in the buffer.  The default value for "pos" is
+	    "#b + 1".  If "pos == 0" then "newline" becomes the first line in
 	    the buffer.
 	o "b:next()" returns the buffer next to "b" in the buffer list.
 	o "b:previous()" returns the buffer previous to "b" in the buffer
@@ -460,7 +460,7 @@ Examples:
 ==============================================================================
 8. Window userdata					*lua-window*
 
-Window objects represent vim windows. A window userdata "w" has the following
+Window objects represent vim windows.  A window userdata "w" has the following
 properties and methods:
 
 Properties
@@ -493,8 +493,9 @@ Examples:
 9. luaeval() Vim function				*lua-luaeval* *lua-eval*
 
 The (dual) equivalent of "vim.eval" for passing Lua values to Vim is
-"luaeval". "luaeval" takes an expression string and an optional argument and
-returns the result of the expression. It is semantically equivalent in Lua to:
+"luaeval".  "luaeval" takes an expression string and an optional argument and
+returns the result of the expression.  It is semantically equivalent in Lua
+to:
 >
 	local chunkheader = "local _A = select(1, ...) return "
 	function luaeval (expstr, arg)
@@ -502,9 +503,9 @@ returns the result of the expression. It is semantically equivalent in Lua to:
 	    return chunk(arg) -- return typval
 	end
 <
-Note that "_A" receives the argument to "luaeval". Lua numbers, strings, and
+Note that "_A" receives the argument to "luaeval".  Lua numbers, strings, and
 list, dict, blob, and funcref userdata are converted to their Vim respective
-types, while Lua booleans are converted to numbers. An error is thrown if
+types, while Lua booleans are converted to numbers.  An error is thrown if
 conversion of any of the remaining Lua types, including userdata other than
 lists, dicts, blobs, and funcrefs, is attempted.
 

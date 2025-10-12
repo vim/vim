@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2024 Sep 08
+*textprop.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -194,7 +194,7 @@ prop_add({lnum}, {col}, {props})
 		the property type does not have "end_incl" set.
 
 		"type" will first be looked up in the buffer the property is
-		added to. When not found, the global property types are used.
+		added to.  When not found, the global property types are used.
 		If not found an error is given.
 							*virtual-text*
 		When "text" is used and the column is non-zero then this text
@@ -329,14 +329,14 @@ prop_list({lnum} [, {props}])				*prop_list()*
 				A negative value is used as an offset from the
 				last buffer line; -1 refers to the last buffer
 				line.
-		   types	List of property type names. Return only text
+		   types	List of property type names.  Return only text
 				properties that match one of the type names.
-		   ids		List of property identifiers. Return only text
-				properties with one of these identifiers.
+		   ids		List of property identifiers.  Return only
+				text properties with one of these identifiers.
 
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
-		   lnum		starting line number. Present only when
+		   lnum		starting line number.  Present only when
 				returning text properties between {lnum} and
 				{end_lnum}.
 		   col		starting column

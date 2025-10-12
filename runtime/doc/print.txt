@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 9.1.  Last change: 2025 Aug 10
+*print.txt*     For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -178,7 +178,7 @@ value for non-MS-Windows a trick is used: Adding "v:shell_error" will result
 in a non-zero number when the system() call fails.
 
 If the expression starts with s: or |<SID>|, then it is replaced with the
-script ID (|local-function|). Example: >
+script ID (|local-function|).  Example: >
 		set printexpr=s:MyPrintFile()
 		set printexpr=<SID>SomePrintFile()
 Otherwise, the expression is evaluated in the context of the script where the
@@ -545,8 +545,9 @@ There are a number of possible causes as to why the printing may have failed:
   not support the requested paper size.  By default Vim uses A4 paper.  Find
   out what size paper your printer normally uses and set the appropriate paper
   size with 'printoptions'.  If you cannot find the name of the paper used,
-  measure a sheet and compare it with the table of supported paper sizes listed
-  for 'printoptions', using the paper that is closest in both width AND height.
+  measure a sheet and compare it with the table of supported paper sizes
+  listed for 'printoptions', using the paper that is closest in both width AND
+  height.
   Note: The dimensions of actual paper may vary slightly from the ones listed.
   If there is no paper listed close enough, then you may want to try psresize
   from PSUtils, discussed below.

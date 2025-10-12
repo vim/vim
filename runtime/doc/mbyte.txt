@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Oct 04
+*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1138,8 +1138,8 @@ it to the Vim maintainer for inclusion in the distribution:
 
 HEBREW KEYMAP						*keymap-hebrew*
 
-This file explains what characters are available in UTF-8 and CP1255 encodings,
-and what the keymaps are to get those characters:
+This file explains what characters are available in UTF-8 and CP1255
+encodings, and what the keymaps are to get those characters:
 
 glyph   encoding	   keymap ~
 Char UTF-8 cp1255  hebrew  hebrewp  name ~
@@ -1270,9 +1270,9 @@ Combining forms:
 ==============================================================================
 10.  Input with imactivatefunc()				*mbyte-func*
 
-Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
-activate/deactivate the input method from Vim in any way, also with an external
-command. For example, fcitx provide fcitx-remote command: >
+Vim has the 'imactivatefunc' and 'imstatusfunc' options.  These are useful to
+activate/deactivate the input method from Vim in any way, also with an
+external command.  For example, fcitx provide fcitx-remote command: >
 
 	set iminsert=2
 	set imsearch=2

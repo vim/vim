@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.1.  Last change: 2025 Sep 02
+*term.txt*      For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -676,7 +676,7 @@ anymore.
 
 							*xterm-true-color*
 Vim supports using true colors in the terminal (taken from |highlight-guifg|
-and |highlight-guibg|), given that the terminal supports this. To make this
+and |highlight-guibg|), given that the terminal supports this.  To make this
 work the 'termguicolors' option needs to be set.
 See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
@@ -746,8 +746,8 @@ Note: When 't_EI' is not set then 't_SI' and 't_SR' will not be sent.  And
 when 't_SI' or 't_SR' is not set then 't_EI' is sent only once.
 
 This can be used to change the shape or color of the cursor in Insert or
-Replace mode. These are not standard termcap/terminfo entries, you need to set
-them yourself.
+Replace mode.  These are not standard termcap/terminfo entries, you need to
+set them yourself.
 Example for an xterm, this changes the color of the cursor: >
     if &term =~ "xterm"
 	let &t_SI = "\<Esc>]12;purple\x7"
@@ -1111,7 +1111,8 @@ which characters are included in a word.  A double click on a character
 that has a match selects until that match (like using "v%").  If the match is
 an #if/#else/#endif block, the selection becomes linewise.
 For MS-Windows and xterm the time for double clicking can be set with the
-'mousetime' option.  For the other systems this time is defined outside of Vim.
+'mousetime' option.  For the other systems this time is defined outside of
+Vim.
 An example, for using a double click to jump to the tag under the cursor: >
 	:map <2-LeftMouse> :exe "tag " .. expand("<cword>")<CR>
 
@@ -1140,10 +1141,10 @@ modifiers.
 When working with several windows, the size of the windows can be changed by
 dragging the status line with the mouse.  Point the mouse at a status line,
 press the left button, move the mouse to the new position of the status line,
-release the button.  Just clicking the mouse in a status line makes that window
-the current window, without moving the cursor.  If by selecting a window it
-will change position or size, the dragging of the status line will look
-confusing, but it will work (just try it).
+release the button.  Just clicking the mouse in a status line makes that
+window the current window, without moving the cursor.  If by selecting a
+window it will change position or size, the dragging of the status line will
+look confusing, but it will work (just try it).
 
 					*<MiddleRelease>* *<MiddleDrag>*
 Mouse clicks can be mapped.  The codes for mouse clicks are:

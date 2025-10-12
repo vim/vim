@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Sep 22
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -602,7 +602,7 @@ your pkg-config works with your GTK+ 2: >
 
     $ pkg-config --modversion gtk+-2.0
 
-Replace gtk+-2.0 with gtk+-3.0 for GTK+ 3. If you get the correct version
+Replace gtk+-2.0 with gtk+-3.0 for GTK+ 3.  If you get the correct version
 number of your GTK+, you can proceed; if not, you probably need to do some
 system administration chores to set up pkg-config and GTK+ correctly.
 

@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
+*sponsor.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,7 +35,7 @@ More explanations can be found in the |register-faq|.
 VOTE FOR FEATURES					*vote-for-features*
 
 Note: Voting for features has been discontinued since the passing of |Bram| in
-2023. The following two links still work, but they are no longer updated. So
+2023.  The following two links still work, but they are no longer updated.  So
 they now only provide a historic view as of summer 2023.
 
 The voting results appear on the results page, which is visible for everybody:

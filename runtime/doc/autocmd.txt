@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Sep 14
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -236,7 +236,7 @@ autocmds.
 
 							*:autocmd-verbose*
 When 'verbose' is non-zero, listing an autocommand will also display where it
-was last defined. Example: >
+was last defined.  Example: >
 
     :verbose autocmd BufEnter
     FileExplorer  BufEnter
@@ -344,7 +344,8 @@ Name			triggered by ~
 |GUIEnter|		after starting the GUI successfully
 |GUIFailed|		after starting the GUI failed
 |TermResponse|		after the terminal response to |t_RV| is received
-|TermResponseAll|	after the terminal response to |t_RV| and others is received
+|TermResponseAll|	after the terminal response to |t_RV| and others is
+			received
 
 |QuitPre|		when using `:quit`, before deciding whether to exit
 |ExitPre|		when using a command that may make Vim exit
@@ -381,7 +382,8 @@ Name			triggered by ~
 |FocusGained|		Vim got input focus
 |FocusLost|		Vim lost input focus
 |CursorHold|		the user doesn't press a key for a while
-|CursorHoldI|		the user doesn't press a key for a while in Insert mode
+|CursorHoldI|		the user doesn't press a key for a while in Insert
+			mode
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedC|		the cursor was moved in the |Command-line|
 |CursorMovedI|		the cursor was moved in Insert mode
@@ -566,7 +568,8 @@ BufWinEnter			After a buffer is displayed in a window.  This
 				since it reloads that buffer.
 				Does not happen for a terminal window, because
 				it starts in Terminal-Job mode and Normal mode
-				commands won't work. Use |TerminalOpen| instead.
+				commands won't work.  Use |TerminalOpen|
+				instead.
 							*BufWinLeave*
 BufWinLeave			Before a buffer is removed from a window.
 				Not when it's still visible in another window.
@@ -679,7 +682,7 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 				Not triggered if the color scheme is not
 				found.
 				The pattern is matched against the
-				colorscheme name. <afile> can be used for the
+				colorscheme name.  <afile> can be used for the
 				name of the actual file where this option was
 				set, and <amatch> for the new colorscheme
 				name.
@@ -748,7 +751,7 @@ CursorHold			When the user doesn't press a key for the time
 				triggered. |q|
 							*<CursorHold>*
 				Internally the autocommand is triggered by the
-				<CursorHold> key. In an expression mapping
+				<CursorHold> key.  In an expression mapping
 				|getchar()| may see this character.
 
 				Note: Interactive commands cannot be used for
@@ -1014,7 +1017,7 @@ InsertLeave			Just after leaving Insert mode.  Also when
 				using CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
 							*KeyInputPre*
 KeyInputPre			Just before a key is processed after mappings
-				have been applied. The pattern is matched
+				have been applied.  The pattern is matched
 				against a string that indicates the current
 				mode, which is the same as what is returned by
 				`mode(1)`.
@@ -1046,7 +1049,7 @@ MenuPopup			Just before showing the popup menu (under the
 					c	Command line
 					tl	Terminal
 							*ModeChanged*
-ModeChanged			After changing the mode. The pattern is
+ModeChanged			After changing the mode.  The pattern is
 				matched against `'old_mode:new_mode'`, for
 				example match against `*:c*` to simulate
 				|CmdlineEnter|.
@@ -1082,7 +1085,7 @@ OptionSet			After setting an option.  The pattern is
 
 				|v:option_oldlocal| is only set when |:set|
 				or |:setlocal| or a |modeline| was used to set
-				the option. Similarly |v:option_oldglobal| is
+				the option.  Similarly |v:option_oldglobal| is
 				only set when |:set| or |:setglobal| was used.
 
 				This does not set |<abuf>|, you could use
@@ -1090,10 +1093,10 @@ OptionSet			After setting an option.  The pattern is
 
 				Note that when setting a |global-local| string
 				option with |:set|, then |v:option_old| is the
-				old global value. However, for all other kinds
-				of options (local string options, global-local
-				number options, ...) it is the old local
-				value.
+				old global value.  However, for all other
+				kinds of options (local string options,
+				global-local number options, ...) it is the
+				old local value.
 
 				OptionSet is not triggered on startup and for
 				the 'key' option for obvious reasons.
@@ -1105,7 +1108,7 @@ OptionSet			After setting an option.  The pattern is
 
 				Note: It's a bad idea to reset an option
 				during this autocommand, this may break a
-				plugin. You can always use `:noa` to prevent
+				plugin.  You can always use `:noa` to prevent
 				triggering this autocommand.
 
 				When using |:set| in the autocommand the event
@@ -1130,7 +1133,7 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 							*QuickFixCmdPost*
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
-				location. For |:cfile| and |:lfile| commands
+				location.  For |:cfile| and |:lfile| commands
 				it is run after the error file is read and
 				before moving to the first error.
 				See |QuickFixCmdPost-example|.
@@ -1174,7 +1177,7 @@ SafeState			When nothing is pending, going to wait for the
 				screen was scrolled for messages.
 							*SafeStateAgain*
 SafeStateAgain			Like SafeState but after processing any
-				messages and invoking callbacks. This may be
+				messages and invoking callbacks.  This may be
 				triggered often, don't do something that takes
 				time.
 
@@ -1278,12 +1281,12 @@ TermChanged			After the value of 'term' has changed.  Useful
 				settings.  Executed for all loaded buffers.
 							*TerminalOpen*
 TerminalOpen			Just after a terminal buffer was created, with
-				`:terminal` or |term_start()|. This event is
+				`:terminal` or |term_start()|.  This event is
 				triggered even if the buffer is created
 				without a window, with the ++hidden option.
 							*TerminalWinOpen*
 TerminalWinOpen			Just after a terminal buffer was created, with
-				`:terminal` or |term_start()|. This event is
+				`:terminal` or |term_start()|.  This event is
 				triggered only if the buffer is created
 				with a window.  Can be used to set window
 				local options for the terminal window.
@@ -1480,7 +1483,7 @@ WinLeave			Before leaving a window.  If the window to be
 				Not used for ":qa" or ":q" when exiting Vim.
 
 							*WinNewPre*
-WinNewPre			Before creating a new window. Triggered
+WinNewPre			Before creating a new window.  Triggered
 				before commands that modify window layout by
 				creating a split.
 				Not done when creating tab pages and for the
@@ -1789,8 +1792,8 @@ option will not cause any commands to be executed.
 			After applying the autocommands the modelines are
 			processed, so that their settings overrule the
 			settings from autocommands, like what happens when
-			editing a file. This is skipped when the <nomodeline>
-			argument is present. You probably want to use
+			editing a file.  This is skipped when the <nomodeline>
+			argument is present.  You probably want to use
 			<nomodeline> for events that are not used when loading
 			a buffer, such as |User|.
 			Processing modelines is also skipped when no
@@ -1802,7 +1805,7 @@ option will not cause any commands to be executed.
 			loaded buffer.  The current buffer is done last.
 
 			Note that [fname] is used to select the autocommands,
-			not the buffers to which they are applied. Example: >
+			not the buffers to which they are applied.  Example: >
 				augroup mine
 				  autocmd!
 				  autocmd FileType * echo expand('<amatch>')

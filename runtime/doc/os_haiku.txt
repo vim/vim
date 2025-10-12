@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 9.1.  Last change: 2025 Sep 08
+*os_haiku.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,7 +40,7 @@ instance (r,g,b)=(168,168,168)) with black letters also works nicely.
 
 2. Compiling Vim					*haiku-compiling*
 
-Vim can be compiled using the standard configure/make approach. Running
+Vim can be compiled using the standard configure/make approach.  Running
 ./configure without any arguments or passing --enable-gui=haiku, will compile
 vim with the Haiku GUI support.  Run ./configure --help , to find out other
 features you can enable/disable.
@@ -73,8 +73,8 @@ additionally installed over the GUI version.  Typical build commands are:
 
 Normally Vim starts with the GUI if you start it as gvim or vim -g.  The vim
 version with GUI tries to determine if it was started from the Tracker instead
-of the Terminal, and if so, uses the GUI anyway.  However, the current detection
-scheme is fooled if you use the command "vim - </dev/null".
+of the Terminal, and if so, uses the GUI anyway.  However, the current
+detection scheme is fooled if you use the command "vim - </dev/null".
 
 Toggling between normal managed window and fullscreen mode can be done by
 pressing <Alt-Enter>.
@@ -90,7 +90,7 @@ Stuff that does not work yet:
   follows-mouse turned on).
 - The cursor does not flash.
 - Switching windows using <C-Tab-Up> and <C-Tab-Down> in Twitcher does not
-  work. This is due to each gvim window being managed by a separate instance
+  work.  This is due to each gvim window being managed by a separate instance
   completely unaware of other vim processes.
 
 4. The $VIM directory					*haiku-vimdir*
@@ -141,7 +141,7 @@ open the files instead.  This works from the Tracker but also from the command
 line.  In the latter case, non-file (option) arguments are not supported.
 Another drawback of the Single Launch is silent ignore of "Open With ..."
 requests by vim instance that running as non-GUI application even GUI support
-was compiled in. Vim instance running with GUI has no such problems.
+was compiled in.  Vim instance running with GUI has no such problems.
 
 NB: Only the GUI version has a BApplication (and hence Application Flags).
 This section does not apply to the GUI-less version, should you compile one.
@@ -201,14 +201,14 @@ $VIM/macros/swapmous.vim for an example.		|gui-mouse-mapping|
 
 11. Color names						*haiku-colors*
 
-Vim has a number of color names built-in. Additional names can be defined in
-|v:colornames|. See |:colorscheme| for details.
+Vim has a number of color names built-in.  Additional names can be defined in
+|v:colornames|.  See |:colorscheme| for details.
 
 
 12. GUI Toolbar Images					*haiku-toolbar-images*
 
 Alternative set of toolbar images should be the PNG image of any height you
-like. Image width is calculated to contain at least 32 buttons in one-row
+like.  Image width is calculated to contain at least 32 buttons in one-row
 cells.
 The image should be stored under the name $VIRUNTIME/bitmaps/builtin-tools.png
 More info about the buttons assignment are at |builtin-tools|.
@@ -229,8 +229,8 @@ Thank you, all!
 
 14. Bugs & to-do					*haiku-bugs*
 
-The port is under development now and far away from the perfect state. For bug
-reports, patches and wishes, please use the Vim mailing list or Vim Github
+The port is under development now and far away from the perfect state.  For
+bug reports, patches and wishes, please use the Vim mailing list or Vim Github
 repository.
 
 Mailing list: https://www.vim.org/maillist.php

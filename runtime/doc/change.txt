@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
+*change.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -101,7 +101,7 @@ An exception for the d{motion} command: If the motion is not linewise, the
 start and end of the motion are not in the same line, and there are only
 blanks before the start and there are no non-blanks after the end of the
 motion, the delete becomes linewise.  This means that the delete also removes
-the line of blanks that you might expect to remain. Use the |o_v| operator to
+the line of blanks that you might expect to remain.  Use the |o_v| operator to
 force the motion to be characterwise or remove the "z" flag from 'cpoptions'
 (see |cpo-z|) to disable this peculiarity.
 
@@ -382,7 +382,7 @@ CTRL-A			Add [count] to the number or alphabetic character at
 
 							*v_g_CTRL-A*
 {Visual}g CTRL-A	Add [count] to the number or alphabetic character in
-			the highlighted text. If several lines are
+			the highlighted text.  If several lines are
 		        highlighted, each one will be incremented by an
 			additional [count] (so effectively creating a
 			[count] incrementing sequence).
@@ -413,7 +413,7 @@ CTRL-X			Subtract [count] from the number or alphabetic
 <
 							*v_g_CTRL-X*
 {Visual}g CTRL-X	Subtract [count] from the number or alphabetic
-			character in the highlighted text. If several lines
+			character in the highlighted text.  If several lines
 			are highlighted, each value will be decremented by an
 			additional [count] (so effectively creating a [count]
 			decrementing sequence).
@@ -866,7 +866,7 @@ the |substitute()| function with the following exceptions:
   - magic is always set without regard to 'magic'.
   - A ~ inserts a tilde literally.
   - <CR> and \r inserts a carriage-return (CTRL-M).
-  - \<CR> does not have a special meaning. It's just one of \x.
+  - \<CR> does not have a special meaning.  It's just one of \x.
 
 Examples: >
   :s/a\|b/xxx\0xxx/g		 modifies "a b"	     to "xxxaxxx xxxbxxx"
@@ -878,7 +878,7 @@ Examples: >
 
 Note: "\L\u" can be used to capitalize the first letter of a word.  This is
 not compatible with Vi and older versions of Vim, where the "\u" would cancel
-out the "\L". Same for "\U\l".
+out the "\L".  Same for "\U\l".
 
 Note: In previous versions CTRL-V was handled in a special way.  Since this is
 not Vi compatible, this was removed.  Use a backslash instead.
@@ -950,7 +950,7 @@ real <NL> character (which will be a NUL in the file).
 
 The "\=" notation can also be used inside the third argument {sub} of
 |substitute()| function.  In this case, the special meaning for characters as
-mentioned at |sub-replace-special| does not apply at all. Especially, <CR> and
+mentioned at |sub-replace-special| does not apply at all.  Especially, <CR> and
 <NL> are interpreted not as a line break but as a carriage-return and a
 new-line respectively.
 
@@ -1092,7 +1092,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			with `zp`.  (for {Visual} see |Visual-mode|)
 
 							*:y* *:yank* *E850*
-:[range]y[ank] [x]	Yank [range] lines [into register x]. Yanking to the
+:[range]y[ank] [x]	Yank [range] lines [into register x].  Yanking to the
 			"* or "+ registers is possible only when the
 			|+clipboard| feature is included.
 
@@ -1173,9 +1173,9 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			or 'a'.
 
 ["x]zp		    or					*zp* *zP*
-["x]zP			Like "p" and "P", except without adding trailing spaces
-			when pasting a block.  Thus the inserted text will not
-			always be a rectangle.  Especially useful in
+["x]zP			Like "p" and "P", except without adding trailing
+			spaces when pasting a block.  Thus the inserted text
+			will not always be a rectangle.  Especially useful in
 			combination with |v_zy|.
 
 You can use these commands to copy text from one place to another.  Do this
@@ -1210,7 +1210,7 @@ With |p| the previously selected text is put in the unnamed register (and
 possibly the selection and/or clipboard).  This is useful if you want to put
 that text somewhere else.  But you cannot repeat the same change.
 With |P| the unnamed register is not changed (and neither the selection or
-clipboard), you can repeat the same change. But the deleted text cannot be
+clipboard), you can repeat the same change.  But the deleted text cannot be
 used.  If you do need it you can use |p| with another register.  E.g., yank
 the text to copy, Visually select the text to replace and use "0p .  You can
 repeat this as many times as you like, and the unnamed register will be
@@ -1291,8 +1291,8 @@ text is less than one line (the small delete register is used then).  An
 exception is made for the delete operator with these movement commands: |%|,
 |(|, |)|, |`|, |/|, |?|, |n|, |N|, |{| and |}|.
 Register "1 is always used then (this is Vi compatible).  The "- register is
-used as well if the delete is within a line. Note that these characters may be
-mapped.  E.g. |%| is mapped by the matchit plugin.
+used as well if the delete is within a line.  Note that these characters may
+be mapped.  E.g. |%| is mapped by the matchit plugin.
    With each successive deletion or change, Vim shifts the previous contents
 of register 1 into register 2, 2 into 3, and so forth, losing the previous
 contents of register 9.
@@ -1608,11 +1608,11 @@ type of comment string.  A part consists of:
 
   e	End of a three-piece comment
 
-  l	Left align. Used together with 's' or 'e', the leftmost character of
+  l	Left align.  Used together with 's' or 'e', the leftmost character of
 	start or end will line up with the leftmost character from the middle.
-	This is the default and can be omitted. See below for more details.
+	This is the default and can be omitted.  See below for more details.
 
-  r	Right align. Same as above but rightmost instead of leftmost. See
+  r	Right align.  Same as above but rightmost instead of leftmost.  See
 	below for more details.
 
   O	Don't consider this comment for the "O" command.
@@ -1624,8 +1624,8 @@ type of comment string.  A part consists of:
 
   {digits}
 	When together with 's' or 'e': add {digit} amount of offset to an
-	automatically inserted middle or end comment leader. The offset begins
-	from a left alignment. See below for more details.
+	automatically inserted middle or end comment leader.  The offset
+	begins from a left alignment.  See below for more details.
 
   -{digits}
 	Like {digits} but reduce the indent.  This only works when there is
@@ -1664,7 +1664,7 @@ part which is longer, the end part is used.  This makes a C style comment work
 without requiring the middle part to end with a space.
 
 Here is an example of alignment flags at work to make a comment stand out
-(kind of looks like a 1 too). Consider comment string: >
+(kind of looks like a 1 too).  Consider comment string: >
 	:set comments=sr:/***,m:**,ex-2:******/
 <
                                    /*** ~
@@ -1675,7 +1675,7 @@ offset 2 spaces for the "-2" flag--->** ~
 In this case, the first comment was typed, then return was pressed 4 times,
 then "/" was pressed to end the comment.
 
-Here are some finer points of three part comments. There are three times when
+Here are some finer points of three part comments.  There are three times when
 alignment and offset flags are taken into consideration: opening a new line
 after a start-comment, opening a new line before an end-comment, and
 automatically ending a three-piece comment.  The end alignment flag has a
@@ -1686,11 +1686,11 @@ will override the "r" and "l" flag.
 
 Enabling 'cindent' will override the alignment flags in many cases.
 Reindenting using a different method like |gq| or |=| will not consult
-alignment flags either. The same behaviour can be defined in those other
-formatting options. One consideration is that 'cindent' has additional options
-for context based indenting of comments but cannot replicate many three piece
-indent alignments.  However, 'indentexpr' has the ability to work better with
-three piece comments.
+alignment flags either.  The same behaviour can be defined in those other
+formatting options.  One consideration is that 'cindent' has additional
+options for context based indenting of comments but cannot replicate many
+three piece indent alignments.  However, 'indentexpr' has the ability to work
+better with three piece comments.
 
 Other examples: >
    "b:*"	Includes lines starting with "*", but not if the "*" is
@@ -1787,7 +1787,7 @@ B	When joining lines, don't insert a space between two multibyte
 1	Don't break a line after a one-letter word.  It's broken before it
 	instead (if possible).
 							*fo-]*
-]	Respect 'textwidth' rigorously. With this flag set, no line can be
+]	Respect 'textwidth' rigorously.  With this flag set, no line can be
 	longer than 'textwidth', unless line-break-prohibition rules make this
 	impossible.  Mainly for CJK scripts and works only if 'encoding' is
 	"utf-8".
@@ -1825,8 +1825,8 @@ is when the 'a' flag is present. |auto-format|
 
 Note that when 'paste' is on, Vim does no formatting at all.
 
-Note that 'textwidth' can be non-zero even if Vim never performs auto-wrapping;
-'textwidth' is still useful for formatting with "gq".
+Note that 'textwidth' can be non-zero even if Vim never performs
+auto-wrapping; 'textwidth' is still useful for formatting with "gq".
 
 If the 'comments' option includes "/*", "*" and/or "*/", then Vim has some
 built in stuff to treat these types of comments a bit more cleverly.
@@ -1913,8 +1913,8 @@ Also see |:uniq|.
 							*:sort-l*
 			With [l] sort uses the current collation locale.
 			Implementation details: strcoll() is used to compare
-			strings. See |:language| to check or set the collation
-			locale. Example: >
+			strings.  See |:language| to check or set the collation
+			locale.  Example: >
 				:language collate en_US.UTF-8
 				:%sort l
 <			|v:collate| can also used to check the current locale.
@@ -1930,7 +1930,7 @@ Also see |:uniq|.
 			With [f] sorting is done on the Float in the line.
 			The value of Float is determined similar to passing
 			the text (after or inside a {pattern} match) to
-			str2float() function. This option is available only
+			str2float() function.  This option is available only
 			if Vim was compiled with Floating point support.
 
 			With [x] sorting is done on the first hexadecimal

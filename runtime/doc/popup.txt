@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2025 Sep 26
+*popup.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -314,7 +314,7 @@ popup_dialog({what}, {options})				*popup_dialog()*
 				\ padding: [],
 				\ mapping: 0,
 				\})
-<		Use {options} to change the properties. E.g. add a 'filter'
+<		Use {options} to change the properties.  E.g. add a 'filter'
 		option with value 'popup_filter_yesno'.  Example: >
 			call popup_create('do you want to quit (Yes/no)?', #{
 				\ filter: 'popup_filter_yesno',
@@ -331,7 +331,7 @@ popup_dialog({what}, {options})				*popup_dialog()*
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
-		Filter that can be used for a popup. These keys can be used:
+		Filter that can be used for a popup.  These keys can be used:
 		    j <Down> <C-N>	select item below
 		    k <Up> <C-P>	select item above
 		    <Space> <Enter>	accept current selection
@@ -354,7 +354,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
-		Filter that can be used for a popup. It handles only the keys
+		Filter that can be used for a popup.  It handles only the keys
 		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
 		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
 		as the second argument.  Pressing Esc and 'x' works like
@@ -460,7 +460,7 @@ popup_getpos({id})					*popup_getpos()*
 
 
 popup_hide({id})						*popup_hide()*
-		If {id} is a displayed popup, hide it now. If the popup has a
+		If {id} is a displayed popup, hide it now.  If the popup has a
 		filter it will not be invoked for so long as the popup is
 		hidden.
 		If window {id} does not exist nothing happens.  If window {id}
@@ -491,8 +491,8 @@ popup_locate({row}, {col})				 *popup_locate()*
 popup_menu({what}, {options})				 *popup_menu()*
 		Show the {what} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {what} should have multiple lines to make this
-		useful.  This works like: >
+		Space or Enter.  {what} should have multiple lines to make
+		this useful.  This works like: >
 			call popup_create({what}, #{
 				\ pos: 'center',
 				\ zindex: 200,
@@ -627,7 +627,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 
 popup_settext({id}, {text})				*popup_settext()*
-		Set the text of the buffer in popup win {id}. {text} is
+		Set the text of the buffer in popup win {id}.  {text} is
 		a string or a list of strings to be displayed in the popup.
 		Does not change the window size or position, other than caused
 		by the different text.
@@ -710,7 +710,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			omitted or invalid the current window is used.  Used
 			when "textprop" is present.
 	textpropid	Used to identify the text property when "textprop" is
-			present. Use zero to reset.
+			present.  Use zero to reset.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
 			 - the popup would be truncated at the right edge of
@@ -753,7 +753,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	wrap		TRUE to make the lines wrap (default TRUE).
 	drag		TRUE to allow the popup to be dragged with the mouse
 			by grabbing at the border.  Has no effect if the
-			popup does not have a border. As soon as dragging
+			popup does not have a border.  As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
 	dragall		TRUE to allow the popup to be dragged from every
@@ -803,10 +803,10 @@ The second argument of |popup_create()| is a dictionary with options:
 	scrollbar	1 or true: show a scrollbar when the text doesn't fit.
 			zero: do not show a scrollbar.  Default is non-zero.
 			Also see |popup-scrollbar|.
-	scrollbarhighlight  Highlight group name for the scrollbar. The
+	scrollbarhighlight  Highlight group name for the scrollbar.  The
 			background color is what matters.  When not given then
 			PmenuSbar is used.
-	thumbhighlight  Highlight group name for the scrollbar thumb. The
+	thumbhighlight  Highlight group name for the scrollbar thumb.  The
 			background color is what matters.  When not given then
 			PmenuThumb is used.
 	zindex		Priority for the popup, default 50.  Minimum value is
@@ -831,7 +831,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			line or to another window.
 	mousemoved	Like "moved" but referring to the mouse pointer
 			position
-	cursorline	TRUE:	 Highlight the cursor line. Also scrolls the
+	cursorline	TRUE:	 Highlight the cursor line.  Also scrolls the
 				 text to show this line (only works properly
 				 when 'wrap' is off).
 			zero:	 Do not highlight the cursor line.

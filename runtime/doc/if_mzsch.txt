@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 9.1.  Last change: 2020 Oct 14
+*if_mzsch.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -20,7 +20,7 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 Based on the work of Brent Fulgham.
 Dynamic loading added by Sergey Khorev
 
-MzScheme and PLT Scheme names have been rebranded as Racket. For more
+MzScheme and PLT Scheme names have been rebranded as Racket.  For more
 information please check http://racket-lang.org
 
 Futures and places of Racket version 5.x up to and including 5.3.1 do not
@@ -67,8 +67,8 @@ MzScheme interface defines exception exn:vim, derived from exn.
 It is raised for various Vim errors.
 
 During compilation, the MzScheme interface will remember the current MzScheme
-collection path. If you want to specify additional paths use the
-'current-library-collection-paths' parameter. E.g., to cons the user-local
+collection path.  If you want to specify additional paths use the
+'current-library-collection-paths' parameter.  E.g., to cons the user-local
 MzScheme collection path: >
     :mz << EOF
     (current-library-collection-paths
@@ -150,9 +150,9 @@ Auto-instantiation of vimext module (can be placed in your |vimrc|): >
 ==============================================================================
 3. Threads						*mzscheme-threads*
 
-The MzScheme interface supports threads. They are independent from OS threads,
-thus scheduling is required. The option 'mzquantum' determines how often
-Vim should poll for available MzScheme threads.
+The MzScheme interface supports threads.  They are independent from OS
+threads, thus scheduling is required.  The option 'mzquantum' determines how
+often Vim should poll for available MzScheme threads.
 NOTE
 Thread scheduling in the console version of Vim is less reliable than in the
 GUI version.
@@ -181,12 +181,12 @@ Common
     (get-option {option-name} [buffer-or-window]) Get Vim option value (either
 				    local or global, see set-option).
     (set-option {string} [buffer-or-window])
-				    Set a Vim option. String must have option
+				    Set a Vim option.  String must have option
 				    setting form (like optname=optval, or
 				    optname+=optval, etc.) When called with
 				    {buffer} or {window} the local option will
-				    be set. The symbol 'global can be passed
-				    as {buffer-or-window}. Then |:setglobal|
+				    be set.  The symbol 'global can be passed
+				    as {buffer-or-window}.  Then |:setglobal|
 				    will be used.
 
 Buffers							 *mzscheme-buffer*
@@ -197,17 +197,17 @@ Buffers							 *mzscheme-buffer*
     (get-buff-line {linenr} [buffer])
 				    Get line from a buffer.
     (set-buff-line {linenr} {string} [buffer])
-				    Set a line in a buffer. If {string} is #f,
-				    the line gets deleted.  The [buffer]
-				    argument is optional. If omitted, the
+				    Set a line in a buffer.  If {string} is
+				    #f, the line gets deleted.  The [buffer]
+				    argument is optional.  If omitted, the
 				    current buffer will be used.
     (get-buff-line-list {start} {end} [buffer])
-				    Get a list of lines in a buffer. {Start}
+				    Get a list of lines in a buffer.  {Start}
 				    and {end} are 1-based and inclusive.
     (set-buff-line-list {start} {end} {string-list} [buffer])
-				    Set a list of lines in a buffer. If
+				    Set a list of lines in a buffer.  If
 				    string-list is #f or null, the lines get
-				    deleted. If a list is shorter than
+				    deleted.  If a list is shorter than
 				    {end}-{start} the remaining lines will
 				    be deleted.
     (get-buff-name [buffer])	    Get a buffer's text name.
@@ -215,13 +215,14 @@ Buffers							 *mzscheme-buffer*
     (get-buff-size [buffer])	    Get buffer line count.
     (insert-buff-line-list {linenr} {string/string-list} [buffer])
 				    Insert a list of lines into a buffer after
-				    {linenr}. If {linenr} is 0, lines will be
+				    {linenr}.  If {linenr} is 0, lines will be
 				    inserted at start.
-    (curr-buff)			    Get the current buffer. Use other MzScheme
-				    interface procedures to change it.
+    (curr-buff)			    Get the current buffer.  Use other
+				    MzScheme interface procedures to change
+				    it.
     (buff-count)		    Get count of total buffers in the editor.
     (get-next-buff [buffer])	    Get next buffer.
-    (get-prev-buff [buffer])	    Get previous buffer. Return #f when there
+    (get-prev-buff [buffer])	    Get previous buffer.  Return #f when there
 				    are no more buffers.
     (open-buff {filename})	    Open a new buffer (for file "name")
     (get-buff-by-name {buffername}) Get a buffer by its filename or #f
@@ -258,7 +259,7 @@ evaluate MzScheme expressions and pass their values to Vim script.
 6. Using Function references				    *mzscheme-funcref*
 
 MzScheme interface allows use of |Funcref|s so you can call Vim functions
-directly from Scheme. For instance: >
+directly from Scheme.  For instance: >
     function! MyAdd2(arg)
 	return a:arg + 2
     endfunction
@@ -273,7 +274,7 @@ directly from Scheme. For instance: >
 ==============================================================================
 7. Dynamic loading				*mzscheme-dynamic* *E815*
 
-On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
+On MS-Windows the MzScheme libraries can be loaded dynamically.  The |:version|
 output then includes |+mzscheme/dyn|.
 
 This means that Vim will search for the MzScheme DLL files only when needed.
@@ -291,7 +292,7 @@ name of the library to load.  The initial value is specified at build time.
 
 The version of the DLL must match the MzScheme version Vim was compiled with.
 For MzScheme version 209 they will be "libmzsch209_000.dll" and
-"libmzgc209_000.dll". To know for sure look at the output of the ":version"
+"libmzgc209_000.dll".  To know for sure look at the output of the ":version"
 command, look for -DDYNAMIC_MZSCH_DLL="something" and
 -DDYNAMIC_MZGC_DLL="something" in the "Compilation" info.
 

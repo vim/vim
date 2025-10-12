@@ -1,4 +1,4 @@
-*os_qnx.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
+*os_qnx.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Julian Kinraid
@@ -22,8 +22,8 @@ Vim on QNX behaves much like other unix versions. |os_unix.txt|
 
 2. Compiling Vim					*qnx-compiling*
 
-Vim can be compiled using the standard configure/make approach.  If you want to
-compile for X11, pass the --with-x option to configure.  Otherwise, running
+Vim can be compiled using the standard configure/make approach.  If you want
+to compile for X11, pass the --with-x option to configure.  Otherwise, running
 ./configure without any arguments or passing --enable-gui=photon, will compile
 vim with the Photon gui support.  Run ./configure --help , to find out other
 features you can enable/disable.

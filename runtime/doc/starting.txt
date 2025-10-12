@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
+*starting.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,8 +43,8 @@ filename	One or more file names.  The first one will be the current
 		To avoid a file name starting with a '-' being interpreted as
 		an option, precede the arglist with "--", e.g.: >
 			vim -- -filename
-<		All arguments after the "--" will be interpreted as file names,
-		no other options or "+command" argument can follow.
+<		All arguments after the "--" will be interpreted as file
+		names, no other options or "+command" argument can follow.
 		For behavior of quotes on MS-Windows, see |win32-quotes|.
 
 							*--*
@@ -174,7 +174,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		"pat" in the first file being edited (see |pattern| for the
 		available search patterns).  The search starts at the cursor
 		position, which can be the first line or the cursor position
-		last used from |viminfo|. To force a search from the first
+		last used from |viminfo|.  To force a search from the first
 		line use "+1 +/pat".
 
 +{command}						*-+c* *-c*
@@ -262,7 +262,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		shell command, it has only been made difficult.
 
 							*-g*
--g		Start Vim in GUI mode.  See |gui|. For the opposite see |-v|.
+-g		Start Vim in GUI mode.  See |gui|.  For the opposite see |-v|.
 
 							*-v*
 -v		Start Ex in Vi mode.  Only makes a difference when the
@@ -585,7 +585,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		characters are appended.  See also |complex-repeat|.
 		{scriptout} cannot start with a digit.
 		If you want to record what is typed in a human readable form,
-		you can use |ch_logfile()|. It adds "raw key input" lines.
+		you can use |ch_logfile()|.  It adds "raw key input" lines.
 		Also see |--log|.
 
 							*-W*
@@ -830,7 +830,7 @@ accordingly.  Vim proceeds in this order:
 	one that is found is read.
 
 	RECOMMENDATION: Put all your Vim configuration stuff in the
-	$HOME/.vim/ directory ($HOME/vimfiles/ for MS-Windows). That makes it
+	$HOME/.vim/ directory ($HOME/vimfiles/ for MS-Windows).  That makes it
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
@@ -1089,7 +1089,7 @@ recommended to add these lines somewhere near the top: >
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc.
 Copying $VIMRUNTIME/vimrc_example.vim to your .vimrc is another way to do
-this. Alternatively, you can copy defaults.vim to your .vimrc and modify it
+this.  Alternatively, you can copy defaults.vim to your .vimrc and modify it
 (but then you won't get updates when it changes).
 
 If you don't like some of the defaults, you can still source defaults.vim and
@@ -1112,8 +1112,8 @@ The specification can be found online at
 https://specifications.freedesktop.org/basedir-spec/latest/
 
 The location of this standard configuration directory is configurable by the
-user, using an environment variable but should also give fallback in case those
-variables weren't set.
+user, using an environment variable but should also give fallback in case
+those variables weren't set.
 
 This is not an exhaustive list of those directories:
   Environment var	Default location	Description ~
@@ -1129,7 +1129,7 @@ Vim will only use the `$XDG_CONFIG_HOME` directory, the others are not
 Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for its
 configuration (see |vimrc|) but it will source it only if no other
 initialization file is found in `$HOME` or `$HOME/.vim` (thus making this
-feature backward compatible). However, if you want to migrate to use
+feature backward compatible).  However, if you want to migrate to use
 `$XDG_CONFIG_HOME/vim/` directory, you will have to move away your `~/.vimrc`
 and `~/.vim/vimrc` file.
 
@@ -1637,8 +1637,8 @@ has marks for.
 							*viminfo-file-marks*
 Uppercase marks ('A to 'Z) are stored when writing the viminfo file.  The
 numbered marks ('0 to '9) are a bit special.  When the viminfo file is written
-(when exiting or with the ":wviminfo" command), '0 is set to the current cursor
-position and file.  The old '0 is moved to '1, '1 to '2, etc.  This
+(when exiting or with the ":wviminfo" command), '0 is set to the current
+cursor position and file.  The old '0 is moved to '1, '1 to '2, etc.  This
 resembles what happens with the "1 to "9 delete registers.  If the current
 cursor position is already present in '0 to '9, it is moved to '0, to avoid
 having the same position twice.  The result is that with "'0", you can jump
@@ -1738,8 +1738,8 @@ most of the information will be restored).
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the
-			internal info is written.  If 'viminfo' is empty, marks
-			for up to 100 files will be written.
+			internal info is written.  If 'viminfo' is empty,
+			marks for up to 100 files will be written.
 			When you get error "E929: Too many viminfo temp
 			files", check that no old temp files were left behind
 			(e.g. ~/.viminf*) and that you can write in the

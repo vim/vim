@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2024 Jul 17
+*channel.txt*      For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -89,7 +89,8 @@ The number will increase every time you send a message.
 The server can send a command to Vim.  Type this on T1 (literally, including
 the quotes):
 	["ex","echo 'hi there'"] ~
-And you should see the message in Vim. You can move the cursor a word forward:
+And you should see the message in Vim.  You can move the cursor a word
+forward:
 	["normal","w"] ~
 
 To handle asynchronous communication a callback needs to be used: >
@@ -234,7 +235,7 @@ what you want!  Stopping the job with job_stop() might be better.
 All readahead is discarded, callbacks will no longer be invoked.
 
 Note that a channel is closed in three stages:
-  - The I/O ends, log message: "Closing channel". There can still be queued
+  - The I/O ends, log message: "Closing channel".  There can still be queued
     messages to read or callbacks to invoke.
   - The readahead is cleared, log message: "Clearing channel".  Some variables
     may still reference the channel.
@@ -478,7 +479,7 @@ To read from the error output use the "part" option:
 	{"part": "err"} ~
 To read a message with a specific ID, on a JS or JSON channel:
 	{"id": 99} ~
-When no ID is specified or the ID is -1, the first message is returned. This
+When no ID is specified or the ID is -1, the first message is returned.  This
 overrules any callback waiting for this message.
 
 For a RAW channel this returns whatever is available, since Vim does not know
@@ -571,7 +572,8 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		Return type: dict<any> or |String|
 
 ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
-		Get the buffer number that {handle} is using for String {what}.
+		Get the buffer number that {handle} is using for String
+		{what}.
 		{handle} can be a Channel or a Job that has a Channel.
 		{what} can be "err" for stderr, "out" for stdout or empty for
 		socket output.
@@ -728,7 +730,7 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		{handle} can be a Channel or a Job that has a Channel.
 		When using the "lsp" channel mode, {expr} must be a |Dict|.
 
-		If the channel mode is "lsp", then returns a Dict. Otherwise
+		If the channel mode is "lsp", then returns a Dict.  Otherwise
 		returns an empty String.  If the "callback" item is present in
 		{options}, then the returned Dict contains the ID of the
 		request message.  The ID can be used to send a cancellation
@@ -813,12 +815,12 @@ been received and not parsed correctly.
 If the command produces a line of output that you want to deal with, specify
 a handler for stdout: >
     let job = job_start(command, {"out_cb": "MyHandler"})
-The function will be called with the channel and a message. You would define
+The function will be called with the channel and a message.  You would define
 it like this: >
     func MyHandler(channel, msg)
 
 Without the handler you need to read the output with |ch_read()| or
-|ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
+|ch_readraw()|.  You can do this in the close callback, see |read-in-close-cb|.
 
 Note that if the job exits before you read the output, the output may be lost.
 This depends on the system (on Unix this happens because closing the write end
@@ -856,7 +858,7 @@ To run a job that reads from a buffer: >
 	    \ {'in_io': 'buffer', 'in_name': 'mybuffer'})
 <
 							*E915* *E918*
-The buffer is found by name, similar to |bufnr()|. The buffer must exist and
+The buffer is found by name, similar to |bufnr()|.  The buffer must exist and
 be loaded when job_start() is called.
 
 By default this reads the whole buffer.  This can be changed with the "in_top"
@@ -933,7 +935,8 @@ job_info([{job}])					*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
-		   "cmd"	List of command arguments used to start the job
+		   "cmd"	List of command arguments used to start the
+				job
 		   "process"	process ID
 		   "tty_in"	terminal input name, empty when none
 		   "tty_out"	terminal output name, empty when none
@@ -985,11 +988,11 @@ job_start({command} [, {options}])			*job_start()*
 		passed to execvp().  Arguments in double quotes can contain
 		white space.
 
-		{command} can be a List, where the first item is the executable
-		and further items are the arguments.  All items are converted
-		to String.  This works best on Unix.
+		{command} can be a List, where the first item is the
+		executable and further items are the arguments.  All items are
+		converted to String.  This works best on Unix.
 
-		On MS-Windows, job_start() makes a GUI application hidden. If
+		On MS-Windows, job_start() makes a GUI application hidden.  If
 		you want to show it, use |:!start| instead.
 
 		The command is executed directly, not through a shell, the
@@ -1311,7 +1314,7 @@ To get the status of a job: >
 To make a job stop running: >
 	job_stop(job)
 
-This is the normal way to end a job. On Unix it sends a SIGTERM to the job.
+This is the normal way to end a job.  On Unix it sends a SIGTERM to the job.
 It is possible to use other ways to stop the job, or even send arbitrary
 signals.  E.g. to force a job to stop, "kill it": >
 	job_stop(job, "kill")
@@ -1327,10 +1330,10 @@ If you want to type input for the job in a Vim window you have a few options:
 - Use a terminal window.  This works well if what you type goes directly to
   the job and the job output is directly displayed in the window.
   See |terminal-window|.
-- Use a window with a prompt buffer. This works well when entering a line for
+- Use a window with a prompt buffer.  This works well when entering a line for
   the job in Vim while displaying (possibly filtered) output from the job.
 
-A prompt buffer is created by setting 'buftype' to "prompt". You would
+A prompt buffer is created by setting 'buftype' to "prompt".  You would
 normally only do that in a newly created buffer.
 
 The user can edit and enter one line of text at the very last line of the
@@ -1339,8 +1342,8 @@ buffer.  When pressing Enter in the prompt line the callback set with
 Another callback would receive the output from the job and display it in the
 buffer, below the prompt (and above the next prompt).
 
-Only the text in the last line, after the prompt, is editable. The rest of the
-buffer is not modifiable with Normal mode commands.  It can be modified by
+Only the text in the last line, after the prompt, is editable.  The rest of
+the buffer is not modifiable with Normal mode commands.  It can be modified by
 calling functions, such as |append()|.  Using other commands may mess up the
 buffer.
 
@@ -1348,8 +1351,8 @@ After setting 'buftype' to "prompt" Vim does not automatically start Insert
 mode, use `:startinsert` if you want to enter Insert mode, so that the user
 can start typing a line.
 
-The text of the prompt can be set with the |prompt_setprompt()| function. If
-no prompt is set with |prompt_setprompt()|, "% " is used. You can get the
+The text of the prompt can be set with the |prompt_setprompt()| function.  If
+no prompt is set with |prompt_setprompt()|, "% " is used.  You can get the
 effective prompt text for a buffer, with |prompt_getprompt()|.
 
 The user can go to Normal mode and navigate through the buffer.  This can be
@@ -1357,7 +1360,7 @@ useful to see older output or copy text.
 
 The CTRL-W key can be used to start a window command, such as CTRL-W w to
 switch to the next window.  This also works in Insert mode (use Shift-CTRL-W
-to delete a word). When leaving the window Insert mode will be stopped.  When
+to delete a word).  When leaving the window Insert mode will be stopped.  When
 coming back to the prompt window Insert mode will be restored.
 
 Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
@@ -1476,7 +1479,7 @@ To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
     let ch = ch_open(..., #{mode: 'lsp'})
 
 To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
-'out_mode' items in the |job_start()| {options} argument to 'lsp'. Example: >
+'out_mode' items in the |job_start()| {options} argument to 'lsp'.  Example: >
 
     let cmd = ['clangd', '--background-index', '--clang-tidy']
     let opts = {}
@@ -1494,8 +1497,8 @@ formats appropriately or you should use a separate callback function for
 "out_cb" and "err_cb" to handle them as shown above.
 
 To synchronously send a JSON-RPC request to the server, use the
-|ch_evalexpr()| function. This function will wait and return the decoded
-response message from the server. You can use either the |channel-timeout| or
+|ch_evalexpr()| function.  This function will wait and return the decoded
+response message from the server.  You can use either the |channel-timeout| or
 the 'timeout' field in the {options} argument to control the response wait
 time.  If the request times out, then an empty |Dict| is returned.  Example: >
 
@@ -1509,9 +1512,10 @@ time.  If the request times out, then an empty |Dict| is returned.  Example: >
         ... <handle failure>
     endif
 
-Note that in the request message the 'id' field should not be specified. If it
-is specified, then Vim will overwrite the value with an internally generated
-identifier.  Vim currently supports only a number type for the 'id' field.
+Note that in the request message the 'id' field should not be specified.  If
+it is specified, then Vim will overwrite the value with an internally
+generated identifier.  Vim currently supports only a number type for the 'id'
+field.
 The callback function will be invoked for both a successful and a failed RPC
 request.
 
@@ -1549,14 +1553,14 @@ for the request.  Example: >
     call ch_sendexpr(ch, notif)
 
 To send a JSON-RPC notification message to the server, use the |ch_sendexpr()|
-function. As the server will not send a response message to the notification,
+function.  As the server will not send a response message to the notification,
 don't specify the "callback" item.  Example: >
 
     call ch_sendexpr(ch, #{method: 'initialized'})
 
 To respond to a JSON-RPC request message from the server, use the
 |ch_sendexpr()| function.  In the response message, copy the 'id' field value
-from the server request message. Example: >
+from the server request message.  Example: >
 
     let resp = {}
     let resp.id = req.id

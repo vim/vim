@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
+*os_amiga.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -74,8 +74,8 @@ example to get white text on a blue background: >
 
 When using multiple commands with a filter command, e.g. >
   :r! echo this; echo that
-Only the output of the last command is used.  To fix this you have to group the
-commands.  This depends on the shell you use (that is why it is not done
+Only the output of the last command is used.  To fix this you have to group
+the commands.  This depends on the shell you use (that is why it is not done
 automatically in Vim).  Examples: >
   :r! (echo this; echo that)
   :r! {echo this; echo that}

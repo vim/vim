@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2025 Aug 10
+*gui.txt*       For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -164,7 +164,7 @@ window Vim is running in with these commands: >
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
 framework, most notably iBus, have been known to produce undesirable results
-in gvim. These may include an inability to enter spaces, or long delays
+in gvim.  These may include an inability to enter spaces, or long delays
 between typing a character and it being recognized by the application.
 
 One workaround that has been successful, for unknown reasons, is to prevent
@@ -574,8 +574,8 @@ the mouse button down on this will pop up a menu containing the item
 which when selected, performs the operation.
 
 To create a menu for terminal mode, use |:tlmenu| instead of |:tmenu| unlike
-key mapping (|:tmap|). This is because |:tmenu| is already used for defining
-tooltips for menus. See |terminal-typing|.
+key mapping (|:tmap|).  This is because |:tmenu| is already used for defining
+tooltips for menus.  See |terminal-typing|.
 
 Special characters in a menu name:
 
@@ -851,7 +851,7 @@ not wrap.
 
 Note that Vim may be in any mode when executing these commands.  The menu
 should be defined for Normal mode and will be executed without changing the
-current mode. Thus if the current window is in Visual mode and the menu
+current mode.  Thus if the current window is in Visual mode and the menu
 command does not intentionally change the mode, Vim will remain in Visual
 mode.  Best is to use `:nnoremenu` to avoid side effects.
 
@@ -1019,8 +1019,8 @@ The tip is defined like this: >
 And delete it with: >
 	:tunmenu MyMenu.Hello
 
-Tooltips are currently only supported for the X11 and Win32 GUI.  However, they
-should appear for the other gui platforms in the not too distant future.
+Tooltips are currently only supported for the X11 and Win32 GUI.  However,
+they should appear for the other gui platforms in the not too distant future.
 
 The ":tmenu" command works just like other menu commands, it uses the same
 arguments.  ":tunmenu" deletes an existing menu tip, in the same way as the
@@ -1158,12 +1158,12 @@ Examples: >
 
 See also |font-sizes|.
 
-Note on Weights: Fonts often come with a variety of weights. "Normal" weights
+Note on Weights: Fonts often come with a variety of weights.  "Normal" weights
 in Windows have a value of 400 and, left unspecified, this is the value that
-will be used when attempting to find fonts. Windows will often match fonts
+will be used when attempting to find fonts.  Windows will often match fonts
 based on their weight with higher priority than the font name which means a
 Book or Medium variant of a font might be used despite specifying a Light or
-ExtraLight variant. If you are experiencing heavier weight substitution, then
+ExtraLight variant.  If you are experiencing heavier weight substitution, then
 explicitly setting a lower weight value may mitigate against this unwanted
 substitution.
 

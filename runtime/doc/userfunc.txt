@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Sep 12
+*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -65,7 +65,7 @@ define a global function.
 <
 							*:function-verbose*
 When 'verbose' is non-zero, listing a function will also display where it was
-last defined. Example: >
+last defined.  Example: >
 
     :verbose function SetFileTypeSH
 	function SetFileTypeSH(name)
