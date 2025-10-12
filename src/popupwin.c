@@ -1784,6 +1784,18 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     curbuf = curwin->w_buffer;
 }
 
+#define SET_BORDER_CHARS(a0, a1, a2, a3, a4, a5, a6, a7)    \
+    do {						    \
+	wp->w_border_char[0] = (a0);			    \
+	wp->w_border_char[1] = (a1);			    \
+	wp->w_border_char[2] = (a2);			    \
+	wp->w_border_char[3] = (a3);			    \
+	wp->w_border_char[4] = (a4);			    \
+	wp->w_border_char[5] = (a5);			    \
+	wp->w_border_char[6] = (a6);			    \
+	wp->w_border_char[7] = (a7);			    \
+    } while (0)
+
 /*
  * Parse the 'previewpopup' or 'completepopup' option and apply the values to
  * window "wp" if it is not NULL.
@@ -1801,6 +1813,8 @@ parse_popup_option(win_T *wp, int is_preview)
 
     if (wp != NULL)
 	wp->w_popup_flags &= ~POPF_INFO_MENU;
+    else
+	return OK;
 
     for ( ; *p != NUL; p += (*p == ',' ? 1 : 0))
     {
@@ -1823,95 +1837,120 @@ parse_popup_option(win_T *wp, int is_preview)
 	{
 	    if (dig != p)
 		return FAIL;
-	    if (wp != NULL)
-	    {
-		if (is_preview)
-		    wp->w_minheight = x;
-		wp->w_maxheight = x;
-	    }
+	    if (is_preview)
+		wp->w_minheight = x;
+	    wp->w_maxheight = x;
 	}
 	else if (STRNCMP(s, "width:", 6) == 0)
 	{
 	    if (dig != p)
 		return FAIL;
-	    if (wp != NULL)
-	    {
-		if (is_preview)
-		    wp->w_minwidth = x;
-		wp->w_maxwidth = x;
-		wp->w_maxwidth_opt = x;
-	    }
+	    if (is_preview)
+		wp->w_minwidth = x;
+	    wp->w_maxwidth = x;
+	    wp->w_maxwidth_opt = x;
 	}
 	else if (STRNCMP(s, "highlight:", 10) == 0)
 	{
-	    if (wp != NULL)
-	    {
-		int c = *p;
+	    int c = *p;
 
-		*p = NUL;
-		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-			s + 10, OPT_FREE|OPT_LOCAL, 0);
-		*p = c;
-	    }
+	    *p = NUL;
+	    set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+		    s + 10, OPT_FREE|OPT_LOCAL, 0);
+	    *p = c;
 	}
 	else if (STRNCMP(s, "borderhighlight:", 16) == 0)
 	{
-	    if (wp != NULL)
-	    {
-		char_u	*arg = s + 16;
+	    char_u	*arg = s + 16;
 
-		if (*arg == NUL || *arg == ',')
-		    return FAIL;
-		for (int i = 0; i < 4; ++i)
-		{
-		    VIM_CLEAR(wp->w_border_highlight[i]);
-		    wp->w_border_highlight[i] = vim_strnsave(arg, p - arg);
-		}
+	    if (*arg == NUL || *arg == ',')
+		return FAIL;
+	    for (int i = 0; i < 4; ++i)
+	    {
+		VIM_CLEAR(wp->w_border_highlight[i]);
+		wp->w_border_highlight[i] = vim_strnsave(arg, p - arg);
 	    }
 	}
 	else if (STRNCMP(s, "border:", 7) == 0)
 	{
-	    // Note: Keep this in sync with p_popup_option_border_values.
 	    char_u	*arg = s + 7;
-	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
-	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 	    int		i;
+	    int		token_len = p - arg;
+	    char_u	*token;
+	    // Use box-drawing characters only when 'encoding' is "utf-8" and
+	    // 'ambiwidth' is "single".
+	    int		can_use_box_chars = (enc_utf8 && *p_ambw == 's');
 
-	    if (!on && !off)
-		return FAIL;
-	    if (wp != NULL)
+	    if ((token_len == 0)
+		    || (STRNCMP(arg, "off", 3) == 0 && arg + 3 == p))
 	    {
 		for (i = 0; i < 4; ++i)
-		    wp->w_popup_border[i] = on ? 1 : 0;
-		if (off)
-		    // only show the X for close when there is a border
-		    wp->w_popup_close = POPCLOSE_NONE;
-		else
-		    border_enabled = TRUE;
+		    wp->w_popup_border[i] = 0;
+		// only show the X for close when there is a border
+		wp->w_popup_close = POPCLOSE_NONE;
+		continue;
 	    }
-	}
-	else if (STRNCMP(s, "borderchars:", 12) == 0)
-	{
-	    if (wp != NULL)
-	    {
-		char_u	*arg = s + 12;
 
-		for (int i = 0; i < 8; i++)
+	    token = vim_strnsave(arg, token_len);
+
+	    if ((can_use_box_chars && (STRCMP(token, "single") == 0
+			    || STRCMP(token, "double") == 0
+			    || STRCMP(token, "on") == 0
+			    || STRCMP(token, "round") == 0))
+		    || STRCMP(token, "ascii") == 0
+		    || (STRNCMP(token, "custom:", 7) == 0))
+	    {
+		if (STRCMP(token, "single") == 0)
+		    SET_BORDER_CHARS(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			    0x250c, 0x2510, 0x2518, 0x2514); // ┌ ┐ ┘ └
+		else if (STRCMP(token, "double") == 0
+			|| STRCMP(token, "on") == 0)
+		    SET_BORDER_CHARS(0x2550, 0x2551, 0x2550, 0x2551, // ═ ║ ═ ║
+			    0x2554, 0x2557, 0x255D, 0x255A); // ╔ ╗ ╝  ╚
+		else if (STRCMP(token, "round") == 0)
+		    SET_BORDER_CHARS(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			    0x256d, 0x256e, 0x256f, 0x2570); // ╭ ╮ ╯ ╰
+		else if (STRCMP(token, "ascii") == 0)
+		    SET_BORDER_CHARS('-', '|', '-', '|', '+', '+', '+', '+');
+		else if (STRNCMP(token, "custom:", 7) == 0)
 		{
-		    if (*arg == NUL || *arg == ',')
-			goto error;
-		    wp->w_border_char[i] = mb_ptr2char(arg);
-		    mb_ptr2char_adv(&arg);
-		    if (i < 7)
+		    char_u	*q = token + 7;
+		    int		out[8];
+		    int		failed = FALSE;
+
+		    SET_BORDER_CHARS(0, 0, 0, 0, 0, 0, 0, 0);
+
+		    for (int i = 0; i < 8 && !failed; i++)
 		    {
-			if (*arg != ';')
-			    goto error;  // must be semicolon
-			arg++;
+			if (*q == NUL)
+			    failed = TRUE;
+			else
+			{
+			    out[i] = mb_ptr2char(q);
+			    mb_ptr2char_adv(&q);
+			    if (i < 7)
+			    {
+				if (*q != ';')
+				    failed = TRUE; // must be semicolon
+				q++;
+			    }
+			}
 		    }
+		    if (failed || *q != NUL) // must end exactly after the 8th char
+		    {
+			vim_free(token);
+			return FAIL;
+		    }
+		    SET_BORDER_CHARS(out[0], out[1], out[2], out[3], out[4],
+			    out[5], out[6], out[7]);
 		}
-		if (*arg != NUL && *arg != ',')
-		    goto error;
 	    }
+
+	    for (i = 0; i < 4; ++i)
+		wp->w_popup_border[i] = 1;
+	    border_enabled = TRUE;
+
+	    vim_free(token);
 	}
 	else if (STRNCMP(s, "close:", 6) == 0)
 	{
@@ -1922,8 +1961,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    if ((!on && !off) || is_preview)
 		return FAIL;
 	    on = on && mouse_has(MOUSE_INSERT) && border_enabled;
-	    if (wp != NULL)
-		wp->w_popup_close = on ? POPCLOSE_BUTTON : POPCLOSE_NONE;
+	    wp->w_popup_close = on ? POPCLOSE_BUTTON : POPCLOSE_NONE;
 	}
 	else if (STRNCMP(s, "resize:", 7) == 0)
 	{
@@ -1933,13 +1971,10 @@ parse_popup_option(win_T *wp, int is_preview)
 
 	    if ((!on && !off) || is_preview)
 		return FAIL;
-	    if (wp != NULL)
-	    {
-		if (on && mouse_has(MOUSE_INSERT))
-		    wp->w_popup_flags |= POPF_RESIZE;
-		else
-		    wp->w_popup_flags &= ~POPF_RESIZE;
-	    }
+	    if (on && mouse_has(MOUSE_INSERT))
+		wp->w_popup_flags |= POPF_RESIZE;
+	    else
+		wp->w_popup_flags &= ~POPF_RESIZE;
 	}
 	else if (STRNCMP(s, "shadow:", 7) == 0)
 	{
@@ -1949,8 +1984,7 @@ parse_popup_option(win_T *wp, int is_preview)
 
 	    if ((!on && !off) || is_preview)
 		return FAIL;
-	    if (wp != NULL)
-		wp->w_popup_shadow = on ? 1 : 0;
+	    wp->w_popup_shadow = on ? 1 : 0;
 	}
 	else if (STRNCMP(s, "align:", 6) == 0)
 	{
@@ -1961,18 +1995,13 @@ parse_popup_option(win_T *wp, int is_preview)
 
 	    if (!menu && !item)
 		return FAIL;
-	    if (wp != NULL && menu)
+	    if (menu)
 		wp->w_popup_flags |= POPF_INFO_MENU;
 	}
 	else
 	    return FAIL;
     }
     return OK;
-
-error:
-    for (int i = 0; i < 8; ++i)
-	wp->w_border_char[i] = 0;
-    return FAIL;
 }
 
 /*

@@ -1295,15 +1295,22 @@ of values:
 	align		"item" (default) or "menu"
 	close		show close button: "on" (default) or "off"
 	resize		show resize handle: "on" (default) or "off"
-	border		"on" (default) or "off"
-	borderchars	eight characters separated by semicolons, in the
-			order: top, right, bottom, left,
-			topleft, topright, botright, botleft.
+	border		border style:
+			"single"	thin box-drawing characters
+			"double"	double-line (default)
+			"round"		rounded corners
+			"ascii"		ASCII characters (-, |, +)
+			"custom:X;X;X;X;X;X;X;X"
+					eight characters separated by
+					semicolons, in the order: top, right,
+					bottom, left, topleft, topright,
+					botright, botleft
+			"off"		no border
 	borderhighlight	highlight group of the popup border characters
 	shadow		"off" (default) or "on" using |hl-PmenuShadow|
 Example: >
-	:set completepopup=height:10,width:60,highlight:InfoPopup
-	:set completepopup=borderchars:─;│;─;│;┌;┐;┘;└
+	:set completepopup=height:10,border:single,highlight:InfoPopup
+	:set completepopup=width:60,border:custom:─;│;─;│;┌;┐;┘;└
 
 When `"align"` is set to `"item"`, the popup is positioned near the selected
 item, and moves as the selection changes.

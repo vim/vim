@@ -70,10 +70,11 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #ifdef FEAT_PROP_POPUP
 // Note: Keep this in sync with parse_popup_option()
-static char *(p_popup_option_values[]) = { "align:", "border:", "borderchars:",
-    "borderhighlight:", "close:", "height:", "highlight:", "resize:", "shadow:",
-    "width:", NULL};
-static char *(p_popup_option_border_values[]) = {"on", "off", NULL};
+static char *(p_popup_option_values[]) = { "align:", "border:",
+    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
+    "shadow:", "width:", NULL};
+static char *(p_popup_option_resize_values[]) = {"on", "off", NULL};
+static char *(p_popup_option_border_values[]) = {"single", "double", "round", "ascii", "custom:", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
 #if defined(FEAT_SPELL)
@@ -3432,7 +3433,16 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 		STRNCMP(xp->xp_pattern - resize_len, "resize:", resize_len) == 0;
 	int is_shadow = xp->xp_pattern - args->oe_set_arg >= shadow_len &&
 		STRNCMP(xp->xp_pattern - shadow_len, "shadow:", shadow_len) == 0;
-	if (is_border || is_close || is_resize || is_shadow)
+	if (is_close || is_resize || is_shadow)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_popup_option_resize_values,
+		    ARRAY_LENGTH(p_popup_option_resize_values) - 1,
+		    numMatches,
+		    matches);
+	}
+	if (is_border)
 	{
 	    return expand_set_opt_string(
 		    args,
