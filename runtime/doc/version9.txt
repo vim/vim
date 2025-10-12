@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 07
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41780,6 +41780,7 @@ Others: ~
   Command-line.
 - |min()|/|max()| can handle all comparable data types.
 - Vim triggers the |TermResponseAll| autocommand for any terminal OSC value.
+- Support CTRL-B and CTRL-F in the |more-prompt|.
 
 							*added-9.2*
 Added ~
