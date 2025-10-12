@@ -5432,6 +5432,12 @@ func Test_autocomplete_trigger()
   call feedkeys("Sprefix->\<Esc>afo\<C-U>\<F2>\<Esc>0", 'tx!')
   call assert_equal(['fooze', 'faberge'], b:matches->mapnew('v:val.word'))
 
+  " Test 9: Trigger autocomplete immediately upon entering Insert mode
+  call feedkeys("Sprefix->foo\<Esc>a\<F2>\<Esc>0", 'tx!')
+  call assert_equal(['foobar', 'fooze', 'faberge'], b:matches->mapnew('v:val.word'))
+  call feedkeys("Sprefix->fooxx\<Esc>hcw\<F2>\<Esc>0", 'tx!')
+  call assert_equal(['foobar', 'fooze', 'faberge'], b:matches->mapnew('v:val.word'))
+
   bw!
   call test_override("char_avail", 0)
   delfunc NonKeywordComplete

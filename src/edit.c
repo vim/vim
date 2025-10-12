@@ -165,6 +165,7 @@ edit(
 #ifdef FEAT_CONCEAL
     int		cursor_line_was_concealed;
 #endif
+    int		ins_just_started = TRUE;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -612,6 +613,30 @@ edit(
 	    // Got here from normal mode when bracketed paste started.
 	    c = K_PS;
 	else
+	{
+	    // Trigger autocomplete when entering Insert mode, either directly
+	    // or via change commands like 'ciw', 'cw', etc., before the first
+	    // character is typed.
+	    if (ins_just_started)
+	    {
+		ins_just_started = FALSE;
+		if (ins_compl_has_autocomplete() && !char_avail()
+			&& curwin->w_cursor.col > 0)
+		{
+		    c = char_before_cursor();
+		    if (vim_isprintc(c))
+		    {
+			ins_compl_enable_autocomplete();
+			ins_compl_init_get_longest();
+#ifdef FEAT_RIGHTLEFT
+			if (p_hkmap)
+			    c = hkmap(c);		// Hebrew mode mapping
+#endif
+			goto docomplete;
+		    }
+		}
+	    }
+
 	    do
 	    {
 		c = safe_vgetc();
@@ -641,6 +666,7 @@ edit(
 		    goto doESCkey;
 		}
 	    } while (c == K_IGNORE || c == K_NOP);
+	}
 
 	// Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V.
 	did_cursorhold = TRUE;
