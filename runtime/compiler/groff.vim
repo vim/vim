@@ -25,12 +25,16 @@ silent! function s:groff_compiler_lang()
   return empty(lang) ? '' : '-m'..lang
 endfunction
 
-" Requires output format (= device) to be set by user after :make.
+" man, mdoc, mom, etc
+let s:groff_macro_pkg = get(b:, 'groff_macro_pkg', get(g:, 'groff_macro_pkg', 'mom'))
+" html, latin1, pdf, utf8, etc
+let s:groff_output_dev = get(b:, 'groff_output_dev', get(g:, 'groff_output_dev', 'utf8'))
+
 execute 'CompilerSet makeprg=groff'..escape(
     \ ' '..s:groff_compiler_lang()..
     \ ' -K'..get(b:, 'groff_compiler_encoding', get(g:, 'groff_compiler_encoding', 'utf8'))..
     \ ' '..get(b:, 'groff_compiler_args', get(g:, 'groff_compiler_args', ''))..
-    \ ' -mom -T$* -- %:S > %:r:S.$*', ' \|"')
+    \ ' "-'..s:groff_macro_pkg..'" "-T'..s:groff_output_dev..'" -- %:S > %:r:S."'..s:groff_output_dev..'"', ' \|"')
 " From Gavin Freeborn's https://github.com/Gavinok/vim-troff under Vim License
 " https://github.com/Gavinok/vim-troff/blob/91017b1423caa80aba541c997909a4f810edd275/compiler/troff.vim#L39
 CompilerSet errorformat=%o:<standard\ input>\ (%f):%l:%m,
