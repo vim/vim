@@ -167,6 +167,8 @@ int expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matche
 char *did_set_splitkeep(optset_T *args);
 int expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_statusline(optset_T *args);
+char *did_set_statuslineopt(optset_T *args);
+int expand_set_statuslineopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_swapsync(optset_T *args);
 int expand_set_swapsync(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_switchbuf(optset_T *args);
