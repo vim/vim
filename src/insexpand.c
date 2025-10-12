@@ -2489,7 +2489,7 @@ ins_compl_has_autocomplete(void)
 }
 
 /*
- * Cacluate fuzzy score and sort completion matches unless sorting is disabled.
+ * Calculate fuzzy score and sort completion matches unless sorting is disabled.
  */
     static void
 ins_compl_fuzzy_sort(void)
