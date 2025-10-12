@@ -156,7 +156,7 @@ static long next_listener_id = 0;
 
 // A flag that is set when any buffer listener housekeeping is required.
 // Currently the only condition is when a listener is marked for removal.
-static bool houskeeping_required;
+static bool housekeeping_required;
 
 /*
  * Remove a given listener_T entry from its containing list.
@@ -212,23 +212,23 @@ clean_listener_list(buf_T *buf, listener_T **list, bool all)
 }
 
 /*
- * Perform houskeeping tasks for buffer change listeners.
+ * Perform housekeeping tasks for buffer change listeners.
  *
- * This does nothing unless the "houskeeping_required" flag has been set.
+ * This does nothing unless the "housekeeping_required" flag has been set.
  */
     static void
 perform_listener_housekeeping(void)
 {
     buf_T	*buf;
 
-    if (houskeeping_required)
+    if (housekeeping_required)
     {
 	FOR_ALL_BUFFERS(buf)
 	{
 	    clean_listener_list(buf, &buf->b_listener, FALSE);
 	    clean_listener_list(NULL, &buf->b_sync_listener, FALSE);
 	}
-	houskeeping_required = FALSE;
+	housekeeping_required = FALSE;
     }
 }
 
@@ -453,9 +453,9 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
 	if (lnr != NULL)
 	{
 	    // Clear the ID to indicate that the listener is unused flag
-	    // houskeeping.
+	    // housekeeping.
 	    lnr->lr_id = 0;
-	    houskeeping_required = TRUE;
+	    housekeeping_required = TRUE;
 	    rettv->vval.v_number = 1;
 	    return;
 	}
