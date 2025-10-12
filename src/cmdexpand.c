@@ -2482,6 +2482,8 @@ set_context_by_cmdname(
 	case CMD_execute:
 	case CMD_echomsg:
 	case CMD_echoerr:
+	case CMD_echoconsole:
+	case CMD_echowindow:
 	case CMD_call:
 	case CMD_return:
 	case CMD_cexpr:
