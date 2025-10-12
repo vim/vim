@@ -3347,6 +3347,10 @@ get_winopts(buf_T *buf)
 	win_T *wp = wip->wi_win;
 
 	copy_winopt(&wp->w_onebuf_opt, &curwin->w_onebuf_opt);
+#ifdef FEAT_STL_OPT
+	// w_stl_rendered_height is not in winvar_T; copy it explicitly.
+	curwin->w_stl_rendered_height = wp->w_stl_rendered_height;
+#endif
 #ifdef FEAT_FOLDING
 	curwin->w_fold_manual = wp->w_fold_manual;
 	curwin->w_foldinvalid = TRUE;
@@ -3372,6 +3376,24 @@ get_winopts(buf_T *buf)
     // Set 'foldlevel' to 'foldlevelstart' if it's not negative.
     if (p_fdls >= 0)
 	curwin->w_p_fdl = p_fdls;
+#endif
+#ifdef FEAT_STL_OPT
+    // Update rendered height for window-local 'statusline'.
+    if (*curwin->w_p_stl != NUL)
+	update_win_stl_rendered_height(curwin);
+    // If the effective statuslineopt changed, re-adjust all window heights.
+    if (curwin->w_status_height > 0
+	    && curwin->w_status_height != statusline_height(curwin))
+    {
+	frame_change_statusline_height();
+	// win_split_ins() estimated the new window's stlh from the splitting
+	// window, which may differ from the actual stlh after option
+	// inheritance is resolved here.  frame_change_statusline_height()
+	// redistributes space within the stale fr_height values set during the
+	// split, so the content rows may be unequal.  Re-equalize if needed.
+	if (p_ea)
+	    win_equal(curwin, TRUE, 'v');
+    }
 #endif
     after_copy_winopt(curwin);
 }

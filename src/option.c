@@ -6593,6 +6593,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_STL:
 	    clear_string_option(&((win_T *)from)->w_p_stl);
 	    break;
+	case PV_STLO:
+	    clear_string_option(&((win_T *)from)->w_p_stlo);
+	    break;
 # endif
 	case PV_UL:
 	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
@@ -6686,6 +6689,7 @@ get_varp_scope(struct vimoption *p, int scope)
 #endif
 #ifdef FEAT_STL_OPT
 	    case PV_STL:  return (char_u *)&(curwin->w_p_stl);
+	    case PV_STLO: return (char_u *)&(curwin->w_p_stlo);
 #endif
 	    case PV_UL:   return (char_u *)&(curbuf->b_p_ul);
 	    case PV_LW:   return (char_u *)&(curbuf->b_p_lw);
@@ -6801,6 +6805,8 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_STL_OPT
 	case PV_STL:	return *curwin->w_p_stl != NUL
 				    ? (char_u *)&(curwin->w_p_stl) : p->var;
+	case PV_STLO:	return *curwin->w_p_stlo != NUL
+				    ? (char_u *)&(curwin->w_p_stlo) : p->var;
 #endif
 	case PV_UL:	return curbuf->b_p_ul != NO_LOCAL_UNDOLEVEL
 				    ? (char_u *)&(curbuf->b_p_ul) : p->var;
@@ -7050,6 +7056,11 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
 {
     copy_winopt(&wp_from->w_onebuf_opt, &wp_to->w_onebuf_opt);
     copy_winopt(&wp_from->w_allbuf_opt, &wp_to->w_allbuf_opt);
+#ifdef FEAT_STL_OPT
+    // w_stl_rendered_height is in win_T directly, not in winvar_T, so it is
+    // not copied by copy_winopt().  Copy it explicitly here.
+    wp_to->w_stl_rendered_height = wp_from->w_stl_rendered_height;
+#endif
     after_copy_winopt(wp_to);
 }
 
@@ -7119,6 +7130,9 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_STL_OPT
     to->wo_stl = copy_option_val(from->wo_stl);
+    to->wo_stlo = copy_option_val(from->wo_stlo);
+    to->wo_stlo_fh = from->wo_stlo_fh;
+    to->wo_stlo_mh = from->wo_stlo_mh;
 #endif
     to->wo_wrap = from->wo_wrap;
 #ifdef FEAT_DIFF
@@ -7241,6 +7255,7 @@ check_winopt(winopt_T *wop UNUSED)
 #endif
 #ifdef FEAT_STL_OPT
     check_string_option(&wop->wo_stl);
+    check_string_option(&wop->wo_stlo);
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&wop->wo_culopt);
@@ -7295,6 +7310,7 @@ clear_winopt(winopt_T *wop UNUSED)
 #endif
 #ifdef FEAT_STL_OPT
     clear_string_option(&wop->wo_stl);
+    clear_string_option(&wop->wo_stlo);
 #endif
 #ifdef FEAT_SYN_HL
     clear_string_option(&wop->wo_culopt);
