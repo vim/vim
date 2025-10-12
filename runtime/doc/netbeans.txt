@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
+*netbeans.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -134,11 +134,11 @@ Without it the toolbar and signs will be disabled.
 
 The XPM library is provided by Arnaud Le Hors of the French National Institute
 for Research in Computer Science and Control.  It can be downloaded from
-http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
-writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create
-the directory /usr/local/xpm and untar the file there you can use the
-uncommented lines in the Makefile without changing them.  If you use another
-xpm directory you will need to change the XPM_DIR in src/Makefile.
+https://ftp.nluug.nl/ftp/windowing/X/contrib/libraries/.  The current release,
+as of this writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If
+you create the directory /usr/local/xpm and untar the file there you can use
+the uncommented lines in the Makefile without changing them.  If you use
+another xpm directory you will need to change the XPM_DIR in src/Makefile.
 
 
 On MS-Windows:
