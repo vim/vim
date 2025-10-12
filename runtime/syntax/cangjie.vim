@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Cangjie
 " Maintainer: Wu Junkai <wu.junkai@qq.com>
-" Github Repo: https://github.com/WuJunkai2004/cangjie.vim
+" URL: https://github.com/WuJunkai2004/cangjie.vim
 " Last Change: 2025 Oct 12
 "
 " The Cangjie programming language is a new-generation programming
