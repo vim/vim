@@ -3036,7 +3036,7 @@ nv_hor_scrollbar(cmdarg_T *cap)
 }
 #endif
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 /*
  * Click in GUI tab.
  */

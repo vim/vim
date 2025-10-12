@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Sep 29
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Oct 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -365,31 +365,17 @@ We follow POSIX.1-2001 (SUSv3) for type sizes, which in practice means:
 
 FUNCTION PROTOTYPES				*assumptions-prototypes*
 
-Vim currently does not use conventional header files (`.h`) for most internal
-function prototypes.  Instead, the current architecture uses individual `.pro`
-files in the `src/proto/` directory, with one `.pro` file per `.c` file.
+Vim does not use conventional header files (`.h`) for most internal function
+prototypes.  Instead, the current architecture uses individual `.pro` files in
+the `src/proto/` directory, with one `.pro` file per `.c` file.
 
 Unlike traditional self-contained header files, these `.pro` files do not
-contain API documentation, struct and enum definitions, or other declaration;
+contain API documentation, struct and enum definitions, or other declarations;
 only function prototypes.
 
-The bundling of these files is not automated.  The `src/proto.h` header is
-composed of a list of manual `#include` directives, one for each individual
-`.pro` file.
-
-Due to this design, integrating a new source file within this architecture
-involves creating a corresponding `.pro` file, manually adding a new `#include`
-directive to `proto.h` and manually adding this file to both `src/Makefile` and
-`src/Make_mvc.mak`.
-
-A `make proto` target exists in `src/Makefile` with the original goal of
-automating the process of updating the `.pro` files.  However, this target is
-unreliable, fails on major platforms (e.g., macOS), and is only part of the
-new release workflow.  In practice, contributors edit the relevant `.pro` files
-by hand when adding, removing, or modifying a function signatures.
-
-This system has been in place since at least v1.24, when Vim's functions were
-still written in K&R style.
+The `make proto` target in `src/Makefile` automates updating most of the .pro
+files using the Python script proto/gen_prototypes.py, which relies on the
+python3-clang module.  Note that a few proto files are hand edited.
 
 ==============================================================================
 4. Coding style						*coding-style*

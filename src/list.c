@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 // List heads for garbage collection.
 static list_T		*first_list = NULL;	// list of all lists

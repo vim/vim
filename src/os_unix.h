@@ -159,8 +159,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 #endif
 
 
-#ifndef PROTO
-
 #ifdef VMS
 # include <unixio.h>
 # include <unixlib.h>
@@ -197,8 +195,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 #ifdef HAVE_FLOCK
 # include <sys/file.h>
 #endif
-
-#endif // PROTO
 
 #ifdef VMS
 typedef struct dsc$descriptor   DESC;

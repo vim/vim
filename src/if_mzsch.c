@@ -27,20 +27,7 @@
 
 // Only do the following when the feature is enabled.  Needed for "make
 // depend".
-#if defined(FEAT_MZSCHEME) || defined(PROTO)
-
-#ifdef PROTO
-typedef int Scheme_Object;
-typedef int Scheme_Closed_Prim;
-typedef int Scheme_Env;
-typedef int Scheme_Hash_Table;
-typedef int Scheme_Type;
-typedef int Scheme_Thread;
-typedef int Scheme_Closed_Prim;
-typedef int mzshort;
-typedef int Scheme_Prim;
-typedef int HINSTANCE;
-#endif
+#if defined(FEAT_MZSCHEME)
 
 /*
  * scheme_register_tls_space is only available on 32-bit Windows until
@@ -216,7 +203,7 @@ static int window_fixup_proc(void *obj)
 # define BUFFER_REF(buf) (vim_mz_buffer *)((buf)->b_mzscheme_ref)
 #endif
 
-#if defined(DYNAMIC_MZSCHEME) || defined(PROTO)
+#if defined(DYNAMIC_MZSCHEME)
 static Scheme_Object *dll_scheme_eof;
 static Scheme_Object *dll_scheme_false;
 static Scheme_Object *dll_scheme_void;
@@ -374,7 +361,7 @@ static void (*dll_scheme_register_embedded_load)(intptr_t len, const char *s);
 static void (*dll_scheme_set_config_path)(Scheme_Object *p);
 # endif
 
-#if defined(DYNAMIC_MZSCHEME) // not when defined(PROTO)
+#if defined(DYNAMIC_MZSCHEME)
 
 // arrays are imported directly
 # define scheme_eof dll_scheme_eof
@@ -498,14 +485,16 @@ static void (*dll_scheme_set_config_path)(Scheme_Object *p);
 #  define scheme_set_config_path dll_scheme_set_config_path
 # endif
 
-# if MZSCHEME_VERSION_MAJOR >= 500
-#  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
+# ifndef PROTO
+#  if MZSCHEME_VERSION_MAJOR >= 500
+#   if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
 // define as function for macro in schthread.h
 Thread_Local_Variables *
 scheme_external_get_thread_local_variables(void)
 {
     return dll_scheme_external_get_thread_local_variables();
 }
+#   endif
 #  endif
 # endif
 
@@ -834,7 +823,7 @@ mzvim_check_threads(void)
 }
 #endif
 
-#if defined(MZSCHEME_GUI_THREADS) || defined(PROTO)
+#if defined(MZSCHEME_GUI_THREADS)
 static void setup_timer(void);
 static void remove_timer(void);
 

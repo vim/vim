@@ -12,8 +12,8 @@
 #include "vim.h"
 
 // define _generic_64 for use in time functions
-#if !defined(VAX) && !defined(PROTO)
-#   include <gen64def.h>
+#if !defined(VAX)
+# include <gen64def.h>
 #else
 // based on Alpha's gen64def.h; the file is absent on VAX
 typedef struct _generic_64 {

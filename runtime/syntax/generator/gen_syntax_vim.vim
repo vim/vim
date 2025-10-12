@@ -399,6 +399,7 @@ function s:get_vim_command_type(cmd_name)
 		substitute
 		swapname
 		syntax
+		syntime
 		tcl
 		tcldo
 		tclfile

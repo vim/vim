@@ -22,6 +22,8 @@ void display_errors(void);
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
 int mch_chdir(char *path);
+int mch_char_avail(void);
+int mch_check_messages(void);
 int mch_icon_load(HANDLE *iconp);
 int mch_get_random(char_u *buf, int len);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);

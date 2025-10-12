@@ -1044,7 +1044,7 @@ pum_redraw(void)
 #endif
 }
 
-#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 /*
  * Position the info popup relative to the popup menu item.
  */
@@ -1527,7 +1527,7 @@ pum_get_height(void)
     return pum_height;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add size information about the pum to "dict".
  */
@@ -1546,7 +1546,7 @@ pum_set_event_info(dict_T *dict)
 }
 #endif
 
-#if defined(FEAT_BEVAL_TERM) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+#if defined(FEAT_BEVAL_TERM) || defined(FEAT_TERM_POPUP_MENU)
     static void
 pum_position_at_mouse(int min_width)
 {
@@ -1616,7 +1616,7 @@ pum_position_at_mouse(int min_width)
 
 #endif
 
-#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+#if defined(FEAT_BEVAL_TERM)
 static pumitem_T *balloon_array = NULL;
 static int balloon_arraysize;
 
@@ -1852,7 +1852,7 @@ ui_may_remove_balloon(void)
 }
 #endif
 
-#if defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+#if defined(FEAT_TERM_POPUP_MENU)
 /*
  * Select the pum entry at the mouse position.
  */

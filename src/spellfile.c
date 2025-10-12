@@ -239,7 +239,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 
 #include <time.h>	// for time_t
 

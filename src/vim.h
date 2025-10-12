@@ -17,7 +17,7 @@
 # define MSWIN
 #endif
 
-#if defined(MSWIN) && !defined(PROTO)
+#if defined(MSWIN)
 # include <io.h>
 #endif
 
@@ -272,9 +272,11 @@
 # include <clib/exec_protos.h>
 #endif
 
-#ifdef __HAIKU__
-# include "os_haiku.h"
-# define __ARGS(x)  x
+#ifndef PROTO
+# ifdef __HAIKU__
+#  include "os_haiku.h"
+#  define __ARGS(x)  x
+# endif
 #endif
 
 #if (defined(UNIX) || defined(VMS)) \
@@ -313,25 +315,27 @@
 // cause compilation failures even though the headers are correct.  For
 // a concrete example, gcc-3.2 enforces exception specifications, and
 // glibc-2.2.5 has them in their system headers.
-#if !defined(__cplusplus) && defined(UNIX) \
+#ifndef PROTO
+# if !defined(__cplusplus) && defined(UNIX) \
 	&& !defined(MACOS_X) // MACOS_X doesn't yet support osdef.h
-# include "auto/osdef.h"	// bring missing declarations in
-#endif
+#  include "auto/osdef.h"	// bring missing declarations in
+# endif
 
-#ifdef AMIGA
-# include "os_amiga.h"
-#endif
+# ifdef AMIGA
+#  include "os_amiga.h"
+# endif
 
-#ifdef MSWIN
-# include "os_win32.h"
-#endif
+# ifdef MSWIN
+#  include "os_win32.h"
+# endif
 
-#if defined(MACOS_X)
-# include "os_mac.h"
-#endif
+# if defined(MACOS_X)
+#  include "os_mac.h"
+# endif
 
-#ifdef __QNX__
-# include "os_qnx.h"
+# ifdef __QNX__
+#  include "os_qnx.h"
+# endif
 #endif
 
 #ifdef X_LOCALE
@@ -437,11 +441,7 @@ typedef __int64 off_T;
 #  define vim_ftell _ftelli64
 # endif
 #else
-# ifdef PROTO
-typedef long off_T;
-# else
 typedef off_t off_T;
-# endif
 # ifdef HAVE_FSEEKO
 #  define vim_lseek lseek
 #  define vim_ftell ftello
@@ -2030,15 +2030,11 @@ typedef enum {
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it
  * for global variables to avoid that.
  */
-#ifdef PROTO
-typedef long  time_T;
-#else
 # ifdef MSWIN
 typedef __time64_t  time_T;
 # else
 typedef time_t	    time_T;
 # endif
-#endif
 
 #ifdef _WIN64
 typedef __int64 sock_T;
@@ -3004,9 +3000,6 @@ long elapsed(struct timeval *start_tv);
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)
-# ifdef PROTO
-typedef int DWORD;
-# endif
 typedef DWORD elapsed_T;
 # ifndef PROTO
 long elapsed(DWORD start_tick);

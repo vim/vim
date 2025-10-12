@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 
 // different types of offsets that are possible
 #define SPO_MS_OFF	0	// match  start offset
@@ -6511,7 +6511,7 @@ syn_get_id(
     return (trans ? current_trans_id : current_id);
 }
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_CONCEAL)
 /*
  * Get extra information about the syntax item.  Must be called right after
  * get_syntax_attr().
@@ -6535,7 +6535,7 @@ syn_get_sub_char(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the syntax ID at position "i" in the current stack.
  * The caller must have called syn_get_id() before to fill the stack.
@@ -6556,7 +6556,7 @@ syn_get_stack_item(int i)
 }
 #endif
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
     static int
 syn_cur_foldlevel(void)
 {
@@ -6619,7 +6619,7 @@ syn_get_foldlevel(win_T *wp, long lnum)
 }
 #endif
 
-#if defined(FEAT_PROFILE) || defined(PROTO)
+#if defined(FEAT_PROFILE)
 /*
  * ":syntime".
  */

@@ -38,7 +38,7 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
     yankreg_T *
 get_y_regs(void)
 {
@@ -46,7 +46,7 @@ get_y_regs(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_CLIPBOARD)
     yankreg_T *
 get_y_register(int reg)
 {
@@ -85,7 +85,7 @@ reset_y_append(void)
 }
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Keep the last expression line here, for repeating.
  */
@@ -346,7 +346,7 @@ put_register(int name, void *reg)
 #endif
 }
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_CLIPBOARD)
     void
 free_register(void *reg)
 {
@@ -499,7 +499,7 @@ stuff_yank(int regname, char_u *p)
  */
 static int execreg_lastc = NUL;
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
     int
 get_execreg_lastc(void)
 {
@@ -1113,7 +1113,7 @@ init_yank(void)
 	y_regs[i].y_array = NULL;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 clear_registers(void)
 {
@@ -2357,7 +2357,7 @@ get_register_name(int num)
 	return num + 'a' - 10;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the index of the register "" points to.
  */
@@ -2564,7 +2564,7 @@ dis_msg(
     ui_breakcheck();
 }
 
-#if defined(FEAT_DND) || defined(PROTO)
+#if defined(FEAT_DND)
 /*
  * Replace the contents of the '~' register with str.
  */
@@ -2624,7 +2624,7 @@ get_reg_type(int regname, long *reglen)
     return MAUTO;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * When "flags" has GREG_LIST return a list with text "s".
  * Otherwise just return "s".
@@ -3084,4 +3084,4 @@ str_to_reg(
     y_ptr->y_time_set = vim_time();
 # endif
 }
-#endif // FEAT_CLIPBOARD || FEAT_EVAL || PROTO
+#endif // FEAT_CLIPBOARD || FEAT_EVAL

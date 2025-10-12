@@ -218,3 +218,8 @@ endif
 set path=.,,
 set clipboard=unnamed,unnamedplus
 " END_INDENT
+
+" START_INDENT
+registers +
+echo 'text'
+" END_INDENT

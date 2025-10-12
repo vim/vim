@@ -263,7 +263,7 @@ sha256_finish(context_sha256_T *ctx, char_u digest[32])
 }
 #endif // FEAT_CRYPT || FEAT_PERSISTENT_UNDO
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Returns hex digest of "buf[buf_len]" in a static array.
  * if "salt" is not NULL also do "salt[salt_len]".

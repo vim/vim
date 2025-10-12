@@ -1,9 +1,29 @@
-// VIM_TEST_SETUP setlocal nofoldenable
-// VIM_TEST_SETUP let g:java_mark_braces_in_parens_as_errors = 1
+// VIM_TEST_SETUP setlocal fen fdc=2 fdl=8 fdm=syntax
+// VIM_TEST_SETUP let g:java_highlight_java_lang = 1
+// VIM_TEST_SETUP let g:java_ignore_folding = "bcdi"
 // VIM_TEST_SETUP let g:java_lookbehind_byte_counts = {'javaBlock': -1}
+// VIM_TEST_SETUP let g:java_mark_braces_in_parens_as_errors = 1
+
+
+
+
+
 // VIM_TEST_SETUP highlight link javaBlockOtherStart Structure
 // VIM_TEST_SETUP highlight link javaBlockStart Todo
 
+
+
+/***/  import java.lang.Comparable;	/*
+import java.lang.Object;
+import java.lang.String;
+*/
+import java.lang.String;
+
+import java.lang.Comparable;	/***/
+import java.lang.Object;	// //
+import java.lang.String;	/***/
+
+import java.util.function.Function;
 	@SuppressWarnings({
 	"""
 	bespoke
@@ -24,11 +44,14 @@
 """
 })
 class UnfoldingTests {
-	interface Unfoldenable
+	interface Unfoldable
 	{
 	}
 
 	static {
+		String import⁠$ = """
+import java.lang.String;
+""";
 		new Object() {
 			{
 				{
@@ -58,12 +81,12 @@ out: {
 }
 	}
 /*\\\*/	{
-		(new java.util.function.Function<Object, Object>() {
+		(new Function<Object, Object>() {
 			/**
 			 * {@inheritDoc} */
 			public Object apply(Object o) { return o; };
 		}).apply(
-		(new java.util.function.Function<Object, Object>() {
+		(new Function<Object, Object>() {
 			/** {@inheritDoc}
 			 */
 			public Object apply(Object o) { return o; };
@@ -118,5 +141,5 @@ out: {
 // {
 // }
 
-/* 122|........................................................................................*/ interface Unfoldenable {
+/* 120|........................................................................................*/ interface Unfoldable {
 }

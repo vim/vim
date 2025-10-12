@@ -691,14 +691,12 @@ NETBEANS_SRC
 RUBY_LIBS
 RUBY_CFLAGS_EXTRA
 RUBY_CFLAGS
-RUBY_PRO
 RUBY_OBJ
 RUBY_SRC
 vi_cv_path_ruby
 TCL_LIBS
 TCL_CFLAGS_EXTRA
 TCL_CFLAGS
-TCL_PRO
 TCL_OBJ
 TCL_SRC
 vi_cv_path_tcl
@@ -729,14 +727,12 @@ MZSCHEME_MZC
 MZSCHEME_EXTRA
 MZSCHEME_CFLAGS
 MZSCHEME_LIBS
-MZSCHEME_PRO
 MZSCHEME_OBJ
 MZSCHEME_SRC
 vi_cv_path_mzscheme
 LUA_CFLAGS_EXTRA
 LUA_CFLAGS
 LUA_LIBS
-LUA_PRO
 LUA_OBJ
 LUA_SRC
 vi_cv_path_plain_lua
@@ -6269,7 +6265,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
       LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
       LUA_SRC="if_lua.c"
       LUA_OBJ="objects/if_lua.o"
-      LUA_PRO="if_lua.pro"
       printf "%s\n" "#define FEAT_LUA 1" >>confdefs.h
 
     fi
@@ -6334,7 +6329,6 @@ printf "%s\n" "yes" >&6; }
   if test "$fail_if_missing" = "yes" -a "$lua_ok" != "yes"; then
     as_fn_error $? "could not configure lua" "$LINENO" 5
   fi
-
 
 
 
@@ -6753,7 +6747,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     if test $mzs_ok = yes; then
       MZSCHEME_SRC="if_mzsch.c"
       MZSCHEME_OBJ="objects/if_mzsch.o"
-      MZSCHEME_PRO="if_mzsch.pro"
       printf "%s\n" "#define FEAT_MZSCHEME 1" >>confdefs.h
 
     else
@@ -6763,7 +6756,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
       MZSCHEME_MZC=
     fi
   fi
-
 
 
 
@@ -6969,7 +6961,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 	PERL_LIBS=$perllibs
 	PERL_SRC="auto/if_perl.c"
 	PERL_OBJ="objects/if_perl.o"
-	PERL_PRO="if_perl.pro"
+	PERL_PRO="proto/if_perl.pro"
 	printf "%s\n" "#define FEAT_PERL 1" >>confdefs.h
 
       fi
@@ -8461,7 +8453,6 @@ printf "%s\n" "<not found>" >&6; }
 
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
-	  TCL_PRO=if_tcl.pro
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
 	fi
       fi
@@ -8481,7 +8472,6 @@ printf "%s\n" "too old; need Tcl version 8.0 or later" >&6; }
     as_fn_error $? "could not configure Tcl" "$LINENO" 5
   fi
 fi
-
 
 
 
@@ -8618,7 +8608,6 @@ printf "%s\n" "$rubyhdrdir" >&6; }
 
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
-	RUBY_PRO="if_ruby.pro"
 	printf "%s\n" "#define FEAT_RUBY 1" >>confdefs.h
 
 	if test "$enable_rubyinterp" = "dynamic"; then
@@ -8648,7 +8637,6 @@ printf "%s\n" "too old; need Ruby version 1.9.1 or later" >&6; }
     as_fn_error $? "could not configure Ruby" "$LINENO" 5
   fi
 fi
-
 
 
 

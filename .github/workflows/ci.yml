@@ -84,7 +84,7 @@ jobs:
             architecture: arm64
           - features: normal
             compiler: gcc
-            extra: [vimtags]
+            extra: [vimtags, proto]
           - features: huge
             compiler: gcc
             extra: [no_x11]
@@ -182,6 +182,9 @@ jobs:
               libattr1-dev
             )
           fi
+          if ${{ contains(matrix.extra, 'proto') }}; then
+            PKGS+=( python3-clang )
+          fi
           sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
@@ -270,6 +273,9 @@ jobs:
           if ${{ contains(matrix.extra, 'vimtags') }}; then
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
+          if ${{ contains(matrix.extra, 'proto') }}; then
+            echo "TEST=-C src protoclean proto"
+          fi
           echo "CFLAGS=${CFLAGS}"
           echo "CONFOPT=${CONFOPT}"
           # Disables GTK attempt to integrate with the accessibility service that does run in CI.
@@ -351,6 +357,15 @@ jobs:
             git diff --exit-code -- tags
             make html; rm *.html tags.ref;
             test -f errors.log && exit 3;
+            true
+          )
+
+      - name: Generate Proto files
+        if: contains(matrix.extra, 'proto')
+        run: |
+          # This will exit with an error code if the generated proto files differ from source
+          (
+            git diff --exit-code -- src/proto/
             true
           )
 

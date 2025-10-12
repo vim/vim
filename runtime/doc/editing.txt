@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2025 Sep 09
+*editing.txt*   For Vim version 9.1.  Last change: 2025 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,8 +40,8 @@ the |CTRL-^| command to toggle between the current and the alternate file.
 However, the alternate file name is not changed when |:keepalt| is used.
 An alternate file name is remembered for each window.
 
-							*:keepalt* *:keepa*
-:keepalt {cmd}		Execute {cmd} while keeping the current alternate file
+							*:keepa* *:keepalt*
+:keepa[lt] {cmd}	Execute {cmd} while keeping the current alternate file
 			name.  Note that commands invoked indirectly (e.g.,
 			with a function) may still set the alternate file
 			name.
@@ -1418,7 +1418,7 @@ present in 'cpoptions' and "!" is not used in the command.
 			to another window will stop using {path}.
 
 							*:lcd-*
-:lcd[!] -		Change to the previous current directory, before the
+:lc[d][!] -		Change to the previous current directory, before the
 			last ":lcd {path}" command.
 
 							*:lch* *:lchdir*

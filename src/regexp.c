@@ -50,7 +50,7 @@ toggle_Magic(int x)
     return Magic(x);
 }
 
-#if defined(FEAT_RELTIME) || defined(PROTO)
+#if defined(FEAT_RELTIME)
 static int timeout_nesting = 0;
 
 /*
@@ -80,7 +80,7 @@ disable_regexp_timeout(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 # ifdef FEAT_RELTIME
 static sig_atomic_t *saved_timeout_flag;
 # endif
@@ -362,7 +362,7 @@ static int	regnzpar;	// \z() count.
 static int	re_has_z;	// \z item detected
 #endif
 static unsigned	regflags;	// RF_ flags for prog
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 static int	had_eol;	// TRUE when EOL found by vim_regcomp()
 #endif
 
@@ -2144,12 +2144,12 @@ vim_regsub_multi(
     return result;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 // When nesting more than a couple levels it's probably a mistake.
 # define MAX_REGSUB_NESTING 4
 static char_u   *eval_result[MAX_REGSUB_NESTING] = {NULL, NULL, NULL, NULL};
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_resub_eval_result(void)
 {
@@ -3025,7 +3025,7 @@ vim_regfree(regprog_T *prog)
 	prog->engine->regfree(prog);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_regexp_stuff(void)
 {
@@ -3050,7 +3050,7 @@ report_re_switch(char_u *pat)
 }
 #endif
 
-#if defined(FEAT_X11) || defined(PROTO)
+#if defined(FEAT_X11)
 /*
  * Return whether "prog" is currently being executed.
  */
@@ -3137,7 +3137,7 @@ vim_regexec_string(
     return result > 0;
 }
 
-#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11)
 /*
  * Note: "*prog" may be freed and changed.
  * Return TRUE if there is a match, FALSE if not.

@@ -24,7 +24,7 @@
 
 // Only do the following when the feature is enabled.  Needed for "make
 // depend".
-#if defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_LUA)
 
 #define LUAVIM_CHUNKNAME "vim chunk"
 #define LUAVIM_NAME "vim"
@@ -472,7 +472,7 @@ lua_link_init(char *libname, int verbose)
 }
 #endif // DYNAMIC_LUA
 
-#if defined(DYNAMIC_LUA) || defined(PROTO)
+#if defined(DYNAMIC_LUA)
     int
 lua_enabled(int verbose)
 {

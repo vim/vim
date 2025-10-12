@@ -2415,7 +2415,7 @@ win_equal_rec(
     }
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     void
 leaving_window(win_T *win)
 {
@@ -3512,7 +3512,7 @@ win_free_mem(
     return wp;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 win_free_all(void)
 {
@@ -4992,7 +4992,7 @@ leave_tabpage(
     tp->tp_prevwin = prevwin;
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
-    tp->tp_old_Rows = Rows;
+    tp->tp_old_Rows = ROWS_AVAIL;
     if (tp->tp_old_Columns != -1)
     {
 	tp->tp_old_Columns = topframe->fr_width;
@@ -5054,7 +5054,7 @@ enter_tabpage(
     // The tabpage line may have appeared or disappeared, may need to resize
     // the frames for that.  When the Vim window was resized need to update
     // frame sizes too.
-    if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
+    if (curtab->tp_old_Rows != ROWS_AVAIL || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
 			    && !gui_use_tabline()
 #endif
@@ -5340,7 +5340,7 @@ win_goto(win_T *wp)
 #endif
 }
 
-#if defined(FEAT_PERL) || defined(PROTO)
+#if defined(FEAT_PERL)
 /*
  * Find window number "winnr" (counting top to bottom).
  */
@@ -5356,7 +5356,7 @@ win_find_nr(int winnr)
 }
 #endif
 
-#if ((defined(FEAT_PYTHON) || defined(FEAT_PYTHON3))) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 /*
  * Find the tabpage for window "win".
  */
@@ -6038,7 +6038,7 @@ win_unlisted(win_T *wp)
     return is_aucmd_win(wp) || WIN_IS_POPUP(wp);
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Free a popup window.  This does not take the window out of the window list
  * and assumes there is only one toplevel frame, no split.
@@ -7913,7 +7913,7 @@ restore_snapshot_rec(frame_T *sn, frame_T *fr)
     return wp;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Return TRUE if there is any vertically split window.
  */
@@ -7934,7 +7934,7 @@ win_hasvertsplit(void)
 }
 #endif
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     int
 get_win_number(win_T *wp, win_T *first_win)
 {
@@ -8004,7 +8004,7 @@ frame_check_width(frame_T *topfrp, int width)
     return TRUE;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 /*
  * Simple int comparison function for use with qsort()
  */

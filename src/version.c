@@ -28,8 +28,8 @@
 char		*Version = VIM_VERSION_SHORT;
 static char	*mediumVersion = VIM_VERSION_MEDIUM;
 
-#if defined(HAVE_DATE_TIME) || defined(PROTO)
-# if (defined(VMS) && defined(VAXC)) || defined(PROTO)
+#if defined(HAVE_DATE_TIME)
+# if defined(VMS) && defined(VAXC)
 char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
@@ -729,6 +729,24 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1846,
+/**/
+    1845,
+/**/
+    1844,
+/**/
+    1843,
+/**/
+    1842,
+/**/
+    1841,
+/**/
+    1840,
+/**/
+    1839,
+/**/
+    1838,
 /**/
     1837,
 /**/
@@ -4427,7 +4445,7 @@ highest_patch(void)
     return included_patches[0];
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if patch "n" has been included.
  */
