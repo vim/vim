@@ -102,10 +102,21 @@ static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 
 #define TRIGGER_AUTOCOMPLETE()			\
     do {					\
-        update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
-        out_flush();				\
-        ins_compl_enable_autocomplete();	\
-        goto docomplete;			\
+	update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
+	out_flush();				\
+	ins_compl_enable_autocomplete();	\
+	goto docomplete;			\
+    } while (0)
+
+#define MAY_TRIGGER_AUTOCOMPLETE(c)				\
+    do {							\
+	if (ins_compl_has_autocomplete() && !char_avail()	\
+		&& curwin->w_cursor.col > 0)			\
+	{							\
+	    (c) = char_before_cursor();				\
+	    if (vim_isprintc(c))				\
+		TRIGGER_AUTOCOMPLETE();				\
+	}							\
     } while (0)
 
 /*
@@ -999,13 +1010,8 @@ doESCkey:
 	case Ctrl_H:
 	    did_backspace = ins_bs(c, BACKSPACE_CHAR, &inserted_space);
 	    auto_format(FALSE, TRUE);
-	    if (did_backspace && ins_compl_has_autocomplete() && !char_avail()
-		    && curwin->w_cursor.col > 0)
-	    {
-		c = char_before_cursor();
-		if (vim_isprintc(c))
-		    TRIGGER_AUTOCOMPLETE();
-	    }
+	    if (did_backspace)
+		MAY_TRIGGER_AUTOCOMPLETE(c);
 	    break;
 
 	case Ctrl_W:	// delete word before the cursor
@@ -1023,13 +1029,8 @@ doESCkey:
 #endif
 	    did_backspace = ins_bs(c, BACKSPACE_WORD, &inserted_space);
 	    auto_format(FALSE, TRUE);
-	    if (did_backspace && ins_compl_has_autocomplete() && !char_avail()
-		    && curwin->w_cursor.col > 0)
-	    {
-		c = char_before_cursor();
-		if (vim_isprintc(c))
-		    TRIGGER_AUTOCOMPLETE();
-	    }
+	    if (did_backspace)
+		MAY_TRIGGER_AUTOCOMPLETE(c);
 	    break;
 
 	case Ctrl_U:	// delete all inserted text in current line
@@ -1041,6 +1042,8 @@ doESCkey:
 	    did_backspace = ins_bs(c, BACKSPACE_LINE, &inserted_space);
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
+	    if (did_backspace)
+		MAY_TRIGGER_AUTOCOMPLETE(c);
 	    break;
 
 	case K_LEFTMOUSE:   // mouse keys
