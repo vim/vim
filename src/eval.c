@@ -3113,6 +3113,8 @@ set_context_for_expression(
 		|| cmdidx == CMD_echo
 		|| cmdidx == CMD_echon
 		|| cmdidx == CMD_echomsg
+		|| cmdidx == CMD_echoerr
+		|| cmdidx == CMD_echoconsole
 		|| cmdidx == CMD_echowindow)
 	    && xp->xp_context == EXPAND_EXPRESSION)
     {
