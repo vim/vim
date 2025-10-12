@@ -45,6 +45,12 @@ static int	buf_same_ino(buf_T *buf, stat_T *stp);
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 static int	value_changed(char_u *str, char_u **last);
+#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE)
+static int build_stl_str_hl_local(stl_mode_T mode, win_T *wp,
+		char_u *out, size_t outlen, char_u **fmt_arg,
+		char_u *opt_name, int opt_scope, int fillchar, int maxwidth,
+		stl_hlrec_T **hltab, stl_hlrec_T **tabtab, int *lbreaks);
+#endif
 static int	append_arg_number(win_T *wp, char_u *buf, size_t buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
@@ -4365,6 +4371,71 @@ build_stl_str_hl(
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
     stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
 {
+    return build_stl_str_hl_local(STL_MODE_SINGLE, wp, out, outlen, &fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+
+    int
+build_stl_str_hl_mline(
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt,		// (in/out)
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+{
+    HH_ch_log("in. *fmt:\"%s\", opt_name:\"%s\", opt_scope:%d", *fmt, opt_name, opt_scope);
+    return build_stl_str_hl_local(STL_MODE_MULTI, wp, out, outlen, fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+
+    int
+count_linebreaks_from_stl_str(
+    win_T	*wp,
+    char_u	*fmt,
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope)	// scope for "opt_name"
+{
+    int lbreaks = 0;
+    char_u	buf[MAXPATHL] = {0};
+
+    (void)build_stl_str_hl_local(STL_MODE_COUNT_LBREAKS,
+	    wp, buf, sizeof(buf), &fmt,
+	    opt_name, opt_scope, 0, 0, NULL, NULL, &lbreaks);
+    HH_ch_log("lbreaks:%d, fmt:\"%s\"", lbreaks, fmt);
+    return lbreaks;
+}
+
+/*
+ * mode:
+ *  STL_MODE_SINGLE:
+ *  - Does not accept line breaks ("%@")
+ *  STL_MODE_MULTI:
+ *  - Accept line breaks
+ *  - Update fmt_arg to the start of the next line or last NUL position
+ *  STL_MODE_COUNT_LBREAKS:
+ *  - Just count line breaks
+ *  - Update lbreaks (if not NULL)
+ */
+static int
+build_stl_str_hl_local(
+    stl_mode_T	mode,
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt_arg,
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    int		*lbreaks)	// return: nr of line breaks (can be NULL)
+{
     linenr_T	lnum;
     colnr_T	len;
     size_t	outputlen;	// length of out[] used (excluding the NUL)
@@ -4398,6 +4469,7 @@ build_stl_str_hl(
     char_u	opt;
 #define TMPLEN 70
     char_u	buf_tmp[TMPLEN];
+    char_u	*fmt = *fmt_arg;
     char_u	*usefmt = fmt;
     stl_hlrec_T *sp;
     int		save_redraw_not_allowed = redraw_not_allowed;
@@ -4406,7 +4478,9 @@ build_stl_str_hl(
     // matter?
     // int	called_emsg_before = called_emsg;
     int		did_emsg_before = did_emsg;
+    int		lbreak_num = 0;		// Number of line breaks
 
+    HH_ch_log("in. mode:%d, *fmt_arg:%p \"%s\"", mode, *fmt_arg, *fmt_arg);
     // When inside update_screen() we do not want redrawing a statusline,
     // ruler, title, etc. to trigger another redraw, it may cause an endless
     // loop.
@@ -4542,6 +4616,17 @@ build_stl_str_hl(
 	s++;
 	if (*s == NUL)  // ignore trailing %
 	    break;
+
+	if (*s == STL_LINEBREAK)
+	{
+	    if (mode == STL_MODE_MULTI)
+	    {
+		s++;
+		break;
+	    }
+	    else
+		lbreak_num++;
+	}
 	if (*s == '%')
 	{
 	    if (p + 1 >= out + outlen)
@@ -5203,10 +5288,33 @@ build_stl_str_hl(
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
+    //if (mode == STL_MODE_MULTI || mode == STL_MODE_COUNT_LBREAKS)
+    if (mode == STL_MODE_MULTI)
+    {
 #ifdef FEAT_EVAL
-    if (usefmt != fmt)
-	vim_free(usefmt);
+	if (usefmt != fmt)
+	    vim_free(fmt);
 #endif
+	size_t fmt_remain_len = strlen((char *)s);
+
+	mch_memmove(usefmt, s, fmt_remain_len);
+	usefmt[fmt_remain_len] = NUL;
+	*fmt_arg = usefmt;
+    }
+    else
+    {
+#ifdef FEAT_EVAL
+	if (usefmt != fmt)
+	    vim_free(usefmt);
+#endif
+    }
+
+    if (mode == STL_MODE_COUNT_LBREAKS)
+    {
+	if (lbreaks != NULL)
+	    *lbreaks = lbreak_num;
+	return 0;
+    }
 
     width = vim_strsize(out);
     if (maxwidth > 0 && width > maxwidth)
@@ -5395,8 +5503,10 @@ build_stl_str_hl(
 	set_string_option_direct(opt_name, -1, (char_u *)"",
 					      OPT_FREE | opt_scope, SID_ERROR);
 
+    HH_ch_log("out. *fmt_arg:%p \"%s\"", *fmt_arg, *fmt_arg);
     return width;
 }
+
 #endif // FEAT_STL_OPT
 
 /*

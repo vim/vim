@@ -308,6 +308,7 @@ let test_values = {
       \		['xxx', '-1', 'timeout:', 'best,double', 'double,fast']],
       \ 'splitkeep': [['', 'cursor', 'screen', 'topline'], ['xxx']],
       \ 'statusline': [['', 'xxx'], ['%$', '%{', '%{%', '%{%}', '%(', '%)']],
+      \ 'statuslineopt': [['', 'maxheight:1', 'fixedheight'], ['xxx', 'maxheight', 'fixedheight:3']],
       \ 'swapsync': [['', 'sync', 'fsync'], ['xxx']],
       \ 'switchbuf': [['', 'useopen', 'usetab', 'split', 'vsplit', 'newtab',
       \		'uselast', 'split,newtab'],

@@ -49,6 +49,8 @@ void maketitle(void);
 void resettitle(void);
 void free_titles(void);
 int build_stl_str_hl(win_T *wp, char_u *out, size_t outlen, char_u *fmt, char_u *opt_name, int opt_scope, int fillchar, int maxwidth, stl_hlrec_T **hltab, stl_hlrec_T **tabtab);
+int build_stl_str_hl_mline(win_T *wp, char_u *out, size_t outlen, char_u **fmt, char_u *opt_name, int opt_scope, int fillchar, int maxwidth, stl_hlrec_T **hltab, stl_hlrec_T **tabtab);
+int count_linebreaks_from_stl_str(win_T *wp, char_u *fmt, char_u *opt_name, int opt_scope);
 int get_rel_pos(win_T *wp, char_u *buf, int buflen);
 char_u *fix_fname(char_u *fname);
 void fname_expand(buf_T *buf, char_u **ffname, char_u **sfname);

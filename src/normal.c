@@ -4562,6 +4562,7 @@ nv_brackets(cmdarg_T *cap)
     // indent adjustment.  Any other button just does as usual.
     else if (cap->nchar >= K_RIGHTRELEASE && cap->nchar <= K_LEFTMOUSE)
     {
+	HH_ch_log("in.");
 	(void)do_mouse(cap->oap, cap->nchar,
 		       (cap->cmdchar == ']') ? FORWARD : BACKWARD,
 		       cap->count1, PUT_FIXINDENT);
@@ -6249,6 +6250,7 @@ nv_g_cmd(cmdarg_T *cap)
     case K_X2DRAG:
     case K_X2RELEASE:
 	mod_mask = MOD_MASK_CTRL;
+	HH_ch_log("in.");
 	(void)do_mouse(oap, cap->nchar, BACKWARD, cap->count1, 0);
 	break;
 

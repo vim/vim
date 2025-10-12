@@ -93,6 +93,9 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", "skiprtp",
     NULL};
 #endif
+#if defined(FEAT_STL_OPT)
+static char *(p_stlo_values[]) = {"fixedheight", "maxheight:", NULL};
+#endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
 static char *(p_spk_values[]) = {"cursor", "screen", "topline", NULL};
@@ -661,6 +664,11 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
+	if (*s == STL_LINEBREAK)
+	{
+	    s++;
+	    continue;
+	}
 	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_SEPARATE)
 	{
 	    s++;
@@ -4179,7 +4187,51 @@ expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_statusline(optset_T *args)
 {
-    return parse_statustabline_rulerformat(args, FALSE);
+    char *ret = parse_statustabline_rulerformat(args, FALSE);
+
+    if (ret != NULL)
+	return ret;
+    fitting_statusline_height_value();
+    frame_change_statusline_height();
+
+    return NULL;
+}
+
+/*
+ * The 'statuslineopt' option is changed.
+ */
+    char *
+did_set_statuslineopt(optset_T *args)
+{
+    char_u	**varp = (char_u **)args->os_varp;
+    win_T       *wp = varp == &curwin->w_p_stlo ? curwin : NULL;
+
+    if (statuslineopt_changed(*varp, wp) == FAIL)
+	return e_invalid_argument;
+
+    if ((args->os_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+    {
+	// When using :set, clear the local values and flags.
+	clear_string_option(&curwin->w_p_stlo);
+	curwin->w_p_stlo_fh = -1;
+	curwin->w_p_stlo_mh = -1;
+    }
+
+    fitting_statusline_height_value();
+    frame_change_statusline_height();
+
+    return NULL;
+}
+
+    int
+expand_set_statuslineopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_stlo_values,
+	    ARRAY_LENGTH(p_stlo_values) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
