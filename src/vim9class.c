@@ -135,6 +135,7 @@ parse_member(
 	if (*init_arg != NUL && !vim9_comment_start(init_arg))
 	{
 	    semsg(_(e_trailing_characters_str), init_arg);
+	    clear_evalarg(&evalarg, NULL);
 	    return FAIL;
 	}
 
