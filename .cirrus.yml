@@ -21,7 +21,7 @@ freebsd_task:
     - pw useradd cirrus -m
     - chown -R cirrus:cirrus .
     - sudo -u cirrus make test
-  on_failure:
+  always:
     test_artifacts:
       name: "Cirrus-${CIRRUS_BUILD_ID}-freebsd-failed-tests"
       path: |
