@@ -1703,9 +1703,6 @@ did_set_completeopt(optset_T *args UNUSED)
 	// When using :set, clear the local flags.
 	curbuf->b_cot_flags = 0;
 
-    if (check_opt_strings(cot, p_cot_values, TRUE) != OK)
-	return e_invalid_argument;
-
     if (opt_strings_flags(cot, p_cot_values, flags, TRUE) != OK)
 	return e_invalid_argument;
 
