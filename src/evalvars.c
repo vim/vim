@@ -968,7 +968,11 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	    }
 
 	    if (list_append_string(l, str, -1) == FAIL)
+	    {
+		if (free_str)
+		    vim_free(str);
 		break;
+	    }
 	    if (free_str)
 		vim_free(str);
 	}
