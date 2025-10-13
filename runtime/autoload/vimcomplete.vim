@@ -36,7 +36,7 @@ enddef
 export def Complete(findstart: number, base: string): any
     if findstart > 0
         var line = getline('.')->strpart(0, col('.') - 1)
-        if line =~ '^\s*$'
+        if line =~ '\s\+$'
             return -2
         endif
         var keyword = line->matchstr('\k\+$')
