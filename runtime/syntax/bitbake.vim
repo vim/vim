@@ -95,7 +95,7 @@ syn region bbPyFuncRegion       matchgroup=bbDelimiter start="{\s*$" end="^}\s*$
 
 " BitBake 'def'd python functions
 syn keyword bbPyDef             def contained
-syn region bbPyDefRegion        start='^\(def\s\+\)\([0-9A-Za-z_-]\+\)\(\s*(.*)\s*\):\s*$' end='^\(\s\|$\)\@!' contains=@python
+syn region bbPyDefRegion        start='^\(def\s\+\)\([0-9A-Za-z_-]\+\)\(\s*(\_.*)\s*\):\s*$' end='^\(\s\|$\)\@!' contains=@python
 
 " Highlighting Definitions
 hi def link bbUnmatched         Error
