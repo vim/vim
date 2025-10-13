@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2025 Oct 12
+*channel.txt*      For Vim version 9.1.  Last change: 2025 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1473,13 +1473,13 @@ and encode the Vim expression into JSON.  Refer to |json_encode()| and
 |json_decode()| for more information about how Vim encodes and decodes the
 builtin types into JSON.
 
-To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
-{options} argument to 'lsp'.  Example: >
+To open a channel using the "lsp" mode, set the "mode" item in the |ch_open()|
+{options} argument to "lsp".  Example: >
 
     let ch = ch_open(..., #{mode: 'lsp'})
 
-To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
-'out_mode' items in the |job_start()| {options} argument to 'lsp'.  Example: >
+To open a channel using the "lsp" mode with a job, set the "in_mode" and
+"out_mode" items in the |job_start()| {options} argument to "lsp".  Example: >
 
     let cmd = ['clangd', '--background-index', '--clang-tidy']
     let opts = {}
@@ -1499,7 +1499,7 @@ formats appropriately or you should use a separate callback function for
 To synchronously send a JSON-RPC request to the server, use the
 |ch_evalexpr()| function.  This function will wait and return the decoded
 response message from the server.  You can use either the |channel-timeout| or
-the 'timeout' field in the {options} argument to control the response wait
+the "timeout" field in the {options} argument to control the response wait
 time.  If the request times out, then an empty |Dict| is returned.  Example: >
 
     let req = {}
@@ -1512,9 +1512,9 @@ time.  If the request times out, then an empty |Dict| is returned.  Example: >
         ... <handle failure>
     endif
 
-Note that in the request message the 'id' field should not be specified.  If
+Note that in the request message the "id" field should not be specified.  If
 it is specified, then Vim will overwrite the value with an internally
-generated identifier.  Vim currently supports only a number type for the 'id'
+generated identifier.  Vim currently supports only a number type for the "id"
 field.
 The callback function will be invoked for both a successful and a failed RPC
 request.
@@ -1559,7 +1559,7 @@ don't specify the "callback" item.  Example: >
     call ch_sendexpr(ch, #{method: 'initialized'})
 
 To respond to a JSON-RPC request message from the server, use the
-|ch_sendexpr()| function.  In the response message, copy the 'id' field value
+|ch_sendexpr()| function.  In the response message, copy the "id" field value
 from the server request message.  Example: >
 
     let resp = {}
