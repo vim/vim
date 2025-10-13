@@ -3,7 +3,7 @@ vim9script
 # Vim completion script
 # Language:    Vim script
 # Maintainer:  Maxim Kim <habamax@gmail.com>
-# Last Change: 2025-08-27
+# Last Change: 2025-10-13
 #
 # Usage:
 # setlocal omnifunc=vimcomplete#Complete
@@ -36,6 +36,9 @@ enddef
 export def Complete(findstart: number, base: string): any
     if findstart > 0
         var line = getline('.')->strpart(0, col('.') - 1)
+        if line =~ '\s\+$'
+            return -2
+        endif
         var keyword = line->matchstr('\k\+$')
         var stx = synstack(line('.'), col('.') - 1)->map('synIDattr(v:val, "name")')->join()
         if stx =~? 'Comment' || (stx =~ 'String' && stx !~ 'vimStringInterpolationExpr')
