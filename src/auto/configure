@@ -857,6 +857,7 @@ enable_arabic
 enable_farsi
 enable_xim
 enable_fontset
+enable_clipboard_provider
 with_wayland
 enable_wayland_focus_steal
 with_x
@@ -1539,6 +1540,7 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
+  --enable-clipboard-provider  Include clipboard provider support.
   --enable-wayland-focus-steal
                           Include focus stealing support for Wayland
                           clipboard.
@@ -9207,6 +9209,35 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_fontset" >&5
 printf "%s\n" "$enable_fontset" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-clipboard-provider" >&5
+printf %s "checking --enable-clipboard-provider... " >&6; }
+# Check whether --enable-clipboard-provider was given.
+if test ${enable_clipboard_provider+y}
+then :
+  enableval=$enable_clipboard_provider; enable_clipboard_provider=$enableval
+	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enableval" >&5
+printf "%s\n" "$enableval" >&6; }
+else case e in #(
+  e) if test "x$features" = xtiny
+then :
+  enable_clipboard_provider="no"
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use clipboard provider with tiny features" >&5
+printf "%s\n" "cannot use clipboard provider with tiny features" >&6; }
+else case e in #(
+  e) enable_clipboard_provider="yes"
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; } ;;
+esac
+fi ;;
+esac
+fi
+
+if test "$enable_clipboard_provider" = "yes"; then
+  printf "%s\n" "#define FEAT_CLIPBOARD_PROVIDER 1" >>confdefs.h
+
+fi
+
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if shm_open is available" >&5
 printf %s "checking if shm_open is available... " >&6; }

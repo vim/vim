@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
+*various.txt*   For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -378,6 +378,7 @@ m  *+channel*		inter process communication |channel|
 T  *+cindent*		'cindent', C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
+N  *+clipboard_provider*  |clipboard-providers| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
@@ -807,7 +808,10 @@ K			Run a program to lookup the keyword under the
 :clip[reset]		Attempts to choose a new method for accessing the
 			clipboard, using the 'clipmethod' option.  This is
 			useful when the current method has become unavailable,
-			and you want to try using another method.
+			and you want to try using another method.  If the
+			|+clipboard_provider| feature is being used, this
+			command should be called after the availability of one
+			of the clipboard registers changes.
 			{only available when compiled with the |+clipboard|
 			feature}
 
