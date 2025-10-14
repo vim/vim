@@ -1938,7 +1938,7 @@ parse_popup_option(win_T *wp, int is_preview)
 
 		    SET_BORDER_CHARS(0, 0, 0, 0, 0, 0, 0, 0);
 
-		    for (int i = 0; i < 8 && !failed; i++)
+		    for (i = 0; i < 8 && !failed; i++)
 		    {
 			if (*q == NUL)
 			    failed = TRUE;
