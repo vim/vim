@@ -65,6 +65,7 @@ syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:[^=]"me=e-2
 syn region makeTargetinDefine transparent matchgroup=makeTargetinDefine
 	\ start="^[~A-Za-z0-9_./$(){}%-][A-Za-z0-9_./\t ${}()%-]*&\?:\?:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$"
+	\ keepend
 syn match makeTargetinDefine           "^[~A-Za-z0-9_./$(){}%*@-][A-Za-z0-9_./\t $(){}%*@-]*&\?::\=\s*$"
 	\ contains=makeIdent,makeSpecTarget,makeComment
 
