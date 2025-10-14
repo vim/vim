@@ -1743,7 +1743,7 @@ Notes
      terminal dir
      !dir
 <
-  These completion might take several seconds to gather candidates.
+  These completions might take several seconds to gather candidates.
 
 - set completion can't complete "no" options:
 >
