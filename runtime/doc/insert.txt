@@ -1721,6 +1721,36 @@ Notes:
 <  to your vimrc
 
 
+VIM							*ft-vim-omni*
+
+Simple completion of Vimscript and Vim9script languages.
+
+Complete:
+
+- set and & options
+- commands and command arguments
+- function names after ->
+- expressions
+- l:, v:, g:, s: and b: variables
+- fallback to command line completion to get candidates
+
+Notes
+
+- It doesn't complete command arguments that rely on 'shellcmd' completion
+  type in Windows and WSL due to general slowness of canditate gathering,
+  e.g.
+>
+     terminal dir
+     !dir
+<
+  These completion might take several seconds to gather candidates.
+
+- set completion can't complete "no" options:
+>
+     set noautoindent
+     set nobuflisted
+<
+
 SYNTAX							*ft-syntax-omni*
 
 Vim has the ability to color syntax highlight nearly 500 languages.  Part of
