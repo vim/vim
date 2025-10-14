@@ -1909,6 +1909,8 @@ parse_popup_option(win_T *wp, int is_preview)
 	    }
 
 	    token = vim_strnsave(arg, token_len);
+	    if (token == NULL)
+		return FAIL;
 
 	    if ((can_use_box_chars && (STRCMP(token, "single") == 0
 			    || STRCMP(token, "double") == 0
@@ -1962,6 +1964,11 @@ parse_popup_option(win_T *wp, int is_preview)
 		    SET_BORDER_CHARS(out[0], out[1], out[2], out[3], out[4],
 			    out[5], out[6], out[7]);
 		}
+	    }
+	    else
+	    {
+		vim_free(token);
+		return FAIL;
 	    }
 
 	    if (wp != NULL)
