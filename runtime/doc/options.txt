@@ -2346,20 +2346,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The option is a comma-separated list of values:
 		height		maximum height of the popup
 		width		maximum width of the popup
-		highlight	highlight group of the popup (default is PmenuSel)
+		highlight	popup highlight group (default: PmenuSel)
 		align		"item" (default) or "menu"
 		close		show close button: "on" (default) or "off"
 		resize		show resize handle: "on" (default) or "off"
 		border		border style:
 				"single"	thin box-drawing characters
-				"double"	double-line (default)
+				"double"	double-line
 				"round"		rounded corners
 				"ascii"		ASCII characters (-, |, +)
 				"custom:X;X;X;X;X;X;X;X"
 						eight characters separated by
-						semicolons, in the order: top, right,
-						bottom, left, topleft, topright,
-						botright, botleft
+						semicolons, in the order: top,
+						right, bottom, left, topleft,
+						topright, botright, botleft
+				"on"		same as "double" when
+						'encoding' is "utf-8" and
+						'ambiwidth' is "single", else
+						"ascii" (default)
 				"off"		no border
 		borderhighlight	highlight group for the popup border characters
 		shadow		"off" (default) or "on" using |hl-PmenuShadow|
