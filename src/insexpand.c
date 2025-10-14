@@ -4192,8 +4192,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 #define CI_WHAT_SELECTED	    0x08
 #define CI_WHAT_COMPLETED	    0x10
 #define CI_WHAT_MATCHES		    0x20
-#define CI_WHAT_PREINSERTED	    0x40
-#define CI_WHAT_PREINSERTED_TEXT    0x80
+#define CI_WHAT_PREINSERTED_TEXT    0x40
 #define CI_WHAT_ALL		    0xff
     int		what_flag;
 
@@ -4217,8 +4216,6 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		what_flag |= CI_WHAT_SELECTED;
 	    else if (STRCMP(what, "completed") == 0)
 		what_flag |= CI_WHAT_COMPLETED;
-	    else if (STRCMP(what, "preinserted") == 0)
-		what_flag |= CI_WHAT_PREINSERTED;
 	    else if (STRCMP(what, "preinserted_text") == 0)
 		what_flag |= CI_WHAT_PREINSERTED_TEXT;
 	    else if (STRCMP(what, "matches") == 0)
@@ -4231,10 +4228,6 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
-
-    if (ret == OK && (what_flag & CI_WHAT_PREINSERTED))
-	ret = dict_add_number(retdict, "preinserted",
-		ins_compl_preinsert_effect());
 
     if (ret == OK && (what_flag & CI_WHAT_PREINSERTED_TEXT))
     {

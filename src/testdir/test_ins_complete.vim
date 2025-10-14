@@ -572,15 +572,15 @@ func Test_completefunc_info()
   set completeopt=menuone
   set completefunc=CompleteTest
   call feedkeys("i\<C-X>\<C-U>\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
-  call assert_equal("matched{'preinserted': 0, 'pum_visible': 1, 'mode': 'function', 'preinserted_text': '', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
+  call assert_equal("matched{'preinserted_text': '', 'pum_visible': 1, 'mode': 'function', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
   %d
   set complete=.,FCompleteTest
   call feedkeys("i\<C-N>\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
-  call assert_equal("matched{'preinserted': 0, 'pum_visible': 1, 'mode': 'keyword', 'preinserted_text': '', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
+  call assert_equal("matched{'preinserted_text': '', 'pum_visible': 1, 'mode': 'keyword', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
   %d
   set complete=.,F
   call feedkeys("i\<C-N>\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
-  call assert_equal("matched{'preinserted': 0, 'pum_visible': 1, 'mode': 'keyword', 'preinserted_text': '', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
+  call assert_equal("matched{'preinserted_text': '', 'pum_visible': 1, 'mode': 'keyword', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
   set completeopt&
   set complete&
   set completefunc&
@@ -698,17 +698,17 @@ func CompleteInfoTestUserDefinedFn(mvmt, idx, noselect)
   set completefunc=CompleteInfoUserDefinedFn
   call feedkeys("i\<C-X>\<C-U>" . a:mvmt . "\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
   let completed = a:idx != -1 ? ['foo', 'bar', 'baz', 'qux']->get(a:idx) : ''
-  call assert_equal(completed. "{'preinserted': 0, 'pum_visible': 1, 'mode': 'function', 'preinserted_text': '', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
+  call assert_equal(completed. "{'preinserted_text': '', 'pum_visible': 1, 'mode': 'function', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
   %d
   set complete=.,FCompleteInfoUserDefinedFn
   call feedkeys("i\<C-N>" . a:mvmt . "\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
   let completed = a:idx != -1 ? ['foo', 'bar', 'baz', 'qux']->get(a:idx) : ''
-  call assert_equal(completed. "{'preinserted': 0, 'pum_visible': 1, 'mode': 'keyword', 'preinserted_text': '', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
+  call assert_equal(completed. "{'preinserted_text': '', 'pum_visible': 1, 'mode': 'keyword', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
   %d
   set complete=.,F
   call feedkeys("i\<C-N>" . a:mvmt . "\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
   let completed = a:idx != -1 ? ['foo', 'bar', 'baz', 'qux']->get(a:idx) : ''
-  call assert_equal(completed. "{'preinserted': 0, 'pum_visible': 1, 'mode': 'keyword', 'preinserted_text': '', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
+  call assert_equal(completed. "{'preinserted_text': '', 'pum_visible': 1, 'mode': 'keyword', 'selected': " . a:idx . ", 'items': " . items . "}", getline(1))
   bwipe!
   set completeopt& completefunc& complete&
 endfunc
@@ -5907,7 +5907,7 @@ func Test_autocomplete_longest()
   " complete_info()
   %delete
   func GetPreinsert()
-    let g:cinfo = complete_info(['preinserted', 'preinserted_text'])
+    let g:cinfo = complete_info(['preinserted_text'])
     return ""
   endfunc
   inoremap <buffer><F6> <C-R>=GetPreinsert()<CR>
@@ -5916,12 +5916,10 @@ func Test_autocomplete_longest()
   set completeopt& completeopt+=preinsert
   call feedkeys("G4li\<F6>\<C-Y>", 'tx')
   call assert_equal("bar_xyz", g:cinfo.preinserted_text)
-  call assert_equal(1, g:cinfo.preinserted)
 
   set completeopt& completeopt+=longest
   call feedkeys("Gof\<F6>\<ESC>", 'tx')
   call assert_equal("oo_bar_xyz", g:cinfo.preinserted_text)
-  call assert_equal(1, g:cinfo.preinserted)
   unlet g:cinfo
   delfunc GetPreinsert
   set completeopt&

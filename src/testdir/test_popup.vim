@@ -1154,7 +1154,6 @@ func Test_popup_complete_info_02()
   setlocal completefunc=UserDefinedComplete
 
   let d = {
-    \   'preinserted': 0,
     \   'mode': 'function',
     \   'pum_visible': 1,
     \   'items': [
@@ -1172,7 +1171,7 @@ func Test_popup_complete_info_02()
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
 
-  let g:compl_what = ['preinserted', 'mode', 'pum_visible', 'preinserted_text', 'selected']
+  let g:compl_what = ['mode', 'pum_visible', 'preinserted_text', 'selected']
   call remove(d, 'items')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
@@ -1180,7 +1179,6 @@ func Test_popup_complete_info_02()
   let g:compl_what = ['mode']
   call remove(d, 'selected')
   call remove(d, 'pum_visible')
-  call remove(d, 'preinserted')
   call remove(d, 'preinserted_text')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
@@ -1192,7 +1190,6 @@ func Test_popup_complete_info_no_pum()
   call assert_false( pumvisible() )
   let no_pum_info = complete_info()
   let d = {
-        \   'preinserted': 0,
         \   'mode': '',
         \   'pum_visible': 0,
         \   'items': [],
