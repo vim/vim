@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
+*if_perl.txt*   For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -18,9 +18,9 @@ Perl and Vim				*perl* *Perl*
 
 Vim syntax highlighting supports Perl and POD files.  Vim assumes a file is
 Perl code if the filename has a .pl or .pm suffix.  Vim also examines the
-first line of a file, regardless of the filename suffix, to check if a file is
-a Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
-is POD text if the filename has a .POD suffix.
+shebang line of a file, if no filetype has been detected, to check if a file
+is a Perl script.  Vim assumes a file is POD text if the filename has a .POD
+suffix.
 
 To use tags with Perl, you need Universal/Exuberant Ctags.  Look here:
 	Universal Ctags (preferred): https://ctags.io
