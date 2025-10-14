@@ -41717,6 +41717,7 @@ Options: ~
   to ">" by default, indicating text that extends beyond the window width.
 - 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
   (see also the below platform specific change).
+- 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|

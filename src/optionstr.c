@@ -70,9 +70,14 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #ifdef FEAT_PROP_POPUP
 // Note: Keep this in sync with parse_popup_option()
-static char *(p_popup_option_values[]) = { "align:", "border:", "height:",
-    "highlight:", "shadow:", "width:", NULL};
-static char *(p_popup_option_border_values[]) = {"on", "off", NULL};
+static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
+    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
+    "shadow:", "width:", NULL};
+static char *(p_popup_pvp_option_values[]) = {"height:", "highlight:",
+    "width:", NULL};
+static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};
+static char *(p_popup_cpp_border_values[]) = {"single", "double", "round",
+    "ascii", "on", "off", "custom:", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
 #if defined(FEAT_SPELL)
@@ -3408,8 +3413,9 @@ did_set_previewpopup(optset_T *args UNUSED)
     return NULL;
 }
 
-    int
-expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
+    static int
+expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches,
+	int previewpopup)
 {
     expand_T *xp = args->oe_xp;
 
@@ -3417,13 +3423,34 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
     {
 	// Within "highlight:"/"border:"/"align:", we have a subgroup of possible options.
 	int border_len = (int)STRLEN("border:");
-	if (xp->xp_pattern - args->oe_set_arg >= border_len &&
-		STRNCMP(xp->xp_pattern - border_len, "border:", border_len) == 0)
+	int close_len = (int)STRLEN("close:");
+	int resize_len = (int)STRLEN("resize:");
+	int shadow_len = (int)STRLEN("shadow:");
+	int is_border = xp->xp_pattern - args->oe_set_arg >= border_len &&
+		STRNCMP(xp->xp_pattern - border_len, "border:", border_len) == 0;
+	int is_close = xp->xp_pattern - args->oe_set_arg >= close_len &&
+		STRNCMP(xp->xp_pattern - close_len, "close:", close) == 0;
+	int is_resize = xp->xp_pattern - args->oe_set_arg >= resize_len &&
+		STRNCMP(xp->xp_pattern - resize_len, "resize:", resize_len) == 0;
+	int is_shadow = xp->xp_pattern - args->oe_set_arg >= shadow_len &&
+		STRNCMP(xp->xp_pattern - shadow_len, "shadow:", shadow_len) == 0;
+	if (is_close || is_resize || is_shadow)
 	{
 	    return expand_set_opt_string(
 		    args,
-		    p_popup_option_border_values,
-		    ARRAY_LENGTH(p_popup_option_border_values) - 1,
+		    p_popup_option_on_off_values,
+		    ARRAY_LENGTH(p_popup_option_on_off_values) - 1,
+		    numMatches,
+		    matches);
+	}
+	if (is_border)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    previewpopup ? p_popup_option_on_off_values
+			: p_popup_cpp_border_values,
+		    (previewpopup ? ARRAY_LENGTH(p_popup_option_on_off_values)
+			: ARRAY_LENGTH(p_popup_cpp_border_values)) - 1,
 		    numMatches,
 		    matches);
 	}
@@ -3439,8 +3466,15 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 		    matches);
 	}
 	int highlight_len = (int)STRLEN("highlight:");
-	if (xp->xp_pattern - args->oe_set_arg >= highlight_len &&
-		STRNCMP(xp->xp_pattern - highlight_len, "highlight:", highlight_len) == 0)
+	int borderhighlight_len = (int)STRLEN("borderhighlight:");
+	int is_highlight = xp->xp_pattern - args->oe_set_arg >= highlight_len
+	    && STRNCMP(xp->xp_pattern - highlight_len, "highlight:",
+		    highlight_len) == 0;
+	int is_borderhighlight
+	    = xp->xp_pattern - args->oe_set_arg >= borderhighlight_len
+	    && STRNCMP(xp->xp_pattern - borderhighlight_len, "highlight:",
+		    borderhighlight_len) == 0;
+	if (is_highlight || is_borderhighlight)
 	{
 	    // Return the list of all highlight names
 	    return expand_set_opt_generic(
@@ -3454,10 +3488,24 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 
     return expand_set_opt_string(
 	    args,
-	    p_popup_option_values,
-	    ARRAY_LENGTH(p_popup_option_values) - 1,
+	    previewpopup ? p_popup_pvp_option_values
+		: p_popup_cpp_option_values,
+	    previewpopup ? ARRAY_LENGTH(p_popup_pvp_option_values) - 1
+		: ARRAY_LENGTH(p_popup_cpp_option_values) - 1,
 	    numMatches,
 	    matches);
+}
+
+    int
+expand_set_previewpopup(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_popupoption(args, numMatches, matches, TRUE);
+}
+
+    int
+expand_set_completepopup(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_popupoption(args, numMatches, matches, FALSE);
 }
 #endif
 
