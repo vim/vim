@@ -1,0 +1,16 @@
+/ {
+	chosen {
+		zephyr,uart-mcumgr = &cdc_acm_uart0;
+		zephyr,shell-uart = &cdc_acm_uart1;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+
+	cdc_acm_uart1: cdc_acm_uart1 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};

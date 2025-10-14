@@ -40,7 +40,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 
 #ifndef MIN
 # define MIN(x,y) ((x) < (y) ? (x) : (y))
@@ -53,10 +53,10 @@
 
 // This is VTermScreenCell without the characters, thus much smaller.
 typedef struct {
-  VTermScreenCellAttrs	attrs;
-  char			width;
-  VTermColor		fg;
-  VTermColor		bg;
+    VTermScreenCellAttrs	attrs;
+    char			width;
+    VTermColor			fg;
+    VTermColor			bg;
 } cellattr_T;
 
 typedef struct sb_line_S {
@@ -446,6 +446,7 @@ term_start(
     buf_T	*newbuf;
     int		vertical = opt->jo_vertical || (cmdmod.cmod_split & WSP_VERT);
     jobopt_T	orig_opt;  // only partly filled
+    pos_T	save_cursor;
 
     if (check_restricted() || check_secure())
 	return NULL;
@@ -518,6 +519,7 @@ term_start(
 	old_curbuf = curbuf;
 	--curbuf->b_nwindows;
 	curbuf = buf;
+	save_cursor = curwin->w_cursor;
 	curwin->w_buffer = buf;
 	++curbuf->b_nwindows;
     }
@@ -538,9 +540,16 @@ term_start(
 	    split_ea.addr_count = 1;
 	}
 
+	int cmod_split_modified = FALSE;
 	if (vertical)
+	{
+	    if (!(cmdmod.cmod_split & WSP_VERT))
+		cmod_split_modified = TRUE;
 	    cmdmod.cmod_split |= WSP_VERT;
+	}
 	ex_splitview(&split_ea);
+	if (cmod_split_modified)
+	    cmdmod.cmod_split &= ~WSP_VERT;
 	if (curwin == old_curwin)
 	{
 	    // split failed
@@ -756,6 +765,7 @@ term_start(
 	    --curbuf->b_nwindows;
 	    curbuf = old_curbuf;
 	    curwin->w_buffer = curbuf;
+	    curwin->w_cursor = save_cursor;
 	    ++curbuf->b_nwindows;
 	}
 	else if (vgetc_busy
@@ -853,13 +863,13 @@ ex_terminal(exarg_T *eap)
 	    else
 		opt.jo_term_api = NULL;
 	}
-	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("rows") && ep != NULL && SAFE_isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_ROWS;
 	    opt.jo_term_rows = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if (OPTARG_HAS("cols") && ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("cols") && ep != NULL && SAFE_isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_COLS;
 	    opt.jo_term_cols = atoi((char *)ep + 1);
@@ -1061,7 +1071,7 @@ expand_terminal_opt(
 	    FALSE);
 }
 
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 /*
  * Write a :terminal command to the session file to restore the terminal in
  * window "wp".
@@ -1420,6 +1430,10 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
 	    update_screen(UPD_VALID_NO_UPDATE);
+#if defined(FEAT_TABPANEL)
+	    if (redraw_tabpanel)
+		draw_tabpanel();
+#endif
 	    // update_screen() can be slow, check the terminal wasn't closed
 	    // already
 	    if (buffer == curbuf && curbuf->b_term != NULL)
@@ -2175,7 +2189,7 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
     }
 }
 
-#if defined(FEAT_TIMERS) || defined(PROTO)
+#if defined(FEAT_TIMERS)
 /*
  * Check if any terminal timer expired.  If so, copy text from the terminal to
  * the buffer.
@@ -2579,7 +2593,7 @@ term_get_highlight_id(term_T *term, win_T *wp)
     return syn_name2id(name);
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
     cursorentry_T *
 term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
 {
@@ -3426,7 +3440,8 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
     if (gap->ga_len < term->tl_buffer->b_p_twsl)
 	return;
 
-    int	todo = term->tl_buffer->b_p_twsl / 10;
+    int	todo = MAX(term->tl_buffer->b_p_twsl / 10,
+				     gap->ga_len - term->tl_buffer->b_p_twsl);
     int	i;
 
     curbuf = term->tl_buffer;
@@ -3443,7 +3458,23 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
 	    (sb_line_T *)gap->ga_data + todo,
 	    sizeof(sb_line_T) * gap->ga_len);
     if (update_buffer)
+    {
+	win_T *curwin_save = curwin;
+	win_T *wp = NULL;
+
 	term->tl_scrollback_scrolled -= todo;
+
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == term->tl_buffer)
+	    {
+		curwin = wp;
+		check_cursor();
+		update_topline();
+	    }
+	}
+	curwin = curwin_save;
+    }
 }
 
 /*
@@ -3607,15 +3638,15 @@ handle_bell(void *user UNUSED)
 }
 
 static VTermScreenCallbacks screen_callbacks = {
-  handle_damage,	// damage
-  handle_moverect,	// moverect
-  handle_movecursor,	// movecursor
-  handle_settermprop,	// settermprop
-  handle_bell,		// bell
-  handle_resize,	// resize
-  handle_pushline,	// sb_pushline
-  NULL,			// sb_popline
-  NULL			// sb_clear
+    handle_damage,		// damage
+    handle_moverect,		// moverect
+    handle_movecursor,		// movecursor
+    handle_settermprop,		// settermprop
+    handle_bell,		// bell
+    handle_resize,		// resize
+    handle_pushline,		// sb_pushline
+    NULL,			// sb_popline
+    NULL			// sb_clear
 };
 
 /*
@@ -3636,7 +3667,7 @@ term_after_channel_closed(term_T *term)
 	if (term->tl_finish == TL_FINISH_CLOSE)
 	{
 	    aco_save_T	aco;
-	    int		do_set_w_closing = term->tl_buffer->b_nwindows == 0;
+	    int		do_set_w_locked = term->tl_buffer->b_nwindows == 0;
 #ifdef FEAT_PROP_POPUP
 	    win_T	*pwin = NULL;
 
@@ -3667,12 +3698,12 @@ term_after_channel_closed(term_T *term)
 	    {
 		// Avoid closing the window if we temporarily use it.
 		if (is_aucmd_win(curwin))
-		    do_set_w_closing = TRUE;
-		if (do_set_w_closing)
-		    curwin->w_closing = TRUE;
+		    do_set_w_locked = TRUE;
+		if (do_set_w_locked)
+		    curwin->w_locked = TRUE;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-		if (do_set_w_closing)
-		    curwin->w_closing = FALSE;
+		if (do_set_w_locked)
+		    curwin->w_locked = FALSE;
 		aucmd_restbuf(&aco);
 	    }
 #ifdef FEAT_PROP_POPUP
@@ -3706,7 +3737,7 @@ term_after_channel_closed(term_T *term)
     return FALSE;
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * If the current window is a terminal in a popup window and the job has
  * finished, close the popup window and to back to the previous window.
@@ -3965,7 +3996,8 @@ update_system_term(term_T *term)
 	else
 	    pos.col = 0;
 
-	screen_line(curwin, term->tl_toprow + pos.row, 0, pos.col, Columns, 0);
+	screen_line(curwin, term->tl_toprow + pos.row, 0, pos.col, Columns, -1,
+									    0);
     }
 
     term->tl_dirty_row_start = MAX_ROW;
@@ -4088,7 +4120,7 @@ term_update_window(win_T *wp)
 #ifdef FEAT_MENU
 				+ winbar_height(wp)
 #endif
-				, wp->w_wincol, pos.col, wp->w_width,
+				, wp->w_wincol, pos.col, wp->w_width, -1,
 #ifdef FEAT_PROP_POPUP
 				popup_is_popup(wp) ? SLF_POPUP :
 #endif
@@ -4830,13 +4862,13 @@ parse_csi(
 }
 
 static VTermStateFallbacks state_fallbacks = {
-  NULL,		// control
-  parse_csi,	// csi
-  parse_osc,	// osc
-  NULL,		// dcs
-  NULL,		// apc
-  NULL,		// pm
-  NULL		// sos
+    NULL,		// control
+    parse_csi,		// csi
+    parse_osc,		// osc
+    NULL,		// dcs
+    NULL,		// apc
+    NULL,		// pm
+    NULL		// sos
 };
 
 /*
@@ -5065,7 +5097,7 @@ set_ref_in_term(int copyID)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = term->tl_job;
-	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
 	}
     return abort;
 }
@@ -5463,11 +5495,11 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 		    // use same attr as previous cell
 		    c = fgetc(fd);
 		}
-		else if (isdigit(c))
+		else if (SAFE_isdigit(c))
 		{
 		    // get the decimal attribute
 		    attr = 0;
-		    while (isdigit(c))
+		    while (SAFE_isdigit(c))
 		    {
 			attr = attr * 10 + (c - '0');
 			c = fgetc(fd);
@@ -5499,9 +5531,9 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 			    c = fgetc(fd);
 			    blue = (blue << 4) + hex2nr(c);
 			    c = fgetc(fd);
-			    if (!isdigit(c))
+			    if (!SAFE_isdigit(c))
 				dump_is_corrupt(&ga_text);
-			    while (isdigit(c))
+			    while (SAFE_isdigit(c))
 			    {
 				index = index * 10 + (c - '0');
 				c = fgetc(fd);
@@ -5565,7 +5597,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 		for (;;)
 		{
 		    c = fgetc(fd);
-		    if (!isdigit(c))
+		    if (!SAFE_isdigit(c))
 			break;
 		    count = count * 10 + (c - '0');
 		}
@@ -6163,8 +6195,16 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
     buf = term_get_buf(argvars, "term_getjob()");
     if (buf == NULL)
     {
-	rettv->v_type = VAR_SPECIAL;
-	rettv->vval.v_number = VVAL_NULL;
+	if (in_vim9script())
+	{
+	    rettv->v_type = VAR_JOB;
+	    rettv->vval.v_job = NULL;
+	}
+	else
+	{
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_NULL;
+	}
 	return;
     }
 
@@ -6283,7 +6323,7 @@ f_term_getsize(typval_T *argvars, typval_T *rettv)
  * "term_setsize(buf, rows, cols)" function
  */
     void
-f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_term_setsize(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf;
     term_T	*term;
@@ -6589,7 +6629,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv UNUSED)
     }
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 /*
  * "term_getansicolors(buf)" function
  */
@@ -6898,7 +6938,7 @@ term_send_eof(channel_T *ch)
 	}
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
     job_T *
 term_getjob(term_T *term)
 {
@@ -6906,24 +6946,10 @@ term_getjob(term_T *term)
 }
 #endif
 
-# if defined(MSWIN) || defined(PROTO)
+# if defined(MSWIN)
 
 ///////////////////////////////////////
 // 2. MS-Windows implementation.
-#ifdef PROTO
-typedef int COORD;
-typedef int DWORD;
-typedef int HANDLE;
-typedef int *DWORD_PTR;
-typedef int HPCON;
-typedef int HRESULT;
-typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
-typedef int SIZE_T;
-typedef int PSIZE_T;
-typedef int PVOID;
-typedef int BOOL;
-# define WINAPI
-#endif
 
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
 HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);
@@ -7044,7 +7070,11 @@ conpty_term_and_job_init(
     if (cmd_wchar == NULL)
 	goto failed;
     if (opt->jo_cwd != NULL)
+    {
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+	if (cwd_wchar == NULL)
+	    goto failed;
+    }
 
     win32_build_env(opt->jo_env, &ga_env, TRUE);
     env_wchar = ga_env.ga_data;
@@ -7246,8 +7276,6 @@ use_conpty(void)
     return has_conpty;
 }
 
-#  ifndef PROTO
-
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
 #define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
 #define WINPTY_MOUSE_MODE_FORCE		2
@@ -7272,7 +7300,6 @@ HANDLE (*winpty_agent_process)(void*);
 #define WINPTY_DLL "winpty.dll"
 
 static HINSTANCE hWinPtyDLL = NULL;
-#  endif
 
     static int
 dyn_winpty_init(int verbose)
@@ -7386,7 +7413,11 @@ winpty_term_and_job_init(
     if (cmd_wchar == NULL)
 	goto failed;
     if (opt->jo_cwd != NULL)
+    {
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+	if (cwd_wchar == NULL)
+	    goto failed;
+    }
 
     win32_build_env(opt->jo_env, &ga_env, TRUE);
     env_wchar = ga_env.ga_data;
@@ -7546,7 +7577,11 @@ failed:
 	char *msg = (char *)utf16_to_enc(
 				(short_u *)winpty_error_msg(winpty_err), NULL);
 
-	emsg(msg);
+	if (msg != NULL)
+	{
+	    emsg(msg);
+	    vim_free(msg);
+	}
 	winpty_error_free(winpty_err);
     }
     return FAIL;

@@ -1,4 +1,4 @@
-*usr_51.txt*	For Vim version 9.0.  Last change: 2022 Jun 03
+*usr_51.txt*	For Vim version 9.1.  Last change: 2024 Nov 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -352,8 +352,9 @@ was called from a mapping defined with ":noremap".
 DOCUMENTATION						*write-local-help*
 
 It's a good idea to also write some documentation for your plugin.  Especially
-when its behavior can be changed by the user.  See |add-local-help| for how
-they are installed.
+when its behavior can be changed by the user.  See |help-writing| for the
+syntax used by the help files and |add-local-help| for how local help files
+are installed.
 
 Here is a simple example for a plugin help file, called "typecorrect.txt": >
 
@@ -649,15 +650,13 @@ When you write a compiler file and put it in your personal runtime directory
 make the default file skip the settings.
 							*:CompilerSet*
 The second mechanism is to use ":set" for ":compiler!" and ":setlocal" for
-":compiler".  Vim defines the ":CompilerSet" user command for this.  However,
-older Vim versions don't, thus your plugin should define it then.  This is an
-example: >
+":compiler".  Vim defines the ":CompilerSet" user command for this.  This is
+an example: >
 
-  if exists(":CompilerSet") != 2
-    command -nargs=* CompilerSet setlocal <args>
-  endif
   CompilerSet errorformat&		" use the default 'errorformat'
   CompilerSet makeprg=nmake
+
+Note: arguments need to be escaped according to |option-backslash|.
 
 When you write a compiler plugin for the Vim distribution or for a system-wide
 runtime directory, use the mechanism mentioned above.  When

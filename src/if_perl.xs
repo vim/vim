@@ -48,8 +48,13 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-#if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+#if defined(PERLIO_LAYERS)
 # include <perliol.h>
+#endif
+
+#if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+// Copy/pasted from perl.h
+const char PL_memory_wrap[] = "panic: memory wrap";
 #endif
 
 /* Workaround for perl < 5.8.7 */
@@ -75,7 +80,6 @@
 #ifndef PROTO
 # ifndef __MINGW32__
 #  include "proto/if_perl.pro"
-#  include "proto/if_perlsfio.pro"
 # endif
 #endif
 
@@ -147,7 +151,7 @@ EXTERN_C void boot_DynaLoader(pTHX_ CV*);
 /*
  * For dynamic linked perl.
  */
-#if defined(DYNAMIC_PERL) || defined(PROTO)
+#if defined(DYNAMIC_PERL)
 
 # ifndef DYNAMIC_PERL /* just generating prototypes */
 #  ifdef MSWIN
@@ -192,7 +196,7 @@ typedef int perl_key;
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
 # endif
 # ifndef PROTO
-#  ifdef PERL_IMPLICIT_CONTEXT
+#  if defined(PERL_IMPLICIT_CONTEXT)
 #   define Perl_croak_nocontext dll_Perl_croak_nocontext
 #  endif
 #  define Perl_call_argv dll_Perl_call_argv
@@ -319,7 +323,7 @@ typedef int perl_key;
 # define Perl_av_fetch dll_Perl_av_fetch
 # define Perl_av_len dll_Perl_av_len
 # define Perl_sv_2nv_flags dll_Perl_sv_2nv_flags
-# if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+# if defined(PERLIO_LAYERS)
 #  define PerlIOBase_pushed dll_PerlIOBase_pushed
 #  define PerlIO_define_layer dll_PerlIO_define_layer
 # endif
@@ -352,7 +356,7 @@ static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const para
 						    __attribute__noreturn__;
 #  endif
 # endif
-# ifdef PERL_IMPLICIT_CONTEXT
+# if defined(PERL_IMPLICIT_CONTEXT)
 static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
 # endif
 static I32 (*Perl_dowantarray)(pTHX);
@@ -492,7 +496,7 @@ static SV * (*Perl_hv_iterval)(pTHX_ HV *, HE *);
 static SV** (*Perl_av_fetch)(pTHX_ AV *, SSize_t, I32);
 static SSize_t (*Perl_av_len)(pTHX_ AV *);
 static NV (*Perl_sv_2nv_flags)(pTHX_ SV *const, const I32);
-# if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+# if defined(PERLIO_LAYERS)
 static IV (*PerlIOBase_pushed)(pTHX_ PerlIO *, const char *, SV *, PerlIO_funcs *);
 static void (*PerlIO_define_layer)(pTHX_ PerlIO_funcs *);
 # endif
@@ -633,9 +637,9 @@ static struct {
 #  ifdef USE_ITHREADS
     {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #  endif
-# ifdef PERL_USE_THREAD_LOCAL
+#  ifdef PERL_USE_THREAD_LOCAL
     {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
-# endif
+#  endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
@@ -650,7 +654,7 @@ static struct {
     {"Perl_av_fetch", (PERL_PROC*)&Perl_av_fetch},
     {"Perl_av_len", (PERL_PROC*)&Perl_av_len},
     {"Perl_sv_2nv_flags", (PERL_PROC*)&Perl_sv_2nv_flags},
-# if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+# if defined(PERLIO_LAYERS)
     {"PerlIOBase_pushed", (PERL_PROC*)&PerlIOBase_pushed},
     {"PerlIO_define_layer", (PERL_PROC*)&PerlIO_define_layer},
 # endif
@@ -716,7 +720,7 @@ perl_enabled(int verbose)
 }
 #endif /* DYNAMIC_PERL */
 
-#if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+#if defined(PERLIO_LAYERS)
 static void vim_IOLayer_init(void);
 #endif
 
@@ -740,12 +744,7 @@ perl_init(void)
     perl_parse(perl_interp, xs_init, argc, argv, 0);
     perl_call_argv("VIM::bootstrap", (long)G_DISCARD, bootargs);
     VIM_init();
-#ifdef USE_SFIO
-    sfdisc(PerlIO_stdout(), sfdcnewvim());
-    sfdisc(PerlIO_stderr(), sfdcnewvim());
-    sfsetbuf(PerlIO_stdout(), NULL, 0);
-    sfsetbuf(PerlIO_stderr(), NULL, 0);
-#elif defined(PERLIO_LAYERS)
+#if defined(PERLIO_LAYERS)
     vim_IOLayer_init();
 #endif
 }
@@ -1368,7 +1367,7 @@ ex_perldo(exarg_T *eap)
 	PUSHMARK(sp);
 	perl_call_pv("VIM::perldo", G_SCALAR | G_EVAL);
 	str = SvPV(GvSV(PL_errgv), length);
-	if (length || curbuf != was_curbuf)
+	if (length || curbuf != was_curbuf || i > curbuf->b_ml.ml_line_count)
 	    break;
 	SPAGAIN;
 	if (SvTRUEx(POPs))
@@ -1394,7 +1393,7 @@ err:
     }
 }
 
-#if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
+#if defined(PERLIO_LAYERS)
 typedef struct {
     struct _PerlIO base;
     int attr;
@@ -1465,7 +1464,7 @@ vim_IOLayer_init(void)
     (void)eval_pv(   "binmode(STDOUT, ':Vim')"
                 "  && binmode(STDERR, ':Vim(ErrorMsg)');", 0);
 }
-#endif /* PERLIO_LAYERS && !USE_SFIO */
+#endif /* PERLIO_LAYERS */
 
 #ifdef DYNAMIC_PERL
 
@@ -1474,6 +1473,19 @@ vim_IOLayer_init(void)
 // would cause linking errors in dynamic builds as we don't link against Perl
 // during build time. Manually fix it here by redirecting these functions
 // towards the dynamically loaded version.
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
+#  undef Perl_croak_nocontext
+void Perl_croak_nocontext(const char *pat, ...)
+{
+    dTHX;
+    va_list args;
+    va_start(args, pat);
+    (*dll_Perl_croak_nocontext)(pat, &args);
+    NOT_REACHED; /* NOTREACHED */
+    va_end(args);
+}
+# endif
 
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 #  undef Perl_sv_free2

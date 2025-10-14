@@ -1,8 +1,6 @@
 " Tests for startup using utf-8.
 
-source check.vim
-source shared.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_read_stdin_utf8()
   let linesin = ['テスト', '€ÀÈÌÒÙ']
@@ -53,6 +51,33 @@ func Test_read_fifo_utf8()
   if RunVim(before, after, '<(cat Xtestin)')
     let lines = readfile('Xtestout')
     call assert_equal(linesin, lines)
+  else
+    call assert_equal('', 'RunVim failed.')
+  endif
+
+  call delete('Xtestout')
+endfunc
+
+func Test_detect_fifo()
+  CheckUnix
+  " Using bash/zsh's process substitution.
+  if executable('bash')
+    set shell=bash
+  elseif executable('zsh')
+    set shell=zsh
+  else
+    throw 'Skipped: bash or zsh is required'
+  endif
+  let linesin = ['one', 'two']
+  call writefile(linesin, 'Xtestin_fifo', 'D')
+  let after = [
+	\ 'call writefile(split(execute(":mess"), "\\n"), "Xtestout")',
+	\ 'quit!',
+	\ ]
+  if RunVim([], after, '<(cat Xtestin_fifo)')
+    let lines = readfile('Xtestout')
+    call assert_match('\[fifo\]', lines[0])
+    call assert_match('\[fifo\]', lines[1])
   else
     call assert_equal('', 'RunVim failed.')
   endif

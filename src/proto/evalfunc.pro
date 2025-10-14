@@ -23,6 +23,7 @@ void execute_common(typval_T *argvars, typval_T *rettv, int arg_off);
 void f_exists(typval_T *argvars, typval_T *rettv);
 void f_has(typval_T *argvars, typval_T *rettv);
 int dynamic_feature(char_u *feature);
+int indexof_eval_expr(typval_T *expr);
 void f_len(typval_T *argvars, typval_T *rettv);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 void range_list_materialize(list_T *list);

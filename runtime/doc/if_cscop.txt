@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 9.0.  Last change: 2022 Jan 08
+*if_cscop.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -255,7 +255,7 @@ started will have no effect!
 					    *cscopequickfix* *csqf* *E469*
 {not available when compiled without the |+quickfix| feature}
 'cscopequickfix' specifies whether to use quickfix window to show cscope
-results.  This is a list of comma-separated values. Each item consists of
+results.  This is a list of comma-separated values.  Each item consists of
 |cscope-find| command (s, g, d, c, t, e, f, i or a) and flag (+, - or 0).
 '+' indicates that results must be appended to quickfix window,
 '-' implies previous results clearance, '0' or command absence - don't use
@@ -358,9 +358,9 @@ system calls: fork(), pipe(), execl(), waitpid().  This means it is mostly
 limited to Unix systems.
 
 Additionally Cscope support works for Win32.  For more information and a
-cscope version for Win32 see:
+cscope version for Win32 see (link seems dead):
 
-	http://iamphet.nm.ru/cscope/index.html
+	iamphet.nm.ru/cscope/index.html
 
 The DJGPP-built version from http://cscope.sourceforge.net is known to not
 work with Vim.

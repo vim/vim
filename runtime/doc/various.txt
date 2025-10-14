@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
+*various.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,9 +19,8 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 							*:redr* *:redraw*
 :redr[aw][!]		Redraw the screen right now.  When ! is included it is
 			cleared first.
-			Useful to update the screen halfway executing a script
-			or function.  Also when halfway a mapping and
-			'lazyredraw' is set.
+			It can be used to redraw the screen in a script
+			or function (or a mapping if 'lazyredraw' is set).
 
 						*:redraws* *:redrawstatus*
 :redraws[tatus][!]	Redraw the status line of the current window.  When !
@@ -35,6 +34,11 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 						*:redrawt* *:redrawtabline*
 :redrawt[abline]	Redraw the tabline.  Useful to update the tabline when
 			'tabline' includes an item that doesn't trigger
+			automatic updating.
+
+				*E1547* *:redrawtabp* *:redrawtabpanel*
+:redrawtabp[anel]	Redraw the tabpanel  Useful to update the tabpanel
+			when 'tabpanel' includes an item that doesn't trigger
 			automatic updating.
 
 							*N<Del>*
@@ -72,7 +76,7 @@ ga			Print the ascii value of the character under the
 			If the character can be inserted as a digraph, also
 			output the two characters that can be used to create
 			the character:
-			    <ö> 246, Hex 00f6, Oct 366, Digr o: ~
+				<ö> 246, Hex 00f6, Oct 366, Digr o: ~
 			This shows you can type CTRL-K o : to insert ö.
 
 							*g8*
@@ -99,7 +103,9 @@ g8			Print the hex values of the bytes used in the
 
 						*:p* *:pr* *:print* *E749*
 :[range]p[rint] [flags]
-			Print [range] lines (default current line).
+			Print [range] lines (default current line).  Can also
+			be spelled `:[range]|` due to Vi compatibility (see
+			|:bar|).  Gives an error in an empty buffer.
 			Note: If you are looking for a way to print your text
 			on paper see |:hardcopy|.  In the GUI you can use the
 			File.Print menu entry.
@@ -138,12 +144,18 @@ g8			Print the hex values of the bytes used in the
 :[range]# [count] [flags]
 			synonym for :number.
 
-							*:#!*
+							*:#!* *vim-shebang*
 :#!{anything}		Ignored, so that you can start a Vim script with: >
 				#!vim -S
-				echo "this is a Vim script"
-				quit
+				let mylogbook='$HOME/logbook.md'
+				exe $':e {mylogbook}'
+				$
+				put ='## ' .. strftime('%d. %b %Y')
+				norm! o
 <
+			Make that script executable and run it to create a
+			new diary entry.
+
 							*:z* *E144*
 :[range]z[+-^.=][count]	Display several lines of text surrounding the line
 			specified with [range], or around the current line
@@ -249,7 +261,19 @@ g8			Print the hex values of the bytes used in the
 
 							*:!cmd* *:!*
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
-			and 'shelltype' option.
+			and 'shelltype' option.  For the filter command, see
+			|:range!|.
+
+			Vim builds command line using options 'shell', 'shcf',
+			'sxq' and 'shq' in the following order:
+			`&sh &shcf &sxq &shq {cmd} &shq &sxq`
+			So setting both 'sxq' and 'shq' is possible but rarely
+			useful.  Additional escaping inside `{cmd}` may also
+			be due to 'sxe' option.
+
+			Also, all |cmdline-special| characters in {cmd} are
+			replaced by Vim before passing them to shell.
+
 							*E34*
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
@@ -300,7 +324,10 @@ g8			Print the hex values of the bytes used in the
 			CTRL-L or ":redraw!" if the command did display
 			something.  However, this depends on what the |t_ti|
 			and |t_te| termcap entries are set to.
-			Also see |shell-window|.
+
+			Hint: use |:terminal| command if you want to run {cmd}
+			in Vim window.  `:term ++shell ++close {cmd}` could
+			serve as close approximation to what `:!{cmd}` does.
 
 							*:!!*
 :!!			Repeat last ":!{cmd}".
@@ -348,20 +375,20 @@ T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
 m  *+channel*		inter process communication |channel|
-T  *+cindent*		|'cindent'|, C indenting; Always enabled
+T  *+cindent*		'cindent', C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
-T  *+cmdline_info*	|'showcmd'| and |'ruler'|; Always enabled since
+T  *+cmdline_info*	'showcmd' and 'ruler'; Always enabled since
 			9.0.0747
 T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
-T  *+comments*		|'comments'| support
+T  *+comments*		'comments' support
 N  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 H  *+cscope*		|cscope| support
-T  *+cursorbind*	|'cursorbind'| support
+T  *+cursorbind*	'cursorbind' support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
 N  *+dialog_gui*	Support for |:confirm| with GUI dialog.
@@ -369,12 +396,12 @@ N  *+dialog_con*	Support for |:confirm| with console dialog.
 N  *+dialog_con_gui*	Support for |:confirm| with GUI and console dialog.
 N  *+diff*		|vimdiff| and 'diff'
 N  *+digraphs*		|digraphs| *E196*
-   *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
+   *+directx*		Win32 GUI only: DirectX and 'renderoptions'
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 H  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
 T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
-N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
+N  *+extra_search*	'hlsearch' and 'incsearch' options.
 -  *+farsi*		Removed: |farsi| language
 T  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|  Always enabled since
 			9.0.265
@@ -397,12 +424,12 @@ T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
 T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
-H  *+keymap*		|'keymap'|
+H  *+keymap*		'keymap'
 N  *+lambda*		|lambda| and |closure|
-H  *+langmap*		|'langmap'|
+H  *+langmap*		'langmap'
 N  *+libcall*		|libcall()|
-N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
-T  *+lispindent*	|'lisp'|
+N  *+linebreak*		'linebreak', 'breakat' and 'showbreak'
+T  *+lispindent*	'lisp'
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 T  *+localmap*		Support for mappings local to a buffer |:map-local|
@@ -412,7 +439,7 @@ N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
 T  *+modify_fname*	|filename-modifiers|
 T  *+mouse*		Mouse handling |mouse-using|
-N  *+mouseshape*	|'mouseshape'|
+N  *+mouseshape*	'mouseshape'
 N  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
@@ -454,12 +481,14 @@ m  *+python3/dyn-stable*
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
-H  *+rightleft*		Right to left typing |'rightleft'|
+H  *+rightleft*		Right to left typing 'rightleft'
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-T  *+scrollbind*	|'scrollbind'|
+T  *+scrollbind*	'scrollbind'
 N  *+signs*		|:sign|
-T  *+smartindent*	|'smartindent'|
+T  *+smartindent*	'smartindent'
+N  *+socketserver*	Unix only: socket server backend for clientserver
+			functionality
 H  *+sodium*		compiled with libsodium for better encryption support
 H  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
@@ -469,6 +498,7 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 -  *+sun_workshop*	Removed: |workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
+H  *+tabpanel*		Support for |tabpanel|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 -  *+tag_old_static*	Removed; method for static tags |tag-old-static|
 -  *+tag_any_white*	Removed; was to allow any white space in tags files
@@ -486,20 +516,25 @@ T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
-H  *+vartabs*		Variable-width tabstops. |'vartabstop'|
+H  *+vartabs*		Variable-width tab stops. 'vartabstop'
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
 T  *+vim9script*	|Vim9| script
-N  *+viminfo*		|'viminfo'|
-T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
+N  *+viminfo*		'viminfo'
+T  *+virtualedit*	'virtualedit' Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
-T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
-T  *+wildmenu*		|'wildmenu'|  Always enabled since 9.0.0279
+N  *+wayland*		Unix only: support for the Wayland protocol.
+N  *+wayland_clipboard*	Unix only: support for Wayland selections/clipboard.
+N  *+wayland_focus_steal*
+			Unix only: support for Wayland clipboard on
+			compositors without a data control protocol
+T  *+wildignore*	'wildignore'  Always enabled since 9.0.0278
+T  *+wildmenu*		'wildmenu'  Always enabled since 9.0.0279
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
-m  *+writebackup*	|'writebackup'| is default on
+m  *+writebackup*	'writebackup' is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
 N  *+xattr*		compiled with extended attribute support (Linux only)
@@ -551,13 +586,13 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] @{a-z}>>	Append messages to register {a-z}.
 
 :redi[r] @*>
-:redi[r] @+>		Redirect messages to the selection or clipboard. For
+:redi[r] @+>		Redirect messages to the selection or clipboard.  For
 			backward compatibility, the ">" after the register
-			name can be omitted. See |quotestar| and |quoteplus|.
+			name can be omitted.  See |quotestar| and |quoteplus|.
 :redi[r] @*>>
 :redi[r] @+>>		Append messages to the selection or clipboard.
 
-:redi[r] @">		Redirect messages to the unnamed register. For
+:redi[r] @">		Redirect messages to the unnamed register.  For
 			backward compatibility, the ">" after the register
 			name can be omitted.
 :redi[r] @">>		Append messages to the unnamed register.
@@ -593,21 +628,23 @@ N  *+X11*		Unix only: can restore window title |X11|
 <			If the [!] is given, restrict the output of {command}
 			to lines that do NOT match {pattern}.
 
-			{pattern} is a Vim search pattern.  Instead of enclosing
-			it in / any non-ID character (see |'isident'|) can be
-			used, so long as it does not appear in {pattern}.
+			{pattern} is a Vim search pattern.  Instead of
+			enclosing it in / any non-ID character (see 'isident')
+			can be used, so long as it does not appear in
+			{pattern}.
 			Without the enclosing character the pattern cannot
-			include the bar character. 'ignorecase' is not used.
+			include the bar character.  'ignorecase' is not used.
 
 			The pattern is matched against the relevant part of
-			the output, not necessarily the whole line. Only some
+			the output, not necessarily the whole line.  Only some
 			commands support filtering, try it out to check if it
-			works. Some of the commands that support filtering:
+			works.  Some of the commands that support filtering:
 			   |:#|          - filter whole line
 			   |:clist|      - filter by file name or module name
 			   |:command|    - filter by command name
 			   |:files|      - filter by file name
 			   |:highlight|  - filter by highlight group
+			   |:history|    - filter by history commands
 			   |:jumps|      - filter by file name
 			   |:let|        - filter by variable name
 			   |:list|       - filter whole line
@@ -670,7 +707,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 						*:verb* *:verbose*
 :[count]verb[ose] {command}
 			Execute {command} with 'verbose' set to [count].  If
-			[count] is omitted one is used. ":0verbose" can be
+			[count] is omitted one is used.  ":0verbose" can be
 			used to set 'verbose' to zero.
 			The additional use of ":silent" makes messages
 			generated but not displayed.
@@ -744,18 +781,17 @@ K			Run a program to lookup the keyword under the
 			MS-Windows).  "gs" stands for "goto sleep".
 			While sleeping the cursor is positioned in the text,
 			if at a visible position.
-			Also process the received netbeans messages. {only
-			available when compiled with the |+netbeans_intg|
-			feature}
+			Queued messages and timers (|+timers|) are processed
+			during the sleep as well.
 
 							*:sl!* *:sleep!*
 :[N]sl[eep]! [N][m]	Same as above, but hide the cursor.
 
 							*:xrestore* *:xr*
-:xr[estore] [display]	Reinitializes the connection to the X11 server. Useful
-			after the X server restarts, e.g. when running Vim for
-			long time inside screen/tmux and connecting from
-			different machines.
+:xr[estore] [display]	Reinitializes the connection to the X11 server.
+			Useful after the X server restarts, e.g. when running
+			Vim for long time inside screen/tmux and connecting
+			from different machines.
 			[display] should be in the format of the $DISPLAY
 			environment variable (e.g. "localhost:10.0")
 			If [display] is	omitted, then it reinitializes the
@@ -763,7 +799,15 @@ K			Run a program to lookup the keyword under the
 			was used for the previous execution of this command.
 			If the value was never specified, then it uses the
 			value of $DISPLAY environment variable as it was when
-			Vim was started.
+			Vim was started.  This will also update |v:clipmethod|.
+			{only available when compiled with the
+			|+xterm_clipboard| feature}
+
+							*:clipreset* *:clip*
+:clip[reset]		Attempts to choose a new method for accessing the
+			clipboard, using the 'clipmethod' option.  This is
+			useful when the current method has become unavailable,
+			and you want to try using another method.
 			{only available when compiled with the |+clipboard|
 			feature}
 

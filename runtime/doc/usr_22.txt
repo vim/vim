@@ -1,4 +1,4 @@
-*usr_22.txt*	For Vim version 9.0.  Last change: 2020 Mar 28
+*usr_22.txt*	For Vim version 9.1.  Last change: 2025 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -27,23 +27,25 @@ Vim has a plugin that makes it possible to edit a directory.  Try this: >
 	:edit .
 
 Through the magic of autocommands and Vim scripts, the window will be filled
-with the contents of the directory.  It looks like this:
+with the contents of the directory.  It looks like this (slightly cleaned up
+so that it fits within 80 chars): >
 
-" ============================================================================ ~
-" Netrw Directory Listing                                        (netrw v109) ~
-"   Sorted by      name ~
-"   Sort sequence: [\/]$,\.h$,\.c$,\.cpp$,*,\.info$,\.swp$,\.o$\.obj$,\.bak$ ~
-"   Quick Help: <F1>:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec ~
-" ============================================================================ ~
-../ ~
-./ ~
-check/ ~
-Makefile ~
-autocmd.txt ~
-change.txt ~
-eval.txt~ ~
-filetype.txt~ ~
-help.txt.info ~
+  " ===========================================================================
+  " Netrw Directory Listing                                        (netrw v180)
+  "   /path/to/vim/runtime/doc
+  "   Sorted by      name
+  "   Sort sequence: [\/]$,*,\(\.bak\|\~\|\.o\|\.h\|\.info\|\.swp\)[*@]\=$
+  "   Quick Help: <F1>:help -:go up dir D:delete R:rename s:sort-by x:special
+  " ===========================================================================
+  ../
+  ./
+  check/
+  Makefile
+  autocmd.txt
+  change.txt
+  eval.txt
+  filetype.txt
+  help.txt.info
 
 You can see these items:
 
@@ -214,11 +216,11 @@ directory, it will go back to using the shared directory.
 TAB LOCAL DIRECTORY
 
 When you open a new tab page, it uses the directory of the window in the
-previous tab page from which the new tab page was opened. You can change the
-directory of the current tab page using the `:tcd` command. All the windows in
+previous tab page from which the new tab page was opened.  You can change the
+directory of the current tab page using the `:tcd` command.  All the windows in
 a tab page share this directory except for windows with a window-local
-directory. Any new windows opened in this tab page will use this directory as
-the current working directory. Using a `:cd` command in a tab page will not
+directory.  Any new windows opened in this tab page will use this directory as
+the current working directory.  Using a `:cd` command in a tab page will not
 change the working directory of tab pages which have a tab local directory.
 When the global working directory is changed using the `:cd` command in a tab
 page, it will also change the current tab page working directory.

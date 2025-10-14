@@ -105,6 +105,8 @@ typedef enum {
     ISN_PUSHCLASS,	// push class, uses isn_arg.classarg
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
 			// -1 for null_list
+    ISN_NEWTUPLE,	// push tuple from stack items, size is isn_arg.number
+			// -1 for null_list
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 			// -1 for null_dict
     ISN_NEWPARTIAL,	// push NULL partial
@@ -149,6 +151,7 @@ typedef enum {
 
     // more expression operations
     ISN_ADDLIST,    // add two lists
+    ISN_ADDTUPLE,   // add two tuples
     ISN_ADDBLOB,    // add two blobs
 
     // operation with two arguments; isn_arg.op.op_type is exprtype_T
@@ -165,10 +168,10 @@ typedef enum {
     ISN_COMPARESTRING,
     ISN_COMPAREBLOB,
     ISN_COMPARELIST,
+    ISN_COMPARETUPLE,
     ISN_COMPAREDICT,
     ISN_COMPAREFUNC,
     ISN_COMPAREANY,
-    ISN_COMPARECLASS,
     ISN_COMPAREOBJECT,
 
     // expression operations
@@ -178,6 +181,8 @@ typedef enum {
     ISN_LISTAPPEND, // append to a list, like add()
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_TUPLEINDEX,  // [expr] tuple index
+    ISN_TUPLESLICE,  // [expr:expr] tuple slice
     ISN_BLOBINDEX,  // [expr] blob index
     ISN_BLOBSLICE,  // [expr:expr] blob slice
     ISN_ANYINDEX,   // [expr] runtime index
@@ -201,6 +206,7 @@ typedef enum {
     ISN_USEDICT,    // use or clear dict saved by ISN_MEMBER/ISN_STRINGMEMBER
 
     ISN_PUT,	    // ":put", uses isn_arg.put
+    ISN_IPUT,	    // ":iput", uses isn_arg.put
 
     ISN_CMDMOD,	    // set cmdmod
     ISN_CMDMOD_REV, // undo ISN_CMDMOD
@@ -219,6 +225,8 @@ typedef enum {
 
     ISN_CEXPR_AUCMD, // first part of :cexpr  isn_arg.number is cmdidx
     ISN_CEXPR_CORE,  // second part of :cexpr, uses isn_arg.cexpr
+
+    ISN_SCRIPTCTX_SET, // set script context for expression evaluation
 
     ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
@@ -239,8 +247,9 @@ typedef struct {
 // arguments to ISN_METHODCALL
 typedef struct {
     class_T *cmf_itf;	    // interface used
-    int	    cmf_idx;	    // index in "def_functions" for ISN_DCALL
+    int	    cmf_idx;	    // index in "def_functions" for ISN_METHODCALL
     int	    cmf_argcount;   // number of arguments on top of stack
+    int	    cmf_is_super;   // doing "super.Func", use cmf_itf, not cmf_idx
 } cmfunc_T;
 
 // arguments to ISN_PCALL
@@ -461,7 +470,7 @@ typedef struct {
 // arguments to ISN_2STRING and ISN_2STRING_ANY
 typedef struct {
     int		offset;
-    int		tolerant;
+    int		flags;
 } tostring_T;
 
 // arguments to ISN_2BOOL
@@ -570,6 +579,7 @@ struct isn_S {
 	classmember_T	    classmember;
 	storeindex_T	    storeindex;
 	lockunlock_T	    lockunlock;
+	sctx_T		    setsctx;
     } isn_arg;
 };
 
@@ -781,6 +791,7 @@ typedef enum {
     dest_vimvar,
     dest_class_member,
     dest_script,
+    dest_script_v9,
     dest_reg,
     dest_expr,
 } assign_dest_T;
@@ -881,3 +892,10 @@ typedef enum {
 
 // flags for call_def_function()
 #define DEF_USE_PT_ARGV	    1	// use the partial arguments
+
+// Flag used for conversion to string by may_generate_2STRING()
+#define TOSTRING_NONE		0x0
+// Convert a List to series of values separated by newline
+#define TOSTRING_INTERPOLATE	0x1
+// Convert a List to a textual representation of the list "[...]"
+#define TOSTRING_TOLERANT	0x2

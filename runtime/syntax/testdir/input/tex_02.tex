@@ -1,0 +1,11 @@
+\documentclass{article}
+\newcommand{\foo}{}
+\renewcommand*{\foo}[1]{#10}
+\providecommand{\foo}[1][default]{#11}
+\newenvironment*{baz}{START}{STOP}
+\renewenvironment{baz}[1]{HEAD of #12:}{TAIL}
+\renewenvironment*{baz}[1][default]{BEGINNING of #12:}{END}
+\begin{document}
+\foo{TeX}  % -> TeX0
+\begin{baz} tex \end{baz}  % -> BEGINNING of default2:tex END
+\end{document}

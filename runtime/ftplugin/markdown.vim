@@ -1,7 +1,8 @@
 " Vim filetype plugin
 " Language:     Markdown
 " Maintainer:   Tim Pope <https://github.com/tpope/vim-markdown>
-" Last Change:  2022 Oct 13
+" Last Change:  2023 Dec 28
+"               2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin")
   finish
@@ -12,7 +13,7 @@ runtime! ftplugin/html.vim ftplugin/html_*.vim ftplugin/html/*.vim
 let s:keepcpo= &cpo
 set cpo&vim
 
-setlocal comments=fb:*,fb:-,fb:+,n:> commentstring=<!--%s-->
+setlocal comments=fb:*,fb:-,fb:+,n:> commentstring=<!--\ %s\ -->
 setlocal formatoptions+=tcqln formatoptions-=r formatoptions-=o
 setlocal formatlistpat=^\\s*\\d\\+\\.\\s\\+\\\|^\\s*[-*+]\\s\\+\\\|^\\[^\\ze[^\\]]\\+\\]:\\&^.\\{4\\}
 
@@ -35,7 +36,7 @@ if !exists("g:no_plugin_maps") && !exists("g:no_markdown_maps")
 endif
 
 function! s:NotCodeBlock(lnum) abort
-  return synIDattr(synID(a:lnum, 1, 1), 'name') !=# 'markdownCode'
+  return synIDattr(synID(a:lnum, 1, 1), 'name') !=# 'markdownCodeBlock'
 endfunction
 
 function! MarkdownFold() abort

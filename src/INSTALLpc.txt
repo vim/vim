@@ -1,4 +1,4 @@
-INSTALLpc.txt - Installation of Vim on PC
+INSTALLpc.txt - Installation of Vim on PC - Last Update: 2025 Aug 10
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
@@ -42,7 +42,7 @@ Contents:
 
 
 The currently recommended way (that means it has been verified to work) is
-using the "Visual Studio 2022 Community Edition" installation.  This doesn't 
+using the "Visual Studio 2022 Community Edition" installation.  This doesn't
 include the SDK for older Windows versions (95 - XP), see "OLDER VERSIONS"
 below for that.
 
@@ -52,7 +52,7 @@ below for that.
 
 We do not provide download links, since Microsoft keeps changing them.  You
 can search for "Visual Studio 2022 Community Edition", for example.  You will
-need to create a Microsoft account (it's free).  You need to download the 
+need to create a Microsoft account (it's free).  You need to download the
 "DVD", and execute the installer from it.
 
 When installing "Visual Studio 2022 Community Edition" or "Build Tools for
@@ -183,7 +183,9 @@ src/INSTALLpc.txt file for instructions.
 2. MSYS2 with MinGW
 ===================
 
-2.1. Setup the basic msys2 environment
+2.1 Buidling x86 32bit or 64bit versions.
+
+2.1.1. Setup the basic msys2 environment
 
 Go to the official page of MSYS2: https://www.msys2.org
 Download an installer:
@@ -208,7 +210,7 @@ If pacman complains that `catgets` and `libcatgets` conflict with another
 package, select `y` to remove them.
 
 
-2.2. Install additional packages for building Vim
+2.1.2. Install additional packages for building Vim
 
 The following package groups are required for building Vim:
 
@@ -230,7 +232,7 @@ Or you can use the `pacboy` command to avoid long package names:
 
 The suffix ":" means that it disables the package name translation.
 The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
-to install only i686, and the ":x" suffix to install only x86_64.
+to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
 (See `pacboy help` for the help.)
 
 See also the pacman page in ArchWiki for the general usage of pacman:
@@ -241,7 +243,7 @@ MSYS2 has its own git package, and you can also install it via pacman:
     $ pacman -S git
 
 
-2.3. Keep the build environment up-to-date
+2.1.3. Keep the build environment up-to-date
 
 After you have installed the build environment, you may want to keep it
 up-to-date (E.g. always use the latest GCC).
@@ -249,12 +251,14 @@ In that case, you just need to execute the command:
     $ pacman -Syu
 
 
-2.4. Build Vim
+2.1.4. Build Vim
 
 Select one of the following icon from the Start Menu:
 
 * MSYS2 MinGW 32-bit (To build 32-bit versions of Vim)
 * MSYS2 MinGW 64-bit (To build 64-bit versions of Vim)
+
+Before building look through notes for MinGW in part 3 below.
 
 Go to the source directory of Vim, then execute the make command.  E.g.:
 
@@ -274,7 +278,7 @@ This command is in msys32.bat.  Or for the 64 bit compiler use msys64.bat:
 If you have msys64 in another location you will need to adjust the paths for
 that.
 
-2.5. Build Vim with Clang
+2.1.5. Build Vim with Clang
 
 The following package group is required for building Vim with Clang:
 
@@ -299,6 +303,71 @@ To build Vim with the address sanitizer (ASAN), execute the following command:
     CXX=clang++
     make -f Make_ming.mak DEBUG=yes ASAN=yes
 
+2.2 Buidling an Arch64 version of Vim
+
+2.2.1. Setup the basic msys2 environment
+
+See also https://www.msys2.org/wiki/arm64/
+Go to the official page of MSYS2: https://www.msys2.org
+
+Download the self-extracting archive:
+
+* msys2-base-x86_64-latest.sfx.exe
+
+Execute the self-extracting archive into a folder of your choice.
+In the extracted folder, run clangarm64.exe
+This will open a MSYS2 terminal window for you.
+
+Execute:
+    $ pacman -Syu
+
+And restart MSYS2 console. Then execute:
+    $ pacman -Su
+
+
+2.2.2. Install additional packages for building Vim
+
+    $ pacman -S mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-toolchain base-devel git
+
+Or you can use the `pacboy` command to avoid long package names:
+
+    $ pacboy -S base-devel: toolchain:a
+
+The suffix ":" means that it disables the package name translation.
+The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
+to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
+(See `pacboy help` for the help.)
+
+See also the pacman page in ArchWiki for the general usage of pacman:
+    https://wiki.archlinux.org/index.php/pacman
+
+2.2.3. Keep the build environment up-to-date
+
+After you have installed the build environment, you may want to keep it
+up-to-date (E.g. always use the latest GCC).
+In that case, you just need to execute the command:
+    $ pacman -Syu
+
+
+2.2.4. Build Vim
+
+Before building look through notes for MinGW in part 3 below.
+
+Go to the source directory of Vim, then execute the make command.  E.g.:
+
+    CC=clang
+    CXX=clang++
+    make -f Make_ming.mak
+    make -f Make_ming.mak GUI=yes
+    make -f Make_ming.mak GUI=no DEBUG=yes
+
+NOTE: you can't execute vim.exe in the MSYS2 console, open a normal Windows
+console for that.
+
+To build Vim with the address sanitizer (ASAN), execute the following command:
+
+    make -f Make_ming.mak DEBUG=yes ASAN=yes
+
 3. MinGW
 ========
 
@@ -319,6 +388,18 @@ Or a compiler provided on msys2:
 The original 'mingw32' compiler is outdated, and may no longer work:
 
     http://www.mingw.org/
+
+Please note, newer versions of Windows (I believe starting with Win10)
+offer support for UCRT C-library in addition to traditional MSVCRT. As result,
+one may find 2 flavors of MinGW: one compiling against UCRT and another compiling
+against MSVCRT. Currently VIM comes with libXpm.a compiled against MSVCRT,
+so an attempt to build VIM against UCRT will fail with:
+
+    undefined reference to __imp___iob_func
+
+In which case, if one does not need support for XPM, then argument XPM=no can be
+added to make-command. If support is needed, then another flavor of MinGW must
+be used.
 
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
@@ -349,10 +430,17 @@ Change directory to 'vim\src':
 
 and you type:
 
-    mingw32-make -f Make_ming.mak gvim.exe
+    mingw32-make -f Make_ming.mak ARCH=x86-64 gvim.exe
+
+Note, ARCH is necessary if you don't have the sed command in your $PATH. Just
+make sure that the correct value is used with ARCH. In the example above the
+value corresponds to 64-bit architecture. For 32-bit the value is "i686".
 
 After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
 directory.
+
+If you also want to get xxd.exe, install.exe etc. then just remove "gvim.exe"
+from the make-command.
 
 You should not need to do *any* editing of any files to get vim compiled this
 way.  If, for some reason, you want the console-mode-only version of vim (this
@@ -368,7 +456,7 @@ found at
 As of 2011, UPX still does not support compressing 64-bit EXE's; if you have
 built a 64-bit vim then an alternative to UPX is 'MPRESS'. MPRESS can be found
 at:
-    http://www.matcode.com/mpress.htm
+    matcode.com/mpress.htm (now a dead link)
 
 
 ADDITION: NLS support with MinGW
@@ -383,7 +471,7 @@ You need to uncomment lines in Make_ming.mak to have NLS defined.
 =========
 
 Use Make_cyg.mak with Cygwin's GCC. See
-    http://users.skynet.be/antoine.mechelynck/vim/compile.htm
+    (now dead) users.skynet.be/antoine.mechelynck/vim/compile.htm
 
 With Cygnus gcc you should use the Unix Makefile instead (you need to get the
 Unix archive then).  Then you get a Cygwin application (feels like Vim is
@@ -671,12 +759,12 @@ When building, you need to set the following variables:
 E.g. When using MSVC (as one line):
 
     nmake -f Make_mvc.mak
-        PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
+        PERL=C:\StrawberryPerl\perl DYNAMIC_PERL=yes PERL_VER=522
 
 Or when using MinGW (as one line):
 
     mingw32-make -f Make_ming.mak
-        PERL=C:/Perl DYNAMIC_PERL=yes PERL_VER=522
+        PERL=C:/StrawberryPerl/perl DYNAMIC_PERL=yes PERL_VER=522
 
 
 11. Building with Ruby support
@@ -915,45 +1003,45 @@ work on MS-DOS because of the limited amount of memory available.
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
 using Git, Mercurial or by downloading them as a unix tar file, you must
-first create a "vim90" directory.  If you instead downloaded the sources as
+first create a "vim91" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
 correct directory structure.
 
-  A.  Create a Vim "runtime" subdirectory named "vim90"
+  A.  Create a Vim "runtime" subdirectory named "vim91"
   -----------------------------------------------------
   If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim90".
+  directories and create a new subdirectory named "vim91".
 
-  Copy the "runtime" files into "vim90":
-     copy runtime\* vim90
-     xcopy /s runtime\* vim90
+  Copy the "runtime" files into "vim91":
+     copy runtime\* vim91
+     xcopy /s runtime\* vim91
 
-  B.  Copy the new binaries into the "vim90" directory
+  B.  Copy the new binaries into the "vim91" directory
   ----------------------------------------------------
   Regardless of how you installed the Vim sources, you need to copy the
-  new binaries you created above into "vim90":
+  new binaries you created above into "vim91":
 
-     copy src\*.exe vim90
-     copy src\tee\tee.exe vim90
-     copy src\xxd\xxd.exe vim90
+     copy src\*.exe vim91
+     copy src\tee\tee.exe vim91
+     copy src\xxd\xxd.exe vim91
 
   To install the "Edit with Vim" popup menu, you need both 32-bit and 64-bit
-  versions of gvimext.dll.  They should be copied to "vim90\GvimExt32" and
-  "vim90\GvimExt64" respectively.
+  versions of gvimext.dll.  They should be copied to "vim91\GvimExt32" and
+  "vim91\GvimExt64" respectively.
   First, build the 32-bit version, then:
 
-     mkdir vim90\GvimExt32
-     copy src\GvimExt\gvimext.dll vim90\GvimExt32
+     mkdir vim91\GvimExt32
+     copy src\GvimExt\gvimext.dll vim91\GvimExt32
 
   Next, clean the 32-bit version and build the 64-bit version, then:
 
-     mkdir vim90\GvimExt64
-     copy src\GvimExt\gvimext.dll vim90\GvimExt64
+     mkdir vim91\GvimExt64
+     copy src\GvimExt\gvimext.dll vim91\GvimExt64
 
-  C.  Copy gettext and iconv DLLs into the "vim90" directory
+  C.  Copy gettext and iconv DLLs into the "vim91" directory
   ----------------------------------------------------------
   Get gettext and iconv DLLs from the following site:
      https://github.com/mlocati/gettext-iconv-windows/releases
@@ -961,7 +1049,7 @@ correct directory structure.
   Download the files gettextX.X.X.X-iconvX.XX-shared-{32,64}.zip, extract
   DLLs and place them as follows:
 
-        vim90\
+        vim91\
             |   libintl-8.dll
             |   libiconv-2.dll
             |   libgcc_s_sjlj-1.dll     (only for 32-bit)
@@ -975,18 +1063,18 @@ correct directory structure.
                 libintl-8.dll
                 libiconv-2.dll
 
-  The DLLs in the "vim90" should be the same bitness with the (g)vim.exe.
+  The DLLs in the "vim91" should be the same bitness with the (g)vim.exe.
 
-  D.  Move the "vim90" directory into the Vim installation subdirectory
+  D.  Move the "vim91" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
-  Move the "vim90" subdirectory into the subdirectory where you want Vim
+  Move the "vim91" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".
-  If you already have a "vim90" subdirectory in "vim", delete it first
+  If you already have a "vim91" subdirectory in "vim", delete it first
   by running its uninstall.exe program.
 
   E.  Install Vim
   ---------------
-  "cd" to your Vim installation subdirectory "vim\vim90" and run the
+  "cd" to your Vim installation subdirectory "vim\vim91" and run the
   "install.exe" program.  It will ask you a number of questions about
   how you would like to have your Vim setup.  Among these are:
   - You can tell it to write a "_vimrc" file with your preferences in the

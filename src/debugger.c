@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 static int debug_greedy = FALSE;	// batch mode debugging: don't save
 					// and restore typeahead.
 static void do_setdebugtracelevel(char_u *arg);
@@ -395,9 +395,9 @@ do_showbacktrace(char_u *cmd)
     }
 
     if (SOURCING_LNUM != 0)
-       smsg(_("line %ld: %s"), (long)SOURCING_LNUM, cmd);
+	smsg(_("line %ld: %s"), (long)SOURCING_LNUM, cmd);
     else
-       smsg(_("cmd: %s"), cmd);
+	smsg(_("cmd: %s"), cmd);
 }
 
 /*
@@ -929,7 +929,7 @@ dbg_find_breakpoint(
     return debuggy_find(file, fname, after, &dbg_breakp, NULL);
 }
 
-#if defined(FEAT_PROFILE) || defined(PROTO)
+#if defined(FEAT_PROFILE)
 #if defined(PROF_CACHE_LOG)
 static int count_lookups[2];
 #endif

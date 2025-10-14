@@ -2,6 +2,8 @@
 "     Language:	xml
 "   Maintainer:	Christian Brabandt <cb@256bit.org>
 " Last Changed: Dec 07th, 2018
+"		2024 Jan 14 by Vim Project (browsefilter)
+"		2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 "   Repository: https://github.com/chrisbra/vim-xml-ftplugin
 " Previous Maintainer:	Dan Sharp
 "          URL:		      http://dwsharp.users.sourceforge.net/vim/ftplugin
@@ -14,7 +16,7 @@ let b:did_ftplugin = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-setlocal commentstring=<!--%s-->
+setlocal commentstring=<!--\ %s\ -->
 " Remove the middlepart from the comments section, as this causes problems:
 " https://groups.google.com/d/msg/vim_dev/x4GT-nqa0Kg/jvtRnEbtAnMJ
 setlocal comments=s:<!--,e:-->
@@ -52,8 +54,12 @@ command! -nargs=? XMLent call xmlcomplete#CreateEntConnection(<f-args>)
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     let  b:browsefilter="XML Files (*.xml)\t*.xml\n" .
     \ "DTD Files (*.dtd)\t*.dtd\n" .
-    \ "XSD Files (*.xsd)\t*.xsd\n" .
-    \ "All Files (*.*)\t*.*\n"
+    \ "XSD Files (*.xsd)\t*.xsd\n"
+    if has("win32")
+	let b:browsefilter .= "All Files (*.*)\t*\n"
+    else
+	let b:browsefilter .= "All Files (*)\t*\n"
+    endif
 endif
 
 " Undo the stuff we changed.

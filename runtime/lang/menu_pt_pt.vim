@@ -1,6 +1,7 @@
 " Menu Translations: Português
 " adaptado de pt_br.
 " Maintainer: Duarte Henriques <duarte_henriques@myrealbox.com>
+" Last Change: 2024 Aug 22
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -66,8 +67,8 @@ menutrans Settings\ &Window		Op&ções
 menutrans &Global\ Settings		Opções\ &Globais
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Activar/Desactivar\ &Realce\ de\ Padrões<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Activar/Desactivar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Activar/Desactivar\ &coincidências<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Activar/Desactivar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Activar/Desactivar\ &coincidências<Tab>:set\ sm!
 
 menutrans &Context\ lines		Linhas\ de\ C&ontexto
 
@@ -79,7 +80,7 @@ menutrans Block\ and\ Insert		Bloco\ e\ inserção
 menutrans Always			Sempre
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im! Activar/Desactivar\ Modo\ de\ In&serção<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp! Activar/Desactivar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp! Activar/Desactivar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Camin&ho\ de\ Busca\.\.\.
 menutrans Ta&g\ Files\.\.\.		Arquivos\ de\ Tags\.\.\.
 
@@ -136,7 +137,7 @@ menutrans &Previous\ Error<Tab>:cp	&Erro\ anterior<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Listar\ erros\ &antigos<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	Listar\ erros\ &novos<Tab>:cnew
 menutrans Error\ &Window		&Janela\ de\ erros
-menutrans &Set\ Compiler		Def&inir\ Compilador
+menutrans Se&t\ Compiler		Def&inir\ Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converter\ para\ hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
 

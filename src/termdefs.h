@@ -114,10 +114,12 @@ enum SpecialKey
     KS_SSI,	// save icon text
     KS_SRI,	// restore icon text
     KS_FD,	// disable focus event tracking
-    KS_FE	// enable focus event tracking
+    KS_FE,	// enable focus event tracking
+    KS_CF,	// set terminal alternate font
+    KS_XON	// terminal uses xon/xoff handshaking
 };
 
-#define KS_LAST	    KS_FE
+#define KS_LAST	    KS_XON
 
 /*
  * the terminal capabilities are stored in this array
@@ -191,6 +193,7 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_CAF	(TERM_STR(KS_CAF))	// set foreground color (ANSI)
 #define T_CAB	(TERM_STR(KS_CAB))	// set background color (ANSI)
 #define T_CAU	(TERM_STR(KS_CAU))	// set underline color (ANSI)
+#define T_CFO	(TERM_STR(KS_CF))	// set alternate font
 #define T_LE	(TERM_STR(KS_LE))	// cursor left
 #define T_ND	(TERM_STR(KS_ND))	// cursor right
 #define T_CIS	(TERM_STR(KS_CIS))	// set icon text start
@@ -222,6 +225,7 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_SRI	(TERM_STR(KS_SRI))	// restore icon text
 #define T_FD	(TERM_STR(KS_FD))	// disable focus event tracking
 #define T_FE	(TERM_STR(KS_FE))	// enable focus event tracking
+#define T_XON	(TERM_STR(KS_XON))	// terminal uses xon/xoff handshaking
 
 typedef enum {
     TMODE_COOK,	    // terminal mode for external cmds and Ex mode

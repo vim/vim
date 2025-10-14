@@ -1,4 +1,4 @@
-*ft_ada.txt*	For Vim version 9.0.  Last change: 2022 Mar 13
+*ft_ada.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		    ADA FILE TYPE PLUG-INS REFERENCE MANUAL~
@@ -48,14 +48,12 @@ ctermfg=White often shows well).
 There are several options you can select in this Ada mode. See |ft-ada-options|
 for a complete list.
 
-To enable them, assign a value to the option.  For example, to turn one on:
- >
-    > let g:ada_standard_types = 1
->
-To disable them use ":unlet".  Example:
->
-    > unlet g:ada_standard_types
-
+To enable them, assign a value to the option.  For example, to turn one on: >
+	let g:ada_standard_types = 1
+<
+To disable them use ":unlet".  Example: >
+	unlet g:ada_standard_types
+<
 You can just use ":" and type these into the command line to set these
 temporarily before loading an Ada file.  You can make these option settings
 permanent by adding the "let" command(s), without a colon, to your "~/.vimrc"
@@ -78,8 +76,8 @@ The Ada plug-in provides support for:
  - user completion	(|i_CTRL-X_CTRL-U|)
  - tag searches		(|tagsrch.txt|)
  - Quick Fix		(|quickfix.txt|)
- - backspace handling	(|'backspace'|)
- - comment handling	(|'comments'|, |'commentstring'|)
+ - backspace handling	('backspace')
+ - comment handling	('comments', 'commentstring')
 
 The plug-in only activates the features of the Ada mode whenever an Ada
 file is opened and adds Ada related entries to the main and pop-up menu.
@@ -158,10 +156,9 @@ several versions available which differ in the licence terms used.
 
 The GNAT compiler plug-in will perform a compile on pressing <F7> and then
 immediately shows the result. You can set the project file to be used by
-setting:
- >
- > call g:gnat.Set_Project_File ('my_project.gpr')
-
+setting: >
+		call g:gnat.Set_Project_File ('my_project.gpr')
+<
 Setting a project file will also create a Vim session (|views-sessions|) so -
 like with the GPS - opened files, window positions etc. will be remembered
 separately for all projects.
@@ -172,7 +169,7 @@ GNAT OBJECT ~
 							       *g:gnat.Make()*
 g:gnat.Make()
 		Calls |g:gnat.Make_Command| and displays the result inside a
-               |quickfix| window.
+		|quickfix| window.
 
 							     *g:gnat.Pretty()*
 g:gnat.Pretty()
@@ -200,7 +197,7 @@ g:gnat.Project_File	string
 
 							 *g:gnat.Make_Command*
 g:gnat.Make_Command	string
-		External command used for |g:gnat.Make()| (|'makeprg'|).
+		External command used for |g:gnat.Make()| ('makeprg').
 
 						       *g:gnat.Pretty_Program*
 g:gnat.Pretty_Program	string
@@ -216,7 +213,7 @@ g:gnat.Tags_Command	string
 
 							 *g:gnat.Error_Format*
 g:gnat.Error_Format	string
-		Error format (|'errorformat'|)
+		Error format ('errorformat')
 
 ------------------------------------------------------------------------------
 4.2 Dec Ada ~
@@ -246,11 +243,11 @@ g:decada.Unit_Name()	function
 
 						       *g:decada.Make_Command*
 g:decada.Make_Command	string
-		External command used for |g:decada.Make()| (|'makeprg'|).
+		External command used for |g:decada.Make()| ('makeprg').
 
 						       *g:decada.Error_Format*
 g:decada.Error_Format	string
-		Error format (|'errorformat'|).
+		Error format ('errorformat').
 
 ==============================================================================
 5. References ~

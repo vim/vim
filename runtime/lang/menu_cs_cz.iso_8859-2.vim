@@ -1,4 +1,4 @@
-" Menu Translations:    Czech (ISO8859-2)
+" Menu Translations:    Czech (ISO-8859-2)
 " Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net>
 " Previous maintainer:  Jiri Brezina
 " Based on:             menu.vim (2012-10-21)
@@ -13,7 +13,7 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding iso8859-2
+scriptencoding iso-8859-2
 
 " {{{ File menu
 menutrans &File				&Soubor

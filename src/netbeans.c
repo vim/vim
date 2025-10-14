@@ -25,7 +25,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG)
 
 #ifndef MSWIN
 # include <netdb.h>
@@ -932,7 +932,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     int lastbyte = last;
 
     oldtext = ml_get(lnum);
-    oldlen = (int)STRLEN(oldtext);
+    oldlen = ml_get_len(lnum);
     if (first >= (colnr_T)oldlen || oldlen == 0)  // just in case
 	return;
     if (lastbyte >= oldlen)
@@ -957,8 +957,8 @@ nb_joinlines(linenr_T first, linenr_T other)
     int len_first, len_other;
     char_u *p;
 
-    len_first = (int)STRLEN(ml_get(first));
-    len_other = (int)STRLEN(ml_get(other));
+    len_first = ml_get_len(first);
+    len_other = ml_get_len(other);
     p = alloc(len_first + len_other + 1);
     if (p == NULL)
 	return;
@@ -1285,8 +1285,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 		netbeansSuppressNoLines = oldSuppress;
 
-		u_blockfree(buf->bufp);
-		u_clearall(buf->bufp);
+		u_clearallandblockfree(buf->bufp);
 	    }
 	    nb_reply_nil(cmdno);
 // =====================================================================
@@ -1403,7 +1402,7 @@ nb_do_cmd(
 			int	col = pos == NULL ? 0 : pos->col;
 
 			// Insert halfway a line.
-			newline = alloc(STRLEN(oldline) + len + 1);
+			newline = alloc(ml_get_len(lnum) + len + 1);
 			if (newline != NULL)
 			{
 			    mch_memmove(newline, oldline, (size_t)col);
@@ -1456,8 +1455,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 
 		// Undo info is invalid now...
-		u_blockfree(curbuf);
-		u_clearall(curbuf);
+		u_clearallandblockfree(curbuf);
 	    }
 	    vim_free(to_free);
 	    nb_reply_nil(cmdno); // or !error
@@ -1691,8 +1689,10 @@ nb_do_cmd(
 	    if (streq((char *)args, "T") && buf->bufp != curbuf)
 	    {
 		exarg_T exarg;
+		CLEAR_FIELD(exarg);
 		exarg.cmd = (char_u *)"goto";
 		exarg.forceit = FALSE;
+		exarg.cmdidx = CMD_USER;
 		dosetvisible = TRUE;
 		goto_buffer(&exarg, DOBUF_FIRST, FORWARD, buf->bufp->b_fnum);
 		do_update = 1;
@@ -1747,6 +1747,9 @@ nb_do_cmd(
 	    {
 		check_status(buf->bufp);
 		redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+		redraw_tabpanel = TRUE;
+#endif
 		maketitle();
 		update_screen(0);
 	    }
@@ -1875,7 +1878,7 @@ nb_do_cmd(
 		// This message was commented out, probably because it can
 		// happen when shutting down.
 		if (p_verbose > 0)
-		    emsg(_(e_invalid_buffer_identifier_in_close_2));
+		    emsg(_(e_invalid_buffer_identifier_in_close));
 	    }
 	    nbdebug(("    CLOSE %d: %s\n", bufno, name));
 #ifdef FEAT_GUI
@@ -2446,7 +2449,7 @@ netbeans_keyname(int key, char *buf)
     strcat(buf, name);
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL)
 /*
  * Function to be called for balloon evaluation.  Grabs the text under the
  * cursor and sends it to the debugger for evaluation.  The debugger should
@@ -2549,7 +2552,7 @@ netbeans_send_disconnect(void)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     int
 set_ref_in_nb_channel(int copyID)
 {
@@ -2561,12 +2564,12 @@ set_ref_in_nb_channel(int copyID)
 
     tv.v_type = VAR_CHANNEL;
     tv.vval.v_channel = nb_channel;
-    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+    abort = set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
     return abort;
 }
 #endif
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN)
 /*
  * Tell netbeans that the window was moved or resized.
  */
@@ -3001,7 +3004,7 @@ netbeans_is_guarded(linenr_T top, linenr_T bot)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_X11)
 /*
  * We have multiple signs to draw at the same location. Draw the
  * multi-sign indicator instead. This is the Motif version.
@@ -3316,8 +3319,7 @@ get_buf_size(buf_T *bufp)
 	eol_size = 1;
     for (lnum = 1; lnum <= bufp->b_ml.ml_line_count; ++lnum)
     {
-	char_count += (long)STRLEN(ml_get_buf(bufp, lnum, FALSE))
-	    + eol_size;
+	char_count += ml_get_buf_len(bufp, lnum) + eol_size;
 	// Check for a CTRL-C every 100000 characters
 	if (char_count > last_check)
 	{

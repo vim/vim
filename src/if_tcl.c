@@ -148,7 +148,7 @@ static struct ref refsdeleted;	// dummy object for deleted ref list
 // TCL interface manager
 ////////////////////////////////////////////////////////////////////////////
 
-#if defined(DYNAMIC_TCL) || defined(PROTO)
+#if defined(DYNAMIC_TCL)
 # ifndef DYNAMIC_TCL_DLL
 #  define DYNAMIC_TCL_DLL "tcl83.dll"
 # endif
@@ -233,7 +233,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     }
     return OK;
 }
-#endif // defined(DYNAMIC_TCL) || defined(PROTO)
+#endif // defined(DYNAMIC_TCL)
 
 #ifdef DYNAMIC_TCL
 static char *find_executable_arg = NULL;
@@ -249,7 +249,7 @@ vim_tcl_init(char *arg)
 #endif
 }
 
-#if defined(DYNAMIC_TCL) || defined(PROTO)
+#if defined(DYNAMIC_TCL)
 
 static int stubs_initialized = FALSE;
 
@@ -282,7 +282,7 @@ tcl_enabled(int verbose)
 }
 #endif
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Called once when exiting.
  */
@@ -2012,7 +2012,8 @@ ex_tcldo(exarg_T *eap)
 #if (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 5) || TCL_MAJOR_VERSION > 8
 	    || Tcl_LimitExceeded(tclinfo.interp)
 #endif
-	    || curbuf != was_curbuf)
+	    || curbuf != was_curbuf
+	    || (linenr_T)rs > curbuf->b_ml.ml_line_count)
 	    break;
 	line = (char *)Tcl_GetVar(tclinfo.interp, var_line, 0);
 	if (line)

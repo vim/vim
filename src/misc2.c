@@ -60,11 +60,8 @@ coladvance_force(colnr_T wcol)
     if (wcol == MAXCOL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else
-    {
 	// Virtcol is valid
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wcol;
-    }
+	set_valid_virtcol(curwin, wcol);
     return rc;
 }
 
@@ -72,7 +69,7 @@ coladvance_force(colnr_T wcol)
  * Get the screen position of character col with a coladd in the cursor line.
  */
     int
-getviscol2(colnr_T col, colnr_T coladd UNUSED)
+getviscol2(colnr_T col, colnr_T coladd)
 {
     colnr_T	x;
     pos_T	pos;
@@ -101,11 +98,8 @@ coladvance(colnr_T wantcol)
     if (wantcol == MAXCOL || rc == FAIL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else if (*ml_get_cursor() != TAB)
-    {
 	// Virtcol is valid when not on a TAB
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wantcol;
-    }
+	set_valid_virtcol(curwin, wantcol);
     return rc;
 }
 
@@ -130,6 +124,7 @@ coladvance2(
     colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*line;
+    int		linelen;
     colnr_T	col = 0;
     int		csize = 0;
     int		one_more;
@@ -142,10 +137,11 @@ coladvance2(
 		    || (VIsual_active && *p_sel != 'o')
 		    || ((get_ve_flags() & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
+    linelen = ml_get_buf_len(curbuf, pos->lnum);
 
     if (wcol >= MAXCOL)
     {
-	    idx = (int)STRLEN(line) - 1 + one_more;
+	    idx = linelen - 1 + one_more;
 	    col = wcol;
 
 	    if ((addspaces || finetune) && !VIsual_active)
@@ -166,7 +162,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize(curwin, pos->lnum);
+	    csize = linetabsize_eol(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -255,7 +251,6 @@ coladvance2(
 	    else
 	    {
 		// Break a tab
-		int	linelen = (int)STRLEN(line);
 		int	correct = wcol - col - csize + 1; // negative!!
 		char_u	*newline;
 		int	t, s = 0;
@@ -412,7 +407,7 @@ dec(pos_T *lp)
     {
 	// past end of line
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 0;
@@ -435,7 +430,7 @@ dec(pos_T *lp)
 	// there is a prior line
 	lp->lnum--;
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 1;
@@ -515,7 +510,6 @@ get_cursor_rel_lnum(
     void
 check_pos(buf_T *buf, pos_T *pos)
 {
-    char_u *line;
     colnr_T len;
 
     if (pos->lnum > buf->b_ml.ml_line_count)
@@ -523,8 +517,7 @@ check_pos(buf_T *buf, pos_T *pos)
 
     if (pos->col > 0)
     {
-	line = ml_get_buf(buf, pos->lnum, FALSE);
-	len = (colnr_T)STRLEN(line);
+	len = ml_get_buf_len(buf, pos->lnum);
 	if (pos->col > len)
 	    pos->col = len;
     }
@@ -570,7 +563,7 @@ check_cursor_col_win(win_T *win)
     colnr_T      oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
     unsigned int cur_ve_flags = get_ve_flags();
 
-    len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
+    len = ml_get_buf_len(win->w_buffer, win->w_cursor.lnum);
     if (len == 0)
 	win->w_cursor.col = 0;
     else if (win->w_cursor.col >= len)
@@ -649,7 +642,7 @@ check_visual_pos(void)
     }
     else
     {
-	int len = (int)STRLEN(ml_get(VIsual.lnum));
+	int len = ml_get_len(VIsual.lnum);
 
 	if (VIsual.col > len)
 	{
@@ -772,7 +765,7 @@ copy_option_part(
     return len;
 }
 
-#ifndef HAVE_MEMSET
+#if !defined(HAVE_MEMSET) && !defined(PROTO)
     void *
 vim_memset(void *ptr, int c, size_t size)
 {
@@ -817,7 +810,7 @@ static struct modmasktable
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_2CLICK,	(char_u)'2'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_3CLICK,	(char_u)'3'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_4CLICK,	(char_u)'4'},
-#ifdef MACOS_X
+#if defined(MACOS_X) || defined(FEAT_GUI_GTK)
     {MOD_MASK_CMD,		MOD_MASK_CMD,		(char_u)'D'},
 #endif
     // 'A' must be the last one
@@ -922,186 +915,209 @@ static char_u modifier_keys_table[] =
     NUL
 };
 
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
 static struct key_name_entry
 {
-    int	    key;	// Special key code or ascii value
-    char_u  *name;	// Name of key
+    int		enabled;	    // is this entry available (TRUE/FALSE)?
+    int		key;		    // special key code or ascii value
+    string_T	name;		    // name of key
+    int		is_alt;		    // is an alternative name
 } key_names_table[] =
+// Must be sorted by the 'name.string' field in ascending order because it is used by bsearch()!
 {
-    {' ',		(char_u *)"Space"},
-    {TAB,		(char_u *)"Tab"},
-    {K_TAB,		(char_u *)"Tab"},
-    {NL,		(char_u *)"NL"},
-    {NL,		(char_u *)"NewLine"},	// Alternative name
-    {NL,		(char_u *)"LineFeed"},	// Alternative name
-    {NL,		(char_u *)"LF"},	// Alternative name
-    {CAR,		(char_u *)"CR"},
-    {CAR,		(char_u *)"Return"},	// Alternative name
-    {CAR,		(char_u *)"Enter"},	// Alternative name
-    {K_BS,		(char_u *)"BS"},
-    {K_BS,		(char_u *)"BackSpace"},	// Alternative name
-    {ESC,		(char_u *)"Esc"},
-    {CSI,		(char_u *)"CSI"},
-    {K_CSI,		(char_u *)"xCSI"},
-    {'|',		(char_u *)"Bar"},
-    {'\\',		(char_u *)"Bslash"},
-    {K_DEL,		(char_u *)"Del"},
-    {K_DEL,		(char_u *)"Delete"},	// Alternative name
-    {K_KDEL,		(char_u *)"kDel"},
-    {K_UP,		(char_u *)"Up"},
-    {K_DOWN,		(char_u *)"Down"},
-    {K_LEFT,		(char_u *)"Left"},
-    {K_RIGHT,		(char_u *)"Right"},
-    {K_XUP,		(char_u *)"xUp"},
-    {K_XDOWN,		(char_u *)"xDown"},
-    {K_XLEFT,		(char_u *)"xLeft"},
-    {K_XRIGHT,		(char_u *)"xRight"},
-    {K_PS,		(char_u *)"PasteStart"},
-    {K_PE,		(char_u *)"PasteEnd"},
-
-    {K_F1,		(char_u *)"F1"},
-    {K_F2,		(char_u *)"F2"},
-    {K_F3,		(char_u *)"F3"},
-    {K_F4,		(char_u *)"F4"},
-    {K_F5,		(char_u *)"F5"},
-    {K_F6,		(char_u *)"F6"},
-    {K_F7,		(char_u *)"F7"},
-    {K_F8,		(char_u *)"F8"},
-    {K_F9,		(char_u *)"F9"},
-    {K_F10,		(char_u *)"F10"},
-
-    {K_F11,		(char_u *)"F11"},
-    {K_F12,		(char_u *)"F12"},
-    {K_F13,		(char_u *)"F13"},
-    {K_F14,		(char_u *)"F14"},
-    {K_F15,		(char_u *)"F15"},
-    {K_F16,		(char_u *)"F16"},
-    {K_F17,		(char_u *)"F17"},
-    {K_F18,		(char_u *)"F18"},
-    {K_F19,		(char_u *)"F19"},
-    {K_F20,		(char_u *)"F20"},
-
-    {K_F21,		(char_u *)"F21"},
-    {K_F22,		(char_u *)"F22"},
-    {K_F23,		(char_u *)"F23"},
-    {K_F24,		(char_u *)"F24"},
-    {K_F25,		(char_u *)"F25"},
-    {K_F26,		(char_u *)"F26"},
-    {K_F27,		(char_u *)"F27"},
-    {K_F28,		(char_u *)"F28"},
-    {K_F29,		(char_u *)"F29"},
-    {K_F30,		(char_u *)"F30"},
-
-    {K_F31,		(char_u *)"F31"},
-    {K_F32,		(char_u *)"F32"},
-    {K_F33,		(char_u *)"F33"},
-    {K_F34,		(char_u *)"F34"},
-    {K_F35,		(char_u *)"F35"},
-    {K_F36,		(char_u *)"F36"},
-    {K_F37,		(char_u *)"F37"},
-
-    {K_XF1,		(char_u *)"xF1"},
-    {K_XF2,		(char_u *)"xF2"},
-    {K_XF3,		(char_u *)"xF3"},
-    {K_XF4,		(char_u *)"xF4"},
-
-    {K_HELP,		(char_u *)"Help"},
-    {K_UNDO,		(char_u *)"Undo"},
-    {K_INS,		(char_u *)"Insert"},
-    {K_INS,		(char_u *)"Ins"},	// Alternative name
-    {K_KINS,		(char_u *)"kInsert"},
-    {K_HOME,		(char_u *)"Home"},
-    {K_KHOME,		(char_u *)"kHome"},
-    {K_XHOME,		(char_u *)"xHome"},
-    {K_ZHOME,		(char_u *)"zHome"},
-    {K_END,		(char_u *)"End"},
-    {K_KEND,		(char_u *)"kEnd"},
-    {K_XEND,		(char_u *)"xEnd"},
-    {K_ZEND,		(char_u *)"zEnd"},
-    {K_PAGEUP,		(char_u *)"PageUp"},
-    {K_PAGEDOWN,	(char_u *)"PageDown"},
-    {K_KPAGEUP,		(char_u *)"kPageUp"},
-    {K_KPAGEDOWN,	(char_u *)"kPageDown"},
-
-    {K_KPLUS,		(char_u *)"kPlus"},
-    {K_KMINUS,		(char_u *)"kMinus"},
-    {K_KDIVIDE,		(char_u *)"kDivide"},
-    {K_KMULTIPLY,	(char_u *)"kMultiply"},
-    {K_KENTER,		(char_u *)"kEnter"},
-    {K_KPOINT,		(char_u *)"kPoint"},
-
-    {K_K0,		(char_u *)"k0"},
-    {K_K1,		(char_u *)"k1"},
-    {K_K2,		(char_u *)"k2"},
-    {K_K3,		(char_u *)"k3"},
-    {K_K4,		(char_u *)"k4"},
-    {K_K5,		(char_u *)"k5"},
-    {K_K6,		(char_u *)"k6"},
-    {K_K7,		(char_u *)"k7"},
-    {K_K8,		(char_u *)"k8"},
-    {K_K9,		(char_u *)"k9"},
-
-    {'<',		(char_u *)"lt"},
-
-    {K_MOUSE,		(char_u *)"Mouse"},
-#ifdef FEAT_MOUSE_NET
-    {K_NETTERM_MOUSE,	(char_u *)"NetMouse"},
-#endif
+    {TRUE, K_BS, STRING_INIT("BackSpace"), TRUE},
+    {TRUE, '|', STRING_INIT("Bar"), FALSE},
+    {TRUE, K_BS, STRING_INIT("BS"), FALSE},
+    {TRUE, '\\', STRING_INIT("Bslash"), FALSE},
+    {TRUE, K_COMMAND, STRING_INIT("Cmd"), FALSE},
+    {TRUE, CAR, STRING_INIT("CR"), FALSE},
+    {TRUE, CSI, STRING_INIT("CSI"), FALSE},
+    {TRUE, K_CURSORHOLD, STRING_INIT("CursorHold"), FALSE},
+    {
 #ifdef FEAT_MOUSE_DEC
-    {K_DEC_MOUSE,	(char_u *)"DecMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
+	K_DEC_MOUSE, STRING_INIT("DecMouse"), FALSE},
+    {TRUE, K_DEL, STRING_INIT("Del"), FALSE},
+    {TRUE, K_DEL, STRING_INIT("Delete"), TRUE},
+    {TRUE, K_DOWN, STRING_INIT("Down"), FALSE},
+    {TRUE, K_DROP, STRING_INIT("Drop"), FALSE},
+    {TRUE, K_END, STRING_INIT("End"), FALSE},
+    {TRUE, CAR, STRING_INIT("Enter"), TRUE},
+    {TRUE, ESC, STRING_INIT("Esc"), FALSE},
+
+    {TRUE, K_F1, STRING_INIT("F1"), FALSE},
+    {TRUE, K_F10, STRING_INIT("F10"), FALSE},
+    {TRUE, K_F11, STRING_INIT("F11"), FALSE},
+    {TRUE, K_F12, STRING_INIT("F12"), FALSE},
+    {TRUE, K_F13, STRING_INIT("F13"), FALSE},
+    {TRUE, K_F14, STRING_INIT("F14"), FALSE},
+    {TRUE, K_F15, STRING_INIT("F15"), FALSE},
+    {TRUE, K_F16, STRING_INIT("F16"), FALSE},
+    {TRUE, K_F17, STRING_INIT("F17"), FALSE},
+    {TRUE, K_F18, STRING_INIT("F18"), FALSE},
+    {TRUE, K_F19, STRING_INIT("F19"), FALSE},
+
+    {TRUE, K_F2, STRING_INIT("F2"), FALSE},
+    {TRUE, K_F20, STRING_INIT("F20"), FALSE},
+    {TRUE, K_F21, STRING_INIT("F21"), FALSE},
+    {TRUE, K_F22, STRING_INIT("F22"), FALSE},
+    {TRUE, K_F23, STRING_INIT("F23"), FALSE},
+    {TRUE, K_F24, STRING_INIT("F24"), FALSE},
+    {TRUE, K_F25, STRING_INIT("F25"), FALSE},
+    {TRUE, K_F26, STRING_INIT("F26"), FALSE},
+    {TRUE, K_F27, STRING_INIT("F27"), FALSE},
+    {TRUE, K_F28, STRING_INIT("F28"), FALSE},
+    {TRUE, K_F29, STRING_INIT("F29"), FALSE},
+
+    {TRUE, K_F3, STRING_INIT("F3"), FALSE},
+    {TRUE, K_F30, STRING_INIT("F30"), FALSE},
+    {TRUE, K_F31, STRING_INIT("F31"), FALSE},
+    {TRUE, K_F32, STRING_INIT("F32"), FALSE},
+    {TRUE, K_F33, STRING_INIT("F33"), FALSE},
+    {TRUE, K_F34, STRING_INIT("F34"), FALSE},
+    {TRUE, K_F35, STRING_INIT("F35"), FALSE},
+    {TRUE, K_F36, STRING_INIT("F36"), FALSE},
+    {TRUE, K_F37, STRING_INIT("F37"), FALSE},
+
+    {TRUE, K_F4, STRING_INIT("F4"), FALSE},
+    {TRUE, K_F5, STRING_INIT("F5"), FALSE},
+    {TRUE, K_F6, STRING_INIT("F6"), FALSE},
+    {TRUE, K_F7, STRING_INIT("F7"), FALSE},
+    {TRUE, K_F8, STRING_INIT("F8"), FALSE},
+    {TRUE, K_F9, STRING_INIT("F9"), FALSE},
+
+    {TRUE, K_FOCUSGAINED, STRING_INIT("FocusGained"), FALSE},
+    {TRUE, K_FOCUSLOST, STRING_INIT("FocusLost"), FALSE},
+    {TRUE, K_HELP, STRING_INIT("Help"), FALSE},
+    {TRUE, K_HOME, STRING_INIT("Home"), FALSE},
+    {TRUE, K_IGNORE, STRING_INIT("Ignore"), FALSE},
+    {TRUE, K_INS, STRING_INIT("Ins"), TRUE},
+    {TRUE, K_INS, STRING_INIT("Insert"), FALSE},
+    {
 #ifdef FEAT_MOUSE_JSB
-    {K_JSBTERM_MOUSE,	(char_u *)"JsbMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
+	K_JSBTERM_MOUSE, STRING_INIT("JsbMouse"), FALSE},
+    {TRUE, K_K0, STRING_INIT("k0"), FALSE},
+    {TRUE, K_K1, STRING_INIT("k1"), FALSE},
+    {TRUE, K_K2, STRING_INIT("k2"), FALSE},
+    {TRUE, K_K3, STRING_INIT("k3"), FALSE},
+    {TRUE, K_K4, STRING_INIT("k4"), FALSE},
+    {TRUE, K_K5, STRING_INIT("k5"), FALSE},
+    {TRUE, K_K6, STRING_INIT("k6"), FALSE},
+    {TRUE, K_K7, STRING_INIT("k7"), FALSE},
+    {TRUE, K_K8, STRING_INIT("k8"), FALSE},
+    {TRUE, K_K9, STRING_INIT("k9"), FALSE},
+
+    {TRUE, K_KDEL, STRING_INIT("kDel"), FALSE},
+    {TRUE, K_KDIVIDE, STRING_INIT("kDivide"), FALSE},
+    {TRUE, K_KEND, STRING_INIT("kEnd"), FALSE},
+    {TRUE, K_KENTER, STRING_INIT("kEnter"), FALSE},
+    {TRUE, K_KHOME, STRING_INIT("kHome"), FALSE},
+    {TRUE, K_KINS, STRING_INIT("kInsert"), FALSE},
+    {TRUE, K_KMINUS, STRING_INIT("kMinus"), FALSE},
+    {TRUE, K_KMULTIPLY, STRING_INIT("kMultiply"), FALSE},
+    {TRUE, K_KPAGEDOWN, STRING_INIT("kPageDown"), FALSE},
+    {TRUE, K_KPAGEUP, STRING_INIT("kPageUp"), FALSE},
+    {TRUE, K_KPLUS, STRING_INIT("kPlus"), FALSE},
+    {TRUE, K_KPOINT, STRING_INIT("kPoint"), FALSE},
+    {TRUE, K_LEFT, STRING_INIT("Left"), FALSE},
+    {TRUE, K_LEFTDRAG, STRING_INIT("LeftDrag"), FALSE},
+    {TRUE, K_LEFTMOUSE, STRING_INIT("LeftMouse"), FALSE},
+    {TRUE, K_LEFTMOUSE_NM, STRING_INIT("LeftMouseNM"), FALSE},
+    {TRUE, K_LEFTRELEASE, STRING_INIT("LeftRelease"), FALSE},
+    {TRUE, K_LEFTRELEASE_NM, STRING_INIT("LeftReleaseNM"), FALSE},
+    {TRUE, NL, STRING_INIT("LF"), TRUE},
+    {TRUE, NL, STRING_INIT("LineFeed"), TRUE},
+    {TRUE, '<', STRING_INIT("lt"), FALSE},
+    {TRUE, K_MIDDLEDRAG, STRING_INIT("MiddleDrag"), FALSE},
+    {TRUE, K_MIDDLEMOUSE, STRING_INIT("MiddleMouse"), FALSE},
+    {TRUE, K_MIDDLERELEASE, STRING_INIT("MiddleRelease"), FALSE},
+    {TRUE, K_MOUSE, STRING_INIT("Mouse"), FALSE},
+    {TRUE, K_MOUSEDOWN, STRING_INIT("MouseDown"), TRUE},
+    {TRUE, K_MOUSEMOVE, STRING_INIT("MouseMove"), FALSE},
+    {TRUE, K_MOUSEUP, STRING_INIT("MouseUp"), TRUE},
+    {
+#ifdef FEAT_MOUSE_NET
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_NETTERM_MOUSE, STRING_INIT("NetMouse"), FALSE},
+    {TRUE, NL, STRING_INIT("NewLine"), TRUE},
+    {TRUE, NL, STRING_INIT("NL"), FALSE},
+    {TRUE, K_ZERO, STRING_INIT("Nul"), FALSE},
+    {TRUE, K_PAGEDOWN, STRING_INIT("PageDown"), FALSE},
+    {TRUE, K_PAGEUP, STRING_INIT("PageUp"), FALSE},
+    {TRUE, K_PE, STRING_INIT("PasteEnd"), FALSE},
+    {TRUE, K_PS, STRING_INIT("PasteStart"), FALSE},
+    {TRUE, K_PLUG, STRING_INIT("Plug"), FALSE},
+    {
 #ifdef FEAT_MOUSE_PTERM
-    {K_PTERM_MOUSE,	(char_u *)"PtermMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
-#ifdef FEAT_MOUSE_URXVT
-    {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
-#endif
-    {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
-    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelease"},
-    {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
-    {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
-    {K_LEFTDRAG,	(char_u *)"LeftDrag"},
-    {K_LEFTRELEASE,	(char_u *)"LeftRelease"},
-    {K_LEFTRELEASE_NM,	(char_u *)"LeftReleaseNM"},
-    {K_MOUSEMOVE,	(char_u *)"MouseMove"},
-    {K_MIDDLEMOUSE,	(char_u *)"MiddleMouse"},
-    {K_MIDDLEDRAG,	(char_u *)"MiddleDrag"},
-    {K_MIDDLERELEASE,	(char_u *)"MiddleRelease"},
-    {K_RIGHTMOUSE,	(char_u *)"RightMouse"},
-    {K_RIGHTDRAG,	(char_u *)"RightDrag"},
-    {K_RIGHTRELEASE,	(char_u *)"RightRelease"},
-    {K_MOUSEDOWN,	(char_u *)"ScrollWheelUp"},
-    {K_MOUSEUP,		(char_u *)"ScrollWheelDown"},
-    {K_MOUSELEFT,	(char_u *)"ScrollWheelRight"},
-    {K_MOUSERIGHT,	(char_u *)"ScrollWheelLeft"},
-    {K_MOUSEDOWN,	(char_u *)"MouseDown"}, // OBSOLETE: Use
-    {K_MOUSEUP,		(char_u *)"MouseUp"},	// ScrollWheelXXX instead
-    {K_X1MOUSE,		(char_u *)"X1Mouse"},
-    {K_X1DRAG,		(char_u *)"X1Drag"},
-    {K_X1RELEASE,		(char_u *)"X1Release"},
-    {K_X2MOUSE,		(char_u *)"X2Mouse"},
-    {K_X2DRAG,		(char_u *)"X2Drag"},
-    {K_X2RELEASE,		(char_u *)"X2Release"},
-    {K_DROP,		(char_u *)"Drop"},
-    {K_ZERO,		(char_u *)"Nul"},
+	K_PTERM_MOUSE, STRING_INIT("PtermMouse"), FALSE},
+    {TRUE, CAR, STRING_INIT("Return"), TRUE},
+    {TRUE, K_RIGHT, STRING_INIT("Right"), FALSE},
+    {TRUE, K_RIGHTDRAG, STRING_INIT("RightDrag"), FALSE},
+    {TRUE, K_RIGHTMOUSE, STRING_INIT("RightMouse"), FALSE},
+    {TRUE, K_RIGHTRELEASE, STRING_INIT("RightRelease"), FALSE},
+    {TRUE, K_SCRIPT_COMMAND, STRING_INIT("ScriptCmd"), FALSE},
+    {TRUE, K_MOUSEUP, STRING_INIT("ScrollWheelDown"), FALSE},
+    {TRUE, K_MOUSERIGHT, STRING_INIT("ScrollWheelLeft"), FALSE},
+    {TRUE, K_MOUSELEFT, STRING_INIT("ScrollWheelRight"), FALSE},
+    {TRUE, K_MOUSEDOWN, STRING_INIT("ScrollWheelUp"), FALSE},
+    {TRUE, K_SGR_MOUSE, STRING_INIT("SgrMouse"), FALSE},
+    {TRUE, K_SGR_MOUSERELEASE, STRING_INIT("SgrMouseRelease"), FALSE},
+    {
 #ifdef FEAT_EVAL
-    {K_SNR,		(char_u *)"SNR"},
+    TRUE,
+#else
+    FALSE,
 #endif
-    {K_PLUG,		(char_u *)"Plug"},
-    {K_CURSORHOLD,	(char_u *)"CursorHold"},
-    {K_IGNORE,		(char_u *)"Ignore"},
-    {K_COMMAND,		(char_u *)"Cmd"},
-    {K_SCRIPT_COMMAND,	(char_u *)"ScriptCmd"},
-    {K_FOCUSGAINED,	(char_u *)"FocusGained"},
-    {K_FOCUSLOST,	(char_u *)"FocusLost"},
-    {0,			NULL}
+	K_SNR, STRING_INIT("SNR"), FALSE},
+    {TRUE, ' ', STRING_INIT("Space"), FALSE},
+    {TRUE, TAB, STRING_INIT("Tab"), FALSE},
+    {TRUE, K_TAB, STRING_INIT("Tab"), FALSE},
+    {TRUE, K_UNDO, STRING_INIT("Undo"), FALSE},
+    {TRUE, K_UP, STRING_INIT("Up"), FALSE},
+    {
+#ifdef FEAT_MOUSE_URXVT
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_URXVT_MOUSE, STRING_INIT("UrxvtMouse"), FALSE},
+    {TRUE, K_X1DRAG, STRING_INIT("X1Drag"), FALSE},
+    {TRUE, K_X1MOUSE, STRING_INIT("X1Mouse"), FALSE},
+    {TRUE, K_X1RELEASE, STRING_INIT("X1Release"), FALSE},
+    {TRUE, K_X2DRAG, STRING_INIT("X2Drag"), FALSE},
+    {TRUE, K_X2MOUSE, STRING_INIT("X2Mouse"), FALSE},
+    {TRUE, K_X2RELEASE, STRING_INIT("X2Release"), FALSE},
+    {TRUE, K_CSI, STRING_INIT("xCSI"), FALSE},
+    {TRUE, K_XDOWN, STRING_INIT("xDown"), FALSE},
+    {TRUE, K_XEND, STRING_INIT("xEnd"), FALSE},
+    {TRUE, K_XF1, STRING_INIT("xF1"), FALSE},
+    {TRUE, K_XF2, STRING_INIT("xF2"), FALSE},
+    {TRUE, K_XF3, STRING_INIT("xF3"), FALSE},
+    {TRUE, K_XF4, STRING_INIT("xF4"), FALSE},
+    {TRUE, K_XHOME, STRING_INIT("xHome"), FALSE},
+    {TRUE, K_XLEFT, STRING_INIT("xLeft"), FALSE},
+    {TRUE, K_XRIGHT, STRING_INIT("xRight"), FALSE},
+    {TRUE, K_XUP, STRING_INIT("xUp"), FALSE},
+    {TRUE, K_ZEND, STRING_INIT("zEnd"), FALSE},
+    {TRUE, K_ZHOME, STRING_INIT("zHome"), FALSE}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
-
-#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
+#undef STRING_INIT
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
@@ -1130,7 +1146,7 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT)))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
 	return key;
 
     // TAB is a special case
@@ -1191,10 +1207,8 @@ handle_x_keys(int key)
 get_special_key_name(int c, int modifiers)
 {
     static char_u string[MAX_KEY_NAME_LEN + 1];
-
-    int	    i, idx;
+    int	    i, idx, len;
     int	    table_idx;
-    char_u  *s;
 
     string[0] = '<';
     idx = 1;
@@ -1266,13 +1280,14 @@ get_special_key_name(int c, int modifiers)
 	// Not a special key, only modifiers, output directly
 	else
 	{
-	    if (has_mbyte && (*mb_char2len)(c) > 1)
-		idx += (*mb_char2bytes)(c, string + idx);
-	    else if (vim_isprintc(c))
+	    len = (*mb_char2len)(c);
+	    if (len == 1 && vim_isprintc(c))
 		string[idx++] = c;
+	    else if (has_mbyte && len > 1)
+		idx += (*mb_char2bytes)(c, string + idx);
 	    else
 	    {
-		s = transchar(c);
+		char_u	*s = transchar(c);
 		while (*s)
 		    string[idx++] = *s++;
 	    }
@@ -1280,16 +1295,19 @@ get_special_key_name(int c, int modifiers)
     }
     else		// use name of special key
     {
-	size_t len = STRLEN(key_names_table[table_idx].name);
+	string_T    *s;
 
-	if (len + idx + 2 <= MAX_KEY_NAME_LEN)
+	s = &key_names_table[table_idx].name;
+
+	if (s->length + idx + 2 <= MAX_KEY_NAME_LEN)
 	{
-	    STRCPY(string + idx, key_names_table[table_idx].name);
-	    idx += (int)len;
+	    STRCPY(string + idx, s->string);
+	    idx += (int)s->length;
 	}
     }
     string[idx++] = '>';
     string[idx] = NUL;
+
     return string;
 }
 
@@ -1582,6 +1600,9 @@ may_remove_shift_modifier(int modifiers, int key)
 {
     if ((modifiers == MOD_MASK_SHIFT
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+#ifdef FEAT_GUI_GTK
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_CMD)
+#endif
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    && ((key >= '!' && key <= '/')
 		|| (key >= ':' && key <= 'Z')
@@ -1666,12 +1687,55 @@ find_special_key_in_table(int c)
 {
     int	    i;
 
-    for (i = 0; key_names_table[i].name != NULL; i++)
-	if (c == key_names_table[i].key)
+    for (i = 0; i < (int)ARRAY_LENGTH(key_names_table); i++)
+	if (c == key_names_table[i].key && !key_names_table[i].is_alt)
+	    return key_names_table[i].enabled ? i : -1;
+
+    return -1;
+}
+
+
+/*
+ * Compare two 'struct key_name_entry' structures.
+ * Note that the target string (p1) may contain additional trailing characters
+ * that should not factor into the comparison. Example:
+ * 'LeftMouse>", "<LeftMouse>"] ...'
+ * should match with
+ * 'LeftMouse'.
+ * These characters are identified by vim_isNormalIDc().
+ */
+    static int
+cmp_key_name_entry(const void *a, const void *b)
+{
+    char_u  *p1 = ((struct key_name_entry *)a)->name.string;
+    char_u  *p2 = ((struct key_name_entry *)b)->name.string;
+    int	    result = 0;
+
+    if (p1 == p2)
+	return 0;
+
+    while (vim_isNormalIDc(*p1) && *p2 != NUL)
+    {
+	if ((result = TOLOWER_ASC(*p1) - TOLOWER_ASC(*p2)) != 0)
 	    break;
-    if (key_names_table[i].name == NULL)
-	i = -1;
-    return i;
+	++p1;
+	++p2;
+    }
+
+    if (result == 0)
+    {
+	if (*p2 == NUL)
+	{
+	    if (vim_isNormalIDc(*p1))
+		result = 1;
+	}
+	else
+	{
+	    result = -1;
+	}
+    }
+
+    return result;
 }
 
 /*
@@ -1684,15 +1748,13 @@ find_special_key_in_table(int c)
     int
 get_special_key_code(char_u *name)
 {
-    char_u  *table_name;
-    char_u  string[3];
-    int	    i, j;
-
     /*
      * If it's <t_xx> we get the code for xx from the termcap
      */
     if (name[0] == 't' && name[1] == '_' && name[2] != NUL && name[3] != NUL)
     {
+	char_u  string[3];
+
 	string[0] = name[2];
 	string[1] = name[3];
 	string[2] = NUL;
@@ -1700,24 +1762,40 @@ get_special_key_code(char_u *name)
 	    return TERMCAP2KEY(name[2], name[3]);
     }
     else
-	for (i = 0; key_names_table[i].name != NULL; i++)
+    {
+	struct key_name_entry	target;
+	struct key_name_entry	*entry;
+
+	target.enabled = TRUE;
+	target.key = 0;
+	target.name.string = name;
+	target.name.length = 0;
+
+	entry = (struct key_name_entry *)bsearch(
+	    &target,
+	    &key_names_table,
+	    ARRAY_LENGTH(key_names_table),
+	    sizeof(key_names_table[0]),
+	    cmp_key_name_entry);
+	if (entry != NULL && entry->enabled)
 	{
-	    table_name = key_names_table[i].name;
-	    for (j = 0; vim_isNormalIDc(name[j]) && table_name[j] != NUL; j++)
-		if (TOLOWER_ASC(table_name[j]) != TOLOWER_ASC(name[j]))
-		    break;
-	    if (!vim_isNormalIDc(name[j]) && table_name[j] == NUL)
-		return key_names_table[i].key;
+	    int key = entry->key;
+	    // Both TAB and K_TAB have name "Tab", and it's unspecified which
+	    // one bsearch() will return.  TAB is the expected one.
+	    return key == K_TAB ? TAB : key;
 	}
+    }
+
     return 0;
 }
 
     char_u *
 get_key_name(int i)
 {
-    if (i >= (int)KEY_NAMES_TABLE_LEN)
+    if (i < 0 || i >= (int)ARRAY_LENGTH(key_names_table))
 	return NULL;
-    return  key_names_table[i].name;
+
+    return key_names_table[i].name.string;
 }
 
 /*
@@ -1796,6 +1874,9 @@ set_fileformat(
     // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     need_maketitle = TRUE;	    // set window title later
 }
 
@@ -1819,7 +1900,6 @@ default_fileformat(void)
     int
 call_shell(char_u *cmd, int opt)
 {
-    char_u	*ncmd;
     int		retval;
 #ifdef FEAT_PROFILE
     proftime_T	wait_time;
@@ -1860,7 +1940,9 @@ call_shell(char_u *cmd, int opt)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
-	    char_u *ecmd = cmd;
+	    char_u  *ncmd;
+	    size_t  ncmdsize;
+	    char_u  *ecmd = cmd;
 
 	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
@@ -1868,14 +1950,13 @@ call_shell(char_u *cmd, int opt)
 		if (ecmd == NULL)
 		    ecmd = cmd;
 	    }
-	    ncmd = alloc(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1);
+	    ncmdsize = STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1;
+	    ncmd = alloc(ncmdsize);
 	    if (ncmd != NULL)
 	    {
-		STRCPY(ncmd, p_sxq);
-		STRCAT(ncmd, ecmd);
 		// When 'shellxquote' is ( append ).
 		// When 'shellxquote' is "( append )".
-		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		vim_snprintf((char *)ncmd, ncmdsize, "%s%s%s", p_sxq, ecmd, *p_sxq == '(' ? (char_u *)")"
 		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
 		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
@@ -1965,8 +2046,7 @@ same_directory(char_u *f1, char_u *f2)
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
 	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_NETBEANS_INTG) \
-	|| defined(PROTO)
+	|| defined(FEAT_NETBEANS_INTG)
 /*
  * Change to a file's directory.
  * Caller must call shorten_fnames()!
@@ -2001,7 +2081,7 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 }
 #endif
 
-#if defined(STAT_IGNORES_SLASH) || defined(PROTO)
+#if defined(STAT_IGNORES_SLASH)
 /*
  * Check if "name" ends in a slash and is not a directory.
  * Used for systems where stat() ignores a trailing slash on a file name.
@@ -2031,7 +2111,7 @@ vim_stat(const char *name, stat_T *stp)
 }
 #endif
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 
 /*
  * Handling of cursor and mouse pointer shapes in various modes.
@@ -2066,26 +2146,29 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-static char *mshape_names[] =
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+static string_T mshape_names[] =
 {
-    "arrow",	// default, must be the first one
-    "blank",	// hidden
-    "beam",
-    "updown",
-    "udsizing",
-    "leftright",
-    "lrsizing",
-    "busy",
-    "no",
-    "crosshair",
-    "hand1",
-    "hand2",
-    "pencil",
-    "question",
-    "rightup-arrow",
-    "up-arrow",
-    NULL
+    STRING_INIT("arrow"),	// default, must be the first one
+    STRING_INIT("blank"),	// hidden
+    STRING_INIT("beam"),
+    STRING_INIT("updown"),
+    STRING_INIT("udsizing"),
+    STRING_INIT("leftright"),
+    STRING_INIT("lrsizing"),
+    STRING_INIT("busy"),
+    STRING_INIT("no"),
+    STRING_INIT("crosshair"),
+    STRING_INIT("hand1"),
+    STRING_INIT("hand2"),
+    STRING_INIT("pencil"),
+    STRING_INIT("question"),
+    STRING_INIT("rightup-arrow"),
+    STRING_INIT("up-arrow"),
+    {NULL, 0}
 };
+#undef STRING_INIT
 
 #  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
 # endif
@@ -2195,7 +2278,7 @@ parse_shape_opt(int what)
 		    {
 			for (i = 0; ; ++i)
 			{
-			    if (mshape_names[i] == NULL)
+			    if (mshape_names[i].string == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
 				    return e_illegal_mouseshape;
@@ -2206,12 +2289,11 @@ parse_shape_opt(int what)
 				    (void)getdigits(&p);
 				break;
 			    }
-			    len = (int)STRLEN(mshape_names[i]);
-			    if (STRNICMP(p, mshape_names[i], len) == 0)
+			    if (STRNICMP(p, mshape_names[i].string, mshape_names[i].length) == 0)
 			    {
 				if (round == 2)
 				    shape_table[idx].mshape = i;
-				p += len;
+				p += mshape_names[i].length;
 				break;
 			    }
 			}
@@ -2337,7 +2419,7 @@ parse_shape_opt(int what)
 }
 
 # if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
+	|| defined(FEAT_MOUSESHAPE)
 /*
  * Return the index into shape_table[] for the current mode.
  * When "mouse" is TRUE, consider indexes valid for the mouse pointer.
@@ -2390,7 +2472,7 @@ get_shape_idx(int mouse)
 }
 #endif
 
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
 static int current_mouse_shape = 0;
 
 /*
@@ -2444,7 +2526,7 @@ update_mouseshape(int shape_idx)
 
 #endif // CURSOR_SHAPE
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mainly for tests: get the name of the current mouse shape.
  */
@@ -2453,11 +2535,12 @@ f_getmouseshape(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
     if (current_mouse_shape >= 0
 			      && current_mouse_shape < (int)MSHAPE_NAMES_COUNT)
-	rettv->vval.v_string = vim_strsave(
-				  (char_u *)mshape_names[current_mouse_shape]);
+	rettv->vval.v_string = vim_strnsave(
+				  mshape_names[current_mouse_shape].string,
+				  mshape_names[current_mouse_shape].length);
 # endif
 }
 #endif
@@ -2508,7 +2591,7 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free the memory allocated by get_user_name()
  */
@@ -2519,7 +2602,7 @@ free_username(void)
 }
 #endif
 
-#ifndef HAVE_QSORT
+#if !defined(HAVE_QSORT) && !defined(PROTO)
 /*
  * Our own qsort(), for systems that don't have it.
  * It's simple and slow.  From the K&R C book.
@@ -2586,7 +2669,7 @@ qsort(
  *  (history removed, not very interesting.  See the "screen" sources.)
  */
 
-#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
+#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(PROTO)
 
 #define EXTRASIZE 5		// increment to add to env. size
 
@@ -2726,7 +2809,7 @@ vimpty_getenv(const char_u *string)
 
 #endif // !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
 
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL)
 /*
  * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
  * rights to write into.
@@ -2761,7 +2844,7 @@ filewritable(char_u *fname)
 }
 #endif
 
-#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO)
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
  * Returns -1 when encountering EOF.
@@ -2903,8 +2986,7 @@ elapsed(DWORD start_tick)
 
 #if defined(FEAT_JOB_CHANNEL) \
 	|| (defined(UNIX) && (!defined(USE_SYSTEM) \
-	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)))) \
-	|| defined(PROTO)
+	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL))))
 /*
  * Parse "cmd" and put the white-separated parts in "argv".
  * "argv" is an allocated array with "argc" entries and room for 4 more.
@@ -3011,7 +3093,7 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+# if defined(FEAT_JOB_CHANNEL)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;
@@ -3066,4 +3148,173 @@ get_special_pty_type(void)
 #else
     return 0;
 #endif
+}
+
+// compare two keyvalue_T structs by case sensitive value
+    int
+cmp_keyvalue_value(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRCMP(kv1->value.string, kv2->value.string);
+}
+
+// compare two keyvalue_T structs by value with length
+    int
+cmp_keyvalue_value_n(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNCMP(kv1->value.string, kv2->value.string, MAX(kv1->value.length,
+		kv2->value.length));
+}
+
+// compare two keyvalue_T structs by case insensitive value
+    int
+cmp_keyvalue_value_i(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRICMP(kv1->value.string, kv2->value.string);
+}
+
+// compare two keyvalue_T structs by case insensitive ASCII value
+// with value.length
+    int
+cmp_keyvalue_value_ni(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return vim_strnicmp_asc((char *)kv1->value.string,
+	    (char *)kv2->value.string, MAX(kv1->value.length,
+		    kv2->value.length));
+}
+
+/*
+ * Iterative merge sort for doubly linked list.
+ * O(NlogN) worst case, and stable.
+ *  - The list is divided into blocks of increasing size (1, 2, 4, 8, ...).
+ *  - Each pair of blocks is merged in sorted order.
+ *  - Merged blocks are reconnected to build the sorted list.
+ */
+    void *
+mergesort_list(
+    void	*head,
+    void	*(*get_next)(void *),
+    void	(*set_next)(void *, void *),
+    void	*(*get_prev)(void *),
+    void	(*set_prev)(void *, void *),
+    int		(*compare)(const void *, const void *))
+{
+    if (!head || !get_next(head))
+	return head;
+
+    // Count length
+    int	    n = 0;
+    void*   curr = head;
+    while (curr)
+    {
+	n++;
+	curr = get_next(curr);
+    }
+
+    int	size;
+    for (size = 1; size < n; size *= 2)
+    {
+	void*	new_head = NULL;
+	void*	tail = NULL;
+	curr = head;
+
+	while (curr)
+	{
+	    // Split two runs
+	    void    *left = curr;
+	    void    *right = left;
+	    int	    i;
+	    for (i = 0; i < size && right; ++i)
+		right = get_next(right);
+
+	    void    *next = right;
+	    for (i = 0; i < size && next; ++i)
+		next = get_next(next);
+
+	    // Break links
+	    void    *l_end = right ? get_prev(right) : NULL;
+	    if (l_end)
+		set_next(l_end, NULL);
+	    if (right)
+		set_prev(right, NULL);
+
+	    void    *r_end = next ? get_prev(next) : NULL;
+	    if (r_end)
+		set_next(r_end, NULL);
+	    if (next)
+		set_prev(next, NULL);
+
+	    // Merge
+	    void    *merged = NULL;
+	    void    *merged_tail = NULL;
+
+	    while (left || right)
+	    {
+		void	*chosen = NULL;
+		if (!left)
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+		else if (!right)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else if (compare(left, right) <= 0)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+
+		if (merged_tail)
+		{
+		    set_next(merged_tail, chosen);
+		    set_prev(chosen, merged_tail);
+		    merged_tail = chosen;
+		}
+		else
+		{
+		    merged = merged_tail = chosen;
+		    set_prev(chosen, NULL);
+		}
+	    }
+
+	    // Connect to full list
+	    if (!new_head)
+		new_head = merged;
+	    else
+	    {
+		set_next(tail, merged);
+		set_prev(merged, tail);
+	    }
+
+	    // Move tail to end
+	    while (get_next(merged_tail))
+		merged_tail = get_next(merged_tail);
+	    tail = merged_tail;
+
+	    curr = next;
+	}
+
+	head = new_head;
+    }
+
+    return head;
 }

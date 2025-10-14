@@ -4,6 +4,8 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:		2022 May 15
+"			2024 Jan 14 by Vim Project (browsefilter)
+"			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -15,7 +17,11 @@ set cpo-=C
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
-let s:browsefilter = "All Files (*.*)\t*.*\n"
+if has("win32")
+  let s:browsefilter = "All Files (*.*)\t*\n"
+else
+  let s:browsefilter = "All Files (*)\t*\n"
+endif
 let s:match_words = ""
 
 if !exists("g:eruby_default_subtype")
@@ -109,8 +115,8 @@ exe 'cmap <buffer><script><expr> <Plug><cfile> ErubyAtCursor() ? ' . maparg('<Pl
 exe 'cmap <buffer><script><expr> <Plug><ctag> ErubyAtCursor() ? ' . maparg('<Plug><ctag>', 'c') . ' : ' . get(s:ctagmap, 'rhs', '"\022\027"')
 unlet s:cfilemap s:ctagmap s:include s:path s:suffixesadd
 
-" Change the browse dialog on Win32 to show mainly eRuby-related files
-if has("gui_win32")
+" Change the browse dialog on Win32 and GTK to show mainly eRuby-related files
+if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let b:browsefilter="eRuby Files (*.erb, *.rhtml)\t*.erb;*.rhtml\n" . s:browsefilter
 endif
 
@@ -120,7 +126,7 @@ if exists("loaded_matchit")
 endif
 
 " TODO: comments=
-setlocal commentstring=<%#%s%>
+setlocal commentstring=<%#\ %s\ %>
 
 let b:undo_ftplugin = "setl cms< " .
       \ " | unlet! b:browsefilter b:match_words | " . b:undo_ftplugin

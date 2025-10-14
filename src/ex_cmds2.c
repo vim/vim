@@ -126,9 +126,9 @@ check_changed(buf_T *buf, int flags)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * When wanting to write a file without a file name, ask the user for a name.
  */
@@ -163,7 +163,7 @@ dialog_changed(
     char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
     buf_T	*buf2;
-    exarg_T     ea;
+    exarg_T	ea;
 
     dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
@@ -177,14 +177,31 @@ dialog_changed(
 
     if (ret == VIM_YES)
     {
+	int	empty_bufname;
+
 #ifdef FEAT_BROWSE
 	// May get file name, when there is none
 	browse_save_fname(buf);
 #endif
-	if (buf->b_fname != NULL && check_overwrite(&ea, buf,
-				    buf->b_fname, buf->b_ffname, FALSE) == OK)
+	empty_bufname = buf->b_fname == NULL ? TRUE : FALSE;
+	if (empty_bufname)
+	    buf_set_name(buf->b_fnum, (char_u *)"Untitled");
+
+	if (check_overwrite(&ea, buf, buf->b_fname, buf->b_ffname, FALSE) == OK)
+	{
 	    // didn't hit Cancel
-	    (void)buf_write_all(buf, FALSE);
+	    if (buf_write_all(buf, FALSE) == OK)
+		return;
+	}
+
+	// restore to empty when write failed
+	if (empty_bufname)
+	{
+	    buf->b_fname = NULL;
+	    VIM_CLEAR(buf->b_ffname);
+	    VIM_CLEAR(buf->b_sfname);
+	    unchanged(buf, TRUE, FALSE);
+	}
     }
     else if (ret == VIM_NO)
     {
@@ -457,6 +474,36 @@ ex_listdo(exarg_T *eap)
     tabpage_T	*tp;
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
+
+    if (curwin->w_p_wfb)
+    {
+	if ((eap->cmdidx == CMD_ldo || eap->cmdidx == CMD_lfdo) &&
+		!eap->forceit)
+	{
+	    // Disallow :ldo if 'winfixbuf' is applied
+	    emsg(_(e_winfixbuf_cannot_go_to_buffer));
+	    return;
+	}
+
+	if (win_valid(prevwin) && !prevwin->w_p_wfb)
+	    // 'winfixbuf' is set; attempt to change to a window without it.
+	    win_goto(prevwin);
+	if (curwin->w_p_wfb)
+	{
+	    // Split the window, which will be 'nowinfixbuf', and set curwin to
+	    // that
+	    (void)win_split(0, 0);
+
+	    if (curwin->w_p_wfb)
+	    {
+		// Autocommands set 'winfixbuf' or sent us to another window
+		// with it set, or we failed to split the window.  Give up.
+		emsg(_(e_winfixbuf_cannot_go_to_buffer));
+		return;
+	    }
+	}
+    }
+
 #if defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
 #endif
@@ -610,7 +657,7 @@ ex_listdo(exarg_T *eap)
 	    ++i;
 
 	    // execute the command
-	    do_cmdline(eap->arg, eap->getline, eap->cookie,
+	    do_cmdline(eap->arg, eap->ea_getline, eap->cookie,
 						DOCMD_VERBOSE + DOCMD_NOWAIT);
 
 	    if (eap->cmdidx == CMD_bufdo)
@@ -742,7 +789,7 @@ ex_compiler(exarg_T *eap)
     {
 	// ":compiler! {name}" sets global options
 	do_cmdline_cmd((char_u *)
-		"command -nargs=* CompilerSet set <args>");
+		"command -nargs=* -keepscript CompilerSet set <args>");
     }
     else
     {
@@ -788,9 +835,9 @@ ex_compiler(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
+#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON)
 
-# if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
 /*
  * Detect Python 3 or 2, and initialize 'pyxversion'.
  */

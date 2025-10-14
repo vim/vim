@@ -56,10 +56,14 @@ VIM_FOR_INDENTTEST = ../../src/vim
 indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
-		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
+		$(MAKE) test VIMPROG="$(VIM_FOR_INDENTTEST)"
 
 # Executable used for running the syntax tests.
 VIM_FOR_SYNTAXTEST = ../../src/vim
+
+# (For local testing only with GNU Make.)
+VIM_SYNTAX_TEST_FILTER =
+VIM_SYNTAX_TEST_WAIT_TIME =
 
 syntaxtest:
 	cd runtime/syntax && \
@@ -94,14 +98,14 @@ syntaxtest:
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 9
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
 # - Update Vim version number.  For a test version in: src/version.h,
 #   READMEdir/Contents, MAJOR/MINOR above, VIMMAJOR and VIMMINOR in
 #   src/Makefile, README.txt, README.md, src/README.md, READMEdir/README*.txt,
-#   runtime/doc/*.txt and make nsis/gvim_version.nsh.
+#   runtime/doc/*.txt.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.manifest.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, Lua, Cscope and
 #   "huge" features.  Add MZscheme if you can make it work.
@@ -111,6 +115,7 @@ MINOR = 0
 # - With these features: "make depend" (works best with gcc).
 # - If you have a lint program: "make lint" and check the output (ignore GTK
 #   warnings).
+# - compile release versions using -DNDEBUG to disable assert()s
 # - If you have valgrind, enable it in src/testdir/Makefile and run "make
 #   test".  Enable EXITFREE, disable GUI, scheme and tcl to avoid false alarms.
 #   Check the valgrind output.
@@ -153,17 +158,17 @@ MINOR = 0
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim90 and puts all files in there.
+#   This creates the directory vim/vim91 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
 #   > cd src
-#   > msvc2015.bat
+#   > msvc-latest.bat
 # - Build the console binary:
-#   > nmake -f Make_mvc.mak
+#   > nmake.exe -f Make_mvc.mak
 # - Run the tests and check the output:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak test
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak test
 # - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
@@ -173,10 +178,10 @@ MINOR = 0
 #           uninstall.exe to uninstallw32.exe
 # Win32 GUI version build:
 # - > cd src
-#   > nmake -f Make_mvc.mak GUI=yes
+#   > nmake.exe -f Make_mvc.mak "GUI=yes"
 # - Run the tests and check the output:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak testgvim
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak testgvim
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
@@ -188,8 +193,8 @@ MINOR = 0
 #   > cd src
 #   > bigvim.bat
 # - Run the tests:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak testgvim
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak testgvim
 #   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
@@ -209,13 +214,13 @@ MINOR = 0
 #	gvimext64.dll in src/GvimExt
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_9.0.*_x64.zip as vim/vim90/GvimExt/gvimext64.dll.
+#	It is part of gvim_9.1.*_x64.zip as vim/vim91/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
-#   > unzip icons.zip
-#   > makensis gvim.nsi  (takes a few minutes).
-#      ignore warning for libwinpthread-1.dll
+#   > nmake.exe -f Make_mvc.mak all
+#    (takes a few minutes).
+#    See nsis/README.txt for details.
 # - Copy gvim##.exe to the dist directory.
 #
 # 64 bit builds (these are not in the normal distribution, the 32 bit build
@@ -223,9 +228,9 @@ MINOR = 0
 # Like the console and GUI version, but first run vcvars64.bat or
 #   "..\VC\vcvarsall.bat x86_amd64".
 # - Build the console version:
-#   > nmake -f Make_mvc.mak
+#   > nmake.exe -f Make_mvc.mak
 # - Build the GUI version:
-#   > nmake -f Make_mvc.mak GUI=yes
+#   > nmake.exe -f Make_mvc.mak "GUI=yes"
 # - Build the OLE version with interfaces:
 #   > bigvim64.bat
 #
@@ -249,9 +254,6 @@ VERSION = $(MAJOR)$(MINOR)
 VDOT	= $(MAJOR).$(MINOR)
 VIMRTDIR = vim$(VERSION)
 
-# Vim used for conversion from "unix" to "dos"
-VIM	= vim
-
 # How to include Filelist depends on the version of "make" you have.
 # If the current choice doesn't work, try the other one.
 
@@ -266,8 +268,8 @@ dist:
 # Clean up some files to avoid they are included.
 # Copy README files to the top directory.
 prepare:
-	if test -f runtime/doc/uganda.nsis.txt; then \
-		rm runtime/doc/uganda.nsis.txt; fi
+	if test -f lang/LICENSE.nsis.txt; then \
+		rm -f lang/LICENSE*.nsis.txt; fi
 	for name in $(IN_README_DIR); do \
 	  cp READMEdir/"$$name" .; \
 	  done
@@ -288,10 +290,10 @@ dist/$(COMMENT_RT): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) runtime files for MS-DOS and MS-Windows" > dist/$(COMMENT_RT)
 
 dist/$(COMMENT_W32): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-Windows NT/95" > dist/$(COMMENT_W32)
+	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-Windows" > dist/$(COMMENT_W32)
 
 dist/$(COMMENT_GVIM): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) GUI binaries for MS-Windows NT/95" > dist/$(COMMENT_GVIM)
+	echo "Vim - Vi IMproved - v$(VDOT) GUI binaries for MS-Windows" > dist/$(COMMENT_GVIM)
 
 dist/$(COMMENT_OLE): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) MS-Windows GUI binaries with OLE support" > dist/$(COMMENT_OLE)
@@ -407,13 +409,8 @@ amisrc: dist prepare
 	gzip -9 dist/vim$(VERSION)src.tar
 	mv dist/vim$(VERSION)src.tar.gz dist/vim$(VERSION)src.tgz
 
-no_title.vim: Makefile
-	echo "set notitle noicon nocp nomodeline viminfo=" >no_title.vim
-
 # MS-DOS sources
-dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
-	runtime/doc/uganda.nsis.txt \
-	nsis/gvim_version.nsh
+dossrc: dist dist/$(COMMENT_SRC) license
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -424,25 +421,15 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 		$(SRC_DOS_BIN) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
-		runtime/doc/uganda.nsis.txt \
-		nsis/gvim_version.nsh \
+		lang/LICENSE.*.txt \
+		lang/README.*.txt \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
-	# This file needs to be in dos fileformat for NSIS.
-	$(VIM) -e -X -u no_title.vim -c ":set tx|wq" dist/vim/$(VIMRTDIR)/doc/uganda.nsis.txt
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
 
-runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
-	cd runtime/doc && $(MAKE) uganda.nsis.txt
-
-nsis/gvim_version.nsh: Makefile
-	echo "# Generated from Makefile: define the version numbers" > $@
-	echo "!ifndef __GVIM_VER__NSH__"  >> $@
-	echo "!define __GVIM_VER__NSH__"  >> $@
-	echo "!define VER_MAJOR $(MAJOR)" >> $@
-	echo "!define VER_MINOR $(MINOR)" >> $@
-	echo "!endif" >> $@
+license:
+	cd nsis && $(MAKE) -f Makefile $@
 
 dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip
@@ -450,7 +437,7 @@ dosrt: dist dist/$(COMMENT_RT) dosrt_files
 
 # Split in two parts to avoid an "argument list too long" error.
 # We no longer convert the files from unix to dos fileformat.
-dosrt_files: dist prepare no_title.vim
+dosrt_files: dist prepare
 	-rm -rf dist/vim
 	mkdir dist/vim
 	mkdir dist/vim/$(VIMRTDIR)
@@ -506,7 +493,7 @@ dosbin: prepare dosbin_gvim dosbin_w32 dosbin_ole $(DOSBIN_S)
 	-rm $(IN_README_DIR)
 
 # make Win32 gvim
-dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
+dosbin_gvim: dist dist/$(COMMENT_GVIM)
 	-rm -rf dist/gvim$(VERSION).zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -528,7 +515,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	cp gvim.pdb dist/gvim$(VERSION).pdb
 
 # make Win32 console
-dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
+dosbin_w32: dist dist/$(COMMENT_W32)
 	-rm -rf dist/vim$(VERSION)w32.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -545,7 +532,7 @@ dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
 	cp vimw32.pdb dist/vim$(VERSION)w32.pdb
 
 # make Win32 gvim with OLE
-dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
+dosbin_ole: dist dist/$(COMMENT_OLE)
 	-rm -rf dist/gvim$(VERSION)ole.zip
 	-rm -rf dist/vim
 	mkdir dist/vim

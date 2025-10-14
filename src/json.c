@@ -16,7 +16,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 
@@ -55,7 +55,7 @@ json_encode(typval_T *val, int options)
     return ga.ga_data;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Encode ["nr", "val"] into a JSON format string in allocated memory.
  * "options" can contain JSON_JS, JSON_NO_NONE and JSON_NL.
@@ -267,6 +267,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
     char_u	*res;
     blob_T	*b;
     list_T	*l;
+    tuple_T	*tuple;
     dict_T	*d;
     int		i;
 
@@ -365,6 +366,42 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    }
 		    ga_append(gap, ']');
 		    l->lv_copyID = 0;
+		}
+	    }
+	    break;
+
+	case VAR_TUPLE:
+	    tuple = val->vval.v_tuple;
+	    if (tuple == NULL)
+		ga_concat(gap, (char_u *)"[]");
+	    else
+	    {
+		if (tuple->tv_copyID == copyID)
+		    ga_concat(gap, (char_u *)"[]");
+		else
+		{
+		    int		len = TUPLE_LEN(tuple);
+
+		    tuple->tv_copyID = copyID;
+		    ga_append(gap, '[');
+		    for (i = 0; i < len && !got_int; i++)
+		    {
+			typval_T	*t_item = TUPLE_ITEM(tuple, i);
+			if (json_encode_item(gap, t_item, copyID,
+						   options & JSON_JS) == FAIL)
+			    return FAIL;
+
+			if ((options & JSON_JS)
+				&& i == len - 1
+				&& t_item->v_type == VAR_SPECIAL
+				&& t_item->vval.v_number == VVAL_NONE)
+			    // add an extra comma if the last item is v:none
+			    ga_append(gap, ',');
+			if (i <= len - 2)
+			    ga_append(gap, ',');
+		    }
+		    ga_append(gap, ']');
+		    tuple->tv_copyID = 0;
 		}
 	    }
 	    break;
@@ -1174,7 +1211,7 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     return OK;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Decode the JSON from "reader" and store the result in "res".
  * "options" can be JSON_JS or zero;

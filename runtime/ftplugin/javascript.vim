@@ -1,8 +1,9 @@
 " Vim filetype plugin file
 " Language:     Javascript
 " Maintainer:   Doug Kearns <dougkearns@gmail.com>
-" Last Change:  2020 Jun 23
 " Contributor:  Romain Lafourcade <romainlafourcade@gmail.com>
+" Last Change:	2024 Jan 14
+" 		2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin")
     finish
@@ -24,7 +25,7 @@ endif
 " Set 'comments' to format dashed lists in comments.
 setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 
-setlocal commentstring=//%s
+setlocal commentstring=//\ %s
 
 " Change the :browse e filter to primarily show JavaScript-related files.
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
@@ -34,7 +35,11 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
                 \ .. "JavaScript Modules (*.es, *.es6, *.cjs, *.mjs, *.jsm)\t*.es;*.es6;*.cjs;*.mjs;*.jsm\n"
                 \ .. "Vue Templates (*.vue)\t*.vue\n"
                 \ .. "JSON Files (*.json)\t*.json\n"
-                \ .. "All Files (*.*)\t*.*\n"
+    if has("win32")
+        let b:browsefilter ..= "All Files (*.*)\t*\n"
+    else
+        let b:browsefilter ..= "All Files (*)\t*\n"
+    endif
 endif
 
 " The following suffixes should be implied when resolving filenames

@@ -9,7 +9,7 @@ endif
 let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
-scriptencoding iso8859-9
+scriptencoding iso-8859-9
 
 " Top
 menutrans &File	&Dosya

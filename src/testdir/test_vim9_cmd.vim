@@ -1,9 +1,6 @@
 " Test commands that are not compiled in a :def function
 
-source check.vim
-import './vim9.vim' as v9
-source term_util.vim
-source view_util.vim
+import './util/vim9.vim' as v9
 
 def Test_vim9cmd()
   var lines =<< trim END
@@ -159,7 +156,7 @@ def Test_cmdmod_execute()
   v9.CheckScriptSuccess(lines)
   delfunc g:TheFunc
 
-  # vim9cmd execute(cmd) executes code in vim9 script context
+  # vim9cmd execute(cmd) executes code in Vim9 script context
   lines =<< trim END
     vim9cmd execute("g:vim9executetest = 'bar'")
     call assert_equal('bar', g:vim9executetest)
@@ -176,7 +173,7 @@ def Test_cmdmod_execute()
   unlet g:vim9executetest1
   unlet g:vim9executetest2
 
-  # legacy call execute(cmd) executes code in vim script context
+  # legacy call execute(cmd) executes code in Vim script context
   lines =<< trim END
     vim9script
     legacy call execute("let g:vim9executetest = 'bar'")
@@ -1350,6 +1347,59 @@ def Test_put_with_linebreak()
   bwipe!
 enddef
 
+def Test_iput()
+  new
+  set noexpandtab
+
+  call feedkeys("i\<Tab>foo", 'x')
+
+  @p = "ppp"
+  iput p
+  call assert_equal("\<Tab>ppp", getline(2))
+
+  iput ="below"
+  assert_equal("\<Tab>below", getline(3))
+  iput! ="above"
+  assert_equal("\<Tab>above", getline(3))
+  assert_equal("\<Tab>below", getline(4))
+
+  :2iput =['a', 'b', 'c']
+  assert_equal(["\<Tab>ppp", "\<Tab>a", "\<Tab>b", "\<Tab>c", "\<Tab>above"], getline(2, 6))
+
+  :0iput =  "\<Tab>\<Tab>first"
+  assert_equal("\<Tab>first", getline(1))
+  :1iput! ="first again"
+  assert_equal("\<Tab>first again", getline(1))
+
+  bw!
+  v9.CheckDefFailure(['iput =xxx'], 'E1001:')
+enddef
+
+def Test_iput_with_linebreak()
+  new
+  var lines =<< trim END
+    vim9script
+    ip =split('abc', '\zs')
+            ->join()
+  END
+  v9.CheckScriptSuccess(lines)
+  getline(2)->assert_equal('a b c')
+  bwipe!
+enddef
+
+def Test_iput_not_put()
+  new
+  call feedkeys("ggS\<Tab>foo", 'x')
+  @a = "putting"
+  :0iput a
+  assert_equal("\<Tab>putting", getline(1))
+  put a
+  assert_equal("putting", getline(2))
+  iput a
+  assert_equal("putting", getline(3))
+  bwipe!
+enddef
+
 def Test_command_star_range()
   new
   setline(1, ['xxx foo xxx', 'xxx bar xxx', 'xxx foo xx bar'])
@@ -1652,7 +1702,7 @@ def Test_lockvar()
       enddef
       SetList()
   END
-  v9.CheckScriptFailure(lines, 'E1119', 4)
+  v9.CheckScriptFailure(lines, 'E1119:', 4)
 
   lines =<< trim END
       vim9script
@@ -1663,7 +1713,7 @@ def Test_lockvar()
       enddef
       AddToList()
   END
-  v9.CheckScriptFailure(lines, 'E741', 2)
+  v9.CheckScriptFailure(lines, 'E741:', 2)
 
   lines =<< trim END
       vim9script
@@ -1674,7 +1724,7 @@ def Test_lockvar()
       enddef
       AddToList()
   END
-  v9.CheckScriptFailure(lines, 'E741', 2)
+  v9.CheckScriptFailure(lines, 'E741:', 2)
 
   # can unlet a locked list item but not change it
   lines =<< trim END
@@ -1689,7 +1739,7 @@ def Test_lockvar()
     lockvar ll[1]
     ll[1] = 9
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E1119:', 'E741'], 3)
+  v9.CheckDefExecAndScriptFailure(lines, ['E1119:', 'E741:'], 3)
 
   # can unlet a locked dict item but not change it
   lines =<< trim END
@@ -1704,26 +1754,26 @@ def Test_lockvar()
     lockvar dd.a
     dd.a = 3
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E1121:', 'E741'], 3)
+  v9.CheckDefExecAndScriptFailure(lines, ['E1121:', 'E741:'], 3)
 
   lines =<< trim END
       var theList = [1, 2, 3]
       lockvar theList
   END
-  v9.CheckDefFailure(lines, 'E1178', 2)
+  v9.CheckDefFailure(lines, 'E1178:', 2)
 
   lines =<< trim END
       var theList = [1, 2, 3]
       unlockvar theList
   END
-  v9.CheckDefFailure(lines, 'E1178', 2)
+  v9.CheckDefFailure(lines, 'E1178:', 2)
 
   lines =<< trim END
       vim9script
       var name = 'john'
       lockvar nameX
   END
-  v9.CheckScriptFailure(lines, 'E1246', 3)
+  v9.CheckScriptFailure(lines, 'E1246:', 3)
 
   lines =<< trim END
       vim9script
@@ -1733,14 +1783,14 @@ def Test_lockvar()
       enddef
       LockIt()
   END
-  v9.CheckScriptFailure(lines, 'E1246', 1)
+  v9.CheckScriptFailure(lines, 'E1246:', 1)
 
   lines =<< trim END
       vim9script
       const name = 'john'
       unlockvar name
   END
-  v9.CheckScriptFailure(lines, 'E46', 3)
+  v9.CheckScriptFailure(lines, 'E46:', 3)
 
   lines =<< trim END
       vim9script
@@ -1750,7 +1800,7 @@ def Test_lockvar()
       enddef
       UnLockIt()
   END
-  v9.CheckScriptFailure(lines, 'E46', 1)
+  v9.CheckScriptFailure(lines, 'E46:', 1)
 
   lines =<< trim END
       def _()
@@ -1758,7 +1808,7 @@ def Test_lockvar()
       enddef
       defcomp
   END
-  v9.CheckScriptFailure(lines, 'E179', 1)
+  v9.CheckScriptFailure(lines, 'E179:', 1)
 
   lines =<< trim END
       def T()
@@ -1766,7 +1816,7 @@ def Test_lockvar()
       enddef
       defcomp
   END
-  v9.CheckScriptFailure(lines, 'E179', 1)
+  v9.CheckScriptFailure(lines, 'E179:', 1)
 enddef
 
 def Test_substitute_expr()
@@ -2036,15 +2086,37 @@ def Test_no_space_after_command()
   v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
 
-" Test for the 'previewpopup' option
-def Test_previewpopup()
-  set previewpopup=height:10,width:60
-  pedit Xppfile
+def Test_lambda_crash()
+  # This used to crash Vim
+  var lines =<< trim END
+    vim9 () => super      => {
+  END
+  v9.CheckScriptFailureList(lines, ["E1356:", "E1405:"])
+enddef
+
+def s:check_previewpopup(expected_title: string)
   var id = popup_findpreview()
   assert_notequal(id, 0)
-  assert_match('Xppfile', popup_getoptions(id).title)
+  assert_match(expected_title, popup_getoptions(id).title)
   popup_clear()
+  bw Xppfile
   set previewpopup&
+enddef
+
+" Test for the 'previewpopup' option
+def Test_previewpopup()
+  CheckFeature quickfix
+  set previewpopup=height:10,width:60
+  pedit Xppfile
+  s:check_previewpopup('Xppfile')
+enddef
+
+def Test_previewpopup_pbuffer()
+  CheckFeature quickfix
+  set previewpopup=height:10,width:60
+  edit Xppfile
+  pbuffer
+  s:check_previewpopup('')
 enddef
 
 def Test_syntax_enable_clear()

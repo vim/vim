@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
+*help.txt*	For Vim version 9.1.  Last change: 2025 Jun 27
 
 			VIM - main help file
 									 k
@@ -162,7 +162,8 @@ Programming language support ~
 |filetype.txt|	settings done specifically for a type of file
 |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |ft_ada.txt|	Ada (the programming language) support
-|ft_context.txt|	Filetype plugin for ConTeXt
+|ft_context.txt|  Filetype plugin for ConTeXt
+|ft_hare.txt|	Filetype plugin for Hare
 |ft_mp.txt|	Filetype plugin for METAFONT and MetaPost
 |ft_ps1.txt|	Filetype plugin for Windows PowerShell
 |ft_raku.txt|	Filetype plugin for Raku
@@ -179,11 +180,15 @@ Language support ~
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
 |hangulin.txt|	Hangul (Korean) input mode
+|vietnamese.txt|  Vietnamese language support and editing
 
 GUI ~
 |gui.txt|	Graphical User Interface (GUI)
 |gui_w32.txt|	Win32 GUI
 |gui_x11.txt|	X11 GUI
+
+System Integration ~
+|wayland.txt|	Wayland protocol support
 
 Interfaces ~
 |if_cscop.txt|	using Cscope with Vim
@@ -231,6 +236,7 @@ Standard plugins ~
 |pi_paren.txt|     Highlight matching parens
 |pi_spec.txt|      Filetype plugin to work with rpm spec files
 |pi_tar.txt|       Tar file explorer
+|pi_tutor.txt|     Interactive tutorial for Vim
 |pi_vimball.txt|   Create a self-installing Vim script
 |pi_zip.txt|       Zip archive explorer
 

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Allocate an empty blob.
@@ -287,6 +287,38 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
     ga_append(&ga, NUL);		// append a NUL at the end
     *tofree = ga.ga_data;
     return *tofree;
+}
+
+/*
+ * "items(blob)" function
+ * Converts a Blob into a List of [index, byte] pairs.
+ * Caller must have already checked that argvars[0] is a Blob.
+ * A null blob behaves like an empty blob.
+ */
+    void
+blob2items(typval_T *argvars, typval_T *rettv)
+{
+    blob_T	*blob = argvars[0].vval.v_blob;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (int i = 0; i < blob_len(blob); i++)
+    {
+	list_T	*l2 = list_alloc();
+	if (l2 == NULL)
+	    return;
+
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    return;
+	}
+
+	if (list_append_number(l2, i) == FAIL
+		|| list_append_number(l2, blob_get(blob, i)) == FAIL)
+	    return;
+    }
 }
 
 /*
@@ -641,25 +673,28 @@ blob_filter_map(
 	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	    break;
-	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
+	if (filtermap != FILTERMAP_FOREACH)
 	{
-	    clear_tv(&newtv);
-	    emsg(_(e_invalid_operation_for_blob));
-	    break;
-	}
-	if (filtermap != FILTERMAP_FILTER)
-	{
-	    if (newtv.vval.v_number != val)
-		blob_set(b_ret, i, newtv.vval.v_number);
-	}
-	else if (rem)
-	{
-	    char_u *p = (char_u *)blob_arg->bv_ga.ga_data;
+	    if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
+	    {
+		clear_tv(&newtv);
+		emsg(_(e_invalid_operation_for_blob));
+		break;
+	    }
+	    if (filtermap != FILTERMAP_FILTER)
+	    {
+		if (newtv.vval.v_number != val)
+		    blob_set(b_ret, i, newtv.vval.v_number);
+	    }
+	    else if (rem)
+	    {
+		char_u *p = (char_u *)blob_arg->bv_ga.ga_data;
 
-	    mch_memmove(p + i, p + i + 1,
-		    (size_t)b->bv_ga.ga_len - i - 1);
-	    --b->bv_ga.ga_len;
-	    --i;
+		mch_memmove(p + i, p + i + 1,
+			    (size_t)b->bv_ga.ga_len - i - 1);
+		--b->bv_ga.ga_len;
+		--i;
+	    }
 	}
 	++idx;
     }

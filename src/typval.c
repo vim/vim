@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Allocate memory for a variable type-value, and make it empty (0 or NULL
@@ -71,6 +71,9 @@ free_tv(typval_T *varp)
 	    break;
 	case VAR_LIST:
 	    list_unref(varp->vval.v_list);
+	    break;
+	case VAR_TUPLE:
+	    tuple_unref(varp->vval.v_tuple);
 	    break;
 	case VAR_DICT:
 	    dict_unref(varp->vval.v_dict);
@@ -137,6 +140,10 @@ clear_tv(typval_T *varp)
 	case VAR_LIST:
 	    list_unref(varp->vval.v_list);
 	    varp->vval.v_list = NULL;
+	    break;
+	case VAR_TUPLE:
+	    tuple_unref(varp->vval.v_tuple);
+	    varp->vval.v_tuple = NULL;
 	    break;
 	case VAR_DICT:
 	    dict_unref(varp->vval.v_dict);
@@ -234,6 +241,9 @@ tv_get_bool_or_number_chk(
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_number));
 	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_number));
+	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_number));
 	    break;
@@ -262,17 +272,25 @@ tv_get_bool_or_number_chk(
 	    emsg(_(e_using_blob_as_number));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_number));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
-	    emsg(_(e_using_object_as_number));
+	    {
+		if (varp->vval.v_object == NULL)
+		    emsg(_(e_using_object_as_string));
+		else
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_number), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_number));
+		}
+	    }
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_number),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -360,6 +378,9 @@ tv_get_float_chk(typval_T *varp, int *error)
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_float));
 	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_float));
+	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_float));
 	    break;
@@ -383,17 +404,14 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_using_blob_as_float));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_float));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
 	    emsg(_(e_using_object_as_float));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_float),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -522,6 +540,20 @@ check_for_bool_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a bool or a number.
+ */
+    static int
+check_for_bool_or_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_BOOL && args[idx].v_type != VAR_NUMBER)
+    {
+	semsg(_(e_bool_or_number_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Check for an optional bool argument at 'idx'.
  * Return FAIL if the type is wrong.
  */
@@ -531,6 +563,18 @@ check_for_opt_bool_arg(typval_T *args, int idx)
     if (args[idx].v_type == VAR_UNKNOWN)
 	return OK;
     return check_for_bool_arg(args, idx);
+}
+
+/*
+ * Check for an optional bool or number argument at 'idx'.
+ * Return FAIL if the type is wrong.
+ */
+    int
+check_for_opt_bool_or_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type == VAR_UNKNOWN)
+	return OK;
+    return check_for_bool_or_number_arg(args, idx);
 }
 
 /*
@@ -589,6 +633,20 @@ check_for_opt_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a tuple.
+ */
+    int
+check_for_tuple_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_TUPLE)
+    {
+	semsg(_(e_tuple_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a dict.
  */
     int
@@ -629,7 +687,17 @@ check_for_opt_dict_arg(typval_T *args, int idx)
 	    || check_for_dict_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+/*
+ * Check for an optional non-NULL dict argument at 'idx'
+ */
+    int
+check_for_opt_nonnull_dict_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_nonnull_dict_arg(args, idx) != FAIL) ? OK : FAIL;
+}
+
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Give an error and return FAIL unless "args[idx]" is a channel or a job.
  */
@@ -755,7 +823,6 @@ check_for_opt_lnum_arg(typval_T *args, int idx)
 	    || check_for_lnum_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a blob.
  */
@@ -769,7 +836,6 @@ check_for_string_or_blob_arg(typval_T *args, int idx)
     }
     return OK;
 }
-#endif
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a list.
@@ -786,17 +852,18 @@ check_for_string_or_list_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string, a list or a
- * blob.
+ * Give an error and return FAIL unless "args[idx]" is a string, a list, a
+ * tuple or a blob.
  */
     int
-check_for_string_or_list_or_blob_arg(typval_T *args, int idx)
+check_for_string_or_list_or_tuple_or_blob_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_BLOB)
     {
-	semsg(_(e_string_list_or_blob_required_for_argument_nr), idx + 1);
+	semsg(_(e_string_list_tuple_or_blob_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -856,35 +923,37 @@ check_for_opt_string_or_number_or_list_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string or a number
- * or a list or a blob.
+ * Give an error and return FAIL unless "args[idx]" is a string, a number, a
+ * list, a tuple or a blob.
  */
     int
-check_for_string_or_number_or_list_or_blob_arg(typval_T *args, int idx)
+check_for_repeat_func_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_NUMBER
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_BLOB)
     {
-	semsg(_(e_string_number_list_or_blob_required_for_argument_nr), idx + 1);
+	semsg(_(e_repeatable_type_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string or a list
- * or a dict.
+ * Give an error and return FAIL unless "args[idx]" is a string, a list, a
+ * tuple or a dict.
  */
     int
-check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
+check_for_string_list_tuple_or_dict_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT)
     {
-	semsg(_(e_string_list_or_dict_required_for_argument_nr), idx + 1);
+	semsg(_(e_string_list_tuple_or_dict_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -922,15 +991,48 @@ check_for_list_or_blob_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a list or dict
+ * Give an error and return FAIL unless "args[idx]" is a list or a tuple.
  */
     int
-check_for_list_or_dict_arg(typval_T *args, int idx)
+check_for_list_or_tuple_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST && args[idx].v_type != VAR_TUPLE)
+    {
+	semsg(_(e_list_or_tuple_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple or a
+ * blob.
+ */
+    int
+check_for_list_or_tuple_or_blob_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
+	    && args[idx].v_type != VAR_BLOB)
+    {
+	semsg(_(e_list_or_tuple_or_blob_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple or a
+ * dict
+ */
+    int
+check_for_list_or_tuple_or_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT)
     {
-	semsg(_(e_list_or_dict_required_for_argument_nr), idx + 1);
+	semsg(_(e_list_or_tuple_or_dict_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -954,18 +1056,19 @@ check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a list or dict or a
- * blob or a string.
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple, a dict,
+ * a blob or a string.
  */
     int
-check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx)
+check_for_list_tuple_dict_blob_or_string_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT
 	    && args[idx].v_type != VAR_BLOB
 	    && args[idx].v_type != VAR_STRING)
     {
-	semsg(_(e_list_dict_blob_or_string_required_for_argument_nr), idx + 1);
+	semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -1006,7 +1109,7 @@ check_for_object_arg(typval_T *args, int idx)
 /*
  * Returns TRUE if "tv" is a type alias for a class
  */
-    int
+    static int
 tv_class_alias(typval_T *tv)
 {
     return tv->v_type == VAR_TYPEALIAS &&
@@ -1014,16 +1117,19 @@ tv_class_alias(typval_T *tv)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a class or a list.
+ * Give an error and return FAIL unless "args[idx]" is a class
+ * or class typealias.
  */
     int
-check_for_class_or_list_arg(typval_T *args, int idx)
+check_for_class_or_typealias_args(typval_T *args, int idx)
 {
-    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST
-					&& !tv_class_alias(&args[idx]))
+    for (int i = idx; args[i].v_type != VAR_UNKNOWN; ++i)
     {
-	semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
-	return FAIL;
+	if (args[i].v_type != VAR_CLASS && !tv_class_alias(&args[idx]))
+	{
+	    semsg(_(e_class_or_typealias_required_for_argument_nr), i + 1);
+	    return FAIL;
+	}
     }
     return OK;
 }
@@ -1105,6 +1211,9 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_string));
 	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_string));
+	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_string));
 	    break;
@@ -1128,10 +1237,22 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    emsg(_(e_using_blob_as_string));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_string));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
-	    emsg(_(e_using_object_as_string));
+	    {
+		if (varp->vval.v_object == NULL)
+		    emsg(_(e_using_object_as_string));
+		else
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_string), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_string));
+		}
+	    }
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -1155,10 +1276,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_string),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -1186,6 +1303,7 @@ tv_stringify(typval_T *varp, char_u *buf)
     {
 	typval_T tmp;
 
+	init_tv(&tmp);
 	f_string(varp, &tmp);
 	tv_get_string_buf(&tmp, buf);
 	clear_tv(varp);
@@ -1215,6 +1333,10 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
 	    if (tv->vval.v_list != NULL)
 		lock = tv->vval.v_list->lv_lock;
 	    break;
+	case VAR_TUPLE:
+	    if (tv->vval.v_tuple != NULL)
+		lock = tv->vval.v_tuple->tv_lock;
+	    break;
 	case VAR_DICT:
 	    if (tv->vval.v_dict != NULL)
 		lock = tv->vval.v_dict->dv_lock;
@@ -1233,9 +1355,11 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
  */
-    void
+    int
 copy_tv(typval_T *from, typval_T *to)
 {
+    int		ret = OK;
+
     to->v_type = from->v_type;
     to->v_lock = 0;
     switch (from->v_type)
@@ -1312,6 +1436,15 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_list->lv_refcount;
 	    }
 	    break;
+	case VAR_TUPLE:
+	    if (from->vval.v_tuple == NULL)
+		to->vval.v_tuple = NULL;
+	    else
+	    {
+		to->vval.v_tuple = from->vval.v_tuple;
+		++to->vval.v_tuple->tv_refcount;
+	    }
+	    break;
 	case VAR_DICT:
 	    if (from->vval.v_dict == NULL)
 		to->vval.v_dict = NULL;
@@ -1332,34 +1465,40 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    ret = FAIL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	    internal_error_no_abort("copy_tv(UNKNOWN)");
+	    ret = FAIL;
 	    break;
     }
+
+    return ret;
 }
 
 /*
  * Compare "tv1" and "tv2".
- * Put the result in "tv1".  Caller should clear "tv2".
  */
     int
-typval_compare(
+typval_compare2(
     typval_T	*tv1,	// first operand
     typval_T	*tv2,	// second operand
-    exprtype_T	type,   // operator
-    int		ic)     // ignore case
+    exprtype_T	type,	// operator
+    int		ic,	// ignore case
+    int		*res)	// comparison result
 {
     varnumber_T	n1, n2;
-    int		res = 0;
     int		type_is = type == EXPR_IS || type == EXPR_ISNOT;
 
-    if (type_is && tv1->v_type != tv2->v_type)
+    if (check_typval_is_value(tv1) == FAIL
+	|| check_typval_is_value(tv2) == FAIL)
+	return FAIL;
+    else if (type_is && tv1->v_type != tv2->v_type)
     {
 	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
-	n1 = (type == EXPR_ISNOT);
+	*res = (type == EXPR_ISNOT);
     }
     else if (((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
 		|| (tv2->v_type == VAR_SPECIAL
@@ -1369,67 +1508,41 @@ typval_compare(
     {
 	n1 = typval_compare_null(tv1, tv2);
 	if (n1 == MAYBE)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	if (type == EXPR_NEQUAL)
 	    n1 = !n1;
+	*res = n1;
     }
     else if (tv1->v_type == VAR_BLOB || tv2->v_type == VAR_BLOB)
     {
-	if (typval_compare_blob(tv1, tv2, type, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_blob(tv1, tv2, type, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
     {
-	if (typval_compare_list(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_list(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
-    else if (tv1->v_type == VAR_CLASS || tv2->v_type == VAR_CLASS)
+    else if (tv1->v_type == VAR_TUPLE || tv2->v_type == VAR_TUPLE)
     {
-	if (typval_compare_class(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_tuple(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_OBJECT || tv2->v_type == VAR_OBJECT)
     {
-	if (typval_compare_object(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_object(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_DICT || tv2->v_type == VAR_DICT)
     {
-	if (typval_compare_dict(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_dict(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_FUNC || tv2->v_type == VAR_FUNC
 	|| tv1->v_type == VAR_PARTIAL || tv2->v_type == VAR_PARTIAL)
     {
-	if (typval_compare_func(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_func(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
 
     // If one of the two variables is a float, compare as a float.
@@ -1444,10 +1557,7 @@ typval_compare(
 	if (!error)
 	    f2 = tv_get_float_chk(tv2, &error);
 	if (error)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	n1 = FALSE;
 	switch (type)
 	{
@@ -1463,6 +1573,7 @@ typval_compare(
 	    case EXPR_MATCH:
 	    default:  break;  // avoid gcc warning
 	}
+	*res = n1;
     }
 
     // If one of the two variables is a number, compare as a number.
@@ -1476,10 +1587,7 @@ typval_compare(
 	if (!error)
 	    n2 = tv_get_number_chk(tv2, &error);
 	if (error)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	switch (type)
 	{
 	    case EXPR_IS:
@@ -1494,6 +1602,7 @@ typval_compare(
 	    case EXPR_MATCH:
 	    default:  break;  // avoid gcc warning
 	}
+	*res = n1;
     }
     else if (in_vim9script() && (tv1->v_type == VAR_BOOL
 				    || tv2->v_type == VAR_BOOL
@@ -1504,7 +1613,6 @@ typval_compare(
 	{
 	    semsg(_(e_cannot_compare_str_with_str),
 		       vartype_name(tv1->v_type), vartype_name(tv2->v_type));
-	    clear_tv(tv1);
 	    return FAIL;
 	}
 	n1 = tv1->vval.v_number;
@@ -1518,9 +1626,9 @@ typval_compare(
 	    default:
 		semsg(_(e_invalid_operation_for_str),
 						   vartype_name(tv1->v_type));
-		clear_tv(tv1);
 		return FAIL;
 	}
+	*res = n1;
     }
 #ifdef FEAT_JOB_CHANNEL
     else if (tv1->v_type == tv2->v_type
@@ -1533,27 +1641,47 @@ typval_compare(
 	    n1 = tv1->vval.v_job == tv2->vval.v_job;
 	if (type == EXPR_NEQUAL)
 	    n1 = !n1;
+	*res = n1;
     }
 #endif
     else
     {
-	if (typval_compare_string(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_string(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
+
+    return OK;
+}
+
+/*
+ * Compare "tv1" and "tv2".
+ * Put the result in "tv1".  Caller should clear "tv2".
+ */
+    int
+typval_compare(
+    typval_T	*tv1,	// first operand
+    typval_T	*tv2,	// second operand
+    exprtype_T	type,   // operator
+    int		ic)     // ignore case
+{
+    int res;
+
+    if (typval_compare2(tv1, tv2, type, ic, &res) == FAIL)
+    {
+	clear_tv(tv1);
+	return FAIL;
+    }
+
     clear_tv(tv1);
     if (in_vim9script())
     {
 	tv1->v_type = VAR_BOOL;
-	tv1->vval.v_number = n1 ? VVAL_TRUE : VVAL_FALSE;
+	tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
     }
     else
     {
 	tv1->v_type = VAR_NUMBER;
-	tv1->vval.v_number = n1;
+	tv1->vval.v_number = res;
     }
 
     return OK;
@@ -1592,8 +1720,48 @@ typval_compare_list(
     }
     else
     {
-	val = list_equal(tv1->vval.v_list, tv2->vval.v_list,
-							ic, FALSE);
+	val = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+	if (type == EXPR_NEQUAL)
+	    val = !val;
+    }
+    *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as tuples according to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_tuple(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int	    val = 0;
+
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	val = (tv1->v_type == tv2->v_type
+			      && tv1->vval.v_tuple == tv2->vval.v_tuple);
+	if (type == EXPR_ISNOT)
+	    val = !val;
+    }
+    else if (tv1->v_type != tv2->v_type
+	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
+    {
+	if (tv1->v_type != tv2->v_type)
+	    emsg(_(e_can_only_compare_tuple_with_tuple));
+	else
+	    emsg(_(e_invalid_operation_for_tuple));
+	return FAIL;
+    }
+    else
+    {
+	val = tuple_equal(tv1->vval.v_tuple, tv2->vval.v_tuple, ic);
 	if (type == EXPR_NEQUAL)
 	    val = !val;
     }
@@ -1626,6 +1794,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_JOB: return tv->vval.v_job == NULL;
 #endif
 	    case VAR_LIST: return tv->vval.v_list == NULL;
+	    case VAR_TUPLE: return tv->vval.v_tuple == NULL;
 	    case VAR_OBJECT: return tv->vval.v_object == NULL;
 	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
 	    case VAR_STRING: return tv->vval.v_string == NULL;
@@ -1686,24 +1855,6 @@ typval_compare_blob(
 }
 
 /*
- * Compare "tv1" to "tv2" as classes according to "type".
- * Put the result, false or true, in "res".
- * Return FAIL and give an error message when the comparison can't be done.
- */
-    int
-typval_compare_class(
-	typval_T    *tv1,
-	typval_T    *tv2,
-	exprtype_T  type UNUSED,
-	int	    ic UNUSED,
-	int	    *res)
-{
-    // TODO: use "type"
-    *res = tv1->vval.v_class == tv2->vval.v_class;
-    return OK;
-}
-
-/*
  * Compare "tv1" to "tv2" as objects according to "type".
  * Put the result, false or true, in "res".
  * Return FAIL and give an error message when the comparison can't be done.
@@ -1729,14 +1880,6 @@ typval_compare_object(
 	return OK;
     }
 
-    class_T *cl1 = tv1->vval.v_object->obj_class;
-    class_T *cl2 = tv2->vval.v_object->obj_class;
-    if (cl1 != cl2 || cl1 == NULL || cl2 == NULL)
-    {
-	*res = !res_match;
-	return OK;
-    }
-
     object_T *obj1 = tv1->vval.v_object;
     object_T *obj2 = tv2->vval.v_object;
     if (type == EXPR_IS || type == EXPR_ISNOT)
@@ -1745,14 +1888,7 @@ typval_compare_object(
 	return OK;
     }
 
-    for (int i = 0; i < cl1->class_obj_member_count; ++i)
-	if (!tv_equal((typval_T *)(obj1 + 1) + i,
-				 (typval_T *)(obj2 + 1) + i, ic, TRUE))
-	{
-	    *res = !res_match;
-	    return OK;
-	}
-    *res = res_match;
+    *res = object_equal(obj1, obj2, ic) ? res_match : !res_match;
     return OK;
 }
 
@@ -1789,7 +1925,7 @@ typval_compare_dict(
     }
     else
     {
-	val = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, FALSE);
+	val = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
 	if (type == EXPR_NEQUAL)
 	    val = !val;
     }
@@ -1828,14 +1964,14 @@ typval_compare_func(
 	if (tv1->v_type == VAR_FUNC && tv2->v_type == VAR_FUNC)
 	    // strings are considered the same if their value is
 	    // the same
-	    val = tv_equal(tv1, tv2, ic, FALSE);
+	    val = tv_equal(tv1, tv2, ic);
 	else if (tv1->v_type == VAR_PARTIAL && tv2->v_type == VAR_PARTIAL)
 	    val = (tv1->vval.v_partial == tv2->vval.v_partial);
 	else
 	    val = FALSE;
     }
     else
-	val = tv_equal(tv1, tv2, ic, FALSE);
+	val = tv_equal(tv1, tv2, ic);
     if (type == EXPR_NEQUAL || type == EXPR_ISNOT)
 	val = !val;
     *res = val;
@@ -1949,6 +2085,9 @@ tv_islocked(typval_T *tv)
 	|| (tv->v_type == VAR_LIST
 		&& tv->vval.v_list != NULL
 		&& (tv->vval.v_list->lv_lock & VAR_LOCKED))
+	|| (tv->v_type == VAR_TUPLE
+		&& tv->vval.v_tuple != NULL
+		&& (tv->vval.v_tuple->tv_lock & VAR_LOCKED))
 	|| (tv->v_type == VAR_DICT
 		&& tv->vval.v_dict != NULL
 		&& (tv->vval.v_dict->dv_lock & VAR_LOCKED));
@@ -1990,7 +2129,7 @@ func_equal(
 	if (d1 != d2)
 	    return FALSE;
     }
-    else if (!dict_equal(d1, d2, ic, TRUE))
+    else if (!dict_equal(d1, d2, ic))
 	return FALSE;
 
     // empty list and no list considered the same
@@ -2000,7 +2139,7 @@ func_equal(
 	return FALSE;
     for (i = 0; i < a1; ++i)
 	if (!tv_equal(tv1->vval.v_partial->pt_argv + i,
-		      tv2->vval.v_partial->pt_argv + i, ic, TRUE))
+		      tv2->vval.v_partial->pt_argv + i, ic))
 	    return FALSE;
 
     return TRUE;
@@ -2015,8 +2154,7 @@ func_equal(
 tv_equal(
     typval_T *tv1,
     typval_T *tv2,
-    int	     ic,	    // ignore case
-    int	     recursive)	    // TRUE when used recursively
+    int	     ic)	    // ignore case
 {
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
     char_u	*s1, *s2;
@@ -2030,7 +2168,7 @@ tv_equal(
     // Reduce the limit every time running into it. That should work fine for
     // deeply linked structures that are not recursively linked and catch
     // recursiveness quickly.
-    if (!recursive)
+    if (recursive_cnt == 0)
 	tv_equal_recurse_limit = 1000;
     if (recursive_cnt >= tv_equal_recurse_limit)
     {
@@ -2060,13 +2198,19 @@ tv_equal(
     {
 	case VAR_LIST:
 	    ++recursive_cnt;
-	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic, TRUE);
+	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+	    --recursive_cnt;
+	    return r;
+
+	case VAR_TUPLE:
+	    ++recursive_cnt;
+	    r = tuple_equal(tv1->vval.v_tuple, tv2->vval.v_tuple, ic);
 	    --recursive_cnt;
 	    return r;
 
 	case VAR_DICT:
 	    ++recursive_cnt;
-	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, TRUE);
+	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
 	    --recursive_cnt;
 	    return r;
 
@@ -2101,7 +2245,9 @@ tv_equal(
 	    return tv1->vval.v_class == tv2->vval.v_class;
 
 	case VAR_OBJECT:
-	    (void)typval_compare_object(tv1, tv2, EXPR_EQUAL, ic, &r);
+	    ++recursive_cnt;
+	    r = object_equal(tv1->vval.v_object, tv2->vval.v_object, ic);
+	    --recursive_cnt;
 	    return r;
 
 	case VAR_PARTIAL:
@@ -2224,7 +2370,7 @@ eval_number(
 	char_u	    **arg,
 	typval_T    *rettv,
 	int	    evaluate,
-	int	    want_string UNUSED)
+	int	    want_string)
 {
     int		len;
     int		skip_quotes = !in_old_script(4);
@@ -2434,7 +2580,7 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate, int interpolate)
 			  if (vim_isxdigit(p[1]))
 			  {
 			      int	n, nr;
-			      int	c = toupper(*p);
+			      int	c = SAFE_toupper(*p);
 
 			      if (c == 'X')
 				  n = 2;

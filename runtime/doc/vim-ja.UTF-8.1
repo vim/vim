@@ -1,4 +1,4 @@
-.TH VIM 1 "2021 Jun 13"
+.TH VIM 1 "2024 Aug 03"
 .SH 名前
 vim \- Vi IMproved, プログラマのテキストエディタ
 .SH 書式
@@ -170,7 +170,7 @@ Note: "+" と "\-c" は合わせて 10 個まで指定できます。
 指定されたファイルが開かれ、それらのファイルの差分が表示されます。
 vimdiff(1) と同様の動作です。
 .TP
-\-d {device}
+\-d {device}, \-dev {device}
 {device} を端末として開きます。
 Amiga でのみ使います。
 例:
@@ -208,7 +208,13 @@ Amiga では、":sh" と "!" コマンドは機能しなくなります。
 GUI がサポートされている場合は、GUI で起動します。
 サポートされていない場合はエラーメッセージを表示して終了します。
 .TP
-\-h
+\-\-gui-dialog-file {name}
+GUI の使用時、ダイアログを表示する代わりとして、ファイル {name} へダイアログのタイトルとメッセージを書き込みます。
+ファイルは作成されるか追記されます。
+テストにみ有用で、見ることができないダイアログによってテストが中断されるのを防ぎます。
+GUI 以外ではこの引数は無視されます。
+.TP
+\-\-help, \-h, \-?
 コマンドライン引数やオプションのヘルプを表示して終了します。
 .TP
 \-H
@@ -266,6 +272,12 @@ N を省略した場合は、引数のファイルを個別のウィンドウで
 N 個のタブページを開きます。
 N を省略した場合は、引数のファイルを個別のタブページで開きます。
 .TP
+\-P {parent-title}
+Win32 のみ。親になるアプリケーションのタイトルを指定します。
+可能であれば Vim はその MDI アプリケーションのウィンドウ内で起動します。
+{parent-title} が親アプリケーションのウィンドウのタイトルに使われていて、明確に区別できる必要があります。
+Note: まだ簡単に実装されているだけです。全てのアプリケーションで動くわけではありません。メニューは機能しません。
+.TP
 \-R
 読み込み専用モード。
 オプション 'readonly' がオンになります。
@@ -301,6 +313,15 @@ N を省略した場合は、引数のファイルを個別のタブページで
 が組み込みでサポートしている名前か、
 termcap または terminfo ファイルで定義されている名前を指定してください。
 .TP
+\-\-not-a-term
+入力と出力(もしくはどちらか一方)が端末に接続されていないことを、ユーザーが把握しているということを
+.B Vim
+に伝えます。
+これにより警告が表示され 2 秒間の遅延が発生するのを避けられます。
+.TP
+\-\-ttyfail
+標準入力か標準出力が端末 (tty) でない場合、すぐに終了します。
+.TP
 \-u {vimrc}
 {vimrc} ファイルを使って初期化します。
 他の初期化処理はスキップされます。
@@ -320,10 +341,26 @@ termcap または terminfo ファイルで定義されている名前を指定�
 N に指定した数値が 'verbose' に設定されます。
 省略した場合は 10 になります。
 .TP
+\-V[N]{filename}
+-V と同様で、さらに 'verbosefile' を {filename} に設定します。
+その結果、メッセージは表示されずにファイル {filename} に書き出されます。
+{filename} は数字で始まってはいけません。
+.TP
+\-\-log {filename}
+もし
+.B Vim
+がチャネル機能付きでコンパイルされている場合、ログの出力を開始し、ファイル {filename} に書き込みます。
+これは、起動時の非常に早い段階で
+.I ch_logfile({filename}, 'ao')
+を呼び出すのと同様な動作です。
+.TP
 \-v
 Vi モードで起動します。
 実行ファイルの名前が "vi" の場合と同じです。
 実行ファイルの名前が "ex" の場合だけ効果があります。
+.TP
+\-w{number}
+オプション 'window' を {number} に設定します。
 .TP
 \-w {scriptout}
 入力した文字を {scriptout} に記録します。
@@ -334,7 +371,9 @@ Vi モードで起動します。
 \-w と同じですが、ファイルがすでに存在した場合は上書きされます。
 .TP
 \-x
-ファイルを暗号化して書き込みます。暗号化キーの入力プロンプトが表示されます。
+.B Vim
+が暗号化機能付きでコンパイルされている場合、ファイルを暗号化して書き込みます。
+暗号化キーの入力プロンプトが表示されます。
 .TP
 \-X
 X サーバーと通信しません。端末での起動時間を短くできます。
@@ -361,9 +400,6 @@ X サーバーと通信しません。端末での起動時間を短くできま
 .TP
 \-\-echo\-wid
 GTK GUI のみ: Window ID を標準出力に出力します。
-.TP
-\-\-help
-ヘルプを表示して終了します。"\-h" と同じです。
 .TP
 \-\-literal
 引数のファイル名をリテラル文字列として扱います。ワイルドカードを展開しません。
@@ -406,6 +442,10 @@ GTK GUI のみ: GtkPlug メカニズムを使って gvim を別のウィンド�
 .TP
 \-\-version
 バージョン情報を表示して終了します。
+.TP
+\-\-windowid {id}
+Win32 GUI の Vim のみ。ウィンドウ {id} を親ウィンドウにしようと試みます。
+成功するとそのウィンドウの内側で起動します。
 .SH オンラインヘルプ
 ヘルプを開くには、
 .B Vim
@@ -420,53 +460,58 @@ GTK GUI のみ: GtkPlug メカニズムを使って gvim を別のウィンド�
 例: ":help syntax.txt"。
 .SH ファイル
 .TP 15
-/usr/local/lib/vim/doc/*.txt
+/usr/local/share/vim/vim??/doc/*.txt
 .B Vim
 のヘルプファイル。
 ファイルの一覧は ":help doc\-file\-list" に記載されています。
+.br
+.I vim??
+は短いバージョン番号で
+.B Vim 9.1
+では vim91 です。
 .TP
-/usr/local/lib/vim/doc/tags
+/usr/local/share/vim/vim??/doc/tags
 ヘルプを検索するための tags ファイル。
 .TP
-/usr/local/lib/vim/syntax/syntax.vim
+/usr/local/share/vim/vim??/syntax/syntax.vim
 システムの構文定義初期化ファイル。
 .TP
-/usr/local/lib/vim/syntax/*.vim
+/usr/local/share/vim/vim??/syntax/*.vim
 いろいろな言語用の構文定義ファイル。
 .TP
-/usr/local/lib/vim/vimrc
+/usr/local/share/vim/vimrc
 システムの
 .B Vim
 初期化ファイル。
 .TP
-~/.vimrc
+~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
 ユーザーの
 .B Vim
-初期化ファイル。
+初期化ファイル。(最初のものが使われます。)
 .TP
-/usr/local/lib/vim/gvimrc
+/usr/local/share/vim/gvimrc
 システムの gvim 初期化ファイル。
 .TP
-~/.gvimrc
-ユーザーの gvim 初期化ファイル。
+~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+ユーザーの gvim 初期化ファイル。(最初のものが使われます。)
 .TP
-/usr/local/lib/vim/optwin.vim
+/usr/local/share/vim/vim??/optwin.vim
 ":options" コマンドで使われるファイル。
 オプションを表示したり設定したりできます。
 .TP
-/usr/local/lib/vim/menu.vim
+/usr/local/share/vim/vim??/menu.vim
 システムのメニュー初期化ファイル。gvim で使います。
 .TP
-/usr/local/lib/vim/bugreport.vim
+/usr/local/share/vim/vim??/bugreport.vim
 バグレポートを生成するスクリプト。":help bugs" 参照。
 .TP
-/usr/local/lib/vim/filetype.vim
+/usr/local/share/vim/vim??/filetype.vim
 ファイル名からファイルタイプを判定するスクリプト。":help 'filetype'" 参照。
 .TP
-/usr/local/lib/vim/scripts.vim
+/usr/local/share/vim/vim??/scripts.vim
 ファイルの内容からファイルタイプを判定するスクリプト。":help 'filetype'" 参照。
 .TP
-/usr/local/lib/vim/print/*.ps
+/usr/local/share/vim/vim??/print/*.ps
 PostScript 印刷に使われるファイル。
 .PP
 最新の情報は VIM のホームページを参照してください:

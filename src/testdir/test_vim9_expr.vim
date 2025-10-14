@@ -1,7 +1,6 @@
 " Tests for Vim9 script expressions
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let g:cond = v:false
 def FuncOne(arg: number): string
@@ -309,6 +308,36 @@ def Test_expr2()
         g:vals = [1]
       endif
       assert_equal([1], g:vals)
+
+      # string interpolation with ||
+      assert_equal('true', $"{0 || 1}")
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # test the short-circuit operation
+  lines =<< trim END
+    assert_equal(true, true && true)
+    assert_equal(false, true && !true)
+    assert_equal(false, !true && true)
+    assert_equal(false, !true && !true)
+
+    assert_equal(true, true || true)
+    assert_equal(true, true || !true)
+    assert_equal(true, !true || true)
+    assert_equal(false, !true || !true)
+
+    assert_equal(false, false && false)
+    assert_equal(false, false && !false)
+    assert_equal(false, !false && false)
+    assert_equal(true, !false && !false)
+
+    assert_equal(false, false || false)
+    assert_equal(true, false || !false)
+    assert_equal(true, !false || false)
+    assert_equal(true, !false || !false)
+
+    assert_equal(false, !true && !true && !true)
+    assert_equal(true, !false || !false || !false)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -387,7 +416,8 @@ def Test_expr2_fails()
   v9.CheckDefAndScriptFailure(["if 3"], 'E1023:', 1)
   v9.CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
 
-  v9.CheckDefAndScriptFailure(["var x = [] || false"], ['E1012: Type mismatch; expected bool but got list<unknown>', 'E745:'], 1)
+  v9.CheckDefAndScriptFailure(["var x = [] || false"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
+  v9.CheckDefAndScriptFailure(["var x = $'{false || []}'"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
 
   var lines =<< trim END
     vim9script
@@ -448,6 +478,9 @@ def Test_expr3()
         failed = true
       endif
       assert_false(failed)
+
+      # string interpolation with &&
+      assert_equal('false', $"{1 && 0}")
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -547,6 +580,8 @@ def Test_expr3_fails()
       echo true && s
   END
   v9.CheckDefAndScriptFailure(lines, ['E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool: "asdf"'])
+
+  v9.CheckDefAndScriptFailure(["var x = $'{true && []}'"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
 enddef
 
 " global variables to use for tests with the "any" type
@@ -676,7 +711,7 @@ def Test_expr4_equal()
 
   v9.CheckDefExecAndScriptFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
-  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138', 'E1072:'], 2)
+  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138:', 'E1072:'], 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = 'a'", 'echo x == 99'], ['E1030:', 'E1072:'], 2)
 
   lines =<< trim END
@@ -1574,7 +1609,7 @@ def Test_expr6_vim9script()
   lines =<< trim END
       echo 0z1234 - 44
   END
-  v9.CheckDefAndScriptFailure(lines, ['E1036', 'E974:'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1036:', 'E974:'], 1)
 
   lines =<< trim END
       echo 'abc' is? 'abc'
@@ -1829,8 +1864,8 @@ def Test_expr7()
   v9.CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
   v9.CheckScriptFailure(['vim9script', "var d = 6 * "], 'E15:', 2)
 
-  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
-  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154:', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154:', 1)
 
   g:zero = 0
   v9.CheckDefExecFailure(['echo 123 / g:zero'], 'E1154: Divide by zero')
@@ -1840,19 +1875,19 @@ def Test_expr7()
         'g:one = 1.0',
         'g:two = 2.0',
         'echo g:one % g:two',
-        ], 'E804', 3)
+        ], 'E804:', 3)
 
   lines =<< trim END
     var n = 0
     eval 1 / n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 
   lines =<< trim END
     var n = 0
     eval 1 % n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 enddef
 
 def Test_expr7_vim9script()
@@ -2082,6 +2117,12 @@ def Test_expr9_number()
       Test()
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    eval("10\n")
+  END
+  v9.CheckSourceScriptFailure(lines, "E488: Trailing characters: \n")
 enddef
 
 def Test_expr9_float()
@@ -2125,6 +2166,7 @@ def Test_expr9_blob()
   v9.CheckDefAndScriptSuccess(lines)
 
   v9.CheckDefAndScriptFailure(["var x = 0z123"], 'E973:', 1)
+  v9.CheckDefAndScriptFailure(["var x = null_blox"], ['E1001:', 'E121:'], 1)
 enddef
 
 def Test_expr9_string()
@@ -2142,7 +2184,7 @@ def Test_expr9_string()
 
   v9.CheckDefAndScriptFailure(['var x = "abc'], 'E114:', 1)
   v9.CheckDefAndScriptFailure(["var x = 'abc"], 'E115:', 1)
-  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115', 2)
+  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115:', 2)
 
   # interpolated string
   var val = 'val'
@@ -2513,28 +2555,28 @@ def Test_expr9_lambda_block()
   lines =<< trim END
       map([1, 2], (k, v) => { redrawt })
   END
-  v9.CheckDefAndScriptFailure(lines, 'E488')
+  v9.CheckDefAndScriptFailure(lines, 'E488:')
 
   lines =<< trim END
       var Func = (nr: int) => {
               echo nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
   END
-  v9.CheckDefFailure(lines, 'E1171', 0)  # line nr is function start
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171', 2)
+  v9.CheckDefFailure(lines, 'E1171:', 0)  # line nr is function start
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171:', 2)
 
   lines =<< trim END
       var Func = (nr: number): int => {
@@ -2795,7 +2837,7 @@ def Test_expr9_dict()
       var ds = {k: null_string}
       assert_equal('dict<string>', typename(ds))
       var dl = {a: null_list}
-      assert_equal('dict<list<unknown>>', typename(dl))
+      assert_equal('dict<list<any>>', typename(dl))
   END
   v9.CheckDefAndScriptSuccess(lines)
 
@@ -3038,7 +3080,7 @@ def Test_expr_member()
 
   v9.CheckDefAndScriptFailure(["var x = g:dict_one.#$!"], ['E1002:', 'E15:'], 1)
   v9.CheckDefExecAndScriptFailure(["var d: dict<any>", "echo d['a']"], 'E716:', 2)
-  v9.CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
+  v9.CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<any>', 2)
 enddef
 
 def Test_expr9_any_index_slice()
@@ -3249,6 +3291,7 @@ def SetSomeVar()
 enddef
 
 def Test_expr9_option()
+  CheckFeature quickfix
   var lines =<< trim END
       # option
       set ts=11
@@ -3596,6 +3639,7 @@ def Test_expr9_call_autoload()
 enddef
 
 def Test_expr9_method_call()
+  CheckFeature quickfix
   var lines =<< trim END
       new
       setline(1, ['first', 'last'])

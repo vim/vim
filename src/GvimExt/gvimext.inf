@@ -16,7 +16,7 @@ HKCR,CLSID\{51EEE242-AD87-11d3-9C1E-0090278BBD99}\InProcServer32
 HKCR,*\shellex\ContextMenuHandlers\gvim
 HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved",{51EEE242-AD87-11d3-9C1E-0090278BBD99}
 HKLM,Software\Vim\Gvim
-HKLM,"Software\Microsoft\Windows\CurrentVersion\Uninstall\Vim 6.0"
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Uninstall\Vim 9.1"
 
 [Strings]
 ThisDll="gvimext.dll"

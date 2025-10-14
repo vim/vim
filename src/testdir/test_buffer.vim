@@ -1,7 +1,5 @@
 " Tests for Vim buffer
 
-source check.vim
-
 " Test for the :bunload command with an offset
 func Test_bunload_with_offset()
   %bwipe!
@@ -126,6 +124,63 @@ func Test_buflist_browse()
   %bwipe!
 endfunc
 
+" Test for :bnext and :bprev when called from help and non-help buffers.
+func Test_bnext_bprev_help()
+  %bwipe!
+
+  e XHelp1 | set bt=help
+  let b1 = bufnr()
+  e Xbuf1
+  let b2 = bufnr()
+
+  " There's only one buffer of each type.
+  b XHelp1
+  bnext | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b1, bufnr())
+  b Xbuf1
+  bnext | call assert_equal(b2, bufnr())
+  bprev | call assert_equal(b2, bufnr())
+
+  " Add one more buffer of each type.
+  e XHelp2 | set bt=help
+  let b3 = bufnr()
+  e Xbuf2
+  let b4 = bufnr()
+
+  " Help buffer jumps to help buffer.
+  b XHelp1
+  bnext | call assert_equal(b3, bufnr())
+  bnext | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b3, bufnr())
+  bprev | call assert_equal(b1, bufnr())
+
+  " Regular buffer jumps to regular buffer.
+  b Xbuf1
+  bnext | call assert_equal(b4, bufnr())
+  bnext | call assert_equal(b2, bufnr())
+  bprev | call assert_equal(b4, bufnr())
+  bprev | call assert_equal(b2, bufnr())
+
+  " :brewind and :blast are not affected by the buffer type.
+  b Xbuf2
+  brewind | call assert_equal(b1, bufnr())
+  b XHelp1
+  blast   | call assert_equal(b4, bufnr())
+
+  " Cycling through help buffers works even if they aren't listed.
+  b XHelp1
+  setlocal nobuflisted
+  bnext | call assert_equal(b3, bufnr())
+  bnext | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b3, bufnr())
+  setlocal nobuflisted
+  bprev | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b3, bufnr())
+  bnext | call assert_equal(b1, bufnr())
+
+  %bwipe!
+endfunc
+
 " Test for :bdelete
 func Test_bdelete_cmd()
   %bwipe!
@@ -133,7 +188,7 @@ func Test_bdelete_cmd()
   call assert_fails('1,1bdelete 1 2', 'E488:')
   call assert_fails('bdelete \)', 'E55:')
 
-  " Deleting a unlisted and unloaded buffer
+  " Deleting an unlisted and unloaded buffer
   edit Xbdelfile1
   let bnr = bufnr()
   set nobuflisted
@@ -252,21 +307,30 @@ func Test_goto_buf_with_confirm()
   CheckUnix
   CheckNotGui
   CheckFeature dialog_con
+  " When dialog_con_gui is defined, Vim is compiled with GUI support
+  " and FEAT_BROWSE will be defined, which causes :confirm :b to
+  " call do_browse(), which will try to use a GUI file browser,
+  " which aborts if a GUI is not available.
+  CheckNotFeature dialog_con_gui
   new XgotoConf
   enew
   call setline(1, 'test')
   call assert_fails('b XgotoConf', 'E37:')
   call feedkeys('c', 'L')
   call assert_fails('confirm b XgotoConf', 'E37:')
-  call assert_equal(1, &modified)
-  call assert_equal('', @%)
+  call assert_true(&modified)
+  call assert_true(empty(bufname('%')))
   call feedkeys('y', 'L')
-  call assert_fails('confirm b XgotoConf', ['', 'E37:'])
-  call assert_equal(1, &modified)
-  call assert_equal('', @%)
+  confirm b XgotoConf
+  call assert_equal('XgotoConf', bufname('%'))
+  call assert_equal(['test'], readfile('Untitled'))
+  e Untitled
+  call setline(2, 'test2')
   call feedkeys('n', 'L')
   confirm b XgotoConf
-  call assert_equal('XgotoConf', @%)
+  call assert_equal('XgotoConf', bufname('%'))
+  call assert_equal(['test'], readfile('Untitled'))
+  call delete('Untitled')
   close!
 endfunc
 
@@ -512,6 +576,68 @@ func Test_buflist_alloc_failure()
   " test for quickfix command loading a buffer
   call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
   call assert_fails('cexpr "XallocFail6:10:Line10"', 'E342:')
+endfunc
+
+func Test_closed_buffer_still_in_window()
+  %bw!
+
+  let s:w = win_getid()
+  new
+  let s:b = bufnr()
+  setl bufhidden=wipe
+
+  augroup ViewClosedBuffer
+    autocmd!
+    autocmd BufUnload * ++once call assert_fails(
+          \ 'call win_execute(s:w, "' .. s:b .. 'b")', 'E1546:')
+  augroup END
+  quit!
+  " Previously resulted in s:b being curbuf while unloaded (no memfile).
+  call assert_equal(1, bufloaded(bufnr()))
+  call assert_equal(0, bufexists(s:b))
+
+  let s:w = win_getid()
+  split
+  new
+  let s:b = bufnr()
+
+  augroup ViewClosedBuffer
+    autocmd!
+    autocmd BufWipeout * ++once call win_gotoid(s:w)
+          \| call assert_fails(s:b .. 'b', 'E1546:') | wincmd p
+  augroup END
+  bw! " Close only this buffer first; used to be a heap UAF.
+
+  unlet! s:w s:b
+  autocmd! ViewClosedBuffer
+  %bw!
+endfunc
+
+" Cursor position should be restored when switching to a buffer previously
+" viewed in a window, regardless of whether it's visible in another one.
+func Test_switch_to_previously_viewed_buffer()
+  set nostartofline
+  new Xviewbuf
+  call setline(1, range(1, 200))
+  let oldwin = win_getid()
+  vsplit
+
+  call cursor(100, 3)
+  edit Xotherbuf
+  buffer Xviewbuf
+  call assert_equal([0, 100, 3, 0], getpos('.'))
+
+  exe win_id2win(oldwin) .. 'close'
+  setlocal bufhidden=hide
+
+  call cursor(200, 3)
+  edit Xotherbuf
+  buffer Xviewbuf
+  call assert_equal([0, 200, 3, 0], getpos('.'))
+
+  bwipe! Xotherbuf
+  bwipe! Xviewbuf
+  set startofline&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

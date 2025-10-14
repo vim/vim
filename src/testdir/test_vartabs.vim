@@ -1,9 +1,6 @@
 " Test for variable tabstops
 
-source check.vim
 CheckFeature vartabs
-
-source view_util.vim
 
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
@@ -385,14 +382,14 @@ func Test_vartabs_shiftwidth()
 endfunc
 
 func Test_vartabs_failures()
-  call assert_fails('set vts=8,')
-  call assert_fails('set vsts=8,')
-  call assert_fails('set vts=8,,8')
-  call assert_fails('set vsts=8,,8')
-  call assert_fails('set vts=8,,8,')
-  call assert_fails('set vsts=8,,8,')
-  call assert_fails('set vts=,8')
-  call assert_fails('set vsts=,8')
+  call assert_fails('set vts=8,', 'E475: Invalid argument: 8,')
+  call assert_fails('set vsts=8,', 'E475: Invalid argument: 8,')
+  call assert_fails('set vts=8,,8', 'E474: Invalid argument: vts=8,,8')
+  call assert_fails('set vsts=8,,8', 'E474: Invalid argument: vsts=8,,8')
+  call assert_fails('set vts=8,,8,', 'E474: Invalid argument: vts=8,,8,')
+  call assert_fails('set vsts=8,,8,', 'E474: Invalid argument: vsts=8,,8,')
+  call assert_fails('set vts=,8', 'E474: Invalid argument: vts=,8')
+  call assert_fails('set vsts=,8', 'E474: Invalid argument: vsts=,8')
 endfunc
 
 func Test_vartabs_reset()
@@ -452,6 +449,65 @@ func Test_vartabstop_latin1()
   bwipe!
   let &encoding = save_encoding
   set nocompatible linebreak& list& revins& smarttab& vartabstop&
+endfunc
+
+" Verify that right-shifting and left-shifting adjust lines to the proper
+" tabstops.
+func Test_vartabstop_shift_right_left()
+  new
+  set expandtab
+  set shiftwidth=0
+  set vartabstop=17,11,7
+  exe "norm! aword"
+  let expect = "word"
+  call assert_equal(expect, getline(1))
+
+  " Shift to first tabstop.
+  norm! >>
+  let expect = "                 word"
+  call assert_equal(expect, getline(1))
+
+  " Shift to second tabstop.
+  norm! >>
+  let expect = "                            word"
+  call assert_equal(expect, getline(1))
+
+  " Shift to third tabstop.
+  norm! >>
+  let expect = "                                   word"
+  call assert_equal(expect, getline(1))
+
+  " Shift to fourth tabstop, repeating the third shift width.
+  norm! >>
+  let expect = "                                          word"
+  call assert_equal(expect, getline(1))
+
+  " Shift back to the third tabstop.
+  norm! <<
+  let expect = "                                   word"
+  call assert_equal(expect, getline(1))
+
+  " Shift back to the second tabstop.
+  norm! <<
+  let expect = "                            word"
+  call assert_equal(expect, getline(1))
+
+  " Shift back to the first tabstop.
+  norm! <<
+  let expect = "                 word"
+  call assert_equal(expect, getline(1))
+
+  " Shift back to the left margin.
+  norm! <<
+  let expect = "word"
+  call assert_equal(expect, getline(1))
+
+  " Shift again back to the left margin.
+  norm! <<
+  let expect = "word"
+  call assert_equal(expect, getline(1))
+
+  bwipeout!
 endfunc
 
 

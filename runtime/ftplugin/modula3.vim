@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	Modula-3
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:	2022 June 12 
+" Last Change:	2024 Jan 14
+" 		2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin")
   finish
@@ -12,7 +13,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 setlocal comments=s0:(*,mb:\ ,ex:*)
-setlocal commentstring=(*%s*)
+setlocal commentstring=(*\ %s\ *)
 setlocal formatoptions-=t formatoptions+=croql
 setlocal suffixesadd+=.m3
 setlocal formatprg=m3pp
@@ -31,8 +32,12 @@ if exists("loaded_matchit") && !exists("b:match_words")
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-  let b:browsefilter = "Modula-3 Source Files (*.m3)\t*.m3\n" ..
-		     \ "All Files (*.*)\t*.*\n"
+  let b:browsefilter = "Modula-3 Source Files (*.m3, *.i3, *.mg, *ig)\t*.m3;*.i3;*.mg;*.ig\n"
+  if has("win32")
+    let b:browsefilter ..= "All Files (*.*)\t*\n"
+  else
+    let b:browsefilter ..= "All Files (*)\t*\n"
+  endif
   let b:undo_ftplugin ..= " | unlet! b:browsefilter"
 endif
 

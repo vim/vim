@@ -1,8 +1,5 @@
 " Tests for the :source command.
 
-source check.vim
-source view_util.vim
-
 func Test_source_autocmd()
   call writefile([
 	\ 'let did_source = 1',
@@ -57,7 +54,7 @@ func Test_different_script()
   call assert_fails('source XtwoScript', 'E121:')
 endfunc
 
-" When sourcing a vim script, shebang should be ignored.
+" When sourcing a Vim script, shebang should be ignored.
 func Test_source_ignore_shebang()
   call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim', 'D')
   source Xsisfile.vim
@@ -408,7 +405,7 @@ func Test_source_buffer_vim9()
   source
   call assert_equal(10, Xtestfunc())
 
-  " test for sourcing a vim9 script with line continuation
+  " test for sourcing a Vim9 script with line continuation
   %d _
   let lines =<< trim END
      vim9script

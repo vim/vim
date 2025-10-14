@@ -1,7 +1,5 @@
 " Tests for Perl interface
 
-source check.vim
-source shared.vim
 CheckFeature perl
 
 " FIXME: RunTest don't see any error when Perl abort...
@@ -211,10 +209,25 @@ func Test_perldo()
   call assert_false(search('\Cperl'))
   bw!
 
-  " Check deleting lines does not trigger ml_get error.
   new
+
+  " Check deleting lines does not trigger ml_get error.
   call setline(1, ['one', 'two', 'three'])
   perldo VIM::DoCommand("%d_")
+  call assert_equal([''], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  perldo VIM::DoCommand("1,2d_")
+  call assert_equal(['three'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  perldo VIM::DoCommand("2,3d_"); $_ = "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3perldo VIM::DoCommand("1,2d_"); $_ = "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 
   " Check a Perl expression which gives an error.
@@ -344,7 +357,10 @@ VIM::DoCommand('let s ..= "B"')
   perl << trim eof
     VIM::DoCommand('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+  perl << trimm
+VIM::DoCommand('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 func Test_perl_in_sandbox()

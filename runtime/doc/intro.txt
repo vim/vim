@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.0.  Last change: 2023 Nov 18
+*intro.txt*     For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -99,7 +99,8 @@ There are several mailing lists for Vim:
 	For discussions about using and improving the Macintosh version of
 	Vim.
 <vim-security@googlegroups.com>			*vim-security*
-	This list is for (privately) discussing security relevant issues of Vim.
+	This list is for (privately) discussing security relevant issues of
+	Vim.
 
 See http://www.vim.org/maillist.php for the latest information.
 
@@ -132,9 +133,9 @@ There are three ways to report bugs:
 3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
-   issue, please contact any of the current Vim maintainers
-   https://github.com/orgs/vim/people (but not Bram or the vim-dev ML).
-   In the future, a proper process for handling security issues will be setup.
+   issue, please contact the current Vim maintainers at the e-mail address
+   <vim-security@googlegroups.com> or create a security advisory at Github:
+   https://github.com/vim/vim/security/advisories
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible
@@ -145,7 +146,7 @@ Preferably start Vim with: >
 Where reproduce.vim is a script that reproduces the problem.  Try different
 machines, if relevant (is this an MS-Windows specific bug perhaps?).
 
-Send me patches if you can!  If you create a pull request on
+Send patches if you can!  If you create a pull request on
 https://github.com/vim/vim then the automated checks will run and report any
 obvious problems.  But you can also send the patch by email (use an attachment
 to avoid white space changes).
@@ -200,6 +201,8 @@ patches, suggestions and giving feedback about what is good and bad in Vim.
 
 Vim would never have become what it is now, without the help of these people!
 
+	|Bram| Moolenaar	Creator and benevolent dictator until his
+				passing (3 August 2023)
 	Ron Aaron		Win32 GUI changes
 	Mohsin Ahmed		encryption
 	Zoltan Arpadffy		work on VMS port
@@ -234,7 +237,8 @@ Vim would never have become what it is now, without the help of these people!
 	Felix von Leitner	Previous maintainer of Vim Mailing Lists
 	David Leonard		Port of Python extensions to Unix
 	Avner Lottem		Edit in right-to-left windows
-	Flemming Madsen		X11 client-server, various features and patches
+	Flemming Madsen		X11 client-server, various features and
+				patches
 	Tony Mechelynck		answers many user questions
 	Paul Moore		Python interface extensions, many patches
 	Katsuhito Nagano	Work on multibyte versions
@@ -267,7 +271,16 @@ Vim would never have become what it is now, without the help of these people!
 	Ken Takata		fixes and features
 	Kazunobu Kuriyama	GTK 3
 	Christian Brabandt	many fixes, features, user support, etc.
-	Yegappan Lakshmanan	many quickfix features
+	Yegappan Lakshmanan	many quickfix features, Vim9 script
+				improvements
+	Doug Kearns		Runtime file maintainer
+	Foxe Chen		Wayland support, new features
+	glepnir			completion feature
+	Girish Palya		autocompletion (ins/cmdline), omnifunc
+				composing, search/subst completion, and more.
+	Hirohito Higashi	lots of patches and fixes
+	Yee Cheng Chin		MacVim maintainer and diff improvements
+	zeertzjq		many fixes and improvements
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without
@@ -475,7 +488,7 @@ notation	meaning		    equivalent	decimal value(s)	~
 <C-...>		control-key			*control* *ctrl* *<C-*
 <M-...>		alt-key or meta-key		*meta* *alt* *<M-*
 <A-...>		same as <M-...>			*<A-*
-<D-...>		command-key (Macintosh only)	*<D-*
+<D-...>		command-key (Mac) / super (GTK)	*<D-*
 <t_xx>		key with "xx" entry in termcap
 -----------------------------------------------------------------------
 
@@ -595,8 +608,8 @@ Operator-pending mode	This is like Normal mode, but after an operator
 
 Replace mode		Replace mode is a special case of Insert mode.  You
 			can do the same things as in Insert mode, but for
-			each character you enter, one character of the existing
-			text is deleted.  See |Replace-mode|.
+			each character you enter, one character of the
+			existing text is deleted.  See |Replace-mode|.
 			If the 'showmode' option is on "-- REPLACE --" is
 			shown at the bottom of the window.
 
@@ -821,11 +834,11 @@ current mode			'showmode'	on	    on
 command characters		'showcmd'	on	    off
 cursor position			'ruler'		off	    off
 
-The current mode is "-- INSERT --" or "-- REPLACE --", see |'showmode'|.  The
+The current mode is "-- INSERT --" or "-- REPLACE --", see 'showmode'.  The
 command characters are those that you typed but were not used yet.
 
 If you have a slow terminal you can switch off the status messages to speed
-up editing:
+up editing: >
 	:set nosc noru nosm
 
 If there is an error, an error message will be shown for at least one second

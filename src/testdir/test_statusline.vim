@@ -3,9 +3,7 @@
 " Not tested yet:
 "   %N
 
-source view_util.vim
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func SetUp()
   set laststatus=2
@@ -16,6 +14,10 @@ func TearDown()
 endfunc
 
 func s:get_statusline()
+  if has('gui_running')
+    redraw!
+    sleep 1m
+  endif
   return ScreenLines(&lines - 1, &columns)[0]
 endfunc
 
@@ -217,6 +219,10 @@ func Test_statusline()
   set statusline=%w%W
   call assert_match('^\s*$', s:get_statusline())
   pedit
+  wincmd j
+  call assert_match('^\[Preview\],PRV\s*$', s:get_statusline())
+  pclose
+  pbuffer
   wincmd j
   call assert_match('^\[Preview\],PRV\s*$', s:get_statusline())
   pclose
@@ -629,6 +635,69 @@ func Test_statusline_highlight_group_cleared()
   call VerifyScreenDump(buf, 'Test_statusline_stl_1', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+" Test for setting both global and local 'statusline' values in a sandbox
+func Test_statusline_in_sandbox()
+  func SandboxStatusLine()
+    call writefile(['after'], 'Xsandboxstatusline_write')
+    return "status line"
+  endfunc
+
+  func Check_statusline_in_sandbox(set_cmd0, set_cmd1)
+    only
+    11new | 20vsplit
+    call setline(1, 'foo')
+    windo setlocal statusline=SomethingElse
+    wincmd t
+    setlocal statusline=
+    call writefile(['before'], 'Xsandboxstatusline_write', 'D')
+
+    exe 'sandbox' a:set_cmd0 'statusline=%!SandboxStatusLine()'
+    call assert_equal('', &l:statusline)
+    sandbox setlocal statusline=%!SandboxStatusLine()
+    call assert_fails('redrawstatus', 'E48:')
+    call assert_equal(['before'], readfile('Xsandboxstatusline_write'))
+    wincmd b
+    call assert_fails('redrawstatus!', 'E48:')
+    call assert_equal(['before'], readfile('Xsandboxstatusline_write'))
+    wincmd t
+
+    5split
+    call assert_fails('redrawstatus!', 'E48:')
+    call assert_equal(['before'], readfile('Xsandboxstatusline_write'))
+    close
+
+    setlocal statusline=%!SandboxStatusLine() | redrawstatus
+    call assert_equal('status line', Screenline(12))
+    call assert_equal(['after'], readfile('Xsandboxstatusline_write'))
+
+    call writefile(['before'], 'Xsandboxstatusline_write')
+    setlocal statusline=
+    call assert_fails('redrawstatus', 'E48:')
+    call assert_equal(['before'], readfile('Xsandboxstatusline_write'))
+
+    5split
+    call assert_fails('redrawstatus!', 'E48:')
+    call assert_equal(['before'], readfile('Xsandboxstatusline_write'))
+
+    exe a:set_cmd1 'statusline=%!SandboxStatusLine()' | redrawstatus!
+    call assert_equal('', &l:statusline)
+    call assert_equal('status line', Screenline(6))
+    call assert_equal('status line', Screenline(12))
+    call assert_equal(['after'], readfile('Xsandboxstatusline_write'))
+    bwipe!
+  endfunc
+
+  set noequalalways
+  call Check_statusline_in_sandbox('setglobal', 'setglobal')
+  call Check_statusline_in_sandbox('setglobal', 'set')
+  call Check_statusline_in_sandbox('set', 'setglobal')
+  call Check_statusline_in_sandbox('set', 'set')
+
+  set equalalways& statusline&
+  delfunc SandboxStatusLine
+  delfunc Check_statusline_in_sandbox
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

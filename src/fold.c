@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 
 // local declarations. {{{1
 // typedef fold_T {{{2
@@ -107,7 +107,7 @@ copyFoldingState(win_T *wp_from, win_T *wp_to)
 
 // hasAnyFolding() {{{2
 /*
- * Return TRUE if there may be folded lines in the current window.
+ * Return TRUE if there may be folded lines in window "win".
  */
     int
 hasAnyFolding(win_T *win)
@@ -551,7 +551,7 @@ checkCloseRec(garray_T *gap, linenr_T lnum, int level)
     return retval;
 }
 
-// foldCreateAllowed() {{{2
+// foldManualAllowed() {{{2
 /*
  * Return TRUE if it's allowed to manually create or delete a fold.
  * Give an error message and return FALSE if not.
@@ -1061,7 +1061,6 @@ find_wl_entry(win_T *win, linenr_T lnum)
 foldAdjustVisual(void)
 {
     pos_T	*start, *end;
-    char_u	*ptr;
 
     if (!VIsual_active || !hasAnyFolding(curwin))
 	return;
@@ -1082,8 +1081,7 @@ foldAdjustVisual(void)
     if (!hasFolding(end->lnum, NULL, &end->lnum))
 	return;
 
-    ptr = ml_get(end->lnum);
-    end->col = (colnr_T)STRLEN(ptr);
+    end->col = ml_get_len(end->lnum);
     if (end->col > 0 && *p_sel == 'o')
 	--end->col;
     // prevent cursor from moving on the trail byte
@@ -1091,7 +1089,7 @@ foldAdjustVisual(void)
 	mb_adjust_cursor();
 }
 
-// cursor_foldstart() {{{2
+// foldAdjustCursor() {{{2
 /*
  * Move the cursor to the first line of a closed fold.
  */
@@ -1494,6 +1492,9 @@ deleteFoldRecurse(garray_T *gap)
 // foldMarkAdjust() {{{2
 /*
  * Update line numbers of folds for inserted/deleted lines.
+ *
+ * We are adjusting the folds in the range from line1 til line2,
+ * make sure that line2 does not get smaller than line1
  */
     void
 foldMarkAdjust(
@@ -1507,6 +1508,8 @@ foldMarkAdjust(
     // lines, set line2 so that only deleted lines have their folds removed.
     if (amount == MAXLNUM && line2 >= line1 && line2 - line1 >= -amount_after)
 	line2 = line1 - amount_after - 1;
+    if (line2 < line1)
+	line2 = line1;
     // If appending a line in Insert mode, it should be included in the fold
     // just above the line.
     if ((State & MODE_INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
@@ -1799,7 +1802,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 
     // Allocate a new line: old-line + 'cms'-start + marker + 'cms'-end
     line = ml_get(lnum);
-    line_len = (int)STRLEN(line);
+    line_len = ml_get_len(lnum);
 
     if (u_save(lnum - 1, lnum + 1) != OK)
 	return;
@@ -1876,7 +1879,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    {
 		// Also delete 'commentstring' if it matches.
 		cms2 = (char_u *)strstr((char *)cms, "%s");
-		if (p - line >= cms2 - cms
+		if (cms2 != NULL && p - line >= cms2 - cms
 			&& STRNCMP(p - (cms2 - cms), cms, cms2 - cms) == 0
 			&& STRNCMP(p + len, cms2 + 2, STRLEN(cms2 + 2)) == 0)
 		{
@@ -1887,7 +1890,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    if (u_save(lnum - 1, lnum + 1) == OK)
 	    {
 		// Make new line: text-before-marker + text-after-marker
-		newline = alloc(STRLEN(line) - len + 1);
+		newline = alloc(ml_get_len(lnum) - len + 1);
 		if (newline != NULL)
 		{
 		    STRNCPY(newline, line, p - line);
@@ -1962,8 +1965,8 @@ get_foldtext(
 
 	    ++emsg_off; // handle exceptions, but don't display errors
 	    text = eval_to_string_safe(wp->w_p_fdt,
-			   was_set_insecurely((char_u *)"foldtext", OPT_LOCAL),
-			   TRUE, TRUE);
+		       was_set_insecurely(wp, (char_u *)"foldtext", OPT_LOCAL),
+		       TRUE, TRUE);
 	    --emsg_off;
 
 	    if (text == NULL || did_emsg)
@@ -2381,12 +2384,7 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
     // this in other situations, the changed lines will be redrawn anyway and
     // this method can cause the whole window to be updated.
     if (end != bot)
-    {
-	if (wp->w_redraw_top == 0 || wp->w_redraw_top > top)
-	    wp->w_redraw_top = top;
-	if (wp->w_redraw_bot < end)
-	    wp->w_redraw_bot = end;
-    }
+	redraw_win_range_later(wp, top, end);
 
     invalid_top = (linenr_T)0;
 }
@@ -3362,7 +3360,9 @@ foldlevelExpr(fline_T *flp)
 		  break;
 
 	// "<1", "<2", .. : end a fold with a certain level
-	case '<': flp->lvl_next = n - 1;
+	case '<': // To prevent an unexpected start of a new fold, the next
+		  // level must not exceed the level of the current fold.
+		  flp->lvl_next = MIN(flp->lvl, n - 1);
 		  flp->end = n;
 		  break;
 
@@ -3532,7 +3532,7 @@ foldlevelSyntax(fline_T *flp)
 
 // functions for storing the fold state in a View {{{1
 // put_folds() {{{2
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 static int put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off);
 static int put_foldopen_recurse(FILE *fd, win_T *wp, garray_T *gap, linenr_T off);
 static int put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off);
@@ -3576,7 +3576,7 @@ put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off)
 	// Do nested folds first, they will be created closed.
 	if (put_folds_recurse(fd, &fp->fd_nested, off + fp->fd_top) == FAIL)
 	    return FAIL;
-	if (fprintf(fd, "%ld,%ldfold", fp->fd_top + off,
+	if (fprintf(fd, "sil! %ld,%ldfold", fp->fd_top + off,
 					fp->fd_top + off + fp->fd_len - 1) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
@@ -3609,9 +3609,10 @@ put_foldopen_recurse(
 	    if (fp->fd_nested.ga_len > 0)
 	    {
 		// open nested folds while this fold is open
+		// ignore errors
 		if (fprintf(fd, "%ld", fp->fd_top + off) < 0
 			|| put_eol(fd) == FAIL
-			|| put_line(fd, "normal! zo") == FAIL)
+			|| put_line(fd, "sil! normal! zo") == FAIL)
 		    return FAIL;
 		if (put_foldopen_recurse(fd, wp, &fp->fd_nested,
 							     off + fp->fd_top)
@@ -3652,7 +3653,7 @@ put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 {
     if (fprintf(fd, "%ld", fp->fd_top + off) < 0
 	    || put_eol(fd) == FAIL
-	    || fprintf(fd, "normal! z%c",
+	    || fprintf(fd, "sil! normal! z%c",
 			   fp->fd_flags == FD_CLOSED ? 'c' : 'o') < 0
 	    || put_eol(fd) == FAIL)
 	return FAIL;
@@ -3662,9 +3663,9 @@ put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 #endif // FEAT_SESSION
 
 // }}}1
-#endif // defined(FEAT_FOLDING) || defined(PROTO)
+#endif // defined(FEAT_FOLDING)
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * "foldclosed()" and "foldclosedend()" functions

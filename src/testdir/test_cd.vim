@@ -1,8 +1,5 @@
 " Test for :cd and chdir()
 
-source shared.vim
-source check.vim
-
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
   call assert_fails('cd ' . repeat('x', 5000), 'E344:')
@@ -99,10 +96,20 @@ func Test_chdir_func()
   call assert_equal('y', fnamemodify(getcwd(3, 2), ':t'))
   call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
 
+  " Forcing scope
+  call chdir('.', 'global')
+  call assert_match('^\[global\]', trim(execute('verbose pwd')))
+  call chdir('.', 'tabpage')
+  call assert_match('^\[tabpage\]', trim(execute('verbose pwd')))
+  call chdir('.', 'window')
+  call assert_match('^\[window\]', trim(execute('verbose pwd')))
+
   " Error case
   call assert_fails("call chdir('dir-abcd')", 'E344:')
   silent! let d = chdir("dir_abcd")
   call assert_equal("", d)
+  call assert_fails("call chdir('.', test_null_string())", 'E475:')
+  call assert_fails("call chdir('.', [])", 'E730:')
   " Should not crash
   call chdir(d)
   call assert_equal('', chdir([]))
@@ -200,12 +207,53 @@ endfunc
 func Test_cd_completion()
   call mkdir('XComplDir1', 'D')
   call mkdir('XComplDir2', 'D')
+  call mkdir('sub/XComplDir3', 'pD')
   call writefile([], 'XComplFile', 'D')
 
   for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
     call feedkeys(':' .. cmd .. " XCompl\<C-A>\<C-B>\"\<CR>", 'tx')
     call assert_equal('"' .. cmd .. ' XComplDir1/ XComplDir2/', @:)
   endfor
+
+  set cdpath+=sub
+  for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
+    call feedkeys(':' .. cmd .. " XCompl\<C-A>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"' .. cmd .. ' XComplDir1/ XComplDir2/ XComplDir3/', @:)
+  endfor
+  set cdpath&
+
+  if has('win32')
+    " Test Windows absolute path completion
+    " Retrieve a suitable dir in the current drive
+    let dir = readdir('/', 'isdirectory("/" .. v:val) && len(v:val) > 2')[-1]
+    " Get partial path
+    let partial = dir[0:-2]
+    " Get the current drive letter
+    let old = chdir('/' . dir)
+    let full = getcwd()
+    let drive = full[0]
+    call chdir(old)
+
+    for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
+      for sep in [ '/', '\']
+
+        " Explicit drive letter
+        call feedkeys(':' .. cmd .. ' ' .. drive .. ':' .. sep ..
+                     \  partial .. "\<C-A>\<C-B>\"\<CR>", 'tx')
+        call assert_match(full, @:)
+
+        " Implicit drive letter
+        call feedkeys(':' .. cmd .. ' ' .. sep .. partial .. "\<C-A>\<C-B>\"\<CR>", 'tx')
+        call assert_match('/' .. dir .. '/', @:)
+
+        " UNC path
+        call feedkeys(':' .. cmd .. ' ' .. sep .. sep .. $COMPUTERNAME .. sep ..
+                     \ drive .. '$' .. sep .. partial .."\<C-A>\<C-B>\"\<CR>", 'tx')
+        call assert_match('//' .. $COMPUTERNAME .. '/' .. drive .. '$/' .. dir .. '/' , @:)
+
+      endfor
+    endfor
+  endif
 endfunc
 
 func Test_cd_unknown_dir()
@@ -242,6 +290,69 @@ func Test_getcwd_actual_dir()
   set noautochdir
   bwipe!
   call chdir(startdir)
+endfunc
+
+func Test_cd_preserve_symlinks()
+  " Test new behavior: preserve symlinks when cpo-=~
+  set cpoptions+=~
+
+  let savedir = getcwd()
+  call mkdir('Xsource', 'R')
+  call writefile(['abc'], 'Xsource/foo.txt', 'D')
+
+  if has("win32")
+    silent !mklink /D Xdest Xsource
+  else
+    silent !ln -s Xsource Xdest
+  endif
+  if v:shell_error
+    call delete('Xsource', 'rf')
+    throw 'Skipped: cannot create symlinks'
+  endif
+
+  edit Xdest/foo.txt
+  let path_before = expand('%')
+  call assert_match('Xdest[/\\]foo\.txt$', path_before)
+
+  cd .
+  let path_after = expand('%')
+  call assert_equal(path_before, path_after)
+  call assert_match('Xdest[/\\]foo\.txt$', path_after)
+
+  bwipe!
+  set cpoptions&
+  call delete('Xdest', 'rf')
+  call delete('Xsource', 'rf')
+  call chdir(savedir)
+endfunc
+
+func Test_cd_symlinks()
+  CheckNotMSWindows
+
+  let savedir = getcwd()
+  call mkdir('Xsource', 'R')
+  call writefile(['abc'], 'Xsource/foo.txt', 'D')
+
+  silent !ln -s Xsource Xdest
+  if v:shell_error
+    call delete('Xsource', 'rf')
+    throw 'Skipped: cannot create symlinks'
+  endif
+
+  edit Xdest/foo.txt
+  let path_before = expand('%')
+  call assert_match('Xdest[/\\]foo\.txt$', path_before)
+
+  cd .
+  let path_after = expand('%')
+  call assert_match('Xsource[/\\]foo\.txt$', path_after)
+  call assert_notequal(path_before, path_after)
+
+  bwipe!
+  set cpoptions&
+  call delete('Xdest', 'rf')
+  call delete('Xsource', 'rf')
+  call chdir(savedir)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

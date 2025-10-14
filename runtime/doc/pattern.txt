@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.0.  Last change: 2023 Oct 23
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -72,7 +72,7 @@ N			Repeat the latest "/" or "?" [count] times in
 *			Search forward for the [count]'th occurrence of the
 			word nearest to the cursor.  The word used for the
 			search is the first of:
-				1. the keyword under the cursor |'iskeyword'|
+				1. the keyword under the cursor 'iskeyword'
 				2. the first keyword after the cursor, in the
 				   current line
 				3. the non-blank word under the cursor
@@ -141,6 +141,8 @@ CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
 			help users who use "vim file | grep word" and don't
 			know how to get out (blindly typing :qa<CR> would
 			work).
+			If a popup with a |popup-filter| is open, the popup
+			will be closed.
 
 							*:noh* *:nohlsearch*
 :noh[lsearch]		Stop the highlighting for the 'hlsearch' option.  It
@@ -151,16 +153,20 @@ CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
 			executing autocommands |autocmd-searchpat|.
 			Same thing for when invoking a user function.
 
+
 While typing the search pattern the current match will be shown if the
 'incsearch' option is on.  Remember that you still have to finish the search
 command with <CR> to actually position the cursor at the displayed match.  Or
 use <Esc> to abandon the search.
 
+							*nohlsearch-auto*
 All matches for the last used search pattern will be highlighted if you set
-the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command.
+the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command
+or auto suspended with nohlsearch plugin.  See |nohlsearch-install|.
+
 
 When 'shortmess' does not include the "S" flag, Vim will automatically show an
-index, on which the cursor is. This can look like this: >
+index, on which the cursor is.  This can look like this: >
 
   [1/5]		Cursor is on first of 5 matches.
   [1/>99]	Cursor is on first of more than 99 matches.
@@ -177,6 +183,17 @@ In |Vim9| script you get E486 for "pattern not found" or *E538* when the pattern
 matches in every line with `:vglobal`.
 For the |:s| command the "e" flag can be used to avoid the error message
 |:s_flags|.
+
+					*search-options*
+The following options affect how a search is performed in Vim:
+    'hlsearch'		highlight matches
+    'ignorecase'	ignore case when searching
+    'imsearch'		use |IME| when entering the search pattern
+    'incsearch'		show matches incrementally as the pattern is typed
+    'maxsearchcount'	maximum number for the search count |shm-S|
+    'shortmess'		suppress messages |shm-s|; show search count |shm-S|
+    'smartcase'		override 'ignorecase' if pattern contains uppercase
+    'wrapscan'		continue searching from the start of the file
 
 					*search-offset* *{offset}*
 These commands search for the specified pattern.  With "/" and "?" an
@@ -271,9 +288,9 @@ When searching backwards, searching starts at the start of the line, using the
 cursor position is used.
 
 In Vi the ":tag" command sets the last search pattern when the tag is searched
-for.  In Vim this is not done, the previous search pattern is still remembered,
-unless the 't' flag is present in 'cpoptions'.  The search pattern is always
-put in the search history.
+for.  In Vim this is not done, the previous search pattern is still
+remembered, unless the 't' flag is present in 'cpoptions'.  The search pattern
+is always put in the search history.
 
 If the 'wrapscan' option is on (which is the default), searches wrap around
 the end of the buffer.  If 'wrapscan' is not set, the backward search stops
@@ -753,7 +770,7 @@ overview.
 	\([a-z]\+\)\zs,\1		",abc" in "abc,abc"
 
 \@123<=
-	Like "\@<=" but only look back 123 bytes. This avoids trying lots
+	Like "\@<=" but only look back 123 bytes.  This avoids trying lots
 	of matches that are known to fail and make executing the pattern very
 	slow.  Example, check if there is a "<" just before "span":
 		/<\@1<=span
@@ -779,7 +796,7 @@ overview.
 	\(\/\/.*\)\@<!in	"in" which is not after "//"
 
 \@123<!
-	Like "\@<!" but only look back 123 bytes. This avoids trying lots of
+	Like "\@<!" but only look back 123 bytes.  This avoids trying lots of
 	matches that are known to fail and make executing the pattern very
 	slow.
 
@@ -903,7 +920,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	inside the Visual area put it at the start and just before the end of
 	the pattern, e.g.: >
 		/\%Vfoo.*ba\%Vr
-<	This also works if only "foo bar" was Visually selected. This: >
+<	This also works if only "foo bar" was Visually selected.  This: >
 		/\%Vfoo.*bar\%V
 <	would match "foo bar" if the Visual selection continues after the "r".
 	Only works for the current buffer.
@@ -950,7 +967,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 	Example, to highlight the line where the cursor currently is: >
-		:exe '/\%' . line(".") . 'l'
+		:exe '/\%' .. line(".") .. 'l'
 <	Alternatively use: >
 		/\%.l
 <	When 'hlsearch' is set and you move the cursor around and make changes
@@ -1010,7 +1027,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 <	To match all characters after the current virtual column (where the
 	cursor is): >
 		/\%>.v.*
-<	Column 17 is not included, because this is a |/zero-width| match. To
+<	Column 17 is not included, because this is a |/zero-width| match.  To
 	include the column use: >
 		/^.*\%17v.
 <	This command does the same thing, but also matches when there is no
@@ -1134,11 +1151,12 @@ x	A single character, with no special meaning, matches itself
 	in the collection: "[^xyz]" matches anything but 'x', 'y' and 'z'.
 	- If two characters in the sequence are separated by '-', this is
 	  shorthand for the full list of ASCII characters between them.  E.g.,
-	  "[0-9]" matches any decimal digit. If the starting character exceeds
-	  the ending character, e.g. [c-a], E944 occurs. Non-ASCII characters
-	  can be used, but the character values must not be more than 256 apart
-	  in the old regexp engine. For example, searching by [\u3000-\u4000]
-	  after setting re=1 emits a E945 error. Prepending \%#=2 will fix it.
+	  "[0-9]" matches any decimal digit.  If the starting character
+	  exceeds the ending character, e.g. [c-a], E944 occurs.  Non-ASCII
+	  characters can be used, but the character values must not be more
+	  than 256 apart in the old regexp engine.  For example, searching by
+	  [\u3000-\u4000] after setting re=1 emits a E945 error.  Prepending
+	  \%#=2 will fix it.
 	- A character class expression is evaluated to the set of characters
 	  belonging to that character class.  The following character classes
 	  are supported:
@@ -1204,7 +1222,7 @@ x	A single character, with no special meaning, matches itself
 	  any character that's not in "^]-\bdertnoUux".  "[\xyz]" matches '\',
 	  'x', 'y' and 'z'.  It's better to use "\\" though, future expansions
 	  may use other characters after '\'.
-	- Omitting the trailing ] is not considered an error. "[]" works like
+	- Omitting the trailing ] is not considered an error.  "[]" works like
 	  "[]]", it matches the ']' character.
 	- The following translations are accepted when the 'l' flag is not
 	  included in 'cpoptions':
@@ -1217,7 +1235,8 @@ x	A single character, with no special meaning, matches itself
 		\o40	octal number of character up to 0o377
 		\x20	hexadecimal number of character up to 0xff
 		\u20AC	hex. number of multibyte character up to 0xffff
-		\U1234	hex. number of multibyte character up to 0xffffffff
+		\U1234	hex. number of multibyte character up to 8 characters
+			0xffffffff |E1541|
 	  NOTE: The other backslash codes mentioned above do not work inside
 	  []!
 	- Matching with a collection can be slow, because each character in
@@ -1258,7 +1277,8 @@ x	A single character, with no special meaning, matches itself
 \%u20AC	Matches the character specified with up to four hexadecimal
 	characters.
 \%U1234abcd	Matches the character specified with up to eight hexadecimal
-	characters, up to 0x7fffffff
+	characters, up to 0x7fffffff (the maximum allowed value is INT_MAX
+	|E1541|, but the maximum valid Unicode codepoint is U+10FFFF).
 
 ==============================================================================
 7. Ignoring case in a pattern					*/ignorecase*
@@ -1394,6 +1414,19 @@ Finally, these constructs are unique to Perl:
 ==============================================================================
 10. Highlighting matches				*match-highlight*
 
+							*syntax-vs-match*
+		Note that the match highlight mechanism is independent
+		of |syntax-highlighting|, which is (usually) a buffer-local
+		highlighting, while matching is window-local, both methods
+		can be freely mixed.  Match highlighting functions give you
+		a bit more flexibility in when and how to apply, but are
+		typically only used for temporary highlighting, without strict
+		rules.  Both methods can be used to conceal text.
+
+		Thus the matching functions like |matchadd()| won't consider
+		syntax rules and functions like |synconcealed()| and the
+		other way around.
+
 							*:mat* *:match*
 :mat[ch] {group} /{pattern}/
 		Define a pattern to highlight in the current window.  It will
@@ -1427,14 +1460,14 @@ Finally, these constructs are unique to Perl:
 		display you may get unexpected results.  That is because Vim
 		looks for a match in the line where redrawing starts.
 
-		Also see |matcharg()| and |getmatches()|. The former returns
+		Also see |matcharg()| and |getmatches()|.  The former returns
 		the highlight group and pattern of a previous |:match|
 		command.  The latter returns a list with highlight groups and
 		patterns defined by both |matchadd()| and |:match|.
 
 		Highlighting matches using |:match| are limited to three
 		matches (aside from |:match|, |:2match| and |:3match| are
-		available). |matchadd()| does not have this limitation and in
+		available).  |matchadd()| does not have this limitation and in
 		addition makes it possible to prioritize matches.
 
 		Another example, which highlights all characters in virtual
@@ -1463,42 +1496,63 @@ Finally, these constructs are unique to Perl:
 		with the lowest number has priority if several match at the
 		same position.  It uses the match id 3.
 		The ":3match" command is used by (Vim < 9.0.2054) |matchparen|
-		plugin. You are suggested to use ":match" for manual matching
+		plugin.  You are suggested to use ":match" for manual matching
 		and ":2match" for another plugin or even better make use of
 		the more flexible |matchadd()| (and similar) functions instead.
 
 ==============================================================================
 11. Fuzzy matching					*fuzzy-matching*
 
-Fuzzy matching refers to matching strings using a non-exact search string.
-Fuzzy matching will match a string, if all the characters in the search string
-are present anywhere in the string in the same order. Case is ignored.  In a
-matched string, other characters can be present between two consecutive
-characters in the search string. If the search string has multiple words, then
-each word is matched separately. So the words in the search string can be
-present in any order in a string.
+Fuzzy matching scores how well a string matches a pattern when the pattern
+characters appear in order but not necessarily contiguously.
 
-Fuzzy matching assigns a score for each matched string based on the following
-criteria:
-    - The number of sequentially matching characters.
-    - The number of characters (distance) between two consecutive matching
-      characters.
-    - Matches at the beginning of a word
-    - Matches at a camel case character (e.g. Case in CamelCase)
-    - Matches after a path separator or a hyphen.
-    - The number of unmatched characters in a string.
-The matching string with the highest score is returned first.
+Example: >
+    Pattern:	"vim"
+    Candidates:	"vim"	     -> perfect
+		"vimeo"	     -> good (v i m)
+		"voice mail" -> weaker (v _ i _ _ _ m)
+		"vintage"    -> no match (no "m")
+<
+If the search string has multiple words, each word is matched separately and
+may appear in any order in the candidate.  For example "get pat" matches
+"GetPattern", "PatternGet", "getPattern", "patGetter", "getSomePattern",
+"MatchpatternGet", etc.
 
-For example, when you search for the "get pat" string using fuzzy matching, it
-will match the strings "GetPattern", "PatternGet", "getPattern", "patGetter",
-"getSomePattern", "MatchpatternGet" etc.
+The 'ignorecase' and 'smartcase' options do not apply, case is ignored if the
+pattern is all lower case.
 
-The functions |matchfuzzy()| and |matchfuzzypos()| can be used to fuzzy search
-a string in a List of strings. The matchfuzzy() function returns a List of
-matching strings. The matchfuzzypos() functions returns the List of matches,
-the matching positions and the fuzzy match scores.
+Vim's implementation is based on the algorithm from the fzy project:
+https://github.com/jhawthorn/fzy
+
+It uses dynamic programming to compute an optimal score for a given pattern
+and candidate.
+
+The algorithm works in two stages:
+
+1. Forward pass
+   Scan the candidate left to right, tracking the best score for each
+   pattern position.  Matches score higher when they occur at the start
+   of the candidate, the start of a word (space, underscore, dash,
+   camelCase), or directly after the previous match.
+
+2. Backward pass
+   Start from the best-scoring end position and step back to find match
+   positions, ensuring the alignment is optimal.
+
+Vim extends the original algorithm to support multibyte codepoints, allowing
+correct matching for UTF-8 and other encodings.
+
+Time complexity is O(pattern * candidate).  Memory usage is proportional
+to the same.
+
+The |matchfuzzy()| and |matchfuzzypos()| functions perform fuzzy searching in
+a List of strings.  |matchfuzzy()| returns the matching strings, while
+|matchfuzzypos()| returns the matches along with their positions and scores.
 
 The "f" flag of `:vimgrep` enables fuzzy matching.
 
+To enable fuzzy matching for |ins-completion|, add "fuzzy" to the
+'completeopt' option.  For |cmdline-completion|, add "fuzzy" to the
+'wildoptions' option.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

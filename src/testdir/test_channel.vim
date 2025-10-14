@@ -1,12 +1,9 @@
 " Test for channel and job functions.
 
 " When +channel is supported then +job is too, so we don't check for that.
-source check.vim
 CheckFeature channel
 
-source shared.vim
-source screendump.vim
-source view_util.vim
+source util/screendump.vim
 
 let s:python = PythonProg()
 if s:python == ''
@@ -1429,7 +1426,7 @@ func Test_exit_cb_wipes_buf()
   new
   let g:wipe_buf = bufnr('')
 
-  let job = job_start(has('win32') ? 'cmd /c echo:' : ['true'],
+  let job = job_start(has('win32') ? 'cmd /D /c echo:' : ['true'],
 	\ {'exit_cb': 'ExitCbWipe'})
   let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
   call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
@@ -1770,7 +1767,7 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls',
         \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
 
-  let cmd = has('win32') ? "cmd /c dir" : "ls"
+  let cmd = has('win32') ? "cmd /D /c dir" : "ls"
 
   set nomodifiable
   call assert_fails("call job_start(cmd,
@@ -2308,7 +2305,7 @@ endfunc
 
 func Test_issue_5150()
   if has('win32')
-    let cmd = 'cmd /c pause'
+    let cmd = 'cmd /D /c pause'
   else
     let cmd = 'grep foo'
   endif
@@ -2438,7 +2435,7 @@ func Test_cb_with_input()
   let g:wait_exit_cb = 1
 
   if has('win32')
-    let cmd = 'cmd /c echo "Vim''s test"'
+    let cmd = 'cmd /D /c echo "Vim''s test"'
   else
     let cmd = 'echo "Vim''s test"'
   endif
@@ -2762,7 +2759,47 @@ func LspTests(port)
 endfunc
 
 func Test_channel_lsp_mode()
+  " The channel lsp mode test is flaky and gives the same error.
+  let g:giveup_same_error = 0
   call RunServer('test_channel_lsp.py', 'LspTests', [])
+endfunc
+
+func Test_error_callback_terminal()
+  CheckUnix
+  CheckFeature terminal
+  let g:out = ''
+  let g:error = ''
+
+  func! s:Out(channel, msg)
+      let g:out .= string(a:msg)
+  endfunc
+
+  func! s:Err(channel, msg)
+      let g:error .= string(a:msg)
+  endfunc
+
+  let buf = term_start(['sh'], #{term_finish: 'close', out_cb: 's:Out', err_cb: 's:Err', err_io: 'pipe'})
+  let job = term_getjob(buf)
+  let dict = job_info(job).channel->ch_info()
+
+  call assert_true(dict.id != 0)
+  call assert_equal('open', dict.status)
+  call assert_equal('open', dict.out_status)
+  call assert_equal('RAW', dict.out_mode)
+  call assert_equal('buffer', dict.out_io)
+  call assert_equal('open', dict.err_status)
+  call assert_equal('RAW', dict.err_mode)
+  call assert_equal('pipe', dict.err_io)
+  call term_sendkeys(buf, "XXXX\<cr>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "exit\<cr>")
+  call term_wait(buf)
+  call assert_match('XXX.*exit', g:out)
+  call assert_match('sh:.*XXXX:.*not found', g:error)
+
+  delfunc s:Out
+  delfunc s:Err
+  unlet! g:out g:error
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

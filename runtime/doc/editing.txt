@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
+*editing.txt*   For Vim version 9.1.  Last change: 2025 Oct 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,8 +40,8 @@ the |CTRL-^| command to toggle between the current and the alternate file.
 However, the alternate file name is not changed when |:keepalt| is used.
 An alternate file name is remembered for each window.
 
-							*:keepalt* *:keepa*
-:keepalt {cmd}		Execute {cmd} while keeping the current alternate file
+							*:keepa* *:keepalt*
+:keepa[lt] {cmd}	Execute {cmd} while keeping the current alternate file
 			name.  Note that commands invoked indirectly (e.g.,
 			with a function) may still set the alternate file
 			name.
@@ -134,11 +134,11 @@ set, Vim renames or copies the original file before it will be overwritten.
 You can use this file if you discover that you need the original file.  See
 also the 'patchmode' option.  The name of the backup file is normally the same
 as the original file with 'backupext' appended.  The default "~" is a bit
-strange to avoid accidentally overwriting existing files.  If you prefer ".bak"
-change the 'backupext' option.  Extra dots are replaced with '_' on MS-Windows
-machines, when Vim has detected that an MS-DOS-like filesystem is being used
-(e.g., messydos or crossdos) or when the 'shortname' option is on.  The
-backup file can be placed in another directory by setting 'backupdir'.
+strange to avoid accidentally overwriting existing files.  If you prefer
+".bak" change the 'backupext' option.  Extra dots are replaced with '_' on
+MS-Windows machines, when Vim has detected that an MS-DOS-like filesystem is
+being used (e.g., messydos or crossdos) or when the 'shortname' option is on.
+The backup file can be placed in another directory by setting 'backupdir'.
 
 							*auto-shortname*
 Technical: On the Amiga you can use 30 characters for a file name.  But on an
@@ -247,6 +247,7 @@ If you want to keep the changed buffer without saving it, switch on the
 							*:fin* *:find*
 :fin[d][!] [++opt] [+cmd] {file}
 			Find {file} in 'path' and then |:edit| it.
+			See also: 'findfunc'.
 
 :{count}fin[d][!] [++opt] [+cmd] {file}
 			Just like ":find", but use the {count} match in
@@ -296,7 +297,7 @@ CTRL-^			Edit the alternate file.  Mostly the alternate file is
 			Mnemonic: "goto file".
 			Uses the 'isfname' option to find out which characters
 			are supposed to be in a file name.  Trailing
-			punctuation characters ".,:;!" are ignored. Escaped
+			punctuation characters ".,:;!" are ignored.  Escaped
 			spaces "\ " are reduced to a single space.
 			Uses the 'path' option as a list of directory names to
 			look for the file.  See the 'path' option for details
@@ -334,7 +335,7 @@ CTRL-^			Edit the alternate file.  Mostly the alternate file is
 			the file.
 			The file name and the number must be separated by a
 			non-filename (see 'isfname') and non-numeric
-			character. " line " is also recognized, like it is
+			character.  " line " is also recognized, like it is
 			used in the output of `:verbose command UserCmd`
 			White space between the filename, the separator and
 			the number are ignored.
@@ -386,7 +387,7 @@ is to use "path\[[]abc]", this matches the file "path\[abc]".
 
 					*starstar-wildcard*
 Expanding "**" is possible on Unix, Win32, macOS and a few other systems (but
-it may depend on your 'shell' setting on Unix and macOS. It's known to work
+it may depend on your 'shell' setting on Unix and macOS.  It's known to work
 correctly for zsh; for bash this requires at least bash version >= 4.X).
 This allows searching a directory tree.  This goes up to 100 directories deep.
 Note there are some commands where this works slightly differently, see
@@ -399,7 +400,7 @@ Finds files:
 	a/b/c/d/ccc.txt ~
 When non-wildcard characters are used right before or after "**" these are
 only matched in the top directory.  They are not used for directories further
-down in the tree. For example: >
+down in the tree.  For example: >
 	:n /usr/inc**/types.h
 Finds files:
 	/usr/include/types.h ~
@@ -417,9 +418,9 @@ argument, for example: >
 Vim will run the command in backticks using the 'shell' and use the standard
 output as argument for the given Vim command (error messages from the shell
 command will be discarded).
-To see what shell command Vim is running, set the 'verbose' option to 4. When
+To see what shell command Vim is running, set the 'verbose' option to 4.  When
 the shell command returns a non-zero exit code, an error message will be
-displayed and the Vim command will be aborted. To avoid this make the shell
+displayed and the Vim command will be aborted.  To avoid this make the shell
 always return zero like so: >
        :next `find . -name ver\\*.c -print \|\| true`
 
@@ -656,19 +657,22 @@ list of the current window.
 			buffer.
 			Also see |++opt| and |+cmd|.
 
-:[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
+:[count]arge[dit][!] [++opt] [+cmd] {name} ...		*:arge* *:argedit*
 			Add {name}s to the argument list and edit it.
-			When {name} already exists in the argument list, this
-			entry is edited.
-			This is like using |:argadd| and then |:edit|.
+			There is no check for duplicates, it is possible to
+			add a file to the argument list twice |:argded|.
+			This is like using |:argadd| and then |:edit| (with
+			the small exception that |:edit| does not change the
+			argument list, so the argument list pointer isn't
+			changed).
 			Spaces in filenames have to be escaped with "\".
 			[count] is used like with |:argadd|.
 			If the current file cannot be |abandon|ed {name}s will
 			still be added to the argument list, but won't be
-			edited. No check for duplicates is done.
+			edited.  No check for duplicates is done.
 			Also see |++opt| and |+cmd|.
 
-:[count]arga[dd] {name} ..			*:arga* *:argadd* *E479*
+:[count]arga[dd] {name} ...			*:arga* *:argadd* *E479*
 :[count]arga[dd]						*E1156*
 			Add the {name}s to the argument list.  When {name} is
 			omitted add the current buffer name to the argument
@@ -679,12 +683,12 @@ list of the current window.
 			If the argument list is "a b c", and "b" is the
 			current argument, then these commands result in:
 				command		new argument list ~
-				:argadd x	a b x c
-				:0argadd x	x a b c
-				:1argadd x	a x b c
-				:$argadd x	a b c x
+				:argadd x	a  [b]  x  c
+				:0argadd x	x   a  [b] c
+				:1argadd x	a   x  [b] c
+				:$argadd x	a  [b]  c  x
 			And after the last one:
-				:+2argadd y	a b c x y
+				:+2argadd y	a  [b]  c  x  y
 			There is no check for duplicates, it is possible to
 			add a file to the argument list twice.  You can use
 			|:argdedupe| to fix it afterwards: >
@@ -699,7 +703,7 @@ list of the current window.
 			If your current file is a duplicate, your current file
 			will change to the original file index.
 
-:argd[elete] {pattern} ..		*:argd* *:argdelete* *E480* *E610*
+:argd[elete] {pattern} ...		*:argd* *:argdelete* *E480* *E610*
 			Delete files from the argument list that match the
 			{pattern}s.  {pattern} is used like a file pattern,
 			see |file-pattern|.  "%" can be used to delete the
@@ -971,8 +975,9 @@ Note: When the 'write' option is off, you are not able to write any file.
 			executed like with ":!{cmd}", any '!' is replaced with
 			the previous command |:!|.
 
-The default [range] for the ":w" command is the whole buffer (1,$).  If you
-write the whole buffer, it is no longer considered changed.  When you
+The default [range] for the ":w" command is the whole buffer (1,$).  The |'[|
+and |']| marks will be set to the [range] being used for the write command.
+If you write the whole buffer, it is no longer considered changed.  When you
 write it to a different file with ":w somefile" it depends on the "+" flag in
 'cpoptions'.  When included, the write command will reset the 'modified' flag,
 even though the buffer itself may still be different from its file.
@@ -1054,6 +1059,15 @@ explanation of when the copy is made and when the file is renamed.
 
 If the creation of a backup file fails, the write is not done.  If you want
 to write anyway add a '!' to the command.
+
+							*file-watcher*
+When you notice issues with programs, that act upon when a buffer is written
+(like inotify, entr or fswatch) or when external applications execute Vim to
+edit the file (like git) and those programs do not seem to notice that the
+original file has been changed, you may want to consider switching the
+'backupcopy' option value to "yes".  This makes sure, Vim writes to the same
+file, that those watcher programs expect, without creating a new file (which
+prevents them from detecting that the file has changed).  See also |crontab|
 
 							*write-permissions*
 When writing a new file the permissions are read-write.  For unix the mask is
@@ -1322,15 +1336,22 @@ used (Motif only offers one pattern, but you can edit it).
 For example, to have only Vim files in the dialog, you could use the following
 command: >
 
-     let g:browsefilter = "Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+     let g:browsefilter = "Vim scripts\t*.vim\nVim Startup Files\t*vimrc\n"
 
 You can override the filter setting on a per-buffer basis by setting the
 b:browsefilter variable.  You would most likely set b:browsefilter in a
 filetype plugin, so that the browse dialog would contain entries related to
 the type of file you are currently editing.  Disadvantage: This makes it
 difficult to start editing a file of a different type.  To overcome this, you
-may want to add "All Files\t*.*\n" as the final filter, so that the user can
-still access any desired file.
+can add the following as the final filter on Windows: >
+
+	All Files\t(*.*)\t*\n
+<
+Or the following on other platforms, so that the user can still access any
+desired file: >
+
+	All Files\t(*)\t*\n
+<
 
 To avoid setting browsefilter when Vim does not actually support it, you can
 use has("browsefilter"): >
@@ -1360,7 +1381,7 @@ present in 'cpoptions' and "!" is not used in the command.
 
 :cd[!] {path}		Change the current directory to {path}.
 			If {path} is relative, it is searched for in the
-			directories listed in |'cdpath'|.
+			directories listed in 'cdpath'.
 			Clear any window-local directory.
 			Does not change the meaning of an already opened file,
 			because its full path name is remembered.  Files from
@@ -1397,7 +1418,7 @@ present in 'cpoptions' and "!" is not used in the command.
 			to another window will stop using {path}.
 
 							*:lcd-*
-:lcd[!] -		Change to the previous current directory, before the
+:lc[d][!] -		Change to the previous current directory, before the
 			last ":lcd {path}" command.
 
 							*:lch* *:lchdir*
@@ -1408,7 +1429,7 @@ present in 'cpoptions' and "!" is not used in the command.
 			Also see |getcwd()|.
 							*:pwd-verbose*
 			When 'verbose' is non-zero, |:pwd| will also display
-			what scope the current directory was set. Example: >
+			what scope the current directory was set.  Example: >
 
 				" Set by :cd
 				:verbose pwd
@@ -1438,8 +1459,8 @@ When a |:tcd| command has been used for a tab page, the specified directory
 becomes the current directory for the current tab page and the current window.
 The current directory of other tab pages is not affected.  When jumping to
 another tab page, the current directory is changed to the last specified local
-directory for that tab page. If the current tab has no local current directory
-the global current directory is used.
+directory for that tab page.  If the current tab has no local current
+directory the global current directory is used.
 
 When a |:cd| command is used, the current window and tab page will lose the
 local current directory and will use the global current directory from now on.
@@ -1567,7 +1588,7 @@ To test for blowfish support you can use these conditions: >
 	has('crypt-blowfish')
 	has('crypt-blowfish2')
 This works since Vim 7.4.1099 while blowfish support was added earlier.
-Thus the condition failing doesn't mean blowfish is not supported. You can
+Thus the condition failing doesn't mean blowfish is not supported.  You can
 test for blowfish with: >
 	v:version >= 703
 And for blowfish2 with: >
@@ -1631,7 +1652,7 @@ Notes:
   algorithm in detail.
 - The implementation of 'cryptmethod' "blowfish" has a flaw.  It is possible
   to crack the first 64 bytes of a file and in some circumstances more of the
-  file. Use of it is not recommended, but it's still the strongest method
+  file.  Use of it is not recommended, but it's still the strongest method
   supported by Vim 7.3 and 7.4.  The "zip" method is even weaker.
 - Vim originates from the Netherlands.  That is where the sources come from.
   Thus the encryption code is not exported from the USA.
@@ -1723,24 +1744,24 @@ ask if you really want to overwrite the file:
 	WARNING: The file has been changed since reading it!!!
 	Do you really want to write to it (y/n)?
 
-If you hit 'y' Vim will continue writing the file.  If you hit 'n' the write is
-aborted.  If you used ":wq" or "ZZ" Vim will not exit, you will get another
+If you hit 'y' Vim will continue writing the file.  If you hit 'n' the write
+is aborted.  If you used ":wq" or "ZZ" Vim will not exit, you will get another
 chance to write the file.
 
 The message would normally mean that somebody has written to the file after
 the edit session started.  This could be another person, in which case you
 probably want to check if your changes to the file and the changes from the
-other person should be merged.  Write the file under another name and check for
-differences (the "diff" program can be used for this).
+other person should be merged.  Write the file under another name and check
+for differences (the "diff" program can be used for this).
 
 It is also possible that you modified the file yourself, from another edit
 session or with another command (e.g., a filter command).  Then you will know
 which version of the file you want to keep.
 
 The accuracy of the time check depends on the filesystem.  On Unix it is
-usually sub-second.  With old file systems and on MS-Windows it is normally one
-second.  Use `has('nanotime')` to check if sub-second time stamp checks are
-available.
+usually sub-second.  With old file systems and on MS-Windows it is normally
+one second.  Use `has('nanotime')` to check if sub-second time stamp checks
+are available.
 
 There is one situation where you get the message while there is nothing wrong:
 On a Win32 system on the day daylight saving time starts.  There is something
@@ -1770,8 +1791,8 @@ There are three different types of searching:
       - It ONLY matches directories.
       - It matches up to 30 directories deep by default, so you can use it to
 	search an entire directory tree
-      - The maximum number of levels matched can be given by appending a number
-	to '**'.
+      - The maximum number of levels matched can be given by appending a
+	number to '**'.
 	Thus '/usr/**2' can match: >
 		/usr
 		/usr/include
@@ -1800,7 +1821,7 @@ There are three different types of searching:
    stop-directories are appended to the path (for the 'path' option) or to
    the filename (for the 'tags' option) with a ';'.  If you want several
    stop-directories separate them with ';'.  If you want no stop-directory
-   ("search upward till the root directory) just use ';'. >
+   ("search upward till the root directory") just use ';'. >
 	/usr/include/sys;/usr
 <   will search in: >
 	   /usr/include/sys
@@ -1813,7 +1834,7 @@ There are three different types of searching:
 
    If Vim's current path is /u/user_x/work/release and you do >
 	:set path=include;/u/user_x
-<  and then search for a file with |gf| the file is searched in: >
+<   and then search for a file with |gf| the file is searched in: >
 	/u/user_x/work/release/include
 	/u/user_x/work/include
 	/u/user_x/include
@@ -1825,7 +1846,7 @@ There are three different types of searching:
 3) Combined up/downward search:
    If Vim's current path is /u/user_x/work/release and you do >
 	set path=**;/u/user_x
-<  and then search for a file with |gf| the file is searched in: >
+<   and then search for a file with |gf| the file is searched in: >
 	/u/user_x/work/release/**
 	/u/user_x/work/**
 	/u/user_x/**
@@ -1837,10 +1858,10 @@ There are three different types of searching:
 
    In the above example you might want to set path to: >
 	:set path=**,/u/user_x/**
-<  This searches:
-	/u/user_x/work/release/** ~
-	/u/user_x/** ~
-   This searches the same directories, but in a different order.
+<   This searches: >
+	/u/user_x/work/release/**
+	/u/user_x/**
+<   This searches the same directories, but in a different order.
 
    Note that completion for ":find", ":sfind", and ":tabfind" commands do not
    currently work with 'path' items that contain a URL or use the double star

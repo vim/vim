@@ -34,7 +34,7 @@ def Test_check_colors()
         'Comment',
         'Conceal',
         'Constant',
-	'CurSearch',
+        'CurSearch',
         'Cursor',
         'CursorColumn',
         'CursorLine',
@@ -66,6 +66,7 @@ def Test_check_colors()
         'PmenuSbar',
         'PmenuSel',
         'PmenuThumb',
+        'PopupNotification',
         'PreProc',
         'Question',
         'QuickFixLine',
@@ -156,7 +157,7 @@ def Test_check_colors()
     cursor(1, 1)
 
     # 4) Check, that t_Co is checked
-    var pat = '[&]t_Co\s*[<>=]=\?\s*\d\+'
+    var pat = '[&]t_Co)\?\s*\%(\%([<>=]=\?\)\|??\)\s*\d\+'
     if search(pat, 'ncW') == 0
         err['t_Co'] = 'Does not check terminal for capable colors'
     endif
@@ -175,7 +176,7 @@ def Test_check_colors()
 
     # 7) Normal should be defined first, not use reverse, fg or bg
     cursor(1, 1)
-    pat = 'hi\%[light] \+\%(link\|clear\)\@!\w\+\>'
+    pat = 'hi\%[ghlight] \+\%(link\|clear\)\@!\w\+\>'
     search(pat, 'cW') # Look for the first hi def, skipping `hi link` and `hi clear`
     if getline('.') !~# '\m\<Normal\>'
         err['highlight']['Normal'] = 'Should be defined first'

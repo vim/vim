@@ -1,0 +1,131 @@
+*comment.txt*   For Vim version 9.1.  Last change:  2025 Jun 22
+
+
+		  VIM REFERENCE MANUAL
+
+Commenting and un-commenting text.
+
+==============================================================================
+
+See |comment-install| on how to activate this package.
+
+The comment.vim package, allows to toggle comments for a single line, a range
+of lines or a selected text object.  It defines the following mappings:
+
+							*o_gc*
+gc{motion}	to toggle comments for the selected motion
+							*v_gc*
+{Visual}gc	to comment/uncomment the highlighted lines.
+
+Since gc operates on a motion, it can be used with any motion, for example _
+to comment the current line, or ip to comment the current paragraph.
+Default mappings are defined for `gc_` and `gc$`:
+							*gcc*
+gcc		to comment/uncomment current line (same as `gc_`)
+
+							*gC*
+gC              to comment/uncomment to end of current line (same as `gc$`)
+
+Commenting to the end of a line using `gC` works whenever the filetype plugin
+supports it (that is, whenever the comment marker precedes the code) and falls
+back to `gcc` otherwise.
+
+Note: using `gC` may not always result in valid comment markers depending on
+the language used.
+
+Additionally, the plugin defines a comment text-object which requires syntax
+highlighting to be enabled.
+						     *v_ac* *ac*
+ac		"a comment", select current or next comment.
+		Leading and trailing white space is included.
+		Trailing newlines are included too.
+						     *v_ic* *ic*
+ic		"inner comment", select current or next comment.
+
+This plugin uses the buffer-local 'commentstring' option value to add or remove
+comment markers to the selected lines.  Whether it will comment or un-comment
+depends on the range of lines to act upon.  When all of the lines in range
+have comment markers, all lines will be un-commented, if it doesn't, the lines
+will be commented out.  Blank and empty lines are ignored.
+
+The value of 'commentstring' is the same for the entire buffer and determined
+by its filetype (|filetypes|). To adapt it within the buffer for embedded
+languages, you can use a plug-in such as
+https://github.com/suy/vim-context-commentstring.
+
+The comment marker will always be padded with blanks whether or not the
+'commentstring' value contains whitespace around "%s".
+
+If the mapping does not seem to work (or uses wrong comment markers), it might
+be because of several reasons:
+- the filetype is not detected by Vim, see |new-filetype|,
+- filetype plugins are not enabled, see |:filetype-plugin-on| or
+- the filetype plugin does not set the (correct) 'commentstring' option.
+
+You can simply configure this using the following autocommand (e.g. for legacy
+Vim script): >
+
+	autocmd Filetype vim :setlocal commentstring="%s
+
+This example sets the " as start of a comment for legacy Vim script.  For Vim9
+script, you would instead use the "#" char: >
+
+	autocmd Filetype vim :setlocal commentstring=#\ %s
+
+==============================================================================
+Options:
+
+*g:comment_first_col*
+*b:comment_first_col*
+    By default comment chars are added in front of the line, i.e. if the line
+    was indented, commented line would stay indented as well.
+
+    However some filetypes require a comment char on the first column, use this option
+    to change default behaviour.
+
+    Use g:comment_first_col to change it globally or b:comment_first_col to
+    target specific filetype(s).
+
+*g:comment_mappings*
+    Set to false to disable the default keyboard mappings, e.g. in your vimrc
+>
+        let g:comment_mappings = v:false
+<
+    This option must be set before the package is activated using |packadd|.
+
+==============================================================================
+Mappings:
+
+The following |<Plug>| mappings are included, which you can use to customise the
+keyboard mappings.
+
+*<Plug>(comment-toggle)*
+    Normal and visual modes, mapped to gc by default
+
+*<Plug>(comment-toggle-line)*
+    Normal mode only, mapped to gcc by default
+
+*<Plug>(comment-toggle-end)*
+    Normal mode only, mapped to gC by default
+
+*<Plug>(comment-text-object-inner)*
+    Operator pending and visual modes, mapped to ic by default
+
+*<Plug>(comment-text-object-outer)*
+    Operator pending and visual modes, mapped to ac by default
+
+The default keyboard mappings are shown below, you can copy these if you wish
+to customise them in your vimrc:
+>
+    nmap gc <Plug>(comment-toggle)
+    xmap gc <Plug>(comment-toggle)
+    nmap gcc <Plug>(comment-toggle-line)
+    nmap gC <Plug>(comment-toggle-end)
+
+    omap ic <Plug>(comment-text-object-inner)
+    omap ac <Plug>(comment-text-object-outer)
+    xmap ic <Plug>(comment-text-object-inner)
+    xmap ac <Plug>(comment-text-object-outer)
+<
+==============================================================================
+vim:tw=78:ts=8:fo=tcq2:ft=help:

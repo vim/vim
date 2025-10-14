@@ -1,0 +1,27 @@
+name: 'test_artifacts'
+description: "Upload failed test artifacts"
+runs:
+  using: "composite"
+  steps:
+    - name: Upload failed tests
+      uses: actions/upload-artifact@v4
+      with:
+        # Name of the artifact to upload.
+        name: GH-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-tests
+
+        # A file, directory or wildcard pattern that describes what
+        # to upload.
+        path: |
+         ${{ github.workspace }}/runtime/indent/testdir/*.fail
+         ${{ github.workspace }}/runtime/syntax/testdir/failed/*
+         ${{ github.workspace }}/src/testdir/failed/*
+        # The desired behavior if no files are found using the
+        # provided path.
+        if-no-files-found: ignore
+
+        # Duration after which artifact will expire in days. 0 means
+        # using repository settings.
+        retention-days: 0
+
+        # If true, an artifact with a matching name will be deleted
+        overwrite: true

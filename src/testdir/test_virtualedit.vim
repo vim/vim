@@ -77,13 +77,30 @@ endfunc
 func Test_edit_change()
   new
   set virtualedit=all
+
   call setline(1, "\t⒌")
   normal Cx
   call assert_equal('x', getline(1))
+
+  call setline(1, "\ta̳")
+  normal Cx
+  call assert_equal('x', getline(1))
+
+  call setline(1, "\tβ̳")
+  normal Cx
+  call assert_equal('x', getline(1))
+
+  if has('arabic')
+    call setline(1, "\tلا")
+    normal Cx
+    call assert_equal('x', getline(1))
+  endif
+
   " Do a visual block change
   call setline(1, ['a', 'b', 'c'])
   exe "normal gg3l\<C-V>2jcx"
   call assert_equal(['a  x', 'b  x', 'c  x'], getline(1, '$'))
+
   bwipe!
   set virtualedit=
 endfunc
@@ -692,5 +709,27 @@ func Test_virtualedit_replace_after_tab()
   bwipe!
 endfunc
 
+" Test that setpos('.') and cursor() behave the same for v:maxcol
+func Test_virtualedit_set_cursor_pos_maxcol()
+  new
+  set virtualedit=all
+
+  call setline(1, 'foobar')
+  exe "normal! V\<Esc>"
+  call assert_equal([0, 1, 1, 0], getpos("'<"))
+  call assert_equal([0, 1, v:maxcol, 0], getpos("'>"))
+  let pos = getpos("'>")
+
+  call cursor(1, 1)
+  call setpos('.', pos)
+  call assert_equal([0, 1, 7, 0], getpos('.'))
+
+  call cursor(1, 1)
+  call cursor(pos[1:])
+  call assert_equal([0, 1, 7, 0], getpos('.'))
+
+  set virtualedit&
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

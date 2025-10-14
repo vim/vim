@@ -9,7 +9,8 @@
  * FIPS-180-2 compliant SHA-256 implementation
  * GPL by Christophe Devine, applies to older version.
  * Modified for md5deep, in public domain.
- * Modified For Vim, Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ * Modified For Vim, Mohsin Ahmed,
+ * (original link www.cs.albany.edu/~mosh no longer available)
  * Mohsin Ahmed states this work is distributed under the VIM License or GPL,
  * at your choice.
  *
@@ -40,7 +41,7 @@
     (b)[(i) + 3] = (char_u)((n)      );   \
 }
 
-     void
+    void
 sha256_start(context_sha256_T *ctx)
 {
     ctx->total[0] = 0;
@@ -262,7 +263,7 @@ sha256_finish(context_sha256_T *ctx, char_u digest[32])
 }
 #endif // FEAT_CRYPT || FEAT_PERSISTENT_UNDO
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Returns hex digest of "buf[buf_len]" in a static array.
  * if "salt" is not NULL also do "salt[salt_len]".

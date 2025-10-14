@@ -1,0 +1,27 @@
+# When making commits that are strictly formatting/style changes, add the
+# commit hash here, so git blame can ignore the change. See docs for more details:
+#
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt-blameignoreRevsFile
+#
+# Run this command to always ignore formatting commits in git blame
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Patch v9.1.0829 expanded tabs to spaces in sound.c
+8ce738de3fd7192fa6274730594305cde780074c
+# Patch v9.1.0879 reformated sound.c and sign.c
+3cf094edaff815141d9941b8dba52b9e77d8dfc1
+# change indentation style of netrw plugin
+c363ca1ecd1f8db03663ef98dcf41eeacc3c22c7
+c673b805ad80d0aef07e745d412a2bf298ba1c07
+# fix indentation style in insexpand.c v9.1.1352
+355db99d12a89f05765948b33eecd6d9733e16bb
+# fix indentation styles in various files v9.1.1363
+c2a9000bc1b4a2cbcfeef55450c184b16906d910
+# indentation style in various files v9.1.1364
+562610cfa327c8ebff12a1700525e17a070d5e2c
+# Patch v9.1.1371
+19e1dd6b6aeb96d64122332a8c3d17b9d5ca007b
+# Patch v9.1.1372
+a4a00a7ad0cfa26685c057c11a09bec2c962346a
+# Patch v9.1.1390
+e89aef3f65388a8b627c77f250525f2a264716c5

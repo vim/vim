@@ -1,9 +1,6 @@
 " Test for the shell related options ('shell', 'shellcmdflag', 'shellpipe',
 " 'shellquote', 'shellredir', 'shellxescape', and 'shellxquote')
 
-source check.vim
-source shared.vim
-
 func Test_shell_options()
   if has('win32')
     " FIXME: This test is flaky on MS-Windows.
@@ -158,6 +155,10 @@ func Test_shellescape()
   call assert_equal("'te\\#xt'", shellescape("te#xt", 1))
   call assert_equal("'te!xt'", shellescape("te!xt"))
   call assert_equal("'te\\!xt'", shellescape("te!xt", 1))
+  call assert_equal("'te<cword>xt'", shellescape("te<cword>xt"))
+  call assert_equal("'te\\<cword>xt'", shellescape("te<cword>xt", 1))
+  call assert_equal("'te<cword>%xt'", shellescape("te<cword>%xt"))
+  call assert_equal("'te\\<cword>\\%xt'", shellescape("te<cword>%xt", 1))
 
   call assert_equal("'te\nxt'", shellescape("te\nxt"))
   call assert_equal("'te\\\nxt'", shellescape("te\nxt", 1))
@@ -293,6 +294,20 @@ func Test_shell_no_prevcmd()
     call assert_equal(['E34: No previous command', 'done'], readfile('Xtestdone'))
   endif
   call delete('Xtestdone')
+endfunc
+
+func Test_shell_filter_buffer_with_nul_bytes()
+  CheckUnix
+  new
+  set noshelltemp
+  " \n is a NUL byte
+  let lines = ["aaa\nbbb\nccc\nddd\neee", "fff\nggg\nhhh\niii\njjj"]
+  call setline(1, lines)
+  %!cat
+  call assert_equal(lines, getline(1, '$'))
+
+  set shelltemp&
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

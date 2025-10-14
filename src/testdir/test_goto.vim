@@ -296,6 +296,7 @@ func Test_gd_string()
       return x;
     }
   [CODE]
+
   call XTest_goto_decl('gd', lines, 4, 7)
 endfunc
 
@@ -312,18 +313,25 @@ func Test_gd_string_only()
   call XTest_goto_decl('gd', lines, 5, 10)
 endfunc
 
-" Check that setting 'cursorline' does not change curswant
-func Test_cursorline_keep_col()
+" Check that setting some options does not change curswant
+func Test_set_options_keep_col()
   new
   call setline(1, ['long long long line', 'short line'])
   normal ggfi
   let pos = getcurpos()
   normal j
-  set cursorline
+  set invhlsearch spell spelllang=en,cjk spelloptions=camel textwidth=80
+  set cursorline cursorcolumn cursorlineopt=line colorcolumn=+1 winfixbuf
+  set comments=:# commentstring=#%s define=function
+  set background=dark
+  set background=light
   normal k
   call assert_equal(pos, getcurpos())
   bwipe!
-  set nocursorline
+  set hlsearch& spell& spelllang& spelloptions& textwidth&
+  set cursorline& cursorcolumn& cursorlineopt& colorcolumn& winfixbuf&
+  set comments& commentstring& define&
+  set background&
 endfunc
 
 func Test_gd_local_block()

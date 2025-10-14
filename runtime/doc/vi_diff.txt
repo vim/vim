@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.0.  Last change: 2022 Apr 03
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,6 +21,7 @@ is missing something or because Posix is beside the mark).
 6. Supported Vi features		|vi-features|
 7. Command-line arguments		|cmdline-arguments|
 8. POSIX compliance			|posix-compliance|
+9. Supported Operating Systems		|os-support|
 
 ==============================================================================
 1. Simulated command					*simulated-command*
@@ -49,7 +50,7 @@ printed.
 
 autoprint (ap)		boolean	(default on)		*'autoprint'* *'ap'*
 beautify (bf)		boolean	(default off)		*'beautify'* *'bf'*
-flash (fl)		boolean	(default ??)		*'flash'* *'fl'*
+flash (fl)		boolean	(default on)		*'flash'* *'fl'*
 graphic (gr)		boolean	(default off)		*'graphic'* *'gr'*
 hardtabs (ht)		number	(default 8)		*'hardtabs'* *'ht'*
 	number of spaces that a <Tab> moves on the display
@@ -90,8 +91,11 @@ Maximum display width	   Unix and Win32: 1024 characters, otherwise 255
 Maximum lhs of a mapping   50 characters.
 Number of different highlighting types: over 30000
 Range of a Number variable:  -2147483648 to 2147483647 (might be more on 64
-			   bit systems)
+			   bit systems)  See also: |v:numbermax|,
+			   |v:numbermin| and |v:numbersize|
 Maximum length of a line in a tags file: 512 bytes.
+							*E1541*
+Maximum value for |/\U| and |/\%U|: 2147483647 (for 32bit integer).
 
 Information for undo and text in registers is kept in memory, thus when making
 (big) changes the amount of (virtual) memory available limits the number of
@@ -114,16 +118,16 @@ argument when starting Vim.
 ==============================================================================
 4. The most interesting additions			*vim-additions*
 
-Vi compatibility.					|'compatible'|
+Vi compatibility.					'compatible'
 	Although Vim is 99% Vi compatible, some things in Vi can be
 	considered to be a bug, or at least need improvement.  But still, Vim
 	starts in a mode which behaves like the "real" Vi as much as possible.
 	To make Vim behave a little bit better, try resetting the 'compatible'
-	option:
+	option: >
 		:set nocompatible
-	Or start Vim with the "-N" argument:
+<	Or start Vim with the "-N" argument: >
 		vim -N
-	Vim starts with 'nocompatible' automatically if you have a .vimrc
+<	Vim starts with 'nocompatible' automatically if you have a .vimrc
 	file.  See |startup|.
 	The 'cpoptions' option can be used to set Vi compatibility on/off for
 	a number of specific items.
@@ -170,7 +174,8 @@ Multiple windows and buffers.				|windows.txt|
 	is called a hidden buffer.  Many commands and options have been added
 	for this facility.
 	Vim can also use multiple tab pages, each with one or more windows.  A
-	line with tab labels can be used to quickly switch between these pages.
+	line with tab labels can be used to quickly switch between these
+	pages.
 	|tab-page|
 
 Terminal window.					|:terminal|
@@ -188,8 +193,8 @@ Syntax highlighting.					|:syntax|
 	this is using a |:colorscheme| command.
 	The highlighted text can be exported as HTML. |convert-to-HTML|
 	Other items that can be highlighted are matches with the search string
-	|'hlsearch'|, matching parens |matchparen| and the cursor line and
-	column |'cursorline'| |'cursorcolumn'|.
+	'hlsearch', matching parens |matchparen| and the cursor line and
+	column 'cursorline' 'cursorcolumn'.
 
 Text properties						|textprop.txt|
 	Vim supports highlighting text by a plugin.  Property types can be
@@ -334,9 +339,10 @@ Insert-mode completion.					|ins-completion|
 	|i_CTRL-X_CTRL-D|	definitions or macros
 	|i_CTRL-X_CTRL-O|	Omni completion: clever completion
 				specifically for a file type
+	|i_CTRL-X_CTRL-R|	contents from registers
 	etc.
 
-Long line support.					|'wrap'| |'linebreak'|
+Long line support.					'wrap' 'linebreak'
 	If the 'wrap' option is off, long lines will not wrap and only part
 	of them will be shown.  When the cursor is moved to a part that is not
 	shown, the screen will scroll horizontally.  The minimum number of
@@ -389,7 +395,7 @@ Finding matches in files.				|:vimgrep|
 	advanced Vim regexp pattern, works on all systems and also works to
 	search in compressed files.
 
-Improved indenting for programs.			|'cindent'|
+Improved indenting for programs.			'cindent'
 	When the 'cindent' option is on the indent of each line is
 	automatically adjusted.  C syntax is mostly recognized.  The indent
 	for various styles can be set with 'cinoptions'.  The keys to trigger
@@ -463,7 +469,7 @@ Editing binary files.					|edit-binary|
 	executable file, without corrupting it.  Vim doesn't remove NUL
 	characters (they are represented as <NL> internally).
 	|-b|		command-line argument to start editing a binary file
-	|'binary'|	Option set by |-b|.  Prevents adding an <EOL> for the
+	'binary'	Option set by |-b|.  Prevents adding an <EOL> for the
 			last line in the file.
 
 Multi-language support.					|multi-lang|
@@ -788,7 +794,7 @@ somewhere else.
 
 Vim is able to work correctly on filesystems with 8.3 file names, also when
 using messydos or crossdos filesystems on the Amiga, or any 8.3 mounted
-filesystem under Unix.  See |'shortname'|.
+filesystem under Unix.  See 'shortname'.
 
 Error messages are shown at least one second (Vi overwrites error messages).
 
@@ -1097,7 +1103,7 @@ The following options are supported by Vi: ~
 'shiftwidth'	  'sw'	    number of spaces to use for (auto)indent step
 'showmatch'	  'sm'	    briefly jump to matching bracket if insert one
 'showmode'	  'smd'     message on status line to show current mode
-'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
+'tabstop'	  'ts'	    number of columns between two tab stops
 'taglength'	  'tl'	    number of significant characters for a tag
 'tags'		  'tag'     list of file names used by the tag command
 			    {Vi: default is "tags /usr/lib/tags"}
@@ -1341,7 +1347,7 @@ This is where Vim does not behave as POSIX specifies and why:
 These are remarks about running the POSIX test suite:
 - vi test 33 sometimes fails for unknown reasons
 - vi test 250 fails; behavior will be changed in a new revision
-    http://www.opengroup.org/austin/mailarchives/ag-review/msg01710.html
+    (dead link) opengroup.org/austin/mailarchives/ag-review/msg01710.html
     (link no longer works, perhaps it's now:
     https://www.opengroup.org/sophocles/show_mail.tpl?CALLER=show_archive.tpl&source=L&listname=austin-review-l&id=1711)
 - vi test 310 fails; exit code non-zero when any error occurred?
@@ -1361,5 +1367,38 @@ These are remarks about running the POSIX test suite:
   1 instead of 2.
 - ex test 534 fails because .exrc isn't read in silent mode.
 
+==============================================================================
+9. Supported Operating systems					*os-support*
+
+Vim tries to support some old operating systems, however support for older
+operating systems might be dropped if maintenance becomes a burden or can no
+longer be verified.
+
+Here is the status of some operating systems.  Note fully supported means,
+support is verified as part of the CI test suite.
+
+System				| Status:~
+--------------------------------+-----------------------------------------
+Amiga (OS4, AROS & MorphOS):	| supported
+Haiku:				| supported
+Linux:				| fully supported (on maintained versions)
+macOS:				| fully supported up until v10.6 (?)
+MS-Windows 7, 8, 10, 11:	| fully supported
+OpenVMS:			| supported
+QNX:				| still supported (?)
+UNIX:				| supported (on maintained versions)
+zOS/OS390:			| still supported (?)
+
+The following operating systems are no longer supported:
+
+System				| Status:~
+--------------------------------+-----------------------------------------
+Atari MiNT:			| support was dropped with v8.2.1215
+BeOS:				| support was dropped with v8.2.0849
+MS-DOS:				| support was dropped with v7.4.1399
+MS-Windows XP and Vista:	| support was dropped with v9.0.0496
+OS/2:				| support was dropped with v7.4.1008
+RISC OS:			| support was dropped with v7.3.0187
+NeXTSTEP:			| support was deprecated with v9.1.1727
 
  vim:tw=78:ts=8:noet:ft=help:norl:

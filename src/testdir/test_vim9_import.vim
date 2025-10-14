@@ -1,9 +1,7 @@
 " Test import/export of the Vim9 script language.
 " Also the autoload mechanism.
 
-source check.vim
-source term_util.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:export_script_lines =<< trim END
   vim9script
@@ -657,6 +655,7 @@ def Test_import_export_expr_map()
 enddef
 
 def Test_import_in_filetype()
+  CheckFeature quickfix
   # check that :import works when the buffer is locked
   mkdir('ftplugin', 'pR')
   var export_lines =<< trim END
@@ -1140,6 +1139,182 @@ def Test_autoload_import_relative()
   v9.CheckScriptFailure(lines, 'E484:')
 enddef
 
+" autoload relative, access from compiled function.
+" Github issues: #14565, #14579
+def Test_autoload_import_relative_compiled_buffer()
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'Ximportrelativebuffer.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Ximportrelativebuffer.vim' as xfile
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  new
+  setline(1, lines)
+  :source
+  # source one more time to detect issues with clearing the script state and
+  # variables
+  :source
+  :bw!
+enddef
+
+" Test for relative import when sourcing a buffer in another directory
+def Test_autoload_import_relative_from_buffer_in_dir()
+  mkdir('Ximportrelative/dir1/dir2', 'pR')
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'Ximportrelative/dir1/dir2/Ximport.vim')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Ximport.vim' as xfile
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  writefile(lines, 'Ximportrelative/dir1/dir2/Xrelative.vim')
+
+  split Ximportrelative/dir1/dir2/Xrelative.vim
+  :source
+  # source one more time to detect issues with clearing the script state and
+  # variables
+  :source
+  :bw!
+enddef
+
+" Test modifying exported autoload variable. Github issue: #14591
+def Test_autoload_export_variables()
+  mkdir('Xautoload_vars/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    g:Xautoload_vars_autoload = true
+    export var val = 11
+    val = 42
+  END
+
+  # Test that the imported script, above, can modify the exported variable;
+  # and test that the importing script, below, can modify the variable.
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f2.vim', 'D')
+  lines =<< trim END
+    vim9script
+    g:Xautoload_vars_autoload = false
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f2.vim' as f2
+    # Verify that the import statement does not load the file.
+    assert_equal(false, g:Xautoload_vars_autoload)
+
+    def F(): number
+      return f2.val
+    enddef
+    # Verify compile does not load the file.
+    defcompile F
+    assert_equal(false, g:Xautoload_vars_autoload)
+
+    # load the file by accessing the exported variable
+    assert_equal(42, F())
+    assert_equal(true, g:Xautoload_vars_autoload)
+    unlet g:Xautoload_vars_autoload
+
+    assert_equal(42, f2.val)
+    f2.val = 17
+    assert_equal(17, f2.val)
+
+    def G()
+      f2.val = 19
+    enddef
+    G()
+    assert_equal(19, f2.val)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Test const var is not modifiable.
+  lines =<< trim END
+    vim9script
+    export const val = 11
+    val = 42
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f3.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f3.vim' as f3
+
+    var x = f3.val
+  END
+  v9.CheckScriptFailure(lines, 'E46:')
+
+  # Test const var is not modifiable from importing script.
+  lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f4.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f4.vim' as f4
+
+    f4.val = 13
+  END
+  v9.CheckScriptFailure(lines, 'E46:')
+
+  # Test const var is not modifiable from importing script from :def.
+  # Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f5.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f5.vim' as f5
+
+    def F()
+      f5.val = 13
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E741:')
+
+  # Still part of Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export var val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f6.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f6.vim' as f6
+
+    def F()
+      f6.val = 13
+    enddef
+    F()
+    assert_equal(13, f6.val)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_autoload_import_relative_autoload_dir()
   mkdir('autoload', 'pR')
   var lines =<< trim END
@@ -1382,6 +1557,63 @@ def Run_Test_import_in_printexpr()
   assert_equal('yes', g:printed)
 
   set printexpr=
+enddef
+
+" Test for using an imported function as 'findfunc'
+func Test_import_in_findfunc()
+  call Run_Test_import_in_findfunc()
+endfunc
+
+def Run_Test_import_in_findfunc()
+  var lines =<< trim END
+    vim9script
+
+    export def FindFunc(pat: string, cmdexpand: bool): list<string>
+      var fnames = ['Xfile1.c', 'Xfile2.c', 'Xfile3.c']
+      return fnames->filter((_, v) => v =~? pat)
+    enddef
+  END
+  writefile(lines, 'Xfindfunc', 'D')
+
+  # Test using the "set" command
+  lines =<< trim END
+    vim9script
+    import './Xfindfunc' as find1
+
+    set findfunc=find1.FindFunc
+  END
+  v9.CheckScriptSuccess(lines)
+
+  enew!
+  find Xfile2
+  assert_equal('Xfile2.c', @%)
+  bwipe!
+
+  botright vert new
+  find Xfile1
+  assert_equal('Xfile1.c', @%)
+  bw!
+
+  # Test using the option variable
+  lines =<< trim END
+    vim9script
+    import './Xfindfunc' as find2
+
+    &findfunc = find2.FindFunc
+  END
+  v9.CheckScriptSuccess(lines)
+
+  enew!
+  find Xfile2
+  assert_equal('Xfile2.c', @%)
+  bwipe!
+
+  botright vert new
+  find Xfile1
+  assert_equal('Xfile1.c', @%)
+
+  set findfunc=
+  bwipe!
 enddef
 
 def Test_import_in_charconvert()
@@ -2054,6 +2286,13 @@ def Test_import_vim9_from_legacy()
     export def GetText(): string
        return 'text'
     enddef
+    export var exported_nr: number = 22
+    def AddNum(n: number)
+      exported_nr += n
+    enddef
+    export var exportedDict: dict<func> = {Fn: AddNum}
+    export const CONST = 10
+    export final finalVar = 'abc'
   END
   writefile(vim9_lines, 'Xvim9_export.vim', 'D')
 
@@ -2072,6 +2311,13 @@ def Test_import_vim9_from_legacy()
     " imported symbol is script-local
     call assert_equal('exported', s:vim9.exported)
     call assert_equal('text', s:vim9.GetText())
+    call s:vim9.exportedDict.Fn(5)
+    call assert_equal(27, s:vim9.exported_nr)
+    call call(s:vim9.exportedDict.Fn, [3])
+    call assert_equal(30, s:vim9.exported_nr)
+    call assert_fails('let s:vim9.CONST = 20', 'E46: Cannot change read-only variable "CONST"')
+    call assert_fails('let s:vim9.finalVar = ""', 'E46: Cannot change read-only variable "finalVar"')
+    call assert_fails('let s:vim9.non_existing_var = 20', 'E1048: Item not found in script: non_existing_var')
   END
   writefile(legacy_lines, 'Xlegacy_script.vim', 'D')
 
@@ -2878,7 +3124,10 @@ def Test_vim9_import_symlink()
     var lines =<< trim END
         vim9script
         import autoload 'bar.vim'
-        g:resultFunc = bar.Func()
+        def FooFunc(): string
+          return bar.Func()
+        enddef
+        g:resultFunc = FooFunc()
         g:resultValue = bar.value
     END
     writefile(lines, 'Xto/plugin/foo.vim')
@@ -2916,6 +3165,33 @@ def Test_vim9_import_symlink()
     unlet g:resultValue
     &rtp = save_rtp
     delete('Xfrom', 'rf')
+
+    # Access item from :def imported through symbolic linked directory. #14536
+    mkdir('Xto/real_dir', 'pR')
+    lines =<< trim END
+        vim9script
+        export const val = 17
+        export def F(): number
+          return 23
+        enddef
+    END
+    writefile(lines, 'Xto/real_dir/real_file.vim')
+    system('ln -s real_dir Xto/syml_dir')
+    defer delete('Xto/syml_dir')
+    lines =<< trim END
+      vim9script
+      import autoload './Xto/syml_dir/real_file.vim'
+
+      def Fmain()
+        assert_equal(17, real_file.val)
+      enddef
+      def F2()
+        assert_equal(23, real_file.F())
+      enddef
+      Fmain()
+      F2()
+    END
+    v9.CheckScriptSuccess(lines)
   endif
 enddef
 
@@ -2929,5 +3205,518 @@ def Test_export_in_conditional_block()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Import fails when an autoloaded script is imported again.
+" Github issue #14171
+def Test_import_autloaded_script()
+  mkdir('Ximporttwice', 'pR')
+  mkdir('Ximporttwice/plugin')
+  mkdir('Ximporttwice/autoload')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Ximporttwice'
+
+  var lines =<< trim END
+    vim9script
+
+    export def H(): number
+      return 10
+    enddef
+  END
+  writefile(lines, 'Ximporttwice/autoload/hello.vim')
+
+  lines =<< trim END
+    vim9script
+
+    import "./hello.vim"
+    export def W(): number
+      return 20
+    enddef
+  END
+  writefile(lines, 'Ximporttwice/autoload/world.vim')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload '../autoload/hello.vim'
+    import autoload '../autoload/world.vim'
+
+    command Hello echo hello.H()
+    command World echo world.W()
+  END
+  writefile(lines, 'Ximporttwice/plugin/main.vim')
+
+  lines =<< trim END
+    vim9script
+
+    source ./Ximporttwice/plugin/main.vim
+    assert_equal(['20'], execute('World')->split("\n"))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+enddef
+
+" Test for autoloading an imported dict func
+def Test_autoload_import_dict_func()
+  mkdir('Xdir/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export var al_exported_nr: number = 33
+    def Al_AddNum(n: number)
+      al_exported_nr += n
+    enddef
+    export var al_exportedDict: dict<func> = {Fn: Al_AddNum}
+  END
+  writefile(lines, 'Xdir/autoload/Xdictfunc.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+    import './Xdir/autoload/Xdictfunc.vim'
+    call Xdictfunc#al_exportedDict.Fn(5)
+    call assert_equal(38, Xdictfunc#al_exported_nr)
+    call call(Xdictfunc#al_exportedDict.Fn, [3])
+    call assert_equal(41, Xdictfunc#al_exported_nr)
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
+" Test for changing the value of an imported Dict item
+def Test_set_imported_dict_item()
+  var lines =<< trim END
+    vim9script
+    export var dict1: dict<bool> = {bflag: false}
+    export var dict2: dict<dict<bool>> = {x: {bflag: false}}
+  END
+  writefile(lines, 'XimportedDict.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict1.bflag = true
+    assert_equal(XimportedDict.dict1.bflag, true)
+    XimportedDict.dict2.x.bflag = true
+    assert_equal(XimportedDict.dict2.x.bflag, true)
+    assert_equal('bool', typename(XimportedDict.dict1.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2['x'].bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x['bflag']))
+
+    assert_equal(XimportedDict.dict1['bflag'], true)
+    XimportedDict.dict1['bflag'] = false
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict2['x']['bflag'] = false
+    assert_equal(XimportedDict.dict2['x'].bflag, false)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    XimportedDict.dict2.x.bflag = []
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected bool but got list<any>', 3)
+enddef
+
+" Test for changing the value of an imported class member
+def Test_set_imported_class_member()
+  var lines =<< trim END
+    vim9script
+    export class Config
+      public static var option = false
+    endclass
+  END
+  writefile(lines, 'XimportedClass.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedClass.vim' as foo
+    type FooConfig = foo.Config
+    assert_equal(false, FooConfig.option)
+    assert_equal(false, foo.Config.option)
+    foo.Config.option = true
+    assert_equal(true, foo.Config.option)
+    assert_equal(true, FooConfig.option)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using an imported function from the vimrc file.  The function is
+" defined in the 'start' directory of a package.
+def Test_import_from_vimrc()
+  mkdir('Ximport/pack/foobar/start/foo/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export def Foo()
+      writefile(['Foo called'], 'Xoutput.log')
+    enddef
+  END
+  writefile(lines, 'Ximport/pack/foobar/start/foo/autoload/foo.vim')
+  lines =<< trim END
+    vim9script
+    set packpath+=./Ximport
+    try
+      import autoload 'foo.vim'
+      foo.Foo()
+    catch
+      writefile(['Failed to import foo.vim'], 'Xoutput.log')
+    endtry
+    qall!
+  END
+  writefile(lines, 'Xvimrc', 'D')
+  g:RunVim([], [], '-u Xvimrc')
+  assert_equal(['Foo called'], readfile('Xoutput.log'))
+  delete('Xoutput.log')
+enddef
+
+" Test for changing a locked imported variable
+def Test_import_locked_var()
+  var lines =<< trim END
+    vim9script
+    export var Foo: number = 10
+    lockvar Foo
+  END
+  writefile(lines, 'Ximportlockedvar.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Ximportlockedvar.vim' as Bar
+    Bar.Foo = 20
+  END
+  v9.CheckScriptFailure(lines, 'E741: Value is locked: Foo', 3)
+enddef
+
+" Test for using an autoload imported class as the function return type
+def Test_imported_class_as_def_func_rettype()
+  var lines =<< trim END
+    vim9script
+
+    export class Foo
+      var name: string = "foo"
+    endclass
+  END
+  writefile(lines, 'Ximportclassrettype1.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload "./Ximportclassrettype1.vim" as A
+
+    export def CreateFoo(): A.Foo
+      return A.Foo.new()
+    enddef
+  END
+  writefile(lines, 'Ximportclassrettype2.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './Ximportclassrettype2.vim' as B
+
+    var foo = B.CreateFoo()
+    assert_equal('foo', foo.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for don't crash when using a combination of import and class extends
+def Test_vim9_import_and_class_extends()
+  var lines =<< trim END
+    vim9script
+    import './cccc.vim'
+    export class Property extends cccc.Run
+      public var value: string
+      def new(this.value)
+      cccc.Run.value2 = this.value
+    enddef
+    endclass
+  END
+  writefile(lines, './aaaa.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    export class Run
+      public var value2: string
+      def new(this.value)
+      enddef
+    endclass
+  END
+  writefile(lines, './cccc.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './aaaa.vim'
+    class View
+      var content = aaaa.Property.new('')
+    endclass
+
+    var myView = View.new('This should be ok')
+    assert_equal('This should be ok', myView.content.value)
+  END
+  v9.CheckScriptFailure(lines, 'E1376: Object variable "value2" accessible only using class "Run" object', 2)
+enddef
+
+" Test for import and class extends
+def Test_vim9_import_and_class_extends_2()
+  mkdir('import', 'R')
+  var save_rtp = &rtp
+  &rtp = getcwd()
+
+  var lines =<< trim END
+    vim9script
+    export class Property
+      public var value: string
+    endclass
+  END
+  writefile(lines, './import/libproperty.vim')
+
+  lines =<< trim END
+    vim9script
+    import 'libproperty.vim'
+    export class View
+      var _content = libproperty.Property.new('')
+    endclass
+  END
+  writefile(lines, './import/libview.vim')
+
+  lines =<< trim END
+    vim9script
+    import 'libview.vim'
+    class MyView extends libview.View
+      def new(value: string)
+        this._content.value = value
+      enddef
+    endclass
+    var myView = MyView.new('This should be ok')
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
+" Test for using an imported class as a type
+def Test_use_imported_class_as_type()
+  mkdir('Xdir', 'R')
+  mkdir('Xdir/autoload', 'D')
+  mkdir('Xdir/import', 'D')
+  var lines =<< trim END
+    vim9script
+    export class B
+      var foo: string
+      def new()
+        this.foo = 'bar'
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xdir/autoload/b.vim')
+
+  lines =<< trim END
+    vim9script
+    import autoload '../autoload/b.vim'
+    export class A
+      final AO: b.B = b.B.new()
+    endclass
+    var a = A.new()
+    assert_equal('bar', a.AO.foo)
+  END
+  writefile(lines, 'Xdir/import/a.vim')
+  source Xdir/import/a.vim
+enddef
+
+" Test for using an autoloaded class from another autoloaded script
+def Test_class_from_auloaded_script()
+  mkdir('Xdir', 'R')
+  var save_rtp = &rtp
+  &rtp = getcwd()
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  mkdir('Xdir/autoload/SomeClass/bar', 'p')
+
+  var lines =<< trim END
+    vim9script
+
+    export class Baz
+      static var v1: string = "v1"
+      var v2: string = "v2"
+      def GetName(): string
+        return "baz"
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xdir/autoload/SomeClass/bar/baz.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload './bar/baz.vim'
+
+    export def MyTestFoo(): string
+      assert_fails('var x = baz.Baz.NonExisting()', 'E1325: Method "NonExisting" not found in class "Baz"')
+      assert_fails('var x = baz.Baz.foobar', 'E1337: Class variable "foobar" not found in class "Baz"')
+
+      const instance = baz.Baz.new()
+      return $'{instance.GetName()} {baz.Baz.v1} {instance.v2}'
+    enddef
+  END
+  writefile(lines, 'Xdir/autoload/SomeClass/foo.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload 'SomeClass/foo.vim'
+    import autoload 'SomeClass/bar/baz.vim'
+
+    def NotInAutoload()
+      # Use non-existing class method and variable
+      assert_fails('var x = baz.Baz.NonExisting()', 'E1325: Method "NonExisting" not found in class "Baz"')
+
+      var caught_exception = false
+      try
+        var x = baz.Baz.foobar
+      catch /E1337: Class variable "foobar" not found in class "Baz"/
+        caught_exception = true
+      endtry
+      assert_true(caught_exception)
+
+      const instance = baz.Baz.new()
+      assert_equal("baz v1 v2", $'{instance.GetName()} {baz.Baz.v1} {instance.v2}')
+    enddef
+
+    def InAutoload()
+      assert_equal("baz v1 v2", foo.MyTestFoo())
+    enddef
+
+    NotInAutoload()
+    InAutoload()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+enddef
+
+" Test for using an autoloaded enum from another script
+def Test_enum_from_auloaded_script()
+  mkdir('Xdir', 'R')
+  var save_rtp = &rtp
+  &rtp = getcwd()
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  mkdir('Xdir/autoload/', 'p')
+
+  var lines =<< trim END
+    vim9script
+    export enum Color
+      Red,
+      Green,
+      Blue
+    endenum
+  END
+  writefile(lines, 'Xdir/autoload/color.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload 'color.vim'
+
+    def CheckColor()
+      var c = color.Color.Green
+      assert_equal('Green', c.name)
+    enddef
+    CheckColor()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+enddef
+
+" Test for using a non-exported constant as an instance variable initiazer in an
+" imported class
+def Test_import_member_initializer()
+  var lines =<< trim END
+    vim9script
+    const DEFAULT = 'default'
+    export class Foo
+      public var x = DEFAULT
+    endclass
+  END
+  writefile(lines, 'Ximportclass.vim', 'D')
+
+  # The initializer for Foo.x is evaluated in the context of Ximportclass.vim.
+  lines =<< trim END
+    vim9script
+    import './Ximportclass.vim' as X
+    class Bar extends X.Foo
+    endclass
+    var o = Bar.new()
+    assert_equal('default', o.x)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Another test
+  lines =<< trim END
+    vim9script
+
+    export interface IObjKey
+      var unique_object_id: string
+    endinterface
+
+    # helper sub-class.
+    export class ObjKey implements IObjKey
+      const unique_object_id = GenerateKey()
+    endclass
+
+    export def GenerateKey(): string
+      return "SomeKey"
+    enddef
+  END
+  writefile(lines, 'XobjKey.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import "./XobjKey.vim" as obj_key
+
+    const GenKey = obj_key.GenerateKey
+
+    class LocalObjKey implements obj_key.IObjKey
+      const unique_object_id = GenKey()
+    endclass
+
+    type Key1 = obj_key.ObjKey
+    type Key2 = LocalObjKey
+
+    class C1 extends Key1
+    endclass
+    class C2 extends Key2
+    endclass
+    assert_equal('SomeKey', C1.new().unique_object_id)
+    assert_equal('SomeKey', C2.new().unique_object_id)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_import_name_conflict_with_local_variable()
+  var lines =<< trim END
+    vim9script
+
+    export class Foo
+      def Method(): string
+        return 'Method'
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9.vim'
+
+    function! s:Main() abort
+      let Xvim9 = s:Xvim9.Foo.new()
+      call assert_equal('Method', Xvim9.Method())
+    endfunction
+
+    call s:Main()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

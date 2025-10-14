@@ -1,6 +1,5 @@
 " Tests for ruby interface
 
-source check.vim
 CheckFeature ruby
 
 func Test_ruby_change_buffer()
@@ -11,10 +10,25 @@ func Test_ruby_change_buffer()
 endfunc
 
 func Test_rubydo()
-  " Check deleting lines does not trigger ml_get error.
   new
+
+  " Check deleting lines does not trigger ml_get error.
   call setline(1, ['one', 'two', 'three'])
   rubydo Vim.command("%d_")
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("1,2d_")
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("2,3d_"); $_ = "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3rubydo Vim.command("1,2d_"); $_ = "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 
   " Check switching to another buffer does not trigger ml_get error.
@@ -275,7 +289,7 @@ func Test_ruby_Vim_buffer_get()
   call assert_match('Xfoo1$', rubyeval('Vim::Buffer[1].name'))
   call assert_match('Xfoo2$', rubyeval('Vim::Buffer[2].name'))
   call assert_fails('ruby print Vim::Buffer[3].name',
-        \           "NoMethodError: undefined method `name' for nil:NilClass")
+        \           "NoMethodError")
   %bwipe
 endfunc
 
@@ -357,7 +371,7 @@ func Test_ruby_Vim_evaluate_dict()
   redir => l:out
   ruby d = Vim.evaluate("d"); print d
   redir END
-  call assert_equal(['{"a"=>"foo", "b"=>123}'], split(l:out, "\n"))
+  call assert_equal(['{"a"=>"foo","b"=>123}'], split(substitute(l:out, '\s', '', 'g'), "\n"))
 endfunc
 
 " Test Vim::message({msg}) (display message {msg})
@@ -376,7 +390,7 @@ func Test_ruby_print()
   call assert_equal('1.23', RubyPrint('1.23'))
   call assert_equal('Hello World!', RubyPrint('"Hello World!"'))
   call assert_equal('[1, 2]', RubyPrint('[1, 2]'))
-  call assert_equal('{"k1"=>"v1", "k2"=>"v2"}', RubyPrint('({"k1" => "v1", "k2" => "v2"})'))
+  call assert_equal('{"k1"=>"v1","k2"=>"v2"}', substitute(RubyPrint('({"k1" => "v1", "k2" => "v2"})'), '\s', '', 'g'))
   call assert_equal('true', RubyPrint('true'))
   call assert_equal('false', RubyPrint('false'))
   call assert_equal('', RubyPrint('nil'))
@@ -431,7 +445,10 @@ Vim.command('let s ..= "B"')
   ruby << trim eof
     Vim.command('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+ruby << trimm
+Vim.command('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

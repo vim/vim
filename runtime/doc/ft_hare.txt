@@ -1,0 +1,134 @@
+*ft_hare.txt*	Support for the Hare programming language
+
+==============================================================================
+CONTENTS						*hare* *hare.vim*
+
+1. Introduction			|ft-hare-intro|
+2. Filetype plugin		|ft-hare-plugin|
+3. Haredoc filetype		|ft-haredoc-plugin|
+4. Indentation settings		|ft-hare-indent|
+5. Compiler support		|compiler-hare|
+
+==============================================================================
+INTRODUCTION						*ft-hare-intro*
+
+This plugin provides syntax highlighting, indentation, and other supporting
+functionality for the Hare programming language.
+
+
+FILETYPE PLUGIN						*ft-hare-plugin*
+
+This plugin has a few different variables that can be defined inside your
+|vimrc| to tweak its behavior.
+
+Additionally, support is provided for folding `{ }` blocks.  To enable folding,
+add the following to a file inside your |after-directory| (e.g.
+~/.vim/after/ftplugin/hare.vim): >
+
+	setlocal foldmethod=syntax
+
+Because block-based folding tends to create many small folds, consider setting
+a few related options, such as 'foldminlines' and 'foldnestmax'.
+
+						*g:hare_recommended_style*
+The following options are set by default, in accordance with Hare's official
+style guide: >
+
+	setlocal noexpandtab
+	setlocal shiftwidth=0
+	setlocal softtabstop=0
+	setlocal tabstop=8
+	setlocal textwidth=80
+
+To disable this behavior, add the following to your |vimrc|: >
+
+	let g:hare_recommended_style = 0
+<
+						*g:hare_symbol_operators*
+By default, symbolic operators do not receive any special highlighting (with
+`!`, `?`, and `::` being the only exceptions).  To enable syntax highlighting
+for most other operators, add the following to your |vimrc|: >
+
+	let g:hare_symbol_operators = 1
+<
+							*g:hare_space_error*
+By default, trailing whitespace and spaces followed by <Tab> characters will
+be highlighted as errors.  This is automatically disabled in Insert mode.  To
+turn off this highlighting completely, add the following to your |vimrc|: >
+
+	let g:hare_space_error = 0
+
+
+HAREDOC FILETYPE					*ft-haredoc-plugin*
+
+This plugin will automatically detect README files inside Hare modules, using
+a recursive directory search, and give them the "haredoc" filetype.  Because
+this is such a common filename, this plugin only searches for Hare source
+files within the same directory by default.
+
+							*g:filetype_haredoc*
+The |g:filetype_haredoc| variable can be used to tweak the depth of this
+search, or bypass the detection of Hare documentation files altogether:
+
+	Value		Effect~
+	0		No automatic detection
+	1		Search current directory only (this is the default)
+	2		Search one level of subdirectories
+	3		Search two levels of subdirectories
+
+The search depth may be any positive integer, but values higher than `2` are
+unlikely to provide a tangible benefit in most situations.
+
+
+INDENTATION SETTINGS					*ft-hare-indent*
+
+Unlike most other settings for this plugin, the indentation settings may also
+be set per-buffer, overriding any global configuration that exists.  To do
+this, simply prefix the variable with |b:| instead of |g:|.
+
+						*g:hare_indent_match_switch*
+By default, continuation lines for "match" and "switch" conditions are
+indented only one level: >hare
+
+	const file = match (os::create(path, 0o644,
+		flag::WRONLY | flag::TRUNC)) {
+	case let file: io::file =>
+		yield file;
+	// ...
+
+If you instead prefer indenting them two levels, to more closely resemble "if"
+and "for" conditions, add the following line to your |vimrc|: >
+
+	let g:hare_indent_match_switch = 2
+<
+							*g:hare_indent_case*
+By default, continuation lines for cases in "match" and "switch" expressions
+are indented two levels, to visually distinguish them from the body of the
+case: >hare
+
+	case ltok::I8, ltok::I16, ltok::I32,
+			ltok::I64, ltok::INT =>
+		// ...
+
+If you prefer a different amount of indentation, you can adjust it using
+|g:hare_indent_case|.  Valid values include `0`, `1`, and `2`.
+
+
+COMPILER SUPPORT					*compiler-hare*
+
+If this plugin detects a Makefile in the current directory, it will assume you
+wish to use `make` for your build system, and will leave 'makeprg' untouched.
+Otherwise, `hare build` will be used.
+
+							*g:hare_makeprg_params*
+When `hare build` is used, additional compiler options may be appended to
+'makeprg' with the |g:hare_makeprg_params| variable.  It may also be set on a
+per-buffer basis (using |b:| instead of |g:|), overriding any global
+configuration that exists.  For example: >
+
+	let b:hare_makeprg_params = '-lc -t o'
+
+The global default is "-q", to suppress writing to stdout while building.
+
+==============================================================================
+ vim:tw=78:ts=8:noet:ft=help:norl:

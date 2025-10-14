@@ -1,8 +1,7 @@
 " Test for 'scroll', 'scrolloff', 'smoothscroll', etc.
 
-source check.vim
-source screendump.vim
-source mouse.vim
+source util/screendump.vim
+source util/mouse.vim
 
 func Test_reset_scroll()
   let scr = &l:scroll
@@ -302,6 +301,68 @@ func Test_smoothscroll_diff_mode()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_smoothscroll_diff_change_line_default()
+  CheckScreendump
+
+  " Uses the new diffopt default with indent-heuristic and inline:char
+  let lines =<< trim END
+    set diffopt=internal,filler,closeoff,indent-heuristic,inline:char,followwrap smoothscroll
+    call setline(1, repeat(' abc', &columns))
+    call setline(2, 'bar')
+    call setline(3, repeat(' abc', &columns))
+    vnew
+    call setline(1, repeat(' abc', &columns))
+    call setline(2, 'foo')
+    call setline(3, 'bar')
+    call setline(4, repeat(' abc', &columns))
+    windo exe "normal! 2gg5\<C-E>"
+    windo diffthis
+  END
+  call writefile(lines, 'XSmoothDiffChangeLine', 'D')
+  let buf = RunVimInTerminal('-S XSmoothDiffChangeLine', #{rows: 20, columns: 55})
+
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_1', {})
+  call term_sendkeys(buf, "Abar")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_3a', {})
+  call term_sendkeys(buf, "yyp")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_diff_change_line()
+  CheckScreendump
+
+  " Uses the old diffopt default
+  let lines =<< trim END
+    set diffopt=internal,filler,closeoff,followwrap,inline:simple smoothscroll
+    call setline(1, repeat(' abc', &columns))
+    call setline(2, 'bar')
+    call setline(3, repeat(' abc', &columns))
+    vnew
+    call setline(1, repeat(' abc', &columns))
+    call setline(2, 'foo')
+    call setline(3, 'bar')
+    call setline(4, repeat(' abc', &columns))
+    windo exe "normal! 2gg5\<C-E>"
+    windo diffthis
+  END
+  call writefile(lines, 'XSmoothDiffChangeLine', 'D')
+  let buf = RunVimInTerminal('-S XSmoothDiffChangeLine', #{rows: 20, columns: 55})
+
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_1', {})
+  call term_sendkeys(buf, "Abar")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_3', {})
+  call term_sendkeys(buf, "yyp")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_change_line_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_smoothscroll_wrap_scrolloff_zero()
   CheckScreendump
 
@@ -552,11 +613,11 @@ func Test_smoothscroll_cursor_position()
   " Test "g0/g<Home>"
   exe "normal gg\<C-E>"
   norm $gkg0
-  call s:check_col_calc(1, 2, 21)
+  call s:check_col_calc(4, 1, 24)
 
   " Test moving the cursor behind the <<< display with 'virtualedit'
   set virtualedit=all
-  exe "normal \<C-E>3lgkh"
+  exe "normal \<C-E>gkh"
   call s:check_col_calc(3, 2, 23)
   set virtualedit&
 
@@ -738,6 +799,7 @@ func Test_smoothscroll_mouse_pos()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
+  bwipe!
 endfunc
 
 " this was dividing by zero
@@ -829,7 +891,7 @@ func Test_smoothscroll_eob()
   call VerifyScreenDump(buf, 'Test_smooth_eob_1', {})
 
   " cursor is not placed below window
-  call term_sendkeys(buf, ":call setline(92, 'a'->repeat(100))\<CR>\<C-B>G")
+  call term_sendkeys(buf, ":call setline(92, 'a'->repeat(100))\<CR>\<C-L>\<C-B>G")
   call VerifyScreenDump(buf, 'Test_smooth_eob_2', {})
 
   call StopVimInTerminal(buf)
@@ -888,10 +950,11 @@ func Test_smoothscroll_multi_skipcol()
 endfunc
 
 " this was dividing by zero bug in scroll_cursor_bot
-func Test_smoothscroll_zero_width_scroll_cursor_bot()
+func Test_smoothscroll_zero_width_scroll_cursor_bot_noruler()
   CheckScreendump
 
   let lines =<< trim END
+      set noruler
       silent normal yy
       silent normal 19p
       set cpoptions+=n
@@ -909,19 +972,57 @@ func Test_smoothscroll_zero_width_scroll_cursor_bot()
   call StopVimInTerminal(buf)
 endfunc
 
-" scroll_cursor_top() should reset skipcol when it changes topline
-func Test_smoothscroll_cursor_top()
+func Test_smoothscroll_zero_width_scroll_cursor_bot_ruler()
   CheckScreendump
 
   let lines =<< trim END
-      set smoothscroll scrolloff=2
+      set ruler
+      silent normal yy
+      silent normal 19p
+      set cpoptions+=n
+      vsplit
+      vertical resize 0
+      set foldcolumn=1
+      set number
+      set smoothscroll
+      silent normal 20G
+  END
+  call writefile(lines, 'XSmoothScrollZeroBot', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollZeroBot', #{rows: 19})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_zero_bot_ruler', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" scroll_cursor_top() should reset skipcol when it changes topline
+func Test_smoothscroll_cursor_top_noruler()
+  CheckScreendump
+
+  let lines =<< trim END
+      set smoothscroll scrolloff=2 noruler
       new | 11resize | wincmd j
       call setline(1, ['line1', 'line2', 'line3'->repeat(20), 'line4'])
       exe "norm G3\<C-E>k"
   END
   call writefile(lines, 'XSmoothScrollCursorTop', 'D')
-  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCursorTop', #{rows: 12, cols:40})
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCursorTop', #{rows: 12, cols: 40})
   call VerifyScreenDump(buf, 'Test_smoothscroll_cursor_top', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_cursor_top_ruler()
+  CheckScreendump
+
+  let lines =<< trim END
+      set smoothscroll scrolloff=2 ruler
+      new | 11resize | wincmd j
+      call setline(1, ['line1', 'line2', 'line3'->repeat(20), 'line4'])
+      exe "norm G3\<C-E>k"
+  END
+  call writefile(lines, 'XSmoothScrollCursorTop', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCursorTop', #{rows: 12, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_cursor_ru_top', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -939,10 +1040,399 @@ func Test_smoothscroll_crash()
       exe "norm! 0\<c-e>"
   END
   call writefile(lines, 'XSmoothScrollCrash', 'D')
-  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCrash', #{rows: 12, cols:40})
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCrash', #{rows: 12, cols: 40})
   call term_sendkeys(buf, "2\<C-E>\<C-L>")
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_insert_bottom_noruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, repeat([repeat('A very long line ...', 10)], 5))
+    set wrap smoothscroll scrolloff=0 noruler
+  END
+  call writefile(lines, 'XSmoothScrollInsertBottom', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollInsertBottom', #{rows: 9, cols: 40})
+  call term_sendkeys(buf, "Go123456789\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_insert_bottom', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_insert_bottom_ruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, repeat([repeat('A very long line ...', 10)], 5))
+    set wrap smoothscroll scrolloff=0 ruler
+  END
+  call writefile(lines, 'XSmoothScrollInsertBottom', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollInsertBottom', #{rows: 9, cols: 40})
+  call term_sendkeys(buf, "Go123456789\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_insert_bottom_ruler', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_in_qf_window_noruler()
+  CheckFeature quickfix
+  CheckScreendump
+
+  let lines =<< trim END
+    set nocompatible display=lastline noruler
+    copen 5
+    setlocal number smoothscroll
+    let g:l = [{'text': 'foo'}] + repeat([{'text': join(range(30))}], 10)
+    call setqflist(g:l, 'r')
+    normal! G
+    wincmd t
+    let g:l1 = [{'text': join(range(1000))}]
+  END
+  call writefile(lines, 'XSmoothScrollInQfWindow', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollInQfWindow', #{rows: 20, cols: 60})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_1', {})
+
+  call term_sendkeys(buf, ":call setqflist([], 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_2', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_3', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l1, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_4', {})
+
+  call term_sendkeys(buf, "\<C-W>b$\<C-W>t")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_5', {})
+
+  call term_sendkeys(buf, ":call setqflist([], 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_2', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l1, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_4', {})
+
+  call term_sendkeys(buf, "\<C-W>b$\<C-W>t")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_5', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_in_qf_window_ruler()
+  CheckFeature quickfix
+  CheckScreendump
+
+  let lines =<< trim END
+    set nocompatible display=lastline ruler
+    copen 5
+    setlocal number smoothscroll
+    let g:l = [{'text': 'foo'}] + repeat([{'text': join(range(30))}], 10)
+    call setqflist(g:l, 'r')
+    normal! G
+    wincmd t
+    let g:l1 = [{'text': join(range(1000))}]
+  END
+  call writefile(lines, 'XSmoothScrollInQfWindow', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollInQfWindow', #{rows: 20, cols: 60})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_1', {})
+
+  call term_sendkeys(buf, ":call setqflist([], 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_2', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_3', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l1, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_4', {})
+
+  call term_sendkeys(buf, "\<C-W>b$\<C-W>t")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_5', {})
+
+  call term_sendkeys(buf, ":call setqflist([], 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_2', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l1, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_4', {})
+
+  call term_sendkeys(buf, "\<C-W>b$\<C-W>t")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_5', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_ru_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_in_zero_width_window()
+  set cpo+=n number smoothscroll
+  set winwidth=99999 winminwidth=0
+
+  vsplit
+  call assert_equal(0, winwidth(winnr('#')))
+  call win_execute(win_getid(winnr('#')), "norm! \<C-Y>")
+
+  only!
+  set winwidth& winminwidth&
+  set cpo-=n nonumber nosmoothscroll
+endfunc
+
+func Test_smoothscroll_textoff_small_winwidth()
+  set smoothscroll number
+  call setline(1, 'llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch')
+  vsplit
+
+  let textoff = getwininfo(win_getid())[0].textoff
+  execute 'vertical resize' textoff + 1
+  redraw
+  call assert_equal(0, winsaveview().skipcol)
+  execute "normal! 0\<C-E>"
+  redraw
+  call assert_equal(1, winsaveview().skipcol)
+  execute 'vertical resize' textoff - 1
+  " This caused a signed integer overflow.
+  redraw
+  call assert_equal(1, winsaveview().skipcol)
+  execute 'vertical resize' textoff
+  " This caused an infinite loop.
+  redraw
+  call assert_equal(1, winsaveview().skipcol)
+
+  %bw!
+  set smoothscroll& number&
+endfunc
+
+func Test_smoothscroll_page()
+  call NewWindow(10, 40)
+  setlocal smoothscroll
+  call setline(1, 'abcde '->repeat(150))
+
+  exe "norm! \<C-F>"
+  call assert_equal(400, winsaveview().skipcol)
+  exe "norm! \<C-F>"
+  call assert_equal(800, winsaveview().skipcol)
+  exe "norm! \<C-F>"
+  call assert_equal(880, winsaveview().skipcol)
+  exe "norm! \<C-B>"
+  call assert_equal(480, winsaveview().skipcol)
+  exe "norm! \<C-B>"
+  call assert_equal(80, winsaveview().skipcol)
+  exe "norm! \<C-B>"
+  call assert_equal(0, winsaveview().skipcol)
+
+  " Half-page scrolling does not go beyond end of buffer and moves the cursor.
+  " Even with 'nostartofline', the correct amount of lines is scrolled.
+  setl nostartofline
+  exe "norm! 15|\<C-D>"
+  call assert_equal(200, winsaveview().skipcol)
+  call assert_equal(215, col('.'))
+  exe "norm! \<C-D>"
+  call assert_equal(400, winsaveview().skipcol)
+  call assert_equal(415, col('.'))
+  exe "norm! \<C-D>"
+  call assert_equal(520, winsaveview().skipcol)
+  call assert_equal(615, col('.'))
+  exe "norm! \<C-D>"
+  call assert_equal(520, winsaveview().skipcol)
+  call assert_equal(815, col('.'))
+  exe "norm! \<C-D>"
+  call assert_equal(520, winsaveview().skipcol)
+  call assert_equal(895, col('.'))
+  exe "norm! \<C-U>"
+  call assert_equal(320, winsaveview().skipcol)
+  call assert_equal(695, col('.'))
+  exe "norm! \<C-U>"
+  call assert_equal(120, winsaveview().skipcol)
+  call assert_equal(495, col('.'))
+  exe "norm! \<C-U>"
+  call assert_equal(0, winsaveview().skipcol)
+  call assert_equal(295, col('.'))
+  exe "norm! \<C-U>"
+  call assert_equal(0, winsaveview().skipcol)
+  call assert_equal(95, col('.'))
+  exe "norm! \<C-U>"
+  call assert_equal(0, winsaveview().skipcol)
+  call assert_equal(15, col('.'))
+
+  bwipe!
+endfunc
+
+func Test_smoothscroll_next_topline()
+  call NewWindow(10, 40)
+  setlocal smoothscroll
+  call setline(1, ['abcde '->repeat(150)]->repeat(2))
+
+  " Scrolling a screenline that causes the cursor to move to the next buffer
+  " line should not skip part of that line to bring the cursor into view.
+  exe "norm! 22\<C-E>"
+  call assert_equal(880, winsaveview().skipcol)
+  exe "norm! \<C-E>"
+  redraw
+  call assert_equal(0, winsaveview().skipcol)
+
+  " Also when scrolling back.
+  exe "norm! G\<C-Y>"
+  redraw
+  call assert_equal(880, winsaveview().skipcol)
+
+  " Cursor in correct place when not in the first screenline of a buffer line.
+  exe "norm! gg4gj20\<C-D>\<C-D>"
+  redraw
+  call assert_equal(2, line('w0'))
+
+  " Cursor does not end up above topline, adjusting topline later.
+  setlocal nu cpo+=n
+  exe "norm! G$g013\<C-Y>"
+  redraw
+  call assert_equal(2, line('.'))
+  call assert_equal(0, winsaveview().skipcol)
+
+  set cpo-=n
+  bwipe!
+endfunc
+
+func Test_smoothscroll_long_line_zb()
+  call NewWindow(10, 40)
+  call setline(1, 'abcde '->repeat(150))
+
+  " Also works without 'smoothscroll' when last line of buffer doesn't fit.
+  " Used to set topline to buffer line count plus one, causing an empty screen.
+  norm zb
+  redraw
+  call assert_equal(1, winsaveview().topline)
+
+  " Moving cursor to bottom works on line that doesn't fit with 'smoothscroll'.
+  " Skipcol was adjusted later for cursor being on not visible part of line.
+  setlocal smoothscroll
+  norm zb
+  redraw
+  call assert_equal(520, winsaveview().skipcol)
+
+  bwipe!
+endfunc
+
+func Test_smooth_long_scrolloff_noruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    set smoothscroll scrolloff=3
+    set noruler
+    call setline(1, ['one', 'two long '->repeat(100), 'three', 'four', 'five', 'six'])
+  END
+  call writefile(lines, 'XSmoothLongScrolloff', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothLongScrolloff', #{rows: 8, cols: 40})
+  call term_sendkeys(buf, ":norm j721|\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_1', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_2', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_3', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_4', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_5', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_6', {})
+
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smooth_long_scrolloff_ruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    set smoothscroll scrolloff=3 ruler
+    call setline(1, ['one', 'two long '->repeat(100), 'three', 'four', 'five', 'six'])
+  END
+  call writefile(lines, 'XSmoothLongScrolloff', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothLongScrolloff', #{rows: 8, cols: 40})
+  call term_sendkeys(buf, ":norm j721|\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_1', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_2', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_3', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_4', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_5', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_6', {})
+
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_ru_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_listchars_eol()
+  call NewWindow(10, 40)
+  setlocal list listchars=eol:$ scrolloff=0 smoothscroll
+  call setline(1, repeat('-', 40))
+  call append(1, repeat(['foobar'], 10))
+
+  normal! G
+  call assert_equal(2, line('w0'))
+  call assert_equal(0, winsaveview().skipcol)
+
+  exe "normal! \<C-Y>"
+  call assert_equal(1, line('w0'))
+  call assert_equal(40, winsaveview().skipcol)
+
+  exe "normal! \<C-Y>"
+  call assert_equal(1, line('w0'))
+  call assert_equal(0, winsaveview().skipcol)
+
+  exe "normal! \<C-Y>"
+  call assert_equal(1, line('w0'))
+  call assert_equal(0, winsaveview().skipcol)
+
+  exe "normal! \<C-E>"
+  call assert_equal(1, line('w0'))
+  call assert_equal(40, winsaveview().skipcol)
+
+  exe "normal! \<C-E>"
+  call assert_equal(2, line('w0'))
+  call assert_equal(0, winsaveview().skipcol)
+
+  for ve in ['', 'all', 'onemore']
+    let &virtualedit = ve
+    normal! gg
+    call assert_equal(1, line('w0'))
+    call assert_equal(0, winsaveview().skipcol)
+
+    exe "normal! \<C-E>"
+    redraw  " redrawing should not cause another scroll
+    call assert_equal(1, line('w0'))
+    call assert_equal(40, winsaveview().skipcol)
+
+    exe "normal! \<C-E>"
+    redraw
+    call assert_equal(2, line('w0'))
+    call assert_equal(0, winsaveview().skipcol)
+
+    if ve != 'all'
+      call assert_equal([0, 2, 1, 0], getpos('.'))
+    endif
+  endfor
+
+  set virtualedit&
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

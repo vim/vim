@@ -1,7 +1,5 @@
 " Tests for when a file was changed outside of Vim.
 
-source check.vim
-
 func Test_FileChangedShell_reload()
   CheckUnix
 
@@ -11,8 +9,12 @@ func Test_FileChangedShell_reload()
   new Xchanged_r
   call setline(1, 'reload this')
   write
-  " Need to wait until the timestamp would change by at least a second.
-  sleep 2
+  " Need to wait until the timestamp would change.
+  if has('nanotime')
+    sleep 10m
+  else
+    sleep 2
+  endif
   silent !echo 'extra line' >>Xchanged_r
   checktime
   call assert_equal('changed', g:reason)
@@ -50,7 +52,11 @@ func Test_FileChangedShell_reload()
   call assert_equal('new line', getline(1))
 
   " Only time changed
-  sleep 2
+  if has('nanotime')
+    sleep 10m
+  else
+    sleep 2
+  endif
   silent !touch Xchanged_r
   let g:reason = ''
   checktime
@@ -65,7 +71,11 @@ func Test_FileChangedShell_reload()
     call setline(2, 'before write')
     write
     call setline(2, 'after write')
-    sleep 2
+    if has('nanotime')
+      sleep 10m
+    else
+      sleep 2
+    endif
     silent !echo 'different line' >>Xchanged_r
     let g:reason = ''
     checktime
@@ -192,8 +202,12 @@ func Test_file_changed_dialog()
   new Xchanged_d
   call setline(1, 'reload this')
   write
-  " Need to wait until the timestamp would change by at least a second.
-  sleep 2
+  " Need to wait until the timestamp would change.
+  if has('nanotime')
+    sleep 10m
+  else
+    sleep 2
+  endif
   silent !echo 'extra line' >>Xchanged_d
   call feedkeys('L', 'L')
   checktime
@@ -228,7 +242,11 @@ func Test_file_changed_dialog()
   call assert_equal('new line', getline(1))
 
   " Only time changed, no prompt
-  sleep 2
+  if has('nanotime')
+    sleep 10m
+  else
+    sleep 2
+  endif
   silent !touch Xchanged_d
   let v:warningmsg = ''
   checktime Xchanged_d

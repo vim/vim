@@ -21,6 +21,13 @@ NR == 1 { nf=split(FILENAME,f,".")
 	gsub(/%/,"\\&#37;");
 
 	nf=split($0,tag,"	");
+	if (counttag[tag[1]] > 0)
+	{
+		print "==============" > "errors.log"
+		print "Duplicate Tag " tag[1] > "errors.log"
+		print "==============" > "errors.log"
+	}
+	counttag[tag[1]]++
 	tagkey[t]=tag[1];tagref[t]=tag[2];tagnum[t]=NR;
 	print $1 "	" $2 "	line " NR >"tags.ref"
 	n=split($2,w,".");

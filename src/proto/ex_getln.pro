@@ -1,4 +1,5 @@
 /* ex_getln.c */
+int parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen);
 void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent, getline_opt_T do_concat);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
@@ -30,9 +31,11 @@ char_u *vim_strsave_fnameescape(char_u *fname, int what);
 void escape_fname(char_u **pp);
 void tilde_replace(char_u *orig_pat, int num_files, char_u **files);
 cmdline_info_T *get_cmdline_info(void);
+void f_getcmdcomplpat(typval_T *argvars, typval_T *rettv);
 void f_getcmdcompltype(typval_T *argvars, typval_T *rettv);
 void f_getcmdline(typval_T *argvars, typval_T *rettv);
 void f_getcmdpos(typval_T *argvars, typval_T *rettv);
+void f_getcmdprompt(typval_T *argvars, typval_T *rettv);
 void f_getcmdscreenpos(typval_T *argvars, typval_T *rettv);
 void f_getcmdtype(typval_T *argvars, typval_T *rettv);
 void f_setcmdline(typval_T *argvars, typval_T *rettv);
@@ -43,4 +46,5 @@ char *did_set_cedit(optset_T *args);
 int is_in_cmdwin(void);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);
+void f_wildtrigger(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

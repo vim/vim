@@ -1,8 +1,5 @@
 " Test :version Ex command
 
-so check.vim
-so shared.vim
-
 func Test_version()
   " version should always return the same string.
   let v1 = execute('version')

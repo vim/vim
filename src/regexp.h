@@ -178,7 +178,9 @@ struct regengine
     int		(*regexec_nl)(regmatch_T *, char_u *, colnr_T, int);
     // bt_regexec_mult or nfa_regexec_mult
     long	(*regexec_multi)(regmmatch_T *, win_T *, buf_T *, linenr_T, colnr_T, int *);
-    //char_u	*expr;
+#ifdef DEBUG
+    char_u	*expr;
+#endif
 };
 
 // Flags used by vim_regsub() and vim_regsub_both()

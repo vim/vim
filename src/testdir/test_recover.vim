@@ -1,7 +1,5 @@
 " Test :recover
 
-source check.vim
-
 func Test_recover_root_dir()
   " This used to access invalid memory.
   split Xtest
@@ -380,7 +378,7 @@ func Test_recover_encrypted_swap_file()
   call delete('Xfile1')
 endfunc
 
-" Test for :recover using a unreadable swap file
+" Test for :recover using an unreadable swap file
 func Test_recover_unreadable_swap_file()
   CheckUnix
   CheckNotRoot

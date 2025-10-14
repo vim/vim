@@ -1,7 +1,5 @@
 " Tests for Lua.
 
-source check.vim
-
 " This test also works without the lua feature.
 func Test_skip_lua()
   if 0
@@ -28,21 +26,37 @@ func TearDown()
 endfunc
 
 " Check that switching to another buffer does not trigger ml_get error.
-func Test_lua_command_new_no_ml_get_error()
+func Test_lua_luado_change_buffer()
   new
+
   let wincount = winnr('$')
   call setline(1, ['one', 'two', 'three'])
   luado vim.command("new")
   call assert_equal(wincount + 1, winnr('$'))
+
   %bwipe!
 endfunc
 
-" Test vim.command()
-func Test_lua_command()
+" Check that :luado deleting lines does not trigger ml_get error.
+func Test_lua_luado_delete_lines()
   new
+
+  call setline(1, ['one', 'two', 'three'])
+  luado vim.command("%d_")
+  call assert_equal([''], getline(1, '$'))
+
   call setline(1, ['one', 'two', 'three'])
   luado vim.command("1,2d_")
   call assert_equal(['three'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  luado vim.command("2,3d_"); return "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3luado vim.command("1,2d_"); return "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 endfunc
 
@@ -101,11 +115,11 @@ func Test_lua_eval()
 
   " lua.eval with a bool
   lua v = vim.eval('v:true')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(1, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:true, luaeval('v'))
   lua v = vim.eval('v:false')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(0, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:false, luaeval('v'))
 
   " lua.eval with a null
   lua v = vim.eval('v:null')
@@ -918,7 +932,10 @@ vim.command('let s ..= "B"')
   lua << trim eof
     vim.command('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+  lua << trimm
+vim.command('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 " Test for adding, accessing and removing global variables using the vim.g

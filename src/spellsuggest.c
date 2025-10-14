@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 
 /*
  * Use this to adjust the score after finding suggestions, based on the
@@ -508,12 +508,11 @@ spell_suggest(int count)
 	++badlen;
 	end_visual_mode();
 	// make sure we don't include the NUL at the end of the line
-	line = ml_get_curline();
-	if (badlen > (int)STRLEN(line) - (int)curwin->w_cursor.col)
-	    badlen = (int)STRLEN(line) - (int)curwin->w_cursor.col;
+	if (badlen > ml_get_curline_len() - (int)curwin->w_cursor.col)
+	    badlen = ml_get_curline_len() - (int)curwin->w_cursor.col;
     }
     // Find the start of the badly spelled word.
-    else if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
+    else if (spell_move_to(curwin, FORWARD, SMT_ALL, TRUE, NULL) == 0
 	    || curwin->w_cursor.col > prev_cursor.col)
     {
 	// No bad word or it starts after the cursor: use the word under the
@@ -543,7 +542,7 @@ spell_suggest(int count)
 							curwin->w_cursor.col);
 
     // Make a copy of current line since autocommands may free the line.
-    line = vim_strsave(ml_get_curline());
+    line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
     if (line == NULL)
 	goto skip;
 
@@ -2175,6 +2174,13 @@ suggest_trie_walk(
 	    // - Skip the byte if it's equal to the byte in the word,
 	    //   accepting that byte is always better.
 	    n += sp->ts_curi++;
+
+	    // break out, if we would be accessing byts buffer out of bounds
+	    if (byts == slang->sl_fbyts && n >= slang->sl_fbyts_len)
+	    {
+		got_int = TRUE;
+		break;
+	    }
 	    c = byts[n];
 	    if (soundfold && sp->ts_twordlen == 0 && c == '*')
 		// Inserting a vowel at the start of a word counts less,
@@ -3756,11 +3762,16 @@ sug_compare(const void *s1, const void *s2)
 {
     suggest_T	*p1 = (suggest_T *)s1;
     suggest_T	*p2 = (suggest_T *)s2;
-    int		n = p1->st_score - p2->st_score;
+    int		n;
+
+    n = p1->st_score == p2->st_score ? 0 :
+	p1->st_score > p2->st_score ? 1 : -1;
 
     if (n == 0)
     {
-	n = p1->st_altscore - p2->st_altscore;
+	n = p1->st_altscore == p2->st_altscore ? 0 :
+	    p1->st_altscore > p2->st_altscore ? 1 : -1;
+
 	if (n == 0)
 	    n = STRICMP(p1->st_word, p2->st_word);
     }

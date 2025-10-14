@@ -1,7 +1,6 @@
 " Test Vim9 type aliases
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 " Test for :type command to create type aliases
 def Test_typealias()
@@ -18,7 +17,7 @@ def Test_typealias()
     assert_equal('typealias<list<string>>', typename(ListOfStrings))
     assert_equal(v:t_typealias, type(ListOfStrings))
     assert_equal('ListOfStrings', string(ListOfStrings))
-    assert_equal(false, null == ListOfStrings)
+    assert_fails('var x = null == ListOfStrings', 'E1403: Type alias "ListOfStrings" cannot be used as a value')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -36,7 +35,7 @@ def Test_typealias()
       assert_equal('typealias<list<string>>', typename(ListOfStrings))
       assert_equal(v:t_typealias, type(ListOfStrings))
       assert_equal('ListOfStrings', string(ListOfStrings))
-      assert_equal(false, null == ListOfStrings)
+      #assert_equal(false, null == ListOfStrings)
     enddef
     Bar()
   END
@@ -47,6 +46,13 @@ def Test_typealias()
     type Index = number
   END
   v9.CheckSourceFailure(lines, 'E1393: Type can only be defined in Vim9 script', 1)
+
+  # The complete "type" should be specified
+  lines =<< trim END
+    vim9script
+    typ Index = number
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: typ Index = number', 2)
 
   # Use :type without any arguments
   lines =<< trim END
@@ -172,6 +178,14 @@ def Test_typealias()
   END
   v9.CheckSourceSuccess(lines)
 
+  # another command follows a type alias
+  lines =<< trim END
+    vim9script
+    type MyType = number | var x = 20
+    assert_equal(20, x)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Sourcing a script twice (which will free script local variables)
   # Uses "lines" from the previous test
   new
@@ -201,7 +215,7 @@ def Test_typealias()
     type MyType = list<number>
     MyType = [1, 2, 3]
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "MyType" cannot be modified', 3)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "MyType" cannot be used as a value', 3)
 
   # Assigning a type alias (def function level)
   lines =<< trim END
@@ -212,18 +226,18 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 1)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Using type alias in an expression (script level)
   lines =<< trim END
     vim9script
     type MyType = list<number>
     assert_fails('var m = MyType', 'E1403: Type alias "MyType" cannot be used as a value')
-    assert_fails('var i = MyType + 1', 'E1400: Using type alias "MyType" as a Number')
-    assert_fails('var f = 1.0 + MyType', 'E1400: Using type alias "MyType" as a Number')
-    assert_fails('MyType += 10', 'E1395: Type alias "MyType" cannot be modified')
-    assert_fails('var x = $"-{MyType}-"', 'E1402: Using type alias "MyType" as a String')
-    assert_fails('var x = MyType[1]', 'E909: Cannot index a special variable')
+    assert_fails('var i = MyType + 1', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var f = 1.0 + MyType', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('MyType += 10', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var x = $"-{MyType}-"', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var x = MyType[1]', 'E1403: Type alias "MyType" cannot be used as a value')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -236,7 +250,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1051: Wrong argument type for +', 1)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Using type alias in an expression (def function level)
   lines =<< trim END
@@ -277,7 +291,7 @@ def Test_typealias()
     type B = number
     sort([1.1, B], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1401: Using type alias "B" as a Float', 3)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "B" cannot be used as a value', 3)
 
   # Creating a typealias in a def function
   lines =<< trim END
@@ -296,7 +310,7 @@ def Test_typealias()
     type A = list<string>
     var x = json_encode(A)
   END
-  v9.CheckSourceFailure(lines, 'E1161: Cannot json encode a typealias', 3)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 3)
 
   # Comparing type alias with a number (script level)
   lines =<< trim END
@@ -305,7 +319,7 @@ def Test_typealias()
     var n: number
     var x = A == n
   END
-  v9.CheckSourceFailure(lines, 'E1072: Cannot compare typealias with number', 4)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 4)
 
   # Comparing type alias with a number (def function level)
   lines =<< trim END
@@ -317,7 +331,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1072: Cannot compare typealias with number', 2)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 2)
 
   # casting a number to a type alias (script level)
   lines =<< trim END
@@ -355,7 +369,7 @@ def Test_typealias_import()
 
     var myNum: A.SomeType = 10
   END
-  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.SomeType = 10', 4)
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.SomeType', 4)
 
   # Use a type alias that is not exported
   lines =<< trim END
@@ -393,7 +407,7 @@ def Test_typealias_import()
   lines =<< trim END
     vim9script
     export class MyClass
-      this.val = 10
+      var val = 10
     endclass
   END
   writefile(lines, 'Xtypeexport4.vim', 'D')
@@ -452,9 +466,9 @@ def Test_typealias_with_builtin_functions()
   var lines =<< trim END
     vim9script
     type A = list<func>
-    assert_equal(0, empty(A))
+    var x = empty(A)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 3)
 
   # Using a type alias with len()
   lines =<< trim END
@@ -462,7 +476,7 @@ def Test_typealias_with_builtin_functions()
     type A = list<func>
     var x = len(A)
   END
-  v9.CheckScriptFailure(lines, 'E701: Invalid type for len()', 3)
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 3)
 
   # Using a type alias with len()
   lines =<< trim END
@@ -473,7 +487,7 @@ def Test_typealias_with_builtin_functions()
     enddef
     Foo()
   END
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<any> but got typealias', 1)
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Using a type alias with eval()
   lines =<< trim END
@@ -516,8 +530,18 @@ def Test_typealias_instanceof()
     var o = C.new()
     assert_equal(1, instanceof(o, Ctype))
     type Ntype = number
-    assert_fails('instanceof(o, Ntype)', 'E693: List or Class required for argument 2')
-    assert_equal(1, instanceof(o, [Ctype]))
+    assert_fails('instanceof(o, Ntype)', 'E693: Class or class typealias required for argument 2')
+    assert_fails('instanceof(o, Ctype, Ntype)', 'E693: Class or class typealias required for argument 3')
+
+    def F()
+      var x = instanceof(o, Ntype)
+    enddef
+    assert_fails('F()', 'E693: Class or class typealias required for argument 2')
+
+    def G(): bool
+      return instanceof(o, Ctype)
+    enddef
+    assert_equal(1, G())
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -527,13 +551,377 @@ def Test_typealias_class()
   var lines =<< trim END
     vim9script
     class C
-      this.color = 'green'
+      var color = 'green'
     endclass
     type MyClass = C
     var o: MyClass = MyClass.new()
     assert_equal('green', o.color)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for typealias as function arg and return value
+def Test_type_as_func_argument_or_return_value()
+  # check typealias as arg, function call in script level
+  var lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(arg: any)
+    enddef
+    Foo(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 5)
+
+  # check typealias as function return, function call in script level
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(): any
+      return A
+    enddef
+    Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check typealias as arg, function call in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(arg: any)
+    enddef
+    def F()
+      Foo(A)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check typealias as function return, function call in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(): any
+      return A
+    enddef
+    def F()
+      Foo()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check funcref using typealias as arg at script level
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    Fref(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 9)
+
+  # check funcref using typealias as arg in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    def G()
+      Fref(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check funcref using typealias as return
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(): any
+      return A
+    enddef
+    var Fref: func(): any
+    Fref = F
+
+    Fref()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check deferred function using typealias as arg
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+    enddef
+    def G()
+      defer F(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+enddef
+
+" Test for class typealias as function arg and return value
+def Test_class_as_func_argument_or_return_value()
+  # check class typealias as arg, function call in script level
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(arg: any)
+    enddef
+    Foo(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 7)
+
+  # check class typealias as function return, function call in script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(): any
+      return A
+    enddef
+    Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check class typealias as arg, function call in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(arg: any)
+    enddef
+    def F()
+      Foo(A)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check class typealias as function return, function call in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(): any
+      return A
+    enddef
+    def F()
+      Foo()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check funcref using class typealias as arg at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    Fref(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 11)
+
+  # check funcref using class typealias as arg in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    def G()
+      Fref(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check funcref using class typealias as return
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(): any
+      return A
+    enddef
+    var Fref: func(): any
+    Fref = F
+
+    Fref()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check deferred function using class typealias as arg
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+    enddef
+    def G()
+      defer F(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+enddef
+
+def Test_passing_typealias_to_builtin()
+  # type, typename, string, instanceof are allowed type argument
+  var lines =<< trim END
+    vim9script
+    type T = number
+    var x: any
+    x = type(T)
+    x = typename(T)
+    x = string(T)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # check argument to add at script level
+  # Note: add() is special cased in compile_call in vim9expr
+  lines =<< trim END
+    vim9script
+    type T = number
+    add([], T)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check argument to add in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      add([], T)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  # check member call argument to add at script level
+  lines =<< trim END
+    vim9script
+    type T = number
+    []->add(T)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check member call argument to add in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      []->add(T)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  # Try "empty()" builtin
+  # check argument to empty at script level
+  lines =<< trim END
+    vim9script
+    type T = number
+    empty(T)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check argument to empty in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      empty(T)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  # check member call argument to empty at script level
+  lines =<< trim END
+    vim9script
+    type T = number
+    T->empty()
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check member call argument to empty in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      T->empty()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  # Try "abs()" builtin
+  # check argument to abs at script level
+  lines =<< trim END
+    vim9script
+    type T = number
+    abs(T)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check argument to abs in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      abs(T)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  # check member call argument to abs at script level
+  lines =<< trim END
+    vim9script
+    type T = number
+    T->abs()
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+
+  # check member call argument to abs in :def
+  lines =<< trim END
+    vim9script
+    type T = number
+    def F()
+      T->abs()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

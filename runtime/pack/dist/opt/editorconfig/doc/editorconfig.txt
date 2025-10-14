@@ -47,7 +47,7 @@ Specify the mode of EditorConfig core. Generally it is OK to leave this option
 empty. Currently, the supported modes are "vim_core" (default) and
 "external_command".
 
-    vim_core:           Use the included VimScript EditorConfig Core.
+    vim_core:           Use the included Vim script EditorConfig Core.
     external_command:   Run external EditorConfig Core.
 
 If "g:EditorConfig_core_mode" is not specified, this plugin will automatically

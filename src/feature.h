@@ -138,11 +138,6 @@
  */
 
 /*
- * Message history is fixed at 200 messages.
- */
-#define MAX_MSG_HIST_LEN 200
-
-/*
  * +folding		Fold lines.
  */
 #ifdef FEAT_NORMAL
@@ -241,7 +236,7 @@
 /*
  * +cscope		Unix only: Cscope support.
  */
-#if defined(UNIX) && defined(FEAT_HUGE) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
+#if defined(UNIX) && defined(FEAT_HUGE) && defined(ENABLE_CSCOPE)
 # define FEAT_CSCOPE
 #endif
 
@@ -346,7 +341,7 @@
  * +syntax		syntax highlighting.  When using this, it's a good
  *			idea to have +eval too.
  */
-#if defined(FEAT_NORMAL) || defined(PROTO)
+#if defined(FEAT_NORMAL)
 # define FEAT_SYN_HL
 #endif
 
@@ -361,14 +356,14 @@
 /*
  * +spell		spell checking
  */
-#if (defined(FEAT_NORMAL) || defined(PROTO))
+#if defined(FEAT_NORMAL)
 # define FEAT_SPELL
 #endif
 
 /*
  * +cryptv		Encryption (originally by Mohsin Ahmed <mosh@sasi.com>).
  */
-#if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT)
 # define FEAT_CRYPT
 #endif
 
@@ -526,6 +521,13 @@
 	|| defined(FEAT_GUI_HAIKU) \
 	|| defined(FEAT_GUI_MSWIN))
 # define FEAT_GUI_TABLINE
+#endif
+
+/*
+ * +tabpanel		Tab SideBar
+ */
+#ifdef FEAT_HUGE
+# define FEAT_TABPANEL
 #endif
 
 /*
@@ -811,6 +813,14 @@
 #endif
 
 /*
+ * +wayland		Unix only.  Include code for the Wayland protocol,
+ *                      only works if HAVE_WAYLAND is defined.
+ */
+#if defined(FEAT_NORMAL) && defined(UNIX)
+# define WANT_WAYLAND
+#endif
+
+/*
  * XSMP - X11 Session Management Protocol
  * It may be preferred to disable this if the GUI supports it (e.g.,
  * GNOME/KDE) and implement save-yourself etc. through that, but it may also
@@ -910,6 +920,21 @@
 # endif
 #endif
 
+#if defined(FEAT_NORMAL) && defined(UNIX) \
+    && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+# define FEAT_WAYLAND_CLIPBOARD
+# ifndef FEAT_CLIPBOARD
+#  define FEAT_CLIPBOARD
+# endif
+#endif
+
+/*
+ * +wayland_focus_steal	    Focus stealing support for Wayland clipboard
+ */
+#if !defined(FEAT_WAYLAND_CLIPBOARD) && defined(FEAT_WAYLAND_CLIPBOARD_FS)
+# undef FEAT_WAYLAND_CLIPBOARD_FS
+#endif
+
 /*
  * +dnd		Drag'n'drop support.  Always used for the GTK+ GUI.
  */
@@ -928,10 +953,19 @@
 #endif
 
 /*
+ * +socketserver	 Use UNIX domain sockets for clientserver communication
+ */
+#if defined(UNIX) && (defined(WANT_SOCKETSERVER) || \
+	(defined(MAYBE_SOCKETSERVER) && !defined(HAVE_X11)))
+#define FEAT_SOCKETSERVER
+#endif
+
+/*
  * +clientserver	Remote control via the remote_send() function
  *			and the --remote argument
  */
-#if (defined(MSWIN) || defined(FEAT_XCLIPBOARD)) && defined(FEAT_EVAL)
+#if (defined(MSWIN) || defined(FEAT_XCLIPBOARD) || defined(FEAT_SOCKETSERVER)) \
+    && defined(FEAT_EVAL)
 # define FEAT_CLIENTSERVER
 #endif
 
@@ -1020,18 +1054,19 @@
  * +tgetent
  */
 
-/*
- * The Netbeans feature requires +eval.
- */
-#if !defined(FEAT_EVAL) && defined(FEAT_NETBEANS_INTG)
-# undef FEAT_NETBEANS_INTG
-#endif
 
 /*
  * The +channel feature requires +eval.
  */
 #if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
 # undef FEAT_JOB_CHANNEL
+#endif
+
+/*
+ * The Netbeans feature requires +eval and +job_channel
+ */
+#if (!defined(FEAT_EVAL) || !defined(FEAT_JOB_CHANNEL)) && defined(FEAT_NETBEANS_INTG)
+# undef FEAT_NETBEANS_INTG
 #endif
 
 /*

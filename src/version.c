@@ -13,7 +13,7 @@
  * Vim originated from Stevie version 3.6 (Fish disk 217) by GRWalter (Fred)
  * It has been changed beyond recognition since then.
  *
- * Differences between version 8.2 and 9.0 can be found with ":help version9".
+ * Differences between version 8.2 and 9.1 can be found with ":help version9".
  * Differences between version 7.4 and 8.x can be found with ":help version8".
  * Differences between version 6.4 and 7.x can be found with ":help version7".
  * Differences between version 5.8 and 6.x can be found with ":help version6".
@@ -28,8 +28,8 @@
 char		*Version = VIM_VERSION_SHORT;
 static char	*mediumVersion = VIM_VERSION_MEDIUM;
 
-#if defined(HAVE_DATE_TIME) || defined(PROTO)
-# if (defined(VMS) && defined(VAXC)) || defined(PROTO)
+#if defined(HAVE_DATE_TIME)
+# if defined(VMS) && defined(VAXC)
 char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
@@ -516,6 +516,11 @@ static char *(features[]) =
 	"-signs",
 #endif
 	"+smartindent",
+#ifdef FEAT_SOCKETSERVER
+	"+socketserver",
+#else
+	"-socketserver",
+#endif
 #ifdef FEAT_SODIUM
 # ifdef DYNAMIC_SODIUM
 	"+sodium/dyn",
@@ -554,6 +559,11 @@ static char *(features[]) =
 	    // only interesting on Unix systems
 #if defined(USE_SYSTEM) && defined(UNIX)
 	"+system()",
+#endif
+#if defined(FEAT_TABPANEL)
+	"+tabpanel",
+#else
+	"-tabpanel",
 #endif
 	"+tag_binary",
 	"-tag_old_static",
@@ -639,6 +649,21 @@ static char *(features[]) =
 	"-vtp",
 # endif
 #endif
+#ifdef FEAT_WAYLAND
+	"+wayland",
+#else
+	"-wayland",
+#endif
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	"+wayland_clipboard",
+#else
+	"-wayland_clipboard",
+#endif
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+	"+wayland_focus_steal",
+#else
+	"-wayland_focus_steal",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",
@@ -704,558 +729,6 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
-/**/
-    2130,
-/**/
-    2129,
-/**/
-    2128,
-/**/
-    2127,
-/**/
-    2126,
-/**/
-    2125,
-/**/
-    2124,
-/**/
-    2123,
-/**/
-    2122,
-/**/
-    2121,
-/**/
-    2120,
-/**/
-    2119,
-/**/
-    2118,
-/**/
-    2117,
-/**/
-    2116,
-/**/
-    2115,
-/**/
-    2114,
-/**/
-    2113,
-/**/
-    2112,
-/**/
-    2111,
-/**/
-    2110,
-/**/
-    2109,
-/**/
-    2108,
-/**/
-    2107,
-/**/
-    2106,
-/**/
-    2105,
-/**/
-    2104,
-/**/
-    2103,
-/**/
-    2102,
-/**/
-    2101,
-/**/
-    2100,
-/**/
-    2099,
-/**/
-    2098,
-/**/
-    2097,
-/**/
-    2096,
-/**/
-    2095,
-/**/
-    2094,
-/**/
-    2093,
-/**/
-    2092,
-/**/
-    2091,
-/**/
-    2090,
-/**/
-    2089,
-/**/
-    2088,
-/**/
-    2087,
-/**/
-    2086,
-/**/
-    2085,
-/**/
-    2084,
-/**/
-    2083,
-/**/
-    2082,
-/**/
-    2081,
-/**/
-    2080,
-/**/
-    2079,
-/**/
-    2078,
-/**/
-    2077,
-/**/
-    2076,
-/**/
-    2075,
-/**/
-    2074,
-/**/
-    2073,
-/**/
-    2072,
-/**/
-    2071,
-/**/
-    2070,
-/**/
-    2069,
-/**/
-    2068,
-/**/
-    2067,
-/**/
-    2066,
-/**/
-    2065,
-/**/
-    2064,
-/**/
-    2063,
-/**/
-    2062,
-/**/
-    2061,
-/**/
-    2060,
-/**/
-    2059,
-/**/
-    2058,
-/**/
-    2057,
-/**/
-    2056,
-/**/
-    2055,
-/**/
-    2054,
-/**/
-    2053,
-/**/
-    2052,
-/**/
-    2051,
-/**/
-    2050,
-/**/
-    2049,
-/**/
-    2048,
-/**/
-    2047,
-/**/
-    2046,
-/**/
-    2045,
-/**/
-    2044,
-/**/
-    2043,
-/**/
-    2042,
-/**/
-    2041,
-/**/
-    2040,
-/**/
-    2039,
-/**/
-    2038,
-/**/
-    2037,
-/**/
-    2036,
-/**/
-    2035,
-/**/
-    2034,
-/**/
-    2033,
-/**/
-    2032,
-/**/
-    2031,
-/**/
-    2030,
-/**/
-    2029,
-/**/
-    2028,
-/**/
-    2027,
-/**/
-    2026,
-/**/
-    2025,
-/**/
-    2024,
-/**/
-    2023,
-/**/
-    2022,
-/**/
-    2021,
-/**/
-    2020,
-/**/
-    2019,
-/**/
-    2018,
-/**/
-    2017,
-/**/
-    2016,
-/**/
-    2015,
-/**/
-    2014,
-/**/
-    2013,
-/**/
-    2012,
-/**/
-    2011,
-/**/
-    2010,
-/**/
-    2009,
-/**/
-    2008,
-/**/
-    2007,
-/**/
-    2006,
-/**/
-    2005,
-/**/
-    2004,
-/**/
-    2003,
-/**/
-    2002,
-/**/
-    2001,
-/**/
-    2000,
-/**/
-    1999,
-/**/
-    1998,
-/**/
-    1997,
-/**/
-    1996,
-/**/
-    1995,
-/**/
-    1994,
-/**/
-    1993,
-/**/
-    1992,
-/**/
-    1991,
-/**/
-    1990,
-/**/
-    1989,
-/**/
-    1988,
-/**/
-    1987,
-/**/
-    1986,
-/**/
-    1985,
-/**/
-    1984,
-/**/
-    1983,
-/**/
-    1982,
-/**/
-    1981,
-/**/
-    1980,
-/**/
-    1979,
-/**/
-    1978,
-/**/
-    1977,
-/**/
-    1976,
-/**/
-    1975,
-/**/
-    1974,
-/**/
-    1973,
-/**/
-    1972,
-/**/
-    1971,
-/**/
-    1970,
-/**/
-    1969,
-/**/
-    1968,
-/**/
-    1967,
-/**/
-    1966,
-/**/
-    1965,
-/**/
-    1964,
-/**/
-    1963,
-/**/
-    1962,
-/**/
-    1961,
-/**/
-    1960,
-/**/
-    1959,
-/**/
-    1958,
-/**/
-    1957,
-/**/
-    1956,
-/**/
-    1955,
-/**/
-    1954,
-/**/
-    1953,
-/**/
-    1952,
-/**/
-    1951,
-/**/
-    1950,
-/**/
-    1949,
-/**/
-    1948,
-/**/
-    1947,
-/**/
-    1946,
-/**/
-    1945,
-/**/
-    1944,
-/**/
-    1943,
-/**/
-    1942,
-/**/
-    1941,
-/**/
-    1940,
-/**/
-    1939,
-/**/
-    1938,
-/**/
-    1937,
-/**/
-    1936,
-/**/
-    1935,
-/**/
-    1934,
-/**/
-    1933,
-/**/
-    1932,
-/**/
-    1931,
-/**/
-    1930,
-/**/
-    1929,
-/**/
-    1928,
-/**/
-    1927,
-/**/
-    1926,
-/**/
-    1925,
-/**/
-    1924,
-/**/
-    1923,
-/**/
-    1922,
-/**/
-    1921,
-/**/
-    1920,
-/**/
-    1919,
-/**/
-    1918,
-/**/
-    1917,
-/**/
-    1916,
-/**/
-    1915,
-/**/
-    1914,
-/**/
-    1913,
-/**/
-    1912,
-/**/
-    1911,
-/**/
-    1910,
-/**/
-    1909,
-/**/
-    1908,
-/**/
-    1907,
-/**/
-    1906,
-/**/
-    1905,
-/**/
-    1904,
-/**/
-    1903,
-/**/
-    1902,
-/**/
-    1901,
-/**/
-    1900,
-/**/
-    1899,
-/**/
-    1898,
-/**/
-    1897,
-/**/
-    1896,
-/**/
-    1895,
-/**/
-    1894,
-/**/
-    1893,
-/**/
-    1892,
-/**/
-    1891,
-/**/
-    1890,
-/**/
-    1889,
-/**/
-    1888,
-/**/
-    1887,
-/**/
-    1886,
-/**/
-    1885,
-/**/
-    1884,
-/**/
-    1883,
-/**/
-    1882,
-/**/
-    1881,
-/**/
-    1880,
-/**/
-    1879,
-/**/
-    1878,
-/**/
-    1877,
-/**/
-    1876,
-/**/
-    1875,
-/**/
-    1874,
-/**/
-    1873,
-/**/
-    1872,
-/**/
-    1871,
-/**/
-    1870,
-/**/
-    1869,
-/**/
-    1868,
-/**/
-    1867,
-/**/
-    1866,
-/**/
-    1865,
-/**/
-    1864,
-/**/
-    1863,
-/**/
-    1862,
-/**/
-    1861,
-/**/
-    1860,
-/**/
-    1859,
-/**/
-    1858,
-/**/
-    1857,
-/**/
-    1856,
-/**/
-    1855,
 /**/
     1854,
 /**/
@@ -4988,7 +4461,7 @@ highest_patch(void)
     return included_patches[0];
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if patch "n" has been included.
  */
@@ -5175,13 +4648,21 @@ list_version(void)
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI/console version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI/console version"));
 #   endif
 #  else
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #   endif
@@ -5191,7 +4672,11 @@ list_version(void)
 #  endif
 # else
 #  ifdef _WIN64
+#   if defined(_M_ARM64) || defined(_M_ARM64EC)
+    msg_puts(_("\nMS-Windows ARM64 console version"));
+#   else
     msg_puts(_("\nMS-Windows 64-bit console version"));
+#   endif
 #  else
     msg_puts(_("\nMS-Windows 32-bit console version"));
 #  endif
@@ -5211,13 +4696,19 @@ list_version(void)
 #endif
 
 #ifdef VMS
-    msg_puts(_("\nOpenVMS version"));
+    msg_puts(_("\nOpenVMS (build) arch, version"));
 # ifdef HAVE_PATHDEF
     if (*compiled_arch != NUL)
     {
-	msg_puts(" - ");
+	msg_puts(": ");
 	msg_puts((char *)compiled_arch);
+	if (*compiled_vers != NUL)
+	{
+	    msg_puts(", ");
+	    msg_puts((char *)compiled_vers);
+	}
     }
+
 # endif
 
 #endif
@@ -5297,9 +4788,9 @@ list_version(void)
 # if defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)
-     msg_puts(_("with GTK2-GNOME GUI."));
+    msg_puts(_("with GTK2-GNOME GUI."));
 # else
-     msg_puts(_("with GTK2 GUI."));
+    msg_puts(_("with GTK2 GUI."));
 # endif
 #elif defined(FEAT_GUI_MOTIF)
     msg_puts(_("with X11-Motif GUI."));
@@ -5331,9 +4822,20 @@ list_version(void)
     version_msg(USR_VIMRC_FILE2);
     version_msg("\"\n");
 #endif
-#ifdef USR_VIMRC_FILE3
+#if defined(USR_VIMRC_FILE3) && defined(XDG_VIMRC_FILE)
     version_msg(_(" 3rd user vimrc file: \""));
     version_msg(USR_VIMRC_FILE3);
+    version_msg("\"\n");
+    version_msg(_(" 4th user vimrc file: \""));
+    version_msg((char *)(XDG_VIMRC_FILE));
+    version_msg("\"\n");
+#elif defined(USR_VIMRC_FILE3)
+    version_msg(_(" 3rd user vimrc file: \""));
+    version_msg(USR_VIMRC_FILE3);
+    version_msg("\"\n");
+#elif defined(XDG_VIMRC_FILE)
+    version_msg(_(" 3rd user vimrc file: \""));
+    version_msg((char *)(XDG_VIMRC_FILE));
     version_msg("\"\n");
 #endif
 #ifdef USR_EXRC_FILE
@@ -5506,7 +5008,7 @@ intro_message(
 
     // start displaying the message lines after half of the blank lines
     row = blanklines / 2;
-    if ((row >= 2 && Columns >= 50) || colon)
+    if ((row >= 2 && topframe->fr_width >= 50) || colon)
     {
 	for (i = 0; i < (int)ARRAY_LENGTH(lines); ++i)
 	{
@@ -5578,9 +5080,9 @@ do_intro_line(
 	if (highest_patch())
 	{
 	    // Check for 9.9x or 9.9xx, alpha/beta version
-	    if (isalpha((int)vers[3]))
+	    if (SAFE_isalpha((int)vers[3]))
 	    {
-		int len = (isalpha((int)vers[4])) ? 5 : 4;
+		int len = (SAFE_isalpha((int)vers[4])) ? 5 : 4;
 		sprintf((char *)vers + len, ".%d%s", highest_patch(),
 							 mediumVersion + len);
 	    }
@@ -5589,7 +5091,7 @@ do_intro_line(
 	}
 	col += (int)STRLEN(vers);
     }
-    col = (Columns - col) / 2;
+    col = (topframe->fr_width - col) / 2;
     if (col < 0)
 	col = 0;
 
@@ -5608,13 +5110,14 @@ do_intro_line(
 	    else
 		clen += byte2cells(p[l]);
 	}
-	screen_puts_len(p, l, row, col, *p == '<' ? HL_ATTR(HLF_8) : attr);
+	screen_puts_len(p, l, row, col + firstwin->w_wincol,
+		*p == '<' ? HL_ATTR(HLF_8) : attr);
 	col += clen;
     }
 
     // Add the version number to the version line.
     if (add_version)
-	screen_puts(vers, row, col, 0);
+	screen_puts(vers, row, col + firstwin->w_wincol, 0);
 }
 
 /*
@@ -5624,6 +5127,9 @@ do_intro_line(
 ex_intro(exarg_T *eap UNUSED)
 {
     screenclear();
+#if defined(FEAT_TABPANEL)
+    draw_tabpanel();
+#endif
     intro_message(TRUE);
     wait_return(TRUE);
 }

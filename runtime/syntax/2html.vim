@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2023 Sep 05
+" Last Change: 2024 Nov 02
 "
 " Additional contributors:
 "
@@ -1842,6 +1842,10 @@ if s:settings.use_css && !s:settings.no_doc
   " fix browser inconsistencies (sometimes within the same browser) of different
   " default font size for different elements
   call append('.', '* { font-size: 1em; }')
+  +
+  " use color scheme styles for links
+  " browser-default blue/purple colors for links don't look like the existing theme and are unreadable on dark backgrounds
+  call append('.', 'a { color: inherit; }')
   +
   " if we use any input elements for unselectable content, make sure they look
   " like normal text

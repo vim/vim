@@ -1,7 +1,6 @@
 " Tests for put commands, e.g. ":put", "p", "gp", "P", "gP", etc.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_put_block()
   new
@@ -10,6 +9,16 @@ func Test_put_block()
   call feedkeys("gg0p", 'x')
   call assert_equal("\u2500x", getline(1))
   bwipe!
+endfunc
+
+func Test_put_block_unicode()
+  new
+  call setreg('a', "À\nÀÀ\naaaaaaaaaaaa", "\<C-V>")
+  call setline(1, [' 1', ' 2', ' 3'])
+  exe "norm! \<C-V>jj\"ap"
+  let expected = ['À           1', 'ÀÀ          2', 'aaaaaaaaaaaa3']
+  call assert_equal(expected, getline(1, 3))
+  bw!
 endfunc
 
 func Test_put_char_block()
@@ -65,6 +74,8 @@ func Test_put_fails_when_nomodifiable()
   normal! yy
   call assert_fails(':put', 'E21:')
   call assert_fails(':put!', 'E21:')
+  call assert_fails(':iput', 'E21:')
+  call assert_fails(':iput!', 'E21:')
   call assert_fails(':normal! p', 'E21:')
   call assert_fails(':normal! gp', 'E21:')
   call assert_fails(':normal! P', 'E21:')
@@ -122,7 +133,7 @@ func Test_put_visual_delete_all_lines()
   let @r = ''
   normal! VG"rgp
   call assert_equal(1, line('$'))
-  close!
+  bw!
 endfunc
 
 func Test_gp_with_count_leaves_cursor_at_end()
@@ -158,10 +169,6 @@ func Test_very_large_count()
 endfunc
 
 func Test_very_large_count_64bit()
-  if v:sizeoflong < 8
-    throw 'Skipped: only works with 64 bit long ints'
-  endif
-
   new
   let @" = repeat('x', 100)
   call assert_fails('norm 999999999p', 'E1240:')
@@ -178,10 +185,6 @@ func Test_very_large_count_block()
 endfunc
 
 func Test_very_large_count_block_64bit()
-  if v:sizeoflong < 8
-    throw 'Skipped: only works with 64 bit long ints'
-  endif
-
   new
   call setline(1, repeat('x', 100))
   exe "norm \<C-V>$y"
@@ -244,6 +247,7 @@ func Test_put_visual_block_mode()
 endfunc
 
 func Test_put_other_window()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -263,6 +267,7 @@ func Test_put_other_window()
 endfunc
 
 func Test_put_in_last_displayed_line()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -280,5 +285,161 @@ func Test_put_in_last_displayed_line()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_put_visual_replace_whole_fold()
+  new
+  let lines = repeat(['{{{1', 'foo', 'bar', ''], 2)
+  call setline(1, lines)
+  setlocal foldmethod=marker
+  call setreg('"', 'baz')
+  call setreg('1', '')
+  normal! Vp
+  call assert_equal("{{{1\nfoo\nbar\n\n", getreg('1'))
+  call assert_equal(['baz', '{{{1', 'foo', 'bar', ''], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_put_visual_replace_fold_marker()
+  new
+  let lines = repeat(['{{{1', 'foo', 'bar', ''], 4)
+  call setline(1, lines)
+  setlocal foldmethod=marker
+  normal! Gkzo
+  call setreg('"', '{{{1')
+  call setreg('1', '')
+  normal! Vp
+  call assert_equal("{{{1\n", getreg('1'))
+  call assert_equal(lines, getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_put_dict()
+  new
+  let d = #{a: #{b: 'abc'}, c: [1, 2], d: 0z10}
+  put! =d
+  call assert_equal(["{'a': {'b': 'abc'}, 'c': [1, 2], 'd': 0z10}", ''],
+        \ getline(1, '$'))
+  bw!
+endfunc
+
+func Test_put_list()
+  new
+  let l = ['a', 'b', 'c']
+  put! =l
+  call assert_equal(['a', 'b', 'c', ''], getline(1, '$'))
+  bw!
+endfunc
+
+func Test_iput_multiline()
+  new
+  setlocal noexpandtab
+  call setline(1, "\<Tab>foo")
+  call setreg('0', "bar\n\<Tab>bar2\nbar3", 'l')
+  iput
+  call assert_equal(["\<Tab>bar", "\<Tab>\<Tab>bar2", "\<Tab>bar3"], getline(2, 4))
+  setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
+  iput
+  call assert_equal([repeat(' ', 8) . "bar",
+        \ repeat(' ', 16) . "bar2",
+        \ repeat(' ', 8) . "bar3"], getline(5, 7))
+  bw!
+endfunc
+
+func Test_iput_beforeafter_tab()
+  new
+  setlocal noexpandtab
+  call setline(1, "\<Tab>foo")
+  call setreg('0', "bar", 'l')
+  iput
+  call assert_equal(["\<Tab>bar"], getline(2, '$'))
+  call feedkeys("k", 'x')
+  iput!
+  call assert_equal("\<Tab>bar", getline(1))
+  call assert_equal("\<Tab>bar", getline(3))
+  bw!
+endfunc
+
+func Test_iput_beforeafter_expandtab()
+  new
+  setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
+  call setline(1, "\<Tab>foo")
+  call setreg('0', "bar", 'l')
+  iput
+  call assert_equal([repeat(' ', 8) . "bar"], getline(2, '$'))
+  :1iput!
+  call assert_equal(repeat(' ', 8) . "bar", getline(1))
+  bw!
+endfunc
+
+func Test_iput_invalidrange()
+  new
+  call setreg('0', "bar", 'l')
+  call assert_fails(':10iput', 'E16:')
+  bw!
+endfunc
+
+func Test_iput_zero_range()
+  new
+  let _var = [getreg('a'), getregtype('a')]
+  call setreg('a', 'foobar', 'l')
+  call setline(1, range(1, 2))
+  call cursor(1, 1)
+  0iput a
+  call assert_equal(['foobar', '1', '2'], getline(1, '$'))
+  %d
+  call setline(1, range(1, 2))
+  call cursor(1, 1)
+  0iput! a
+  call assert_equal(['foobar', '1', '2'], getline(1, '$'))
+  call setreg('a', _var[0], _var[1])
+  bw!
+endfunc
+
+func Test_iput_not_put()
+  new
+  call setline(1, "\<Tab>foo")
+  call setreg('0', "bar", 'l')
+  iput
+  call assert_equal("\<Tab>bar", getline(2))
+  put
+  call assert_equal("bar", getline(3))
+  bw!
+endfunc
+
+" Test pasting the '.' register
+func Test_put_inserted()
+  new
+
+  for s in ['', '…', '0', '^', '+0', '+^', '…0', '…^']
+    call setline(1, 'foobar')
+    exe $"normal! A{s}\<Esc>"
+    call assert_equal($'foobar{s}', getline(1))
+    normal! ".p
+    call assert_equal($'foobar{s}{s}', getline(1))
+    normal! ".2p
+    call assert_equal($'foobar{s}{s}{s}{s}', getline(1))
+  endfor
+
+  for s in ['0', '^', '+0', '+^', '…0', '…^']
+    call setline(1, "\t\t\t\t\tfoobar")
+    exe $"normal! A\<C-D>{s}\<Esc>"
+    call assert_equal($"\t\t\t\tfoobar{s}", getline(1))
+    normal! ".p
+    call assert_equal($"\t\t\tfoobar{s}{s}", getline(1))
+    normal! ".2p
+    call assert_equal($"\tfoobar{s}{s}{s}{s}", getline(1))
+  endfor
+
+  bwipe!
+endfunc
+
+func Test_put_tuple()
+  new
+  let t = ('a', 'b', 'c')
+  put! =t
+  call assert_equal(['a', 'b', 'c', ''], getline(1, '$'))
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

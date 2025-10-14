@@ -1,8 +1,5 @@
 " Tests for the sound feature
 
-source check.vim
-source shared.vim
-
 CheckFeature sound
 
 func PlayCallback(id, result)
@@ -15,6 +12,7 @@ func Test_play_event()
   if has('win32')
     throw 'Skipped: Playing event with callback is not supported on Windows'
   endif
+  let g:result = 0
   let g:playcallback_count = 0
   let g:id = 0
   let event_name = 'bell'
@@ -37,6 +35,7 @@ endfunc
 func Test_play_silent()
   let fname = fnamemodify('silent.wav', '%p')
   let g:playcallback_count = 0
+  let g:result = -1
 
   " play without callback
   let id1 = sound_playfile(fname)

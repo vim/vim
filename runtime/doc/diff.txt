@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.0.  Last change: 2023 Apr 04
+*diff.txt*      For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,7 +14,8 @@ The basics are explained in section |08.7| of the user manual.
 2. Viewing diffs		|view-diffs|
 3. Jumping to diffs		|jumpto-diffs|
 4. Copying diffs		|copy-diffs|
-5. Diff options			|diff-options|
+5. Diff anchors			|diff-anchors|
+6. Diff options			|diff-options|
 
 ==============================================================================
 1. Starting diff mode					*start-vimdiff*
@@ -73,7 +74,8 @@ See `:diffoff` for an easy way to revert the options.
 The differences shown are actually the differences in the buffer.  Thus if you
 make changes after loading a file, these will be included in the displayed
 diffs.  You might have to do ":diffupdate" now and then, not all changes are
-immediately taken into account, especially when using an external diff command.
+immediately taken into account, especially when using an external diff
+command.
 
 In your .vimrc file you could do something special when Vim was started in
 diff mode.  You could use a construct like this: >
@@ -226,14 +228,28 @@ The diffs are highlighted with these groups:
 |hl-DiffAdd|	DiffAdd		Added (inserted) lines.  These lines exist in
 				this buffer but not in another.
 |hl-DiffChange|	DiffChange	Changed lines.
-|hl-DiffText|	DiffText	Changed text inside a Changed line.  Vim
-				finds the first character that is different,
-				and the last character that is different
-				(searching from the end of the line).  The
-				text in between is highlighted.  This means
-				that parts in the middle that are still the
-				same are highlighted anyway.  The 'diffopt'
-				flags "iwhite" and "icase" are used here.
+|hl-DiffText|	DiffText	Changed text inside a Changed line.  Exact
+				behavior depends on the `inline:` setting in
+				'diffopt'.
+				With `inline:` set to "simple", Vim finds the
+				first character that is different, and the
+				last character that is different (searching
+				from the end of the line).  The text in
+				between is highlighted.  This means that parts
+				in the middle that are still the same are
+				highlighted anyway.  The 'diffopt' flags
+				"iwhite" and "icase" are used here.
+				With `inline:` set to "char" or "word", Vim
+				uses the internal diff library to perform a
+				detailed diff between the changed blocks and
+				highlight the exact difference between the
+				two.  Will respect any 'diffopt' flag that
+				affects internal diff.
+				Not used when `inline:` is set to "none".
+|hl-DiffTextAdd|  DiffTextAdd	Added text inside a Changed line.  Similar to
+				DiffText, but used when there is no
+				corresponding text in other buffers.  Not used
+				when `inline:` is set to "simple" or "none".
 |hl-DiffDelete|	DiffDelete	Deleted lines.  Also called filler lines,
 				because they don't really exist in this
 				buffer.
@@ -277,7 +293,7 @@ that the buffers will be equal within the specified range.
 
 							*do*
 [count]do	Same as ":diffget" without range.  The "o" stands for "obtain"
-		("dg" can't be used, it could be the start of "dgg"!). Note:
+		("dg" can't be used, it could be the start of "dgg"!).  Note:
 		this doesn't work in Visual mode.
 		If you give a [count], it is used as the [bufspec] argument
 		for ":diffget".
@@ -290,18 +306,20 @@ that the buffers will be equal within the specified range.
 
 
 When no [range] is given, the diff at the cursor position or just above it is
-affected.  When [range] is used, Vim tries to only put or get the specified
-lines.  When there are deleted lines, this may not always be possible.
+affected.  There can be deleted lines below the last line of the buffer.  When
+the cursor is on the last line in the buffer and there is no diff above this
+line, and no [range] is given, the diff below the cursor position will be used
+instead.
 
-There can be deleted lines below the last line of the buffer.  When the cursor
-is on the last line in the buffer and there is no diff above this line, the
-":diffget" and "do" commands will obtain lines from the other buffer.
+When [range] is used, Vim tries to only put or get the specified lines.  When
+there are deleted lines, they will be used if they are between the lines
+specified by [range].
 
-To be able to get those lines from another buffer in a [range] it's allowed to
-use the last line number plus one.  This command gets all diffs from the other
-buffer: >
+To be able to put or get those lines to/from another buffer in a [range] it's
+allowed to use 0 and the last line number plus one.  This command gets all
+diffs from the other buffer: >
 
-	:1,$+1diffget
+	:0,$+1diffget
 
 Note that deleted lines are displayed, but not counted as text lines.  You
 can't move the cursor into them.  To fill the deleted lines with the lines
@@ -320,13 +338,135 @@ name or a part of a buffer name.  Examples:
 				diff mode (e.g., "file.c.v2")
 
 ==============================================================================
-5. Diff options						*diff-options*
+5. Diff anchors						*diff-anchors*
 
-Also see |'diffopt'| and the "diff" item of |'fillchars'|.
+Diff anchors allow you to control where the diff algorithm aligns and
+synchronize text across files.  Each anchor matches each other in each file,
+allowing you to control the output of a diff.
+
+This is useful when a change involves complicated edits.  For example, if a
+function was moved to another location and further edited.  By default, the
+algorithm aims to create the smallest diff, which results in that entire
+function being considered to be deleted and added on the other side, making it
+hard to see what the actual edit on it was.  You can use diff anchors to pin
+that function so the diff algorithm will align based on it.
+
+To use it, set anchors using 'diffanchors' which is a comma-separated list of
+{address} in each file, and then add "anchor" to 'diffopt'.  Internally, Vim
+splits each file up into sections split by the anchors.  It performs the diff
+on each pair of sections separately before merging the results back.
+
+Setting 'diffanchors' will update the diff immediately.  If an anchor is tied
+to a mark, and you change what the mark is pointed to, you need to manually
+call |:diffupdate| afterwards to get the updated diff results.
+
+Example:
+
+Let's say we have the following files, side-by-side.  We are interested in the
+change that happened to the function `foo()`, which was both edited and moved.
+
+File A: >
+	int foo() {
+	    int n = 1;
+	    return n;
+	}
+
+	int g = 1;
+
+	int bar(int a) {
+	    a *= 2;
+	    a += 3;
+	    return a;
+	}
+<File B: >
+	int bar(int a) {
+	    a *= 2;
+	    a += 3;
+	    return a;
+	}
+
+	int foo() {
+	    int n = 999;
+	    return n;
+	}
+
+	int g = 1;
+<
+A normal diff will usually align the diff result as such: >
+
+	int foo() {     |----------------
+	    int n = 1;  |----------------
+	    return n;   |----------------
+	}               |----------------
+	                |----------------
+	int g = 1;      |----------------
+	                |----------------
+	int bar(int a) {|int bar(int a) {
+	    a *= 2;     |    a *= 2;
+	    a += 3;     |    a += 3;
+	    return a;   |    return a;
+	}               |}
+	----------------|
+	----------------|int foo() {
+	----------------|    int n = 999;
+	----------------|    return n;
+	----------------|}
+	----------------|
+	----------------|int g = 1;
+<
+What we want is to instead ask the diff to align on `foo()`: >
+
+	----------------|int bar(int a) {
+	----------------|    a *= 2;
+	----------------|    a += 3;
+	----------------|    return a;
+	----------------|}
+	----------------|
+	int foo() {     |int foo() {
+	    int n = 1;  |    int n = 999;
+	    return n;   |    return n;
+	}               |}
+	                |
+	int g = 1;      |int g = 1;
+	                |----------------
+	int bar(int a) {|----------------
+	    a *= 2;     |----------------
+	    a += 3;     |----------------
+	    return a;   |----------------
+	}               |----------------
+<
+
+Below are some ways of setting diff anchors to get the above result.  In each
+example, 'diffopt' needs to have `anchor` set for this to take effect.
+
+Marks: Set the |'a| mark on the `int foo()` lines in each file first before
+setting the anchors: >
+	set diffanchors='a
+
+Pattern: Specify the anchor using a |pattern| (see |:/|).  Here, we make sure
+to always start search from line 1 for consistency: >
+	set diffanchors=1/int\ foo(/
+<
+Selection: Use visual mode to select the entire `foo()` function body in each
+file.  Here, we use two anchors.  This does a better job of making sure only
+the function bodies are anchored against each other but not the lines after
+it.  Note the `'>+1` below.  The "+1" is necessary as we want the split to
+happen below the last line of the function, not above: >
+	set diffanchors='<,'>+1
+<
+Manually set two anchors using line numbers via buffer-local options: >
+	setlocal diffanchors=1,5
+	wincmd w
+	setlocal diffanchors=7,11
+<
+==============================================================================
+6. Diff options						*diff-options*
+
+Also see 'diffopt' and the "diff" item of 'fillchars'.
 
 					    *diff-slow* *diff_translations*
 For very long lines, the diff syntax highlighting might be slow, especially
-since it tries to match all different kind of localisations. To disable
+since it tries to match all different kind of localisations.  To disable
 localisations and speed up the syntax highlighting, set the global variable
 g:diff_translations to zero: >
 
@@ -408,7 +548,7 @@ The `redraw!` command may not be needed, depending on whether executing a
 shell command shows something on the display or not.
 
 If the 'diffexpr' expression starts with s: or |<SID>|, then it is replaced
-with the script ID (|local-function|). Example: >
+with the script ID (|local-function|).  Example: >
 		set diffexpr=s:MyDiffExpr()
 		set diffexpr=<SID>SomeDiffExpr()
 Otherwise, the expression is evaluated in the context of the script where the
@@ -469,11 +609,55 @@ directory are accidentally patched.  Vim will also delete files starting with
 v:fname_in and ending in ".rej" and ".orig".
 
 If the 'patchexpr' expression starts with s: or |<SID>|, then it is replaced
-with the script ID (|local-function|). Example: >
+with the script ID (|local-function|).  Example: >
 		set patchexpr=s:MyPatchExpr()
 		set patchexpr=<SID>SomePatchExpr()
 Otherwise, the expression is evaluated in the context of the script where the
 option was set, thus script-local items are available.
 
+
+DIFF FUNCTION EXAMPLES				*diff-func-examples*
+
+Some examples for using the |diff()| function to compute the diff indices
+between two Lists of strings are below.
+>
+  " some lines are changed
+  :echo diff(['abc', 'def', 'ghi'], ['abx', 'rrr', 'xhi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 3, 'to_idx': 0, 'to_count': 3}]
+
+  " few lines added at the beginning
+  :echo diff(['ghi'], ['abc', 'def', 'ghi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 0, 'to_idx': 0, 'to_count': 2}]
+
+  " few lines removed from the beginning
+  :echo diff(['abc', 'def', 'ghi'], ['ghi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 2, 'to_idx': 0, 'to_count': 0}]
+
+  " few lines added in the middle
+  :echo diff(['abc', 'jkl'], ['abc', 'def', 'ghi', 'jkl'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}]
+
+  " few lines removed in the middle
+  :echo diff(['abc', 'def', 'ghi', 'jkl'], ['abc', 'jkl'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 2, 'to_idx': 1, 'to_count': 0}]
+
+  " few lines added at the end
+  :echo diff(['abc'], ['abc', 'def', 'ghi'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}]
+
+  " few lines removed from the end
+  :echo diff(['abc', 'def', 'ghi'], ['abc'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 2, 'to_idx': 1, 'to_count': 0}]
+
+  " disjointed changes
+  :echo diff(['ab', 'def', 'ghi', 'jkl'], ['abc', 'def', 'ghi', 'jk'], {'output': 'indices', 'context': 0})
+   [{'from_idx': 0, 'from_count': 1, 'to_idx': 0, 'to_count': 1},
+    {'from_idx': 3, 'from_count': 1, 'to_idx': 3, 'to_count': 1}]
+
+  " disjointed changes with context length 1
+  :echo diff(['ab', 'def', 'ghi', 'jkl'], ['abc', 'def', 'ghi', 'jk'], {'output': 'indices', 'context': 1})
+   [{'from_idx': 0, 'from_count': 4, 'to_idx': 0, 'to_count': 4}]
+
+<
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,8 +1,5 @@
 " test taglist(), tagfiles() functions and :tags command
 
-source check.vim
-source view_util.vim
-
 func Test_taglist()
   call writefile([
 	\ "FFoo\tXfoo\t1",
@@ -100,7 +97,10 @@ func Test_tagfiles()
 
   help
   let tf = tagfiles()
-  call assert_equal(1, len(tf))
+  " If 'helplang' includes another language, then we may find 2 tagfiles
+  " (e.g.: for EN and RU).
+  " We may need to adjust this, if further translated help files are included.
+  call assert_inrange(1, 2, len(tf))
   call assert_equal(fnamemodify(expand('$VIMRUNTIME/doc/tags'), ':p:gs?\\?/?'),
 	\           fnamemodify(tf[0], ':p:gs?\\?/?'))
   helpclose
@@ -122,6 +122,47 @@ func Test_tagsfile_without_trailing_newline()
   call assert_equal('Foo', tl[0].name)
 
   set tags&
+endfunc
+
+" Check that specifying a stop directory in 'tags' works properly.
+func Test_tagfiles_stopdir()
+  let save_cwd = getcwd()
+
+  call mkdir('Xtagsdir1/Xtagsdir2/Xtagsdir3', 'pR')
+  call writefile([], 'Xtagsdir1/Xtags', 'D')
+
+  cd Xtagsdir1/
+  let &tags = './Xtags;' .. fnamemodify('..', ':p')
+  call assert_equal(1, len(tagfiles()))
+
+  cd Xtagsdir2/
+  let &tags = './Xtags;' .. fnamemodify('..', ':p')
+  call assert_equal(1, len(tagfiles()))
+
+  cd Xtagsdir3/
+  let &tags = './Xtags;' .. fnamemodify('..', ':p')
+  call assert_equal(0, len(tagfiles()))
+
+  let &tags = './Xtags;../'
+  call assert_equal(0, len(tagfiles()))
+
+  cd ..
+  call assert_equal(1, len(tagfiles()))
+
+  cd ..
+  call assert_equal(1, len(tagfiles()))
+
+  let &tags = './Xtags;..'
+  call assert_equal(1, len(tagfiles()))
+
+  cd Xtagsdir2/
+  call assert_equal(1, len(tagfiles()))
+
+  cd Xtagsdir3/
+  call assert_equal(0, len(tagfiles()))
+
+  set tags&
+  call chdir(save_cwd)
 endfunc
 
 " Test for ignoring comments in a tags file

@@ -3,7 +3,10 @@
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2023 Mar 21
+" Last Change:	2024 Jun 06 (disabled the q mapping, #8210)
+" 		2024 Jul 06 (use nnoremap, #15130)
+" 		2024 Aug 23 (improve the <Plug>ManBS mapping, #15547, #15556)
+" 		2025 Mar 09 (improve :Man completion for man-db, #16843)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -22,6 +25,14 @@ endif
 let s:cpo_save = &cpo
 set cpo-=C
 
+if !exists('g:ft_man_implementation')
+  if executable('mandb') > 0
+    let g:ft_man_implementation = 'man-db'
+  else
+    let g:ft_man_implementation = ''
+  endif
+endif
+
 if &filetype == "man"
   " Allow hyphen, plus, colon, dot, and commercial at in manual page name.
   " Parentheses are not here but in dist#man#PreGetPage()
@@ -35,18 +46,18 @@ if &filetype == "man"
       let b:undo_ftplugin = b:undo_ftplugin
 	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
-    nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
+
+    nnoremap <buffer> <silent> <Plug>ManBS :setl ma<Bar>%s/.\b//g
+	\ <Bar>setl noma<CR>`'
 
     nnoremap <buffer> <silent> <c-]> :call dist#man#PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call dist#man#PopPage()<CR>
-    nnoremap <buffer> <silent> q :q<CR>
 
     " Add undo commands for the maps
     let b:undo_ftplugin = b:undo_ftplugin
 	  \ . '|silent! nunmap <buffer> <Plug>ManBS'
 	  \ . '|silent! nunmap <buffer> <c-]>'
 	  \ . '|silent! nunmap <buffer> <c-t>'
-	  \ . '|silent! nunmap <buffer> q'
   endif
 
   if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
@@ -58,9 +69,17 @@ if &filetype == "man"
 endif
 
 if exists(":Man") != 2
-  com -nargs=+ -complete=shellcmd Man call dist#man#GetPage(<q-mods>, <f-args>)
-  nmap <Leader>K :call dist#man#PreGetPage(0)<CR>
-  nmap <Plug>ManPreGetPage :call dist#man#PreGetPage(0)<CR>
+  if g:ft_man_implementation ==# 'man-db'
+    com -nargs=+ -complete=customlist,dist#man#ManDbComplete Man call dist#man#GetPage(<q-mods>, <f-args>)
+  else
+    com -nargs=+ -complete=shellcmd Man call dist#man#GetPage(<q-mods>, <f-args>)
+  endif
+  nnoremap <Leader>K :call dist#man#PreGetPage(0)<CR>
+  nnoremap <Plug>ManPreGetPage :call dist#man#PreGetPage(0)<CR>
+endif
+
+if exists(":ManReload") != 2
+  com ManReload call dist#man#Reload()
 endif
 
 let &cpo = s:cpo_save

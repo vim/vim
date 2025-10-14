@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.0.  Last change: 2023 Apr 29
+*gui.txt*       For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -70,6 +70,8 @@ When the GUI starts up initializations are carried out, in this order:
   - For Win32, $HOME is set by Vim if needed, see |$HOME-windows|.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
+  - On Unix, if "~/.config/vim/gvimrc" or "$XDG_CONFIG_HOME/vim/gvimrc"
+    exists, it is sourced.  You can check this with ":version".
   The name of the first file found is stored in $MYGVIMRC, unless it was
   already set.
 - If the 'exrc' option is set (which is NOT the default) the file ./.gvimrc
@@ -162,7 +164,7 @@ window Vim is running in with these commands: >
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
 framework, most notably iBus, have been known to produce undesirable results
-in gvim. These may include an inability to enter spaces, or long delays
+in gvim.  These may include an inability to enter spaces, or long delays
 between typing a character and it being recognized by the application.
 
 One workaround that has been successful, for unknown reasons, is to prevent
@@ -246,7 +248,7 @@ For older versions of XFree86 you must patch your X server.  The following
 page has a bit of information about using the Intellimouse on Linux as well as
 links to the patches and X server binaries (may not have the one you need
 though):
-    http://www.inria.fr/koala/colas/mouse-wheel-scroll/
+    (dead link) inria.fr/koala/colas/mouse-wheel-scroll/
 
 ==============================================================================
 3. Mouse Control					*gui-mouse*
@@ -472,6 +474,8 @@ When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same as the "* register.  Thus you can yank to and paste the
 selection without prepending "* to commands.
 
+See also |W23| and |W24|.
+
 ==============================================================================
 5. Menus						*menus*
 
@@ -496,14 +500,14 @@ Starting off with the default set is a good idea.  You can add more items, or,
 if you don't like the defaults at all, start with removing all menus
 |:unmenu-all|.  You can also avoid the default menus being loaded by adding
 this line to your .vimrc file (NOT your .gvimrc file!): >
-	:let did_install_default_menus = 1
+	:let g:did_install_default_menus = 1
 If you also want to avoid the Syntax menu: >
-	:let did_install_syntax_menu = 1
+	:let g:did_install_syntax_menu = 1
 The first item in the Syntax menu can be used to show all available filetypes
 in the menu (which can take a bit of time to load).  If you want to have all
 filetypes already present at startup, add: >
-	:let do_syntax_sel_menu = 1
-
+	:let g:do_syntax_sel_menu = 1
+<				    *menu-lazyload* *g:do_no_lazyload_menus*
 The following menuitems show all available color schemes, keymaps and compiler
 settings:
 	Edit > Color Scheme ~
@@ -513,7 +517,7 @@ However, they can also take a bit of time to load, because they search all
 related files from the directories in 'runtimepath'.  Therefore they are
 loaded lazily (by the |CursorHold| event), or you can also load them manually.
 If you want to have all these items already present at startup, add: >
-	:let do_no_lazyload_menus = 1
+	:let g:do_no_lazyload_menus = 1
 
 Note that the menu.vim is sourced when `:syntax on` or `:filetype on` is
 executed or after your .vimrc file is sourced.  This means that the 'encoding'
@@ -570,8 +574,8 @@ the mouse button down on this will pop up a menu containing the item
 which when selected, performs the operation.
 
 To create a menu for terminal mode, use |:tlmenu| instead of |:tmenu| unlike
-key mapping (|:tmap|). This is because |:tmenu| is already used for defining
-tooltips for menus. See |terminal-typing|.
+key mapping (|:tmap|).  This is because |:tmenu| is already used for defining
+tooltips for menus.  See |terminal-typing|.
 
 Special characters in a menu name:
 
@@ -847,7 +851,7 @@ not wrap.
 
 Note that Vim may be in any mode when executing these commands.  The menu
 should be defined for Normal mode and will be executed without changing the
-current mode. Thus if the current window is in Visual mode and the menu
+current mode.  Thus if the current window is in Visual mode and the menu
 command does not intentionally change the mode, Vim will remain in Visual
 mode.  Best is to use `:nnoremenu` to avoid side effects.
 
@@ -968,7 +972,7 @@ name and all existing submenus below it are affected.
 
 5.7 Examples for Menus					*menu-examples*
 
-Here is an example on how to add menu items with menu's!  You can add a menu
+Here is an example on how to add menu items with menus.  You can add a menu
 item for the keyword under the cursor.  The register "z" is used. >
 
   :nmenu Words.Add\ Var		wb"zye:menu! Words.<C-R>z <C-R>z<CR>
@@ -1015,8 +1019,8 @@ The tip is defined like this: >
 And delete it with: >
 	:tunmenu MyMenu.Hello
 
-Tooltips are currently only supported for the X11 and Win32 GUI.  However, they
-should appear for the other gui platforms in the not too distant future.
+Tooltips are currently only supported for the X11 and Win32 GUI.  However,
+they should appear for the other gui platforms in the not too distant future.
 
 The ":tmenu" command works just like other menu commands, it uses the same
 arguments.  ":tunmenu" deletes an existing menu tip, in the same way as the
@@ -1154,12 +1158,12 @@ Examples: >
 
 See also |font-sizes|.
 
-Note on Weights: Fonts often come with a variety of weights. "Normal" weights
+Note on Weights: Fonts often come with a variety of weights.  "Normal" weights
 in Windows have a value of 400 and, left unspecified, this is the value that
-will be used when attempting to find fonts. Windows will often match fonts
+will be used when attempting to find fonts.  Windows will often match fonts
 based on their weight with higher priority than the font name which means a
 Book or Medium variant of a font might be used despite specifying a Light or
-ExtraLight variant. If you are experiencing heavier weight substitution, then
+ExtraLight variant.  If you are experiencing heavier weight substitution, then
 explicitly setting a lower weight value may mitigate against this unwanted
 substitution.
 
@@ -1236,7 +1240,8 @@ This section describes other features which are related to the GUI.
 	endif
 
 A recommended Japanese font is MS Mincho.  You can find info here:
-http://www.lexikan.com/mincho.htm
+https://learn.microsoft.com/en-us/typography/font-list/ms-mincho
+It should be distributed with Windows.
 
 ==============================================================================
 8. Shell Commands					*gui-shell*

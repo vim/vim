@@ -1,9 +1,16 @@
 " Vim syntax file
 " Language:	TeX
-" Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
+" Maintainer:	This runtime file is looking for a new maintainer.
+" Former Maintainer: Charles E. Campbell
 " Last Change:	Apr 22, 2022
+"   2024 Feb 19 by Vim Project: announce adoption
+"   2025 Jan 18 by Vim Project: add texEmphStyle to texMatchGroup, #16228
+"   2025 Feb 08 by Vim Project: improve macro option, \providecommand,
+"                               \newcommand and \newenvironment #16543
+"   2025 Sep 29 by Vim Project: add amsmath support #18433
+"   2025 Oct 06 by Vim Project: link texBoldStyle to Bold, etc #18505
 " Version:	121
-" URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
+" Former URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
 " Notes: {{{1
 "
@@ -107,9 +114,9 @@ if s:tex_fold_enabled && &fdm == "manual"
  setl fdm=syntax
 endif
 if s:tex_fold_enabled && has("folding")
- com! -nargs=* TexFold <args> fold 
+ com! -nargs=* TexFold <args> fold
 else
- com! -nargs=* TexFold <args> 
+ com! -nargs=* TexFold <args>
 endif
 
 " (La)TeX keywords: uses the characters 0-9,a-z,A-Z,192-255 only... {{{1
@@ -164,7 +171,7 @@ syn cluster texCmdGroup			contains=texCmdBody,texComment,texDefParm,texDelimiter
 if !s:tex_no_error
  syn cluster texCmdGroup		add=texMathError
 endif
-syn cluster texEnvGroup			contains=texMatcher,texMathDelim,texSpecialChar,texStatement
+syn cluster texEnvGroup			contains=texDefParm,texMatcher,texMathDelim,texSpecialChar,texStatement
 syn cluster texFoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texBoldStyle,texItalStyle,texEmphStyle,texNoSpell
 syn cluster texBoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texBoldStyle,texBoldItalStyle,texNoSpell
 syn cluster texItalGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texItalStyle,texEmphStyle,texItalBoldStyle,texNoSpell
@@ -174,11 +181,11 @@ if !s:tex_excludematcher
 endif
 if !s:tex_nospell
  if !s:tex_no_error
-  syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texError,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
+  syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texError,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texEmphStyle,texZone,texInputFile,texOption,@Spell
   syn cluster texMatchNMGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texError,texInput,texLength,texLigature,texMatcherNM,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
   syn cluster texStyleGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texError,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,texStyleStatement,texStyleMatcher,@Spell
  else
-  syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
+  syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texEmphStyle,texZone,texInputFile,texOption,@Spell
   syn cluster texMatchNMGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcherNM,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
   syn cluster texStyleGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,texStyleStatement,texStyleMatcher,@Spell
  endif
@@ -284,7 +291,7 @@ syn match texDelimiter		"&"
 syn match texDelimiter		"\\\\"
 
 " Tex/Latex Options: {{{1
-syn match texOption		"[^\\]\zs#\d\+\|^#\d\+"
+syn match texOption		"[^\\]\zs#[1-9]\|^#[1-9]"
 
 " texAccent (tnx to Karim Belabas) avoids annoying highlighting for accents: {{{1
 if b:tex_stylish
@@ -422,7 +429,7 @@ if s:tex_fast =~# 'b'
     syn region texEmphStyle	matchgroup=texTypeStyle start="\\texts[cfl]\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texBoldGroup,@Spell
     syn region texEmphStyle	matchgroup=texTypeStyle start="\\textup\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texBoldGroup,@Spell
     syn region texEmphStyle	matchgroup=texTypeStyle start="\\texttt\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texBoldGroup,@Spell
-   else                                                                                              
+   else
     syn region texBoldStyle	matchgroup=texTypeStyle start="\\textbf\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texBoldGroup
     syn region texBoldItalStyle	matchgroup=texTypeStyle start="\\textit\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texItalGroup
     syn region texItalStyle	matchgroup=texTypeStyle start="\\textit\s*{" matchgroup=texTypeStyle  end="}" concealends contains=@texItalGroup
@@ -438,7 +445,7 @@ endif
 " Bad Math (mismatched): {{{1
 if !exists("g:tex_no_math") && !s:tex_no_error
  syn match texBadMath		"\\end\s*{\s*\(array\|[bBpvV]matrix\|split\|smallmatrix\)\s*}"
- syn match texBadMath		"\\end\s*{\s*\(displaymath\|equation\|eqnarray\|math\)\*\=\s*}"
+ syn match texBadMath		"\\end\s*{\s*\(align\|alignat\|displaymath\|eqnarray\|equation\|flalign\|gather\|math\|multline\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
  syn match texBadPar	contained  "\%(\\par\>\|^\s*\n.\)"
 endif
@@ -482,6 +489,11 @@ if !exists("g:tex_no_math")
  call TexNewMathZone("B","eqnarray",1)
  call TexNewMathZone("C","equation",1)
  call TexNewMathZone("D","math",1)
+ call TexNewMathZone("E","align",1)
+ call TexNewMathZone("F","alignat",1)
+ call TexNewMathZone("G","flalign",1)
+ call TexNewMathZone("H","gather",1)
+ call TexNewMathZone("I","multline",1)
 
  " Inline Math Zones: {{{2
  if s:tex_fast =~# 'M'
@@ -666,16 +678,46 @@ if s:tex_fast =~# 'r'
 endif
 syn match  texRefZone		'\\cite\%([tp]\*\=\)\=\>' nextgroup=texRefOption,texCite
 
-" Handle (re)newcommand, (re)newenvironment : {{{1
-syn match  texNewCmd				"\\\%(re\)\=newcommand\>"		nextgroup=texCmdName skipwhite skipnl
+" Handle (re)newcommand, providecommand, (re)newenvironment : {{{1
+" EXAMPLE:
+"
+" The followings are valid (ignoring error due to redefinition):
+"
+" \newcommand{\foo}{body}
+" \newcommand{\foo}[1]{#1}
+" \newcommand{\foo}[1][def]{#1}
+"
+" The followings are ill-formed:
+"
+" \newcommand{\foo}{#1}		! Illegal parameter number in definition of \foo.
+" \newcommand{\foo}[x]{…}	! Missing number, treated as zero.
+" \newcommand{\foo}[10]{…}	! You already have nine parameters.
+syn match  texNewCmd				"\\\%(\%(re\)\=new\|provide\)command\>\*\?"	nextgroup=texCmdName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texCmdName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texCmdArgs,texCmdBody skipwhite skipnl
-  syn region texCmdArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texCmdBody skipwhite skipnl
+  syn region texCmdArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texCmdDefaultPar,texCmdBody skipwhite skipnl
+  syn region texCmdDefaultPar contained matchgroup=texDelimiter start="\["rs=s+1 end="]"	nextgroup=texCmdBody skipwhite skipnl
   syn region texCmdBody contained matchgroup=texDelimiter start="{"rs=s+1 skip="\\\\\|\\[{}]"	matchgroup=texDelimiter end="}" contains=@texCmdGroup
 endif
-syn match  texNewEnv				"\\\%(re\)\=newenvironment\>"		nextgroup=texEnvName skipwhite skipnl
+" EXAMPLE:
+"
+" The followings are valid (ignoring error due to redefinition):
+"
+" \newenvironment{baz}{beg}{end}
+" \newenvironment{baz}[1]{beg #1}{end}
+" \newenvironment{baz}[1][default]{beg #1}{end}
+"
+" The followings are invalid:
+"
+" \newenvironment{baz}{#1}{…}		! Illegal parameter number in definition of \baz.
+" \newenvironment{baz}[x]{…}{…}		! Missing number, treated as zero.
+" \newenvironment{baz}[10]{…}{…}	! You already have nine parameters.
+" \newenvironment{baz}[1]{…}{#1}	! Illegal parameter number in definition of \endbaz.
+syn match  texNewEnv				"\\\%(re\)\=newenvironment\>\*\?"		nextgroup=texEnvName skipwhite skipnl
 if s:tex_fast =~# 'V'
-  syn region texEnvName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvBgn skipwhite skipnl
+  syn region texEnvName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvArgs,texEnvBgn skipwhite skipnl
+  syn region texEnvArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texEnvDefaultPar,texEnvBgn skipwhite skipnl
+  syn region texEnvDefaultPar contained matchgroup=texDelimiter start="\["rs=s+1 end="]"	nextgroup=texEnvBgn skipwhite skipnl
   syn region texEnvBgn  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvEnd skipwhite skipnl contains=@texEnvGroup
   syn region texEnvEnd  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		skipwhite skipnl contains=@texEnvGroup
 endif
@@ -690,7 +732,7 @@ else
   syn match texDefName contained		"\\\A"					nextgroup=texDefParms,texCmdBody skipwhite skipnl
 endif
 syn match texDefParms  contained		"#[^{]*"	contains=texDefParm	nextgroup=texCmdBody skipwhite skipnl
-syn match  texDefParm  contained		"#\d\+"
+syn match  texDefParm  contained		"#[1-9]"
 
 " TeX Lengths: {{{1
 syn match  texLength		"\<\d\+\([.,]\d\+\)\=\s*\(true\)\=\s*\(bp\|cc\|cm\|dd\|em\|ex\|in\|mm\|pc\|pt\|sp\)\>"
@@ -1276,10 +1318,10 @@ if !exists("skip_tex_syntax_inits")
    hi def link texError			Error
   endif
 
-  hi texBoldStyle		gui=bold	cterm=bold
-  hi texItalStyle		gui=italic	cterm=italic
-  hi texBoldItalStyle		gui=bold,italic cterm=bold,italic
-  hi texItalBoldStyle		gui=bold,italic cterm=bold,italic
+  hi def link texBoldStyle	Bold
+  hi def link texItalStyle	Italic
+  hi def link texBoldItalStyle	BoldItalic
+  hi def link texItalBoldStyle	BoldItalic
   hi def link texEmphStyle	texItalStyle
   hi def link texCite		texRefZone
   hi def link texDefCmd		texDef
@@ -1322,6 +1364,7 @@ if !exists("skip_tex_syntax_inits")
   hi def link texDef		Statement
   hi def link texDefParm	Special
   hi def link texDelimiter	Delimiter
+  hi def link texEnvArgs	Number
   hi def link texInput		Special
   hi def link texInputFile	Special
   hi def link texLength		Number

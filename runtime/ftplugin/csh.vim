@@ -3,7 +3,8 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Dan Sharp
 " Contributor:		Johannes Zellner <johannes@zellner.org>
-" Last Change:		2023 Oct 09
+" Last Change:		2024 Jan 14
+" 			2024 May 23 by Riley Bruins ('commentstring')
 
 if exists("b:did_ftplugin")
   finish
@@ -14,7 +15,7 @@ let s:save_cpo = &cpo
 set cpo-=C
 
 setlocal comments=:#
-setlocal commentstring=#%s
+setlocal commentstring=#\ %s
 setlocal formatoptions-=t
 setlocal formatoptions+=crql
 
@@ -44,8 +45,12 @@ if exists("loaded_matchit") && !exists("b:match_words")
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-  let b:browsefilter = "csh Scripts (*.csh)\t*.csh\n" ..
-	\	       "All Files (*.*)\t*.*\n"
+  let b:browsefilter = "csh Scripts (*.csh)\t*.csh\n"
+  if has("win32")
+    let b:browsefilter ..= "All Files (*.*)\t*\n"
+  else
+    let b:browsefilter ..= "All Files (*)\t*\n"
+  endif
   let b:csh_set_browsefilter = 1
   let b:undo_ftplugin ..= " | unlet! b:browsefilter b:csh_set_browsefilter"
 endif

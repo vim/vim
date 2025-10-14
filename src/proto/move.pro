@@ -1,6 +1,6 @@
 /* move.c */
 int adjust_plines_for_skipcol(win_T *wp);
-void redraw_for_cursorline(win_T *wp);
+void set_valid_virtcol(win_T *wp, colnr_T vcol);
 int sms_marker_overlap(win_T *wp, int extra2);
 void update_topline_redraw(void);
 void update_topline(void);
@@ -10,6 +10,7 @@ void check_cursor_moved(win_T *wp);
 void changed_window_setting(void);
 void changed_window_setting_win(win_T *wp);
 void changed_window_setting_buf(buf_T *buf);
+void changed_window_setting_all(void);
 void set_topline(win_T *wp, linenr_T lnum);
 void changed_cline_bef_curs(void);
 void changed_cline_bef_curs_win(win_T *wp);
@@ -36,6 +37,7 @@ void curs_columns(int may_scroll);
 void textpos2screenpos(win_T *wp, pos_T *pos, int *rowp, int *scolp, int *ccolp, int *ecolp);
 void f_screenpos(typval_T *argvars, typval_T *rettv);
 void f_virtcol2col(typval_T *argvars, typval_T *rettv);
+void scroll_redraw(int up, long count);
 void scrolldown(long line_count, int byfold);
 void scrollup(long line_count, int byfold);
 void adjust_skipcol(void);
@@ -47,7 +49,6 @@ void set_empty_rows(win_T *wp, int used);
 void scroll_cursor_bot(int min_scroll, int set_topbot);
 void scroll_cursor_halfway(int atend, int prefer_above);
 void cursor_correct(void);
-int onepage(int dir, long count);
-void halfpage(int flag, linenr_T Prenum);
+int pagescroll(int dir, long count, int half);
 void do_check_cursorbind(void);
 /* vim: set ft=c : */

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Prepare "gap" for an assert error and add the sourcing position.
@@ -99,7 +99,7 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	return;
     }
 
-    for (p = str; *p != NUL; ++p)
+    for (p = str; *p != NUL; )
     {
 	same_len = 1;
 	s = p;
@@ -118,10 +118,13 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%d", same_len);
 	    ga_concat(gap, buf);
 	    ga_concat(gap, (char_u *)" times]");
-	    p = s - 1;
+	    p = s;
 	}
 	else
+	{
 	    ga_concat_esc(gap, p, clen);
+	    p += clen;
+	}
     }
 }
 
@@ -187,7 +190,7 @@ fill_assert_error(
 		{
 		    item2 = dict_find(got_d, hi->hi_key, -1);
 		    if (item2 == NULL || !tv_equal(&HI2DI(hi)->di_tv,
-						  &item2->di_tv, FALSE, FALSE))
+						  &item2->di_tv, FALSE))
 		    {
 			// item of exp_d not present in got_d or values differ.
 			dict_add_tv(exp_tv->vval.v_dict,
@@ -262,7 +265,7 @@ assert_equal_common(typval_T *argvars, assert_type_T atype)
 {
     garray_T	ga;
 
-    if (tv_equal(&argvars[0], &argvars[1], FALSE, FALSE)
+    if (tv_equal(&argvars[0], &argvars[1], FALSE)
 						   != (atype == ASSERT_EQUAL))
     {
 	prepare_assert_error(&ga);
@@ -1051,6 +1054,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	ml_get_alloc_lines = val;
     else if (STRCMP(name, (char_u *)"autoload") == 0)
 	override_autoload = val;
+    else if (STRCMP(name, (char_u *)"defcompile") == 0)
+	override_defcompile = val;
     else if (STRCMP(name, (char_u *)"ALL") == 0)
     {
 	disable_char_avail_for_testing = FALSE;
@@ -1091,9 +1096,8 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_STRING:
 	case VAR_INSTR:
-	case VAR_CLASS:
-	case VAR_OBJECT:
 	    break;
+
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    if (argvars[0].vval.v_job != NULL)
@@ -1128,9 +1132,21 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_list != NULL)
 		retval = argvars[0].vval.v_list->lv_refcount - 1;
 	    break;
+	case VAR_TUPLE:
+	    if (argvars[0].vval.v_tuple != NULL)
+		retval = argvars[0].vval.v_tuple->tv_refcount - 1;
+	    break;
 	case VAR_DICT:
 	    if (argvars[0].vval.v_dict != NULL)
 		retval = argvars[0].vval.v_dict->dv_refcount - 1;
+	    break;
+	case VAR_CLASS:
+	    if (argvars[0].vval.v_class != NULL)
+		retval = argvars[0].vval.v_class->class_refcount - 1;
+	    break;
+	case VAR_OBJECT:
+	    if (argvars[0].vval.v_object != NULL)
+		retval = argvars[0].vval.v_object->obj_refcount - 1;
 	    break;
 	case VAR_TYPEALIAS:
 	    if (argvars[0].vval.v_typealias != NULL)
@@ -1185,7 +1201,7 @@ f_test_null_blob(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_blob = NULL;
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1200,7 +1216,7 @@ f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv)
     rettv_dict_set(rettv, NULL);
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1234,6 +1250,12 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    void
+f_test_null_tuple(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv_tuple_set(rettv, NULL);
 }
 
     void
@@ -1389,7 +1411,7 @@ test_gui_mouse_event(dict_T *args)
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // calculate the middle of the character cell
-	    // Note: Cell coordinates are 1-based from vimscript
+	    // Note: Cell coordinates are 1-based from Vim script
 	    pY = (row - 1) * gui.char_height + gui.char_height / 2;
 	    pX = (col - 1) * gui.char_width + gui.char_width / 2;
 	}
@@ -1539,7 +1561,7 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
 #  endif
 #  ifdef MSWIN
-    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0)
+    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0 || STRCMP(event, "set_keycode_trans_strategy") == 0)
 	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 #  endif
     else if (STRCMP(event, "mouse") == 0)

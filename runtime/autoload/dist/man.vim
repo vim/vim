@@ -3,7 +3,10 @@
 " Maintainer:	Jason Franklin <jason@oneway.dev>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2023 Jun 28
+" Last Change: 	2024 Jan 17 (make it work on AIX, see #13847)
+" 		2024 Jul 06 (honor command modifiers, #15117)
+" 		2025 Mar 05 (add :keepjumps, #16791)
+" 		2025 Mar 09 (improve :Man completion for man-db, #16843)
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -13,13 +16,107 @@ let s:man_tag_depth = 0
 let s:man_sect_arg = ""
 let s:man_find_arg = "-w"
 try
-  if !has("win32") && $OSTYPE !~ 'cygwin\|linux' && system('uname -s') =~ "SunOS" && system('uname -r') =~ "^5"
-    let s:man_sect_arg = "-s"
-    let s:man_find_arg = "-l"
+  if !has("win32") && $OSTYPE !~ 'cygwin\|linux'
+    " cache the value
+    let uname_s = system('uname -s')
+
+    if uname_s =~ "SunOS" && system('uname -r') =~ "^5"
+      " Special Case for Man on SunOS
+      let s:man_sect_arg = "-s"
+      let s:man_find_arg = "-l"
+    elseif uname_s =~? 'AIX'
+      " Special Case for Man on AIX
+      let s:man_sect_arg = ""
+      let s:man_find_arg = ""
+    endif
   endif
 catch /E145:/
   " Ignore the error in restricted mode
 endtry
+
+unlet! uname_s
+
+let s:man_db_pages_by_section = v:null
+func! s:ManDbPagesBySection() abort
+  if s:man_db_pages_by_section isnot v:null
+    return s:man_db_pages_by_section
+  endif
+  let s:man_db_pages_by_section = {}
+  let list_command = 'apropos --long .'
+  let unparsed_lines = []
+  for line in systemlist(list_command)
+    " Typical lines:
+    " vim (1)              - Vi IMproved, a programmer's text editor
+    "
+    " Unusual lines:
+    " pgm_read_ T _ (3avr) - (unknown subject)
+    "
+    " Code that shows the line's format:
+    " https://gitlab.com/man-db/man-db/-/blob/2607d203472efb036d888e9e7997724a41a53876/src/whatis.c#L409
+    let match = matchlist(line, '^\(.\{-1,}\) (\(\S\+\)) ')
+    if empty(match)
+      call add(unparsed_lines, line)
+      continue
+    endif
+    let [page, section] = match[1:2]
+    if !has_key(s:man_db_pages_by_section, section)
+      let s:man_db_pages_by_section[section] = []
+    endif
+    call add(s:man_db_pages_by_section[section], page)
+  endfor
+  if !empty(unparsed_lines)
+    echomsg 'Unable to parse ' .. string(len(unparsed_lines)) .. ' lines ' ..
+          \ 'from the output of `' .. list_command .. '`. Example lines:'
+    for line in unparsed_lines[:9]
+      echomsg line
+    endfor
+  endif
+  return s:man_db_pages_by_section
+endfunc
+
+func! dist#man#Reload() abort
+  if g:ft_man_implementation ==# 'man-db'
+    let s:man_db_pages_by_section = v:null
+    call s:ManDbPagesBySection()
+  endif
+endfunc
+
+func! s:StartsWithCaseInsensitive(haystack, needle) abort
+  if empty(a:needle)
+    return v:true
+  endif
+  return a:haystack[:len(a:needle)-1] ==? a:needle
+endfunc
+
+func! dist#man#ManDbComplete(arg_lead, cmd_line, cursor_pos) abort
+  let args = split(trim(a:cmd_line[: a:cursor_pos - 1], '', 1), '', v:true)
+  let pages_by_section = s:ManDbPagesBySection()
+  if len(args) > 2
+    " Page in the section args[1]. At least on Debian testing as of
+    " 2025-03-06, man seems to match sections case-insensitively and match any
+    " prefix of the section. E.g., `man 3 sigprocmask` and `man 3PoSi
+    " sigprocmask` with both load sigprocmask(3posix) even though the 3 in the
+    " first command is also the name of a different section.
+    let results = []
+    for [section, pages] in items(pages_by_section)
+      if s:StartsWithCaseInsensitive(section, args[1])
+        call extend(results, pages)
+      endif
+    endfor
+  else
+    " Could be a section, or a page in any section. Add space after sections
+    " since there has to be a second argument in that case.
+    let results = flattennew(values(pages_by_section), 1)
+    for section in keys(pages_by_section)
+      call add(results, section .. ' ')
+    endfor
+  endif
+  call sort(results)
+  call uniq(results)
+  call filter(results,
+        \ {_, val -> s:StartsWithCaseInsensitive(val, a:arg_lead)})
+  return results
+endfunc
 
 func s:ParseIntoPageAndSection()
   " Accommodate a reference that terminates in a hyphen.
@@ -153,7 +250,9 @@ func dist#man#GetPage(cmdmods, ...)
       endwhile
     endif
     if &filetype != "man"
-      if exists("g:ft_man_open_mode")
+      if a:cmdmods =~ '\<\(tab\|vertical\|horizontal\)\>'
+	let open_cmd = a:cmdmods . ' split'
+      elseif exists("g:ft_man_open_mode")
         if g:ft_man_open_mode == 'vert'
 	  let open_cmd = 'vsplit'
         elseif g:ft_man_open_mode == 'tab'
@@ -162,7 +261,7 @@ func dist#man#GetPage(cmdmods, ...)
 	  let open_cmd = 'split'
         endif
       else
-	let open_cmd = a:cmdmods . ' split'
+	let open_cmd = 'split'
       endif
     endif
   endif
@@ -173,7 +272,7 @@ func dist#man#GetPage(cmdmods, ...)
   setl buftype=nofile noswapfile
 
   setl fdc=0 ma nofen nonu nornu
-  %delete _
+  keepjumps %delete _
   let unsetwidth = 0
   if empty($MANWIDTH)
     let $MANWIDTH = winwidth(0)
@@ -203,10 +302,10 @@ func dist#man#GetPage(cmdmods, ...)
   endif
   " Remove blank lines from top and bottom.
   while line('$') > 1 && getline(1) =~ '^\s*$'
-    1delete _
+    keepjumps 1delete _
   endwhile
   while line('$') > 1 && getline('$') =~ '^\s*$'
-    $delete _
+    keepjumps $delete _
   endwhile
   1
   setl ft=man nomod

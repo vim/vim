@@ -56,11 +56,14 @@ internal_format(
     colnr_T	leader_len;
     int		no_leader = FALSE;
     int		do_comments = (flags & INSCHAR_DO_COM);
+    int		safe_tw = trim_to_int(8 * (vimlong_T)textwidth);
 #ifdef FEAT_LINEBREAK
     int		has_lbr = curwin->w_p_lbr;
+    int		has_bri = curwin->w_p_bri;
 
     // make sure win_lbr_chartabsize() counts correctly
     curwin->w_p_lbr = FALSE;
+    curwin->w_p_bri = FALSE;
 #endif
 
     // When 'ai' is off we don't want a space under the cursor to be
@@ -90,11 +93,18 @@ internal_format(
 	colnr_T	end_col;
 	int	wcc;			// counter for whitespace chars
 	int	did_do_comment = FALSE;
+	int	first_pass;
 
-	virtcol = get_nolist_virtcol()
-				   + char2cells(c != NUL ? c : gchar_cursor());
-	if (virtcol <= (colnr_T)textwidth)
-	    break;
+	// Cursor is currently at the end of line. No need to format
+	// if line length is less than textwidth (8 * textwidth for
+	// utf safety)
+	if (curwin->w_cursor.col < safe_tw)
+	{
+	    virtcol = get_nolist_virtcol()
+		+ char2cells(c != NUL ? c : gchar_cursor());
+	    if (virtcol <= (colnr_T)textwidth)
+		break;
+	}
 
 	if (no_leader)
 	    do_comments = FALSE;
@@ -144,9 +154,16 @@ internal_format(
 	coladvance((colnr_T)textwidth);
 	wantcol = curwin->w_cursor.col;
 
-	curwin->w_cursor.col = startcol;
+	// If startcol is large (a long line), formatting takes too much
+	// time. The algorithm is O(n^2), it walks from the end of the
+	// line to textwidth border every time for each line break.
+	//
+	// Ceil to 8 * textwidth to optimize.
+	curwin->w_cursor.col = startcol < safe_tw ? startcol : safe_tw;
+
 	foundcol = 0;
 	skip_pos = 0;
+	first_pass = TRUE;
 
 	// Find position to break at.
 	// Stop at first entered white when 'formatoptions' has 'v'
@@ -155,8 +172,11 @@ internal_format(
 		    || curwin->w_cursor.lnum != Insstart.lnum
 		    || curwin->w_cursor.col >= Insstart.col)
 	{
-	    if (curwin->w_cursor.col == startcol && c != NUL)
+	    if (first_pass && c != NUL)
+	    {
 		cc = c;
+		first_pass = FALSE;
+	    }
 	    else
 		cc = gchar_cursor();
 	    if (WHITECHAR(cc))
@@ -349,7 +369,7 @@ internal_format(
 	{
 	    // In MODE_VREPLACE state, we will backspace over the text to be
 	    // wrapped, so save a copy now to put on the next line.
-	    saved_text = vim_strsave(ml_get_cursor());
+	    saved_text = vim_strnsave(ml_get_cursor(), ml_get_cursor_len());
 	    curwin->w_cursor.col = orig_col;
 	    if (saved_text == NULL)
 		break;	// Can't do it, out of memory
@@ -414,7 +434,7 @@ internal_format(
 			// add the additional whitespace needed after the
 			// comment leader for the numbered list.
 			for (i = 0; i < padding; i++)
-			    ins_str((char_u *)" ");
+			    ins_str((char_u *)" ", 1);
 		    }
 		    else
 		    {
@@ -437,7 +457,7 @@ internal_format(
 	    // Check if cursor is not past the NUL off the line, cindent
 	    // may have added or removed indent.
 	    curwin->w_cursor.col += startcol;
-	    len = (colnr_T)STRLEN(ml_get_curline());
+	    len = ml_get_curline_len();
 	    if (curwin->w_cursor.col > len)
 		curwin->w_cursor.col = len;
 	}
@@ -457,6 +477,7 @@ internal_format(
 
 #ifdef FEAT_LINEBREAK
     curwin->w_p_lbr = has_lbr;
+    curwin->w_p_bri = has_bri;
 #endif
     if (!format_only && haveto_redraw)
     {
@@ -513,9 +534,7 @@ ends_in_white(linenr_T lnum)
 
     if (*s == NUL)
 	return FALSE;
-    // Don't use STRLEN() inside VIM_ISWHITE(), SAS/C complains: "macro
-    // invocation may call function multiple times".
-    l = STRLEN(s) - 1;
+    l = ml_get_len(lnum) - 1;
     return VIM_ISWHITE(s[l]);
 }
 
@@ -533,9 +552,7 @@ same_leader(
     char_u  *leader2_flags)
 {
     int	    idx1 = 0, idx2 = 0;
-    char_u  *p;
     char_u  *line1;
-    char_u  *line2;
 
     if (leader1_len == 0)
 	return (leader2_len == 0);
@@ -547,6 +564,8 @@ same_leader(
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {
+	char_u	*p;
+
 	for (p = leader1_flags; *p && *p != ':'; ++p)
 	{
 	    if (*p == COM_FIRST)
@@ -555,7 +574,7 @@ same_leader(
 		return FALSE;
 	    if (*p == COM_START)
 	    {
-		int line_len = (int)STRLEN(ml_get(lnum));
+		int line_len = ml_get_len(lnum);
 		if (line_len <= leader1_len)
 		    return FALSE;
 		if (leader2_flags == NULL || leader2_len == 0)
@@ -570,9 +589,11 @@ same_leader(
 
     // Get current line and next line, compare the leaders.
     // The first line has to be saved, only one line can be locked at a time.
-    line1 = vim_strsave(ml_get(lnum));
+    line1 = vim_strnsave(ml_get(lnum), ml_get_len(lnum));
     if (line1 != NULL)
     {
+	char_u  *line2;
+
 	for (idx1 = 0; VIM_ISWHITE(line1[idx1]); ++idx1)
 	    ;
 	line2 = ml_get(lnum + 1);
@@ -646,11 +667,8 @@ auto_format(
     int		prev_line)	// may start in previous line
 {
     pos_T	pos;
-    colnr_T	len;
     char_u	*old;
-    char_u	*new, *pnew;
     int		wasatend;
-    int		cc;
 
     if (!has_format_option(FO_AUTO))
 	return;
@@ -666,9 +684,11 @@ auto_format(
     // in 'formatoptions' and there is a single character before the cursor.
     // Otherwise the line would be broken and when typing another non-white
     // next they are not joined back together.
-    wasatend = (pos.col == (colnr_T)STRLEN(old));
+    wasatend = (pos.col == ml_get_curline_len());
     if (*old != NUL && !trailblank && wasatend)
     {
+	int cc;
+
 	dec_cursor();
 	cc = gchar_cursor();
 	if (!WHITECHAR(cc) && curwin->w_cursor.col > 0
@@ -721,11 +741,13 @@ auto_format(
     // formatted.
     if (!wasatend && has_format_option(FO_WHITE_PAR))
     {
-	new = ml_get_curline();
-	len = (colnr_T)STRLEN(new);
+	char_u	*new = ml_get_curline();
+	colnr_T	len = ml_get_curline_len();
 	if (curwin->w_cursor.col == len)
 	{
-	    pnew = vim_strnsave(new, len + 2);
+	    char_u *pnew = vim_strnsave(new, len + 2);
+	    if (pnew == NULL)
+		return;
 	    pnew[len] = ' ';
 	    pnew[len + 1] = NUL;
 	    ml_replace(curwin->w_cursor.lnum, pnew, FALSE);
@@ -795,7 +817,7 @@ comp_textwidth(
 	// The width is the window width minus 'wrapmargin' minus all the
 	// things that add to the margin.
 	textwidth = curwin->w_width - curbuf->b_p_wm;
-	if (cmdwin_type != 0)
+	if (curbuf == cmdwin_buf)
 	    textwidth -= 1;
 #ifdef FEAT_FOLDING
 	textwidth -= curwin->w_p_fdc;
@@ -893,7 +915,7 @@ op_format(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Implementation of the format operator 'gq' for when using 'formatexpr'.
  */
@@ -916,8 +938,8 @@ fex_format(
     long	count,
     int		c)	// character to be inserted
 {
-    int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
-								   OPT_LOCAL);
+    int		use_sandbox = was_set_insecurely(curwin,
+					    (char_u *)"formatexpr", OPT_LOCAL);
     int		r;
     char_u	*fex;
     sctx_T	save_sctx = current_sctx;
@@ -1144,13 +1166,24 @@ format_lines(
 		State = MODE_INSERT;	// for open_line()
 		smd_save = p_smd;
 		p_smd = FALSE;
+
 		insertchar(NUL, INSCHAR_FORMAT
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 			+ (do_comments && do_comments_list
 						       ? INSCHAR_COM_LIST : 0)
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
+
 		State = old_State;
 		p_smd = smd_save;
+		// Cursor and mouse shape shapes may have been updated (e.g. by
+		// :normal) in insertchar(), so they need to be updated here.
+#ifdef CURSOR_SHAPE
+		ui_cursor_shape();
+#endif
+#ifdef FEAT_MOUSESHAPE
+		update_mouseshape(-1);
+#endif
+
 		second_indent = -1;
 		// at end of par.: need to set indent of next par.
 		need_set_indent = is_end_par;
@@ -1199,7 +1232,7 @@ format_lines(
 		}
 		first_par_line = FALSE;
 		// If the line is getting long, format it next time
-		if (STRLEN(ml_get_curline()) > (size_t)max_len)
+		if (ml_get_curline_len() > max_len)
 		    force_format = TRUE;
 		else
 		    force_format = FALSE;

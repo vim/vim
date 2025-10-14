@@ -1,7 +1,6 @@
 " Tests for expressions.
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_equal()
   let base = {}
@@ -22,7 +21,7 @@ func Test_equal()
   call assert_false(base.method == instance.other)
   call assert_false([base.method] == [instance.other])
 
-  call assert_fails('echo base.method > instance.method')
+  call assert_fails('echo base.method > instance.method', 'E694: Invalid operation for Funcrefs')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
   call assert_fails('eval 10 == test_unknown()', ['E340:', 'E685:'])
@@ -36,11 +35,13 @@ func Test_version()
   call assert_true(has('patch-7.1.999'))
   call assert_true(has('patch-7.4.123'))
   call assert_true(has('patch-7.4.123 ')) " Trailing space can be allowed.
+  call assert_true(has('patch-9.1.0'))
+  call assert_true(has('patch-9.1.0000'))
 
   call assert_false(has('patch-7'))
   call assert_false(has('patch-7.4'))
   call assert_false(has('patch-7.4.'))
-  call assert_false(has('patch-9.1.0'))
+  call assert_false(has('patch-9.2.0'))
   call assert_false(has('patch-9.9.1'))
 
   call assert_false(has('patch-abc'))
@@ -255,10 +256,10 @@ func Test_method_with_prefix()
   call v9.CheckLegacyAndVim9Success(lines)
 
   call assert_equal([0, 1, 2], --3->range())
-  call v9.CheckDefAndScriptFailure(['eval --3->range()'], 'E15')
+  call v9.CheckDefAndScriptFailure(['eval --3->range()'], 'E15:')
 
   call assert_equal(1, !+-+0)
-  call v9.CheckDefAndScriptFailure(['eval !+-+0'], 'E15')
+  call v9.CheckDefAndScriptFailure(['eval !+-+0'], 'E15:')
 endfunc
 
 func Test_option_value()
@@ -656,10 +657,10 @@ func Test_printf_spec_b()
 endfunc
 
 func Test_max_min_errors()
-  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['E712:', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['max()', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['E712:', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['min()', 'E1013:', 'E1227:'])
+  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['E712:', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['max()', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['E712:', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['min()', 'E1013:', 'E1530:'])
 endfunc
 
 func Test_function_with_funcref()
@@ -872,7 +873,7 @@ endfunc
 " Test for errors in expression evaluation
 func Test_expr_eval_error()
   call v9.CheckLegacyAndVim9Failure(["VAR i = 'abc' .. []"], ['E730:', 'E1105:', 'E730:'])
-  call v9.CheckLegacyAndVim9Failure(["VAR l = [] + 10"], ['E745:', 'E1051:', 'E745'])
+  call v9.CheckLegacyAndVim9Failure(["VAR l = [] + 10"], ['E745:', 'E1051:', 'E745:'])
   call v9.CheckLegacyAndVim9Failure(["VAR v = 10 + []"], ['E745:', 'E1051:', 'E745:'])
   call v9.CheckLegacyAndVim9Failure(["VAR v = 10 / []"], ['E745:', 'E1036:', 'E745:'])
   call v9.CheckLegacyAndVim9Failure(["VAR v = -{}"], ['E728:', 'E1012:', 'E728:'])
@@ -927,7 +928,7 @@ func Test_string_interp()
     #" String conversion.
     call assert_equal('hello from ' .. v:version, $"hello from {v:version}")
     call assert_equal('hello from ' .. v:version, $'hello from {v:version}')
-    #" Paper over a small difference between VimScript behaviour.
+    #" Paper over a small difference between Vim script behaviour.
     call assert_equal(string(v:true), $"{v:true}")
     call assert_equal('(1+1=2)', $"(1+1={1 + 1})")
     #" Hex-escaped opening brace: char2nr('{') == 0x7b
@@ -947,6 +948,22 @@ func Test_string_interp()
       echo "${ LET tmp += 1 }"
     endif
     call assert_equal(0, tmp)
+
+    #" Dict interpolation
+    VAR d = {'a': 10, 'b': [1, 2]}
+    call assert_equal("{'a': 10, 'b': [1, 2]}", $'{d}')
+    VAR emptydict = {}
+    call assert_equal("a{}b", $'a{emptydict}b')
+    VAR nulldict = test_null_dict()
+    call assert_equal("a{}b", $'a{nulldict}b')
+
+    #" List interpolation
+    VAR l = ['a', 'b', 'c']
+    call assert_equal("['a', 'b', 'c']", $'{l}')
+    VAR emptylist = []
+    call assert_equal("a[]b", $'a{emptylist}b')
+    VAR nulllist = test_null_list()
+    call assert_equal("a[]b", $'a{nulllist}b')
 
     #" Stray closing brace.
     call assert_fails('echo $"moo}"', 'E1278:')
@@ -1041,6 +1058,16 @@ func Test_bitwise_shift()
      assert_equal(16, a)
   END
   call v9.CheckDefAndScriptSuccess(lines)
+
+  " Error in the second expression of "<<"
+  let lines =<< trim END
+    vim9script
+    def Fn()
+      var x = 1 << y
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E1001: Variable not found: y')
 
   let lines =<< trim END
     # Use in a lambda function

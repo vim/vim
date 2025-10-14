@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.0.  Last change: 2023 May 25
+*spell.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -61,6 +61,17 @@ To search for the next misspelled word:
 
 							*[S*
 [S			Like "]S" but search backwards.
+
+							*]r*
+]r			Move to next "rare" word after the cursor.
+			A count before the command can be used to repeat.
+			'wrapscan' applies.
+
+							*[r*
+[r			Like "]r" but search backwards, find the "rare"
+			word before the cursor.  Doesn't recognize words
+			split over two lines, thus may stop at words that are
+			not highlighted as rare.
 
 
 To add words to your own word list:
@@ -129,7 +140,7 @@ zuG			Undo |zW| and |zG|, remove the word from the internal
 
 			There are no normal mode commands to mark words as
 			rare as this is a fairly uncommon command and all
-			intuitive commands for this are already taken. If you
+			intuitive commands for this are already taken.  If you
 			want you can add mappings with e.g.: >
 		nnoremap z?  :exe ':spellrare  ' .. expand('<cWORD>')<CR>
 		nnoremap z/  :exe ':spellrare! ' .. expand('<cWORD>')<CR>
@@ -207,7 +218,7 @@ CTRL-X s to find suggestions.  This works like Insert mode completion.  Use
 CTRL-N to use the next suggestion, CTRL-P to go back. |i_CTRL-X_s|
 
 The 'spellsuggest' option influences how the list of suggestions is generated
-and sorted.  See |'spellsuggest'|.
+and sorted.  See 'spellsuggest'.
 
 The 'spellcapcheck' option is used to check the first word of a sentence
 starts with a capital.  This doesn't work for the first word in the file.
@@ -289,7 +300,7 @@ In a table:
 
 							*spell-cjk*
 Chinese, Japanese and other East Asian characters are normally marked as
-errors, because spell checking of these characters is not supported. If
+errors, because spell checking of these characters is not supported.  If
 'spelllang' includes "cjk", these characters are not marked as errors.  This
 is useful when editing text with spell checking while some Asian words are
 present.
@@ -496,10 +507,10 @@ Vim uses a binary file format for spelling.  This greatly speeds up loading
 the word list and keeps it small.
 						    *.aff* *.dic* *Myspell*
 You can create a Vim spell file from the .aff and .dic files that Myspell
-uses.  Myspell is used by OpenOffice.org and Mozilla. The OpenOffice .oxt
-files are zip files which contain the .aff and .dic files. You should be able
+uses.  Myspell is used by OpenOffice.org and Mozilla.  The OpenOffice .oxt
+files are zip files which contain the .aff and .dic files.  You should be able
 to find them here:
-	http://extensions.services.openoffice.org/dictionary
+	https://extensions.openoffice.org/en/search@f[0]=field_project_application%253A1&f[1]=field_project_tags%253A94.html
 The older, OpenOffice 2 files may be used if this doesn't work:
 	http://wiki.services.openoffice.org/wiki/Dictionaries
 You can also use a plain word list.  The results are the same, the choice
@@ -654,11 +665,11 @@ ask you where to write the file (there must be a writable directory in
 'runtimepath' for this).
 
 The plugin has a default place where to look for spell files, on the Vim ftp
-server.  The protocol used is SSL (https://) for security.  If you want to use
-another location or another protocol, set the g:spellfile_URL variable to the
-directory that holds the spell files.  You can use http:// or ftp://, but you
-are taking a security risk then.  The |netrw| plugin is used for getting the
-file, look there for the specific syntax of the URL.  Example: >
+server.  The protocol used is TLS (`https://`) for security.  If you want to
+use another location or another protocol, set the g:spellfile_URL variable to
+the directory that holds the spell files.  You can use `http://` or `ftp://`,
+but you are taking a security risk then.  The |netrw| plugin is used for
+getting the file, look there for the specific syntax of the URL.  Example: >
 	let g:spellfile_URL = 'https://ftp.nluug.nl/vim/runtime/spell'
 You may need to escape special characters.
 
@@ -781,7 +792,7 @@ them before the Vim word list is made.  The tools for this can be found in the
 The format for the affix and word list files is based on what Myspell uses
 (the spell checker of Mozilla and OpenOffice.org).  A description can be found
 here:
-	http://lingucomponent.openoffice.org/affix.readme ~
+	http://lingucomponent.openoffice.org/affix.readme
 Note that affixes are case sensitive, this isn't obvious from the description.
 
 Vim supports quite a few extras.  They are described below |spell-affix-vim|.
@@ -831,8 +842,8 @@ starting with an upper-case letter.
 
 When the word includes an upper-case letter, this means the upper-case letter
 is required at this position.  The same word with a lower-case letter at this
-position will not match. When some of the other letters are upper-case it will
-not match either.
+position will not match.  When some of the other letters are upper-case it
+will not match either.
 
 The word with all upper-case characters will always be OK,
 
@@ -903,7 +914,7 @@ right encoding.
 				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
 	NAME		Name of the language
 	VERSION		1.0.1  with fixes
-	HOME		http://www.myhome.eu
+	HOME		<URL>
 	AUTHOR		John Doe
 	EMAIL		john AT Doe DOT net
 	COPYRIGHT	LGPL
@@ -1171,9 +1182,10 @@ WORDS WITH A SLASH					*spell-SLASH*
 
 The slash is used in the .dic file to separate the basic word from the affix
 letters and other flags.  Unfortunately, this means you cannot use a slash in
-a word.  Thus "TCP/IP" is not a word but "TCP" with the flags "IP".  To include
-a slash in the word put a backslash before it: "TCP\/IP".  In the rare case
-you want to use a backslash inside a word you need to use two backslashes.
+a word.  Thus "TCP/IP" is not a word but "TCP" with the flags "IP".  To
+include a slash in the word put a backslash before it: "TCP\/IP".  In the rare
+case you want to use a backslash inside a word you need to use two
+backslashes.
 Any other use of the backslash is reserved for future expansion.
 
 
@@ -1603,7 +1615,7 @@ CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 
 CHECKSHARPS  (Hunspell)				*spell-CHECKSHARPS*
 		SS letter pair in uppercased (German) words may be upper case
-		sharp s (ß). Not supported.
+		sharp s (ß).  Not supported.
 
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.

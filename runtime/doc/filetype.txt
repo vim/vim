@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 9.0.  Last change: 2023 Sep 11
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -148,14 +148,24 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.cls		g:filetype_cls
 	*.csh		g:filetype_csh		|ft-csh-syntax|
 	*.dat		g:filetype_dat
+	*.def		g:filetype_def
+	*.dsp		g:filetype_dsp
 	*.f		g:filetype_f		|ft-forth-syntax|
 	*.frm		g:filetype_frm		|ft-form-syntax|
 	*.fs		g:filetype_fs		|ft-forth-syntax|
-	*.h		g:c_syntax_for_h	|ft-c-syntax|
+	*.h		g:c_syntax_for_h	|ft-c-syntax|	(deprecated)
+	*.h		g:ch_syntax_for_h	|ft-ch-syntax|	(deprecated)
+	*.h		g:filetype_h		|ft-c-syntax|
+						|ft-ch-syntax|
+						|ft-cpp-syntax|
 	*.i		g:filetype_i		|ft-progress-syntax|
 	*.inc		g:filetype_inc
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
+	*[mM]makefile,*.mk,*.mak,[mM]akefile*
+			g:make_flavor		|ft-make-syntax|
+	*.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
+			g:filetype_md		|ft-pandoc-syntax|
 	*.mod		g:filetype_mod
 	*.p		g:filetype_p		|ft-pascal-syntax|
 	*.pl		g:filetype_pl
@@ -169,6 +179,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.sh		g:bash_is_sh		|ft-sh-syntax|
 	*.tex		g:tex_flavor		|ft-tex-plugin|
 	*.typ		g:filetype_typ
+	*.v		g:filetype_v
 	*.w		g:filetype_w		|ft-cweb-syntax|
 
 For a few filetypes the global variable is used only when the filetype could
@@ -258,7 +269,7 @@ D. If your filetype can only be detected by inspecting the contents of the
       item of the 'runtimepath' option.  Example for Unix: >
 	:!mkdir ~/.vim
 <
-   2. Create a vim script file for doing this.  Example: >
+   2. Create a Vim script file for doing this.  Example: >
 	if did_filetype()	" filetype already set..
 	  finish		" ..don't do these checks
 	endif
@@ -435,6 +446,31 @@ So to enable this only for ruby, set the following variable: >
 If both, the global `plugin_exec` and the `<filetype>_exec` specific variable
 are set, the filetype specific variable should have precedent.
 
+
+ASCIIDOC						*ft-asciidoc-plugin*
+
+To enable |folding| use this: >
+	let g:asciidoc_folding = 1
+
+To disable nesting of folded headers use this: >
+	let g:asciidoc_foldnested = 0
+
+To disable folding everything under the title use this: >
+	let asciidoc_fold_under_title = 0
+
+
+ARDUINO							*ft-arduino-plugin*
+
+By default the following options are set, in accordance with the default
+settings of Arduino IDE: >
+
+	setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:arduino_recommended_style = 0
+
+
 AWK							*ft-awk-plugin*
 
 Support for features specific to GNU Awk, like @include, can be enabled by
@@ -494,12 +530,13 @@ g:changelog_new_date_format
 				%%	insert a single '%' character
 				%d	insert the date from above
 				%u	insert the user from above
-                                %p	insert result of b:changelog_entry_prefix
+				%p	insert result of
+					b:changelog_entry_prefix
 				%c	where to position cursor when done
-			The default is "%d  %u\n\n\t* %p%c\n\n", which produces
-			something like (| is where cursor will be, unless at
-			the start of the line where it denotes the beginning
-			of the line) >
+			The default is "%d  %u\n\n\t* %p%c\n\n", which
+			produces something like (| is where cursor will be,
+			unless at the start of the line where it denotes the
+			beginning of the line) >
 				|2003-01-14  Full Name  <user@host>
 				|
 				|        * prefix|
@@ -508,7 +545,8 @@ g:changelog_new_entry_format
 			The format used when creating a new entry.
 			The following table describes special tokens in the
 			string:
-                                %p	insert result of b:changelog_entry_prefix
+				%p	insert result of
+					b:changelog_entry_prefix
 				%c	where to position cursor when done
 			The default is "\t*%c", which produces something
 			similar to >
@@ -567,8 +605,10 @@ FORTRAN							*ft-fortran-plugin*
 Options:
 'expandtab'	is switched on to avoid tabs as required by the Fortran
 		standards unless the user has set fortran_have_tabs in .vimrc.
-'textwidth'	is set to 72 for fixed source format as required by the
-		Fortran standards and to 80 for free source format.
+'textwidth'	is set to 80 for fixed source format whereas it is set to 132
+		for free source format.  Setting the
+		fortran_extended_line_length variable increases the width to
+		132 for fixed source format.
 'formatoptions' is set to break code and comment lines and to preserve long
 		lines.  You can format comments with |gq|.
 For further discussion of fortran_have_tabs and the method used for the
@@ -592,11 +632,62 @@ any #lang directive overrides, use the following command: >
 	let g:freebasic_lang = "fblite"
 
 
-GIT COMMIT                                              *ft-gitcommit-plugin*
+GDSCRIPT						*ft-gdscript-plugin*
+
+By default the following options are set, based on Godot official docs: >
+
+	setlocal noexpandtab softtabstop=0 shiftwidth=0
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:gdscript_recommended_style = 0
+
+
+GIT COMMIT						*ft-gitcommit-plugin*
 
 One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
 any arguments given to the command.
+
+GIT REBASE						*ft-gitrebase-plugin*
+
+The gitrebase filetype defines the following buffer-local commands, to help
+with interactive `git rebase`: >
+
+	:Drop   " to discard this commit
+	:Edit   " to stop for editing this commit
+	:Fixup  " to squash (but discard the message) into the previous one
+	:Pick   " to pick this commit (the cursor is on)
+	:Reword " to pick this commit, but change the commit message
+	:Squash " to squash this commit into the previous one
+
+In addition, the following command can be used to cycle between the different
+possibilities: >
+
+	:Cycle  " to cycle between the previous commands
+<
+The `:Cycle` command is also mapped to the CTRL-A and CTRL-X keys.
+For details, see `git-rebase --help`.
+
+GLEAM						*ft-gleam-plugin*
+
+By default the following options are set for the recommended gleam style: >
+
+	setlocal expandtab shiftwidth=2 softtabstop=2
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:gleam_recommended_style = 0
+
+GO							*ft-go-plugin*
+
+By default the following options are set, based on Golang official docs: >
+
+	setlocal noexpandtab softtabstop=0 shiftwidth=0
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:go_recommended_style = 0
 
 
 GPROF							*ft-gprof-plugin*
@@ -609,6 +700,129 @@ The mapping can be disabled with: >
 	let g:no_gprof_maps = 1
 
 
+HARE							*ft-hare*
+
+Since the text for this plugin is rather long it has been put in a separate
+file: |ft_hare.txt|.
+
+HTML							*ft-html-plugin*
+
+Tag folding poses a few difficulties.  Many elements, e.g. `blockquote`, are
+always delimited by start and end tags; end tags for some elements, e.g. `p`,
+can be omitted in certain contexts; void elements, e.g. `hr`, have no end tag.
+Although the rules for supporting omissible end tags are ad-hoc and involved
+[0], they apply to elements in scope.  Assuming syntactical wellformedness, an
+end tag can be associated with its nearest matching start tag discoverable in
+scope [1] and towards the beginning of a file, whereas all unbalanced tags and
+inlined tags can be disregarded.  Having syntax highlighting in effect, tag
+folding using the |fold-expr| method can be enabled with: >
+	let g:html_expr_folding = 1
+<
+By default, tag folding will be redone from scratch after each occurrence of
+a |TextChanged| or an |InsertLeave| event.  Such frequency may not be desired,
+especially for large files, and this recomputation can be disabled with: >
+	let g:html_expr_folding_without_recomputation = 1
+        doautocmd FileType
+<
+To force another recomputation, do: >
+	unlet! b:foldsmap
+	normal zx
+<
+[0] https://html.spec.whatwg.org/multipage/syntax.html#optional-tags
+[1] https://en.wikipedia.org/wiki/Dangling_else
+
+IDRIS2							*ft-idris2-plugin*
+
+By default the following options are set: >
+
+	setlocal shiftwidth=2 tabstop=2 expandtab
+	setlocal comments=s1:{-,mb:-,ex:-},:\|\|\|,:--
+	setlocal commentstring=--\ %s
+	setlocal wildignore+=*.ibc
+
+To use tabs instead of spaces for indentation, set the following variable
+in your vimrc: >
+
+	let g:idris2#allow_tabchar = 1
+
+JAVA							*ft-java-plugin*
+
+Whenever the variable "g:ftplugin_java_source_path" is defined and its value
+is a filename whose extension is either ".jar" or ".zip", e.g.: >
+	let g:ftplugin_java_source_path = '/path/to/src.jar'
+	let g:ftplugin_java_source_path = '/path/to/src.zip'
+<
+and the |zip| plugin has already been sourced, the |gf| command can be used to
+open the archive and the |n| command can be used to look for the selected type
+and the <Return> key can be used to load a listed file.
+
+Note that the effect of using the "gf" command WITHIN a buffer loaded with the
+Zip plugin depends on the version of the Zip plugin.  For the Zip plugin
+versions that do not support Jar type archives, consider creating symbolic
+links with the ".zip" extension for each Jar archive of interest and assigning
+any such file to the variable from now on.
+
+Otherwise, for the defined variable "g:ftplugin_java_source_path", the local
+value of the 'path' option will be further modified by prefixing the value of
+the variable, e.g.: >
+	let g:ftplugin_java_source_path = $JDK_SRC_PATH
+	let &l:path = g:ftplugin_java_source_path .. ',' .. &l:path
+<
+and the "gf" command can be used on a fully-qualified type to look for a file
+in the "path" and to try to load it.
+
+Remember to manually trigger the |FileType| event from a buffer with a Java
+file loaded in it each time after assigning a new value to the variable: >
+	doautocmd FileType
+<
+Markdown documentation comments may contain common runs of vertical leading
+whitespace following the comment marks (`///`) for aesthetic reasons; however,
+some horizontal runs of leading whitespace are significant in Markdown because
+they denote code blocks etc.  For convenience, a 'formatexpr' function is
+provided for the |gq| operator.  As long as neither "g:java_ignore_javadoc"
+nor "g:java_ignore_markdown" is defined, the reformatting of Markdown comments
+can be enabled on demand with: >
+	setlocal formatexpr=g:javaformat#RemoveCommonMarkdownWhitespace()
+<
+Or for Vim versions less than `7.4.265`, with: >
+	setlocal formatexpr=javaformat#RemoveCommonMarkdownWhitespace()
+<
+This function accepts a range of lines, removes a common run of vertical
+leading whitespace, and rewrites the lines of the range.  Depending on the
+author's layout style and the comment contents, which lines to select for
+reformatting can vary from the whole comment to only some portion of it.
+
+To enable the recognition of Markdown comments each time after removing
+"g:java_ignore_markdown" or "g:java_ignore_javadoc", remember to manually
+re-source "javaformat.vim" for Vim versions greater than `8.2.1397`: >
+	runtime autoload/javaformat.vim
+<
+JSON-FORMAT						*ft-json-plugin*
+
+JSON filetype can be extended to use 'formatexpr' and "json.FormatExpr()"
+function for json formatting (using |gq|).
+
+Add following lines to $HOME/.vim/ftplugin/json.vim: >
+
+	vim9script
+	import autoload 'dist/json.vim'
+	setl formatexpr=json.FormatExpr()
+
+LUA					*ft-lua-plugin* *g:lua_folding*
+
+You can enable folding of Lua functions using |fold-expr| by: >
+
+	let g:lua_folding = 1
+<					*g:lua_version* *g:lua_subversion*
+Lua filetype's 'includeexpr' and |ft-lua-syntax| highlighting use the global
+variables "g:lua_version" and "g:lua_subversion" to determine the version of
+Lua to use (5.3 is the default)
+
+For example, to use Lua 5.1, set the variables like this: >
+
+	let g:lua_version = 5
+	let g:lua_subversion = 1
+<
 MAIL							*ft-mail-plugin*
 
 Options:
@@ -621,12 +835,12 @@ Options:
 		You can also format quoted text with |gq|.
 
 Local mappings:
-<LocalLeader>q   or   \\MailQuote
+<LocalLeader>q   or   \MailQuote
 	Quotes the text selected in Visual mode, or from the cursor position
 	to the end of the file in Normal mode.  This means "> " is inserted in
 	each line.
 
-MAN					*ft-man-plugin* *:Man* *man.vim*
+MAN				*ft-man-plugin* *:Man* *:ManReload* *man.vim*
 
 This plugin displays a manual page in a nice way.  See |find-manpage| in the
 user manual for more information.
@@ -643,6 +857,8 @@ Commands:
 Man {name}	Display the manual page for {name} in a window.
 Man {number} {name}
 		Display the manual page for {name} in a section {number}.
+ManReload	Reload the cache of available man pages used for |:Man| argument
+		completion.
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
@@ -651,9 +867,13 @@ Global mapping:
 			nmap <F1> <Plug>ManPreGetPage
 
 Local mappings:
+<Plug>ManBS
+<LocalLeader>h	Clear backspace <BS> characters from the buffer.
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as the |:quit| command.
+
+The mappings can be disabled with: >
+	let g:no_man_maps = 1
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'
@@ -662,20 +882,28 @@ To use a new tab: >
 
 To enable |folding|, use this: >
 	let g:ft_man_folding_enable = 1
-If you do not like the default folding, use an |autocommand| to add your desired
-folding style instead.  For example: >
+If you do not like the default folding, use an |autocommand| to add your
+desired folding style instead.  For example: >
 	autocmd FileType man setlocal foldmethod=indent foldenable
 
 If you would like :Man {number} {name} to behave like man {number} {name} by
 not running man {name} if no page is found, then use this: >
 	let g:ft_man_no_sect_fallback = 1
+<
+						*g:ft_man_implementation*
+The completion for the :Man command tries to guess which implementation of man
+the system has.  If it guesses wrong, you can set g:ft_man_implementation to
+one of these values:
+	'man-db'	https://man-db.nongnu.org/
+	''		Unknown, fall back to completing shell commands
+			instead of man pages.
 
 You may also want to set 'keywordprg' to make the |K| command open a manual
 page in a Vim window: >
 	set keywordprg=:Man
 
 
-MANPAGER				      *manpager.vim*
+MANPAGER						*manpager.vim*
 
 The |:Man| command allows you to turn Vim into a manpager (that syntax
 highlights manpages and follows linked manpages on hitting CTRL-]).
@@ -693,7 +921,7 @@ For fish, add to the config file
 	set -x MANPAGER "vim +MANPAGER --not-a-term -"
 
 
-MARKDOWN                                                *ft-markdown-plugin*
+MARKDOWN						*ft-markdown-plugin*
 
 To enable folding use this: >
 	let g:markdown_folding = 1
@@ -701,6 +929,12 @@ To enable folding use this: >
 'expandtab' will be set by default.  If you do not want that use this: >
 	let g:markdown_recommended_style = 0
 
+
+ORG							*ft-org-plugin*
+
+To enable folding use this: >
+	let g:org_folding = 1
+<
 
 PDF							*ft-pdf-plugin*
 
@@ -714,6 +948,12 @@ the PDF.  The following are treated as tags:
 
 These maps can be disabled with >
 	:let g:no_pdf_maps = 1
+
+PLSQL							*ft-plsql-plugin*
+
+To enable syntax folding in PL/SQL filetypes, set the following variable: >
+
+	:let g:plsql_fold = 1
 <
 
 PYTHON						*ft-python-plugin* *PEP8*
@@ -732,27 +972,27 @@ QF QUICKFIX					    *qf.vim* *ft-qf-plugin*
 The "qf" filetype is used for the quickfix window, see |quickfix-window|.
 
 The quickfix filetype plugin includes configuration for displaying the command
-that produced the quickfix list in the |status-line|. To disable this setting,
+that produced the quickfix list in the |status-line|.  To disable this setting,
 configure as follows: >
 	:let g:qf_disable_statusline = 1
 
 
 R MARKDOWN						*ft-rmd-plugin*
 
-By default ftplugin/html.vim is not sourced. If you want it sourced, add to
+By default ftplugin/html.vim is not sourced.  If you want it sourced, add to
 your |vimrc|: >
 	let rmd_include_html = 1
 
 The 'formatexpr' option is set dynamically with different values for R code
-and for Markdown code. If you prefer that 'formatexpr' is not set, add to your
-|vimrc|: >
+and for Markdown code.  If you prefer that 'formatexpr' is not set, add to
+your |vimrc|: >
 	let rmd_dynamic_comments = 0
 
 
 R RESTRUCTURED TEXT					*ft-rrst-plugin*
 
 The 'formatexpr' option is set dynamically with different values for R code
-and for ReStructured text. If you prefer that 'formatexpr' is not set, add to
+and for ReStructured text.  If you prefer that 'formatexpr' is not set, add to
 your |vimrc|: >
 	let rrst_dynamic_comments = 0
 
@@ -764,6 +1004,14 @@ The following formatting setting are optionally available: >
 
 To enable this behavior, set the following variable in your vimrc: >
 	let g:rst_style = 1
+
+
+RNOWEB							*ft-rnoweb-plugin*
+
+The 'formatexpr' option is set dynamically with different values for R code
+and for LaTeX code.  If you prefer that 'formatexpr' is not set, add to your
+|vimrc|: >
+	let rnw_dynamic_comments = 0
 
 
 RPM SPEC						*ft-spec-plugin*
@@ -798,14 +1046,73 @@ You can change the default by defining the variable g:tex_flavor to the format
 	let g:tex_flavor = "latex"
 Currently no other formats are recognized.
 
+TYPST							*ft-typst-plugin*
 
+							*g:typst_conceal*
+When |TRUE| the Typst filetype plugin will set the 'conceallevel' option to 2.
+
+							*g:typst_folding*
+When |TRUE| the Typst filetype plugin will fold headings. (default: |FALSE|)
+
+To enable: >
+	let g:typst_folding = 1
+<
+							*g:typst_foldnested*
+When |TRUE| the Typst filetype plugin will fold nested heading under their
+parents. (default: |TRUE|)
+
+To disable: >
+	let g:typst_foldnested = 0
+<
 VIM							*ft-vim-plugin*
 
-The Vim filetype plugin defines mappings to move to the start and end of
-functions with [[ and ]].  Move around comments with ]" and [".
+The Vim filetype plugin defines the following mappings:
+
+    [[		move to the start of the previous function
+    ]]		move to the start of the next function
+    ][		move to the end of the previous function
+    []		move to the end of the next function
+    ]"		move to the next (legacy) comment
+    ["		move to the previous (legacy) comment
+    gf		edit the file under the cursor
+    CTRL-W gf	edit the file under the cursor in a new tab page
+    CTRL-W f	edit the file under the cursor in a new window
+
 
 The mappings can be disabled with: >
 	let g:no_vim_maps = 1
+
+YAML							*ft-yaml-plugin*
+By default, the YAML filetype plugin enables the following options: >
+	setlocal shiftwidth=2 softtabstop=2
+
+To disable this, set the following variable: >
+	let g:yaml_recommended_style = 0
+
+
+ZIG							*ft-zig-plugin*
+
+						*g:zig_recommended_style*
+By default the following indentation options are set, in accordance with Zig's
+recommended style (https://ziglang.org/documentation/master/): >
+
+	setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
+<
+To disable this behavior, set |g:zig_recommended_style| to 0: >
+
+	let g:zig_recommended_style = 0
+<
+							*g:zig_std_dir*
+The path to the Zig standard library.  The Zig |ftplugin| reads |g:zig_std_dir|
+and appends it to the 'path' for Zig files.  Where the Zig standard library
+is located is system and installation method dependent.
+
+One can automatically set |g:zig_std_dir| using `zig env`: >
+
+	let g:zig_std_dir = json_decode(system('zig env'))['std_dir']
+<
+This can, for example, be put in a FileType |:autocmd| or user |ftplugin| to
+only load when a Zig file is opened.
 
 
 ZIMBU							*ft-zimbu-plugin*

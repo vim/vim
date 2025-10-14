@@ -3,12 +3,10 @@
 set encoding=latin1
 scriptencoding latin1
 
-source check.vim
 CheckOption linebreak
 CheckFeature conceal
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 function s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)
@@ -374,13 +372,13 @@ endfunc
 
 func Test_linebreak_no_break_after_whitespace_only()
   call s:test_windows('setl ts=4 linebreak wrap')
-  call setline(1, "\tabcdefghijklmnopqrstuvwxyz" ..
+  call setline(1, "\t  abcdefghijklmnopqrstuvwxyz" ..
         \ "abcdefghijklmnopqrstuvwxyz")
   let lines = s:screen_lines([1, 4], winwidth(0))
   let expect = [
-\ "    abcdefghijklmnop",
-\ "qrstuvwxyzabcdefghij",
-\ "klmnopqrstuvwxyz    ",
+\ "      abcdefghijklmn",
+\ "opqrstuvwxyzabcdefgh",
+\ "ijklmnopqrstuvwxyz  ",
 \ "~                   ",
 \ ]
   call s:compare_lines(expect, lines)

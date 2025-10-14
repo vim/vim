@@ -1,8 +1,6 @@
 " Test for the search command
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 func Test_search_cmdline()
   CheckOption incsearch
@@ -843,6 +841,7 @@ func Test_search_cmdline_incsearch_highlight()
 
   " clean up
   set noincsearch nohlsearch
+  call test_override("char_avail", 0)
   bw!
 endfunc
 
@@ -945,6 +944,7 @@ func Test_incsearch_cmdline_modifier()
 endfunc
 
 func Test_incsearch_scrolling()
+  CheckScreendump
   CheckRunVimInTerminal
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -1541,15 +1541,44 @@ func Test_large_hex_chars2()
   try
     /[\Ufffffc1f]
   catch
-    call assert_match('E486:', v:exception)
+    call assert_match('E1541:', v:exception)
   endtry
   try
     set re=1
     /[\Ufffffc1f]
   catch
-    call assert_match('E486:', v:exception)
+    call assert_match('E1541:', v:exception)
   endtry
   set re&
+endfunc
+
+func Test_large_hex_chars3()
+  " Validate max number of Unicode char
+  try
+    /[\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /[\UFFFFFFF]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  try
+    /\%#=2[\d32-\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /\%#=1[\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /\%#=1[\d32-\UFFFFFFFF]
+  catch
+    call assert_match('E945:', v:exception)
+  endtry
 endfunc
 
 func Test_one_error_msg()
@@ -1594,7 +1623,7 @@ func Test_search_match_at_curpos()
   call search('.', 'c')
   call assert_equal([3, 5], [line('.'), col('.')])
 
-  close!
+  bw!
 endfunc
 
 " Test for error cases with the search() function
@@ -1747,6 +1776,37 @@ func Test_search_with_no_last_pat()
   call delete('Xresult')
 endfunc
 
+" Test for using the last substitute pattern without last search pattern.
+func Test_search_with_last_substitute_pat()
+  let lines =<< trim [SCRIPT]
+    new
+    set shortmess+=S
+    call setline(1, repeat(['foofoo'], 3))
+    %s/foo/bar/
+    call assert_equal(repeat(['barfoo'], 3), getline(1, '$'))
+
+    call cursor(1, 1)
+    call assert_equal("/foo", execute('call feedkeys("/\r", "tx")', '')->trim())
+    call assert_equal([0, 1, 4, 0], getpos('.'))
+
+    if has('rightleft')
+      set rightleft rightleftcmd=search
+      call cursor(1, 1)
+      call assert_equal("oof/", execute('call feedkeys("/\r", "tx")', '')->trim())
+      call assert_equal([0, 1, 4, 0], getpos('.'))
+    endif
+
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript', 'D')
+
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xresult')
+endfunc
+
 " Test for using tilde (~) atom in search. This should use the last used
 " substitute pattern
 func Test_search_tilde_pat()
@@ -1776,7 +1836,7 @@ func Test_search_pat_not_found()
   call assert_fails('normal n', 'E385:')
   call assert_fails('normal N', 'E384:')
   set wrapscan&
-  close
+  bw
 endfunc
 
 " Test for v:searchforward variable
@@ -1792,7 +1852,7 @@ func Test_searchforward_var()
   let v:searchforward = 1
   normal N
   call assert_equal(1, line('.'))
-  close!
+  bw!
 endfunc
 
 " Test for invalid regular expressions
@@ -1853,7 +1913,7 @@ func Test_search_in_visual_area()
   call assert_equal([2, 5], [line('.'), col('.')])
   exe "normal 2GVj$?\\%Vbar\<CR>\<Esc>"
   call assert_equal([3, 5], [line('.'), col('.')])
-  close!
+  bw!
 endfunc
 
 " Test for searching with 'smartcase' and 'ignorecase'
@@ -1881,7 +1941,7 @@ func Test_search_smartcase()
   call assert_equal([2, 4], [line('.'), col('.')])
 
   set ignorecase& smartcase&
-  close!
+  bw!
 endfun
 
 " Test 'smartcase' with utf-8.
@@ -1944,42 +2004,102 @@ func Test_search_offset()
   call assert_equal([1, 7], [line('.'), col('.')])
 
   " with cursor at the beginning of the file, use /s+1
-  call cursor(1, 1)
-  exe "normal /two/s+1\<CR>"
-  call assert_equal([1, 6], [line('.'), col('.')])
+  " '+' without a digit is the same as +1, and 'b' is an alias for 's'
+  for searchcmd in ['/two/s+1', '/two/s+', '/two/b+1', '/two/b+', '/']
+    call cursor(1, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([1, 6], [line('.'), col('.')], searchcmd)
+    call assert_equal('/two/s+1', Screenline(&lines)->trim(), searchcmd)
+  endfor
+
+  " repeat the same search pattern with different offsets
+  for [offset, col] in [['s', 5], ['e-1', 6], ['s+2', 7], ['s-2', 3], ['', 5]]
+    let searchcmd = $'//{offset}'
+    call cursor(1, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([1, col], [line('.'), col('.')], searchcmd)
+    call assert_equal(col == 5 ? '/two' : $'/two/{offset}',
+                      \ Screenline(&lines)->trim(), searchcmd)
+  endfor
 
   " with cursor at the end of the file, use /e-1
-  call cursor(2, 10)
-  exe "normal ?three?e-1\<CR>"
-  call assert_equal([2, 4], [line('.'), col('.')])
+  " '-' without a digit is the same as -1
+  for searchcmd in ['?three?e-1', '?three?e-', '?']
+    call cursor(2, 10)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([2, 4], [line('.'), col('.')], searchcmd)
+    call assert_equal('?three?e-1', Screenline(&lines)->trim(), searchcmd)
+  endfor
+
+  " repeat the same search pattern with different offsets
+  for [offset, col] in [['e', 5], ['s+1', 2], ['e-2', 3], ['e+2', 7], ['', 1]]
+    let searchcmd = $'??{offset}'
+    call cursor(2, 10)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([2, col], [line('.'), col('.')], searchcmd)
+    call assert_equal(col == 1 ? '?three' : $'?three?{offset}',
+                      \ Screenline(&lines)->trim(), searchcmd)
+  endfor
 
   " line offset - after the last line
-  call cursor(1, 1)
-  exe "normal /three/+1\<CR>"
-  call assert_equal([2, 1], [line('.'), col('.')])
+  " '+' without a digit and '1' without a sign are the same as +1
+  for searchcmd in ['/three/+1', '/three/+', '/three/1', '/']
+    call cursor(1, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([2, 1], [line('.'), col('.')], searchcmd)
+    call assert_equal('/three/+1', Screenline(&lines)->trim(), searchcmd)
+  endfor
+
+  " repeat the same search pattern with different line offsets
+  for [offset, lnum] in [['+0', 2], ['-1', 1], ['+2', 2], ['-2', 1]]
+    let searchcmd = $'//{offset}'
+    call cursor(1, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([lnum, 1], [line('.'), col('.')], searchcmd)
+    call assert_equal($'/three/{offset}',
+                      \ Screenline(&lines)->trim(), searchcmd)
+  endfor
 
   " line offset - before the first line
-  call cursor(2, 1)
-  exe "normal ?one?-1\<CR>"
-  call assert_equal([1, 1], [line('.'), col('.')])
+  " '-' without a digit is the same as -1
+  for searchcmd in ['?one?-1', '?one?-', '?']
+    call cursor(2, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([1, 1], [line('.'), col('.')], searchcmd)
+    call assert_equal('?one?-1', Screenline(&lines)->trim(), searchcmd)
+  endfor
+
+  " repeat the same search pattern with different line offsets
+  for [offset, lnum] in [['+0', 1], ['+1', 2], ['-2', 1], ['+2', 2]]
+    let searchcmd = $'??{offset}'
+    call cursor(2, 1)
+    exe $"normal {searchcmd}\<CR>"
+    call assert_equal([lnum, 1], [line('.'), col('.')], searchcmd)
+    call assert_equal($'?one?{offset}',
+                      \ Screenline(&lines)->trim(), searchcmd)
+  endfor
 
   " character offset - before the first character in the file
   call cursor(2, 1)
   exe "normal ?one?s-1\<CR>"
   call assert_equal([1, 1], [line('.'), col('.')])
+  call assert_equal('?one?s-1', Screenline(&lines)->trim())
   call cursor(2, 1)
   exe "normal ?one?e-3\<CR>"
   call assert_equal([1, 1], [line('.'), col('.')])
+  call assert_equal('?one?e-3', Screenline(&lines)->trim())
 
   " character offset - after the last character in the file
   call cursor(1, 1)
   exe "normal /four/s+4\<CR>"
   call assert_equal([2, 10], [line('.'), col('.')])
+  call assert_equal('/four/s+4', Screenline(&lines)->trim())
   call cursor(1, 1)
   exe "normal /four/e+1\<CR>"
   call assert_equal([2, 10], [line('.'), col('.')])
+  call assert_equal('/four/e+1', Screenline(&lines)->trim())
 
-  close!
+  bw!
 endfunc
 
 " Test for searching for matching parenthesis using %
@@ -2005,7 +2125,7 @@ func Test_search_match_paren()
   normal 20|%
   call assert_equal(4, col('.'))
   set virtualedit&
-  close!
+  bw!
 endfunc
 
 " Test for searching a pattern and stopping before a specified line
@@ -2018,7 +2138,7 @@ func Test_search_stopline()
   call cursor(4, 1)
   call assert_equal(0, search('vim', 'bn', 2))
   call assert_equal(1, search('vim', 'bn', 1))
-  close!
+  bw!
 endfunc
 
 func Test_incsearch_highlighting_newline()
@@ -2194,5 +2314,86 @@ func Test_search_with_invalid_range()
   bwipe!
 endfunc
 
+func Test_incsearch_delimiter_ctrlg()
+  CheckOption incsearch
+  CheckScreendump
+  CheckRunVimInTerminal
+  call assert_equal(0, &scrolloff)
+  call writefile([
+	\ 'set incsearch hls',
+  \ 'call setline(1, ["1 vim inc", "2 vim /", "3 vim /", "4 vim ?", "5 vim ?"])',
+	\ 'normal gg',
+	\ 'redraw',
+	\ ], 'Xscript_incsearch_delim', 'D')
+  let buf = RunVimInTerminal('-S Xscript_incsearch_delim', {'rows': 6})
+
+  call term_sendkeys(buf, '/')
+  sleep 100m
+  call term_sendkeys(buf, 'v')
+  sleep 100m
+  call term_sendkeys(buf, 'i')
+  sleep 100m
+  call term_sendkeys(buf, 'm')
+  sleep 100m
+  call term_sendkeys(buf, ' ')
+  sleep 100m
+  call term_sendkeys(buf, '/')
+  sleep 100m
+  call term_sendkeys(buf, "\<C-G>")
+  call VerifyScreenDump(buf, 'Test_incsearch_delim_01', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call term_sendkeys(buf, ":5\<cr>")
+  call term_sendkeys(buf, '?')
+  sleep 100m
+  call term_sendkeys(buf, 'v')
+  sleep 100m
+  call term_sendkeys(buf, 'i')
+  sleep 100m
+  call term_sendkeys(buf, 'm')
+  sleep 100m
+  call term_sendkeys(buf, ' ')
+  sleep 100m
+  call term_sendkeys(buf, '?')
+  sleep 100m
+  call term_sendkeys(buf, "\<C-T>")
+  call VerifyScreenDump(buf, 'Test_incsearch_delim_02', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call term_sendkeys(buf, '/')
+  sleep 100m
+  call term_sendkeys(buf, 'v')
+  sleep 100m
+  call term_sendkeys(buf, 'i')
+  sleep 100m
+  call term_sendkeys(buf, 'm')
+  sleep 100m
+  call term_sendkeys(buf, ' ')
+  sleep 100m
+  call term_sendkeys(buf, '\/')
+  sleep 100m
+  call term_sendkeys(buf, "\<C-G>")
+  call VerifyScreenDump(buf, 'Test_incsearch_delim_03', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call term_sendkeys(buf, ":5\<cr>")
+  call term_sendkeys(buf, '?')
+  sleep 100m
+  call term_sendkeys(buf, 'v')
+  sleep 100m
+  call term_sendkeys(buf, 'i')
+  sleep 100m
+  call term_sendkeys(buf, 'm')
+  sleep 100m
+  call term_sendkeys(buf, ' ')
+  sleep 100m
+  call term_sendkeys(buf, '\?')
+  sleep 100m
+  call term_sendkeys(buf, "\<C-T>")
+  call VerifyScreenDump(buf, 'Test_incsearch_delim_04', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

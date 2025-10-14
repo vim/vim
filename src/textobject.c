@@ -226,13 +226,13 @@ findpar(
     if (both && *ml_get(curr) == '}')	// include line with '}'
 	++curr;
     curwin->w_cursor.lnum = curr;
-    if (curr == curbuf->b_ml.ml_line_count && what != '}')
+    if (curr == curbuf->b_ml.ml_line_count && what != '}' && dir == FORWARD)
     {
 	char_u *line = ml_get(curr);
 
 	// Put the cursor on the last character in the last line and make the
 	// motion inclusive.
-	if ((curwin->w_cursor.col = (colnr_T)STRLEN(line)) != 0)
+	if ((curwin->w_cursor.col = ml_get_len(curr)) != 0)
 	{
 	    --curwin->w_cursor.col;
 	    curwin->w_cursor.col -=
@@ -502,6 +502,12 @@ end_word(
 
     curwin->w_cursor.coladd = 0;
     cls_bigword = bigword;
+
+    // If adjusted cursor position previously, unadjust it.
+    if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+		&& VIsual_select_exclu_adj)
+	unadjust_for_sel();
+
     while (--count >= 0)
     {
 #ifdef FEAT_FOLDING
@@ -1132,6 +1138,16 @@ current_block(
 	}
 
 	/*
+	 * In Visual mode, when resulting area is empty
+	 * i.e. there is no inner block to select, abort.
+	 */
+	if (EQUAL_POS(start_pos, *end_pos) && VIsual_active)
+	{
+	    curwin->w_cursor = old_pos;
+	    return FAIL;
+	}
+
+	/*
 	 * In Visual mode, when the resulting area is not bigger than what we
 	 * started with, extend it to the next block, and then exclude again.
 	 * Don't try to expand the area if the area is empty.
@@ -1190,7 +1206,7 @@ current_block(
     return OK;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
  * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
@@ -1416,15 +1432,22 @@ again:
 
     if (!do_include)
     {
-	// Exclude the start tag.
+	// Exclude the start tag,
+	// but skip over '>' if it appears in quotes
+	int in_quotes = FALSE;
 	curwin->w_cursor = start_pos;
 	while (inc_cursor() >= 0)
-	    if (*ml_get_cursor() == '>')
+	{
+	    p = ml_get_cursor();
+	    if (*p == '>' && !in_quotes)
 	    {
 		inc_cursor();
 		start_pos = curwin->w_cursor;
 		break;
 	    }
+	    else if (*p == '"' || *p == '\'')
+		in_quotes = !in_quotes;
+	}
 	curwin->w_cursor = end_pos;
 
 	// If we are in Visual mode and now have the same text as before set

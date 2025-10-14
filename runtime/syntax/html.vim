@@ -3,9 +3,11 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainers: Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 "			Claudio Fleiner <claudio@fleiner.com>
-" Last Change:		2023 Feb 20
+" Last Change:		2023 Nov 28
+" 2024 Jul 30 by Vim Project: increase syn-sync-minlines to 250
+" 2025 May 10 by Vim Project: update comment
 
-" Please check :help html.vim for some comments and a description of the options
+" See :help html.vim for some comments and a description of the options
 
 " quit when a syntax file was already loaded
 if !exists("main_syntax")
@@ -28,7 +30,6 @@ syn case ignore
 " mark illegal characters
 syn match htmlError "[<>&]"
 
-
 " tags
 syn region  htmlString	 contained start=+"+ end=+"+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn region  htmlString	 contained start=+'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
@@ -38,7 +39,6 @@ syn region  htmlTag		   start=+<[^/]+   end=+>+ fold contains=htmlTagN,htmlStrin
 syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
-
 
 " tag names
 syn keyword htmlTagName contained address applet area a base basefont
@@ -61,7 +61,7 @@ syn keyword htmlTagName contained article aside audio bdi canvas data
 syn keyword htmlTagName contained datalist details dialog embed figcaption
 syn keyword htmlTagName contained figure footer header hgroup keygen main
 syn keyword htmlTagName contained mark menuitem meter nav output picture
-syn keyword htmlTagName contained progress rb rp rt rtc ruby section
+syn keyword htmlTagName contained progress rb rp rt rtc ruby search section
 syn keyword htmlTagName contained slot source summary template time track
 syn keyword htmlTagName contained video wbr
 
@@ -88,18 +88,71 @@ syn keyword htmlArg contained size src start target text type url
 syn keyword htmlArg contained usemap ismap valign value vlink vspace width wrap
 syn match   htmlArg contained "\<\%(http-equiv\|href\|title\)="me=e-1
 
-" aria attributes
-exe 'syn match htmlArg contained "\<aria-\%(' . join([
-    \ 'activedescendant', 'atomic', 'autocomplete', 'busy', 'checked', 'colcount',
-    \ 'colindex', 'colspan', 'controls', 'current', 'describedby', 'details',
-    \ 'disabled', 'dropeffect', 'errormessage', 'expanded', 'flowto', 'grabbed',
-    \ 'haspopup', 'hidden', 'invalid', 'keyshortcuts', 'label', 'labelledby', 'level',
-    \ 'live', 'modal', 'multiline', 'multiselectable', 'orientation', 'owns',
-    \ 'placeholder', 'posinset', 'pressed', 'readonly', 'relevant', 'required',
-    \ 'roledescription', 'rowcount', 'rowindex', 'rowspan', 'selected', 'setsize',
-    \ 'sort', 'valuemax', 'valuemin', 'valuenow', 'valuetext'
-    \ ], '\|') . '\)\>"'
 syn keyword htmlArg contained role
+
+" ARIA attributes {{{1
+let s:aria =<< trim END
+  activedescendant
+  atomic
+  autocomplete
+  braillelabel
+  brailleroledescription
+  busy
+  checked
+  colcount
+  colindex
+  colindextext
+  colspan
+  controls
+  current
+  describedby
+  description
+  details
+  disabled
+  errormessage
+  expanded
+  flowto
+  haspopup
+  hidden
+  invalid
+  keyshortcuts
+  label
+  labelledby
+  level
+  live
+  modal
+  multiline
+  multiselectable
+  orientation
+  owns
+  placeholder
+  posinset
+  pressed
+  readonly
+  relevant
+  required
+  roledescription
+  rowcount
+  rowindex
+  rowindextext
+  rowspan
+  selected
+  setsize
+  sort
+  valuemax
+  valuemin
+  valuenow
+  valuetext
+END
+let s:aria_deprecated =<< trim END
+  dropeffect
+  grabbed
+END
+
+call extend(s:aria, s:aria_deprecated)
+exe 'syn match htmlArg contained "\%#=1\<aria-\%(' .. s:aria->join('\|') .. '\)\>"'
+unlet s:aria s:aria_deprecated
+" }}}
 
 " Netscape extensions
 syn keyword htmlTagName contained frame noframes frameset nobr blink
@@ -140,7 +193,7 @@ syn keyword htmlArg contained step title translate typemustmatch
 syn match   htmlArg contained "\<data-\h\%(\w\|[-.]\)*\%(\_s*=\)\@="
 
 " special characters
-syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,8};"
+syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,32};"
 
 " Comments (the real ones or the old netscape ones)
 if exists("html_wrong_comments")
@@ -269,11 +322,12 @@ if main_syntax == "html"
   syn sync match htmlHighlight groupthere NONE "<[/a-zA-Z]"
   syn sync match htmlHighlight groupthere javaScript "<script"
   syn sync match htmlHighlightSkip "^.*['\"].*$"
-  syn sync minlines=10
+  exe "syn sync minlines=" . get(g:, 'html_minlines', 250)
 endif
 
 " Folding
-" Originally by Ingo Karkat and Marcus Zanona
+" (Originally written by Ingo Karkat and Marcus Zanona; see
+" https://vi.stackexchange.com/questions/2306/html-syntax-folding-in-vim .)
 if get(g:, "html_syntax_folding", 0)
   syn region htmlFold start="<\z(\<\%(area\|base\|br\|col\|command\|embed\|hr\|img\|input\|keygen\|link\|meta\|param\|source\|track\|wbr\>\)\@![a-z-]\+\>\)\%(\_s*\_[^/]\?>\|\_s\_[^>]*\_[^>/]>\)" end="</\z1\_s*>" fold transparent keepend extend containedin=htmlHead,htmlH\d
   " fold comments (the real ones and the old Netscape ones)
@@ -321,9 +375,9 @@ if !exists("html_no_rendering")
     hi def htmlUnderlineItalic	   term=italic,underline cterm=italic,underline gui=italic,underline
     hi def htmlItalic		   term=italic cterm=italic gui=italic
     if v:version > 800 || v:version == 800 && has("patch1038")
-	hi def htmlStrike	       term=strikethrough cterm=strikethrough gui=strikethrough
+      hi def htmlStrike	term=strikethrough cterm=strikethrough gui=strikethrough
     else
-	hi def htmlStrike	       term=underline cterm=underline gui=underline
+      hi def htmlStrike	term=underline cterm=underline gui=underline
     endif
   endif
 endif
@@ -356,4 +410,5 @@ endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-" vim: ts=8
+
+" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:

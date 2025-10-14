@@ -2,8 +2,6 @@
 
 scriptencoding utf-8
 
-source check.vim
-
 func Test_environ()
   unlet! $TESTENV
   call assert_equal(0, has_key(environ(), 'TESTENV'))

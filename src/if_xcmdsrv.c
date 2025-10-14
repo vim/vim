@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if (defined(FEAT_CLIENTSERVER) && defined(FEAT_X11))
 
 # ifdef FEAT_X11
 #  include <X11/Intrinsic.h>
@@ -321,7 +321,7 @@ DoRegisterName(Display *dpy, char_u *name)
     return -2;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Clean out new ID from registry and set it as comm win.
  * Change any registered window ID.
@@ -657,7 +657,7 @@ serverGetVimNames(Display *dpy)
     for (p = regProp; (long_u)(p - regProp) < numItems; p++)
     {
 	entry = p;
-	while (*p != 0 && !isspace(*p))
+	while (*p != 0 && !SAFE_isspace(*p))
 	    p++;
 	if (*p != 0)
 	{
@@ -928,7 +928,7 @@ LookupName(
     for (p = regProp; (long_u)(p - regProp) < numItems; )
     {
 	entry = p;
-	while (*p != 0 && !isspace(*p))
+	while (*p != 0 && !SAFE_isspace(*p))
 	    p++;
 	if (*p != 0 && STRICMP(name, p + 1) == 0)
 	{
@@ -945,7 +945,7 @@ LookupName(
 	for (p = regProp; (long_u)(p - regProp) < numItems; )
 	{
 	    entry = p;
-	    while (*p != 0 && !isspace(*p))
+	    while (*p != 0 && !SAFE_isspace(*p))
 		p++;
 	    if (*p != 0 && IsSerialName(p + 1)
 		    && STRNICMP(name, p + 1, STRLEN(name)) == 0)

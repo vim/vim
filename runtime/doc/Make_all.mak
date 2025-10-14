@@ -19,6 +19,7 @@ DOCS = \
 	fold.txt \
 	ft_ada.txt \
 	ft_context.txt \
+	ft_hare.txt \
 	ft_mp.txt \
 	ft_ps1.txt \
 	ft_raku.txt \
@@ -74,6 +75,7 @@ DOCS = \
 	pi_paren.txt \
 	pi_spec.txt \
 	pi_tar.txt \
+	pi_tutor.txt \
 	pi_vimball.txt \
 	pi_zip.txt \
 	popup.txt \
@@ -150,6 +152,8 @@ DOCS = \
 	vim9.txt \
 	vim9class.txt \
 	visual.txt \
+	vietnamese.txt \
+	wayland.txt \
 	windows.txt \
 	workshop.txt
 
@@ -172,6 +176,7 @@ HTMLS = \
 	fold.html \
 	ft_ada.html \
 	ft_context.html \
+	ft_hare.html \
 	ft_mp.html \
 	ft_ps1.html \
 	ft_raku.html \
@@ -226,6 +231,7 @@ HTMLS = \
 	pi_paren.html \
 	pi_spec.html \
 	pi_tar.html \
+	pi_tutor.html \
 	pi_vimball.html \
 	pi_zip.html \
 	popup.html \
@@ -299,10 +305,12 @@ HTMLS = \
 	version8.html \
 	version9.html \
 	vi_diff.html \
+	vietnamese.html \
 	vimindex.html \
 	vim9.html \
 	vim9class.html \
 	visual.html \
+	wayland.html \
 	windows.html \
 	workshop.html
 

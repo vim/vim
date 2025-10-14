@@ -1,8 +1,8 @@
-*usr_toc.txt*	For Vim version 9.0.  Last change: 2022 Jun 20
+*usr_toc.txt*	For Vim version 9.1.  Last change: 2024 Oct 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
-			      Table Of Contents			*user-manual*
+			      Table Of Contents		*user-manual* *usr*
 
 ==============================================================================
 Overview ~
@@ -360,6 +360,7 @@ Writing Vim script ~
 		|52.3|	Autoloading without import/export
 		|52.4|	Other mechanisms to use
 		|52.5|	Using a Vim9 script from legacy script
+		|52.6|	Vim9 examples: comment and highlight-yank plugin
 
 ==============================================================================
 Making Vim Run ~

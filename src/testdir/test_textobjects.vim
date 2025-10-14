@@ -1,7 +1,5 @@
 " Test for textobjects
 
-source check.vim
-
 func CpoM(line, useM, expected)
   new
 
@@ -200,6 +198,18 @@ func Test_string_html_objects()
     $put =t
     normal! 2k0vaty
     call assert_equal("<div><div\nattr=\"attr\"\n></div></div>", @", e)
+
+    " tag, that includes a > in some attribute
+    let t = "<div attr=\"attr >> foo >> bar \">Hello</div>"
+    $put =t
+    normal! fHyit
+    call assert_equal("Hello", @", e)
+
+    " tag, that includes a > in some attribute
+    let t = "<div attr='attr >> foo >> bar '>Hello 123</div>"
+    $put =t
+    normal! fHyit
+    call assert_equal("Hello 123", @", e)
 
     set quoteescape&
 
@@ -400,7 +410,7 @@ func Test_paragraph()
   call assert_beeps("normal Vipip")
   exe "normal \<C-C>"
 
-  close!
+  bw!
 endfunc
 
 " Tests for text object aw
@@ -606,7 +616,7 @@ func Test_textobj_quote()
   normal $hhyi"
   call assert_equal('bar', @")
 
-  close!
+  bw!
 endfunc
 
 " Test for i(, i<, etc. when cursor is in front of a block
@@ -638,7 +648,133 @@ func Test_textobj_find_paren_forward()
   normal 0di)
   call assert_equal('foo ()', getline(1))
 
-  close!
+  bw!
+endfunc
+
+func Test_inner_block_empty_paren()
+  new
+  call setline(1, ["(text)()", "", "(text)(", ")", "", "()()", "", "text()"])
+
+  " Example 1
+  call cursor(1, 1)
+  let @" = ''
+  call assert_beeps(':call feedkeys("0f(viby","xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('(', @")
+
+  " Example 2
+  call cursor(3, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f(viby", "xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('(', @")
+
+  " Example 3
+  call cursor(6, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f(viby", "xt")')
+  call assert_equal(3, getpos('.')[2])
+  call assert_equal('(', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0cibtext", "xt")
+  call assert_equal("text(text)", getline('.'))
+
+  bwipe!
+endfunc
+
+func Test_inner_block_empty_bracket()
+  new
+  call setline(1, ["[text][]", "", "[text][", "]", "", "[][]", "", "text[]"])
+
+  " Example 1
+  call cursor(1, 1)
+  let @" = ''
+  call assert_beeps(':call feedkeys("0f[viby","xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('[', @")
+
+  " Example 2
+  call cursor(3, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f[viby", "xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('[', @")
+
+  " Example 3
+  call cursor(6, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f[viby", "xt")')
+  call assert_equal(3, getpos('.')[2])
+  call assert_equal('[', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0ci[text", "xt")
+  call assert_equal("text[text]", getline('.'))
+
+  bwipe!
+endfunc
+
+func Test_inner_block_empty_brace()
+  new
+  call setline(1, ["{text}{}", "", "{text}{", "}", "", "{}{}", "", "text{}"])
+
+  " Example 1
+  call cursor(1, 1)
+  let @" = ''
+  call assert_beeps(':call feedkeys("0f{viby","xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('{', @")
+
+  " Example 2
+  call cursor(3, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f{viby", "xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('{', @")
+
+  " Example 3
+  call cursor(6, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f{viby", "xt")')
+  call assert_equal(3, getpos('.')[2])
+  call assert_equal('{', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0ciBtext", "xt")
+  call assert_equal("text{text}", getline('.'))
+
+  bwipe!
+endfunc
+
+func Test_inner_block_empty_lessthan()
+  new
+  call setline(1, ["<text><>", "", "<text><", ">", "", "<><>"])
+
+  " Example 1
+  call cursor(1, 1)
+  let @" = ''
+  call assert_beeps(':call feedkeys("0f<viby","xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('<', @")
+
+  " Example 2
+  call cursor(3, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f<viby", "xt")')
+  call assert_equal(7, getpos('.')[2])
+  call assert_equal('<', @")
+
+  " Example 3
+  call cursor(6, 1)
+  let @" = ''
+  call assert_beeps('call feedkeys("0f<viby", "xt")')
+  call assert_equal(3, getpos('.')[2])
+  call assert_equal('<', @")
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

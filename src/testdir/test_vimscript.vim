@@ -2,9 +2,7 @@
 " Most of this was formerly in test49.vim (developed by Servatius Brandt
 " <Servatius.Brandt@fujitsu-siemens.com>)
 
-source check.vim
-source shared.vim
-source script_util.vim
+source util/script_util.vim
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -25,7 +23,7 @@ com! -nargs=1	     Xout     call Xout(<args>)
 func RunInNewVim(test, verify)
   let init =<< trim END
     set cpo-=C            " support line-continuation in sourced script
-    source script_util.vim
+    source util/script_util.vim
     XpathINIT
     XloopINIT
   END
@@ -6524,7 +6522,7 @@ func Test_type()
     endif
     call assert_equal(v:t_blob, type(test_null_blob()))
 
-    call assert_fails("call type(test_void())", ['E340:', 'E685:'])
+    call assert_fails("call type(test_void())", ['E1031: Cannot use void value', 'E1031: Cannot use void value'])
     call assert_fails("call type(test_unknown())", ['E340:', 'E685:'])
 
     call assert_equal(0, 0 + v:false)
@@ -6600,6 +6598,10 @@ func Test_type()
     call assert_false(empty(v:true))
     call assert_true(empty(v:null))
     call assert_true(empty(v:none))
+
+    def s:GetVoidValue(): void
+    enddef
+    call assert_fails('let x = type(s:GetVoidValue())', 'E1031: Cannot use void value')
 
     func ChangeYourMind()
 	try
@@ -6890,6 +6892,52 @@ func Test_script_lines()
     catch
 	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
     endtry
+
+    " More test for :append, :change, :insert
+    let cmds = ["append", "change", "insert"]
+    let suffixes = ["", "!", "|", "|xyz", " "]
+
+    for c in cmds
+      " Single character (with some accepted trailing characters)
+      for s in suffixes
+        let cmd = c[:0] .. s
+        let line = ["func LinesCheck()", cmd, "", "endfunc", "call LinesCheck()"]
+        call writefile(line, 'Xfunc', 'D')
+        call assert_fails('source Xfunc', 'E1145: Missing heredoc end marker: .', $'"{cmd}"')
+      endfor
+
+      " Unnecessary arguments
+      let cmd = c[:2] .. " end"
+      let line[1] = cmd
+      call writefile(line, 'Xfunc', 'D')
+      call assert_fails('source Xfunc', 'E488: Trailing characters: end:', $'"{cmd}"')
+
+      " Extra characters at the end (i.e., other commands)
+      let cmd = c .. "x"
+      let line[1] = cmd
+      call writefile(line, 'Xfunc', 'D')
+      call assert_fails('source Xfunc', 'E492: Not an editor command:', $'"{cmd}"')
+    endfor
+
+    let line =<< trim END
+    func AppendCheck()
+      apple
+    endfunc
+    call AppendCheck()
+    END
+    call writefile(line, 'Xfunc', 'D')
+    call assert_fails('source Xfunc', 'E492: Not an editor command:   apple')
+
+    let line =<< trim END
+    func AppendCheck()
+      command! apple :echo "hello apple"
+      apple
+    endfunc
+    call AppendCheck()
+    END
+    call writefile(line, 'Xfunc', 'D')
+    call assert_fails('source Xfunc', 'E183: User defined commands must start with an uppercase letter')
+
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -7509,6 +7557,25 @@ func Test_for_over_string()
     let res ..= c .. '-'
   endfor
   call assert_equal('', res)
+
+  " Test for using "_" as the loop variable
+  let i = 0
+  let s = 'abc'
+  for _ in s
+    call assert_equal(s[i], _)
+    let i += 1
+  endfor
+endfunc
+
+" Test for 'for' loop failures
+func Test_for_loop_failure()
+  CheckFeature job
+  func ForFn()
+    for x in test_null_job()
+    endfor
+  endfunc
+  call assert_fails('call ForFn()', 'E1523: String, List, Tuple or Blob required')
+  delfunc ForFn
 endfunc
 
 " Test for deeply nested :source command  {{{1
@@ -7526,6 +7593,96 @@ func Test_deeply_nested_source()
   " this must not crash
   let cmd = GetVimCommand() .. " -e -s -S Xnested.vim -c qa!"
   call system(cmd)
+endfunc
+
+" Test for impact of silent! on an exception  {{{1
+func Test_exception_silent()
+  XpathINIT
+  let lines =<< trim END
+  func Throw()
+    Xpath 'a'
+    throw "Uncaught"
+    " This line is not executed.
+    Xpath 'b'
+  endfunc
+  " The exception is suppressed due to the presence of silent!.
+  silent! call Throw()
+  try
+    call DoesNotExist()
+  catch /E117:/
+    Xpath 'c'
+  endtry
+  Xpath 'd'
+  END
+  let verify =<< trim END
+    call assert_equal('acd', g:Xpath)
+  END
+
+  call RunInNewVim(lines, verify)
+endfunc
+
+" Test for an error message starting with "Vim E123: " {{{1
+func Test_skip_prefix_in_exception()
+  let emsg = ''
+  try
+    echoerr "Vim E123:"
+  catch
+    let emsg = v:exception
+  endtry
+  call assert_equal('Vim(echoerr):Vim E123:', emsg)
+
+  let emsg = ''
+  try
+    echoerr "Vim E123: abc"
+  catch
+    let emsg = v:exception
+  endtry
+  call assert_equal('Vim(echoerr):E123: abc', emsg)
+endfunc
+
+" Test for try/except messages displayed with 'verbose' level set to 13 {{{1
+func Test_verbose_try_except_messages()
+  let msgs = ''
+  redir => msgs
+  set verbose=13
+  try
+    echoerr 'foo'
+  catch
+    echo v:exception
+  endtry
+  set verbose=0
+  redir END
+  let expected =<< trim END
+    Exception thrown: Vim(echoerr):foo
+
+    Exception caught: Vim(echoerr):foo
+
+    Vim(echoerr):foo
+    Exception finished: Vim(echoerr):foo
+  END
+  call assert_equal(expected, msgs->split("\n"))
+endfunc
+
+" Test for trailing characters after a catch pattern {{{1
+func Test_catch_pattern_trailing_chars()
+  let lines =<< trim END
+    try
+      echoerr 'foo'
+    catch /foo/xxx
+      echo 'caught foo'
+    endtry
+  END
+
+  new
+  call setline(1, lines)
+  let caught_exception = v:false
+  try
+    source
+  catch /E488: Trailing characters: \/xxx/
+    let caught_exception = v:true
+  endtry
+  call assert_true(caught_exception)
+  bw!
 endfunc
 
 "-------------------------------------------------------------------------------

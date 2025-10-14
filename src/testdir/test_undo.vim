@@ -3,8 +3,7 @@
 " undo-able pieces.  Do that by setting 'undolevels'.
 " Also tests :earlier and :later.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_undotree()
   new
@@ -149,7 +148,7 @@ func Test_undotree_bufnr()
   " Drop created windows
   set ul&
   new
-  only!
+  bw!
 endfunc
 
 func Test_global_local_undolevels()
@@ -193,6 +192,7 @@ func Test_global_local_undolevels()
   " Drop created windows
   set ul&
   new
+  bw! one two
   only!
 endfunc
 
@@ -218,7 +218,7 @@ func Test_undo_del_chars()
   call BackOne('3-456')
   call BackOne('23-456')
   call BackOne('123-456')
-  call assert_fails("BackOne('123-456')")
+  call assert_fails("BackOne('123-456')", "E492: Not an editor command: BackOne('123-456')")
 
   :" Delete three other characters and go back in time with g-
   call feedkeys('$x', 'xt')
@@ -234,7 +234,7 @@ func Test_undo_del_chars()
   call BackOne('3-456')
   call BackOne('23-456')
   call BackOne('123-456')
-  call assert_fails("BackOne('123-456')")
+  call assert_fails("BackOne('123-456')", "E492: Not an editor command: BackOne('123-456')")
   normal 10g+
   call assert_equal('123-', getline(1))
 
@@ -253,7 +253,7 @@ func Test_undo_del_chars()
   later 1h
   call assert_equal('123-abc', getline(1))
 
-  close!
+  bw!
 endfunc
 
 func Test_undolist()
@@ -274,7 +274,17 @@ func Test_undolist()
   call feedkeys('achange3\<Esc>', 'xt')
   let a = execute('undolist')
   call assert_match("^\nnumber changes  when  *saved\n *2  *2  *.*\n *3  *2 .*$", a)
-  close!
+
+  " 3 save number
+  if has("persistent_undo")
+    setl undofile
+    w Xundolist.txt
+    defer delete('Xundolist.txt')
+    let lastline = execute('undolist')->split("\n")[-1]
+    call assert_match('seconds\? ago         \?1', lastline)
+
+  endif
+  bw!
 endfunc
 
 func Test_U_command()
@@ -286,7 +296,7 @@ func Test_U_command()
   call assert_equal('', getline(1))
   norm! U
   call assert_equal('change1change2', getline(1))
-  close!
+  bw!
 endfunc
 
 func Test_undojoin()
@@ -393,7 +403,7 @@ func Test_insert_expr()
   call feedkeys("u", 'x')
   call assert_equal(['a', 'b', 'c', '12', 'd'], getline(2, '$'))
 
-  close!
+  bw!
 endfunc
 
 func Test_undofile_earlier()
@@ -583,7 +593,7 @@ funct Test_undofile()
   endif
   call assert_equal('', undofile(''))
 
-  " Test undofile() with 'undodir' set to to an existing directory.
+  " Test undofile() with 'undodir' set to an existing directory.
   call mkdir('Xundodir')
   set undodir=Xundodir
   let cwd = getcwd()
@@ -838,6 +848,7 @@ func Test_undo_mark()
 endfunc
 
 func Test_undo_after_write()
+  CheckScreendump
   " use a terminal to make undo work like when text is typed
   CheckRunVimInTerminal
 
@@ -873,5 +884,34 @@ func Test_undo_range_normal()
   call assert_equal(['asa', 'bsb'], getline(1, '$'))
   bwipe!
 endfunc
+
+func Test_load_existing_undofile()
+  CheckFeature persistent_undo
+  sp samples/test_undo.txt
+  let mess=execute(':verbose rundo samples/test_undo.txt.undo')
+  call assert_match('Finished reading undo file', mess)
+
+  call assert_equal(['one', 'two', 'three'], getline(1, '$'))
+  norm! u
+  call assert_equal(['one', 'two'], getline(1, '$'))
+  norm! u
+  call assert_equal(['one'], getline(1, '$'))
+  norm! u
+  call assert_equal([''], getline(1, '$'))
+  let mess = execute(':norm! u')
+  call assert_equal([''], getline(1, '$'))
+  call assert_match('Already at oldest change', mess)
+  exe ":norm! \<c-r>"
+  call assert_equal(['one'], getline(1, '$'))
+  exe ":norm! \<c-r>"
+  call assert_equal(['one', 'two'], getline(1, '$'))
+  exe ":norm! \<c-r>"
+  call assert_equal(['one', 'two', 'three'], getline(1, '$'))
+  let mess = execute(":norm! \<c-r>")
+  call assert_equal(['one', 'two', 'three'], getline(1, '$'))
+  call assert_match('Already at newest change', mess)
+  bw!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

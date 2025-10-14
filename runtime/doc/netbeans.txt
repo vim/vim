@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.0.  Last change: 2022 Apr 03
+*netbeans.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -35,16 +35,16 @@ longer exists for recent versions of NetBeans but the protocol was developed
 in such a way that any IDE can use it to integrate Vim.
 
 The NetBeans protocol of Vim is a text based communication protocol, over a
-classical TCP socket. There is no dependency on Java or NetBeans. Any language
-or environment providing a socket interface can control Vim using this
-protocol. There are existing implementations in C, C++, Python and Java. The
-name NetBeans is kept today for historical reasons.
+classical TCP socket.  There is no dependency on Java or NetBeans.  Any
+language or environment providing a socket interface can control Vim using
+this protocol.  There are existing implementations in C, C++, Python and Java.
+The name NetBeans is kept today for historical reasons.
 
 Active project using the NetBeans protocol of Vim:
-- Eclim, http://eclim.org/
+- Eclim, (dead link) eclim.org/
 
 VimIntegration, description of various projects doing Vim Integration:
-	http://www.freehackers.org/VimIntegration
+	(dead link) www.freehackers.org/VimIntegration
 
 Projects using the NetBeans protocol of Vim are or were:
 - Agide, an IDE for the AAP project, written in Python (now replaced by
@@ -54,7 +54,7 @@ Projects using the NetBeans protocol of Vim are or were:
 - Pyclewn, a gdb integration into Vim, written in Python:
 	http://pyclewn.sourceforge.net/
 - VimWrapper, library to easy Vim integration into IDE:
-	http://www.freehackers.org/VimWrapper
+	(dead link) freehackers.org/VimWrapper
 Outdated projects (links don't work):
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
@@ -77,8 +77,8 @@ Initially just a Java IDE, NetBeans has had C, C++, and Fortran support added
 in recent releases.
 
 For more information visit the main NetBeans web site http://www.netbeans.org.
-The External Editor is now, unfortunately, declared obsolete.  See
- http://externaleditor.netbeans.org.
+The External Editor is now, unfortunately, declared obsolete.  See (link seems
+dead): externaleditor.netbeans.org.
 
 Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
 Visit http://www.sun.com for more information regarding the Sun ONE Studio
@@ -134,11 +134,11 @@ Without it the toolbar and signs will be disabled.
 
 The XPM library is provided by Arnaud Le Hors of the French National Institute
 for Research in Computer Science and Control.  It can be downloaded from
-http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
-writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create
-the directory /usr/local/xpm and untar the file there you can use the
-uncommented lines in the Makefile without changing them.  If you use another
-xpm directory you will need to change the XPM_DIR in src/Makefile.
+https://ftp.nluug.nl/ftp/windowing/X/contrib/libraries/.  The current release,
+as of this writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If
+you create the directory /usr/local/xpm and untar the file there you can use
+the uncommented lines in the Makefile without changing them.  If you use
+another xpm directory you will need to change the XPM_DIR in src/Makefile.
 
 
 On MS-Windows:
@@ -147,8 +147,9 @@ On MS-Windows:
 The Win32 support is now in beta stage.
 
 To use XPM signs on Win32 (e.g. when using with NetBeans) you can compile
-XPM by yourself or use precompiled libraries from http://iamphet.nm.ru/misc/
-(for MS Visual C++) or http://gnuwin32.sourceforge.net (for MinGW).
+XPM by yourself or use precompiled libraries from (link seems dead):
+iamphet.nm.ru/misc/ (for MS Visual C++) or
+http://gnuwin32.sourceforge.net (for MinGW).
 
 Enable debugging:
 -----------------
@@ -251,7 +252,7 @@ environment variable "__NETBEANS_SOCKET" is used or the default 3219.
 environment variable "__NETBEANS_VIM_PASSWORD" is used or "changeme".
 
 Vim will initiate a socket connection (client side) to the specified host and
-port upon startup. The password will be sent with the AUTH event when the
+port upon startup.  The password will be sent with the AUTH event when the
 connection has been established.
 
 
@@ -261,7 +262,7 @@ connection has been established.
 The communication between the Vim Controller and Vim uses plain text
 messages.  This protocol was first designed to work with the external editor
 module of NetBeans.  Later it was extended to work with Agide (A-A-P GUI IDE,
-see http://www.a-a-p.org) and then with other IDE. The extensions are marked
+see http://www.a-a-p.org) and then with other IDE.  The extensions are marked
 with "version 2.1".
 
 Version 2.2 of the protocol has several minor changes which should only affect
@@ -284,7 +285,7 @@ mechanism.
 Netbeans messages are processed when Vim is idle, waiting for user input.
 When Vim is run in non-interactive mode, for example when running an automated
 test case that sources a Vim script, the idle loop may not be called often
-enough. In that case, insert |:sleep| commands in the Vim script. The |:sleep|
+enough.  In that case, insert |:sleep| commands in the Vim script.  The |:sleep|
 command does invoke Netbeans messages processing.
 
 6.1 Kinds of messages		|nb-messages|
@@ -441,7 +442,7 @@ editFile pathname
 		Normal way for the IDE to tell the editor to edit a file.
 
 		You must set a bufId different of 0 with this command to
-		assign a bufId to the buffer. It will trigger an event
+		assign a bufId to the buffer.  It will trigger an event
 		fileOpened with a bufId of 0 but the buffer has been assigned.
 
 		If the IDE is going to pass the file text to the editor use
@@ -469,8 +470,8 @@ initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 insertDone starteol readonly
 		Sent by Vim Controller to tell Vim an initial file insert is
 		done.  This triggers a read message being printed.  If
-		"starteol" is "F" then the last line doesn't have a EOL. If
-		"readonly" is "T" then the file is marked as readonly. Prior
+		"starteol" is "F" then the last line doesn't have a EOL.  If
+		"readonly" is "T" then the file is marked as readonly.  Prior
 		to version 2.3, no read messages were displayed after opening
 		a file.  New in version 2.3.
 
@@ -846,7 +847,7 @@ REJECT		Not used.
 These errors occur when a message violates the protocol:
 *E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
 *E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
-*E647* *E648* *E649* *E650* *E651* *E652*
+*E647* *E648* *E650* *E651* *E652*
 
 
 ==============================================================================
@@ -861,7 +862,7 @@ These errors occur when a message violates the protocol:
 			':echo has("netbeans_enabled")'
 
 							*:nbclose*
-:nbc[lose]		Close the current NetBeans session. Remove all placed
+:nbc[lose]		Close the current NetBeans session.  Remove all placed
 			signs.
 
 							*:nbkey*
@@ -870,7 +871,7 @@ These errors occur when a message violates the protocol:
 			command, this command can be used to generate a hotkey
 			message to the Vim Controller.
 			This command can also be used to pass any text to the
-			Vim  Controller. It is used by Pyclewn, for example,
+			Vim  Controller.  It is used by Pyclewn, for example,
 			to build the complete set of gdb commands as Vim user
 			commands.
 			The events newDotAndMark, keyCommand and keyAtPos are
@@ -884,7 +885,7 @@ NUL bytes are not possible.  For editor -> IDE they will appear as NL
 characters.  For IDE -> editor they cannot be inserted.
 
 A NetBeans session may be initiated with Vim running in a terminal, and
-continued later in a GUI environment after running the |:gui| command. In this
+continued later in a GUI environment after running the |:gui| command.  In this
 case, the highlighting defined for the NetBeans annotations may be cleared
 when the ":gui" command sources .gvimrc and this file loads a colorscheme
 that runs the command ":highlight clear".
@@ -934,19 +935,21 @@ version of NetBeans.
 
 10.1. Downloading NetBeans			*netbeans-download*
 
-The NetBeans IDE is available for download from netbeans.org.  You can download
-a released version, download sources, or use CVS to download the current
-source tree.  If you choose to download sources, follow directions from
-netbeans.org on building NetBeans.
+The NetBeans IDE is available for download from netbeans.org.  You can
+download a released version, download sources, or use CVS to download the
+current source tree.  If you choose to download sources, follow directions
+from netbeans.org on building NetBeans.
 
 Depending on the version of NetBeans you download, you may need to do further
-work to get the required External Editor module.  This is the module which lets
-NetBeans work with gvim (or xemacs :-).  See http://externaleditor.netbeans.org
+work to get the required External Editor module.  This is the module which
+lets NetBeans work with gvim (or xemacs :-).  See (dead link)
+externaleditor.netbeans.org
 for details on downloading this module if your NetBeans release does not have
 it.
 
 For C, C++, and Fortran support you will also need the cpp module.  See
-http://cpp.netbeans.org for information regarding this module.
+cpp.netbeans.org (link seems dead) for information regarding this
+module.
 
 You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
 free trial.  See http://www.sun.com for further details.
@@ -992,10 +995,11 @@ Unfortunately, some versions do not have this module in their update
 center.  If you cannot download via the update center you will need to
 download sources and build the module.  I will try and get the module
 available from the NetBeans Update Center so building will be unnecessary.
-Also check http://externaleditor.netbeans.org for other availability options.
+Also check (dead link) externaleditor.netbeans.org
+for other availability options.
 
 To download the External Editor sources via CVS and build your own module,
-see http://externaleditor.netbeans.org and http://www.netbeans.org.
+see (dead link) externaleditor.netbeans.org and http://www.netbeans.org.
 Unfortunately, this is not a trivial procedure.
 
 

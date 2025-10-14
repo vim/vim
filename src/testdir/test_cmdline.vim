@@ -1,10 +1,7 @@
 " Tests for editing the command line.
 
-source check.vim
-source screendump.vim
-source view_util.vim
-source shared.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func SetUp()
   func SaveLastScreenLine()
@@ -211,6 +208,37 @@ func Test_wildmenu_screendump()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_wildmenu_with_input_func()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('-c "set wildmenu"', {'rows': 8})
+
+  call term_sendkeys(buf, ":call input('Command? ', '', 'command')\<CR>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_1', {})
+  call term_sendkeys(buf, "ech\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_2', {})
+  call term_sendkeys(buf, "\<Space>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_3', {})
+  call term_sendkeys(buf, "bufn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_4', {})
+  call term_sendkeys(buf, "\<CR>")
+
+  call term_sendkeys(buf, ":set wildoptions+=pum\<CR>")
+
+  call term_sendkeys(buf, ":call input('Command? ', '', 'command')\<CR>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_5', {})
+  call term_sendkeys(buf, "ech\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_6', {})
+  call term_sendkeys(buf, "\<Space>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_7', {})
+  call term_sendkeys(buf, "bufn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_input_func_8', {})
+  call term_sendkeys(buf, "\<CR>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_redraw_in_autocmd()
   CheckScreendump
 
@@ -270,6 +298,12 @@ func Test_changing_cmdheight()
 
   let lines =<< trim END
       set cmdheight=1 laststatus=2
+      func EchoOne()
+        set laststatus=2 cmdheight=1
+        echo 'foo'
+        echo 'bar'
+        set cmdheight=2
+      endfunc
       func EchoTwo()
         set laststatus=2
         set cmdheight=5
@@ -284,8 +318,8 @@ func Test_changing_cmdheight()
   call term_sendkeys(buf, ":resize -3\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_1', {})
 
-  " using the space available doesn't change the status line
-  call term_sendkeys(buf, ":set cmdheight+=3\<CR>")
+  " :resize now also changes 'cmdheight' accordingly
+  call term_sendkeys(buf, ":set cmdheight+=1\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_2', {})
 
   " using more space moves the status line up
@@ -293,7 +327,7 @@ func Test_changing_cmdheight()
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_3', {})
 
   " reducing cmdheight moves status line down
-  call term_sendkeys(buf, ":set cmdheight-=2\<CR>")
+  call term_sendkeys(buf, ":set cmdheight-=3\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_4', {})
 
   " reducing window size and then setting cmdheight
@@ -304,6 +338,14 @@ func Test_changing_cmdheight()
   " setting 'cmdheight' works after outputting two messages
   call term_sendkeys(buf, ":call EchoTwo()\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_6', {})
+
+  " increasing 'cmdheight' doesn't clear the messages that need hit-enter
+  call term_sendkeys(buf, ":call EchoOne()\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_7', {})
+
+  " window commands do not reduce 'cmdheight' to value lower than :set by user
+  call term_sendkeys(buf, "\<CR>:wincmd _\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_8', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -404,8 +446,8 @@ func Test_match_completion()
   hi Aardig ctermfg=green
   call feedkeys(":match \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"match Aardig', @:)
-  call feedkeys(":match \<S-Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"match none', @:)
+  call feedkeys(":match NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"match NONE', @:)
   call feedkeys(":match | chist\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"match | chistory', @:)
 endfunc
@@ -414,22 +456,40 @@ func Test_highlight_completion()
   hi Aardig ctermfg=green
   call feedkeys(":hi \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi Aardig', getreg(':'))
+
+  " hi default
   call feedkeys(":hi default \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi default Aardig', getreg(':'))
-  call feedkeys(":hi clear Aa\<Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"hi clear Aardig', getreg(':'))
-  call feedkeys(":hi li\<S-Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"hi link', getreg(':'))
   call feedkeys(":hi d\<S-Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi default', getreg(':'))
+  call feedkeys(":hi default link Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi default link Aardig', getreg(':'))
+
+  " hi clear only accepts one parameter
   call feedkeys(":hi c\<S-Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi clear', getreg(':'))
+  call feedkeys(":hi clear Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi clear Aardig', getreg(':'))
   call feedkeys(":hi clear Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"hi clear Aardig Aardig', getreg(':'))
-  call feedkeys(":hi Aardig \<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"hi Aardig \t", getreg(':'))
+  call assert_equal("\"hi clear Aardig Aard\<Tab>", getreg(':'))
+  " hi link accepts up to two parameters
+  call feedkeys(":hi li\<S-Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi link', getreg(':'))
+  call assert_equal('"hi link', getreg(':'))
+  call feedkeys(":hi link Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi link Aardig', getreg(':'))
+  call feedkeys(":hi link Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig Aardig", getreg(':'))
+  call feedkeys(":hi link Aardig Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig Aardig Aard\<Tab>", getreg(':'))
+  " hi link will complete to "NONE" for second parameter
+  call feedkeys(":hi link NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"hi link NonText", getreg(':'))
+  call feedkeys(":hi link Aardig NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig NONE", getreg(':'))
 
   " A cleared group does not show up in completions.
+  hi clear Added
   hi Anders ctermfg=green
   call assert_equal(['Aardig', 'Anders'], getcompletion('A', 'highlight'))
   hi clear Aardig
@@ -444,6 +504,117 @@ func Test_highlight_easter_egg()
   call feedkeys(":hi Ni \<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"hi Ni \<Tab>", @:)
   call test_override('ALL', 0)
+endfunc
+
+func Test_highlight_group_completion()
+  " Test completing keys
+  call assert_equal('term=', getcompletion('hi Foo ', 'cmdline')[0])
+  call assert_equal('ctermfg=', getcompletion('hi Foo c*fg', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi Foo NON', 'cmdline')[0])
+  set wildoptions+=fuzzy
+  call assert_equal('ctermbg=', getcompletion('hi Foo cmbg', 'cmdline')[0])
+  set wildoptions-=fuzzy
+
+  " Test completing the current value
+  hi FooBar term=bold,underline cterm=undercurl ctermfg=lightgray ctermbg=12 ctermul=34
+  hi AlmostEmpty term=bold
+  call assert_equal('bold,underline', getcompletion('hi FooBar term=', 'cmdline')[0])
+  call assert_equal('undercurl', getcompletion('hi FooBar cterm=', 'cmdline')[0])
+  call assert_equal('7', getcompletion('hi FooBar ctermfg=', 'cmdline')[0])
+  call assert_equal('12', getcompletion('hi FooBar ctermbg=', 'cmdline')[0])
+  call assert_equal('34', getcompletion('hi FooBar ctermul=', 'cmdline')[0])
+
+  " highlight group exists, but no value was set. Should not complete to
+  " existing value
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermfg=', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermbg=', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermul=', 'cmdline')[0])
+  call assert_equal('bold', getcompletion('hi AlmostEmpty cterm=', 'cmdline')[0])
+
+  " "bold,underline" is unique and creates an extra item. "undercurl" isn't
+  " and should be de-duplicated.
+  call assert_equal(len(getcompletion('hi FooBar term=', 'cmdline')),
+        \ 1 + len(getcompletion('hi FooBar cterm=', 'cmdline')))
+
+  " don't complete original value if we have user input already, similar to
+  " behavior in :set <option>=<pattern>
+  call assert_equal(['bold'], getcompletion('hi FooBar term=bol', 'cmdline'))
+  call assert_equal([], getcompletion('hi FooBar ctermfg=1', 'cmdline'))
+
+  " start/stop do not fill their current value now as they are more
+  " complicated
+  hi FooBar start=123 stop=234
+  call assert_equal([], getcompletion('hi FooBar start=', 'cmdline'))
+  call assert_equal([], getcompletion('hi FooBar stop=', 'cmdline'))
+
+  if has("gui") || has("termguicolors")
+    hi FooBar gui=italic guifg=#112233 guibg=brown1 guisp=green
+    call assert_equal('italic', getcompletion('hi FooBar gui=', 'cmdline')[0])
+    call assert_equal('#112233', getcompletion('hi FooBar guifg=', 'cmdline')[0])
+    call assert_equal('brown1', getcompletion('hi FooBar guibg=', 'cmdline')[0])
+    call assert_equal('green', getcompletion('hi FooBar guisp=', 'cmdline')[0])
+
+    " Check that existing value is de-duplicated and doesn't show up later
+    call assert_equal(1, count(getcompletion('hi FooBar guibg=', 'cmdline'), 'brown1'))
+
+    " highlight group exists, but no value was set. Should not complete to
+    " existing value
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guifg=', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guibg=', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guisp=', 'cmdline')[0])
+    call assert_equal('bold', getcompletion('hi AlmostEmpty gui=', 'cmdline')[0])
+  endif
+
+  " Test completing attributes
+  call assert_equal(['underdouble', 'underdotted'], getcompletion('hi DoesNotExist term=un*erdo*', 'cmdline'))
+  call assert_equal('NONE', getcompletion('hi DoesNotExist cterm=NON', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi DoesNotExist cterm=', 'cmdline')[-1]) " NONE should be at the end and not sorted
+  call assert_equal('bold', getcompletion('hi DoesNotExist cterm=underline,bo', 'cmdline')[0]) " complete after comma
+  if has("gui") || has("termguicolors")
+    set wildoptions+=fuzzy
+    call assert_equal('italic', getcompletion('hi DoesNotExist gui=itic', 'cmdline')[0])
+    set wildoptions-=fuzzy
+  endif
+
+  " Test completing cterm colors
+  call assert_equal('fg', getcompletion('hi FooBar ctermbg=f*g', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi DoesNotExist ctermbg=f*g', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi FooBar ctermfg=NON', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi DoesNotExist ctermfg=NON', 'cmdline')[0])
+  set wildoptions+=fuzzy
+  call assert_equal('Black', getcompletion('hi FooBar ctermul=blck', 'cmdline')[0])
+  call assert_equal('Black', getcompletion('hi DoesNotExist ctermul=blck', 'cmdline')[0])
+  set wildoptions-=fuzzy
+
+  " Test completing gui colors
+  if has("gui") || has("termguicolors")
+    call assert_equal('fg', getcompletion('hi FooBar guibg=f*g', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi DoesNotExist guibg=f*g', 'cmdline')[0])
+    call assert_equal('NONE', getcompletion('hi FooBar guifg=NON', 'cmdline')[0])
+    call assert_equal('NONE', getcompletion('hi DoesNotExist guifg=NON', 'cmdline')[0])
+    set wildoptions=fuzzy
+    call assert_equal('limegreen', getcompletion('hi FooBar guisp=limgrn', 'cmdline')[0])
+    call assert_equal('limegreen', getcompletion('hi DoesNotExist guisp=limgrn', 'cmdline')[0])
+    set wildoptions-=fuzzy
+
+    " Test pruning bad color names with space. Vim doesn't support them.
+    let v:colornames['foobar with space'] = '#123456'
+    let v:colornames['foobarwithoutspace'] = '#234567'
+    call assert_equal(['foobarwithoutspace'], getcompletion('hi FooBar guibg=foobarw', 'cmdline'))
+
+    " Test specialized sorting. First few items are special values that
+    " go first, after that it's a sorted list of color names.
+    call assert_equal(['fg','bg','NONE'], getcompletion('hi DoesNotExist guifg=', 'cmdline')[0:2])
+    let completed_colors=getcompletion('hi DoesNotExist guifg=', 'cmdline')[3:]
+    let gui_colors_no_space=filter(copy(v:colornames), {key,val -> match(key, ' ')==-1})
+    call assert_equal(len(gui_colors_no_space), len(completed_colors))
+    call assert_equal(sort(copy(completed_colors)), completed_colors)
+
+    " Test that the specialized sorting still works if we have some pattern matches
+    let completed_colors=getcompletion('hi DoesNotExist guifg=*blue*', 'cmdline')
+    call assert_equal(sort(copy(completed_colors)), completed_colors)
+    call assert_equal('aliceblue', completed_colors[0])
+  endif
 endfunc
 
 func Test_getcompletion()
@@ -511,6 +682,13 @@ func Test_getcompletion()
   let l = getcompletion('kill', 'expression')
   call assert_equal([], l)
 
+  let l = getcompletion('', 'filetypecmd')
+  call assert_equal(["indent", "off", "on", "plugin"], l)
+  let l = getcompletion('not', 'filetypecmd')
+  call assert_equal([], l)
+  let l = getcompletion('o', 'filetypecmd')
+  call assert_equal(['off', 'on'], l)
+
   let l = getcompletion('tag', 'function')
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
@@ -545,6 +723,13 @@ func Test_getcompletion()
   let l = getcompletion('horse', 'filetype')
   call assert_equal([], l)
 
+  if has('keymap')
+    let l = getcompletion('acc', 'keymap')
+    call assert_true(index(l, 'accents') >= 0)
+    let l = getcompletion('nullkeymap', 'keymap')
+    call assert_equal([], l)
+  endif
+
   let l = getcompletion('z', 'syntax')
   call assert_true(index(l, 'zimbu') >= 0)
   let l = getcompletion('emacs', 'syntax')
@@ -578,6 +763,11 @@ func Test_getcompletion()
   let l = getcompletion('', 'mapclear')
   call assert_true(index(l, '<buffer>') >= 0)
   let l = getcompletion('not', 'mapclear')
+  call assert_equal([], l)
+
+  let l = getcompletion('', 'retab')
+  call assert_true(index(l, '-indentonly') >= 0)
+  let l = getcompletion('not', 'retab')
   call assert_equal([], l)
 
   let l = getcompletion('.', 'shellcmd')
@@ -636,6 +826,8 @@ func Test_getcompletion()
   call assert_equal([], l)
   let l = getcompletion('autocmd BufEnter * map <bu', 'cmdline')
   call assert_equal(['<buffer>'], l)
+  let l = getcompletion('retab! ', 'cmdline')
+  call assert_true(index(l, '-indentonly') >= 0)
 
   func T(a, c, p)
     let g:cmdline_compl_params = [a:a, a:c, a:p]
@@ -651,7 +843,8 @@ func Test_getcompletion()
   unlet g:cmdline_compl_params
 
   " For others test if the name is recognized.
-  let names = ['buffer', 'environment', 'file_in_path', 'mapping', 'tag', 'tag_listfiles', 'user']
+  let names = ['buffer', 'environment', 'file_in_path', 'dir_in_path', 'mapping', 'tag',
+      \ 'tag_listfiles', 'user']
   if has('cmdline_hist')
     call add(names, 'history')
   endif
@@ -684,9 +877,21 @@ func Test_getcompletion()
     bw Xtest\
   endif
 
-  call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
+  call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E866:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
+endfunc
+
+func Test_getcompletiontype()
+  call assert_fails('call getcompletiontype()', 'E119:')
+  call assert_fails('call getcompletiontype({})', 'E1174:')
+  call assert_equal('command', getcompletiontype(''))
+  call assert_equal('', getcompletiontype('dummy '))
+  call assert_equal('', getcompletiontype('ls '))
+  call assert_equal('dir_in_path', getcompletiontype('cd '))
+  call assert_equal('var', getcompletiontype('let v:n'))
+  call assert_equal('function', getcompletiontype('call tag'))
+  call assert_equal('help', getcompletiontype('help '))
 endfunc
 
 func Test_multibyte_expression()
@@ -910,6 +1115,26 @@ func Test_cmdline_remove_char()
   let &encoding = encoding_save
 endfunc
 
+func Test_cmdline_del_utf8()
+  let @s = '⒌'
+  call feedkeys(":\"\<C-R>s,,\<C-B>\<Right>\<Del>\<CR>", 'tx')
+  call assert_equal('",,', @:)
+
+  let @s = 'a̳'
+  call feedkeys(":\"\<C-R>s,,\<C-B>\<Right>\<Del>\<CR>", 'tx')
+  call assert_equal('",,', @:)
+
+  let @s = 'β̳'
+  call feedkeys(":\"\<C-R>s,,\<C-B>\<Right>\<Del>\<CR>", 'tx')
+  call assert_equal('",,', @:)
+
+  if has('arabic')
+    let @s = 'لا'
+    call feedkeys(":\"\<C-R>s,,\<C-B>\<Right>\<Del>\<CR>", 'tx')
+    call assert_equal('",,', @:)
+  endif
+endfunc
+
 func Test_cmdline_keymap_ctrl_hat()
   CheckFeature keymap
 
@@ -1050,6 +1275,18 @@ func Test_cmdline_complete_user_names()
   endif
 endfunc
 
+func Test_cmdline_complete_shellcmdline()
+  CheckExecutable whoami
+  command -nargs=1 -complete=shellcmdline MyCmd
+
+  call feedkeys(":MyCmd whoam\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('^".*\<whoami\>', @:)
+  let l = getcompletion('whoam', 'shellcmdline')
+  call assert_match('\<whoami\>', join(l, ' '))
+
+  delcommand MyCmd
+endfunc
+
 func Test_cmdline_complete_bang()
   CheckExecutable whoami
   call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -1096,11 +1333,12 @@ endfunc
 
 func Test_cmdline_complete_expression()
   let g:SomeVar = 'blah'
-  for cmd in ['exe', 'echo', 'echon', 'echomsg']
+  for cmd in ['exe', 'echo', 'echon', 'echomsg', 'echoerr',
+        \ 'echoconsole', 'echowindow']
     call feedkeys(":" .. cmd .. " SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
-    call assert_match('"' .. cmd .. ' SomeVar', @:)
+    call assert_match('"' .. cmd .. ' SomeVar', @:, cmd)
     call feedkeys(":" .. cmd .. " foo SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
-    call assert_match('"' .. cmd .. ' foo SomeVar', @:)
+    call assert_match('"' .. cmd .. ' foo SomeVar', @:, cmd)
   endfor
   unlet g:SomeVar
 endfunc
@@ -1166,6 +1404,10 @@ func Test_cmdline_complete_various()
   " completion for :k command
   call feedkeys(":ka\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"ka\<C-A>", @:)
+
+  " completion for :keepmarks command
+  call feedkeys(":kee edi\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"kee edit", @:)
 
   " completion for short version of the :s command
   call feedkeys(":sI \<C-A>\<C-B>\"\<CR>", 'xt')
@@ -1427,8 +1669,10 @@ func Test_cmdline_complete_various()
   " completion after a :global command
   call feedkeys(":g/a/chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"g/a/chistory', @:)
+  set wildchar=0
   call feedkeys(":g/a\\/chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"g/a\\/chist\t", @:)
+  set wildchar&
 
   " use <Esc> as the 'wildchar' for completion
   set wildchar=<Esc>
@@ -1589,7 +1833,7 @@ endfunc
 
 set cpo&
 
-func Test_getcmdtype()
+func Test_getcmdtype_getcmdprompt()
   call feedkeys(":MyCmd a\<C-R>=Check_cmdline(':')\<CR>\<Esc>", "xt")
 
   let cmdtype = ''
@@ -1613,6 +1857,31 @@ func Test_getcmdtype()
   cunmap <F6>
 
   call assert_equal('', getcmdline())
+
+  call assert_equal('', getcmdprompt())
+  augroup test_CmdlineEnter
+    autocmd!
+    autocmd CmdlineEnter * let g:cmdprompt=getcmdprompt()
+  augroup END
+  call feedkeys(":call input('Answer?')\<CR>a\<CR>\<ESC>", "xt")
+  call assert_equal('Answer?', g:cmdprompt)
+  call assert_equal('', getcmdprompt())
+  call feedkeys(":\<CR>\<ESC>", "xt")
+  call assert_equal('', g:cmdprompt)
+  call assert_equal('', getcmdprompt())
+
+  let str = "C" .. repeat("c", 1023) .. "xyz"
+  call feedkeys(":call input('" .. str .. "')\<CR>\<CR>\<ESC>", "xt")
+  call assert_equal(str, g:cmdprompt)
+
+  call feedkeys(':call input("Msg1\nMessage2\nAns?")' .. "\<CR>b\<CR>\<ESC>", "xt")
+  call assert_equal('Ans?', g:cmdprompt)
+  call assert_equal('', getcmdprompt())
+
+  augroup test_CmdlineEnter
+    au!
+  augroup END
+  augroup! test_CmdlineEnter
 endfunc
 
 func Test_verbosefile()
@@ -1632,6 +1901,8 @@ func Test_verbose_option()
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
+    " clear the TermResponse autocommand from defaults.vim
+    au! vimStartup TermResponse
     command DoSomething echo 'hello' |set ts=4 |let v = '123' |echo v
     call feedkeys("\r", 't') " for the hit-enter prompt
     set verbose=20
@@ -1957,16 +2228,55 @@ func Wildmode_tests()
   call assert_equal('AAA    AAAA   AAAAA', g:Sline)
   call assert_equal('"b A', @:)
 
+  " When 'wildmenu' is not set, 'noselect' completes first item
+  set wildmode=noselect
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+
+  " When 'noselect' is present, do not complete first <tab>.
+  set wildmenu
+  set wildmode=noselect
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+
+  " When 'full' is present, complete after first <tab>.
+  set wildmode=noselect,full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+  call feedkeys(":MyCmd o\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneB', @:)
+  call feedkeys(":MyCmd o\t\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneB', @:)
+
+  " 'noselect' has no effect when 'longest' is present.
+  set wildmode=noselect:longest
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd one', @:)
+
+  " Complete 'noselect' value in 'wildmode' option
+  set wildmode&
+  call feedkeys(":set wildmode=n\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set wildmode=noselect', @:)
+  call feedkeys(":set wildmode=\t\t\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set wildmode=noselect', @:)
+
   " when using longest completion match, matches shorter than the argument
   " should be ignored (happens with :help)
   set wildmode=longest,full
-  set wildmenu
-  call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"help a', @:)
+  " XXX: This test is incorrect.  ':help a*' will never yield 'help a'
+  "   because '`a' exists as a menu item.  The intent was to test a case
+  "   handled by nextwild().
+  " call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
+  " call assert_equal('"help a', @:)
   " non existing file
   call feedkeys(":e a1b2y3z4\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e a1b2y3z4', @:)
-  set wildmenu&
 
   " Test for longest file name completion with 'fileignorecase'
   " On MS-Windows, file names are case insensitive.
@@ -1985,6 +2295,21 @@ func Wildmode_tests()
     call assert_equal('"e Xtest', @:)
     set fileignorecase&
   endif
+
+  " If 'noselect' is present, single item menu should not insert item
+  func! T(a, c, p)
+    return "oneA"
+  endfunc
+  command! -nargs=1 -complete=custom,T MyCmd
+  set wildmode=noselect,full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+  " 'nowildmenu' should make 'noselect' ineffective
+  set nowildmenu
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
 
   %argdelete
   delcommand MyCmd
@@ -2335,6 +2660,7 @@ endfunc
 " Test for using a popup menu for the command line completion matches
 " (wildoptions=pum)
 func Test_wildmenu_pum()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let commands =<< trim [CODE]
@@ -2501,9 +2827,11 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "sign xyz\<Esc>:sign \<Tab>\<C-E>\<Up>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_29', {})
 
-  " Check "list" still works
+  " Check that when "longest" produces no result, "list" works
   call term_sendkeys(buf, "\<C-U>set wildmode=longest,list\<CR>")
   call term_sendkeys(buf, ":cn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
+  call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
   call term_sendkeys(buf, "s")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
@@ -2605,7 +2933,66 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "\<Esc>:set wildchazz\<Left>\<Left>\<Tab>\<C-Y>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_53', {})
 
-  call term_sendkeys(buf, "\<C-U>\<CR>")
+  call term_sendkeys(buf, "\<Esc>:set showtabline& laststatus& lazyredraw&\<CR>")
+
+  " "longest:list" shows list whether it finds a candidate or not
+  call term_sendkeys(buf, ":set wildmode=longest:list,full wildoptions&\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_55', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_56', {})
+  call term_sendkeys(buf, "\<Esc>:sign u\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_57', {})
+
+  " "longest:full" shows wildmenu whether it finds a candidate or not; item not selected
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest:full,full\<CR>")
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_58', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_59', {})
+  call term_sendkeys(buf, "\<Esc>:cn\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_60', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_61', {})
+
+  " If "longest,full" finds a candidate, wildmenu is not shown
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,full\<CR>")
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_62', {})
+  " Subsequent wildchar shows wildmenu
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_63', {})
+
+  " 'longest' does not find candidate, and displays menu without selecting item
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,noselect\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_64', {})
+
+  " If "longest" finds no candidate in "longest,full", "full" is used
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,full\<CR>")
+  call term_sendkeys(buf, ":set wildoptions=pum\<CR>")
+  call term_sendkeys(buf, ":sign un\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
+
+  " Similarly for "longest,noselect:full"
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,noselect:full\<CR>")
+  call term_sendkeys(buf, ":sign un\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_65', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
+
+  call term_sendkeys(buf, "\<C-U>\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -2627,6 +3014,7 @@ func Test_wildmenumode_with_pum()
 endfunc
 
 func Test_wildmenu_with_pum_foldexpr()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -2652,6 +3040,7 @@ endfunc
 " The popup menu should be positioned correctly over the status line of the
 " bottom-most window.
 func Test_wildmenu_pum_from_terminal()
+  CheckScreendump
   CheckRunVimInTerminal
   let python = PythonProg()
   call CheckPython(python)
@@ -2672,6 +3061,7 @@ func Test_wildmenu_pum_from_terminal()
 endfunc
 
 func Test_wildmenu_pum_odd_wildchar()
+  CheckScreendump
   CheckRunVimInTerminal
 
   " Test odd wildchar interactions with pum. Make sure they behave properly
@@ -2714,15 +3104,152 @@ func Test_wildmenu_pum_odd_wildchar()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test that 'rightleft' should not affect cmdline completion popup menu.
+func Test_wildmenu_pum_rightleft()
+  CheckFeature rightleft
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum
+    set rightleft
+  END
+  call writefile(lines, 'Xwildmenu_pum_rl', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_rl', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":sign \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_rl', {})
+
+  " Behavior is the same when using 'keymap'.
+  call term_sendkeys(buf, "\<Esc>:set keymap=dvorak\<CR>")
+  call TermWait(buf)
+  " ";gul" -> "sign" when using Dvorak keymap.
+  call term_sendkeys(buf, ":\<C-^>;gul \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_rl', {})
+  call term_sendkeys(buf, "\<Esc>:set keymap&\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting when pattern matches non-first character of item
+func Test_wildmenu_pum_hl_nonfirst()
+  CheckScreendump
+  let lines =<< trim END
+    set wildoptions=pum wildchar=<tab> wildmode=noselect,full
+    hi PmenuMatchSel  ctermfg=6 ctermbg=7
+    hi PmenuMatch     ctermfg=4 ctermbg=225
+    func T(a, c, p)
+      return ["oneA", "o neBneB", "aoneC"]
+    endfunc
+    command -nargs=1 -complete=customlist,T MyCmd
+  END
+
+  call writefile(lines, 'Xwildmenu_pum_hl_nonf', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl_nonf', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":MyCmd ne\<tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_nonf', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting matched text in cmdline completion popup menu.
+func Test_wildmenu_pum_hl_match()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  ctermfg=6 ctermbg=7
+    hi PmenuMatch     ctermfg=4 ctermbg=225
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":sign plc\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_1', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_2', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_3', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":sign un\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_4', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_5', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_6', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting of matched text in cmdline completion popup menu provided
+" by a command completed with customlist.
+func Test_wildmenu_pum_hl_match_list()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  cterm=reverse
+    hi PmenuMatch     cterm=reverse
+    command -nargs=1 -complete=customlist,ListComplete ListT echo <q-args>
+    func ListComplete(A, B, C)
+      return ['hello/world', 'hello/wonderful']->matchfuzzy(a:A)
+    endfunc
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":ListT hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_list_1', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":ListT hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_list_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting of matched text in cmdline completion popup menu provided
+" by a custom 'findfunc'
+func Test_wildmenu_pum_hl_match_findfunc()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  cterm=reverse
+    hi PmenuMatch     cterm=reverse
+    func FindComplete(cmdarg, cmdcomplete)
+      return ['hello/world', 'hello/wonderful']->matchfuzzy(a:cmdarg)
+    endfunc
+    set findfunc=FindComplete
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_1', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test for completion after a :substitute command followed by a pipe (|)
 " character
 func Test_cmdline_complete_substitute()
+  set wildchar=0
   call feedkeys(":s | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s | \t", @:)
   call feedkeys(":s/ | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/ | \t", @:)
   call feedkeys(":s/one | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/one | \t", @:)
+  set wildchar&
   call feedkeys(":s/one/ | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/one/ | \t", @:)
   call feedkeys(":s/one/two | \t\<C-B>\"\<CR>", 'xt')
@@ -2815,10 +3342,10 @@ func Test_fuzzy_completion_bufname_fullpath()
   edit Xcmd/Xstate/Xfile.js
   cd Xcmd/Xstate
   enew
-  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b CmdStateFile', @:)
+  call feedkeys(":b cmdstatefile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b cmdstatefile', @:)
   set wildoptions=fuzzy
-  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call feedkeys(":b cmdstatefile\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_match('Xcmd/Xstate/Xfile.js$', @:)
   cd -
   set wildoptions&
@@ -2840,6 +3367,26 @@ func Test_fuzzy_completion_behave()
   call feedkeys(":behave win\<C-D>\<F4>\<C-B>\"\<CR>", 'tx')
   call assert_equal('mswin', g:Sline)
   call assert_equal('"behave win', @:)
+  set wildoptions&
+endfunc
+
+" :filetype suboptions completion
+func Test_completion_filetypecmd()
+  set wildoptions&
+  call feedkeys(":filetype \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype indent off on plugin', @:)
+  call feedkeys(":filetype plugin \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype plugin indent off on', @:)
+  call feedkeys(":filetype indent \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype indent off on plugin', @:)
+  call feedkeys(":filetype i\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype indent', @:)
+  call feedkeys(":filetype p\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype plugin', @:)
+  call feedkeys(":filetype o\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype off on', @:)
+  call feedkeys(":filetype indent of\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"filetype indent off', @:)
   set wildoptions&
 endfunc
 
@@ -3077,7 +3624,7 @@ func Test_fuzzy_completion_mapname()
   nmap <Plug>state :
   nmap <Plug>FendingOff :
   call feedkeys(":nmap <Plug>fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>goformat <Plug>fendoff", @:)
+  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>fendoff <Plug>goformat", @:)
   nunmap <Plug>format
   nunmap <Plug>goformat
   nunmap <Plug>TestFOrmat
@@ -3249,7 +3796,7 @@ func Test_fuzzy_completion_cmd_sort_results()
   command T123FendingOff :
   set wildoptions=fuzzy
   call feedkeys(":T123fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123goformat T123fendoff', @:)
+  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123fendoff T123goformat', @:)
   delcommand T123format
   delcommand T123goformat
   delcommand T123TestFOrmat
@@ -3525,6 +4072,60 @@ func Test_cmdline_complete_substitute_short()
   endfor
 endfunc
 
+" Test for shellcmdline command argument completion
+func Test_cmdline_complete_shellcmdline_argument()
+  command -nargs=+ -complete=shellcmdline MyCmd
+
+  set wildoptions=fuzzy
+
+  call feedkeys(":MyCmd vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim test_cmdline.vim', @:)
+  call assert_equal(['test_cmdline.vim'],
+        \ getcompletion('vim test_cmdline.', 'shellcmdline'))
+
+  call feedkeys(":MyCmd vim nonexistentfile\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim nonexistentfile', @:)
+  call assert_equal([],
+        \ getcompletion('vim nonexistentfile', 'shellcmdline'))
+
+  let compl1 = getcompletion('', 'file')[0]
+  let compl2 = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1, @:)
+
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl1, @:)
+
+  let compl = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl2, @:)
+
+  set wildoptions&
+  call feedkeys(":MyCmd vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim test_cmdline.vim', @:)
+  call assert_equal(['test_cmdline.vim'],
+        \ getcompletion('vim test_cmdline.', 'shellcmdline'))
+
+  call feedkeys(":MyCmd vim nonexistentfile\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim nonexistentfile', @:)
+  call assert_equal([],
+        \ getcompletion('vim nonexistentfile', 'shellcmdline'))
+
+  let compl1 = getcompletion('', 'file')[0]
+  let compl2 = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1, @:)
+
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl1, @:)
+
+  let compl = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl2, @:)
+
+  delcommand MyCmd
+endfunc
+
 " Test for :! shell command argument completion
 func Test_cmdline_complete_bang_cmd_argument()
   set wildoptions=fuzzy
@@ -3536,21 +4137,34 @@ func Test_cmdline_complete_bang_cmd_argument()
 endfunc
 
 func Call_cmd_funcs()
-  return string([getcmdpos(), getcmdscreenpos(), getcmdcompltype()])
+  return [getcmdpos(), getcmdscreenpos(), getcmdcompltype(), getcmdcomplpat()]
 endfunc
 
 func Test_screenpos_and_completion()
   call assert_equal(0, getcmdpos())
   call assert_equal(0, getcmdscreenpos())
   call assert_equal('', getcmdcompltype())
+  call assert_equal('', getcmdcomplpat())
 
-  cnoremap <expr> <F2> string([getcmdpos(), getcmdscreenpos(), getcmdcompltype()])
+  cnoremap <expr> <F2> string(Call_cmd_funcs())
   call feedkeys(":let a\<F2>\<C-B>\"\<CR>", "xt")
-  call assert_equal("\"let a[6, 7, 'var']", @:)
+  call assert_equal("\"let a[6, 7, 'var', 'a']", @:)
   call feedkeys(":quit \<F2>\<C-B>\"\<CR>", "xt")
-  call assert_equal("\"quit [6, 7, '']", @:)
+  call assert_equal("\"quit [6, 7, '', '']", @:)
   call feedkeys(":nosuchcommand \<F2>\<C-B>\"\<CR>", "xt")
-  call assert_equal("\"nosuchcommand [15, 16, '']", @:)
+  call assert_equal("\"nosuchcommand [15, 16, '', '']", @:)
+
+  " Check that getcmdcompltype() and getcmdcomplpat() don't interfere with
+  " cmdline completion.
+  let g:results = []
+  cnoremap <F2> <Cmd>let g:results += [[getcmdline()] + Call_cmd_funcs()]<CR>
+  call feedkeys(":sign un\<Tab>\<F2>\<Tab>\<F2>\<Tab>\<F2>\<C-C>", "xt")
+  call assert_equal([
+        \ ['sign undefine', 14, 15, 'sign', 'undefine'],
+        \ ['sign unplace', 13, 14, 'sign', 'unplace'],
+        \ ['sign un', 8, 9, 'sign', 'un']], g:results)
+
+  unlet g:results
   cunmap <F2>
 endfunc
 
@@ -3670,6 +4284,27 @@ func Test_rulerformat_position()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test for using "%!" in 'rulerformat' to use a function
+func Test_rulerformat_function()
+  CheckScreendump
+
+  let lines =<< trim END
+    func TestRulerFn()
+      return '10,20%=30%%'
+    endfunc
+  END
+  call writefile(lines, 'Xrulerformat_function', 'D')
+
+  let buf = RunVimInTerminal('-S Xrulerformat_function', #{rows: 2, cols: 40})
+  call term_sendkeys(buf, ":set ruler rulerformat=%!TestRulerFn()\<CR>")
+  call term_sendkeys(buf, ":redraw!\<CR>")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_rulerformat_function', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_getcompletion_usercmd()
   command! -nargs=* -complete=command TestCompletion echo <q-args>
 
@@ -3702,13 +4337,15 @@ func Test_custom_completion()
 
   call feedkeys(":Test1 \<C-R>=Check_custom_completion()\<CR>\<Esc>", "xt")
   call feedkeys(":Test2 \<C-R>=Check_customlist_completion()\<CR>\<Esc>", "xt")
+  call assert_equal('custom,CustomComplete1', getcompletiontype('Test1 '))
+  call assert_equal('customlist,CustomComplete2', getcompletiontype('Test2 '))
 
   call assert_fails("call getcompletion('', 'custom')", 'E475:')
   call assert_fails("call getcompletion('', 'customlist')", 'E475:')
 
-  call assert_equal(getcompletion('', 'custom,CustomComplete1'), ['a', 'b', 'c'])
-  call assert_equal(getcompletion('', 'customlist,CustomComplete2'), ['a', 'b'])
-  call assert_equal(getcompletion('b', 'customlist,CustomComplete2'), ['b'])
+  call assert_equal(['a', 'b', 'c'], getcompletion('', 'custom,CustomComplete1'))
+  call assert_equal(['a', 'b'], getcompletion('', 'customlist,CustomComplete2'))
+  call assert_equal(['b'], getcompletion('b', 'customlist,CustomComplete2'))
 
   delcom Test1
   delcom Test2
@@ -3733,6 +4370,742 @@ func Test_custom_completion_with_glob()
 
   delcommand TestGlobComplete
   delfunc TestGlobComplete
+endfunc
+
+func Test_window_size_stays_same_after_changing_cmdheight()
+  set laststatus=2
+  let expected = winheight(0)
+  function! Function_name() abort
+    call feedkeys(":"..repeat('x', &columns), 'x')
+    let &cmdheight=2
+    let &cmdheight=1
+    redraw
+  endfunction
+  call Function_name()
+  call assert_equal(expected, winheight(0))
+endfunc
+
+" verify that buffer-completion finds all buffer names matching a pattern
+func Test_buffer_completion()
+  " should return empty list
+  call assert_equal([], getcompletion('', 'buffer'))
+
+  call mkdir('Xbuf_complete', 'R')
+  e Xbuf_complete/Foobar.c
+  e Xbuf_complete/MyFoobar.c
+  e AFoobar.h
+  let expected = ["Xbuf_complete/Foobar.c", "Xbuf_complete/MyFoobar.c", "AFoobar.h"]
+
+  call assert_equal(3, len(getcompletion('Foo', 'buffer')))
+  call assert_equal(expected, getcompletion('Foo', 'buffer'))
+  call feedkeys(":b Foo\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"b Xbuf_complete/Foobar.c Xbuf_complete/MyFoobar.c AFoobar.h", @:)
+endfunc
+
+" :set t_??
+func Test_term_option()
+  set wildoptions&
+  let _cpo = &cpo
+  set cpo-=C
+  " There may be more, test only until t_xo
+  let expected='"set t_AB t_AF t_AU t_AL t_al t_bc t_BE t_BD t_cd t_ce t_Ce t_CF t_cl t_cm'
+        \ .. ' t_Co t_CS t_Cs t_cs t_CV t_da t_db t_DL t_dl t_ds t_Ds t_EC t_EI t_fs t_fd t_fe'
+        \ .. ' t_GP t_IE t_IS t_ke t_ks t_le t_mb t_md t_me t_mr t_ms t_nd t_op t_RF t_RB t_RC'
+        \ .. ' t_RI t_Ri t_RK t_RS t_RT t_RV t_Sb t_SC t_se t_Sf t_SH t_SI t_Si t_so t_SR t_sr'
+        \ .. ' t_ST t_Te t_te t_TE t_ti t_TI t_Ts t_ts t_u7 t_ue t_us t_Us t_ut t_vb t_ve t_vi'
+        \ .. ' t_VS t_vs t_WP t_WS t_XM t_xn t_xs t_ZH t_ZR t_8f t_8b t_8u t_xo .*'
+  call feedkeys(":set t_\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match(expected, @:)
+  let &cpo = _cpo
+endfunc
+
+func Test_ex_command_completion()
+  " required for :*
+  set cpo+=*
+  let list = filter(getcompletion('', 'command'), 'exists(":" . v:val) == 0')
+  " :++ and :-- are only valid in Vim9 script context, so they can be ignored
+  call assert_equal(['++', '--'], sort(list))
+  call assert_equal(2, exists(':k'))
+  call assert_equal(0, exists(':ke'))
+  call assert_equal(1, exists(':kee'))
+  call assert_equal(1, exists(':keep'))
+  call assert_equal(1, exists(':keepm'))
+  call assert_equal(1, exists(':keepma'))
+  call assert_equal(1, exists(':keepmar'))
+  call assert_equal(1, exists(':keepmark'))
+  call assert_equal(2, exists(':keepmarks'))
+  call assert_equal(2, exists(':keepalt'))
+  call assert_equal(2, exists(':keepjumps'))
+  call assert_equal(2, exists(':keeppatterns'))
+  set cpo-=*
+endfunc
+
+func Test_cd_bslash_completion_windows()
+  CheckMSWindows
+  let save_shellslash = &shellslash
+  set noshellslash
+  call system('mkdir XXXa\_b')
+  defer delete('XXXa', 'rf')
+  call feedkeys(":cd XXXa\\_b\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cd XXXa\_b\', @:)
+  let &shellslash = save_shellslash
+endfunc
+
+" Test cmdcomplete_info() with CmdlineLeavePre autocmd
+func Test_cmdcomplete_info()
+  augroup test_CmdlineLeavePre
+    autocmd!
+    " Calling expand() should not interfere with cmdcomplete_info().
+    autocmd CmdlineLeavePre * call expand('test_cmdline.*')
+    autocmd CmdlineLeavePre * let g:cmdcomplete_info = string(cmdcomplete_info())
+  augroup END
+
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  call assert_equal({}, cmdcomplete_info())
+
+  for trig in ["\<Tab>", "\<F8>"]
+    new
+    call assert_equal({}, cmdcomplete_info())
+    call feedkeys(":h echom\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': ''h echoms'', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+
+    set wildoptions=pum
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': ''h echoms'', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+    bw!
+    set wildoptions&
+  endfor
+
+  " wildtrigger() should not show matches when prefix is invalid
+  for pat in ["", " ", "22"]
+    call feedkeys($":{pat}\<F8>\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+  endfor
+
+  augroup test_CmdlineLeavePre | autocmd! | augroup END
+  call test_override("char_avail", 0)
+  unlet g:cmdcomplete_info
+  cunmap <F8>
+endfunc
+
+func Test_redrawtabpanel_error()
+  CheckNotFeature tabpanel
+  call assert_fails(':redrawtabpanel', 'E1547:')
+endfunc
+
+" Test wildcharm completion for '/' and '?' search
+func Test_search_complete()
+  CheckOption incsearch
+  set wildcharm=<c-z>
+
+  " Disable char_avail so that expansion of commandline works
+  call test_override("char_avail", 1)
+
+  func GetComplInfo()
+    let g:compl_info = cmdcomplete_info()
+    return ''
+  endfunc
+
+  new
+  cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  " Pressing <Tab> inserts tab character
+  set wildchar=0
+  call setline(1, "x\t")
+  call feedkeys("/x\t\r", "tx")
+  call assert_equal("x\t", @/)
+  set wildchar&
+
+  call setline(1, ['the', 'these', 'thethe', 'thethere', 'foobar'])
+
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
+    " Test menu first item and order
+    call feedkeys($"gg2j/t{trig}\<f9>", 'tx')
+    call assert_equal(['the', 'thethere', 'there', 'these', 'thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?t{trig}\<f9>", 'tx')
+    call assert_equal(['these', 'the', 'there', 'thethere', 'thethe'], g:compl_info.matches)
+
+    " <c-n> and <c-p> cycle through menu items
+    call feedkeys($"gg/the{trig}\<cr>", 'tx')
+    call assert_equal('these', getline('.'))
+    call feedkeys($"gg/the{trig}\<c-n>\<cr>", 'tx')
+    call assert_equal('thethe', getline('.'))
+    call feedkeys($"gg/the{trig}".repeat("\<c-n>", 5)."\<cr>", 'tx')
+    call assert_equal('these', getline('.'))
+    call feedkeys($"G?the{trig}\<cr>", 'tx')
+    call assert_equal('thethere', getline('.'))
+    call feedkeys($"G?the{trig}".repeat("\<c-p>", 5)."\<cr>", 'tx')
+    call assert_equal('thethere', getline('.'))
+
+    " Beginning of word pattern (<) retains '<'
+    call feedkeys($"gg2j/\\<t{trig}\<f9>", 'tx')
+    call assert_equal(['\<thethere', '\<the', '\<these', '\<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?\\<t{trig}\<f9>", 'tx')
+    call assert_equal(['\<these', '\<the', '\<thethere', '\<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j/\\v<t{trig}\<f9>", 'tx')
+    call assert_equal(['\v<thethere', '\v<the', '\v<these', '\v<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?\\v<th{trig}\<f9>", 'tx')
+    call assert_equal(['\v<these', '\v<the', '\v<thethere', '\v<thethe'], g:compl_info.matches)
+  endfor
+
+  " Ctrl-G goes from one match to the next, after menu is opened
+  set incsearch
+  " first match
+  call feedkeys("gg/the\<c-z>\<c-n>\<c-g>\<cr>", 'tx')
+  call assert_equal('thethe', getline('.'))
+  " second match
+  call feedkeys("gg/the\<c-z>\<c-n>\<c-g>\<c-g>\<cr>", 'tx')
+  call assert_equal('thethere', getline('.'))
+  call assert_equal([0, 0, 0, 0], getpos('"'))
+
+  " CTRL-T goes to the previous match
+  " first match
+  call feedkeys("G?the\<c-z>".repeat("\<c-n>", 2)."\<c-t>\<cr>", 'tx')
+  call assert_equal('thethere', getline('.'))
+  " second match
+  call feedkeys("G?the\<c-z>".repeat("\<c-n>", 2).repeat("\<c-t>", 2)."\<cr>", 'tx')
+  call assert_equal('thethe', getline('.'))
+
+  " wild menu is cleared properly
+  call feedkeys("/the\<c-z>\<esc>/\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("/the\<c-z>\<c-e>\<f9>", 'tx')
+  call assert_equal([], g:compl_info.matches)
+
+  " Do not expand if offset is present (/pattern/offset and ?pattern?offset)
+  for pat in ["/", "/2", "/-3", "\\/"]
+    call feedkeys("/the" . pat . "\<c-z>\<f9>", 'tx')
+    call assert_equal({}, g:compl_info)
+  endfor
+  for pat in ["?", "?2", "?-3", "\\\\?"]
+    call feedkeys("?the" . pat . "\<c-z>\<f9>", 'tx')
+    call assert_equal({}, g:compl_info)
+  endfor
+
+  " Last letter of match is multibyte
+  call setline('$', ['theΩ'])
+  call feedkeys("gg/th\<c-z>\<f9>", 'tx')
+  call assert_equal(['these', 'thethe', 'the', 'thethere', 'there', 'theΩ'],
+        \ g:compl_info.matches)
+
+  " Identical words
+  call setline(1, ["foo", "foo", "foo", "foobar"])
+  call feedkeys("gg/f\<c-z>\<f9>", 'tx')
+  call assert_equal(['foo', 'foobar'], g:compl_info.matches)
+
+  " Exact match
+  call feedkeys("/foo\<c-z>\<f9>", 'tx')
+  call assert_equal(['foo', 'foobar'], g:compl_info.matches)
+
+  " Match case correctly
+  %d
+  call setline(1, ["foobar", "Foobar", "fooBAr", "FooBARR"])
+
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['fooBAr', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("gg/\\cFo\<tab>\<f9>", 'tx')
+  call assert_equal(['\cFoobar', '\cFooBAr', '\cFooBARR'], g:compl_info.matches)
+
+  set ignorecase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'fooBAr', 'fooBARR'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBAr', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal(['FOobar', 'FOoBAr', 'FOoBARR'], g:compl_info.matches)
+  call feedkeys("gg/\\Cfo\<tab>\<f9>", 'tx')
+  call assert_equal(['\CfooBAr', '\Cfoobar'], g:compl_info.matches)
+
+  set smartcase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'fooBAr', 'foobarr'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+
+  " Issue #17680 (getcompletion() does not support search completion)
+  let result = getcompletion('%s/', 'cmdline')
+  call assert_equal([], result)
+
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'foobarr'], g:compl_info.matches)
+  call feedkeys("gg/\\Cfo\<tab>\<f9>", 'tx')
+  call assert_equal(['\CfooBAr', '\Cfoobar'], g:compl_info.matches)
+  call feedkeys("gg/\\cFo\<tab>\<f9>", 'tx')
+  call assert_equal(['\cFoobar', '\cFooBAr', '\cFooBARR'], g:compl_info.matches)
+
+  set wildoptions+=exacttext ignorecase& smartcase&
+  call feedkeys("gg/F\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal([], g:compl_info.matches)
+  call feedkeys("gg/r\\n.\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar', 'r\nfooBAr', 'r\nFooBARR'], g:compl_info.matches)
+
+  set ignorecase
+  call feedkeys("gg/F\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/R\\n.\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar', 'r\nfooBAr', 'r\nFooBARR'], g:compl_info.matches)
+
+  set smartcase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/R\\n.\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("gg/r\\n.*\\n\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar\nfooBAr', 'r\nfooBAr\nFooBARR'], g:compl_info.matches)
+
+  " Issue #17858
+  %d
+  set wildcharm=0 incsearch& ignorecase& smartcase& wildoptions&
+  setlocal iskeyword=!-~,192-255
+  let l:lines = ['th=~/foo', 'these', 'tho']
+  call setline(1, l:lines)
+  call feedkeys("G/th\<tab>\<f9>", 'tx')
+  call assert_equal(l:lines, g:compl_info.matches)
+
+  bw!
+  call test_override("char_avail", 0)
+  delfunc GetComplInfo
+  unlet! g:compl_info
+endfunc
+
+func Test_search_wildmenu_screendump()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call test_override('alloc_lines', 1)
+    set wildmenu wildcharm=<f5>
+    call setline(1, ['the', 'these', 'the', 'foobar', 'thethe', 'thethere'])
+  [SCRIPT]
+  call writefile(lines, 'XTest_search_wildmenu', 'D')
+  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': 10})
+
+  " Pattern has newline at EOF
+  call term_sendkeys(buf, "gg2j/e\\n\<f5>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_1', {})
+
+  " longest:full
+  call term_sendkeys(buf, "\<esc>:set wim=longest,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_2', {})
+
+  " list:full
+  call term_sendkeys(buf, "\<esc>:set wim=list,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_3', {})
+
+  " noselect:full
+  call term_sendkeys(buf, "\<esc>:set wim=noselect,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_4', {})
+
+  " Multiline
+  call term_sendkeys(buf, "\<esc>gg/t.*\\n.*\\n.\<tab>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_5', {})
+
+  " 'incsearch' is redrawn after accepting completion
+  call term_sendkeys(buf, "\<esc>:set wim=full\<cr>")
+  call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(buf, "/th")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_6', {})
+  call term_sendkeys(buf, "\<f5>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_7', {})
+  call term_sendkeys(buf, "\<c-n>\<c-y>")
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_8', {})
+
+  " 'incsearch' highlight is restored after dismissing popup (Ctrl_E)
+  call term_sendkeys(buf, "\<esc>:set wop=pum is hls&\<cr>")
+  call term_sendkeys(buf, "gg/th\<tab>\<c-e>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_9', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #17858
+func Test_search_wildmenu_iminsert()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wop=pum imi=1
+    setlocal iskeyword=!-~,192-255
+    call setline(1, [
+          \ "global toggle global-local global/local glyphs toggles English",
+          \ "accordingly. toggled accordingly single-byte",
+          \ ])
+    call cursor(2, 42)
+  [SCRIPT]
+  call writefile(lines, 'XTest_search_wildmenu', 'D')
+  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': 12})
+
+  call term_sendkeys(buf, "/gl\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_iminsert', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test wildcharm completion for :s and :g with range
+func Test_range_complete()
+  set wildcharm=<c-z>
+
+  " Disable char_avail so that expansion of commandline works
+  call test_override("char_avail", 1)
+
+  func GetComplInfo()
+    let g:compl_info = cmdcomplete_info()
+    return ''
+  endfunc
+  new
+  cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  call setline(1, ['ab', 'ba', 'ca', 'af'])
+
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
+    call feedkeys($":%s/a{trig}\<f9>", 'xt')
+    call assert_equal(['ab', 'a', 'af'], g:compl_info.matches)
+    call feedkeys($":vim9cmd :%s/a{trig}\<f9>", 'xt')
+    call assert_equal(['ab', 'a', 'af'], g:compl_info.matches)
+  endfor
+
+  call feedkeys(":%s/\<c-z>\<f9>", 'xt')
+  call assert_equal({}, g:compl_info)
+
+  for cmd in ['s', 'g']
+    call feedkeys($":1,2{cmd}/a\<c-z>\<f9>", 'xt')
+    call assert_equal(['ab', 'a'], g:compl_info.matches)
+  endfor
+
+  1
+  call feedkeys(":.,+2s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['ab', 'a'], g:compl_info.matches)
+
+  /f
+  call feedkeys(":1,s/b\<c-z>\<f9>", 'xt')
+  call assert_equal(['b', 'ba'], g:compl_info.matches)
+
+  /c
+  call feedkeys(":\\?,4s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af'], g:compl_info.matches)
+
+  %s/c/c/
+  call feedkeys(":1,\\&s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['ab', 'a'], g:compl_info.matches)
+
+  3
+  normal! ma
+  call feedkeys(":'a,$s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af'], g:compl_info.matches)
+
+  " Line number followed by a search pattern ([start]/pattern/[command])
+  call feedkeys("3/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af', 'ab'], g:compl_info.matches)
+
+  bw!
+  call test_override("char_avail", 0)
+  delfunc GetComplInfo
+  unlet! g:compl_info
+  set wildcharm=0
+endfunc
+
+" With 'noselect' in 'wildmode', ensure that the popup menu (pum) does not retain
+" its scroll position after reopening. The menu should open showing the top items,
+" regardless of previous scrolling.
+func Test_pum_scroll_noselect()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command! -nargs=* -complete=customlist,TestFn TestCmd echo
+    func TestFn(a, b, c)
+      return map(range(1, 50), 'printf("a%d", v:val)')
+    endfunc
+    set wildmode=noselect,full
+    set wildoptions=pum
+    set wildmenu
+    set noruler
+  [SCRIPT]
+  call writefile(lines, 'XTest_pum_scroll', 'D')
+  let buf = RunVimInTerminal('-S XTest_pum_scroll', {'rows': 10})
+
+  call term_sendkeys(buf, ":TestCmd \<tab>" . repeat("\<c-n>", 20))
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_pum_scroll_noselect_1', {})
+
+  call term_sendkeys(buf, "\<esc>:TestCmd \<tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_pum_scroll_noselect_2', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" CmdlineChanged shouldn't trigger if command-line text is unchanged
+func Test_cmdline_changed()
+  let g:cmdchg_count = 0
+  let g:cmdprefix = ''
+  augroup test_CmdlineAugrp | autocmd!
+    autocmd CmdlineChanged * if getcmdline() =~ g:cmdprefix | let g:cmdchg_count += 1 | endif
+  augroup END
+
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  new
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+  set wildmenu
+  set wildmode=full
+
+  let g:cmdprefix = 'echomsg'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":echomsg{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once only for 'g', not again for <Tab>
+  endfor
+
+  let g:cmdprefix = 'echo'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " (once for 'h' and) once for 'o'
+  endfor
+
+  set wildmode=noselect,full
+  let g:cmdprefix = 'ech'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once for 'h', not again for <tab>
+  endfor
+
+  command! -nargs=+ -complete=custom,TestComplete Test echo
+
+  func TestComplete(arglead, cmdline, cursorpos)
+    return "AbC"
+  endfunc
+
+  set wildoptions=fuzzy wildmode=full
+  let g:cmdprefix = 'Test \(AbC\|abc\)'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":Test abc{trig}", "tx")
+    call assert_equal(2, g:cmdchg_count) " once for 'c', again for 'AbC'
+  endfor
+
+  bw!
+  set wildmode& wildmenu& wildoptions&
+  augroup test_CmdlineAugrp | autocmd! | augroup END
+  unlet g:cmdchg_count
+  unlet g:cmdprefix
+  delfunc TestComplete
+  delcommand Test
+  call test_override("char_avail", 0)
+endfunc
+
+func Test_wildtrigger_update_screen()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command! -nargs=* -complete=customlist,TestFn TestCmd echo
+    func TestFn(cmdarg, b, c)
+      if a:cmdarg == 'ax'
+        return []
+      else
+        return map(range(1, 5), 'printf("abc%d", v:val)')
+      endif
+    endfunc
+    set wildmode=noselect,full
+    set wildoptions=pum
+    set wildmenu
+    cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildtrigger', 'D')
+  let buf = RunVimInTerminal('-S XTest_wildtrigger', {'rows': 10})
+
+  call term_sendkeys(buf, ":TestCmd a\<F8>")
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_1', {})
+
+  " Typing a character when pum is open does not close the pum window
+  " This is needed to prevent pum window from flickering during
+  " ':h cmdline-autocompletion'.
+  call term_sendkeys(buf, "x")
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_2', {})
+
+  " pum window is closed when no completion candidates are available
+  call term_sendkeys(buf, "\<F8>")
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_3', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #17969: With 'noselect', the popup menu should appear next to the
+" environment variable being expanded. Disable 'showtail' when completing
+" file paths when 'noselect' is present.
+func Test_noselect_expand_env_var()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildoptions=pum wildmode=noselect,full
+    let $TESTDIR = 'a/b'
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu', 'D')
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8})
+
+  call mkdir('a/b/c', 'pR')
+  call writefile(['asdf'], 'a/b/fileXname1')
+  call writefile(['foo'], 'a/b/fileXname2')
+
+  call term_sendkeys(buf, ":e $TESTDIR/\<Tab>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_2', {})
+
+  call term_sendkeys(buf, "\<C-P>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #18035: long lines should not get listed twice in the menu when
+" 'wildmode' contains 'noselect'
+func Test_long_line_noselect()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildoptions=pum wildmode=noselect,full
+    command -nargs=1 -complete=custom,Entries DoubleEntry echo
+    func Entries(a, b, c)
+      return 'loooooooooooooooong quite loooooooooooong, really loooooooooooong, probably too looooooooooooooooooooooooooong entry'
+    endfunc
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu', 'D')
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8, 'cols': 60})
+
+  call term_sendkeys(buf, ":DoubleEntry \<Tab>")
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:DoubleEntry \<Tab>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_2', {})
+
+  call term_sendkeys(buf, "\<Esc>:DoubleEntry \<Tab>\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_3', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_CmdlineLeave_vchar_keys()
+  func OnLeave()
+    let g:leave_key = v:char
+  endfunction
+
+  new
+  for event in ["CmdlineLeavePre", "CmdlineLeave"]
+    exec "autocmd" event "* :call OnLeave()"
+    for key in ["\<C-C>", "\<Esc>", "\<CR>"]
+      call feedkeys($":echo{key}", 'tx')
+      call assert_equal(key, g:leave_key)
+    endfor
+    exec "autocmd!" event
+  endfor
+  bwipe!
+  delfunc OnLeave
+  unlet g:leave_key
+endfunc
+
+" Skip wildmenu during history navigation via Up/Down keys
+func Test_skip_wildtrigger_hist_navigation()
+  call test_override("char_avail", 1)
+  set wildmenu wildmode=noselect,full
+  augroup TestSkipWildtrigger | autocmd!
+    autocmd CmdlineChanged : call wildtrigger()
+  augroup END
+  cnoremap <expr> <Up>   wildmenumode() ? "\<C-E>\<Up>"   : "\<Up>"
+  cnoremap <expr> <Down> wildmenumode() ? "\<C-E>\<Down>" : "\<Down>"
+
+  call feedkeys(":echom \"foo\"", "tx")
+  call feedkeys(":echom \"foobar\"", "tx")
+
+  call feedkeys(":ech\<Up>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foobar"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foo"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<Down>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foobar"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<Down>\<Down>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"ech', @:)
+
+  call test_override("char_avail", 0)
+  set wildmenu& wildmode& wildoptions&
+  augroup TestSkipWildtrigger | autocmd! | augroup END
+  cunmap <Up>
+  cunmap <Down>
+endfunc
+
+" Issue 18298: wildmenu should be dismissed after wildtrigger and whitespace
+func Test_update_screen_after_wildtrigger()
+  CheckScreendump
+  let lines =<< trim [SCRIPT]
+    call test_override("char_avail", 1)
+    set wildmode=noselect:lastused,full wildmenu wildoptions=pum
+    autocmd CmdlineChanged : if getcmdcompltype() != 'shellcmd' | call wildtrigger() | endif
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildtrigger', 'D')
+  let buf = RunVimInTerminal('-S XTest_wildtrigger', {'rows': 10})
+
+  call term_sendkeys(buf, ":term foo")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_update_screen_wildtrigger_1', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

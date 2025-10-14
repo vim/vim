@@ -1,12 +1,14 @@
 " Vim syntax file
 " Language:	      R (GNU S)
-" Maintainer:	      Jakson Aquino <jalvesaq@gmail.com>
-" Former Maintainers: Vaidotas Zemlys <zemlys@gmail.com>
-" 		      Tom Payne <tom@tompayne.org>
+" Maintainer:	      This runtime file is looking for a new maintainer.
+" Former Maintainers: Jakson Aquino <jalvesaq@gmail.com>
+"                     Vaidotas Zemlys <zemlys@gmail.com>
+"                     Tom Payne <tom@tompayne.org>
 " Contributor:        Johannes Ranke <jranke@uni-bremen.de>
-" Homepage:           https://github.com/jalvesaq/R-Vim-runtime
-" Last Change:	      Thu Nov 17, 2022  10:13PM
-" Filenames:	      *.R *.r *.Rhistory *.Rt
+" Former Repository:  https://github.com/jalvesaq/R-Vim-runtime
+" Filenames:          *.R *.r *.Rhistory *.Rt
+" Last Change:        2023 Dec 24  08:05AM
+"   2024 Feb 19 by Vim Project (announce adoption)
 "
 " NOTE: The highlighting of R functions might be defined in
 " runtime files created by a filetype plugin, if installed.
@@ -26,11 +28,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-if has("patch-7.4.1142")
-  syn iskeyword @,48-57,_,.
-else
-  setlocal iskeyword=@,48-57,_,.
-endif
+syn iskeyword @,48-57,_,.
 
 " The variables g:r_hl_roxygen and g:r_syn_minlines were renamed on April 8, 2017.
 if exists("g:r_hl_roxygen")

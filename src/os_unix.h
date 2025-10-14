@@ -159,8 +159,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 #endif
 
 
-#ifndef PROTO
-
 #ifdef VMS
 # include <unixio.h>
 # include <unixlib.h>
@@ -197,8 +195,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 #ifdef HAVE_FLOCK
 # include <sys/file.h>
 #endif
-
-#endif // PROTO
 
 #ifdef VMS
 typedef struct dsc$descriptor   DESC;
@@ -249,6 +245,12 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
+#ifndef XDG_VIMRC_FILE
+# define XDG_VIMRC_FILE (mch_getenv((char_u *)"XDG_CONFIG_HOME") \
+	? "$XDG_CONFIG_HOME/vim/vimrc" \
+	: "~/.config/vim/vimrc")
+#endif
+
 #if !defined(USR_VIMRC_FILE3) && defined(VMS)
 # define USR_VIMRC_FILE3 "sys$login:_vimrc"
 #endif
@@ -272,6 +274,12 @@ typedef struct dsc$descriptor   DESC;
 #ifdef VMS
 # ifndef USR_GVIMRC_FILE3
 #  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
+# endif
+#else
+# ifndef USR_GVIMRC_FILE3
+#  define USR_GVIMRC_FILE3 (mch_getenv("XDG_CONFIG_HOME") \
+	? "$XDG_CONFIG_HOME/vim/gvimrc" \
+	: "~/.config/vim/gvimrc")
 # endif
 #endif
 
@@ -335,6 +343,8 @@ typedef struct dsc$descriptor   DESC;
 #  define DFLT_VDIR    "sys$login:vimfiles/view"
 # else
 #  define DFLT_VDIR    "$HOME/.vim/view"       // default for 'viewdir'
+#  define XDG_VDIR     (mch_getenv("XDG_CONFIG_HOME") ? \
+	"$XDG_CONFIG_HOME/vim/view" : "~/.config/vim/view")
 # endif
 #endif
 
@@ -349,13 +359,19 @@ typedef struct dsc$descriptor   DESC;
 #  ifdef RUNTIME_GLOBAL
 #   ifdef RUNTIME_GLOBAL_AFTER
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.vim/after"
+#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER "/after,$XDG_CONFIG_HOME/vim/after"
+#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER "/after,~/.config/vim/after"
 #    define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER
 #   else
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
+#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,$XDG_CONFIG_HOME/vim/after"
+#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.config/vim/after"
 #    define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after"
 #   endif
 #  else
 #   define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+#   define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$XDG_CONFIG_HOME/vim/after"
+#   define XDG_RUNTIMEPATH_FB	"~/.config/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.config/vim/after"
 #   define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 #  endif
 # endif
@@ -468,3 +484,4 @@ int mch_rename(const char *src, const char *dest);
 
 // We have three kinds of ACL support.
 #define HAVE_ACL (HAVE_POSIX_ACL || HAVE_SOLARIS_ACL || HAVE_AIX_ACL)
+

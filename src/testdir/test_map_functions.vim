@@ -1,8 +1,6 @@
 " Tests for maparg(), mapcheck(), mapset(), maplist()
 " Also test utf8 map with a 0x80 byte.
 
-source shared.vim
-
 func s:SID()
   return str2nr(matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$'))
 endfunc
@@ -538,6 +536,25 @@ func Test_map_restore_negative_sid()
     call assert_equal([], readfile('Xresult'))
   endif
   call delete('Xresult')
+endfunc
+
+" Check that restoring a mapping doesn't remove a mapping whose {rhs} matches
+" the restored mapping's {lhs}.
+func Test_map_restore_with_rhs_match_lhs()
+  nnoremap <F2> <F3>
+  nnoremap <F3> <F4>
+  call assert_equal('<F3>', maparg('<F2>', 'n'))
+  call assert_equal('<F4>', maparg('<F3>', 'n'))
+  let d = maparg('<F3>', 'n', v:false, v:true)
+  nunmap <F3>
+  call assert_equal('<F3>', maparg('<F2>', 'n'))
+  call assert_equal('', maparg('<F3>', 'n'))
+  call mapset(d)
+  call assert_equal('<F3>', maparg('<F2>', 'n'))
+  call assert_equal('<F4>', maparg('<F3>', 'n'))
+
+  nunmap <F2>
+  nunmap <F3>
 endfunc
 
 def Test_maplist()

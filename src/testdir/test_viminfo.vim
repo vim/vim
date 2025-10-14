@@ -1,9 +1,5 @@
 " Test for reading and writing .viminfo
 
-source check.vim
-source term_util.vim
-source shared.vim
-
 func Test_viminfo_read_and_write()
   " First clear 'history', so that "hislen" is zero.  Then set it again,
   " simulating Vim starting up.
@@ -1297,6 +1293,62 @@ func Test_viminfo_merge_old_jumplist()
   call assert_equal([40, 30, 20, 10], [l[0].lnum, l[1].lnum, l[2].lnum,
         \ l[3].lnum])
   bw!
+endfunc
+
+func Test_viminfo_oldfiles_filter()
+  let v:oldfiles = []
+  let _viminfofile = &viminfofile
+  let &viminfofile=''
+  let lines = [
+	\ '# comment line',
+	\ '*encoding=utf-8',
+	\ "> /tmp/vimrc_one.vim",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ "> /tmp/foobar.txt",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ ]
+  call writefile(lines, 'Xviminfo1', 'D')
+  rviminfo! Xviminfo1
+  new
+  " filter returns a single item
+  let a = execute('filter /vim/ oldfiles')->split('\n')
+  call assert_equal(1, len(a))
+  " filter returns more than a single match
+  let a = execute('filter #tmp# oldfiles')->split('\n')
+  call assert_equal(2, len(a))
+  " don't get prompted for the file, but directly open it
+  filter /vim/ browse oldfiles
+  call assert_equal("/tmp/vimrc_one.vim", expand("%"))
+  bw
+  let &viminfofile = _viminfofile
+endfunc
+
+func Test_viminfo_global_var()
+  let _viminfofile = &viminfofile
+  let _viminfo = &viminfo
+  let &viminfofile=''
+  set viminfo+=!
+  let lines = [
+    \ '# comment line',
+    \ "",
+    \ '# Viminfo version',
+    \ '|1,4',
+    \ "",
+    \ '*encoding=utf-8',
+    \ "",
+    \ '# global variables:',
+    \ "!VAL\tFLO\t-in",
+    \ "!VAR\tFLO\t-inf",
+    \ "",
+    \ ]
+  call writefile(lines, 'Xviminfo2', 'D')
+  rviminfo! Xviminfo2
+  call assert_equal(0.0, g:VAL)
+  call assert_equal(str2float("-inf"), g:VAR)
+  let &viminfofile = _viminfofile
+  let &viminfo = _viminfo
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

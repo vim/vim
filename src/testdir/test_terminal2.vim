@@ -2,13 +2,10 @@
 " This is split in two, because it can take a lot of time.
 " See test_terminal.vim and test_terminal3.vim for further tests.
 
-source check.vim
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let $PROMPT_COMMAND=''
 
@@ -241,13 +238,117 @@ func Test_termwinscroll()
     let filtered = filter(copy(lines), {idx, val -> val =~ 'echo ' . i . '\>'})
     call assert_equal(1, len(filtered), 'for "echo ' . i . '"')
   endfor
+  exe buf . 'bwipe!'
+endfunc
+
+func Test_termwinscroll_topline()
+  " TODO: why does this fail on Appveyor and Github?
+  CheckNotMSWindows
+
+  set termwinscroll=1000 mouse=a
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+  call WaitFor({-> !empty(term_getline(buf, 1))})
+
+  let num1 = &termwinscroll / 100 * 99
+  call writefile(range(num1), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "cat Xtext\<CR>")
+  endif
+  let rows = term_getsize(buf)[0]
+  " On MS-Windows there is an empty line, check both last line and above it.
+  call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. term_getline(buf, rows - 2))})
+  call feedkeys("\<C-W>N", 'xt')
+  call feedkeys("i", 'xt')
+
+  let num2 = &termwinscroll / 100 * 10
+  call writefile(range(num2), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "timeout /t 1 && type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "sleep 1; cat Xtext\<CR>")
+  endif
+  " Change the normal window to the current window with keystrokes.
+  call feedkeys("\<C-W>w", 'xt')
+  call WaitForAssert({-> assert_notequal(buf, bufnr())})
+  let rows = term_getsize(buf)[0]
+  " On MS-Windows there is an empty line, check both last line and above it.
+  call WaitForAssert({-> assert_match(string(num2 - 1), term_getline(buf, rows - 1) .. term_getline(buf, rows - 2))})
+  " Change the terminal window to the current window using mouse operation.
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_equal(buf, bufnr())})
+  " Before the fix, E340 and E315 would occur multiple times at this point.
+  let wm = winheight(0) * 2
+  let num3 = num1 + num2 - (num1 / 10) - wm
+  call assert_inrange(num3 - wm, num3 + wm, getwininfo(bufwinid(buf))[0].topline)
+  exe buf . 'bwipe!'
+  set termwinscroll& mouse&
+endfunc
+
+func Test_termwinscroll_topline2()
+  " calling the terminal API doesn't work on Windows
+  CheckNotMSWindows
+
+  set termwinscroll=50000 mouse=a
+  set shell=sh
+  let norm_winid = win_getid()
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+  let win = winnr()
+  call WaitFor({-> !empty(term_getline(buf, 1))})
+
+  let num1 = &termwinscroll / 1000 * 999
+  call writefile(range(num1), 'Xtext', 'D')
+  call term_sendkeys(buf, "cat Xtext\<CR>")
+  call term_sendkeys(buf, "printf '" .. TermNotifyParentCmd(v:false) .. "'\<cr>")
+  let rows = term_getsize(buf)[0]
+  let cnt = 0
+  while !g:child_notification && cnt <= 50000
+    " Spin wait to process the terminal print as quickly as possible. This is
+    " more efficient than calling WaitForChildNotification() as we don't want
+    " to sleep here as the print is I/O-bound.
+    let cnt += 1
+    call term_wait(buf, 0)
+  endwhile
+  call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. '\|' .. term_getline(buf, rows - 2))})
+  call feedkeys("\<C-W>N", 'xt')
+  call feedkeys("i", 'xt')
+
+  let num2 = &termwinscroll / 1000 * 8
+  call writefile(range(num2), 'Xtext', 'D')
+  call term_sendkeys(buf, "sleep 2; cat Xtext\<CR>")
+  let winrow = get(get(filter(getwininfo(), 'v:val.winid == norm_winid'), 0, {}), 'winrow', -1)
+
+  call test_setmouse(winrow, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_notequal(buf, bufnr())})
+
+  " Change the terminal window row size
+  call win_move_statusline(win,1)
+  " Before the fix, E340 and E315 would occur multiple times at this point.
+  let winrow2 = get(get(filter(getwininfo(), 'v:val.winid == norm_winid'), 0, {}), 'winrow', -1)
+  call assert_equal(winrow + 1, winrow2)
+
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_equal(buf, bufnr())})
 
   exe buf . 'bwipe!'
+  set termwinscroll& mouse& sh&
 endfunc
 
 " Resizing the terminal window caused an ml_get error.
 " TODO: This does not reproduce the original problem.
+" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize()
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
@@ -279,8 +380,12 @@ func Test_terminal_resize()
   set statusline&
 endfunc
 
+" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize2()
   CheckNotMSWindows
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
@@ -391,6 +496,7 @@ func Test_terminal_switch_mode()
 endfunc
 
 func Test_terminal_normal_mode()
+  CheckScreendump
   CheckRunVimInTerminal
 
   " Run Vim in a terminal and open a terminal window to run Vim in.
@@ -442,7 +548,7 @@ func Test_terminal_does_not_truncate_last_newlines()
   for c in contents
     call writefile(c, 'Xdntfile', 'D')
     if has('win32')
-      term cmd /c type Xdntfile
+      term cmd /D /c type Xdntfile
     else
       term cat Xdntfile
     endif
@@ -457,7 +563,7 @@ endfunc
 
 func GetDummyCmd()
   if has('win32')
-    return 'cmd /c ""'
+    return 'cmd /D /c ""'
   else
     CheckExecutable false
     return 'false'
@@ -527,6 +633,7 @@ func Test_term_getcursor()
 endfunc
 
 " Test for term_gettitle()
+" Known to be flaky on Mac-OS X and the GH runners
 func Test_term_gettitle()
   " term_gettitle() returns an empty string for a non-terminal buffer
   " and for a non-existing buffer.
@@ -535,6 +642,13 @@ func Test_term_gettitle()
 
   if !has('title') || empty(&t_ts)
     throw "Skipped: can't get/set title"
+  endif
+  if has('osx') && !empty($CI) && system('uname -m') =~# 'arm64'
+    " This test often fails with the following error message on Github runners
+    " MacOS-14
+    " '^\\[No Name\\] - VIM\\d*$' does not match 'e] - VIM'
+    " Why? Is the terminal that runs Vim too small?
+    throw 'Skipped: FIXME: Running this test on M1 Mac fails on GitHub Actions'
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])

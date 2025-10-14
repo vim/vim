@@ -89,7 +89,7 @@ alist_new(void)
     }
 }
 
-#if !defined(UNIX) || defined(PROTO)
+#if !defined(UNIX)
 /*
  * Expand the file names in the global argument list.
  * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer
@@ -184,6 +184,8 @@ alist_set(
 /*
  * Add file "fname" to argument list "al".
  * "fname" must have been allocated and "al" must have been checked for room.
+ *
+ * May trigger Buf* autocommands
  */
     void
 alist_add(
@@ -196,6 +198,7 @@ alist_add(
     if (check_arglist_locked() == FAIL)
 	return;
     arglist_locked = TRUE;
+    curwin->w_locked = TRUE;
 
 #ifdef BACKSLASH_IN_FILENAME
     slash_adjust(fname);
@@ -207,9 +210,10 @@ alist_add(
     ++al->al_ga.ga_len;
 
     arglist_locked = FALSE;
+    curwin->w_locked = FALSE;
 }
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * Adjust slashes in file names.  Called after 'shellslash' was set.
  */
@@ -295,7 +299,7 @@ get_arglist(garray_T *gap, char_u *str, int escaped)
     return OK;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 /*
  * Parse a list of arguments (file names), expand them and return in
  * "fnames[fcountp]".  When "wig" is TRUE, removes files matching 'wildignore'.
@@ -365,6 +369,7 @@ alist_add_list(
 	    mch_memmove(&(ARGLIST[after + count]), &(ARGLIST[after]),
 				       (ARGCOUNT - after) * sizeof(aentry_T));
 	arglist_locked = TRUE;
+	curwin->w_locked = TRUE;
 	for (i = 0; i < count; ++i)
 	{
 	    int flags = BLN_LISTED | (will_edit ? BLN_CURBUF : 0);
@@ -373,6 +378,7 @@ alist_add_list(
 	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], flags);
 	}
 	arglist_locked = FALSE;
+	curwin->w_locked = FALSE;
 	ALIST(curwin)->al_ga.ga_len += count;
 	if (old_argcount > 0 && curwin->w_arg_idx >= after)
 	    curwin->w_arg_idx += count;
@@ -502,7 +508,7 @@ do_arglist(
     void
 set_arglist(char_u *str)
 {
-    do_arglist(str, AL_SET, 0, FALSE);
+    do_arglist(str, AL_SET, 0, TRUE);
 }
 
 /*
@@ -555,7 +561,7 @@ check_arg_idx(win_T *win)
 }
 
 /*
- * ":args", ":argslocal" and ":argsglobal".
+ * ":args", ":arglocal" and ":argglobal".
  */
     void
 ex_args(exarg_T *eap)
@@ -682,6 +688,7 @@ do_argfile(exarg_T *eap, int argn)
     int		other;
     char_u	*p;
     int		old_arg_idx = curwin->w_arg_idx;
+    int is_split_cmd = *eap->cmd == 's';
 
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
@@ -697,13 +704,18 @@ do_argfile(exarg_T *eap, int argn)
 	return;
     }
 
+    if (!is_split_cmd
+	    && (&ARGLIST[argn])->ae_fnum != curbuf->b_fnum
+	    && !check_can_set_curbuf_forceit(eap->forceit))
+	return;
+
     setpcmark();
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
 
     // split window or create new tab page first
-    if (*eap->cmd == 's' || cmdmod.cmod_tab != 0)
+    if (is_split_cmd || cmdmod.cmod_tab != 0)
     {
 	if (win_split(0, 0) == FAIL)
 	    return;
@@ -983,6 +995,9 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 
     if (aall->had_tab > 0)
 	goto_tabpage_tp(first_tabpage, TRUE, TRUE);
+
+    // moving tabpages around in an autocommand may cause an endless loop
+    tabpage_move_disallowed++;
     for (;;)
     {
 	tpnext = curtab->tp_next;
@@ -1093,6 +1108,7 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 
 	goto_tabpage_tp(tpnext, TRUE, TRUE);
     }
+    tabpage_move_disallowed--;
 }
 
 /*
@@ -1242,16 +1258,16 @@ do_arg_all(
 
     tabpage_T *new_lu_tp = curtab;
 
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
+
     // Try closing all windows that are not in the argument list.
     // Also close windows that are not full width;
     // When 'hidden' or "forceit" set the buffer becomes hidden.
     // Windows that have a changed buffer and can't be hidden won't be closed.
     // When the ":tab" modifier was used do this for all tab pages.
     arg_all_close_unused_windows(&aall);
-
-    // Now set the last used tabpage to where we started.
-    if (valid_tabpage(new_lu_tp))
-	lastused_tabpage = new_lu_tp;
 
     // Open a window for files in the argument list that don't have one.
     // ARGCOUNT may change while doing this, because of autocommands.
@@ -1287,6 +1303,11 @@ do_arg_all(
     // to window with first arg
     if (valid_tabpage(aall.new_curtab))
 	goto_tabpage_tp(aall.new_curtab, TRUE, TRUE);
+
+    // Now set the last used tabpage to where we started.
+    if (valid_tabpage(new_lu_tp))
+	lastused_tabpage = new_lu_tp;
+
     if (win_valid(aall.new_curwin))
 	win_enter(aall.new_curwin, FALSE);
 
@@ -1373,7 +1394,7 @@ arg_all(void)
     return retval;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "argc([window id])" function
  */

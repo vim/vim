@@ -36,11 +36,16 @@
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
 
-static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T redobuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
+static buffheader_T old_redobuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
+static buffheader_T recordbuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 static int typeahead_char = 0;		// typeahead char that's not flushed
+
+#ifdef FEAT_EVAL
+static char_u typedchars[MAXMAPLEN + 1] = { NUL };  // typed chars before map
+static int typedchars_pos = 0;
+#endif
 
 /*
  * When block_redo is TRUE the redo buffer will not be changed.
@@ -77,11 +82,17 @@ static int	KeyNoremap = 0;	    // remapping flags
 // typebuf.tb_buf has three parts: room in front (for result of mappings), the
 // middle for typeahead and room for new characters (which needs to be 3 *
 // MAXMAPLEN for the Amiga).
+#ifdef FEAT_NORMAL
+// Add extra space to handle large OSC responses in bigger chunks (improve
+// performance)
+#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
+#else // Tiny version
 #define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
+#endif
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
-static int	last_recorded_len = 0;	// number of last recorded chars
+static size_t	last_recorded_len = 0;	// number of last recorded chars
 
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
@@ -96,6 +107,9 @@ static void	closescript(void);
 static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
+#ifdef FEAT_EVAL
+static int	do_key_input_pre(int c);
+#endif
 
 /*
  * Free and clear a buffer.
@@ -121,17 +135,19 @@ free_buff(buffheader_T *buf)
     static char_u *
 get_buffcont(
     buffheader_T	*buffer,
-    int			dozero)	    // count == zero is not an error
+    int			dozero,	    // count == zero is not an error
+    size_t		*len)	    // the length of the returned buffer
 {
     long_u	    count = 0;
     char_u	    *p = NULL;
     char_u	    *p2;
     char_u	    *str;
     buffblock_T *bp;
+    size_t	    i = 0;
 
     // compute the total length of the string
     for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
-	count += (long_u)STRLEN(bp->b_str);
+	count += (long_u)bp->b_strlen;
 
     if ((count > 0 || dozero) && (p = alloc(count + 1)) != NULL)
     {
@@ -140,7 +156,12 @@ get_buffcont(
 	    for (str = bp->b_str; *str; )
 		*p2++ = *str++;
 	*p2 = NUL;
+	i = (size_t)(p2 - p);
     }
+
+    if (len != NULL)
+	*len = i;
+
     return p;
 }
 
@@ -155,15 +176,17 @@ get_recorded(void)
     char_u	*p;
     size_t	len;
 
-    p = get_buffcont(&recordbuff, TRUE);
+    p = get_buffcont(&recordbuff, TRUE, &len);
+    if (p == NULL)
+	return NULL;
+
     free_buff(&recordbuff);
 
     /*
      * Remove the characters that were added the last time, these must be the
      * (possibly mapped) characters that stopped the recording.
      */
-    len = STRLEN(p);
-    if ((int)len >= last_recorded_len)
+    if (len >= last_recorded_len)
     {
 	len -= last_recorded_len;
 	p[len] = NUL;
@@ -183,10 +206,13 @@ get_recorded(void)
  * Return the contents of the redo buffer as a single string.
  * K_SPECIAL and CSI in the returned string are escaped.
  */
-    char_u *
+    string_T
 get_inserted(void)
 {
-    return get_buffcont(&redobuff, FALSE);
+    size_t len = 0;
+    char_u *str = get_buffcont(&redobuff, FALSE, &len);
+    string_T ret = { str, len };
+    return ret;
 }
 
 /*
@@ -199,9 +225,6 @@ add_buff(
     char_u		*s,
     long		slen)	// length of "s" or -1
 {
-    buffblock_T *p;
-    long_u	    len;
-
     if (slen < 0)
 	slen = (long)STRLEN(s);
     if (slen == 0)				// don't add empty strings
@@ -209,8 +232,8 @@ add_buff(
 
     if (buf->bh_first.b_next == NULL)	// first add to list
     {
-	buf->bh_space = 0;
 	buf->bh_curr = &(buf->bh_first);
+	buf->bh_create_newblock = TRUE;
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
@@ -218,19 +241,26 @@ add_buff(
 	return;
     }
     else if (buf->bh_index != 0)
+    {
 	mch_memmove(buf->bh_first.b_next->b_str,
 		    buf->bh_first.b_next->b_str + buf->bh_index,
-		    STRLEN(buf->bh_first.b_next->b_str + buf->bh_index) + 1);
+		    (buf->bh_first.b_next->b_strlen - buf->bh_index) + 1);
+	buf->bh_first.b_next->b_strlen -= buf->bh_index;
+	buf->bh_space += buf->bh_index;
+    }
     buf->bh_index = 0;
 
-    if (buf->bh_space >= (int)slen)
+    if (!buf->bh_create_newblock && buf->bh_space >= (int)slen)
     {
-	len = (long_u)STRLEN(buf->bh_curr->b_str);
-	vim_strncpy(buf->bh_curr->b_str + len, s, (size_t)slen);
+	vim_strncpy(buf->bh_curr->b_str + buf->bh_curr->b_strlen, s, (size_t)slen);
+	buf->bh_curr->b_strlen += slen;
 	buf->bh_space -= slen;
     }
     else
     {
+	long_u	    len;
+	buffblock_T *p;
+
 	if (slen < MINIMAL_SIZE)
 	    len = MINIMAL_SIZE;
 	else
@@ -238,8 +268,10 @@ add_buff(
 	p = alloc(offsetof(buffblock_T, b_str) + len + 1);
 	if (p == NULL)
 	    return; // no space, just forget it
-	buf->bh_space = (int)(len - slen);
 	vim_strncpy(p->b_str, s, (size_t)slen);
+	p->b_strlen = slen;
+	buf->bh_space = (int)(len - slen);
+	buf->bh_create_newblock = FALSE;
 
 	p->b_next = buf->bh_curr->b_next;
 	buf->bh_curr->b_next = p;
@@ -254,15 +286,13 @@ add_buff(
     static void
 delete_buff_tail(buffheader_T *buf, int slen)
 {
-    int len;
-
     if (buf->bh_curr == NULL)
 	return;  // nothing to delete
-    len = (int)STRLEN(buf->bh_curr->b_str);
-    if (len < slen)
+    if (buf->bh_curr->b_strlen < (size_t)slen)
 	return;
 
-    buf->bh_curr->b_str[len - slen] = NUL;
+    buf->bh_curr->b_str[buf->bh_curr->b_strlen - (size_t)slen] = NUL;
+    buf->bh_curr->b_strlen -= slen;
     buf->bh_space += slen;
 }
 
@@ -273,9 +303,10 @@ delete_buff_tail(buffheader_T *buf, int slen)
 add_num_buff(buffheader_T *buf, long n)
 {
     char_u	number[32];
+    int		numberlen;
 
-    sprintf((char *)number, "%ld", n);
-    add_buff(buf, number, -1L);
+    numberlen = vim_snprintf((char *)number, sizeof(number), "%ld", n);
+    add_buff(buf, number, (long)numberlen);
 }
 
 /*
@@ -289,6 +320,7 @@ add_char_buff(buffheader_T *buf, int c)
     int		len;
     int		i;
     char_u	temp[4];
+    long	templen;
 
     if (IS_SPECIAL(c))
 	len = 1;
@@ -306,6 +338,7 @@ add_char_buff(buffheader_T *buf, int c)
 	    temp[1] = K_SECOND(c);
 	    temp[2] = K_THIRD(c);
 	    temp[3] = NUL;
+	    templen = 3;
 	}
 #ifdef FEAT_GUI
 	else if (c == CSI)
@@ -315,22 +348,24 @@ add_char_buff(buffheader_T *buf, int c)
 	    temp[1] = KS_EXTRA;
 	    temp[2] = (int)KE_CSI;
 	    temp[3] = NUL;
+	    templen = 3;
 	}
 #endif
 	else
 	{
 	    temp[0] = c;
 	    temp[1] = NUL;
+	    templen = 1;
 	}
-	add_buff(buf, temp, -1L);
+	add_buff(buf, temp, templen);
     }
 }
 
 // First read ahead buffer. Used for translated commands.
-static buffheader_T readbuf1 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf1 = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 // Second read ahead buffer. Used for redo.
-static buffheader_T readbuf2 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf2 = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 /*
  * Get one byte from the read buffers.  Use readbuf1 one first, use readbuf2
@@ -382,12 +417,12 @@ start_stuff(void)
     if (readbuf1.bh_first.b_next != NULL)
     {
 	readbuf1.bh_curr = &(readbuf1.bh_first);
-	readbuf1.bh_space = 0;
+	readbuf1.bh_create_newblock = TRUE;		// force a new block to be created (see add_buff())
     }
     if (readbuf2.bh_first.b_next != NULL)
     {
 	readbuf2.bh_curr = &(readbuf2.bh_first);
-	readbuf2.bh_space = 0;
+	readbuf2.bh_create_newblock = TRUE;		// force a new block to be created (see add_buff())
     }
 }
 
@@ -401,7 +436,7 @@ stuff_empty(void)
 	 && readbuf2.bh_first.b_next == NULL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
@@ -438,9 +473,18 @@ flush_buffers(flush_buffers_T flush_typeahead)
 
     if (flush_typeahead == FLUSH_MINIMAL)
     {
-	// remove mapped characters at the start only
-	typebuf.tb_off += typebuf.tb_maplen;
-	typebuf.tb_len -= typebuf.tb_maplen;
+	// remove mapped characters at the start only,
+	// but only when enough space left in typebuf
+	if (typebuf.tb_off + typebuf.tb_maplen >= typebuf.tb_buflen)
+	{
+	    typebuf.tb_off = MAXMAPLEN;
+	    typebuf.tb_len = 0;
+	}
+	else
+	{
+	    typebuf.tb_off += typebuf.tb_maplen;
+	    typebuf.tb_len -= typebuf.tb_maplen;
+	}
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
 	if (typebuf.tb_len == 0)
 	    typebuf_was_filled = FALSE;
@@ -512,6 +556,7 @@ CancelRedo(void)
 saveRedobuff(save_redo_T *save_redo)
 {
     char_u	*s;
+    size_t	slen;
 
     save_redo->sr_redobuff = redobuff;
     redobuff.bh_first.b_next = NULL;
@@ -519,11 +564,11 @@ saveRedobuff(save_redo_T *save_redo)
     old_redobuff.bh_first.b_next = NULL;
 
     // Make a copy, so that ":normal ." in a function works.
-    s = get_buffcont(&save_redo->sr_redobuff, FALSE);
+    s = get_buffcont(&save_redo->sr_redobuff, FALSE, &slen);
     if (s == NULL)
 	return;
 
-    add_buff(&redobuff, s, -1L);
+    add_buff(&redobuff, s, (long)slen);
     vim_free(s);
 }
 
@@ -666,13 +711,13 @@ stuffRedoReadbuff(char_u *s)
     add_buff(&readbuf2, s, -1L);
 }
 
-    static void
+    void
 stuffReadbuffLen(char_u *s, long len)
 {
     add_buff(&readbuf1, s, len);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Stuff "s" into the stuff buffer, leaving special key codes unmodified and
  * escaping other K_SPECIAL and CSI bytes.
@@ -870,7 +915,7 @@ start_redo(long count, int old_redo)
 	{
 	    c = read_redo(FALSE, old_redo);
 	    add_char_buff(&readbuf2, c);
-	    if (!isdigit(c))
+	    if (!SAFE_isdigit(c))
 		break;
 	}
 	c = read_redo(FALSE, old_redo);
@@ -1282,50 +1327,104 @@ del_typebuf(int len, int offset)
 }
 
 /*
+ * State for adding bytes to a recording or 'showcmd'.
+ */
+typedef struct
+{
+    char_u	buf[MB_MAXBYTES * 3 + 4];
+    int		prev_c;
+    size_t	buflen;
+    unsigned	pending_special;
+    unsigned	pending_mbyte;
+} gotchars_state_T;
+
+/*
+ * Add a single byte to a recording or 'showcmd'.
+ * Return TRUE if a full key has been received, FALSE otherwise.
+ */
+    static int
+gotchars_add_byte(gotchars_state_T *state, char_u byte)
+{
+    int		c = state->buf[state->buflen++] = byte;
+    int		retval = FALSE;
+    int		in_special = state->pending_special > 0;
+    int		in_mbyte = state->pending_mbyte > 0;
+
+    if (in_special)
+	state->pending_special--;
+    else if (c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| c == CSI
+#endif
+	    )
+	// When receiving a special key sequence, store it until we have all
+	// the bytes and we can decide what to do with it.
+	state->pending_special = 2;
+
+    if (state->pending_special > 0)
+	goto ret_false;
+
+    if (in_mbyte)
+	state->pending_mbyte--;
+    else
+    {
+	if (in_special)
+	{
+	    if (state->prev_c == KS_MODIFIER)
+		// When receiving a modifier, wait for the modified key.
+		goto ret_false;
+	    c = TO_SPECIAL(state->prev_c, c);
+	    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		// Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful
+		// in a recording.
+		state->buflen = 0;
+	}
+	// When receiving a multibyte character, store it until we have all
+	// the bytes, so that it won't be split between two buffer blocks,
+	// and delete_buff_tail() will work properly.
+	state->pending_mbyte = MB_BYTE2LEN_CHECK(c) - 1;
+    }
+
+    if (state->pending_mbyte > 0)
+	goto ret_false;
+
+    retval = TRUE;
+ret_false:
+    state->prev_c = c;
+    return retval;
+}
+
+/*
  * Write typed characters to script file.
- * If recording is on put the character in the recordbuffer.
+ * If recording is on put the character in the record buffer.
  */
     static void
 gotchars(char_u *chars, int len)
 {
     char_u		*s = chars;
-    int			i;
-    static char_u	buf[4];
-    static int		buflen = 0;
+    size_t		i;
     int			todo = len;
+    static gotchars_state_T state;
 
-    while (todo--)
+    while (todo-- > 0)
     {
-	buf[buflen++] = *s++;
-
-	// When receiving a special key sequence, store it until we have all
-	// the bytes and we can decide what to do with it.
-	if (buflen == 1 && buf[0] == K_SPECIAL)
+	if (!gotchars_add_byte(&state, *s++))
 	    continue;
-	if (buflen == 2)
-	    continue;
-	if (buflen == 3 && buf[1] == KS_EXTRA
-		       && (buf[2] == KE_FOCUSGAINED || buf[2] == KE_FOCUSLOST))
-	{
-	    // Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful in a
-	    // recording.
-	    buflen = 0;
-	    continue;
-	}
 
 	// Handle one byte at a time; no translation to be done.
-	for (i = 0; i < buflen; ++i)
-	    updatescript(buf[i]);
+	for (i = 0; i < state.buflen; ++i)
+	    updatescript(state.buf[i]);
 
 	if (reg_recording != 0)
 	{
-	    buf[buflen] = NUL;
-	    add_buff(&recordbuff, buf, (long)buflen);
+	    state.buf[state.buflen] = NUL;
+	    add_buff(&recordbuff, state.buf, (long)state.buflen);
 	    // remember how many chars were last recorded
-	    last_recorded_len += buflen;
+	    last_recorded_len += state.buflen;
 	}
-	buflen = 0;
+	state.buflen = 0;
     }
+
     may_sync_undo();
 
 #ifdef FEAT_EVAL
@@ -1339,12 +1438,12 @@ gotchars(char_u *chars, int len)
 }
 
 /*
- * Record a <Nop> key.
+ * Record an <Ignore> key.
  */
     void
-gotchars_nop(void)
+gotchars_ignore(void)
 {
-    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_NOP };
+    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_IGNORE };
     gotchars(nop_buf, 3);
 }
 
@@ -1601,7 +1700,7 @@ closescript(void)
 	--curscript;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 close_all_scripts(void)
 {
@@ -1652,6 +1751,13 @@ updatescript(int c)
 	ml_sync_all(c == 0, TRUE);
 	count = 0;
     }
+#ifdef FEAT_EVAL
+    if (typedchars_pos < MAXMAPLEN)
+    {
+	typedchars[typedchars_pos] = c;
+	typedchars_pos++;
+    }
+#endif
 }
 
 /*
@@ -1713,6 +1819,67 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 }
 
 /*
+ * Add a single byte to 'showcmd' for a partially matched mapping.
+ * Call add_to_showcmd() if a full key has been received.
+ */
+    static void
+add_byte_to_showcmd(char_u byte)
+{
+    static gotchars_state_T state;
+    char_u	*ptr;
+    int		modifiers = 0;
+    int		c = NUL;
+
+    if (!p_sc || msg_silent != 0)
+	return;
+
+    if (!gotchars_add_byte(&state, byte))
+	return;
+
+    state.buf[state.buflen] = NUL;
+    state.buflen = 0;
+
+    ptr = state.buf;
+    if (ptr[0] == K_SPECIAL && ptr[1] == KS_MODIFIER && ptr[2] != NUL)
+    {
+	modifiers = ptr[2];
+	ptr += 3;
+    }
+
+    if (*ptr != NUL)
+    {
+	char_u		*mb_ptr = mb_unescape(&ptr);
+
+	c = mb_ptr != NULL ? (*mb_ptr2char)(mb_ptr) : *ptr++;
+	if (c <= 0x7f)
+	{
+	    // Merge modifiers into the key to make the result more readable.
+	    int		modifiers_after = modifiers;
+	    int		mod_c = merge_modifyOtherKeys(c, &modifiers_after);
+
+	    if (modifiers_after == 0)
+	    {
+		modifiers = 0;
+		c = mod_c;
+	    }
+	}
+    }
+
+    // TODO: is there a more readable and yet compact representation of
+    // modifiers and special keys?
+    if (modifiers != 0)
+    {
+	add_to_showcmd(K_SPECIAL);
+	add_to_showcmd(KS_MODIFIER);
+	add_to_showcmd(modifiers);
+    }
+    if (c != NUL)
+	add_to_showcmd(c);
+    while (*ptr != NUL)
+	add_to_showcmd(*ptr++);
+}
+
+/*
  * Get the next input character.
  * Can return a special key or a multi-byte character.
  * Can return NUL when called recursively, use safe_vgetc() if that's not
@@ -1751,7 +1918,7 @@ vgetc(void)
     else
     {
 	// number of characters recorded from the last vgetc() call
-	static int	last_vgetc_recorded_len = 0;
+	static size_t	last_vgetc_recorded_len = 0;
 
 	mod_mask = 0;
 	vgetc_mod_mask = 0;
@@ -1873,7 +2040,7 @@ vgetc(void)
 
 		    // Handle <SID>{sid};  Do up to 20 digits for safety.
 		    last_used_sid = 0;
-		    for (j = 0; j < 20 && isdigit(c = vgetorpeek(TRUE)); ++j)
+		    for (j = 0; j < 20 && SAFE_isdigit(c = vgetorpeek(TRUE)); ++j)
 			last_used_sid = last_used_sid * 10 + (c - '0');
 		    last_used_map = NULL;
 		    continue;
@@ -1881,8 +2048,45 @@ vgetc(void)
 #endif
 	    }
 
-	    // a keypad or special function key was not mapped, use it like
-	    // its ASCII equivalent
+	    // For a multi-byte character get all the bytes and return the
+	    // converted character.
+	    // Note: This will loop until enough bytes are received!
+	    if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
+	    {
+		++no_mapping;
+		buf[0] = c;
+		for (i = 1; i < n; ++i)
+		{
+		    buf[i] = vgetorpeek(TRUE);
+		    if (buf[i] == K_SPECIAL
+#ifdef FEAT_GUI
+			    || (buf[i] == CSI)
+#endif
+			    )
+		    {
+			// Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER
+			// sequence, which represents a K_SPECIAL (0x80),
+			// or a CSI - KS_EXTRA - KE_CSI sequence, which
+			// represents a CSI (0x9B),
+			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
+			// too.
+			c = vgetorpeek(TRUE);
+			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
+			    buf[i] = CSI;
+		    }
+		}
+		--no_mapping;
+		c = (*mb_ptr2char)(buf);
+	    }
+
+	    if (vgetc_char == 0)
+	    {
+		vgetc_mod_mask = mod_mask;
+		vgetc_char = c;
+	    }
+
+	    // A keypad or special function key was not mapped, use it like
+	    // its ASCII equivalent.
 	    switch (c)
 	    {
 		case K_KPLUS:	c = '+'; break;
@@ -1944,43 +2148,6 @@ vgetc(void)
 		case K_XRIGHT:	c = K_RIGHT; break;
 	    }
 
-	    // For a multi-byte character get all the bytes and return the
-	    // converted character.
-	    // Note: This will loop until enough bytes are received!
-	    if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
-	    {
-		++no_mapping;
-		buf[0] = c;
-		for (i = 1; i < n; ++i)
-		{
-		    buf[i] = vgetorpeek(TRUE);
-		    if (buf[i] == K_SPECIAL
-#ifdef FEAT_GUI
-			    || (buf[i] == CSI)
-#endif
-			    )
-		    {
-			// Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER
-			// sequence, which represents a K_SPECIAL (0x80),
-			// or a CSI - KS_EXTRA - KE_CSI sequence, which
-			// represents a CSI (0x9B),
-			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
-			// too.
-			c = vgetorpeek(TRUE);
-			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
-			    buf[i] = CSI;
-		    }
-		}
-		--no_mapping;
-		c = (*mb_ptr2char)(buf);
-	    }
-
-	    if (vgetc_char == 0)
-	    {
-		vgetc_mod_mask = mod_mask;
-		vgetc_char = c;
-	    }
-
 	    break;
 	}
 
@@ -2015,6 +2182,13 @@ vgetc(void)
     }
 #endif
 
+#ifdef FEAT_EVAL
+    c = do_key_input_pre(c);
+
+    // Clear the next typedchars_pos
+    typedchars_pos = 0;
+#endif
+
     // Need to process the character before we know it's safe to do something
     // else.
     if (c != K_IGNORE)
@@ -2022,6 +2196,80 @@ vgetc(void)
 
     return c;
 }
+
+#ifdef FEAT_EVAL
+/*
+ * Handle the InsertCharPre autocommand.
+ * "c" is the character that was typed.
+ * Return new input character.
+ */
+    static int
+do_key_input_pre(int c)
+{
+    int		res = c;
+    char_u	buf[MB_MAXBYTES + 1];
+    char_u	curr_mode[MODE_MAX_LENGTH];
+    int		save_State = State;
+    save_v_event_T save_v_event;
+    dict_T	*v_event;
+
+    // Return quickly when there is nothing to do.
+    if (!has_keyinputpre())
+	return res;
+
+    if (IS_SPECIAL(c))
+    {
+	buf[0] = K_SPECIAL;
+	buf[1] = KEY2TERMCAP0(c);
+	buf[2] = KEY2TERMCAP1(c);
+	buf[3] = NUL;
+    }
+    else
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+
+    typedchars[typedchars_pos] = NUL;
+    vim_unescape_csi(typedchars);
+
+    get_mode(curr_mode);
+
+    // Lock the text to avoid weird things from happening.
+    ++textlock;
+    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+
+    v_event = get_v_event(&save_v_event);
+    (void)dict_add_bool(v_event, "typed", KeyTyped);
+    (void)dict_add_string(v_event, "typedchar", typedchars);
+
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
+	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
+    {
+	// Get the value of v:char.  It may be empty or more than one
+	// character.  Only use it when changed, otherwise continue with the
+	// original character.
+	char_u *v_char;
+	size_t	v_charlen;
+
+	v_char = get_vim_var_str(VV_CHAR);
+	v_charlen = STRLEN(v_char);
+
+	// Convert special bytes when it is special string.
+	if (v_charlen >= 3 && v_char[0] == K_SPECIAL)
+	    res = TERMCAP2KEY(v_char[1], v_char[2]);
+	else if (v_charlen > 0)
+	    res = PTR2CHAR(v_char);
+    }
+
+    restore_v_event(v_event, &save_v_event);
+
+    set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
+    --textlock;
+
+    // Restore the State, it may have been changed.
+    State = save_State;
+
+    return res;
+}
+#endif
 
 /*
  * Like vgetc(), but never return a NUL when called recursively, get a key
@@ -2087,7 +2335,7 @@ vpeekc(void)
     return vgetorpeek(FALSE);
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(FEAT_TERMINAL)
 /*
  * Like vpeekc(), but don't allow mapping.  Do allow checking for terminal
  * codes.
@@ -2143,17 +2391,51 @@ char_avail(void)
     return (retval != NUL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "getchar()" and "getcharstr()" functions
  */
     static void
-getchar_common(typval_T *argvars, typval_T *rettv)
+getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
 {
-    varnumber_T		n;
+    varnumber_T		n = 0;
+    int			called_emsg_start = called_emsg;
     int			error = FALSE;
+    int			simplify = TRUE;
+    char_u		cursor_flag = 'm';
 
-    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+    if ((in_vim9script()
+		&& check_for_opt_bool_or_number_arg(argvars, 0) == FAIL)
+	    || (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type == VAR_DICT)
+    {
+	dict_T		*d = argvars[1].vval.v_dict;
+	char_u		*cursor_str;
+
+	if (allow_number)
+	    allow_number = dict_get_bool(d, "number", TRUE);
+	else if (dict_has_key(d, "number"))
+	    semsg(_(e_invalid_argument_str), "number");
+
+	simplify = dict_get_bool(d, "simplify", TRUE);
+
+	cursor_str = dict_get_string(d, "cursor", FALSE);
+	if (cursor_str != NULL)
+	{
+	    if (STRCMP(cursor_str, "hide") != 0
+		    && STRCMP(cursor_str, "keep") != 0
+		    && STRCMP(cursor_str, "msg") != 0)
+		semsg(_(e_invalid_value_for_argument_str_str), "cursor",
+								   cursor_str);
+	    else
+		cursor_flag = cursor_str[0];
+	}
+    }
+
+    if (called_emsg != called_emsg_start)
 	return;
 
 #ifdef MESSAGE_QUEUE
@@ -2163,14 +2445,20 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     parse_queued_messages();
 #endif
 
-    // Position the cursor.  Needed after a message that ends in a space.
-    windgoto(msg_row, msg_col);
+    if (cursor_flag == 'h')
+	cursor_sleep();
+    else if (cursor_flag == 'm')
+	windgoto(msg_row, msg_col);
 
     ++no_mapping;
     ++allow_keys;
+    if (!simplify)
+	++no_reduce_keys;
     for (;;)
     {
-	if (argvars[0].v_type == VAR_UNKNOWN)
+	if (argvars[0].v_type == VAR_UNKNOWN
+		|| (argvars[0].v_type == VAR_NUMBER
+			&& argvars[0].vval.v_number == -1))
 	    // getchar(): blocking wait.
 	    n = plain_vgetc_nopaste();
 	else if (tv_get_bool_chk(&argvars[0], &error))
@@ -2191,14 +2479,18 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     }
     --no_mapping;
     --allow_keys;
+    if (!simplify)
+	--no_reduce_keys;
+
+    if (cursor_flag == 'h')
+	cursor_unsleep();
 
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
     set_vim_var_nr(VV_MOUSE_LNUM, 0);
     set_vim_var_nr(VV_MOUSE_COL, 0);
 
-    rettv->vval.v_number = n;
-    if (n != 0 && (IS_SPECIAL(n) || mod_mask != 0))
+    if (n != 0 && (!allow_number || IS_SPECIAL(n) || mod_mask != 0))
     {
 	char_u		temp[10];   // modifier: 3, mbyte-char: 6, NUL: 1
 	int		i = 0;
@@ -2220,9 +2512,9 @@ getchar_common(typval_T *argvars, typval_T *rettv)
 	    i += (*mb_char2bytes)(n, temp + i);
 	else
 	    temp[i++] = n;
-	temp[i++] = NUL;
+	temp[i] = NUL;
 	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(temp);
+	rettv->vval.v_string = vim_strnsave(temp, i);
 
 	if (is_mouse_key(n))
 	{
@@ -2256,6 +2548,10 @@ getchar_common(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
+    else if (!allow_number)
+	rettv->v_type = VAR_STRING;
+    else
+	rettv->vval.v_number = n;
 }
 
 /*
@@ -2264,7 +2560,7 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     void
 f_getchar(typval_T *argvars, typval_T *rettv)
 {
-    getchar_common(argvars, rettv);
+    getchar_common(argvars, rettv, TRUE);
 }
 
 /*
@@ -2273,25 +2569,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     void
 f_getcharstr(typval_T *argvars, typval_T *rettv)
 {
-    getchar_common(argvars, rettv);
-
-    if (rettv->v_type != VAR_NUMBER)
-	return;
-
-    char_u		temp[7];   // mbyte-char: 6, NUL: 1
-    varnumber_T	n = rettv->vval.v_number;
-    int		i = 0;
-
-    if (n != 0)
-    {
-	if (has_mbyte)
-	    i += (*mb_char2bytes)(n, temp + i);
-	else
-	    temp[i++] = n;
-    }
-    temp[i++] = NUL;
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave(temp);
+    getchar_common(argvars, rettv, FALSE);
 }
 
 /*
@@ -2304,7 +2582,7 @@ f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
 }
 #endif // FEAT_EVAL
 
-#if defined(MESSAGE_QUEUE) || defined(PROTO)
+#if defined(MESSAGE_QUEUE)
 # define MAX_REPEAT_PARSE 8
 
 /*
@@ -2332,7 +2610,7 @@ parse_queued_messages(void)
     // If memory allocation fails during startup we'll exit but curbuf or
     // curwin could be NULL.
     if (curbuf == NULL || curwin == NULL)
-       return;
+	return;
 
     old_curbuf_fnum = curbuf->b_fnum;
     old_curwin_id = curwin->w_id;
@@ -2726,8 +3004,11 @@ handle_mapping(
 		    }
 		}
 		else
+		{
 		    // No match; may have to check for termcode at next
-		    // character.  If the first character that didn't match is
+		    // character.
+
+		    // If the first character that didn't match is
 		    // K_SPECIAL then check for a termcode.  This isn't perfect
 		    // but should work in most cases.
 		    if (max_mlen < mlen)
@@ -2737,6 +3018,12 @@ handle_mapping(
 		    }
 		    else if (max_mlen == mlen && mp->m_keys[mlen] == K_SPECIAL)
 			want_termcode = 1;
+
+		    // Check termcode for uppercase character to properly
+		    // process "ESC[27;2;<ascii code>~" control sequences.
+		    if (ASCII_ISUPPER(mp->m_keys[mlen]))
+			want_termcode = 1;
+		}
 	    }
 	}
 
@@ -2938,6 +3225,8 @@ handle_mapping(
 	int	save_m_noremap;
 	int	save_m_silent;
 	char_u	*save_m_keys;
+	char_u	*save_alt_m_keys;
+	int	save_alt_m_keylen;
 #else
 # define save_m_noremap mp->m_noremap
 # define save_m_silent mp->m_silent
@@ -2986,6 +3275,8 @@ handle_mapping(
 	save_m_noremap = mp->m_noremap;
 	save_m_silent = mp->m_silent;
 	save_m_keys = NULL;  // only saved when needed
+	save_alt_m_keys = NULL;  // only saved when needed
+	save_alt_m_keylen = mp->m_alt != NULL ? mp->m_alt->m_keylen : 0;
 
 	/*
 	 * Handle ":map <expr>": evaluate the {rhs} as an expression.  Also
@@ -3002,7 +3293,10 @@ handle_mapping(
 	    vgetc_busy = 0;
 	    may_garbage_collect = FALSE;
 
-	    save_m_keys = vim_strsave(mp->m_keys);
+	    save_m_keys = vim_strnsave(mp->m_keys, (size_t)mp->m_keylen);
+	    save_alt_m_keys = mp->m_alt != NULL
+				    ? vim_strnsave(mp->m_alt->m_keys,
+					     (size_t)save_alt_m_keylen) : NULL;
 	    map_str = eval_map_expr(mp, NUL);
 
 	    // The mapping may do anything, but we expect it to take care of
@@ -3022,7 +3316,7 @@ handle_mapping(
 		buf[1] = KS_EXTRA;
 		buf[2] = KE_IGNORE;
 		buf[3] = NUL;
-		map_str = vim_strsave(buf);
+		map_str = vim_strnsave(buf, 3);
 		if (State & MODE_CMDLINE)
 		{
 		    // redraw the command below the error
@@ -3060,15 +3354,20 @@ handle_mapping(
 		noremap = save_m_noremap;
 	    else if (
 #ifdef FEAT_EVAL
-		STRNCMP(map_str, save_m_keys != NULL ? save_m_keys : mp->m_keys,
-								(size_t)keylen)
-#else
-		STRNCMP(map_str, mp->m_keys, (size_t)keylen)
+		save_m_expr ?
+		(save_m_keys != NULL
+			&& STRNCMP(map_str, save_m_keys, (size_t)keylen) == 0)
+		|| (save_alt_m_keys != NULL
+			&& STRNCMP(map_str, save_alt_m_keys,
+					    (size_t)save_alt_m_keylen) == 0) :
 #endif
-		   != 0)
-		noremap = REMAP_YES;
-	    else
+		STRNCMP(map_str, mp->m_keys, (size_t)keylen) == 0
+		|| (mp->m_alt != NULL
+			&& STRNCMP(map_str, mp->m_alt->m_keys,
+					    (size_t)mp->m_alt->m_keylen) == 0))
 		noremap = REMAP_SKIP;
+	    else
+		noremap = REMAP_YES;
 	    i = ins_typebuf(map_str, noremap,
 					 0, TRUE, cmd_silent || save_m_silent);
 #ifdef FEAT_EVAL
@@ -3078,6 +3377,7 @@ handle_mapping(
 	}
 #ifdef FEAT_EVAL
 	vim_free(save_m_keys);
+	vim_free(save_alt_m_keys);
 #endif
 	*keylenp = keylen;
 	if (i == FAIL)
@@ -3544,7 +3844,7 @@ vgetorpeek(int advance)
 			if (typebuf.tb_len > SHOWCMD_COLS)
 			    showcmd_idx = typebuf.tb_len - SHOWCMD_COLS;
 			while (showcmd_idx < typebuf.tb_len)
-			    (void)add_to_showcmd(
+			    add_byte_to_showcmd(
 			       typebuf.tb_buf[typebuf.tb_off + showcmd_idx++]);
 			curwin->w_wcol = old_wcol;
 			curwin->w_wrow = old_wrow;
@@ -3666,9 +3966,9 @@ vgetorpeek(int advance)
 #endif
     if (timedout && c == ESC)
     {
-	// When recording there will be no timeout.  Add a <Nop> after the ESC
-	// to avoid that it forms a key code with following characters.
-	gotchars_nop();
+	// When recording there will be no timeout.  Add an <Ignore> after the
+	// ESC to avoid that it forms a key code with following characters.
+	gotchars_ignore();
     }
 
     --vgetc_busy;
@@ -3889,7 +4189,7 @@ fix_input_buffer(char_u *buf, int len)
     return len;
 }
 
-#if defined(USE_INPUT_BUF) || defined(PROTO)
+#if defined(USE_INPUT_BUF)
 /*
  * Return TRUE when bytes are in the input buffer or in the typeahead buffer.
  * Normally the input buffer would be sufficient, but the server_to_input_buf()
@@ -4014,7 +4314,7 @@ getcmdkeycmd(
     return (char_u *)line_ga.ga_data;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * If there was a mapping we get its SID.  Otherwise, use "last_used_sid", it
  * is set when redo'ing.
@@ -4025,6 +4325,7 @@ getcmdkeycmd(
 may_add_last_used_map_to_redobuff(void)
 {
     char_u  buf[3 + 20];
+    int	    buflen;
     int	    sid = -1;
 
     if (last_used_map != NULL)
@@ -4039,8 +4340,10 @@ may_add_last_used_map_to_redobuff(void)
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
     buf[2] = KE_SID;
-    vim_snprintf((char *)buf + 3, 20, "%d;", sid);
-    add_buff(&redobuff, buf, -1L);
+    buflen = 3;
+
+    buflen += vim_snprintf((char *)buf + 3, 20, "%d;", sid);
+    add_buff(&redobuff, buf, (long)buflen);
 }
 #endif
 
@@ -4076,7 +4379,7 @@ do_cmdkey_command(int key UNUSED, int flags)
     return res;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     void
 reset_last_used_map(mapblock_T *mp)
 {

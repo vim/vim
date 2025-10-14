@@ -130,6 +130,38 @@ setmark_pos(int c, pos_T *pos, int fnum)
 }
 
 /*
+ * Delete every entry referring to file 'fnum' from both the jumplist and the
+ * tag stack.
+ */
+    void
+mark_forget_file(win_T *wp, int fnum)
+{
+    int		i;
+
+    for (i = wp->w_jumplistlen - 1; i >= 0; --i)
+	if (wp->w_jumplist[i].fmark.fnum == fnum)
+	{
+	    vim_free(wp->w_jumplist[i].fname);
+	    if (wp->w_jumplistidx > i)
+		--wp->w_jumplistidx;
+	    --wp->w_jumplistlen;
+	    mch_memmove(&wp->w_jumplist[i], &wp->w_jumplist[i + 1],
+			(wp->w_jumplistlen - i) * sizeof(wp->w_jumplist[i]));
+	}
+
+    for (i = wp->w_tagstacklen - 1; i >= 0; --i)
+	if (wp->w_tagstack[i].fmark.fnum == fnum)
+	{
+	    tagstack_clear_entry(&wp->w_tagstack[i]);
+	    if (wp->w_tagstackidx > i)
+		--wp->w_tagstackidx;
+	    --wp->w_tagstacklen;
+	    mch_memmove(&wp->w_tagstack[i], &wp->w_tagstack[i + 1],
+			(wp->w_tagstacklen - i) * sizeof(wp->w_tagstack[i]));
+	}
+}
+
+/*
  * Set the previous context mark to the current position and add it to the
  * jump list.
  */
@@ -508,10 +540,9 @@ fname2fnum(xfmark_T *fm)
 #endif
 		))
     {
-	int len;
+	size_t len;
 
-	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	len = (int)STRLEN(NameBuff);
+	len = expand_env((char_u *)"~/", NameBuff, MAXPATHL);
 	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
     else
@@ -752,6 +783,11 @@ show_one_mark(
 	if (name == NULL && current)
 	{
 	    name = mark_line(p, 15);
+	    if (name == NULL)
+	    {
+		emsg(_(e_out_of_memory));
+		return;
+	    }
 	    mustfree = TRUE;
 	}
 	if (!message_filtered(name))
@@ -1380,7 +1416,7 @@ set_last_cursor(win_T *win)
 	win->w_buffer->b_last_cursor = win->w_cursor;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_marks(void)
 {
@@ -1392,7 +1428,7 @@ free_all_marks(void)
 }
 #endif
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 /*
  * Return a pointer to the named file marks.
  */
@@ -1403,7 +1439,7 @@ get_namedfm(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add information about mark 'mname' to list 'l'
  */
@@ -1432,7 +1468,7 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 
     list_append_number(lpos, bufnr);
     list_append_number(lpos, pos->lnum);
-    list_append_number(lpos, pos->col + 1);
+    list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
     if (dict_add_string(d, "mark", mname) == FAIL

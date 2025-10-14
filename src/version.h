@@ -17,10 +17,10 @@
 
 // Values that change for a new release.
 #define VIM_VERSION_MAJOR		9
-#define VIM_VERSION_MINOR		0
-#define VIM_VERSION_BUILD		284
-#define VIM_VERSION_BUILD_BCD		0x11c
-#define VIM_VERSION_DATE_ONLY		"2022 Jun 28"
+#define VIM_VERSION_MINOR		1
+#define VIM_VERSION_BUILD		285
+#define VIM_VERSION_BUILD_BCD		0x11d
+#define VIM_VERSION_DATE_ONLY		"2024 Jan 02"
 
 // Values based on the above
 #define VIM_VERSION_MAJOR_STR		VIM_TOSTR(VIM_VERSION_MAJOR)
@@ -31,7 +31,22 @@
 #ifndef VIM_VERSION_PATCHLEVEL
 # define VIM_VERSION_PATCHLEVEL		0
 #endif
-#define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(VIM_VERSION_PATCHLEVEL)
+
+// Patchlevel with leading zeros
+// For compatibility with the installer from "vim-win32-installer" and WinGet.
+// For details see https://github.com/vim/vim-win32-installer/pull/277
+// and https://github.com/vim/vim-win32-installer/pull/285
+#if VIM_VERSION_PATCHLEVEL < 10
+#define LEADZERO(x) 000 ## x
+#elif VIM_VERSION_PATCHLEVEL < 100
+#define LEADZERO(x) 00 ## x
+#elif VIM_VERSION_PATCHLEVEL < 1000
+#define LEADZERO(x) 0 ## x
+#else
+#define LEADZERO(x) x
+#endif
+
+#define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(LEADZERO(VIM_VERSION_PATCHLEVEL))
 // Used by MacOS port; should be one of: development, alpha, beta, final
 #define VIM_VERSION_RELEASE		final
 

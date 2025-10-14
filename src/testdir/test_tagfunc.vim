@@ -1,8 +1,7 @@
 " Test 'tagfunc'
 
-import './vim9.vim' as v9
-source check.vim
-source screendump.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 func TagFunc(pat, flag, info)
   let g:tagfunc_args = [a:pat, a:flag, a:info]
@@ -412,5 +411,24 @@ func Test_tagfunc_closes_window()
   set tagfunc=
 endfunc
 
+func Test_tagfunc_deletes_lines()
+  defer delete('Xany')
+  split Xany
+  call writefile([''], 'Xtest', 'D')
+  call setline(1, range(10))
+  call cursor(10, 1)
+  func MytagfuncDel(pat, flags, info)
+    9,10d
+    return [{'name' : 'mytag', 'filename' : 'Xtest', 'cmd' : '1'}]
+  endfunc
+  set tagfunc=MytagfuncDel
+  call taglist('.')
+  call assert_equal([0, 8, 1, 0], getpos('.'))
+  norm! ofoobar
+  call assert_equal(['0', '1', '2', '3', '4', '5', '6', '7', 'foobar'], getline(1, '$'))
+
+  bw!
+  set tagfunc=
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

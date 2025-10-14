@@ -1,10 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
-import './vim9.vim' as v9
-source screendump.vim
-source shared.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 def Test_vim9script_feature()
   # example from the help, here the feature is always present
@@ -458,7 +455,7 @@ func s:InvokeSomeCommand()
   SomeCommand
 endfunc
 
-def Test_autocommand_block()
+def Test_command_block()
   com SomeCommand {
       g:someVar = 'some'
     }
@@ -469,7 +466,121 @@ def Test_autocommand_block()
   unlet g:someVar
 enddef
 
-def Test_command_block()
+" Test for using heredoc in a :command command block
+def Test_command_block_heredoc()
+  var lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          aaa
+          bbb
+        END
+      }
+    SomeCommand
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    def Foo()
+      g:someVar = []
+      SomeCommand
+      assert_equal(['aaa', 'bbb'], g:someVar)
+    enddef
+    Foo()
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess( lines)
+
+  # Execute a command with heredoc in a block
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          aaa
+          bbb
+        END
+      }
+    execute('SomeCommand')
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # Heredoc with comment
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END # comment
+          aaa
+          bbb
+        END
+      }
+    execute('SomeCommand')
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # heredoc evaluation
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        var suffix = '---'
+        g:someVar =<< trim eval END
+          ccc{suffix}
+          ddd
+        END
+      }
+    SomeCommand
+    assert_equal(['ccc---', 'ddd'], g:someVar)
+    def Foo()
+      g:someVar = []
+      SomeCommand
+      assert_equal(['ccc---', 'ddd'], g:someVar)
+    enddef
+    Foo()
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # command following heredoc
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        var l =<< trim END
+          eee
+          fff
+        END
+        g:someVar = l
+      }
+    SomeCommand
+    assert_equal(['eee', 'fff'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # Error in heredoc
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          eee
+          fff
+      }
+    try
+      SomeCommand
+    catch
+      assert_match("E990: Missing end marker 'END'", v:exception)
+    endtry
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_autocommand_block()
   au BufNew *.xml {
       g:otherVar = 'other'
     }
@@ -479,6 +590,80 @@ def Test_command_block()
   bwipe!
   au! BufNew *.xml
   unlet g:otherVar
+enddef
+
+def Test_block_in_a_string()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(): string
+      var x = ' => { # abc'
+      return x
+    enddef
+
+    assert_equal(' => { # abc', Foo())
+
+    def Bar(): string
+      var x = " => { # abc"
+      return x
+    enddef
+
+    assert_equal(" => { # abc", Bar())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for a block in a command with comments
+def Test_block_command_with_comment()
+  var lines =<< trim END
+    vim9script
+
+    g:Str = ''
+    command Cmd1 {
+      g:Str = 'Hello' # comment1
+      var x: string # comment2
+      g:Str ..= ' World' # comment3
+    }
+    Cmd1
+    assert_equal('Hello World', g:Str)
+
+    g:Str = ''
+    command Cmd2 {
+      # comment1
+      g:Str = 'Hello'
+      # comment2
+      g:Str ..= ' World'
+      # comment3
+    }
+    Cmd2
+    assert_equal('Hello World', g:Str)
+
+    command Cmd3 {
+      new # comment1
+      setline(1, 'hello') # comment2
+    }
+    Cmd3
+    assert_equal(['hello'], getline(1, '$'))
+    :bw!
+
+    command Cmd4 {
+      # comment1
+      new
+      # comment2
+      setline(1, 'hello') # comment2
+    }
+    Cmd4
+    assert_equal(['hello'], getline(1, '$'))
+    :bw!
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using too many nested blocks
+def Test_too_many_nested_blocks()
+  var lines = ['vim9script']
+  lines += repeat(['{'], 51) + ['echo "Hello"'] + repeat(['}'], 51)
+  v9.CheckSourceFailure(lines, 'E579: Block nesting too deep: {')
 enddef
 
 func g:NoSuchFunc()
@@ -810,6 +995,47 @@ def Test_try_catch_throw()
       endif
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # test that the v:exception stacks are correctly restored
+  try
+    try
+      throw 101
+    catch
+      assert_equal('101', v:exception)
+      try
+      catch
+      finally
+        assert_equal('101', v:exception) # finally shouldn't clear if it doesn't own it
+      endtry
+      assert_equal('101', v:exception)
+      throw 102 # Re-throw inside catch block
+    endtry
+  catch
+    assert_equal('102', v:exception)
+    try
+      throw 103 # throw inside nested exception stack
+    catch
+      assert_equal('103', v:exception)
+    endtry
+    assert_equal('102', v:exception) # restored stack
+  finally
+    assert_equal('', v:exception) # finally should clear if it owns the exception
+  endtry
+  try
+    try
+      throw 104
+    catch
+      try
+        exec 'nonexistent_cmd' # normal exception inside nested exception stack
+      catch
+        assert_match('E492:', v:exception)
+      endtry
+      eval [][0] # normal exception inside catch block
+    endtry
+  catch
+    assert_match('E684:', v:exception)
+  endtry
+  assert_equal('', v:exception) # All exceptions properly popped
 enddef
 
 def Test_unreachable_after()
@@ -1050,6 +1276,7 @@ def Test_nocatch_return_in_try()
 enddef
 
 def Test_cnext_works_in_catch()
+  CheckFeature quickfix
   var lines =<< trim END
       vim9script
       au BufEnter * eval 1 + 2
@@ -1252,6 +1479,31 @@ def Test_try_catch_fails()
   v9.CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
   v9.CheckDefFailure(['if 1', 'endtry'], 'E171:')
   v9.CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
+  v9.CheckDefFailure(['try'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally', 'echo 2'], 'E600:')
+
+  # Missing :endtry inside a nested :try
+  var outer1 =<< trim END
+      try
+        echo 0
+      catch
+        echo 1
+  END
+  var outer2 =<< trim END
+      finally
+        echo 2
+      endtry
+  END
+  v9.CheckDefFailure(outer1 + ['try'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally'] + outer2, 'E607:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally', 'echo 12'] + outer2, 'E607:')
 
   v9.CheckDefFailure(['throw'], 'E1143:')
   v9.CheckDefFailure(['throw xxx'], 'E1001:')
@@ -1282,11 +1534,23 @@ def Test_throw_line_number()
     eval 2 + 2
     throw 'exception'
   enddef
+  def Func2()
+    eval 1 + 1
+    eval 2 + 2
+    eval 3 + 3
+    throw 'exception'
+  enddef
   try
     Func()
   catch /exception/
+    try
+      Func2()
+    catch /exception/
+      assert_match('line 4', v:throwpoint)
+    endtry
     assert_match('line 3', v:throwpoint)
   endtry
+  assert_match('', v:throwpoint)
 enddef
 
 
@@ -1353,6 +1617,7 @@ def Test_abort_after_error()
 enddef
 
 def Test_cexpr_vimscript()
+  CheckFeature quickfix
   # only checks line continuation
   set errorformat=File\ %f\ line\ %l
   var lines =<< trim END
@@ -1924,6 +2189,12 @@ def Test_if_const_expr()
       .. 'ccc'
       )->setline(1)
   endif
+
+  if 1
+    # do nothing
+  else
+    var [a] = [10]
+  endif
 enddef
 
 def Test_if_const_expr_fails()
@@ -2045,6 +2316,18 @@ def Test_echo_cmd()
   assert_match('^two$', g:Screenline(&lines))
 
   v9.CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+
+  # Test for echoing a script local function name
+  var lines =<< trim END
+    vim9script
+    def ScriptLocalEcho()
+    enddef
+    echo ScriptLocalEcho
+  END
+  new
+  setline(1, lines)
+  assert_match('<SNR>\d\+_ScriptLocalEcho', execute('source')->split("\n")[0])
+  bw!
 enddef
 
 def Test_echomsg_cmd()
@@ -2108,6 +2391,15 @@ def Test_echowindow_cmd()
 
   # output goes in message window
   popup_clear()
+
+  # Invalid range
+  var lines =<< trim END
+    def Foo()
+      :$echowindow "foo"
+    enddef
+    defcompile
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E16: Invalid range')
 enddef
 
 def Test_for_outside_of_function()
@@ -2396,8 +2688,20 @@ def Test_for_loop()
         reslist->add('x')
       endfor
       assert_equal(['x', 'x', 'x'], reslist)
+
+      # Test for trying to use the loop variable "_" inside the loop
+      for _ in "a"
+        assert_fails('echo _', 'E1181: Cannot use an underscore here')
+      endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    for i : number : [1, 2]
+      echo i
+    endfor
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1059: No white space allowed before colon: : [1, 2]', 1)
 enddef
 
 def Test_for_loop_list_of_lists()
@@ -2581,6 +2885,35 @@ def Test_define_global_closure_in_loops()
   delfunc g:Global_2c
 enddef
 
+" Test for using a closure in a for loop after another for/while loop
+def Test_for_loop_with_closure_after_another_loop()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      # first loop with a local variable
+      for i in 'a'
+        var v1 = 0
+      endfor
+      var idx = 1
+      while idx > 0
+        idx -= 1
+      endwhile
+      var results = []
+      var s = 'abc'
+      # second loop with a local variable and a funcref
+      for j in range(2)
+        var k = 0
+        results->add(s)
+        g:FuncRefs = () => j
+      endfor
+      assert_equal(['abc', 'abc'], results)
+    enddef
+    Fn()
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:FuncRefs
+enddef
+
 def Test_for_loop_fails()
   v9.CheckDefAndScriptFailure(['for '], ['E1097:', 'E690:'])
   v9.CheckDefAndScriptFailure(['for x'], ['E1097:', 'E690:'])
@@ -2698,6 +3031,37 @@ def Test_for_loop_fails()
   v9.CheckDefSuccess(lines)
 
   v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306:')
+
+  # Test for too many for loops
+  lines =<< trim END
+    vim9script
+    def Foo()
+      for a in range(1)
+        for b in range(1)
+          for c in range(1)
+            for d in range(1)
+              for e in range(1)
+                for f in range(1)
+                  for g in range(1)
+                    for h in range(1)
+                      for i in range(1)
+                        for j in range(1)
+                          for k in range(1)
+                          endfor
+                        endfor
+                      endfor
+                    endfor
+                  endfor
+                endfor
+              endfor
+            endfor
+          endfor
+        endfor
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1306: Loop nesting too deep', 11)
 enddef
 
 def Test_for_loop_script_var()
@@ -3395,12 +3759,12 @@ def Test_vim9_comment()
       ], 'E1144:')
   v9.CheckScriptSuccess([
       'vim9script',
-      'import "./vim9.vim" as v9',
+      'import "./util/vim9.vim" as v9',
       'function v9.CheckScriptSuccess # comment',
       ])
   v9.CheckScriptFailure([
       'vim9script',
-      'import "./vim9.vim" as v9',
+      'import "./util/vim9.vim" as v9',
       'function v9.CheckScriptSuccess# comment',
       ], 'E1048: Item not found in script: CheckScriptSuccess#')
 
@@ -3733,6 +4097,7 @@ func Test_vim9script_not_global()
 endfunc
 
 def Test_vim9_copen()
+  CheckFeature quickfix
   # this was giving an error for setting w:quickfix_title
   copen
   quit
@@ -3794,6 +4159,22 @@ def Test_error_in_autoload_script()
   &rtp = save_rtp
 enddef
 
+" Test for sourcing a Vim9 script with a function script variable and "noclear".
+" The type for the variable is dynamically allocated and should be freed.
+def Test_source_func_script_var()
+  var lines =<< trim END
+    vim9script noclear
+    var Fn: func(list<any>): any
+    Fn = function('min')
+    assert_equal(2, Fn([4, 2]))
+  END
+  new
+  setline(1, lines)
+  source
+  source
+  bw!
+enddef
+
 def Test_error_in_autoload_script_foldexpr()
   var save_rtp = &rtp
   mkdir('Xvim/autoload', 'pR')
@@ -3838,7 +4219,7 @@ def Test_restoring_cpo()
   edit XanotherScript
   so %
   assert_equal('aABceFsMny>', &cpo)
-  assert_equal('aABceFs', g:cpoval)
+  assert_equal('aABceFsz', g:cpoval)
   :1del
   setline(1, 'let g:cpoval = &cpo')
   w
@@ -3879,10 +4260,10 @@ def Test_restoring_cpo()
     exe "silent !" .. cmd
 
     assert_equal([
-        'before: aABceFs',
-        'after: aABceFsM',
-        'later: aABceFsM',
-        'vim9: aABceFs'], readfile('Xrporesult'))
+        'before: aABceFsz',
+        'after: aABceFszM',
+        'later: aABceFszM',
+        'vim9: aABceFsz'], readfile('Xrporesult'))
 
     $HOME = save_HOME
     delete('Xrporesult')
@@ -3897,6 +4278,7 @@ func Test_no_redraw_when_restoring_cpo()
 endfunc
 
 def Run_test_no_redraw_when_restoring_cpo()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     export def Func()
@@ -3928,6 +4310,7 @@ func Test_reject_declaration()
 endfunc
 
 def Run_test_reject_declaration()
+  CheckScreendump
   var buf = g:RunVimInTerminal('', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd var x: number\<CR>")
   g:VerifyScreenDump(buf, 'Test_vim9_reject_declaration_1', {})
@@ -4406,11 +4789,11 @@ def Run_Test_debug_with_lambda()
       Func()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 10, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "cont\<CR>")
-  g:WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 5)))
+  g:WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 9)))
 
   g:StopVimInTerminal(buf)
 enddef
@@ -4441,12 +4824,12 @@ def Run_Test_debug_running_out_of_lines()
       Crash()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 10, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "next\<CR>")
   g:TermWait(buf)
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "cont\<CR>")
   g:TermWait(buf)
@@ -4554,11 +4937,13 @@ def Test_profile_with_lambda()
 enddef
 
 func Test_misplaced_type()
+  CheckScreendump
   CheckRunVimInTerminal
   call Run_Test_misplaced_type()
 endfunc
 
 def Run_Test_misplaced_type()
+  CheckScreendump
   writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type', 'D')
   var buf = g:RunVimInTerminal('-S XTest_misplaced_type', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd echo islocked('somevar: string')\<CR>")
@@ -4781,6 +5166,429 @@ def Test_multidefer_with_exception()
     assert_equal([11, 9, 10, 7, 8, 5, 1, 3, 4, 12, 15, 16], callTrace)
   END
   v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using ":defer" inside an if statement with a false condition
+def Test_defer_skipped()
+  var lines =<< trim END
+    def Foo()
+      if false
+        defer execute('echow "hello"', "")
+      endif
+    enddef
+    defcompile
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using defer without parenthesis for the function name
+def Test_defer_func_without_paren()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      defer Bar
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E107: Missing parentheses: Bar', 1)
+enddef
+
+" Test for using defer without parenthesis for the function name
+def Test_defer_non_existing_func()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      defer Bar()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: Bar', 1)
+enddef
+
+" Test for using defer with an invalid function name
+def Test_defer_invalid_func()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      var Abc = 10
+      defer Abc()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E129: Function name required', 2)
+enddef
+
+" Test for using defer with an invalid argument to a function
+def Test_defer_invalid_func_arg()
+  var lines =<< trim END
+    vim9script
+    def Bar(x: number)
+    enddef
+    def Foo()
+      defer Bar(a)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: a', 1)
+enddef
+
+" Test for using an non-existing type in a "for" statement.
+def Test_invalid_type_in_for()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      for b: x in range(10)
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: x', 1)
+enddef
+
+" Test for using a line break between the variable name and the type in a for
+" statement.
+def Test_for_stmt_space_before_type()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      for a
+           :number in range(10)
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1059: No white space allowed before colon: :number in range(10)', 2)
+enddef
+
+" This test used to cause a use-after-free memory access
+def Test_for_empty_line_after_lambda()
+  var lines =<< trim END
+    vim9script
+    echomsg range(0, 2)->map((_, v) => {
+      return 1
+    })
+
+    assert_equal('[1, 1, 1]', v:statusmsg)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    echomsg range(0, 1)->map((_, v) => {
+      return 1
+    }) range(0, 1)->map((_, v) => {
+      return 2
+    }) # comment
+
+    assert_equal('[1, 1] [2, 2]', v:statusmsg)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for evaluating a lambda block from a string
+def Test_eval_lambda_block()
+  var lines =<< trim END
+    vim9script
+    var Fn = eval("(x: number): number => {\nreturn x * 2\n}")
+    assert_equal(6, Fn(3))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using various null values
+def Test_null_values()
+  var lines =<< trim END
+    var nullValues = [
+      [null, 1, 'null', 7, 'special'],
+      [null_blob, 1, '0z', 10, 'blob'],
+      [null_dict, 1, '{}', 4, 'dict<any>'],
+      [null_function, 1, "function('')", 2, 'func(...): unknown'],
+      [null_list, 1, '[]', 3, 'list<any>'],
+      [null_object, 1, 'object of [unknown]', 13, 'object<any>'],
+      [null_partial, 1, "function('')", 2, 'func(...): unknown'],
+      [null_string, 1, "''", 1, 'string']
+    ]
+    if has('channel')
+      nullValues->add([null_channel, 1, 'channel fail', 9, 'channel'])
+    endif
+    if has('job')
+      nullValues->add([null_job, 1, 'no process', 8, 'job'])
+    endif
+
+    for [Val, emptyExp, stringExp, typeExp, typenameExp] in nullValues
+      assert_equal(emptyExp, empty(Val))
+      assert_equal(stringExp, string(Val))
+      assert_equal(typeExp, type(Val))
+      assert_equal(typenameExp, typename(Val))
+      assert_equal(Val, copy(Val))
+      assert_equal(-1, test_refcount(Val))
+    endfor
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
+" Test for using an unknown type in a typecast
+def Test_unknown_type_in_typecast()
+  var lines =<< trim END
+    vim9script
+    var a = <MyType>b
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: MyType', 2)
+
+  lines =<< trim END
+    vim9script
+    var Fn = <funcx(number, number): number>b
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: funcx(number, number): number', 2)
+
+  # Wrong type in a type cast
+  lines =<< trim END
+    vim9script
+    var i: number = <number>true
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got bool', 2)
+enddef
+
+" Test for calling a function as a method with a list argument
+" This exercises some conditions in the assignment statement parsing code.
+def Test_method_call_with_list_arg()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(l: list<number>)
+      g:save_list = l
+    enddef
+
+    def Bar()
+      var a = 10
+      var b = 20
+      [a, b]->Foo()
+    enddef
+
+    g:save_list = []
+    Bar()
+    assert_equal([10, 20], g:save_list)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using more than one has() check in a compound if condition.
+def Test_has_func_shortcircuit()
+  var lines =<< trim END
+    vim9script
+    def Has_And1_Cond(): string
+      # true && false
+      if has('jumplist') && has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And1_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Has_And2_Cond(): string
+      # false && true
+      if has('foobar') && has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And2_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Has_And3_Cond(): string
+      # false && false
+      if has('foobar') && has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And3_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Has_Or1_Cond(): string
+      # true || false
+      if has('jumplist') || has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('present', Has_Or1_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Has_Or2_Cond(): string
+      # false || true
+      if has('foobar') || has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('present', Has_Or2_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Has_Or3_Cond(): string
+      # false || false
+      if has('foobar') || has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_Or3_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using more than one len() function in a compound if condition.
+def Test_len_func_shortcircuit()
+  def Len_And1_Cond(): string
+    # true && false
+    if len('xxx') == 3 && len('yyy') == 2
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('nomatch', Len_And1_Cond())
+
+  def Len_And2_Cond(): string
+    # false && true
+    if len('xxx') == 2 && len('yyy') == 3
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('nomatch', Len_And2_Cond())
+
+  def Len_Or1_Cond(): string
+    # true || false
+    if len('xxx') == 3 || len('yyy') == 2
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('match', Len_Or1_Cond())
+
+  def Len_Or2_Cond(): string
+    # false || true
+    if len('xxx') == 2 || len('yyy') == 3
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('match', Len_Or2_Cond())
+enddef
+
+" Test for skipping list/tuple/dict/blob indexing when short circuiting a if
+" condition check.
+def Test_if_cond_shortcircuit_skip_indexing()
+  # indexing a list
+  var lines =<< trim END
+    vim9script
+    def Foo(): string
+      const l = [false]
+      if false && l[0]
+        return 'failed'
+      endif
+      if true || l[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a tuple
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const t = (false)
+      if false && t[0]
+        return 'failed'
+      endif
+      if true || t[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a dict
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const d = {x: false}
+      if false && d['x']
+        return 'failed'
+      endif
+      if true || d['x']
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a blob
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const b = 0z00
+      if false && b[0]
+        return 'failed'
+      endif
+      if true || b[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for defining a dict with multiple keys in a command-block
+def Test_multikey_dict_in_block()
+  var lines =<< trim END
+    vim9script
+    command NewCommand {
+         g:TestDict = {
+           'key': 'v1',
+           'other_key': 'v2' }
+       }
+    NewCommand
+  END
+  v9.CheckSourceSuccess(lines)
+  assert_equal({key: 'v1', other_key: 'v2'}, g:TestDict)
+  unlet g:TestDict
+enddef
+
+" Test for using the type() function with void
+def Test_type_func_with_void()
+  var lines =<< trim END
+    vim9script
+    def GetVoidValue(): void
+    enddef
+    echo type(GetVoidValue())
+  END
+  v9.CheckSourceFailure(lines, 'E1031: Cannot use void value', 4)
 enddef
 
 " Keep this last, it messes up highlighting.

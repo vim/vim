@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 9.0.  Last change: 2023 May 14
+*if_perl.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -17,9 +17,9 @@ Perl and Vim				*perl* *Perl*
 1. Editing Perl files					*perl-editing*
 
 Vim syntax highlighting supports Perl and POD files.  Vim assumes a file is
-Perl code if the filename has a .pl or .pm suffix.  Vim also examines the first
-line of a file, regardless of the filename suffix, to check if a file is a
-Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
+Perl code if the filename has a .pl or .pm suffix.  Vim also examines the
+first line of a file, regardless of the filename suffix, to check if a file is
+a Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
 is POD text if the filename has a .POD suffix.
 
 To use tags with Perl, you need Universal/Exuberant Ctags.  Look here:
@@ -33,10 +33,8 @@ features than Exuberant ctags' Perl support.
 ==============================================================================
 2. Compiling Vim with Perl interface			*perl-compiling*
 
-To compile Vim with Perl interface, you need Perl 5.004 (or later).  Perl must
-be installed before you compile Vim.  Vim's Perl interface does NOT work with
-the 5.003 version that has been officially released!  It will probably work
-with Perl 5.003_05 and later.
+To compile Vim with the Perl interface, you need a recent Perl version.  Perl
+must be installed before you compile Vim.
 
 The Perl patches for Vim were made by:
 	Sven Verdoolaege <skimo@breughel.ufsia.ac.be>
@@ -74,7 +72,7 @@ The ActiveState one should work, Strawberry Perl is a good alternative.
 			|script-here|.
 
 
-Example vim script: >
+Example Vim script: >
 
 	function! WhitePearl()
 	perl << EOF
@@ -92,9 +90,9 @@ To see what version of Perl you have: >
 							*:perldo* *:perld*
 :[range]perld[o] {cmd}	Execute Perl command {cmd} for each line in the
 			[range], with $_ being set to the text of each line in
-			turn, without a trailing <EOL>.  Setting $_ will change
-			the text, but note that it is not possible to add or
-			delete lines using this command.
+			turn, without a trailing <EOL>.  Setting $_ will
+			change the text, but note that it is not possible to
+			add or delete lines using this command.
 			The default for [range] is the whole file: "1,$".
 
 Here are some things you can try: >
@@ -298,8 +296,8 @@ version of the shared library must match the Perl version Vim was compiled
 with.
 
 Note: If you are building Perl locally, you have to use a version compiled
-with threading support for it for Vim to successfully link against it. You can
-use the `-Dusethreads` flags when configuring Perl, and check that a Perl
+with threading support for it for Vim to successfully link against it.  You
+can use the `-Dusethreads` flags when configuring Perl, and check that a Perl
 binary has it enabled by running `perl -V` and verify that `USE_ITHREADS` is
 under "Compile-time options".
 

@@ -7,6 +7,8 @@
 " Last Change:   2021 Nov 10
 "                2023 Sep 07 by Vim Project (safety check: don't execute perl
 "                    from current directory)
+"                2024 Jan 14 by Vim Project (browsefilter)
+"                2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -21,7 +23,7 @@ setlocal formatoptions+=crqol
 setlocal keywordprg=perldoc\ -f
 
 setlocal comments=:#
-setlocal commentstring=#%s
+setlocal commentstring=#\ %s
 
 " Provided by Ned Konz <ned at bike-nomad dot com>
 "---------------------------------------------
@@ -95,8 +97,12 @@ let b:undo_ftplugin .= " | setlocal pa<"
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     let b:browsefilter = "Perl Source Files (*.pl)\t*.pl\n" .
 		       \ "Perl Modules (*.pm)\t*.pm\n" .
-		       \ "Perl Documentation Files (*.pod)\t*.pod\n" .
-		       \ "All Files (*.*)\t*.*\n"
+		       \ "Perl Documentation Files (*.pod)\t*.pod\n"
+    if has("win32")
+	let b:browsefilter .= "All Files (*.*)\t*\n"
+    else
+	let b:browsefilter .= "All Files (*)\t*\n"
+    endif
     let b:undo_ftplugin .= " | unlet! b:browsefilter"
 endif
 

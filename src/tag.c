@@ -144,7 +144,6 @@ static void print_tag_list(int new_tag, int use_tagstack, int num_matches, char_
 #if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
 static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
-static void tagstack_clear_entry(taggy_T *item);
 
 static char_u	*tagmatchname = NULL;	// name of last used tag
 
@@ -164,7 +163,7 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
 // Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Reads the 'tagfunc' option value and convert that to a callback value.
  * Invoked when the 'tagfunc' option is set. The option value can be a name of
@@ -190,7 +189,7 @@ did_set_tagfunc(optset_T *args UNUSED)
 }
 #endif
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_tagfunc_option(void)
 {
@@ -200,7 +199,7 @@ free_tagfunc_option(void)
 }
 # endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mark the global 'tagfunc' callback with "copyID" so that it is not garbage
  * collected.
@@ -289,14 +288,6 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
-#ifdef FEAT_EVAL
-    if (tfu_in_use)
-    {
-	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
-	return FALSE;
-    }
-#endif
-
 #ifdef EXITFREE
     if (type == DT_FREE)
     {
@@ -309,6 +300,17 @@ do_tag(
 	return FALSE;
     }
 #endif
+
+#ifdef FEAT_EVAL
+    if (tfu_in_use)
+    {
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
+	return FALSE;
+    }
+#endif
+
+    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
+	return FALSE;
 
     if (type == DT_HELP)
     {
@@ -395,7 +397,7 @@ do_tag(
 		    tagstack_clear_entry(&tagstack[0]);
 		    for (i = 1; i < tagstacklen; ++i)
 			tagstack[i - 1] = tagstack[i];
-		    --tagstackidx;
+		    tagstack[--tagstackidx].user_data = NULL;
 		}
 
 		/*
@@ -1194,7 +1196,7 @@ add_llist_tags(
 	// Get the line number or the search pattern used to locate
 	// the tag.
 	lnum = 0;
-	if (isdigit(*tagp.command))
+	if (SAFE_isdigit(*tagp.command))
 	    // Line number is used to locate the tag
 	    lnum = atol((char *)tagp.command);
 	else
@@ -1479,6 +1481,7 @@ find_tagfunc_tags(
     save_pos = curwin->w_cursor;
     result = call_callback(&curbuf->b_tfu_cb, 0, &rettv, 3, args);
     curwin->w_cursor = save_pos;	// restore the cursor position
+    check_cursor();			// make sure cursor position is valid
     --d->dv_refcount;
 
     if (result == FAIL)
@@ -1832,7 +1835,8 @@ findtags_in_help_init(findtags_state_T *st)
  * Use the function set in 'tagfunc' (if configured and enabled) to get the
  * tags.
  * Return OK if at least 1 tag has been successfully found, NOTDONE if the
- * 'tagfunc' is not used or the 'tagfunc' returns v:null and FAIL otherwise.
+ * 'tagfunc' is not used, still executing or the 'tagfunc' returned v:null and
+ * FAIL otherwise.
  */
     static int
 findtags_apply_tfu(findtags_state_T *st, char_u *pat, char_u *buf_ffname)
@@ -3275,7 +3279,7 @@ found_tagfile_cb(char_u *fname, void *cookie UNUSED)
     ((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] = tag_fname;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_tag_stuff(void)
 {
@@ -3410,10 +3414,16 @@ get_tagfname(
 	    // move the filename one char forward and truncate the
 	    // filepath with a NUL
 	    filename = gettail(buf);
+	    if (r_ptr != NULL)
+	    {
+		STRMOVE(r_ptr + 1, r_ptr);
+		++r_ptr;
+	    }
 	    STRMOVE(filename + 1, filename);
 	    *filename++ = NUL;
 
 	    tnp->tn_search_ctx = vim_findfile_init(buf, filename,
+		    STRLEN(filename),
 		    r_ptr, 100,
 		    FALSE,	   // don't free visited list
 		    FINDFILE_FILE, // we search for a file
@@ -3704,6 +3714,10 @@ jumpto_tag(
 #endif
     size_t	len;
     char_u	*lbuf;
+    int		isdigit = FALSE;
+
+    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
+	return FAIL;
 
     // Make a copy of the line, it can become invalid when an autocommand calls
     // back here recursively.
@@ -3712,7 +3726,7 @@ jumpto_tag(
     if (lbuf != NULL)
 	mch_memmove(lbuf, lbuf_arg, len);
 
-    pbuf = alloc(LSIZE);
+    pbuf = alloc_clear(LSIZE);
 
     // parse the match line into the tagp structure
     if (pbuf == NULL || lbuf == NULL || parse_match(lbuf, &tagp) == FAIL)
@@ -3727,14 +3741,21 @@ jumpto_tag(
 
     // copy the command to pbuf[], remove trailing CR/NL
     str = tagp.command;
-    for (pbuf_end = pbuf; *str && *str != '\n' && *str != '\r'; )
+    if (VIM_ISDIGIT(*str))
+    {
+	// need to inject a ':' for a proper Vim9 :nr command
+	isdigit = TRUE;
+	pbuf[0] = ':';
+    }
+    for (pbuf_end = pbuf + isdigit;
+	    *str && *str != '\n' && *str != '\r'; )
     {
 #ifdef FEAT_EMACS_TAGS
 	if (tagp.is_etag && *str == ',')// stop at ',' after line number
 	    break;
 #endif
 	*pbuf_end++ = *str++;
-	if (pbuf_end - pbuf + 1 >= LSIZE)
+	if (pbuf_end - pbuf + 1 + isdigit >= LSIZE)
 	    break;
     }
     *pbuf_end = NUL;
@@ -3747,6 +3768,9 @@ jumpto_tag(
 	 * Remove the "<Tab>fieldname:value" stuff; we don't need it here.
 	 */
 	str = pbuf;
+	// skip over the ':'
+	if (isdigit)
+	    str++;
 	if (find_extra(&str) == OK)
 	{
 	    pbuf_end = str;
@@ -3895,6 +3919,8 @@ jumpto_tag(
 	    str = skip_regexp(pbuf + 1, pbuf[0], FALSE) + 1;
 	if (str > pbuf_end - 1)	// search command with nothing following
 	{
+	    size_t pbuflen = pbuf_end - pbuf;
+
 	    save_p_ws = p_ws;
 	    save_p_ic = p_ic;
 	    save_p_scs = p_scs;
@@ -3908,7 +3934,7 @@ jumpto_tag(
 	    else
 		// start search before first line
 		curwin->w_cursor.lnum = 0;
-	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
+	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, pbuflen - 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
 	    else
@@ -3920,7 +3946,7 @@ jumpto_tag(
 		 * try again, ignore case now
 		 */
 		p_ic = TRUE;
-		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
+		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, pbuflen - 1, (long)1,
 							 search_options, NULL))
 		{
 		    /*
@@ -3930,14 +3956,14 @@ jumpto_tag(
 		    (void)test_for_static(&tagp);
 		    cc = *tagp.tagname_end;
 		    *tagp.tagname_end = NUL;
-		    sprintf((char *)pbuf, "^%s\\s\\*(", tagp.tagname);
-		    if (!do_search(NULL, '/', '/', pbuf, (long)1,
+		    pbuflen = vim_snprintf((char *)pbuf, LSIZE, "^%s\\s\\*(", tagp.tagname);
+		    if (!do_search(NULL, '/', '/', pbuf, pbuflen, (long)1,
 							 search_options, NULL))
 		    {
 			// Guess again: "^char * \<func  ("
-			sprintf((char *)pbuf, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
+			pbuflen = vim_snprintf((char *)pbuf, LSIZE, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', '/', pbuf, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, pbuflen, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }
@@ -3984,6 +4010,8 @@ jumpto_tag(
 	    ++sandbox;
 #endif
 	    curwin->w_cursor.lnum = 1;		// start command in line 1
+	    curwin->w_cursor.col = 0;
+	    curwin->w_cursor.coladd = 0;
 	    do_cmdline_cmd(pbuf);
 	    retval = OK;
 
@@ -4225,7 +4253,7 @@ find_extra(char_u **pp)
 /*
  * Free a single entry in a tag stack
  */
-    static void
+    void
 tagstack_clear_entry(taggy_T *item)
 {
     VIM_CLEAR(item->tagname);
@@ -4302,7 +4330,7 @@ expand_tags(
     return ret;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add a tag field to the dictionary "dict".
  * Return OK or FAIL.

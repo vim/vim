@@ -55,10 +55,25 @@ getGvimName(char *name, int runtime)
     HKEY	keyhandle;
     DWORD	hlen;
 
-    // Get the location of gvim from the registry.
+    // Get the location of gvim from the registry.  Try
+    // HKEY_CURRENT_USER first, then fall back to HKEY_LOCAL_MACHINE if
+    // not found.
     name[0] = 0;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Vim\\Gvim", 0,
 				       KEY_READ, &keyhandle) == ERROR_SUCCESS)
+    {
+	hlen = BUFSIZE;
+	if (RegQueryValueEx(keyhandle, "path", 0, NULL, (BYTE *)name, &hlen)
+							     != ERROR_SUCCESS)
+	    name[0] = 0;
+	else
+	    name[hlen] = 0;
+	RegCloseKey(keyhandle);
+    }
+
+    if ((name[0] == 0) &&
+	    (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
+				       KEY_READ, &keyhandle) == ERROR_SUCCESS))
     {
 	hlen = BUFSIZE;
 	if (RegQueryValueEx(keyhandle, "path", 0, NULL, (BYTE *)name, &hlen)

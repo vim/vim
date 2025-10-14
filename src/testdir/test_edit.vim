@@ -4,11 +4,7 @@ if exists("+t_kD")
   let &t_kD="[3;*~"
 endif
 
-source check.vim
-source screendump.vim
-
-" Needed for testing basic rightleft: Test_edit_rightleft
-source view_util.vim
+source util/screendump.vim
 
 " Needs to come first until the bug in getchar() is
 " fixed: https://groups.google.com/d/msg/vim_dev/fXL9yme4H4c/bOR-U6_bAQAJ
@@ -200,7 +196,7 @@ func Test_edit_07()
     endif
   endfu
   au InsertCharPre <buffer> :call DoIt()
-  call feedkeys("A\<f5>\<c-p>u\<cr>\<c-l>\<cr>", 'tx')
+  call feedkeys("A\<f5>\<c-p>u\<C-Y>\<c-l>\<cr>", 'tx')
   call assert_equal(["Jan\<c-l>",''], 1->getline('$'))
   %d
   call setline(1, 'J')
@@ -462,6 +458,64 @@ func Test_autoindent_remove_indent()
   call delete('Xarifile')
 endfunc
 
+func Test_edit_esc_after_CR_autoindent()
+  new
+  setlocal autoindent
+  autocmd InsertLeavePre * let g:prev_cursor = getpos('.')
+
+  call setline(1, 'foobar')
+  exe "normal! $hi\<CR>\<Esc>"
+  call assert_equal(['foob', 'ar'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, 'foobar')
+  exe "normal! $i\<CR>\<Esc>"
+  call assert_equal(['fooba', 'r'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, 'foobar')
+  exe "normal! A\<CR>\<Esc>"
+  call assert_equal(['foobar', ''], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! $hi\<CR>\<Esc>"
+  call assert_equal(['  foob', '  ar'], getline(1, '$'))
+  call assert_equal([0, 2, 2, 0], getpos('.'))
+  call assert_equal([0, 2, 3, 0], getpos("'^"))
+  call assert_equal([0, 2, 3, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! $i\<CR>\<Esc>"
+  call assert_equal(['  fooba', '  r'], getline(1, '$'))
+  call assert_equal([0, 2, 2, 0], getpos('.'))
+  call assert_equal([0, 2, 3, 0], getpos("'^"))
+  call assert_equal([0, 2, 3, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! A\<CR>\<Esc>"
+  call assert_equal(['  foobar', ''], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  autocmd! InsertLeavePre
+  unlet g:prev_cursor
+  bwipe!
+endfunc
+
 func Test_edit_CR()
   " Test for <CR> in insert mode
   " basically only in quickfix mode it's tested, the rest
@@ -653,12 +707,9 @@ func Test_edit_CTRL_K()
   %d
   call setline(1, 'A')
   call cursor(1, 1)
-  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-k>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds, when v:testing is not set
-    let v:testing = 0
   endtry
 
   call test_override("char_avail", 1)
@@ -906,12 +957,9 @@ func Test_edit_CTRL_T()
   %d
   call setline(1, 'mad')
   call cursor(1, 1)
-  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-t>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds, when v:testing is not set
-    let v:testing = 0
   endtry
   call assert_equal(['mad'], getline(1, '$'))
   bw!
@@ -1302,9 +1350,9 @@ func Test_edit_PAGEUP_PAGEDOWN()
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
   call assert_equal([0, 13, 1, 0], getpos('.'))
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
-  call assert_equal([0, 5, 1, 0], getpos('.'))
+  call assert_equal([0, 10, 1, 0], getpos('.'))
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   " <S-Up> is the same as <PageUp>
   " <S-Down> is the same as <PageDown>
   call cursor(1, 1)
@@ -1325,9 +1373,9 @@ func Test_edit_PAGEUP_PAGEDOWN()
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
   call assert_equal([0, 13, 1, 0], getpos('.'))
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
-  call assert_equal([0, 5, 1, 0], getpos('.'))
+  call assert_equal([0, 10, 1, 0], getpos('.'))
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   set nostartofline
   call cursor(30, 11)
   norm! zt
@@ -1338,9 +1386,9 @@ func Test_edit_PAGEUP_PAGEDOWN()
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
   call assert_equal([0, 13, 11, 0], getpos('.'))
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   call feedkeys("A\<PageUp>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   call cursor(1, 1)
   call feedkeys("A\<PageDown>\<esc>", 'tnix')
   call assert_equal([0, 9, 11, 0], getpos('.'))
@@ -1363,9 +1411,9 @@ func Test_edit_PAGEUP_PAGEDOWN()
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
   call assert_equal([0, 13, 11, 0], getpos('.'))
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   call feedkeys("A\<S-Up>\<esc>", 'tnix')
-  call assert_equal([0, 5, 11, 0], getpos('.'))
+  call assert_equal([0, 10, 11, 0], getpos('.'))
   call cursor(1, 1)
   call feedkeys("A\<S-Down>\<esc>", 'tnix')
   call assert_equal([0, 9, 11, 0], getpos('.'))
@@ -1654,7 +1702,7 @@ func Test_edit_special_chars()
   exe "normal " . t
   call assert_equal("ABC !a\<C-O>g\<C-G>8", getline(2))
 
-  close!
+  bw!
 endfunc
 
 func Test_edit_startinsert()
@@ -1685,7 +1733,7 @@ func Test_edit_startreplace()
   call assert_equal("axyz\tb", getline(1))
   call feedkeys("0i\<C-R>=execute('startreplace')\<CR>12\e", 'xt')
   call assert_equal("12axyz\tb", getline(1))
-  close!
+  bw!
 endfunc
 
 func Test_edit_noesckeys()
@@ -1724,7 +1772,7 @@ func Test_edit_ctrl_o_invalid_cmd()
   call assert_equal('abc', getline(1))
   set showmode& showcmd&
   call test_override('ui_delay', 0)
-  close!
+  bw!
 endfunc
 
 " Test for editing a file with a very long name
@@ -1926,7 +1974,7 @@ func Test_edit_hkmap()
   call assert_equal(expected, getline(1))
 
   set revins& hkmap& hkmapp&
-  close!
+  bw!
 endfunc
 
 " Test for 'allowrevins' and using CTRL-_ in insert mode
@@ -1937,7 +1985,7 @@ func Test_edit_allowrevins()
   call feedkeys("iABC\<C-_>DEF\<C-_>GHI", 'xt')
   call assert_equal('ABCFEDGHI', getline(1))
   set allowrevins&
-  close!
+  bw!
 endfunc
 
 " Test for inserting a register in insert mode using CTRL-R
@@ -1954,18 +2002,24 @@ func Test_edit_insert_reg()
   let @r = 'sample'
   call feedkeys("a\<C-R>=SaveFirstLine()\<CR>", "xt")
   call assert_equal('"', g:Line)
+
+  " Test for inserting an null and an empty list
+  call feedkeys("a\<C-R>=test_null_list()\<CR>", "xt")
+  call feedkeys("a\<C-R>=[]\<CR>", "xt")
+  call assert_equal(['r'], getbufline('', 1, '$'))
   call test_override('ALL', 0)
-  close!
+  bw!
 endfunc
 
 " Test for positioning cursor after CTRL-R expression failed
 func Test_edit_ctrl_r_failed()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let buf = RunVimInTerminal('', #{rows: 6, cols: 60})
 
-  " trying to insert a dictionary produces an error
-  call term_sendkeys(buf, "i\<C-R>={}\<CR>")
+  " trying to insert a blob produces an error
+  call term_sendkeys(buf, "i\<C-R>=0z\<CR>")
 
   " ending Insert mode should put the cursor back on the ':'
   call term_sendkeys(buf, ":\<Esc>")
@@ -1978,6 +2032,10 @@ endfunc
 " window, the window contents should be scrolled one line up. If the top line
 " is part of a fold, then the entire fold should be scrolled up.
 func Test_edit_lastline_scroll()
+  if has('linux')
+    " TODO: For unknown reasons, this test fails on CI when run in Gui mode
+    CheckNotGui
+  endif
   new
   let h = winheight(0)
   let lines = ['one', 'two', 'three']
@@ -1998,7 +2056,7 @@ func Test_edit_lastline_scroll()
   call assert_equal(h - 1, winline())
   call assert_equal(3, line('w0'))
 
-  close!
+  bw!
 endfunc
 
 func Test_edit_browse()
@@ -2022,7 +2080,7 @@ endfunc
 func Test_read_invalid()
   set encoding=latin1
   " This was not properly checking for going past the end.
-  call assert_fails('r`=', 'E484')
+  call assert_fails('r`=', 'E484:')
   set encoding=utf-8
 endfunc
 
@@ -2046,7 +2104,10 @@ func Test_edit_revins()
   call setline(1, 'one two three')
   exe "normal! wi\nfour"
   call assert_equal(['one two three', 'ruof'], getline(1, '$'))
-  set revins&
+  set backspace=indent,eol,start
+  exe "normal! ggA\<BS>:"
+  call assert_equal(['one two three:ruof'], getline(1, '$'))
+  set revins& backspace&
   bw!
 endfunc
 
@@ -2121,6 +2182,229 @@ func Test_edit_shift_bs()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_edit_Ctrl_RSB()
+  new
+  let g:triggered = []
+  autocmd InsertCharPre <buffer> let g:triggered += [v:char]
+
+  " i_CTRL-] should not trigger InsertCharPre
+  exe "normal! A\<C-]>"
+  call assert_equal([], g:triggered)
+
+  " i_CTRL-] should expand abbreviations but not trigger InsertCharPre
+  inoreabbr <buffer> f foo
+  exe "normal! Af\<C-]>a"
+  call assert_equal(['f', 'f', 'o', 'o', 'a'], g:triggered)
+  call assert_equal('fooa', getline(1))
+
+  " CTRL-] followed by i_CTRL-V should not expand abbreviations
+  " i_CTRL-V doesn't trigger InsertCharPre
+  call setline(1, '')
+  exe "normal! Af\<C-V>\<C-]>"
+  call assert_equal("f\<C-]>", getline(1))
+
+  let g:triggered = []
+  call setline(1, '')
+
+  " Also test assigning to v:char
+  autocmd InsertCharPre <buffer> let v:char = 'f'
+  exe "normal! Ag\<C-]>h"
+  call assert_equal(['g', 'f', 'o', 'o', 'h'], g:triggered)
+  call assert_equal('ffff', getline(1))
+
+  autocmd! InsertCharPre
+  unlet g:triggered
+  bwipe!
+endfunc
+
+func s:check_backspace(expected)
+  let g:actual = []
+  inoremap <buffer> <F2> <Cmd>let g:actual += [getline('.')]<CR>
+  set backspace=indent,eol,start
+
+  exe "normal i" .. repeat("\<BS>\<F2>", len(a:expected))
+  call assert_equal(a:expected, g:actual)
+
+  set backspace&
+  iunmap <buffer> <F2>
+  unlet g:actual
+endfunc
+
+" Test that backspace works with 'smarttab' and mixed Tabs and spaces.
+func Test_edit_backspace_smarttab_mixed()
+  set smarttab
+  call NewWindow(1, 30)
+  setlocal tabstop=4 shiftwidth=4
+
+  call setline(1, "\t    \t         \t a")
+  normal! $
+  call s:check_backspace([
+        \ "\t    \t         \ta",
+        \ "\t    \t        a",
+        \ "\t    \t    a",
+        \ "\t    \ta",
+        \ "\t    a",
+        \ "\ta",
+        \ "a",
+        \ ])
+
+  call CloseWindow()
+  set smarttab&
+endfunc
+
+" Test that backspace works with 'smarttab' and 'varsofttabstop'.
+func Test_edit_backspace_smarttab_varsofttabstop()
+  CheckFeature vartabs
+
+  set smarttab
+  call NewWindow(1, 30)
+  setlocal tabstop=8 varsofttabstop=6,2,5,3
+
+  call setline(1, "a\t    \t a")
+  normal! $
+  call s:check_backspace([
+        \ "a\t    \ta",
+        \ "a\t     a",
+        \ "a\ta",
+        \ "a     a",
+        \ "aa",
+        \ "a",
+        \ ])
+
+  call CloseWindow()
+  set smarttab&
+endfunc
+
+" Test that backspace works with 'smarttab' when a Tab is shown as "^I".
+func Test_edit_backspace_smarttab_list()
+  set smarttab
+  call NewWindow(1, 30)
+  setlocal tabstop=4 shiftwidth=4 list listchars=
+
+  call setline(1, "\t    \t         \t a")
+  normal! $
+  call s:check_backspace([
+        \ "\t    \t        a",
+        \ "\t    \t    a",
+        \ "\t    \ta",
+        \ "\t  a",
+        \ "a",
+        \ ])
+
+  call CloseWindow()
+  set smarttab&
+endfunc
+
+" Test that backspace works with 'smarttab' and 'breakindent'.
+func Test_edit_backspace_smarttab_breakindent()
+  CheckFeature linebreak
+
+  set smarttab
+  call NewWindow(3, 17)
+  setlocal tabstop=4 shiftwidth=4 breakindent breakindentopt=min:5
+
+  call setline(1, "\t    \t         \t a")
+  normal! $
+  call s:check_backspace([
+        \ "\t    \t         \ta",
+        \ "\t    \t        a",
+        \ "\t    \t    a",
+        \ "\t    \ta",
+        \ "\t    a",
+        \ "\ta",
+        \ "a",
+        \ ])
+
+  call CloseWindow()
+  set smarttab&
+endfunc
+
+" Test that backspace works with 'smarttab' and virtual text.
+func Test_edit_backspace_smarttab_virtual_text()
+  CheckFeature textprop
+
+  set smarttab
+  call NewWindow(1, 50)
+  setlocal tabstop=4 shiftwidth=4
+
+  call setline(1, "\t    \t         \t a")
+  call prop_type_add('theprop', {})
+  call prop_add(1, 3, {'type': 'theprop', 'text': 'text'})
+  normal! $
+  call s:check_backspace([
+        \ "\t    \t         \ta",
+        \ "\t    \t        a",
+        \ "\t    \t    a",
+        \ "\t    \ta",
+        \ "\t    a",
+        \ "\ta",
+        \ "a",
+        \ ])
+
+  call CloseWindow()
+  call prop_type_delete('theprop')
+  set smarttab&
+endfunc
+
+func Test_edit_CAR_with_completion()
+  new
+
+  " With "noselect", behavior is the same with and without "noinsert":
+  " Enter inserts a new line when no selection is done or after selecting with
+  " Ctrl-N/P, but does not insert a new line when selecting with cursor keys.
+  for cot in ['menu,menuone,noselect', 'menu,menuone,noselect,noinsert']
+    let &cot = cot
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>e\<CR>", 'tx')
+    call assert_equal(['hello hero', 'he', ''], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'h', ''], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<C-N>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'hello', ''], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<C-N>\<C-N>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'hero', ''], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<C-N>\<C-P>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'h', ''], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<Down>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'hello'], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<Down>\<Down>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'hero'], getline(1, '$'))
+    %delete
+    call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<Down>\<Up>\<CR>", 'tx')
+    call assert_equal(['hello hero', 'h'], getline(1, '$'))
+  endfor
+
+  " With "noinsert" but not "noselect": like pressing <Down> after "noselect".
+  set cot=menu,menuone,noinsert
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>e\<CR>", 'tx')
+  call assert_equal(['hello hero', 'hello'], getline(1, '$'))
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<CR>", 'tx')
+  call assert_equal(['hello hero', 'hello'], getline(1, '$'))
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<Down>\<CR>", 'tx')
+  call assert_equal(['hello hero', 'hero'], getline(1, '$'))
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<Up>\<CR>", 'tx')
+  call assert_equal(['hello hero', 'h'], getline(1, '$'))
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<C-N>\<CR>", 'tx')
+  call assert_equal(['hello hero', 'hero', ''], getline(1, '$'))
+  %delete
+  call feedkeys("Shello hero\<CR>h\<C-X>\<C-N>\<C-P>\<CR>", 'tx')
+  call assert_equal(['hello hero', 'h', ''], getline(1, '$'))
+
+  set cot&
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

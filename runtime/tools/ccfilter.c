@@ -249,7 +249,7 @@ int main( int argc, char *argv[] )
 
 	    stay = (echogets(Line2, echo) != NULL);
 	    while ( stay && (Line2[0] == '|') )
-	      { for (p=&Line2[2]; (*p) && (isspace(*p)); p++);
+	      { for (p=&Line2[2]; (*p) && (isspace((unsigned char)*p)); p++);
 		strcat( Reason, ": " );
 		strcat( Reason, p );
 		Line2[0] = 0;
@@ -265,7 +265,7 @@ int main( int argc, char *argv[] )
 	    ok	      = 0;
 	    if ( !strncmp(Line, "cfe: ", 5) )
 	      { p = &Line[5];
-		Severity = tolower(*p);
+		Severity = tolower((unsigned char)*p);
 		p = strchr( &Line[5], ':' );
 		if (p == NULL)
 		  { ok = 0;
@@ -313,7 +313,7 @@ int main( int argc, char *argv[] )
 	}
        else
 	{
-	  for (p=Reason; (*p) && (isspace(*p)); p++);
+	  for (p=Reason; (*p) && (isspace((unsigned char)*p)); p++);
 	  if ( BasePath[CWDlen] == 0 )
 	      printf( "%s:%lu:%lu:%c:%s\n", FileName, Row, Col, Severity, p );
 	  else

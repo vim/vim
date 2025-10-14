@@ -1,9 +1,8 @@
 " Test for signs
 
-source check.vim
 CheckFeature signs
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_sign()
   new
@@ -245,7 +244,7 @@ func Test_sign_completion()
   call assert_equal('"sign define jump list place undefine unplace', @:)
 
   call feedkeys(":sign define Sign \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"sign define Sign culhl= icon= linehl= numhl= text= texthl=', @:)
+  call assert_equal('"sign define Sign culhl= icon= linehl= numhl= priority= text= texthl=', @:)
 
   for hl in ['culhl', 'linehl', 'numhl', 'texthl']
     call feedkeys(":sign define Sign "..hl.."=Spell\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -1231,6 +1230,25 @@ func Test_sign_priority()
   call sign_define("sign1", attr)
   call sign_define("sign2", attr)
   call sign_define("sign3", attr)
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search', 'priority': 60}
+  call sign_define("sign4", attr)
+
+  " Test for :sign list
+  let a = execute('sign list')
+  call assert_equal("\nsign sign1 text==> linehl=Search texthl=Search\n" .
+      \ "sign sign2 text==> linehl=Search texthl=Search\n" .
+      \ "sign sign3 text==> linehl=Search texthl=Search\n" .
+      \ "sign sign4 text==> priority=60 linehl=Search texthl=Search", a)
+
+  " Test for sign_getdefined()
+  let s = sign_getdefined()
+  call assert_equal([
+      \ {'name': 'sign1', 'texthl': 'Search', 'linehl': 'Search', 'text': '=>'},
+      \ {'name': 'sign2', 'texthl': 'Search', 'linehl': 'Search', 'text': '=>'},
+      \ {'name': 'sign3', 'texthl': 'Search', 'linehl': 'Search', 'text': '=>'},
+      \ {'name': 'sign4', 'priority': 60, 'texthl': 'Search', 'linehl': 'Search',
+      \ 'text': '=>'}],
+      \ s)
 
   " Place three signs with different priority in the same line
   call writefile(repeat(["Sun is shining"], 30), "Xsign", 'D')
@@ -1586,6 +1604,25 @@ func Test_sign_priority()
 	      \ "    line=10  id=5  group=g1  name=sign1  priority=20\n", a)
 
   call sign_unplace('*')
+
+  " Test for sign with default priority.
+  call sign_place(1, 'g1', 'sign4', 'Xsign', {'lnum' : 3})
+  sign place 2 line=5 name=sign4 group=g1 file=Xsign
+
+  let s = sign_getplaced('Xsign', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 1, 'name' : 'sign4', 'lnum' : 3, 'group' : 'g1',
+	      \ 'priority' : 60},
+	      \ {'id' : 2, 'name' : 'sign4', 'lnum' : 5, 'group' : 'g1',
+	      \ 'priority' : 60}],
+	      \ s[0].signs)
+
+  let a = execute('sign place group=g1')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=3  id=1  group=g1  name=sign4  priority=60\n" .
+	      \ "    line=5  id=2  group=g1  name=sign4  priority=60\n", a)
+
+  call sign_unplace('*')
   call sign_undefine()
   enew | only
 endfunc
@@ -1775,6 +1812,7 @@ endfunc
 
 " Test for correct cursor position after the sign column appears or disappears.
 func Test_sign_cursor_position()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -2062,6 +2100,25 @@ func Test_sign_null_list()
   eval test_null_list()->sign_placelist()
   eval test_null_list()->sign_undefine()
   eval test_null_list()->sign_unplacelist()
+endfunc
+
+func Test_sign_number_without_signtext()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set number signcolumn=number
+      call setline(1, ['a', 'b', 'c'])
+      sign define SignA text=>> texthl=Search numhl=Error
+      sign define SignB numhl=Error
+      sign place 1 line=1 name=SignA buffer=1
+      sign place 2 line=2 name=SignB  buffer=1
+  END
+  call writefile(lines, 'XtestSigncolumnNumber', 'D')
+  let buf = RunVimInTerminal('-S XtestSigncolumnNumber', {'rows': 5})
+  call VerifyScreenDump(buf, 'Test_sign_number_without_signtext', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -323,7 +323,7 @@ sort_compare(const void *s1, const void *s2)
     if (sort_nr)
     {
 	if (l1.st_u.num.is_number != l2.st_u.num.is_number)
-	    result = l1.st_u.num.is_number - l2.st_u.num.is_number;
+	    result = l1.st_u.num.is_number > l2.st_u.num.is_number ? 1 : -1;
 	else
 	    result = l1.st_u.num.value == l2.st_u.num.value ? 0
 			     : l1.st_u.num.value > l2.st_u.num.value ? 1 : -1;
@@ -489,7 +489,7 @@ ex_sort(exarg_T *eap)
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
     {
 	s = ml_get(lnum);
-	len = (int)STRLEN(s);
+	len = ml_get_len(lnum);
 	if (maxlen < len)
 	    maxlen = len;
 
@@ -644,6 +644,231 @@ sortend:
 }
 
 /*
+ * ":uniq".
+ */
+    void
+ex_uniq(exarg_T *eap)
+{
+    regmatch_T	regmatch;
+    int		len;
+    linenr_T	lnum;
+    long	maxlen = 0;
+    linenr_T	count = eap->line2 - eap->line1 + 1;
+    char_u	*p;
+    char_u	*s;
+    char_u	save_c = 0;		// temporary character storage
+    int		keep_only_unique = FALSE;
+    int		keep_only_not_unique = eap->forceit ? TRUE : FALSE;
+    long	deleted = 0;
+    colnr_T	start_col;
+    colnr_T	end_col;
+    int		change_occurred = FALSE; // Buffer contents changed.
+
+    // Uniq one line is really quick!
+    if (count <= 1)
+	return;
+
+    if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
+	return;
+    sortbuf1 = NULL;
+    regmatch.regprog = NULL;
+
+    sort_abort = sort_ic = sort_lc = sort_rx = sort_nr = 0;
+    sort_flt = 0;
+
+    for (p = eap->arg; *p != NUL; ++p)
+    {
+	if (VIM_ISWHITE(*p))
+	    ;
+	else if (*p == 'i')
+	    sort_ic = TRUE;
+	else if (*p == 'l')
+	    sort_lc = TRUE;
+	else if (*p == 'r')
+	    sort_rx = TRUE;
+	else if (*p == 'u')
+	{
+	    // 'u' is only valid when '!' is not given.
+	    if (!keep_only_not_unique)
+		keep_only_unique = TRUE;
+	}
+	else if (*p == '"')	// comment start
+	    break;
+	else if (eap->nextcmd == NULL && check_nextcmd(p) != NULL)
+	{
+	    eap->nextcmd = check_nextcmd(p);
+	    break;
+	}
+	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
+	{
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
+		goto uniqend;
+	    *s = NUL;
+	    // Use last search pattern if uniq pattern is empty.
+	    if (s == p + 1)
+	    {
+		if (last_search_pat() == NULL)
+		{
+		    emsg(_(e_no_previous_regular_expression));
+		    goto uniqend;
+		}
+		regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
+	    }
+	    else
+		regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
+	    if (regmatch.regprog == NULL)
+		goto uniqend;
+	    p = s;		// continue after the regexp
+	    regmatch.rm_ic = p_ic;
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), p);
+	    goto uniqend;
+	}
+    }
+
+    // Find the length of the longest line.
+    for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
+    {
+	len = ml_get_len(lnum);
+	if (maxlen < len)
+	    maxlen = len;
+
+	if (got_int)
+	    goto uniqend;
+    }
+
+    // Allocate a buffer that can hold the longest line.
+    sortbuf1 = alloc(maxlen + 1);
+    if (sortbuf1 == NULL)
+	goto uniqend;
+
+    // Delete lines according to options.
+    int match_continue = FALSE;
+    int next_is_unmatch = FALSE;
+    int is_match;
+    linenr_T done_lnum = eap->line1 - 1;
+    linenr_T delete_lnum = 0;
+    for (linenr_T i = 0; i < count; ++i)
+    {
+	linenr_T get_lnum = eap->line1 + i;
+
+	s = ml_get(get_lnum);
+	len = ml_get_len(get_lnum);
+
+	start_col = 0;
+	end_col = len;
+	if (regmatch.regprog != NULL && vim_regexec(&regmatch, s, 0))
+	{
+	    if (sort_rx)
+	    {
+		start_col = (colnr_T)(regmatch.startp[0] - s);
+		end_col = (colnr_T)(regmatch.endp[0] - s);
+	    }
+	    else
+		start_col = (colnr_T)(regmatch.endp[0] - s);
+	}
+	else
+	    if (regmatch.regprog != NULL)
+		end_col = 0;
+	if (end_col > 0)
+	{
+	    save_c = s[end_col];
+	    s[end_col] = NUL;
+	}
+
+	is_match = i > 0 ? !string_compare(&s[start_col], sortbuf1) : FALSE;
+	delete_lnum = 0;
+	if (next_is_unmatch)
+	{
+	    is_match = FALSE;
+	    next_is_unmatch = FALSE;
+	}
+
+	if (!keep_only_unique && !keep_only_not_unique)
+	{
+	    if (is_match)
+		delete_lnum = get_lnum;
+	    else
+		STRCPY(sortbuf1, &s[start_col]);
+	}
+	else if (keep_only_not_unique)
+	{
+	    if (is_match)
+	    {
+		done_lnum = get_lnum - 1;
+		delete_lnum = get_lnum;
+		match_continue = TRUE;
+	    }
+	    else
+	    {
+		if (i > 0 && !match_continue && get_lnum - 1 > done_lnum)
+		{
+		    delete_lnum = get_lnum - 1;
+		    next_is_unmatch = TRUE;
+		}
+		else if (i >= count - 1)
+		    delete_lnum = get_lnum;
+		match_continue = FALSE;
+		STRCPY(sortbuf1, &s[start_col]);
+	    }
+	}
+	else // keep_only_unique
+	{
+	    if (is_match)
+	    {
+		if (!match_continue)
+		    delete_lnum = get_lnum - 1;
+		else
+		    delete_lnum = get_lnum;
+		match_continue = TRUE;
+	    }
+	    else
+	    {
+		if (i == 0 && match_continue)
+		    delete_lnum = get_lnum;
+		match_continue = FALSE;
+		STRCPY(sortbuf1, &s[start_col]);
+	    }
+	}
+
+	if (end_col > 0)
+	    s[end_col] = save_c;
+
+	if (delete_lnum > 0)
+	{
+	    ml_delete(delete_lnum);
+	    i -= get_lnum - delete_lnum + 1;
+	    count--;
+	    deleted++;
+	    change_occurred = TRUE;
+	}
+
+	fast_breakcheck();
+	if (got_int)
+	    goto uniqend;
+    }
+
+    // Adjust marks for deleted lines and prepare for displaying.
+    mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+    msgmore(-deleted);
+
+    if (change_occurred)
+	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
+    curwin->w_cursor.lnum = eap->line1;
+    beginline(BL_WHITE | BL_FIX);
+
+uniqend:
+    vim_free(sortbuf1);
+    vim_regfree(regmatch.regprog);
+    if (got_int)
+	emsg(_(e_interrupted));
+}
+
+/*
  * :move command - move lines line1-line2 to line dest
  *
  * return FAIL for failure, OK otherwise
@@ -691,7 +916,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	return FAIL;
     for (extra = 0, l = line1; l <= line2; l++)
     {
-	str = vim_strsave(ml_get(l + extra));
+	str = vim_strnsave(ml_get(l + extra), ml_get_len(l + extra));
 	if (str != NULL)
 	{
 	    ml_append(dest + l - line1, str, (colnr_T)0, FALSE);
@@ -824,9 +1049,9 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
     curwin->w_cursor.lnum = n;
     while (line1 <= line2)
     {
-	// need to use vim_strsave() because the line will be unlocked within
+	// need to make a copy because the line will be unlocked within
 	// ml_append()
-	p = vim_strsave(ml_get(line1));
+	p = vim_strnsave(ml_get(line1), ml_get_len(line1));
 	if (p != NULL)
 	{
 	    ml_append(curwin->w_cursor.lnum, p, (colnr_T)0, FALSE);
@@ -852,7 +1077,7 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
 
 static char_u	*prevcmd = NULL;	// the previous command
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_prev_shellcmd(void)
 {
@@ -1854,6 +2079,9 @@ ex_file(exarg_T *eap)
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
 	redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
     }
 
     // print file name if no argument or 'F' is not in 'shortmess'
@@ -2100,6 +2328,9 @@ do_write(exarg_T *eap)
 	    {
 		curbuf->b_p_ro = FALSE;
 		redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+		redraw_tabpanel = TRUE;
+#endif
 	    }
 	}
 
@@ -2428,6 +2659,9 @@ getfile(
     int		retval;
     char_u	*free_me = NULL;
 
+    if (!check_can_set_curbuf_forceit(forceit))
+	return GETFILE_ERROR;
+
     if (text_locked())
 	return GETFILE_ERROR;
     if (curbuf_locked())
@@ -2740,6 +2974,19 @@ do_ecmd(
 	}
 	if (buf == NULL)
 	    goto theend;
+	// autocommands try to edit a closing buffer, which like splitting, can
+	// result in more windows displaying it; abort
+	if (buf->b_locked_split)
+	{
+	    // window was split, but not editing the new buffer,
+	    // reset b_nwindows again
+	    if (oldwin == NULL
+		    && curwin->w_buffer != NULL
+		    && curwin->w_buffer->b_nwindows > 1)
+		--curwin->w_buffer->b_nwindows;
+	    emsg(_(e_cannot_switch_to_a_closing_buffer));
+	    goto theend;
+	}
 	if (curwin->w_alt_fnum == buf->b_fnum && prev_alt_fnum != 0)
 	    // reusing the buffer, keep the old alternate file
 	    curwin->w_alt_fnum = prev_alt_fnum;
@@ -2782,9 +3029,16 @@ do_ecmd(
 	{
 	    bufref_T	save_au_new_curbuf;
 	    int		save_cmdwin_type = cmdwin_type;
+	    win_T	*save_cmdwin_win = cmdwin_win;
+
+	    // Should only be possible to get here if the cmdwin is closed, or
+	    // if it's opening and its buffer hasn't been set yet (the new
+	    // buffer is for it).
+	    assert(cmdwin_buf == NULL);
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
+	    cmdwin_win = NULL;
 
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
@@ -2801,7 +3055,10 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+
 	    cmdwin_type = save_cmdwin_type;
+	    cmdwin_win = save_cmdwin_win;
+
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted
@@ -2825,9 +3082,9 @@ do_ecmd(
 		int	    did_decrement;
 		buf_T	    *was_curbuf = curbuf;
 
-		// Set the w_closing flag to avoid that autocommands close the
+		// Set the w_locked flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
-		the_curwin->w_closing = TRUE;
+		the_curwin->w_locked = TRUE;
 		++buf->b_locked;
 
 		if (curbuf == old_curbuf.br_buf)
@@ -2841,7 +3098,7 @@ do_ecmd(
 
 		// Autocommands may have closed the window.
 		if (win_valid(the_curwin))
-		    the_curwin->w_closing = FALSE;
+		    the_curwin->w_locked = FALSE;
 		--buf->b_locked;
 
 #ifdef FEAT_EVAL
@@ -2948,7 +3205,7 @@ do_ecmd(
     // Since we are starting to edit a file, consider the filetype to be
     // unset.  Helps for when an autocommand changes files and expects syntax
     // highlighting to work in the other file.
-    did_filetype = FALSE;
+    curbuf->b_did_filetype = FALSE;
 
 /*
  * other_file	oldbuf
@@ -3347,11 +3604,17 @@ ex_append(exarg_T *eap)
 		indent = get_indent_lnum(lnum);
 	}
 	ex_keep_indent = FALSE;
-	if (eap->getline == NULL)
+	if (*eap->arg == '|')
+	{
+	    // Get the text after the trailing bar.
+	    theline = vim_strsave(eap->arg + 1);
+	    *eap->arg = NUL;
+	}
+	else if (eap->ea_getline == NULL)
 	{
 	    // No getline() function, use the lines that follow. This ends
 	    // when there is no more.
-	    if (eap->nextcmd == NULL || *eap->nextcmd == NUL)
+	    if (eap->nextcmd == NULL)
 		break;
 	    p = vim_strchr(eap->nextcmd, NL);
 	    if (p == NULL)
@@ -3359,6 +3622,8 @@ ex_append(exarg_T *eap)
 	    theline = vim_strnsave(eap->nextcmd, p - eap->nextcmd);
 	    if (*p != NUL)
 		++p;
+	    else
+		p = NULL;
 	    eap->nextcmd = p;
 	}
 	else
@@ -3368,7 +3633,7 @@ ex_append(exarg_T *eap)
 	    // Set State to avoid the cursor shape to be set to MODE_INSERT
 	    // state when getline() returns.
 	    State = MODE_CMDLINE;
-	    theline = eap->getline(
+	    theline = eap->ea_getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
@@ -3707,7 +3972,7 @@ skip_substitute(char_u *start, int delimiter)
     static int
 check_regexp_delim(int c)
 {
-    if (isalpha(c))
+    if (SAFE_isalpha(c))
     {
 	emsg(_(e_regular_expressions_cant_be_delimited_by_letters));
 	return FAIL;
@@ -3737,6 +4002,7 @@ ex_substitute(exarg_T *eap)
     int		save_do_all;		// remember user specified 'g' flag
     int		save_do_ask;		// remember user specified 'c' flag
     char_u	*pat = NULL, *sub = NULL;	// init for GCC
+    size_t	patlen = 0;
     int		delimiter;
     int		sublen;
     int		got_quit = FALSE;
@@ -3755,6 +4021,7 @@ ex_substitute(exarg_T *eap)
     int		endcolumn = FALSE;	// cursor in last column when done
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
+    int		keeppatterns = cmdmod.cmod_flags & CMOD_KEEPPATTERNS;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
     int		save_sandbox = 0;
@@ -3810,6 +4077,7 @@ ex_substitute(exarg_T *eap)
 	    if (*cmd != '&')
 		which_pat = RE_SEARCH;	    // use last '/' pattern
 	    pat = (char_u *)"";		    // empty search pattern
+	    patlen = 0;
 	    delimiter = *cmd++;		    // remember delimiter character
 	}
 	else		// find the end of the regexp
@@ -3821,6 +4089,7 @@ ex_substitute(exarg_T *eap)
 							&eap->arg, NULL, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
+	    patlen = STRLEN(pat);
 	}
 
 	/*
@@ -3852,7 +4121,7 @@ ex_substitute(exarg_T *eap)
 		    // out of memory
 		    return;
 	    }
-	    else
+	    else if (!keeppatterns)
 	    {
 		vim_free(old_sub);
 		old_sub = vim_strsave(sub);
@@ -3870,6 +4139,7 @@ ex_substitute(exarg_T *eap)
 	    return;
 	}
 	pat = NULL;		// search_regcomp() will use previous pattern
+	patlen = 0;
 	sub = vim_strsave(old_sub);
 
 	// Vi compatibility quirk: repeating with ":s" keeps the cursor in the
@@ -3915,10 +4185,10 @@ ex_substitute(exarg_T *eap)
 	    ex_may_print(eap);
 	}
 
-	if ((cmdmod.cmod_flags & CMOD_KEEPPATTERNS) == 0)
-	    save_re_pat(RE_SUBST, pat, magic_isset());
+	if (!keeppatterns)
+	    save_re_pat(RE_SUBST, pat, patlen, magic_isset());
 	// put pattern in history
-	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
+	add_to_history(HIST_SEARCH, pat, patlen, TRUE, NUL);
 	vim_free(sub);
 
 	return;
@@ -4053,7 +4323,7 @@ ex_substitute(exarg_T *eap)
 	return;
     }
 
-    if (search_regcomp(pat, NULL, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, patlen, NULL, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
 	    emsg(_(e_invalid_command));
@@ -4212,7 +4482,8 @@ ex_substitute(exarg_T *eap)
 
 		if (sub_firstline == NULL)
 		{
-		    sub_firstline = vim_strsave(ml_get(sub_firstlnum));
+		    sub_firstline = vim_strnsave(ml_get(sub_firstlnum),
+						    ml_get_len(sub_firstlnum));
 		    if (sub_firstline == NULL)
 		    {
 			vim_free(new_start);
@@ -4366,7 +4637,8 @@ ex_substitute(exarg_T *eap)
 				// really update the line, it would change
 				// what matches.  Temporarily replace the line
 				// and change it back afterwards.
-				orig_line = vim_strsave(ml_get(lnum));
+				orig_line = vim_strnsave(ml_get(lnum),
+							     ml_get_len(lnum));
 				if (orig_line != NULL)
 				{
 				    char_u *new_line = concat_str(new_start,
@@ -4650,7 +4922,7 @@ ex_substitute(exarg_T *eap)
 		     * too many calls to alloc()/free()).
 		     */
 		    new_start_len = needed_len + 50;
-		    if ((new_start = alloc(new_start_len)) == NULL)
+		    if ((new_start = alloc_clear(new_start_len)) == NULL)
 			goto outofmem;
 		    *new_start = NUL;
 		    new_end = new_start;
@@ -4667,7 +4939,7 @@ ex_substitute(exarg_T *eap)
 		    if (needed_len > (int)new_start_len)
 		    {
 			new_start_len = needed_len + 50;
-			if ((p1 = alloc(new_start_len)) == NULL)
+			if ((p1 = alloc_clear(new_start_len)) == NULL)
 			{
 			    vim_free(new_start);
 			    goto outofmem;
@@ -4712,7 +4984,8 @@ ex_substitute(exarg_T *eap)
 		{
 		    sub_firstlnum += nmatch - 1;
 		    vim_free(sub_firstline);
-		    sub_firstline = vim_strsave(ml_get(sub_firstlnum));
+		    sub_firstline = vim_strnsave(ml_get(sub_firstlnum),
+						    ml_get_len(sub_firstlnum));
 		    // When going beyond the last line, stop substituting.
 		    if (sub_firstlnum <= line2)
 			do_again = TRUE;
@@ -5088,6 +5361,7 @@ ex_global(exarg_T *eap)
 
     char_u	delim;		// delimiter, normally '/'
     char_u	*pat;
+    size_t	patlen;
     char_u	*used_pat;
     regmmatch_T	regmatch;
     int		match;
@@ -5134,6 +5408,7 @@ ex_global(exarg_T *eap)
 	    which_pat = RE_SEARCH;	// use previous search pattern
 	++cmd;
 	pat = (char_u *)"";
+	patlen = 0;
     }
     else if (*cmd == NUL)
     {
@@ -5152,9 +5427,10 @@ ex_global(exarg_T *eap)
 	cmd = skip_regexp_ex(cmd, delim, magic_isset(), &eap->arg, NULL, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
+	patlen = STRLEN(pat);
     }
 
-    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS,
+    if (search_regcomp(pat, patlen, &used_pat, RE_BOTH, which_pat, SEARCH_HIS,
 							    &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
@@ -5303,7 +5579,7 @@ set_old_sub(char_u *val)
 }
 #endif // FEAT_VIMINFO
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_old_sub(void)
 {
@@ -5311,7 +5587,7 @@ free_old_sub(void)
 }
 #endif
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Set up for a tagpreview.
  * Makes the preview window the current window.
@@ -5425,8 +5701,7 @@ ex_smile(exarg_T *eap UNUSED)
 
 /*
  * ":drop"
- * Opens the first argument in a window.  When there are two or more arguments
- * the argument list is redefined.
+ * Opens the first argument in a window, and the argument list is redefined.
  */
     void
 ex_drop(exarg_T *eap)
@@ -5463,6 +5738,8 @@ ex_drop(exarg_T *eap)
 	// edited in a window yet.  It's like ":tab all" but without closing
 	// windows or tabs.
 	ex_all(eap);
+	cmdmod.cmod_tab = 0;
+	ex_rewind(eap);
 	return;
     }
 
@@ -5486,6 +5763,8 @@ ex_drop(exarg_T *eap)
 		buf_check_timestamp(curbuf, FALSE);
 		curbuf->b_p_ar = save_ar;
 	    }
+	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+		ex_rewind(eap);
 	    return;
 	}
     }
@@ -5592,7 +5871,7 @@ skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp)
     return p;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * List v:oldfiles in a nice way.
  */
@@ -5603,6 +5882,9 @@ ex_oldfiles(exarg_T *eap UNUSED)
     listitem_T	*li;
     int		nr = 0;
     char_u	*fname;
+    // for a single filtered match, remember the number
+    // so we can jump directly to it without prompting
+    int		matches = -1;
 
     if (l == NULL)
     {
@@ -5618,6 +5900,10 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	fname = tv_get_string(&li->li_tv);
 	if (!message_filtered(fname))
 	{
+	    if (matches < 0)
+		matches = nr;
+	    else
+		matches = 0;
 	    msg_outnum((long)nr);
 	    msg_puts(": ");
 	    msg_outtrans(fname);
@@ -5635,7 +5921,15 @@ ex_oldfiles(exarg_T *eap UNUSED)
     if (cmdmod.cmod_flags & CMOD_BROWSE)
     {
 	quit_more = FALSE;
-	nr = prompt_for_number(FALSE);
+	// we only need to prompt if there is more than 1 match
+	if (matches > 0)
+	{
+	    nr = matches;
+	    // msg_putchar above sets needs_wait_return
+	    need_wait_return = FALSE;
+	}
+	else
+	    nr = prompt_for_number(FALSE);
 	msg_starthere();
 	if (nr > 0)
 	{

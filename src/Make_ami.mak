@@ -53,8 +53,8 @@ endif
 
 # OS specific compiler flags
 ifeq ($(UNM),AmigaOS)
-LDFLAGS = -mcrt=clib2 -lauto -lm -lnet
-CFLAGS += -DHAVE_FSYNC -D__USE_INLINE__ -mcrt=clib2
+LDFLAGS = -lauto
+CFLAGS += -DHAVE_FSYNC -D__USE_INLINE__
 else
 ifeq ($(UNM),AROS)
 LDFLAGS = -DHAVE_FSYNC -ldebug
@@ -69,6 +69,11 @@ endif
 # Patch level used for Amiga style version string
 ifdef PATCHLEVEL
 CFLAGS += -DPATCHLEVEL=\"$(PATCHLEVEL)\"
+endif
+
+# Build date used for Amiga style version string
+ifdef BUILDDATE
+CFLAGS += -DBUILDDATE=\"$(BUILDDATE)\"
 endif
 
 # Common sources
@@ -113,7 +118,9 @@ SRC += \
 	findfile.c \
 	float.c \
 	fold.c \
+	fuzzy.c \
 	getchar.c \
+	gc.c \
 	hardcopy.c \
 	hashtab.c \
 	help.c \
@@ -122,6 +129,7 @@ SRC += \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c\
 	list.c \
 	locale.c \
 	logfile.c \
@@ -160,6 +168,7 @@ SRC += \
 	strings.c \
 	syntax.c \
 	tag.c \
+	tabpanel.c \
 	term.c \
 	termlib.c \
 	testing.c \
@@ -167,6 +176,7 @@ SRC += \
 	textobject.c \
 	textprop.c \
 	time.c \
+	tuple.c \
 	typval.c \
 	ui.c \
 	undo.c \
@@ -179,6 +189,7 @@ SRC += \
 	vim9compile.c \
 	vim9execute.c \
 	vim9expr.c \
+	vim9generics.c \
 	vim9instr.c \
 	vim9script.c \
 	vim9type.c \

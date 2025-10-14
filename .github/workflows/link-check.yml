@@ -1,0 +1,15 @@
+# .github/workflows/link-check.yml
+name: Check Links
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0' # Every Sunday at 03:00 UTC
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run Lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --verbose --config ci/lychee.toml .

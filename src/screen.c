@@ -18,8 +18,7 @@
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
  * ScreenCols[off]   Contains the virtual columns in the line. -1 means not
- *		     available or before buffer text, MAXCOL means after the
- *		     end of the line.
+ *		     available or before buffer text.
  *
  * LineOffset[row]   Contains the offset into ScreenLines*[], ScreenAttrs[]
  *		     and ScreenCols[] for each line.
@@ -60,7 +59,7 @@ static void recording_mode(int attr);
 // Ugly global: overrule attribute used by screen_char()
 static int screen_char_attr = 0;
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_CONCEAL)
 /*
  * Return TRUE if the cursor line in window "wp" may be concealed, according
  * to the 'concealcursor' option.
@@ -216,24 +215,21 @@ win_draw_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol, W_ENDCOL(wp) - 1 - n,
-		c2, c2, attr);
+		wp->w_wincol, W_ENDCOL(wp) - 1 - n, c2, c2, attr);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - 1 - n, W_ENDCOL(wp) - n,
-		c1, c2, attr);
+		W_ENDCOL(wp) - 1 - n, W_ENDCOL(wp) - n, c1, c2, attr);
     }
     else
 #endif
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + n, (int)W_ENDCOL(wp),
-		c1, c2, attr);
+		wp->w_wincol + n, (int)W_ENDCOL(wp), c1, c2, attr);
     }
 
     set_empty_rows(wp, row);
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Compute the width of the foldcolumn.  Based on 'foldcolumn' and how much
  * space is available for window "wp", minus "col".
@@ -241,13 +237,10 @@ win_draw_end(
     int
 compute_foldcolumn(win_T *wp, int col)
 {
-    int fdc = wp->w_p_fdc;
     int wmw = wp == curwin && p_wmw == 0 ? 1 : p_wmw;
-    int wwidth = wp->w_width;
+    int n = wp->w_width - (col + wmw);
 
-    if (fdc > wwidth - (col + wmw))
-	fdc = wwidth - (col + wmw);
-    return fdc;
+    return MIN(wp->w_p_fdc, n);
 }
 
 /*
@@ -272,6 +265,7 @@ fill_foldcolumn(
     size_t	byte_counter = 0;
     int		symbol = 0;
     int		len = 0;
+    int		n;
 
     // Init to all spaces.
     vim_memset(p, ' ', MAX_MCO * fdc + 1);
@@ -285,13 +279,16 @@ fill_foldcolumn(
     if (first_level < 1)
 	first_level = 1;
 
-    for (i = 0; i < MIN(fdc, level); i++)
+    n = MIN(fdc, level);		// evaluate this once
+    for (i = 0; i < n; i++)
     {
 	if (win_foldinfo.fi_lnum == lnum
 		&& first_level + i >= win_foldinfo.fi_low_level)
 	    symbol = wp->w_fill_chars.foldopen;
 	else if (first_level == 1)
 	    symbol = wp->w_fill_chars.foldsep;
+	else if (wp->w_fill_chars.foldinner != NUL)
+	    symbol = wp->w_fill_chars.foldinner;
 	else if (first_level + i <= 9)
 	    symbol = '0' + first_level + i;
 	else
@@ -374,7 +371,7 @@ char_needs_redraw(int off_from, int off_to, int cols)
     return FALSE;
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * Return the index in ScreenLines[] for the current screen line.
  */
@@ -452,6 +449,10 @@ skip_for_popup(int row, int col)
  * SLF_RIGHTLEFT    rightleft window:
  *    When TRUE and "clear_width" > 0, clear columns 0 to "endcol"
  *    When FALSE and "clear_width" > 0, clear columns "endcol" to "clear_width"
+ * SLF_INC_VCOL:
+ *    When FALSE, use "last_vcol" for ScreenCols[] of the columns to clear.
+ *    When TRUE, use an increasing sequence starting from "last_vcol + 1" for
+ *    ScreenCols[] of the columns to clear.
  */
     void
 screen_line(
@@ -460,6 +461,7 @@ screen_line(
 	int	coloff,
 	int	endcol,
 	int	clear_width,
+	colnr_T	last_vcol,
 	int	flags UNUSED)
 {
     unsigned	    off_from;
@@ -504,6 +506,8 @@ screen_line(
 	// Clear rest first, because it's left of the text.
 	if (clear_width > 0)
 	{
+	    int clear_start = col;
+
 	    while (col <= endcol && ScreenLines[off_to] == ' '
 		    && ScreenAttrs[off_to] == 0
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0))
@@ -514,6 +518,10 @@ screen_line(
 	    if (col <= endcol)
 		screen_fill(row, row + 1, col + coloff,
 					    endcol + coloff + 1, ' ', ' ', 0);
+
+	    for (int i = endcol; i >= clear_start; i--)
+		ScreenCols[off_to + (i - col)] =
+		    (flags & SLF_INC_VCOL) ? ++last_vcol : last_vcol;
 	}
 	col = endcol + 1;
 	off_to = LineOffset[row] + col + coloff;
@@ -775,7 +783,8 @@ screen_line(
 						  && ScreenAttrs[off_to] == 0
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0))
 	{
-	    ScreenCols[off_to] = MAXCOL;
+	    ScreenCols[off_to] =
+			      (flags & SLF_INC_VCOL) ? ++last_vcol : last_vcol;
 	    ++off_to;
 	    ++col;
 	}
@@ -830,7 +839,8 @@ screen_line(
 								 ' ', ' ', 0);
 	    while (col < clear_width)
 	    {
-		ScreenCols[off_to++] = MAXCOL;
+		ScreenCols[off_to++]
+			    = (flags & SLF_INC_VCOL) ? ++last_vcol : last_vcol;
 		++col;
 	    }
 	}
@@ -844,7 +854,7 @@ screen_line(
     {
 	// For a window that has a right neighbor, draw the separator char
 	// right of the window contents.  But not on top of a popup window.
-	if (coloff + col < Columns)
+	if (coloff + col < firstwin->w_wincol + topframe->fr_width)
 	{
 	    if (!skip_for_popup(row, col + coloff))
 	    {
@@ -877,7 +887,7 @@ screen_line(
     }
 }
 
-#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
+#if defined(FEAT_RIGHTLEFT)
 /*
  * Mirror text "str" for right-left displaying.
  * Only works for single-byte characters (e.g., numbers).
@@ -912,8 +922,7 @@ draw_vsep_win(win_T *wp, int row)
     // draw the vertical separator right of this window
     c = fillchar_vsep(&hl, wp);
     screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-	    W_ENDCOL(wp), W_ENDCOL(wp) + 1,
-	    c, ' ', hl);
+	    W_ENDCOL(wp), W_ENDCOL(wp) + 1, c, ' ', hl);
 }
 
 /*
@@ -956,20 +965,21 @@ get_keymap_str(
     int		len)	    // length of buffer
 {
     char_u	*p;
+    int		plen;
 
     if (wp->w_buffer->b_p_iminsert != B_IMODE_LMAP)
-	return FALSE;
+	return 0;
 
 #ifdef FEAT_EVAL
     buf_T	*old_curbuf = curbuf;
     win_T	*old_curwin = curwin;
+    char_u	to_evaluate[] = "b:keymap_name";
     char_u	*s;
 
     curbuf = wp->w_buffer;
     curwin = wp;
-    STRCPY(buf, "b:keymap_name");	// must be writable
     ++emsg_skip;
-    s = p = eval_to_string(buf, FALSE, FALSE);
+    s = p = eval_to_string(to_evaluate, FALSE, FALSE);
     --emsg_skip;
     curbuf = old_curbuf;
     curwin = old_curwin;
@@ -983,15 +993,20 @@ get_keymap_str(
 #endif
 	    p = (char_u *)"lang";
     }
-    if (vim_snprintf((char *)buf, len, (char *)fmt, p) > len - 1)
-	buf[0] = NUL;
+    plen = vim_snprintf((char *)buf, len, (char *)fmt, p);
 #ifdef FEAT_EVAL
     vim_free(s);
 #endif
-    return buf[0] != NUL;
+    if (plen < 0 || plen > len - 1)
+    {
+	buf[0] = NUL;
+	plen = 0;
+    }
+
+    return plen;
 }
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
 /*
  * Redraw the status line or ruler of window "wp".
  * When "wp" is NULL redraw the tab pages line from 'tabline'.
@@ -1034,9 +1049,10 @@ win_redr_custom(
 	// Use 'tabline'.  Always at the first line of the screen.
 	stl = p_tal;
 	row = 0;
+	col = firstwin->w_wincol;
 	fillchar = ' ';
 	attr = HL_ATTR(HLF_TPF);
-	maxwidth = Columns;
+	maxwidth = topframe->fr_width;
 	opt_name = (char_u *)"tabline";
     }
     else
@@ -1102,7 +1118,7 @@ win_redr_custom(
     // might change the option value and free the memory.
     stl = vim_strsave(stl);
     width = build_stl_str_hl(ewp, buf, sizeof(buf),
-				stl, opt_name, opt_scope,
+				(stl == NULL) ? (char_u *)"" : stl, opt_name, opt_scope,
 				fillchar, maxwidth, &hltab, &tabtab);
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
@@ -1111,12 +1127,13 @@ win_redr_custom(
     p = transstr(buf);
     if (p != NULL)
     {
-	vim_strncpy(buf, p, sizeof(buf) - 1);
+	len = vim_snprintf((char *)buf, sizeof(buf), "%s", p);
 	vim_free(p);
     }
+    else
+	len = (int)STRLEN(buf);
 
     // fill up with "fillchar"
-    len = (int)STRLEN(buf);
     while (width < maxwidth && len < (int)sizeof(buf) - 1)
     {
 	len += (*mb_char2bytes)(fillchar, buf + len);
@@ -1158,7 +1175,7 @@ win_redr_custom(
     if (wp == NULL)
     {
 	// Fill the TabPageIdxs[] array for clicking in the tab pagesline.
-	col = 0;
+	col = firstwin->w_wincol;
 	len = 0;
 	p = buf;
 	fillchar = 0;
@@ -1533,7 +1550,7 @@ screen_puts_len(
     }
 }
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 /*
  * Prepare for 'hlsearch' highlighting.
  */
@@ -1562,7 +1579,7 @@ end_search_hl(void)
 }
 #endif
 
-      static void
+    static void
 screen_start_highlight(int attr)
 {
     attrentry_T *aep = NULL;
@@ -1667,6 +1684,8 @@ screen_start_highlight(int attr)
      */
     if (aep != NULL)
     {
+	if (aep->ae_u.cterm.font > 0 && aep->ae_u.cterm.font < 12)
+		term_font(aep->ae_u.cterm.font);
 #ifdef FEAT_TERMGUICOLORS
 	// When 'termguicolors' is set but fg or bg is unset,
 	// fall back to the cterm colors.   This helps for SpellBad,
@@ -1718,7 +1737,7 @@ screen_start_highlight(int attr)
     }
 }
 
-      void
+    void
 screen_stop_highlight(void)
 {
     int	    do_ME = FALSE;	    // output T_ME code
@@ -1967,7 +1986,21 @@ screen_char(unsigned off, int row, int col)
     {
 	char_u	    buf[MB_MAXBYTES + 1];
 
-	if (utf_ambiguous_width(ScreenLinesUC[off]))
+	if (
+#ifdef FEAT_GUI
+	    !gui.in_use &&
+#endif
+	    get_cellwidth(ScreenLinesUC[off]) > 1
+	    )
+	{
+	    // If the width is set to 2 with setcellwidths()
+	    // clear the two screen cells. If the character is actually
+	    // single width it won't change the second cell.
+	    out_str((char_u *)"  ");
+	    term_windgoto(row, col);
+	    screen_cur_col = 9999;
+	}
+	else if (utf_ambiguous_width(ScreenLinesUC[off]))
 	{
 	    if (*p_ambw == 'd'
 #ifdef FEAT_GUI
@@ -2093,8 +2126,8 @@ redraw_block(int row, int end, win_T *wp)
 
     if (wp == NULL)
     {
-	col = 0;
-	width = Columns;
+	col = firstwin->w_wincol;
+	width = topframe->fr_width;
     }
     else
     {
@@ -2293,7 +2326,11 @@ screen_fill(
 	{
 	    redraw_cmdline = TRUE;
 	    if (start_col == 0 && end_col == Columns
-		    && c1 == ' ' && c2 == ' ' && attr == 0)
+		    && c1 == ' ' && c2 == ' ' && attr == 0
+#ifdef FEAT_PROP_POPUP
+		    && !popup_overlaps_cmdline()
+#endif
+		    )
 		clear_cmdline = FALSE;	// command line has been cleared
 	    if (start_col == 0)
 		mode_displayed = FALSE; // mode cleared or overwritten
@@ -2567,6 +2604,25 @@ give_up:
 	    new_LineOffset[new_row] = new_row * Columns;
 	    new_LineWraps[new_row] = FALSE;
 
+	    (void)vim_memset(new_ScreenLines + new_row * Columns,
+				  ' ', (size_t)Columns * sizeof(schar_T));
+	    if (enc_utf8)
+	    {
+		(void)vim_memset(new_ScreenLinesUC + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+		for (int i = 0; i < p_mco; ++i)
+		    (void)vim_memset(new_ScreenLinesC[i]
+						      + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+	    }
+	    if (enc_dbcs == DBCS_JPNU)
+		(void)vim_memset(new_ScreenLines2 + new_row * Columns,
+				   0, (size_t)Columns * sizeof(schar_T));
+	    (void)vim_memset(new_ScreenAttrs + new_row * Columns,
+				    0, (size_t)Columns * sizeof(sattr_T));
+	    (void)vim_memset(new_ScreenCols + new_row * Columns,
+				    0, (size_t)Columns * sizeof(colnr_T));
+
 	    /*
 	     * If the screen is not going to be cleared, copy as much as
 	     * possible from the old screen to the new one and clear the rest
@@ -2575,24 +2631,6 @@ give_up:
 	     */
 	    if (!doclear)
 	    {
-		(void)vim_memset(new_ScreenLines + new_row * Columns,
-				      ' ', (size_t)Columns * sizeof(schar_T));
-		if (enc_utf8)
-		{
-		    (void)vim_memset(new_ScreenLinesUC + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		    for (int i = 0; i < p_mco; ++i)
-			(void)vim_memset(new_ScreenLinesC[i]
-							  + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		}
-		if (enc_dbcs == DBCS_JPNU)
-		    (void)vim_memset(new_ScreenLines2 + new_row * Columns,
-				       0, (size_t)Columns * sizeof(schar_T));
-		(void)vim_memset(new_ScreenAttrs + new_row * Columns,
-					0, (size_t)Columns * sizeof(sattr_T));
-		(void)vim_memset(new_ScreenCols + new_row * Columns,
-					0, (size_t)Columns * sizeof(colnr_T));
 		old_row = new_row + (screen_Rows - Rows);
 		if (old_row >= 0 && ScreenLines != NULL)
 		{
@@ -2811,6 +2849,9 @@ screenclear2(int doclear)
     win_rest_invalid(firstwin);	// redraw all regular windows
     redraw_cmdline = TRUE;
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     if (must_redraw == UPD_CLEAR)	// no need to clear again
 	must_redraw = UPD_NOT_VALID;
     msg_scrolled = 0;		// compute_cmdrow() uses this
@@ -3204,7 +3245,7 @@ setcursor_mayforce(int force)
 			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
 			   && vim_isprintc(gchar_cursor())) ? 2 : 1)) :
 #endif
-							    curwin->w_wcol));
+					    curwin->w_wcol));
     }
 }
 
@@ -3274,8 +3315,7 @@ win_ins_lines(
 	if (lastrow > Rows)
 	    lastrow = Rows;
 	screen_fill(nextrow - line_count, lastrow - line_count,
-		  wp->w_wincol, (int)W_ENDCOL(wp),
-		  ' ', ' ', 0);
+		  wp->w_wincol, (int)W_ENDCOL(wp), ' ', ' ', 0);
     }
 
     if (screen_ins_lines(0, W_WINROW(wp) + row, line_count, (int)Rows, 0, NULL)
@@ -3372,7 +3412,8 @@ win_do_lines(
 	return FAIL;
 
     // only a few lines left: redraw is faster
-    if (mayclear && Rows - line_count < 5 && wp->w_width == Columns)
+    if (mayclear && Rows - line_count < 5
+	    && wp->w_width == topframe->fr_width)
     {
 	if (!no_win_do_lines_ins)
 	    screenclear();	    // will set wp->w_lines_valid to 0
@@ -3389,8 +3430,7 @@ win_do_lines(
     if (row + line_count >= wp->w_height)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-		wp->w_wincol, (int)W_ENDCOL(wp),
-		' ', ' ', 0);
+		wp->w_wincol, (int)W_ENDCOL(wp), ' ', ' ', 0);
 	return OK;
     }
 
@@ -3411,9 +3451,10 @@ win_do_lines(
      * a character in the lower right corner of the scroll region may cause a
      * scroll-up .
      */
-    if (scroll_region || wp->w_width != Columns)
+    if (scroll_region || wp->w_width != topframe->fr_width)
     {
-	if (scroll_region && (wp->w_width == Columns || *T_CSV != NUL))
+	if (scroll_region && (wp->w_width == topframe->fr_width
+		    || *T_CSV != NUL))
 	    scroll_region_set(wp, row);
 	if (del)
 	    retval = screen_del_lines(W_WINROW(wp) + row, 0, line_count,
@@ -3421,7 +3462,8 @@ win_do_lines(
 	else
 	    retval = screen_ins_lines(W_WINROW(wp) + row, 0, line_count,
 					   wp->w_height - row, clear_attr, wp);
-	if (scroll_region && (wp->w_width == Columns || *T_CSV != NUL))
+	if (scroll_region && (wp->w_width == topframe->fr_width
+		    || *T_CSV != NUL))
 	    scroll_region_reset();
 	return retval;
     }
@@ -3505,7 +3547,7 @@ screen_ins_lines(
      * - redrawing for a callback and there is a modeless selection
      * - there is a popup window
      */
-     if (!screen_valid(TRUE)
+    if (!screen_valid(TRUE)
 	     || line_count <= 0 || line_count > p_ttyscroll
 	     || end > Rows
 #ifdef FEAT_CLIPBOARD
@@ -3544,7 +3586,7 @@ screen_ins_lines(
      * exists.
      */
     result_empty = (row + line_count >= end);
-    if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
+    if (wp != NULL && wp->w_width != topframe->fr_width && *T_CSV == NUL)
     {
 	// Avoid that lines are first cleared here and then redrawn, which
 	// results in many characters updated twice.  This happens with CTRL-F
@@ -3590,7 +3632,7 @@ screen_ins_lines(
 #ifdef FEAT_CLIPBOARD
     // Remove a modeless selection when inserting lines halfway the screen
     // or not the full width of the screen.
-    if (off + row > 0 || (wp != NULL && wp->w_width != Columns))
+    if (off + row > 0 || (wp != NULL && wp->w_width != topframe->fr_width))
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(-line_count);
@@ -3622,7 +3664,7 @@ screen_ins_lines(
     end += off;
     for (i = 0; i < line_count; ++i)
     {
-	if (wp != NULL && wp->w_width != Columns)
+	if (wp != NULL && wp->w_width != topframe->fr_width)
 	{
 	    // need to copy part of a line
 	    j = end - 1 - i;
@@ -3630,8 +3672,8 @@ screen_ins_lines(
 		linecopy(j + line_count, j, wp);
 	    j += line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width,
-								   clear_attr);
+		lineclear(LineOffset[j] + wp->w_wincol,
+			wp->w_width, clear_attr);
 	    else
 		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
 	    LineWraps[j] = FALSE;
@@ -3700,6 +3742,10 @@ screen_ins_lines(
 	    screen_start();	    // don't know where cursor is now
 	}
     }
+
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 
 #ifdef FEAT_GUI
     gui_can_update_cursor();
@@ -3779,7 +3825,7 @@ screen_del_lines(
      * 5. Use T_DL (delete line) if it exists.
      * 6. redraw the characters from ScreenLines[].
      */
-    if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
+    if (wp != NULL && wp->w_width != topframe->fr_width && *T_CSV == NUL)
     {
 	// Avoid that lines are first cleared here and then redrawn, which
 	// results in many characters updated twice.  This happens with CTRL-F
@@ -3802,7 +3848,7 @@ screen_del_lines(
     else if (*T_CDL != NUL && line_count > 1 && can_delete)
 	type = USE_T_CDL;
     else if (can_clear(T_CE) && result_empty
-	    && (wp == NULL || wp->w_width == Columns))
+	    && (wp == NULL || wp->w_width == topframe->fr_width))
 	type = USE_T_CE;
     else if (*T_DL != NUL && can_delete)
 	type = USE_T_DL;
@@ -3814,7 +3860,7 @@ screen_del_lines(
 #ifdef FEAT_CLIPBOARD
     // Remove a modeless selection when deleting lines halfway the screen or
     // not the full width of the screen.
-    if (off + row > 0 || (wp != NULL && wp->w_width != Columns))
+    if (off + row > 0 || (wp != NULL && wp->w_width != topframe->fr_width))
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(line_count);
@@ -3853,7 +3899,7 @@ screen_del_lines(
     end += off;
     for (i = 0; i < line_count; ++i)
     {
-	if (wp != NULL && wp->w_width != Columns)
+	if (wp != NULL && wp->w_width != topframe->fr_width)
 	{
 	    // need to copy part of a line
 	    j = row + i;
@@ -3861,8 +3907,8 @@ screen_del_lines(
 		linecopy(j - line_count, j, wp);
 	    j -= line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol, wp->w_width,
-								   clear_attr);
+		lineclear(LineOffset[j] + wp->w_wincol,
+			wp->w_width, clear_attr);
 	    else
 		lineinvalid(LineOffset[j] + wp->w_wincol, wp->w_width);
 	    LineWraps[j] = FALSE;
@@ -3953,6 +3999,10 @@ screen_del_lines(
 	}
     }
 
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
+
 #ifdef FEAT_GUI
     gui_can_update_cursor();
     if (gui.in_use)
@@ -4000,6 +4050,7 @@ showmode(void)
     int		attr;
     int		nwr_save;
     int		sub_attr;
+    int		show_ruler_with_pum = FALSE;
 
     do_mode = p_smd && msg_silent == 0
 	    && ((State & MODE_INSERT)
@@ -4104,7 +4155,7 @@ showmode(void)
 		    else
 # endif
 			if (get_keymap_str(curwin, (char_u *)" (%s)",
-							   NameBuff, MAXPATHL))
+							   NameBuff, MAXPATHL) > 0)
 			    msg_puts_attr((char *)NameBuff, attr);
 		}
 #endif
@@ -4131,6 +4182,10 @@ showmode(void)
 		    msg_puts_attr(_(p), attr);
 		}
 		msg_puts_attr(" --", attr);
+		// Ensure ruler is shown when a popup is visible and only the mode name
+		// is displayed. Without this, the ruler may disappear during insert-mode
+		// completion when 'shortmess' includes 'c'.
+		show_ruler_with_pum = TRUE;
 	    }
 
 	    need_clear = TRUE;
@@ -4166,7 +4221,7 @@ showmode(void)
     // If the last window has no status line, the ruler is after the mode
     // message and must be redrawn
     if (redrawing() && lastwin->w_status_height == 0)
-	win_redr_ruler(lastwin, TRUE, FALSE);
+	win_redr_ruler(lastwin, TRUE, show_ruler_with_pum);
 
     redraw_cmdline = FALSE;
     redraw_mode = FALSE;
@@ -4234,6 +4289,16 @@ recording_mode(int attr)
 }
 
 /*
+ * Return TRUE if mouse is enabled.
+ */
+    static int
+mouse_has_any(void)
+{
+    return mouse_has(MOUSE_NORMAL) || mouse_has(MOUSE_INSERT)
+	|| mouse_has(MOUSE_VISUAL);
+}
+
+/*
  * Draw the tab pages line at the top of the Vim window.
  */
     void
@@ -4265,6 +4330,10 @@ draw_tabline(void)
 #endif
 					    );
 
+#if defined(FEAT_TABPANEL)
+    col = firstwin->w_wincol;
+#endif
+
     if (ScreenLines == NULL)
 	return;
     redraw_tabline = FALSE;
@@ -4293,7 +4362,7 @@ draw_tabline(void)
 	FOR_ALL_TABPAGES(tp)
 	    ++tabcount;
 
-	tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
+	tabwidth = (topframe->fr_width - 1 + tabcount / 2) / tabcount;
 	if (tabwidth < 6)
 	    tabwidth = 6;
 
@@ -4333,8 +4402,7 @@ draw_tabline(void)
 	    {
 		if (wincount > 1)
 		{
-		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-		    len = (int)STRLEN(NameBuff);
+		    len = vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
 		    if (col + len >= Columns - 3)
 			break;
 		    screen_puts_len(NameBuff, len, 0, col,
@@ -4354,6 +4422,8 @@ draw_tabline(void)
 	    room = scol - col + tabwidth - 1;
 	    if (room > 0)
 	    {
+		int n;
+
 		// Get buffer name in NameBuff[]
 		get_trans_bufname(cwp->w_buffer);
 		shorten_dir(NameBuff);
@@ -4370,8 +4440,9 @@ draw_tabline(void)
 		    p += len - room;
 		    len = room;
 		}
-		if (len > Columns - col - 1)
-		    len = Columns - col - 1;
+		n = Columns - col - 1;
+		if (len > n)
+		    len = n;
 
 		screen_puts_len(p, (int)STRLEN(p), 0, col, attr);
 		col += len;
@@ -4394,7 +4465,8 @@ draw_tabline(void)
 	// Draw the 'showcmd' information if 'showcmdloc' == "tabline".
 	if (p_sc && *p_sloc == 't')
 	{
-	    int	width = MIN(10, (int)Columns - col - (tabcount > 1) * 3);
+	    int	n = (int)Columns - col - (tabcount > 1) * 3;
+	    int	width = MIN(10, n);
 
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, 0, (int)Columns
@@ -4402,7 +4474,7 @@ draw_tabline(void)
 	}
 
 	// Put an "X" for closing the current tab if there are several.
-	if (tabcount > 1)
+	if (tabcount > 1 && mouse_has_any())
 	{
 	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
 	    TabPageIdxs[Columns - 1] = -999;
@@ -4533,7 +4605,7 @@ comp_col(void)
 	if (!last_has_status)
 	    sc_col = ru_col;
     }
-    if (p_sc)
+    if (p_sc && *p_sloc == 'l')
     {
 	sc_col += SHOWCMD_COLS;
 	if (!p_ru || last_has_status)	    // no need for separating space
@@ -4550,7 +4622,7 @@ comp_col(void)
 #endif
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Return the width of the 'number' and 'relativenumber' column.
  * Caller may need to check if 'number' or 'relativenumber' is set.
@@ -4598,7 +4670,7 @@ number_width(win_T *wp)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the current cursor column. This is the actual position on the
  * screen. First column is 0.
@@ -4652,41 +4724,60 @@ get_encoded_char_adv(char_u **p)
 struct charstab
 {
     int	    *cp;
-    char    *name;
+    string_T	name;
 };
+
+#define CHARSTAB_ENTRY(cp, name) \
+    {(cp), {(char_u *)(name), STRLEN_LITERAL(name)}}
+
 static fill_chars_T fill_chars;
 static struct charstab filltab[] =
 {
-    {&fill_chars.stl,		"stl"},
-    {&fill_chars.stlnc,		"stlnc"},
-    {&fill_chars.vert,		"vert"},
-    {&fill_chars.fold,		"fold"},
-    {&fill_chars.foldopen,	"foldopen"},
-    {&fill_chars.foldclosed,	"foldclose"},
-    {&fill_chars.foldsep,	"foldsep"},
-    {&fill_chars.diff,		"diff"},
-    {&fill_chars.eob,		"eob"},
-    {&fill_chars.lastline,	"lastline"},
+    CHARSTAB_ENTRY(&fill_chars.stl,	    "stl"),
+    CHARSTAB_ENTRY(&fill_chars.stlnc,	    "stlnc"),
+    CHARSTAB_ENTRY(&fill_chars.vert,	    "vert"),
+    CHARSTAB_ENTRY(&fill_chars.fold,	    "fold"),
+    CHARSTAB_ENTRY(&fill_chars.foldopen,    "foldopen"),
+    CHARSTAB_ENTRY(&fill_chars.foldclosed,  "foldclose"),
+    CHARSTAB_ENTRY(&fill_chars.foldsep,	    "foldsep"),
+    CHARSTAB_ENTRY(&fill_chars.foldinner,   "foldinner"),
+    CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
+    CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
+    CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
+#if defined(FEAT_TABPANEL)
+    CHARSTAB_ENTRY(&fill_chars.tpl_vert,    "tpl_vert"),
+#endif
+    CHARSTAB_ENTRY(&fill_chars.trunc,	    "trunc"),
+    CHARSTAB_ENTRY(&fill_chars.truncrl,	    "truncrl"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
 {
-    {&lcs_chars.eol,		"eol"},
-    {&lcs_chars.ext,		"extends"},
-    {&lcs_chars.nbsp,		"nbsp"},
-    {&lcs_chars.prec,		"precedes"},
-    {&lcs_chars.space,		"space"},
-    {&lcs_chars.tab2,		"tab"},
-    {&lcs_chars.trail,		"trail"},
-    {&lcs_chars.lead,		"lead"},
+    CHARSTAB_ENTRY(&lcs_chars.eol,	    "eol"),
+    CHARSTAB_ENTRY(&lcs_chars.ext,	    "extends"),
+    CHARSTAB_ENTRY(&lcs_chars.nbsp,	    "nbsp"),
+    CHARSTAB_ENTRY(&lcs_chars.prec,	    "precedes"),
+    CHARSTAB_ENTRY(&lcs_chars.space,	    "space"),
+    CHARSTAB_ENTRY(&lcs_chars.tab2,	    "tab"),
+    CHARSTAB_ENTRY(&lcs_chars.trail,	    "trail"),
+    CHARSTAB_ENTRY(&lcs_chars.lead,	    "lead"),
 #ifdef FEAT_CONCEAL
-    {&lcs_chars.conceal,	"conceal"},
+    CHARSTAB_ENTRY(&lcs_chars.conceal,	    "conceal"),
 #else
-    {NULL,			"conceal"},
+    CHARSTAB_ENTRY(NULL,		    "conceal"),
 #endif
-    {NULL,			"multispace"},
-    {NULL,			"leadmultispace"},
+    CHARSTAB_ENTRY(NULL,		    "multispace"),
+    CHARSTAB_ENTRY(NULL,		    "leadmultispace")
 };
+
+    static char *
+field_value_err(char *errbuf, size_t errbuflen, char *fmt, char_u *field)
+{
+    if (errbuf == NULL)
+	return "";
+    vim_snprintf(errbuf, errbuflen, _(fmt), field);
+    return errbuf;
+}
 
 /*
  * Handle setting 'listchars' or 'fillchars'.
@@ -4697,9 +4788,10 @@ static struct charstab lcstab[] =
  * Returns error message, NULL if it's OK.
  */
     static char *
-set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
+set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
+						char *errbuf, size_t errbuflen)
 {
-    int	    round, i, len, entries;
+    int	    round, i, entries;
     char_u  *p, *s;
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
@@ -4722,7 +4814,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	tab = filltab;
 	entries = ARRAY_LENGTH(filltab);
 	if (wp->w_p_fcs[0] == NUL)
-	    value = p_fcs;  // local value is empty, us the global value
+	    value = p_fcs;  // local value is empty, use the global value
     }
 
     // first round: check for valid value, second round: assign values
@@ -4752,7 +4844,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 		{
 		    lcs_chars.leadmultispace =
 				      ALLOC_MULT(int, lead_multispace_len + 1);
-		    lcs_chars.leadmultispace[lead_multispace_len] = NUL;
+		    if (lcs_chars.leadmultispace != NULL)
+			lcs_chars.leadmultispace[lead_multispace_len] = NUL;
 		}
 		else
 		    lcs_chars.leadmultispace = NULL;
@@ -4766,9 +4859,15 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 		fill_chars.foldopen = '-';
 		fill_chars.foldclosed = '+';
 		fill_chars.foldsep = '|';
+		fill_chars.foldinner = NUL;
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
+#if defined(FEAT_TABPANEL)
+		fill_chars.tpl_vert = '|';
+#endif
+		fill_chars.trunc = '>';
+		fill_chars.truncrl = '<';
 	    }
 	}
 	p = value;
@@ -4776,15 +4875,13 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	{
 	    for (i = 0; i < entries; ++i)
 	    {
-		len = (int)STRLEN(tab[i].name);
-		if (!(STRNCMP(p, tab[i].name, len) == 0
-			&& p[len] == ':'
-			&& p[len + 1] != NUL))
+		if (!(STRNCMP(p, tab[i].name.string, tab[i].name.length) == 0 && p[tab[i].name.length] == ':'))
 		    continue;
 
-		if (is_listchars && strcmp(tab[i].name, "multispace") == 0)
+		s = p + tab[i].name.length + 1;
+
+		if (is_listchars && STRCMP(tab[i].name.string, "multispace") == 0)
 		{
-		    s = p + len + 1;
 		    if (round == 0)
 		    {
 			// Get length of lcs-multispace string in first round
@@ -4794,13 +4891,16 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invalid_argument;
+				return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name.string);
 			    ++multispace_len;
 			}
 			if (multispace_len == 0)
 			    // lcs-multispace cannot be an empty string
-			    return e_invalid_argument;
-			p = s;
+			    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name.string);
 		    }
 		    else
 		    {
@@ -4809,20 +4909,19 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			while (*s != NUL && *s != ',')
 			{
 			    c1 = get_encoded_char_adv(&s);
-			    if (p == last_multispace)
+			    if (p == last_multispace && lcs_chars.multispace != NULL)
 				lcs_chars.multispace[multispace_pos++] = c1;
 			}
-			p = s;
 		    }
+		    p = s;
 		    break;
 		}
 
-		if (is_listchars && strcmp(tab[i].name, "leadmultispace") == 0)
+		if (is_listchars && STRCMP(tab[i].name.string, "leadmultispace") == 0)
 		{
-		    s = p + len + 1;
 		    if (round == 0)
 		    {
-			// get length of lcs-leadmultispace string in first
+			// Get length of lcs-leadmultispace string in first
 			// round
 			last_lmultispace = p;
 			lead_multispace_len = 0;
@@ -4830,13 +4929,16 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invalid_argument;
+				return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name.string);
 			    ++lead_multispace_len;
 			}
 			if (lead_multispace_len == 0)
 			    // lcs-leadmultispace cannot be an empty string
-			    return e_invalid_argument;
-			p = s;
+			    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name.string);
 		    }
 		    else
 		    {
@@ -4845,31 +4947,42 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			while (*s != NUL && *s != ',')
 			{
 			    c1 = get_encoded_char_adv(&s);
-			    if (p == last_lmultispace)
+			    if (p == last_lmultispace && lcs_chars.leadmultispace != NULL)
 				lcs_chars.leadmultispace[multispace_pos++] = c1;
 			}
-			p = s;
 		    }
+		    p = s;
 		    break;
 		}
 
 		c2 = c3 = 0;
-		s = p + len + 1;
+		if (*s == NUL)
+		    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name.string);
 		c1 = get_encoded_char_adv(&s);
 		if (char2cells(c1) > 1)
-		    return e_invalid_argument;
+		    return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name.string);
 		if (tab[i].cp == &lcs_chars.tab2)
 		{
 		    if (*s == NUL)
-			return e_invalid_argument;
+			return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name.string);
 		    c2 = get_encoded_char_adv(&s);
 		    if (char2cells(c2) > 1)
-			return e_invalid_argument;
+			return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name.string);
 		    if (!(*s == ',' || *s == NUL))
 		    {
 			c3 = get_encoded_char_adv(&s);
 			if (char2cells(c3) > 1)
-			    return e_invalid_argument;
+			    return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name.string);
 		    }
 		}
 
@@ -4890,6 +5003,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 		    p = s;
 		    break;
 		}
+		else
+		    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name.string);
 	    }
 
 	    if (i == entries)
@@ -4921,18 +5038,20 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
  * Handle the new value of 'fillchars'.
  */
     char *
-set_fillchars_option(win_T *wp, char_u *val, int apply)
+set_fillchars_option(win_T *wp, char_u *val, int apply, char *errbuf,
+							      size_t errbuflen)
 {
-    return set_chars_option(wp, val, FALSE, apply);
+    return set_chars_option(wp, val, FALSE, apply, errbuf, errbuflen);
 }
 
 /*
  * Handle the new value of 'listchars'.
  */
     char *
-set_listchars_option(win_T *wp, char_u *val, int apply)
+set_listchars_option(win_T *wp, char_u *val, int apply, char *errbuf,
+							      size_t errbuflen)
 {
-    return set_chars_option(wp, val, TRUE, apply);
+    return set_chars_option(wp, val, TRUE, apply, errbuf, errbuflen);
 }
 
 /*
@@ -4942,10 +5061,10 @@ set_listchars_option(win_T *wp, char_u *val, int apply)
     char_u *
 get_fillchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (int)(sizeof(filltab) / sizeof(filltab[0])))
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(filltab))
 	return NULL;
 
-    return (char_u*)filltab[idx].name;
+    return filltab[idx].name.string;
 }
 
 /*
@@ -4955,10 +5074,10 @@ get_fillchars_name(expand_T *xp UNUSED, int idx)
     char_u *
 get_listchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (int)(sizeof(lcstab) / sizeof(lcstab[0])))
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(lcstab))
 	return NULL;
 
-    return (char_u*)lcstab[idx].name;
+    return lcstab[idx].name.string;
 }
 
 /*
@@ -4972,15 +5091,15 @@ check_chars_options(void)
     tabpage_T   *tp;
     win_T	    *wp;
 
-    if (set_listchars_option(curwin, p_lcs, FALSE) != NULL)
+    if (set_listchars_option(curwin, p_lcs, FALSE, NULL, 0) != NULL)
 	return e_conflicts_with_value_of_listchars;
-    if (set_fillchars_option(curwin, p_fcs, FALSE) != NULL)
+    if (set_fillchars_option(curwin, p_fcs, FALSE, NULL, 0) != NULL)
 	return e_conflicts_with_value_of_fillchars;
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
-	if (set_listchars_option(wp, wp->w_p_lcs, FALSE) != NULL)
+	if (set_listchars_option(wp, wp->w_p_lcs, FALSE, NULL, 0) != NULL)
 	    return e_conflicts_with_value_of_listchars;
-	if (set_fillchars_option(wp, wp->w_p_fcs, FALSE) != NULL)
+	if (set_fillchars_option(wp, wp->w_p_fcs, FALSE, NULL, 0) != NULL)
 	    return e_conflicts_with_value_of_fillchars;
     }
     return NULL;

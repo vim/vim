@@ -1,35 +1,41 @@
-" zip.vim: Handles browsing zipfiles
-"            AUTOLOAD PORTION
-" Date:		Mar 12, 2023
-" Version:	33
-" Maintainer:	Charles E Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
+  " zip.vim: Handles browsing zipfiles
+" AUTOLOAD PORTION
+" Date:		2024 Aug 21
+" Version:	34
+" Maintainer:	This runtime file is looking for a new maintainer.
+" Former Maintainer:	Charles E Campbell
+" Last Change:
+" 2024 Jun 16 by Vim Project: handle whitespace on Windows properly (#14998)
+" 2024 Jul 23 by Vim Project: fix 'x' command
+" 2024 Jul 24 by Vim Project: use delete() function
+" 2024 Jul 30 by Vim Project: fix opening remote zipfile
+" 2024 Aug 04 by Vim Project: escape '[' in name of file to be extracted
+" 2024 Aug 05 by Vim Project: workaround for the FreeBSD's unzip
+" 2024 Aug 05 by Vim Project: clean-up and make it work with shellslash on Windows
+" 2024 Aug 18 by Vim Project: correctly handle special globbing chars
+" 2024 Aug 21 by Vim Project: simplify condition to detect MS-Windows
+" 2025 Mar 11 by Vim Project: handle filenames with leading '-' correctly
+" 2025 Jul 12 by Vim Project: drop ../ on write to prevent path traversal attacks
+" 2025 Sep 22 by Vim Project: support PowerShell Core
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005-2019 Charles E. Campbell {{{1
-"               Permission is hereby granted to use and distribute this code,
-"               with or without modifications, provided that this copyright
-"               notice is copied with it. Like anything else that's free,
-"               zip.vim and zipPlugin.vim are provided *as is* and comes with
-"               no warranty of any kind, either expressed or implied. By using
-"               this plugin, you agree that in no event will the copyright
-"               holder be liable for any damages resulting from the use
-"               of this software.
-"redraw!|call DechoSep()|call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+" Copyright:	Copyright (C) 2005-2019 Charles E. Campbell {{{1
+"		Permission is hereby granted to use and distribute this code,
+"		with or without modifications, provided that this copyright
+"		notice is copied with it. Like anything else that's free,
+"		zip.vim and zipPlugin.vim are provided *as is* and comes with
+"		no warranty of any kind, either expressed or implied. By using
+"		this plugin, you agree that in no event will the copyright
+"		holder be liable for any damages resulting from the use
+"		of this software.
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
 if &cp || exists("g:loaded_zip")
  finish
 endif
-let g:loaded_zip= "v33"
-if v:version < 702
- echohl WarningMsg
- echo "***warning*** this version of zip needs vim 7.2 or later"
- echohl Normal
- finish
-endif
+let g:loaded_zip= "v34"
 let s:keepcpo= &cpo
 set cpo&vim
-"DechoTabOn
 
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
@@ -57,10 +63,139 @@ if !exists("g:zip_extractcmd")
  let g:zip_extractcmd= g:zip_unzipcmd
 endif
 
-if !dist#vim#IsSafeExecutable('zip', g:zip_unzipcmd)
- echoerr "Warning: NOT executing " .. g:zip_unzipcmd .. " from current directory!"
+" ---------------------------------------------------------------------
+"  required early
+" s:Mess: {{{2
+fun! s:Mess(group, msg)
+  redraw!
+  exe "echohl " . a:group
+  echomsg a:msg
+  echohl Normal
+endfun
+
+if v:version < 901
+ " required for defer
+ call s:Mess('WarningMsg', "***warning*** this version of zip needs vim 9.1 or later")
  finish
 endif
+" sanity checks
+if !executable(g:zip_unzipcmd) && &shell !~ 'pwsh'
+ call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system")
+ finish
+endif
+if !dist#vim#IsSafeExecutable('zip', g:zip_unzipcmd) && &shell !~ 'pwsh'
+ call s:Mess('Error', "Warning: NOT executing " .. g:zip_unzipcmd .. " from current directory!")
+ finish
+endif
+
+" ----------------
+"  PowerShell: {{{1
+" ----------------
+
+function! s:TryExecGnuFallBackToPs(executable, gnu_func_call, ...)
+  " Check that a gnu executable is available, run the gnu_func_call if so. If
+  " the gnu executable is not available or if gnu_func_call fails, try
+  " ps_func_call if &shell =~ 'pwsh'. If all attempts fail, print errors.
+  " a:executable - one of (g:zip_zipcmd, g:zip_unzipcmd, g:zip_extractcmd)
+  " a:gnu_func_call - (string) a gnu function call to execute
+  " a:1 - (optional string) a PowerShell function call to execute.
+  let failures = []
+  if executable(substitute(a:executable,'\s\+.*$','',''))
+    try
+      exe a:gnu_func_call
+      return
+    catch
+      call add(failures, 'Failed to execute '.a:gnu_func_call)
+    endtry
+  else
+    call add(failures, a:executable.' not available on your system')
+  endif
+  if &shell =~ 'pwsh' && a:0 == 1
+    try
+      exe a:1
+      return
+    catch
+      call add(failures, 'Fallback to PowerShell attempted but failed')
+    endtry
+  endif
+  for msg in failures
+    call s:Mess('Error', msg)
+  endfor
+endfunction
+
+
+function! s:ZipBrowsePS(zipfile)
+  " Browse the contents of a zip file using PowerShell's
+  " Equivalent `unzip -Z1 -- zipfile`
+  let cmds = [
+        \ '$zip = [System.IO.Compression.ZipFile]::OpenRead(' . s:Escape(a:zipfile, 1) . ');',
+        \ '$zip.Entries | ForEach-Object { $_.FullName };',
+        \ '$zip.Dispose()'
+        \ ]
+  return 'pwsh -NoProfile -Command ' . s:Escape(join(cmds, ' '), 1)
+endfunction
+
+function! s:ZipReadPS(zipfile, fname, tempfile)
+  " Read a filename within a zipped file to a temporary file.
+  " Equivalent to `unzip -p -- zipfile fname > tempfile`
+  if a:fname =~ '/'
+    call s:Mess('WarningMsg', "***warning*** PowerShell can display, but cannot update, files in archive subfolders")
+  endif
+  let cmds = [
+        \ '$zip = [System.IO.Compression.ZipFile]::OpenRead(' . s:Escape(a:zipfile, 1) . ');',
+        \ '$fileEntry = $zip.Entries | Where-Object { $_.FullName -eq ' . s:Escape(a:fname, 1) . ' };',
+        \ '$stream = $fileEntry.Open();',
+        \ '$fileStream = [System.IO.File]::Create(' . s:Escape(a:tempfile, 1) . ');',
+        \ '$stream.CopyTo($fileStream);',
+        \ '$fileStream.Close();',
+        \ '$stream.Close();',
+        \ '$zip.Dispose()'
+        \ ]
+  return 'pwsh -NoProfile -Command ' . s:Escape(join(cmds, ' '), 1)
+endfunction
+
+function! s:ZipUpdatePS(zipfile, fname)
+  " Update a filename within a zipped file
+  " Equivalent to `zip -u zipfile fname`
+  if a:fname =~ '/'
+    call s:Mess('Error', "***error*** PowerShell cannot update files in archive subfolders")
+    return ':'
+  endif
+  return 'Compress-Archive -Path ' . a:fname . ' -Update -DestinationPath ' . a:zipfile
+endfunction
+
+function! s:ZipExtractFilePS(zipfile, fname)
+  " Extract a single file from an archive
+  " Equivalent to `unzip -o zipfile fname`
+  if a:fname =~ '/'
+    call s:Mess('Error', "***error*** PowerShell cannot extract files in archive subfolders")
+    return ':'
+  endif
+  let cmds = [
+        \ '$zip = [System.IO.Compression.ZipFile]::OpenRead(' . s:Escape(a:zipfile, 1) . ');',
+        \ '$fileEntry = $zip.Entries | Where-Object { $_.FullName -eq ' . a:fname . ' };',
+        \ '$stream = $fileEntry.Open();',
+        \ '$fileStream = [System.IO.File]::Create(' . a:fname . ');',
+        \ '$stream.CopyTo($fileStream);',
+        \ '$fileStream.Close();',
+        \ '$stream.Close();',
+        \ '$zip.Dispose()'
+        \ ]
+  return 'pwsh -NoProfile -Command ' . s:Escape(join(cmds, ' '), 1)
+endfunction
+
+function! s:ZipDeleteFilePS(zipfile, fname)
+  " Delete a single file from an archive
+  " Equivalent to `zip -d zipfile fname`
+  let cmds = [
+        \ 'Add-Type -AssemblyName System.IO.Compression.FileSystem;',
+        \ '$zip = [System.IO.Compression.ZipFile]::Open(' . s:Escape(a:zipfile, 1) . ', ''Update'');',
+        \ '$entry = $zip.Entries | Where-Object { $_.Name -eq ' . s:Escape(a:fname, 1) . ' };',
+        \ 'if ($entry) { $entry.Delete(); $zip.Dispose() }',
+        \ 'else { $zip.Dispose() }'
+        \ ]
+  return 'pwsh -NoProfile -Command ' . s:Escape(join(cmds, ' '), 1)
+endfunction
 
 " ----------------
 "  Functions: {{{1
@@ -69,47 +204,28 @@ endif
 " ---------------------------------------------------------------------
 " zip#Browse: {{{2
 fun! zip#Browse(zipfile)
-"  call Dfunc("zip#Browse(zipfile<".a:zipfile.">)")
-  " sanity check: insure that the zipfile has "PK" as its first two letters
-  "               (zipped files have a leading PK as a "magic cookie")
-  if !filereadable(a:zipfile) || readfile(a:zipfile, "", 1)[0] !~ '^PK'
-   exe "noswapfile noautocmd noswapfile e ".fnameescape(a:zipfile)
-"   call Dret("zip#Browse : not a zipfile<".a:zipfile.">")
+  " sanity check: ensure that the zipfile has "PK" as its first two letters
+  "               (zip files have a leading PK as a "magic cookie")
+  if filereadable(a:zipfile) && readblob(a:zipfile, 0, 2) != 0z50.4B
+   exe "noswapfile noautocmd e " .. fnameescape(a:zipfile)
    return
-"  else        " Decho
-"   call Decho("zip#Browse: a:zipfile<".a:zipfile."> passed PK test - it's a zip file")
   endif
 
-  let repkeep= &report
-  set report=10
+  let dict = s:SetSaneOpts()
+  defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !exists("*fnameescape")
-   if &verbose > 1
-    echoerr "the zip plugin is not available (your vim doesn't support fnameescape())"
-   endif
-   return
-  endif
-  if !executable(g:zip_unzipcmd)
-   redraw!
-   echohl Error | echo "***error*** (zip#Browse) unzip not available on your system"
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   let &report= repkeep
-"   call Dret("zip#Browse")
+  if !executable(g:zip_unzipcmd) && &shell !~ 'pwsh'
+   call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system")
    return
   endif
   if !filereadable(a:zipfile)
    if a:zipfile !~# '^\a\+://'
     " if it's an url, don't complain, let url-handlers such as vim do its thing
-    redraw!
-    echohl Error | echo "***error*** (zip#Browse) File not readable<".a:zipfile.">" | echohl None
-"    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+    call s:Mess('Error', "***error*** (zip#Browse) File not readable <".a:zipfile.">")
    endif
-   let &report= repkeep
-"   call Dret("zip#Browse : file<".a:zipfile."> not readable")
    return
   endif
-"  call Decho("passed sanity checks")
   if &ma != 1
    set ma
   endif
@@ -134,19 +250,18 @@ fun! zip#Browse(zipfile)
  \                '" Select a file with cursor and press ENTER'])
   keepj $
 
-"  call Decho("exe silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1))
-  exe "keepj sil! r! ".g:zip_unzipcmd." -Z -1 -- ".s:Escape(a:zipfile,1)
+  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " -Z1 -- " . s:Escape(a:zipfile, 1)
+  let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
+
   if v:shell_error != 0
-   redraw!
-   echohl WarningMsg | echo "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file" | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   call s:Mess('WarningMsg', "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file")
    keepj sil! %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
    exe "keepj r ".fnameescape(a:zipfile)
    let &ei= eikeep
    keepj 1d
-"   call Dret("zip#Browse")
    return
   endif
 
@@ -158,64 +273,46 @@ fun! zip#Browse(zipfile)
    noremap <silent> <buffer>	<leftmouse>	<leftmouse>:call <SID>ZipBrowseSelect()<cr>
   endif
 
-  let &report= repkeep
-"  call Dret("zip#Browse")
 endfun
 
 " ---------------------------------------------------------------------
 " ZipBrowseSelect: {{{2
 fun! s:ZipBrowseSelect()
-  "  call Dfunc("ZipBrowseSelect() zipfile<".((exists("b:zipfile"))? b:zipfile : "n/a")."> curfile<".expand("%").">")
-  let repkeep= &report
-  set report=10
+  let dict = s:SetSaneOpts()
+  defer s:RestoreOpts(dict)
   let fname= getline(".")
   if !exists("b:zipfile")
-"   call Dret("ZipBrowseSelect : b:zipfile doesn't exist!")
    return
   endif
 
   " sanity check
   if fname =~ '^"'
-   let &report= repkeep
-"   call Dret("ZipBrowseSelect")
    return
   endif
   if fname =~ '/$'
-   redraw!
-   echohl Error | echo "***error*** (zip#Browse) Please specify a file, not a directory" | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   let &report= repkeep
-"   call Dret("ZipBrowseSelect")
+   call s:Mess('Error', "***error*** (zip#Browse) Please specify a file, not a directory")
    return
   endif
-
-"  call Decho("fname<".fname.">")
 
   " get zipfile to the new-window
   let zipfile = b:zipfile
   let curfile = expand("%")
-"  call Decho("zipfile<".zipfile.">")
-"  call Decho("curfile<".curfile.">")
 
   noswapfile new
   if !exists("g:zip_nomax") || g:zip_nomax == 0
    wincmd _
   endif
   let s:zipfile_{winnr()}= curfile
-"  call Decho("exe e ".fnameescape("zipfile://".zipfile.'::'.fname))
   exe "noswapfile e ".fnameescape("zipfile://".zipfile.'::'.fname)
   filetype detect
 
-  let &report= repkeep
-"  call Dret("ZipBrowseSelect : s:zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
 endfun
 
 " ---------------------------------------------------------------------
 " zip#Read: {{{2
 fun! zip#Read(fname,mode)
-"  call Dfunc("zip#Read(fname<".a:fname.">,mode=".a:mode.")")
-  let repkeep= &report
-  set report=10
+  let dict = s:SetSaneOpts()
+  defer s:RestoreOpts(dict)
 
   if has("unix")
    let zipfile = substitute(a:fname,'zipfile://\(.\{-}\)::[^\\].*$','\1','')
@@ -223,28 +320,24 @@ fun! zip#Read(fname,mode)
   else
    let zipfile = substitute(a:fname,'^.\{-}zipfile://\(.\{-}\)::[^\\].*$','\1','')
    let fname   = substitute(a:fname,'^.\{-}zipfile://.\{-}::\([^\\].*\)$','\1','')
-   let fname   = substitute(fname, '[', '[[]', 'g')
   endif
-"  call Decho("zipfile<".zipfile.">")
-"  call Decho("fname  <".fname.">")
+  let fname    = fname->substitute('[', '[[]', 'g')->escape('?*\\')
   " sanity check
-  if !executable(substitute(g:zip_unzipcmd,'\s\+.*$','',''))
-   redraw!
-   echohl Error | echo "***error*** (zip#Read) sorry, your system doesn't appear to have the ".g:zip_unzipcmd." program" | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   let &report= repkeep
-"   call Dret("zip#Write")
+  if !executable(substitute(g:zip_unzipcmd,'\s\+.*$','',''))  && &shell !~ 'pwsh'
+   call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".g:zip_unzipcmd." program")
    return
   endif
 
   " the following code does much the same thing as
-  "   exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1)
+  "   exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
   " but allows zipfile://... entries in quickfix lists
   let temp = tempname()
-"  call Decho("using temp file<".temp.">")
   let fn   = expand('%:p')
-  exe "sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp
-"  call Decho("exe sil! !".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fnameescape(fname),1).' > '.temp)
+
+  let gnu_cmd = 'sil !' . g:zip_unzipcmd . ' -p -- ' . s:Escape(zipfile, 1) . ' ' . s:Escape(fname, 1) . ' > ' . s:Escape(temp, 1)
+  let ps_cmd = 'sil !' . s:ZipReadPS(zipfile, fname, temp)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
+
   sil exe 'keepalt file '.temp
   sil keepj e!
   sil exe 'keepalt file '.fnameescape(fn)
@@ -253,175 +346,180 @@ fun! zip#Read(fname,mode)
   filetype detect
 
   " cleanup
-  "  keepj 0d   " used to be needed for the ...r! ... method
   set nomod
 
-  let &report= repkeep
-"  call Dret("zip#Read")
 endfun
 
 " ---------------------------------------------------------------------
 " zip#Write: {{{2
 fun! zip#Write(fname)
-"  call Dfunc("zip#Write(fname<".a:fname.">) zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
-  let repkeep= &report
-  set report=10
+  let dict = s:SetSaneOpts()
+  let need_rename = 0
+  defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !executable(substitute(g:zip_zipcmd,'\s\+.*$','',''))
-   redraw!
-   echohl Error | echo "***error*** (zip#Write) sorry, your system doesn't appear to have the ".g:zip_zipcmd." program" | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   let &report= repkeep
-"   call Dret("zip#Write")
-   return
-  endif
-  if !exists("*mkdir")
-   redraw!
-   echohl Error | echo "***error*** (zip#Write) sorry, mkdir() doesn't work on your system" | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-   let &report= repkeep
-"   call Dret("zip#Write")
-   return
+  if !executable(substitute(g:zip_zipcmd,'\s\+.*$','','')) && &shell !~ 'pwsh'
+    call s:Mess('Error', "***error*** (zip#Write) sorry, your system doesn't appear to have the ".g:zip_zipcmd." program")
+    return
   endif
 
   let curdir= getcwd()
   let tmpdir= tempname()
-"  call Decho("orig tempname<".tmpdir.">")
   if tmpdir =~ '\.'
-   let tmpdir= substitute(tmpdir,'\.[^.]*$','','e')
+    let tmpdir= substitute(tmpdir,'\.[^.]*$','','e')
   endif
-"  call Decho("tmpdir<".tmpdir.">")
   call mkdir(tmpdir,"p")
 
   " attempt to change to the indicated directory
   if s:ChgDir(tmpdir,s:ERROR,"(zip#Write) cannot cd to temporary directory")
-   let &report= repkeep
-"   call Dret("zip#Write")
-   return
+    return
   endif
-"  call Decho("current directory now: ".getcwd())
 
   " place temporary files under .../_ZIPVIM_/
   if isdirectory("_ZIPVIM_")
-   call s:Rmdir("_ZIPVIM_")
+    call delete("_ZIPVIM_", "rf")
   endif
   call mkdir("_ZIPVIM_")
   cd _ZIPVIM_
-"  call Decho("current directory now: ".getcwd())
 
   if has("unix")
-   let zipfile = substitute(a:fname,'zipfile://\(.\{-}\)::[^\\].*$','\1','')
-   let fname   = substitute(a:fname,'zipfile://.\{-}::\([^\\].*\)$','\1','')
+    let zipfile = substitute(a:fname,'zipfile://\(.\{-}\)::[^\\].*$','\1','')
+    let fname   = substitute(a:fname,'zipfile://.\{-}::\([^\\].*\)$','\1','')
   else
-   let zipfile = substitute(a:fname,'^.\{-}zipfile://\(.\{-}\)::[^\\].*$','\1','')
-   let fname   = substitute(a:fname,'^.\{-}zipfile://.\{-}::\([^\\].*\)$','\1','')
+    let zipfile = substitute(a:fname,'^.\{-}zipfile://\(.\{-}\)::[^\\].*$','\1','')
+    let fname   = substitute(a:fname,'^.\{-}zipfile://.\{-}::\([^\\].*\)$','\1','')
   endif
-"  call Decho("zipfile<".zipfile.">")
-"  call Decho("fname  <".fname.">")
+  if fname =~ '^[.]\{1,2}/'
+    let gnu_cmd = g:zip_zipcmd . ' -d ' . s:Escape(fnamemodify(zipfile,":p"),0) . ' ' . s:Escape(fname,0) 
+    let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
+    let ps_cmd = $"call system({s:Escape(s:ZipDeleteFilePS(zipfile, fname), 1)})"
+    call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
+    let fname = fname->substitute('^\([.]\{1,2}/\)\+', '', 'g')
+    let need_rename = 1
+  endif
 
   if fname =~ '/'
-   let dirpath = substitute(fname,'/[^/]\+$','','e')
-   if has("win32unix") && executable("cygpath")
+    let dirpath = substitute(fname,'/[^/]\+$','','e')
+    if has("win32unix") && executable("cygpath")
     let dirpath = substitute(system("cygpath ".s:Escape(dirpath,0)),'\n','','e')
-   endif
-"   call Decho("mkdir(dirpath<".dirpath.">,p)")
-   call mkdir(dirpath,"p")
+    endif
+    call mkdir(dirpath,"p")
   endif
   if zipfile !~ '/'
-   let zipfile= curdir.'/'.zipfile
+    let zipfile= curdir.'/'.zipfile
   endif
-"  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-  exe "w! ".fnameescape(fname)
+  " don't overwrite files forcefully
+  exe "w ".fnameescape(fname)
   if has("win32unix") && executable("cygpath")
-   let zipfile = substitute(system("cygpath ".s:Escape(zipfile,0)),'\n','','e')
+    let zipfile = substitute(system("cygpath ".s:Escape(zipfile,0)),'\n','','e')
   endif
 
   if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-"  call Decho(g:zip_zipcmd." -u ".s:Escape(fnamemodify(zipfile,":p"),0)." ".s:Escape(fname,0))
-  call system(g:zip_zipcmd." -u ".s:Escape(fnamemodify(zipfile,":p"),0)." ".s:Escape(fname,0))
+  let gnu_cmd = g:zip_zipcmd . ' -u '. s:Escape(fnamemodify(zipfile,":p"),0) . ' ' . s:Escape(fname,0) 
+  let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
+  let ps_cmd = s:ZipUpdatePS(s:Escape(fnamemodify(zipfile, ':p'), 0), s:Escape(fname, 0))
+  let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
+  call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
+  if &shell =~ 'pwsh'
+    " Vim flashes 'creation in progress ...' from what I believe is the
+    " ProgressAction stream of PowerShell. Unfortunately, this cannot be
+    " suppressed (as of 250824) due to an open PowerShell issue.
+    " https://github.com/PowerShell/PowerShell/issues/21074
+    " This necessitates a redraw of the buffer.
+    redraw!
+  endif
+
   if v:shell_error != 0
-   redraw!
-   echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+    call s:Mess('Error', "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname)
 
   elseif s:zipfile_{winnr()} =~ '^\a\+://'
-   " support writing zipfiles across a network
-   let netzipfile= s:zipfile_{winnr()}
-"   call Decho("handle writing <".zipfile."> across network as <".netzipfile.">")
-   1split|enew
-   let binkeep= &binary
-   let eikeep = &ei
-   set binary ei=all
-   exe "noswapfile e! ".fnameescape(zipfile)
-   call netrw#NetWrite(netzipfile)
-   let &ei     = eikeep
-   let &binary = binkeep
-   q!
-   unlet s:zipfile_{winnr()}
+    " support writing zipfiles across a network
+    let netzipfile= s:zipfile_{winnr()}
+    1split|enew
+    let binkeep= &binary
+    let eikeep = &ei
+    set binary ei=all
+    exe "noswapfile e! ".fnameescape(zipfile)
+    call netrw#NetWrite(netzipfile)
+    let &ei     = eikeep
+    let &binary = binkeep
+    q!
+    unlet s:zipfile_{winnr()}
+  elseif need_rename
+    exe $"sil keepalt file {fnameescape($"zipfile://{zipfile}::{fname}")}"
+    call s:Mess('Warning', "***error*** (zip#Browse) Path Traversal Attack detected, dropping relative path")
   endif
-  
+
   " cleanup and restore current directory
   cd ..
-  call s:Rmdir("_ZIPVIM_")
+  call delete("_ZIPVIM_", "rf")
   call s:ChgDir(curdir,s:WARNING,"(zip#Write) unable to return to ".curdir."!")
-  call s:Rmdir(tmpdir)
+  call delete(tmpdir, "rf")
   setlocal nomod
-
-  let &report= repkeep
-"  call Dret("zip#Write")
 endfun
 
 " ---------------------------------------------------------------------
 " zip#Extract: extract a file from a zip archive {{{2
 fun! zip#Extract()
-"  call Dfunc("zip#Extract()")
 
-  let repkeep= &report
-  set report=10
+  let dict = s:SetSaneOpts()
+  defer s:RestoreOpts(dict)
   let fname= getline(".")
-"  call Decho("fname<".fname.">")
 
   " sanity check
   if fname =~ '^"'
-   let &report= repkeep
-"   call Dret("zip#Extract")
-   return
+    return
   endif
   if fname =~ '/$'
-   redraw!
-   echohl Error | echo "***error*** (zip#Extract) Please specify a file, not a directory" | echohl None
-   let &report= repkeep
-"   call Dret("zip#Extract")
-   return
+    call s:Mess('Error', "***error*** (zip#Extract) Please specify a file, not a directory")
+    return
+  elseif fname =~ '^[.]\?[.]/'
+    call s:Mess('Error', "***error*** (zip#Browse) Path Traversal Attack detected, not extracting!")
+    return
+  endif
+  if filereadable(fname)
+    call s:Mess('Error', "***error*** (zip#Extract) <" .. fname .."> already exists in directory, not overwriting!")
+    return
+  endif
+  let target = fname->substitute('\[', '[[]', 'g')
+  " unzip 6.0 does not support -- to denote end-of-arguments
+  " unzip 6.1 (2010) apparently supports, it, but hasn't been released
+  " so the workaround is to use glob '[-]' so that it won't be considered an argument
+  " else, it would be possible to use 'unzip -o <file.zip> '-d/tmp' to extract the whole archive
+  let target = target->substitute('^-', '[&]', '')
+  if &shell =~ 'cmd' && has("win32")
+    let target = target
+		\ ->substitute('[?*]', '[&]', 'g')
+		\ ->substitute('[\\]', '?', 'g')
+		\ ->shellescape()
+    " there cannot be a file name with '\' in its name, unzip replaces it by _
+    let fname = fname->substitute('[\\?*]', '_', 'g')
+  else
+    let target = target->escape('*?\\')->shellescape()
   endif
 
   " extract the file mentioned under the cursor
-"  call Decho("system(".g:zip_extractcmd." ".shellescape(b:zipfile)." ".shellescape(shell).")")
-  call system(g:zip_extractcmd." ".shellescape(b:zipfile)." ".shellescape(shell))
-"  call Decho("zipfile<".b:zipfile.">")
+  let gnu_cmd = g:zip_extractcmd . ' -o '. shellescape(b:zipfile) . ' ' . target
+  let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
+  let ps_cmd = $"call system({s:Escape(s:ZipExtractFilePS(b:zipfile, target), 1)})"
+  call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)
+
   if v:shell_error != 0
-   echohl Error | echo "***error*** ".g:zip_extractcmd." ".b:zipfile." ".fname.": failed!" | echohl NONE
-  elseif !filereadable(fname)
-   echohl Error | echo "***error*** attempted to extract ".fname." but it doesn't appear to be present!"
+    call s:Mess('Error', "***error*** ".g:zip_extractcmd." ".b:zipfile." ".fname.": failed!")
+  elseif !filereadable(fname) && &shell !~ 'pwsh'
+    call s:Mess('Error', "***error*** attempted to extract ".fname." but it doesn't appear to be present!")
   else
-   echo "***note*** successfully extracted ".fname
+    echomsg "***note*** successfully extracted ".fname
   endif
-
-  " restore option
-  let &report= repkeep
-
-"  call Dret("zip#Extract")
 endfun
 
 " ---------------------------------------------------------------------
 " s:Escape: {{{2
 fun! s:Escape(fname,isfilt)
-"  call Dfunc("QuoteFileDir(fname<".a:fname."> isfilt=".a:isfilt.")")
   if exists("*shellescape")
    if a:isfilt
     let qnameq= shellescape(a:fname,1)
@@ -431,45 +529,48 @@ fun! s:Escape(fname,isfilt)
   else
    let qnameq= g:zip_shq.escape(a:fname,g:zip_shq).g:zip_shq
   endif
-"  call Dret("QuoteFileDir <".qnameq.">")
   return qnameq
 endfun
 
 " ---------------------------------------------------------------------
-" ChgDir: {{{2
+" s:ChgDir: {{{2
 fun! s:ChgDir(newdir,errlvl,errmsg)
-"  call Dfunc("ChgDir(newdir<".a:newdir."> errlvl=".a:errlvl."  errmsg<".a:errmsg.">)")
-
   try
    exe "cd ".fnameescape(a:newdir)
   catch /^Vim\%((\a\+)\)\=:E344/
    redraw!
    if a:errlvl == s:NOTE
-    echo "***note*** ".a:errmsg
+    echomsg "***note*** ".a:errmsg
    elseif a:errlvl == s:WARNING
-    echohl WarningMsg | echo "***warning*** ".a:errmsg | echohl NONE
+    call s:Mess("WarningMsg", "***warning*** ".a:errmsg)
    elseif a:errlvl == s:ERROR
-    echohl Error | echo "***error*** ".a:errmsg | echohl NONE
+    call s:Mess("Error", "***error*** ".a:errmsg)
    endif
-"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-"   call Dret("ChgDir 1")
    return 1
   endtry
 
-"  call Dret("ChgDir 0")
   return 0
 endfun
 
 " ---------------------------------------------------------------------
-" s:Rmdir: {{{2
-fun! s:Rmdir(fname)
-"  call Dfunc("Rmdir(fname<".a:fname.">)")
-  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
-   call system("rmdir /S/Q ".s:Escape(a:fname,0))
-  else
-   call system("/bin/rm -rf ".s:Escape(a:fname,0))
-  endif
-"  call Dret("Rmdir")
+" s:SetSaneOpts: {{{2
+fun! s:SetSaneOpts()
+  let dict = {}
+  let dict.report = &report
+  let dict.shellslash = &shellslash
+
+  let &report = 10
+  let &shellslash = 0
+
+  return dict
+endfun
+
+" ---------------------------------------------------------------------
+" s:RestoreOpts: {{{2
+fun! s:RestoreOpts(dict)
+  for [key, val] in items(a:dict)
+    exe $"let &{key} = {val}"
+  endfor
 endfun
 
 " ------------------------------------------------------------------------

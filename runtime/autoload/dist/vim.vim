@@ -1,9 +1,9 @@
 " Vim runtime support library,
-" runs the vim9 script version or legacy script version
+" runs the Vim9 script version or legacy script version
 " on demand (mostly for Neovim compatability)
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Nov 04
+" Last Change:	2025 Apr 27
 
 
 " enable the zip and gzip plugin by default, if not set
@@ -18,6 +18,9 @@ endif
 if !has('vim9script')
   function dist#vim#IsSafeExecutable(filetype, executable)
     let cwd = getcwd()
+    if empty(exepath(a:executable))
+      return v:false
+    endif
     return get(g:, a:filetype .. '_exec', get(g:, 'plugin_exec', 0)) &&
           \ (fnamemodify(exepath(a:executable), ':p:h') !=# cwd
           \ || (split($PATH, has('win32') ? ';' : ':')->index(cwd) != -1 &&

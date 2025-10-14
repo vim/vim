@@ -44,9 +44,7 @@
 
 #include "vim.h"
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>
-#endif
+#include <time.h>
 
 #if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    // for Open() and Close()
@@ -423,7 +421,7 @@ error:
     return FAIL;
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
  * used then disable the swapfile, to avoid plain text being written to disk,
@@ -1754,7 +1752,7 @@ ml_recover(int checkext)
 	for (idx = 1; idx <= lnum; ++idx)
 	{
 	    // Need to copy one line, fetching the other one may flush it.
-	    p = vim_strsave(ml_get(idx));
+	    p = vim_strnsave(ml_get(idx), ml_get_len(idx));
 	    i = STRCMP(p, ml_get(idx + lnum));
 	    vim_free(p);
 	    if (i != 0)
@@ -1975,7 +1973,7 @@ recover_names(
 		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
 		{
 		    // Ends with '//', Use Full path for swap name
-		    tail = make_percent_swname(dir_name, fname_res);
+		    tail = make_percent_swname(dir_name, p, fname_res);
 		}
 		else
 #endif
@@ -2134,7 +2132,7 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(MSWIN) || defined(PROTO)
+#if defined(UNIX) || defined(MSWIN)
 /*
  * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
@@ -2143,7 +2141,7 @@ recover_names(
  * removed.
  */
     char_u *
-make_percent_swname(char_u *dir, char_u *name)
+make_percent_swname(char_u *dir, char_u *dir_end, char_u *name)
 {
     char_u *d = NULL, *s, *f;
 
@@ -2159,7 +2157,7 @@ make_percent_swname(char_u *dir, char_u *name)
 	    if (vim_ispathsep(*d))
 		*d = '%';
 
-	dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
+	dir_end[-1] = NUL;  // remove one trailing slash
 	d = concat_fnames(dir, s, TRUE);
 	vim_free(s);
     }
@@ -2174,7 +2172,7 @@ make_percent_swname(char_u *dir, char_u *name)
 static int process_still_running;
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return information found in swapfile "fname" in dictionary "d".
  * This is used by the swapinfo() function.
@@ -2675,6 +2673,48 @@ ml_get_cursor(void)
 							curwin->w_cursor.col);
 }
 
+// return length (excluding the NUL) of the given line
+    colnr_T
+ml_get_len(linenr_T lnum)
+{
+    return ml_get_buf_len(curbuf, lnum);
+}
+
+// return length (excluding the NUL) of the text after position "pos"
+    colnr_T
+ml_get_pos_len(pos_T *pos)
+{
+    return ml_get_buf_len(curbuf, pos->lnum) - pos->col;
+}
+
+// return length (excluding the NUL) of the cursor line
+    colnr_T
+ml_get_curline_len(void)
+{
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum);
+}
+
+// return length (excluding the NUL) of the cursor position
+    colnr_T
+ml_get_cursor_len(void)
+{
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum) - curwin->w_cursor.col;
+}
+
+// return length (excluding the NUL) of the given line in the given buffer
+    colnr_T
+ml_get_buf_len(buf_T *buf, linenr_T lnum)
+{
+    char_u	*line;
+
+    if (*(line = ml_get_buf(buf, lnum, FALSE)) == NUL)
+	return 0;
+
+    if (buf->b_ml.ml_line_textlen <= 0)
+	buf->b_ml.ml_line_textlen = (int)STRLEN(line) + 1;
+    return buf->b_ml.ml_line_textlen - 1;
+}
+
 /*
  * Return a pointer to a line in a specific buffer
  *
@@ -2706,6 +2746,7 @@ ml_get_buf(
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
     }
@@ -2715,6 +2756,7 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	// there are no lines
     {
 	buf->b_ml.ml_line_len = 1;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	return (char_u *)"";
     }
 
@@ -2727,7 +2769,6 @@ errorret:
     if (buf->b_ml.ml_line_lnum != lnum || mf_dont_release)
     {
 	unsigned    start, end;
-	colnr_T	    len;
 	int	    idx;
 
 	ml_flush_line(buf);
@@ -2763,10 +2804,18 @@ errorret:
 	    end = dp->db_txt_end;
 	else
 	    end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
-	len = end - start;
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
-	buf->b_ml.ml_line_len = len;
+	buf->b_ml.ml_line_len = end - start;
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
+	// Text properties come after a NUL byte, so ml_line_len should be
+	// larger than the size of textprop_T if there is any.
+	if (buf->b_has_textprop
+			 && (size_t)buf->b_ml.ml_line_len > sizeof(textprop_T))
+	    buf->b_ml.ml_line_textlen = 0;  // call STRLEN() later when needed
+	else
+#endif
+	    buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     }
@@ -3400,10 +3449,10 @@ ml_append_int(
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
-	if (STRLEN(line) > 0)
-	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, (int)STRLEN(line));
-	netbeans_inserted(buf, lnum+1, (colnr_T)STRLEN(line),
-							   (char_u *)"\n", 1);
+	int line_len = (int)STRLEN(line);
+	if (line_len > 0)
+	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, line_len);
+	netbeans_inserted(buf, lnum+1, (colnr_T)line_len, (char_u *)"\n", 1);
     }
 #endif
 #ifdef FEAT_JOB_CHANNEL
@@ -3484,8 +3533,8 @@ ml_append_flags(
 }
 
 
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP) \
-	|| defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP)
+
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -3531,7 +3580,7 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
  * Replace a line for the current buffer.  Like ml_replace() with:
  * "len_arg" is the length of the text, excluding NUL.
  * If "has_props" is TRUE then "line_arg" includes the text properties and
- * "len_arg" includes the NUL of the text.
+ * "len_arg" includes the NUL of the text and text properties.
  * When "copy" is TRUE copy the text into allocated memory, otherwise
  * "line_arg" must be allocated and will be consumed here.
  */
@@ -3571,7 +3620,7 @@ ml_replace_len(
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
-	netbeans_removed(curbuf, lnum, 0, (long)STRLEN(ml_get(lnum)));
+	netbeans_removed(curbuf, lnum, 0, (long)ml_get_len(lnum));
 	netbeans_inserted(curbuf, lnum, 0, line, (int)STRLEN(line));
     }
 #endif
@@ -3617,6 +3666,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
+    curbuf->b_ml.ml_line_textlen = !has_props ? len_arg + 1 : 0;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 
@@ -4517,7 +4567,7 @@ ml_lineadd(buf_T *buf, int count)
     }
 }
 
-#if defined(HAVE_READLINK) || defined(PROTO)
+#if defined(HAVE_READLINK)
 /*
  * Resolve a symlink in the last component of a file name.
  * Note that f_resolve() does it for every part of the path, we don't do that
@@ -4624,7 +4674,7 @@ makeswapname(
     if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       // Ends with '//', Use Full path
 	r = NULL;
-	if ((s = make_percent_swname(dir_name, fname_res)) != NULL)
+	if ((s = make_percent_swname(dir_name, s, fname_res)) != NULL)
 	{
 	    r = modname(s, (char_u *)".swp", FALSE);
 	    vim_free(s);
@@ -5192,15 +5242,15 @@ findswapname(
 		    {
 			char_u	*name;
 			int	dialog_result;
+			size_t  len = STRLEN(_("Swap file \""));
 
 			name = alloc(STRLEN(fname)
-				+ STRLEN(_("Swap file \""))
+				+ len
 				+ STRLEN(_("\" already exists!")) + 5);
 			if (name != NULL)
 			{
 			    STRCPY(name, _("Swap file \""));
-			    home_replace(NULL, fname, name + STRLEN(name),
-								  1000, TRUE);
+			    home_replace(NULL, fname, name + len, 1000, TRUE);
 			    STRCAT(name, _("\" already exists!"));
 			}
 			dialog_result = do_dialog(VIM_WARNING,
@@ -5475,7 +5525,7 @@ ml_setflags(buf_T *buf)
     }
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * If "data" points to a data block encrypt the text in it and return a copy
  * in allocated memory.  Return NULL when out of memory.
@@ -5504,7 +5554,10 @@ ml_encrypt_data(
 
     new_data = alloc(size);
     if (new_data == NULL)
+    {
+	crypt_free_state(state);
 	return NULL;
+    }
     head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
     text_start = (char_u *)dp + dp->db_txt_start;
     text_len = size - dp->db_txt_start;
@@ -5623,7 +5676,7 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 #endif
 
 
-#if defined(FEAT_BYTEOFF) || defined(PROTO)
+#if defined(FEAT_BYTEOFF)
 
 #define MLCS_MAXL 800	// max no of lines in chunk
 #define MLCS_MINL 400   // should be half of MLCS_MAXL

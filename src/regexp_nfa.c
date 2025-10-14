@@ -1321,7 +1321,7 @@ nfa_regatom(void)
 
 	case Magic('$'):
 	    EMIT(NFA_EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 	    had_eol = TRUE;
 #endif
 	    break;
@@ -1347,7 +1347,7 @@ nfa_regatom(void)
 	    if (c == '$')	// "\_$" is end-of-line
 	    {
 		EMIT(NFA_EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 		had_eol = TRUE;
 #endif
 		break;
@@ -1560,7 +1560,7 @@ nfa_regatom(void)
 		case 'u':   // %uabcd hex 4
 		case 'U':   // %U1234abcd hex 8
 		    {
-			long nr;
+			vimlong_T nr;
 
 			switch (c)
 			{
@@ -1577,7 +1577,7 @@ nfa_regatom(void)
 						       reg_magic == MAGIC_ALL);
 			// A NUL is stored in the text as NL
 			// TODO: what if a composing character follows?
-			EMIT(nr == 0 ? 0x0a : nr);
+			EMIT(nr == 0 ? 0x0a : (long)nr);
 		    }
 		    break;
 
@@ -1733,7 +1733,7 @@ nfa_regatom(void)
 			    EMIT((int)n);
 			    break;
 			}
-			else if (c == '\'' && n == 0)
+			else if (no_Magic(c) == '\'' && n == 0)
 			{
 			    // \%'m  \%<'m  \%>'m
 			    EMIT(cmp == '<' ? NFA_MARK_LT :
@@ -1764,6 +1764,7 @@ collection:
 	    endp = skip_anyof(p);
 	    if (*endp == ']')
 	    {
+		int plen;
 		/*
 		 * Try to reverse engineer character classes. For example,
 		 * recognize that [0-9] stands for \d and [A-Za-z_] for \h,
@@ -1952,6 +1953,10 @@ collection:
 			    {
 				// TODO(RE) This needs more testing
 				startc = coll_get_char();
+				// max UTF-8 Codepoint is U+10FFFF,
+				// but allow values until INT_MAX
+				if (startc == INT_MAX)
+				    EMSG_RET_FAIL(_(e_unicode_val_too_large));
 				got_coll_char = TRUE;
 				MB_PTR_BACK(old_regparse, regparse);
 			    }
@@ -2033,13 +2038,43 @@ collection:
 			else
 			{
 			    if (got_coll_char == TRUE && startc == 0)
+			    {
 				EMIT(0x0a);
+				EMIT(NFA_CONCAT);
+			    }
 			    else
+			    {
 				EMIT(startc);
-			    EMIT(NFA_CONCAT);
+				if (!(enc_utf8 && (utf_ptr2len(regparse) != (plen = utfc_ptr2len(regparse)))))
+				{
+				    EMIT(NFA_CONCAT);
+				}
+			    }
 			}
 		    }
 
+		    if (enc_utf8 && (utf_ptr2len(regparse) != (plen = utfc_ptr2len(regparse))))
+		    {
+			int i = utf_ptr2len(regparse);
+
+			c = utf_ptr2char(regparse + i);
+
+			// Add composing characters
+			for (;;)
+			{
+			    if (c == 0)
+				// \x00 is translated to \x0a, start at \x01.
+				EMIT(1);
+			    else
+				EMIT(c);
+			    EMIT(NFA_CONCAT);
+			    if ((i += utf_char2len(c)) >= plen)
+				break;
+			    c = utf_ptr2char(regparse + i);
+			}
+			EMIT(NFA_COMPOSING);
+			EMIT(NFA_CONCAT);
+		    }
 		    MB_PTR_ADV(regparse);
 		} // while (p < endp)
 
@@ -2187,7 +2222,7 @@ nfa_regpiece(void)
 	    break;
 
 	case Magic('@'):
-	    c2 = getdecchrs();
+	    c2 = (long)getdecchrs();
 	    op = no_Magic(getchr());
 	    i = 0;
 	    switch(op)
@@ -5119,7 +5154,7 @@ check_char_class(int class, int c)
 
 	default:
 	    // should not be here :P
-	    siemsg(e_nfa_regexp_invalid_character_class_nr, class);
+	    siemsg(_(e_nfa_regexp_invalid_character_class_nr), class);
 	    return FAIL;
     }
     return FAIL;
@@ -5356,7 +5391,7 @@ recursive_regmatch(
 		    rex.input = rex.line;
 		}
 		else
-		    rex.input = rex.line + STRLEN(rex.line);
+		    rex.input = rex.line + reg_getline_len(rex.lnum);
 	    }
 	    if ((int)(rex.input - rex.line) >= state->val)
 	    {
@@ -5635,7 +5670,12 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
     for (;;)
     {
 	match = TRUE;
-	len2 = MB_CHAR2LEN(regstart); // skip regstart
+	// skip regstart
+	len2 = MB_CHAR2LEN(regstart);
+	if (enc_utf8 && len2 > 1 && MB_CHAR2LEN(PTR2CHAR(rex.line + col)) != len2)
+	    // because of case-folding of the previously matched text, we may need
+	    // to skip fewer bytes than mb_char2len(regstart)
+	    len2 = mb_char2len(utf_fold(regstart));
 	for (len1 = 0; match_text[len1] != NUL; len1 += MB_CHAR2LEN(c1))
 	{
 	    c1 = PTR2CHAR(match_text + len1);
@@ -6418,6 +6458,85 @@ nfa_regmatch(
 		result_if_matched = (t->state->c == NFA_START_COLL);
 		for (;;)
 		{
+		    if (state->c == NFA_COMPOSING)
+		    {
+			int	    mc = curc;
+			int	    len = 0;
+			nfa_state_T *end;
+			nfa_state_T *sta;
+			int	    cchars[MAX_MCO];
+			int	    ccount = 0;
+			int	    j;
+
+			sta = t->state->out->out;
+			len = 0;
+			if (utf_iscomposing(sta->c))
+			{
+			    // Only match composing character(s), ignore base
+			    // character.  Used for ".{composing}" and "{composing}"
+			    // (no preceding character).
+			    len += mb_char2len(mc);
+			}
+			if (rex.reg_icombine && len == 0)
+			{
+			    // If \Z was present, then ignore composing characters.
+			    // When ignoring the base character this always matches.
+			    if (sta->c != curc)
+				result = FAIL;
+			    else
+				result = OK;
+			    while (sta->c != NFA_END_COMPOSING)
+				sta = sta->out;
+			}
+			// Check base character matches first, unless ignored.
+			else if (len > 0 || mc == sta->c)
+//			if (len > 0 || mc == sta->c)
+			{
+			    if (len == 0)
+			    {
+				len += mb_char2len(mc);
+				sta = sta->out;
+			    }
+
+			    // We don't care about the order of composing characters.
+			    // Get them into cchars[] first.
+			    while (len < clen)
+			    {
+				mc = mb_ptr2char(rex.input + len);
+				cchars[ccount++] = mc;
+				len += mb_char2len(mc);
+				if (ccount == MAX_MCO)
+				    break;
+			    }
+
+			    // Check that each composing char in the pattern matches a
+			    // composing char in the text.  We do not check if all
+			    // composing chars are matched.
+			    result = OK;
+			    while (sta->c != NFA_END_COMPOSING)
+			    {
+				for (j = 0; j < ccount; ++j)
+				    if (cchars[j] == sta->c)
+					break;
+				if (j == ccount)
+				{
+				    result = FAIL;
+				    break;
+				}
+				sta = sta->out;
+			    }
+			}
+			else
+			    result = FAIL;
+
+			if (t->state->out->out1 != NULL
+				&& t->state->out->out1->c == NFA_END_COMPOSING)
+			{
+			    end = t->state->out->out1;
+			    ADD_STATE_IF_MATCH(end);
+			}
+			break;
+		    }
 		    if (state->c == NFA_END_COLL)
 		    {
 			result = !result_if_matched;
@@ -6828,8 +6947,7 @@ nfa_regmatch(
 		{
 		    colnr_T pos_col = pos->lnum == rex.lnum + rex.reg_firstlnum
 							  && pos->col == MAXCOL
-				      ? (colnr_T)STRLEN(reg_getline(
-						pos->lnum - rex.reg_firstlnum))
+				      ? reg_getline_len(pos->lnum - rex.reg_firstlnum)
 				      : pos->col;
 
 		    result = (pos->lnum == rex.lnum + rex.reg_firstlnum
@@ -7394,7 +7512,7 @@ nfa_regexec_both(
 
 	// If match_text is set it contains the full text that must match.
 	// Nothing else to try. Doesn't handle combining chars well.
-	if (prog->match_text != NULL && !rex.reg_icombine)
+	if (prog->match_text != NULL && *prog->match_text != NUL && !rex.reg_icombine)
 	{
 	    retval = find_match_text(&col, prog->regstart, prog->match_text);
 	    if (REG_MULTI)

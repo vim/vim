@@ -1,26 +1,36 @@
 # List of distributed Vim files.
 # Used by Makefile.
 
-# source files for all source archives
+# Source files for all source archives.
 SRC_ALL =	\
 		.cirrus.yml \
-		.coveralls.yml \
 		.gitattributes \
-		.github/CODEOWNERS \
+		.git-blame-ignore-revs \
+		.github/MAINTAINERS \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
 		.github/ISSUE_TEMPLATE/feature_request.md \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
+		.github/workflows/link-check.yml \
+		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
 		.appveyor.yml \
+		.clang-format \
 		.codecov.yml \
+		.editorconfig \
 		ci/appveyor.bat \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
+		ci/if_feat_check.vim \
+		ci/lychee.toml \
 		ci/setup-xvfb.sh \
+		ci/setup-sway.sh \
+		ci/remove_snap.sh \
+		ci/ddebs.list \
+		ci/pinned-pkgs \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.c \
@@ -48,6 +58,7 @@ SRC_ALL =	\
 		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
+		src/linematch.c \
 		src/digraph.c \
 		src/drawline.c \
 		src/drawscreen.c \
@@ -71,7 +82,9 @@ SRC_ALL =	\
 		src/findfile.c \
 		src/float.c \
 		src/fold.c \
+		src/fuzzy.c \
 		src/getchar.c \
+		src/gc.c \
 		src/globals.h \
 		src/gui.c \
 		src/gui.h \
@@ -141,6 +154,7 @@ SRC_ALL =	\
 		src/strings.c \
 		src/structs.h \
 		src/syntax.c \
+		src/tabpanel.c \
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
@@ -151,6 +165,7 @@ SRC_ALL =	\
 		src/textobject.c \
 		src/textprop.c \
 		src/time.c \
+		src/tuple.c \
 		src/typval.c \
 		src/ui.c \
 		src/undo.c \
@@ -165,6 +180,7 @@ SRC_ALL =	\
 		src/vim9compile.c \
 		src/vim9execute.c \
 		src/vim9expr.c \
+		src/vim9generics.c \
 		src/vim9instr.c \
 		src/vim9script.c \
 		src/vim9type.c \
@@ -172,54 +188,70 @@ SRC_ALL =	\
 		src/winclip.c \
 		src/window.c \
 		src/xxd/xxd.c \
-		src/testdir/gen_opt_test.vim \
-		src/testdir/README.txt \
-		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
-		src/testdir/keycode_check.vim \
+		src/testdir/Make_all.mak \
+		src/testdir/README.txt \
+		src/testdir/commondumps.vim \
+		src/testdir/crash/* \
+		src/testdir/dumps/*.dump \
+		src/testdir/dumps/*.vim \
 		src/testdir/keycode_check.json \
+		src/testdir/keycode_check.vim \
 		src/testdir/lsan-suppress.txt \
-		src/testdir/sautest/autoload/*.vim \
-		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
-		src/testdir/check.vim \
-		src/testdir/gui_init.vim \
-		src/testdir/gui_preinit.vim \
-		src/testdir/mouse.vim \
-		src/testdir/runtest.vim \
-		src/testdir/screendump.vim \
-		src/testdir/setup.vim \
-		src/testdir/setup_gui.vim \
-		src/testdir/shared.vim \
-		src/testdir/vim9.vim \
-		src/testdir/script_util.vim \
-		src/testdir/summarize.vim \
-		src/testdir/term_util.vim \
-		src/testdir/view_util.vim \
-		src/testdir/test[0-9]*.ok \
-		src/testdir/test77a.ok \
-		src/testdir/test77a.com \
-		src/testdir/test_*.vim \
 		src/testdir/python2/*.py \
 		src/testdir/python3/*.py \
+		src/testdir/python_after/*.py \
+		src/testdir/python_before/*.py \
 		src/testdir/pythonx/*.py \
 		src/testdir/pythonx/topmodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/subsubsubmodule.py \
-		src/testdir/python_after/*.py \
-		src/testdir/python_before/*.py \
 		src/testdir/pyxfile/*.py \
-		src/testdir/dumps/*.dump \
-		src/testdir/dumps/*.vim \
+		src/testdir/ru_RU/LC_MESSAGES/Makefile \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
+		src/testdir/runtest.vim \
+		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
+		src/testdir/samples/*.vim \
+		src/testdir/samples/evil.zip \
+		src/testdir/samples/evil.tar \
+		src/testdir/samples/poc.zip \
+		src/testdir/samples/sample.tar \
+		src/testdir/samples/test.zip \
 		src/testdir/samples/test000 \
-		src/testdir/color_ramp.vim \
+		src/testdir/samples/test_undo.txt.undo \
+		src/testdir/samples/testa.zip \
+		src/testdir/sautest/autoload/*.vim \
 		src/testdir/silent.wav \
-		src/testdir/popupbounce.vim \
-		src/testdir/crash/* \
+		src/testdir/test77a.com \
+		src/testdir/test77a.ok \
+		src/testdir/test[0-9]*.ok \
+		src/testdir/test_*.vim \
+		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
+		src/testdir/util/check.vim \
+		src/testdir/util/color_ramp.vim \
+		src/testdir/util/gen_opt_test.vim \
+		src/testdir/util/gui_init.vim \
+		src/testdir/util/gui_preinit.vim \
+		src/testdir/util/mouse.vim \
+		src/testdir/util/popupbounce.vim \
+		src/testdir/util/screendump.vim \
+		src/testdir/util/script_util.vim \
+		src/testdir/util/setup.vim \
+		src/testdir/util/setup_gui.vim \
+		src/testdir/util/shared.vim \
+		src/testdir/util/summarize.vim \
+		src/testdir/util/term_util.vim \
+		src/testdir/util/view_util.vim \
+		src/testdir/util/vim9.vim \
+		src/testdir/util/window_manager.vim \
+		src/testdir/viewdumps.vim \
 		src/proto.h \
 		src/protodef.h \
+		src/proto/gen_prototypes.py \
 		src/proto/alloc.pro \
 		src/proto/arabic.pro \
 		src/proto/arglist.pro \
@@ -261,7 +293,9 @@ SRC_ALL =	\
 		src/proto/findfile.pro \
 		src/proto/float.pro \
 		src/proto/fold.pro \
+		src/proto/fuzzy.pro \
 		src/proto/getchar.pro \
+		src/proto/gc.pro \
 		src/proto/gui.pro \
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
@@ -272,6 +306,7 @@ SRC_ALL =	\
 		src/proto/insexpand.pro \
 		src/proto/job.pro \
 		src/proto/json.pro \
+		src/proto/linematch.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
 		src/proto/logfile.pro \
@@ -311,6 +346,7 @@ SRC_ALL =	\
 		src/proto/spellsuggest.pro \
 		src/proto/strings.pro \
 		src/proto/syntax.pro \
+		src/proto/tabpanel.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
 		src/proto/terminal.pro \
@@ -320,6 +356,7 @@ SRC_ALL =	\
 		src/proto/textobject.pro \
 		src/proto/textprop.pro \
 		src/proto/time.pro \
+		src/proto/tuple.pro \
 		src/proto/typval.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
@@ -331,6 +368,7 @@ SRC_ALL =	\
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
 		src/proto/vim9expr.pro \
+		src/proto/vim9generics.pro \
 		src/proto/vim9instr.pro \
 		src/proto/vim9script.pro \
 		src/proto/vim9type.pro \
@@ -429,7 +467,7 @@ SRC_ALL =	\
 		src/xdiff/xutils.h \
 
 
-# source files for Unix only
+# Source files for Unix-like only.
 SRC_UNIX =	\
 		Makefile \
 		Filelist \
@@ -463,6 +501,12 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
+		src/auto/wayland/README.txt \
+		src/auto/wayland/Makefile \
+		src/auto/wayland/protocols/ext-data-control-v1.xml \
+		src/auto/wayland/protocols/wlr-data-control-unstable-v1.xml \
+		src/auto/wayland/protocols/xdg-shell.xml \
+		src/auto/wayland/protocols/primary-selection-unstable-v1.xml \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -481,21 +525,25 @@ SRC_UNIX =	\
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
+		src/proto/wayland.pro \
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \
 		src/pty.c \
 		src/testdir/Makefile \
-		src/testdir/unix.vim \
+		src/testdir/util/unix.vim \
 		src/toolcheck \
 		src/vim_icon.xbm \
 		src/vim_mask.xbm \
 		src/vimtutor \
 		src/gvimtutor \
+		src/wayland.c \
+		src/wayland.h \
 		src/which.sh \
+		src/gen-wayland-protocols.sh \
 		src/xxd/Makefile \
 
-# source files for both DOS and Unix
+# Source files for both MS Windows and Unix-like.
 SRC_DOS_UNIX =	\
 		src/gui_xim.c \
 		src/if_cscope.c \
@@ -503,7 +551,6 @@ SRC_DOS_UNIX =	\
 		src/if_mzsch.c \
 		src/if_mzsch.h \
 		src/if_perl.xs \
-		src/if_perlsfio.c \
 		src/if_python.c \
 		src/if_python3.c \
 		src/if_py_both.h \
@@ -514,15 +561,15 @@ SRC_DOS_UNIX =	\
 		src/proto/if_lua.pro \
 		src/proto/if_mzsch.pro \
 		src/proto/if_perl.pro \
-		src/proto/if_perlsfio.pro \
 		src/proto/if_python.pro \
 		src/proto/if_python3.pro \
 		src/proto/if_ruby.pro \
 		src/proto/if_tcl.pro \
 		src/typemap \
 
-# source files for MS-Windows (also in the extra archive)
+# Source files for MS Windows (also in the extra archive).
 SRC_DOS =	\
+		src/auto/nmake/tools.mak \
 		src/GvimExt/*.mak \
 		src/GvimExt/GvimExt.reg \
 		src/GvimExt/Makefile \
@@ -578,7 +625,7 @@ SRC_DOS =	\
 		src/testdir/Make_dos.mak \
 		src/testdir/Make_mvc.mak \
 		src/testdir/Make_ming.mak \
-		src/testdir/dos.vim \
+		src/testdir/util/dos.vim \
 		src/uninstall.c \
 		src/vim.rc \
 		src/vim.manifest \
@@ -591,13 +638,16 @@ SRC_DOS =	\
 		src/tee/tee.c \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
+		nsis/auxiliary.nsh \
 		nsis/gvim.nsi \
-		nsis/gvim_version.nsh \
+		nsis/Makefile \
+		nsis/Make_mvc.mak \
 		nsis/README.txt \
 		nsis/lang/*.nsi \
+		nsis/lang/README.txt \
 		uninstall.txt \
 
-# source files for DOS without CR/LF translation (also in the extra archive)
+# Source files for MS Windows without CR/LF translation (also in the extra archive).
 SRC_DOS_BIN =	\
 		src/tearoff.bmp \
 		src/tools.bmp \
@@ -614,10 +664,10 @@ SRC_DOS_BIN =	\
 		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
-# source files for Amiga, DOS, etc. (also in the extra archive)
+# Source files for Amiga, DOS, etc. (also in the extra archive).
 SRC_AMI_DOS =	\
 
-# source files for Amiga (also in the extra archive)
+# Source files for Amiga (also in the extra archive).
 SRC_AMI =	\
 		README_amisrc.txt \
 		README_amisrc.txt.info \
@@ -628,10 +678,10 @@ SRC_AMI =	\
 		src/os_amiga.h \
 		src/proto/os_amiga.pro \
 		src/testdir/Make_amiga.mak \
-		src/testdir/amiga.vim \
+		src/testdir/util/amiga.vim \
 		src/xxd/Make_amiga.mak \
 
-# source files for Haiku (also in the extra archive)
+# Source files for Haiku (also in the extra archive).
 SRC_HAIKU =	\
 		README_haiku.txt \
 		src/os_haiku.h \
@@ -640,7 +690,7 @@ SRC_HAIKU =	\
 		src/gui_haiku.h \
 		src/proto/gui_haiku.pro \
 
-# source files for the Mac (also in the extra archive)
+# Source files for the Mac (also in the extra archive).
 SRC_MAC =	\
 		src/INSTALLmac.txt \
 		src/os_mac.h \
@@ -649,7 +699,7 @@ SRC_MAC =	\
 		src/proto/os_mac_conv.pro \
 		src/proto/os_macosx.pro \
 
-# source files for VMS (in the extra archive)
+# Source files for VMS (in the extra archive).
 SRC_VMS =	\
 		src/INSTALLvms.txt \
 		src/Make_vms.mms \
@@ -659,11 +709,11 @@ SRC_VMS =	\
 		src/os_vms_mms.c \
 		src/proto/os_vms.pro \
 		src/testdir/Make_vms.mms \
-		src/testdir/vms.vim \
+		src/testdir/util/vms.vim \
 		src/xxd/Make_vms.mms \
 		vimtutor.com \
 
-# source files for QNX (in the extra archive)
+# Source files for QNX (in the extra archive).
 SRC_QNX =	\
 		src/os_qnx.c \
 		src/os_qnx.h \
@@ -671,7 +721,7 @@ SRC_QNX =	\
 		src/proto/gui_photon.pro \
 		src/proto/os_qnx.pro \
 
-# source files for the extra archive (all sources that are not for Unix)
+# Source files for the extra archive (all sources that are not for Unix).
 SRC_EXTRA =	\
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
@@ -686,7 +736,7 @@ SRC_EXTRA =	\
 		src/os_vms_fix.com \
 		src/toolbar.phi \
 
-# runtime files for all distributions
+# Runtime files for all distributions.
 RT_ALL =	\
 		README.txt \
 		README.md \
@@ -749,29 +799,67 @@ RT_ALL =	\
 		runtime/tools/README.txt \
 		runtime/tools/[a-z]*[a-z0-9] \
 		runtime/tutor/README.txt \
-		runtime/tutor/tutor \
+		runtime/tutor/tutor1 \
+		runtime/tutor/en/vim-01-beginner.tutor \
+		runtime/tutor/en/vim-01-beginner.tutor.json \
+		runtime/tutor/en/vim-02-beginner.tutor \
+		runtime/tutor/en/vim-02-beginner.tutor.json \
+		runtime/tutor/tutor.tutor \
+		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
+		runtime/tutor/tutor2 \
 		runtime/vimrc_example.vim \
 		runtime/pack/dist/opt/cfilter/plugin/cfilter.vim \
+		runtime/pack/dist/opt/comment/plugin/comment.vim \
+		runtime/pack/dist/opt/comment/doc/comment.txt \
+		runtime/pack/dist/opt/comment/doc/tags \
+		runtime/pack/dist/opt/comment/autoload/comment.vim \
 		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
 		runtime/pack/dist/opt/editexisting/plugin/editexisting.vim \
+		runtime/pack/dist/opt/editorconfig/.editorconfig \
+		runtime/pack/dist/opt/editorconfig/CONTRIBUTORS \
+		runtime/pack/dist/opt/editorconfig/LICENSE* \
+		runtime/pack/dist/opt/editorconfig/mkzip.sh \
+		runtime/pack/dist/opt/editorconfig/README.md \
+		runtime/pack/dist/opt/editorconfig/autoload/*.vim \
+		runtime/pack/dist/opt/editorconfig/autoload/editorconfig_core/*.vim \
+		runtime/pack/dist/opt/editorconfig/doc/tags \
+		runtime/pack/dist/opt/editorconfig/doc/editorconfig.txt \
+		runtime/pack/dist/opt/editorconfig/ftdetect/editorconfig.vim \
+		runtime/pack/dist/opt/editorconfig/plugin/editorconfig.vim \
+		runtime/pack/dist/opt/helptoc/autoload/helptoc.vim \
+		runtime/pack/dist/opt/helptoc/doc/helptoc.txt \
+		runtime/pack/dist/opt/helptoc/doc/tags \
+		runtime/pack/dist/opt/helptoc/plugin/helptoc.vim \
+		runtime/pack/dist/opt/hlyank/plugin/hlyank.vim \
 		runtime/pack/dist/opt/justify/plugin/justify.vim \
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
 		runtime/pack/dist/opt/matchit/doc/tags \
 		runtime/pack/dist/opt/matchit/autoload/*.vim \
+		runtime/pack/dist/opt/nohlsearch/plugin/nohlsearch.vim \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \
+		runtime/pack/dist/opt/netrw/LICENSE.txt \
+		runtime/pack/dist/opt/netrw/README.md \
+		runtime/pack/dist/opt/netrw/autoload/netrw.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/fs.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/os.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/msg.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw_gitignore.vim \
+		runtime/pack/dist/opt/netrw/doc/netrw.txt \
+		runtime/pack/dist/opt/netrw/plugin/netrwPlugin.vim \
+		runtime/pack/dist/opt/netrw/syntax/netrw.vim
 
-# runtime files for all distributions without CR-NL translation
+# Runtime files for all distributions without CR/LF translation.
 RT_ALL_BIN =	\
 		runtime/doc/tags \
 		runtime/print/*.ps \
 
-# runtime script files
+# Runtime script files.
 RT_SCRIPTS =	\
 		runtime/filetype.vim \
 		runtime/scripts.vim \
@@ -782,9 +870,10 @@ RT_SCRIPTS =	\
 		runtime/makemenu.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
+		runtime/autoload/cargo/*.vim \
 		runtime/autoload/dist/*.vim \
+		runtime/autoload/rust/*.vim \
 		runtime/autoload/xml/*.vim \
-		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \
@@ -798,6 +887,7 @@ RT_SCRIPTS =	\
 		runtime/indent/testdir/*.vim \
 		runtime/indent/testdir/*.in \
 		runtime/indent/testdir/*.ok \
+		runtime/indent/testdir/tools/* \
 		runtime/ftplugin/*.vim \
 		runtime/ftplugin/logtalk.dict \
 		runtime/ftplugin/README.txt \
@@ -805,15 +895,27 @@ RT_SCRIPTS =	\
 		runtime/plugin/README.txt \
 		runtime/syntax/*.vim \
 		runtime/syntax/README.txt \
+		runtime/syntax/modula2/opt/*.vim \
 		runtime/syntax/shared/*.vim \
 		runtime/syntax/shared/README.txt \
 		runtime/syntax/Makefile \
 		runtime/syntax/testdir/README.txt \
 		runtime/syntax/testdir/runtest.vim \
+		runtime/syntax/testdir/viewdumps.vim \
+		runtime/syntax/testdir/ftplugin/*.* \
 		runtime/syntax/testdir/input/*.* \
+		runtime/syntax/testdir/input/selftestdir/* \
+		runtime/syntax/testdir/input/setup/*.* \
 		runtime/syntax/testdir/dumps/*.dump \
+		runtime/syntax/testdir/dumps/*.vim \
+		runtime/syntax/testdir/tools/* \
+		runtime/syntax/generator/Makefile \
+		runtime/syntax/generator/README.md \
+		runtime/syntax/generator/gen_syntax_vim.vim \
+		runtime/syntax/generator/update_date.vim \
+		runtime/syntax/generator/vim.vim.base \
 
-# Unix runtime
+# Unix-like runtime.
 RT_UNIX =	\
 		README_unix.txt \
 		runtime/hi16-action-make.png \
@@ -821,7 +923,7 @@ RT_UNIX =	\
 		runtime/gvim.desktop \
 		runtime/vim.desktop \
 
-# Unix and DOS runtime without CR-LF translation
+# Unix-like and MS Windows runtime without CR/LF translation.
 RT_UNIX_DOS_BIN =	\
 		runtime/vim16x16.gif \
 		runtime/vim16x16.png \
@@ -833,10 +935,10 @@ RT_UNIX_DOS_BIN =	\
 		runtime/vim48x48.png \
 		runtime/vim48x48.xpm \
 
-# runtime not for unix or extra
+# Runtime not for Unix-like or extra.
 RT_NO_UNIX =	\
 
-# runtime for Amiga (also in the extra archive)
+# Runtime for Amiga (also in the extra archive).
 RT_AMI_DOS =	\
 		runtime/doc/evim.man \
 		runtime/doc/vim.man \
@@ -844,19 +946,21 @@ RT_AMI_DOS =	\
 		runtime/doc/vimtutor.man \
 		runtime/doc/xxd.man \
 
-# DOS runtime (also in the extra archive)
+# MS Windows runtime (also in the extra archive).
 RT_DOS =	\
 		README_dos.txt \
 		runtime/doc/Make_mvc.mak \
-		runtime/tutor/Make_mvc.mak \
+		runtime/indent/Make_mvc.mak \
+		runtime/lang/Make_mvc.mak \
 		vimtutor.bat \
 
-# DOS runtime without CR-LF translation (also in the extra archive)
+# MS Windows runtime without CR/LF translation (also in the extra archive).
 RT_DOS_BIN =	\
 		runtime/vimlogo.cdr \
 		runtime/vimlogo.eps \
 		runtime/vimlogo.gif \
 		runtime/vimlogo.pdf \
+		runtime/vimlogo.svg \
 
 # Amiga runtime (also in the extra archive)
 RT_AMI =	\
@@ -878,7 +982,7 @@ RT_AMI =	\
 		runtime/tutor.info \
 		runtime/tutor/*.info \
 
-# runtime files in extra archive
+# Runtime files in extra archive.
 RT_EXTRA =	\
 		$(RT_AMI) \
 		$(RT_AMI_DOS) \
@@ -886,46 +990,46 @@ RT_EXTRA =	\
 		$(RT_DOS_BIN) \
 		README_mac.txt \
 
-# included in all Amiga archives
+# Included in all Amiga archives.
 ROOT_AMI =	\
 		Contents \
 		Contents.info \
 		runtime.info \
 		vimdir.info \
 
-# root files for the extra archive
+# Root files for the extra archive.
 ROOT_EXTRA =	\
 		$(ROOT_AMI) \
 
-# files for Amiga small binary (also in extra archive)
+# Files for Amiga small binary (also in extra archive).
 BIN_AMI =	\
 		README_amibin.txt \
 		README_amibin.txt.info \
 		Vim.info \
 		Xxd.info \
 
-# files for DOS binary (also in extra archive)
+# Files for MS Windows binary (also in extra archive).
 BIN_DOS =	\
 		README_bindos.txt \
 		uninstall.txt \
 
-# files for Win32 OLE binary (also in extra archive)
+# Files for Win32 OLE binary (also in extra archive).
 BIN_OLE =	\
 		README_ole.txt \
 
-# files for Win32s binary (also in extra archive)
+# Files for Win32s binary (also in extra archive).
 BIN_W32S =	\
 		README_w32s.txt \
 
-# files for VMS binary (also in extra archive)
+# Files for VMS binary (also in extra archive).
 BIN_VMS =	\
 		README_vms.txt \
 
-# files for OS/2 binary (also in extra archive)
+# Files for OS/2 binary (also in extra archive).
 BIN_OS2 =	\
 		README_os2.txt \
 
-# binary files for extra archive
+# Binary files for extra archive.
 BIN_EXTRA =	\
 		$(BIN_AMI) \
 		$(BIN_DOS) \
@@ -934,7 +1038,7 @@ BIN_EXTRA =	\
 		$(BIN_VMS) \
 		$(BIN_OS2) \
 
-# all files for extra archive
+# All files for extra archive.
 EXTRA =		\
 		$(BIN_EXTRA) \
 		$(ROOT_EXTRA) \
@@ -943,7 +1047,7 @@ EXTRA =		\
 		README_extra.txt \
 		runtime/vimlogo.xpm \
 
-# files in READMEdir that are included from the top dir
+# Files in READMEdir that are included from the top dir.
 IN_README_DIR = \
 		README.txt.info \
 		README_ami.txt \
@@ -955,6 +1059,7 @@ IN_README_DIR = \
 		README_bindos.txt \
 		README_dos.txt \
 		README_extra.txt \
+		README_haiku.txt \
 		README_mac.txt \
 		README_ole.txt \
 		README_os2.txt \
@@ -962,6 +1067,7 @@ IN_README_DIR = \
 		README_src.txt \
 		README_srcdos.txt \
 		README_unix.txt \
+		README_vimlogo.txt \
 		README_vms.txt \
 		README_w32s.txt \
 		Contents \
@@ -972,8 +1078,10 @@ IN_README_DIR = \
 		src.info \
 		vimdir.info \
 
-# generic language files
+# Generic language files.
 LANG_GEN = \
+		lang/README.*.txt \
+		lang/LICENSE.*.txt \
 		runtime/doc/*-da.1 \
 		runtime/doc/*-da.UTF-8.1 \
 		runtime/doc/*-de.1 \
@@ -996,21 +1104,20 @@ LANG_GEN = \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \
 		runtime/tutor/README.*.txt \
-		runtime/tutor/Makefile \
-		runtime/tutor/Make_all.mak \
-		runtime/tutor/tutor.utf-8 \
-		runtime/tutor/tutor.?? \
-		runtime/tutor/tutor.??.utf-8 \
-		runtime/tutor/tutor.??.euc \
-		runtime/tutor/tutor.??.sjis \
-		runtime/tutor/tutor.??.iso9 \
-		runtime/tutor/tutor.??.big5 \
-		runtime/tutor/tutor.??.cp1250 \
-		runtime/tutor/tutor.??.cp1251 \
-		runtime/tutor/tutor.??.cp737 \
-		runtime/tutor/tutor.??_??.utf-8 \
-		runtime/tutor/tutor.bar \
-		runtime/tutor/tutor.bar.utf-8 \
+		runtime/tutor/it/vim-01-beginner.tutor \
+		runtime/tutor/it/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-01-beginner.tutor \
+		runtime/tutor/ru/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-02-beginner.tutor \
+		runtime/tutor/ru/vim-02-beginner.tutor.json \
+		runtime/tutor/sr/vim-01-beginner.tutor \
+		runtime/tutor/sr/vim-01-beginner.tutor.json \
+		runtime/tutor/sr/vim-02-beginner.tutor \
+		runtime/tutor/sr/vim-02-beginner.tutor.json \
+		runtime/tutor/tutor1.?? \
+		runtime/tutor/tutor1.??_?? \
+		runtime/tutor/tutor1.bar \
+		runtime/tutor/tutor2.?? \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
@@ -1025,7 +1132,7 @@ LANG_GEN = \
 		runtime/spell/main.aap \
 		runtime/spell/*.vim \
 
-# generic language files, binary
+# Generic language files, binary.
 LANG_GEN_BIN = \
 		runtime/spell/README_en.txt \
 		runtime/spell/en.ascii.spl \
@@ -1035,7 +1142,7 @@ LANG_GEN_BIN = \
 		runtime/spell/en.latin1.sug \
 		runtime/spell/en.utf-8.sug \
 
-# all files for lang archive
+# All files for lang archive.
 LANG_SRC = \
 		src/po/README.txt \
 		src/po/README_mingw.txt \
@@ -1054,10 +1161,25 @@ LANG_SRC = \
 		src/po/sjiscorr.c \
 		src/po/big5corr.c \
 		src/po/*.po \
+		src/po/vim.pot \
 
-# the language files for the Win32 lang archive
+# The language files for the Win32 lang archive.
 LANG_DOS = \
 		src/po/*.mo \
-		runtime/lang/Make_mvc.mak \
+
+# Files in the repository that are deliberately not listed above, and will thus
+# be excluded from distribution tarballs and the like.
+# This excludes them from the CI check for unlisted files.
+IGNORE = \
+		.appveyor.yml \
+		.github/FUNDING.yml \
+		.github/labeler.yml \
+		.github/workflows/label.yml \
+		SECURITY.md \
+		ci/unlisted.make \
+		ci/hlgroups.make \
+		ci/hlgroups.ignore \
+		src/libvterm/CODE-MAP \
+		runtime/syntax/testdir/input/html_html \
 
 # vim: set ft=make:

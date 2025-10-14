@@ -1351,8 +1351,8 @@ msgstr " Completar definido por usuario (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Completar con método Omni (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Sugerencia de ortografía (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Sugerencia de ortografía (^S^N^P)"
 
 # Scroll has its own msgs, in its place there is the msg for local
 # * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo

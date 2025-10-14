@@ -12,7 +12,7 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding iso8859-5
+scriptencoding iso-8859-5
 
 " Help menu
 menutrans &Help		      Помо&ћ

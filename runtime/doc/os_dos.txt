@@ -1,4 +1,4 @@
-*os_dos.txt*    For Vim version 9.0.  Last change: 2006 Mar 30
+*os_dos.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -139,7 +139,7 @@ A DOS console does not support attributes like bold and underlining.  You can
 set the color used in five modes with nine terminal options.  Note that this
 is not necessary since you can set the color directly with the ":highlight"
 command; these options are for backward compatibility with older Vim versions.
-The |'highlight'| option specifies which of the five modes is used for which
+The 'highlight' option specifies which of the five modes is used for which
 action. >
 
 	:set t_mr=^V^[\|xxm		start of invert mode
@@ -195,8 +195,8 @@ The defaults for the various highlight modes are:
 	t_so	 31	 standout mode: White (15) text on DarkBlue (16)
 	t_se	  0	 standout mode end (revert to default)
 
-	t_czh	225	 italic mode: DarkBlue text (1) on Yellow (224)
-	t_czr	  0	 italic mode end (revert to default)
+	t_ZH	225	 italic mode: DarkBlue text (1) on Yellow (224)
+	t_ZR	  0	 italic mode end (revert to default)
 
 	t_us	 67	 underline mode: DarkCyan text (3) on DarkRed (64)
 	t_ue	  0	 underline mode end (revert to default)
@@ -231,7 +231,6 @@ writing in Unix mode (":se ff=unix").
 
 Vim sets 'fileformat' automatically when 'fileformats' is not empty (which is
 the default), so you don't really have to worry about what you are doing.
-					|'fileformat'| |'fileformats'|
 
 If you want to edit a script file or a binary file, you should set the
 'binary' option before loading the file.  Script files and binary files may
@@ -279,10 +278,10 @@ The default for the 'sh' ('shell') option is "command.com" on Windows 95 and
 "cmd.exe" on Windows NT.  If SHELL is defined, Vim uses SHELL instead, and if
 SHELL is not defined but COMSPEC is, Vim uses COMSPEC.  Vim starts external
 commands with "<shell> /c <command_name>".  Typing CTRL-Z starts a new command
-subshell.  Return to Vim with "exit".	|'shell'| |CTRL-Z|
+subshell.  Return to Vim with "exit".	'shell' |CTRL-Z|
 
 If you are running a third-party shell, you may need to set the
-|'shellcmdflag'| ('shcf') and |'shellquote'| ('shq') or |'shellxquote'|
+'shellcmdflag' ('shcf') and 'shellquote' ('shq') or 'shellxquote'
 ('sxq') options.  Unfortunately, this also depends on the version of Vim used.
 For example, with the MKS Korn shell or with bash, the values of the options
 should be:
@@ -292,9 +291,9 @@ should be:
 'shellquote'	   "
 'shellxquote'						 "
 
-For Dos 16 bit this starts the shell as:
+For Dos 16 bit this starts the shell as: >
 	<shell> -c "command name" >file
-For Win32 as:
+For Win32 as: >
 	<shell> -c "command name >file"
 For DOS 32 bit, DJGPP does this internally somehow.
 
@@ -329,6 +328,11 @@ following values:
 'shellxquote'	"
 'shellpipe'	>%s 2>&1
 'shellredir'	>%s 2>&1
+
+Note: those options are only set after reading the |.vimrc| file, in
+particular setting the 'shell' option via |-c| is too late to take effect for
+the other shell related settings.  Consider using |--cmd| to override this
+option via the command line.
 
 If you find that PowerShell commands are taking a long time to run then try
 with "-NoProfile" at the beginning of the 'shellcmdflag'.  Note this will

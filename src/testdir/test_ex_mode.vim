@@ -1,8 +1,5 @@
 " Test editing line in Ex mode (see :help Q and :help gQ).
 
-source check.vim
-source shared.vim
-
 " Helper function to test editing line in Q Ex mode
 func Ex_Q(cmd)
   " Is there a simpler way to test editing Ex line?
@@ -68,7 +65,7 @@ func Test_Ex_substitute()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
 
-  call term_sendkeys(buf, ":call setline(1, ['foo foo', 'foo foo', 'foo foo'])\<CR>")
+  call term_sendkeys(buf, ":call setline(1, repeat(['foo foo'], 4))\<CR>")
   call term_sendkeys(buf, ":set number\<CR>")
   call term_sendkeys(buf, "gQ")
   call WaitForAssert({-> assert_match(':', term_getline(buf, 6))}, 1000)
@@ -90,8 +87,14 @@ func Test_Ex_substitute()
 
   " Pressing enter in ex mode should print the current line
   call term_sendkeys(buf, "\<CR>")
-  call WaitForAssert({-> assert_match('  3 foo foo',
-        \ term_getline(buf, 5))}, 1000)
+  call WaitForAssert({-> assert_match('  3 foo foo', term_getline(buf, 5))}, 1000)
+  call WaitForAssert({-> assert_match(':', term_getline(buf, 6))}, 1000)
+
+  " The printed line should overwrite the colon
+  call term_sendkeys(buf, "\<CR>")
+  call WaitForAssert({-> assert_match('  3 foo foo', term_getline(buf, 4))}, 1000)
+  call WaitForAssert({-> assert_match('  4 foo foo', term_getline(buf, 5))}, 1000)
+  call WaitForAssert({-> assert_match(':', term_getline(buf, 6))}, 1000)
 
   call term_sendkeys(buf, ":vi\<CR>")
   call WaitForAssert({-> assert_match('foo bar', term_getline(buf, 1))}, 1000)
@@ -165,6 +168,37 @@ func Test_Ex_global()
   call assert_equal('bax', getline(3))
   call assert_equal('bay', getline(5))
   bwipe!
+
+  new
+  call setline(1, ['foo', 'bar'])
+  call feedkeys("Qg/./i\\\na\\\n.\\\na\\\nb\\\n.", "xt")
+  call assert_equal(['a', 'b', 'foo', 'a', 'b', 'bar'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_Ex_shell()
+  CheckUnix
+
+  new
+  call feedkeys("Qr !echo foo\\\necho bar\n", 'xt')
+  call assert_equal(['', 'foo', 'bar'], getline(1, '$'))
+  bwipe!
+
+  new
+  call feedkeys("Qr !echo foo\\\\\nbar\n", 'xt')
+  call assert_equal(['', 'foobar'], getline(1, '$'))
+  bwipe!
+
+  new
+  call feedkeys("Qr !echo foo\\ \\\necho bar\n", 'xt')
+  call assert_equal(['', 'foo ', 'bar'], getline(1, '$'))
+  bwipe!
+
+  new
+  call setline(1, ['bar', 'baz'])
+  call feedkeys("Qg/./!echo \\\ns/b/c/", "xt")
+  call assert_equal(['car', 'caz'], getline(1, '$'))
+  bwipe!
 endfunc
 
 " Test for pressing Ctrl-C in :append inside a loop in Ex mode
@@ -204,18 +238,11 @@ func Test_Ex_append()
   call feedkeys("Qappend!\npqr\nxyz\n.\nvisual\n", 'xt')
   call assert_equal(["\t   abc", "\t   pqr", "\t   xyz"], getline(1, '$'))
   close!
-endfunc
 
-" In Ex-mode, backslashes at the end of a command should be halved.
-func Test_Ex_echo_backslash()
-  " This test works only when the language is English
-  CheckEnglish
-  let bsl = '\\\\'
-  let bsl2 = '\\\'
-  call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',
-        \ 'E15: Invalid expression: "\\"')
-  call assert_fails('call feedkeys("Qecho " .. bsl2 .. "\nm\nvisual\n", "xt")',
-        \ "E15: Invalid expression: \"\\\nm\"")
+  new
+  call feedkeys("Qappend\na\\\n.", 'xt')
+  call assert_equal(['a\'], getline(1, '$'))
+  close!
 endfunc
 
 func Test_ex_mode_errors()
@@ -314,5 +341,63 @@ func Test_empty_command_visual_mode()
   call delete('guidialogfile')
 endfunc
 
+" Test using backslash in ex-mode
+func Test_backslash_multiline()
+  new
+  call setline(1, 'enum')
+  call feedkeys('Qg/enum/i\\.', "xt")
+  call assert_equal(["", "enum"], getline(1, 2))
+endfunc
+
+" Test using backslash in ex-mode after patch 9.1.0535
+func Test_backslash_multiline2()
+  new
+  call feedkeys('QaX \\Y.', "xt")
+  call assert_equal(['X \\', "Y"], getline(1, 2))
+endfunc
+
+" Testing implicit print command
+func Test_implicit_print()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  call feedkeys('Q:let a=execute(":1,2")', 'xt')
+  call feedkeys('Q:let b=execute(":3")', 'xt')
+  call assert_equal('one two', a->split('\n')->join(' '))
+  call assert_equal('three', b->split('\n')->join(' '))
+  bw!
+endfunc
+
+" Test inserting text after the trailing bar
+func Test_insert_after_trailing_bar()
+  new
+  call feedkeys("Qi|\nfoo\n.\na|bar\nbar\n.\nc|baz\n.", "xt")
+  call assert_equal(['', 'foo', 'bar', 'baz'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" Test global insert of a newline without terminating period
+func Test_global_insert_newline()
+  new
+  call setline(1, ['foo'])
+  call feedkeys("Qg/foo/i\\\n", "xt")
+  call assert_equal(['', 'foo'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" An empty command followed by a newline shouldn't cause E749 in Ex mode.
+func Test_ex_empty_command_newline()
+  let g:var = 0
+  call feedkeys("gQexecute \"\\nlet g:var = 1\"\r", 'xt')
+  call assert_equal(1, g:var)
+  call feedkeys("gQexecute \"  \\nlet g:var = 2\"\r", 'xt')
+  call assert_equal(2, g:var)
+  call feedkeys("gQexecute \"\\t \\nlet g:var = 3\"\r", 'xt')
+  call assert_equal(3, g:var)
+  call feedkeys("gQexecute \"\\\"?!\\nlet g:var = 4\"\r", 'xt')
+  call assert_equal(4, g:var)
+  call feedkeys("gQexecute \"  \\\"?!\\nlet g:var = 5\"\r", 'xt')
+  call assert_equal(5, g:var)
+  unlet g:var
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

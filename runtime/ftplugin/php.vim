@@ -2,7 +2,8 @@
 " Language:		PHP
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Dan Sharp
-" Last Changed:		2022 Jul 20
+" Last Change:		2024 Jan 14
+" Last Change:		2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin")
   finish
@@ -15,8 +16,12 @@ set cpo&vim
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
-let s:browsefilter = "HTML Files (*.html, *.htm)\t*.html;*.htm\n" ..
-      \		     "All Files (*.*)\t*.*\n"
+let s:browsefilter = "HTML Files (*.html, *.htm)\t*.html;*.htm\n"
+if has("win32")
+    let s:browsefilter ..= "All Files (*.*)\t*\n"
+else
+    let s:browsefilter ..= "All Files (*)\t*\n"
+endif
 let s:match_words = ""
 
 runtime! ftplugin/html.vim ftplugin/html_*.vim ftplugin/html/*.vim
@@ -40,7 +45,7 @@ if exists("b:match_skip")
 endif
 
 setlocal comments=s1:/*,mb:*,ex:*/,://,:#
-setlocal commentstring=/*%s*/
+setlocal commentstring=/*\ %s\ */
 setlocal formatoptions+=l formatoptions-=t
 
 if get(g:, "php_autocomment", 1)

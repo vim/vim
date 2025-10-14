@@ -690,7 +690,7 @@ buf_write(
     int		    write_undo_file = FALSE;
     context_sha256_T sha_ctx;
 #endif
-    unsigned int    bkc = get_bkc_value(buf);
+    unsigned int    bkc = get_bkc_flags(buf);
     pos_T	    orig_start = buf->b_op_start;
     pos_T	    orig_end = buf->b_op_end;
 
@@ -1173,8 +1173,6 @@ buf_write(
 #if defined(UNIX) || defined(MSWIN)
 	else if ((bkc & BKC_AUTO))	// "auto"
 	{
-	    int		i;
-
 # ifdef UNIX
 	    // Don't rename the file when:
 	    // - it's a hard link
@@ -1201,18 +1199,24 @@ buf_write(
 #  endif
 # endif
 	    {
+		size_t	dirlen;
+		char_u	tmp_fname[MAXPATHL];
+		int	i;
+
 		// Check if we can create a file and set the owner/group to
 		// the ones from the original file.
 		// First find a file name that doesn't exist yet (use some
 		// arbitrary numbers).
-		STRCPY(IObuff, fname);
+		dirlen = (size_t)(gettail(fname) - fname);
+		vim_strncpy(tmp_fname, fname, dirlen);
 		fd = -1;
 		for (i = 4913; ; i += 123)
 		{
-		    sprintf((char *)gettail(IObuff), "%d", i);
-		    if (mch_lstat((char *)IObuff, &st) < 0)
+		    vim_snprintf((char *)tmp_fname + dirlen,
+			sizeof(tmp_fname) - dirlen, "%d", i);
+		    if (mch_lstat((char *)tmp_fname, &st) < 0)
 		    {
-			fd = mch_open((char *)IObuff,
+			fd = mch_open((char *)tmp_fname,
 				    O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
 			if (fd < 0 && errno == EEXIST)
 			    // If the same file name is created by another
@@ -1230,7 +1234,7 @@ buf_write(
 #  ifdef HAVE_FCHOWN
 		    vim_ignored = fchown(fd, st_old.st_uid, st_old.st_gid);
 #  endif
-		    if (mch_stat((char *)IObuff, &st) < 0
+		    if (mch_stat((char *)tmp_fname, &st) < 0
 			    || st.st_uid != st_old.st_uid
 			    || st.st_gid != st_old.st_gid
 			    || (long)st.st_mode != perm)
@@ -1239,7 +1243,7 @@ buf_write(
 		    // Close the file before removing it, on MS-Windows we
 		    // can't delete an open file.
 		    close(fd);
-		    mch_remove(IObuff);
+		    mch_remove(tmp_fname);
 # ifdef MSWIN
 		    // MS-Windows may trigger a virus scanner to open the
 		    // file, we can't delete it then.  Keep trying for half a
@@ -1249,10 +1253,10 @@ buf_write(
 
 			for (try = 0; try < 10; ++try)
 			{
-			    if (mch_lstat((char *)IObuff, &st) < 0)
+			    if (mch_lstat((char *)tmp_fname, &st) < 0)
 				break;
 			    ui_delay(50L, TRUE);  // wait 50 msec
-			    mch_remove(IObuff);
+			    mch_remove(tmp_fname);
 			}
 		    }
 # endif
@@ -1350,7 +1354,7 @@ buf_write(
 		p = copybuf + STRLEN(copybuf);
 		if (after_pathsep(copybuf, p) && p[-1] == p[-2])
 		    // Ends with '//', use full path
-		    if ((p = make_percent_swname(copybuf, fname)) != NULL)
+		    if ((p = make_percent_swname(copybuf, p, fname)) != NULL)
 		    {
 			backup = modname(p, backup_ext, FALSE);
 			vim_free(p);
@@ -1564,7 +1568,7 @@ buf_write(
 		p = IObuff + STRLEN(IObuff);
 		if (after_pathsep(IObuff, p) && p[-1] == p[-2])
 		    // path ends with '//', use full path
-		    if ((p = make_percent_swname(IObuff, fname)) != NULL)
+		    if ((p = make_percent_swname(IObuff, p, fname)) != NULL)
 		    {
 			backup = modname(p, backup_ext, FALSE);
 			vim_free(p);
@@ -2316,6 +2320,8 @@ restore_backup:
 		{
 		    errmsg_allocated = TRUE;
 		    errmsg = alloc(300);
+		    if (errmsg == NULL)
+			goto fail;
 		    vim_snprintf((char *)errmsg, 300, _(e_write_error_conversion_failed_in_line_nr_make_fenc_empty_to_override),
 					 (long)write_info.bw_conv_error_lnum);
 		}

@@ -102,7 +102,7 @@
 # define WINBYTE BYTE
 #endif
 
-#if (defined(MSWIN) || defined(WIN32UNIX)) && !defined(__MINGW32__)
+#if defined(MSWIN) || defined(WIN32UNIX)
 # include <winnls.h>
 #endif
 
@@ -118,14 +118,6 @@
 
 #ifdef HAVE_WCHAR_H
 # include <wchar.h>
-#endif
-
-#if 0
-// This has been disabled, because several people reported problems with the
-// wcwidth() and iswprint() library functions, esp. for Hebrew.
-# ifdef __STDC_ISO_10646__
-#  define USE_WCHAR_FUNCTIONS
-# endif
 #endif
 
 static int dbcs_char2len(int c);
@@ -802,7 +794,7 @@ bomb_size(void)
     return n;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
@@ -828,8 +820,8 @@ remove_bom(char_u *s)
  * Get class of pointer:
  * 0 for blank or NUL
  * 1 for punctuation
- * 2 for an (ASCII) word character
- * >2 for other word characters
+ * 2 for an alphanumeric word character
+ * >2 for other word characters, including CJK and emoji
  */
     int
 mb_get_class(char_u *p)
@@ -1354,7 +1346,7 @@ static struct interval ambiguous[] =
     {0x100000, 0x10fffd}
 };
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * utf_char2cells() with different argument type for libvterm.
  */
@@ -1389,8 +1381,10 @@ utf_char2cells(int c)
 	{0x23f3, 0x23f3},
 	{0x25fd, 0x25fe},
 	{0x2614, 0x2615},
+	{0x2630, 0x2637},
 	{0x2648, 0x2653},
 	{0x267f, 0x267f},
+	{0x268a, 0x268f},
 	{0x2693, 0x2693},
 	{0x26a1, 0x26a1},
 	{0x26aa, 0x26ab},
@@ -1424,11 +1418,10 @@ utf_char2cells(int c)
 	{0x3099, 0x30ff},
 	{0x3105, 0x312f},
 	{0x3131, 0x318e},
-	{0x3190, 0x31e3},
+	{0x3190, 0x31e5},
 	{0x31ef, 0x321e},
 	{0x3220, 0x3247},
-	{0x3250, 0x4dbf},
-	{0x4e00, 0xa48c},
+	{0x3250, 0xa48c},
 	{0xa490, 0xa4c6},
 	{0xa960, 0xa97c},
 	{0xac00, 0xd7a3},
@@ -1443,7 +1436,7 @@ utf_char2cells(int c)
 	{0x16ff0, 0x16ff1},
 	{0x17000, 0x187f7},
 	{0x18800, 0x18cd5},
-	{0x18d00, 0x18d08},
+	{0x18cff, 0x18d08},
 	{0x1aff0, 0x1aff3},
 	{0x1aff5, 0x1affb},
 	{0x1affd, 0x1affe},
@@ -1453,6 +1446,8 @@ utf_char2cells(int c)
 	{0x1b155, 0x1b155},
 	{0x1b164, 0x1b167},
 	{0x1b170, 0x1b2fb},
+	{0x1d300, 0x1d356},
+	{0x1d360, 0x1d376},
 	{0x1f004, 0x1f004},
 	{0x1f0cf, 0x1f0cf},
 	{0x1f18e, 0x1f18e},
@@ -1493,11 +1488,10 @@ utf_char2cells(int c)
 	{0x1f93c, 0x1f945},
 	{0x1f947, 0x1f9ff},
 	{0x1fa70, 0x1fa7c},
-	{0x1fa80, 0x1fa88},
-	{0x1fa90, 0x1fabd},
-	{0x1fabf, 0x1fac5},
-	{0x1face, 0x1fadb},
-	{0x1fae0, 0x1fae8},
+	{0x1fa80, 0x1fa89},
+	{0x1fa8f, 0x1fac6},
+	{0x1face, 0x1fadc},
+	{0x1fadf, 0x1fae9},
 	{0x1faf0, 0x1faf8},
 	{0x20000, 0x2fffd},
 	{0x30000, 0x3fffd}
@@ -1591,11 +1585,7 @@ utf_char2cells(int c)
 #ifdef FEAT_EVAL
     // Use the value from setcellwidths() at 0x80 and higher, unless the
     // character is not printable.
-    if (c >= 0x80 &&
-# ifdef USE_WCHAR_FUNCTIONS
-	    wcwidth(c) >= 1 &&
-# endif
-	    vim_isprintc(c))
+    if (c >= 0x80 && vim_isprintc(c))
     {
 	int n = cw_value(c);
 	if (n != 0)
@@ -1605,25 +1595,10 @@ utf_char2cells(int c)
 
     if (c >= 0x100)
     {
-#ifdef USE_WCHAR_FUNCTIONS
-	int	n;
-
-	/*
-	 * Assume the library function wcwidth() works better than our own
-	 * stuff.  It should return 1 for ambiguous width chars!
-	 */
-	n = wcwidth(c);
-
-	if (n < 0)
-	    return 6;		// unprintable, displays <xxxx>
-	if (n > 1)
-	    return n;
-#else
 	if (!utf_printable(c))
 	    return 6;		// unprintable, displays <xxxx>
 	if (intable(doublewidth, sizeof(doublewidth), c))
 	    return 2;
-#endif
 	if (p_emoji && intable(emoji_wide, sizeof(emoji_wide), c))
 	    return 2;
     }
@@ -1946,7 +1921,7 @@ mb_cptr2char_adv(char_u **pp)
     return c;
 }
 
-#if defined(FEAT_ARABIC) || defined(PROTO)
+#if defined(FEAT_ARABIC)
 /*
  * Check if the character pointed to by "p2" is a composing character when it
  * comes after "p1".  For Arabic sometimes "ab" is replaced with "c", which
@@ -2102,6 +2077,17 @@ utf_ptr2len(char_u *p)
 utf_byte2len(int b)
 {
     return utf8len_tab[b];
+}
+
+/*
+ * Return length of UTF-8 character, obtained from the first byte.
+ * "b" must be between 0 and 255!
+ * Returns 0 for an invalid first byte value.
+ */
+    int
+utf_byte2len_zero(int b)
+{
+    return utf8len_tab_zero[b];
 }
 
 /*
@@ -2310,7 +2296,7 @@ utf_char2bytes(int c, char_u *buf)
     return 6;
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * utf_iscomposing() with different argument type for libvterm.
  */
@@ -2357,7 +2343,7 @@ utf_iscomposing(int c)
 	{0x0825, 0x0827},
 	{0x0829, 0x082d},
 	{0x0859, 0x085b},
-	{0x0898, 0x089f},
+	{0x0897, 0x089f},
 	{0x08ca, 0x08e1},
 	{0x08e3, 0x0902},
 	{0x093a, 0x093a},
@@ -2552,8 +2538,9 @@ utf_iscomposing(int c)
 	{0x10a3f, 0x10a3f},
 	{0x10ae5, 0x10ae6},
 	{0x10d24, 0x10d27},
+	{0x10d69, 0x10d6d},
 	{0x10eab, 0x10eac},
-	{0x10efd, 0x10eff},
+	{0x10efc, 0x10eff},
 	{0x10f46, 0x10f50},
 	{0x10f82, 0x10f85},
 	{0x11001, 0x11001},
@@ -2584,6 +2571,11 @@ utf_iscomposing(int c)
 	{0x11340, 0x11340},
 	{0x11366, 0x1136c},
 	{0x11370, 0x11374},
+	{0x113bb, 0x113c0},
+	{0x113ce, 0x113ce},
+	{0x113d0, 0x113d0},
+	{0x113d2, 0x113d2},
+	{0x113e1, 0x113e2},
 	{0x11438, 0x1143f},
 	{0x11442, 0x11444},
 	{0x11446, 0x11446},
@@ -2603,7 +2595,8 @@ utf_iscomposing(int c)
 	{0x116ad, 0x116ad},
 	{0x116b0, 0x116b5},
 	{0x116b7, 0x116b7},
-	{0x1171d, 0x1171f},
+	{0x1171d, 0x1171d},
+	{0x1171f, 0x1171f},
 	{0x11722, 0x11725},
 	{0x11727, 0x1172b},
 	{0x1182f, 0x11837},
@@ -2642,8 +2635,11 @@ utf_iscomposing(int c)
 	{0x11f36, 0x11f3a},
 	{0x11f40, 0x11f40},
 	{0x11f42, 0x11f42},
+	{0x11f5a, 0x11f5a},
 	{0x13440, 0x13440},
 	{0x13447, 0x13455},
+	{0x1611e, 0x16129},
+	{0x1612d, 0x1612f},
 	{0x16af0, 0x16af4},
 	{0x16b30, 0x16b36},
 	{0x16f4f, 0x16f4f},
@@ -2673,6 +2669,7 @@ utf_iscomposing(int c)
 	{0x1e2ae, 0x1e2ae},
 	{0x1e2ec, 0x1e2ef},
 	{0x1e4ec, 0x1e4ef},
+	{0x1e5ee, 0x1e5ef},
 	{0x1e8d0, 0x1e8d6},
 	{0x1e944, 0x1e94a},
 	{0xe0100, 0xe01ef}
@@ -2688,12 +2685,6 @@ utf_iscomposing(int c)
     int
 utf_printable(int c)
 {
-#ifdef USE_WCHAR_FUNCTIONS
-    /*
-     * Assume the iswprint() library function works better than our own stuff.
-     */
-    return iswprint(c);
-#else
     // Sorted list of non-overlapping intervals.
     // 0xd800-0xdfff is reserved for UTF-16, actually illegal.
     static struct interval nonprint[] =
@@ -2704,7 +2695,6 @@ utf_printable(int c)
     };
 
     return !intable(nonprint, sizeof(nonprint), c);
-#endif
 }
 
 // Sorted list of non-overlapping intervals of all Emoji characters,
@@ -2923,7 +2913,7 @@ utf_class_buf(int c, buf_T *buf)
 	{0x202f, 0x202f, 0},
 	{0x2030, 0x205e, 1},		// punctuation and symbols
 	{0x205f, 0x205f, 0},
-	{0x2060, 0x27ff, 1},		// punctuation and symbols
+	{0x2060, 0x206f, 1},		// punctuation and symbols
 	{0x2070, 0x207f, 0x2070},	// superscript
 	{0x2080, 0x2094, 0x2080},	// subscript
 	{0x20a0, 0x27ff, 1},		// all kinds of symbols
@@ -3129,6 +3119,7 @@ static convertStruct foldCase[] =
 	{0x1c86,0x1c86,-1,-6204},
 	{0x1c87,0x1c87,-1,-6180},
 	{0x1c88,0x1c88,-1,35267},
+	{0x1c89,0x1c89,-1,1},
 	{0x1c90,0x1cba,1,-3008},
 	{0x1cbd,0x1cbf,1,-3008},
 	{0x1e00,0x1e94,2,1},
@@ -3208,8 +3199,11 @@ static convertStruct foldCase[] =
 	{0xa7c5,0xa7c5,-1,-42307},
 	{0xa7c6,0xa7c6,-1,-35384},
 	{0xa7c7,0xa7c9,2,1},
-	{0xa7d0,0xa7d6,6,1},
-	{0xa7d8,0xa7f5,29,1},
+	{0xa7cb,0xa7cb,-1,-42343},
+	{0xa7cc,0xa7d0,4,1},
+	{0xa7d6,0xa7da,2,1},
+	{0xa7dc,0xa7dc,-1,-42561},
+	{0xa7f5,0xa7f5,-1,1},
 	{0xab70,0xabbf,1,-38864},
 	{0xfb05,0xfb05,-1,1},
 	{0xff21,0xff3a,1,32},
@@ -3220,6 +3214,7 @@ static convertStruct foldCase[] =
 	{0x1058c,0x10592,1,39},
 	{0x10594,0x10595,1,39},
 	{0x10c80,0x10cb2,1,64},
+	{0x10d50,0x10d65,1,32},
 	{0x118a0,0x118bf,1,32},
 	{0x16e40,0x16e5f,1,32},
 	{0x1e900,0x1e921,1,34}
@@ -3364,6 +3359,7 @@ static convertStruct toLower[] =
 	{0x10c7,0x10cd,6,7264},
 	{0x13a0,0x13ef,1,38864},
 	{0x13f0,0x13f5,1,8},
+	{0x1c89,0x1c89,-1,1},
 	{0x1c90,0x1cba,1,-3008},
 	{0x1cbd,0x1cbf,1,-3008},
 	{0x1e00,0x1e94,2,1},
@@ -3439,8 +3435,11 @@ static convertStruct toLower[] =
 	{0xa7c5,0xa7c5,-1,-42307},
 	{0xa7c6,0xa7c6,-1,-35384},
 	{0xa7c7,0xa7c9,2,1},
-	{0xa7d0,0xa7d6,6,1},
-	{0xa7d8,0xa7f5,29,1},
+	{0xa7cb,0xa7cb,-1,-42343},
+	{0xa7cc,0xa7d0,4,1},
+	{0xa7d6,0xa7da,2,1},
+	{0xa7dc,0xa7dc,-1,-42561},
+	{0xa7f5,0xa7f5,-1,1},
 	{0xff21,0xff3a,1,32},
 	{0x10400,0x10427,1,40},
 	{0x104b0,0x104d3,1,40},
@@ -3449,11 +3448,14 @@ static convertStruct toLower[] =
 	{0x1058c,0x10592,1,39},
 	{0x10594,0x10595,1,39},
 	{0x10c80,0x10cb2,1,64},
+	{0x10d50,0x10d65,1,32},
 	{0x118a0,0x118bf,1,32},
 	{0x16e40,0x16e5f,1,32},
 	{0x1e900,0x1e921,1,34}
 };
 
+// Note: UnicodeData.txt does not define U+1E9E as being the corresponding upper
+// case letter for U+00DF (ß), however it is part of the toLower table
 static convertStruct toUpper[] =
 {
 	{0x61,0x7a,1,-32},
@@ -3475,6 +3477,7 @@ static convertStruct toUpper[] =
 	{0x195,0x195,-1,97},
 	{0x199,0x199,-1,-1},
 	{0x19a,0x19a,-1,163},
+	{0x19b,0x19b,-1,42561},
 	{0x19e,0x19e,-1,130},
 	{0x1a1,0x1a5,2,-1},
 	{0x1a8,0x1ad,5,-1},
@@ -3512,6 +3515,7 @@ static convertStruct toUpper[] =
 	{0x260,0x260,-1,-205},
 	{0x261,0x261,-1,42315},
 	{0x263,0x263,-1,-207},
+	{0x264,0x264,-1,42343},
 	{0x265,0x265,-1,42280},
 	{0x266,0x266,-1,42308},
 	{0x268,0x268,-1,-209},
@@ -3577,6 +3581,7 @@ static convertStruct toUpper[] =
 	{0x1c86,0x1c86,-1,-6236},
 	{0x1c87,0x1c87,-1,-6181},
 	{0x1c88,0x1c88,-1,35266},
+	{0x1c8a,0x1c8a,-1,-1},
 	{0x1d79,0x1d79,-1,35332},
 	{0x1d7d,0x1d7d,-1,3814},
 	{0x1d8e,0x1d8e,-1,35384},
@@ -3634,8 +3639,9 @@ static convertStruct toUpper[] =
 	{0xa797,0xa7a9,2,-1},
 	{0xa7b5,0xa7c3,2,-1},
 	{0xa7c8,0xa7ca,2,-1},
-	{0xa7d1,0xa7d7,6,-1},
-	{0xa7d9,0xa7f6,29,-1},
+	{0xa7cd,0xa7d1,4,-1},
+	{0xa7d7,0xa7db,2,-1},
+	{0xa7f6,0xa7f6,-1,-1},
 	{0xab53,0xab53,-1,-928},
 	{0xab70,0xabbf,1,-38864},
 	{0xff41,0xff5a,1,-32},
@@ -3646,6 +3652,7 @@ static convertStruct toUpper[] =
 	{0x105b3,0x105b9,1,-39},
 	{0x105bb,0x105bc,1,-39},
 	{0x10cc0,0x10cf2,1,-64},
+	{0x10d70,0x10d85,1,-32},
 	{0x118c0,0x118df,1,-32},
 	{0x16e60,0x16e7f,1,-32},
 	{0x1e922,0x1e943,1,-34}
@@ -3798,6 +3805,15 @@ utf_strnicmp(
  * Returns zero if s1 and s2 are equal (ignoring case), the difference between
  * two characters otherwise.
  */
+    int
+mb_strnicmp2(char_u *s1, char_u *s2, size_t n1, size_t n2)
+{
+    if (n1 == n2 || !enc_utf8)
+	return mb_strnicmp(s1, s2, n1);
+    else
+	return utf_strnicmp(s1, s2, n1, n2);
+}
+
     int
 mb_strnicmp(char_u *s1, char_u *s2, size_t nn)
 {
@@ -4186,32 +4202,12 @@ mb_copy_char(char_u **fp, char_u **tp)
     int
 mb_off_next(char_u *base, char_u *p)
 {
-    int		i;
-    int		j;
+    int		head_off = (*mb_head_off)(base, p);
 
-    if (enc_utf8)
-    {
-	if (*p < 0x80)		// be quick for ASCII
-	    return 0;
+    if (head_off == 0)
+	return 0;
 
-	// Find the next character that isn't 10xx.xxxx
-	for (i = 0; (p[i] & 0xc0) == 0x80; ++i)
-	    ;
-	if (i > 0)
-	{
-	    // Check for illegal sequence.
-	    for (j = 0; p - j > base; ++j)
-		if ((p[-j] & 0xc0) != 0x80)
-		    break;
-	    if (utf8len_tab[p[-j]] != i + j)
-		return 0;
-	}
-	return i;
-    }
-
-    // Only need to check if we're on a trail byte, it doesn't matter if we
-    // want the offset to the next or current character.
-    return (*mb_head_off)(base, p);
+    return (*mb_ptr2len)(p - head_off) - head_off;
 }
 
 /*
@@ -4325,7 +4321,7 @@ theend:
     convert_setup(&vimconv, NULL, NULL);
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(FEAT_EVAL)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
  * When "end" is NULL stop at the first NUL.  Otherwise stop at "end".
@@ -4352,7 +4348,7 @@ utf_valid_string(char_u *s, char_u *end)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Special version of mb_tail_off() for use in ScreenLines[].
  */
@@ -4396,7 +4392,7 @@ mb_adjustpos(buf_T *buf, pos_T *lp)
     if (lp->col > 0 || lp->coladd > 1)
     {
 	p = ml_get_buf(buf, lp->lnum, FALSE);
-	if (*p == NUL || (int)STRLEN(p) < lp->col)
+	if (*p == NUL || ml_get_buf_len(buf, lp->lnum) < lp->col)
 	    lp->col = 0;
 	else
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
@@ -4628,7 +4624,7 @@ enc_canonize(char_u *enc)
     }
 
     // "iso-8859n" -> "iso-8859-n"
-    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    if (STRNCMP(p, "iso-8859", 8) == 0 && SAFE_isdigit(p[8]))
     {
 	STRMOVE(p + 9, p + 8);
 	p[8] = '-';
@@ -4705,7 +4701,7 @@ enc_locale_env(char *locale)
     if ((p = (char *)vim_strchr((char_u *)s, '.')) != NULL)
     {
 	if (p > s + 2 && STRNICMP(p + 1, "EUC", 3) == 0
-			&& !isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
+			&& !SAFE_isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
 	{
 	    // copy "XY.EUC" to "euc-XY" to buf[10]
 	    STRCPY(buf + 10, "euc-");
@@ -4721,7 +4717,7 @@ enc_locale_env(char *locale)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
-	else if (isalnum((int)s[i]))
+	else if (SAFE_isalnum(s[i]))
 	    buf[i] = TOLOWER_ASC(s[i]);
 	else
 	    break;
@@ -4768,7 +4764,7 @@ enc_locale(void)
 #endif
 }
 
-# if defined(MSWIN) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+# if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /*
  * Convert an encoding name to an MS-Windows codepage.
  * Returns zero if no codepage can be figured out.
@@ -4797,7 +4793,7 @@ encname2codepage(char_u *name)
 }
 # endif
 
-# if defined(USE_ICONV) || defined(PROTO)
+# if defined(USE_ICONV)
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -4955,7 +4951,7 @@ iconv_string(
     return result;
 }
 
-#  if defined(DYNAMIC_ICONV) || defined(PROTO)
+#  if defined(DYNAMIC_ICONV)
 /*
  * Dynamically load the "iconv.dll" on Win32.
  */
@@ -5066,7 +5062,7 @@ iconv_end(void)
 #  endif // DYNAMIC_ICONV
 # endif // USE_ICONV
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "getimstatus()" function
  */
@@ -5245,8 +5241,7 @@ convert_setup_ext(
     return OK;
 }
 
-#if defined(FEAT_GUI) || defined(AMIGA) || defined(MSWIN) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI) || defined(AMIGA) || defined(MSWIN)
 /*
  * Do conversion on typed input characters in-place.
  * The input and output are not NUL terminated!
@@ -5560,7 +5555,21 @@ string_convert_ext(
     return retval;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return 1 or 2 when "c" is in the cellwidth table.
+ * Return 0 if not.
+ */
+    int
+get_cellwidth(int c UNUSED)
+{
+#ifdef FEAT_EVAL
+    return cw_value(c);
+#else
+    return 0;
+#endif
+}
+
+#if defined(FEAT_EVAL)
 
 /*
  * Table set by setcellwidths().
@@ -5613,7 +5622,8 @@ tv_nr_compare(const void *a1, const void *a2)
     listitem_T *li1 = *(listitem_T **)a1;
     listitem_T *li2 = *(listitem_T **)a2;
 
-    return li1->li_tv.vval.v_number - li2->li_tv.vval.v_number;
+    return li1->li_tv.vval.v_number == li2->li_tv.vval.v_number ? 0 :
+	li1->li_tv.vval.v_number > li2->li_tv.vval.v_number ? 1 : -1;
 }
 
     void
@@ -5624,7 +5634,8 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     int		    item;
     int		    i;
     listitem_T	    **ptrs;
-    cw_interval_T   *table;
+    cw_interval_T   *table = NULL;
+    size_t	    table_size;
     cw_interval_T   *cw_table_save;
     size_t	    cw_table_size_save;
     char	    *error = NULL;
@@ -5633,15 +5644,12 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     l = argvars[0].vval.v_list;
-    if (l->lv_len == 0)
-    {
+    table_size = (size_t)l->lv_len;
+    if (table_size == 0)
 	// Clearing the table.
-	VIM_CLEAR(cw_table);
-	cw_table_size = 0;
-	return;
-    }
+	goto update;
 
-    ptrs = ALLOC_MULT(listitem_T *, l->lv_len);
+    ptrs = ALLOC_MULT(listitem_T *, table_size);
     if (ptrs == NULL)
 	return;
 
@@ -5700,9 +5708,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Sort the list on the first number.
-    qsort((void *)ptrs, (size_t)l->lv_len, sizeof(listitem_T *), tv_nr_compare);
+    qsort((void *)ptrs, table_size, sizeof(listitem_T *), tv_nr_compare);
 
-    table = ALLOC_MULT(cw_interval_T, l->lv_len);
+    table = ALLOC_MULT(cw_interval_T, table_size);
     if (table == NULL)
     {
 	vim_free(ptrs);
@@ -5710,7 +5718,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Store the items in the new table.
-    for (item = 0; item < l->lv_len; ++item)
+    for (item = 0; (size_t)item < table_size; ++item)
     {
 	listitem_T	*lili = ptrs[item];
 	varnumber_T	n1;
@@ -5732,10 +5740,11 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
     vim_free(ptrs);
 
+update:
     cw_table_save = cw_table;
     cw_table_size_save = cw_table_size;
     cw_table = table;
-    cw_table_size = l->lv_len;
+    cw_table_size = table_size;
 
     // Check that the new value does not conflict with 'listchars' or
     // 'fillchars'.
@@ -5750,6 +5759,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
+    changed_window_setting_all();
     redraw_all_later(UPD_CLEAR);
 }
 

@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 // flag passed from compile_subscript() to compile_load_scriptvar()
 static int paren_follows_after_expr = 0;
@@ -73,7 +68,74 @@ clear_ppconst(ppconst_T *ppconst)
 }
 
 /*
- * Compile getting a member from a list/dict/string/blob.  Stack has the
+ * Compile getting a member from a tuple.  Stack has the indexable value and
+ * the index or the two indexes of a slice.
+ */
+    static int
+compile_tuple_member(
+    type2_T	*typep,
+    int		is_slice,
+    cctx_T	*cctx)
+{
+    if (is_slice)
+    {
+	if (generate_instr_drop(cctx, ISN_TUPLESLICE, 2) == FAIL)
+	    return FAIL;
+	// a copy is made so the member type is no longer declared
+	if (typep->type_decl->tt_type == VAR_TUPLE)
+	    typep->type_decl = &t_tuple_any;
+
+	// a copy is made, the composite is no longer "const"
+	if (typep->type_curr->tt_flags & TTFLAG_CONST)
+	{
+	    type_T *type = copy_type(typep->type_curr, cctx->ctx_type_list);
+
+	    if (type != typep->type_curr)  // did get a copy
+	    {
+		type->tt_flags &= ~(TTFLAG_CONST | TTFLAG_STATIC);
+		typep->type_curr = type;
+	    }
+	}
+    }
+    else
+    {
+	if (typep->type_curr->tt_type == VAR_TUPLE)
+	{
+	    if (typep->type_curr->tt_argcount == 1)
+	    {
+		if (typep->type_curr->tt_flags & TTFLAG_VARARGS)
+		    typep->type_curr
+				= typep->type_curr->tt_args[0]->tt_member;
+		else
+		    typep->type_curr = typep->type_curr->tt_args[0];
+	    }
+	    else
+		typep->type_curr = &t_any;
+	    if (typep->type_decl->tt_type == VAR_TUPLE)
+	    {
+		if (typep->type_decl->tt_argcount == 1)
+		{
+		    if (typep->type_decl->tt_flags & TTFLAG_VARARGS)
+			typep->type_decl
+				= typep->type_decl->tt_args[0]->tt_member;
+		    else
+			typep->type_decl = typep->type_decl->tt_args[0];
+		}
+		else
+		    typep->type_curr = &t_any;
+	    }
+	    else
+		typep->type_decl = typep->type_curr;
+	}
+	if (generate_instr_drop(cctx, ISN_TUPLEINDEX, 1) == FAIL)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Compile getting a member from a list/tuple/dict/string/blob.  Stack has the
  * indexable value and the index or the two indexes of a slice.
  * "keeping_dict" is used for dict[func](arg) to pass dict to func.
  */
@@ -85,7 +147,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     vartype_T	vartype;
     type_T	*idxtype;
 
-    // We can index a list, dict and blob.  If we don't know the type
+    // We can index a list, tuple, dict and blob.  If we don't know the type
     // we can use the index value type.  If we still don't know use an "ANY"
     // instruction.
     // TODO: what about the decl type?
@@ -97,7 +159,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		|| typep->type_curr->tt_type == VAR_UNKNOWN)
 						       && idxtype == &t_string)
 	vartype = VAR_DICT;
-    if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
+    if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB
+						|| vartype == VAR_TUPLE)
     {
 	if (need_type(idxtype, &t_number, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
@@ -142,7 +205,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    typep->type_curr = &t_any;
 	    typep->type_decl = &t_any;
 	}
-	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL
+	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL
 		|| generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
 	if (keeping_dict != NULL)
@@ -173,6 +236,11 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    if (generate_instr_drop(cctx, ISN_BLOBINDEX, 1) == FAIL)
 		return FAIL;
 	}
+    }
+    else if (vartype == VAR_TUPLE)
+    {
+	if (compile_tuple_member(typep, is_slice, cctx) == FAIL)
+	    return FAIL;
     }
     else if (vartype == VAR_LIST || typep->type_curr->tt_type == VAR_ANY
 				 || typep->type_curr->tt_type == VAR_UNKNOWN)
@@ -282,7 +350,8 @@ inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
     static int
 compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 {
-    int m_idx;
+    int		m_idx;
+    int		ret = FAIL;
 
     if (VIM_ISWHITE((*arg)[1]))
     {
@@ -291,7 +360,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
 
     class_T *cl = type->tt_class;
-    int is_super = type->tt_flags & TTFLAG_SUPER;
+    int is_super = ((type->tt_flags & TTFLAG_SUPER) == TTFLAG_SUPER);
     if (type == &t_super)
     {
 	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
@@ -331,8 +400,24 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
     if (name_end == name)
+    {
+	emsg(_(e_missing_name_after_dot));
 	return FAIL;
+    }
     size_t len = name_end - name;
+
+    gfargs_tab_T    gfatab;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (*name_end == '<')
+    {
+	// generic method call
+	name_end = parse_generic_func_type_args(name, len, name_end,
+							&gfatab, cctx);
+	if (name_end == NULL)
+	    return FAIL;
+    }
 
     if (*name_end == '(')
     {
@@ -349,6 +434,11 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	else
 	{
 	    // type->tt_type == VAR_OBJECT: method call
+	    // When compiling Func and doing "super.SomeFunc()", must be in the
+	    // class context that defines Func.
+	    if (is_super)
+		cl = cctx->ctx_ufunc->uf_defclass;
+
 	    function_count = cl->class_obj_method_count;
 	    child_count = cl->class_obj_method_count_child;
 	    functions = cl->class_obj_methods;
@@ -368,6 +458,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		break;
 	    }
 	}
+
 	ocmember_T  *ocm = NULL;
 	if (ufunc == NULL)
 	{
@@ -376,21 +467,37 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (ocm == NULL || ocm->ocm_type->tt_type != VAR_FUNC)
 	    {
 		method_not_found_msg(cl, type->tt_type, name, len);
-		return FAIL;
+		goto done;
 	    }
 	    if (type->tt_type == VAR_CLASS)
 	    {
 		// Remove the class type from the stack
 		--cctx->ctx_type_stack.ga_len;
 		if (generate_CLASSMEMBER(cctx, TRUE, cl, m_idx) == FAIL)
-		    return FAIL;
+		    goto done;
 	    }
 	    else
 	    {
-		if (generate_GET_OBJ_MEMBER(cctx, m_idx, ocm->ocm_type) ==
-									FAIL)
-		    return FAIL;
+		int status;
+
+		if (IS_INTERFACE(cl))
+		    status = generate_GET_ITF_MEMBER(cctx, cl, m_idx,
+							ocm->ocm_type);
+		else
+		    status = generate_GET_OBJ_MEMBER(cctx, m_idx,
+							ocm->ocm_type);
+		if (status == FAIL)
+		    goto done;
 	    }
+	}
+
+	if (is_super && ufunc != NULL && IS_ABSTRACT_METHOD(ufunc))
+	{
+	    // Trying to invoke an abstract method in a super class is not
+	    // allowed.
+	    semsg(_(e_abstract_method_str_direct), ufunc->uf_name,
+		    ufunc->uf_defclass->class_name);
+	    goto done;
 	}
 
 	// A private object method can be used only inside the class where it
@@ -404,7 +511,15 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		     && cctx->ctx_ufunc->uf_class != cl)))
 	{
 	    semsg(_(e_cannot_access_protected_method_str), name);
-	    return FAIL;
+	    goto done;
+	}
+
+	// process generic function call
+	if (ufunc != NULL)
+	{
+	    ufunc = generic_func_get(ufunc, &gfatab);
+	    if (ufunc == NULL)
+		goto done;
 	}
 
 	// Compile the arguments and call the class function or object method.
@@ -413,32 +528,39 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	*arg = skipwhite(name_end + 1);
 	int argcount = 0;
 	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
-	    return FAIL;
+	    goto done;
 
 	if (ocm != NULL)
-	    return generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
+	{
+	    ret = generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
+	    goto done;
+	}
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-	    return generate_CALL(cctx, ufunc, cl, fi, argcount);
-	return generate_CALL(cctx, ufunc, NULL, 0, argcount);
+	    ret = generate_CALL(cctx, ufunc, cl, fi, argcount, is_super);
+	else
+	    ret = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
+	goto done;
     }
 
     if (type->tt_type == VAR_OBJECT)
     {
-        ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
+	ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
 	if (m_idx >= 0)
 	{
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
-		return FAIL;
+		goto done;
 	    }
 
 	    *arg = name_end;
 	    if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
-		return generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type);
-	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
+		ret = generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type);
+	    else
+		ret = generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
+	    goto done;
 	}
 
 	// Could be an object method reference: "obj.Func".
@@ -446,16 +568,17 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private object methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 	    *arg = name_end;
 	    // Remove the object type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_FUNCREF(cctx, fp, cl, TRUE, m_idx, NULL);
+	    ret = generate_FUNCREF(cctx, fp, cl, TRUE, m_idx, NULL);
+	    goto done;
 	}
 
 	member_not_found_msg(cl, VAR_OBJECT, name, len);
@@ -474,13 +597,14 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
-		return FAIL;
+		goto done;
 	    }
 
 	    *arg = name_end;
 	    // Remove the class type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	    ret = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	    goto done;
 	}
 
 	// Could be a class method reference: "class.Func".
@@ -488,22 +612,25 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_class_functions[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private class methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 	    *arg = name_end;
 	    // Remove the class type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_FUNCREF(cctx, fp, cl, FALSE, m_idx, NULL);
+	    ret = generate_FUNCREF(cctx, fp, cl, FALSE, m_idx, NULL);
+	    goto done;
 	}
 
 	member_not_found_msg(cl, VAR_CLASS, name, len);
     }
 
-    return FAIL;
+done:
+    generic_func_args_table_clear(&gfatab);
+    return ret;
 }
 
 /*
@@ -516,11 +643,12 @@ compile_load_scriptvar(
 	cctx_T *cctx,
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
-	char_u **end)	    // end of variable, may be NULL
+	char_u **end,	    // end of variable, may be NULL
+	imported_T *import) // found imported item, can be NULL
 {
     scriptitem_T    *si;
     int		    idx;
-    imported_T	    *import;
+    imported_T	    *imp;
 
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return FAIL;
@@ -535,8 +663,14 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    import = end == NULL ? NULL : find_imported(name, 0, FALSE);
-    if (import != NULL)
+    if (end == NULL)
+	imp = NULL;
+    else if (import == NULL)
+	imp = find_imported(name, 0, FALSE);
+    else
+	imp = import;
+
+    if (imp != NULL)
     {
 	char_u	*p = skipwhite(*end);
 	char_u	*exp_name;
@@ -545,6 +679,9 @@ compile_load_scriptvar(
 	type_T	*type;
 	int	done = FALSE;
 	int	res = OK;
+
+	check_script_symlink(imp->imp_sid);
+	import_check_sourced_sid(&imp->imp_sid);
 
 	// Need to lookup the member.
 	if (*p != '.')
@@ -566,11 +703,11 @@ compile_load_scriptvar(
 	cc = *p;
 	*p = NUL;
 
-	si = SCRIPT_ITEM(import->imp_sid);
+	si = SCRIPT_ITEM(imp->imp_sid);
 	if (si->sn_import_autoload && si->sn_state == SN_STATE_NOT_LOADED)
 	    // "import autoload './dir/script.vim'" or
 	    // "import autoload './autoload/script.vim'" - load script first
-	    res = generate_SOURCE(cctx, import->imp_sid);
+	    res = generate_SOURCE(cctx, imp->imp_sid);
 
 	if (res == OK)
 	{
@@ -599,17 +736,17 @@ compile_load_scriptvar(
 		{
 		    char_u sid_name[MAX_FUNC_NAME_LEN];
 
-		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
+		    func_name_with_sid(exp_name, imp->imp_sid, sid_name);
 		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any, TRUE);
 		}
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
-						      import->imp_sid, &t_any);
+						      imp->imp_sid, &t_any);
 		done = TRUE;
 	    }
 	    else
 	    {
-		idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
+		idx = find_exported(imp->imp_sid, exp_name, &ufunc, &type,
 							     cctx, NULL, TRUE);
 	    }
 	}
@@ -623,6 +760,43 @@ compile_load_scriptvar(
 	{
 	    if (ufunc != NULL)
 	    {
+		gfargs_tab_T	gfatab;
+
+		generic_func_args_table_init(&gfatab);
+
+		if (IS_GENERIC_FUNC(ufunc))
+		{
+		    if (*p == '<')
+		    {
+			// generic function call
+			p = parse_generic_func_type_args(name, STRLEN(name), p,
+								&gfatab, cctx);
+			if (p != NULL)
+			{
+			    *end = p;
+
+			    // generic function call
+			    ufunc = generic_func_get(ufunc, &gfatab);
+			}
+
+			generic_func_args_table_clear(&gfatab);
+
+			if (p == NULL || ufunc == NULL)
+			    return FAIL;
+		    }
+		    else
+		    {
+			emsg_funcname(e_generic_func_missing_type_args_str,
+									name);
+			return FAIL;
+		    }
+		}
+		else if (*p == '<')
+		{
+		    emsg_funcname(e_not_a_generic_function_str, name);
+		    return FAIL;
+		}
+
 		// function call or function reference
 		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL, TRUE);
 		return OK;
@@ -631,7 +805,7 @@ compile_load_scriptvar(
 	}
 
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		import->imp_sid,
+		imp->imp_sid,
 		idx,
 		type);
 	return OK;
@@ -644,13 +818,22 @@ compile_load_scriptvar(
 }
 
     static int
-generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
+generate_funcref(
+    cctx_T		*cctx,
+    char_u		*name,
+    gfargs_tab_T	*gfatab,
+    int			has_g_prefix)
 {
     ufunc_T *ufunc = find_func(name, FALSE);
     compiletype_T compile_type;
 
     // Reject a global non-autoload function found without the "g:" prefix.
     if (ufunc == NULL || (!has_g_prefix && func_requires_g_prefix(ufunc)))
+	return FAIL;
+
+    // process generic function call
+    ufunc = generic_func_get(ufunc, gfatab);
+    if (ufunc == NULL)
 	return FAIL;
 
     // Need to compile any default values to get the argument types.
@@ -662,6 +845,26 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 }
 
 /*
+ * Returns TRUE if compiling a class method.
+ */
+    static int
+compiling_a_class_method(cctx_T *cctx)
+{
+    // For an object method, the FC_OBJECT flag will be set.
+    // For a constructor method, the FC_NEW flag will be set.
+    // Excluding these methods, the others are class methods.
+    // When compiling a closure function inside an object method,
+    // cctx->ctx_outer->ctx_func will point to the object method.
+    return cctx->ctx_ufunc != NULL
+	&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0
+	&& (cctx->ctx_outer == NULL
+		|| cctx->ctx_outer->ctx_ufunc == NULL
+		|| cctx->ctx_outer->ctx_ufunc->uf_class == NULL
+		|| (cctx->ctx_outer->ctx_ufunc->uf_flags
+		    & (FC_OBJECT|FC_NEW)) == 0);
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -670,6 +873,7 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
     int
 compile_load(
 	char_u **arg,
+	size_t  namelen,
 	char_u *end_arg,
 	cctx_T	*cctx,
 	int	is_expr,
@@ -680,6 +884,18 @@ compile_load(
     char_u	*end = end_arg;
     int		res = FAIL;
     int		prev_called_emsg = called_emsg;
+    gfargs_tab_T gfatab;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (*(*arg + namelen) == '<')
+    {
+	// generic function call
+	if (parse_generic_func_type_args(*arg, namelen,
+			*arg + namelen, &gfatab, cctx) == NULL)
+	    return FAIL;
+	*(*arg + namelen) = NUL;
+    }
 
     if (*(*arg + 1) == ':')
     {
@@ -709,7 +925,7 @@ compile_load(
 	    // load namespaced variable
 	    name = vim_strnsave(*arg + 2, end - (*arg + 2));
 	    if (name == NULL)
-		return FAIL;
+		goto theend;
 
 	    switch (**arg)
 	    {
@@ -719,20 +935,21 @@ compile_load(
 			  {
 			      semsg(_(e_cannot_use_s_colon_in_vim9_script_str),
 									 *arg);
-			      vim_free(name);
-			      return FAIL;
+			      goto theend;
 			  }
 			  if (is_expr && find_func(name, FALSE) != NULL)
-			      res = generate_funcref(cctx, name, FALSE);
+			      res = generate_funcref(cctx, name, &gfatab, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
-								   NULL, &end);
+							    NULL, &end, NULL);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE) != NULL)
-				  res = generate_funcref(cctx, name, TRUE);
+				       && (find_func(name, FALSE) != NULL
+					   || gfatab.gfat_args.ga_len > 0))
+				  res = generate_funcref(cctx, name, &gfatab,
+								TRUE);
 			      else
 				  isn_type = ISN_LOADG;
 			  }
@@ -742,7 +959,7 @@ compile_load(
 			      vim_free(name);
 			      name = vim_strnsave(*arg, end - *arg);
 			      if (name == NULL)
-				  return FAIL;
+				  goto theend;
 			  }
 			  break;
 		case 'w': isn_type = ISN_LOADW; break;
@@ -763,7 +980,6 @@ compile_load(
     }
     else
     {
-	size_t	    len = end - *arg;
 	int	    idx;
 	int	    method_idx;
 	int	    gen_load = FALSE;
@@ -771,13 +987,11 @@ compile_load(
 	int	    outer_loop_depth = -1;
 	int	    outer_loop_idx = -1;
 
-	name = vim_strnsave(*arg, end - *arg);
+	name = vim_strnsave(*arg, namelen);
 	if (name == NULL)
-	    return FAIL;
+	    goto theend;
 
-	if (STRCMP(name, "super") == 0
-		&& cctx->ctx_ufunc != NULL
-		&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0)
+	if (STRCMP(name, "super") == 0 && compiling_a_class_method(cctx))
 	{
 	    // super.SomeFunc() in a class function: push &t_super type, this
 	    // is recognized in compile_subscript().
@@ -790,7 +1004,7 @@ compile_load(
 	    script_autoload(name, FALSE);
 	    res = generate_LOAD(cctx, ISN_LOADAUTO, 0, name, &t_any);
 	}
-	else if (arg_exists(*arg, len, &idx, &type, &gen_load_outer, cctx)
+	else if (arg_exists(*arg, namelen, &idx, &type, &gen_load_outer, cctx)
 									 == OK)
 	{
 	    if (gen_load_outer == 0)
@@ -801,7 +1015,7 @@ compile_load(
 	    lvar_T  lvar;
 	    class_T *cl = NULL;
 
-	    if (lookup_local(*arg, len, &lvar, cctx) == OK)
+	    if (lookup_local(*arg, namelen, &lvar, cctx) == OK)
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
@@ -816,9 +1030,9 @@ compile_load(
 	    }
 	    else if (cctx->ctx_ufunc->uf_defclass != NULL &&
 		    (((idx =
-		       cctx_class_member_idx(cctx, *arg, len, &cl)) >= 0)
+		       cctx_class_member_idx(cctx, *arg, namelen, &cl)) >= 0)
 		     || ((method_idx =
-			     cctx_class_method_idx(cctx, *arg, len, &cl)) >= 0)))
+			     cctx_class_method_idx(cctx, *arg, namelen, &cl)) >= 0)))
 	    {
 		// Referencing a class variable or method without the class
 		// name.  A class variable or method can be referenced without
@@ -844,17 +1058,19 @@ compile_load(
 	    }
 	    else
 	    {
+		imported_T *imp = NULL;
+
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
-		if (script_var_exists(*arg, len, cctx, NULL) == OK
-				      || find_imported(name, 0, FALSE) != NULL)
-		   res = compile_load_scriptvar(cctx, name, *arg, &end);
+		if (script_var_exists(*arg, namelen, cctx, NULL) == OK
+			    || (imp = find_imported(name, 0, FALSE)) != NULL)
+		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
 		// generate_funcref() will fail if the function can't be found.
 		if (res == FAIL && is_expr && ASCII_ISUPPER(*name))
-		    res = generate_funcref(cctx, name, FALSE);
+		    res = generate_funcref(cctx, name, &gfatab, FALSE);
 	    }
 	}
 	if (gen_load)
@@ -873,6 +1089,7 @@ theend:
     if (res == FAIL && error && called_emsg == prev_called_emsg)
 	semsg(_(e_variable_not_found_str), name);
     vim_free(name);
+    generic_func_args_table_clear(&gfatab);
     return res;
 }
 
@@ -977,7 +1194,9 @@ compile_arguments(
 	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
 
 	    // {skip} argument of searchpair() can be compiled if not empty
-	    if (isn->isn_type == ISN_PUSHS && *isn->isn_arg.string != NUL)
+	    if (isn->isn_type == ISN_PUSHS
+		    && isn->isn_arg.string != NULL
+		    && *isn->isn_arg.string != NUL)
 		compile_string(isn, cctx, 0);
 	}
 	else if (special_fn == CA_SUBSTITUTE && *argcount == 3
@@ -987,21 +1206,26 @@ compile_arguments(
 
 	    // {sub} argument of substitute() can be compiled if it starts
 	    // with \=
-	    if (isn->isn_type == ISN_PUSHS && isn->isn_arg.string[0] == '\\'
-					      && isn->isn_arg.string[1] == '=')
+	    if (isn->isn_type == ISN_PUSHS
+		    && isn->isn_arg.string != NULL
+		    && isn->isn_arg.string[0] == '\\'
+		    && isn->isn_arg.string[1] == '=')
 		compile_string(isn, cctx, 2);
 	}
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
 	    semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
-	    p = skipwhite(p);
+	    return FAIL;
 	}
 	if (*p == ',')
 	{
 	    ++p;
 	    if (*p != NUL && !VIM_ISWHITE(*p))
+	    {
 		semsg(_(e_white_space_required_after_str_str), ",", p - 1);
+		return FAIL;
+	    }
 	}
 	else
 	    must_end = TRUE;
@@ -1012,6 +1236,32 @@ failret:
     emsg(_(e_missing_closing_paren));
     return FAIL;
 }
+
+/*
+ * Compile a builtin method call of an object (e.g. string(), len(), empty(),
+ * etc.) if the class implements it.
+ */
+    static int
+compile_builtin_method_call(cctx_T *cctx, class_builtin_T builtin_method)
+{
+    type_T	*type = get_decl_type_on_stack(cctx, 0);
+    int		res = FAIL;
+
+    // If the built in function is invoked on an object and the class
+    // implements the corresponding built in method, then invoke the object
+    // method.
+    if (type->tt_type == VAR_OBJECT)
+    {
+	int	method_idx;
+	ufunc_T *uf = class_get_builtin_method(type->tt_class, builtin_method,
+							&method_idx);
+	if (uf != NULL)
+	    res = generate_CALL(cctx, uf, type->tt_class, method_idx, 0, FALSE);
+    }
+
+    return res;
+}
+
 
 /*
  * Compile a function call:  name(arg1, arg2)
@@ -1079,20 +1329,25 @@ compile_call(
 	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
 		    || !is_has))
 	{
-	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
 
 	    *arg = s + 1;
-	    argvars[1].v_type = VAR_UNKNOWN;
-	    tv->v_type = VAR_NUMBER;
-	    tv->vval.v_number = 0;
-	    if (is_has)
-		f_has(argvars, tv);
-	    else if (is_len)
-		f_len(argvars, tv);
-	    else
-		f_exists(argvars, tv);
+
+	    if (cctx->ctx_skip != SKIP_YES)
+	    {
+		typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
+
+		argvars[1].v_type = VAR_UNKNOWN;
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = 0;
+		if (is_has)
+		    f_has(argvars, tv);
+		else if (is_len)
+		    f_len(argvars, tv);
+		else
+		    f_exists(argvars, tv);
+		++ppconst->pp_used;
+	    }
 	    clear_tv(&argvars[0]);
-	    ++ppconst->pp_used;
 	    return OK;
 	}
 	clear_tv(&argvars[0]);
@@ -1121,7 +1376,23 @@ compile_call(
     else
 	special_fn = CA_NOT_SPECIAL;
 
-    *arg = skipwhite(*arg + varlen + 1);
+    gfargs_tab_T    gfatab;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (*(*arg + varlen) == '<')
+    {
+	// generic function
+	*arg = parse_generic_func_type_args(*arg, varlen, *arg + varlen,
+								&gfatab, cctx);
+	if (*arg == NULL)
+	    goto theend;
+	++*arg;			// skip '('
+    }
+    else
+	*arg += varlen + 1;
+
+    *arg = skipwhite(*arg);
     if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
@@ -1143,6 +1414,8 @@ compile_call(
 	    if (STRCMP(name, "add") == 0 && argcount == 2)
 	    {
 		type_T	    *type = get_decl_type_on_stack(cctx, 1);
+		if (check_type_is_value(get_type_on_stack(cctx, 0)) == FAIL)
+		    goto theend;
 
 		// add() can be compiled to instructions if we know the type
 		if (type->tt_type == VAR_LIST)
@@ -1165,6 +1438,20 @@ compile_call(
 		// May have the "D" or "R" flag, reserve a variable for a
 		// deferred function call.
 		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
+	    }
+
+	    class_builtin_T	builtin_method = CLASS_BUILTIN_INVALID;
+	    if (STRCMP(name, "string") == 0)
+		builtin_method = CLASS_BUILTIN_STRING;
+	    else if (STRCMP(name, "empty") == 0)
+		builtin_method = CLASS_BUILTIN_EMPTY;
+	    else if (STRCMP(name, "len") == 0)
+		builtin_method = CLASS_BUILTIN_LEN;
+	    if (builtin_method != CLASS_BUILTIN_INVALID)
+	    {
+		res = compile_builtin_method_call(cctx, builtin_method);
+		if (res == OK)
 		    idx = -1;
 	    }
 
@@ -1191,15 +1478,22 @@ compile_call(
 	ufunc = find_func(name, FALSE);
 	if (ufunc != NULL)
 	{
+	    // process generic function call
+	    ufunc = generic_func_get(ufunc, &gfatab);
+	    if (ufunc == NULL)
+		goto theend;
+
 	    if (!func_is_global(ufunc))
 	    {
-		res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
+		res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 		goto theend;
 	    }
 	    if (!has_g_namespace
-			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
+			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
+			  && !IS_GENERIC_FUNC(ufunc))
 	    {
-		// A function name without g: prefix must be found locally.
+		// A function name without g: prefix must be found locally
+		// A generic function has the name emptied out.
 		emsg_funcname(e_unknown_function_str, namebuf);
 		goto theend;
 	    }
@@ -1212,7 +1506,7 @@ compile_call(
 	    if (cctx->ctx_ufunc->uf_defclass == cl)
 	    {
 		res = generate_CALL(cctx, cl->class_class_functions[mi], NULL,
-							0, argcount);
+							0, argcount, FALSE);
 	    }
 	    else
 	    {
@@ -1229,7 +1523,7 @@ compile_call(
     // Not for some#Func(), it will be loaded later.
     p = namebuf;
     if (!has_g_namespace && !is_autoload
-	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
+	    && compile_load(&p, varlen, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
 	type_T	    *s_type = get_type_on_stack(cctx, 0);
 
@@ -1240,7 +1534,7 @@ compile_call(
     // If we can find a global function by name generate the right call.
     if (ufunc != NULL)
     {
-	res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
+	res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 	goto theend;
     }
 
@@ -1252,6 +1546,7 @@ compile_call(
 	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
+    generic_func_args_table_clear(&gfatab);
     vim_free(tofree);
     return res;
 }
@@ -1372,6 +1667,82 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
+ * parse a tuple: (expr, expr)
+ * "*arg" points to the ','.
+ * ppconst->pp_is_const is set if all the items are constants.
+ */
+    static int
+compile_tuple(
+    char_u **arg,
+    cctx_T *cctx,
+    ppconst_T *ppconst,
+    int first_item_const)
+{
+    char_u	*p = *arg + 1;
+    char_u	*whitep = *arg + 1;
+    int		count = 0;
+    int		is_const;
+    int		is_all_const = TRUE;	// reset when non-const encountered
+    int		must_end = FALSE;
+
+    if (**arg != ')')
+    {
+	if (*p != ')' && !IS_WHITE_OR_NUL(*p))
+	{
+	    semsg(_(e_white_space_required_after_str_str), ",", p - 1);
+	    return FAIL;
+	}
+	count = 1;	// the first tuple item is already processed
+	is_all_const = first_item_const;
+	for (;;)
+	{
+	    if (may_get_next_line(whitep, &p, cctx) == FAIL)
+	    {
+		semsg(_(e_missing_end_of_tuple_rsp_str), *arg);
+		return FAIL;
+	    }
+	    if (*p == ',')
+	    {
+		semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
+		return FAIL;
+	    }
+	    if (*p == ')')
+	    {
+		++p;
+		break;
+	    }
+	    if (must_end)
+	    {
+		semsg(_(e_missing_comma_in_tuple_str), p);
+		return FAIL;
+	    }
+	    if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
+		return FAIL;
+	    if (!is_const)
+		is_all_const = FALSE;
+	    ++count;
+	    if (*p == ',')
+	    {
+		++p;
+		if (*p != ')' && !IS_WHITE_OR_NUL(*p))
+		{
+		    semsg(_(e_white_space_required_after_str_str), ",", p - 1);
+		    return FAIL;
+		}
+	    }
+	    else
+		must_end = TRUE;
+	    whitep = p;
+	    p = skipwhite(p);
+	}
+    }
+    *arg = p;
+
+    ppconst->pp_is_const = is_all_const;
+    return generate_NEWTUPLE(cctx, count, FALSE);
+}
+
+/*
  * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '('.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
@@ -1389,7 +1760,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     evalarg.eval_cctx = cctx;
 
     // Get the funcref in "rettv".
-    r = get_lambda_tv(arg, &rettv, TRUE, &evalarg);
+    r = get_lambda_tv(arg, &rettv, TRUE, &evalarg, cctx);
     if (r != OK)
     {
 	clear_evalarg(&evalarg, NULL);
@@ -1400,6 +1771,11 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
     clear_tv(&rettv);
+
+    if (cctx->ctx_ufunc != NULL)
+	// This lambda might be defined in a class method.  Inherit the class
+	// from the current function.
+	ufunc->uf_defclass = cctx->ctx_ufunc->uf_defclass;
 
     // Compile it here to get the return type.  The return type is optional,
     // when it's missing use t_unknown.  This is recognized in
@@ -1474,7 +1850,7 @@ get_lambda_tv_and_compile(
 
     // Get the funcref in "rettv".
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
-    r = get_lambda_tv(arg, rettv, types_optional, evalarg);
+    r = get_lambda_tv(arg, rettv, types_optional, evalarg, NULL);
     current_sctx.sc_version = save_sc_version;
     if (r != OK)
 	return r;  // currently unreachable
@@ -1519,7 +1895,10 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (d == NULL)
 	return FAIL;
     if (generate_ppconst(cctx, ppconst) == FAIL)
+    {
+	dict_unref(d);
 	return FAIL;
+    }
     for (;;)
     {
 	char_u	    *key = NULL;
@@ -1553,7 +1932,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    }
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
-	    else if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		return FAIL;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
@@ -1948,7 +2327,7 @@ get_compare_type(char_u *p, int *len, int *type_is)
 			if (p[2] == 'n' && p[3] == 'o' && p[4] == 't')
 			    *len = 5;
 			i = p[*len];
-			if (!isalnum(i) && i != '_')
+			if (!SAFE_isalnum(i) && i != '_')
 			{
 			    type = *len == 2 ? EXPR_IS : EXPR_ISNOT;
 			    *type_is = TRUE;
@@ -2071,6 +2450,11 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
     if (may_get_next_line_error(p, arg, cctx) == FAIL)
 	return FAIL;
+
+    if (**arg == ')')
+	// empty tuple
+	return compile_tuple(arg, cctx, ppconst, FALSE);
+
     if (ppconst->pp_used <= PPSIZE - 10)
     {
 	ret = compile_expr1(arg, cctx, ppconst);
@@ -2084,6 +2468,15 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     }
     if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 	return FAIL;
+    if (ret == OK && **arg == ',')
+    {
+	// tuple
+	int is_const = ppconst->pp_used > 0 || ppconst->pp_is_const;
+	if (generate_ppconst(cctx, ppconst) == FAIL)
+	    return FAIL;
+	return compile_tuple(arg, cctx, ppconst, is_const);
+    }
+
     if (**arg == ')')
 	++*arg;
     else if (ret == OK)
@@ -2343,6 +2736,7 @@ compile_subscript(
 	    int		is_slice = FALSE;
 
 	    // list index: list[123]
+	    // tuple index: tuple[123]
 	    // dict member: dict[key]
 	    // string index: text[123]
 	    // blob index: blob[123]
@@ -2410,7 +2804,8 @@ compile_subscript(
 		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 	    }
-	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
+	    if (cctx->ctx_skip != SKIP_YES
+		    && compile_member(is_slice, &keeping_dict, cctx) == FAIL)
 		return FAIL;
 	}
 	else if (*p == '.' && p[1] != '.')
@@ -2420,9 +2815,11 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    if ((type = get_type_on_stack(cctx, 0)) != &t_unknown
+	    type = get_type_on_stack(cctx, 0);
+	    if (type != &t_unknown
 		    && (type->tt_type == VAR_CLASS
-					       || type->tt_type == VAR_OBJECT))
+			|| (type->tt_type == VAR_OBJECT
+			    && type != &t_object_any)))
 	    {
 		// class member: SomeClass.varname
 		// class method: SomeClass.SomeMethod()
@@ -2717,16 +3114,23 @@ compile_expr9(
 	    return FAIL;
 	}
 
+	size_t namelen = p - *arg;
+	if (*p == '<')
+	{
+	    if (skip_generic_func_type_args(&p) == FAIL)
+		return FAIL;
+	}
+
 	if (*p == '(')
 	{
-	    r = compile_call(arg, p - *arg, cctx, ppconst, 0);
+	    r = compile_call(arg, namelen, cctx, ppconst, 0);
 	}
 	else
 	{
 	    if (cctx->ctx_skip != SKIP_YES
 				    && generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
-	    r = compile_load(arg, p, cctx, TRUE, TRUE);
+	    r = compile_load(arg, namelen, p, cctx, TRUE, TRUE);
 	}
 	if (r == FAIL)
 	    return FAIL;
@@ -2737,7 +3141,7 @@ compile_expr9(
     if (compile_subscript(arg, cctx, start_leader, &end_leader,
 							     ppconst) == FAIL)
 	return FAIL;
-    if (ppconst->pp_used > 0)
+    if ((ppconst->pp_used > 0) && (cctx->ctx_skip != SKIP_YES))
     {
 	// apply the '!', '-' and '+' before the constant
 	rettv = &ppconst->pp_tv[ppconst->pp_used - 1];
@@ -2762,7 +3166,7 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (**arg == '<' && eval_isnamec1((*arg)[1]))
     {
 	++*arg;
-	want_type = parse_type(arg, cctx->ctx_type_list, TRUE);
+	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
 	if (want_type == NULL)
 	    return FAIL;
 
@@ -2787,12 +3191,13 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	type_T	    *actual;
 	where_T	    where = WHERE_INIT;
 
+	where.wt_kind = WT_CAST;
 	generate_ppconst(cctx, ppconst);
 	actual = get_type_on_stack(cctx, 0);
 	if (check_type_maybe(want_type, actual, FALSE, where) != OK)
 	{
-	    if (need_type(actual, want_type, FALSE,
-					    -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    if (need_type_where(actual, want_type, FALSE, -1, where, cctx, FALSE, FALSE)
+		    == FAIL)
 		return FAIL;
 	}
     }
@@ -2968,8 +3373,8 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ppconst->pp_is_const = FALSE;
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-2, FALSE, cctx) == FAIL
-			|| may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL
+			|| may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		    return FAIL;
 		if (generate_CONCAT(cctx, 2) == FAIL)
 		    return FAIL;

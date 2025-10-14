@@ -1,5 +1,7 @@
 " Test for checking the source code style.
 
+let s:list_of_c_files = []
+
 def s:ReportError(fname: string, lnum: number, msg: string)
   if lnum > 0
     assert_report(fname .. ' line ' .. lnum .. ': ' .. msg)
@@ -7,19 +9,32 @@ def s:ReportError(fname: string, lnum: number, msg: string)
 enddef
 
 def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
+  var prev_lnum = 1
   var lnum = 1
   while (lnum > 0)
     cursor(lnum, 1)
     lnum = search(pattern, 'W', 0, 0, skip)
-    ReportError(fname, lnum, msg)
+    if (prev_lnum == lnum)
+      break
+    endif
+    prev_lnum = lnum
     if (lnum > 0)
-      lnum += 1
+      ReportError(fname, lnum, msg)
     endif
   endwhile
 enddef
 
+def s:Get_C_source_files(): list<string>
+  if empty(list_of_c_files)
+    var list = glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+    # Some files are auto-generated and may contain space errors, so skip those
+    list_of_c_files = filter(list, (i, v) => v !~ 'dlldata.c\|if_ole.h\|iid_ole.c')
+  endif
+  return list_of_c_files
+enddef
+
 def Test_source_files()
-  for fname in glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+  for fname in Get_C_source_files()
     bwipe!
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
@@ -64,7 +79,8 @@ def Test_test_files()
         && fname !~ 'test_listchars.vim'
         && fname !~ 'test_visual.vim'
       cursor(1, 1)
-      var lnum = search(fname =~ "test_regexp_latin" ? '[^á] \t' : ' \t')
+      var skip = 'getline(".") =~ "codestyle: ignore"'
+      var lnum = search(fname =~ "test_regexp_latin" ? '[^á] \t' : ' \t', 'W', 0, 0, skip)
       ReportError('testdir/' .. fname, lnum, 'space before Tab')
     endif
 
@@ -73,6 +89,7 @@ def Test_test_files()
             && fname !~ 'test_let.vim'
             && fname !~ 'test_tagjump.vim'
             && fname !~ 'test_vim9_cmd.vim'
+            && fname !~ 'test_vim9_enum.vim'
       cursor(1, 1)
       var lnum = search(
           fname =~ 'test_vim9_assign.vim' ? '[^=]\s$'
@@ -150,5 +167,30 @@ def Test_help_files()
   bwipe!
 enddef
 
+def Test_indent_of_source_files()
+  for fname in Get_C_source_files()
+    execute 'tabnew ' .. fname
+    if &expandtab
+      continue
+    endif
+    for lnum in range(1, line('$'))
+      var name: string = synIDattr(synID(lnum, 1, 0), 'name')
+      if -1 == index(['cComment', 'cCommentStart'], name)
+        var line: string = getline(lnum)
+        var indent: string = matchstr(line, '^\s*')
+        var tailing: string = matchstr(line, '\s*$')
+        if !empty(indent)
+          if indent !~# '^\t* \{0,7}$'
+            ReportError('testdir/' .. fname, lnum, 'invalid indent')
+          endif
+        endif
+        if !empty(tailing)
+          ReportError('testdir/' .. fname, lnum, 'tailing spaces')
+        endif
+      endif
+    endfor
+    close
+  endfor
+enddef
 
-" vim: shiftwidth=2 sts=2 expandtab
+" vim: shiftwidth=2 sts=2 expandtab nofoldenable

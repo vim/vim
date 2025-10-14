@@ -3,10 +3,11 @@
 # serbian.nsi: Serbian language strings for gvim NSIS installer.
 #
 # Locale ID    : 3098
+# Locale Name  : sr
 # fileencoding : UTF-8
 # Author       : Ivan Pešić
 
-!insertmacro MUI_LANGUAGE "Српски"
+!insertmacro MUI_LANGUAGE "Serbian"
 
 
 # Overwrite the default translation.
@@ -15,6 +16,20 @@ LangString ^SetupCaption     ${LANG_SERBIAN} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_SERBIAN} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "..\lang\LICENSE.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_SERBIAN} "..\lang\LICENSE.sr.nsis.txt"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_SERBIAN} "README.sr.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

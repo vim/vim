@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.0.  Last change: 2023 Oct 20
+*starting.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,8 +43,8 @@ filename	One or more file names.  The first one will be the current
 		To avoid a file name starting with a '-' being interpreted as
 		an option, precede the arglist with "--", e.g.: >
 			vim -- -filename
-<		All arguments after the "--" will be interpreted as file names,
-		no other options or "+command" argument can follow.
+<		All arguments after the "--" will be interpreted as file
+		names, no other options or "+command" argument can follow.
 		For behavior of quotes on MS-Windows, see |win32-quotes|.
 
 							*--*
@@ -93,30 +93,30 @@ filename	One or more file names.  The first one will be the current
 
 The startup mode can be changed by using another name instead of "vim", which
 is equal to giving options:
-ex	vim -e	    Start in Ex mode (see |Ex-mode|).		    *ex*
-exim	vim -E	    Start in improved Ex mode (see |Ex-mode|).	    *exim*
-			(normally not installed)
-view	vim -R	    Start in read-only mode (see |-R|).		    *view*
-gvim	vim -g	    Start the GUI (see |gui|).			    *gvim*
-gex	vim -eg	    Start the GUI in Ex mode.			  *gex*
-gview	vim -Rg	    Start the GUI in read-only mode.		  *gview*
-rvim	vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
-rview	vim -RZ	    Like "view", but in restricted mode.	  *rview*
-rgvim	vim -gZ	    Like "gvim", but in restricted mode.	  *rgvim*
-rgview	vim -RgZ    Like "gview", but in restricted mode.	  *rgview*
-evim    vim -y      Easy Vim: set 'insertmode' (see |-y|)	    *evim*
-eview   vim -yR     Like "evim" in read-only mode		  *eview*
-vimdiff vim -d	    Start in diff mode |diff-mode|
+ex	 vim -e	    Start in Ex mode (see |Ex-mode|).		  *ex*
+exim	 vim -E	    Start in improved Ex mode (see |Ex-mode|).	  *exim*
+		    (normally not installed)
+view	 vim -R	    Start in read-only mode (see |-R|).		  *view*
+gvim	 vim -g	    Start the GUI (see |gui|).			  *gvim*
+gex	 vim -eg    Start the GUI in Ex mode.			  *gex*
+gview	 vim -Rg    Start the GUI in read-only mode.		  *gview*
+rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
+rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
+rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
+rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
+evim	 vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview	 vim -yR    Like "evim" in read-only mode		  *eview*
+vimdiff	 vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
 "gvim-8" to start the GUI.  You must have an executable by that name then, of
 course.
 
-On Unix, you would normally have one executable called Vim, and links from the
-different startup-names to that executable.  If your system does not support
-links and you do not want to have several copies of the executable, you could
-use an alias instead.  For example: >
+On Unix, you would normally have one executable called "vim", and links from
+the different startup-names to that executable.  If your system does not
+support links and you do not want to have several copies of the executable,
+you could use an alias instead.  For example, in a C shell descendant: >
 	alias view   vim -R
 	alias gvim   vim -g
 <
@@ -174,7 +174,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		"pat" in the first file being edited (see |pattern| for the
 		available search patterns).  The search starts at the cursor
 		position, which can be the first line or the cursor position
-		last used from |viminfo|. To force a search from the first
+		last used from |viminfo|.  To force a search from the first
 		line use "+1 +/pat".
 
 +{command}						*-+c* *-c*
@@ -194,7 +194,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 --cmd {command}						*--cmd*
 		{command} will be executed before processing any vimrc file.
-		Otherwise it acts like -c {command}.  You can use up to 10 of
+		Otherwise, it acts like -c {command}.  You can use up to 10 of
 		these commands, independently from "-c" commands.
 
 							*-S*
@@ -262,7 +262,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		shell command, it has only been made difficult.
 
 							*-g*
--g		Start Vim in GUI mode.  See |gui|. For the opposite see |-v|.
+-g		Start Vim in GUI mode.  See |gui|.  For the opposite see |-v|.
 
 							*-v*
 -v		Start Ex in Vi mode.  Only makes a difference when the
@@ -279,7 +279,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-s-ex*
 -s		Silent or batch mode.  Only when Vim was started as "ex" or
-		when preceded with the "-e" argument.  Otherwise see |-s|,
+		when preceded with the "-e" argument.  Otherwise, see |-s|,
 		which does take an argument while this use of "-s" doesn't.
 		To be used when Vim is used to execute Ex commands from a file
 		instead of a terminal.  Switches off most prompts and
@@ -289,12 +289,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 			:list
 			:number
 			:set      to display option values.
-		When 'verbose' is non-zero messages are printed (for
+		When 'verbose' is non-zero, messages are printed (for
 		debugging, to stderr).
 		'term' and $TERM are not used.
-		If Vim appears to be stuck try typing "qa!<Enter>".  You don't
-		get a prompt thus you can't see Vim is waiting for you to type
-		something.
+		If Vim appears to be stuck, try typing "qa!<Enter>".  You
+		don't get a prompt, thus you can't see Vim is waiting for you
+		to type something.
 		Initializations are skipped (except the ones given with the
 		"-u" argument).
 		Example: >
@@ -317,7 +317,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-A*
 -A		Arabic mode.  Sets the 'arabic' option on.  {only when
 		compiled with the |+arabic| features (which include
-		|+rightleft|), otherwise Vim gives an error message
+		|+rightleft|), otherwise, Vim gives an error message
 		and exits}
 
 							*-F*
@@ -326,7 +326,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
-		{only when compiled with the |+rightleft| feature, otherwise
+		{only when compiled with the |+rightleft| feature, otherwise,
 		Vim gives an error message and exits}
 
 							*-V* *verbose*
@@ -407,7 +407,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		few windows will be editing an empty file.
 
 							*-O*
--O[N]		Open N windows, split vertically.  Otherwise it's like -o.
+-O[N]		Open N windows, split vertically.  Otherwise, it's like -o.
 		If both the -o and the -O option are given, the last one on
 		the command line determines how the windows will be split.
 
@@ -428,8 +428,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen.
-		Also avoids the "Reading from stdin..." message.
-		Also avoids the "N files to edit" message.
+		Also avoids the "Reading from stdin..." as well as the
+		"N files to edit" message.
 
 --gui-dialog-file {name}				*--gui-dialog-file*
 		When using the GUI, instead of showing a dialog, write the
@@ -483,8 +483,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 		This can be used to start Vim in a special mode, with special
 		mappings and settings.  A shell alias can be used to make
-		this easy to use.  For example: >
-			alias vimc vim -u ~/.c_vimrc !*
+		this easy to use.  For example, in a C shell descendant: >
+			alias vimc 'vim -u ~/.c_vimrc \!*'
+<		And in a Bash shell: >
+			alias vimc='vim -u ~/.c_vimrc'
 <		Also consider using autocommands; see |autocommand|.
 
 		When {vimrc} is equal to "NONE" (all uppercase), all
@@ -503,7 +505,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Using the "-u" argument with another argument than DEFAULTS
 		has the side effect that the 'compatible' option will be on by
 		default.  This can have unexpected effects.  See
-		|'compatible'|.
+		'compatible'.
 
 							*-U* *E230*
 -U {gvimrc}	The file {gvimrc} is read for initializations when the GUI
@@ -538,15 +540,16 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		not needed when reading a file, because there is a check if
 		the file that is being read has been encrypted, and Vim asks
 		for a key automatically. |encryption|
+		{only available when compiled with the |+cryptv| feature}
 
 							*-X*
 -X		Do not try connecting to the X server to get the current
 		window title and copy/paste using the X clipboard.  This
 		avoids a long startup time when running Vim in a terminal
 		emulator and the connection to the X server is slow.
-		See |--startuptime| to find out if affects you.
+		See |--startuptime| to find out if this affects you.
 		Only makes a difference on Unix or VMS, when compiled with the
-		|+X11| feature.  Otherwise it's ignored.
+		|+X11| feature.  Otherwise, it's ignored.
 		To disable the connection only for specific terminals, see the
 		'clipboard' option.
 		When the X11 Session Management Protocol (XSMP) handler has
@@ -555,6 +558,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		When the connection is desired later anyway (e.g., for
 		client-server messages), call the |serverlist()| function.
 		This does not enable the XSMP handler though.
+
+							*-Y*
+-Y		Do not try connecting to the Wayland compositor.  Is only
+		relevant for Unix when compiled with the |+wayland| feature,
+		otherwise it's ignored.  Note that this will make any feature
+		that uses Wayland unavailable, such as the clipboard.
 
 							*-s*
 -s {scriptin}	The script file "scriptin" is read.  The characters in the
@@ -575,8 +584,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":source!".  When the "scriptout" file already exists, new
 		characters are appended.  See also |complex-repeat|.
 		{scriptout} cannot start with a digit.
-		If you want to record what is typed in a human readable for
-		you can use |ch_logfile()|, It adds "raw key input" lines.
+		If you want to record what is typed in a human readable form,
+		you can use |ch_logfile()|.  It adds "raw key input" lines.
 		Also see |--log|.
 
 							*-W*
@@ -666,7 +675,7 @@ If the executable is called "ex", Vim will start in "Ex" mode.  This means it
 will accept only ":" commands.  But when the "-v" argument is given, Vim will
 start in Normal mode anyway.
 
-Additional arguments are available on unix like systems when compiled with
+Additional arguments are available on Unix like systems when compiled with
 X11 GUI support.  See |gui-resources|.
 
 ==============================================================================
@@ -740,7 +749,7 @@ In Evim these options are changed from their default value:
 	:set incsearch		show matches halfway typing a pattern
 	:set mouse=a		use the mouse in all modes
 	:set hlsearch		highlight all matches for a search pattern
-	:set whichwrap+=<,>,[,]  <Left> and <Right> wrap around line breaks
+	:set whichwrap+=<,>,[,]	<Left> and <Right> wrap around line breaks
 	:set guioptions-=a	non-Unix only: don't do auto-select
 
 Key mappings:
@@ -809,7 +818,8 @@ accordingly.  Vim proceeds in this order:
 	name.  Also see |vimrc-intro|.
 
 	Places for your personal initializations:
-		Unix		$HOME/.vimrc or $HOME/.vim/vimrc
+		Unix		$HOME/.vimrc, $HOME/.vim/vimrc
+				or $XDG_CONFIG_HOME/vim/vimrc
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
@@ -820,12 +830,13 @@ accordingly.  Vim proceeds in this order:
 	one that is found is read.
 
 	RECOMMENDATION: Put all your Vim configuration stuff in the
-	$HOME/.vim/ directory ($HOME/vimfiles/ for MS-Windows). That makes it
+	$HOME/.vim/ directory ($HOME/vimfiles/ for MS-Windows).  That makes it
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
-	All following initializations until 4. are skipped. $MYVIMRC is not
-	set.
+	All following initializations until 4. are skipped. `$MYVIMRC` and
+	`$MYVIMDIR` are not set (but `$MYVIMDIR` will be set, if 'rtp' is
+	updated).
 	"vim -u NORC" can be used to skip these initializations without
 	reading a file.  "vim -u NONE" also skips loading plugins.  |-u|
 
@@ -833,7 +844,7 @@ accordingly.  Vim proceeds in this order:
 	initializations until 4. are skipped.  Only the "-u" option is
 	interpreted.
 							*evim.vim*
-     a. If vim was started as |evim| or |eview| or with the |-y| argument, the
+     a. If Vim was started as |evim| or |eview| or with the |-y| argument, the
 	script $VIMRUNTIME/evim.vim will be loaded.
 							*system-vimrc*
      b. For Unix, MS-Windows, VMS, Macintosh and Amiga the system vimrc file
@@ -843,23 +854,27 @@ accordingly.  Vim proceeds in this order:
 	'compatible' is only done later.  Add a ":set nocp" command if you
 	like.  For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
-	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
+			*VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
+			*$MYVIMRC* *$MYVIMDIR*
      c. Five places are searched for initializations.  The first that exists
-	is used, the others are ignored.  The $MYVIMRC environment variable is
-	set to the file that was first found, unless $MYVIMRC was already set
-	and when using VIMINIT.
+	is used, the others are ignored.  The `$MYVIMRC` environment variable is
+	set to the file that was first found, unless `$MYVIMRC` was already set
+	when using VIMINIT.  The `$MYVIMDIR` environment variable is
+	set to the personal 'rtp' directory, however it is not verified
+	that the directory actually exists.
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
-		    "$HOME/.vimrc"	   (for Unix) (*)
-		    "$HOME/.vim/vimrc"	   (for Unix) (*)
-		    "s:.vimrc"		   (for Amiga) (*)
-		    "home:.vimrc"	   (for Amiga) (*)
-		    "home:vimfiles:vimrc"  (for Amiga) (*)
-		    "$VIM/.vimrc"	   (for Amiga) (*)
-		    "$HOME/_vimrc"	   (for Win32) (*)
-		    "$HOME/vimfiles/vimrc" (for Win32) (*)
-		    "$VIM/_vimrc"	   (for Win32) (*)
+		    "$HOME/.vimrc"		  (for Unix) (*)
+		    "$HOME/.vim/vimrc"		  (for Unix) (*)
+		    "$XDG_CONFIG_HOME/vim/vimrc"  (for Unix) (*)
+		    "s:.vimrc"			  (for Amiga) (*)
+		    "home:.vimrc"		  (for Amiga) (*)
+		    "home:vimfiles:vimrc"	  (for Amiga) (*)
+		    "$VIM/.vimrc"		  (for Amiga) (*)
+		    "$HOME/_vimrc"		  (for Win32) (*)
+		    "$HOME/vimfiles/vimrc"	  (for Win32) (*)
+		    "$VIM/_vimrc"		  (for Win32) (*)
 		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
 
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
@@ -929,7 +944,7 @@ accordingly.  Vim proceeds in this order:
 	This means that Vim will figure out the values of 'shellpipe' and
 	'shellredir' for you, unless you have set them yourself.
 
-6. Set 'updatecount' to zero, if "-n" command argument used
+6. Set 'updatecount' to zero, if "-n" command argument used.
 
 7. Set binary options
 	If the "-b" flag was given to Vim, the options for binary editing will
@@ -965,15 +980,18 @@ accordingly.  Vim proceeds in this order:
 	The |v:vim_did_enter| variable is set to 1.
 	The |VimEnter| autocommands are executed.
 
-The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or
-gvimrc file.
+The `$MYVIMRC` or `$MYGVIMRC` environment variable will be set to the first found
+vimrc and/or gvimrc file while `$MYVIMDIR` is set to the users personal runtime
+directory 'rtp' (typically the first entry in 'runtimepath').  If 'rtp'
+changes, `$MYVIMDIR` will be updated.
+Note: These environment variables resolve symbolic links, but 'rtp' does not.
 
 
 Some hints on using initializations ~
 
 Standard setup:
 Create a vimrc file to set the default settings and mappings for all your edit
-sessions.  Put it in a place so that it will be found by 3b:
+sessions.  Put it in a place so that it will be found by 3b.:
 	~/.vimrc	(Unix)
 	s:.vimrc	(Amiga)
 	$VIM\_vimrc	(Win32)
@@ -1069,9 +1087,10 @@ This should work well for new Vim users.  If you create your own .vimrc, it is
 recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
-Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
-is way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
-and modify it (but then you won't get updates when it changes).
+Then Vim works like before you had a .vimrc.
+Copying $VIMRUNTIME/vimrc_example.vim to your .vimrc is another way to do
+this.  Alternatively, you can copy defaults.vim to your .vimrc and modify it
+(but then you won't get updates when it changes).
 
 If you don't like some of the defaults, you can still source defaults.vim and
 revert individual settings.  See the defaults.vim file for hints on how to
@@ -1083,15 +1102,53 @@ defaults.vim from your .vimrc, first unlet skip_defaults_vim, as in the
 example above.
 
 
+					*xdg-base-dir* *$XDG_CONFIG_HOME*
+XDG Base Directory Specification ~
+
+The XDG Base Directory Specification aims to define a standard location for
+configuration files used by applications.  This is mainly done to prevent
+the legacy behavior of dumping everything into the user's home directory.
+The specification can be found online at
+https://specifications.freedesktop.org/basedir-spec/latest/
+
+The location of this standard configuration directory is configurable by the
+user, using an environment variable but should also give fallback in case
+those variables weren't set.
+
+This is not an exhaustive list of those directories:
+  Environment var	Default location	Description ~
+  `$XDG_CACHE_HOME`	$HOME/.cache		Ephemeral data files
+  `$XDG_CONFIG_HOME`	$HOME/.config		Configuration files
+  `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
+  `$XDG_STATE_HOME`	$HOME/.local/state	State data files
+
+Vim will only use the `$XDG_CONFIG_HOME` directory, the others are not
+(yet) used for its various configuration and state files.
+
+							*xdg-vimrc*
+Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for its
+configuration (see |vimrc|) but it will source it only if no other
+initialization file is found in `$HOME` or `$HOME/.vim` (thus making this
+feature backward compatible).  However, if you want to migrate to use
+`$XDG_CONFIG_HOME/vim/` directory, you will have to move away your `~/.vimrc`
+and `~/.vim/vimrc` file.
+
+							*xdg-runtime*
+When the |xdg-vimrc| is used the 'runtimepath' and 'packpath' options will be
+modified accordingly to respect the |xdg-base-dir|: >
+
+    "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
+<
+
 Avoiding trojan horses ~
 							*trojan-horse*
 While reading the "vimrc" or the "exrc" file in the current directory, some
 commands can be disabled for security reasons by setting the 'secure' option.
-This is always done when executing the command from a tags file.  Otherwise it
-would be possible that you accidentally use a vimrc or tags file that somebody
-else created and contains nasty commands.  The disabled commands are the ones
-that start a shell, the ones that write to a file, and ":autocmd".  The ":map"
-commands are echoed, so you can see which keys are being mapped.
+This is always done when executing the command from a tags file.  Otherwise,
+it would be possible that you accidentally use a vimrc or tags file that
+somebody else created and contains nasty commands.  The disabled commands are
+the ones that start a shell, the ones that write to a file, and ":autocmd".
+The ":map" commands are echoed, so you can see which keys are being mapped.
 	If you want Vim to execute all commands in a local vimrc file, you
 can reset the 'secure' option in the EXINIT or VIMINIT environment variable or
 in the global "exrc" or "vimrc" file.  This is not possible in "vimrc" or
@@ -1215,7 +1272,7 @@ To change it later, use a ":let" command like this: >
 In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
 
-	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
+	VIMRUNTIME=$(vim -es '+put=$VIMRUNTIME|print|quit!')
 
 Don't set $VIMRUNTIME to an empty value, some things may stop working.
 
@@ -1248,9 +1305,9 @@ continue if you make it the foreground job again.  On other systems, CTRL-Z
 will start a new shell.  This is the same as the ":sh" command.  Vim will
 continue if you exit from the shell.
 
-In X-windows the selection is disowned when Vim suspends.  this means you
-can't paste it in another application (since Vim is going to sleep an attempt
-to get the selection would make the program hang).
+In the X Window System environment, the selection is disowned when Vim
+suspends.  This means you can't paste it in another application (since Vim is
+going to sleep, an attempt to get the selection would make the program hang).
 
 ==============================================================================
 7. Exiting						*exiting*
@@ -1295,7 +1352,7 @@ will be set to the same values.  The options 'columns', 'endofline',
 dependent.  Note that the options 'binary', 'paste' and 'readonly' are
 included, this might not always be what you want.
 
-When special keys are used in mappings, The 'cpoptions' option will be
+When special keys are used in mappings, the 'cpoptions' option will be
 temporarily set to its Vim default, to avoid the mappings to be
 misinterpreted.  This makes the file incompatible with Vi, but makes sure it
 can be used with different terminals.
@@ -1323,7 +1380,7 @@ these steps:
    You need to escape special characters, esp. spaces.
 
 Note that when you create a .vimrc file, this can influence the 'compatible'
-option, which has several side effects.  See |'compatible'|.
+option, which has several side effects.  See 'compatible'.
 ":mkvimrc", ":mkexrc" and ":mksession" write the command to set or reset the
 'compatible' option to the output file first, because of these side effects.
 
@@ -1356,8 +1413,8 @@ All this is {not available when compiled without the |+mksession| feature}.
 							*:mks* *:mksession*
 :mks[ession][!] [file]	Write a Vim script that restores the current editing
 			session.
-			When [!] is included an existing file is overwritten.
-			When [file] is omitted "Session.vim" is used.
+			When [!] is included, an existing file is overwritten.
+			When [file] is omitted, "Session.vim" is used.
 
 The output of ":mksession" is like ":mkvimrc", but additional commands are
 added to the file.  Which ones depends on the 'sessionoptions' option.  The
@@ -1369,16 +1426,16 @@ resulting file, when executed with a ":source" command:
 3. Closes all windows in the current tab page, except the current one; closes
    all tab pages except the current one (this results in currently loaded
    buffers to be unloaded, some may become hidden if 'hidden' is set or
-   otherwise specified); wipes out the current buffer, if it is empty
-   and unnamed.
-4. Restores the current directory if 'sessionoptions' contains "curdir", or
-   sets the current directory to where the Session file is if 'sessionoptions'
-   contains "sesdir".
+   otherwise specified); wipes out the current buffer, if it is empty and
+   unnamed.
+4. Restores the current directory, if 'sessionoptions' contains "curdir", or
+   sets the current directory to where the Session file is, if
+   'sessionoptions' contains "sesdir".
 5. Restores GUI Vim window position, if 'sessionoptions' contains "winpos".
 6. Restores screen size, if 'sessionoptions' contains "resize".
 7. Reloads the buffer list, with the last cursor positions.  If
    'sessionoptions' contains "buffers" then all buffers are restored,
-   including hidden and unloaded buffers.  Otherwise only buffers in windows
+   including hidden and unloaded buffers.  Otherwise, only buffers in windows
    are restored.
 8. Restores all windows with the same layout.  If 'sessionoptions' contains
    "help", help windows are restored.  If 'sessionoptions' contains "blank",
@@ -1405,14 +1462,14 @@ A session includes all tab pages, unless "tabpages" was removed from
 The |SessionLoadPost| autocmd event is triggered after a session file is
 loaded/sourced.
 						*SessionLoad-variable*
-While the session file is loading the SessionLoad global variable is set to 1.
-Plugins can use this to postpone some work until the SessionLoadPost event is
-triggered.
+While the session file is loading, the SessionLoad global variable is set to
+1.  Plugins can use this to postpone some work until the SessionLoadPost event
+is triggered.
 
 							*:mkvie* *:mkview*
 :mkvie[w][!] [file]	Write a Vim script that restores the contents of the
 			current window.
-			When [!] is included an existing file is overwritten.
+			When [!] is included, an existing file is overwritten.
 			When [file] is omitted or is a number from 1 to 9, a
 			name is generated and 'viewdir' prepended.  When the
 			last path part of 'viewdir' does not exist, this
@@ -1427,14 +1484,13 @@ triggered.
 
 The output of ":mkview" contains these items:
 1. The argument list used in the window.  When the global argument list is
-   used it is reset to the global list.
+   used, it is reset to the global list.
    The index in the argument list is also restored.
 2. The file being edited in the window.  If there is no file, the window is
    made empty.
-3. Restore mappings, abbreviations and options local to the window if
-   'viewoptions' contains "options" or "localoptions".  For the options it
-   restores only values that are local to the current buffer and values local
-   to the window.
+3. Restore mappings, abbreviations and options local to the window, if
+   'viewoptions' contains "options" or "localoptions".  Only option values
+   that are local to the current buffer and the current window are restored.
    When storing the view as part of a session and "options" is in
    'sessionoptions', global values for local options will be stored too.
 4. Restore folds when using manual folding and 'viewoptions' contains
@@ -1468,7 +1524,7 @@ Note that Views and Sessions are not perfect:
 The combination of ":mkview" and ":loadview" can be used to store up to ten
 different views of a file.  These are remembered in the directory specified
 with the 'viewdir' option.  The views are stored using the file name.  If a
-file is renamed or accessed through a (symbolic) link the view will not be
+file is renamed or accessed through a (symbolic) link, the view will not be
 found.
 
 You might want to clean up your 'viewdir' directory now and then.
@@ -1541,12 +1597,13 @@ always kept.  This is used for:
 - The search string history.
 - The input-line history.
 - Contents of non-empty registers.
-- The jump list
-- File marks
+- The jump list.
+- File marks.
+
 The timestamp feature was added before Vim 8.0.  Older versions of Vim,
 starting with 7.4.1131, will keep the items with timestamp, but not use them.
-Thus when using both an older and a newer version of Vim the most recent data
-will be kept.
+Thus, when using both an older and a newer version of Vim, the most recent
+data will be kept.
 
 Notes for Unix:
 - The file protection for the viminfo file will be set to prevent other users
@@ -1558,7 +1615,7 @@ Notes for Unix:
   allow just anybody to read and write your viminfo file!
 - Vim will not overwrite a viminfo file that is not writable by the current
   "real" user.  This helps for when you did "su" to become root, but your
-  $HOME is still set to a normal user's home directory.  Otherwise Vim would
+  $HOME is still set to a normal user's home directory.  Otherwise, Vim would
   create a viminfo file owned by root that nobody else can read.
 - The viminfo file cannot be a symbolic link.  This is to avoid security
   issues.
@@ -1580,8 +1637,8 @@ has marks for.
 							*viminfo-file-marks*
 Uppercase marks ('A to 'Z) are stored when writing the viminfo file.  The
 numbered marks ('0 to '9) are a bit special.  When the viminfo file is written
-(when exiting or with the ":wviminfo" command), '0 is set to the current cursor
-position and file.  The old '0 is moved to '1, '1 to '2, etc.  This
+(when exiting or with the ":wviminfo" command), '0 is set to the current
+cursor position and file.  The old '0 is moved to '1, '1 to '2, etc.  This
 resembles what happens with the "1 to "9 delete registers.  If the current
 cursor position is already present in '0 to '9, it is moved to '0, to avoid
 having the same position twice.  The result is that with "'0", you can jump
@@ -1590,11 +1647,11 @@ using this command: >
 
 	vim -c "normal '0"
 
-In a csh compatible shell you could make an alias for it: >
+In a C shell descendant, you could make an alias for it: >
 
 	alias lvim vim -c '"'normal "'"0'"'
 
-For a bash-like shell: >
+For a Bash-like shell: >
 
 	alias lvim='vim -c "normal '\''0"'
 
@@ -1609,7 +1666,7 @@ VIMINFO FILE NAME					*viminfo-file-name*
   is not set, "$VIM\_viminfo" is used.  When $VIM is also not set,
   "c:\_viminfo" is used.
 - The 'n' flag in the 'viminfo' option can be used to specify another viminfo
-  file name |'viminfo'|.
+  file name 'viminfo'.
 - The "-i" Vim argument can be used to set another file name, |-i|.  When the
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
@@ -1639,14 +1696,14 @@ MANUALLY READING AND WRITING				*viminfo-read-write*
 Two commands can be used to read and write the viminfo file manually.  This
 can be used to exchange registers between two running Vim programs: First
 type ":wv" in one and then ":rv" in the other.  Note that if the register
-already contained something, then ":rv!" would be required.  Also note
-however that this means everything will be overwritten with information from
+already contained something, then ":rv!" would be required.  Also note,
+however, that this means everything will be overwritten with information from
 the first Vim, including the command line history, etc.
 
 The viminfo file itself can be edited by hand too, although we suggest you
 start with an existing one to get the format right.  It is reasonably
 self-explanatory once you're in there.  This can be useful in order to
-create a second file, say "~/.my_viminfo" which could contain certain
+create a second file, say "~/.my_viminfo", which could contain certain
 settings that you always want when you first start Vim.  For example, you
 can preload registers with particular data, or put certain commands in the
 command line history.  A line in your .vimrc file like >
@@ -1670,7 +1727,8 @@ most of the information will be restored).
 			|viminfo-file-name| above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
-			will be overwritten
+			will be overwritten.  "E195" may be given, when
+			'viminfofile' has been set to "NONE".
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see
@@ -1680,12 +1738,12 @@ most of the information will be restored).
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the
-			internal info is written.  If 'viminfo' is empty, marks
-			for up to 100 files will be written.
-			When you get error "E929: Too many viminfo temp files"
-			check that no old temp files were left behind (e.g.
-			~/.viminf*) and that you can write in the directory of
-			the .viminfo file.
+			internal info is written.  If 'viminfo' is empty,
+			marks for up to 100 files will be written.
+			When you get error "E929: Too many viminfo temp
+			files", check that no old temp files were left behind
+			(e.g. ~/.viminf*) and that you can write in the
+			directory of the .viminfo file.
 
 						*:ol* *:oldfiles*
 :ol[dfiles]		List the files that have marks stored in the viminfo
@@ -1703,7 +1761,7 @@ most of the information will be restored).
 			the list is edited.
 			If you get the |press-enter| prompt you can press "q"
 			and still get the prompt to enter a file number.
-			Use ! to abandon a modified buffer. |abandon|
+			Use [!] to abandon a modified buffer. |abandon|
 			{not when compiled with tiny features}
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1663,7 +1663,7 @@ install_registry(void)
 	uninstall_string,
 	icon_string,
 	version_string,
-	"Bram Moolenaar et al.");
+	"The Vim Project");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
 
@@ -2174,7 +2174,7 @@ init_homedir(void)
 	if (homedrive != NULL
 		   && strlen(homedrive) + strlen(homepath) < sizeof(buf))
 	{
-	    sprintf(buf, "%s%s", homedrive, homepath);
+	    snprintf(buf, sizeof(buf), "%s%s", homedrive, homepath);
 	    if (buf[0] != NUL)
 		var = buf;
 	}
@@ -2202,7 +2202,7 @@ init_homedir(void)
 	    if (exp != NULL && *exp != NUL
 				&& strlen(exp) + strlen(p) < sizeof(buf))
 	    {
-		sprintf(buf, "%s%s", exp, p + 1);
+		snprintf(buf, sizeof(buf), "%s%s", exp, p + 1);
 		var = buf;
 	    }
 	}
@@ -2695,8 +2695,8 @@ request_choice(void)
 
     printf("\n\nInstall will do for you:\n");
     for (i = 0; i < choice_count; ++i)
-      if (choices[i].active)
-	  printf("%2d  %s\n", i + 1, choices[i].text);
+	if (choices[i].active)
+	    printf("%2d  %s\n", i + 1, choices[i].text);
     printf("To change an item, enter its number\n\n");
     printf("Enter item number, h (help), d (do it) or q (quit): ");
 }
@@ -2760,7 +2760,7 @@ main(int argc, char **argv)
 	    rewind(stdin);
 	    if (scanf("%99s", buf) == 1)
 	    {
-		if (isdigit(buf[0]))
+		if (isdigit((unsigned char)buf[0]))
 		{
 		    // Change a choice.
 		    i = atoi(buf);

@@ -1,0 +1,69 @@
+# Unfortunately ubtunu does not keep the debug packages strictly up-to-date
+# with the main packages. So this file needs to pin the main packages back to
+# the version for which debug packages are available.
+
+Package: libwayland-client0
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-client0
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+Package: libwayland-cursor0
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-cursor0
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+Package: libwayland-egl1
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-egl1
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+Package: libwayland-dev
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-dev
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+Package: libwayland-server0
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-server0
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+Package: libwayland-bin
+Pin: version 1.20.0-1
+Pin-Priority: 1000
+
+Package: libwayland-bin
+Pin: version 1.20.0-1ubuntu0.1
+Pin-Priority: 100
+
+# As of 2025-04-27 the base library package libgtk-3-0t64 is still at 3.24.41-4ubuntu1.2
+Package: libgtk-3-0t64-dbgsym
+Pin: version 3.24.41-4ubuntu1.2
+Pin-Priority: 1000
+
+Package: libgtk-3-0t64-dbgsym
+Pin: version 3.24.41-4ubuntu1.3
+Pin-Priority: 100
+
+# As of 2025-04-27 the base binary package libgtk-3-bin is still at 3.24.41-4ubuntu1.2
+Package: libgtk-3-bin-dbgsym
+Pin: version 3.24.41-4ubuntu1.2
+Pin-Priority: 1000
+
+Package: libgtk-3-bin-dbgsym
+Pin: version 3.24.41-4ubuntu1.3
+Pin-Priority: 100

@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2023 Dec 26
 
 if exists("b:current_syntax")
   finish
@@ -90,7 +90,7 @@ syn match   contextDirectLua  "\\\%(directlua\|ctxlua\)\>\%(\s*%.*$\)\="
       \ nextgroup=contextBeginEndLua skipwhite skipempty
       \ contains=contextComment
 syn region  contextBeginEndLua matchgroup=contextSpecial
-      \ start="{" end="}" skip="\\[{}]"
+      \ start="{" end="}" skip="\\[{}]" keepend
       \ contained contains=@luaTop,@NoSpell
 
 for synname in keys(context_include)

@@ -1,9 +1,8 @@
 " Test MS-Windows input event handling.
 " Most of this works the same in Windows GUI as well as Windows console.
 
-source check.vim
 CheckMSWindows
-source mouse.vim
+source util/mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
 " The modifier key(s) can be included as VK Key Codes in the sequence
@@ -35,6 +34,17 @@ endfunc
 func SendKey(key)
   call SendKeyWithModifiers(a:key, 0)
 endfunc
+
+" getcharstr(0) but catch Vim:Interrupt
+func Getcharstr()
+  try
+    let ch = getcharstr(0)
+  catch /^Vim:Interrupt$/
+    let ch = "\<c-c>"
+  endtry
+  return ch
+endfunc
+
 
 " Send a string of individual key-press events, without modifiers.
 func SendKeyStr(keystring)
@@ -347,7 +357,7 @@ func s:LoopTestKeyArray(arr)
   for [kcodes, kstr] in a:arr
     " Send as a sequence of key presses.
     call SendKeyGroup(kcodes)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     " need to deal a bit differently with the non-printable ascii chars < 0x20
     if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], kcodes[0]) >= 0
       call assert_equal(nr2char(kstr), $"{ch}")
@@ -374,7 +384,7 @@ func s:LoopTestKeyArray(arr)
       endif
     endfor
     call SendKeyWithModifiers(key, modifiers)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     " need to deal a bit differently with the non-printable ascii chars < 0x20
     if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL],  kcodes[0]) >= 0
       call assert_equal(nr2char(kstr), $"{ch}")
@@ -408,10 +418,10 @@ func Test_mswin_event_character_keys()
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
   for kc in range(48, 57)
     call SendKey(kc)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     call assert_equal(nr2char(kc), ch)
     call SendKeyWithModifiers(kc, 0)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     call assert_equal(nr2char(kc), ch)
   endfor
 
@@ -437,10 +447,10 @@ func Test_mswin_event_character_keys()
 " numbered 32 higher than their uppercase versions.
   for kc in range(65, 90)
     call SendKey(kc)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     call assert_equal(nr2char(kc + 32), ch)
     call SendKeyWithModifiers(kc, 0)
-    let ch = getcharstr(0)
+    let ch = Getcharstr()
     call assert_equal(nr2char(kc + 32), ch)
   endfor
 
@@ -449,23 +459,28 @@ func Test_mswin_event_character_keys()
   for modkey in [s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT]
     for kc in range(65, 90)
       call SendKeyGroup([modkey, kc])
-      let ch = getcharstr(0)
+      let ch = Getcharstr()
       call assert_equal(nr2char(kc), ch)
       call SendKeyWithModifiers(kc, s:MOD_MASK_SHIFT)
-      let ch = getcharstr(0)
+      let ch = Getcharstr()
       call assert_equal(nr2char(kc), ch)
     endfor
   endfor
 
-  " Test for <Ctrl-A> to <Ctrl-Z> keys
- "  Expect the unicode characters 0x01 to 0x1A
+" Test for <Ctrl-A> to <Ctrl-Z> keys
+" Expect the unicode characters 0x01 to 0x1A
+" Note: Skip C because it triggers an Interrupt (CTRL-C)
+"       which causes a test failure
    for modkey in [s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL]
     for kc in range(65, 90)
+      if kc == 67
+        continue
+      endif
       call SendKeyGroup([modkey, kc])
-      let ch = getcharstr(0)
+      let ch = Getcharstr()
       call assert_equal(nr2char(kc - 64), ch)
       call SendKeyWithModifiers(kc, s:MOD_MASK_CTRL)
-      let ch = getcharstr(0)
+      let ch = Getcharstr()
       call assert_equal(nr2char(kc - 64), ch)
     endfor
   endfor
@@ -518,7 +533,7 @@ func Test_mswin_event_function_keys()
         while getchar(0)
         endwhile
         call SendKeyWithModifiers(111+n, vim_mod_mask)
-        let ch = getcharstr(0)
+        let ch = Getcharstr()
         let mod_mask = getcharmod()
         call assert_equal(keycode, $"{ch}", $"key = {kstr}")
         " workaround for the virtual termcap maps changing the character
@@ -590,21 +605,21 @@ func Test_mswin_event_movement_keys()
       while getchar(0)
       endwhile
       execute 'call feedkeys("\<' .. kstr .. '>")'
-      let chstr_fk = getcharstr(0)
+      let chstr_fk = Getcharstr()
       call assert_equal(chstr_eval, chstr_fk, $"feedkeys = <{kstr}>")
 
       " flush out the typeahead buffer
       while getchar(0)
       endwhile
       call SendKey(kcode)
-      let chstr_alone = getcharstr(0)
+      let chstr_alone = Getcharstr()
       let chstr_alone_end = chstr_alone[len(chstr_alone)-2:len(chstr_alone)-1]
 
       " flush out the typeahead buffer
       while getchar(0)
       endwhile
       call SendKeyGroup(mod_keycodes + [kcode])
-      let chstr_mswin = getcharstr(0)
+      let chstr_mswin = Getcharstr()
       let chstr_mswin_end = chstr_mswin[len(chstr_mswin)-2:len(chstr_mswin)-1]
       let mod_mask = getcharmod()
 
@@ -653,7 +668,7 @@ func Test_QWERTY_Ctrl_minus()
   new
 
   call SendKeyGroup([s:VK.CONTROL, s:VK.OEM_MINUS])
-  let ch = getcharstr(0)
+  let ch = Getcharstr()
   call assert_equal(nr2char(0x1f),ch)
 
   call SendKey(s:VK.KEY_I)
@@ -727,14 +742,14 @@ func Test_mswin_event_mouse()
   if has('gui_running')
     let args = { }
     let args.row = 9
-    let args.col = 7
+    let args.col = 5
     let args.move = 1
     let args.cell = 1
     call test_mswin_event("mouse", args)
     call feedkeys("\<Esc>", 'Lx!')
     let pos = getmousepos()
     call assert_equal(9, pos.screenrow)
-    call assert_equal(7, pos.screencol)
+    call assert_equal(5, pos.screencol)
 
     let args.cell = 0
     call test_mswin_event("mouse", args)

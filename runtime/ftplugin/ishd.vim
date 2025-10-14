@@ -2,7 +2,8 @@
 " Language:		InstallShield (ft=ishd)
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:		2023 Aug 28
+" Last Change:		2025 Jun 18
+" 2025 Jun 18 by Vim Project: set comments and commentstring option (#17490)
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -12,8 +13,10 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 setlocal foldmethod=syntax
+setlocal commentstring=//\ %s
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 
-let b:undo_ftplugin = "setl fdm<"
+let b:undo_ftplugin = "setl fdm< com< cms"
 
 " matchit support
 if exists("loaded_matchit")
@@ -29,8 +32,12 @@ if exists("loaded_matchit")
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-    let b:browsefilter = "InstallShield Files (*.rul)\t*.rul\n" .
-          \              "All Files (*.*)\t*\n"
+    let b:browsefilter = "InstallShield Files (*.rul)\t*.rul\n"
+    if has("win32")
+	let b:browsefilter .= "All Files (*.*)\t*\n"
+    else
+	let b:browsefilter .= "All Files (*)\t*\n"
+    endif
     let b:undo_ftplugin .= " | unlet! b:browsefilter"
 endif
 

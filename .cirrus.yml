@@ -5,9 +5,9 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 14.0
+    - name: FreeBSD 14.3
       freebsd_instance:
-        image_family: freebsd-14-0
+        image_family: freebsd-14-3
   timeout_in: 20m
   install_script:
     - pkg install -y gettext
@@ -21,3 +21,11 @@ freebsd_task:
     - pw useradd cirrus -m
     - chown -R cirrus:cirrus .
     - sudo -u cirrus make test
+  on_failure:
+    test_artifacts:
+      name: "Cirrus-${CIRRUS_BUILD_ID}-freebsd-failed-tests"
+      path: |
+        runtime/indent/testdir/*.fail
+        runtime/syntax/testdir/failed/*
+        src/testdir/failed/*
+      type: application/octet-stream

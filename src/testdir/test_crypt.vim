@@ -1,7 +1,5 @@
 " Tests for encryption.
 
-source shared.vim
-source check.vim
 CheckFeature cryptv
 
 " Use the xxd command from:
@@ -344,7 +342,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     " should fail
     norm! u
     call assert_match('Already at oldest change', execute(':1mess'))
-    call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822')
+    call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822:')
     bw!
     set undolevels& cryptmethod& undofile&
     call delete('Xcrypt_sodium_undo.txt')
@@ -357,8 +355,8 @@ func Test_encrypt_xchacha20_missing()
     return
   endif
   sp Xcrypt_sodium_undo.txt
-  call assert_fails(':set cryptmethod=xchacha20', 'E474')
-  call assert_fails(':set cryptmethod=xchacha20v2', 'E474')
+  call assert_fails(':set cryptmethod=xchacha20', 'E474:')
+  call assert_fails(':set cryptmethod=xchacha20v2', 'E474:')
   bw!
   set cm&
 endfunc
@@ -400,16 +398,16 @@ func Test_crypt_set_key_changes_buffer()
   call assert_fails(":q", "E37:")
   w
   set key=anotherkey
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
   call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
   let winnr = winnr()
   wincmd p
   call setwinvar(winnr, '&key', 'yetanotherkey')
   wincmd p
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
 
   set cryptmethod&

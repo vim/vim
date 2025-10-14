@@ -219,7 +219,7 @@ ex_helpclose(exarg_T *eap UNUSED)
     }
 }
 
-#if defined(FEAT_MULTI_LANG) || defined(PROTO)
+#if defined(FEAT_MULTI_LANG)
 /*
  * In an argument search for a language specifiers in the form "@xx".
  * Changes the "@" to NUL if found, and returns a pointer to "xx".
@@ -720,7 +720,7 @@ fix_help_buffer(void)
 	for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count; ++lnum)
 	{
 	    line = ml_get_buf(curbuf, lnum, FALSE);
-	    len = (int)STRLEN(line);
+	    len = ml_get_buf_len(curbuf, lnum);
 	    if (in_example && len > 0 && !VIM_ISWHITE(line[0]))
 	    {
 		// End of example: non-white or '<' in first column.
@@ -813,6 +813,8 @@ fix_help_buffer(void)
 			    f1 = fnames[i1];
 			    t1 = gettail(f1);
 			    e1 = vim_strrchr(t1, '.');
+			    if (e1 == NULL)
+				continue;
 			    if (fnamecmp(e1, ".txt") != 0
 					       && fnamecmp(e1, fname + 4) != 0)
 			    {
@@ -828,6 +830,8 @@ fix_help_buffer(void)
 				    continue;
 				t2 = gettail(f2);
 				e2 = vim_strrchr(t2, '.');
+				if (e2 == NULL)
+				    continue;
 				if (e1 - f1 != e2 - f2
 					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
@@ -961,7 +965,6 @@ helptags_one(
     int		this_utf8;
     int		firstline;
     int		in_example;
-    int		len;
     int		mix = FALSE;	// detected mixed encodings
 
     // Find all *.txt files.
@@ -1113,10 +1116,16 @@ helptags_one(
 		}
 		p1 = p2;
 	    }
-	    len = (int)STRLEN(IObuff);
-	    if ((len == 2 && STRCMP(&IObuff[len - 2], ">\n") == 0)
-		    || (len >= 3 && STRCMP(&IObuff[len - 3], " >\n") == 0))
-		in_example = TRUE;
+	    size_t off = STRLEN(IObuff);
+	    if (off >= 2 && IObuff[off - 1] == '\n')
+	    {
+		off -= 2;
+		while (off > 0 && (ASCII_ISLOWER(IObuff[off])
+						  || VIM_ISDIGIT(IObuff[off])))
+		    off--;
+		if (IObuff[off] == '>' && (off == 0 || IObuff[off - 1] == ' '))
+		    in_example = TRUE;
+	    }
 	    line_breakcheck();
 	}
 

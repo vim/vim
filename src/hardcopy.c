@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_PRINTER) || defined(PROTO)
+#if defined(FEAT_PRINTER)
 /*
  * To implement printing on a platform, the following functions must be
  * defined:
@@ -149,7 +149,7 @@ parse_printoptions(optset_T *args UNUSED)
     return parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 }
 
-#if defined(FEAT_POSTSCRIPT) || defined(PROTO)
+#if defined(FEAT_POSTSCRIPT)
 /*
  * Parse 'printmbfont' and set the flags in "mbfont_opts".
  * Returns an error message or NULL;
@@ -939,7 +939,7 @@ hardcopy_line(
     return col;
 }
 
-# if defined(FEAT_POSTSCRIPT) || defined(PROTO)
+# if defined(FEAT_POSTSCRIPT)
 
 /*
  * PS printer stuff.
@@ -1745,7 +1745,7 @@ prt_resfile_skip_nonws(int offset)
     idx = prt_resfile.line_start + offset;
     while (idx < prt_resfile.line_end)
     {
-	if (isspace(prt_resfile.buffer[idx]))
+	if (SAFE_isspace(prt_resfile.buffer[idx]))
 	    return idx - prt_resfile.line_start;
 	idx++;
     }
@@ -1760,7 +1760,7 @@ prt_resfile_skip_ws(int offset)
     idx = prt_resfile.line_start + offset;
     while (idx < prt_resfile.line_end)
     {
-	if (!isspace(prt_resfile.buffer[idx]))
+	if (!SAFE_isspace(prt_resfile.buffer[idx]))
 	    return idx - prt_resfile.line_start;
 	idx++;
     }
@@ -2742,7 +2742,7 @@ mch_print_begin(prt_settings_T *psettings)
 
     prt_dsc_textline("CreationDate", get_ctime(time(NULL), FALSE));
     prt_dsc_textline("DocumentData", "Clean8Bit");
-    prt_dsc_textline("Orientation", "Portrait");
+    prt_dsc_textline("Orientation", prt_portrait ? "Portrait" : "Landscape");
     prt_dsc_atend("Pages");
     prt_dsc_textline("PageOrder", "Ascend");
     // The bbox does not change with orientation - it is always in the default

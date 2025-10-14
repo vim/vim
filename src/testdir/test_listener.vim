@@ -8,13 +8,34 @@ func s:StoreList(s, e, a, l)
   let s:list = a:l
 endfunc
 
+func s:StoreListUnbuffered(s, e, a, l)
+  let s:start = a:s
+  let s:end = a:e
+  let s:added = a:a
+  let s:text = getline(a:s)
+  let s:list2 = a:l
+endfunc
+
 func s:AnotherStoreList(l)
   let s:list2 = a:l
 endfunc
 
 func s:EvilStoreList(l)
+  func! Modify_dict_in_list(the_list, key)
+    let a:the_list[0][a:key] = a:the_list[0][a:key] + 1
+  endfunc
+  func! Modify_list_entry(the_list)
+    let a:the_list[0] = 42
+  endfunc
+
   let s:list3 = a:l
-  call assert_fails("call add(a:l, 'myitem')", "E742:")
+  call assert_fails("call add(a:l, 'myitem')", "E741:")
+  call assert_fails("call remove(a:l, 1)", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'lnum')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'end')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'col')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'added')", "E741:")
+  call assert_fails("call Modify_list_entry(a:l)", "E741:")
 endfunc
 
 func Test_listening()
@@ -131,15 +152,181 @@ func Test_listening()
   call setline(1, 'asdfasdf')
   redraw
   call assert_equal([], s:list)
+  bwipe!
+endfunc
 
-  " Trying to change the list fails
+func Test_change_list_is_locked()
+  " Trying to change the list passed to the callback fails
+  new
+  call setline(1, ['one', 'two'])
   let id = listener_add({b, s, e, a, l -> s:EvilStoreList(l)})
+
   let s:list3 = []
   call setline(1, 'asdfasdf')
   redraw
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list3)
 
   eval id->listener_remove()
+  bwipe!
+endfunc
+
+func Test_change_list_is_locked_unbuffered()
+  " Trying to change the list passed to the callback fails (unbuffered mode).
+  new
+  call setline(1, ['one', 'two'])
+  let id = listener_add({b, s, e, a, l -> s:EvilStoreList(l)}, bufnr(), v:true)
+
+  let s:list3 = []
+  call setline(1, 'asdfasdf')
+  redraw
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list3)
+
+  eval id->listener_remove()
+  bwipe!
+endfunc
+
+func Test_new_listener_does_not_receive_ood_changes()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+  let s:list2 = []
+
+  " Add a listener and make a change.
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
+  call setline(1, 'one one')
+
+  " Add a second listener, it should not see the above change to the buffer,
+  " only the change after it was added.
+  let id = listener_add({b, s, e, a, l -> s:AnotherStoreList(l)})
+  call setline(2, 'two two')
+
+  redraw
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+func Test_callbacks_do_not_recurse()
+  func DodgyExtendList(b, s, e, a, l)
+    call extend(s:list, a:l)
+    if len(s:list) < 3  " Limit recursion in the face of test failure.
+      call listener_flush()
+      redraw
+    endif
+  endfunc
+
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+
+  " Add a listener and make a change.
+  let id = listener_add("DodgyExtendList")
+  call setline(1, 'one one')
+
+  " The callback should only be invoked once, i.e. recursion is blocked.
+  redraw
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+func Test_clean_up_after_last_listener_removed()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+
+  " Add a listener, make a change, but then remove the listener before the
+  " listener gets invoked.
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
+  call setline(3, 'three three')
+  let ok = listener_remove(id)
+  call assert_equal(1, ok)
+
+  " Further buffer changes should (obviously) have no effect.
+  let s:list = []
+  call setline(2, 'two two')
+  redraw
+  call assert_equal([], s:list)
+
+  " Add a new listener, it should not see the above change to line 3 of the
+  " buffer.
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
+  redraw
+  call assert_equal([], s:list)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+func Test_a_callback_may_not_add_a_listener()
+  func ListenerWotAdds_listener(bufnr, start, end, added, changes)
+    call s:StoreList(a:start, a:end, a:added, a:changes)
+    call assert_fails(
+        \ "call listener_add({b, s, e, a, l -> s:AnotherStoreList(l)})", "E1569:")
+  endfunc
+
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+
+  " Add a listener, make a change, but then remove the listener before the
+  " listener gets invoked.
+  let id = listener_add("ListenerWotAdds_listener")
+  call setline(3, 'three three')
+  redraw
+  call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
+
+  let s:list2 = []
+  call setline(2, 'two two')
+  redraw
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
+  call assert_equal([], s:list2)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+func Test_changes_can_be_unbuffered()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+  let s:list2 = []
+
+  " Add both a buffered and an unbuffered listener.
+  let id_a = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
+  let id_b = listener_add(
+      \ {b, s, e, a, l -> s:StoreListUnbuffered(s, e, a, l)},
+      \ bufnr(), v:true)
+
+  " Make a change, which only the second listener should see immediately.
+  call setline(2, 'two two')
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list2)
+  call assert_equal(2, s:start)
+  call assert_equal(3, s:end)
+  call assert_equal(0, s:added)
+  call assert_equal([], s:list)
+
+  " Make another change, which only the second listener should see immediately.
+  call setline(3, 'three three')
+  call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list2)
+  call assert_equal(3, s:start)
+  call assert_equal(4, s:end)
+  call assert_equal(0, s:added)
+  call assert_equal([], s:list)
+
+  " Force changes to be flushed. Only the first listener should be invoked,
+  " with both the above changes.
+  let s:list2 = []
+  redraw
+  call assert_equal([
+      \ {'lnum': 2, 'end': 3, 'col': 1, 'added': 0},
+      \ {'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
+  call assert_equal([], s:list2)
+
+  call listener_remove(id_a)
+  call listener_remove(id_b)
   bwipe!
 endfunc
 
