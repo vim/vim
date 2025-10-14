@@ -68,7 +68,7 @@ It is raised for various Vim errors.
 
 During compilation, the MzScheme interface will remember the current MzScheme
 collection path.  If you want to specify additional paths use the
-'current-library-collection-paths' parameter.  E.g., to cons the user-local
+"current-library-collection-paths" parameter.  E.g., to cons the user-local
 MzScheme collection path: >
     :mz << EOF
     (current-library-collection-paths
