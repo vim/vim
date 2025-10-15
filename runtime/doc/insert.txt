@@ -1745,7 +1745,7 @@ Notes
 <
   These completions might take several seconds to gather candidates.
 
-- set completion can't complete "no" options:
+- 'autocomplete' can't complete "no" options:
 >
      set noautoindent
      set nobuflisted
