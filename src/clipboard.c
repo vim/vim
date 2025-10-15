@@ -3466,7 +3466,7 @@ clip_wl_owner_exists(Clipboard_T *cbd)
  * depending on the order of values in str.
  */
     static clipmethod_T
-get_clipmethod(char_u *str, bool *regular, bool *primary)
+get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
 {
     int		len	= (int)STRLEN(str) + 1;
     char_u	*buf	= alloc(len);
@@ -3493,8 +3493,8 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 		if (clip_wl.regular.available || clip_wl.primary.available)
 		{
 		    method = CLIPMETHOD_WAYLAND;
-		    *regular = clip_wl.regular.available;
-		    *primary = clip_wl.primary.available;
+		    *plus = clip_wl.regular.available;
+		    *star = clip_wl.primary.available;
 		}
 #endif
 	    }
@@ -3516,7 +3516,7 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 		    // won't be executed since xterm_dpy will be set to NULL.
 		    xterm_update();
 		    method = CLIPMETHOD_X11;
-		    *regular = *primary = true;
+		    *plus = *star = true;
 		}
 #endif
 	    }
@@ -3527,7 +3527,7 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 	    if (gui.in_use)
 	    {
 		method = CLIPMETHOD_GUI;
-		*regular = *primary = true;
+		*star = *plus = true;
 	    }
 #endif
 	}
@@ -3535,27 +3535,40 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 	{
 #ifndef UNIX
 		method = CLIPMETHOD_OTHER;
-		*regular = *primary = true;
+		*plus = *star = true;
 #endif
 	}
 	else
 	{
 #ifdef FEAT_CLIPBOARD_PROVIDER
 	    // Check if it is the name of a provider
-	    int reg = clip_provider_is_available(&clip_plus, buf);
-	    int pri = clip_provider_is_available(&clip_star, buf);
+#ifndef ONE_CLIPBOARD
+	    int plus_avail = clip_provider_is_available(&clip_plus, buf);
+#endif
+	    int star_avail = clip_provider_is_available(&clip_star, buf);
 
-	    if (reg == 1 || pri == 1)
+	    if (
+#ifndef ONE_CLIPBOARD
+		    plus_avail == 1 ||
+#endif
+		    star_avail == 1)
 	    {
 		method = CLIPMETHOD_PROVIDER;
 
 		vim_free(clipprovider_name);
 		clipprovider_name = vim_strsave(buf);
 
-		*regular = reg == 1;
-		*primary = pri == 1;
+#ifndef ONE_CLIPBOARD
+		*plus = plus_avail == 1;
+#endif
+		*star = star_avail == 1;
 	    }
-	    else if (reg == -1)
+
+	    else if (
+#ifndef ONE_CLIPBOARD
+		    plus_avail == -1 ||
+#endif
+		    star_avail == -1)
 #endif
 	    {
 		ret = CLIPMETHOD_FAIL;
@@ -3614,8 +3627,9 @@ clipmethod_to_str(clipmethod_T method)
     char *
 choose_clipmethod(void)
 {
-    bool regular = false, primary = false;
-    clipmethod_T method = get_clipmethod(p_cpm, &regular, &primary);
+    bool plus = false;
+    bool star = false;
+    clipmethod_T method = get_clipmethod(p_cpm, &plus, &star);
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
@@ -3633,9 +3647,11 @@ choose_clipmethod(void)
     // If we have a clipmethod that works now, then initialize clipboard
     else if (clipmethod == CLIPMETHOD_NONE && method != CLIPMETHOD_NONE)
     {
-	clip_init_single(&clip_plus, regular);
-	clip_init_single(&clip_star, primary);
+#ifndef ONE_CLIPBOARD
+	clip_init_single(&clip_plus, plus);
 	clip_plus.did_warn = false;
+#endif
+	clip_init_single(&clip_star, star);
 	clip_star.did_warn = false;
     }
     else if ((clipmethod != CLIPMETHOD_NONE && method != clipmethod))
@@ -3643,20 +3659,23 @@ choose_clipmethod(void)
 	// Disown clipboard if we are switching to a new method
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
+	clip_init_single(&clip_star, star);
+#ifndef ONE_CLIPBOARD
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
-
-	clip_init_single(&clip_plus, regular);
-	clip_init_single(&clip_star, primary);
+	clip_init_single(&clip_plus, plus);
+#endif
     }
     else
     {
 	// If availability of a clipboard changed, then update the clipboard
 	// structure.
-	if (regular != clip_plus.available)
-	    clip_init_single(&clip_plus, regular);
-	if (primary != clip_star.available)
-	    clip_init_single(&clip_star, primary);
+#ifndef ONE_CLIPBOARD
+	if (plus != clip_plus.available)
+	    clip_init_single(&clip_plus, plus);
+#endif
+	if (star != clip_star.available)
+	    clip_init_single(&clip_star, star);
     }
 
     clipmethod = method;
@@ -3724,8 +3743,12 @@ clip_provider_is_available(Clipboard_T *cbd, char_u *provider)
 
     avail = rettv.vval.v_string;
 
-    if ((vim_strchr(avail, '+') != NULL && cbd == &clip_plus)
-	    || (vim_strchr(avail, '*') != NULL && cbd == &clip_star))
+
+    if (
+#ifndef ONE_CLIPBOARD
+	    (vim_strchr(avail, '+') != NULL && cbd == &clip_plus) ||
+#endif
+	    (vim_strchr(avail, '*') != NULL && cbd == &clip_star))
 	res = 1;
 
     if (FALSE)
