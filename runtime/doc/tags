@@ -1411,6 +1411,7 @@ $quote	eval.txt	/*$quote*
 +cindent	various.txt	/*+cindent*
 +clientserver	various.txt	/*+clientserver*
 +clipboard	various.txt	/*+clipboard*
++clipboard_provider	various.txt	/*+clipboard_provider*
 +clipboard_working	various.txt	/*+clipboard_working*
 +cmd	editing.txt	/*+cmd*
 +cmdline_compl	various.txt	/*+cmdline_compl*
@@ -6691,6 +6692,12 @@ clipboard-autoselectml	options.txt	/*clipboard-autoselectml*
 clipboard-autoselectplus	options.txt	/*clipboard-autoselectplus*
 clipboard-exclude	options.txt	/*clipboard-exclude*
 clipboard-html	options.txt	/*clipboard-html*
+clipboard-provider-available	eval.txt	/*clipboard-provider-available*
+clipboard-provider-copy	eval.txt	/*clipboard-provider-copy*
+clipboard-provider-example	eval.txt	/*clipboard-provider-example*
+clipboard-provider-paste	eval.txt	/*clipboard-provider-paste*
+clipboard-provider-textlock	eval.txt	/*clipboard-provider-textlock*
+clipboard-providers	eval.txt	/*clipboard-providers*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
@@ -11254,6 +11261,7 @@ v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:clipmethod	eval.txt	/*v:clipmethod*
+v:clipproviders	eval.txt	/*v:clipproviders*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*

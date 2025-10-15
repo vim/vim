@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41653,6 +41653,8 @@ Other new features ~
 
 - |items()| function now supports Blob.
 
+- |clipboard-providers| support.
+
 							*changed-9.2*
 Changed~
 -------
@@ -41717,6 +41719,7 @@ Options: ~
   to ">" by default, indicating text that extends beyond the window width.
 - 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
   (see also the below platform specific change).
+- 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
@@ -41899,12 +41902,28 @@ Options: ~
 			compositor
 
 Vim Variables: ~
+|v:clipmethod|		The current 'clipmethod'.
+|v:clipproviders|	A dictionary containing clipboard providers
+			information.
+|v:stacktrace|		The most recent caught exception.
+|v:t_enumvalue|		Value of |enumvalue|.
+|v:t_enum|		Value of |enum| type.
+|v:t_tuple|		Value of |Tuple| type.
 |v:termda1|		The escape sequence returned for the primary device
 			attribute query (DA1).
+|v:termosc|		The most recent received OSC response.
+|v:wayland_display|	The name of the Wayland display Vim is connected to.
 
 Vim Arguments: ~
 |-Y|			Do not connect to the |wayland| compositor.
 |--clientserver|	Specify backend for clientserver functionality.
+
+Configure Switches: ~
+--with-wayland			Enable the |wayland| feature.
+--enable-wayland-focus-steal	Enable the |wayland-focus-steal| feature.
+--enable-socketserver		Enable the |socketserver-clientserver|
+				feature.
+--enable-clipboard-provider	Enable the |clipboard-providers| feature.
 
 
 ==============================================================================

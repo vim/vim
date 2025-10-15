@@ -105,6 +105,7 @@ NEW_TESTS = \
 	test_cjk_linebreak \
 	test_clientserver \
 	test_clipmethod \
+	test_clipboard_provider \
 	test_close_count \
 	test_cmd_lists \
 	test_cmdline \
@@ -395,6 +396,7 @@ NEW_TESTS_RES = \
 	test_cjk_linebreak.res \
 	test_clientserver.res \
 	test_clipmethod.res \
+	test_clipboard_provider.res \
 	test_close_count.res \
 	test_cmd_lists.res \
 	test_cmdline.res \

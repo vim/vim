@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1287,26 +1287,9 @@ remove existing text in the preview window.  The size of the preview window is
 three lines, but 'previewheight' is used when it has a value of 1 or 2.
 
 						*complete-popup*
-When "popup" is in 'completeopt' a popup window is used to display the "info".
-Then the 'completepopup' option specifies the properties of the popup.  This
-is used when the info popup is created.  The option is a comma-separated list
-of values:
-	height		maximum height of the popup
-	width		maximum width of the popup
-	highlight	highlight group of the popup (default is PmenuSel)
-	align		"item" (default) or "menu"
-	border		"on" (default) or "off"
-Example: >
-	:set completepopup=height:10,width:60,highlight:InfoPopup
-
-When `"align"` is set to `"item"`, the popup is positioned near the selected
-item, and moves as the selection changes.
-When set to `"menu"`, the popup aligns with the top of the menu (if the menu
-appears below the text), or with the bottom (if the menu appears above).
-
-If the 'mouse' is enabled, a close button and resize handle will appear on the
-popup border.
-
+When "popup" is included in 'completeopt', a popup window is used to display
+the completion "info" text.  The appearance and behavior of this popup are
+controlled by the 'completepopup' option when the popup is created.
 After creation, the info popup can be located with |popup_findinfo()| and
 modified using |popup_setoptions()|.
 
