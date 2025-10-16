@@ -727,4 +727,48 @@ func Test_eval_string_in_special_key()
   silent! echo 0{1-$"\<S--{>n|nö% 
 endfunc
 
+func AvailableTest()
+  return g:vim_test_plus .. g:vim_test_star
+endfunc
+
+func Test_clipboard_runtime_features()
+  " Use clipboard provider because we can change if a register is available or
+  " not.
+  CheckFeature clipboard_provider
+  CheckFeature clipboard
+
+    let g:vim_test_plus = ''
+    let g:vim_test_star = ''
+
+  let v:clipproviders["evaltest"] = {
+        \ "available": function("AvailableTest")
+        \ }
+
+  set clipmethod=evaltest
+
+  if has('win32') || has('macunix')
+    let g:vim_test_plus = '+'
+    let g:vim_test_star = '*'
+    clipreset
+
+    " plus register should be disabled on windows or macos
+    call assert_equal(0, has('clipboard_plus_avail'))
+    call assert_equal(1, has('clipboard_star_avail'))
+  else
+    let g:vim_test_plus = '+'
+    let g:vim_test_star = '*'
+    clipreset
+
+    call assert_equal(1, has('clipboard_plus_avail'))
+    call assert_equal(1, has('clipboard_star_avail'))
+
+    let g:vim_test_plus = ""
+    clipreset
+
+    call assert_equal(0, has('clipboard_plus_avail'))
+  endif
+
+  set clipmethod&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -3573,7 +3573,6 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
 #endif
 		*star = star_avail == 1;
 	    }
-
 	    else if (
 #ifndef ONE_CLIPBOARD
 		    plus_avail == -1 ||
@@ -3585,7 +3584,6 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
 		goto exit;
 	    }
 	}
-
 	// Keep on going in order to catch errors
 	if (method != CLIPMETHOD_NONE && ret == CLIPMETHOD_FAIL)
 	    ret = method;
