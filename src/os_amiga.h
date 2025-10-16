@@ -41,10 +41,10 @@
 #endif
 
 #ifndef	DFLT_RUNTIMEPATH
-# define DFLT_RUNTIMEPATH "home:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,home:vimfiles/after"
+# define DFLT_RUNTIMEPATH "VIM:vimfiles,VIM:,VIM:vimfiles/after"
 #endif
 #ifndef	CLEAN_RUNTIMEPATH
-# define CLEAN_RUNTIMEPATH "$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
+# define CLEAN_RUNTIMEPATH "VIM:vimfiles,VIM:,VIM:vimfiles/after"
 #endif
 
 #ifndef	BASENAMELEN
@@ -110,63 +110,63 @@ typedef long off_t;
  * Some of these may have been defined in the makefile.
  */
 #ifndef SYS_VIMRC_FILE
-# define SYS_VIMRC_FILE "$VIM/vimrc"
+# define SYS_VIMRC_FILE "VIM:vimrc"
 #endif
 #ifndef SYS_GVIMRC_FILE
-# define SYS_GVIMRC_FILE "$VIM/gvimrc"
+# define SYS_GVIMRC_FILE "VIM:gvimrc"
 #endif
 #ifndef SYS_MENU_FILE
-# define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
+# define SYS_MENU_FILE	"VIM:menu.vim"
 #endif
 #ifndef DFLT_HELPFILE
-# define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
+# define DFLT_HELPFILE	"VIM:doc/help.txt"
 #endif
 #ifndef SYNTAX_FNAME
-# define SYNTAX_FNAME	"$VIMRUNTIME/syntax/%s.vim"
+# define SYNTAX_FNAME	"VIM:syntax/%s.vim"
 #endif
 
 #ifndef USR_EXRC_FILE
-# define USR_EXRC_FILE	"s:.exrc"
+# define USR_EXRC_FILE	"HOME:.exrc"
 #endif
 #ifndef USR_EXRC_FILE2
-# define USR_EXRC_FILE2	"home:.exrc"
+# define USR_EXRC_FILE2	"VIM:.exrc"
 #endif
 
 #ifndef USR_VIMRC_FILE
-# define USR_VIMRC_FILE	"s:.vimrc"
+# define USR_VIMRC_FILE	"HOME:.vimrc"
 #endif
 #ifndef USR_VIMRC_FILE2
-# define USR_VIMRC_FILE2 "home:.vimrc"
+# define USR_VIMRC_FILE2 "VIM:.vimrc"
 #endif
 #ifndef USR_VIMRC_FILE3
-# define USR_VIMRC_FILE3 "home:vimfiles:vimrc"
+# define USR_VIMRC_FILE3 "HOME:vimfiles/vimrc"
 #endif
 #ifndef USR_VIMRC_FILE4
-# define USR_VIMRC_FILE4 "$VIM/.vimrc"
+# define USR_VIMRC_FILE4 "S:.vimrc"
 #endif
 #ifndef VIM_DEFAULTS_FILE
-# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
+# define VIM_DEFAULTS_FILE "VIM:defaults.vim"
 #endif
 #ifndef EVIM_FILE
-# define EVIM_FILE	"$VIMRUNTIME/evim.vim"
+# define EVIM_FILE	"VIM:evim.vim"
 #endif
 
 #ifndef USR_GVIMRC_FILE
-# define USR_GVIMRC_FILE "s:.gvimrc"
+# define USR_GVIMRC_FILE "HOME:.gvimrc"
 #endif
 #ifndef USR_GVIMRC_FILE2
-# define USR_GVIMRC_FILE2 "home:.gvimrc"
+# define USR_GVIMRC_FILE2 "VIM:.gvimrc"
 #endif
 #ifndef USR_GVIMRC_FILE3
-# define USR_GVIMRC_FILE3 "home:vimfiles:gvimrc"
+# define USR_GVIMRC_FILE3 "HOME:vimfiles/gvimrc"
 #endif
 #ifndef USR_GVIMRC_FILE4
-# define USR_GVIMRC_FILE4 "$VIM/.gvimrc"
+# define USR_GVIMRC_FILE4 "S:.gvimrc"
 #endif
 
 #ifdef FEAT_VIMINFO
 # ifndef VIMINFO_FILE
-#  define VIMINFO_FILE	"s:.viminfo"
+# define VIMINFO_FILE	"VIM:.viminfo"
 # endif
 #endif
 
@@ -183,15 +183,15 @@ typedef long off_t;
 #endif
 
 #ifndef DFLT_BDIR
-# define DFLT_BDIR	".,t:"		// default for 'backupdir'
+# define DFLT_BDIR	"T:"		// default for 'backupdir'
 #endif
 
 #ifndef DFLT_DIR
-# define DFLT_DIR	".,t:"		// default for 'directory'
+# define DFLT_DIR	"T:"		// default for 'directory'
 #endif
 
 #ifndef DFLT_VDIR
-# define DFLT_VDIR	"home:vimfiles/view"	// default for 'viewdir'
+# define DFLT_VDIR	"HOME:vimfiles/view"	// default for 'viewdir'
 #endif
 
 #ifndef DFLT_MAXMEM
