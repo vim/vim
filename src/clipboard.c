@@ -260,7 +260,9 @@ clip_gen_own_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#ifndef UNIX
+#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
+	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
+	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
 	return clip_mch_own_selection(cbd);
 #endif
     }
@@ -327,7 +329,9 @@ clip_gen_lose_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#ifndef UNIX
+#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
+	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
+	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
 	clip_mch_lose_selection(cbd);
 #endif
     }
@@ -1377,7 +1381,9 @@ clip_gen_set_selection(Clipboard_T *cbd)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#ifndef UNIX
+#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
+	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
+	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
 	clip_mch_set_selection(cbd);
 #endif
     }
@@ -1413,7 +1419,9 @@ clip_gen_request_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#ifndef UNIX
+#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
+	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
+	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
 	clip_mch_request_selection(cbd);
 #endif
     }
@@ -3533,7 +3541,9 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
 	}
 	else if (STRCMP(buf, "other") == 0)
 	{
-#ifndef UNIX
+#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
+	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
+	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
 		method = CLIPMETHOD_OTHER;
 		*plus = *star = true;
 #endif
