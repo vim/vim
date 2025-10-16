@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Oct 14
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Oct 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5274,8 +5274,9 @@ Usage: >vim
 
 When Vim is compiled with the |+clipboard_provider| feature, which requires
 the |+eval| feature, creating custom clipboards is possible.  These providers
-handle the "+" and "*" registers.  Note that on non-Unix or non-VMS systems,
-only the "*" register will be available for use.
+handle the "+" and "*" registers.  Note that if |+wayland_clipboard| or
+|+xterm_clipboard| features are not compiled in, then the "+" register will
+not be available.
 
 To add a provider, add a new entry to the |v:clipproviders| dictionary, in the
 format of: >
@@ -5353,7 +5354,7 @@ Here is an example script that uses the clipboard provider feature through the
 OSC52 command: >vim
 
 	func Available()
-	  return "+"
+	  return "*"
 	endfunc
 	
 	func Paste(reg, type)
@@ -5368,7 +5369,7 @@ OSC52 command: >vim
 	  augroup END
 	
 	  " Send command
-	  call echoraw("\<Esc>]52;c;?\<Esc>\\")
+	  call echoraw("\<Esc>]52;;?\<Esc>\\")
 	
 	  " Wait until autocmd is triggered
 	  while getchar(-1) != "\<F30>"
@@ -5377,7 +5378,7 @@ OSC52 command: >vim
 	  autocmd! OSC
 	
 	  " Extract the base64 stuff
-	  let l:stuff = matchstr(v:termosc, '52;c;\zs[A-Za-z0-9+/=]\+')
+	  let l:stuff = matchstr(v:termosc, '52;.\+;\zs[A-Za-z0-9+/=]\+')
 	
 	  return ("", blob2str(base64_decode(l:stuff)))
 	endfunc
@@ -5389,10 +5390,10 @@ OSC52 command: >vim
 	let v:clipproviders["myosc"] = {
 	    \   "available": function("Available"),
 	    \   "paste": {
-	    \     '+': function("Paste"),
+	    \     '*': function("Paste")
 	    \   },
 	    \   "copy": {
-	    \     '+': function("Copy"),
+	    \     '*': function("Copy")
 	    \   },
 	    \ }
 	set clipmethod=myosc
