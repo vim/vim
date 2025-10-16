@@ -4375,9 +4375,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		// This is a new edit command, not a restart.  Need to
 		// remember it to make 'insertmode' work with mappings for
-		// Visual mode.  But do this only once and not when typed and
-		// 'insertmode' isn't set.
-		if (p_im || !KeyTyped)
+		// Visual mode.  But do this only once and only when
+		// 'insertmode' is set.
+		if (p_im)
 		    restart_edit_save = restart_edit;
 		else
 		    restart_edit_save = 0;

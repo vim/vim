@@ -1949,5 +1949,15 @@ func Test_mapclear_while_listing()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_operator_map_with_normal_op_change()
+  new
+  call setline(1, ['one two three', 'four five six'])
+  onoremap <buffer> gb <cmd>normal! V<cr>
+  call cursor(1, 2)
+  " the first <ESC> should enter insert mode directly
+  call feedkeys("a\<C-o>cgb\<esc>athree two one\<esc>", 'tx')
+  call assert_equal('three two one', getline(1))
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
