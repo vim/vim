@@ -1,10 +1,10 @@
 vim9script
 
 export def Paste(reg: string, type: string): any
-  # Many terminals have a confrim prompt when accessing the clipboard, so we
+  # Some terminals have a confrim prompt when accessing the clipboard, so we
   # only want to request the clipboard if the user explicitly does so.
-  if type == "implicit"
-    return "previous"
+  if type == "implicit" && !get(g:, 'osc52_always_access', 0)
+      return "previous"
   endif
 
   augroup VimOSC52
@@ -45,12 +45,12 @@ export def Paste(reg: string, type: string): any
   # ```
   if has('clipboard_plus_avail')
     if reg == "+"
-      call echoraw("\<Esc>]52;c;?\<Esc>\\")
+      echoraw("\<Esc>]52;c;?\<Esc>\\")
     else
-      call echoraw("\<Esc>]52;p;?\<Esc>\\")
+      echoraw("\<Esc>]52;p;?\<Esc>\\")
     endif
   else
-      call echoraw("\<Esc>]52;;?\<Esc>\\")
+      echoraw("\<Esc>]52;;?\<Esc>\\")
   endif
 
   # Wait for response from terminal
@@ -67,12 +67,12 @@ enddef
 export def Copy(reg: string, type: string, lines: list<string>): void
   if has('clipboard_plus_avail')
     if reg == "+"
-      call echoraw("\<Esc>]52;c;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
+      echoraw("\<Esc>]52;c;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
     else
-      call echoraw("\<Esc>]52;p;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
+      echoraw("\<Esc>]52;p;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
     endif
   else
-      call echoraw("\<Esc>]52;;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
+      echoraw("\<Esc>]52;;" .. base64_encode(str2blob(lines)) .. "\<Esc>\\")
   endif
 enddef
 
