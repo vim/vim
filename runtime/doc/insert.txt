@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Oct 16
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Oct 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1706,7 +1706,7 @@ Notes:
 
 VIM							*ft-vim-omni*
 
-Simple completion of Vimscript and Vim9script languages.
+Simple completion of Vim script and Vim9 script languages.
 
 Complete:
 
