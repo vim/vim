@@ -1706,7 +1706,7 @@ Notes:
 
 VIM							*ft-vim-omni*
 
-Simple completion of Vimscript and Vim9script languages.
+Simple completion of Vim script and Vim9 script languages.
 
 Complete:
 
