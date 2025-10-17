@@ -8,7 +8,28 @@ vim9script
 import autoload "../autoload/osc52.vim" as osc
 
 def Available(): string
-  return "+*"
+  if get(g:, 'osc52_force_avail', 0)
+    return "+*"
+  endif
+
+  # Send DA1 request
+  augroup VimOSC52DA1
+    autocmd!
+    autocmd TermResponseAll da1 ++once call feedkeys("\<F30>", '!')
+  augroup END
+
+  call echoraw("\<Esc>[c")
+
+  # Wait for response from terminal
+  while getchar(-1) != "\<F30>"
+  endwhile
+  autocmd! VimOSC52DA1
+
+  # If there is a 52 parameter, then the terminal supports OSC 52
+  if match(v:termda1, ';\zs52\ze') != -1
+    return "+*"
+  endif
+  return ""
 enddef
 
 v:clipproviders["osc52"] = {
