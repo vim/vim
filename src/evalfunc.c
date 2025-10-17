@@ -7944,7 +7944,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
-	    n = clip_plus.available && &clip_star != &clip_plus;
+# ifdef ONE_CLIPBOARD
+	    n = FALSE;
+# else
+	    n = clip_plus.available;
+# endif
 #endif
 	}
     }

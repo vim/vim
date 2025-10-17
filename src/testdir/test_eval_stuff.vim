@@ -746,17 +746,19 @@ func Test_clipboard_runtime_features()
 
   set clipmethod=evaltest
 
-  if has('win32') || has('macunix')
+  if has('win32') || has('macunix') ||
+        \ (!has('wayland_clipboard') && !has('xterm_clipboard'))
     let g:vim_test_plus = '+'
     let g:vim_test_star = '*'
     clipreset
 
-    " plus register should be disabled on windows or macos
+    " plus register should be disabled on windows or macos, or if Wayland and
+    " X11 is not enabled.
     call assert_equal(0, has('clipboard_plus_avail'))
     call assert_equal(1, has('clipboard_star_avail'))
   else
-    let g:vim_test_plus = '+'
     let g:vim_test_star = '*'
+    let g:vim_test_plus = '+'
     clipreset
 
     call assert_equal(1, has('clipboard_plus_avail'))
