@@ -37,6 +37,8 @@ endfunc
 " Test if "available" function works properly for provider
 func Test_clipboard_provider_available()
     CheckUnix
+    CheckFeature clipboard_plus_avail
+
     let v:clipproviders["test"] = {
                 \ "available": function("AvailablePlus"),
                 \ "paste": {
