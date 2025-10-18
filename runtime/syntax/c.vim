@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		C
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Jan 18
+" Last Change:		2025 Jul 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -571,6 +571,54 @@ else
   exec "syn sync ccomment cComment minlines=" . b:c_minlines
 endif
 
+"
+"	Standard C Library Functions Table, By Name
+"	Put in by Mark Manning on July 12th, 2025.
+"
+syn keyword cStdCLibFunctions	abort abs acos asctime asctime_r asin assert atan
+syn keyword cStdCLibFunctions	atexit atof atoi atol bsearch btowc calloc catclose
+syn keyword cStdCLibFunctions	catgets catopen ceil clearerr clock cos cosh ctime
+syn keyword cStdCLibFunctions	ctime64 ctime_r ctime64_r difftime difftime64 div
+syn keyword cStdCLibFunctions	erf erfc exit exp fabs fclose fdopen feof ferror
+syn keyword cStdCLibFunctions	fflush fgetc fgetpos fgets fgetwc fgetws fileno
+syn keyword cStdCLibFunctions	floor fmod fopen fprintf fputc fputs fputwc fputws
+syn keyword cStdCLibFunctions	fread free freopen frexp fscanf fseek fsetpos
+syn keyword cStdCLibFunctions	ftell fwide fwprintf fwrite fwscanf gamma getc
+syn keyword cStdCLibFunctions	getchar getenv gets getwc getwchar gmtime gmtime64
+syn keyword cStdCLibFunctions	gmtime_r gmtime64_r hypot isalnum isalpha isascii
+syn keyword cStdCLibFunctions	isblank iscntrl isdigit isgraph islower isprint
+syn keyword cStdCLibFunctions	ispunct isspace isupper iswalnum iswalpha iswblank
+syn keyword cStdCLibFunctions	iswcntrl iswctype iswdigit iswgraph iswlower iswprint
+syn keyword cStdCLibFunctions	iswpunct iswspace iswupper iswxdigit isxdigit
+syn keyword cStdCLibFunctions	j0 j1 jn labs ldexp ldiv localeconv localtime localtime64
+syn keyword cStdCLibFunctions	localtime_r localtime64_r log log10 longjmp malloc
+syn keyword cStdCLibFunctions	mblen mbrlen mbrtowc mbsinit mbsrtowcs mbstowcs mbtowc
+syn keyword cStdCLibFunctions	memchr memcmp memcpy memmove memset mktime mktime64
+syn keyword cStdCLibFunctions	modf nextafter nextafterl nexttoward nexttowardl
+syn keyword cStdCLibFunctions	nl_langinfo perror pow printf putc putchar putenv puts
+syn keyword cStdCLibFunctions	putwc putwchar qsort quantexpd32 quantexpd64 quantexpd128
+syn keyword cStdCLibFunctions	quantized32 quantized64 quantized128 samequantumd32
+syn keyword cStdCLibFunctions	samequantumd64 samequantumd128 raise rand rand_r
+syn keyword cStdCLibFunctions	realloc regcomp regerror regexec regfree remove
+syn keyword cStdCLibFunctions	rename rewind scanf setbuf setjmp setlocale setvbuf
+syn keyword cStdCLibFunctions	signal sin sinh snprintf sprintf sqrt srand sscanf
+syn keyword cStdCLibFunctions	strcasecmp strcat strchr strcmp strcoll strcpy strcspn
+syn keyword cStdCLibFunctions	strerror strfmon4 strftime strlen strncasecmp strncat
+syn keyword cStdCLibFunctions	strncmp strncpy strpbrk strptime4 strrchr strspn strstr
+syn keyword cStdCLibFunctions	strtod strtod32 strtod64 strtod128 strtof strtok strtok_r
+syn keyword cStdCLibFunctions	strtol strtold strtoul strxfrm swprintf swscanf system
+syn keyword cStdCLibFunctions	tan tanh time time64 tmpfile tmpnam toascii tolower toupper
+syn keyword cStdCLibFunctions	towctrans towlower towupper ungetc ungetwc va_arg va_copy
+syn keyword cStdCLibFunctions	va_end va_start vfprintf vfscanf vfwprintf vfwscanf
+syn keyword cStdCLibFunctions	vprintf vscanf vsprintf vsnprintf vsscanf vswprintf
+syn keyword cStdCLibFunctions	vswscanf vwprintf vwscanf wcrtomb wcscat wcschr wcscmp
+syn keyword cStdCLibFunctions	wcscoll wcscpy wcscspn wcsftime wcslen wcslocaleconv
+syn keyword cStdCLibFunctions	wcsncat wcsncmp wcsncpy wcspbrk wcsptime wcsrchr
+syn keyword cStdCLibFunctions	wcsrtombs wcsspn wcsstr wcstod wcstod32 wcstod64 wcstod128
+syn keyword cStdCLibFunctions	wcstof wcstok wcstol wcstold wcstombs wcstoul wcsxfrm4
+syn keyword cStdCLibFunctions	wctob wctomb wctrans wctype wcwidth wmemchr wmemcmp
+syn keyword cStdCLibFunctions	wmemcpy wmemmove wmemset wprintf wscanf y0 y1 yn
+
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
 hi def link cFormat		cSpecial
@@ -627,6 +675,7 @@ hi def link cCppOutIf2		cCppOut
 hi def link cCppOut		Comment
 hi def link cFunction		Function
 hi def link cFunctionPointer	Function
+hi def link cStdCLibFunctions	Function
 
 let b:current_syntax = "c"
 
