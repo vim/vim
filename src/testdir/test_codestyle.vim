@@ -123,9 +123,13 @@ def Test_help_files()
     # Check for mixed tabs and spaces
     cursor(1, 1)
     while 1
-      lnum = search('[^/] \t')
-      if fname == 'visual.txt' && getline(lnum) =~ "STRING  \tjkl"
-        || fname == 'usr_27.txt' && getline(lnum) =~ "\[^\? \t\]"
+      lnum = search(' \t')
+         # :help v_b_I_example
+      if fname == 'visual.txt' && getline(lnum) =~ 'STRING  \tjkl'
+           # :help 12.7
+        || fname == 'usr_12.txt' && getline(lnum) =~ '/ \t'
+           # :help 27.6
+        || fname == 'usr_27.txt' && getline(lnum) =~ '\[^\? \t\]'
         continue
       endif
       ReportError(fpath, lnum, 'space before tab')
@@ -139,10 +143,14 @@ def Test_help_files()
     while 1
       lnum = search('\%([^/~\\]\|^\)\s\+$')
       # skip line that are known to have trailing white space
+         # :help map-trailing-white
       if fname == 'map.txt' && getline(lnum) =~ "unmap @@ $"
-        || fname == 'usr_12.txt' && getline(lnum) =~ "^\t/ \t$"
-        || fname == 'usr_41.txt' && getline(lnum) =~ "map <F4> o#include  $"
-        || fname == 'change.txt' && getline(lnum) =~ "foobar bla $"
+           # :help 12.7
+        || fname == 'usr_12.txt' && getline(lnum) =~ '^\t/ \t$'
+           # :help 41.11
+        || fname == 'usr_41.txt' && getline(lnum) =~ 'map <F4> o#include  $'
+           # :help autoformat
+        || fname == 'change.txt' && getline(lnum) =~ 'foobar bla $'
         continue
       endif
       ReportError('testdir' .. fpath, lnum, 'trailing white space')
