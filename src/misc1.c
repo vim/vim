@@ -2623,7 +2623,14 @@ get_cmd_output_as_rettv(
 	for (i = 0; i < len; ++i)
 	{
 	    start = res + i;
+#ifdef USE_CRNL
+	    if (*start == NL)
+		continue;
+
+	    while (i < len && res[i] != CAR && res[i] != NL)
+#else
 	    while (i < len && res[i] != NL)
+#endif
 		++i;
 	    end = res + i;
 
