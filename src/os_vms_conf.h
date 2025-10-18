@@ -97,7 +97,6 @@
 
 #define TGETENT_ZERO_ERR
 #define HAVE_GETCWD
-#define HAVE_STRCSPN
 #define HAVE_STRTOL
 #define HAVE_TGETENT
 #define HAVE_MEMSET

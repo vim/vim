@@ -23,7 +23,6 @@
 # define HAVE_STDLIB_H
 # define HAVE_STRING_H
 # define HAVE_FCNTL_H
-# define HAVE_STRCSPN
 # define HAVE_STRICMP
 # define HAVE_STRNICMP
 # define HAVE_STRFTIME	    // guessed
