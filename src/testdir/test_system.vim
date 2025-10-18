@@ -1,18 +1,38 @@
 " Tests for system() and systemlist()
 
+let s:old_path = $PATH
+
+func SetUp()
+  " On Windows, try making 'cat' and 'wc' available.
+  " Note more.com does not behave exactly like cat.
+  if has('win32') && !executable('cat') && executable('git')
+    let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
+    let $PATH = $'{git_path}\usr\bin;{$PATH}'
+  endif
+endfunc
+
+func TearDown()
+  let $PATH = s:old_path
+endfunc
+
 func Test_System()
-  if !has('win32')
-    call assert_equal("123\n", system('echo 123'))
-    call assert_equal(['123'], systemlist('echo 123'))
+
+  call assert_equal("123\n", system('echo 123'))
+  call assert_equal(['123'], systemlist('echo 123'))
+
+  if executable('cat')
     call assert_equal('123',   system('cat', '123'))
     call assert_equal(['123'], systemlist('cat', '123'))
     call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
-  else
-    call assert_equal("123\n", system('echo 123'))
-    call assert_equal(["123\r"], systemlist('echo 123'))
+  endif
+
+  if executable('more.com')
+    " more.com unlike cat:
+    " > outputs an extra line at the end
+    " > turns \0 int \r\n within a string
     call assert_equal("123\n",   system('more.com', '123'))
-    call assert_equal(["123\r"], systemlist('more.com', '123'))
-    call assert_equal(["as\r", "df\r"], systemlist('more.com', ["as\<NL>df"]))
+    call assert_equal(["123"], systemlist('more.com', '123'))
+    call assert_equal(["as", "df"], systemlist('more.com', ["as\<NL>df"]))
   endif
 
   new Xdummy
@@ -35,16 +55,33 @@ func Test_System()
     endif
   endif
 
-  if !has('win32')
+  if executable('cat')
     let out = systemlist('cat', bufnr('%'))
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
-  else
+  endif
+
+  if executable('more.com')
     let out = systemlist('more.com', bufnr('%'))
-    call assert_equal(["asdf\r", "pw\r", "er\r", "xxxx\r"],  out)
+    call assert_equal(["asdf", "pw", "er", "xxxx"],  out)
   endif
   bwipe!
 
   call assert_fails('call system("wc -l", 99999)', 'E86:')
+
+  enew!
+  let ref = ['aa', 'bb', 'cc', 'dd', 'ee']
+  call setline(1, ref)
+
+  if executable('cat')
+    let out = systemlist('cat', bufnr('%'))
+    call assert_equal(ref,  out)
+  endif
+
+  if executable('more.com')
+    let out = systemlist('more.com', bufnr('%'))
+    call assert_equal(ref,  out)
+  endif
+
 endfunc
 
 func Test_system_exmode()
