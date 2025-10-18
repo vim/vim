@@ -4642,11 +4642,7 @@ enddef
 def Test_systemlist()
   v9.CheckSourceDefAndScriptFailure(['systemlist(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['systemlist("a", {})'], ['E1013: Argument 2: type mismatch, expected string but got dict<any>', 'E1224: String, Number or List required for argument 2'])
-  if has('win32')
-    call assert_equal(["123\r"], systemlist('echo 123'))
-  else
-    call assert_equal(['123'], systemlist('echo 123'))
-  endif
+  call assert_equal(['123'], systemlist('echo 123'))
 enddef
 
 def Test_tabpagebuflist()
