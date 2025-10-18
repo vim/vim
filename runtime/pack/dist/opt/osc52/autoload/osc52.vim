@@ -14,8 +14,10 @@ export def Available(): string
   call echoraw("\<Esc>[c")
 
   # Wait for response from terminal
-  while getchar(-1) != "\<F30>"
+  echo "Waiting for OSC 52 response..."
+  while getcharstr(-1, {cursor: "hide"}) != "\<F30>"
   endwhile
+  redraw!
   autocmd! VimOSC52DA1
 
   # If there is a 52 parameter, then the terminal supports OSC 52
@@ -79,8 +81,10 @@ export def Paste(reg: string, type: string): any
   endif
 
   # Wait for response from terminal
-  while getchar(-1) != "\<F30>"
+  echo "Waiting for OSC 52 response..."
+  while getcharstr(-1, {cursor: "hide"}) != "\<F30>"
   endwhile
+  redraw!
   autocmd! VimOSC52
 
   # Extract the base64 stuff
