@@ -968,10 +968,6 @@ normal_cmd(
     if (old_mapped_len > 0)
 	old_mapped_len = typebuf_maplen();
 
-#ifdef FEAT_EVAL
-    int prev_VIsual_active = VIsual_active;
-#endif
-
     // If an operation is pending, handle it.  But not for K_IGNORE or
     // K_MOUSEMOVE.
     if (ca.cmdchar != K_IGNORE && ca.cmdchar != K_MOUSEMOVE)
@@ -988,7 +984,7 @@ normal_end:
     msg_nowait = FALSE;
 
 #ifdef FEAT_EVAL
-    if (finish_op || prev_VIsual_active)
+    if (finish_op)
 	reset_reg_var();
 #endif
 

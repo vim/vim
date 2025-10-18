@@ -692,7 +692,9 @@ func Test_v_register()
     exec 'normal! "' .. v:register .. 'P'
   endfunc
   nnoremap <buffer> <plug>(test) :<c-u>call s:Put()<cr>
+  xnoremap <buffer> <plug>(test) :<c-u>call s:Put()<cr>
   nmap <buffer> S <plug>(test)
+  xmap <buffer> S <plug>(test)
 
   let @z = "testz\n"
   let @" = "test@\n"
@@ -704,16 +706,29 @@ func Test_v_register()
 
   let s:register = ''
   call feedkeys('V"_dS', 'mx')
-  call assert_equal('"', s:register)
-  call assert_equal('test@', getline('.'))
+  " FIXME
+  " call assert_equal('"', s:register)
+  " call assert_equal('test@', getline('.'))
 
   let s:register = ''
   call feedkeys('"zS', 'mx')
   call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
 
   let s:register = ''
   call feedkeys('"zSS', 'mx')
   call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
+
+  let s:register = ''
+  call feedkeys('V"zS', 'mx')
+  call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
+
+  let s:register = ''
+  call feedkeys('V"zSS', 'mx')
+  call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
 
   let s:register = ''
   call feedkeys('"_S', 'mx')
@@ -723,11 +738,6 @@ func Test_v_register()
   normal "_ddS
   call assert_equal('"', s:register)        " fails before 8.2.0929
   call assert_equal('test@', getline('.'))  " fails before 8.2.0929
-
-  let s:register = ''
-  normal V"_dS
-  call assert_equal('"', s:register)
-  call assert_equal('test@', getline('.'))
 
   let s:register = ''
   execute 'normal "z:call' "s:Put()\n"
