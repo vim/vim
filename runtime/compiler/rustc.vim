@@ -45,6 +45,10 @@ CompilerSet errorformat+=
             \%-G%*[\ ]^%*[~],
             \%-G%*[\ ]...
 
+" Compatibility with standard unix tools errorformat
+CompilerSet errorformat+=
+            \%f:%l:%c:%m
+
 " vint: -ProhibitAbbreviationOption
 let &cpo = s:save_cpo
 unlet s:save_cpo
