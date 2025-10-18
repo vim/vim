@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Oct 16
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Oct 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5356,30 +5356,30 @@ OSC52 command: >vim
 	func Available()
 	  return "*"
 	endfunc
-	
+
 	func Paste(reg, type)
 	  " If implicit access, don't do anything
 	  if a:type == "implicit"
 	    return "previous"
 	  endif
-	
+
 	  augroup OSC
 	    autocmd!
 	    autocmd TermResponseAll osc ++once call feedkeys("\<F30>", '!')
 	  augroup END
-	
+
 	  " Send command
 	  call echoraw("\<Esc>]52;;?\<Esc>\\")
-	
+
 	  " Wait until autocmd is triggered
 	  while getchar(-1) != "\<F30>"
 	  endwhile
-	
+
 	  autocmd! OSC
-	
+
 	  " Extract the base64 stuff
 	  let l:stuff = matchstr(v:termosc, '52;.\+;\zs[A-Za-z0-9+/=]\+')
-	
+
 	  return ("", blob2str(base64_decode(l:stuff)))
 	endfunc
 
