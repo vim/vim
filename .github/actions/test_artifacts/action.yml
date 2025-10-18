@@ -3,11 +3,39 @@ description: "Upload failed test artifacts"
 runs:
   using: "composite"
   steps:
+    - name: Collect matrix properties for naming
+      uses: actions/github-script@v8
+      id: matrix-props
+      env:
+        MATRIX_PROPS: ${{ toJSON(matrix) }}
+      with:
+        # An array-flattening-to-string JavaScript function.
+        script: |
+          const f = function (x) { return x.toString().length > 0; }
+          const g = function (x) {
+            return (Array.isArray(x))
+              ? x.filter(f)
+                .map((function (h) { return function (y) { return h(y); }; })(g))
+                .join('-')
+              : x;
+          }
+          return Object.values(JSON.parse(process.env.MATRIX_PROPS))
+            .filter(f)
+            .map(g)
+            .join('-');
+        # By default, the JSON-encoded return value of the function is
+        # set as the "result".
+        result-encoding: string
     - name: Upload failed tests
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
-        name: GH-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-tests
+        name: ${{ format('GH-{0}-{1}-{2}-{3}-{4}-failed-tests',
+          github.run_id,
+          github.run_attempt,
+          github.job,
+          strategy.job-index,
+          steps.matrix-props.outputs.result) }}
 
         # A file, directory or wildcard pattern that describes what
         # to upload.

@@ -120,3 +120,5 @@ class SwitchTests	// JDK 21+.
 		});
 	}
 }
+
+
