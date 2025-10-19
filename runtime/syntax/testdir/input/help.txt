@@ -1,3 +1,15 @@
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+					  and Somebody Else
+					  and Another Person
+
+
+		  VIM USER MANUAL	  by Bram Moolenaar
+					  and Somebody Else
+					  and Another Person
+
+
 VIM HELP FILE FORMAT
 
 

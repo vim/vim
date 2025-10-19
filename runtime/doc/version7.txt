@@ -3,6 +3,7 @@
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
+
 					*vim7* *version-7.0* *version7.0*
 Welcome to Vim 7!  A large number of features has been added.  This file
 mentions all the new items, changes to existing features and bug fixes

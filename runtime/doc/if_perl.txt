@@ -2,7 +2,7 @@
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
-					 and Matt Gerassimof
+					  and Matt Gerassimof
 
 Perl and Vim				*perl* *Perl*
 

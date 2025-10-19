@@ -3,6 +3,7 @@
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
+
 Welcome to Vim Version 5.0!
 
 This document lists the differences between Vim 4.x and Vim 5.0.
