@@ -53,12 +53,15 @@ let s:is_bash = get(b:, "is_bash", get(g:, "is_bash", 0))
 let s:is_kornshell = get(b:, "is_kornshell", get(g:, "is_kornshell", 0))
 
 if s:is_bash
-  if exists(':terminal') == 2
-    command! -buffer -nargs=1 ShKeywordPrg silent exe ':hor term bash -c "help "<args>" 2>/dev/null || man "<args>""'
-  else
-    command! -buffer -nargs=1 ShKeywordPrg echo system('bash -c "help <args>" 2>/dev/null || MANPAGER= man "<args>"')
-  endif
-  setlocal keywordprg=:ShKeywordPrg
+  function! s:KeywordPrg() abort
+    let keyword = expand('<cword>')
+    if exists(':terminal') == 2
+      execute ':hor term bash -c "help ' . keyword . ' 2>/dev/null'
+    else
+      return system('bash -c "help ' . keyword . ' 2>/dev/null"')
+    endif
+  endfunction
+  let &l:keywordprg=':call ' .. expand('<SID>') .. 'KeywordPrg() "'
   let b:undo_ftplugin ..= " | setl kp< | sil! delc -buffer ShKeywordPrg"
 endif
 

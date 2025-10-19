@@ -22,9 +22,7 @@ setlocal formatprg=gofmt
 
 setlocal comments=s1:/*,mb:*,ex:*/,://
 setlocal commentstring=//\ %s
-setlocal keywordprg=:GoKeywordPrg
-
-command! -buffer -nargs=* GoKeywordPrg call s:GoKeywordPrg()
+let &l:keywordprg = ':call ' .. expand('<SID>') .. 'GoKeywordPrg() "'
 
 let b:undo_ftplugin = 'setl fo< com< cms< fp< kp<'
                   \ . '| delcommand -buffer GoKeywordPrg'
