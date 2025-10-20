@@ -1,6 +1,3 @@
-
-
-
 let s:netrw_path =        $VIMRUNTIME . '/pack/dist/opt/netrw/autoload/netrw.vim'
 let s:netrw_test_dir  =   'samples'
 let s:netrw_test_path =   s:netrw_test_dir . '/netrw.vim'
@@ -37,7 +34,7 @@ func s:combine
   \, ports
   \, dirs
   \, files)
-  for username in a:usernames 
+  for username in a:usernames
     for method in a:methods
       for host in a:hosts
         for port in a:ports
@@ -80,12 +77,12 @@ func Test_netrw_parse_regular_usernames()
   call s:setup()
 
   " --- sample data for combinations ---"
-  let usernames = ["root", "toor", "user01", "skillIssue"] 
+  let usernames = ["root", "toor", "user01", "skillIssue"]
   let methods = ["scp", "ssh", "ftp", "sftp"]
   let hosts = ["localhost", "server.com", "fit-workspaces.ksi.fit.cvut.cz", "192.168.1.42"]
   let ports = ["", "22","420", "443", "2222", "1234"]
   let dirs = ["", "somefolder/", "path/to/the/bottom/of/the/world/please/send/help/"]
-  let files = ["test.txt", "tttt.vim", "Makefile"] 
+  let files = ["test.txt", "tttt.vim", "Makefile"]
 
   call s:combine(usernames, methods, hosts, ports, dirs, files)
 
