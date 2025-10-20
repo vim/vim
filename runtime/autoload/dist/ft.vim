@@ -2157,6 +2157,8 @@ const ft_from_ext = {
   "jgr": "jgraph",
   # Jinja
   "jinja": "jinja",
+  # Jinja2
+  "j2": "jinja2",
   # Jujutsu
   "jjdescription": "jjdescription",
   # Jovial
