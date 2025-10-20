@@ -76,7 +76,7 @@ func Test_netrw_parse_remote_simple()
 endfunction
 
 "testing different combinations"
-func Test__netrw_parse_regular_usernames()
+func Test_netrw_parse_regular_usernames()
   call s:setup()
 
   " --- sample data for combinations ---"
@@ -95,7 +95,7 @@ endfunc
 "Host myserver
 "    HostName 192.168.1.42
 "    User alice
-func Test__netrw_parse_ssh_config_entries()
+func Test_netrw_parse_ssh_config_entries()
   call s:setup()
   let result = TestNetrwCaptureRemotePath('scp://myserver//etc/nginx/nginx.conf')
   call assert_equal(result.method, 'scp')
