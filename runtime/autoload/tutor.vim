@@ -225,7 +225,7 @@ endfunction
 function! tutor#EnableInteractive(enable)
     let enable = a:enable
     if enable
-        setlocal buftype=nofile
+        setlocal buftype=nowrite
         setlocal concealcursor+=inv
         setlocal conceallevel=2
         call tutor#ApplyMarks()
