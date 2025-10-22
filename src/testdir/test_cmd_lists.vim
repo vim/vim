@@ -32,8 +32,8 @@ func Test_cmd_lists()
   endif
   call search('\*ex-cmd-index\*')
   1,.d
-  v/^|:/d
-  %s/^|:\(\S*\)|.*/\1/
+  v/^`:/d
+  %s/^`:\(\S*\)`.*/\1/
   sort u
   norm gg
   let l:missing_cmds = []
