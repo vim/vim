@@ -6865,8 +6865,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set pumborder=custom:─;│;─;│;┌;┐;┘;└,shadow
 <
 	Border styles using box-drawing characters ("single", "double",
-	"round") are only available when |'encoding'| is "utf-8" and
-	|'ambiwidth'| is "single".  "margin" requires a border style.
+	"round") are only available when 'encoding' is "utf-8" and 'ambiwidth'
+	is "single".  "margin" requires a border style.
 	See also: |ins-completion-menu|.
 
 						*'pumheight'* *'ph'*
