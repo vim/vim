@@ -454,7 +454,7 @@ def GetRemotePtyCmd(gdb_cmd: list<string>): list<string>
         term_cmd = gdb_cmd[0 : gdb_pos - 1]
         # roundtrip to check if socat is available on the remote side
         silent call system(join(term_cmd, ' ') .. ' socat -h')
-        if v:shell_error
+        if v:shell_error != 0
           Echowarn('Install socat on the remote machine for a program window better experience')
         else
           # create a devoted tty slave device and link to stdin/stdout
