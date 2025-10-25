@@ -1,0 +1,238 @@
+
+
+							*:ve* *:ver* *:version*
+:ve[rsion]		Print the version number of the editor.  If the
+			compiler used understands "__DATE__" the compilation
+			date is mentioned.  Otherwise a fixed release-date is
+			shown.
+			The following lines contain information about which
+			features were enabled when Vim was compiled.  When
+			there is a preceding '+', the feature is included,
+			when there is a '-' it is excluded.  To change this,
+			you have to edit feature.h and recompile Vim.
+			To check for this in an expression, see |has()|.
+			Here is an overview of the features.
+			The first column shows the smallest version in which
+			they are included:
+			   T	tiny (always)
+			   N	normal
+			   H	huge
+			   m	manually enabled or depends on other features
+			   -    never, feature was removed
+			 (none) system dependent
+			Thus if a feature is marked with "N", it is included
+			in the normal and huge versions of Vim.
+
+							*+feature-list*
+   *+acl*		|ACL| support included
+   *+ARP*		Amiga only: ARP support included
+H  *+arabic*		|Arabic| language support
+N  *+autochdir*		support 'autochdir' option
+T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
+			8.0.1564
+H  *+autoservername*	Automatically enable |clientserver|
+m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
+			compiling with supported GUI (Motif, GTK, GUI) and
+			either Netbeans/Sun Workshop integration or |+eval|
+			feature.
+H  *+balloon_eval_term*	|balloon-eval| support in the terminal,
+			'balloonevalterm'
+N  *+browse*		|:browse| command
+T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
+			enabled since 9.0.0280
+N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
+			and ":goto" commands.
+m  *+channel*		inter process communication |channel|
+T  *+cindent*		'cindent', C indenting; Always enabled
+N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
+   *+clipboard*		|clipboard| support compiled-in
+N  *+clipboard_provider*  |clipboard-providers| support compiled-in
+   *+clipboard_working*	|clipboard| support compiled-in and working
+   *+clipboard_star_avail*
+			|clipboard| support compiled-in and star "*" register
+			available
+   *+clipboard_plus_avail*
+			|clipboard| support compiled-in and separate plus "+"
+			register available
+T  *+cmdline_compl*	command line completion |cmdline-completion|
+T  *+cmdline_hist*	command line history |cmdline-history|
+T  *+cmdline_info*	'showcmd' and 'ruler'; Always enabled since
+			9.0.0747
+T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
+T  *+comments*		'comments' support
+N  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
+N  *+cryptv*		encryption support |encryption|
+H  *+cscope*		|cscope| support
+T  *+cursorbind*	'cursorbind' support
+m  *+cursorshape*	|termcap-cursor-shape| support
+m  *+debug*		Compiled for debugging.
+N  *+dialog_gui*	Support for |:confirm| with GUI dialog.
+N  *+dialog_con*	Support for |:confirm| with console dialog.
+N  *+dialog_con_gui*	Support for |:confirm| with GUI and console dialog.
+N  *+diff*		|vimdiff| and 'diff'
+N  *+digraphs*		|digraphs| *E196*
+   *+directx*		Win32 GUI only: DirectX and 'renderoptions'
+   *+dnd*		Support for DnD into the "~ register |quote_~|.
+H  *+emacs_tags*	|emacs-tags| files
+N  *+eval*		expression evaluation |eval.txt|
+T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
+N  *+extra_search*	'hlsearch' and 'incsearch' options.
+-  *+farsi*		Removed: |farsi| language
+T  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|  Always enabled since
+			9.0.265
+N  *+find_in_path*	include file searches: |[I|, |:isearch|,
+			|CTRL-W_CTRL-I|, |:checkpath|, etc.
+N  *+folding*		|folding|
+   *+footer*		|gui-footer|
+   *+fork*		Unix only: |fork| shell commands
+T  *+float*		Floating point support  Always enabled since 9.0.0491
+N  *+gettext*		message translations |multi-lang|
+-  *+GUI_Athena*	Unix only: Athena |GUI|
+   *+GUI_neXtaw*	Unix only: neXtaw |GUI|
+   *+GUI_GTK*		Unix only: GTK+ |GUI|
+   *+GUI_Motif*		Unix only: Motif |GUI|
+   *+GUI_Photon*	QNX only:  Photon |GUI|
+m  *+hangul_input*	Hangul input support |hangul|
+   *+iconv*		Compiled with the |iconv()| function
+   *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
+T  *+insert_expand*	|insert_expand| Insert mode completion
+m  *+ipv6*		Support for IPv6 networking |channel|
+m  *+job*		starting and stopping jobs |job|
+T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
+H  *+keymap*		'keymap'
+N  *+lambda*		|lambda| and |closure|
+H  *+langmap*		'langmap'
+N  *+libcall*		|libcall()|
+N  *+linebreak*		'linebreak', 'breakat' and 'showbreak'
+T  *+lispindent*	'lisp'
+T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
+			and argument list |:argdelete|
+T  *+localmap*		Support for mappings local to a buffer |:map-local|
+m  *+lua*		|Lua| interface
+m  *+lua/dyn*		|Lua| interface |/dyn|
+N  *+menu*		|:menu|
+N  *+mksession*		|:mksession|
+T  *+modify_fname*	|filename-modifiers|
+T  *+mouse*		Mouse handling |mouse-using|
+N  *+mouseshape*	'mouseshape'
+N  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
+N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
+m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
+			|/dyn|
+N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
+N  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
+N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
+N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
+N  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
+N  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
+N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
+T  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
+   *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
+N  *+multi_lang*	non-English language support |multi-lang|
+m  *+mzscheme*		Mzscheme interface |mzscheme|
+m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
+m  *+netbeans_intg*	|netbeans|
+T  *+num64*		64-bit Number support |Number|
+			Always enabled since 8.2.0271, use v:numbersize to
+			check the actual size of a Number.
+m  *+ole*		Win32 GUI only: |ole-interface|
+N  *+packages*		Loading |packages|
+T  *+path_extra*	Up/downwards search in 'path' and 'tags'  Always
+			enabled since 9.0.0270
+m  *+perl*		Perl interface |perl|
+m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
+N  *+persistent_undo*	Persistent undo |undo-persistence|
+N  *+popupwin*		Popup windows |popup-window|
+   *+postscript*	|:hardcopy| writes a PostScript file
+N  *+printer*		|:hardcopy| command
+H  *+profile*		|:profile| command
+m  *+python*		Python 2 interface |python|
+m  *+python/dyn*	Python 2 interface |python-dynamic| |/dyn|
+m  *+python3*		Python 3 interface |python|
+m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
+m  *+python3/dyn-stable*
+			Python 3 interface |python-dynamic| |python-stable|
+			|/dyn|
+N  *+quickfix*		|:make| and |quickfix| commands
+N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
+			'redrawtime' option
+H  *+rightleft*		Right to left typing 'rightleft'
+m  *+ruby*		Ruby interface |ruby|
+m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
+T  *+scrollbind*	'scrollbind'
+N  *+signs*		|:sign|
+T  *+smartindent*	'smartindent'
+N  *+socketserver*	Unix only: socket server backend for clientserver
+			functionality
+H  *+sodium*		compiled with libsodium for better encryption support
+H  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
+N  *+spell*		spell checking support, see |spell|
+N  *+startuptime*	|--startuptime| argument
+N  *+statusline*	Options 'statusline', 'rulerformat' and special
+			formats of 'titlestring' and 'iconstring'
+-  *+sun_workshop*	Removed: |workshop|
+N  *+syntax*		Syntax highlighting |syntax|
+   *+system()*		Unix only: opposite of |+fork|
+H  *+tabpanel*		Support for |tabpanel|
+T  *+tag_binary*	binary searching in tags file |tag-binary-search|
+-  *+tag_old_static*	Removed; method for static tags |tag-old-static|
+-  *+tag_any_white*	Removed; was to allow any white space in tags files
+m  *+tcl*		Tcl interface |tcl|
+m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
+m  *+terminal*		Support for terminal window |terminal|
+   *+terminfo*		uses |terminfo| instead of termcap
+N  *+termresponse*	support for |t_RV| and |v:termresponse|
+N  *+termguicolors*	24-bit color in xterm-compatible terminals support
+T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
+N  *+textprop*		|text-properties|
+   *+tgetent*		non-Unix only: able to use external termcap
+N  *+timers*		the |timer_start()| function
+T  *+title*		Setting the window 'title' and 'icon'; Always enabled
+N  *+toolbar*		|gui-toolbar|
+T  *+user_commands*	User-defined commands. |user-commands|
+			Always enabled since 8.1.1210.
+H  *+vartabs*		Variable-width tab stops. 'vartabstop'
+T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
+			since 8.0.1118.
+T  *+vim9script*	|Vim9| script
+N  *+viminfo*		'viminfo'
+T  *+virtualedit*	'virtualedit' Always enabled since 8.1.826.
+T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
+T  *+visualextra*	extra Visual mode commands |blockwise-operators|
+T  *+vreplace*		|gR| and |gr|
+   *+vtp*		on MS-Windows console: support for 'termguicolors'
+N  *+wayland*		Unix only: support for the Wayland protocol.
+N  *+wayland_clipboard*	Unix only: support for Wayland selections/clipboard.
+N  *+wayland_focus_steal*
+			Unix only: support for Wayland clipboard on
+			compositors without a data control protocol
+T  *+wildignore*	'wildignore'  Always enabled since 9.0.0278
+T  *+wildmenu*		'wildmenu'  Always enabled since 9.0.0279
+T  *+windows*		more than one window; Always enabled since 8.0.1118.
+m  *+writebackup*	'writebackup' is default on
+m  *+xim*		X input method |xim|
+   *+xfontset*		X fontset support |xfontset|
+N  *+xattr*		compiled with extended attribute support (Linux only)
+   *+xpm*		pixmap support
+m  *+xpm_w32*		Win32 GUI only: pixmap support |w32-xpm-support|
+   *+xsmp*		XSMP (X session management) support
+   *+xsmp_interact*	interactive XSMP (X session management) support
+N  *+xterm_clipboard*	Unix only: xterm clipboard handling
+m  *+xterm_save*	save and restore xterm screen |xterm-screens|
+N  *+X11*		Unix only: can restore window title |X11|
+
+							*/dyn* *E370* *E448*
+			To some of the features "/dyn" is added when the
+			feature is only available when the related library can
+			be dynamically loaded.
+
+:ve[rsion] {nr}		Is now ignored.  This was previously used to check the
+			version number of a .vimrc file.  It was removed,
+			because you can now use the ":if" command for
+			version-dependent behavior.
+
+							*:redi* *:redir*
+:redi[r][!] > {file}	Redirect messages to file {file}.  The messages which
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
