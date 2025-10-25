@@ -3476,7 +3476,7 @@ get_c_indent(void)
 			    amount = cur_amount;
 
 			    n = (int)STRLEN(l);
-			    if (terminated == ',' && (*skipwhite(l) == ']'
+			    if (curbuf->b_ind_js && terminated == ',' && (*skipwhite(l) == ']'
 					|| (n >=2 && l[n - 2] == ']')))
 				break;
 
