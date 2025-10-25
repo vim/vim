@@ -134,12 +134,6 @@ static bool clip_wl_owner_exists(Clipboard_T *cbd);
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
-static int clip_provider_is_available(Clipboard_T *cbd, char_u *provider);
-static void clip_provider_set_selection(Clipboard_T *cbd, char_u *provider);
-static void clip_provider_request_selection(Clipboard_T *cbd, char_u *provider);
-#endif
-
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -237,36 +231,32 @@ clip_update_selection(Clipboard_T *clip)
 }
 
     static int
-clip_gen_own_selection(Clipboard_T *cbd UNUSED)
+clip_gen_own_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_GUI)
-    {
-#ifdef FEAT_GUI
-	if (gui.in_use)
-	    return clip_mch_own_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_WAYLAND)
-    {
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	return clip_wl_own_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_X11)
-    {
-#ifdef FEAT_XCLIPBOARD
-	return clip_xterm_own_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_OTHER)
-    {
-#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
-	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
-	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+# ifdef FEAT_GUI
+    if (gui.in_use)
 	return clip_mch_own_selection(cbd);
+    else
+# endif
+    {
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    return clip_wl_own_selection(cbd);
 #endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    return clip_xterm_own_selection(cbd);
+#endif
+	}
     }
     return FAIL;
+#else
+    return clip_mch_own_selection(cbd);
+#endif
 }
 
     void
@@ -306,35 +296,31 @@ clip_own_selection(Clipboard_T *cbd)
 }
 
     static void
-clip_gen_lose_selection(Clipboard_T *cbd UNUSED)
+clip_gen_lose_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_GUI)
-    {
-#ifdef FEAT_GUI
-	if (gui.in_use)
-	    clip_mch_lose_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_WAYLAND)
-    {
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	clip_wl_lose_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_X11)
-    {
-#ifdef FEAT_XCLIPBOARD
-	clip_xterm_lose_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_OTHER)
-    {
-#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
-	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
-	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+# ifdef FEAT_GUI
+    if (gui.in_use)
 	clip_mch_lose_selection(cbd);
+    else
+# endif
+    {
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    clip_wl_lose_selection(cbd);
 #endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    clip_xterm_lose_selection(cbd);
+#endif
+	}
     }
+#else
+    clip_mch_lose_selection(cbd);
+#endif
 }
 
     void
@@ -1360,77 +1346,57 @@ clip_gen_set_selection(Clipboard_T *cbd)
 	    return;
 	}
     }
-    if (clipmethod == CLIPMETHOD_GUI)
-    {
-#ifdef FEAT_GUI
-	if (gui.in_use)
-	    clip_mch_set_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_WAYLAND)
-    {
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	clip_wl_set_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_X11)
-    {
-#ifdef FEAT_XCLIPBOARD
-	clip_xterm_set_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_OTHER)
-    {
-#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
-	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
-	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+# ifdef FEAT_GUI
+    if (gui.in_use)
 	clip_mch_set_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_PROVIDER)
+    else
+# endif
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	clip_provider_set_selection(cbd, clipprovider_name);
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    clip_wl_set_selection(cbd);
 #endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    clip_xterm_set_selection(cbd);
+#endif
+	}
     }
+#else
+    clip_mch_set_selection(cbd);
+#endif
 }
 
     static void
-clip_gen_request_selection(Clipboard_T *cbd UNUSED)
+clip_gen_request_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_GUI)
-    {
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI
-	if (gui.in_use)
-	    clip_mch_request_selection(cbd);
-# endif
-    }
-    else if (clipmethod == CLIPMETHOD_WAYLAND)
-    {
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	clip_wl_request_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_X11)
-    {
-#ifdef FEAT_XCLIPBOARD
-	clip_xterm_request_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_OTHER)
-    {
-#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
-	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
-	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
+    if (gui.in_use)
 	clip_mch_request_selection(cbd);
-#endif
-    }
-    else if (clipmethod == CLIPMETHOD_PROVIDER)
+    else
+# endif
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	clip_provider_request_selection(cbd, clipprovider_name);
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    clip_wl_request_selection(cbd);
 #endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    clip_xterm_request_selection(cbd);
+#endif
+	}
     }
+#else
+    clip_mch_request_selection(cbd);
+#endif
 }
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
@@ -1447,28 +1413,31 @@ clip_x11_owner_exists(Clipboard_T *cbd)
     int
 clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 {
-    if (clipmethod == CLIPMETHOD_OTHER)
-    {
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI_GTK
-	if (gui.in_use)
-	    return clip_gtk_owner_exists(cbd);
-# endif
-    }
-    else if (clipmethod == CLIPMETHOD_WAYLAND)
-    {
-# ifdef FEAT_WAYLAND_CLIPBOARD
-	return clip_wl_owner_exists(cbd);
-# endif
-    }
-    else if (clipmethod == CLIPMETHOD_X11)
-    {
-# ifdef FEAT_XCLIPBOARD
-	return clip_x11_owner_exists(cbd);
-# endif
-    }
+    if (gui.in_use)
+	return clip_gtk_owner_exists(cbd);
     else
-	return FALSE;
-    return FALSE;
+# endif
+    {
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    return clip_wl_owner_exists(cbd);
+#endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    return clip_x11_owner_exists(cbd);
+#endif
+	}
+	else
+	    return FALSE;
+    }
+#else
+    return TRUE;
+#endif
 }
 #endif
 
@@ -2292,18 +2261,10 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	// We will choose if we want to the free the selection if using provider
-	if (clipmethod != CLIPMETHOD_PROVIDER)
-	    clip_free_selection(cbd);
-#endif
+	clip_free_selection(cbd);
 
 	// Try to get selected text from another window
 	clip_gen_request_selection(cbd);
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	if (clipmethod == CLIPMETHOD_PROVIDER)
-	    clip_access_type = CLIP_ACCESS_IMPLICIT;
-#endif
     }
 }
 
@@ -3474,7 +3435,7 @@ clip_wl_owner_exists(Clipboard_T *cbd)
  * depending on the order of values in str.
  */
     static clipmethod_T
-get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
+get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
 {
     int		len	= (int)STRLEN(str) + 1;
     char_u	*buf	= alloc(len);
@@ -3514,76 +3475,27 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star)
 #endif
 	    {
 #ifdef FEAT_XCLIPBOARD
-		// x_IOerror_handler() in os_unix.c should set xterm_dpy to NULL
-		// if we lost connection to the X server.
+		// x_IOerror_handler() in os_unix.c should set xterm_dpy to NULL if
+		// we lost connection to the X server.
 		if (xterm_dpy != NULL)
 		{
-		    // If the X connection is lost then that handler will
-		    // longjmp somewhere else, in that case we will call
-		    // choose_clipmethod() again from there, and this if block
-		    // won't be executed since xterm_dpy will be set to NULL.
+		    // If the X connection is lost then that handler will longjmp
+		    // somewhere else, in that case we will call choose_clipmethod()
+		    // again from there, and this if block won't be executed since
+		    // xterm_dpy will be set to NULL.
 		    xterm_update();
 		    method = CLIPMETHOD_X11;
-		    *plus = *star = true;
+		    *plus = *star = TRUE;
 		}
 #endif
 	    }
 	}
-	else if (STRCMP(buf, "gui") == 0)
-	{
-#ifdef FEAT_GUI
-	    if (gui.in_use)
-	    {
-		method = CLIPMETHOD_GUI;
-		*star = *plus = true;
-	    }
-#endif
-	}
-	else if (STRCMP(buf, "other") == 0)
-	{
-#if (!defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD) \
-	&& !defined(FEAT_CLIPBOARD_PROVIDER)) \
-	|| (!(defined(UNIX) || defined(MACOS_X)) && defined(FEAT_CLIPBOARD_PROVIDER))
-		method = CLIPMETHOD_OTHER;
-		*plus = *star = true;
-#endif
-	}
 	else
 	{
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	    // Check if it is the name of a provider
-#ifndef ONE_CLIPBOARD
-	    int plus_avail = clip_provider_is_available(&clip_plus, buf);
-#endif
-	    int star_avail = clip_provider_is_available(&clip_star, buf);
-
-	    if (
-#ifndef ONE_CLIPBOARD
-		    plus_avail == 1 ||
-#endif
-		    star_avail == 1)
-	    {
-		method = CLIPMETHOD_PROVIDER;
-
-		vim_free(clipprovider_name);
-		clipprovider_name = vim_strsave(buf);
-
-#ifndef ONE_CLIPBOARD
-		*plus = plus_avail == 1;
-#endif
-		*star = star_avail == 1;
-	    }
-	    else if (
-#ifndef ONE_CLIPBOARD
-		    plus_avail == -1 ||
-#endif
-		    star_avail == -1)
-#endif
-	    {
-		ret = CLIPMETHOD_FAIL;
-		goto exit;
-	    }
+	    ret = CLIPMETHOD_FAIL;
+	    goto exit;
 	}
+
 	// Keep on going in order to catch errors
 	if (method != CLIPMETHOD_NONE && ret == CLIPMETHOD_FAIL)
 	    ret = method;
@@ -3601,30 +3513,17 @@ exit:
 /*
  * Returns name of clipmethod in a statically allocated string.
  */
-    static char_u *
+    static char *
 clipmethod_to_str(clipmethod_T method)
 {
     switch(method)
     {
 	case CLIPMETHOD_WAYLAND:
-	    return (char_u *)"wayland";
+	    return "wayland";
 	case CLIPMETHOD_X11:
-	    return (char_u *)"x11";
-	case CLIPMETHOD_GUI:
-	    return (char_u *)"gui";
-	case CLIPMETHOD_OTHER:
-	    return (char_u *)"other";
-	case CLIPMETHOD_PROVIDER:
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	    if (clipprovider_name == NULL)
-		return (char_u *)"none";
-	    else
-		return clipprovider_name;
-#else
-	    return (char_u *)"none";
-#endif
+	    return "x11";
 	default:
-	    return (char_u *)"none";
+	    return "none";
     }
 }
 
@@ -3635,18 +3534,33 @@ clipmethod_to_str(clipmethod_T method)
     char *
 choose_clipmethod(void)
 {
-    bool plus = false;
-    bool star = false;
-    clipmethod_T method = get_clipmethod(p_cpm, &plus, &star);
+    bool regular = false, primary = false;
+    clipmethod_T method = get_clipmethod(p_cpm, &regular, &primary);
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
 
-#if defined(FEAT_GUI) && defined(FEAT_WAYLAND)
-    if (method == CLIPMETHOD_GUI)
+// If GUI is running or we are not on a system with Wayland or X11, then always
+// return CLIPMETHOD_NONE. System or GUI clipboard handling always overrides.
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+# if defined(FEAT_GUI)
+    if (gui.in_use)
+    {
+#  ifdef FEAT_WAYLAND
 	// We only interact with Wayland for the clipboard, we can just deinit
 	// everything.
 	wayland_uninit_connection();
+#  endif
+
+	method = CLIPMETHOD_NONE;
+	goto lose_sel_exit;
+    }
+# endif
+#else
+    // If on a system like windows or macos, then clipmethod is irrelevant, we
+    // use their way of accessing the clipboard.
+    method = CLIPMETHOD_NONE;
+    goto exit;
 #endif
 
     // Deinitialize clipboard if there is no way to access clipboard
@@ -3655,41 +3569,40 @@ choose_clipmethod(void)
     // If we have a clipmethod that works now, then initialize clipboard
     else if (clipmethod == CLIPMETHOD_NONE && method != CLIPMETHOD_NONE)
     {
-#ifndef ONE_CLIPBOARD
-	clip_init_single(&clip_plus, plus);
+	clip_init_single(&clip_plus, regular);
+	clip_init_single(&clip_star, primary);
 	clip_plus.did_warn = false;
-#endif
-	clip_init_single(&clip_star, star);
 	clip_star.did_warn = false;
     }
-    else if ((clipmethod != CLIPMETHOD_NONE && method != clipmethod))
+    // Disown clipboard if we are switching to a new method
+    else if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
     {
-	// Disown clipboard if we are switching to a new method
+#if (defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)) \
+	&& defined(FEAT_GUI)
+lose_sel_exit:
+#endif
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
-	clip_init_single(&clip_star, star);
-#ifndef ONE_CLIPBOARD
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
-	clip_init_single(&clip_plus, plus);
+
+#if defined(FEAT_GUI)
+	if (!gui.in_use)
 #endif
+	{
+	    clip_init_single(&clip_plus, regular);
+	    clip_init_single(&clip_star, primary);
+	}
     }
-    else
-    {
-	// If availability of a clipboard changed, then update the clipboard
-	// structure.
-#ifndef ONE_CLIPBOARD
-	if (plus != clip_plus.available)
-	    clip_init_single(&clip_plus, plus);
+
+#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+exit:
 #endif
-	if (star != clip_star.available)
-	    clip_init_single(&clip_star, star);
-    }
 
     clipmethod = method;
 
 #ifdef FEAT_EVAL
-    set_vim_var_string(VV_CLIPMETHOD, clipmethod_to_str(method), -1);
+    set_vim_var_string(VV_CLIPMETHOD, (char_u*)clipmethod_to_str(method), -1);
 #endif
 
     return NULL;
@@ -3711,326 +3624,5 @@ ex_clipreset(exarg_T *eap UNUSED)
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
 }
-
-#ifdef FEAT_CLIPBOARD_PROVIDER
-
-/*
- * Check if a clipboard provider with given name exists and is available for the
- * given clipboard. Returns 1 if the provider exists and the 'available'
- * function returned true, 0 if the provider exists but the function returned
- * false, and -1 on error.
- */
-    static int
-clip_provider_is_available(Clipboard_T *cbd, char_u *provider)
-{
-    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
-    typval_T	provider_tv = {0};
-    callback_T	callback = {0};
-    typval_T	rettv = {0};
-    typval_T	func_tv = {0};
-    char_u	*avail;
-    int		res = 0;
-
-    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL
-	    || provider_tv.v_type != VAR_DICT)
-	return -1;
-
-    if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
-    {
-	clear_tv(&provider_tv);
-	// If "available" functon not specified assume always TRUE
-	return 1;
-    }
-
-    if ((callback = get_callback(&func_tv)).cb_name == NULL)
-	goto fail;
-
-    if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
-	    rettv.v_type != VAR_STRING)
-	goto fail;
-
-    avail = rettv.vval.v_string;
-
-
-    if (
-#ifndef ONE_CLIPBOARD
-	    (vim_strchr(avail, '+') != NULL && cbd == &clip_plus) ||
-#endif
-	    (vim_strchr(avail, '*') != NULL && cbd == &clip_star))
-	res = 1;
-
-    if (FALSE)
-fail:
-	res = -1;
-
-    free_callback(&callback);
-    clear_tv(&func_tv);
-    clear_tv(&rettv);
-    clear_tv(&provider_tv);
-
-    return res;
-}
-
-/*
- * Get the specified callback "function" from the provider dictionary of for
- * register "reg".
- */
-    static int
-clip_provider_get_callback(
-	char_u *reg,
-	char_u *provider,
-	char_u *function,
-	callback_T *callback)
-{
-    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
-    typval_T	provider_tv;
-    typval_T	action_tv;
-    typval_T	func_tv;
-    callback_T	cb;
-
-    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL)
-	return FAIL;
-    else if (provider_tv.v_type != VAR_DICT)
-    {
-	clear_tv(&provider_tv);
-	return FAIL;
-    }
-    else if (dict_get_tv(
-		provider_tv.vval.v_dict,
-		(char *)function,
-		&action_tv) == FAIL)
-    {
-	clear_tv(&provider_tv);
-	return FAIL;
-    }
-    else if (action_tv.v_type != VAR_DICT)
-    {
-	clear_tv(&provider_tv);
-	clear_tv(&action_tv);
-	return FAIL;
-    }
-    else if (dict_get_tv(action_tv.vval.v_dict, (char *)reg, &func_tv) == FAIL)
-    {
-	clear_tv(&provider_tv);
-	clear_tv(&action_tv);
-	return FAIL;
-    }
-    else if ((cb = get_callback(&func_tv)).cb_name == NULL)
-    {
-	clear_tv(&provider_tv);
-	clear_tv(&action_tv);
-	clear_tv(&func_tv);
-	return FAIL;
-    }
-    clear_tv(&provider_tv);
-    clear_tv(&action_tv);
-
-    // func_tv owns the function name, so we must make a copy for the callback
-    set_callback(callback, &cb);
-    free_callback(&cb);
-    clear_tv(&func_tv);
-    return OK;
-}
-
-    static void
-clip_provider_set_selection(Clipboard_T *cbd, char_u *provider)
-{
-    char_u	*reg = (char_u *)(cbd == &clip_star ? "*" : "+");
-    callback_T	callback;
-    typval_T	rettv;
-    typval_T	argvars[4];
-    yankreg_T	*y_ptr;
-    char_u	type[2 + NUMBUFLEN] = {0};
-    list_T	*list = NULL;
-
-    if (clip_provider_get_callback(
-		reg,
-		provider,
-		(char_u *)"copy",
-		&callback) == FAIL)
-	return;
-
-    // Possibly get selected text, if using autoselect for 'clipboard'
-    cbd->owned = TRUE;
-    clip_get_selection(cbd);
-    cbd->owned = FALSE;
-
-    // Convert register type into a string
-    if (cbd == &clip_plus)
-	y_ptr = get_y_register(PLUS_REGISTER);
-    else
-	y_ptr = get_y_register(STAR_REGISTER);
-
-    switch (y_ptr->y_type)
-    {
-	case MCHAR:
-	    type[0] = 'v';
-	    break;
-	case MLINE:
-	    type[0] = 'V';
-	    break;
-	case MBLOCK:
-	    sprintf((char *)type, "%c%d", Ctrl_V, y_ptr->y_width + 1);
-	    break;
-	default:
-	    type[0] = 0;
-	    break;
-    }
-
-    argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = reg;
-
-    argvars[1].v_type = VAR_STRING;
-    argvars[1].vval.v_string = type;
-
-    // Get register contents by creating a list of lines
-    list = list_alloc();
-
-    if (list == NULL)
-    {
-	free_callback(&callback);
-	return;
-    }
-
-    for (int i = 0; i < y_ptr->y_size; i++)
-	if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL)
-	{
-	    free_callback(&callback);
-	    list_unref(list);
-	    return;
-	}
-
-    list->lv_refcount++;
-
-    argvars[2].v_type = VAR_LIST;
-    argvars[2].v_lock = VAR_FIXED;
-    argvars[2].vval.v_list = list;
-
-    argvars[3].v_type = VAR_UNKNOWN;
-
-    textlock++;
-    call_callback(&callback, -1, &rettv, 3, argvars);
-    clear_tv(&rettv);
-    textlock--;
-
-    free_callback(&callback);
-    list_unref(list);
-}
-
-    static void
-clip_provider_request_selection(Clipboard_T *cbd, char_u *provider)
-{
-    char_u	*reg = (char_u *)(cbd == &clip_star ? "*" : "+");
-    callback_T	callback;
-    typval_T	argvars[3];
-    typval_T	rettv;
-    int		ret;
-    char_u	*reg_type;
-    list_T	*lines;
-
-    if (clip_provider_get_callback(
-		reg,
-		provider,
-		(char_u *)"paste",
-		&callback) == FAIL)
-	return;
-
-    argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = reg;
-
-    argvars[1].v_type = VAR_STRING;
-    argvars[1].vval.v_string = (char_u *)
-	(clip_access_type == CLIP_ACCESS_EXPLICIT ? "explicit" : "implicit");
-
-    argvars[2].v_type = VAR_UNKNOWN;
-
-    textlock++;
-    ret = call_callback(&callback, -1, &rettv, 2, argvars);
-    textlock--;
-
-    if (ret == FAIL)
-	goto exit;
-    else if (rettv.v_type == VAR_STRING
-	    && STRCMP(rettv.vval.v_string, "clear") == 0)
-    {
-	clip_free_selection(cbd);
-	goto exit;
-    }
-    else if (rettv.v_type == VAR_STRING
-	    && STRCMP(rettv.vval.v_string, "previous") == 0)
-	goto exit;
-    else if (rettv.v_type == VAR_TUPLE
-	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
-	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
-	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
-    {
-	reg_type = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
-	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
-    }
-    else if (rettv.v_type == VAR_LIST
-	    && rettv.vval.v_list->lv_len == 2
-	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
-	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
-    {
-	reg_type = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
-	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
-    }
-    else
-	goto exit;
-
-    {
-	char_u	    yank_type = MAUTO;
-	long	    block_len = -1;
-	yankreg_T   *y_ptr;
-	char_u	    **contents;
-	listitem_T  *li;
-	int	    i = 0;
-
-	contents = ALLOC_MULT(char_u *, lines->lv_len + 1); // Ends with a NULL
-
-	if (contents == NULL)
-	    goto exit;
-
-	// Convert strings in list to type char_u **
-	FOR_ALL_LIST_ITEMS(lines, li)
-	{
-	    char_u *str = tv_get_string_chk(&li->li_tv);
-
-	    if (str == NULL)
-		goto exit;
-
-	    contents[i++] = vim_strsave(str);
-	}
-	contents[i] = NULL;
-
-	if (STRLEN(reg_type) > 0
-		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
-	    goto exit;
-
-	if (cbd == &clip_plus)
-	    y_ptr = get_y_register(PLUS_REGISTER);
-	else
-	    y_ptr = get_y_register(STAR_REGISTER);
-
-	clip_free_selection(cbd);
-
-	str_to_reg(y_ptr,
-		yank_type,
-		(char_u *)contents,
-		STRLEN(contents),
-		block_len,
-		TRUE);
-
-	for (int k = 0; k < i; k++)
-	    vim_free(contents[k]);
-	vim_free(contents);
-    }
-
-exit:
-    free_callback(&callback);
-    clear_tv(&rettv);
-}
-
-#endif // FEAT_CLIPBOARD_PROVIDER
 
 #endif // FEAT_CLIPBOARD

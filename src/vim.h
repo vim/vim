@@ -2256,8 +2256,7 @@ typedef int sock_T;
 #define VV_CLIPMETHOD 113
 #define VV_TERMDA1 114
 #define VV_TERMOSC 115
-#define VV_CLIPPROVIDERS 116
-#define VV_LEN		117	// number of v: vars
+#define VV_LEN		116	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2317,9 +2316,6 @@ typedef enum {
     CLIPMETHOD_NONE,
     CLIPMETHOD_WAYLAND,
     CLIPMETHOD_X11,
-    CLIPMETHOD_GUI,
-    CLIPMETHOD_OTHER,
-    CLIPMETHOD_PROVIDER
 } clipmethod_T;
 
 // Info about selected text

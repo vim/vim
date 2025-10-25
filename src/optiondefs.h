@@ -638,11 +638,11 @@ static struct vimoption options[] =
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
-			    {(char_u *)"wayland,x11,gui,other", (char_u *)0L}
+			    {(char_u *)"wayland,x11", (char_u *)0L}
 # elif defined(VMS)
-			    {(char_u *)"x11,gui,other", (char_u *)0L}
+			    {(char_u *)"x11", (char_u *)0L}
 # else
-			    {(char_u *)"gui,other", (char_u *)0L}
+			    {(char_u *)"", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

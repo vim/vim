@@ -1559,10 +1559,6 @@ do_put(
 #ifdef FEAT_CLIPBOARD
     // Adjust register name for "unnamed" in 'clipboard'.
     adjust_clip_reg(&regname);
-# ifdef FEAT_CLIPBOARD_PROVIDER
-    if (clipmethod == CLIPMETHOD_PROVIDER)
-	clip_access_type = CLIP_ACCESS_EXPLICIT;
-# endif
     (void)may_get_selection(regname);
 #endif
 
