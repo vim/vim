@@ -695,6 +695,9 @@ normal_cmd(
     int		idx;
     int		set_prevcount = FALSE;
     int		save_did_cursorhold = did_cursorhold;
+#ifdef FEAT_EVAL
+    int		did_visual_op = FALSE;
+#endif
 
     CLEAR_FIELD(ca);	// also resets ca.retval
     ca.oap = oap;
@@ -971,7 +974,15 @@ normal_cmd(
     // If an operation is pending, handle it.  But not for K_IGNORE or
     // K_MOUSEMOVE.
     if (ca.cmdchar != K_IGNORE && ca.cmdchar != K_MOUSEMOVE)
+    {
+#ifdef FEAT_EVAL
+	did_visual_op = VIsual_active && oap->op_type != OP_NOP
+			// For OP_COLON, do_pending_operator() stuffs ':' into
+			// the read buffer, which isn't executed immediately.
+			&& oap->op_type != OP_COLON;
+#endif
 	do_pending_operator(&ca, old_col, FALSE);
+    }
 
     // Wait for a moment when a message is displayed that will be overwritten
     // by the mode message.
@@ -984,7 +995,7 @@ normal_end:
     msg_nowait = FALSE;
 
 #ifdef FEAT_EVAL
-    if (finish_op)
+    if (finish_op || did_visual_op)
 	reset_reg_var();
 #endif
 

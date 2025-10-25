@@ -4637,7 +4637,7 @@ trans_function_name_ext(
 		else
 		{
 		    // dropping "g:" without setting "is_global" won't work in
-		    // Vim9script, put it back later
+		    // Vim9 script, put it back later
 		    prefix_g = TRUE;
 		    extra = 2;
 		}

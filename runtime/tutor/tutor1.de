@@ -128,14 +128,14 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
      zurückzukehren.
 
   4. Bewege den Cursor zur zweiten mit ---> markierten Zeile und wiederhole
-     die Schritte 2 und 3, um den Satz zu auszubessern.
+     die Schritte 2 und 3, um den Satz auszubessern.
 
 ---> In dieser Zeile feh
      In dieser Zeile fehlt etwas Text.
 ---> Auch hier steh
      Auch hier steht etwas Unvollständiges.
 
-  5. Wenn Du dich mit dem Anfügen von Text sicher fühlst, gehe zu Lektion 1.1.6.
+  5. Wenn Du Dich mit dem Anfügen von Text sicher fühlst, gehe zu Lektion 1.1.6.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		       Lektion 1.1.6: EINE DATEI EDITIEREN
 
@@ -145,7 +145,7 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
      diese gesamte Lektion!!
 
   1. Verlasse den Editor so wie in Lektion 1.1.2:  :q!       
-	   Oder, falls du Zugriff zu einem anderen Terminal hast, führe das 
+	   Oder, falls Du Zugriff zu einem anderen Terminal hast, führe das 
 		 Folgende dort aus.
 
   2. Gib dieses Kommando in die Eingabeaufforderung ein:  vim tutor <ENTER>
@@ -158,7 +158,7 @@ Anmerkung: Während Du durch diesen Tutor gehst, versuche nicht, auswendig zu
   4. Speichere die geänderte Datei und verlasse Vim mit:  :wq  <ENTER>
 
   5. Falls Du in Schritt 1 den vimtutor beendet hast, starte vimtutor neu und
-	   bewege dich abwärts bis zur folgenden Zusammenfassung.
+	   bewege Dich abwärts bis zur folgenden Zusammenfassung.
 
   6. Nachdem Du obige Schritte gelesen und verstanden hast: führe sie durch.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -406,7 +406,7 @@ Anmerkung:  Die Eingabe lediglich des Bewegungsteils im Normalmodus bewegt den
 --->  Alf diese Zeite eingegoben wurde, wurden einike falsche Tasten gelippt!
 --->  Als diese Zeile eingegeben wurde, wurden einige falsche Tasten getippt!
 
-  5. Nun fahre fort mit Lektion 1.3.2.
+  5. Nun fahre fort mit Lektion 1.3.3.
 
 Anmerkung: Erinnere Dich daran, dass Du durch Anwenden lernen solltest, nicht 
      durch Auswendiglernen.
@@ -593,10 +593,10 @@ Anmerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
 
   4. Um das erste Vorkommen von "alt" in einer Zeile durch "neu" zu ersetzen,
              tippe       :s/alt/neu
-     Um alle Vorkommen von "alt" in der Zeile ersetzen, tippe  :s/alt/neu/g
-     Um Ausdrücke innerhalb zweier Zeilen # zu ersetzen        :#,#s/alt/neu/g
-     Um alle Vorkommen in der ganzen Datei zu ersetzen, tippe  :%s/alt/neu/g
-     Für eine jedesmalige Bestätigung, addiere 'c' (confirm)   :%s/alt/neu/gc
+     Um alle Vorkommen von "alt" in der Zeile zu ersetzen, tippe :s/alt/neu/g
+     Um Ausdrücke innerhalb zweier Zeilen # zu ersetzen          :#,#s/alt/neu/g
+     Um alle Vorkommen in der ganzen Datei zu ersetzen, tippe    :%s/alt/neu/g
+     Für eine jedesmalige Bestätigung, addiere 'c' (confirm)     :%s/alt/neu/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Lektion 1.5.1: AUSFÜHREN EINES EXTERNEN KOMMANDOS
 
@@ -678,7 +678,7 @@ Hinweis: Drücken von  v  startet die Visuelle Auswahl. Du kannst den Cursor
 BEACHTE:  Nachdem Du Schritt 2 ausgeführt hast, wirst Du Text aus Lektion 1.5.3
        sehen. Dann bewege Dich wieder ABWÄRTS, Lektion 1.5.4 wiederzusehen.
 
-  2. Nun lies deine Datei TEST ein indem Du das Kommando  :r TEST  ausführst,
+  2. Nun lies deine Datei TEST ein, indem Du das Kommando  :r TEST  ausführst,
      wobei TEST der von Dir verwendete Dateiname ist.
      Die eingelesene Datei wird unterhalb der Cursorzeile eingefügt.
 

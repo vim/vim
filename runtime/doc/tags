@@ -1411,7 +1411,9 @@ $quote	eval.txt	/*$quote*
 +cindent	various.txt	/*+cindent*
 +clientserver	various.txt	/*+clientserver*
 +clipboard	various.txt	/*+clipboard*
++clipboard_plus_avail	various.txt	/*+clipboard_plus_avail*
 +clipboard_provider	various.txt	/*+clipboard_provider*
++clipboard_star_avail	various.txt	/*+clipboard_star_avail*
 +clipboard_working	various.txt	/*+clipboard_working*
 +cmd	editing.txt	/*+cmd*
 +cmdline_compl	various.txt	/*+cmdline_compl*
@@ -7676,6 +7678,7 @@ ft-vb-syntax	syntax.txt	/*ft-vb-syntax*
 ft-verilog-indent	indent.txt	/*ft-verilog-indent*
 ft-vhdl-indent	indent.txt	/*ft-vhdl-indent*
 ft-vim-indent	indent.txt	/*ft-vim-indent*
+ft-vim-omni	insert.txt	/*ft-vim-omni*
 ft-vim-plugin	filetype.txt	/*ft-vim-plugin*
 ft-vim-syntax	syntax.txt	/*ft-vim-syntax*
 ft-xf86conf-syntax	syntax.txt	/*ft-xf86conf-syntax*

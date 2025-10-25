@@ -7930,7 +7930,25 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
+	    n = clip_star.available || clip_plus.available;
+#endif
+	}
+	else if (STRICMP(name, "clipboard_star_avail") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_CLIPBOARD
 	    n = clip_star.available;
+#endif
+	}
+	else if (STRICMP(name, "clipboard_plus_avail") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_CLIPBOARD
+# ifdef ONE_CLIPBOARD
+	    n = FALSE;
+# else
+	    n = clip_plus.available;
+# endif
 #endif
 	}
     }

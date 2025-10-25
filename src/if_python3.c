@@ -57,9 +57,6 @@
 #ifdef HAVE_PUTENV
 # undef HAVE_PUTENV
 #endif
-#ifdef HAVE_STDARG_H
-# undef HAVE_STDARG_H   // Python's config.h defines it as well.
-#endif
 #ifdef _POSIX_C_SOURCE  // defined in feature.h
 # undef _POSIX_C_SOURCE
 #endif
