@@ -3120,7 +3120,7 @@ auto/pathdef.c: Makefile auto/config.mk
 	-@echo 'char_u *compiled_user = (char_u *)"' | tr -d $(NL) >> $@
 	-@if test -n "$(COMPILEDBY)"; then \
 		echo "$(COMPILEDBY)" | tr -d $(NL) >> $@; \
-		else ((logname) 2>/dev/null || whoami) | tr -d $(NL) >> $@; fi
+		else (logname 2>/dev/null || whoami) | tr -d $(NL) >> $@; fi
 	-@echo '";' >> $@
 	-@echo 'char_u *compiled_sys = (char_u *)"' | tr -d $(NL) >> $@
 	-@if test -z "$(COMPILEDBY)"; then hostname | tr -d $(NL) >> $@; fi

@@ -166,7 +166,8 @@ static struct vimvar
     {VV_NAME("wayland_display",  VAR_STRING), NULL, VV_RO},
     {VV_NAME("clipmethod",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termda1",		 VAR_STRING), NULL, VV_RO},
-    {VV_NAME("termosc",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termosc",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("clipproviders",	 VAR_DICT), &t_dict_string, VV_RO}
 };
 
 // shorthand

@@ -3,7 +3,7 @@ vim9script noclear
 # the Vim HelpTOC plugin, creates a table of contents in a popup
 # Maintainer: Vim project
 # Original Author: @lacygoill
-# Latest Change: 2025 Jul 10
+# Latest Change: 2025 Oct 17
 #
 # Config {{{1
 # g:helptoc {{{2
@@ -486,7 +486,7 @@ def SetToc() #{{{2
             ->substitute('\\\([&%$_#{}~\\^]\)', '\1', 'g')
 
     # SANITIZE_VIM {{{3
-    # #1 - Omit leading Vim9 script # or vimscript " markers and blanks
+    # #1 - Omit leading Vim9 script # or Vim script " markers and blanks
     # #2 - Omit numbered 3x { markers
     const SANITIZE_VIM = (text: string): string =>
         text->substitute('\v^[#[:blank:]"]*(.+)\ze[{]{3}([1-6])',

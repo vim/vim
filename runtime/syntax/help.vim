@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
-" Last Change:		2025 Oct 03
+" Last Change:		2025 Oct 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -69,6 +69,12 @@ syn region helpReturnType
       \ contains=@vimType,helpHyperTextJump,helpSpecial
       \ transparent
 syn match helpSpecial		contained "{type}" containedin=vimCompoundType
+
+" various.txt
+syn region helpExCommand_Version
+      \ start="^:ve\[rsion]\t\t"
+      \ end="\n\ze\n:ve\[rsion] {nr}"
+      \ contains=helpHyperTextEntry,helpHyperTextJump,helpOption
 
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar

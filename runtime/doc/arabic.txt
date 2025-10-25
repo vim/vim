@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 9.1.  Last change: 2021 Jun 22
+*arabic.txt*	For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli
@@ -191,7 +191,7 @@ o  Enable Arabic settings [short-cut]
 
       To activate the Arabic keymap (i.e. to remap your English/Latin
       keyboard to look-n-feel like a standard Arabic one), set the
-      'keymap' command to "arabic".  This is done by entering
+      'keymap' option to "arabic".  This is done by entering
 >
 		:set keymap=arabic
 <

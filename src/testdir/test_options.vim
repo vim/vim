@@ -637,7 +637,7 @@ func Test_set_completion_string_values()
   set keyprotocol&
 
   " previewpopup / completepopup
-  call assert_equal('align:', getcompletion('set previewpopup=', 'cmdline')[0])
+  call assert_equal('height:', getcompletion('set previewpopup=', 'cmdline')[0])
   call assert_equal('EndOfBuffer', getcompletion('set previewpopup=highlight:End*Buffer', 'cmdline')[0])
   call feedkeys(":set previewpopup+=border:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set previewpopup+=border:on', @:)

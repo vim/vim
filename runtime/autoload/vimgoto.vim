@@ -4,9 +4,9 @@ vim9script
 # Contributers: @lacygoill
 #               Shane-XB-Qian
 #               Andrew Radev
-# Last Change:  2025 Sep 21
+# Last Change:  2025 Oct 17
 #
-# Vim Script to handle jumping to the targets of several types of Vim commands
+# Vim script to handle jumping to the targets of several types of Vim commands
 # (:import, :packadd, :runtime, :colorscheme), and to autoloaded functions of
 # the style <path>#<function_name>.
 #
