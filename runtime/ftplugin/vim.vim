@@ -61,8 +61,8 @@ setlocal isk+=#
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
 if !exists("*" .. expand("<SID>") .. "Help")
-  function s:Help(topic) abort
-    let topic = a:topic
+  function s:Help() abort
+    let topic = expand('<cword>')
 
     " keyword is not necessarily under the cursor, see :help K
     let line = getline('.')
@@ -78,35 +78,34 @@ if !exists("*" .. expand("<SID>") .. "Help")
     if get(g:, 'syntax_on', 0)
       let syn = synIDattr(synID(line('.'), col('.'), 1), 'name')
       if syn ==# 'vimFuncName'
-        return topic .. '()'
+        exe 'help' topic .. '()'
       elseif syn ==# 'vimOption' || syn ==# 'vimOptionVarName'
-        return "'" .. topic .. "'"
+        exe 'help' "'" .. topic .. "'"
       elseif syn ==# 'vimUserCmdAttrKey'
-        return ':command-' .. topic
+        exe 'help' ':command-' .. topic
       elseif syn ==# 'vimCommand'
-        return ':' .. topic
+        exe 'help' ':' .. topic
       endif
     endif
 
     if pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
-      return ':' .. topic
+      exe 'help' ':' .. topic
     elseif pre =~# '\<v:$'
-      return 'v:' .. topic
+      exe 'help' 'v:' .. topic
     elseif pre =~# '<$'
-      return '<' .. topic .. '>'
+      exe 'help' '<' .. topic .. '>'
     elseif pre =~# '\\$'
-      return '/\' .. topic
+      exe 'help' '/\' .. topic
     elseif topic ==# 'v' && post =~# ':\w\+'
-      return 'v' .. matchstr(post, ':\w\+')
+      exe 'help' 'v' .. matchstr(post, ':\w\+')
     elseif pre =~# '&\%([lg]:\)\=$'
-      return "'" .. topic .. "'"
+      exe 'help' "'" .. topic .. "'"
     else
-      return topic
+      exe 'help' topic
     endif
   endfunction
 endif
-command! -buffer -nargs=1 VimKeywordPrg :exe 'help' s:Help(<q-args>)
-setlocal keywordprg=:VimKeywordPrg
+let &l:keywordprg = ':call ' .. expand('<SID>') .. 'Help() "'
 
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
 if "\n" .. getline(1, 32)->join("\n") =~# '\n\s*vim9\%[script]\>'
