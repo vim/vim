@@ -1,6 +1,8 @@
 *usr_21.txt*	For Vim version 9.1.  Last change: 2024 May 17
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	  by Bram Moolenaar
+
 
 			   Go away and come back
 

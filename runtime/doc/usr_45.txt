@@ -1,6 +1,8 @@
 *usr_45.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	  by Bram Moolenaar
+
 
 			Select your language (locale)
 
