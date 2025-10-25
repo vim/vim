@@ -1076,6 +1076,9 @@ au BufNewFile,BufRead Snakefile,*.smk		setf snakemake
 au BufNewFile,BufRead *.hog,snort.conf,vision.conf	setf hog
 au BufNewFile,BufRead *.rules			call dist#ft#FTRules()
 
+" Soy
+au BufNewFile,BufRead *.soy			setf soy
+
 " *.typ can be either SQL or Typst files
 au BufNewFile,BufRead *.typ			call dist#ft#FTtyp()
 
