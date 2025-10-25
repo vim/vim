@@ -2385,4 +2385,37 @@ func Test_popup_border()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_shadow_hiddenchar()
+  CheckScreendump
+
+  let lines =<< trim END
+    bold italic underline reverse normal
+    italic underline reverse normal bold
+    underline reverse normal bold italic
+    reverse normal bold italic underline
+    normal bold italic underline reverse
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
+
+  call term_sendkeys(buf, ":set completeopt=menuone,noselect pumborder=shadow\<CR>")
+  call term_sendkeys(buf, ":hi BoldGrp cterm=bold\<CR>")
+  call term_sendkeys(buf, ":hi ItalicGrp cterm=italic,underline\<CR>")
+  call term_sendkeys(buf, ":hi ReverseGrp cterm=reverse\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"BoldGrp\", \"bold\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ItalicGrp\", \"italic\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ItalicGrp\", \"underline\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ReverseGrp\", \"reverse\")\<CR>")
+
+  call term_sendkeys(buf, "i\<C-N>")
+  call TermWait(buf, 10)
+  call VerifyScreenDump(buf, 'Test_popup_shadow_hiddenchar_1', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>wwi\<C-N>")
+  call TermWait(buf, 10)
+  call VerifyScreenDump(buf, 'Test_popup_shadow_hiddenchar_2', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
