@@ -747,6 +747,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     snobol4: ['file.sno', 'file.spt'],
     solidity: ['file.sol'],
     solution: ['file.sln'],
+    soy: ['file.soy'],
     spajson: ['any/pipewire/file.conf', 'any/pipewire/file.conf.d/other.conf',
               'any/wireplumber/file.conf', 'any/wireplumber/file.conf.d/other.conf'],
     sparql: ['file.rq', 'file.sparql'],

@@ -289,6 +289,7 @@ runtime/ftplugin/slint.vim				@ribru17
 runtime/ftplugin/snakemake.vim				@ribru17
 runtime/ftplugin/solidity.vim				@coti-z
 runtime/ftplugin/solution.vim				@dkearns
+runtime/ftplugin/soy.vim				@ribru17
 runtime/ftplugin/spajson.vim				@dseomn
 runtime/ftplugin/spec.vim				@ignatenkobrain
 runtime/ftplugin/squirrel.vim				@ribru17
