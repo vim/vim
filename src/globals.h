@@ -2067,9 +2067,6 @@ EXTERN int	p_tgc_set INIT(= FALSE);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
-# ifdef FEAT_CLIPBOARD_PROVIDER
-EXTERN char_u *clipprovider_name INIT(= NULL);
-# endif
 #endif
 
 #ifdef FEAT_WAYLAND
@@ -2118,17 +2115,4 @@ INIT(= CLIENTSERVER_METHOD_NONE);
 #ifdef FEAT_SOCKETSERVER
 // Path to socket of last client that communicated with us
 EXTERN char_u *client_socket INIT(= NULL);
-#endif
-
-#ifdef FEAT_CLIPBOARD_PROVIDER
-typedef enum
-{
-    CLIP_ACCESS_IMPLICIT,
-    CLIP_ACCESS_EXPLICIT,
-} clip_access_T;
-
-// Only relevant for the clipboard provider feature. This indicates if the
-// clipboard request is implicit (ex. access when doing :registers),
-// explicit (ex. typing "+p). Always defaults to implicit.
-EXTERN clip_access_T clip_access_type INIT(= CLIP_ACCESS_IMPLICIT);
 #endif

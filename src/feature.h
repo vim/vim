@@ -905,19 +905,6 @@
 # define FEAT_CLIPBOARD
 #endif
 
-/*
- * +clipboard_provider	Allow Vim to use clipboard providers
- */
-#if defined(FEAT_CLIPBOARD_PROVIDER)
-# ifndef FEAT_EVAL
-#  undef FEAT_CLIPBOARD_PROVIDER
-# else
-#  ifndef FEAT_CLIPBOARD
-#   define FEAT_CLIPBOARD
-#  endif
-# endif
-#endif
-
 #ifdef FEAT_GUI
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD

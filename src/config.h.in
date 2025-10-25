@@ -528,6 +528,3 @@
 
 /* Define if you want to load libgpm dynamically */
 #undef DYNAMIC_GPM
-
-/* Define if you want to have clipboard provider functionality*/
-#undef FEAT_CLIPBOARD_PROVIDER
