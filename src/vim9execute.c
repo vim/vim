@@ -1176,20 +1176,30 @@ invoke_defer_funcs(ectx_T *ectx)
 	    argvars[i] = arg_li->li_tv;
 	}
 
-	funcexe_T   funcexe;
+	funcexe_T	funcexe;
+	char_u		*name = NULL;
+	partial_T	*pt = NULL;
+
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	rettv.v_type = VAR_UNKNOWN;
+
 	if (functv->v_type == VAR_PARTIAL)
 	{
-	    funcexe.fe_partial = functv->vval.v_partial;
-	    funcexe.fe_object = functv->vval.v_partial->pt_obj;
+	    pt = functv->vval.v_partial;
+	    functv->vval.v_partial = NULL;
+
+	    name = pt->pt_func->uf_name;
+	    funcexe.fe_partial = pt;
+	    funcexe.fe_object = pt->pt_obj;
 	    if (funcexe.fe_object != NULL)
 		++funcexe.fe_object->obj_refcount;
 	}
-
-	char_u *name = functv->vval.v_string;
-	functv->vval.v_string = NULL;
+	else
+	{
+	    name = functv->vval.v_string;
+	    functv->vval.v_string = NULL;
+	}
 
 	// If the deferred function is called after an exception, then only the
 	// first statement in the function will be executed (because of the
@@ -1204,7 +1214,10 @@ invoke_defer_funcs(ectx_T *ectx)
 	exception_state_restore(&estate);
 
 	clear_tv(&rettv);
-	vim_free(name);
+	if (functv->v_type == VAR_PARTIAL)
+	    partial_unref(pt);
+	else
+	    vim_free(name);
     }
 }
 

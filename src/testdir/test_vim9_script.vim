@@ -5232,6 +5232,23 @@ def Test_defer_invalid_func_arg()
   v9.CheckScriptFailure(lines, 'E1001: Variable not found: a', 1)
 enddef
 
+" Test for using defer with a lambda funcref
+def Test_defer_lambda_funcref()
+  var lines =<< trim END
+    vim9script
+    var lfr_result = ''
+    def Foo()
+      var Fn = () => {
+          lfr_result = 'called'
+        }
+      defer Fn()
+    enddef
+    Foo()
+    assert_equal('called', lfr_result)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using an non-existing type in a "for" statement.
 def Test_invalid_type_in_for()
   var lines =<< trim END
