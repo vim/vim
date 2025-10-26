@@ -2234,16 +2234,19 @@ pum_draw_border(void)
 }
 
 /*
- * Get the underlying character and redraw with shadow highlight
+ * Get the underlying character and redraw with shadow highlight.
+ * Preserve bold, italic, underline, and reverse text underneath the shadow.
  */
     void
 put_shadow_char(int row, int col)
 {
     char_u  buf[MB_MAXBYTES + 1];
-    int	    attr = highlight_attr[HLF_PMS];
+    int	    shadow_attr = highlight_attr[HLF_PMS];
+    int	    char_attr, new_attr;
 
-    screen_getbytes(row, col, buf, NULL);
-    screen_putchar((*mb_ptr2char)(buf), row, col, attr);
+    screen_getbytes(row, col, buf, &char_attr);
+    new_attr = hl_combine_attr(char_attr, shadow_attr);
+    screen_putchar((*mb_ptr2char)(buf), row, col, new_attr);
 }
 
 /*
