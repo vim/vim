@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 14
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41653,8 +41653,6 @@ Other new features ~
 
 - |items()| function now supports Blob.
 
-- |clipboard-providers| support.
-
 							*changed-9.2*
 Changed~
 -------
@@ -41903,8 +41901,6 @@ Options: ~
 
 Vim Variables: ~
 |v:clipmethod|		The current 'clipmethod'.
-|v:clipproviders|	A dictionary containing clipboard providers
-			information.
 |v:stacktrace|		The most recent caught exception.
 |v:t_enumvalue|		Value of |enumvalue|.
 |v:t_enum|		Value of |enum| type.
@@ -41923,8 +41919,6 @@ Configure Switches: ~
 --enable-wayland-focus-steal	Enable the |wayland-focus-steal| feature.
 --enable-socketserver		Enable the |socketserver-clientserver|
 				feature.
---enable-clipboard-provider	Enable the |clipboard-providers| feature.
-
 
 ==============================================================================
 INCOMPATIBLE CHANGES					*incompatible-9.2*

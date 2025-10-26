@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Oct 14
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13061,7 +13061,6 @@ channel			Compiled with support for |channel| and |job|
 cindent			Compiled with 'cindent' support. (always true)
 clientserver		Compiled with remote invocation support |clientserver|.
 clipboard		Compiled with 'clipboard' support.
-clipboard_provider	Compiled with |clipboard-providers| support
 clipboard_working	Compiled with 'clipboard' support and it can be used.
 cmdline_compl		Compiled with |cmdline-completion| support.
 cmdline_hist		Compiled with |cmdline-history| support.
