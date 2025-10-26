@@ -247,6 +247,7 @@ NEW_TESTS = \
 	test_plugin_helptoc \
 	test_plugin_man \
 	test_plugin_matchparen \
+	test_plugin_netrw \
 	test_plugin_tar \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
@@ -520,6 +521,7 @@ NEW_TESTS_RES = \
 	test_plugin_helptoc.res \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \
+	test_plugin_netrw.res \
 	test_plugin_tar.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
