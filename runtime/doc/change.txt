@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Oct 14
+*change.txt*    For Vim version 9.1.  Last change: 2025 Oct 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1324,7 +1324,7 @@ and ":put" commands and with CTRL-R.
 		"@:" to repeat the previous command-line command.
 		The command-line is only stored in this register when at least
 		one character of it was typed.  Thus it remains unchanged if
-		the command was completely from a mapping.
+		the command was executed completely from a mapping.
 		{not available when compiled without the |+cmdline_hist|
 		feature}
 							*quote_#* *quote#*
