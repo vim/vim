@@ -84,7 +84,6 @@
 
 #ifndef HAVE_CONFIG_H
 # define HAVE_STRING_H
-# define HAVE_STRCSPN
 # define HAVE_MEMSET
 # define USE_TMPNAM		// use tmpnam() instead of mktemp()
 # define HAVE_FCNTL_H

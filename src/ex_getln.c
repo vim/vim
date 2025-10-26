@@ -1871,6 +1871,12 @@ getcmdline_int(
 				// that occurs while typing a command should
 				// cause the command not to be executed.
 
+	if (stuff_empty() && typebuf.tb_len == 0)
+	    // There is no pending input from sources other than user input, so
+	    // Vim is going to wait for the user to type a key.  Consider the
+	    // command line typed even if next key will trigger a mapping.
+	    some_key_typed = TRUE;
+
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
@@ -4846,6 +4852,7 @@ open_cmdwin(void)
 
     State = MODE_NORMAL;
     setmouse();
+    clear_showcmd();
 
     // Reset here so it can be set by a CmdwinEnter autocommand.
     cmdwin_result = 0;

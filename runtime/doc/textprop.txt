@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
+*textprop.txt*  For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -363,7 +363,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 
 		Returns an empty list on error.
 
-		Examples:
+		Examples: >
 		   " get text properties placed in line 5
 		   echo prop_list(5)
 		   " get text properties placed in line 20 in buffer 4
@@ -384,7 +384,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		   " in buffer 4.
 		   echo prop_list(1, {'bufnr': 4, 'types': ['myprop'],
 					\ 'ids': [100], 'end_lnum': -1})
-
+<
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <

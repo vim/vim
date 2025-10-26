@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2025 Oct 13
+*editing.txt*   For Vim version 9.1.  Last change: 2025 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -137,7 +137,7 @@ as the original file with 'backupext' appended.  The default "~" is a bit
 strange to avoid accidentally overwriting existing files.  If you prefer
 ".bak" change the 'backupext' option.  Extra dots are replaced with '_' on
 MS-Windows machines, when Vim has detected that an MS-DOS-like filesystem is
-being used (e.g., messydos or crossdos) or when the 'shortname' option is on.
+being used, or when the 'shortname' option is on.
 The backup file can be placed in another directory by setting 'backupdir'.
 
 							*auto-shortname*
