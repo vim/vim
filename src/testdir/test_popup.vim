@@ -1163,6 +1163,7 @@ func Test_popup_complete_info_02()
     \     {'word': 'Apr', 'menu': 'April', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
     \     {'word': 'May', 'menu': 'May', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}
     \   ],
+    \   'preinserted_text': '',
     \   'selected': 0,
     \ }
 
@@ -1170,7 +1171,7 @@ func Test_popup_complete_info_02()
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
 
-  let g:compl_what = ['mode', 'pum_visible', 'selected']
+  let g:compl_what = ['mode', 'pum_visible', 'preinserted_text', 'selected']
   call remove(d, 'items')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
@@ -1178,6 +1179,7 @@ func Test_popup_complete_info_02()
   let g:compl_what = ['mode']
   call remove(d, 'selected')
   call remove(d, 'pum_visible')
+  call remove(d, 'preinserted_text')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
   bwipe!
@@ -1191,6 +1193,7 @@ func Test_popup_complete_info_no_pum()
         \   'mode': '',
         \   'pum_visible': 0,
         \   'items': [],
+        \   'preinserted_text': '',
         \   'selected': -1,
         \  }
   call assert_equal( d, complete_info() )

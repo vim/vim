@@ -819,7 +819,7 @@ enddef
 def Test_complete_info()
   v9.CheckSourceDefAndScriptFailure(['complete_info("")'], ['E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1211: List required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['complete_info({})'], ['E1013: Argument 1: type mismatch, expected list<string> but got dict<any>', 'E1211: List required for argument 1'])
-  assert_equal({'pum_visible': 0, 'mode': '', 'selected': -1, 'items': []}, complete_info())
+  assert_equal({'pum_visible': 0, 'mode': '', 'preinserted_text': '', 'selected': -1, 'items': []}, complete_info())
   assert_equal({'mode': '', 'items': []}, complete_info(['mode', 'items']))
 enddef
 
