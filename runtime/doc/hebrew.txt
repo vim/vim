@@ -1,7 +1,7 @@
-*hebrew.txt*    For Vim version 9.1.  Last change: 2019 May 05
+*hebrew.txt*    For Vim version 9.1.  Last change: 2025 Oct 26
 
 
-	   VIM REFERENCE MANUAL    by Ron Aaron (and Avner Lottem)
+		  VIM REFERENCE MANUAL    by Ron Aaron and Avner Lottem
 
 
 Hebrew Language support (options & mapping) for Vim		*hebrew*

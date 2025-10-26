@@ -1,6 +1,8 @@
-*usr_44.txt*	For Vim version 9.1.  Last change: 2017 May 06
+*usr_44.txt*	For Vim version 9.1.  Last change: 2025 Oct 26
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	  by Bram Moolenaar
+
 
 			 Your own syntax highlighted
 

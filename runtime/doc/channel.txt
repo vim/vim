@@ -1,7 +1,7 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2025 Oct 13
+*channel.txt*      For Vim version 9.1.  Last change: 2025 Oct 26
 
 
-		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 		      Inter-process communication		*channel*

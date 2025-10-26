@@ -1,6 +1,8 @@
-*usr_09.txt*	For Vim version 9.1.  Last change: 2017 Aug 11
+*usr_09.txt*	For Vim version 9.1.  Last change: 2025 Oct 26
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	  by Bram Moolenaar
+
 
 				Using the GUI
 
