@@ -2714,6 +2714,8 @@ const ft_from_ext = {
   "hlp": "smcl",
   "ihlp": "smcl",
   "smcl": "smcl",
+  # Soy
+  "soy": "soy",
   # Stored Procedures
   "stp": "stp",
   # Standard ML
