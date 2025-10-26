@@ -2040,25 +2040,35 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		argcount = 0;
     int		defer_var_idx;
     type_T	*type = NULL;
-    int		func_idx;
+    int		func_idx = -1;
 
-    // Get a funcref for the function name.
-    // TODO: better way to find the "(".
-    paren = vim_strchr(arg, '(');
-    if (paren == NULL)
+    if (*arg == '(')
     {
-	semsg(_(e_missing_parenthesis_str), arg);
-	return NULL;
+	// a lambda function
+	if (compile_lambda(&arg, cctx) != OK)
+	    return NULL;
+	paren = arg;
     }
-    *paren = NUL;
-    func_idx = find_internal_func(arg);
-    if (func_idx >= 0)
-	// TODO: better type
-	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
-							   &t_func_any, FALSE);
-    else if (compile_expr0(&arg, cctx) == FAIL)
-	return NULL;
-    *paren = '(';
+    else
+    {
+	// Get a funcref for the function name.
+	// TODO: better way to find the "(".
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
+	*paren = NUL;
+	func_idx = find_internal_func(arg);
+	if (func_idx >= 0)
+	    // TODO: better type
+	    generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
+		    &t_func_any, FALSE);
+	else if (compile_expr0(&arg, cctx) == FAIL)
+	    return NULL;
+	*paren = '(';
+    }
 
     // check for function type
     if (cctx->ctx_skip != SKIP_YES)

@@ -1747,7 +1747,7 @@ compile_tuple(
  * "*arg" points to the '('.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
-    static int
+    int
 compile_lambda(char_u **arg, cctx_T *cctx)
 {
     int		r;

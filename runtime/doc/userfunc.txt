@@ -449,6 +449,15 @@ or altering execution outside of deferred functions.
 No range is accepted.  The function can be a partial with extra arguments, but
 not with a dictionary. *E1300*
 
+In a |:def| function, a lambda can be used with |:defer|.  Example: >
+
+    def Fn()
+      set lazyredraw
+      defer () => {
+        set lazyredraw&
+      }()
+    enddef
+<
 ==============================================================================
 
 4. Automatically loading functions ~
