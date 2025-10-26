@@ -2,8 +2,6 @@
 
 
 " START NOT MATCHED
-:@
-:@@
 :Next
 :Print
 :X
@@ -13,6 +11,8 @@
  :help
 : help
  : help # FIXME
+
+:@
 
 :append
     text

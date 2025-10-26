@@ -3,8 +3,6 @@ vim9script
 
 
 # START NOT MATCHED
-:@
-:@@
 :Next
 :X
 # END NOT MATCHED
@@ -13,6 +11,8 @@ vim9script
  :help
 : help
  : help # FIXME
+
+:@
 
 :abbreviate
 :abclear
