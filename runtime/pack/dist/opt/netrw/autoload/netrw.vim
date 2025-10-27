@@ -9312,7 +9312,7 @@ endfunction
 " s:RemotePathAnalysis: {{{2
 function s:RemotePathAnalysis(dirname)
 
-    "                method   ://    user  @      machine      :port            /path
+    "                method   ://    user    @      machine      :port           /path
     let dirpat  = '^\(\w\{-}\)://\(\([^@]\+\)@\)\=\([^/:#]\+\)\%([:#]\(\d\+\)\)\=/\(.*\)$'
     let s:method  = substitute(a:dirname,dirpat,'\1','')
     let s:user    = substitute(a:dirname,dirpat,'\3','')
