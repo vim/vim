@@ -1226,11 +1226,8 @@ blob_from_string(char_u *str, blob_T *blob)
 
     for (p = str; *p != NUL; ++p)
     {
-	if (*p == NL)
-	    // Translate newlines in the string to NUL character
-	    *p = NUL;
-
-	ga_append(&blob->bv_ga, (int)*p);
+	// Translate newlines in the string to NUL character
+	ga_append(&blob->bv_ga, (*p == NL) ? NUL : (int)*p);
     }
 }
 
@@ -1268,7 +1265,8 @@ string_from_blob(blob_T *blob, long *start_idx)
 
     ga_append(&str_ga, NUL);
 
-    char_u *ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    char_u *ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len - 1);	// -1 to allow for the NUL
+									// in the ga_append() above.
     *start_idx = idx;
 
     ga_clear(&str_ga);
