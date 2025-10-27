@@ -4235,7 +4235,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	int	len = compl_ins_end_col - curwin->w_cursor.col;
 
 	ret = dict_add_string_len(retdict, "preinserted_text",
-		(len > 0) ? line + curwin->w_cursor.col : (char_u *)"", len);
+		(len > 0) ? line + curwin->w_cursor.col : (char_u *)"", (len > 0) ? len : 0);
     }
 
     if (ret == OK && (what_flag & (CI_WHAT_ITEMS | CI_WHAT_SELECTED
