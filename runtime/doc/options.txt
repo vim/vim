@@ -7032,6 +7032,58 @@ A jump table for the options with a short description can be found at |Q_op|.
 	many states.  This should prevent Vim from hanging on a combination of
 	a complex pattern with long text.
 
+						*'regreqfunc* *'rrf'*
+'regreqfunc' 'rrf'	string	(default "")
+			global
+	This options specifies a function to be used whenever the custom
+	register |quote_&| is put, including |getreg()|.  The function takes
+	no arguments, and should return a |tuple| or |list| containing the
+	following elements in order:
+		1. The register type, conforming to |setreg()|, that the
+		   register will be set to.
+		2. A |list| containing a list of strings to set the register
+		   to.
+
+	The following is a possible example use of this option:
+>vim
+		function RequestFunc()
+		    return ('l', readfile('stuff.txt'))
+		endfunction
+
+		set regreqfunc=RequestFunc
+<
+	The value can be the name of a function, a |lambda| or a |Funcref|.  See
+	|option-value-function| for more information.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+	Additionally it is not allowed to change the buffer
+	text in the function, see |textlock|.
+
+						*'regsetfunc* *'rsf'*
+'regsetfunc' 'rsf'	string	(default "")
+			global
+	This option specifies a function to be used whenever the custom
+	register |quote_&| is yanked, inclusing |setreg()|. The function
+	returns nothing and takes two arguments:
+		1. The register type being used, conforming to |getregtype()|.
+		2. A list of strings being yanked.
+
+	The following is a possible example use of this option:
+>vim
+		function SetFunc(type, lines)
+		    call writefile(a:lines, 'stuff.txt', 'a')
+		    echom 'Yanked ' .. len(a:lines) .. ' lines of type ' .. a:type
+		endfunction
+
+		set regsetfunc=SetFunc
+<
+	The value can be the name of a function, a |lambda| or a |Funcref|.  See
+	|option-value-function| for more information.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+	Additionally it is not allowed to change the buffer
+	text in the function, see |textlock|.
+
 		*'relativenumber'* *'rnu'* *'norelativenumber'* *'nornu'*
 'relativenumber' 'rnu'	boolean	(default off)
 			local to window
