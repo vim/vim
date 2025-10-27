@@ -19,8 +19,10 @@
  *   1..9 = registers '1' to '9', for deletes
  * 10..35 = registers 'a' to 'z' ('A' to 'Z' for appending)
  *     36 = delete register '-'
- *     37 = Selection register '*'. Only if FEAT_CLIPBOARD defined
- *     38 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11
+ *     37 = custom register '&'
+ *
+ *     38 = Selection register '*'. Only if FEAT_CLIPBOARD defined
+ *     39 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11
  *                                  or FEAT_WAYLAND_CLIPBOARD defined
  */
 static yankreg_T	y_regs[NUM_REGISTERS];
@@ -193,6 +195,7 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
+	    || regname == '&'
 #ifdef FEAT_CLIPBOARD
 	    || regname == '*'
 	    || regname == '+'
@@ -249,6 +252,8 @@ get_yank_register(int regname, int writing)
     }
     else if (regname == '-')
 	i = DELETION_REGISTER;
+    else if (regname == '&')
+	i = CUSTOM_REGISTER;
 #ifdef FEAT_CLIPBOARD
     // When selection is not available, use register 0 instead of '*'
     else if (clip_star.available && regname == '*')
@@ -2350,6 +2355,8 @@ get_register_name(int num)
 	return num + '0';
     else if (num == DELETION_REGISTER)
 	return '-';
+    else if (num == CUSTOM_REGISTER)
+	return '&';
 #ifdef FEAT_CLIPBOARD
     else if (num == STAR_REGISTER)
 	return '*';
@@ -2947,6 +2954,14 @@ did_set_regxfunc(optset_T *args)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+/*
+ * Call the function specified in 'regyankfunc'
+ */
+    static void
+call_regyankfunc(void)
+{
 }
 
 #endif	// FEAT_EVAL

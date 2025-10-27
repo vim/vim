@@ -5224,6 +5224,8 @@ get_register_completion(void)
 	    regname = '0' + i;
 	else if (i == DELETION_REGISTER)
 	    regname = '-';
+	else if (i == CUSTOM_REGISTER)
+	    regname = '&';
 #ifdef FEAT_CLIPBOARD
 	else if (i == STAR_REGISTER)
 	    regname = '*';

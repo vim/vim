@@ -4877,16 +4877,30 @@ typedef enum {
 
 // Symbolic names for some registers.
 #define DELETION_REGISTER	36
+
+#ifdef FEAT_EVAL
+#  define CUSTOM_REGISTER    	37
+#endif
+
 #ifdef FEAT_CLIPBOARD
-# define STAR_REGISTER		37
+#  ifdef FEAT_EVAL
+#   define STAR_REGISTER	38
+#  else
+#   define STAR_REGISTER	37
+#  endif
 #  if defined(FEAT_X11) || defined(FEAT_WAYLAND)
-#   define PLUS_REGISTER	38
+#   define PLUS_REGISTER	(STAR_REGISTER + 1)
 #  else
 #   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
 #  endif
 #endif
+
 #ifdef FEAT_DND
-# define TILDE_REGISTER		(PLUS_REGISTER + 1)
+# ifdef FEAT_EVAL
+#  define TILDE_REGISTER	(CUSTOM_REGISTER + 1)
+# else
+#  define TILDE_REGISTER	(PLUS_REGISTER + 1)
+# endif
 #endif
 
 #ifdef FEAT_CLIPBOARD
@@ -4896,7 +4910,7 @@ typedef enum {
 #  define NUM_REGISTERS		(PLUS_REGISTER + 1)
 # endif
 #else
-# define NUM_REGISTERS		37
+# define NUM_REGISTERS		38
 #endif
 
 // structure used by block_prep, op_delete and op_yank for blockwise operators
