@@ -1445,6 +1445,12 @@ op_yank(oparg_T *oap, int deleting, int mess)
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+    // Call custom register set function if is custom register
+    if (curr == get_y_register(CUSTOM_REGISTER))
+	call_regsetfunc();
+#endif
+
 #if defined(FEAT_EVAL)
     if (!deleting && has_textyankpost())
 	yank_do_autocmd(oap, y_current);
@@ -2703,7 +2709,9 @@ get_reg_contents(int regname, int flags)
     regname = may_get_selection(regname);
 # endif
 
+#ifdef FEAT_EVAL
     call_regreqfunc();
+#endif
 
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
     {
@@ -3099,6 +3107,61 @@ fail:
     static void
 call_regsetfunc(void)
 {
+    typval_T	rettv;
+    typval_T	argvars[3];
+    yankreg_T	*y_ptr = get_y_register(CUSTOM_REGISTER);
+    char_u	type[2 + NUMBUFLEN] = {0};
+    list_T	*list = NULL;
+
+    if (rsf_cb.cb_name == NULL)
+	return;
+
+    switch (y_ptr->y_type)
+    {
+	case MCHAR:
+	    type[0] = 'v';
+	    break;
+	case MLINE:
+	    type[0] = 'V';
+	    break;
+	case MBLOCK:
+	    sprintf((char *)type, "%c%d", Ctrl_V, y_ptr->y_width + 1);
+	    break;
+	default:
+	    type[0] = 0;
+	    break;
+    }
+
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = type;
+
+    // Return register contents as a list of lines
+    list = list_alloc();
+
+    if (list == NULL)
+	return;
+
+    for (int i = 0; i < y_ptr->y_size; i++)
+	if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL)
+	{
+	    list_unref(list);
+	    return;
+	}
+
+    list->lv_refcount++;
+
+    argvars[1].v_type = VAR_LIST;
+    argvars[1].v_lock = VAR_FIXED;
+    argvars[1].vval.v_list = list;
+
+    argvars[2].v_type = VAR_UNKNOWN;
+
+    textlock++;
+    call_callback(&rsf_cb, -1, &rettv, 2, argvars);
+    clear_tv(&rettv);
+    textlock--;
+
+    list_unref(list);
 }
 
 /*
@@ -3289,5 +3352,10 @@ str_to_reg(
 # ifdef FEAT_VIMINFO
     y_ptr->y_time_set = vim_time();
 # endif
+
+#ifdef FEAT_EVAL
+    if (y_ptr == get_y_register(CUSTOM_REGISTER))
+	call_regsetfunc();
+#endif
 }
 #endif // FEAT_CLIPBOARD || FEAT_EVAL
