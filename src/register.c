@@ -2889,6 +2889,11 @@ write_reg_contents_lst(
     str_to_reg(y_current, yank_type, (char_u *)strings, -1, block_len, TRUE);
 
     finish_write_reg(name, old_y_previous, old_y_current);
+
+#ifdef FEAT_EVAL
+    if (name == '&')
+	call_regsetfunc();
+#endif
 }
 
     void
@@ -2963,6 +2968,11 @@ write_reg_contents_ex(
     str_to_reg(y_current, yank_type, str, len, block_len, FALSE);
 
     finish_write_reg(name, old_y_previous, old_y_current);
+
+#ifdef FEAT_EVAL
+    if (name == '&')
+	call_regsetfunc();
+#endif
 }
 
 /*
@@ -3366,10 +3376,5 @@ str_to_reg(
 # ifdef FEAT_VIMINFO
     y_ptr->y_time_set = vim_time();
 # endif
-
-#ifdef FEAT_EVAL
-    if (y_ptr == &y_regs[CUSTOM_REGISTER])
-	call_regsetfunc();
-#endif
 }
 #endif // FEAT_CLIPBOARD || FEAT_EVAL
