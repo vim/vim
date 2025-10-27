@@ -1,5 +1,5 @@
 /* move.c */
-int adjust_plines_for_skipcol(win_T *wp);
+int plines_correct_topline(win_T *wp, linenr_T lnum, int limit_winheight);
 void set_valid_virtcol(win_T *wp, colnr_T vcol);
 int sms_marker_overlap(win_T *wp, int extra2);
 void update_topline_redraw(void);

@@ -39,7 +39,7 @@ static void botline_forw(lineoff_T *lp);
 /*
  * Get the number of screen lines skipped with "wp->w_skipcol".
  */
-    int
+    static int
 adjust_plines_for_skipcol(win_T *wp)
 {
     if (wp->w_skipcol == 0)
@@ -58,7 +58,7 @@ adjust_plines_for_skipcol(win_T *wp)
  * whether it is the first line, whether w_skipcol is non-zero and limiting to
  * the window height.
  */
-    static int
+    int
 plines_correct_topline(win_T *wp, linenr_T lnum, int limit_winheight)
 {
     int n;
