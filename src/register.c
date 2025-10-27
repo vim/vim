@@ -29,6 +29,9 @@ static yankreg_T	*y_current;	    // ptr to current yankreg
 static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
+static callback_T rpf_cb; // 'regputfunc'
+static callback_T ryf_cb; // 'regyankfunc'
+
 static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon, int silent);
@@ -2926,6 +2929,26 @@ write_reg_contents_ex(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 }
+
+/*
+ * Reads 'regputfunc' or 'regyankfunc' option and converts it to a callback to
+ * be called when the custom register is used.
+ */
+    char *
+did_set_regxfunc(optset_T *args)
+{
+    int ret;
+    if ((long *)args->os_varp == (long *)&p_rpf)
+	ret = option_set_callback_func(p_rpf, &rpf_cb);
+    else
+	ret = option_set_callback_func(p_ryf, &ryf_cb);
+
+    if (ret == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
+}
+
 #endif	// FEAT_EVAL
 
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
