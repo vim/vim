@@ -5249,6 +5249,102 @@ def Test_defer_lambda_funcref()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using defer with a lambda and a command block
+def Test_defer_lambda_func()
+  var lines =<< trim END
+    vim9script
+    var result = ''
+    def Foo()
+      result = 'xxx'
+      defer (a: number, b: string): number => {
+        result = $'{a}:{b}'
+        return 0
+      }(10, 'aaa')
+      result = 'yyy'
+    enddef
+    Foo()
+    assert_equal('10:aaa', result)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Error: argument type mismatch
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer (a: number, b: string): number => {
+        return 0
+      }(10, 20)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got number', 1)
+
+  # Error: not enough arguments
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer (a: number) => {
+      }()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E119: Not enough arguments for function: (a: number) => {', 1)
+
+  # Error: too many arguments
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer () => {
+      }(10)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E118: Too many arguments for function: () => {', 1)
+
+  # Error: invalid command in command-block
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer () => {
+        xxx
+      }()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: xxx', 1)
+
+  # Error: missing return
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer (): number => {
+      }()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1027: Missing return statement', 1)
+
+  # Error: missing lambda body
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer (a: number): number
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1028: Compiling :def function failed', 1)
+
+  # Error: invalid lambda syntax
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer (
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1028: Compiling :def function failed', 1)
+enddef
+
 " Test for using an non-existing type in a "for" statement.
 def Test_invalid_type_in_for()
   var lines =<< trim END

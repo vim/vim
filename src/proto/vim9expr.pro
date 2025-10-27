@@ -7,6 +7,7 @@ int compile_load(char_u **arg, size_t namelen, char_u *end_arg, cctx_T *cctx, in
 int compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, ca_special_T special_fn);
 char_u *to_name_end(char_u *arg, int use_namespace);
 char_u *to_name_const_end(char_u *arg);
+int compile_lambda(char_u **arg, cctx_T *cctx);
 int get_lambda_tv_and_compile(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 exprtype_T get_compare_type(char_u *p, int *len, int *type_is);
 void skip_expr_cctx(char_u **arg, cctx_T *cctx);
