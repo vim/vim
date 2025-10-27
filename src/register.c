@@ -3091,6 +3091,7 @@ call_regreqfunc(void)
 	}
 	*curval++ = NULL;
 
+	// If user didn't specify reg type, then use MAUTO
 	if (STRLEN(reg_type) > 0
 		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	    goto free_lstval;
