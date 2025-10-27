@@ -4896,11 +4896,7 @@ typedef enum {
 #endif
 
 #ifdef FEAT_DND
-# ifdef FEAT_EVAL
-#  define TILDE_REGISTER	(CUSTOM_REGISTER + 1)
-# else
-#  define TILDE_REGISTER	(PLUS_REGISTER + 1)
-# endif
+# define TILDE_REGISTER	(PLUS_REGISTER + 1)
 #endif
 
 #ifdef FEAT_CLIPBOARD
