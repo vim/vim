@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Nov 07
+" Last Change:	   2025 Nov 08
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -34,11 +34,11 @@ syn cluster vimCommentGroup	contains=vimTodo,@Spell
 
 " regular vim commands {{{2
 " GEN_SYN_VIM: vimCommand normal, START_STR='syn keyword vimCommand contained', END_STR='nextgroup=vimBang'
-syn keyword vimCommand contained al[l] ar[gs] arga[dd] argd[elete] argdo argded[upe] arge[dit] argg[lobal] argl[ocal] argu[ment] as[cii] b[uffer] bN[ext] ba[ll] bad[d] balt bd[elete] bf[irst] bl[ast] bm[odified] bn[ext] bp[revious] br[ewind] brea[k] breaka[dd] breakd[el] breakl[ist] buffers bufd[o] bun[load] bw[ipeout] cN[ext] cNf[ile] cabo[ve] cad[dbuffer] cadde[xpr] caddf[ile] caf[ter] cb[uffer] cbe[fore] cbel[ow] cbo[ttom] cc ccl[ose] cd cdo ce[nter] cex[pr] cf[ile] cfd[o] cfir[st] cg[etfile] cgetb[uffer] cgete[xpr] changes che[ckpath] checkt[ime] chi[story] cl[ist] clip[reset] cla[st] clo[se] cle[arjumps] cn[ext] cnew[er] cnf[ile] col[der] colo[rscheme] comc[lear] comp[iler] con[tinue] cope[n] cp[revious] cpf[ile] cq[uit] cr[ewind] cs[cope] cst[ag] cw[indow] nextgroup=vimBang
-syn keyword vimCommand contained delm[arks] deb[ug] defc[ompile] di[splay] dif[fupdate] diffg[et] diffo[ff] diffp[atch] diffpu[t] diffs[plit] difft[his] dig[raphs] disa[ssemble] dj[ump] dli[st] dr[op] ds[earch] dsp[lit] e[dit] ea[rlier] em[enu] endfo[r] endt[ry] endw[hile] ene[w] ex exi[t] exu[sage] f[ile] files fin[d] fina[lly] fini[sh] fir[st] fix[del] fo[ld] foldc[lose] foldd[oopen] folddoc[losed] foldo[pen] g[lobal] go[to] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpt[ags] ha[rdcopy] his[tory] ij[ump] il[ist] int[ro] ip[ut] is[earch] isp[lit] ju[mps] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] ld[o] le[ft] lex[pr] lf[ile] lfd[o] nextgroup=vimBang
-syn keyword vimCommand contained lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lw[indow] ls m[ove] marks mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] n[ext] nb[key] nbc[lose] nbs[tart] noh[lsearch] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pb[uffer] pc[lose] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pw[d] q[uit] quita[ll] qa[ll] r[ead] rec[over] red[o] redr[aw] redraws[tatus] redrawt[abline] redrawtabp[anel] reg[isters] res[ize] nextgroup=vimBang
-syn keyword vimCommand contained ret[ab] rew[ind] ri[ght] ru[ntime] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] scr[iptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] sim[alt] sig[n] sla[st] sn[ext] so[urce] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sre[wind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sync[bind] smi[le] t tN[ext] ta[g] tags tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] nextgroup=vimBang
-syn keyword vimCommand contained te[aroff] tf[irst] tj[ump] tl[ast] tn[ext] tp[revious] tr[ewind] try ts[elect] u[ndo] undoj[oin] undol[ist] unh[ide] up[date] v[global] ve[rsion] vi[sual] vie[w] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] wind[o] winp[os] wl[restore] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
+syn keyword vimCommand contained al[l] ar[gs] arga[dd] argd[elete] argded[upe] arge[dit] argg[lobal] argl[ocal] argu[ment] as[cii] b[uffer] bN[ext] ba[ll] bad[d] balt bd[elete] bf[irst] bl[ast] bm[odified] bn[ext] bp[revious] br[ewind] brea[k] breaka[dd] breakd[el] breakl[ist] buffers bun[load] bw[ipeout] cN[ext] cNf[ile] cabo[ve] cad[dbuffer] cadde[xpr] caddf[ile] caf[ter] cb[uffer] cbe[fore] cbel[ow] cbo[ttom] cc ccl[ose] cd ce[nter] cex[pr] cf[ile] cfir[st] cg[etfile] cgetb[uffer] cgete[xpr] changes che[ckpath] checkt[ime] chi[story] cl[ist] clip[reset] cla[st] clo[se] cle[arjumps] cn[ext] cnew[er] cnf[ile] col[der] colo[rscheme] comc[lear] comp[iler] con[tinue] cope[n] cp[revious] cpf[ile] cq[uit] cr[ewind] cs[cope] cst[ag] cw[indow] delm[arks] deb[ug] defc[ompile] nextgroup=vimBang
+syn keyword vimCommand contained di[splay] dif[fupdate] diffg[et] diffo[ff] diffp[atch] diffpu[t] diffs[plit] difft[his] dig[raphs] disa[ssemble] dj[ump] dli[st] dr[op] ds[earch] dsp[lit] e[dit] ea[rlier] em[enu] endfo[r] endt[ry] endw[hile] ene[w] ex exi[t] exu[sage] f[ile] files fin[d] fina[lly] fini[sh] fir[st] fix[del] fo[ld] foldc[lose] foldo[pen] g[lobal] go[to] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpt[ags] ha[rdcopy] his[tory] ij[ump] il[ist] int[ro] ip[ut] is[earch] isp[lit] ju[mps] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] le[ft] lex[pr] lf[ile] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lhi[story] ll lla[st] lli[st] nextgroup=vimBang
+syn keyword vimCommand contained lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lw[indow] ls m[ove] marks mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] n[ext] nb[key] nbc[lose] nbs[tart] noh[lsearch] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pb[uffer] pc[lose] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pw[d] q[uit] quita[ll] qa[ll] r[ead] rec[over] red[o] redr[aw] redraws[tatus] redrawt[abline] redrawtabp[anel] reg[isters] res[ize] ret[ab] rew[ind] ri[ght] ru[ntime] rund[o] rv[iminfo] sN[ext] sa[rgument] nextgroup=vimBang
+syn keyword vimCommand contained sal[l] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] scr[iptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] sim[alt] sig[n] sla[st] sn[ext] so[urce] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sre[wind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sync[bind] smi[le] t tN[ext] ta[g] tags tabc[lose] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] te[aroff] tf[irst] tj[ump] tl[ast] tn[ext] tp[revious] tr[ewind] try ts[elect] nextgroup=vimBang
+syn keyword vimCommand contained u[ndo] undoj[oin] undol[ist] unh[ide] up[date] v[global] ve[rsion] vi[sual] vie[w] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] winp[os] wl[restore] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
 
 " Lower priority :syn-match to allow for :command/function() distinction
 syn match vimCommand "\<chd\%[ir]\>"    nextgroup=vimBang
@@ -300,7 +300,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=@vi
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAt,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimCommandModifier,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelFunction,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimEval,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimSyntime,vimSynColor,vimSynLink,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimWincmd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAt,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimCommandModifier,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelFunction,vimDoCommand,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimEval,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimSyntime,vimSynColor,vimSynLink,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimWincmd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"\\\@1<!|"	skipwhite nextgroup=@vimCmdList,vimSubst1,@vimFunc
 syn match vimCmdSep	":\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
@@ -373,6 +373,16 @@ syn match	vimDebuggreedy	"\<0\=debugg\%[reedy]\>" contains=vimCount
 " Defer {{{2
 " =====
 syn match	vimDefer	"\<defer\=\>"	skipwhite nextgroup=@vimFunc,vim9LambdaParams
+
+" *Do commands {{{2
+" ============
+syn match	vimDoCommandBang	contained	"\a\@1<=!"	skipwhite nextgroup=@vimCmdList
+
+syn keyword	vimDoCommand	argdo bufd[o]		skipwhite nextgroup=vimDoCommandBang,@vimCmdList
+syn keyword	vimDoCommand	tabd[o] wind[o]		skipwhite nextgroup=@vimCmdList
+syn keyword	vimDoCommand	cdo cfd[o]		skipwhite nextgroup=vimDoCommandBang,@vimCmdList
+syn keyword	vimDoCommand	ld[o] lfd[o]		skipwhite nextgroup=vimDoCommandBang,@vimCmdList
+syn keyword	vimDoCommand	foldd[oopen] folddoc[losed]	skipwhite nextgroup=@vimCmdList
 
 " Exception Handling {{{2
 syn keyword	vimThrow	th[row]	skipwhite nextgroup=@vimExprList
@@ -2438,6 +2448,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDelfunctionBang	vimBang
  hi def link vimDoautocmd	vimCommand
  hi def link vimDoautocmdMod	Special
+ hi def link vimDoCommand	vimCommand
+ hi def link vimDoCommandBang	vimBang
  hi def link vimEcho	vimCommand
  hi def link vimEchohlNone	vimGroup
  hi def link vimEchohl	vimCommand

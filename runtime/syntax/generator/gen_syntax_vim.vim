@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Oct 11
+" Last Change: 2025 Nov 08
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -299,13 +299,17 @@ function s:get_vim_command_type(cmd_name)
 		Print
 		X
 		abstract
+		argdo
 		append
 		augroup
 		autocmd
 		behave
 		browse
+		bufdo
 		call
 		catch
+		cdo
+		cfdo
 		chdir
 		change
 		class
@@ -343,6 +347,8 @@ function s:get_vim_command_type(cmd_name)
 		filetype
 		filter
 		final
+		folddoopen
+		folddoclosed
 		for
 		function
 		grep
@@ -356,6 +362,8 @@ function s:get_vim_command_type(cmd_name)
 		join
 		k
 		let
+		ldo
+		lfdo
 		loadkeymap
 		lhelpgrep
 		lgrep
@@ -411,6 +419,7 @@ function s:get_vim_command_type(cmd_name)
 		swapname
 		syntax
 		syntime
+		tabdo
 		tcl
 		tcldo
 		tclfile
@@ -428,6 +437,7 @@ function s:get_vim_command_type(cmd_name)
 		vimgrepadd
 		while
 		wincmd
+		windo
 	EOL
 	" Required for original behavior
 	" \	'global', 'vglobal'
