@@ -3796,4 +3796,6 @@ EXTERN char e_osc_response_timed_out[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+EXTERN char e_failed_calling_custom_reg_func[]
+	INIT(= N_("E1569: Failed calling '%s' for custom register"));
 #endif

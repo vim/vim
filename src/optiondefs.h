@@ -2175,11 +2175,22 @@ static struct vimoption options[] =
 			    (char_u *)&p_re, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"regreqfunc", "rrf",   P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
+#ifdef FEAT_EVAL
 			    (char_u *)&p_rrf, PV_NONE, did_set_regxfunc, NULL,
-			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"regsetfunc", "rsf",  P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
+#ifdef FEAT_EVAL
 			    (char_u *)&p_rsf, PV_NONE, did_set_regxfunc, NULL,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
     {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    did_set_number_relativenumber, NULL,

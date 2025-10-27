@@ -43,6 +43,7 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 static void	call_regreqfunc(void);
+static void	call_regsetfunc(void);
 
 #if defined(FEAT_VIMINFO)
     yankreg_T *
@@ -2702,6 +2703,8 @@ get_reg_contents(int regname, int flags)
     regname = may_get_selection(regname);
 # endif
 
+    call_regreqfunc();
+
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
     {
 	if (retval == NULL)
@@ -2960,12 +2963,173 @@ did_set_regxfunc(optset_T *args)
 }
 
 /*
- * Call the function specified in 'regreqfunc'. Should be called when the
- * register is accessed
+ * Call the function specified in 'regreqfunc'. Should be called to update the
+ * custom register before being accessed.
  */
     static void
 call_regreqfunc(void)
 {
+    typval_T	rettv;
+    typval_T	argvars[1];
+    int		ret;
+    char_u	*reg_type;
+    list_T	*lines;
+
+    // If 'reqreqfunc' option is empty, then do nothing and treat the register
+    // like a normal one.
+    if (rrf_cb.cb_name == NULL)
+	return;
+    
+    argvars[0].v_type = VAR_UNKNOWN;
+
+    textlock++;
+    ret = call_callback(&rrf_cb, -1, &rettv, 0, argvars);
+    textlock--;
+
+    if (ret == FAIL)
+	goto fail;
+
+    // The callback should return a tuple or list containg these values:
+    // 1. register type conforming to setreg() to set the register to
+    // 2. a list of strings to set the register to
+
+    if (rettv.v_type == VAR_TUPLE
+	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
+    {
+	reg_type = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
+	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
+    }
+    else if (rettv.v_type == VAR_LIST
+	    && rettv.vval.v_list->lv_len == 2
+	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
+	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
+    {
+	reg_type = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
+	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
+    }
+    else
+	goto fail;
+
+    {
+	char_u		yank_type = MAUTO;
+	long		block_len = -1;
+	yankreg_T	*y_ptr, *old_y_current;
+	char_u		**lstval;
+	char_u		**allocval;
+	char_u		buf[NUMBUFLEN];
+	char_u		**curval;
+	char_u		**curallocval;
+	char_u		*strval;
+	listitem_T	*li;
+	int		len;
+
+	// If the list is NULL handle like an empty list.
+	len = lines == NULL ? 0 : lines->lv_len;
+
+	// First half: use for pointers to result lines; second half: use for
+	// pointers to allocated copies.
+	lstval = ALLOC_MULT(char_u *, (len + 1) * 2);
+	if (lstval == NULL)
+	    return;
+	curval = lstval;
+	allocval = lstval + len + 2;
+	curallocval = allocval;
+
+	if (lines != NULL)
+	{
+	    CHECK_LIST_MATERIALIZE(lines);
+	    FOR_ALL_LIST_ITEMS(lines, li)
+	    {
+		strval = tv_get_string_buf_chk(&li->li_tv, buf);
+		if (strval == NULL)
+		    goto free_lstval;
+		if (strval == buf)
+		{
+		    // Need to make a copy, next tv_get_string_buf_chk() will
+		    // overwrite the string.
+		    strval = vim_strsave(buf);
+		    if (strval == NULL)
+			goto free_lstval;
+		    *curallocval++ = strval;
+		}
+		*curval++ = strval;
+	    }
+	}
+	*curval++ = NULL;
+
+	if (STRLEN(reg_type) > 0
+		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
+	    goto free_lstval;
+
+	y_current = get_y_register(CUSTOM_REGISTER);
+	old_y_current = y_current;
+
+	free_yank_all();
+
+	y_ptr = y_current;
+	y_current = old_y_current;
+
+	str_to_reg(
+		y_ptr,
+		yank_type,
+		(char_u *)lstval,
+		-1,
+		block_len,
+		TRUE);
+
+free_lstval:
+	while (curallocval > allocval)
+	    vim_free(*--curallocval);
+	vim_free(lstval);
+    }
+    clear_tv(&rettv);
+
+    return;
+fail:
+    semsg(_(e_failed_calling_custom_reg_func), "regreqfunc");
+    clear_tv(&rettv);
+}
+
+/*
+ * Call the function specified in 'regsetfunc'. Should be called when the
+ * register is updated by the user.
+ */
+    static void
+call_regsetfunc(void)
+{
+}
+
+/*
+ * Translate a register type string to the yank type and block length
+ */
+    int
+get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
+{
+    char_u *stropt = *pp;
+    switch (*stropt)
+    {
+	case 'v': case 'c':	// character-wise selection
+	    *yank_type = MCHAR;
+	    break;
+	case 'V': case 'l':	// line-wise selection
+	    *yank_type = MLINE;
+	    break;
+	case 'b': case Ctrl_V:	// block-wise selection
+	    *yank_type = MBLOCK;
+	    if (VIM_ISDIGIT(stropt[1]))
+	    {
+		++stropt;
+		*block_len = getdigits(&stropt) - 1;
+		--stropt;
+	    }
+	    break;
+	default:
+	    return FAIL;
+    }
+    *pp = stropt;
+    return OK;
 }
 
 #endif	// FEAT_EVAL
