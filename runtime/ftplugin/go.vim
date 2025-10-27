@@ -22,7 +22,11 @@ setlocal formatprg=gofmt
 
 setlocal comments=s1:/*,mb:*,ex:*/,://
 setlocal commentstring=//\ %s
-let &l:keywordprg = ':call ' .. expand('<SID>') .. 'GoKeywordPrg() "'
+
+let s:sid = expand('<SID>')
+
+" Trailing comment marks `"` is to avoid processing further arg
+let &l:keywordprg = ':call ' .. s:sid .. 'GoKeywordPrg() "'
 
 let b:undo_ftplugin = 'setl fo< com< cms< fp< kp<'
                   \ . '| delcommand -buffer GoKeywordPrg'
@@ -32,7 +36,7 @@ if get(g:, 'go_recommended_style', 1)
   let b:undo_ftplugin .= ' | setl et< sts< sw<'
 endif
 
-if !exists('*' . expand('<SID>') . 'GoKeywordPrg')
+if !exists('*' . s:sid . 'GoKeywordPrg')
   func! s:GoKeywordPrg()
     let temp_isk = &l:iskeyword
     setl iskeyword+=.

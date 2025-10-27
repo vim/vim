@@ -32,7 +32,7 @@ if exists("loaded_matchit") && !exists("b:match_words")
 	\  s:sol .. '\%(for\|while\)\>:' .. s:sol .. 'done\>,' ..
 	\  s:sol .. 'case\>:' .. s:sol .. 'esac\>'
   unlet s:sol
-  let b:match_skip = "synIDattr(synID(line('.'),col('.'),0),'name') =~ 'shSnglCase'" 
+  let b:match_skip = "synIDattr(synID(line('.'),col('.'),0),'name') =~ 'shSnglCase'"
   let b:undo_ftplugin ..= " | unlet! b:match_ignorecase b:match_words b:match_skip"
 endif
 
@@ -56,12 +56,15 @@ if s:is_bash
   function! s:KeywordPrg() abort
     let keyword = expand('<cword>')
     if exists(':terminal') == 2
-      execute ':hor term bash -c "help ' . keyword . ' 2>/dev/null'
+      execute ':hor term bash -c "help ' .. keyword .. ' 2>/dev/null'
     else
-      return system('bash -c "help ' . keyword . ' 2>/dev/null"')
+      return system('bash -c "help ' .. keyword .. ' 2>/dev/null"')
     endif
   endfunction
+
+  " Trailing comment marks `"` is to avoid processing further arg
   let &l:keywordprg=':call ' .. expand('<SID>') .. 'KeywordPrg() "'
+
   let b:undo_ftplugin ..= " | setl kp< | sil! delc -buffer ShKeywordPrg"
 endif
 

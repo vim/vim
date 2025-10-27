@@ -58,9 +58,11 @@ setlocal fo-=t fo+=croql
 " keyword character.  E.g., for netrw#Nread().
 setlocal isk+=#
 
+let s:sid = expand("<SID>")
+
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
-if !exists("*" .. expand("<SID>") .. "Help")
+if !exists("*" .. s:sid .. "Help")
   function s:Help() abort
     let topic = expand('<cword>')
 
@@ -80,32 +82,34 @@ if !exists("*" .. expand("<SID>") .. "Help")
       if syn ==# 'vimFuncName'
         exe 'help' topic .. '()'
       elseif syn ==# 'vimOption' || syn ==# 'vimOptionVarName'
-        exe 'help' "'" .. topic .. "'"
+        exe "help '" .. topic .. "'"
       elseif syn ==# 'vimUserCmdAttrKey'
         exe 'help :command-' .. topic
       elseif syn ==# 'vimCommand'
-        exe 'help' ':' .. topic
+        exe 'help :' .. topic
       endif
     endif
 
     if pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
-      exe 'help' ':' .. topic
+      exe 'help :' .. topic
     elseif pre =~# '\<v:$'
-      exe 'help' 'v:' .. topic
+      exe 'help v:' .. topic
     elseif pre =~# '<$'
-      exe 'help' '<' .. topic .. '>'
+      exe 'help <' .. topic .. '>'
     elseif pre =~# '\\$'
-      exe 'help' '/\' .. topic
+      exe 'help /\' .. topic
     elseif topic ==# 'v' && post =~# ':\w\+'
-      exe 'help' 'v' .. matchstr(post, ':\w\+')
+      exe 'help v' .. matchstr(post, ':\w\+')
     elseif pre =~# '&\%([lg]:\)\=$'
-      exe 'help' "'" .. topic .. "'"
+      exe "help '" .. topic .. "'"
     else
       exe 'help' topic
     endif
   endfunction
 endif
-let &l:keywordprg = ':call ' .. expand('<SID>') .. 'Help() "'
+
+" Trailing comment marks `"` is to avoid processing further arg
+let &l:keywordprg = ':call ' .. s:sid .. 'Help() "'
 
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
 if "\n" .. getline(1, 32)->join("\n") =~# '\n\s*vim9\%[script]\>'
