@@ -31,8 +31,8 @@ static yankreg_T	*y_current;	    // ptr to current yankreg
 static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
-static callback_T rpf_cb; // 'regputfunc'
-static callback_T ryf_cb; // 'regyankfunc'
+static callback_T rrf_cb; // 'regreqfunc'
+static callback_T rsf_cb; // 'regsetfunc'
 
 static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
@@ -42,6 +42,7 @@ static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing
 static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
+static void	call_regreqfunc(void);
 
 #if defined(FEAT_VIMINFO)
     yankreg_T *
@@ -1570,6 +1571,8 @@ do_put(
     (void)may_get_selection(regname);
 #endif
 
+    call_regreqfunc();
+
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
     curbuf->b_op_end = curwin->w_cursor;	// default for '] mark
 
@@ -2938,17 +2941,17 @@ write_reg_contents_ex(
 }
 
 /*
- * Reads 'regputfunc' or 'regyankfunc' option and converts it to a callback to
+ * Reads 'regreqfunc' or 'regsetfunc' option and converts it to a callback to
  * be called when the custom register is used.
  */
     char *
 did_set_regxfunc(optset_T *args)
 {
     int ret;
-    if ((long *)args->os_varp == (long *)&p_rpf)
-	ret = option_set_callback_func(p_rpf, &rpf_cb);
+    if ((long *)args->os_varp == (long *)&p_rrf)
+	ret = option_set_callback_func(p_rrf, &rrf_cb);
     else
-	ret = option_set_callback_func(p_ryf, &ryf_cb);
+	ret = option_set_callback_func(p_rsf, &rsf_cb);
 
     if (ret == FAIL)
 	return e_invalid_argument;
@@ -2957,10 +2960,11 @@ did_set_regxfunc(optset_T *args)
 }
 
 /*
- * Call the function specified in 'regyankfunc'
+ * Call the function specified in 'regreqfunc'. Should be called when the
+ * register is accessed
  */
     static void
-call_regyankfunc(void)
+call_regreqfunc(void)
 {
 }
 
