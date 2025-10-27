@@ -10,5 +10,8 @@ endfunction
 def Bar()
   defer delete("tmpfile")
   defer Delete("tmpfile")
+  defer () => {
+    echo "..."
+  }()
 enddef
 
