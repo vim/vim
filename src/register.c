@@ -19,7 +19,7 @@
  *   1..9 = registers '1' to '9', for deletes
  * 10..35 = registers 'a' to 'z' ('A' to 'Z' for appending)
  *     36 = delete register '-'
- *     37 = custom register '&'
+ *     37 = custom register '&'. Only if FEAT_EVAL is defined
  *
  *     38 = Selection register '*'. Only if FEAT_CLIPBOARD defined
  *     39 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11
@@ -31,8 +31,10 @@ static yankreg_T	*y_current;	    // ptr to current yankreg
 static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
+#ifdef FEAT_EVAL
 static callback_T rrf_cb; // 'regreqfunc'
 static callback_T rsf_cb; // 'regsetfunc'
+#endif
 
 static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
@@ -42,8 +44,10 @@ static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing
 static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
+#ifdef FEAT_EVAL
 static void	call_regreqfunc(void);
 static void	call_regsetfunc(void);
+#endif
 
 #if defined(FEAT_VIMINFO)
     yankreg_T *
@@ -197,7 +201,9 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
+#ifdef FEAT_EVAL
 	    || regname == '&'
+#endif
 #ifdef FEAT_CLIPBOARD
 	    || regname == '*'
 	    || regname == '+'
@@ -254,8 +260,10 @@ get_yank_register(int regname, int writing)
     }
     else if (regname == '-')
 	i = DELETION_REGISTER;
+#ifdef FEAT_EVAL
     else if (regname == '&')
 	i = CUSTOM_REGISTER;
+#endif
 #ifdef FEAT_CLIPBOARD
     // When selection is not available, use register 0 instead of '*'
     else if (clip_star.available && regname == '*')
@@ -1447,7 +1455,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 #ifdef FEAT_EVAL
     // Call custom register set function if is custom register
-    if (curr == get_y_register(CUSTOM_REGISTER))
+    if (curr == &y_regs[CUSTOM_REGISTER])
 	call_regsetfunc();
 #endif
 
@@ -1578,7 +1586,10 @@ do_put(
     (void)may_get_selection(regname);
 #endif
 
-    call_regreqfunc();
+#ifdef FEAT_EVAL
+    if (regname == '&')
+	call_regreqfunc();
+#endif
 
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
     curbuf->b_op_end = curwin->w_cursor;	// default for '] mark
@@ -2365,8 +2376,10 @@ get_register_name(int num)
 	return num + '0';
     else if (num == DELETION_REGISTER)
 	return '-';
+#ifdef FEAT_EVAL
     else if (num == CUSTOM_REGISTER)
 	return '&';
+#endif
 #ifdef FEAT_CLIPBOARD
     else if (num == STAR_REGISTER)
 	return '*';
@@ -2710,7 +2723,8 @@ get_reg_contents(int regname, int flags)
 # endif
 
 #ifdef FEAT_EVAL
-    call_regreqfunc();
+    if (regname == '&')
+	call_regreqfunc();
 #endif
 
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
@@ -2987,7 +3001,7 @@ call_regreqfunc(void)
     // like a normal one.
     if (rrf_cb.cb_name == NULL)
 	return;
-    
+
     argvars[0].v_type = VAR_UNKNOWN;
 
     textlock++;
@@ -3071,7 +3085,7 @@ call_regreqfunc(void)
 		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	    goto free_lstval;
 
-	y_current = get_y_register(CUSTOM_REGISTER);
+	y_current =  &y_regs[CUSTOM_REGISTER];
 	old_y_current = y_current;
 
 	free_yank_all();
@@ -3109,7 +3123,7 @@ call_regsetfunc(void)
 {
     typval_T	rettv;
     typval_T	argvars[3];
-    yankreg_T	*y_ptr = get_y_register(CUSTOM_REGISTER);
+    yankreg_T	*y_ptr = &y_regs[CUSTOM_REGISTER];
     char_u	type[2 + NUMBUFLEN] = {0};
     list_T	*list = NULL;
 
@@ -3354,7 +3368,7 @@ str_to_reg(
 # endif
 
 #ifdef FEAT_EVAL
-    if (y_ptr == get_y_register(CUSTOM_REGISTER))
+    if (y_ptr == &y_regs[CUSTOM_REGISTER])
 	call_regsetfunc();
 #endif
 }

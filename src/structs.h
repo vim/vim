@@ -4879,7 +4879,7 @@ typedef enum {
 #define DELETION_REGISTER	36
 
 #ifdef FEAT_EVAL
-#  define CUSTOM_REGISTER    	37
+#  define CUSTOM_REGISTER	37
 #endif
 
 #ifdef FEAT_CLIPBOARD
