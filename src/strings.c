@@ -880,12 +880,11 @@ string_count(char_u *haystack, char_u *needle, int ic)
     long	n = 0;
     char_u	*p = haystack;
     char_u	*next;
-    size_t	needlelen;
 
     if (p == NULL || needle == NULL || *needle == NUL)
 	return 0;
 
-    needlelen = STRLEN(needle);
+    size_t  needlelen = STRLEN(needle);
     if (ic)
     {
 	while (*p != NUL)
