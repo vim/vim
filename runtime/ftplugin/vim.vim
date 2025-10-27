@@ -82,7 +82,7 @@ if !exists("*" .. expand("<SID>") .. "Help")
       elseif syn ==# 'vimOption' || syn ==# 'vimOptionVarName'
         exe 'help' "'" .. topic .. "'"
       elseif syn ==# 'vimUserCmdAttrKey'
-        exe 'help' ':command-' .. topic
+        exe 'help :command-' .. topic
       elseif syn ==# 'vimCommand'
         exe 'help' ':' .. topic
       endif
