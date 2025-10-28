@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Oct 22
+" Last Change:	   2025 Oct 27
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -318,7 +318,7 @@ syn match	vimDebuggreedy	"\<0\=debugg\%[reedy]\>" contains=vimCount
 
 " Defer {{{2
 " =====
-syn match	vimDefer	"\<defer\=\>"	skipwhite nextgroup=@vimFunc
+syn match	vimDefer	"\<defer\=\>"	skipwhite nextgroup=@vimFunc,vim9LambdaParams
 
 " Exception Handling {{{2
 syn keyword	vimThrow	th[row]	skipwhite nextgroup=@vimExprList
