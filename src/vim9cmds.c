@@ -2047,7 +2047,12 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 	// a lambda function
 	if (compile_lambda(&arg, cctx) != OK)
 	    return NULL;
-	paren = arg;
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
     }
     else
     {
