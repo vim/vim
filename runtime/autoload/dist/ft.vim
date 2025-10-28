@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Oct 09
+# Last Change:		2025 Oct 28
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2473,6 +2473,7 @@ const ft_from_ext = {
   "textproto": "pbtxt",
   "textpb": "pbtxt",
   "pbtxt": "pbtxt",
+  "aconfig": "pbtxt", # Android aconfig files
   # Poke
   "pk": "poke",
   # Nvidia PTX (Parallel Thread Execution)
