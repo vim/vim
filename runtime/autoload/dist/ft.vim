@@ -2473,6 +2473,7 @@ const ft_from_ext = {
   "textproto": "pbtxt",
   "textpb": "pbtxt",
   "pbtxt": "pbtxt",
+  "aconfig": "pbtxt", # Android aconfig files
   # Poke
   "pk": "poke",
   # Nvidia PTX (Parallel Thread Execution)
