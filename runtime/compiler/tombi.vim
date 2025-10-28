@@ -10,10 +10,10 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 if !executable('tombi')
-	echoerr "tombi compiler: 'tombi' executable not found in PATH"
-	let &cpo = s:cpo_save
-	unlet s:cpo_save
-	finish
+  echoerr "tombi compiler: 'tombi' executable not found in PATH"
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
+  finish
 endif
 
 if get(s:, 'tombi_nocolor', -1) == -1
@@ -21,42 +21,42 @@ if get(s:, 'tombi_nocolor', -1) == -1
   let s:out = trim(system('tombi --version'))
   let s:tombi_ver = matchstr(s:out, '\v\s\d+\.\d+\.\d+$')
 
-	function! s:VersionGE(ver, req) abort
-  	" Compare semantic versions a.b.c ≥ x.y.z
-  	let l:pa = map(split(get(a:, 'ver', ''), '\.'), 'str2nr(v:val)')
-  	let l:pb = map(split(get(a:, 'req', ''), '\.'), 'str2nr(v:val)')
-  	while len(l:pa) < 3 | call add(l:pa, 0) | endwhile
-  	while len(l:pb) < 3 | call add(l:pb, 0) | endwhile
-  	for i in range(0, 2)
-    	if l:pa[i] > l:pb[i] | return 1
-    	elseif l:pa[i] < l:pb[i] | return 0
-    	endif
-  	endfor
-  	return 1
-	endfunction
-	let s:tombi_nocolor = s:VersionGE(s:tombi_ver, '0.6.40')
+  function! s:VersionGE(ver, req) abort
+    " Compare semantic versions a.b.c ≥ x.y.z
+    let l:pa = map(split(get(a:, 'ver', ''), '\.'), 'str2nr(v:val)')
+    let l:pb = map(split(get(a:, 'req', ''), '\.'), 'str2nr(v:val)')
+    while len(l:pa) < 3 | call add(l:pa, 0) | endwhile
+    while len(l:pb) < 3 | call add(l:pb, 0) | endwhile
+    for i in range(0, 2)
+      if l:pa[i] > l:pb[i] | return 1
+      elseif l:pa[i] < l:pb[i] | return 0
+      endif
+    endfor
+    return 1
+  endfunction
+  let s:tombi_nocolor = s:VersionGE(s:tombi_ver, '0.6.40')
 endif
 
 if s:tombi_nocolor
-	if has('win32')
-		" requires tombi 0.6.40 or later
-		if &shell =~# '\v<%(cmd|cmd)>'
-			CompilerSet makeprg=set\ NO_COLOR=1\ &&\ tombi\ lint
- 		elseif &shell =~# '\v<%(powershell|pwsh)>'
-			CompilerSet makeprg=$env:NO_COLOR="1";\ tombi\ lint
-		else
-			echoerr "tombi compiler: Unsupported shell for Windows"
-		endif
-	else " if has('unix')
-		" NO_COLOR support requires tombi 0.6.40 or later
-		CompilerSet makeprg=env\ NO_COLOR=1\ tombi\ lint
-	endif
+  if has('win32')
+    " requires tombi 0.6.40 or later
+    if &shell =~# '\v<%(cmd|cmd)>'
+      CompilerSet makeprg=set\ NO_COLOR=1\ &&\ tombi\ lint
+    elseif &shell =~# '\v<%(powershell|pwsh)>'
+      CompilerSet makeprg=$env:NO_COLOR="1";\ tombi\ lint
+    else
+      echoerr "tombi compiler: Unsupported shell for Windows"
+    endif
+  else " if has('unix')
+    " NO_COLOR support requires tombi 0.6.40 or later
+    CompilerSet makeprg=env\ NO_COLOR=1\ tombi\ lint
+  endif
 else
   " Older tombi: strip ANSI color codes with sed.
-	if executable('sed')
-  	CompilerSet makeprg=tombi\ lint\ $*\ \|\ sed\ -E\ \"s/\\x1B(\\[[0-9;]*[JKmsu]\|\\(B)//g\"
+  if executable('sed')
+    CompilerSet makeprg=tombi\ lint\ $*\ \|\ sed\ -E\ \"s/\\x1B(\\[[0-9;]*[JKmsu]\|\\(B)//g\"
   else
-  	echoerr "tombi compiler: tombi version < 0.6.40 requires 'sed' to strip ANSI color codes"
+    echoerr "tombi compiler: tombi version < 0.6.40 requires 'sed' to strip ANSI color codes"
   endif
 endif
 
