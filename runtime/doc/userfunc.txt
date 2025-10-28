@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Oct 27
+*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -189,9 +189,9 @@ See |:verbose-cmd| for more information.
 			With the ! there is no error if the function does not
 			exist.
 							*:retu* *:return* *E133*
-:retu[rn] [expr]	Return from a function.  When "[expr]" is given, it is
+:retu[rn] [expr]	Return from a function.  When [expr] is given, it is
 			evaluated and returned as the result of the function.
-			If "[expr]" is not given, the number 0 is returned.
+			If [expr] is not given, the number 0 is returned.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
 
