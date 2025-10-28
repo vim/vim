@@ -4195,6 +4195,12 @@ func Test_normal33_g_cmd_nonblank()
   call assert_equal(20, col('.'))
   exe "normal 0g\<kEnd>"
   call assert_equal(11, col('.'))
+
+  " Test visual mode at end of line
+  normal 0$bvg$y
+  call assert_equal(80, col("'>"))
+  exe "normal 0$bvg\<End>y"
+  call assert_equal(71, col("'>"))
   bw!
 endfunc
 

@@ -5934,6 +5934,12 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     }
     if (flag)
     {
+	char_u	*ptr = ml_get_curline();
+
+	// In Visual mode we may end up after the line.
+	if (curwin->w_cursor.col > 0 && ptr[curwin->w_cursor.col] == NUL)
+	     --curwin->w_cursor.col;
+
 	do
 	    i = gchar_cursor();
 	while (VIM_ISWHITE(i) && oneleft() == OK);
