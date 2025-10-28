@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Oct 12
+*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1723,6 +1723,16 @@ from |errorformat-LaTeX| is too complex to keep it working for different
 shells and OSes and also does not allow to use other available TeX options,
 if any.  If your TeX doesn't support "-interaction=nonstopmode", please
 report it with different means to express \nonstopmode from the command line.
+
+TOMBI					*quickfix-toml* *compiler-tombi*
+
+The tombi compiler plugin does not compile.
+
+It runs "tombi lint" and parses diagnostics into the quickfix list.
+
+Color codes are stripped from the linter output to keep |errorformat|
+parsing reliable.  This may require a working "sed" for old versions of the
+tombi linter.
 
 TSC COMPILER						*compiler-tsc*
 
