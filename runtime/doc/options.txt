@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 26
+*options.txt*	For Vim version 9.1.  Last change: 2025 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -5124,10 +5124,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the
 			|+extra_search| features}
 	While typing a search command, show where the pattern, as it was typed
-	so far, matches (ignoring {offset} and {address} modifiers).  The
-	matched string is highlighted.  If the pattern is invalid or not
-	found, nothing is shown.  The screen will be updated often, this is
-	only useful on fast terminals.
+	so far, matches.  The matched string is highlighted.  If the pattern
+	is invalid or not found, nothing is shown.  The screen will be updated
+	often, this is only useful on fast terminals.
 	Also applies to the pattern in commands: >
 		:global
 		:lvimgrep
