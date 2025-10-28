@@ -1408,7 +1408,8 @@ the callback specified in 'regsetfunc' is called, and when it is put, the
 callback specified in 'regreqfunc' is called.  This allows for custom
 behaviour on the fly for this register.  If either or both callbacks are not
 specified (empty), then the register simply acts like another numbered or
-named register.  This register is not saved in the |viminfo| file.
+named register.  This register is not saved in the |viminfo| file and the
+|+eval| feature is required.
 
 							*@/*
 You can write to a register with a `:let` command |:let-@|.  Example: >

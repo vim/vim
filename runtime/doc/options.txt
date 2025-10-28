@@ -7035,6 +7035,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'regreqfunc* *'rrf'*
 'regreqfunc' 'rrf'	string	(default "")
 			global
+			{not available when compiled without the |+eval|
+			feature}
 	This options specifies a function to be used whenever the custom
 	register |quote_&| is put, including |getreg()|.  The function takes
 	no arguments, and should return a |tuple| or |list| containing the
@@ -7062,6 +7064,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'regsetfunc* *'rsf'*
 'regsetfunc' 'rsf'	string	(default "")
 			global
+			{not available when compiled without the |+eval|
+			feature}
 	This option specifies a function to be used whenever the custom
 	register |quote_&| is yanked, inclusing |setreg()|. The function
 	returns nothing and takes two arguments:
