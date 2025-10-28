@@ -16,15 +16,16 @@ if !executable('tombi')
   finish
 endif
 
-if get(s:, 'tombi_nocolor', -1) == -1
+" NO_COLOR support requires tombi 0.6.40 or later
+if !exists('s:tombi_nocolor')
   " Expect output like: 'tombi 0.6.40' or '0.6.40'
   let s:out = trim(system('tombi --version'))
   let s:tombi_ver = matchstr(s:out, '\v\s\d+\.\d+\.\d+$')
 
-  function! s:VersionGE(ver, req) abort
+  function s:VersionGE(ver, req) abort
     " Compare semantic versions a.b.c ≥ x.y.z
-    let l:pa = map(split(get(a:, 'ver', ''), '\.'), 'str2nr(v:val)')
-    let l:pb = map(split(get(a:, 'req', ''), '\.'), 'str2nr(v:val)')
+    let l:pa = map(split(a:ver), '\.'), 'str2nr(v:val)')
+    let l:pb = map(split(a:req, '\.'), 'str2nr(v:val)')
     while len(l:pa) < 3 | call add(l:pa, 0) | endwhile
     while len(l:pb) < 3 | call add(l:pb, 0) | endwhile
     for i in range(0, 2)
@@ -35,11 +36,11 @@ if get(s:, 'tombi_nocolor', -1) == -1
     return 1
   endfunction
   let s:tombi_nocolor = s:VersionGE(s:tombi_ver, '0.6.40')
+  delfunction s:VersionGE
 endif
 
 if s:tombi_nocolor
   if has('win32')
-    " requires tombi 0.6.40 or later
     if &shell =~# '\v<%(cmd|cmd)>'
       CompilerSet makeprg=set\ NO_COLOR=1\ &&\ tombi\ lint
     elseif &shell =~# '\v<%(powershell|pwsh)>'
@@ -48,7 +49,6 @@ if s:tombi_nocolor
       echoerr "tombi compiler: Unsupported shell for Windows"
     endif
   else " if has('unix')
-    " NO_COLOR support requires tombi 0.6.40 or later
     CompilerSet makeprg=env\ NO_COLOR=1\ tombi\ lint
   endif
 else
