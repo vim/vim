@@ -1919,13 +1919,8 @@ win_update(win_T *wp)
 		    // Correct the first entry for filler lines at the top
 		    // when it won't get updated below.
 		    if (wp->w_p_diff && bot_start > 0)
-		    {
-			int n = plines_win_nofill(wp, wp->w_topline, FALSE)
-			      + wp->w_topfill - adjust_plines_for_skipcol(wp);
-			if (n > wp->w_height)
-			    n = wp->w_height;
-			wp->w_lines[0].wl_size = n;
-		    }
+			wp->w_lines[0].wl_size = plines_correct_topline(wp,
+							  wp->w_topline, TRUE);
 #endif
 		}
 	    }
@@ -2342,21 +2337,7 @@ win_update(win_T *wp)
 			    ++new_rows;
 			else
 #endif
-			{
-#ifdef FEAT_DIFF
-			    if (l == wp->w_topline)
-			    {
-				int n = plines_win_nofill(wp, l, FALSE)
-								+ wp->w_topfill;
-				n -= adjust_plines_for_skipcol(wp);
-				if (n > wp->w_height)
-				    n = wp->w_height;
-				new_rows += n;
-			    }
-			    else
-#endif
-				new_rows += plines_win(wp, l, TRUE);
-			}
+			    new_rows += plines_correct_topline(wp, l, TRUE);
 			++j;
 			if (new_rows > wp->w_height - row - 2)
 			{
