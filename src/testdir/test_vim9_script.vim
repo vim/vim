@@ -5343,6 +5343,18 @@ def Test_defer_lambda_func()
     defcompile
   END
   v9.CheckScriptFailure(lines, 'E1028: Compiling :def function failed', 1)
+
+  # Error: lambda without arguments
+  lines =<< trim END
+    vim9script
+    def Foo()
+      defer () => {
+      }
+      assert_report("shouldn't reach here")
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E107: Missing parentheses: ', 1)
 enddef
 
 " Test for using an non-existing type in a "for" statement.
