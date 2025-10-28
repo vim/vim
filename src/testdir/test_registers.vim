@@ -1260,4 +1260,79 @@ func Test_insert_small_delete_linewise()
   bwipe!
 endfunc
 
+func PutList()
+    return ["c", ["list"]]
+endfunc
+
+func PutTuple()
+    return ("b40", ["tuple", "of", "strings"])
+endfunc
+
+func YankReg(type, lines)
+    let g:vim_test_stuff = {
+                \ "type": a:type,
+                \ "lines": a:lines
+                \ }
+endfunc
+
+func Test_custom_register_put()
+  CheckFeature eval
+
+  set regreqfunc=PutList
+  new
+  normal! "&p
+  call assert_equal(['list'], getline(1, '$'))
+  call assert_equal("list", getreg('&'))
+  call assert_equal('v', getregtype('&'))
+  bw!
+
+  set regreqfunc=PutTuple
+  new
+  normal! "&p
+  call assert_equal(['tuple', 'of', 'strings'], getline(1, 4))
+  call assert_equal("tuple\nof\nstrings", getreg('&'))
+  call assert_equal('40', getregtype('&'))
+  bw!
+
+  set regreqfunc&
+endfunc
+
+func Test_custom_register_yank()
+  CheckFeature eval
+
+  set regsetfunc=YankReg
+  new
+  call append(0, ["hello", "world!"])
+  call execute("1,2yank &")
+  call assert_equal("hello\nworld!\n", getreg('&'))
+  call assert_equal("V", g:vim_test_stuff.type)
+  call assert_equal(["hello", "world!"], g:vim_test_stuff.lines)
+  bw!
+
+  set regsetfunc&
+endfunc
+
+func Test_custom_register_combined()
+  CheckFeature eval
+
+  " Test if it acts like a normal register without the callbacks
+  set regreqfunc= regsetfunc=
+  new
+  call append(0, ["hello", "world!"])
+  call execute("1,2yank &")
+  call assert_equal("hello\nworld!\n", getreg('&'))
+
+  set regreqfunc=PutTuple
+  call assert_equal("tuple\nof\nstrings", getreg('&'))
+  call execute("1,2yank &")
+  call assert_equal("tuple\nof\nstrings", getreg('&'))
+
+  set regreqfunc= regsetfunc=YankReg
+  call execute("1yank &")
+  call assert_equal("hello\n", getreg('&'))
+  bw!
+
+  set regreqfunc& regsetfunc&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
