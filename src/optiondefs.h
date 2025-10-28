@@ -2174,9 +2174,9 @@ static struct vimoption options[] =
     {"regexpengine", "re",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_re, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"regreqfunc", "rrf",   P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
+    {"reggetfunc", "rgf",   P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
 #ifdef FEAT_EVAL
-			    (char_u *)&p_rrf, PV_NONE, did_set_regxfunc, NULL,
+			    (char_u *)&p_rgf, PV_NONE, did_set_regxfunc, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

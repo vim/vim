@@ -32,7 +32,7 @@ static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
 #ifdef FEAT_EVAL
-static callback_T rrf_cb; // 'regreqfunc'
+static callback_T rgf_cb; // 'reggetfunc'
 static callback_T rsf_cb; // 'regsetfunc'
 #endif
 
@@ -45,7 +45,7 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 #ifdef FEAT_EVAL
-static void	call_regreqfunc(void);
+static void	call_reggetfunc(void);
 static void	call_regsetfunc(void);
 #endif
 
@@ -1588,7 +1588,7 @@ do_put(
 
 #ifdef FEAT_EVAL
     if (regname == '&')
-	call_regreqfunc();
+	call_reggetfunc();
 #endif
 
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
@@ -2724,7 +2724,7 @@ get_reg_contents(int regname, int flags)
 
 #ifdef FEAT_EVAL
     if (regname == '&')
-	call_regreqfunc();
+	call_reggetfunc();
 #endif
 
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
@@ -2976,15 +2976,15 @@ write_reg_contents_ex(
 }
 
 /*
- * Reads 'regreqfunc' or 'regsetfunc' option and converts it to a callback to
+ * Reads 'reggetfunc' or 'regsetfunc' option and converts it to a callback to
  * be called when the custom register is used.
  */
     char *
 did_set_regxfunc(optset_T *args)
 {
     int ret;
-    if ((long *)args->os_varp == (long *)&p_rrf)
-	ret = option_set_callback_func(p_rrf, &rrf_cb);
+    if ((long *)args->os_varp == (long *)&p_rgf)
+	ret = option_set_callback_func(p_rgf, &rgf_cb);
     else
 	ret = option_set_callback_func(p_rsf, &rsf_cb);
 
@@ -2995,11 +2995,11 @@ did_set_regxfunc(optset_T *args)
 }
 
 /*
- * Call the function specified in 'regreqfunc'. Should be called to update the
+ * Call the function specified in 'reggetfunc'. Should be called to update the
  * custom register before being accessed.
  */
     static void
-call_regreqfunc(void)
+call_reggetfunc(void)
 {
     typval_T	rettv;
     typval_T	argvars[1];
@@ -3009,13 +3009,13 @@ call_regreqfunc(void)
 
     // If 'reqreqfunc' option is empty, then do nothing and treat the register
     // like a normal one.
-    if (rrf_cb.cb_name == NULL)
+    if (rgf_cb.cb_name == NULL)
 	return;
 
     argvars[0].v_type = VAR_UNKNOWN;
 
     textlock++;
-    ret = call_callback(&rrf_cb, -1, &rettv, 0, argvars);
+    ret = call_callback(&rgf_cb, -1, &rettv, 0, argvars);
     textlock--;
 
     if (ret == FAIL)
@@ -3121,7 +3121,7 @@ free_lstval:
 
     return;
 fail:
-    semsg(_(e_failed_calling_custom_reg_func), "regreqfunc");
+    semsg(_(e_failed_calling_custom_reg_func), "reggetfunc");
     clear_tv(&rettv);
 }
 

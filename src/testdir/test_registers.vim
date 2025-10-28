@@ -1278,7 +1278,7 @@ endfunc
 func Test_custom_register_put()
   CheckFeature eval
 
-  set regreqfunc=PutList
+  set reggetfunc=PutList
   new
   normal! "&p
   call assert_equal(['list'], getline(1, '$'))
@@ -1286,7 +1286,7 @@ func Test_custom_register_put()
   call assert_equal('v', getregtype('&'))
   bw!
 
-  set regreqfunc=PutTuple
+  set reggetfunc=PutTuple
   new
   normal! "&p
   call assert_equal(['tuple', 'of', 'strings'], getline(1, 4))
@@ -1294,7 +1294,7 @@ func Test_custom_register_put()
   call assert_equal('40', getregtype('&'))
   bw!
 
-  set regreqfunc&
+  set reggetfunc&
 endfunc
 
 func Test_custom_register_yank()
@@ -1316,23 +1316,23 @@ func Test_custom_register_combined()
   CheckFeature eval
 
   " Test if it acts like a normal register without the callbacks
-  set regreqfunc= regsetfunc=
+  set reggetfunc= regsetfunc=
   new
   call append(0, ["hello", "world!"])
   call execute("1,2yank &")
   call assert_equal("hello\nworld!\n", getreg('&'))
 
-  set regreqfunc=PutTuple
+  set reggetfunc=PutTuple
   call assert_equal("tuple\nof\nstrings", getreg('&'))
   call execute("1,2yank &")
   call assert_equal("tuple\nof\nstrings", getreg('&'))
 
-  set regreqfunc= regsetfunc=YankReg
+  set reggetfunc= regsetfunc=YankReg
   call execute("1yank &")
   call assert_equal("hello\n", getreg('&'))
   bw!
 
-  set regreqfunc& regsetfunc&
+  set reggetfunc& regsetfunc&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

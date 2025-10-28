@@ -1403,13 +1403,12 @@ Note that the value is restored when returning from a function
 |function-search-undo|.
 
 11. Custom register			"&		*quote_&* *quote&*
-Acts like a numbered or named register, but when the register is yanked to,
-the callback specified in 'regsetfunc' is called, and when it is put, the
-callback specified in 'regreqfunc' is called.  This allows for custom
-behaviour on the fly for this register.  If either or both callbacks are not
-specified (empty), then the register simply acts like another numbered or
-named register.  This register is not saved in the |viminfo| file and the
-|+eval| feature is required.
+Acts like a named register, but when writing to the register, the callback
+specified in 'regsetfunc' is called, and when it is read from, the callback
+specified in 'reggetfunc' is called.  This allows for custom behaviour on the
+fly for this register.  If either or both callbacks are not specified (empty),
+then the register simply acts like another named register.  This register is
+not saved in the |viminfo| file and the |+eval| feature is required.
 
 							*@/*
 You can write to a register with a `:let` command |:let-@|.  Example: >
