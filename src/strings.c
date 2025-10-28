@@ -194,7 +194,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	if (*p == '\'')
 	{
 	    if (powershell)
-		length +=2;		// ' => ''
+		length += 2;		// ' => ''
 	    else
 		length += 3;		// ' => '\''
 	}
@@ -884,16 +884,15 @@ string_count(char_u *haystack, char_u *needle, int ic)
     if (p == NULL || needle == NULL || *needle == NUL)
 	return 0;
 
+    size_t  needlelen = STRLEN(needle);
     if (ic)
     {
-	size_t len = STRLEN(needle);
-
 	while (*p != NUL)
 	{
-	    if (MB_STRNICMP(p, needle, len) == 0)
+	    if (MB_STRNICMP(p, needle, needlelen) == 0)
 	    {
 		++n;
-		p += len;
+		p += needlelen;
 	    }
 	    else
 		MB_PTR_ADV(p);
@@ -903,7 +902,7 @@ string_count(char_u *haystack, char_u *needle, int ic)
 	while ((next = (char_u *)strstr((char *)p, (char *)needle)) != NULL)
 	{
 	    ++n;
-	    p = next + STRLEN(needle);
+	    p = next + needlelen;
 	}
 
     return n;
@@ -911,7 +910,7 @@ string_count(char_u *haystack, char_u *needle, int ic)
 
 /*
  * Make a typval_T of the first character of "input" and store it in "output".
- * Return OK or FAIL.
+ * Return -1 on failure or v_string's length on success.
  */
     static int
 copy_first_char_to_tv(char_u *input, typval_T *output)
@@ -920,15 +919,15 @@ copy_first_char_to_tv(char_u *input, typval_T *output)
     int		len;
 
     if (input == NULL || output == NULL)
-	return FAIL;
+	return -1;
 
     len = has_mbyte ? mb_ptr2len(input) : 1;
     STRNCPY(buf, input, len);
     buf[len] = NUL;
     output->v_type = VAR_STRING;
-    output->vval.v_string = vim_strsave(buf);
+    output->vval.v_string = vim_strnsave(buf, len);
 
-    return output->vval.v_string == NULL ? FAIL : OK;
+    return output->vval.v_string == NULL ? -1 : len;
 }
 
 /*
@@ -963,9 +962,9 @@ string_filter_map(
     ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
-	if (copy_first_char_to_tv(p, &tv) == FAIL)
+	len = copy_first_char_to_tv(p, &tv);
+	if (len < 0)
 	    break;
-	len = (int)STRLEN(tv.vval.v_string);
 
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
@@ -1026,9 +1025,10 @@ string_reduce(
 	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "String");
 	    return;
 	}
-	if (copy_first_char_to_tv(p, rettv) == FAIL)
+	len = copy_first_char_to_tv(p, rettv);
+	if (len < 0)
 	    return;
-	p += STRLEN(rettv->vval.v_string);
+	p += len;
     }
     else if (check_for_string_arg(argvars, 2) == FAIL)
 	return;
@@ -1041,9 +1041,9 @@ string_reduce(
     for ( ; *p != NUL; p += len)
     {
 	argv[0] = *rettv;
-	if (copy_first_char_to_tv(p, &argv[1]) == FAIL)
+	len = copy_first_char_to_tv(p, &argv[1]);
+	if (len < 0)
 	    break;
-	len = (int)STRLEN(argv[1].vval.v_string);
 
 	r = eval_expr_typval(expr, TRUE, argv, 2, fc, rettv);
 
@@ -1221,17 +1221,12 @@ convert_string(char_u *str, char_u *from, char_u *to)
     static void
 blob_from_string(char_u *str, blob_T *blob)
 {
-    size_t len = STRLEN(str);
+    char_u  *p;
 
-    for (size_t i = 0; i < len; i++)
+    for (p = str; *p != NUL; ++p)
     {
-	int	ch = str[i];
-
-	if (str[i] == NL)
-	    // Translate newlines in the string to NUL character
-	    ch = NUL;
-
-	ga_append(&blob->bv_ga, ch);
+	// Translate newlines in the string to NUL character
+	ga_append(&blob->bv_ga, (*p == NL) ? NUL : (int)*p);
     }
 }
 
@@ -1267,9 +1262,7 @@ string_from_blob(blob_T *blob, long *start_idx)
 	ga_append(&str_ga, byte);
     }
 
-    ga_append(&str_ga, NUL);
-
-    char_u *ret_str = vim_strsave(str_ga.ga_data);
+    char_u *ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
     *start_idx = idx;
 
     ga_clear(&str_ga);
@@ -2648,7 +2641,7 @@ vim_snprintf_safelen(char *str, size_t str_m, const char *fmt, ...)
     int	    str_l;
 
     va_start(ap, fmt);
-    str_l = vim_vsnprintf(str, str_m, fmt, ap);
+    str_l = vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
     va_end(ap);
 
     if (str_l < 0)
