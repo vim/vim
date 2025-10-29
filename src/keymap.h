@@ -280,6 +280,7 @@ enum key_extra
     , KE_SID = 106		// <SID> special key, followed by {nr};
     , KE_ESC = 107		// used for K_ESC
     , KE_WILD = 108		// triggers wildmode completion
+    , KE_OSC = 109		// OSC sequence
 };
 
 /*
@@ -478,6 +479,7 @@ enum key_extra
 #define K_MOUSERIGHT	TERMCAP2KEY(KS_EXTRA, KE_MOUSERIGHT)
 
 #define K_CSI		TERMCAP2KEY(KS_EXTRA, KE_CSI)
+#define K_OSC		TERMCAP2KEY(KS_EXTRA, KE_OSC)
 #define K_SNR		TERMCAP2KEY(KS_EXTRA, KE_SNR)
 #define K_PLUG		TERMCAP2KEY(KS_EXTRA, KE_PLUG)
 #define K_CMDWIN	TERMCAP2KEY(KS_EXTRA, KE_CMDWIN)
