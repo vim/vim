@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,7 +52,7 @@ remember him!
 Vim version 9.1 is dedicated to Bram Moolenaar, who passed away on August 3rd
 2023 while still working full-time on Vim.  The Vim project would not exist
 without his ongoing passion to lead and develop Vim and the community for more
-than 30 years.  Bram was also passionate about his |ICCF| foundation to help
+than 30 years.  Bram was also passionate about his ICCF foundation to help
 children in Uganda.  If you enjoy using Vim, please consider donating! We will
 miss his guidance, passion and leadership.
 

@@ -596,14 +596,14 @@ func Test_window_jump_tag()
   CheckFeature quickfix
 
   help
-  /iccf
-  call assert_match('^|iccf|',  getline('.'))
+  /Kuwasha
+  call assert_match('^|Kuwasha|',  getline('.'))
   call assert_equal(2, winnr('$'))
   2wincmd }
   call assert_equal(3, winnr('$'))
-  call assert_match('^|iccf|',  getline('.'))
+  call assert_match('^|Kuwasha|',  getline('.'))
   wincmd k
-  call assert_match('\*iccf\*',  getline('.'))
+  call assert_match('\*Kuwasha\*',  getline('.'))
   call assert_equal(2, winheight(0))
 
   wincmd z
