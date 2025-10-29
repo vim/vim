@@ -4201,6 +4201,11 @@ func Test_normal33_g_cmd_nonblank()
   call assert_equal(80, col("'>"))
   exe "normal 0$bvg\<End>y"
   call assert_equal(71, col("'>"))
+  setlocal nowrap virtualedit=all
+  exe "normal 0$\<C-v>llg\<End>y"
+  call assert_equal(71, col("'<"))
+  exe "normal 0$llvg\<End>y"
+  call assert_equal(71, col("'<"))
   bw!
 endfunc
 
