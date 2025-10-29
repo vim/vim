@@ -5225,7 +5225,9 @@ get_register_completion(void)
 	else if (i == DELETION_REGISTER)
 	    regname = '-';
 #ifdef FEAT_EVAL
-	else if (i == CUSTOM_REGISTER)
+	else if (i == CARET_REGISTER)
+	    regname = '^';
+	else if (i == AMPERSAND_REGISTER)
 	    regname = '&';
 #endif
 #ifdef FEAT_CLIPBOARD

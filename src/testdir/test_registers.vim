@@ -1260,16 +1260,17 @@ func Test_insert_small_delete_linewise()
   bwipe!
 endfunc
 
-func PutList()
-    return ["c", ["list"]]
+func PutList(reg)
+    return ["c", ["list", a:reg]]
 endfunc
 
-func PutTuple()
-    return ("b40", ["tuple", "of", "strings"])
+func PutTuple(reg)
+    return ("b40", ["tuple", "of", "strings", a:reg])
 endfunc
 
-func YankReg(type, lines)
+func YankReg(reg, type, lines)
     let g:vim_test_stuff = {
+                \ "reg": a:reg,
                 \ "type": a:type,
                 \ "lines": a:lines
                 \ }
@@ -1281,17 +1282,17 @@ func Test_custom_register_put()
   set reggetfunc=PutList
   new
   normal! "&p
-  call assert_equal(['list'], getline(1, '$'))
-  call assert_equal("list", getreg('&'))
+  call assert_equal(['list', '&'], getline(1, '$'))
+  call assert_equal("list\n&", getreg('&'))
   call assert_equal('v', getregtype('&'))
   bw!
 
   set reggetfunc=PutTuple
   new
-  normal! "&p
-  call assert_equal(['tuple', 'of', 'strings'], getline(1, 4))
-  call assert_equal("tuple\nof\nstrings", getreg('&'))
-  call assert_equal('40', getregtype('&'))
+  normal! "^p
+  call assert_equal(['tuple', 'of', 'strings', '^'], getline(1, 4))
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
+  call assert_equal('40', getregtype('^'))
   bw!
 
   set reggetfunc&
@@ -1307,6 +1308,13 @@ func Test_custom_register_yank()
   call assert_equal("hello\nworld!\n", getreg('&'))
   call assert_equal("V", g:vim_test_stuff.type)
   call assert_equal(["hello", "world!"], g:vim_test_stuff.lines)
+  call assert_equal('&', g:vim_test_stuff.reg)
+
+  call execute("1yank ^")
+  call assert_equal("hello\n", getreg('^'))
+  call assert_equal("V", g:vim_test_stuff.type)
+  call assert_equal(["hello"], g:vim_test_stuff.lines)
+  call assert_equal('^', g:vim_test_stuff.reg)
   bw!
 
   set regsetfunc&
@@ -1323,13 +1331,13 @@ func Test_custom_register_combined()
   call assert_equal("hello\nworld!\n", getreg('&'))
 
   set reggetfunc=PutTuple
-  call assert_equal("tuple\nof\nstrings", getreg('&'))
-  call execute("1,2yank &")
-  call assert_equal("tuple\nof\nstrings", getreg('&'))
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
+  call execute("1,2yank ^")
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
 
   set reggetfunc= regsetfunc=YankReg
-  call execute("1yank &")
-  call assert_equal("hello\n", getreg('&'))
+  call execute("1yank ^")
+  call assert_equal("hello\n", getreg('^'))
   bw!
 
   set reggetfunc& regsetfunc&

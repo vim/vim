@@ -7038,18 +7038,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+eval|
 			feature}
 	This options specifies a function to be used whenever the custom
-	register |quote_&| is read.  The function takes no arguments, and
-	should return a |tuple| or |list| containing the following elements in
-	order:
-		1. The register type, conforming to |setreg()|, that the
+	registers |quote_&|, |quote_^| are read.  The function takes a single
+	argument, the register name, and should return a |tuple| or |list|
+	containing the following elements in order:
+		2. The register type, conforming to |setreg()|, that the
 		   register will be set to.
-		2. A |list| containing a list of strings to set the register
+		3. A |list| containing a list of strings to set the register
 		   to.
 	Note that this function is not called on |:registers| or |:display|.
 
 	The following is a possible example use of this option:
 >vim
-		function GetFunc()
+		function GetFunc(reg)
+		    echom "Updating register " .. a:reg
 		    return ('l', readfile('stuff.txt'))
 		endfunction
 
@@ -7068,18 +7069,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+eval|
 			feature}
 	This option specifies a function to be used whenever the custom
-	register |quote_&| is written including |setreg()|.  The function
-	returns nothing and takes two arguments:
-		1. The register type being used, conforming to |getregtype()|.
-		2. A list of strings being written
+	registers |quote_&|, |quote_^| are written to.  The function returns
+	nothing and takes three arguments:
+		1. The register name.
+		2. The register type being used, conforming to |getregtype()|.
+		3. A list of strings being written.
 	If the register type is not specified (an empty string), then the type
 	is automatically chosen, see |setreg()| for how.
 
 	The following is a possible example use of this option:
 >vim
-		function SetFunc(type, lines)
+		function SetFunc(reg, type, lines)
 		    call writefile(a:lines, 'stuff.txt', 'a')
-		    echom 'Yanked ' .. len(a:lines) .. ' lines of type ' .. a:type
+		    echom 'Yanked ' .. len(a:lines)
+			\ .. ' lines of type ' .. a:type
+			\ .. ' to register ' .. a:reg
 		endfunction
 
 		set regsetfunc=SetFunc

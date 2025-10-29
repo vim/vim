@@ -19,7 +19,8 @@
  *   1..9 = registers '1' to '9', for deletes
  * 10..35 = registers 'a' to 'z' ('A' to 'Z' for appending)
  *     36 = delete register '-'
- *     37 = custom register '&'. Only if FEAT_EVAL is defined
+ *     37 = custom register '^'. Only if FEAT_EVAL is defined
+ *     38 = custom register '&'. Only if FEAT_EVAL is defined
  *
  *     38 = Selection register '*'. Only if FEAT_CLIPBOARD defined
  *     39 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11
@@ -45,8 +46,8 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 #ifdef FEAT_EVAL
-static void	call_reggetfunc(void);
-static void	call_regsetfunc(void);
+static void	call_reggetfunc(int name);
+static void	call_regsetfunc(int name);
 #endif
 
 #if defined(FEAT_VIMINFO)
@@ -202,6 +203,7 @@ valid_yank_reg(
 	    || regname == '-'
 	    || regname == '_'
 #ifdef FEAT_EVAL
+	    || regname == '^'
 	    || regname == '&'
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -261,8 +263,10 @@ get_yank_register(int regname, int writing)
     else if (regname == '-')
 	i = DELETION_REGISTER;
 #ifdef FEAT_EVAL
+    else if (regname == '^')
+	i = CARET_REGISTER;
     else if (regname == '&')
-	i = CUSTOM_REGISTER;
+	i = AMPERSAND_REGISTER;
 #endif
 #ifdef FEAT_CLIPBOARD
     // When selection is not available, use register 0 instead of '*'
@@ -1454,9 +1458,11 @@ op_yank(oparg_T *oap, int deleting, int mess)
 #endif
 
 #ifdef FEAT_EVAL
-    // Call custom register set function if is custom register
-    if (curr == &y_regs[CUSTOM_REGISTER])
-	call_regsetfunc();
+    // Call custom register set function if it is a custom register
+    if (curr == &y_regs[CARET_REGISTER])
+	call_regsetfunc(CARET_REGISTER);
+    else if (curr == &y_regs[AMPERSAND_REGISTER])
+	call_regsetfunc(AMPERSAND_REGISTER);
 #endif
 
 #if defined(FEAT_EVAL)
@@ -1587,8 +1593,10 @@ do_put(
 #endif
 
 #ifdef FEAT_EVAL
-    if (regname == '&')
-	call_reggetfunc();
+    if (regname == '^')
+	call_reggetfunc(CARET_REGISTER);
+    else if (regname == '&')
+	call_reggetfunc(AMPERSAND_REGISTER);
 #endif
 
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
@@ -2377,7 +2385,9 @@ get_register_name(int num)
     else if (num == DELETION_REGISTER)
 	return '-';
 #ifdef FEAT_EVAL
-    else if (num == CUSTOM_REGISTER)
+    else if (num == CARET_REGISTER)
+	return '^';
+    else if (num == AMPERSAND_REGISTER)
 	return '&';
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -2723,8 +2733,10 @@ get_reg_contents(int regname, int flags)
 # endif
 
 #ifdef FEAT_EVAL
-    if (regname == '&')
-	call_reggetfunc();
+    if (regname == '^')
+	call_reggetfunc(CARET_REGISTER);
+    else if (regname == '&')
+	call_reggetfunc(AMPERSAND_REGISTER);
 #endif
 
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
@@ -2891,8 +2903,10 @@ write_reg_contents_lst(
     finish_write_reg(name, old_y_previous, old_y_current);
 
 #ifdef FEAT_EVAL
-    if (name == '&')
-	call_regsetfunc();
+    if (name == '^')
+	call_regsetfunc(CARET_REGISTER);
+    else if (name == '&')
+	call_regsetfunc(AMPERSAND_REGISTER);
 #endif
 }
 
@@ -2970,8 +2984,10 @@ write_reg_contents_ex(
     finish_write_reg(name, old_y_previous, old_y_current);
 
 #ifdef FEAT_EVAL
-    if (name == '&')
-	call_regsetfunc();
+    if (name == '^')
+	call_regsetfunc(CARET_REGISTER);
+    else if (name == '&')
+	call_regsetfunc(AMPERSAND_REGISTER);
 #endif
 }
 
@@ -2999,10 +3015,11 @@ did_set_regxfunc(optset_T *args)
  * custom register before being accessed.
  */
     static void
-call_reggetfunc(void)
+call_reggetfunc(int name)
 {
+    char *reg = name == CARET_REGISTER ? "^" : "&";
     typval_T	rettv;
-    typval_T	argvars[1];
+    typval_T	argvars[2];
     int		ret;
     char_u	*reg_type;
     list_T	*lines;
@@ -3012,10 +3029,13 @@ call_reggetfunc(void)
     if (rgf_cb.cb_name == NULL)
 	return;
 
-    argvars[0].v_type = VAR_UNKNOWN;
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = (char_u *)reg;
+
+    argvars[1].v_type = VAR_UNKNOWN;
 
     textlock++;
-    ret = call_callback(&rgf_cb, -1, &rettv, 0, argvars);
+    ret = call_callback(&rgf_cb, -1, &rettv, 1, argvars);
     textlock--;
 
     if (ret == FAIL)
@@ -3096,7 +3116,7 @@ call_reggetfunc(void)
 		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	    goto free_lstval;
 
-	y_current =  &y_regs[CUSTOM_REGISTER];
+	y_current =  &y_regs[name];
 	old_y_current = y_current;
 
 	free_yank_all();
@@ -3130,11 +3150,12 @@ fail:
  * register is updated by the user.
  */
     static void
-call_regsetfunc(void)
+call_regsetfunc(int name)
 {
+    char *reg = name == CARET_REGISTER ? "^" : "&";
     typval_T	rettv;
-    typval_T	argvars[3];
-    yankreg_T	*y_ptr = &y_regs[CUSTOM_REGISTER];
+    typval_T	argvars[4];
+    yankreg_T	*y_ptr = &y_regs[name];
     char_u	type[2 + NUMBUFLEN] = {0};
     list_T	*list = NULL;
 
@@ -3158,7 +3179,10 @@ call_regsetfunc(void)
     }
 
     argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = type;
+    argvars[0].vval.v_string = (char_u *)reg;
+
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = type;
 
     // Return register contents as a list of lines
     list = list_alloc();
@@ -3175,14 +3199,14 @@ call_regsetfunc(void)
 
     list->lv_refcount++;
 
-    argvars[1].v_type = VAR_LIST;
-    argvars[1].v_lock = VAR_FIXED;
-    argvars[1].vval.v_list = list;
+    argvars[2].v_type = VAR_LIST;
+    argvars[2].v_lock = VAR_FIXED;
+    argvars[2].vval.v_list = list;
 
-    argvars[2].v_type = VAR_UNKNOWN;
+    argvars[3].v_type = VAR_UNKNOWN;
 
     textlock++;
-    call_callback(&rsf_cb, -1, &rettv, 2, argvars);
+    call_callback(&rsf_cb, -1, &rettv, 3, argvars);
     clear_tv(&rettv);
     textlock--;
 

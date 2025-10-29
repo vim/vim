@@ -1918,8 +1918,8 @@ write_viminfo_registers(FILE *fp)
 	    continue;
 #endif
 #ifdef FEAT_EVAL
-	// Skip the custom register as well
-	if (i == CUSTOM_REGISTER)
+	// Skip the custom registers as well
+	if (i == CARET_REGISTER || i == AMPERSAND_REGISTER)
 	    continue;
 #endif
 	// When reading viminfo for merging and writing: Use the register from

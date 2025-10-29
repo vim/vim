@@ -1265,7 +1265,7 @@ There are ten types of registers:		*registers* *{register}* *E354*
 8. The selection and drop registers "*, "+ and "~ 
 9. The black hole register "_
 10. Last search pattern register "/
-11. The custom register "&
+11. The custom registers "^, "&
 
 1. Unnamed register ""				*quote_quote* *quotequote*
 Vim fills this register with text deleted with the "d", "c", "s", "x" commands
@@ -1402,13 +1402,15 @@ register.  The search direction is available in |v:searchforward|.
 Note that the value is restored when returning from a function
 |function-search-undo|.
 
-11. Custom register			"&		*quote_&* *quote&*
-Acts like a named register, but when writing to the register, the callback
+11. Custom registers "^ and "&		*quote_^* *quote^* *quote_&* *quote&*
+
+Both act like a named register, but when writing to the register, the callback
 specified in 'regsetfunc' is called, and when it is read from, the callback
 specified in 'reggetfunc' is called.  This allows for custom behaviour on the
-fly for this register.  If either or both callbacks are not specified (empty),
-then the register simply acts like another named register.  This register is
-not saved in the |viminfo| file and the |+eval| feature is required.
+fly for these registers.  If either or both callbacks are not specified
+(empty), then the register simply acts like another named register.  These
+registers are not saved in the |viminfo| file and the |+eval| feature is
+required.
 
 							*@/*
 You can write to a register with a `:let` command |:let-@|.  Example: >
