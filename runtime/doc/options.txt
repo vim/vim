@@ -7059,8 +7059,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|option-value-function| for more information.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-	Additionally it is not allowed to change the buffer
-	text in the function, see |textlock|.
+	Additionally it is not allowed to change the buffer text in the
+	function, see |textlock|.
 
 						*'regsetfunc* *'rsf'*
 'regsetfunc' 'rsf'	string	(default "")
@@ -7068,7 +7068,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+eval|
 			feature}
 	This option specifies a function to be used whenever the custom
-	register |quote_&| is written inclusing |setreg()|. The function
+	register |quote_&| is written including |setreg()|.  The function
 	returns nothing and takes two arguments:
 		1. The register type being used, conforming to |getregtype()|.
 		2. A list of strings being written
@@ -7088,8 +7088,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|option-value-function| for more information.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-	Additionally it is not allowed to change the buffer
-	text in the function, see |textlock|.
+	Additionally it is not allowed to change the buffer text in the
+	function, see |textlock|.
 
 		*'relativenumber'* *'rnu'* *'norelativenumber'* *'nornu'*
 'relativenumber' 'rnu'	boolean	(default off)

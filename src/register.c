@@ -3007,7 +3007,7 @@ call_reggetfunc(void)
     char_u	*reg_type;
     list_T	*lines;
 
-    // If 'reqreqfunc' option is empty, then do nothing and treat the register
+    // If 'reggetfunc' option is empty, then do nothing and treat the register
     // like a normal one.
     if (rgf_cb.cb_name == NULL)
 	return;
