@@ -4085,8 +4085,8 @@ syn_list_cluster(int id)
 
     if (msg_col >= endcol)	// output at least one space
 	endcol = msg_col + 1;
-    if (Columns <= (long)endcol)	// avoid hang for tiny window
-	endcol = (int)(Columns - 1);
+    if (cmdline_width <= endcol)	// avoid hang for tiny window
+	endcol = cmdline_width - 1;
 
     msg_advance(endcol);
     if (SYN_CLSTR(curwin->w_s)[id].scl_list != NULL)

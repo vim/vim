@@ -484,9 +484,8 @@ do_mouse(
 
     // Check for clicking in the tab page panel.
 #if defined(FEAT_TABPANEL)
-    if (mouse_row < firstwin->w_winrow + topframe->fr_height
-	&& (mouse_col < firstwin->w_wincol
-		|| mouse_col >= firstwin->w_wincol + topframe->fr_width))
+    if (mouse_col < firstwin->w_wincol
+		|| mouse_col >= firstwin->w_wincol + topframe->fr_width)
     {
 	tp_label.is_panel = true;
 	tp_label.just_in = true;

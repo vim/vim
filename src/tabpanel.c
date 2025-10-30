@@ -163,7 +163,7 @@ draw_tabpanel(void)
 	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN, maxwidth, &curtab_row,
 		    NULL);
 	    // draw vert separator in tabpanel
-	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
+	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			topframe->fr_width, vs_attr);
 	}
@@ -175,7 +175,7 @@ draw_tabpanel(void)
 	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN,
 		    &curtab_row, NULL);
 	    // draw vert separator in tabpanel
-	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
+	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			maxwidth - VERT_LEN, vs_attr);
 	}
@@ -516,7 +516,7 @@ do_by_tplmode(
     typval_T	v;
     tabpanel_T	args;
 
-    args.maxrow = cmdline_row;
+    args.maxrow = Rows;
     args.offsetrow = 0;
     args.col_start = col_start;
     args.col_end = col_end;

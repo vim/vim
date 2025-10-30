@@ -1856,12 +1856,13 @@ display_showcmd(void)
     else // 'showcmdloc' is "last" or empty
     {
 	if (!showcmd_is_clear)
-	    screen_puts(showcmd_buf, (int)Rows - 1, sc_col, 0);
+	    screen_puts(showcmd_buf, (int)Rows - 1,
+		    cmdline_col_off + sc_col, 0);
 
 	// clear the rest of an old message by outputting up to SHOWCMD_COLS
 	// spaces
 	screen_puts((char_u *)"          " + len,
-						(int)Rows - 1, sc_col + len, 0);
+		(int)Rows - 1, cmdline_col_off + sc_col + len, 0);
     }
 
     setcursor();	    // put cursor back where it belongs

@@ -4596,7 +4596,7 @@ version_msg_wrap(char_u *s, int wrap)
 {
     int		len = vim_strsize(s) + (wrap ? 2 : 0);
 
-    if (!got_int && len < (int)Columns && msg_col + len >= (int)Columns
+    if (!got_int && len < cmdline_width && msg_col + len >= cmdline_width
 								&& *s != '\n')
 	msg_putchar('\n');
     if (!got_int)
@@ -4654,7 +4654,7 @@ list_in_columns(char_u **items, int size, int current)
     }
     width += 1;
 
-    if (Columns < width)
+    if (cmdline_width < width)
     {
 	// Not enough screen columns - show one per line
 	for (i = 0; i < item_count; ++i)
@@ -4668,7 +4668,7 @@ list_in_columns(char_u **items, int size, int current)
 
     // The rightmost column doesn't need a separator.
     // Sacrifice it to fit in one more column if possible.
-    ncol = (int) (Columns + 1) / width;
+    ncol = (cmdline_width + 1) / width;
     nrow = item_count / ncol + ((item_count % ncol) ? 1 : 0);
 
     // "i" counts columns then rows.  "idx" counts rows then columns.

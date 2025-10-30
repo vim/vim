@@ -6684,7 +6684,7 @@ ex_stop(exarg_T *eap)
     if (!eap->forceit)
 	autowrite_all();
     apply_autocmds(EVENT_VIMSUSPEND, NULL, NULL, FALSE, NULL);
-    windgoto((int)Rows - 1, 0);
+    windgoto((int)Rows - 1, cmdline_col_off);
     out_char('\n');
     out_flush();
     stoptermcap();

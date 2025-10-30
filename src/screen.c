@@ -1060,7 +1060,7 @@ win_redr_custom(
 	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	int in_status_line = wp->w_status_height != 0;
-	maxwidth = in_status_line ? wp->w_width : Columns;
+	maxwidth = in_status_line ? wp->w_width : cmdline_width;
 
 	if (draw_ruler)
 	{
@@ -1077,7 +1077,7 @@ win_redr_custom(
 		if (*stl++ != '(')
 		    stl = p_ruf;
 	    }
-	    col = ru_col - (Columns - maxwidth);
+	    col = ru_col - (cmdline_width - maxwidth);
 	    if (col < (maxwidth + 1) / 2)
 		col = (maxwidth + 1) / 2;
 	    maxwidth -= col;
@@ -1103,6 +1103,8 @@ win_redr_custom(
 
 	if (in_status_line)
 	    col += wp->w_wincol;
+	else
+	    col += cmdline_col_off;
     }
 
     if (maxwidth <= 0)
@@ -1187,7 +1189,7 @@ win_redr_custom(
 	    p = tabtab[n].start;
 	    fillchar = tabtab[n].userhl;
 	}
-	while (col < Columns)
+	while (col < firstwin->w_wincol + topframe->fr_width)
 	    TabPageIdxs[col++] = fillchar;
     }
 
@@ -2325,14 +2327,16 @@ screen_fill(
 	if (row == Rows - 1)		// overwritten the command line
 	{
 	    redraw_cmdline = TRUE;
-	    if (start_col == 0 && end_col == Columns
+	    if (((start_col == 0 && end_col == Columns)
+			|| (start_col <= cmdline_col_off
+			&& end_col == cmdline_col_off + cmdline_width))
 		    && c1 == ' ' && c2 == ' ' && attr == 0
 #ifdef FEAT_PROP_POPUP
 		    && !popup_overlaps_cmdline()
 #endif
 		    )
 		clear_cmdline = FALSE;	// command line has been cleared
-	    if (start_col == 0)
+	    if (start_col == 0 || start_col == cmdline_col_off)
 		mode_displayed = FALSE; // mode cleared or overwritten
 	}
     }
@@ -2725,8 +2729,8 @@ give_up:
 	    msg_row = Rows - 1;		// put cursor at last row
 	else if (Rows > old_Rows)	// Rows got bigger
 	    msg_row += Rows - old_Rows; // put cursor in same place
-	if (msg_col >= Columns)		// Columns got smaller
-	    msg_col = Columns - 1;	// put cursor at last column
+	if (msg_col >= cmdline_width)	// cmdline_width got smaller
+	    msg_col = cmdline_width - 1;    // put cursor at last cmdline column
     }
 #endif
     clear_TabPageIdxs();
@@ -4097,7 +4101,7 @@ showmode(void)
 	    {
 		// These messages can get long, avoid a wrap in a narrow
 		// window.  Prefer showing edit_submode_extra.
-		length = (Rows - msg_row) * Columns - 3;
+		length = (Rows - msg_row) * cmdline_width - 3;
 		if (edit_submode_extra != NULL)
 		    length -= vim_strsize(edit_submode_extra);
 		if (length > 0)
@@ -4611,8 +4615,8 @@ comp_col(void)
 	if (!p_ru || last_has_status)	    // no need for separating space
 	    ++sc_col;
     }
-    sc_col = Columns - sc_col;
-    ru_col = Columns - ru_col;
+    sc_col = cmdline_width - sc_col;
+    ru_col = cmdline_width - ru_col;
     if (sc_col <= 0)		// screen too narrow, will become a mess
 	sc_col = 1;
     if (ru_col <= 0)
