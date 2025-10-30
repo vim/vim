@@ -433,6 +433,10 @@ main
     // Source startup scripts.
     source_startup_scripts(&params);
 
+#ifdef FEAT_EVAL
+    set_vim_var_nr(VV_VIM_DID_INIT, 1L);
+#endif
+
 #ifdef FEAT_MZSCHEME
     /*
      * Newer version of MzScheme (Racket) require earlier (trampolined)

@@ -843,6 +843,9 @@ accordingly.  Vim proceeds in this order:
 	If Vim was started in Ex mode with the "-s" argument, all following
 	initializations until 4. are skipped.  Only the "-u" option is
 	interpreted.
+
+	The |v:vim_did_init| variable is set to 1 after this step is finished.
+
 							*evim.vim*
      a. If Vim was started as |evim| or |eview| or with the |-y| argument, the
 	script $VIMRUNTIME/evim.vim will be loaded.
