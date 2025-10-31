@@ -1,23 +1,24 @@
 "------------------------------------------------------------------------------
 "  Description: Vim Ada indent file
-"     Language: Ada (2005)
-"	   $Id: ada.vim 887 2008-07-08 14:29:01Z krischik $
-"    Copyright: Copyright (C) 2006 Martin Krischik
-"   Maintainer: Martin Krischik <krischik@users.sourceforge.net>
+"     Language: Ada (2022)
+"    Copyright: Copyright (C) 2006 … 2022 Martin Krischik
+"   Maintainer:	Doug Kearns <dougkearns@gmail.com> (Vim)
+"		Martin Krischik <krischik@users.sourceforge.net> (Upstream)
 "		Neil Bird <neil@fnxweb.com>
 "		Ned Okie <nokie@radford.edu>
-"      $Author: krischik $
-"	 $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
-"      Version: 4.6
-"    $Revision: 887 $
-"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/indent/ada.vim $
+"	   URL: https://github.com/krischik/vim-ada
+"      Version: 5.5.0
 "      History: 24.05.2006 MK Unified Headers
 "		16.07.2006 MK Ada-Mode as vim-ball
 "		15.10.2006 MK Bram's suggestion for runtime integration
 "		05.11.2006 MK Bram suggested to save on spaces
 "		19.09.2007 NO g: missing before ada#Comment
 "		2022 April: b:undo_indent added by Doug Kearns
-"    Help Page: ft-vim-indent
+"		01.09.2022 MK Use GitHub and dein to publish new versions
+"		25.10.2022 MK Add Alire compiler support
+"               21.08.2023 MK Release 5.5.0
+"	 Usage: Use dein to install
+"    Help Page: ft-ada-indent
 "------------------------------------------------------------------------------
 " ToDo:
 "  Verify handling of multi-line exprs. and recovery upon the final ';'.
@@ -34,7 +35,7 @@ let b:did_indent = 45
 
 setlocal indentexpr=GetAdaIndent()
 setlocal indentkeys-=0{,0}
-setlocal indentkeys+=0=~then,0=~end,0=~elsif,0=~when,0=~exception,0=~begin,0=~is,0=~record
+setlocal indentkeys+=0=~then,0=~end,0=~elsif,0=~when,0=~exception,0=~begin,0=~is,0=~record,0=~private
 
 let b:undo_indent = "setl inde< indk<"
 
@@ -46,9 +47,9 @@ let s:keepcpo= &cpo
 set cpo&vim
 
 if exists("g:ada_with_gnat_project_files")
-   let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<\(loop\|use\)\>\|declare\>\|begin\>\|type\>.*\<is\>[^;]*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|project\>\|then\>\|when\>\|is\>\)'
+   let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<\(loop\|use\)\>\|declare\>\|begin\>\|type\>.*\<is\>[^;]*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|project\>\|then\>\|when\>\|is\>\|private\>\)'
 else
-   let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<\(loop\|use\)\>\|declare\>\|begin\>\|type\>.*\<is\>[^;]*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|then\>\|when\>\|is\>\)'
+   let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<\(loop\|use\)\>\|declare\>\|begin\>\|type\>.*\<is\>[^;]*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|then\>\|when\>\|is\>\|private\>\)'
 endif
 
 " Section: s:MainBlockIndent {{{1
@@ -185,6 +186,7 @@ function GetAdaIndent()
    " Find a non-blank line above the current line.
    let lnum = prevnonblank(v:lnum - 1)
    let ind = indent(lnum)
+   let sw = shiftwidth()
    let package_line = 0
 
    " Get previous non-blank/non-comment-only/non-cpp line
@@ -216,15 +218,15 @@ function GetAdaIndent()
       endif
       " Move indent in
       if ! false_match
-	 let ind = ind + shiftwidth()
+	 let ind = ind + sw
       endif
    elseif line =~ '^\s*\(case\|exception\)\>'
       " Move indent in twice (next 'when' will move back)
-      let ind = ind + 2 * shiftwidth()
+      let ind = ind + 2 * sw
    elseif line =~ '^\s*end\s*record\>'
       " Move indent back to tallying 'type' preceding the 'record'.
       " Allow indent to be equal to 'end record's.
-      let ind = s:MainBlockIndent( ind+shiftwidth(), lnum, 'type\>', '' )
+      let ind = s:MainBlockIndent( ind+sw, lnum, 'type\>', '' )
    elseif line =~ '\(^\s*new\>.*\)\@<!)\s*[;,]\s*$'
       " Revert to indent of line that started this parenthesis pair
       exe lnum
@@ -238,10 +240,10 @@ function GetAdaIndent()
       exe v:lnum
    elseif line =~ '[.=(]\s*$'
       " A statement continuation - move in one
-      let ind = ind + shiftwidth()
+      let ind = ind + sw
    elseif line =~ '^\s*new\>'
       " Multiple line generic instantiation ('package blah is\nnew thingy')
-      let ind = s:StatementIndent( ind - shiftwidth(), lnum )
+      let ind = s:StatementIndent( ind - sw, lnum )
    elseif line =~ ';\s*$'
       " Statement end (but not 'end' ) - try to find current statement-start indent
       let ind = s:StatementIndent( ind, lnum )
@@ -259,17 +261,17 @@ function GetAdaIndent()
    elseif continuation && line =~ '^\s*('
       " Don't do this if we've already indented due to the previous line
       if ind == initind
-	 let ind = ind + shiftwidth()
+	 let ind = ind + sw
       endif
    elseif line =~ '^\s*\(begin\|is\)\>'
       let ind = s:MainBlockIndent( ind, lnum, '\(procedure\|function\|declare\|package\|task\)\>', 'begin\>' )
    elseif line =~ '^\s*record\>'
-      let ind = s:MainBlockIndent( ind, lnum, 'type\>\|for\>.*\<use\>', '' ) + shiftwidth()
+      let ind = s:MainBlockIndent( ind, lnum, 'type\>\|for\>.*\<use\>', '' ) + sw
    elseif line =~ '^\s*\(else\|elsif\)\>'
       let ind = s:MainBlockIndent( ind, lnum, 'if\>', '' )
    elseif line =~ '^\s*when\>'
       " Align 'when' one /in/ from matching block start
-      let ind = s:MainBlockIndent( ind, lnum, '\(case\|exception\)\>', '' ) + shiftwidth()
+      let ind = s:MainBlockIndent( ind, lnum, '\(case\|exception\)\>', '' ) + sw
    elseif line =~ '^\s*end\>\s*\<if\>'
       " End of if statements
       let ind = s:EndBlockIndent( ind, lnum, 'if\>', 'end\>\s*\<if\>' )
@@ -292,6 +294,8 @@ function GetAdaIndent()
       let ind = s:MainBlockIndent( ind, lnum, 'begin\>', '' )
    elseif line =~ '^\s*then\>'
       let ind = s:MainBlockIndent( ind, lnum, 'if\>', '' )
+   elseif line =~ '^\s*private\>'
+      let ind = s:MainBlockIndent( ind, lnum, '\(package\|protected\|task\)\>', '' )
    endif
 
    return ind
@@ -300,12 +304,11 @@ endfunction GetAdaIndent
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-finish " 1}}}
+finish " }}}1
 
 "------------------------------------------------------------------------------
-"   Copyright (C) 2006	Martin Krischik
-"
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
-" vim: foldmethod=marker
+" vim: set textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab :
+" vim: set filetype=vim fileencoding=utf-8 fileformat=unix foldmethod=marker :
+" vim: set spell spelllang=en_gb :
