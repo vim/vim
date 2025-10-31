@@ -5430,7 +5430,7 @@ get_rel_pos(
     char tmp[8];
     // localized percentage value
     vim_snprintf(tmp, sizeof(tmp), _("%d%%"), perc);
-    return (int)vim_snprintf_safelen((char *)buf, buflen, _("%2s"), tmp);
+    return (int)vim_snprintf_safelen((char *)buf, buflen, _("%3s"), tmp);
 }
 
 /*
