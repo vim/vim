@@ -1659,6 +1659,7 @@ const ft_from_ext = {
   # XA65 MOS6510 cross assembler
   "a65": "a65",
   # Applescript
+  "applescript": "applescript",
   "scpt": "applescript",
   # Applix ELF
   "am": "elf",
