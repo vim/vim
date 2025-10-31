@@ -5936,7 +5936,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     {
 	do
 	    i = gchar_cursor();
-	while (VIM_ISWHITE(i) && oneleft() == OK);
+	while (IS_WHITE_OR_NUL(i) && oneleft() == OK);
 	curwin->w_valid &= ~VALID_WCOL;
     }
 }
