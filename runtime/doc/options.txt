@@ -7032,6 +7032,69 @@ A jump table for the options with a short description can be found at |Q_op|.
 	many states.  This should prevent Vim from hanging on a combination of
 	a complex pattern with long text.
 
+						*'reggetfunc'* *'rrf'*
+'reggetfunc' 'rgf'	string	(default "")
+			global
+			{not available when compiled without the |+eval|
+			feature}
+	This options specifies a function to be used whenever the custom
+	registers |quote_&|, |quote_^| are read.  The function takes a single
+	argument, the register name, and should return a |tuple| or |list|
+	containing the following elements in order:
+		2. The register type, conforming to |setreg()|, that the
+		   register will be set to.
+		3. A |list| containing a list of strings to set the register
+		   to.
+	Note that this function is not called on |:registers| or |:display|.
+
+	The following is a possible example use of this option:
+>vim
+		function GetFunc(reg)
+		    echom "Updating register " .. a:reg
+		    return ('l', readfile('stuff.txt'))
+		endfunction
+
+		set reggetfunc=GetFunc
+<
+	The value can be the name of a function, a |lambda| or a |Funcref|.  See
+	|option-value-function| for more information.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+	Additionally it is not allowed to change the buffer text in the
+	function, see |textlock|.
+
+						*'regsetfunc* *'rsf'*
+'regsetfunc' 'rsf'	string	(default "")
+			global
+			{not available when compiled without the |+eval|
+			feature}
+	This option specifies a function to be used whenever the custom
+	registers |quote_&|, |quote_^| are written to.  The function returns
+	nothing and takes three arguments:
+		1. The register name.
+		2. The register type being used, conforming to |getregtype()|.
+		3. A list of strings being written.
+	If the register type is not specified (an empty string), then the type
+	is automatically chosen, see |setreg()| for how.
+
+	The following is a possible example use of this option:
+>vim
+		function SetFunc(reg, type, lines)
+		    call writefile(a:lines, 'stuff.txt', 'a')
+		    echom 'Yanked ' .. len(a:lines)
+			\ .. ' lines of type ' .. a:type
+			\ .. ' to register ' .. a:reg
+		endfunction
+
+		set regsetfunc=SetFunc
+<
+	The value can be the name of a function, a |lambda| or a |Funcref|.  See
+	|option-value-function| for more information.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+	Additionally it is not allowed to change the buffer text in the
+	function, see |textlock|.
+
 		*'relativenumber'* *'rnu'* *'norelativenumber'* *'nornu'*
 'relativenumber' 'rnu'	boolean	(default off)
 			local to window
