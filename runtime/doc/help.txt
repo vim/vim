@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.1.  Last change: 2025 Jun 27
+*help.txt*	For Vim version 9.1.  Last change: 2025 Nov 01
 
 			VIM - main help file
 									 k
@@ -44,7 +44,7 @@ BASIC:
 |quickref|	Overview of the most common commands you will use
 |tutor|		30-minute interactive course for beginners
 |copying|	About copyrights
-|iccf|		Helping poor children in Uganda
+|Kuwasha|	Helping poor children in Uganda
 |sponsor|	Sponsor Vim development, become a registered Vim user
 |www|		Vim on the World Wide Web
 |bugs|		Where to send bug reports

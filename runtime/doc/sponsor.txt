@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2025 Oct 12
+*sponsor.txt*   For Vim version 9.1.  Last change: 2025 Nov 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,30 +22,6 @@ For the most recent information about sponsoring look on the Vim web site:
 More explanations can be found in the |sponsor-faq|.
 
 
-REGISTERED VIM USER						*register*
-
-You can become a registered Vim user by sending at least 10 euro.  This works
-similar to sponsoring Vim, see |sponsor| above.  Registration was made
-possible for the situation where your boss or bookkeeper may be willing to
-register software, but does not like the terms "sponsoring" and "donation".
-
-More explanations can be found in the |register-faq|.
-
-
-VOTE FOR FEATURES					*vote-for-features*
-
-Note: Voting for features has been discontinued since the passing of |Bram| in
-2023.  The following two links still work, but they are no longer updated.  So
-they now only provide a historic view as of summer 2023.
-
-The voting results appear on the results page, which is visible for everybody:
-http://www.vim.org/sponsor/vote_results.php
-
-Additionally, once you have sent 100 euro or more in total, your name appears
-in the "Vim hall of honour":   http://www.vim.org/sponsor/hall_of_honour.php
-But only if you enable this on your account page.
-
-
 HOW TO SEND MONEY						*send-money*
 
 Credit card	Through PayPal, see the PayPal site for information:
@@ -58,77 +34,45 @@ Credit card	Through PayPal, see the PayPal site for information:
 		In Euro countries a bank transfer is preferred, this has lower
 		costs.
 
-Other methods	See |iccf-donations|.
+Other methods	See |donate|.
 		Include "Vim sponsor" or "Vim registration" in the comment of
 		your money transfer.
 
 
 QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
 
-Why should I give money?
+Why should I give money?~
 
 If you do not show your appreciation for Vim, the development team will be
 less motivated to fix bugs and add new features.  They will do something else
 instead.
 
 
-How much money should I send?
+How much money should I send?~
 
 That is up to you.  The more you give, the more children will be helped.
 An indication for individuals that use Vim at home: 10 Euro per year.  For
 professional use: 30 Euro per year per person.
 
 
-How do I become a Vim sponsor or registered Vim user?
-
-Send money, as explained above |send-money| and include your e-mail address.
-When the money has been received you will receive a unique registration key.
-This key can be used on the Vim website to get an extra page where you can
-choose whether others will be able to see that you donated.  There is a link
-to this page on your "My Account" page.
-
-
-What is the difference between sponsoring and registering?
-
-It has a different name.  Use the term "registration" if your boss doesn't
-like "sponsoring" or "donation".  The benefits are the same.
-
-
-How can I send money?
+How can I send money?~
 
 See |send-money|.  Check the web site for the most recent information:
 http://www.vim.org/sponsor/
 
 
-Why don't you use the SourceForge donation system?
-
-SourceForge takes 5% of the donations for themselves.  If you want to support
-SourceForge you can send money to them directly.
-
-
-I cannot afford to send money, may I still use Vim?
+I cannot afford to send money, may I still use Vim?~
 
 Yes.
 
 
-I did not register Vim, can I use all available features?
-
-Yes.
-
-
-I noticed a bug, do I need to register before I can report it?
-
-No, suggestions for improving Vim can always be given.  For improvements use
-the developer |maillist|, for reporting bugs see |bugs|.
-
-
-How about Charityware?
+How about Charityware?~
 
 Currently the Vim donations go to |uganda| anyway.  Thus it doesn't matter if
-you sponsor Vim or ICCF.
+you sponsor Vim or Kuwasha.
 
 
-I donated $$$, now please add feature XYZ!
+I donated $$$, now please add feature XYZ!~
 
 There is no direct relation between your donation and the work developers do.
 Otherwise you would be paying for work and we would have to pay tax over the
@@ -136,15 +80,12 @@ donation.  If you want to hire one of the developers for specific work,
 contact them directly, don't use the donation system.
 
 
-Are the donations tax deductible?
+Are the donations tax deductible?~
 
-That depends on your country.  The donations to help the children in |Uganda|
-are tax deductible in Holland, Germany, Canada and in the USA.  See the ICCF
-website https://iccf-holland.org/donate.html (Note: this process is currently
-undergoing some changes and will be done differently in the future).
+Possibly.  Please refer to |Kuwasha| for this question.
 
 
-Can you send me a bill?
+Can you send me a bill?~
 
 No, because there is no relation between the money you send and the work that
 is done.  But a receipt is possible.

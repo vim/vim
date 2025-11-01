@@ -730,6 +730,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1893,
+/**/
     1892,
 /**/
     1891,
@@ -5029,7 +5031,7 @@ intro_message(
 	N_("Vim is open source and freely distributable"),
 	"",
 	N_("Help poor children in Uganda!"),
-	N_("type  :help iccf<Enter>       for information "),
+	N_("type  :help Kuwasha<Enter>    for information "),
 	"",
 	N_("type  :q<Enter>               to exit         "),
 	N_("type  :help<Enter>  or  <F1>  for on-line help"),
@@ -5105,7 +5107,7 @@ intro_message(
 		    p = sponsor < 0
 			? N_("Sponsor Vim development!")
 			: N_("Become a registered Vim user!");
-		else if (strstr(p, "iccf") != NULL)
+		else if (strstr(p, "Kuwasha") != NULL)
 		    p = sponsor < 0
 			? N_("type  :help sponsor<Enter>    for information ")
 			: N_("type  :help register<Enter>   for information ");

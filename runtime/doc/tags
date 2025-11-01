@@ -5739,6 +5739,7 @@ KVim	gui_x11.txt	/*KVim*
 KeyInputPre	autocmd.txt	/*KeyInputPre*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
+Kuwasha	uganda.txt	/*Kuwasha*
 L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
@@ -8598,7 +8599,6 @@ i`	motion.txt	/*i`*
 ia64.vim	syntax.txt	/*ia64.vim*
 ib	motion.txt	/*ib*
 iccf	uganda.txt	/*iccf*
-iccf-donations	uganda.txt	/*iccf-donations*
 icon-changed	version4.txt	/*icon-changed*
 iconise	starting.txt	/*iconise*
 iconize	starting.txt	/*iconize*
@@ -10023,7 +10023,6 @@ reg_executing()	builtin.txt	/*reg_executing()*
 reg_recording()	builtin.txt	/*reg_recording()*
 regexp	pattern.txt	/*regexp*
 regexp-changes-5.4	version5.txt	/*regexp-changes-5.4*
-register	sponsor.txt	/*register*
 register-faq	sponsor.txt	/*register-faq*
 register-functions	usr_41.txt	/*register-functions*
 register-variable	eval.txt	/*register-variable*
@@ -11707,7 +11706,6 @@ vms-notes	os_vms.txt	/*vms-notes*
 vms-problems	os_vms.txt	/*vms-problems*
 vms-started	os_vms.txt	/*vms-started*
 vms-usage	os_vms.txt	/*vms-usage*
-vote-for-features	sponsor.txt	/*vote-for-features*
 votes-for-changes	todo.txt	/*votes-for-changes*
 vreplace-mode	insert.txt	/*vreplace-mode*
 vt100-cursor-keys	term.txt	/*vt100-cursor-keys*

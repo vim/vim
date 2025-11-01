@@ -114,6 +114,7 @@ func Test_window_cmd_wincmd_gf()
   new | only!
 
   augroup! test_window_cmd_wincmd_gf
+  bw!
 endfunc
 
 func Test_window_quit()
@@ -596,14 +597,14 @@ func Test_window_jump_tag()
   CheckFeature quickfix
 
   help
-  /iccf
-  call assert_match('^|iccf|',  getline('.'))
+  /Kuwasha
+  call assert_match('^|Kuwasha|',  getline('.'))
   call assert_equal(2, winnr('$'))
   2wincmd }
   call assert_equal(3, winnr('$'))
-  call assert_match('^|iccf|',  getline('.'))
+  call assert_match('^|Kuwasha|',  getline('.'))
   wincmd k
-  call assert_match('\*iccf\*',  getline('.'))
+  call assert_match('\*Kuwasha\*',  getline('.'))
   call assert_equal(2, winheight(0))
 
   wincmd z
@@ -823,6 +824,7 @@ func Test_window_prevwin()
   q
   set hidden&vim autoread&vim
   delfunc Fun_RenewFile
+  bw!
 endfunc
 
 func Test_relative_cursor_position_in_one_line_window()
@@ -2117,6 +2119,7 @@ func Test_splitkeep_skipcol()
   let buf = RunVimInTerminal('-S XTestSplitkeepSkipcol', #{rows: 12, cols: 40})
 
   call VerifyScreenDump(buf, 'Test_splitkeep_skipcol_1', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_splitkeep_line()
@@ -2135,6 +2138,7 @@ func Test_splitkeep_line()
 
   call term_sendkeys(buf, ":wincmd s\<CR>")
   call VerifyScreenDump(buf, 'Test_splitkeep_line_2', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_new_help_window_on_error()
