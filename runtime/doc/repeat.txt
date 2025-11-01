@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.1.  Last change: 2025 Oct 13
+*repeat.txt*    For Vim version 9.1.  Last change: 2025 Nov 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -327,6 +327,12 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Note that for ftdetect scripts to be loaded
 			you will need to write `filetype plugin indent on`
 			AFTER all `packadd!` commands.
+
+			To programmatically decide if `!` is needed during
+			startup, check |v:vim_did_init|: use `!` if 0 (to not
+			duplicate |load-plugins| step), no `!` otherwise (to
+			force load plugin files as otherwise they won't be
+			loaded automatically).
 
 			Also see |pack-add|.
 			{only available when compiled with |+eval|}

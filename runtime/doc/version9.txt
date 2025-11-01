@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Oct 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Nov 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41908,6 +41908,7 @@ Vim Variables: ~
 |v:termda1|		The escape sequence returned for the primary device
 			attribute query (DA1).
 |v:termosc|		The most recent received OSC response.
+|v:vim_did_init|	Set once Vim finishes startup initialization.
 |v:wayland_display|	The name of the Wayland display Vim is connected to.
 
 Vim Arguments: ~
