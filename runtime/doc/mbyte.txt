@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Oct 26
+*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Nov 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -997,8 +997,8 @@ recommended to test with an alternative one.
 
 For proper integration with Vim's |+multi_byte_ime| system, changes in the
 input method's status must be detectable by the `ImmGetOpenStatus()` function
-in Vims source code.  Currently, some input methods that support multi-language
-input may have internal state changes that gVim cannot capture.
+in Vim's source code.  Currently, some input methods that support
+multi-language input may have internal state changes that gVim cannot capture.
 
 
 Cursor color when IME or XIM is on				*CursorIM*
