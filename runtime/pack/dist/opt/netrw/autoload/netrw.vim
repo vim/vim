@@ -4211,11 +4211,12 @@ function s:NetrwChgPerm(islocal,curdir)
     call inputsave()
     let newperm= input("Enter new permission: ")
     call inputrestore()
-    let chgperm= substitute(g:netrw_chgperm,'\<FILENAME\>',netrw#os#Escape(expand("<cfile>")),'')
+    let fullpath = fnamemodify(netrw#fs#PathJoin(a:curdir, expand("<cfile>")), ':p')
+    let chgperm= substitute(g:netrw_chgperm,'\<FILENAME\>',netrw#os#Escape(fullpath),'')
     let chgperm= substitute(chgperm,'\<PERM\>',netrw#os#Escape(newperm),'')
     call system(chgperm)
     if v:shell_error != 0
-        NetrwKeepj call netrw#ErrorMsg(1,"changing permission on file<".expand("<cfile>")."> seems to have failed",75)
+        NetrwKeepj call netrw#msg#Notify('WARNING', printf('changing permission on file<%s> seems to have failed', fullpath))
     endif
     if a:islocal
         NetrwKeepj call s:NetrwRefresh(a:islocal,s:NetrwBrowseChgDir(a:islocal,'./',0))
@@ -4591,7 +4592,7 @@ function s:NetrwServerEdit(islocal,fname)
         endif
 
     else
-        call netrw#ErrorMsg(s:ERROR,"you need a gui-capable vim and client-server to use <ctrl-r>",98)
+        call netrw#msg#Notify('ERROR', 'you need a gui-capable vim and client-server to use <ctrl-r>')
     endif
 
 endfunction
