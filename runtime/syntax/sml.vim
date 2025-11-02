@@ -152,9 +152,9 @@ syn match    smlKeyChar      ";"
 syn match    smlKeyChar      "\*"
 syn match    smlKeyChar      "="
 
-syn match    smlNumber        "\<-\=\d\+\>"
-syn match    smlNumber        "\<-\=0[x|X]\x\+\>"
-syn match    smlReal          "\<-\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
+syn match    smlNumber        "\<\~\=\(0w\)\=\d\+\>"
+syn match    smlNumber        "\<\~\=0w\=x\x\+\>"
+syn match    smlReal          "\<\~\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
 
 " Synchronization
 syn sync minlines=20
