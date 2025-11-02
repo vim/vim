@@ -2706,6 +2706,10 @@ set_last_insert_str(char_u	*str)
     *s = NUL;
     last_insert.length = (size_t)(s - last_insert.string);
     last_insert_skip = 0;
+
+    // Change redo buff
+    ResetRedobuff();
+    AppendToRedobuffLit(s, -1);
 }
 
 #if defined(EXITFREE)
