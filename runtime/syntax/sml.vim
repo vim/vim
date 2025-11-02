@@ -4,7 +4,8 @@
 " Maintainer:   Markus Mottl <markus.mottl@gmail.com>
 " Previous Maintainer: Fabrizio Zeno Cornelli
 "				<zeno@filibusta.crema.unimi.it> (invalid)
-" Last Change:  2022 Apr 01
+" Last Change:  2025 Nov 07
+"               2022 Apr 01
 "               2015 Aug 31 - Fixed opening of modules (Ramana Kumar)
 "               2006 Oct 23 - Fixed character highlighting bug (MM)
 
