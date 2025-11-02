@@ -5933,6 +5933,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	last_char = ((char_u *)osc_state.buf.ga_data)[osc_state.buf.ga_len - 1];
 
     key_name[0] = (int)KS_EXTRA;
+    key_name[1] = (int)KE_IGNORE;
 
     // Read data and append to buffer. If we reach a terminator, then
     // finally set the vim var.
@@ -5943,8 +5944,6 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 			)))
 	{
 	    osc_state.processing = FALSE;
-
-	    key_name[1] = (int)KE_OSC;
 
 	    ga_concat_len(&osc_state.buf, tp, i + 1 + (tp[i] == ESC));
 	    ga_append(&osc_state.buf, NUL);
@@ -5962,8 +5961,6 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 		redraw_asap(UPD_CLEAR);
 	    return OK;
 	}
-
-    key_name[1] = (int)KE_IGNORE;
 
 #ifdef ELAPSED_FUNC
     if (ELAPSED_FUNC(osc_state.start_tv) >= p_ost)

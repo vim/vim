@@ -3841,7 +3841,6 @@ $quote	eval.txt	/*$quote*
 <NL>	motion.txt	/*<NL>*
 <Nop>	map.txt	/*<Nop>*
 <Nul>	intro.txt	/*<Nul>*
-<OSC>	intro.txt	/*<OSC>*
 <PageDown>	scroll.txt	/*<PageDown>*
 <PageUp>	scroll.txt	/*<PageUp>*
 <Plug>	map.txt	/*<Plug>*
@@ -3962,7 +3961,6 @@ $quote	eval.txt	/*$quote*
 <xHome>	term.txt	/*<xHome>*
 <xHome>-xterm	term.txt	/*<xHome>-xterm*
 <xLeft>	term.txt	/*<xLeft>*
-<xOSC>	intro.txt	/*<xOSC>*
 <xRight>	term.txt	/*<xRight>*
 <xUp>	term.txt	/*<xUp>*
 =	change.txt	/*=*
