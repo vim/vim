@@ -29,12 +29,6 @@ setlocal shiftwidth=2
 
 let b:undo_indent = "setl et< inde< indk< lisp< si< sw< tw<"
 
-" Comment formatting
-if (has("comments"))
-  set comments=sr:(*,mb:*,ex:*)
-  set fo=cqort
-endif
-
 " Only define the function once.
 "if exists("*GetSMLIndent")
 "finish
