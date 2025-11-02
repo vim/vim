@@ -2670,6 +2670,44 @@ set_last_insert(int c)
     last_insert_skip = 0;
 }
 
+/*
+ * Set the last inserted text to str.
+ */
+    void
+set_last_insert_str(char_u	*str)
+{
+    char_u  *s;
+    char_u  *p;
+    int     c;
+    size_t  len = str ? STRLEN(str) : 0;
+
+    vim_free(last_insert.string);
+    last_insert.string = alloc(len * MB_MAXBYTES + 5);
+    if (last_insert.string == NULL)
+    {
+	last_insert.length = 0;
+	return;
+    }
+
+    s = last_insert.string;
+    if (str != NULL)
+    {
+	for (p = str; *p != NUL; MB_PTR_ADV(p))
+	{
+	    c = mb_ptr2char(p);
+	    // Use the CTRL-V only when entering a special char
+	    if (c < ' ' || c == DEL)
+		*s++ = Ctrl_V;
+	    s = add_char2buf(c, s);
+	}
+    }
+
+    *s++ = ESC;
+    *s = NUL;
+    last_insert.length = (size_t)(s - last_insert.string);
+    last_insert_skip = 0;
+}
+
 #if defined(EXITFREE)
     void
 free_last_insert(void)

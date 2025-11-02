@@ -14,6 +14,7 @@ void insertchar(int c, int flags, int second_indent);
 void start_arrow(pos_T *end_insert_pos);
 int stop_arrow(void);
 void set_last_insert(int c);
+void set_last_insert_str(char_u *str);
 void free_last_insert(void);
 char_u *add_char2buf(int c, char_u *s);
 void beginline(int flags);

@@ -10336,8 +10336,8 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 
 							*E883*
 		Note: you may not use |List| containing more than one item to
-		      set search and expression registers.  Lists containing
-		      no items act like empty strings.
+		      set search and expression and dot registers.  Lists
+		      containing no items act like empty strings.
 
 		Examples: >
 			:call setreg(v:register, @*)
