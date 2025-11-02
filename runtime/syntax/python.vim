@@ -168,6 +168,8 @@ syn region  pythonRawString matchgroup=pythonTripleQuotes
 
 " Formatted string literals (f-strings)
 " https://docs.python.org/3/reference/lexical_analysis.html#f-strings
+" Template string literals (t-strings)
+" https://docs.python.org/3/reference/lexical_analysis.html#template-string-literals
 syn region  pythonFString
       \ matchgroup=pythonQuotes
       \ start=+\c[FT]\z(['"]\)+
