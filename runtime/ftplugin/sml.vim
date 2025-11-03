@@ -2,7 +2,7 @@
 " Language: 		SML
 " Filenames:		*.sml *.sig
 " Maintainer: 		tocariimaa <tocariimaa@firemail.cc>
-" Last Change:		2025-10-02
+" Last Change:		2025-10-03
 
 if exists('b:did_ftplugin')
   finish
@@ -19,6 +19,10 @@ setlocal formatoptions+=cqort
 if has('comments')
   setlocal commentstring=(*\ %s\ *)
   setlocal comments=sr:(*,mb:*,ex:*)
+endif
+
+if exists('loaded_matchit')
+  let b:match_words = '\<let\|local\|sig\|struct\|with\>:\<end\>'
 endif
 
 let &cpo = s:cpo_save
