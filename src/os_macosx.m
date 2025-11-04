@@ -386,7 +386,13 @@ timer_delete(timer_t timerid)
 
 #ifdef FEAT_SOUND
 
+// If building on 10.6 with a newer version of clang through MacPorts,
+// use older syntax by avoiding generics and subscripting in this section.
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
+#else
+static NSMutableDictionary *sounds_list = nil;
+#endif
 
 /// A delegate for handling when a sound has stopped playing, in
 /// order to clean up the sound and to send a callback.
@@ -463,9 +469,17 @@ sound_mch_play(const char_u* sound_name, long sound_id, soundcb_T *callback, boo
 
 	if (sounds_list == nil)
 	{
+	    #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 	    sounds_list = [[NSMutableDictionary<NSNumber*, NSSound*> alloc] init];
+	    #else
+	    sounds_list = [[NSMutableDictionary alloc] init];
+	    #endif
 	}
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 	sounds_list[[NSNumber numberWithLong:sound_id]] = sound;
+	#else
+	[sounds_list setObject:sound forKey:[NSNumber numberWithLong:sound_id]];
+	#endif
 
 	// Make a delegate to handle when the sound stops. No need to call
 	// autorelease because NSSound only holds a weak reference to it.
@@ -482,7 +496,11 @@ sound_mch_stop(long sound_id)
 {
     @autoreleasepool
     {
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 	NSSound *sound = sounds_list[[NSNumber numberWithLong:sound_id]];
+	#else
+	NSSound *sound = [sounds_list objectForKey:[NSNumber numberWithLong:sound_id]];
+	#endif
 	if (sound != nil)
 	{
 	    // Stop the sound. No need to release it because the delegate will do
