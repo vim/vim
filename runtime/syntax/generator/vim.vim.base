@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Oct 27
+" Last Change:	   2025 Nov 04
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1923,10 +1923,10 @@ VimFoldl syn region vimLuaHeredoc	contained
 
 " [-- mzscheme --] {{{3
 if s:interfaces =~# 'm'
-  let s:iskKeep = &isk
+  let s:iskKeep = &l:isk
   syn include @vimMzSchemeScript syntax/scheme.vim
   unlet b:current_syntax
-  let &isk = s:iskKeep
+  let &l:isk = s:iskKeep
 endif
 
 syn keyword	vimMzScheme	mz[scheme]	skipwhite nextgroup=vimMzSchemeHeredoc,vimMzSchemeStatement
