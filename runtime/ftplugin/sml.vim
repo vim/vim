@@ -19,7 +19,7 @@ setlocal commentstring=(*\ %s\ *)
 setlocal comments=sr:(*,mb:*,ex:*)
 
 if exists('loaded_matchit')
-  let b:math_ignorecase = 0
+  let b:match_ignorecase = 0
   let b:match_words = '\<\%(abstype\|let\|local\|sig\|struct\)\>:\<\%(in\|with\)\>:\<end\>'
   let b:undo_ftplugin ..= ' | unlet! b:match_ignorecase b:match_words'
 endif
