@@ -286,6 +286,7 @@ runtime/ftplugin/sed.vim				@dkearns
 runtime/ftplugin/sh.vim					@dkearns
 runtime/ftplugin/shaderslang.vim			@mTvare6
 runtime/ftplugin/slint.vim				@ribru17
+runtime/ftplugin/sml.vim				@tocariimaa
 runtime/ftplugin/snakemake.vim				@ribru17
 runtime/ftplugin/solidity.vim				@coti-z
 runtime/ftplugin/solution.vim				@dkearns
