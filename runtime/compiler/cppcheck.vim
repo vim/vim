@@ -18,14 +18,14 @@ if !exists('g:c_cppcheck_params')
   let s:undo_compiler = 'unlet! g:c_cppcheck_params'
 endif
 
-let &l:makeprg = 'cppcheck --quiet'
+exe 'CompilerSet makeprg=' .. escape('cppcheck --quiet'
       \ ..' --template="{file}:{line}:{column}: {severity}: [{id}] {message} {callstack}"'
       \ ..' '..get(b:, 'c_cppcheck_params', get(g:, 'c_cppcheck_params', (&filetype ==# 'cpp' ? ' --language=c++' : '')))
       \ ..' '..get(b:, 'c_cppcheck_includes', get(g:, 'c_cppcheck_includes',
       \	          (filereadable('compile_commands.json') ? '--project=compile_commands.json' :
       \           (!empty(glob('*'..s:slash..'compile_commands.json', 1, 1)) ? '--project='..glob('*'..s:slash..'compile_commands.json', 1, 1)[0] :
-      \	          (empty(&path) ? '' : '-I')..join(map(filter(split(&path, ','), 'isdirectory(v:val)'),'shellescape(v:val)'), ' -I')))))
-exe 'CompilerSet makeprg='..escape(&l:makeprg, ' \|"')
+      \	          (empty(&path) ? '' : '-I')..join(map(filter(split(&path, ','), 'isdirectory(v:val)'),'shellescape(v:val)'), ' -I'))))),
+      \ ' \|"')
 
 CompilerSet errorformat=
   \%f:%l:%c:\ %tarning:\ %m,
