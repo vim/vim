@@ -1480,34 +1480,32 @@ without arguments.  Example: >
 
 4. Types					*vim9-types*
 
-The following builtin types, each with its corresponding |v:t_TYPE| and |type()|
-value, are supported:
+The following types, each shown with its corresponding internal |v:t_TYPE|
+variable, are supported:
 
-	builtin type			|v:t_TYPE|	|type()|
-	--------------------------	------------	------
-	number				|v:t_number|	  0
-	string				|v:t_string|	  1
-	func				|v:t_func|	  2
-	func: {type}			|v:t_func|	  2
-	func({type}, ...)		|v:t_func|	  2
-	func({type}, ...): {type}	|v:t_func|	  2
-	list<{type}>			|v:t_list|	  3
-	dict<{type}>			|v:t_dict|	  4
-	float				|v:t_float|	  5
-	bool				|v:t_bool|	  6
-	none				|v:t_none|	  7
-	job				|v:t_job|	  8
-	channel				|v:t_channel|	  9
-	blob				|v:t_blob|	 10
-	class				|v:t_class|	 12
-	object				|v:t_object|	 13
-	typealias			|v:t_typealias|	 14
-	enum				|v:t_enum|	 15
-	enumvalue			|v:t_enumvalue|	 16
-	tuple<{type}>			|v:t_tuple|	 17
-	tuple<{type}, {type}, ...>	|v:t_tuple| 	 17
-	tuple<...list<{type}>>		|v:t_tuple| 	 17
-	tuple<{type}, ...list<{type}>>	|v:t_tuple| 	 17
+	number					|v:t_number|
+	string					|v:t_string|
+	func					|v:t_func|
+	func: {type}				|v:t_func|
+	func({type}, ...)			|v:t_func|
+	func({type}, ...): {type}		|v:t_func|
+	list<{type}>				|v:t_list|
+	dict<{type}>				|v:t_dict|
+	float					|v:t_float|
+	bool					|v:t_bool|
+	none					|v:t_none|
+	job					|v:t_job|
+	channel					|v:t_channel|
+	blob					|v:t_blob|
+	class					|v:t_class|
+	object					|v:t_object|
+	typealias				|v:t_typealias|
+	enum					|v:t_enum|
+	enumvalue				|v:t_enumvalue|
+	tuple<{type}>				|v:t_tuple|
+	tuple<{type}, {type}, ...>		|v:t_tuple|
+	tuple<...list<{type}>>			|v:t_tuple|
+	tuple<{type}, ...list<{type}>>		|v:t_tuple|
 	void
 
 						 *E1031* *E1186*
@@ -1515,14 +1513,14 @@ These types can be used in declarations, though no simple value can have the
 "void" type.  Trying to use a void as a value results in an error.  Examples: >vim9
 
 	vim9script
-	def NoReturn(): void
+	def NoReturnValue(): void
 	enddef
 	try
-	    const X: any = NoReturn()
+	    const X: any = NoReturnValue()
 	catch
 	    echo v:exception	  # E1031: Cannot use void value
 	    try
-	        echo NoReturn()
+	        echo NoReturnValue()
 	    catch
 	        echo v:exception  # E1186: Expression does not result in a ...
 	    endtry
@@ -1683,9 +1681,9 @@ classes, objects, and interface: >vim9
 					*vim9-enum-type*  *vim9-enumvalue-type*
 An |enum| may be used as a type (|v:t_enum|).  Variables holding enum values
 have the enumvalue type (|v:t_enumvalue|) at runtime.  The following
-interactive example prompts for a value and returns information about either
-a square or a rhombus.  It also reports on the |type()| and |typename()| of
-the enum and enumvalue: >vim9
+interactive example prompts for a character and returns information about
+either a square or a rhombus.  It also reports on the |type()| and |typename()|
+of the enum and enumvalue: >vim9
 
 	vim9script
 	enum Quad
@@ -1693,18 +1691,21 @@ the enum and enumvalue: >vim9
 	    Rhombus('opposite', 'no')
 	    var eq: string
 	    var ra: string
-	    def About(): string
+	    def string(): string
 	        return $"\nA {this.name} has " ..
 	               $"{this.eq} equal sides and {this.ra} right angles\n\n"
 	    enddef
 	endenum
-	var myQuad: Quad = "Rhombus or Square? "->input()->toupper() =~ '^R' ?
-			   Quad.Rhombus : Quad.Square
-	echo myQuad.About()
-	echo "\n\ttype()\ttypename()\n\t------\t----------"
-	echo $"Quad\t{Quad->type()}\t{Quad->typename()}"
+	echo "Rhombus (r) or Square (s)?"
+	var myQuad: Quad = getcharstr() =~ '\c^R' ? Quad.Rhombus : Quad.Square
+	echo myQuad.string() .. "\ttype()\ttypename()"
+	echo $"Quad  \t{Quad->type()}  \t{Quad->typename()}"
 	echo $"myQuad\t{myQuad->type()}\t{myQuad->typename()}"
 <
+	 Notes: This script uses builtin method "string()" (|object-string()|).
+		The typename() of Quad and myQuad are the same ("enum<Quad>")
+		whereas the type() is distinguished (myQuad returns 16,
+		enumvalue, whereas Quad returns 15, enum).
 
 Variable types and type casting	~
 							*variable-types*
@@ -1730,10 +1731,11 @@ list items match the declared type.  For example: >
 So, here the type cast checks whether "b:two" is a number and gives an error
 if it isn't.
 
-The difference is demonstrated in the following example.  In function "NTC",
-Vim infers the expression type "[1, b:two]" as list<any>, then verifies
-whether it can be assigned to the list<number> return type.  In function "TC",
-the type cast means Vim first checks whether "b:two" is a <number> type: >vim9
+The difference is demonstrated in the following example.  With funcref
+variable "NTC", Vim infers the expression type "[1, b:two]" as list<any>, then
+verifies whether it can be assigned to the list<number> return type.  With
+funcref variable "TC", the type cast means Vim first checks whether "b:two" is
+a <number> type: >vim9
 
 	vim9script
 	b:two = '2'
@@ -1760,14 +1762,11 @@ the type cast means Vim first checks whether "b:two" is a <number> type: >vim9
 	        type checking occurs.
 
 						*E1104*
-The syntax of a type cast is:  "<" {type} ">".  White space isn't allowed
-either after the "<" or before the ">" (to avoid them being confused with
-smaller-than and greater-than operators).  Examples: >vim9
+The syntax of a type cast is "<{type}>".  An error occurs if either the
+opening "<" (|E121|) or closing ">" (E1104) is omitted.  Also, white space
+is not allowed either after the "<" (|E15|) or before the ">" (|E1068|), which
+avoids ambiguity with smaller-than and greater-than operators.
 
-	vim9cmd echo [1, <number g:num]   # E1104: Missing >
-	vim9cmd echo [1, <number >g:num]  # E1068: No white space allowed...
-	vim9cmd echo [1, < number>g:num]  # E15: Invalid expression ...
-<
 Although a type casting forces explicit type checking, it neither changes the
 value of, nor the type of, a variable.  If you need to alter the type, use a
 function such as |string()| to convert to a string, or |str2nr()| to convert a
@@ -1784,6 +1783,12 @@ the final result.  Examples: >vim9
 	# This type cast fails
 	echo <number>[3, 2, 1]->extend(['Go!'])->string()
 <
+						*E1272*
+If a type is used in a context where types are not expected you can get
+E1272.  For example: >
+	:vim9cmd echo islocked('x: string')
+<  Note: This must be executed from Vim's command line, not sourced.
+
 						*E1363*
 If a type is incomplete, such as when an object's class is unknown, E1363
 results.  For example: >vim9
@@ -1974,7 +1979,7 @@ in Vim9 script.
 	let &laststatus='2'
 	vim9cmd &laststatus = '2'
 <
-  - Not using a string when as string is required (|E928|): >vim
+  - Not using a string when a string is required (|E928|): >vim
 
 	let &langmenu = 42
 	vim9cmd &langmenu = 42  # E928: String required
@@ -2043,8 +2048,8 @@ is not specified.  Inferred and declared types are shown in this example: >vim9
 <
 The key concept here is, variables with declared or inferred types cannot
 have the types of the elements within their containers change.  However, type
-"changes" are allowed for either a:
-  - container literal (not bound to a variable), or
+"changes" are allowed for either:
+  - a container literal (not bound to a variable), or
   - a container where |copy()| or |deepcopy()| is used in method chaining.
 Both are demonstrated in this example: >vim9
 
@@ -2061,11 +2066,11 @@ Both are demonstrated in this example: >vim9
 The reasoning behind this is, when a type is either declared or inferred
 and the list is passed around and changed, the declaration/inference must
 always hold so that you can rely on the type to match the declared/inferred
-type.  For either a list literal or a deepcopied list, that type safety is
+type.  For either a list literal or a fully copied list, that type safety is
 not needed because the original list is unchanged (as "echo mylist" shows,
 above).
 
-If the item type was not declared or determined to be "<any>" it will not
+If the item type was not declared or determined to be "<any>", it will not
 change, even if all items later become the same type.  However, when `mapnew()`
 is used, inference means that the new list will reflect the type(s) present.
 For example: >vim9
@@ -2108,7 +2113,7 @@ always to change the type.  This even applies to a list literal
 
 	vim9cmd [1, [2, 3]]->flatten()		# E1158: Cannot use flatten
 	vim9cmd echo [1, [2, 3]]->flattennew()	# [1, 2, 3]
-
+<
 Assigning to a funcref with specified arguments (see |vim9-func-declaration|)
 involves strict type checking of the arguments.  For example, this works: >vim9
 
@@ -2122,7 +2127,7 @@ whereas this fails with error |E1012| (type mismatch): >vim9
 	vim9script
 	var F_name_age: func(string, number): string
 	F_name_age = (n: string, a: string): string => $"Name: {n}, Age: {a}"
-
+<
 If there is a variable number of arguments they must have the same type, as in
 this example: >vim9
 
@@ -2130,14 +2135,34 @@ this example: >vim9
 	var Fproduct: func(...list<number>): number
 	Fproduct = (...v: list<number>): number => reduce(v, (a, b) => a * b)
 	echo Fproduct(3, 2, 4)  # Echoes 24
-
-Though, <any> may be used to accommodate mixed types: >vim9
+<
+And <any> may be used to accommodate mixed types: >vim9
 
 	vim9script
 	var FlatSort: func(...list<any>): any
-	FlatSort = (...v) => flattennew(v)->sort('n')
+	FlatSort = (...v: list<any>) => flattennew(v)->sort('n')
 	echo FlatSort(true, [[[5, 3], 2], 4])  # Echoes [true, 2, 3, 4, 5]
+<
+	  Note: Using <any> in a lambda does not avoid type checking of the
+		funcref.  It remains constrained by the declared funcref's
+		type and, as these examples show, a runtime or compiling error
+		occurs when the types mismatch: >vim9
 
+		    vim9script
+		    var FuncSN: func(string): number
+		    FuncSN = (v: any): number => v->str2nr()
+		    echo FuncSN('162')->nr2char()  # Echoes ¢
+		    echo FuncSN(162)->nr2char())   # E1013 (runtime error)
+< >vim9
+		    vim9script
+		    var FuncSN: func(string): number
+		    FuncSN = (v: any): number => v->str2nr()
+		    def FuncSNfail(): void
+		        echo FuncSN('162')->nr2char()  # No echo because ...
+		        echo FuncSN(162)->nr2char()    # Error while compiling
+		    enddef
+		    FuncSNfail()
+<
 When the funcref has no arguments specified, there is no type checking.  This
 example shows FlexArgs has a string argument the first time and a list the
 following time: >vim9
@@ -2154,8 +2179,8 @@ following time: >vim9
 				*E1251* *E1253* *E1256* *E1297* *E1298* *E1301* *E1528*
 				*E1529* *E1530* *E1531* *E1534*
 Types are checked for most builtin functions to make it easier to spot
-mistakes.  The following one-line |:vim9| commands demonstrate many of those
-type-checking errors: >vim9
+mistakes.  The following one-line |:vim9| commands, calling builtin functions,
+demonstrate many of those type-checking errors: >vim9
 
 	vim9 9->list2blob()               # E1211: List required for argument 1
 	vim9 9->ch_close()                # E1217: Channel or Job required for
@@ -2252,7 +2277,7 @@ resources.  For example: >vim9
 	echo [myjob, myjob->job_status()]
 	myjob = null_job  # Clear the variable; release the job's resources.
 	echo myjob
-
+<
 For a container variable, resources may also be cleared by assigning an
 empty container to the variable.  For example: >vim9
 
@@ -2272,8 +2297,8 @@ differ.  For containers:
   - A container initialized as null_list defaults to empty and is null.
 The lists "lu" and "li", below, are equivalent and indistinguishable
 initializations whereas "ln" is a null container (similar to, but not
-equivalent to, an empty container - see |null-anomalies|).
->vim9
+equivalent to, an empty container - see |null-anomalies|). >vim9
+
 	vim9script
 	# uninitialized: empty container, not null
 	var lu: list<any>
@@ -2300,38 +2325,38 @@ it cannot be inferred.  Consequently, the item type defaults to "any": >vim9
 	vim9script
 	var [t1, t2] = [(), null_tuple]
 	echo $'t1 is {t1->typename()} and t2 is {t2->typename()} too'
-
-Declaring a function (or partial) may be done in various ways.  A tuple may
-be declared in various ways too.  So, those types are atypical.
-See  |vim9-func-declaration|, |tuple-type|, and |variadic-tuple|.
+<
+Tuples and functions (or partials) may be declared in various ways.
+See |tuple-type|, |variadic-tuple|, and |vim9-func-declaration|.
 
 						*null-compare*
 For familiar null compare semantics, where an empty container is not equal to
 a null container, do not use null_<type> in a comparison.  That is because,
-in Vim9 script, evaluation of:
-  - an empty container to null_<type> returns `true`, and
-  - null_<type> to `null` returns `true`, but
-  - an empty container to `null` returns `false`.
->vim9
-	vim9script
-	echo [] == null_list		# true
-	echo null == null_list		# true
-	echo [] == null			# false
+in Vim9 script, although null_<type> == `null`, comparing an:
 
-This non-transitive relationship of null, null_<type>, and empty container
-is further demonstrated in this example: >vim9
+  - empty container to `null` is `false`, but
+  - empty container to null_<type> is `true`.
+
+So, compare against `null`, not null_<type>.  For example: >vim9
 
 	vim9script
-	echo '            null  null_list  empty'
-	def NullCompare(n: string, t: any)
-	  echo printf('%9S%7S%9S%7S', n, t == null, t == null_list, empty(t))
+	var bonds: dict<list<string>> = {g: ['007', '008'], o: ['007', '009']}
+	def Search(query: string): list<string>
+	    return query == "\r" ? null_list : bonds->get(query, [])
 	enddef
-	NullCompare('null', null)		# null
-	NullCompare('null_list', null_list)	# null container
-	NullCompare('[]', [])			# empty container
-
-So, where the goal is to distinguish null containers from empty containers,
-comparing against `null`, rather than null_<type>, is the correct choice.
+	echo "Goldfinger (g) or Octopussy (o)?: "
+	const C: string = getcharstr()
+	var result: list<string> = C->Search()
+	if result == null  # <<< DO NOT USE null_list HERE!
+	    echo "Error: Nothing was entered"
+	else
+	    echo result->empty() ? $"No matches for '{C}'" : $"{result}"
+	endif
+<
+	  NOTE: Using "result == null_list" instead of "result == null" would
+		fail to distinguish the error (nothing entered) and the valid
+		(nothing matched) result because [] == null_list whereas
+		[] != null.
 
 Conceptually, think of the null_<type> construct as a hybrid/bridge between
 the general `null` and typed `empty` containers, having properties of both.
@@ -2354,14 +2379,13 @@ null container: >vim9
 	ln->add("E1130")	# E1130: Cannot add to null list
 <
 As explained in |null-compare|, there is a non-transitive relationship among
-`null`, the `null-variables` null_<list>, null_<dict>, null_<tuple>, and
-null_<blob> and `empty`.  To recap, for example: >vim9
+`null`, null_<type> containers, and `empty`.  To recap, for example: >vim9
 
 	vim9cmd echo (null_dict == {}, null_dict == null, {} != null)
 <
 The exception is an uninitialized string.  It is equal to `null` (and is the
 same instance as `null_string`).  The 'is' operator (|expr-is|) may be used to
-determine whether such a string is either `null` or a `null_string`: >vim9
+determine whether a string is uninitialized: >vim9
 
 	vim9script
 	var s: string

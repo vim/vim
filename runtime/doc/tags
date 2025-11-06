@@ -4488,6 +4488,7 @@ E1269	vim9.txt	/*E1269*
 E127	userfunc.txt	/*E127*
 E1270	change.txt	/*E1270*
 E1271	vim9.txt	/*E1271*
+E1272	vim9.txt	/*E1272*
 E1273	pattern.txt	/*E1273*
 E1274	cmdline.txt	/*E1274*
 E1275	eval.txt	/*E1275*
@@ -8310,6 +8311,7 @@ help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
+help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
