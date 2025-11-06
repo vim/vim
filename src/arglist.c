@@ -203,7 +203,19 @@ alist_add(
 #ifdef BACKSLASH_IN_FILENAME
     slash_adjust(fname);
 #endif
+
+    size_t	fname_len = 0;
+    linenr_T	pos_lnum = 0;
+    colnr_T	pos_col = 0;
+    int		pos_has_col = FALSE;
+
+    if (parse_cmd_file_arg(fname, &fname_len, &pos_lnum, &pos_col,
+		&pos_has_col) == OK)
+	fname[fname_len] = NUL;
+
     AARGLIST(al)[al->al_ga.ga_len].ae_fname = fname;
+    AARGLIST(al)[al->al_ga.ga_len].ae_lnum = pos_lnum;
+    AARGLIST(al)[al->al_ga.ga_len].ae_col = pos_has_col ? pos_col : 0;
     if (set_fnum > 0)
 	AARGLIST(al)[al->al_ga.ga_len].ae_fnum =
 	    buflist_add(fname, BLN_LISTED | (set_fnum == 2 ? BLN_CURBUF : 0));
@@ -373,8 +385,18 @@ alist_add_list(
 	for (i = 0; i < count; ++i)
 	{
 	    int flags = BLN_LISTED | (will_edit ? BLN_CURBUF : 0);
+	    size_t fname_len = 0;
+	    linenr_T pos_lnum = 0;
+	    colnr_T pos_col = 0;
+	    int pos_has_col = FALSE;
+
+	    if (parse_cmd_file_arg(files[i], &fname_len, &pos_lnum,
+			&pos_col, &pos_has_col) == OK)
+		files[i][fname_len] = NUL;
 
 	    ARGLIST[after + i].ae_fname = files[i];
+	    ARGLIST[after + i].ae_lnum = pos_lnum;
+	    ARGLIST[after + i].ae_col = pos_has_col ? pos_col : 0;
 	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], flags);
 	}
 	arglist_locked = FALSE;
@@ -626,6 +648,10 @@ ex_args(exarg_T *eap)
 	    {
 		AARGLIST(curwin->w_alist)[gap->ga_len].ae_fname =
 		    vim_strsave(GARGLIST[i].ae_fname);
+		AARGLIST(curwin->w_alist)[gap->ga_len].ae_lnum =
+		    GARGLIST[i].ae_lnum;
+		AARGLIST(curwin->w_alist)[gap->ga_len].ae_col =
+		    GARGLIST[i].ae_col;
 		AARGLIST(curwin->w_alist)[gap->ga_len].ae_fnum =
 		    GARGLIST[i].ae_fnum;
 		++gap->ga_len;
@@ -744,6 +770,19 @@ do_argfile(exarg_T *eap, int argn)
     if (argn == ARGCOUNT - 1 && curwin->w_alist == &global_alist)
 	arg_had_last = TRUE;
 
+    aentry_T    *aep = &ARGLIST[curwin->w_arg_idx];
+    linenr_T    saved_lnum = eap->do_ecmd_lnum;
+    int		restore_lnum = FALSE;
+    linenr_T    arg_lnum = aep->ae_lnum;
+    colnr_T	arg_col = aep->ae_col;
+    int		apply_col = (aep->ae_col > 0 && eap->do_ecmd_cmd == NULL);
+
+    if (eap->do_ecmd_cmd == NULL && eap->do_ecmd_lnum == 0 && arg_lnum > 0)
+    {
+	eap->do_ecmd_lnum = arg_lnum;
+	restore_lnum = TRUE;
+    }
+
     // Edit the file; always use the last known line number.
     // When it fails (e.g. Abort for already edited file) restore the
     // argument index.
@@ -755,6 +794,23 @@ do_argfile(exarg_T *eap, int argn)
     // like Vi: set the mark where the cursor is in the file.
     else if (eap->cmdidx != CMD_argdo)
 	setmark('\'');
+
+    if (restore_lnum)
+	eap->do_ecmd_lnum = saved_lnum;
+
+    if (curwin->w_arg_idx == argn && apply_col
+	    && curbuf == curwin->w_buffer
+	    && !(curbuf->b_ml.ml_flags & ML_EMPTY))
+    {
+	linenr_T target = arg_lnum > 0 ? arg_lnum : curwin->w_cursor.lnum;
+	if (target < 1)
+	    target = 1;
+	else if (target > curbuf->b_ml.ml_line_count)
+	    target = curbuf->b_ml.ml_line_count;
+	curwin->w_cursor.lnum = target;
+	coladvance(arg_col - 1);
+	curwin->w_set_curswant = TRUE;
+    }
 }
 
 /*

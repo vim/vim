@@ -7622,6 +7622,11 @@ do_exedit(
     int		n;
     int		need_hide;
     int		exmode_was = exmode_active;
+    int		have_file_position = FALSE;
+    linenr_T	file_pos_lnum = 1;
+    colnr_T	file_pos_col = 1;
+    int		file_pos_has_col = FALSE;
+    size_t	file_pos_len = 0;
 
     if ((eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
 						 || ERROR_IF_TERM_POPUP_WINDOW)
@@ -7699,6 +7704,17 @@ do_exedit(
 	if (*eap->arg != NUL && text_or_buf_locked())
 	    return;
 
+	if (*eap->arg != NUL && eap->do_ecmd_cmd == NULL
+		&& parse_cmd_file_arg(eap->arg, &file_pos_len,
+			&file_pos_lnum, &file_pos_col,
+			&file_pos_has_col) == OK)
+	{
+	    eap->arg[file_pos_len] = NUL;
+	    if (eap->do_ecmd_lnum == 0)
+		eap->do_ecmd_lnum = file_pos_lnum;
+	    have_file_position = TRUE;
+	}
+
 	n = readonlymode;
 	if (eap->cmdidx == CMD_view || eap->cmdidx == CMD_sview)
 	    readonlymode = TRUE;
@@ -7755,6 +7771,19 @@ do_exedit(
 	    // want the  file to be readonly, except when another window is
 	    // editing the same buffer.
 	    curbuf->b_p_ro = TRUE;
+	}
+	else if (have_file_position && file_pos_has_col
+		&& eap->do_ecmd_cmd == NULL)
+	{
+	    linenr_T target_lnum = file_pos_lnum;
+
+	    if (target_lnum > curbuf->b_ml.ml_line_count)
+		target_lnum = curbuf->b_ml.ml_line_count;
+	    if (target_lnum < 1)
+		target_lnum = 1;
+	    curwin->w_cursor.lnum = target_lnum;
+	    coladvance(file_pos_col - 1);
+	    curwin->w_set_curswant = TRUE;
 	}
 	readonlymode = n;
     }

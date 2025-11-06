@@ -17,6 +17,124 @@ static char_u	*username = NULL; // cached result of mch_get_user_name()
 static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
 
 /*
+ * Parse "arg" to detect a trailing ":line" or ":line:column" suffix.
+ * On success returns OK and sets the output parameters:
+ *   - *fname_len is the number of bytes before the suffix.
+ *   - *lnum is the parsed line number (at least 1).
+ *   - *col is the parsed column number (at least 1, only meaningful when
+ *     *has_col is TRUE).
+ *   - *has_col is set to TRUE when a column was present, otherwise FALSE.
+ * Returns FAIL when no suffix was found.
+ */
+    int
+parse_cmd_file_arg(
+	char_u	*arg,
+	size_t	*fname_len,
+	linenr_T *lnum,
+	colnr_T	*col,
+	int	*has_col)
+{
+    char_u	*p;
+    char_u	*suffix = NULL;
+    char_u	*line_start = NULL;
+    char_u	*col_start = NULL;
+    int		col_present = FALSE;
+
+    if (fname_len != NULL)
+	*fname_len = 0;
+    if (has_col != NULL)
+	*has_col = FALSE;
+    if (col != NULL)
+	*col = 1;
+    if (lnum != NULL)
+	*lnum = 1;
+
+    if (arg == NULL || *arg == NUL)
+	return FAIL;
+
+    for (p = arg; (p = vim_strchr(p, ':')) != NULL; ++p)
+    {
+	char_u *maybe_line = p + 1;
+	char_u *line_end;
+
+	if (!VIM_ISDIGIT(*maybe_line))
+	    continue;
+
+	line_end = maybe_line;
+	while (VIM_ISDIGIT(*line_end))
+	    ++line_end;
+
+	if (*line_end == ':' && VIM_ISDIGIT(line_end[1]))
+	{
+	    char_u *maybe_col = line_end + 1;
+	    char_u *col_end = maybe_col;
+
+	    while (VIM_ISDIGIT(*col_end))
+		++col_end;
+	    if (*col_end == NUL)
+	    {
+		suffix = p;
+		line_start = maybe_line;
+		col_start = maybe_col;
+		col_present = TRUE;
+		break;
+	    }
+	}
+	else if (*line_end == NUL)
+	{
+	    suffix = p;
+	    line_start = maybe_line;
+	    col_present = FALSE;
+	    break;
+	}
+    }
+
+    if (suffix == NULL || line_start == NULL)
+	return FAIL;
+
+    {
+	char_u *scan = suffix;
+
+	while (scan > arg && VIM_ISDIGIT(scan[-1]))
+	    --scan;
+	if (scan > arg && scan[-1] == ':')
+	    return FAIL;
+    }
+
+    {
+	size_t len = (size_t)(suffix - arg);
+
+	if (len == 0)
+	    return FAIL;
+	if (fname_len != NULL)
+	    *fname_len = len;
+    }
+
+    {
+	long line = strtol((char *)line_start, NULL, 10);
+
+	if (line < 1)
+	    line = 1;
+	if (lnum != NULL)
+	    *lnum = (linenr_T)line;
+    }
+
+    if (col_present && col_start != NULL)
+    {
+	long column = strtol((char *)col_start, NULL, 10);
+
+	if (column < 1)
+	    column = 1;
+	if (col != NULL)
+	    *col = (colnr_T)column;
+    }
+    if (has_col != NULL)
+	*has_col = col_present;
+
+    return OK;
+}
+
+/*
  * Return TRUE if in the current mode we need to use virtual.
  */
     int

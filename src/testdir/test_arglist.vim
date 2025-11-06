@@ -788,4 +788,41 @@ func Test_crash_arglist_uaf()
   au! BufAdd
 endfunc
 
+func Test_args_file_position()
+  call Reset_arglist()
+  call writefile(['first', '    second', 'third'], 'Xargspos', 'D')
+  let after =<< trim [CODE]
+    args Xargspos:2:5
+    next
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xargspos.out')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '')
+    let lines = readfile('Xargspos.out')
+    call assert_equal('2 5', get(lines, 0, ''))
+  endif
+
+  call delete('Xargspos.out')
+  call Reset_arglist()
+endfunc
+
+func Test_arg_drop_file_position()
+  call Reset_arglist()
+  call writefile(['alpha', '    beta', 'gamma'], 'Xargdrop', 'D')
+  let after =<< trim [CODE]
+    drop Xargdrop:3:4
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xargdrop.out')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '')
+    let lines = readfile('Xargdrop.out')
+    call assert_equal('3 4', get(lines, 0, ''))
+  endif
+
+  call delete('Xargdrop.out')
+  call Reset_arglist()
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

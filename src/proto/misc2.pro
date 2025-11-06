@@ -5,6 +5,7 @@ int coladvance_force(colnr_T wcol);
 int getviscol2(colnr_T col, colnr_T coladd);
 int coladvance(colnr_T wantcol);
 int getvpos(pos_T *pos, colnr_T wantcol);
+int parse_cmd_file_arg(char_u *arg, size_t *fname_len, linenr_T *lnum, colnr_T *col, int *has_col);
 int inc_cursor(void);
 int inc(pos_T *lp);
 int incl(pos_T *lp);

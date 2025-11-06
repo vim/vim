@@ -2093,6 +2093,7 @@ command_line_scan(mparm_T *parmp)
     int		c;
     char_u	*p = NULL;
     long	n;
+    int		location_arg_used = FALSE;
 
     --argc;
     ++argv;
@@ -2744,7 +2745,33 @@ scripterror:
 	 */
 	else
 	{
+	    size_t	fname_len = 0;
+	    linenr_T	pos_lnum = 0;
+	    colnr_T	pos_col = 0;
+	    int		pos_has_col = FALSE;
+	    int		use_position = FALSE;
+
+	    if (argv[0][0] == ':'
+		    && STRNICMP(argv[0] + 1, "tabe", 4) == 0
+		    && STRLEN((char_u *)argv[0]) == 5)
+	    {
+		--argc;
+		++argv;
+		argv_idx = 1;
+		continue;
+	    }
+
 	    argv_idx = -1;	    // skip to next argument
+
+	    if (!location_arg_used
+		    && parse_cmd_file_arg((char_u *)argv[0], &fname_len,
+			&pos_lnum, &pos_col, &pos_has_col) == OK)
+	    {
+		int needed = 1 + (pos_has_col ? 1 : 0);
+
+		if (parmp->n_commands + needed <= MAX_ARG_CMDS)
+		    use_position = TRUE;
+	    }
 
 	    // Check for only one type of editing.
 	    if (parmp->edit_type != EDIT_NONE && parmp->edit_type != EDIT_FILE)
@@ -2759,8 +2786,11 @@ scripterror:
 #endif
 
 	    // Add the file to the global argument list.
-	    if (ga_grow(&global_alist.al_ga, 1) == FAIL
-		    || (p = vim_strsave((char_u *)argv[0])) == NULL)
+	    if (ga_grow(&global_alist.al_ga, 1) == FAIL)
+		mch_exit(2);
+	    if (use_position)
+		p = vim_strnsave((char_u *)argv[0], fname_len);
+	    else if ((p = vim_strsave((char_u *)argv[0])) == NULL)
 		mch_exit(2);
 #ifdef FEAT_DIFF
 	    if (parmp->diff_mode && mch_isdir(p) && GARGCOUNT > 0
@@ -2811,6 +2841,37 @@ scripterror:
 		    2		// add buffer number now and use curbuf
 #endif
 		    );
+
+	    if (use_position)
+	    {
+		char	linebuf[NUMBUFLEN];
+		char_u	*cmd;
+
+		vim_snprintf(linebuf, sizeof(linebuf), "%ld",
+			(long)(pos_lnum < 1 ? 1 : pos_lnum));
+		cmd = vim_strsave((char_u *)linebuf);
+		if (cmd == NULL || p == NULL)
+		    mch_exit(2);
+		parmp->cmds_tofree[parmp->n_commands] = TRUE;
+		parmp->commands[parmp->n_commands++] = cmd;
+
+		if (pos_has_col)
+		{
+		    char	cursorbuf[NUMBUFLEN * 2 + 24];
+		    long	line = (long)(pos_lnum < 1 ? 1 : pos_lnum);
+		    long	column = (long)(pos_col < 1 ? 1 : pos_col);
+
+		    vim_snprintf(cursorbuf, sizeof(cursorbuf),
+			    "call cursor(%ld,%ld)", line, column);
+		    cmd = vim_strsave((char_u *)cursorbuf);
+		    if (cmd == NULL)
+			mch_exit(2);
+		    parmp->cmds_tofree[parmp->n_commands] = TRUE;
+		    parmp->commands[parmp->n_commands++] = cmd;
+		}
+
+		location_arg_used = TRUE;
+	    }
 
 #ifdef MSWIN
 	    {

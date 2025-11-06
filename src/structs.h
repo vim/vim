@@ -989,6 +989,8 @@ typedef struct argentry
 {
     char_u	*ae_fname;	// file name as specified
     int		ae_fnum;	// buffer number with expanded file name
+    linenr_T	ae_lnum;	// optional target line number (0 if unused)
+    colnr_T	ae_col;		// optional target column (0 if unused)
 } aentry_T;
 
 #define ALIST(win)	(win)->w_alist

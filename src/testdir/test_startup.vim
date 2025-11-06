@@ -176,6 +176,119 @@ func Test_compatible_args()
   call delete('Xtestout')
 endfunc
 
+func Test_cmdline_file_line_position()
+  call writefile(['first', '    second'], 'Xlinepos', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, 'Xlinepos:2')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([2, 5], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
+func Test_cmdline_file_line_and_column_position()
+  call writefile(['first', '    second'], 'Xlinecol', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, 'Xlinecol:2:3')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([2, 3], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
+func Test_cmdline_file_position_clamped()
+  call writefile(['only line'], 'Xlineclamp', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, 'Xlineclamp:0:0')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([1, 1], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
+func Test_cmdline_file_position_only_first_argument()
+  call writefile(['alpha', '    beta'], 'Xfirstpos', 'D')
+  call writefile(['other'], 'Xsecondpos', 'D')
+  let after =<< trim [CODE]
+    let out = [printf('%d %d', line('.'), col('.'))]
+    if argc() > 1
+      call add(out, argv(1))
+    endif
+    call writefile(out, 'Xmultiout')
+    qall!
+  [CODE]
+
+  if RunVim([], after, 'Xfirstpos:2 Xsecondpos:3')
+    let lines = readfile('Xmultiout')
+    let parts = map(split(lines[0]), 'str2nr(v:val)')
+    call assert_equal([2, 5], parts)
+    call assert_equal('Xsecondpos:3', get(lines, 1, ''))
+  endif
+
+  call delete('Xmultiout')
+endfunc
+
+func Test_cmdline_file_position_after_option_value()
+  call writefile(['first', '    second'], 'Xlineopt', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '--cmd "set number" Xlineopt:2')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([2, 5], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
+func Test_cmdline_file_position_tabe_prefix()
+  call writefile(['first', '    second'], 'Xtabe', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, ':TaBe Xtabe:2:4')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([2, 4], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
+func Test_cmdline_non_numeric_colon_argument()
+  CheckUnix
+  call writefile(['colon name'], 'Xnon:numeric', 'D')
+  let after =<< trim [CODE]
+    call writefile([expand('%:t')], 'Xnameout')
+    qall!
+  [CODE]
+
+  if RunVim([], after, 'Xnon:numeric')
+    let lines = readfile('Xnameout')
+    call assert_equal(['Xnon:numeric'], lines)
+  endif
+
+  call delete('Xnameout')
+endfunc
+
 " Test the -o[N] and -O[N] arguments to open N windows split
 " horizontally or vertically.
 func Test_o_arg()
