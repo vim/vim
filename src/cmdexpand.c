@@ -421,7 +421,7 @@ cmdline_pum_create(
     if (showtail)
 	prefix_len += vim_strsize(showmatches_gettail(matches[0]))
 	    - vim_strsize(matches[0]);
-    compl_startcol = MAX(0, compl_startcol - prefix_len);
+    compl_startcol = cmdline_col_off + MAX(0, compl_startcol - prefix_len);
 
     return EXPAND_OK;
 }
@@ -611,9 +611,9 @@ win_redr_status_matches(
 	return;
 
     if (has_mbyte)
-	buf = alloc(Columns * MB_MAXBYTES + 1);
+	buf = alloc(topframe->fr_width * MB_MAXBYTES + 1);
     else
-	buf = alloc(Columns + 1);
+	buf = alloc(topframe->fr_width + 1);
     if (buf == NULL)
 	return;
 
@@ -640,7 +640,7 @@ win_redr_status_matches(
 	if (first_match > 0)
 	    clen += 2;
 	// jumping right, put match at the left
-	if ((long)clen > Columns)
+	if (clen > topframe->fr_width)
 	{
 	    first_match = match;
 	    // if showing the last match, we can add some on the left
@@ -648,7 +648,7 @@ win_redr_status_matches(
 	    for (i = match; i < num_matches; ++i)
 	    {
 		clen += status_match_len(xp, SHOW_MATCH(i)) + 2;
-		if ((long)clen >= Columns)
+		if (clen >= topframe->fr_width)
 		    break;
 	    }
 	    if (i == num_matches)
@@ -659,7 +659,7 @@ win_redr_status_matches(
 	while (first_match > 0)
 	{
 	    clen += status_match_len(xp, SHOW_MATCH(first_match - 1)) + 2;
-	    if ((long)clen >= Columns)
+	    if (clen >= topframe->fr_width)
 		break;
 	    --first_match;
 	}
@@ -679,7 +679,7 @@ win_redr_status_matches(
     clen = len;
 
     i = first_match;
-    while ((long)(clen + status_match_len(xp, SHOW_MATCH(i)) + 2) < Columns)
+    while (clen + status_match_len(xp, SHOW_MATCH(i)) + 2 < topframe->fr_width)
     {
 	if (i == match)
 	{
@@ -773,14 +773,17 @@ win_redr_status_matches(
 	    }
 	}
 
-	screen_puts(buf, row, 0, attr);
+	screen_puts(buf, row, firstwin->w_wincol, attr);
 	if (selstart != NULL && highlight)
 	{
 	    *selend = NUL;
-	    screen_puts(selstart, row, selstart_col, HL_ATTR(HLF_WM));
+	    screen_puts(selstart, row, firstwin->w_wincol + selstart_col,
+		    HL_ATTR(HLF_WM));
 	}
 
-	screen_fill(row, row + 1, clen, (int)Columns, fillchar, fillchar, attr);
+	screen_fill(row, row + 1, firstwin->w_wincol + clen,
+		firstwin->w_wincol + topframe->fr_width,
+		fillchar, fillchar, attr);
     }
 
     win_redraw_last_status(topframe);
@@ -1371,7 +1374,7 @@ showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 	{
 	    // compute the number of columns and lines for the listing
 	    maxlen += 2;    // two spaces between file names
-	    columns = ((int)Columns + 2) / maxlen;
+	    columns = (cmdline_width + 2) / maxlen;
 	    if (columns < 1)
 		columns = 1;
 	    lines = (numMatches + columns - 1) / columns;
@@ -4503,9 +4506,6 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 	p_ls = save_p_ls;
 	p_wmh = save_p_wmh;
 	last_status(FALSE);
-#if defined(FEAT_TABPANEL)
-	redraw_tabpanel = TRUE;
-#endif
 	update_screen(UPD_VALID);	// redraw the screen NOW
 	redrawcmd();
 	save_p_ls = -1;

@@ -3447,7 +3447,7 @@ syn_list_header(
 	name_col = msg_col;
 	endcol = 15;
     }
-    else if (msg_col + outlen + 1 >= Columns)
+    else if (msg_col + outlen + 1 >= cmdline_width)
     {
 	msg_putchar('\n');
 	if (got_int)
@@ -3461,15 +3461,15 @@ syn_list_header(
 
     if (msg_col >= endcol)	// output at least one space
 	endcol = msg_col + 1;
-    if (Columns <= (long)endcol)	// avoid hang for tiny window
-	endcol = (int)(Columns - 1);
+    if (cmdline_width <= endcol)	// avoid hang for tiny window
+	endcol = cmdline_width - 1;
 
     msg_advance(endcol);
 
     // Show "xxx" with the attributes.
     if (!did_header)
     {
-	if (endcol == Columns - 1 && endcol <= name_col)
+	if (endcol == cmdline_width - 1 && endcol <= name_col)
 	    msg_putchar(' ');
 	msg_puts_attr("xxx", syn_id2attr(id));
 	msg_putchar(' ');

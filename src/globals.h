@@ -146,6 +146,8 @@ EXTERN int	vgetc_char INIT(= 0);
  * update_screen().
  */
 EXTERN int	cmdline_row;
+EXTERN int	cmdline_col_off;
+EXTERN int	cmdline_width;
 
 EXTERN int	redraw_cmdline INIT(= FALSE);	// cmdline must be redrawn
 EXTERN int	redraw_mode INIT(= FALSE);	// mode must be redrawn

@@ -568,7 +568,7 @@ spell_suggest(int count)
 	// When 'rightleft' is set the list is drawn right-left.
 	cmdmsg_rl = curwin->w_p_rl;
 	if (cmdmsg_rl)
-	    msg_col = Columns - 1;
+	    msg_col = cmdline_width - 1;
 #endif
 
 	// List the suggestions.

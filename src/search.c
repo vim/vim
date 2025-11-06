@@ -1478,10 +1478,11 @@ do_search(
 		// msg_strtrunc() will shorten in the middle.
 		if (msg_scrolled != 0 && !cmd_silent)
 		    // Use all the columns.
-		    msgbufsize = (int)(Rows - msg_row) * Columns - 1;
+		    msgbufsize = (int)(Rows - msg_row) * cmdline_width - 1;
 		else
 		    // Use up to 'showcmd' column.
-		    msgbufsize = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
+		    msgbufsize = (int)(Rows - msg_row - 1) * cmdline_width
+			+ sc_col - 1;
 		if (msgbufsize < plen + off_len + SEARCH_STAT_BUF_LEN + 3)
 		    msgbufsize = plen + off_len + SEARCH_STAT_BUF_LEN + 3;
 	    }

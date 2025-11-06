@@ -975,7 +975,7 @@ print_tag_list(
     taglen = (int)(tagp.tagname_end - tagp.tagname + 2);
     if (taglen < 18)
 	taglen = 18;
-    if (taglen > Columns - 25)
+    if (taglen > cmdline_width - 25)
 	taglen = MAXCOL;
     if (msg_col == 0)
 	msg_didout = FALSE;	// overwrite previous message
@@ -1055,7 +1055,7 @@ print_tag_list(
 		attr = HL_ATTR(HLF_CM);
 		while (*p && *p != '\r' && *p != '\n')
 		{
-		    if (msg_col + ptr2cells(p) >= Columns)
+		    if (msg_col + ptr2cells(p) >= cmdline_width)
 		    {
 			msg_putchar('\n');
 			if (got_int)
@@ -1103,7 +1103,7 @@ print_tag_list(
 
 	while (p != command_end)
 	{
-	    if (msg_col + (*p == TAB ? 1 : ptr2cells(p)) > Columns)
+	    if (msg_col + (*p == TAB ? 1 : ptr2cells(p)) > cmdline_width)
 		msg_putchar('\n');
 	    if (got_int)
 		break;

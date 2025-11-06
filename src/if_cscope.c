@@ -2084,7 +2084,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	    (void)sprintf(buf, cntxformat, context);
 
 	    // print the context only if it fits on the same line
-	    if (msg_col + (int)strlen(buf) >= (int)Columns)
+	    if (msg_col + (int)strlen(buf) >= cmdline_width)
 		msg_putchar('\n');
 	    msg_advance(12);
 	    msg_outtrans_long_attr((char_u *)buf, 0);

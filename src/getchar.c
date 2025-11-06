@@ -2448,7 +2448,7 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     if (cursor_flag == 'h')
 	cursor_sleep();
     else if (cursor_flag == 'm')
-	windgoto(msg_row, msg_col);
+	windgoto(msg_row, cmdline_col_off + msg_col);
 
     ++no_mapping;
     ++allow_keys;

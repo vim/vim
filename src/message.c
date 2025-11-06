@@ -194,7 +194,7 @@ msg_attr_keep(
     retval = msg_end();
 
     if (keep && retval && vim_strsize((char_u *)s)
-			    < (int)(Rows - cmdline_row - 1) * Columns + sc_col)
+		    < (int)(Rows - cmdline_row - 1) * cmdline_width + sc_col)
 	set_keep_msg((char_u *)s, 0);
 
     need_fileinfo = FALSE;
@@ -228,10 +228,10 @@ msg_strtrunc(
 #endif
 		)
 	    // Use all the columns.
-	    room = (int)(Rows - msg_row) * Columns - 1;
+	    room = (int)(Rows - msg_row) * cmdline_width - 1;
 	else
 	    // Use up to 'showcmd' column.
-	    room = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
+	    room = (int)(Rows - msg_row - 1) * cmdline_width + sc_col - 1;
 	if (len > room && room > 0)
 	{
 	    if (enc_utf8)
@@ -989,7 +989,7 @@ msg_may_trunc(int force, char_u *s)
 
     // If 'cmdheight' is zero or something unexpected happened "room" may be
     // negative.
-    room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
+    room = (int)(Rows - cmdline_row - 1) * cmdline_width + sc_col - 1;
     if (room > 0 && (force || (shortmess(SHM_TRUNC) && !exmode_active))
 	    && (n = (int)STRLEN(s) - room) > 0)
     {
@@ -1368,7 +1368,7 @@ wait_return(int redraw)
 			    c = K_IGNORE;
 			    msg_col =
 #ifdef FEAT_RIGHTLEFT
-				cmdmsg_rl ? Columns - 1 :
+				cmdmsg_rl ? cmdline_width - 1 :
 #endif
 				0;
 			}
@@ -1472,7 +1472,7 @@ wait_return(int redraw)
     lines_left = -1;		// reset lines_left at next msg_start()
     reset_last_sourcing();
     if (keep_msg != NULL && vim_strsize(keep_msg) >=
-				  (Rows - cmdline_row - 1) * Columns + sc_col)
+			    (Rows - cmdline_row - 1) * cmdline_width + sc_col)
 	VIM_CLEAR(keep_msg);	    // don't redisplay message, it's too long
 
     if (tmpState == MODE_SETWSIZE)  // got resize event while in vgetc()
@@ -1586,7 +1586,7 @@ msg_start(void)
 	msg_row = cmdline_row;
 	msg_col =
 #ifdef FEAT_RIGHTLEFT
-	    cmdmsg_rl ? Columns - 1 :
+	    cmdmsg_rl ? cmdline_width - 1 :
 #endif
 	    0;
     }
@@ -2228,21 +2228,21 @@ screen_puts_mbyte(char_u *s, int l, int attr)
 #ifdef FEAT_RIGHTLEFT
 		cmdmsg_rl ? msg_col <= 1 :
 #endif
-		msg_col == Columns - 1))
+		msg_col == cmdline_width - 1))
     {
 	// Doesn't fit, print a highlighted '>' to fill it up.
 	msg_screen_putchar('>', HL_ATTR(HLF_AT));
 	return s;
     }
 
-    screen_puts_len(s, l, msg_row, msg_col, attr);
+    screen_puts_len(s, l, msg_row, cmdline_col_off + msg_col, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
 	msg_col -= cw;
 	if (msg_col == 0)
 	{
-	    msg_col = Columns;
+	    msg_col = cmdline_width;
 	    ++msg_row;
 	}
     }
@@ -2250,7 +2250,7 @@ screen_puts_mbyte(char_u *s, int l, int attr)
 #endif
     {
 	msg_col += cw;
-	if (msg_col >= Columns)
+	if (msg_col >= cmdline_width)
 	{
 	    msg_col = 0;
 	    ++msg_row;
@@ -2286,7 +2286,7 @@ msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
     int		slen = len;
     int		room;
 
-    room = Columns - msg_col;
+    room = cmdline_width - msg_col;
     if (len > room && room >= 20)
     {
 	slen = (room - 3) / 2;
@@ -2497,10 +2497,11 @@ msg_puts_display(
 		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
-		      ((*s != '\r' && msg_col + t_col >= Columns - 1)
-		       || (*s == TAB && msg_col + t_col >= ((Columns - 1) & ~7))
+		      ((*s != '\r' && msg_col + t_col >= cmdline_width - 1)
+		       || (*s == TAB && msg_col + t_col
+			   >= ((cmdline_width - 1) & ~7))
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					 && msg_col + t_col >= Columns - 2)))))
+			   && msg_col + t_col >= cmdline_width - 2)))))
 	{
 	    /*
 	     * The screen is scrolled up when at the last row (some terminals
@@ -2533,8 +2534,8 @@ msg_puts_display(
 		msg_scroll_up();
 
 	    msg_row = Rows - 2;
-	    if (msg_col >= Columns)	// can happen after screen resize
-		msg_col = Columns - 1;
+	    if (msg_col >= cmdline_width)   // can happen after screen resize
+		msg_col = cmdline_width - 1;
 
 	    // Display char in last column before showing more-prompt.
 	    if (*s >= ' '
@@ -2602,9 +2603,9 @@ msg_puts_display(
 	}
 
 	wrap = *s == '\n'
-		    || msg_col + t_col >= Columns
+		    || msg_col + t_col >= cmdline_width
 		    || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					    && msg_col + t_col >= Columns - 1);
+			    && msg_col + t_col >= cmdline_width - 1);
 	if (t_col > 0 && (wrap || *s == '\r' || *s == '\b'
 						 || *s == '\t' || *s == BELL))
 	{
@@ -2643,7 +2644,7 @@ msg_puts_display(
 		msg_didout = FALSE;	    // remember that line is empty
 #ifdef FEAT_RIGHTLEFT
 	    if (cmdmsg_rl)
-		msg_col = Columns - 1;
+		msg_col = cmdline_width - 1;
 	    else
 #endif
 		msg_col = 0;
@@ -2699,7 +2700,7 @@ msg_puts_display(
 # ifdef FEAT_RIGHTLEFT
 		    cmdmsg_rl ||
 # endif
-		    (cw > 1 && msg_col + t_col >= Columns - 1))
+		    (cw > 1 && msg_col + t_col >= cmdline_width - 1))
 	    {
 		if (l > 1)
 		    s = screen_puts_mbyte(s, l, attr) - 1;
@@ -2781,8 +2782,8 @@ msg_scroll_up(void)
 	// Scrolling up doesn't result in the right background.  Set the
 	// background here.  It's not efficient, but avoids that we have to do
 	// it all over the code.
-	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
-		' ', ' ', HL_ATTR(HLF_MSG));
+	screen_fill((int)Rows - 1, (int)Rows, cmdline_col_off,
+		cmdline_col_off + cmdline_width, ' ', ' ', HL_ATTR(HLF_MSG));
 
 	// Also clear the last char of the last but one line if it was not
 	// cleared before to avoid a scroll-up.
@@ -3068,7 +3069,8 @@ disp_sb_line(int row, msgchunk_T *smp, int clear_to_eol)
 	// If clearing the screen did not work (e.g. because of a background
 	// color and t_ut isn't set) clear until the last column here.
 	if (clear_to_eol)
-	    screen_fill(row, row + 1, msg_col, (int)Columns,
+	    screen_fill(row, row + 1,
+		    cmdline_col_off + msg_col, cmdline_col_off + cmdline_width,
 		    ' ', ' ', HL_ATTR(HLF_MSG));
 
 	if (mp->sb_eol || mp->sb_next == NULL)
@@ -3090,14 +3092,15 @@ t_puts(
 {
     // output postponed text
     msg_didout = TRUE;		// remember that line is not empty
-    screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
+    screen_puts_len(t_s, (int)(s - t_s), msg_row, cmdline_col_off + msg_col,
+	    attr);
     msg_col += *t_col;
     *t_col = 0;
     // If the string starts with a composing character don't increment the
     // column position for it.
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(t_s)))
 	--msg_col;
-    if (msg_col >= Columns)
+    if (msg_col >= cmdline_width)
     {
 	msg_col = 0;
 	++msg_row;
@@ -3173,7 +3176,7 @@ msg_puts_printf(char_u *str, int maxlen)
 	if (cmdmsg_rl)
 	{
 	    if (*s == CAR || *s == NL)
-		msg_col = Columns - 1;
+		msg_col = cmdline_width - 1;
 	    else
 		--msg_col;
 	}
@@ -3451,7 +3454,8 @@ do_more_prompt(int typed_char)
 		    // scroll up, display line at bottom
 		    msg_scroll_up();
 		    inc_msg_scrolled();
-		    screen_fill((int)Rows - 2, (int)Rows - 1, 0, (int)Columns,
+		    screen_fill((int)Rows - 2, (int)Rows - 1,
+			    cmdline_col_off, cmdline_col_off + cmdline_width,
 			    ' ', ' ', msg_attr);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last, FALSE);
 		    --toscroll;
@@ -3461,8 +3465,8 @@ do_more_prompt(int typed_char)
 	    if (toscroll <= 0)
 	    {
 		// displayed the requested text, more prompt again
-		screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
-			' ', ' ', msg_attr);
+		screen_fill((int)Rows - 1, (int)Rows, cmdline_col_off,
+			cmdline_col_off + cmdline_width, ' ', ' ', msg_attr);
 		msg_moremsg(FALSE);
 		continue;
 	    }
@@ -3475,7 +3479,8 @@ do_more_prompt(int typed_char)
     }
 
     // clear the --more-- message
-    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', msg_attr);
+    screen_fill((int)Rows - 1, (int)Rows, cmdline_col_off,
+	    cmdline_col_off + cmdline_width, ' ', ' ', msg_attr);
     State = oldState;
     setmouse();
     if (quit_more)
@@ -3485,7 +3490,7 @@ do_more_prompt(int typed_char)
     }
 #ifdef FEAT_RIGHTLEFT
     else if (cmdmsg_rl)
-	msg_col = Columns - 1;
+	msg_col = cmdline_width - 1;
 #endif
 
     entered = FALSE;
@@ -3698,20 +3703,20 @@ mch_msg(char *str)
 msg_screen_putchar(int c, int attr)
 {
     msg_didout = TRUE;		// remember that line is not empty
-    screen_putchar(c, msg_row, msg_col, attr);
+    screen_putchar(c, msg_row, cmdline_col_off + msg_col, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
 	if (--msg_col == 0)
 	{
-	    msg_col = Columns;
+	    msg_col = cmdline_width;
 	    ++msg_row;
 	}
     }
     else
 #endif
     {
-	if (++msg_col >= Columns)
+	if (++msg_col >= cmdline_width)
 	{
 	    msg_col = 0;
 	    ++msg_row;
@@ -3726,11 +3731,11 @@ msg_moremsg(int full)
     char_u	*s = (char_u *)_("-- More --");
 
     attr = HL_ATTR(HLF_M);
-    screen_puts(s, (int)Rows - 1, 0, attr);
+    screen_puts(s, (int)Rows - 1, cmdline_col_off, attr);
     if (full)
 	screen_puts((char_u *)
 		_(" SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "),
-		(int)Rows - 1, vim_strsize(s), attr);
+		(int)Rows - 1, cmdline_col_off + vim_strsize(s), attr);
 }
 
 /*
@@ -3754,7 +3759,7 @@ repeat_message(void)
 #endif
     else if (State == MODE_EXTERNCMD)
     {
-	windgoto(msg_row, msg_col); // put cursor back
+	windgoto(msg_row, cmdline_col_off + msg_col); // put cursor back
     }
     else if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
     {
@@ -3786,8 +3791,8 @@ msg_check_screen(void)
 
     if (msg_row >= Rows)
 	msg_row = Rows - 1;
-    if (msg_col >= Columns)
-	msg_col = Columns - 1;
+    if (msg_col >= cmdline_width)
+	msg_col = cmdline_width - 1;
     return TRUE;
 }
 
@@ -3833,17 +3838,21 @@ msg_clr_eos_force(void)
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
 	{
-	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1,
+	    screen_fill(msg_row, msg_row + 1,
+		    cmdline_col_off, cmdline_col_off + msg_col + 1,
 		    ' ', ' ', msg_attr);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
+	    screen_fill(msg_row + 1, (int)Rows,
+		    cmdline_col_off, cmdline_col_off + cmdline_width,
 		    ' ', ' ', msg_attr);
 	}
 	else
 #endif
 	{
-	    screen_fill(msg_row, msg_row + 1, msg_col, (int)Columns,
+	    screen_fill(msg_row, msg_row + 1,
+		    cmdline_col_off + msg_col, cmdline_col_off + cmdline_width,
 		    ' ', ' ', msg_attr);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
+	    screen_fill(msg_row + 1, (int)Rows,
+		    cmdline_col_off, cmdline_col_off + cmdline_width,
 		    ' ', ' ', msg_attr);
 	}
     }
@@ -4152,11 +4161,11 @@ msg_advance(int col)
 	msg_col = col;		// for redirection, may fill it up later
 	return;
     }
-    if (col >= Columns)		// not enough room
-	col = Columns - 1;
+    if (col >= cmdline_width)	// not enough room
+	col = cmdline_width - 1;
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
-	while (msg_col > Columns - col)
+	while (msg_col > cmdline_width - col)
 	    msg_putchar(' ');
     else
 #endif

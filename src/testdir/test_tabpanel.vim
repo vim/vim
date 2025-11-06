@@ -117,6 +117,9 @@ function Test_tabpanel_mouse()
   call test_setmouse(3, 1)
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
+  call test_setmouse(&lines, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal(1, tabpagenr())
 
   " Drag the active tab page
   tablast
@@ -148,8 +151,8 @@ function Test_tabpanel_mouse()
   call assert_equal(3, tabpagenr())
 
   " Test getmousepos()
-  call feedkeys("\<LeftMouse>", 'xt')
   call test_setmouse(2, 3)
+  call feedkeys("\<LeftMouse>", 'xt')
   let pos = getmousepos()
   call assert_equal(0, pos['winid'])
   call assert_equal(0, pos['winrow'])
@@ -404,7 +407,7 @@ function Test_tabpanel_visual()
   let lines =<< trim END
     set showtabpanel=2
     set tabpanelopt=columns:10
-    set showtabline=0
+    set showtabline=0 laststatus=2
     tabnew
     call setbufline(bufnr(), 1, ['aaa1 bbb1 ccc1 ddd1', 'aaa2 bbb2 ccc2 ddd2', 'aaa3 bbb3 ccc3 ddd3', 'aaa4 bbb4 ccc4 ddd4'])
   END
@@ -452,7 +455,7 @@ function Test_tabpanel_tabline_and_tabpanel()
     set showtabpanel=2
     set tabpanelopt=columns:10,vert
     set fillchars=tpl_vert:│
-    set showtabline=2
+    set showtabline=2 laststatus=2
     e aaa.txt
     tabnew
     e bbb.txt

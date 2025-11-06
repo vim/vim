@@ -4436,7 +4436,7 @@ handler_routine(
     case CTRL_CLOSE_EVENT:
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-	windgoto((int)Rows - 1, 0);
+	windgoto((int)Rows - 1, cmdline_col_off);
 	g_fForceExit = TRUE;
 
 	vim_snprintf((char *)IObuff, IOSIZE, _("Vim: Caught %s event\n"),
@@ -5058,7 +5058,7 @@ dump_pipe(int	    options,
 	    msg_puts((char *)buffer);
 	}
 
-	windgoto(msg_row, msg_col);
+	windgoto(msg_row, cmdline_col_off + msg_col);
 	cursor_on();
 	out_flush();
     }
@@ -5257,7 +5257,7 @@ mch_system_piped(char *cmd, int options)
 			else
 			    msg_outtrans_len(ta_buf + i, 1);
 		    }
-		    windgoto(msg_row, msg_col);
+		    windgoto(msg_row, cmdline_col_off + msg_col);
 		    out_flush();
 
 		    ta_len += len;

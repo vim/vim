@@ -1972,7 +1972,7 @@ printdigraph(digr_T *dp, result_T *previous)
 	*previous = dp->result;
     }
 #endif
-    if (msg_col > Columns - list_width)
+    if (msg_col > cmdline_width - list_width)
 	msg_putchar('\n');
     if (msg_col)
 	while (msg_col % list_width != 0)
