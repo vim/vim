@@ -153,7 +153,7 @@ syn match    smlKeyChar      ";"
 syn match    smlKeyChar      "\*"
 syn match    smlKeyChar      "="
 
-syn match    smlNumber        "\<\~\=\(0w\)\=\d\+\>"
+syn match    smlNumber        "\<\~\=\%(0w\)\=\d\+\>"
 syn match    smlNumber        "\<\~\=0w\=x\x\+\>"
 syn match    smlReal          "\<\~\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
 
