@@ -1910,11 +1910,11 @@ In legacy Vim script, where a number was expected, a string would be
 automatically converted to a number.  This was convenient for an actual number
 such as "123", but leads to unexpected problems (and no error message) if the
 string doesn't start with a number.  Quite often this leads to hard-to-find
-bugs.  For example, in legacy Vim script this echoes '1': >vim
+bugs.  For example, in legacy Vim script this echoes "1": >vim
 
 	echo 123 == '123'
 <
-However, if an unintended space is included, '0' is echoed: >vim
+However, if an unintended space is included, "0" is echoed: >vim
 
 	echo 123 == ' 123'
 <
