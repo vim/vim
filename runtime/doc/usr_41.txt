@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Oct 26
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Nov 07
 
 
 		     VIM USER MANUAL	  by Bram Moolenaar
@@ -764,7 +764,8 @@ String manipulation:					*string-functions*
 	charclass()		class of a character
 	match()			position where a pattern matches in a string
 	matchbufline()		all the matches of a pattern in a buffer
-	matchend()		position where a pattern match ends in a string
+	matchend()		position where a pattern match ends in a
+				string
 	matchfuzzy()		fuzzy matches a string in a list of strings
 	matchfuzzypos()		fuzzy matches a string in a list of strings
 	matchstr()		match of a pattern in a string
@@ -841,7 +842,8 @@ List manipulation:					*list-functions*
 	indexof()		index in a List where an expression is true
 	max()			maximum value in a List
 	min()			minimum value in a List
-	count()			count number of times a value appears in a List
+	count()			count number of times a value appears in a
+				List
 	repeat()		repeat a List multiple times
 	flatten()		flatten a List
 	flattennew()		flatten a copy of a List
@@ -1246,7 +1248,8 @@ Mappings and Menus:			    *mapping-functions*
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
 	assert_equalfile()	assert that two file contents are equal
-	assert_notequal()	assert that two expressions values are not equal
+	assert_notequal()	assert that two expressions values are not
+				equal
 	assert_inrange()	assert that an expression is inside a range
 	assert_match()		assert that a pattern matches the value
 	assert_notmatch()	assert that a pattern does not match the value
