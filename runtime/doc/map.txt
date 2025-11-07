@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2025 Oct 12
+*map.txt*       For Vim version 9.1.  Last change: 2025 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1753,7 +1753,7 @@ by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
 Possible values are (second column is the short name used in listing):
-    -addr=lines			Range of lines (this is the default for -range)
+    -addr=lines			Range of lines (the default for -range)
     -addr=arguments	  arg	Range for arguments
     -addr=buffers	  buf	Range for buffers (also not loaded buffers)
     -addr=loaded_buffers  load	Range for loaded buffers
@@ -1761,8 +1761,7 @@ Possible values are (second column is the short name used in listing):
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
     -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
-				as with "lines" (this is the default for
-				-count)
+				as with "lines" (the default for -count)
 
 
 Special cases ~
