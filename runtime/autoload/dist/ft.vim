@@ -2571,6 +2571,8 @@ const ft_from_ext = {
   "builder": "ruby",
   "rxml": "ruby",
   "rjs": "ruby",
+  # Sorbet (Ruby typechecker)
+  "rbi": "ruby",
   # Rust
   "rs": "rust",
   # S-lang
@@ -2999,6 +3001,8 @@ const ft_from_name = {
   "apt.conf": "aptconf",
   # BIND zone
   "named.root": "bindzone",
+  # Brewfile (uses Ruby syntax)
+  "Brewfile": "ruby",
   # Busted (Lua unit testing framework - configuration files)
   ".busted": "lua",
   # Bun history
