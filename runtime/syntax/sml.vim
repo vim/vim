@@ -153,9 +153,11 @@ syn match    smlKeyChar      ";"
 syn match    smlKeyChar      "\*"
 syn match    smlKeyChar      "="
 
-syn match    smlNumber        "\<\~\=\%(0w\)\=\d\+\>"
-syn match    smlNumber        "\<\~\=0w\=x\x\+\>"
-syn match    smlReal          "\<\~\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
+syn match    smlNumber        "\~\=\<\d\+\>"
+syn match    smlNumber        "\~\=\<0x\x\+\>"
+syn match    smlWord          "\<0w\d\+\>"
+syn match    smlWord          "\<0wx\x\+\>"
+syn match    smlReal          "\~\=\<\d\+\.\d\+\%([eE]\~\=\d\+\)\=\>"
 
 " Synchronization
 syn sync minlines=20
@@ -209,6 +211,7 @@ hi def link smlOperator     Keyword
 hi def link smlBoolean      Boolean
 hi def link smlCharacter    Character
 hi def link smlNumber       Number
+hi def link smlWord         Number
 hi def link smlReal         Float
 hi def link smlString       String
 hi def link smlType         Type
