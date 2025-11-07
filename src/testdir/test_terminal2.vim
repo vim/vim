@@ -632,6 +632,39 @@ func Test_term_getcursor()
   call StopShellInTerminal(buf)
 endfunc
 
+func! s:TermPollAndAssertMatchTitle(term, old_name, new_pattern) abort
+  let new_name = ''
+  let next_part = ''
+  let prev_part = next_part
+  let times = 2048
+
+  " Ignore any pending or old title (or its tail part).
+  while (empty(new_name) ||
+          \ a:old_name[max([0, strridx(a:old_name, new_name)]) :] ==# new_name) &&
+          \ times > 0
+    let new_name = term_gettitle(a:term)
+    let times -= 1
+    sleep 1m
+  endwhile
+
+  " FIXME: Allow for occasional title "buffering" (on MacOS) and fetch either
+  " the whole title or its parts.
+  while new_name !~# a:new_pattern && times > 0
+    let next_part = term_gettitle(a:term)
+
+    if next_part !=# prev_part
+      let new_name .= next_part
+    endif
+
+    let prev_part = next_part
+    let times -= 1
+    sleep 1m
+  endwhile
+
+  call assert_match(a:new_pattern, new_name)
+  return new_name
+endfunc
+
 " Test for term_gettitle()
 " Known to be flaky on Mac-OS X and the GH runners
 func Test_term_gettitle()
@@ -643,24 +676,16 @@ func Test_term_gettitle()
   if !has('title') || empty(&t_ts)
     throw "Skipped: can't get/set title"
   endif
-  if has('osx') && !empty($CI) && system('uname -m') =~# 'arm64'
-    " This test often fails with the following error message on Github runners
-    " MacOS-14
-    " '^\\[No Name\\] - VIM\\d*$' does not match 'e] - VIM'
-    " Why? Is the terminal that runs Vim too small?
-    throw 'Skipped: FIXME: Running this test on M1 Mac fails on GitHub Actions'
-  endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])
   call TermWait(term)
   " When Vim is running as a server then the title ends in VIM{number}, thus
   " optionally match a number after "VIM".
-  call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d*$', term_gettitle(term)) })
+  let title = s:TermPollAndAssertMatchTitle(term, '', '^\[No Name\] - VIM\d*$')
   call term_sendkeys(term, ":e Xfoo\r")
-  call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d*$', term_gettitle(term)) })
-
+  let title = s:TermPollAndAssertMatchTitle(term, title, '^Xfoo (.*[/\\]testdir) - VIM\d*$')
   call term_sendkeys(term, ":set titlestring=foo\r")
-  call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
+  let title = s:TermPollAndAssertMatchTitle(term, title, 'foo')
 
   exe term . 'bwipe!'
 endfunc
