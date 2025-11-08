@@ -1,7 +1,7 @@
 vim9script
 # Vim9 types
 # VIM_TEST_SETUP hi link vimTypeAny Todo
-# VIM_TEST_SETUP hi link vimVariableTypeAny Todo
+# VIM_TEST_SETUP hi link vim9VariableTypeAny Todo
 
 
 # builtin types (distinct any highlighting)
