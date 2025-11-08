@@ -2328,7 +2328,7 @@ screen_fill(
 	{
 	    redraw_cmdline = TRUE;
 	    if (((start_col == 0 && end_col == Columns)
-			|| (start_col <= cmdline_col_off
+			|| (start_col == cmdline_col_off
 			&& end_col == cmdline_col_off + cmdline_width))
 		    && c1 == ' ' && c2 == ' ' && attr == 0
 #ifdef FEAT_PROP_POPUP
