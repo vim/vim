@@ -94,6 +94,45 @@ function Test_tabpanel_with_vsplit()
   call StopVimInTerminal(buf)
 endfunc
 
+func Call_cmd_funcs()
+  let g:results = [getcmdpos(), getcmdscreenpos(), getcmdline()]
+endfunc
+
+function Test_tabpanel_cmdline()
+  let save_showtabline = &showtabline
+  let g:results = []
+  cnoremap <expr> <F2> Call_cmd_funcs()
+
+  set showtabline=0 showtabpanel=0
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 2, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 5, 'pwd'], g:results)
+
+  set showtabline=2 showtabpanel=2 tabpanelopt=columns:20,align:left
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 22, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 25, 'pwd'], g:results)
+
+  set showtabline=2 showtabpanel=2 tabpanelopt+=align:right
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 2, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 5, 'pwd'], g:results)
+
+  unlet g:results
+  cunmap <F2>
+  call s:reset()
+  let &showtabline = save_showtabline
+endfunc
+
 function Test_tabpanel_mouse()
   let save_showtabline = &showtabline
   let save_mouse = &mouse
