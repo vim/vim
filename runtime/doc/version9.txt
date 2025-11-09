@@ -1,7 +1,7 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Nov 01
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 				*vim-9.0* *vim-9* *version-9.0* *version9.0*

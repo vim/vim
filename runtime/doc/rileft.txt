@@ -1,7 +1,7 @@
-*rileft.txt*    For Vim version 9.1.  Last change: 2022 Oct 12
+*rileft.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Avner Lottem
+		  VIM REFERENCE MANUAL	  by Avner Lottem
 					  updated by Nadim Shaikli
 
 

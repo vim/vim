@@ -1,7 +1,7 @@
-*cmdline.txt*   For Vim version 9.1.  Last change: 2025 Oct 26
+*cmdline.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 				*Cmdline-mode* *Command-line-mode*

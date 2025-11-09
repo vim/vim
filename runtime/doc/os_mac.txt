@@ -1,7 +1,7 @@
-*os_mac.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
+*os_mac.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
 
 
 					*mac* *Mac* *macintosh* *Macintosh*

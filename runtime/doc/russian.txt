@@ -1,7 +1,7 @@
-*russian.txt*   For Vim version 9.1.  Last change: 2006 Apr 24
+*russian.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Vassily Ragosin
+		  VIM REFERENCE MANUAL	  by Vassily Ragosin
 
 
 Russian language localization and support in Vim	   *russian* *Russian*

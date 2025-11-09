@@ -1,7 +1,7 @@
-*if_tcl.txt*    For Vim version 9.1.  Last change: 2025 Oct 12
+*if_tcl.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Ingo Wilken
+		  VIM REFERENCE MANUAL	  by Ingo Wilken
 
 
 The Tcl Interface to Vim				*tcl* *Tcl* *TCL*

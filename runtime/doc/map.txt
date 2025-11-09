@@ -1,7 +1,7 @@
-*map.txt*       For Vim version 9.1.  Last change: 2025 Nov 07
+*map.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Key mapping, abbreviations and user-defined commands.

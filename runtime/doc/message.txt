@@ -1,7 +1,7 @@
-*message.txt*   For Vim version 9.1.  Last change: 2025 Nov 01
+*message.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 This file contains an alphabetical list of messages and error messages that

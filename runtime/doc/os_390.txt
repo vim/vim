@@ -1,7 +1,8 @@
-*os_390.txt*    For Vim version 9.1.  Last change: 2025 Oct 26
+*os_390.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Ralf Schandl
+		  VIM REFERENCE MANUAL	  by Ralf Schandl
+
 
 					*zOS* *z/OS* *OS390* *os390* *MVS*
 This file contains the particulars for the z/OS UNIX version of Vim.

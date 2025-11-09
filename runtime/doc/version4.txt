@@ -1,7 +1,7 @@
-*version4.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
+*version4.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 This document lists the incompatible differences between Vim 3.0 and Vim 4.0.
