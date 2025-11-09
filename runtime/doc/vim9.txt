@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Oct 06
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Oct 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2224,14 +2224,15 @@ There are three categories of variables:
 When declaring a variable without an initializer, an explicit type must be
 provided.  Each category has different default initialization semantics.
 
-Primitives default to type-specific values.  All are |empty()| but not |null|: >vim9
+Primitives default to type-specific values.  All primitives are |empty()| but
+do not equal |null|: >vim9
 
     vim9script
     var n: number | echo [n, n->empty(), n == null]  # [0, 1, false]
     var f: float  | echo [f, f->empty(), f == null]  # [0.0, 1, false]
     var b: bool   | echo [b, b->empty(), b == null]  # [false, 1, false]
 <
-Containers default to an |empty| container.  Only an empty string is |null|: >vim9
+Containers default to an |empty| container.  Only an empty string equals |null|: >vim9
 
     vim9script
     var s: string       | echo [s, s->empty(), s == null]  # ['', 1, true]
@@ -2240,7 +2241,7 @@ Containers default to an |empty| container.  Only an empty string is |null|: >vi
     var t: tuple<any>   | echo [t, t->empty(), t == null]  # [(), 1, false]
     var d: dict<number> | echo [d, d->empty(), d == null]  # [{}, 1, false]
 <
-Specialized types default to |null|: >vim9
+Specialized types default to equaling |null|: >vim9
 
     vim9script
     var F: func    | echo [F, F == null]  # [function(''), true]
@@ -2259,8 +2260,11 @@ Specialized types default to |null|: >vim9
 Vim does not have a familiar null value.  Instead, it has various |null|_<type>
 predefined values including |null_string|, |null_list|, and |null_job|.
 Primitives do not have a null_<type>.  Typical use cases for null_<type> are:
-  - to clear a variable and release its resources, or
-  - as a default for a parameter in a function definition, see |null-compare|.
+    - to clear a variable and release its resources,
+    - as a default for a parameter in a function definition (for an example,
+      see |null_blob|), or
+    - assigned to a container or specialized variable to set it to null
+      for later comparison (for an example, see |null-compare|).
 
 For a specialized variable, like `job`, null_<type> is used to clear the
 resources.  For example: >vim9
@@ -2292,12 +2296,16 @@ variable may avoid null complications - see |null-anomalies|.
 
 The initialization semantics of container variables and specialized variables
 differ.  For containers:
-  - An uninitialized container defaults to empty but is not null
-  - A container initialized to [] defaults to empty but is not null, and
-  - A container initialized as null_list defaults to empty and is null.
-The lists "lu" and "li", below, are equivalent and indistinguishable
-initializations whereas "ln" is a null container (similar to, but not
-equivalent to, an empty container - see |null-anomalies|). >vim9
+  - An uninitialized container defaults to empty but does not equal `null`
+    (except for a uninitialized string).
+  - A container initialized to [], (), {}, "", or 0z is empty but does not
+    equal `null`.
+  - A container initialized as null_<type> defaults to empty and equals `null`.
+
+In the following example, the uninitialized list ("lu") and [] initialized
+list ("li") are equivalent and indistinguishable whereas "ln" is a null
+container, which is similar to, but not equivalent to, an empty container
+(see |null-anomalies|). >vim9
 
 	vim9script
 	# uninitialized: empty container, not null
@@ -2310,14 +2318,14 @@ equivalent to, an empty container - see |null-anomalies|). >vim9
 	var ln: list<any> = null_list
 	echo ['ln', $"empty={ln->empty()}", $"null={ln == null}"]
 <
-Specialized variables default to null.  These job initializations are
-equivalent and indistinguishable: >vim9
+Specialized variables default to equaling null.  These job initializations
+are equivalent and indistinguishable: >vim9
 
 	vim9script
 	var j1: job
 	var j2: job = null_job
 	var j3 = null_job
-	echo (j1 == j2) == (j2 == j3)  # true (equivalent, indistinguisable)
+	echo (j1 == j2) == (j2 == j3)  # true (equivalent, indistinguishable)
 <
 When a list, tuple, or dict is declared, if the item type is not specified
 it cannot be inferred.  Consequently, the item type defaults to "any": >vim9
