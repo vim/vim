@@ -417,8 +417,12 @@ def Test_generic_func_typename()
     Fn<list<list<blob>>>([[0z10, 0z20], [0z30]], 'list<list<blob>>')
     Fn<tuple<number, string>>((1, 'abc'), 'tuple<number, string>')
     Fn<dict<string>>({a: 'a', b: 'b'}, 'dict<string>')
-    Fn<job>(test_null_job(), 'job')
-    Fn<channel>(test_null_channel(), 'channel')
+    if has('job')
+      Fn<job>(test_null_job(), 'job')
+    endif
+    if has('channel')
+      Fn<channel>(test_null_channel(), 'channel')
+    endif
     Fn<func>(function('Foo'), 'func(list<string>, dict<number>): list<blob>')
   END
   v9.CheckSourceSuccess(lines)
