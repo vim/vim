@@ -1190,47 +1190,6 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
  * Implementation of the file selector related stuff
  */
 
-#ifndef USE_FILE_CHOOSER
-    static void
-browse_ok_cb(GtkWidget *widget UNUSED, gpointer cbdata)
-{
-    gui_T *vw = (gui_T *)cbdata;
-
-    if (vw->browse_fname != NULL)
-	g_free(vw->browse_fname);
-
-    vw->browse_fname = (char_u *)g_strdup(gtk_file_selection_get_filename(
-					GTK_FILE_SELECTION(vw->filedlg)));
-    gtk_widget_hide(vw->filedlg);
-}
-
-    static void
-browse_cancel_cb(GtkWidget *widget UNUSED, gpointer cbdata)
-{
-    gui_T *vw = (gui_T *)cbdata;
-
-    if (vw->browse_fname != NULL)
-    {
-	g_free(vw->browse_fname);
-	vw->browse_fname = NULL;
-    }
-    gtk_widget_hide(vw->filedlg);
-}
-
-    static gboolean
-browse_destroy_cb(GtkWidget *widget UNUSED)
-{
-    if (gui.browse_fname != NULL)
-    {
-	g_free(gui.browse_fname);
-	gui.browse_fname = NULL;
-    }
-    gui.filedlg = NULL;
-    gtk_main_quit();
-    return FALSE;
-}
-#endif
-
 /*
  * Put up a file requester.
  * Returns the selected name in allocated memory, or NULL for Cancel.
@@ -1249,13 +1208,11 @@ gui_mch_browse(int saving,
 	       char_u *initdir,
 	       char_u *filter)
 {
-#ifdef USE_FILE_CHOOSER
 # if GTK_CHECK_VERSION(3,20,0)
     GtkFileChooserNative	*fc;
 # else
     GtkWidget			*fc;
 # endif
-#endif
     char_u		dirbuf[MAXPATHL];
     guint		log_handler;
     const gchar		*domain = "Gtk";
@@ -1278,7 +1235,6 @@ gui_mch_browse(int saving,
     log_handler = g_log_set_handler(domain, G_LOG_LEVEL_WARNING,
 						  recent_func_log_func, NULL);
 
-#ifdef USE_FILE_CHOOSER
     // We create the dialog each time, so that the button text can be "Open"
     // or "Save" according to the action.
 # if GTK_CHECK_VERSION(3,20,0)
@@ -1352,7 +1308,7 @@ gui_mch_browse(int saving,
     if (gtk_native_dialog_run(GTK_NATIVE_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
 # else
     if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
-#endif
+# endif
     {
 	char *filename;
 
@@ -1366,43 +1322,6 @@ gui_mch_browse(int saving,
     gtk_widget_destroy(GTK_WIDGET(fc));
 # endif
 
-#else // !USE_FILE_CHOOSER
-
-    if (gui.filedlg == NULL)
-    {
-	GtkFileSelection	*fs;	// shortcut
-
-	gui.filedlg = gtk_file_selection_new((const gchar *)title);
-	gtk_window_set_modal(GTK_WINDOW(gui.filedlg), TRUE);
-	gtk_window_set_transient_for(GTK_WINDOW(gui.filedlg),
-						     GTK_WINDOW(gui.mainwin));
-	fs = GTK_FILE_SELECTION(gui.filedlg);
-
-	gtk_container_border_width(GTK_CONTAINER(fs), 4);
-
-	gtk_signal_connect(GTK_OBJECT(fs->ok_button),
-		"clicked", GTK_SIGNAL_FUNC(browse_ok_cb), &gui);
-	gtk_signal_connect(GTK_OBJECT(fs->cancel_button),
-		"clicked", GTK_SIGNAL_FUNC(browse_cancel_cb), &gui);
-	// gtk_signal_connect() doesn't work for destroy, it causes a hang
-	gtk_signal_connect_object(GTK_OBJECT(gui.filedlg),
-		"destroy", GTK_SIGNAL_FUNC(browse_destroy_cb),
-		GTK_OBJECT(gui.filedlg));
-    }
-    else
-	gtk_window_set_title(GTK_WINDOW(gui.filedlg), (const gchar *)title);
-
-    // Concatenate "initdir" and "dflt".
-    if (dflt != NULL && *dflt != NUL
-			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
-	STRCAT(dirbuf, dflt);
-
-    gtk_file_selection_set_filename(GTK_FILE_SELECTION(gui.filedlg),
-						      (const gchar *)dirbuf);
-
-    gtk_widget_show(gui.filedlg);
-    gtk_main();
-#endif // !USE_FILE_CHOOSER
     g_log_remove_handler(domain, log_handler);
 
     CONVERT_TO_UTF8_FREE(title);

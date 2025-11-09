@@ -2678,12 +2678,6 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # endif
 #endif
 
-#if defined(FEAT_BROWSE) && defined(GTK_CHECK_VERSION)
-# if GTK_CHECK_VERSION(2,4,0)
-#  define USE_FILE_CHOOSER
-# endif
-#endif
-
 #ifdef FEAT_GUI_GTK
 # if !GTK_CHECK_VERSION(2,14,0)
 #  define gtk_widget_get_window(wid)	((wid)->window)
