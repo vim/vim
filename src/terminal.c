@@ -291,10 +291,11 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
 #ifdef FEAT_GUI
     if (term->tl_system)
     {
-	// Use the whole screen for the system command.  However, it will start
-	// at the command line and scroll up as needed, using tl_toprow.
+	// Use the entire screen (excluding the tabpanel area) for the system
+	// commands.  However, it will start at the command line and scroll up
+	// as needed, using tl_toprow.
 	term->tl_rows = Rows;
-	term->tl_cols = Columns;
+	term->tl_cols = topframe->fr_width;
 	return;
     }
 #endif
@@ -1340,7 +1341,7 @@ update_cursor(term_T *term, int redraw)
 #ifdef FEAT_GUI
     if (term->tl_system)
 	windgoto(term->tl_cursor_pos.row + term->tl_toprow,
-						      term->tl_cursor_pos.col);
+		firstwin->w_wincol + term->tl_cursor_pos.col);
     else
 #endif
     if (!term_job_running(term))
@@ -3989,15 +3990,15 @@ update_system_term(term_T *term)
     {
 	if (pos.row < term->tl_rows)
 	{
-	    int max_col = MIN(Columns, term->tl_cols);
+	    int max_col = MIN(topframe->fr_width, term->tl_cols);
 
 	    term_line2screenline(term, NULL, screen, &pos, max_col);
 	}
 	else
 	    pos.col = 0;
 
-	screen_line(curwin, term->tl_toprow + pos.row, 0, pos.col, Columns, -1,
-									    0);
+	screen_line(curwin, term->tl_toprow + pos.row,
+		firstwin->w_wincol, pos.col, topframe->fr_width, -1, 0);
     }
 
     term->tl_dirty_row_start = MAX_ROW;
