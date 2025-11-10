@@ -5185,7 +5185,7 @@ static PangoEngineShape *default_shape_engine = NULL;
 
 /*
  * Create a map from ASCII characters in the range [32,126] to glyphs
- * of the current font.  This is used by gui_gtk2_draw_string() to skip
+ * of the current font.  This is used by gui_gtk_draw_string() to skip
  * the itemize and shaping process for the most common case.
  */
     static void
@@ -5900,7 +5900,7 @@ draw_under(int flags, int row, int col, int cells)
 }
 
     int
-gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
+gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 {
     char_u	*conv_buf = NULL;   // result of UTF-8 conversion
     char_u	*new_conv_buf;
@@ -6062,8 +6062,8 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 	    backup_ch = *(cs + slen);
 	    *(cs + slen) = NUL;
 	}
-	len_sum += gui_gtk2_draw_string_ext(row, col + len_sum,
-						 cs, slen, flags, needs_pango);
+	len_sum += gui_gtk_draw_string_ext(row, col + len_sum, cs, slen, flags,
+		                           needs_pango);
 	if (slen < len)
 	    *(cs + slen) = backup_ch;
 	cs += slen;
@@ -6075,7 +6075,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 }
 
     int
-gui_gtk2_draw_string_ext(
+gui_gtk_draw_string_ext(
 	int	row,
 	int	col,
 	char_u	*s,
