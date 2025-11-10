@@ -41,14 +41,16 @@ augroup  \"\| | autocmd! | augroup END
 augroup! \"\|
 
 
+" trailing bar and tail comments
+
 augroup  foo"comment
-  au!
-  au BufRead * echo "Foo"
+  autocmd!
+  autocmd BufRead * echo "Foo"
 augroup END"comment
 
 augroup  foo|echo "Foo"
-  au!
-  au BufRead * echo "Foo"
+  autocmd!
+  autocmd BufRead * echo "Foo"
 augroup END|echo "Foo"
 
 augroup! foo"comment
@@ -56,7 +58,14 @@ augroup! foo|echo "Foo"
 
 
 " list groups
+
 augroup
 augroup | echo "Foo"
 augroup " comment
+
+
+" groups named END*
+
+augroup ending
+augroup END
 
