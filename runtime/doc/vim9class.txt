@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Aug 27
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -766,7 +766,7 @@ The following builtin methods are supported:
 A class method cannot be used as a builtin method.
 
 Defining an interface ~
-					*Interface* *:interface* *:endinterface*
+			*interface* *Interface* *:interface* *:endinterface*
 An interface is defined between `:interface` and `:endinterface`.  It may be
 prefixed with `:export`: >
 
