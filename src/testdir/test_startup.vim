@@ -273,6 +273,21 @@ func Test_cmdline_file_position_tabe_prefix()
   call delete('Xcursor')
 endfunc
 
+func Test_cmdline_plus_argument_line_and_column()
+  call writefile(['first', 'second'], 'Xplusarg', 'D')
+  let after =<< trim [CODE]
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xcursor')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '+2:4 Xplusarg')
+    let parts = map(split(readfile('Xcursor')[0]), 'str2nr(v:val)')
+    call assert_equal([2, 4], parts)
+  endif
+
+  call delete('Xcursor')
+endfunc
+
 func Test_cmdline_non_numeric_colon_argument()
   CheckUnix
   call writefile(['colon name'], 'Xnon:numeric', 'D')

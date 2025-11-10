@@ -509,9 +509,11 @@ The [+cmd] argument can be used to position the cursor in the newly opened
 file, or execute any other command:
 	+		Start at the last line.
 	+{num}		Start at line {num}.
+	+{num}:{col}	Start at line {num} and column {col}.
 	+/{pat}		Start at first line containing {pat}.
 	+{command}	Execute {command} after opening the new file.
 			{command} is any Ex command.
+Both {num} and {col} are 1-based numbers, the column is counted in bytes.
 To include a white space in the {pat} or {command}, precede it with a
 backslash.  Double the number of backslashes. >
 	:edit  +/The\ book	     file

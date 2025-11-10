@@ -135,6 +135,57 @@ parse_cmd_file_arg(
 }
 
 /*
+ * Parse a "+cmd" style argument of the form "{lnum}:{col}".
+ * Returns OK when both values are present and only decimal digits were used,
+ * FAIL otherwise.  The resulting numbers are at least one.
+ */
+    int
+parse_cmd_lnum_col(
+	char_u	*cmd,
+	linenr_T *lnum,
+	colnr_T	*col)
+{
+    char_u	*p;
+    long	line = 0;
+    long	column = 0;
+
+    if (cmd == NULL || *cmd == NUL || !VIM_ISDIGIT(*cmd))
+	return FAIL;
+
+    p = cmd;
+    while (VIM_ISDIGIT(*p))
+    {
+	line = line * 10 + (*p - '0');
+	++p;
+    }
+
+    if (*p != ':' || !VIM_ISDIGIT(p[1]))
+	return FAIL;
+
+    ++p;
+    while (VIM_ISDIGIT(*p))
+    {
+	column = column * 10 + (*p - '0');
+	++p;
+    }
+
+    if (*p != NUL)
+	return FAIL;
+
+    if (line < 1)
+	line = 1;
+    if (column < 1)
+	column = 1;
+
+    if (lnum != NULL)
+	*lnum = (linenr_T)line;
+    if (col != NULL)
+	*col = (colnr_T)column;
+
+    return OK;
+}
+
+/*
  * Return TRUE if in the current mode we need to use virtual.
  */
     int

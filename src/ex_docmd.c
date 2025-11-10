@@ -643,6 +643,19 @@ do_cmdline_cmd(char_u *cmd)
     static int
 do_cmd_argument(char_u *cmd)
 {
+    linenr_T	lnum;
+    colnr_T	col;
+
+    if (parse_cmd_lnum_col(cmd, &lnum, &col) == OK)
+    {
+	char_u	cursorbuf[NUMBUFLEN * 2 + 24];
+
+	vim_snprintf((char *)cursorbuf, sizeof(cursorbuf),
+		"call cursor(%ld,%ld)", (long)lnum, (long)col);
+	return do_cmdline(cursorbuf, NULL, NULL,
+		  DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED|DOCMD_RANGEOK);
+    }
+
     return do_cmdline(cmd, NULL, NULL,
 		      DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED|DOCMD_RANGEOK);
 }

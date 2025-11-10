@@ -2111,7 +2111,27 @@ command_line_scan(mparm_T *parmp)
 	    if (argv[0][1] == NUL)
 		parmp->commands[parmp->n_commands++] = (char_u *)"$";
 	    else
-		parmp->commands[parmp->n_commands++] = (char_u *)&(argv[0][1]);
+	    {
+		linenr_T lnum;
+		colnr_T col;
+
+		if (parse_cmd_lnum_col((char_u *)&argv[0][1], &lnum, &col) == OK)
+		{
+		    char	cursorbuf[NUMBUFLEN * 2 + 24];
+		    char_u	*cmdstr;
+
+		    vim_snprintf(cursorbuf, sizeof(cursorbuf),
+			    "call cursor(%ld,%ld)", (long)lnum, (long)col);
+		    cmdstr = vim_strsave((char_u *)cursorbuf);
+		    if (cmdstr == NULL)
+			mch_exit(2);
+		    parmp->cmds_tofree[parmp->n_commands] = TRUE;
+		    parmp->commands[parmp->n_commands++] = cmdstr;
+		}
+		else
+		    parmp->commands[parmp->n_commands++] =
+						 (char_u *)&(argv[0][1]);
+	    }
 	}
 
 	/*

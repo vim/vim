@@ -8,6 +8,16 @@ function Test_edit()
   call assert_equal(["fooSLASHbar"], readfile("Xfile2"))
 endfunction
 
+func Test_edit_plus_cmd_column()
+  call writefile(['alpha', 'bravo'], 'Xpluscmdcol', 'D')
+  enew!
+  execute 'edit +2:3 Xpluscmdcol'
+  let pos = getcurpos()
+  call assert_equal(2, pos[1])
+  call assert_equal(3, pos[2])
+  bw!
+endfunc
+
 func Test_edit_bad()
   " Test loading a utf8 file with bad utf8 sequences.
   call writefile(["[\xff][\xc0][\xe2\x89\xf0][\xc2\xc2]"], "Xbadfile", 'D')
