@@ -1081,7 +1081,7 @@ gui_get_wide_font(void)
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 /*
  * Set list of ascii characters that combined can create ligature.
- * Store them in char map for quick access from gui_gtk2_draw_string.
+ * Store them in char map for quick access from gui_gtk_draw_string.
  */
     void
 gui_set_ligatures(void)
@@ -2533,7 +2533,7 @@ gui_outstr_nowrap(
      */
 #ifdef FEAT_GUI_GTK
     // The value returned is the length in display cells
-    len = gui_gtk2_draw_string(gui.row, col, s, len, draw_flags);
+    len = gui_gtk_draw_string(gui.row, col, s, len, draw_flags);
 #else
     if (enc_utf8)
     {

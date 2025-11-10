@@ -6063,7 +6063,7 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 	    *(cs + slen) = NUL;
 	}
 	len_sum += gui_gtk_draw_string_ext(row, col + len_sum, cs, slen, flags,
-		                           needs_pango);
+					    needs_pango);
 	if (slen < len)
 	    *(cs + slen) = backup_ch;
 	cs += slen;
