@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Nov 08
+" Last Change:	   2025 Nov 10
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -451,13 +451,13 @@ syn cluster vimAugroupList	contains=@vimCmdList,vimFilter,@vimFunc,vimLineCommen
 
 " define
 VimFolda syn region vimAugroup
-      \ start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\)\@!\S\+"
+      \ start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\%($\|[[:space:]|"#]\)\)\@!\S"
       \ matchgroup=vimAugroupKey
-      \ end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>"
+      \ end="\<aug\%[roup]\ze\s\+[eE][nN][dD]\s*\%($\|[|"#]\)"
       \ skipwhite nextgroup=vimAugroupEnd
       \ contains=vimAutocmd,@vimAugroupList,vimAugroupkey
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noaugrouperror")
-  syn match	vimAugroupError	"\<aug\%[roup]\>\s\+[eE][nN][dD]\>"
+  syn match	vimAugroupError	"\<aug\%[roup]\s\+[eE][nN][dD]\ze\s*\%($\|[|"#]\)"
 endif
 
 " TODO: Vim9 comment
