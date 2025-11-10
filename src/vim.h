@@ -2095,6 +2095,9 @@ typedef int sock_T;
 // Lowest button code for using the mouse wheel (xterm only)
 #define MOUSEWHEEL_LOW		0x60
 
+// Lowest button code for extra mouse buttons 8-11
+#define MOUSESIDEBUTTONS_LOW		0xa0
+
 #define MOUSE_CLICK_MASK	0x03
 
 #define NUM_MOUSE_CLICKS(code) \
