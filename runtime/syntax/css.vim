@@ -197,7 +197,7 @@ syn keyword cssBorderAttr contained clone slice
 
 syn match cssBoxProp contained "\<padding\(-\(top\|right\|bottom\|left\)\)\=\>"
 syn match cssBoxProp contained "\<margin\(-\(top\|right\|bottom\|left\)\)\=\>"
-syn match cssBoxProp contained "\<\(margin\|padding\)\(-\(inline\|block\)\(-\(start\|end\)\)\)\=\>"
+syn match cssBoxProp contained "\<\(margin\|padding\)\(-\(inline\|block\)\(-\(start\|end\)\)\=\)\=\>"
 syn match cssBoxProp contained "\<overflow\(-\(x\|y\|style\)\)\=\>"
 syn match cssBoxProp contained "\<rotation\(-point\)\=\>"
 syn keyword cssBoxAttr contained visible hidden scroll auto
