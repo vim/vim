@@ -3107,11 +3107,13 @@ win_line(
 		    char_u  *p = ptr - (mb_off + 1);
 		    chartabsize_T cts;
 
-		    init_chartabsize_arg(&cts, wp, lnum, wlv.vcol
+
+		    colnr_T init_colnr = wlv.vcol;
 # ifdef FEAT_PROP_POPUP
-							     - vcol_first_char,
+		    init_colnr -= vcol_first_char;
 # endif
-								      line, p);
+		    init_chartabsize_arg(&cts, wp, lnum, init_colnr, line, p);
+
 # ifdef FEAT_PROP_POPUP
 		    // do not want virtual text counted here
 		    cts.cts_has_prop_with_text = FALSE;
