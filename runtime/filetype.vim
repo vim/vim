@@ -774,12 +774,13 @@ au BufNewFile,BufRead */neofetch/config.conf	setf sh
 " Nginx
 au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/nginx/*.conf	setf nginx
 
-" Nroff/Troff (*.ms and *.t are checked below)
+" Nroff/Groff/Troff (*.ms and *.t are checked below)
 au BufNewFile,BufRead *.me
 	\ if expand("<afile>") != "read.me" && expand("<afile>") != "click.me" |
 	\   setf nroff |
 	\ endif
-au BufNewFile,BufRead *.tr,*.nr,*.roff,*.tmac,*.mom	setf nroff
+au BufNewFile,BufRead *.tr,*.nr,*.roff,*.tmac setf nroff
+au BufNewFile,BufRead *.groff,*.mom setf groff
 au BufNewFile,BufRead *.[0-9],*.[013]p,*.[1-8]x,*.3{am,perl,pm,posix,type},*.n	call dist#ft#FTnroff()
 
 " Nroff or Objective C++
