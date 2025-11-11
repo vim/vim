@@ -2316,6 +2316,10 @@ check_termcode_mouse(
 	 *	   0x23 = any button release
 	 *	   0x60 = button 4 down (scroll wheel down)
 	 *	   0x61 = button 5 down (scroll wheel up)
+	 *	   0x62 = button 6 down (scroll wheel left)
+	 *	   0x63 = button 7 down (scroll wheel right)
+	 *	   0xa0 = button 8 down (backward button)
+	 *	   0xa1 = button 9 down (forward button)
 	 *	add 0x04 for SHIFT
 	 *	add 0x08 for ALT
 	 *	add 0x10 for CTRL
@@ -2470,7 +2474,7 @@ check_termcode_mouse(
 	 * Linux console with GPM and the MS-DOS or Win32 console
 	 * (multi-clicks use >= 0x60).
 	 */
-	if (mouse_code >= MOUSEWHEEL_LOW
+	if (mouse_code >= MOUSEWHEEL_LOW && mouse_code < MOUSESIDEBUTTONS_LOW
 #  ifdef FEAT_GUI
 		&& !gui.in_use
 #  endif
@@ -2993,7 +2997,13 @@ check_termcode_mouse(
 	held_button = MOUSE_RELEASE;
     }
     else
+    {
+#if defined(UNIX)
+	if (use_xterm_mouse() && orig_mouse_code >= MOUSESIDEBUTTONS_LOW)
+	    current_button = (current_button) ? MOUSE_X2 : MOUSE_X1;
+#endif
 	key_name[1] = get_pseudo_mouse_code(current_button, is_click, is_drag);
+    }
 
 
     // Make sure the mouse position is valid.  Some terminals may return weird
