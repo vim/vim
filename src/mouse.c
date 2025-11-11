@@ -2998,8 +2998,10 @@ check_termcode_mouse(
     }
     else
     {
+#if defined(UNIX)
 	if (use_xterm_mouse() && orig_mouse_code >= MOUSESIDEBUTTONS_LOW)
 	    current_button = (current_button) ? MOUSE_X2 : MOUSE_X1;
+#endif
 	key_name[1] = get_pseudo_mouse_code(current_button, is_click, is_drag);
     }
 
