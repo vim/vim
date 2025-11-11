@@ -1167,7 +1167,8 @@ Mouse clicks can be mapped.  The codes for mouse clicks are:
 
 The X1 and X2 buttons refer to the extra buttons found on some mice.  The
 'Microsoft Explorer' mouse has these buttons available to the right thumb.
-Currently X1 and X2 only work on Win32 and X11 environments.
+Currently X1 and X2 only work on Win32 and X11 environments, and in terminals
+with xterm-like mouse support.
 
 Examples: >
 	:noremap <MiddleMouse> <LeftMouse><MiddleMouse>
