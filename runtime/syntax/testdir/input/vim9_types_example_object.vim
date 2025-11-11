@@ -1,7 +1,5 @@
 vim9script
 # Vim9 object type constructor
-# VIM_TEST_SETUP hi link vimTypeObject Todo
-# VIM_TEST_SETUP hi link vim9VariableTypeObject Todo
 
 
 # Issue #18677 (No recognition of object<any> types - Aliaksei Budavei)

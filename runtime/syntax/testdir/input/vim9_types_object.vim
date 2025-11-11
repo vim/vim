@@ -1,7 +1,7 @@
 vim9script
 # Vim9 object type constructor
-# VIM_TEST_SETUP hi link vimIypeObject Todo
-# VIM_TEST_SETUP hi link vim9VariableIypeObject Todo
+# VIM_TEST_SETUP hi link vimTypeObject Todo
+# VIM_TEST_SETUP hi link vimTypeObjectBracket Title
 
 
 interface I
