@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Nov 10
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -661,8 +661,8 @@ The basic idea is to build on top of an existing class, add properties to it.
 The extended class is called the "base class" or "super class".  The new class
 is called the "child class".
 
-Object variables from the base class are all taken over by the child class.  It
-is not possible to override them (unlike some other languages).
+Object variables from the base class are all taken over by the child class.
+It is not possible to override them (unlike some other languages).
 
 						*E1356* *E1357* *E1358*
 Object methods of the base class can be overruled.  The signature (arguments,

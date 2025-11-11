@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 10
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3062,7 +3062,8 @@ much overhead that cannot be avoided.
 Therefore the `:def` method to define a new-style function had to be added,
 which allows for a function with different semantics.  Most things still work
 as before, but some parts do not.  A new way to define a function was
-considered the best way to separate the legacy style code from Vim9 style code.
+considered the best way to separate the legacy style code from Vim9 style
+code.
 
 Using "def" to define a function comes from Python.  Other languages use
 "function" which clashes with legacy Vim script.
