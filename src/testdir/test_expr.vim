@@ -1121,7 +1121,7 @@ func Test_unlet_nonexisting_key()
   try
     unlet! g:base["foobar"]
   catch
-    call assert_false(1, "no error when unletting non-existing dict key")
+    call assert_report("error when unletting non-existing dict key")
   endtry
   unlet g:base
 
