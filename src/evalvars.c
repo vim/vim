@@ -2022,7 +2022,7 @@ ex_let_one(
     void
 ex_unlet(exarg_T *eap)
 {
-    ex_unletlock(eap, eap->arg, 0, 0, do_unlet_var, NULL);
+    ex_unletlock(eap, eap->arg, 0, eap->forceit ? GLV_QUIET : 0, do_unlet_var, NULL);
 }
 
 /*

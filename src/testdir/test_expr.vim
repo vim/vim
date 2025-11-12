@@ -1114,4 +1114,17 @@ func Test_bitwise_shift()
   call assert_equal(64, MultBy2_A()(32))
 endfunc
 
+func Test_unlet_nonexisting_key()
+  let g:base = {}
+  call assert_fails(':unlet g:base["foobar"]', 'E716:')
+
+  try
+    unlet! g:base["foobar"]
+  catch
+    call assert_false(1, "no error when unletting non-existing dict key")
+  endtry
+  unlet g:base
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
