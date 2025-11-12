@@ -1145,10 +1145,10 @@ list of buffers. |unlisted-buffer|
 		or "N CTRL-^", where N is the buffer number.
 
 		For the file name these special values are used:
-			[Prompt]	|prompt-buffer|
-			[Popup]		buffer of a |popup-window|
-			[Scratch]	'buftype' is "nofile"
-			[No Name]	no file name specified
+			"[Prompt]"	|prompt-buffer|
+			"[Popup]"	buffer of a |popup-window|
+			"[Scratch]"	'buftype' is "nofile"
+			"[No Name]"	no file name specified
 		For a |terminal-window| buffer the status is used.
 
 		Indicators (chars in the same column are mutually exclusive):
