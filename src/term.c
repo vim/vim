@@ -5362,7 +5362,7 @@ put_key_modifiers_in_typebuf(
     static int
 parse_csi_f_keys(int arg)
 {
-    char_u key_name[2] = "";
+    char_u key_name[2] = { 0, 0 };
 
     switch (arg)
     {
