@@ -3564,11 +3564,6 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_GREY:
 		// make menu's have grey items, ignored here
 		break;
-#ifdef FEAT_GUI_MSWIN
-	    case GO_TITLEBAR:
-		using_titlebar = TRUE;
-		break;
-#endif
 #ifdef FEAT_TOOLBAR
 	    case GO_TOOLBAR:
 		using_toolbar = TRUE;
