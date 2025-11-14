@@ -1,13 +1,12 @@
 "------------------------------------------------------------------------------
 "  Description: Vim Ada omnicompletion file
-"     Language:	Ada (2005)
-"	   $Id: adacomplete.vim 887 2008-07-08 14:29:01Z krischik $
-"   Maintainer:	Martin Krischik
-"      $Author: krischik $
-"	 $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
-"      Version: 4.6
-"    $Revision: 887 $
-"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/adacomplete.vim $
+"     Language:	Ada (2022)
+"    Copyright: Copyright (C) 2006 … 2022 Martin Krischik
+"   Maintainer:	Doug Kearns <dougkearns@gmail.com> (Vim)
+"		Martin Krischik <krischik@users.sourceforge.net> (Upstream)
+"               Bartek Jasicki <thindil@laeran.pl>
+"	   URL: https://github.com/krischik/vim-ada
+"      Version: 5.5.0
 "      History: 24.05.2006 MK Unified Headers
 "		26.05.2006 MK improved search for begin of word.
 "		16.07.2006 MK Ada-Mode as vim-ball
@@ -16,6 +15,11 @@
 "			      autoload
 "		05.11.2006 MK Bram suggested against using setlocal omnifunc 
 "		05.11.2006 MK Bram suggested to save on spaces
+"		28.08.2022 MK Merge Ada 2012 changes from thindil
+"		01.09.2022 MK Use GitHub and dein to publish new versions
+"		25.10.2022 MK Add Alire compiler support
+"               21.08.2023 MK Release 5.5.0
+"	 Usage: Use dein to install
 "    Help Page: ft-ada-omni
 "------------------------------------------------------------------------------
 
@@ -46,26 +50,16 @@ function! adacomplete#Complete (findstart, base)
       " add symbols
       "
       for Tag_Item in l:Tag_List
-	 if l:Tag_Item['kind'] == ''
-	    "
-	    " Tag created by gnat xref
-	    "
-	    let l:Match_Item = {
-	       \ 'word':  l:Tag_Item['name'],
-	       \ 'menu':  l:Tag_Item['filename'],
-	       \ 'info':  "Symbol from file " . l:Tag_Item['filename'] . " line " . l:Tag_Item['cmd'],
-	       \ 'kind':  's',
-	       \ 'icase': 1}
-	 else
+	 if !has_key(l:Tag_Item, 'language') || l:Tag_Item['language'] == 'Ada'
 	    "
 	    " Tag created by ctags
 	    "
-	    let l:Info	= 'Symbol		 : ' . l:Tag_Item['name']  . "\n"
-	    let l:Info .= 'Of type		 : ' . g:ada#Ctags_Kinds[l:Tag_Item['kind']][1]  . "\n"
-	    let l:Info .= 'Defined in File	 : ' . l:Tag_Item['filename'] . "\n"
+	    let l:Info	= 'Symbol                : ' . l:Tag_Item['name']  . "\n"
+	    let l:Info .= 'Of type               : ' . g:ada#Ctags_Kinds[l:Tag_Item['kind']][1]  . "\n"
+	    let l:Info .= 'Defined in File       : ' . l:Tag_Item['filename'] . "\n"
 
 	    if has_key( l:Tag_Item, 'package')
-	       let l:Info .= 'Package		    : ' . l:Tag_Item['package'] . "\n"
+	       let l:Info .= 'Package               : ' . l:Tag_Item['package'] . "\n"
 	       let l:Menu  = l:Tag_Item['package']
 	    elseif has_key( l:Tag_Item, 'separate')
 	       let l:Info .= 'Separate from Package : ' . l:Tag_Item['separate'] . "\n"
@@ -74,14 +68,20 @@ function! adacomplete#Complete (findstart, base)
 	       let l:Info .= 'Package Specification : ' . l:Tag_Item['packspec'] . "\n"
 	       let l:Menu  = l:Tag_Item['packspec']
 	    elseif has_key( l:Tag_Item, 'type')
-	       let l:Info .= 'Datetype		    : ' . l:Tag_Item['type'] . "\n"
+	       let l:Info .= 'Datetype              : ' . l:Tag_Item['type'] . "\n"
 	       let l:Menu  = l:Tag_Item['type']
 	    else
 	       let l:Menu  = l:Tag_Item['filename']
 	    endif
 
+	    let l:Definition = trim(l:Tag_Item['cmd'], "/^")
+	    let l:Definition = trim(l:Definition, "$/;")
+	    let l:Definition = trim(l:Definition)
+	    let l:Info .= 'Definition            : ' . l:Definition . "\n"
+
 	    let l:Match_Item = {
 	       \ 'word':  l:Tag_Item['name'],
+	       \ 'abbr':  l:Definition,
 	       \ 'menu':  l:Menu,
 	       \ 'info':  l:Info,
 	       \ 'kind':  l:Tag_Item['kind'],
@@ -98,12 +98,11 @@ function! adacomplete#Complete (findstart, base)
    endif
 endfunction adacomplete#Complete
 
-finish " 1}}}
+finish " }}}1
 
 "------------------------------------------------------------------------------
-"   Copyright (C) 2006	Martin Krischik
-"
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
-" vim: foldmethod=marker
+" vim: set textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab :
+" vim: set filetype=vim fileencoding=utf-8 fileformat=unix foldmethod=marker :
+" vim: set spell spelllang=en_gb :
