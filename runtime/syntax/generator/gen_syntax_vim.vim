@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Nov 11
+" Last Change: 2025 Nov 14
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -304,6 +304,9 @@ function s:get_vim_command_type(cmd_name)
 		augroup
 		autocmd
 		behave
+		breakadd
+		breakdel
+		breaklist
 		browse
 		bufdo
 		call
@@ -317,6 +320,7 @@ function s:get_vim_command_type(cmd_name)
 		confirm
 		const
 		copy
+		debug
 		debuggreedy
 		def
 		defer
