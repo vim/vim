@@ -40,10 +40,6 @@ CompilerSet errorformat+=
             \%-Gnote:\ Run\ with\ \`RUST_BACKTRACE=%.%#,
             \%.%#panicked\ at\ \\'%m\\'\\,\ %f:%l:%c
 
-" Compatibility with standard unix tools errorformat
-CompilerSet errorformat+=
-            \%f:%l:%c:%m
-
 " vint: -ProhibitAbbreviationOption
 let &cpo = s:save_cpo
 unlet s:save_cpo
