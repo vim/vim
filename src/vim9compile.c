@@ -3170,6 +3170,8 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
     int		ret = OK;
     char_u	*whitep;
     lhs_T	*lhs = &cac->cac_lhs;
+    lvar_T	*lvp;
+    lvar_T	save_lhs_lvar;
 
     // Compile the expression.
     if (cac->cac_incdec)
@@ -3178,7 +3180,14 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
     // Temporarily hide the new local variable here, it is
     // not available to this expression.
     if (lhs->lhs_new_local)
+    {
 	--cctx->ctx_locals.ga_len;
+
+	// Save the local variable value (compiling the RHS expression may
+	// create new local variables).
+	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + cctx->ctx_locals.ga_len;
+	save_lhs_lvar = *lvp;
+    }
     whitep = cac->cac_op + cac->cac_oplen;
 
     if (may_get_next_line_error(whitep, &cac->cac_nextc, cctx) == FAIL)
@@ -3190,7 +3199,15 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
 
     ret = compile_expr0_ext(&cac->cac_nextc, cctx, &cac->cac_is_const);
     if (lhs->lhs_new_local)
+    {
+	// Restore the local variable value.  Update lhs_lvar as the index of
+	// the local variable might have changed.
+	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + cctx->ctx_locals.ga_len;
+	*lvp = save_lhs_lvar;
+	lhs->lhs_lvar = lvp;
+
 	++cctx->ctx_locals.ga_len;
+    }
 
     return ret;
 }
