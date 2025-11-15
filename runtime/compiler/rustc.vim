@@ -17,11 +17,7 @@ set cpo&vim
 if get(g:, 'rustc_makeprg_no_percent', 0)
     CompilerSet makeprg=rustc
 else
-    if has('patch-7.4.191')
-      CompilerSet makeprg=rustc\ \%:S
-    else
-      CompilerSet makeprg=rustc\ \"%\"
-    endif
+    CompilerSet makeprg=rustc\ \%:S
 endif
 
 " New errorformat (after nightly 2016/08/10)
