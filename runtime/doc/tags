@@ -6739,6 +6739,7 @@ compile-changes-7	version7.txt	/*compile-changes-7*
 compile-changes-8	version8.txt	/*compile-changes-8*
 compile-changes-9	version9.txt	/*compile-changes-9*
 compile-changes-9.2	version9.txt	/*compile-changes-9.2*
+compiler-biome		quickfix.txt	/*compiler-biome*
 compiler-compaqada	ft_ada.txt	/*compiler-compaqada*
 compiler-cppcheck	quickfix.txt	/*compiler-cppcheck*
 compiler-decada	ft_ada.txt	/*compiler-decada*
@@ -9932,6 +9933,7 @@ quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
 quickfix-ID	quickfix.txt	/*quickfix-ID*
 quickfix-buffer	quickfix.txt	/*quickfix-buffer*
+quickfix-biome	quickfix.txt	/*quickfix-biome*
 quickfix-changedtick	quickfix.txt	/*quickfix-changedtick*
 quickfix-context	quickfix.txt	/*quickfix-context*
 quickfix-cppcheck	quickfix.txt	/*quickfix-cppcheck*
