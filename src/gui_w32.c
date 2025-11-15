@@ -1563,7 +1563,6 @@ extern BOOL win11_or_later; // this is in os_win32.c
 /*
  * Set TitleBar's color. Handle hl-TitleBar and hl-TitleBarNC.
  *
- * Only enabled when 'guioptions' has 'C'.
  * if "TitleBar guibg=NONE guifg=NONE" reset the window back to using the
  * system's default behavior for the border color.
  */
@@ -1573,27 +1572,23 @@ gui_mch_set_titlebar_colors(void)
     if (pDwmSetWindowAttribute == NULL || !win11_or_later)
 	return;
 
-    guicolor_T captionColor = 0xFFFFFFFF;
-    guicolor_T textColor = 0xFFFFFFFF;
+    guicolor_T captionColor, textColor;
 
-    if (vim_strchr(p_go, GO_TITLEBAR) != NULL)
+    if (gui.in_focus)
     {
-	if (gui.in_focus)
-	{
-	    captionColor = gui.title_bg_pixel;
-	    textColor = gui.title_fg_pixel;
-	}
-	else
-	{
-	    captionColor = gui.titlenc_bg_pixel;
-	    textColor = gui.titlenc_fg_pixel;
-	}
-
-	if (captionColor == INVALCOLOR)
-	    captionColor = 0xFFFFFFFF;
-	if (textColor == INVALCOLOR)
-	    textColor = 0xFFFFFFFF;
+	captionColor = gui.title_bg_pixel;
+	textColor = gui.title_fg_pixel;
     }
+    else
+    {
+	captionColor = gui.titlenc_bg_pixel;
+	textColor = gui.titlenc_fg_pixel;
+    }
+
+    if (captionColor == INVALCOLOR)
+	captionColor = 0xFFFFFFFF;
+    if (textColor == INVALCOLOR)
+	textColor = 0xFFFFFFFF;
 
     pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
 	    &captionColor, sizeof(captionColor));

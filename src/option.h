@@ -288,7 +288,6 @@ typedef enum {
 #define GO_ASELML	'A'		// autoselect modeless selection
 #define GO_BOT		'b'		// use bottom scrollbar
 #define GO_CONDIALOG	'c'		// use console dialog
-#define GO_TITLEBAR	'C'		// use 'hl-TitleBar'
 #define GO_DARKTHEME	'd'		// use dark theme variant
 #define GO_TABLINE	'e'		// may show tabline
 #define GO_FORG		'f'		// start GUI in foreground
@@ -309,7 +308,7 @@ typedef enum {
 #define GO_VERTICAL	'v'		// arrange dialog buttons vertically
 #define GO_KEEPWINSIZE	'k'		// keep GUI window size
 // all possible flags for 'go'
-#define GO_ALL		"!aAbcCdefFghilLmMpPrRtTvk"
+#define GO_ALL		"!aAbcdefFghilLmMpPrRtTvk"
 
 // flags for 'comments' option
 #define COM_NEST	'n'		// comments strings nest

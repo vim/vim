@@ -41715,8 +41715,6 @@ Options: ~
 - Setting 'nowrap' in a modeline could cause long lines to be hidden
   off-screen.  To make this visible, the listchars "extend" suboption is set
   to ">" by default, indicating text that extends beyond the window width.
-- 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
-  (see also the below platform specific change).
 - 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~

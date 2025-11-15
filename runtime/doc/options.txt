@@ -4527,10 +4527,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-c'*
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
-								*'go-C'*
-	  'C'	Use |hl-TitleBar| and |hl-TitleBarNC| if available.
-		Currently only works for MS-Window GUI.
-		See |gui-w32-title-bar| for details.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
 		GTK+ GUI.
