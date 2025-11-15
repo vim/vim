@@ -48,9 +48,7 @@
 #define PV_CINSD	OPT_BUF(BV_CINSD)
 #define PV_CINW		OPT_BUF(BV_CINW)
 #define PV_CM		OPT_BOTH(OPT_BUF(BV_CM))
-#ifdef FEAT_FOLDING
-# define PV_CMS		OPT_BUF(BV_CMS)
-#endif
+#define PV_CMS		OPT_BUF(BV_CMS)
 #define PV_COM		OPT_BUF(BV_COM)
 #define PV_COT		OPT_BOTH(OPT_BUF(BV_COT))
 #define PV_CPT		OPT_BUF(BV_CPT)
@@ -671,13 +669,8 @@ static struct vimoption options[] =
 				(char_u *)0L}
 			    SCTX_INIT},
     {"commentstring", "cms", P_STRING|P_ALLOCED|P_VI_DEF,
-#ifdef FEAT_FOLDING
 			    (char_u *)&p_cms, PV_CMS, did_set_commentstring, NULL,
 			    {(char_u *)"/* %s */", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
 			    // P_PRI_MKRC isn't needed here, optval_default()
 			    // always returns TRUE for 'compatible'

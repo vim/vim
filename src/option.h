@@ -510,9 +510,7 @@ EXTERN char_u	*p_cb;		// 'clipboard'
 EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
 EXTERN long	p_ch;		// 'cmdheight'
-#ifdef FEAT_FOLDING
 EXTERN char_u	*p_cms;		// 'commentstring'
-#endif
 EXTERN char_u	*p_cpt;		// 'complete'
 EXTERN long	p_cto;		// 'completetimeout'
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -1191,9 +1189,7 @@ enum
     , BV_CINSD
     , BV_CINW
     , BV_CM
-#ifdef FEAT_FOLDING
     , BV_CMS
-#endif
     , BV_COM
     , BV_COT
     , BV_CPT

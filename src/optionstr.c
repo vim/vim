@@ -307,9 +307,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_flp);
     check_string_option(&buf->b_p_isk);
     check_string_option(&buf->b_p_com);
-#ifdef FEAT_FOLDING
     check_string_option(&buf->b_p_cms);
-#endif
     check_string_option(&buf->b_p_nf);
     check_string_option(&buf->b_p_qe);
 #ifdef FEAT_SYN_HL
@@ -1581,7 +1579,6 @@ did_set_comments(optset_T *args)
     return errmsg;
 }
 
-#if defined(FEAT_FOLDING)
 /*
  * The 'commentstring' option is changed.
  */
@@ -1595,7 +1592,6 @@ did_set_commentstring(optset_T *args)
 
     return NULL;
 }
-#endif
 
 /*
  * Check if value for 'complete' is valid when 'complete' option is changed.

@@ -1364,9 +1364,9 @@ EXTERN char e_illegal_character_after_chr[]
 #ifdef FEAT_FOLDING
 EXTERN char e_comma_required[]
 	INIT(= N_("E536: Comma required"));
+#endif
 EXTERN char e_commentstring_must_be_empty_or_contain_str[]
 	INIT(= N_("E537: 'commentstring' must be empty or contain %s"));
-#endif
 EXTERN char e_pattern_found_in_every_line_str[]
 	INIT(= N_("E538: Pattern found in every line: %s"));
 EXTERN char e_illegal_character_str[]

@@ -2476,9 +2476,7 @@ free_buf_options(
     ga_clear(&buf->b_kmap_ga);
 #endif
     clear_string_option(&buf->b_p_com);
-#ifdef FEAT_FOLDING
     clear_string_option(&buf->b_p_cms);
-#endif
     clear_string_option(&buf->b_p_nf);
 #ifdef FEAT_SYN_HL
     clear_string_option(&buf->b_p_syn);
