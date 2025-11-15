@@ -1260,4 +1260,87 @@ func Test_insert_small_delete_linewise()
   bwipe!
 endfunc
 
+func PutList(reg)
+    return ["c", ["list", a:reg]]
+endfunc
+
+func PutTuple(reg)
+    return ("b40", ["tuple", "of", "strings", a:reg])
+endfunc
+
+func YankReg(reg, type, lines)
+    let g:vim_test_stuff = {
+                \ "reg": a:reg,
+                \ "type": a:type,
+                \ "lines": a:lines
+                \ }
+endfunc
+
+func Test_custom_register_put()
+  CheckFeature eval
+
+  set reggetfunc=PutList
+  new
+  normal! "&p
+  call assert_equal(['list', '&'], getline(1, '$'))
+  call assert_equal("list\n&", getreg('&'))
+  call assert_equal('v', getregtype('&'))
+  bw!
+
+  set reggetfunc=PutTuple
+  new
+  normal! "^p
+  call assert_equal(['tuple', 'of', 'strings', '^'], getline(1, 4))
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
+  call assert_equal('40', getregtype('^'))
+  bw!
+
+  set reggetfunc&
+endfunc
+
+func Test_custom_register_yank()
+  CheckFeature eval
+
+  set regsetfunc=YankReg
+  new
+  call append(0, ["hello", "world!"])
+  call execute("1,2yank &")
+  call assert_equal("hello\nworld!\n", getreg('&'))
+  call assert_equal("V", g:vim_test_stuff.type)
+  call assert_equal(["hello", "world!"], g:vim_test_stuff.lines)
+  call assert_equal('&', g:vim_test_stuff.reg)
+
+  call execute("1yank ^")
+  call assert_equal("hello\n", getreg('^'))
+  call assert_equal("V", g:vim_test_stuff.type)
+  call assert_equal(["hello"], g:vim_test_stuff.lines)
+  call assert_equal('^', g:vim_test_stuff.reg)
+  bw!
+
+  set regsetfunc&
+endfunc
+
+func Test_custom_register_combined()
+  CheckFeature eval
+
+  " Test if it acts like a normal register without the callbacks
+  set reggetfunc= regsetfunc=
+  new
+  call append(0, ["hello", "world!"])
+  call execute("1,2yank &")
+  call assert_equal("hello\nworld!\n", getreg('&'))
+
+  set reggetfunc=PutTuple
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
+  call execute("1,2yank ^")
+  call assert_equal("tuple\nof\nstrings\n^", getreg('^'))
+
+  set reggetfunc= regsetfunc=YankReg
+  call execute("1yank ^")
+  call assert_equal("hello\n", getreg('^'))
+  bw!
+
+  set reggetfunc& regsetfunc&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

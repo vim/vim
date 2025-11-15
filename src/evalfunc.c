@@ -11491,37 +11491,6 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Translate a register type string to the yank type and block length
- */
-    static int
-get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
-{
-    char_u *stropt = *pp;
-    switch (*stropt)
-    {
-	case 'v': case 'c':	// character-wise selection
-	    *yank_type = MCHAR;
-	    break;
-	case 'V': case 'l':	// line-wise selection
-	    *yank_type = MLINE;
-	    break;
-	case 'b': case Ctrl_V:	// block-wise selection
-	    *yank_type = MBLOCK;
-	    if (VIM_ISDIGIT(stropt[1]))
-	    {
-		++stropt;
-		*block_len = getdigits(&stropt) - 1;
-		--stropt;
-	    }
-	    break;
-	default:
-	    return FAIL;
-    }
-    *pp = stropt;
-    return OK;
-}
-
-/*
  * "setreg()" function
  */
     static void

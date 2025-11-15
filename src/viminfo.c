@@ -1917,6 +1917,11 @@ write_viminfo_registers(FILE *fp)
 	if (i == TILDE_REGISTER)
 	    continue;
 #endif
+#ifdef FEAT_EVAL
+	// Skip the custom registers as well
+	if (i == CARET_REGISTER || i == AMPERSAND_REGISTER)
+	    continue;
+#endif
 	// When reading viminfo for merging and writing: Use the register from
 	// viminfo if it's newer.
 	if (y_read_regs != NULL

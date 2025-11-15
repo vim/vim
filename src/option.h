@@ -867,6 +867,10 @@ EXTERN long	p_rdt;		// 'redrawtime'
 #endif
 EXTERN int	p_remap;	// 'remap'
 EXTERN long	p_re;		// 'regexpengine'
+#ifdef FEAT_EVAL
+EXTERN char_u	*p_rgf;		// 'reggetfunc'
+EXTERN char_u	*p_rsf;		// 'regsetfunc'
+#endif
 #ifdef FEAT_RENDER_OPTIONS
 EXTERN char_u	*p_rop;		// 'renderoptions'
 #endif
