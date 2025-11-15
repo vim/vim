@@ -691,6 +691,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			horizontally centered.  The first column is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
+	focusable	When FALSE (the default) the popup is not focusable.
+			When TRUE the popup is focusable. Popup can be focused
+			using |win_gotoid| function.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
@@ -838,6 +841,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.
+			It is ignored when focusable popup.
 	mapping		Allow for key mapping.  When FALSE and the popup is
 			visible and has a filter callback key mapping is
 			disabled.  Default value is TRUE.
