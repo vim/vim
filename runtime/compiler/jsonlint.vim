@@ -2,6 +2,7 @@
 " Compiler:	JSON Lint
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2024 Apr 03
+" Last Change:  2025 Nov 16 by The Vim Project (check if in webdev repo)
 
 if exists("current_compiler")
   finish
@@ -13,7 +14,11 @@ set cpo&vim
 
 " CompilerSet makeprg=npx\ jsonlint\ --compact\ --quiet
 
-CompilerSet makeprg=jsonlint\ --compact\ --quiet
+if empty(findfile('package.json', '.;'))
+  CompilerSet makeprg=jsonlint\ --compact\ --quiet
+else
+  CompilerSet makeprg=npx\ jsonlint\ --compact\ --quiet
+endif
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ found:\ %m,
 		       \%-G%.%#
 

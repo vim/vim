@@ -1,12 +1,16 @@
 " Vim compiler file
 " Compiler:	svelte-check
 " Maintainer:	@Konfekt
-" Last Change:	2025 Feb 27
+" Last Change:	2025 Nov 16
 
 if exists("current_compiler") | finish | endif
 let current_compiler = "svelte-check"
 
-CompilerSet makeprg=npx\ svelte-check\ --output\ machine
+if empty(findfile('package.json', '.;'))
+  CompilerSet makeprg=svelte-check\ --output\ machine
+else
+  CompilerSet makeprg=npx\ svelte-check\ --output\ machine
+endif
 CompilerSet errorformat=%*\\d\ %t%*\\a\ \"%f\"\ %l:%c\ \"%m\",
 CompilerSet errorformat+=%-G%*\\d\ START\ %.%#,
 CompilerSet errorformat+=%-G%*\\d\ COMPLETED\ %.%#,

@@ -2,6 +2,7 @@
 " Compiler:	Jest
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2024 Apr 03
+" Last Change:  2025 Nov 16 by The Vim Project (check if in webdev repo)
 
 if exists("current_compiler")
   finish
@@ -13,7 +14,11 @@ set cpo&vim
 
 " CompilerSet makeprg=npx\ --no-install\ jest\ --no-colors
 
-CompilerSet makeprg=jest\ --no-colors
+if empty(findfile('package.json', '.;'))
+  CompilerSet makeprg=jest\ --no-colors
+else
+  CompilerSet makeprg=npx\ jest\ --no-colors
+endif
 CompilerSet errorformat=%-A\ \ ●\ Console,
 		       \%E\ \ ●\ %m,
 		       \%Z\ %\\{4}%.%#Error:\ %f:\ %m\ (%l:%c):%\\=,

@@ -2,6 +2,7 @@
 " Compiler:	TypeScript Runner
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2024 Apr 03
+"               2025 Nov 16 by The Vim Project (check if in webdev repo)
 
 if exists("current_compiler")
   finish
@@ -13,7 +14,11 @@ set cpo&vim
 
 " CompilerSet makeprg=npx\ ts-node
 
-CompilerSet makeprg=ts-node
+if empty(findfile('package.json', '.;'))
+  CompilerSet makeprg=ts-node
+else
+  CompilerSet makeprg=npx\ ts-node
+endif
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,
 		       \%E%f:%l,
 		       \%+Z%\\w%\\+Error:\ %.%#,
