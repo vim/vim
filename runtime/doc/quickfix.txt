@@ -1286,6 +1286,8 @@ BIOME				      *compiler-biome* *quickfix-biome*
 Biome check lints JavaScript, TypeScript, JSX, TSX, JSON, JSONC, HTML, Vue,
 Svelte, Astro, CSS, GraphQL and GritQL files.
 
+Assumes installation by npm and run using npx.  Adjust 'b/g:node_makeprg'
+as needed to use, for example, pnpm/yarn dlx instead.
 Commonly used compiler options can be added to 'makeprg' by setting the
 b/g:biome_makeprg_params variable.  For example (global default is ""): >
 
@@ -1747,10 +1749,12 @@ tombi linter.
 
 TSC COMPILER						*compiler-tsc*
 
-The executable and compiler options can be added to 'makeprg' by setting the
-b/g:tsc_makeprg variable.  For example: >
+Assumes installation by npm and run using npx.  Adjust 'b/g:node_makeprg'
+as needed to use, for example, pnpm/yarn dlx instead.
+Compiler options can be added to 'makeprg' by setting the
+b/g:tsc_makeprg_params variable.  For example: >
 
-	let b:tsc_makeprg = "npx tsc --noEmit"
+	let b:tsc_makeprg_params = "--noEmit"
 
 TYPST COMPILER						*compiler-typst*
 

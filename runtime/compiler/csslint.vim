@@ -3,11 +3,18 @@
 " Maintainer:	Daniel Moch <daniel@danielmoch.com>
 " Last Change:	2016 May 21
 "		2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
+"               2025 Nov 22 by The Vim Project (default to npx)
 
 if exists("current_compiler")
   finish
 endif
 let current_compiler = "csslint"
 
-CompilerSet makeprg=csslint\ --format=compact
+" CompilerSet makeprg=csslint
+" CompilerSet makeprg=npx\ csslint
+exe 'CompilerSet makeprg=' .. escape(
+			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' csslint' ..
+			\ ' --format=compact ' ..
+                        \ get(b:, 'csslint_makeprg_params', get(g:, 'csslint_makeprg_params', '')), ' \|"')
+
 CompilerSet errorformat=%-G,%-G%f:\ lint\ free!,%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ -\ %m,%f:\ line\ %l\\,\ col\ %c\\,\ %tarning\ -\ %m,%f:\ line\ %l\\,\ col\ %c\\,\ %m
