@@ -1088,8 +1088,6 @@ ex_let(exarg_T *eap)
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
 	return;
-    if (argend > arg && argend[-1] == '.')  // for var.='str'
-	--argend;
     expr = skipwhite(argend);
     concat = expr[0] == '.'
 	&& ((expr[1] == '=' && in_old_script(2))
