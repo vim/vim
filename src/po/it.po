@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-10-07 08:49+0200\n"
-"PO-Revision-Date: 2025-10-07 13:30+0100\n"
+"POT-Creation-Date: 2025-11-16 09:16+0100\n"
+"PO-Revision-Date: 2025-11-16 09:22+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -165,9 +165,8 @@ msgstr "Cim"
 msgid "%d%%"
 msgstr "%d%%"
 
-#, c-format
-msgid "%2s"
-msgstr "%2s"
+msgid "%3s"
+msgstr "%3s"
 
 #, c-format
 msgid " (%d of %d)"
@@ -3797,8 +3796,8 @@ msgstr "Vim è 'open source' e può essere distribuito liberamente"
 msgid "Help poor children in Uganda!"
 msgstr "Aiuta i bambini poveri dell'Uganda!"
 
-msgid "type  :help iccf<Enter>       for information "
-msgstr "batti :help iccf<Invio>       per informazioni            "
+msgid "type  :help Kuwasha<Enter>    for information "
+msgstr "batti :help Kuwasha<Invio>    per informazioni "
 
 msgid "type  :q<Enter>               to exit         "
 msgstr "batti :q<Invio>               per uscire                  "
@@ -8632,6 +8631,7 @@ msgstr "E1328: Il valore predefinito del costruttore dev'essere v:none: %s"
 msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: Dichiarazione di variabile Classe non valida: %s"
 
+#, c-format
 msgid "E1330: Invalid type used in variable declaration: %s"
 msgstr "E1330: Tipo non valido usato nella dichiarazione di variabile: %s"
 
@@ -9302,6 +9302,7 @@ msgstr ""
 "E1567: Non posso far partire il server di socket, percorso di socket non "
 "disponibile"
 
+#, c-format
 msgid "E1568: OSC command response timed out: %.*s"
 msgstr "E1568: tempo di risposta a comando OSC terminato: %.*s"
 
@@ -9966,8 +9967,8 @@ msgid ""
 "buffer text, filler lines and truncation in the completion menu"
 msgstr ""
 "caratteri da usare per riga di status, piegature, differenze,\n"
-"testo di un buffer, righe di riempitivo e troncamento nel menu "
-"di completamento"
+"testo di un buffer, righe di riempitivo e troncamento nel menu di "
+"completamento"
 
 msgid "number of lines used for the command-line"
 msgstr "numero di righe disponibili per la riga-di-comando"
@@ -10589,16 +10590,15 @@ msgid ""
 "initial decay timeout for 'autocomplete' algorithm"
 msgstr ""
 " \n"
-"tempo-di-attesa iniziale prima di interrompere l'algoritmo di "
-"'autocomplete'"
+"tempo-di-attesa iniziale prima di interrompere l'algoritmo di 'autocomplete'"
 
 msgid ""
 " \n"
 "initial decay timeout for CTRL-N and CTRL-P completion"
 msgstr ""
 " \n"
-"tempo-di-attesa iniziale prima di interrompere il completamento "
-"con CTRL-N e CTRL-P"
+"tempo-di-attesa iniziale prima di interrompere il completamento con CTRL-N e "
+"CTRL-P"
 
 msgid ""
 " \n"
@@ -10638,6 +10638,9 @@ msgstr "larghezza minima del menù dinamico"
 
 msgid "maximum width of the popup menu"
 msgstr "larghezza massima del menù dinamico"
+
+msgid "popup border style"
+msgstr "stile bordo menù dinamico"
 
 msgid "user defined function for Insert mode completion"
 msgstr "funzione definita dall'utente per il completamento in modo Insert"
@@ -11405,7 +11408,3 @@ msgstr "opzioni per usare il pannello-schede"
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
 "Questa è la finestra della riga-di-comando! Si può chiudere con \":q\"."
-
-#, c-format
-#~ msgid "E1330: Invalid type for object variable: %s"
-#~ msgstr "E1330: Tipo non valido per variabile Object: %s"
