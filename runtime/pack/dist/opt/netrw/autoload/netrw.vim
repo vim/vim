@@ -1701,10 +1701,10 @@ function netrw#NetRead(mode,...)
             else
                 let useport= ""
             endif
-            " 'C' in 'C:\path\to\file' is handled as hostname on windows.
+            " Using UNC notation in windows to get a unix like path.
             " This is workaround to avoid mis-handle windows local-path:
             if g:netrw_scp_cmd =~ '^scp' && has("win32")
-                let tmpfile_get = substitute(tr(tmpfile, '\', '/'), '^\(\a\):[/\\]\(.*\)$', '/\1/\2', '')
+                let tmpfile_get = substitute(tr(tmpfile, '\', '/'), '^\(\a\):[/\\]\(.*\)$', '//' .. $COMPUTERNAME .. '/\1$/\2', '')
             else
                 let tmpfile_get = tmpfile
             endif
