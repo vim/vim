@@ -6762,6 +6762,9 @@ ex_bexit(exarg_T *eap)
 {
     do_write(eap);
     do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
+    // TODO: if the last buffer was closed -> close vim instead of having
+    // vim open without an open file
+    // => but :bw also leaves vim open without a buffer
 }
 
 /*
