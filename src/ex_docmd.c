@@ -112,6 +112,7 @@ static void	back_to_current_window(win_T *curwin_save);
 #endif
 static void	ex_hide(exarg_T *eap);
 static void	ex_exit(exarg_T *eap);
+static void	ex_bexit(exarg_T *eap);
 static void	ex_print(exarg_T *eap);
 #ifdef FEAT_BYTEOFF
 static void	ex_goto(exarg_T *eap);
@@ -271,6 +272,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_breakadd		ex_ni
 # define ex_breakdel		ex_ni
 # define ex_breaklist		ex_ni
+# define ex_bexit		ex_ni
 # define ex_call		ex_ni
 # define ex_catch		ex_ni
 # define ex_class		ex_ni
@@ -6749,6 +6751,17 @@ ex_exit(exarg_T *eap)
 	// Quit current window, may free the buffer.
 	win_close(curwin, !buf_hide(curwin->w_buffer));
     }
+}
+
+/*
+ * :bx
+ * like :x but for a single buffer (write changes to the current buffer and close current buffer)
+ */
+    static void
+ex_bexit(exarg_T *eap)
+{
+    do_write(eap);
+    do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
 }
 
 /*
