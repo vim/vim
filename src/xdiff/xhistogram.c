@@ -43,8 +43,8 @@
 
 #include "xinclude.h"
 
-#define MAX_PTR	INT_MAX
-#define MAX_CNT	INT_MAX
+#define MAX_PTR	UINT_MAX
+#define MAX_CNT	UINT_MAX
 
 #define LINE_END(n) (line##n + count##n - 1)
 #define LINE_END_PTR(n) (*line##n + *count##n - 1)
@@ -86,7 +86,7 @@ struct region {
 	((LINE_MAP(index, ptr))->cnt)
 
 #define REC(env, s, l) \
-	(env->xdf##s.recs[l - 1])
+	(&env->xdf##s.recs[l - 1])
 
 static int cmp_recs(xrecord_t *r1, xrecord_t *r2)
 {
@@ -102,11 +102,11 @@ static int cmp_recs(xrecord_t *r1, xrecord_t *r2)
 
 static int scanA(struct histindex *index, int line1, int count1)
 {
-	int ptr, tbl_idx;
+	unsigned int ptr, tbl_idx;
 	unsigned int chain_len;
 	struct record **rec_chain, *rec;
 
-	for (ptr = LINE_END(1); line1 <= ptr; ptr--) {
+	for (ptr = LINE_END(1); (unsigned int)line1 <= ptr; ptr--) {
 		tbl_idx = TABLE_HASH(index, 1, ptr);
 		rec_chain = index->records + tbl_idx;
 		rec = *rec_chain;
@@ -181,14 +181,14 @@ static int try_lcs(struct histindex *index, struct region *lcs, int b_ptr,
 			be = bs;
 			rc = rec->cnt;
 
-			while (line1 < (int)as && line2 < (int)bs
+			while ((unsigned int)line1 < as && (unsigned int)line2 < bs
 				&& CMP(index, 1, as - 1, 2, bs - 1)) {
 				as--;
 				bs--;
 				if (1 < rc)
 					rc = XDL_MIN(rc, CNT(index, as));
 			}
-			while ((int)ae < LINE_END(1) && (int)be < LINE_END(2)
+			while (ae < (unsigned int)LINE_END(1) && be < (unsigned int)LINE_END(2)
 				&& CMP(index, 1, ae + 1, 2, be + 1)) {
 				ae++;
 				be++;
@@ -313,16 +313,16 @@ redo:
 	if (count1 <= 0 && count2 <= 0)
 		return 0;
 
-	if (LINE_END(1) >= MAX_PTR)
+	if ((unsigned int)LINE_END(1) >= MAX_PTR)
 		return -1;
 
 	if (!count1) {
 		while(count2--)
-			env->xdf2.rchg[line2++ - 1] = 1;
+			env->xdf2.changed[line2++ - 1] = true;
 		return 0;
 	} else if (!count2) {
 		while(count1--)
-			env->xdf1.rchg[line1++ - 1] = 1;
+			env->xdf1.changed[line1++ - 1] = true;
 		return 0;
 	}
 
@@ -335,9 +335,9 @@ redo:
 	else {
 		if (lcs.begin1 == 0 && lcs.begin2 == 0) {
 			while (count1--)
-				env->xdf1.rchg[line1++ - 1] = 1;
+				env->xdf1.changed[line1++ - 1] = true;
 			while (count2--)
-				env->xdf2.rchg[line2++ - 1] = 1;
+				env->xdf2.changed[line2++ - 1] = true;
 			result = 0;
 		} else {
 			result = histogram_diff(xpp, env,
