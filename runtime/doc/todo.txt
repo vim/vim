@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*todo.txt*	For Vim version 9.1.  Last change: 2025 Nov 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -537,9 +537,6 @@ When ":redir" is used while already active, the previous one is ended.  But
 when redirecting to a local variable (function or script) storing the value
 won't work.  At least give an error.  Is there a way to make it work?
 #10616
-
-Completion for ":runtime" should show valid values, not what's in the current
-directory. (#11447)
 
 Add a "description" property to mappings.  #12205
 
