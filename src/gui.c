@@ -3260,6 +3260,8 @@ button_set:
      */
     if ((State == MODE_NORMAL || State == MODE_NORMAL_BUSY
 						      || (State & MODE_INSERT))
+	    && X_2_COL(x) >= firstwin->w_wincol
+	    && X_2_COL(x) < firstwin->w_wincol + topframe->fr_width
 	    && Y_2_ROW(y) >= topframe->fr_height + firstwin->w_winrow
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
@@ -4941,7 +4943,12 @@ xy2win(int x, int y, mouse_find_T popup)
 	return NULL;
     wp = mouse_find_win(&row, &col, popup);
     if (wp == NULL)
+    {
+#ifdef FEAT_MOUSESHAPE
+	update_mouseshape(-2);
+#endif
 	return NULL;
+    }
 #ifdef FEAT_MOUSESHAPE
     if (State == MODE_HITRETURN || State == MODE_ASKMORE)
     {
