@@ -538,9 +538,6 @@ when redirecting to a local variable (function or script) storing the value
 won't work.  At least give an error.  Is there a way to make it work?
 #10616
 
-Completion for ":runtime" should show valid values, not what's in the current
-directory. (#11447)
-
 Add a "description" property to mappings.  #12205
 
 Add an option to start_timer() to return from the input loop with K_IGNORE.
