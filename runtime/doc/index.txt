@@ -1230,6 +1230,7 @@ tag		command		action ~
 |:buffers|	:buffers	list all files in the buffer list
 |:bunload|	:bun[load]	unload a specific buffer
 |:bwipeout|	:bw[ipeout]	really delete a buffer
+|:bxit|		:bx[it]		write the buffer and delete it
 |:change|	:c[hange]	replace a line or series of lines
 |:cNext|	:cN[ext]	go to previous error
 |:cNfile|	:cNf[ile]	go to last error in previous file
