@@ -6816,6 +6816,7 @@ conversion-server	mbyte.txt	/*conversion-server*
 convert-to-HTML	syntax.txt	/*convert-to-HTML*
 convert-to-XHTML	syntax.txt	/*convert-to-XHTML*
 convert-to-XML	syntax.txt	/*convert-to-XML*
+convert_:function_to_:def	vim9.txt	/*convert_:function_to_:def*
 convert_legacy_function_to_vim9	vim9.txt	/*convert_legacy_function_to_vim9*
 copy()	builtin.txt	/*copy()*
 copy-diffs	diff.txt	/*copy-diffs*
