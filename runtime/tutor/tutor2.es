@@ -119,57 +119,65 @@ REFERENCIA: 	Registro de expresión	:h quote=
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		     Lesson 2.1.4: THE NUMBERED REGISTERS
+		     Lección 2.1.4: LOS REGISTROS NUMERADOS
 
 
-	** Press  yy and dd to witness their effect on the registers **
+   ** Pulsa  yy  y  dd  para ser testigo de sus efectos en los registros **
 
-  1. Move the cursor to the line below marked --->
+  1. Situa el cursor sobre la línea inferior marcada con --->
 
-  2. yank the zeroth line, then inspect registers with :reg<ENTER>
+  2. Copia la línea marcada con 0,
+     después revisa los registros mediante :reg<ENTER>
 
-  3. delete line 0. with "cdd, then inspect registers
-     (Where do you expect line 0 to be?)
+  3. Elimina la línea 0 mediante  "cdd, después revisa los registros
+     (¿Dónde esperas que esté la línea 0?)
 
-  4. continue deleting each successive line, inspecting :reg as you go
+  4. Continúa eliminado cada línea sucesivamente,
+     inspencciona :reg mientras lo haces
 
-NOTE: You should notice that old full-line deletions move down the list
-      as new full-line deletions are added
+NOTA: Deberías comprobar cómo las líneas completas eliminadas
+      van bajando en la lista, cada vez que nuevas líneas eliminadas se añaden
 
-  5. Now (p)aste the following registers in order; c, 7, 4, 8, 2. i.e. "7p
+  5. Ahora (p)ega los siguiente registros en orden; 0, 7, 4, 2, 8. Así: "7p
 
----> 0. This
-     9. wobble
-     8. secret
-     7. is
-     6. on
-     5. axis
-     4. a
-     3. war
-     2. message
-     1. tribute
+---> 0. Este
+     9. tambaleante
+     8. secreto
+     7. es
+     6. en
+     5. eje
+     4. un
+     3. guerra
+     2. mensaje
+     1. tributo
 
-NOTE: Whole line deletions (dd) are much longer lived in the numbered registers
-      than whole line yanks, or deletions involving smaller movements
+NOTA: La eliminación completa de líneas (dd) persisten más en los registros
+      numerados que las copias completas de lína o las eliminaciones que
+      implican pequeños movimientos
 
-REFERENCE: 	Numbered Registers 	:h quote0
+REFERENCIA: 	Registros numerados	:h quote0
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		     Lesson 2.1.5: SPECIAL REGISTERS
+		     Lección 2.1.5: REGISTROS ESPECIALES
 
- ** Use system clipboard and blackhole registers for advanced editing **
+ ** Utilizar el portapappeles del sistema y los registros de agujero negro **
+                    ** para una edición avanzada **
 
- Note: Clipboard use requires X11/Wayland libraries on Linux systems AND
-       a Vim built with "+clipboard" (usually a Huge build). Check with
-       ":version"  and ":echo has('clipboard_working')"
+ Nota: El uso del portapapeles del sistema requiere de bibliotecas X11/Wayland
+       en sistemas Linux Y una compilación de Vim con la opción "+clipboard"
+       (normalmente una compilación enorme). Se puede comprobar mediante
+       ":version"  o ":echo has('clipboard_working')"
 
-  1. Clipboard registers  +  and  *  :
-     - "+y  - Yank to system clipboard (e.g. "+yy for current line)
-     - "+p  - Paste from system clipboard
-     - "* is primary selection on X11 (middle-click), "+ is clipboard
+  1. Registros del portapapeles  +  and  *  :
+     - "+y  - Copiar al portapapeles del sistema
+       (Por ejemplo: "+yy para copiar en el portapapeles la línea actual)
+     - "+p  - Pegar del portapapeles del sistema
+     - "* es la selección principal de X11 (el botón central),
+       "+ es el portapapeles
 
----> Try: "+yy then paste into another application with Ctrl-V or Cmd+V
+---> Prueba: "+yy después pega la línea en otra aplicación
+	     mediante Ctrl-V o Cmd+V
 
   2. Blackhole register  _  discards text:
      - "_daw  - Delete word without saving to any register
