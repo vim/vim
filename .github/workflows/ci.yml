@@ -406,7 +406,7 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
-        runner: [macos-15-intel, macos-15]
+        runner: [macos-15-intel, macos-26]
 
     steps:
       - name: Checkout repository from github
