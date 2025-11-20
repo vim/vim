@@ -43,6 +43,9 @@
 # define inline __inline
 #endif
 
+// Vim replacement for BUG()
+void xdl_bug(const char *msg);
+
 #if !defined(XINCLUDE_H)
 #define XINCLUDE_H
 
