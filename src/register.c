@@ -310,20 +310,29 @@ get_register(
     yankreg_T	*reg;
     int		i;
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (name == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (name == '*')
+	call_clip_provider_request((char_u *)"*");
+#endif
 #ifdef FEAT_CLIPBOARD
-    // When Visual area changed, may have to update selection.  Obtain the
-    // selection too.
-    if (name == '*' && clip_star.available)
+    if (clipmethod != CLIPMETHOD_PROVIDER)
     {
-	if (clip_isautosel_star())
-	    clip_update_selection(&clip_star);
-	may_get_selection(name);
-    }
-    if (name == '+' && clip_plus.available)
-    {
-	if (clip_isautosel_plus())
-	    clip_update_selection(&clip_plus);
-	may_get_selection(name);
+	// When Visual area changed, may have to update selection.  Obtain the
+	// selection too.
+	if (name == '*' && clip_star.available)
+	{
+	    if (clip_isautosel_star())
+		clip_update_selection(&clip_star);
+	    may_get_selection(name);
+	}
+	if (name == '+' && clip_plus.available)
+	{
+	    if (clip_isautosel_plus())
+		clip_update_selection(&clip_plus);
+	    may_get_selection(name);
+	}
     }
 #endif
 
@@ -641,8 +650,15 @@ do_execreg(
     }
     execreg_lastc = regname;
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (regname == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (regname == '*')
+	call_clip_provider_request((char_u *)"*");
+#endif
 #ifdef FEAT_CLIPBOARD
-    regname = may_get_selection(regname);
+    if (clipmethod != CLIPMETHOD_PROVIDER)
+	regname = may_get_selection(regname);
 #endif
 
     // black hole: don't stuff anything
@@ -849,8 +865,15 @@ insert_reg(
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return FAIL;
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (regname == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (regname == '*')
+	call_clip_provider_request((char_u *)"*");
+#endif
 #ifdef FEAT_CLIPBOARD
-    regname = may_get_selection(regname);
+    if (clipmethod != CLIPMETHOD_PROVIDER)
+	regname = may_get_selection(regname);
 #endif
 
     if (regname == '.')			// insert last inserted text
@@ -2425,7 +2448,7 @@ get_register_name(int num)
 #if defined(FEAT_CLIPBOARD) || (defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL))
     else if (num == STAR_REGISTER)
 	return '*';
-    else if (num == PLUS_REGISTER)
+    else if (num == REAL_PLUS_REGISTER)
 	return '+';
 #endif
     else
@@ -2477,13 +2500,24 @@ ex_display(exarg_T *eap)
 	}
 	if (arg != NULL && vim_strchr(arg, name) == NULL
 #ifdef ONE_CLIPBOARD
-	    // Star register and plus register contain the same thing.
-		&& (name != '*' || vim_strchr(arg, '+') == NULL)
+	    // Star register and plus register contain the same thing. Unless
+	    // clipmethod is provider.
+		&&
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+		clipmethod != CLIPMETHOD_PROVIDER &&
+#endif
+		(name != '*' || vim_strchr(arg, '+') == NULL)
 #endif
 		)
 	    continue;	    // did not ask for this register
 
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+	if (name == '+')
+	    call_clip_provider_request((char_u *)"+");
+	else if (name == '*')
+	    call_clip_provider_request((char_u *)"*");
+#endif
 #ifdef FEAT_CLIPBOARD
 	if (clipmethod != CLIPMETHOD_PROVIDER)
 	{
