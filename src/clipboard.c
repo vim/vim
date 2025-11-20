@@ -3656,7 +3656,7 @@ ex_clipreset(exarg_T *eap UNUSED)
     static int
 clip_provider_is_available(char_u *provider)
 {
-    dict_T	*providers = get_vim_var_dict(VV_CLIPBOARDS);
+    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
     typval_T	provider_tv = {0};
     callback_T	callback = {0};
     typval_T	rettv = {0};
@@ -3708,7 +3708,7 @@ clip_provider_get_callback(
 	char_u *function,
 	callback_T *callback)
 {
-    dict_T	*providers = get_vim_var_dict(VV_CLIPBOARDS);
+    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
     typval_T	provider_tv;
     typval_T	action_tv;
     typval_T	func_tv;

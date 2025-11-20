@@ -2266,7 +2266,7 @@ typedef int sock_T;
 #define VV_TERMDA1 114
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
-#define VV_CLIPBOARDS 117
+#define VV_CLIPPROVIDERS 117
 #define VV_LEN		118	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
