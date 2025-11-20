@@ -375,7 +375,7 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_WAYLAND)
 # define ex_wlrestore		ex_ni
 #endif
-#if !defined(FEAT_CLIPBOARD)
+#if !defined(HAVE_CLIPMETHOD)
 # define ex_clipreset		ex_ni
 #endif
 #if !defined(FEAT_PROP_POPUP)

@@ -11493,7 +11493,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 /*
  * Translate a register type string to the yank type and block length
  */
-    static int
+    int
 get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
 {
     char_u *stropt = *pp;

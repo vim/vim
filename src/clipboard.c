@@ -8,7 +8,9 @@
  */
 
 /*
- * clipboard.c: Functions to handle the clipboard
+ * clipboard.c: Functions to handle the clipboard. Additionally contains the
+ *		clipboard provider code, which is separate from the main 
+ *		clipboard code.
  */
 
 #include "vim.h"
@@ -28,6 +30,11 @@
 // (visible - for Visual mode use) selection, and only that. There are no
 // versions of these for the 'clipboard' selection, as Visual mode has no use
 // for them.
+
+
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+static int clip_provider_is_available(char_u *provider);
+#endif
 
 #if defined(FEAT_CLIPBOARD)
 
@@ -3417,7 +3424,7 @@ clip_wl_owner_exists(Clipboard_T *cbd)
 
 #endif // FEAT_CLIPBOARD
 
-#ifdef ADD_CLIPMETHOD
+#ifdef HAVE_CLIPMETHOD
 
 /*
  * Returns the first method for accessing the clipboard that is available/works,
@@ -3476,8 +3483,26 @@ get_clipmethod(char_u *str)
 	}
 	else
 	{
-	    ret = CLIPMETHOD_FAIL;
-	    goto exit;
+#ifdef FEAT_EVAL
+	    // Check if name matches a clipboard provider
+	    int r = clip_provider_is_available(buf);
+	    
+	    if (r == 1)
+	    {
+		method = CLIPMETHOD_PROVIDER;
+		clip_provider = vim_strsave(buf);
+		if (clip_provider == NULL)
+		    goto fail;
+	    }
+	    else if (r == -1)
+#endif
+	    {
+#ifdef FEAT_EVAL
+fail:
+#endif
+		ret = CLIPMETHOD_FAIL;
+		goto exit;
+	    }
 	}
 
 	// Keep on going in order to catch errors
@@ -3497,17 +3522,21 @@ exit:
 /*
  * Returns name of clipmethod in a statically allocated string.
  */
-    static char *
+    static char_u *
 clipmethod_to_str(clipmethod_T method)
 {
     switch(method)
     {
 	case CLIPMETHOD_WAYLAND:
-	    return "wayland";
+	    return (char_u *)"wayland";
 	case CLIPMETHOD_X11:
-	    return "x11";
+	    return (char_u *)"x11";
+	case CLIPMETHOD_PROVIDER:
+#ifdef FEAT_EVAL
+	    return clip_provider;
+#endif
 	default:
-	    return "none";
+	    return (char_u *)"none";
     }
 }
 
@@ -3522,6 +3551,12 @@ choose_clipmethod(void)
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
+
+    if (method != CLIPMETHOD_PROVIDER)
+    {
+	vim_free(clip_provider);
+	clip_provider = NULL;
+    }
 
 // If GUI is running or we are not on a system with Wayland or X11, then always
 // return CLIPMETHOD_NONE. System or GUI clipboard handling always overrides.
@@ -3539,13 +3574,9 @@ choose_clipmethod(void)
 	goto lose_sel_exit;
     }
 # endif
-#else
-    // If on a system like windows or macos, then clipmethod is irrelevant, we
-    // use their way of accessing the clipboard.
-    method = CLIPMETHOD_NONE;
-    goto exit;
 #endif
 
+#ifdef FEAT_CLIPBOARD
     // Deinitialize clipboard if there is no way to access clipboard
     if (method == CLIPMETHOD_NONE)
 	clip_init(FALSE);
@@ -3575,10 +3606,7 @@ lose_sel_exit:
 	    did_warn_clipboard = false;
 	}
     }
-
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
-exit:
-#endif
+#endif // FEAT_CLIPBOARD
 
     clipmethod = method;
 
@@ -3606,10 +3634,312 @@ ex_clipreset(exarg_T *eap UNUSED)
 		clipmethod_to_str(clipmethod));
 }
 
-#endif // ADD_CLIPMETHOD
+#endif // HAVE_CLIPMETHOD
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
 
+/*
+ * Check if a clipboard provider with given name is available. Returns 1 if available,
+ * 0 if not available, and -1 on error
+ */
+    static int
+clip_provider_is_available(char_u *provider)
+{
+    dict_T	*providers = get_vim_var_dict(VV_CLIPBOARDS);
+    typval_T	provider_tv = {0};
+    callback_T	callback = {0};
+    typval_T	rettv = {0};
+    typval_T	func_tv = {0};
+    int		res = 0;
 
+    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL
+	    || provider_tv.v_type != VAR_DICT)
+	// clipboard provider not defined
+	return 0;
+
+    if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
+    {
+	clear_tv(&provider_tv);
+	// If "available" functon not specified assume always TRUE
+	return 1;
+    }
+
+    if ((callback = get_callback(&func_tv)).cb_name == NULL)
+	goto fail;
+
+    if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
+	    rettv.v_type != VAR_BOOL)
+	goto fail;
+
+    if (rettv.vval.v_number)
+	res = 1;
+
+    if (FALSE)
+fail:
+	res = -1;
+
+    free_callback(&callback);
+    clear_tv(&func_tv);
+    clear_tv(&rettv);
+    clear_tv(&provider_tv);
+
+    return res;
+}
+
+/*
+ * Get the specified callback "function" from the provider dictionary of for
+ * register "reg".
+ */
+    static int
+clip_provider_get_callback(
+	char_u *reg,
+	char_u *provider,
+	char_u *function,
+	callback_T *callback)
+{
+    dict_T	*providers = get_vim_var_dict(VV_CLIPBOARDS);
+    typval_T	provider_tv;
+    typval_T	action_tv;
+    typval_T	func_tv;
+    callback_T	cb;
+
+    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL)
+	return FAIL;
+    else if (provider_tv.v_type != VAR_DICT)
+    {
+	clear_tv(&provider_tv);
+	return FAIL;
+    }
+    else if (dict_get_tv(
+		provider_tv.vval.v_dict,
+		(char *)function,
+		&action_tv) == FAIL)
+    {
+	clear_tv(&provider_tv);
+	return FAIL;
+    }
+    else if (action_tv.v_type != VAR_DICT)
+    {
+	clear_tv(&provider_tv);
+	clear_tv(&action_tv);
+	return FAIL;
+    }
+    else if (dict_get_tv(action_tv.vval.v_dict, (char *)reg, &func_tv) == FAIL)
+    {
+	clear_tv(&provider_tv);
+	clear_tv(&action_tv);
+	return FAIL;
+    }
+    else if ((cb = get_callback(&func_tv)).cb_name == NULL)
+    {
+	clear_tv(&provider_tv);
+	clear_tv(&action_tv);
+	clear_tv(&func_tv);
+	return FAIL;
+    }
+    clear_tv(&provider_tv);
+    clear_tv(&action_tv);
+
+    // func_tv owns the function name, so we must make a copy for the callback
+    set_callback(callback, &cb);
+    free_callback(&cb);
+    clear_tv(&func_tv);
+    return OK;
+}
+
+    static void
+clip_provider_set_selection(char_u *reg, char_u *provider)
+{
+    callback_T	callback;
+    typval_T	rettv;
+    typval_T	argvars[4];
+    yankreg_T	*y_ptr;
+    char_u	type[2 + NUMBUFLEN] = {0};
+    list_T	*list = NULL;
+
+    if (clip_provider_get_callback(
+		reg,
+		provider,
+		(char_u *)"copy",
+		&callback) == FAIL)
+	return;
+
+    // Convert register type into a string
+    if (*reg == '+')
+	y_ptr = get_y_register(REAL_PLUS_REGISTER);
+    else
+	y_ptr = get_y_register(STAR_REGISTER);
+
+    switch (y_ptr->y_type)
+    {
+	case MCHAR:
+	    type[0] = 'v';
+	    break;
+	case MLINE:
+	    type[0] = 'V';
+	    break;
+	case MBLOCK:
+	    sprintf((char *)type, "%c%d", Ctrl_V, y_ptr->y_width + 1);
+	    break;
+	default:
+	    type[0] = 0;
+	    break;
+    }
+
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = reg;
+
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = type;
+
+    // Get register contents by creating a list of lines
+    list = list_alloc();
+
+    if (list == NULL)
+    {
+	free_callback(&callback);
+	return;
+    }
+
+    for (int i = 0; i < y_ptr->y_size; i++)
+	if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL)
+	{
+	    free_callback(&callback);
+	    list_unref(list);
+	    return;
+	}
+
+    list->lv_refcount++;
+
+    argvars[2].v_type = VAR_LIST;
+    argvars[2].v_lock = VAR_FIXED;
+    argvars[2].vval.v_list = list;
+
+    argvars[3].v_type = VAR_UNKNOWN;
+
+    textlock++;
+    call_callback(&callback, -1, &rettv, 3, argvars);
+    clear_tv(&rettv);
+    textlock--;
+
+    free_callback(&callback);
+    list_unref(list);
+}
+
+    static void
+clip_provider_request_selection(char_u *reg, char_u *provider)
+{
+    callback_T	callback;
+    typval_T	argvars[2];
+    typval_T	rettv;
+    int		ret;
+    char_u	*reg_type;
+    list_T	*lines;
+
+    if (clip_provider_get_callback(
+		reg,
+		provider,
+		(char_u *)"paste",
+		&callback) == FAIL)
+	return;
+
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = reg;
+
+    argvars[1].v_type = VAR_UNKNOWN;
+
+    textlock++;
+    ret = call_callback(&callback, -1, &rettv, 1, argvars);
+    textlock--;
+
+    if (ret == FAIL)
+	goto exit;
+    else if (rettv.v_type == VAR_TUPLE
+	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
+	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
+    {
+	reg_type = TUPLE_ITEM(rettv.vval.v_tuple, 0)->vval.v_string;
+	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
+    }
+    else if (rettv.v_type == VAR_LIST
+	    && rettv.vval.v_list->lv_len == 2
+	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
+	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
+    {
+	reg_type = rettv.vval.v_list->lv_first->li_tv.vval.v_string;
+	lines = rettv.vval.v_list->lv_first->li_next->li_tv.vval.v_list;
+    }
+    else
+	goto exit;
+
+    {
+	char_u	    yank_type = MAUTO;
+	long	    block_len = -1;
+	yankreg_T   *y_ptr;
+	char_u	    **contents;
+	listitem_T  *li;
+	int	    i = 0;
+
+	contents = ALLOC_MULT(char_u *, lines->lv_len + 1); // Ends with a NULL
+
+	if (contents == NULL)
+	    goto exit;
+
+	// Convert strings in list to type char_u **
+	FOR_ALL_LIST_ITEMS(lines, li)
+	{
+	    char_u *str = tv_get_string_chk(&li->li_tv);
+
+	    if (str == NULL)
+		goto exit;
+
+	    contents[i++] = vim_strsave(str);
+	}
+	contents[i] = NULL;
+
+	if (STRLEN(reg_type) > 0
+		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
+	    goto exit;
+
+	if (*reg == '+')
+	    y_ptr = get_y_register(REAL_PLUS_REGISTER);
+	else
+	    y_ptr = get_y_register(STAR_REGISTER);
+
+	str_to_reg(y_ptr,
+		yank_type,
+		(char_u *)contents,
+		STRLEN(contents),
+		block_len,
+		TRUE);
+
+	for (int k = 0; k < i; k++)
+	    vim_free(contents[k]);
+	vim_free(contents);
+    }
+
+exit:
+    free_callback(&callback);
+    clear_tv(&rettv);
+}
+
+void
+call_clip_provider_request(char_u *reg)
+{
+    if (clip_provider == NULL)
+	return;
+
+    clip_provider_request_selection(reg, clip_provider);
+}
+
+void
+call_clip_provider_set(char_u *reg)
+{
+    if (clip_provider == NULL)
+	return;
+
+    clip_provider_set_selection(reg, clip_provider);
+}
 
 #endif // FEAT_EVAL

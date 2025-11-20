@@ -46,7 +46,7 @@ get_y_regs(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD)
+#if defined(FEAT_CLIPBOARD) || (defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD))
     yankreg_T *
 get_y_register(int reg)
 {
@@ -190,7 +190,7 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(HAVE_CLIPMETHOD)
 	    || regname == '*'
 	    || regname == '+'
 #endif
@@ -257,6 +257,19 @@ get_yank_register(int regname, int writing)
     else if (clip_plus.available && regname == '+')
     {
 	i = PLUS_REGISTER;
+	ret = TRUE;
+    }
+#else
+    // When selection is not available, use register 0 instead of '*'
+    else if (regname == '*')
+    {
+	i = STAR_REGISTER;
+	ret = TRUE;
+    }
+    // When clipboard is not available, use register 0 instead of '+'
+    else if (regname == '+')
+    {
+	i = REAL_PLUS_REGISTER;
 	ret = TRUE;
     }
 #endif
@@ -1414,6 +1427,13 @@ op_yank(oparg_T *oap, int deleting, int mess)
 # endif
 #endif
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (curr == &y_regs[REAL_PLUS_REGISTER])
+	call_clip_provider_set((char_u *)"+");
+    else if (curr == &y_regs[STAR_REGISTER])
+	call_clip_provider_set((char_u *)"*");
+#endif
+
 #if defined(FEAT_EVAL)
     if (!deleting && has_textyankpost())
 	yank_do_autocmd(oap, y_current);
@@ -1539,6 +1559,13 @@ do_put(
     // Adjust register name for "unnamed" in 'clipboard'.
     adjust_clip_reg(&regname);
     (void)may_get_selection(regname);
+#endif
+
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (regname == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (regname == '*')
+	call_clip_provider_request((char_u *)"*");
 #endif
 
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
@@ -2326,7 +2353,7 @@ get_register_name(int num)
 	return num + '0';
     else if (num == DELETION_REGISTER)
 	return '-';
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(HAVE_CLIPMETHOD)
     else if (num == STAR_REGISTER)
 	return '*';
     else if (num == PLUS_REGISTER)
@@ -2668,6 +2695,13 @@ get_reg_contents(int regname, int flags)
     regname = may_get_selection(regname);
 # endif
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (regname == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (regname == '*')
+	call_clip_provider_request((char_u *)"*");
+#endif
+
     if (get_spec_reg(regname, &retval, &allocated, FALSE))
     {
 	if (retval == NULL)
@@ -2830,6 +2864,13 @@ write_reg_contents_lst(
     str_to_reg(y_current, yank_type, (char_u *)strings, -1, block_len, TRUE);
 
     finish_write_reg(name, old_y_previous, old_y_current);
+
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (name == '+')
+	call_clip_provider_set((char_u *)"+");
+    else if (name == '*')
+	call_clip_provider_set((char_u *)"*");
+#endif
 }
 
     void
@@ -2904,6 +2945,13 @@ write_reg_contents_ex(
     str_to_reg(y_current, yank_type, str, len, block_len, FALSE);
 
     finish_write_reg(name, old_y_previous, old_y_current);
+
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (name == '+')
+	call_clip_provider_set((char_u *)"+");
+    else if (name == '*')
+	call_clip_provider_set((char_u *)"*");
+#endif
 }
 #endif	// FEAT_EVAL
 
