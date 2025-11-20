@@ -3509,6 +3509,7 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
 	    if (r == 1)
 	    {
 		method = CLIPMETHOD_PROVIDER;
+		vim_free(clip_provider);
 		clip_provider = vim_strsave(buf);
 		if (clip_provider == NULL)
 		    goto fail;
@@ -3572,14 +3573,6 @@ choose_clipmethod(void)
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
-
-#ifdef FEAT_EVAL
-    if (method != CLIPMETHOD_PROVIDER)
-    {
-	vim_free(clip_provider);
-	clip_provider = NULL;
-    }
-#endif
 
 // If GUI is running or we are not on a system with Wayland or X11, then always
 // return CLIPMETHOD_NONE. System or GUI clipboard handling always overrides.
@@ -3788,7 +3781,7 @@ clip_provider_get_callback(
 }
 
     static void
-clip_provider_set_selection(char_u *reg, char_u *provider)
+clip_provider_copy(char_u *reg, char_u *provider)
 {
     callback_T	callback;
     typval_T	rettv;
@@ -3867,7 +3860,7 @@ clip_provider_set_selection(char_u *reg, char_u *provider)
 }
 
     static void
-clip_provider_request_selection(char_u *reg, char_u *provider)
+clip_provider_paste(char_u *reg, char_u *provider)
 {
     callback_T	callback;
     typval_T	argvars[2];
@@ -3978,7 +3971,7 @@ call_clip_provider_request(char_u *reg)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
-    clip_provider_request_selection(reg, clip_provider);
+    clip_provider_paste(reg, clip_provider);
 }
 
 void
@@ -3987,7 +3980,8 @@ call_clip_provider_set(char_u *reg)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
-    clip_provider_set_selection(reg, clip_provider);
+    clip_provider_copy(reg, clip_provider);
 }
 
-#endif // FEAT_EVAL
+#endif // defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+
