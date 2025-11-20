@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41692,6 +41692,8 @@ Completion: ~
 - 'smartcase' applies to completion filtering
 
 Options: ~
+- 'commentstring' is now available in all builds and no longer requires the
+  |+folding| feature
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
