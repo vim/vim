@@ -194,7 +194,7 @@ valid_yank_reg(
 			    // always exist.
 	    || regname == '*'
 	    || regname == '+'
-#elif  defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+#elif defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
 	    || ( // If -clipboard, then these registers only exist when
 		 // clipmethod is set to provider.
 	     clipmethod == CLIPMETHOD_PROVIDER && (
@@ -311,10 +311,7 @@ get_register(
     int		i;
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (name == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (name == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(name);
 #endif
 #ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -651,10 +648,7 @@ do_execreg(
     execreg_lastc = regname;
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (regname == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (regname == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -866,10 +860,7 @@ insert_reg(
 	return FAIL;
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (regname == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (regname == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -1465,9 +1456,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
     if (curr == &y_regs[REAL_PLUS_REGISTER])
-	call_clip_provider_set((char_u *)"+");
+	call_clip_provider_set('+');
     else if (curr == &y_regs[STAR_REGISTER])
-	call_clip_provider_set((char_u *)"*");
+	call_clip_provider_set('*');
 #endif
 
 #ifdef FEAT_CLIPBOARD
@@ -1645,10 +1636,7 @@ do_put(
     unsigned int cur_ve_flags = get_ve_flags();
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (regname == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (regname == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -2487,6 +2475,10 @@ ex_display(exarg_T *eap)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    inc_clip_provider();
+#endif
+
     // Highlight title
     msg_puts_title(_("\nType Name Content"));
     for (i = -1; i < NUM_REGISTERS && !got_int; ++i)
@@ -2506,17 +2498,14 @@ ex_display(exarg_T *eap)
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
 		clipmethod != CLIPMETHOD_PROVIDER &&
 #endif
-		(name != '*' || vim_strchr(arg, '+') == NULL)
+		(name != '*' || vim_strchr(arg, '+' == NULL))
 #endif
 		)
 	    continue;	    // did not ask for this register
 
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-	if (name == '+')
-	    call_clip_provider_request((char_u *)"+");
-	else if (name == '*')
-	    call_clip_provider_request((char_u *)"*");
+	call_clip_provider_request(name);
 #endif
 #ifdef FEAT_CLIPBOARD
 	if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -2647,6 +2636,10 @@ ex_display(exarg_T *eap)
 	dis_msg(expr_line, FALSE);
     }
 #endif
+
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    dec_clip_provider();
+#endif
 }
 
 /*
@@ -2720,10 +2713,7 @@ get_reg_type(int regname, long *reglen)
     }
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (regname == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (regname == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(regname);
 #endif
 # ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -2806,10 +2796,7 @@ get_reg_contents(int regname, int flags)
 	return NULL;
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (regname == '+')
-	call_clip_provider_request((char_u *)"+");
-    else if (regname == '*')
-	call_clip_provider_request((char_u *)"*");
+    call_clip_provider_request(regname);
 #endif
 # ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -2980,10 +2967,7 @@ write_reg_contents_lst(
     finish_write_reg(name, old_y_previous, old_y_current);
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (name == '+')
-	call_clip_provider_set((char_u *)"+");
-    else if (name == '*')
-	call_clip_provider_set((char_u *)"*");
+    call_clip_provider_set(name);
 #endif
 }
 
@@ -3061,10 +3045,7 @@ write_reg_contents_ex(
     finish_write_reg(name, old_y_previous, old_y_current);
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-    if (name == '+')
-	call_clip_provider_set((char_u *)"+");
-    else if (name == '*')
-	call_clip_provider_set((char_u *)"*");
+    call_clip_provider_set(name);
 #endif
 }
 #endif	// FEAT_EVAL
