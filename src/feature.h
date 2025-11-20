@@ -942,12 +942,6 @@
 # define FEAT_DND
 #endif
 
-// The clipboard provider feature uses clipmethod as well but should be separate
-// from the clipboard code.
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
-#define HAVE_CLIPMETHOD
-#endif
-
 #if defined(FEAT_GUI_MSWIN)
 # define MSWIN_FIND_REPLACE	// include code for find/replace dialog
 # define MSWIN_FR_BUFSIZE 256

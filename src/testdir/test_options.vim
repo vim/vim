@@ -526,7 +526,7 @@ func Test_set_completion_string_values()
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
   endif
   if exists('+clipmethod')
-    if has('unix') || has('vms')
+    if has('wayland_clipboard') || has('xterm_clipboard')
       call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
     else
       call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
