@@ -3973,7 +3973,7 @@ exit:
 void
 call_clip_provider_request(char_u *reg)
 {
-    if (clip_provider == NULL)
+    if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
     clip_provider_request_selection(reg, clip_provider);
@@ -3982,7 +3982,7 @@ call_clip_provider_request(char_u *reg)
 void
 call_clip_provider_set(char_u *reg)
 {
-    if (clip_provider == NULL)
+    if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
     clip_provider_set_selection(reg, clip_provider);
