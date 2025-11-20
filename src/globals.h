@@ -993,6 +993,12 @@ EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 EXTERN int	clip_unnamed_saved INIT(= 0);
 #endif
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+EXTERN char_u	*clip_provider INIT(= NULL); // NULL when clipmethod is not set
+					     // to CLIPMETHOD_PROVIDER
+#endif
+
+
 /*
  * All regular windows are linked in a list. "firstwin" points to the first
  * entry, "lastwin" to the last entry (can be the same as firstwin) and
@@ -2067,7 +2073,7 @@ EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
 EXTERN int	p_tgc_set INIT(= FALSE);
 #endif
 
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
 #endif
 
