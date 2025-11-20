@@ -6760,8 +6760,10 @@ ex_exit(exarg_T *eap)
     static void
 ex_bexit(exarg_T *eap)
 {
-    if (curbufIsChanged())
-	do_write(eap);
+    if (curbufIsChanged() && !do_write(eap)) {
+	emsg("Writing buffer has failed!");
+	return;
+    }
 
     do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
     // TODO: if the last buffer was closed -> close vim instead of having
