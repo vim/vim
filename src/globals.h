@@ -994,8 +994,7 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
 #endif
 
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-EXTERN char_u	*clip_provider INIT(= NULL); // NULL when clipmethod is not set
-					     // to CLIPMETHOD_PROVIDER
+EXTERN char_u	*clip_provider INIT(= NULL);
 #endif
 
 
