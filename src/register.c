@@ -190,11 +190,13 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
-#if defined(FEAT_CLIPBOARD)
+#if defined(FEAT_CLIPBOARD) // If +clipboard is enabled, then these registers
+			    // always exist.
 	    || regname == '*'
 	    || regname == '+'
 #elif  defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
-	    || (
+	    || ( // If -clipboard, then these registers only exist when
+		 // clipmethod is set to provider.
 	     clipmethod == CLIPMETHOD_PROVIDER && (
 		 regname == '*'
 		 || regname == '+'
