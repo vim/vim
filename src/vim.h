@@ -2042,6 +2042,12 @@ typedef __int64 sock_T;
 typedef int sock_T;
 #endif
 
+// The clipboard provider feature uses clipmethod as well but should be separate
+// from the clipboard code.
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
+#define HAVE_CLIPMETHOD
+#endif
+
 // Include option.h before structs.h, because the number of window-local and
 // buffer-local options is used there.
 #include "option.h"	// options and default values
