@@ -190,9 +190,15 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
-#if defined(FEAT_CLIPBOARD) || (defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL))
+#if defined(FEAT_CLIPBOARD)
 	    || regname == '*'
 	    || regname == '+'
+#elif  defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+	    || (
+	     clipmethod == CLIPMETHOD_PROVIDER && (
+		 regname == '*'
+		 || regname == '+'
+	    ))
 #endif
 #ifdef FEAT_DND
 	    || (!writing && regname == '~')
@@ -1618,9 +1624,9 @@ do_put(
 	call_clip_provider_request((char_u *)"+");
     else if (regname == '*')
 	call_clip_provider_request((char_u *)"*");
-    if (clipmethod != CLIPMETHOD_PROVIDER)
 #endif
 #ifdef FEAT_CLIPBOARD
+    if (clipmethod != CLIPMETHOD_PROVIDER)
     {
 	// Adjust register name for "unnamed" in 'clipboard'.
 	adjust_clip_reg(&regname);
@@ -2761,9 +2767,9 @@ get_reg_contents(int regname, int flags)
 	call_clip_provider_request((char_u *)"+");
     else if (regname == '*')
 	call_clip_provider_request((char_u *)"*");
-    if (clipmethod != CLIPMETHOD_PROVIDER)
 #endif
 # ifdef FEAT_CLIPBOARD
+    if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 # endif
 
