@@ -4897,8 +4897,10 @@ typedef enum {
 #  define NUM_REGISTERS		(PLUS_REGISTER + 1)
 # endif
 #else
-# ifdef STAR_REGISTER
-# define NUM_REGISTERS		REAL_PLUS_REGISTER + 1
+# ifdef HAVE_CLIPMETHOD
+#  define NUM_REGISTERS		REAL_PLUS_REGISTER + 1
+# else
+#  define NUM_REGISTERS		37
 # endif
 #endif
 

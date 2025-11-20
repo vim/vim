@@ -266,14 +266,12 @@ get_yank_register(int regname, int writing)
 	    i = PLUS_REGISTER;
 	ret = TRUE;
     }
-#else
-    // When selection is not available, use register 0 instead of '*'
+#elif defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
     else if (regname == '*')
     {
 	i = STAR_REGISTER;
 	ret = TRUE;
     }
-    // When clipboard is not available, use register 0 instead of '+'
     else if (regname == '+')
     {
 	i = REAL_PLUS_REGISTER;
