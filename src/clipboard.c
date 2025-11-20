@@ -3512,6 +3512,7 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
 		clip_provider = vim_strsave(buf);
 		if (clip_provider == NULL)
 		    goto fail;
+		*plus = *star = TRUE;
 	    }
 	    else if (r == -1)
 #endif
@@ -3566,8 +3567,8 @@ clipmethod_to_str(clipmethod_T method)
     char *
 choose_clipmethod(void)
 {
-    bool regular = false, primary = false;
-    clipmethod_T method = get_clipmethod(p_cpm, &regular, &primary);
+    bool plus = false, star = false;
+    clipmethod_T method = get_clipmethod(p_cpm, &plus, &star);
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
@@ -3594,6 +3595,17 @@ choose_clipmethod(void)
 	goto lose_sel_exit;
     }
 # endif
+#else
+    // If on a system like windows or macos, then clipmethod is irrelevant, we
+    // use their way of accessing the clipboard. THis is unless we are using the
+    // clipboard provider
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (method != CLIPMETHOD_PROVIDER)
+#endif
+    {
+	method = CLIPMETHOD_NONE;
+	goto exit;
+    }
 #endif
 
 #ifdef FEAT_CLIPBOARD
@@ -3603,8 +3615,8 @@ choose_clipmethod(void)
     // If we have a clipmethod that works now, then initialize clipboard
     else if (clipmethod == CLIPMETHOD_NONE && method != CLIPMETHOD_NONE)
     {
-	clip_init_single(&clip_plus, regular);
-	clip_init_single(&clip_star, primary);
+	clip_init_single(&clip_plus, plus);
+	clip_init_single(&clip_star, star);
 	clip_plus.did_warn = false;
 	clip_star.did_warn = false;
     }
@@ -3624,11 +3636,15 @@ lose_sel_exit:
 	if (!gui.in_use)
 #endif
 	{
-	    clip_init_single(&clip_plus, regular);
-	    clip_init_single(&clip_star, primary);
+	    clip_init_single(&clip_plus, plus);
+	    clip_init_single(&clip_star, star);
 	}
     }
 #endif // FEAT_CLIPBOARD
+
+#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+exit:
+#endif
 
     clipmethod = method;
 
@@ -3677,7 +3693,7 @@ clip_provider_is_available(char_u *provider)
     if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL
 	    || provider_tv.v_type != VAR_DICT)
 	// clipboard provider not defined
-	return 0;
+	return -1;
 
     if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
     {
@@ -3902,6 +3918,7 @@ clip_provider_request_selection(char_u *reg, char_u *provider)
 	char_u	    **contents;
 	listitem_T  *li;
 	int	    i = 0;
+	yankreg_T   *cur_y_ptr;
 
 	contents = ALLOC_MULT(char_u *, lines->lv_len + 1); // Ends with a NULL
 
@@ -3928,6 +3945,13 @@ clip_provider_request_selection(char_u *reg, char_u *provider)
 	    y_ptr = get_y_register(REAL_PLUS_REGISTER);
 	else
 	    y_ptr = get_y_register(STAR_REGISTER);
+
+	// Free previous register contents
+	cur_y_ptr = get_y_current();
+	set_y_current(y_ptr);
+	free_yank_all();
+	get_y_current()->y_size = 0;
+	set_y_current(cur_y_ptr);
 
 	str_to_reg(y_ptr,
 		yank_type,
