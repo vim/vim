@@ -924,7 +924,7 @@
     && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
 # define FEAT_WAYLAND_CLIPBOARD
 # ifndef FEAT_CLIPBOARD
-#  define FEAT_CLIPBOARD 
+#  define FEAT_CLIPBOARD
 # endif
 #endif
 

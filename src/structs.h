@@ -4882,6 +4882,8 @@ typedef enum {
 #  else
 #   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
 #   ifdef FEAT_EVAL
+// If there is only star register, we want the clipboard provider to use the +
+// register instead for clipboard provider functionality.
 #    define REAL_PLUS_REGISTER	38
 #   endif
 #  endif

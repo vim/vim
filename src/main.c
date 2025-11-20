@@ -704,7 +704,7 @@ vim_main2(void)
     }
 #endif
 
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
     choose_clipmethod();
 #endif
 
