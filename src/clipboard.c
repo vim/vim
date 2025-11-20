@@ -3415,6 +3415,9 @@ clip_wl_owner_exists(Clipboard_T *cbd)
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
+#endif // FEAT_CLIPBOARD
+
+#ifdef ADD_CLIPMETHOD
 
 /*
  * Returns the first method for accessing the clipboard that is available/works,
@@ -3603,4 +3606,10 @@ ex_clipreset(exarg_T *eap UNUSED)
 		clipmethod_to_str(clipmethod));
 }
 
-#endif // FEAT_CLIPBOARD
+#endif // ADD_CLIPMETHOD
+
+#ifdef FEAT_EVAL
+
+
+
+#endif // FEAT_EVAL
