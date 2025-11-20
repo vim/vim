@@ -924,7 +924,7 @@
     && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
 # define FEAT_WAYLAND_CLIPBOARD
 # ifndef FEAT_CLIPBOARD
-#  define FEAT_CLIPBOARD
+#  define FEAT_CLIPBOARD 
 # endif
 #endif
 
@@ -944,8 +944,8 @@
 
 // The clipboard provider feature uses clipmethod as well but should be separate
 // from the clipboard code.
-#if defined(FEAT_CLIPBOARD)
-#define ADD_CLIPMETHOD
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
+#define HAVE_CLIPMETHOD
 #endif
 
 #if defined(FEAT_GUI_MSWIN)

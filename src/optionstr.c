@@ -44,6 +44,8 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CLIPBOARD
 // Note: Keep this in sync with did_set_clipboard()
 static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autoselectplus", "autoselectml", "html", "exclude:", NULL};
+#endif
+#ifdef HAVE_CLIPMETHOD
 // Note: Keep this in sync with get_clipmethod()
 static char *(p_cpm_values[]) = {"wayland", "x11", NULL};
 #endif
@@ -1402,7 +1404,9 @@ expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches)
 	    numMatches,
 	    matches);
 }
+#endif
 
+#ifdef HAVE_CLIPMETHOD
     char *
 did_set_clipmethod(optset_T *args UNUSED)
 {
