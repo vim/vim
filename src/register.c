@@ -2685,8 +2685,15 @@ get_reg_type(int regname, long *reglen)
 	    return MCHAR;
     }
 
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    if (regname == '+')
+	call_clip_provider_request((char_u *)"+");
+    else if (regname == '*')
+	call_clip_provider_request((char_u *)"*");
+#endif
 # ifdef FEAT_CLIPBOARD
-    regname = may_get_selection(regname);
+    if (clipmethod != CLIPMETHOD_PROVIDER)
+	regname = may_get_selection(regname);
 # endif
 
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
