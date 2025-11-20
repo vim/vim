@@ -9,7 +9,7 @@
 
 /*
  * clipboard.c: Functions to handle the clipboard. Additionally contains the
- *		clipboard provider code, which is separate from the main 
+ *		clipboard provider code, which is separate from the main
  *		clipboard code.
  */
 
@@ -3486,7 +3486,7 @@ get_clipmethod(char_u *str)
 #ifdef FEAT_EVAL
 	    // Check if name matches a clipboard provider
 	    int r = clip_provider_is_available(buf);
-	    
+
 	    if (r == 1)
 	    {
 		method = CLIPMETHOD_PROVIDER;
