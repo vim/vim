@@ -2372,7 +2372,7 @@ do_one_cmd(
 	    && (!IS_USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
 	    && !((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
-#ifndef FEAT_CLIPBOARD
+#if !defined(FEAT_CLIPBOARD) && !defined(FEAT_EVAL) && !defined(HAVE_CLIPMETHOD)
 	// check these explicitly for a more specific error message
 	if (*ea.arg == '*' || *ea.arg == '+')
 	{
@@ -10404,6 +10404,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     start_global_changes();
 # endif
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    inc_clip_provider();
+#endif
 
     // First set the marks for all lines closed/open.
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
@@ -10416,6 +10419,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     end_global_changes();
 # endif
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+    dec_clip_provider();
+#endif
 }
 #endif
 

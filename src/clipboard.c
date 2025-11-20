@@ -3943,22 +3943,77 @@ exit:
     clear_tv(&rettv);
 }
 
+// Used to stop calling the provider callback every time there is an update.
+// This prevents unessecary calls when accessing the provider often in an
+// interval.
+//
+// If -1 then allow provider callback to be called then set to zero. Default
+// value (is allowed) is -2.
+static int star_pause_count = -2, plus_pause_count = -2; 
+
 void
-call_clip_provider_request(char_u *reg)
+call_clip_provider_request(int reg)
 {
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
-    clip_provider_paste(reg, clip_provider);
+    if (reg == '+' && plus_pause_count < 0)
+    {
+	if (plus_pause_count == -1)
+	    plus_pause_count = 1;
+	clip_provider_paste((char_u *)"+", clip_provider);
+    }
+    else if (reg == '*' && star_pause_count < 0)
+    {
+	if (star_pause_count == -1)
+	    star_pause_count = 1;
+	clip_provider_paste((char_u *)"*", clip_provider);
+    }
+    else
+	return;
 }
 
 void
-call_clip_provider_set(char_u *reg)
+call_clip_provider_set(int reg)
 {
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	return;
 
-    clip_provider_copy(reg, clip_provider);
+    if (reg == '+' && plus_pause_count < 0)
+    {
+	if (plus_pause_count == -1)
+	    plus_pause_count = 1;
+	clip_provider_copy((char_u *)"+", clip_provider);
+    }
+    else if (reg == '*' && star_pause_count < 0)
+    {
+	if (star_pause_count == -1)
+	    star_pause_count = 1;
+	clip_provider_copy((char_u *)"*", clip_provider);
+    }
+}
+
+/*
+ * Makes it so that the next provider call is only done once any calls after are
+ * ignored, clip_provider_pause is zero again. Note that this is per clipboard
+ * register ("+", "*")
+ */
+void
+inc_clip_provider(void)
+{
+    plus_pause_count = plus_pause_count == -2 ? -1 : plus_pause_count + 1;
+    star_pause_count = star_pause_count == -2 ? -1 : star_pause_count + 1;
+}
+
+void dec_clip_provider(void)
+{
+    plus_pause_count = plus_pause_count == -1 ? -1 : plus_pause_count - 1;
+    star_pause_count = star_pause_count == -1 ? -1 : star_pause_count - 1;
+
+    if (plus_pause_count == 0)
+	plus_pause_count = -2;
+    if (star_pause_count == 0)
+	star_pause_count = -2;
 }
 
 #endif // defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)

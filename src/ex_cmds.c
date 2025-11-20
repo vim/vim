@@ -5489,12 +5489,18 @@ ex_global(exarg_T *eap)
 	}
 	else
 	{
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+	    inc_clip_provider();
+#endif
 #ifdef FEAT_CLIPBOARD
 	    start_global_changes();
 #endif
 	    global_exe(cmd);
 #ifdef FEAT_CLIPBOARD
 	    end_global_changes();
+#endif
+#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+	    dec_clip_provider();
 #endif
 	}
 
