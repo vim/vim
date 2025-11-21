@@ -4885,6 +4885,8 @@ typedef enum {
 // Make it so that if clipmethod is "none", the plus register is not available,
 // but if clipmethod is a provider, then expose the plus register for use.
 #    define REAL_PLUS_REGISTER	38
+#   else
+#    define REAL_PLUS_REGISTER	STAR_REGISTER
 #   endif
 #  endif
 #endif

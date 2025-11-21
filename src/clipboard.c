@@ -3884,6 +3884,9 @@ clip_provider_paste(char_u *reg, char_u *provider)
     else
 	goto exit;
 
+    // If reg_type is "pass", then don't do anything and use the previous
+    // register contents
+    if (STRCMP(reg_type, "pass") != 0)
     {
 	char_u	    yank_type = MAUTO;
 	long	    block_len = -1;
@@ -3904,15 +3907,18 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	    char_u *str = tv_get_string_chk(&li->li_tv);
 
 	    if (str == NULL)
-		goto exit;
+		goto fail;
 
 	    contents[i++] = vim_strsave(str);
 	}
 	contents[i] = NULL;
 
-	if (STRLEN(reg_type) > 0
-		&& get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
-	    goto exit;
+	if (STRLEN(reg_type) <= 0
+		|| get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
+	{
+	    emsg(e_invalid_argument);
+	    goto fail;
+	}
 
 	if (*reg == '+')
 	    y_ptr = get_y_register(REAL_PLUS_REGISTER);
@@ -3933,6 +3939,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 		block_len,
 		TRUE);
 
+fail:
 	for (int k = 0; k < i; k++)
 	    vim_free(contents[k]);
 	vim_free(contents);
@@ -3949,7 +3956,7 @@ exit:
 //
 // If -1 then allow provider callback to be called then set to zero. Default
 // value (is allowed) is -2.
-static int star_pause_count = -2, plus_pause_count = -2; 
+static int star_pause_count = -2, plus_pause_count = -2;
 
 void
 call_clip_provider_request(int reg)
