@@ -122,7 +122,7 @@ static int scanA(struct histindex *index, int line1, int count1)
 				NEXT_PTR(index, ptr) = rec->ptr;
 				rec->ptr = ptr;
 				/* cap rec->cnt at MAX_CNT */
-				rec->cnt = XDL_MIN(MAX_CNT, rec->cnt + 1);
+				rec->cnt = (rec->cnt < MAX_CNT) ? rec->cnt + 1 : rec->cnt;
 				LINE_MAP(index, ptr) = rec;
 				goto continue_scan;
 			}
