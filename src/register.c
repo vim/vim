@@ -2436,7 +2436,13 @@ get_register_name(int num)
 #if defined(FEAT_CLIPBOARD) || (defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL))
     else if (num == STAR_REGISTER)
 	return '*';
-    else if (num == REAL_PLUS_REGISTER)
+    // If there is only one clipboard, we only want the plus register to point
+    // to the star register if the clipboard provider is not being used. If the
+    // clipboard provider is being used, then both registers should be available
+    // no matter the plaform
+    else if (clipmethod == CLIPMETHOD_PROVIDER && num == REAL_PLUS_REGISTER)
+	return '+';
+    else if (clipmethod != CLIPMETHOD_PROVIDER && num == PLUS_REGISTER)
 	return '+';
 #endif
     else
@@ -2492,13 +2498,8 @@ ex_display(exarg_T *eap)
 	}
 	if (arg != NULL && vim_strchr(arg, name) == NULL
 #ifdef ONE_CLIPBOARD
-	    // Star register and plus register contain the same thing. Unless
-	    // clipmethod is provider.
-		&&
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-		clipmethod != CLIPMETHOD_PROVIDER &&
-#endif
-		(name != '*' || vim_strchr(arg, '+' == NULL))
+		// Star register and plus register contain the same thing.
+		&& (name != '*' || vim_strchr(arg, '+') == NULL)
 #endif
 		)
 	    continue;	    // did not ask for this register
