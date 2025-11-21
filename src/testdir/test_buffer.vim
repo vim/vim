@@ -686,7 +686,7 @@ func Test_bexit()
 
   let actual_output = readfile(temp_file)
 
-  call assert_equal(actual_output[0], "foo")
+  call assert_equal("foo", actual_output[0])
 
   call delete(temp_file)
 endfunc
