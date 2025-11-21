@@ -215,32 +215,34 @@ REFERENCIA: 	Registros numerados	:h quote0
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		     Lesson 2.1.6: THE BEAUTY OF MARKS
+		     Lección 2.1.6: LA BELLEZA DE LAS MARCAS
 
-	           ** Code monkey arithmetic avoidance **
+		** El programador que rehuye de la aritmética **
 
-NOTE: a common conundrum when coding is moving around large chunks of code.
-      The following technique helps avoid number line calculations associated
-      with operations like   "a147d   or   :945,1091d a   or even worse using
-      i<CTRL-R> followed by   =1091-945<ENTER>   first
+NOTA: Un dilema común cuando se está creando código es mover grandes porciones
+      de código.
+      La siguiente técnica ayuda a evitar los cálculos asociados a los números
+      de línea con operaciones como  "a147d   o   :945,1091d a   o o incluso peor
+      i<CTRL-R> seguido por   =1091-945<ENTER>
 
-  1. Move the cursor to the line below marked --->
+  1. Mueve el cursor hasta la línea inferior marcada con --->
 
-  2. Go to the first line of the function and mark it with   ma
+  2. Ve a la primera línea de la función marcada con   ma
 
-NOTE: exact position on line is NOT important!
+NOTA: ¡La posición exacta dentro de la línea NO es importante!
 
-  3. Navigate to the end of the line and then the end of the code block 
-     with   $%
+  3. Navega hasta el final de la línea y después hasta el final del
+     bloque del código mediante  $%
 
-  4. Delete the block into register a with   "ad'a
+  4. Elimina el bloque y guárdalo dentro del registro a mediante  "ad'a
 
-MNEMONIC: into register(") named (a) put the (d)eletion from the cursor to the
-          LINE containing mark(') (a)
+REGLA NEMOTÉCNICA: dentro del registro(") llamado (a) coloca lo que he
+		   (d)eliminado desde el cursor hasta la LÍNEA que
+                   contiene la marca(') (a)
 
-  5. Paste the block between BBB and CCC   "ap
+  5. Pega el contenido del bloque entre BBB y CCC mediante   "ap
 
-NOTE: practice this operation multiple times to become fluent   ma$%"ad'a
+NOTA: practica esta operación varias veces hasta que tengas soltura   ma$%"ad'a
 
 ---> AAA
      function itGotRealBigRealFast() {
