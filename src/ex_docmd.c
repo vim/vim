@@ -6760,15 +6760,13 @@ ex_exit(exarg_T *eap)
     static void
 ex_bexit(exarg_T *eap)
 {
+    // write buffer if it has changed
     if (curbufIsChanged() && !do_write(eap)) {
 	eap->errmsg = "Writing buffer has failed!";
 	return;
     }
 
     eap->errmsg = do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
-    // TODO: if the last buffer was closed -> close vim instead of having
-    // vim open without an open file
-    // => but :bw also leaves vim open without a buffer
 }
 
 /*
