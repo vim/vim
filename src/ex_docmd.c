@@ -6754,8 +6754,7 @@ ex_exit(exarg_T *eap)
 }
 
 /*
- * :bx
- * like :x but for a single buffer (write changes to the current buffer and close current buffer)
+ * ":bx", ":bxit": Write the current buffer if it has changed and close the buffer.
  */
     static void
 ex_bexit(exarg_T *eap)
