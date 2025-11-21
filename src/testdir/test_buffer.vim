@@ -671,4 +671,24 @@ func Test_switch_to_previously_viewed_buffer()
   set startofline&
 endfunc
 
+func Test_bexit()
+  let temp_file = tempname()
+  execute ":e " .. temp_file
+
+  call assert_equal(temp_file, bufname())
+
+  call feedkeys("ifoo\e:bx\<CR>", "x")
+
+  call assert_equal([], v:errors)
+  call assert_equal("", bufname())
+
+  call assert_true(filereadable(temp_file), "temp_file is not readable")
+
+  let actual_output = readfile(temp_file)
+
+  call assert_equal(actual_output[0], "foo")
+
+  call delete(temp_file)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
