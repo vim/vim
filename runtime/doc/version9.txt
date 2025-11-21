@@ -41802,7 +41802,6 @@ Functions: ~
 |blob2str()|		convert a blob into a List of strings
 |bindtextdomain()|	set message lookup translation base path
 |cmdcomplete_info()|	get current cmdline completion info
-|complete_match()|	get completion and trigger info
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
@@ -41887,7 +41886,6 @@ Options: ~
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
-'isexpand'		defines triggers for completion
 'lhistory'		Size of the location list stack |quickfix-stack|
 'maxsearchcount'	Set the maximum number for search-stat |shm-S|
 'messagesopt'		configure |:messages| and |hit-enter| prompt
