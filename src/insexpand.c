@@ -137,11 +137,8 @@ static compl_T    *compl_shown_match = NULL;
 static compl_T    *compl_old_match = NULL;
 
 // list used to store the compl_T which have the max score
-// used for completefuzzycollect
 static compl_T	  **compl_best_matches = NULL;
 static int	  compl_num_bests = 0;
-// inserted a longest when completefuzzycollect enabled
-static int	  compl_cfc_longest_ins = FALSE;
 
 // After using a cursor key <Enter> selects a match in the popup menu,
 // otherwise it inserts a line break.
@@ -2273,7 +2270,6 @@ ins_compl_clear(void)
 {
     compl_cont_status = 0;
     compl_started = FALSE;
-    compl_cfc_longest_ins = FALSE;
     compl_matches = 0;
     compl_selected_item = -1;
     compl_ins_end_col = 0;
@@ -4712,7 +4708,6 @@ fuzzy_longest_match(void)
     if (prefix != NULL)
     {
 	ins_compl_longest_insert(prefix);
-	compl_cfc_longest_ins = TRUE;
 	vim_free(prefix);
     }
 
