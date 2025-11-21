@@ -128,9 +128,12 @@ runtime:
   - all:
     - changed-files:
       - any-glob-to-any-file:
-        - 'runtime/ftplugin'
-        - 'runtime/syntax'
-        - 'runtime/indent'
+        - 'runtime/autoload/**/*.vim'
+        - 'runtime/colors/**/*.vim'
+        - 'runtime/compiler/**/*.vim'
+        - 'runtime/ftplugin/**/*.vim'
+        - 'runtime/indent/**/*.vim'
+        - 'runtime/syntax/**/*.vim'
         - 'runtime/pack/dist/opt/termdebug/plugin/termdebug.vim'
 
 termdebug:
