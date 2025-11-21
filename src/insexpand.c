@@ -3936,35 +3936,6 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * Add match item to the return list.
- * Returns FAIL if out of memory, OK otherwise.
- */
-    static int
-add_match_to_list(
-    typval_T  *rettv,
-    char_u    *str,
-    int        len,
-    int        pos)
-{
-    list_T    *match;
-    int        ret;
-
-    match = list_alloc();
-    if (match == NULL)
-	return FAIL;
-
-    if ((ret = list_append_number(match, pos + 1)) == FAIL
-	    || (ret = list_append_string(match, str, len)) == FAIL
-	    || (ret = list_append_list(rettv->vval.v_list, match)) == FAIL)
-    {
-	vim_free(match);
-	return FAIL;
-    }
-
-    return OK;
-}
-
-/*
  * Return Insert completion mode name string
  */
     static char_u *
