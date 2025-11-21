@@ -3935,7 +3935,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	str_to_reg(y_ptr,
 		yank_type,
 		(char_u *)contents,
-		STRLEN(contents),
+		(long)STRLEN(contents),
 		block_len,
 		TRUE);
 
