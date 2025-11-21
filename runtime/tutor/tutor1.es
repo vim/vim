@@ -1,6 +1,8 @@
 ===============================================================================
 =     B i e n v e n i d o   a l   t u t o r   d e   V I M  -  Versión 1.7     =
 ===============================================================================
+=			       CAPÍTULO UNO				      =
+===============================================================================
 
      Vim es un editor muy potente que dispone de muchos comandos, demasiados
      para ser explicados en un tutor como éste. Este tutor está diseñado
@@ -994,10 +996,15 @@ NOTA:  El completado funciona con muchos comandos. Solo pulse CTRL-D o
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Aquí concluye el tutor de Vim. Está pensado para dar una visión breve del
+  Aquí concluye el tutor de Vim. Considera continuar con Capítulo 2, que trata
+  sobre registros, marcas y el uso de objetos de texto.
+
+  Está pensado para dar una visión breve del
   editor Vim, lo suficiente para permitirle usar el editor de forma bastante
   sencilla. Está muy lejos de estar completo pues Vim tiene muchísimos más
-  comandos. Lea el siguiente manual de usuario: ":help user-manual".
+  comandos.
+
+  Lee el siguiente manual de usuario: ":help user-manual".
 
   Para lecturas y estudios posteriores se recomienda el libro:
 	Vim - Vi Improved - de Steve Oualline
