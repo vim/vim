@@ -249,69 +249,74 @@ NOTA: practica esta operación varias veces hasta que tengas soltura   ma$%"ad'a
        if ( somethingIsTrue ) {
          doIt()
        }
-       // the taxonomy of our function has changed and it
-       // no longer makes alphabetical sense in its current position
+       // La taxonomía de nuestra función ha cambiado y
+       // Ya no tiene sentido alfabético en su posición actual
 
-       // imagine hundreds of lines of code
+       // imagina que aquí hay cientos de líneas de código
 
-       // naively you could navigate to the start and end and record or
-       // remember each line number
+       // de manera ingenua podrías navegar hasta el comienzo y hasta el final y
+       // apuntar o recordar cada número de la línea
      }
      BBB
      CCC
 
-NOTE: marks and registers do not share a namespace, therefore register a is
-      completely independent of mark a. This is not true of registers and
-      macros.
+NOTA: Las marcas y los registros no comparten sus nombres. Así pues el
+      registro a es completamente independiente de la marca a.
+      Esto no se cumple con los registros y las macros.
 
-REFERENCE: 	Marks 		:h marks
-		Mark Motions 	:h mark-motions  (difference between ' and `)
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-		     Lesson 2.1 SUMMARY
-
-  1. Text objects provide precision editing:
-     - iw/aw - inner/around word
-     - i[/a[ - inner/around bracket
-     - i"/a" - inner/around quotes
-     - it/at - inner/around tag
-     - ip/ap - inner/around paragraph
-     - is/as - inner/around sentence
-
-  2. To store (yank, delete) text into, and retrieve (paste) from, a total of
-     26 registers (a-z) 
-  3. Yank a whole word from anywhere within a word:   yiw
-  4. Change a whole word from anywhere within a word:   ciw
-  5. Insert text directly from registers in insert mode:   <CTRL-R>a
-
-  6. Insert the results of simple arithmetic operations: <CTRL-R> followed by
-     =60*60<ENTER>
-     in insert mode
-  7. Insert the results of system calls: <CTRL-R> followed by
-     =system('ls -1')<ENTER>
-     in insert mode
-
-  8. Inspect registers with   :reg
-  9. Learn the final destination of whole line deletions: dd in the numbered
-     registers, i.e. descending from register 1 - 9.  Appreciate that whole
-     line deletions are preserved in the numbered registers longer than any
-     other operation
- 10. Learn the final destination of all yanks in the numbered registers and
-     how ephemeral they are
-
- 11. Place marks from command mode   m[a-zA-Z0-9]
- 12. Move line-wise to a mark with   '
-
- 13. Special registers:
-     - "+/"*  - System clipboard (OS dependent)
-     - "_     - Blackhole (discard deleted/yanked text)
-     - "=     - Expression register
+REFERENCIA: 	Marcas 				:h marks
+		Movimientos con las marcas	:h mark-motions
+						(diferencia entre ' y `)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  This concludes chapter two of the Vim Tutor. It is a work in progress.
+		     Lección 2.1 RESUMEN
 
-  This chapter was written by Paul D. Parker and Christian Brabandt.
+  1. Los objetos de texto ofrecen precisión a la hora de editar:
+     - iw/aw - dentro/alrededor de una palabra
+     - i[/a[ - dentro/alrededor de un paréntesis, corchete, etc
+     - i"/a" - dentro/alrededor de unas comillas quotes
+     - it/at - dentro/alrededor de una etiqueta
+     - ip/ap - dentro/alrededor de un párrafo
+     - is/as - dentro/alrededor de una frase
+
+  2. Para almacenar (copiar o eliminar) un texto dentro y volverlo a utilizar
+     (pegarlo), existen un total de 26 registros nominales (a-z)
+  3. Copiar una palabra complete con el cursor situado en cualquierparte
+     dentro de esa palabra mediante:   yiw
+  4. Cambiar una palabra completa con el cursor en cualquier parte de esa
+     palabra mediante:   ciw
+  5. Insertar texto directamente desde los registros en el modo insertar
+     mediante el comando:   <CTRL-R>a
+
+  6. Insertar los resultado de una simple operación aritmética
+     en el modo insertar mediante: <CTRL-R> seguido por  =60*60<ENTER>
+  7. Insertar los resultado de una llamada del sistema en el modo insertar
+     mediante: <CTRL-R> seguido por  =system('ls -1')<ENTER>
+
+  8. Inspeccionar el contenido de los registros con   :reg
+  9. Aprender el destino final al que va a parar la eliminación de
+     una línea complete: dd en los registros numerados.
+     Por ejemplo: descendiendo desde el registro 1 al 9. i.e. descending from register 1 - 9.
+     Ten en cuenta cómo las eliminaciones completas de las líneas son preservadas en
+     los registros numerado y permanecen más que cualquier otra operación realizada
+ 10. Aprender cual es el destino final de todos los objetos que copiamos
+     en los registros numerados y cómo son de efímeros
+
+ 11. Ubicar marcas desde el modo de comandos   m[a-zA-Z0-9]
+ 12. Mover de manera inteligente una línea a una marca con   '
+
+ 13. Registros especiales:
+     - "+/"*  - Portapapeles del sistema (depende el sistema operativo utilizado)
+     - "_     - El agujero negro (descarta texto eliminado/copiado)
+     - "=     - Registro de expresión
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Con esto concluye el capítulo dos del Tutor de Vim.
+  Este es un trabajo en progreso.
+
+  Este capítulo fue traducido por Paul D. Parker y Christian Brabandt.
+  Traducido por Victorhck.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
