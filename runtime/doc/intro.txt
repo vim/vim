@@ -275,7 +275,6 @@ Vim would never have become what it is now, without the help of these people!
 				improvements
 	Doug Kearns		Runtime file maintainer
 	Foxe Chen		Wayland support, new features
-	glepnir			completion feature
 	Girish Palya		autocompletion (ins/cmdline), omnifunc
 				composing, search/subst completion, and more.
 	Hirohito Higashi	lots of patches and fixes
