@@ -179,34 +179,39 @@ REFERENCIA: 	Registros numerados	:h quote0
 ---> Prueba: "+yy después pega la línea en otra aplicación
 	     mediante Ctrl-V o Cmd+V
 
-  2. Blackhole register  _  discards text:
-     - "_daw  - Delete word without saving to any register
-     - Useful when you don't want to overwrite your default " register
-     - Note this is using the "a Word" text object, introduced in a previous
+  2. El registro de agujero negro _  para texto descartado:
+     - "_daw  - Elimina una palabra sin guardarla en ningún registro
+     - Útil cuando no quieres sobreescribir el registro predeterminado "
+     - Ten en cuenta que utiliza el objeto de texto "una Palabra" visto
+       en la lección anterior
        lession
-     - "_dd   - Delete line without saving
-     - "_dap  - Delete paragraph without saving
-     - Combine with counts: 3"_dw
+     - "_dd   - Elimina una línea sin guardarla
+     - "_dap  - Elimina un párrafo sin almacenarlo
+     - Combinado con un conteo: 3"_dw
 
----> Practice: "_diw on any word to delete it without affecting yank history
+---> Practica: Utiliza  "_diw en cualquier palabra para eliminarla sin afectar
+               al historial de copiado
 
-  3. Combine with visual selections:
-     - Select text with V then "+y
-     - To paste from clipboard in insert mode: <CTRL-R>+
-     - Try opening another application and paste from clipboard
+  3. Combinado con unas selecciones visuales:
+     - Selecciona un texto con V y después pulsa "+y
+     - Para pegarlo desde el portapapeles en el modo insertar pulsa: <CTRL-R>+
+     - Intenta abrir otra aplicación y péga el texto desde el portapapeles
 
-  4. Remember:
-     - Clipboard registers work across different Vim instances
-     - Clipboard register is not always working
-     - Blackhole prevents accidental register overwrites
-     - Default " register is still available for normal yank/paste
-     - Named registers (a-z) remain private to each Vim session
+  4. Recuerda:
+     - Los registros del portapapeles funcionan a través de diferentes
+       instancias de Vim
+     - El registro del portapapelesno siempre está funcional
+     - El agujero negro previene el sobreescribir accidentalmente un registro
+     - El registro predeterminado " todavía está disponible para una acción
+       normal de copado/pegado
+     - Los registros nominales (a-z) permanecen privados para cada sesión de Vim
 
-  5. Clipboard troubleshooting:
-     - Check support with :echo has('clipboard_working')
-     - 1 means available, 0 means not compiled in
-     - On Linux, may need vim-gtk or vim-x11 package
-       (check :version output)
+  5. Problemas con el portapapeles:
+     - Comprueba que tu Vim lo admite mediante :echo has('clipboard_working')
+     - Si el comando anterior devuelve un 1 significa que está disponible,
+       Si devuelve un 0, significa que esa compilación de Vim no lo admite.
+     - En Linux, se puede necesitar el paquete vim-gtk o vim-x11 package
+       (comprueba :version output)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
