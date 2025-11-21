@@ -990,9 +990,8 @@ ins_compl_add(
 	current = compl_first_match->cp_next;
 	prev = compl_first_match;
 	inserted = FALSE;
-	// The direction is ignored when using longest and
-	// completefuzzycollect, because matches are inserted
-	// and sorted by score.
+	// The direction is ignored when using longest and fuzzy match, because
+	// matches are inserted and sorted by score.
 	while (current != NULL && current != compl_first_match)
 	{
 	    if (current->cp_score < score)
