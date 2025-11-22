@@ -3556,9 +3556,10 @@ choose_clipmethod(void)
 
 // If GUI is running or we are not on a system with Wayland or X11, then always
 // return CLIPMETHOD_NONE. System or GUI clipboard handling always overrides.
+// This is unless a provider is being used.
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # if defined(FEAT_GUI)
-    if (gui.in_use)
+    if (method != CLIPMETHOD_PROVIDER && gui.in_use)
     {
 #  ifdef FEAT_WAYLAND
 	// We only interact with Wayland for the clipboard, we can just deinit
@@ -3572,7 +3573,7 @@ choose_clipmethod(void)
 # endif
 #else
     // If on a system like windows or macos, then clipmethod is irrelevant, we
-    // use their way of accessing the clipboard. THis is unless we are using the
+    // use their way of accessing the clipboard. This is unless we are using the
     // clipboard provider
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
     if (method != CLIPMETHOD_PROVIDER)
