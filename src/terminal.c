@@ -437,7 +437,8 @@ term_start(
 	typval_T    *argvar,
 	char	    **argv,
 	jobopt_T    *opt,
-	int	    flags)
+	int	    flags,
+	char_u	    *pattern)
 {
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
@@ -793,9 +794,9 @@ term_start(
 	return NULL;
     }
 
-    apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, newbuf);
+    apply_autocmds(EVENT_TERMINALOPEN, pattern, NULL, FALSE, newbuf);
     if (!opt->jo_hidden && !(flags & TERM_START_SYSTEM))
-	apply_autocmds(EVENT_TERMINALWINOPEN, NULL, NULL, FALSE, newbuf);
+	apply_autocmds(EVENT_TERMINALWINOPEN, pattern, NULL, FALSE, newbuf);
     return newbuf;
 }
 
@@ -950,7 +951,8 @@ ex_terminal(exarg_T *eap)
 
 	// :term ++shell command
 	if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == OK)
-	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0,
+		    NULL);
 	vim_free(argv);
 	vim_free(tofree1);
 	vim_free(tofree2);
@@ -975,7 +977,7 @@ ex_terminal(exarg_T *eap)
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = cmd;
     argvar[1].v_type = VAR_UNKNOWN;
-    term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+    term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0, NULL);
 
 theend:
     vim_free(tofree);
@@ -5765,7 +5767,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     }
     else
 	// Create a new terminal window.
-	buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
+	buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB, NULL);
 
     if (buf != NULL && buf->b_term != NULL)
     {
@@ -6841,28 +6843,15 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_ANSI_COLORS + JO2_TTY_TYPE + JO2_TERM_API) == FAIL)
 	return;
 
-    buf = term_start(&argvars[0], NULL, &opt, 0);
+    buf = term_start(&argvars[0], NULL, &opt, 0, NULL);
 
     if (buf != NULL && buf->b_term != NULL)
 	rettv->vval.v_number = buf->b_fnum;
 }
 
-/*
- * "term_wait" function
- */
     void
-f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
+term_wait(buf_T *buf, long wait)
 {
-    buf_T	*buf;
-
-    if (in_vim9script()
-	    && (check_for_buffer_arg(argvars, 0) == FAIL
-		|| check_for_opt_number_arg(argvars, 1) == FAIL))
-	return;
-
-    buf = term_get_buf(argvars, "term_wait()");
-    if (buf == NULL)
-	return;
     if (buf->b_term->tl_job == NULL)
     {
 	ch_log(NULL, "term_wait(): no job to wait for");
@@ -6898,19 +6887,37 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
     }
     else
     {
-	long wait = 10L;
-
 	term_flush_messages();
 
 	// Wait for some time for any channel I/O.
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	    wait = tv_get_number(&argvars[1]);
+	if (wait == -1)
+	    wait = 10L;
 	ui_delay(wait, TRUE);
 
 	// Flushing messages on channels is hopefully sufficient.
 	// TODO: is there a better way?
 	term_flush_messages();
     }
+}
+
+/*
+ * "term_wait" function
+ */
+    void
+f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_wait()");
+    if (buf == NULL)
+	return;
+    term_wait(buf, argvars[1].v_type != VAR_UNKNOWN
+	    ? tv_get_number(&argvars[1]) : -1);
 }
 
 /*
