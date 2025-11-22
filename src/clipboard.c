@@ -3889,36 +3889,57 @@ clip_provider_paste(char_u *reg, char_u *provider)
     // register contents
     if (STRCMP(reg_type, "pass") != 0)
     {
-	char_u	    yank_type = MAUTO;
-	long	    block_len = -1;
-	yankreg_T   *y_ptr;
-	char_u	    **contents;
-	listitem_T  *li;
-	int	    i = 0;
-	yankreg_T   *cur_y_ptr;
+	char_u		yank_type = MAUTO;
+	long		block_len = -1;
+	yankreg_T	*y_ptr, *cur_y_ptr;
+	char_u		**lstval;
+	char_u		**allocval;
+	char_u		buf[NUMBUFLEN];
+	char_u		**curval;
+	char_u		**curallocval;
+	char_u		*strval;
+	listitem_T	*li;
+	int		len;
 
-	contents = ALLOC_MULT(char_u *, lines->lv_len + 1); // Ends with a NULL
+	// If the list is NULL handle like an empty list.
+	len = lines == NULL ? 0 : lines->lv_len;
 
-	if (contents == NULL)
-	    goto exit;
+	// First half: use for pointers to result lines; second half: use for
+	// pointers to allocated copies.
+	lstval = ALLOC_MULT(char_u *, (len + 1) * 2);
+	if (lstval == NULL)
+	    return;
+	curval = lstval;
+	allocval = lstval + len + 2;
+	curallocval = allocval;
 
-	// Convert strings in list to type char_u **
-	FOR_ALL_LIST_ITEMS(lines, li)
+	if (lines != NULL)
 	{
-	    char_u *str = tv_get_string_chk(&li->li_tv);
-
-	    if (str == NULL)
-		goto fail;
-
-	    contents[i++] = vim_strsave(str);
+	    CHECK_LIST_MATERIALIZE(lines);
+	    FOR_ALL_LIST_ITEMS(lines, li)
+	    {
+		strval = tv_get_string_buf_chk(&li->li_tv, buf);
+		if (strval == NULL)
+		    goto free_lstval;
+		if (strval == buf)
+		{
+		    // Need to make a copy, next tv_get_string_buf_chk() will
+		    // overwrite the string.
+		    strval = vim_strsave(buf);
+		    if (strval == NULL)
+			goto free_lstval;
+		    *curallocval++ = strval;
+		}
+		*curval++ = strval;
+	    }
 	}
-	contents[i] = NULL;
+	*curval++ = NULL;
 
 	if (STRLEN(reg_type) <= 0
 		|| get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
 	{
 	    emsg(e_invalid_argument);
-	    goto fail;
+	    goto free_lstval;
 	}
 
 	if (*reg == '+')
@@ -3929,21 +3950,23 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	// Free previous register contents
 	cur_y_ptr = get_y_current();
 	set_y_current(y_ptr);
+
 	free_yank_all();
 	get_y_current()->y_size = 0;
+
 	set_y_current(cur_y_ptr);
 
 	str_to_reg(y_ptr,
 		yank_type,
-		(char_u *)contents,
-		(long)STRLEN(contents),
+		(char_u *)lstval,
+		-1,
 		block_len,
 		TRUE);
 
-fail:
-	for (int k = 0; k < i; k++)
-	    vim_free(contents[k]);
-	vim_free(contents);
+free_lstval:
+	while (curallocval > allocval)
+	    vim_free(*--curallocval);
+	vim_free(lstval);
     }
 
 exit:
@@ -4003,8 +4026,8 @@ call_clip_provider_set(int reg)
 
 /*
  * Makes it so that the next provider call is only done once any calls after are
- * ignored, clip_provider_pause is zero again. Note that this is per clipboard
- * register ("+", "*")
+ * ignored, until dec_clip_provider is called the same number of times after
+ * again. Note that this is per clipboard register ("+", "*")
  */
 void
 inc_clip_provider(void)
