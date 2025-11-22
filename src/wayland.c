@@ -849,8 +849,6 @@ ex_wlrestore(exarg_T *eap)
 	smsg(_("restoring Wayland display %s"), wayland_display_name);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
-	clip_plus.did_warn = false;
-	clip_star.did_warn = false;
 	clip_init_wayland();
 #endif
     }

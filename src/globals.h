@@ -2067,6 +2067,9 @@ EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
 EXTERN int	p_tgc_set INIT(= FALSE);
 #endif
 
+// If we've already warned about missing/unavailable clipboard
+EXTERN bool did_warn_clipboard INIT(= FALSE);
+
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
 #endif
@@ -2079,6 +2082,9 @@ EXTERN char *wayland_display_name INIT(= NULL);
 // Special mime type used to identify selection events that came from us setting
 // the selection. Is in format of "application/x-vim-instance-<pid>" where <pid>
 // is the PID of the Vim process. Set in main.c
+//
+// This is more reliable than just checking if our data source is non-NULL, as
+// that may be subject to data races in the Wayland protocol.
 EXTERN char wayland_vim_special_mime[
     sizeof("application/x-vim-instance-") + NUMBUFLEN - 1]; // Includes NUL
 
