@@ -2829,6 +2829,14 @@ handle_mapping(
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
 
+    // If we are in the middle of processing an OSC response, ignore everything
+    // else.
+    if (processing_osc)
+    {
+	mlen = typebuf.tb_len;
+	goto check_code;
+    }
+
     // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
     if (typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
@@ -3098,6 +3106,7 @@ handle_mapping(
 			    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
 		    && !*timedout)
+check_code:
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
 		keylen = 0;

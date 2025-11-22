@@ -2118,3 +2118,7 @@ INIT(= CLIENTSERVER_METHOD_NONE);
 // Path to socket of last client that communicated with us
 EXTERN char_u *client_socket INIT(= NULL);
 #endif
+
+EXTERN bool processing_osc INIT(= false); // TRUE if we are in the middle of
+					  // getting an OSC response from the
+					  // typeahead buffer.

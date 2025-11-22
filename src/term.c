@@ -107,7 +107,6 @@ typedef struct {
 // Holds state for current OSC response.
 typedef struct
 {
-    int		    processing;	// If we are in the middle of an OSC response
     char_u	    start_char;	// First char in the OSC response
     garray_T	    buf;	// Buffer holding the OSC response, to be
 				// placed in the "v:termosc" vim var.
@@ -5903,7 +5902,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 {
     char_u last_char;
 
-    if (!osc_state.processing)
+    if (!processing_osc)
     {
 	int cur;
 
@@ -5925,7 +5924,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 #ifdef ELAPSED_FUNC
 	ELAPSED_INIT(osc_state.start_tv);
 #endif
-	osc_state.processing = TRUE;
+	processing_osc = TRUE;
 	osc_state.start_char = tp[0];
 	last_char = 0;
     }
@@ -5933,7 +5932,6 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	last_char = ((char_u *)osc_state.buf.ga_data)[osc_state.buf.ga_len - 1];
 
     key_name[0] = (int)KS_EXTRA;
-    key_name[1] = (int)KE_IGNORE;
 
     // Read data and append to buffer. If we reach a terminator, then
     // finally set the vim var.
@@ -5943,7 +5941,8 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 			|| (i == 0 && tp[i] == '\\' && last_char == ESC)
 			)))
 	{
-	    osc_state.processing = FALSE;
+	    processing_osc = FALSE;
+	    key_name[1] = (int)KE_OSC;
 
 	    ga_concat_len(&osc_state.buf, tp, i + 1 + (tp[i] == ESC));
 	    ga_append(&osc_state.buf, NUL);
@@ -5962,18 +5961,21 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	    return OK;
 	}
 
+
 #ifdef ELAPSED_FUNC
     if (ELAPSED_FUNC(osc_state.start_tv) >= p_ost)
     {
 	semsg(_(e_osc_response_timed_out), osc_state.buf.ga_len,
 		osc_state.buf.ga_data);
 
+	key_name[1] = (int)KE_OSC;
 	ga_clear(&osc_state.buf);
-	osc_state.processing = FALSE;
+	processing_osc = FALSE;
 	return FAIL;
     }
 #endif
 
+    key_name[1] = (int)KE_IGNORE;
     ga_concat(&osc_state.buf, tp);
     *slen = len; // Consume everything
 
@@ -6156,43 +6158,45 @@ check_termcode(
 	    len = *buflen - offset;
 	}
 
-	/*
-	 * Don't check characters after K_SPECIAL, those are already
-	 * translated terminal chars (avoid translating ~@^Hx).
-	 */
-	if (*tp == K_SPECIAL)
+	// Only try checking the character if they are not from an OSC response.
+	if (!processing_osc)
 	{
-	    offset += 2;	// there are always 2 extra characters
-	    continue;
+	    /*
+	     * Don't check characters after K_SPECIAL, those are already
+	     * translated terminal chars (avoid translating ~@^Hx).
+	     */
+	    if (*tp == K_SPECIAL)
+	    {
+		offset += 2;	// there are always 2 extra characters
+		continue;
+	    }
+
+	    /*
+	     * Skip this position if the character does not appear as the first
+	     * character in term_strings. This speeds up a lot, since most
+	     * termcodes start with the same character (ESC or CSI).
+	     */
+	    i = *tp;
+	    for (p = termleader; *p && *p != i; ++p)
+		;
+	    if (*p == NUL)
+		continue;
+
+	    /*
+	     * Skip this position if p_ek is not set and tp[0] is an ESC and we
+	     * are in Insert mode.
+	     */
+	    if (*tp == ESC && !p_ek && (State & MODE_INSERT))
+		continue;
 	}
-
-	if (osc_state.processing)
-	    // Still processing OSC response data, go straight to handler
-	    // function.
-	    goto handle_osc;
-
-	/*
-	 * Skip this position if the character does not appear as the first
-	 * character in term_strings. This speeds up a lot, since most
-	 * termcodes start with the same character (ESC or CSI).
-	 */
-	i = *tp;
-	for (p = termleader; *p && *p != i; ++p)
-	    ;
-	if (*p == NUL)
-	    continue;
-
-	/*
-	 * Skip this position if p_ek is not set and tp[0] is an ESC and we
-	 * are in Insert mode.
-	 */
-	if (*tp == ESC && !p_ek && (State & MODE_INSERT))
-	    continue;
 
 	tp[len] = NUL;
 	key_name[0] = NUL;	// no key name found yet
 	key_name[1] = NUL;	// no key name found yet
 	modifiers = 0;		// no modifiers yet
+
+	if (processing_osc)
+	    goto do_osc;
 
 #ifdef FEAT_GUI
 	if (gui.in_use)
@@ -6446,7 +6450,7 @@ check_termcode(
 	    // Check for OSC responses from terminal
 	    else if ((tp[0] == ESC && len >= 2 && tp[1] == ']') || tp[0] == OSC)
 	    {
-handle_osc:
+do_osc:
 		if (handle_osc(tp, len, key_name, &slen) == FAIL)
 		    return -1;
 	    }
@@ -6690,12 +6694,8 @@ handle_osc:
 	 */
 	key = handle_x_keys(TERMCAP2KEY(key_name[0], key_name[1]));
 
-	if (osc_state.processing)
-	    // We don't want to add anything to the typeahead buffer.
-	    new_slen = 0;
-	else
-	    // Add any modifier codes to our string.
-	    new_slen = modifiers2keycode(modifiers, &key, string);
+	// Add any modifier codes to our string.
+	new_slen = modifiers2keycode(modifiers, &key, string);
 
 	// Finally, add the special key code to our string
 	key_name[0] = KEY2TERMCAP0(key);
