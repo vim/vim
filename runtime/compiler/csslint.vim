@@ -1,9 +1,10 @@
 " Vim compiler file
-" Compiler:     csslint for CSS
-" Maintainer:   Daniel Moch <daniel@danielmoch.com>
-" Last Change:  2016 May 21
-"               2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
-"               2025 Nov 22 by The Vim Project (default to npx)
+" Compiler:             csslint for CSS
+" Previous Maintainer:  Daniel Moch <daniel@danielmoch.com>
+" Last Change:          2016 May 21
+"                       2024 Apr 03 by The Vim Project (removed :CompilerSet
+"                       definition)
+"                       2025 Nov 22 by The Vim Project (default to npx)
 
 if exists("current_compiler")
   finish
