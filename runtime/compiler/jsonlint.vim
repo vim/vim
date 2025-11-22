@@ -16,14 +16,12 @@ set cpo&vim
 
 " CompilerSet makeprg=jsonlint
 " CompilerSet makeprg=npx\ jsonlint
-if !empty(escape(get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', 'jsonlint')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jsonlint' ..
-			\ ' --compact --quiet ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', ''))) ?
+			\   get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', '')) :
+			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jsonlint'))
+			\ .. ' --compact --quiet ' ..
                         \ get(b:, 'jsonlint_makeprg_params', get(g:, 'jsonlint_makeprg_params', '')), ' \|"')
-endif
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ found:\ %m,
 		       \%-G%.%#
 

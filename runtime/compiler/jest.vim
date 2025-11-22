@@ -16,14 +16,12 @@ set cpo&vim
 
 " CompilerSet makeprg=jest
 " CompilerSet makeprg=npx\ jest
-if !empty(escape(get(b:, 'jest_makeprg', get(g:, 'jest_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'jest_makeprg', get(g:, 'jest_makeprg', 'jest')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jest' ..
-			\ ' --no-colors ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'jest_makeprg', get(g:, 'jest_makeprg', ''))) ?
+			\   get(b:, 'jest_makeprg', get(g:, 'jest_makeprg', '')) :
+			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jest'))
+			\ .. ' --no-colors ' ..
                         \ get(b:, 'jest_makeprg_params', get(g:, 'jest_makeprg_params', '')), ' \|"')
-endif
 CompilerSet errorformat=%-A\ \ ●\ Console,
 		       \%E\ \ ●\ %m,
 		       \%Z\ %\\{4}%.%#Error:\ %f:\ %m\ (%l:%c):%\\=,

@@ -15,14 +15,12 @@ set cpo&vim
 
 " CompilerSet makeprg=tsc
 " CompilerSet makeprg=npx\ tsc
-if !empty(escape(get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', 'tsc')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' tsc' ..
-			\ ' ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', ''))) ?
+			\   get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', '')) :
+			\   get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' tsc')
+			\ .. ' ' ..
                         \ get(b:, 'tsc_makeprg_params', get(g:, 'tsc_makeprg_params', '')), ' \|"')
-endif
 
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,
 		       \%trror\ TS%n:\ %m,

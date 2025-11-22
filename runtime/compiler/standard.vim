@@ -12,12 +12,10 @@ let current_compiler = "standard"
 
 " CompilerSet makeprg=standard
 " CompilerSet makeprg=npx\ standard
-if !empty(escape(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', 'standard')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' standard' ..
-			\ ' ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', ''))) ?
+			\   get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', '')) :
+			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' standard'))
+			\ .. ' ' ..
                         \ get(b:, 'standard_makeprg_params', get(g:, 'standard_makeprg_params', '')), ' \|"')
-endif
 CompilerSet errorformat=%f:%l:%c:\ %m,%-G%.%#

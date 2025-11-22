@@ -11,14 +11,12 @@ set cpo&vim
 
 " CompilerSet makeprg=biome
 " CompilerSet makeprg=npx\ biome
-if !empty(escape(get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', 'biome')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' @biomejs/biome'
-			\ .. ' check --linter-enabled=true --formatter-enabled=false --assist-enabled=false --reporter=github '
-      \ .. get(b:, 'biome_makeprg_params', get(g:, 'biome_makeprg_params', '')), ' \|"')
-endif
+exe 'CompilerSet makeprg=' .. escape(
+                      \ (!empty(get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', ''))) ?
+                      \   get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', '')) :
+		      \   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' @biomejs/biome'))
+		      \ .. ' check --linter-enabled=true --formatter-enabled=false --assist-enabled=false --reporter=github '
+                      \ .. get(b:, 'biome_makeprg_params', get(g:, 'biome_makeprg_params', '')), ' \|"')
 
 CompilerSet errorformat=::%trror%.%#file=%f\\,line=%l\\,%.%#col=%c\\,%.%#::%m
 CompilerSet errorformat+=::%tarning%.%#file=%f\\,line=%l\\,%.%#col=%c\\,%.%#::%m

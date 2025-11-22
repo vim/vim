@@ -16,14 +16,12 @@ set cpo&vim
 
 " CompilerSet makeprg=jshint
 " CompilerSet makeprg=npx\ jshint
-if !empty(escape(get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', 'jshint')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jshint' ..
-			\ ' --verbose ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', ''))) ?
+			\   get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', '')) :
+			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jshint'))
+			\ .. ' --verbose ' ..
                         \ get(b:, 'jshint_makeprg_params', get(g:, 'jshint_makeprg_params', '')), ' \|"')
-endif
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %m\ (%t%n),
 		       \%-G%.%#
 

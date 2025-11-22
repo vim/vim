@@ -16,14 +16,12 @@ set cpo&vim
 
 " CompilerSet makeprg=typedoc
 " CompilerSet makeprg=npx\ typedoc
-if !empty(escape(get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', ''))))
-  execute $'CompilerSet makeprg={escape(get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', 'typedoc')), ' \|"')}'
-else
-  exe 'CompilerSet makeprg=' .. escape(
-			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' typedoc' ..
-			\ ' ' ..
+exe 'CompilerSet makeprg=' .. escape(
+			\ (!empty(get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', ''))) ?
+			\   get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', '')) :
+			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' typedoc'))
+			\ .. ' ' ..
                         \ get(b:, 'typedoc_makeprg_params', get(g:, 'typedoc_makeprg_params', '')), ' \|"')
-endif
 CompilerSet errorformat=%EError:\ %f(%l),
 		       \%WWarning:\ %f(%l),
 		       \%+IDocumentation\ generated\ at\ %f,
