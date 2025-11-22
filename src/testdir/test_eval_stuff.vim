@@ -880,6 +880,7 @@ endfunc
 " star register like normal.
 func Test_clipboard_provider_registers()
   CheckNotFeature unnamedplus
+  CheckFeature clipboard_working
 
   let v:clipproviders["test"] = {}
   set clipmethod=test
