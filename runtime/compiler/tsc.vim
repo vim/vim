@@ -18,7 +18,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', ''))) ?
 			\   get(b:, 'tsc_makeprg', get(g:, 'tsc_makeprg', '')) :
-			\   get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' tsc')
+			\   get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' tsc')
 			\ .. ' ' ..
                         \ get(b:, 'tsc_makeprg_params', get(g:, 'tsc_makeprg_params', '')), ' \|"')
 

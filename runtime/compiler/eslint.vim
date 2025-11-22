@@ -14,7 +14,7 @@ let current_compiler = "eslint"
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'eslint_makeprg', get(g:, 'eslint_makeprg', ''))) ?
 			\   get(b:, 'eslint_makeprg', get(g:, 'eslint_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' eslint'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' eslint'))
 			\ .. ' --format stylish ' ..
                         \ get(b:, 'eslint_makeprg_params', get(g:, 'eslint_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%-P%f,\%\\s%#%l:%c\ %#\ %trror\ \ %m,\%\\s%#%l:%c\ %#\ %tarning\ \ %m,\%-Q,\%-G%.%#,

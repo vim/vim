@@ -15,7 +15,7 @@ let current_compiler = "standard"
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', ''))) ?
 			\   get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' standard'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' standard'))
 			\ .. ' ' ..
                         \ get(b:, 'standard_makeprg_params', get(g:, 'standard_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:%l:%c:\ %m,%-G%.%#

@@ -17,7 +17,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'xo_makeprg', get(g:, 'xo_makeprg', ''))) ?
 			\   get(b:, 'xo_makeprg', get(g:, 'xo_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' xo'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' xo'))
 			\ .. ' --reporter compact ' ..
                         \ get(b:, 'xo_makeprg_params', get(g:, 'xo_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ %m,

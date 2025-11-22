@@ -19,7 +19,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', ''))) ?
 			\   get(b:, 'jsonlint_makeprg', get(g:, 'jsonlint_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jsonlint'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' jsonlint'))
 			\ .. ' --compact --quiet ' ..
                         \ get(b:, 'jsonlint_makeprg_params', get(g:, 'jsonlint_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ found:\ %m,

@@ -19,7 +19,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', ''))) ?
 			\   get(b:, 'jshint_makeprg', get(g:, 'jshint_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' jshint'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' jshint'))
 			\ .. ' --verbose ' ..
                         \ get(b:, 'jshint_makeprg_params', get(g:, 'jshint_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %m\ (%t%n),

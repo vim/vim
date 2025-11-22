@@ -15,7 +15,7 @@ let current_compiler = "csslint"
 exe 'CompilerSet makeprg=' .. escape(
                       \ (!empty(get(b:, 'csslint_makeprg', get(g:, 'csslint_makeprg', ''))) ?
                       \   get(b:, 'csslint_makeprg', get(g:, 'csslint_makeprg', '')) :
-		      \   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' csslint'))
+		      \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' csslint'))
 		      \ .. ' --format=compact ' ..
                       \ get(b:, 'csslint_makeprg_params', get(g:, 'csslint_makeprg_params', '')), ' \|"')
 

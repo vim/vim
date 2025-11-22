@@ -11,7 +11,7 @@ let current_compiler = "svelte-check"
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', ''))) ?
 			\   get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' svelte-check'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' svelte-check'))
 			\ .. ' --output machine ' ..
                         \ get(b:, 'svelte_check_makeprg_params', get(g:, 'svelte_check_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%*\\d\ %t%*\\a\ \"%f\"\ %l:%c\ \"%m\",

@@ -19,7 +19,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', ''))) ?
 			\   get(b:, 'typedoc_makeprg', get(g:, 'typedoc_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' typedoc'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' typedoc'))
 			\ .. ' ' ..
                         \ get(b:, 'typedoc_makeprg_params', get(g:, 'typedoc_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%EError:\ %f(%l),

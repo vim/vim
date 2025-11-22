@@ -17,7 +17,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'ts_node_makeprg', get(g:, 'ts_node_makeprg', ''))) ?
 			\   get(b:, 'ts_node_makeprg', get(g:, 'ts_node_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' ts-node'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' ts-node'))
 			\ .. ' ' ..
                         \ get(b:, 'ts_node_makeprg_params', get(g:, 'ts_node_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,

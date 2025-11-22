@@ -18,7 +18,7 @@ set cpo-=C
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', ''))) ?
 			\   get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' sass'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' sass'))
 			\ .. ' ' ..
                         \ get(b:, 'sass_makeprg_params', get(g:, 'sass_makeprg_params', '')), ' \|"')
 

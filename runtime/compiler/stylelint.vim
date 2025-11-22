@@ -19,7 +19,7 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
 			\ (!empty(get(b:, 'stylelint_makeprg', get(g:, 'stylelint_makeprg', ''))) ?
 			\   get(b:, 'stylelint_makeprg', get(g:, 'stylelint_makeprg', '')) :
-			\   (get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' stylelint'))
+			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' stylelint'))
 			\ .. ' --formatter compact ' ..
                         \ get(b:, 'stylelint_makeprg_params', get(g:, 'stylelint_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ -\ %m,

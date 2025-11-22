@@ -1292,7 +1292,7 @@ b/g:biome_makeprg variable.  For example: >
 	let b:biome_makeprg = "biome"
 
 Otherwise assumes installation by npm and run using npx. Adjust
-'b/g:node_makeprg' as needed to use, for example, pnpm/yarn dlx instead.
+'b/g:javascript_javascript_node_makeprg' as needed to use, for example, pnpm/yarn dlx instead.
 Compiler options can be added to 'makeprg' by setting the
 b/g:biome_makeprg_params variable.  For example (global default is ""): >
 
@@ -1760,7 +1760,7 @@ b/g:tsc_makeprg variable.  For example: >
 	let b:tsc_makeprg = "npx tsc --noEmit"
 
 Otherwise assumes installation by npm and run using npx.  Adjust
-'b/g:node_makeprg' as needed to use, for example, pnpm/yarn dlx instead.
+'b/g:javascript_javascript_node_makeprg' as needed to use, for example, pnpm/yarn dlx instead.
 
 Compiler options can then be added to 'makeprg' by setting the
 b/g:tsc_makeprg_params variable.  For example: >
