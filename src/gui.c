@@ -146,9 +146,11 @@ gui_start(char_u *arg UNUSED)
 	    emsg(msg);
 #endif
     }
+#ifdef HAVE_CLIPMETHOD
     else
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
+#endif
 
 #ifdef FEAT_SOCKETSERVER
     // Install socket server listening socket if we are running it
