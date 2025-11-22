@@ -2253,6 +2253,11 @@ v:clipmethod	The current method of accessing the clipboard that is being
 					functionality.
 		See 'clipmethod' for more details.
 
+					*v:clipproviders*
+v:clipproviders
+		A dictionary containing clipboard providers, see
+		|clipboard-providers| for more information.
+
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
 		1. The extra arguments given to a file read/write command.
@@ -5325,7 +5330,7 @@ tries to call it, nothing is done.
 
 						*clipboard-providers-available*
 The "available" is an optional callback does not take any arguments and should
-return a |bool|, which tells Vim if it is available for use.  If it is not,
+return a |boolean|, which tells Vim if it is available for use.  If it is not,
 then Vim skips over it and tries the next 'clipmethod' item.  If the
 "available" callback is not provided, Vim assumes the provider is always
 available for use (true).
