@@ -14,8 +14,8 @@ set cpo&vim
 exe 'CompilerSet makeprg=' .. escape(
                       \ (!empty(get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', ''))) ?
                       \   get(b:, 'biome_makeprg', get(g:, 'biome_makeprg', '')) :
-		      \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' @biomejs/biome'))
-		      \ .. ' check --linter-enabled=true --formatter-enabled=false --assist-enabled=false --reporter=github '
+                      \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' @biomejs/biome'))
+                      \ .. ' check --linter-enabled=true --formatter-enabled=false --assist-enabled=false --reporter=github '
                       \ .. get(b:, 'biome_makeprg_params', get(g:, 'biome_makeprg_params', '')), ' \|"')
 
 CompilerSet errorformat=::%trror%.%#file=%f\\,line=%l\\,%.%#col=%c\\,%.%#::%m

@@ -1,7 +1,7 @@
 " Vim compiler file
-" Compiler:	svelte-check
-" Maintainer:	@Konfekt
-" Last Change:	2025 Nov 16
+" Compiler:     svelte-check
+" Maintainer:   @Konfekt
+" Last Change:  2025 Nov 16
 
 if exists("current_compiler") | finish | endif
 let current_compiler = "svelte-check"
@@ -9,10 +9,10 @@ let current_compiler = "svelte-check"
 " CompilerSet makeprg=svelte-check
 " CompilerSet makeprg=npx\ svelte-check
 exe 'CompilerSet makeprg=' .. escape(
-			\ (!empty(get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', ''))) ?
-			\   get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', '')) :
-			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' svelte-check'))
-			\ .. ' --output machine ' ..
+                        \ (!empty(get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', ''))) ?
+                        \   get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', '')) :
+                        \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' svelte-check'))
+                        \ .. ' --output machine ' ..
                         \ get(b:, 'svelte_check_makeprg_params', get(g:, 'svelte_check_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%*\\d\ %t%*\\a\ \"%f\"\ %l:%c\ \"%m\",
 CompilerSet errorformat+=%-G%*\\d\ START\ %.%#,

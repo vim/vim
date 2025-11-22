@@ -1,8 +1,8 @@
 " Vim compiler file
-" Compiler:	Sass
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2016 Aug 29
-"		2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
+" Compiler:     Sass
+" Maintainer:   Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:  2016 Aug 29
+"               2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
 "               2025 Nov 22 by The Vim Project (default to npx)
 
 if exists("current_compiler")
@@ -16,10 +16,10 @@ set cpo-=C
 " CompilerSet makeprg=sass
 " CompilerSet makeprg=npx\ sass
 exe 'CompilerSet makeprg=' .. escape(
-			\ (!empty(get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', ''))) ?
-			\   get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', '')) :
-			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' sass'))
-			\ .. ' ' ..
+                        \ (!empty(get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', ''))) ?
+                        \   get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', '')) :
+                        \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' sass'))
+                        \ .. ' ' ..
                         \ get(b:, 'sass_makeprg_params', get(g:, 'sass_makeprg_params', '')), ' \|"')
 
 CompilerSet errorformat=

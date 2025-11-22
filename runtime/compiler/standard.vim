@@ -2,7 +2,7 @@
 " Compiler:    Standard for JavaScript
 " Maintainer:  Romain Lafourcade <romainlafourcade@gmail.com>
 " Last Change: 2020 August 20
-"		2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
+"               2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
 "               2025 Nov 22 by The Vim Project (default to npx)
 
 if exists("current_compiler")
@@ -13,9 +13,9 @@ let current_compiler = "standard"
 " CompilerSet makeprg=standard
 " CompilerSet makeprg=npx\ standard
 exe 'CompilerSet makeprg=' .. escape(
-			\ (!empty(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', ''))) ?
-			\   get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', '')) :
-			\   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' standard'))
-			\ .. ' ' ..
+                        \ (!empty(get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', ''))) ?
+                        \   get(b:, 'standard_makeprg', get(g:, 'standard_makeprg', '')) :
+                        \   (get(b:, 'javascript_node_makeprg', get(g:, 'javascript_node_makeprg', 'npx')) .. ' standard'))
+                        \ .. ' ' ..
                         \ get(b:, 'standard_makeprg_params', get(g:, 'standard_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:%l:%c:\ %m,%-G%.%#
