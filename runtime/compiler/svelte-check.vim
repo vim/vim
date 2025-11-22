@@ -8,10 +8,14 @@ let current_compiler = "svelte-check"
 
 " CompilerSet makeprg=svelte-check
 " CompilerSet makeprg=npx\ svelte-check
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'svelte_check_makeprg', get(g:, 'svelte_check_makeprg', 'svelte-check')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' svelte-check' ..
 			\ ' --output machine ' ..
                         \ get(b:, 'svelte_check_makeprg_params', get(g:, 'svelte_check_makeprg_params', '')), ' \|"')
+endif
 CompilerSet errorformat=%*\\d\ %t%*\\a\ \"%f\"\ %l:%c\ \"%m\",
 CompilerSet errorformat+=%-G%*\\d\ START\ %.%#,
 CompilerSet errorformat+=%-G%*\\d\ COMPLETED\ %.%#,

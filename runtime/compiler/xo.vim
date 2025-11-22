@@ -14,10 +14,14 @@ set cpo&vim
 
 " CompilerSet makeprg=xo
 " CompilerSet makeprg=npx\ xo
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'xo_makeprg', get(g:, 'xo_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'xo_makeprg', get(g:, 'xo_makeprg', 'xo')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' xo' ..
 			\ ' --reporter compact ' ..
                         \ get(b:, 'xo_makeprg_params', get(g:, 'xo_makeprg_params', '')), ' \|"')
+endif
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ %m,
 		       \%f:\ line\ %l\\,\ col\ %c\\,\ %tarning\ %m,
 		       \%-G%.%#

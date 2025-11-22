@@ -11,8 +11,12 @@ let current_compiler = "eslint"
 
 " CompilerSet makeprg=eslint
 " CompilerSet makeprg=npx\ eslint
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'eslint_makeprg', get(g:, 'eslint_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'eslint_makeprg', get(g:, 'eslint_makeprg', 'eslint')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' eslint' ..
 			\ ' --format stylish ' ..
                         \ get(b:, 'eslint_makeprg_params', get(g:, 'eslint_makeprg_params', '')), ' \|"')
+endif
 CompilerSet errorformat=%-P%f,\%\\s%#%l:%c\ %#\ %trror\ \ %m,\%\\s%#%l:%c\ %#\ %tarning\ \ %m,\%-Q,\%-G%.%#,

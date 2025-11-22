@@ -14,10 +14,14 @@ set cpo&vim
 
 " CompilerSet makeprg=ts-node
 " CompilerSet makeprg=npx\ ts-node
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'ts_node_makeprg', get(g:, 'ts_node_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'ts_node_makeprg', get(g:, 'ts_node_makeprg', 'ts-node')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' ts-node' ..
 			\ ' ' ..
                         \ get(b:, 'ts_node_makeprg_params', get(g:, 'ts_node_makeprg_params', '')), ' \|"')
+endif
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,
 		       \%E%f:%l,
 		       \%+Z%\\w%\\+Error:\ %.%#,

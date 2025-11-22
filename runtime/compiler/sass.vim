@@ -15,10 +15,14 @@ set cpo-=C
 
 " CompilerSet makeprg=sass
 " CompilerSet makeprg=npx\ sass
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'sass_makeprg', get(g:, 'sass_makeprg', 'sass')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' sass' ..
 			\ ' ' ..
                         \ get(b:, 'sass_makeprg_params', get(g:, 'sass_makeprg_params', '')), ' \|"')
+endif
 
 CompilerSet errorformat=
       \%f:%l:%m\ (Sass::Syntax%trror),

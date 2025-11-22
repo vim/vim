@@ -12,9 +12,13 @@ let current_compiler = "csslint"
 
 " CompilerSet makeprg=csslint
 " CompilerSet makeprg=npx\ csslint
-exe 'CompilerSet makeprg=' .. escape(
+if !empty(escape(get(b:, 'csslint_makeprg', get(g:, 'csslint_makeprg', ''))))
+  execute $'CompilerSet makeprg={escape(get(b:, 'csslint_makeprg', get(g:, 'csslint_makeprg', 'csslint')), ' \|"')}'
+else
+  exe 'CompilerSet makeprg=' .. escape(
 			\ get(b:, 'node_makeprg', get(g:, 'node_makeprg', 'npx')) .. ' csslint' ..
 			\ ' --format=compact ' ..
                         \ get(b:, 'csslint_makeprg_params', get(g:, 'csslint_makeprg_params', '')), ' \|"')
+endif
 
 CompilerSet errorformat=%-G,%-G%f:\ lint\ free!,%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ -\ %m,%f:\ line\ %l\\,\ col\ %c\\,\ %tarning\ -\ %m,%f:\ line\ %l\\,\ col\ %c\\,\ %m
