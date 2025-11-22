@@ -1842,9 +1842,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			option, yank operations (but not delete, change or
 			put) will additionally copy the text into register
 			'*'.  If Wayland is being used and the compositor does
-			not support the primary-selection-unstable-v1
-			protocol, then the regular selection is used in its
-			place.  Only available with the |+X11| or
+			not support the primary selection then the regular
+			selection is used in its place.  Only available with
+			the |+X11| or
 			|+wayland_clipboard| feature.  Availability can be
 			checked with: >
 			if has('unnamedplus')
