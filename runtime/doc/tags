@@ -6692,6 +6692,13 @@ clipboard-autoselectml	options.txt	/*clipboard-autoselectml*
 clipboard-autoselectplus	options.txt	/*clipboard-autoselectplus*
 clipboard-exclude	options.txt	/*clipboard-exclude*
 clipboard-html	options.txt	/*clipboard-html*
+clipboard-providers	eval.txt	/*clipboard-providers*
+clipboard-providers-available	eval.txt	/*clipboard-providers-available*
+clipboard-providers-clipmethod	eval.txt	/*clipboard-providers-clipmethod*
+clipboard-providers-copy	eval.txt	/*clipboard-providers-copy*
+clipboard-providers-define	eval.txt	/*clipboard-providers-define*
+clipboard-providers-paste	eval.txt	/*clipboard-providers-paste*
+clipboard-providers-plus	eval.txt	/*clipboard-providers-plus*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
