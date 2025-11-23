@@ -749,12 +749,22 @@ func s:Paste(reg)
   elseif l:t == "invalid"
     return ("INVALID", [])
 
+  elseif l:t == "invalid2"
+    return ("c", ["test", [1, 2]])
+
   elseif l:t == "pass"
     return ("pass", [])
+  elseif l:t == "count"
+    let g:vim_paste_count[a:reg] += 1
+    return ("c", ["hello"])
   endif
 endfunc
 
 func s:Copy(reg, type, lines)
+  if exists("g:vim_copy_count")
+    let g:vim_copy_count[a:reg] += 1
+  endif
+
   let g:vim_copy = {
         \ "reg": a:reg,
         \ "type": a:type,
@@ -815,8 +825,12 @@ func Test_clipboard_provider_paste()
   call assert_equal([], getreg("*", 1, 1))
 
   let g:vim_paste = "invalid"
-  call assert_fails('call getreg("+", 1, 1)', "E474:")
-  call assert_fails('call getreg("*", 1, 1)', "E474:")
+  call assert_fails('call getreg("+", 1, 1)', "E474:")
+  call assert_fails('call getreg("*", 1, 1)', "E474:")
+
+  let g:vim_paste = "invalid2"
+  call assert_fails('call getreg("+", 1, 1)', "E730:")
+  call assert_fails('call getreg("*", 1, 1)', "E730:")
 
   " Check if special "pass" regtype works properly
   let g:vim_paste = "list"
@@ -927,6 +941,57 @@ func Test_clipboard_provider_sys_clipboard()
   call setreg("+", "testing 1 2 3 4 5", "c")
   call assert_equal("testing 1 2 3 4 5", getreg("+"))
 
+  set clipmethod&
+endfunc
+
+" Test if the provider callback are only called once per register on operations
+" that may try calling them multiple times.
+func Test_clipboard_provider_accessed_once()
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  let g:vim_paste = "count"
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  " Test if the paste callback is only called once per register when the
+  " :registers/:display cmd is run.
+  for i in range(1, 10)
+    registers
+
+    call assert_equal(i, g:vim_paste_count['*'])
+    call assert_equal(i, g:vim_paste_count['+'])
+  endfor
+
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  " Test same for :global
+  new
+
+  call setline(1, "The quick brown fox jumps over the lazy dog")
+  call execute(':global/quick/:put +')
+  call execute(':global/quick/:put *')
+
+  call assert_equal(1, g:vim_paste_count['+'])
+  call assert_equal(1, g:vim_paste_count['*'])
+
+  call execute(':global/quick/:yank +')
+  call execute(':global/quick/:yank *')
+
+  call assert_equal(1, g:vim_copy_count['+'])
+  call assert_equal(1, g:vim_copy_count['*'])
+
+  bw!
   set clipmethod&
 endfunc
 

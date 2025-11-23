@@ -4041,9 +4041,9 @@ void dec_clip_provider(void)
     plus_pause_count = plus_pause_count == -1 ? -1 : plus_pause_count - 1;
     star_pause_count = star_pause_count == -1 ? -1 : star_pause_count - 1;
 
-    if (plus_pause_count == 0)
+    if (plus_pause_count == 0 || plus_pause_count == -1)
 	plus_pause_count = -2;
-    if (star_pause_count == 0)
+    if (star_pause_count == 0 || star_pause_count == -1)
 	star_pause_count = -2;
 }
 
