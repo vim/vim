@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Nov 20
+*options.txt*	For Vim version 9.1.  Last change: 2025 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1670,7 +1670,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a modified version of the following command in your vimrc file to
 	override it: >
 	  :let &cdpath = ',' .. substitute(substitute($CDPATH, '[, ]', '\\\0', 'g'), ':', ',', 'g')
-<	This option cannot be set from a |modeline| or in the |sandbox|, for
+<	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 	(parts of 'cdpath' can be passed to the shell to expand file names).
 
@@ -3064,6 +3065,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.
+	Environment variables are expanded |:set_env|.
 	This has nothing to do with the |Dictionary| variable type.
 	Where to find a list of words?
 	- On FreeBSD, there is the file "/usr/share/dict/words".
@@ -6116,7 +6118,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set mkspellmem=900000,3000,800
 <	If you have less than 512 Mbyte |:mkspell| may fail for some
 	languages, no matter what you set 'mkspellmem' to.
-
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6539,6 +6541,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'packpath'* *'pp'*
 'packpath' 'pp'		string	(default: see 'runtimepath')
 	Directories used to find packages.  See |packages|.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -7363,6 +7366,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	runtime files.
 	When Vim is started with |--clean| the home directory entries are not
 	included.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -8195,6 +8199,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	name if you want to.  However, it will then only be used when
 	'spellfile' is set to it, for entries in 'spelllang' only files
 	without region name will be found.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -8322,7 +8327,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only one of "best", "double" or "fast" may be used.  The others may
 	appear several times in any order.  Example: >
 		:set sps=file:~/.vim/sugg,best,expr:MySuggest()
-<
+<	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -9159,8 +9164,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	name.  See |option-backslash| about using backslashes.  The use of
 	|:set+=| and |:set-=| is preferred when adding or removing directories
 	from the list.  This avoids problems when a future version uses
-	another default.  Backticks cannot be used in this option for security
-	reasons.
+	another default.
+	Environment variables are expanded |:set_env|.
+	Backticks cannot be used in this option for security reasons.
 
 						*'thesaurusfunc'* *'tsrfu'*
 'thesaurusfunc' 'tsrfu'	string	(default: empty)
@@ -9488,6 +9494,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'ttytype' 'tty'		string	(default from $TERM)
 			global
 	Alias for 'term', see above.
+	Environment variables are expanded |:set_env|.
 
 						*'undodir'* *'udir'*
 'undodir' 'udir'	string	(default ".")
@@ -9505,6 +9512,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	undo file that exists is used.  When it cannot be read an error is
 	given, no further entry is used.
 	See |undo-persistence|.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -9656,6 +9664,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Setting 'verbosefile' to a new value is like making it empty first.
 	The difference with |:redir| is that verbose messages are not
 	displayed when 'verbosefile' is set.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -9670,6 +9679,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Name of the directory where to store files for |:mkview|.
 	For $XDG_CONFIG_HOME see |xdg-base-dir|.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -9825,6 +9835,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When equal to "NONE" no viminfo file will be read or written.
 	This option can be set with the |-i| command line flag.  The |--clean|
 	command line flag sets it to "NONE".
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
