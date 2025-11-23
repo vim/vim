@@ -23,10 +23,10 @@ exe 'CompilerSet makeprg=' .. escape(
                         \ .. ' ' ..
                         \ get(b:, 'typedoc_makeprg_params', get(g:, 'typedoc_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%EError:\ %f(%l),
-                       \%WWarning:\ %f(%l),
-                       \%+IDocumentation\ generated\ at\ %f,
-                       \%Z\ %m,
-                       \%-G%.%#
+		       \%WWarning:\ %f(%l),
+		       \%+IDocumentation\ generated\ at\ %f,
+		       \%Z\ %m,
+		       \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

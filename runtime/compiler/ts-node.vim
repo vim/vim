@@ -21,11 +21,11 @@ exe 'CompilerSet makeprg=' .. escape(
                         \ .. ' ' ..
                         \ get(b:, 'ts_node_makeprg_params', get(g:, 'ts_node_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,
-                       \%E%f:%l,
-                       \%+Z%\\w%\\+Error:\ %.%#,
-                       \%C%p^%\\+,
-                       \%C%.%#,
-                       \%-G%.%#
+		       \%E%f:%l,
+		       \%+Z%\\w%\\+Error:\ %.%#,
+		       \%C%p^%\\+,
+		       \%C%.%#,
+		       \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

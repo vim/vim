@@ -21,8 +21,8 @@ exe 'CompilerSet makeprg=' .. escape(
                         \ .. ' --reporter compact ' ..
                         \ get(b:, 'xo_makeprg_params', get(g:, 'xo_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %trror\ %m,
-                       \%f:\ line\ %l\\,\ col\ %c\\,\ %tarning\ %m,
-                       \%-G%.%#
+		       \%f:\ line\ %l\\,\ col\ %c\\,\ %tarning\ %m,
+		       \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

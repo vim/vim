@@ -23,8 +23,8 @@ exe 'CompilerSet makeprg=' .. escape(
                         \ get(b:, 'tsc_makeprg_params', get(g:, 'tsc_makeprg_params', '')), ' \|"')
 
 CompilerSet errorformat=%f\ %#(%l\\,%c):\ %trror\ TS%n:\ %m,
-                       \%trror\ TS%n:\ %m,
-                       \%-G%.%#
+		       \%trror\ TS%n:\ %m,
+		       \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

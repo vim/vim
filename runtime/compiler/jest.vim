@@ -23,14 +23,14 @@ exe 'CompilerSet makeprg=' .. escape(
                         \ .. ' --no-colors ' ..
                         \ get(b:, 'jest_makeprg_params', get(g:, 'jest_makeprg_params', '')), ' \|"')
 CompilerSet errorformat=%-A\ \ ●\ Console,
-                       \%E\ \ ●\ %m,
-                       \%Z\ %\\{4}%.%#Error:\ %f:\ %m\ (%l:%c):%\\=,
-                       \%Z\ %\\{6}at\ %\\S%#\ (%f:%l:%c),
-                       \%Z\ %\\{6}at\ %\\S%#\ %f:%l:%c,
-                       \%+C\ %\\{4}%\\w%.%#,
-                       \%+C\ %\\{4}%[-+]%.%#,
-                       \%-C%.%#,
-                       \%-G%.%#
+		       \%E\ \ ●\ %m,
+		       \%Z\ %\\{4}%.%#Error:\ %f:\ %m\ (%l:%c):%\\=,
+		       \%Z\ %\\{6}at\ %\\S%#\ (%f:%l:%c),
+		       \%Z\ %\\{6}at\ %\\S%#\ %f:%l:%c,
+		       \%+C\ %\\{4}%\\w%.%#,
+		       \%+C\ %\\{4}%[-+]%.%#,
+		       \%-C%.%#,
+		       \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
