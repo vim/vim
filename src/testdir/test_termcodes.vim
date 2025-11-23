@@ -2847,12 +2847,36 @@ func Test_term_response_osc()
   " Test if large OSC responses (that must be processed in chunks) are handled
   let data = repeat('a', 3000)
 
-  call feedkeys("\<Esc>]12;" .. data .. "\x07", 'Lx!')
-  call assert_equal("\<Esc>]12;" .. data .. "\x07", v:termosc)
+  call feedkeys("\<Esc>]12;" .. data .. "\<Esc>\\", 'Lx!')
+  call assert_equal("\<Esc>]12;" .. data .. "\<Esc>\\", v:termosc)
 
   " Test small OSC responses
-  call feedkeys("\<Esc>]15;hello world!\07", 'Lx!')
+  call feedkeys("\<Esc>]15;hello world!\x07", 'Lx!')
   call assert_equal("\<Esc>]15;hello world!\x07", v:termosc)
+endfunc
+
+" Test if xOSC key is emitted.
+func Test_term_response_xosc_key()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    func Test()
+      while getcharstr(-1) != "\<xOSC>"
+      endwhile
+      call writefile(["done"], 'XTestResult')
+    endfunc
+  END
+  call writefile(lines, 'XTest', 'D')
+  defer delete('XTestResult')
+
+  let buf = RunVimInTerminal("-S XTest", {'rows': 10})
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>:call Test()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>]52;hello;\<Esc>\\")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal(["done"], readfile('XTestResult'))})
+  call StopVimInTerminal(buf)
 endfunc
 
 " This only checks if the sequence is recognized.

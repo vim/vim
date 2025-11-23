@@ -450,6 +450,8 @@ notation	meaning		    equivalent	decimal value(s)	~
 <Del>		delete				127
 <CSI>		command sequence intro  ALT-Esc 155	*<CSI>*
 <xCSI>		CSI when typed in the GUI		*<xCSI>*
+<OSC>		operating system command	157	*<OSC>*
+<xOSC>		received OSC response			*<xOSC>*
 
 <EOL>		end-of-line (can be <CR>, <NL> or <CR><NL>,
 		depends on system and 'fileformat')	*<EOL>*
