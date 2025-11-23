@@ -754,9 +754,20 @@ func s:Paste(reg)
 
   elseif l:t == "pass"
     return ("pass", [])
+
   elseif l:t == "count"
     let g:vim_paste_count[a:reg] += 1
     return ("c", ["hello"])
+
+  elseif l:t == "store"
+    let l:s = get(g:, "vim_reg_store", [])
+
+    if (len(l:s) > 0)
+      return (l:s[0], l:s[1])
+    else
+      return ("c", [])
+    endif
+
   endif
 endfunc
 
@@ -770,6 +781,7 @@ func s:Copy(reg, type, lines)
         \ "type": a:type,
         \ "lines": a:lines
         \ }
+  let g:vim_reg_store = (a:type, a:lines)
 endfunc
 
 func Test_clipboard_provider_available()
@@ -896,12 +908,52 @@ func Test_clipboard_provider_registers()
   CheckNotFeature unnamedplus
   CheckFeature clipboard_working
 
+  let g:vim_paste = "store"
   let v:clipproviders["test"] = {}
   set clipmethod=test
 
   call assert_equal(1, has('unnamedplus'))
+
+  call setreg("+", ["plus"], "c")
+  call setreg("*", ["star"], "c")
+  call assert_equal("plus", getreg("+"))
+  call assert_equal("star", getreg("*"))
+
   set clipmethod=
   call assert_equal(0, has('unnamedplus'))
+
+  call setreg("+", ["plus2"], "c")
+  call setreg("*", ["star2"], "c")
+  call assert_equal("star2", getreg("+"))
+  call assert_equal("star2", getreg("*"))
+
+  set clipmethod&
+endfunc
+
+" Same as Test_clipboard_provider_registers() but do it when +clipboard isnt
+" enabled.
+func Test_clipboard_provider_no_clipboard()
+  CheckNotFeature clipboard
+
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+
+  call assert_fails('call setreg("+", "")', 'E354:')
+  call assert_fails('call setreg("*", "")', 'E354:')
+
+  let g:vim_paste = "tuple"
+  set clipmethod=test
+
+  call assert_equal(["a", "tuple", "+"], getreg("+", 1, 1))
+  call assert_equal(["a", "tuple", "*"], getreg("*", 1, 1))
 
   set clipmethod&
 endfunc

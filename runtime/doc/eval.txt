@@ -5285,15 +5285,14 @@ not use the 'clipboard' option and should be treated separate from the
 clipboard functionality.  It essentially overrides the existing behaviour of
 the clipboard registers.
 
+						*clipboard-providers-no-clipboard*
+If the |+clipboard| feature is not enabled, then the "+" and "*" registers
+will not be enabled/available unless |v:clipmethod| is set to a provider.
+
 						*clipboard-providers-plus*
-If the clipboard feature is enabled, then Vim exposes the "+" register for
-use.  However if on a platform such as Windows or MacOS that does not have a
-separate "+" register normally, such behaviour will stay the same.  Instead
-when |v:clipmethod| is set to a provider, then the "+" register becomes
-available, but once |v:clipmethod| is "none", the "+' register becomes
-unavailable for use, and will point to the "*" register.  If on X11/Wayland
-systems, then the "+" register will always be available for use. If you want
-to check if the "+" is available for use, it can be checked with: >
+If on a platform that only has the "*" register, then the "+" register will
+only be available when |v:clipmethod| is set to a provider.  If you want to
+check if the "+" is available for use, it can be checked with: >
 	if has('unnamedplus')
 <
 						*clipboard-providers-clipmethod*
@@ -5306,9 +5305,7 @@ all.
 						*clipboard-providers-define*
 To defined a clipboard provider, the |v:clipproviders| vim variable is used.
 It is a |dict| where each key is the clipboard provider name, and the value is
-another |dict| declaring the 'available", "copy", and "paste" callbacks.  For
-example, see below to know how these callbacks work: >vim
-
+another |dict| declaring the 'available", "copy", and "paste" callbacks: >vim
 	let v:clipproviders["myprovider"] = {
 	    \ "available": Available,
 	    \ "paste": {
@@ -5327,6 +5324,10 @@ a |lambda| expression.
 
 If a callback except the "available" callback is not provided, then when Vim
 tries to call it, nothing is done.
+
+						*clipboard-providers-textlock*
+In both the "paste" and "copy" callbacks, it is not allowed to change the
+buffer text, see |textlock|.
 
 						*clipboard-providers-available*
 The "available" is an optional callback does not take any arguments and should
