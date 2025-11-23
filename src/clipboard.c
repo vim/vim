@@ -4048,4 +4048,3 @@ void dec_clip_provider(void)
 }
 
 #endif // defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
-

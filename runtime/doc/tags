@@ -6697,8 +6697,10 @@ clipboard-providers-available	eval.txt	/*clipboard-providers-available*
 clipboard-providers-clipmethod	eval.txt	/*clipboard-providers-clipmethod*
 clipboard-providers-copy	eval.txt	/*clipboard-providers-copy*
 clipboard-providers-define	eval.txt	/*clipboard-providers-define*
+clipboard-providers-no-clipboard	eval.txt	/*clipboard-providers-no-clipboard*
 clipboard-providers-paste	eval.txt	/*clipboard-providers-paste*
 clipboard-providers-plus	eval.txt	/*clipboard-providers-plus*
+clipboard-providers-textlock	eval.txt	/*clipboard-providers-textlock*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
@@ -11265,6 +11267,7 @@ v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:clipmethod	eval.txt	/*v:clipmethod*
+v:clipproviders	eval.txt	/*v:clipproviders*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*
