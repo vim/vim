@@ -3,7 +3,7 @@
 " Original Author: Josef Litos (JosefLitos/i3config.vim)
 " Maintainer: Quentin Hibon (github user hiqua)
 " Version: 1.2.5
-" Last Change: 2025-11-17
+" Last Change: 2025-11-24
 
 " References:
 " http://i3wm.org/docs/userguide.html#configuring
@@ -150,8 +150,10 @@ syn keyword i3ConfigMouseWarpingOpts output container none contained
 syn keyword i3ConfigKeyword mouse_warping contained skipwhite nextgroup=i3ConfigMouseWarpingOpts
 
 " 4.26 Popups while fullscreen
-syn keyword i3ConfigPopupFullscreenOpts smart ignore leave_fullscreen all contained
-syn keyword i3ConfigKeyword popup_during_fullscreen contained skipwhite nextgroup=i3ConfigPopupFullscreenOpts
+syn keyword i3ConfigPopupFullscreenShared smart ignore leave_fullscreen contained
+syn keyword i3ConfigPopupFullscreenExtra all contained
+syn cluster i3ConfigPopupFullscreenOpts contains=i3ConfigPopupFullscreenShared,i3ConfigPopupFullscreenExtra
+syn keyword i3ConfigKeyword popup_during_fullscreen contained skipwhite nextgroup=@i3ConfigPopupFullscreenOpts
 
 " 4.27 Focus wrapping
 syn keyword i3ConfigFocusWrappingOpts force workspace contained
