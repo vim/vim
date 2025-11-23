@@ -392,7 +392,7 @@ set_init_clean_rtp(void)
  * vimrc found is located in '$XDG_CONFIG_HOME/vim/vimrc'.
  * In case the '$XDG_CONFIG_HOME' variable is not set, '$HOME/.config' is used
  * as a fallback as is defined in the XDG base dir specification:
- * <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+ * <https://specifications.freedesktop.org/basedir/latest/>
  */
     static void
 set_init_xdg_rtp(void)
