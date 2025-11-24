@@ -23,7 +23,7 @@ syn cluster i3ConfigCommand contains=i3ConfigCommand,i3ConfigAction,i3ConfigActi
 runtime! syntax/i3config.vim
 
 " In sway, popup_during_fullscreen does not have options like all option.
-syn cluster i3ConfigPopupFullscreenOpts remove=i3ConfigPopupFullscreenExtra
+syn cluster i3ConfigPopupFullscreenOpts remove=i3ConfigPopupFullscreenOptsExtra
 
 " Sway extensions to i3
 syn keyword i3ConfigActionKeyword opacity urgent shortcuts_inhibitor splitv splith splitt contained contained skipwhite nextgroup=i3ConfigOption
