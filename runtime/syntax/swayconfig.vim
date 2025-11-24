@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language: sway config file
-" Original Author: Josef Litos (JosefLitos/i3config.vim)
+" Original Author: Josef Litos (litoj/i3config.vim)
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 1.2.5
+" Version: 1.2.6
 " Last Change: 2025 Nov 24
 " 2025 Sep 23 by Vim Project update swayconfig syntax #18293
 
