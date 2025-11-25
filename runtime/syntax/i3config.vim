@@ -313,7 +313,7 @@ hi def link i3ConfigClientOpts                      i3ConfigOption
 hi def link i3ConfigFocusFollowsMouseOpts           i3ConfigOption
 hi def link i3ConfigMouseWarpingOpts                i3ConfigOption
 hi def link i3ConfigPopupFullscreenOpts             i3ConfigOption
-hi def link i3ConfigPopupFullscreenOptsExtra        i3ConfigOption
+hi def link i3ConfigPopupFullscreenOptsExtra        i3ConfigPopupFullscreenOpts
 hi def link i3ConfigFocusWrappingOpts               i3ConfigOption
 hi def link i3ConfigTimeUnit                        i3ConfigNumber
 hi def link i3ConfigFocusOnActivationOpts           i3ConfigOption
