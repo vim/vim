@@ -3494,7 +3494,6 @@ get_clipmethod(char_u *str)
 		clip_provider = vim_strsave(buf);
 		if (clip_provider == NULL)
 		    goto fail;
-		*plus = *star = TRUE;
 	    }
 	    else if (r == -1)
 #endif
