@@ -100,10 +100,6 @@ typedef struct {
 
     clip_wl_selection_T regular;
     clip_wl_selection_T primary;
-
-    // Array of file descriptors of clients we are sending data to. These should
-    // be polled for POLLOUT and have the respective callback called for each.
-    garray_T write_fds;
 } clip_wl_T;
 
 // Mime types we support sending and receiving
@@ -170,22 +166,6 @@ skip:
 	    break;
 	cb = &clip_plus;
     }
-}
-
-    static void
-clip_init_single(Clipboard_T *cb, int can_use)
-{
-    // No need to init again if cbd is already available
-    if (can_use && cb->available)
-	return;
-
-    cb->available  = can_use;
-    cb->owned      = FALSE;
-    cb->start.lnum = 0;
-    cb->start.col  = 0;
-    cb->end.lnum   = 0;
-    cb->end.col    = 0;
-    cb->state      = SELECT_CLEARED;
 }
 
 /*
@@ -2428,7 +2408,7 @@ adjust_clip_reg(int *rp)
     if ((!clip_star.available && *rp == '*') ||
 	   (!clip_plus.available && *rp == '+'))
     {
-	msg_warn_missing_clipboard(!clip_plus.available, !clip_star.available);
+	msg_warn_missing_clipboard();
 	*rp = 0;
     }
 }
@@ -2874,6 +2854,8 @@ clip_init_wayland(void)
     if (wayland_ct == NULL)
 	return FAIL;
 
+    memset(&clip_wl, 0, sizeof(clip_wl));
+
     clip_wl.seat = vwl_connection_get_seat(wayland_ct, (char *)p_wse);
 
     if (clip_wl.seat == NULL)
@@ -2891,12 +2873,14 @@ clip_init_wayland(void)
 	    clip_wl.regular.available = true;
 	else
 	{
+	    // Shouldn't happen
 	    vwl_data_device_manager_discard(clip_wl.regular.manager);
 	    clip_wl.regular.manager = NULL;
+	    return FAIL;
 	}
     }
 
-    // If we still don't support the primary selection, find one for it
+    // If we still don't support the primary selection, try finding one for it
     // specifically.
     if (!(supported & WAYLAND_SELECTION_PRIMARY))
     {
@@ -2917,10 +2901,12 @@ clip_init_wayland(void)
 	    }
 	}
     }
-    else if (clip_wl.regular.available)
+
+    if (clip_wl.regular.available && !clip_wl.primary.available)
     {
 	// The protocol supports both regular and primary selections, just use
-	// one data device manager and one data device.
+	// one data device manager and one data device. Or the primary selection
+	// is not supported, make it point to the regular selection instead.
 	clip_wl.primary.available = true;
 	clip_wl.primary.manager = clip_wl.regular.manager;
 	clip_wl.primary.device = clip_wl.regular.device;
@@ -3435,7 +3421,7 @@ clip_wl_owner_exists(Clipboard_T *cbd)
  * depending on the order of values in str.
  */
     static clipmethod_T
-get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
+get_clipmethod(char_u *str)
 {
     int		len	= (int)STRLEN(str) + 1;
     char_u	*buf	= alloc(len);
@@ -3460,11 +3446,7 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
 	    {
 #ifdef FEAT_WAYLAND_CLIPBOARD
 		if (clip_wl.regular.available || clip_wl.primary.available)
-		{
 		    method = CLIPMETHOD_WAYLAND;
-		    *plus = clip_wl.regular.available;
-		    *star = clip_wl.primary.available;
-		}
 #endif
 	    }
 	}
@@ -3485,7 +3467,6 @@ get_clipmethod(char_u *str, bool *plus UNUSED, bool *star UNUSED)
 		    // xterm_dpy will be set to NULL.
 		    xterm_update();
 		    method = CLIPMETHOD_X11;
-		    *plus = *star = TRUE;
 		}
 #endif
 	    }
@@ -3534,8 +3515,7 @@ clipmethod_to_str(clipmethod_T method)
     char *
 choose_clipmethod(void)
 {
-    bool regular = false, primary = false;
-    clipmethod_T method = get_clipmethod(p_cpm, &regular, &primary);
+    clipmethod_T method = get_clipmethod(p_cpm);
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
@@ -3569,10 +3549,8 @@ choose_clipmethod(void)
     // If we have a clipmethod that works now, then initialize clipboard
     else if (clipmethod == CLIPMETHOD_NONE && method != CLIPMETHOD_NONE)
     {
-	clip_init_single(&clip_plus, regular);
-	clip_init_single(&clip_star, primary);
-	clip_plus.did_warn = false;
-	clip_star.did_warn = false;
+	    clip_init(TRUE);
+	    did_warn_clipboard = false;
     }
     // Disown clipboard if we are switching to a new method
     else if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
@@ -3590,8 +3568,8 @@ lose_sel_exit:
 	if (!gui.in_use)
 #endif
 	{
-	    clip_init_single(&clip_plus, regular);
-	    clip_init_single(&clip_star, primary);
+	    clip_init(TRUE);
+	    did_warn_clipboard = false;
 	}
     }
 
