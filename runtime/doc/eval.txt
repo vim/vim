@@ -2248,10 +2248,10 @@ v:clipmethod	The current method of accessing the clipboard that is being
 			x11		X11 selections are being used.
 			none		The above methods are unavailable or
 					cannot be used.
-			*		A clipboard provider is being used and
-					overriding the existing clipboard
-					functionality.
-		See 'clipmethod' for more details.
+		If it is set to a value not in the above list, then a
+		clipboard provider with the given name is being used and
+		overriding the clipboard functionality.  See 'clipmethod' for
+		more details.
 
 					*v:clipproviders*
 v:clipproviders
