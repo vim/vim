@@ -15,6 +15,9 @@
 /* Define if you want focus stealing support with Wayland clipboard  */
 #undef FEAT_WAYLAND_CLIPBOARD_FS
 
+/* Define unless no Treesitter support found */
+#undef FEAT_TREESITTER
+
 /* Define when terminfo support found */
 #undef TERMINFO
 
