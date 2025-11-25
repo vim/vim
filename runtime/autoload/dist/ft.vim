@@ -2705,6 +2705,8 @@ const ft_from_ext = {
   "nut": "squirrel",
   # Starlark
   "ipd": "starlark",
+  "sky": "starlark",
+  "skylark": "starlark",
   "star": "starlark",
   "starlark": "starlark",
   # OpenVPN configuration

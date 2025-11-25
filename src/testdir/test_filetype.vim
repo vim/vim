@@ -769,7 +769,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     sshconfig: ['ssh_config', '/.ssh/config', '/etc/ssh/ssh_config.d/file.conf', 'any/etc/ssh/ssh_config.d/file.conf', 'any/.ssh/config', 'any/.ssh/file.conf'],
     sshdconfig: ['sshd_config', '/etc/ssh/sshd_config.d/file.conf', 'any/etc/ssh/sshd_config.d/file.conf'],
     st: ['file.st'],
-    starlark: ['file.ipd', 'file.star', 'file.starlark'],
+    starlark: ['file.ipd', 'file.sky', 'file.skylark', 'file.star', 'file.starlark'],
     stata: ['file.ado', 'file.do', 'file.imata', 'file.mata'],
     stp: ['file.stp'],
     stylus: ['a.styl', 'file.stylus'],
