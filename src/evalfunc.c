@@ -198,7 +198,8 @@ static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
-static void f_ts_load_lang(typval_T *argvars, typval_T *rettv);
+static void f_treesitter_load(typval_T *argvars, typval_T *rettv);
+static void f_treesitter_parse(typval_T *argvars, typval_T *rettv);
 
 
 /*
@@ -1935,6 +1936,11 @@ typedef struct
 #else
 # define TERM_FUNC(name) NULL
 #endif
+#ifdef FEAT_TREESITTER
+# define TS_FUNC(name) name
+#else
+# define TS_FUNC(name) NULL
+#endif
 
 static const funcentry_T global_functions[] =
 {
@@ -3128,8 +3134,11 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_tolower},
     {"toupper",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_toupper},
-    {"ts_load_lang",	2, 3, 0,	    arg3_string_string_dict,
-			ret_void,	    f_ts_load_lang},
+    {"treesitter_load",	2, 3, 0,	    arg3_string_string_dict,
+			ret_void,	    f_treesitter_load},
+    {"treesitter_parse",
+			0, 1, 0,	    arg1_buffer,
+			ret_void,	    f_treesitter_parse},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_tr},
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
@@ -12815,7 +12824,7 @@ f_xor(typval_T *argvars, typval_T *rettv)
 
 #ifdef FEAT_TREESITTER
     static void
-f_ts_load_lang(typval_T *argvars, typval_T *rettv)
+f_treesitter_load(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
     char_u *path;
@@ -12830,7 +12839,8 @@ f_ts_load_lang(typval_T *argvars, typval_T *rettv)
     name = argvars[0].vval.v_string;
     path = argvars[1].vval.v_string;
 
-    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN)
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN
+	    && argvars[1].v_type == VAR_DICT)
     {
 	dict_T *d =  argvars[2].vval.v_dict;
 
@@ -12840,7 +12850,21 @@ f_ts_load_lang(typval_T *argvars, typval_T *rettv)
     if (symbol == NULL)
 	symbol = name;
 
-    vts_load_language(name, path, symbol);
+    ts_vim_load_language(name, path, symbol);
+}
+    static void
+f_treesitter_parse(typval_T *argvars, typval_T *rettv)
+{
+    buf_T *buf;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
+    buf = get_buf_arg(&argvars[0]);
+
+    if (buf != NULL)
+	ts_vim_parse_buf(buf);
+
 }
 #endif
 

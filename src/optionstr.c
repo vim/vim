@@ -357,6 +357,9 @@ check_buf_options(buf_T *buf)
 #ifdef FEAT_DIFF
     check_string_option(&buf->b_p_dia);
 #endif
+#ifdef FEAT_TREESITTER
+    check_string_option(&buf->b_p_tslg);
+#endif
     check_string_option(&buf->b_p_tsr);
     check_string_option(&buf->b_p_lw);
     check_string_option(&buf->b_p_bkc);
