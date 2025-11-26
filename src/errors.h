@@ -3797,3 +3797,7 @@ EXTERN char e_osc_response_timed_out[]
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
 #endif
+#ifdef FEAT_TREESITTER
+EXTERN char e_treesitter_get_lang_error[]
+	INIT(= N_("E1570: Failed loading treesitter parser %s"));
+#endif
