@@ -2053,6 +2053,22 @@ typedef int sock_T;
 # define FEAT_CLIPBOARD_PROVIDER
 #endif
 
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+# define ELAPSED_TIMEVAL
+# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
+# define ELAPSED_FUNC(v) elapsed(&(v))
+typedef struct timeval elapsed_T;
+long elapsed(struct timeval *start_tv);
+#elif defined(MSWIN)
+# define ELAPSED_TICKCOUNT
+# define ELAPSED_INIT(v) v = GetTickCount()
+# define ELAPSED_FUNC(v) elapsed(v)
+typedef DWORD elapsed_T;
+# ifndef PROTO
+long elapsed(DWORD start_tick);
+# endif
+#endif
+
 // Include option.h before structs.h, because the number of window-local and
 // buffer-local options is used there.
 #include "option.h"	// options and default values
@@ -2996,22 +3012,6 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #  define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
 # else
 #  define S_ISLNK(m)	0
-# endif
-#endif
-
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-# define ELAPSED_TIMEVAL
-# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
-# define ELAPSED_FUNC(v) elapsed(&(v))
-typedef struct timeval elapsed_T;
-long elapsed(struct timeval *start_tv);
-#elif defined(MSWIN)
-# define ELAPSED_TICKCOUNT
-# define ELAPSED_INIT(v) v = GetTickCount()
-# define ELAPSED_FUNC(v) elapsed(v)
-typedef DWORD elapsed_T;
-# ifndef PROTO
-long elapsed(DWORD start_tick);
 # endif
 #endif
 
