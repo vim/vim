@@ -45,6 +45,11 @@ syn match i3ConfigKeyword /floating_modifier \(none\|[$A-Z][0-9A-Za-z]\+ \(norma
 syn match swayConfigI3Param /--i3/ contains=i3ConfigShParam skipwhite nextgroup=i3ConfigEdgeOpts
 syn keyword i3ConfigKeyword hide_edge_borders contained skipwhite nextgroup=swayConfigI3Param,i3ConfigEdgeOpts
 
+" Accept passing the bar id as an argument
+syn region swayConfigBar matchgroup=i3ConfigParen start=/ {$/ end=/^\s*}$/ contained contains=i3ConfigBarOpts,i3ConfigComment,i3ConfigBindKeyword,i3ConfigColorsBlock keepend extend
+syn match swayConfigBarIdent /[^ ]\+/ contained contains=i3ConfigOutputIdent skipwhite nextgroup=swayConfigBar
+syn keyword i3ConfigKeyword bar contained skipwhite nextgroup=swayConfigBarIdent,swayConfigBar
+
 syn keyword i3ConfigBarOpts swaybar_command contained skipwhite nextgroup=@i3ConfigSh
 syn region i3ConfigBarOpts matchgroup=i3ConfigBarOpts start=/gaps/ end=/$/ contained contains=@i3ConfigNumVar
 syn keyword i3ConfigBarOpts height pango_markup status_edge_padding status_padding wrap_scroll tray_bindcode tray_bindsym icon_theme contained skipwhite nextgroup=i3ConfigBarOptVals,@i3ConfigValue,i3ConfigShOper
