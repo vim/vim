@@ -127,10 +127,6 @@ typedef struct {
  */
 #include "regexp.h"
 
-#ifdef FEAT_TREESITTER
-# include "treesitter.h"
-#endif
-
 /*
  * This is here because gui.h needs the pos_T and win_T, and win_T needs gui.h
  * for scrollbar_T.
@@ -3122,6 +3118,10 @@ typedef struct {
     char_u	*b_syn_isk;	    // iskeyword option
 } synblock_T;
 
+#ifdef FEAT_TREESITTER
+typedef struct ts_vim_parser_S ts_vim_parser_T;
+#endif
+
 
 /*
  * buffer: structure that holds information about one file
@@ -3425,6 +3425,9 @@ struct file_buffer
     char_u	*b_p_syn;	// 'syntax'
 #endif
     long	b_p_ts;		// 'tabstop'
+#ifdef FEAT_TREESITTER
+    char_u	*b_p_tslg;	// 'tslanguage'
+#endif
     int		b_p_tx;		// 'textmode'
     long	b_p_tw;		// 'textwidth'
     long	b_p_tw_nobin;	// b_p_tw saved for binary mode
@@ -3640,6 +3643,10 @@ struct file_buffer
 #endif
 #ifdef FEAT_DIFF
     int		b_diff_failed;	// internal diff failed for this buffer
+#endif
+
+#ifdef FEAT_TREESITTER
+    ts_vim_parser_T *b_ts_parser;
 #endif
 }; // file_buffer
 

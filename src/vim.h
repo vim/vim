@@ -3015,6 +3015,22 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # endif
 #endif
 
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+# define ELAPSED_TIMEVAL
+# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
+# define ELAPSED_FUNC(v) elapsed(&(v))
+typedef struct timeval elapsed_T;
+long elapsed(struct timeval *start_tv);
+#elif defined(MSWIN)
+# define ELAPSED_TICKCOUNT
+# define ELAPSED_INIT(v) v = GetTickCount()
+# define ELAPSED_FUNC(v) elapsed(v)
+typedef DWORD elapsed_T;
+# ifndef PROTO
+long elapsed(DWORD start_tick);
+# endif
+#endif
+
 // Replacement for nchar used by nv_replace().
 #define REPLACE_CR_NCHAR    (-1)
 #define REPLACE_NL_NCHAR    (-2)

@@ -139,6 +139,9 @@
 #ifdef FEAT_EVAL
 # define PV_TFU		OPT_BUF(BV_TFU)
 #endif
+#ifdef FEAT_TREESITTER
+# define PV_TSLG	OPT_BUF(BV_TSLG)
+#endif
 #ifdef FEAT_COMPL_FUNC
 # define PV_TSRFU	OPT_BOTH(OPT_BUF(BV_TSRFU))
 #endif
@@ -2758,6 +2761,15 @@ static struct vimoption options[] =
 			    (char_u *)&p_tbis, PV_NONE,
 			    did_set_toolbariconsize, expand_set_toolbariconsize,
 			    {(char_u *)"small", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"tslanguage",  "tslg", P_STRING|P_VI_DEF,
+#ifdef FEAT_TREESITTER
+			    (char_u *)&p_tslg, PV_TSLG, NULL, NULL,
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}

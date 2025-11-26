@@ -1050,6 +1050,9 @@ EXTERN int	p_title;	// 'title'
 EXTERN long	p_titlelen;	// 'titlelen'
 EXTERN char_u	*p_titleold;	// 'titleold'
 EXTERN char_u	*p_titlestring;	// 'titlestring'
+#ifdef FEAT_TREESITTER
+EXTERN char_u	*p_tslg;	// 'tslanguage'
+#endif
 EXTERN char_u	*p_tsr;		// 'thesaurus'
 EXTERN int	p_ttimeout;	// 'ttimeout'
 EXTERN long	p_ttm;		// 'ttimeoutlen'
@@ -1283,6 +1286,9 @@ enum
 #endif
     , BV_TAGS
     , BV_TC
+#ifdef FEAT_TREESITTER
+    , BV_TSLG
+#endif
 #ifdef FEAT_COMPL_FUNC
     , BV_TSRFU
 #endif

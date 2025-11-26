@@ -950,6 +950,12 @@ buf_freeall(buf_T *buf, int flags)
     }
 #endif
 
+#ifdef FEAT_TREESITTER
+    // Free treesitter parser attached to buffer
+    if (buf->b_ts_parser != NULL)
+	ts_vim_parser_free(buf->b_ts_parser);
+#endif
+
 #ifdef FEAT_TCL
     tcl_buffer_free(buf);
 #endif
@@ -2519,6 +2525,9 @@ free_buf_options(
 #ifdef FEAT_EVAL
     clear_string_option(&buf->b_p_tfu);
     free_callback(&buf->b_tfu_cb);
+#ifdef FEAT_TREESITTER
+    clear_string_option(&buf->b_p_tslg);
+#endif
     clear_string_option(&buf->b_p_ffu);
     free_callback(&buf->b_ffu_cb);
 #endif

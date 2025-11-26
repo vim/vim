@@ -6946,6 +6946,9 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
+#ifdef FEAT_TREESITTER
+	case PV_TSLG:	return (char_u *)&(curbuf->b_p_tslg);
+#endif
 	case PV_TW:	return (char_u *)&(curbuf->b_p_tw);
 	case PV_TX:	return (char_u *)&(curbuf->b_p_tx);
 #ifdef FEAT_PERSISTENT_UNDO
@@ -7543,6 +7546,10 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_keymap = vim_strsave(p_keymap);
 	    COPY_OPT_SCTX(buf, BV_KMAP);
 	    buf->b_kmap_state |= KEYMAP_INIT;
+#endif
+#ifdef FEAT_TREESITTER
+	    buf->b_p_tslg = vim_strsave(p_tslg);
+	    COPY_OPT_SCTX(buf, BV_TSLG);
 #endif
 #ifdef FEAT_TERMINAL
 	    buf->b_p_twsl = p_twsl;
