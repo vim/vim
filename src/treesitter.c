@@ -31,24 +31,33 @@
 # define load_dll_error dlerror
 #endif
 
+// Buffer size to use when parsing
+#define TS_VIM_BUFSIZE 4096
+
 // This is not exposed in vimscript. It is held internally in a hash table to be
 // used as needed.
 typedef struct
 {
-    HANDLE		dll_handle;
+    HANDLE		tl_dll;
     const TSLanguage	*tl_lang;
-    char_u		name[1]; // Actually longer
-} vts_language_T;
+    char_u		tl_name[1]; // Actually longer
+} ts_vim_language_T;
 
-#define VTS_LANG_OFF (offsetof(vts_language_T, name))
-#define HI2LANG(hi) ((vts_language_T *)(hi)->hi_key - VTS_LANG_OFF)
+#define VTS_LANG_OFF offsetof(ts_vim_language_T, tl_name)
+#define HI2LANG(hi) ((ts_vim_language_T *)((hi)->hi_key - VTS_LANG_OFF))
+
+// Represents a TSParser object. Each buffer has its own TSParser.
+struct ts_vim_parser_S
+{
+    TSParser	    	*tp_parser;
+    garray_T		tp_trees; // Array of TSTree objects
+    
+    // Next parser that should be processed
+    ts_vim_parser_T	*tp_next;
+};
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T languages;
-
-// Singly linked list of parsers that are currently parsing, but are deferred to
-// a later time. Each parser is completed before going onto the next one.
-static vts_parser_T *pending_parser;
 
     int
 init_treesitter(void)
@@ -101,7 +110,7 @@ load_language(char *path, char *symbol, HANDLE *dll)
  * Handler function for ts_load_lang()
  */
     void
-vts_load_language(char_u *name, char_u *path, char_u *symbol_name)
+ts_vim_load_language(char_u *name, char_u *path, char_u *symbol_name)
 {
     hashitem_T		*hi;
     HANDLE		h;
@@ -116,198 +125,202 @@ vts_load_language(char_u *name, char_u *path, char_u *symbol_name)
     if (HASHITEM_EMPTY(hi))
     {
 	hash_T		hash = hash_hash(name);
-	vts_language_T	*obj =
+	ts_vim_language_T	*obj =
 	    alloc(VTS_LANG_OFF + STRLEN(name) + 1);
 
 	if (obj == NULL)
 	    return;
 
-	STRCPY(obj->name, name);
+	STRCPY(obj->tl_name, name);
 	obj->tl_lang = lang_obj;
-	obj->dll_handle = h;
+	obj->tl_dll = h;
 
-	hash_add_item(&languages, hi, obj->name, hash);
+	hash_add_item(&languages, hi, obj->tl_name, hash);
     }
     else
     {
 	// Replace assigned TSLanguage object with new one. This does not affect
 	// any objects that were created using this language, everything is
 	// refcounted.
-	vts_language_T	*lang = HI2LANG(hi);
+	ts_vim_language_T	*lang = HI2LANG(hi);
 
 	ts_language_delete(lang->tl_lang);
 	lang->tl_lang = lang_obj;
+	close_dll(lang->tl_dll);
+	lang->tl_dll = h;
     }
 }
 
 /*
- * Allocate a new object representing a TSParser. Returns NULL on failure.
+ * Allocate new parser object, returns NULL on failure.
  */
-    vts_parser_T *
-vts_parser_new(char_u *language)
+    static ts_vim_parser_T *
+ts_vim_parser_new(void)
 {
-    vts_parser_T    *new;
-    hashitem_T	    *hi;
-    vts_language_T  *lang;
-    TSParser	    *parser;
+    ts_vim_parser_T *vparser = ALLOC_CLEAR_ONE(ts_vim_parser_T);
 
-    // Lookup language object and set parser to it.
-    hi = hash_find(&languages, language);
+    if (vparser == NULL)
+	return NULL;
+
+    vparser->tp_parser = ts_parser_new();
+
+    // Docs don't say anything about this function returning NULL but check
+    // it to be safe.
+    if (vparser->tp_parser == NULL)
+    {
+	vim_free(vparser);
+	return NULL;
+    }
+    
+    ga_init2(&vparser->tp_trees, sizeof(TSTree *), 2);
+
+    return vparser;
+}
+
+/*
+ * Free resources allocated for parser object.
+ */
+    void
+ts_vim_parser_free(ts_vim_parser_T *vparser)
+{
+    TSTree **trees = vparser->tp_trees.ga_data;
+
+    // Free TSTree objects
+    for (int i = 0; i < vparser->tp_trees.ga_len; i++)
+	ts_tree_delete(trees[i]);
+
+    ga_clear(&vparser->tp_trees);
+    ts_parser_delete(vparser->tp_parser);
+
+    vim_free(vparser);
+}
+
+#ifdef ELAPSED_FUNC
+    static bool
+parse_progress_callback(TSParseState *state)
+{
+    return ELAPSED_FUNC(*((elapsed_T *)state->payload)) >= 1000;
+}
+#endif
+
+/*
+ * Copied from Neovim with slight modifications.
+ */
+    static const char *
+parse_read_buf_callback(
+	void *payload,
+	uint32_t byte_index,
+	TSPoint position,
+	uint32_t *bytes_read)
+{
+    buf_T	    *b = payload;
+    static char	    buf[TS_VIM_BUFSIZE];
+    char	    *mbuf, *end;
+    linenr_T	    lnum;
+    char	    *line;
+    size_t	    len, tocopy;
+
+    if ((linenr_T)position.row >= b->b_ml.ml_line_count) {
+	*bytes_read = 0;
+	return "";
+    }
+    lnum = (linenr_T)position.row + 1;
+    line = (char *)ml_get_buf(b, lnum, FALSE);
+    len = (size_t)ml_get_buf_len(b, lnum);
+
+    if (position.column > len) {
+	*bytes_read = 0;
+	return "";
+    }
+
+    tocopy = MIN(len - position.column, TS_VIM_BUFSIZE);
+    memcpy(buf, line + position.column, tocopy);
+
+    // Translate embedded \n to NUL
+    mbuf = buf;
+    end = buf + len;
+    while ((mbuf = memchr(mbuf, '\n', (size_t)(end - mbuf)))) {
+	*mbuf++ = NUL;
+    }
+
+    *bytes_read = (uint32_t)tocopy;
+    if (tocopy < TS_VIM_BUFSIZE) {
+	// Now add the final \n, if it is meant to be present for this buffer.
+	// If it didn't fit, input_cb will be called again on the same line with
+	// advanced column.
+	if (lnum != b->b_ml.ml_line_count || (!b->b_p_bin && b->b_p_fixeol)
+		|| (lnum != b->b_no_eol_lnum && b->b_p_eol)) {
+	    buf[tocopy] = '\n';
+	    (*bytes_read)++;
+	}
+  }
+  return buf;
+}
+
+// TODO: free parser when buf is freed
+
+/*
+ * Start parsing the given buffer asynchronously. We simulate async behaviour by
+ * setting a timeout for each parse operation. If the timeout is reached, then
+ * the parse operation is deferred later.
+ */
+    void
+ts_vim_parse_buf(buf_T *buf)
+{
+    static char_u	*current_lang; // Current language the parser is set to.
+    static TSTree	*last_tree;
+
+    TSTree		*tree;
+    TSInput		input;
+    TSParseOptions	opts;
+    ts_vim_parser_T	*vparser;
+    ts_vim_language_T   *vlang;
+#ifdef ELAPSED_FUNC
+    elapsed_T		start; // Used to cancel parse if it is taking too long
+#endif
+    char_u		*lang = current_lang == NULL
+				? buf->b_p_tslg : current_lang;
+    hashitem_T		*hi = hash_find(&languages, lang);
 
     if (HASHITEM_EMPTY(hi))
     {
-	semsg(_(e_treesitter_lang_not_loaded), language);
-	return NULL;
+	semsg(_(e_treesitter_lang_not_loaded), lang);
+	return;
     }
-    else
-	lang = HI2LANG(hi);
+    vlang = HI2LANG(hi);
 
-    parser = ts_parser_new();
+    // Create parser for buffer if we didn't already
+    if (buf->b_ts_parser == NULL
+	    && (buf->b_ts_parser = ts_vim_parser_new()) == NULL)
+	return;
 
-    if (parser == NULL)
-	// No documentation on how the function handles errors, but still check
-	// for them.
-	return NULL;
+    vparser = buf->b_ts_parser;
 
-    new = ALLOC_ONE(vts_parser_T);
-
-    if (new == NULL)
-    {
-	ts_parser_delete(parser);
-	return NULL;
-    }
-
-    ts_parser_set_language(parser, lang->tl_lang);
-    ga_init2(&new->tp_children, sizeof(vts_parser_T), 2);
-    new->tp_parser = parser;
-    new->tp_tree = NULL;
-    new->tp_next = NULL;
-
-    return new;
-}
-
-    void
-vts_parser_free(vts_parser_T *self)
-{
-    ts_parser_delete(self->tp_parser);
-
-    for (int i = 0; i < self->tp_children.ga_len; i++)
-    {
-	vts_parser_T *child = ((vts_parser_T **)self->tp_children.ga_data)[i];
-
-	vts_parser_free(child);
-    }
-    ga_clear(&self->tp_children);
-
-    vim_free(self);
-}
-
-/*
- * Used to check the current elapsed time while parsing.
- */
-    static bool 
-vts_parser_parse_progress_callback(TSParseState *state)
-{
+    // Try growing tree array first
+    if (ga_grow(&vparser->tp_trees, 1) == FAIL)
+	return;
+    
 #ifdef ELAPSED_FUNC
-    vts_parser_T *parser = state->payload;
-
-    return ELAPSED_FUNC(parser->tp_elapsed) >= parser->tp_timeout;
+    opts.payload = &start;
+    opts.progress_callback = parse_progress_callback;
 #else
-    return false;
+    // Make it synchronous
+    memset(opts, 0, sizeof(opts));
 #endif
-}
 
-/*
- * Start the parser using the given TSInput parameters, which must be set before
- * calling this. It will do an initial parse before deferring, see below.
- *
- * "timeout" is how long until a single parse operation should
- * timeout. After that, it will defer another parse operation later and return
- * back into the event loop. "timeout" must be greater than 0 and is in
- * milliseconds.
- *
- * "input" will be copied, so no need to worry about it going out of scope.
- *
- * Returns OK on success, and FAIL if deferred.
- */
-    int
-vts_parser_start_parse(vts_parser_T *self, TSInput *input, long timeout)
-{
-    TSParseOptions opts;
-    TSTree *tree;
+    input.decode = NULL;
+    input.encoding = TSInputEncodingUTF8;
+    input.payload = buf;
+    input.read = parse_read_buf_callback;
 
-    opts.payload = self;
-    opts.progress_callback = vts_parser_parse_progress_callback;
-
-#ifdef ELAPSED_FUNC
-    ELAPSED_INIT(self->tp_elapsed);
-#endif
-    ts_parser_reset(self->tp_parser);
-    self->tp_input = *input;
-
-    tree = ts_parser_parse_with_options(
-	    self->tp_parser, self->tp_tree->tt_tree, self->tp_input, opts
-	    );
+    ts_parser_set_language(vparser->tp_parser, vlang->tl_lang);
+    tree = ts_parser_parse_with_options(vparser->tp_parser, last_tree, input, opts);
 
     if (tree == NULL)
-    {
-	// Append to tail of list
-	vts_parser_T *parser = pending_parser;
+	return;
 
-	while (true)
-	{
-	    if (parser == NULL)
-		pending_parser = self;
-	    else if (parser->tp_next != NULL)
-	    {
-		parser = parser->tp_next;
-		break;
-	    }
-	    else
-		parser->tp_next = self;
-	    break;
-	}
-	self->tp_parsing = true;
-
-	return FAIL;
-    }
-    self->tp_parsing = false;
-
-    // TODO: set tree obj
-    self->tp_tree = NULL;
-    return OK;
-}
-
-/*
- * Start a parse operation on the current parser for a while. Returns elapsed
- * time in milliseconds it took. "timeout" is in milliseconds.
- */
-    long
-vts_do_pending_parsing(long timeout)
-{
-#ifdef ELAPSED_FUNC
-    elapsed_T start;
-#endif
-
-    if (pending_parser == NULL)
-	return 0;
-
-#ifdef ELAPSED_FUNC
-    ELAPSED_INIT(start);
-#endif
-
-    pending_parser->tp_timeout = timeout;
-    if (vts_parser_start_parse(
-		pending_parser, &pending_parser->tp_input, timeout) == OK)
-    {
-	// Done procesing parser, go onto next one.
-	pending_parser = pending_parser->tp_next;
-    }
-#ifdef ELAPSED_FUNC
-    return ELAPSED_FUNC(start);
-#else
-    return timeout;
-#endif
+    // Finished parsing, add result tree to array
+    ((TSTree **)vparser->tp_trees.ga_data)[vparser->tp_trees.ga_len++] = tree;
 }
 
 #endif // FEAT_TREESITTER
