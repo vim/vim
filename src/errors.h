@@ -3800,4 +3800,6 @@ EXTERN char e_cannot_add_listener_in_listener_callback[]
 #ifdef FEAT_TREESITTER
 EXTERN char e_treesitter_get_lang_error[]
 	INIT(= N_("E1570: Failed loading treesitter parser %s"));
+EXTERN char e_treesitter_lang_not_loaded[]
+	INIT(= N_("E1570: Language %s is not loaded"));
 #endif
