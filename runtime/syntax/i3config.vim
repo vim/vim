@@ -52,7 +52,7 @@ syn match i3ConfigComment /#.*$/ contained contains=i3ConfigTodo
 syn match i3ConfigFontSize / \d\+\(px\)\?$/ contained
 syn match i3ConfigColonOperator /:/ contained
 syn match i3ConfigFontNamespace /pango:/ contained contains=i3ConfigColonOperator
-syn region i3ConfigParamLine matchgroup=i3ConfigKeyword start=/font / skip=/\\$/ end=/$/ contained contains=i3ConfigFontNamespace,i3ConfigFontSize,i3ConfigSeparator keepend containedin=i3ConfigBarBlock
+syn region i3ConfigFont matchgroup=i3ConfigKeyword start=/font / skip=/\\$/ end=/$/ contained contains=i3ConfigFontNamespace,i3ConfigFontSize,i3ConfigSeparator keepend
 
 " 4.4-4.5 Keyboard/Mouse bindings
 syn match i3ConfigBindArgument /--\(release\|border\|whole-window\|exclude-titlebar\) / contained nextgroup=i3ConfigBindArgument,i3ConfigBindCombo
@@ -189,7 +189,8 @@ syn keyword i3ConfigBarOpts modifier contained skipwhite nextgroup=i3ConfigBindC
 syn keyword i3ConfigBarOpts i3bar_command status_command workspace_command contained skipwhite nextgroup=@i3ConfigSh
 syn keyword i3ConfigBarOpts mode hidden_state id position output tray_output tray_padding separator_symbol workspace_buttons workspace_min_width strip_workspace_numbers strip_workspace_name binding_mode_indicator padding contained skipwhite nextgroup=i3ConfigBarOptVals,@i3ConfigValue,i3ConfigShOper
 syn keyword i3ConfigBarOptVals dock hide invisible show none top bottom primary nonprimary contained
-syn region i3ConfigBarBlock matchgroup=i3ConfigKeyword start=/bar\ze {$/ end=/^\s*}\zs$/ contained contains=i3ConfigBarOpts,i3ConfigComment,i3ConfigParen,i3ConfigBindKeyword,i3ConfigColorsBlock fold keepend extend
+syn region i3ConfigBarBlock matchgroup=i3ConfigParen start=/ {$/ end=/^\s*}$/ contained contains=i3ConfigBarOpts,i3ConfigComment,i3ConfigBindKeyword,i3ConfigColorsBlock,i3ConfigFont fold keepend
+syn keyword i3ConfigKeyword bar contained nextgroup=i3ConfigBarBlock
 
 " 5.16 Color block
 syn match i3ConfigColorSeq /#[0-9A-Fa-f]\{3,8}\|\$[0-9A-Za-z_:|[\]-]\+/ contained contains=@i3ConfigColVar skipwhite nextgroup=i3ConfigColorSeq
@@ -260,7 +261,7 @@ syn match i3ConfigMarkOpt /--\(add\|replace\)\( --toggle\)\?/ contained contains
 syn keyword i3ConfigActionKeyword mark contained skipwhite nextgroup=i3ConfigMarkOpt,i3ConfigOutputIdent
 
 " Commands usable for direct config calls - for enforcing start of line for Commands
-syn match i3ConfigTopLevelDirective /^\s*/ nextgroup=i3ConfigComment,i3ConfigKeyword,i3ConfigCommand,i3ConfigBindKeyword,i3ConfigParamLine,i3ConfigModeBlock,i3ConfigBarBlock,i3ConfigError
+syn match i3ConfigTopLevelDirective /^\s*/ nextgroup=i3ConfigComment,i3ConfigKeyword,i3ConfigCommand,i3ConfigBindKeyword,i3ConfigParamLine,i3ConfigModeBlock,i3ConfigFont,i3ConfigError
 
 " Commands useable in keybinds
 syn keyword i3ConfigActionKeyword mode append_layout kill open fullscreen sticky split floating swap unmark title_window_icon title_format border restart reload exit scratchpad nop bar contained skipwhite nextgroup=i3ConfigOption,@i3ConfigValue
@@ -281,6 +282,7 @@ hi def link i3ConfigBoolean                         Boolean
 hi def link i3ConfigString                          String
 hi def link i3ConfigColor                           Constant
 hi def link i3ConfigNumber                          Number
+hi def link i3ConfigIdent                           i3ConfigParamLine
 hi def link i3ConfigComment                         Comment
 hi def link i3ConfigColonOperator                   i3ConfigOperator
 hi def link i3ConfigFontNamespace                   i3ConfigOption

@@ -45,6 +45,10 @@ syn match i3ConfigKeyword /floating_modifier \(none\|[$A-Z][0-9A-Za-z]\+ \(norma
 syn match swayConfigI3Param /--i3/ contains=i3ConfigShParam skipwhite nextgroup=i3ConfigEdgeOpts
 syn keyword i3ConfigKeyword hide_edge_borders contained skipwhite nextgroup=swayConfigI3Param,i3ConfigEdgeOpts
 
+" Accept passing the bar id as an argument
+syn match swayConfigBarIdent /[^{ ,;]\+/ contained contains=@i3ConfigStrVar skipwhite nextgroup=i3ConfigBarBlock
+syn keyword i3ConfigKeyword bar contained skipwhite nextgroup=swayConfigBarIdent,i3ConfigBarBlock
+
 syn keyword i3ConfigBarOpts swaybar_command contained skipwhite nextgroup=@i3ConfigSh
 syn region i3ConfigBarOpts matchgroup=i3ConfigBarOpts start=/gaps/ end=/$/ contained contains=@i3ConfigNumVar
 syn keyword i3ConfigBarOpts height pango_markup status_edge_padding status_padding wrap_scroll tray_bindcode tray_bindsym icon_theme contained skipwhite nextgroup=i3ConfigBarOptVals,@i3ConfigValue,i3ConfigShOper
@@ -148,6 +152,7 @@ syn keyword i3ConfigKeyword output contained skipwhite nextgroup=swayConfigOutpu
 hi def link swayConfigFloatingModifierOpts   i3ConfigOption
 hi def link swayConfigXOpt                   i3ConfigOption
 hi def link swayConfigInhibitOpts            i3ConfigOption
+hi def link swayConfigBarIdent               i3ConfigIdent
 hi def link swayConfigBindswitchArgument     i3ConfigBindArgument
 hi def link swayConfigBindswitchType         i3ConfigMoveType
 hi def link swayConfigBindswitchState        i3ConfigMoveDir
