@@ -198,7 +198,7 @@ static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
-static void f_treesitter_load(typval_T *argvars, typval_T *rettv);
+static void f_ts_load_lang(typval_T *argvars, typval_T *rettv);
 
 
 /*
@@ -3128,8 +3128,8 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_tolower},
     {"toupper",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_toupper},
-    {"treesitter_load",	2, 3, 0,	    arg3_string_string_dict,
-			ret_void,	    f_treesitter_load},
+    {"ts_load_lang",	2, 3, 0,	    arg3_string_string_dict,
+			ret_void,	    f_ts_load_lang},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_tr},
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
@@ -12815,7 +12815,7 @@ f_xor(typval_T *argvars, typval_T *rettv)
 
 #ifdef FEAT_TREESITTER
     static void
-f_treesitter_load(typval_T *argvars, typval_T *rettv)
+f_ts_load_lang(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
     char_u *path;
@@ -12840,7 +12840,7 @@ f_treesitter_load(typval_T *argvars, typval_T *rettv)
     if (symbol == NULL)
 	symbol = name;
 
-    treesitter_load_language(name, path, symbol);
+    vts_load_language(name, path, symbol);
 }
 #endif
 
