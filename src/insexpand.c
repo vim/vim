@@ -137,11 +137,8 @@ static compl_T    *compl_shown_match = NULL;
 static compl_T    *compl_old_match = NULL;
 
 // list used to store the compl_T which have the max score
-// used for completefuzzycollect
 static compl_T	  **compl_best_matches = NULL;
 static int	  compl_num_bests = 0;
-// inserted a longest when completefuzzycollect enabled
-static int	  compl_cfc_longest_ins = FALSE;
 
 // After using a cursor key <Enter> selects a match in the popup menu,
 // otherwise it inserts a line break.
@@ -827,19 +824,12 @@ ins_compl_add_infercase(
 }
 
 /*
- * Check if ctrl_x_mode has been configured in 'completefuzzycollect'
+ * Check if fuzzy matching is enabled
  */
     static int
-cfc_has_mode(void)
+cot_fuzzy(void)
 {
-    if (ctrl_x_mode_normal() || ctrl_x_mode_dictionary())
-	return (cfc_flags & CFC_KEYWORD) != 0;
-    else if (ctrl_x_mode_files())
-	return (cfc_flags & CFC_FILES) != 0;
-    else if (ctrl_x_mode_whole_line())
-	return (cfc_flags & CFC_WHOLELINE) != 0;
-    else
-	return FALSE;
+    return (get_cot_flags() & COT_FUZZY) != 0;
 }
 
 /*
@@ -848,9 +838,8 @@ cfc_has_mode(void)
     static int
 is_nearest_active(void)
 {
-    int flags = get_cot_flags();
-    return (compl_autocomplete || (flags & COT_NEAREST))
-	&& !(flags & COT_FUZZY);
+    return (compl_autocomplete || (get_cot_flags() & COT_NEAREST))
+	&& !cot_fuzzy();
 }
 
 /*
@@ -996,14 +985,13 @@ ins_compl_add(
     // current match in the list of matches .
     if (compl_first_match == NULL)
 	match->cp_next = match->cp_prev = NULL;
-    else if (cfc_has_mode() && score != FUZZY_SCORE_NONE && compl_get_longest)
+    else if (cot_fuzzy() && score != FUZZY_SCORE_NONE && compl_get_longest)
     {
 	current = compl_first_match->cp_next;
 	prev = compl_first_match;
 	inserted = FALSE;
-	// The direction is ignored when using longest and
-	// completefuzzycollect, because matches are inserted
-	// and sorted by score.
+	// The direction is ignored when using longest and fuzzy match, because
+	// matches are inserted and sorted by score.
 	while (current != NULL && current != compl_first_match)
 	{
 	    if (current->cp_score < score)
@@ -1046,7 +1034,7 @@ ins_compl_add(
     compl_curr_match = match;
 
     // Find the longest common string if still doing that.
-    if (compl_get_longest && (flags & CP_ORIGINAL_TEXT) == 0 && !cfc_has_mode()
+    if (compl_get_longest && (flags & CP_ORIGINAL_TEXT) == 0 && !cot_fuzzy()
 	    && !ins_compl_preinsert_longest())
 	ins_compl_longest_match(match);
 
@@ -1110,7 +1098,7 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
 			|| ins_compl_preinsert_longest();
     int	    attr;
 
-    if ((get_cot_flags() & COT_FUZZY)
+    if (cot_fuzzy()
 	    || (!compl_hi_on_autocompl_longest && ins_compl_preinsert_longest())
 	    || (attr = syn_name2attr(has_preinsert
 		    ? (char_u *)"PreInsert" : (char_u *)"ComplMatchIns")) == 0)
@@ -1647,10 +1635,8 @@ ins_compl_build_pum(void)
     int		shown_match_ok = FALSE;
     int		i = 0;
     int		cur = -1;
-    unsigned int cur_cot_flags = get_cot_flags();
-    int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0
+    int		compl_no_select = (get_cot_flags() & COT_NOSELECT) != 0
 		    || (compl_autocomplete && !ins_compl_has_preinsert());
-    int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
@@ -1691,14 +1677,14 @@ ins_compl_build_pum(void)
 
 	// Apply 'smartcase' behavior during normal mode
 	if (ctrl_x_mode_normal() && !p_inf && leader->string
-		&& !ignorecase(leader->string) && !fuzzy_filter)
+		&& !ignorecase(leader->string) && !cot_fuzzy())
 	    compl->cp_flags &= ~CP_ICASE;
 
 	if (!match_at_original_text(compl)
 		&& (leader->string == NULL
 		    || ins_compl_equal(compl, leader->string,
 			(int)leader->length)
-		    || (fuzzy_filter && compl->cp_score != FUZZY_SCORE_NONE)))
+		    || (cot_fuzzy() && compl->cp_score != FUZZY_SCORE_NONE)))
 	{
 	    // Limit number of items from each source if max_items is set.
 	    int match_limit_exceeded = FALSE;
@@ -1721,7 +1707,7 @@ ins_compl_build_pum(void)
 		    match_tail->cp_match_next = compl;
 		match_tail = compl;
 
-		if (!shown_match_ok && !fuzzy_filter)
+		if (!shown_match_ok && !cot_fuzzy())
 		{
 		    if (compl == compl_shown_match || did_find_shown_match)
 		    {
@@ -1737,7 +1723,7 @@ ins_compl_build_pum(void)
 			shown_compl = compl;
 		    cur = i;
 		}
-		else if (fuzzy_filter)
+		else if (cot_fuzzy())
 		{
 		    if (i == 0)
 			shown_compl = compl;
@@ -1752,7 +1738,7 @@ ins_compl_build_pum(void)
 	    }
 	}
 
-	if (compl == compl_shown_match && !fuzzy_filter)
+	if (compl == compl_shown_match && !cot_fuzzy())
 	{
 	    did_find_shown_match = TRUE;
 
@@ -1777,7 +1763,7 @@ ins_compl_build_pum(void)
     if (compl_match_arraysize == 0)
 	return -1;
 
-    if (fuzzy_filter && !compl_no_select && !shown_match_ok)
+    if (cot_fuzzy() && !compl_no_select && !shown_match_ok)
     {
 	compl_shown_match = shown_compl;
 	shown_match_ok = TRUE;
@@ -1993,8 +1979,8 @@ ins_compl_dictionaries(
 # endif
 	    if (count > 0)	// avoid warning for using "files" uninit
 	{
-	    ins_compl_files(count, files, thesaurus, flags,
-			    (cfc_has_mode() ? NULL : &regmatch), buf, &dir);
+	    ins_compl_files(count, files, thesaurus, flags, &regmatch, buf,
+		    &dir);
 	    if (flags != DICT_EXACT)
 		FreeWild(count, files);
 	}
@@ -2084,12 +2070,11 @@ ins_compl_files(
     int		add_r;
     char_u	*leader = NULL;
     int		leader_len = 0;
-    int		in_fuzzy_collect = cfc_has_mode();
     int		score = 0;
     int		len = 0;
     char_u	*line_end = NULL;
 
-    if (in_fuzzy_collect)
+    if (cot_fuzzy())
     {
 	leader = ins_compl_leader();
 	leader_len = (int)ins_compl_leader_len();
@@ -2116,7 +2101,28 @@ ins_compl_files(
 	       && !vim_fgets(buf, LSIZE, fp))
 	{
 	    ptr = buf;
-	    if (regmatch != NULL)
+	    if (cot_fuzzy() && leader_len > 0)
+	    {
+		line_end = find_line_end(ptr);
+		while (ptr < line_end)
+		{
+		    if (fuzzy_match_str_in_line(&ptr, leader, &len, NULL, &score))
+		    {
+			char_u *end_ptr = ctrl_x_mode_line_or_eval()
+					? find_line_end(ptr) : find_word_end(ptr);
+			add_r = ins_compl_add_infercase(ptr, (int)(end_ptr - ptr),
+					    p_ic, files[i], *dir, FALSE, score);
+			if (add_r == FAIL)
+			    break;
+			ptr = end_ptr;  // start from next word
+			if (compl_get_longest && ctrl_x_mode_normal()
+				&& compl_first_match->cp_next
+				&& score == compl_first_match->cp_next->cp_score)
+			    compl_num_bests++;
+		    }
+		}
+	    }
+	    else if (regmatch != NULL)
 	    {
 		while (vim_regexec(regmatch, buf, (colnr_T)(ptr - buf)))
 		{
@@ -2142,27 +2148,6 @@ ins_compl_files(
 		    // of line
 		    if (*ptr == '\n' || got_int)
 			break;
-		}
-	    }
-	    else if (in_fuzzy_collect && leader_len > 0)
-	    {
-		line_end = find_line_end(ptr);
-		while (ptr < line_end)
-		{
-		    if (fuzzy_match_str_in_line(&ptr, leader, &len, NULL, &score))
-		    {
-			char_u *end_ptr = ctrl_x_mode_line_or_eval()
-					? find_line_end(ptr) : find_word_end(ptr);
-			add_r = ins_compl_add_infercase(ptr, (int)(end_ptr - ptr),
-					    p_ic, files[i], *dir, FALSE, score);
-			if (add_r == FAIL)
-			    break;
-			ptr = end_ptr;  // start from next word
-			if (compl_get_longest && ctrl_x_mode_normal()
-				&& compl_first_match->cp_next
-				&& score == compl_first_match->cp_next->cp_score)
-			    compl_num_bests++;
-		    }
 		}
 	    }
 	    line_breakcheck();
@@ -2284,7 +2269,6 @@ ins_compl_clear(void)
 {
     compl_cont_status = 0;
     compl_started = FALSE;
-    compl_cfc_longest_ins = FALSE;
     compl_matches = 0;
     compl_selected_item = -1;
     compl_ins_end_col = 0;
@@ -2539,7 +2523,7 @@ ins_compl_new_leader(void)
 	ins_compl_set_original_text(compl_leader.string, compl_leader.length);
 	if (is_cpt_func_refresh_always())
 	    cpt_compl_refresh();
-	if (get_cot_flags() & COT_FUZZY)
+	if (cot_fuzzy())
 	    ins_compl_fuzzy_sort();
     }
     else
@@ -4723,7 +4707,6 @@ fuzzy_longest_match(void)
     if (prefix != NULL)
     {
 	ins_compl_longest_insert(prefix);
-	compl_cfc_longest_ins = TRUE;
 	vim_free(prefix);
     }
 
@@ -4747,7 +4730,7 @@ get_next_filename_completion(void)
     int		score;
     char_u	*leader = ins_compl_leader();
     size_t	leader_len = ins_compl_leader_len();;
-    int		in_fuzzy_collect = (cfc_has_mode() && leader_len > 0);
+    int		in_fuzzy_collect = (cot_fuzzy() && leader_len > 0);
     int		*fuzzy_indices_data;
     char_u	*last_sep = NULL;
     int		need_collect_bests = in_fuzzy_collect && compl_get_longest;
@@ -5059,8 +5042,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     char_u	*ptr = NULL;
     int		len = 0;
     int		in_fuzzy_collect = !compl_status_adding()
-		&& ((cfc_has_mode() && compl_length > 0)
-		    || ((get_cot_flags() & COT_FUZZY) && compl_autocomplete));
+			&& cot_fuzzy() && compl_length > 0;
     char_u	*leader = ins_compl_leader();
     int		score = FUZZY_SCORE_NONE;
     int		in_curbuf = st->ins_buf == curbuf;
@@ -5601,7 +5583,7 @@ ins_compl_get_exp(pos_T *ini)
 					&& (!compl_started || st.found_all))
 	{
 	    int status = process_next_cpt_value(&st, &type, &start_pos,
-		    cfc_has_mode(), &may_advance_cpt_idx);
+		    cot_fuzzy(), &may_advance_cpt_idx);
 
 	    if (status == INS_COMPL_CPT_END)
 		break;
@@ -5695,7 +5677,7 @@ ins_compl_get_exp(pos_T *ini)
 		&& !ctrl_x_mode_line_or_eval()))
 	match_count = ins_compl_make_cyclic();
 
-    if (cfc_has_mode() && compl_get_longest && compl_num_bests > 0)
+    if (cot_fuzzy() && compl_get_longest && compl_num_bests > 0)
 	fuzzy_longest_match();
 
     if (compl_old_match != NULL)
@@ -5715,7 +5697,7 @@ ins_compl_get_exp(pos_T *ini)
 	if (is_nearest_active() && !ins_compl_has_preinsert())
 	    sort_compl_match_list(cp_compare_nearest);
 
-	if ((get_cot_flags() & COT_FUZZY) && ins_compl_leader_len() > 0)
+	if (cot_fuzzy() && ins_compl_leader_len() > 0)
 	    ins_compl_fuzzy_sort();
     }
 
@@ -6141,7 +6123,6 @@ find_next_completion_match(
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0
 		    || (compl_autocomplete && !ins_compl_has_preinsert());
-    int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
     string_T	*leader;
 
 
@@ -6218,7 +6199,7 @@ find_next_completion_match(
 		&& leader->string != NULL
 		&& !ins_compl_equal(compl_shown_match,
 		    leader->string, (int)leader->length)
-		&& !(compl_fuzzy_match
+		&& !(cot_fuzzy()
 		    && compl_shown_match->cp_score != FUZZY_SCORE_NONE))
 	    ++todo;
 	else
@@ -6271,7 +6252,6 @@ ins_compl_next(
     unsigned int cur_cot_flags = get_cot_flags();
     int	    compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0
 		    || (compl_autocomplete && !ins_compl_has_preinsert());
-    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
     int	    compl_preinsert = ins_compl_has_preinsert();
     int	    has_autocomplete_delay = (compl_autocomplete && p_acl > 0);
 
@@ -6282,7 +6262,7 @@ ins_compl_next(
 
     if (compl_leader.string != NULL
 	    && !match_at_original_text(compl_shown_match)
-	    && !compl_fuzzy_match)
+	    && !cot_fuzzy())
 	// Update "compl_shown_match" to the actually shown match
 	ins_compl_update_shown_match();
 

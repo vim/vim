@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 20
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41878,8 +41878,6 @@ Options: ~
 'autocompletetimeout'	initial decay timeout for autocompletion algorithm
 'chistory'		Size of the quickfix stack |quickfix-stack|
 'clipmethod'		How to access the clipboard
-'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
-			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
 'completetimeout'	initial decay timeout for CTRL-N and CTRL-P
