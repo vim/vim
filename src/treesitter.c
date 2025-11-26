@@ -49,33 +49,26 @@
 // end positions in the source code, as well as its relation to other nodes like
 // its parent, siblings and children.
 
+// This is not exposed in vimscript. It is held internally in a hash table to be
+// used multiple times.
 typedef struct
 {
-    const TSLanguage *obj;
-    char_u name[1]; // actually longer
-} vts_lang_T;
+    HANDLE		dll_handle;
+    const TSLanguage	*tl_lang;
+    char_u		name[1]; // Actually longer
+} vts_language_T;
 
-#define TSLOFFSET (offsetof(vts_lang_T, name))
-#define HI2TSL(hi)   ((vts_lang_T *)(hi)->hi_key)
+#define VTS_LANG_OFF (offsetof(vts_language_T, name))
+#define HI2LANG(hi) ((vts_language_T *)(hi)->hi_key - VTS_LANG_OFF)
 
-typedef struct
-{
-    TSTree *obj;
-    TSNode *root;
-} vts_tree_T;
 
-typedef struct 
-{
-    TSNode *root;
-} vts_node_T;
-
-// Table of loaded TSLanguage object. Each key the language name.
-static hashtab_T loaded_langs;
+// Table of loaded TSLanguage objects. Each key the language name.
+static hashtab_T languages;
 
     int
 init_treesitter(void)
 {
-    hash_init(&loaded_langs);
+    hash_init(&languages);
 
     return OK;
 }
@@ -85,7 +78,7 @@ init_treesitter(void)
  * symbol suffix as "symbol". Return NULL on failure.
  */
     static const TSLanguage *
-load_language(char *path, char *symbol)
+load_language(char *path, char *symbol, HANDLE *dll)
 {
     HANDLE	    h = load_dll(path);
     TSLanguage	    *lang;
@@ -114,40 +107,113 @@ load_language(char *path, char *symbol)
 	return NULL;
     }
 
+    *dll = h;
+
     return lang;
 }
 
+/*
+ * Handler function for ts_load_lang()
+ */
     void
-treesitter_load_language(char_u *name, char_u *path, char_u *symbol_name)
+vts_load_language(char_u *name, char_u *path, char_u *symbol_name)
 {
     hashitem_T		*hi;
-    const TSLanguage	*lang_obj = load_language((char *)path, (char *)symbol_name);
+    HANDLE		h;
+    const TSLanguage	*lang_obj =
+	load_language((char *)path, (char *)symbol_name, &h);
 
     if (lang_obj == NULL)
 	return;
 
-    hi = hash_find(&loaded_langs, name);
+    hi = hash_find(&languages, name);
 
     if (HASHITEM_EMPTY(hi))
     {
-	hash_T h = hash_hash(name);
-	vts_lang_T *obj = alloc(TSLOFFSET + STRLEN(name) + 1);
+	hash_T		hash = hash_hash(name);
+	vts_language_T	*obj =
+	    alloc(VTS_LANG_OFF + STRLEN(name) + 1);
 
 	if (obj == NULL)
 	    return;
-	STRCPY(obj->name, name);
-	obj->obj = lang_obj;
 
-	hash_add_item(&loaded_langs, hi, obj->name, h);
+	STRCPY(obj->name, name);
+	obj->tl_lang = lang_obj;
+	obj->dll_handle = h;
+
+	hash_add_item(&languages, hi, obj->name, hash);
     }
     else
     {
-	// Replace assigned TSLanguage object with new one
-	vts_lang_T *lang = HI2TSL(hi);
+	// Replace assigned TSLanguage object with new one. This does not affect
+	// any objects that were created using this language, everything is
+	// refcounted.
+	vts_language_T	*lang = HI2LANG(hi);
 
-	ts_language_delete(lang->obj);
-	lang->obj = lang_obj;
+	ts_language_delete(lang->tl_lang);
+	lang->tl_lang = lang_obj;
     }
+}
+
+/*
+ * Allocate a new object representing a TSParser. Returns NULL on failure.
+ */
+    vts_parser_T *
+vts_parser_new(char_u *language)
+{
+    vts_parser_T    *new;
+    hashitem_T	    *hi;
+    vts_language_T  *lang;
+    TSParser	    *parser;
+
+    // Lookup language object and set parser to it.
+    hi = hash_find(&languages, language);
+
+    if (HASHITEM_EMPTY(hi))
+    {
+	semsg(_(e_treesitter_lang_not_loaded), language);
+	return NULL;
+    }
+    else
+	lang = HI2LANG(hi);
+
+    parser = ts_parser_new();
+
+    if (parser == NULL)
+	// No documentation on how the function handles errors, but still check
+	// for them.
+	return NULL;
+
+    new = ALLOC_ONE(vts_parser_T);
+
+    if (new == NULL)
+    {
+	ts_parser_delete(parser);
+	return NULL;
+    }
+
+    ts_parser_set_language(parser, lang->tl_lang);
+    ga_init2(&new->tp_children, sizeof(vts_parser_T), 2);
+    new->tp_parser = parser;
+    new->tp_tree = NULL;
+
+    return new;
+}
+
+    void
+vts_parser_free(vts_parser_T *self)
+{
+    ts_parser_delete(self->tp_parser);
+
+    for (int i = 0; i < self->tp_children.ga_len; i++)
+    {
+	vts_parser_T *child = ((vts_parser_T **)self->tp_children.ga_data)[i];
+
+	vts_parser_free(child);
+    }
+    ga_clear(&self->tp_children);
+
+    vim_free(self);
 }
 
 #endif // FEAT_TREESITTER
