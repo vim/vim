@@ -180,6 +180,9 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_WAYLAND
 #  include "wayland.pro"
 # endif
+# ifdef FEAT_TREESITTER
+#  include "treesitter.pro"
+# endif
 # include "regexp.pro"
 # include "register.pro"
 # include "scriptfile.pro"

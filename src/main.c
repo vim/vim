@@ -682,7 +682,14 @@ vim_main2(void)
 # ifdef FEAT_CLIENTSERVER
     // Prepare for being a Vim server.
     prepare_server(&params);
-# endif
+#endif
+
+#ifdef FEAT_TREESITTER
+    if (init_treesitter() == FAIL)
+    {
+	smsg("fail");
+    }
+#endif
 
 # ifdef FEAT_WAYLAND
 #  ifdef FEAT_GUI

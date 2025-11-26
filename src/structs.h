@@ -1503,6 +1503,9 @@ typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
 
+typedef struct treesitter_tree_S treesitter_tree_T;
+typedef struct treesitter_node_S treesitter_node_T;
+
 typedef enum
 {
     VAR_UNKNOWN = 0,	// not set, any type or "void" allowed
@@ -1524,7 +1527,9 @@ typedef enum
     VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
-    VAR_TUPLE		// "v_tuple" is used
+    VAR_TUPLE,		// "v_tuple" is used
+    VAR_TREESITTER_TREE,    // "v_ts_tree" is used
+    VAR_TREESITTER_NODE    // "v_ts_node" is used
 } vartype_T;
 
 // A type specification.
@@ -1677,6 +1682,18 @@ struct typealias_S
     char_u  *ta_name;
 };
 
+struct treesitter_tree_S
+{
+    int tt_refcount;
+    void *tree; // Opaque pointer to internal object in treesitter.c
+};
+
+struct treesitter_node_S
+{
+    int tn_refcount;
+    void *node; // Opaque pointer to internal object in treesitter.c
+};
+
 /*
  * Structure to hold an internal variable without a name.
  */
@@ -1702,6 +1719,12 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
+#ifdef FEAT_TREESITTER
+	treesitter_tree_T
+			*v_treesitter_tree;	// treesitter TSTree object
+	treesitter_node_T
+			*v_treesitter_node;	// treesitter TSNode object
+#endif
     }		vval;
 };
 

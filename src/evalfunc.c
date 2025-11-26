@@ -198,6 +198,7 @@ static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
+static void f_treesitter_load(typval_T *argvars, typval_T *rettv);
 
 
 /*
@@ -3127,6 +3128,8 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_tolower},
     {"toupper",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_toupper},
+    {"treesitter_load",	2, 3, 0,	    arg3_string_string_dict,
+			ret_void,	    f_treesitter_load},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_tr},
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
@@ -12809,5 +12812,36 @@ f_xor(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					^ tv_get_number_chk(&argvars[1], NULL);
 }
+
+#ifdef FEAT_TREESITTER
+    static void
+f_treesitter_load(typval_T *argvars, typval_T *rettv)
+{
+    char_u *name;
+    char_u *path;
+    char_u *symbol = NULL;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
+    name = argvars[0].vval.v_string;
+    path = argvars[1].vval.v_string;
+
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d =  argvars[2].vval.v_dict;
+
+	symbol = dict_get_string(d, "cursor", FALSE);
+    }
+
+    if (symbol == NULL)
+	symbol = name;
+
+    treesitter_load_language(name, path, symbol);
+}
+#endif
 
 #endif // FEAT_EVAL
