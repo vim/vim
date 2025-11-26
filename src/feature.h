@@ -1207,7 +1207,8 @@
 	|| defined(DYNAMIC_GETTEXT) \
 	|| defined(DYNAMIC_MZSCHEME) \
 	|| defined(DYNAMIC_LUA) \
-	|| defined(FEAT_TERMINAL)
+	|| defined(FEAT_TERMINAL) \
+	|| defined(FEAT_TREESITTER)
 # define USING_LOAD_LIBRARY
 #endif
 
