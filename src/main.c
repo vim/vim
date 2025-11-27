@@ -685,7 +685,7 @@ vim_main2(void)
 #endif
 
 #ifdef FEAT_TREESITTER
-    if (init_treesitter() == FAIL)
+    if (tsvim_init() == FAIL)
     {
 	smsg("fail");
     }
