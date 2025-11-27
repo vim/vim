@@ -739,7 +739,6 @@ EXTERN char_u	*p_inde;	// 'indentexpr'
 EXTERN char_u	*p_indk;	// 'indentkeys'
 #endif
 EXTERN int	p_im;		// 'insertmode'
-EXTERN char_u	*p_ise;		// 'isexpand'
 EXTERN char_u	*p_isf;		// 'isfname'
 EXTERN char_u	*p_isi;		// 'isident'
 EXTERN char_u	*p_isk;		// 'iskeyword'
