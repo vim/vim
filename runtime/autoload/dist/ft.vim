@@ -1921,6 +1921,7 @@ const ft_from_ext = {
   # ERicsson LANGuage; Yaws is erlang too
   "erl": "erlang",
   "hrl": "erlang",
+  "xrl": "erlang",
   "yaws": "erlang",
   # Elm
   "elm": "elm",
