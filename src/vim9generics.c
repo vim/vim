@@ -102,8 +102,7 @@ generic_func_find_close_bracket(char_u *start)
 	    return NULL;
 	}
 
-	p = skip_type(p, FALSE);
-	if (p == typename)
+	if (!ASCII_ISALNUM(*p) || (p = skip_type(p, FALSE)) == typename)
 	{
 	    char_u cc = *p;
 	    *p = NUL;
@@ -127,7 +126,7 @@ generic_func_find_close_bracket(char_u *start)
 
 	if (*p != ',')
 	{
-	    semsg(_(e_missing_comma_in_generic_function_str), start);
+	    semsg(_(e_missing_comma_in_generic_str), start);
 	    return NULL;
 	}
 	p++;
@@ -145,21 +144,21 @@ generic_func_find_close_bracket(char_u *start)
 
     if (*p != '>')
     {
-	semsg(_(e_missing_closing_angle_bracket_in_generic_function_str), start);
+	semsg(_(e_missing_closing_angle_bracket_in_generic_str), start);
 	return NULL;
     }
 
-    if (VIM_ISWHITE(*(p + 1)) && *skipwhite(p + 1) == '(')
+    if (VIM_ISWHITE(*(p + 1)) && (*skipwhite(p + 1) == '('
+						|| *skipwhite(p + 1) == '.'))
     {
 	// white space not allowed between '>' and '('
 	semsg(_(e_no_white_space_allowed_after_str_str), ">", start);
 	return NULL;
     }
 
-
     if (type_count == 0)
     {
-	semsg(_(e_empty_type_list_for_generic_function_str), start);
+	semsg(_(e_empty_type_list_for_generic_str), start);
 	return NULL;
     }
 
@@ -273,8 +272,8 @@ get_generic_func_name(ufunc_T *fp, char_u **argp)
  * including whitespace rules, comma separation, and non-empty argument lists.
  */
     char_u *
-parse_generic_func_type_args(
-    char_u		*func_name,
+parse_generic_type_args(
+    char_u		*name,
     size_t		namelen,
     char_u		*start,
     gfargs_tab_T	*gfatab,
@@ -305,7 +304,8 @@ parse_generic_func_type_args(
 	}
 
 	// parse the type
-	type_arg = parse_type(&p, &gfatab->gfat_arg_types, NULL, cctx, TRUE);
+	type_arg = parse_type(&p, &gfatab->gfat_arg_types, NULL, NULL, cctx,
+									TRUE);
 	if (type_arg == NULL || !valid_declaration_type(type_arg))
 	    return NULL;
 
@@ -340,7 +340,7 @@ parse_generic_func_type_args(
 	// after a type, expect ',' or '>'
 	if (*p != ',')
 	{
-	    semsg(_(e_missing_comma_in_generic_function_str), start);
+	    semsg(_(e_missing_comma_in_generic_str), start);
 	    return NULL;
 	}
 
@@ -359,8 +359,7 @@ parse_generic_func_type_args(
     // ensure the list of types ends in a closing '>'
     if (*p != '>')
     {
-	semsg(_(e_missing_closing_angle_bracket_in_generic_function_str),
-		func_name);
+	semsg(_(e_missing_closing_angle_bracket_in_generic_str), name);
 	return NULL;
     }
 
@@ -372,12 +371,12 @@ parse_generic_func_type_args(
     }
 
     // at least one type argument is required
-    if (generic_func_args_table_size(gfatab) == 0)
+    if (generic_args_table_size(gfatab) == 0)
     {
-	char_u	cc = func_name[namelen];
-	func_name[namelen] = NUL;
-	semsg(_(e_empty_type_list_for_generic_function_str), func_name);
-	func_name[namelen] = cc;
+	char_u	cc = name[namelen];
+	name[namelen] = NUL;
+	semsg(_(e_empty_type_list_for_generic_str), name);
+	name[namelen] = cc;
 	return NULL;
     }
     ++p;	// skip the '>'
@@ -466,8 +465,8 @@ generic_name_exists(
  * - The list must not be empty
  */
     char_u *
-parse_generic_func_type_params(
-    char_u		*func_name,
+parse_generic_type_params(
+    char_u		*name,
     char_u		*p,
     gfargs_tab_T	*gfatab,
     cctx_T		*cctx)
@@ -547,7 +546,7 @@ parse_generic_func_type_params(
 
 	if (*p != ',' && *p != '>')
 	{
-	    semsg(_(e_missing_comma_in_generic_function_str), start);
+	    semsg(_(e_missing_comma_in_generic_str), start);
 	    return NULL;
 	}
 	if (*p == ',')
@@ -564,11 +563,11 @@ parse_generic_func_type_params(
 	return NULL;
     p++;
 
-    int gfat_sz = generic_func_args_table_size(gfatab);
+    int gfat_sz = generic_args_table_size(gfatab);
 
     if (gfat_sz == 0)
     {
-	emsg_funcname(e_empty_type_list_for_generic_function_str, func_name);
+	semsg(_(e_empty_type_list_for_generic_str), name);
 	return NULL;
     }
 
@@ -577,7 +576,7 @@ parse_generic_func_type_params(
 	return NULL;
 
     gfatab->gfat_param_types.ga_len = gfat_sz;
-    for (int i = 0; i < generic_func_args_table_size(gfatab); i++)
+    for (int i = 0; i < generic_args_table_size(gfatab); i++)
     {
 	type_T *gt = &((type_T *)gfatab->gfat_param_types.ga_data)[i];
 
@@ -616,10 +615,10 @@ generic_func_init(ufunc_T *fp, gfargs_tab_T *gfatab)
 }
 
 /*
- * Initialize the generic function args table
+ * Initialize the generic args table for a class or a function
  */
     void
-generic_func_args_table_init(gfargs_tab_T *gfatab)
+generic_args_table_init(gfargs_tab_T *gfatab)
 {
     ga_init2(&gfatab->gfat_args, sizeof(generic_T), 10);
     ga_init2(&gfatab->gfat_param_types, sizeof(type_T), 10);
@@ -627,10 +626,10 @@ generic_func_args_table_init(gfargs_tab_T *gfatab)
 }
 
 /*
- * Return the number of entries in the generic function args table
+ * Return the number of entries in the generic args table
  */
     int
-generic_func_args_table_size(gfargs_tab_T *gfatab)
+generic_args_table_size(gfargs_tab_T *gfatab)
 {
     return gfatab->gfat_args.ga_len;
 }
@@ -639,7 +638,7 @@ generic_func_args_table_size(gfargs_tab_T *gfatab)
  * Free all the generic function args table items
  */
     void
-generic_func_args_table_clear(gfargs_tab_T *gfatab)
+generic_args_table_clear(gfargs_tab_T *gfatab)
 {
     clear_type_list(&gfatab->gfat_param_types);
     clear_type_list(&gfatab->gfat_arg_types);
@@ -1082,7 +1081,7 @@ generic_func_get(ufunc_T *fp, gfargs_tab_T *gfatab)
 
     if (!IS_GENERIC_FUNC(fp))
     {
-	if (gfatab && generic_func_args_table_size(gfatab) > 0)
+	if (gfatab && generic_args_table_size(gfatab) > 0)
 	{
 	    emsg_funcname(e_not_a_generic_function_str, fp->uf_name);
 	    return NULL;
@@ -1149,17 +1148,17 @@ find_generic_func(ufunc_T *ufunc, char_u *name, char_u **argp)
     char_u	*p;
     ufunc_T	*new_ufunc = NULL;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     // Get the list of types following the name
-    p = parse_generic_func_type_args(name, *argp - name, *argp, &gfatab, NULL);
+    p = parse_generic_type_args(name, *argp - name, *argp, &gfatab, NULL);
     if (p != NULL)
     {
 	new_ufunc = generic_func_get(ufunc, &gfatab);
 	*argp = p;
     }
 
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
 
     return new_ufunc;
 }
@@ -1218,6 +1217,14 @@ find_generic_type_in_cctx(char_u *gt_name, size_t name_len, cctx_T *cctx)
     if (type != NULL)
 	return type;
 
+    if (cctx->ctx_ufunc->uf_class != NULL)
+    {
+	type = find_generic_type_in_class(gt_name, name_len,
+						cctx->ctx_ufunc->uf_class);
+	if (type != NULL)
+	    return type;
+    }
+
     if (cctx->ctx_outer != NULL)
 	return find_generic_type_in_cctx(gt_name, name_len, cctx->ctx_outer);
 
@@ -1244,17 +1251,38 @@ find_generic_type(
     char_u	*gt_name,
     size_t	name_len,
     ufunc_T	*ufunc,
+    class_T	*cl,
     cctx_T	*cctx)
 {
+    type_T	*type;
+
     if (ufunc != NULL)
     {
-	type_T *type = find_generic_type_in_ufunc(gt_name, name_len, ufunc);
+	type = find_generic_type_in_ufunc(gt_name, name_len, ufunc);
 	if (type != NULL)
 	    return type;
+
+	if (ufunc->uf_class != NULL)
+	{
+	    type = find_generic_type_in_class(gt_name, name_len, ufunc->uf_class);
+	    if (type != NULL)
+		return type;
+	}
     }
+
+    if (cl != NULL)
+	return find_generic_type_in_class(gt_name, name_len, cl);
 
     if (cctx != NULL && ufunc != cctx->ctx_ufunc)
 	return find_generic_type_in_cctx(gt_name, name_len, cctx);
+
+    class_T	*extending_class = get_extending_class();
+    if (extending_class != NULL)
+    {
+	type = find_generic_type_in_class(gt_name, name_len, extending_class);
+	if (type != NULL)
+	    return type;
+    }
 
     return NULL;
 }
