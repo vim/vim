@@ -408,12 +408,12 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
     gfargs_tab_T    gfatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     if (*name_end == '<')
     {
 	// generic method call
-	name_end = parse_generic_func_type_args(name, len, name_end,
+	name_end = parse_generic_type_args(name, len, name_end,
 							&gfatab, cctx);
 	if (name_end == NULL)
 	    return FAIL;
@@ -629,7 +629,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
 
 done:
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
     return ret;
 }
 
@@ -644,7 +644,8 @@ compile_load_scriptvar(
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
 	char_u **end,	    // end of variable, may be NULL
-	imported_T *import) // found imported item, can be NULL
+	imported_T *import, // found imported item, can be NULL
+	gfargs_tab_T *gfatabp) // generic args
 {
     scriptitem_T    *si;
     int		    idx;
@@ -657,6 +658,25 @@ compile_load_scriptvar(
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	type_T		*sv_type = sv->sv_type;
+	if (sv_type->tt_type == VAR_CLASS)
+	{
+	    if (IS_GENERIC_CLASS(sv_type->tt_class))
+	    {
+		class_T	*new_cl = generic_class_get(sv_type->tt_class,
+								gfatabp);
+		if (new_cl == NULL)
+		    return FAIL;
+
+		sv_type = &new_cl->class_type;
+	    }
+	    else if (gfatabp != NULL && gfatabp->gfat_args.ga_len != 0)
+	    {
+		semsg(_(e_not_a_generic_class_str), name);
+		return FAIL;
+	    }
+	}
 
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 					current_sctx.sc_sid, idx, sv->sv_type);
@@ -762,14 +782,14 @@ compile_load_scriptvar(
 	    {
 		gfargs_tab_T	gfatab;
 
-		generic_func_args_table_init(&gfatab);
+		generic_args_table_init(&gfatab);
 
 		if (IS_GENERIC_FUNC(ufunc))
 		{
 		    if (*p == '<')
 		    {
 			// generic function call
-			p = parse_generic_func_type_args(name, STRLEN(name), p,
+			p = parse_generic_type_args(name, STRLEN(name), p,
 								&gfatab, cctx);
 			if (p != NULL)
 			{
@@ -779,7 +799,7 @@ compile_load_scriptvar(
 			    ufunc = generic_func_get(ufunc, &gfatab);
 			}
 
-			generic_func_args_table_clear(&gfatab);
+			generic_args_table_clear(&gfatab);
 
 			if (p == NULL || ufunc == NULL)
 			    return FAIL;
@@ -886,14 +906,17 @@ compile_load(
     int		prev_called_emsg = called_emsg;
     gfargs_tab_T gfatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     if (*(*arg + namelen) == '<')
     {
-	// generic function call
-	if (parse_generic_func_type_args(*arg, namelen,
-			*arg + namelen, &gfatab, cctx) == NULL)
+	// generic function or class
+	if (parse_generic_type_args(*arg, namelen, *arg + namelen, &gfatab,
+								cctx) == NULL)
+	{
+	    generic_args_table_clear(&gfatab);
 	    return FAIL;
+	}
 	*(*arg + namelen) = NUL;
     }
 
@@ -941,7 +964,7 @@ compile_load(
 			      res = generate_funcref(cctx, name, &gfatab, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
-							    NULL, &end, NULL);
+						    NULL, &end, NULL, &gfatab);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
@@ -1064,7 +1087,8 @@ compile_load(
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, namelen, cctx, NULL) == OK
 			    || (imp = find_imported(name, 0, FALSE)) != NULL)
-		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
+		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp,
+								&gfatab);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
@@ -1089,7 +1113,7 @@ theend:
     if (res == FAIL && error && called_emsg == prev_called_emsg)
 	semsg(_(e_variable_not_found_str), name);
     vim_free(name);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
     return res;
 }
 
@@ -1378,13 +1402,13 @@ compile_call(
 
     gfargs_tab_T    gfatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     if (*(*arg + varlen) == '<')
     {
 	// generic function
-	*arg = parse_generic_func_type_args(*arg, varlen, *arg + varlen,
-								&gfatab, cctx);
+	*arg = parse_generic_type_args(*arg, varlen, *arg + varlen, &gfatab,
+									cctx);
 	if (*arg == NULL)
 	    goto theend;
 	++*arg;			// skip '('
@@ -1546,7 +1570,7 @@ compile_call(
 	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
     vim_free(tofree);
     return res;
 }
@@ -3168,7 +3192,8 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (**arg == '<' && eval_isnamec1((*arg)[1]))
     {
 	++*arg;
-	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
+	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, NULL,
+								cctx, TRUE);
 	if (want_type == NULL)
 	    return FAIL;
 

@@ -524,6 +524,7 @@ parse_argument_types(
     ufunc_T	*fp,
     garray_T	*argtypes,
     int		varargs,
+    class_T	*cl,
     garray_T	*arg_objm,
     ocmember_T	*obj_members,
     int		obj_member_count,
@@ -571,7 +572,8 @@ parse_argument_types(
 			}
 		    }
 		    else
-			type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+			type = parse_type(&p, &fp->uf_type_list, fp, cl,
+								cctx, TRUE);
 		}
 		if (type == NULL || !valid_declaration_type(type))
 		    return FAIL;
@@ -607,7 +609,8 @@ parse_argument_types(
 	    fp->uf_va_type = &t_list_any;
 	else
 	{
-	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, fp, cl, cctx,
+									TRUE);
 	    if (fp->uf_va_type != NULL && fp->uf_va_type->tt_type != VAR_LIST)
 	    {
 		semsg(_(e_variable_arguments_type_must_be_list_str),
@@ -623,7 +626,7 @@ parse_argument_types(
 }
 
     static int
-parse_return_type(ufunc_T *fp, char_u *ret_type, cctx_T *cctx)
+parse_return_type(ufunc_T *fp, char_u *ret_type, class_T *cl, cctx_T *cctx)
 {
     if (ret_type == NULL)
 	fp->uf_ret_type = &t_void;
@@ -631,7 +634,8 @@ parse_return_type(ufunc_T *fp, char_u *ret_type, cctx_T *cctx)
     {
 	char_u *p = ret_type;
 
-	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, fp, cl, cctx,
+									TRUE);
 	if (fp->uf_ret_type == NULL)
 	{
 	    fp->uf_ret_type = &t_void;
@@ -1605,7 +1609,7 @@ lambda_function_body(
     SOURCING_LNUM = sourcing_lnum_top;
 
     // parse argument types
-    if (parse_argument_types(ufunc, argtypes, varargs, NULL, NULL, 0,
+    if (parse_argument_types(ufunc, argtypes, varargs, NULL, NULL, NULL, 0,
 		NULL) == FAIL)
     {
 	SOURCING_LNUM = lnum_save;
@@ -1613,7 +1617,7 @@ lambda_function_body(
     }
 
     // parse the return type, if any
-    if (parse_return_type(ufunc, ret_type, NULL) == FAIL)
+    if (parse_return_type(ufunc, ret_type, NULL, NULL) == FAIL)
 	goto erret;
 
     pt = ALLOC_CLEAR_ONE(partial_T);
@@ -1851,13 +1855,13 @@ get_lambda_tv(
 	if (types_optional)
 	{
 	    if (parse_argument_types(fp, &argtypes,
-				vim9script && varargs, NULL, NULL, 0,
+				vim9script && varargs, NULL, NULL, NULL, 0,
 				cctx) == FAIL)
 		goto errret;
 	    if (ret_type != NULL)
 	    {
 		fp->uf_ret_type = parse_type(&ret_type, &fp->uf_type_list,
-					     NULL, cctx, TRUE);
+					     NULL, NULL, cctx, TRUE);
 		if (fp->uf_ret_type == NULL)
 		    goto errret;
 	    }
@@ -3964,7 +3968,7 @@ call_func(
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     if (partial != NULL)
 	fp = partial->pt_func;
@@ -3980,7 +3984,7 @@ call_func(
 	    if (p != NULL)
 	    {
 		len = p - funcname;
-		if (parse_generic_func_type_args(funcname, len, p, &gfatab,
+		if (parse_generic_type_args(funcname, len, p, &gfatab,
 						funcexe->fe_cctx) == NULL)
 		    goto theend;
 	    }
@@ -4110,7 +4114,7 @@ call_func(
 		    goto theend;
 		}
 	    }
-	    else if (generic_func_args_table_size(&gfatab) > 0)
+	    else if (generic_args_table_size(&gfatab) > 0)
 	    {
 		emsg_funcname(fp != NULL ? e_not_a_generic_function_str
 				: e_unknown_generic_function_str, rfname);
@@ -4206,7 +4210,7 @@ theend:
 
     vim_free(tofree);
     vim_free(name);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
 
     return ret;
 }
@@ -5033,6 +5037,7 @@ define_function(
 	exarg_T	    *eap,
 	char_u	    *name_arg,
 	garray_T    *lines_to_free,
+	class_T	    *cl,
 	int	    class_flags,
 	ocmember_T  *obj_members,
 	int         obj_member_count,
@@ -5092,7 +5097,7 @@ define_function(
     ga_init(&argtypes);
     ga_init(&arg_objm);
     ga_init(&default_args);
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     /*
      * Get the function name.  There are these situations:
@@ -5202,7 +5207,7 @@ define_function(
     if (vim9script && eap->cmdidx == CMD_def && *p == '<')
     {
 	// generic function
-	p = parse_generic_func_type_params(name, p, &gfatab, cctx);
+	p = parse_generic_type_params(name, p, &gfatab, cctx);
 	if (p == NULL)
 	    goto ret_free;
     }
@@ -5636,7 +5641,7 @@ define_function(
 
 	fp->uf_def_status = UF_TO_BE_COMPILED;
 
-	if (generic_func_args_table_size(&gfatab) > 0)
+	if (generic_args_table_size(&gfatab) > 0)
 	{
 	    // initialize generic function state
 	    flags |= FC_GENERIC;
@@ -5656,7 +5661,7 @@ define_function(
 	int save_is_export = is_export;
 	is_export = FALSE;
 
-	if (parse_argument_types(fp, &argtypes, varargs, &arg_objm,
+	if (parse_argument_types(fp, &argtypes, varargs, cl, &arg_objm,
 				obj_members, obj_member_count, cctx) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
@@ -5667,7 +5672,7 @@ define_function(
 	varargs = FALSE;
 
 	// parse the return type, if any
-	if (parse_return_type(fp, ret_type, cctx) == FAIL)
+	if (parse_return_type(fp, ret_type, cl, cctx) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
 	    free_fp = fp_allocated;
@@ -5769,7 +5774,7 @@ ret_free:
     // The generic types are still in use and should not be freed.  Instead
     // clear the grow array.
     ga_clear(&gfatab.gfat_param_types);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
     vim_free(fudi.fd_newkey);
     if (name != name_arg)
 	vim_free(name);
@@ -5788,7 +5793,7 @@ ex_function(exarg_T *eap)
     garray_T lines_to_free;
 
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
-    (void)define_function(eap, NULL, &lines_to_free, 0, NULL, 0, NULL);
+    (void)define_function(eap, NULL, &lines_to_free, NULL, 0, NULL, 0, NULL);
     ga_clear_strings(&lines_to_free);
 }
 
