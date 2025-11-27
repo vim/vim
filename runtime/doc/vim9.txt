@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1252,44 +1252,11 @@ Using ++var or --var in an expression is not supported yet.
 			  vim9script
 			  def F_1073()
 			  enddef
-			  def F_1073()  # E1073: Name already defined
+			  def F_1073() # E1073: Name already defined: <SNR>...
 			  enddef
 <				 			*E1011*
 			The {name} must be less than 100 bytes long.
 
-							*E1003* *E1027* *E1096*
-			The type of value used with `:return` must match
-			{return-type}.  When {return-type} is omitted or is
-			"void" the function is not allowed to return
-			anything.  Examples: >vim9
-
-			  vim9script
-			  def F_1003(): bool
-			      return  # E1003: Missing return value
-			  enddef
-			  F_1003()
-< >vim9
-			  vim9script
-			  def F_1027(): bool
-			      echo false  # E1027: Missing return statement
-			  enddef
-			  F_1027()
-< >vim9
-			  vim9script
-			  def F_1096(): void
-			      return false  # E1096: Returning a value ...
-			  enddef
-			  F_1096()
-<							*E1056* *E1059*
-			The type cannot be omitted if the colon heralding it
-			is included.  The colon also cannot be preceded by
-			white space.  Examples: >vim
-
-			  def F_1056():
-			  enddef  # E1056: Expected a type
-			  def F_1059() : bool
-			  enddef  # E1059: No white space allowed before colon
-<
 							*E1077*
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
@@ -1300,7 +1267,8 @@ Using ++var or --var in an expression is not supported yet.
 			declaration must provide a type.  Example: >vim9
 
 			  vim9script
-			  def F_1077(x): void  # E1077: Missing argument type
+			  def F_1077(x): void
+			      # E1077: Missing argument type for x
 			  enddef
 <
 			For the second form, because the declaration does not
@@ -1324,9 +1292,44 @@ Using ++var or --var in an expression is not supported yet.
 
 			  vim9script
 			  def F_1123(a: number, b: number): void
-			      echo max(a b)  # E1123: Missing comma
+			      echo max(a b)
+			      # E1123: Missing comma before argument: b)
 			  enddef
 			  F_1123(1, 2)
+<							*E1003* *E1027* *E1096*
+			The type of value used with `:return` must match
+			{return-type}.  When {return-type} is omitted or is
+			"void" the function is not allowed to return
+			anything.  Examples: >vim9
+
+			  vim9script
+			  def F_1003(): bool
+			      return  # E1003: Missing return value
+			  enddef
+			  F_1003()
+< >vim9
+			  vim9script
+			  def F_1027(): bool
+			      echo false  # E1027: Missing return statement
+			  enddef
+			  F_1027()
+< >vim9
+			  vim9script
+			  def F_1096(): void
+			      return false  # E1096: Returning a value ...
+			  enddef
+			  F_1096()
+<							*E1056* *E1059*
+			When ": {return-type}" is specified, {return-type}
+			cannot be omitted (leaving a hanging colon).  The ": "
+			also cannot be preceded by white space.  Examples: >vim
+
+			  def F_1056():
+                              # E1056: Expected a type:
+			  enddef
+			  def F_1059() : bool
+                              # E1059: No white space allowed before colon:...
+			  enddef
 <
 			The function will be compiled into instructions when
 			called or when either `:defcompile` or `:disassemble` is
@@ -1354,7 +1357,8 @@ Using ++var or --var in an expression is not supported yet.
 < >vim9
 			  vim9script
 			  def Func()
-			      def! InnerFunc()  # E1117: Cannot use ! ...
+			      def! InnerFunc()
+			          # E1117: Cannot use ! with nested :def
 			      enddef
 			  enddef
 			  Func()
@@ -1366,7 +1370,8 @@ Using ++var or --var in an expression is not supported yet.
 			  vim9script
 			  def F_1084(): void
 			  enddef
-			  delfunction! F_1084  # E1084: Cannot delete Vim9 ...
+			  delfunction! F_1084
+			  # E1084: Cannot delete Vim9 script function F_1084
 <
 			Note: The generic error *E1028* ("Compiling :def
 			function failed") indicates an undeterminable error
@@ -1380,11 +1385,13 @@ Using ++var or --var in an expression is not supported yet.
 
 			  vim9script
 			  def MyFunc()
-			  echo 'Do Something' | enddef # E1057: Missing enddef
+			  echo 'Do Something' | enddef
+			  # E1057: Missing :enddef
 < >vim9
 			  vim9script
 			  def F_1173()
-			  enddef echo "X"  # E1173: Text found after enddef...
+			  enddef echo 'X'
+			  # E1173: Text found after enddef: echo 'X'
 < >vim9
 			  vim9script
 			  def F_1152()
@@ -1409,9 +1416,9 @@ For example: >vim9
 	        # echo duo  # This would be E1001 (Variable not found: duo)
 	    endif
 	enddef
-	var unus = 1
+	var unus: number = 1
 	MyVim9def()         # MyVim9def is compiled ("duo" does not exist yet)
-	var duo = 2
+	var duo: number = 2
 <
 If the script the `:def` function is defined in is legacy Vim script,
 script-local variables may be accessed with or without the "s:" prefix.
@@ -1445,9 +1452,10 @@ in a legacy function with the "s:" prefix.  For example: >vim9
 
 	vim9script
 	function F_1269()
-	    let s:wishful_thinking = v:true
+	    let s:i_wish = v:true
 	endfunction
-	F_1269()  # E1269: Cannot create a Vim9 script variable in a function
+	F_1269()
+	# E1269: Cannot create a Vim9 script variable in a function: s:i_wish
 <
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions and classes (|class-compile|)
@@ -1600,7 +1608,7 @@ function to define it: >vim9
 
 	vim9script
 	def GetClosure(i: number): func
-	    var infunc = i
+	    var infunc: number = i
 	    return (): number => infunc
 	enddef
 	var flist: list<func>
@@ -1626,7 +1634,7 @@ the original context where the closure was defined.  For example: >vim9
 	vim9script
 	def F_1248(): void
 	    var n: number
-	    var F = () => {
+	    var F: func = () => {
 	        n += 1
 	    }
 	    try
@@ -1643,7 +1651,7 @@ the variable "n" is used after the `:endfor`, that is an |E121| error: >vim9
 
 	vim9script
 	for n in range(3)
-	    var nr = n
+	    var nr: number = n
 	    timer_start(1000 * n, (_) => {
 	        echowindow nr
 	    })
@@ -1722,14 +1730,16 @@ Calling a :def function in an expr option ~
 							*expr-option-function*
 The value of a few options, such as 'foldexpr', is an expression that is
 evaluated to get a value.  The evaluation can have quite a bit of overhead.
-One way to minimize the overhead, and also to keep the option value very
-simple, is to define a compiled function and set the option to call it
-without arguments.  For example: >vim9
+One way to minimize the overhead, and also to keep the option value simple,
+is to define a compiled function and set the option to call it without
+arguments.  For example: >vim9
 
 	vim9script
 	def MyFoldFunc(): string
-	    return getline(v:lnum) =~ '^\d\%x2E\s\S' &&
-	           getline(v:lnum + 1)->empty() ? '>1' : '1'
+	    # This matches start of line (^), followed by a digit, a full stop
+	    # a space or tab, an uppercase character, with an empty next line
+	    return getline(v:lnum) =~ '^[[:digit:]]\.[[:blank:]][[:upper:]]'
+	        && getline(v:lnum + 1)->empty() ? '>1' : '1'
 	enddef
 	set foldexpr=MyFoldFunc()
 	set foldmethod=expr
@@ -2236,7 +2246,7 @@ in Vim9 script.
   - Using an empty string in an argument that requires a non-empty string: >vim9
 
 	echo exepath('')
-	vim9cmd echo exepath('')  # E1175: Non-empty string required for arg
+	vim9cmd echo exepath('') # E1175: Non-empty string required for arg...
 <
   - Not using a number when it is required: >vim
 
