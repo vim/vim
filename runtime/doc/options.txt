@@ -1919,7 +1919,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	available.  Supported methods are:
 		wayland		Wayland selections
 		x11		X11 selections
-		*		Clipboard provider name
+		<name>		Use a clipboard provider with the given name
 
 	Note: This option is ignored when either the GUI is running or if Vim
 	is run on a system without Wayland or X11 support, such as Windows or
