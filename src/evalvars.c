@@ -3363,7 +3363,30 @@ eval_variable(
 		    }
 		}
 	    }
+
 	    ret = copy_tv(tv, rettv);
+
+	    // If a generic class is used, then use the class with the
+	    // specified type
+	    if (tv != NULL && tv->v_type == VAR_CLASS
+				&& tv->vval.v_class != NULL)
+	    {
+		char_u	*argp = name + len;
+		class_T	*cl = tv->vval.v_class;
+
+		cl->class_refcount--;
+
+		name[len] = cc;
+		cl = eval_generic_class(cl, &argp);
+		name[len] = NUL;
+		if (cl == NULL)
+		{
+		    ret = FAIL;
+		    goto done;
+		}
+		rettv->vval.v_class = cl;
+		cl->class_refcount++;
+	    }
 	}
     }
 

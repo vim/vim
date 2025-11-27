@@ -26,7 +26,7 @@ int check_type(type_T *expected, type_T *actual, int give_msg, where_T where);
 int check_type_maybe(type_T *expected, type_T *actual, int give_msg, where_T where);
 int check_argument_types(type_T *type, typval_T *argvars, int argcount, typval_T *base_tv, char_u *name);
 char_u *skip_type(char_u *start, int optional);
-type_T *parse_type(char_u **arg, garray_T *type_gap, ufunc_T *ufunc, cctx_T *cctx, int give_error);
+type_T *parse_type(char_u **arg, garray_T *type_gap, ufunc_T *ufunc, class_T *cl, cctx_T *cctx, int give_error);
 int equal_type(type_T *type1, type_T *type2, int flags);
 void common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap);
 type_T *get_item_type(type_T *type);
