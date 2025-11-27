@@ -774,5 +774,49 @@ func Test_vim9_nested_call()
   call delete('Xprofile_nested.log')
 endfunc
 
+" Test for profiling the copy of a function: an inherited method, a method of
+" a generic class and a generic function.  The copy must not use the
+" profiling data of the function it was copied from.
+func Test_vim9_profile_function_copy()
+  let lines =<< trim END
+    vim9script
+    class A
+      var v: number
+      def Get(): number
+        return this.v
+      enddef
+    endclass
+    class B extends A
+    endclass
+    class Box<T>
+      var v: T
+      def Get(): T
+        return this.v
+      enddef
+    endclass
+    def Id<T>(x: T): T
+      return x
+    enddef
+    g:result = [B.new(1).Get(), Box<number>.new(2).Get(), Id<number>(3)]
+  END
+  call writefile(lines, 'Xprofile_copy.vim', 'D')
+  " Sourcing the script again frees the classes and the functions.
+  call system(GetVimCommandClean()
+    \ . ' -es'
+    \ . ' -c "profile start Xprofile_copy.log"'
+    \ . ' -c "profile! file Xprofile_copy.vim"'
+    \ . ' -c "so Xprofile_copy.vim"'
+    \ . ' -c "so Xprofile_copy.vim"'
+    \ . ' -c "call writefile([string(g:result)], ''Xprofile_copy.res'')"'
+    \ . ' -c "qall!"')
+  call assert_equal(0, v:shell_error)
+  call assert_equal(['[1, 2, 3]'], readfile('Xprofile_copy.res'))
+  call assert_match('^SCRIPT .*Xprofile_copy.vim$',
+        \ readfile('Xprofile_copy.log')[0])
+
+  call delete('Xprofile_copy.log')
+  call delete('Xprofile_copy.res')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

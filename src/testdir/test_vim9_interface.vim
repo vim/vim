@@ -1459,6 +1459,62 @@ def Test_implements_many_with_error()
 enddef
 
 " Test interface garbage collection {{{1
+" Test for a method returning the implementing class where the interface
+" method returns the interface type
+def Test_interface_method_returns_own_class()
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Copy(): I
+    endinterface
+    interface J extends I
+      def Get(): number
+    endinterface
+    class A implements I
+      def Copy(): A
+        return A.new()
+      enddef
+    endclass
+    class B implements J
+      def Copy(): B
+        return B.new()
+      enddef
+      def Get(): number
+        return 2
+      enddef
+    endclass
+    abstract class Base implements I
+      abstract def Copy(): I
+    endclass
+    class C extends Base
+      def Copy(): C
+        return C.new()
+      enddef
+    endclass
+    var i: I = A.new().Copy()
+    assert_equal('object<A>', typename(i))
+    assert_equal('object<B>', typename(B.new().Copy()))
+    i = C.new().Copy()
+    assert_equal('object<C>', typename(i))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    interface I
+      def Copy(): I
+    endinterface
+    class Other
+    endclass
+    class A implements I
+      def Copy(): Other
+        return Other.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Copy": type mismatch, expected func(): object<I> but got func(): object<Other>', 11)
+enddef
+
 func Test_interface_garbagecollect()
   let lines =<< trim END
     vim9script

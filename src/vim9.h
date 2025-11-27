@@ -250,6 +250,9 @@ typedef struct {
     int	    cmf_idx;	    // index in "def_functions" for ISN_METHODCALL
     int	    cmf_argcount;   // number of arguments on top of stack
     int	    cmf_is_super;   // doing "super.Func", use cmf_itf, not cmf_idx
+    ufunc_T *cmf_ufunc;	    // for a generic method: the method of
+			    // "cmf_itf" with the type arguments, NULL
+			    // otherwise
 } cmfunc_T;
 
 // arguments to ISN_PCALL
@@ -776,6 +779,8 @@ typedef struct {
 				// ASSIGN_FINAL (no assignment) or ASSIGN_CONST
 				// (value cannot be changed)
     int		lv_arg;		// when TRUE this is an argument
+    ufunc_T	*lv_ufunc;	// for a nested function: its ufunc, see
+				// compile_nested_generic_func()
 } lvar_T;
 
 // Destination for an assignment or ":unlet" with an index.
@@ -843,6 +848,9 @@ typedef struct {
  */
 struct cctx_S {
     ufunc_T	*ctx_ufunc;	    // current function
+    class_T	*ctx_generic_class; // class for the type variables, when
+				    // NULL the class defining "ctx_ufunc"
+				    // is used
     int		ctx_lnum;	    // line number in current function
     char_u	*ctx_line_start;    // start of current line or NULL
     garray_T	ctx_instr;	    // generated instructions

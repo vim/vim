@@ -4045,6 +4045,10 @@ are examples of errors E1008, E1009, E1010, and E1012:
 	vim9cmd var l_1010: list<invalidtype>
 	vim9cmd var l_1012: list<number> = ['42']
 <
+							*E1596*
+A type cannot be nested too deeply, e.g. a "list<list<...>>" type nested more
+than 1000 times results in an error.
+
 There is no array type.  Instead, use either a list or a tuple.  Those types
 may also be literals (constants).  In the following example, [5, 6] is a list
 literal and (7, ) a tuple literal.  The echoed list is a list literal too:
@@ -5270,7 +5274,7 @@ Examples:
 >vim9
 	vim9script
 	def My1555<>(): void
-	enddef	# E1555: Empty type list specified for generic function '<S...
+	enddef	# E1555: Empty type list specified for generic '<SNR>1_My15...
 < >vim9
 	vim9script
 	def My1556<T>(): void
@@ -5313,6 +5317,10 @@ An example:
 	enddef
 	Outer()
 <
+							*E1594*
+A nested generic function cannot be used with type arguments in a closure,
+such as a lambda or another nested function, of the function where it is
+defined.
 
 Using a type variable as a type argument ~
 
@@ -5373,6 +5381,8 @@ A generic class method in a base class can be overridden by a generic method
 in a child class.  The number of type variables must match between both
 methods.  A concrete class method cannot be overridden by a generic method,
 and vice versa.
+
+A class and an interface can also have type parameters, see |generic-class|.
 
 
 Generic function reference~

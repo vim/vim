@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Oct 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,9 +14,10 @@ Vim9 classes, objects, interfaces, types and enums.		*vim9-class*
 6.  More class details		|Vim9-class|
 7.  Type definition		|Vim9-type|
 8.  Enum			|Vim9-enum|
+9.  Generic classes		|Vim9-generic|
 
-9.  Rationale
-10. To be done later
+10. Rationale
+11. To be done later
 
 ==============================================================================
 
@@ -626,6 +627,9 @@ these variants: >
 							*E1314*
 The class name should be CamelCased.  It must start with an uppercase letter.
 That avoids clashing with builtin types.
+
+The class name may be followed by type parameters, e.g. "class Box<T>", see
+|generic-class|.
 							*E1315*
 After the class name these optional items can be used.  Each can appear only
 once.  They can appear in any order, although this order is recommended: >
@@ -793,6 +797,7 @@ name, with a hint about what it provides.
 An interface can only be defined in a |Vim9| script file.  *E1342*
 An interface cannot "implement" another interface but it can "extend" another
 interface. *E1381*
+An interface can have type parameters, see |generic-interface|.
 
 null object ~
 
@@ -1093,7 +1098,325 @@ A enum can contain object variables and methods just like a regular class: >
 <
 ==============================================================================
 
-9.  Rationale
+9.  Generic classes				*Vim9-generic* *generic-class*
+
+A generic class has type parameters, like a generic function, see
+|generic-functions|.  The class is written once and used with different types,
+while the types of variables, arguments and return values are still checked.
+An interface can be generic in the same way, see |generic-interface|.
+
+
+Defining a generic class ~
+						*generic-class-declaration*
+The type parameters are given in angle brackets ("<" and ">") directly after
+the class name: >
+
+	class Box<T>
+	   var value: T
+
+	   def new(this.value)
+	   enddef
+
+	   def Get(): T
+	      return this.value
+	   enddef
+
+	   def Set(value: T)
+	      this.value = value
+	   enddef
+	endclass
+<
+Inside the class a type parameter can be used like any other type: for object
+and class variables, for the arguments and return type of a method and in the
+body of a method.  Multiple type parameters are separated by a comma and a
+space: >
+
+	class Pair<K, V>
+	   var key: K
+	   var val: V
+
+	   def new(this.key, this.val)
+	   enddef
+
+	   def Swap(): Pair<V, K>
+	      return Pair<V, K>.new(this.val, this.key)
+	   enddef
+	endclass
+<
+The names of the type parameters must start with an uppercase letter and must
+be different, see |type-variable-naming|.  No white space is allowed between
+the class name and the "<".  The "extends" and "implements" items follow the
+">", see |generic-class-extends| and |generic-interface|.
+
+A generic class can be abstract and can be exported, like other classes.
+							*E1593*
+An enum cannot be generic.
+
+
+Using a generic class ~
+						*generic-class-use*
+A generic class is used with type arguments: the types to use for the type
+parameters, in angle brackets after the class name.  One type must be given
+for each type parameter, in the same order: >
+
+	var nb = Box<number>.new(10)
+	nb.Set(nb.Get() + 5)
+	echo nb.Get()			# 15
+	var sb: Box<string> = Box<string>.new('abc')
+	echo typename(sb)		# object<Box<string>>
+
+	var p = Pair<string, number>.new('one', 1)
+	echo p.Swap().key		# 1
+<
+Each list of type arguments gives a separate class, such as "Box<number>" and
+"Box<string>", in which the type parameters stand for the type arguments.
+Thus "nb.Set()" only accepts a number and "sb.Get()" returns a string.  The
+same type written differently, e.g. with a type alias (|typealias|), gives the
+same class.
+
+Any type can be used as a type argument, including a class, an interface and a
+generic class with type arguments: >
+
+	var pairs: list<Pair<string, number>> = [p]
+	var boxed: Box<Box<number>> = Box<Box<number>>.new(nb)
+<
+A generic class with type arguments can be used where a class can be used: to
+create an object, for a class variable or class method, as a type, and with
+|typename()|, |instanceof()| and |exists()|.  An imported generic class is
+used like "imp.Box<number>".  The `:defcompile` and `:disassemble` commands
+accept a generic class with type arguments: >
+
+	defcompile Box<number>
+	disassemble Box<number>.Get
+<
+Inside a generic class, function or method, the type arguments can use the
+type parameters, e.g. "Pair<V, K>" in the Pair class above.
+
+					*E1588* *E1589* *E1590* *E1591*
+A generic class cannot be used without type arguments, and type arguments
+cannot be given for a class that is not generic: >
+
+	var b = Box.new(1)
+	# E1588: Type arguments missing for generic class 'Box'
+	var p = Pair<number>.new()
+	# E1591: Not enough types specified for generic class 'Pair'
+<
+The same rules for white space apply as when calling a generic function, see
+|generic-function-call|.
+
+
+Type checking ~
+						*generic-class-type-check*
+Classes with different type arguments are different classes.  An object of
+one of them cannot be used where an object of another one is expected, also
+not when a type argument is a class that extends the other type argument: >
+
+	var b1: Box<number> = Box<string>.new('abc')
+	# E1012: Type mismatch; expected object<Box<number>> but got
+	#        object<Box<string>>
+
+	class Base
+	endclass
+	class Child extends Base
+	endclass
+	var b2: Box<Base> = Box<Child>.new(Child.new())
+	# E1012: Type mismatch; expected object<Box<object<Base>>> but got
+	#        object<Box<object<Child>>>
+<
+Some checks depend on the type arguments, such as the method types for an
+overridden method or an implemented interface.  When these fail, the error is
+given when the class is used with those type arguments, not when the generic
+class is defined.
+
+
+Class variables and methods ~
+						*generic-class-variable*
+Each class created from a generic class has its own class variables.  The
+initializer of a class variable is evaluated when the class with the type
+arguments is used for the first time.  The type parameters can be used in
+class variables and class methods: >
+
+	class Counter<T>
+	   static var count: number = 0
+	   var value: T
+
+	   def new(this.value)
+	      Counter<T>.count += 1
+	   enddef
+
+	   static def Of(value: T): Counter<T>
+	      return Counter<T>.new(value)
+	   enddef
+	endclass
+
+	Counter<number>.new(1)
+	Counter<number>.Of(2)
+	Counter<string>.new('a')
+	echo Counter<number>.count Counter<string>.count	# 2 1
+<
+A method of a generic class can be a generic function itself.  It can use the
+type parameters of the class and its own type parameters, which must have
+different names (|E1561|): >
+
+	class Box<T>
+	   var value: T
+
+	   def new(this.value)
+	   enddef
+
+	   def Map<U>(F: func(T): U): Box<U>
+	      return Box<U>.new(F(this.value))
+	   enddef
+	endclass
+
+	var b = Box<number>.new(3)
+	var s = b.Map<string>((n: number): string => repeat('x', n))
+	echo s.value			# xxx
+<
+
+Extending a generic class ~
+						*generic-class-extends*
+A generic class can extend another generic class.  The type arguments of the
+base class can use the type parameters of the child class.  A class that is
+not generic can extend a generic class with type arguments, and a generic
+class can extend a class that is not generic: >
+
+	class Stack<T>
+	   var items: list<T> = []
+
+	   def Push(item: T)
+	      this.items->add(item)
+	   enddef
+	endclass
+
+	class LimitedStack<T> extends Stack<T>
+	   var limit: number
+
+	   def new(this.limit)
+	   enddef
+
+	   def Push(item: T)
+	      if len(this.items) < this.limit
+		 super.Push(item)
+	      endif
+	   enddef
+	endclass
+
+	class NumberStack extends Stack<number>
+	   def Sum(): number
+	      return this.items->reduce((acc, n) => acc + n, 0)
+	   enddef
+	endclass
+
+	var st: Stack<string> = LimitedStack<string>.new(2)
+<
+"LimitedStack<string>" extends "Stack<string>", thus an object of
+"LimitedStack<string>" can be used where "Stack<string>" is expected.  The
+methods inherited from the base class use its type arguments, and an
+overridden method must have the same signature with the type arguments of the
+base class (|E1383|).
+
+
+Generic interfaces ~
+						*generic-interface*
+An interface can have type parameters, like a class: >
+
+	interface Container<T>
+	   def Get(): T
+	endinterface
+
+	interface Resettable<T> extends Container<T>
+	   def Reset(value: T)
+	endinterface
+<
+A class implements a generic interface with type arguments.  A generic class
+can use its type parameters in them: >
+
+	class Box<T> implements Resettable<T>
+	   var value: T
+
+	   def new(this.value)
+	   enddef
+
+	   def Get(): T
+	      return this.value
+	   enddef
+
+	   def Reset(value: T)
+	      this.value = value
+	   enddef
+	endclass
+
+	class Name implements Container<string>
+	   def Get(): string
+	      return 'Vim'
+	   enddef
+	endclass
+<
+The variables and methods of the class must match those of the interface with
+the type arguments (|E1382|, |E1383|).  The interface with type arguments can
+be used as a type: >
+
+	def Describe(c: Container<string>): string
+	   return $'value: {c.Get()}'
+	enddef
+	echo Describe(Box<string>.new('abc'))	# value: abc
+	echo Describe(Name.new())		# value: Vim
+
+	var r: Resettable<number> = Box<number>.new(1)
+	r.Reset(7)
+	echo r.Get()				# 7
+<
+							*E1598*
+A method of an interface can be a generic function.  The method that
+implements it must have the same number of type parameters.  When it is called
+through the interface, the method of the object is called with the same type
+arguments: >
+
+	interface Mapper<T>
+	   def Map<U>(F: func(T): U): list<U>
+	endinterface
+
+	class Numbers implements Mapper<number>
+	   var items: list<number>
+
+	   def new(this.items)
+	   enddef
+
+	   def Map<U>(F: func(number): U): list<U>
+	      return this.items->mapnew((_, n) => F(n))
+	   enddef
+	endclass
+
+	var m: Mapper<number> = Numbers.new([1, 2])
+	echo m.Map<string>((n: number): string => $'#{n}')	# ['#1', '#2']
+<
+
+Errors ~
+							*E1592*
+Using a generic class with type arguments may require using it with other type
+arguments, e.g. when a method of "Box<T>" returns a "Box<list<T>>".  When
+this does not end, an error is given: >
+
+	class Box<T>
+	   def Wrap(): Box<list<T>>
+	      return Box<list<T>>.new()
+	   enddef
+	endclass
+	var b = Box<number>.new()
+	# E1592: Generic class 'Box' nested too deep
+<
+							*E1597*
+A generic class cannot be used with type arguments while it is being defined,
+e.g. in a class variable initializer of its base class.
+							*E1595*
+When the script that defines a generic class is sourced again while the class
+is used with new type arguments, e.g. from a class variable initializer, that
+use fails.
+
+==============================================================================
+
+10. Rationale
 
 Most of the choices for |Vim9| classes come from popular and recently
 developed languages, such as Java, TypeScript and Dart.  The syntax has been
@@ -1347,13 +1670,12 @@ it simple and not specify access details.
 
 ==============================================================================
 
-10. To be done later
+11. To be done later
 
 Can a newSomething() constructor invoke another constructor?  If yes, what are
 the restrictions?
 
 Thoughts:
-- Generics for a class: `class <Tkey, Tentry>`
 - Mixins: not sure if that is useful, leave out for simplicity.
 
 Some things that look like good additions:

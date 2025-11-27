@@ -19,6 +19,7 @@ int generate_COND2BOOL(cctx_T *cctx);
 int generate_TYPECHECK(cctx_T *cctx, type_T *expected, int typechk_flags, int offset, int is_var, int argidx);
 int generate_SETTYPE(cctx_T *cctx, type_T *expected);
 int generate_PUSHOBJ(cctx_T *cctx);
+int generate_PUSHCLASS(cctx_T *cctx, class_T *class);
 int generate_tv_PUSH(cctx_T *cctx, typval_T *tv);
 int generate_PUSHNR(cctx_T *cctx, varnumber_T number);
 int generate_PUSHBOOL(cctx_T *cctx, varnumber_T number);

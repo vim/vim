@@ -766,7 +766,7 @@ generate_PUSHOBJ(cctx_T *cctx)
 /*
  * Generate an ISN_PUSHCLASS instruction.  "class" can be NULL.
  */
-    static int
+    int
 generate_PUSHCLASS(cctx_T *cctx, class_T *class)
 {
     RETURN_OK_IF_SKIP(cctx);
@@ -2092,6 +2092,15 @@ generate_CALL(
 	isn->isn_arg.mfunc->cmf_idx = mi;
 	isn->isn_arg.mfunc->cmf_argcount = argcount;
 	isn->isn_arg.mfunc->cmf_is_super = is_super;
+	// For a generic method "ufunc" has the type arguments, the method of
+	// the object class is created with the same type arguments when
+	// called.
+	isn->isn_arg.mfunc->cmf_ufunc = NULL;
+	if (ufunc != cl->class_obj_methods[mi])
+	{
+	    isn->isn_arg.mfunc->cmf_ufunc = ufunc;
+	    ++ufunc->uf_refcount;
+	}
     }
     else if (isn->isn_type == ISN_DCALL)
     {
@@ -2867,6 +2876,7 @@ delete_instr(isn_T *isn)
 	    {
 		cmfunc_T  *mfunc = isn->isn_arg.mfunc;
 		class_unref(mfunc->cmf_itf);
+		func_ptr_unref(mfunc->cmf_ufunc);
 		vim_free(mfunc);
 	    }
 	    break;
