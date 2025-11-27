@@ -462,6 +462,10 @@ ui_wait_for_chars_or_timer(
 
     while (wtime < 0 || remaining > 0)
     {
+#ifdef FEAT_TREESITTER
+	// Try parsing
+	bool pending_parses = tsvim_parse_pending();
+#endif
 	// Trigger timers and then get the time in wtime until the next one is
 	// due.  Wait up to that time.
 	due_time = check_due_timer();
@@ -497,6 +501,11 @@ ui_wait_for_chars_or_timer(
 #  endif
 	}
 # endif
+#ifdef FEAT_TREESITTER
+	// Pending parser waiting to be processed
+	if (pending_parses)
+	    due_time = 1L;
+#endif
 	if (wait_func(due_time, interrupted, ignore_input))
 	    return OK;
 	if ((interrupted != NULL && *interrupted)
