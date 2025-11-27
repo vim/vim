@@ -16,6 +16,17 @@
 
 #if defined(FEAT_EVAL)
 
+static void class_free(class_T *cl);
+static int class_get_selfrefs(class_T *cl);
+static void generic_class_init(class_T *cl, generic_args_tab_T *gatab);
+static void generic_class_remove_parents(class_T *cl, class_T *parent,
+					      class_T **intfs, int intf_count);
+static int generic_class_in_use(class_T *cl);
+static void generic_class_clear_items(class_T *cl);
+static void set_class_extended(class_T *cl);
+static class_T *generic_class_get_with_types(class_T *cl, type_T **args,
+								int argcount);
+
 static class_T *first_class = NULL;
 static class_T *next_nonref_class = NULL;
 
@@ -96,7 +107,7 @@ parse_member(
 	    return FAIL;
 	}
 	type_arg = skipwhite(colon + 1);
-	type = parse_type(&type_arg, type_list, NULL, NULL, TRUE);
+	type = parse_type(&type_arg, type_list, NULL, TRUE);
 	if (type == NULL || !valid_declaration_type(type))
 	    return FAIL;
 	*has_type = TRUE;
@@ -129,7 +140,12 @@ parse_member(
 	init_arg = skipwhite(init_arg + 1);
 
 	fill_evalarg_from_eap(&evalarg, eap, FALSE);
-	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
+	if (skip_expr_concatenate(&init_arg, &expr_start, &expr_end,
+							    &evalarg) == FAIL)
+	{
+	    clear_evalarg(&evalarg, NULL);
+	    return FAIL;
+	}
 
 	init_arg = skipwhite(init_arg);
 	if (*init_arg != NUL && !vim9_comment_start(init_arg))
@@ -173,7 +189,7 @@ add_member(
     type_T	*type,
     char_u	*init_expr)
 {
-    if (ga_grow(gap, 1) == FAIL)
+    if (ga_grow_id(gap, 1, aid_class_add_member) == FAIL)
 	return FAIL;
     ocmember_T *m = ((ocmember_T *)gap->ga_data) + gap->ga_len;
     m->ocm_name.length = (size_t)(varname_end - varname);
@@ -221,29 +237,39 @@ add_members_to_class(
     ocmember_T	**members,
     int		*member_count)
 {
-    *member_count = parent_count + gap->ga_len;
-    *members = *member_count == 0 ? NULL
-				       : ALLOC_MULT(ocmember_T, *member_count);
-    if (*member_count > 0 && *members == NULL)
+    int count = parent_count + gap->ga_len;
+
+    // "member_count" is the number of members that were set, they are freed
+    // on failure.
+    *member_count = 0;
+    *members = count == 0 ? NULL
+		: alloc_id(sizeof(ocmember_T) * count, aid_class_members);
+    if (count > 0 && *members == NULL)
 	return FAIL;
     for (int i = 0; i < parent_count; ++i)
     {
 	// parent members need to be copied
 	ocmember_T	*m = *members + i;
-	*m = parent_members[i];
-	m->ocm_name.string = vim_strnsave(m->ocm_name.string, m->ocm_name.length);
-	if (m->ocm_name.string == NULL)
+	ocmember_T	*pm = &parent_members[i];
+
+	*m = *pm;
+	m->ocm_name.string = vim_strnsave(pm->ocm_name.string,
+							pm->ocm_name.length);
+	m->ocm_init = pm->ocm_init == NULL ? NULL : vim_strsave(pm->ocm_init);
+	if (m->ocm_name.string == NULL
+			    || (pm->ocm_init != NULL && m->ocm_init == NULL))
 	{
-	    m->ocm_name.length = 0;
+	    vim_free(m->ocm_name.string);
+	    vim_free(m->ocm_init);
 	    return FAIL;
 	}
-	if (m->ocm_init != NULL)
-	    m->ocm_init = vim_strsave(m->ocm_init);
+	++*member_count;
     }
     if (gap->ga_len > 0)
 	// new members are moved
 	mch_memmove(*members + parent_count,
 			       gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
+    *member_count += gap->ga_len;
     VIM_CLEAR(gap->ga_data);
     return OK;
 }
@@ -316,15 +342,18 @@ validate_extends_class(
 {
     typval_T	tv;
     int		success = FALSE;
+    size_t	len = cl->class_name.length;
 
-    if (STRCMP(cl->class_name.string, extends_name) == 0)
+    // A class cannot extend itself, also not with type arguments.
+    if (STRNCMP(cl->class_name.string, extends_name, len) == 0
+		&& (extends_name[len] == NUL || extends_name[len] == '<'))
     {
 	semsg(_(e_cannot_extend_str), extends_name);
 	return success;
     }
 
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable_import(extends_name, &tv) == FAIL)
+    if (eval_variable_import(extends_name, &tv, 0) == FAIL)
     {
 	semsg(_(e_class_name_not_found_str), extends_name);
 	return success;
@@ -733,12 +762,25 @@ validate_interface_variables(
 }
 
 /*
- * Returns TRUE if the method signature of "if_method" and "cl_method" matches.
+ * Returns TRUE if the method signature of "if_method" of interface
+ * "intf_name" and "cl_method" matches.
  */
     static int
-intf_method_type_matches(ufunc_T *if_method, ufunc_T *cl_method)
+intf_method_type_matches(
+    ufunc_T	*if_method,
+    ufunc_T	*cl_method,
+    char_u	*intf_name)
 {
     where_T where = WHERE_INIT;
+
+    // A generic method must have the same number of type variables, like
+    // when overriding a method, see validate_extends_generic_method().
+    if (cl_method->uf_generic_argcount != if_method->uf_generic_argcount)
+    {
+	semsg(_(e_type_var_count_of_method_str_differs_from_interface_str),
+						cl_method->uf_name, intf_name);
+	return FALSE;
+    }
 
     // Ensure the type is matching.
     where.wt_func_name = (char *)if_method->uf_name;
@@ -751,16 +793,17 @@ intf_method_type_matches(ufunc_T *if_method, ufunc_T *cl_method)
 }
 
 /*
- * Returns TRUE if the interface method "if_ufunc" is present in the list of
- * methods in "cl_fp" or in the parent lineage of one of the extended classes
- * in "extends_cl".  For a class method, 'is_class_method' is TRUE.
+ * Returns TRUE if the method "if_ufunc" of interface "intf_name" is present in
+ * the list of methods in "cl_fp" or in the parent lineage of one of the
+ * extended classes in "extends_cl".
  */
     static int
 intf_method_present(
     ufunc_T *if_ufunc,
     ufunc_T **cl_fp,
     int	    cl_count,
-    class_T *extends_cl)
+    class_T *extends_cl,
+    char_u  *intf_name)
 {
     int		method_present  = FALSE;
 
@@ -769,7 +812,7 @@ intf_method_present(
 	if (STRCMP(if_ufunc->uf_name, cl_fp[cl_i]->uf_name) == 0)
 	{
 	    // Ensure the type is matching.
-	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i]))
+	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i], intf_name))
 		return FALSE;
 	    method_present = TRUE;
 	    break;
@@ -781,7 +824,7 @@ intf_method_present(
 	ufunc_T **ext_cl_fp = (ufunc_T **)(extends_cl->class_obj_methods);
 	int	ext_cl_count = extends_cl->class_obj_method_count;
 	return intf_method_present(if_ufunc, ext_cl_fp, ext_cl_count,
-						extends_cl->class_extends);
+					extends_cl->class_extends, intf_name);
     }
 
     return method_present;
@@ -813,7 +856,8 @@ validate_interface_methods(
     {
 	char_u	*if_name = if_fp[if_i]->uf_name;
 
-	if (!intf_method_present(if_fp[if_i], cl_fp, cl_count, extends_cl))
+	if (!intf_method_present(if_fp[if_i], cl_fp, cl_count, extends_cl,
+							    intf_class_name))
 	{
 	    semsg(_(e_method_str_of_interface_str_not_implemented),
 		    if_name, intf_class_name);
@@ -833,6 +877,7 @@ validate_interface_methods(
  */
     static int
 validate_implements_classes(
+    class_T	*cl,
     garray_T	*impl_gap,
     garray_T	*intf_classes_gap,
     garray_T	*objmethods_gap,
@@ -846,7 +891,7 @@ validate_implements_classes(
 	char_u *impl = ((char_u **)impl_gap->ga_data)[i];
 	typval_T tv;
 	tv.v_type = VAR_UNKNOWN;
-	if (eval_variable_import(impl, &tv) == FAIL)
+	if (eval_variable_import(impl, &tv, 0) == FAIL)
 	{
 	    semsg(_(e_interface_name_not_found_str), impl);
 	    success = FALSE;
@@ -878,14 +923,27 @@ validate_implements_classes(
 	// check the variables of the interface match the members of the class
 	success = validate_interface_variables(impl, ifcl, objmembers_gap,
 								extends_cl);
-
-	// check the functions/methods of the interface match the
-	// functions/methods of the class
-	if (success)
-	    success = validate_interface_methods(impl, ifcl, objmethods_gap,
-								extends_cl);
 	clear_tv(&tv);
     }
+
+    if (!success)
+	return FALSE;
+
+    // check the functions/methods of the interface match the
+    // functions/methods of the class.  A method may return the new class
+    // where an interface or the parent class is expected, temporarily set
+    // them in "cl" to make the type check work.
+    cl->class_interfaces_cl = (class_T **)intf_classes_gap->ga_data;
+    cl->class_interface_count = intf_classes_gap->ga_len;
+    cl->class_extends = extends_cl;
+    for (int i = 0; i < impl_gap->ga_len && success; ++i)
+	success = validate_interface_methods(
+		((char_u **)impl_gap->ga_data)[i],
+		((class_T **)intf_classes_gap->ga_data)[i], objmethods_gap,
+		extends_cl);
+    cl->class_interfaces_cl = NULL;
+    cl->class_interface_count = 0;
+    cl->class_extends = NULL;
 
     return success;
 }
@@ -899,7 +957,7 @@ is_interface_class_present(garray_T *intf_classes_gap, class_T *ifcl)
 {
     for (int j = 0; j < intf_classes_gap->ga_len; j++)
     {
-	if (((class_T **)intf_classes_gap)[j] == ifcl)
+	if (((class_T **)intf_classes_gap->ga_data)[j] == ifcl)
 	    return TRUE;
     }
 
@@ -963,8 +1021,10 @@ add_super_class_interfaces(
     {
 	class_T	*ifcl = super->class_interfaces_cl[i];
 
-	if (!is_interface_class_present(intf_classes_gap, ifcl))
-	    add_interface_from_super_class(ifcl, impl_gap, intf_classes_gap);
+	if (!is_interface_class_present(intf_classes_gap, ifcl)
+		&& !add_interface_from_super_class(ifcl, impl_gap,
+							    intf_classes_gap))
+	    return FALSE;
     }
 
     return TRUE;
@@ -1419,10 +1479,20 @@ add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
 add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 {
     // Allocate a typval for each class member and initialize it.
-    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
-					    cl->class_class_member_count);
+    // For a concrete class of a generic class it was already allocated.
     if (cl->class_members_tv == NULL)
-	return FAIL;
+    {
+	cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
+					    cl->class_class_member_count);
+	if (cl->class_members_tv == NULL)
+	    return FAIL;
+    }
+
+    // The class variables of a generic class are not used, the types are
+    // not known yet.  Each concrete class initializes its own class
+    // variables.
+    if (IS_GENERIC_CLASS(cl))
+	return OK;
 
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
@@ -1438,6 +1508,32 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 	    current_sctx = save_current_sctx;
 	    if (etv == NULL)
 		return FAIL;
+
+	    // The type of a concrete class variable of a generic class is
+	    // only known now.  The error mentions "Class<type>.name".
+	    if (cl->class_generic_base != NULL)
+	    {
+		size_t	len = cl->class_name.length
+						    + m->ocm_name.length + 2;
+		char	*vname = alloc(len);
+		where_T	where = WHERE_INIT;
+		int	r;
+
+		if (vname != NULL)
+		{
+		    vim_snprintf(vname, len, "%s.%s", cl->class_name.string,
+							m->ocm_name.string);
+		    where.wt_func_name = vname;
+		    where.wt_kind = WT_MEMBER;
+		}
+		r = check_typval_type(m->ocm_type, etv, where);
+		vim_free(vname);
+		if (r == FAIL)
+		{
+		    free_tv(etv);
+		    return FAIL;
+		}
+	    }
 
 	    if (m->ocm_type->tt_type == VAR_ANY
 		    && !(m->ocm_flags & OCMFLAG_HAS_TYPE)
@@ -1466,8 +1562,9 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 
 /*
  * Add a default constructor method (new()) to the class "cl".
+ * Returns FAIL when out of memory.
  */
-    static void
+    static int
 add_default_constructor(
     class_T	*cl,
     garray_T	*classfunctions_gap,
@@ -1475,8 +1572,14 @@ add_default_constructor(
 {
     garray_T	fga;
     int		is_enum = IS_ENUM(cl);
+    size_t	len = 30;
 
+    // Allocate the space for the text first, appending cannot fail then.
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	len += cl->class_obj_members[i].ocm_name.length + 20;
     ga_init2(&fga, 1, 1000);
+    if (ga_grow_id(&fga, (int)len, aid_default_new) == FAIL)
+	return FAIL;
     GA_CONCAT_LITERAL(&fga, "new(");
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
@@ -1512,22 +1615,26 @@ add_default_constructor(
     ga_clear_strings(&lines_to_free);
     vim_free(fga.ga_data);
 
-    if (nf != NULL && ga_grow(classfunctions_gap, 1) == OK)
+    if (nf == NULL)
+	return FAIL;
+    if (ga_grow(classfunctions_gap, 1) == FAIL)
     {
-	((ufunc_T **)classfunctions_gap->ga_data)[classfunctions_gap->ga_len]
-									= nf;
-	++classfunctions_gap->ga_len;
-
-	nf->uf_flags |= FC_NEW;
-	nf->uf_ret_type = get_type_ptr(type_list_gap);
-	if (nf->uf_ret_type != NULL)
-	{
-	    nf->uf_ret_type->tt_type = VAR_OBJECT;
-	    nf->uf_ret_type->tt_class = cl;
-	    nf->uf_ret_type->tt_argcount = 0;
-	    nf->uf_ret_type->tt_args = NULL;
-	}
+	func_clear_free(nf, FALSE);
+	return FAIL;
     }
+    ((ufunc_T **)classfunctions_gap->ga_data)[classfunctions_gap->ga_len]
+									= nf;
+    ++classfunctions_gap->ga_len;
+
+    nf->uf_flags |= FC_NEW;
+    nf->uf_ret_type = get_type_ptr(type_list_gap);
+    if (nf->uf_ret_type == NULL)
+	return FAIL;
+    nf->uf_ret_type->tt_type = VAR_OBJECT;
+    nf->uf_ret_type->tt_class = cl;
+    nf->uf_ret_type->tt_argcount = 0;
+    nf->uf_ret_type->tt_args = NULL;
+    return OK;
 }
 
 /*
@@ -1560,15 +1667,18 @@ add_classfuncs_objmethods(
 				? 0
 				: extends_cl->class_obj_method_count;
 
-	*fcount = parent_count + gap->ga_len;
-	if (*fcount == 0)
+	int count = parent_count + gap->ga_len;
+	*fcount = 0;
+	if (count == 0)
 	{
 	    *fup = NULL;
 	    continue;
 	}
-	*fup = ALLOC_MULT(ufunc_T *, *fcount);
+	*fup = alloc_id(sizeof(ufunc_T *) * count, aid_class_methods);
 	if (*fup == NULL)
 	    return FAIL;
+	// Only the moved functions, a copy may fail below.
+	*fcount = gap->ga_len;
 
 	if (gap->ga_len != 0)
 	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
@@ -1590,7 +1700,18 @@ add_classfuncs_objmethods(
 		// methods may be overruled, then "super.Method()" is used to
 		// find a method from the parent.
 		ufunc_T *pf = (extends_cl->class_obj_methods)[i];
-		(*fup)[gap->ga_len + i] = copy_function(pf, 0);
+		ufunc_T *nf = copy_function(pf, 0);
+		if (nf == NULL)
+		    return FAIL;
+		(*fup)[gap->ga_len + i] = nf;
+		++*fcount;
+
+		// The types of a generic method use the type variables of the
+		// parent method, make them use the type variables of the copy.
+		if (IS_GENERIC_FUNC(nf) && pf->uf_func_type != NULL
+			&& update_func_generic_types(NULL, NULL,
+							     pf, nf) == FAIL)
+		    return FAIL;
 
 		// If the child class overrides a function from the parent
 		// the signature must be equal.
@@ -1658,7 +1779,8 @@ update_builtin_method_index(class_T *cl)
 /*
  * Return the end of the class name starting at "arg".  Valid characters in a
  * class name are alphanumeric characters and "_".  Also handles imported class
- * names.
+ * names and type arguments.  Returns NULL if the type arguments are invalid,
+ * an error was given then.
  */
     static char_u *
 find_class_name_end(char_u *arg)
@@ -1668,6 +1790,9 @@ find_class_name_end(char_u *arg)
     while (ASCII_ISALNUM(*end) || *end == '_'
 	    || (*end == '.' && (ASCII_ISALNUM(end[1]) || end[1] == '_')))
 	++end;
+
+    if (*end == '<' && skip_generic_type_args(&end) == FAIL)
+	return NULL;	// error already given
 
     return end;
 }
@@ -1763,7 +1888,9 @@ enum_parse_values(
 	    char_u *expr_start, *expr_end;
 
 	    p = eni_name_start;
-	    (void)skip_expr_concatenate(&p, &expr_start, &expr_end, &evalarg);
+	    if (skip_expr_concatenate(&p, &expr_start, &expr_end,
+							    &evalarg) == FAIL)
+		break;
 
 	    while (*expr_start && *expr_start != '(' && *expr_start != '<')
 		expr_start++;
@@ -1782,10 +1909,15 @@ enum_parse_values(
 		init_expr);
 	    vim_free(init_expr);
 	}
-	if (add_member(gap, eni_name_start, eni_name_end, FALSE,
+	init_expr = vim_strnsave((char_u *)initexpr_buf, initexpr_buflen);
+	if (init_expr == NULL
+		|| add_member(gap, eni_name_start, eni_name_end, FALSE,
 				TRUE, TRUE, TRUE, &en->class_object_type,
-				vim_strnsave((char_u *)initexpr_buf, initexpr_buflen)) == FAIL)
+				init_expr) == FAIL)
+	{
+	    vim_free(init_expr);
 	    break;
+	}
 
 	++*num_enum_values;
 
@@ -1867,14 +1999,18 @@ enum_add_values_member(
 
     type->tt_type = VAR_LIST;
     type->tt_member = get_type_ptr(type_list_gap);
-    if (type->tt_member != NULL)
-    {
-	type->tt_member->tt_type = VAR_OBJECT;
-	type->tt_member->tt_class = en;
-    }
+    if (type->tt_member == NULL)
+	goto done;
+    type->tt_member->tt_type = VAR_OBJECT;
+    type->tt_member->tt_class = en;
 
+    char_u *init_expr = vim_strnsave((char_u *)fga.ga_data, fga.ga_len);
+    if (init_expr == NULL)
+	goto done;
     rc = add_member(gap, varname, varname + 6, FALSE, FALSE, TRUE, TRUE, type,
-					vim_strnsave((char_u *)fga.ga_data, fga.ga_len));
+								    init_expr);
+    if (rc == FAIL)
+	vim_free(init_expr);
 
 done:
     vim_free(fga.ga_data);
@@ -1971,6 +2107,7 @@ skip_class_body(exarg_T *eap)
     void
 ex_class(exarg_T *eap)
 {
+    type_resolve_ctx_T	save_trctx;
     int		is_class = eap->cmdidx == CMD_class;
     int		is_abstract = eap->cmdidx == CMD_abstract;
     int		is_enum = eap->cmdidx == CMD_enum;
@@ -1978,12 +2115,17 @@ ex_class(exarg_T *eap)
     int		is_interface;
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
+    generic_args_tab_T	gatab;
+    int		is_generic = FALSE;
 
     if (eap->skip)
     {
 	skip_class_body(eap);
 	return;
     }
+
+    // Restored at "cleanup" and when done, it is changed below.
+    save_type_resolve_ctx(&save_trctx);
 
     if (is_abstract)
     {
@@ -2023,15 +2165,47 @@ ex_class(exarg_T *eap)
 	return;
     }
     char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
-    if (!IS_WHITE_OR_NUL(*name_end))
+    if (!IS_WHITE_OR_NUL(*name_end) && *name_end != '<')
     {
 	semsg(_(e_white_space_required_after_name_str), arg);
 	return;
     }
     char_u *name_start = arg;
 
-    // TODO:
-    //    generics: <Tkey, Tentry>
+    generic_args_table_init(&gatab);
+
+    if (*name_end == '<')
+    {
+	if (is_enum)
+	{
+	    *name_end = NUL;
+	    semsg(_(e_enum_cannot_be_generic_str), name_start);
+	    *name_end = '<';
+	    return;
+	}
+
+	// generic class
+	char_u *class_name = vim_strnsave(name_start, name_end - name_start);
+	if (class_name == NULL)
+	    return;
+	arg = parse_generic_type_params(class_name, name_end, &gatab, NULL);
+	vim_free(class_name);
+	if (arg == NULL)
+	{
+	    generic_args_table_clear(&gatab);
+	    return;
+	}
+	if (!IS_WHITE_OR_NUL(*arg))
+	{
+	    semsg(_(e_white_space_required_after_name_str), arg);
+	    generic_args_table_clear(&gatab);
+	    return;
+	}
+	is_generic = TRUE;
+	arg = skipwhite(arg);
+    }
+    else
+	arg = skipwhite(name_end);
 
     // Name for "extends BaseClass"
     char_u *extends = NULL;
@@ -2040,7 +2214,6 @@ ex_class(exarg_T *eap)
     garray_T	ga_impl;
     ga_init2(&ga_impl, sizeof(char_u *), 5);
 
-    arg = skipwhite(name_end);
     while (*arg != NUL && *arg != '#' && *arg != '\n')
     {
 	// TODO:
@@ -2060,6 +2233,8 @@ ex_class(exarg_T *eap)
 	    arg = skipwhite(arg + 7);
 
 	    char_u *end = find_class_name_end(arg);
+	    if (end == NULL)
+		goto early_ret;
 	    if (!IS_WHITE_OR_NUL(*end))
 	    {
 		semsg(_(e_white_space_required_after_name_str), arg);
@@ -2090,6 +2265,8 @@ ex_class(exarg_T *eap)
 	    for (;;)
 	    {
 		char_u *impl_end = find_class_name_end(arg);
+		if (impl_end == NULL)
+		    goto early_ret;
 		if ((!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
 			|| (*impl_end == ','
 			    && !IS_WHITE_OR_NUL(*(impl_end + 1))))
@@ -2129,10 +2306,14 @@ ex_class(exarg_T *eap)
 	}
 	else
 	{
-	    semsg(_(e_trailing_characters_str), arg);
+	    if (*skipwhite(arg) == '<')
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", arg);
+	    else
+		semsg(_(e_trailing_characters_str), arg);
 early_ret:
 	    vim_free(extends);
 	    ga_clear_strings(&ga_impl);
+	    generic_args_table_clear(&gatab);
 	    return;
 	}
     }
@@ -2159,6 +2340,7 @@ early_ret:
     class_T *cl = NULL;
     class_T *extends_cl = NULL;  // class from "extends" argument
     class_T **intf_classes = NULL;
+    int	    intf_count = 0;	// number of items in "intf_classes"
     int	    num_enum_values = 0;
 
     cl = ALLOC_CLEAR_ONE(class_T);
@@ -2173,19 +2355,29 @@ early_ret:
 	cl->class_flags = CLASS_ABSTRACT;
     if (source_dryrun)
 	cl->class_flags |= CLASS_DRYRUN;
+    cl->class_flags |= CLASS_INCOMPLETE;
 
     cl->class_refcount = 1;
     cl->class_name.length = (size_t)(name_end - name_start);
     cl->class_name.string = vim_strnsave(name_start, cl->class_name.length);
     if (cl->class_name.string == NULL)
+    {
+	// not added to the script variables yet
+	VIM_CLEAR(cl);
 	goto cleanup;
+    }
 
     cl->class_type.tt_type = VAR_CLASS;
     cl->class_type.tt_class = cl;
     cl->class_object_type.tt_type = VAR_OBJECT;
     cl->class_object_type.tt_class = cl;
 
+    set_type_resolve_ctx(cl, NULL);
+
     eap->ea_class = cl;
+
+    if (is_generic)
+	generic_class_init(cl, &gatab);
 
     // Add the class to the script-local variables.
     // TODO: handle other context, e.g. in a function
@@ -2196,7 +2388,11 @@ early_ret:
     SOURCING_LNUM = start_lnum;
     int rc = set_var_const(cl->class_name.string, 0, NULL, &tv, FALSE, 0, 0);
     if (rc == FAIL)
+    {
+	// "cl" was freed when clearing "tv"
+	cl = NULL;
 	goto cleanup;
+    }
 
     if (is_enum)
     {
@@ -2601,7 +2797,11 @@ early_ret:
 
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
-		if (ga_grow(fgap, 1) == OK)
+		if (ga_grow(fgap, 1) == FAIL)
+		{
+		    func_clear_free(uf, FALSE);
+		    break;
+		}
 		{
 		    if (is_new)
 			uf->uf_flags |= FC_NEW;
@@ -2677,7 +2877,7 @@ early_ret:
     ga_init2(&intf_classes_ga, sizeof(class_T *), 5);
 
     if (success && ga_impl.ga_len > 0)
-	success = validate_implements_classes(&ga_impl, &intf_classes_ga,
+	success = validate_implements_classes(cl, &ga_impl, &intf_classes_ga,
 					&objmethods, &objmembers, extends_cl);
 
     // inherit the super class interfaces
@@ -2685,7 +2885,10 @@ early_ret:
 	success = add_super_class_interfaces(extends_cl, &ga_impl,
 							&intf_classes_ga);
 
+    // When validating failed "intf_classes" may have fewer items than
+    // "ga_impl".
     intf_classes = intf_classes_ga.ga_data;
+    intf_count = intf_classes_ga.ga_len;
     intf_classes_ga.ga_len = 0;
 
     // Check no function argument name is used as a class member.
@@ -2701,7 +2904,7 @@ early_ret:
 	if (extends_cl != NULL)
 	{
 	    cl->class_extends = extends_cl;
-	    extends_cl->class_flags |= CLASS_EXTENDED;
+	    set_class_extended(extends_cl);
 	}
 
 	// Add class and object variables to "cl".
@@ -2722,10 +2925,11 @@ early_ret:
 	if (ga_impl.ga_len > 0)
 	{
 	    // Move the "implements" names into the class.
-	    cl->class_interface_count = ga_impl.ga_len;
-	    cl->class_interfaces = ALLOC_MULT(char_u *, ga_impl.ga_len);
+	    cl->class_interfaces = alloc_id(sizeof(char_u *) * ga_impl.ga_len,
+							 aid_class_interfaces);
 	    if (cl->class_interfaces == NULL)
 		goto cleanup;
+	    cl->class_interface_count = ga_impl.ga_len;
 	    for (int i = 0; i < ga_impl.ga_len; ++i)
 		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
 	    VIM_CLEAR(ga_impl.ga_data);
@@ -2733,6 +2937,12 @@ early_ret:
 
 	    cl->class_interfaces_cl = intf_classes;
 	    intf_classes = NULL;
+	}
+	else
+	{
+	    // The arrays may have been allocated without adding an item.
+	    ga_clear(&ga_impl);
+	    VIM_CLEAR(intf_classes);
 	}
 
 	if (cl->class_interface_count > 0 || extends_cl != NULL)
@@ -2759,9 +2969,12 @@ early_ret:
 	if (have_new)
 	    // The return type of new() is an object of class "cl"
 	    class_func->uf_ret_type->tt_class = cl;
-	else if ((is_class || is_enum) && !is_abstract && !have_new)
-	    // No new() method was defined, add the default constructor.
-	    add_default_constructor(cl, &classfunctions, &type_list);
+	else if ((is_class || is_enum) && !is_abstract && !have_new
+		&& add_default_constructor(cl, &classfunctions,
+							&type_list) == FAIL)
+	    // No new() method was defined, adding the default constructor
+	    // failed.
+	    goto cleanup;
 
 	// Move all the functions into the created class.
 	if (add_classfuncs_objmethods(cl, extends_cl, &classfunctions,
@@ -2770,6 +2983,7 @@ early_ret:
 
 	update_builtin_method_index(cl);
 
+	cl->class_flags &= ~CLASS_INCOMPLETE;
 	class_created(cl);
 
 	// Allocate a typval for each class member and initialize it.
@@ -2777,6 +2991,7 @@ early_ret:
 	    if (add_class_members(cl, eap, &type_list) == FAIL)
 	    {
 		cl->class_type_list = type_list;
+		restore_type_resolve_ctx(&save_trctx);
 		return;
 	    }
 
@@ -2792,16 +3007,24 @@ early_ret:
 	// TODO:
 	// - Fill hashtab with object members and methods ?
 
+	restore_type_resolve_ctx(&save_trctx);
+
 	return;
     }
 
 cleanup:
     vim_free(extends);
+    // When the parent class was set in "cl" it is done when "cl" is freed.
+    if (cl != NULL && cl->class_extends == extends_cl)
+	extends_cl = NULL;
+    if (cl != NULL && IS_GENERIC_CLASS(cl))
+	generic_class_remove_parents(cl, extends_cl, intf_classes,
+				    intf_classes == NULL ? 0 : intf_count);
     class_unref(extends_cl);
 
     if (intf_classes != NULL)
     {
-	for (int i = 0; i < ga_impl.ga_len; ++i)
+	for (int i = 0; i < intf_count; ++i)
 	    class_unref(intf_classes[i]);
 	vim_free(intf_classes);
     }
@@ -2810,7 +3033,7 @@ cleanup:
     for (int round = 1; round <= 2; ++round)
     {
 	garray_T *gap = round == 1 ? &classmembers : &objmembers;
-	if (gap->ga_len == 0 || gap->ga_data == NULL)
+	if (gap->ga_data == NULL)
 	    continue;
 
 	for (int i = 0; i < gap->ga_len; ++i)
@@ -2822,14 +3045,16 @@ cleanup:
 	ga_clear(gap);
     }
 
-    for (int i = 0; i < objmethods.ga_len; ++i)
+    // The functions were moved into "cl" when "ga_data" is NULL.
+    for (int i = 0; objmethods.ga_data != NULL && i < objmethods.ga_len; ++i)
     {
 	ufunc_T *uf = ((ufunc_T **)objmethods.ga_data)[i];
 	func_clear_free(uf, FALSE);
     }
     ga_clear(&objmethods);
 
-    for (int i = 0; i < classfunctions.ga_len; ++i)
+    for (int i = 0; classfunctions.ga_data != NULL
+					  && i < classfunctions.ga_len; ++i)
     {
 	ufunc_T *uf = ((ufunc_T **)classfunctions.ga_data)[i];
 	func_clear_free(uf, FALSE);
@@ -2837,6 +3062,10 @@ cleanup:
     ga_clear(&classfunctions);
 
     clear_type_list(&type_list);
+
+    generic_args_table_clear(&gatab);
+
+    restore_type_resolve_ctx(&save_trctx);
 }
 
 /*
@@ -2977,7 +3206,7 @@ ex_type(exarg_T *eap)
     }
 
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
-    type_T *type = parse_type(&arg, &si->sn_type_list, NULL, NULL, TRUE);
+    type_T *type = parse_type(&arg, &si->sn_type_list, NULL, TRUE);
     if (type == NULL)
 	return;
 
@@ -2993,7 +3222,7 @@ ex_type(exarg_T *eap)
 
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable_import(name_start, &tv) == OK)
+    if (eval_variable_import(name_start, &tv, EVAL_VAR_NO_GENERIC) == OK)
     {
 	if (tv.v_type == VAR_TYPEALIAS)
 	    semsg(_(e_typealias_already_exists_for_str), name_start);
@@ -3093,7 +3322,7 @@ call_oc_method(
     char_u	*name_end,
     evalarg_T	*evalarg,
     char_u	**arg,
-    gfargs_tab_T	*gfatab,	// generic types
+    generic_args_tab_T	*gatab,	// generic types
     typval_T	*rettv)
 {
     ufunc_T	*fp;
@@ -3145,7 +3374,7 @@ call_oc_method(
     // process generic function call
     if (fp != NULL)
     {
-	fp = generic_func_get(fp, gfatab);
+	fp = generic_func_get(fp, gatab);
 	if (fp == NULL)
 	    return FAIL;
     }
@@ -3276,9 +3505,9 @@ class_object_index(
 	return FAIL;
     }
 
-    gfargs_tab_T    gfatab;
+    generic_args_tab_T	gatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gatab);
 
     if (*name_end == '<')
     {
@@ -3288,8 +3517,8 @@ class_object_index(
 	    cctx = evalarg->eval_cctx;
 
 	// calling a generic method
-	name_end = parse_generic_func_type_args(name, len, name + len,
-						&gfatab, cctx);
+	name_end = parse_generic_type_args(name, len, name + len, &gatab,
+									cctx);
 	if (name_end == NULL)
 	    goto done;
     }
@@ -3297,7 +3526,7 @@ class_object_index(
     if (*name_end == '(')
 	// Invoke the class or object method
 	ret = call_oc_method(cl, name, len, name_end, evalarg, arg,
-							&gfatab, rettv);
+							&gatab, rettv);
     else if (rettv->v_type == VAR_OBJECT || rettv->v_type == VAR_CLASS)
     {
 	// Search in the object member variable table and the class member
@@ -3337,30 +3566,45 @@ class_object_index(
     }
 
 done:
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gatab);
 
     return ret;
 }
 
 /*
- * If "arg" points to a class or object method, return it.
- * Otherwise return NULL.
+ * If "arg" points to a class or object method, return it.  Also handles
+ * "import.Class.Method" and "GenericClass<type>.Method".
+ * Otherwise return NULL, possibly after giving an error message.
  */
     ufunc_T *
 find_class_func(char_u **arg)
 {
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
-    if (name_end == name || *name_end != '.')
+    if (name_end == name || (*name_end != '.' && *name_end != '<'))
 	return NULL;
 
     ufunc_T	*fp = NULL;
-    size_t	len = name_end - name;
     typval_T	tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(name, (int)len,
-				    0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
+    // Only a class, an object or an import, not a function.
+    if (eval_variable(name, (int)(name_end - name), 0, &tv, NULL,
+		EVAL_VAR_NOAUTOLOAD | EVAL_VAR_IMPORT | EVAL_VAR_NO_GENERIC
+					    | EVAL_VAR_NO_FUNC) == FAIL)
 	return NULL;
+
+    if (tv.v_type == VAR_ANY && *name_end == '.')
+    {
+	// "import.ClassName"
+	int sid = tv.vval.v_number;
+
+	name = name_end + 1;
+	name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+	if (name_end == name || eval_variable(name, (int)(name_end - name),
+		      sid, &tv, NULL, EVAL_VAR_NOAUTOLOAD | EVAL_VAR_NO_GENERIC
+					    | EVAL_VAR_NO_FUNC) == FAIL)
+	    return NULL;
+    }
     if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
 	goto fail_after_eval;
 
@@ -3368,6 +3612,17 @@ find_class_func(char_u **arg)
 						 : tv.vval.v_object->obj_class;
     if (cl == NULL)
 	goto fail_after_eval;
+    if (tv.v_type == VAR_CLASS)
+    {
+	// "GenericClass<type>": use the class with the specified types.  Gives
+	// an error for missing types or types for a class that is not generic.
+	cl = eval_generic_class(cl, &name_end, NULL);
+	if (cl == NULL)
+	    goto fail_after_eval;
+    }
+    if (*name_end != '.')
+	goto fail_after_eval;
+    size_t len;
     char_u *fname = name_end + 1;
     char_u *fname_end = find_name_end(fname, NULL, NULL, FNE_CHECK_START);
     if (fname_end == fname)
@@ -3664,10 +3919,37 @@ method_lookup(
 inside_class(cctx_T *cctx_arg, class_T *cl)
 {
     for (cctx_T *cctx = cctx_arg; cctx != NULL; cctx = cctx->ctx_outer)
-	if (cctx->ctx_ufunc != NULL
-			&& class_instance_of(cctx->ctx_ufunc->uf_class, cl))
+    {
+	if (cctx->ctx_ufunc == NULL)
+	    continue;
+	if (class_instance_of(cctx->ctx_ufunc->uf_class, cl))
 	    return TRUE;
+	// Inside "Box<T>" also "Box<U>" can be accessed.
+	for (class_T *clp = cctx->ctx_ufunc->uf_class; clp != NULL;
+						    clp = clp->class_extends)
+	    if (class_same_generic(clp, cl))
+		return TRUE;
+    }
     return FALSE;
+}
+
+/*
+ * Return TRUE if "cl1" and "cl2" are the same class or are created from the
+ * same generic class (e.g. "Box<number>" and "Box<string>").
+ */
+    int
+class_same_generic(class_T *cl1, class_T *cl2)
+{
+    if (cl1 == cl2)
+	return TRUE;
+    if (cl1 == NULL || cl2 == NULL)
+	return FALSE;
+
+    class_T *g1 = cl1->class_generic_base != NULL
+					    ? cl1->class_generic_base : cl1;
+    class_T *g2 = cl2->class_generic_base != NULL
+					    ? cl2->class_generic_base : cl2;
+    return g1 == g2;
 }
 
 /*
@@ -3775,6 +4057,9 @@ class_free(class_T *cl)
     // be freed.
     VIM_CLEAR_STRING(cl->class_name);
 
+    if (IS_GENERIC_CLASS(cl))
+	generic_class_remove_parents(cl, cl->class_extends,
+			cl->class_interfaces_cl, cl->class_interface_count);
     class_unref(cl->class_extends);
 
     for (int i = 0; i < cl->class_interface_count; ++i)
@@ -3832,6 +4117,8 @@ class_free(class_T *cl)
 
     clear_type_list(&cl->class_type_list);
 
+    generic_class_clear_items(cl);
+
     class_cleared(cl);
 
     vim_free(cl);
@@ -3847,6 +4134,9 @@ class_get_selfrefs(class_T *cl)
     int		self_refs = 0;
     typval_T	*tv;
 
+    // When defining the class failed the values may not have been created.
+    if (cl->class_members_tv == NULL)
+	return 0;
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	tv = &cl->class_members_tv[i];
@@ -3868,6 +4158,9 @@ class_get_selfrefs(class_T *cl)
     static int
 can_free_enum(class_T *cl)
 {
+    // When defining the enum failed the values may not have been created.
+    if (cl->class_members_tv == NULL)
+	return TRUE;
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	typval_T	*tv = &cl->class_members_tv[i];
@@ -3918,6 +4211,11 @@ can_free_class(class_T *cl)
     if (IS_ENUM(cl) && !can_free_enum(cl))
 	return FALSE;
 
+    // The concrete classes of a generic class use the generic class and each
+    // other in their types.  Keep them all while one of them is in use.
+    if (IS_GENERIC_CLASS(cl) && generic_class_in_use(cl))
+	return FALSE;
+
     if (cl->class_refcount > 0)
 	self_refs = class_get_selfrefs(cl);
 
@@ -3931,6 +4229,8 @@ can_free_class(class_T *cl)
 
 /*
  * Unreference a class.  Free it when the reference count goes down to zero.
+ * When "cl" was created from a generic class that is no longer referenced,
+ * the generic class may be freed too.
  */
     void
 class_unref(class_T *cl)
@@ -3944,7 +4244,36 @@ class_unref(class_T *cl)
 	return;
 
     if (can_free_class(cl))
+    {
 	class_free(cl);
+	return;
+    }
+
+    // If "cl" was created from a generic class that is no longer referenced,
+    // then the generic class may be freed now.
+    // A NULL name means the generic class is already being freed.
+    class_T *base = cl->class_generic_base;
+    if (base != NULL && base->class_refcount <= 0
+	    && base->class_name.string != NULL && can_free_class(base))
+	class_free(base);
+}
+
+/*
+ * Replace the class in the VAR_CLASS typval "tv" with "cl", which may be
+ * NULL.  "cl" is referenced before the old class is unreferenced, that may
+ * free "cl" otherwise (e.g. when "cl" was created from the generic class in
+ * "tv").
+ */
+    void
+tv_set_class(typval_T *tv, class_T *cl)
+{
+    class_T	*old_cl = tv->vval.v_class;
+
+    if (cl != NULL)
+	++cl->class_refcount;
+    tv->v_type = VAR_CLASS;
+    tv->vval.v_class = cl;
+    class_unref(old_cl);
 }
 
 /*
@@ -4221,17 +4550,1302 @@ defcompile_classes_in_script(void)
 
 /*
  * Returns TRUE if "name" is the name of a class.  The typval for the class is
- * returned in "rettv".
+ * returned in "rettv".  For "GenericClass<type>" the class with the specified
+ * types is returned.  When the types are invalid an error is given, TRUE is
+ * returned and the class in "rettv" is NULL.
  */
     int
 is_class_name(char_u *name, typval_T *rettv)
 {
+    char_u  *p = name;
+
     rettv->v_type = VAR_UNKNOWN;
+
+    while (ASCII_ISALNUM(*p) || *p == '_')
+	++p;
+    // "GenericClass<type>.Method" is a method, not a class
+    // "GenericClass<type>", not followed by ".member"
+    if (*p == '<' && p > name && skip_generic_class_member(name, p, 0) == p)
+    {
+	if (eval_variable(name, (int)(p - name), 0, rettv, NULL,
+			    EVAL_VAR_NOAUTOLOAD | EVAL_VAR_NO_FUNC
+						| EVAL_VAR_NO_GENERIC) == FAIL
+		|| rettv->v_type != VAR_CLASS)
+	    return FALSE;
+
+	class_T *new_cl = eval_generic_class(rettv->vval.v_class, &p, NULL);
+	if (new_cl != NULL && *skipwhite(p) != NUL)
+	{
+	    semsg(_(e_trailing_characters_str), p);
+	    new_cl = NULL;
+	}
+	tv_set_class(rettv, new_cl);
+	return TRUE;
+    }
 
     if (eval_variable(name, 0, 0, rettv, NULL, EVAL_VAR_NOAUTOLOAD |
 						EVAL_VAR_NO_FUNC) != FAIL)
 	return rettv->v_type == VAR_CLASS;
     return FALSE;
+}
+
+/*
+ * A hash table is used to lookup a generic class with specific types.
+ * The specific type names are used as the key.
+ */
+typedef struct gcitem_S gcitem_T;
+struct gcitem_S
+{
+    class_T	*gci_cl;
+    int		gci_invalid;	// creating "gci_cl" failed
+    gcitem_T	*gci_prev;	// previous failed attempt or NULL
+    char_u	gci_name[1];	// actually longer
+};
+#define GCITEM_KEY_OFF	offsetof(gcitem_T, gci_name)
+#define HI2GCITEM(hi)	((gcitem_T *)((hi)->hi_key - GCITEM_KEY_OFF))
+
+/*
+ * Return the next used item after "hi" in the table "ht" of a generic class,
+ * the first one when "hi" is NULL.  Returns NULL when there are no more.
+ * The item "hi" may have been freed or removed.
+ */
+    static hashitem_T *
+gcitem_next(hashtab_T *ht, hashitem_T *hi)
+{
+    hashitem_T	*end;
+
+    // The table of a class that is not generic may not be initialized.
+    if (ht->ht_array == NULL || ht->ht_used == 0)
+	return NULL;
+    end = ht->ht_array + ht->ht_mask + 1;
+    for (hi = hi == NULL ? ht->ht_array : hi + 1; hi < end; ++hi)
+	if (!HASHITEM_EMPTY(hi))
+	    return hi;
+    return NULL;
+}
+
+// Loop over the used items "hi" in the table "ht" of a generic class, use
+// HI2GCITEM(hi) for the item.
+#define FOR_ALL_GCITEMS(ht, hi) \
+    for ((hi) = gcitem_next((ht), NULL); (hi) != NULL; \
+						(hi) = gcitem_next((ht), (hi)))
+
+/*
+ * Make "cl" a generic class with the type variables in "gatab".  The type
+ * variables are moved from "gatab" to "cl".
+ */
+    static void
+generic_class_init(class_T *cl, generic_args_tab_T *gatab)
+{
+    cl->class_flags |= CLASS_GENERIC;
+    cl->class_generic_argcount = gatab->gat_args.ga_len;
+    cl->class_generic_args = (generic_T *)gatab->gat_args.ga_data;
+    ga_init(&gatab->gat_args);	// remove the reference to the args
+    cl->class_generic_param_types = (type_T *)gatab->gat_param_types.ga_data;
+    ga_init(&gatab->gat_param_types);	// remove the reference
+    ga_init(&cl->class_generic_arg_types);
+    hash_init(&cl->class_generic_table);
+}
+
+/*
+ * Unreference the concrete class of "gcitem" and free it, including the
+ * previous failed attempts.
+ */
+    static void
+gcitem_free(gcitem_T *gcitem)
+{
+    while (gcitem != NULL)
+    {
+	gcitem_T *prev = gcitem->gci_prev;
+
+	class_unref(gcitem->gci_cl);
+	vim_free(gcitem);
+	gcitem = prev;
+    }
+}
+
+/*
+ * Unreference all concrete classes in the generic class table of "cl" and
+ * clear the table.
+ */
+    static void
+free_generic_classtab(class_T *cl)
+{
+    hashtab_T	*ht = &cl->class_generic_table;
+    hashitem_T	*hi;
+
+    FOR_ALL_GCITEMS(ht, hi)
+	gcitem_free(HI2GCITEM(hi));
+
+    hash_clear(ht);
+}
+
+/*
+ * Return TRUE if "type" uses one of the type variables of the generic class
+ * "cl".
+ */
+    static int
+type_uses_class_type_vars(type_T *type, class_T *cl)
+{
+    if (type == NULL)
+	return FALSE;
+    for (int i = 0; i < cl->class_generic_argcount; i++)
+	if (type == &cl->class_generic_param_types[i])
+	    return TRUE;
+    if (type_uses_class_type_vars(type->tt_member, cl))
+	return TRUE;
+    if (type->tt_args != NULL)
+	for (int i = 0; i < type->tt_argcount; i++)
+	    if (type_uses_class_type_vars(type->tt_args[i], cl))
+		return TRUE;
+    return FALSE;
+}
+
+/*
+ * If "pcl" was created with the type variables of the generic class "cl"
+ * (e.g. "A<T>" for "class B<T> extends A<T>"), remove it from the table of
+ * its generic class.  It is detached from the generic class, which is added
+ * to "bases" with a reference, the caller must unreference it.
+ */
+    static void
+generic_class_detach_parent(
+    class_T	*cl,
+    class_T	*pcl,
+    garray_T	*bases)
+{
+    class_T	*base = pcl->class_generic_base;
+    int		i;
+
+    if (base == NULL)
+	return;
+    for (i = 0; i < pcl->class_generic_argcount; ++i)
+	if (type_uses_class_type_vars(pcl->class_generic_args[i].gt_type, cl))
+	    break;
+    if (i == pcl->class_generic_argcount)
+	return;
+
+    hashtab_T	*ht = &base->class_generic_table;
+    hashitem_T	*hi;
+
+    FOR_ALL_GCITEMS(ht, hi)
+    {
+	gcitem_T *gcitem = HI2GCITEM(hi);
+	if (gcitem->gci_cl == pcl)
+	{
+	    // Keep the generic class until all the classes are removed, then
+	    // it may be freed, see generic_class_remove_parents().
+	    for (i = 0; i < bases->ga_len; ++i)
+		if (((class_T **)bases->ga_data)[i] == base)
+		    break;
+	    if (i == bases->ga_len && ga_grow(bases, 1) == OK)
+	    {
+		((class_T **)bases->ga_data)[bases->ga_len++] = base;
+		++base->class_refcount;
+	    }
+	    hash_remove(ht, hi, "generic class");
+	    // "pcl" may still be used by "cl", it must not use the generic
+	    // class anymore.
+	    pcl->class_generic_base = NULL;
+	    gcitem_free(gcitem);
+	    return;
+	}
+    }
+}
+
+/*
+ * Remove the classes created with the type variables of the generic class
+ * "cl" (e.g. "A<T>" for "class B<T> extends A<T>") from the table of their
+ * generic class: the parent class "parent", its parent classes and the
+ * interfaces of all these, and the "intf_count" interfaces in "intfs".
+ * Their types refer to the type variables of "cl", which are going to be
+ * freed.
+ */
+    static void
+generic_class_remove_parents(
+    class_T	*cl,
+    class_T	*parent,
+    class_T	**intfs,
+    int		intf_count)
+{
+    garray_T	bases;
+
+    ga_init2(&bases, sizeof(class_T *), 4);
+
+    // The classes are still referenced by "cl" or by the caller.
+    for (int i = 0; i < intf_count; ++i)
+	for (class_T *ifcl = intfs[i]; ifcl != NULL;
+						    ifcl = ifcl->class_extends)
+	    generic_class_detach_parent(cl, ifcl, &bases);
+    for (class_T *p = parent; p != NULL; p = p->class_extends)
+    {
+	generic_class_detach_parent(cl, p, &bases);
+	for (int i = 0; i < p->class_interface_count; ++i)
+	    for (class_T *ifcl = p->class_interfaces_cl[i]; ifcl != NULL;
+						    ifcl = ifcl->class_extends)
+		generic_class_detach_parent(cl, ifcl, &bases);
+    }
+
+    // A generic class may be freed now that its concrete classes are removed.
+    for (int i = 0; i < bases.ga_len; ++i)
+	class_unref(((class_T **)bases.ga_data)[i]);
+    ga_clear(&bases);
+}
+
+/*
+ * Returns TRUE if one of the concrete classes of the generic class "cl" is
+ * referenced from outside of the generic class table, e.g. by an object.
+ */
+    static int
+generic_class_in_use(class_T *cl)
+{
+    hashtab_T	*ht = &cl->class_generic_table;
+    hashitem_T	*hi;
+
+    FOR_ALL_GCITEMS(ht, hi)
+	for (gcitem_T *gcitem = HI2GCITEM(hi); gcitem != NULL;
+						    gcitem = gcitem->gci_prev)
+	{
+	    class_T *gcl = gcitem->gci_cl;
+
+	    // one reference is from the generic class table
+	    if (gcl->class_refcount - 1 > class_get_selfrefs(gcl))
+		return TRUE;
+	}
+
+    return FALSE;
+}
+
+/*
+ * Free the generic types, the type arguments and the concrete classes of the
+ * generic class "cl".
+ */
+    static void
+generic_class_clear_items(class_T *cl)
+{
+    VIM_CLEAR(cl->class_generic_param_types);
+    clear_type_list(&cl->class_generic_arg_types);
+    for (int i = 0; i < cl->class_generic_argcount; i++)
+	VIM_CLEAR(cl->class_generic_args[i].gt_name);
+    VIM_CLEAR(cl->class_generic_args);
+    free_generic_classtab(cl);
+}
+
+/*
+ * Searches for a generic type with the given name "gt_name" in the generic
+ * class "cl" or a concrete class created from it.
+ *
+ * Returns:
+ *   Pointer to the type_T representing the found generic type,
+ *   or NULL if the type is not found.
+ */
+    type_T *
+find_generic_type_in_class(char_u *gt_name, size_t name_len, class_T *cl)
+{
+    for (int i = 0; i < cl->class_generic_argcount; i++)
+    {
+	generic_T *generic = cl->class_generic_args + i;
+
+	if (STRNCMP(generic->gt_name, gt_name, name_len) == 0
+				&& generic->gt_name[name_len] == NUL)
+	    return generic->gt_type;
+    }
+
+    return NULL;
+}
+
+/*
+ * Copy the "count" variables in "members" to a new array in "new_members"
+ * for class "new_cl" and set "new_count".  The name, type and initializer are
+ * copied.  Returns OK or FAIL on memory allocation failure.
+ */
+    static int
+clone_oc_vars(
+    class_T	*new_cl,
+    ocmember_T	*members,
+    int		count,
+    ocmember_T	**new_members,
+    int		*new_count)
+{
+    *new_members = NULL;
+    *new_count = 0;
+
+    if (count == 0)
+	return OK;
+
+    *new_members = ALLOC_CLEAR_MULT(ocmember_T, count);
+    if (*new_members == NULL)
+	return FAIL;
+
+    // The count is incremented for each copied variable, on failure only
+    // those are freed.
+    for (int i = 0; i < count; i++)
+    {
+	ocmember_T	*m = &members[i];
+	ocmember_T	*new_m = *new_members + i;
+
+	*new_m = *m;
+	new_m->ocm_name.string = vim_strnsave(m->ocm_name.string,
+							m->ocm_name.length);
+	new_m->ocm_init = m->ocm_init == NULL ? NULL
+						: vim_strsave(m->ocm_init);
+	if (new_m->ocm_name.string == NULL
+			|| (m->ocm_init != NULL && new_m->ocm_init == NULL))
+	{
+	    vim_free(new_m->ocm_name.string);
+	    vim_free(new_m->ocm_init);
+	    return FAIL;
+	}
+	new_m->ocm_type = copy_type_deep(m->ocm_type,
+						&new_cl->class_type_list);
+	++*new_count;
+	// out of memory when the type was not copied
+	if (new_m->ocm_type == m->ocm_type)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Copy the class functions and object methods of class "cl" to "new_cl".
+ * Returns OK or FAIL on memory allocation failure.
+ */
+    static int
+clone_oc_methods(class_T *cl, class_T *new_cl)
+{
+    // loop 1: class functions, loop 2: object methods
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	int		fcount = loop == 1 ? cl->class_class_function_count
+						: cl->class_obj_method_count;
+	int		*new_fcount = loop == 1
+					? &new_cl->class_class_function_count
+					: &new_cl->class_obj_method_count;
+	ufunc_T		***fup = loop == 1 ? &cl->class_class_functions
+						: &cl->class_obj_methods;
+	ufunc_T		***new_fup = loop == 1
+					? &new_cl->class_class_functions
+					: &new_cl->class_obj_methods;
+	// the functions defined in the class itself come first
+	int		count_child = loop == 1
+					? cl->class_class_function_count_child
+					: cl->class_obj_method_count_child;
+
+	*new_fcount = 0;
+	if (fcount == 0)
+	{
+	    *new_fup = NULL;
+	    continue;
+	}
+
+	*new_fup = ALLOC_MULT(ufunc_T *, fcount);
+	if (*new_fup == NULL)
+	    return FAIL;
+
+	if (loop == 1)
+	    new_cl->class_class_function_count_child = count_child;
+	else
+	    new_cl->class_obj_method_count_child = count_child;
+
+	for (int i = 0; i < fcount; i++)
+	{
+	    // On failure only the copied functions are freed.
+	    (*new_fup)[i] = copy_function((*fup)[i], 0);
+	    if ((*new_fup)[i] == NULL)
+		return FAIL;
+	    ++*new_fcount;
+	    (*new_fup)[i]->uf_class = new_cl;
+	    if (i < count_child)
+		(*new_fup)[i]->uf_defclass = new_cl;
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Clone the interface-to-class lookup tables of class "cl" in interface or
+ * parent class "ifcl" for "new_cl" in "new_ifcl".  "new_ifcl" is "ifcl" or a
+ * concrete class of the same generic class, with the same layout.
+ *
+ * Returns:
+ *   OK on success, FAIL on memory allocation failure
+ */
+    static int
+clone_if2cl_values(
+    class_T	*cl,
+    class_T	*new_cl,
+    class_T	*ifcl,
+    class_T	*new_ifcl)
+{
+    // loop 1: table for members, loop 2: table for methods
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	int	    is_method = loop == 2;
+	int	    count = is_method ? new_ifcl->class_obj_method_count
+					    : new_ifcl->class_obj_member_count;
+	itf2class_T *cl_if2cl;
+
+	// Find the table of "cl".  If there is none, then the table of a
+	// parent class is used and that also works for "new_cl".
+	for (cl_if2cl = ifcl->class_itf2class; cl_if2cl != NULL;
+					    cl_if2cl = cl_if2cl->i2c_next)
+	    if (cl_if2cl->i2c_class == cl
+				    && cl_if2cl->i2c_is_method == is_method)
+		break;
+	if (cl_if2cl == NULL)
+	    continue;
+
+	itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
+							+ count * sizeof(int));
+	if (if2cl == NULL)
+	    return FAIL;
+	// "new_cl" has the members and methods in the same order as "cl"
+	mch_memmove((int *)(if2cl + 1), (int *)(cl_if2cl + 1),
+							count * sizeof(int));
+	if2cl->i2c_next = new_ifcl->class_itf2class;
+	new_ifcl->class_itf2class = if2cl;
+	if2cl->i2c_class = new_cl;
+	if2cl->i2c_is_method = is_method;
+    }
+
+    return OK;
+}
+
+/*
+ * Copy the lookup tables of class "cl" in its interfaces and parent classes
+ * for "new_cl" to the corresponding interfaces and parent classes of
+ * "new_cl".  Returns OK or FAIL on memory allocation failure.
+ */
+    static int
+clone_lookup_tables(class_T *cl, class_T *new_cl)
+{
+    // update the lookup table for all the implemented interfaces
+    for (int i = 0; i < cl->class_interface_count; ++i)
+    {
+	class_T *ifcl = cl->class_interfaces_cl[i];
+	class_T *new_ifcl = new_cl->class_interfaces_cl[i];
+
+	// update the lookup table for this interface and all its super
+	// interfaces.
+	while (ifcl != NULL && new_ifcl != NULL)
+	{
+	    if (clone_if2cl_values(cl, new_cl, ifcl, new_ifcl) == FAIL)
+		return FAIL;
+
+	    ifcl = ifcl->class_extends;
+	    new_ifcl = new_ifcl->class_extends;
+	}
+    }
+
+    // Update the entire lineage of extended classes, if any.
+    class_T *pclass = cl->class_extends;
+    class_T *new_pclass = new_cl->class_extends;
+    while (pclass != NULL && new_pclass != NULL)
+    {
+	if (clone_if2cl_values(cl, new_cl, pclass, new_pclass) == FAIL)
+	    return FAIL;
+
+	pclass = pclass->class_extends;
+	new_pclass = new_pclass->class_extends;
+    }
+
+    return OK;
+}
+
+/*
+ * Copy the names of the generic types of class "cl" to "new_cl".  The types
+ * are set by generic_class_add().
+ * Returns OK on success, FAIL on memory allocation failure.
+ */
+    static int
+clone_generic_arg_names(class_T *cl, class_T *new_cl)
+{
+    new_cl->class_generic_args = ALLOC_CLEAR_MULT(generic_T,
+						cl->class_generic_argcount);
+    if (new_cl->class_generic_args == NULL)
+	return FAIL;
+
+    new_cl->class_generic_argcount = cl->class_generic_argcount;
+    for (int i = 0; i < cl->class_generic_argcount; i++)
+    {
+	new_cl->class_generic_args[i].gt_name =
+				vim_strsave(cl->class_generic_args[i].gt_name);
+	if (new_cl->class_generic_args[i].gt_name == NULL)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Make a copy of class "cl", with "extra_namelen" extra bytes for the name
+ * (for the type arguments).  The lookup tables and the class variable values
+ * are set by generic_class_add().  Returns NULL on memory allocation failure.
+ */
+    static class_T *
+clone_class(class_T *cl, size_t extra_namelen)
+{
+    int		i;
+
+    class_T *new_cl = ALLOC_CLEAR_ONE(class_T);
+    if (new_cl == NULL)
+	return NULL;
+
+    // "class_name.length" does not include the NUL
+    new_cl->class_name.length = cl->class_name.length + extra_namelen;
+    new_cl->class_name.string = alloc(new_cl->class_name.length + 1);
+    if (new_cl->class_name.string == NULL)
+    {
+	vim_free(new_cl);
+	return NULL;
+    }
+    STRNCPY(new_cl->class_name.string, cl->class_name.string,
+	    cl->class_name.length);
+
+    new_cl->class_flags = cl->class_flags;
+    new_cl->class_flags &= ~CLASS_GENERIC;
+    new_cl->class_refcount = 1;
+
+    new_cl->class_type.tt_type = VAR_CLASS;
+    new_cl->class_type.tt_class = new_cl;
+    new_cl->class_object_type.tt_type = VAR_OBJECT;
+    new_cl->class_object_type.tt_class = new_cl;
+
+    ga_init2(&new_cl->class_type_list, sizeof(type_T *), 10);
+
+    // Copy the extended class
+    new_cl->class_extends = cl->class_extends;
+    if (new_cl->class_extends != NULL)
+	new_cl->class_extends->class_refcount++;
+
+    // Copy the interface classes
+    if (cl->class_interface_count > 0)
+    {
+	new_cl->class_interfaces =
+	    ALLOC_CLEAR_MULT(char_u *, cl->class_interface_count);
+	new_cl->class_interfaces_cl = ALLOC_CLEAR_MULT(class_T *,
+						    cl->class_interface_count);
+	if (new_cl->class_interfaces == NULL
+				    || new_cl->class_interfaces_cl == NULL)
+	{
+	    VIM_CLEAR(new_cl->class_interfaces);
+	    VIM_CLEAR(new_cl->class_interfaces_cl);
+	    goto fail;
+	}
+	new_cl->class_interface_count = cl->class_interface_count;
+
+	for (i = 0; i < cl->class_interface_count; ++i)
+	{
+	    new_cl->class_interfaces[i] = vim_strsave(cl->class_interfaces[i]);
+	    if (new_cl->class_interfaces[i] == NULL)
+		goto fail;
+
+	    new_cl->class_interfaces_cl[i] = cl->class_interfaces_cl[i];
+	    new_cl->class_interfaces_cl[i]->class_refcount++;
+	}
+    }
+
+    // Copy the object and class variables
+    if (clone_oc_vars(new_cl, cl->class_class_members,
+		cl->class_class_member_count,
+		&new_cl->class_class_members,
+		&new_cl->class_class_member_count) == FAIL)
+	goto fail;
+
+    if (clone_oc_vars(new_cl, cl->class_obj_members,
+		cl->class_obj_member_count,
+		&new_cl->class_obj_members,
+		&new_cl->class_obj_member_count) == FAIL)
+	goto fail;
+
+    // Allocate the class member typvals.  They are initialized after the
+    // types are known, see generic_class_add().
+    if (cl->class_class_member_count > 0)
+    {
+	new_cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
+						cl->class_class_member_count);
+	if (new_cl->class_members_tv == NULL)
+	    goto fail;
+    }
+
+    if (clone_oc_methods(cl, new_cl) == FAIL)
+	goto fail;
+
+    // The lookup tables are created after the parent class and interfaces
+    // are known, see generic_class_add().
+
+    if (clone_generic_arg_names(cl, new_cl) == FAIL)
+	goto fail;
+
+    update_builtin_method_index(new_cl);
+
+    class_created(new_cl);
+
+    return new_cl;
+
+fail:
+    class_free(new_cl);
+    return NULL;
+}
+
+/*
+ * Set the CLASS_EXTENDED flag in class "cl".  When "cl" is a concrete class
+ * of a generic class, also set it in the generic class and all its concrete
+ * classes: each of them can be the parent class of a concrete class of the
+ * class extending "cl".
+ */
+    static void
+set_class_extended(class_T *cl)
+{
+    class_T	*base = cl->class_generic_base;
+
+    cl->class_flags |= CLASS_EXTENDED;
+    if (base == NULL)
+	return;
+
+    base->class_flags |= CLASS_EXTENDED;
+
+    hashtab_T	*ht = &base->class_generic_table;
+    hashitem_T	*hi;
+
+    // The previous failed attempts ("gci_prev") are not used as a parent
+    // class, they don't need the flag.
+    FOR_ALL_GCITEMS(ht, hi)
+	HI2GCITEM(hi)->gci_cl->class_flags |= CLASS_EXTENDED;
+}
+
+/*
+ * Return the class to use in the concrete class "new_cl" of the generic class
+ * "cl" for "pcl", the parent class or an interface of "cl".  When "pcl" was
+ * created from a generic class with type arguments using the type variables
+ * of "cl" (e.g. "A<T>" in "class B<T> extends A<T>"), then the concrete class
+ * with the types of "new_cl" is returned (e.g. "A<number>" for "B<number>").
+ * Otherwise "pcl" is returned.  Returns NULL on failure.
+ */
+    static class_T *
+generic_class_parent(class_T *cl, class_T *new_cl, class_T *pcl)
+{
+    class_T	*base = pcl->class_generic_base;
+    int		argcount = pcl->class_generic_argcount;
+    int		i;
+
+    if (base == NULL)
+	return pcl;
+    for (i = 0; i < argcount; i++)
+	if (type_has_generic(pcl->class_generic_args[i].gt_type))
+	    break;
+    if (i == argcount)
+	return pcl;	// type arguments are concrete types
+
+    type_T	**args = ALLOC_MULT(type_T *, argcount);
+    garray_T	type_list;
+    class_T	*ret = NULL;
+
+    if (args == NULL)
+	return NULL;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+
+    for (i = 0; i < argcount; i++)
+    {
+	type_T *gt = pcl->class_generic_args[i].gt_type;
+
+	args[i] = copy_type_deep(gt, &type_list);
+	update_generic_type(cl, new_cl, NULL, NULL, gt, &args[i], NULL);
+	if (type_has_generic(args[i]))
+	    break;	// not a type variable of "cl"
+    }
+    if (i == argcount)
+	ret = generic_class_get_with_types(base, args, argcount);
+    else
+	ret = pcl;
+
+    vim_free(args);
+    clear_type_list(&type_list);
+    return ret;
+}
+
+/*
+ * Use the concrete parent class and interfaces for the concrete class
+ * "new_cl" of the generic class "cl" and create the lookup tables.
+ * Returns OK or FAIL.
+ */
+    static int
+generic_class_set_parents(class_T *cl, class_T *new_cl)
+{
+    // loop over the parent class (i == -1) and the interfaces
+    for (int i = -1; i < new_cl->class_interface_count; ++i)
+    {
+	class_T **pclp = i < 0 ? &new_cl->class_extends
+					    : &new_cl->class_interfaces_cl[i];
+	if (*pclp == NULL)
+	    continue;
+
+	class_T *pcl = generic_class_parent(cl, new_cl, *pclp);
+	if (pcl == NULL)
+	    return FAIL;
+	if (pcl != *pclp)
+	{
+	    ++pcl->class_refcount;
+	    class_unref(*pclp);
+	    *pclp = pcl;
+	}
+    }
+
+    // The methods inherited from a parent class are defined in the
+    // corresponding concrete parent class.
+    for (int i = new_cl->class_obj_method_count_child;
+				    i < new_cl->class_obj_method_count; ++i)
+    {
+	ufunc_T *fp = new_cl->class_obj_methods[i];
+	class_T *p = cl->class_extends;
+	class_T *new_p = new_cl->class_extends;
+
+	for ( ; p != NULL && new_p != NULL;
+			    p = p->class_extends, new_p = new_p->class_extends)
+	    if (fp->uf_defclass == p)
+	    {
+		fp->uf_defclass = new_p;
+		break;
+	    }
+    }
+
+    return clone_lookup_tables(cl, new_cl);
+}
+
+/*
+ * Check the signature of the methods in the concrete class "new_cl" that
+ * override a method in the parent class.  The types of a generic class are
+ * only known in a concrete class.
+ * Returns TRUE if the signatures match.
+ */
+    static int
+generic_class_check_overrides(class_T *new_cl)
+{
+    class_T *pcl = new_cl->class_extends;
+
+    if (pcl == NULL)
+	return TRUE;
+
+    for (int ci = 0; ci < new_cl->class_obj_method_count_child; ++ci)
+    {
+	ufunc_T *cf = new_cl->class_obj_methods[ci];
+
+	for (int pi = 0; pi < pcl->class_obj_method_count; ++pi)
+	{
+	    ufunc_T *pf = pcl->class_obj_methods[pi];
+
+	    if (STRCMP(pf->uf_name, cf->uf_name) == 0)
+	    {
+		where_T where = WHERE_INIT;
+
+		where.wt_func_name = (char *)pf->uf_name;
+		where.wt_kind = WT_METHOD;
+		if (check_type(pf->uf_func_type, cf->uf_func_type, TRUE,
+								where) == FAIL)
+		    return FALSE;
+	    }
+	}
+    }
+
+    return TRUE;
+}
+
+/*
+ * Check the variables and methods of the concrete class "new_cl" against its
+ * interfaces.  The types of a generic class are only known in a concrete
+ * class.
+ * Returns TRUE if they match.
+ */
+    static int
+generic_class_check_interfaces(class_T *new_cl)
+{
+    garray_T	members_ga;
+    garray_T	methods_ga;
+
+    // The variables and methods include the ones from the parent classes.
+    ga_init(&members_ga);
+    members_ga.ga_data = new_cl->class_obj_members;
+    members_ga.ga_len = new_cl->class_obj_member_count;
+    ga_init(&methods_ga);
+    methods_ga.ga_data = new_cl->class_obj_methods;
+    methods_ga.ga_len = new_cl->class_obj_method_count;
+
+    for (int i = 0; i < new_cl->class_interface_count; ++i)
+	for (class_T *ifcl = new_cl->class_interfaces_cl[i]; ifcl != NULL;
+						    ifcl = ifcl->class_extends)
+	    if (!validate_interface_variables(ifcl->class_name.string, ifcl,
+							    &members_ga, NULL)
+		    || !validate_interface_methods(ifcl->class_name.string,
+						    ifcl, &methods_ga, NULL))
+		return FALSE;
+
+    return TRUE;
+}
+
+/*
+ * Create the concrete class of the generic class "cl" for the type arguments
+ * in "gatab" and add it to the generic class table with "key", see
+ * generic_args_key().  The first "typeslen" bytes of "key" are used for the
+ * class name.  Returns NULL on failure, an error was given then (except for
+ * memory allocation failure).
+ */
+    static class_T *
+generic_class_add(
+    class_T		*cl,
+    char_u		*key,
+    size_t		typeslen,
+    generic_args_tab_T	*gatab)
+{
+    hashtab_T	*ht = &cl->class_generic_table;
+    long_u	hash;
+    hashitem_T	*hi;
+    int		i;
+
+    size_t	keylen = STRLEN(key);
+    gcitem_T	*gcitem = alloc(sizeof(gcitem_T) + keylen);
+    if (gcitem == NULL)
+	return NULL;
+
+    STRCPY(gcitem->gci_name, key);
+    gcitem->gci_invalid = FALSE;
+    gcitem->gci_prev = NULL;
+
+    class_T *new_cl = clone_class(cl, typeslen + 2);
+    if (new_cl == NULL)
+    {
+	vim_free(gcitem);
+	return NULL;
+    }
+
+    new_cl->class_generic_arg_types = gatab->gat_arg_types;
+    // now that the type arguments are copied, remove the reference to the
+    // type arguments
+    ga_init(&gatab->gat_arg_types);
+
+    // Create a new name for the class: name<type1, type2...>
+    size_t  namelen = cl->class_name.length;
+    new_cl->class_name.string[namelen] = '<';
+    mch_memmove(new_cl->class_name.string + namelen + 1, key, typeslen);
+    new_cl->class_name.string[namelen + typeslen + 1] = '>';
+    new_cl->class_name.string[namelen + typeslen + 2] = NUL;
+
+    gcitem->gci_cl = new_cl;
+    new_cl->class_generic_base = cl;
+
+    // Replace the t_any generic types with the actual types
+    for (i = 0; i < cl->class_generic_argcount; i++)
+	new_cl->class_generic_args[i].gt_type =
+			((generic_T *)gatab->gat_args.ga_data)[i].gt_type;
+
+    // Update the generic types (if any) in the class and object variables
+    for (i = 0; i < cl->class_class_member_count; i++)
+	update_generic_type(cl, new_cl, NULL, NULL,
+				cl->class_class_members[i].ocm_type,
+			    &new_cl->class_class_members[i].ocm_type, NULL);
+    for (i = 0; i < cl->class_obj_member_count; i++)
+	update_generic_type(cl, new_cl, NULL, NULL,
+				cl->class_obj_members[i].ocm_type,
+				&new_cl->class_obj_members[i].ocm_type, NULL);
+
+    // Update the generic types (if any) in the class methods
+    for (i = 0; i < cl->class_class_function_count; i++)
+    {
+	ufunc_T *fp = cl->class_class_functions[i];
+	ufunc_T *new_fp = new_cl->class_class_functions[i];
+
+	if (update_func_generic_types(cl, new_cl, fp, new_fp) == FAIL)
+	{
+	    // Not in the table yet, nothing refers to "new_cl".
+	    vim_free(gcitem);
+	    class_free(new_cl);
+	    return NULL;
+	}
+	// The constructor returns an object of "new_cl".  This is also set
+	// when it is compiled, but it may be used before that, e.g. in an
+	// object variable initializer.  The function type was not copied
+	// when out of memory.
+	if (IS_CONSTRUCTOR_METHOD(new_fp))
+	{
+	    type_T *ft = new_fp->uf_func_type;
+
+	    new_fp->uf_ret_type = &new_cl->class_object_type;
+	    if (ft != NULL && ft != fp->uf_func_type
+				       && (ft->tt_flags & TTFLAG_STATIC) == 0)
+		ft->tt_member = &new_cl->class_object_type;
+	}
+    }
+
+    // Update the generic types (if any) in the object methods
+    for (i = 0; i < cl->class_obj_method_count; i++)
+    {
+	ufunc_T *fp = cl->class_obj_methods[i];
+	ufunc_T *new_fp = new_cl->class_obj_methods[i];
+
+	// If it is a builtin function, check the signature
+	if (update_func_generic_types(cl, new_cl, fp, new_fp) == FAIL
+		|| (SAFE_islower(*new_fp->uf_name)
+		    && !object_check_builtin_method_sig(new_fp)))
+	{
+	    // Not in the table yet, nothing refers to "new_cl".
+	    vim_free(gcitem);
+	    class_free(new_cl);
+	    return NULL;
+	}
+    }
+
+    // Add the class to the table before creating the parent class, the
+    // interfaces and the types, these may refer to this class itself (e.g.
+    // "class Foo<T> implements Cmp<Foo<T>>").  Other classes may refer to
+    // the class from now on, thus on failure the class is kept in the table.
+    // A previous failed attempt is replaced, so that using the class gives
+    // the errors again.
+    hash = hash_hash(key);
+    hi = hash_lookup(ht, key, hash);
+    if (!HASHITEM_EMPTY(hi))
+    {
+	gcitem->gci_prev = HI2GCITEM(hi);
+	hi->hi_key = gcitem->gci_name;
+    }
+    else
+	hash_add_item(ht, hi, gcitem->gci_name, hash);
+
+    // The parent class and the interfaces may use the type variables.
+    if (generic_class_set_parents(cl, new_cl) == FAIL)
+	goto fail;
+
+    // Resolve the object types using a generic class.  When creating one of
+    // these classes fails this class cannot be used either.
+    for (i = 0; i < new_cl->class_class_member_count; i++)
+	if (resolve_generic_obj_type(new_cl->class_class_members[i].ocm_type)
+								      == FAIL)
+	    goto fail;
+    for (i = 0; i < new_cl->class_obj_member_count; i++)
+	if (resolve_generic_obj_type(new_cl->class_obj_members[i].ocm_type)
+								      == FAIL)
+	    goto fail;
+    for (i = 0; i < new_cl->class_class_function_count; i++)
+	if (ufunc_resolve_generic_types(new_cl->class_class_functions[i])
+								      == FAIL)
+	    goto fail;
+    for (i = 0; i < new_cl->class_obj_method_count; i++)
+	if (ufunc_resolve_generic_types(new_cl->class_obj_methods[i]) == FAIL)
+	    goto fail;
+
+    // Check the method types after resolving them.
+    if (!generic_class_check_overrides(new_cl)
+				    || !generic_class_check_interfaces(new_cl))
+	goto fail;
+
+    // Initialize the class variables, now that the types are known.  A type
+    // variable used in an initializer refers to the type of this class.
+    if (new_cl->class_class_member_count > 0)
+    {
+	type_resolve_ctx_T	save_trctx;
+	int			r;
+
+	save_type_resolve_ctx(&save_trctx);
+	set_type_resolve_ctx(new_cl, NULL);
+	r = add_class_members(new_cl, NULL, &new_cl->class_type_list);
+	restore_type_resolve_ctx(&save_trctx);
+	if (r == FAIL)
+	    goto fail;
+    }
+
+    return new_cl;
+
+fail:
+    gcitem->gci_invalid = TRUE;
+    return NULL;
+}
+
+/*
+ * Get the concrete class for the generic class "cl" with the type arguments
+ * "args[argcount]".  The type arguments must be concrete types.
+ * Returns NULL on failure.
+ */
+    static class_T *
+generic_class_get_with_types(class_T *cl, type_T **args, int argcount)
+{
+    generic_args_tab_T	gatab;
+    class_T		*new_cl = NULL;
+
+    generic_args_table_init(&gatab);
+
+    if (ga_grow(&gatab.gat_args, argcount) == FAIL)
+	goto done;
+    for (int i = 0; i < argcount; i++)
+    {
+	generic_T	*generic_arg;
+	char		*tofree = NULL;
+	type_T		*type;
+
+	// Use the concrete class for an object type, the key must not depend
+	// on whether the type was resolved.
+	type = copy_type_deep(args[i], &gatab.gat_arg_types);
+	// out of memory when "args[i]" is returned, it must not be changed
+	if (type == args[i] || resolve_generic_obj_type(type) == FAIL)
+	    goto done;
+	generic_arg = (generic_T *)gatab.gat_args.ga_data + i;
+	generic_arg->gt_name = vim_strsave(
+				    (char_u *)type_name(type, &tofree));
+	vim_free(tofree);
+	if (generic_arg->gt_name == NULL)
+	    goto done;
+	generic_arg->gt_type = type;
+	gatab.gat_args.ga_len++;
+    }
+
+    new_cl = generic_class_get(cl, &gatab);
+
+done:
+    generic_args_table_clear(&gatab);
+    return new_cl;
+}
+
+/*
+ * Resolve the object types in "type" which use a generic class with type
+ * arguments (e.g. "Pair<A, B>").  When none of the type arguments is a
+ * generic type anymore, the type is changed to use the concrete class
+ * (e.g. "Pair<number, string>").  The type is changed in place.
+ * Returns FAIL when creating a concrete class failed, an error was given
+ * then (except for memory allocation failure).
+ */
+    int
+resolve_generic_obj_type(type_T *type)
+{
+    if (type == NULL || (type->tt_flags & TTFLAG_STATIC))
+	return OK;
+
+    if (type->tt_member != NULL
+			&& resolve_generic_obj_type(type->tt_member) == FAIL)
+	return FAIL;
+    if (type->tt_args != NULL)
+	for (int i = 0; i < type->tt_argcount; i++)
+	    if (resolve_generic_obj_type(type->tt_args[i]) == FAIL)
+		return FAIL;
+
+    if (type->tt_type != VAR_OBJECT || type->tt_class == NULL
+	    || !IS_GENERIC_CLASS(type->tt_class) || type->tt_args == NULL
+	    || type_has_generic(type))
+	return OK;
+
+    class_T *cl = generic_class_get_with_types(type->tt_class, type->tt_args,
+							type->tt_argcount);
+    if (cl == NULL)
+	return FAIL;
+
+    type->tt_class = cl;
+    type->tt_args = NULL;
+    type->tt_argcount = 0;
+    return OK;
+}
+
+/*
+ * Resolve the object types using a generic class in the argument types,
+ * return type and function type of "fp".  Returns OK or FAIL, see
+ * resolve_generic_obj_type().
+ */
+    int
+ufunc_resolve_generic_types(ufunc_T *fp)
+{
+    // "uf_arg_types" is NULL when out of memory while defining "fp"
+    if (fp->uf_arg_types != NULL)
+	for (int i = 0; i < fp->uf_args.ga_len; i++)
+	    if (resolve_generic_obj_type(fp->uf_arg_types[i]) == FAIL)
+		return FAIL;
+    if (resolve_generic_obj_type(fp->uf_va_type) == FAIL
+	    || resolve_generic_obj_type(fp->uf_ret_type) == FAIL
+	    || resolve_generic_obj_type(fp->uf_func_type) == FAIL)
+	return FAIL;
+    return OK;
+}
+
+/*
+ * Look up the concrete class of the generic class "cl" for the type arguments
+ * in "gatab".  The key is built in "gkey_gap" and "*typeslen" is set, see
+ * generic_args_key().  Returns NULL if not found.
+ */
+    static class_T *
+generic_lookup_class(
+    class_T		*cl,
+    generic_args_tab_T	*gatab,
+    garray_T		*gkey_gap,
+    size_t		*typeslen)
+{
+    hashitem_T	*hi = generic_args_lookup(&cl->class_generic_table,
+						    gatab, gkey_gap, typeslen);
+
+    // A previous failed attempt is not used, it is created again.
+    if (hi == NULL || HI2GCITEM(hi)->gci_invalid)
+	return NULL;
+    return HI2GCITEM(hi)->gci_cl;
+}
+
+// Maximum nesting of generic classes created while creating a generic class.
+#define MAX_GENERIC_CLASS_DEPTH	    100
+
+/*
+ * Check the number of type arguments in "gatab" for the generic class "cl".
+ * Returns OK if it is correct, otherwise gives an error and returns FAIL.
+ */
+    int
+generic_class_check_args(class_T *cl, generic_args_tab_T *gatab)
+{
+    char	*emsg = NULL;
+
+    if (gatab == NULL || gatab->gat_args.ga_len == 0)
+	emsg = e_generic_class_missing_type_args_str;
+    else if (gatab->gat_args.ga_len < cl->class_generic_argcount)
+	emsg = e_not_enough_types_for_generic_class_str;
+    else if (gatab->gat_args.ga_len > cl->class_generic_argcount)
+	emsg = e_too_many_types_for_generic_class_str;
+
+    if (emsg != NULL)
+    {
+	semsg(_(emsg), cl->class_name.string);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Get the concrete class of the generic class "cl" for the type arguments in
+ * "gatab", create it when it does not exist yet.  Returns NULL on failure,
+ * an error was given then (except for memory allocation failure).
+ */
+    class_T *
+generic_class_get(class_T *cl, generic_args_tab_T *gatab)
+{
+    static int	depth = 0;
+
+    if (generic_class_check_args(cl, gatab) == FAIL)
+	return NULL;
+
+    // While the generic class is being defined its methods are not known yet
+    // (e.g. when an initializer of the parent class uses it), a class created
+    // from it would not be usable.
+    if (cl->class_flags & CLASS_INCOMPLETE)
+    {
+	semsg(_(e_generic_class_str_not_completely_defined),
+						    cl->class_name.string);
+	return NULL;
+    }
+
+    garray_T gkey_ga;
+
+    ga_init2(&gkey_ga, 1, 80);
+
+    // Look up the class with specific types
+    size_t	typeslen;
+    class_T	*new_cl = generic_lookup_class(cl, gatab, &gkey_ga,
+								    &typeslen);
+    if (new_cl == NULL)
+    {
+	// generic class with these type arguments doesn't exist.
+	// Create a new one.  Creating a class may create other classes used
+	// in the types of the class, e.g. "Box<list<T>>" in "Box<T>".  Avoid
+	// endless recursion.
+	if (depth >= MAX_GENERIC_CLASS_DEPTH)
+	    semsg(_(e_generic_class_str_nested_too_deep),
+						    cl->class_name.string);
+	else
+	{
+	    // Creating the class runs the class variable initializers, these
+	    // may delete the generic class, e.g. by sourcing the script again.
+	    // Keep a reference until done.  When a reference was dropped
+	    // meanwhile the generic class was deleted, then the new class
+	    // cannot be used.
+	    int	refcount = cl->class_refcount;
+
+	    ++cl->class_refcount;
+	    ++depth;
+	    new_cl = generic_class_add(cl, (char_u *)gkey_ga.ga_data,
+							    typeslen, gatab);
+	    --depth;
+	    if (cl->class_refcount <= refcount)
+	    {
+		if (new_cl != NULL)
+		    semsg(_(e_generic_class_str_deleted_while_creating_class),
+							cl->class_name.string);
+		new_cl = NULL;
+	    }
+	    class_unref(cl);
+	}
+    }
+    ga_clear(&gkey_ga);
+
+    return new_cl;
+}
+
+/*
+ * Find or create the concrete class of the generic class "cl" for the type
+ * arguments at "*argp" (e.g. "<number, string>").  "cctx" is used to find the
+ * type variables of the function being compiled, may be NULL.
+ * Returns the concrete class and advances "*argp" to after the type arguments.
+ * Returns NULL and gives an error message on failure.
+ */
+    class_T *
+find_generic_class(class_T *cl, char_u **argp, cctx_T *cctx)
+{
+    generic_args_tab_T	gatab;
+    char_u		*p;
+    class_T		*new_cl = NULL;
+
+    generic_args_table_init(&gatab);
+
+    p = parse_generic_type_args(cl->class_name.string, cl->class_name.length,
+							*argp, &gatab, cctx);
+    if (p != NULL)
+    {
+	new_cl = generic_class_get(cl, &gatab);
+	if (new_cl != NULL)
+	    *argp = p;
+    }
+
+    generic_args_table_clear(&gatab);
+
+    return new_cl;
+}
+
+/*
+ * Return the class to use for class "cl" followed by "*argp".  For a generic
+ * class the type arguments must follow, the concrete class is returned and
+ * "*argp" is advanced to after them.  A class that is not generic is returned
+ * when no type arguments follow.  "cctx" is used for the type variables of
+ * the function being compiled, may be NULL.  Returns NULL and gives an error
+ * message otherwise.
+ */
+    class_T *
+eval_generic_class(
+    class_T	*cl,
+    char_u	**argp,
+    cctx_T	*cctx)
+{
+    class_T	*new_cl = cl;
+
+    if (IS_GENERIC_CLASS(cl))
+    {
+	if (**argp == '<')
+	    new_cl = find_generic_class(cl, argp, cctx);
+	else
+	{
+	    if (*skipwhite(*argp) == '<')
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", *argp);
+	    else
+		semsg(_(e_generic_class_missing_type_args_str),
+			cl->class_name.string);
+	    return NULL;
+	}
+    }
+    else if (**argp == '<')
+    {
+	semsg(_(e_not_a_generic_class_str), cl->class_name.string);
+	return NULL;
+    }
+
+    return new_cl;
 }
 
 /*

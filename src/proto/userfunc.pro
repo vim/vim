@@ -4,6 +4,7 @@ hashtab_T *func_tbl_get(void);
 char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
 string_T get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
+void function_set_block_ids(ufunc_T *fp, int *ids, int depth);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg, cctx_T *cctx);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload, int new_function, int *found_var);
 void emsg_funcname(char *ermsg, char_u *name);

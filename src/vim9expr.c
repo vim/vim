@@ -334,7 +334,7 @@ inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
 	    class_T	*clp = cctx->ctx_ufunc->uf_class;
 	    while (clp != NULL)
 	    {
-		if (clp == cl)
+		if (class_same_generic(clp, cl))
 		    return TRUE;
 		clp = clp->class_extends;
 	    }
@@ -386,6 +386,12 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		--instr->ga_len;
 		vim_free(isn->isn_arg.script.scriptref);
 	    }
+	    else if (isn->isn_type == ISN_PUSHCLASS)
+	    {
+		// A class of a generic class with types, drop the instruction.
+		--instr->ga_len;
+		class_unref(isn->isn_arg.classarg);
+	    }
 	}
     }
 
@@ -406,17 +412,20 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
     size_t len = name_end - name;
 
-    gfargs_tab_T    gfatab;
+    generic_args_tab_T	gatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gatab);
 
     if (*name_end == '<')
     {
 	// generic method call
-	name_end = parse_generic_func_type_args(name, len, name_end,
-							&gfatab, cctx);
+	name_end = parse_generic_type_args(name, len, name_end,
+							&gatab, cctx);
 	if (name_end == NULL)
+	{
+	    generic_args_table_clear(&gatab);
 	    return FAIL;
+	}
     }
 
     if (*name_end == '(')
@@ -508,7 +517,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		((type->tt_type == VAR_OBJECT
 		  && !inside_class_hierarchy(cctx, cl))
 		 || (type->tt_type == VAR_CLASS
-		     && cctx->ctx_ufunc->uf_defclass != cl)))
+		     && !class_same_generic(cctx->ctx_ufunc->uf_defclass,
+									cl))))
 	{
 	    semsg(_(e_cannot_access_protected_method_str), name);
 	    goto done;
@@ -517,7 +527,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	// process generic function call
 	if (ufunc != NULL)
 	{
-	    ufunc = generic_func_get(ufunc, &gfatab);
+	    ufunc = generic_func_get(ufunc, &gatab);
 	    if (ufunc == NULL)
 		goto done;
 	}
@@ -593,7 +603,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // Note: type->tt_type = VAR_CLASS
 	    // A private class variable can be accessed only in the class where
 	    // it is defined.
-	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
+	    if (*name == '_'
+		    && !class_same_generic(cctx->ctx_ufunc->uf_class, cl))
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name.string, 0, cl);
@@ -629,7 +640,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
 
 done:
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gatab);
     return ret;
 }
 
@@ -644,7 +655,8 @@ compile_load_scriptvar(
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
 	char_u **end,	    // end of variable, may be NULL
-	imported_T *import) // found imported item, can be NULL
+	imported_T *import, // found imported item, can be NULL
+	generic_args_tab_T *gatabp) // type args after the name or NULL
 {
     scriptitem_T    *si;
     int		    idx;
@@ -657,6 +669,36 @@ compile_load_scriptvar(
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_type->tt_type == VAR_CLASS
+					    && sv->sv_type->tt_class != NULL)
+	{
+	    if (IS_GENERIC_CLASS(sv->sv_type->tt_class))
+	    {
+		if ((gatabp == NULL || gatabp->gat_args.ga_len == 0)
+			&& end != NULL && VIM_ISWHITE(**end)
+			&& *skipwhite(*end) == '<')
+		{
+		    semsg(_(e_no_white_space_allowed_before_str_str), "<",
+									*end);
+		    return FAIL;
+		}
+
+		class_T	*new_cl = generic_class_get(
+						sv->sv_type->tt_class, gatabp);
+		if (new_cl == NULL)
+		    return FAIL;
+
+		// The script variable is the generic class, push the class
+		// with the specified types.
+		return generate_PUSHCLASS(cctx, new_cl);
+	    }
+	    else if (gatabp != NULL && gatabp->gat_args.ga_len != 0)
+	    {
+		semsg(_(e_not_a_generic_class_str), name);
+		return FAIL;
+	    }
+	}
 
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 					current_sctx.sc_sid, idx, sv->sv_type);
@@ -760,26 +802,26 @@ compile_load_scriptvar(
 	{
 	    if (ufunc != NULL)
 	    {
-		gfargs_tab_T	gfatab;
+		generic_args_tab_T	gatab;
 
-		generic_func_args_table_init(&gfatab);
+		generic_args_table_init(&gatab);
 
 		if (IS_GENERIC_FUNC(ufunc))
 		{
 		    if (*p == '<')
 		    {
 			// generic function call
-			p = parse_generic_func_type_args(name, STRLEN(name), p,
-								&gfatab, cctx);
+			p = parse_generic_type_args(name, STRLEN(name), p,
+								&gatab, cctx);
 			if (p != NULL)
 			{
 			    *end = p;
 
 			    // generic function call
-			    ufunc = generic_func_get(ufunc, &gfatab);
+			    ufunc = generic_func_get(ufunc, &gatab);
 			}
 
-			generic_func_args_table_clear(&gfatab);
+			generic_args_table_clear(&gatab);
 
 			if (p == NULL || ufunc == NULL)
 			    return FAIL;
@@ -804,6 +846,21 @@ compile_load_scriptvar(
 	    return FAIL;
 	}
 
+	if (type->tt_type == VAR_CLASS && type->tt_class != NULL)
+	{
+	    // An imported generic class, the types must follow and the class
+	    // with the types is used.
+	    class_T *new_cl = eval_generic_class(type->tt_class, &p, cctx);
+
+	    if (new_cl == NULL)
+		return FAIL;
+	    if (new_cl != type->tt_class)
+	    {
+		*end = p;
+		return generate_PUSHCLASS(cctx, new_cl);
+	    }
+	}
+
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 		imp->imp_sid,
 		idx,
@@ -821,7 +878,7 @@ compile_load_scriptvar(
 generate_funcref(
     cctx_T		*cctx,
     char_u		*name,
-    gfargs_tab_T	*gfatab,
+    generic_args_tab_T	*gatab,
     int			has_g_prefix)
 {
     ufunc_T *ufunc = find_func(name, FALSE);
@@ -832,7 +889,7 @@ generate_funcref(
 	return FAIL;
 
     // process generic function call
-    ufunc = generic_func_get(ufunc, gfatab);
+    ufunc = generic_func_get(ufunc, gatab);
     if (ufunc == NULL)
 	return FAIL;
 
@@ -865,6 +922,34 @@ compiling_a_class_method(cctx_T *cctx)
 }
 
 /*
+ * Generate a closure for the nested generic function "ufunc" with the type
+ * arguments in "gatab".  The function is compiled in the context of the
+ * function where it is defined.
+ */
+    static int
+compile_nested_generic_func(
+    cctx_T		*cctx,
+    ufunc_T		*ufunc,
+    generic_args_tab_T	*gatab)
+{
+    ufunc_T	*fp = generic_func_get(ufunc, gatab);
+
+    if (fp == NULL)
+	return FAIL;
+
+    // copy over the block scope IDs before compiling
+    if (fp->uf_block_ids == NULL)
+	function_set_block_ids(fp, ufunc->uf_block_ids, ufunc->uf_block_depth);
+
+    compiletype_T compile_type = get_compile_type(fp);
+    if (func_needs_compiling(fp, compile_type)
+	    && compile_def_function(fp, TRUE, compile_type, cctx) == FAIL)
+	return FAIL;
+
+    return generate_FUNCREF(cctx, fp, NULL, FALSE, 0, NULL);
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -884,17 +969,24 @@ compile_load(
     char_u	*end = end_arg;
     int		res = FAIL;
     int		prev_called_emsg = called_emsg;
-    gfargs_tab_T gfatab;
+    generic_args_tab_T gatab;
+    char_u	*lt = NULL;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gatab);
 
     if (*(*arg + namelen) == '<')
     {
-	// generic function call
-	if (parse_generic_func_type_args(*arg, namelen,
-			*arg + namelen, &gfatab, cctx) == NULL)
+	// generic function or class
+	if (parse_generic_type_args(*arg, namelen, *arg + namelen, &gatab,
+								cctx) == NULL)
+	{
+	    generic_args_table_clear(&gatab);
 	    return FAIL;
-	*(*arg + namelen) = NUL;
+	}
+	// Temporarily terminate the name, the line may be compiled again
+	// (e.g. for "Foo<number>.var[0] += 1").
+	lt = *arg + namelen;
+	*lt = NUL;
     }
 
     if (*(*arg + 1) == ':')
@@ -938,17 +1030,18 @@ compile_load(
 			      goto theend;
 			  }
 			  if (is_expr && find_func(name, FALSE) != NULL)
-			      res = generate_funcref(cctx, name, &gfatab, FALSE);
+			      res = generate_funcref(cctx, name, &gatab,
+									FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
-							    NULL, &end, NULL);
+						    NULL, &end, NULL, &gatab);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
 				       && (find_func(name, TRUE) != NULL
-					   || gfatab.gfat_args.ga_len > 0))
-				  res = generate_funcref(cctx, name, &gfatab,
+					   || gatab.gat_args.ga_len > 0))
+				  res = generate_funcref(cctx, name, &gatab,
 								TRUE);
 			      else
 				  isn_type = ISN_LOADG;
@@ -1019,7 +1112,19 @@ compile_load(
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
-		if (lvar.lv_from_outer != 0)
+		if (lvar.lv_ufunc != NULL && IS_GENERIC_FUNC(lvar.lv_ufunc)
+			&& gatab.gat_args.ga_len > 0)
+		{
+		    // The function with the types would have to be created
+		    // in the function where it is defined.
+		    if (lvar.lv_from_outer != 0)
+			semsg(_(e_cannot_use_generic_func_from_closure_str),
+								name);
+		    else
+			res = compile_nested_generic_func(cctx,
+						    lvar.lv_ufunc, &gatab);
+		}
+		else if (lvar.lv_from_outer != 0)
 		{
 		    gen_load_outer = lvar.lv_from_outer;
 		    outer_loop_depth = lvar.lv_loop_depth;
@@ -1064,13 +1169,14 @@ compile_load(
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, namelen, cctx, NULL) == OK
 			    || (imp = find_imported(name, 0, FALSE)) != NULL)
-		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
+		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp,
+								&gatab);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
 		// generate_funcref() will fail if the function can't be found.
 		if (res == FAIL && is_expr && ASCII_ISUPPER(*name))
-		    res = generate_funcref(cctx, name, &gfatab, FALSE);
+		    res = generate_funcref(cctx, name, &gatab, FALSE);
 	    }
 	}
 	if (gen_load)
@@ -1086,10 +1192,12 @@ compile_load(
     *arg = end;
 
 theend:
+    if (lt != NULL)
+	*lt = '<';
     if (res == FAIL && error && called_emsg == prev_called_emsg)
 	semsg(_(e_variable_not_found_str), name);
     vim_free(name);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gatab);
     return res;
 }
 
@@ -1286,6 +1394,7 @@ compile_call(
     char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
+    char_u	*gname = NULL;
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
@@ -1376,16 +1485,22 @@ compile_call(
     else
 	special_fn = CA_NOT_SPECIAL;
 
-    gfargs_tab_T    gfatab;
+    generic_args_tab_T	gatab;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gatab);
 
     if (*(*arg + varlen) == '<')
     {
+	char_u	*start = *arg;
+
 	// generic function
-	*arg = parse_generic_func_type_args(*arg, varlen, *arg + varlen,
-								&gfatab, cctx);
+	*arg = parse_generic_type_args(*arg, varlen, *arg + varlen, &gatab,
+									cctx);
 	if (*arg == NULL)
+	    goto theend;
+	// the name with the type arguments, these can be of any length
+	gname = vim_strnsave(start, *arg - start);
+	if (gname == NULL)
 	    goto theend;
 	++*arg;			// skip '('
     }
@@ -1466,8 +1581,9 @@ compile_call(
 
     // An argument or local variable can be a function reference, this
     // overrules a function name.
-    if (lookup_local(namebuf, varlen, NULL, cctx) == FAIL
-	    && arg_exists(namebuf, varlen, NULL, NULL, NULL, cctx) != OK)
+    if (gatab.gat_args.ga_len != 0
+	    || (lookup_local(namebuf, varlen, NULL, cctx) == FAIL
+		&& arg_exists(namebuf, varlen, NULL, NULL, NULL, cctx) != OK))
     {
 	class_T		*cl = NULL;
 	int		mi = 0;
@@ -1478,7 +1594,7 @@ compile_call(
 	if (ufunc != NULL)
 	{
 	    // process generic function call
-	    ufunc = generic_func_get(ufunc, &gfatab);
+	    ufunc = generic_func_get(ufunc, &gatab);
 	    if (ufunc == NULL)
 		goto theend;
 
@@ -1520,9 +1636,9 @@ compile_call(
     // If the name is a variable, load it and use PCALL.
     // Not for g:Func(), we don't know if it is a variable or not.
     // Not for some#Func(), it will be loaded later.
-    p = namebuf;
+    p = ufunc == NULL && gname != NULL ? gname : namebuf;
     if (!has_g_namespace && !is_autoload
-	    && compile_load(&p, varlen, namebuf + varlen, cctx, FALSE, FALSE) == OK)
+	    && compile_load(&p, varlen, p + varlen, cctx, FALSE, FALSE) == OK)
     {
 	type_T	    *s_type = get_type_on_stack(cctx, 0);
 
@@ -1545,8 +1661,9 @@ compile_call(
 	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gatab);
     vim_free(tofree);
+    vim_free(gname);
     return res;
 }
 
@@ -1811,18 +1928,8 @@ compile_lambda(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	// Copy over the block scope IDs, so that a script variable declared in
 	// an enclosing block can be found.
-	int block_depth = cctx->ctx_ufunc->uf_block_depth;
-
-	if (block_depth > 0)
-	{
-	    ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
-	    if (ufunc->uf_block_ids != NULL)
-	    {
-		mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
-						    sizeof(int) * block_depth);
-		ufunc->uf_block_depth = block_depth;
-	    }
-	}
+	function_set_block_ids(ufunc, cctx->ctx_ufunc->uf_block_ids,
+					    cctx->ctx_ufunc->uf_block_depth);
     }
 
     // Compile it here to get the return type.  The return type is optional,
@@ -3177,7 +3284,7 @@ compile_expr9(
 	size_t namelen = p - *arg;
 	if (*p == '<')
 	{
-	    if (skip_generic_func_type_args(&p) == FAIL)
+	    if (skip_generic_type_args(&p) == FAIL)
 		return FAIL;
 	}
 
@@ -3226,7 +3333,7 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (**arg == '<' && eval_isnamec1((*arg)[1]))
     {
 	++*arg;
-	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
+	want_type = parse_type(arg, cctx->ctx_type_list, cctx, TRUE);
 	if (want_type == NULL)
 	    return FAIL;
 

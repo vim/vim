@@ -3754,12 +3754,12 @@ EXTERN char e_cannot_open_a_popup_window_to_a_closing_buffer[]
 #ifdef FEAT_EVAL
 EXTERN char e_type_var_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1552: Type variable name must start with an uppercase letter: %s"));
-EXTERN char e_missing_comma_in_generic_function_str[]
-	INIT(= N_("E1553: Missing comma after type in generic function: %s"));
-EXTERN char e_missing_closing_angle_bracket_in_generic_function_str[]
-	INIT(= N_("E1554: Missing '>' in generic function: %s"));
-EXTERN char e_empty_type_list_for_generic_function_str[]
-	INIT(= N_("E1555: Empty type list specified for generic function '%s'"));
+EXTERN char e_missing_comma_in_generic_str[]
+	INIT(= N_("E1553: Missing comma after type in generic: %s"));
+EXTERN char e_missing_closing_angle_bracket_in_generic_str[]
+	INIT(= N_("E1554: Missing '>' in generic: %s"));
+EXTERN char e_empty_type_list_for_generic_str[]
+	INIT(= N_("E1555: Empty type list specified for generic '%s'"));
 EXTERN char e_too_many_types_for_generic_function_str[]
 	INIT(= N_("E1556: Too many types specified for generic function '%s'"));
 EXTERN char e_not_enough_types_for_generic_function_str[]
@@ -3842,4 +3842,28 @@ EXTERN char e_changing_image_backend_failed[]
 	INIT(= N_("E1586: Failed changing image backends"));
 EXTERN char e_image_id_nr_does_not_exist[]
 	INIT(= N_("E1587: Image ID %d does not exist"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_generic_class_missing_type_args_str[]
+	INIT(= N_("E1588: Type arguments missing for generic class '%s'"));
+EXTERN char e_not_a_generic_class_str[]
+	INIT(= N_("E1589: Not a generic class: %s"));
+EXTERN char e_too_many_types_for_generic_class_str[]
+	INIT(= N_("E1590: Too many types specified for generic class '%s'"));
+EXTERN char e_not_enough_types_for_generic_class_str[]
+	INIT(= N_("E1591: Not enough types specified for generic class '%s'"));
+EXTERN char e_generic_class_str_nested_too_deep[]
+	INIT(= N_("E1592: Generic class '%s' nested too deep"));
+EXTERN char e_enum_cannot_be_generic_str[]
+	INIT(= N_("E1593: Enum cannot be generic: %s"));
+EXTERN char e_cannot_use_generic_func_from_closure_str[]
+	INIT(= N_("E1594: Cannot use generic function from a closure: %s"));
+EXTERN char e_generic_class_str_deleted_while_creating_class[]
+	INIT(= N_("E1595: Generic class '%s' was deleted while creating a class from it"));
+EXTERN char e_type_nested_too_deep[]
+	INIT(= N_("E1596: Type nested too deep"));
+EXTERN char e_generic_class_str_not_completely_defined[]
+	INIT(= N_("E1597: Generic class '%s' is not completely defined"));
+EXTERN char e_type_var_count_of_method_str_differs_from_interface_str[]
+	INIT(= N_("E1598: Number of type variables of method \"%s\" differs from interface \"%s\""));
 #endif

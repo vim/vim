@@ -75,7 +75,7 @@ typedef struct partial_S	partial_T;
 typedef struct blobvar_S	blob_T;
 typedef struct tuplevar_S	tuple_T;
 typedef struct generictype_S	generic_T;
-typedef struct gfargs_tab_S	gfargs_tab_T;
+typedef struct generic_args_tab_S	generic_args_tab_T;
 
 typedef struct window_S		win_T;
 typedef struct wininfo_S	wininfo_T;
@@ -1670,6 +1670,14 @@ typedef struct {
 #define TYPECHK_NUMBER_OK	0x1	// number is accepted for a float
 #define TYPECHK_TUPLE_OK	0x2	// tuple is accepted for a list
 
+/*
+ * Context used when resolving a type.
+ */
+typedef struct {
+    class_T	*trc_class;	// class whose type variables are used
+    ufunc_T	*trc_ufunc;	// function whose type variables are used
+} type_resolve_ctx_T;
+
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class
     VIM_ACCESS_READ,	// read everywhere, write only inside the class
@@ -1717,6 +1725,8 @@ struct itf2class_S {
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
 #define CLASS_DRYRUN	    0x10    // defined by ":source ++dryrun"
+#define CLASS_GENERIC	    0x20    // generic class
+#define CLASS_INCOMPLETE    0x40    // class is being defined
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -1763,10 +1773,35 @@ struct class_S
     garray_T	class_type_list;	// used for type pointers
     type_T	class_type;		// type used for the class
     type_T	class_object_type;	// same as class_type but VAR_OBJECT
+
+    // For a generic class (CLASS_GENERIC) and a concrete class created from
+    // it, e.g. "Box<number>" from "Box<T>".
+    // Number of type variables:
+    int		class_generic_argcount;
+    // Names and types of the type variables: in a generic class the type
+    // variables, in a concrete class the type arguments:
+    generic_T	*class_generic_args;
+    // Generic class: array of "class_generic_argcount" type variables:
+    type_T	*class_generic_param_types;
+    // Concrete class: allocated types used in "class_generic_args":
+    garray_T	class_generic_arg_types;
+    // Generic class: the concrete classes, each item holds a reference:
+    hashtab_T	class_generic_table;
+    // Unique number used when the class is in a lookup key, zero when not
+    // set yet, see generic_key_add_class_ids():
+    int		class_id;
+    // Concrete class: the generic class it was created from (not counted in
+    // its refcount):
+    class_T	*class_generic_base;
 };
 
 #define IS_INTERFACE(cl)	((cl)->class_flags & CLASS_INTERFACE)
 #define IS_ENUM(cl)		((cl)->class_flags & CLASS_ENUM)
+#define IS_GENERIC_CLASS(cl)	((cl)->class_flags & CLASS_GENERIC)
+// TRUE if typval "tv" is a generic class
+#define TV_IS_GENERIC_CLASS(tv)	((tv)->v_type == VAR_CLASS \
+				    && (tv)->vval.v_class != NULL \
+				    && IS_GENERIC_CLASS((tv)->vval.v_class))
 
 // Used for v_object of typval of VAR_OBJECT.
 // The member variables follow in an array of typval_T.
@@ -1977,13 +2012,13 @@ struct generictype_S
 };
 
 /*
- * Generic function args table
+ * Generic function or class args table
  */
-struct gfargs_tab_S
+struct generic_args_tab_S
 {
-    garray_T	gfat_args;
-    garray_T	gfat_param_types;
-    garray_T	gfat_arg_types;
+    garray_T	gat_args;
+    garray_T	gat_param_types;
+    garray_T	gat_arg_types;
 };
 
 typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
@@ -5036,6 +5071,7 @@ typedef struct lval_S
     int		ll_is_root;	// TRUE if ll_tv is the lval_root, like a
 				// plain object/class. ll_tv is variable.
     garray_T	ll_type_list;   // list of pointers to allocated types
+    typval_T	ll_class_tv;	// "ll_tv" for "GenericClass<type>"
 } lval_T;
 
 /**

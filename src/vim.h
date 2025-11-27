@@ -3131,6 +3131,7 @@ long elapsed(DWORD start_tick);
 #define EVAL_VAR_NOAUTOLOAD	2   // do not use script autoloading
 #define EVAL_VAR_IMPORT		4   // may return special variable for import
 #define EVAL_VAR_NO_FUNC	8   // do not look for a function
+#define EVAL_VAR_NO_GENERIC	16  // do not instantiate a generic class
 
 // Fuzzy matching
 #define FUZZY_MATCH_MAX_LEN	1024    // max characters that can be matched

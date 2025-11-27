@@ -546,16 +546,18 @@ skip_expr_concatenate(
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
 
+    *start = *arg;
+    *end = *arg;
     if (vim9script && evaluate
 	       && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL))
     {
 	ga_init2(gap, sizeof(char_u *), 10);
 	// leave room for "start"
-	if (ga_grow(gap, 1) == OK)
-	    ++gap->ga_len;
+	if (ga_grow_id(gap, 1, aid_expr_concat) == FAIL)
+	    return FAIL;
+	++gap->ga_len;
 	ga_init2(freegap, sizeof(char_u *), 10);
     }
-    *start = *arg;
 
     // Don't evaluate the expression.
     if (evalarg != NULL)
@@ -2134,6 +2136,9 @@ get_lval(
 	lp->ll_name = name;
 	lp->ll_name_end = find_name_end(name, NULL, NULL,
 						      FNE_INCL_BR | fne_flags);
+	if (vim9script)
+	    lp->ll_name_end = skip_generic_class_member(name,
+				    lp->ll_name_end, FNE_INCL_BR | fne_flags);
 	return lp->ll_name_end;
     }
 
@@ -2222,7 +2227,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       NULL, NULL, !quiet);
+			       NULL, !quiet);
 		if (!quiet && (lp->ll_type == NULL
 			    || !valid_declaration_type(lp->ll_type)))
 		    return NULL;
@@ -2263,6 +2268,52 @@ get_lval(
 		if (p == NULL)
 		    return NULL;
 	    }
+	}
+    }
+
+    if (vim9script && lval_root != NULL)
+    {
+	// The compiled code pushed the class with the types as "lval_root"
+	// (see compile_lock_unlock()), only skip the types.
+	if (*p == '<')
+	    p = skip_type(lp->ll_name, FALSE);
+    }
+    else if (vim9script && (*p == '<' || *p == '.'))
+    {
+	// "GenericClass<type>.member" or "import.GenericClass<type>.member":
+	// use the class with the specified types
+	typval_T    *ctv = lp->ll_tv;	// set for an imported class
+	dictitem_T  *di = NULL;
+
+	if (ctv == NULL)
+	{
+	    cc = *p;
+	    *p = NUL;
+	    di = find_var(lp->ll_name, NULL, TRUE);
+	    *p = cc;
+	    if (di != NULL)
+		ctv = &di->di_tv;
+	}
+	if (ctv != NULL && ctv->v_type == VAR_CLASS
+		&& ctv->vval.v_class != NULL
+		&& (*p == '<' || IS_GENERIC_CLASS(ctv->vval.v_class)))
+	{
+	    // The concrete class is kept in the generic class table, the
+	    // typval does not need a reference.  Gives an error for missing
+	    // types or types for a class that is not generic, unless "quiet"
+	    // is set.
+	    if (quiet)
+		++emsg_off;
+	    class_T *gcl = eval_generic_class(ctv->vval.v_class, &p, NULL);
+	    if (quiet)
+		--emsg_off;
+
+	    if (gcl == NULL)
+		return NULL;
+	    lp->ll_class_tv.v_type = VAR_CLASS;
+	    lp->ll_class_tv.vval.v_class = gcl;
+	    lp->ll_tv = &lp->ll_class_tv;
+	    v = NULL;
 	}
     }
 
@@ -5020,11 +5071,18 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
-	if (want_type == NULL && (evaluate || **arg != '>'))
+	if (!evaluate)
+	    // Only skip over the type, it may use a type variable that is only
+	    // known when the expression is compiled, e.g. in a lambda.
+	    *arg = skip_type(*arg, FALSE);
+	else
 	{
-	    clear_type_list(&type_list);
-	    return FAIL;
+	    want_type = parse_type(arg, &type_list, NULL, TRUE);
+	    if (want_type == NULL)
+	    {
+		clear_type_list(&type_list);
+		return FAIL;
+	    }
 	}
 
 	if (**arg != '>')
@@ -5318,7 +5376,7 @@ eval9_nested_expr(
 }
 
 /*
-* Handle be a variable or function name.
+* Handle a variable or function name.
 * Can also be a curly-braces kind of name: {expr}.
 */
     static int
@@ -5346,6 +5404,8 @@ eval9_var_func_name(
     {
 	int	flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
+	int prev_called_emsg = called_emsg;
+
 	if (evaluate && vim9script && len == 1 && *s == '_')
 	{
 	    emsg(_(e_cannot_use_underscore_here));
@@ -5364,6 +5424,9 @@ eval9_var_func_name(
 	    *arg = skipwhite(*arg);
 	    ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	}
+	else if (called_emsg != prev_called_emsg)
+	    // invalid type arguments in "name<type>", an error was given
+	    ret = FAIL;
 	else if (evaluate)
 	{
 	    // get the value of "true", "false", etc. or a variable
@@ -5379,14 +5442,20 @@ eval9_var_func_name(
 		// skip the generic function arguments (if present)
 		// they are already processed by eval_variable
 		if (ret == OK && vim9script && **arg == '<'
-						&& rettv->v_type == VAR_FUNC)
-		    ret = skip_generic_func_type_args(arg);
+					&& (rettv->v_type == VAR_FUNC
+					    || rettv->v_type == VAR_CLASS))
+		    ret = skip_generic_type_args(arg);
 	    }
 	}
 	else
 	{
 	    // skip the name
 	    check_vars(s, len);
+
+	    // Skip the type arguments of a generic class or function, their
+	    // name starts with an uppercase letter.
+	    if (vim9script && **arg == '<' && ASCII_ISUPPER(*s))
+		skip_generic_type_args(arg);
 	    ret = OK;
 	}
     }
@@ -5584,6 +5653,19 @@ eval9(
     // expr(expr), expr->name(expr)
     if (ret == OK)
 	ret = handle_subscript(arg, name_start, rettv, evalarg, evaluate);
+
+    // An imported generic class can only be used with the types, like a
+    // generic class in the script, see eval_variable().
+    if (ret == OK && evaluate && TV_IS_GENERIC_CLASS(rettv))
+    {
+	if (VIM_ISWHITE(**arg) && *skipwhite(*arg) == '<')
+	    semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
+	else
+	    semsg(_(e_generic_class_missing_type_args_str),
+				    rettv->vval.v_class->class_name.string);
+	clear_tv(rettv);
+	ret = FAIL;
+    }
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
@@ -5976,7 +6058,7 @@ eval_index(
 	    // skip generic type arguments
 	    char_u	*p = &key[keylen];
 
-	    if (skip_generic_func_type_args(&p) == FAIL)
+	    if (skip_generic_type_args(&p) == FAIL)
 		return FAIL;
 	    keylen = p - key;
 	}
@@ -7803,6 +7885,16 @@ handle_subscript(
 	else if (**arg == '.' && (rettv->v_type == VAR_CLASS
 					       || rettv->v_type == VAR_OBJECT))
 	{
+	    if (TV_IS_GENERIC_CLASS(rettv))
+	    {
+		if (verbose)
+		    semsg(_(e_generic_class_missing_type_args_str),
+			    rettv->vval.v_class->class_name.string);
+		clear_tv(rettv);
+		ret = FAIL;
+		break;
+	    }
+
 	    // class member: SomeClass.varname
 	    // class method: SomeClass.SomeMethod()
 	    // class constructor: SomeClass.new()
@@ -7813,6 +7905,24 @@ handle_subscript(
 		clear_tv(rettv);
 		ret = FAIL;
 	    }
+	}
+	else if (**arg == '<' && rettv->v_type == VAR_CLASS
+		&& rettv->vval.v_class != NULL)
+	{
+	    // "import.GenericClass<type>": use the class with the types
+	    if (!verbose)
+		++emsg_off;
+	    class_T *cl = eval_generic_class(rettv->vval.v_class, arg, NULL);
+	    if (!verbose)
+		--emsg_off;
+
+	    if (cl == NULL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+		break;
+	    }
+	    tv_set_class(rettv, cl);
 	}
 	else
 	    break;
