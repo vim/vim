@@ -12850,7 +12850,7 @@ f_treesitter_load(typval_T *argvars, typval_T *rettv)
     if (symbol == NULL)
 	symbol = name;
 
-    ts_vim_load_language(name, path, symbol);
+    tsvim_load_language(name, path, symbol);
 }
     static void
 f_treesitter_parse(typval_T *argvars, typval_T *rettv)
@@ -12863,7 +12863,7 @@ f_treesitter_parse(typval_T *argvars, typval_T *rettv)
     buf = get_buf_arg(&argvars[0]);
 
     if (buf != NULL)
-	ts_vim_parse_buf(buf);
+	tsvim_parse_buf(buf);
 
 }
 #endif

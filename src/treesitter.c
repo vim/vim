@@ -32,35 +32,47 @@
 #endif
 
 // Buffer size to use when parsing
-#define TS_VIM_BUFSIZE 4096
+#define TSVIM_BUFSIZE 256
 
 // This is not exposed in vimscript. It is held internally in a hash table to be
 // used as needed.
 typedef struct
 {
-    HANDLE		tl_dll;
-    const TSLanguage	*tl_lang;
-    char_u		tl_name[1]; // Actually longer
-} ts_vim_language_T;
+    HANDLE		dll;
+    const TSLanguage	*lang;
+    char_u		name[1]; // Actually longer
+} TSVimLanguage;
 
-#define VTS_LANG_OFF offsetof(ts_vim_language_T, tl_name)
-#define HI2LANG(hi) ((ts_vim_language_T *)((hi)->hi_key - VTS_LANG_OFF))
+#define VTS_LANG_OFF offsetof(TSVimLanguage, name)
+#define HI2LANG(hi) ((TSVimLanguage *)((hi)->hi_key - VTS_LANG_OFF))
 
-// Represents a TSParser object. Each buffer has its own TSParser.
-struct ts_vim_parser_S
+typedef struct {
+    TSTree *tree;
+    garray_T children;
+} TSVimTree;
+
+// Holds the state for a single treesitter parser instance
+struct TSVimState
 {
-    TSParser	    	*tp_parser;
-    garray_T		tp_trees; // Array of TSTree objects
-    
-    // Next parser that should be processed
-    ts_vim_parser_T	*tp_next;
+    TSParser *parser;
+    union
+    {
+	buf_T *buf;
+    } source;
+
+    TSVimTree *tree;
+
+    const TSLanguage *cur_lang;
+    TSVimState *next;
+
 };
 
 // Table of loaded TSLanguage objects. Each key the language name.
-static hashtab_T languages;
+static hashtab_T    languages;
+static TSVimState   *pending_state;
 
     int
-init_treesitter(void)
+tsvim_init(void)
 {
     hash_init(&languages);
 
@@ -110,7 +122,7 @@ load_language(char *path, char *symbol, HANDLE *dll)
  * Handler function for ts_load_lang()
  */
     void
-ts_vim_load_language(char_u *name, char_u *path, char_u *symbol_name)
+tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
 {
     hashitem_T		*hi;
     HANDLE		h;
@@ -125,202 +137,259 @@ ts_vim_load_language(char_u *name, char_u *path, char_u *symbol_name)
     if (HASHITEM_EMPTY(hi))
     {
 	hash_T		hash = hash_hash(name);
-	ts_vim_language_T	*obj =
+	TSVimLanguage	*obj =
 	    alloc(VTS_LANG_OFF + STRLEN(name) + 1);
 
 	if (obj == NULL)
 	    return;
 
-	STRCPY(obj->tl_name, name);
-	obj->tl_lang = lang_obj;
-	obj->tl_dll = h;
+	STRCPY(obj->name, name);
+	obj->lang = lang_obj;
+	obj->dll = h;
 
-	hash_add_item(&languages, hi, obj->tl_name, hash);
+	hash_add_item(&languages, hi, obj->name, hash);
     }
     else
     {
-	// Replace assigned TSLanguage object with new one. This does not affect
-	// any objects that were created using this language, everything is
-	// refcounted.
-	ts_vim_language_T	*lang = HI2LANG(hi);
+	// Replace assigned TSLanguage object with new one.
+	TSVimLanguage	*lang = HI2LANG(hi);
 
-	ts_language_delete(lang->tl_lang);
-	lang->tl_lang = lang_obj;
-	close_dll(lang->tl_dll);
-	lang->tl_dll = h;
+	ts_language_delete(lang->lang);
+	lang->lang = lang_obj;
+	close_dll(lang->dll);
+	lang->dll = h;
     }
-}
-
-/*
- * Allocate new parser object, returns NULL on failure.
- */
-    static ts_vim_parser_T *
-ts_vim_parser_new(void)
-{
-    ts_vim_parser_T *vparser = ALLOC_CLEAR_ONE(ts_vim_parser_T);
-
-    if (vparser == NULL)
-	return NULL;
-
-    vparser->tp_parser = ts_parser_new();
-
-    // Docs don't say anything about this function returning NULL but check
-    // it to be safe.
-    if (vparser->tp_parser == NULL)
-    {
-	vim_free(vparser);
-	return NULL;
-    }
-    
-    ga_init2(&vparser->tp_trees, sizeof(TSTree *), 2);
-
-    return vparser;
-}
-
-/*
- * Free resources allocated for parser object.
- */
-    void
-ts_vim_parser_free(ts_vim_parser_T *vparser)
-{
-    TSTree **trees = vparser->tp_trees.ga_data;
-
-    // Free TSTree objects
-    for (int i = 0; i < vparser->tp_trees.ga_len; i++)
-	ts_tree_delete(trees[i]);
-
-    ga_clear(&vparser->tp_trees);
-    ts_parser_delete(vparser->tp_parser);
-
-    vim_free(vparser);
 }
 
 #ifdef ELAPSED_FUNC
-    static bool
-parse_progress_callback(TSParseState *state)
+typedef struct
 {
-    return ELAPSED_FUNC(*((elapsed_T *)state->payload)) >= 1000;
+    elapsed_T start;
+    long timeout;
+} ParserProgressContext;
+
+    static bool 
+parser_progress_callback(TSParseState *state)
+{
+    ParserProgressContext *ctx = state->payload;
+
+    return ELAPSED_FUNC(ctx->start) >= ctx->timeout;
 }
 #endif
 
-/*
- * Copied from Neovim with slight modifications.
- */
+    static TSTree *
+tsvim_parser_parse(
+	TSParser *parser,
+	TSTree *last_tree,
+	const char *(*read)(
+	    void *payload,
+	    uint32_t byte_index,
+	    TSPoint position,
+	    uint32_t *bytes_read),
+	void *userdata,
+	long timeout
+	)
+{
+
+    TSInput	    input;
+    TSTree	    *res;
+    TSParseOptions  opts;
+#ifdef ELAPSED_FUNC
+    ParserProgressContext progress_ctx;
+#else
+    (void)timeout;
+#endif
+
+    // Check if parser is set to a language
+    if (ts_parser_language(parser) == NULL)
+	return NULL;
+
+    input.decode = NULL;
+    input.encoding = TSInputEncodingUTF8;
+    input.payload = userdata;
+    input.read = read;
+
+#ifdef ELAPSED_FUNC
+    ELAPSED_INIT(progress_ctx.start);
+    progress_ctx.timeout = timeout;
+    opts.payload = &progress_ctx;
+    opts.progress_callback = parser_progress_callback;
+#else
+    memset(opts, 0, sizeof(opts));
+#endif
+
+    res = ts_parser_parse_with_options(parser, last_tree, input, opts);
+
+    return res;
+}
+
+    static TSVimState *
+tsvim_state_create(void)
+{
+    TSVimState *state = ALLOC_ONE(TSVimState); 
+
+    if (state == NULL)
+	return NULL;
+
+    state->parser = ts_parser_new();
+
+    // Not sure if function can fail but still check for it
+    if (state->parser == NULL)
+    {
+	vim_free(state);
+	return NULL;
+    }
+    state->tree = NULL;
+    state->cur_lang = NULL;
+    state->next = NULL;
+
+    return state;
+}
+
+    void
+tsvim_state_free(TSVimState *state)
+{
+    TSVimState *s = pending_state;
+
+    if (s == state)
+	pending_state = state->next;
+    else
+	while (s != NULL)
+	{
+	    if (s->next == state)
+		s->next = state->next;
+	}
+
+    ts_parser_delete(state->parser);
+    if(state->tree != NULL)
+	ts_tree_delete(state->tree);
+    vim_free(state);
+}
+
+// Treesitter internally updates the "position" argument by counting newlines in
+// the text we return.
     static const char *
-parse_read_buf_callback(
+parse_buf_read_callback(
 	void *payload,
 	uint32_t byte_index,
 	TSPoint position,
 	uint32_t *bytes_read)
 {
-    buf_T	    *b = payload;
-    static char	    buf[TS_VIM_BUFSIZE];
-    char	    *mbuf, *end;
-    linenr_T	    lnum;
-    char	    *line;
-    size_t	    len, tocopy;
+    buf_T	*bp = payload;
+    static char buf[TSVIM_BUFSIZE];
 
-    if ((linenr_T)position.row >= b->b_ml.ml_line_count) {
+    // Finish if we are past the last line
+    if (position.row >= bp->b_ml.ml_line_count)
+    {
 	*bytes_read = 0;
-	return "";
+	return NULL;
     }
-    lnum = (linenr_T)position.row + 1;
-    line = (char *)ml_get_buf(b, lnum, FALSE);
-    len = (size_t)ml_get_buf_len(b, lnum);
 
-    if (position.column > len) {
+    char *line = (char *)ml_get_buf(bp, position.row + 1, FALSE);
+    colnr_T cols = ml_get_buf_len(bp, position.row + 1);
+    uint32_t to_copy;
+
+    // Should only be true if the last call didn't add a newline
+    if (position.column > cols)
+    {
 	*bytes_read = 0;
-	return "";
+	return NULL;
     }
 
-    tocopy = MIN(len - position.column, TS_VIM_BUFSIZE);
-    memcpy(buf, line + position.column, tocopy);
+    // Subtract one from buffer size so we can include newline
+    to_copy = MIN(cols - position.column, TSVIM_BUFSIZE - 1);
+    memcpy(buf, line + position.column, to_copy);
 
-    // Translate embedded \n to NUL
-    mbuf = buf;
-    end = buf + len;
-    while ((mbuf = memchr(mbuf, '\n', (size_t)(end - mbuf)))) {
-	*mbuf++ = NUL;
-    }
+    // If to_copy == cols, then the entire line fits in the buffer - 1, add a
+    // newline. If to_copy == 0, then add a newline because we are at end of the
+    // line.
+    if (to_copy == cols || to_copy == 0)
+	buf[to_copy++] = NL;
 
-    *bytes_read = (uint32_t)tocopy;
-    if (tocopy < TS_VIM_BUFSIZE) {
-	// Now add the final \n, if it is meant to be present for this buffer.
-	// If it didn't fit, input_cb will be called again on the same line with
-	// advanced column.
-	if (lnum != b->b_ml.ml_line_count || (!b->b_p_bin && b->b_p_fixeol)
-		|| (lnum != b->b_no_eol_lnum && b->b_p_eol)) {
-	    buf[tocopy] = '\n';
-	    (*bytes_read)++;
-	}
-  }
-  return buf;
+    *bytes_read = to_copy;
+
+    return buf;
 }
 
-// TODO: free parser when buf is freed
-
-/*
- * Start parsing the given buffer asynchronously. We simulate async behaviour by
- * setting a timeout for each parse operation. If the timeout is reached, then
- * the parse operation is deferred later.
- */
     void
-ts_vim_parse_buf(buf_T *buf)
+tsvim_parse_buf(buf_T *buf)
 {
-    static char_u	*current_lang; // Current language the parser is set to.
-    static TSTree	*last_tree;
+    hashitem_T	    *hi;
+    TSVimLanguage   *lang;
+    TSVimState	    *state;
+    TSTree	    *tree;
 
-    TSTree		*tree;
-    TSInput		input;
-    TSParseOptions	opts;
-    ts_vim_parser_T	*vparser;
-    ts_vim_language_T   *vlang;
-#ifdef ELAPSED_FUNC
-    elapsed_T		start; // Used to cancel parse if it is taking too long
-#endif
-    char_u		*lang = current_lang == NULL
-				? buf->b_p_tslg : current_lang;
-    hashitem_T		*hi = hash_find(&languages, lang);
+    // Lookup language object and set parser to it.
+    hi = hash_find(&languages, buf->b_p_tslg);
 
     if (HASHITEM_EMPTY(hi))
     {
-	semsg(_(e_treesitter_lang_not_loaded), lang);
+	semsg(_(e_treesitter_lang_not_loaded), buf->b_p_tslg);
 	return;
     }
-    vlang = HI2LANG(hi);
+    else
+	lang = HI2LANG(hi);
 
-    // Create parser for buffer if we didn't already
-    if (buf->b_ts_parser == NULL
-	    && (buf->b_ts_parser = ts_vim_parser_new()) == NULL)
+    if (buf->b_tsstate == NULL)
+    {
+	buf->b_tsstate = tsvim_state_create();
+
+	if (buf->b_tsstate == NULL)
+	    return;
+    }
+    state = buf->b_tsstate;
+
+    ts_parser_set_language(state->parser, lang->lang);
+
+    // TODO: handle case when buffer is destroyed while parsing
+    tree = tsvim_parser_parse(state->parser, state->tree,
+	    parse_buf_read_callback, buf, 10);
+
+    if (tree != NULL)
+    {
+	state->tree = tree;
+	smsg("Done!");
 	return;
+    }
+    state->cur_lang = lang->lang;
+    // Defer next parse later
+    if (pending_state == NULL)
+	pending_state = state;
+    else
+    {
+	TSVimState *s = pending_state;
+	while (s != NULL)
+	{
+	    if (s->next == NULL)
+		break;
+	    else
+		s = s->next;
+	}
+	s->next = state;
+    }
+    state->source.buf = buf;
+}
 
-    vparser = buf->b_ts_parser;
+    bool
+tsvim_parse_pending(void)
+{
+    TSTree	    *tree;
 
-    // Try growing tree array first
-    if (ga_grow(&vparser->tp_trees, 1) == FAIL)
-	return;
-    
-#ifdef ELAPSED_FUNC
-    opts.payload = &start;
-    opts.progress_callback = parse_progress_callback;
-#else
-    // Make it synchronous
-    memset(opts, 0, sizeof(opts));
-#endif
+    if (pending_state == NULL)
+	return false;
 
-    input.decode = NULL;
-    input.encoding = TSInputEncodingUTF8;
-    input.payload = buf;
-    input.read = parse_read_buf_callback;
+    tree = tsvim_parser_parse(pending_state->parser, pending_state->tree,
+	    parse_buf_read_callback, pending_state->source.buf, 3);
 
-    ts_parser_set_language(vparser->tp_parser, vlang->tl_lang);
-    tree = ts_parser_parse_with_options(vparser->tp_parser, last_tree, input, opts);
+    if (tree != NULL)
+    {
+	pending_state->tree = tree;
+	pending_state = pending_state->next;
+	smsg("Done pending!");
+	return false;
+    }
 
-    if (tree == NULL)
-	return;
-
-    // Finished parsing, add result tree to array
-    ((TSTree **)vparser->tp_trees.ga_data)[vparser->tp_trees.ga_len++] = tree;
+    return true;
 }
 
 #endif // FEAT_TREESITTER

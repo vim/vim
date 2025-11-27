@@ -3119,9 +3119,8 @@ typedef struct {
 } synblock_T;
 
 #ifdef FEAT_TREESITTER
-typedef struct ts_vim_parser_S ts_vim_parser_T;
+typedef struct TSVimState TSVimState;
 #endif
-
 
 /*
  * buffer: structure that holds information about one file
@@ -3646,7 +3645,7 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_TREESITTER
-    ts_vim_parser_T *b_ts_parser;
+    TSVimState	*b_tsstate;
 #endif
 }; // file_buffer
 
