@@ -2124,3 +2124,6 @@ INIT(= CLIENTSERVER_METHOD_NONE);
 // Path to socket of last client that communicated with us
 EXTERN char_u *client_socket INIT(= NULL);
 #endif
+
+// If the <xOSC> key should be propogated from vgetc()
+EXTERN int allow_osc_key INIT(= 0);
