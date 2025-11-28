@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Sep 10
+" Last Change:	2025 Nov 28
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -136,7 +136,7 @@ if &t_Co > 2 || has("gui_running")
   syntax on
 
   " I like highlighting strings inside C comments.
-  " Revert with ":unlet c_comment_strings".
+  " Revert with ":unlet g:c_comment_strings".
   let c_comment_strings=1
 endif
 
