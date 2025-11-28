@@ -3907,7 +3907,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	// pointers to allocated copies.
 	lstval = ALLOC_MULT(char_u *, (len + 1) * 2);
 	if (lstval == NULL)
-	    return;
+	    goto exit;
 	curval = lstval;
 	allocval = lstval + len + 2;
 	curallocval = allocval;
