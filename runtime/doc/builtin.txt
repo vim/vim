@@ -908,7 +908,7 @@ appendbufline({buf}, {lnum}, {text})			*appendbufline()*
 		for an invalid {lnum}, since {lnum} isn't actually used.
 
 		Can also be used as a |method| after a List, the base is
-		passed as the second argument: >
+		passed as the third argument: >
 			mylist->appendbufline(buf, lnum)
 <
 		Return type: |Number|
