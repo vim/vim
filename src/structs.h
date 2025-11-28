@@ -4902,7 +4902,7 @@ typedef enum {
 # endif
 #else
 # ifdef HAVE_CLIPMETHOD
-#  define NUM_REGISTERS		REAL_PLUS_REGISTER + 1
+#  define NUM_REGISTERS		(REAL_PLUS_REGISTER + 1)
 # else
 #  define NUM_REGISTERS		37
 # endif

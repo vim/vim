@@ -3671,7 +3671,7 @@ clip_provider_is_available(char_u *provider)
     if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
     {
 	clear_tv(&provider_tv);
-	// If "available" functon not specified assume always TRUE
+	// If "available" function not specified assume always TRUE
 	return 1;
     }
 
@@ -3698,7 +3698,7 @@ fail:
 }
 
 /*
- * Get the specified callback "function" from the provider dictionary of for
+ * Get the specified callback "function" from the provider dictionary for
  * register "reg".
  */
     static int
@@ -3974,7 +3974,7 @@ exit:
 }
 
 // Used to stop calling the provider callback every time there is an update.
-// This prevents unessecary calls when accessing the provider often in an
+// This prevents unnecessary calls when accessing the provider often in an
 // interval.
 //
 // If -1 then allow provider callback to be called then set to zero. Default
