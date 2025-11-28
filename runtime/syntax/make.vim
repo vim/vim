@@ -45,15 +45,15 @@ syn match makeIdent	"^ *[^:#= \t]*\s*::="me=e-3
 syn match makeIdent	"^ *[^:#= \t]*\s*="me=e-1
 syn match makeIdent	"%"
 if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
-  syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent
-  syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent
-  syn region makeIdent	start="\$\$(" end=")" containedin=makeDefine contains=makeStatement,makeIdent
-  syn region makeIdent	start="\$\${" end="}" containedin=makeDefine contains=makeStatement,makeIdent
+  syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\$\$(" end=")" containedin=makeDefine contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\$\${" end="}" containedin=makeDefine contains=makeStatement,makeIdent,makeDString,makeSString
 else
-  syn region makeIdent	start="\$(" skip="\\)\|\\\\" end=")" contains=makeStatement,makeIdent
-  syn region makeIdent	start="\${" skip="\\}\|\\\\" end="}" contains=makeStatement,makeIdent
-  syn region makeIdent	start="\$\$(" skip="\\)\|\\\\" end=")" containedin=makeDefine contains=makeStatement,makeIdent
-  syn region makeIdent	start="\$\${" skip="\\}\|\\\\" end="}" containedin=makeDefine contains=makeStatement,makeIdent
+  syn region makeIdent	start="\$(" skip="\\)\|\\\\" end=")" contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\${" skip="\\}\|\\\\" end="}" contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\$\$(" skip="\\)\|\\\\" end=")" containedin=makeDefine contains=makeStatement,makeIdent,makeDString,makeSString
+  syn region makeIdent	start="\$\${" skip="\\}\|\\\\" end="}" containedin=makeDefine contains=makeStatement,makeIdent,makeDString,makeSString
 endif
 
 " Makefile.in variables
