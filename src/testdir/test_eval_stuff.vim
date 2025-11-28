@@ -798,7 +798,7 @@ func Test_clipboard_provider_available()
   clipreset
   call assert_notequal("test", v:clipmethod)
 
-  " Invalud return value
+  " Invalid return value
   let g:vim_cp_available = "invalid"
   call assert_fails('set clipmethod=test', "E474:")
   call assert_notequal("test", v:clipmethod)
