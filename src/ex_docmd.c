@@ -5019,6 +5019,36 @@ replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep)
 
 	p = skipwhite(p);
 
+#ifdef FEAT_TERMINAL
+	init_job_options(&eap->make_info.opt);
+
+	// Check for ++term and ++hidden arguments for :make/:lmake
+	while (p[0] == '+' && p[1] == '+')
+	{
+	    char_u *ep;
+
+	    p += 2;
+	    ep = vim_strchr(p, '=');
+
+	    if (STRNCMP(p, "term", 4) == 0)
+		eap->make_info.use_term = TRUE;
+	    else if (STRNCMP(p, "hidden", 6) == 0)
+		eap->make_info.opt.jo_hidden = TRUE;
+	    else if (STRNCMP(p, "rows", 4) == 0 && ep != NULL
+		    && SAFE_isdigit(ep[1]))
+		eap->make_info.opt.jo_term_rows = atoi((char *)ep + 1);
+	    else if (STRNCMP(p, "cols", 4) == 0 && ep != NULL
+		    && SAFE_isdigit(ep[1]))
+		eap->make_info.opt.jo_term_cols = atoi((char *)ep + 1);
+	    else if (STRNCMP(p, "open", 4) == 0)
+		eap->make_info.opt.jo_term_finish = 'o';
+	    else if (STRNCMP(p, "curwin", 4) == 0)
+		eap->make_info.opt.jo_curwin = TRUE;
+
+	    p = skipwhite(skiptowhite(p));
+	}
+#endif
+
 	if ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
 	{
 	    // replace $* by given arguments
