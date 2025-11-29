@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Nov 11
+# Last Change:		2025 Nov 28
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2705,6 +2705,7 @@ const ft_from_ext = {
   "nut": "squirrel",
   # Starlark
   "ipd": "starlark",
+  "sky": "starlark",
   "star": "starlark",
   "starlark": "starlark",
   # OpenVPN configuration

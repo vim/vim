@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Oct 14
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1877,7 +1877,7 @@ Contributions for termdebug improvements are welcome.
 However, it is fairly common that during the development process you need some
 mechanisms like `echo` statements (or similar) to help you in your job.
 For this reason, you can set: >
-    let g:termdebug_config['debug'] = true
+    let g:termdebug_config['debug'] = v:true
 <
 This sets the `DEBUG` variable to `true`, which can be referenced in the
 source code.  An example of its usage follows: >
