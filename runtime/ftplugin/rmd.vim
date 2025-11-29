@@ -6,6 +6,7 @@
 " Last Change:
 "  2024 Feb 28 by Vim Project
 "  2024 Sep 23 by Vim Project: properly restore fex option
+"  2025 Oct 24 by Vim Project: force override functions
 " Original work by Alex Zvoleff (adjusted from R help for rmd by Michel Kuhlmann)
 
 " Only do this when not yet done for this buffer
@@ -26,7 +27,7 @@ setlocal iskeyword=@,48-57,_,.
 let s:cpo_save = &cpo
 set cpo&vim
 
-function FormatRmd()
+function! FormatRmd()
   if search("^[ \t]*```[ ]*{r", "bncW") > search("^[ \t]*```$", "bncW")
     setlocal comments=:#',:###,:##,:#
   else
@@ -36,7 +37,7 @@ function FormatRmd()
 endfunction
 
 let s:last_line = 0
-function SetRmdCommentStr()
+function! SetRmdCommentStr()
   if line('.') == s:last_line
     return
   endif
