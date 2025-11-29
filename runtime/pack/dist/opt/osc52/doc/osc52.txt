@@ -1,0 +1,58 @@
+*osc52.txt*   For Vim version 9.1.  Last change:  2025 Oct 16
+
+
+			  VIM REFERENCE MANUAL
+
+Use OSC 52 terminal command for clipboard support
+==============================================================================
+
+
+1. OVERVIEW					        *osc52-overview*
+
+The osc52.vim plugin provides support for the OSC 52 terminal command, which
+allows an application to access the clipboard by communicating with the
+terminal.  This is useful in situations such as if you are in a SSH session.
+
+                                                        *osc52-support*
+In order for this plugin to work, the terminal Vim is running in must
+recognize and handle the OSC 52 escape sequence.  You can easily check this
+online. Additionally, while yanking is guaranteed to work, some terminals
+don't implement the paste functionality.  If the terminal doesn't support
+pasting, then nothing will happen upon trying to put from the clipboard.
+
+                                                        *g:osc52_always_access*
+If this global variable is true, then implicit accesses to the clipboard will
+always be allowed, see |clipboard-provider-paste|, by default this is
+disabled.  Note that some terminals have a confirm prompt before accessing the
+clipboard, which can be annoying if this global variable is true. This is why
+it is disabled. If your terminal does not do this, you are free to enable this
+option.
+
+                                                        *osc52-selections*
+Note that this only applies to Wayland or X11 compiled versions of Vim.
+
+Some terminals support the selection type parameter in the OSC 52 command.
+This originates from X11, and some terminals check this parameter and handle
+it accordingly.  If you have the "+" and "*" registers available and your
+terminal handles this parameter, then the "+" register corresponds to the
+regular selection, and the "*" register corresponds to the primary selection.
+If your terminal does not handle it, then it is up to the terminal to handle
+what selection to use.
+
+2. HOW TO USE THE PLUGIN                                *osc52-how-to-use*
+
+The osc52.vim plugin relys on Vim's clipboard provider functionality, see
+|clipboard-providers|.  In short, add these commands to your vimrc to get
+everything working: >
+        packadd osc52
+        set clipmethod^=osc52
+<
+                                                        *g:osc52_force_avail*
+In most cases, the plugin should automatically detect and work if your
+terminal supports the OSC 52 command.  Internally, it does this via a Primary
+Device Attributes (DA1) query.  However, if it does not detect your terminal,
+you may force enable it, set |g:osc52_force_avail| to true.  You may check if
+the osc52.vim plugin is being used if the value of |v:clipmethod| is "osc52".
+
+==============================================================================
+vim:tw=78:ts=8:fo=tcq2:ft=help:
