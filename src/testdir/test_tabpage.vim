@@ -1074,4 +1074,43 @@ func Test_lastused_tabpage_settabvar()
   bwipe!
 endfunc
 
+func Test_tabedit_file_position()
+  call writefile(['first line', '    second line', 'third'], 'Xtabpos', 'D')
+  let after =<< trim [CODE]
+    tabedit Xtabpos:2:5
+    call writefile([printf('tabedit %s %d %d',
+		\ expand('%:t'), line('.'), col('.'))], 'Xtabpos.out')
+    tabclose
+    TaBe Xtabpos:1:3
+    call writefile(readfile('Xtabpos.out')
+		\ + [printf('tabe %s %d %d',
+		\ expand('%:t'), line('.'), col('.'))], 'Xtabpos.out')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '')
+    let lines = readfile('Xtabpos.out')
+    call assert_equal('tabedit Xtabpos 2 5', get(lines, 0, ''))
+    call assert_equal('tabe Xtabpos 1 3', get(lines, 1, ''))
+  endif
+
+  call delete('Xtabpos.out')
+endfunc
+
+func Test_drop_file_position()
+  call writefile(['first', '    second', 'third'], 'Xdrop', 'D')
+  let after =<< trim [CODE]
+    drop Xdrop:3:6
+    call writefile([printf('%d %d', line('.'), col('.'))], 'Xdrop.out')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '')
+    let lines = readfile('Xdrop.out')
+    call assert_equal('3 6', get(lines, 0, ''))
+  endif
+
+  call delete('Xdrop.out')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
