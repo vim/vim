@@ -2226,6 +2226,8 @@ const ft_from_ext = {
   "ldg": "ledger",
   "ledger": "ledger",
   "journal": "ledger",
+  # Leex
+  "xrl": "leex",
   # Leo
   "leo": "leo",
   # Less
