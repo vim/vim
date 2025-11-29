@@ -34,7 +34,7 @@ syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite skipnl di
 syn region leexRuleCode start="" end="\.$" contained contains=@leexErlang keepend skipnl skipwhite
 
 " Sections
-syn match leexHeading "^[A-Z][A-Za-z ]*\.$" contained display
+syn match leexHeading "^\%(Definitions\|Rules\|Erlang code\)\.$" contained display
 syn region leexDefinitions start="^Definitions\.$" end="^[A-Z][A-Za-z ]*\.$"me=s-1 end="\%$" keepend fold
   \ contains=leexHeading,leexComment,leexMacroName
 syn region leexRules start="^Rules\.$" end="^[A-Z][A-Za-z ]*\.$"me=s-1 end="\%$" keepend fold
