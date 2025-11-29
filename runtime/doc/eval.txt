@@ -3698,7 +3698,7 @@ text...
 
 					*:cat* *:catch*
 					*E603* *E604* *E605* *E654* *E1033*
-:cat[ch] /{pattern}/	The following commands until the next `:catch`,
+:cat[ch] [/{pattern}/]	The following commands until the next `:catch`,
 			`:finally`, or `:endtry` that belongs to the same
 			`:try` as the `:catch` are executed when an exception
 			matching {pattern} is being thrown and has not yet
