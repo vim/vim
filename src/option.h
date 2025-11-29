@@ -303,13 +303,14 @@ typedef enum {
 #define GO_ASELPLUS	'P'		// autoselectPlus
 #define GO_RIGHT	'r'		// use right scrollbar
 #define GO_VRIGHT	'R'		// right scrollbar with vert split
+#define GO_FULLSCREEN	's'		// enter fullscreen
 #define GO_TEAROFF	't'		// add tear-off menu items
 #define GO_TOOLBAR	'T'		// add toolbar
 #define GO_FOOTER	'F'		// add footer
 #define GO_VERTICAL	'v'		// arrange dialog buttons vertically
 #define GO_KEEPWINSIZE	'k'		// keep GUI window size
 // all possible flags for 'go'
-#define GO_ALL		"!aAbcCdefFghilLmMpPrRtTvk"
+#define GO_ALL		"!aAbcCdefFghilLmMpPrRstTvk"
 
 // flags for 'comments' option
 #define COM_NEST	'n'		// comments strings nest
