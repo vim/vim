@@ -3496,6 +3496,9 @@ gui_init_which_components(char_u *oldval UNUSED)
 #ifdef FEAT_GUI_MSWIN
     static int	prev_titlebar = -1;
     int		using_titlebar = FALSE;
+
+    static int	prev_fullscreen = FALSE;
+    int		using_fullscreen = FALSE;
 #endif
 #if defined(FEAT_MENU)
     static int	prev_tearoff = -1;
@@ -3570,6 +3573,9 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_TITLEBAR:
 		using_titlebar = TRUE;
 		break;
+	    case GO_FULLSCREEN:
+		using_fullscreen = TRUE;
+		break;
 #endif
 #ifdef FEAT_TOOLBAR
 	    case GO_TOOLBAR:
@@ -3597,6 +3603,12 @@ gui_init_which_components(char_u *oldval UNUSED)
     {
 	gui_mch_set_titlebar_colors();
 	prev_titlebar = using_titlebar;
+    }
+
+    if (using_fullscreen != prev_fullscreen)
+    {
+	gui_mch_set_fullscreen(using_fullscreen);
+	prev_fullscreen = using_fullscreen;
     }
 #endif
 
