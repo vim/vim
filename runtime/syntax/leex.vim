@@ -30,8 +30,8 @@ syn match leexMacroRef "{\h\w*}" contained display
 
 " Rule definitions: <Regexp> : <Erlang code>.
 syn match leexRuleRegex "^\S.\{-}\ze\s*:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
-syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite display
-syn match leexRuleCode ".*\.$" contained contains=@leexErlang display
+syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite skipnl display
+syn region leexRuleCode start="" end="\.$" contained contains=@leexErlang keepend skipnl skipwhite
 
 " Sections
 syn match leexHeading "^[A-Z][A-Za-z ]*\.$" contained display
