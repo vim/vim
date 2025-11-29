@@ -1464,7 +1464,9 @@ vim9_declare_error(char_u *name)
     static int
 valid_dest_reg(int name)
 {
-    if ((name == '@' || valid_yank_reg(name, FALSE)) && name != '.')
+    if (name == '@')
+       name = '"';
+    if (name == '/' || name == '=' || valid_yank_reg(name, TRUE))
 	return TRUE;
     emsg_invreg(name);
     return FAIL;

@@ -3352,7 +3352,11 @@ def Test_expr9_register()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # read-only registers
   v9.CheckDefAndScriptFailure(["@. = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@% = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@: = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@~ = 'yes'"], 'E354:', 1)
 enddef
 
 " This is slow when run under valgrind.

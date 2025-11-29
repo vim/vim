@@ -1592,12 +1592,17 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var $VAR = 5'], 'E1016: Cannot declare an environment variable:')
   v9.CheckScriptFailure(['vim9script', 'var $ENV = "xxx"'], 'E1016:')
 
+  # read-only registers
+  v9.CheckDefAndScriptFailure(['var @. = 5'], ['E354:', 'E1066:'], 1)
+  v9.CheckDefAndScriptFailure(['var @. = 5'], ['E354:', 'E1066:'], 1)
+  v9.CheckDefAndScriptFailure(['var @% = 5'], ['E354:', 'E1066:'], 1)
+  v9.CheckDefAndScriptFailure(['var @: = 5'], ['E354:', 'E1066:'], 1)
   if has('dnd')
-    v9.CheckDefFailure(['var @~ = 5'], 'E1066:')
+    v9.CheckDefAndScriptFailure(['var @~ = 5'], ['E354:', 'E1066:'], 1)
   else
-    v9.CheckDefFailure(['var @~ = 5'], 'E354:')
-    v9.CheckDefFailure(['@~ = 5'], 'E354:')
+    v9.CheckDefAndScriptFailure(['var @~ = 5'], ['E354:', 'E1066:'], 1)
   endif
+
   v9.CheckDefFailure(['var @a = 5'], 'E1066:')
   v9.CheckDefFailure(['var @/ = "x"'], 'E1066:')
   v9.CheckScriptFailure(['vim9script', 'var @a = "abc"'], 'E1066:')
