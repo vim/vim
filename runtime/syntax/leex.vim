@@ -23,10 +23,10 @@ syn match leexRegexEscape '\\\%([bfnrtevsd]\|\o\{1,3}\|x\x\{2}\|x{\x\+}\|.\)' co
 syn match leexRegexRange "\[[^\]]*\]" contains=leexRegexDelimiter,leexRegexEscape contained display
 
 " Macro definitions: NAME = VALUE
-syn match leexMacroName "^\s*[A-Z_][A-Z0-9_]*\ze\s\+=\s\+" contained nextgroup=leexMacroEquals skipwhite display
+syn match leexMacroName "^\s*\zs\h\w*\ze\s\+=\s\+" contained nextgroup=leexMacroEquals skipwhite display
 syn match leexMacroEquals "=" contained nextgroup=leexMacroValue skipwhite display
 syn match leexMacroValue ".*$" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef display
-syn match leexMacroRef "{[A-Z_][A-Z0-9_]*}" contained display
+syn match leexMacroRef "{\h\w*}" contained display
 
 " Rule definitions: <Regexp> : <Erlang code>.
 syn match leexRuleRegex "^\S.\{-}\ze\s*:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
