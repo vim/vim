@@ -9,7 +9,7 @@ if exists('b:current_syntax')
   finish
 endif
 
-syn include @Erlang syntax/erlang.vim
+syn include @leexErlang syntax/erlang.vim
 unlet! b:current_syntax
 
 syn match leexComment "%.*$" contains=@Spell display
@@ -29,7 +29,7 @@ syn match leexMacroRef "{[A-Z_][A-Z0-9_]*}" contained display
 " Rule definitions: <Regexp> : <Erlang code>.
 syn match leexRuleRegex "^\S.\{-}\ze\s*:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
 syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite display
-syn match leexRuleCode ".*\.$" contained contains=@Erlang display
+syn match leexRuleCode ".*\.$" contained contains=@leexErlang display
 
 " Sections
 syn match leexHeading "^[A-Z][A-Za-z ]*\.$" contained display
@@ -38,7 +38,7 @@ syn region leexDefinitions start="^Definitions\.$" end="^[A-Z][A-Za-z ]*\.$"me=s
 syn region leexRules start="^Rules\.$" end="^[A-Z][A-Za-z ]*\.$"me=s-1 end="\%$" keepend fold
   \ contains=leexHeading,leexComment,leexRuleRegex
 syn region leexErlangCode start="^Erlang code\.$" end="^[A-Z][A-Za-z ]*\.$"me=s-1 end="\%$" keepend fold
-  \ contains=leexHeading,@Erlang
+  \ contains=leexHeading,@leexErlang
 
 hi def link leexComment Comment
 hi def link leexHeading PreProc
