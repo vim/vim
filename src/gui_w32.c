@@ -3117,6 +3117,63 @@ gui_mch_set_curtab(int nr)
 #endif
 
 /*
+ * When flag is true, set fullscreen on.
+ * When flag is false, set fullscreen off.
+ * One state only should be called once!
+ */
+void gui_mch_set_fullscreen(int flag)
+{
+    static RECT normal_rect;
+    static LONG_PTR normal_style, normal_exstyle;
+    HMONITOR	mon;
+    MONITORINFO	moninfo;
+    RECT	rc;
+
+    if (flag)
+    {
+	// Enter fullscreen mode
+	GetWindowRect(s_hwnd, &rc);
+
+	moninfo.cbSize = sizeof(MONITORINFO);
+	mon = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+	if (mon == NULL || !GetMonitorInfo(mon, &moninfo))
+	    return;
+
+	// Save current window state
+	GetWindowRect(s_hwnd, &normal_rect);
+	normal_style = GetWindowLongPtr(s_hwnd, GWL_STYLE);
+	normal_exstyle = GetWindowLongPtr(s_hwnd, GWL_EXSTYLE);
+
+	// Set fullscreen styles
+	SetWindowLongPtr(s_hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE
+		| WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
+
+	// Resize window to fill the monitor
+	SetWindowPos(s_hwnd, HWND_TOP,
+		moninfo.rcMonitor.left,
+		moninfo.rcMonitor.top,
+		moninfo.rcMonitor.right - moninfo.rcMonitor.left,
+		moninfo.rcMonitor.bottom - moninfo.rcMonitor.top,
+		SWP_SHOWWINDOW | SWP_FRAMECHANGED);
+    }
+    else
+    {
+	// Exit fullscreen mode
+	SetWindowLongPtr(s_hwnd, GWL_STYLE, normal_style);
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE, normal_exstyle);
+
+	// Restore original window position and size
+	SetWindowPos(s_hwnd, NULL,
+		normal_rect.left,
+		normal_rect.top,
+		normal_rect.right - normal_rect.left,
+		normal_rect.bottom - normal_rect.top,
+		SWP_NOZORDER | SWP_FRAMECHANGED);
+    }
+}
+
+/*
  * ":simalt" command.
  */
     void
