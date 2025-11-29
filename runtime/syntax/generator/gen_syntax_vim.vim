@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Nov 26
+" Last Change: 2025 Nov 29
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -370,6 +370,7 @@ function s:get_vim_command_type(cmd_name)
 		insert
 		join
 		k
+		language
 		let
 		ldo
 		lfdo
