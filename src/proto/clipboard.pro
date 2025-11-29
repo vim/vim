@@ -40,4 +40,8 @@ void clip_uninit_wayland(void);
 int clip_reset_wayland(void);
 char *choose_clipmethod(void);
 void ex_clipreset(exarg_T *eap);
+void call_clip_provider_request(int reg);
+void call_clip_provider_set(int reg);
+void inc_clip_provider(void);
+void dec_clip_provider(void);
 /* vim: set ft=c : */
