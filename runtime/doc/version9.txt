@@ -41719,6 +41719,8 @@ Options: ~
   to ">" by default, indicating text that extends beyond the window width.
 - 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
   (see also the below platform specific change).
+- 'guioptions': New value |'go-s'| to support fullscreen on MS-Windows GUI
+  (see also the below platform specific change).
 - 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~
@@ -41757,6 +41759,7 @@ Platform specific ~
   absolute paths (to the current drive) and no longer relative.
 - MS-Windows: The title bar follows the |hl-TitleBar| and |hl-TitleBarNC|
   highlighting group |gui-w32-title-bar|.
+- MS-Windows: New value |'go-s'| to support fullscreen on MS-Windows GUI
 - macOS: increase default scheduler priority to TASK_DEFAULT_APPLICATION.
 
 Others: ~
