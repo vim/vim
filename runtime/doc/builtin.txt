@@ -5343,9 +5343,13 @@ getwininfo([{winid}])					*getwininfo()*
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
+			status_height	status lines height (0 or 1)
+			tabnr		tab page number
 			terminal	1 if a terminal window
 					{only with the +terminal feature}
-			tabnr		tab page number
+			textoff		number of columns occupied by any
+					'foldcolumn', 'signcolumn' and line
+					number in front of the text
 			topline		first displayed buffer line
 			variables	a reference to the dictionary with
 					window-local variables
@@ -5354,9 +5358,6 @@ getwininfo([{winid}])					*getwininfo()*
 					otherwise
 			wincol		leftmost screen column of the window;
 					"col" from |win_screenpos()|
-			textoff		number of columns occupied by any
-					'foldcolumn', 'signcolumn' and line
-					number in front of the text
 			winid		|window-ID|
 			winnr		window number
 			winrow		topmost screen line of the window;
