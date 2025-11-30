@@ -923,6 +923,9 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
 	case VAR_CHANNEL:
 	    return &t_channel;
+	
+	case VAR_TSOBJECT:
+	    return &t_tsobject;
 
 	case VAR_CLASS:
 	case VAR_OBJECT:
@@ -2143,6 +2146,11 @@ parse_type(
 		return parse_type_tuple(arg, type_gap, give_error, ufunc,
 									cctx);
 	    }
+	    if (len == 8 && STRNCMP(*arg, "tsobject", len) == 0)
+	    {
+		*arg += len;
+		return &t_tsobject;
+	    }
 	    break;
 	case 'v':
 	    if (len == 4 && STRNCMP(*arg, "void", len) == 0)
@@ -2187,6 +2195,7 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_TYPEALIAS:
+	case VAR_TSOBJECT:
 	    break;  // not composite is always OK
 	case VAR_OBJECT:
 	case VAR_CLASS:
@@ -2528,6 +2537,7 @@ vartype_name(vartype_T type)
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
+	case VAR_TSOBJECT: return "tsobject";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";

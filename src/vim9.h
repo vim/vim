@@ -103,6 +103,7 @@ typedef enum {
     ISN_PUSHJOB,	// push NULL job
     ISN_PUSHOBJ,	// push NULL object
     ISN_PUSHCLASS,	// push class, uses isn_arg.classarg
+    ISN_PUSHTSOBJECT,	// push NULL treesitter object
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
 			// -1 for null_list
     ISN_NEWTUPLE,	// push tuple from stack items, size is isn_arg.number
@@ -173,6 +174,7 @@ typedef enum {
     ISN_COMPAREFUNC,
     ISN_COMPAREANY,
     ISN_COMPAREOBJECT,
+    ISN_COMPARETSOBJECT,
 
     // expression operations
     ISN_CONCAT,     // concatenate isn_arg.number strings
@@ -538,6 +540,7 @@ struct isn_S {
 	job_T		    *job;
 	partial_T	    *partial;
 	class_T		    *classarg;
+	tsobject_T	    *tsobject;
 	jump_T		    jump;
 	jumparg_T	    jumparg;
 	forloop_T	    forloop;

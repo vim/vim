@@ -34,6 +34,8 @@ int check_for_opt_chan_or_job_arg(typval_T *args, int idx);
 int check_for_job_arg(typval_T *args, int idx);
 int check_for_opt_job_arg(typval_T *args, int idx);
 int check_for_string_or_number_arg(typval_T *args, int idx);
+int check_for_tsobject_arg(typval_T *args, int idx);
+int check_for_opt_tsobject_arg(typval_T *args, int idx);
 int check_for_opt_string_or_number_arg(typval_T *args, int idx);
 int check_for_buffer_arg(typval_T *args, int idx);
 int check_for_opt_buffer_arg(typval_T *args, int idx);
@@ -77,6 +79,7 @@ int typval_compare_object(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic,
 int typval_compare_dict(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_func(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_string(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
+int typval_compare_tsobject(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 char_u *typval_tostring(typval_T *arg, int quotes);
 int tv_islocked(typval_T *tv);
 int tv_equal(typval_T *tv1, typval_T *tv2, int ic);
