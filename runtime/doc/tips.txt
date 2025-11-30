@@ -1,4 +1,4 @@
-*tips.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*tips.txt*	For Vim version 9.1.  Last change: 2025 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -546,26 +546,8 @@ A slightly more advanced version is used in the |matchparen| plugin.
 ==============================================================================
 Opening help in the current window				*help-curwin*
 
-By default, help is displayed in a split window.  If you prefer it opens in
-the current window, try this custom `:HelpCurwin` command:
->
-	command -bar -nargs=? -complete=help HelpCurwin execute s:HelpCurwin(<q-args>)
-	let s:did_open_help = v:false
-
-	function s:HelpCurwin(subject) abort
-	  let mods = 'silent noautocmd keepalt'
-	  if !s:did_open_help
-	    execute mods .. ' help'
-	    execute mods .. ' helpclose'
-	    let s:did_open_help = v:true
-	  endif
-	  if !getcompletion(a:subject, 'help')->empty()
-	    execute mods .. ' edit ' .. &helpfile
-	    set buftype=help
-	  endif
-	  return 'help ' .. a:subject
-	endfunction
-<
+By default, help is displayed in a split window.  If you prefer help to
+display in the current window, use the helpcurwin plugin: |pi_helpcurwin.txt|.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:
