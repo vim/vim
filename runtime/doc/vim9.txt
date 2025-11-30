@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -104,7 +104,8 @@ script and `:def` functions; details are below:
 	echo "hello "
 	     .. yourName
 	     .. ", how are you?"
-- White space is required in many places to improve readability.
+- White space is required in many places to improve readability,
+  see |vim9-white-space|.
 - Assign values without `:let` *E1126* , declare variables with `:var`: >
 	var count = 0
 	count += 3
@@ -232,7 +233,7 @@ You can call a legacy dict function though: >
 	  var d = {func: Legacy, value: 'text'}
 	  d.func()
 	enddef
-<						*E1096* *E1174* *E1175*
+
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
 functions.
@@ -275,7 +276,7 @@ script "export" needs to be used for those to be used elsewhere. >
 	def ThisFunction()          # script-local
 	def g:ThatFunction()        # global
 	export def Function()       # for import and import autoload
-<						*E1058* *E1075*
+<						*E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
 block it is defined in.  It cannot be used in `function()` with a string
@@ -842,7 +843,7 @@ Notes:
 
 
 White space ~
-			*E1004* *E1068* *E1069* *E1074* *E1127* *E1202*
+	*vim9-white-space* *E1004* *E1068* *E1069* *E1074* *E1127* *E1202*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	var name=234	# Error!
 	var name= 234	# Error!
@@ -1236,69 +1237,245 @@ subtracting one: >
 
 Using ++var or --var in an expression is not supported yet.
 
+
 ==============================================================================
 
 3. New style functions					*fast-functions*
 
-							*:def* *E1028*
+							*:def*
 :def[!] {name}([arguments])[: {return-type}]
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
-			matching `:enddef`. *E1073*
-							*E1011*
+			matching `:enddef`.
+							*E1073*
+			The {name} cannot be reused at the script-local level: >vim9
+
+			  vim9script
+			  def F_1073()
+			  enddef
+			  def F_1073() # E1073: Name already defined: <SNR>...
+			  enddef
+<							*E1011*
 			The {name} must be less than 100 bytes long.
-					*E1003* *E1027* *E1056* *E1059*
-			The type of value used with `:return` must match
-			{return-type}.  When {return-type} is omitted or is
-			"void" the function is not expected to return
-			anything.
-							*E1077* *E1123*
+
+							*E1077*
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
 				{name}: {type}
 				{name} = {value}
 				{name}: {type} = {value}
-			The first form is a mandatory argument, the caller
-			must always provide them.
-			The second and third form are optional arguments.
-			When the caller omits an argument the {value} is used.
+			The first form is a mandatory argument.  So, the
+			declaration must provide a type.  Example: >vim9
 
+			  vim9script
+			  def F_1077(x): void
+			      # E1077: Missing argument type for x
+			  enddef
+<
+			For the second form, because the declaration does not
+			specify it, Vim infers the type.  For both second and
+			third forms, a default {value} applies when the
+			caller omits it.  Examples: >vim9
+
+			  vim9script
+			  def SecondForm(arg = "Hi"): void
+			      echo $'2. arg is a "{arg->typename()}" type ' ..
+			           $'and the default value of arg is "{arg}"'
+			  enddef
+			  SecondForm()
+			  def ThirdForm(arg2: number = 9): void
+			      echo $'3. default value of arg2 is {arg2}'
+			  enddef
+			  ThirdForm()
+<							*E1123*
+			Arguments in a builtin function called in a `:def`
+			function must have commas between arguments: >vim9
+
+			  vim9script
+			  def F_1123(a: number, b: number): void
+			      echo max(a b)
+			      # E1123: Missing comma before argument: b)
+			  enddef
+			  F_1123(1, 2)
+<							*E1003* *E1027* *E1096*
+			The type of value used with `:return` must match
+			{return-type}.  When {return-type} is omitted or is
+			"void" the function is not allowed to return
+			anything.  Examples: >vim9
+
+			  vim9script
+			  def F_1003(): bool
+			      return  # E1003: Missing return value
+			  enddef
+			  F_1003()
+< >vim9
+			  vim9script
+			  def F_1027(): bool
+			      echo false  # E1027: Missing return statement
+			  enddef
+			  F_1027()
+< >vim9
+			  vim9script
+			  def F_1096(): void
+			      return false  # E1096: Returning a value ...
+			  enddef
+			  F_1096()
+<							*E1056* *E1059*
+			When ": {return-type}" is specified, {return-type}
+			cannot be omitted (leaving a hanging colon).  The ": "
+			also cannot be preceded by white space.  Examples: >vim
+
+			  def F_1056():
+                              # E1056: Expected a type:
+			  enddef
+			  def F_1059() : bool
+                              # E1059: No white space allowed before colon:...
+			  enddef
+<
 			The function will be compiled into instructions when
-			called, or when `:disassemble` or `:defcompile` is
-			used.  Syntax and type errors will be produced at that
-			time.
+			called or when either `:defcompile` or `:disassemble` is
+			used.  (For an example, see |:disassemble|.)  Syntax
+			and type errors will be produced at that time.
 
+							*E1058*
 			It is possible to nest `:def` inside another `:def` or
-			`:function` up to about 50 levels deep.
+			`:function` only up to 49 levels deep.  At 50 or more
+			levels, it is a |E1058| error.
+
 							*E1117*
-			[!] is used as with `:function`.  Note that
-			script-local functions cannot be deleted or redefined
-			later in Vim9 script.  They can only be removed by
-			reloading the same script.
+			[!] is allowed only in legacy Vim script because it
+			permits function redefinition (as with `:function`!).
+			In Vim9 script, ! is not allowed because script-local
+			functions cannot be deleted or redefined, though they
+			can be removed by reloading the script.  Also, nested
+			functions cannot use ! for redefinition.  Examples: >vim
+
+			  " Legacy Vim script :def! example
+			  def! LegacyFunc()
+			      echo "def! is allowed in a legacy Vim script"
+			  enddef
+			  call LegacyFunc()
+< >vim9
+			  vim9script
+			  def Func()
+			      def! InnerFunc()
+			          # E1117: Cannot use ! with nested :def
+			      enddef
+			  enddef
+			  Func()
+< >vim9
+			  vim9script
+			  def! F_477(): void  # E477: No ! allowed
+			  enddef
+< >vim9
+			  vim9script
+			  def F_1084(): void
+			  enddef
+			  delfunction! F_1084
+			  # E1084: Cannot delete Vim9 script function F_1084
+<
+			Note: The generic error *E1028* ("Compiling :def
+			function failed") indicates an undeterminable error
+			during compilation.  If reproducible, it may be
+			reported at https://github.com/vim/vim/issues as
+			it could represent a gap in Vim's error reporting.
 
 					*:enddef* *E1057* *E1152* *E1173*
-:enddef			End of a function defined with `:def`. It should be on
-			a line by its own.
+:enddef			End of a function defined with `:def`.  It should be on
+			a line by itself.  Examples: >vim9
 
+			  vim9script
+			  def MyFunc()
+			  echo 'Do Something' | enddef
+			  # E1057: Missing :enddef
+< >vim9
+			  vim9script
+			  def F_1173()
+			  enddef echo 'X'
+			  # E1173: Text found after enddef: echo 'X'
+< >vim9
+			  vim9script
+			  def F_1152()
+			      function X()
+			      enddef  # E1152: Mismatched enddef
+			  enddef
+<
 You may also find this wiki useful.  It was written by an early adopter of
 Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
-If the script the function is defined in is Vim9 script, then script-local
-variables can be accessed without the "s:" prefix.  They must be defined
-before the function is compiled.  If the script the function is defined in is
-legacy script, then script-local variables must be accessed with the "s:"
-prefix if they do not exist at the time of compiling.
-							*E1269*
-Script-local variables in a |Vim9| script must be declared at the script
-level.  They cannot be created in a function, also not in a legacy function.
+If the script the `:def` function is defined in is Vim9 script, script-local
+variables must be accessed without using the "s:" prefix.  They must be
+defined before the function is compiled and there is no way to avoid errors
+(e.g., by using |exists()|) to conditionally skip undeclared variables.
+For example: >vim9
 
+	vim9script
+	def MyVim9def()
+	    echo unus       # Echoes 1
+	    # echo s:unus   # This would be E1268 (Cannot use s: in Vim9)
+	    if exists('duo')
+	        # echo duo  # This would be E1001 (Variable not found: duo)
+	    endif
+	enddef
+	var unus: number = 1
+	MyVim9def()         # MyVim9def is compiled ("duo" does not exist yet)
+	var duo: number = 2
+<
+If the script the `:def` function is defined in is legacy Vim script,
+script-local variables may be accessed with or without the "s:" prefix.
+However, using "s:" may defer variable resolution to runtime, avoiding
+compilation errors for variables that may not exist yet, as this example
+explains: >vim
+
+	" legacy Vim script
+	def! MyLegacyDef(): void
+	    echo [unus, s:unus]   # Echoes [1, 1]
+	    # (If uncommented) First sourcing of 'echo s:duo' is E121 and
+	    # causes a compilation error; subsequent sourcing echoes 2:
+	    # echo s:duo
+	    if exists("s:duo")
+	        # First sourcing: skips echo; subsequent sourcing: echoes 2
+	        echo s:duo
+	    endif
+	    if exists("duo")
+	        # (If uncommented) First sourcing of 'echo duo' is E1001 and
+	        # causes a compilation error; subsequent sourcing echoes 2:
+	        # echo duo
+	    endif
+	enddef
+	let s:unus = 1
+	call MyLegacyDef()  " Calls MyLegacyDef() and compiles if not already
+	let s:duo = 2
+<							*E1269*
+Script-local variables in a Vim9 script must be declared at the script
+level.  They cannot be created in a `:def` function and may not be declared
+in a legacy function with the "s:" prefix.  For example: >vim9
+
+	vim9script
+	function F_1269()
+	    let s:i_wish = v:true
+	endfunction
+	F_1269()
+	# E1269: Cannot create a Vim9 script variable in a function: s:i_wish
+<
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions and classes (|class-compile|)
 			defined in the current script that were not compiled
 			yet.  This will report any errors found during
 			compilation.
 
-:defc[ompile] MyClass	Compile all methods in a class. |class-compile|
+			Example: When the three lines (up to and including
+			`enddef`) are sourced, there is no error because the
+			Vim9 `:def` function is not compiled.  However, if all
+			four lines are sourced, compilation fails: >vim9
+
+			  vim9script
+			  def F_1027(): string
+			  enddef
+			  defcompile F_1027  # E1027: Missing return statement
+
+:defc[ompile] MyClass	Compile all methods in a class.  (See |:disassemble|
+			for an example.)
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1306,16 +1483,35 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Compile function {func}, if needed.  Use "debug" and
 			"profile" to specify the compilation mode.
 			This will report any errors found during compilation.
-			{func} call also be "ClassName.functionName" to
+			{func} can also be "ClassName.functionName" to
 			compile a function or method in a class.
-			{func} call also be "ClassName" to compile all
+			{func} can also be "ClassName" to compile all
 			functions and methods in a class.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
-			This is for debugging and testing. *E1061*
-			Note that for command line completion of {func} you
-			can prepend "s:" to find script-local functions.
+			This is for debugging and testing.
+			If {func} is not found, error *E1061* occurs.
+			{func} can also be "ClassName.functionName" to
+			disassemble a function in a class.
+			The following example demonstrates using `:defcompile`
+			with a |class| and `:disassemble` with a
+			"ClassName.functionName" (positioning the cursor on
+			the last line of the visually sourced script): >vim9
+
+			  vim9script
+			  class Line
+			      var lnum: number
+			      def new(this.lnum)
+			      enddef
+			      def SetLnum()
+			          cursor(this.lnum, 52)
+			      enddef
+			  endclass
+			  defcompile Line
+			  disassemble Line.SetLnum
+			  var vlast: Line = Line.new(line("'>"))
+			  vlast.SetLnum()  # Cursor is positioned here->_
 
 :disa[ssemble] profile {func}
 			Like `:disassemble` but with the instructions used for
@@ -1325,156 +1521,234 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Like `:disassemble` but with the instructions used for
 			debugging.
 
+  Note: For command line completion of {func}, script-local functions
+	are shown with their <SNR>.  Depending on options, including
+	|wildmenumode()|, completion may work with "s:", "<S", or the function
+	name directly.  (For example, in Vim started with |-u| NONE, ":disa s:"
+	and |c_CTRL-E| lists script-local function names.)
+
+
 Limitations ~
 
-Local variables will not be visible to string evaluation.  For example: >
-	def MapList(): list<string>
-	  var list = ['aa', 'bb', 'cc', 'dd']
-	  return range(1, 2)->map('list[v:val]')
-	enddef
+Variables local to `:def` functions are not visible to string evaluation.
+The following example shows that the script-local constant "SCRIPT_LOCAL" is
+visible whereas the function-local constant "DEF_LOCAL" is not: >vim9
 
+	vim9script
+	const SCRIPT_LOCAL = ['A', 'script-local', 'list']
+	def MapList(scope: string): list<string>
+	    const DEF_LOCAL: list<string> = ['A', 'def-local', 'list']
+	    if scope == 'script local'
+	        return [1]->map('SCRIPT_LOCAL[v:val]')
+	    else
+	        return [1]->map('DEF_LOCAL[v:val]')
+	    endif
+	enddef
+	echo 'script local'->MapList()	# Echoes ['script-local']
+	echo 'def local'->MapList()	# E121: Undefined variable: DEF_LOCAL
+<
 The map argument is a string expression, which is evaluated without the
-function scope.  Instead, use a lambda: >
+function scope.  Instead, in Vim9 script, use a lambda: >vim9
+
+	vim9script
 	def MapList(): list<string>
-	  var list = ['aa', 'bb', 'cc', 'dd']
-	  return range(1, 2)->map((_, v) => list[v])
+	    const DEF_LOCAL: list<string> = ['A', 'def-local', 'list']
+	    return [1]->map((_, v) => DEF_LOCAL[v])
 	enddef
+	echo MapList()			# Echoes ['def-local']
+<
+For commands that are not compiled, such as `:edit`, |backtick-expansion| can
+be used and it can use the local scope.  Example: >vim9
 
-For commands that are not compiled, such as `:edit`, backtick expansion can be
-used and it can use the local scope.  Example: >
-	def Replace()
-	  var fname = 'blah.txt'
-	  edit `=fname`
+	vim9script
+	def EditNewBlah()
+	    var fname: string = 'blah.txt'
+	    split
+	    edit `=fname`
 	enddef
+	EditNewBlah()  # A new split is created as buffer 'blah.txt'
+<
+Closures defined in a loop can either share a variable or each have their own
+copy, depending on where the variable is declared.  With a variable declared
+outside the loop, all closures reference the same shared variable.
+The following example demonstrates the consequences, with the "outloop"
+variable existing only once: >vim9
 
-Closures defined in a loop will share the same context.  For example: >
+	vim9script
 	var flist: list<func>
-	for i in range(5)
-	  var inloop = i
-	  flist[i] = () => inloop
-	endfor
-	echo range(5)->map((i, _) => flist[i]())
-	# Result: [4, 4, 4, 4, 4]
+	def ClosureEg(n: number): void
+	    var outloop: number = 0  # outloop is declared outside the loop!
+	    for i in range(n)
+	        outloop = i
+	        flist[i] = (): number => outloop  # Closures ref the same var
+	    endfor
+	    echo range(n)->map((i, _) => flist[i]())
+	enddef
+	ClosureEg(4)  # Echoes [3, 3, 3, 3]
+<
+All closures put in the list refer to the same instance, which, in the end,
+is 3.
+
+However, when the variable is declared inside the loop, each closure gets its
+own copy, as shown in this example: >vim9
+
+	vim9script
+	var flist: list<func>
+	def ClosureEg(n: number): void
+	    for i in range(n)
+	        var inloop: number = i  # inloop is declared inside the loop
+	        flist[i] = (): number => inloop  # Closures ref each inloop
+	    endfor
+	    echo range(n)->map((i, _) => flist[i]())
+	enddef
+	ClosureEg(4)  # Echoes [0, 1, 2, 3]
+
+Another way to have a separate context for each closure is to call a
+function to define it: >vim9
+
+	vim9script
+	def GetClosure(i: number): func
+	    var infunc: number = i
+	    return (): number => infunc
+	enddef
+	var flist: list<func>
+	def ClosureEg(n: number): void
+	    for i in range(n)
+	        flist[i] = GetClosure(i)
+	    endfor
+	    echo range(n)->map((i, _) => flist[i]())
+	enddef
+	ClosureEg(4)  # Echoes [0, 1, 2, 3]
 <							*E1271*
 A closure must be compiled in the context that it is defined in, so that
-variables in that context can be found.  This mostly happens correctly, except
-when a function is marked for debugging with `:breakadd` after it was compiled.
-Make sure to define the breakpoint before compiling the outer function.
+variables in that context can be found.  This mostly happens correctly,
+except when a function is marked for debugging with `:breakadd` after it was
+compiled.  Make sure to define the breakpoint before compiling the outer
+function.
+							*E1248*
+In some situations, such as when a Vim9 closure which captures local variables
+is converted to a string and then executed, an error occurs.  This happens
+because the string execution context cannot access the local variables from
+the original context where the closure was defined.  For example: >vim9
 
-The "inloop" variable will exist only once, all closures put in the list refer
-to the same instance, which in the end will have the value 4.  This is
-efficient, also when looping many times.  If you do want a separate context
-for each closure, call a function to define it: >
-	def GetClosure(i: number): func
-	  var infunc = i
-	  return () => infunc
+	vim9script
+	def F_1248(): void
+	    var n: number
+	    var F: func = () => {
+	        n += 1
+	    }
+	    try
+	        execute printf("call %s()", F)
+	    catch
+	        echo v:exception
+	    endtry
 	enddef
+	F_1248()  # Vim(call):E1248: Closure called from invalid context
 
-	var flist: list<func>
-	for i in range(5)
-	  flist[i] = GetClosure(i)
+In Vim9 script, a loop variable is invalid after the loop is closed.
+For example, this timer will echo 0 to 2 on separate lines.  However, if
+the variable "n" is used after the `:endfor`, that is an |E121| error: >vim9
+
+	vim9script
+	for n in range(3)
+	    var nr: number = n
+	    timer_start(1000 * n, (_) => {
+	        echowindow nr
+	    })
 	endfor
-	echo range(5)->map((i, _) => flist[i]())
-	# Result: [0, 1, 2, 3, 4]
-
-In some situations, especially when calling a Vim9 closure from legacy
-context, the evaluation will fail.  *E1248*
-
-Note that at the script level the loop variable will be invalid after the
-loop, also when used in a closure that is called later, e.g. with a timer.
-This will generate error |E1302|: >
-	for n in range(4)
-	    timer_start(500 * n, (_) => {
-	          echowin n
-	       })
-	endfor
-
-You need to use a block and define a variable there, and use that one in the
-closure: >
-	for n in range(4)
-	{
-	   var nr = n
-	   timer_start(500 * n, (_) => {
-	          echowin nr
-	      })
-	}
-	endfor
-
-Using `:echowindow` is useful in a timer, the messages go into a popup and will
-not interfere with what the user is doing when it triggers.
+	try
+	    echowindow n
+	catch
+	    echo v:exception
+	endtry
+<
+	  Note: Using `:echowindow` is useful in a timer because messages go
+		into a popup and will not interfere with what the user is
+		doing when it triggers.
 
 
-Converting a function from legacy to Vim9 ~
+Converting a :function to a :def~
 					*convert_legacy_function_to_vim9*
-These are the most changes that need to be made to convert a legacy function
-to a Vim9 function:
+					*convert_:function_to_:def*
+There are many changes that need to be made to convert a `:function` to
+a `:def` function.  The following are some of them:
 
+- Change `let` used to declare variables to one of `var`, `const`, or `final`,
+  and remove the "s:" from each |script-variable|.
 - Change `func` or `function` to `def`.
 - Change `endfunc` or `endfunction` to `enddef`.
-- Add types to the function arguments.
-- If the function returns something, add the return type.
-- Change comments to start with # instead of ".
+- Add the applicable type (or "any") to each function argument.
+- Remove "a:" from each |function-argument|.
+- Remove inapplicable options such as |:func-range|, |:func-abort|,
+  |:func-dict|, and |:func-closure|.
+- If the function returns something, add the return type.  (Ideally, add
+  "void" if it does not return anything.)
+- Remove line continuation backslashes from places they are not required.
+- Remove `let` for assigning values to |g:|, |b:|, |w:|, |t:|, or |l:| variables.
+- Rewrite |lambda| expressions in Vim9 script syntax (see |vim9-lambda|).
+- Change comments to start with # (preceded by white space) instead of ".
+- Insert white space in expressions where required (see |vim9-white-space|).
+- Change "." used for string concatenation to " .. ".  (Alternatively, use
+  an |interpolated-string|.)
 
-  For example, a legacy function: >
-	func MyFunc(text)
-	  " function body
-	endfunc
-<  Becomes: >
-	def MyFunc(text: string): number
-	  # function body
+The following legacy Vim script and Vim9 script examples demonstrate all
+those differences.  First, legacy Vim script: >vim
+
+	let s:lnum=0
+	function Leg8(arg) abort
+	    let l:pre=['Result',
+	      \': ']
+	    let b:arg=a:arg
+	    let s:lnum+=2
+	    let b:arg*=4
+	    let l:result={pre->join(pre,'')}(l:pre)
+	    return l:result.(b:arg+s:lnum)"no space before comment
+	endfunction
+	call Leg8(10)->popup_notification(#{time: 3000})" Pops up 'Result: 42'
+
+The equivalent in Vim9 script: >vim9
+
+	vim9script
+	var lnum: number
+	def Vim9(arg: number): string
+	    final pre = ['Result',
+	      ': ']
+	    b:arg = arg
+	    lnum += 2
+	    b:arg *= 4
+	    const RESULT: string = ((lpre) => join(lpre, ''))(pre)
+	    return RESULT .. (b:arg + lnum) # space required before # comment
 	enddef
+	Vim9(10)->popup_notification({time: 3000}) # Pops up 'Result: 42'
 
-- Remove "a:" used for arguments. E.g.: >
-	return len(a:text)
-<  Becomes: >
-	return len(text)
-
-- Change `let` used to declare a variable to `var`.
-- Remove `let` used to assign a value to a variable.  This is for local
-  variables already declared and b: w: g: and t: variables.
-
-  For example, legacy function: >
-	  let lnum = 1
-	  let lnum += 3
-	  let b:result = 42
-<  Becomes: >
-	  var lnum = 1
-	  lnum += 3
-	  b:result = 42
-
-- Insert white space in expressions where needed.
-- Change "." used for concatenation to "..".
-
-  For example, legacy function: >
-	  echo line(1).line(2)
-<  Becomes: >
-	  echo line(1) .. line(2)
-
-- line continuation does not always require a backslash: >
-	echo ['one',
-		\ 'two',
-		\ 'three'
-		\ ]
-<  Becomes: >
-	echo ['one',
-		'two',
-		'three'
-		]
+<	Note: This example also demonstrates (outside the `:def` function):
+		- Removing "#" from the legacy |#{}| - see |vim9-literal-dict|
+		- Omitting `:call` (allowed, though unnecessary in Vim9 script)
 
 
-Calling a function in an expr option ~
+Calling a :def function in an expr option ~
 							*expr-option-function*
 The value of a few options, such as 'foldexpr', is an expression that is
 evaluated to get a value.  The evaluation can have quite a bit of overhead.
-One way to minimize the overhead, and also to keep the option value very
-simple, is to define a compiled function and set the option to call it
-without arguments.  Example: >
+One way to minimize the overhead, and also to keep the option value simple,
+is to define a compiled function and set the option to call it without
+arguments.  For example: >vim9
+
 	vim9script
-	def MyFoldFunc(): any
-	   ... compute fold level for line v:lnum
-	   return level
+	def MyFoldFunc(): string
+	    # This matches start of line (^), followed by a digit, a full stop
+	    # a space or tab, an uppercase character, with an empty next line
+	    return getline(v:lnum) =~ '^[[:digit:]]\.[[:blank:]][[:upper:]]'
+	        && getline(v:lnum + 1)->empty() ? '>1' : '1'
 	enddef
-	set foldexpr=s:MyFoldFunc()
+	set foldexpr=MyFoldFunc()
+	set foldmethod=expr
+	norm! zM
+<
+  Warning: This script creates and applies folds at the "Heading 1" level of
+	   this vim9.txt help buffer.  (You can use |zR|, in Normal mode, to
+	   open all the folds after sourcing the script.)
+
 
 ==============================================================================
 
@@ -1927,8 +2201,8 @@ dictionary when it is required: >vim
 	echo [8, 9]->keys()
 	vim9cmd echo [8, 9]->keys()	 # E1206: Dictionary required
 <
-						*E1023* *E1024* *E1029*
-						*E1030* *E1210* *E1212*
+						*E1023* *E1024* *E1029* *E1030*
+						*E1174* *E1175* *E1210* *E1212*
 However, sometimes there will be an error in Vim9 script, which breaks
 backwards compatibility.  The following examples illustrate various places
 this happens.  The legacy Vim script behavior, which does not fail, is shown
@@ -1963,6 +2237,16 @@ in Vim9 script.
 
 	let b:l = [42] | unlet b:l['#'] | echo b:l
 	vim9cmd b:l = [42] | vim9cmd unlet b:l['#']  # E1030: Using a string...
+<
+  - Not using a string where an argument requires a string: >vim9
+
+	echo substitute('Hallo', 'a', 'e', v:true)
+	vim9cmd echo substitute('Hallo', 'a', 'e', true)  # E1174: String...
+<
+  - Using an empty string in an argument that requires a non-empty string: >vim9
+
+	echo exepath('')
+	vim9cmd echo exepath('') # E1175: Non-empty string required for arg...
 <
   - Not using a number when it is required: >vim
 

@@ -6815,6 +6815,7 @@ conversion-server	mbyte.txt	/*conversion-server*
 convert-to-HTML	syntax.txt	/*convert-to-HTML*
 convert-to-XHTML	syntax.txt	/*convert-to-XHTML*
 convert-to-XML	syntax.txt	/*convert-to-XML*
+convert_:function_to_:def	vim9.txt	/*convert_:function_to_:def*
 convert_legacy_function_to_vim9	vim9.txt	/*convert_legacy_function_to_vim9*
 copy()	builtin.txt	/*copy()*
 copy-diffs	diff.txt	/*copy-diffs*
@@ -11637,6 +11638,7 @@ vim9-types	vim9.txt	/*vim9-types*
 vim9-unpack-ignore	vim9.txt	/*vim9-unpack-ignore*
 vim9-user-command	vim9.txt	/*vim9-user-command*
 vim9-variable-arguments	vim9.txt	/*vim9-variable-arguments*
+vim9-white-space	vim9.txt	/*vim9-white-space*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9class.txt	vim9class.txt	/*vim9class.txt*
 vim9script	vim9.txt	/*vim9script*
