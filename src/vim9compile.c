@@ -2815,6 +2815,9 @@ push_default_value(
 	case VAR_CHANNEL:
 	    r = generate_PUSHCHANNEL(cctx);
 	    break;
+	case VAR_TSOBJECT:
+	    r = generate_PUSHTSOBJECT(cctx);
+	    break;
 	case VAR_OBJECT:
 	    r = generate_PUSHOBJ(cctx);
 	    break;
