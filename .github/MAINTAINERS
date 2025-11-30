@@ -221,6 +221,7 @@ runtime/ftplugin/kivy.vim				@ribru17
 runtime/ftplugin/kotlin.vim				@udalov
 runtime/ftplugin/lc.vim					@ribru17
 runtime/ftplugin/ldapconf.vim				@ribru17
+runtime/ftplugin/leex.vim				@jparise
 runtime/ftplugin/leo.vim				@ribru17
 runtime/ftplugin/less.vim				@genoma
 runtime/ftplugin/lex.vim				@ribru17
@@ -550,6 +551,7 @@ runtime/syntax/kivy.vim					@prophittcorey
 runtime/syntax/kotlin.vim				@udalov
 runtime/syntax/kdl.vim					@imsnif @jiangyinzuo
 runtime/syntax/krl.vim					@KnoP-01
+runtime/syntax/leex.vim					@jparise
 runtime/syntax/less.vim					@genoma
 runtime/syntax/lf.vim					@andis-sprinkis
 runtime/syntax/liquid.vim				@tpope
