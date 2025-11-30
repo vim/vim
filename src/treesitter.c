@@ -46,30 +46,27 @@ typedef struct
 #define VTS_LANG_OFF offsetof(TSVimLanguage, name)
 #define HI2LANG(hi) ((TSVimLanguage *)((hi)->hi_key - VTS_LANG_OFF))
 
-typedef struct {
-    TSTree *tree;
-    garray_T children;
-} TSVimTree;
-
-// Holds the state for a single treesitter parser instance
-struct TSVimState
+typedef enum
 {
-    TSParser *parser;
+    TSOBJECT_TYPE_PARSER,
+    TSOBJECT_TYPE_TREE,
+    TSOBJECT_TYPE_NODE
+} tsobject_type_T;
+
+struct tsobject_S
+{
+    int		    to_refcount;
+    tsobject_type_T to_type;
     union
     {
-	buf_T *buf;
-    } source;
-
-    TSVimTree *tree;
-
-    const TSLanguage *cur_lang;
-    TSVimState *next;
-
+	TSParser    *to_parser;
+	TSTree	    *to_tree;
+	TSNode	    to_node;
+    };
 };
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
-static TSVimState   *pending_state;
 
     int
 tsvim_init(void)
@@ -161,6 +158,172 @@ tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
     }
 }
 
+/*
+ * Allocate new treesitter object. Returns NULL on failure.
+ */
+    static tsobject_T *
+tsobject_new(tsobject_type_T type)
+{
+    tsobject_T *obj = ALLOC_ONE(tsobject_T);
+
+    if (obj == NULL)
+	return NULL;
+
+    obj->to_refcount = 1;
+    obj->to_type = type;
+    
+    return obj;
+}
+
+    tsobject_T *
+tsobject_ref(tsobject_T *obj)
+{
+    obj->to_refcount++;
+    return obj;
+}
+
+    void
+tsobject_free(tsobject_T *obj)
+{
+    switch (obj->to_type)
+    {
+	case TSOBJECT_TYPE_PARSER:
+	    if (obj->to_parser != NULL)
+		ts_parser_delete(obj->to_parser);
+	    break;
+	case TSOBJECT_TYPE_TREE:
+	    if (obj->to_tree != NULL)
+		ts_tree_delete(obj->to_tree);
+	    break;
+	case TSOBJECT_TYPE_NODE:
+	    break;
+    }
+    vim_free(obj);
+}
+
+    void
+tsobject_unref(tsobject_T *obj)
+{
+    if (obj != NULL && --obj->to_refcount <= 0)
+	tsobject_free(obj);
+}
+
+    bool
+tsobject_equal(tsobject_T *a, tsobject_T *b)
+{
+    if (a->to_type != b->to_type)
+	return false;
+
+    switch (a->to_type)
+    {
+	case TSOBJECT_TYPE_PARSER:
+	    return a->to_parser == b->to_parser;
+	case TSOBJECT_TYPE_TREE:
+	    return a->to_tree == b->to_tree;
+	case TSOBJECT_TYPE_NODE:
+	    return ts_node_eq(a->to_node, b->to_node);
+    }
+    return false;
+}
+
+/*
+ * Returns statically allocated string
+ */
+    char_u *
+tsobject_get_name(tsobject_T *obj)
+{
+    switch (obj->to_type)
+    {
+	case TSOBJECT_TYPE_PARSER:
+	    return (char_u *)"TSParser";
+	case TSOBJECT_TYPE_TREE:
+	    return (char_u *)"TSTree";
+	case TSOBJECT_TYPE_NODE:
+	    return (char_u *)"TSNode";
+    }
+    return (char_u *)"";
+}
+
+    int
+tsobject_get_refcount(tsobject_T *obj)
+{
+    return obj->to_refcount;
+}
+
+    bool
+tsobject_is_parser(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_PARSER;
+}
+
+    bool
+tsobject_is_tree(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_TREE;
+}
+
+    bool
+tsobject_is_node(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_NODE;
+}
+
+    int
+check_tsobject_type_arg(
+	typval_T *args,
+	int idx,
+	bool opt,
+	bool (*func)(tsobject_T *obj))
+{
+    if (opt && args[idx].v_type == VAR_UNKNOWN)
+	return OK;
+    if (!func(args[idx].vval.v_tsobject))
+    {
+        semsg(_(e_tsobject_str_required_for_argument_nr),
+		tsobject_get_name(args[idx].vval.v_tsobject), idx);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Allocate a new TSParser object. Returns NULL on failure.
+ */
+    tsobject_T *
+tsparser_new(void)
+{
+    tsobject_T *obj = tsobject_new(TSOBJECT_TYPE_PARSER);
+
+    obj->to_parser = ts_parser_new();
+
+    // Documentation says nothing about it returning NULL but just check to be
+    // sure.
+    if (obj->to_parser == NULL)
+    {
+	tsobject_free(obj);
+	return NULL;
+    }
+
+    return obj;
+}
+
+/*
+ * Set the given parser to "language".
+ */
+    void
+tsparser_set_language(tsobject_T *parser, char_u *language)
+{
+    hashitem_T *hi = hash_find(&languages, language);
+
+    if (!HASHITEM_EMPTY(hi))
+    {
+	TSVimLanguage *lang = HI2LANG(hi);
+	ts_parser_set_language(parser->to_parser, lang->lang);
+    }
+    else
+	emsg(_(e_treesitter_lang_not_loaded));
+}
+
 #ifdef ELAPSED_FUNC
 typedef struct
 {
@@ -200,10 +363,6 @@ tsvim_parser_parse(
     (void)timeout;
 #endif
 
-    // Check if parser is set to a language
-    if (ts_parser_language(parser) == NULL)
-	return NULL;
-
     input.decode = NULL;
     input.encoding = TSInputEncodingUTF8;
     input.payload = userdata;
@@ -223,51 +382,6 @@ tsvim_parser_parse(
     return res;
 }
 
-    static TSVimState *
-tsvim_state_create(void)
-{
-    TSVimState *state = ALLOC_ONE(TSVimState); 
-
-    if (state == NULL)
-	return NULL;
-
-    state->parser = ts_parser_new();
-
-    // Not sure if function can fail but still check for it
-    if (state->parser == NULL)
-    {
-	vim_free(state);
-	return NULL;
-    }
-    state->tree = NULL;
-    state->cur_lang = NULL;
-    state->next = NULL;
-
-    return state;
-}
-
-    void
-tsvim_state_free(TSVimState *state)
-{
-    TSVimState *s = pending_state;
-
-    if (s == state)
-	pending_state = state->next;
-    else
-	while (s != NULL)
-	{
-	    if (s->next == state)
-		s->next = state->next;
-	}
-
-    ts_parser_delete(state->parser);
-    if(state->tree != NULL)
-	ts_tree_delete(state->tree);
-    vim_free(state);
-}
-
-// Treesitter internally updates the "position" argument by counting newlines in
-// the text we return.
     static const char *
 parse_buf_read_callback(
 	void *payload,
@@ -275,7 +389,7 @@ parse_buf_read_callback(
 	TSPoint position,
 	uint32_t *bytes_read)
 {
-    buf_T	*bp = payload;
+    buf_T        *bp = payload;
     static char buf[TSVIM_BUFSIZE];
 
     // Finish if we are past the last line
@@ -311,85 +425,76 @@ parse_buf_read_callback(
     return buf;
 }
 
-    void
-tsvim_parse_buf(buf_T *buf)
+/*
+ * Parse the given buffer using the parser and return the result TSTree if is
+ * completed within the timeout, else NULL.
+ */
+    tsobject_T *
+tsparser_parse_buf(
+	tsobject_T *parser,
+	tsobject_T *last_tree,
+	buf_T *buf,
+	long timeout)
 {
-    hashitem_T	    *hi;
-    TSVimLanguage   *lang;
-    TSVimState	    *state;
-    TSTree	    *tree;
+    TSTree *ltree = last_tree == NULL ? NULL : last_tree->to_tree;
+    TSTree *res;
+    tsobject_T *obj;
 
-    // Lookup language object and set parser to it.
-    hi = hash_find(&languages, buf->b_p_tslg);
-
-    if (HASHITEM_EMPTY(hi))
+    // Check if parser is set to a language
+    if (ts_parser_language(parser->to_parser) == NULL)
     {
-	semsg(_(e_treesitter_lang_not_loaded), buf->b_p_tslg);
-	return;
+	emsg(_(e_tsparser_not_set_to_language));
+	return NULL;
     }
-    else
-	lang = HI2LANG(hi);
 
-    if (buf->b_tsstate == NULL)
+    res = tsvim_parser_parse(parser->to_parser, ltree,
+	    parse_buf_read_callback, buf, timeout);
+
+    if (res == NULL)
+	return NULL;
+
+    obj = tsobject_new(TSOBJECT_TYPE_TREE);
+    if (obj == NULL)
     {
-	buf->b_tsstate = tsvim_state_create();
-
-	if (buf->b_tsstate == NULL)
-	    return;
+	ts_tree_delete(res);
+	return NULL;
     }
-    state = buf->b_tsstate;
 
-    ts_parser_set_language(state->parser, lang->lang);
+    obj->to_tree = res;
 
-    // TODO: handle case when buffer is destroyed while parsing
-    tree = tsvim_parser_parse(state->parser, state->tree,
-	    parse_buf_read_callback, buf, 10);
-
-    if (tree != NULL)
-    {
-	state->tree = tree;
-	smsg("Done!");
-	return;
-    }
-    state->cur_lang = lang->lang;
-    // Defer next parse later
-    if (pending_state == NULL)
-	pending_state = state;
-    else
-    {
-	TSVimState *s = pending_state;
-	while (s != NULL)
-	{
-	    if (s->next == NULL)
-		break;
-	    else
-		s = s->next;
-	}
-	s->next = state;
-    }
-    state->source.buf = buf;
+    return obj;
 }
 
-    bool
-tsvim_parse_pending(void)
+/*
+ * Edit the specified tree using the given information describing the edit.
+ */
+    void
+tstree_edit(
+	tsobject_T *tree,
+	uint32_t start_byte,
+	uint32_t old_end_byte,
+	uint32_t new_end_byte,
+	uint32_t start_point[2],
+	uint32_t old_end_point[2],
+	uint32_t new_end_point[2]
+	)
 {
-    TSTree	    *tree;
+    TSInputEdit edit;
 
-    if (pending_state == NULL)
-	return false;
+    edit.start_byte = start_byte;
+    edit.old_end_byte = old_end_byte;
+    edit.new_end_byte = new_end_byte;
 
-    tree = tsvim_parser_parse(pending_state->parser, pending_state->tree,
-	    parse_buf_read_callback, pending_state->source.buf, 3);
+    edit.start_point.row = start_point[0];
+    edit.start_point.column = start_point[1];
 
-    if (tree != NULL)
-    {
-	pending_state->tree = tree;
-	pending_state = pending_state->next;
-	smsg("Done pending!");
-	return false;
-    }
+    edit.old_end_point.row = old_end_point[0];
+    edit.old_end_point.column = old_end_point[1];
 
-    return true;
+    edit.new_end_point.row = new_end_point[0];
+    edit.new_end_point.column = new_end_point[1];
+
+    ts_tree_edit(tree->to_tree, &edit);
 }
 
 #endif // FEAT_TREESITTER

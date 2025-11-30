@@ -1427,6 +1427,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_CLASS:
 		    case VAR_OBJECT:
 		    case VAR_TYPEALIAS:
+		    case VAR_TSOBJECT:
 				      continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
