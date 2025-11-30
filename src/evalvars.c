@@ -275,6 +275,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_ENUM,    VAR_TYPE_ENUM);
     set_vim_var_nr(VV_TYPE_ENUMVALUE,  VAR_TYPE_ENUMVALUE);
     set_vim_var_nr(VV_TYPE_TUPLE,   VAR_TYPE_TUPLE);
+    set_vim_var_nr(VV_TYPE_TSOBJECT,   VAR_TYPE_TSOBJECT);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
@@ -2460,6 +2461,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_TSOBJECT:
 	    break;
 
 	case VAR_BLOB:
