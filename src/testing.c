@@ -1152,6 +1152,12 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_typealias != NULL)
 		retval = argvars[0].vval.v_typealias->ta_refcount - 1;
 	    break;
+	case VAR_TSOBJECT:
+#ifdef FEAT_TREESITTER
+	    if (argvars[0].vval.v_tsobject != NULL)
+		retval = tsobject_get_refcount(argvars[0].vval.v_tsobject) - 1;
+#endif
+	    break;
     }
 
     rettv->v_type = VAR_NUMBER;
@@ -1257,6 +1263,15 @@ f_test_null_tuple(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv_tuple_set(rettv, NULL);
 }
+
+#ifdef FEAT_TREESITTER
+    void
+f_test_null_tsobject(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_TSOBJECT;
+    rettv->vval.v_tsobject = NULL;
+}
+#endif
 
     void
 f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)

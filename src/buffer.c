@@ -959,12 +959,6 @@ buf_freeall(buf_T *buf, int flags)
     }
 #endif
 
-#ifdef FEAT_TREESITTER
-    // Free treesitter parser attached to buffer
-    if (buf->b_tsstate != NULL)
-	tsvim_state_free(buf->b_tsstate);
-#endif
-
 #ifdef FEAT_TCL
     tcl_buffer_free(buf);
 #endif

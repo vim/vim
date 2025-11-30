@@ -3805,11 +3805,27 @@ EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
 EXTERN char e_no_redraw_listener_callbacks_defined[]
 	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
 #endif
+# ifndef FEAT_TREESITTER
+EXTERN char e_treesitter_feature_not_available[]
+	INIT(= N_("E1570: Treesitter feature is not available"));
+# endif
 #ifdef FEAT_TREESITTER
 EXTERN char e_treesitter_get_lang_error[]
-	INIT(= N_("E1570: Failed loading treesitter parser %s"));
+	INIT(= N_("E1571: Failed loading treesitter parser %s"));
 EXTERN char e_treesitter_lang_not_loaded[]
-	INIT(= N_("E1570: Language %s is not loaded"));
-EXTERN char e_cannot_use_treesitter_object[]
-	INIT(= N_("E1571: Cannot use treesitter object"));
+	INIT(= N_("E1572: Language %s is not loaded"));
+EXTERN char e_using_tsobject_as_number[]
+	INIT(= N_("E1573: Using a Treesitter object as a Number"));
+EXTERN char e_using_tsobject_as_float[]
+	INIT(= N_("E1573: Using a Treesitter object as a Float"));
+EXTERN char e_using_tsobject_as_string[]
+	INIT(= N_("E1573: Using a Treesitter object as a String"));
+EXTERN char e_tsparser_not_set_to_language[]
+	INIT(= N_("E1573: TSParser is not set to a language"));
+EXTERN char e_tsobject_required_for_argument_nr[]
+	INIT(= N_("E1574: Treesitter object required for argument %d"));
+EXTERN char e_tsobject_str_required_for_argument_nr[]
+	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
+EXTERN char e_tuple_is_not_of_numbers[]
+	INIT(= N_("E1574: Tuple given is not of type <number, number>"));
 #endif

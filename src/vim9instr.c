@@ -241,6 +241,7 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_TSOBJECT:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }
@@ -523,6 +524,7 @@ get_compare_isn(
 	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
 	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
 	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
+	    case VAR_TSOBJECT: isntype = ISN_COMPARETSOBJECT; break;
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
@@ -831,6 +833,13 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    generate_PUSHCHANNEL(cctx);
 	    break;
 #endif
+#ifdef FEAT_TREESITTER
+	case VAR_TSOBJECT:
+	    if (tv->vval.v_tsobject != NULL)
+		iemsg("non-null tsobject constant not supported");
+	    generate_PUSHTSOBJECT(cctx);
+	    break;
+#endif
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
@@ -1045,6 +1054,23 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
 
     isn->isn_arg.string = funcname;
     return OK;
+}
+
+/*
+ * Generate an ISN_PUSHTSOBJECT instruction. treesitter object is always NULL.
+ */
+    int
+generate_PUSHTSOBJECT(cctx_T *cctx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+#ifdef FEAT_TREESITTER
+    if (generate_instr_type(cctx, ISN_PUSHTSOBJECT, &t_tsobject) == NULL)
+	return FAIL;
+    return OK;
+#else
+    emsg(_(e_treesitter_feature_not_available));
+    return FAIL;
+#endif
 }
 
 /*
@@ -2734,7 +2760,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHCLASS:
 	    class_unref(isn->isn_arg.classarg);
 	    break;
-
+	
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2875,6 +2901,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREOBJECT:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
+	case ISN_COMPARETSOBJECT:
 	case ISN_CONCAT:
 	case ISN_CONSTRUCT:
 	case ISN_COND2BOOL:
@@ -2932,6 +2959,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHNR:
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
+	case ISN_PUSHTSOBJECT:
 	case ISN_PUT:
 	case ISN_IPUT:
 	case ISN_REDIREND:

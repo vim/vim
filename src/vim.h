@@ -2315,9 +2315,7 @@ long elapsed(DWORD start_tick);
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
-#define VAR_TYPE_TSPARSER   18
-#define VAR_TYPE_TSTREE	    19
-#define VAR_TYPE_TSNODE	    20
+#define VAR_TYPE_TSOBJECT   18
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 

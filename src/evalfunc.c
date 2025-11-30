@@ -198,8 +198,13 @@ static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
-static void f_treesitter_load(typval_T *argvars, typval_T *rettv);
-static void f_treesitter_parse(typval_T *argvars, typval_T *rettv);
+static void f_ts_load(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_TREESITTER
+static void f_tsparser_new(typval_T *argvars, typval_T *rettv);
+static void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
+static void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
+static void f_tstree_edit(typval_T *argvars, typval_T *rettv);
+#endif
 
 
 /*
@@ -1000,6 +1005,15 @@ arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a string.
+ */
+    static int
+arg_tsobject(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    return check_arg_type(&t_tsobject, type, context);
+}
+
+/*
  * Check "type" can be used as the type_decl of the previous argument.
  * Must not be used for the first argcheck_T entry.
  */
@@ -1260,6 +1274,7 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
+static argcheck_T arg2_tsobject_string[] = {arg_tsobject, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1330,6 +1345,7 @@ static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, a
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg4_tsobject_buffer_number_tsobject[] = {arg_tsobject, arg_buffer, arg_number, arg_tsobject};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -1386,6 +1402,7 @@ static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
+static argcheck_T arg7_tsobject_3number_3tuple[] = {arg_tsobject, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
 
 // Can be used by functions called through "f_retfunc" to create new types.
 static garray_T *current_type_gap = NULL;
@@ -1572,6 +1589,13 @@ ret_job(int argcount UNUSED,
 	type_T	**decl_type UNUSED)
 {
     return &t_job;
+}
+    static type_T *
+ret_tsobject(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsobject;
 }
     static type_T *
 ret_first_arg(int argcount,
@@ -3102,6 +3126,8 @@ static const funcentry_T global_functions[] =
 			ret_func_any,	    f_test_null_partial},
     {"test_null_string", 0, 0, 0,	    NULL,
 			ret_string,	    f_test_null_string},
+    {"test_null_tsobject", 0, 0, 0,	    NULL,
+			ret_tsobject,	    TS_FUNC(f_test_null_tsobject)},
     {"test_null_tuple",	0, 0, 0,	    NULL,
 			ret_tuple_any,	    f_test_null_tuple},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
@@ -3134,17 +3160,22 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_tolower},
     {"toupper",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_toupper},
-    {"treesitter_load",	2, 3, 0,	    arg3_string_string_dict,
-			ret_void,	    f_treesitter_load},
-    {"treesitter_parse",
-			0, 1, 0,	    arg1_buffer,
-			ret_void,	    f_treesitter_parse},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_tr},
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
+    {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
+			ret_void,	    TS_FUNC(f_ts_load)},
+    {"tsparser_new",	0, 0, 0,	    NULL,
+			ret_tsobject,	    TS_FUNC(f_tsparser_new)},
+    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsobject_buffer_number_tsobject,
+			ret_tsobject,	    TS_FUNC(f_tsparser_parse_buf)},
+    {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsobject_string,
+			ret_void,	    TS_FUNC(f_tsparser_set_language)},
+    {"tstree_edit",	7, 7, FEARG_1,	    arg7_tsobject_3number_3tuple,
+			ret_void,	    TS_FUNC(f_tstree_edit)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
@@ -4471,6 +4502,11 @@ f_empty(typval_T *argvars, typval_T *rettv)
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
 #endif
+	case VAR_TSOBJECT:
+#ifdef FEAT_TREESITTER
+	    n = argvars[0].vval.v_tsobject == NULL;
+#endif
+	    break;
 	case VAR_TYPEALIAS:
 	    n = argvars[0].vval.v_typealias == NULL
 		|| argvars[0].vval.v_typealias->ta_name == NULL
@@ -8895,6 +8931,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_TSOBJECT:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -12644,6 +12681,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
+	case VAR_TSOBJECT: n = VAR_TYPE_TSOBJECT; break;
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;
@@ -12824,7 +12862,7 @@ f_xor(typval_T *argvars, typval_T *rettv)
 
 #ifdef FEAT_TREESITTER
     static void
-f_treesitter_load(typval_T *argvars, typval_T *rettv)
+f_ts_load(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
     char_u *path;
@@ -12844,7 +12882,7 @@ f_treesitter_load(typval_T *argvars, typval_T *rettv)
     {
 	dict_T *d =  argvars[2].vval.v_dict;
 
-	symbol = dict_get_string(d, "cursor", FALSE);
+	symbol = dict_get_string(d, "symbol", FALSE);
     }
 
     if (symbol == NULL)
@@ -12852,20 +12890,125 @@ f_treesitter_load(typval_T *argvars, typval_T *rettv)
 
     tsvim_load_language(name, path, symbol);
 }
-    static void
-f_treesitter_parse(typval_T *argvars, typval_T *rettv)
-{
-    buf_T *buf;
 
-    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+    static void
+f_tsparser_new(typval_T *argvars, typval_T *rettv)
+{
+    tsobject_T *obj = tsparser_new();
+
+    if (obj == NULL)
 	return;
 
-    buf = get_buf_arg(&argvars[0]);
+    rettv->v_type = VAR_TSOBJECT;
+    rettv->vval.v_tsobject = obj;
+}
 
-    if (buf != NULL)
-	tsvim_parse_buf(buf);
+    static void
+f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_parser) == FAIL)
+	return;
+
+    tsparser_set_language(argvars[0].vval.v_tsobject,
+	    argvars[1].vval.v_string);
 
 }
+
+    static void
+f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+		|| check_for_buffer_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL
+		|| check_for_opt_tsobject_arg(argvars, 3) == FAIL))
+	return;
+
+    if (check_tsobject_type_arg(argvars, 0,
+		false, tsobject_is_parser) == FAIL
+	    || check_tsobject_type_arg(argvars, 3,
+		true, tsobject_is_tree) == FAIL)
+	return;
+
+    {
+	buf_T *buf = get_buf_arg(argvars + 1);
+	tsobject_T *res;
+
+	if (buf == NULL)
+	    return;
+
+	res = tsparser_parse_buf(
+		argvars[0].vval.v_tsobject,
+		argvars[3].v_type == VAR_UNKNOWN
+		? NULL : argvars[3].vval.v_tsobject,
+		buf, argvars[2].vval.v_number);
+
+	if (res == NULL)
+	{
+	    rettv->v_type = VAR_TSOBJECT;
+	    rettv->vval.v_tsobject = NULL;
+	    return;
+	}
+
+	rettv->v_type = VAR_TSOBJECT;
+	rettv->vval.v_tsobject = res;
+    }
+}
+
+    static void
+f_tstree_edit(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL
+		|| check_for_number_arg(argvars, 3) == FAIL
+		|| check_for_tuple_arg(argvars, 4) == FAIL
+		|| check_for_tuple_arg(argvars, 5) == FAIL
+		|| check_for_tuple_arg(argvars, 6) == FAIL))
+	return;
+
+    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_tree) == FAIL)
+	return;
+
+    {
+	tuple_T *points[] = {
+	    argvars[4].vval.v_tuple,	// start_point
+	    argvars[5].vval.v_tuple,	// old_end_point
+	    argvars[6].vval.v_tuple};	// new_end_point
+	uint32_t p[3][2];
+
+	// Validate tuples are <number, number>
+	for (int i = 0; i < ARRAY_LENGTH(points); i++)
+	{
+	    typval_T *row = TUPLE_ITEM(points[i], 0);
+	    typval_T *col = TUPLE_ITEM(points[i], 1);
+
+	    if (row->v_type != VAR_NUMBER || col->v_type != VAR_NUMBER
+		    || points[i]->tv_items.ga_len != 2)
+	    {
+		emsg(_(e_tuple_is_not_of_numbers));
+		return;
+	    }
+
+	    p[i][0] = row->vval.v_number;
+	    p[i][1] = col->vval.v_number;
+	}
+
+	tstree_edit(
+		argvars[0].vval.v_tsobject,
+		argvars[1].vval.v_number,
+		argvars[2].vval.v_number,
+		argvars[3].vval.v_number,
+		p[0], p[1], p[2]);
+    }
+}
+
 #endif
 
 #endif // FEAT_EVAL

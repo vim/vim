@@ -1502,6 +1502,7 @@ typedef struct instr_S instr_T;
 typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
+typedef struct tsobject_S tsobject_T;
 
 typedef enum
 {
@@ -1525,6 +1526,7 @@ typedef enum
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
     VAR_TUPLE,		// "v_tuple" is used
+    VAR_TSOBJECT	// "v_tsobject" is used
 } vartype_T;
 
 // A type specification.
@@ -1702,6 +1704,9 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
+#ifdef FEAT_TREESITTER
+	tsobject_T	*v_tsobject;	// treesitter object
+#endif
     }		vval;
 };
 
