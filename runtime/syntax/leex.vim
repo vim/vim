@@ -25,11 +25,11 @@ syn match leexRegexRange "\[[^\]]*\]" contains=leexRegexDelimiter,leexRegexEscap
 " Macro definitions: NAME = VALUE
 syn match leexMacroName "^\s*\zs\h\w*\ze\s\+=\s\+" contained nextgroup=leexMacroEquals skipwhite display
 syn match leexMacroEquals "=" contained nextgroup=leexMacroValue skipwhite display
-syn match leexMacroValue ".*$" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef display
+syn match leexMacroValue "\S\+" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef display
 syn match leexMacroRef "{\h\w*}" contained display
 
 " Rule definitions: <Regexp> : <Erlang code>.
-syn match leexRuleRegex "^\S.\{-}\ze\s*:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
+syn match leexRuleRegex "^\s*\zs[^%].\{-}\ze\s\+:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
 syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite skipnl display
 syn region leexRuleCode start="" end="\.\s*\%(%.*\)\?$" skip="^\s*%.*$" contained contains=@leexErlang keepend skipnl skipwhite
 

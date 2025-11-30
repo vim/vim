@@ -6,7 +6,7 @@ Definitions.
 floats	= (\+|-)?[0-9]+\.[0-9]+((E|e)(\+|-)?[0-9]+)?
 D	= [0-9]
 A	= ({D}|_|@)
-WS	= ([\000-\s]|%.*)
+WS	= ([\000-\s]|%.*) % whitespace
 
 Rules.
 {D}+ :
@@ -17,13 +17,12 @@ Rules.
   {token,{float,TokenLine,list_to_float(TokenChars)}}.
 {A} :  ErlangCode. % comment
 {WS} : ErlangCode.
+:= :{token,{':=',TokenLine}}.
 
 Erlang code.
 
 -export([reserved_word/1]).
 
 %% reserved_word(Atom) -> Bool
-%%   return 'true' if Atom is an Erlang reserved word, else 'false'.
-
 reserved_word('reserved') -> true;
 reserved_word(_) -> false.
