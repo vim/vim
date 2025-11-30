@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     Leex (Erlang Lexical Analyzer Generator)
 " Maintainer:   Jon Parise <jon@indelible.org>
-" Last Change:  2025 Nov 29
+" Last Change:  2025 Nov 30
 " Filenames:    *.xrl
 "
 " References:
@@ -31,7 +31,7 @@ syn match leexMacroRef "{\h\w*}" contained display
 " Rule definitions: <Regexp> : <Erlang code>.
 syn match leexRuleRegex "^\S.\{-}\ze\s*:" contained contains=leexRegexOperator,leexRegexDelimiter,leexRegexSpecial,leexRegexEscape,leexRegexRange,leexMacroRef nextgroup=leexRuleColon skipwhite display
 syn match leexRuleColon ":" contained nextgroup=leexRuleCode skipwhite skipnl display
-syn region leexRuleCode start="" end="\.$" contained contains=@leexErlang keepend skipnl skipwhite
+syn region leexRuleCode start="" end="\.\s*\%(%.*\)\?$" skip="^\s*%.*$" contained contains=@leexErlang keepend skipnl skipwhite
 
 " Sections
 syn match leexHeading "^\%(Definitions\|Rules\|Erlang code\)\.$" contained display
