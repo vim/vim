@@ -3072,6 +3072,8 @@ const ft_from_name = {
   ".editorconfig": "editorconfig",
   # Elinks configuration
   "elinks.conf": "elinks",
+  # Erlang
+  "rebar.config": "erlang",
   # Exim
   "exim.conf": "exim",
   # Exports
