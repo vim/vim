@@ -3414,6 +3414,7 @@ nv_K_getcmd(
 /*
  * Handle the commands that use the word under the cursor.
  * [g] CTRL-]	:ta to current identifier
+ * [g] CTRL-[	:ta to current identifier
  * [g] 'K'	run program for current identifier
  * [g] '*'	/ to current identifier or string
  * [g] '#'	? to current identifier or string
@@ -3437,7 +3438,7 @@ nv_ident(cmdarg_T *cap)
     int		tag_cmd = FALSE;
     char_u	*aux_ptr;
 
-    if (cap->cmdchar == 'g')	// "g*", "g#", "g]" and "gCTRL-]"
+    if (cap->cmdchar == 'g')	// "g*", "g#", "g]", "g[" and "gCTRL-]"
     {
 	cmdchar = cap->nchar;
 	g_cmd = TRUE;
@@ -3513,6 +3514,7 @@ nv_ident(cmdarg_T *cap)
 	    break;
 
 	case ']':
+	case '[':
 	    tag_cmd = TRUE;
 #ifdef FEAT_CSCOPE
 	    if (p_cst)

@@ -880,6 +880,18 @@ the buffer.  The result is that all buffers will use the 'encoding' encoding
 		Does ":tag[!] [tagname]" and splits the window for the found
 		tag.  See also |:tag|.
 
+CTRL-W [						*CTRL-W_[*
+		Vertical split current window in two.  Use identifier under
+		cursor as a tag and jump to it in the new window.  The
+		position of the new window depends on the value of
+		'splitright'. In Visual mode uses the Visually selected
+		text as a tag. Make new window N high.
+							*CTRL-W_g[*
+CTRL-W g [	Like |CTRL-W_]|, but vertical split current window in two.
+		Use identifier under cursor as a tag and perform ":tselect"
+		on it in the new window. In Visual mode uses the
+		Visually selected text as a tag. Make new window N high.
+
 CTRL-W ]					*CTRL-W_]* *CTRL-W_CTRL-]*
 CTRL-W CTRL-]	Split current window in two.  Use identifier under cursor as a
 		tag and jump to it in the new upper window.

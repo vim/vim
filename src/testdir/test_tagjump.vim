@@ -1670,4 +1670,77 @@ func Test_tag_excmd_with_number_vim9script()
   bwipe!
 endfunc
 
+func Test_tag_jump_split()
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "second\tXtpfile1\t2",
+        \ "third\tXtpfile1\t3",],
+        \ 'Xtags', 'D')
+  call writefile(['first', 'second', 'third'], 'Xtpfile1', 'D')
+  set tags=Xtags
+  let cwin = win_getid()
+  edit Xtpfile1
+  " vertical split at the left
+  call cursor(3, 1)
+  wincmd [
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, winwidth(new_win) < &columns)
+  call assert_equal(1, getwininfo(new_win)[0]['wincol'] == 1)
+
+  " vertical split at the right
+  wincmd p
+  only
+  set splitright
+  wincmd [
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, winwidth(new_win) < &columns)
+  call assert_equal(1, getwininfo(new_win)[0]['wincol'] > 1)
+
+  " vertical split with tselect
+  wincmd p
+  only
+  call feedkeys(":\<C-u>wincmd g[\<CR>1\<CR>", 'xt')
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, winwidth(new_win) < &columns)
+  call assert_equal(1, getwininfo(new_win)[0]['wincol'] > 1)
+
+  " split horizontally at the top
+  wincmd p
+  only
+  call feedkeys(":\<C-u>wincmd g]\<CR>1\<CR>", 'xt')
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, getwininfo(cwin)[0]['winrow'] > 1)
+
+  " split horizontally with tselect
+  wincmd p
+  only
+  wincmd ]
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, getwininfo(cwin)[0]['winrow'] > 1)
+
+  " split horizontally at the below
+  set splitbelow
+  wincmd p
+  only
+  wincmd ]
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, getwininfo(new_win)[0]['winrow'] > 1)
+
+  wincmd p
+  only
+  call feedkeys(":\<C-u>wincmd g]\<CR>1\<CR>", 'xt')
+  let new_win = win_getid()
+  call assert_equal(1, new_win > cwin)
+  call assert_equal(1, getwininfo(new_win)[0]['winrow'] > 1)
+
+  set tags&
+  set splitright&
+  set splitbelow&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

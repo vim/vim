@@ -226,6 +226,30 @@ swbuf_goto_win_with_buf(buf_T *buf)
     return wp;
 }
 
+static void do_tag_jump(
+    int		c1,
+    int		c2,
+    int		Prenum,
+    int		split_flags,
+    const int	*nchar UNUSED)
+{
+    // Keep visual mode, can select words to use as a tag.
+    postponed_split = Prenum ? Prenum : -1;
+    int saved_flags = postponed_split_flags;
+    postponed_split_flags = split_flags;
+#ifdef FEAT_QUICKFIX
+    if (nchar && *nchar != '}')
+	g_do_tagpreview = 0;
+#endif
+
+    // Execute the command right here, required when
+    // "wincmd ]" or "wincmd g}" was used in a function.
+    do_nv_ident(c1, c2);
+
+    postponed_split = 0;
+    postponed_split_flags = saved_flags;
+}
+
 /*
  * All CTRL-W window commands are handled here, called from normal_cmd().
  */
@@ -597,6 +621,10 @@ newwindow:
 #endif
 		win_setwidth(Prenum != 0 ? (int)Prenum : 9999);
 		break;
+    case '[':
+		CHECK_CMDWIN;
+		do_tag_jump(Ctrl_RSB, NUL, Prenum, WSP_VERT, NULL);
+		break;
 
 // jump to tag and split window if tag exists (in preview window)
 #if defined(FEAT_QUICKFIX)
@@ -611,20 +639,7 @@ newwindow:
     case ']':
     case Ctrl_RSB:
 		CHECK_CMDWIN;
-		// keep Visual mode, can select words to use as a tag
-		if (Prenum)
-		    postponed_split = Prenum;
-		else
-		    postponed_split = -1;
-#ifdef FEAT_QUICKFIX
-		if (nchar != '}')
-		    g_do_tagpreview = 0;
-#endif
-
-		// Execute the command right here, required when "wincmd ]"
-		// was used in a function.
-		do_nv_ident(Ctrl_RSB, NUL);
-		postponed_split = 0;
+		do_tag_jump(Ctrl_RSB, NUL, Prenum, 0, &nchar);
 		break;
 
 // edit file name under cursor in a new window
@@ -732,6 +747,10 @@ wingotofile:
 
 		switch (xchar)
 		{
+		    case '[':
+			do_tag_jump('g', xchar, Prenum, WSP_VERT, NULL);
+			break;
+
 #if defined(FEAT_QUICKFIX)
 		    case '}':
 			xchar = Ctrl_RSB;
@@ -743,16 +762,7 @@ wingotofile:
 			// FALLTHROUGH
 		    case ']':
 		    case Ctrl_RSB:
-			// keep Visual mode, can select words to use as a tag
-			if (Prenum)
-			    postponed_split = Prenum;
-			else
-			    postponed_split = -1;
-
-			// Execute the command right here, required when
-			// "wincmd g}" was used in a function.
-			do_nv_ident('g', xchar);
-			postponed_split = 0;
+			do_tag_jump('g', xchar, Prenum, 0, NULL);
 			break;
 
 		    case 'f':	    // CTRL-W gf: "gf" in a new tab page
