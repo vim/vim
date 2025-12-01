@@ -275,7 +275,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     elsa: ['file.lc'],
     elvish: ['file.elv'],
     epuppet: ['file.epp'],
-    erlang: ['file.erl', 'file.hrl', 'file.yaws', 'file.app.src', 'rebar.config'],
+    erlang: ['file.erl', 'file.hrl', 'file.yaws', 'rebar.config'],
     eruby: ['file.erb', 'file.rhtml'],
     esdl: ['file.esdl'],
     esmtprc: ['anyesmtprc', 'esmtprc', 'some-esmtprc'],
@@ -3201,6 +3201,39 @@ func Test_m4_format()
   bwipe!
 
   cd -
+  filetype off
+endfunc
+
+func Test_app_file()
+  filetype on
+
+  for extension in ['app', 'app.src']
+
+    call writefile(['% line comment', '{application, xfile,'], $'xfile.{extension}', 'D')
+    exe $'split xfile.{extension}'
+    call assert_equal('erlang', &filetype)
+    bwipe!
+
+    call writefile(['% line comment', "{application, 'Xfile',"], $'Xfile.{extension}', 'D')
+    exe $'split Xfile.{extension}'
+    call assert_equal('erlang', &filetype)
+    bwipe!
+
+    call writefile([' % line comment',
+          \ ' ',
+          \ ' % line comment',
+          \ ' { ',
+          \ ' % line comment ',
+          \ ' application , ',
+          \ ' % line comment ',
+          \ ' xfile , '],
+          \ $'xfile.{extension}', 'D')
+    exe $'split xfile.{extension}'
+    call assert_equal('erlang', &filetype)
+    bwipe!
+
+  endfor
+
   filetype off
 endfunc
 

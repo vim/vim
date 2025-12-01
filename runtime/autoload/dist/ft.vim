@@ -29,6 +29,28 @@ export def Check_inp()
   endif
 enddef
 
+export def FTapp()
+  if exists("g:filetype_app")
+    exe "setf " .. g:filetype_app
+    return
+  endif
+  # https://erlang.org/doc/system/applications
+  const pat = '^\s*{\s*application\s*,\s*\(''\=\)' .. expand("%:t:r:r") .. '\1\s*,'
+  var line: string
+  for lnum in range(1, min([line("$"), 100]))
+    line = getline(lnum)
+    # skip Erlang comments, might be something else
+    if line =~ '^\s*%' || line =~ '^\s*$'
+      continue
+    elseif line =~ '^\s*{' &&
+	getline(lnum, lnum + 9)->filter((_, v) => v !~ '^\s*%')->join(' ') =~# pat
+      setf erlang
+      return
+    endif
+    return
+  endfor
+enddef
+
 # This function checks for the kind of assembly that is wanted by the user, or
 # can be detected from the beginning of the file.
 export def FTasm()
