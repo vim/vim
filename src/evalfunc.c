@@ -204,6 +204,9 @@ static void f_tsparser_new(typval_T *argvars, typval_T *rettv);
 static void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
 static void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
 static void f_tstree_edit(typval_T *argvars, typval_T *rettv);
+static void f_tstree_root_node(typval_T *argvars, typval_T *rettv);
+static void f_tsnode_info(typval_T *argvars, typval_T *rettv);
+static void f_tsquery_new(typval_T *argvars, typval_T *rettv);
 #endif
 
 
@@ -1274,6 +1277,7 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
+static argcheck_T arg1_tsobject[] = {arg_tsobject};
 static argcheck_T arg2_tsobject_string[] = {arg_tsobject, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
@@ -3168,14 +3172,20 @@ static const funcentry_T global_functions[] =
 			ret_float,	    f_trunc},
     {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
 			ret_void,	    TS_FUNC(f_ts_load)},
+    {"tsnode_info",	1, 1, FEARG_1,	    arg1_tsobject,
+			ret_dict_any,	    TS_FUNC(f_tsnode_info)},
     {"tsparser_new",	0, 0, 0,	    NULL,
 			ret_tsobject,	    TS_FUNC(f_tsparser_new)},
     {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsobject_buffer_number_tsobject,
 			ret_tsobject,	    TS_FUNC(f_tsparser_parse_buf)},
     {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsobject_string,
 			ret_void,	    TS_FUNC(f_tsparser_set_language)},
+    {"tsquery_new",	2, 2, 0,	    arg2_string,
+			ret_tsobject,	    TS_FUNC(f_tsquery_new)},
     {"tstree_edit",	7, 7, FEARG_1,	    arg7_tsobject_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
+    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tsobject,
+			ret_tsobject,	    TS_FUNC(f_tstree_root_node)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
@@ -13007,6 +13017,58 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv)
 		argvars[3].vval.v_number,
 		p[0], p[1], p[2]);
     }
+}
+
+    static void
+f_tstree_root_node(typval_T *argvars, typval_T *rettv)
+{
+    tsobject_T *res;
+
+    if (in_vim9script() && check_for_tsobject_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_tree) == FAIL)
+	return;
+
+    res = tstree_root_node(argvars[0].vval.v_tsobject);
+
+    if (res == NULL)
+	return;
+
+    rettv->v_type = VAR_TSOBJECT;
+    rettv->vval.v_tsobject = res;
+}
+
+    static void
+f_tsnode_info(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script() && check_for_tsobject_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_node) == FAIL)
+	return;
+
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = tsnode_info(argvars[0].vval.v_tsobject);
+}
+
+    static void
+f_tsquery_new(typval_T *argvars, typval_T *rettv)
+{
+    tsobject_T *res;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    res = tsquery_new(argvars[0].vval.v_string, argvars[1].vval.v_string);
+
+    if (res == NULL)
+	return;
+
+    rettv->v_type = VAR_TSOBJECT;
+    rettv->vval.v_tsobject = res;
 }
 
 #endif
