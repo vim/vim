@@ -2716,10 +2716,12 @@ executable({expr})					*executable()*
 		executable is always found.  Since this directory is added to
 		$PATH it should also work to execute it |win32-PATH|.
 					*NoDefaultCurrentDirectoryInExePath*
-		On MS-Windows an executable in Vim's current working directory
-		is also normally found, but this can be disabled by setting
-		the `$NoDefaultCurrentDirectoryInExePath` environment variable.
-		This is always done for |:!| commands, for security reasons.
+		On MS-Windows when using cmd.exe as 'shell' an executable in
+		Vim's current working directory is also normally found, which
+		can be disabled by setting the
+		`$NoDefaultCurrentDirectoryInExePath` environment variable.
+		This is always done when executing external commands using
+		e.g. |:!|, |:make|, |system()| for security reasons.
 
 		The result is a Number:
 			1	exists
