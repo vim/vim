@@ -5,7 +5,6 @@ Look in the file for hints on how it can be disabled without deleting it.
 
 getscriptPlugin.vim  get latest version of Vim scripts
 gzip.vim	     edit compressed files
-helpcurwin.vim	     open help in the current window
 logiPat.vim	     logical operators on patterns
 manpager.vim	     using Vim as manpager
 matchparen.vim	     highlight paren matching the one under the cursor

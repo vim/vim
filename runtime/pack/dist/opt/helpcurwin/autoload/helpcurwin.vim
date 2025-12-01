@@ -3,8 +3,7 @@ vim9script
 # Open Vim help on {subject} in the current window (rather than a new split)
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last change:  2025 Nov 30
-# Usage:        :help pi_helpcurwin.txt
+# Last change:  2025 Dec 02
 
 export def Open(subject: string): void
 
@@ -21,21 +20,21 @@ export def Open(subject: string): void
   var contmod: bool = true
   if &modified
     echohl MoreMsg
-    echo $"Buffer {bufname()} is modified - continue? (y/n)"
+    echo $'Buffer {bufname()} is modified - continue? (y/n)'
     echohl None
-    contmod = getcharstr() == 'y' ? true : false
+    contmod = (getcharstr() == 'y')
   endif
   if contmod
     try
       execute HELPCURWIN()
     catch
       echohl Error
-      # {subject} isn't valid.  Echo 'helpcurwin: E149:' (w/o 'Vim(help):')
-      echo $"helpcurwin: {v:exception->substitute('^[^:]\+:', '', '')}"
+      # {subject} invalid - Echo 'helpcurwin: E149:' (omit 'Vim(help):')
+      echo $'helpcurwin: {v:exception->substitute("^[^:]\+:", "", "")}'
       echohl None
     endtry
   else
-    echo $"Aborted opening in current window, :help {subject}"
+    echo $'Aborted opening in current window, :help {subject}'
   endif
 
 enddef

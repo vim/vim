@@ -2194,7 +2194,6 @@ $quote	eval.txt	/*$quote*
 :GnatFind	ft_ada.txt	/*:GnatFind*
 :GnatPretty	ft_ada.txt	/*:GnatPretty*
 :GnatTags	ft_ada.txt	/*:GnatTags*
-:HelpCurwin	pi_helpcurwin.txt	/*:HelpCurwin*
 :HelpToc	helphelp.txt	/*:HelpToc*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
 :Justify	usr_25.txt	/*:Justify*
@@ -8310,7 +8309,6 @@ help	helphelp.txt	/*help*
 help-TOC	helphelp.txt	/*help-TOC*
 help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
-help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
@@ -8319,9 +8317,6 @@ help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
-helpcurwin-command	pi_helpcurwin.txt	/*helpcurwin-command*
-helpcurwin-function	pi_helpcurwin.txt	/*helpcurwin-function*
-helpcurwin-mapping	pi_helpcurwin.txt	/*helpcurwin-mapping*
 helphelp	helphelp.txt	/*helphelp*
 helphelp.txt	helphelp.txt	/*helphelp.txt*
 hex-editing	tips.txt	/*hex-editing*
@@ -9626,6 +9621,7 @@ package-create	repeat.txt	/*package-create*
 package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
 package-editorconfig	usr_05.txt	/*package-editorconfig*
+package-helpcurwin	tips.txt	/*package-helpcurwin*
 package-helptoc	helphelp.txt	/*package-helptoc*
 package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
@@ -9709,7 +9705,6 @@ php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
-pi_helpcurwin.txt	pi_helpcurwin.txt	/*pi_helpcurwin.txt*
 pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*

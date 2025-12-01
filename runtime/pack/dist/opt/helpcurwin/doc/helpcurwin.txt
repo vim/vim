@@ -1,18 +1,11 @@
-*pi_helpcurwin.txt*	For Vim version 9.1.	Last change: 2025 Nov 30
+*helpcurwin.txt*	For Vim version 9.1.	Last change: 2025 Dec 02
 
-The helpcurwin |standard-plugin| enables opening help in the current window.
+The helpcurwin optional package enables opening help in the current window.
 
 1. :HelpCurwin			|helpcurwin-command|
 2. helpcurwin#Open()		|helpcurwin-function|
 3. <Plug>HelpCurwin;		|helpcurwin-mapping|
 
-This plugin is only available if 'compatible' is not set.
-You can avoid loading this plugin by setting the "g:loaded_helpcurwin"
-variable: >vim9
-
-	vim9script
-	g:loaded_helpcurwin = true
-<
 
 ==============================================================================
 1. :HelpCurwin				     *:HelpCurwin* *helpcurwin-command*
@@ -31,9 +24,10 @@ variable: >vim9
 			It should otherwise behave like :help {subject}.
 
 You may also want to save typing with a command line abbreviation,
-for example: >vim9
+for example: >vi
 
-	cnoreabbrev hc HelpCurwin
+  cnoreabbrev <expr> hc getcmdtype() == ":" &&
+    \ getcmdline() == 'hc' ? 'HelpCurwin' : 'hc'
 <
 
 ==============================================================================

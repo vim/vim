@@ -3,11 +3,10 @@ vim9script
 # Open Vim help on {subject} in the current window (rather than a new split)
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last change:  2025 Nov 30
-# Usage:        :help pi_helpcurwin.txt
+# Last change:  2025 Dec 02
 
-# Exit when the helpcurwin plugin is either already loaded or disabled
-if exists("g:loaded_helpcurwin")
+# Exit when the helpcurwin plugin is loaded already
+if exists('g:loaded_helpcurwin')
   finish
 endif
 g:loaded_helpcurwin = true
