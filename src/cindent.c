@@ -2076,16 +2076,30 @@ find_match(int lookfor, linenr_T ourscope)
 	    if (theirscope->lnum > ourscope)
 		continue;
 
-	    // if it was an "else" (that's not an "else if")
-	    // then we need to go back to another if, so
-	    // increment elselevel
 	    look = cin_skipcomment(ml_get_curline());
-	    if (cin_iselse(look))
+	    // When looking for if, we ignore "if" and "else" in a deeper do-while loop.
+	    if (!(lookfor == LOOKFOR_IF && whilelevel))
 	    {
-		mightbeif = cin_skipcomment(look + 4);
-		if (!cin_isif(mightbeif))
-		    ++elselevel;
-		continue;
+		// if it was an "else" (that's not an "else if")
+		// then we need to go back to another if, so
+		// increment elselevel
+		if (cin_iselse(look))
+		{
+		    mightbeif = cin_skipcomment(look + 4);
+		    if (!cin_isif(mightbeif))
+			++elselevel;
+		    continue;
+		}
+
+		// If it's an "if" decrement elselevel
+		if (cin_isif(look))
+		{
+		    elselevel--;
+		    // When looking for an "if" ignore "while"s that
+		    // get in the way.
+		    if (elselevel == 0 && lookfor == LOOKFOR_IF)
+			whilelevel = 0;
+		}
 	    }
 
 	    // if it was a "while" then we need to go back to
@@ -2094,17 +2108,6 @@ find_match(int lookfor, linenr_T ourscope)
 	    {
 		++whilelevel;
 		continue;
-	    }
-
-	    // If it's an "if" decrement elselevel
-	    look = cin_skipcomment(ml_get_curline());
-	    if (cin_isif(look))
-	    {
-		elselevel--;
-		// When looking for an "if" ignore "while"s that
-		// get in the way.
-		if (elselevel == 0 && lookfor == LOOKFOR_IF)
-		    whilelevel = 0;
 	    }
 
 	    // If it's a "do" decrement whilelevel
