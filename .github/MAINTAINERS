@@ -378,6 +378,7 @@ runtime/indent/kdl.vim					@imsnif @jiangyinzuo
 runtime/indent/kotlin.vim				@udalov
 runtime/indent/krl.vim					@KnoP-01
 runtime/indent/ld.vim					@dkearns
+runtime/indent/lf.vim					@andis-sprinkis
 runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
 runtime/indent/lua.vim					@marcuscf
