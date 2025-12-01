@@ -3828,4 +3828,6 @@ EXTERN char e_tsobject_str_required_for_argument_nr[]
 	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
 EXTERN char e_tuple_is_not_of_numbers[]
 	INIT(= N_("E1574: Tuple given is not of type <number, number>"));
+EXTERN char e_tsquery_error[]
+	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
 #endif
