@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Nov 30
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2381,8 +2381,8 @@ v:echospace	Number of screen cells that can be used for an `:echo` message
 		available above the last line.
 
 					*v:errmsg* *errmsg-variable*
-v:errmsg	Last given error message.  It's allowed to set this variable.
-		Example: >
+v:errmsg	Last error message that occurred (not neccessarily displayed).
+		It's allowed to set this variable.  Example: >
 	:let v:errmsg = ""
 	:silent! next
 	:if v:errmsg != ""
