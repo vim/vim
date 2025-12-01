@@ -20,6 +20,7 @@ int dict_add_bool(dict_T *d, char *key, varnumber_T nr);
 int dict_add_string(dict_T *d, char *key, char_u *str);
 int dict_add_string_len(dict_T *d, char *key, char_u *str, int len);
 int dict_add_list(dict_T *d, char *key, list_T *list);
+int dict_add_tuple(dict_T *d, char *key, tuple_T *list);
 int dict_add_tv(dict_T *d, char *key, typval_T *tv);
 int dict_add_callback(dict_T *d, char *key, callback_T *cb);
 int dict_add_func(dict_T *d, char *key, ufunc_T *fp);

@@ -34,8 +34,7 @@
 // Buffer size to use when parsing
 #define TSVIM_BUFSIZE 256
 
-// This is not exposed in vimscript. It is held internally in a hash table to be
-// used as needed.
+// Represents a loaded TSLanguage object, that is identified with a name.
 typedef struct
 {
     HANDLE		dll;
@@ -50,7 +49,10 @@ typedef enum
 {
     TSOBJECT_TYPE_PARSER,
     TSOBJECT_TYPE_TREE,
-    TSOBJECT_TYPE_NODE
+    TSOBJECT_TYPE_NODE,
+    TSOBJECT_TYPE_QUERY,
+    TSOBJECT_TYPE_QUERYCURSOR,
+    TSOBJECT_TYPE_QUERYMATCH,
 } tsobject_type_T;
 
 struct tsobject_S
@@ -59,9 +61,12 @@ struct tsobject_S
     tsobject_type_T to_type;
     union
     {
-	TSParser    *to_parser;
-	TSTree	    *to_tree;
-	TSNode	    to_node;
+	TSParser	*to_parser;
+	TSTree	    	*to_tree;
+	TSNode	    	to_node;
+	TSQuery		*to_query;
+	TSQueryCursor   *to_querycursor;
+	TSQueryMatch	to_querymatch;
     };
 };
 
@@ -197,6 +202,17 @@ tsobject_free(tsobject_T *obj)
 	    break;
 	case TSOBJECT_TYPE_NODE:
 	    break;
+	case TSOBJECT_TYPE_QUERY:
+	    if (obj->to_query != NULL)
+		ts_query_delete(obj->to_query);
+	    break;
+	case TSOBJECT_TYPE_QUERYCURSOR:
+	    if (obj->to_querycursor != NULL)
+		ts_query_cursor_delete(obj->to_querycursor);
+	    break;
+	case TSOBJECT_TYPE_QUERYMATCH:
+	    break;
+
     }
     vim_free(obj);
 }
@@ -222,6 +238,12 @@ tsobject_equal(tsobject_T *a, tsobject_T *b)
 	    return a->to_tree == b->to_tree;
 	case TSOBJECT_TYPE_NODE:
 	    return ts_node_eq(a->to_node, b->to_node);
+	case TSOBJECT_TYPE_QUERY:
+	    return a->to_query == b->to_query;
+	case TSOBJECT_TYPE_QUERYCURSOR:
+	    return a->to_querycursor == b->to_querycursor;
+	case TSOBJECT_TYPE_QUERYMATCH:
+	    return false;
     }
     return false;
 }
@@ -240,6 +262,12 @@ tsobject_get_name(tsobject_T *obj)
 	    return (char_u *)"TSTree";
 	case TSOBJECT_TYPE_NODE:
 	    return (char_u *)"TSNode";
+	case TSOBJECT_TYPE_QUERY:
+	    return (char_u *)"TSQuery";
+	case TSOBJECT_TYPE_QUERYCURSOR:
+	    return (char_u *)"TSQueryCursor";
+	case TSOBJECT_TYPE_QUERYMATCH:
+	    return (char_u *)"TSQueryMatch";
     }
     return (char_u *)"";
 }
@@ -268,6 +296,24 @@ tsobject_is_node(tsobject_T *obj)
     return obj->to_type == TSOBJECT_TYPE_NODE;
 }
 
+    bool
+tsobject_is_query(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_QUERY;
+}
+
+    bool
+tsobject_is_querycursor(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_QUERYCURSOR;
+}
+
+    bool
+tsobject_is_querymatch(tsobject_T *obj)
+{
+    return obj->to_type == TSOBJECT_TYPE_QUERYMATCH;
+}
+
     int
 check_tsobject_type_arg(
 	typval_T *args,
@@ -284,6 +330,49 @@ check_tsobject_type_arg(
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Create a tuple that represents a TSPoint. Returns NULL on failure.
+ */
+    static tuple_T *
+tspoint_to_tuple(TSPoint point)
+{
+    typval_T	*row, *column;
+    tuple_T	*t = tuple_alloc_with_items(2);
+
+    if (t == NULL)
+	return NULL;
+
+    if ((row = alloc_tv()) == NULL)
+    {
+	tuple_free(t);
+	return NULL;
+    }
+    if ((column = alloc_tv()) == NULL)
+    {
+	free_tv(row);
+	tuple_free(t);
+	return NULL;
+    }
+
+    tuple_set_item(t, 0, row);
+    tuple_set_item(t, 1, column);
+    t->tv_refcount++;
+
+    return t;
+}
+
+    static TSVimLanguage *
+get_language(char_u *language)
+{
+    hashitem_T *hi = hash_find(&languages, language);
+
+    if (!HASHITEM_EMPTY(hi))
+	return HI2LANG(hi);
+    else
+	semsg(_(e_treesitter_lang_not_loaded), language);
+    return NULL;
 }
 
 /*
@@ -313,15 +402,10 @@ tsparser_new(void)
     void
 tsparser_set_language(tsobject_T *parser, char_u *language)
 {
-    hashitem_T *hi = hash_find(&languages, language);
+    TSVimLanguage *lang = get_language(language);
 
-    if (!HASHITEM_EMPTY(hi))
-    {
-	TSVimLanguage *lang = HI2LANG(hi);
+    if (lang != NULL)
 	ts_parser_set_language(parser->to_parser, lang->lang);
-    }
-    else
-	emsg(_(e_treesitter_lang_not_loaded));
 }
 
 #ifdef ELAPSED_FUNC
@@ -495,6 +579,151 @@ tstree_edit(
     edit.new_end_point.column = new_end_point[1];
 
     ts_tree_edit(tree->to_tree, &edit);
+}
+
+/*
+ * Return the root node of the tree. Returns NULL on failure.
+ */
+    tsobject_T *
+tstree_root_node(tsobject_T *tree)
+{
+    tsobject_T *obj = tsobject_new(TSOBJECT_TYPE_NODE);
+
+    if (obj == NULL)
+	return NULL;
+
+    obj->to_node = ts_tree_root_node(tree->to_tree);
+    return obj;
+}
+
+/*
+ * Return a dictionary describing the node, returns NULL on failure. The
+ * following entries that will be in the dictionary are:
+ *
+ * "kkkkkkkk
+ */
+    dict_T *
+tsnode_info(tsobject_T *node_obj)
+{
+    TSNode node = node_obj->to_node;
+    dict_T *dict = dict_alloc();
+
+    if (dict == NULL)
+	return NULL;
+
+    else if (dict_add_string(dict, "id", (char_u *)node.id) == FAIL)
+	goto fail;
+    if (dict_add_string(dict, "type", (char_u *)ts_node_type(node)) == FAIL)
+	goto fail;
+    else if (dict_add_string(dict, "grammar_type",
+		(char_u *)ts_node_grammar_type(node)) == FAIL)
+	goto fail;
+    else if (dict_add_number(dict, "start_byte", ts_node_start_byte(node)) == FAIL)
+	goto fail;
+    else if (dict_add_tuple(dict, "start",
+		tspoint_to_tuple(ts_node_start_point(node))) == FAIL)
+	goto fail;
+    else if (dict_add_number(dict, "end_byte", ts_node_end_byte(node)) == FAIL)
+	goto fail;
+    else if (dict_add_tuple(dict, "end",
+		tspoint_to_tuple(ts_node_end_point(node))) == FAIL)
+	goto fail;
+
+    dict->dv_refcount++;
+    return dict;
+fail:
+    dict_unref(dict);
+    return NULL;
+}
+
+    static char_u *
+query_error_to_string(TSQueryError error)
+{
+    // Copied from Neovim
+    switch (error)
+    {
+	case TSQueryErrorSyntax:
+	    return (char_u *)"Invalid syntax";
+	case TSQueryErrorNodeType:
+	    return (char_u *)"Invalid node type";
+	case TSQueryErrorField:
+	    return (char_u *)"Invalid field name";
+	case TSQueryErrorCapture:
+	    return (char_u *)"Invalid capture name";
+	case TSQueryErrorStructure:
+	    return (char_u *)"Impossible pattern";
+	default:
+	    return (char_u *)"Error";
+    }
+}
+
+    static void
+query_do_error_message(char_u *str, uint32_t offset, TSQueryError error)
+{
+    // Copied from Neovim (mostly)
+    int	    line_start = 0;
+    int	    row = 0;
+    int	    column;
+    char_u  *end_str;
+    char_u  *msg;
+
+    do {
+	char_u *src_tmp = str + line_start;
+
+	int line_length;
+	int line_end;
+
+	end_str = vim_strchr(src_tmp, '\n');
+	line_length = end_str != NULL ? (int)(end_str - src_tmp) : STRLEN(src_tmp);
+	line_end = line_start + line_length;
+
+	if (line_end > offset)
+	    break;
+
+	line_start = line_end + 1;
+	row++;
+    } while (end_str != NULL);
+
+    column = offset - line_start;
+    msg = query_error_to_string(error);
+    semsg(_(e_tsquery_error), row, column, msg);
+}
+
+/*
+ * Create a new TSQuery object using the given string. Returns NULL on failure.
+ */
+    tsobject_T *
+tsquery_new(char_u *language, char_u *query_str)
+{
+    TSVimLanguage   *lang = get_language(language);
+    TSQuery	    *query;
+    uint32_t	    error_offset;
+    TSQueryError    error_type;
+    tsobject_T	    *obj;
+
+    if (lang == NULL)
+	return NULL;
+
+    query = ts_query_new(lang->lang, (char *)query_str,
+	    STRLEN(query_str), &error_offset, &error_type);
+
+    if (query == NULL)
+    {
+	query_do_error_message(query_str, error_offset, error_type);
+	return NULL;
+    }
+
+    obj = tsobject_new(TSOBJECT_TYPE_QUERY);
+
+    if (obj == NULL)
+    {
+	ts_query_delete(query);
+	return NULL;
+    }
+
+    obj->to_query = query;
+
+    return obj;
 }
 
 #endif // FEAT_TREESITTER

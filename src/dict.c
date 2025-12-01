@@ -494,6 +494,29 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 }
 
 /*
+ * Add a tuple entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_tuple(dict_T *d, char *key, tuple_T *tuple)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_type = VAR_TUPLE;
+    item->di_tv.vval.v_tuple = tuple;
+    ++tuple->tv_refcount;
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Add a typval_T entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
