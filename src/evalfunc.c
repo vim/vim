@@ -1008,12 +1008,12 @@ arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
- * Check "type" is a string.
+ * Check "type" is an opaque.
  */
     static int
-arg_tsobject(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_opaque(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    return check_arg_type(&t_tsobject, type, context);
+    return check_arg_type(&t_opaque, type, context);
 }
 
 /*
@@ -1277,8 +1277,8 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
-static argcheck_T arg1_tsobject[] = {arg_tsobject};
-static argcheck_T arg2_tsobject_string[] = {arg_tsobject, arg_string};
+static argcheck_T arg1_opaque[] = {arg_opaque};
+static argcheck_T arg2_opaque_string[] = {arg_opaque, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1349,7 +1349,7 @@ static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, a
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_tsobject_buffer_number_tsobject[] = {arg_tsobject, arg_buffer, arg_number, arg_tsobject};
+static argcheck_T arg4_opaque_buffer_number_opaque[] = {arg_opaque, arg_buffer, arg_number, arg_opaque};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -1406,7 +1406,7 @@ static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
-static argcheck_T arg7_tsobject_3number_3tuple[] = {arg_tsobject, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
+static argcheck_T arg7_opaque_3number_3tuple[] = {arg_opaque, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
 
 // Can be used by functions called through "f_retfunc" to create new types.
 static garray_T *current_type_gap = NULL;
@@ -1600,13 +1600,6 @@ ret_job(int argcount UNUSED,
 	type_T	**decl_type UNUSED)
 {
     return &t_job;
-}
-    static type_T *
-ret_tsobject(int argcount UNUSED,
-	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
-{
-    return &t_tsobject;
 }
     static type_T *
 ret_first_arg(int argcount,
@@ -3139,8 +3132,6 @@ static const funcentry_T global_functions[] =
 			ret_func_any,	    f_test_null_partial},
     {"test_null_string", 0, 0, 0,	    NULL,
 			ret_string,	    f_test_null_string},
-    {"test_null_tsobject", 0, 0, 0,	    NULL,
-			ret_tsobject,	    TS_FUNC(f_test_null_tsobject)},
     {"test_null_tuple",	0, 0, 0,	    NULL,
 			ret_tuple_any,	    f_test_null_tuple},
     {"test_opaque",	2, 2, 0,	    arg2_string_number,
@@ -3183,20 +3174,20 @@ static const funcentry_T global_functions[] =
 			ret_float,	    f_trunc},
     {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
 			ret_void,	    TS_FUNC(f_ts_load)},
-    {"tsnode_info",	1, 1, FEARG_1,	    arg1_tsobject,
+    {"tsnode_info",	1, 1, FEARG_1,	    arg1_opaque,
 			ret_dict_any,	    TS_FUNC(f_tsnode_info)},
     {"tsparser_new",	0, 0, 0,	    NULL,
-			ret_tsobject,	    TS_FUNC(f_tsparser_new)},
-    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsobject_buffer_number_tsobject,
-			ret_tsobject,	    TS_FUNC(f_tsparser_parse_buf)},
-    {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsobject_string,
+			ret_opaque,	    TS_FUNC(f_tsparser_new)},
+    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_opaque_buffer_number_opaque,
+			ret_opaque,	    TS_FUNC(f_tsparser_parse_buf)},
+    {"tsparser_set_language", 2, 2, FEARG_1, arg2_opaque_string,
 			ret_void,	    TS_FUNC(f_tsparser_set_language)},
     {"tsquery_new",	2, 2, 0,	    arg2_string,
-			ret_tsobject,	    TS_FUNC(f_tsquery_new)},
-    {"tstree_edit",	7, 7, FEARG_1,	    arg7_tsobject_3number_3tuple,
+			ret_opaque,	    TS_FUNC(f_tsquery_new)},
+    {"tstree_edit",	7, 7, FEARG_1,	    arg7_opaque_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
-    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tsobject,
-			ret_tsobject,	    TS_FUNC(f_tstree_root_node)},
+    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_opaque,
+			ret_opaque,	    TS_FUNC(f_tstree_root_node)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
@@ -4523,11 +4514,6 @@ f_empty(typval_T *argvars, typval_T *rettv)
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
 #endif
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    n = argvars[0].vval.v_tsobject == NULL;
-#endif
-	    break;
 	case VAR_OPAQUE:
 	    n = argvars[0].vval.v_opaque == NULL;
 	    break;
@@ -8955,7 +8941,6 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_TSOBJECT:
 	case VAR_OPAQUE:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
@@ -12706,7 +12691,6 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
-	case VAR_TSOBJECT: n = VAR_TYPE_TSOBJECT; break;
 	case VAR_OPAQUE:   n = VAR_TYPE_OPAQUE; break;
 	case VAR_CLASS:
 	    {
@@ -12920,28 +12904,27 @@ f_ts_load(typval_T *argvars, typval_T *rettv)
     static void
 f_tsparser_new(typval_T *argvars, typval_T *rettv)
 {
-    tsobject_T *obj = tsparser_new();
+    opaque_T *op = tsparser_new();
 
-    if (obj == NULL)
+    if (op == NULL)
 	return;
 
-    rettv->v_type = VAR_TSOBJECT;
-    rettv->vval.v_tsobject = obj;
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
 }
 
     static void
 f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script()
-	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+	    && (check_for_opaque_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
 
-    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_parser) == FAIL)
+    if (check_for_opaque_type_arg(argvars, 0, TSPARSER) == FAIL)
 	return;
 
-    tsparser_set_language(argvars[0].vval.v_tsobject,
-	    argvars[1].vval.v_string);
+    tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
 
 }
 
@@ -12949,40 +12932,38 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script()
-	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+	    && (check_for_opaque_arg(argvars, 0) == FAIL
 		|| check_for_buffer_arg(argvars, 1) == FAIL
 		|| check_for_number_arg(argvars, 2) == FAIL
-		|| check_for_opt_tsobject_arg(argvars, 3) == FAIL))
+		|| check_for_opt_opaque_arg(argvars, 3) == FAIL))
 	return;
 
-    if (check_tsobject_type_arg(argvars, 0,
-		false, tsobject_is_parser) == FAIL
-	    || check_tsobject_type_arg(argvars, 3,
-		true, tsobject_is_tree) == FAIL)
+    if (check_for_opaque_type_arg(argvars, 0, TSPARSER) == FAIL
+	    || check_for_opt_opaque_type_arg(argvars, 3, TSTREE) == FAIL)
 	return;
 
     {
 	buf_T *buf = get_buf_arg(argvars + 1);
-	tsobject_T *res;
+	opaque_T *res;
 
 	if (buf == NULL)
 	    return;
 
 	res = tsparser_parse_buf(
-		argvars[0].vval.v_tsobject,
+		argvars[0].vval.v_opaque,
 		argvars[3].v_type == VAR_UNKNOWN
-		? NULL : argvars[3].vval.v_tsobject,
+		? NULL : argvars[3].vval.v_opaque,
 		buf, argvars[2].vval.v_number);
 
 	if (res == NULL)
 	{
-	    rettv->v_type = VAR_TSOBJECT;
-	    rettv->vval.v_tsobject = NULL;
+	    rettv->v_type = VAR_OPAQUE;
+	    rettv->vval.v_opaque = NULL;
 	    return;
 	}
 
-	rettv->v_type = VAR_TSOBJECT;
-	rettv->vval.v_tsobject = res;
+	rettv->v_type = VAR_OPAQUE;
+	rettv->vval.v_opaque = res;
     }
 }
 
@@ -12990,7 +12971,7 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 f_tstree_edit(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script()
-	    && (check_for_tsobject_arg(argvars, 0) == FAIL
+	    && (check_for_opaque_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL
 		|| check_for_number_arg(argvars, 2) == FAIL
 		|| check_for_number_arg(argvars, 3) == FAIL
@@ -12999,7 +12980,7 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv)
 		|| check_for_tuple_arg(argvars, 6) == FAIL))
 	return;
 
-    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_tree) == FAIL)
+    if (check_for_opaque_type_arg(argvars, 0, TSTREE) == FAIL)
 	return;
 
     {
@@ -13027,7 +13008,7 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv)
 	}
 
 	tstree_edit(
-		argvars[0].vval.v_tsobject,
+		argvars[0].vval.v_opaque,
 		argvars[1].vval.v_number,
 		argvars[2].vval.v_number,
 		argvars[3].vval.v_number,
@@ -13038,40 +13019,40 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv)
     static void
 f_tstree_root_node(typval_T *argvars, typval_T *rettv)
 {
-    tsobject_T *res;
+    opaque_T *res;
 
-    if (in_vim9script() && check_for_tsobject_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
 	return;
 
-    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_tree) == FAIL)
+    if (check_for_opaque_type_arg(argvars, 0, TSTREE) == FAIL)
 	return;
 
-    res = tstree_root_node(argvars[0].vval.v_tsobject);
+    res = tstree_root_node(argvars[0].vval.v_opaque);
 
     if (res == NULL)
 	return;
 
-    rettv->v_type = VAR_TSOBJECT;
-    rettv->vval.v_tsobject = res;
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
 }
 
     static void
 f_tsnode_info(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_tsobject_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
 	return;
 
-    if (check_tsobject_type_arg(argvars, 0, false, tsobject_is_node) == FAIL)
+    if (check_for_opaque_type_arg(argvars, 0, TSNODE) == FAIL)
 	return;
 
     rettv->v_type = VAR_DICT;
-    rettv->vval.v_dict = tsnode_info(argvars[0].vval.v_tsobject);
+    rettv->vval.v_dict = tsnode_info(argvars[0].vval.v_opaque);
 }
 
     static void
 f_tsquery_new(typval_T *argvars, typval_T *rettv)
 {
-    tsobject_T *res;
+    opaque_T *res;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -13083,8 +13064,8 @@ f_tsquery_new(typval_T *argvars, typval_T *rettv)
     if (res == NULL)
 	return;
 
-    rettv->v_type = VAR_TSOBJECT;
-    rettv->vval.v_tsobject = res;
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
 }
 
 #endif

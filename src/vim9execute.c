@@ -4000,7 +4000,6 @@ exec_instructions(ectx_T *ectx)
 			{
 			    if (tv->v_type == VAR_CHANNEL
 						      || tv->v_type == VAR_JOB
-						      || tv->v_type == VAR_TSOBJECT
 						      || tv->v_type == VAR_OPAQUE)
 			    {
 				SOURCING_LNUM = iptr->isn_lnum;
@@ -4644,7 +4643,6 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHJOB:
 	    case ISN_PUSHOBJ:
 	    case ISN_PUSHCLASS:
-	    case ISN_PUSHTSOBJECT:
 	    case ISN_PUSHOPAQUE:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
@@ -4699,12 +4697,6 @@ exec_instructions(ectx_T *ectx)
 		    case ISN_PUSHCLASS:
 			tv->v_type = VAR_CLASS;
 			tv->vval.v_class = iptr->isn_arg.classarg;
-			break;
-		    case ISN_PUSHTSOBJECT:
-#ifdef FEAT_TREESITTER
-			tv->v_type = VAR_TSOBJECT;
-			tv->vval.v_tsobject = NULL;
-#endif
 			break;
 		    case ISN_PUSHOPAQUE:
 			tv->v_type = VAR_OPAQUE;
@@ -5566,7 +5558,6 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREBLOB:
 	    case ISN_COMPAREOBJECT:
-	    case ISN_COMPARETSOBJECT:
 	    case ISN_COMPAREOPAQUE:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
@@ -5605,11 +5596,6 @@ exec_instructions(ectx_T *ectx)
 		    else if (iptr->isn_type == ISN_COMPAREBLOB)
 		    {
 			status = typval_compare_blob(tv1, tv2, exprtype, &res);
-		    }
-		    else if (iptr->isn_type == ISN_COMPARETSOBJECT)
-		    {
-			status = typval_compare_tsobject(tv1, tv2,
-							exprtype, ic, &res);
 		    }
 		    else if (iptr->isn_type == ISN_COMPAREOPAQUE)
 		    {
@@ -7455,11 +7441,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);
 		break;
-	    case ISN_PUSHTSOBJECT:
-#ifdef FEAT_TREESITTER
-		smsg("%s%4d PUSHTSOBJECT null", pfx, current);
-#endif
-		break;
 	    case ISN_PUSHOPAQUE:
 		smsg("%s%4d PUSHOPAQUE null", pfx, current);
 		break;
@@ -7791,7 +7772,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREOBJECT:
-	    case ISN_COMPARETSOBJECT:
 	    case ISN_COMPAREOPAQUE:
 	    case ISN_COMPAREANY:
 		   {
@@ -7833,8 +7813,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
 			   case ISN_COMPAREOBJECT:
 						 type = "COMPAREOBJECT"; break;
-			   case ISN_COMPARETSOBJECT:
-						 type = "COMPARETSOBJECT"; break;
 			   case ISN_COMPAREOPAQUE: type = "COMPAREOPAQUE"; break;
 			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
 			   default: type = "???"; break;
@@ -8160,12 +8138,6 @@ tv2bool(typval_T *tv)
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
 	    return tv->vval.v_channel != NULL;
-#else
-	    break;
-#endif
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    return tv->vval.v_tsobject != NULL;
 #else
 	    break;
 #endif

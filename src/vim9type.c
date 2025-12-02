@@ -47,11 +47,28 @@ get_type_ptr(garray_T *type_gap)
     type_T *
 copy_type(type_T *type, garray_T *type_gap)
 {
-    type_T *copy = get_type_ptr(type_gap);
+    type_T  *copy;
+    char_u  *optype = NULL;
+    bool    isstatic = type->tt_flags & TTFLAG_OPTYPE_STATIC;
 
+    if (type->tt_optype != NULL && !isstatic)
+    {
+	optype = vim_strsave(type->tt_optype);
+
+	if (optype == NULL)
+	    return type;
+    }
+    copy = get_type_ptr(type_gap);
     if (copy == NULL)
+    {
+	if (!isstatic)
+	    vim_free(optype);
 	return type;
+    }
+
     *copy = *type;
+    if (!isstatic)
+	copy->tt_optype = optype;
     copy->tt_flags &= ~TTFLAG_STATIC;
 
     if (type->tt_args != NULL
@@ -114,8 +131,7 @@ clear_type_list(garray_T *gap)
 {
     while (gap->ga_len > 0)
     {
-	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]->tt_optype);
-	vim_free(((type_T **)gap->ga_data)[gap->ga_len]);
+	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]);
     }
     ga_clear(gap);
 }
@@ -167,6 +183,9 @@ alloc_type(type_T *type)
     else
 	ret->tt_args = NULL;
 
+    if (!(type->tt_flags & TTFLAG_OPTYPE_STATIC) && type->tt_optype != NULL)
+	ret->tt_optype = vim_strsave(type->tt_optype);
+
     return ret;
 }
 
@@ -187,6 +206,8 @@ free_type(type_T *type)
 	vim_free(type->tt_args);
     }
 
+    if (!(type->tt_flags & TTFLAG_OPTYPE_STATIC))
+	vim_free(type->tt_optype);
     free_type(type->tt_member);
 
     vim_free(type);
@@ -883,10 +904,31 @@ opaque_typval2type(typval_T *tv, garray_T *type_gap)
 	return &t_opaque;
 
     type = get_type_ptr(type_gap);
+
     if (type == NULL)
 	return NULL;
 
-    type->tt_optype = vim_strsave(op->op_type);
+    if (op->op_type_static)
+    {
+	type->tt_optype = op->op_type;
+	type->tt_flags |= TTFLAG_OPTYPE_STATIC;
+    }
+    else
+    {
+	type->tt_optype = vim_strsave(op->op_type);
+
+	// We must add it to type_gap as it is allocated memory that should be
+	// freed later.
+	if (ga_grow(type_gap, 1) == OK)
+	    ((type_T **)type_gap->ga_data)[type_gap->ga_len++]
+		= (type_T *)type->tt_optype;
+	else
+	{
+	    // Just make the type match any type as fallback
+	    vim_free(type->tt_optype);
+	    type->tt_optype = NULL;
+	}
+    }
     type->tt_type = VAR_OPAQUE;
     return type;
 }
@@ -947,9 +989,6 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
 	case VAR_CHANNEL:
 	    return &t_channel;
-	
-	case VAR_TSOBJECT:
-	    return &t_tsobject;
 
 	case VAR_OPAQUE:
 	    return opaque_typval2type(tv, type_gap);
@@ -1359,7 +1398,7 @@ check_opaque_type_maybe(
 	return MAYBE;	// use runtime type check
 
     // Any opaque type is ok if NULL
-    if (expected->tt_optype == NULL)
+    if (expected->tt_optype == NULL || actual->tt_optype == NULL)
 	return OK;
 
     if (STRCMP(expected->tt_optype, actual->tt_optype) != 0)
@@ -2152,6 +2191,17 @@ parse_type_opaque(
 
 	opaque_type->tt_type = VAR_OPAQUE;
 	opaque_type->tt_optype = vim_strsave(IObuff);
+
+	// We must add it to type_gap as it is allocated memory that should be
+	// freed later.
+	if (ga_grow(type_gap, 1) == OK)
+	    ((type_T **)type_gap->ga_data)[type_gap->ga_len++]
+		= (type_T *)opaque_type->tt_optype;
+	else
+	{
+	    vim_free(opaque_type->tt_optype);
+	    opaque_type->tt_optype = NULL;
+	}
 	++*arg;
     }
 
@@ -2276,11 +2326,6 @@ parse_type(
 		return parse_type_tuple(arg, type_gap, give_error, ufunc,
 									cctx);
 	    }
-	    if (len == 8 && STRNCMP(*arg, "tsobject", len) == 0)
-	    {
-		*arg += len;
-		return &t_tsobject;
-	    }
 	    break;
 	case 'v':
 	    if (len == 4 && STRNCMP(*arg, "void", len) == 0)
@@ -2325,7 +2370,6 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_TYPEALIAS:
-	case VAR_TSOBJECT:
 	    break;  // not composite is always OK
 	case VAR_OPAQUE:
 	    return type1->tt_optype == NULL || type2->tt_optype == NULL
@@ -2670,7 +2714,6 @@ vartype_name(vartype_T type)
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
-	case VAR_TSOBJECT: return "tsobject";
 	case VAR_OPAQUE: return "opaque";
 
 	case VAR_FUNC:

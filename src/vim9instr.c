@@ -241,7 +241,6 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
-	case VAR_TSOBJECT:
 	case VAR_OPAQUE:
 			 to_string_error(type->tt_type);
 			 return FAIL;
@@ -512,22 +511,40 @@ get_compare_isn(
 
     if (vartype1 == vartype2)
     {
-	switch (vartype1)
+	if (vartype1 == VAR_OPAQUE)
 	{
-	    case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
-	    case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
-	    case VAR_NUMBER: isntype = ISN_COMPARENR; break;
-	    case VAR_FLOAT: isntype = ISN_COMPAREFLOAT; break;
-	    case VAR_STRING: isntype = ISN_COMPARESTRING; break;
-	    case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
-	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
-	    case VAR_TUPLE: isntype = ISN_COMPARETUPLE; break;
-	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
-	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
-	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
-	    case VAR_TSOBJECT: isntype = ISN_COMPARETSOBJECT; break;
-	    case VAR_OPAQUE: isntype = ISN_COMPAREOPAQUE; break;
-	    default: isntype = ISN_COMPAREANY; break;
+	    // For opaque types, we must also check the type of both opaques as
+	    // well. This is unless there is a NULL opaque type, then we have to
+	    // do a runtime check.
+	    char_u *optype1 = tv1 != NULL ?
+		tv1->vval.v_opaque->op_type : type1->tt_optype;
+	    char_u *optype2 = tv2 != NULL ?
+		tv2->vval.v_opaque->op_type : type2->tt_optype;
+
+	    if (optype1 != NULL && optype2 != NULL && STRCMP(optype1, optype2) != 0)
+	    {
+		semsg(_(e_opaque_cannot_compare_str_with_str), optype1, optype2);
+		return ISN_DROP;
+	    }
+	    isntype = ISN_COMPAREOPAQUE;
+	}
+	else
+	{
+	    switch (vartype1)
+	    {
+		case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
+		case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
+		case VAR_NUMBER: isntype = ISN_COMPARENR; break;
+		case VAR_FLOAT: isntype = ISN_COMPAREFLOAT; break;
+		case VAR_STRING: isntype = ISN_COMPARESTRING; break;
+		case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
+		case VAR_LIST: isntype = ISN_COMPARELIST; break;
+		case VAR_TUPLE: isntype = ISN_COMPARETUPLE; break;
+		case VAR_DICT: isntype = ISN_COMPAREDICT; break;
+		case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
+		case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
+		default: isntype = ISN_COMPAREANY; break;
+	    }
 	}
     }
     else if (vartype1 == VAR_ANY || vartype2 == VAR_ANY
@@ -835,13 +852,6 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    generate_PUSHCHANNEL(cctx);
 	    break;
 #endif
-#ifdef FEAT_TREESITTER
-	case VAR_TSOBJECT:
-	    if (tv->vval.v_tsobject != NULL)
-		iemsg("non-null tsobject constant not supported");
-	    generate_PUSHTSOBJECT(cctx);
-	    break;
-#endif
 	case VAR_OPAQUE:
 	    if (tv->vval.v_opaque != NULL)
 		iemsg("non-null opaque constant not supported");
@@ -1061,23 +1071,6 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
 
     isn->isn_arg.string = funcname;
     return OK;
-}
-
-/*
- * Generate an ISN_PUSHTSOBJECT instruction. treesitter object is always NULL.
- */
-    int
-generate_PUSHTSOBJECT(cctx_T *cctx)
-{
-    RETURN_OK_IF_SKIP(cctx);
-#ifdef FEAT_TREESITTER
-    if (generate_instr_type(cctx, ISN_PUSHTSOBJECT, &t_tsobject) == NULL)
-	return FAIL;
-    return OK;
-#else
-    emsg(_(e_treesitter_feature_not_available));
-    return FAIL;
-#endif
 }
 
 /*
@@ -2920,7 +2913,6 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREOBJECT:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
-	case ISN_COMPARETSOBJECT:
 	case ISN_COMPAREOPAQUE:
 	case ISN_CONCAT:
 	case ISN_CONSTRUCT:
@@ -2979,7 +2971,6 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHNR:
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
-	case ISN_PUSHTSOBJECT:
 	case ISN_PUSHOPAQUE:
 	case ISN_PUT:
 	case ISN_IPUT:

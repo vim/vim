@@ -1502,7 +1502,6 @@ typedef struct instr_S instr_T;
 typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
-typedef struct tsobject_S tsobject_T;
 typedef struct opaque_S opaque_T;
 
 typedef enum
@@ -1527,7 +1526,6 @@ typedef enum
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
     VAR_TUPLE,		// "v_tuple" is used
-    VAR_TSOBJECT,	// "v_tsobject" is used
     VAR_OPAQUE		// "v_opaque" is used
 } vartype_T;
 
@@ -1549,15 +1547,16 @@ typedef struct {
     type_T	*type_decl;	    // declared type or equal to type_current
 } type2_T;
 
-#define TTFLAG_VARARGS	    0x01    // func args ends with "..."
-#define TTFLAG_BOOL_OK	    0x02    // can be converted to bool
-#define TTFLAG_FLOAT_OK	    0x04    // number can be used/converted to float
-#define TTFLAG_NUMBER_OK    0x08    // number can be used for a float
-#define TTFLAG_STATIC	    0x10    // one of the static types, e.g. t_any
-#define TTFLAG_CONST	    0x20    // cannot be changed
-#define TTFLAG_SUPER	    0x40    // object from "super".
-#define TTFLAG_GENERIC	    0x80    // generic type
-#define TTFLAG_TUPLE_OK	    0x100   // tuple can be used for a list
+#define TTFLAG_VARARGS		0x01    // func args ends with "..."
+#define TTFLAG_BOOL_OK	    	0x02    // can be converted to bool
+#define TTFLAG_FLOAT_OK	    	0x04    // number can be used/converted to float
+#define TTFLAG_NUMBER_OK    	0x08    // number can be used for a float
+#define TTFLAG_STATIC	    	0x10    // one of the static types, e.g. t_any
+#define TTFLAG_CONST	    	0x20    // cannot be changed
+#define TTFLAG_SUPER	    	0x40    // object from "super".
+#define TTFLAG_GENERIC	    	0x80    // generic type
+#define TTFLAG_TUPLE_OK	    	0x100   // tuple can be used for a list
+#define TTFLAG_OPTYPE_STATIC	0x200    // tt_opttype is static memory
 
 #define IS_GENERIC_TYPE(type)	\
     ((type->tt_flags & TTFLAG_GENERIC) == TTFLAG_GENERIC)
@@ -1685,34 +1684,26 @@ struct typealias_S
 
 typedef void	(*opaque_free_func_T)(opaque_T *);
 typedef bool	(*opaque_equal_func_T)(opaque_T *, opaque_T *);
+typedef char_u *(*opaque_str_func_T)(opaque_T *, char_u **tofree);
 
 struct opaque_S
 {
     int		op_refcount;	// Reference count
     char_u	*op_type;	// Used to identify what type this is.
+    bool	op_type_static;	// If op_type is static memory
 
     opaque_free_func_T	op_free_func;	// Called when opaque_T is freed. May be NULL.
     opaque_equal_func_T op_equal_func;	// Called when comparing two opaque_T of
 					// the same type. Must be set.                 
+    opaque_str_func_T op_str_func;	// Should return textual form of opaque.
+					// May be NULL, if so then a default
+					// format is used.
 
     char_u	op_data[1];	// Actually larger, should be casted to actual
 				// type when used
 };
 
 #define OP2DATA(s, t) ((t *)(s->op_data))
-
-    static inline bool
-opaque_eq_ptr(opaque_T *a, opaque_T *b)
-{
-    return OP2DATA(a, void *) == OP2DATA(b, void *);
-}
-
-// Used for f_test_opaque();
-typedef struct
-{
-    char_u *type_name;
-    int val;
-} test_opaque_T;
 
 /*
  * Structure to hold an internal variable without a name.
@@ -1740,9 +1731,6 @@ struct typval_S
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
 	opaque_T	*v_opaque;	// opaque data type
-#ifdef FEAT_TREESITTER
-	tsobject_T	*v_tsobject;	// treesitter object
-#endif
     }		vval;
 };
 
@@ -3159,10 +3147,6 @@ typedef struct {
     char_u	*b_syn_isk;	    // iskeyword option
 } synblock_T;
 
-#ifdef FEAT_TREESITTER
-typedef struct TSVimState TSVimState;
-#endif
-
 /*
  * buffer: structure that holds information about one file
  *
@@ -3683,10 +3667,6 @@ struct file_buffer
 #endif
 #ifdef FEAT_DIFF
     int		b_diff_failed;	// internal diff failed for this buffer
-#endif
-
-#ifdef FEAT_TREESITTER
-    TSVimState	*b_tsstate;
 #endif
 }; // file_buffer
 
