@@ -99,11 +99,6 @@ free_tv(typval_T *varp)
 	    typealias_unref(varp->vval.v_typealias);
 	    break;
 	
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    tsobject_unref(varp->vval.v_tsobject);
-#endif
-	    break;
 	case VAR_OPAQUE:
 	    opaque_unref(varp->vval.v_opaque);
 	    break;
@@ -192,12 +187,6 @@ clear_tv(typval_T *varp)
 	case VAR_TYPEALIAS:
 	    typealias_unref(varp->vval.v_typealias);
 	    varp->vval.v_typealias = NULL;
-	    break;
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    tsobject_unref(varp->vval.v_tsobject);
-	    varp->vval.v_tsobject = NULL;
-#endif
 	    break;
 	case VAR_OPAQUE:
 	    opaque_unref(varp->vval.v_opaque);
@@ -289,11 +278,6 @@ tv_get_bool_or_number_chk(
 #endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_number));
-	    break;
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    emsg(_(e_using_tsobject_as_number));
-#endif
 	    break;
 	case VAR_OPAQUE:
 	    emsg(_(e_using_opaque_as_number));
@@ -793,33 +777,61 @@ check_for_opt_chan_or_job_arg(typval_T *args, int idx)
 }
 #endif
 
-#ifdef FEAT_TREESITTER
 /*
- * Give an error and return FAIL unless "args[idx]" is a treesitter object.
+ * Give an error and return FAIL unless "args[idx]" is an opaque.
  */
     int
-check_for_tsobject_arg(typval_T *args, int idx)
+check_for_opaque_arg(typval_T *args, int idx)
 {
-    if (args[idx].v_type != VAR_TSOBJECT)
+    if (args[idx].v_type != VAR_OPAQUE)
     {
-	semsg(_(e_tsobject_required_for_argument_nr), idx + 1);
+	semsg(_(e_opaque_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is an optional treesitter
- * object.
+ * Give an error and return FAIL unless "args[idx]" is an optional opaque
  */
     int
-check_for_opt_tsobject_arg(typval_T *args, int idx)
+check_for_opt_opaque_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type == VAR_UNKNOWN)
 	return OK;
-    return check_for_tsobject_arg(args, idx);
+    return check_for_opaque_arg(args, idx);
 }
-#endif
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an opaque of the given
+ * type. It is assumed that args[idx] is a valid opaque.
+ */
+    int
+check_for_opaque_type_arg(typval_T *args, int idx, char_u *type)
+{
+    if (args[idx].v_type == VAR_UNKNOWN)
+	return FAIL;
+    if (args[idx].vval.v_opaque == NULL)
+	return FAIL;
+    if (STRCMP(args[idx].vval.v_opaque->op_type, type) != 0)
+    {
+	semsg(_(e_opaque_str_required_for_argument_nr), type, idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an opaque of the given
+ * type optionally. It is assumed that args[idx] is a valid opaque.
+ */
+    int
+check_for_opt_opaque_type_arg(typval_T *args, int idx, char_u *type)
+{
+    if (args[idx].v_type == VAR_UNKNOWN || args[idx].vval.v_opaque == NULL)
+	return OK;
+    return check_for_opaque_type_arg(args, idx, type);
+}
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or
@@ -1299,11 +1311,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_string));
 	    break;
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    emsg(_(e_using_tsobject_as_string));
-#endif
-	    break;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
 	    check_typval_is_value(varp);
@@ -1457,13 +1464,6 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_channel->ch_refcount;
 	    break;
 #endif
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    to->vval.v_tsobject = from->vval.v_tsobject;
-	    if (to->vval.v_tsobject != NULL)
-		tsobject_ref(to->vval.v_tsobject);
-#endif
-	    break;
 	case VAR_INSTR:
 	    to->vval.v_instr = from->vval.v_instr;
 	    break;
@@ -1629,11 +1629,6 @@ typval_compare2(
 	|| tv1->v_type == VAR_PARTIAL || tv2->v_type == VAR_PARTIAL)
     {
 	if (typval_compare_func(tv1, tv2, type, ic, res) == FAIL)
-	    return FAIL;
-    }
-    else if (tv1->v_type == VAR_TSOBJECT || tv2->v_type == VAR_TSOBJECT)
-    {
-	if (typval_compare_tsobject(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
     }
     else if (tv1->v_type == VAR_OPAQUE || tv2->v_type == VAR_OPAQUE)
@@ -2149,46 +2144,6 @@ typval_compare_string(
 }
 
 /*
- * Compare "tv1" to "tv2" as treesitter objects according to "type".
- * Put the result, false or true, in "res".
- * Return FAIL and give an error message when the comparison can't be done.
- */
-    int
-typval_compare_tsobject(
-	typval_T    *tv1,
-	typval_T    *tv2,
-	exprtype_T  type,
-	int	    ic,
-	int	    *res)
-{
-#ifdef FEAT_TREESITTER
-    int res_match = type == EXPR_EQUAL || type == EXPR_IS ? TRUE : FALSE;
-
-    if (tv1->vval.v_tsobject == NULL && tv2->vval.v_object == NULL)
-    {
-	*res = res_match;
-	return OK;
-    }
-    if (tv1->vval.v_tsobject == NULL || tv2->vval.v_tsobject == NULL)
-    {
-	*res = !res_match;
-	return OK;
-    }
-
-    tsobject_T *obj1 = tv1->vval.v_tsobject;
-    tsobject_T *obj2 = tv2->vval.v_tsobject;
-    if (type == EXPR_IS || type == EXPR_ISNOT)
-    {
-	*res = obj1 == obj2 ? res_match : !res_match;
-	return OK;
-    }
-
-    *res = tsobject_equal(obj1, obj2) ? res_match : !res_match;
-#endif
-    return OK;
-}
-
-/*
  * Compare "tv1" to "tv2" as opaques according to "type".
  * Put the result, false or true, in "res".
  * Return FAIL and give an error message when the comparison can't be done.
@@ -2427,10 +2382,6 @@ tv_equal(
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_channel == tv2->vval.v_channel;
-#endif
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    return tsobject_equal(tv1->vval.v_tsobject, tv2->vval.v_tsobject);
 #endif
 	case VAR_INSTR:
 	    return tv1->vval.v_instr == tv2->vval.v_instr;

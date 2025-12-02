@@ -1152,12 +1152,6 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_typealias != NULL)
 		retval = argvars[0].vval.v_typealias->ta_refcount - 1;
 	    break;
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    if (argvars[0].vval.v_tsobject != NULL)
-		retval = tsobject_get_refcount(argvars[0].vval.v_tsobject) - 1;
-#endif
-	    break;
 	case VAR_OPAQUE:
 	    if (argvars[0].vval.v_opaque != NULL)
 		retval = argvars[0].vval.v_opaque->op_refcount - 1;
@@ -1268,15 +1262,6 @@ f_test_null_tuple(typval_T *argvars UNUSED, typval_T *rettv)
     rettv_tuple_set(rettv, NULL);
 }
 
-#ifdef FEAT_TREESITTER
-    void
-f_test_null_tsobject(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->v_type = VAR_TSOBJECT;
-    rettv->vval.v_tsobject = NULL;
-}
-#endif
-
     void
 f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1302,6 +1287,15 @@ test_opaque_equal(opaque_T *a, opaque_T *b)
     return *OP2DATA(a, int) == *OP2DATA(b, int);
 }
 
+    static char_u *
+test_opaque_str(opaque_T *a, char_u **tofree)
+{
+    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d", a->op_type,
+	    *OP2DATA(a, int));
+    *tofree = vim_strsave(IObuff);
+    return *tofree;
+}
+
     void
 f_test_opaque(typval_T *argvars, typval_T *rettv)
 {
@@ -1312,13 +1306,14 @@ f_test_opaque(typval_T *argvars, typval_T *rettv)
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
-    op = opaque_new(argvars[0].vval.v_string,
+    op = opaque_new(argvars[0].vval.v_string, false,
 	    &argvars[1].vval.v_number, sizeof(int));
 
     if (op == NULL)
 	return;
 
     op->op_equal_func = test_opaque_equal;
+    op->op_str_func = test_opaque_str;
     rettv->v_type = VAR_OPAQUE;
     rettv->vval.v_opaque = op;
     op->op_refcount++;

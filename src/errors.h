@@ -3805,7 +3805,11 @@ EXTERN char e_using_opaque_as_float[]
 EXTERN char e_using_opaque_as_string[]
 	INIT(= N_("E1572: Using a Opaque as a String"));
 EXTERN char e_opaque_cannot_compare_str_with_str[]
-	INIT(= N_("E1072: Cannot compare opaques %s with %s"));
+	INIT(= N_("E1073: Cannot compare opaques %s with %s"));
+EXTERN char e_opaque_required_for_argument_nr[]
+	INIT(= N_("E1574: Opaque required for argument %d"));
+EXTERN char e_opaque_str_required_for_argument_nr[]
+	INIT(= N_("E1574: Opaque of type %s required for argument %d"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]

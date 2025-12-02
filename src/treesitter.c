@@ -45,30 +45,12 @@ typedef struct
 #define VTS_LANG_OFF offsetof(TSVimLanguage, name)
 #define HI2LANG(hi) ((TSVimLanguage *)((hi)->hi_key - VTS_LANG_OFF))
 
-typedef enum
-{
-    TSOBJECT_TYPE_PARSER,
-    TSOBJECT_TYPE_TREE,
-    TSOBJECT_TYPE_NODE,
-    TSOBJECT_TYPE_QUERY,
-    TSOBJECT_TYPE_QUERYCURSOR,
-    TSOBJECT_TYPE_QUERYMATCH,
-} tsobject_type_T;
-
-struct tsobject_S
-{
-    int		    to_refcount;
-    tsobject_type_T to_type;
-    union
-    {
-	TSParser	*to_parser;
-	TSTree	    	*to_tree;
-	TSNode	    	to_node;
-	TSQuery		*to_query;
-	TSQueryCursor   *to_querycursor;
-	TSQueryMatch	to_querymatch;
-    };
-};
+#define OP2TSPARSER(o) (*OP2DATA(o, TSParser *))
+#define OP2TSTREE(o) (*OP2DATA(o, TSTree *))
+#define OP2TSNODE(o) OP2DATA(o, TSNode)
+#define OP2TSQUERY(o) (*OP2DATA(o, TSQuery *))
+#define OP2TSQUERYCURSOR(o) (*OP2DATA(o, TSQueryCursor *))
+#define OP2TSQUERYMATCH(o) OP2DATA(o, TSQueryMatch)
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
@@ -164,175 +146,6 @@ tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
 }
 
 /*
- * Allocate new treesitter object. Returns NULL on failure.
- */
-    static tsobject_T *
-tsobject_new(tsobject_type_T type)
-{
-    tsobject_T *obj = ALLOC_ONE(tsobject_T);
-
-    if (obj == NULL)
-	return NULL;
-
-    obj->to_refcount = 1;
-    obj->to_type = type;
-    
-    return obj;
-}
-
-    tsobject_T *
-tsobject_ref(tsobject_T *obj)
-{
-    obj->to_refcount++;
-    return obj;
-}
-
-    void
-tsobject_free(tsobject_T *obj)
-{
-    switch (obj->to_type)
-    {
-	case TSOBJECT_TYPE_PARSER:
-	    if (obj->to_parser != NULL)
-		ts_parser_delete(obj->to_parser);
-	    break;
-	case TSOBJECT_TYPE_TREE:
-	    if (obj->to_tree != NULL)
-		ts_tree_delete(obj->to_tree);
-	    break;
-	case TSOBJECT_TYPE_NODE:
-	    break;
-	case TSOBJECT_TYPE_QUERY:
-	    if (obj->to_query != NULL)
-		ts_query_delete(obj->to_query);
-	    break;
-	case TSOBJECT_TYPE_QUERYCURSOR:
-	    if (obj->to_querycursor != NULL)
-		ts_query_cursor_delete(obj->to_querycursor);
-	    break;
-	case TSOBJECT_TYPE_QUERYMATCH:
-	    break;
-
-    }
-    vim_free(obj);
-}
-
-    void
-tsobject_unref(tsobject_T *obj)
-{
-    if (obj != NULL && --obj->to_refcount <= 0)
-	tsobject_free(obj);
-}
-
-    bool
-tsobject_equal(tsobject_T *a, tsobject_T *b)
-{
-    if (a->to_type != b->to_type)
-	return false;
-
-    switch (a->to_type)
-    {
-	case TSOBJECT_TYPE_PARSER:
-	    return a->to_parser == b->to_parser;
-	case TSOBJECT_TYPE_TREE:
-	    return a->to_tree == b->to_tree;
-	case TSOBJECT_TYPE_NODE:
-	    return ts_node_eq(a->to_node, b->to_node);
-	case TSOBJECT_TYPE_QUERY:
-	    return a->to_query == b->to_query;
-	case TSOBJECT_TYPE_QUERYCURSOR:
-	    return a->to_querycursor == b->to_querycursor;
-	case TSOBJECT_TYPE_QUERYMATCH:
-	    return false;
-    }
-    return false;
-}
-
-/*
- * Returns statically allocated string
- */
-    char_u *
-tsobject_get_name(tsobject_T *obj)
-{
-    switch (obj->to_type)
-    {
-	case TSOBJECT_TYPE_PARSER:
-	    return (char_u *)"TSParser";
-	case TSOBJECT_TYPE_TREE:
-	    return (char_u *)"TSTree";
-	case TSOBJECT_TYPE_NODE:
-	    return (char_u *)"TSNode";
-	case TSOBJECT_TYPE_QUERY:
-	    return (char_u *)"TSQuery";
-	case TSOBJECT_TYPE_QUERYCURSOR:
-	    return (char_u *)"TSQueryCursor";
-	case TSOBJECT_TYPE_QUERYMATCH:
-	    return (char_u *)"TSQueryMatch";
-    }
-    return (char_u *)"";
-}
-
-    int
-tsobject_get_refcount(tsobject_T *obj)
-{
-    return obj->to_refcount;
-}
-
-    bool
-tsobject_is_parser(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_PARSER;
-}
-
-    bool
-tsobject_is_tree(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_TREE;
-}
-
-    bool
-tsobject_is_node(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_NODE;
-}
-
-    bool
-tsobject_is_query(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_QUERY;
-}
-
-    bool
-tsobject_is_querycursor(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_QUERYCURSOR;
-}
-
-    bool
-tsobject_is_querymatch(tsobject_T *obj)
-{
-    return obj->to_type == TSOBJECT_TYPE_QUERYMATCH;
-}
-
-    int
-check_tsobject_type_arg(
-	typval_T *args,
-	int idx,
-	bool opt,
-	bool (*func)(tsobject_T *obj))
-{
-    if (opt && args[idx].v_type == VAR_UNKNOWN)
-	return OK;
-    if (!func(args[idx].vval.v_tsobject))
-    {
-        semsg(_(e_tsobject_str_required_for_argument_nr),
-		tsobject_get_name(args[idx].vval.v_tsobject), idx);
-	return FAIL;
-    }
-    return OK;
-}
-
-/*
  * Create a tuple that represents a TSPoint. Returns NULL on failure.
  */
     static tuple_T *
@@ -375,37 +188,69 @@ get_language(char_u *language)
     return NULL;
 }
 
+    static void
+tsparser_free_func(opaque_T *op)
+{
+    ts_parser_delete(OP2TSPARSER(op));
+}
+
+    static void
+tstree_free_func(opaque_T *op)
+{
+    ts_tree_delete(OP2TSTREE(op));
+}
+
+    static void
+tsquery_free_func(opaque_T *op)
+{
+    ts_query_delete(OP2TSQUERY(op));
+}
+
+    static bool
+tsnode_equal_func(opaque_T *a, opaque_T *b)
+{
+    return ts_node_eq(*OP2TSNODE(a), *OP2TSNODE(b));
+}
+
 /*
  * Allocate a new TSParser object. Returns NULL on failure.
  */
-    tsobject_T *
+    opaque_T *
 tsparser_new(void)
 {
-    tsobject_T *obj = tsobject_new(TSOBJECT_TYPE_PARSER);
-
-    obj->to_parser = ts_parser_new();
+    TSParser *parser = ts_parser_new();
+    opaque_T *op;
 
     // Documentation says nothing about it returning NULL but just check to be
     // sure.
-    if (obj->to_parser == NULL)
+    if (parser == NULL)
+	return NULL;
+
+    op = opaque_new(TSPARSER, true, &parser, sizeof(TSParser *));
+
+    if (op == NULL)
     {
-	tsobject_free(obj);
+	ts_parser_delete(parser);
 	return NULL;
     }
 
-    return obj;
+    op->op_free_func = tsparser_free_func;
+    op->op_equal_func= opaque_equal_ptr;
+    op->op_refcount++;
+
+    return op;
 }
 
 /*
  * Set the given parser to "language".
  */
     void
-tsparser_set_language(tsobject_T *parser, char_u *language)
+tsparser_set_language(opaque_T *parser, char_u *language)
 {
     TSVimLanguage *lang = get_language(language);
 
     if (lang != NULL)
-	ts_parser_set_language(parser->to_parser, lang->lang);
+	ts_parser_set_language(OP2TSPARSER(parser), lang->lang);
 }
 
 #ifdef ELAPSED_FUNC
@@ -513,40 +358,42 @@ parse_buf_read_callback(
  * Parse the given buffer using the parser and return the result TSTree if is
  * completed within the timeout, else NULL.
  */
-    tsobject_T *
+    opaque_T *
 tsparser_parse_buf(
-	tsobject_T *parser,
-	tsobject_T *last_tree,
+	opaque_T *parser,
+	opaque_T *last_tree,
 	buf_T *buf,
 	long timeout)
 {
-    TSTree *ltree = last_tree == NULL ? NULL : last_tree->to_tree;
+    TSTree *ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree);
     TSTree *res;
-    tsobject_T *obj;
+    opaque_T *op;
 
     // Check if parser is set to a language
-    if (ts_parser_language(parser->to_parser) == NULL)
+    if (ts_parser_language(OP2TSPARSER(parser)) == NULL)
     {
 	emsg(_(e_tsparser_not_set_to_language));
 	return NULL;
     }
 
-    res = tsvim_parser_parse(parser->to_parser, ltree,
+    res = tsvim_parser_parse(OP2TSPARSER(parser), ltree,
 	    parse_buf_read_callback, buf, timeout);
 
     if (res == NULL)
 	return NULL;
 
-    obj = tsobject_new(TSOBJECT_TYPE_TREE);
-    if (obj == NULL)
+    op = opaque_new(TSTREE, true, &res, sizeof(TSTree *));
+    if (op == NULL)
     {
 	ts_tree_delete(res);
 	return NULL;
     }
 
-    obj->to_tree = res;
+    op->op_free_func = tstree_free_func;
+    op->op_equal_func = opaque_equal_ptr;
+    op->op_refcount++;
 
-    return obj;
+    return op;
 }
 
 /*
@@ -554,7 +401,7 @@ tsparser_parse_buf(
  */
     void
 tstree_edit(
-	tsobject_T *tree,
+	opaque_T *tree,
 	uint32_t start_byte,
 	uint32_t old_end_byte,
 	uint32_t new_end_byte,
@@ -578,34 +425,37 @@ tstree_edit(
     edit.new_end_point.row = new_end_point[0];
     edit.new_end_point.column = new_end_point[1];
 
-    ts_tree_edit(tree->to_tree, &edit);
+    ts_tree_edit(OP2TSTREE(tree), &edit);
 }
 
 /*
  * Return the root node of the tree. Returns NULL on failure.
  */
-    tsobject_T *
-tstree_root_node(tsobject_T *tree)
+    opaque_T *
+tstree_root_node(opaque_T *tree)
 {
-    tsobject_T *obj = tsobject_new(TSOBJECT_TYPE_NODE);
+    TSNode node = ts_tree_root_node(OP2TSTREE(tree));
+    opaque_T *op = opaque_new(TSNODE, true, &node, sizeof(TSNode));
 
-    if (obj == NULL)
+    if (op == NULL)
 	return NULL;
 
-    obj->to_node = ts_tree_root_node(tree->to_tree);
-    return obj;
+    op->op_equal_func = tsnode_equal_func;
+    op->op_refcount++;
+
+    return op;
 }
 
 /*
  * Return a dictionary describing the node, returns NULL on failure. The
  * following entries that will be in the dictionary are:
  *
- * "kkkkkkkk
+ *
  */
     dict_T *
-tsnode_info(tsobject_T *node_obj)
+tsnode_info(opaque_T *node_obj)
 {
-    TSNode node = node_obj->to_node;
+    TSNode node = *OP2TSNODE(node_obj); 
     dict_T *dict = dict_alloc();
 
     if (dict == NULL)
@@ -692,14 +542,14 @@ query_do_error_message(char_u *str, uint32_t offset, TSQueryError error)
 /*
  * Create a new TSQuery object using the given string. Returns NULL on failure.
  */
-    tsobject_T *
+    opaque_T *
 tsquery_new(char_u *language, char_u *query_str)
 {
     TSVimLanguage   *lang = get_language(language);
     TSQuery	    *query;
     uint32_t	    error_offset;
     TSQueryError    error_type;
-    tsobject_T	    *obj;
+    opaque_T	    *op;
 
     if (lang == NULL)
 	return NULL;
@@ -713,17 +563,19 @@ tsquery_new(char_u *language, char_u *query_str)
 	return NULL;
     }
 
-    obj = tsobject_new(TSOBJECT_TYPE_QUERY);
+    op = opaque_new(TSQUERY, true, &query, sizeof(TSQuery *));
 
-    if (obj == NULL)
+    if (op == NULL)
     {
 	ts_query_delete(query);
 	return NULL;
     }
 
-    obj->to_query = query;
+    op->op_free_func = tsquery_free_func;
+    op->op_equal_func = opaque_equal_ptr;
+    op->op_refcount++;
 
-    return obj;
+    return op;
 }
 
 #endif // FEAT_TREESITTER
