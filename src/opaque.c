@@ -20,14 +20,15 @@
  * reference count, it is set to zero. "data" may be NULL.
  */
     opaque_T *
-opaque_new(char_u *type, void *data, size_t data_sz)
+opaque_new(char_u *type, bool isstatic, void *data, size_t data_sz)
 {
     opaque_T	*op = alloc_clear(offsetof(opaque_T, op_data) + data_sz);
 
     if (op == NULL)
 	return NULL;
 
-    op->op_type = vim_strsave(type);
+    op->op_type = isstatic ? type : vim_strsave(type);
+    op->op_type_static = isstatic;
 
     if (op->op_type == NULL)
     {
@@ -46,7 +47,8 @@ opaque_free(opaque_T *op)
 {
     if (op->op_free_func != NULL)
 	op->op_free_func(op);
-    vim_free(op->op_type);
+    if (!op->op_type_static)
+	vim_free(op->op_type);
     vim_free(op);
 }
 
@@ -55,6 +57,12 @@ opaque_unref(opaque_T *op)
 {
     if (op != NULL && --op->op_refcount <= 0)
 	opaque_free(op);
+}
+
+    bool
+opaque_equal_ptr(opaque_T *a, opaque_T *b)
+{
+    return OP2DATA(a, void *) == OP2DATA(b, void *);
 }
 
 #endif // FEAT_EVAL
