@@ -2739,6 +2739,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_TYPEALIAS:
 	case VAR_TUPLE:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    break;
 
 	case VAR_BLOB:
@@ -4958,6 +4959,12 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
+		if (STRNCMP(s, "null_opaque", 13) == 0)
+		{
+		    rettv->v_type = VAR_OPAQUE;
+		    rettv->vval.v_tsobject = NULL;
+		    return OK;
+		}
 		break;
 	case 12:
 		if (STRNCMP(s, "null_channel", 12) == 0)
@@ -4983,14 +4990,6 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		{
 		    rettv->v_type = VAR_FUNC;
 		    rettv->vval.v_string = NULL;
-		    return OK;
-		}
-		if (STRNCMP(s, "null_tsobject", 13) == 0)
-		{
-#ifdef FEAT_TREESITTER
-		    rettv->v_type = VAR_TSOBJECT;
-		    rettv->vval.v_tsobject = NULL;
-#endif
 		    return OK;
 		}
 		break;
@@ -5888,6 +5887,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_INSTR:
 	case VAR_OBJECT:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -5977,6 +5977,7 @@ eval_index_inner(
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -6651,6 +6652,40 @@ tsobject_tv2string(
 }
 
 /*
+ * Return a textual representation of an opaque in "tv".
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * "numbuf" is used for a number.
+ * When "composite_val" is FALSE, put quotes around strings as "string()",
+ * otherwise does not put quotes around strings.
+ * May return NULL.
+ */
+    static char_u *
+opaque_tv2string(
+    typval_T	*tv,
+    char_u	**tofree,
+    int		composite_val)
+{
+    char_u	*r = NULL;
+
+    *tofree = NULL;
+
+    if (tv->vval.v_tsobject == NULL)
+	r = (char_u *)"opaque null";
+    else
+    {
+	r = tv->vval.v_opaque->op_type;
+
+	if (composite_val)
+	{
+	    *tofree = string_quote(r, FALSE);
+	    r = *tofree;
+	}
+    }
+
+    return r;
+}
+
+/*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
@@ -6753,6 +6788,10 @@ echo_string_core(
 	
 	case VAR_TSOBJECT:
 	    r = tsobject_tv2string(tv, tofree, composite_val);
+	    break;
+
+	case VAR_OPAQUE:
+	    r = opaque_tv2string(tv, tofree, composite_val);
 	    break;
 
 	case VAR_FLOAT:
@@ -7667,6 +7706,7 @@ item_copy(
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

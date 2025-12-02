@@ -890,6 +890,7 @@ set_ref_in_item(
 	case VAR_TYPEALIAS:
 	case VAR_INSTR:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    // Types that do not contain any other item
 	    break;
     }

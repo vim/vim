@@ -2288,7 +2288,8 @@ long elapsed(DWORD start_tick);
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
 #define VV_CLIPPROVIDERS 117
-#define VV_LEN		118	// number of v: vars
+#define VV_TYPE_OPAQUE	118
+#define VV_LEN		119	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2315,7 +2316,8 @@ long elapsed(DWORD start_tick);
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
-#define VAR_TYPE_TSOBJECT   18
+#define VAR_TYPE_OPAQUE	    18
+#define VAR_TYPE_TSOBJECT   19
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 

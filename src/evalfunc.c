@@ -1472,6 +1472,13 @@ ret_list_any(int argcount UNUSED,
     return &t_list_any;
 }
     static type_T *
+ret_opaque(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_opaque;
+}
+    static type_T *
 ret_list_number(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type)
@@ -3126,6 +3133,8 @@ static const funcentry_T global_functions[] =
 			ret_job,	    JOB_FUNC(f_test_null_job)},
     {"test_null_list",	0, 0, 0,	    NULL,
 			ret_list_any,	    f_test_null_list},
+    {"test_null_opaque", 0, 0, 0,	    NULL,
+			ret_opaque,	    f_test_null_opaque},
     {"test_null_partial", 0, 0, 0,	    NULL,
 			ret_func_any,	    f_test_null_partial},
     {"test_null_string", 0, 0, 0,	    NULL,
@@ -3134,6 +3143,8 @@ static const funcentry_T global_functions[] =
 			ret_tsobject,	    TS_FUNC(f_test_null_tsobject)},
     {"test_null_tuple",	0, 0, 0,	    NULL,
 			ret_tuple_any,	    f_test_null_tuple},
+    {"test_opaque",	2, 2, 0,	    arg2_string_number,
+			ret_opaque,	    f_test_opaque},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
 			ret_void,	    f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
@@ -4516,6 +4527,9 @@ f_empty(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TREESITTER
 	    n = argvars[0].vval.v_tsobject == NULL;
 #endif
+	    break;
+	case VAR_OPAQUE:
+	    n = argvars[0].vval.v_opaque == NULL;
 	    break;
 	case VAR_TYPEALIAS:
 	    n = argvars[0].vval.v_typealias == NULL
@@ -8942,6 +8956,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -12692,6 +12707,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
 	case VAR_TSOBJECT: n = VAR_TYPE_TSOBJECT; break;
+	case VAR_OPAQUE:   n = VAR_TYPE_OPAQUE; break;
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;

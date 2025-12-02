@@ -1158,6 +1158,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 		retval = tsobject_get_refcount(argvars[0].vval.v_tsobject) - 1;
 #endif
 	    break;
+	case VAR_OPAQUE:
+	    if (argvars[0].vval.v_opaque != NULL)
+		retval = argvars[0].vval.v_opaque->op_refcount - 1;
+	    break;
     }
 
     rettv->v_type = VAR_NUMBER;
@@ -1283,6 +1287,41 @@ f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
 f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_VOID;
+}
+
+    void
+f_test_null_opaque(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = NULL;
+}
+
+    static bool
+test_opaque_equal(opaque_T *a, opaque_T *b)
+{
+    return *OP2DATA(a, int) == *OP2DATA(b, int);
+}
+
+    void
+f_test_opaque(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *op;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    op = opaque_new(argvars[0].vval.v_string,
+	    &argvars[1].vval.v_number, sizeof(int));
+
+    if (op == NULL)
+	return;
+
+    op->op_equal_func = test_opaque_equal;
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
+    op->op_refcount++;
 }
 
     void

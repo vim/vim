@@ -1427,6 +1427,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_CLASS:
 		    case VAR_OBJECT:
 		    case VAR_TYPEALIAS:
+		    case VAR_OPAQUE:
 		    case VAR_TSOBJECT:
 				      continue;
 		}

@@ -4000,7 +4000,8 @@ exec_instructions(ectx_T *ectx)
 			{
 			    if (tv->v_type == VAR_CHANNEL
 						      || tv->v_type == VAR_JOB
-						      || tv->v_type == VAR_TSOBJECT)
+						      || tv->v_type == VAR_TSOBJECT
+						      || tv->v_type == VAR_OPAQUE)
 			    {
 				SOURCING_LNUM = iptr->isn_lnum;
 				semsg(_(e_using_invalid_value_as_string_str),
@@ -4644,6 +4645,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHOBJ:
 	    case ISN_PUSHCLASS:
 	    case ISN_PUSHTSOBJECT:
+	    case ISN_PUSHOPAQUE:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
@@ -4703,6 +4705,10 @@ exec_instructions(ectx_T *ectx)
 			tv->v_type = VAR_TSOBJECT;
 			tv->vval.v_tsobject = NULL;
 #endif
+			break;
+		    case ISN_PUSHOPAQUE:
+			tv->v_type = VAR_OPAQUE;
+			tv->vval.v_opaque = NULL;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -5561,6 +5567,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_COMPAREBLOB:
 	    case ISN_COMPAREOBJECT:
 	    case ISN_COMPARETSOBJECT:
+	    case ISN_COMPAREOPAQUE:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
@@ -5603,6 +5610,10 @@ exec_instructions(ectx_T *ectx)
 		    {
 			status = typval_compare_tsobject(tv1, tv2,
 							exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPAREOPAQUE)
+		    {
+			status = typval_compare_opaque(tv1, tv2, exprtype, &res);
 		    }
 		    else // ISN_COMPAREOBJECT
 		    {
@@ -7449,6 +7460,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d PUSHTSOBJECT null", pfx, current);
 #endif
 		break;
+	    case ISN_PUSHOPAQUE:
+		smsg("%s%4d PUSHOPAQUE null", pfx, current);
+		break;
 	    case ISN_AUTOLOAD:
 		smsg("%s%4d AUTOLOAD %s", pfx, current, iptr->isn_arg.string);
 		break;
@@ -7778,6 +7792,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREOBJECT:
 	    case ISN_COMPARETSOBJECT:
+	    case ISN_COMPAREOPAQUE:
 	    case ISN_COMPAREANY:
 		   {
 		       char *p;
@@ -7820,6 +7835,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 						 type = "COMPAREOBJECT"; break;
 			   case ISN_COMPARETSOBJECT:
 						 type = "COMPARETSOBJECT"; break;
+			   case ISN_COMPAREOPAQUE: type = "COMPAREOPAQUE"; break;
 			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
 			   default: type = "???"; break;
 		       }
@@ -8153,6 +8169,8 @@ tv2bool(typval_T *tv)
 #else
 	    break;
 #endif
+	case VAR_OPAQUE:
+	    return tv->vval.v_opaque != NULL;
 	case VAR_BLOB:
 	    return tv->vval.v_blob != NULL && tv->vval.v_blob->bv_ga.ga_len > 0;
 

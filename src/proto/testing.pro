@@ -34,6 +34,8 @@ void f_test_null_tuple(typval_T *argvars, typval_T *rettv);
 void f_test_null_tsobject(typval_T *argvars UNUSED, typval_T *rettv);
 void f_test_unknown(typval_T *argvars, typval_T *rettv);
 void f_test_void(typval_T *argvars, typval_T *rettv);
+void f_test_null_opaque(typval_T *argvars UNUSED, typval_T *rettv);
+void f_test_opaque(typval_T *argvars, typval_T *rettv);
 void f_test_setmouse(typval_T *argvars, typval_T *rettv);
 void f_test_mswin_event(typval_T *argvars, typval_T *rettv);
 void f_test_gui_event(typval_T *argvars, typval_T *rettv);

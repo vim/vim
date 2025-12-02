@@ -113,7 +113,10 @@ copy_type_deep(type_T *type, garray_T *type_gap)
 clear_type_list(garray_T *gap)
 {
     while (gap->ga_len > 0)
-	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]);
+    {
+	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]->tt_optype);
+	vim_free(((type_T **)gap->ga_data)[gap->ga_len]);
+    }
     ga_clear(gap);
 }
 
@@ -868,6 +871,27 @@ fp_typval2type(typval_T *tv, garray_T *type_gap)
 }
 
 /*
+ * Get a type_T for a "partial" typval in "tv".
+ */
+    static type_T *
+opaque_typval2type(typval_T *tv, garray_T *type_gap)
+{
+    opaque_T *op = tv->vval.v_opaque;
+    type_T  *type;
+
+    if (op == NULL)
+	return &t_opaque;
+
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
+	return NULL;
+
+    type->tt_optype = vim_strsave(op->op_type);
+    type->tt_type = VAR_OPAQUE;
+    return type;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
@@ -926,6 +950,9 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	
 	case VAR_TSOBJECT:
 	    return &t_tsobject;
+
+	case VAR_OPAQUE:
+	    return opaque_typval2type(tv, type_gap);
 
 	case VAR_CLASS:
 	case VAR_OBJECT:
@@ -1318,6 +1345,30 @@ check_object_type_maybe(
 }
 
 /*
+ * Check if the expected and actual types match for an opaque
+ * Returns OK if "expected" and "actual" are matching object types.
+ * Returns FAIL if "expected" and "actual" are different types.
+ * Returns MAYBE when a runtime type check is needed.
+ */
+    static int
+check_opaque_type_maybe(
+    type_T	*expected,
+    type_T	*actual)
+{
+    if (actual->tt_type == VAR_ANY)
+	return MAYBE;	// use runtime type check
+
+    // Any opaque type is ok if NULL
+    if (expected->tt_optype == NULL)
+	return OK;
+
+    if (STRCMP(expected->tt_optype, actual->tt_optype) != 0)
+	return FAIL;
+
+    return OK;
+}
+
+/*
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
  * When "argidx" > 0 it is included in the error message.
@@ -1397,6 +1448,8 @@ check_type_maybe(
 	    ret = check_func_type_maybe(expected, actual, where);
 	else if (expected->tt_type == VAR_OBJECT)
 	    ret = check_object_type_maybe(expected, actual, where);
+	else if (expected->tt_type == VAR_OPAQUE)
+	    ret = check_opaque_type_maybe(expected, actual);
 
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
@@ -2040,6 +2093,73 @@ parse_type_user_defined(
 }
 
 /*
+ * Parse a "opaque" type at "*arg" and advance over it. When "give_error" is
+ * TRUE give error messages, otherwise be quiet. Return NULL for failure.
+ */
+    static type_T *
+parse_type_opaque(
+    char_u	**arg,
+    garray_T	*type_gap,
+    int		give_error)
+{
+    char_u	*arg_start = *arg;
+    char_u	*op_type;
+    int		op_len;
+    type_T	*opaque_type;
+
+    // object<X>
+    if (**arg != '<')
+    {
+	if (give_error)
+	{
+	    if (*skipwhite(*arg) == '<')
+	    {
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
+		return NULL;
+	    }
+	}
+	// If only "opaque" is specified then assume any opaque type.
+	opaque_type = get_type_ptr(type_gap);
+	if (opaque_type == NULL)
+	    return NULL;
+	opaque_type->tt_type = VAR_OPAQUE;
+	opaque_type->tt_optype = NULL;
+    }
+    else
+    {
+	char_u *temp;
+
+	// skip spaces following "opaque<"
+	*arg = skipwhite(*arg + 1);
+	op_type = *arg;
+	temp = vim_strchr(*arg, '>');
+
+	if (temp == NULL)
+	{
+	    if (give_error)
+		semsg(_(e_missing_gt_after_type_str), arg_start);
+	    return NULL;
+	}
+
+	*arg = temp;
+	op_len = *arg - op_type;
+
+	vim_snprintf((char *)IObuff, IOSIZE, "%.*s", op_len, op_type);
+
+	opaque_type = get_type_ptr(type_gap);
+	if (opaque_type == NULL)
+	    return NULL;
+
+	opaque_type->tt_type = VAR_OPAQUE;
+	opaque_type->tt_optype = vim_strsave(IObuff);
+	++*arg;
+    }
+
+
+    return opaque_type;
+}
+
+/*
  * Parse a type at "arg" and advance over it.
  * When "give_error" is TRUE give error messages, otherwise be quiet.
  * Return NULL for failure.
@@ -2136,6 +2256,11 @@ parse_type(
 		*arg += len;
 		return parse_type_object(arg, type_gap, give_error, cctx);
 	    }
+	    if (len == 6 && STRNCMP(*arg, "opaque", len) == 0)
+	    {
+		*arg += len;
+		return parse_type_opaque(arg, type_gap, give_error);
+	    }
 	    break;
 	case 's':
 	    if (len == 6 && STRNCMP(*arg, "string", len) == 0)
@@ -2202,6 +2327,9 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_TYPEALIAS:
 	case VAR_TSOBJECT:
 	    break;  // not composite is always OK
+	case VAR_OPAQUE:
+	    return type1->tt_optype == NULL || type2->tt_optype == NULL
+		|| STRCMP(type1->tt_optype, type2->tt_optype) == 0;
 	case VAR_OBJECT:
 	case VAR_CLASS:
 	    // Objects are considered equal if they are from the same class
@@ -2543,6 +2671,7 @@ vartype_name(vartype_T type)
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
 	case VAR_TSOBJECT: return "tsobject";
+	case VAR_OPAQUE: return "opaque";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -2739,6 +2868,30 @@ failed:
 }
 
 /*
+ * Return the type name of an opaque.
+ * The result may be in allocated memory, in which case "tofree" is set.
+ */
+    static char *
+type_name_opaque(type_T *type, char **tofree)
+{
+    size_t sz = sizeof("opaque");
+    char *s;
+
+    if (type->tt_optype != NULL)
+	sz += STRLEN(type->tt_optype) + sizeof("<>");
+
+    s = alloc(sz);
+
+    if (s == NULL)
+	return "[unknown]";
+
+    vim_snprintf(s, sz, "opaque<%s>", type->tt_optype);
+
+    *tofree = s;
+    return s;
+}
+
+/*
  * Return the name of a type.
  * The result may be in allocated memory, in which case "tofree" is set.
  */
@@ -2767,7 +2920,8 @@ type_name(type_T *type, char **tofree)
 
 	case VAR_FUNC:
 	    return type_name_func(type, tofree);
-
+	case VAR_OPAQUE:
+	    return type_name_opaque(type, tofree);
 	default:
 	    break;
     }

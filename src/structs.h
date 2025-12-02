@@ -1503,6 +1503,7 @@ typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
 typedef struct tsobject_S tsobject_T;
+typedef struct opaque_S opaque_T;
 
 typedef enum
 {
@@ -1526,7 +1527,8 @@ typedef enum
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
     VAR_TUPLE,		// "v_tuple" is used
-    VAR_TSOBJECT	// "v_tsobject" is used
+    VAR_TSOBJECT,	// "v_tsobject" is used
+    VAR_OPAQUE		// "v_opaque" is used
 } vartype_T;
 
 // A type specification.
@@ -1538,6 +1540,8 @@ struct type_S {
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
+    char_u	    *tt_optype;	    // type of opaque data type. If NULL then
+				    // any type.
 };
 
 typedef struct {
@@ -1679,6 +1683,37 @@ struct typealias_S
     char_u  *ta_name;
 };
 
+typedef void	(*opaque_free_func_T)(opaque_T *);
+typedef bool	(*opaque_equal_func_T)(opaque_T *, opaque_T *);
+
+struct opaque_S
+{
+    int		op_refcount;	// Reference count
+    char_u	*op_type;	// Used to identify what type this is.
+
+    opaque_free_func_T	op_free_func;	// Called when opaque_T is freed. May be NULL.
+    opaque_equal_func_T op_equal_func;	// Called when comparing two opaque_T of
+					// the same type. Must be set.                 
+
+    char_u	op_data[1];	// Actually larger, should be casted to actual
+				// type when used
+};
+
+#define OP2DATA(s, t) ((t *)(s->op_data))
+
+    static inline bool
+opaque_eq_ptr(opaque_T *a, opaque_T *b)
+{
+    return OP2DATA(a, void *) == OP2DATA(b, void *);
+}
+
+// Used for f_test_opaque();
+typedef struct
+{
+    char_u *type_name;
+    int val;
+} test_opaque_T;
+
 /*
  * Structure to hold an internal variable without a name.
  */
@@ -1704,6 +1739,7 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
+	opaque_T	*v_opaque;	// opaque data type
 #ifdef FEAT_TREESITTER
 	tsobject_T	*v_tsobject;	// treesitter object
 #endif
