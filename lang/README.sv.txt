@@ -93,7 +93,7 @@ Licensen är GPL-kompatibel, du kan kompilera Vim med GPL-bibliotek och
 distribuera det.
 
 
-SPONSORING
+SPONSRING
 
 Att fixa buggar och lägga till nya funktioner tar mycket tid och ansträngning.  För att visa
 din uppskattning för arbetet och motivera utvecklarna att fortsätta arbeta med
@@ -131,7 +131,7 @@ Om inget annat fungerar, rapportera buggar direkt till vim-dev-maillistan:
 	<vim-dev@vim.org>
 
 
-HUVUDAFÖRFATTARE
+HUVUDFÖRFATTARE
 
 Det mesta av Vim har skapats av Bram Moolenaar <Bram@vim.org>, ":help Bram-Moolenaar"
 
