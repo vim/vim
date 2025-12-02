@@ -242,6 +242,7 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
 	case VAR_TSOBJECT:
+	case VAR_OPAQUE:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }
@@ -525,6 +526,7 @@ get_compare_isn(
 	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
 	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
 	    case VAR_TSOBJECT: isntype = ISN_COMPARETSOBJECT; break;
+	    case VAR_OPAQUE: isntype = ISN_COMPAREOPAQUE; break;
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
@@ -840,6 +842,11 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    generate_PUSHTSOBJECT(cctx);
 	    break;
 #endif
+	case VAR_OPAQUE:
+	    if (tv->vval.v_opaque != NULL)
+		iemsg("non-null opaque constant not supported");
+	    generate_PUSHOPAQUE(cctx);
+	    break;
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
@@ -1071,6 +1078,18 @@ generate_PUSHTSOBJECT(cctx_T *cctx)
     emsg(_(e_treesitter_feature_not_available));
     return FAIL;
 #endif
+}
+
+/*
+ * Generate an ISN_PUSHTSOBJECT instruction. treesitter object is always NULL.
+ */
+    int
+generate_PUSHOPAQUE(cctx_T *cctx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    if (generate_instr_type(cctx, ISN_PUSHOPAQUE, &t_opaque) == NULL)
+	return FAIL;
+    return OK;
 }
 
 /*
@@ -2902,6 +2921,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_COMPARETSOBJECT:
+	case ISN_COMPAREOPAQUE:
 	case ISN_CONCAT:
 	case ISN_CONSTRUCT:
 	case ISN_COND2BOOL:
@@ -2960,6 +2980,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
 	case ISN_PUSHTSOBJECT:
+	case ISN_PUSHOPAQUE:
 	case ISN_PUT:
 	case ISN_IPUT:
 	case ISN_REDIREND:

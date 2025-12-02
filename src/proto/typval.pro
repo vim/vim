@@ -80,6 +80,7 @@ int typval_compare_dict(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, i
 int typval_compare_func(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_string(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_tsobject(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
+int typval_compare_opaque(typval_T *tv1, typval_T *tv2, exprtype_T type, int *res);
 char_u *typval_tostring(typval_T *arg, int quotes);
 int tv_islocked(typval_T *tv);
 int tv_equal(typval_T *tv1, typval_T *tv2, int ic);

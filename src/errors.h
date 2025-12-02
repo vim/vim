@@ -3798,6 +3798,14 @@ EXTERN char e_osc_response_timed_out[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+EXTERN char e_using_opaque_as_number[]
+	INIT(= N_("E1570: Using a Opaque as a Number"));
+EXTERN char e_using_opaque_as_float[]
+	INIT(= N_("E1571: Using a Opaque as a Float"));
+EXTERN char e_using_opaque_as_string[]
+	INIT(= N_("E1572: Using a Opaque as a String"));
+EXTERN char e_opaque_cannot_compare_str_with_str[]
+	INIT(= N_("E1072: Cannot compare opaques %s with %s"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]

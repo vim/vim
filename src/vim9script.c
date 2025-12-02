@@ -1125,7 +1125,7 @@ static char *reserved[] = {
     "null_partial",
     "null_string",
     "null_tuple",
-    "null_tsobject",
+    "null_opaque",
     "super",
     "this",
     "true",
