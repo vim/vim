@@ -2317,7 +2317,6 @@ long elapsed(DWORD start_tick);
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
 #define VAR_TYPE_OPAQUE	    18
-#define VAR_TYPE_TSOBJECT   19
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
@@ -3110,5 +3109,15 @@ long elapsed(DWORD start_tick);
 #define CF_CLASS	1	// inside a class
 #define CF_INTERFACE	2	// inside an interface
 #define CF_ABSTRACT_METHOD	4	// inside an abstract class
+
+#ifdef FEAT_TREESITTER
+// Used for opaque type
+#define TSPARSER (char_u *)"TSParser"
+#define TSTREE (char_u *)"TSTree"
+#define TSNODE (char_u *)"TSNode"
+#define TSQUERY (char_u *)"TSQuery"
+#define TSQUERYCURSOR (char_u *)"TSQueryCursor"
+#define TSQUERYMATCH (char_u *)"TSQueryMatch"
+#endif
 
 #endif // VIM__H
