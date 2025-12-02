@@ -1,0 +1,59 @@
+*helpcurwin.txt*	For Vim version 9.1.	Last change: 2025 Dec 02
+
+The helpcurwin optional package enables opening help in the current window.
+
+1. :HelpCurwin			|helpcurwin-command|
+2. helpcurwin#Open()		|helpcurwin-function|
+3. <Plug>HelpCurwin;		|helpcurwin-mapping|
+
+
+==============================================================================
+1. :HelpCurwin				     *:HelpCurwin* *helpcurwin-command*
+
+:HelpCurwin		Use the current window to display the help file,
+			|help.txt| in read-only mode.  It leaves any other
+			windows as-is (including when there is another
+			help window(s)).
+
+:HelpCurwin {subject}	Like ":HelpCurwin" but, additionally open the
+			applicable help file at the tag {subject}.
+			For example: >
+
+			  :HelpCurwin version9.2
+<
+			It should otherwise behave like :help {subject}.
+
+You may also want to save typing with a command line abbreviation,
+for example: >vi
+
+  cnoreabbrev <expr> hc getcmdtype() == ":" &&
+    \ getcmdline() == 'hc' ? 'HelpCurwin' : 'hc'
+<
+
+==============================================================================
+2. helpcurwin#Open()					*helpcurwin-function*
+
+The underlying `:def` function may also be used, for example: >vim
+
+	:vim9cmd helpcurwin#Open('version9.2')
+<
+This may be useful from other scripts where you want to bring up help on
+{subject} in the current window.
+
+
+==============================================================================
+3. <Plug>HelpCurwin;					*helpcurwin-mapping*
+
+There may be times when you want to get the help for a WORD, such as when it
+is in a Vim9 script.  If you want to open it in the same window, you can map
+<Plug>HelpCurwin; to keys of your choosing to enable that.  For example: >vim9
+
+	nnoremap <Leader>hc <Plug>HelpCurwin;
+
+Once sourced (in this instance, when <Leader>hc is typed), the applicable
+help file will be opened in the current window at the tag for <cWORD> (that
+is, the |WORD| under the cursor), if it exists.
+
+
+==============================================================================
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -8309,7 +8309,6 @@ help	helphelp.txt	/*help*
 help-TOC	helphelp.txt	/*help-TOC*
 help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
-help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
@@ -9622,6 +9621,7 @@ package-create	repeat.txt	/*package-create*
 package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
 package-editorconfig	usr_05.txt	/*package-editorconfig*
+package-helpcurwin	tips.txt	/*package-helpcurwin*
 package-helptoc	helphelp.txt	/*package-helptoc*
 package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
