@@ -311,6 +311,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    case VAR_ANY:
 	    case VAR_VOID:
 	    case VAR_TSOBJECT:
+	    case VAR_OPAQUE:
 		emsg(_(e_cannot_index_special_variable));
 		break;
 	    default:
