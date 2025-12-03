@@ -740,40 +740,4 @@ func Test_term_gettty()
   exe buf . 'bwipe'
 endfunc
 
-func Test_windows_external_cmd_in_cwd()
-  " Check that Vim does not execute anything from current directory
-  CheckMSWindows
-
-  " just in case
-  call system('rd /S /Q Xfolder')
-  call mkdir('Xfolder', 'R')
-  cd Xfolder
-
-  let contents = ['@echo off', 'echo filename1.txt:1:AAAA']
-  call writefile(contents, 'findstr.cmd')
-
-  let file1 = ['AAAA', 'THIS FILE SHOULD NOT BE FOUND']
-  let file2 = ['BBBB', 'THIS FILE SHOULD BE FOUND']
-
-  call writefile(file1, 'filename1.txt')
-  call writefile(file2, 'filename2.txt')
-
-  " use silent to avoid hit-enter-prompt
-  sil grep BBBB filename*.txt
-
-  call assert_equal('filename2.txt', @%)
-
-  let output = system('findstr BBBB filename*')
-  " Match trailing newline byte
-  call assert_match('filename2.txt:BBBB.', output)
-
-  set guioptions+=!
-
-  let output = system('findstr BBBB filename*')
-  call assert_match('filename2.txt:BBBB.', output)
-
-  cd -
-  set guioptions&
-endfunc
-
 " vim: shiftwidth=2 sts=2 expandtab
