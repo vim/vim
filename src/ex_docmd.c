@@ -2372,7 +2372,7 @@ do_one_cmd(
 	    && (!IS_USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
 	    && !((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
-#if !defined(FEAT_CLIPBOARD) && !defined(FEAT_EVAL) && !defined(HAVE_CLIPMETHOD)
+#if !defined(FEAT_CLIPBOARD) && !defined(FEAT_CLIPBOARD_PROVIDER)
 	// check these explicitly for a more specific error message
 	if (*ea.arg == '*' || *ea.arg == '+')
 	{
@@ -10404,7 +10404,7 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     start_global_changes();
 # endif
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     inc_clip_provider();
 #endif
 
@@ -10419,7 +10419,7 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     end_global_changes();
 # endif
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
 }

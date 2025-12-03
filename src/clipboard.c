@@ -32,7 +32,7 @@
 // for them.
 
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
 static int clip_provider_is_available(char_u *provider);
 #endif
 
@@ -3490,10 +3490,13 @@ get_clipmethod(char_u *str)
 	    if (r == 1)
 	    {
 		method = CLIPMETHOD_PROVIDER;
-		vim_free(clip_provider);
-		clip_provider = vim_strsave(buf);
-		if (clip_provider == NULL)
-		    goto fail;
+		if (ret == CLIPMETHOD_FAIL)
+		{
+		    vim_free(clip_provider);
+		    clip_provider = vim_strsave(buf);
+		    if (clip_provider == NULL)
+			goto fail;
+		}
 	    }
 	    else if (r == -1)
 #endif
@@ -3574,7 +3577,7 @@ choose_clipmethod(void)
     // If on a system like windows or macos, then clipmethod is irrelevant, we
     // use their way of accessing the clipboard. This is unless we are using the
     // clipboard provider
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     if (method != CLIPMETHOD_PROVIDER)
 #endif
     {
@@ -3647,7 +3650,7 @@ ex_clipreset(exarg_T *eap UNUSED)
 
 #endif // HAVE_CLIPMETHOD
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
 
 /*
  * Check if a clipboard provider with given name is available. Returns 1 if available,
@@ -3679,7 +3682,7 @@ clip_provider_is_available(char_u *provider)
 	goto fail;
 
     if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
-	    rettv.v_type != VAR_BOOL)
+	    (rettv.v_type != VAR_BOOL && rettv.v_type != VAR_NUMBER))
 	goto fail;
 
     if (rettv.vval.v_number)
@@ -3981,7 +3984,7 @@ exit:
 // value (is allowed) is -2.
 static int star_pause_count = -2, plus_pause_count = -2;
 
-void
+    void
 call_clip_provider_request(int reg)
 {
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -4003,7 +4006,7 @@ call_clip_provider_request(int reg)
 	return;
 }
 
-void
+    void
 call_clip_provider_set(int reg)
 {
     if (clipmethod != CLIPMETHOD_PROVIDER)
@@ -4028,14 +4031,15 @@ call_clip_provider_set(int reg)
  * ignored, until dec_clip_provider is called the same number of times after
  * again. Note that this is per clipboard register ("+", "*")
  */
-void
+    void
 inc_clip_provider(void)
 {
     plus_pause_count = plus_pause_count == -2 ? -1 : plus_pause_count + 1;
     star_pause_count = star_pause_count == -2 ? -1 : star_pause_count + 1;
 }
 
-void dec_clip_provider(void)
+    void
+dec_clip_provider(void)
 {
     plus_pause_count = plus_pause_count == -1 ? -1 : plus_pause_count - 1;
     star_pause_count = star_pause_count == -1 ? -1 : star_pause_count - 1;
@@ -4046,4 +4050,4 @@ void dec_clip_provider(void)
 	star_pause_count = -2;
 }
 
-#endif // defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#endif // FEAT_CLIPBOARD_PROVIDER

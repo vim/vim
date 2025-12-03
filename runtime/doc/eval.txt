@@ -5332,10 +5332,10 @@ buffer text, see |textlock|.
 
 						*clipboard-providers-available*
 The "available" callback is optional, does not take any arguments and should
-return a |boolean|, which tells Vim if it is available for use.  If it is not,
-then Vim skips over it and tries the next 'clipmethod' item.  If the
-"available" callback is not provided, Vim assumes the provider is always
-available for use (true).
+return a |boolean| or non-zero number, which tells Vim if it is available
+for use.  If it is not, then Vim skips over it and tries the next 'clipmethod'
+value.  If the "available" callback is not provided, Vim assumes the provider
+is always available for use (true).
 
 						*clipboard-providers-paste*
 The "paste" callback takes the following arguments in the following order:

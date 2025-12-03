@@ -536,7 +536,7 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     start_global_changes();
 #endif
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     inc_clip_provider();
 #endif
 
@@ -763,7 +763,7 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     end_global_changes();
 #endif
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
 }
