@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Nov 30
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Dec 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -64,7 +64,7 @@ dictionary adds quite a lot of overhead.  In a Vim9 function this dictionary
 is not available.  Other differences are more subtle, such as how errors are
 handled.
 
-The Vim9 script syntax and semantics are used in:
+Vim9 script syntax, semantics, and behavior apply in:
 - a function defined with the `:def` command
 - a script file where the first command is `vim9script`
 - an autocommand defined in the context of the above
@@ -78,18 +78,72 @@ Vim9 script and legacy Vim script can be mixed.  There is no requirement to
 rewrite old scripts, they keep working as before.  You may want to use a few
 `:def` functions for code that needs to be fast.
 
-:vim9[cmd] {cmd}				*:vim9* *:vim9cmd* *E1164*
-		Evaluate and execute {cmd} using Vim9 script syntax and
-		semantics.  Useful when typing a command and in a legacy
-		script or function.
+:vim9[cmd] {cmd}				*:vim9* *:vim9cmd*
+		Evaluate and execute {cmd} using Vim9 script syntax,
+		semantics, and behavior.  Useful when typing a command,
+		in a `:function`, or a legacy Vim script.
 
-:leg[acy] {cmd}					*:leg* *:legacy* *E1189* *E1234*
-		Evaluate and execute {cmd} using legacy script syntax and
-		semantics.  Only useful in a Vim9 script or a :def function.
-		Note that {cmd} cannot use local variables, since it is parsed
-		with legacy expression syntax.
+		The following short example shows how a legacy Vim script
+		command and a :vim9cmd (so Vim9 script context) may appear
+		similar, though may differ not just syntactically, but also
+		semantically and behaviorally. >vim
 
-See some examples of Vim9 script at |52.6|.
+		  call popup_notification('entrée'[5:]
+		    \ ->str2list()->string(), #{time: 7000})
+		  vim9cmd popup_notification('entrée'[5 :]
+		      ->str2list()->string(), {time: 7000})
+<
+		 Notes: 1) The reason for the different output is Vim9 script
+			   uses character indexing whereas legacy Vim script
+			   uses byte indexing - see |vim9-string-index|.
+			2) Syntax is different too.  In Vim9 script:
+			  - The space in "[5 :]" is mandatory (see
+			    |vim9-white-space|).
+			  - Line continuation with "\" is not required.
+			  - The "#" (to avoid putting quotes around dictionary
+			    keys) is neither required nor allowed - see |#{}|.
+
+						*E1164*
+		`:vim9cmd` cannot stand alone; it must be followed by a command.
+
+:leg[acy] {cmd}					*:leg* *:legacy*
+		Evaluate and execute {cmd} using legacy Vim script syntax,
+		semantics, and behavior.  It is only applicable in a Vim9
+		script or a `:def` function.  Using an equivalent script to
+		the one, above (see its notes for why the output differs): >vim9
+
+		  vim9script
+		  # Legacy context - so, this creates a popup with [769, 101]
+		  legacy call popup_notification('entrée'[5:]
+		    \ ->str2list()->string(), #{time: 7000})
+		  # Vim9 script context - so, this creates a pop up with [101]
+		  popup_notification('entrée'[5 :]
+		      ->str2list()->string(), {time: 7000})
+<
+		Vim9 script script-local variables may be used by prefixing
+		"s:", like in legacy Vim script.  This example shows the
+		difference in syntax: "k" for the script-local variable in
+		Vim9 script, "s:k" in the legacy Vim script context. >vim9
+
+		  vim9script
+		  var k: string = "Okay"
+		  echo k
+		  legacy echo s:k
+<						*E1189*
+		Using `:legacy` is not allowed in compiled Vim9 script
+		control flow contexts. For example: >vim9
+
+		  vim9script
+		  def F_1189()
+		    if v:version == 900
+		    # E1189: Cannot use :legacy with this command: endif
+		    legacy endif
+		  enddef
+		  F_1189()
+<						*E1234*
+		`:legacy` cannot stand alone; it must be followed by a command.
+
+
 ==============================================================================
 
 2. Differences from legacy Vim script			*vim9-differences*
