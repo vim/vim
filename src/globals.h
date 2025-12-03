@@ -993,7 +993,7 @@ EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 EXTERN int	clip_unnamed_saved INIT(= 0);
 #endif
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
 EXTERN char_u	*clip_provider INIT(= NULL);
 #endif
 

@@ -1907,7 +1907,7 @@ write_viminfo_registers(FILE *fp)
 
     for (i = 0; i < NUM_REGISTERS; i++)
     {
-#if defined(FEAT_CLIPBOARD) || (defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD))
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
 	// Skip '*'/'+' register, we don't want them back next time
 	if (i == STAR_REGISTER || i == PLUS_REGISTER || i == REAL_PLUS_REGISTER)
 	    continue;

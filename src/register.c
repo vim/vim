@@ -46,7 +46,7 @@ get_y_regs(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || (defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD))
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
     yankreg_T *
 get_y_register(int reg)
 {
@@ -194,7 +194,7 @@ valid_yank_reg(
 			    // always exist.
 	    || regname == '*'
 	    || regname == '+'
-#elif defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+#elif defined(FEAT_CLIPBOARD_PROVIDER)
 	    || ( // If -clipboard, then these registers only exist when
 		 // clipmethod is set to provider.
 	     clipmethod == CLIPMETHOD_PROVIDER && (
@@ -264,7 +264,7 @@ get_yank_register(int regname, int writing)
     // When clipboard is not available, use register 0 instead of '+'
     else if (clip_plus.available && regname == '+')
     {
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
 	// We want to use the actual + register, since PLUS_REGISTER may be
 	// pointing to STAR_REGISTER.
 	if (clipmethod == CLIPMETHOD_PROVIDER)
@@ -274,7 +274,7 @@ get_yank_register(int regname, int writing)
 	    i = PLUS_REGISTER;
 	ret = TRUE;
     }
-#elif defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#elif defined(FEAT_CLIPBOARD_PROVIDER)
     else if (regname == '*')
     {
 	i = STAR_REGISTER;
@@ -310,7 +310,7 @@ get_register(
     yankreg_T	*reg;
     int		i;
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(name);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -647,7 +647,7 @@ do_execreg(
     }
     execreg_lastc = regname;
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -859,7 +859,7 @@ insert_reg(
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return FAIL;
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -1419,7 +1419,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    decl(&curbuf->b_op_end);
     }
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     if (curr == &y_regs[REAL_PLUS_REGISTER])
 	call_clip_provider_set('+');
     else if (curr == &y_regs[STAR_REGISTER])
@@ -1585,7 +1585,7 @@ do_put(
     pos_T	orig_end = curbuf->b_op_end;
     unsigned int cur_ve_flags = get_ve_flags();
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -2383,7 +2383,7 @@ get_register_name(int num)
 	return num + '0';
     else if (num == DELETION_REGISTER)
 	return '-';
-#if defined(FEAT_CLIPBOARD) || (defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL))
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
     else if (num == STAR_REGISTER)
 	return '*';
     // If there is only one clipboard, we only want the plus register to point
@@ -2431,7 +2431,7 @@ ex_display(exarg_T *eap)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     inc_clip_provider();
 #endif
 
@@ -2454,8 +2454,7 @@ ex_display(exarg_T *eap)
 		)
 	    continue;	    // did not ask for this register
 
-
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
 	call_clip_provider_request(name);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -2588,7 +2587,7 @@ ex_display(exarg_T *eap)
     }
 #endif
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
 }
@@ -2663,7 +2662,7 @@ get_reg_type(int regname, long *reglen)
 	    return MCHAR;
     }
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 # ifdef FEAT_CLIPBOARD
@@ -2746,7 +2745,7 @@ get_reg_contents(int regname, int flags)
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return NULL;
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 # ifdef FEAT_CLIPBOARD
@@ -2917,7 +2916,7 @@ write_reg_contents_lst(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
 #endif
 }
@@ -2995,7 +2994,7 @@ write_reg_contents_ex(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
+#ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
 #endif
 }
