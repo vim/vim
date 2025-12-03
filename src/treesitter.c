@@ -151,26 +151,19 @@ tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
     static tuple_T *
 tspoint_to_tuple(TSPoint point)
 {
-    typval_T	*row, *column;
+    typval_T	row, column;
     tuple_T	*t = tuple_alloc_with_items(2);
 
     if (t == NULL)
 	return NULL;
 
-    if ((row = alloc_tv()) == NULL)
-    {
-	tuple_free(t);
-	return NULL;
-    }
-    if ((column = alloc_tv()) == NULL)
-    {
-	free_tv(row);
-	tuple_free(t);
-	return NULL;
-    }
+    row.v_type = VAR_NUMBER;
+    column.v_type = VAR_NUMBER;
+    row.vval.v_number = point.row;
+    column.vval.v_number = point.column;
 
-    tuple_set_item(t, 0, row);
-    tuple_set_item(t, 1, column);
+    tuple_set_item(t, 0, &row);
+    tuple_set_item(t, 1, &column);
     t->tv_refcount++;
 
     return t;
@@ -447,13 +440,30 @@ tstree_root_node(opaque_T *tree)
 }
 
 /*
- * Return a dictionary describing the node, returns NULL on failure. The
- * following entries that will be in the dictionary are:
- *
- *
+ * Return the node's type as a string. Returned value is owned by the node, and
+ * should not be freed.
+ */
+    char_u *
+tsnode_type(opaque_T *node_obj)
+{
+    TSNode node = *OP2TSNODE(node_obj); 
+
+    return (char_u *)ts_node_type(node);
+}
+
+    int
+tsnode_symbol(opaque_T *node_obj)
+{
+    TSNode node = *OP2TSNODE(node_obj); 
+
+    return ts_node_symbol(node);
+}
+
+/*
+ * Return a dictionary describing the node's position, returns NULL on failure.
  */
     dict_T *
-tsnode_info(opaque_T *node_obj)
+tsnode_position(opaque_T *node_obj)
 {
     TSNode node = *OP2TSNODE(node_obj); 
     dict_T *dict = dict_alloc();
@@ -461,25 +471,19 @@ tsnode_info(opaque_T *node_obj)
     if (dict == NULL)
 	return NULL;
 
-    else if (dict_add_string(dict, "id", (char_u *)node.id) == FAIL)
-	goto fail;
-    if (dict_add_string(dict, "type", (char_u *)ts_node_type(node)) == FAIL)
-	goto fail;
-    else if (dict_add_string(dict, "grammar_type",
-		(char_u *)ts_node_grammar_type(node)) == FAIL)
-	goto fail;
-    else if (dict_add_number(dict, "start_byte", ts_node_start_byte(node)) == FAIL)
+    if (dict_add_number(dict, "start_byte",
+		ts_node_start_byte(node)) == FAIL)
 	goto fail;
     else if (dict_add_tuple(dict, "start",
 		tspoint_to_tuple(ts_node_start_point(node))) == FAIL)
 	goto fail;
-    else if (dict_add_number(dict, "end_byte", ts_node_end_byte(node)) == FAIL)
+    else if (dict_add_number(dict, "end_byte",
+		ts_node_end_byte(node)) == FAIL)
 	goto fail;
     else if (dict_add_tuple(dict, "end",
 		tspoint_to_tuple(ts_node_end_point(node))) == FAIL)
 	goto fail;
 
-    dict->dv_refcount++;
     return dict;
 fail:
     dict_unref(dict);
