@@ -1310,7 +1310,7 @@ func Test_inc_search()
   call assert_fails('isplit 6 foo', 'E389:')
   call assert_fails('isplit bar', 'E389:')
 
-  close!
+  bw!
 endfunc
 
 " this was using a line from ml_get() freed by the regexp
@@ -1423,7 +1423,7 @@ func Test_macro_search()
   call assert_fails('dsplit 6 FOO', 'E388:')
   call assert_fails('dsplit BAR', 'E388:')
 
-  close!
+  bw!
 endfunc
 
 func Test_define_search()
@@ -1469,7 +1469,7 @@ func Test_comment_search()
   call assert_beeps('normal! 15|[/')
   call setline(1, '        /* comment')
   call assert_beeps('normal! 15|]/')
-  close!
+  bw!
 endfunc
 
 " Test for the 'taglength' option
