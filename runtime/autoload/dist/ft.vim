@@ -1736,6 +1736,8 @@ const ft_from_ext = {
   # BSDL
   "bsd": "bsdl",
   "bsdl": "bsdl",
+  # Bpftrace
+  "bt": "bpftrace",
   # C3
   "c3": "c3",
   "c3i": "c3",
