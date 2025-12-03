@@ -1419,41 +1419,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    decl(&curbuf->b_op_end);
     }
 
-#ifdef FEAT_CLIPBOARD
-    // If we were yanking to the '*' register, send result to clipboard.
-    // If no register was specified, and "unnamed" in 'clipboard', make a copy
-    // to the '*' register.
-    if (clip_star.available
-	    && (curr == &(y_regs[STAR_REGISTER])
-		|| (!deleting && oap->regname == 0
-		   && ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED))))
-    {
-	if (curr != &(y_regs[STAR_REGISTER]))
-	    // Copy the text from register 0 to the clipboard register.
-	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
-
-	clip_own_selection(&clip_star);
-	clip_gen_set_selection(&clip_star);
-    }
-
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-    // If we were yanking to the '+' register, send result to selection.
-    if (clip_plus.available
-	    && (curr == &(y_regs[PLUS_REGISTER])
-		|| (!deleting && oap->regname == 0
-		  && ((clip_unnamed | clip_unnamed_saved) &
-							  CLIP_UNNAMED_PLUS))))
-    {
-	if (curr != &(y_regs[PLUS_REGISTER]))
-	    // Copy the text from register 0 to the clipboard register.
-	    copy_yank_reg(&(y_regs[PLUS_REGISTER]));
-
-	clip_own_selection(&clip_plus);
-	clip_gen_set_selection(&clip_plus);
-    }
-# endif
-#endif
-
 #if defined(FEAT_EVAL) && defined(HAVE_CLIPMETHOD)
     if (curr == &y_regs[REAL_PLUS_REGISTER])
 	call_clip_provider_set('+');
@@ -1462,56 +1427,41 @@ op_yank(oparg_T *oap, int deleting, int mess)
 #endif
 
 #ifdef FEAT_CLIPBOARD
-    // If we were yanking to the '*' register, send result to clipboard.
-    // If no register was specified, and "unnamed" in 'clipboard', make a copy
-    // to the '*' register.
-    if (clipmethod != CLIPMETHOD_PROVIDER && clip_star.available
-	    && (curr == &(y_regs[STAR_REGISTER])
-		|| (!deleting && oap->regname == 0
-		    && ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED))))
+    if (clipmethod != CLIPMETHOD_PROVIDER)
     {
-	if (curr != &(y_regs[STAR_REGISTER]))
-	    // Copy the text from register 0 to the clipboard register.
-	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
-
-	clip_own_selection(&clip_star);
-	clip_gen_set_selection(&clip_star);
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-	did_star = TRUE;
-# endif
-    }
-
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-    // If we were yanking to the '+' register, send result to selection.
-    // Also copy to the '*' register, in case auto-select is off.  But not when
-    // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
-    // deleting and both "unnamedplus" and "unnamed".
-    if (clipmethod != CLIPMETHOD_PROVIDER && clip_plus.available
-	    && (curr == &(y_regs[PLUS_REGISTER])
-		|| (!deleting && oap->regname == 0
-		    && ((clip_unnamed | clip_unnamed_saved) &
-							    CLIP_UNNAMED_PLUS))))
-    {
-	if (curr != &(y_regs[PLUS_REGISTER]))
-	    // Copy the text from register 0 to the clipboard register.
-	    copy_yank_reg(&(y_regs[PLUS_REGISTER]));
-
-	clip_own_selection(&clip_plus);
-	clip_gen_set_selection(&clip_plus);
-	if (!clip_isautosel_star()
-		&& !clip_isautosel_plus()
-		&& !((clip_unnamed | clip_unnamed_saved) == CLIP_UNNAMED_PLUS)
-		&& !(deleting && (clip_unnamed | clip_unnamed_saved)
-					== (CLIP_UNNAMED | CLIP_UNNAMED_PLUS))
-		&& !did_star
-		&& curr == &(y_regs[PLUS_REGISTER]))
+	// If we were yanking to the '*' register, send result to clipboard. If
+	// no register was specified, and "unnamed" in 'clipboard', make a copy
+	// to the '*' register.
+	if (clip_star.available
+		&& (curr == &(y_regs[STAR_REGISTER])
+		    || (!deleting && oap->regname == 0
+			&& ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED))))
 	{
-	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
+	    if (curr != &(y_regs[STAR_REGISTER]))
+		// Copy the text from register 0 to the clipboard register.
+		copy_yank_reg(&(y_regs[STAR_REGISTER]));
+
 	    clip_own_selection(&clip_star);
 	    clip_gen_set_selection(&clip_star);
 	}
-    }
+
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+	// If we were yanking to the '+' register, send result to selection.
+	if (clip_plus.available
+		&& (curr == &(y_regs[PLUS_REGISTER])
+		    || (!deleting && oap->regname == 0
+			&& ((clip_unnamed | clip_unnamed_saved) &
+			    CLIP_UNNAMED_PLUS))))
+	{
+	    if (curr != &(y_regs[PLUS_REGISTER]))
+		// Copy the text from register 0 to the clipboard register.
+		copy_yank_reg(&(y_regs[PLUS_REGISTER]));
+
+	    clip_own_selection(&clip_plus);
+	    clip_gen_set_selection(&clip_plus);
+	}
 # endif
+    }
 #endif
 
 #if defined(FEAT_EVAL)
