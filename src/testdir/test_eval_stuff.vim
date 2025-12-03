@@ -852,6 +852,20 @@ func Test_clipboard_provider_paste()
   call assert_equal(["a", "list", "+"], getreg("+", 1, 1))
   call assert_equal(["a", "list", "*"], getreg("*", 1, 1))
 
+  " Test put
+  new
+
+  let g:vim_paste = "tuple"
+  put! *
+
+  call assert_equal(["a", "tuple", "*"], getline(1, 3))
+
+  put +
+
+  call assert_equal(["a", "tuple", "+"], getline(4, 6))
+
+  bw!
+
   set clipmethod&
 endfunc
 
@@ -897,6 +911,25 @@ func Test_clipboard_provider_copy()
   call assert_equal(["hello", "world!"], g:vim_copy.lines)
   call assert_equal("40", g:vim_copy.type)
 
+  " Test yanking
+  new
+
+  call setline(1, "TESTING")
+  yank *
+
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["TESTING"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  call setline(1, "TESTING2")
+  yank +
+
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["TESTING2"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  bw!
+
   set clipmethod&
 endfunc
 
@@ -904,7 +937,7 @@ endfunc
 " and that the clipboard provider feature exposes the + register only when
 " clipmethod is set to a provider. If not, then the plus register points to the
 " star register like normal.
-func Test_clipboard_provider_registers()
+func Test_clipboard_provider_no_unamedplus()
   CheckNotFeature unnamedplus
   CheckFeature clipboard_working
 
@@ -973,6 +1006,7 @@ func Test_clipboard_provider_sys_clipboard()
         \       '*': function("s:Copy")
         \   }
         \ }
+
   call setreg("*", "hello world from the * register!", "c")
   call assert_equal("hello world from the * register!", getreg("*"))
   call setreg("+", "hello world from the + register!", "c")
@@ -985,6 +1019,19 @@ func Test_clipboard_provider_sys_clipboard()
   call setreg("*", "hello world!", "c")
   call assert_equal(["a", "tuple", "*"], getreg("*", 1, 1))
   call assert_equal(["a", "tuple", "+"], getreg("+", 1, 1))
+
+  new
+  call setline(1, "TESTING")
+  yank *
+
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["TESTING"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  put *
+
+  call assert_equal(["TESTING", "a", "tuple", "*"], getline(1, 4))
+  bw!
 
   set clipmethod&
 
