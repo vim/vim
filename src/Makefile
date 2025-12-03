@@ -1589,6 +1589,7 @@ BASIC_SRC = \
 	viminfo.c \
 	window.c \
 	bufwrite.c \
+	opaque.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1767,6 +1768,7 @@ OBJ_COMMON = \
 	objects/viminfo.o \
 	objects/window.o \
 	objects/bufwrite.o \
+	objects/opaque.o \
 	$(GUI_OBJ) \
 	$(TERM_OBJ) \
 	$(LUA_OBJ) \
@@ -1843,6 +1845,7 @@ PROTO_FILES = \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/bufwrite.pro \
+	proto/opaque.pro \
 	proto/change.pro \
 	proto/channel.pro \
 	proto/charset.pro \
@@ -3491,6 +3494,9 @@ objects/mbyte.o: mbyte.c
 objects/normal.o: normal.c
 	$(CCC) -o $@ normal.c
 
+objects/opaque.o: opaque.c
+	$(CCC) -o $@ opaque.c
+
 objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
@@ -4811,3 +4817,4 @@ proto/gui_gtk_x11.pro: gui_gtk_x11.c
 proto/gui_x11.pro: gui_x11.c
 proto/gui_w32.pro: gui_w32.c
 proto/gui_photon.pro: gui_photon.c
+proto/opaque.pro: opaque.c

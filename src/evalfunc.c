@@ -205,7 +205,9 @@ static void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
 static void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
 static void f_tstree_edit(typval_T *argvars, typval_T *rettv);
 static void f_tstree_root_node(typval_T *argvars, typval_T *rettv);
-static void f_tsnode_info(typval_T *argvars, typval_T *rettv);
+static void f_tsnode_position(typval_T *argvars, typval_T *rettv);
+static void f_tsnode_symbol(typval_T *argvars, typval_T *rettv);
+static void f_tsnode_type(typval_T *argvars, typval_T *rettv);
 static void f_tsquery_new(typval_T *argvars, typval_T *rettv);
 #endif
 
@@ -3174,8 +3176,12 @@ static const funcentry_T global_functions[] =
 			ret_float,	    f_trunc},
     {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
 			ret_void,	    TS_FUNC(f_ts_load)},
-    {"tsnode_info",	1, 1, FEARG_1,	    arg1_opaque,
-			ret_dict_any,	    TS_FUNC(f_tsnode_info)},
+    {"tsnode_position",	1, 1, FEARG_1,	    arg1_opaque,
+			ret_dict_any,	    TS_FUNC(f_tsnode_position)},
+    {"tsnode_symbol",	1, 1, FEARG_1,	    arg1_opaque,
+			ret_number,	    TS_FUNC(f_tsnode_symbol)},
+    {"tsnode_type",	1, 1, FEARG_1,	    arg1_opaque,
+			ret_string,	    TS_FUNC(f_tsnode_type)},
     {"tsparser_new",	0, 0, 0,	    NULL,
 			ret_opaque,	    TS_FUNC(f_tsparser_new)},
     {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_opaque_buffer_number_opaque,
@@ -13037,7 +13043,7 @@ f_tstree_root_node(typval_T *argvars, typval_T *rettv)
 }
 
     static void
-f_tsnode_info(typval_T *argvars, typval_T *rettv)
+f_tsnode_position(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
 	return;
@@ -13046,7 +13052,33 @@ f_tsnode_info(typval_T *argvars, typval_T *rettv)
 	return;
 
     rettv->v_type = VAR_DICT;
-    rettv->vval.v_dict = tsnode_info(argvars[0].vval.v_opaque);
+    rettv->vval.v_dict = tsnode_position(argvars[0].vval.v_opaque);
+}
+
+    static void
+f_tsnode_symbol(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, TSNODE) == FAIL)
+	return;
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = tsnode_symbol(argvars[0].vval.v_opaque);
+}
+
+    static void
+f_tsnode_type(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, TSNODE) == FAIL)
+	return;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave(tsnode_type(argvars[0].vval.v_opaque));
 }
 
     static void
