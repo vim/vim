@@ -3258,13 +3258,21 @@ win_line(
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
+#ifdef FEAT_PROP_POPUP
+		    // the lenght of above virtual text may add up to a number
+		    // that is not a multiple of 'ts', adjust here to fix the
+		    // calculation of tab_len
+		    if (wlv.text_prop_above_count > 0)
+			vcol_adjusted -= (wp->w_width - win_col_off(wp))
+			       * wlv.text_prop_above_count % wp->w_buffer->b_p_ts;
+#endif
 #ifdef FEAT_LINEBREAK
 		    char_u  *sbr = get_showbreak_value(wp);
 
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
-		    if (*sbr != NUL && wlv.vcol == wlv.vcol_sbr && wp->w_p_wrap)
-			vcol_adjusted = wlv.vcol - MB_CHARLEN(sbr);
+		    if (*sbr != NUL && vcol_adjusted == wlv.vcol_sbr && wp->w_p_wrap)
+			vcol_adjusted -= MB_CHARLEN(sbr);
 #endif
 		    // tab amount depends on current column
 #ifdef FEAT_VARTABS
