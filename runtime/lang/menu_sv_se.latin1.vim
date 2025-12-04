@@ -33,14 +33,14 @@ menutrans &About		&Om
 " File menu
 menutrans &File				&Arkiv
 menutrans &Open\.\.\.<Tab>:e		Ö&ppna\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ delad vy\.\.\.<Tab>:sp
-menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Öppna\ flik\.\.\.<Tab>:tabnew
+menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ &delad vy\.\.\.<Tab>:sp
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Öppna\ &flik\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Ny<Tab>:enew
 menutrans &Close<Tab>:close		S&täng<Tab>:close
 menutrans &Save<Tab>:w			&Spara<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Spara\ som\.\.\.<Tab>:sav
-menutrans Split\ &Diff\ with\.\.\.	Dela\ diff\ med\.\.\.
-menutrans Split\ Patched\ &By\.\.\.	Dela\ lappad\ med\.\.\.
+menutrans Save\ &As\.\.\.<Tab>:sav	Spara\ so&m\.\.\.<Tab>:sav
+menutrans Split\ &Diff\ with\.\.\.	Dela\ &diff\ med\.\.\.
+menutrans Split\ Patched\ &By\.\.\.	Dela\ &lappad\ med\.\.\.
 menutrans &Print			Skriv\ &ut
 menutrans Sa&ve-Exit<Tab>:wqa		Spara\ &och\ avsluta<Tab>:wqa
 menutrans E&xit<Tab>:qa			A&vsluta<Tab>:qa
@@ -132,15 +132,15 @@ menutrans Suggest\ &Corrections<Tab>z=		Föreslå\ &korrigeringar
 menutrans &Repeat\ correction<Tab>:spellrepall	&Upprepa\ korrigering
 
 " Tools.Folding
-menutrans &Enable/Disable\ folds<Tab>zi	Växla\ veck<Tab>zi
-menutrans &View\ Cursor\ Line<Tab>zv	Visa\ markörrad<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx	Visa\ bara\ markörrad<Tab>zMzx
-menutrans C&lose\ more\ folds<Tab>zm	Stäng\ mer\ veck<Tab>zm
-menutrans &Close\ all\ folds<Tab>zM	Stäng\ alla\ veck<Tab>zM
-menutrans O&pen\ more\ folds<Tab>zr	Öppna\ mer\ veck<Tab>zr
-menutrans &Open\ all\ folds<Tab>zR	Öppna\ mer\ veck<Tab>zR
-menutrans Fold\ Met&hod			Veckmetod
-menutrans M&anual			Manual
+menutrans &Enable/Disable\ folds<Tab>zi	Växla\ ve&ck<Tab>zi
+menutrans &View\ Cursor\ Line<Tab>zv	Visa\ ma&rkörrad<Tab>zv
+menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vi&sa\ bara\ markörrad<Tab>zMzx
+menutrans C&lose\ more\ folds<Tab>zm	Stäng\ f&ler\ veck<Tab>zm
+menutrans &Close\ all\ folds<Tab>zM	S&täng\ alla\ veck<Tab>zM
+menutrans O&pen\ more\ folds<Tab>zr	Ö&pp&na\ mer\ veck<Tab>zr
+menutrans &Open\ all\ folds<Tab>zR	Öppna\ alla\ veck<Tab>zR
+menutrans Fold\ Met&hod			Veckmet&od
+menutrans M&anual			M&anual
 menutrans I&ndent			Indentering
 menutrans E&xpression			Uttryck
 menutrans S&yntax			Syntax
@@ -221,7 +221,7 @@ if has("toolbar")
     tmenu ToolBar.FindNext	Sök nästa
     tmenu ToolBar.FindPrev	Sök föregående
     tmenu ToolBar.Replace	Sök och ersätt...
-    tmenu ToolBar.LoadSesn	Ladda session
+    tmenu ToolBar.LoadSesn	Läs in session
     tmenu ToolBar.SaveSesn	Spara session
     tmenu ToolBar.RunScript	Kör ett Vim-skript
     tmenu ToolBar.Make		Bygg aktuellt projekt
@@ -238,11 +238,11 @@ menutrans &Syntax			&Syntax
 menutrans &Show\ filetypes\ in\ menu	&Visa\ filtyper\ i\ meny
 menutrans &Off				&Av
 menutrans &Manual			&Manuellt
-menutrans A&utomatic			Automatiskt
-menutrans on/off\ for\ &This\ file	Av/På\ för\ aktuell\ fil
-menutrans Co&lor\ test			Färgtest
-menutrans &Highlight\ test		Framhävningstest
-menutrans &Convert\ to\ HTML		Konvertera\ till\ &HTML
+menutrans A&utomatic			A&utomatiskt
+menutrans on/off\ for\ &This\ file	Av/På\ för\ a&ktuell\ fil
+menutrans Co&lor\ test			Fär&gtest
+menutrans &Highlight\ test		&Framhävningstest
+menutrans &Convert\ to\ HTML		&Konvertera\ till\ &HTML
 
 " dialog texts
 let menutrans_no_file = "[Ingen fil]"
