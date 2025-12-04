@@ -21,7 +21,7 @@ LangString ^UninstallCaption ${LANG_SWEDISH} \
 # Licensfil för licenssidan                                       {{{1
 ##############################################################################
 
-LicenseLangString page_lic_file ${LANG_SWEDISH} "..\lang\LICENSE.nsis.txt"
+LicenseLangString page_lic_file ${LANG_SWEDISH} "..\lang\LICENSE.sv.nsis.txt"
 
 ##############################################################################
 # README.txt-fil, som öppnas efter installationen                     {{{1
