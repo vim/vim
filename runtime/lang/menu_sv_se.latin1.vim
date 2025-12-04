@@ -19,21 +19,22 @@ endif
 
 " Help menu
 menutrans &Help			&Hjälp
-menutrans &Overview<Tab><F1>	&Översikt<Tab><F1>
+menutrans &Overview<Tab><F1>	Öv&ersikt<Tab><F1>
 menutrans &User\ Manual		&Användarmanual
 menutrans &How-to\ links	&Hur-göra-länkar
 menutrans &Find\.\.\.		&Sök\.\.\.
-menutrans &Credits		&Tack
-menutrans Co&pying		&Kopieringsrättigheter
+menutrans &Credits		&Tack\ till
+menutrans Co&pying		&Kopiering
 menutrans &Sponsor/Register	&Sponsra/Registrera
-menutrans O&rphans		&Föräldralösa
+menutrans O&rphans		&Föräldralösa\ barn
 menutrans &Version		&Version
 menutrans &About		&Om
 
 " File menu
+
 menutrans &File				&Arkiv
 menutrans &Open\.\.\.<Tab>:e		Ö&ppna\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ &delad vy\.\.\.<Tab>:sp
+menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ &delad\ vy\.\.\.<Tab>:sp
 menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Öppna\ &flik\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Ny<Tab>:enew
 menutrans &Close<Tab>:close		S&täng<Tab>:close
@@ -49,12 +50,12 @@ menutrans E&xit<Tab>:qa			A&vsluta<Tab>:qa
 menutrans &Edit				R&edigera
 menutrans &Undo<Tab>u			Å&ngra<Tab>u
 menutrans &Redo<Tab>^R			&Gör\ om<Tab>^R
-menutrans Rep&eat<Tab>\.		&Repetera<Tab>\.
+menutrans Rep&eat<Tab>\.		Upp&repa<Tab>\.
 menutrans Cu&t<Tab>"+x			Klipp\ &ut<Tab>"+x
 menutrans &Copy<Tab>"+y			&Kopiera<Tab>"+y
 menutrans &Paste<Tab>"+gP		Klistra\ &in<Tab>"+gP
-menutrans Put\ &Before<Tab>[p		Sätt\ in\ &före<Tab>[p
-menutrans Put\ &After<Tab>]p		Sätt\ in\ &efter<Tab>]p
+menutrans Put\ &Before<Tab>[p		Infoga\ &före<Tab>[p
+menutrans Put\ &After<Tab>]p		Infoga\ &efter<Tab>]p
 menutrans &Select\ All<Tab>ggVG		&Markera\ allt<Tab>ggVG
 menutrans &Find\.\.\.			&Sök\.\.\.
 menutrans &Find<Tab>/			&Sök<Tab>/
@@ -66,12 +67,15 @@ menutrans Settings\ &Window		In&ställningar
 menutrans &Global\ Settings		Gl&obala\ inställningar
 menutrans F&ile\ Settings		Fi&linställningar
 menutrans C&olor\ Scheme		Färgs&chema
-menutrans &Keymap			&Tangentbordsuppsättning
+menutrans Show\ C&olor\ Schemes\ in\ Menu    Visa\ fär&gscheman\ i\ meny
+menutrans &Keymap			&Tangentuppsättning
+menutrans Show\ &Keymaps\ in\ Menu      Visa\ &tangentuppsättningar\ i\ meny 
+menutrans Startup\ &Settings		U&ppstartsinställningar
 
 " Edit.Global Settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Växla\ &mönsterframhävning<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Växla\ &ignorering\ av\ storlek<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Växla\ &matchningsvisning<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Växla\ &ignorering\ av\ skiftläge<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!  Växla\ visning\ av\ &matchande\ par<Tab>:set\ sm!
 menutrans &Context\ lines				Sa&mmanhangsrader
 menutrans &Virtual\ Edit				&Virtuell\ redigering
 menutrans Never						Aldrig
@@ -80,7 +84,7 @@ menutrans Insert\ mode					Infogningsläge
 menutrans Block\ and\ Insert				Block\ och\ infogning
 menutrans Always					Alltid
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Växla\ &infogningsläge<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		Växla\ Vi-k&ompabilitet<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		Växla\ Vi-k&ompabilitet<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				Sö&kväg\.\.\.
 menutrans Ta&g\ Files\.\.\.				Tag&gfiler\.\.\.
 menutrans Toggle\ &Toolbar				Växla\ v&erktygsrad
@@ -90,46 +94,47 @@ menutrans Toggle\ &Right\ Scrollbar			Växla\ &höger\ rullningslista
 menutrans None						Ingen
 
 " Edit.File Settings
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Växla\ radnumrering<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Växla\ listläge<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		Växla\ radbrytning<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Växla\ radbrytning\ vid\ ord<tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
-menutrans &Shiftwidth					Shiftbredd
-menutrans Soft\ &Tabstop				Mjuk\ tab-stopp
-menutrans Te&xt\ Width\.\.\.				Textbredd\.\.\.
-menutrans &File\ Format\.\.\.				Filformat\.\.\.
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Växla\ rad&numrering<Tab>:set\ nu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!  Växla\ &relativ\ radnumrering<Tab>:set\ rnu!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Växla\ &listläge<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Växla\ radbr&ytning<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	Växla\ radbry&tning\ vid\ ord<tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		Växla\ tab-e&xpandering<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Växla\ &automatisk\ indentering<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Växla\ &C-indentering<Tab>:set\ cin!
+menutrans &Shiftwidth					&Shiftbredd
+menutrans Soft\ &Tabstop				Mjuk\ &tab-stopp
+menutrans Te&xt\ Width\.\.\.				Te&xtbredd\.\.\.
+menutrans &File\ Format\.\.\.				&Filformat\.\.\.
 
 " Tools menu
 menutrans &Tools			Ver&ktyg
 menutrans &Jump\ to\ this\ tag<Tab>g^]	&Hoppa\ till\ den\ här\ taggen<Tab>g^]
-menutrans Jump\ &back<Tab>^T		Hoppa\ tillbaka<Tab>^T
-menutrans Build\ &Tags\ File		Bygg\ taggfil
+menutrans Jump\ &back<Tab>^T		Hoppa\ &tillbaka<Tab>^T
+menutrans Build\ &Tags\ File		&Bygg\ taggfil
 menutrans &Make<Tab>:make		&Bygg<Tab>:make
-menutrans &List\ Errors<Tab>:cl		Listfel<Tab>:cl
-menutrans L&ist\ Messages<Tab>:cl!	Listmeddelande<Tab>:cl!
-menutrans &Next\ Error<Tab>:cn		Nästa\ fel<Tab>:cn
-menutrans &Previous\ Error<Tab>:cp	Föregående\ fel<Tab>:cp
-menutrans &Older\ List<Tab>:cold	&Äldre\ lista<Tab>:cold
+menutrans &List\ Errors<Tab>:cl		L&istfel<Tab>:cl
+menutrans L&ist\ Messages<Tab>:cl!	&Listmeddelande<Tab>:cl!
+menutrans &Next\ Error<Tab>:cn		&Nästa\ fel<Tab>:cn
+menutrans &Previous\ Error<Tab>:cp	Före&gående\ fel<Tab>:cp
+menutrans &Older\ List<Tab>:cold	Ä&ldre\ lista<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	&Nyare\ lista<Tab>:cnew
-menutrans Error\ &Window		Felfönster
+menutrans Error\ &Window		Felfö&nster
 menutrans &Update<Tab>:cwin		&Uppdatera<Tab>:cwin
-menutrans &Open<Tab>:copen		&Öppna<Tab>:copen
+menutrans &Open<Tab>:copen		Ö&ppna<Tab>:copen
 menutrans &Close<Tab>:cclose		&Stäng<Tab>:cclose
-menutrans &Convert\ to\ HEX<Tab>:%!xxd	Konvertera\ till\ HEX<Tab>:%!xxd
-menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Konvertera\ tillbaka<Tab>:%!xxd\ -r
+menutrans &Convert\ to\ HEX<Tab>:%!xxd	&Konvertera\ till\ HEX<Tab>:%!xxd
+menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Konv&ertera\ tillbaka<Tab>:%!xxd\ -r
 menutrans Se&T\ Compiler		Ställ\ in\ &kompilerare
 
 " Tools.Spelling
 menutrans &Spelling				&Stavning
 menutrans &Spell\ Check\ On			&Stavningskontroll\ på
-menutrans &Spell\ Check\ Off			Stavningskontroll\ &av
-menutrans To\ &Next\ error<Tab>]s		Till\ &nästa\ fel
-menutrans To\ &Previous\ error<Tab>[s		Till\ &föregående\ fel
-menutrans Suggest\ &Corrections<Tab>z=		Föreslå\ &korrigeringar
-menutrans &Repeat\ correction<Tab>:spellrepall	&Upprepa\ korrigering
+menutrans Spell\ Check\ &Off			Stavningskontroll\ a&v
+menutrans To\ &Next\ error<Tab>]s		Till\ &nästa\ fel<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		Till\ &föregående\ fel<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		Föreslå\ &korrigeringar<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	&Upprepa\ korrigering<Tab>:spellrepall
 
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Växla\ ve&ck<Tab>zi
@@ -140,17 +145,17 @@ menutrans &Close\ all\ folds<Tab>zM	S&täng\ alla\ veck<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	Ö&pp&na\ mer\ veck<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	Öppna\ alla\ veck<Tab>zR
 menutrans Fold\ Met&hod			Veckmet&od
-menutrans M&anual			M&anual
+menutrans M&anual			M&anuell
 menutrans I&ndent			Indentering
-menutrans E&xpression			Uttryck
-menutrans S&yntax			Syntax
-menutrans &Folding			Vikning
-menutrans &Diff				Differans
-menutrans Ma&rker			Markering
-menutrans Create\ &Fold<Tab>zf		Skapa\ veck<Tab>zf
-menutrans &Delete\ Fold<Tab>zd		Ta\ bort\ veck<Tab>zd
-menutrans Delete\ &All\ Folds<Tab>zD	Ta\ bort\ alla\ veck<Tab>zD
-menutrans Fold\ col&umn\ width		Veckkolumnsbredd
+menutrans E&xpression			&Uttryck
+menutrans S&yntax			S&yntax
+menutrans &Folding			Vi&kning
+menutrans &Diff				&Diff
+menutrans Ma&rker			Mar&kering
+menutrans Create\ &Fold<Tab>zf		Skapa\ &veck<Tab>zf
+menutrans &Delete\ Fold<Tab>zd		&Ta\ bort\ veck<Tab>zd
+menutrans Delete\ &All\ Folds<Tab>zD	Ta\ bort\ &alla\ veck<Tab>zD
+menutrans Fold\ col&umn\ width		Veckkol&umnsbredd
 
 " Tools.Diff
 menutrans &Update		&Uppdatera
@@ -235,14 +240,14 @@ endif
 
 " Syntax menu
 menutrans &Syntax			&Syntax
-menutrans &Show\ filetypes\ in\ menu	&Visa\ filtyper\ i\ meny
+menutrans &Show\ File\ Types\ in\ Menu	&Visa\ filtyper\ i\ meny
 menutrans &Off				&Av
 menutrans &Manual			&Manuellt
 menutrans A&utomatic			A&utomatiskt
 menutrans on/off\ for\ &This\ file	Av/På\ för\ a&ktuell\ fil
 menutrans Co&lor\ test			Fär&gtest
 menutrans &Highlight\ test		&Framhävningstest
-menutrans &Convert\ to\ HTML		&Konvertera\ till\ &HTML
+menutrans &Convert\ to\ HTML		&Konvertera\ till\ HTML
 
 " dialog texts
 let menutrans_no_file = "[Ingen fil]"
@@ -251,6 +256,7 @@ let g:menutrans_path_dialog = "Skriv in sökväg för filer.\nSeparera katalognamn 
 let g:menutrans_tags_dialog = "Skriv in namn på taggfiler.\nSeparera namn med komma."
 let g:menutrans_textwidth_dialog = "Välj ny textbredd (0 för att förhindra formatering): "
 let g:menutrans_fileformat_dialog = "Välj filformat som filen ska sparas med"
+let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Avbryt"
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
