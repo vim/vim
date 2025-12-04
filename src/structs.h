@@ -1699,11 +1699,12 @@ struct opaque_S
 					// May be NULL, if so then a default
 					// format is used.
 
-    char_u	op_data[1];	// Actually larger, should be casted to actual
+     char_u	op_data[1];	// Actually larger, should be casted to actual
 				// type when used
 };
 
 #define OP2DATA(s, t) ((t *)(s->op_data))
+#define OP2DATAOFF(s, t, o) ((t *)(s->op_data + o))
 
 /*
  * Structure to hold an internal variable without a name.

@@ -3842,4 +3842,6 @@ EXTERN char e_tuple_is_not_of_numbers[]
 	INIT(= N_("E1574: Tuple given is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
+EXTERN char e_tsnode_property_str_no_exist[]
+	INIT(= N_("E1575: TSNode does not have the property %s"));
 #endif

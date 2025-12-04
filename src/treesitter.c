@@ -47,10 +47,11 @@ typedef struct
 
 #define OP2TSPARSER(o) (*OP2DATA(o, TSParser *))
 #define OP2TSTREE(o) (*OP2DATA(o, TSTree *))
-#define OP2TSNODE(o) OP2DATA(o, TSNode)
+#define OP2TSNODE(o) (*OP2DATA(o, TSNode))
+#define OP2TSNODETREE(o) (*OP2DATAOFF(o, opaque_T *, sizeof(TSNode)))
 #define OP2TSQUERY(o) (*OP2DATA(o, TSQuery *))
 #define OP2TSQUERYCURSOR(o) (*OP2DATA(o, TSQueryCursor *))
-#define OP2TSQUERYMATCH(o) OP2DATA(o, TSQueryMatch)
+#define OP2TSQUERYMATCH(o) (*OP2DATA(o, TSQueryMatch))
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
@@ -194,6 +195,15 @@ tstree_free_func(opaque_T *op)
 }
 
     static void
+tsnode_free_func(opaque_T *op)
+{
+    opaque_T *tree_obj = OP2TSNODETREE(op);
+
+    // Remove our reference to the TSTree
+    opaque_unref(tree_obj);
+}
+
+    static void
 tsquery_free_func(opaque_T *op)
 {
     ts_query_delete(OP2TSQUERY(op));
@@ -202,7 +212,7 @@ tsquery_free_func(opaque_T *op)
     static bool
 tsnode_equal_func(opaque_T *a, opaque_T *b)
 {
-    return ts_node_eq(*OP2TSNODE(a), *OP2TSNODE(b));
+    return ts_node_eq(OP2TSNODE(a), OP2TSNODE(b));
 }
 
 /*
@@ -427,67 +437,138 @@ tstree_edit(
     opaque_T *
 tstree_root_node(opaque_T *tree)
 {
+    // We must make the node have its own reference to the tree, so that the
+    // tree doesn't get gc'd and the node becomes invalid (undefined). We do
+    // this by adding the pointer to the opaque_T of the TSTree at the end of
+    // the TSNode struct in our opaque_T.
     TSNode node = ts_tree_root_node(OP2TSTREE(tree));
-    opaque_T *op = opaque_new(TSNODE, true, &node, sizeof(TSNode));
+    opaque_T *op = opaque_new(TSNODE, true, NULL,
+					    sizeof(TSNode) + sizeof(opaque_T *));
 
     if (op == NULL)
 	return NULL;
 
+    memcpy(op->op_data, &node, sizeof(TSNode));
+    memcpy(op->op_data + sizeof(TSNode), &tree, sizeof(opaque_T *));
+    tree->op_refcount++;
+
+    op->op_free_func = tsnode_free_func;
     op->op_equal_func = tsnode_equal_func;
     op->op_refcount++;
 
     return op;
 }
 
-/*
- * Return the node's type as a string. Returned value is owned by the node, and
- * should not be freed.
- */
-    char_u *
-tsnode_type(opaque_T *node_obj)
+typedef enum
 {
-    TSNode node = *OP2TSNODE(node_obj); 
-
-    return (char_u *)ts_node_type(node);
-}
-
-    int
-tsnode_symbol(opaque_T *node_obj)
-{
-    TSNode node = *OP2TSNODE(node_obj); 
-
-    return ts_node_symbol(node);
-}
+    TSNODE_PROP_END_BYTE = 0,
+    TSNODE_PROP_END_POINT,
+    TSNODE_PROP_EXTRA,
+    TSNODE_PROP_MISSING,
+    TSNODE_PROP_NAMED,
+    TSNODE_PROP_START_BYTE,
+    TSNODE_PROP_START_POINT,
+    TSNODE_PROP_STRING,
+    TSNODE_PROP_SYMBOL,
+    TSNODE_PROP_TREE,
+    TSNODE_PROP_TYPE,
+    TSNODE_PROP_NODE = 99
+} TSVimNodeProperty;
 
 /*
- * Return a dictionary describing the node's position, returns NULL on failure.
+ * Return a typval_T value of the specified property for the node.
  */
-    dict_T *
-tsnode_position(opaque_T *node_obj)
+    typval_T
+tsnode_property(opaque_T *node_obj, char_u *property)
 {
-    TSNode node = *OP2TSNODE(node_obj); 
-    dict_T *dict = dict_alloc();
+    static keyvalue_T properties[] = {
+	KEYVALUE_ENTRY(TSNODE_PROP_END_BYTE, "end_byte"),
+	KEYVALUE_ENTRY(TSNODE_PROP_END_POINT, "end_point"),
+	KEYVALUE_ENTRY(TSNODE_PROP_EXTRA, "extra"),
+	KEYVALUE_ENTRY(TSNODE_PROP_MISSING, "missing"),
+	KEYVALUE_ENTRY(TSNODE_PROP_NAMED, "named"),
+	KEYVALUE_ENTRY(TSNODE_PROP_START_BYTE, "start_byte"),
+	KEYVALUE_ENTRY(TSNODE_PROP_START_POINT, "start_point"),
+	KEYVALUE_ENTRY(TSNODE_PROP_STRING, "string"),
+	KEYVALUE_ENTRY(TSNODE_PROP_SYMBOL, "symbol"),
+	KEYVALUE_ENTRY(TSNODE_PROP_TREE, "tree"),
+	KEYVALUE_ENTRY(TSNODE_PROP_TYPE, "type"),
+    };
+    TSNode node = OP2TSNODE(node_obj);
+    keyvalue_T target;
+    keyvalue_T *entry;
+    typval_T ret = {0};
 
-    if (dict == NULL)
-	return NULL;
+    target.key = 0;
+    target.value.string = property;
+    target.value.length = 0;	// not used, see cmp_keyvalue_value()
 
-    if (dict_add_number(dict, "start_byte",
-		ts_node_start_byte(node)) == FAIL)
-	goto fail;
-    else if (dict_add_tuple(dict, "start",
-		tspoint_to_tuple(ts_node_start_point(node))) == FAIL)
-	goto fail;
-    else if (dict_add_number(dict, "end_byte",
-		ts_node_end_byte(node)) == FAIL)
-	goto fail;
-    else if (dict_add_tuple(dict, "end",
-		tspoint_to_tuple(ts_node_end_point(node))) == FAIL)
-	goto fail;
+    entry = (keyvalue_T *)bsearch(&target, &properties, ARRAY_LENGTH(properties),
+				  sizeof(properties[0]), cmp_keyvalue_value);
 
-    return dict;
-fail:
-    dict_unref(dict);
-    return NULL;
+    if (entry == NULL)
+    {
+	semsg(_(e_tsnode_property_str_no_exist), property);
+	ret.v_type = VAR_UNKNOWN;
+    }
+    else
+	switch (entry->key)
+	{
+	    case TSNODE_PROP_END_BYTE:
+		ret.v_type = VAR_NUMBER;
+		ret.vval.v_number = ts_node_end_byte(node);
+		break;
+	    case TSNODE_PROP_END_POINT:
+		ret.v_type = VAR_TUPLE;
+		ret.vval.v_tuple = tspoint_to_tuple(ts_node_end_point(node));
+		break;
+	    case TSNODE_PROP_EXTRA:
+		ret.v_type = VAR_BOOL;
+		ret.vval.v_number = ts_node_is_extra(node);
+		break;
+	    case TSNODE_PROP_MISSING:
+		ret.v_type = VAR_BOOL;
+		ret.vval.v_number = ts_node_is_missing(node);
+		break;
+	    case TSNODE_PROP_NAMED:
+		ret.v_type = VAR_BOOL;
+		ret.vval.v_number = ts_node_is_named(node);
+		break;
+	    case TSNODE_PROP_START_BYTE:
+		ret.v_type = VAR_NUMBER;
+		ret.vval.v_number = ts_node_start_byte(node);
+		break;
+	    case TSNODE_PROP_START_POINT:
+		ret.v_type = VAR_TUPLE;
+		ret.vval.v_tuple = tspoint_to_tuple(ts_node_start_point(node));
+		break;
+	    case TSNODE_PROP_STRING:
+		ret.v_type = VAR_STRING;
+		ret.vval.v_string = (char_u *)ts_node_string(node);
+		break;
+	    case TSNODE_PROP_SYMBOL:
+		ret.v_type = VAR_NUMBER;
+		ret.vval.v_number = ts_node_symbol(node);
+		break;
+	    case TSNODE_PROP_TREE:;
+		opaque_T *tree_obj = OP2TSNODETREE(node_obj);
+
+		tree_obj->op_refcount++;
+		ret.v_type = VAR_OPAQUE;
+		ret.vval.v_opaque = tree_obj;
+		break;
+	    case TSNODE_PROP_TYPE:
+		ret.v_type = VAR_STRING;
+		ret.vval.v_string = vim_strsave((char_u *)ts_node_type(node));
+		break;
+	    default:
+		// Shouldn't happen
+		semsg(_(e_tsnode_property_str_no_exist), property);
+		ret.v_type = VAR_UNKNOWN;
+		break;
+	}
+
+    return ret;
 }
 
     static char_u *
