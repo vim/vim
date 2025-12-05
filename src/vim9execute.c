@@ -3379,6 +3379,43 @@ var_any_get_oc_member(class_T *current_class, isn_T *iptr, typval_T *tv)
 }
 
 /*
+ * Accessing a property of an opaque stored in a variable of type "any". Returns
+ * OK if the property is valid, else FAIL.
+ */
+    static int
+var_any_get_opaque_property(isn_T *iptr, typval_T *tv)
+{
+    opaque_T		*op = tv->vval.v_opaque;
+    size_t		str_len;
+    opaque_property_T	*prop;
+
+    if (op == NULL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_using_null_opaque));
+	return FAIL;
+    }
+
+    str_len = STRLEN(iptr->isn_arg.string);
+    prop = lookup_opaque_property(op->op_type, iptr->isn_arg.string, str_len, NULL);
+
+    if (prop == NULL)
+    {
+	semsg(_(e_opaque_str_property_str_no_exist), str_len, iptr->isn_arg.string,
+		op->op_type->ot_type);
+	return FAIL;
+    }
+
+    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
  * do ISN_PUT or ISN_IPUT instruction depending on fixindent parameter
  */
     static void
@@ -6089,6 +6126,14 @@ exec_instructions(ectx_T *ectx)
 			if (var_any_get_oc_member(ufunc->uf_class, iptr, tv) == FAIL)
 			    goto on_error;
 		    }
+		    if (tv->v_type == VAR_OPAQUE)
+		    {
+			if (dict_stack_save(tv) == FAIL)
+			    goto on_fatal_error;
+			// Is an opaque, not a dict
+			if (var_any_get_opaque_property(iptr, tv) == FAIL)
+			    goto on_error;
+		    }
 		    else
 		    {
 			if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
@@ -6197,7 +6242,6 @@ exec_instructions(ectx_T *ectx)
 		    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_error_getting_opaque_property), prop->opp_name);
 			goto on_error;
 		    }
 
