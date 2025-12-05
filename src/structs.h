@@ -3312,9 +3312,7 @@ struct file_buffer
     char_u	*b_p_cinsd;	// 'cinscopedecls'
     char_u	*b_p_cinw;	// 'cinwords'
     char_u	*b_p_com;	// 'comments'
-#ifdef FEAT_FOLDING
     char_u	*b_p_cms;	// 'commentstring'
-#endif
     char_u	*b_p_cot;	// 'completeopt' local value
     unsigned	b_cot_flags;	// flags for 'completeopt'
     char_u	*b_p_cpt;	// 'complete'
@@ -3347,7 +3345,6 @@ struct file_buffer
     char_u	*b_p_fo;	// 'formatoptions'
     char_u	*b_p_flp;	// 'formatlistpat'
     int		b_p_inf;	// 'infercase'
-    char_u	*b_p_ise;	// 'isexpand' local value
     char_u	*b_p_isk;	// 'iskeyword'
 #ifdef FEAT_FIND_ID
     char_u	*b_p_def;	// 'define' local value

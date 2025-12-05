@@ -87,14 +87,11 @@ jobs:
             extra: [vimtags, proto]
           - features: huge
             compiler: gcc
-            extra: [no_x11]
-          - features: huge
-            compiler: gcc
-            extra: [socketserver]
+            extra: [no_x11_wl]
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check Filelist (for packaging)
         run: |
@@ -245,11 +242,8 @@ jobs:
             ;;
           esac
 
-          if ${{ contains(matrix.extra, 'no_x11') }}; then
-            CONFOPT="${CONFOPT} --without-x --disable-gui"
-          fi
-          if ${{ contains(matrix.extra, 'socketserver') }}; then
-            CONFOPT="${CONFOPT} --enable-socketserver"
+          if ${{ contains(matrix.extra, 'no_x11_wl') }}; then
+            CONFOPT="${CONFOPT} --without-x --disable-gui --without-wayland --enable-socketserver"
           fi
           if ${{ matrix.coverage == true }}; then
             CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
@@ -406,11 +400,11 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
-        runner: [macos-15-intel, macos-15]
+        runner: [macos-15-intel, macos-26]
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install packages
         if: matrix.features == 'huge'
@@ -594,7 +588,7 @@ jobs:
           release: false
 
       - name: Checkout repository from github
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Create a list of download URLs
         shell: cmd

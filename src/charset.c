@@ -1702,8 +1702,7 @@ getvcol(
 	    {
 		incr = 1;	// NUL at end of line only takes one column
 #ifdef FEAT_PROP_POPUP
-		if (cts.cts_cur_text_width > 0)
-		    incr = cts.cts_cur_text_width;
+		incr += cts.cts_cur_text_width;
 		on_NUL = TRUE;
 #endif
 		break;

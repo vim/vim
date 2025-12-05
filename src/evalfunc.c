@@ -2131,8 +2131,6 @@ static const funcentry_T global_functions[] =
 			ret_number_bool,    f_complete_check},
     {"complete_info",	0, 1, FEARG_1,	    arg1_list_string,
 			ret_dict_any,	    f_complete_info},
-    {"complete_match",	0, 2, 0,	    NULL,
-			ret_list_any,	    f_complete_match},
     {"confirm",		1, 4, FEARG_1,	    arg4_string_string_number_string,
 			ret_number,	    f_confirm},
     {"copy",		1, 1, FEARG_1,	    NULL,
@@ -5150,7 +5148,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		++ex_normal_busy;
 		++in_feedkeys;
 	    }
+	    ++allow_osc_key;
 	    exec_normal(TRUE, lowlevel, TRUE);
+	    --allow_osc_key;
 	    if (!dangerous)
 	    {
 		--ex_normal_busy;

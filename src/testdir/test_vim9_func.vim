@@ -4771,6 +4771,20 @@ def Test_call_modified_import_func()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for assigning the return value of mkdir() to a new local variable.
+" This used to result in the "E1012: Type mismatch; expected list<any> but
+" got number" error message.
+def Test_assign_mkdir_ret_value()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var ret: number = mkdir('./foo/bar/baz', 'p')
+    enddef
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

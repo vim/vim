@@ -315,12 +315,12 @@
 // cause compilation failures even though the headers are correct.  For
 // a concrete example, gcc-3.2 enforces exception specifications, and
 // glibc-2.2.5 has them in their system headers.
-#ifndef PROTO
-# if !defined(__cplusplus) && defined(UNIX) \
-	&& !defined(MACOS_X) // MACOS_X doesn't yet support osdef.h
-#  include "auto/osdef.h"	// bring missing declarations in
-# endif
+#if !defined(__cplusplus) && defined(UNIX) \
+       && !defined(MACOS_X) // MACOS_X doesn't yet support osdef.h
+# include "auto/osdef.h"	// bring missing declarations in
+#endif
 
+#ifndef PROTO
 # ifdef AMIGA
 #  include "os_amiga.h"
 # endif
@@ -2364,8 +2364,6 @@ typedef struct
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?
 # endif
-    // If we've already warned about missing/unavailable clipboard
-    bool did_warn;
 } Clipboard_T;
 #else
 typedef int Clipboard_T;	// This is required for the prototypes.

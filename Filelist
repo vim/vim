@@ -829,6 +829,10 @@ RT_ALL =	\
 		runtime/pack/dist/opt/editorconfig/doc/editorconfig.txt \
 		runtime/pack/dist/opt/editorconfig/ftdetect/editorconfig.vim \
 		runtime/pack/dist/opt/editorconfig/plugin/editorconfig.vim \
+		runtime/pack/dist/opt/helpcurwin/autoload/helpcurwin.vim \
+		runtime/pack/dist/opt/helpcurwin/doc/helpcurwin.txt \
+		runtime/pack/dist/opt/helpcurwin/doc/tags \
+		runtime/pack/dist/opt/helpcurwin/plugin/helpcurwin.vim \
 		runtime/pack/dist/opt/helptoc/autoload/helptoc.vim \
 		runtime/pack/dist/opt/helptoc/doc/helptoc.txt \
 		runtime/pack/dist/opt/helptoc/doc/tags \

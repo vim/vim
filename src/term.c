@@ -5921,6 +5921,9 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	// The whole OSC response may be larger than the typeahead buffer.
 	// To handle this, keep reading data in and out of the typeahead
 	// buffer until we read an OSC terminator or timeout.
+
+	// We can't use the previous buffer since we transferred ownership of it
+	// to the vim var.
 	ga_init2(&osc_state.buf, 1, 1024);
 #ifdef ELAPSED_FUNC
 	ELAPSED_INIT(osc_state.start_tv);
@@ -5933,7 +5936,6 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	last_char = ((char_u *)osc_state.buf.ga_data)[osc_state.buf.ga_len - 1];
 
     key_name[0] = (int)KS_EXTRA;
-    key_name[1] = (int)KE_IGNORE;
 
     // Read data and append to buffer. If we reach a terminator, then
     // finally set the vim var.
@@ -5944,6 +5946,8 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 			)))
 	{
 	    osc_state.processing = FALSE;
+
+	    key_name[1] = (int)KE_OSC;
 
 	    ga_concat_len(&osc_state.buf, tp, i + 1 + (tp[i] == ESC));
 	    ga_append(&osc_state.buf, NUL);
@@ -5961,6 +5965,8 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 		redraw_asap(UPD_CLEAR);
 	    return OK;
 	}
+
+    key_name[1] = (int)KE_IGNORE;
 
 #ifdef ELAPSED_FUNC
     if (ELAPSED_FUNC(osc_state.start_tv) >= p_ost)
@@ -6167,9 +6173,15 @@ check_termcode(
 	}
 
 	if (osc_state.processing)
+	{
 	    // Still processing OSC response data, go straight to handler
 	    // function.
+	    tp[len] = NUL;
+	    key_name[0] = NUL;
+	    key_name[1] = NUL;
+	    modifiers = 0;
 	    goto handle_osc;
+	}
 
 	/*
 	 * Skip this position if the character does not appear as the first
@@ -6690,12 +6702,8 @@ handle_osc:
 	 */
 	key = handle_x_keys(TERMCAP2KEY(key_name[0], key_name[1]));
 
-	if (osc_state.processing)
-	    // We don't want to add anything to the typeahead buffer.
-	    new_slen = 0;
-	else
-	    // Add any modifier codes to our string.
-	    new_slen = modifiers2keycode(modifiers, &key, string);
+	// Add any modifier codes to our string.
+	new_slen = modifiers2keycode(modifiers, &key, string);
 
 	// Finally, add the special key code to our string
 	key_name[0] = KEY2TERMCAP0(key);
@@ -6708,8 +6716,10 @@ handle_osc:
 	    else
 		string[new_slen++] = key_name[1];
 	}
-	else if (new_slen == 0 && key_name[0] == KS_EXTRA
-						  && key_name[1] == KE_IGNORE)
+	else if (osc_state.processing ||
+		(new_slen == 0
+		 && key_name[0] == KS_EXTRA
+		 && key_name[1] == KE_IGNORE))
 	{
 	    // Do not put K_IGNORE into the buffer, do return KEYLEN_REMOVED
 	    // to indicate what happened.

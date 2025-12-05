@@ -13,6 +13,9 @@
 " 2025 Oct 26 by Vim Project fix parsing of remote user names #18611
 " 2025 Oct 27 by Vim Project align comment after #18611
 " 2025 Nov 01 by Vim Project fix NetrwChgPerm #18674
+" 2025 Nov 13 by Vim Project don't wipe unnamed buffers #18740
+" 2025 Nov 18 by Vim Project use UNC paths when using scp and Windows paths #18764
+" 2025 Nov 28 by Vim Project fix undefined variable in *NetrwMenu #18829
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -1700,10 +1703,10 @@ function netrw#NetRead(mode,...)
             else
                 let useport= ""
             endif
-            " 'C' in 'C:\path\to\file' is handled as hostname on windows.
+            " Using UNC notation in windows to get a unix like path.
             " This is workaround to avoid mis-handle windows local-path:
             if g:netrw_scp_cmd =~ '^scp' && has("win32")
-                let tmpfile_get = substitute(tr(tmpfile, '\', '/'), '^\(\a\):[/\\]\(.*\)$', '/\1/\2', '')
+                let tmpfile_get = substitute(tr(tmpfile, '\', '/'), '^\(\a\):[/\\]\(.*\)$', '//' .. $COMPUTERNAME .. '/\1$/\2', '')
             else
                 let tmpfile_get = tmpfile
             endif
@@ -6399,6 +6402,7 @@ function s:NetrwMenu(domenu)
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.8   '.g:NetrwTopLvlMenu.'Marked\ Files.Exe\ Cmd<tab>mx    mx'
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.9   '.g:NetrwTopLvlMenu.'Marked\ Files.Move\ To\ Target<tab>mm    mm'
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.10  '.g:NetrwTopLvlMenu.'Marked\ Files.Obtain<tab>O       O'
+            exe 'sil! menu '.g:NetrwMenuPriority.'.14.11  '.g:NetrwTopLvlMenu.'Marked\ Files.Print<tab>mp       mp'
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.12  '.g:NetrwTopLvlMenu.'Marked\ Files.Replace<tab>R      R'
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.13  '.g:NetrwTopLvlMenu.'Marked\ Files.Set\ Target<tab>mt mt'
             exe 'sil! menu '.g:NetrwMenuPriority.'.14.14  '.g:NetrwTopLvlMenu.'Marked\ Files.Tag<tab>mT mT'
@@ -6426,14 +6430,13 @@ function s:NetrwMenu(domenu)
             let s:netrwcnt = 0
             let curwin     = winnr()
             windo if getline(2) =~# "Netrw" | let s:netrwcnt= s:netrwcnt + 1 | endif
-        endif
-        exe curwin."wincmd w"
+            exe curwin."wincmd w"
 
-        if s:netrwcnt <= 1
-            exe 'sil! unmenu '.g:NetrwTopLvlMenu
-            sil! unlet s:netrw_menu_enabled
+            if s:netrwcnt <= 1
+                exe 'sil! unmenu '.g:NetrwTopLvlMenu
+                sil! unlet s:netrw_menu_enabled
+            endif
         endif
-    endif
     return
   endif
 
@@ -8315,7 +8318,7 @@ function netrw#LocalBrowseCheck(dirname)
         let ibuf    = 1
         let buflast = bufnr("$")
         while ibuf <= buflast
-            if bufwinnr(ibuf) == -1 && isdirectory(s:NetrwFile(bufname(ibuf)))
+            if bufwinnr(ibuf) == -1 && !empty(bufname(ibuf)) && isdirectory(s:NetrwFile(bufname(ibuf)))
                 exe "sil! keepj keepalt ".ibuf."bw!"
             endif
             let ibuf= ibuf + 1

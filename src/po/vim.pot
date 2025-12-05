@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-11-01 16:14+0000\n"
+"POT-Creation-Date: 2025-11-27 21:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2220,16 +2220,10 @@ msgstr ""
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr ""
 
-msgid "W24: Clipboard register not available. See :h W24"
-msgstr ""
-
 msgid "W23: Clipboard register not available, using register 0"
 msgstr ""
 
-msgid "W23: Clipboard register + not available, using register 0"
-msgstr ""
-
-msgid "W23: Clipboard register * not available, using register 0"
+msgid "W24: Clipboard register not available. See :h W24"
 msgstr ""
 
 msgid "Question"
@@ -9957,6 +9951,9 @@ msgstr ""
 msgid "definition of what comment lines look like"
 msgstr ""
 
+msgid "template for comments; used to put the marker in"
+msgstr ""
+
 msgid "list of flags that tell how automatic formatting works"
 msgstr ""
 
@@ -9993,11 +9990,6 @@ msgstr ""
 msgid ""
 " \n"
 "popup menu item align order"
-msgstr ""
-
-msgid ""
-" \n"
-"use fuzzy collection for specific completion modes"
 msgstr ""
 
 msgid "options for the Insert mode completion info popup"
@@ -10153,9 +10145,6 @@ msgid "specifies for which commands a fold will be opened"
 msgstr ""
 
 msgid "minimum number of screen lines for a fold to be closed"
-msgstr ""
-
-msgid "template for comments; used to put the marker in"
 msgstr ""
 
 msgid ""
@@ -10451,9 +10440,6 @@ msgid "specifies the characters in a file name"
 msgstr ""
 
 msgid "specifies the characters in an identifier"
-msgstr ""
-
-msgid "defines trigger strings for complete_match()"
 msgstr ""
 
 msgid "specifies the characters in a keyword"

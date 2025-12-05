@@ -2476,9 +2476,7 @@ free_buf_options(
     ga_clear(&buf->b_kmap_ga);
 #endif
     clear_string_option(&buf->b_p_com);
-#ifdef FEAT_FOLDING
     clear_string_option(&buf->b_p_cms);
-#endif
     clear_string_option(&buf->b_p_nf);
 #ifdef FEAT_SYN_HL
     clear_string_option(&buf->b_p_syn);
@@ -2501,7 +2499,6 @@ free_buf_options(
     clear_string_option(&buf->b_p_cinw);
     clear_string_option(&buf->b_p_cot);
     clear_string_option(&buf->b_p_cpt);
-    clear_string_option(&buf->b_p_ise);
 #ifdef FEAT_COMPL_FUNC
     clear_string_option(&buf->b_p_cfu);
     free_callback(&buf->b_cfu_cb);

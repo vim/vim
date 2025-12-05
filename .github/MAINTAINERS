@@ -45,6 +45,7 @@ runtime/colors/torte.vim				@habamax @romainl @neutaaaaan
 runtime/colors/wildcharm.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zaibatsu.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zellner.vim				@habamax @romainl @neutaaaaan
+runtime/compiler/biome.vim				@Konfekt
 runtime/compiler/checkstyle.vim				@dkearns
 runtime/compiler/cm3.vim				@dkearns
 runtime/compiler/cucumber.vim				@tpope
@@ -220,6 +221,7 @@ runtime/ftplugin/kivy.vim				@ribru17
 runtime/ftplugin/kotlin.vim				@udalov
 runtime/ftplugin/lc.vim					@ribru17
 runtime/ftplugin/ldapconf.vim				@ribru17
+runtime/ftplugin/leex.vim				@jparise
 runtime/ftplugin/leo.vim				@ribru17
 runtime/ftplugin/less.vim				@genoma
 runtime/ftplugin/lex.vim				@ribru17
@@ -376,6 +378,7 @@ runtime/indent/kdl.vim					@imsnif @jiangyinzuo
 runtime/indent/kotlin.vim				@udalov
 runtime/indent/krl.vim					@KnoP-01
 runtime/indent/ld.vim					@dkearns
+runtime/indent/lf.vim					@andis-sprinkis
 runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
 runtime/indent/lua.vim					@marcuscf
@@ -549,6 +552,7 @@ runtime/syntax/kivy.vim					@prophittcorey
 runtime/syntax/kotlin.vim				@udalov
 runtime/syntax/kdl.vim					@imsnif @jiangyinzuo
 runtime/syntax/krl.vim					@KnoP-01
+runtime/syntax/leex.vim					@jparise
 runtime/syntax/less.vim					@genoma
 runtime/syntax/lf.vim					@andis-sprinkis
 runtime/syntax/liquid.vim				@tpope

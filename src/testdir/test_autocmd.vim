@@ -5537,4 +5537,27 @@ func Test_VimResized_and_window_width_not_equalized()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_win_tabclose_autocmd()
+
+  defer CleanUpTestAuGroup()
+  new
+  augroup testing
+    au WinClosed * wincmd p
+  augroup END
+
+  tabnew
+  new
+  new
+
+  call assert_equal(2, tabpagenr('$'))
+  try
+    tabclose
+  catch
+    " should not happen
+    call assert_report("closing tabpage failed")
+  endtry
+  call assert_equal(1, tabpagenr('$'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -144,6 +144,24 @@ func Test_tagjump_switchbuf()
   1tabnext | stag third
   call assert_equal(2, tabpagenr('$'))
   call assert_equal(3, line('.'))
+  tabonly
+
+  " use a vertically split window
+  enew | only
+  set switchbuf=vsplit
+  stag third
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  call assert_equal(3, line('.'))
+  call assert_equal(['row', [['leaf', win_getid(1)], ['leaf', win_getid(2)]]], winlayout())
+
+  " jump to a tag in a new tabpage
+  enew | only
+  set switchbuf=newtab
+  stag second
+  call assert_equal(2, tabpagenr('$'))
+  call assert_equal(2, tabpagenr())
+  call assert_equal(2, line('.'))
 
   tabclose!
   enew | only
@@ -1292,7 +1310,7 @@ func Test_inc_search()
   call assert_fails('isplit 6 foo', 'E389:')
   call assert_fails('isplit bar', 'E389:')
 
-  close!
+  bw!
 endfunc
 
 " this was using a line from ml_get() freed by the regexp
@@ -1405,7 +1423,7 @@ func Test_macro_search()
   call assert_fails('dsplit 6 FOO', 'E388:')
   call assert_fails('dsplit BAR', 'E388:')
 
-  close!
+  bw!
 endfunc
 
 func Test_define_search()
@@ -1451,7 +1469,7 @@ func Test_comment_search()
   call assert_beeps('normal! 15|[/')
   call setline(1, '        /* comment')
   call assert_beeps('normal! 15|]/')
-  close!
+  bw!
 endfunc
 
 " Test for the 'taglength' option

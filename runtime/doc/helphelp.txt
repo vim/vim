@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Dec 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -158,11 +158,12 @@ When no argument is given to |:help| the file given with the 'helpfile' option
 will be opened.  Otherwise the specified tag is searched for in all "doc/tags"
 files in the directories specified in the 'runtimepath' option.
 
-If you would like to open the help in the current window, see this tip:
-|help-curwin|.
-
 The initial height of the help window can be set with the 'helpheight' option
 (default 20).
+
+If you want to open help on {subject} in the current window, the helpcurwin
+optional package can be used.  See |package-helpcurwin|.
+
 						*help-buffer-options*
 When the help buffer is created, several local options are set to make sure
 the help text is displayed as it was intended:

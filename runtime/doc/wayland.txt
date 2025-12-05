@@ -1,4 +1,4 @@
-*wayland.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*wayland.txt*	For Vim version 9.1.  Last change: 2025 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -16,7 +16,8 @@ Wayland Protocol Support				*wayland*
 Functionality such as the clipboard for Wayland requires a seat to use.  A
 Wayland seat can consist of a keyboard, pointer, and touch device(s).  The
 seat to use can be set with the 'wlseat' option.  Only useful if you use
-multiple Wayland seats in the same Wayland session.
+multiple Wayland seats in the same Wayland session.  If you don't know what
+this is means, then it likely does not matter for you.
 
 							*wayland-gui*
 See |gui-wayland|.  Please note that when using the GUI, Vim uses the toolkit
@@ -63,11 +64,18 @@ should be bundled with libwayland on your system: >
 If you don't get any match, then please see |wayland-focus-steal| for more
 information.
 
+Some compositors that are known to support either or both protocols:
+    1. KWin (KDE)
+    2. wlroots based (Sway, Labwc)
+    3. Niri
+    4. Hyprland
+    5. Wayfire
+
 If you come from X11, then the regular Wayland selection is equivalent to the
 CLIPBOARD selection in X11, and the primary Wayland selection equates to the
-X11 primary selection.  Accessing these selections is the same as X11 in Vim,
+X11 PRIMARY selection.  Accessing these selections is the same as X11 in Vim,
 in which the + register is the regular selection, and the * register is the
-primary selection, note that your compositor may not support primary
+primary selection.  Note that your compositor may not support primary
 selections, see |wayland-primary-selection| for more details.
 
 							*wayland-persist*

@@ -4403,6 +4403,7 @@ close_others(
 {
     win_T	*wp;
     win_T	*nextwp;
+    win_T	*old_curwin = curwin;
     int		r;
 
     if (one_window())
@@ -4416,6 +4417,14 @@ close_others(
     for (wp = firstwin; win_valid(wp); wp = nextwp)
     {
 	nextwp = wp->w_next;
+
+	// autocommands messed this one up
+	if (old_curwin != curwin && win_valid(old_curwin))
+	{
+	    curwin = old_curwin;
+	    curbuf = curwin->w_buffer;
+	}
+
 	if (wp == curwin)		// don't close current window
 	    continue;
 

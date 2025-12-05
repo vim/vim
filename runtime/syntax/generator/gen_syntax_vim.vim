@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Nov 11
+" Last Change: 2025 Nov 29
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -31,6 +31,9 @@ function s:parse_vim_option(opt, missing_opt, term_out_code)
 
 		for line in getline(1, line('$'))
 			let list = matchlist(line, '^\s*{\s*"\(\w\+\)"\s*,\s*\%("\(\w\+\)"\|NULL\)\s*,\s*\%([^,]*\(P_BOOL\)[^,]*\|[^,]*\)\s*,\s*\([^,]*NULL\)\?.*')
+			if list[1] == 'completefuzzycollect'
+				continue
+			endif
 			let item.name = list[1]
 			let item.short_name = list[2]
 			let item.is_bool = empty(list[3]) ? 0 : 1
@@ -288,6 +291,7 @@ function s:get_vim_command_type(cmd_name)
 	"   6: unmap
 	"   7: abclear
 	"   8: modifiers
+	"   9: cd
 	"   99: (Exclude registration of "syn keyword")
 	let ab_prefix   = '^[ci]\?'
 	let menu_prefix = '^\%([acinostvx]\?\|tl\)'
@@ -304,6 +308,9 @@ function s:get_vim_command_type(cmd_name)
 		augroup
 		autocmd
 		behave
+		breakadd
+		breakdel
+		breaklist
 		browse
 		bufdo
 		call
@@ -317,6 +324,7 @@ function s:get_vim_command_type(cmd_name)
 		confirm
 		const
 		copy
+		debug
 		debuggreedy
 		def
 		defer
@@ -355,12 +363,14 @@ function s:get_vim_command_type(cmd_name)
 		grepadd
 		helpgrep
 		highlight
+		history
 		if
 		import
 		interface
 		insert
 		join
 		k
+		language
 		let
 		ldo
 		lfdo
@@ -459,6 +469,9 @@ function s:get_vim_command_type(cmd_name)
 		let ret = 6
 	elseif index(s:get_cmd_modifiers(), a:cmd_name) != -1
 		let ret = 8
+	" :chdir handled specially for command/function distinction
+	elseif a:cmd_name =~# '^\%([lt]\?cd\|[lt]chdir\)$'
+		let ret = 9
 	else
 		let ret = 0
 	endif
@@ -926,6 +939,9 @@ function s:update_syntax_vim_file(vim_info)
 		" vimCommand - modifier
 		let lnum = s:search_and_check(kword . ' modifier', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 8)
+		" vimCommand - cd
+		let lnum = s:search_and_check(kword . ' cd', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 9)
 
 		update
 		quit!

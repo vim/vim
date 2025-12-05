@@ -520,6 +520,38 @@ func Test_clipboard_regs()
   bwipe!
 endfunc
 
+" When clipboard registers (* and +) are supported, check that they are
+" independent for direct writes.
+func Test_clipboard_regs_separate()
+  CheckNotGui
+  CheckFeature clipboard_working
+  CheckTwoClipboards
+
+  new
+  call setline(1, ['foo'])
+
+  " Check that various clipboard options do not result in one register
+  " affecting the other.
+  for clip in ['', 'autoselect', 'unnamed', 'unnamedplus']
+    :execute 'set clipboard=' . clip
+    " check that * does not affect +
+    let @* = 'xxx'
+    let @+ = 'xxx'
+    :normal "*yw
+    call assert_equal('foo', getreg('*'))
+    call assert_equal('xxx', getreg('+'))
+
+    " check that + does not affect *
+    let @* = 'xxx'
+    :normal "+yw
+    call assert_equal('foo', getreg('+'))
+    call assert_equal('xxx', getreg('*'))
+  endfor
+
+  set clipboard&vim
+  bwipe!
+endfunc
+
 " Test unnamed for both clipboard registers (* and +)
 func Test_clipboard_regs_both_unnamed()
   CheckNotGui
@@ -582,7 +614,7 @@ func Test_execute_register()
   new
   call feedkeys("@=\<BS>ax\<CR>y", 'xt')
   call assert_equal(['x', 'y'], getline(1, '$'))
-  close!
+  bw!
 
   " cannot execute a register in operator pending mode
   call assert_beeps('normal! c@r')
@@ -1258,6 +1290,13 @@ func Test_insert_small_delete_linewise()
   exe ":norm! \"-cc\<C-R>-"
   call assert_equal(['foo', ''], getline(1, '$'))
   bwipe!
+endfunc
+
+func Test_writing_readonly_regs()
+  call assert_fails('let @. = "foo"', 'E354:')
+  call assert_fails('let @% = "foo"', 'E354:')
+  call assert_fails('let @: = "foo"', 'E354:')
+  call assert_fails('let @~ = "foo"', 'E354:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -427,6 +427,9 @@ au BufNewFile,BufRead *.e,*.E			call dist#ft#FTe()
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
 
+" Erlang
+au BufNewFile,BufRead *.app.src			setf erlang
+
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
 

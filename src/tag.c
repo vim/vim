@@ -3850,6 +3850,15 @@ jumpto_tag(
     if (getfile_result == GETFILE_UNUSED
 				  && (postponed_split || cmdmod.cmod_tab != 0))
     {
+	if (swb_flags & SWB_VSPLIT)
+	    // If 'switchbuf' contains 'vsplit', then use a new vertically
+	    // split window.
+	    cmdmod.cmod_split |= WSP_VERT;
+
+	if (swb_flags & SWB_NEWTAB)
+	    // If 'switchbuf' contains 'newtab', then use a new tabpage
+	    cmdmod.cmod_tab = tabpage_index(curtab) + 1;
+
 	if (win_split(postponed_split > 0 ? postponed_split : 0,
 						postponed_split_flags) == FAIL)
 	{

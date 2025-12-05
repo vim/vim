@@ -244,6 +244,7 @@ NEW_TESTS = \
 	test_perl \
 	test_plugin_comment \
 	test_plugin_glvs \
+	test_plugin_helpcurwin \
 	test_plugin_helptoc \
 	test_plugin_man \
 	test_plugin_matchparen \
@@ -518,6 +519,7 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plugin_comment.res \
 	test_plugin_glvs.res \
+	test_plugin_helpcurwin.res \
 	test_plugin_helptoc.res \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \

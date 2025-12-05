@@ -392,7 +392,7 @@ set_init_clean_rtp(void)
  * vimrc found is located in '$XDG_CONFIG_HOME/vim/vimrc'.
  * In case the '$XDG_CONFIG_HOME' variable is not set, '$HOME/.config' is used
  * as a fallback as is defined in the XDG base dir specification:
- * <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+ * <https://specifications.freedesktop.org/basedir/latest/>
  */
     static void
 set_init_xdg_rtp(void)
@@ -6508,9 +6508,6 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_cot);
 	    buf->b_cot_flags = 0;
 	    break;
-	case PV_ISE:
-	    clear_string_option(&buf->b_p_ise);
-	    break;
 	case PV_DICT:
 	    clear_string_option(&buf->b_p_dict);
 	    break;
@@ -6639,7 +6636,6 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
 #endif
 	    case PV_COT:  return (char_u *)&(curbuf->b_p_cot);
-	    case PV_ISE:  return (char_u *)&(curbuf->b_p_ise);
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
 #ifdef FEAT_DIFF
 	    case PV_DIA:  return (char_u *)&(curbuf->b_p_dia);
@@ -6727,8 +6723,6 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_COT:	return *curbuf->b_p_cot != NUL
 				    ? (char_u *)&(curbuf->b_p_cot) : p->var;
-	case PV_ISE:	return *curbuf->b_p_ise != NUL
-				    ? (char_u *)&(curbuf->b_p_ise) : p->var;
 	case PV_DICT:	return *curbuf->b_p_dict != NUL
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
 #ifdef FEAT_DIFF
@@ -6866,9 +6860,7 @@ get_varp(struct vimoption *p)
 	case PV_CINSD:	return (char_u *)&(curbuf->b_p_cinsd);
 	case PV_CINW:	return (char_u *)&(curbuf->b_p_cinw);
 	case PV_COM:	return (char_u *)&(curbuf->b_p_com);
-#ifdef FEAT_FOLDING
 	case PV_CMS:	return (char_u *)&(curbuf->b_p_cms);
-#endif
 	case PV_CPT:	return (char_u *)&(curbuf->b_p_cpt);
 #ifdef BACKSLASH_IN_FILENAME
 	case PV_CSL:	return (char_u *)&(curbuf->b_p_csl);
@@ -7457,10 +7449,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_SN);
 	    buf->b_p_com = vim_strsave(p_com);
 	    COPY_OPT_SCTX(buf, BV_COM);
-#ifdef FEAT_FOLDING
 	    buf->b_p_cms = vim_strsave(p_cms);
 	    COPY_OPT_SCTX(buf, BV_CMS);
-#endif
 	    buf->b_p_fo = vim_strsave(p_fo);
 	    COPY_OPT_SCTX(buf, BV_FO);
 	    buf->b_p_flp = vim_strsave(p_flp);
@@ -7583,7 +7573,6 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_dia = empty_option;
 #endif
 	    buf->b_p_tsr = empty_option;
-	    buf->b_p_ise = empty_option;
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_tsrfu = empty_option;
 #endif

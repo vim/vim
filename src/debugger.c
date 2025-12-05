@@ -1111,8 +1111,10 @@ debuggy_find(
 	    {
 		if (bp->dbg_val == NULL)
 		{
+		    vim_free(debug_oldval);
 		    debug_oldval = typval_tostring(NULL, TRUE);
 		    bp->dbg_val = tv;
+		    vim_free(debug_newval);
 		    debug_newval = typval_tostring(bp->dbg_val, TRUE);
 		    line = TRUE;
 		}
@@ -1129,10 +1131,12 @@ debuggy_find(
 			typval_T *v;
 
 			line = TRUE;
+			vim_free(debug_oldval);
 			debug_oldval = typval_tostring(bp->dbg_val, TRUE);
 			// Need to evaluate again, typval_compare() overwrites
 			// "tv".
 			v = eval_expr_no_emsg(bp);
+			vim_free(debug_newval);
 			debug_newval = typval_tostring(v, TRUE);
 			free_tv(bp->dbg_val);
 			bp->dbg_val = v;
@@ -1142,7 +1146,9 @@ debuggy_find(
 	    }
 	    else if (bp->dbg_val != NULL)
 	    {
+		vim_free(debug_oldval);
 		debug_oldval = typval_tostring(bp->dbg_val, TRUE);
+		vim_free(debug_newval);
 		debug_newval = typval_tostring(NULL, TRUE);
 		free_tv(bp->dbg_val);
 		bp->dbg_val = NULL;

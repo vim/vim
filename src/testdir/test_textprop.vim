@@ -4403,6 +4403,22 @@ func Test_text_eol_long_wrap_smoothscroll()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_eol_virtcol()
+  new
+  call prop_type_add('test', #{highlight: 'ErrorMsg'})
+  call setline(1, repeat(['1234567890'], 6))
+
+  for [ln, tx] in [[2, 'a'], [3, 'ab'], [4, 'abc'], [5, 'abcd'], [6, 'αβγ口']]
+    let co = col([ln, '$'])
+    call assert_equal(11, virtcol([ln, '$']))
+    call prop_add(ln, co, #{type: 'test', text: tx})
+    call assert_equal(11 + strwidth(tx), virtcol([ln, '$']))
+  endfor
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
 func Test_text_below_nowrap()
   CheckScreendump
   CheckRunVimInTerminal

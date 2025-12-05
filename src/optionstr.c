@@ -161,7 +161,6 @@ didset_string_options(void)
     (void)opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
     (void)opt_strings_flags(p_bkc, p_bkc_values, &bkc_flags, TRUE);
     (void)opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE);
-    (void)opt_strings_flags(p_cfc, p_cfc_values, &cfc_flags, TRUE);
     (void)opt_strings_flags(p_cot, p_cot_values, &cot_flags, TRUE);
 #ifdef FEAT_SESSION
     (void)opt_strings_flags(p_ssop, p_ssop_values, &ssop_flags, TRUE);
@@ -307,9 +306,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_flp);
     check_string_option(&buf->b_p_isk);
     check_string_option(&buf->b_p_com);
-#ifdef FEAT_FOLDING
     check_string_option(&buf->b_p_cms);
-#endif
     check_string_option(&buf->b_p_nf);
     check_string_option(&buf->b_p_qe);
 #ifdef FEAT_SYN_HL
@@ -332,7 +329,6 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cinw);
     check_string_option(&buf->b_p_cot);
     check_string_option(&buf->b_p_cpt);
-    check_string_option(&buf->b_p_ise);
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
@@ -1581,7 +1577,6 @@ did_set_comments(optset_T *args)
     return errmsg;
 }
 
-#if defined(FEAT_FOLDING)
 /*
  * The 'commentstring' option is changed.
  */
@@ -1595,7 +1590,6 @@ did_set_commentstring(optset_T *args)
 
     return NULL;
 }
-#endif
 
 /*
  * Check if value for 'complete' is valid when 'complete' option is changed.
@@ -2924,48 +2918,6 @@ did_set_imactivatekey(optset_T *args UNUSED)
     return NULL;
 }
 #endif
-
-/*
- * The 'isexpand' option is changed.
- */
-    char *
-did_set_isexpand(optset_T *args)
-{
-    char_u  *ise = p_ise;
-    char_u  *p;
-    int     last_was_comma = FALSE;
-
-    if (args->os_flags & OPT_LOCAL)
-	ise = curbuf->b_p_ise;
-
-    for (p = ise; *p != NUL;)
-    {
-	if (*p == '\\' && p[1] == ',')
-	{
-	    p += 2;
-	    last_was_comma = FALSE;
-	    continue;
-	}
-
-	if (*p == ',')
-	{
-	    if (last_was_comma)
-		return e_invalid_argument;
-	    last_was_comma = TRUE;
-	    p++;
-	    continue;
-	}
-
-	last_was_comma = FALSE;
-	MB_PTR_ADV(p);
-    }
-
-    if (last_was_comma)
-	return e_invalid_argument;
-
-    return NULL;
-}
-
 
 /*
  * The 'iskeyword' option is changed.
