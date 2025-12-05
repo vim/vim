@@ -3819,10 +3819,6 @@ EXTERN char e_error_getting_opaque_property[]
 EXTERN char e_opaque_type_str_no_exist[]
 	INIT(= N_("E1577: Opaque type %.*s does not exist"));
 #endif
-# ifndef FEAT_TREESITTER
-EXTERN char e_treesitter_feature_not_available[]
-	INIT(= N_("E1570: Treesitter feature is not available"));
-# endif
 #ifdef FEAT_TREESITTER
 EXTERN char e_treesitter_get_lang_error[]
 	INIT(= N_("E1571: Failed loading treesitter parser %s"));
@@ -3841,7 +3837,7 @@ EXTERN char e_tsobject_required_for_argument_nr[]
 EXTERN char e_tsobject_str_required_for_argument_nr[]
 	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
 EXTERN char e_invalid_argument_tuple_not_number_number[]
-	INIT(= N_("E1574: Invalid argument: tuple is not of type <number, number>"));
+	INIT(= N_("E1575: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
 EXTERN char e_tsnode_property_str_no_exist[]
