@@ -1101,6 +1101,7 @@ LANG_GEN = \
 		runtime/doc/*-ru.UTF-8.1 \
 		runtime/doc/*-sv.1 \
 		runtime/doc/*-sv.UTF-8.1 \
+		runtime/doc/*.svx \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
