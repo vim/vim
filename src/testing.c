@@ -1290,11 +1290,43 @@ test_opaque_equal(opaque_T *a, opaque_T *b)
     static char_u *
 test_opaque_str(opaque_T *a, char_u **tofree)
 {
-    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d", a->op_type,
+    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d", a->op_type->ot_type,
 	    *OP2DATA(a, int));
     *tofree = vim_strsave(IObuff);
     return *tofree;
 }
+
+    static int
+test_opaque_property(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
+{
+    int val = *OP2DATA(op, int);
+
+    switch (prop->opp_idx)
+    {
+	case 0: // val
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = val;
+	    break;
+	case 1: // type
+	    rettv->v_type = VAR_STRING;
+	    rettv->vval.v_string = vim_strsave(op->op_type->ot_type);
+	    break;
+	default:
+	    return FAIL;
+    }
+    return OK;
+}
+
+static opaque_property_T test_opaque_properties[] = {
+    {1,	OPPROPNAME("type"), &t_string},
+    {0,	OPPROPNAME("val"), &t_number},
+};
+
+opaque_type_T test_opaque_type = {
+    (char_u *)"TestOpaque", ARRAY_LENGTH(test_opaque_properties),
+    test_opaque_properties, NULL, test_opaque_equal,
+    test_opaque_str, test_opaque_property
+};
 
     void
 f_test_opaque(typval_T *argvars, typval_T *rettv)
@@ -1306,14 +1338,12 @@ f_test_opaque(typval_T *argvars, typval_T *rettv)
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
-    op = opaque_new(argvars[0].vval.v_string, false,
-	    &argvars[1].vval.v_number, sizeof(int));
+    // TODO: fix it
+    op = opaque_new(&test_opaque_type, &argvars[1].vval.v_number, sizeof(int));
 
     if (op == NULL)
 	return;
 
-    op->op_equal_func = test_opaque_equal;
-    op->op_str_func = test_opaque_str;
     rettv->v_type = VAR_OPAQUE;
     rettv->vval.v_opaque = op;
     op->op_refcount++;
