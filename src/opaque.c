@@ -85,8 +85,8 @@ cmp_opaqueproperty_value(const void *a, const void *b)
 
 /*
  * Lookup a property in an opaque type and return the pointer to it. "idx" is
- * set to the index of it in the properties array. If not exists, then return
- * NULL.
+ * set to the index of it in the properties array (but may be NULL). If not
+ * exists, then return NULL.
  */
     opaque_property_T *
 lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx)
@@ -95,6 +95,7 @@ lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx
     opaque_property_T target;
     opaque_property_T *prop;
 
+    target.opp_idx = 0;
     target.opp_name = name;
     target.opp_type = NULL;
     target.opp_name_len = 0; // Not used
@@ -105,7 +106,8 @@ lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx
     if (prop == NULL)
 	return NULL;
 
-    *idx = prop->opp_idx;
+    if (idx != NULL)
+	*idx = prop->opp_idx;
 
     return prop;
 }
@@ -125,7 +127,12 @@ get_opaque_property_tv(opaque_T *op, char_u *name, size_t namelen, typval_T *ret
     prop = lookup_opaque_property(op->op_type, name, namelen, &prop_idx);
 
     if (prop == NULL)
+    {
+	// Property doesn't exist
+	semsg(_(e_opaque_str_property_str_no_exist),
+		namelen, name, op->op_type->ot_type);
 	return FAIL;
+    }
 
     // Call getter function
     ret = op->op_type->ot_property_func(op, prop, &tv);
@@ -185,10 +192,6 @@ opaque_property_index(char_u **arg, typval_T *rettv)
 	*arg = name_end;
 	return OK;
     }
-
-    // Property doesn't exist
-    semsg(_(e_opaque_str_property_str_no_exist), name, op->op_type->ot_type);
-
     return FAIL;
 }
 
