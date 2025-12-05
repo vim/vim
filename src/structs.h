@@ -1716,19 +1716,15 @@ struct opaque_type_S
 					      // FAIL on error, else OK.
 };
 
+// This is designed to be put in another struct as a the first member. This is
+// so we don't have to worry about alignment issues.
 struct opaque_S
 {
     int		    op_refcount;    // Reference count
     opaque_type_T   *op_type;
-
-     char_u	    op_data[1];	    // Actually larger, should be casted to actual
-				    // type when used
 };
 
 #define OPPROPNAME(s) (char_u *)s, sizeof(s) - 1
-
-#define OP2DATA(s, t) ((t *)(s->op_data))
-#define OP2DATAOFF(s, t, o) ((t *)(s->op_data + o))
 
 /*
  * Structure to hold an internal variable without a name.

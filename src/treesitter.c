@@ -42,16 +42,58 @@ typedef struct
     char_u		name[1]; // Actually longer
 } TSVimLanguage;
 
+typedef struct
+{
+    opaque_T	opaque;
+
+    union
+    {
+	TSParser	    *parser;
+	TSTree	    	    *tree;
+	struct {
+	    TSNode	    obj;
+	    opaque_T	    *tree;  // Hold back reference to parent TSTree
+	} node;
+
+	TSQuery		    *query;
+	struct
+	{
+	    TSQueryCursor   *obj;
+
+	    // These may be NULL
+	    opaque_T	    *node;  // Reference to node object from exec
+	    opaque_T	    *query; // Reference to query object from exec
+	} querycursor;
+
+	struct
+	{
+	    TSQueryMatch    obj;
+	    opaque_T	    *querycursor; // Refrence to querycursor object
+	} querymatch;
+	void		    *dummy; // Used to compare pointers
+    } val;
+} TSVimObject;
+
 #define VTS_LANG_OFF offsetof(TSVimLanguage, name)
 #define HI2LANG(hi) ((TSVimLanguage *)((hi)->hi_key - VTS_LANG_OFF))
 
-#define OP2TSPARSER(o) (*OP2DATA(o, TSParser *))
-#define OP2TSTREE(o) (*OP2DATA(o, TSTree *))
-#define OP2TSNODE(o) (*OP2DATA(o, TSNode))
-#define OP2TSNODETREE(o) (*OP2DATAOFF(o, opaque_T *, sizeof(TSNode)))
-#define OP2TSQUERY(o) (*OP2DATA(o, TSQuery *))
-#define OP2TSQUERYCURSOR(o) (*OP2DATA(o, TSQueryCursor *))
-#define OP2TSQUERYMATCH(o) (*OP2DATA(o, TSQueryMatch))
+#define NEWOBJ(type) (opaque_new(&type, sizeof(TSVimObject)))
+
+#define OBJ2OP(o) ((opaque_T *)(o))
+#define OP2OBJ(o) ((TSVimObject *)(o))
+#define OBJVAL(o) (OP2OBJ(o)->val)
+#define OP2PTR(o) (OP2OBJ(o)->val.dummy)
+
+#define OP2TSPARSER(o) (OP2OBJ(o)->val.parser)
+#define OP2TSTREE(o) (OP2OBJ(o)->val.tree)
+#define OP2TSNODE(o) (OP2OBJ(o)->val.node.obj)
+#define OP2TSNODETREE(o) (OP2OBJ(o)->val.node.tree)
+#define OP2TSQUERY(o) (OP2OBJ(o)->val.query)
+#define OP2TSQUERYCURSOR(o) (OP2OBJ(o)->val.querycursor.obj)
+#define OP2TSQUERYCURSORNODE(o) (OP2OBJ(o)->val.querycursor.node)
+#define OP2TSQUERYCURSORQUERY(o) (OP2OBJ(o)->val.querycursor.query)
+#define OP2TSQUERYMATCH(o) (OP2OBJ(o)->val.querymatch.obj)
+#define OP2TSQUERYMATCHQUERYCURSOR(o) (OP2OBJ(o)->val.querymatch.querycursor)
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
@@ -60,6 +102,8 @@ static opaque_type_T tsparser_type;
 static opaque_type_T tstree_type;
 static opaque_type_T tsnode_type;
 static opaque_type_T tsquery_type;
+static opaque_type_T tsquerycursor_type;
+static opaque_type_T tsquerymatch_type;
 
     int
 tsvim_init(void)
@@ -165,14 +209,13 @@ new_tsnode(TSNode *node, opaque_T *tree)
 	// Node is NULL
 	return NULL;
 
-    op = opaque_new(&tsnode_type, NULL,
-	    sizeof(TSNode) + sizeof(opaque_T *));
+    op = NEWOBJ(tsnode_type);
 
     if (op == NULL)
 	return NULL;
 
-    memcpy(op->op_data, node, sizeof(TSNode));
-    memcpy(op->op_data + sizeof(TSNode), &tree, sizeof(opaque_T *));
+    OBJVAL(op).node.obj = *node;
+    OBJVAL(op).node.tree = tree;
     tree->op_refcount++;
     op->op_refcount++;
 
@@ -213,9 +256,9 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
     typval_T *row;
     typval_T *col;
 
-    if (tuple == NULL || tuple->tv_items.ga_len != 2)
+    if (tuple->tv_items.ga_len != 2)
     {
-	emsg(_(e_invalid_argument_tuple_not_number_number));
+	semsg(_(e_invalid_argument_str), "tuple not type <number, number>");
 	return FAIL;
     }
 
@@ -245,6 +288,12 @@ get_language(char_u *language)
     return NULL;
 }
 
+    static bool
+tsobject_equal_func(opaque_T *a, opaque_T *b)
+{
+    return OP2PTR(a) == OP2PTR(b);
+}
+
     static void
 tsparser_free_func(opaque_T *op)
 {
@@ -266,16 +315,36 @@ tsnode_free_func(opaque_T *op)
     opaque_unref(tree_obj);
 }
 
+    static bool
+tsnode_equal_func(opaque_T *a, opaque_T *b)
+{
+    return ts_node_eq(OP2TSNODE(a), OP2TSNODE(b));
+}
+
     static void
 tsquery_free_func(opaque_T *op)
 {
     ts_query_delete(OP2TSQUERY(op));
 }
 
-    static bool
-tsnode_equal_func(opaque_T *a, opaque_T *b)
+    static void
+tsquerycursor_free_func(opaque_T *op)
 {
-    return ts_node_eq(OP2TSNODE(a), OP2TSNODE(b));
+    opaque_unref(OP2TSQUERYCURSORNODE(op));
+    opaque_unref(OP2TSQUERYCURSORQUERY(op));
+    ts_query_cursor_delete(OP2TSQUERYCURSOR(op));
+}
+
+    static void
+tsquerymatch_free_func(opaque_T *op)
+{
+    opaque_unref(OP2TSQUERYMATCHQUERYCURSOR(op));
+}
+
+    static bool
+tsquerymatch_equal_func(opaque_T *a, opaque_T *b)
+{
+    return OP2TSQUERYMATCH(a).id == OP2TSQUERYMATCH(b).id;
 }
 
 typedef enum
@@ -433,6 +502,14 @@ type_T t_tsquery = {
     VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquery_type
 };
 
+type_T t_tsquerycursor = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquerycursor_type
+};
+
+type_T t_tsquerymatch = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquerymatch_type
+};
+
 static opaque_property_T tsnode_properties[] = {
     {NPROP_CHILD_COUNT,		    OPPROPNAME("child_count"), &t_number},
     {NPROP_END_BYTE,	    	    OPPROPNAME("end_byte"), &t_number},
@@ -457,15 +534,11 @@ static opaque_property_T tsnode_properties[] = {
 };
 
 static opaque_type_T tsparser_type = {
-    (char_u *)"TSParser", 0, NULL, tsparser_free_func, opaque_equal_ptr, NULL, NULL
+    (char_u *)"TSParser", 0, NULL, tsparser_free_func, tsobject_equal_func, NULL, NULL
 };
 
 static opaque_type_T tstree_type = {
-    (char_u *)"TSTree", 0, NULL, tstree_free_func, opaque_equal_ptr, NULL, NULL
-};
-
-static opaque_type_T tsquery_type = {
-    (char_u *)"TSQuery", 0, NULL, tsquery_free_func, opaque_equal_ptr, NULL, NULL
+    (char_u *)"TSTree", 0, NULL, tstree_free_func, tsobject_equal_func, NULL, NULL
 };
 
 static opaque_type_T tsnode_type = {
@@ -473,17 +546,38 @@ static opaque_type_T tsnode_type = {
     tsnode_free_func, tsnode_equal_func, NULL, tsnode_property_func
 };
 
+static opaque_type_T tsquery_type = {
+    (char_u *)"TSQuery", 0, NULL, tsquery_free_func, tsobject_equal_func, NULL, NULL
+};
+
+static opaque_type_T tsquerycursor_type = {
+    (char_u *)"TSQueryCursor", 0, NULL, tsquerycursor_free_func,
+    tsobject_equal_func, NULL, NULL
+};
+
+static opaque_type_T tsquerymatch_type = {
+    (char_u *)"TSQueryMatch", 0, NULL, tsquerymatch_free_func,
+    tsquerymatch_equal_func, NULL, NULL
+};
+
 // Should be in sync with opaque_types_table[]
 static opaque_type_T *opaque_types[] = {
-    &tsnode_type, &tsparser_type, &tsquery_type, &tstree_type
+    &tsnode_type,
+    &tsparser_type,
+    &tsquery_type,
+    &tsquerycursor_type,
+    &tsquerymatch_type,
+    &tstree_type
 };
 
 // Should be sorted alphabetically
 static keyvalue_T opaque_types_table[] = {
     KEYVALUE_ENTRY(0, "TSNode"),
     KEYVALUE_ENTRY(1, "TSParser"),
-    KEYVALUE_ENTRY(2, "TSQuerry"),
-    KEYVALUE_ENTRY(3, "TSTree"),
+    KEYVALUE_ENTRY(2, "TSQuery"),
+    KEYVALUE_ENTRY(3, "TSQueryCursor"),
+    KEYVALUE_ENTRY(4, "TSQueryMatch"),
+    KEYVALUE_ENTRY(5, "TSTree"),
 };
 
 /*
@@ -524,13 +618,14 @@ tsparser_new(void)
     if (parser == NULL)
 	return NULL;
 
-    op = opaque_new(&tsparser_type, &parser, sizeof(TSParser *));
+    op = NEWOBJ(tsparser_type);
 
     if (op == NULL)
     {
 	ts_parser_delete(parser);
 	return NULL;
     }
+    OBJVAL(op).parser = parser;
     op->op_refcount++;
 
     return op;
@@ -553,12 +648,12 @@ typedef struct
 {
     elapsed_T start;
     long timeout;
-} ParserProgressContext;
+} ProgressContext;
 
     static bool 
 parser_progress_callback(TSParseState *state)
 {
-    ParserProgressContext *ctx = state->payload;
+    ProgressContext *ctx = state->payload;
 
     return ELAPSED_FUNC(ctx->start) >= ctx->timeout;
 }
@@ -582,7 +677,7 @@ tsvim_parser_parse(
     TSTree	    *res;
     TSParseOptions  opts;
 #ifdef ELAPSED_FUNC
-    ParserProgressContext progress_ctx;
+    ProgressContext progress_ctx;
 #else
     (void)timeout;
 #endif
@@ -598,7 +693,7 @@ tsvim_parser_parse(
     opts.payload = &progress_ctx;
     opts.progress_callback = parser_progress_callback;
 #else
-    memset(opts, 0, sizeof(opts));
+    memset(&opts, 0, sizeof(opts));
 #endif
 
     res = ts_parser_parse_with_options(parser, last_tree, input, opts);
@@ -677,12 +772,13 @@ tsparser_parse_buf(
     if (res == NULL)
 	return NULL;
 
-    op = opaque_new(&tstree_type, &res, sizeof(TSTree *));
+    op = NEWOBJ(tstree_type);
     if (op == NULL)
     {
 	ts_tree_delete(res);
 	return NULL;
     }
+    OBJVAL(op).tree = res;
     op->op_refcount++;
 
     return op;
@@ -845,13 +941,13 @@ tsquery_new(char_u *language, char_u *query_str)
 	return NULL;
     }
 
-    op = opaque_new(&tsquery_type, &query, sizeof(TSQuery *));
-
+    op = NEWOBJ(tsquery_type);
     if (op == NULL)
     {
 	ts_query_delete(query);
 	return NULL;
     }
+    OBJVAL(op).query = query;
     op->op_refcount++;
 
     return op;
@@ -865,8 +961,8 @@ f_ts_load(typval_T *argvars, typval_T *rettv)
     char_u *symbol = NULL;
 
     if (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL
-		|| check_for_opt_dict_arg(argvars, 2) == FAIL)
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
     name = argvars[0].vval.v_string;
@@ -902,7 +998,7 @@ f_tsparser_new(typval_T *argvars, typval_T *rettv)
 f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
 {
     if (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL)
+	    || check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
@@ -916,9 +1012,9 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
     if (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_buffer_arg(argvars, 1) == FAIL
-		|| check_for_number_arg(argvars, 2) == FAIL
-		|| check_for_opt_opaque_arg(argvars, 3) == FAIL)
+	    || check_for_buffer_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_opt_opaque_arg(argvars, 3) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL
@@ -956,12 +1052,12 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv)
     TSPoint start_point, old_end_point, new_end_point;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_number_arg(argvars, 2) == FAIL
-		|| check_for_number_arg(argvars, 3) == FAIL
-		|| check_for_tuple_arg(argvars, 4) == FAIL
-		|| check_for_tuple_arg(argvars, 5) == FAIL
-		|| check_for_tuple_arg(argvars, 6) == FAIL)
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_number_arg(argvars, 3) == FAIL
+	    || check_for_tuple_arg(argvars, 4) == FAIL
+	    || check_for_tuple_arg(argvars, 5) == FAIL
+	    || check_for_tuple_arg(argvars, 6) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL)
@@ -1007,8 +1103,8 @@ f_tsnode_child(typval_T *argvars, typval_T *rettv)
     bool named = false;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_opt_bool_arg(argvars, 2) == FAIL)
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_opt_bool_arg(argvars, 2) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsnode_type) == FAIL)
@@ -1059,7 +1155,7 @@ f_tsquery_new(typval_T *argvars, typval_T *rettv)
     opaque_T *res;
 
     if (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL)
+	    || check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     res = tsquery_new(argvars[0].vval.v_string, argvars[1].vval.v_string);
@@ -1069,6 +1165,228 @@ f_tsquery_new(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_OPAQUE;
     rettv->vval.v_opaque = res;
+}
+
+    void
+f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv)
+{
+    TSQuery *query;
+    char_u *str;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquery_type) == FAIL)
+	return;
+
+    query = OP2TSQUERY(argvars[0].vval.v_opaque);
+    str = argvars[1].vval.v_string;
+
+    ts_query_disable_capture(query, (char *)str, STRLEN(str));
+}
+
+    void
+f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv)
+{
+    TSQuery *query;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquery_type) == FAIL)
+	return;
+
+    query = OP2TSQUERY(argvars[0].vval.v_opaque);
+
+    ts_query_disable_pattern(query, argvars[1].vval.v_number);
+}
+
+    void
+f_tsquerycursor_new(typval_T *argvars, typval_T *rettv)
+{
+    TSQueryCursor   *cursor;
+    opaque_T	    *op;
+    bool	    have_range = false;
+    bool 	    have_max_depth = false;
+    bool 	    have_match_limit = false;
+    TSPoint	    startp, endp;
+    uint32_t	    max_depth, match_limit;
+
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type == VAR_DICT)
+    {
+	dict_T *opts = argvars[0].vval.v_dict;
+	typval_T rangetv, max_depthtv, match_limittv;
+
+	// "range" type: tuple<tuple<number, number>, tuple<number, number>>
+	if (dict_get_tv(opts, "range", &rangetv) == OK)
+	{
+	    typval_T *starttv, *endtv;
+	    tuple_T *start, *end;
+
+            if (rangetv.v_type != VAR_TUPLE
+		    || rangetv.vval.v_tuple->tv_items.ga_len != 2)
+            {
+range_fail:
+		semsg(_(e_invalid_argument_str), "range");
+		clear_tv(&rangetv);
+		return;
+	    }
+
+	    starttv = TUPLE_ITEM(rangetv.vval.v_tuple, 0);
+	    endtv = TUPLE_ITEM(rangetv.vval.v_tuple, 1);
+
+	    if (starttv->v_type != VAR_TUPLE || endtv->v_type != VAR_TUPLE)
+		goto range_fail;
+
+	    start = starttv->vval.v_tuple;
+	    end = endtv->vval.v_tuple;
+
+	    if (tuple_to_tspoint(start, &startp) == FAIL
+		    || tuple_to_tspoint(end, &endp) == FAIL)
+	    {
+		clear_tv(&rangetv);
+		return;
+	    }
+
+	    have_range = true;
+	}
+
+	if (dict_get_tv(opts, "max_start_depth", &max_depthtv) == OK)
+	{
+	    if (max_depthtv.v_type != VAR_NUMBER)
+	    {
+		semsg(_(e_invalid_argument_str), "max_start_depth");
+		clear_tv(&rangetv);
+		clear_tv(&max_depthtv);
+		return;
+	    }
+	    max_depth = max_depthtv.vval.v_number;
+	    have_max_depth = true;
+	}
+
+	if (dict_get_tv(opts, "match_limit", &match_limittv) == OK)
+	{
+	    if (match_limittv.v_type != VAR_NUMBER)
+	    {
+		semsg(_(e_invalid_argument_str), "match_limit");
+		clear_tv(&rangetv);
+		clear_tv(&max_depthtv);
+		clear_tv(&match_limittv);
+		return;
+	    }
+	    match_limit = match_limittv.vval.v_number;
+	    have_match_limit = true;
+	}
+    }
+
+    cursor = ts_query_cursor_new();
+
+    if (cursor == NULL)
+	return;
+
+    // The querycursor struct is to hold the query and node object when we exec.
+    op = NEWOBJ(tsquerycursor_type);
+
+    if (op == NULL)
+    {
+	ts_query_cursor_delete(cursor);
+	return;
+    }
+    OBJVAL(op).querycursor.obj = cursor;
+    op->op_refcount++;
+
+    if (have_range)
+	ts_query_cursor_set_point_range(cursor, startp, endp);
+    if (have_max_depth)
+	ts_query_cursor_set_max_start_depth(cursor, max_depth);
+    if (have_match_limit)
+	ts_query_cursor_set_match_limit(cursor, match_limit);
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
+}
+
+    void
+f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv)
+{
+    TSQueryCursor	    *cursor;
+    TSQuery	    	    *query;
+    TSNode	    	    node;
+    opaque_T		    *old_query, *old_node;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_opaque_arg(argvars, 1) == FAIL
+	    || check_for_opaque_arg(argvars, 2) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL
+	    || check_for_opaque_type_arg(argvars, 1, &tsquery_type) == FAIL
+	    || check_for_opaque_type_arg(argvars, 2, &tsnode_type) == FAIL)
+	return;
+
+    cursor = OP2TSQUERYCURSOR(argvars[0].vval.v_opaque);
+    query = OP2TSQUERY(argvars[1].vval.v_opaque);
+    node = OP2TSNODE(argvars[2].vval.v_opaque);
+
+    // Add back references to the query and node object. Replace the current
+    // ones (and unref them) if any.
+    old_node = OP2TSQUERYCURSORNODE(argvars[2].vval.v_opaque);
+    old_query = OP2TSQUERYCURSORQUERY(argvars[1].vval.v_opaque);
+
+    if (old_node != NULL)
+	opaque_unref(old_node);
+    if (old_query != NULL)
+	opaque_unref(old_query);
+
+    // Ref node
+    OBJVAL(argvars[0].vval.v_opaque).querycursor.node = argvars[2].vval.v_opaque;
+    argvars[2].vval.v_opaque->op_refcount++;
+    // Ref query
+    OBJVAL(argvars[0].vval.v_opaque).querycursor.query = argvars[1].vval.v_opaque;
+    argvars[1].vval.v_opaque->op_refcount++;
+
+    ts_query_cursor_exec(cursor, query, node);
+}
+
+    void
+f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
+{
+    TSQueryCursor   *cursor;
+    opaque_T	    *op;
+    TSQueryMatch    match;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL)
+	return;
+
+    cursor = OP2TSQUERYCURSOR(argvars[0].vval.v_opaque);
+
+    if (!ts_query_cursor_next_match(cursor, &match))
+    {
+	rettv->v_type = VAR_OPAQUE;
+	rettv->vval.v_opaque = NULL;
+	return;
+    }
+
+    op = NEWOBJ(tsquerymatch_type);
+
+    if (op == NULL)
+	return;
+
+    OBJVAL(op).querymatch.obj = match;
+    OBJVAL(op).querymatch.querycursor = argvars[0].vval.v_opaque;
+    op->op_refcount++;
+    argvars[0].vval.v_opaque->op_refcount++;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
 }
 
 #endif // FEAT_TREESITTER

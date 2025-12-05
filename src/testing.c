@@ -1281,17 +1281,23 @@ f_test_null_opaque(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_opaque = NULL;
 }
 
+typedef struct
+{
+    opaque_T	opaque;
+    int		val;
+} testopaque_T;
+
     static bool
 test_opaque_equal(opaque_T *a, opaque_T *b)
 {
-    return *OP2DATA(a, int) == *OP2DATA(b, int);
+    return ((testopaque_T *)a)->val == ((testopaque_T *)b)->val;
 }
 
     static char_u *
 test_opaque_str(opaque_T *a, char_u **tofree)
 {
-    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d", a->op_type->ot_type,
-	    *OP2DATA(a, int));
+    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d",
+	    a->op_type->ot_type, ((testopaque_T *)a)->val);
     *tofree = vim_strsave(IObuff);
     return *tofree;
 }
@@ -1299,7 +1305,7 @@ test_opaque_str(opaque_T *a, char_u **tofree)
     static int
 test_opaque_property(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 {
-    int val = *OP2DATA(op, int);
+    int val = ((testopaque_T *)op)->val;
 
     switch (prop->opp_idx)
     {
@@ -1338,15 +1344,15 @@ f_test_opaque(typval_T *argvars, typval_T *rettv)
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
-    // TODO: fix it
-    op = opaque_new(&test_opaque_type, &argvars[1].vval.v_number, sizeof(int));
+    op = opaque_new(&test_opaque_type, sizeof(testopaque_T));
 
     if (op == NULL)
 	return;
+    ((testopaque_T *)op)->val = argvars[1].vval.v_number;
+    op->op_refcount++;
 
     rettv->v_type = VAR_OPAQUE;
     rettv->vval.v_opaque = op;
-    op->op_refcount++;
 }
 
     void

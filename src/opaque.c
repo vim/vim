@@ -39,21 +39,18 @@ lookup_opaque_type(char_u *name, size_t namelen)
 
 /*
  * Allocate new opaque data type, Returns NULL on failure. Caller must manage
- * reference count, it is set to zero. "data" may be NULL.
+ * reference count, it is set to zero. "data" may be NULL. "data_sz" should be
+ * the total size of the struct containing the opaque_T struct.
  */
     opaque_T *
-opaque_new(opaque_type_T *type, void *data, size_t data_sz)
+opaque_new(opaque_type_T *type, size_t struct_sz)
 {
-    opaque_T	*op = alloc_clear(offsetof(opaque_T, op_data) + data_sz);
+    opaque_T	*op = alloc_clear(struct_sz);
 
     if (op == NULL)
 	return NULL;
 
     op->op_type = type;
-
-    if (data != NULL)
-	memcpy(op->op_data, data, data_sz);
-
     return op;
 }
 
@@ -71,12 +68,6 @@ opaque_unref(opaque_T *op)
 {
     if (op != NULL && --op->op_refcount <= 0)
 	opaque_free(op);
-}
-
-    bool
-opaque_equal_ptr(opaque_T *a, opaque_T *b)
-{
-    return OP2DATA(a, void *) == OP2DATA(b, void *);
 }
 
 /*

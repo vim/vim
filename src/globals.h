@@ -2149,6 +2149,8 @@ extern type_T t_tsparser;
 extern type_T t_tstree;
 extern type_T t_tsnode;
 extern type_T t_tsquery;
+extern type_T t_tsquerycursor;
+extern type_T t_tsquerymatch;
 #endif
 
 // If greater than zero, then silence the W23/W24 warning.

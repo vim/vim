@@ -3798,6 +3798,10 @@ EXTERN char e_osc_response_timed_out[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
+	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
+EXTERN char e_no_redraw_listener_callbacks_defined[]
+	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
 EXTERN char e_using_opaque_as_number[]
 	INIT(= N_("E1570: Using a Opaque as a Number"));
 EXTERN char e_using_opaque_as_float[]
@@ -3821,12 +3825,6 @@ EXTERN char e_error_getting_opaque_property[]
 EXTERN char e_opaque_type_str_no_exist[]
 	INIT(= N_("E1577: Opaque type %.*s does not exist"));
 #endif
-#ifdef FEAT_EVAL
-EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
-	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
-EXTERN char e_no_redraw_listener_callbacks_defined[]
-	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
-#endif
 # ifndef FEAT_TREESITTER
 EXTERN char e_treesitter_feature_not_available[]
 	INIT(= N_("E1570: Treesitter feature is not available"));
@@ -3849,7 +3847,7 @@ EXTERN char e_tsobject_required_for_argument_nr[]
 EXTERN char e_tsobject_str_required_for_argument_nr[]
 	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
 EXTERN char e_invalid_argument_tuple_not_number_number[]
-	INIT(= N_("E1574: Invalid argument: tuple is not of type <number, number>"));
+	INIT(= N_("E1575: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
 EXTERN char e_tsnode_property_str_no_exist[]
