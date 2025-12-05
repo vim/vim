@@ -145,6 +145,28 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
 }
 
 /*
+ * Generate ISN_GET_OPAQUE_PROPERTY instruction - access property of opaque at
+ * bottom of stack by index.
+ */
+    int
+generate_GET_OPAQUE_PROPERTY(cctx_T *cctx, int idx, opaque_type_T *ot, type_T *type)
+{
+    isn_T		*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    // Drop the opaque type
+    isn = generate_instr_drop(cctx, ISN_GET_OPAQUE_PROPERTY, 1);
+    if (isn == NULL)
+	return FAIL;
+
+    isn->isn_arg.opaqueprop.oprop_idx = idx;
+    isn->isn_arg.opaqueprop.oprop_ot = ot;
+
+    return push_type_stack2(cctx, type, &t_any);
+}
+
+/*
  * Generate ISN_GET_ITF_MEMBER - access member of interface at bottom of stack
  * by index.
  */
@@ -516,14 +538,15 @@ get_compare_isn(
 	    // For opaque types, we must also check the type of both opaques as
 	    // well. This is unless there is a NULL opaque type, then we have to
 	    // do a runtime check.
-	    char_u *optype1 = tv1 != NULL ?
+	    opaque_type_T *optype1 = tv1 != NULL ?
 		tv1->vval.v_opaque->op_type : type1->tt_optype;
-	    char_u *optype2 = tv2 != NULL ?
+	    opaque_type_T *optype2 = tv2 != NULL ?
 		tv2->vval.v_opaque->op_type : type2->tt_optype;
 
-	    if (optype1 != NULL && optype2 != NULL && STRCMP(optype1, optype2) != 0)
+	    if (optype1 != NULL && optype2 != NULL && optype1 == optype2)
 	    {
-		semsg(_(e_opaque_cannot_compare_str_with_str), optype1, optype2);
+		semsg(_(e_opaque_cannot_compare_str_with_str),
+			optype1->ot_type, optype2->ot_type);
 		return ISN_DROP;
 	    }
 	    isntype = ISN_COMPAREOPAQUE;
@@ -2934,6 +2957,7 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_GET_OBJ_MEMBER:
+	case ISN_GET_OPAQUE_PROPERTY:
 	case ISN_JUMP:
 	case ISN_JUMP_IF_ARG_NOT_SET:
 	case ISN_JUMP_IF_ARG_SET:

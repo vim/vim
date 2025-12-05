@@ -3274,6 +3274,19 @@ object_required_error(typval_T *tv)
     clear_type_list(&type_list);
 }
 
+    static void
+opaque_required_error(typval_T *tv)
+{
+    garray_T type_list;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type_T *type = typval2type(tv, get_copyID(), &type_list, 0);
+    char *tofree = NULL;
+    char *typename = type_name(type, &tofree);
+    semsg(_(e_opaque_required_found_str), typename);
+    vim_free(tofree);
+    clear_type_list(&type_list);
+}
+
 /*
  * Accessing the variable or method of an object or a class stored in a
  * variable of type "any".
@@ -6156,6 +6169,43 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_GET_OPAQUE_PROPERTY:
+		{
+		    opaque_T		*op;
+		    int			idx;
+		    opaque_property_T	*prop;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_OPAQUE)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			opaque_required_error(tv);
+			goto on_error;
+		    }
+		    op = tv->vval.v_opaque;
+
+		    if (op == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_using_null_opaque));
+			goto on_error;
+		    }
+
+		    idx = iptr->isn_arg.opaqueprop.oprop_idx;
+		    prop = &op->op_type->ot_properties[idx];
+
+		    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			semsg(_(e_error_getting_opaque_property), prop->opp_name);
+			goto on_error;
+		    }
+
+		    opaque_unref(op);
+		}
+		break;
+
+
 	    case ISN_STORE_THIS:
 		{
 		    int idx = iptr->isn_arg.number;
@@ -7860,6 +7910,13 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			     (int)iptr->isn_arg.classmember.cm_idx,
 			     iptr->isn_arg.classmember.cm_class->class_name.string);
 				     break;
+
+	    case ISN_GET_OPAQUE_PROPERTY:
+                smsg("%s%4d OPAQUE_PROPERTY %d on %s", pfx, current,
+                     (int)iptr->isn_arg.opaqueprop.oprop_idx,
+                     iptr->isn_arg.opaqueprop.oprop_ot->ot_type);
+                break;
+
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
 	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;
