@@ -676,7 +676,7 @@ compile_opaque_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return generate_GET_OPAQUE_PROPERTY(cctx, idx, ot, prop->opp_type);
     }
 
-    semsg(_(e_opaque_str_property_str_no_exist), name, ot->ot_type);
+    semsg(_(e_opaque_str_property_str_no_exist), len, name, ot->ot_type);
 
     return FAIL;
 }
@@ -2880,7 +2880,7 @@ compile_subscript(
 		if (compile_class_object_index(cctx, arg, type) == FAIL)
 		    return FAIL;
 	    }
-	    else if (type != &t_unknown && type->tt_type == VAR_OPAQUE)
+	    else if (type != &t_unknown && (type->tt_type == VAR_OPAQUE))
 	    {
 		// opaque property: Opaque.property
 		*arg = p;
