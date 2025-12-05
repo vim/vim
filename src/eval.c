@@ -6626,15 +6626,15 @@ opaque_tv2string(
 
     if (tv->vval.v_opaque == NULL)
 	r = (char_u *)"opaque null";
-    else if (tv->vval.v_opaque->op_str_func == NULL)
+    else if (tv->vval.v_opaque->op_type->ot_str_func == NULL)
 	{
 	    vim_snprintf((char *)IObuff, IOSIZE, "opaque type %s",
-		    tv->vval.v_opaque->op_type);
+		    tv->vval.v_opaque->op_type->ot_type);
 	    r = vim_strsave(IObuff);
 	    *tofree = r;
 	}
     else
-	r = tv->vval.v_opaque->op_str_func(tv->vval.v_opaque, tofree);
+	r = tv->vval.v_opaque->op_type->ot_str_func(tv->vval.v_opaque, tofree);
 
     return r;
 }
@@ -7591,6 +7591,15 @@ handle_subscript(
 	    // object member: someObject.varname
 	    // object method: someObject.SomeMethod()
 	    if (class_object_index(arg, rettv, evalarg, verbose) == FAIL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
+	}
+	else if (**arg == '.' && rettv->v_type == VAR_OPAQUE)
+	{
+	    // Opaque property: Opaque.property
+	    if (opaque_property_index(arg, rettv) == FAIL)
 	    {
 		clear_tv(rettv);
 		ret = FAIL;

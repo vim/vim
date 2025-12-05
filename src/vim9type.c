@@ -47,28 +47,12 @@ get_type_ptr(garray_T *type_gap)
     type_T *
 copy_type(type_T *type, garray_T *type_gap)
 {
-    type_T  *copy;
-    char_u  *optype = NULL;
-    bool    isstatic = type->tt_flags & TTFLAG_OPTYPE_STATIC;
+    type_T *copy = get_type_ptr(type_gap);
 
-    if (type->tt_optype != NULL && !isstatic)
-    {
-	optype = vim_strsave(type->tt_optype);
-
-	if (optype == NULL)
-	    return type;
-    }
-    copy = get_type_ptr(type_gap);
     if (copy == NULL)
-    {
-	if (!isstatic)
-	    vim_free(optype);
 	return type;
-    }
-
     *copy = *type;
-    if (!isstatic)
-	copy->tt_optype = optype;
+    copy->tt_optype = type->tt_optype;
     copy->tt_flags &= ~TTFLAG_STATIC;
 
     if (type->tt_args != NULL
@@ -130,9 +114,7 @@ copy_type_deep(type_T *type, garray_T *type_gap)
 clear_type_list(garray_T *gap)
 {
     while (gap->ga_len > 0)
-    {
 	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]);
-    }
     ga_clear(gap);
 }
 
@@ -183,8 +165,8 @@ alloc_type(type_T *type)
     else
 	ret->tt_args = NULL;
 
-    if (!(type->tt_flags & TTFLAG_OPTYPE_STATIC) && type->tt_optype != NULL)
-	ret->tt_optype = vim_strsave(type->tt_optype);
+    if (type->tt_optype != NULL)
+	ret->tt_optype = type->tt_optype;
 
     return ret;
 }
@@ -206,8 +188,6 @@ free_type(type_T *type)
 	vim_free(type->tt_args);
     }
 
-    if (!(type->tt_flags & TTFLAG_OPTYPE_STATIC))
-	vim_free(type->tt_optype);
     free_type(type->tt_member);
 
     vim_free(type);
@@ -892,7 +872,7 @@ fp_typval2type(typval_T *tv, garray_T *type_gap)
 }
 
 /*
- * Get a type_T for a "partial" typval in "tv".
+ * Get a type_T for a "opaque" typval in "tv".
  */
     static type_T *
 opaque_typval2type(typval_T *tv, garray_T *type_gap)
@@ -908,28 +888,9 @@ opaque_typval2type(typval_T *tv, garray_T *type_gap)
     if (type == NULL)
 	return NULL;
 
-    if (op->op_type_static)
-    {
-	type->tt_optype = op->op_type;
-	type->tt_flags |= TTFLAG_OPTYPE_STATIC;
-    }
-    else
-    {
-	type->tt_optype = vim_strsave(op->op_type);
-
-	// We must add it to type_gap as it is allocated memory that should be
-	// freed later.
-	if (ga_grow(type_gap, 1) == OK)
-	    ((type_T **)type_gap->ga_data)[type_gap->ga_len++]
-		= (type_T *)type->tt_optype;
-	else
-	{
-	    // Just make the type match any type as fallback
-	    vim_free(type->tt_optype);
-	    type->tt_optype = NULL;
-	}
-    }
+    type->tt_optype = op->op_type;
     type->tt_type = VAR_OPAQUE;
+
     return type;
 }
 
@@ -1401,10 +1362,7 @@ check_opaque_type_maybe(
     if (expected->tt_optype == NULL || actual->tt_optype == NULL)
 	return OK;
 
-    if (STRCMP(expected->tt_optype, actual->tt_optype) != 0)
-	return FAIL;
-
-    return OK;
+    return expected->tt_optype == actual->tt_optype ? OK : FAIL;
 }
 
 /*
@@ -2162,11 +2120,11 @@ parse_type_opaque(
 	if (opaque_type == NULL)
 	    return NULL;
 	opaque_type->tt_type = VAR_OPAQUE;
-	opaque_type->tt_optype = NULL;
     }
     else
     {
 	char_u *temp;
+	opaque_type_T *type;
 
 	// skip spaces following "opaque<"
 	*arg = skipwhite(*arg + 1);
@@ -2182,26 +2140,22 @@ parse_type_opaque(
 
 	*arg = temp;
 	op_len = *arg - op_type;
+	type = lookup_opaque_type(op_type, op_len);
 
-	vim_snprintf((char *)IObuff, IOSIZE, "%.*s", op_len, op_type);
+	if (type == NULL)
+	{
+	    // Type doesn't exist
+	    if (give_error)
+		semsg(_(e_opaque_type_str_no_exist), op_len, op_type);
+	    return NULL;
+	}
 
 	opaque_type = get_type_ptr(type_gap);
 	if (opaque_type == NULL)
 	    return NULL;
 
 	opaque_type->tt_type = VAR_OPAQUE;
-	opaque_type->tt_optype = vim_strsave(IObuff);
-
-	// We must add it to type_gap as it is allocated memory that should be
-	// freed later.
-	if (ga_grow(type_gap, 1) == OK)
-	    ((type_T **)type_gap->ga_data)[type_gap->ga_len++]
-		= (type_T *)opaque_type->tt_optype;
-	else
-	{
-	    vim_free(opaque_type->tt_optype);
-	    opaque_type->tt_optype = NULL;
-	}
+	opaque_type->tt_optype = type;
 	++*arg;
     }
 
@@ -2920,15 +2874,21 @@ type_name_opaque(type_T *type, char **tofree)
     size_t sz = sizeof("opaque");
     char *s;
 
+    if (type->tt_optype == NULL)
+    {
+	*tofree = NULL;
+	return "opaque";
+    }
+
     if (type->tt_optype != NULL)
-	sz += STRLEN(type->tt_optype) + sizeof("<>");
+	sz += STRLEN(type->tt_optype->ot_type) + sizeof("<>");
 
     s = alloc(sz);
 
     if (s == NULL)
 	return "[unknown]";
 
-    vim_snprintf(s, sz, "opaque<%s>", type->tt_optype);
+    vim_snprintf(s, sz, "opaque<%s>", type->tt_optype->ot_type);
 
     *tofree = s;
     return s;

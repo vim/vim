@@ -635,6 +635,53 @@ done:
 }
 
 /*
+ * Compile ".property" coming after an opaque.
+ */
+    static int
+compile_opaque_index(cctx_T *cctx, char_u **arg, type_T *type)
+{
+    opaque_type_T	*ot;
+    opaque_property_T	*prop;
+    char_u  *name;
+    char_u  *name_end;
+    size_t  len;
+    int	    idx;
+
+    if (VIM_ISWHITE((*arg)[1]))
+    {
+	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
+	return FAIL;
+    }
+
+    ++*arg;
+    name = *arg;
+    name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+
+    ot = type->tt_optype;
+    if (ot == NULL)
+    {
+	emsg(_(e_incomplete_type));
+	return FAIL;
+    }
+
+    if (name_end == name)
+	return FAIL;
+
+    len = name_end - name;
+    prop = lookup_opaque_property(ot, name, len, &idx);
+
+    if (prop != NULL)
+    {
+	*arg = name_end;
+	return generate_GET_OPAQUE_PROPERTY(cctx, idx, ot, prop->opp_type);
+    }
+
+    semsg(_(e_opaque_str_property_str_no_exist), name, ot->ot_type);
+
+    return FAIL;
+}
+
+/*
  * Generate an instruction to load script-local variable "name", without the
  * leading "s:".
  * Also finds imported variables.
@@ -2833,6 +2880,13 @@ compile_subscript(
 		if (compile_class_object_index(cctx, arg, type) == FAIL)
 		    return FAIL;
 	    }
+	    else if (type != &t_unknown && type->tt_type == VAR_OPAQUE)
+	    {
+		// opaque property: Opaque.property
+		*arg = p;
+		if (compile_opaque_index(cctx, arg, type) == FAIL)
+		    return FAIL;
+	    }
 	    else
 	    {
 		*arg = p + 1;
@@ -4068,6 +4122,5 @@ compile_expr0(char_u **arg,  cctx_T *cctx)
 {
     return compile_expr0_ext(arg, cctx, NULL);
 }
-
 
 #endif // defined(FEAT_EVAL)

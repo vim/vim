@@ -1,11 +1,13 @@
 /* treesitter.c */
 int tsvim_init(void);
-void tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name);
-opaque_T *tsparser_new(void);
-void tsparser_set_language(opaque_T *parser, char_u *language);
-opaque_T *tsparser_parse_buf( opaque_T *parser, opaque_T *last_tree, buf_T *buf, long timeout);
-void tstree_edit(opaque_T *tree, uint32_t start_byte, uint32_t old_end_byte, uint32_t new_end_byte, uint32_t start_point[2], uint32_t old_end_point[2], uint32_t new_end_point[2]);
-opaque_T *tstree_root_node(opaque_T *tree);
-typval_T tsnode_property(opaque_T *node_obj, char_u *property);
-opaque_T *tsquery_new(char_u *language, char_u *query_str);
+opaque_type_T *tsvim_lookup_opaque_type(char_u *name, size_t namelen);
+void f_ts_load(typval_T *argvars, typval_T *rettv);
+void f_tsparser_new(typval_T *argvars, typval_T *rettv);
+void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
+void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
+void f_tstree_edit(typval_T *argvars, typval_T *rettv);
+void f_tstree_root_node(typval_T *argvars, typval_T *rettv);
+void f_tsnode_child(typval_T *argvars, typval_T *rettv);
+void f_tsnode_descendant_for_range(typval_T *argvars, typval_T *rettv);
+void f_tsquery_new(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

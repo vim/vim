@@ -807,15 +807,15 @@ check_for_opt_opaque_arg(typval_T *args, int idx)
  * type. It is assumed that args[idx] is a valid opaque.
  */
     int
-check_for_opaque_type_arg(typval_T *args, int idx, char_u *type)
+check_for_opaque_type_arg(typval_T *args, int idx, opaque_type_T *type)
 {
     if (args[idx].v_type == VAR_UNKNOWN)
 	return FAIL;
     if (args[idx].vval.v_opaque == NULL)
 	return FAIL;
-    if (STRCMP(args[idx].vval.v_opaque->op_type, type) != 0)
+    if (args[idx].vval.v_opaque->op_type != type)
     {
-	semsg(_(e_opaque_str_required_for_argument_nr), type, idx + 1);
+	semsg(_(e_opaque_str_required_for_argument_nr), type->ot_type, idx + 1);
 	return FAIL;
     }
     return OK;
@@ -826,7 +826,7 @@ check_for_opaque_type_arg(typval_T *args, int idx, char_u *type)
  * type optionally. It is assumed that args[idx] is a valid opaque.
  */
     int
-check_for_opt_opaque_type_arg(typval_T *args, int idx, char_u *type)
+check_for_opt_opaque_type_arg(typval_T *args, int idx, opaque_type_T *type)
 {
     if (args[idx].v_type == VAR_UNKNOWN || args[idx].vval.v_opaque == NULL)
 	return OK;
@@ -1374,6 +1374,7 @@ tv_stringify(typval_T *varp, char_u *buf)
 {
     if (varp->v_type == VAR_LIST
 	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_TUPLE
 	    || varp->v_type == VAR_BLOB
 	    || varp->v_type == VAR_FUNC
 	    || varp->v_type == VAR_PARTIAL
@@ -2184,8 +2185,8 @@ typval_compare_opaque(
 	return OK;
     }
 
-    if (obj1->op_equal_func == obj2->op_equal_func)
-	*res = obj2->op_equal_func(obj1, obj2) ? res_match : !res_match;
+    if (obj1->op_type->ot_equal_func == obj2->op_type->ot_equal_func)
+	*res = obj2->op_type->ot_equal_func(obj1, obj2) ? res_match : !res_match;
     else
 	*res = !res_match;
     return OK;
@@ -2406,9 +2407,9 @@ tv_equal(
 	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
 
 	case VAR_OPAQUE:
-            return tv1->vval.v_opaque->op_equal_func ==
-		tv2->vval.v_opaque->op_equal_func &&
-		tv1->vval.v_opaque->op_equal_func(
+            return tv1->vval.v_opaque->op_type->ot_equal_func ==
+		tv2->vval.v_opaque->op_type->ot_equal_func &&
+		tv1->vval.v_opaque->op_type->ot_equal_func(
 			tv1->vval.v_opaque, tv2->vval.v_opaque);
 
         case VAR_UNKNOWN:

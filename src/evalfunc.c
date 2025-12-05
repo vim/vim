@@ -198,16 +198,6 @@ static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
-static void f_ts_load(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_TREESITTER
-static void f_tsparser_new(typval_T *argvars, typval_T *rettv);
-static void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
-static void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
-static void f_tstree_edit(typval_T *argvars, typval_T *rettv);
-static void f_tstree_root_node(typval_T *argvars, typval_T *rettv);
-static void f_tsnode_property(typval_T *argvars, typval_T *rettv);
-static void f_tsquery_new(typval_T *argvars, typval_T *rettv);
-#endif
 
 
 /*
@@ -1008,12 +998,55 @@ arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
- * Check "type" is an opaque.
+ * Check "type" is an opaque TSParser.
  */
     static int
-arg_opaque(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tsparser(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    return check_arg_type(&t_opaque, type, context);
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsparser, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSTree.
+ */
+    static int
+arg_tstree(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tstree, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSNode.
+ */
+    static int
+arg_tsnode(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsnode, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSQuery.
+ */
+    static int
+arg_tsquery(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsquery, type, context);
+#else
+    return FAIL;
+#endif
 }
 
 /*
@@ -1277,8 +1310,8 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
-static argcheck_T arg1_opaque[] = {arg_opaque};
-static argcheck_T arg2_opaque_string[] = {arg_opaque, arg_string};
+static argcheck_T arg1_tstree[] = {arg_tstree};
+static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1348,8 +1381,10 @@ static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg
 static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, arg_bool, arg_number};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
+static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_opaque_buffer_number_opaque[] = {arg_opaque, arg_buffer, arg_number, arg_opaque};
+static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
+static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -1406,7 +1441,7 @@ static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
-static argcheck_T arg7_opaque_3number_3tuple[] = {arg_opaque, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
+static argcheck_T arg7_tstree_3number_3tuple[] = {arg_tstree, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
 
 // Can be used by functions called through "f_retfunc" to create new types.
 static garray_T *current_type_gap = NULL;
@@ -1478,6 +1513,36 @@ ret_opaque(int argcount UNUSED,
 {
     return &t_opaque;
 }
+#ifdef FEAT_TREESITTER
+    static type_T *
+ret_tsparser(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsparser;
+}
+    static type_T *
+ret_tstree(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tstree;
+}
+    static type_T *
+ret_tsnode(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsnode;
+}
+    static type_T *
+ret_tsquery(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquery;
+}
+#endif // FEAT_TREESITTER
     static type_T *
 ret_list_number(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
@@ -1966,8 +2031,10 @@ typedef struct
 #endif
 #ifdef FEAT_TREESITTER
 # define TS_FUNC(name) name
+# define TS_OPRET(name) name
 #else
 # define TS_FUNC(name) NULL
+# define TS_OPRET(name) ret_void
 #endif
 
 static const funcentry_T global_functions[] =
@@ -3174,20 +3241,22 @@ static const funcentry_T global_functions[] =
 			ret_float,	    f_trunc},
     {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
 			ret_void,	    TS_FUNC(f_ts_load)},
-    {"tsnode_property",	2, 2, FEARG_1,	    arg2_opaque_string,
-			ret_any,	    TS_FUNC(f_tsnode_property)},
+    {"tsnode_child",	2, 3, FEARG_1,	    arg3_tsnode_number_bool,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tsnode_child)},
+    {"tsnode_descendant_for_range", 3, 4, FEARG_1, arg4_tsnode_tuple_tuple_bool,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tsnode_descendant_for_range)},
     {"tsparser_new",	0, 0, 0,	    NULL,
-			ret_opaque,	    TS_FUNC(f_tsparser_new)},
-    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_opaque_buffer_number_opaque,
-			ret_opaque,	    TS_FUNC(f_tsparser_parse_buf)},
-    {"tsparser_set_language", 2, 2, FEARG_1, arg2_opaque_string,
+			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
+    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsparser_buffer_number_tstree,
+			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
+    {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsparser_string,
 			ret_void,	    TS_FUNC(f_tsparser_set_language)},
     {"tsquery_new",	2, 2, 0,	    arg2_string,
-			ret_opaque,	    TS_FUNC(f_tsquery_new)},
-    {"tstree_edit",	7, 7, FEARG_1,	    arg7_opaque_3number_3tuple,
+			TS_OPRET(ret_tsquery), TS_FUNC(f_tsquery_new)},
+    {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
-    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_opaque,
-			ret_opaque,	    TS_FUNC(f_tstree_root_node)},
+    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tstree,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tstree_root_node)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
@@ -12869,212 +12938,5 @@ f_xor(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					^ tv_get_number_chk(&argvars[1], NULL);
 }
-
-#ifdef FEAT_TREESITTER
-    static void
-f_ts_load(typval_T *argvars, typval_T *rettv)
-{
-    char_u *name;
-    char_u *path;
-    char_u *symbol = NULL;
-
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL
-		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
-	return;
-
-    name = argvars[0].vval.v_string;
-    path = argvars[1].vval.v_string;
-
-    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN
-	    && argvars[1].v_type == VAR_DICT)
-    {
-	dict_T *d =  argvars[2].vval.v_dict;
-
-	symbol = dict_get_string(d, "symbol", FALSE);
-    }
-
-    if (symbol == NULL)
-	symbol = name;
-
-    tsvim_load_language(name, path, symbol);
-}
-
-    static void
-f_tsparser_new(typval_T *argvars, typval_T *rettv)
-{
-    opaque_T *op = tsparser_new();
-
-    if (op == NULL)
-	return;
-
-    rettv->v_type = VAR_OPAQUE;
-    rettv->vval.v_opaque = op;
-}
-
-    static void
-f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL))
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, TSPARSER) == FAIL)
-	return;
-
-    tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
-
-}
-
-    static void
-f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_buffer_arg(argvars, 1) == FAIL
-		|| check_for_number_arg(argvars, 2) == FAIL
-		|| check_for_opt_opaque_arg(argvars, 3) == FAIL))
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, TSPARSER) == FAIL
-	    || check_for_opt_opaque_type_arg(argvars, 3, TSTREE) == FAIL)
-	return;
-
-    {
-	buf_T *buf = get_buf_arg(argvars + 1);
-	opaque_T *res;
-
-	if (buf == NULL)
-	    return;
-
-	res = tsparser_parse_buf(
-		argvars[0].vval.v_opaque,
-		argvars[3].v_type == VAR_UNKNOWN
-		? NULL : argvars[3].vval.v_opaque,
-		buf, argvars[2].vval.v_number);
-
-	if (res == NULL)
-	{
-	    rettv->v_type = VAR_OPAQUE;
-	    rettv->vval.v_opaque = NULL;
-	    return;
-	}
-
-	rettv->v_type = VAR_OPAQUE;
-	rettv->vval.v_opaque = res;
-    }
-}
-
-    static void
-f_tstree_edit(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_number_arg(argvars, 2) == FAIL
-		|| check_for_number_arg(argvars, 3) == FAIL
-		|| check_for_tuple_arg(argvars, 4) == FAIL
-		|| check_for_tuple_arg(argvars, 5) == FAIL
-		|| check_for_tuple_arg(argvars, 6) == FAIL))
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, TSTREE) == FAIL)
-	return;
-
-    {
-	tuple_T *points[] = {
-	    argvars[4].vval.v_tuple,	// start_point
-	    argvars[5].vval.v_tuple,	// old_end_point
-	    argvars[6].vval.v_tuple};	// new_end_point
-	uint32_t p[3][2];
-
-	// Validate tuples are <number, number>
-	for (int i = 0; i < ARRAY_LENGTH(points); i++)
-	{
-	    typval_T *row = TUPLE_ITEM(points[i], 0);
-	    typval_T *col = TUPLE_ITEM(points[i], 1);
-
-	    if (row->v_type != VAR_NUMBER || col->v_type != VAR_NUMBER
-		    || points[i]->tv_items.ga_len != 2)
-	    {
-		emsg(_(e_tuple_is_not_of_numbers));
-		return;
-	    }
-
-	    p[i][0] = row->vval.v_number;
-	    p[i][1] = col->vval.v_number;
-	}
-
-	tstree_edit(
-		argvars[0].vval.v_opaque,
-		argvars[1].vval.v_number,
-		argvars[2].vval.v_number,
-		argvars[3].vval.v_number,
-		p[0], p[1], p[2]);
-    }
-}
-
-    static void
-f_tstree_root_node(typval_T *argvars, typval_T *rettv)
-{
-    opaque_T *res;
-
-    if (in_vim9script() && check_for_opaque_arg(argvars, 0) == FAIL)
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, TSTREE) == FAIL)
-	return;
-
-    res = tstree_root_node(argvars[0].vval.v_opaque);
-
-    if (res == NULL)
-	return;
-
-    rettv->v_type = VAR_OPAQUE;
-    rettv->vval.v_opaque = res;
-}
-
-    static void
-f_tsnode_property(typval_T *argvars, typval_T *rettv)
-{
-    typval_T ret;
-    if (in_vim9script() 
-	    && (check_for_opaque_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL))
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, TSNODE) == FAIL)
-	return;
-
-    ret = tsnode_property(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
-
-    if (ret.v_type == VAR_UNKNOWN)
-	return;
-
-    *rettv = ret;
-}
-
-    static void
-f_tsquery_new(typval_T *argvars, typval_T *rettv)
-{
-    opaque_T *res;
-
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL))
-	return;
-
-    res = tsquery_new(argvars[0].vval.v_string, argvars[1].vval.v_string);
-
-    if (res == NULL)
-	return;
-
-    rettv->v_type = VAR_OPAQUE;
-    rettv->vval.v_opaque = res;
-}
-
-#endif
 
 #endif // FEAT_EVAL

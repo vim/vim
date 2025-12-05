@@ -2140,6 +2140,15 @@ EXTERN int allow_osc_key INIT(= 0);
 // Global singly linked list of redraw listeners
 EXTERN redraw_listener_T *redraw_listeners INIT(= NULL);
 EXTERN bool inside_redraw_on_start_cb INIT(= false);
+// Set in testing.c
+extern opaque_type_T test_opaque_type;
+#endif
+#ifdef FEAT_TREESITTER
+// Set in treesitter.c
+extern type_T t_tsparser;
+extern type_T t_tstree;
+extern type_T t_tsnode;
+extern type_T t_tsquery;
 #endif
 
 // If greater than zero, then silence the W23/W24 warning.
