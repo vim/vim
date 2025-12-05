@@ -1050,6 +1050,19 @@ arg_tsquery(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is an opaque TSQueryCursor.
+ */
+    static int
+arg_tsquerycursor(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsquerycursor, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
  * Check "type" can be used as the type_decl of the previous argument.
  * Must not be used for the first argcheck_T entry.
  */
@@ -1311,6 +1324,7 @@ static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
 static argcheck_T arg1_tstree[] = {arg_tstree};
+static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
@@ -1343,6 +1357,8 @@ static argcheck_T arg2_number_buffer[] = {arg_number, arg_buffer};
 static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
 static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
+static argcheck_T arg2_tsquery_string[] = {arg_tsquery, arg_string};
+static argcheck_T arg2_tsquery_number[] = {arg_tsquery, arg_number};
 static argcheck_T arg2_string_any[] = {arg_string, arg_any};
 static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
@@ -1383,6 +1399,7 @@ static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool}
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg3_tsquerycursor_tsquery_tsnode[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode};
 static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
 static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
@@ -1541,6 +1558,20 @@ ret_tsquery(int argcount UNUSED,
 	type_T	**decl_type UNUSED)
 {
     return &t_tsquery;
+}
+    static type_T *
+ret_tsquerycursor(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquerycursor;
+}
+    static type_T *
+ret_tsquerymatch(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquerymatch;
 }
 #endif // FEAT_TREESITTER
     static type_T *
@@ -3251,8 +3282,19 @@ static const funcentry_T global_functions[] =
 			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
     {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsparser_string,
 			ret_void,	    TS_FUNC(f_tsparser_set_language)},
+    {"tsquery_disable_capture",	2, 2, FEARG_1, arg2_tsquery_string,
+			ret_void,	    TS_FUNC(f_tsquery_disable_capture)},
+    {"tsquery_disable_pattern",	2, 2, FEARG_1, arg2_tsquery_number,
+			ret_void,	    TS_FUNC(f_tsquery_disable_pattern)},
     {"tsquery_new",	2, 2, 0,	    arg2_string,
 			TS_OPRET(ret_tsquery), TS_FUNC(f_tsquery_new)},
+    {"tsquerycursor_exec", 3, 3, FEARG_1,   arg3_tsquerycursor_tsquery_tsnode,
+			ret_void,	    TS_FUNC(f_tsquerycursor_exec)},
+    {"tsquerycursor_new", 0, 1, 0,	    arg1_dict_any,
+			TS_OPRET(ret_tsquerycursor), TS_FUNC(f_tsquerycursor_new)},
+    {"tsquerycursor_next_match", 1, 1, FEARG_1,   arg1_tsquerycursor,
+			TS_OPRET(ret_tsquerymatch),
+			TS_FUNC(f_tsquerycursor_next_match)},
     {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
     {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tstree,
