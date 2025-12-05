@@ -3810,6 +3810,16 @@ EXTERN char e_opaque_required_for_argument_nr[]
 	INIT(= N_("E1574: Opaque required for argument %d"));
 EXTERN char e_opaque_str_required_for_argument_nr[]
 	INIT(= N_("E1574: Opaque of type %s required for argument %d"));
+EXTERN char e_opaque_str_property_str_no_exist[]
+	INIT(= N_("E1574: Property '%s' of Opaque of type %s does not exist"));
+EXTERN char e_opaque_required_found_str[]
+	INIT(= N_("E1574: Opaque required, found %s"));
+EXTERN char e_using_null_opaque[]
+	INIT(= N_("E1575: Using a null opaque"));
+EXTERN char e_error_getting_opaque_property[]
+	INIT(= N_("E1576: Error getting opaque property '%s'"));
+EXTERN char e_opaque_type_str_no_exist[]
+	INIT(= N_("E1577: Opaque type %.*s does not exist"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
@@ -3838,8 +3848,8 @@ EXTERN char e_tsobject_required_for_argument_nr[]
 	INIT(= N_("E1574: Treesitter object required for argument %d"));
 EXTERN char e_tsobject_str_required_for_argument_nr[]
 	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
-EXTERN char e_tuple_is_not_of_numbers[]
-	INIT(= N_("E1574: Tuple given is not of type <number, number>"));
+EXTERN char e_invalid_argument_tuple_not_number_number[]
+	INIT(= N_("E1574: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
 EXTERN char e_tsnode_property_str_no_exist[]
