@@ -56,6 +56,11 @@ typedef struct
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
 
+static opaque_type_T tsparser_type;
+static opaque_type_T tstree_type;
+static opaque_type_T tsnode_type;
+static opaque_type_T tsquery_type;
+
     int
 tsvim_init(void)
 {
@@ -103,10 +108,7 @@ load_language(char *path, char *symbol, HANDLE *dll)
     return lang;
 }
 
-/*
- * Handler function for ts_load_lang()
- */
-    void
+    static void
 tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
 {
     hashitem_T		*hi;
@@ -147,6 +149,37 @@ tsvim_load_language(char_u *name, char_u *path, char_u *symbol_name)
 }
 
 /*
+ * Create new opaque_T for node. Returns NULL on failure or if node is a null
+ * node.
+ */
+    static opaque_T *
+new_tsnode(TSNode *node, opaque_T *tree)
+{
+    // We must make the node have its own reference to the tree, so that the
+    // tree doesn't get gc'd and the node becomes invalid (undefined). We do
+    // this by adding the pointer to the opaque_T of the TSTree at the end of
+    // the TSNode struct in our opaque_T.
+    opaque_T *op;
+
+    if (node->tree == NULL)
+	// Node is NULL
+	return NULL;
+
+    op = opaque_new(&tsnode_type, NULL,
+	    sizeof(TSNode) + sizeof(opaque_T *));
+
+    if (op == NULL)
+	return NULL;
+
+    memcpy(op->op_data, node, sizeof(TSNode));
+    memcpy(op->op_data + sizeof(TSNode), &tree, sizeof(opaque_T *));
+    tree->op_refcount++;
+    op->op_refcount++;
+
+    return op;
+}
+
+/*
  * Create a tuple that represents a TSPoint. Returns NULL on failure.
  */
     static tuple_T *
@@ -168,6 +201,36 @@ tspoint_to_tuple(TSPoint point)
     t->tv_refcount++;
 
     return t;
+}
+
+/*
+ * Convert a tuple into a TSPoint struct, Returns FAIL on failure and emits an
+ * error.
+ */
+    static int
+tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
+{
+    typval_T *row;
+    typval_T *col;
+
+    if (tuple == NULL || tuple->tv_items.ga_len != 2)
+    {
+	emsg(_(e_invalid_argument_tuple_not_number_number));
+	return FAIL;
+    }
+
+    row = TUPLE_ITEM(tuple, 0);
+    col = TUPLE_ITEM(tuple, 1);
+
+    if (row->v_type != VAR_NUMBER || col->v_type != VAR_NUMBER)
+    {
+	emsg(_(e_invalid_argument_tuple_not_number_number));
+	return FAIL;
+    }
+
+    point->row = row->vval.v_number;
+    point->column = col->vval.v_number;
+    return OK;
 }
 
     static TSVimLanguage *
@@ -215,10 +278,242 @@ tsnode_equal_func(opaque_T *a, opaque_T *b)
     return ts_node_eq(OP2TSNODE(a), OP2TSNODE(b));
 }
 
+typedef enum
+{
+    NPROP_CHILD_COUNT = 0,
+    NPROP_END_BYTE,
+    NPROP_END_POINT,
+    NPROP_EXTRA,
+    NPROP_HAS_CHANGES,
+    NPROP_HAS_ERROR,
+    NPROP_MISSING,
+    NPROP_NAMED_CHILD_COUNT,
+    NPROP_NAMED,
+    NPROP_NEXT_NAMED_SIBLING,
+    NPROP_NEXT_SIBLING,
+    NPROP_PARENT,
+    NPROP_PREV_NAMED_SIBLING,
+    NPROP_PREV_SIBLING,
+    NPROP_START_BYTE,
+    NPROP_START_POINT,
+    NPROP_STRING,
+    NPROP_SYMBOL,
+    NPROP_TREE,
+    NPROP_TYPE,
+} TSVimNodeProperty;
+
+    static int
+tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
+{
+#define NEW_TSNODE(func) \
+    do { \
+	TSNode	n = func(node); \
+	if (n.tree != NULL) \
+	{ \
+	    opaque_T *new = new_tsnode(&n, tree_obj); \
+	    if (new == NULL) \
+	    return FAIL; \
+	    rettv->v_type = VAR_OPAQUE; \
+	    rettv->vval.v_opaque = new; \
+	} \
+	else \
+	{ \
+	    rettv->v_type = VAR_OPAQUE; \
+	    rettv->vval.v_opaque = NULL; \
+	} \
+    } while (false);
+
+    TSNode node = OP2TSNODE(op);
+    opaque_T *tree_obj = OP2TSNODETREE(op);
+
+    switch ((TSVimNodeProperty)prop->opp_idx)
+    {
+	case NPROP_CHILD_COUNT:		    // child_count
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_child_count(node);
+	    break;
+	case NPROP_END_BYTE:		    // end_byte
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_end_byte(node);
+	    break;
+	case NPROP_END_POINT:		    // end_point
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = tspoint_to_tuple(ts_node_end_point(node));
+	    break;
+	case NPROP_EXTRA:		    // extra
+	    rettv->v_type = VAR_BOOL;
+	    rettv->vval.v_number = ts_node_is_extra(node);
+	    break;
+	case NPROP_HAS_CHANGES:		    // has_changes
+	    rettv->v_type = VAR_BOOL;
+	    rettv->vval.v_number = ts_node_has_changes(node);
+	    break;
+	case NPROP_HAS_ERROR:		    // has_error
+	    rettv->v_type = VAR_BOOL;
+	    rettv->vval.v_number = ts_node_has_error(node);
+	    break;
+	case NPROP_MISSING:		    // missing
+	    rettv->v_type = VAR_BOOL;
+	    rettv->vval.v_number = ts_node_is_missing(node);
+	    break;
+	case NPROP_NAMED_CHILD_COUNT:	    // named_child_count
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_named_child_count(node);
+	    break;
+	case NPROP_NAMED:		    // named
+	    rettv->v_type = VAR_BOOL;
+	    rettv->vval.v_number = ts_node_is_named(node);
+	    break;
+	case NPROP_NEXT_NAMED_SIBLING:	    // next_named_sibling
+	    NEW_TSNODE(ts_node_next_named_sibling);
+	    break;
+	case NPROP_NEXT_SIBLING:	    // next_sibling
+	    NEW_TSNODE(ts_node_next_sibling);
+	    break;
+	case NPROP_PARENT:		    // parent
+	    NEW_TSNODE(ts_node_parent);
+	    break;
+	case NPROP_PREV_NAMED_SIBLING:	    // prev_named_sibling
+	    NEW_TSNODE(ts_node_prev_named_sibling);
+	    break;
+	case NPROP_PREV_SIBLING:	    // prev_sibling
+	    NEW_TSNODE(ts_node_prev_sibling);
+	    break;
+	case NPROP_START_BYTE:		    // start_byte
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_start_byte(node);
+	    break;
+	case NPROP_START_POINT:		    // start_point
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = tspoint_to_tuple(ts_node_start_point(node));
+	    break;
+	case NPROP_STRING:		    // string
+	    rettv->v_type = VAR_STRING;
+	    rettv->vval.v_string = (char_u *)ts_node_string(node);
+	    break;
+	case NPROP_SYMBOL:		    // symbol
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_symbol(node);
+	    break;
+	case NPROP_TREE:		    // tree
+	{
+	    tree_obj->op_refcount++;
+	    rettv->v_type = VAR_OPAQUE;
+	    rettv->vval.v_opaque = tree_obj;
+	}
+	    break;
+	case NPROP_TYPE:		    // type
+	    rettv->v_type = VAR_STRING;
+	    rettv->vval.v_string = vim_strsave((char_u *)ts_node_type(node));
+	    break;
+    }
+#undef NEW_TSNODE
+
+    return OK;
+}
+
+static type_T *number_number[] = {&t_number, &t_number};
+static type_T t_tspoint = {
+    VAR_TUPLE, 2, 0, TTFLAG_STATIC, &t_number, NULL, number_number, NULL
+};
+
+type_T t_tsparser = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsparser_type
+};
+
+type_T t_tstree = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tstree_type
+};
+
+type_T t_tsnode = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsnode_type
+};
+
+type_T t_tsquery = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquery_type
+};
+
+static opaque_property_T tsnode_properties[] = {
+    {NPROP_CHILD_COUNT,		    OPPROPNAME("child_count"), &t_number},
+    {NPROP_END_BYTE,	    	    OPPROPNAME("end_byte"), &t_number},
+    {NPROP_END_POINT,	    	    OPPROPNAME("end_point"), &t_tspoint},
+    {NPROP_EXTRA,	    	    OPPROPNAME("extra"), &t_bool},
+    {NPROP_HAS_CHANGES,	    	    OPPROPNAME("has_changes"), &t_bool},
+    {NPROP_HAS_ERROR,	    	    OPPROPNAME("has_error"), &t_bool},
+    {NPROP_MISSING,	    	    OPPROPNAME("missing"), &t_bool},
+    {NPROP_NAMED_CHILD_COUNT,	    OPPROPNAME("named_child_count"), &t_number},
+    {NPROP_NAMED,	    	    OPPROPNAME("named"), &t_bool},
+    {NPROP_NEXT_NAMED_SIBLING,	    OPPROPNAME("next_named_sibling"), &t_tsnode},
+    {NPROP_NEXT_SIBLING,	    OPPROPNAME("next_sibling"), &t_tsnode},
+    {NPROP_PARENT,		    OPPROPNAME("parent"), &t_tsnode},
+    {NPROP_PREV_NAMED_SIBLING,	    OPPROPNAME("prev_named_sibling"), &t_tsnode},
+    {NPROP_PREV_SIBLING,	    OPPROPNAME("prev_sibling"), &t_tsnode},
+    {NPROP_START_BYTE,		    OPPROPNAME("start_byte"), &t_number},
+    {NPROP_START_POINT,     	    OPPROPNAME("start_point"), &t_tspoint},
+    {NPROP_STRING,	    	    OPPROPNAME("string"), &t_string},
+    {NPROP_SYMBOL,	    	    OPPROPNAME("symbol"), &t_number},
+    {NPROP_TREE,	    	    OPPROPNAME("tree"), &t_tstree},
+    {NPROP_TYPE,	    	    OPPROPNAME("type"), &t_string},
+};
+
+static opaque_type_T tsparser_type = {
+    (char_u *)"TSParser", 0, NULL, tsparser_free_func, opaque_equal_ptr, NULL, NULL
+};
+
+static opaque_type_T tstree_type = {
+    (char_u *)"TSTree", 0, NULL, tstree_free_func, opaque_equal_ptr, NULL, NULL
+};
+
+static opaque_type_T tsquery_type = {
+    (char_u *)"TSQuery", 0, NULL, tsquery_free_func, opaque_equal_ptr, NULL, NULL
+};
+
+static opaque_type_T tsnode_type = {
+    (char_u *)"TSNode", ARRAY_LENGTH(tsnode_properties), tsnode_properties,
+    tsnode_free_func, tsnode_equal_func, NULL, tsnode_property_func
+};
+
+// Should be in sync with opaque_types_table[]
+static opaque_type_T *opaque_types[] = {
+    &tsnode_type, &tsparser_type, &tsquery_type, &tstree_type
+};
+
+// Should be sorted alphabetically
+static keyvalue_T opaque_types_table[] = {
+    KEYVALUE_ENTRY(0, "TSNode"),
+    KEYVALUE_ENTRY(1, "TSParser"),
+    KEYVALUE_ENTRY(2, "TSQuerry"),
+    KEYVALUE_ENTRY(3, "TSTree"),
+};
+
+/*
+ * Lookup the given opaque type and return the opaque_type_T struct if it
+ * corresponds to a treesitter type.
+ */
+    opaque_type_T *
+tsvim_lookup_opaque_type(char_u *name, size_t namelen)
+{
+    keyvalue_T target;
+    keyvalue_T *entry;
+
+    target.key = 0;
+    target.value.string = name;
+    target.value.length = namelen;
+
+    entry = (keyvalue_T *)bsearch(&target, &opaque_types_table,
+	    ARRAY_LENGTH(opaque_types_table), sizeof(opaque_types_table[0]),
+	    cmp_keyvalue_value_n);
+
+    if (entry == NULL)
+	return NULL;
+
+    return opaque_types[entry->key];
+}
+
 /*
  * Allocate a new TSParser object. Returns NULL on failure.
  */
-    opaque_T *
+    static opaque_T *
 tsparser_new(void)
 {
     TSParser *parser = ts_parser_new();
@@ -229,16 +524,13 @@ tsparser_new(void)
     if (parser == NULL)
 	return NULL;
 
-    op = opaque_new(TSPARSER, true, &parser, sizeof(TSParser *));
+    op = opaque_new(&tsparser_type, &parser, sizeof(TSParser *));
 
     if (op == NULL)
     {
 	ts_parser_delete(parser);
 	return NULL;
     }
-
-    op->op_free_func = tsparser_free_func;
-    op->op_equal_func= opaque_equal_ptr;
     op->op_refcount++;
 
     return op;
@@ -247,7 +539,7 @@ tsparser_new(void)
 /*
  * Set the given parser to "language".
  */
-    void
+    static void
 tsparser_set_language(opaque_T *parser, char_u *language)
 {
     TSVimLanguage *lang = get_language(language);
@@ -361,7 +653,7 @@ parse_buf_read_callback(
  * Parse the given buffer using the parser and return the result TSTree if is
  * completed within the timeout, else NULL.
  */
-    opaque_T *
+    static opaque_T *
 tsparser_parse_buf(
 	opaque_T *parser,
 	opaque_T *last_tree,
@@ -385,15 +677,12 @@ tsparser_parse_buf(
     if (res == NULL)
 	return NULL;
 
-    op = opaque_new(TSTREE, true, &res, sizeof(TSTree *));
+    op = opaque_new(&tstree_type, &res, sizeof(TSTree *));
     if (op == NULL)
     {
 	ts_tree_delete(res);
 	return NULL;
     }
-
-    op->op_free_func = tstree_free_func;
-    op->op_equal_func = opaque_equal_ptr;
     op->op_refcount++;
 
     return op;
@@ -402,15 +691,15 @@ tsparser_parse_buf(
 /*
  * Edit the specified tree using the given information describing the edit.
  */
-    void
+    static void
 tstree_edit(
 	opaque_T *tree,
 	uint32_t start_byte,
 	uint32_t old_end_byte,
 	uint32_t new_end_byte,
-	uint32_t start_point[2],
-	uint32_t old_end_point[2],
-	uint32_t new_end_point[2]
+	TSPoint start_point,
+	TSPoint old_end_point,
+	TSPoint new_end_point
 	)
 {
     TSInputEdit edit;
@@ -419,14 +708,9 @@ tstree_edit(
     edit.old_end_byte = old_end_byte;
     edit.new_end_byte = new_end_byte;
 
-    edit.start_point.row = start_point[0];
-    edit.start_point.column = start_point[1];
-
-    edit.old_end_point.row = old_end_point[0];
-    edit.old_end_point.column = old_end_point[1];
-
-    edit.new_end_point.row = new_end_point[0];
-    edit.new_end_point.column = new_end_point[1];
+    edit.start_point = start_point;
+    edit.old_end_point = old_end_point;
+    edit.new_end_point = new_end_point;
 
     ts_tree_edit(OP2TSTREE(tree), &edit);
 }
@@ -434,141 +718,54 @@ tstree_edit(
 /*
  * Return the root node of the tree. Returns NULL on failure.
  */
-    opaque_T *
+    static opaque_T *
 tstree_root_node(opaque_T *tree)
 {
-    // We must make the node have its own reference to the tree, so that the
-    // tree doesn't get gc'd and the node becomes invalid (undefined). We do
-    // this by adding the pointer to the opaque_T of the TSTree at the end of
-    // the TSNode struct in our opaque_T.
     TSNode node = ts_tree_root_node(OP2TSTREE(tree));
-    opaque_T *op = opaque_new(TSNODE, true, NULL,
-					    sizeof(TSNode) + sizeof(opaque_T *));
-
-    if (op == NULL)
-	return NULL;
-
-    memcpy(op->op_data, &node, sizeof(TSNode));
-    memcpy(op->op_data + sizeof(TSNode), &tree, sizeof(opaque_T *));
-    tree->op_refcount++;
-
-    op->op_free_func = tsnode_free_func;
-    op->op_equal_func = tsnode_equal_func;
-    op->op_refcount++;
+    opaque_T *op = new_tsnode(&node, tree);
 
     return op;
 }
 
-typedef enum
+/*
+ * Return the child at the given index "idx" of the TSNode object. Returns NULL
+ * on failure or if no child exists at "idx". If "named" is true, then skip over
+ * anonymous nodes.
+ */
+    static opaque_T *
+tsnode_child(opaque_T *node, int idx, bool named)
 {
-    TSNODE_PROP_END_BYTE = 0,
-    TSNODE_PROP_END_POINT,
-    TSNODE_PROP_EXTRA,
-    TSNODE_PROP_MISSING,
-    TSNODE_PROP_NAMED,
-    TSNODE_PROP_START_BYTE,
-    TSNODE_PROP_START_POINT,
-    TSNODE_PROP_STRING,
-    TSNODE_PROP_SYMBOL,
-    TSNODE_PROP_TREE,
-    TSNODE_PROP_TYPE,
-    TSNODE_PROP_NODE = 99
-} TSVimNodeProperty;
+    TSNode new;
+
+    if (named)
+	new = ts_node_named_child(OP2TSNODE(node), idx);
+    else
+	new = ts_node_child(OP2TSNODE(node), idx);
+
+    return new_tsnode(&new, OP2TSNODETREE(node));
+}
 
 /*
- * Return a typval_T value of the specified property for the node.
+ * Get the smallest node within this node that spans the given range of (row,
+ * column) positions. If "named" is true, then skip over anonymous nodes.
+ * Returns NULL on failure or if no node exists.
  */
-    typval_T
-tsnode_property(opaque_T *node_obj, char_u *property)
+    static opaque_T *
+tsnode_descendant_for_point_range(
+	opaque_T *node,
+	TSPoint start,
+	TSPoint end,
+	bool named)
 {
-    static keyvalue_T properties[] = {
-	KEYVALUE_ENTRY(TSNODE_PROP_END_BYTE, "end_byte"),
-	KEYVALUE_ENTRY(TSNODE_PROP_END_POINT, "end_point"),
-	KEYVALUE_ENTRY(TSNODE_PROP_EXTRA, "extra"),
-	KEYVALUE_ENTRY(TSNODE_PROP_MISSING, "missing"),
-	KEYVALUE_ENTRY(TSNODE_PROP_NAMED, "named"),
-	KEYVALUE_ENTRY(TSNODE_PROP_START_BYTE, "start_byte"),
-	KEYVALUE_ENTRY(TSNODE_PROP_START_POINT, "start_point"),
-	KEYVALUE_ENTRY(TSNODE_PROP_STRING, "string"),
-	KEYVALUE_ENTRY(TSNODE_PROP_SYMBOL, "symbol"),
-	KEYVALUE_ENTRY(TSNODE_PROP_TREE, "tree"),
-	KEYVALUE_ENTRY(TSNODE_PROP_TYPE, "type"),
-    };
-    TSNode node = OP2TSNODE(node_obj);
-    keyvalue_T target;
-    keyvalue_T *entry;
-    typval_T ret = {0};
+    TSNode new;
 
-    target.key = 0;
-    target.value.string = property;
-    target.value.length = 0;	// not used, see cmp_keyvalue_value()
-
-    entry = (keyvalue_T *)bsearch(&target, &properties, ARRAY_LENGTH(properties),
-				  sizeof(properties[0]), cmp_keyvalue_value);
-
-    if (entry == NULL)
-    {
-	semsg(_(e_tsnode_property_str_no_exist), property);
-	ret.v_type = VAR_UNKNOWN;
-    }
+    if (named)
+	new = ts_node_descendant_for_point_range(OP2TSNODE(node), start, end);
     else
-	switch (entry->key)
-	{
-	    case TSNODE_PROP_END_BYTE:
-		ret.v_type = VAR_NUMBER;
-		ret.vval.v_number = ts_node_end_byte(node);
-		break;
-	    case TSNODE_PROP_END_POINT:
-		ret.v_type = VAR_TUPLE;
-		ret.vval.v_tuple = tspoint_to_tuple(ts_node_end_point(node));
-		break;
-	    case TSNODE_PROP_EXTRA:
-		ret.v_type = VAR_BOOL;
-		ret.vval.v_number = ts_node_is_extra(node);
-		break;
-	    case TSNODE_PROP_MISSING:
-		ret.v_type = VAR_BOOL;
-		ret.vval.v_number = ts_node_is_missing(node);
-		break;
-	    case TSNODE_PROP_NAMED:
-		ret.v_type = VAR_BOOL;
-		ret.vval.v_number = ts_node_is_named(node);
-		break;
-	    case TSNODE_PROP_START_BYTE:
-		ret.v_type = VAR_NUMBER;
-		ret.vval.v_number = ts_node_start_byte(node);
-		break;
-	    case TSNODE_PROP_START_POINT:
-		ret.v_type = VAR_TUPLE;
-		ret.vval.v_tuple = tspoint_to_tuple(ts_node_start_point(node));
-		break;
-	    case TSNODE_PROP_STRING:
-		ret.v_type = VAR_STRING;
-		ret.vval.v_string = (char_u *)ts_node_string(node);
-		break;
-	    case TSNODE_PROP_SYMBOL:
-		ret.v_type = VAR_NUMBER;
-		ret.vval.v_number = ts_node_symbol(node);
-		break;
-	    case TSNODE_PROP_TREE:;
-		opaque_T *tree_obj = OP2TSNODETREE(node_obj);
+	new = ts_node_named_descendant_for_point_range(
+						OP2TSNODE(node), start, end);
 
-		tree_obj->op_refcount++;
-		ret.v_type = VAR_OPAQUE;
-		ret.vval.v_opaque = tree_obj;
-		break;
-	    case TSNODE_PROP_TYPE:
-		ret.v_type = VAR_STRING;
-		ret.vval.v_string = vim_strsave((char_u *)ts_node_type(node));
-		break;
-	    default:
-		// Shouldn't happen
-		semsg(_(e_tsnode_property_str_no_exist), property);
-		ret.v_type = VAR_UNKNOWN;
-		break;
-	}
-
-    return ret;
+    return new_tsnode(&new, OP2TSNODETREE(node));
 }
 
     static char_u *
@@ -627,7 +824,7 @@ query_do_error_message(char_u *str, uint32_t offset, TSQueryError error)
 /*
  * Create a new TSQuery object using the given string. Returns NULL on failure.
  */
-    opaque_T *
+    static opaque_T *
 tsquery_new(char_u *language, char_u *query_str)
 {
     TSVimLanguage   *lang = get_language(language);
@@ -648,19 +845,230 @@ tsquery_new(char_u *language, char_u *query_str)
 	return NULL;
     }
 
-    op = opaque_new(TSQUERY, true, &query, sizeof(TSQuery *));
+    op = opaque_new(&tsquery_type, &query, sizeof(TSQuery *));
 
     if (op == NULL)
     {
 	ts_query_delete(query);
 	return NULL;
     }
-
-    op->op_free_func = tsquery_free_func;
-    op->op_equal_func = opaque_equal_ptr;
     op->op_refcount++;
 
     return op;
+}
+
+    void
+f_ts_load(typval_T *argvars, typval_T *rettv)
+{
+    char_u *name;
+    char_u *path;
+    char_u *symbol = NULL;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL)
+	return;
+
+    name = argvars[0].vval.v_string;
+    path = argvars[1].vval.v_string;
+
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN
+	    && argvars[1].v_type == VAR_DICT)
+    {
+	dict_T *d =  argvars[2].vval.v_dict;
+
+	symbol = dict_get_string(d, "symbol", FALSE);
+    }
+
+    if (symbol == NULL)
+	symbol = name;
+
+    tsvim_load_language(name, path, symbol);
+}
+
+    void
+f_tsparser_new(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *op = tsparser_new();
+
+    if (op == NULL)
+	return;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
+}
+
+    void
+f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
+{
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
+	return;
+
+    tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
+
+}
+
+    void
+f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
+{
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+		|| check_for_buffer_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL
+		|| check_for_opt_opaque_arg(argvars, 3) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL
+	    || check_for_opt_opaque_type_arg(argvars, 3, &tstree_type) == FAIL)
+	return;
+
+    {
+	buf_T *buf = get_buf_arg(argvars + 1);
+	opaque_T *res;
+
+	if (buf == NULL)
+	    return;
+
+	res = tsparser_parse_buf(
+		argvars[0].vval.v_opaque,
+		argvars[3].v_type == VAR_UNKNOWN
+		? NULL : argvars[3].vval.v_opaque,
+		buf, argvars[2].vval.v_number);
+
+	if (res == NULL)
+	{
+	    rettv->v_type = VAR_OPAQUE;
+	    rettv->vval.v_opaque = NULL;
+	    return;
+	}
+
+	rettv->v_type = VAR_OPAQUE;
+	rettv->vval.v_opaque = res;
+    }
+}
+
+    void
+f_tstree_edit(typval_T *argvars, typval_T *rettv)
+{
+    TSPoint start_point, old_end_point, new_end_point;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL
+		|| check_for_number_arg(argvars, 3) == FAIL
+		|| check_for_tuple_arg(argvars, 4) == FAIL
+		|| check_for_tuple_arg(argvars, 5) == FAIL
+		|| check_for_tuple_arg(argvars, 6) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL)
+	return;
+
+    if (tuple_to_tspoint(argvars[4].vval.v_tuple, &start_point) == FAIL
+	    || tuple_to_tspoint(argvars[5].vval.v_tuple, &old_end_point) == FAIL
+	    || tuple_to_tspoint(argvars[6].vval.v_tuple, &new_end_point) == FAIL)
+	return;
+
+    tstree_edit(
+	    argvars[0].vval.v_opaque,
+	    argvars[1].vval.v_number,
+	    argvars[2].vval.v_number,
+	    argvars[3].vval.v_number,
+	    start_point, old_end_point, new_end_point);
+}
+
+    void
+f_tstree_root_node(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *res;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL)
+	return;
+
+    res = tstree_root_node(argvars[0].vval.v_opaque);
+
+    if (res == NULL)
+	return;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
+}
+
+    void
+f_tsnode_child(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *res;
+    bool named = false;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsnode_type) == FAIL)
+	return;
+
+    if (argvars[3].v_type != VAR_UNKNOWN)
+	named = argvars[3].vval.v_number ? true : false;
+
+    res = tsnode_child(argvars[0].vval.v_opaque, argvars[1].vval.v_number, named);
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
+}
+
+    void
+f_tsnode_descendant_for_range(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T	*res;
+    TSPoint	start_point, end_point;
+    bool	named = false;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+		|| check_for_tuple_arg(argvars, 1) == FAIL
+		|| check_for_tuple_arg(argvars, 2) == FAIL
+		|| check_for_opt_bool_arg(argvars, 3) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsnode_type) == FAIL)
+	return;
+
+    if (argvars[3].v_type != VAR_UNKNOWN)
+	named = argvars[3].vval.v_number ? true : false;
+
+    if (tuple_to_tspoint(argvars[1].vval.v_tuple, &start_point) == FAIL
+	    || tuple_to_tspoint(argvars[2].vval.v_tuple, &end_point) == FAIL)
+	return;
+
+    res = tsnode_descendant_for_point_range(argvars[0].vval.v_opaque,
+	    start_point, end_point, named);
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
+}
+
+    void
+f_tsquery_new(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *res;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL)
+	return;
+
+    res = tsquery_new(argvars[0].vval.v_string, argvars[1].vval.v_string);
+
+    if (res == NULL)
+	return;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = res;
 }
 
 #endif // FEAT_TREESITTER

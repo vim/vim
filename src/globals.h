@@ -2137,3 +2137,15 @@ EXTERN char_u *client_socket INIT(= NULL);
 
 // If the <xOSC> key should be propogated from vgetc()
 EXTERN int allow_osc_key INIT(= 0);
+
+#ifdef FEAT_EVAL
+// Set in testing.c
+extern opaque_type_T test_opaque_type;
+#endif
+#ifdef FEAT_TREESITTER
+// Set in treesitter.c
+extern type_T t_tsparser;
+extern type_T t_tstree;
+extern type_T t_tsnode;
+extern type_T t_tsquery;
+#endif
