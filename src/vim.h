@@ -2042,6 +2042,16 @@ typedef __int64 sock_T;
 typedef int sock_T;
 #endif
 
+// The clipboard provider feature uses clipmethod as well but should be separate
+// from the clipboard code.
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
+# define HAVE_CLIPMETHOD
+#endif
+
+#if defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+# define FEAT_CLIPBOARD_PROVIDER
+#endif
+
 // Include option.h before structs.h, because the number of window-local and
 // buffer-local options is used there.
 #include "option.h"	// options and default values
@@ -2260,7 +2270,8 @@ typedef int sock_T;
 #define VV_TERMDA1 114
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
-#define VV_LEN		117	// number of v: vars
+#define VV_CLIPPROVIDERS 117
+#define VV_LEN		118	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2292,6 +2303,16 @@ typedef int sock_T;
 
 #define TABSTOP_MAX 9999
 
+#ifdef HAVE_CLIPMETHOD
+typedef enum {
+    CLIPMETHOD_FAIL,
+    CLIPMETHOD_NONE,
+    CLIPMETHOD_WAYLAND,
+    CLIPMETHOD_X11,
+    CLIPMETHOD_PROVIDER
+} clipmethod_T;
+#endif
+
 #ifdef FEAT_CLIPBOARD
 
 // VIM_ATOM_NAME is the older Vim-specific selection type for X11.  Still
@@ -2314,13 +2335,6 @@ typedef int sock_T;
 #   define WM_OLE (WM_APP+0)
 #  endif
 # endif
-
-typedef enum {
-    CLIPMETHOD_FAIL,
-    CLIPMETHOD_NONE,
-    CLIPMETHOD_WAYLAND,
-    CLIPMETHOD_X11,
-} clipmethod_T;
 
 // Info about selected text
 typedef struct
