@@ -5,7 +5,7 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 14.3
+    - name: FreeBSD 15.0
       freebsd_instance:
         image_family: freebsd-14-3
   timeout_in: 20m
