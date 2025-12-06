@@ -1500,7 +1500,7 @@ func Test_sort_followed_by_cmd()
   call setline(1, ['3b', '1c', '2a'])
   %sort /\d\+/ " sort alphabetically
   call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 " Test for :sort using last search pattern
@@ -1510,7 +1510,7 @@ func Test_sort_last_search_pat()
   call setline(1, ['3b', '1c', '2a'])
   sort //
   call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 " Test for :sort with no last search pattern
@@ -1540,7 +1540,7 @@ func Test_sort_with_marks()
   call assert_equal(2, line("'a"))
   call assert_equal(3, line("'b"))
   call assert_equal(1, line("'c"))
-  close!
+  bw!
 endfunc
 
 " Test for sort() using a dict function
