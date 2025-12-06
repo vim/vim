@@ -187,6 +187,8 @@ SRC_ALL =	\
 		src/winclip.c \
 		src/window.c \
 		src/xxd/xxd.c \
+		src/treesitter.c \
+		src/opaque.c \
 		src/testdir/*.in \
 		src/testdir/*.py \
 		src/testdir/Make_all.mak \
@@ -375,6 +377,8 @@ SRC_ALL =	\
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
+		src/proto/treesitter.pro \
+		src/proto/opaque.pro \
 		src/libvterm/.bzrignore \
 		src/libvterm/.gitignore \
 		src/libvterm/LICENSE \

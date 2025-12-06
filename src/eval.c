@@ -4958,7 +4958,7 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
-		if (STRNCMP(s, "null_opaque", 13) == 0)
+		if (STRNCMP(s, "null_opaque", 11) == 0)
 		{
 		    rettv->v_type = VAR_OPAQUE;
 		    rettv->vval.v_opaque = NULL;
