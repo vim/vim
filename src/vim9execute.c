@@ -2526,6 +2526,11 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    nr = tv_get_number_chk(tv, &error);
 	    if (error)
 		return FAIL;
+	    if (nr < 0 || nr > 255)
+	    {
+		semsg(_(e_invalid_value_for_blob_nr), nr);
+		return FAIL;
+	    }
 	    blob_set_append(blob, lidx, nr);
 	}
 	else if (dest_type == VAR_CLASS || dest_type == VAR_OBJECT)

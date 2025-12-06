@@ -2363,7 +2363,7 @@ set_var_lval(
 
 	if (lp->ll_blob != NULL)
 	{
-	    int	    error = FALSE, val;
+	    int	    error = FALSE;
 
 	    if (op != NULL && *op != '=')
 	    {
@@ -2384,9 +2384,14 @@ set_var_lval(
 	    }
 	    else
 	    {
-		val = (int)tv_get_number_chk(rettv, &error);
+		varnumber_T	val = tv_get_number_chk(rettv, &error);
 		if (!error)
-		    blob_set_append(lp->ll_blob, lp->ll_n1, val);
+		{
+		    if (val < 0 || val > 255)
+			semsg(_(e_invalid_value_for_blob_nr), val);
+		    else
+			blob_set_append(lp->ll_blob, lp->ll_n1, val);
+		}
 	    }
 	}
 	else if (op != NULL && *op != '=')
