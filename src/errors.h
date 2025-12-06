@@ -3181,7 +3181,7 @@ EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
 EXTERN char e_blob_required_for_argument_nr[]
 	INIT(= N_("E1238: Blob required for argument %d"));
 EXTERN char e_invalid_value_for_blob_nr[]
-	INIT(= N_("E1239: Invalid value for blob: %d"));
+	INIT(= N_("E1239: Invalid value for blob: 0x%lX"));
 #endif
 EXTERN char e_resulting_text_too_long[]
 	INIT(= N_("E1240: Resulting text too long"));

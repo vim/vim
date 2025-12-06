@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-11-27 21:26+0000\n"
+"POT-Creation-Date: 2025-12-06 10:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -7906,7 +7906,7 @@ msgid "E1238: Blob required for argument %d"
 msgstr ""
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
 msgstr ""
 
 msgid "E1240: Resulting text too long"
