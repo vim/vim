@@ -45,10 +45,12 @@ static int	buf_same_ino(buf_T *buf, stat_T *stp);
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 static int	value_changed(char_u *str, char_u **last);
+#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE)
 static int build_stl_str_hl_local(stl_mode_T mode, win_T *wp,
 		char_u *out, size_t outlen, char_u **fmt_arg,
 		char_u *opt_name, int opt_scope, int fillchar, int maxwidth,
 		stl_hlrec_T **hltab, stl_hlrec_T **tabtab, int *lbreaks);
+#endif
 static int	append_arg_number(win_T *wp, char_u *buf, size_t buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
@@ -4470,7 +4472,6 @@ build_stl_str_hl_local(
     // matter?
     // int	called_emsg_before = called_emsg;
     int		did_emsg_before = did_emsg;
-    int		cur_stl_linenr = 0;	// current statusline line nr
     int		lbreak_num = 0;		// Number of line breaks
 
     // When inside update_screen() we do not want redrawing a statusline,
