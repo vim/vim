@@ -96,10 +96,11 @@ static int split_disallowed = 0;
 // autocommands mess up the window structure.
 static int close_disallowed = 0;
 
-static int stl_height = STATUS_HEIGHT;
+#if defined(FEAT_STL_OPT)
 static int stl_lbreaks = 0;
 static int stlo_fh = FALSE;
 static int stlo_mh = STATUS_HEIGHT;
+#endif
 
 /*
  * Disallow changing the window layout (split window, close window, move
@@ -2141,9 +2142,7 @@ win_equal_rec(
     int		new_size;
     int		has_next_curwin = 0;
     int		hnc;
-    static int S_recur = 0;
 
-    HH_ch_log("in. S_recur:%d", S_recur++);
     HH_ch_log("col:%d, row:%d, w:%d, h:%d, layout:%d", col, row, width, height, topfr->fr_layout);
 
     if (topfr->fr_layout == FR_LEAF)
@@ -2465,8 +2464,6 @@ win_equal_rec(
 	    HH_ch_log("new_size:%d, row:%d, height:%d, totwincount:%d", new_size, row, height, totwincount);
 	}
     }
-
-    HH_ch_log("out. S_recur:%d", --S_recur);
 }
 
 #if defined(FEAT_JOB_CHANNEL)
