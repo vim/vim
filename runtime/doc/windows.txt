@@ -953,7 +953,7 @@ windows.
 						*preview-popup*
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
-settings.  The option is a comma-separated list of values:
+settings.  The option is a comma-separated list of values, more values See |completepopup|:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
