@@ -7662,13 +7662,10 @@ last_status_rec(frame_T *fr, int statusline)
     void
 fitting_statusline_height_value(void)
 {
-    int height;
-
     char_u *l_p_stl = *curwin->w_p_stl == NUL ? p_stl : curwin->w_p_stl;
-    int *l_stl_height;
     int *l_lbreaks;
     int l_stlo_fh;
-    int l_stlo_mh;
+    //int l_stlo_mh;
     char_u *opt_name = (char_u *)"statusline";
     int opt_scope;
 
@@ -7688,12 +7685,12 @@ fitting_statusline_height_value(void)
     if (*curwin->w_p_stlo == NUL)
     {
 	l_stlo_fh = stlo_fh;
-	l_stlo_mh = stlo_mh;
+	//l_stlo_mh = stlo_mh;
     }
     else
     {
 	l_stlo_fh = curwin->w_p_stlo_fh;
-	l_stlo_mh = curwin->w_p_stlo_mh;
+	//l_stlo_mh = curwin->w_p_stlo_mh;
     }
 
     if (!l_stlo_fh)
