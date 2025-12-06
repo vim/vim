@@ -3848,8 +3848,6 @@ EXTERN char e_invalid_argument_tuple_not_number_number[]
 	INIT(= N_("E1575: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
-EXTERN char e_tsnode_property_str_no_exist[]
-	INIT(= N_("E1575: TSNode does not have the property %s"));
-EXTERN char e_tsquerymatch_invalid[]
-	INIT(= N_("E1575: TSQueryMatch is invalid"));
+EXTERN char e_tsquerycursor_match_invalid[]
+	INIT(= N_("E1575: TSQueryCursor does not have a current match"));
 #endif
