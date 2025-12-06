@@ -3494,7 +3494,7 @@ gui_init_which_components(char_u *oldval UNUSED)
     int		using_tabline;
 #endif
 #ifdef FEAT_GUI_MSWIN
-    static int	prev_titlebar = -1;
+    static int	prev_titlebar = FALSE;
     int		using_titlebar = FALSE;
 #endif
 #if defined(FEAT_MENU)
