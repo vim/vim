@@ -3796,6 +3796,14 @@ call_callback(
     funcexe_T	funcexe;
     int		ret;
 
+    if (callback->cb_fp != NULL)
+    {
+	// Callback is a function pointer, just call it.
+	rettv->v_type = VAR_UNKNOWN;
+	callback->cb_fp(argvars, rettv);
+	return OK;
+    }
+
     if (callback->cb_name == NULL || *callback->cb_name == NUL)
 	return FAIL;
 

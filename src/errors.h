@@ -3797,3 +3797,7 @@ EXTERN char e_osc_response_timed_out[]
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
 #endif
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TERMINAL)
+EXTERN char e_already_running_make_command[]
+	INIT(= N_("E1569: Already running a make command"));
+#endif
