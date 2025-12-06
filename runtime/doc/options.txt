@@ -4526,7 +4526,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		See |gui-w32-title-bar| for details.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
-		GTK+ GUI.
+		Win32 and GTK+ GUI.
 								*'go-e'*
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
