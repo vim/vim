@@ -2483,6 +2483,13 @@ msg_puts_display(
     did_wait_return = FALSE;
     while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
     {
+#ifdef HAS_MESSAGE_WINDOW
+	// For echowindow, use full width; for regular messages, leave last column
+	int wrap_col = msg_win != NULL ? cmdline_width : cmdline_width - 1;
+#else
+	int wrap_col = cmdline_width - 1;
+#endif
+
 	/*
 	 * We are at the end of the screen line when:
 	 * - When outputting a newline.
@@ -2497,11 +2504,11 @@ msg_puts_display(
 		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
-		      ((*s != '\r' && msg_col + t_col >= cmdline_width - 1)
+		      ((*s != '\r' && msg_col + t_col >= wrap_col)
 		       || (*s == TAB && msg_col + t_col
-			   >= ((cmdline_width - 1) & ~7))
+			   >= (wrap_col & ~7))
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
-			   && msg_col + t_col >= cmdline_width - 2)))))
+			   && msg_col + t_col >= wrap_col - 1)))))
 	{
 	    /*
 	     * The screen is scrolled up when at the last row (some terminals
@@ -2515,6 +2522,8 @@ msg_puts_display(
 		if (msg_win != NULL)
 		{
 		    put_msg_win(msg_win, where, t_s, s, lnum);
+		    if (where == PUT_BELOW)
+			++lnum;
 		    t_col = 0;
 		    where = PUT_BELOW;
 		}
@@ -2533,9 +2542,16 @@ msg_puts_display(
 		// Scroll the screen up one line.
 		msg_scroll_up();
 
-	    msg_row = Rows - 2;
-	    if (msg_col >= cmdline_width)   // can happen after screen resize
-		msg_col = cmdline_width - 1;
+#ifdef HAS_MESSAGE_WINDOW
+	    if (msg_win == NULL)
+	    {
+#endif
+		msg_row = Rows - 2;
+		if (msg_col >= cmdline_width)  // can happen after screen resize
+		    msg_col = cmdline_width - 1;
+#ifdef HAS_MESSAGE_WINDOW
+	    }
+#endif
 
 	    // Display char in last column before showing more-prompt.
 	    if (*s >= ' '
@@ -2603,9 +2619,9 @@ msg_puts_display(
 	}
 
 	wrap = *s == '\n'
-		    || msg_col + t_col >= cmdline_width
+		    || msg_col + t_col >= wrap_col
 		    || (has_mbyte && (*mb_ptr2cells)(s) > 1
-			    && msg_col + t_col >= cmdline_width - 1);
+			    && msg_col + t_col >= wrap_col - 1);
 	if (t_col > 0 && (wrap || *s == '\r' || *s == '\b'
 						 || *s == '\t' || *s == BELL))
 	{
@@ -2614,8 +2630,13 @@ msg_puts_display(
 	    if (msg_win != NULL)
 	    {
 		put_msg_win(msg_win, where, t_s, s, lnum);
+		if (where == PUT_BELOW)
+		    ++lnum;
 		t_col = 0;
 		where = PUT_BELOW;
+		// Reset msg_col after outputting to new line in echowindow
+		if (wrap)
+		    msg_col = 0;
 	    }
 	    else
 #endif
@@ -2638,6 +2659,7 @@ msg_puts_display(
 		    put_msg_win(msg_win, PUT_BELOW, t_s, t_s, lnum);
 		    ++lnum;
 		}
+		msg_col = 0;  // Reset column for new line
 	    }
 	    else
 #endif
@@ -2700,7 +2722,7 @@ msg_puts_display(
 # ifdef FEAT_RIGHTLEFT
 		    cmdmsg_rl ||
 # endif
-		    (cw > 1 && msg_col + t_col >= cmdline_width - 1))
+		    (cw > 1 && msg_col + t_col >= wrap_col))
 	    {
 		if (l > 1)
 		    s = screen_puts_mbyte(s, l, attr) - 1;
