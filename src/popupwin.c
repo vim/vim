@@ -1988,7 +1988,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off) || is_preview)
+	    if ((!on && !off))
 		return FAIL;
 	    on = on && mouse_has(MOUSE_INSERT) && border_enabled;
 	    if (wp != NULL)
@@ -2000,7 +2000,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off) || is_preview)
+	    if ((!on && !off))
 		return FAIL;
 	    if (wp != NULL)
 	    {
@@ -2016,7 +2016,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off) || is_preview)
+	    if ((!on && !off))
 		return FAIL;
 	    if (wp != NULL)
 		wp->w_popup_shadow = on ? 1 : 0;
@@ -2439,22 +2439,24 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_flags |= POPF_CURSORLINE;
     }
 
-    if (type == TYPE_PREVIEW)
-    {
-	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
-	wp->w_popup_close = POPCLOSE_BUTTON;
-	for (i = 0; i < 4; ++i)
-	    wp->w_popup_border[i] = 1;
-	parse_previewpopup(wp);
-	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
-    }
-
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
     for (i = 0; i < 8; ++i)
 	wp->w_border_char[i] = 0;
 
-#ifdef FEAT_QUICKFIX
+    if (type == TYPE_PREVIEW)
+    {
+	if (mouse_has(MOUSE_INSERT))
+	{
+	    wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
+	    wp->w_popup_close = POPCLOSE_BUTTON;
+	}
+	add_border_left_right_padding(wp);
+	parse_previewpopup(wp);
+	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
+    }
+
+# ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
