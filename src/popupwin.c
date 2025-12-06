@@ -1646,7 +1646,9 @@ popup_adjust_position(win_T *wp)
 	    // top aligned and not enough space below but there is space above:
 	    // make bottom aligned and recompute the height
 	    wp->w_height = w_height_before_limit;
-	    wp->w_winrow = wantline - 2 - wp->w_height - extra_height;
+	    wp->w_winrow = wantline - wp->w_height - extra_height  - 2;
+	    if (wp->w_popup_flags & POPF_INFO)
+		wp->w_winrow += extra_height + 2;
 	    if (wp->w_winrow < 0)
 	    {
 		wp->w_height += wp->w_winrow;
