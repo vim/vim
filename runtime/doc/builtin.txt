@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 02
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2891,7 +2891,7 @@ exists({expr})						*exists()*
 		Can also be used as a |method|: >
 			Varname()->exists()
 <
-		Return type: |String|
+		Return type: |Number|
 
 
 exists_compiled({expr})					*exists_compiled()*
@@ -2908,7 +2908,7 @@ exists_compiled({expr})					*exists_compiled()*
 		Can only be used in a |:def| function. *E1233*
 		This does not work to check for arguments or local variables.
 
-		Return type: |String|
+		Return type: |Number|
 
 
 exp({expr})						*exp()*
