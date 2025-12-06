@@ -130,6 +130,7 @@ runtime/ftplugin/basic.vim				@dkearns
 runtime/ftplugin/brighterscript.vim			@ribru17
 runtime/ftplugin/brightscript.vim			@ribru17
 runtime/ftplugin/bst.vim				@tpope
+runtime/ftplugin/bpftrace.vim				@sgruszka
 runtime/ftplugin/c3.vim					@ttytm
 runtime/ftplugin/cabal.vim				@ribru17
 runtime/ftplugin/cedar.vim				@ribru17
