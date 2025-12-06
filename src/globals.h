@@ -2144,5 +2144,4 @@ extern type_T t_tstree;
 extern type_T t_tsnode;
 extern type_T t_tsquery;
 extern type_T t_tsquerycursor;
-extern type_T t_tsquerymatch;
 #endif
