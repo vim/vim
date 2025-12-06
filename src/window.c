@@ -9,6 +9,8 @@
 
 #include "vim.h"
 
+#define HH_ch_log(fmt,...)  // XXX: Delete later.
+
 static void cmd_with_count(char *cmd, char_u *bufp, size_t bufsize, long Prenum);
 static void win_init(win_T *newp, win_T *oldp, int flags);
 static void win_init_some(win_T *newp, win_T *oldp);
@@ -54,7 +56,9 @@ static void win_goto_ver(int up, long count);
 static void win_goto_hor(int left, long count);
 static void frame_add_height(frame_T *frp, int n);
 static void last_status_rec(frame_T *fr, int statusline);
+#if defined(FEAT_STL_OPT)
 static void frame_change_statusline_height_rec(frame_T *frp);
+#endif
 static void frame_flatten(frame_T *frp);
 static void winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr);
 
@@ -2103,7 +2107,9 @@ win_equal(
 		      topframe, dir, firstwin->w_wincol, tabline_height(),
 		      topframe->fr_width, topframe->fr_height);
     HH_ch_log("2");
+#if defined(FEAT_STL_OPT)
     frame_change_statusline_height();
+#endif
     if (!is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
     HH_ch_log("out.");
@@ -6433,7 +6439,9 @@ win_comp_pos(void)
     int		col = TPL_LCOL();
 
     frame_comp_pos(topframe, &row, &col);
+#if defined(FEAT_STL_OPT)
     frame_change_statusline_height();
+#endif
 }
 
 /*
@@ -6502,7 +6510,9 @@ win_ensure_size(void)
 win_setheight(int height)
 {
     win_setheight_win(height, curwin);
+#if defined(FEAT_STL_OPT)
     frame_change_statusline_height();
+#endif
 }
 
 /*
@@ -7580,7 +7590,9 @@ last_status(
 {
     // Don't make a difference between horizontal or vertical split.
     last_status_rec(topframe, last_stl_height(morewin) > 0);
+#if defined(FEAT_STL_OPT)
     frame_change_statusline_height();
+#endif
 }
 
     static void
@@ -7649,6 +7661,7 @@ last_status_rec(frame_T *fr, int statusline)
     }
 }
 
+#if defined(FEAT_STL_OPT)
     void
 fitting_statusline_height_value(void)
 {
@@ -7789,14 +7802,16 @@ statuslineopt_changed(
 
     return OK;
 }
+#endif
 
 /*
  * Return the number of lines used by the status line.
  */
     int
-statusline_height(win_T *wp)
+statusline_height(win_T *wp UNUSED)
 {
-    int stl_height;
+    int stl_height = 1;
+#if defined(FEAT_STL_OPT)
     bool fixed;
 
     if (wp != NULL && *wp->w_p_stlo != NUL)
@@ -7829,6 +7844,7 @@ statusline_height(win_T *wp)
 
     if (stl_height < 0)
 	stl_height = 0;
+#endif
 
     return stl_height;
 }
