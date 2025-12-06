@@ -346,6 +346,14 @@
 #endif
 
 /*
+ * +treesitter		treesitter integration for syntax highlighting and text
+ *			objects.
+ */
+#if defined(FEAT_TREESITTER) && !defined(FEAT_SYN_HL)
+#undef FEAT_TREESITTER
+#endif
+
+/*
  * +conceal		'conceal' option.  Depends on syntax highlighting
  *			as this is how the concealed text is defined.
  */
@@ -1207,7 +1215,8 @@
 	|| defined(DYNAMIC_GETTEXT) \
 	|| defined(DYNAMIC_MZSCHEME) \
 	|| defined(DYNAMIC_LUA) \
-	|| defined(FEAT_TERMINAL)
+	|| defined(FEAT_TERMINAL) \
+	|| defined(FEAT_TREESITTER)
 # define USING_LOAD_LIBRARY
 #endif
 

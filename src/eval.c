@@ -2723,6 +2723,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
 	case VAR_TUPLE:
+	case VAR_OPAQUE:
 	    break;
 
 	case VAR_BLOB:
@@ -4934,6 +4935,12 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
+		if (STRNCMP(s, "null_opaque", 13) == 0)
+		{
+		    rettv->v_type = VAR_OPAQUE;
+		    rettv->vval.v_opaque = NULL;
+		    return OK;
+		}
 		break;
 	case 12:
 		if (STRNCMP(s, "null_channel", 12) == 0)
@@ -4954,7 +4961,8 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
-	case 13: if (STRNCMP(s, "null_function", 13) == 0)
+	case 13:
+		if (STRNCMP(s, "null_function", 13) == 0)
 		{
 		    rettv->v_type = VAR_FUNC;
 		    rettv->vval.v_string = NULL;
@@ -5850,6 +5858,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_OBJECT:
+	case VAR_OPAQUE:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -5938,6 +5947,7 @@ eval_index_inner(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_OPAQUE:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -6575,6 +6585,36 @@ object_tv2string(
 }
 
 /*
+ * Return a textual representation of an opaque in "tv".
+ * Never puts quotes around the string.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * May return NULL.
+ */
+    static char_u *
+opaque_tv2string(
+    typval_T	*tv,
+    char_u	**tofree)
+{
+    char_u	*r = NULL;
+
+    *tofree = NULL;
+
+    if (tv->vval.v_opaque == NULL)
+	r = (char_u *)"opaque null";
+    else if (tv->vval.v_opaque->op_type->ot_str_func == NULL)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "opaque type %s",
+		    tv->vval.v_opaque->op_type->ot_type);
+	    r = vim_strsave(IObuff);
+	    *tofree = r;
+	}
+    else
+	r = tv->vval.v_opaque->op_type->ot_str_func(tv->vval.v_opaque, tofree);
+
+    return r;
+}
+
+/*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
@@ -6673,6 +6713,10 @@ echo_string_core(
 	case VAR_OBJECT:
 	    r = object_tv2string(tv, tofree, copyID, restore_copyID,
 					 numbuf, echo_style, composite_val);
+	    break;
+	
+	case VAR_OPAQUE:
+	    r = opaque_tv2string(tv, tofree);
 	    break;
 
 	case VAR_FLOAT:
@@ -7519,6 +7563,15 @@ handle_subscript(
 		ret = FAIL;
 	    }
 	}
+	else if (**arg == '.' && rettv->v_type == VAR_OPAQUE)
+	{
+	    // Opaque property: Opaque.property
+	    if (opaque_property_index(arg, rettv) == FAIL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
+	}
 	else
 	    break;
     }
@@ -7578,6 +7631,7 @@ item_copy(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_OPAQUE:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

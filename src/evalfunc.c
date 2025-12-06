@@ -998,6 +998,71 @@ arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is an opaque TSParser.
+ */
+    static int
+arg_tsparser(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsparser, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSTree.
+ */
+    static int
+arg_tstree(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tstree, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSNode.
+ */
+    static int
+arg_tsnode(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsnode, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSQuery.
+ */
+    static int
+arg_tsquery(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsquery, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
+ * Check "type" is an opaque TSQueryCursor.
+ */
+    static int
+arg_tsquerycursor(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+#ifdef FEAT_TREESITTER
+    return check_arg_type(&t_tsquerycursor, type, context);
+#else
+    return FAIL;
+#endif
+}
+
+/*
  * Check "type" can be used as the type_decl of the previous argument.
  * Must not be used for the first argcheck_T entry.
  */
@@ -1258,6 +1323,9 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
+static argcheck_T arg1_tstree[] = {arg_tstree};
+static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
+static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1289,6 +1357,8 @@ static argcheck_T arg2_number_buffer[] = {arg_number, arg_buffer};
 static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
 static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
+static argcheck_T arg2_tsquery_string[] = {arg_tsquery, arg_string};
+static argcheck_T arg2_tsquery_number[] = {arg_tsquery, arg_number};
 static argcheck_T arg2_string_any[] = {arg_string, arg_any};
 static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
@@ -1327,7 +1397,11 @@ static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg
 static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, arg_bool, arg_number};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
+static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg3_tsquerycursor_tsquery_tsnode[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode};
+static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
+static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -1384,6 +1458,7 @@ static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
+static argcheck_T arg7_tstree_3number_3tuple[] = {arg_tstree, arg_number, arg_number, arg_number, arg_tuple_any, arg_tuple_any, arg_tuple_any};
 
 // Can be used by functions called through "f_retfunc" to create new types.
 static garray_T *current_type_gap = NULL;
@@ -1448,6 +1523,50 @@ ret_list_any(int argcount UNUSED,
 {
     return &t_list_any;
 }
+    static type_T *
+ret_opaque(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_opaque;
+}
+#ifdef FEAT_TREESITTER
+    static type_T *
+ret_tsparser(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsparser;
+}
+    static type_T *
+ret_tstree(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tstree;
+}
+    static type_T *
+ret_tsnode(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsnode;
+}
+    static type_T *
+ret_tsquery(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquery;
+}
+    static type_T *
+ret_tsquerycursor(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquerycursor;
+}
+#endif // FEAT_TREESITTER
     static type_T *
 ret_list_number(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
@@ -1933,6 +2052,13 @@ typedef struct
 # define TERM_FUNC(name) name
 #else
 # define TERM_FUNC(name) NULL
+#endif
+#ifdef FEAT_TREESITTER
+# define TS_FUNC(name) name
+# define TS_OPRET(name) name
+#else
+# define TS_FUNC(name) NULL
+# define TS_OPRET(name) ret_void
 #endif
 
 static const funcentry_T global_functions[] =
@@ -3087,12 +3213,16 @@ static const funcentry_T global_functions[] =
 			ret_job,	    JOB_FUNC(f_test_null_job)},
     {"test_null_list",	0, 0, 0,	    NULL,
 			ret_list_any,	    f_test_null_list},
+    {"test_null_opaque", 0, 0, 0,	    NULL,
+			ret_opaque,	    f_test_null_opaque},
     {"test_null_partial", 0, 0, 0,	    NULL,
 			ret_func_any,	    f_test_null_partial},
     {"test_null_string", 0, 0, 0,	    NULL,
 			ret_string,	    f_test_null_string},
     {"test_null_tuple",	0, 0, 0,	    NULL,
 			ret_tuple_any,	    f_test_null_tuple},
+    {"test_opaque",	2, 2, 0,	    arg2_string_number,
+			ret_opaque,	    f_test_opaque},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
 			ret_void,	    f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
@@ -3129,6 +3259,34 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
+    {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
+			ret_void,	    TS_FUNC(f_ts_load)},
+    {"tsnode_child",	2, 3, FEARG_1,	    arg3_tsnode_number_bool,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tsnode_child)},
+    {"tsnode_descendant_for_range", 3, 4, FEARG_1, arg4_tsnode_tuple_tuple_bool,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tsnode_descendant_for_range)},
+    {"tsparser_new",	0, 0, 0,	    NULL,
+			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
+    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsparser_buffer_number_tstree,
+			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
+    {"tsparser_set_language", 2, 2, FEARG_1, arg2_tsparser_string,
+			ret_void,	    TS_FUNC(f_tsparser_set_language)},
+    {"tsquery_disable_capture",	2, 2, FEARG_1, arg2_tsquery_string,
+			ret_void,	    TS_FUNC(f_tsquery_disable_capture)},
+    {"tsquery_disable_pattern",	2, 2, FEARG_1, arg2_tsquery_number,
+			ret_void,	    TS_FUNC(f_tsquery_disable_pattern)},
+    {"tsquery_new",	2, 2, 0,	    arg2_string,
+			TS_OPRET(ret_tsquery), TS_FUNC(f_tsquery_new)},
+    {"tsquerycursor_exec", 3, 3, FEARG_1,   arg3_tsquerycursor_tsquery_tsnode,
+			ret_void,	    TS_FUNC(f_tsquerycursor_exec)},
+    {"tsquerycursor_new", 0, 1, 0,	    arg1_dict_any,
+			TS_OPRET(ret_tsquerycursor), TS_FUNC(f_tsquerycursor_new)},
+    {"tsquerycursor_next_match", 1, 1, FEARG_1,	arg1_tsquerycursor,
+			ret_bool,	    TS_FUNC(f_tsquerycursor_next_match)},
+    {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
+			ret_void,	    TS_FUNC(f_tstree_edit)},
+    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tstree,
+			TS_OPRET(ret_tsnode), TS_FUNC(f_tstree_root_node)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
@@ -4455,6 +4613,9 @@ f_empty(typval_T *argvars, typval_T *rettv)
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
 #endif
+	case VAR_OPAQUE:
+	    n = argvars[0].vval.v_opaque == NULL;
+	    break;
 	case VAR_TYPEALIAS:
 	    n = argvars[0].vval.v_typealias == NULL
 		|| argvars[0].vval.v_typealias->ta_name == NULL
@@ -8851,6 +9012,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_OPAQUE:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -12600,6 +12762,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
+	case VAR_OPAQUE:   n = VAR_TYPE_OPAQUE; break;
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;

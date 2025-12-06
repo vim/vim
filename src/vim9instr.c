@@ -145,6 +145,28 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
 }
 
 /*
+ * Generate ISN_GET_OPAQUE_PROPERTY instruction - access property of opaque at
+ * bottom of stack by index.
+ */
+    int
+generate_GET_OPAQUE_PROPERTY(cctx_T *cctx, int idx, opaque_type_T *ot, type_T *type)
+{
+    isn_T		*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    // Drop the opaque type
+    isn = generate_instr_drop(cctx, ISN_GET_OPAQUE_PROPERTY, 1);
+    if (isn == NULL)
+	return FAIL;
+
+    isn->isn_arg.opaqueprop.oprop_idx = idx;
+    isn->isn_arg.opaqueprop.oprop_ot = ot;
+
+    return push_type_stack2(cctx, type, &t_any);
+}
+
+/*
  * Generate ISN_GET_ITF_MEMBER - access member of interface at bottom of stack
  * by index.
  */
@@ -241,6 +263,7 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_OPAQUE:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }
@@ -510,20 +533,41 @@ get_compare_isn(
 
     if (vartype1 == vartype2)
     {
-	switch (vartype1)
+	if (vartype1 == VAR_OPAQUE)
 	{
-	    case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
-	    case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
-	    case VAR_NUMBER: isntype = ISN_COMPARENR; break;
-	    case VAR_FLOAT: isntype = ISN_COMPAREFLOAT; break;
-	    case VAR_STRING: isntype = ISN_COMPARESTRING; break;
-	    case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
-	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
-	    case VAR_TUPLE: isntype = ISN_COMPARETUPLE; break;
-	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
-	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
-	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
-	    default: isntype = ISN_COMPAREANY; break;
+	    // For opaque types, we must also check the type of both opaques as
+	    // well. This is unless there is a NULL opaque type, then we have to
+	    // do a runtime check.
+	    opaque_type_T *optype1 = tv1 != NULL ?
+		tv1->vval.v_opaque->op_type : type1->tt_optype;
+	    opaque_type_T *optype2 = tv2 != NULL ?
+		tv2->vval.v_opaque->op_type : type2->tt_optype;
+
+	    if (optype1 != NULL && optype2 != NULL && optype1 == optype2)
+	    {
+		semsg(_(e_opaque_cannot_compare_str_with_str),
+			optype1->ot_type, optype2->ot_type);
+		return ISN_DROP;
+	    }
+	    isntype = ISN_COMPAREOPAQUE;
+	}
+	else
+	{
+	    switch (vartype1)
+	    {
+		case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
+		case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
+		case VAR_NUMBER: isntype = ISN_COMPARENR; break;
+		case VAR_FLOAT: isntype = ISN_COMPAREFLOAT; break;
+		case VAR_STRING: isntype = ISN_COMPARESTRING; break;
+		case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
+		case VAR_LIST: isntype = ISN_COMPARELIST; break;
+		case VAR_TUPLE: isntype = ISN_COMPARETUPLE; break;
+		case VAR_DICT: isntype = ISN_COMPAREDICT; break;
+		case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
+		case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
+		default: isntype = ISN_COMPAREANY; break;
+	    }
 	}
     }
     else if (vartype1 == VAR_ANY || vartype2 == VAR_ANY
@@ -825,6 +869,11 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    generate_PUSHCHANNEL(cctx);
 	    break;
 #endif
+	case VAR_OPAQUE:
+	    if (tv->vval.v_opaque != NULL)
+		iemsg("non-null opaque constant not supported");
+	    generate_PUSHOPAQUE(cctx);
+	    break;
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
@@ -1038,6 +1087,18 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
     }
 
     isn->isn_arg.string = funcname;
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHTSOBJECT instruction. treesitter object is always NULL.
+ */
+    int
+generate_PUSHOPAQUE(cctx_T *cctx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    if (generate_instr_type(cctx, ISN_PUSHOPAQUE, &t_opaque) == NULL)
+	return FAIL;
     return OK;
 }
 
@@ -2729,7 +2790,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHCLASS:
 	    class_unref(isn->isn_arg.classarg);
 	    break;
-
+	
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2870,6 +2931,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREOBJECT:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
+	case ISN_COMPAREOPAQUE:
 	case ISN_CONCAT:
 	case ISN_CONSTRUCT:
 	case ISN_COND2BOOL:
@@ -2890,6 +2952,7 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_GET_OBJ_MEMBER:
+	case ISN_GET_OPAQUE_PROPERTY:
 	case ISN_JUMP:
 	case ISN_JUMP_IF_ARG_NOT_SET:
 	case ISN_JUMP_IF_ARG_SET:
@@ -2927,6 +2990,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHNR:
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
+	case ISN_PUSHOPAQUE:
 	case ISN_PUT:
 	case ISN_IPUT:
 	case ISN_REDIREND:

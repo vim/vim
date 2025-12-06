@@ -2260,7 +2260,8 @@ typedef int sock_T;
 #define VV_TERMDA1 114
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
-#define VV_LEN		117	// number of v: vars
+#define VV_TYPE_OPAQUE	117
+#define VV_LEN		118	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2287,6 +2288,7 @@ typedef int sock_T;
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
+#define VAR_TYPE_OPAQUE	    18
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 

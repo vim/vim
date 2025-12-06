@@ -1384,6 +1384,7 @@ ALL_LIBS = \
 	   $(X_PRE_LIBS) \
 	   $(X_LIBS) \
 	   $(WAYLAND_LIBS) \
+	   $(TREESITTER_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -1585,6 +1586,7 @@ BASIC_SRC = \
 	viminfo.c \
 	window.c \
 	bufwrite.c \
+	opaque.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1597,7 +1599,8 @@ SRC =	$(BASIC_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
-	$(WAYLAND_SRC)
+	$(WAYLAND_SRC) \
+	$(TREESITTER_SRC)
 
 EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
@@ -1631,7 +1634,7 @@ RUN_UNITTESTS = $(WAYLAND_SRC) run_json_test run_kword_test run_memfile_test run
 
 # All sources, also the ones that are not configured
 ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC) \
-		$(WAYLAND_SRC)
+		$(WAYLAND_SRC) $(TREESITTER_SRC)
 ALL_SRC = $(ALL_LOCAL_SRC) $(TERM_SRC) $(XDIFF_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
@@ -1762,6 +1765,7 @@ OBJ_COMMON = \
 	objects/viminfo.o \
 	objects/window.o \
 	objects/bufwrite.o \
+	objects/opaque.o \
 	$(GUI_OBJ) \
 	$(TERM_OBJ) \
 	$(LUA_OBJ) \
@@ -1775,7 +1779,8 @@ OBJ_COMMON = \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
 	$(XDIFF_OBJS_USED) \
-	$(WAYLAND_OBJ)
+	$(WAYLAND_OBJ) \
+	$(TREESITTER_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -1837,6 +1842,7 @@ PROTO_FILES = \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/bufwrite.pro \
+	proto/opaque.pro \
 	proto/change.pro \
 	proto/channel.pro \
 	proto/charset.pro \
@@ -3460,6 +3466,9 @@ objects/mbyte.o: mbyte.c
 objects/normal.o: normal.c
 	$(CCC) -o $@ normal.c
 
+objects/opaque.o: opaque.c
+	$(CCC) -o $@ opaque.c
+
 objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
@@ -3645,6 +3654,9 @@ objects/xdg-shell.o: auto/wayland/xdg-shell.c
 
 objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
 	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
+
+objects/treesitter.o: treesitter.c
+	$(CCC) $(TREESITTER_CFLAGS) $(TREESITTER_CPPFLAGS) -o $@ treesitter.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -4777,3 +4789,4 @@ proto/gui_gtk_x11.pro: gui_gtk_x11.c
 proto/gui_x11.pro: gui_x11.c
 proto/gui_w32.pro: gui_w32.c
 proto/gui_photon.pro: gui_photon.c
+proto/opaque.pro: opaque.c
