@@ -5,9 +5,9 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 14.3
+    - name: FreeBSD 15.0
       freebsd_instance:
-        image_family: freebsd-14-3
+        image_family: freebsd-15-0-amd64-zfs
   timeout_in: 20m
   install_script:
     - pkg install -y gettext
@@ -16,6 +16,7 @@ freebsd_task:
     - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
   test_script:
+    - sed -i '' 's/term_wait(10)/term_wait(50)/' src/testdir/util/term_util.vim
     - src/vim --version
       # run tests as user "cirrus" instead of root
     - pw useradd cirrus -m
