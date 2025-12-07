@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -138,6 +138,7 @@ what kind of file it is.  This doesn't always work.  A number of global
 variables can be used to overrule the filetype used for certain extensions:
 
 	file name	variable ~
+	*.app		g:filetype_app
 	*.asa		g:filetype_asa		|ft-aspperl-syntax|
 						|ft-aspvbs-syntax|
 	*.asm		g:asmsyntax		|ft-asm-syntax|
