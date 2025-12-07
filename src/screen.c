@@ -1116,7 +1116,7 @@ win_redr_custom(
     ewp = wp == NULL ? curwin : wp;
     p_crb_save = ewp->w_p_crb;
     ewp->w_p_crb = FALSE;
-    stlh_cnt = stl == p_tal ? 1 : wp->w_status_height;
+    stlh_cnt = draw_ruler || stl == p_tal ? 1 : wp->w_status_height;
 
     // Make a copy, because the statusline may include a function call that
     // might change the option value and free the memory.
