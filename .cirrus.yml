@@ -16,7 +16,7 @@ freebsd_task:
     - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
   test_script:
-    - sed -i 's/term_wait(10)/term_wait(50)/' src/testdir/util/term_util.vim
+    - sed -i '' 's/term_wait(10)/term_wait(50)/' src/testdir/util/term_util.vim
     - src/vim --version
       # run tests as user "cirrus" instead of root
     - pw useradd cirrus -m
