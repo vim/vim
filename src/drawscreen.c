@@ -1426,7 +1426,7 @@ fold_line(
  *		   - continue redrawing when syntax status is invalid.
  *		4. if scrolled up, update lines at the bottom.
  * This results in three areas that may need updating:
- * top:	from first row to top_end (when scrolled down)
+ * top: from first row to top_end (when scrolled down)
  * mid: from mid_start to mid_end (update inversion or changed text)
  * bot: from bot_start to last row (when scrolled up)
  */
@@ -1445,6 +1445,8 @@ win_update(win_T *wp)
 				// updating.  999 when no bot area updating
     int		scrolled_down = FALSE;	// TRUE when scrolled down when
 					// w_topline got smaller a bit
+    int		scrolled_for_mod = FALSE;   // TRUE after scrolling for changed
+					    // lines
 #ifdef FEAT_SEARCH_EXTRA
     int		top_to_mod = FALSE;    // redraw above mod_top
 #endif
@@ -2280,11 +2282,14 @@ win_update(win_T *wp)
 	    // When at start of changed lines: May scroll following lines
 	    // up or down to minimize redrawing.
 	    // Don't do this when the change continues until the end.
-	    // Don't scroll when redrawing the top, scrolled already above.
-	    if (lnum == mod_top
-		    && mod_bot != MAXLNUM
+	    // Don't scroll the top area which was already scrolled above,
+	    // but do scroll for changed lines below the top area.
+	    if (!scrolled_for_mod && mod_bot != MAXLNUM
+		    && lnum >= mod_top && lnum < MAX(mod_bot, mod_top + 1)
 		    && row >= top_end)
 	    {
+		scrolled_for_mod = TRUE;
+
 		int		old_cline_height = 0;
 		int		old_rows = 0;
 		int		new_rows = 0;
