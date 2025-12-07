@@ -13,7 +13,7 @@ freebsd_task:
     - pkg install -y gettext
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
-    - ./configure --with-features=${FEATURES}
+    - ./configure --with-features=${FEATURES} --with-vterm=builtin
     - make -j${NPROC}
   test_script:
     - src/vim --version
