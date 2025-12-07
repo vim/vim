@@ -665,6 +665,19 @@ func Test_echowindow()
   call term_sendkeys(buf, ":call HideWin()\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_9', {})
 
+  call term_sendkeys(buf, ":set cmdheight=2 columns=50\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":echowindow 'S' .. repeat('a', &columns - 2) .. 'Eabcde'\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_10', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, ":echowindow 'A' .. repeat('0', &columns - 2) .. 'a' .. 'B' .. repeat('a', &columns - 2) .. 'b' .. 'C' .. repeat('a', &columns - 2) .. 'c' .. 'D' .. repeat('a', &columns - 2) .. 'd12345'")
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_11', {})
+
   " clean up
   call StopVimInTerminal(buf)
 endfunc
