@@ -3855,7 +3855,7 @@ jumpto_tag(
 	    // split window.
 	    cmdmod.cmod_split |= WSP_VERT;
 
-	if (swb_flags & SWB_NEWTAB)
+	if ((swb_flags & SWB_NEWTAB) && cmdmod.cmod_tab == 0)
 	    // If 'switchbuf' contains 'newtab', then use a new tabpage
 	    cmdmod.cmod_tab = tabpage_index(curtab) + 1;
 
