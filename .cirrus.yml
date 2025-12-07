@@ -13,10 +13,10 @@ freebsd_task:
     - pkg install -y gettext
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
-    - ./configure --with-features=${FEATURES} --with-vterm=builtin
+    - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
   test_script:
-    - export TERM=xterm-256color
+    - sed -i '' 's/term_wait(10)/term_wait(50)/' src/testdir/term_util.vim
     - src/vim --version
       # run tests as user "cirrus" instead of root
     - pw useradd cirrus -m
