@@ -16,6 +16,7 @@ freebsd_task:
     - ./configure --with-features=${FEATURES} --with-vterm=builtin
     - make -j${NPROC}
   test_script:
+    - export TERM=xterm-256color
     - src/vim --version
       # run tests as user "cirrus" instead of root
     - pw useradd cirrus -m
