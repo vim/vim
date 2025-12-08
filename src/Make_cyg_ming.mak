@@ -851,6 +851,7 @@ OBJ = \
 	$(OUTDIR)/move.o \
 	$(OUTDIR)/mbyte.o \
 	$(OUTDIR)/normal.o \
+	$(OUTDIR)/opaque.o \
 	$(OUTDIR)/ops.o \
 	$(OUTDIR)/option.o \
 	$(OUTDIR)/optionstr.o \
