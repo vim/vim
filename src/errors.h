@@ -3832,18 +3832,8 @@ EXTERN char e_treesitter_get_lang_error[]
 	INIT(= N_("E1571: Failed loading treesitter parser %s"));
 EXTERN char e_treesitter_lang_not_loaded[]
 	INIT(= N_("E1572: Language %s is not loaded"));
-EXTERN char e_using_tsobject_as_number[]
-	INIT(= N_("E1573: Using a Treesitter object as a Number"));
-EXTERN char e_using_tsobject_as_float[]
-	INIT(= N_("E1573: Using a Treesitter object as a Float"));
-EXTERN char e_using_tsobject_as_string[]
-	INIT(= N_("E1573: Using a Treesitter object as a String"));
 EXTERN char e_tsparser_not_set_to_language[]
 	INIT(= N_("E1573: TSParser is not set to a language"));
-EXTERN char e_tsobject_required_for_argument_nr[]
-	INIT(= N_("E1574: Treesitter object required for argument %d"));
-EXTERN char e_tsobject_str_required_for_argument_nr[]
-	INIT(= N_("E1574: Treesitter object %s required for argument %d"));
 EXTERN char e_invalid_argument_tuple_not_number_number[]
 	INIT(= N_("E1575: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]

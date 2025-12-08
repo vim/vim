@@ -744,7 +744,7 @@ check_map_filter_arg2(
 {
     type_T *expected_member = NULL;
     type_T *(args[2]);
-    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args};
+    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args, NULL};
 
     if (context->arg_types[0].type_curr->tt_type == VAR_LIST
 	    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
@@ -878,7 +878,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     if (type->tt_type == VAR_FUNC)
     {
 	type_T *(args[2]);
-	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args};
+	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args, NULL};
 
 	if (context->arg_types[0].type_curr->tt_type == VAR_LIST)
 	    args[0] = context->arg_types[0].type_curr->tt_member;
@@ -1001,7 +1001,8 @@ arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * Check "type" is an opaque TSParser.
  */
     static int
-arg_tsparser(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tsparser(type_T *type UNUSED, type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
 {
 #ifdef FEAT_TREESITTER
     return check_arg_type(&t_tsparser, type, context);
@@ -1014,7 +1015,8 @@ arg_tsparser(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * Check "type" is an opaque TSTree.
  */
     static int
-arg_tstree(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tstree(type_T *type UNUSED, type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
 {
 #ifdef FEAT_TREESITTER
     return check_arg_type(&t_tstree, type, context);
@@ -1027,7 +1029,8 @@ arg_tstree(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * Check "type" is an opaque TSNode.
  */
     static int
-arg_tsnode(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tsnode(type_T *type UNUSED, type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
 {
 #ifdef FEAT_TREESITTER
     return check_arg_type(&t_tsnode, type, context);
@@ -1040,7 +1043,8 @@ arg_tsnode(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * Check "type" is an opaque TSQuery.
  */
     static int
-arg_tsquery(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tsquery(type_T *type UNUSED, type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
 {
 #ifdef FEAT_TREESITTER
     return check_arg_type(&t_tsquery, type, context);
@@ -1053,7 +1057,8 @@ arg_tsquery(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * Check "type" is an opaque TSQueryCursor.
  */
     static int
-arg_tsquerycursor(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_tsquerycursor(type_T *type UNUSED, type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
 {
 #ifdef FEAT_TREESITTER
     return check_arg_type(&t_tsquerycursor, type, context);

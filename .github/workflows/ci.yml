@@ -145,6 +145,8 @@ jobs:
             libwayland-egl1:${{ matrix.architecture }} \
             libwayland-client0:${{ matrix.architecture }} \
             libwayland-cursor0:${{ matrix.architecture }} \
+            libwayland-cursor0:${{ matrix.architecture }} \
+            libtree-sitter-dev:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
           )

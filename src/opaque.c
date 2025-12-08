@@ -25,13 +25,16 @@
  * NULL/
  */
     opaque_type_T *
-lookup_opaque_type(char_u *name, size_t namelen)
+lookup_opaque_type(char_u *name, size_t namelen UNUSED)
 {
+
+#ifdef FEAT_TREESITTER
     opaque_type_T *type;
 
     if (STRNCMP(name, "TS", 2) == 0
 	    && (type = tsvim_lookup_opaque_type(name, namelen)) != NULL)
 	return type;
+#endif
     if (STRCMP(name, "TestOpaque") == 0)
 	return &test_opaque_type;
     return NULL;
@@ -98,7 +101,7 @@ lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx
     target.opp_idx = 0;
     target.opp_name = name;
     target.opp_type = NULL;
-    target.opp_name_len = 0; // Not used
+    target.opp_name_len = namelen;
 
     prop = bsearch(&target, ot->ot_properties, ot->ot_property_count,
 	    sizeof(ot->ot_properties[0]), cmp_opaqueproperty_value);
