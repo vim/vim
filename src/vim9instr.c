@@ -2790,7 +2790,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHCLASS:
 	    class_unref(isn->isn_arg.classarg);
 	    break;
-	
+
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
