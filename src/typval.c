@@ -98,7 +98,7 @@ free_tv(typval_T *varp)
 	case VAR_TYPEALIAS:
 	    typealias_unref(varp->vval.v_typealias);
 	    break;
-	
+
 	case VAR_OPAQUE:
 	    opaque_unref(varp->vval.v_opaque);
 	    break;
@@ -2407,12 +2407,12 @@ tv_equal(
 	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
 
 	case VAR_OPAQUE:
-            return tv1->vval.v_opaque->op_type->ot_equal_func ==
+	    return tv1->vval.v_opaque->op_type->ot_equal_func ==
 		tv2->vval.v_opaque->op_type->ot_equal_func &&
 		tv1->vval.v_opaque->op_type->ot_equal_func(
 			tv1->vval.v_opaque, tv2->vval.v_opaque);
 
-        case VAR_UNKNOWN:
+	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
 	    break;

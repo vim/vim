@@ -7955,11 +7955,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			     iptr->isn_arg.classmember.cm_class->class_name.string);
 				     break;
 
-	    case ISN_GET_OPAQUE_PROPERTY:
-                smsg("%s%4d OPAQUE_PROPERTY %d on %s", pfx, current,
-                     (int)iptr->isn_arg.opaqueprop.oprop_idx,
-                     iptr->isn_arg.opaqueprop.oprop_ot->ot_type);
-                break;
+	    case ISN_GET_OPAQUE_PROPERTY: smsg("%s%4d OPAQUE_PROPERTY %d on %s",
+			    pfx, current,
+			    (int)iptr->isn_arg.opaqueprop.oprop_idx,
+			    iptr->isn_arg.opaqueprop.oprop_ot->ot_type);
+					  break;
 
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;

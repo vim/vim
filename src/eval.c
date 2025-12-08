@@ -6739,7 +6739,7 @@ echo_string_core(
 	    r = object_tv2string(tv, tofree, copyID, restore_copyID,
 					 numbuf, echo_style, composite_val);
 	    break;
-	
+
 	case VAR_OPAQUE:
 	    r = opaque_tv2string(tv, tofree);
 	    break;

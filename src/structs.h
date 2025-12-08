@@ -1707,7 +1707,7 @@ struct opaque_type_S
 
     opaque_free_func_T	ot_free_func;	// Called when opaque_T is freed. May be NULL.
     opaque_equal_func_T ot_equal_func;	// Called when comparing two opaque_T of
-					// the same type. Must be set.                 
+					// the same type. Must be set.
     opaque_str_func_T	ot_str_func;	// Should return textual form of opaque.
 					// May be NULL, if so then a default
 					// format is used.
