@@ -565,25 +565,25 @@ type_T t_tsquerycursor = {
 
 static opaque_property_T tsnode_properties[] = {
     {NPROP_CHILD_COUNT,		    OPPROPNAME("child_count"), &t_number},
-    {NPROP_END_BYTE,	    	    OPPROPNAME("end_byte"), &t_number},
-    {NPROP_END_POINT,	    	    OPPROPNAME("end_point"), &t_tspoint},
-    {NPROP_EXTRA,	    	    OPPROPNAME("extra"), &t_bool},
-    {NPROP_HAS_CHANGES,	    	    OPPROPNAME("has_changes"), &t_bool},
-    {NPROP_HAS_ERROR,	    	    OPPROPNAME("has_error"), &t_bool},
-    {NPROP_MISSING,	    	    OPPROPNAME("missing"), &t_bool},
+    {NPROP_END_BYTE,		    OPPROPNAME("end_byte"), &t_number},
+    {NPROP_END_POINT,		    OPPROPNAME("end_point"), &t_tspoint},
+    {NPROP_EXTRA,		    OPPROPNAME("extra"), &t_bool},
+    {NPROP_HAS_CHANGES,		    OPPROPNAME("has_changes"), &t_bool},
+    {NPROP_HAS_ERROR,		    OPPROPNAME("has_error"), &t_bool},
+    {NPROP_MISSING,		    OPPROPNAME("missing"), &t_bool},
     {NPROP_NAMED_CHILD_COUNT,	    OPPROPNAME("named_child_count"), &t_number},
-    {NPROP_NAMED,	    	    OPPROPNAME("named"), &t_bool},
+    {NPROP_NAMED,		    OPPROPNAME("named"), &t_bool},
     {NPROP_NEXT_NAMED_SIBLING,	    OPPROPNAME("next_named_sibling"), &t_tsnode},
     {NPROP_NEXT_SIBLING,	    OPPROPNAME("next_sibling"), &t_tsnode},
     {NPROP_PARENT,		    OPPROPNAME("parent"), &t_tsnode},
     {NPROP_PREV_NAMED_SIBLING,	    OPPROPNAME("prev_named_sibling"), &t_tsnode},
     {NPROP_PREV_SIBLING,	    OPPROPNAME("prev_sibling"), &t_tsnode},
     {NPROP_START_BYTE,		    OPPROPNAME("start_byte"), &t_number},
-    {NPROP_START_POINT,     	    OPPROPNAME("start_point"), &t_tspoint},
-    {NPROP_STRING,	    	    OPPROPNAME("string"), &t_string},
-    {NPROP_SYMBOL,	    	    OPPROPNAME("symbol"), &t_number},
-    {NPROP_TREE,	    	    OPPROPNAME("tree"), &t_tstree},
-    {NPROP_TYPE,	    	    OPPROPNAME("type"), &t_string},
+    {NPROP_START_POINT,		    OPPROPNAME("start_point"), &t_tspoint},
+    {NPROP_STRING,		    OPPROPNAME("string"), &t_string},
+    {NPROP_SYMBOL,		    OPPROPNAME("symbol"), &t_number},
+    {NPROP_TREE,		    OPPROPNAME("tree"), &t_tstree},
+    {NPROP_TYPE,		    OPPROPNAME("type"), &t_string},
 };
 
 static opaque_property_T tsquerycursor_properties[] = {
@@ -703,7 +703,7 @@ typedef struct
     long timeout;
 } ProgressContext;
 
-    static bool 
+    static bool
 parser_progress_callback(TSParseState *state)
 {
     ProgressContext *ctx = state->payload;
@@ -1263,8 +1263,8 @@ f_tsquerycursor_new(typval_T *argvars, typval_T *rettv)
     TSQueryCursor   *cursor;
     opaque_T	    *op;
     bool	    have_range = false;
-    bool 	    have_max_depth = false;
-    bool 	    have_match_limit = false;
+    bool	    have_max_depth = false;
+    bool	    have_match_limit = false;
     TSPoint	    startp, endp;
     uint32_t	    max_depth, match_limit;
 
@@ -1282,9 +1282,9 @@ f_tsquerycursor_new(typval_T *argvars, typval_T *rettv)
 	    typval_T *starttv, *endtv;
 	    tuple_T *start, *end;
 
-            if (rangetv.v_type != VAR_TUPLE
+	    if (rangetv.v_type != VAR_TUPLE
 		    || rangetv.vval.v_tuple->tv_items.ga_len != 2)
-            {
+	    {
 range_fail:
 		semsg(_(e_invalid_argument_str), "range");
 		clear_tv(&rangetv);
@@ -1369,8 +1369,8 @@ range_fail:
 f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv)
 {
     TSQueryCursor	    *cursor;
-    TSQuery	    	    *query;
-    TSNode	    	    node;
+    TSQuery		    *query;
+    TSNode		    node;
     opaque_T		    *old_query, *old_node;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
@@ -1411,8 +1411,8 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
 {
     TSVimQueryCursor	*obj;
     TSQueryCursor	*cursor;
-    TSQueryMatch    	match;
-    opaque_T	    	*tree;
+    TSQueryMatch	match;
+    opaque_T		*tree;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL)
 	return;

@@ -99,7 +99,7 @@ lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx
     target.opp_name = name;
     target.opp_type = NULL;
     target.opp_name_len = 0; // Not used
-    
+
     prop = bsearch(&target, ot->ot_properties, ot->ot_property_count,
 	    sizeof(ot->ot_properties[0]), cmp_opaqueproperty_value);
 
