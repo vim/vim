@@ -2886,7 +2886,10 @@ type_name_opaque(type_T *type, char **tofree)
     s = alloc(sz);
 
     if (s == NULL)
+    {
+	*tofree = NULL;
 	return "[unknown]";
+    }
 
     vim_snprintf(s, sz, "opaque<%s>", type->tt_optype->ot_type);
 

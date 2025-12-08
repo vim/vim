@@ -757,7 +757,7 @@ tsvim_parser_parse(
     static const char *
 parse_buf_read_callback(
 	void *payload,
-	uint32_t byte_index,
+	uint32_t byte_index UNUSED,
 	TSPoint position,
 	uint32_t *bytes_read)
 {
@@ -772,7 +772,7 @@ parse_buf_read_callback(
     }
 
     char *line = (char *)ml_get_buf(bp, position.row + 1, FALSE);
-    colnr_T cols = ml_get_buf_len(bp, position.row + 1);
+    uint32_t cols = ml_get_buf_len(bp, position.row + 1);
     uint32_t to_copy;
 
     // Should only be true if the last call didn't add a newline
@@ -956,10 +956,11 @@ query_do_error_message(char_u *str, uint32_t offset, TSQueryError error)
 	int line_end;
 
 	end_str = vim_strchr(src_tmp, '\n');
-	line_length = end_str != NULL ? (int)(end_str - src_tmp) : STRLEN(src_tmp);
+	line_length = end_str != NULL ?
+	    (int)(end_str - src_tmp) : (int)STRLEN(src_tmp);
 	line_end = line_start + line_length;
 
-	if (line_end > offset)
+	if ((uint32_t)line_end > offset)
 	    break;
 
 	line_start = line_end + 1;
@@ -1008,7 +1009,7 @@ tsquery_new(char_u *language, char_u *query_str)
 }
 
     void
-f_ts_load(typval_T *argvars, typval_T *rettv)
+f_ts_load(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u *name;
     char_u *path;
@@ -1037,7 +1038,7 @@ f_ts_load(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_tsparser_new(typval_T *argvars, typval_T *rettv)
+f_tsparser_new(typval_T *argvars UNUSED, typval_T *rettv)
 {
     opaque_T *op = tsparser_new();
 
@@ -1049,7 +1050,7 @@ f_tsparser_new(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_tsparser_set_language(typval_T *argvars, typval_T *rettv)
+f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (check_for_opaque_arg(argvars, 0) == FAIL
 	    || check_for_string_arg(argvars, 1) == FAIL)
@@ -1101,7 +1102,7 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_tstree_edit(typval_T *argvars, typval_T *rettv)
+f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
 {
     TSPoint start_point, old_end_point, new_end_point;
 
@@ -1222,7 +1223,7 @@ f_tsquery_new(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv)
+f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv UNUSED)
 {
     TSQuery *query;
     char_u *str;
@@ -1241,7 +1242,7 @@ f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv)
+f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv UNUSED)
 {
     TSQuery *query;
 
@@ -1366,7 +1367,7 @@ range_fail:
 }
 
     void
-f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv)
+f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
 {
     TSQueryCursor	    *cursor;
     TSQuery		    *query;
