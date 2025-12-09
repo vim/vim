@@ -712,6 +712,32 @@ parser_progress_callback(TSParseState *state)
 }
 #endif
 
+    static uint32_t
+parser_decode_callback(const uint8_t *string, uint32_t length, int32_t *code_point)
+{
+    char_u *str = (char_u *)string;
+
+    if (length == 0) {
+        *code_point = 0;
+        return 0;
+    }
+    else if (has_mbyte)
+    {
+	uint32_t char_len = (uint32_t)(*mb_ptr2len_len)(str, length);
+
+	if (char_len > length) {
+	    return 0;
+	}
+
+	*code_point = (int32_t)(*mb_ptr2char)(str);
+	return (uint32_t)char_len;
+    }
+
+    // Characters are just single bytes, just set it directly
+    *code_point = *string;
+    return 1;
+}
+
     static TSTree *
 tsvim_parser_parse(
 	TSParser *parser,
@@ -735,8 +761,8 @@ tsvim_parser_parse(
     (void)timeout;
 #endif
 
-    input.decode = NULL;
-    input.encoding = TSInputEncodingUTF8;
+    input.decode = parser_decode_callback;
+    input.encoding = TSInputEncodingCustom;
     input.payload = userdata;
     input.read = read;
 
