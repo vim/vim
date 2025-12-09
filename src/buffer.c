@@ -2529,9 +2529,6 @@ free_buf_options(
 #ifdef FEAT_EVAL
     clear_string_option(&buf->b_p_tfu);
     free_callback(&buf->b_tfu_cb);
-#ifdef FEAT_TREESITTER
-    clear_string_option(&buf->b_p_tslg);
-#endif
     clear_string_option(&buf->b_p_ffu);
     free_callback(&buf->b_ffu_cb);
 #endif
