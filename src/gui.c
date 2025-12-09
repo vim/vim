@@ -4804,6 +4804,7 @@ gui_mouse_focus(int x, int y)
     char_u	st[8];
 
 #ifdef FEAT_MOUSESHAPE
+    HH_ch_log("in.");
     // Get window pointer, and update mouse shape as well.
     wp = xy2win(x, y, IGNORE_POPUP);
 #endif
@@ -4821,6 +4822,7 @@ gui_mouse_focus(int x, int y)
 	if (x < 0 || x > Columns * gui.char_width)
 	    return;
 #ifndef FEAT_MOUSESHAPE
+	HH_ch_log("in.");
 	wp = xy2win(x, y, IGNORE_POPUP);
 #endif
 	if (wp == curwin || wp == NULL)
@@ -4900,7 +4902,10 @@ gui_mouse_window(mouse_find_T popup)
     // Only use the mouse when it's on the Vim window
     if (x >= 0 && x <= Columns * gui.char_width
 	    && y >= 0 && Y_2_ROW(y) >= tabline_height())
+    {
+	HH_ch_log("in.");
 	return xy2win(x, y, popup);
+    }
     return NULL;
 }
 
@@ -4966,7 +4971,10 @@ xy2win(int x, int y, mouse_find_T popup)
     else if (!(State & MODE_CMDLINE) && wp->w_status_height > 0
 	    && row >= wp->w_height && row < wp->w_height + wp->w_status_height
 	    && msg_scrolled == 0)
+    {
+	HH_ch_log("status row:%d, col:%d", row, col);
 	update_mouseshape(SHAPE_IDX_STATUS);
+    }
     else
 	update_mouseshape(-2);
 #endif

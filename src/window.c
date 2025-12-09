@@ -9,8 +9,6 @@
 
 #include "vim.h"
 
-#define HH_ch_log(fmt,...)  // XXX: Delete later.
-
 static void cmd_with_count(char *cmd, char_u *bufp, size_t bufsize, long Prenum);
 static void win_init(win_T *newp, win_T *oldp, int flags);
 static void win_init_some(win_T *newp, win_T *oldp);
@@ -7724,10 +7722,13 @@ frame_change_statusline_height_rec(frame_T *frp)
 	if (wp->w_status_height > 0)
 	{
 	    wp->w_status_height = statusline_height(wp);
-	    if (wp->w_status_height >= frp->fr_height - p_wmh)
-		wp->w_status_height = frp->fr_height - p_wmh;
+	    if (wp->w_status_height >= frp->fr_height - wp->w_winbar_height
+		    - p_wmh)
+		wp->w_status_height = frp->fr_height - wp->w_winbar_height
+		    - p_wmh;
 
-	    win_new_height(wp, frp->fr_height - wp->w_status_height);
+	    win_new_height(wp, frp->fr_height - wp->w_status_height
+		    - wp->w_winbar_height);
 	}
     }
     else if (frp->fr_layout == FR_ROW)
