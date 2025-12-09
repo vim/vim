@@ -57,6 +57,20 @@ func Test_opaque_declaration_error()
     var r: opaque <TestOpaque> = test_opaque(1)
   END
   call v9.CheckSourceDefAndScriptFailure(lines, "E1068: No white space allowed before '<'")
+
+  let lines =<< trim END
+    var t: opque<TestOpaque> = test_opaque(1)
+  END
+  call v9.CheckSourceDefAndScriptFailure(lines, 'E1010: Type not recognized: opque<TestOpaque>')
+
+  let lines =<< trim END
+    var t: opaque<TestOpaque> = [1, 2]
+  END
+  call v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected opaque<TestOpaque> but got list<number>')
+endfunc
+
+" Test opaque properties
+func Test_opaque_properties()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
