@@ -762,8 +762,23 @@ tsvim_parser_parse(
     (void)timeout;
 #endif
 
-    input.decode = parser_decode_callback;
-    input.encoding = TSInputEncodingCustom;
+    if (enc_utf8)
+	input.encoding = TSInputEncodingUTF8;
+    else if (enc_unicode == 2)
+    {
+	int prop = enc_canon_props(p_enc);
+
+	// Can either be UTF-16 or UCS-2, make sure it is UTF-16.
+	if (prop & (ENC_ENDIAN_B | ENC_2WORD))
+	    input.encoding = TSInputEncodingUTF16BE;
+	else if (prop & (ENC_ENDIAN_L | ENC_2WORD))
+	    input.encoding = TSInputEncodingUTF16LE;
+	else
+	    input.decode = parser_decode_callback;
+    }
+    else
+	input.decode = parser_decode_callback;
+
     input.payload = userdata;
     input.read = read;
 
