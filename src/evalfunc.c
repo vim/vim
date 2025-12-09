@@ -3230,7 +3230,7 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_test_null_string},
     {"test_null_tuple",	0, 0, 0,	    NULL,
 			ret_tuple_any,	    f_test_null_tuple},
-    {"test_opaque",	2, 2, 0,	    arg2_string_number,
+    {"test_opaque",	1, 1, 0,	    arg1_number,
 			ret_opaque,	    f_test_opaque},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
 			ret_void,	    f_test_option_not_set},
