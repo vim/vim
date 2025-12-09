@@ -52,6 +52,10 @@ static long diff_algorithm = XDF_INDENT_HEURISTIC;
 
 #define LBUFLEN 50		// length of line in diff file
 
+// Max file size xdiff is eqipped to deal with. The value (1GB - 1MB) comes
+// from Git's implementation.
+#define MAX_XDIFF_SIZE (1024L * 1024 * 1023)
+
 static int diff_a_works = MAYBE; // TRUE when "diff -a" works, FALSE when it
 				 // doesn't work, MAYBE when not checked yet
 #if defined(MSWIN)
@@ -1318,6 +1322,12 @@ diff_file_internal(diffio_T *diffio)
 	emit_cfg.hunk_func = xdiff_out_indices;
     else
 	emit_cb.out_line = xdiff_out_unified;
+    if (diffio->dio_orig.din_mmfile.size > MAX_XDIFF_SIZE ||
+	diffio->dio_new.din_mmfile.size > MAX_XDIFF_SIZE)
+    {
+	emsg(_(e_problem_creating_internal_diff));
+	return FAIL;
+    }
     if (xdl_diff(&diffio->dio_orig.din_mmfile,
 		&diffio->dio_new.din_mmfile,
 		&param, &emit_cfg, &emit_cb) < 0)
