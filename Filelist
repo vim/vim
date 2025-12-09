@@ -27,6 +27,7 @@ SRC_ALL =	\
 		ci/if_feat_check.vim \
 		ci/lychee.toml \
 		ci/setup-xvfb.sh \
+		ci/build-treesitter.sh \
 		ci/remove_snap.sh \
 		ci/ddebs.list \
 		ci/pinned-pkgs \
