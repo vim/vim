@@ -315,6 +315,10 @@ gui_mch_set_rendering_options(char_u *s)
 # define SPI_SETWHEELSCROLLCHARS	0x006D
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+# define DWMWA_USE_IMMERSIVE_DARK_MODE	20
+#endif
+
 #ifndef DWMWA_CAPTION_COLOR
 # define DWMWA_CAPTION_COLOR		35
 #endif
@@ -416,6 +420,14 @@ static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENES
 static HINSTANCE hLibDwm = NULL;
 static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD);
 static void dyn_dwm_load(void);
+
+#ifdef FEAT_GUI_DARKTHEME
+
+static HINSTANCE hUxThemeLib = NULL;
+static DWORD (WINAPI *pSetPreferredAppMode)(DWORD) = NULL;
+static void (WINAPI *pFlushMenuThemes)(void) = NULL;
+static void dyn_uxtheme_load(void);
+#endif
 
     static int WINAPI
 stubGetSystemMetricsForDpi(int nIndex, UINT dpi UNUSED)
@@ -3116,6 +3128,48 @@ gui_mch_set_curtab(int nr)
 
 #endif
 
+#ifdef FEAT_GUI_DARKTHEME
+extern BOOL win10_22H2_or_later; // this is in os_win32.c
+
+    void
+gui_mch_set_dark_theme(int dark)
+{
+    if (!win10_22H2_or_later)
+	return;
+
+    if (pDwmSetWindowAttribute != NULL)
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark,
+		sizeof(dark));
+
+    if (pSetPreferredAppMode != NULL)
+	pSetPreferredAppMode(dark);
+
+    if (pFlushMenuThemes != NULL)
+	pFlushMenuThemes();
+}
+
+    static void
+dyn_uxtheme_load(void)
+{
+    hUxThemeLib = vimLoadLib("uxtheme.dll");
+    if (hUxThemeLib == NULL)
+	return;
+
+    pSetPreferredAppMode = (DWORD (WINAPI *)(DWORD))
+	GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(135));
+    pFlushMenuThemes = (void (WINAPI *)(void))
+	GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(136));
+
+    if (pSetPreferredAppMode == NULL || pFlushMenuThemes == NULL)
+    {
+	FreeLibrary(hUxThemeLib);
+	hUxThemeLib = NULL;
+	return;
+    }
+}
+
+#endif // FEAT_GUI_DARKTHEME
+
 /*
  * ":simalt" command.
  */
@@ -5645,6 +5699,10 @@ gui_mch_init(void)
 #endif
 
     load_dpi_func();
+
+#ifdef FEAT_GUI_DARKTHEME
+    dyn_uxtheme_load();
+#endif
 
     dyn_dwm_load();
 

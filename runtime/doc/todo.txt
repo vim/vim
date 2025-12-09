@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.1.  Last change: 2025 Nov 18
+*todo.txt*	For Vim version 9.1.  Last change: 2025 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -308,8 +308,6 @@ Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 
 GUI Scroll test fails on FreeBSD when using Motif.  See FIXME in
 Test_scrollbars in src/test_gui.vim
-
-Support dark mode for MS-Windows: #12282
 
 Remote command escapes single quote with backslash, should be doubling the
 single quote in vim_strsave_escaped_ext()  #12202.
