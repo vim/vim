@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Nov 27
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41757,6 +41757,9 @@ Platform specific ~
   absolute paths (to the current drive) and no longer relative.
 - MS-Windows: The title bar follows the |hl-TitleBar| and |hl-TitleBarNC|
   highlighting group |gui-w32-title-bar|.
+- MS-Windows: Vim no longer searches the current directory for
+  executables when running external commands; use a relative or absolute path
+  if you want the previous behavior |NoDefaultCurrentDirectoryInExePath|.
 - macOS: increase default scheduler priority to TASK_DEFAULT_APPLICATION.
 
 Others: ~
