@@ -1339,16 +1339,14 @@ f_test_opaque(typval_T *argvars, typval_T *rettv)
 {
     opaque_T *op;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL))
+    if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
     op = opaque_new(&test_opaque_type, sizeof(testopaque_T));
 
     if (op == NULL)
 	return;
-    ((testopaque_T *)op)->val = argvars[1].vval.v_number;
+    ((testopaque_T *)op)->val = argvars[0].vval.v_number;
     op->op_refcount++;
 
     rettv->v_type = VAR_OPAQUE;

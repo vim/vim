@@ -25,7 +25,7 @@
  * NULL/
  */
     opaque_type_T *
-lookup_opaque_type(char_u *name, size_t namelen UNUSED)
+lookup_opaque_type(char_u *name, size_t namelen)
 {
 
 #ifdef FEAT_TREESITTER
@@ -35,7 +35,7 @@ lookup_opaque_type(char_u *name, size_t namelen UNUSED)
 	    && (type = tsvim_lookup_opaque_type(name, namelen)) != NULL)
 	return type;
 #endif
-    if (STRCMP(name, "TestOpaque") == 0)
+    if (STRNCMP(name, "TestOpaque", namelen) == 0)
 	return &test_opaque_type;
     return NULL;
 }
