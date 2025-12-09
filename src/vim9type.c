@@ -2140,6 +2140,14 @@ parse_type_opaque(
 
 	*arg = temp;
 	op_len = *arg - op_type;
+
+	if (**arg != '>' || op_len <= 0)
+	{
+	    if (give_error)
+		semsg(_(e_missing_type_after_str), *arg);
+	    return NULL;
+	}
+
 	type = lookup_opaque_type(op_type, op_len);
 
 	if (type == NULL)
