@@ -717,20 +717,21 @@ parser_decode_callback(const uint8_t *string, uint32_t length, int32_t *code_poi
 {
     char_u *str = (char_u *)string;
 
-    if (length == 0) {
-        *code_point = 0;
-        return 0;
+    if (length == 0)
+    {
+	*code_point = 0;
+	return 0;
     }
     else if (has_mbyte)
     {
 	uint32_t char_len = (uint32_t)(*mb_ptr2len_len)(str, length);
 
-	if (char_len > length) {
+	if (char_len > length)
+	    // In middle of mutlibyte character
 	    return 0;
-	}
 
 	*code_point = (int32_t)(*mb_ptr2char)(str);
-	return (uint32_t)char_len;
+	return char_len;
     }
 
     // Characters are just single bytes, just set it directly
@@ -791,7 +792,7 @@ parse_buf_read_callback(
     static char buf[TSVIM_BUFSIZE];
 
     // Finish if we are past the last line
-    if (position.row >= bp->b_ml.ml_line_count)
+    if ((linenr_T)position.row >= bp->b_ml.ml_line_count)
     {
 	*bytes_read = 0;
 	return NULL;
