@@ -41759,7 +41759,7 @@ Platform specific ~
   highlighting group |gui-w32-title-bar|.
 - MS-Windows: Vim no longer searches the current directory for
   executables when running external commands; use a relative or absolute path
-  if you want the previous behavior |NoDefaultCurrentDirectoryInExePath|.
+  if you want the previous behavior |$NoDefaultCurrentDirectoryInExePath|.
 - macOS: increase default scheduler priority to TASK_DEFAULT_APPLICATION.
 
 Others: ~
