@@ -2389,7 +2389,7 @@ get_register_name(int num)
     // If there is only one clipboard, we only want the plus register to point
     // to the star register if the clipboard provider is not being used. If the
     // clipboard provider is being used, then both registers should be available
-    // no matter the plaform
+    // no matter the platform
     else if (clipmethod == CLIPMETHOD_PROVIDER && num == REAL_PLUS_REGISTER)
 	return '+';
     else if (clipmethod != CLIPMETHOD_PROVIDER && num == PLUS_REGISTER)

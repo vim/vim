@@ -3887,9 +3887,6 @@ clip_provider_paste(char_u *reg, char_u *provider)
     else
 	goto exit;
 
-    // If reg_type is "pass", then don't do anything and use the previous
-    // register contents
-    if (STRCMP(reg_type, "pass") != 0)
     {
 	char_u		yank_type = MAUTO;
 	long		block_len = -1;

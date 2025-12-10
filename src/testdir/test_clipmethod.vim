@@ -217,10 +217,6 @@ func Test_clipmethod_provider()
   clipreset
   call assert_equal("none", v:clipmethod)
 
-  let g:b_available = 0
-  clipreset
-  call assert_equal("none", v:clipmethod)
-
   let g:a_available = 1
   let g:b_available = 1
   clipreset

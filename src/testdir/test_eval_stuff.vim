@@ -752,9 +752,6 @@ func s:Paste(reg)
   elseif l:t == "invalid2"
     return ("c", ["test", [1, 2]])
 
-  elseif l:t == "pass"
-    return ("pass", [])
-
   elseif l:t == "count"
     let g:vim_paste_count[a:reg] += 1
     return ("c", ["hello"])
@@ -843,14 +840,6 @@ func Test_clipboard_provider_paste()
   let g:vim_paste = "invalid2"
   call assert_fails('call getreg("+", 1, 1)', "E730:")
   call assert_fails('call getreg("*", 1, 1)', "E730:")
-
-  " Check if special "pass" regtype works properly
-  let g:vim_paste = "list"
-  call getreg("+", 1, 1)
-  call getreg("*", 1, 1)
-  let g:vim_paste = "pass"
-  call assert_equal(["a", "list", "+"], getreg("+", 1, 1))
-  call assert_equal(["a", "list", "*"], getreg("*", 1, 1))
 
   " Test put
   new

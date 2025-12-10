@@ -5297,11 +5297,11 @@ check if the "+" is available for use, it can be checked with: >
 	if has('unnamedplus')
 <
 						*clipboard-providers-clipmethod*
-To integrate with the Vim's actual clipboard functionality, the 'clipmethod'
-option is used on all platforms.  The names of clipboard providers should be
-put inside the option, and if Vim chooses it, then it overrides the "+" and
-"*" registers.  Note that the "+" and "*" will not be saved in the viminfo at
-all.
+To integrate the providers with Vim's clipboard functionality, the
+'clipmethod' option is used on all platforms.  The names of clipboard
+providers should be put inside the option, and if Vim chooses it, then it
+overrides the "+" and "*" registers.  Note that the "+" and "*" will not be
+saved in the viminfo at all.
 
 						*clipboard-providers-define*
 To define a clipboard provider, the |v:clipproviders| vim variable is used. It
@@ -5323,8 +5323,8 @@ another |dict| declaring the "available", "copy", and "paste" callbacks: >vim
 Each callback can either be a name of a function in a string, a |Funcref|, or
 a |lambda| expression.
 
-If a callback except the "available" callback is not provided, then when Vim
-tries to call it, nothing is done.
+With the exception of the "available" callback if a callback is not provided,
+Vim will not invoke anything, and this is not an error.
 
 						*clipboard-providers-textlock*
 In both the "paste" and "copy" callbacks, it is not allowed to change the
@@ -5343,12 +5343,8 @@ The "paste" callback takes the following arguments in the following order:
 
 It should return a |list| or |tuple| containing the following elements in
 order:
-	1. Register type conforming to |setreg()|
+	1. Register type (and optional width) conforming to |setreg()|
 	2. A |list| of strings to return to Vim, each representing a line.
-
-The first element (the register type), may also have a special value of
-"pass".  In that case, Vim does nothing to the register, meaning the current
-contents become unchanged.
 
 						*clipboard-providers-copy*
 The "copy" callback returns nothing and takes the following arguments in the

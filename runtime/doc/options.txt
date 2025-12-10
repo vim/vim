@@ -1915,8 +1915,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only when the |+xterm_clipboard|, |+wayland_clipboard|,
 			or |+eval| features are included}
 	Specifies which method of accessing the system clipboard (or clipboard
-	provider) is used, depending on which method works first or is
-	available.  Supported methods are:
+	provider) is used.  Methods are tried in the order given; the first
+	working method is used.  Supported methods are:
 		wayland		Wayland selections
 		x11		X11 selections
 		<name>		Use a clipboard provider with the given name

@@ -1435,6 +1435,9 @@ expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches)
 #endif
     values = ALLOC_MULT(char *, count + 1); // Add NULL terminator too
 
+    if (values == NULL)
+	return FAIL;
+
 #ifdef FEAT_WAYLAND_CLIPBOARD
     values[pos++] = "wayland";
 #endif
