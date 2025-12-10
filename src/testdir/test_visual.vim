@@ -2824,6 +2824,7 @@ endfunc
 
 " Test visual block pos update after block insert and gv
 func Test_visual_block_pos_update()
+  new
   set virtualedit=block
   call setline(1, ['aacccc', 'bb'])
   exe "norm! e\<C-v>jAa\<Esc>gv"
