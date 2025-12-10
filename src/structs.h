@@ -2874,7 +2874,7 @@ struct redraw_listener_S
     struct
     {
 	callback_T	on_start;
-	callback_T	on_win;
+	callback_T	on_end;
     }			rl_callbacks;
 };
 #endif

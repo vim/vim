@@ -8798,21 +8798,15 @@ redraw_listener_add({opts})				*redraw_listener_add()*
 
 		    on_start	Called first on each screen redraw.  Takes no
 				arguments and returns nothing.
-		    on_win	Called when a window is being redrawn.  Takes
-				the following arguments in order:
-				    winid	the window id |window-ID|
-				    bufnr	number of buffer in the window
-				    botline	last complete displayed buffer
-						line
-				    topline	first displayed buffer line
-				The function does not take any return values.
+		    on_end	Called at the end of each screen redraw.
+				Takes no arguments and returns nothing.
 
 		A good use case for this function is with the |listener_add()|
 		callback with unbuffered set to TRUE.  This allows you to
 		modify the state on buffer changes, and finally render that
-		state just before the next redraw.  Attempting to render or
-		redraw for every single buffer change would be very
-		inefficient.
+		state just before the next redraw, only if it has changed.
+		Attempting to render or redraw for every single buffer change
+		would be very inefficient.
 
 		You may not call redraw_listener_add() during any of the
 		callbacks defined in {opts}. *E1570*

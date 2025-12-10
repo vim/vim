@@ -2131,4 +2131,5 @@ EXTERN int allow_osc_key INIT(= 0);
 #ifdef FEAT_EVAL
 // Global singly linked list of redraw listeners
 EXTERN redraw_listener_T *redraw_listeners INIT(= NULL);
+EXTERN bool inside_redraw_on_start_cb INIT(= false);
 #endif

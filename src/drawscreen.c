@@ -74,8 +74,8 @@ static int  did_update_one_window;
 #endif
 
 #ifdef FEAT_EVAL
-static void invoke_redraw_listener_start(void);
-static void invoke_redraw_listener_win(win_T *wp);
+static void redraw_listener_cleanup(void);
+static void invoke_redraw_listener_start_or_end(bool start);
 #endif
 
 /*
@@ -250,7 +250,7 @@ update_screen(int type_arg)
 #endif
 
 #ifdef FEAT_EVAL
-    invoke_redraw_listener_start();
+    invoke_redraw_listener_start_or_end(true);
 #endif
 
     // Only start redrawing if there is really something to do.
@@ -414,6 +414,12 @@ update_screen(int type_arg)
 	gui_update_scrollbars(FALSE);
     }
 #endif
+
+#ifdef FEAT_EVAL
+    invoke_redraw_listener_start_or_end(false);
+    redraw_listener_cleanup();
+#endif
+
     return OK;
 }
 
@@ -1540,10 +1546,6 @@ win_update(win_T *wp)
 	wp->w_redr_type = 0;
 	return;
     }
-
-#ifdef FEAT_EVAL
-    invoke_redraw_listener_win(wp);
-#endif
 
 #ifdef FEAT_TERMINAL
     // If this window contains a terminal, redraw works completely differently.
@@ -3198,6 +3200,13 @@ redraw_win_later(
     win_T	*wp,
     int		type)
 {
+#ifdef FEAT_EVAL
+    // If inside a redraw_listener_add() callback, then only set the redraw type
+    // for the window and not request another one right after.
+    if (inside_redraw_on_start_cb && wp->w_redr_type < type)
+	wp->w_redr_type = type;
+    else
+#endif
     if (!exiting && !redraw_not_allowed && wp->w_redr_type < type)
     {
 	wp->w_redr_type = type;
@@ -3254,7 +3263,11 @@ redraw_all_windows_later(int type)
     void
 set_must_redraw(int type)
 {
-    if (!redraw_not_allowed && must_redraw < type)
+    if (!redraw_not_allowed &&
+#ifdef FEAT_EVAL
+	    !inside_redraw_on_start_cb &&
+#endif
+	    must_redraw < type)
 	must_redraw = type;
 }
 
@@ -3425,7 +3438,7 @@ redraw_win_range_later(
 }
 
 #ifdef FEAT_EVAL
-static bool redraw_cb_recursive;
+static bool redraw_cb_in_progress = false;
 
     void
 f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
@@ -3436,7 +3449,7 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
     bool		got_one = false;
     static int		id;
 
-    if (redraw_cb_recursive)
+    if (redraw_cb_in_progress)
     {
 	emsg(_(e_cannot_add_redraw_listener_in_listener_callback));
 	return;
@@ -3454,24 +3467,39 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
     /*
      * on_start: called on each screen redraw
      *
-     * on_win: called when redrawing a window
+     * on_end: called at the end of a redraw cycle
      */
     if (dict_get_tv(dict, "on_start", &tv) == OK)
     {
-	if (rln->rl_callbacks.on_start = get_callback(&tv),
-		rln->rl_callbacks.on_start.cb_name != NULL)
-	    got_one = true;
-	else
+	callback_T cb = get_callback(&tv);
+
+	if (cb.cb_name == NULL)
+	{
 	    clear_tv(&tv);
+	    vim_free(rln);
+	    return;
+	}
+	set_callback(&rln->rl_callbacks.on_start, &cb);
+	free_callback(&cb);
+	clear_tv(&tv);
+	got_one = true;
     }
 
-    if (dict_get_tv(dict, "on_win", &tv) == OK)
+    if (dict_get_tv(dict, "on_end", &tv) == OK)
     {
-	if (rln->rl_callbacks.on_win = get_callback(&tv),
-		rln->rl_callbacks.on_win.cb_name != NULL)
-	    got_one = true;
-	else
+	callback_T cb = get_callback(&tv);
+
+	if (cb.cb_name == NULL)
+	{
 	    clear_tv(&tv);
+	    free_callback(&rln->rl_callbacks.on_start);
+	    vim_free(rln);
+	    return;
+	}
+	set_callback(&rln->rl_callbacks.on_end, &cb);
+	free_callback(&cb);
+	clear_tv(&tv);
+	got_one = true;
     }
 
     if (!got_one)
@@ -3483,7 +3511,7 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
 
     rln->rl_next = redraw_listeners;
     redraw_listeners = rln;
-    rln->rl_id = ++id;
+    rln->rl_id = ++id; // Never zero
 
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = id;
@@ -3495,29 +3523,38 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
 redraw_listener_free(redraw_listener_T *rln)
 {
     free_callback(&rln->rl_callbacks.on_start);
-    free_callback(&rln->rl_callbacks.on_win);
+    free_callback(&rln->rl_callbacks.on_end);
 
     vim_free(rln);
 }
 
+
+    static void
+redraw_listener_cleanup(void)
+{
+    for (redraw_listener_T *rln = redraw_listeners; rln != NULL;)
+    {
+	redraw_listener_T *next = rln->rl_next;
+	if (rln->rl_id == 0)
+	{
+	    if (redraw_listeners == rln)
+		redraw_listeners = rln->rl_next;
+	    redraw_listener_free(rln);
+	}
+	rln = next;
+    }
+}
+
 /*
  * Return the redraw listener struct with the specified id. Returns NULL if not
- * found. "prev" is set to the listener before the one that is found, else NULL.
+ * found.
  */
     static redraw_listener_T *
-get_redraw_listener(int id, redraw_listener_T **prev)
+get_redraw_listener(int id)
 {
-    redraw_listener_T *p = NULL;
-
     for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
-    {
 	if (rln->rl_id == id)
-	{
-	    *prev = p;
 	    return rln;
-	}
-	p = rln;
-    }
     return NULL;
 }
 
@@ -3526,13 +3563,12 @@ f_redraw_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int			id;
     redraw_listener_T	*rln;
-    redraw_listener_T	*prev;
 
     if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
     id = argvars[0].vval.v_number;
-    rln = get_redraw_listener(id, &prev);
+    rln = get_redraw_listener(id);
 
     rettv->v_type = VAR_NUMBER;
     if (rln == NULL)
@@ -3541,59 +3577,46 @@ f_redraw_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
+    // We set the id to zero instead of freeing it here, since we still need
+    // rl_next from it.
+    rln->rl_id = 0;
     rettv->vval.v_number = 1;
-    if (redraw_listeners == rln)
-	redraw_listeners = rln->rl_next;
-    if (prev != NULL)
-	prev->rl_next = rln->rl_next;
-    redraw_listener_free(rln);
 }
 
 /*
  * Invoke the on_start callbacks.
  */
     static void
-invoke_redraw_listener_start(void)
+invoke_redraw_listener_start_or_end(bool start)
 {
     typval_T argv[1];
     typval_T rettv;
 
     argv[0].v_type = VAR_UNKNOWN;
 
-    redraw_cb_recursive = true;
+    if (start)
+	inside_redraw_on_start_cb = true;
+
+    redraw_cb_in_progress = true;
     for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
     {
-	call_callback(&rln->rl_callbacks.on_start, -1, &rettv, 0, argv);
-	clear_tv(&rettv);
+	if (rln->rl_id == 0)
+	    // Listener has been removed, skip
+	    continue;
+	if (start && rln->rl_callbacks.on_start.cb_name != NULL)
+	{
+	    call_callback(&rln->rl_callbacks.on_start, -1, &rettv, 0, argv);
+	    clear_tv(&rettv);
+	}
+	else if (rln->rl_callbacks.on_end.cb_name != NULL)
+	{
+	    call_callback(&rln->rl_callbacks.on_end, -1, &rettv, 0, argv);
+	    clear_tv(&rettv);
+	}
     }
-    redraw_cb_recursive = false;
-}
+    redraw_cb_in_progress = false;
 
-/*
- * Invoke the on_win callbacks.
- */
-    static void
-invoke_redraw_listener_win(win_T *wp)
-{
-    typval_T argv[5];
-    typval_T rettv;
-
-    argv[0].v_type = VAR_NUMBER;
-    argv[0].vval.v_number = wp->w_id;
-    argv[1].v_type = VAR_NUMBER;
-    argv[1].vval.v_number = wp->w_buffer->b_fnum;
-    argv[2].v_type = VAR_NUMBER;
-    argv[2].vval.v_number = wp->w_topline;
-    argv[3].v_type = VAR_NUMBER;
-    argv[3].vval.v_number = wp->w_botline - 1;
-    argv[4].v_type = VAR_UNKNOWN;
-
-    redraw_cb_recursive = true;
-    for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
-    {
-	call_callback(&rln->rl_callbacks.on_win, -1, &rettv, 4, argv);
-	clear_tv(&rettv);
-    }
-    redraw_cb_recursive = false;
+    if (start)
+	inside_redraw_on_start_cb = false;
 }
 #endif // FEAT_EVAL
