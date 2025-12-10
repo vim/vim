@@ -1473,6 +1473,9 @@ Various:					*various-functions*
 
 	debugbreak()		interrupt a program being debugged
 
+	redraw_listener_add()	    add callbacks to listen for redraws
+	redraw_listener_remove()    remove a redraw listener
+
 ==============================================================================
 *41.7*	Defining a function
 

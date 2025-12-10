@@ -270,6 +270,7 @@ NEW_TESTS = \
 	test_quotestar \
 	test_random \
 	test_recover \
+	test_redraw_listener \
 	test_regex_char_classes \
 	test_regexp_latin \
 	test_regexp_utf8 \
@@ -544,6 +545,7 @@ NEW_TESTS_RES = \
 	test_quotestar.res \
 	test_random.res \
 	test_recover.res \
+	test_redraw_listener.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_remote.res \

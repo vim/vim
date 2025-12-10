@@ -73,6 +73,11 @@ static void redraw_custom_statusline(win_T *wp);
 static int  did_update_one_window;
 #endif
 
+#ifdef FEAT_EVAL
+static void invoke_redraw_listener_start(void);
+static void invoke_redraw_listener_win(win_T *wp);
+#endif
+
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
@@ -242,6 +247,10 @@ update_screen(int type_arg)
 	   && curwin->w_nrwidth != ((curwin->w_p_nu || curwin->w_p_rnu)
 				    ? number_width(curwin) : 0))
 	curwin->w_redr_type = UPD_NOT_VALID;
+#endif
+
+#ifdef FEAT_EVAL
+    invoke_redraw_listener_start();
 #endif
 
     // Only start redrawing if there is really something to do.
@@ -1531,6 +1540,10 @@ win_update(win_T *wp)
 	wp->w_redr_type = 0;
 	return;
     }
+
+#ifdef FEAT_EVAL
+    invoke_redraw_listener_win(wp);
+#endif
 
 #ifdef FEAT_TERMINAL
     // If this window contains a terminal, redraw works completely differently.
@@ -3410,3 +3423,177 @@ redraw_win_range_later(
 	redraw_win_later(wp, UPD_VALID);
     }
 }
+
+#ifdef FEAT_EVAL
+static bool redraw_cb_recursive;
+
+    void
+f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
+{
+    redraw_listener_T	*rln;
+    dict_T		*dict;
+    typval_T		tv;
+    bool		got_one = false;
+    static int		id;
+
+    if (redraw_cb_recursive)
+    {
+	emsg(_(e_cannot_add_redraw_listener_in_listener_callback));
+	return;
+    }
+
+    if (check_for_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    rln = ALLOC_CLEAR_ONE(redraw_listener_T);
+
+    if (rln == NULL)
+	return;
+    dict = argvars[0].vval.v_dict;
+
+    /*
+     * on_start: called on each screen redraw
+     *
+     * on_win: called when redrawing a window
+     */
+    if (dict_get_tv(dict, "on_start", &tv) == OK)
+    {
+	if (rln->rl_callbacks.on_start = get_callback(&tv),
+		rln->rl_callbacks.on_start.cb_name != NULL)
+	    got_one = true;
+	else
+	    clear_tv(&tv);
+    }
+
+    if (dict_get_tv(dict, "on_win", &tv) == OK)
+    {
+	if (rln->rl_callbacks.on_win = get_callback(&tv),
+		rln->rl_callbacks.on_win.cb_name != NULL)
+	    got_one = true;
+	else
+	    clear_tv(&tv);
+    }
+
+    if (!got_one)
+    {
+	emsg(_(e_no_redraw_listener_callbacks_defined));
+	vim_free(rln);
+	return;
+    }
+
+    rln->rl_next = redraw_listeners;
+    redraw_listeners = rln;
+    rln->rl_id = ++id;
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = id;
+
+    return;
+}
+
+    static void
+redraw_listener_free(redraw_listener_T *rln)
+{
+    free_callback(&rln->rl_callbacks.on_start);
+    free_callback(&rln->rl_callbacks.on_win);
+
+    vim_free(rln);
+}
+
+/*
+ * Return the redraw listener struct with the specified id. Returns NULL if not
+ * found. "prev" is set to the listener before the one that is found, else NULL.
+ */
+    static redraw_listener_T *
+get_redraw_listener(int id, redraw_listener_T **prev)
+{
+    redraw_listener_T *p = NULL;
+
+    for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
+    {
+	if (rln->rl_id == id)
+	{
+	    *prev = p;
+	    return rln;
+	}
+	p = rln;
+    }
+    return NULL;
+}
+
+    void
+f_redraw_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    int			id;
+    redraw_listener_T	*rln;
+    redraw_listener_T	*prev;
+
+    if (check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = argvars[0].vval.v_number;
+    rln = get_redraw_listener(id, &prev);
+
+    rettv->v_type = VAR_NUMBER;
+    if (rln == NULL)
+    {
+	rettv->vval.v_number = 0;
+	return;
+    }
+
+    rettv->vval.v_number = 1;
+    if (redraw_listeners == rln)
+	redraw_listeners = rln->rl_next;
+    if (prev != NULL)
+	prev->rl_next = rln->rl_next;
+    redraw_listener_free(rln);
+}
+
+/*
+ * Invoke the on_start callbacks.
+ */
+    static void
+invoke_redraw_listener_start(void)
+{
+    typval_T argv[1];
+    typval_T rettv;
+
+    argv[0].v_type = VAR_UNKNOWN;
+
+    redraw_cb_recursive = true;
+    for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
+    {
+	call_callback(&rln->rl_callbacks.on_start, -1, &rettv, 0, argv);
+	clear_tv(&rettv);
+    }
+    redraw_cb_recursive = false;
+}
+
+/*
+ * Invoke the on_win callbacks.
+ */
+    static void
+invoke_redraw_listener_win(win_T *wp)
+{
+    typval_T argv[5];
+    typval_T rettv;
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = wp->w_id;
+    argv[1].v_type = VAR_NUMBER;
+    argv[1].vval.v_number = wp->w_buffer->b_fnum;
+    argv[2].v_type = VAR_NUMBER;
+    argv[2].vval.v_number = wp->w_topline;
+    argv[3].v_type = VAR_NUMBER;
+    argv[3].vval.v_number = wp->w_botline - 1;
+    argv[4].v_type = VAR_UNKNOWN;
+
+    redraw_cb_recursive = true;
+    for (redraw_listener_T *rln = redraw_listeners; rln != NULL; rln = rln->rl_next)
+    {
+	call_callback(&rln->rl_callbacks.on_win, -1, &rettv, 4, argv);
+	clear_tv(&rettv);
+    }
+    redraw_cb_recursive = false;
+}
+#endif // FEAT_EVAL
