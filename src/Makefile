@@ -2982,6 +2982,7 @@ clean celan: testclean
 	fi
 	cd xxd; $(MAKE) clean
 	cd auto/wayland; $(MAKE) clean
+	cd treesitter; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
@@ -3684,7 +3685,7 @@ objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable
 	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
 
 objects/treesitter.o: treesitter.c
-	$(CCC) $(TREESITTER_CFLAGS) $(TREESITTER_CPPFLAGS) -o $@ treesitter.c
+	$(CCC) $(TREESITTER_CFLAGS) -o $@ treesitter.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -3695,6 +3696,9 @@ objects/channel.o: channel.c
 # Dependencies that "make depend" doesn't find
 objects/gui_gtk_x11.o: version.h
 
+# We use our in-tree Treesitter provided Makefile to build the library
+treesitter/libtree-sitter.a:
+	cd treesitter; CFLAGS= $(MAKE) static
 
 # Build rules for libvterm.  Putting them here allows for adding compilation
 # options specific for Vim.  Since the .o files go into objects/ we do need to
