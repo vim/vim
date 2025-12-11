@@ -52,14 +52,10 @@ export def Available(): bool
   return false
 enddef
 
-export def Paste(reg: string): any
-  # Call without a letter (which indicates the selection type in X11), if there
-  # is only one clipboard. Adding a letter also seems to break functionality on
-  # Windows terminal.
-  #
+export def Paste(reg: string): tuple<string, list<string>>
   # Some terminals like Kitty respect the selection type parameter on both X11
-  # and Wayland, from Xterm docs:
-
+  # and Wayland. If the terminal doesn't then the selection type parameter
+  # should be ignored (no-op)
   if reg == "+"
     echoraw("\<Esc>]52;c;?\<Esc>\\")
   else
