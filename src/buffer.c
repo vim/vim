@@ -516,6 +516,10 @@ can_unload_buffer(buf_T *buf)
 		break;
 	    }
     }
+    // Don't unload the buffer while it's still being saved
+    if (can_unload && buf->b_saving)
+	can_unload = FALSE;
+
     if (!can_unload)
     {
 	char_u *fname = buf->b_fname != NULL ? buf->b_fname : buf->b_ffname;
