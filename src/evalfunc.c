@@ -1330,6 +1330,7 @@ static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
 static argcheck_T arg1_tstree[] = {arg_tstree};
 static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
+static argcheck_T arg1_tsquery[] = {arg_tsquery};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
@@ -3284,6 +3285,8 @@ static const funcentry_T global_functions[] =
 			ret_void,	    TS_FUNC(f_tsquery_disable_capture)},
     {"tsquery_disable_pattern",	2, 2, FEARG_1, arg2_tsquery_number,
 			ret_void,	    TS_FUNC(f_tsquery_disable_pattern)},
+    {"tsquery_inspect", 1, 1, FEARG_1,	    arg1_tsquery,
+			ret_dict_any,	    TS_FUNC(f_tsquery_inspect)},
     {"tsquery_new",	2, 2, 0,	    arg2_string,
 			TS_OPRET(ret_tsquery), TS_FUNC(f_tsquery_new)},
     {"tsquerycursor_exec", 3, 3, FEARG_1,   arg3_tsquerycursor_tsquery_tsnode,

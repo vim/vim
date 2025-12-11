@@ -1300,6 +1300,176 @@ f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv UNUSED)
     ts_query_disable_pattern(query, argvars[1].vval.v_number);
 }
 
+/*
+ * Get the predicates/directives and captures for the given query.
+ */
+    void
+f_tsquery_inspect(typval_T *argvars, typval_T *rettv)
+{
+    TSQuery *query;
+    dict_T  *dict;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquery_type) == FAIL)
+	return;
+
+    query = OP2TSQUERY(argvars[0].vval.v_opaque)->query;
+
+   /*
+    * The dictionary returned is in the following format:
+    *
+    * {
+    *   captures = (
+    *	   "capture", ...
+    *   ),
+    *   patterns = (
+    *	  '1': [
+    *	    [ <predicate/directive>, <args> ],
+    *	    ...
+    *     ]
+    *   )
+    * }
+    */
+    dict = dict_alloc();
+
+    if (dict == NULL)
+	return;
+
+    // Get captures and save them in the dictionary
+    {
+	uint32_t    n = ts_query_capture_count(query);
+	tuple_T	    *captures = tuple_alloc_with_items(n);
+
+	if (captures == NULL)
+	    goto fail;
+
+	for (uint32_t i = 0; i < n; i++)
+	{
+	    uint32_t	length;
+	    char_u	*name = vim_strsave((char_u *)
+				ts_query_capture_name_for_id(query, i, &length));
+
+	    if (name == NULL)
+		goto captures_fail;
+	    tuple_set_string(captures, i, name);
+	}
+
+	if (dict_add_tuple(dict, "captures", captures) == FAIL)
+	{
+captures_fail:
+	    tuple_unref(captures);
+	    goto fail;
+	}
+    }
+
+    // Get predicates/directives and save them in the dictionary
+    {
+	uint32_t    n = ts_query_pattern_count(query);
+	dict_T	    *patterns = dict_alloc();
+	char	    buf[NUMBUFLEN + 1];
+
+	if (patterns == NULL)
+	    goto fail;
+
+	for (uint32_t i = 0; i < n; i++)
+	{
+	    // Each pattern is a list that may contain multiple lists, each
+	    // representing a predicate or directive.
+	    uint32_t			len;
+	    const TSQueryPredicateStep	*step;
+	    list_T			*pattern;
+	    list_T			*p = NULL;
+
+	    step = ts_query_predicates_for_pattern(query, (uint32_t)i, &len);
+	    if (len == 0)
+		continue;
+
+	    pattern = list_alloc();
+
+	    if (pattern == NULL)
+		goto patterns_fail;
+
+	    // Add each step of the predicate/directive to the list. Each
+	    // series of steps that represent a predicate/directive is
+	    // terminated with TSQueryPredicateStepTypeDone.
+	    for (uint32_t k = 0; k < len; k++)
+	    {
+		typval_T tv;
+
+		if (p == NULL)
+		{
+		    p = list_alloc();
+
+		    if (p == NULL)
+		    {
+			list_unref(pattern);
+			goto patterns_fail;
+		    }
+		}
+
+		switch (step[k].type)
+		{
+		    case TSQueryPredicateStepTypeString:
+		    {
+			uint32_t    slen; // Must be provided for value_for_id()
+			const char  *str = ts_query_string_value_for_id(
+					    query, step[k].value_id, &slen);
+
+			tv.v_type = VAR_STRING;
+			tv.vval.v_string = (char_u *)str;
+		    }
+			break;
+		    case TSQueryPredicateStepTypeCapture:
+			tv.v_type = VAR_NUMBER;
+			tv.vval.v_number = step[k].value_id;
+			break;
+		    case TSQueryPredicateStepTypeDone:
+		    {
+			if (list_append_list(pattern, p) == FAIL)
+			{
+			    list_unref(p);
+			    list_unref(pattern);
+			    goto patterns_fail;
+			}
+			p = NULL;
+		    }
+			continue;
+		}
+		if (list_append_tv(p, &tv) == FAIL)
+		{
+		    list_unref(p);
+		    list_unref(pattern);
+		    goto patterns_fail;
+		}
+	    }
+	    // Add pattern tuple to patterns tuple
+	    sprintf(buf, "%d", i);
+	    if (dict_add_list(patterns, buf, pattern) == FAIL)
+	    {
+		list_unref(pattern);
+		goto patterns_fail;
+	    }
+	}
+
+	if (dict_add_dict(dict, "patterns", patterns) == FAIL)
+	{
+patterns_fail:
+	    dict_unref(patterns);
+	    goto fail;
+	}
+    }
+
+
+    dict->dv_refcount++;
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = dict;
+    return;
+fail:
+    dict_unref(dict);
+}
+
     void
 f_tsquerycursor_new(typval_T *argvars, typval_T *rettv)
 {
