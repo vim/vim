@@ -15,7 +15,7 @@
 
 #ifdef FEAT_TREESITTER
 
-#include <tree_sitter/api.h>
+#include "tree_sitter/api.h"
 
 #ifdef MSWIN
 # define load_dll vimLoadLib

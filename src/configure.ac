@@ -2434,40 +2434,74 @@ dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
 AC_MSG_CHECKING(--enable-treesitter argument)
 AC_ARG_ENABLE(treesitter,
-	[  --enable-treesitter     Include Treesitter integration.], ,
-	[enable_treesitter="auto"])
-AC_MSG_RESULT($enable_treesitter)
+	[  --enable-treesitter[=OPTS]   Include Tree-sitter integration. [default=no] [OPTS=no/yes/system]],
+    [enable_treesitter=$enableval],
+    [enable_treesitter=auto])
 
-if test "$enable_treesitter" == auto || "$enable_treesitter" == yes; then
-  cppflags_save=$CPPFLAGS
-  cflags_save=$CFLAGS
+if test "$enable_treesitter" = "yes" || test "$enable_treesitter" = "auto" -a "x$features" = "xhuge" ; then
+  if test "$has_eval" = "no"; then
+    AC_MSG_RESULT([cannot use treesitter with tiny features])
+    enable_treesitter="no"
+  else
+    if test "$enable_treesitter" = "auto"; then
+      enable_treesitter="yes"
+      AC_MSG_RESULT(defaulting to yes)
+    else
+      AC_MSG_RESULT(yes)
+    fi
+  fi
+else
+  if test "$enable_treesitter" = "auto"; then
+    enable_treesitter="no"
+    AC_MSG_RESULT(defaulting to no)
+  else
+    if test "$enable_treesitter" = "shared"; then
+      AC_MSG_RESULT(using system library)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+fi
 
-  AC_MSG_CHECKING(for treesitter)
+if test "$enable_treesitter" = yes || test "$enable_treesitter" = system; then
+  if test "$enable_treesitter" = system; then
+    AC_MSG_CHECKING(for treesitter)
 
-  if "$PKG_CONFIG" --exists 'tree-sitter'; then
-    AC_MSG_RESULT([yes])
+    if "$PKG_CONFIG" --exists 'tree-sitter'; then
+      AC_MSG_RESULT([yes])
+
+      AC_DEFINE(FEAT_TREESITTER)
+
+      TREESITTER_CFLAGS=`$PKG_CONFIG --cflags tree-sitter`
+      TREESITTER_LIBS=`$PKG_CONFIG --libs tree-sitter`
+      TREESITTER_SRC="treesitter.c"
+      TREESITTER_OBJ="objects/treesitter.o"
+
+      AC_SUBST(TREESITTER_CPPFLAGS)
+      AC_SUBST(TREESITTER_CFLAGS)
+      AC_SUBST(TREESITTER_LIBS)
+      AC_SUBST(TREESITTER_SRC)
+      AC_SUBST(TREESITTER_OBJ)
+    else
+      AC_MSG_RESULT(no)
+      enable_treesitter=no
+    fi
+  else
+    dnl use in-tree version
 
     AC_DEFINE(FEAT_TREESITTER)
 
-    TREESITTER_CPPFLAGS=`$PKG_CONFIG --cflags-only-I tree-sitter`
-    TREESITTER_CFLAGS=`$PKG_CONFIG --cflags-only-other tree-sitter`
-    CPPFLAGS="$CPPFLAGS $TREESITTER_CPPFLAGS"
-    CFLAGS="$CFLAGS $TREESITTER_CFLAGS"
-    TREESITTER_LIBS=`$PKG_CONFIG --libs tree-sitter`
+    TREESITTER_CFLAGS="-Itreesitter/lib/include"
+    TREESITTER_LIBS=""
     TREESITTER_SRC="treesitter.c"
-    TREESITTER_OBJ="objects/treesitter.o"
+    TREESITTER_OBJ="objects/treesitter.o treesitter/libtree-sitter.a"
 
     AC_SUBST(TREESITTER_CPPFLAGS)
     AC_SUBST(TREESITTER_CFLAGS)
     AC_SUBST(TREESITTER_LIBS)
     AC_SUBST(TREESITTER_SRC)
     AC_SUBST(TREESITTER_OBJ)
-  else
-    AC_MSG_RESULT(no)
-    enable_treesitter=no
   fi
-  CPPFLAGS=$cppflags_save
-  CFLAGS=$cflags_save
 fi
 
 

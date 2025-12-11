@@ -1545,7 +1545,7 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-treesitter     Include Treesitter integration.
+  --enable-treesitter=OPTS   Include Tree-sitter integration. default=no OPTS=no/yes/system
   --enable-wayland-focus-steal
                           Include focus stealing support for Wayland
                           clipboard.
@@ -9216,49 +9216,87 @@ printf %s "checking --enable-treesitter argument... " >&6; }
 # Check whether --enable-treesitter was given.
 if test ${enable_treesitter+y}
 then :
-  enableval=$enable_treesitter;
+  enableval=$enable_treesitter; enable_treesitter=$enableval
 else case e in #(
-  e) enable_treesitter="auto" ;;
+  e) enable_treesitter=auto ;;
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_treesitter" >&5
-printf "%s\n" "$enable_treesitter" >&6; }
 
-if test "$enable_treesitter" == auto || "$enable_treesitter" == yes; then
-  cppflags_save=$CPPFLAGS
-  cflags_save=$CFLAGS
+if test "$enable_treesitter" = "yes" || test "$enable_treesitter" = "auto" -a "x$features" = "xhuge" ; then
+  if test "$has_eval" = "no"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use treesitter with tiny features" >&5
+printf "%s\n" "cannot use treesitter with tiny features" >&6; }
+    enable_treesitter="no"
+  else
+    if test "$enable_treesitter" = "auto"; then
+      enable_treesitter="yes"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: defaulting to yes" >&5
+printf "%s\n" "defaulting to yes" >&6; }
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    fi
+  fi
+else
+  if test "$enable_treesitter" = "auto"; then
+    enable_treesitter="no"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: defaulting to no" >&5
+printf "%s\n" "defaulting to no" >&6; }
+  else
+    if test "$enable_treesitter" = "shared"; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: using system library" >&5
+printf "%s\n" "using system library" >&6; }
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    fi
+  fi
+fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for treesitter" >&5
+if test "$enable_treesitter" = yes || test "$enable_treesitter" = system; then
+  if test "$enable_treesitter" = system; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for treesitter" >&5
 printf %s "checking for treesitter... " >&6; }
 
-  if "$PKG_CONFIG" --exists 'tree-sitter'; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    if "$PKG_CONFIG" --exists 'tree-sitter'; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
+
+      printf "%s\n" "#define FEAT_TREESITTER 1" >>confdefs.h
+
+
+      TREESITTER_CFLAGS=`$PKG_CONFIG --cflags tree-sitter`
+      TREESITTER_LIBS=`$PKG_CONFIG --libs tree-sitter`
+      TREESITTER_SRC="treesitter.c"
+      TREESITTER_OBJ="objects/treesitter.o"
+
+
+
+
+
+
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      enable_treesitter=no
+    fi
+  else
 
     printf "%s\n" "#define FEAT_TREESITTER 1" >>confdefs.h
 
 
-    TREESITTER_CPPFLAGS=`$PKG_CONFIG --cflags-only-I tree-sitter`
-    TREESITTER_CFLAGS=`$PKG_CONFIG --cflags-only-other tree-sitter`
-    CPPFLAGS="$CPPFLAGS $TREESITTER_CPPFLAGS"
-    CFLAGS="$CFLAGS $TREESITTER_CFLAGS"
-    TREESITTER_LIBS=`$PKG_CONFIG --libs tree-sitter`
+    TREESITTER_CFLAGS="-Itreesitter/lib/include"
+    TREESITTER_LIBS=""
     TREESITTER_SRC="treesitter.c"
-    TREESITTER_OBJ="objects/treesitter.o"
+    TREESITTER_OBJ="objects/treesitter.o treesitter/libtree-sitter.a"
 
 
 
 
 
 
-  else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    enable_treesitter=no
   fi
-  CPPFLAGS=$cppflags_save
-  CFLAGS=$cflags_save
 fi
 
 
