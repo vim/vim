@@ -34,9 +34,9 @@ then it is up to the terminal to handle what selection to use.
 
 The osc52.vim plugin relys on Vim's clipboard provider functionality, see
 |clipboard-providers|.  In short, add these commands to your vimrc to get
-everything working: >
-        packadd osc52
-        set clipmethod^=osc52
+everything working: >vim
+        :packadd osc52
+        :set clipmethod^=osc52
 <
                                                         *g:osc52_force_avail*
 In most cases, the plugin should automatically detect and work if your
