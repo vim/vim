@@ -375,7 +375,7 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_WAYLAND)
 # define ex_wlrestore		ex_ni
 #endif
-#if !defined(FEAT_CLIPBOARD)
+#if !defined(HAVE_CLIPMETHOD)
 # define ex_clipreset		ex_ni
 #endif
 #if !defined(FEAT_PROP_POPUP)
@@ -2372,7 +2372,7 @@ do_one_cmd(
 	    && (!IS_USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
 	    && !((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
-#ifndef FEAT_CLIPBOARD
+#if !defined(FEAT_CLIPBOARD) && !defined(FEAT_CLIPBOARD_PROVIDER)
 	// check these explicitly for a more specific error message
 	if (*ea.arg == '*' || *ea.arg == '+')
 	{
@@ -10404,6 +10404,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     start_global_changes();
 # endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
+#endif
 
     // First set the marks for all lines closed/open.
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
@@ -10416,6 +10419,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     end_global_changes();
 # endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
+#endif
 }
 #endif
 

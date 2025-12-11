@@ -536,6 +536,9 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     start_global_changes();
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
+#endif
 
     if (eap->cmdidx == CMD_windo
 	    || eap->cmdidx == CMD_tabdo
@@ -759,6 +762,9 @@ ex_listdo(exarg_T *eap)
 #endif
 #ifdef FEAT_CLIPBOARD
     end_global_changes();
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
 #endif
 }
 

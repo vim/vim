@@ -168,6 +168,7 @@ static struct vimvar
     {VV_NAME("termda1",		 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termosc",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("vim_did_init",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("clipproviders",	 VAR_DICT), NULL, VV_RO},
 };
 
 // shorthand

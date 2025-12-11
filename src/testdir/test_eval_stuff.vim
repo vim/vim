@@ -727,4 +727,360 @@ func Test_eval_string_in_special_key()
   silent! echo 0{1-$"\<S--{>n|nö% 
 endfunc
 
+func s:Available()
+  return get(g:, "vim_cp_available", v:true)
+endfunc
+
+func s:Paste(reg)
+  let l:t = g:vim_paste
+
+  if l:t == "tuple"
+    return ("c", ["a", "tuple", a:reg])
+
+  elseif l:t == "list"
+    return ["c", ["a", "list", a:reg]]
+
+  elseif l:t == "block"
+    return ("b40", ["a", "block"])
+
+  elseif l:t == "empty"
+    return ("c", [])
+
+  elseif l:t == "invalid"
+    return ("INVALID", [])
+
+  elseif l:t == "invalid2"
+    return ("c", ["test", [1, 2]])
+
+  elseif l:t == "count"
+    let g:vim_paste_count[a:reg] += 1
+    return ("c", ["hello"])
+
+  elseif l:t == "store"
+    let l:s = get(g:, "vim_reg_store", [])
+
+    if (len(l:s) > 0)
+      return (l:s[0], l:s[1])
+    else
+      return ("c", [])
+    endif
+
+  endif
+endfunc
+
+func s:Copy(reg, type, lines)
+  if exists("g:vim_copy_count")
+    let g:vim_copy_count[a:reg] += 1
+  endif
+
+  let g:vim_copy = {
+        \ "reg": a:reg,
+        \ "type": a:type,
+        \ "lines": a:lines
+        \ }
+  let g:vim_reg_store = (a:type, a:lines)
+endfunc
+
+func Test_clipboard_provider_available()
+  let g:vim_cp_available = v:true
+
+  let v:clipproviders["test"] = {
+        \ "available": function("s:Available"),
+        \ }
+  set clipmethod=test
+
+  call assert_equal("test", v:clipmethod)
+
+  let g:vim_cp_available = v:false
+  clipreset
+  call assert_notequal("test", v:clipmethod)
+
+  " Invalid return value
+  let g:vim_cp_available = "invalid"
+  call assert_fails('set clipmethod=test', "E474:")
+  call assert_notequal("test", v:clipmethod)
+
+  let v:clipproviders["test"] = {}
+  clipreset
+  " Should default to TRUE
+  call assert_equal("test", v:clipmethod)
+
+  set clipmethod&
+endfunc
+
+func Test_clipboard_provider_paste()
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   }
+        \ }
+  set clipmethod=test
+
+  let g:vim_paste = "tuple"
+  call assert_equal(["a", "tuple", "+"], getreg("+", 1, 1))
+  call assert_equal(["a", "tuple", "*"], getreg("*", 1, 1))
+
+  let g:vim_paste = "list"
+  call assert_equal(["a", "list", "+"], getreg("+", 1, 1))
+  call assert_equal(["a", "list", "*"], getreg("*", 1, 1))
+
+  let g:vim_paste = "block"
+  call assert_equal("40", getregtype("+"))
+  call assert_equal("40", getregtype("*"))
+
+  let g:vim_paste = "empty"
+  call assert_equal([], getreg("+", 1, 1))
+  call assert_equal([], getreg("*", 1, 1))
+
+  let g:vim_paste = "invalid"
+  call assert_fails('call getreg("+", 1, 1)', "E474:")
+  call assert_fails('call getreg("*", 1, 1)', "E474:")
+
+  let g:vim_paste = "invalid2"
+  call assert_fails('call getreg("+", 1, 1)', "E730:")
+  call assert_fails('call getreg("*", 1, 1)', "E730:")
+
+  " Test put
+  new
+
+  let g:vim_paste = "tuple"
+  put! *
+
+  call assert_equal(["a", "tuple", "*"], getline(1, 3))
+
+  put +
+
+  call assert_equal(["a", "tuple", "+"], getline(4, 6))
+
+  bw!
+
+  set clipmethod&
+endfunc
+
+func Test_clipboard_provider_copy()
+  let v:clipproviders["test"] = {
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  " Test charwise
+  call setreg("+", ["hello", "world!"], "c")
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("v", g:vim_copy.type)
+
+  call setreg("*", ["hello", "world!"], "c")
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("v", g:vim_copy.type)
+
+  " Test linewise
+  call setreg("+", ["hello", "world!"], "l")
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  call setreg("*", ["hello", "world!"], "l")
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  " Test blockwise
+  call setreg("+", ["hello", "world!"], "b40")
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("40", g:vim_copy.type)
+
+  call setreg("*", ["hello", "world!"], "b40")
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["hello", "world!"], g:vim_copy.lines)
+  call assert_equal("40", g:vim_copy.type)
+
+  " Test yanking
+  new
+
+  call setline(1, "TESTING")
+  yank *
+
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["TESTING"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  call setline(1, "TESTING2")
+  yank +
+
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["TESTING2"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  bw!
+
+  set clipmethod&
+endfunc
+
+" Test on platforms where only the * register is available (+ points to *),
+" and that the clipboard provider feature exposes the + register only when
+" clipmethod is set to a provider. If not, then the plus register points to the
+" star register like normal.
+func Test_clipboard_provider_no_unamedplus()
+  CheckNotFeature unnamedplus
+  CheckFeature clipboard_working
+
+  let g:vim_paste = "store"
+  let v:clipproviders["test"] = {}
+  set clipmethod=test
+
+  call assert_equal(1, has('unnamedplus'))
+
+  call setreg("+", ["plus"], "c")
+  call setreg("*", ["star"], "c")
+  call assert_equal("plus", getreg("+"))
+  call assert_equal("star", getreg("*"))
+
+  set clipmethod=
+  call assert_equal(0, has('unnamedplus'))
+
+  call setreg("+", ["plus2"], "c")
+  call setreg("*", ["star2"], "c")
+  call assert_equal("star2", getreg("+"))
+  call assert_equal("star2", getreg("*"))
+
+  set clipmethod&
+endfunc
+
+" Same as Test_clipboard_provider_registers() but do it when +clipboard isnt
+" enabled.
+func Test_clipboard_provider_no_clipboard()
+  CheckNotFeature clipboard
+
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+
+  call assert_fails('call setreg("+", "")', 'E354:')
+  call assert_fails('call setreg("*", "")', 'E354:')
+
+  let g:vim_paste = "tuple"
+  set clipmethod=test
+
+  call assert_equal(["a", "tuple", "+"], getreg("+", 1, 1))
+  call assert_equal(["a", "tuple", "*"], getreg("*", 1, 1))
+
+  set clipmethod&
+endfunc
+
+" Test if clipboard provider feature doesn't break existing clipboard
+" functionality.
+func Test_clipboard_provider_sys_clipboard()
+  CheckFeature clipboard_working
+
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+
+  call setreg("*", "hello world from the * register!", "c")
+  call assert_equal("hello world from the * register!", getreg("*"))
+  call setreg("+", "hello world from the + register!", "c")
+  call assert_equal("hello world from the + register!", getreg("+"))
+
+  let g:vim_paste = "tuple"
+  set clipmethod=test
+
+  call assert_equal(1, has('clipboard_working'))
+  call setreg("*", "hello world!", "c")
+  call assert_equal(["a", "tuple", "*"], getreg("*", 1, 1))
+  call assert_equal(["a", "tuple", "+"], getreg("+", 1, 1))
+
+  new
+  call setline(1, "TESTING")
+  yank *
+
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["TESTING"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  put *
+
+  call assert_equal(["TESTING", "a", "tuple", "*"], getline(1, 4))
+  bw!
+
+  set clipmethod&
+
+  call setreg("*", "testing 1 2 3", "c")
+  call assert_equal("testing 1 2 3", getreg("*"))
+  call setreg("+", "testing 1 2 3 4 5", "c")
+  call assert_equal("testing 1 2 3 4 5", getreg("+"))
+
+  set clipmethod&
+endfunc
+
+" Test if the provider callback are only called once per register on operations
+" that may try calling them multiple times.
+func Test_clipboard_provider_accessed_once()
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  let g:vim_paste = "count"
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  " Test if the paste callback is only called once per register when the
+  " :registers/:display cmd is run.
+  for i in range(1, 10)
+    registers
+
+    call assert_equal(i, g:vim_paste_count['*'])
+    call assert_equal(i, g:vim_paste_count['+'])
+  endfor
+
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  " Test same for :global
+  new
+
+  call setline(1, "The quick brown fox jumps over the lazy dog")
+  call execute(':global/quick/:put +')
+  call execute(':global/quick/:put *')
+
+  call assert_equal(1, g:vim_paste_count['+'])
+  call assert_equal(1, g:vim_paste_count['*'])
+
+  call execute(':global/quick/:yank +')
+  call execute(':global/quick/:yank *')
+
+  call assert_equal(1, g:vim_copy_count['+'])
+  call assert_equal(1, g:vim_copy_count['*'])
+
+  bw!
+  set clipmethod&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

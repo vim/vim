@@ -632,7 +632,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"clipmethod", "cpm",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
 			    {(char_u *)"wayland,x11", (char_u *)0L}

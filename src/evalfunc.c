@@ -6868,6 +6868,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"clipboard_provider",
+#ifdef FEAT_CLIPBOARD_PROVIDER
+		1
+#else
+		0
+#endif
+		},
 	{"cmdline_compl", 1},
 	{"cmdline_hist", 1},
 	{"cmdwin", 1},
@@ -7565,14 +7572,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"unnamedplus",
-#if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
-	|| defined(FEAT_WAYLAND_CLIPBOARD))
-		1
-#else
-		0
-#endif
-		},
 	{"user-commands", 1},    // was accidentally included in 5.4
 	{"user_commands", 1},
 	{"vartabs",
@@ -7918,7 +7917,27 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
-	    n = clip_star.available;
+	    n = clipmethod == CLIPMETHOD_PROVIDER ? TRUE : clip_star.available;
+#endif
+	}
+	else if (STRICMP(name, "unnamedplus") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_CLIPBOARD
+	    // The + register is available when clipmethod is set to a provider,
+	    // but becomes unavailable if on a platform that doesn't support it
+	    // and clipmethod is "none".
+	    // (Windows, MacOS).
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+	    n = TRUE;
+# elif defined(FEAT_EVAL)
+	    if (clipmethod == CLIPMETHOD_PROVIDER)
+		n = TRUE;
+	    else
+		n = FALSE;
+# else
+	    n = FALSE;
+# endif
 #endif
 	}
     }
@@ -11493,7 +11512,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 /*
  * Translate a register type string to the yank type and block length
  */
-    static int
+    int
 get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
 {
     char_u *stropt = *pp;
