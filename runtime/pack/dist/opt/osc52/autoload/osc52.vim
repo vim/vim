@@ -1,5 +1,18 @@
 vim9script
 
+var sent_message: bool = false
+
+def OSCMessage(id: number)
+  echom "Waiting for OSC52 response... Press CTRL-C to quit"
+  sent_message = true
+enddef
+
+def DA1Message(id: number)
+  echom "Waiting for DA1 response... Press CTRL-C to quit"
+  sent_message = true
+enddef
+
+
 export def Available(): bool
   if get(g:, 'osc52_force_avail', 0)
     return true
@@ -14,8 +27,21 @@ export def Available(): bool
 
   # Send request and wait for DA1 response from terminal
   call echoraw("\<Esc>[c")
-  while getcharstr(-1, {cursor: "hide"}) != "\<xCSI>" && !g:vimosc52_gotda1
+
+  var timerid: number = timer_start(1000, DA1Message)
+
+  while true
+    if getcharstr(-1, {cursor: "hide"}) == "\<xCSI>" && g:vimosc52_gotda1
+      break
+    endif
   endwhile
+
+  timer_stop(timerid)
+  if sent_message
+    sent_message = false
+    :redraw
+  endif
+
   autocmd! VimOSC52DA1
   unlet g:vimosc52_gotda1
 
@@ -40,12 +66,20 @@ export def Paste(reg: string): any
     echoraw("\<Esc>]52;p;?\<Esc>\\")
   endif
 
+  var timerid: number = timer_start(1000, OSCMessage)
+
   # Wait for response from terminal
   while true
     if getcharstr(-1, {cursor: "hide"}) == "\<xOSC>" && match(v:termosc, '52;') != -1
       break
     endif
   endwhile
+
+  timer_stop(timerid)
+  if sent_message
+    sent_message = false
+    :redraw
+  endif
 
   # Extract the base64 stuff
   var stuff = matchstr(v:termosc, '52;.\+;\zs[A-Za-z0-9+/=]\+')
