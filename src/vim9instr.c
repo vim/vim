@@ -146,14 +146,29 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
 
 /*
  * Generate ISN_GET_OPAQUE_PROPERTY instruction - access property of opaque at
- * bottom of stack by index.
+ * bottom of stack by index. "name" is the property name used when "ot" is NULL
+ * and must be found at runtime.
  */
     int
-generate_GET_OPAQUE_PROPERTY(cctx_T *cctx, int idx, opaque_type_T *ot, type_T *type)
+generate_GET_OPAQUE_PROPERTY(
+	cctx_T *cctx,
+	int idx,
+	opaque_type_T *ot,
+	type_T *type,
+	char_u *name,
+	size_t namelen)
 {
     isn_T		*isn;
+    char_u		*prop_name;
 
     RETURN_OK_IF_SKIP(cctx);
+
+    if (ot == NULL)
+    {
+	prop_name = vim_strnsave(name, namelen);
+	if (prop_name == NULL)
+	    return FAIL;
+    }
 
     // Drop the opaque type
     isn = generate_instr_drop(cctx, ISN_GET_OPAQUE_PROPERTY, 1);
@@ -162,8 +177,16 @@ generate_GET_OPAQUE_PROPERTY(cctx_T *cctx, int idx, opaque_type_T *ot, type_T *t
 
     isn->isn_arg.opaqueprop.oprop_idx = idx;
     isn->isn_arg.opaqueprop.oprop_ot = ot;
+    if (ot == NULL)
+    {
+	isn->isn_arg.opaqueprop.oprop_prop_name = prop_name;
+	isn->isn_arg.opaqueprop.oprop_prop_namelen = namelen;
+    }
+    else
+	// Set it to NULL so we can free it without worrying later.
+	isn->isn_arg.opaqueprop.oprop_prop_name = NULL;
 
-    return push_type_stack2(cctx, type, &t_any);
+    return push_type_stack2(cctx, type, type);
 }
 
 /*
@@ -2906,6 +2929,10 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.cexpr.cexpr_ref);
 	    break;
 
+	case ISN_GET_OPAQUE_PROPERTY:
+	    vim_free(isn->isn_arg.opaqueprop.oprop_prop_name);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -2957,7 +2984,6 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_GET_OBJ_MEMBER:
-	case ISN_GET_OPAQUE_PROPERTY:
 	case ISN_JUMP:
 	case ISN_JUMP_IF_ARG_NOT_SET:
 	case ISN_JUMP_IF_ARG_SET:

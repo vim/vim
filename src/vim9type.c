@@ -2110,16 +2110,13 @@ parse_type_opaque(
 	if (give_error)
 	{
 	    if (*skipwhite(*arg) == '<')
-	    {
 		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
-		return NULL;
-	    }
+	    else
+		semsg(_(e_missing_type_after_str), "opaque");
 	}
-	// If only "opaque" is specified then assume any opaque type.
-	opaque_type = get_type_ptr(type_gap);
-	if (opaque_type == NULL)
-	    return NULL;
-	opaque_type->tt_type = VAR_OPAQUE;
+
+	// only "opaque" is specified
+	return NULL;
     }
     else
     {
