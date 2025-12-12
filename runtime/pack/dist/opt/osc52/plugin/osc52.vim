@@ -25,10 +25,10 @@ augroup VimOSC52Plugin
   autocmd TermResponseAll da1 {
     if match(v:termda1, ';\zs52\ze') != -1
       osc.allowed = true
-      clipreset
+      :silent! clipreset
     else
       osc.allowed = false
-      clipreset
+      :silent! clipreset
     endif
   }
   autocmd VimEnter * {

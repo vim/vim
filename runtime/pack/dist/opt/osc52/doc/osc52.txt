@@ -35,15 +35,20 @@ The osc52.vim plugin relys on Vim's clipboard provider functionality, see
 |clipboard-providers|.  In short, add these commands to your vimrc to get
 everything working: >vim
         :packadd osc52
-        :set clipmethod^=osc52
+        :set clipmethod+=osc52
 <
-                                            *g:osc52_force_avail* *osc52-da1*
-                                                    
+This will make the osc52.vim provider the last resort if there are other
+values in |clipmethod|.  This allows Vim, for example, to access the system
+clipboard directly if it can, but automatically switch to OSC 52 if it cannot
+(e.g. in an SSH session).
+
+                                                        *g:osc52_force_avail*
 In most cases, the plugin should automatically detect and work if your
 terminal supports the OSC 52 command.  Internally, it does this via a Primary
 Device Attributes (DA1) query.  You may force enable the plugin by setting
 |g:osc52_force_avail| to true.  You may check if the osc52.vim plugin is being
-used if the value of |v:clipmethod| is "osc52".
+used if the value of |v:clipmethod| is "osc52".  Note that using a terminal
+multiplexer such as tmux, may prevent automatic OSC 52 detection.
 
 ==============================================================================
 vim:tw=78:ts=8:fo=tcq2:ft=help:
