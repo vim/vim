@@ -754,6 +754,7 @@ func s:Paste(reg)
 
   elseif l:t == "count"
     let g:vim_paste_count[a:reg] += 1
+    let g:vim_test = "hello"
     return ("c", ["hello"])
 
   elseif l:t == "store"
@@ -1073,13 +1074,81 @@ func Test_clipboard_provider_accessed_once()
   call assert_equal(1, g:vim_paste_count['+'])
   call assert_equal(1, g:vim_paste_count['*'])
 
+  call assert_equal(0, g:vim_copy_count['+'])
+  call assert_equal(0, g:vim_copy_count['*'])
+
+  let g:vim_paste_count = {'*': 0, '+': 0}
+
   call execute(':global/quick/:yank +')
   call execute(':global/quick/:yank *')
 
   call assert_equal(1, g:vim_copy_count['+'])
   call assert_equal(1, g:vim_copy_count['*'])
 
+  call assert_equal(0, g:vim_paste_count['+'])
+  call assert_equal(0, g:vim_paste_count['*'])
+
   bw!
+  set clipmethod&
+endfunc
+
+" Test if the copying does not call the paste callback, and pasting does not all
+" the copy callback.
+func Test_clipboard_provider_copy_paste_independent()
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  let g:vim_paste = "count"
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  new
+
+  put +
+
+  put *
+
+  bw!
+
+  call getreg("+")
+  call getreg("*")
+
+  call assert_equal(0, g:vim_copy_count['*'])
+  call assert_equal(0, g:vim_copy_count['+'])
+
+  let g:vim_paste_count = {'*': 0, '+': 0}
+
+  " Emitting TextYankPost event may cause a clipboard access
+  augroup Test
+    autocmd!
+    autocmd TextYankPost * let g:test = 2
+  augroup END
+
+  new
+  call setline(1, "The quick brown fox jumps over the lazy dog")
+
+  yank +
+
+  yank *
+
+  bw!
+  autocmd! Test
+
+  call setreg("+", "hello")
+  call setreg("*", "hello")
+
+  call assert_equal(0, g:vim_paste_count['*'])
+  call assert_equal(0, g:vim_paste_count['+'])
+
   set clipmethod&
 endfunc
 

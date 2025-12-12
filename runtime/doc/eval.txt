@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 11
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5343,7 +5343,8 @@ The "paste" callback takes the following arguments in the following order:
 
 It should return a |list| or |tuple| containing the following elements in
 order:
-	1. Register type (and optional width) conforming to |setreg()|
+	1. Register type (and optional width) conforming to |setreg()|.  If it
+	   is an empty string, then the type is automatically chosen.
 	2. A |list| of strings to return to Vim, each representing a line.
 
 						*clipboard-providers-copy*

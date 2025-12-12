@@ -1420,6 +1420,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
     }
 
 #ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
     if (curr == &y_regs[REAL_PLUS_REGISTER])
 	call_clip_provider_set('+');
     else if (curr == &y_regs[STAR_REGISTER])
@@ -1467,6 +1468,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 #if defined(FEAT_EVAL)
     if (!deleting && has_textyankpost())
 	yank_do_autocmd(oap, y_current);
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
 #endif
     return OK;
 

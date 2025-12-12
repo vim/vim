@@ -3934,8 +3934,8 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	}
 	*curval++ = NULL;
 
-	if (STRLEN(reg_type) <= 0
-		|| get_yank_type(&reg_type, &yank_type, &block_len) == FAIL)
+	if (*reg_type != NUL && (STRLEN(reg_type) <= 0
+		|| get_yank_type(&reg_type, &yank_type, &block_len) == FAIL))
 	{
 	    emsg(e_invalid_argument);
 	    goto free_lstval;
@@ -3977,7 +3977,7 @@ exit:
 // This prevents unnecessary calls when accessing the provider often in an
 // interval.
 //
-// If -1 then allow provider callback to be called then set to zero. Default
+// If -1 then allow provider callback to be called then set to one. Default
 // value (is allowed) is -2.
 static int star_pause_count = -2, plus_pause_count = -2;
 
@@ -4031,15 +4031,19 @@ call_clip_provider_set(int reg)
     void
 inc_clip_provider(void)
 {
-    plus_pause_count = plus_pause_count == -2 ? -1 : plus_pause_count + 1;
-    star_pause_count = star_pause_count == -2 ? -1 : star_pause_count + 1;
+    plus_pause_count = (plus_pause_count == -2
+	|| plus_pause_count == -1) ? -1 : plus_pause_count + 1;
+    star_pause_count = (star_pause_count == -2
+	|| star_pause_count == -1) ? -1 : star_pause_count + 1;
 }
 
     void
 dec_clip_provider(void)
 {
-    plus_pause_count = plus_pause_count == -1 ? -1 : plus_pause_count - 1;
-    star_pause_count = star_pause_count == -1 ? -1 : star_pause_count - 1;
+    if (plus_pause_count != -2)
+	plus_pause_count = plus_pause_count == -1 ? -1 : plus_pause_count - 1;
+    if (star_pause_count != -2)
+	star_pause_count = star_pause_count == -1 ? -1 : star_pause_count - 1;
 
     if (plus_pause_count == 0 || plus_pause_count == -1)
 	plus_pause_count = -2;
