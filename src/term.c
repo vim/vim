@@ -5683,7 +5683,7 @@ handle_csi(
 					(char_u *)"da1", NULL, FALSE, curbuf);
 
 	key_name[0] = (int)KS_EXTRA;
-	key_name[1] = (int)KE_CSI;
+	key_name[1] = (int)KE_IGNORE;
     }
 
     // Version string: Eat it when there is at least one digit and

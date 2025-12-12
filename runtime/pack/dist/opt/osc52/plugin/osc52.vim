@@ -19,4 +19,23 @@ v:clipproviders["osc52"] = {
   },
 }
 
+augroup VimOSC52Plugin
+  autocmd!
+  # Query support for OSC 52 using a DA1 query
+  autocmd TermResponseAll da1 {
+    if match(v:termda1, ';\zs52\ze') != -1
+      osc.allowed = true
+      clipreset
+    else
+      osc.allowed = false
+      clipreset
+    endif
+  }
+  autocmd VimEnter * {
+    if !has("gui_running")
+      echoraw("\<Esc>[c")
+    endif
+  }
+augroup END
+
 # vim: set sw=2 sts=2 :
