@@ -30,7 +30,6 @@ int generate_PUSHCHANNEL(cctx_T *cctx);
 int generate_PUSHJOB(cctx_T *cctx);
 int generate_PUSHBLOB(cctx_T *cctx, blob_T *blob);
 int generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix);
-int generate_PUSHTSOBJECT(cctx_T *cctx);
 int generate_PUSHOPAQUE(cctx_T *cctx);
 int generate_AUTOLOAD(cctx_T *cctx, char_u *name, type_T *type);
 int generate_GETITEM(cctx_T *cctx, int index, int with_op);
