@@ -1,55 +1,19 @@
 vim9script
 
-var sent_message: bool = false
-
-def OSCMessage(id: number)
-  echom "Waiting for OSC52 response... Press CTRL-C to quit"
-  sent_message = true
-enddef
-
-def DA1Message(id: number)
-  echom "Waiting for DA1 response... Press CTRL-C to quit"
-  sent_message = true
-enddef
-
+export var allowed: bool = false
 
 export def Available(): bool
   if get(g:, 'osc52_force_avail', 0)
     return true
   endif
+  return allowed
+enddef
 
-  g:vimosc52_gotda1 = false
+var sent_message: bool = false
 
-  augroup VimOSC52DA1
-    autocmd!
-    autocmd TermResponseAll da1 ++once g:vimosc52_gotda1 = v:true
-  augroup END
-
-  # Send request and wait for DA1 response from terminal
-  call echoraw("\<Esc>[c")
-
-  var timerid: number = timer_start(1000, DA1Message)
-
-  while true
-    if getcharstr(-1, {cursor: "hide"}) == "\<xCSI>" && g:vimosc52_gotda1
-      break
-    endif
-  endwhile
-
-  timer_stop(timerid)
-  if sent_message
-    sent_message = false
-    :redraw
-  endif
-
-  autocmd! VimOSC52DA1
-  unlet g:vimosc52_gotda1
-
-  # If there is a 52 parameter, then the terminal supports OSC 52
-  if match(v:termda1, ';\zs52\ze') != -1
-    return true
-  endif
-  return false
+def OSCMessage(id: number)
+  echom "Waiting for OSC52 response... Press CTRL-C to quit"
+  sent_message = true
 enddef
 
 export def Paste(reg: string): tuple<string, list<string>>

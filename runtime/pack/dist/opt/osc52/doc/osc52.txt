@@ -5,8 +5,6 @@
 
 Use OSC 52 terminal command for clipboard support
 ==============================================================================
-
-
 1. OVERVIEW					        *osc52-overview*
 
 The osc52.vim plugin provides support for the OSC 52 terminal command, which
@@ -18,7 +16,8 @@ In order for this plugin to work, the terminal Vim is running in must
 recognize and handle the OSC 52 escape sequence.  You can easily check this
 online. Additionally, while yanking is guaranteed to work, some terminals
 don't implement the paste functionality.  If the terminal doesn't support
-pasting, then nothing will happen upon trying to paste from the clipboard.
+pasting, then Vim will just block waiting for the data which will never come.
+In this case just press Ctrl-C to cancel the operation.
 
                                                         *osc52-selections*
 Note that this only applies to users on Wayland or X11 platforms
@@ -38,12 +37,11 @@ everything working: >vim
         :packadd osc52
         :set clipmethod^=osc52
 <
-                                                        *g:osc52_force_avail*
+                                            *g:osc52_force_avail* *osc52-da1*
+                                                    
 In most cases, the plugin should automatically detect and work if your
 terminal supports the OSC 52 command.  Internally, it does this via a Primary
-Device Attributes (DA1) query.  However, if the terminal does not supporting
-sending such sequence, then Vim will block waiting for it in which you can
-press Ctrl-C to cancel.  You may force enable the plugin by setting
+Device Attributes (DA1) query.  You may force enable the plugin by setting
 |g:osc52_force_avail| to true.  You may check if the osc52.vim plugin is being
 used if the value of |v:clipmethod| is "osc52".
 
