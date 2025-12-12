@@ -656,24 +656,29 @@ compile_opaque_index(cctx_T *cctx, char_u **arg, type_T *type)
     ++*arg;
     name = *arg;
     name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+    len = name_end - name;
 
     ot = type->tt_optype;
+
     if (ot == NULL)
     {
-	emsg(_(e_incomplete_type));
-	return FAIL;
+	// This is usually (should be) because the function that the opaque
+	// object is created from indicates it returns the general opaque type
+	// (ret_opaque), and tt_optype is NULL. In this case, we must get the
+	// opaque_type_T struct at runtime.
+	*arg = name_end;
+	return generate_GET_OPAQUE_PROPERTY(cctx, 0, NULL, &t_any, name, len);
     }
 
     if (name_end == name)
 	return FAIL;
 
-    len = name_end - name;
     prop = lookup_opaque_property(ot, name, len, &idx);
 
     if (prop != NULL)
     {
 	*arg = name_end;
-	return generate_GET_OPAQUE_PROPERTY(cctx, idx, ot, prop->opp_type);
+	return generate_GET_OPAQUE_PROPERTY(cctx, idx, ot, prop->opp_type, NULL, 0);
     }
 
     semsg(_(e_opaque_str_property_str_no_exist), len, name, ot->ot_type);
