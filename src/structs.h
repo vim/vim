@@ -1474,7 +1474,8 @@ typedef long_u hash_T;		// Type for hi_hash
 #endif
 
 // Struct that holds both a normal function name and a partial_T, as used for a
-// callback argument.
+// callback argument. It could also instead hold a function pointer to directly
+// be called instead. if it is not NULL.
 // When used temporarily "cb_name" is not allocated.  The refcounts to either
 // the function or the partial are incremented and need to be decremented
 // later with free_callback().
@@ -1482,6 +1483,7 @@ typedef struct {
     char_u	*cb_name;
     partial_T	*cb_partial;
     int		cb_free_name;	    // cb_name was allocated
+    void	(*cb_fp)(typval_T *argvars, typval_T *rettv);
 } callback_T;
 
 typedef struct isn_S isn_T;	    // instruction
@@ -2698,6 +2700,8 @@ struct channel_S {
     void	(*ch_nb_close_cb)(void);
 				// callback for Netbeans when channel is
 				// closed
+    void	(*ch_make_callback)(channel_T *ch, char_u *msg);
+    void	(*ch_make_exit_cb)(channel_T *ch, char_u *msg);
 
 #ifdef MSWIN
     int		ch_named_pipe;	// using named pipe instead of pty

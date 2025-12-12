@@ -5208,6 +5208,24 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * Create a callback from the given function pointer callback.
+ */
+    callback_T
+create_callback(void (*callback)(typval_T *argvars, typval_T *rettv))
+{
+    callback_T res;
+
+    CLEAR_FIELD(res);
+
+    // We don't want a NULL or empty cb_name since we may be ignored thinking
+    // the callback is empty.
+    res.cb_name = (char_u *)" ";
+    res.cb_fp = callback;
+
+    return res;
+}
+
+/*
  * Get a callback from "arg".  It can be a Funcref or a function name.
  * When "arg" is zero "res.cb_name" is set to an empty string.
  * If "res.cb_name" is allocated then "res.cb_free_name" is set to TRUE.
@@ -5271,11 +5289,16 @@ put_callback(callback_T *cb, typval_T *tv)
 	tv->vval.v_partial = cb->cb_partial;
 	++tv->vval.v_partial->pt_refcount;
     }
-    else
+    else if (cb->cb_fp == NULL)
     {
 	tv->v_type = VAR_FUNC;
 	tv->vval.v_string = vim_strsave(cb->cb_name);
 	func_ref(cb->cb_name);
+    }
+    else
+    {
+	tv->v_type = VAR_UNKNOWN;
+	internal_error("put_callback()");
     }
 }
 
@@ -5286,11 +5309,19 @@ put_callback(callback_T *cb, typval_T *tv)
     void
 set_callback(callback_T *dest, callback_T *src)
 {
+    if (src->cb_fp != NULL)
+    {
+	dest->cb_name = src->cb_name;
+	dest->cb_fp = src->cb_fp;
+	return;
+    }
+
     if (src->cb_partial == NULL)
     {
 	// just a function name, make a copy
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
+	dest->cb_fp = NULL;
     }
     else
     {
@@ -5307,17 +5338,26 @@ set_callback(callback_T *dest, callback_T *src)
     void
 copy_callback(callback_T *dest, callback_T *src)
 {
+    if (src->cb_fp != NULL)
+    {
+	dest->cb_name = src->cb_name;
+	dest->cb_fp = src->cb_fp;
+	return;
+    }
+
     dest->cb_partial = src->cb_partial;
     if (dest->cb_partial != NULL)
     {
 	dest->cb_name = src->cb_name;
 	dest->cb_free_name = FALSE;
+	dest->cb_fp = NULL;
 	++dest->cb_partial->pt_refcount;
     }
     else
     {
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
+	dest->cb_fp = NULL;
 	func_ref(src->cb_name);
     }
 }
@@ -5391,6 +5431,7 @@ free_callback(callback_T *callback)
 	callback->cb_free_name = FALSE;
     }
     callback->cb_name = NULL;
+    callback->cb_fp = NULL;
 }
 
 #endif // FEAT_EVAL
