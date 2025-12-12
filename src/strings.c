@@ -1242,6 +1242,7 @@ string_from_blob(blob_T *blob, long *start_idx)
     garray_T	str_ga;
     long	blen;
     int		idx;
+    char_u	*ret_str = NULL;
 
     ga_init2(&str_ga, sizeof(char), 80);
 
@@ -1262,7 +1263,8 @@ string_from_blob(blob_T *blob, long *start_idx)
 	ga_append(&str_ga, byte);
     }
 
-    char_u *ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    if (str_ga.ga_data != NULL)
+	ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
     *start_idx = idx;
 
     ga_clear(&str_ga);
