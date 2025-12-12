@@ -40,7 +40,8 @@ typedef enum {
     ISN_LOAD_CLASSMEMBER,  // load class member, using isn_arg.classmember
     ISN_STORE_CLASSMEMBER,  // store in class member, using isn_arg.classmember
 
-    ISN_GET_OPAQUE_PROPERTY, // get opaque property, index is isn_arg.number
+    ISN_GET_OPAQUE_PROPERTY, // get opaque property, index is
+			     // isn_arg.opaqueprop.oprop_idx
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -531,6 +532,8 @@ typedef struct
 {
     opaque_type_T   *oprop_ot;
     int		    oprop_idx;
+    char_u	    *oprop_prop_name; // Set when "oprop_ot" is NULL
+    size_t	    oprop_prop_namelen;
 } opaqueproperty_T;
 
 /*

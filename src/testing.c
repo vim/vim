@@ -1309,13 +1309,13 @@ test_opaque_property(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 
     switch (prop->opp_idx)
     {
-	case 0: // val
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = val;
-	    break;
-	case 1: // type
+	case 0: // type
 	    rettv->v_type = VAR_STRING;
 	    rettv->vval.v_string = vim_strsave(op->op_type->ot_type);
+	    break;
+	case 1: // val
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = val;
 	    break;
 	default:
 	    return FAIL;
@@ -1324,8 +1324,8 @@ test_opaque_property(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 }
 
 static opaque_property_T test_opaque_properties[] = {
-    {1,	OPPROPNAME("type"), &t_string},
-    {0,	OPPROPNAME("val"), &t_number},
+    {0,	OPPROPNAME("type"), &t_string},
+    {1,	OPPROPNAME("val"), &t_number},
 };
 
 opaque_type_T test_opaque_type = {
@@ -1334,6 +1334,11 @@ opaque_type_T test_opaque_type = {
     test_opaque_str, test_opaque_property
 };
 
+/*
+ * In evalfunc.c, this function indicates it returns ret_opaque, and not a more
+ * specific type indicating the opaque type. This is intentional and used to
+ * test some logic that handles this case.
+ */
     void
 f_test_opaque(typval_T *argvars, typval_T *rettv)
 {

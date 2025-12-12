@@ -3403,12 +3403,18 @@ var_any_get_opaque_property(isn_T *iptr, typval_T *tv)
     {
 	semsg(_(e_opaque_str_property_str_no_exist), str_len, iptr->isn_arg.string,
 		op->op_type->ot_type);
+
+	// We must increment the reference count on failure because we
+	// dict_stack_save() consumes the opaque tv, which is cleared right
+	// after on error.
+	op->op_refcount++;
 	return FAIL;
     }
 
     if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
     {
 	SOURCING_LNUM = iptr->isn_lnum;
+	op->op_refcount++;
 	return FAIL;
     }
 
@@ -6106,7 +6112,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    // dict member with string key (dict.member)
-	    // or can be an object
+	    // or can be an object or opaque
 	    case ISN_STRINGMEMBER:
 		{
 		    dict_T	*dict;
@@ -6236,8 +6242,29 @@ exec_instructions(ectx_T *ectx)
 			goto on_error;
 		    }
 
-		    idx = iptr->isn_arg.opaqueprop.oprop_idx;
-		    prop = &op->op_type->ot_properties[idx];
+		    if (iptr->isn_arg.opaqueprop.oprop_ot == NULL)
+		    {
+			// Must find opaque type now
+			char_u	*name = iptr->isn_arg.opaqueprop.oprop_prop_name;
+			size_t	len = iptr->isn_arg.opaqueprop.oprop_prop_namelen;
+
+			prop = lookup_opaque_property(op->op_type,
+				name, len, &idx);
+
+			if (prop == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+                            semsg(_(e_opaque_str_property_str_no_exist), len,
+				    name, op->op_type->ot_type);
+			    goto on_error;
+                        }
+		    }
+		    else
+		    {
+			idx = iptr->isn_arg.opaqueprop.oprop_idx;
+			prop = &op->op_type->ot_properties[idx];
+
+		    }
 
 		    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
 		    {
@@ -7955,11 +7982,25 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			     iptr->isn_arg.classmember.cm_class->class_name.string);
 				     break;
 
-	    case ISN_GET_OPAQUE_PROPERTY: smsg("%s%4d OPAQUE_PROPERTY %d on %s",
-			    pfx, current,
-			    (int)iptr->isn_arg.opaqueprop.oprop_idx,
-			    iptr->isn_arg.opaqueprop.oprop_ot->ot_type);
-					  break;
+	    case ISN_GET_OPAQUE_PROPERTY:
+		{
+		    char_u *prop;
+		    int idx;
+
+		    if (iptr->isn_arg.opaqueprop.oprop_ot == NULL)
+		    {
+			prop = (char_u *)"ANY";
+			idx = -1;
+		    }
+		    else
+		    {
+			prop = iptr->isn_arg.opaqueprop.oprop_ot->ot_type;
+			idx = iptr->isn_arg.opaqueprop.oprop_idx;
+		    }
+
+		    smsg("%s%4d OPAQUE_PROPERTY %d on %s", pfx, current, idx, prop);
+		    break;
+		}
 
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;

@@ -35,7 +35,7 @@ lookup_opaque_type(char_u *name, size_t namelen)
 	    && (type = tsvim_lookup_opaque_type(name, namelen)) != NULL)
 	return type;
 #endif
-    if (STRNCMP(name, "TestOpaque", namelen) == 0)
+    if (STRNCMP(name, "TestOpaque", MAX(namelen, sizeof("TestOpaque") - 1)) == 0)
 	return &test_opaque_type;
     return NULL;
 }
@@ -97,6 +97,9 @@ lookup_opaque_property(opaque_type_T *ot, char_u *name, size_t namelen, int *idx
     // Since properties array is sorted, we can use binary search
     opaque_property_T target;
     opaque_property_T *prop;
+
+    if (ot->ot_properties == NULL)
+	return NULL;
 
     target.opp_idx = 0;
     target.opp_name = name;
