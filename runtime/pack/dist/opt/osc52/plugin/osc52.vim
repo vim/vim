@@ -23,7 +23,7 @@ augroup VimOSC52Plugin
   autocmd!
   # Query support for OSC 52 using a DA1 query
   autocmd TermResponseAll da1 {
-    if match(v:termda1, ';\zs52\ze') != -1
+    if match(v:termda1, '?\zs.*52\ze') != -1
       osc.allowed = true
       :silent! clipreset
     else
