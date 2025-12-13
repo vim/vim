@@ -164,6 +164,30 @@ func WaitForChildNotification(...)
   let g:child_notification = 0
 endfunc
 
+" Wait for the cursor position in a terminal buffer to fall in range and for
+" specific line contents to be matchable against expected patterns.
+"
+" The waited-for cursor position [lnum, cnum] can be discovered by searching
+" for the only instance of non-"|"-delimited ">" in an already verified
+" screendump file, with every "|.\+|" cell entry counted as a single column.
+" Use 2-tuples (aka pairs) with (lnum, pattern) as optional arguments for
+" additional points of synchronisation. Assuming that buffer lines are drawn
+" from top to bottom, consider pairing up the bottom line number with its
+" corresponding whole line pattern; if nothing will be written on the bottom
+" line, or if other lines will be further updated before verification, then
+" prefer a more recently-updated line (or lines) for matching.
+func WaitForTermCurPosAndLinesToMatch(bnum, cpos, timeout = g:test_timeout, ...)
+  if empty(term_getstatus(a:bnum))
+    throw 'Skipped: Not a terminal buffer'
+  endif
+
+  if a:0 > 0 && indexof(a:000, {_, ps -> len(ps) != 2}) < 0
+    return WaitFor({b, c, ps -> {-> slice(term_getcursor(b), 0, 2) == c && indexof(ps, {b_ -> {_, p -> term_getline(b_, p[0]) !~# p[1]}}(b)) < 0}}(a:bnum, a:cpos, a:000), a:timeout)
+  else
+    return WaitFor({b, c -> {-> slice(term_getcursor(b), 0, 2) == c}}(a:bnum, a:cpos), a:timeout)
+  endif
+endfunc
+
 " Wait for up to five seconds for "expr" to become true.  "expr" can be a
 " stringified expression to evaluate, or a funcref without arguments.
 " Using a lambda works best.  Example:
@@ -353,6 +377,8 @@ endfunc
 func ValgrindOrAsan()
   return RunningWithValgrind() || RunningAsan()
 endfun
+
+const g:test_timeout = (ValgrindOrAsan()) ? 5000 * 4 : 5000
 
 " Get the command to run Vim, with --clean instead of "-u NONE".
 func GetVimCommandClean()
