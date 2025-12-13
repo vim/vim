@@ -8906,6 +8906,27 @@ delete_tooltip(BalloonEval *beval)
     PostMessage(beval->balloon, WM_CLOSE, 0, 0);
 }
 
+/*
+ * Set opacity of gui windows.
+ */
+    int
+gui_mch_set_opacity(char_u *value)
+{
+    float fvalue = (float)atof((char *)value);
+    if (fvalue <= 0 || fvalue > 1)
+	return FAIL;
+
+    if (fvalue == 1)
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE,
+		GetWindowLongPtr(s_hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+    else
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE,
+		GetWindowLongPtr(s_hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+    SetLayeredWindowAttributes(s_hwnd, 0, (BYTE)(255 * fvalue), LWA_ALPHA);
+    return OK;
+}
+
     static VOID CALLBACK
 beval_timer_proc(
     HWND	hwnd UNUSED,
