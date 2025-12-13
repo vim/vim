@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 11
+*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4527,11 +4527,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		choices.
 								*'go-C'*
 	  'C'	Use |hl-TitleBar| and |hl-TitleBarNC| if available.
-		Currently only works for MS-Window GUI.
+		Currently only works for MS-Windows GUI.
 		See |gui-w32-title-bar| for details.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
-		Win32 and GTK+ GUI.
+		MS-Windows and GTK+ GUI.
 								*'go-e'*
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.

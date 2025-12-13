@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 12
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2389,7 +2389,7 @@ v:echospace	Number of screen cells that can be used for an `:echo` message
 		available above the last line.
 
 					*v:errmsg* *errmsg-variable*
-v:errmsg	Last error message that occurred (not neccessarily displayed).
+v:errmsg	Last error message that occurred (not necessarily displayed).
 		It's allowed to set this variable.  Example: >
 	:let v:errmsg = ""
 	:silent! next
@@ -3841,7 +3841,7 @@ text...
 			when the screen is redrawn.
 
 					*:echow* *:echowin* *:echowindow*
-:[N]echow[indow] {expr1} ..
+:[N]echow[indow] {expr1} ...
 			Like |:echomsg| but when the messages popup window is
 			available the message is displayed there.  This means
 			it will show for three seconds and avoid a
