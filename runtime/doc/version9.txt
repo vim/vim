@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 11
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41721,6 +41721,8 @@ Options: ~
   to ">" by default, indicating text that extends beyond the window width.
 - 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
   (see also the below platform specific change).
+- 'guioptions': Support |'go-d'| on MS-Windows for Menu and title bar darkmode
+  (see also the below platform specific change).
 - 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~
@@ -41759,6 +41761,7 @@ Platform specific ~
   absolute paths (to the current drive) and no longer relative.
 - MS-Windows: The title bar follows the |hl-TitleBar| and |hl-TitleBarNC|
   highlighting group |gui-w32-title-bar|.
+- MS-Windows: Support |'go-d'| on MS-Windows for Menu and title bar darkmode
 - MS-Windows: Vim no longer searches the current directory for
   executables when running external commands; prefix a relative or absolute
   path if you want the old behavior |$NoDefaultCurrentDirectoryInExePath|.
