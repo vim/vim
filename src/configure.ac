@@ -2493,8 +2493,8 @@ if test "$enable_treesitter" = yes || test "$enable_treesitter" = system; then
 
     TREESITTER_CFLAGS="-Itreesitter/lib/include"
     TREESITTER_LIBS=""
-    TREESITTER_SRC="treesitter.c"
-    TREESITTER_OBJ="objects/treesitter.o treesitter/libtree-sitter.a"
+    TREESITTER_SRC="treesitter.c treesitter/lib/src/lib.c"
+    TREESITTER_OBJ="objects/treesitter.o objects/treesitter_lib.o"
 
     AC_SUBST(TREESITTER_CPPFLAGS)
     AC_SUBST(TREESITTER_CFLAGS)
