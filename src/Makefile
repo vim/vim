@@ -1329,6 +1329,37 @@ XDIFF_INCL = \
 	xdiff/xtypes.h \
 	xdiff/xutils.h \
 
+TREESITTER_DEPS = \
+	treesitter/lib/src/alloc.h \
+	treesitter/lib/src/array.h \
+	treesitter/lib/src/atomic.h \
+	treesitter/lib/src/error_costs.h \
+	treesitter/lib/src/get_changed_ranges.h \
+	treesitter/lib/src/host.h \
+	treesitter/lib/src/language.h \
+	treesitter/lib/src/length.h \
+	treesitter/lib/src/lexer.h \
+	treesitter/lib/src/parser.h \
+	treesitter/lib/src/point.h \
+	treesitter/lib/src/portable/endian.h \
+	treesitter/lib/src/reduce_action.h \
+	treesitter/lib/src/reusable_node.h \
+	treesitter/lib/src/stack.h \
+	treesitter/lib/src/subtree.h \
+	treesitter/lib/src/tree.h \
+	treesitter/lib/src/tree_cursor.h \
+	treesitter/lib/src/ts_assert.h \
+	treesitter/lib/src/unicode/ICU_SHA \
+	treesitter/lib/src/unicode/ptypes.h \
+	treesitter/lib/src/unicode/umachine.h \
+	treesitter/lib/src/unicode/urename.h \
+	treesitter/lib/src/unicode/utf.h \
+	treesitter/lib/src/unicode/utf16.h \
+	treesitter/lib/src/unicode/utf8.h \
+	treesitter/lib/src/unicode.h \
+	treesitter/lib/src/wasm/wasm-stdlib.h \
+	treesitter/lib/src/wasm_store.h \
+
 ### Command to create dependencies based on #include "..."
 ### prototype headers are ignored due to -DPROTO, system
 ### headers #include <...> are ignored if we use the -MM option, as
@@ -2982,7 +3013,6 @@ clean celan: testclean
 	fi
 	cd xxd; $(MAKE) clean
 	cd auto/wayland; $(MAKE) clean
-	cd treesitter; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
@@ -3696,10 +3726,6 @@ objects/channel.o: channel.c
 # Dependencies that "make depend" doesn't find
 objects/gui_gtk_x11.o: version.h
 
-# We use our in-tree Treesitter provided Makefile to build the library
-treesitter/libtree-sitter.a:
-	cd treesitter; CFLAGS= $(MAKE) static
-
 # Build rules for libvterm.  Putting them here allows for adding compilation
 # options specific for Vim.  Since the .o files go into objects/ we do need to
 # prefix vterm_ to avoid name clashes.
@@ -3756,6 +3782,14 @@ objects/xhistogram.o: xdiff/xhistogram.c $(XDIFF_INCL)
 objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
 
+# Build rules for libtree-sitter. We use the amalagted
+CCCTS = $(CCC_NF) $(ALL_CFLAGS) \
+       -D_POSIX_C_SOURCE=200112L -D_DEFAULT_SOURCE -D_DARWIN_C_SOURCE \
+       -Itreesitter/lib/src -Itreesitter/lib/src/wasm -Itreesitter/lib/include \
+       -Wno-missing-prototypes
+
+objects/treesitter_lib.o: treesitter/lib/src/lib.c $(TREESITTER_DEPS)
+	$(CCCTS) -o $@ treesitter/lib/src/lib.c
 
 Makefile:
 	@echo 'The name of the makefile MUST be "Makefile" (with capital M)!'
@@ -4584,6 +4618,38 @@ objects/treesitter.o: treesitter.c vim.h protodef.h auto/config.h feature.h \
  beval.h structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h
+objects/treesitter_lib.o: treesitter/lib/src/lib.c treesitter/lib/src/./alloc.c \
+ treesitter/lib/src/./alloc.h treesitter/lib/src/./get_changed_ranges.c \
+ treesitter/lib/src/././get_changed_ranges.h \
+ treesitter/lib/src/./././tree_cursor.h \
+ treesitter/lib/src/././././subtree.h \
+ treesitter/lib/src/./././././length.h \
+ treesitter/lib/src/././././././point.h \
+ treesitter/lib/src/./././././array.h \
+ treesitter/lib/src/././././././alloc.h \
+ treesitter/lib/src/././././././ts_assert.h \
+ treesitter/lib/src/./././././error_costs.h \
+ treesitter/lib/src/./././././host.h \
+ treesitter/lib/src/./././././parser.h treesitter/lib/src/./././subtree.h \
+ treesitter/lib/src/././subtree.h treesitter/lib/src/././language.h \
+ treesitter/lib/src/./././parser.h treesitter/lib/src/././error_costs.h \
+ treesitter/lib/src/././tree_cursor.h treesitter/lib/src/././ts_assert.h \
+ treesitter/lib/src/./language.c treesitter/lib/src/././wasm_store.h \
+ treesitter/lib/src/./lexer.c treesitter/lib/src/././length.h \
+ treesitter/lib/src/././lexer.h treesitter/lib/src/./././length.h \
+ treesitter/lib/src/././unicode.h treesitter/lib/src/././unicode/utf8.h \
+ treesitter/lib/src/././unicode/utf16.h \
+ treesitter/lib/src/././portable/endian.h treesitter/lib/src/./node.c \
+ treesitter/lib/src/././point.h treesitter/lib/src/././tree.h \
+ treesitter/lib/src/./parser.c treesitter/lib/src/././alloc.h \
+ treesitter/lib/src/././array.h treesitter/lib/src/././reduce_action.h \
+ treesitter/lib/src/./././array.h treesitter/lib/src/././reusable_node.h \
+ treesitter/lib/src/././stack.h treesitter/lib/src/./point.c \
+ treesitter/lib/src/./point.h treesitter/lib/src/./query.c \
+ treesitter/lib/src/./stack.c treesitter/lib/src/./subtree.c \
+ treesitter/lib/src/././atomic.h treesitter/lib/src/./tree_cursor.c \
+ treesitter/lib/src/./tree.c treesitter/lib/src/./wasm_store.c \
+ treesitter/lib/src/././parser.h
 objects/wayland.o: auto/osdef.h wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \

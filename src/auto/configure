@@ -9288,8 +9288,8 @@ printf "%s\n" "no" >&6; }
 
     TREESITTER_CFLAGS="-Itreesitter/lib/include"
     TREESITTER_LIBS=""
-    TREESITTER_SRC="treesitter.c"
-    TREESITTER_OBJ="objects/treesitter.o treesitter/libtree-sitter.a"
+    TREESITTER_SRC="treesitter.c treesitter/lib/src/lib.c"
+    TREESITTER_OBJ="objects/treesitter.o objects/treesitter_lib.o"
 
 
 
