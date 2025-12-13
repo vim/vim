@@ -4471,6 +4471,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Changing this option updates screen output immediately.  Set it to an
 	empty string to disable ligatures.
 
+						*'guiopacity'* *'gop'*
+'guiopacity' 'gop'	number	(default 100)
+			global
+			{only in the Win32 GUI}
+	Adjusts the transparency of the main GUI window. Valid values lie in
+	the range (0, 100] (greater than 0 and up to and including 100).
+	Values outside this interval or non‑numeric input cause an error.
+	This setting applies to the complete window, including the menu bar,
+	toolbars, and scrollbars.
+	Example: >
+		:set guiopacity=85    " 85% opaque, 15% transparent
+
 						*'guioptions'* *'go'*
 'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
 					   "t" is removed in |defaults.vim|),

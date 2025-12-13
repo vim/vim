@@ -1552,6 +1552,26 @@ _TextAreaWndProc(
     }
 }
 
+/*
+ * Set opacity of gui windows.
+ */
+    int
+gui_mch_set_opacity(int value)
+{
+    if (value <= 0 || value > 100)
+	return FAIL;
+
+    if (value == 100)
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE,
+		GetWindowLongPtr(s_hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+    else
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE,
+		GetWindowLongPtr(s_hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+    SetLayeredWindowAttributes(s_hwnd, 0, (BYTE)(255 * value / 100), LWA_ALPHA);
+    return OK;
+}
+
     static void
 dyn_dwm_load(void)
 {

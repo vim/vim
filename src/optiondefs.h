@@ -1290,6 +1290,15 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
 
+    {"guiopacity",  "gop",   P_NUM|P_VI_DEF,
+#if defined(FEAT_GUI_MSWIN)
+			    (char_u *)&p_gop, PV_NONE, did_set_guiopacity, NULL,
+			    {(char_u *)100L, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"guioptions",  "go",   P_STRING|P_VI_DEF|P_RALL|P_FLAGLIST,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_go, PV_NONE, did_set_guioptions, expand_set_guioptions,

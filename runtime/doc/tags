@@ -379,6 +379,7 @@ $quote	eval.txt	/*$quote*
 'go-r'	options.txt	/*'go-r'*
 'go-t'	options.txt	/*'go-t'*
 'go-v'	options.txt	/*'go-v'*
+'gop'	options.txt	/*'gop'*
 'gp'	options.txt	/*'gp'*
 'gr'	vi_diff.txt	/*'gr'*
 'graphic'	vi_diff.txt	/*'graphic'*
@@ -392,6 +393,7 @@ $quote	eval.txt	/*$quote*
 'guifontwide'	options.txt	/*'guifontwide'*
 'guiheadroom'	options.txt	/*'guiheadroom'*
 'guiligatures'	options.txt	/*'guiligatures'*
+'guiopacity'	options.txt	/*'guiopacity'*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
 'guitablabel'	options.txt	/*'guitablabel'*

@@ -691,6 +691,9 @@ EXTERN char_u	*p_guicursor;	// 'guicursor'
 #ifdef FEAT_MOUSESHAPE
 EXTERN char_u	*p_mouseshape;	// 'mouseshape'
 #endif
+#if defined(FEAT_GUI_MSWIN)
+EXTERN int	p_gop;		// 'guiopacity'
+#endif
 #if defined(FEAT_GUI)
 EXTERN char_u	*p_go;		// 'guioptions'
 #endif

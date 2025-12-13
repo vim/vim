@@ -2711,6 +2711,20 @@ did_set_guiligatures(optset_T *args UNUSED)
 }
 #endif
 
+#if defined(FEAT_GUI_MSWIN)
+/*
+ * The 'guiopacity' option is changed.
+ */
+    char *
+did_set_guiopacity(optset_T *args UNUSED)
+{
+    if (!gui_mch_set_opacity(p_gop))
+	return e_invalid_argument;
+
+    return NULL;
+}
+#endif
+
 #if defined(FEAT_GUI)
 /*
  * The 'guioptions' option is changed.
