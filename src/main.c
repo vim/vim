@@ -684,6 +684,13 @@ vim_main2(void)
     prepare_server(&params);
 #endif
 
+#ifdef FEAT_TREESITTER
+    if (tsvim_init() == FAIL)
+    {
+	smsg("fail");
+    }
+#endif
+
 #ifdef FEAT_WAYLAND
 # ifdef FEAT_GUI
     if (!gui.in_use)

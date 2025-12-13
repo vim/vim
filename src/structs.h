@@ -1502,6 +1502,8 @@ typedef struct instr_S instr_T;
 typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
+typedef struct opaque_S opaque_T;
+typedef struct opaque_type_S opaque_type_T;
 
 typedef enum
 {
@@ -1524,7 +1526,8 @@ typedef enum
     VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
-    VAR_TUPLE		// "v_tuple" is used
+    VAR_TUPLE,		// "v_tuple" is used
+    VAR_OPAQUE		// "v_opaque" is used
 } vartype_T;
 
 // A type specification.
@@ -1536,6 +1539,7 @@ struct type_S {
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
+    opaque_type_T   *tt_optype;	    // opaque type. If NULL then any type.
 };
 
 typedef struct {
@@ -1672,6 +1676,50 @@ struct typealias_S
     char_u  *ta_name;
 };
 
+typedef void	(*opaque_free_func_T)(opaque_T *);
+typedef bool	(*opaque_equal_func_T)(opaque_T *, opaque_T *);
+typedef char_u *(*opaque_str_func_T)(opaque_T *, char_u **tofree);
+
+typedef struct
+{
+    int	    opp_idx; // Index in properties array
+    char_u  *opp_name;
+    size_t  opp_name_len;
+    type_T  *opp_type;
+} opaque_property_T;
+
+typedef int (*opaque_property_func_T)(opaque_T *,
+	opaque_property_T *prop, typval_T *rettv);
+
+struct opaque_type_S
+{
+    char_u		*ot_type;
+    int			ot_property_count;
+    opaque_property_T	*ot_properties; // May be NULL if opaque type doesn't
+					// have any properties. Should be
+					// ordered alphabetically.
+
+    opaque_free_func_T	ot_free_func;	// Called when opaque_T is freed. May be NULL.
+    opaque_equal_func_T ot_equal_func;	// Called when comparing two opaque_T of
+					// the same type. Must be set.
+    opaque_str_func_T	ot_str_func;	// Should return textual form of opaque.
+					// May be NULL, if so then a default
+					// format is used.
+    opaque_property_func_T  ot_property_func; // Called to return value for
+					      // passed property. Should return
+					      // FAIL on error, else OK.
+};
+
+// This is designed to be put in another struct as a the first member. This is
+// so we don't have to worry about alignment issues.
+struct opaque_S
+{
+    int		    op_refcount;    // Reference count
+    opaque_type_T   *op_type;
+};
+
+#define OPPROPNAME(s) (char_u *)s, sizeof(s) - 1
+
 /*
  * Structure to hold an internal variable without a name.
  */
@@ -1697,6 +1745,7 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
+	opaque_T	*v_opaque;	// opaque data type
     }		vval;
 };
 
@@ -3090,7 +3139,6 @@ typedef struct {
     char_u	b_syn_chartab[32];  // syntax iskeyword option
     char_u	*b_syn_isk;	    // iskeyword option
 } synblock_T;
-
 
 /*
  * buffer: structure that holds information about one file

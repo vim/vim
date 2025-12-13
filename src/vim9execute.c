@@ -3274,6 +3274,19 @@ object_required_error(typval_T *tv)
     clear_type_list(&type_list);
 }
 
+    static void
+opaque_required_error(typval_T *tv)
+{
+    garray_T type_list;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type_T *type = typval2type(tv, get_copyID(), &type_list, 0);
+    char *tofree = NULL;
+    char *typename = type_name(type, &tofree);
+    semsg(_(e_opaque_required_found_str), typename);
+    vim_free(tofree);
+    clear_type_list(&type_list);
+}
+
 /*
  * Accessing the variable or method of an object or a class stored in a
  * variable of type "any".
@@ -3361,6 +3374,49 @@ var_any_get_oc_member(class_T *current_class, isn_T *iptr, typval_T *tv)
     if (obj_method_to_partial_tv(is_object ? obj : NULL, oc_method, tv)
 								== FAIL)
 	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Accessing a property of an opaque stored in a variable of type "any". Returns
+ * OK if the property is valid, else FAIL.
+ */
+    static int
+var_any_get_opaque_property(isn_T *iptr, typval_T *tv)
+{
+    opaque_T		*op = tv->vval.v_opaque;
+    size_t		str_len;
+    opaque_property_T	*prop;
+
+    if (op == NULL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_using_null_opaque));
+	return FAIL;
+    }
+
+    str_len = STRLEN(iptr->isn_arg.string);
+    prop = lookup_opaque_property(op->op_type, iptr->isn_arg.string, str_len, NULL);
+
+    if (prop == NULL)
+    {
+	semsg(_(e_opaque_str_property_str_no_exist), str_len, iptr->isn_arg.string,
+		op->op_type->ot_type);
+
+	// We must increment the reference count on failure because we
+	// dict_stack_save() consumes the opaque tv, which is cleared right
+	// after on error.
+	op->op_refcount++;
+	return FAIL;
+    }
+
+    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	op->op_refcount++;
+	return FAIL;
+    }
 
     return OK;
 }
@@ -4010,7 +4066,8 @@ exec_instructions(ectx_T *ectx)
 			if (iptr->isn_type == ISN_EXECUTE)
 			{
 			    if (tv->v_type == VAR_CHANNEL
-						      || tv->v_type == VAR_JOB)
+						      || tv->v_type == VAR_JOB
+						      || tv->v_type == VAR_OPAQUE)
 			    {
 				SOURCING_LNUM = iptr->isn_lnum;
 				semsg(_(e_using_invalid_value_as_string_str),
@@ -4653,6 +4710,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHJOB:
 	    case ISN_PUSHOBJ:
 	    case ISN_PUSHCLASS:
+	    case ISN_PUSHOPAQUE:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
@@ -4706,6 +4764,10 @@ exec_instructions(ectx_T *ectx)
 		    case ISN_PUSHCLASS:
 			tv->v_type = VAR_CLASS;
 			tv->vval.v_class = iptr->isn_arg.classarg;
+			break;
+		    case ISN_PUSHOPAQUE:
+			tv->v_type = VAR_OPAQUE;
+			tv->vval.v_opaque = NULL;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -5563,6 +5625,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREBLOB:
 	    case ISN_COMPAREOBJECT:
+	    case ISN_COMPAREOPAQUE:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
@@ -5600,6 +5663,10 @@ exec_instructions(ectx_T *ectx)
 		    else if (iptr->isn_type == ISN_COMPAREBLOB)
 		    {
 			status = typval_compare_blob(tv1, tv2, exprtype, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPAREOPAQUE)
+		    {
+			status = typval_compare_opaque(tv1, tv2, exprtype, &res);
 		    }
 		    else // ISN_COMPAREOBJECT
 		    {
@@ -6056,7 +6123,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    // dict member with string key (dict.member)
-	    // or can be an object
+	    // or can be an object or opaque
 	    case ISN_STRINGMEMBER:
 		{
 		    dict_T	*dict;
@@ -6074,6 +6141,14 @@ exec_instructions(ectx_T *ectx)
 					+ ectx->ec_dfunc_idx)->df_ufunc;
 			// Class or an object (not a Dict)
 			if (var_any_get_oc_member(ufunc->uf_class, iptr, tv) == FAIL)
+			    goto on_error;
+		    }
+		    if (tv->v_type == VAR_OPAQUE)
+		    {
+			if (dict_stack_save(tv) == FAIL)
+			    goto on_fatal_error;
+			// Is an opaque, not a dict
+			if (var_any_get_opaque_property(iptr, tv) == FAIL)
 			    goto on_error;
 		    }
 		    else
@@ -6155,6 +6230,63 @@ exec_instructions(ectx_T *ectx)
 		    object_unref(obj);
 		}
 		break;
+
+	    case ISN_GET_OPAQUE_PROPERTY:
+		{
+		    opaque_T		*op;
+		    int			idx;
+		    opaque_property_T	*prop;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_OPAQUE)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			opaque_required_error(tv);
+			goto on_error;
+		    }
+		    op = tv->vval.v_opaque;
+
+		    if (op == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_using_null_opaque));
+			goto on_error;
+		    }
+
+		    if (iptr->isn_arg.opaqueprop.oprop_ot == NULL)
+		    {
+			// Must find opaque type now
+			char_u	*name = iptr->isn_arg.opaqueprop.oprop_prop_name;
+			size_t	len = iptr->isn_arg.opaqueprop.oprop_prop_namelen;
+
+			prop = lookup_opaque_property(op->op_type,
+				name, len, &idx);
+
+			if (prop == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+                            semsg(_(e_opaque_str_property_str_no_exist), len,
+				    name, op->op_type->ot_type);
+			    goto on_error;
+                        }
+		    }
+		    else
+		    {
+			idx = iptr->isn_arg.opaqueprop.oprop_idx;
+			prop = &op->op_type->ot_properties[idx];
+
+		    }
+
+		    if (op->op_type->ot_property_func(op, prop, tv) == FAIL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			goto on_error;
+		    }
+
+		    opaque_unref(op);
+		}
+		break;
+
 
 	    case ISN_STORE_THIS:
 		{
@@ -7441,6 +7573,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);
 		break;
+	    case ISN_PUSHOPAQUE:
+		smsg("%s%4d PUSHOPAQUE null", pfx, current);
+		break;
 	    case ISN_AUTOLOAD:
 		smsg("%s%4d AUTOLOAD %s", pfx, current, iptr->isn_arg.string);
 		break;
@@ -7769,6 +7904,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREOBJECT:
+	    case ISN_COMPAREOPAQUE:
 	    case ISN_COMPAREANY:
 		   {
 		       char *p;
@@ -7809,6 +7945,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
 			   case ISN_COMPAREOBJECT:
 						 type = "COMPAREOBJECT"; break;
+			   case ISN_COMPAREOPAQUE: type = "COMPAREOPAQUE"; break;
 			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
 			   default: type = "???"; break;
 		       }
@@ -7855,6 +7992,27 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			     (int)iptr->isn_arg.classmember.cm_idx,
 			     iptr->isn_arg.classmember.cm_class->class_name);
 				     break;
+
+	    case ISN_GET_OPAQUE_PROPERTY:
+		{
+		    char_u *prop;
+		    int idx;
+
+		    if (iptr->isn_arg.opaqueprop.oprop_ot == NULL)
+		    {
+			prop = (char_u *)"ANY";
+			idx = -1;
+		    }
+		    else
+		    {
+			prop = iptr->isn_arg.opaqueprop.oprop_ot->ot_type;
+			idx = iptr->isn_arg.opaqueprop.oprop_idx;
+		    }
+
+		    smsg("%s%4d OPAQUE_PROPERTY %d on %s", pfx, current, idx, prop);
+		    break;
+		}
+
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
 	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;
@@ -8133,6 +8291,8 @@ tv2bool(typval_T *tv)
 #else
 	    break;
 #endif
+	case VAR_OPAQUE:
+	    return tv->vval.v_opaque != NULL;
 	case VAR_BLOB:
 	    return tv->vval.v_blob != NULL && tv->vval.v_blob->bv_ga.ga_len > 0;
 	case VAR_UNKNOWN:

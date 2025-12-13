@@ -40,6 +40,9 @@ typedef enum {
     ISN_LOAD_CLASSMEMBER,  // load class member, using isn_arg.classmember
     ISN_STORE_CLASSMEMBER,  // store in class member, using isn_arg.classmember
 
+    ISN_GET_OPAQUE_PROPERTY, // get opaque property, index is
+			     // isn_arg.opaqueprop.oprop_idx
+
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
     ISN_LOADV,	    // push v: variable isn_arg.number
@@ -103,6 +106,7 @@ typedef enum {
     ISN_PUSHJOB,	// push NULL job
     ISN_PUSHOBJ,	// push NULL object
     ISN_PUSHCLASS,	// push class, uses isn_arg.classarg
+    ISN_PUSHOPAQUE,	// push NULL opaque
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
 			// -1 for null_list
     ISN_NEWTUPLE,	// push tuple from stack items, size is isn_arg.number
@@ -173,6 +177,7 @@ typedef enum {
     ISN_COMPAREFUNC,
     ISN_COMPAREANY,
     ISN_COMPAREOBJECT,
+    ISN_COMPAREOPAQUE,
 
     // expression operations
     ISN_CONCAT,     // concatenate isn_arg.number strings
@@ -522,6 +527,15 @@ typedef struct {
     int		lu_is_arg;	// is lval_root a function arg
 } lockunlock_T;
 
+// arguments to ISN_GET_OPAQUE_PROPERTY
+typedef struct
+{
+    opaque_type_T   *oprop_ot;
+    int		    oprop_idx;
+    char_u	    *oprop_prop_name; // Set when "oprop_ot" is NULL
+    size_t	    oprop_prop_namelen;
+} opaqueproperty_T;
+
 /*
  * Instruction
  */
@@ -538,6 +552,8 @@ struct isn_S {
 	job_T		    *job;
 	partial_T	    *partial;
 	class_T		    *classarg;
+	opaque_T	    *opaque;
+	opaqueproperty_T    opaqueprop;
 	jump_T		    jump;
 	jumparg_T	    jumparg;
 	forloop_T	    forloop;

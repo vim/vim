@@ -99,6 +99,10 @@ free_tv(typval_T *varp)
 	    typealias_unref(varp->vval.v_typealias);
 	    break;
 
+	case VAR_OPAQUE:
+	    opaque_unref(varp->vval.v_opaque);
+	    break;
+
 	case VAR_NUMBER:
 	case VAR_FLOAT:
 	case VAR_ANY:
@@ -183,6 +187,10 @@ clear_tv(typval_T *varp)
 	case VAR_TYPEALIAS:
 	    typealias_unref(varp->vval.v_typealias);
 	    varp->vval.v_typealias = NULL;
+	    break;
+	case VAR_OPAQUE:
+	    opaque_unref(varp->vval.v_opaque);
+	    varp->vval.v_opaque = NULL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -270,6 +278,9 @@ tv_get_bool_or_number_chk(
 #endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_number));
+	    break;
+	case VAR_OPAQUE:
+	    emsg(_(e_using_opaque_as_number));
 	    break;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
@@ -412,6 +423,9 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    break;
+	case VAR_OPAQUE:
+	    emsg(_(e_using_opaque_as_float));
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -757,6 +771,62 @@ check_for_opt_chan_or_job_arg(typval_T *args, int idx)
     return args[idx].v_type == VAR_UNKNOWN ? OK : FAIL;
 }
 #endif
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an opaque.
+ */
+    int
+check_for_opaque_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_OPAQUE)
+    {
+	semsg(_(e_opaque_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an optional opaque
+ */
+    int
+check_for_opt_opaque_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type == VAR_UNKNOWN)
+	return OK;
+    return check_for_opaque_arg(args, idx);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an opaque of the given
+ * type. It is assumed that args[idx] is a valid opaque.
+ */
+    int
+check_for_opaque_type_arg(typval_T *args, int idx, opaque_type_T *type)
+{
+    if (args[idx].v_type == VAR_UNKNOWN)
+	return FAIL;
+    if (args[idx].vval.v_opaque == NULL)
+	return FAIL;
+    if (args[idx].vval.v_opaque->op_type != type)
+    {
+	semsg(_(e_opaque_str_required_for_argument_nr), type->ot_type, idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an opaque of the given
+ * type optionally. It is assumed that args[idx] is a valid opaque.
+ */
+    int
+check_for_opt_opaque_type_arg(typval_T *args, int idx, opaque_type_T *type)
+{
+    if (args[idx].v_type == VAR_UNKNOWN || args[idx].vval.v_opaque == NULL)
+	return OK;
+    return check_for_opaque_type_arg(args, idx, type);
+}
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or
@@ -1277,6 +1347,9 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
 	    break;
+	case VAR_OPAQUE:
+	    emsg(_(e_using_opaque_as_string));
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_INSTR:
@@ -1296,6 +1369,7 @@ tv_stringify(typval_T *varp, char_u *buf)
 {
     if (varp->v_type == VAR_LIST
 	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_TUPLE
 	    || varp->v_type == VAR_BLOB
 	    || varp->v_type == VAR_FUNC
 	    || varp->v_type == VAR_PARTIAL
@@ -1463,6 +1537,15 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_typealias->ta_refcount;
 	    }
 	    break;
+	case VAR_OPAQUE:
+	    if (from->vval.v_opaque == NULL)
+		to->vval.v_opaque = NULL;
+	    else
+	    {
+		to->vval.v_opaque = from->vval.v_opaque;
+		++to->vval.v_opaque->op_refcount;
+	    }
+	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
 	    ret = FAIL;
@@ -1542,6 +1625,11 @@ typval_compare2(
 	|| tv1->v_type == VAR_PARTIAL || tv2->v_type == VAR_PARTIAL)
     {
 	if (typval_compare_func(tv1, tv2, type, ic, res) == FAIL)
+	    return FAIL;
+    }
+    else if (tv1->v_type == VAR_OPAQUE || tv2->v_type == VAR_OPAQUE)
+    {
+	if (typval_compare_opaque(tv1, tv2, type, res) == FAIL)
 	    return FAIL;
     }
 
@@ -2045,6 +2133,55 @@ typval_compare_string(
     *res = val;
     return OK;
 }
+
+/*
+ * Compare "tv1" to "tv2" as opaques according to "type".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_opaque(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    *res)
+{
+    int		res_match = type == EXPR_EQUAL || type == EXPR_IS ? TRUE : FALSE;
+    opaque_T	*obj1, *obj2;
+
+    if (tv1->vval.v_opaque == NULL && tv2->vval.v_opaque == NULL)
+    {
+	*res = res_match;
+	return OK;
+    }
+    if (tv1->vval.v_opaque == NULL || tv2->vval.v_opaque == NULL)
+    {
+	*res = !res_match;
+	return OK;
+    }
+
+    if (STRCMP(tv1->vval.v_opaque->op_type, tv2->vval.v_opaque->op_type) != 0)
+    {
+	semsg(_(e_opaque_cannot_compare_str_with_str),
+		tv1->vval.v_opaque->op_type, tv2->vval.v_opaque->op_type);
+	return FAIL;
+    }
+
+    obj1  = tv1->vval.v_opaque;
+    obj2  = tv2->vval.v_opaque;
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	*res = obj1 == obj2 ? res_match : !res_match;
+	return OK;
+    }
+
+    if (obj1->op_type->ot_equal_func == obj2->op_type->ot_equal_func)
+	*res = obj2->op_type->ot_equal_func(obj1, obj2) ? res_match : !res_match;
+    else
+	*res = !res_match;
+    return OK;
+}
+
 /*
  * Convert any type to a string, never give an error.
  * When "quotes" is TRUE add quotes to a string.
@@ -2258,6 +2395,12 @@ tv_equal(
 
 	case VAR_TYPEALIAS:
 	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
+
+	case VAR_OPAQUE:
+	    return tv1->vval.v_opaque->op_type->ot_equal_func ==
+		tv2->vval.v_opaque->op_type->ot_equal_func &&
+		tv1->vval.v_opaque->op_type->ot_equal_func(
+			tv1->vval.v_opaque, tv2->vval.v_opaque);
 
 	case VAR_UNKNOWN:
 	case VAR_ANY:

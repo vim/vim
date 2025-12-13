@@ -1329,6 +1329,37 @@ XDIFF_INCL = \
 	xdiff/xtypes.h \
 	xdiff/xutils.h \
 
+TREESITTER_DEPS = \
+	treesitter/lib/src/alloc.h \
+	treesitter/lib/src/array.h \
+	treesitter/lib/src/atomic.h \
+	treesitter/lib/src/error_costs.h \
+	treesitter/lib/src/get_changed_ranges.h \
+	treesitter/lib/src/host.h \
+	treesitter/lib/src/language.h \
+	treesitter/lib/src/length.h \
+	treesitter/lib/src/lexer.h \
+	treesitter/lib/src/parser.h \
+	treesitter/lib/src/point.h \
+	treesitter/lib/src/portable/endian.h \
+	treesitter/lib/src/reduce_action.h \
+	treesitter/lib/src/reusable_node.h \
+	treesitter/lib/src/stack.h \
+	treesitter/lib/src/subtree.h \
+	treesitter/lib/src/tree.h \
+	treesitter/lib/src/tree_cursor.h \
+	treesitter/lib/src/ts_assert.h \
+	treesitter/lib/src/unicode/ICU_SHA \
+	treesitter/lib/src/unicode/ptypes.h \
+	treesitter/lib/src/unicode/umachine.h \
+	treesitter/lib/src/unicode/urename.h \
+	treesitter/lib/src/unicode/utf.h \
+	treesitter/lib/src/unicode/utf16.h \
+	treesitter/lib/src/unicode/utf8.h \
+	treesitter/lib/src/unicode.h \
+	treesitter/lib/src/wasm/wasm-stdlib.h \
+	treesitter/lib/src/wasm_store.h \
+
 ### Command to create dependencies based on #include "..."
 ### prototype headers are ignored due to -DPROTO, system
 ### headers #include <...> are ignored if we use the -MM option, as
@@ -1384,6 +1415,7 @@ ALL_LIBS = \
 	   $(X_PRE_LIBS) \
 	   $(X_LIBS) \
 	   $(WAYLAND_LIBS) \
+	   $(TREESITTER_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -1585,6 +1617,7 @@ BASIC_SRC = \
 	viminfo.c \
 	window.c \
 	bufwrite.c \
+	opaque.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1597,7 +1630,8 @@ SRC =	$(BASIC_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
-	$(WAYLAND_SRC)
+	$(WAYLAND_SRC) \
+	$(TREESITTER_SRC)
 
 EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
@@ -1631,7 +1665,7 @@ RUN_UNITTESTS = $(WAYLAND_SRC) run_json_test run_kword_test run_memfile_test run
 
 # All sources, also the ones that are not configured
 ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC) \
-		$(WAYLAND_SRC)
+		$(WAYLAND_SRC) $(TREESITTER_SRC)
 ALL_SRC = $(ALL_LOCAL_SRC) $(TERM_SRC) $(XDIFF_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
@@ -1762,6 +1796,7 @@ OBJ_COMMON = \
 	objects/viminfo.o \
 	objects/window.o \
 	objects/bufwrite.o \
+	objects/opaque.o \
 	$(GUI_OBJ) \
 	$(TERM_OBJ) \
 	$(LUA_OBJ) \
@@ -1775,7 +1810,8 @@ OBJ_COMMON = \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
 	$(XDIFF_OBJS_USED) \
-	$(WAYLAND_OBJ)
+	$(WAYLAND_OBJ) \
+	$(TREESITTER_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -1837,6 +1873,7 @@ PROTO_FILES = \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/bufwrite.pro \
+	proto/opaque.pro \
 	proto/change.pro \
 	proto/channel.pro \
 	proto/charset.pro \
@@ -3460,6 +3497,9 @@ objects/mbyte.o: mbyte.c
 objects/normal.o: normal.c
 	$(CCC) -o $@ normal.c
 
+objects/opaque.o: opaque.c
+	$(CCC) -o $@ opaque.c
+
 objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
@@ -3646,6 +3686,9 @@ objects/xdg-shell.o: auto/wayland/xdg-shell.c
 objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
 	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
 
+objects/treesitter.o: treesitter.c
+	$(CCC) $(TREESITTER_CFLAGS) -o $@ treesitter.c
+
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
 
@@ -3654,7 +3697,6 @@ objects/channel.o: channel.c
 
 # Dependencies that "make depend" doesn't find
 objects/gui_gtk_x11.o: version.h
-
 
 # Build rules for libvterm.  Putting them here allows for adding compilation
 # options specific for Vim.  Since the .o files go into objects/ we do need to
@@ -3712,6 +3754,14 @@ objects/xhistogram.o: xdiff/xhistogram.c $(XDIFF_INCL)
 objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
 
+# Build rules for libtree-sitter. We use the amalagted
+CCCTS = $(CCC_NF) $(ALL_CFLAGS) \
+       -D_POSIX_C_SOURCE=200112L -D_DEFAULT_SOURCE -D_DARWIN_C_SOURCE \
+       -Itreesitter/lib/src -Itreesitter/lib/src/wasm -Itreesitter/lib/include \
+       -Wno-missing-prototypes
+
+objects/treesitter_lib.o: treesitter/lib/src/lib.c $(TREESITTER_DEPS)
+	$(CCCTS) -o $@ treesitter/lib/src/lib.c
 
 Makefile:
 	@echo 'The name of the makefile MUST be "Makefile" (with capital M)!'
@@ -4383,6 +4433,11 @@ objects/bufwrite.o: auto/osdef.h bufwrite.c vim.h protodef.h auto/config.h featu
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/opaque.o: opaque.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
 objects/gui.o: auto/osdef.h gui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4530,6 +4585,43 @@ objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
 objects/xdg-shell.o: auto/wayland/xdg-shell.c
 objects/primary-selection-unstable-v1.o: \
  auto/wayland/primary-selection-unstable-v1.c
+objects/treesitter.o: treesitter.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/treesitter_lib.o: treesitter/lib/src/lib.c treesitter/lib/src/./alloc.c \
+ treesitter/lib/src/./alloc.h treesitter/lib/src/./get_changed_ranges.c \
+ treesitter/lib/src/././get_changed_ranges.h \
+ treesitter/lib/src/./././tree_cursor.h \
+ treesitter/lib/src/././././subtree.h \
+ treesitter/lib/src/./././././length.h \
+ treesitter/lib/src/././././././point.h \
+ treesitter/lib/src/./././././array.h \
+ treesitter/lib/src/././././././alloc.h \
+ treesitter/lib/src/././././././ts_assert.h \
+ treesitter/lib/src/./././././error_costs.h \
+ treesitter/lib/src/./././././host.h \
+ treesitter/lib/src/./././././parser.h treesitter/lib/src/./././subtree.h \
+ treesitter/lib/src/././subtree.h treesitter/lib/src/././language.h \
+ treesitter/lib/src/./././parser.h treesitter/lib/src/././error_costs.h \
+ treesitter/lib/src/././tree_cursor.h treesitter/lib/src/././ts_assert.h \
+ treesitter/lib/src/./language.c treesitter/lib/src/././wasm_store.h \
+ treesitter/lib/src/./lexer.c treesitter/lib/src/././length.h \
+ treesitter/lib/src/././lexer.h treesitter/lib/src/./././length.h \
+ treesitter/lib/src/././unicode.h treesitter/lib/src/././unicode/utf8.h \
+ treesitter/lib/src/././unicode/utf16.h \
+ treesitter/lib/src/././portable/endian.h treesitter/lib/src/./node.c \
+ treesitter/lib/src/././point.h treesitter/lib/src/././tree.h \
+ treesitter/lib/src/./parser.c treesitter/lib/src/././alloc.h \
+ treesitter/lib/src/././array.h treesitter/lib/src/././reduce_action.h \
+ treesitter/lib/src/./././array.h treesitter/lib/src/././reusable_node.h \
+ treesitter/lib/src/././stack.h treesitter/lib/src/./point.c \
+ treesitter/lib/src/./point.h treesitter/lib/src/./query.c \
+ treesitter/lib/src/./stack.c treesitter/lib/src/./subtree.c \
+ treesitter/lib/src/././atomic.h treesitter/lib/src/./tree_cursor.c \
+ treesitter/lib/src/./tree.c treesitter/lib/src/./wasm_store.c \
+ treesitter/lib/src/././parser.h
 objects/wayland.o: auto/osdef.h wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4777,3 +4869,4 @@ proto/gui_gtk_x11.pro: gui_gtk_x11.c
 proto/gui_x11.pro: gui_x11.c
 proto/gui_w32.pro: gui_w32.c
 proto/gui_photon.pro: gui_photon.c
+proto/opaque.pro: opaque.c

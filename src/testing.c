@@ -1152,6 +1152,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_typealias != NULL)
 		retval = argvars[0].vval.v_typealias->ta_refcount - 1;
 	    break;
+	case VAR_OPAQUE:
+	    if (argvars[0].vval.v_opaque != NULL)
+		retval = argvars[0].vval.v_opaque->op_refcount - 1;
+	    break;
     }
 
     rettv->v_type = VAR_NUMBER;
@@ -1268,6 +1272,90 @@ f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
 f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_VOID;
+}
+
+    void
+f_test_null_opaque(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = NULL;
+}
+
+typedef struct
+{
+    opaque_T	opaque;
+    int		val;
+} testopaque_T;
+
+    static bool
+test_opaque_equal(opaque_T *a, opaque_T *b)
+{
+    return ((testopaque_T *)a)->val == ((testopaque_T *)b)->val;
+}
+
+    static char_u *
+test_opaque_str(opaque_T *a, char_u **tofree)
+{
+    snprintf((char *)IObuff, IOSIZE, "Opaque '%s': value %d",
+	    a->op_type->ot_type, ((testopaque_T *)a)->val);
+    *tofree = vim_strsave(IObuff);
+    return *tofree;
+}
+
+    static int
+test_opaque_property(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
+{
+    int val = ((testopaque_T *)op)->val;
+
+    switch (prop->opp_idx)
+    {
+	case 0: // type
+	    rettv->v_type = VAR_STRING;
+	    rettv->vval.v_string = vim_strsave(op->op_type->ot_type);
+	    break;
+	case 1: // val
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = val;
+	    break;
+	default:
+	    return FAIL;
+    }
+    return OK;
+}
+
+static opaque_property_T test_opaque_properties[] = {
+    {0,	OPPROPNAME("type"), &t_string},
+    {1,	OPPROPNAME("val"), &t_number},
+};
+
+opaque_type_T test_opaque_type = {
+    (char_u *)"TestOpaque", ARRAY_LENGTH(test_opaque_properties),
+    test_opaque_properties, NULL, test_opaque_equal,
+    test_opaque_str, test_opaque_property
+};
+
+/*
+ * In evalfunc.c, this function indicates it returns ret_opaque, and not a more
+ * specific type indicating the opaque type. This is intentional and used to
+ * test some logic that handles this case.
+ */
+    void
+f_test_opaque(typval_T *argvars, typval_T *rettv)
+{
+    opaque_T *op;
+
+    if (check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    op = opaque_new(&test_opaque_type, sizeof(testopaque_T));
+
+    if (op == NULL)
+	return;
+    ((testopaque_T *)op)->val = argvars[0].vval.v_number;
+    op->op_refcount++;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
 }
 
     void

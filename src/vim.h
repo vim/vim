@@ -2052,6 +2052,22 @@ typedef int sock_T;
 # define FEAT_CLIPBOARD_PROVIDER
 #endif
 
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+# define ELAPSED_TIMEVAL
+# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
+# define ELAPSED_FUNC(v) elapsed(&(v))
+typedef struct timeval elapsed_T;
+long elapsed(struct timeval *start_tv);
+#elif defined(MSWIN)
+# define ELAPSED_TICKCOUNT
+# define ELAPSED_INIT(v) v = GetTickCount()
+# define ELAPSED_FUNC(v) elapsed(v)
+typedef DWORD elapsed_T;
+# ifndef PROTO
+long elapsed(DWORD start_tick);
+# endif
+#endif
+
 // Include option.h before structs.h, because the number of window-local and
 // buffer-local options is used there.
 #include "option.h"	// options and default values
@@ -2271,7 +2287,8 @@ typedef int sock_T;
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
 #define VV_CLIPPROVIDERS 117
-#define VV_LEN		118	// number of v: vars
+#define VV_TYPE_OPAQUE	118
+#define VV_LEN		119	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2298,6 +2315,7 @@ typedef int sock_T;
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
+#define VAR_TYPE_OPAQUE	    18
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
