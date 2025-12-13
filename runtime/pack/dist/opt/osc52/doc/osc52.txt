@@ -3,8 +3,9 @@
 
 			  VIM REFERENCE MANUAL
 
-Use OSC 52 terminal command for clipboard support
+Use the OSC 52 terminal command for clipboard support
 ==============================================================================
+
 1. OVERVIEW					        *osc52-overview*
 
 The osc52.vim plugin provides support for the OSC 52 terminal command, which
