@@ -48,7 +48,6 @@ func Test_osc52_paste()
     set clipmethod=osc52
   END
   call writefile(lines, "Xosc52.vim", "D")
-  defer delete("Xosc52result")
 
   let buf = RunVimInTerminal("-S Xosc52.vim", {})
 
