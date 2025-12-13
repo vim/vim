@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Nov 27
+*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4465,6 +4465,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set guiligatures=!\"#$%&()*+-./:<=>?@[]^_{\|~
 <	Changing this option updates screen output immediately.  Set it to an
 	empty string to disable ligatures.
+
+						*'guiopacity'* *'gop'*
+'guiopacity' 'gop'	float	(default 1.0)
+			global
+			{only in the Win32 GUI}
+	Adjusts the transparency of the main GUI window. Valid values lie in
+	the range (0.0, 1.0] (greater than 0.0 and up to and including 1.0).
+	Values outside this interval or non‑numeric input cause an error.
+	This setting applies to the complete window, including the menu bar,
+	toolbars, and scrollbars.
+	Example: >
+		:set guiopacity=0.85    " 85% opaque, 15% transparent
+<	Warning: A very low value (e.g. 0.1) can make the window extremely
+	difficult to read.
 
 						*'guioptions'* *'go'*
 'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
