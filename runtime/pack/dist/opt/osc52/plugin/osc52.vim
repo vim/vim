@@ -5,6 +5,10 @@ vim9script
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
 # Last Change:	2025 October 14
 
+if !has("timers")
+  finish
+endif
+
 import autoload "../autoload/osc52.vim" as osc
 
 v:clipproviders["osc52"] = {
