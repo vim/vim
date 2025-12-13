@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-06 10:11+0100\n"
+"POT-Creation-Date: 2025-12-13 17:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8837,6 +8837,12 @@ msgid "E1568: OSC command response timed out: %.*s"
 msgstr ""
 
 msgid "E1569: Cannot use listener_add in a listener callback"
+msgstr ""
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr ""
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr ""
 
 #. type of cmdline window or 0

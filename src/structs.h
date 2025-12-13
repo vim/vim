@@ -2864,6 +2864,19 @@ struct listener_S
     int		lr_id;
     callback_T	lr_callback;
 };
+
+// Structure used for listeners added with redraw_listener_add().
+typedef struct redraw_listener_S redraw_listener_T;
+struct redraw_listener_S
+{
+    redraw_listener_T	*rl_next;
+    int			rl_id;
+    struct
+    {
+	callback_T	on_start;
+	callback_T	on_end;
+    }			rl_callbacks;
+};
 #endif
 
 /*

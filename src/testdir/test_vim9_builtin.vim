@@ -3471,6 +3471,14 @@ def Test_readfile()
   v9.CheckSourceDefExecAndScriptFailure(['readfile("")'], 'E1175: Non-empty string required for argument 1')
 enddef
 
+def Test_redraw_listener_add()
+  v9.CheckSourceDefAndScriptFailure(['redraw_listener_add("1")'], ['E1013: Argument 1: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 1'])
+enddef
+
+def Test_redraw_listener_remove()
+  v9.CheckSourceDefAndScriptFailure(['redraw_listener_remove("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
+enddef
+
 def Test_reduce()
   v9.CheckSourceDefAndScriptFailure(['reduce({a: 10}, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1253: String, List, Tuple or Blob required for argument 1'])
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))

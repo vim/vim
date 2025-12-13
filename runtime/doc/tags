@@ -4755,6 +4755,8 @@ E1567	remote.txt	/*E1567*
 E1568	options.txt	/*E1568*
 E1569	builtin.txt	/*E1569*
 E157	sign.txt	/*E157*
+E1570	builtin.txt	/*E1570*
+E1571	builtin.txt	/*E1571*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
@@ -10028,6 +10030,8 @@ recovery	recover.txt	/*recovery*
 recursive_mapping	map.txt	/*recursive_mapping*
 redo	undo.txt	/*redo*
 redo-register	undo.txt	/*redo-register*
+redraw_listener_add()	builtin.txt	/*redraw_listener_add()*
+redraw_listener_remove()	builtin.txt	/*redraw_listener_remove()*
 reduce()	builtin.txt	/*reduce()*
 ref	intro.txt	/*ref*
 reference	intro.txt	/*reference*

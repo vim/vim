@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -493,6 +493,8 @@ readdirex({dir} [, {expr} [, {dict}]])
 				List	file info in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
+redraw_listener_add({opts})	Number	add callbacks to listen for redraws
+redraw_listener_remove({id})	none	remove a redraw listener
 reduce({object}, {func} [, {initial}])
 				any	reduce {object} using {func}
 reg_executing()			String	get the executing register name
@@ -8783,6 +8785,48 @@ readfile({fname} [, {type} [, {max}]])			*readfile()*
 			GetFileName()->readfile()
 <
 		Return type: list<string> or list<any>
+
+
+redraw_listener_add({opts})				*redraw_listener_add()*
+		Add a listener that holds callback functions that will be
+		called at specific times in the redraw cycle.  {opts} is a
+		dictionary that contain the callback functions to be defined.
+		At least one callback must be specified. *E1571*
+		Returns a unique ID that can be passed to
+		|redraw_listener_remove()|.
+
+		{opts} may have the following entries:
+
+		    on_start	Called first on each screen redraw.  Takes no
+				arguments and returns nothing.
+		    on_end	Called at the end of each screen redraw.
+				Takes no arguments and returns nothing.
+
+		A good use case for this function is with the |listener_add()|
+		callback with unbuffered set to TRUE.  This allows you to
+		modify the state on buffer changes, and finally render that
+		state just before the next redraw, only if it has changed.
+		Attempting to render or redraw for every single buffer change
+		would be very inefficient.
+
+		You may not call redraw_listener_add() during any of the
+		callbacks defined in {opts}. *E1570*
+
+		Can also be used as a |method|: >
+			GetOpts()->redraw_listener_add()
+<
+		Return type: |Number|
+
+
+redraw_listener_remove({id})				*redraw_listener_remove()*
+		Remove a redraw listener previously added with
+		|redraw_listener_add()|.  Returns FALSE when {id} could not be
+		found, TRUE when {id} was removed.
+
+		Can also be used as a |method|: >
+			GetRedrawListenerId()->redraw_listener_remove()
+<
+		Return type: |Number|
 
 
 reduce({object}, {func} [, {initial}])			*reduce()* *E998*
