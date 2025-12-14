@@ -2371,6 +2371,8 @@ const ft_from_ext = {
   "norg": "norg",
   # Novell netware batch files
   "ncf": "ncf",
+  # N-Quads
+  "nq": "nq",
   # Not Quite C
   "nqc": "nqc",
   # NSE - Nmap Script Engine - uses Lua syntax
