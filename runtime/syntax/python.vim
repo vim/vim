@@ -34,6 +34,7 @@
 "   let python_no_exception_highlight = 1
 "   let python_no_number_highlight = 1
 "   let python_space_error_highlight = 1
+"   let python_constant_highlight = 1
 "
 " All the options above can be switched on together.
 "
@@ -85,6 +86,7 @@ if exists("python_highlight_all")
     unlet python_no_number_highlight
   endif
   let python_space_error_highlight = 1
+  let python_constant_highlight = 1
 endif
 
 " Keep Python keywords in alphabetical order inside groups for easy
@@ -367,6 +369,13 @@ if exists("python_space_error_highlight")
   syn match   pythonSpaceError	display "\t\+ "
 endif
 
+" Built-in Constants
+" https://docs.python.org/3/library/constants.html
+if exists("python_constant_highlight")
+  syn keyword pythonBoolean	False True
+  syn keyword pythonConstant	None NotImplemented Ellipsis __debug__
+endif
+
 " Do not spell doctests inside strings.
 " Notice that the end of a string, either ''', or """, will end the contained
 " doctest too.  Thus, we do *not* need to have it as an end pattern.
@@ -433,6 +442,10 @@ endif
 if !exists("python_no_doctest_highlight")
   hi def link pythonDoctest		Special
   hi def link pythonDoctestValue	Define
+endif
+if exists("python_constant_highlight")
+  hi def link pythonBoolean		Boolean
+  hi def link pythonConstant		Constant
 endif
 
 let b:current_syntax = "python"
