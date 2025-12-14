@@ -269,9 +269,9 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
     typval_T *row;
     typval_T *col;
 
-    if (tuple->tv_items.ga_len != 2)
+    if (tuple_len(tuple) != 2)
     {
-	semsg(_(e_invalid_argument_str), "tuple not type <number, number>");
+	semsg(_(e_invalid_argument_str), "tuple not of type <number, number>");
 	return FAIL;
     }
 
@@ -280,12 +280,60 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
 
     if (row->v_type != VAR_NUMBER || col->v_type != VAR_NUMBER)
     {
-	emsg(_(e_invalid_argument_tuple_not_number_number));
+	semsg(_(e_invalid_argument_str), "tuple not of type <number, number>");
 	return FAIL;
     }
 
     point->row = row->vval.v_number - 1;
     point->column = col->vval.v_number - 1;
+    return OK;
+}
+
+/*
+ * Convert a tuple into a TSRange struct. Returns FAIL on failure, and emits an
+ * error. The tuple should be in the format of:
+ * ((start_point), start_byte, (end_point), end_byte)
+ *
+ */
+    static int
+tuple_to_tsrange(tuple_T *tuple, TSRange *range)
+{
+    typval_T	*starttv, *endtv, *start_bytetv, *end_bytetv;
+    TSPoint	start, end;
+
+    if (tuple_len(tuple) != 4)
+    {
+	semsg(_(e_invalid_argument_str),
+		"tuple not type <tuple<number, number>, number, tuple<number, "
+		"number>, number>");
+        return FAIL;
+    }
+
+    starttv = TUPLE_ITEM(tuple, 0);
+    start_bytetv = TUPLE_ITEM(tuple, 1);
+    endtv = TUPLE_ITEM(tuple, 2);
+    end_bytetv = TUPLE_ITEM(tuple, 3);
+
+    if (starttv->v_type != VAR_TUPLE
+	    || endtv->v_type != VAR_TUPLE
+	    || start_bytetv->v_type != VAR_NUMBER
+	    || end_bytetv->v_type != VAR_NUMBER)
+    {
+	semsg(_(e_invalid_argument_str),
+		"tuple not type <tuple<number, number>, number, tuple<number, "
+		"number>, number>");
+        return FAIL;
+    }
+
+    if (tuple_to_tspoint(starttv->vval.v_tuple, &start) == FAIL
+	    || tuple_to_tspoint(endtv->vval.v_tuple, &end) == FAIL)
+	return FAIL;
+
+    range->start_point = start;
+    range->end_point = end;
+    range->start_byte = start_bytetv->vval.v_number;
+    range->end_byte = end_bytetv->vval.v_number;
+
     return OK;
 }
 
@@ -1155,6 +1203,55 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 	rettv->v_type = VAR_OPAQUE;
 	rettv->vval.v_opaque = res;
     }
+}
+
+    void
+f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
+{
+    listitem_T	*li;
+    TSRange	*ranges;
+    long	len;
+    uint32_t	i = 0;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_list_arg(argvars, 1) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
+	return;
+
+    // The list contains tuples in the format of:
+    // ((start_point), start_byte, (end_point), end_byte)
+    len = list_len(argvars[1].vval.v_list);
+
+    if (len == 0)
+    {
+	semsg(_(e_invalid_argument_str), "empty list");
+	return;
+    }
+
+    ranges = ALLOC_MULT(TSRange, len);
+
+    if (ranges == NULL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
+    {
+	if (li->li_tv.v_type != VAR_TUPLE)
+	{
+	    semsg(_(e_invalid_argument_str), "list of tuples required");
+	    goto exit;
+	}
+	if (tuple_to_tsrange(li->li_tv.vval.v_tuple, ranges + i) == FAIL)
+	    goto exit;
+	i++;
+    }
+
+    rettv->vval.v_number = ts_parser_set_included_ranges(
+	    OP2TSPARSER(argvars[0].vval.v_opaque)->parser, ranges, len);
+    rettv->v_type = VAR_BOOL;
+exit:
+    vim_free(ranges);
 }
 
     void
