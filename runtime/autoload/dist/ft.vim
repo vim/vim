@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Dec 07
+# Last Change:		2025 Dec 14
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2371,6 +2371,8 @@ const ft_from_ext = {
   "norg": "norg",
   # Novell netware batch files
   "ncf": "ncf",
+  # N-Quads
+  "nq": "nq",
   # Not Quite C
   "nqc": "nqc",
   # NSE - Nmap Script Engine - uses Lua syntax
