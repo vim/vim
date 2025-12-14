@@ -5,6 +5,7 @@ void tuple_set_item(tuple_T *tuple, int idx, typval_T *tv);
 void tuple_set_tuple(tuple_T *tuple, int idx, tuple_T *t);
 void tuple_set_list(tuple_T *tuple, int idx, list_T *l);
 void tuple_set_string(tuple_T *tuple, int idx, char_u *str);
+void tuple_set_number(tuple_T *tuple, int idx, varnumber_T nr);
 int rettv_tuple_alloc(typval_T *rettv);
 void rettv_tuple_set(typval_T *rettv, tuple_T *tuple);
 int rettv_tuple_set_with_items(typval_T *rettv, int count);
