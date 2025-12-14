@@ -17,6 +17,12 @@ def OSCMessage(id: number)
 enddef
 
 export def Paste(reg: string): tuple<string, list<string>>
+  # Check if user has indicated that the terminal does not support OSC 52 paste
+  # (or has disabled it)
+  if get(g:, 'osc52_disable_paste', 0)
+    return ("c", [""])
+  endif
+
   # Some terminals like Kitty respect the selection type parameter on both X11
   # and Wayland. If the terminal doesn't then the selection type parameter
   # should be ignored (no-op)
