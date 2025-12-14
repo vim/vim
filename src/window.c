@@ -7727,9 +7727,9 @@ frame_change_statusline_height_rec(frame_T *frp)
 	    {
 		wp->w_status_height = frp->fr_height - wp->w_winbar_height
 		    - p_wmh;
-		win_new_height(wp, frp->fr_height - wp->w_status_height
-			- wp->w_winbar_height);
 	    }
+	    win_new_height(wp, frp->fr_height - wp->w_status_height
+		    - wp->w_winbar_height);
 	}
     }
     else if (frp->fr_layout == FR_ROW)
