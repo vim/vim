@@ -106,10 +106,24 @@ static opaque_type_T tsnode_type;
 static opaque_type_T tsquery_type;
 static opaque_type_T tsquerycursor_type;
 
+    static void *
+ts_calloc(size_t n, size_t size)
+{
+    return alloc_clear(n * size);
+}
+
+    static void *
+ts_realloc(void *ptr, size_t size)
+{
+    return vim_realloc(ptr, size);
+}
+
     int
 tsvim_init(void)
 {
     hash_init(&languages);
+
+    ts_set_allocator(alloc, ts_calloc, ts_realloc, vim_free);
 
     return OK;
 }
