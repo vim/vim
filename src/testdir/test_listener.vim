@@ -774,4 +774,12 @@ func Test_redraw_remove_in_callback()
   call StopVimInTerminal(buf)
 endfunc
 
+func s:OnRedraw()
+endfunc
+
+" Test if partial is correctly ref'ed and doesn't cause use afte free error
+func Test_redraw_listener_partial()
+  call redraw_listener_add(#{on_start: function("s:OnRedraw", [1])})
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
