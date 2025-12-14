@@ -3834,8 +3834,6 @@ EXTERN char e_treesitter_lang_not_loaded[]
 	INIT(= N_("E1572: Language %s is not loaded"));
 EXTERN char e_tsparser_not_set_to_language[]
 	INIT(= N_("E1573: TSParser is not set to a language"));
-EXTERN char e_invalid_argument_tuple_not_number_number[]
-	INIT(= N_("E1575: Invalid argument: tuple is not of type <number, number>"));
 EXTERN char e_tsquery_error[]
 	INIT(= N_("E1575: TSQuery error at row %d, column %d: %s"));
 EXTERN char e_tsquerycursor_match_invalid[]
