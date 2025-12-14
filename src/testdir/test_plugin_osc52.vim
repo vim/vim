@@ -46,6 +46,7 @@ func Test_osc52_paste()
   let lines =<< trim END
     packadd osc52
     set clipmethod=osc52
+    redraw!
   END
   call writefile(lines, "Xosc52.vim", "D")
 
@@ -76,6 +77,15 @@ func Test_osc52_paste()
   call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_osc52_paste_03', {})
+
+  " Test if interrupt is handled and message is outputted
+  call term_sendkeys(buf, "\"+p")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<C-c>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_osc52_paste_04', {})
 
   call StopVimInTerminal(buf)
 endfunc

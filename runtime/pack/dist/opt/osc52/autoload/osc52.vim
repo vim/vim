@@ -33,18 +33,37 @@ export def Paste(reg: string): tuple<string, list<string>>
   endif
 
   var timerid: number = timer_start(1000, OSCMessage)
+  var interrupt: bool = false
 
-  # Wait for response from terminal
-  while true
-    if getcharstr(-1, {cursor: "hide"}) == "\<xOSC>" && match(v:termosc, '52;') != -1
-      break
+  # Wait for response from terminal. If we got interrupted (Ctrl-C), then do a
+  # redraw if we already sent the message, and return an empty string.
+  try
+    while true
+      var key: string =  getcharstr(-1, {cursor: "hide"})
+
+      if key == "\<xOSC>" && match(v:termosc, '52;') != -1
+        break
+      elseif key == "\<C-c>"
+        interrupt = true
+        break
+      endif
+    endwhile
+
+  # This doesn't seem to catch Ctrl-C sent via term_sendkeys(), which is used in
+  # tests. So also check the result of getcharstr()/getchar().
+  catch /^Vim:Interrupt$/
+    interrupt = true
+  finally
+    timer_stop(timerid)
+    if sent_message
+      sent_message = false
+      :redraw!
     endif
-  endwhile
+  endtry
 
-  timer_stop(timerid)
-  if sent_message
-    sent_message = false
-    :redraw!
+  if interrupt
+    echo "Interrupted while waiting for OSC 52 response"
+    return ("c", [""])
   endif
 
   # Extract the base64 stuff

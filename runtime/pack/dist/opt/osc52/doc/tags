@@ -1,4 +1,4 @@
-g:osc52_always_access	osc52.txt	/*g:osc52_always_access*
+g:osc52_disable_paste	osc52.txt	/*g:osc52_disable_paste*
 g:osc52_force_avail	osc52.txt	/*g:osc52_force_avail*
 osc52-how-to-use	osc52.txt	/*osc52-how-to-use*
 osc52-overview	osc52.txt	/*osc52-overview*
