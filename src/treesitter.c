@@ -235,8 +235,8 @@ tspoint_to_tuple(TSPoint point)
 
     row.v_type = VAR_NUMBER;
     column.v_type = VAR_NUMBER;
-    row.vval.v_number = point.row;
-    column.vval.v_number = point.column;
+    row.vval.v_number = point.row + 1;
+    column.vval.v_number = point.column + 1;
 
     tuple_set_item(t, 0, &row);
     tuple_set_item(t, 1, &column);
@@ -270,8 +270,8 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
 	return FAIL;
     }
 
-    point->row = row->vval.v_number;
-    point->column = col->vval.v_number;
+    point->row = row->vval.v_number - 1;
+    point->column = col->vval.v_number - 1;
     return OK;
 }
 
