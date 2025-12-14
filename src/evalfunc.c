@@ -1328,7 +1328,6 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
-static argcheck_T arg1_tstree[] = {arg_tstree};
 static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
 static argcheck_T arg1_tsquery[] = {arg_tsquery};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
@@ -3275,7 +3274,7 @@ static const funcentry_T global_functions[] =
     {"tsnode_child",	2, 3, FEARG_1,	    arg3_tsnode_number_bool,
 			TS_OPRET(ret_tsnode), TS_FUNC(f_tsnode_child)},
     {"tsnode_descendant_for_range", 3, 4, FEARG_1, arg4_tsnode_tuple_tuple_bool,
-			TS_OPRET(ret_tsnode), 
+			TS_OPRET(ret_tsnode),
 			TS_FUNC(f_tsnode_descendant_for_range)},
     {"tsparser_new",	0, 0, 0,	    NULL,
 			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
@@ -3301,8 +3300,6 @@ static const funcentry_T global_functions[] =
 			ret_bool,	    TS_FUNC(f_tsquerycursor_next_match)},
     {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
-    {"tstree_root_node", 1, 1, FEARG_1,	    arg1_tstree,
-			TS_OPRET(ret_tsnode), TS_FUNC(f_tstree_root_node)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
