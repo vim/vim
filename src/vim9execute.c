@@ -6254,10 +6254,10 @@ exec_instructions(ectx_T *ectx)
 			if (prop == NULL)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
-                            semsg(_(e_opaque_str_property_str_no_exist), len,
+			    semsg(_(e_opaque_str_property_str_no_exist), len,
 				    name, op->op_type->ot_type);
 			    goto on_error;
-                        }
+			}
 		    }
 		    else
 		    {
