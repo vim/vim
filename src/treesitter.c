@@ -239,7 +239,7 @@ new_tsnode(TSNode *node, opaque_T *tree)
  * Create a tuple that represents a TSPoint. Returns NULL on failure.
  */
     static tuple_T *
-tspoint_to_tuple(TSPoint point)
+tspoint_to_tuple(TSPoint *point)
 {
     typval_T	row, column;
     tuple_T	*t = tuple_alloc_with_items(2);
@@ -249,8 +249,8 @@ tspoint_to_tuple(TSPoint point)
 
     row.v_type = VAR_NUMBER;
     column.v_type = VAR_NUMBER;
-    row.vval.v_number = point.row + 1;
-    column.vval.v_number = point.column + 1;
+    row.vval.v_number = point->row + 1;
+    column.vval.v_number = point->column + 1;
 
     tuple_set_item(t, 0, &row);
     tuple_set_item(t, 1, &column);
@@ -335,6 +335,44 @@ tuple_to_tsrange(tuple_T *tuple, TSRange *range)
     range->end_byte = end_bytetv->vval.v_number;
 
     return OK;
+}
+
+/*
+ * Create a tuple that represents a TSRange. Returns NULL on failure.
+ */
+    static tuple_T *
+tsrange_to_tuple(TSRange *range)
+{
+    tuple_T	*t = tuple_alloc_with_items(4);
+    tuple_T	*start, *end;
+
+    if (t == NULL)
+	return NULL;
+
+    start = tspoint_to_tuple(&range->start_point);
+
+    if (start == NULL)
+    {
+	tuple_unref(t);
+	return NULL;
+    }
+
+    end = tspoint_to_tuple(&range->end_point);
+
+    if (end == NULL)
+    {
+	tuple_unref(t);
+	tuple_unref(start);
+	return NULL;
+    }
+
+    tuple_set_tuple(t, 0, start);
+    tuple_set_number(t, 1, range->start_byte);
+    tuple_set_tuple(t, 2, end);
+    tuple_set_number(t, 3, range->end_byte);
+    t->tv_refcount++;
+
+    return t;
 }
 
     static TSVimLanguage *
@@ -472,8 +510,11 @@ tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 	    rettv->vval.v_number = ts_node_end_byte(node);
 	    break;
 	case NPROP_END_POINT:		    // end_point
+	{
+	    TSPoint p = ts_node_end_point(node);
 	    rettv->v_type = VAR_TUPLE;
-	    rettv->vval.v_tuple = tspoint_to_tuple(ts_node_end_point(node));
+	    rettv->vval.v_tuple = tspoint_to_tuple(&p);
+	}
 	    break;
 	case NPROP_EXTRA:		    // extra
 	    rettv->v_type = VAR_BOOL;
@@ -519,8 +560,11 @@ tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 	    rettv->vval.v_number = ts_node_start_byte(node);
 	    break;
 	case NPROP_START_POINT:		    // start_point
+	{
+	    TSPoint p = ts_node_start_point(node);
 	    rettv->v_type = VAR_TUPLE;
-	    rettv->vval.v_tuple = tspoint_to_tuple(ts_node_start_point(node));
+	    rettv->vval.v_tuple = tspoint_to_tuple(&p);
+	}
 	    break;
 	case NPROP_STRING:		    // string
 	    rettv->v_type = VAR_STRING;
@@ -1144,13 +1188,6 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 		? NULL : argvars[3].vval.v_opaque,
 		buf, argvars[2].vval.v_number);
 
-	if (res == NULL)
-	{
-	    rettv->v_type = VAR_OPAQUE;
-	    rettv->vval.v_opaque = NULL;
-	    return;
-	}
-
 	rettv->v_type = VAR_OPAQUE;
 	rettv->vval.v_opaque = res;
     }
@@ -1203,6 +1240,59 @@ f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_BOOL;
 exit:
     vim_free(ranges);
+}
+
+    void
+f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
+{
+    tuple_T	    *ret;
+    const TSRange   *ranges;
+    uint32_t	    count;
+    opaque_T	    *parser;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
+	return;
+
+    parser = argvars[0].vval.v_opaque;
+    ranges = ts_parser_included_ranges(OP2TSPARSER(parser)->parser, &count);
+
+    ret = tuple_alloc_with_items(count);
+
+    if (ret == NULL)
+	return;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+	TSRange range = ranges[i];
+	tuple_T	*t = tsrange_to_tuple(&range);
+
+	if (t == NULL)
+	{
+	    tuple_unref(ret);
+	    return;
+	}
+
+	tuple_set_tuple(ret, i, t);
+    }
+
+    ret->tv_refcount++;
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = ret;
+}
+
+    void
+f_tsparser_reset(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
+	return;
+
+    ts_parser_reset(OP2TSPARSER(argvars[0].vval.v_opaque)->parser);
 }
 
     void
