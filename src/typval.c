@@ -809,11 +809,8 @@ check_for_opt_opaque_arg(typval_T *args, int idx)
     int
 check_for_opaque_type_arg(typval_T *args, int idx, opaque_type_T *type)
 {
-    if (args[idx].v_type == VAR_UNKNOWN)
-	return FAIL;
-    if (args[idx].vval.v_opaque == NULL)
-	return FAIL;
-    if (args[idx].vval.v_opaque->op_type != type)
+    if (args[idx].vval.v_opaque == NULL
+	    || args[idx].vval.v_opaque->op_type != type)
     {
 	semsg(_(e_opaque_str_required_for_argument_nr), type->ot_type, idx + 1);
 	return FAIL;
