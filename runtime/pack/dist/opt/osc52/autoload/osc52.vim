@@ -12,7 +12,7 @@ enddef
 var sent_message: bool = false
 
 def OSCMessage(id: number)
-  echom "Waiting for OSC52 response... Press CTRL-C to quit"
+  echom "Waiting for OSC52 response... Press CTRL-C to cancel"
   sent_message = true
 enddef
 

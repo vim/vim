@@ -35,8 +35,8 @@ then it is up to the terminal to handle what selection to use.
 The osc52.vim plugin relies on Vim's clipboard provider functionality, see
 |clipboard-providers|.  In short, add these commands to your vimrc to get
 everything working: >vim
-        :packadd osc52
-        :set clipmethod+=osc52
+        packadd osc52
+        set clipmethod+=osc52
 <
 This will make the osc52.vim provider the last resort if there are other
 values in |clipmethod|.  This allows Vim, for example, to access the system
