@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41721,6 +41721,8 @@ Options: ~
   to ">" by default, indicating text that extends beyond the window width.
 - 'guioptions': New value |'go-C'| to style the title/caption bar on Windows 11
   (see also the below platform specific change).
+- 'guioptions': Support darkmode on MS-Windows for menu and title bar using
+  |'go-d'| (see also the below platform specific change).
 - 'completepopup': Add more values to style popup windows.
 
 Ex commands: ~
@@ -41760,10 +41762,12 @@ Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be
   absolute paths (to the current drive) and no longer relative.
 - MS-Windows: The title bar follows the |hl-TitleBar| and |hl-TitleBarNC|
-  highlighting group |gui-w32-title-bar|.
+  highlighting group |gui-w32-title-bar| with |'go-C'|
+- MS-Windows: Support darkmode for menu and title bar using |'go-d'|
 - MS-Windows: Vim no longer searches the current directory for
   executables when running external commands; prefix a relative or absolute
   path if you want the old behavior |$NoDefaultCurrentDirectoryInExePath|.
+
 - macOS: increase default scheduler priority to TASK_DEFAULT_APPLICATION.
 
 Others: ~
