@@ -1627,7 +1627,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 
     if (IS_ENUM(cl))
     {
-	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name,
+	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name.string,
 		m->ocm_name);
 	return FALSE;
     }
@@ -1758,7 +1758,7 @@ compile_lhs_class_variable(
 	// A class variable can be accessed without the class name
 	// only inside a class.
 	semsg(_(e_class_variable_str_accessible_only_inside_class_str),
-		lhs->lhs_name, defcl->class_name);
+		lhs->lhs_name, defcl->class_name.string);
 	return FAIL;
     }
 
@@ -2055,7 +2055,7 @@ compile_lhs_set_oc_member_type(
 	if (!inside_class(cctx, cl))
 	{
 	    semsg(_(e_enumvalue_str_cannot_be_modified),
-		    cl->class_name, m->ocm_name);
+		    cl->class_name.string, m->ocm_name);
 	    return FAIL;
 	}
 	if (lhs->lhs_type->tt_type == VAR_OBJECT &&
@@ -2064,7 +2064,7 @@ compile_lhs_set_oc_member_type(
 	    char *msg = lhs->lhs_member_idx == 0 ?
 		e_enum_str_name_cannot_be_modified :
 		e_enum_str_ordinal_cannot_be_modified;
-	    semsg(_(msg), cl->class_name);
+	    semsg(_(msg), cl->class_name.string);
 	    return FAIL;
 	}
     }

@@ -283,7 +283,7 @@ tv_get_bool_or_number_chk(
 		{
 		    class_T *cl = varp->vval.v_object->obj_class;
 		    if (cl != NULL && IS_ENUM(cl))
-			semsg(_(e_using_enum_str_as_number), cl->class_name);
+			semsg(_(e_using_enum_str_as_number), cl->class_name.string);
 		    else
 			emsg(_(e_using_object_as_number));
 		}
@@ -1248,7 +1248,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 		{
 		    class_T *cl = varp->vval.v_object->obj_class;
 		    if (cl != NULL && IS_ENUM(cl))
-			semsg(_(e_using_enum_str_as_string), cl->class_name);
+			semsg(_(e_using_enum_str_as_string), cl->class_name.string);
 		    else
 			emsg(_(e_using_object_as_string));
 		}

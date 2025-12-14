@@ -496,7 +496,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // Trying to invoke an abstract method in a super class is not
 	    // allowed.
 	    semsg(_(e_abstract_method_str_direct), ufunc->uf_name,
-		    ufunc->uf_defclass->class_name);
+		    ufunc->uf_defclass->class_name.string);
 	    goto done;
 	}
 
@@ -1052,7 +1052,7 @@ compile_load(
 		else
 		{
 		    semsg(_(e_class_variable_str_accessible_only_inside_class_str),
-			    name, cl->class_name);
+			    name, cl->class_name.string);
 		    res = FAIL;
 		}
 	    }
@@ -1511,7 +1511,7 @@ compile_call(
 	    else
 	    {
 		semsg(_(e_class_method_str_accessible_only_inside_class_str),
-			name, cl->class_name);
+			name, cl->class_name.string);
 		res = FAIL;
 	    }
 	    goto theend;

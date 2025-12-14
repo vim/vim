@@ -1606,7 +1606,7 @@ struct itf2class_S {
 // Also used for an interface (class_flags has CLASS_INTERFACE).
 struct class_S
 {
-    char_u	*class_name;		// allocated
+    string_T	class_name;		// allocated
     int		class_flags;		// CLASS_ flags
 
     int		class_refcount;

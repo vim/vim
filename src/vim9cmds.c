@@ -248,8 +248,8 @@ compile_lock_unlock(
 		if (*end != '.' && *end != '[')
 		{
 		    // Push the class of the bare class variable name
-		    name = cl->class_name;
-		    len = (int)STRLEN(name);
+		    name = cl->class_name.string;
+		    len = (int)cl->class_name.length;
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
