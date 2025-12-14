@@ -241,19 +241,13 @@ new_tsnode(TSNode *node, opaque_T *tree)
     static tuple_T *
 tspoint_to_tuple(TSPoint *point)
 {
-    typval_T	row, column;
     tuple_T	*t = tuple_alloc_with_items(2);
 
     if (t == NULL)
 	return NULL;
 
-    row.v_type = VAR_NUMBER;
-    column.v_type = VAR_NUMBER;
-    row.vval.v_number = point->row + 1;
-    column.vval.v_number = point->column + 1;
-
-    tuple_set_item(t, 0, &row);
-    tuple_set_item(t, 1, &column);
+    tuple_set_number(t, 0, point->row + 1);
+    tuple_set_number(t, 1, point->column + 1);
     t->tv_refcount++;
 
     return t;
@@ -920,16 +914,20 @@ tsvim_parser_parse(
     input.payload = userdata;
     input.read = read;
 
+    if (timeout != -1)
+    {
 #ifdef ELAPSED_FUNC
-    ELAPSED_INIT(progress_ctx.start);
-    progress_ctx.timeout = timeout;
-    opts.payload = &progress_ctx;
-    opts.progress_callback = parser_progress_callback;
+	ELAPSED_INIT(progress_ctx.start);
+	progress_ctx.timeout = timeout;
+	opts.payload = &progress_ctx;
+	opts.progress_callback = parser_progress_callback;
 #else
-    memset(&opts, 0, sizeof(opts));
+	memset(&opts, 0, sizeof(opts));
 #endif
-
-    res = ts_parser_parse_with_options(parser, last_tree, input, opts);
+	res = ts_parser_parse_with_options(parser, last_tree, input, opts);
+    }
+    else
+	res = ts_parser_parse(parser, last_tree, input);
 
     return res;
 }
@@ -979,7 +977,8 @@ parse_buf_read_callback(
 
 /*
  * Parse the given buffer using the parser and return the result TSTree if is
- * completed within the timeout, else NULL.
+ * completed within the timeout, else NULL. If "timeout" is -1, then there will
+ * be no timeout
  */
     static opaque_T *
 tsparser_parse_buf(
@@ -988,9 +987,9 @@ tsparser_parse_buf(
 	buf_T *buf,
 	long timeout)
 {
-    TSTree *ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree)->tree;
-    TSTree *res;
-    opaque_T *op;
+    TSTree	*ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree)->tree;
+    TSTree	*res;
+    opaque_T	*op;
 
     // Check if parser is set to a language
     if (ts_parser_language(OP2TSPARSER(parser)->parser) == NULL)
@@ -1162,6 +1161,35 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
 
 }
 
+/*
+ * Convert an array of TSRange structs to a list. Returns NULL on failure.
+ */
+    static list_T *
+tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
+{
+    list_T *ret = list_alloc_with_items(n);
+
+    if (ret == NULL)
+	return NULL;
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+	TSRange range = arr[i];
+	tuple_T	*t = tsrange_to_tuple(&range);
+
+	if (t == NULL)
+	{
+	    list_unref(ret);
+	    return NULL;
+	}
+
+	list_append_tuple(ret, t);
+    }
+
+    ret->lv_refcount++;
+    return ret;
+}
+
     void
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
@@ -1176,20 +1204,62 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 	return;
 
     {
-	buf_T *buf = get_buf_arg(argvars + 1);
-	opaque_T *res;
+	buf_T	    *buf = get_buf_arg(argvars + 1);
+	opaque_T    *res;
+        tuple_T	    *t;
+        opaque_T    *oldtree =
+            argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
 
 	if (buf == NULL)
 	    return;
 
-	res = tsparser_parse_buf(
-		argvars[0].vval.v_opaque,
-		argvars[3].v_type == VAR_UNKNOWN
-		? NULL : argvars[3].vval.v_opaque,
+	res = tsparser_parse_buf(argvars[0].vval.v_opaque, oldtree,
 		buf, argvars[2].vval.v_number);
 
-	rettv->v_type = VAR_OPAQUE;
-	rettv->vval.v_opaque = res;
+	if (res != NULL)
+	{
+	    typval_T	tv;
+	    list_T	*l;
+	    TSRange	*ranges;
+	    uint32_t    count;
+
+	    t = tuple_alloc_with_items(2);
+
+	    if (t == NULL)
+	    {
+		opaque_unref(res);
+		return;
+	    }
+
+	    tv.v_type = VAR_OPAQUE;
+	    tv.vval.v_opaque = res;
+	    tuple_set_item(t, 0, &tv);
+
+	    // Get changed ranges if finished, else included ranges of old tree.
+	    if (oldtree != NULL)
+                ranges = ts_tree_get_changed_ranges(
+			OP2TSTREE(oldtree)->tree, OP2TSTREE(res)->tree, &count);
+	    else
+                ranges = ts_tree_included_ranges(OP2TSTREE(res)->tree, &count);
+
+	    l = tsrange_array_to_tuple(ranges, count);
+
+	    if (l == NULL)
+	    {
+		tuple_unref(t);
+		return;
+	    }
+
+	    vim_free(ranges);
+	    tuple_set_list(t, 1, l);
+
+	    t->tv_refcount++;
+	}
+	else
+	    t = NULL;
+
+	rettv->v_type = VAR_TUPLE;
+	rettv->vval.v_tuple = t;
     }
 }
 
@@ -1245,7 +1315,7 @@ exit:
     void
 f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
 {
-    tuple_T	    *ret;
+    list_T	    *ret;
     const TSRange   *ranges;
     uint32_t	    count;
     opaque_T	    *parser;
@@ -1259,28 +1329,13 @@ f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
     parser = argvars[0].vval.v_opaque;
     ranges = ts_parser_included_ranges(OP2TSPARSER(parser)->parser, &count);
 
-    ret = tuple_alloc_with_items(count);
+    ret = tsrange_array_to_tuple(ranges, count);
 
     if (ret == NULL)
 	return;
 
-    for (uint32_t i = 0; i < count; i++)
-    {
-	TSRange range = ranges[i];
-	tuple_T	*t = tsrange_to_tuple(&range);
-
-	if (t == NULL)
-	{
-	    tuple_unref(ret);
-	    return;
-	}
-
-	tuple_set_tuple(ret, i, t);
-    }
-
-    ret->tv_refcount++;
-    rettv->v_type = VAR_TUPLE;
-    rettv->vval.v_tuple = ret;
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = ret;
 }
 
     void
@@ -1484,12 +1539,12 @@ f_tsquery_inspect(typval_T *argvars, typval_T *rettv)
     *   captures = (
     *	   "capture", ...
     *   ),
-    *   patterns = (
+    *   patterns = {
     *	  '1': [
     *	    [ <predicate/directive>, <args> ],
     *	    ...
     *     ]
-    *   )
+    *   }
     * }
     */
     dict = dict_alloc();
@@ -1812,7 +1867,7 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
 	{
 	    TSQueryCapture  capture = match.captures[i];
 	    tuple_T	    *t = tuple_alloc_with_items(2);
-	    typval_T	    node, index;
+	    typval_T	    node;
 
 	    if (t == NULL)
 	    {
@@ -1824,11 +1879,8 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
 	    // If it fails then we just get a null opaque object
 	    node.vval.v_opaque = new_tsnode(&capture.node, tree);
 
-	    index.v_type = VAR_NUMBER;
-	    index.vval.v_number = capture.index;
-
 	    tuple_set_item(t, 0, &node);
-	    tuple_set_item(t, 1, &index);
+	    tuple_set_number(t, 1, capture.index);
 
 	    t->tv_refcount++;
 	    ttv.v_type = VAR_TUPLE;

@@ -1546,13 +1546,6 @@ ret_tsparser(int argcount UNUSED,
     return &t_tsparser;
 }
     static type_T *
-ret_tstree(int argcount UNUSED,
-	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
-{
-    return &t_tstree;
-}
-    static type_T *
 ret_tsnode(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type UNUSED)
@@ -3282,7 +3275,7 @@ static const funcentry_T global_functions[] =
     {"tsparser_new",	0, 0, 0,	    NULL,
 			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
     {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsparser_buffer_number_tstree,
-			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
+			ret_tuple_any,	    TS_FUNC(f_tsparser_parse_buf)},
     {"tsparser_reset",	1, 1, FEARG_1,	    arg1_tsparser,
 			ret_void,	    TS_FUNC(f_tsparser_reset)},
     {"tsparser_set_included_ranges", 2, 2, FEARG_1, arg2_tsparser_list,
