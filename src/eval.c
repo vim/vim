@@ -1156,7 +1156,7 @@ fill_lval_from_lval_root(lval_T *lp, lval_root_T *lr)
 		lp->ll_tv = &lp->ll_class->class_members_tv[m_idx];
 #ifdef LOG_LOCKVAR
 		ch_log(NULL, "LKVAR:    ... class member %s.%s",
-					lp->ll_class->class_name, lp->ll_name);
+					lp->ll_class->class_name.string, lp->ll_name);
 #endif
 		return;
 	    }
@@ -1205,7 +1205,7 @@ get_lval_check_access(
 		{
 		    if (om->ocm_type->tt_type == VAR_OBJECT)
 			semsg(_(e_enumvalue_str_cannot_be_modified),
-				cl->class_name, om->ocm_name);
+				cl->class_name.string, om->ocm_name);
 		    else
 			msg = e_variable_is_not_writable_str;
 		}
@@ -6230,7 +6230,7 @@ method_tv2string(typval_T *tv, char_u **tofree, int echo_style)
 
     size_t len = vim_snprintf((char *)buf, sizeof(buf), "<SNR>%d_%s.%s",
 			   pt->pt_func->uf_script_ctx.sc_sid,
-			   pt->pt_func->uf_class->class_name,
+			   pt->pt_func->uf_class->class_name.string,
 			   pt->pt_func->uf_name);
     if (len >= sizeof(buf))
     {
@@ -6493,31 +6493,29 @@ class_tv2string(typval_T *tv, char_u **tofree)
     char_u	*r = NULL;
     size_t	rsize;
     class_T	*cl = tv->vval.v_class;
-    char_u	*class_name = (char_u *)"[unknown]";
-    size_t	class_namelen = 9;
-    char	*s = "class";
-    size_t	slen = 5;
+    string_T	class_name = {(char_u *)"[unknown]", 9};
+    string_T	s = {(char_u *)"class", 5};
 
     if (cl != NULL)
     {
-	class_name = cl->class_name;
-	class_namelen = STRLEN(cl->class_name);
+	class_name.string = cl->class_name.string;
+	class_name.length = cl->class_name.length;
 	if (IS_INTERFACE(cl))
 	{
-	    s = "interface";
-	    slen = 9;
+	    s.string = (char_u *)"interface";
+	    s.length = 9;
 	}
 	else if (IS_ENUM(cl))
 	{
-	    s = "enum";
-	    slen = 4;
+	    s.string = (char_u *)"enum";
+	    s.length = 4;
 	}
     }
 
-    rsize = slen + 1 + class_namelen + 1;
+    rsize = s.length + 1 + class_name.length + 1;
     r = *tofree = alloc(rsize);
     if (r != NULL)
-	vim_snprintf((char *)r, rsize, "%s %s", s, (char *)class_name);
+	vim_snprintf((char *)r, rsize, "%s %s", s.string, (char *)class_name.string);
 
     return r;
 }
@@ -6550,11 +6548,11 @@ object_tv2string(
     else if (copyID != 0 && obj->obj_copyID == copyID
 	    && obj->obj_class->class_obj_member_count != 0)
     {
-	size_t n = 25 + STRLEN((char *)obj->obj_class->class_name);
+	size_t n = 25 + obj->obj_class->class_name.length;
 	r = alloc(n);
 	if (r != NULL)
 	    (void)vim_snprintf((char *)r, n, "object of %s {...}",
-						obj->obj_class->class_name);
+						obj->obj_class->class_name.string);
 	*tofree = r;
     }
     else

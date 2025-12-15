@@ -188,51 +188,65 @@ estack_sfile(estack_arg_T which UNUSED)
 	entry = ((estack_T *)exestack.ga_data) + idx;
 	if (entry->es_name != NULL)
 	{
-	    long    lnum = 0;
-	    char_u  *type_name = (char_u *)"";
-	    char_u  *class_name = (char_u *)"";
+	    long	lnum = 0;
+	    string_T	type_name = {(char_u *)"", 0};
+	    string_T	class_name = {(char_u *)"", 0};
+	    string_T	es_name = {entry->es_name, STRLEN(entry->es_name)};
 
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
-		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
-		    default: type_name = (char_u *)""; break;
+		    case ETYPE_SCRIPT:
+			type_name.string = (char_u *)"script ";
+			type_name.length = 7;
+			break;
+		    case ETYPE_UFUNC:
+			type_name.string = (char_u *)"function ";
+			type_name.length = 9;
+			break;
+		    default:
+			break;
 		}
 		last_type = entry->es_type;
 	    }
 	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
-		class_name = entry->es_info.ufunc->uf_class->class_name;
+	    {
+		class_name.string = entry->es_info.ufunc->uf_class->class_name.string;
+		class_name.length = entry->es_info.ufunc->uf_class->class_name.length;
+	    }
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+
+	    len = es_name.length + type_name.length + class_name.length + 26;
 	    if (ga_grow(&ga, (int)len) == FAIL)
 		break;
-	    ga_concat(&ga, type_name);
-	    if (*class_name != NUL)
-	    {
-		// For class methods prepend "<class name>." to the function name.
-		ga_concat(&ga, (char_u *)"<SNR>");
-		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23,
-		       "%d_", entry->es_info.ufunc->uf_script_ctx.sc_sid);
-		ga_concat(&ga, class_name);
-		ga_append(&ga, '.');
-	    }
-	    ga_concat(&ga, entry->es_name);
+	    ga_concat_len(&ga, type_name.string, type_name.length);
+	    // For class methods prepend "<class name>." to the function name.
+	    if (*class_name.string != NUL)
+		ga.ga_len += vim_snprintf_safelen(
+		    (char *)ga.ga_data + ga.ga_len,
+		    len - (size_t)ga.ga_len,
+		    "<SNR>%d_%s.",
+		    entry->es_info.ufunc->uf_script_ctx.sc_sid,
+		    class_name.string);
+	    ga_concat_len(&ga, es_name.string, es_name.length);
 	    // For the bottom entry of <sfile>: do not add the line number, it is used in
 	    // <slnum>.  Also leave it out when the number is not set.
 	    if (lnum != 0)
-		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
-			lnum);
+		ga.ga_len += vim_snprintf_safelen(
+		    (char *)ga.ga_data + ga.ga_len,
+		    len - (size_t)ga.ga_len,
+		    "[%ld]",
+		    lnum);
 	    if (idx != exestack.ga_len - 1)
-		ga_concat(&ga, (char_u *)"..");
+		ga_concat_len(&ga, (char_u *)"..", 2);
 	}
     }
 
-    ga_append(&ga, '\0');
+    ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 #endif
 }

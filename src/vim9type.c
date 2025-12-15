@@ -2626,23 +2626,27 @@ failed:
     static char *
 type_name_class_or_obj(char *name, type_T *type, char **tofree)
 {
-    char_u *class_name;
+    string_T	class_name;
 
     if (type->tt_class != NULL)
     {
-	class_name = type->tt_class->class_name;
+	class_name.string = type->tt_class->class_name.string;
+	class_name.length = type->tt_class->class_name.length;
 	if (IS_ENUM(type->tt_class))
 	    name = "enum";
     }
     else
-	class_name = (char_u *)"any";
+    {
+	class_name.string = (char_u *)"any";
+	class_name.length = 3;
+    }
 
-    size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+    size_t len = STRLEN(name) + class_name.length + 3;
     *tofree = alloc(len);
     if (*tofree == NULL)
 	return name;
 
-    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+    vim_snprintf(*tofree, len, "%s<%s>", name, class_name.string);
     return *tofree;
 }
 
@@ -2812,7 +2816,7 @@ check_typval_is_value(typval_T *tv)
 	    {
 		class_T *cl = tv->vval.v_class;
 		char_u *class_name = (cl == NULL) ? (char_u *)""
-							: cl->class_name;
+							: cl->class_name.string;
 		if (cl != NULL && IS_ENUM(cl))
 		    semsg(_(e_using_enum_as_value_str), class_name);
 		else
@@ -2844,11 +2848,11 @@ check_type_is_value(type_T *type)
 	case VAR_CLASS:
 	    if (type->tt_class != NULL && IS_ENUM(type->tt_class))
 		semsg(_(e_using_enum_as_value_str),
-			type->tt_class->class_name);
+			type->tt_class->class_name.string);
 	    else
 		semsg(_(e_using_class_as_value_str),
 			type->tt_class == NULL ? (char_u *)""
-			: type->tt_class->class_name);
+			: type->tt_class->class_name.string);
 	    return FAIL;
 
 	case VAR_TYPEALIAS:

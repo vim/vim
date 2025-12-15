@@ -3345,7 +3345,7 @@ var_any_get_oc_member(class_T *current_class, isn_T *iptr, typval_T *tv)
 	    msg = e_variable_not_found_on_object_str_str;
 	else
 	    msg = e_class_variable_str_not_found_in_class_str;
-	semsg(_(msg), iptr->isn_arg.string, tv_cl->class_name);
+	semsg(_(msg), iptr->isn_arg.string, tv_cl->class_name.string);
 	return FAIL;
     }
 
@@ -7069,7 +7069,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_CONSTRUCT:
 		smsg("%s%4d NEW %s size %d", pfx, current,
-			iptr->isn_arg.construct.construct_class->class_name,
+			iptr->isn_arg.construct.construct_class->class_name.string,
 				  (int)iptr->isn_arg.construct.construct_size);
 		break;
 	    case ISN_EXEC:
@@ -7381,7 +7381,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    smsg("%s%4d %s CLASSMEMBER %s.%s", pfx, current,
 			    iptr->isn_type == ISN_LOAD_CLASSMEMBER
 							    ? "LOAD" : "STORE",
-			    cl->class_name, ocm->ocm_name);
+			    cl->class_name.string, ocm->ocm_name);
 		}
 		break;
 
@@ -7436,7 +7436,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_PUSHCLASS:
 		smsg("%s%4d PUSHCLASS %s", pfx, current,
 			iptr->isn_arg.classarg == NULL ? "null"
-				 : (char *)iptr->isn_arg.classarg->class_name);
+				 : (char *)iptr->isn_arg.classarg->class_name.string);
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);
@@ -7508,7 +7508,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    cmfunc_T	*mfunc = iptr->isn_arg.mfunc;
 
 		    smsg("%s%4d METHODCALL %s.%s(argc %d)", pfx, current,
-			    mfunc->cmf_itf->class_name,
+			    mfunc->cmf_itf->class_name.string,
 			    mfunc->cmf_itf->class_obj_methods[
 						      mfunc->cmf_idx]->uf_name,
 			    mfunc->cmf_argcount);
@@ -7563,7 +7563,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    if (extra != NULL && extra->fre_class != NULL)
 		    {
 			smsg("%s%4d FUNCREF %s.%s", pfx, current,
-					   extra->fre_class->class_name, name);
+					   extra->fre_class->class_name.string, name);
 		    }
 		    else if (extra == NULL
 				     || extra->fre_loopvar_info.lvi_depth == 0)
@@ -7853,7 +7853,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_GET_ITF_MEMBER: smsg("%s%4d ITF_MEMBER %d on %s",
 			     pfx, current,
 			     (int)iptr->isn_arg.classmember.cm_idx,
-			     iptr->isn_arg.classmember.cm_class->class_name);
+			     iptr->isn_arg.classmember.cm_class->class_name.string);
 				     break;
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
