@@ -67,18 +67,23 @@ export def Paste(reg: string): tuple<string, list<string>>
   endif
 
   # Extract the base64 stuff
-  var stuff: string = matchstr(v:termosc, '52;.\+;\zs[A-Za-z0-9+/=]\+')
-  var decoded: blob
+  var stuff: string = matchstr(v:termosc, '52;.*;\zs[A-Za-z0-9+/=]*')
+
+  if len(stuff) == 0
+    return ("c", [])
+  endif
+
+  var ret: list<string>
 
   # "stuff" may be an invalid base64 string, so catch any errors
   try
-    decoded = base64_decode(stuff)
-  catch /:E475/
-    decoded = null_blob
+    ret = blob2str(base64_decode(stuff))
+  catch /E\(475\|1515\)/
     echo "Invalid OSC 52 response received"
+    return ("c", [""])
   endtry
 
-  return ("", blob2str(decoded))
+  return ("", ret)
 enddef
 
 export def Copy(reg: string, type: string, lines: list<string>): void

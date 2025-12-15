@@ -37,6 +37,7 @@ augroup VimOSC52Plugin
   }
   autocmd VimEnter * {
     if !has("gui_running") && !get(g:, 'osc52_force_avail', 0)
+        && !get(g:, 'osc52_no_da1', 0)
       echoraw("\<Esc>[c")
     endif
   }
