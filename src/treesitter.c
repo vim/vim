@@ -447,6 +447,16 @@ tsquerycursor_free_func(opaque_T *op)
     ts_query_cursor_delete(OP2TSQUERYCURSOR(op)->querycursor);
 }
 
+    static bool
+tsquerymatch_equal_func(opaque_T *a, opaque_T *b)
+{
+    TSVimQueryMatch *a2 = OP2TSQUERYMATCH(a);
+    TSVimQueryMatch *b2 = OP2TSQUERYMATCH(b);
+
+    return tsquerycursor_equal_func(a2->querycursor, b2->querycursor)
+	&& a2->querymatch.id == b2->querymatch.id;
+}
+
     static void
 tsquerymatch_free_func(opaque_T *op)
 {
@@ -782,7 +792,7 @@ static opaque_type_T tsquerycursor_type = {
 static opaque_type_T tsquerymatch_type = {
     (char_u *)"TSQueryMatch", ARRAY_LENGTH(tsquerymatch_properties),
     tsquerymatch_properties, tsquerymatch_free_func,
-    opaque_direct_equal_func, NULL, tsquerymatch_property_func
+    tsquerymatch_equal_func, NULL, tsquerymatch_property_func
 };
 
 
