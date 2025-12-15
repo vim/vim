@@ -88,6 +88,7 @@ clean:
 	-@if exist starttime $(DEL) starttime
 	-@if exist benchmark.out del benchmark.out
 	-@if exist opt_test.vim $(DEL) opt_test.vim
+	-@if exist gen_opt_test.log $(DEL) gen_opt_test.log
 	-@if exist guidialog $(DEL) guidialog
 	-@if exist guidialogfile $(DEL) guidialogfile
 
@@ -159,8 +160,8 @@ test_gui_init.res: test_gui_init.vim
 
 opt_test.vim: util/gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $^
-	@if test -f test.log; then \
-		cat test.log; \
+	@if test -f gen_opt_test.log; then \
+		cat gen_opt_test.log; \
 		exit 1; \
 	fi
 
