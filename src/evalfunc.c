@@ -1333,6 +1333,7 @@ static argcheck_T arg1_tsquery[] = {arg_tsquery};
 static argcheck_T arg1_tsparser[] = {arg_tsparser};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_tsparser_list[] = {arg_tsparser, arg_list_any};
+static argcheck_T arg2_tsquerycursor_number[] = {arg_tsquerycursor, arg_number};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1565,6 +1566,13 @@ ret_tsquerycursor(int argcount UNUSED,
 	type_T	**decl_type UNUSED)
 {
     return &t_tsquerycursor;
+}
+    static type_T *
+ret_tsquerymatch(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tsquerymatch;
 }
 #endif // FEAT_TREESITTER
     static type_T *
@@ -3294,8 +3302,13 @@ static const funcentry_T global_functions[] =
 			ret_void,	    TS_FUNC(f_tsquerycursor_exec)},
     {"tsquerycursor_new", 0, 1, 0,	    arg1_dict_any,
 			TS_OPRET(ret_tsquerycursor), TS_FUNC(f_tsquerycursor_new)},
+    {"tsquerycursor_next_capture", 1, 1, FEARG_1, arg1_tsquerycursor,
+			ret_tuple_any,	    TS_FUNC(f_tsquerycursor_next_capture)},
     {"tsquerycursor_next_match", 1, 1, FEARG_1,	arg1_tsquerycursor,
-			ret_bool,	    TS_FUNC(f_tsquerycursor_next_match)},
+			TS_OPRET(ret_tsquerymatch),		    
+			TS_FUNC(f_tsquerycursor_next_match)},
+    {"tsquerycursor_remove_match", 2, 2, FEARG_1, arg2_tsquerycursor_number,
+			ret_void,	    TS_FUNC(f_tsquerycursor_remove_match)},
     {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
