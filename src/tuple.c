@@ -150,6 +150,21 @@ tuple_set_number(tuple_T *tuple, int idx, varnumber_T nr)
 }
 
 /*
+ * Set a opaque "op" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ */
+    void
+tuple_set_opaque(tuple_T *tuple, int idx, opaque_T *op)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_OPAQUE;
+    tv->vval.v_opaque = op;
+    tuple->tv_items.ga_len++;
+}
+
+/*
  * Allocate an empty tuple for a return value, with reference count set.
  * Returns OK or FAIL.
  */
