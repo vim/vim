@@ -3042,9 +3042,8 @@ color2index(VTermColor *color, int fg, int *boldp)
 	{
 	    uint8_t index = color->index;
 #ifdef MSWIN
-	    if (index < 16) {
+	    if (index < 16)
 		index = ansi_to_cterm_nr16[index];
-	    }
 #endif
 	    return index + 1;
 	}
