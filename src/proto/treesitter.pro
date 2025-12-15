@@ -19,4 +19,5 @@ void f_tsquerycursor_new(typval_T *argvars, typval_T *rettv);
 void f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv);
 void f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv);
 void f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv);
+void f_tsquerycursor_remove_match(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

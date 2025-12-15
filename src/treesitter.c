@@ -1948,6 +1948,8 @@ f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv)
 
 	tuple_set_opaque(t, 0, op);
 	tuple_set_number(t, 1, idx);
+
+	t->tv_refcount++;
     }
     else
 	// No next match/capture
@@ -1956,6 +1958,21 @@ f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_TUPLE;
     rettv->vval.v_tuple = t;
 }
+
+    void
+f_tsquerycursor_remove_match(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    TSQueryCursor *cursor;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1))
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL)
+	return;
+
+    cursor = OP2TSQUERYCURSOR(argvars[0].vval.v_opaque)->querycursor;
+    ts_query_cursor_remove_match(cursor, argvars[1].vval.v_number);
 }
 
 #endif // FEAT_TREESITTER
