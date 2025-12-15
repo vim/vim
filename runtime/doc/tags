@@ -9616,6 +9616,7 @@ os_risc.txt	os_risc.txt	/*os_risc.txt*
 os_unix.txt	os_unix.txt	/*os_unix.txt*
 os_vms.txt	os_vms.txt	/*os_vms.txt*
 os_win32.txt	os_win32.txt	/*os_win32.txt*
+osc52-install	usr_05.txt	/*osc52-install*
 other-features	vi_diff.txt	/*other-features*
 out_buf	channel.txt	/*out_buf*
 out_cb	channel.txt	/*out_cb*
@@ -9640,6 +9641,7 @@ package-justify	usr_25.txt	/*package-justify*
 package-matchit	usr_05.txt	/*package-matchit*
 package-nohlsearch	usr_05.txt	/*package-nohlsearch*
 package-open	eval.txt	/*package-open*
+package-osc52	usr_05.txt	/*package-osc52*
 package-termdebug	terminal.txt	/*package-termdebug*
 package-translate_example	repeat.txt	/*package-translate_example*
 package-translation	repeat.txt	/*package-translation*
