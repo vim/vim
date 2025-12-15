@@ -75,15 +75,16 @@ typedef struct
     // These may be NULL
     opaque_T	    *node;  // Reference to node object from exec
     opaque_T	    *query; // Reference to query object from exec
-
-    // Describes current match the cursor is on
-    struct
-    {
-	int	    id;
-	int	    pattern_index;
-	list_T	    *captures;
-    } match;
 } TSVimQueryCursor;
+
+typedef struct
+{
+    opaque_T	    opaque;
+    TSQueryMatch    querymatch; // Note that the captures array is owned by the
+			   // querycursor, meaning it will be changed when the
+			   // cursor goes onto the next match.
+    opaque_T	    *querycursor;
+} TSVimQueryMatch;
 
 #define VTS_LANG_OFF offsetof(TSVimLanguage, name)
 #define HI2LANG(hi) ((TSVimLanguage *)((hi)->hi_key - VTS_LANG_OFF))
@@ -96,6 +97,7 @@ typedef struct
 #define OP2TSNODE(s) OP2TSOBJ(Node, s)
 #define OP2TSQUERY(s) OP2TSOBJ(Query, s)
 #define OP2TSQUERYCURSOR(s) OP2TSOBJ(QueryCursor, s)
+#define OP2TSQUERYMATCH(s) OP2TSOBJ(QueryMatch, s)
 
 // Table of loaded TSLanguage objects. Each key the language name.
 static hashtab_T    languages;
@@ -105,6 +107,7 @@ static opaque_type_T tstree_type;
 static opaque_type_T tsnode_type;
 static opaque_type_T tsquery_type;
 static opaque_type_T tsquerycursor_type;
+static opaque_type_T tsquerymatch_type;
 
     static void *
 ts_calloc(size_t n, size_t size)
@@ -441,8 +444,13 @@ tsquerycursor_free_func(opaque_T *op)
 {
     opaque_unref(OP2TSQUERYCURSOR(op)->node);
     opaque_unref(OP2TSQUERYCURSOR(op)->query);
-    list_unref(OP2TSQUERYCURSOR(op)->match.captures);
     ts_query_cursor_delete(OP2TSQUERYCURSOR(op)->querycursor);
+}
+
+    static void
+tsquerymatch_free_func(opaque_T *op)
+{
+    opaque_unref(OP2TSQUERYMATCH(op)->querycursor);
 }
 
 typedef enum
@@ -587,42 +595,62 @@ tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 
 typedef enum
 {
-    QCPROP_MATCH_CAPTURES = 0,
-    QCPROP_MATCH_ID,
-    QCPROP_MATCH_PATTERN_INDEX,
+    QMPROP_CAPTURES = 0,
+    QMPROP_ID,
+    QMPROP_PATTERN_INDEX,
 } TSVimQueryCursorProperty;
 
     static int
-tsquerycursor_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
+tsquerymatch_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 {
-    TSVimQueryCursor *cursor = OP2TSQUERYCURSOR(op);
-
-    // If NULL, then next_match() hasn't been called yet
-    if (cursor->match.captures == NULL)
-    {
-	emsg(_(e_tsquerycursor_match_invalid));
-	return FAIL;
-    }
+    TSQueryMatch *match = &OP2TSQUERYMATCH(op)->querymatch;
+    opaque_T *tree = OP2TSNODE(OP2TSQUERYCURSOR(
+		OP2TSQUERYMATCH(op)->querycursor)->node)->tree;
 
     switch ((TSVimQueryCursorProperty)prop->opp_idx)
     {
-	case QCPROP_MATCH_CAPTURES:	    // captures
+	case QMPROP_CAPTURES:		    // captures
 	{
-	    list_T *list = cursor->match.captures;
+	    tuple_T	*ret;
 
-	    list->lv_refcount++;
-	    rettv->v_lock = VAR_FIXED;
-	    rettv->v_type = VAR_LIST;
-	    rettv->vval.v_list = list;
+	    ret = tuple_alloc_with_items(match->capture_count);
+	    if (ret == NULL)
+		return FAIL;
+
+	    for (int i = 0; i < match->capture_count; i++)
+	    {
+		TSQueryCapture  capture = match->captures[i];
+		tuple_T		*t = tuple_alloc_with_items(2);
+		typval_T	node;
+
+		if (t == NULL)
+		{
+		    tuple_unref(ret);
+		    return FAIL;
+		}
+
+		node.v_type = VAR_OPAQUE;
+		// If it fails then we just get a null opaque object
+		node.vval.v_opaque = new_tsnode(&capture.node, tree);
+
+		tuple_set_item(t, 0, &node);
+		tuple_set_number(t, 1, capture.index);
+
+		t->tv_refcount++;
+		tuple_set_tuple(ret, i, t);
+	    }
+	    ret->tv_refcount++;
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = ret;
 	}
 	    break;
-	case QCPROP_MATCH_ID:		    // id
+	case QMPROP_ID:			    // id
 	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = cursor->match.pattern_index;
+	    rettv->vval.v_number = match->id;
 	    break;
-	case QCPROP_MATCH_PATTERN_INDEX:    // pattern_index
+	case QMPROP_PATTERN_INDEX:	    // pattern_index
 	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = cursor->match.pattern_index;
+	    rettv->vval.v_number = match->pattern_index;
 	    break;
     }
     return OK;
@@ -666,8 +694,8 @@ static type_T t_tscapture = {
     VAR_TUPLE, 2, 2, TTFLAG_STATIC, &t_any, NULL, tsnode_number, NULL
 };
 
-static type_T t_tscapturelist = {
-    VAR_LIST, -1, 0,TTFLAG_STATIC, &t_tscapture, NULL, NULL, NULL
+static type_T t_tscapturetuple = {
+    VAR_TUPLE, -1, 0,TTFLAG_STATIC, &t_tscapture, NULL, NULL, NULL
 };
 
 type_T t_tsparser = {
@@ -688,6 +716,10 @@ type_T t_tsquery = {
 
 type_T t_tsquerycursor = {
     VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquerycursor_type
+};
+
+type_T t_tsquerymatch = {
+    VAR_OPAQUE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL, &tsquerymatch_type
 };
 
 static opaque_property_T tsnode_properties[] = {
@@ -713,10 +745,10 @@ static opaque_property_T tsnode_properties[] = {
     {NPROP_TYPE,		    OPPROPNAME("type"), &t_string},
 };
 
-static opaque_property_T tsquerycursor_properties[] = {
-    {QCPROP_MATCH_CAPTURES,	    OPPROPNAME("match_captures"), &t_tscapturelist},
-    {QCPROP_MATCH_ID,		    OPPROPNAME("match_id"), &t_number},
-    {QCPROP_MATCH_PATTERN_INDEX,    OPPROPNAME("match_pattern_index"), &t_number},
+static opaque_property_T tsquerymatch_properties[] = {
+    {QMPROP_CAPTURES,	    OPPROPNAME("captures"), &t_tscapturetuple},
+    {QMPROP_ID,		    OPPROPNAME("id"), &t_number},
+    {QMPROP_PATTERN_INDEX,    OPPROPNAME("pattern_index"), &t_number},
 };
 
 static opaque_property_T tstree_properties[] = {
@@ -742,10 +774,17 @@ static opaque_type_T tsquery_type = {
 };
 
 static opaque_type_T tsquerycursor_type = {
-    (char_u *)"TSQueryCursor", ARRAY_LENGTH(tsquerycursor_properties),
-    tsquerycursor_properties, tsquerycursor_free_func,
-    tsquerycursor_equal_func, NULL, tsquerycursor_property_func
+    (char_u *)"TSQueryCursor", ARRAY_LENGTH(tsquerymatch_properties),
+    tsquerymatch_properties, tsquerycursor_free_func,
+    tsquerycursor_equal_func, NULL, tsquerymatch_property_func
 };
+
+static opaque_type_T tsquerymatch_type = {
+    (char_u *)"TSQueryMatch", ARRAY_LENGTH(tsquerymatch_properties),
+    tsquerymatch_properties, tsquerymatch_free_func,
+    opaque_direct_equal_func, NULL, tsquerymatch_property_func
+};
+
 
 // Should be in sync with opaque_types_table[]
 static opaque_type_T *opaque_types[] = {
@@ -753,6 +792,7 @@ static opaque_type_T *opaque_types[] = {
     &tsparser_type,
     &tsquery_type,
     &tsquerycursor_type,
+    &tsquerymatch_type,
     &tstree_type
 };
 
@@ -762,7 +802,8 @@ static keyvalue_T opaque_types_table[] = {
     KEYVALUE_ENTRY(1, "TSParser"),
     KEYVALUE_ENTRY(2, "TSQuery"),
     KEYVALUE_ENTRY(3, "TSQueryCursor"),
-    KEYVALUE_ENTRY(4, "TSTree"),
+    KEYVALUE_ENTRY(4, "TSQueryMatch"),
+    KEYVALUE_ENTRY(5, "TSTree"),
 };
 
 /*
@@ -1840,7 +1881,7 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
     TSVimQueryCursor	*obj;
     TSQueryCursor	*cursor;
     TSQueryMatch	match;
-    opaque_T		*tree;
+    opaque_T		*op;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL)
 	return;
@@ -1850,59 +1891,71 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
 
     obj = OP2TSQUERYCURSOR(argvars[0].vval.v_opaque);
     cursor = obj->querycursor;
-    tree = OP2TSNODE(obj->node)->tree;
 
     if (ts_query_cursor_next_match(cursor, &match))
     {
-	list_T	    *list;
-	typval_T    ttv;
+	op = opaque_new(&tsquerymatch_type, sizeof(TSVimQueryMatch));
 
-	// We always create a new list and tuples because we don't want to
-	// modify the old copy, in case the user decided to keep it for use.
-	list = list_alloc_with_items(match.capture_count);
-	if (list == NULL)
+	if (op == NULL)
 	    return;
-
-	for (int i = 0; i < match.capture_count; i++)
-	{
-	    TSQueryCapture  capture = match.captures[i];
-	    tuple_T	    *t = tuple_alloc_with_items(2);
-	    typval_T	    node;
-
-	    if (t == NULL)
-	    {
-		list_unref(list);
-		return;
-	    }
-
-	    node.v_type = VAR_OPAQUE;
-	    // If it fails then we just get a null opaque object
-	    node.vval.v_opaque = new_tsnode(&capture.node, tree);
-
-	    tuple_set_item(t, 0, &node);
-	    tuple_set_number(t, 1, capture.index);
-
-	    t->tv_refcount++;
-	    ttv.v_type = VAR_TUPLE;
-	    ttv.vval.v_tuple = t;
-
-	    list_set_item(list, i, &ttv);
-	}
-	list->lv_refcount++;
-	list->lv_lock = VAR_FIXED;
-
-	// Clear the old one if any and set the new one
-	list_unref(obj->match.captures);
-	obj->match.captures = list;
-
-	obj->match.id = match.id;
-	obj->match.pattern_index = match.pattern_index;
-
-	rettv->vval.v_number = true;
+	OP2TSQUERYMATCH(op)->querymatch = match;
+	OP2TSQUERYMATCH(op)->querycursor = argvars[0].vval.v_opaque;
+	op->op_refcount++;
+	argvars[0].vval.v_opaque->op_refcount++;
     }
     else
-	rettv->vval.v_number = false;
-    rettv->v_type = VAR_BOOL;
+	// No next match
+	op = NULL;
+
+    rettv->v_type = VAR_OPAQUE;
+    rettv->vval.v_opaque = op;
+}
+
+    void
+f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv)
+{
+    TSVimQueryCursor	*obj;
+    TSQueryCursor	*cursor;
+    TSQueryMatch	match;
+    uint32_t		idx;
+    tuple_T		*t;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL)
+	return;
+
+    obj = OP2TSQUERYCURSOR(argvars[0].vval.v_opaque);
+    cursor = obj->querycursor;
+
+    if (ts_query_cursor_next_capture(cursor, &match, &idx))
+    {
+	opaque_T *op;
+
+	t = tuple_alloc_with_items(2);
+	if (t == NULL)
+	    return;
+
+	op = opaque_new(&tsquerymatch_type, sizeof(TSVimQueryMatch));
+
+	if (op == NULL)
+	    return;
+	OP2TSQUERYMATCH(op)->querymatch = match;
+	OP2TSQUERYMATCH(op)->querycursor = argvars[0].vval.v_opaque;
+	op->op_refcount++;
+	argvars[0].vval.v_opaque->op_refcount++;
+
+	tuple_set_opaque(t, 0, op);
+	tuple_set_number(t, 1, idx);
+    }
+    else
+	// No next match/capture
+	t = NULL;
+
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = t;
+}
 }
 
 #endif // FEAT_TREESITTER
