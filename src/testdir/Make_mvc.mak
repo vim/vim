@@ -87,6 +87,7 @@ clean:
 	- if exist starttime $(RM) starttime
 	- if exist benchmark.out $(RM) benchmark.out
 	- if exist opt_test.vim $(RM) opt_test.vim
+	- if exist gen_opt_test.log $(RM) gen_opt_test.log
 	- if exist guidialog $(RM) guidialog
 	- if exist guidialogfile $(RM) guidialogfile
 
@@ -160,7 +161,7 @@ test_gui_init.res: test_gui_init.vim
 opt_test.vim: util/gen_opt_test.vim ../optiondefs.h \
 		../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $**
-	@ if exist test.log ( type test.log & exit /b 1 )
+	@ if exist gen_opt_test.log ( type gen_opt_test.log & exit /b 1 )
 
 test_bench_regexp.res: test_bench_regexp.vim
 	- if exist benchmark.out $(RM) benchmark.out
