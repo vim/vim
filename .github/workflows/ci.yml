@@ -285,6 +285,7 @@ jobs:
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
+          sudo bash ci/build-treesitter.sh
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')

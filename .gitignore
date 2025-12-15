@@ -65,7 +65,6 @@ src/xxd/xxd.dSYM
 *.mo
 *.swp
 *~
-*.a
 *.pyc
 *.log
 src/tags
