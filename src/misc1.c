@@ -316,7 +316,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		for (off = (len2 > i ? i : len2); off > 0 && off + len1 > len2;)
 		{
 		    --off;
-		    if (!STRNCMP(string + off, com_leader, len2 - off))
+		    if (STRNCMP(string + off, com_leader, len2 - off) == 0)
 		    {
 			if (i - off < lower_check_bound)
 			    lower_check_bound = i - off;
