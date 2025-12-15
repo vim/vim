@@ -174,7 +174,7 @@ msg_attr_keep(
 	    || (*s != '<'
 		&& last_msg_hist != NULL
 		&& last_msg_hist->msg != NULL
-		&& STRCMP(s, last_msg_hist->msg)))
+		&& STRCMP(s, last_msg_hist->msg) != 0))
 	add_msg_hist((char_u *)s, -1, attr);
 
 #ifdef FEAT_EVAL

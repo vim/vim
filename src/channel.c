@@ -1277,7 +1277,7 @@ channel_open_func(typval_T *argvars)
 	return NULL;
     }
 
-    if (!STRNCMP(address, "unix:", 5))
+    if (STRNCMP(address, "unix:", 5) == 0)
     {
 	is_unix = TRUE;
 	address += 5;

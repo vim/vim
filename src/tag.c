@@ -1533,23 +1533,23 @@ find_tagfunc_tags(
 		continue;
 
 	    len += (int)STRLEN(tv->vval.v_string) + 1;   // Space for "\tVALUE"
-	    if (!STRCMP(dict_key, "name"))
+	    if (STRCMP(dict_key, "name") == 0)
 	    {
 		res_name = tv->vval.v_string;
 		continue;
 	    }
-	    if (!STRCMP(dict_key, "filename"))
+	    if (STRCMP(dict_key, "filename") == 0)
 	    {
 		res_fname = tv->vval.v_string;
 		continue;
 	    }
-	    if (!STRCMP(dict_key, "cmd"))
+	    if (STRCMP(dict_key, "cmd") == 0)
 	    {
 		res_cmd = tv->vval.v_string;
 		continue;
 	    }
 	    has_extra = 1;
-	    if (!STRCMP(dict_key, "kind"))
+	    if (STRCMP(dict_key, "kind") == 0)
 	    {
 		res_kind = tv->vval.v_string;
 		continue;
@@ -1615,13 +1615,13 @@ find_tagfunc_tags(
 		    if (tv->v_type != VAR_STRING || tv->vval.v_string == NULL)
 			continue;
 
-		    if (!STRCMP(dict_key, "name"))
+		    if (STRCMP(dict_key, "name") == 0)
 			continue;
-		    if (!STRCMP(dict_key, "filename"))
+		    if (STRCMP(dict_key, "filename") == 0)
 			continue;
-		    if (!STRCMP(dict_key, "cmd"))
+		    if (STRCMP(dict_key, "cmd") == 0)
 			continue;
-		    if (!STRCMP(dict_key, "kind"))
+		    if (STRCMP(dict_key, "kind") == 0)
 			continue;
 
 		    *p++ = TAB;

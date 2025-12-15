@@ -8775,11 +8775,11 @@ gui_mch_register_sign(char_u *signfile)
     {
 	int do_load = 1;
 
-	if (!STRICMP(ext, ".bmp"))
+	if (STRICMP(ext, ".bmp") == 0)
 	    sign.uType =  IMAGE_BITMAP;
-	else if (!STRICMP(ext, ".ico"))
+	else if (STRICMP(ext, ".ico") == 0)
 	    sign.uType =  IMAGE_ICON;
-	else if (!STRICMP(ext, ".cur") || !STRICMP(ext, ".ani"))
+	else if (STRICMP(ext, ".cur") == 0 || STRICMP(ext, ".ani") == 0)
 	    sign.uType =  IMAGE_CURSOR;
 	else
 	    do_load = 0;
@@ -8789,7 +8789,7 @@ gui_mch_register_sign(char_u *signfile)
 		    gui.char_width * 2, gui.char_height,
 		    LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 # ifdef FEAT_XPM_W32
-	if (!STRICMP(ext, ".xpm"))
+	if (STRICMP(ext, ".xpm") == 0)
 	{
 	    sign.uType = IMAGE_XPM;
 	    LoadXpmImage((char *)signfile, (HBITMAP *)&sign.hImage,
