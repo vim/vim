@@ -3479,7 +3479,7 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
 	    vim_free(rln);
 	    return;
 	}
-	set_callback(&rln->rl_callbacks.on_start, &cb);
+	copy_callback(&rln->rl_callbacks.on_start, &cb);
 	free_callback(&cb);
 	clear_tv(&tv);
 	got_one = true;
@@ -3496,7 +3496,7 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
 	    vim_free(rln);
 	    return;
 	}
-	set_callback(&rln->rl_callbacks.on_end, &cb);
+	copy_callback(&rln->rl_callbacks.on_end, &cb);
 	free_callback(&cb);
 	clear_tv(&tv);
 	got_one = true;
