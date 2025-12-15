@@ -3013,6 +3013,12 @@ may_toggle_cursor(term_T *term)
 	cursor_off();
 }
 
+#ifdef MSWIN
+static const uint8_t ansi_to_cterm_nr16[] = {
+    0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
+};
+#endif
+
 /*
  * Reverse engineer the RGB value into a cterm color index.
  * First color is 1.  Return 0 if no match found (default color).
@@ -3033,7 +3039,15 @@ color2index(VTermColor *color, int fg, int *boldp)
     {
 	// Use the color as-is if possible, give up otherwise.
 	if (color->index < t_colors)
-	    return color->index + 1;
+	{
+	    uint8_t index = color->index;
+#ifdef MSWIN
+	    if (index < 16) {
+		index = ansi_to_cterm_nr16[index];
+	    }
+#endif
+	    return index + 1;
+	}
 	// 8-color terminals can actually display twice as many colors by
 	// setting the high-intensity/bold bit.
 	else if (t_colors == 8 && fg && color->index < 16)
