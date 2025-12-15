@@ -201,4 +201,11 @@ opaque_property_index(char_u **arg, typval_T *rettv)
     return FAIL;
 }
 
+    
+    bool
+opaque_direct_equal_func(opaque_T *a, opaque_T *b)
+{
+    return a == b;
+}
+
 #endif // FEAT_EVAL
