@@ -4384,6 +4384,7 @@ build_stl_str_hl_mline(
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
     stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
 {
+    HH_ch_log("in. *fmt:\"%s\", opt_name:\"%s\", opt_scope:%d", *fmt, opt_name, opt_scope);
     return build_stl_str_hl_local(STL_MODE_MULTI, wp, out, outlen, fmt,
 	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
 }
@@ -4401,6 +4402,7 @@ count_linebreaks_from_stl_str(
     (void)build_stl_str_hl_local(STL_MODE_COUNT_LBREAKS,
 	    wp, buf, sizeof(buf), &fmt,
 	    opt_name, opt_scope, 0, 0, NULL, NULL, &lbreaks);
+    HH_ch_log("lbreaks:%d, fmt:\"%s\"", lbreaks, fmt);
     return lbreaks;
 }
 

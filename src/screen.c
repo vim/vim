@@ -4605,7 +4605,6 @@ comp_col(void)
 {
     int last_has_status = last_stl_height(FALSE) > 0;
 
-    HH_ch_log("in.");
     sc_col = 0;
     ru_col = 0;
     if (p_ru)
@@ -4631,7 +4630,6 @@ comp_col(void)
 	sc_col = 1;
     if (ru_col <= 0)
 	ru_col = 1;
-    HH_ch_log("sc_col:%d, ru_col:%d", sc_col, ru_col);
 #ifdef FEAT_EVAL
     set_vim_var_nr(VV_ECHOSPACE, sc_col - 1);
 #endif
