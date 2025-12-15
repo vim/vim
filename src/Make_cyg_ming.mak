@@ -1252,8 +1252,9 @@ nvcmdidxs: nv_cmds.h
 
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
-	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h termdefs.h beval.h $(NBDEBUG_INCL)
+	keymap.h macros.h option.h optiondefs.h os_dos.h os_win32.h \
+	proto.h regexp.h spell.h structs.h termdefs.h beval.h \
+	$(NBDEBUG_INCL)
 GUI_INCL = gui.h
 ifeq ($(DIRECTX),yes)
 GUI_INCL += gui_dwrite.h

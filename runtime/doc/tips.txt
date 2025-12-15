@@ -1,4 +1,4 @@
-*tips.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*tips.txt*	For Vim version 9.1.  Last change: 2025 Dec 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,7 @@ Executing shell commands in a window		|shell-window|
 Hex editing					|hex-editing|
 Using <> notation in autocommands		|autocmd-<>|
 Highlighting matching parens			|match-parens|
-Opening help in the current window		|help-curwin|
+Opening help in the current window		|package-helpcurwin|
 
 ==============================================================================
 Editing C programs					*C-editing*
@@ -544,28 +544,22 @@ A slightly more advanced version is used in the |matchparen| plugin.
 <
 
 ==============================================================================
-Opening help in the current window				*help-curwin*
+Opening help in the current window			*package-helpcurwin*
 
-By default, help is displayed in a split window.  If you prefer it opens in
-the current window, try this custom `:HelpCurwin` command:
->
-	command -bar -nargs=? -complete=help HelpCurwin execute s:HelpCurwin(<q-args>)
-	let s:did_open_help = v:false
+By default, help is displayed in a split window.  In some scenarios, you may
+prefer to open the help in the current window.  The optional helpcurwin
+package makes this possible.  Load the package manually, or in your |vimrc|,
+with: >vim
 
-	function s:HelpCurwin(subject) abort
-	  let mods = 'silent noautocmd keepalt'
-	  if !s:did_open_help
-	    execute mods .. ' help'
-	    execute mods .. ' helpclose'
-	    let s:did_open_help = v:true
-	  endif
-	  if !getcompletion(a:subject, 'help')->empty()
-	    execute mods .. ' edit ' .. &helpfile
-	    set buftype=help
-	  endif
-	  return 'help ' .. a:subject
-	endfunction
+    packadd helpcurwin
 <
-
+After it has loaded:
+- The command `:HelpCurwin` {subject} can be used to open help in the current
+  window.
+- If the current window contains a modified buffer, the plugin asks for
+  confirmation before replacing it.  If confirmed, the buffer becomes
+  hidden |hidden-buffer|.
+- The help file, |helpcurwin.txt|, will be available and describes the plugin
+  in more details.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

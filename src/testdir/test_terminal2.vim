@@ -440,6 +440,14 @@ func Test_zz2_terminal_guioptions_bang()
   call writefile(contents, filename, 'D')
   call setfperm(filename, 'rwxrwx---')
 
+  if has("win32")
+    " should not execute anything below the current directory
+    let exitval = 1
+    execute printf(':!%s%s %d', prefix, filename, exitval)
+    call assert_equal(exitval, v:shell_error)
+    let prefix = '.\'
+  endif
+
   " Check if v:shell_error is equal to the exit status.
   let exitval = 0
   execute printf(':!%s%s %d', prefix, filename, exitval)
@@ -731,6 +739,5 @@ func Test_term_gettty()
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab

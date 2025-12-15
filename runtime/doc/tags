@@ -9,6 +9,7 @@ $HOME-windows	options.txt	/*$HOME-windows*
 $MYGVIMRC	gui.txt	/*$MYGVIMRC*
 $MYVIMDIR	starting.txt	/*$MYVIMDIR*
 $MYVIMRC	starting.txt	/*$MYVIMRC*
+$NoDefaultCurrentDirectoryInExePath	builtin.txt	/*$NoDefaultCurrentDirectoryInExePath*
 $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
@@ -1409,6 +1410,7 @@ $quote	eval.txt	/*$quote*
 +cindent	various.txt	/*+cindent*
 +clientserver	various.txt	/*+clientserver*
 +clipboard	various.txt	/*+clipboard*
++clipboard_provider	various.txt	/*+clipboard_provider*
 +clipboard_working	various.txt	/*+clipboard_working*
 +cmd	editing.txt	/*+cmd*
 +cmdline_compl	various.txt	/*+cmdline_compl*
@@ -4753,6 +4755,8 @@ E1567	remote.txt	/*E1567*
 E1568	options.txt	/*E1568*
 E1569	builtin.txt	/*E1569*
 E157	sign.txt	/*E157*
+E1570	builtin.txt	/*E1570*
+E1571	builtin.txt	/*E1571*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
@@ -5777,7 +5781,6 @@ Neovim	intro.txt	/*Neovim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetBeans	netbeans.txt	/*NetBeans*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
-NoDefaultCurrentDirectoryInExePath	builtin.txt	/*NoDefaultCurrentDirectoryInExePath*
 None	eval.txt	/*None*
 Normal	intro.txt	/*Normal*
 Normal-mode	intro.txt	/*Normal-mode*
@@ -6692,6 +6695,15 @@ clipboard-autoselectml	options.txt	/*clipboard-autoselectml*
 clipboard-autoselectplus	options.txt	/*clipboard-autoselectplus*
 clipboard-exclude	options.txt	/*clipboard-exclude*
 clipboard-html	options.txt	/*clipboard-html*
+clipboard-providers	eval.txt	/*clipboard-providers*
+clipboard-providers-available	eval.txt	/*clipboard-providers-available*
+clipboard-providers-clipmethod	eval.txt	/*clipboard-providers-clipmethod*
+clipboard-providers-copy	eval.txt	/*clipboard-providers-copy*
+clipboard-providers-define	eval.txt	/*clipboard-providers-define*
+clipboard-providers-no-clipboard	eval.txt	/*clipboard-providers-no-clipboard*
+clipboard-providers-paste	eval.txt	/*clipboard-providers-paste*
+clipboard-providers-plus	eval.txt	/*clipboard-providers-plus*
+clipboard-providers-textlock	eval.txt	/*clipboard-providers-textlock*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
@@ -6815,6 +6827,7 @@ conversion-server	mbyte.txt	/*conversion-server*
 convert-to-HTML	syntax.txt	/*convert-to-HTML*
 convert-to-XHTML	syntax.txt	/*convert-to-XHTML*
 convert-to-XML	syntax.txt	/*convert-to-XML*
+convert_:function_to_:def	vim9.txt	/*convert_:function_to_:def*
 convert_legacy_function_to_vim9	vim9.txt	/*convert_legacy_function_to_vim9*
 copy()	builtin.txt	/*copy()*
 copy-diffs	diff.txt	/*copy-diffs*
@@ -8308,7 +8321,6 @@ help	helphelp.txt	/*help*
 help-TOC	helphelp.txt	/*help-TOC*
 help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
-help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
@@ -9621,6 +9633,7 @@ package-create	repeat.txt	/*package-create*
 package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
 package-editorconfig	usr_05.txt	/*package-editorconfig*
+package-helpcurwin	tips.txt	/*package-helpcurwin*
 package-helptoc	helphelp.txt	/*package-helptoc*
 package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
@@ -10017,6 +10030,8 @@ recovery	recover.txt	/*recovery*
 recursive_mapping	map.txt	/*recursive_mapping*
 redo	undo.txt	/*redo*
 redo-register	undo.txt	/*redo-register*
+redraw_listener_add()	builtin.txt	/*redraw_listener_add()*
+redraw_listener_remove()	builtin.txt	/*redraw_listener_remove()*
 reduce()	builtin.txt	/*reduce()*
 ref	intro.txt	/*ref*
 reference	intro.txt	/*reference*
@@ -11257,6 +11272,7 @@ v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:clipmethod	eval.txt	/*v:clipmethod*
+v:clipproviders	eval.txt	/*v:clipproviders*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*
@@ -11637,6 +11653,7 @@ vim9-types	vim9.txt	/*vim9-types*
 vim9-unpack-ignore	vim9.txt	/*vim9-unpack-ignore*
 vim9-user-command	vim9.txt	/*vim9-user-command*
 vim9-variable-arguments	vim9.txt	/*vim9-variable-arguments*
+vim9-white-space	vim9.txt	/*vim9-white-space*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9class.txt	vim9class.txt	/*vim9class.txt*
 vim9script	vim9.txt	/*vim9script*

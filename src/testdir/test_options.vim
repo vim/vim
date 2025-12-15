@@ -522,15 +522,21 @@ func Test_set_completion_string_values()
   call assert_equal('unload', getcompletion('set bufhidden=', 'cmdline')[1])
   call assert_equal('nowrite', getcompletion('set buftype=', 'cmdline')[1])
   call assert_equal('internal', getcompletion('set casemap=', 'cmdline')[1])
-  if exists('+clipboard')
+  if has('clipboard')
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
   endif
-  if exists('+clipmethod')
-    if has('unix') || has('vms')
-      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
-    else
-      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
-    endif
+  if has('wayland_clipboard')
+    call assert_match('wayland', getcompletion('set clipmethod=w', 'cmdline')[0])
+  endif
+  if has('xterm_clipboard')
+    call assert_match('x11', getcompletion('set clipmethod=x', 'cmdline')[0])
+  endif
+  if has('eval')
+    let v:clipproviders["first"] = {}
+    let v:clipproviders["second"] = {}
+
+    call assert_match('first', getcompletion('set clipmethod=f', 'cmdline')[0])
+    call assert_match('second', getcompletion('set clipmethod=s', 'cmdline')[0])
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])

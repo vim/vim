@@ -340,6 +340,25 @@ func Test_message_more()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_message_more_recording()
+  CheckRunVimInTerminal
+  let buf = RunVimInTerminal('', {'rows': 6})
+  call term_sendkeys(buf, ":call setline(1, range(1, 100))\n")
+  call term_sendkeys(buf, ":%p\n")
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+  call term_sendkeys(buf, 'G')
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+
+  " Hitting 'q' at the end of the more prompt should not start recording
+  call term_sendkeys(buf, 'q')
+  call WaitForAssert({-> assert_equal(5, term_getcursor(buf)[0])})
+  " Hitting 'k' now should move the cursor up instead of recording keys
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal(4, term_getcursor(buf)[0])})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test more-prompt scrollback
 func Test_message_more_scrollback()
   CheckScreendump
@@ -665,6 +684,19 @@ func Test_echowindow()
   call term_sendkeys(buf, ":call HideWin()\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_9', {})
 
+  call term_sendkeys(buf, ":set cmdheight=2 columns=50\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":echowindow 'S' .. repeat('a', &columns - 2) .. 'Eabcde'\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_10', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, ":echowindow 'A' .. repeat('0', &columns - 2) .. 'a' .. 'B' .. repeat('a', &columns - 2) .. 'b' .. 'C' .. repeat('a', &columns - 2) .. 'c' .. 'D' .. repeat('a', &columns - 2) .. 'd12345'")
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_11', {})
+
   " clean up
   call StopVimInTerminal(buf)
 endfunc
@@ -749,6 +781,31 @@ func Test_messagesopt_wait()
   call term_sendkeys(buf, ":set messagesopt=wait:100,history:500\n")
   call term_sendkeys(buf, ":echo 'foo' | echo 'bar' | echo 'baz'\n")
   call WaitForAssert({-> assert_equal('                           0,0-1         All', term_getline(buf, 6))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+" Check that using a long 'formatprg' doesn't cause a hit-enter prompt or
+" wrong cursor position.
+func Test_long_formatprg_no_hit_enter()
+  CheckScreendump
+  CheckExecutable sed
+
+  let lines =<< trim END
+    setlocal scrolloff=0
+    call setline(1, range(1, 40))
+    let &l:formatprg = $'sed{repeat(' ', &columns)}p'
+    normal 20Gmz
+    normal 10Gzt
+  END
+  call writefile(lines, 'XtestLongFormatprg', 'D')
+  let buf = RunVimInTerminal('-S XtestLongFormatprg', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_long_formatprg_no_hit_enter_1', {})
+  call term_sendkeys(buf, 'gq2j')
+  call VerifyScreenDump(buf, 'Test_long_formatprg_no_hit_enter_2', {})
+  call term_sendkeys(buf, ":messages\<CR>")
+  call VerifyScreenDump(buf, 'Test_long_formatprg_no_hit_enter_3', {})
 
   " clean up
   call StopVimInTerminal(buf)

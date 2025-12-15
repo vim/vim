@@ -3181,7 +3181,7 @@ EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
 EXTERN char e_blob_required_for_argument_nr[]
 	INIT(= N_("E1238: Blob required for argument %d"));
 EXTERN char e_invalid_value_for_blob_nr[]
-	INIT(= N_("E1239: Invalid value for blob: %d"));
+	INIT(= N_("E1239: Invalid value for blob: 0x%lX"));
 #endif
 EXTERN char e_resulting_text_too_long[]
 	INIT(= N_("E1240: Resulting text too long"));
@@ -3796,4 +3796,10 @@ EXTERN char e_osc_response_timed_out[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
+	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
+EXTERN char e_no_redraw_listener_callbacks_defined[]
+	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
 #endif

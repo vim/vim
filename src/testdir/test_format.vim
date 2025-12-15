@@ -299,6 +299,8 @@ func Test_printf_pos_errors()
   call v9.CheckLegacyAndVim9Failure(["call printf('%1$1$.5d', 5)"], "E1505:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%1$5.1$d', 5)"], "E1505:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%1$1$.1$d', 5)"], "E1505:")
+  call v9.CheckLegacyAndVim9Failure(["call printf('%1$*1$.*0$s')"], "E1505:")
+  call v9.CheckLegacyAndVim9Failure(["call printf('%*0$s')"], "E1505:")
 
   call v9.CheckLegacyAndVim9Failure(["call printf('%.123456789$d', 5)"], "E1510:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%.123456789d', 5)"], "E1510:")

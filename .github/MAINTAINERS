@@ -130,6 +130,7 @@ runtime/ftplugin/basic.vim				@dkearns
 runtime/ftplugin/brighterscript.vim			@ribru17
 runtime/ftplugin/brightscript.vim			@ribru17
 runtime/ftplugin/bst.vim				@tpope
+runtime/ftplugin/bpftrace.vim				@sgruszka
 runtime/ftplugin/c3.vim					@ttytm
 runtime/ftplugin/cabal.vim				@ribru17
 runtime/ftplugin/cedar.vim				@ribru17
@@ -221,6 +222,7 @@ runtime/ftplugin/kivy.vim				@ribru17
 runtime/ftplugin/kotlin.vim				@udalov
 runtime/ftplugin/lc.vim					@ribru17
 runtime/ftplugin/ldapconf.vim				@ribru17
+runtime/ftplugin/leex.vim				@jparise
 runtime/ftplugin/leo.vim				@ribru17
 runtime/ftplugin/less.vim				@genoma
 runtime/ftplugin/lex.vim				@ribru17
@@ -377,6 +379,7 @@ runtime/indent/kdl.vim					@imsnif @jiangyinzuo
 runtime/indent/kotlin.vim				@udalov
 runtime/indent/krl.vim					@KnoP-01
 runtime/indent/ld.vim					@dkearns
+runtime/indent/lf.vim					@andis-sprinkis
 runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
 runtime/indent/lua.vim					@marcuscf
@@ -550,6 +553,7 @@ runtime/syntax/kivy.vim					@prophittcorey
 runtime/syntax/kotlin.vim				@udalov
 runtime/syntax/kdl.vim					@imsnif @jiangyinzuo
 runtime/syntax/krl.vim					@KnoP-01
+runtime/syntax/leex.vim					@jparise
 runtime/syntax/less.vim					@genoma
 runtime/syntax/lf.vim					@andis-sprinkis
 runtime/syntax/liquid.vim				@tpope

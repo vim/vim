@@ -993,6 +993,11 @@ EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 EXTERN int	clip_unnamed_saved INIT(= 0);
 #endif
 
+#ifdef FEAT_CLIPBOARD_PROVIDER
+EXTERN char_u	*clip_provider INIT(= NULL);
+#endif
+
+
 /*
  * All regular windows are linked in a list. "firstwin" points to the first
  * entry, "lastwin" to the last entry (can be the same as firstwin) and
@@ -2070,7 +2075,7 @@ EXTERN int	p_tgc_set INIT(= FALSE);
 // If we've already warned about missing/unavailable clipboard
 EXTERN bool did_warn_clipboard INIT(= FALSE);
 
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
 #endif
 
@@ -2127,3 +2132,9 @@ EXTERN char_u *client_socket INIT(= NULL);
 
 // If the <xOSC> key should be propogated from vgetc()
 EXTERN int allow_osc_key INIT(= 0);
+
+#ifdef FEAT_EVAL
+// Global singly linked list of redraw listeners
+EXTERN redraw_listener_T *redraw_listeners INIT(= NULL);
+EXTERN bool inside_redraw_on_start_cb INIT(= false);
+#endif

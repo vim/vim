@@ -1242,6 +1242,7 @@ string_from_blob(blob_T *blob, long *start_idx)
     garray_T	str_ga;
     long	blen;
     int		idx;
+    char_u	*ret_str = NULL;
 
     ga_init2(&str_ga, sizeof(char), 80);
 
@@ -1262,7 +1263,8 @@ string_from_blob(blob_T *blob, long *start_idx)
 	ga_append(&str_ga, byte);
     }
 
-    char_u *ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    if (str_ga.ga_data != NULL)
+	ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
     *start_idx = idx;
 
     ga_clear(&str_ga);
@@ -2843,6 +2845,12 @@ adjust_types(
     int *num_posarg,
     const char *type)
 {
+    if (arg <= 0)
+    {
+	semsg(_( e_invalid_format_specifier_str), type);
+	return FAIL;
+    }
+
     if (*ap_types == NULL || *num_posarg < arg)
     {
 	int	    idx;
@@ -2876,7 +2884,8 @@ adjust_types(
 	    {
 		switch (pt[0])
 		{
-		    case 'd': case 'i': break;
+		    case 'd':
+		    case 'i': break;
 		    default:
 			semsg(_(e_positional_num_field_spec_reused_str_str), arg, format_typename((*ap_types)[arg - 1]), format_typename(type));
 			return FAIL;

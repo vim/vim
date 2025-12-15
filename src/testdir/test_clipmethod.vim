@@ -3,21 +3,26 @@
 source util/window_manager.vim
 
 CheckFeature clipboard_working
-CheckFeature xterm_clipboard
-CheckFeature wayland_clipboard
-CheckUnix
 
 " Test if no available clipmethod sets v:clipmethod to none and deinits clipboard
 func Test_no_clipmethod_sets_v_clipmethod_none()
+  CheckFeature xterm_clipboard
+  CheckFeature wayland_clipboard
+  CheckUnix
   CheckNotGui
 
   set clipmethod=
   call assert_equal("none", v:clipmethod)
   call assert_equal(0, has('clipboard_working'))
+
+  set clipmethod&
 endfunc
 
 " Test if method chosen is in line with clipmethod order
 func Test_clipmethod_order()
+  CheckFeature xterm_clipboard
+  CheckFeature wayland_clipboard
+  CheckUnix
   CheckNotGui
 
   set cpm=wayland,x11
@@ -60,6 +65,8 @@ func Test_clipmethod_order()
   call assert_equal("wayland", v:clipmethod)
 
   call EndWaylandCompositor(l:wayland_display)
+
+  set clipmethod&
 endfunc
 
 " Test if clipmethod is set to 'none' when gui is started
@@ -83,6 +90,9 @@ endfunc
 
 " Test if :clipreset switches methods when current one doesn't work
 func Test_clipreset_switches()
+  CheckFeature xterm_clipboard
+  CheckFeature wayland_clipboard
+  CheckUnix
   CheckNotGui
   CheckFeature clientserver
   CheckXServer
@@ -171,6 +181,48 @@ func Test_clipreset_switches()
     " existing, this why WaitForAssert() is used.
     call WaitForAssert({-> assert_equal(['SUCCESS'], readfile('Xtest'))}, 1000)
   endif
+
+  set clipmethod&
+endfunc
+
+func s:AAvailable()
+  return g:a_available
+endfunc
+
+func s:BAvailable()
+  return g:b_available
+endfunc
+
+" Test clipmethod when using provider
+func Test_clipmethod_provider()
+  CheckFeature clipboard_provider
+
+  let v:clipproviders["a"] = {
+        \ "available": function("s:AAvailable"),
+        \ }
+  let v:clipproviders["b"] = {
+        \ "available": function("s:BAvailable"),
+        \ }
+  let g:a_available = 1
+  let g:b_available = 1
+
+  set clipmethod=a,b
+  call assert_equal("a", v:clipmethod)
+
+  let g:a_available = 0
+  clipreset
+  call assert_equal("b", v:clipmethod)
+
+  let g:b_available = 0
+  clipreset
+  call assert_equal("none", v:clipmethod)
+
+  let g:a_available = 1
+  let g:b_available = 1
+  clipreset
+  call assert_equal("a", v:clipmethod)
+
+  set clipmethod&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

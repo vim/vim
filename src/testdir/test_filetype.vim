@@ -148,6 +148,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     blank: ['file.bl'],
     blueprint: ['file.blp'],
     bp: ['Android.bp'],
+    bpftrace: ['file.bt'],
     brighterscript: ['file.bs'],
     brightscript: ['file.brs'],
     bsdl: ['file.bsd', 'file.bsdl'],
@@ -275,7 +276,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     elsa: ['file.lc'],
     elvish: ['file.elv'],
     epuppet: ['file.epp'],
-    erlang: ['file.erl', 'file.hrl', 'file.yaws'],
+    erlang: ['file.erl', 'file.hrl', 'file.yaws', 'file.app.src', 'rebar.config'],
     eruby: ['file.erb', 'file.rhtml'],
     esdl: ['file.esdl'],
     esmtprc: ['anyesmtprc', 'esmtprc', 'some-esmtprc'],
@@ -440,6 +441,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ldif: ['file.ldif'],
     lean: ['file.lean'],
     ledger: ['file.ldg', 'file.ledger', 'file.journal'],
+    leex: ['file.xrl'],
     leo: ['file.leo'],
     less: ['file.less'],
     lex: ['file.lex', 'file.l', 'file.lxx', 'file.l++'],
@@ -576,6 +578,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ninja: ['file.ninja'],
     nix: ['file.nix'],
     norg: ['file.norg'],
+    nq: ['file.nq'],
     nqc: ['file.nqc'],
     nroff: ['file.tr', 'file.nr', 'file.roff', 'file.tmac', 'tmac.file'],
     nsis: ['file.nsi', 'file.nsh'],
@@ -2394,6 +2397,49 @@ func Test_tf_file()
   filetype off
 endfunc
 
+func Test_tf_file_v2()
+  filetype on
+
+  let lines =<< trim END
+    ;# Connect to a MUD server
+    /server mud.example.com 4000
+    ;set verbose on
+    /def greet = /echo Hello, $[name()]
+    /def hp = /send score
+    ;alias n = north
+    ;alias s = south
+    ;set autolog on
+    /def prompt = /echo -p Prompt: %{*}
+  END
+
+  call writefile(lines, "Xfile.tf", "D")
+  split Xfile.tf
+  call assert_equal('tf', &filetype)
+  bw!
+  let lines =<< trim END
+		# This is a comment at the top of the file
+
+		terraform {
+			required_version = ">= 1.0"
+		}
+
+		provider "aws" {
+			region = "us-east-1"
+		}
+
+		resource "aws_s3_bucket" "demo" {
+			bucket = "example-bucket"
+		}
+  END
+  call writefile(lines, "Xfile.tf", "D")
+  split Xfile.tf
+  call assert_equal('terraform', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+
 func Test_ts_file()
   filetype on
 
@@ -3200,6 +3246,36 @@ func Test_m4_format()
   bwipe!
 
   cd -
+  filetype off
+endfunc
+
+" Erlang Application Resource File
+func Test_app_file()
+  filetype on
+
+  call writefile(['% line comment', '{application, xfile1,'], 'xfile1.app', 'D')
+  split xfile1.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
+  call writefile(['% line comment', "{application, 'Xfile2',"], 'Xfile2.app', 'D')
+  split Xfile2.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
+  call writefile([' % line comment',
+        \ ' ',
+        \ ' % line comment',
+        \ ' { ',
+        \ ' % line comment ',
+        \ ' application , ',
+        \ ' % line comment ',
+        \ ' xfile3 , '],
+        \ 'xfile3.app', 'D')
+  split xfile3.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
   filetype off
 endfunc
 

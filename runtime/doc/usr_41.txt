@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Nov 27
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -1472,6 +1472,9 @@ Various:					*various-functions*
 	rubyeval()		evaluate |Ruby| expression
 
 	debugbreak()		interrupt a program being debugged
+
+	redraw_listener_add()   add callbacks to listen for redraws
+	redraw_listener_remove()    remove a redraw listener
 
 ==============================================================================
 *41.7*	Defining a function

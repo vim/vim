@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Nov 28
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -493,6 +493,8 @@ readdirex({dir} [, {expr} [, {dict}]])
 				List	file info in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
+redraw_listener_add({opts})	Number	add callbacks to listen for redraws
+redraw_listener_remove({id})	none	remove a redraw listener
 reduce({object}, {func} [, {initial}])
 				any	reduce {object} using {func}
 reg_executing()			String	get the executing register name
@@ -2711,13 +2713,18 @@ executable({expr})					*executable()*
 		then the name is also tried without adding an extension.
 		On MS-Windows it only checks if the file exists and is not a
 		directory, not if it's really executable.
+
 		On MS-Windows an executable in the same directory as the Vim
 		executable is always found.  Since this directory is added to
 		$PATH it should also work to execute it |win32-PATH|.
-					*NoDefaultCurrentDirectoryInExePath*
-		On MS-Windows an executable in Vim's current working directory
-		is also normally found, but this can be disabled by setting
-		the $NoDefaultCurrentDirectoryInExePath environment variable.
+					*$NoDefaultCurrentDirectoryInExePath*
+		On MS-Windows when using cmd.exe as 'shell' an executable in
+		Vim's current working directory is also normally found, which
+		can be disabled by setting the
+		`$NoDefaultCurrentDirectoryInExePath` environment variable.
+		This variable is always set by Vim when executing external
+		commands (e.g., via |:!|, |:make|, or |system()|) for security
+		reasons.
 
 		The result is a Number:
 			1	exists
@@ -2887,7 +2894,7 @@ exists({expr})						*exists()*
 		Can also be used as a |method|: >
 			Varname()->exists()
 <
-		Return type: |String|
+		Return type: |Number|
 
 
 exists_compiled({expr})					*exists_compiled()*
@@ -2904,7 +2911,7 @@ exists_compiled({expr})					*exists_compiled()*
 		Can only be used in a |:def| function. *E1233*
 		This does not work to check for arguments or local variables.
 
-		Return type: |String|
+		Return type: |Number|
 
 
 exp({expr})						*exp()*
@@ -5343,9 +5350,13 @@ getwininfo([{winid}])					*getwininfo()*
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
+			status_height	status lines height (0 or 1)
+			tabnr		tab page number
 			terminal	1 if a terminal window
 					{only with the +terminal feature}
-			tabnr		tab page number
+			textoff		number of columns occupied by any
+					'foldcolumn', 'signcolumn' and line
+					number in front of the text
 			topline		first displayed buffer line
 			variables	a reference to the dictionary with
 					window-local variables
@@ -5354,9 +5365,6 @@ getwininfo([{winid}])					*getwininfo()*
 					otherwise
 			wincol		leftmost screen column of the window;
 					"col" from |win_screenpos()|
-			textoff		number of columns occupied by any
-					'foldcolumn', 'signcolumn' and line
-					number in front of the text
 			winid		|window-ID|
 			winnr		window number
 			winrow		topmost screen line of the window;
@@ -8330,24 +8338,24 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 							*E1502*
 		You can re-use a [field-width] (or [precision]) argument: >
-		    echo printf("%1$d at width %2$d is: %01$*2$d", 1, 2)
+		    echo printf("%1$d at width %2$d is: %1$0*2$d", 1, 2)
 <		    1 at width 2 is: 01
 
 		However, you can't use it as a different type: >
-		    echo printf("%1$d at width %2$ld is: %01$*2$d", 1, 2)
+		    echo printf("%1$d at width %2$ld is: %1$0*2$d", 1, 2)
 <		    E1502: Positional argument 2 used as field width reused as
 		    different type: long int/int
 
 							*E1503*
 		When a positional argument is used, but not the correct number
 		or arguments is given, an error is raised: >
-		    echo printf("%1$d at width %2$d is: %01$*2$.*3$d", 1, 2)
+		    echo printf("%1$d at width %2$d is: %1$0*2$.*3$d", 1, 2)
 <		    E1503: Positional argument 3 out of bounds: %1$d at width
-		    %2$d is: %01$*2$.*3$d
+		    %2$d is: %1$0*2$.*3$d
 
 		Only the first error is reported: >
-		    echo printf("%01$*2$.*3$d %4$d", 1, 2)
-<		    E1503: Positional argument 3 out of bounds: %01$*2$.*3$d
+		    echo printf("%1$0*2$.*3$d %4$d", 1, 2)
+<		    E1503: Positional argument 3 out of bounds: %1$0*2$.*3$d
 		    %4$d
 
 							*E1504*
@@ -8777,6 +8785,48 @@ readfile({fname} [, {type} [, {max}]])			*readfile()*
 			GetFileName()->readfile()
 <
 		Return type: list<string> or list<any>
+
+
+redraw_listener_add({opts})				*redraw_listener_add()*
+		Add a listener that holds callback functions that will be
+		called at specific times in the redraw cycle.  {opts} is a
+		dictionary that contain the callback functions to be defined.
+		At least one callback must be specified. *E1571*
+		Returns a unique ID that can be passed to
+		|redraw_listener_remove()|.
+
+		{opts} may have the following entries:
+
+		    on_start	Called first on each screen redraw.  Takes no
+				arguments and returns nothing.
+		    on_end	Called at the end of each screen redraw.
+				Takes no arguments and returns nothing.
+
+		A good use case for this function is with the |listener_add()|
+		callback with unbuffered set to TRUE.  This allows you to
+		modify the state on buffer changes, and finally render that
+		state just before the next redraw, only if it has changed.
+		Attempting to render or redraw for every single buffer change
+		would be very inefficient.
+
+		You may not call redraw_listener_add() during any of the
+		callbacks defined in {opts}. *E1570*
+
+		Can also be used as a |method|: >
+			GetOpts()->redraw_listener_add()
+<
+		Return type: |Number|
+
+
+redraw_listener_remove({id})				*redraw_listener_remove()*
+		Remove a redraw listener previously added with
+		|redraw_listener_add()|.  Returns FALSE when {id} could not be
+		found, TRUE when {id} was removed.
+
+		Can also be used as a |method|: >
+			GetRedrawListenerId()->redraw_listener_remove()
+<
+		Return type: |Number|
 
 
 reduce({object}, {func} [, {initial}])			*reduce()* *E998*

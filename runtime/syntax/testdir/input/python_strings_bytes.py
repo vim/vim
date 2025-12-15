@@ -99,6 +99,47 @@ and fields {1}, {2} and {1
     +
     2}"""
 
+# Template string literals (t-strings)
+# https://docs.python.org/3/reference/lexical_analysis.html#template-string-literals
+test = t'T-string with escapes \' and \" and \t and fields {foo} and {bar}'
+test = T"T-string with escapes \040 and \xFF and fields {foo} and {bar}"
+test = t'T-string with escapes \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK} and fields {foo} and {bar}'
+test = T"T-string with literal {{field}} and fields {foo} and {bar}"
+test = t'''T-string with quotes ' and "
+and escapes \t and \040 and \xFF
+and escapes \u00A1 and \U00010605
+and fields {1}, {2} and {1
+    +
+    2}'''
+test = T"""T-string with quotes ' and "
+and escapes \t and \040 and \xFF
+and escapes \u00A1 and \U00010605
+and fields {1}, {2} and {1
+    +
+    2}"""
+
+# Raw template string literals
+test = tr'Raw t-string with literal \' and \" and \t and fields {foo} and {bar}'
+test = tR"Raw t-string with literal \040 and \xFF and fields {foo} and {bar}"
+test = tr'Raw t-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
+test = tR"Raw t-string with literal {{field}} and fields {foo} and {bar}"
+test = rt'Raw t-string with literal \' and \" and \t and fields {foo} and {bar}'
+test = rT"Raw t-string with literal \040 and \xFF and fields {foo} and {bar}"
+test = Rt'Raw t-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
+test = RT"Raw t-string with literal {{field}} and fields {foo} and {bar}"
+test = tr'''Raw t-string with quotes ' and "
+and literal \t and \040 and \xFF
+and literal \u00A1 and \U00010605
+and fields {1}, {2} and {1
+    +
+    2}'''
+test = RT"""Raw t-string with quotes ' and "
+and literal \t and \040 and \xFF
+and literal \u00A1 and \U00010605
+and fields {1}, {2} and {1
+    +
+    2}"""
+
 # F-string replacement fields
 test = f"String is {
     "one plus "
