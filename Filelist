@@ -470,57 +470,6 @@ SRC_ALL =	\
 		src/xdiff/xtypes.h \
 		src/xdiff/xutils.c \
 		src/xdiff/xutils.h \
-		src/treesitter/LICENSE \
-		src/treesitter/Makefile \
-		src/treesitter/README.md \
-		src/treesitter/lib/LICENSE \
-		src/treesitter/lib/include/tree_sitter/api.h \
-		src/treesitter/lib/src/alloc.c \
-		src/treesitter/lib/src/alloc.h \
-		src/treesitter/lib/src/array.h \
-		src/treesitter/lib/src/atomic.h \
-		src/treesitter/lib/src/error_costs.h \
-		src/treesitter/lib/src/get_changed_ranges.c \
-		src/treesitter/lib/src/get_changed_ranges.h \
-		src/treesitter/lib/src/host.h \
-		src/treesitter/lib/src/language.c \
-		src/treesitter/lib/src/language.h \
-		src/treesitter/lib/src/length.h \
-		src/treesitter/lib/src/lexer.c \
-		src/treesitter/lib/src/lexer.h \
-		src/treesitter/lib/src/lib.c \
-		src/treesitter/lib/src/node.c \
-		src/treesitter/lib/src/parser.c \
-		src/treesitter/lib/src/parser.h \
-		src/treesitter/lib/src/point.c \
-		src/treesitter/lib/src/point.h \
-		src/treesitter/lib/src/portable/endian.h \
-		src/treesitter/lib/src/query.c \
-		src/treesitter/lib/src/reduce_action.h \
-		src/treesitter/lib/src/reusable_node.h \
-		src/treesitter/lib/src/stack.c \
-		src/treesitter/lib/src/stack.h \
-		src/treesitter/lib/src/subtree.c \
-		src/treesitter/lib/src/subtree.h \
-		src/treesitter/lib/src/tree.c \
-		src/treesitter/lib/src/tree.h \
-		src/treesitter/lib/src/tree_cursor.c \
-		src/treesitter/lib/src/tree_cursor.h \
-		src/treesitter/lib/src/ts_assert.h \
-		src/treesitter/lib/src/unicode/ICU_SHA \
-		src/treesitter/lib/src/unicode/LICENSE \
-		src/treesitter/lib/src/unicode/README.md \
-		src/treesitter/lib/src/unicode/ptypes.h \
-		src/treesitter/lib/src/unicode/umachine.h \
-		src/treesitter/lib/src/unicode/urename.h \
-		src/treesitter/lib/src/unicode/utf.h \
-		src/treesitter/lib/src/unicode/utf16.h \
-		src/treesitter/lib/src/unicode/utf8.h \
-		src/treesitter/lib/src/unicode.h \
-		src/treesitter/lib/src/wasm/stdlib-symbols.txt \
-		src/treesitter/lib/src/wasm/wasm-stdlib.h \
-		src/treesitter/lib/src/wasm_store.c \
-		src/treesitter/lib/src/wasm_store.h
 
 
 # Source files for Unix-like only.
