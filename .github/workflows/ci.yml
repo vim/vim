@@ -601,7 +601,7 @@ jobs:
           echo %GETTEXT64_URL%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
