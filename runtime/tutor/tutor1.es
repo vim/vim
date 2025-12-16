@@ -901,7 +901,7 @@ NOTA:  Si quiere ignorar las mayúsculas y minúsculas, solo para un comando
   7. Añada "no" para inhabilitar una opción:   :set noic
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  Lección 7: OBTENER AYUDA
+		  Lección 1.7.1: OBTENER AYUDA
 
 
 		 ** Utilice el sistema de ayuda en línea **
