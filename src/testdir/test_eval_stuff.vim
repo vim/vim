@@ -783,6 +783,8 @@ func s:Copy(reg, type, lines)
 endfunc
 
 func Test_clipboard_provider_available()
+  CheckFeature clipboard_provider
+
   let g:vim_cp_available = v:true
 
   let v:clipproviders["test"] = {
@@ -810,6 +812,8 @@ func Test_clipboard_provider_available()
 endfunc
 
 func Test_clipboard_provider_paste()
+  CheckFeature clipboard_provider
+
   let v:clipproviders["test"] = {
         \ "paste": {
         \       '+': function("s:Paste"),
@@ -860,6 +864,8 @@ func Test_clipboard_provider_paste()
 endfunc
 
 func Test_clipboard_provider_copy()
+  CheckFeature clipboard_provider
+
   let v:clipproviders["test"] = {
         \ "copy": {
         \       '+': function("s:Copy"),
@@ -928,6 +934,7 @@ endfunc
 " clipmethod is set to a provider. If not, then the plus register points to the
 " star register like normal.
 func Test_clipboard_provider_no_unamedplus()
+  CheckFeature clipboard_provider
   CheckNotFeature unnamedplus
   CheckFeature clipboard_working
 
@@ -956,6 +963,7 @@ endfunc
 " Same as Test_clipboard_provider_registers() but do it when +clipboard isnt
 " enabled.
 func Test_clipboard_provider_no_clipboard()
+  CheckFeature clipboard_provider
   CheckNotFeature clipboard
 
   let v:clipproviders["test"] = {
@@ -984,6 +992,7 @@ endfunc
 " Test if clipboard provider feature doesn't break existing clipboard
 " functionality.
 func Test_clipboard_provider_sys_clipboard()
+  CheckFeature clipboard_provider
   CheckFeature clipboard_working
 
   let v:clipproviders["test"] = {
@@ -1036,6 +1045,8 @@ endfunc
 " Test if the provider callback are only called once per register on operations
 " that may try calling them multiple times.
 func Test_clipboard_provider_accessed_once()
+  CheckFeature clipboard_provider
+
   let v:clipproviders["test"] = {
         \ "paste": {
         \       '+': function("s:Paste"),
@@ -1095,6 +1106,8 @@ endfunc
 " Test if the copying does not call the paste callback, and pasting does not all
 " the copy callback.
 func Test_clipboard_provider_copy_paste_independent()
+  CheckFeature clipboard_provider
+
   let v:clipproviders["test"] = {
         \ "paste": {
         \       '+': function("s:Paste"),
@@ -1148,6 +1161,35 @@ func Test_clipboard_provider_copy_paste_independent()
 
   call assert_equal(0, g:vim_paste_count['*'])
   call assert_equal(0, g:vim_paste_count['+'])
+
+  set clipmethod&
+endfunc
+
+" Test if clipboard provider feature works under :redir and execute()
+func Test_clipboard_provider_redir_execute()
+  CheckFeature clipboard_provider
+
+  let v:clipproviders["test"] = {
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  redir @+
+  echom "testing"
+  redir END
+
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["", "testing"], g:vim_copy.lines)
+  call assert_equal("v", g:vim_copy.type)
+
+  let @+ = execute("echom 'hello world'")
+
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["", "hello world"], g:vim_copy.lines)
+  call assert_equal("v", g:vim_copy.type)
 
   set clipmethod&
 endfunc
