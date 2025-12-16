@@ -316,7 +316,7 @@ REFERENCIA: 	Marcas 				:h marks
   Con esto concluye el capítulo dos del Tutor de Vim.
   Este es un trabajo en progreso.
 
-  Este capítulo fue traducido por Paul D. Parker y Christian Brabandt.
+  Este capítulo fue escrito por Paul D. Parker y Christian Brabandt.
   Traducido por Victorhck.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
