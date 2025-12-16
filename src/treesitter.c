@@ -621,37 +621,62 @@ tsquerymatch_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rett
     {
 	case QMPROP_CAPTURES:		    // captures
 	{
-	    tuple_T	*ret;
+	    // Each dictionary key is a number that represents the capture id.
+	    // Each key is associated with a list of nodes that is matched by
+	    // the capture id.
+	    dict_T	*dict;
+	    char_u	buf[NUMBUFLEN + 1];
 
-	    ret = tuple_alloc_with_items(match->capture_count);
-	    if (ret == NULL)
+	    dict = dict_alloc();
+	    if (dict == NULL)
 		return FAIL;
 
 	    for (int i = 0; i < match->capture_count; i++)
 	    {
-		TSQueryCapture  capture = match->captures[i];
-		tuple_T		*t = tuple_alloc_with_items(2);
-		typval_T	node;
+		TSQueryCapture	capture = match->captures[i];
+		dictitem_T	*di;
+		opaque_T	*node;
+		list_T		*list;
 
-		if (t == NULL)
+		node = new_tsnode(&capture.node, tree);
+
+		if (node == NULL)
 		{
-		    tuple_unref(ret);
+		    dict_unref(dict);
 		    return FAIL;
 		}
 
-		node.v_type = VAR_OPAQUE;
-		// If it fails then we just get a null opaque object
-		node.vval.v_opaque = new_tsnode(&capture.node, tree);
+		sprintf((char *)buf, "%d", capture.index);
+		di = dict_find(dict, buf, -1);
 
-		tuple_set_item(t, 0, &node);
-		tuple_set_number(t, 1, capture.index);
+		if (di == NULL)
+		{
+		    // List hasn't been created yet
+		    list = list_alloc();
 
-		t->tv_refcount++;
-		tuple_set_tuple(ret, i, t);
+		    if (list == NULL)
+		    {
+			dict_unref(dict);
+			opaque_unref(node);
+			return FAIL;
+		    }
+		    dict_add_list(dict, (char *)buf, list);
+		}
+		else
+		    list = di->di_tv.vval.v_list;
+
+		if (list_append_opaque(list, node) == FAIL)
+		{
+		    dict_unref(dict);
+		    list_unref(list);
+		    opaque_unref(node);
+		    return FAIL;
+		}
 	    }
-	    ret->tv_refcount++;
-	    rettv->v_type = VAR_TUPLE;
-	    rettv->vval.v_tuple = ret;
+
+	    dict->dv_refcount++;
+	    rettv->v_type = VAR_DICT;
+	    rettv->vval.v_dict = dict;
 	}
 	    break;
 	case QMPROP_ID:			    // id
@@ -694,18 +719,17 @@ tstree_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 }
 
 static type_T *number_number[] = {&t_number, &t_number};
-static type_T *tsnode_number[] = {&t_tsnode, &t_number};
 
 static type_T t_tspoint = {
     VAR_TUPLE, 2, 2, TTFLAG_STATIC, &t_number, NULL, number_number, NULL
 };
 
 static type_T t_tscapture = {
-    VAR_TUPLE, 2, 2, TTFLAG_STATIC, &t_any, NULL, tsnode_number, NULL
+    VAR_LIST, -1, 0, TTFLAG_STATIC, &t_tsnode, NULL, NULL, NULL
 };
 
-static type_T t_tscapturetuple = {
-    VAR_TUPLE, -1, 0,TTFLAG_STATIC, &t_tscapture, NULL, NULL, NULL
+static type_T t_tscapturesdict = {
+    VAR_DICT, -1, 0,TTFLAG_STATIC, &t_tscapture, NULL, NULL, NULL
 };
 
 type_T t_tsparser = {
@@ -756,9 +780,9 @@ static opaque_property_T tsnode_properties[] = {
 };
 
 static opaque_property_T tsquerymatch_properties[] = {
-    {QMPROP_CAPTURES,	    OPPROPNAME("captures"), &t_tscapturetuple},
-    {QMPROP_ID,		    OPPROPNAME("id"), &t_number},
-    {QMPROP_PATTERN_INDEX,    OPPROPNAME("pattern_index"), &t_number},
+    {QMPROP_CAPTURES,		    OPPROPNAME("captures"), &t_tscapturesdict},
+    {QMPROP_ID,			    OPPROPNAME("id"), &t_number},
+    {QMPROP_PATTERN_INDEX,	    OPPROPNAME("pattern_index"), &t_number},
 };
 
 static opaque_property_T tstree_properties[] = {

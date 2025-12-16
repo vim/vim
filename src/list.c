@@ -736,6 +736,26 @@ list_append_tuple(list_T *l, tuple_T *t)
 }
 
 /*
+ * Append "op" to list "l".
+ * Returns FAIL when out of memory.
+ * Does not add a reference to the opaque.
+ */
+    int
+list_append_opaque(list_T *l, opaque_T *op)
+{
+    listitem_T	*li;
+
+    li = listitem_alloc();
+    if (li == NULL)
+	return FAIL;
+    li->li_tv.v_type = VAR_OPAQUE;
+    li->li_tv.v_lock = 0;
+    li->li_tv.vval.v_opaque = op;
+    list_append(l, li);
+    return OK;
+}
+
+/*
  * Insert typval_T "tv" in list "l" before "item".
  * If "item" is NULL append at the end.
  * Return FAIL when out of memory or the type is wrong.
