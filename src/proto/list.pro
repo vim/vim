@@ -29,6 +29,7 @@ int list_append_list(list_T *list1, list_T *list2);
 int list_append_string(list_T *l, char_u *str, int len);
 int list_append_number(list_T *l, varnumber_T n);
 int list_append_tuple(list_T *l, tuple_T *t);
+int list_append_opaque(list_T *l, opaque_T *op);
 int list_insert_tv(list_T *l, typval_T *tv, listitem_T *item);
 void list_insert(list_T *l, listitem_T *ni, listitem_T *item);
 listitem_T *check_range_index_one(list_T *l, long *n1, int can_append, int quiet);
