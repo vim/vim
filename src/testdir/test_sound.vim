@@ -33,9 +33,14 @@ func Test_play_event()
 endfunc
 
 func Test_play_silent()
+  if has('win32') && !has('gui_running')
+    throw 'Skipped: Playing file with callback is not supported on Windows, non-GUI'
+  endif
+
   let fname = fnamemodify('silent.wav', '%p')
   let g:playcallback_count = 0
   let g:result = -1
+  let g:id = 0
 
   " play without callback
   let id1 = sound_playfile(fname)
