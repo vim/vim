@@ -3013,12 +3013,6 @@ may_toggle_cursor(term_T *term)
 	cursor_off();
 }
 
-#ifdef MSWIN
-static const uint8_t ansi_to_cterm_nr16[] = {
-    0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
-};
-#endif
-
 /*
  * Reverse engineer the RGB value into a cterm color index.
  * First color is 1.  Return 0 if no match found (default color).
@@ -3042,8 +3036,14 @@ color2index(VTermColor *color, int fg, int *boldp)
 	{
 	    uint8_t index = color->index;
 #ifdef MSWIN
+	    // Convert ANSI palette to cterm color index.
+	    // cterm_ansi_idx is a table for the reverse conversion from cterm
+	    // color index to ANSI palette. However, the current table can
+	    // be used for this conversion as well.
+	    // Note: If the contents of cterm_ansi_idx change in the future, a
+	    // different table may be needed for this purpose.
 	    if (index < 16)
-		index = ansi_to_cterm_nr16[index];
+		index = cterm_ansi_idx[index];
 #endif
 	    return index + 1;
 	}

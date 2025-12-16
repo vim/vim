@@ -7642,7 +7642,7 @@ static const char_u ansi_table[16][3] = {
 
 # if defined(MSWIN)
 // Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
-static const char_u cterm_ansi_idx[] = {
+const char_u cterm_ansi_idx[] = {
     0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
 };
 # endif
