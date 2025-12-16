@@ -1614,12 +1614,12 @@ f_tsquery_inspect(typval_T *argvars, typval_T *rettv)
     *   captures = (
     *	   "capture", ...
     *   ),
-    *   patterns = {
-    *	  '1': [
+    *   patterns = (
+    *	  [
     *	    [ <predicate/directive>, <args> ],
     *	    ...
     *     ]
-    *   }
+    *   )
     * }
     */
     dict = dict_alloc();
@@ -1657,8 +1657,7 @@ captures_fail:
     // Get predicates/directives and save them in the dictionary
     {
 	uint32_t    n = ts_query_pattern_count(query);
-	dict_T	    *patterns = dict_alloc();
-	char	    buf[NUMBUFLEN + 1];
+	tuple_T	    *patterns = tuple_alloc_with_items(n);
 
 	if (patterns == NULL)
 	    goto fail;
@@ -1734,19 +1733,15 @@ captures_fail:
 		    goto patterns_fail;
 		}
 	    }
-	    // Add pattern tuple to patterns tuple
-	    sprintf(buf, "%d", i);
-	    if (dict_add_list(patterns, buf, pattern) == FAIL)
-	    {
-		list_unref(pattern);
-		goto patterns_fail;
-	    }
+	    // Add pattern to patterns tuple
+	    pattern->lv_refcount++;
+	    tuple_set_list(patterns, i, pattern);
 	}
 
-	if (dict_add_dict(dict, "patterns", patterns) == FAIL)
+	if (dict_add_tuple(dict, "patterns", patterns) == FAIL)
 	{
 patterns_fail:
-	    dict_unref(patterns);
+	    tuple_unref(patterns);
 	    goto fail;
 	}
     }
