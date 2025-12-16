@@ -3,7 +3,7 @@ vim9script
 # Vim plugin for OSC52 clipboard support
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 October 14
+# Last Change:	2025 Dec 16
 
 if !has("timers")
   finish
@@ -37,6 +37,7 @@ augroup VimOSC52Plugin
   }
   autocmd VimEnter * {
     if !has("gui_running") && !get(g:, 'osc52_force_avail', 0)
+        && !get(g:, 'osc52_no_da1', 0)
       echoraw("\<Esc>[c")
     endif
   }

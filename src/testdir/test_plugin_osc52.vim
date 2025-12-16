@@ -1,14 +1,14 @@
 " Test for the OSC 52 plugin
 
+CheckFeature clipboard_provider
 CheckRunVimInTerminal
-" Does not run on BSD CI test runner
-CheckNotBSD
 
 source util/screendump.vim
 
 " Check if plugin correctly detects OSC 52 support if possible
 func Test_osc52_detect()
   let lines =<< trim END
+    let g:osc52_no_da1 = 1
     packadd osc52
     set clipmethod=osc52
   END
@@ -46,6 +46,7 @@ func Test_osc52_paste()
   CheckScreendump
 
   let lines =<< trim END
+    let g:osc52_no_da1 = 1
     packadd osc52
     set clipmethod=osc52
     redraw!
