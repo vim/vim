@@ -226,7 +226,7 @@ estack_sfile(estack_arg_T which UNUSED)
 	    ga_concat_len(&ga, type_name.string, type_name.length);
 	    // For class methods prepend "<class name>." to the function name.
 	    if (*class_name.string != NUL)
-		ga.ga_len += vim_snprintf_safelen(
+		ga.ga_len += (int)vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
 		    len - (size_t)ga.ga_len,
 		    "<SNR>%d_%s.",
@@ -236,7 +236,7 @@ estack_sfile(estack_arg_T which UNUSED)
 	    // For the bottom entry of <sfile>: do not add the line number, it is used in
 	    // <slnum>.  Also leave it out when the number is not set.
 	    if (lnum != 0)
-		ga.ga_len += vim_snprintf_safelen(
+		ga.ga_len += (int)vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
 		    len - (size_t)ga.ga_len,
 		    "[%ld]",
@@ -246,7 +246,9 @@ estack_sfile(estack_arg_T which UNUSED)
 	}
     }
 
-    ga_append(&ga, NUL);
+    // Only NUL-terminate when not returning NULL.
+    if (ga.ga_data != NULL)
+	ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 #endif
 }
