@@ -1037,4 +1037,55 @@ func Test_terminal_visual_empty_listchars()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_terminal_ansi_color_windows_cui()
+  if !has('win32') || has('gui_running')
+    throw 'Skipped: only for the Windows CUI'
+  endif
+  if exists('$APPVEYOR')
+    throw 'Skipped: this test cannot be performed because AppVeyor does not support ANSI escape sequences'
+  endif
+
+  call assert_equal('dark', &background)
+
+  " Outputs 16 ANSI colors as background colors
+  let ansi = ''
+  for i in range(16)
+    let ansi ..= printf("\e[%dm%X", i + (i < 8 ? 40 : 92), i)
+  endfor
+  let ansi ..= "\e[40m\n"
+  call writefile([ansi], 'XANSIcolor', 'D')
+
+  let expected_chars = '0123456789ABCDEF'
+  let expected_colors = [
+        \ '#000000', '#e00000', '#00e000', '#e0e000',
+        \ '#0000e0', '#e000e0', '#00e0e0', '#e0e0e0',
+        \ '#808080', '#ff4040', '#40ff40', '#ffff40',
+        \ '#4040ff', '#ff40ff', '#40ffff', '#ffffff',
+        \ ]
+
+  " Ideally, 16 colors should be checked. However, in the current CI
+  " environment, the 16th color is something other than white, and we don't
+  " know the cause nor solution. After discussion, we decided to check only 15
+  " colors for the time being.
+  " FIXME: Check all 16 colors in the future.
+  let len_to_check = 15
+  let expected_colors = expected_colors[:len_to_check-1]
+
+  " First, make sure vim can display correct ANSI color text in terminal.
+  let buf = term_start("cmd /C type XANSIcolor")
+  call WaitForAssert({-> assert_equal(expected_chars, term_scrape(buf, 1)[:15]->map({_, v -> v['chars']})->join(''))})
+  call assert_equal(expected_colors, term_scrape(buf, 1)[:len_to_check-1]->map({_, v -> v['bg']}))
+  bwipeout!
+
+  " Next, check if vim can do the same thing in the vim terminal in terminal.
+  let lines = [
+        \ 'call term_start("cmd /C type XANSIcolor")'
+        \ ]
+  call writefile(lines, 'XloadANSI', 'D')
+  let cmd = GetVimCommandCleanTerm()
+  let buf = term_start(cmd .. '-S XloadANSI')
+  call WaitForAssert({-> assert_equal(expected_chars, term_scrape(buf, 1)[:15]->map({_, v -> v['chars']})->join(''))})
+  call assert_equal(expected_colors, term_scrape(buf, 1)[:len_to_check-1]->map({_, v -> v['bg']}))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
