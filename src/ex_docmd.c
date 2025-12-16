@@ -8856,6 +8856,10 @@ ex_redir(exarg_T *eap)
 	    close_redir();
 	    ++arg;
 	    if (ASCII_ISALPHA(*arg)
+# ifdef HAVE_CLIPMETHOD
+		    || (clipmethod == CLIPMETHOD_PROVIDER
+			&& (*arg == '*' || *arg == '+'))
+# endif
 # ifdef FEAT_CLIPBOARD
 		    || *arg == '*'
 		    || *arg == '+'
