@@ -1282,6 +1282,9 @@ win_lbr_chartabsize(
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
     {
+	if (*s == TAB)
+	    size = wp->w_buffer->b_p_ts;
+
 	int	    tab_size = size;
 	int	    charlen = *s == NUL ? 1 : mb_ptr2len(s);
 	int	    i;

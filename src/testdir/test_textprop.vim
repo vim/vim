@@ -3731,6 +3731,38 @@ func Test_prop_above_with_indent()
   call prop_type_delete('indented')
 endfunc
 
+func Test_prop_above_tablen()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      [
+        "\t\tone",
+        "\ttwo",
+        "   \t3\tline three\t*\tline\tthree",
+        "   \t3\tline three\t*\tline\tthree",
+      ]->setline(1)
+      prop_type_add('above', {highlight: 'NonText'})
+      prop_add(1, 0, { text:  'above 1', type: 'above', text_align: 'above', text_padding_left: 16, })
+      prop_add(1, 0, { text:  'above 2', type: 'above', text_align: 'above', text_padding_left: 16, })
+      prop_add(2, 0, { text:  'above 1', type: 'above', text_align: 'above', text_padding_left: 8, })
+      prop_add(3, 0, { text:  'above 1', type: 'above', text_align: 'above', text_padding_left: 8, })
+      set list listchars=tab:<->
+  END
+  call writefile(lines, 'XscriptPropAboveTab', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveTab', #{cols: 34, rows: 11})
+  call term_sendkeys(buf, "w")
+  call VerifyScreenDump(buf, 'Test_prop_above_tablen_1', {})
+
+  "TODO: also test for cursor position
+  for width in range(33, 28, -1)
+    call term_sendkeys(buf, ":set columns="..width.."\<CR>")
+    call VerifyScreenDump(buf, 'Test_prop_above_tablen_'..(35-width), {})
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_above_with_number()
   CheckScreendump
   CheckRunVimInTerminal
