@@ -996,15 +996,18 @@ NOTA:  El completado funciona con muchos comandos. Solo pulse CTRL-D o
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Aquí concluye el tutor de Vim. Considera continuar con Capítulo 2, que trata
+  Aquí concluye el tutor de Vim. Considere continuar con Capítulo 2, que trata
   sobre registros, marcas y el uso de objetos de texto.
+
+  Para acceder al Capítulo 2 salga de este y ejecute en una terminal:
+  vimtutor -c 2
 
   Está pensado para dar una visión breve del
   editor Vim, lo suficiente para permitirle usar el editor de forma bastante
   sencilla. Está muy lejos de estar completo pues Vim tiene muchísimos más
   comandos.
 
-  Lee el siguiente manual de usuario: ":help user-manual".
+  Lea el siguiente manual de usuario: ":help user-manual".
 
   Para lecturas y estudios posteriores se recomienda el libro:
 	Vim - Vi Improved - de Steve Oualline
