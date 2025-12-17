@@ -672,6 +672,7 @@ func Test_switch_to_previously_viewed_buffer()
 endfunc
 
 func Test_bexit()
+  " :bx on modified buffer
   let temp_file = tempname()
   execute ":e " .. temp_file
 
@@ -684,9 +685,9 @@ func Test_bexit()
 
   call assert_true(filereadable(temp_file), "temp_file is not readable")
 
-  let actual_output = readfile(temp_file)
+  let file_content = readfile(temp_file)
 
-  call assert_equal("foo", actual_output[0])
+  call assert_equal("foo", file_content[0])
 
   call delete(temp_file)
 endfunc
