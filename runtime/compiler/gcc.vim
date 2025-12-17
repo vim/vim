@@ -16,6 +16,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 CompilerSet errorformat=
+      \make:\ ***\ [%f:%l:\ %m,
       \%*[^\"]\"%f\"%*\\D%l:%c:\ %m,
       \%*[^\"]\"%f\"%*\\D%l:\ %m,
       \\"%f\"%*\\D%l:%c:\ %m,
