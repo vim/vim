@@ -1100,7 +1100,31 @@ func Test_clipboard_provider_accessed_once()
   call assert_equal(0, g:vim_paste_count['*'])
 
   bw!
+
+  new
+  " Test same for changing and deleting text when 'clipboard' is
+  " unnamed/unnamedplus.
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  set clipboard=unnamed
+  call setline(1, "testing")
+  normal cw
+
+  call assert_equal(0, g:vim_paste_count['*'])
+  call assert_equal(1, g:vim_copy_count['*'])
+
+  set clipboard=unnamedplus
+  call setline(1, "testing")
+  normal dw
+
+  call assert_equal(0, g:vim_paste_count['+'])
+  call assert_equal(1, g:vim_copy_count['+'])
+
+  bw!
+
   set clipmethod&
+  set clipboard&
 endfunc
 
 " Test if the copying does not call the paste callback, and pasting does not all
@@ -1193,5 +1217,74 @@ func Test_clipboard_provider_redir_execute()
 
   set clipmethod&
 endfunc
+
+" Test if clipboard provider feature respects the "unnamed" and "unnamedplus"
+" values in the 'clipboard' option
+func Test_clipboard_provider_clipboard_option()
+  CheckFeature clipboard_provider
+
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+  let g:vim_paste = "tuple"
+
+  new
+
+  call setline(1, "hello world!")
+
+  set clipboard=unnamed
+
+  yank
+  call assert_equal("*",g:vim_copy.reg)
+  call assert_equal(["hello world!"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  put
+  call assert_equal(["a", "tuple", "*"], getline(2, 4))
+
+  set clipboard=unnamedplus
+
+  call cursor(1, 0)
+  yank
+  call assert_equal("+",g:vim_copy.reg)
+  call assert_equal(["hello world!"], g:vim_copy.lines)
+  call assert_equal("V", g:vim_copy.type)
+
+  put
+  call assert_equal(["a", "tuple", "+"], getline(2, 4))
+
+  set clipboard=unnamed,unnamedplus
+
+  call setline(1, "testing")
+  call cursor(1, 0)
+  yank
+  call assert_equal(["testing"], g:vim_copy.lines)
+  call assert_equal(["testing"], g:vim_copy.lines)
+
+  " Change and delete operations are tested in
+  " Test_clipboard_provider_accessed_once()
+  bw!
+
+  " Check if only "unnamed" and "unnamedplus" values are allowed when no
+  " +clipboard feature (including cmdline expansion).
+  if !has('clipboard')
+    call assert_fails("set clipboard=autoselect", "E474:")
+
+    call assert_equal(["unnamed,unnamedplus", "unnamed", "unnamedplus"],
+          \ getcompletion('set clipboard=', 'cmdline'))
+  endif
+
+  set clipmethod&
+  set clipboard&
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

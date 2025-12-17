@@ -1094,7 +1094,8 @@ inside of strings can change!  Also see 'softtabstop' option. >
 							*:y* *:yank* *E850*
 :[range]y[ank] [x]	Yank [range] lines [into register x].  Yanking to the
 			"* or "+ registers is possible only when the
-			|+clipboard| feature is included.
+			|+clipboard| or |+clipboard_provider| features are
+			included.
 
 :[range]y[ank] [x] {count}
 			Yank {count} lines, starting with last line number

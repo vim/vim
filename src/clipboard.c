@@ -1429,104 +1429,6 @@ clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 #endif
 
 /*
- * Extract the items in the 'clipboard' option and set global values.
- * Return an error message or NULL for success.
- */
-    char *
-did_set_clipboard(optset_T *args UNUSED)
-{
-    int		new_unnamed = 0;
-    int		new_autoselect_star = FALSE;
-    int		new_autoselect_plus = FALSE;
-    int		new_autoselectml = FALSE;
-    int		new_html = FALSE;
-    regprog_T	*new_exclude_prog = NULL;
-    char	*errmsg = NULL;
-    char_u	*p;
-
-    for (p = p_cb; *p != NUL; )
-    {
-	// Note: Keep this in sync with p_cb_values.
-	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
-	{
-	    new_unnamed |= CLIP_UNNAMED;
-	    p += 7;
-	}
-	else if (STRNCMP(p, "unnamedplus", 11) == 0
-					    && (p[11] == ',' || p[11] == NUL))
-	{
-	    new_unnamed |= CLIP_UNNAMED_PLUS;
-	    p += 11;
-	}
-	else if (STRNCMP(p, "autoselect", 10) == 0
-					    && (p[10] == ',' || p[10] == NUL))
-	{
-	    new_autoselect_star = TRUE;
-	    p += 10;
-	}
-	else if (STRNCMP(p, "autoselectplus", 14) == 0
-					    && (p[14] == ',' || p[14] == NUL))
-	{
-	    new_autoselect_plus = TRUE;
-	    p += 14;
-	}
-	else if (STRNCMP(p, "autoselectml", 12) == 0
-					    && (p[12] == ',' || p[12] == NUL))
-	{
-	    new_autoselectml = TRUE;
-	    p += 12;
-	}
-	else if (STRNCMP(p, "html", 4) == 0 && (p[4] == ',' || p[4] == NUL))
-	{
-	    new_html = TRUE;
-	    p += 4;
-	}
-	else if (STRNCMP(p, "exclude:", 8) == 0 && new_exclude_prog == NULL)
-	{
-	    p += 8;
-	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
-	    if (new_exclude_prog == NULL)
-		errmsg = e_invalid_argument;
-	    break;
-	}
-	else
-	{
-	    errmsg = e_invalid_argument;
-	    break;
-	}
-	if (*p == ',')
-	    ++p;
-    }
-    if (errmsg == NULL)
-    {
-	if (global_busy)
-	    // clip_unnamed will be reset to clip_unnamed_saved
-	    // at end_global_changes
-	    clip_unnamed_saved = new_unnamed;
-	else
-	    clip_unnamed = new_unnamed;
-	clip_autoselect_star = new_autoselect_star;
-	clip_autoselect_plus = new_autoselect_plus;
-	clip_autoselectml = new_autoselectml;
-	clip_html = new_html;
-	vim_regfree(clip_exclude_prog);
-	clip_exclude_prog = new_exclude_prog;
-#ifdef FEAT_GUI_GTK
-	if (gui.in_use)
-	{
-	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);
-	    gui_gtk_set_selection_targets((GdkAtom)clip_plus.gtk_sel_atom);
-	    gui_gtk_set_dnd_targets();
-	}
-#endif
-    }
-    else
-	vim_regfree(new_exclude_prog);
-
-    return errmsg;
-}
-
-/*
  * Stuff for the X clipboard.  Shared between VMS and Unix.
  */
 
@@ -2391,32 +2293,6 @@ may_set_selection(void)
     {
 	clip_own_selection(&clip_plus);
 	clip_gen_set_selection(&clip_plus);
-    }
-}
-
-/*
- * Adjust the register name pointed to with "rp" for the clipboard being
- * used always and the clipboard being available.
- */
-    void
-adjust_clip_reg(int *rp)
-{
-    // If no reg. specified, and "unnamed" or "unnamedplus" is in 'clipboard',
-    // use '*' or '+' reg, respectively. "unnamedplus" prevails.
-    if (*rp == 0 && (clip_unnamed != 0 || clip_unnamed_saved != 0))
-    {
-	if (clip_unnamed != 0)
-	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
-								  ? '+' : '*';
-	else
-	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS)
-					   && clip_plus.available) ? '+' : '*';
-    }
-    if ((!clip_star.available && *rp == '*') ||
-	   (!clip_plus.available && *rp == '+'))
-    {
-	msg_warn_missing_clipboard();
-	*rp = 0;
     }
 }
 
@@ -3483,7 +3359,7 @@ get_clipmethod(char_u *str)
 	}
 	else
 	{
-#ifdef FEAT_EVAL
+#ifdef FEAT_CLIPBOARD_PROVIDER
 	    // Check if name matches a clipboard provider
 	    int r = clip_provider_is_available(buf);
 
@@ -3501,7 +3377,7 @@ get_clipmethod(char_u *str)
 	    else if (r == -1)
 #endif
 	    {
-#ifdef FEAT_EVAL
+#ifdef FEAT_CLIPBOARD_PROVIDER
 fail:
 #endif
 		ret = CLIPMETHOD_FAIL;
@@ -3646,6 +3522,148 @@ ex_clipreset(exarg_T *eap UNUSED)
     else if (clipmethod != prev)
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
+}
+
+/*
+ * Adjust the register name pointed to with "rp" for the clipboard being
+ * used always and the clipboard being available.
+ */
+    void
+adjust_clip_reg(int *rp)
+{
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+    {
+	if (clip_unnamed != 0)
+	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS)) ? '+' : '*';
+	return;
+    }
+#endif
+#ifdef FEAT_CLIPBOARD
+    // If no reg. specified, and "unnamed" or "unnamedplus" is in 'clipboard',
+    // use '*' or '+' reg, respectively. "unnamedplus" prevails.
+    if (*rp == 0 && (clip_unnamed != 0 || clip_unnamed_saved != 0))
+    {
+	if (clip_unnamed != 0)
+	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
+								  ? '+' : '*';
+	else
+	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS)
+					   && clip_plus.available) ? '+' : '*';
+    }
+    if ((!clip_star.available && *rp == '*') ||
+	   (!clip_plus.available && *rp == '+'))
+    {
+	msg_warn_missing_clipboard();
+	*rp = 0;
+    }
+#endif
+}
+
+/*
+ * Extract the items in the 'clipboard' option and set global values.
+ * Return an error message or NULL for success.
+ */
+    char *
+did_set_clipboard(optset_T *args UNUSED)
+{
+    int		new_unnamed = 0;
+#ifdef FEAT_CLIPBOARD
+    int		new_autoselect_star = FALSE;
+    int		new_autoselect_plus = FALSE;
+    int		new_autoselectml = FALSE;
+    int		new_html = FALSE;
+#endif
+    regprog_T	*new_exclude_prog = NULL;
+    char	*errmsg = NULL;
+    char_u	*p;
+
+    for (p = p_cb; *p != NUL; )
+    {
+	// Note: Keep this in sync with p_cb_values.
+	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
+	{
+	    new_unnamed |= CLIP_UNNAMED;
+	    p += 7;
+	}
+	else if (STRNCMP(p, "unnamedplus", 11) == 0
+					    && (p[11] == ',' || p[11] == NUL))
+	{
+	    new_unnamed |= CLIP_UNNAMED_PLUS;
+	    p += 11;
+	}
+#ifdef FEAT_CLIPBOARD
+	else if (STRNCMP(p, "autoselect", 10) == 0
+					    && (p[10] == ',' || p[10] == NUL))
+	{
+	    new_autoselect_star = TRUE;
+	    p += 10;
+	}
+	else if (STRNCMP(p, "autoselectplus", 14) == 0
+					    && (p[14] == ',' || p[14] == NUL))
+	{
+	    new_autoselect_plus = TRUE;
+	    p += 14;
+	}
+	else if (STRNCMP(p, "autoselectml", 12) == 0
+					    && (p[12] == ',' || p[12] == NUL))
+	{
+	    new_autoselectml = TRUE;
+	    p += 12;
+	}
+	else if (STRNCMP(p, "html", 4) == 0 && (p[4] == ',' || p[4] == NUL))
+	{
+	    new_html = TRUE;
+	    p += 4;
+	}
+	else if (STRNCMP(p, "exclude:", 8) == 0 && new_exclude_prog == NULL)
+	{
+	    p += 8;
+	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
+	    if (new_exclude_prog == NULL)
+		errmsg = e_invalid_argument;
+	    break;
+	}
+#endif
+	else
+	{
+	    errmsg = e_invalid_argument;
+	    break;
+	}
+	if (*p == ',')
+	    ++p;
+    }
+    if (errmsg == NULL)
+    {
+#ifdef FEAT_CLIPBOARD
+	if (global_busy)
+	    // clip_unnamed will be reset to clip_unnamed_saved
+	    // at end_global_changes
+	    clip_unnamed_saved = new_unnamed;
+	else
+#endif
+	    clip_unnamed = new_unnamed;
+#ifdef FEAT_CLIPBOARD
+	clip_autoselect_star = new_autoselect_star;
+	clip_autoselect_plus = new_autoselect_plus;
+	clip_autoselectml = new_autoselectml;
+	clip_html = new_html;
+	vim_regfree(clip_exclude_prog);
+	clip_exclude_prog = new_exclude_prog;
+#endif
+#ifdef FEAT_GUI_GTK
+	if (gui.in_use)
+	{
+	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);
+	    gui_gtk_set_selection_targets((GdkAtom)clip_plus.gtk_sel_atom);
+	    gui_gtk_set_dnd_targets();
+	}
+#endif
+    }
+    else
+	vim_regfree(new_exclude_prog);
+
+    return errmsg;
 }
 
 #endif // HAVE_CLIPMETHOD

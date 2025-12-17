@@ -800,7 +800,7 @@ op_delete(oparg_T *oap)
 	// use register given with CTRL_R, defaults to zero
 	oap->regname = VIsual_select_reg;
 
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
     adjust_clip_reg(&oap->regname);
 #endif
 
@@ -857,12 +857,18 @@ op_delete(oparg_T *oap)
      */
     if (oap->regname != '_')
     {
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	inc_clip_provider();
+#endif
 	if (oap->regname != 0)
 	{
 	    // check for read-only register
 	    if (!valid_yank_reg(oap->regname, TRUE))
 	    {
 		beep_flush();
+#ifdef FEAT_CLIPBOARD_PROVIDER
+		dec_clip_provider();
+#endif
 		return OK;
 	    }
 	    get_yank_register(oap->regname, TRUE); // yank into specif'd reg.
@@ -888,7 +894,7 @@ op_delete(oparg_T *oap)
 	// Yank into small delete register when no named register specified
 	// and the delete is within one line.
 	if ((
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 	    ((clip_unnamed & CLIP_UNNAMED) && oap->regname == '*') ||
 	    ((clip_unnamed & CLIP_UNNAMED_PLUS) && oap->regname == '+') ||
 #endif
@@ -918,6 +924,9 @@ op_delete(oparg_T *oap)
 	    if (n != 'y')
 	    {
 		emsg(_(e_command_aborted));
+#ifdef FEAT_CLIPBOARD_PROVIDER
+		dec_clip_provider();
+#endif
 		return FAIL;
 	    }
 	}
@@ -925,6 +934,9 @@ op_delete(oparg_T *oap)
 #if defined(FEAT_EVAL)
 	if (did_yank && has_textyankpost())
 	    yank_do_autocmd(oap, get_y_current());
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	dec_clip_provider();
 #endif
     }
 

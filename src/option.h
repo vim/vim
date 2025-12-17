@@ -505,10 +505,8 @@ EXTERN int	p_cdh;		// 'cdhome'
 EXTERN char_u	*p_cino;	// 'cinoptions'
 EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
-#ifdef FEAT_CLIPBOARD
-EXTERN char_u	*p_cb;		// 'clipboard'
-#endif
 #ifdef HAVE_CLIPMETHOD
+EXTERN char_u	*p_cb;		// 'clipboard'
 EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
 EXTERN long	p_ch;		// 'cmdheight'

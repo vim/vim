@@ -5280,9 +5280,14 @@ Usage: >vim
 The clipboard provider feature allows the "+" |quoteplus| and "*" |quotestar|
 registers to be overridden by custom Vimscript functions.  There can be
 multiple providers, and Vim chooses which one to use based on 'clipmethod'.
-Despite the name, it does not use the 'clipboard' option and should be treated
-separate from the clipboard functionality.  It essentially overrides the
-existing behaviour of the clipboard registers.
+
+Despite the name, it should be treated separate from the clipboard
+functionality.  It essentially overrides the existing behaviour of the
+clipboard registers.
+
+						*clipboard-providers-clipboard*
+The clipboard provider feature will respect the "unnamed" and "unnamedplus"
+values in the 'clipboard' option.  Any other value will be ignored.
 
 						*clipboard-providers-no-clipboard*
 If the |+clipboard| feature is not enabled, then the "+" and "*" registers
