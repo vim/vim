@@ -689,6 +689,15 @@ func Test_bexit()
 
   call assert_equal("foo", file_content[0])
 
+  " :bx on unmodified buffer
+  execute ":e " .. temp_file
+  call assert_equal(temp_file, bufname())
+
+  execute ":bx"
+
+  call assert_equal([], v:errors)
+  call assert_equal("", bufname())
+
   call delete(temp_file)
 endfunc
 
