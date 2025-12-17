@@ -1352,7 +1352,7 @@ Dictionary and arguments, use |get()| to get the function name: >
 <
 							*E1437*
 An |Object| can only be compared with another |Object|, using only the
-"equal", "not equal", "is" and "isnot" operators |expr4|.  An |Enum| is also a
+"equal", "not equal", "is" and "isnot" operators |expr4|.  An |enum| is also a
 type of |Object|, and the same rules apply.
 
 							*E1037*
