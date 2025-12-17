@@ -29,8 +29,10 @@ CompilerSet errorformat=
             \%Eerror:\ %m,
             \%Eerror[E%n]:\ %m,
             \%Wwarning:\ %m,
+            \%Wwarning[E%n]:\ %m,
             \%Inote:\ %m,
             \%C\ %#-->\ %f:%l:%c,
+            \%C\ %#╭▸\ %f:%l:%c,
             \%E\ \ left:%m,%C\ right:%m\ %f:%l:%c,%Z
 
 " Old errorformat (before nightly 2016/08/10)
