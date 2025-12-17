@@ -189,6 +189,7 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long	lnum = 0;
+	    size_t	added = 0;
 	    string_T	type_name = {(char_u *)"", 0};
 	    string_T	class_name = {(char_u *)"", 0};
 	    string_T	es_name = {entry->es_name, STRLEN(entry->es_name)};
@@ -226,21 +227,29 @@ estack_sfile(estack_arg_T which UNUSED)
 	    ga_concat_len(&ga, type_name.string, type_name.length);
 	    // For class methods prepend "<class name>." to the function name.
 	    if (*class_name.string != NUL)
-		ga.ga_len += (int)vim_snprintf_safelen(
+	    {
+		added = vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
 		    len - (size_t)ga.ga_len,
 		    "<SNR>%d_%s.",
 		    entry->es_info.ufunc->uf_script_ctx.sc_sid,
 		    class_name.string);
+
+		ga.ga_len += (int)added;
+	    }
 	    ga_concat_len(&ga, es_name.string, es_name.length);
 	    // For the bottom entry of <sfile>: do not add the line number, it is used in
 	    // <slnum>.  Also leave it out when the number is not set.
 	    if (lnum != 0)
-		ga.ga_len += (int)vim_snprintf_safelen(
+	    {
+		added = vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
 		    len - (size_t)ga.ga_len,
 		    "[%ld]",
 		    lnum);
+
+		ga.ga_len += (int)added;
+	    }
 	    if (idx != exestack.ga_len - 1)
 		ga_concat_len(&ga, (char_u *)"..", 2);
 	}
