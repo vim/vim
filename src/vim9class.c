@@ -1024,9 +1024,19 @@ is_duplicate_variable(
     char_u	*varname,
     char_u	*varname_end)
 {
-    char_u	*name = vim_strnsave(varname, varname_end - varname);
-    char_u	*pstr = (*name == '_') ? name + 1 : name;
+    string_T	pstr = {varname, (size_t)(varname_end - varname)};  // Note: the .string field may
+								    // point to a string longer
+								    // than the .length field.
+								    // So we need to use STRNCMP()
+								    // to compare it.
     int		dup = FALSE;
+
+    // Step over a leading '_'.
+    if (*pstr.string == '_')
+    {
+	pstr.string++;
+	pstr.length--;
+    }
 
     for (int loop = 1; loop <= 2; loop++)
     {
@@ -1037,16 +1047,20 @@ is_duplicate_variable(
 	    ocmember_T *m = ((ocmember_T *)vgap->ga_data) + i;
 	    char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1
 						    : m->ocm_name;
-	    if (STRCMP(pstr, qstr) == 0)
+	    if (STRNCMP(pstr.string, qstr, pstr.length) == 0
+		&& qstr[pstr.length] == NUL)
 	    {
-		semsg(_(e_duplicate_variable_str), name);
+		char_u	save_c = *varname_end;
+
+		*varname_end = NUL;
+		semsg(_(e_duplicate_variable_str), varname);
+		*varname_end = save_c;
 		dup = TRUE;
 		break;
 	    }
 	}
     }
 
-    vim_free(name);
     return dup;
 }
 
@@ -1627,21 +1641,29 @@ is_duplicate_enum(
     char_u	*varname,
     char_u	*varname_end)
 {
-    char_u	*name = vim_strnsave(varname, varname_end - varname);
+    string_T	name = {varname, (size_t)(varname_end - varname)};  // Note: the .string field may
+								    // point to a string longer
+								    // than the .length field.
+								    // So we need to use STRNCMP()
+								    // to compare it.
     int		dup = FALSE;
 
     for (int i = 0; i < enum_gap->ga_len; ++i)
     {
 	ocmember_T *m = ((ocmember_T *)enum_gap->ga_data) + i;
-	if (STRCMP(name, m->ocm_name) == 0)
+	if (STRNCMP(name.string, m->ocm_name, name.length) == 0
+	    && m->ocm_name[name.length] == NUL)
 	{
-	    semsg(_(e_duplicate_enum_str), name);
+	    char_u  save_c = *varname_end;
+
+	    *varname_end = NUL;
+	    semsg(_(e_duplicate_enum_str), varname);
+	    *varname_end = save_c;
 	    dup = TRUE;
 	    break;
 	}
     }
 
-    vim_free(name);
     return dup;
 }
 
