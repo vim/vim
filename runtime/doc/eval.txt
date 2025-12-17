@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1349,7 +1349,13 @@ To compare Funcrefs to see if they refer to the same function, ignoring bound
 Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
-<							*E1037*
+<
+							*E1437*
+An |Object| can only be compared with another |Object|, using only the
+"equal", "not equal", "is" and "isnot" operators |expr4|.  An |Enum| is also a
+type of |Object|, and the same rules apply.
+
+							*E1037*
 Using "is" or "isnot" with a |List|, |Tuple|, |Dictionary| or |Blob| checks
 whether the expressions are referring to the same |List|, |Tuple|,
 |Dictionary| or |Blob| instance.  A copy of a |List| or |Tuple| is different

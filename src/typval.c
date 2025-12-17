@@ -1887,6 +1887,11 @@ typval_compare_object(
 	*res = obj1 == obj2 ? res_match : !res_match;
 	return OK;
     }
+    else if (tv1->v_type != tv2->v_type)
+    {
+	emsg(_(e_can_only_compare_object_with_object));
+	return FAIL;
+    }
 
     *res = object_equal(obj1, obj2, ic) ? res_match : !res_match;
     return OK;

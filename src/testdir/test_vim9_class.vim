@@ -13008,6 +13008,29 @@ def Test_object_any_type()
     x['a'] = {}
   END
   v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got dict<any>', 'E1012: Type mismatch; expected object<any> but got dict<any>'])
+
+  # Error if comparing object with non object when using COMPAREANY instruction
+  lines =<< trim END
+    vim9script
+
+    enum DirectiveType
+        Unknown,
+        Set
+    endenum
+
+    type PatternSteps = list<any>
+    type Directive = tuple<DirectiveType, PatternSteps>
+
+    def Test(): void
+        var directive: Directive = (DirectiveType.Unknown, ["eq", 1, "hello"])
+
+        if directive[0] == "test"
+        endif
+    enddef
+
+    Test()
+  END
+  v9.CheckSourceFailure(lines, 'E1437: Can only compare Object with Object', 3)
 enddef
 
 " Test for object<{class}> type

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-13 17:59+0100\n"
+"POT-Creation-Date: 2025-12-17 21:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3582,16 +3582,10 @@ msgstr ""
 msgid "Sponsor Vim development!"
 msgstr ""
 
-msgid "Become a registered Vim user!"
-msgstr ""
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 
-msgid "type  :help register<Enter>   for information "
-msgstr ""
-
-msgid "menu  Help->Sponsor/Register  for information    "
+msgid "menu  Help->Sponsor  for information    "
 msgstr ""
 
 msgid "global"
@@ -8591,6 +8585,9 @@ msgid "E1435: Enum can only be used in a script"
 msgstr ""
 
 msgid "E1436: Interface can only be used in a script"
+msgstr ""
+
+msgid "E1437: Can only compare Object with Object"
 msgstr ""
 
 #, c-format
