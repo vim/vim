@@ -4766,6 +4766,9 @@ def Test_term_gettty()
     CheckFeature terminal
   else
     var buf = g:Run_shell_in_terminal({})
+    if has('win32') && buf->term_getjob()->job_info()['tty_type'] == 'conpty'
+      throw 'Skipped: When using conpty, term_gettty() always returns an empty string.'
+    endif
     term_gettty(buf, true)->assert_notequal('')
     g:StopShellInTerminal(buf)
   endif
