@@ -170,22 +170,21 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
  * a function (string), or function(<name>) or funcref(<name>) or a lambda.
  */
     char *
-did_set_tagfunc(optset_T *args UNUSED)
+did_set_tagfunc(optset_T *args)
 {
-#ifdef FEAT_EVAL
-    free_callback(&tfu_cb);
-    free_callback(&curbuf->b_tfu_cb);
+    int	retval;
 
-    if (*curbuf->b_p_tfu == NUL)
-	return NULL;
+    if (args->os_flags & OPT_LOCAL)
+	retval = option_set_callback_func(args->os_newval.string,
+							    &curbuf->b_tfu_cb);
+    else
+    {
+	retval = option_set_callback_func(args->os_newval.string, &tfu_cb);
+	if (retval == OK && !(args->os_flags & OPT_GLOBAL))
+	    set_buflocal_tfu_callback(curbuf);
+    }
 
-    if (option_set_callback_func(curbuf->b_p_tfu, &tfu_cb) == FAIL)
-	return e_invalid_argument;
-
-    copy_callback(&curbuf->b_tfu_cb, &tfu_cb);
-#endif
-
-    return NULL;
+    return retval == FAIL ? e_invalid_argument : NULL;
 }
 #endif
 
