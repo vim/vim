@@ -1350,7 +1350,7 @@ Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
 <
-							*E1572*
+							*E1437*
 An |Object| can only be compared with an |Object| and only "equal", "not
 equal", "is" and "isnot" can be used.  Note that an |Enum| is also a type of
 |Object|, and the same rules apply to it as well.
