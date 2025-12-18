@@ -6762,11 +6762,10 @@ ex_bexit(exarg_T *eap)
     // write buffer if it has changed
     if (curbufIsChanged() && !do_write(eap))
     {
-	eap->errmsg = "Writing buffer has failed!";
 	return;
     }
 
-    eap->errmsg = do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
+    do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
 }
 
 /*
