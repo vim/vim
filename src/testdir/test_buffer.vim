@@ -215,6 +215,58 @@ func Test_bdelete_cmd()
   %bwipe!
 endfunc
 
+func Test_bexit()
+  " :bx on modified buffer
+  let temp_file = tempname()
+  execute ":e " .. temp_file
+
+  call assert_equal(temp_file, bufname())
+
+  call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
+
+  call assert_equal([], v:errors)
+  call assert_equal("", bufname())
+
+  call assert_true(filereadable(temp_file), "temp_file is not readable")
+
+  let file_content = readfile(temp_file)
+
+  call assert_equal("foo", file_content[0])
+
+  " :bx on unmodified buffer
+  execute ":e " .. temp_file
+  call assert_equal(temp_file, bufname())
+
+  execute ":bx"
+
+  call assert_equal([], v:errors)
+  call assert_equal("", bufname())
+
+  " Try to write to an unnamed buffer.
+  try
+    call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
+  catch
+    call assert_exception('E32:')
+  endtry
+
+  execute(":bw!")
+
+  " Do not allow a trailing buffer number.
+  execute ":e " .. temp_file
+  call assert_equal(temp_file, bufname())
+
+  try
+    execute ":bx1"
+  catch
+    call assert_exception('E488:')
+  endtry
+
+  call assert_equal([], v:errors)
+  call assert_equal(temp_file, bufname())
+
+  call delete(temp_file)
+endfunc
+
 func Test_buffer_error()
   new foo1
   new foo2
@@ -669,58 +721,6 @@ func Test_switch_to_previously_viewed_buffer()
   bwipe! Xotherbuf
   bwipe! Xviewbuf
   set startofline&
-endfunc
-
-func Test_bexit()
-  " :bx on modified buffer
-  let temp_file = tempname()
-  execute ":e " .. temp_file
-
-  call assert_equal(temp_file, bufname())
-
-  call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
-
-  call assert_equal([], v:errors)
-  call assert_equal("", bufname())
-
-  call assert_true(filereadable(temp_file), "temp_file is not readable")
-
-  let file_content = readfile(temp_file)
-
-  call assert_equal("foo", file_content[0])
-
-  " :bx on unmodified buffer
-  execute ":e " .. temp_file
-  call assert_equal(temp_file, bufname())
-
-  execute ":bx"
-
-  call assert_equal([], v:errors)
-  call assert_equal("", bufname())
-
-  " Try to write to an unnamed buffer.
-  try
-    call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
-  catch
-    call assert_exception('E32:')
-  endtry
-
-  execute(":bw!")
-
-  " Do not allow a trailing buffer number.
-  execute ":e " .. temp_file
-  call assert_equal(temp_file, bufname())
-
-  try
-    execute ":bx1"
-  catch
-    call assert_exception('E488:')
-  endtry
-
-  call assert_equal([], v:errors)
-  call assert_equal(temp_file, bufname())
-
-  call delete(temp_file)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
