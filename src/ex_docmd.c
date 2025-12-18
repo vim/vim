@@ -6754,13 +6754,14 @@ ex_exit(exarg_T *eap)
 }
 
 /*
- * ":bx", ":bxit": Write the current buffer if it has changed and close the buffer.
+ * ":bx", ":bxit": Write to the current buffer if it has changed and close it.
  */
     static void
 ex_bexit(exarg_T *eap)
 {
     // write buffer if it has changed
-    if (curbufIsChanged() && !do_write(eap)) {
+    if (curbufIsChanged() && !do_write(eap))
+    {
 	eap->errmsg = "Writing buffer has failed!";
 	return;
     }

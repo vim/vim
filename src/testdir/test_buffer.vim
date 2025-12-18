@@ -678,7 +678,7 @@ func Test_bexit()
 
   call assert_equal(temp_file, bufname())
 
-  call feedkeys("ifoo\e:bx\<CR>", "x")
+  call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
 
   call assert_equal([], v:errors)
   call assert_equal("", bufname())
@@ -697,6 +697,15 @@ func Test_bexit()
 
   call assert_equal([], v:errors)
   call assert_equal("", bufname())
+
+  " Try to write to an unnamed buffer.
+  try
+    call feedkeys("ifoo\<ESC>:bx\<CR>", "x")
+  catch
+    call assert_exception('E32:')
+  endtry
+
+  execute(":bw!")
 
   " Do not allow a trailing buffer number.
   execute ":e " .. temp_file
