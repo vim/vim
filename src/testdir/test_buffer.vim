@@ -698,6 +698,19 @@ func Test_bexit()
   call assert_equal([], v:errors)
   call assert_equal("", bufname())
 
+  " Do not allow a trailing buffer number.
+  execute ":e " .. temp_file
+  call assert_equal(temp_file, bufname())
+
+  try
+    execute ":bx1"
+  catch
+    call assert_exception('E488:')
+  endtry
+
+  call assert_equal([], v:errors)
+  call assert_equal(temp_file, bufname())
+
   call delete(temp_file)
 endfunc
 
