@@ -2225,7 +2225,7 @@ rewind_retry:
 		    {
 			*ptr = NUL;	    // end of line
 			len = (colnr_T) (ptr - line_start + 1);
-			if (ml_append(lnum, line_start, len, newfile) == FAIL)
+			if (len < 0 || ml_append(lnum, line_start, len, newfile) == FAIL)
 			{
 			    error = TRUE;
 			    break;
@@ -2295,7 +2295,7 @@ rewind_retry:
 				ff_error = EOL_DOS;
 			    }
 			}
-			if (ml_append(lnum, line_start, len, newfile) == FAIL)
+			if (len < 0 || ml_append(lnum, line_start, len, newfile) == FAIL)
 			{
 			    error = TRUE;
 			    break;
@@ -2355,7 +2355,7 @@ failed:
 	    curbuf->b_p_eol = FALSE;
 	*ptr = NUL;
 	len = (colnr_T)(ptr - line_start + 1);
-	if (ml_append(lnum, line_start, len, newfile) == FAIL)
+	if (len < 0 || ml_append(lnum, line_start, len, newfile) == FAIL)
 	    error = TRUE;
 	else
 	{
