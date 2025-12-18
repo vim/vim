@@ -40,7 +40,7 @@
 
   4. Advanced combinations:
      - ciwnew<ESC>    - Change current word to "new"
-     - ciw"<Ctrl>-"<ESC> - (Note: This is Ctrl-Minus): wrap current word in quotes
+     - ciw"<CTRL-R>-"<ESC> - Wrap current word in quotes
      - gUit           - Uppercase inner HTML tag content
      - va"p           - Select quoted text and paste over it
 
