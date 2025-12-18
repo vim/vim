@@ -1314,6 +1314,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WSP_ABOVE	0x80	// put new window above/left
 #define WSP_NEWLOC	0x100	// don't copy location list
 #define WSP_FORCE_ROOM	0x200	// ignore "not enough room" errors
+#define WSP_QUICKFIX	0x400	// creating the quickfix window
 
 /*
  * arguments for gui_set_shellsize()

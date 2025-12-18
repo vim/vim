@@ -959,6 +959,11 @@ win_split(int size, int flags)
     else
 	clear_snapshot(curtab, SNAP_HELP_IDX);
 
+    if (flags & WSP_QUICKFIX)
+	make_snapshot(SNAP_QUICKFIX_IDX);
+    else
+	clear_snapshot(curtab, SNAP_QUICKFIX_IDX);
+
     return win_split_ins(size, flags, NULL, 0, NULL);
 }
 
@@ -2688,6 +2693,7 @@ win_close(win_T *win, int free_buf)
     int		close_curwin = FALSE;
     int		dir;
     int		help_window = FALSE;
+    int		quickfix_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
 #ifdef FEAT_DIFF
@@ -2739,6 +2745,11 @@ win_close(win_T *win, int free_buf)
 	help_window = TRUE;
     else
 	clear_snapshot(curtab, SNAP_HELP_IDX);
+
+    if (bt_quickfix(win->w_buffer))
+	quickfix_window = TRUE;
+    else
+	clear_snapshot(curtab, SNAP_QUICKFIX_IDX);
 
     if (win == curwin)
     {
@@ -2845,11 +2856,11 @@ win_close(win_T *win, int free_buf)
     // the screen space.
     wp = win_free_mem(win, &dir, NULL);
 
-    if (help_window)
+    if (help_window || quickfix_window)
     {
 	// Closing the help window moves the cursor back to the current window
 	// of the snapshot.
-	win_T *prev_win = get_snapshot_curwin(SNAP_HELP_IDX);
+	win_T *prev_win = get_snapshot_curwin(help_window ? SNAP_HELP_IDX : SNAP_QUICKFIX_IDX);
 
 	if (win_valid(prev_win))
 	    wp = prev_win;
@@ -2939,10 +2950,11 @@ win_close(win_T *win, int free_buf)
 	--dont_parse_messages;
 #endif
 
-    // After closing the help window, try restoring the window layout from
-    // before it was opened.
-    if (help_window)
-	restore_snapshot(SNAP_HELP_IDX, close_curwin);
+    // After closing the help or quickfix window, try restoring the window
+    // layout from before it was opened.
+    if (help_window || quickfix_window)
+	restore_snapshot(help_window ? SNAP_HELP_IDX : SNAP_QUICKFIX_IDX,
+			close_curwin);
 
 #ifdef FEAT_DIFF
     // If the window had 'diff' set and now there is only one window left in

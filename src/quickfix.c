@@ -4612,6 +4612,12 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     if (cmdmod.cmod_split == 0)
 	flags = WSP_BELOW;
     flags |= WSP_NEWLOC;
+
+    // Create a snapshot for quickfix window (not for location list)
+    // so that when closing it, we can restore to the previous window
+    if (IS_QF_STACK(qi))
+	flags |= WSP_QUICKFIX;
+
     if (win_split(height, flags) == FAIL)
 	return FAIL;		// not enough room for window
     RESET_BINDING(curwin);

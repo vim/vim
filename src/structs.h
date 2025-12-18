@@ -3693,9 +3693,10 @@ typedef void diffline_T;
 typedef void diffline_change_T;
 #endif
 
-#define SNAP_HELP_IDX	0
-#define SNAP_AUCMD_IDX	1
-#define SNAP_COUNT	2
+#define SNAP_HELP_IDX	    0
+#define SNAP_AUCMD_IDX	    1
+#define SNAP_QUICKFIX_IDX   2
+#define SNAP_COUNT	    3
 
 /*
  * Tab pages point to the top frame of each tab page.
