@@ -34,6 +34,7 @@ static void	append_command(char_u *cmd);
 #endif
 static void	ex_autocmd(exarg_T *eap);
 static void	ex_doautocmd(exarg_T *eap);
+static void	ex_bexit(exarg_T *eap);
 static void	ex_bunload(exarg_T *eap);
 static void	ex_buffer(exarg_T *eap);
 static void	do_exbuffer(exarg_T *eap);
@@ -112,7 +113,6 @@ static void	back_to_current_window(win_T *curwin_save);
 #endif
 static void	ex_hide(exarg_T *eap);
 static void	ex_exit(exarg_T *eap);
-static void	ex_bexit(exarg_T *eap);
 static void	ex_print(exarg_T *eap);
 #ifdef FEAT_BYTEOFF
 static void	ex_goto(exarg_T *eap);
