@@ -3,7 +3,7 @@ vim9script
 # Vim plugin for OSC52 clipboard support
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Dec 16
+# Last Change:	2025 Dec 18
 
 if !has("timers")
   finish
@@ -23,6 +23,17 @@ v:clipproviders["osc52"] = {
   },
 }
 
+def SendDA1(): void
+  if !has("gui_running") && !get(g:, 'osc52_force_avail', 0)
+      && !get(g:, 'osc52_no_da1', 0)
+    echoraw("\<Esc>[c")
+  endif
+enddef
+
+if v:vim_did_enter
+  SendDA1()
+endif
+
 augroup VimOSC52Plugin
   autocmd!
   # Query support for OSC 52 using a DA1 query
@@ -35,12 +46,7 @@ augroup VimOSC52Plugin
       :silent! clipreset
     endif
   }
-  autocmd VimEnter * {
-    if !has("gui_running") && !get(g:, 'osc52_force_avail', 0)
-        && !get(g:, 'osc52_no_da1', 0)
-      echoraw("\<Esc>[c")
-    endif
-  }
+  autocmd VimEnter * SendDA1()
 augroup END
 
 # vim: set sw=2 sts=2 :

@@ -1,4 +1,4 @@
-*osc52.txt*   For Vim version 9.1.  Last change:  2025 Dec 15
+*osc52.txt*   For Vim version 9.1.  Last change:  2025 Dec 18
 
 
 			  VIM REFERENCE MANUAL
@@ -32,27 +32,33 @@ then it is up to the terminal to handle what selection to use.
 
 2. HOW TO USE THE PLUGIN                                *osc52-how-to-use*
 
-The osc52.vim plugin relies on Vim's clipboard provider functionality, see
-|clipboard-providers|.  In short, add these commands to your vimrc to get
-everything working: >vim
+The osc52.vim package relies on Vim's clipboard provider functionality, see
+|clipboard-providers|.  To enable it, add the following to your |vimrc|: >vim
         packadd osc52
         set clipmethod+=osc52
 <
-This will make the osc52.vim provider the last resort if there are other
-values in |clipmethod|.  This allows Vim, for example, to access the system
-clipboard directly if it can, but automatically switch to OSC 52 if it cannot
-(e.g. in an SSH session).  Note that this does not happen when on a platform
-that doesn't use |clipmethod| for system clipboard functionality (MacOS,
-Windows).  If OSC 52 support is detected, then it will always be used if set
-in |clipmethod| when it is the only value/method.
+This appends "osc52" to |clipmethod|, causing Vim to try it only after any
+earlier clipboard methods.  This allows Vim to use the system clipboard
+directly when available, and automatically fall back to OSC 52 method when it
+is not (for example, when running over SSH).
+
+Note: that this fallback behavior applies only on platforms that use
+|clipmethod| for accessing the clipboard.  On macOS and Windows, Vim does not
+use |clipmethod|, so this behaviour won't happen.  Instead if OSC 52 support is
+detected and "osc52" is the only value in |clipmethod|, then it will always be
+used.
+
+You can check whether the osc52.vim provider is active by inspecting
+|v:clipmethod|.  If it contains "osc52", the plugin is enabled.
+
+Note: terminal multiplexers such as tmux may interfere with automatic OSC 52
+detection.
 
                                                         *g:osc52_force_avail*
 In most cases, the plugin should automatically detect and work if your
-terminal supports the OSC 52 command.  Internally, it does this via a Primary
-Device Attributes (DA1) query.  You may force enable the plugin by setting
-|g:osc52_force_avail| to true.  You may check if the osc52.vim plugin is being
-used if the value of |v:clipmethod| is "osc52".  Note that using a terminal
-multiplexer such as tmux, may prevent automatic OSC 52 detection.
+terminal supports the OSC 52 command.  Internally, it does this by sending the
+Primary Device Attributes (DA1) query.  You may force enable the plugin by
+setting |g:osc52_force_avail| to true.
 
                                                         *g:osc52_disable_paste*
 If your terminal does not support pasting via OSC 52, or has it disabled, then
