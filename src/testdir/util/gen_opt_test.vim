@@ -370,6 +370,15 @@ let test_values = {
       \ 'otherstring': [['', 'xxx'], []],
       \}
 
+if !has('clipboard')
+  " If +clipboard isn't enabled but +clipboard_provider is, then 'clipboard' is
+  " limited to "unnamed" and "unnamedplus"
+  let test_values['clipboard'] = [
+	\ ['', 'unnamed', 'unnamedplus'],
+	\ ['xxx', 'autoselect', 'exclude:\\%(']
+	\ ]
+endif
+
 " Two lists with values: values that pre- and post-processing in test.
 " Clear out t_WS: we don't want to resize the actual terminal.
 let test_prepost = {

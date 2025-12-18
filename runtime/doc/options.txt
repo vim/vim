@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
+*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1815,13 +1815,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 						  for X-windows, "" otherwise)
 			global
 			{only in GUI versions or when the |+xterm_clipboard|
-			or |+wayland_clipboard| features are included}
+			or |+wayland_clipboard| features or
+			|+clipboard_provider| features are included}
 	This option is a list of comma-separated names.
 	Note: if one of the items is "exclude:", then you can't add an item
 	after that.  Therefore do not append an item with += but use ^= to
 	prepend, e.g.: >
 		set clipboard^=unnamed
 <	When using the GUI see |'go-A'|.
+	When using the |clipboard-providers| feature, only the "unamed" and
+	"unnamedplus" features will be recognized  If compiled without the
+	|+clipboard| feature but compiled with the |+clipboard_provider|
+	feature, then they will be the only values allowed and the other
+	values will be invalid.
 	These names are recognized:
 
 						*clipboard-unnamed*
@@ -1845,9 +1851,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			'*'.  If Wayland is being used and the compositor does
 			not support the primary selection then the regular
 			selection is used in its place.  Only available with
-			the |+X11| or
-			|+wayland_clipboard| feature.  Availability can be
-			checked with: >
+			the |+X11| or |+wayland_clipboard| feature.
+			Availability can be checked with: >
 			if has('unnamedplus')
 <
 						*clipboard-autoselect*

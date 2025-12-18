@@ -2986,7 +2986,7 @@ reset_reg_var(void)
 
     // Adjust the register according to 'clipboard', so that when
     // "unnamed" is present it becomes '*' or '+' instead of '"'.
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
     adjust_clip_reg(&regname);
 #endif
     set_reg_var(regname);

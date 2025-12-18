@@ -6698,6 +6698,7 @@ clipboard-exclude	options.txt	/*clipboard-exclude*
 clipboard-html	options.txt	/*clipboard-html*
 clipboard-providers	eval.txt	/*clipboard-providers*
 clipboard-providers-available	eval.txt	/*clipboard-providers-available*
+clipboard-providers-clipboard	eval.txt	/*clipboard-providers-clipboard*
 clipboard-providers-clipmethod	eval.txt	/*clipboard-providers-clipmethod*
 clipboard-providers-copy	eval.txt	/*clipboard-providers-copy*
 clipboard-providers-define	eval.txt	/*clipboard-providers-define*

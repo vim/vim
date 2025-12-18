@@ -980,17 +980,21 @@ EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland
 #  define clip_plus clip_star	// there is only one clipboard
 #  define ONE_CLIPBOARD
 # endif
+#endif
 
+#ifdef HAVE_CLIPMETHOD
 # define CLIP_UNNAMED      1
 # define CLIP_UNNAMED_PLUS 2
 EXTERN int	clip_unnamed INIT(= 0); // above two values or'ed
 
+# ifdef FEAT_CLIPBOARD
 EXTERN int	clip_autoselect_star INIT(= FALSE);
 EXTERN int	clip_autoselect_plus INIT(= FALSE);
 EXTERN int	clip_autoselectml INIT(= FALSE);
 EXTERN int	clip_html INIT(= FALSE);
 EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 EXTERN int	clip_unnamed_saved INIT(= 0);
+# endif
 #endif
 
 #ifdef FEAT_CLIPBOARD_PROVIDER

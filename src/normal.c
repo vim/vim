@@ -7425,7 +7425,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	was_visual = TRUE;
 	regname = cap->oap->regname;
 	keep_registers = cap->cmdchar == 'P';
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 	adjust_clip_reg(&regname);
 #endif
 	if (regname == 0 || regname == '"'

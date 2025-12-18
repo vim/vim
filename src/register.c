@@ -33,7 +33,7 @@ static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon, int silent);
 static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space);
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
@@ -1421,10 +1421,20 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 #ifdef FEAT_CLIPBOARD_PROVIDER
     inc_clip_provider();
-    if (curr == &y_regs[REAL_PLUS_REGISTER])
+    if (curr == &y_regs[REAL_PLUS_REGISTER] || (!deleting && oap->regname == 0
+		&& (clip_unnamed & CLIP_UNNAMED_PLUS)))
+    {
+	if (curr != &(y_regs[REAL_PLUS_REGISTER]))
+	    copy_yank_reg(&(y_regs[REAL_PLUS_REGISTER]));
 	call_clip_provider_set('+');
-    else if (curr == &y_regs[STAR_REGISTER])
+    }
+    if (curr == &y_regs[STAR_REGISTER] || (!deleting && oap->regname == 0
+		&& (clip_unnamed & CLIP_UNNAMED)))
+    {
+	if (curr != &(y_regs[STAR_REGISTER]))
+	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
 	call_clip_provider_set('*');
+    }
 #endif
 
 #ifdef FEAT_CLIPBOARD
@@ -1518,7 +1528,7 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
     return OK;
 }
 
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 /*
  * Make a copy of the y_current register to register "reg".
  */
@@ -1589,16 +1599,16 @@ do_put(
     pos_T	orig_end = curbuf->b_op_end;
     unsigned int cur_ve_flags = get_ve_flags();
 
+#ifdef HAVE_CLIPMETHOD
+    adjust_clip_reg(&regname);
+#endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
-    {
 	// Adjust register name for "unnamed" in 'clipboard'.
-	adjust_clip_reg(&regname);
 	(void)may_get_selection(regname);
-    }
 #endif
 
 
@@ -2458,18 +2468,18 @@ ex_display(exarg_T *eap)
 		)
 	    continue;	    // did not ask for this register
 
+#ifdef HAVE_CLIPMETHOD
+	adjust_clip_reg(&name);
+#endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
 	call_clip_provider_request(name);
 #endif
 #ifdef FEAT_CLIPBOARD
 	if (clipmethod != CLIPMETHOD_PROVIDER)
-	{
 	    // Adjust register name for "unnamed" in 'clipboard'.
 	    // When it's a clipboard register, fill it with the current contents
 	    // of the clipboard.
-	    adjust_clip_reg(&name);
 	    (void)may_get_selection(name);
-	}
 #endif
 
 	if (i == -1)
