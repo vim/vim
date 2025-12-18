@@ -407,7 +407,19 @@ mswin_stat_impl(const WCHAR *name, stat_T *stp, const int resolve)
     DWORD		flag = 0;
     WIN32_FIND_DATAW    findDataW;
 
-#ifdef _UCRT
+#if 0 && defined(_UCRT)
+    // This code was disabled because the behavior of MSVC's _wstat (actually
+    // _wstat64) for empty symlinks varies depending on the C runtime you link
+    // to.
+    //
+    // The expected behavior here is for _wstat() to fail for empty symlinks.
+    // The expected behavior occurs when linking to a static runtime.  However,
+    // the expected behavior does not occur when linking to a dynamic runtime,
+    // and it succeeds for empty symlinks.  This causes Test_glob_symlinks in
+    // test_functions.vim to fail when linking to a dynamic runtime.
+    //
+    // For more details, see:
+    // https://github.com/koron/vc-stat-behavior-verification
     if (resolve)
 	// Universal CRT can handle symlinks properly.
 	return _wstat(name, stp);
