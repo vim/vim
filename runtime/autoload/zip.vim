@@ -371,7 +371,7 @@ fun! zip#Write(fname)
   call mkdir(tmpdir,"p")
 
   " attempt to change to the indicated directory
-  if s:ChgDir(tmpdir,s:ERROR,"(zip#Write) cannot cd to temporary directory")
+  if s:ChgDir(tmpdir,s:ERROR,"(zip#Write) cannot lcd to temporary directory")
     return
   endif
 
@@ -380,7 +380,7 @@ fun! zip#Write(fname)
     call delete("_ZIPVIM_", "rf")
   endif
   call mkdir("_ZIPVIM_")
-  cd _ZIPVIM_
+  lcd _ZIPVIM_
 
   if has("unix")
     let zipfile = substitute(a:fname,'zipfile://\(.\{-}\)::[^\\].*$','\1','')
@@ -455,7 +455,7 @@ fun! zip#Write(fname)
   endif
 
   " cleanup and restore current directory
-  cd ..
+  lcd ..
   call delete("_ZIPVIM_", "rf")
   call s:ChgDir(curdir,s:WARNING,"(zip#Write) unable to return to ".curdir."!")
   call delete(tmpdir, "rf")
@@ -536,7 +536,7 @@ endfun
 " s:ChgDir: {{{2
 fun! s:ChgDir(newdir,errlvl,errmsg)
   try
-   exe "cd ".fnameescape(a:newdir)
+   exe "lcd ".fnameescape(a:newdir)
   catch /^Vim\%((\a\+)\)\=:E344/
    redraw!
    if a:errlvl == s:NOTE
