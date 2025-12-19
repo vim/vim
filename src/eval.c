@@ -1205,7 +1205,7 @@ get_lval_check_access(
 		{
 		    if (om->ocm_type->tt_type == VAR_OBJECT)
 			semsg(_(e_enumvalue_str_cannot_be_modified),
-				cl->class_name.string, om->ocm_name);
+				cl->class_name.string, om->ocm_name.string);
 		    else
 			msg = e_variable_is_not_writable_str;
 		}
@@ -1218,7 +1218,7 @@ get_lval_check_access(
     }
     if (msg != NULL)
     {
-	emsg_var_cl_define(msg, om->ocm_name, 0, cl);
+	emsg_var_cl_define(msg, om->ocm_name.string, 0, cl);
 	return FAIL;
     }
     return OK;

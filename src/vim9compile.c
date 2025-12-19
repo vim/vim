@@ -1628,7 +1628,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
     if (IS_ENUM(cl))
     {
 	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name.string,
-		m->ocm_name);
+		m->ocm_name.string);
 	return FALSE;
     }
 
@@ -1643,7 +1643,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 				? e_cannot_access_protected_variable_str
 				: e_variable_is_not_writable_str;
-	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+	emsg_var_cl_define(msg, m->ocm_name.string, 0, cl);
 	return FALSE;
     }
 
@@ -2055,7 +2055,7 @@ compile_lhs_set_oc_member_type(
 	if (!inside_class(cctx, cl))
 	{
 	    semsg(_(e_enumvalue_str_cannot_be_modified),
-		    cl->class_name.string, m->ocm_name);
+		    cl->class_name.string, m->ocm_name.string);
 	    return FAIL;
 	}
 	if (lhs->lhs_type->tt_type == VAR_OBJECT &&
@@ -2080,7 +2080,7 @@ compile_lhs_set_oc_member_type(
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 	    ? e_cannot_access_protected_variable_str
 	    : e_variable_is_not_writable_str;
-	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+	emsg_var_cl_define(msg, m->ocm_name.string, 0, cl);
 	return FAIL;
     }
 
@@ -4118,7 +4118,7 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 		// determined at run time.  Add a runtime type check.
 		where_T	where = WHERE_INIT;
 		where.wt_kind = WT_MEMBER;
-		where.wt_func_name = (char *)m->ocm_name;
+		where.wt_func_name = (char *)m->ocm_name.string;
 		if (need_type_where(type, m->ocm_type, FALSE, -1,
 					where, cctx, FALSE, FALSE) == FAIL)
 		    return FAIL;

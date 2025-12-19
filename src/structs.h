@@ -1580,7 +1580,7 @@ typedef enum {
  * Entry for an object or class member variable.
  */
 typedef struct {
-    char_u	*ocm_name;	// allocated
+    string_T	ocm_name;	// allocated
     omacc_T	ocm_access;
     type_T	*ocm_type;
     int		ocm_flags;

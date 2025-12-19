@@ -551,7 +551,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
-							m->ocm_name, 0, cl);
+							m->ocm_name.string, 0, cl);
 		goto done;
 	    }
 
@@ -596,7 +596,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
-							m->ocm_name, 0, cl);
+							m->ocm_name.string, 0, cl);
 		goto done;
 	    }
 

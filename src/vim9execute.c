@@ -2391,7 +2391,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 			char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 			    ? e_cannot_access_protected_variable_str
 			    : e_variable_is_not_writable_str;
-			emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+			emsg_var_cl_define(msg, m->ocm_name.string, 0, cl);
 			status = FAIL;
 		    }
 		    // Fail if the variable is a const or final or the type
@@ -6145,7 +6145,7 @@ exec_instructions(ectx_T *ectx)
 			ocmember_T *m = &obj->obj_class->class_obj_members[idx];
 			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_uninitialized_object_var_reference),
-				m->ocm_name);
+				m->ocm_name.string);
 			goto on_error;
 		    }
 		    copy_tv(mtv, tv);
@@ -7381,7 +7381,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    smsg("%s%4d %s CLASSMEMBER %s.%s", pfx, current,
 			    iptr->isn_type == ISN_LOAD_CLASSMEMBER
 							    ? "LOAD" : "STORE",
-			    cl->class_name.string, ocm->ocm_name);
+			    cl->class_name.string, ocm->ocm_name.string);
 		}
 		break;
 
