@@ -1276,6 +1276,12 @@ list of buffers. |unlisted-buffer|
 		a number).  Insert a backslash before a space in a buffer
 		name.
 
+:bx[it]
+		Write changes to the current buffer if there are any and
+		delete the buffer.
+		Similar to |:x| but within the scope of the current buffer.
+		The buffer will not be deleted if writing failed.
+
 :[N]b[uffer][!] [+cmd] [N]		*:b* *:bu* *:buf* *:buffer* *E86*
 		Edit buffer [N] from the buffer list.  If [N] is not given,
 		the current buffer remains being edited.  See |:buffer-!| for
