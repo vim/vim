@@ -34,6 +34,7 @@ static void	append_command(char_u *cmd);
 #endif
 static void	ex_autocmd(exarg_T *eap);
 static void	ex_doautocmd(exarg_T *eap);
+static void	ex_bexit(exarg_T *eap);
 static void	ex_bunload(exarg_T *eap);
 static void	ex_buffer(exarg_T *eap);
 static void	do_exbuffer(exarg_T *eap);
@@ -266,6 +267,7 @@ static void	ex_psearch(exarg_T *eap);
 static void	ex_tag(exarg_T *eap);
 static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 #ifndef FEAT_EVAL
+# define ex_bexit		ex_ni
 # define ex_block		ex_ni
 # define ex_break		ex_ni
 # define ex_breakadd		ex_ni
@@ -6749,6 +6751,19 @@ ex_exit(exarg_T *eap)
 	// Quit current window, may free the buffer.
 	win_close(curwin, !buf_hide(curwin->w_buffer));
     }
+}
+
+/*
+ * ":bx", ":bxit": Write to the current buffer if it has changed and delete it.
+ */
+    static void
+ex_bexit(exarg_T *eap)
+{
+    // write buffer if it has changed
+    if (curbufIsChanged() && !do_write(eap))
+	return;
+
+    do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
 }
 
 /*
