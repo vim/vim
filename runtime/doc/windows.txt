@@ -1278,9 +1278,9 @@ list of buffers. |unlisted-buffer|
 
 :bx[it]
 		Write changes to the current buffer if there are any and
-		unload the buffer.
-		Similar to |:x| but only for the current buffer.
-		Buffer will not be unloaded if writing failed.
+		delete the buffer.
+		Similar to |:x| but within the scope of the current buffer.
+		The buffer will not be deleted if writing failed.
 
 :[N]b[uffer][!] [+cmd] [N]		*:b* *:bu* *:buf* *:buffer* *E86*
 		Edit buffer [N] from the buffer list.  If [N] is not given,
