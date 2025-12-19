@@ -6754,16 +6754,14 @@ ex_exit(exarg_T *eap)
 }
 
 /*
- * ":bx", ":bxit": Write to the current buffer if it has changed and close it.
+ * ":bx", ":bxit": Write to the current buffer if it has changed and delete it.
  */
     static void
 ex_bexit(exarg_T *eap)
 {
     // write buffer if it has changed
     if (curbufIsChanged() && !do_write(eap))
-    {
 	return;
-    }
 
     do_bufdel(DOBUF_WIPE, NULL, 0, 0, 0, 1);
 }
