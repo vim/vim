@@ -5245,7 +5245,7 @@ def Test_lockvar_islocked_notfound()
 enddef
 
 " Test for a protected object method
-def Test_private_object_method()
+def Test_protected_object_method()
   # Try calling a protected method using an object (at the script level)
   var lines =<< trim END
     vim9script
@@ -5482,10 +5482,27 @@ def Test_private_object_method()
     var a = _Foo()
   END
   v9.CheckSourceFailure(lines, 'E1267: Function name must start with a capital: _Foo(): number', 2)
+
+  # Test for initializing a protected funcref instance variable to a protected
+  # class method from another class
+  lines =<< trim END
+    vim9script
+
+    class A
+      static def _Internal(): string
+      enddef
+    endclass
+
+    class B
+      var Fn: func = A._Internal
+    endclass
+    var b = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Internal', 1)
 enddef
 
 " Test for an protected class method
-def Test_private_class_method()
+def Test_protected_class_method()
   # Try calling a class protected method (at the script level)
   var lines =<< trim END
     vim9script
@@ -5680,6 +5697,22 @@ def Test_private_class_method()
     assert_equal(1234, C._Foo())
   END
   v9.CheckSourceFailure(lines, 'E1325: Method "_Foo" not found in class "C"', 16)
+
+  # Test for initializing a protected funcref class variable to a protected
+  # class method from another class
+  lines =<< trim END
+    vim9script
+
+    class A
+      static def _Internal(): string
+      enddef
+    endclass
+
+    class B
+      static var Fn: func = A._Internal
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Internal', 10)
 enddef
 
 " Test for using the return value of a class/object method as a function
@@ -5938,15 +5971,12 @@ def Test_dup_member_variable()
 enddef
 
 " Test for accessing a protected member outside a class in a def function
-def Test_private_member_access_outside_class()
-  # protected object member variable
+def Test_protected_member_access_outside_class()
+  # try to modify a protected instance variable from a def function
   var lines =<< trim END
     vim9script
     class A
       var _val = 10
-      def GetVal(): number
-        return this._val
-      enddef
     endclass
     def T()
       var a = A.new()
@@ -5956,7 +5986,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 2)
 
-  # access a non-existing protected object member variable
+  # access a non-existing protected instance variable from a def function
   lines =<< trim END
     vim9script
     class A
@@ -5970,7 +6000,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1326: Variable "_a" not found in object "A"', 2)
 
-  # protected static member variable
+  # try to read a protected class variable from a def function using an instance
   lines =<< trim END
     vim9script
     class A
@@ -5984,7 +6014,8 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"', 2)
 
-  # protected static member variable
+  # try to modify a protected class variable from a def function using an
+  # instance
   lines =<< trim END
     vim9script
     class A
@@ -5998,7 +6029,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"', 2)
 
-  # protected static class variable
+  # try to read a protected class variable from a def function using the class
   lines =<< trim END
     vim9script
     class A
@@ -6011,7 +6042,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 1)
 
-  # protected static class variable
+  # try to modify a protected class variable from a def function using the class
   lines =<< trim END
     vim9script
     class A
@@ -6023,6 +6054,33 @@ def Test_private_member_access_outside_class()
     T()
   END
   v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 1)
+
+  # initialize a protected class variable using a protected class variable
+  # from another class
+  lines =<< trim END
+    vim9script
+    class A
+      static var _aval = 10
+    endclass
+    class B
+      static var _bval = A._aval
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_aval" in class "A"', 7)
+
+  # initialize a protected instance variable using a protected class variable
+  # from another class
+  lines =<< trim END
+    vim9script
+    class A
+      static var _aval = 10
+    endclass
+    class B
+      var _bval = A._aval
+    endclass
+    var b = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_aval" in class "A"', 1)
 enddef
 
 " Test for changing the member access of an interface in a implementation class
@@ -7088,7 +7146,7 @@ def Test_extend_empty_class()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" A interface cannot have a static variable or a static method or a private
+" A interface cannot have a static variable or a static method or a protected
 " variable or a protected method or a public variable
 def Test_interface_with_unsupported_members()
   var lines =<< trim END
@@ -11686,7 +11744,7 @@ def Test_any_obj_var_type()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Modifying an object private variable from a method in another class using
+  # Modifying an object protected variable from a method in another class using
   # any type
   lines =<< trim END
     vim9script
@@ -11756,7 +11814,7 @@ def Test_any_obj_var_type()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Try to modify a private object variable using a variable of type "any"
+  # Try to modify a protected object variable using a variable of type "any"
   lines =<< trim END
     vim9script
 
