@@ -2920,7 +2920,7 @@ executable_exists(
 		(char *)buf,
 		sizeof(buf),
 		"%.*s%s%s", (int)(e - p), p,
-		!after_pathsep(p, e - 1) ? PATHSEPSTR : "",
+		!after_pathsep(p, e) ? PATHSEPSTR : "",
 		name);
 	}
 
