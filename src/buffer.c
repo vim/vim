@@ -5297,7 +5297,7 @@ build_stl_str_hl_local(
 	    usefmt[fmt_remain_len] = NUL;
 	    *fmt_arg = usefmt;
 	    if (usefmt != fmt)
-	        vim_free(fmt);
+		vim_free(fmt);
 	}
     }
     else
