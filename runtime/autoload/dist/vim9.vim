@@ -60,7 +60,7 @@ if has('unix')
     enddef
   else
     export def Launch(args: string)
-      const fork = has('gui_running') ? '' : '&'
+      const fork = has('gui_running') ? '&' : ''
       execute $':silent ! nohup {args} {Redir()} {fork}' | redraw!
     enddef
   endif
