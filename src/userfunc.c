@@ -563,7 +563,7 @@ parse_argument_types(
 			{
 			    if (obj_members != NULL
 				    && STRCMP(aname,
-					obj_members[om].ocm_name) == 0)
+					obj_members[om].ocm_name.string) == 0)
 			    {
 				type = obj_members[om].ocm_type;
 				break;
