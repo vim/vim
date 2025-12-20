@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 18
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5284,7 +5284,7 @@ Usage: >vim
 15. Clipboard providers				*clipboard-providers*
 
 The clipboard provider feature allows the "+" |quoteplus| and "*" |quotestar|
-registers to be overridden by custom Vimscript functions.  There can be
+registers to be overridden by custom Vim script functions.  There can be
 multiple providers, and Vim chooses which one to use based on 'clipmethod'.
 
 Despite the name, it should be treated separate from the clipboard
@@ -5295,7 +5295,7 @@ clipboard registers.
 The clipboard provider feature will respect the "unnamed" and "unnamedplus"
 values in the 'clipboard' option.  Any other value will be ignored.
 
-						*clipboard-providers-no-clipboard*
+					*clipboard-providers-no-clipboard*
 If the |+clipboard| feature is not enabled, then the "+" and "*" registers
 will not be enabled/available unless |v:clipmethod| is set to a provider.  If
 it is set to a provider, then the clipboard registers will be exposed despite
