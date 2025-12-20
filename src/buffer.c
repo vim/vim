@@ -5287,23 +5287,22 @@ build_stl_str_hl_local(
     //if (mode == STL_MODE_MULTI || mode == STL_MODE_COUNT_LBREAKS)
     if (mode == STL_MODE_MULTI)
     {
-	if (*s == NUL)
-	    **fmt_arg = NUL;
-	else
-	{
-	    size_t fmt_remain_len = strlen((char *)s);
+#ifdef FEAT_EVAL
+	if (usefmt != fmt)
+	    vim_free(fmt);
+#endif
+	size_t fmt_remain_len = strlen((char *)s);
 
-	    mch_memmove(usefmt, s, fmt_remain_len);
-	    usefmt[fmt_remain_len] = NUL;
-	    *fmt_arg = usefmt;
-	    if (usefmt != fmt)
-		vim_free(fmt);
-	}
+	mch_memmove(usefmt, s, fmt_remain_len);
+	usefmt[fmt_remain_len] = NUL;
+	*fmt_arg = usefmt;
     }
     else
     {
+#ifdef FEAT_EVAL
 	if (usefmt != fmt)
 	    vim_free(usefmt);
+#endif
     }
 
     if (mode == STL_MODE_COUNT_LBREAKS)
