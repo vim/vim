@@ -4476,6 +4476,7 @@ build_stl_str_hl_local(
     int		did_emsg_before = did_emsg;
     int		lbreak_num = 0;		// Number of line breaks
 
+    HH_ch_log("in. mode:%d, *fmt_arg:%p \"%s\"", mode, *fmt_arg, *fmt_arg);
     // When inside update_screen() we do not want redrawing a statusline,
     // ruler, title, etc. to trigger another redraw, it may cause an endless
     // loop.
@@ -5279,16 +5280,32 @@ build_stl_str_hl_local(
 	    vim_free(str);
 	curitem++;
     }
-    if (mode == STL_MODE_MULTI)
-	*fmt_arg = s;
     *p = NUL;
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
-#ifdef FEAT_EVAL
-    if (usefmt != fmt)
-	vim_free(usefmt);
-#endif
+    //if (mode == STL_MODE_MULTI || mode == STL_MODE_COUNT_LBREAKS)
+    if (mode == STL_MODE_MULTI)
+    {
+	if (*s == NUL)
+	    **fmt_arg = NUL;
+	else
+	{
+	    size_t fmt_remain_len = strlen((char *)s);
+
+	    mch_memmove(usefmt, s, fmt_remain_len);
+	    usefmt[fmt_remain_len] = NUL;
+	    *fmt_arg = usefmt;
+	}
+	if (usefmt != fmt)
+	    vim_free(fmt);
+    }
+    else
+    {
+	if (usefmt != fmt)
+	    vim_free(usefmt);
+    }
+
     if (mode == STL_MODE_COUNT_LBREAKS)
     {
 	if (lbreaks != NULL)
@@ -5483,6 +5500,7 @@ build_stl_str_hl_local(
 	set_string_option_direct(opt_name, -1, (char_u *)"",
 					      OPT_FREE | opt_scope, SID_ERROR);
 
+    HH_ch_log("out. *fmt_arg:%p \"%s\"", *fmt_arg, *fmt_arg);
     return width;
 }
 

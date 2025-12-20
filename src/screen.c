@@ -1181,7 +1181,8 @@ win_redr_custom(
 	}
 	screen_puts(p, row + i, col, curattr);
     }
-    vim_free(stl);
+    if (stl != NULL)
+	vim_free(stl_tmp);
 
     if (wp == NULL)
     {
