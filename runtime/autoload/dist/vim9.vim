@@ -66,9 +66,13 @@ if has('unix')
   endif
 elseif has('win32')
   export def Launch(args: string)
-    const shell = (&shell =~? '\<cmd\.exe\>') ? '' : 'cmd.exe /c'
-    const quotes = empty(shell) ? '' : '""'
-    execute $'silent ! {shell} start {quotes} /b {args} {Redir()}' | redraw!
+    try
+      execute ':silent !start' args | redraw!
+    catch /^Vim(!):E371:/
+      echohl ErrorMsg
+      echom "dist#vim9#Launch(): can not start" args
+      echohl None
+    endtry
   enddef
 else
   export def Launch(dummy: string)
@@ -81,7 +85,10 @@ var os_viewer = null_string
 if has('win32unix')
   # (cyg)start suffices
   os_viewer = ''
-# Windows / WSL
+# Windows
+elseif has('win32')
+  os_viewer = '' # Use :!start
+# WSL
 elseif executable('explorer.exe')
   os_viewer = 'explorer.exe'
 # Linux / BSD

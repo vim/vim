@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 19
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5231,7 +5231,7 @@ $VIMRUNTIME/plugin/openPlugin.vim
 dist#vim9#Open(file: string) ~
 
 Opens `path` with the system default handler (macOS `open`, Windows
-`explorer.exe`, Linux `xdg-open`, …).  If the variable |g:Openprg| exists the
+`start`, Linux `xdg-open`, …).  If the variable |g:Openprg| exists the
 string specified in the variable is used instead.
 
 The |:Open| user command uses file completion for its argument.
