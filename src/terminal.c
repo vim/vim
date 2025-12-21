@@ -3033,7 +3033,20 @@ color2index(VTermColor *color, int fg, int *boldp)
     {
 	// Use the color as-is if possible, give up otherwise.
 	if (color->index < t_colors)
-	    return color->index + 1;
+	{
+	    uint8_t index = color->index;
+#ifdef MSWIN
+	    // Convert ANSI palette to cterm color index.
+	    // cterm_ansi_idx is a table for the reverse conversion from cterm
+	    // color index to ANSI palette. However, the current table can
+	    // be used for this conversion as well.
+	    // Note: If the contents of cterm_ansi_idx change in the future, a
+	    // different table may be needed for this purpose.
+	    if (index < 16)
+		index = cterm_ansi_idx[index];
+#endif
+	    return index + 1;
+	}
 	// 8-color terminals can actually display twice as many colors by
 	// setting the high-intensity/bold bit.
 	else if (t_colors == 8 && fg && color->index < 16)

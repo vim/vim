@@ -233,3 +233,8 @@ typedef enum {
     TMODE_RAW,	    // terminal mode for Normal and Insert mode
     TMODE_UNKNOWN   // after executing a shell
 } tmode_T;
+
+#if defined(MSWIN)
+// Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
+extern const char_u cterm_ansi_idx[];
+#endif
