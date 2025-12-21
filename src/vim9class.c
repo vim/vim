@@ -2700,7 +2700,10 @@ early_ret:
 	// Allocate a typval for each class member and initialize it.
 	if ((is_class || is_enum) && cl->class_class_member_count > 0)
 	    if (add_class_members(cl, eap, &type_list) == FAIL)
-		goto cleanup;
+	    {
+		cl->class_type_list = type_list;
+		return;
+	    }
 
 	cl->class_type_list = type_list;
 
