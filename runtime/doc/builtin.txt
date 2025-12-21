@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2755,15 +2755,15 @@ execute({command} [, {silent}])				*execute()*
 			"silent!"	`:silent!` used
 		The default is "silent".  Note that with "silent!", unlike
 		`:redir`, error messages are dropped.  When using an external
-		command the screen may be messed up, use `system()` instead.
+		command the screen may be messed up, use |system()| instead.
 							*E930*
 		It is not possible to use `:redir` anywhere in {command}.
 
-		To get a list of lines use `split()` on the result: >
+		To get a list of lines use |split()| on the result: >
 			execute('args')->split("\n")
 
 <		To execute a command in another window than the current one
-		use `win_execute()`.
+		use |win_execute()|.
 
 		When used recursively the output of the recursive call is not
 		included in the output of the higher level call.
@@ -2794,7 +2794,7 @@ exists({expr})						*exists()*
 		zero otherwise.
 
 		Note: In a compiled |:def| function the evaluation is done at
-		runtime.  Use `exists_compiled()` to evaluate the expression
+		runtime.  Use |exists_compiled()| to evaluate the expression
 		at compile time.
 
 		For checking for a supported feature use |has()|.
@@ -2898,13 +2898,13 @@ exists({expr})						*exists()*
 
 
 exists_compiled({expr})					*exists_compiled()*
-		Like `exists()` but evaluated at compile time.  This is useful
+		Like |exists()| but evaluated at compile time.  This is useful
 		to skip a block where a function is used that would otherwise
 		give an error: >
 			if exists_compiled('*ThatFunction')
 			   ThatFunction('works')
 			endif
-<		If `exists()` were used then a compilation error would be
+<		If |exists()| were used then a compilation error would be
 		given if ThatFunction() is not defined.
 
 		{expr} must be a literal string. *E1232*
@@ -3917,7 +3917,7 @@ getbufline({buf}, {lnum} [, {end}])			*getbufline()*
 		Return a |List| with the lines starting from {lnum} to {end}
 		(inclusive) in the buffer {buf}.  If {end} is omitted, a
 		|List| with only the line {lnum} is returned.  See
-		`getbufoneline()` for only getting the line.
+		|getbufoneline()| for only getting the line.
 
 		For the use of {buf}, see |bufname()| above.
 
@@ -3945,7 +3945,7 @@ getbufline({buf}, {lnum} [, {end}])			*getbufline()*
 
 
 getbufoneline({buf}, {lnum})				*getbufoneline()*
-		Just like `getbufline()` but only get one line and return it
+		Just like |getbufline()| but only get one line and return it
 		as a string.
 
 		Return type: |String|
@@ -7956,7 +7956,7 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
-		Also see `and()` and `xor()`.
+		Also see |and()| and |xor()|.
 		Example: >
 			:let bits = or(bits, 0x80)
 <		Can also be used as a |method|: >
@@ -8067,7 +8067,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		argument: >
 			Compute()->printf("result: %d")
 <
-		You can use `call()` to pass the items as a list.
+		You can use |call()| to pass the items as a list.
 
 		Often used items are:
 		  %s	string
@@ -10681,7 +10681,7 @@ sound_playevent({name} [, {callback}])			*sound_playevent()*
 
 <		MS-Windows: {callback} doesn't work for this function.
 
-		Returns the sound ID, which can be passed to `sound_stop()`.
+		Returns the sound ID, which can be passed to |sound_stop()|.
 		Returns zero if the sound could not be played.
 
 		Can also be used as a |method|: >
@@ -10693,7 +10693,7 @@ sound_playevent({name} [, {callback}])			*sound_playevent()*
 
 
 sound_playfile({path} [, {callback}])			*sound_playfile()*
-		Like `sound_playevent()` but play sound file {path}.  {path}
+		Like |sound_playevent()| but play sound file {path}.  {path}
 		must be a full path.  On Ubuntu you may find files to play
 		with this command: >
 		    :!find /usr/share/sounds -type f | grep -v index.theme
@@ -10708,13 +10708,13 @@ sound_playfile({path} [, {callback}])			*sound_playfile()*
 
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
-		`sound_playevent()` or `sound_playfile()`.
+		|sound_playevent()| or |sound_playfile()|.
 
 		On some Linux systems you may need the libcanberra-pulse
 		package, otherwise sound may not stop.
 
 		On MS-Windows, this does not work for event sound started by
-		`sound_playevent()`.  To stop event sounds, use `sound_clear()`.
+		|sound_playevent()|.  To stop event sounds, use |sound_clear()|.
 
 		Can also be used as a |method|: >
 			soundid->sound_stop()
@@ -10871,7 +10871,7 @@ state([{what}])						*state()*
 		       toplevel, |SafeStateAgain| triggers after handling
 		       messages and callbacks).
 		- When SafeState or SafeStateAgain is triggered and executes
-		  your autocommand, check with `state()` if the work can be
+		  your autocommand, check with |state()| if the work can be
 		  done now, and if yes remove it from the queue and execute.
 		  Remove the autocommand if the queue is now empty.
 		Also see |mode()|.
@@ -12531,14 +12531,14 @@ wildtrigger()						*wildtrigger()*
 
 
 win_execute({id}, {command} [, {silent}])		*win_execute()*
-		Like `execute()` but in the context of window {id}.
+		Like |execute()| but in the context of window {id}.
 		The window will temporarily be made the current window,
 		without triggering autocommands or changing directory.  When
 		executing {command} autocommands will be triggered, this may
 		have unexpected side effects.  Use `:noautocmd` if needed.
 		Example: >
 			call win_execute(winid, 'set syntax=python')
-<		Doing the same with `setwinvar()` would not trigger
+<		Doing the same with |setwinvar()| would not trigger
 		autocommands and not actually show syntax highlighting.
 							*E994*
 		Not all commands are allowed in popup windows.
@@ -13011,7 +13011,7 @@ writefile({object}, {fname} [, {flags}])		*writefile()*
 xor({expr}, {expr})					*xor()*
 		Bitwise XOR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
-		Also see `and()` and `or()`.
+		Also see |and()| and |or()|.
 		Example: >
 			:let bits = xor(bits, 0x80)
 <
@@ -13201,7 +13201,7 @@ signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support. (always true)
 socketserver		Compiled with socket server functionality. (Unix only)
 sodium			Compiled with libsodium for better crypt support
-sound			Compiled with sound support, e.g. `sound_playevent()`
+sound			Compiled with sound support, e.g. |sound_playevent()|
 spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
