@@ -377,6 +377,7 @@ $quote	eval.txt	/*$quote*
 'go-m'	options.txt	/*'go-m'*
 'go-p'	options.txt	/*'go-p'*
 'go-r'	options.txt	/*'go-r'*
+'go-s'	options.txt	/*'go-s'*
 'go-t'	options.txt	/*'go-t'*
 'go-v'	options.txt	/*'go-v'*
 'gp'	options.txt	/*'gp'*
@@ -8249,6 +8250,7 @@ gui-vert-scroll	gui.txt	/*gui-vert-scroll*
 gui-w32	gui_w32.txt	/*gui-w32*
 gui-w32-cmdargs	gui_w32.txt	/*gui-w32-cmdargs*
 gui-w32-dialogs	gui_w32.txt	/*gui-w32-dialogs*
+gui-w32-fullscreen	gui_w32.txt	/*gui-w32-fullscreen*
 gui-w32-printing	gui_w32.txt	/*gui-w32-printing*
 gui-w32-start	gui_w32.txt	/*gui-w32-start*
 gui-w32-title-bar	gui_w32.txt	/*gui-w32-title-bar*
