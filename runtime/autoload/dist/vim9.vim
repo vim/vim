@@ -126,6 +126,11 @@ export def Open(file: string)
     &shellslash = false
     defer setbufvar('%', '&shellslash', true)
   endif
+  if &shell == 'pwsh' || &shell == 'powershell'
+    const shell = &shell
+    setlocal shell&
+    defer setbufvar('%', '&shell', shell)
+  endif
   Launch($"{Viewer()} {shellescape(file, 1)}")
 enddef
 
