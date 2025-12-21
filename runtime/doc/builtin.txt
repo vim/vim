@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -23,9 +23,11 @@ Use CTRL-] on the function name to jump to the full explanation.
 
 USAGE				RESULT	DESCRIPTION	~
 
-abs({expr})			Float or Number  absolute value of {expr}
+abs({expr})			Float/Number
+					absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
-add({object}, {item})		List/Blob   append {item} to {object}
+add({object}, {item})		List/Blob
+					append {item} to {object}
 and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {text})		Number	append {text} below line {lnum}
 appendbufline({buf}, {lnum}, {text})
@@ -33,7 +35,8 @@ appendbufline({buf}, {lnum}, {text})
 					in buffer {buf}
 argc([{winid}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
-arglistid([{winnr} [, {tabnr}]]) Number	argument list id
+arglistid([{winnr} [, {tabnr}]])
+				Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
 argv([-1, {winid}])		List	the argument list
 asin({expr})			Float	arc sine of {expr}
@@ -43,7 +46,7 @@ assert_equal({exp}, {act} [, {msg}])
 assert_equalfile({fname-one}, {fname-two} [, {msg}])
 				Number	assert file contents are equal
 assert_exception({error} [, {msg}])
-				Number	assert {error} is in v:exception
+				Number	assert {error} is in |v:exception|
 assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
@@ -81,8 +84,8 @@ bufexists({buf})		Number	|TRUE| if buffer {buf} exists
 buflisted({buf})		Number	|TRUE| if buffer {buf} is listed
 bufload({buf})			Number	load buffer {buf} if not loaded yet
 bufloaded({buf})		Number	|TRUE| if buffer {buf} is loaded
-bufname([{buf}])		String	Name of the buffer {buf}
-bufnr([{buf} [, {create}]])	Number	Number of the buffer {buf}
+bufname([{buf}])		String	name of the buffer {buf}
+bufnr([{buf} [, {create}]])	Number	number of the buffer {buf}
 bufwinid({buf})			Number	window ID of buffer {buf}
 bufwinnr({buf})			Number	window number of buffer {buf}
 byte2line({byte})		Number	line number at byte count {byte}
@@ -121,7 +124,8 @@ ch_setoptions({handle}, {options})
 ch_status({handle} [, {options}])
 				String	status of channel {handle}
 changenr()			Number	current change number
-char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in {expr}
+char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in
+					{expr}
 charclass({string})		Number	character class of {string}
 charcol({expr} [, {winid}])	Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc} [, {utf16}]])
@@ -180,10 +184,12 @@ expand({expr} [, {nosuf} [, {list}]])
 expandcmd({string} [, {options}])
 				String	expand {string} like with `:edit`
 extend({expr1}, {expr2} [, {expr3}])
-				List/Dict insert items of {expr2} into {expr1}
+				List/Dict
+					insert items of {expr2} into {expr1}
 extendnew({expr1}, {expr2} [, {expr3}])
-				List/Dict like |extend()| but creates a new
-					List or Dictionary
+				List/Dict
+					like |extend()| but creates a new List
+					or Dictionary
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
@@ -194,7 +200,8 @@ filter({expr1}, {expr2})	List/Dict/Blob/String
 					{expr2} is 0
 finddir({name} [, {path} [, {count}]])
 findfile({name} [, {path} [, {count}]])
-				String/List find dir/file {name} in {path}
+				String/List
+					find dir/file {name} in {path}
 flatten({list} [, {maxdepth}])	List	flatten {list} up to {maxdepth} levels
 flattennew({list} [, {maxdepth}])
 				List	flatten a copy of {list}
@@ -216,7 +223,8 @@ funcref({name} [, {arglist}] [, {dict}])
 				Funcref	reference to function {name}
 function({name} [, {arglist}] [, {dict}])
 				Funcref	named reference to function {name}
-garbagecollect([{atexit}])	none	free memory, breaking cyclic references
+garbagecollect([{atexit}])	none	free memory, breaking cyclic
+					references
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
@@ -229,7 +237,7 @@ getbufvar({buf}, {varname} [, {def}])
 getcellpixels()			List	get character cell pixel size
 getcellwidths()			List	get character cell width overrides
 getchangelist([{buf}])		List	list of change list items
-getchar([{expr} [, {opts}]])	Number or String
+getchar([{expr} [, {opts}]])	Number/String
 					get one character from the user
 getcharmod()			Number	modifiers for the last typed character
 getcharpos({expr})		List	position of cursor, mark, etc.
@@ -245,7 +253,8 @@ getcmdprompt()			String	return the current command-line prompt
 getcmdscreenpos()		Number	return cursor screen position in
 					command-line
 getcmdtype()			String	return current command-line type
-getcmdwintype()			String	return current command-line window type
+getcmdwintype()			String	return current command-line window
+					type
 getcompletion({pat}, {type} [, {filtered}])
 				List	list of cmdline completion matches
 getcompletiontype({pat})	String	return the type of the command-line
@@ -263,7 +272,8 @@ getimstatus()			Number	|TRUE| if the IME status is active
 getjumplist([{winnr} [, {tabnr}]])
 				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
-getline({lnum}, {end})		List	lines {lnum} to {end} of current buffer
+getline({lnum}, {end})		List	lines {lnum} to {end} of current
+					buffer
 getloclist({nr})		List	list of location list items
 getloclist({nr}, {what})	Dict	get specific location list properties
 getmarklist([{buf}])		List	list of global/local marks
@@ -275,7 +285,8 @@ getpos({expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
-				String or List   contents of a register
+				String/List
+					contents of a register
 getreginfo([{regname}])		Dict	information about a register
 getregion({pos1}, {pos2} [, {opts}])
 				List	get the text from {pos1} to {pos2}
@@ -286,7 +297,8 @@ getscriptinfo([{opts}])		List	list of sourced scripts
 getstacktrace()			List	get current stack trace of Vim scripts
 gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
-				any	variable {varname} in tab {nr} or {def}
+				any	variable {varname} in tab {nr} or
+					{def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
@@ -305,8 +317,8 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 has({feature} [, {check}])	Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
-				Number	|TRUE| if the window executed |:lcd|
-					or |:tcd|
+				Number	|TRUE| if the window executed `:lcd` or
+					`:tcd`
 hasmapto({what} [, {mode} [, {abbr}]])
 				Number	|TRUE| if mapping to {what} exists
 histadd({history}, {item})	Number	add an item to a history
@@ -332,9 +344,13 @@ inputdialog({prompt} [, {text} [, {cancelreturn}]])
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
-inputsecret({prompt} [, {text}]) String	like input() but hiding the text
-insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
-instanceof({object}, {class})	Number	|TRUE| if {object} is an instance of {class}
+inputsecret({prompt} [, {text}])
+				String	like input() but hiding the text
+insert({object}, {item} [, {idx}])
+				List	insert {item} in {object}
+					[before {idx}]
+instanceof({object}, {class})	Number	|TRUE| if {object} is an instance of
+					{class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
 isabsolutepath({path})		Number	|TRUE| if {path} is an absolute path
@@ -346,7 +362,8 @@ isnan({expr})			Number	|TRUE| if {expr} is NaN
 items({expr})			List	key/index-value pairs in {expr}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info([{job}])		Dict	get information about {job}
-job_setoptions({job}, {options}) none	set options for {job}
+job_setoptions({job}, {options})
+				none	set options for {job}
 job_start({command} [, {options}])
 				Job	start a job
 job_status({job})		String	get the status of {job}
@@ -358,9 +375,10 @@ json_decode({string})		any	decode JSON
 json_encode({expr})		String	encode JSON
 keys({dict})			List	keys in {dict}
 keytrans({string})		String	translate internal keycodes to a form
-					that can be used by |:map|
+					that can be used by `:map`
 len({expr})			Number	the length of {expr}
-libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
+libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with
+					{arg}
 libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
 line({expr} [, {winid}])	Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
@@ -379,7 +397,7 @@ luaeval({expr} [, {expr}])	any	evaluate |Lua| expression
 map({expr1}, {expr2})		List/Dict/Blob/String
 					change each item in {expr1} to {expr2}
 maparg({name} [, {mode} [, {abbr} [, {dict}]]])
-				String or Dict
+				String/Dict
 					rhs of mapping {name} in mode {mode}
 mapcheck({name} [, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
@@ -394,7 +412,7 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight {pattern} with {group}
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight positions with {group}
-matcharg({nr})			List	arguments of |:match|
+matcharg({nr})			List	arguments of `:match`
 matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict})
 				List	all the {pat} matches in buffer {buf}
 matchdelete({id} [, {win}])	Number	delete match identified by {id}
@@ -405,7 +423,8 @@ matchfuzzy({list}, {str} [, {dict}])
 matchfuzzypos({list}, {str} [, {dict}])
 				List	fuzzy match {str} in {list}
 matchlist({expr}, {pat} [, {start} [, {count}]])
-				List	match and submatches of {pat} in {expr}
+				List	match and submatches of {pat} in
+					{expr}
 matchstr({expr}, {pat} [, {start} [, {count}]])
 				String	{count}'th match of {pat} in {expr}
 matchstrlist({list}, {pat} [, {dict})
@@ -422,11 +441,13 @@ mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 ngettext({single}, {plural}, {number}[, {domain}])
 				String	translate text based on {number}
-nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value {expr}
+nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value
+					{expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr} [, {len}])	String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
-popup_atcursor({what}, {options}) Number create popup window near the cursor
+popup_atcursor({what}, {options})
+				Number	create popup window near the cursor
 popup_beval({what}, {options})	Number	create popup window for 'ballooneval'
 popup_clear()			none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
@@ -446,7 +467,8 @@ popup_menu({what}, {options})	Number	create a popup window used as a menu
 popup_move({id}, {options})	none	set position of popup window {id}
 popup_notification({what}, {options})
 				Number	create a notification popup window
-popup_setbuf({id}, {buf})	Bool	set the buffer for the popup window {id}
+popup_setbuf({id}, {buf})	Bool	set the buffer for the popup window
+					{id}
 popup_setoptions({id}, {options})
 				none	set options for popup window {id}
 popup_settext({id}, {text})	none	set the text of popup window {id}
@@ -456,10 +478,13 @@ preinserted()			Number	whether text is inserted after cursor
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
 prompt_getprompt({buf})		String	get prompt text
-prompt_setcallback({buf}, {expr}) none	set prompt callback function
-prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
+prompt_setcallback({buf}, {expr})
+				none	set prompt callback function
+prompt_setinterrupt({buf}, {text})
+				none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
-prop_add({lnum}, {col}, {props})  none	add one text property
+prop_add({lnum}, {col}, {props})
+				none	add one text property
 prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
 				none	add multiple text properties
 prop_clear({lnum} [, {lnum-end} [, {props}]])
@@ -527,9 +552,10 @@ round({expr})			Float	round off {expr}
 rubyeval({expr})		any	evaluate |Ruby| expression
 screenattr({row}, {col})	Number	attribute at screen position
 screenchar({row}, {col})	Number	character at screen position
-screenchars({row}, {col})	List	List of characters at screen position
+screenchars({row}, {col})	List	list of characters at screen position
 screencol()			Number	current cursor column
-screenpos({winid}, {lnum}, {col}) Dict	screen row and col of a text character
+screenpos({winid}, {lnum}, {col})
+				Dict	screen row and col of a text character
 screenrow()			Number	current cursor row
 screenstring({row}, {col})	String	characters at screen position
 search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
@@ -570,7 +596,9 @@ setqflist({list} [, {action}])	Number	modify quickfix list using {list}
 setqflist({list}, {action}, {what})
 				Number	modify specific quickfix list props
 setreg({n}, {v} [, {opt}])	Number	set register to value and type
-settabvar({nr}, {varname}, {val}) none	set {varname} in tab page {nr} to {val}
+settabvar({nr}, {varname}, {val})
+				none	set {varname} in tab page {nr} to
+					{val}
 settabwinvar({tabnr}, {winnr}, {varname}, {val})
 				none	set {varname} in window {winnr} in tab
 					page {tabnr} to {val}
@@ -600,7 +628,8 @@ sign_unplacelist({list})	List	unplace a list of signs
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
-slice({expr}, {start} [, {end}])  String, List or Blob
+slice({expr}, {start} [, {end}])
+				String/List/Blob
 					slice of a String, List or Blob
 sort({list} [, {how} [, {dict}]])
 				List	sort {list}, compare with {how}
@@ -630,7 +659,8 @@ strcharpart({str}, {start} [, {len} [, {skipcc}]])
 				String	{len} characters of {str} at
 					character {start}
 strchars({expr} [, {skipcc}])	Number	character count of the String {expr}
-strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
+strdisplaywidth({expr} [, {col}])
+				Number	display length of the String {expr}
 strftime({format} [, {time}])	String	format time with a specified format
 strgetchar({str}, {index})	Number	get char {index} from {str}
 stridx({haystack}, {needle} [, {start}])
@@ -638,20 +668,24 @@ stridx({haystack}, {needle} [, {start}])
 string({expr})			String	String representation of {expr} value
 strlen({expr})			Number	length of the String {expr}
 strpart({str}, {start} [, {len} [, {chars}]])
-				String	{len} bytes/chars of {str} at
-					byte {start}
+				String	{len} bytes/chars of {str} at byte
+					{start}
 strptime({format}, {timestring})
-				Number	Convert {timestring} to unix timestamp
+				Number	convert {timestring} to unix timestamp
 strridx({haystack}, {needle} [, {start}])
 				Number	last index of {needle} in {haystack}
 strtrans({expr})		String	translate string to make it printable
 strutf16len({string} [, {countcc}])
-				Number	number of UTF-16 code units in {string}
-strwidth({expr})		Number	display cell length of the String {expr}
-submatch({nr} [, {list}])	String or List
-					specific match in ":s" or substitute()
+				Number	number of UTF-16 code units in
+					{string}
+strwidth({expr})		Number	display cell length of the String
+					{expr}
+submatch({nr} [, {list}])	String/List
+					specific match in `:substitute` or
+					substitute()
 substitute({expr}, {pat}, {sub}, {flags})
-				String	all {pat} in {expr} replaced with {sub}
+				String	all {pat} in {expr} replaced with
+					{sub}
 swapfilelist()			List	swap files found in 'directory'
 swapinfo({fname})		Dict	information about swap file {fname}
 swapname({buf})			String	swap file of buffer {buf}
@@ -660,12 +694,14 @@ synIDattr({synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans({synID})		Number	translated syntax ID of {synID}
 synconcealed({lnum}, {col})	List	info about concealing
-synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and {col}
+synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and
+					{col}
 system({expr} [, {input}])	String	output of shell command/filter {expr}
 systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
 tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
-tabpagewinnr({tabarg} [, {arg}]) Number	number of current window in tab page
+tabpagewinnr({tabarg} [, {arg}])
+				Number	number of current window in tab page
 tagfiles()			List	tags files used
 taglist({expr} [, {filename}])	List	list of tags matching {expr}
 tan({expr})			Float	tangent of {expr}
@@ -695,7 +731,8 @@ term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
 term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
-term_setrestore({buf}, {command}) none	set command to restore terminal
+term_setrestore({buf}, {command})
+				none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
 term_start({cmd} [, {options}])	Number	open a terminal window and run a job
@@ -735,8 +772,10 @@ timer_start({time}, {callback} [, {options}])
 				Number	create a timer
 timer_stop({timer})		none	stop a timer
 timer_stopall()			none	stop all timers
-tolower({expr})			String	the String {expr} switched to lowercase
-toupper({expr})			String	the String {expr} switched to uppercase
+tolower({expr})			String	the String {expr} switched to
+					lowercase
+toupper({expr})			String	the String {expr} switched to
+					uppercase
 tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
 trim({text} [, {mask} [, {dir}]])
@@ -755,7 +794,7 @@ utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
 virtcol({expr} [, {list} [, {winid}])
-				Number or List
+				Number/List
 					screen column of cursor or mark
 virtcol2col({winid}, {lnum}, {col})
 				Number  byte index of a character on screen
@@ -782,7 +821,8 @@ winheight({nr})			Number	height of window {nr}
 winlayout([{tabnr}])		List	layout of windows in tab {tabnr}
 winline()			Number	window line of the cursor
 winnr([{expr}])			Number	number of current window
-winrestcmd()			String	returns command to restore window sizes
+winrestcmd()			String	returns command to restore window
+					sizes
 winrestview({dict})		none	restore view of current window
 winsaveview()			Dict	save view of current window
 winwidth({nr})			Number	width of window {nr}
