@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Nov 09
+*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1653,6 +1653,15 @@ b/g:mypy_makeprg_params variable.  For example: >
 	let b:mypy_makeprg_params = "--warn-unused-ignores"
 
 The global default is "--strict --ignore-missing-imports".
+
+TY TYPE CHECKER					*compiler-ty*
+
+Commonly used compiler options and executable can be set by the
+b/g:ty_makeprg variable.  For example: >
+
+	let b:ty_makeprg = "uv run ty"
+
+The global default is "ty --no-progress --color=never".
 
 RUFF LINTER						*compiler-ruff*
 
