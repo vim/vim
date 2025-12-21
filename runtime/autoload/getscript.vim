@@ -58,7 +58,10 @@ endif
 
 " wget vs curl {{{2
 if !exists("g:GetLatestVimScripts_wget")
- if executable("wget")
+ if executable("wget.exe")
+  " enforce extension: windows powershell desktop version has a wget alias that hides wget.exe
+  let g:GetLatestVimScripts_wget= "wget.exe"
+ elseif executable("wget")
   let g:GetLatestVimScripts_wget= "wget"
  elseif executable("curl.exe")
   " enforce extension: windows powershell desktop version has a curl alias that hides curl.exe
@@ -73,7 +76,7 @@ endif
 
 " options that wget and curl require:
 if !exists("g:GetLatestVimScripts_options")
- if g:GetLatestVimScripts_wget == "wget"
+ if g:GetLatestVimScripts_wget =~ "wget"
   let g:GetLatestVimScripts_options= "-q -O"
  elseif g:GetLatestVimScripts_wget =~ "curl"
   let g:GetLatestVimScripts_options= "-s -o"
