@@ -233,6 +233,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^execlineb\>'
     return 'execline'
 
+    # Bpftrace
+  elseif name =~ '^bpftrace\>'
+    return 'bpftrace'
+
     # Vim
   elseif name =~ '^vim\>'
     return 'vim'
