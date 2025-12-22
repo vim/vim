@@ -2118,6 +2118,8 @@ const ft_from_ext = {
   "tmpl": "template",
   # Hurl
   "hurl": "hurl",
+  # Hylo
+  "hylo": "hylo",
   # Hyper Builder
   "hb": "hb",
   # Httest
