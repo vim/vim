@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Aug 09
+# Last Change:	2025 Dec 22
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -232,6 +232,10 @@ export def Exe2filetype(name: string, line1: string): string
     # Execline (s6)
   elseif name =~ '^execlineb\>'
     return 'execline'
+
+    # Bpftrace
+  elseif name =~ '^bpftrace\>'
+    return 'bpftrace'
 
     # Vim
   elseif name =~ '^vim\>'

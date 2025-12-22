@@ -1095,6 +1095,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/regina']],
     janet:  [['#!/path/janet']],
     dart:   [['#!/path/dart']],
+    bpftrace:  [['#!/path/bpftrace']],
     vim:    [['#!/path/vim']],
   }
 enddef
