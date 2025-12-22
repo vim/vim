@@ -2750,9 +2750,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	icon_theme = gtk_icon_theme_get_default();
 
 	if (icon_theme && gtk_icon_theme_has_icon(icon_theme, "gvim"))
-	{
 	    gtk_window_set_icon_name(GTK_WINDOW(gui.mainwin), "gvim");
-	}
 	else
 	{
 	    /*
@@ -2770,7 +2768,6 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	    g_list_foreach(icons, (GFunc)(void *)&g_object_unref, NULL);
 	    g_list_free(icons);
 	}
-	g_object_unref(icon_theme);
     }
 
 #if !defined(USE_GNOME_SESSION)
