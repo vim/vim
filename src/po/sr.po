@@ -7811,7 +7811,7 @@ msgid "E1129: Throw with empty string"
 msgstr "E1129: Throw са празним стрингом"
 
 msgid "E1130: Cannot add to null list"
-msgstr "E1130: null не може да се дода листи"
+msgstr "E1130: Не може да се дода у null листу"
 
 msgid "E1131: Cannot add to null blob"
 msgstr "E1131: Не може да се дода на null блоб"
@@ -8141,7 +8141,7 @@ msgstr "E1219: За аргумент %d се захтева Покретни и�
 
 #, c-format
 msgid "E1220: String or Number required for argument %d"
-msgstr "E1220: За аргумент %d се се захтева Стринг или Број"
+msgstr "E1220: За аргумент %d се захтева Стринг или Број"
 
 #, c-format
 msgid "E1221: String or Blob required for argument %d"
