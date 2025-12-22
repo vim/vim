@@ -1823,7 +1823,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	prepend, e.g.: >
 		set clipboard^=unnamed
 <	When using the GUI see |'go-A'|.
-	When using the |clipboard-providers| feature, only the "unamed" and
+	When using the |clipboard-providers| feature, only the "unnamed" and
 	"unnamedplus" features will be recognized  If compiled without the
 	|+clipboard| feature but compiled with the |+clipboard_provider|
 	feature, then they will be the only values allowed and the other
