@@ -46,9 +46,11 @@ func Test_terminal_shell_option()
     " the %PATH%, "term dir" succeeds unintentionally.  Use dir.com instead.
     try
       term dir.com /b runtest.vim
-      call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
-    catch /CreateProcess/
-      " ignore
+      throw 'dir.com without a shell must fail, so you will never get here'
+    catch /CreateProcess failed/
+      " ignore:
+      " winpty simply fails with "CreateProcess failed".
+      " compty fails with "CreateProcess failed: {localized failure reason}".
     endtry
     bwipe!
 
