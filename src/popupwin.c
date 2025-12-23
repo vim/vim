@@ -718,7 +718,7 @@ popup_highlight_curline(win_T *wp)
 apply_general_options(win_T *wp, dict_T *dict)
 {
     dictitem_T	*di;
-    int		nr;
+    int		nr, focusable;
     char_u	*str;
 
     // TODO: flip
@@ -761,6 +761,15 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags |= POPF_DRAGALL;
 	else
 	    wp->w_popup_flags &= ~POPF_DRAGALL;
+    }
+
+    nr = dict_get_bool(dict, "focusable", -1);
+    if (nr != -1)
+    {
+	if (nr)
+	    wp->w_popup_flags |= POPF_FOCUSABLE;
+	else
+	    wp->w_popup_flags &= ~POPF_FOCUSABLE;
     }
 
     nr = dict_get_bool(dict, "posinvert", -1);
@@ -972,7 +981,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     }
 
     di = dict_find(dict, (char_u *)"filter", -1);
-    if (di != NULL)
+    if (di != NULL && (wp->w_popup_flags & POPF_FOCUSABLE) == 0)
     {
 	callback_T	callback = get_callback(&di->di_tv);
 
@@ -2913,13 +2922,6 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     id = (int)tv_get_number(argvars);
-    if (
-# ifdef FEAT_TERMINAL
-	// if the popup contains a terminal it will become hidden
-	curbuf->b_term == NULL &&
-# endif
-	    ERROR_IF_ANY_POPUP_WINDOW)
-	return;
 
     wp = find_popup_win(id);
     if (wp != NULL)
@@ -3518,6 +3520,8 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
     dict_add_number(dict, "posinvert",
 	    (wp->w_popup_flags & POPF_POSINVERT) != 0);
+    dict_add_number(dict, "focusable",
+	    (wp->w_popup_flags & POPF_FOCUSABLE) != 0);
     dict_add_number(dict, "cursorline",
 	    (wp->w_popup_flags & POPF_CURSORLINE) != 0);
     dict_add_string(dict, "highlight", wp->w_p_wcr);
