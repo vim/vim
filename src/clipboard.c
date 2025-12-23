@@ -3534,7 +3534,7 @@ adjust_clip_reg(int *rp)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     if (clipmethod == CLIPMETHOD_PROVIDER)
     {
-	if (clip_unnamed != 0)
+	if (*rp == 0 && clip_unnamed != 0)
 	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS)) ? '+' : '*';
 	return;
     }
