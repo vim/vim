@@ -1234,6 +1234,8 @@ blob_from_string(char_u *str, blob_T *blob)
  * Return a string created from the bytes in blob starting at "start_idx".
  * A NL character in the blob indicates end of string.
  * A NUL character in the blob is translated to a NL.
+ * If a newline is followed by another newline (empty line), then an empty
+ * allocated string is returned and "start_idx" is moved forward by one byte.
  * On return, "start_idx" points to next byte to process in blob.
  */
     static char_u *
@@ -1265,6 +1267,8 @@ string_from_blob(blob_T *blob, long *start_idx)
 
     if (str_ga.ga_data != NULL)
 	ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    else
+	ret_str = vim_strsave((char_u *)"");
     *start_idx = idx;
 
     ga_clear(&str_ga);
