@@ -6175,8 +6175,17 @@ getregionpos(
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
+	#ifdef FEAT_LINEBREAK
+	int	lbr_saved = reset_lbr();
+	#endif
+
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
+
+	#ifdef FEAT_LINEBREAK
+	restore_lbr(lbr_saved);
+	#endif
+
 	oap->motion_type = MBLOCK;
 	oap->inclusive = TRUE;
 	oap->op_type = OP_NOP;

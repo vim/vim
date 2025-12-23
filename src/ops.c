@@ -2398,7 +2398,7 @@ theend:
  * Reset 'linebreak' and take care of side effects.
  * Returns the previous value, to be passed to restore_lbr().
  */
-    static int
+    int
 reset_lbr(void)
 {
     if (!curwin->w_p_lbr)
@@ -2412,7 +2412,7 @@ reset_lbr(void)
 /*
  * Restore 'linebreak' and take care of side effects.
  */
-    static void
+    void
 restore_lbr(int lbr_saved)
 {
     if (curwin->w_p_lbr || !lbr_saved)
