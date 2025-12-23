@@ -10,8 +10,8 @@ func TrySocketServer()
       call remote_startserver('VIMSOCKETSERVERTEST')
     endif
   else
-      let g:socketserver_only = v:false
-    endif
+    let g:socketserver_only = v:false
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

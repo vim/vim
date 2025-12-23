@@ -170,6 +170,7 @@ def Test_help_files()
 enddef
 
 def Test_indent_of_source_files()
+  g:ignoreSwapExists = 'o'
   for fname in Get_C_source_files()
     execute 'tabnew ' .. fname
     if &expandtab
@@ -193,6 +194,7 @@ def Test_indent_of_source_files()
     endfor
     close
   endfor
+  unlet g:ignoreSwapExists
 enddef
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

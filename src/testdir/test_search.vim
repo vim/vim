@@ -362,6 +362,7 @@ func SearchpairSkip()
 endfunc
 
 func Test_searchpair_timeout_with_skip()
+  let g:ignoreSwapExists = 'o'
   let g:test_is_flaky = 1
 
   edit ../evalfunc.c
@@ -386,6 +387,7 @@ func Test_searchpair_timeout_with_skip()
   let found = searchpair('(', '', ')', 'crnm', 'SearchpairSkip()', 0, ms)
   let elapsed = reltimefloat(reltime(start))
   call assert_inrange(min_time, max_time, elapsed)
+  unlet g:ignoreSwapExists
 
   bwipe!
 endfunc

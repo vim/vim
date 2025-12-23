@@ -636,8 +636,10 @@ textprop_size_after_trunc(
 	char_u	*text,
 	int	*n_used_ptr)
 {
-    int	space = (flags & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_ABOVE))
-				       ? wp->w_width - win_col_off(wp) : added;
+    int align = flags & TP_FLAG_VTEXT_BITS;
+    bool above_or_below = align == TP_FLAG_ALIGN_BELOW
+			  || align == TP_FLAG_ALIGN_ABOVE;
+    int	space = above_or_below ? wp->w_width - win_col_off(wp) : added;
     int strsize = 0;
     char_u *p;
 
@@ -645,7 +647,7 @@ textprop_size_after_trunc(
     // use the next line
     if (space < PROP_TEXT_MIN_CELLS && wp->w_p_wrap)
 	space += wp->w_width;
-    if (flags & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_ABOVE))
+    if (above_or_below)
 	space -= padding;
 
     for (p = text; *p != NUL; p += (*mb_ptr2len)(p))
@@ -681,12 +683,12 @@ text_prop_position(
 	int	    *n_attr_skip,   // cells to skip attr, NULL if not used
 	int	    do_skip)	    // skip_cells is not zero
 {
-    int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
-    int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
-    int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-    int	    wrap = tp->tp_col < MAXCOL || (tp->tp_flags & TP_FLAG_WRAP);
-    int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
-							  ? tp->tp_len - 1 : 0;
+    int	    right = PROP_IS_RIGHT(tp);
+    int	    above = PROP_IS_ABOVE(tp);
+    int	    below = PROP_IS_BELOW(tp);
+    int	    wrap = !PROP_IS_FLOATING(tp) || (tp->tp_flags & TP_FLAG_WRAP);
+    int	    padding = PROP_IS_FLOATING(tp) && tp->tp_padleft > 0
+							  ? tp->tp_padleft : 0;
     int	    col_with_padding = scr_col + (below ? 0 : padding);
     int	    room = wp->w_width - col_with_padding;
     int	    before = room;	// spaces before the text
@@ -850,12 +852,10 @@ text_prop_position(
     int
 text_prop_no_showbreak(textprop_T *tp)
 {
-    int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
-    int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
-    int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-    int	    wrap = tp->tp_col < MAXCOL || (tp->tp_flags & TP_FLAG_WRAP);
+    int	wrap = !PROP_IS_FLOATING(tp) || (tp->tp_flags & TP_FLAG_WRAP);
 
-    return (right || above || below || !wrap);
+    return PROP_IS_RIGHT(tp) || PROP_IS_ABOVE(tp) || PROP_IS_BELOW(tp)
+	   || !wrap;
 }
 # endif
 #endif
@@ -1224,7 +1224,6 @@ win_line(
     int		text_prop_attr = 0;
     int		text_prop_attr_comb = 0;  // text_prop_attr combined with
 					  // syntax_attr
-    int		text_prop_id = 0;	// active property ID
     int		text_prop_flags = 0;
     int		text_prop_above = FALSE;  // first doing virtual text above
     int		text_prop_follows = FALSE;  // another text prop to display
@@ -1690,21 +1689,16 @@ win_line(
     if (WIN_IS_POPUP(wp))
 	wlv.screen_line_flags |= SLF_POPUP;
 
-    char_u *prop_start;
-    text_prop_count = get_text_props(wp->w_buffer, lnum, &prop_start, FALSE);
+    text_props = get_text_props_copy(wp->w_buffer, lnum, &text_prop_count);
     if (text_prop_count > 0)
     {
-	// Make a copy of the properties, so that they are properly
-	// aligned.
-	text_props = ALLOC_MULT(textprop_T, text_prop_count);
-	if (text_props != NULL)
-	    mch_memmove(text_props, prop_start,
-				     text_prop_count * sizeof(textprop_T));
-
 	// Allocate an array for the indexes.
 	text_prop_idxs = ALLOC_MULT(int, text_prop_count);
 	if (text_prop_idxs == NULL)
+	{
 	    VIM_CLEAR(text_props);
+	    text_prop_count = 0;
+	}
 
 	if (text_props != NULL)
 	{
@@ -1713,7 +1707,7 @@ win_line(
 
 	    /* Find the last text property that inserts text. */
 	    for (int i = 0; i < text_prop_count; ++i)
-		if (text_props[i].tp_id < 0)
+		if (PROP_IS_VTEXT(&text_props[i]))
 		    last_textprop_text_idx = i;
 
 	    // Text props "above" move the line number down to where the text
@@ -1721,7 +1715,7 @@ win_line(
 	    // skipped because of w_skipcol.
 	    int text_width = wp->w_width - win_col_off(wp);
 	    for (int i = text_prop_count - 1; i >= 0; --i)
-		if (text_props[i].tp_flags & TP_FLAG_ALIGN_ABOVE)
+		if (PROP_IS_ABOVE(&text_props[i]))
 		{
 		    if (lnum == wp->w_topline
 			    && wp->w_skipcol - skipcol_in_text_prop_above
@@ -2115,7 +2109,7 @@ win_line(
 		    // An inline property ends when after the start column plus
 		    // length. An "above" property ends when used and n_extra
 		    // is zero.
-		    if ((tp->tp_col != MAXCOL
+		    if ((!PROP_IS_FLOATING(tp)
 				       && bcol >= tp->tp_col - 1 + tp->tp_len))
 		    {
 			if (pi + 1 < text_props_active)
@@ -2143,9 +2137,9 @@ win_line(
 		{
 		    int active;
 		    textprop_T *tp = &text_props[text_prop_next];
-		    if (tp->tp_col == MAXCOL)
+		    if (PROP_IS_FLOATING(tp))
 		    {
-			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
+			if (bcol == 0 && PROP_IS_ABOVE(tp))
 			    active = TRUE;
 			else if (*ptr != NUL)
 			    break;
@@ -2155,7 +2149,7 @@ win_line(
 			    // text prop can show.
 			    active = wp->w_p_wrap
 				  || wlv.row == startrow
-				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+				  || PROP_IS_BELOW(tp);
 			}
 		    }
 		    else
@@ -2180,7 +2174,6 @@ win_line(
 		    text_prop_attr_comb = 0;
 		    text_prop_flags = 0;
 		    text_prop_type = NULL;
-		    text_prop_id = 0;
 		    reset_extra_attr = FALSE;
 		}
 		if (text_props_active > 0 && wlv.n_extra == 0)
@@ -2188,6 +2181,7 @@ win_line(
 		    int used_tpi = -1;
 		    int used_attr = 0;
 		    int other_tpi = -1;
+		    bool is_vtext_prop = FALSE;
 
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
@@ -2208,24 +2202,20 @@ win_line(
 			// Skip "after" properties when wrap is off and at the
 			// end of the window.
 			if (pt != NULL
-				&& (pt->pt_hl_id > 0 || tp->tp_id < 0)
+				&& (pt->pt_hl_id > 0 || PROP_IS_VTEXT(tp))
 				&& tp->tp_id != -MAXCOL
-				&& !(tp->tp_id < 0
+				&& !(PROP_IS_VTEXT(tp)
 				    && !wp->w_p_wrap
-				    && (tp->tp_flags & (TP_FLAG_ALIGN_RIGHT
-						| TP_FLAG_ALIGN_ABOVE
-						| TP_FLAG_ALIGN_BELOW)) == 0
+				    && !PROP_IS_ABOVE_RIGHT_OR_BELOW(tp)
 				    && wlv.col >= wp->w_width))
 			{
-			    if (tp->tp_col == MAXCOL
+			    if (PROP_IS_FLOATING(tp)
 				     && *ptr == NUL
 				     && ((wp->w_p_list && lcs_eol_one > 0
-					     && (tp->tp_flags
-						   & TP_FLAG_ALIGN_ABOVE) == 0)
+					     && !PROP_IS_ABOVE(tp))
 					 || (ptr == line
 						&& !did_line
-						&& (tp->tp_flags
-						      & TP_FLAG_ALIGN_BELOW))))
+						&& PROP_IS_BELOW(tp))))
 			    {
 				// skip this prop, first display the '$' after
 				// the line or display an empty line
@@ -2238,24 +2228,21 @@ win_line(
 			    text_prop_type = pt;
 			    text_prop_attr =
 				   hl_combine_attr(text_prop_attr, used_attr);
-			    if (used_tpi >= 0 && text_props[used_tpi].tp_id < 0)
+			    if (used_tpi >= 0
+				    && PROP_IS_VTEXT(&text_props[used_tpi]))
 				other_tpi = used_tpi;
 			    text_prop_flags = pt->pt_flags;
-			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
+			    is_vtext_prop = PROP_IS_VTEXT(tp);
 			}
 		    }
-		    if (text_prop_id < 0 && used_tpi >= 0
-			    && -text_prop_id
-				      <= wp->w_buffer->b_textprop_text.ga_len)
+
+		    if (is_vtext_prop && used_tpi >= 0)
 		    {
-			textprop_T  *tp = &text_props[used_tpi];
-			char_u	    *p = ((char_u **)wp->w_buffer
-						   ->b_textprop_text.ga_data)[
-							   -text_prop_id - 1];
-			int	    above = (tp->tp_flags
-							& TP_FLAG_ALIGN_ABOVE);
-			int	    bail_out = FALSE;
+			textprop_T *tp = &text_props[used_tpi];
+			char_u	   *p = tp->tp_id != -MAXCOL ? tp->tp_text : NULL;
+			int	   above = PROP_IS_ABOVE(tp);
+			int	   bail_out = FALSE;
 
 			// reset the ID in the copy to avoid it being used
 			// again
@@ -2263,15 +2250,13 @@ win_line(
 
 			if (p != NULL)
 			{
-			    int	    right = (tp->tp_flags
-							& TP_FLAG_ALIGN_RIGHT);
-			    int	    below = (tp->tp_flags
-							& TP_FLAG_ALIGN_BELOW);
-			    int	    wrap = tp->tp_col < MAXCOL
+			    int	    right = PROP_IS_RIGHT(tp);
+			    int	    below = PROP_IS_BELOW(tp);
+			    int	    wrap = !PROP_IS_FLOATING(tp)
 					      || (tp->tp_flags & TP_FLAG_WRAP);
-			    int	    padding = tp->tp_col == MAXCOL
-						 && tp->tp_len > 1
-							  ? tp->tp_len - 1 : 0;
+			    int	    padding = PROP_IS_FLOATING(tp)
+						 && tp->tp_padleft > 0
+							  ? tp->tp_padleft : 0;
 
 			    // Insert virtual text before the current
 			    // character, or add after the end of the line.
@@ -2386,8 +2371,8 @@ win_line(
 			text_prop_above = above;
 			text_prop_follows |= other_tpi != -1
 					&& (wp->w_p_wrap
-					     || (text_props[other_tpi].tp_flags
-			       & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_RIGHT)));
+					     || PROP_IS_RIGHT_OR_BELOW(
+						    &text_props[other_tpi]));
 
 			if (bail_out)
 			    // starting a new line for "below"
@@ -2409,9 +2394,9 @@ win_line(
 		    //       needs to be checked for following "below" virtual text
 		    for (int i = text_prop_next; i < text_prop_count; ++i)
 		    {
-			if (text_props[i].tp_col == MAXCOL
+			if (PROP_IS_FLOATING(&text_props[i])
 				&& (!only_below_follows
-				    || (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)))
+				    || PROP_IS_BELOW(&text_props[i])))
 			{
 			    text_prop_follows = TRUE;
 			    break;

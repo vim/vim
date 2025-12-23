@@ -87,6 +87,15 @@ and/or ends with a specific character, such as the quote surrounding a string.
 Nevertheless, when text is inserted or deleted the text may need to be parsed
 and the text properties updated.  But this can be done asynchronously.
 
+The "start_incl" setting also affects how text is inserted either side of
+an inline virtual text property (see |virtual-text|). If you have a line
+with a virtual text property "<inline>" looking like this >
+
+    Some text<inline>followed by more text.
+<
+If you place the cursor on the "f" of "followed" and then insert text, the new
+text will appear *after* "<inline>" if "start_incl" is set and *before"
+"<inline>" otherwise.
 
 Internal error *E967*
 
@@ -139,11 +148,12 @@ prop_add({lnum}, {col}, {props})
 				to {lnum}, this is a zero-width text property
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
-		   id		user defined ID for the property; must be a
-				number, should be positive |E1510|;
-				when using "text" then "id" must not be
-				present and will be set automatically to a
-				negative number; otherwise zero is used
+		   id		user defined ID for the property; must be a 32
+				bit signed number |E1510|, should be positive
+				to avoid conflicts with virtual text
+				properties; when using "text" then "id" must
+				not be present and will be set automatically
+				to a negative number; otherwise zero is used
 							*E1305*
 		   text		text to be displayed before {col}, or
 				above/below the line if {col} is zero; prepend
@@ -223,15 +233,6 @@ prop_add({lnum}, {col}, {props})
 		changed to a space (Rationale: otherwise the size of the text
 		is difficult to compute).
 		A negative "id" will be chosen and is returned.
-
-		Before text properties with text were supported it was
-		possible to use a negative "id", even though this was very
-		rare.  Now that negative "id"s are reserved for text
-		properties with text an error is given when using a negative
-		"id".  When a text property with text already exists using a
-		negative "id" results in *E1293* .  If a negative "id" was
-		used and later a text property with text is added results in
-		*E1339* .
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
@@ -334,7 +335,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		   ids		List of property identifiers.  Return only
 				text properties with one of these identifiers.
 
-		The properties are ordered by starting column and priority.
+		The properties are ordered by starting column.
 		Each property is a Dict with these entries:
 		   lnum		starting line number.  Present only when
 				returning text properties between {lnum} and

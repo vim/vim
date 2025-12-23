@@ -5,6 +5,7 @@ CheckFeature textprop
 
 source util/screendump.vim
 import './util/vim9.vim' as v9
+import './textprop_support.vim' as ts
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
@@ -677,7 +678,7 @@ func Test_prop_open_line()
   call assert_equal('xo', getline(1))
   call assert_equal('nex xtwoxx', getline(2))
   let exp_first = [deepcopy(expected[0])]
-  let exp_first[0].length = 1
+  let exp_first[0].length = 2
   let exp_first[0].end = 0
   call assert_equal(exp_first, prop_list(1))
   let expected[0].col = 1
@@ -836,7 +837,7 @@ func Test_prop_substitute()
 	\ copy(expected_props[2]),
 	\ copy(expected_props[3]),
 	\ ]
-  let expected_props[0].length = 5
+  let expected_props[0].length = 6
   let expected_props[0].end = 0
   unlet expected_props[3]
   unlet expected_props[2]
@@ -944,6 +945,7 @@ func Test_prop_multiline()
   call assert_equal([expect4], prop_list(4))
   4del
   let expect3.end = 1
+  let expect3.length -= 1
   call assert_equal([expect3], prop_list(3))
   call assert_equal([expect_short], prop_list(4))
   bwipe!
@@ -1138,7 +1140,15 @@ func Test_prop_undo()
   call assert_equal(expected, prop_list(1))
   call prop_clear(1)
 
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
+func Test_substitute_with_backslash()
   " substitute with backslash
+  new
+
+  call prop_type_add('comment', {'highlight': 'Directory'})
   call setline(1, 'the number 123 is highlighted.')
   call prop_add(1, 12, {'length': 3, 'type': 'comment'})
   let expected = [#{type_bufnr: 0, col: 12, length: 3, id: 0, type: 'comment', start: 1, end: 1} ]
@@ -1152,8 +1162,11 @@ func Test_prop_undo()
   let expected[0].col += 1
   call assert_equal(expected, prop_list(1))
   1s/123/12\\3
-  let expected[0].length += 1
-  call assert_equal(expected, prop_list(1))
+
+  " This used to expect the property to increase in length by 1, but that
+  " behaviour is inconsistant with deleting and then inserting text. So now,
+  " no properties are epected.
+  call assert_equal([], prop_list(1))
   call prop_clear(1)
 
   bwipe!
@@ -1399,6 +1412,15 @@ func Test_textprop_nowrap_scrolled()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+" The text property ID may not be specified for virtual text properties.
+"
+func Test_textprop_virttext_id_not_permitted()
+  new
+  call setline(1, "Line text")
+  call prop_type_add('one', #{highlight: 'Search'})
+  call assert_fails("call prop_add(1, 5, #{type: 'one', text: 'virt-text', id: 42})", 'E1305:')
 endfunc
 
 func Test_textprop_text_priority()
@@ -1790,24 +1812,52 @@ func Test_prop_func_invalid_args()
   bwipe!
 endfunc
 
-func Test_prop_split_join()
+func Test_prop_split_join_1()
   new
   call prop_type_add('test', {'highlight': 'ErrorMsg'})
   call setline(1, 'just some text')
   call prop_add(1, 6, {'length': 4, 'type': 'test'})
 
-  " Split in middle of "some"
+  " Split in middle of 'some'.
   execute "normal! 8|i\<CR>"
   call assert_equal(
-        \ [#{type_bufnr: 0, id: 0, col: 6, end: 0, type: 'test', length: 2, start: 1}],
+        \ [#{type_bufnr: 0, id: 0, col: 6, end: 0, type: 'test', length: 3, start: 1}],
         \ prop_list(1))
   call assert_equal(
         \ [#{type_bufnr: 0, id: 0, col: 1, end: 1, type: 'test', length: 2, start: 0}],
         \ prop_list(2))
 
-  " Join the two lines back together
+  " Join the two lines back together.
   normal! 1GJ
   call assert_equal([#{type_bufnr: 0, id: 0, col: 6, end: 1, type: 'test', length: 5, start: 1}], prop_list(1))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+" Joining multiprop lines using ":a,b /\n//".
+"
+" At time of writing, Vim has special code to convert this special case to a
+" join operation (apparently avoids using a lot of memory) hence a special test.
+func Test_prop_split_join_3()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 6, {'length': 4, 'type': 'test'})
+
+  " Split in middle of 'some'.
+  substitute /om/o\rm/
+  call assert_equal(
+        \ [#{type_bufnr: 0, id: 0, col: 6, end: 0, type: 'test', length: 3, start: 1}],
+        \ prop_list(1))
+  call assert_equal(
+        \ [#{type_bufnr: 0, id: 0, col: 1, end: 1, type: 'test', length: 2, start: 0}],
+        \ prop_list(2))
+
+  " Join the two lines back together.
+  1 substitute /\n//
+  call assert_equal('just some text', getline(1))
+  call assert_equal([#{type_bufnr: 0, id: 0, col: 6, end: 1, type: 'test', length: 4, start: 1}], prop_list(1))
 
   bwipe!
   call prop_type_delete('test')
@@ -1942,7 +1992,7 @@ def Test_prop_add_delete_line()
 enddef
 
 " This test is to detect a regression related to #10430. It is not an attempt
-" fully cover deleting lines in the presence of multi-line properties.
+" to fully cover deleting lines in the presence of multi-line properties.
 def Test_delete_line_within_multiline_prop()
   new
   setline(1, '# Top.')
@@ -3606,7 +3656,7 @@ func Test_props_with_text_below_nowrap()
       vim9script
       edit foobar
       set nowrap
-      set showbreak=+++\ 
+      set showbreak=+++\
       setline(1, ['onasdf asdf asdf sdf df asdf asdf e asdf asdf asdf asdf asd fas df', 'two'])
       prop_type_add('test', {highlight: 'Special'})
       prop_add(1, 0, {
@@ -3970,25 +4020,6 @@ func Test_props_with_text_after_split_join()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_removed_prop_with_text_cleans_up_array()
-  new
-  call setline(1, 'some text here')
-  call prop_type_add('some', #{highlight: 'ErrorMsg'})
-  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
-  let id2 = prop_add(1, 10, #{type: 'some', text: "HERE"})
-  call assert_equal(-2, id2)
-
-  " removing the props resets the index
-  call prop_remove(#{id: id1})
-  call prop_remove(#{id: id2})
-  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
-
-  call prop_type_delete('some')
-  bwipe!
-endfunc
-
 def Test_insert_text_before_virtual_text()
   new foobar
   setline(1, '12345678')
@@ -4273,7 +4304,7 @@ func Test_text_after_wrap_showbreak()
     set shiftwidth=4
 
     set breakindent
-    set showbreak=>\ 
+    let &showbreak='> '
     set breakindentopt=shift:2,min:64
 
     call setline(1, ['        " 1234567890', 'foo', 'bar'])
@@ -4663,51 +4694,6 @@ func Test_text_prop_diff_mode()
 
   call term_sendkeys(buf, ":windo set number\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_diff_mode_2', {})
-
-  call StopVimInTerminal(buf)
-endfunc
-
-func Test_error_when_using_negative_id()
-  call prop_type_add('test1', #{highlight: 'ErrorMsg'})
-  call prop_add(1, 1, #{type: 'test1', text: 'virtual'})
-  call assert_fails("call prop_add(1, 1, #{type: 'test1', length: 1, id: -1})", 'E1293:')
-
-  call prop_type_delete('test1')
-endfunc
-
-func Test_error_after_using_negative_id()
-  CheckScreendump
-  " This needs to run a separate Vim instance because the
-  " "did_use_negative_pop_id" will be set.
-  CheckRunVimInTerminal
-
-  let lines =<< trim END
-      vim9script
-
-      setline(1, ['one', 'two', 'three'])
-      prop_type_add('test_1', {highlight: 'Error'})
-      prop_type_add('test_2', {highlight: 'WildMenu'})
-
-      prop_add(3, 1, {
-          type: 'test_1',
-          length: 5,
-          id: -1
-      })
-
-      def g:AddTextprop()
-          prop_add(1, 0, {
-              type: 'test_2',
-              text: 'The quick fox',
-              text_padding_left: 2
-          })
-      enddef
-  END
-  call writefile(lines, 'XtextPropError', 'D')
-  let buf = RunVimInTerminal('-S XtextPropError', #{rows: 8, cols: 60})
-  call VerifyScreenDump(buf, 'Test_prop_negative_error_1', {})
-
-  call term_sendkeys(buf, ":call AddTextprop()\<CR>")
-  call VerifyScreenDump(buf, 'Test_prop_negative_error_2', {})
 
   call StopVimInTerminal(buf)
 endfunc
