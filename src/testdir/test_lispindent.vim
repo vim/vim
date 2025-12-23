@@ -19,6 +19,9 @@ endfunc
 def Test_lisp_indent()
   enew!
 
+  setglobal lispwords=foo,bar,baz
+  setlocal lispwords-=foo | setlocal lispwords+=quux
+  setlocal lispwords<
   append(0, [
 	       '(defun html-file (base)',
 	       '(format nil "~(~A~).html" base))',
@@ -51,6 +54,90 @@ def Test_lisp_indent()
   set lisp
   set lispwords&
   var save_copt = &cpoptions
+  set cpoptions+=p
+  normal 1G=G
+
+  assert_equal([
+	       '(defun html-file (base)',
+	       '  (format nil "~(~A~).html" base))',
+	       '',
+	       '(defmacro page (name title &rest body)',
+	       '  (let ((ti (gensym)))',
+	       '       `(with-open-file (*standard-output*',
+	       '			 (html-file ,name)',
+	       '			 :direction :output',
+	       '			 :if-exists :supersede)',
+	       '			(let ((,ti ,title))',
+	       '			     (as title ,ti)',
+	       '			     (with center ',
+	       '				   (as h2 (string-upcase ,ti)))',
+	       '			     (brs 3)',
+	       '			     ,@body))))',
+	       '',
+	       ';;; Utilities for generating links',
+	       '',
+	       '(defmacro with-link (dest &rest body)',
+	       '  `(progn',
+	       '    (format t "<a href=\"~A\">" (html-file ,dest))',
+	       '    ,@body',
+	       '    (princ "</a>")))',
+	       ''
+	       ], getline(1, "$"))
+
+  enew!
+  &cpoptions = save_copt
+  set nolisp
+enddef
+
+" Lisp indenting should work when a buffer has had properties.
+def Test_lisp_after_props()
+  enew!
+
+  setglobal lispwords=foo,bar,baz
+  setlocal lispwords-=foo | setlocal lispwords+=quux
+  setlocal lispwords<
+  append(0, [
+	       '(defun html-file (base)',
+	       '(format nil "~(~A~).html" base))',
+	       '',
+	       '(defmacro page (name title &rest body)',
+	       '(let ((ti (gensym)))',
+	       '`(with-open-file (*standard-output*',
+	       '(html-file ,name)',
+	       ':direction :output',
+	       ':if-exists :supersede)',
+	       '(let ((,ti ,title))',
+	       '(as title ,ti)',
+	       '(with center ',
+	       '(as h2 (string-upcase ,ti)))',
+	       '(brs 3)',
+	       ',@body))))',
+	       '',
+	       ';;; Utilities for generating links',
+	       '',
+	       '(defmacro with-link (dest &rest body)',
+	       '`(progn',
+	       '(format t "<a href=\"~A\">" (html-file ,dest))',
+	       ',@body',
+	       '(princ "</a>")))'
+	       ])
+
+  call prop_type_add('comment', {'highlight': 'DiffAdd'})
+  prop_add(1, 1, {length: 1, type: 'comment'})
+  prop_clear(1)
+  prop_type_delete('comment')
+
+  assert_equal(7, lispindent(2))
+  assert_equal(5, 6->lispindent())
+  assert_fails('lispindent(-1)', 'E966: Invalid line number: -1')
+  redir! > opts.txt
+  set
+  redir END
+
+  set lisp
+  set lispwords&
+  var save_copt = &cpoptions
+  set cpoptions&
   set cpoptions+=p
   normal 1G=G
 

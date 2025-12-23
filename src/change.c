@@ -2562,7 +2562,7 @@ truncate_line(int fixpos)
  * Saves the lines for undo first if "undo" is TRUE.
  */
     void
-del_lines(long nlines,	int undo)
+del_lines(long nlines,int undo, int flags)
 {
     long	n;
     linenr_T	first = curwin->w_cursor.lnum;
@@ -2579,7 +2579,7 @@ del_lines(long nlines,	int undo)
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    // nothing to delete
 	    break;
 
-	ml_delete_flags(first, ML_DEL_MESSAGE);
+	ml_delete_flags(first, flags | ML_DEL_MESSAGE);
 	++n;
 
 	// If we delete the last line in the file, stop

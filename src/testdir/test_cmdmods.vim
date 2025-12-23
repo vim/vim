@@ -82,6 +82,7 @@ def Test_keep_cmdmods_names()
 enddef
 
 def Test_cmdmod_completion()
+  g:ignoreSwapExists = 'o'
   for mod in s:get_cmdmods()
     var cmd = $'{mod} ed'
     if mod == 'filter'
@@ -89,7 +90,7 @@ def Test_cmdmod_completion()
     endif
     assert_equal('edit', getcompletion(cmd, 'cmdline')[0])
   endfor
+  unlet g:ignoreSwapExists
 enddef
 
 " vim: shiftwidth=2 sts=2 expandtab
-

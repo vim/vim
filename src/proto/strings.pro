@@ -1,5 +1,5 @@
 /* strings.c */
-char_u *vim_strsave(char_u *string);
+char_u *vim_strsave(const char_u *string);
 char_u *vim_strnsave(char_u *string, size_t len);
 char_u *vim_strsave_escaped(char_u *string, char_u *esc_chars);
 char_u *vim_strsave_escaped_ext(char_u *string, char_u *esc_chars, int cc, int bsl);

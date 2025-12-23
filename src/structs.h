@@ -872,9 +872,13 @@ typedef struct memline
 } memline_T;
 
 // Values for the flags argument of ml_delete_flags().
-#define ML_DEL_MESSAGE	    1	// may give a "No lines in buffer" message
-#define ML_DEL_UNDO	    2	// called from undo, do not update textprops
-#define ML_DEL_NOPROP	    4	// splitting data block, do not update textprops
+#define ML_DEL_MESSAGE	     1   // may give a "No lines in buffer" message
+#define ML_DEL_UNDO	     2   // called from undo, do not update textprops
+#define ML_DEL_NOPROP	     4   // splitting data block, do not update
+				 // textprops
+#define ML_DEL_NO_ADJ_NEXT   8   // Do not adjust properties in next line
+#define ML_DEL_NO_ADJ_PREV   16  // Do not adjust properties in prev line
+#define ML_DEL_DELETING_LINE 32  // The line is being deleted.
 
 // Values for the flags argument of ml_append_int().
 #define ML_APPEND_NEW	    1	// starting to edit a new file
@@ -882,6 +886,14 @@ typedef struct memline
 #define ML_APPEND_UNDO	    4	// called from undo
 #define ML_APPEND_NOPROP    8	// do not continue textprop from previous line
 
+// Constants for use with ml_replace() and ml_replace_len.
+#define ML_TAKE_OWNERSHIP_OF_LINE FALSE  // Take ownership of the provided
+					 // line.
+#define ML_COPY_LINE TRUE		 // Make a copy of the provided line.
+
+// Constants for use with ml_replace() and ml_replace_len.
+#define ML_PROPS_EXCLUDED FALSE  // Supplied line excludes text properties.
+#define ML_PROPS_INCLUDED TRUE	 // Supplied line includes text properties.
 
 /*
  * Structure defining text properties.  These stick with the text.
@@ -890,30 +902,94 @@ typedef struct memline
  */
 typedef struct textprop_S
 {
-    colnr_T	tp_col;		// start column (one based, in bytes)
-    colnr_T	tp_len;		// length in bytes, when tp_id is negative used
-				// for left padding plus one
-    int		tp_id;		// identifier
-    int		tp_type;	// property type
-    int		tp_flags;	// TP_FLAG_ values
-    int		tp_padleft;	// left padding between text line and virtual
-				// text
+    colnr_T	tp_col;		 // Start column (one based, in bytes).
+				 // This is set to MAXCOL for floating virtual text,
+				 // purely for sorting purposes.
+    colnr_T	tp_len;		 // Length in bytes of property or the size of
+				 // the virtual text (including the NUL).
+    int		tp_id;		 // The identifier of this property.
+    int		tp_type;	 // The identifier of the property type.
+    int		tp_flags;	 // TP_FLAG_ values
+    int		tp_padleft;	 // Left padding between text line and virtual
+				 // text.
+    union
+    {
+	colnr_T tp_text_offset;  // Virtual text offset, starting from the byte
+				 // after the line's NUL terminator.
+	char_u	*tp_text;	 // A pointer to the virtual text.
+    };
 } textprop_T;
 
 #define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
 #define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
+#define TP_FLAG_CONT_BITS	0x3	// mask to check for either continuation
 
-// without these text is placed after the end of the line
-#define TP_FLAG_ALIGN_RIGHT	0x010	// virtual text is right-aligned
-#define TP_FLAG_ALIGN_ABOVE	0x020	// virtual text above the line
-#define TP_FLAG_ALIGN_BELOW	0x040	// virtual text on next screen line
+#define TP_FLAG_ALIGN_RIGHT	0x010	// Virtual text is right-aligned.
+#define TP_FLAG_ALIGN_ABOVE	0x020	// Virtual text above the line.
+#define TP_FLAG_ALIGN_BELOW	0x030	// Virtual text on next screen line.
+#define TP_FLAG_ALIGN_AFTER	0x040	// Virtual text appears immediately
+					// after the line's text.
+#define TP_FLAG_INLINE		0x050	// Virtual text appears within the
+					// line's text.
+#define TP_FLAG_VTEXT_BITS	0x070	// Mask for the virtual text bits.
 
 #define TP_FLAG_WRAP		0x080	// virtual text wraps - when missing
 					// text is truncated
 #define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
+#define TP_FLAG_DELETED		0x200	// If set, this property is deleted.
+					// Only used in unpacked_memline_T.
 
 #define PROP_TEXT_MIN_CELLS	4	// minimum number of cells to use for
 					// the text, even when truncating
+
+#define PROP_VTEXT_VAL(p) ((p)->tp_flags & TP_FLAG_VTEXT_BITS)
+#define PROP_IS_VTEXT(p) (PROP_VTEXT_VAL(p) != 0)
+#define PROP_IS_FLOATING(p) (PROP_IS_VTEXT(p) && !PROP_IS_INLINE(p))
+#define PROP_IS_ABOVE(p) (PROP_VTEXT_VAL(p) == TP_FLAG_ALIGN_ABOVE)
+#define PROP_IS_BELOW(p) (PROP_VTEXT_VAL(p) == TP_FLAG_ALIGN_BELOW)
+#define PROP_IS_RIGHT(p) (PROP_VTEXT_VAL(p) == TP_FLAG_ALIGN_RIGHT)
+#define PROP_IS_AFTER(p) (PROP_VTEXT_VAL(p) == TP_FLAG_ALIGN_AFTER)
+#define PROP_IS_INLINE(p) (PROP_VTEXT_VAL(p) == TP_FLAG_INLINE)
+#define PROP_IS_ABOVE_OR_BELOW(p) (PROP_IS_ABOVE(p) || PROP_IS_BELOW(p))
+#define PROP_IS_RIGHT_OR_BELOW(p) (PROP_IS_RIGHT(p) || PROP_IS_BELOW(p))
+#define PROP_IS_ABOVE_RIGHT_OR_BELOW(p) ( \
+    PROP_IS_ABOVE_OR_BELOW(p) || PROP_IS_RIGHT(p))
+
+/*
+ * An unpacked form of a single memline.
+ *
+ * When a memline is initially unpacked, detached is false, text points into
+ * the memline and all virtual text properties in "props" point into the
+ * memline. When detached is true, the text and *all* virtual text properties
+ * point to separately allocated memory.
+ *
+ * See the trailing comments for which attribuites are considered private (P)
+ * or read-only (R). When in doubt, use the "um_...()" functions in textprop.c.
+ * When any "um_...()" function fails the unpacked memline is 'closed', which
+ * is indicated by "buf" being set to NULL.
+ */
+typedef struct unpacked_memline_S
+{
+    buf_T      *buf;	      // [R]  The line's buffer.
+    linenr_T   lnum;	      // [R]  The number of the line. May be zero to
+			      //      indicate that no line is loaded.
+    bool       detached;      // [R]  When set, "text" and property virtual text
+			      //      is allocated.
+    colnr_T    text_size;     // [R]  Size of text including NUL.
+    char_u     *text;	      // [R]  Just the NUL terminated text.
+    uint16_t   prop_size;     // [P]  The number of allocated "props".
+    uint16_t   prop_count;    // [R]  The number of properties.
+    textprop_T *props;	      // [R]  Variable length vector of properties. Treat
+			      //      as read-only unless detached is true.
+    bool       text_changed;  // [P]  The text has been changed. Note "detached"
+			      //      must also be set.
+    int        adjust_flags;  //      Flags controlling "prev" and "next"
+			      //      adjustments.
+
+    // Next and previous lines, used to adjust neighbouring properties.
+    struct unpacked_memline_S *next;
+    struct unpacked_memline_S *prev;
+} unpacked_memline_T;
 
 /*
  * Structure defining a property type.
@@ -932,6 +1008,9 @@ typedef struct proptype_S
 #define PT_FLAG_INS_END_INCL	2	// insert at end included in property
 #define PT_FLAG_COMBINE		4	// combine with syntax highlight
 #define PT_FLAG_OVERRIDE	8	// override any highlight
+
+// A structure used to match a property. This is opaque outside of textprop.c.
+struct criteria_S;
 
 // Sign group
 typedef struct signgroup_S
@@ -3548,7 +3627,6 @@ struct file_buffer
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
     proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
-    garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)

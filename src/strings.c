@@ -18,7 +18,7 @@
  * Copy "string" into newly allocated memory.
  */
     char_u *
-vim_strsave(char_u *string)
+vim_strsave(const char_u *string)
 {
     char_u	*p;
     size_t	len;
