@@ -22,4 +22,6 @@ char *did_set_operatorfunc(optset_T *args);
 void free_operatorfunc_option(void);
 int set_ref_in_opfunc(int copyID);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
+int reset_lbr(void);
+void restore_lbr(int lbr_saved);
 /* vim: set ft=c : */
