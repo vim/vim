@@ -2025,7 +2025,7 @@ EXTERN listitem_T range_list_item;
 EXTERN evalarg_T EVALARG_EVALUATE
 # ifdef DO_INIT
 	= {EVAL_EVALUATE, 0, NULL, NULL, NULL, NULL, GA_EMPTY, GA_EMPTY, NULL,
-			 {0, 0, (int)sizeof(char_u *), 20, NULL}, 0, NULL}
+			 {0, 0, (int)sizeof(char_u *), 20, NULL}, 0, NULL, NULL}
 # endif
 	;
 #endif

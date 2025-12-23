@@ -12407,9 +12407,13 @@ def Test_protected_new_method()
     vim9script
     class A
       static var _instance: A
+      static var handler: func = A._Internal
       var str: string
       def _new(str: string)
         this.str = str
+      enddef
+      static def _Internal(): string
+        return "test"
       enddef
       static def GetInstance(str: string): A
         if _instance == null
@@ -12422,6 +12426,24 @@ def Test_protected_new_method()
     var b: A = A.GetInstance('bar')
     assert_equal('foo', a.str)
     assert_equal('foo', b.str)
+    assert_equal('test', A.handler())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    enum Test
+      A,
+      B,
+      C
+
+      static var handler: func = Test._Internal
+
+      static def _Internal(): string
+        return "test"
+      enddef
+    endenum
+    assert_equal('test', Test.handler())
   END
   v9.CheckSourceSuccess(lines)
 enddef

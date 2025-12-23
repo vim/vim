@@ -2282,6 +2282,9 @@ typedef struct {
 
     // pointer to the lines concatenated for a lambda.
     char_u	*eval_tofree_lambda;
+
+    // pointer to name of class being constructed
+    class_T	*eval_class;
 } evalarg_T;
 
 // Flag for expression evaluation.

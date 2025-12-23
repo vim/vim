@@ -1973,6 +1973,8 @@ struct exarg
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
+    class_T	*class;		// Name of class being defined. Used by :class
+				// and :enum commands.
 #endif
 };
 

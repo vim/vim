@@ -131,6 +131,7 @@ fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
 	evalarg->eval_getline = eap->ea_getline;
 	evalarg->eval_cookie = eap->cookie;
     }
+    evalarg->eval_class = eap->class;
 }
 
 /*

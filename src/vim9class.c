@@ -2122,6 +2122,8 @@ early_ret:
     cl->class_object_type.tt_type = VAR_OBJECT;
     cl->class_object_type.tt_class = cl;
 
+    eap->class = cl;
+
     // Add the class to the script-local variables.
     // TODO: handle other context, e.g. in a function
     // TODO: does uf_hash need to be cleared?
@@ -3243,7 +3245,8 @@ class_object_index(
 	if (fp != NULL)
 	{
 	    // Protected methods are not accessible outside the class
-	    if (*name == '_')
+	    if (fp->uf_defclass != evalarg->eval_class
+		    && *name == '_')
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		goto done;
