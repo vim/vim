@@ -302,6 +302,9 @@ au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
 " Faust
 au BufNewFile,BufRead *.dsp				call dist#ft#FTdsp()
 
+" Fluent
+au BufNewFile,BufRead *.ftl				setf fluent
+
 " Modula-3 configuration language (must be before *.cfg and *makefile)
 au BufNewFile,BufRead *.quake,cm3.cfg		setf m3quake
 au BufNewFile,BufRead m3makefile,m3overrides	setf m3build

@@ -298,6 +298,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     firrtl: ['file.fir'],
     fish: ['file.fish'],
     flix: ['file.flix'],
+    fluent: ['file.ftl'],
     focexec: ['file.fex', 'file.focexec'],
     form: ['file.frm'],
     forth: ['file.ft', 'file.fth', 'file.4th'],
