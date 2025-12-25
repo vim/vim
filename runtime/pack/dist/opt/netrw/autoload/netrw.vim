@@ -3234,7 +3234,7 @@ function s:NetrwFile(fname)
             let b:netrw_curdir= getcwd()
         endif
 
-        if !exists("g:netrw_cygwin") && has("win32")
+        if !g:netrw_cygwin && has("win32")
             if fname =~ '^\' || fname =~ '^\a:\'
                 " windows, but full path given
                 let ret= fname
