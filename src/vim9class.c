@@ -2122,7 +2122,7 @@ early_ret:
     cl->class_object_type.tt_type = VAR_OBJECT;
     cl->class_object_type.tt_class = cl;
 
-    eap->class = cl;
+    eap->ea_class = cl;
 
     // Add the class to the script-local variables.
     // TODO: handle other context, e.g. in a function
