@@ -1227,6 +1227,23 @@ f_ts_load(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
     void
+f_ts_language_is_loaded(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*name;
+    hashitem_T	*hi;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    name = argvars[0].vval.v_string;
+
+    hi = hash_find(&languages, name);
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = !HASHITEM_EMPTY(hi);
+}
+
+    void
 f_tsparser_new(typval_T *argvars UNUSED, typval_T *rettv)
 {
     opaque_T *op = tsparser_new();
@@ -1249,7 +1266,6 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
-
 }
 
 /*
