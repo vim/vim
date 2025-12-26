@@ -946,6 +946,10 @@ parser_decode_callback(const uint8_t *string, uint32_t length, int32_t *code_poi
     return 1;
 }
 
+/*
+ * Parse using the given read function. If "read" is NULL, then "userdata" is
+ * assumed to be a string to be parsed, and "timeout" will be ignored.
+ */
     static TSTree *
 tsvim_parser_parse(
 	TSParser *parser,
@@ -968,6 +972,12 @@ tsvim_parser_parse(
 #else
     (void)timeout;
 #endif
+
+    if (read == NULL)
+    {
+	char *str = userdata;
+        return ts_parser_parse_string(parser, last_tree, str, STRLEN(str));
+    }
 
     if (enc_utf8)
 	input.encoding = TSInputEncodingUTF8;
@@ -1051,15 +1061,17 @@ parse_buf_read_callback(
 }
 
 /*
- * Parse the given buffer using the parser and return the result TSTree if is
- * completed within the timeout, else NULL. If "timeout" is negative, then there
- * will be no timeout
+ * Parse the given buffer or string using the parser and return the result
+ * TSTree if is completed within the timeout, else NULL. If "timeout" is
+ * negative, then there will be no timeout. If "buf" is NULL and "string" is
+ * not, then "timeout" will be ignored and the string will be parsed fully.
  */
     static opaque_T *
-tsparser_parse_buf(
+tsparser_parse(
 	opaque_T *parser,
 	opaque_T *last_tree,
 	buf_T *buf,
+	char_u *str,
 	long timeout)
 {
     TSTree	*ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree)->tree;
@@ -1073,8 +1085,12 @@ tsparser_parse_buf(
 	return NULL;
     }
 
-    res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
-	    parse_buf_read_callback, buf, timeout);
+    if (buf == NULL)
+	res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
+		NULL, str, 0);
+    else
+	res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
+		parse_buf_read_callback, buf, timeout);
 
     if (res == NULL)
 	return NULL;
@@ -1265,6 +1281,43 @@ tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
     return ret;
 }
 
+    static tuple_T *
+finish_parse(opaque_T *oldtree, opaque_T *tree)
+{
+    tuple_T	*t;
+    list_T	*l;
+    TSRange	*ranges;
+    uint32_t    count;
+
+    t = tuple_alloc_with_items(2);
+
+    if (t == NULL)
+	return NULL;
+
+    tuple_set_opaque(t, 0, tree);
+
+    // Get changed ranges if finished, else included ranges of old tree.
+    if (oldtree != NULL)
+	ranges = ts_tree_get_changed_ranges(
+		OP2TSTREE(oldtree)->tree, OP2TSTREE(tree)->tree, &count);
+    else
+	ranges = ts_tree_included_ranges(OP2TSTREE(tree)->tree, &count);
+
+    l = tsrange_array_to_tuple(ranges, count);
+
+    if (l == NULL)
+    {
+	tuple_unref(t);
+	return NULL;
+    }
+
+    vim_free(ranges);
+    tuple_set_list(t, 1, l);
+
+    t->tv_refcount++;
+    return t;
+}
+
     void
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
@@ -1288,51 +1341,51 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 	if (buf == NULL)
 	    return;
 
-	res = tsparser_parse_buf(argvars[0].vval.v_opaque, oldtree,
-		buf, argvars[2].vval.v_number);
+	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
+		buf, NULL, argvars[2].vval.v_number);
 
-	if (res != NULL)
+	t = res == NULL ? NULL : finish_parse(oldtree, res);
+
+	if (t == NULL && res == NULL)
 	{
-	    typval_T	tv;
-	    list_T	*l;
-	    TSRange	*ranges;
-	    uint32_t    count;
-
-	    t = tuple_alloc_with_items(2);
-
-	    if (t == NULL)
-	    {
-		opaque_unref(res);
-		return;
-	    }
-
-	    tv.v_type = VAR_OPAQUE;
-	    tv.vval.v_opaque = res;
-	    tuple_set_item(t, 0, &tv);
-
-	    // Get changed ranges if finished, else included ranges of old tree.
-	    if (oldtree != NULL)
-                ranges = ts_tree_get_changed_ranges(
-			OP2TSTREE(oldtree)->tree, OP2TSTREE(res)->tree, &count);
-	    else
-                ranges = ts_tree_included_ranges(OP2TSTREE(res)->tree, &count);
-
-	    l = tsrange_array_to_tuple(ranges, count);
-
-	    if (l == NULL)
-	    {
-		tuple_unref(t);
-		return;
-	    }
-
-	    vim_free(ranges);
-	    tuple_set_list(t, 1, l);
-
-	    t->tv_refcount++;
+	    opaque_unref(res);
+	    return;
 	}
-	else
-	    t = NULL;
+	rettv->v_type = VAR_TUPLE;
+	rettv->vval.v_tuple = t;
+    }
+}
 
+    void
+f_tsparser_parse_string(typval_T *argvars, typval_T *rettv)
+{
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_opt_opaque_arg(argvars, 3) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL
+	    || check_for_opt_opaque_type_arg(argvars, 3, &tstree_type) == FAIL)
+	return;
+
+    {
+	char_u	    *str = argvars[1].vval.v_string;
+	opaque_T    *res;
+        tuple_T	    *t;
+        opaque_T    *oldtree =
+            argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
+
+	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
+		NULL, str, argvars[2].vval.v_number);
+
+	t = res == NULL ? NULL : finish_parse(oldtree, res);
+
+	if (t == NULL && res == NULL)
+	{
+	    opaque_unref(res);
+	    return;
+	}
 	rettv->v_type = VAR_TUPLE;
 	rettv->vval.v_tuple = t;
     }
