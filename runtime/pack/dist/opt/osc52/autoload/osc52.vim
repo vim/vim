@@ -12,7 +12,7 @@ enddef
 var sent_message: bool = false
 
 def OSCMessage(id: number)
-  echom "Waiting for OSC52 response... Press CTRL-C to cancel"
+  echo "Waiting for OSC52 response... Press CTRL-C to cancel"
   sent_message = true
 enddef
 
@@ -20,7 +20,7 @@ export def Paste(reg: string): tuple<string, list<string>>
   # Check if user has indicated that the terminal does not support OSC 52 paste
   # (or has disabled it)
   if get(g:, 'osc52_disable_paste', 0)
-    return ("c", [""])
+    return ("c", [])
   endif
 
   # Some terminals like Kitty respect the selection type parameter on both X11
