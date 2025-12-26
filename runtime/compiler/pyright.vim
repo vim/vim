@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Pyright (Python Type Checker)
 " Maintainer:   @konfekt
-" Last Change:  2025 Dec 24
+" Last Change:  2025 Dec 26
 
 if exists("current_compiler") | finish | endif
 let current_compiler = "pyright"
@@ -10,6 +10,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " CompilerSet makeprg=pyright
+" CompilerSet makeprg=basedpyright
 exe 'CompilerSet makeprg=' ..  escape(
         \ get(b:, 'pyright_makeprg', get(g:, 'pyright_makeprg', 'pyright')),
         \ ' \|"')
