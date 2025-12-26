@@ -372,6 +372,35 @@ tsrange_to_tuple(TSRange *range)
     return t;
 }
 
+/*
+ * Convert an array of TSRange structs to a list. Returns NULL on failure.
+ */
+    static list_T *
+tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
+{
+    list_T *ret = list_alloc();
+
+    if (ret == NULL)
+	return NULL;
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+	TSRange range = arr[i];
+	tuple_T	*t = tsrange_to_tuple(&range);
+
+	if (t == NULL)
+	{
+	    list_unref(ret);
+	    return NULL;
+	}
+
+	list_append_tuple(ret, t);
+    }
+
+    ret->lv_refcount++;
+    return ret;
+}
+
     static TSVimLanguage *
 get_language(char_u *language)
 {
@@ -963,7 +992,6 @@ tsvim_parser_parse(
 	long timeout
 	)
 {
-
     TSInput	    input;
     TSTree	    *res;
     TSParseOptions  opts;
@@ -999,7 +1027,7 @@ tsvim_parser_parse(
     input.payload = userdata;
     input.read = read;
 
-    if (timeout < 0)
+    if (timeout >= 0)
     {
 #ifdef ELAPSED_FUNC
 	ELAPSED_INIT(progress_ctx.start);
@@ -1266,35 +1294,6 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
-}
-
-/*
- * Convert an array of TSRange structs to a list. Returns NULL on failure.
- */
-    static list_T *
-tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
-{
-    list_T *ret = list_alloc_with_items(n);
-
-    if (ret == NULL)
-	return NULL;
-
-    for (uint32_t i = 0; i < n; i++)
-    {
-	TSRange range = arr[i];
-	tuple_T	*t = tsrange_to_tuple(&range);
-
-	if (t == NULL)
-	{
-	    list_unref(ret);
-	    return NULL;
-	}
-
-	list_append_tuple(ret, t);
-    }
-
-    ret->lv_refcount++;
-    return ret;
 }
 
     static tuple_T *
@@ -1731,7 +1730,7 @@ captures_fail:
 	if (patterns == NULL)
 	    goto fail;
 
-	for (uint32_t i = 0; i < n; i++)
+	for (uint32_t i = 0, j = 0; i < n; i++)
 	{
 	    // Each pattern is a list that may contain multiple lists, each
 	    // representing a predicate or directive. We cannot use a tuple
@@ -1806,7 +1805,7 @@ captures_fail:
 	    }
 	    // Add pattern to patterns tuple
 	    pattern->lv_refcount++;
-	    tuple_set_list(patterns, i, pattern);
+	    tuple_set_list(patterns, j++, pattern);
 	}
 
 	if (dict_add_tuple(dict, "patterns", patterns) == FAIL)
