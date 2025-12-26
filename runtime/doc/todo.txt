@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.1.  Last change: 2025 Dec 09
+*todo.txt*	For Vim version 9.1.  Last change: 2025 Dec 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -205,11 +205,8 @@ Popup windows:
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
   However, it may also cause trouble, changing the popup of another plugin.
-- Should popup_getoptions() also return the mask?  #7774
 - Add a way to use popup_menu() synchronously: instead of invoking the
   callback, return the choice. (Ben Jackson, #6534)
-- When using a popup for the info of a completion menu, and there is not
-  enough space, let the popup overlap with the menu. (#4544)
 - Implement flip option.
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also in popup_mask?
@@ -368,9 +365,6 @@ Can we not request XT key sequences, or reduce them drastically?
 Issue #10512: Dynamic loading broken with Perl 5.36
 Damien has a patch (2022 Dec 4)
 
-Request #11965: Allow several "%=" items in 'statusline', makes it possible
-to have text in the center.
-
 Add some kind of ":whathappend" command and functions to make visible what the
 last few typed keys and executed commands are.  To be used when the user
 wonders what went wrong.  Could also be used for statistics #12046.
@@ -379,10 +373,6 @@ wonders what went wrong.  Could also be used for statistics #12046.
 - register used - #12063
 - executed command lines
 - with more verbosity: what scripts/functions/autocommands were executed
-
-NFA regexp does not handle composing characters well: #10286
-    [ɔ̃] matches both ɔ and ɔ̃
-    \(ɔ\|ɔ̃\) matches ɔ and not ɔ̃
 
 Is there a way to make 'autowriteall' make a clean exit when the xterm is
 closed? (Dennis Nazic says files are preserved, okt 28).  Perhaps handle TERM
@@ -416,8 +406,6 @@ consistently (James McCoy, #10698)
 In a timer callback, when using ":echo" and then input() the message is
 overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
 #11299
-
-Syntax include problem: #11277.  Related to Patch 8.2.2761
 
 To avoid flicker: add an option that when a screen clear is requested, instead
 of clearing it draws everything and uses "clear to end of line" for every line.
@@ -516,8 +504,6 @@ there is a match do not scan the directory (possibly speeds up :find a lot).
 #12482
 
 globpath() does not use 'wildignorecase' at all? (related to #8350)
-
-mksession uses :buffer instead of :edit in one place but not another. #10629
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
@@ -5781,7 +5767,6 @@ Argument list:
 
 
 Registers:
-8   Don't display empty registers with ":display". (Etienne)
 8   Add put command that overwrites existing text.  Should also work for
     blocks.  Useful to move text around in a table.  Works like using "R ^R r"
     for every line.
