@@ -11,6 +11,8 @@ void f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv);
 void f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv);
 void f_tsparser_reset(typval_T *argvars, typval_T *rettv);
 void f_tstree_edit(typval_T *argvars, typval_T *rettv);
+void f_tstree_included_ranges(typval_T *argvars, typval_T *rettv);
+void f_tstree_get_changed_ranges(typval_T *argvars, typval_T *rettv);
 void f_tsnode_child(typval_T *argvars, typval_T *rettv);
 void f_tsnode_descendant_for_range(typval_T *argvars, typval_T *rettv);
 void f_tsquery_new(typval_T *argvars, typval_T *rettv);

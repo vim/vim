@@ -1331,9 +1331,11 @@ static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
 static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
 static argcheck_T arg1_tsquery[] = {arg_tsquery};
 static argcheck_T arg1_tsparser[] = {arg_tsparser};
+static argcheck_T arg1_tstree[] = {arg_tstree};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_tsparser_list[] = {arg_tsparser, arg_list_any};
 static argcheck_T arg2_tsquerycursor_number[] = {arg_tsquerycursor, arg_number};
+static argcheck_T arg2_tstree_tstree[] = {arg_tstree, arg_tstree};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1407,10 +1409,10 @@ static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool}
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg3_tsparser_string_tstree[] = {arg_tsparser, arg_string, arg_tstree};
 static argcheck_T arg4_tsquerycursor_tsquery_tsnode_number[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode, arg_number};
 static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
 static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
-static argcheck_T arg4_tsparser_string_number_tstree[] = {arg_tsparser, arg_string, arg_number, arg_tstree};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -1546,6 +1548,13 @@ ret_tsparser(int argcount UNUSED,
 	type_T	**decl_type UNUSED)
 {
     return &t_tsparser;
+}
+    static type_T *
+ret_tstree(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tstree;
 }
     static type_T *
 ret_tsnode(int argcount UNUSED,
@@ -3282,13 +3291,13 @@ static const funcentry_T global_functions[] =
 			TS_OPRET(ret_tsnode),
 			TS_FUNC(f_tsnode_descendant_for_range)},
     {"tsparser_included_ranges", 1, 1, FEARG_1, arg1_tsparser,
-			ret_list_any,	    TS_FUNC(f_tsparser_included_ranges)},
+			ret_tuple_any,	    TS_FUNC(f_tsparser_included_ranges)},
     {"tsparser_new",	0, 0, 0,	    NULL,
 			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
     {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsparser_buffer_number_tstree,
-			ret_tuple_any,	    TS_FUNC(f_tsparser_parse_buf)},
-    {"tsparser_parse_string", 3, 4, FEARG_1, arg4_tsparser_string_number_tstree,
-			ret_tuple_any,	    TS_FUNC(f_tsparser_parse_string)},
+			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
+    {"tsparser_parse_string", 2, 3, FEARG_1, arg3_tsparser_string_tstree,
+			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_string)},
     {"tsparser_reset",	1, 1, FEARG_1,	    arg1_tsparser,
 			ret_void,	    TS_FUNC(f_tsparser_reset)},
     {"tsparser_set_included_ranges", 2, 2, FEARG_1, arg2_tsparser_list,
@@ -3317,6 +3326,10 @@ static const funcentry_T global_functions[] =
 			ret_void,	    TS_FUNC(f_tsquerycursor_remove_match)},
     {"tstree_edit",	7, 7, FEARG_1,	    arg7_tstree_3number_3tuple,
 			ret_void,	    TS_FUNC(f_tstree_edit)},
+    {"tstree_get_changed_ranges", 2, 2, FEARG_1, arg2_tstree_tstree,
+			ret_tuple_any,	    TS_FUNC(f_tstree_get_changed_ranges)},
+    {"tstree_included_ranges", 1, 1, FEARG_1, arg1_tstree,
+			ret_tuple_any,	    TS_FUNC(f_tstree_included_ranges)},
     {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
 			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,

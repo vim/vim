@@ -378,12 +378,12 @@ tsrange_to_tuple(TSRange *range)
 }
 
 /*
- * Convert an array of TSRange structs to a list. Returns NULL on failure.
+ * Convert an array of TSRange structs to a tuple. Returns NULL on failure.
  */
-    static list_T *
+    static tuple_T *
 tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
 {
-    list_T *ret = list_alloc();
+    tuple_T *ret = tuple_alloc_with_items(n);
 
     if (ret == NULL)
 	return NULL;
@@ -395,14 +395,14 @@ tsrange_array_to_tuple(const TSRange *arr, uint32_t n)
 
 	if (t == NULL)
 	{
-	    list_unref(ret);
+	    tuple_unref(ret);
 	    return NULL;
 	}
 
-	list_append_tuple(ret, t);
+	tuple_set_tuple(ret, i, t);
     }
 
-    ret->lv_refcount++;
+    ret->tv_refcount++;
     return ret;
 }
 
@@ -1301,43 +1301,6 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
     tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
 }
 
-    static tuple_T *
-finish_parse(opaque_T *oldtree, opaque_T *tree)
-{
-    tuple_T	*t;
-    list_T	*l;
-    TSRange	*ranges;
-    uint32_t    count;
-
-    t = tuple_alloc_with_items(2);
-
-    if (t == NULL)
-	return NULL;
-
-    tuple_set_opaque(t, 0, tree);
-
-    // Get changed ranges if finished, else included ranges of old tree.
-    if (oldtree != NULL)
-	ranges = ts_tree_get_changed_ranges(
-		OP2TSTREE(oldtree)->tree, OP2TSTREE(tree)->tree, &count);
-    else
-	ranges = ts_tree_included_ranges(OP2TSTREE(tree)->tree, &count);
-
-    l = tsrange_array_to_tuple(ranges, count);
-
-    if (l == NULL)
-    {
-	tuple_unref(t);
-	return NULL;
-    }
-
-    vim_free(ranges);
-    tuple_set_list(t, 1, l);
-
-    t->tv_refcount++;
-    return t;
-}
-
     void
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
@@ -1354,7 +1317,6 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
     {
 	buf_T	    *buf = get_buf_arg(argvars + 1);
 	opaque_T    *res;
-        tuple_T	    *t;
         opaque_T    *oldtree =
             argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
 
@@ -1364,15 +1326,8 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
 		buf, NULL, argvars[2].vval.v_number);
 
-	t = res == NULL ? NULL : finish_parse(oldtree, res);
-
-	if (t == NULL && res == NULL)
-	{
-	    opaque_unref(res);
-	    return;
-	}
-	rettv->v_type = VAR_TUPLE;
-	rettv->vval.v_tuple = t;
+	rettv->v_type = VAR_OPAQUE;
+	rettv->vval.v_opaque = res;
     }
 }
 
@@ -1381,33 +1336,24 @@ f_tsparser_parse_string(typval_T *argvars, typval_T *rettv)
 {
     if (check_for_opaque_arg(argvars, 0) == FAIL
 	    || check_for_string_arg(argvars, 1) == FAIL
-	    || check_for_number_arg(argvars, 2) == FAIL
-	    || check_for_opt_opaque_arg(argvars, 3) == FAIL)
+	    || check_for_opt_opaque_arg(argvars, 2) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL
-	    || check_for_opt_opaque_type_arg(argvars, 3, &tstree_type) == FAIL)
+	    || check_for_opt_opaque_type_arg(argvars, 2, &tstree_type) == FAIL)
 	return;
 
     {
 	char_u	    *str = argvars[1].vval.v_string;
 	opaque_T    *res;
-        tuple_T	    *t;
         opaque_T    *oldtree =
             argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
 
 	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
-		NULL, str, argvars[2].vval.v_number);
+		NULL, str, 0);
 
-	t = res == NULL ? NULL : finish_parse(oldtree, res);
-
-	if (t == NULL && res == NULL)
-	{
-	    opaque_unref(res);
-	    return;
-	}
-	rettv->v_type = VAR_TUPLE;
-	rettv->vval.v_tuple = t;
+	rettv->v_type = VAR_OPAQUE;
+	rettv->vval.v_opaque = res;
     }
 }
 
@@ -1463,7 +1409,7 @@ exit:
     void
 f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
 {
-    list_T	    *ret;
+    tuple_T	    *ret;
     const TSRange   *ranges;
     uint32_t	    count;
     opaque_T	    *parser;
@@ -1482,8 +1428,8 @@ f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
     if (ret == NULL)
 	return;
 
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = ret;
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = ret;
 }
 
     void
@@ -1531,6 +1477,65 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
     edit.new_end_point = new_end_point;
 
     ts_tree_edit(OP2TSTREE(argvars[0].vval.v_opaque)->tree, &edit);
+}
+
+    void
+f_tstree_included_ranges(typval_T *argvars, typval_T *rettv)
+{
+    tuple_T	*ret;
+    TSRange	*ranges;
+    uint32_t	count;
+    opaque_T	*tree;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL)
+	return;
+
+    tree = argvars[0].vval.v_opaque;
+    ranges = ts_tree_included_ranges(OP2TSTREE(tree)->tree, &count);
+
+    ret = tsrange_array_to_tuple(ranges, count);
+    vim_free(ranges);
+
+    if (ret == NULL)
+	return;
+
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = ret;
+}
+
+    void
+f_tstree_get_changed_ranges(typval_T *argvars, typval_T *rettv)
+{
+    tuple_T	*ret;
+    opaque_T	*old, *new;
+    TSRange	*ranges;
+    uint32_t	count;
+
+    if (check_for_opaque_arg(argvars, 0) == FAIL
+	    || check_for_opaque_arg(argvars, 1) == FAIL)
+	return;
+
+    if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL
+	    || check_for_opaque_type_arg(argvars, 1, &tstree_type) == FAIL)
+	return;
+
+    old = argvars[0].vval.v_opaque;
+    new = argvars[1].vval.v_opaque;
+
+    ranges = ts_tree_get_changed_ranges(
+	    OP2TSTREE(old)->tree, OP2TSTREE(new)->tree, &count);
+
+    ret = tsrange_array_to_tuple(ranges, count);
+    vim_free(ranges);
+
+    if (ret == NULL)
+	return;
+
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = ret;
 }
 
     void
