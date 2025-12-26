@@ -1746,7 +1746,7 @@ const ft_from_ext = {
   "bst": "bst",
   # Bicep
   "bicep": "bicep",
-  "bicepparam": "bicep",
+  "bicepparam": "bicep-params",
   # BIND zone
   "zone": "bindzone",
   # Blank
