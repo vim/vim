@@ -249,8 +249,13 @@ tspoint_to_tuple(TSPoint *point)
     if (t == NULL)
 	return NULL;
 
-    tuple_set_number(t, 0, point->row + 1);
-    tuple_set_number(t, 1, point->column + 1);
+    // By default if no included ranges are set, then ts_tree_included_ranges
+    // sets end_point and end_byte to the max uint32_t value. If we add one,
+    // then it overflows, which we do not want in that case.
+#define CONVERT(t) point->t == 0xffffffff ? point->t : point->t + 1
+    tuple_set_number(t, 0, CONVERT(row));
+    tuple_set_number(t, 1, CONVERT(column));
+#undef CONVERT
     t->tv_refcount++;
 
     return t;
