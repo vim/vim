@@ -13,6 +13,8 @@ int op_change(oparg_T *oap);
 void adjust_cursor_eol(void);
 char_u *skip_comment(char_u *line, int process, int include_space, int *is_comment);
 int do_join(long count, int insert_space, int save_undo, int use_formatoptions, int setmark);
+int reset_lbr(void);
+void restore_lbr(int lbr_saved);
 void block_prep(oparg_T *oap, struct block_def *bdp, linenr_T lnum, int is_del);
 void charwise_block_prep(pos_T start, pos_T end, struct block_def *bdp, linenr_T lnum, int inclusive);
 void op_addsub(oparg_T *oap, linenr_T Prenum1, int g_cmd);
@@ -22,6 +24,4 @@ char *did_set_operatorfunc(optset_T *args);
 void free_operatorfunc_option(void);
 int set_ref_in_opfunc(int copyID);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
-int reset_lbr(void);
-void restore_lbr(int lbr_saved);
 /* vim: set ft=c : */
