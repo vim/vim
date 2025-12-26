@@ -666,7 +666,7 @@ serverGetVimNames(Display *dpy)
 	    if (WindowValid(dpy, (Window)w))
 	    {
 		ga_concat(&ga, p + 1);
-		ga_concat_len(&ga, (char_u *)"\n", 1);	// Note: not 2!
+		ga_concat_len(&ga, (char_u *)"\n", 1);
 	    }
 	    while (*p != 0)
 		p++;
