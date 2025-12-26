@@ -2,6 +2,7 @@
 int tsvim_init(void);
 opaque_type_T *tsvim_lookup_opaque_type(char_u *name, size_t namelen);
 void f_ts_load(typval_T *argvars, typval_T *rettv);
+void f_ts_language_is_loaded(typval_T *argvars, typval_T *rettv);
 void f_tsparser_new(typval_T *argvars, typval_T *rettv);
 void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
 void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
