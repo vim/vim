@@ -989,7 +989,7 @@ tsvim_parser_parse(
     input.payload = userdata;
     input.read = read;
 
-    if (timeout != -1)
+    if (timeout < 0)
     {
 #ifdef ELAPSED_FUNC
 	ELAPSED_INIT(progress_ctx.start);
@@ -1052,8 +1052,8 @@ parse_buf_read_callback(
 
 /*
  * Parse the given buffer using the parser and return the result TSTree if is
- * completed within the timeout, else NULL. If "timeout" is -1, then there will
- * be no timeout
+ * completed within the timeout, else NULL. If "timeout" is negative, then there
+ * will be no timeout
  */
     static opaque_T *
 tsparser_parse_buf(
@@ -1665,7 +1665,9 @@ captures_fail:
 	for (uint32_t i = 0; i < n; i++)
 	{
 	    // Each pattern is a list that may contain multiple lists, each
-	    // representing a predicate or directive.
+	    // representing a predicate or directive. We cannot use a tuple
+	    // since we don't know the amount of predicates/directives
+	    // beforehand, only the total number of steps.
 	    uint32_t			len;
 	    const TSQueryPredicateStep	*step;
 	    list_T			*pattern;
@@ -1863,6 +1865,16 @@ range_fail:
     rettv->vval.v_opaque = op;
 }
 
+#ifdef ELAPSED_FUNC
+    static bool
+querycursor_progress_callback(TSQueryCursorState *state)
+{
+    ProgressContext *ctx = state->payload;
+
+    return ELAPSED_FUNC(ctx->start) >= ctx->timeout;
+}
+#endif
+
     void
 f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1870,10 +1882,12 @@ f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
     TSQuery		    *query;
     TSNode		    node;
     opaque_T		    *old_query, *old_node;
+    varnumber_T		    timeout = -1;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
 	    || check_for_opaque_arg(argvars, 1) == FAIL
-	    || check_for_opaque_arg(argvars, 2) == FAIL)
+	    || check_for_opaque_arg(argvars, 2) == FAIL
+	    || check_for_opt_number_arg(argvars, 3) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL
@@ -1901,7 +1915,27 @@ f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
     OP2TSQUERYCURSOR(argvars[0].vval.v_opaque)->query = argvars[1].vval.v_opaque;
     argvars[1].vval.v_opaque->op_refcount++;
 
-    ts_query_cursor_exec(cursor, query, node);
+    if (argvars[3].v_type != VAR_UNKNOWN)
+	timeout = argvars[3].vval.v_number;
+
+    if (timeout < 0)
+    {
+	TSQueryCursorOptions opts;
+#ifdef ELAPSED_FUNC
+	ProgressContext progress_ctx;
+
+	ELAPSED_INIT(progress_ctx.start);
+	progress_ctx.timeout = timeout;
+	opts.payload = &progress_ctx;
+	opts.progress_callback = querycursor_progress_callback;
+#else
+	(void)timeout;
+	memset(&opts, 0, sizeof(opts));
+#endif
+	ts_query_cursor_exec_with_options(cursor, query, node, &opts);
+    }
+    else
+	ts_query_cursor_exec(cursor, query, node);
 }
 
     void

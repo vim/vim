@@ -1407,7 +1407,7 @@ static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool}
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg3_tsquerycursor_tsquery_tsnode[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode};
+static argcheck_T arg4_tsquerycursor_tsquery_tsnode_number[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode, arg_number};
 static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
 static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
@@ -3298,7 +3298,8 @@ static const funcentry_T global_functions[] =
 			ret_dict_any,	    TS_FUNC(f_tsquery_inspect)},
     {"tsquery_new",	2, 2, 0,	    arg2_string,
 			TS_OPRET(ret_tsquery), TS_FUNC(f_tsquery_new)},
-    {"tsquerycursor_exec", 3, 3, FEARG_1,   arg3_tsquerycursor_tsquery_tsnode,
+    {"tsquerycursor_exec", 3, 4, FEARG_1,   
+			arg4_tsquerycursor_tsquery_tsnode_number,
 			ret_void,	    TS_FUNC(f_tsquerycursor_exec)},
     {"tsquerycursor_new", 0, 1, 0,	    arg1_dict_any,
 			TS_OPRET(ret_tsquerycursor), TS_FUNC(f_tsquerycursor_new)},
