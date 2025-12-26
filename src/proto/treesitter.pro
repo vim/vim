@@ -5,6 +5,7 @@ void f_ts_load(typval_T *argvars, typval_T *rettv);
 void f_tsparser_new(typval_T *argvars, typval_T *rettv);
 void f_tsparser_set_language(typval_T *argvars, typval_T *rettv);
 void f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv);
+void f_tsparser_parse_string(typval_T *argvars, typval_T *rettv);
 void f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv);
 void f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv);
 void f_tsparser_reset(typval_T *argvars, typval_T *rettv);
