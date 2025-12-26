@@ -2558,7 +2558,7 @@ getsourceline(
 		ga_concat(&ga, p + 1);
 	    else if (*p == '|')
 	    {
-		ga_concat(&ga, (char_u *)" ");
+		ga_concat_len(&ga, (char_u *)" ", 1);
 		ga_concat(&ga, p);
 	    }
 	    for (;;)
@@ -2583,7 +2583,7 @@ getsourceline(
 			ga_concat(&ga, p + 1);
 		    else
 		    {
-			ga_concat(&ga, (char_u *)" ");
+			ga_concat_len(&ga, (char_u *)" ", 1);
 			ga_concat(&ga, p);
 		    }
 		}

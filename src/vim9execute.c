@@ -1764,7 +1764,7 @@ do_2string(typval_T *tv, int is_2string_any, int tostring_flags)
 					if (p != NULL)
 					{
 					    ga_concat(&ga, p);
-					    ga_concat(&ga, (char_u *)" ");
+					    ga_concat_len(&ga, (char_u *)" ", 1);
 					    vim_free(p);
 					}
 					s = e + 1;
