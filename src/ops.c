@@ -2051,6 +2051,7 @@ adjust_cursor_eol(void)
     int adj_cursor = (curwin->w_cursor.col > 0
 				&& gchar_cursor() == NUL
 				&& (cur_ve_flags & VE_ONEMORE) == 0
+				&& (cur_ve_flags & VE_ALL) == 0
 				&& !(restart_edit || (State & MODE_INSERT)));
     if (!adj_cursor)
 	return;
