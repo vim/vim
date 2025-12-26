@@ -3272,6 +3272,8 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
+    {"ts_language_is_loaded", 1, 1, 0,	    arg1_string,
+			ret_bool,	    TS_FUNC(f_ts_language_is_loaded)},
     {"ts_load",		2, 3, 0,	    arg3_string_string_dict,
 			ret_void,	    TS_FUNC(f_ts_load)},
     {"tsnode_child",	2, 3, FEARG_1,	    arg3_tsnode_number_bool,
