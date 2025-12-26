@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Dec 22
+# Last Change:		2025 Dec 26
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1976,6 +1976,8 @@ const ft_from_ext = {
   "fish": "fish",
   # Flix
   "flix": "flix",
+  # Fluent
+  "ftl": "fluent",
   # Focus Executable
   "fex": "focexec",
   "focexec": "focexec",
