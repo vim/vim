@@ -7167,6 +7167,8 @@ conpty_term_and_job_init(
     channel->ch_write_text_mode = TRUE;
 
     // Use to explicitly delete anonymous pipe handle.
+    // In addition, it is used to prevent the pipe from being closed when input
+    // from a buffer etc. is finished.
     channel->ch_anonymous_pipe = TRUE;
 
     jo = CreateJobObject(NULL, NULL);
