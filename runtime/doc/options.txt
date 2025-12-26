@@ -4269,7 +4269,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fsync'* *'fs'* *'nofsync'* *'nofs'*
 'fsync' 'fs'		boolean	(default on)
-			global
+			global or local to buffer |global-local|
 	When on, the library function fsync() will be called after writing a
 	file.  This will flush a file to disk, ensuring that it is safely
 	written even on filesystems which do metadata-only journaling.  This

@@ -2537,6 +2537,9 @@ free_buf_options(
     clear_string_option(&buf->b_p_qe);
     buf->b_p_ac = -1;
     buf->b_p_ar = -1;
+#ifdef HAVE_FSYNC
+    buf->b_p_fs = -1;
+#endif
     buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     clear_string_option(&buf->b_p_lw);
     clear_string_option(&buf->b_p_bkc);
