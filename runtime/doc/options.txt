@@ -8502,6 +8502,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      The difference between User{N} and StatusLine will be applied to
 	      StatusLineNC for the statusline of non-current windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
+								*'stl-@'*
+	@ -   Insert a line break.  This is effective when the "maxheight" of
+	      the 'statuslineopt' option is 2 or greater.
 
 	When displaying a flag, Vim removes the leading comma, if any, when
 	that flag comes right after plaintext.  This will make a nice display
@@ -8559,6 +8562,34 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  :function VarExists(var, val)
 	  :    if exists(a:var) | return a:val | else | return '' | endif
 	  :endfunction
+<
+						*'statuslineopt'* *'stlo'*
+'statuslineopt' 'stlo'	string	(default "")
+			global or local to window |global-local|
+			{not available when compiled without the |+statusline|
+			feature}
+	Option settings for |status-line|.  It can consist of the following
+	items.  All are optional.  Items must be separated by a comma.
+
+		fixedheight	Fix the status line height to "maxheight".
+
+		maxheight:{n}	Set the maximum status line height to {n}.
+				{n} must be 1 or greater.
+				If not present, 1 is used.
+				When {n} is set to 2 or more, you can use "@"
+				in 'statusline' to display information on
+				multiple lines in the status line.
+				When "fixedheight" is not specified, the
+				status line height will vary from 1 to
+				"maxheight" depending on the number of "@"s in
+				'statusline'.
+				See |'stl-@'|.
+
+	Examples: >
+		:set statuslineopt=fixedheight
+		:set stlo=
+		:set stlo=maxheight:2,fixedheight
+		:set stlo-=fixedheight
 <
 						*'suffixes'* *'su'*
 'suffixes' 'su'		string	(default ".bak,~,.o,.h,.info,.swp,.obj")

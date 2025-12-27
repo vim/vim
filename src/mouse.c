@@ -247,6 +247,7 @@ do_mouse(
     int		old_mode = VIsual_mode;
     int		regname;
 
+    HH_ch_log("in.");
 #if defined(FEAT_FOLDING)
     save_cursor = curwin->w_cursor;
 #endif
@@ -1113,6 +1114,7 @@ ins_mouse(int c)
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
+    HH_ch_log("in.");
     if (do_mouse(NULL, c, BACKWARD, 1L, 0))
     {
 	win_T	*new_curwin = curwin;
@@ -1765,6 +1767,7 @@ retnomove:
     if (flags & MOUSE_SETPOS)
 	goto retnomove;				// ugly goto...
 
+    HH_ch_log("flags:0x%08x, mouse_row:%d, mouse_col:%d", flags, mouse_row, mouse_col);
     old_curwin = curwin;
     old_cursor = curwin->w_cursor;
 
@@ -1776,6 +1779,7 @@ retnomove:
 	// find the window where the row is in and adjust "row" and "col" to be
 	// relative to top-left of the window
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	HH_ch_log("after mouse_find_win(), wp:%p, row:%d, col:%d", wp, row, col);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
 	dragwin = NULL;
@@ -1831,10 +1835,12 @@ retnomove:
 	in_winbar = FALSE;
 #endif
 
+	HH_ch_log("row:%d, wp->w_height:%d", row, wp->w_height);
 	// winpos and height may change in win_enter()!
 	if (row >= wp->w_height)		// In (or below) status line
 	{
 	    on_status_line = row - wp->w_height + 1;
+	    HH_ch_log("on_status_line:%d", on_status_line);
 	    dragwin = wp;
 	}
 	else
@@ -1940,11 +1946,13 @@ retnomove:
     }
     else if (on_status_line && which_button == MOUSE_LEFT)
     {
+	HH_ch_log("on_status_line AND LEFT");
 	if (dragwin != NULL)
 	{
 	    // Drag the status line
 	    count = row - W_WINROW(dragwin) - dragwin->w_height + 1
 							     - on_status_line;
+	    HH_ch_log("drag stl. count:%d", count);
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
 	}
@@ -2251,6 +2259,7 @@ nv_mousescroll(cmdarg_T *cap)
     void
 nv_mouse(cmdarg_T *cap)
 {
+    HH_ch_log("in.");
     (void)do_mouse(cap->oap, cap->cmdchar, BACKWARD, cap->count1, 0);
 }
 

@@ -223,6 +223,7 @@
 #endif
 #ifdef FEAT_STL_OPT
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
+# define PV_STLO	OPT_BOTH(OPT_WIN(WV_STLO))
 #endif
 #define PV_UL		OPT_BOTH(OPT_BUF(BV_UL))
 # define PV_WFB		OPT_WIN(WV_WFB)
@@ -2514,6 +2515,14 @@ static struct vimoption options[] =
     {"statusline"  ,"stl",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT|P_MLE,
 #ifdef FEAT_STL_OPT
 			    (char_u *)&p_stl, PV_STL, did_set_statusline, NULL,
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"statuslineopt"  ,"stlo",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT|P_MLE
+			    |P_ONECOMMA|P_COLON|P_NODUP,
+#ifdef FEAT_STL_OPT
+			    (char_u *)&p_stlo, PV_STLO, did_set_statuslineopt, expand_set_statuslineopt,
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
