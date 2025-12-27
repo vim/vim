@@ -735,6 +735,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    2023,
+/**/
     2022,
 /**/
     2021,
