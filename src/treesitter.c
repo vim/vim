@@ -513,6 +513,7 @@ typedef enum
     NPROP_PARENT,
     NPROP_PREV_NAMED_SIBLING,
     NPROP_PREV_SIBLING,
+    NPROP_RANGE,
     NPROP_START_BYTE,
     NPROP_START_POINT,
     NPROP_STRING,
@@ -600,6 +601,25 @@ tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 	    break;
 	case NPROP_PREV_SIBLING:	    // prev_sibling
 	    NEW_TSNODE(ts_node_prev_sibling);
+	    break;
+	case NPROP_RANGE:		    // range
+	{
+	    tuple_T	*t;
+	    TSRange	range;
+
+	    range.start_point = ts_node_start_point(node);
+	    range.start_byte = ts_node_start_byte(node);
+	    range.end_point = ts_node_end_point(node);
+	    range.end_byte = ts_node_end_byte(node);
+
+	    t = tsrange_to_tuple(&range);
+
+	    if (t == NULL)
+		return FAIL;
+
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = t;
+	}
 	    break;
 	case NPROP_START_BYTE:		    // start_byte
 	    rettv->v_type = VAR_NUMBER;
@@ -753,9 +773,13 @@ tstree_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 }
 
 static type_T *number_number[] = {&t_number, &t_number};
-
 static type_T t_tspoint = {
     VAR_TUPLE, 2, 2, TTFLAG_STATIC, &t_number, NULL, number_number, NULL
+};
+
+static type_T *tsrange_members[] = {&t_tspoint, &t_number, &t_tspoint, &t_number};
+static type_T t_tsrange = {
+    VAR_TUPLE, 4, 4, TTFLAG_STATIC, &t_any, NULL, tsrange_members, NULL
 };
 
 static type_T t_tscapture = {
@@ -805,6 +829,7 @@ static opaque_property_T tsnode_properties[] = {
     {NPROP_PARENT,		    OPPROPNAME("parent"), &t_tsnode},
     {NPROP_PREV_NAMED_SIBLING,	    OPPROPNAME("prev_named_sibling"), &t_tsnode},
     {NPROP_PREV_SIBLING,	    OPPROPNAME("prev_sibling"), &t_tsnode},
+    {NPROP_RANGE,		    OPPROPNAME("range"), &t_tsrange},
     {NPROP_START_BYTE,		    OPPROPNAME("start_byte"), &t_number},
     {NPROP_START_POINT,		    OPPROPNAME("start_point"), &t_tspoint},
     {NPROP_STRING,		    OPPROPNAME("string"), &t_string},
