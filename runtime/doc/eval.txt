@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 23
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3723,11 +3723,11 @@ text...
 			{cmd}.  When {pattern} is omitted all errors are
 			caught. Examples: >
 		:catch /^Vim:Interrupt$/	 " catch interrupts (CTRL-C)
-		:catch /^Vim\%((\a\+)\)\=:E/	 " catch all Vim errors
-		:catch /^Vim\%((\a\+)\)\=:/	 " catch errors and interrupts
+		:catch /^Vim\%((\S\+)\)\=:E/	 " catch all Vim errors
+		:catch /^Vim\%((\S\+)\)\=:/	 " catch errors and interrupts
 		:catch /^Vim(write):/		 " catch all errors in :write
 		:catch /^Vim(!):/		 " catch all errors in :!
-		:catch /^Vim\%((\a\+)\)\=:E123:/ " catch error E123
+		:catch /^Vim\%((\S\+)\)\=:E123:/ " catch error E123
 		:catch /my-exception/		 " catch user exception
 		:catch /.*/			 " catch everything
 		:catch				 " same as /.*/
