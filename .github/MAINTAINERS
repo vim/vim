@@ -127,6 +127,8 @@ runtime/ftplugin/asy.vim				@avidseeker
 runtime/ftplugin/autohotkey.vim				@telemachus
 runtime/ftplugin/awk.vim				@dkearns
 runtime/ftplugin/basic.vim				@dkearns
+runtime/ftplugin/bicep.vim				@scottmckendry
+runtime/ftplugin/bicep-params.vim				@scottmckendry
 runtime/ftplugin/brighterscript.vim			@ribru17
 runtime/ftplugin/brightscript.vim			@ribru17
 runtime/ftplugin/bst.vim				@tpope
