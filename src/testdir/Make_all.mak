@@ -50,6 +50,7 @@ TEST_VIM9 = \
 	test_vim9_func \
 	test_vim9_generics \
 	test_vim9_import \
+	test_vim9_interface \
 	test_vim9_python3 \
 	test_vim9_script \
 	test_vim9_typealias
@@ -66,6 +67,7 @@ TEST_VIM9_RES = \
 	test_vim9_func.res \
 	test_vim9_generics.res \
 	test_vim9_import.res \
+	test_vim9_interface.res \
 	test_vim9_python3.res \
 	test_vim9_script.res \
 	test_vim9_typealias.res
