@@ -114,6 +114,7 @@ extern int _stricoll(char *a, char *b);
 # include "match.pro"
 # include "memfile.pro"
 # include "memline.pro"
+# include "opaque.pro"
 # ifdef FEAT_MENU
 #  include "menu.pro"
 # endif
@@ -179,6 +180,9 @@ void mbyte_im_set_active(int active_arg);
 # include "quickfix.pro"
 #ifdef FEAT_WAYLAND
 # include "wayland.pro"
+#endif
+#ifdef FEAT_TREESITTER
+# include "treesitter.pro"
 #endif
 # include "regexp.pro"
 # include "register.pro"

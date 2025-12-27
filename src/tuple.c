@@ -87,6 +87,84 @@ tuple_set_item(tuple_T *tuple, int idx, typval_T *tv)
 }
 
 /*
+ * Set a tuple "idx" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ * The reference count of the given tuple is not incremented.
+ */
+    void
+tuple_set_tuple(tuple_T *tuple, int idx, tuple_T *t)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_TUPLE;
+    tv->vval.v_tuple = t;
+    tuple->tv_items.ga_len++;
+}
+
+/*
+ * Set a list "idx" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ * The reference count of the given list is not incremented.
+ */
+    void
+tuple_set_list(tuple_T *tuple, int idx, list_T *l)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_LIST;
+    tv->vval.v_list = l;
+    tuple->tv_items.ga_len++;
+}
+
+/*
+ * Set a tuple "idx" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ * The string is not copied
+ */
+    void
+tuple_set_string(tuple_T *tuple, int idx, char_u *str)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = str;
+    tuple->tv_items.ga_len++;
+}
+
+/*
+ * Set a number "idx" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ */
+    void
+tuple_set_number(tuple_T *tuple, int idx, varnumber_T nr)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_NUMBER;
+    tv->vval.v_number = nr;
+    tuple->tv_items.ga_len++;
+}
+
+/*
+ * Set a opaque "op" for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ */
+    void
+tuple_set_opaque(tuple_T *tuple, int idx, opaque_T *op)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_OPAQUE;
+    tv->vval.v_opaque = op;
+    tuple->tv_items.ga_len++;
+}
+
+/*
  * Allocate an empty tuple for a return value, with reference count set.
  * Returns OK or FAIL.
  */
