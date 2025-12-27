@@ -506,8 +506,8 @@ typedef enum
     NPROP_HAS_CHANGES,
     NPROP_HAS_ERROR,
     NPROP_MISSING,
-    NPROP_NAMED_CHILD_COUNT,
     NPROP_NAMED,
+    NPROP_NAMED_CHILD_COUNT,
     NPROP_NEXT_NAMED_SIBLING,
     NPROP_NEXT_SIBLING,
     NPROP_PARENT,
@@ -579,13 +579,13 @@ tsnode_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 	    rettv->v_type = VAR_BOOL;
 	    rettv->vval.v_number = ts_node_is_missing(node);
 	    break;
-	case NPROP_NAMED_CHILD_COUNT:	    // named_child_count
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = ts_node_named_child_count(node);
-	    break;
 	case NPROP_NAMED:		    // named
 	    rettv->v_type = VAR_BOOL;
 	    rettv->vval.v_number = ts_node_is_named(node);
+	    break;
+	case NPROP_NAMED_CHILD_COUNT:	    // named_child_count
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = ts_node_named_child_count(node);
 	    break;
 	case NPROP_NEXT_NAMED_SIBLING:	    // next_named_sibling
 	    NEW_TSNODE(ts_node_next_named_sibling);
@@ -822,8 +822,8 @@ static opaque_property_T tsnode_properties[] = {
     {NPROP_HAS_CHANGES,		    OPPROPNAME("has_changes"), &t_bool},
     {NPROP_HAS_ERROR,		    OPPROPNAME("has_error"), &t_bool},
     {NPROP_MISSING,		    OPPROPNAME("missing"), &t_bool},
-    {NPROP_NAMED_CHILD_COUNT,	    OPPROPNAME("named_child_count"), &t_number},
     {NPROP_NAMED,		    OPPROPNAME("named"), &t_bool},
+    {NPROP_NAMED_CHILD_COUNT,	    OPPROPNAME("named_child_count"), &t_number},
     {NPROP_NEXT_NAMED_SIBLING,	    OPPROPNAME("next_named_sibling"), &t_tsnode},
     {NPROP_NEXT_SIBLING,	    OPPROPNAME("next_sibling"), &t_tsnode},
     {NPROP_PARENT,		    OPPROPNAME("parent"), &t_tsnode},
