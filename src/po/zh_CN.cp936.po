@@ -18,11 +18,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Simplified Chinese)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-17 21:42+0100\n"
-"PO-Revision-Date: 2025-12-20 21:01+0800\n"
-"Last-Translator: lilydjwg, Ada (Haowen) Yu, Mao-Yining\n"
+"POT-Creation-Date: 2025-12-27 18:25+0800\n"
+"PO-Revision-Date: 2025-12-27 22:46+0800\n"
+"Last-Translator: Mao-Yining\n"
 "Language-Team: Simplified Chinese\n"
-"Language: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=GBK\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -167,19 +167,19 @@ msgstr "%d%%"
 msgid "%3s"
 msgstr "%3s"
 
-#, fuzzy, c-format
+#, c-format
 msgid " (%d of %d)"
 msgstr " (%d/%d)"
 
-#, fuzzy, c-format
+#, c-format
 msgid " ((%d) of %d)"
 msgstr " ((%d)/%d)"
 
-#, fuzzy, c-format
+#, c-format
 msgid " (file %d of %d)"
 msgstr " (文件 %d/%d)"
 
-#, fuzzy, c-format
+#, c-format
 msgid " (file (%d) of %d)"
 msgstr " (文件 (%d)/%d)"
 
@@ -262,7 +262,6 @@ msgstr ": 发送失败。尝试本地执行\n"
 msgid "%d of %d edited"
 msgstr "%d 中 %d 已编辑"
 
-#, fuzzy
 msgid "Socket server not online:Send expression failed"
 msgstr "Socket 服务器不在线，发送表达式失败"
 
@@ -791,7 +790,7 @@ msgstr "[unix 格式]"
 msgid "%s%ldL, %lldB"
 msgstr "%s%ld 行, %lld 字节"
 
-#, fuzzy, c-format
+#, c-format
 msgid "%s%ld line, "
 msgid_plural "%s%ld lines, "
 msgstr[0] "%s%ld 行，"
@@ -814,21 +813,21 @@ msgid ""
 msgstr "W12: 警告: 文件 \"%s\" 已变动，并且在 Vim 中的缓冲区也已变动"
 
 msgid "See \":help W12\" for more info."
-msgstr "进一步说明请见 \":help W12\""
+msgstr "请参阅 \":help W12\" 以获取更多信息。"
 
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr "W11: 警告: 编辑开始后，文件 \"%s\" 已变动"
 
 msgid "See \":help W11\" for more info."
-msgstr "进一步说明请见 \":help W11\""
+msgstr "请参阅 \":help W11\" 以获取更多信息。"
 
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr "W16: 警告: 编辑开始后，文件 \"%s\" 的模式已变动"
 
 msgid "See \":help W16\" for more info."
-msgstr "进一步说明请见 \":help W16\""
+msgstr "请参阅 \":help W16\" 以获取更多信息。"
 
 #, c-format
 msgid "W13: Warning: File \"%s\" has been created after editing started"
@@ -1322,7 +1321,6 @@ msgstr[0] "缩进了 %ld 行 "
 msgid " Keyword completion (^N^P)"
 msgstr " 关键字补全 (^N^P)"
 
-#, fuzzy
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 msgstr " ^X 模式 (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
@@ -1362,7 +1360,6 @@ msgstr " 拼写建议 (^S^N^P)"
 msgid " Keyword Local completion (^N^P)"
 msgstr " 关键字局部补全 (^N^P)"
 
-#, fuzzy
 msgid " Register completion (^N^P)"
 msgstr " 寄存器补全 (^N^P)"
 
@@ -1401,7 +1398,6 @@ msgstr "-- 查找中..."
 msgid "Hit end of paragraph"
 msgstr "已到段落结尾"
 
-#, fuzzy
 msgid "Pattern not found"
 msgstr "找不到模式"
 
@@ -1440,7 +1436,6 @@ msgstr "mapnew() 参数"
 msgid "filter() argument"
 msgstr "filter() 参数"
 
-#, fuzzy
 msgid "foreach() argument"
 msgstr "foreach() 参数"
 
@@ -1486,7 +1481,7 @@ msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "'-nb' 无法使用：编译时未启用\n"
 
 msgid "This Vim was not compiled with the diff feature."
-msgstr "此 Vim 编译时没有加入比对（diff）功能"
+msgstr "此 Vim 编译时没有加入比对（diff）功能。"
 
 msgid "Attempt to open script file again: \""
 msgstr "试图再次打开脚本文件: \""
@@ -1550,14 +1545,13 @@ msgstr ""
 "\n"
 "  或:"
 
-#, fuzzy
 msgid ""
 "\n"
 "Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
 "case."
 msgstr ""
 "\n"
-"如果大小写被忽略，在标志前加 / 来表示大写"
+"如果大小写被忽略，在标志前加 / 来表示大写。"
 
 msgid ""
 "\n"
@@ -1672,7 +1666,7 @@ msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\t跳过输入/输出不是终端的警告"
 
 msgid "--gui-dialog-file {fname}  For testing: write dialog text"
-msgstr "--gui-dialog-file {文件名}  测试用：输出对话文本"
+msgstr "--gui-dialog-file {fname}  测试用：输出对话文本"
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\t如果输入或输出不是终端就退出"
@@ -1728,7 +1722,6 @@ msgstr "-display <display>\t将 Vim 与指定的 X-server 连接"
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\t不连接到 X Server"
 
-#, fuzzy
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\t不连接到 Wayland compositor"
 
@@ -1769,7 +1762,6 @@ msgstr "--servername <名称>\t发送到或成为 Vim 服务器 <名称>"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <文件>\t将启动计时信息写入 <文件>"
 
-#, fuzzy
 msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <文件>\t\t尽早开始记录日志到 <文件>"
 
@@ -1971,7 +1963,7 @@ msgid ""
 "enter the new crypt key."
 msgstr ""
 "\n"
-"输入新密码: "
+"输入新密码："
 
 msgid ""
 "\n"
@@ -2023,7 +2015,7 @@ msgid "???END"
 msgstr "???END"
 
 msgid "See \":help E312\" for more information."
-msgstr "更多信息请见 \":help E312\""
+msgstr "请参阅 \":help E312\" 以获取更多信息。"
 
 msgid "Recovery completed. You should check if everything is OK."
 msgstr "恢复完毕。请确定一切正常。"
@@ -2487,7 +2479,7 @@ msgid " returned\n"
 msgstr " 已返回\n"
 
 msgid "ANCHOR_BUF_SIZE too small."
-msgstr "ANCHOR_BUF_SIZE 太小"
+msgstr "ANCHOR_BUF_SIZE 太小。"
 
 msgid "I/O ERROR"
 msgstr "I/O 错误"
@@ -2517,7 +2509,7 @@ msgstr ""
 "\n"
 "Vim: X 错误\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "restoring X11 display %s"
 msgstr "正在恢复 X11 display %s"
 
@@ -2619,12 +2611,12 @@ msgstr "XSMP ICE 连接监视失败"
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection 调用失败: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Failed creating socket directory: %s"
 msgstr "创建 socket 目录失败: %s"
 
 msgid "At line"
-msgstr "在行号 "
+msgstr "在行号"
 
 #, c-format
 msgid "Vim: Caught %s event\n"
@@ -2646,7 +2638,7 @@ msgid ""
 msgstr ""
 "在你的 $PATH 中找不到 VIMRUN.EXE。\n"
 "外部命令执行完毕后将不会暂停。\n"
-"进一步说明请见 :help win32-vimrun"
+"请参阅 :help win32-vimrun 以获取更多信息。"
 
 msgid "Vim Warning"
 msgstr "Vim 警告"
@@ -2760,7 +2752,7 @@ msgstr " 选择 块"
 msgid "recording"
 msgstr "记录中"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Searching for \"%s\" under \"%s\" in \"%s\""
 msgstr "在 \"%3$s\" 的 \"%2$s\" 下搜索 \"%1$s\""
 
@@ -2989,8 +2981,8 @@ msgid ""
 "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
 "line %d: %s"
 msgstr ""
-"%s 第 %d 行，附加项被 BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST "
-"使用: %s"
+"词缀在 %s 第 %d 行中已用于 BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/"
+"NOSUGGEST 标志：%s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -3154,14 +3146,14 @@ msgstr "完成！"
 
 #, c-format
 msgid "Word '%.*s' removed from %s"
-msgstr "从 %3$s 中删除了单词 '%1$.*2s'"
+msgstr "单词 '%.*s' 已从 %s 中删除"
 
 msgid "Seek error in spellfile"
 msgstr "拼写文件中定位错误"
 
 #, c-format
 msgid "Word '%.*s' added to %s"
-msgstr "向 %3$s 中添加了单词 '%1$.*2s'"
+msgstr "单词 '%.*s' 已成功添加到 %s"
 
 msgid "Sorry, no suggestions"
 msgstr "抱歉，没有建议"
@@ -3435,13 +3427,13 @@ msgstr "%s 已中止"
 
 #, c-format
 msgid "%s returning #%ld"
-msgstr "%s 返回 #%ld "
+msgstr "%s 返回 #%ld"
 
 #, c-format
 msgid "%s returning %s"
 msgstr "%s 返回 %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Function %s%s%s does not need compiling"
 msgstr "函数 %s%s%s 不需要编译"
 
@@ -3449,7 +3441,6 @@ msgstr "函数 %s%s%s 不需要编译"
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, 编译于 %s)"
 
-#, fuzzy
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI/console version"
@@ -3471,7 +3462,6 @@ msgstr ""
 "\n"
 "MS-Windows 32 位图形/控制台版本"
 
-#, fuzzy
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI version"
@@ -3496,7 +3486,6 @@ msgstr ""
 msgid " with OLE support"
 msgstr " 带 OLE 支持"
 
-#, fuzzy
 msgid ""
 "\n"
 "MS-Windows ARM64 console version"
@@ -3530,9 +3519,8 @@ msgid ""
 "macOS version w/o darwin feat."
 msgstr ""
 "\n"
-"无 darwin 特性的 macOS 版本"
+"无 darwin 特性的 macOS 版本。"
 
-#, fuzzy
 msgid ""
 "\n"
 "OpenVMS (build) arch, version"
@@ -3627,7 +3615,6 @@ msgstr " 第二用户 vimrc 文件: \""
 msgid " 3rd user vimrc file: \""
 msgstr " 第三用户 vimrc 文件: \""
 
-#, fuzzy
 msgid " 4th user vimrc file: \""
 msgstr " 第四用户 vimrc 文件: \""
 
@@ -3680,7 +3667,7 @@ msgid "version "
 msgstr "版本 "
 
 msgid "by Bram Moolenaar et al."
-msgstr "维护人 Bram Moolenaar 等"
+msgstr "作者 Bram Moolenaar 等"
 
 msgid "Vim is open source and freely distributable"
 msgstr "Vim 是可自由分发的开放源代码软件"
@@ -3688,7 +3675,6 @@ msgstr "Vim 是可自由分发的开放源代码软件"
 msgid "Help poor children in Uganda!"
 msgstr "帮助乌干达的可怜儿童！"
 
-#, fuzzy
 msgid "type  :help Kuwasha<Enter>    for information "
 msgstr "输入  :help Kuwasha<Enter>    查看说明        "
 
@@ -3734,7 +3720,6 @@ msgstr "赞助 Vim 的开发！"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "输入  :help sponsor<Enter>    查看说明        "
 
-#, fuzzy
 msgid "menu  Help->Sponsor  for information    "
 msgstr "菜单  帮助->赞助者   获取信息           "
 
@@ -3898,7 +3883,7 @@ msgstr "写入 viminfo 文件 \"%s\""
 msgid "wayland protocol error -> "
 msgstr "Wayland 协议错误 -> "
 
-#, fuzzy, c-format
+#, c-format
 msgid "restoring Wayland display %s"
 msgstr "正在恢复 Wayland 显示 %s"
 
@@ -3948,7 +3933,6 @@ msgstr "已中断"
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ 后面应该跟有 /、? 或 &"
 
-#, fuzzy
 msgid "E11: Invalid in command-line window; :q<CR> closes the window"
 msgstr "E11: 在命令行窗口中无效；:q<CR> 关闭窗口"
 
@@ -4247,7 +4231,7 @@ msgstr "E104: 二合字符中不能使用 Escape"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: 不是在脚本文件中使用 :loadkeymap "
 
-#, fuzzy, c-format
+#, c-format
 msgid "E106: Unsupported diff output format: %s"
 msgstr "E106: 不支持的差异比较输出格式: %s"
 
@@ -4488,7 +4472,7 @@ msgstr "E171: 缺少 :endif"
 msgid "E172: Missing marker"
 msgstr "E172: 缺少标记"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E173: %d more file to edit"
 msgid_plural "E173: %d more files to edit"
 msgstr[0] "E173: 还有 %d 个文件待编辑"
@@ -4579,7 +4563,6 @@ msgstr "E196: 此版本无二合字符"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: 不能设定语言为 \"%s\""
 
-#, fuzzy
 msgid "E199: Active window or buffer changed or deleted"
 msgstr "E199: 活动窗口或缓冲区已被更改或删除"
 
@@ -5103,26 +5086,26 @@ msgstr "E371: 找不到命令"
 
 #, c-format
 msgid "E372: Too many %%%c in format string"
-msgstr "E372: 格式化字符串里有太多 %%%c "
+msgstr "E372: 格式化字符串里有太多 %%%c"
 
 #, c-format
 msgid "E373: Unexpected %%%c in format string"
-msgstr "E373: 格式化字符串不应该出现 %%%c "
+msgstr "E373: 格式化字符串不应该出现 %%%c"
 
 msgid "E374: Missing ] in format string"
 msgstr "E374: 格式化字符串里少了 ]"
 
 #, c-format
 msgid "E375: Unsupported %%%c in format string"
-msgstr "E375: 格式化字符串里有不支持的 %%%c "
+msgstr "E375: 格式化字符串里有不支持的 %%%c"
 
 #, c-format
 msgid "E376: Invalid %%%c in format string prefix"
-msgstr "E376: 格式化字符串开头里有不正确的 %%%c "
+msgstr "E376: 格式化字符串开头里有不正确的 %%%c"
 
 #, c-format
 msgid "E377: Invalid %%%c in format string"
-msgstr "E377: 格式化字符串里有不正确的 %%%c "
+msgstr "E377: 格式化字符串里有不正确的 %%%c"
 
 msgid "E378: 'errorformat' contains no pattern"
 msgstr "E378: 'errorformat' 未设定"
@@ -5472,7 +5455,7 @@ msgstr "E476: 无效的命令"
 msgid "E476: Invalid command: %s"
 msgstr "E476: 无效的命令：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E476: Invalid command: %s, expected %s"
 msgstr "E476: 命令无效：%s，应为 %s"
 
@@ -5517,7 +5500,7 @@ msgstr "E486: 找不到模式: %s"
 msgid "E487: Argument must be positive"
 msgstr "E487: 参数必须是正数"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E487: Argument must be positive: %s"
 msgstr "E487: 参数必须是正数：%s"
 
@@ -5576,7 +5559,6 @@ msgstr "不是文件或可写的设备"
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: \"%s\" 不是文件或可写的设备"
 
-#, fuzzy
 msgid "E503: Coffee is currently not available"
 msgstr "E503: 当前无法提供咖啡（彩蛋）"
 
@@ -5797,7 +5779,7 @@ msgstr "E568: 未加入重复的 cscope 数据库"
 
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
-msgstr "E571: 抱歉，此命令不可用，无法加载 Tcl 库"
+msgstr "E571: 抱歉，此命令不可用，无法加载 Tcl 库。"
 
 #, c-format
 msgid "E572: Exit code %d"
@@ -5936,7 +5918,7 @@ msgstr "E612: Signs 定义过多"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: 未知的打印机字体: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: 参数 %d 需要对象"
 
@@ -5976,11 +5958,11 @@ msgstr "E625: 无法打开 cscope 数据库: %s"
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: 无法获取 cscope 数据库信息"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E627: Missing colon: %s"
 msgstr "E627: 缺少冒号: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E628: Missing ! or / in: %s"
 msgstr "E628: 缺少 ! 或 /: %s"
 
@@ -5998,15 +5980,12 @@ msgstr "E632: getLength 中的缓冲区标识符无效"
 msgid "E633: Invalid buffer identifier in getText"
 msgstr "E633: getText 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E634: Invalid buffer identifier in remove"
 msgstr "E634: remove 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E635: Invalid buffer identifier in insert"
 msgstr "E635: insert 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E636: Invalid buffer identifier in create"
 msgstr "E636: create 中的缓冲区标识符无效"
 
@@ -6016,7 +5995,6 @@ msgstr "E637: startDocumentListen 中的缓冲区标识符无效"
 msgid "E638: Invalid buffer identifier in stopDocumentListen"
 msgstr "E638: stopDocumentListen 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E639: Invalid buffer identifier in setTitle"
 msgstr "E639: setTitle 中的缓冲区标识符无效"
 
@@ -6036,29 +6014,24 @@ msgstr "E643: setFullName 中的缓冲区标识符无效"
 msgid "E644: Invalid buffer identifier in editFile"
 msgstr "E644: editFile 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E645: Invalid buffer identifier in setVisible"
 msgstr "E645: setVisible 中的缓冲区标识符无效"
 
 msgid "E646: Invalid buffer identifier in setModified"
 msgstr "E646: setModified 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E647: Invalid buffer identifier in setDot"
 msgstr "E647: setDot 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: close 中的缓冲区标识符无效"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: defineAnnoType 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E651: Invalid buffer identifier in addAnno"
 msgstr "E651: addAnno 中的缓冲区标识符无效"
 
-#, fuzzy
 msgid "E652: Invalid buffer identifier in getAnno"
 msgstr "E652: getAnno 中的缓冲区标识符无效"
 
@@ -6132,7 +6105,7 @@ msgstr "E674: printmbcharset 在多字节编码下不能为空。"
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: 没有指定多字节打印的默认字体。"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E676: No matching autocommands for buftype=%s buffer"
 msgstr "E676: 没有匹配 buftype=%s 缓冲区的自动命令"
 
@@ -6177,7 +6150,7 @@ msgstr "E687: 目标比列表项数少"
 msgid "E688: More targets than List items"
 msgstr "E688: 目标比列表项数多"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E689: Index not allowed after a %s: %s"
 msgstr "E689: 在 %s 后不允许使用索引: %s"
 
@@ -6190,7 +6163,7 @@ msgstr "E691: 只能比较 List 和 List"
 msgid "E692: Invalid operation for List"
 msgstr "E692: 对 List 无效的操作"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E693: Class or class typealias required for argument %d"
 msgstr "E693: 参数 %d 需要类或类的类型别名"
 
@@ -6235,7 +6208,7 @@ msgstr "E704: Funcref 变量名必须以大写字母开头: %s"
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: 变量名与已有函数名冲突: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E706: Argument of %s must be a List, String or Dictionary"
 msgstr "E706: %s 的参数必须是列表、字符串或字典"
 
@@ -6391,7 +6364,7 @@ msgid "E749: Empty buffer"
 msgstr "E749: 空的缓冲区"
 
 msgid "E750: First use \":profile start {fname}\""
-msgstr "E750: 请先使用 \":profile start {文件名}\""
+msgstr "E750: 请先使用 \":profile start {fname}\""
 
 msgid "E751: Output file name must not have region name"
 msgstr "E751: 输出文件名不能含有区域名"
@@ -6587,7 +6560,6 @@ msgstr "E804: 不能对浮点数使用 '%'"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: 将浮点数作整数使用"
 
-#, fuzzy
 msgid "E806: Using a Float as a String"
 msgstr "E806: 将浮点数作字符串使用"
 
@@ -6618,7 +6590,7 @@ msgstr "E814: 无法关闭窗口，不然就只剩下自动命令窗口了"
 msgid ""
 "E815: Sorry, this command is disabled, the MzScheme libraries could not be "
 "loaded."
-msgstr "E815: 抱歉，此命令已禁用，无法加载 MzScheme 库"
+msgstr "E815: 抱歉，此命令已禁用，无法加载 MzScheme 库。"
 
 msgid "E816: Cannot read patch output"
 msgstr "E816: 无法读取 patch 的输出"
@@ -6763,7 +6735,6 @@ msgstr "E858: eval 未能返回有效的 Python 对象"
 msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: 无法将返回的 Python 对象转换为 Vim 值"
 
-#, fuzzy
 msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
 msgstr "E860: 使用 'both' 时需要 'id' 和 'type' 或 'types'"
 
@@ -6798,7 +6769,7 @@ msgid "E867: (NFA regexp) Unknown operator '\\%%%c'"
 msgstr "E867: (NFA regexp) 未知的操作符 '\\%%%c'"
 
 msgid "E868: Error building NFA with equivalence class!"
-msgstr "E868: 对等价类构建 NFA 时出错"
+msgstr "E868: 对等价类构建 NFA 时出错！"
 
 #, c-format
 msgid "E869: (NFA regexp) Unknown operator '\\@%c'"
@@ -7121,7 +7092,7 @@ msgstr "E961: 没有用于替换 \"<sflnum>\" 的行号"
 msgid "E962: Invalid action: '%s'"
 msgstr "E962: 无效的动作：'%s'"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E963: Setting v:%s to value with wrong type"
 msgstr "E963: 将 v:%s 设置为类型错误的值"
 
@@ -7279,11 +7250,11 @@ msgstr "E1006: %s 被作为参数使用"
 msgid "E1007: Mandatory argument after optional argument"
 msgstr "E1007: 必须参数位于可选参数之后"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1008: Missing <type> after %s"
 msgstr "E1008: %s 后缺少 <类型>"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1009: Missing > after type: %s"
 msgstr "E1009: 类型 %s 后缺少右尖括号 >"
 
@@ -7585,7 +7556,7 @@ msgstr "E1093: 预期 %d 项但得到 %d 项"
 msgid "E1094: Import can only be used in a script"
 msgstr "E1094: 只能在脚本中导入"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1095: Unreachable code after :%s"
 msgstr "E1095: :%s 语句之后存在无法执行的代码"
 
@@ -7624,11 +7595,10 @@ msgstr "E1104: 缺少 >"
 msgid "E1105: Cannot convert %s to string"
 msgstr "E1105: 无法将 %s 转换为字符串"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1106: One argument too many"
 msgid_plural "E1106: %d arguments too many"
-msgstr[0] "E1106: 一个参数太多"
-msgstr[1] "E1106: %d 个参数太多"
+msgstr[0] "E1106: %d 个参数太多"
 
 msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: 需要字符串、列表、字典或 Blob"
@@ -7653,7 +7623,6 @@ msgstr "E1112: 列表项 %d 单元格宽度无效"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: 重叠范围为 0x%lx"
 
-#, fuzzy
 msgid "E1114: Only values of 0x80 and higher supported"
 msgstr "E1114: 只支持 0x80 或更高的值"
 
@@ -7663,7 +7632,7 @@ msgstr "E1115: \"assert_fails()\" 第四个参数必须是一个整数"
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "E1116: \"assert_fails()\" 第五个参数必须是一个字符串"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1117: Cannot use ! with nested %s"
 msgstr "E1117: 不能在嵌套的 %s 中使用 !"
 
@@ -7709,7 +7678,7 @@ msgstr "E1129: 抛出空字符串"
 msgid "E1130: Cannot add to null list"
 msgstr "E1130: 不能加到 null 列表"
 
-msgid "E1131: Cannot add to null Blob"
+msgid "E1131: Cannot add to null blob"
 msgstr "E1131: 不能加到 null Blob"
 
 msgid "E1132: Missing function argument"
@@ -7734,7 +7703,6 @@ msgstr "E1138: 将布尔值作整数使用"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: 字典键后缺少匹配的括号"
 
-#, fuzzy
 msgid "E1140: :for argument must be a sequence of lists or tuples"
 msgstr "E1140: :for 参数必须是列表或元组的序列"
 
@@ -7915,11 +7883,10 @@ msgstr "E1188: 无法从命令行窗口打开终端"
 msgid "E1189: Cannot use :legacy with this command: %s"
 msgstr "E1189: 不能将 :legacy 用于此命令：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1190: One argument too few"
 msgid_plural "E1190: %d arguments too few"
-msgstr[0] "E1190: 一个参数太少"
-msgstr[1] "E1190: %d 个参数太少"
+msgstr[0] "E1190: %d 个参数太少"
 
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
@@ -7959,7 +7926,7 @@ msgstr "E1201: 解密失败：文件提前结束！"
 msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: '%s' 后不允许有空格：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1203: Dot not allowed after a %s: %s"
 msgstr "E1203: 在 %s 后不允许加点号: %s"
 
@@ -8045,7 +8012,7 @@ msgstr "E1223: 参数 %d 需要字符串或字典"
 msgid "E1224: String, Number or List required for argument %d"
 msgstr "E1224: 参数 %d 需要字符串或整数或列表"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
 msgstr "E1225: 参数 %d 需要字符串、列表、元组或字典"
 
@@ -8081,7 +8048,7 @@ msgstr "E1233: exists_compiled() 只能在 :def 函数中使用"
 msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy 后面必须跟着命令"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1235: Bool or Number required for argument %d"
 msgstr "E1235: 参数 %d 需要布尔值或整数"
 
@@ -8097,7 +8064,7 @@ msgstr "E1237: 当前缓冲区中无此用户定义命令：%s"
 msgid "E1238: Blob required for argument %d"
 msgstr "E1238: 参数 %d 需要 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1239: Invalid value for blob: 0x%lX"
 msgstr "E1239: blob 的值无效: 0x%lX"
 
@@ -8139,7 +8106,7 @@ msgstr "E1249: 高亮组名称太长"
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
 msgstr "E1250: %s 的参数必须是列表、字符串、字典或 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
 msgstr "E1251: 参数 %d 需要列表、元组、Blob 或字符串"
 
@@ -8147,7 +8114,7 @@ msgstr "E1251: 参数 %d 需要列表、元组、Blob 或字符串"
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: 参数 %d 需要字符串、列表或 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1253: String, List, Tuple or Blob required for argument %d"
 msgstr "E1253: 参数 %d 需要字符串、列表、元组或 Blob"
 
@@ -8287,7 +8254,7 @@ msgstr "E1289: 无法检查未决的 SIGALRM：%s"
 msgid "E1290: substitute nesting too deep"
 msgstr "E1290: 替换嵌套层数过深"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1291: Invalid argument: %ld"
 msgstr "E1291: 无效的参数: %ld"
 
@@ -8306,26 +8273,24 @@ msgstr "E1295: 不能同时指定 'type' 和 'types'"
 msgid "E1296: Can only use left padding when column is zero"
 msgstr "E1296: 仅当列为零时才能使用左填充"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1297: Non-NULL Dictionary required for argument %d"
 msgstr "E1297: 参数 %d 需要非空字典"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1298: Non-NULL List required for argument %d"
 msgstr "E1298: 参数 %d 需要非空列表"
 
 msgid "E1299: Window unexpectedly closed while searching for tags"
 msgstr "E1299: 搜索标签时窗口意外关闭"
 
-#, fuzzy
 msgid "E1300: Cannot use a partial with dictionary for :defer"
 msgstr "E1300: 不能对 :defer 使用带字典的部分函数"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
 msgstr "E1301: 参数 %d 需要字符串、数字、列表、元组或 Blob"
 
-#, fuzzy
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: 脚本变量已被删除"
 
@@ -8333,7 +8298,7 @@ msgstr "E1302: 脚本变量已被删除"
 msgid "E1303: Custom list completion function does not return a List but a %s"
 msgstr "E1303: 自定义列表补全函数未返回列表而返回 %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1304: Cannot use type with this variable: %s"
 msgstr "E1304: 不能对此变量使用类型：%s"
 
@@ -8342,7 +8307,6 @@ msgid ""
 msgstr ""
 "E1305: 不能将 \"length\"、\"end_col\" 和 \"end_lnum\" 与 \"text\" 一起使用"
 
-#, fuzzy
 msgid "E1306: Loop nesting too deep"
 msgstr "E1306: 循环嵌套过深"
 
@@ -8350,23 +8314,18 @@ msgstr "E1306: 循环嵌套过深"
 msgid "E1307: Argument %d: Trying to modify a const %s"
 msgstr "E1307: 参数 %d: 尝试修改常量 %s"
 
-#, fuzzy
 msgid "E1308: Cannot resize a window in another tab page"
 msgstr "E1308: 不能调整另一个标签页中的窗口大小"
 
-#, fuzzy
 msgid "E1309: Cannot change mappings while listing"
 msgstr "E1309: 列出时不能更改映射"
 
-#, fuzzy
 msgid "E1310: Cannot change menus while listing"
 msgstr "E1310: 列出时不能更改菜单"
 
-#, fuzzy
 msgid "E1311: Cannot change user commands while listing"
 msgstr "E1311: 列出时不能更改用户命令"
 
-#, fuzzy
 msgid "E1312: Not allowed to change the window layout in this autocmd"
 msgstr "E1312: 在此自动命令中不允许更改窗口布局"
 
@@ -8374,47 +8333,43 @@ msgstr "E1312: 在此自动命令中不允许更改窗口布局"
 msgid "E1313: Not allowed to add or remove entries (%s)"
 msgstr "E1313: 不允许添加或移除条目 (%s)"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1314: Class name must start with an uppercase letter: %s"
 msgstr "E1314: 类名必须以大写字母开头：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1315: White space required after name: %s"
 msgstr "E1315: 名称后需要空白字符：%s"
 
-#, fuzzy
 msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: 类只能在 Vim9 脚本中定义"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1317: Invalid object variable declaration: %s"
 msgstr "E1317: 无效的对象变量声明：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: 在类中无效的命令：%s"
 
-#, fuzzy
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: 将对象作整数使用"
 
-#, fuzzy
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: 将对象作浮点数使用"
 
-#, fuzzy
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: 将对象作字符串使用"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1325: Method \"%s\" not found in class \"%s\""
 msgstr "E1325: 在类 \"%2$s\" 中未找到方法 \"%1$s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1326: Variable \"%s\" not found in object \"%s\""
 msgstr "E1326: 在对象 \"%2$s\" 中未找到变量 \"%1$s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1327: Object required, found %s"
 msgstr "E1327: 需要对象，但找到 %s"
 
@@ -8422,11 +8377,11 @@ msgstr "E1327: 需要对象，但找到 %s"
 msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: 构造函数的默认值必须是 v:none：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: 无效的类变量声明：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1330: Invalid type used in variable declaration: %s"
 msgstr "E1330: 变量声明中使用了无效的类型：%s"
 
@@ -8436,19 +8391,19 @@ msgid ""
 msgstr ""
 "E1331: public 后面必须是 \"var\" 或 \"static\" 或 \"final\" 或 \"const\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1332: public variable name cannot start with underscore: %s"
 msgstr "E1332: 公共变量名不能以下划线开头：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
 msgstr "E1333: 不能在类 \"%2$s\" 中访问受保护的变量 \"%1$s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
 msgstr "E1335: 类 \"%2$s\" 中的变量 \"%1$s\" 不可写"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
 msgstr "E1337: 在类 \"%2$s\" 中未找到类变量 \"%1$s\""
 
@@ -8457,35 +8412,33 @@ msgid ""
 "negative id"
 msgstr "E1339: 使用负 ID 的文本属性后不能添加带文本的文本属性"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1340: Argument already declared in the class: %s"
 msgstr "E1340: 参数已在类中声明：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1341: Variable already declared in the class: %s"
 msgstr "E1341: 变量已在类中声明：%s"
 
-#, fuzzy
 msgid "E1342: Interface can only be defined in Vim9 script"
 msgstr "E1342: 接口只能在 Vim9 脚本中定义"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "E1343: 接口名必须以大写字母开头：%s"
 
-#, fuzzy
 msgid "E1344: Cannot initialize a variable in an interface"
 msgstr "E1344: 不能在接口中初始化变量"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1345: Not a valid command in an interface: %s"
 msgstr "E1345: 在接口中无效的命令：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1346: Interface name not found: %s"
 msgstr "E1346: 未找到接口名：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: 无效的接口：%s"
 
@@ -8497,53 +8450,46 @@ msgstr "E1348: 接口 \"%2$s\" 的变量 \"%1$s\" 未实现"
 msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
 msgstr "E1349: 接口 \"%2$s\" 的方法 \"%1$s\" 未实现"
 
-#, fuzzy
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: 重复的 \"implements\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1351: Duplicate interface after \"implements\": %s"
 msgstr "E1351: \"implements\" 后有重复的接口：%s"
 
-#, fuzzy
 msgid "E1352: Duplicate \"extends\""
 msgstr "E1352: 重复的 \"extends\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1353: Class name not found: %s"
 msgstr "E1353: 找不到类名：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1354: Cannot extend %s"
 msgstr "E1354: 不能扩展 %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1355: Duplicate function: %s"
 msgstr "E1355: 重复的函数：%s"
 
-#, fuzzy
 msgid "E1356: \"super\" must be followed by a dot"
 msgstr "E1356: \"super\" 后面必须跟一个点"
 
-#, fuzzy
 msgid "E1357: Using \"super\" not in a class method"
 msgstr "E1357: 不在类方法中使用 \"super\""
 
-#, fuzzy
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: 不在子类中使用 \"super\""
 
 msgid "E1359: Cannot define a \"new\" method in an abstract class"
 msgstr "E1359: 不能在抽象类中定义 \"new\" 方法"
 
-#, fuzzy
 msgid "E1360: Using a null object"
 msgstr "E1360: 使用空对象"
 
 msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
 msgstr "E1361: 不能使用颜色 \"none\"，你的意思是 \"NONE\" 吗？"
 
-#, fuzzy
 msgid "E1362: Cannot use a non-null object"
 msgstr "E1362: 不能使用非空对象"
 
@@ -8553,11 +8499,10 @@ msgstr "E1363: 不完整的类型"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: 警告：指针块已损坏"
 
-#, fuzzy
 msgid "E1365: Cannot use a return type with the \"new\" method"
 msgstr "E1365: 不能对 \"new\" 方法使用返回类型"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1366: Cannot access protected method: %s"
 msgstr "E1366: 不能访问受保护的方法：%s"
 
@@ -8570,15 +8515,13 @@ msgid ""
 "\"const\""
 msgstr "E1368: Static 后面必须是 \"var\" 或 \"def\" 或 \"final\" 或 \"const\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1369: Duplicate variable: %s"
 msgstr "E1369: 重复的变量：%s"
 
-#, fuzzy
 msgid "E1370: Cannot define a \"new\" method as static"
 msgstr "E1370: 不能将 \"new\" 方法定义为静态"
 
-#, fuzzy
 msgid "E1371: Abstract must be followed by \"def\""
 msgstr "E1371: Abstract 后面必须是 \"def\""
 
@@ -8618,11 +8561,11 @@ msgstr "E1380: 接口中不支持受保护的方法"
 msgid "E1381: Interface cannot use \"implements\""
 msgstr "E1381: 接口不能使用 \"implements\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
 msgstr "E1382: 变量 \"%s\"：类型不匹配，预期 %s 但得到 %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
 msgstr "E1383: 方法 \"%s\"：类型不匹配，预期 %s 但得到 %s"
 
@@ -8644,7 +8587,6 @@ msgstr "E1387: 接口中不支持公共变量"
 msgid "E1388: public keyword not supported for a method"
 msgstr "E1388: 方法不支持 public 关键字"
 
-#, fuzzy
 msgid "E1389: Missing name after implements"
 msgstr "E1389: implements 后缺少名称"
 
@@ -8654,39 +8596,34 @@ msgid ""
 "method"
 msgstr "E1390: 除了 \"new\" 方法外不能使用对象变量 \"this.%s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
 msgstr "E1391: 不能在类 \"%2$s\" 中（解）锁变量 \"%1$s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
 msgstr "E1392: 不能在类 \"%2$s\" 中（解）锁类变量 \"%1$s\""
 
-#, fuzzy
 msgid "E1393: Type can only be defined in Vim9 script"
 msgstr "E1393: 类型只能在 Vim9 脚本中定义"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: 类型名必须以大写字母开头：%s"
 
-#, fuzzy
 msgid "E1395: Using a null class"
 msgstr "E1395: 使用了一个空类"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: 类型别名 \"%s\" 已存在"
 
-#, fuzzy
 msgid "E1397: Missing type alias name"
 msgstr "E1397: 缺少类型别名的名称"
 
-#, fuzzy
 msgid "E1398: Missing type alias type"
 msgstr "E1398: 缺少类型别名的类型"
 
-#, fuzzy
 msgid "E1399: Type can only be used in a script"
 msgstr "E1399: 类型只能在脚本中使用"
 
@@ -8694,73 +8631,66 @@ msgstr "E1399: 类型只能在脚本中使用"
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: 类型别名 \"%s\" 不能作为值使用"
 
-#, fuzzy
 msgid "E1404: Abstract cannot be used in an interface"
 msgstr "E1404: 不能在接口中使用 abstract"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: 类 \"%s\" 不能作为值使用"
 
-#, fuzzy
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: 不能将类型别名用作变量或值"
 
 msgid "E1408: Final variable not supported in an interface"
 msgstr "E1408: 接口中不支持 final 变量"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
 msgstr "E1409: 不能更改类 \"%2$s\" 中的只读变量 \"%1$s\""
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: 接口中不支持 Const 变量"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1411: Missing dot after object \"%s\""
 msgstr "E1411: 对象 \"%s\" 后缺少点号"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1412: Builtin object method \"%s\" not supported"
 msgstr "E1412: 不支持内置对象方法 \"%s\""
 
-#, fuzzy
 msgid "E1413: Builtin class method not supported"
 msgstr "E1413: 不支持内置类方法"
 
-#, fuzzy
 msgid "E1414: Enum can only be defined in Vim9 script"
 msgstr "E1414: 枚举只能在 Vim9 脚本中定义"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1415: Enum name must start with an uppercase letter: %s"
 msgstr "E1415: 枚举名必须以大写字母开头：%s"
 
-#, fuzzy
 msgid "E1416: Enum cannot extend a class or enum"
 msgstr "E1416: 枚举不能扩展类或其他枚举"
 
-#, fuzzy
 msgid "E1417: Abstract cannot be used in an Enum"
 msgstr "E1417: 不能在枚举中使用 abstract"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1418: Invalid enum value declaration: %s"
 msgstr "E1418: 无效的枚举值声明：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1419: Not a valid command in an Enum: %s"
 msgstr "E1419: 在枚举中无效的命令：%s"
 
-#, fuzzy
 msgid "E1420: Missing :endenum"
 msgstr "E1420: 缺少 :endenum"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1421: Enum \"%s\" cannot be used as a value"
 msgstr "E1421: 枚举 \"%s\" 不能作为值使用"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
 msgstr "E1422: 在枚举 \"%s\" 中未找到枚举值 \"%s\""
 
@@ -8768,11 +8698,11 @@ msgstr "E1422: 在枚举 \"%s\" 中未找到枚举值 \"%s\""
 msgid "E1423: Enum value \"%s.%s\" cannot be modified"
 msgstr "E1423: 枚举值 \"%s.%s\" 不能被修改"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1424: Using an Enum \"%s\" as a Number"
 msgstr "E1424: 将枚举 \"%s\" 作为整数使用"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1425: Using an Enum \"%s\" as a String"
 msgstr "E1425: 将枚举 \"%s\" 作为字符串使用"
 
@@ -8784,11 +8714,10 @@ msgstr "E1426: 枚举 \"%s\" 的序数值不能被修改"
 msgid "E1427: Enum \"%s\" name cannot be modified"
 msgstr "E1427: 枚举 \"%s\" 的名称不能被修改"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1428: Duplicate enum value: %s"
 msgstr "E1428: 重复的枚举值：%s"
 
-#, fuzzy
 msgid "E1429: Class can only be used in a script"
 msgstr "E1429: 类只能在脚本中使用"
 
@@ -8819,19 +8748,16 @@ msgid ""
 "class \"%s\""
 msgstr "E1434: 类 \"%2$s\" 中泛型方法 \"%1$s\" 的类型变量数量不匹配"
 
-#, fuzzy
 msgid "E1435: Enum can only be used in a script"
 msgstr "E1435: 枚举只能在脚本中使用"
 
-#, fuzzy
 msgid "E1436: Interface can only be used in a script"
 msgstr "E1436: 接口只能在脚本中使用"
 
-#, fuzzy
 msgid "E1437: Can only compare Object with Object"
 msgstr "E1437: 只能比较对象与对象"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: 不能混合使用位置参数和非位置参数：%s"
 
@@ -8845,15 +8771,15 @@ msgid ""
 "%s/%s"
 msgstr "E1502: 作为字段宽度的位置参数 %d 被重复用作不同类型：%s/%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1503: Positional argument %d out of bounds: %s"
 msgstr "E1503: 位置参数 %d 越界：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
 msgstr "E1504: 位置参数 %d 的类型使用不一致：%s/%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1505: Invalid format specifier: %s"
 msgstr "E1505: 无效的格式说明符：%s"
 
@@ -8868,7 +8794,7 @@ msgstr "E1508: 扩展属性值的大小超过允许的最大大小"
 msgid "E1509: Error occurred when reading or writing extended attribute"
 msgstr "E1509: 读写扩展属性时发生错误"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: 值太大：%s"
 
@@ -8886,107 +8812,94 @@ msgstr "E1513: 不能切换缓冲区，'winfixbuf' 已启用"
 msgid "E1514: 'findfunc' did not return a List type"
 msgstr "E1514: 'findfunc' 未返回列表类型"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1515: Unable to convert from '%s' encoding"
 msgstr "E1515: 无法从 '%s' 编码转换"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1516: Unable to convert to '%s' encoding"
 msgstr "E1516: 无法转换到 '%s' 编码"
 
-#, fuzzy
 msgid "E1517: Can only compare Tuple with Tuple"
 msgstr "E1517: 只能比较元组与元组"
 
-#, fuzzy
 msgid "E1518: Invalid operation for Tuple"
 msgstr "E1518: 对元组的无效操作"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1519: Tuple index out of range: %ld"
 msgstr "E1519: 元组索引超出范围：%ld"
 
-#, fuzzy
 msgid "E1520: Using a Tuple as a Number"
 msgstr "E1520: 将元组作为数字使用"
 
-#, fuzzy
 msgid "E1521: Using a Tuple as a Float"
 msgstr "E1521: 将元组作为浮点数使用"
 
-#, fuzzy
 msgid "E1522: Using a Tuple as a String"
 msgstr "E1522: 将元组作为字符串使用"
 
-#, fuzzy
 msgid "E1523: String, List, Tuple or Blob required"
 msgstr "E1523: 需要字符串、列表、元组或 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1524: Cannot use a tuple with function %s"
 msgstr "E1524: 不能在函数 %s 中使用元组"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
 msgstr "E1525: %s 的参数必须是列表、元组、字符串、字典或 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1526: Missing end of Tuple ')': %s"
 msgstr "E1526: 元组缺少结束符 ')'：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1527: Missing comma in Tuple: %s"
 msgstr "E1527: 元组中缺少逗号：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1528: List or Tuple or Blob required for argument %d"
 msgstr "E1528: 参数 %d 需要列表、元组或 Blob"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1529: List or Tuple required for argument %d"
 msgstr "E1529: 参数 %d 需要列表或元组"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1530: List or Tuple or Dictionary required for argument %d"
 msgstr "E1530: 参数 %d 需要列表、元组或字典"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"
 msgstr "E1531: %s 的参数必须是列表、元组、字典或 Blob"
 
-#, fuzzy
 msgid "E1532: Cannot modify a tuple"
 msgstr "E1532: 不能修改元组"
 
-#, fuzzy
 msgid "E1533: Cannot slice a tuple"
 msgstr "E1533: 不能对元组切片"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1534: Tuple required for argument %d"
 msgstr "E1534: 参数 %d 需要元组"
 
-#, fuzzy
 msgid "E1535: List or Tuple required"
 msgstr "E1535: 需要列表或元组"
 
-#, fuzzy
 msgid "E1536: Tuple required"
 msgstr "E1536: 需要元组"
 
-#, fuzzy
 msgid "E1537: Less targets than Tuple items"
 msgstr "E1537: 目标比元组项少"
 
-#, fuzzy
 msgid "E1538: More targets than Tuple items"
 msgstr "E1538: 目标比元组项多"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1539: Variadic tuple must end with a list type: %s"
 msgstr "E1539: 可变元组必须以列表类型结尾：%s"
 
-#, fuzzy
 msgid "E1540: Cannot use a variadic tuple in concatenation"
 msgstr "E1540: 不能在连接中使用可变元组"
 
@@ -9005,38 +8918,34 @@ msgstr "E1544: 调整 quickfix/位置列表栈大小失败"
 msgid "E1545: Quickfix list stack unavailable"
 msgstr "E1545: Quickfix 列表栈不可用"
 
-#, fuzzy
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr "E1546: 不能切换到正在关闭的缓冲区"
 
-#, fuzzy
 msgid "E1547: This version of Vim does support :redrawtabpanel"
 msgstr "E1547: 此版本的 Vim 支持 :redrawtabpanel"
 
-#, fuzzy
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Wayland 连接不可用"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1549: Cannot have more than %d diff anchors"
 msgstr "E1549: 不能有超过 %d 个差异锚点"
 
 msgid "E1550: Failed to find all diff anchors"
 msgstr "E1550: 未能找到所有差异锚点"
 
-#, fuzzy
 msgid "E1551: Cannot open a popup window to a closing buffer"
 msgstr "E1551: 不能为正在关闭的缓冲区打开弹出窗口"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1552: Type variable name must start with an uppercase letter: %s"
 msgstr "E1552: 类型变量名必须以大写字母开头：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1553: Missing comma after type in generic function: %s"
 msgstr "E1553: 泛型函数中类型后缺少逗号：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1554: Missing '>' in generic function: %s"
 msgstr "E1554: 泛型函数中缺少 '>'：%s"
 
@@ -9044,27 +8953,27 @@ msgstr "E1554: 泛型函数中缺少 '>'：%s"
 msgid "E1555: Empty type list specified for generic function '%s'"
 msgstr "E1555: 为泛型函数 '%s' 指定了空类型列表"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1556: Too many types specified for generic function '%s'"
 msgstr "E1556: 为泛型函数 '%s' 指定了太多类型"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1557: Not enough types specified for generic function '%s'"
 msgstr "E1557: 为泛型函数 '%s' 指定的类型不足"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1558: Unknown generic function: %s"
 msgstr "E1558: 未知的泛型函数：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1559: Type arguments missing for generic function '%s'"
 msgstr "E1559: 泛型函数 '%s' 缺少类型参数"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1560: Not a generic function: %s"
 msgstr "E1560: 不是泛型函数：%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1561: Duplicate type variable name: %s"
 msgstr "E1561: 重复的类型变量名：%s"
 
@@ -9084,11 +8993,10 @@ msgstr "E1565: Socket 服务器不在线，请先调用 remote_startserver()"
 msgid "E1566: Failed connecting to socket %s: %s"
 msgstr "E1566: 连接到 socket %s 失败：%s"
 
-#, fuzzy
 msgid "E1567: Cannot start socket server, socket path is unavailable"
 msgstr "E1567: 无法启动 socket 服务器，socket 路径不可用"
 
-#, fuzzy, c-format
+#, c-format
 msgid "E1568: OSC command response timed out: %.*s"
 msgstr "E1568: OSC 命令响应超时：%.*s"
 
@@ -9107,11 +9015,9 @@ msgstr "--缓冲区无内容--"
 msgid "int"
 msgstr "int"
 
-#, fuzzy
 msgid "long int"
 msgstr "long int"
 
-#, fuzzy
 msgid "long long int"
 msgstr "long long int"
 
@@ -9133,7 +9039,6 @@ msgstr "percent"
 msgid "char"
 msgstr "char"
 
-#, fuzzy
 msgid "string"
 msgstr "string"
 
@@ -9277,19 +9182,15 @@ msgstr "不能删除 vim.List 的属性"
 msgid "cannot modify fixed list"
 msgstr "不能修改固定列表"
 
-#, fuzzy
 msgid "tuple constructor does not accept keyword arguments"
 msgstr "元组构造器不接受关键字参数"
 
-#, fuzzy
 msgid "tuple index out of range"
 msgstr "元组索引超出范围"
 
-#, fuzzy
 msgid "cannot delete vim.Tuple attributes"
 msgstr "不能删除 vim.Tuple 的属性"
 
-#, fuzzy
 msgid "cannot modify fixed tuple"
 msgstr "不能修改固定元组"
 
@@ -10041,7 +9942,6 @@ msgstr "工具栏图标大小"
 msgid "room (in pixels) left above/below the window"
 msgstr "窗口上方/下方的空间（以像素为单位）"
 
-#, fuzzy
 msgid ""
 "list of ASCII characters that can be combined into complex\n"
 "shapes"
@@ -10053,7 +9953,6 @@ msgstr "文本渲染选项"
 msgid "use a pseudo-tty for I/O to external commands"
 msgstr "对外部命令的 I/O 使用伪终端"
 
-#, fuzzy
 msgid ""
 "\"last\", \"buffer\" or \"current\": which directory used for\n"
 "the file browser"
@@ -10077,7 +9976,6 @@ msgstr "延迟指定毫秒后，气泡可能会弹出"
 msgid "use balloon evaluation in the GUI"
 msgstr "在 GUI 中使用气泡求值"
 
-#, fuzzy
 msgid ""
 " \n"
 "use balloon evaluation in the terminal"
@@ -10519,7 +10417,6 @@ msgstr "二进制文件编辑"
 msgid "last line in the file has an end-of-line"
 msgstr "文件的最后一行有换行符"
 
-#, fuzzy
 msgid "last line in the file followed by CTRL-Z"
 msgstr "文件的最后一行以 CTRL-Z 字符结尾"
 
@@ -10719,7 +10616,6 @@ msgstr "'grepprg' 的输出格式列表"
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "\":make\" 和 \":grep\" 输出的编码"
 
-#, fuzzy
 msgid ""
 " \n"
 "function to display text in the quickfix window"
@@ -10935,7 +10831,6 @@ msgstr "Python 2 主目录的名字"
 msgid "name of the Python 3 dynamic library"
 msgstr "Python 3 动态库的名字"
 
-#, fuzzy
 msgid ""
 " \n"
 "name of the Python 3 home directory"
