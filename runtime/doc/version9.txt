@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
+*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41727,6 +41727,7 @@ Options: ~
 - 'guioptions': New value |'go-s'| to support fullscreen on MS-Windows GUI
   (see also the below platform specific change).
 - 'completepopup': Add more values to style popup windows.
+- 'fsync' is now a |global-local| option.
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|

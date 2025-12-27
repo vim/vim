@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 23
+*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4274,7 +4274,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fsync'* *'fs'* *'nofsync'* *'nofs'*
 'fsync' 'fs'		boolean	(default on)
-			global
+			global or local to buffer |global-local|
 	When on, the library function fsync() will be called after writing a
 	file.  This will flush a file to disk, ensuring that it is safely
 	written even on filesystems which do metadata-only journaling.  This
@@ -4283,6 +4283,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	turning this off increases the chances of data loss after a crash.  On
 	systems without an fsync() implementation, this variable is always
 	off.
+	This is a |global-local| option, so it can be set per buffer, for
+	example when writing to a slow filesystem.
 	Also see 'swapsync' for controlling fsync() on swap files.
 	'fsync' also applies to |writefile()| (unless a flag is used to
 	overrule it) and when writing undo files (see |undo-persistence|).

@@ -2199,7 +2199,8 @@ restore_backup:
 	// For a device do try the fsync() but don't complain if it does not
 	// work (could be a pipe).
 	// If the 'fsync' option is FALSE, don't fsync().  Useful for laptops.
-	if (p_fs && vim_fsync(fd) != 0 && !device)
+	if ((buf->b_p_fs >= 0 ? buf->b_p_fs : p_fs) && vim_fsync(fd) != 0
+		&& !device)
 	{
 	    errmsg = (char_u *)_(e_fsync_failed);
 	    end = 0;

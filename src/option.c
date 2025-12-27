@@ -698,6 +698,9 @@ set_init_1(int clean_arg)
     curbuf->b_p_initialized = TRUE;
     curbuf->b_p_ac = -1;
     curbuf->b_p_ar = -1;	// no local 'autoread' value
+#ifdef HAVE_FSYNC
+    curbuf->b_p_fs = -1;	// no local 'fsync' value
+#endif
     curbuf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     check_buf_options(curbuf);
     check_win_options(curwin);
@@ -2216,6 +2219,10 @@ do_set_option_bool(
 	    value = -1;
 	else if ((int *)varp == &curbuf->b_p_ac && opt_flags == OPT_LOCAL)
 	    value = -1;
+#ifdef HAVE_FSYNC
+	else if ((int *)varp == &curbuf->b_p_fs && opt_flags == OPT_LOCAL)
+	    value = -1;
+#endif
 	else
 	    value = *(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
     }
@@ -6479,6 +6486,11 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_AR:
 	    buf->b_p_ar = -1;
 	    break;
+#ifdef HAVE_FSYNC
+	case PV_FS:
+	    buf->b_p_fs = -1;
+	    break;
+#endif
 	case PV_BKC:
 	    clear_string_option(&buf->b_p_bkc);
 	    buf->b_bkc_flags = 0;
@@ -6613,6 +6625,9 @@ get_varp_scope(struct vimoption *p, int scope)
 	switch ((int)p->indir)
 	{
 	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
+#ifdef HAVE_FSYNC
+	    case PV_FS:	return (char_u *)&(curbuf->b_p_fs);
+#endif
 #ifdef FEAT_EVAL
 	    case PV_FFU: return (char_u *)&(curbuf->b_p_ffu);
 #endif
@@ -6737,6 +6752,10 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_FP:	return *curbuf->b_p_fp != NUL
 				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
+#ifdef HAVE_FSYNC
+	case PV_FS:	return curbuf->b_p_fs >= 0
+				    ? (char_u *)&(curbuf->b_p_fs) : p->var;
+#endif
 #ifdef FEAT_EVAL
 	case PV_FFU:	return *curbuf->b_p_ffu != NUL
 				    ? (char_u *)&(curbuf->b_p_ffu) : p->var;
@@ -7540,6 +7559,9 @@ buf_copy_options(buf_T *buf, int flags)
 	    // are not copied, start using the global value
 	    buf->b_p_ac = -1;
 	    buf->b_p_ar = -1;
+#ifdef HAVE_FSYNC
+	    buf->b_p_fs = -1;
+#endif
 	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 	    buf->b_p_bkc = empty_option;
 	    buf->b_bkc_flags = 0;

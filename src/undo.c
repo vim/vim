@@ -1774,7 +1774,8 @@ u_write_undo(
 #endif
 
 #if defined(UNIX) && defined(HAVE_FSYNC)
-    if (p_fs && fflush(fp) == 0 && vim_fsync(fd) != 0)
+    if ((buf->b_p_fs >= 0 ? buf->b_p_fs : p_fs) && fflush(fp) == 0
+	    && vim_fsync(fd) != 0)
 	write_ok = FALSE;
 #endif
 

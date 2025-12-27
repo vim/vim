@@ -1223,6 +1223,9 @@ enum
     , BV_FF
     , BV_FLP
     , BV_FO
+#ifdef HAVE_FSYNC
+    , BV_FS
+#endif
     , BV_FT
     , BV_IMI
     , BV_IMS

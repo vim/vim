@@ -3380,6 +3380,9 @@ struct file_buffer
     char_u	*b_p_fex;	// 'formatexpr'
     long_u	b_p_fex_flags;	// flags for 'formatexpr'
 #endif
+#ifdef HAVE_FSYNC
+    int		b_p_fs;		// 'fsync'
+#endif
 #ifdef FEAT_CRYPT
     char_u	*b_p_key;	// 'key'
 #endif
