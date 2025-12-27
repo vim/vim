@@ -45,8 +45,7 @@
 
   4. Combinaciones avanzadas:
      - ciwnuevo<ESC>     - Cambiar la palabra actual por "nuevo"
-     - ciw"<Ctrl>-"<ESC> - (Nota: Utiliza Ctrl y el símbolo menos)
-                           Encierra la palabra actual entre comillas
+     - ciw"<CTRL-R>-"<ESC> - Encierra la palabra actual entre comillas
      - gUit              - Convertir a mayúsculas el contenido de la
 			               etiqueta HTML donde esté el cursor
      - va"p              - Seleccionar el texto entre comillas y pegarlo sobre él
