@@ -1250,6 +1250,9 @@ tsquery_new(char_u *language, char_u *query_str)
     return op;
 }
 
+/*
+ * "ts_load()" function
+ */
     void
 f_ts_load(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1279,6 +1282,9 @@ f_ts_load(typval_T *argvars, typval_T *rettv UNUSED)
     tsvim_load_language(name, path, symbol);
 }
 
+/*
+ * "ts_language_is_loaded()" function
+ */
     void
 f_ts_language_is_loaded(typval_T *argvars, typval_T *rettv)
 {
@@ -1296,6 +1302,9 @@ f_ts_language_is_loaded(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = !HASHITEM_EMPTY(hi);
 }
 
+/*
+ * "tsparser_new()" function
+ */
     void
 f_tsparser_new(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1308,6 +1317,9 @@ f_tsparser_new(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_opaque = op;
 }
 
+/*
+ * "tsparser_set_language()" function
+ */
     void
 f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1321,6 +1333,9 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
     tsparser_set_language(argvars[0].vval.v_opaque, argvars[1].vval.v_string);
 }
 
+/*
+ * "tsparser_parse_buf()" function
+ */
     void
 f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 {
@@ -1351,6 +1366,9 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
     }
 }
 
+/*
+ * "tsparser_parse_string()" function
+ */
     void
 f_tsparser_parse_string(typval_T *argvars, typval_T *rettv)
 {
@@ -1377,6 +1395,9 @@ f_tsparser_parse_string(typval_T *argvars, typval_T *rettv)
     }
 }
 
+/*
+ * "tsparser_set_included_ranges()" function
+ */
     void
 f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
 {
@@ -1426,6 +1447,9 @@ exit:
     vim_free(ranges);
 }
 
+/*
+ * "tsparser_included_ranges()" function
+ */
     void
 f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
 {
@@ -1452,6 +1476,9 @@ f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_tuple = ret;
 }
 
+/*
+ * "tsparser_reset()" function
+ */
     void
 f_tsparser_reset(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1464,6 +1491,9 @@ f_tsparser_reset(typval_T *argvars, typval_T *rettv UNUSED)
     ts_parser_reset(OP2TSPARSER(argvars[0].vval.v_opaque)->parser);
 }
 
+/*
+ * "tstree_edit()" function
+ */
     void
 f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1499,6 +1529,9 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
     ts_tree_edit(OP2TSTREE(argvars[0].vval.v_opaque)->tree, &edit);
 }
 
+/*
+ * "tstree_included_ranges()" function
+ */
     void
 f_tstree_included_ranges(typval_T *argvars, typval_T *rettv)
 {
@@ -1526,6 +1559,9 @@ f_tstree_included_ranges(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_tuple = ret;
 }
 
+/*
+ * "tstree_get_changed_ranges()" function
+ */
     void
 f_tstree_get_changed_ranges(typval_T *argvars, typval_T *rettv)
 {
@@ -1558,6 +1594,9 @@ f_tstree_get_changed_ranges(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_tuple = ret;
 }
 
+/*
+ * "tsnode_descendant_child()" function
+ */
     void
 f_tsnode_child(typval_T *argvars, typval_T *rettv)
 {
@@ -1594,6 +1633,9 @@ f_tsnode_child(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_opaque = res;
 }
 
+/*
+ * "tsnode_descendant_for_range()" function
+ */
     void
 f_tsnode_descendant_for_range(typval_T *argvars, typval_T *rettv)
 {
@@ -1634,6 +1676,9 @@ f_tsnode_descendant_for_range(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_opaque = res;
 }
 
+/*
+ * "tsquery_new()" function
+ */
     void
 f_tsquery_new(typval_T *argvars, typval_T *rettv)
 {
@@ -1652,6 +1697,9 @@ f_tsquery_new(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_opaque = res;
 }
 
+/*
+ * "tsquery_disable_capture()" function
+ */
     void
 f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1671,6 +1719,9 @@ f_tsquery_disable_capture(typval_T *argvars, typval_T *rettv UNUSED)
     ts_query_disable_capture(query, (char *)str, STRLEN(str));
 }
 
+/*
+ * "tsquery_disable_pattern()" function
+ */
     void
 f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1689,6 +1740,8 @@ f_tsquery_disable_pattern(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * "tsquery_inspect()" function
+ *
  * Get the predicates/directives and captures for the given query.
  */
     void
@@ -1862,6 +1915,9 @@ fail:
     dict_unref(dict);
 }
 
+/*
+ * "tsquerycursor_new()" function
+ */
     void
 f_tsquerycursor_new(typval_T *argvars, typval_T *rettv)
 {
@@ -1970,6 +2026,9 @@ range_fail:
     rettv->vval.v_opaque = op;
 }
 
+/*
+ * "tsquerycursor_exec()" function
+ */
     void
 f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -2011,6 +2070,9 @@ f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
     ts_query_cursor_exec(cursor, query, node);
 }
 
+/*
+ * "tsquerycursor_next_match()" function
+ */
     void
 f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
 {
@@ -2047,6 +2109,9 @@ f_tsquerycursor_next_match(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_opaque = op;
 }
 
+/*
+ * "tsquerycursor_next_capture()" function
+ */
     void
 f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv)
 {
@@ -2095,6 +2160,9 @@ f_tsquerycursor_next_capture(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_tuple = t;
 }
 
+/*
+ * "tsquerycursor_remove_match()" function
+ */
     void
 f_tsquerycursor_remove_match(typval_T *argvars, typval_T *rettv UNUSED)
 {
