@@ -4773,10 +4773,10 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     {
 	for (lnum = start->lnum + 1; lnum < end->lnum; lnum++)
 	{
-	    size_t  linelen;
+	    int  linelen;
 
 	    line = ml_get(lnum);
-	    linelen = ml_get_len(lnum);
+	    linelen = (int)ml_get_len(lnum);
 	    if (ga_grow(&ga, linelen + 2) != OK)
 		return FAIL;
 	    ga_concat_len(&ga, line, linelen);
