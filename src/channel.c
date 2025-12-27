@@ -1635,7 +1635,14 @@ channel_write_in(channel_T *channel)
 	ch_log(channel, "Finished writing all lines to channel");
 
 	// Close the pipe/socket, so that the other side gets EOF.
-	ch_close_part(channel, PART_IN);
+#ifdef MSWIN
+	// At this point, the input part of the conpty channel must not be
+	// closed.  If it is closed, the pipe will be destroyed, the console
+	// that was using it will be destroyed, and the process running within
+	// it will be forcibly terminated, so this needs to be prevented.
+	if (!channel->ch_anonymous_pipe)
+#endif
+	    ch_close_part(channel, PART_IN);
     }
     else
 	ch_log(channel, "Still %ld more lines to write",
