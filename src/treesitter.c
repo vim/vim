@@ -1692,12 +1692,12 @@ f_tsquery_inspect(typval_T *argvars, typval_T *rettv)
     *   captures = (
     *	   "capture", ...
     *   ),
-    *   patterns = (
-    *	  [
-    *	    [ <predicate/directive>, <args> ],
-    *	    ...
+    *   patterns = {
+    *	  '0': [
+    *	     [ <predicate/directive>, <args> ],
+    *	     ...
     *     ]
-    *   )
+    *   }
     * }
     */
     dict = dict_alloc();
@@ -1735,12 +1735,16 @@ captures_fail:
     // Get predicates/directives and save them in the dictionary
     {
 	uint32_t    n = ts_query_pattern_count(query);
-	tuple_T	    *patterns = tuple_alloc_with_items(n);
+	char	    numbuf[NUMBUFLEN];
+
+	// We must use a dictionary, since patterns may contain no predicates or
+	// directives, meaning there may be gaps if we tried using a tuple/list.
+	dict_T	    *patterns = dict_alloc();
 
 	if (patterns == NULL)
 	    goto fail;
 
-	for (uint32_t i = 0, j = 0; i < n; i++)
+	for (uint32_t i = 0; i < n; i++)
 	{
 	    // Each pattern is a list that may contain multiple lists, each
 	    // representing a predicate or directive. We cannot use a tuple
@@ -1760,6 +1764,8 @@ captures_fail:
 	    if (pattern == NULL)
 		goto patterns_fail;
 
+	    // TODO: USE DICT INSTEAD OF TUPLE FOR "patterns", since it may have
+	    // gaps
 	    // Add each step of the predicate/directive to the list. Each
 	    // series of steps that represent a predicate/directive is
 	    // terminated with TSQueryPredicateStepTypeDone.
@@ -1815,13 +1821,14 @@ captures_fail:
 	    }
 	    // Add pattern to patterns tuple
 	    pattern->lv_refcount++;
-	    tuple_set_list(patterns, j++, pattern);
+	    sprintf(numbuf, "%u", i);
+	    dict_add_list(patterns, numbuf, pattern);
 	}
 
-	if (dict_add_tuple(dict, "patterns", patterns) == FAIL)
+	if (dict_add_dict(dict, "patterns", patterns) == FAIL)
 	{
 patterns_fail:
-	    tuple_unref(patterns);
+	    dict_unref(patterns);
 	    goto fail;
 	}
     }
@@ -1943,16 +1950,6 @@ range_fail:
     rettv->vval.v_opaque = op;
 }
 
-#ifdef ELAPSED_FUNC
-    static bool
-querycursor_progress_callback(TSQueryCursorState *state)
-{
-    ProgressContext *ctx = state->payload;
-
-    return ELAPSED_FUNC(ctx->start) >= ctx->timeout;
-}
-#endif
-
     void
 f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1960,12 +1957,10 @@ f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
     TSQuery		    *query;
     TSNode		    node;
     opaque_T		    *old_query, *old_node;
-    varnumber_T		    timeout = -1;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
 	    || check_for_opaque_arg(argvars, 1) == FAIL
-	    || check_for_opaque_arg(argvars, 2) == FAIL
-	    || check_for_opt_number_arg(argvars, 3) == FAIL)
+	    || check_for_opaque_arg(argvars, 2) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsquerycursor_type) == FAIL
@@ -1993,27 +1988,7 @@ f_tsquerycursor_exec(typval_T *argvars, typval_T *rettv UNUSED)
     OP2TSQUERYCURSOR(argvars[0].vval.v_opaque)->query = argvars[1].vval.v_opaque;
     argvars[1].vval.v_opaque->op_refcount++;
 
-    if (argvars[3].v_type != VAR_UNKNOWN)
-	timeout = argvars[3].vval.v_number;
-
-    if (timeout < 0)
-    {
-	TSQueryCursorOptions opts;
-#ifdef ELAPSED_FUNC
-	ProgressContext progress_ctx;
-
-	ELAPSED_INIT(progress_ctx.start);
-	progress_ctx.timeout = timeout;
-	opts.payload = &progress_ctx;
-	opts.progress_callback = querycursor_progress_callback;
-#else
-	(void)timeout;
-	memset(&opts, 0, sizeof(opts));
-#endif
-	ts_query_cursor_exec_with_options(cursor, query, node, &opts);
-    }
-    else
-	ts_query_cursor_exec(cursor, query, node);
+    ts_query_cursor_exec(cursor, query, node);
 }
 
     void
