@@ -281,8 +281,8 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
 	return FAIL;
     }
 
-    point->row = row->vval.v_number - 1;
-    point->column = col->vval.v_number - 1;
+    point->row = row->vval.v_number;
+    point->column = col->vval.v_number;
     return OK;
 }
 
@@ -1529,6 +1529,9 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
     ts_tree_edit(OP2TSTREE(argvars[0].vval.v_opaque)->tree, &edit);
 }
 
+/*
+ * TODO: convert this and tsparser_included_ranges into an opaque property
+ */
 /*
  * "tstree_included_ranges()" function
  */
