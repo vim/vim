@@ -4,11 +4,11 @@
 =	                         CAPÍTULO DOS                                 =
 ===============================================================================
 
-     Hic Sunt Dracones: si esta es tu primera vez usando vim y tienes la
+     Hic Sunt Dracones: si esta es tu primera vez usando Vim y tienes la
      intención de aprovechar el capítulo de introducción, simplemente escribe
      :q!<ENTER> y ejecuta vimtutor para empezar por el Capítulo 1.
 
-     El tiempo aproxiomado para completar este capítulo es de 8-10 minutos,
+     El tiempo aproximado para completar este capítulo es de 8-10 minutos,
      dependiendo de cuanto tiempo dediques a experimentar.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,10 +30,10 @@
 
   2. Trabaja con contenido entre paréntesis, corchetes o llaves:
      - Situa el cursor dentro de cualquier par de los símbolos () {} [] <>
-     - Escribe  di(  o  dib  (eliminar dentro de los símbolos)
-     - Escribe  da(  o  dab  (eliminar alrededor de los símbolos)
-     - Prueba lo mismo con  i"/a"  para las comillas
-     - Prueba con  it/at  para etiquetas HTML/XML
+     - Escribe  di(  o  dib  (eliminar dentro de los paréntesis)
+     - Escribe  da(  o  dab  (eliminar alrededor de los paréntesis)
+     - Prueba lo mismo con  i" o con  a"  para las comillas
+     - Prueba con  it o con  at  para etiquetas HTML/XML
 
 ---> Ejemplos de prueba: con {llaves}, [corchetes], <ángulos> y "comillas".
 
@@ -44,12 +44,11 @@
        (funciona entre símbolos de puntuación .!?)
 
   4. Combinaciones avanzadas:
-     - ciwnuevo<ESC>    - Cambiar la palabra actual por "nuevo"
-     - yss"<ESC>        - Encerrar la línea completa entre comillas
-                          (similar al comlemento vim-surround)
-     - gUit             - Convertir a mayúsculas el contenido de la
-			  etiqueta HTML donde esté el cursor
-     - va"p             - Seleccionar el texto entre comillas y pegarlo sobre él
+     - ciwnuevo<ESC>     - Cambiar la palabra actual por "nuevo"
+     - ciw"<CTRL-R>-"<ESC> - Encierra la palabra actual entre comillas
+     - gUit              - Convertir a mayúsculas el contenido de la
+			               etiqueta HTML donde esté el cursor
+     - va"p              - Seleccionar el texto entre comillas y pegarlo sobre él
 
 ---> Ejercicio final: (Modificar "el" texto) al [aplicar {varias} operaciones]<
 
@@ -101,7 +100,7 @@ REFERENCIAS: 	Registros 		:h registers
 
   2. Navega hasta cualquier parte del número que se muestra
 
-  3. Escribe ciw<CTRL-R> seguido por =60*60*24<ENTER>
+  3. Escribe  ciw<CTRL-R>  seguido por =60*60*24<ENTER>
 
   4. En la línea siguiente, entra en modo insertar y añade la fecha actual con
      <CTRL-R> seguido por  =system('date')<ENTER>
