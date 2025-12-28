@@ -3646,6 +3646,7 @@ qf_jump_print_msg(
 {
     linenr_T		i;
     garray_T		*gap;
+    size_t		IObufflen;
 
     gap = qfga_get();
 
@@ -3653,12 +3654,13 @@ qf_jump_print_msg(
     // scrolled up.
     if (!msg_scrolled)
 	update_topline_redraw();
-    vim_snprintf((char *)IObuff, IOSIZE, _("(%d of %d)%s%s: "), qf_index,
+    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+	    _("(%d of %d)%s%s: "), qf_index,
 	    qf_get_curlist(qi)->qf_count,
 	    qf_ptr->qf_cleared ? _(" (line deleted)") : "",
 	    (char *)qf_types(qf_ptr->qf_type, qf_ptr->qf_nr));
     // Add the message, skipping leading whitespace and newlines.
-    ga_concat(gap, IObuff);
+    ga_concat_len(gap, IObuff, IObufflen);
     qf_fmt_text(gap, skipwhite(qf_ptr->qf_text));
     ga_append(gap, NUL);
 
@@ -4126,32 +4128,25 @@ qf_fmt_text(garray_T *gap, char_u *text)
     static void
 qf_range_text(garray_T *gap, qfline_T *qfp)
 {
-    char_u	*buf = IObuff;
-    int		bufsize = IOSIZE;
-    int len;
+    string_T	buf = {IObuff, 0};
 
-    vim_snprintf((char *)buf, bufsize, "%ld", qfp->qf_lnum);
-    len = (int)STRLEN(buf);
+    buf.length = vim_snprintf_safelen((char *)buf.string, IOSIZE, "%ld", qfp->qf_lnum);
 
     if (qfp->qf_end_lnum > 0 && qfp->qf_lnum != qfp->qf_end_lnum)
     {
-	vim_snprintf((char *)buf + len, bufsize - len, "-%ld",
-							     qfp->qf_end_lnum);
-	len += (int)STRLEN(buf + len);
+	buf.length += vim_snprintf_safelen((char *)buf.string + buf.length,
+	    IOSIZE - buf.length, "-%ld", qfp->qf_end_lnum);
     }
     if (qfp->qf_col > 0)
     {
-	vim_snprintf((char *)buf + len, bufsize - len, " col %d", qfp->qf_col);
-	len += (int)STRLEN(buf + len);
+	buf.length += vim_snprintf_safelen((char *)buf.string + buf.length,
+	    IOSIZE - buf.length, " col %d", qfp->qf_col);
 	if (qfp->qf_end_col > 0 && qfp->qf_col != qfp->qf_end_col)
-	{
-	    vim_snprintf((char *)buf + len, bufsize - len, "-%d",
-							      qfp->qf_end_col);
-	    len += (int)STRLEN(buf + len);
-	}
+	    buf.length += vim_snprintf_safelen((char *)buf.string + buf.length,
+		IOSIZE - buf.length, "-%d", qfp->qf_end_col);
     }
 
-    ga_concat_len(gap, buf, len);
+    ga_concat_len(gap, buf.string, buf.length);
 }
 
 /*

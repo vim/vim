@@ -6270,14 +6270,14 @@ partial_tv2string(
     fname = string_quote(pt == NULL ? NULL : partial_name(pt), FALSE);
 
     ga_init2(&ga, 1, 100);
-    ga_concat(&ga, (char_u *)"function(");
+    ga_concat_len(&ga, (char_u *)"function(", 9);
     if (fname != NULL)
     {
 	// When using uf_name prepend "g:" for a global function.
 	if (pt != NULL && pt->pt_name == NULL && fname[0] == '\''
 						&& vim_isupper(fname[1]))
 	{
-	    ga_concat(&ga, (char_u *)"'g:");
+	    ga_concat_len(&ga, (char_u *)"'g:", 3);
 	    ga_concat(&ga, fname + 1);
 	}
 	else
@@ -6286,21 +6286,21 @@ partial_tv2string(
     }
     if (pt != NULL && pt->pt_argc > 0)
     {
-	ga_concat(&ga, (char_u *)", [");
+	ga_concat_len(&ga, (char_u *)", [", 3);
 	for (i = 0; i < pt->pt_argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat(&ga, (char_u *)", ");
+		ga_concat_len(&ga, (char_u *)", ", 2);
 	    ga_concat(&ga, tv2string(&pt->pt_argv[i], &tf, numbuf, copyID));
 	    vim_free(tf);
 	}
-	ga_concat(&ga, (char_u *)"]");
+	ga_concat_len(&ga, (char_u *)"]", 1);
     }
     if (pt != NULL && pt->pt_dict != NULL)
     {
 	typval_T dtv;
 
-	ga_concat(&ga, (char_u *)", ");
+	ga_concat_len(&ga, (char_u *)", ", 2);
 	dtv.v_type = VAR_DICT;
 	dtv.vval.v_dict = pt->pt_dict;
 	ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));

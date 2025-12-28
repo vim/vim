@@ -1200,10 +1200,14 @@ f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
 	winnr = 1;
 	FOR_ALL_WINDOWS(wp)
 	{
-	    sprintf((char *)buf, ":%dresize %d|", winnr, wp->w_height);
-	    ga_concat(&ga, buf);
-	    sprintf((char *)buf, "vert :%dresize %d|", winnr, wp->w_width);
-	    ga_concat(&ga, buf);
+	    size_t  buflen;
+
+	    buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		":%dresize %d|", winnr, wp->w_height);
+	    ga_concat_len(&ga, buf, buflen);
+	    buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		"vert :%dresize %d|", winnr, wp->w_width);
+	    ga_concat_len(&ga, buf, buflen);
 	    ++winnr;
 	}
     }
