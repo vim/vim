@@ -2746,40 +2746,40 @@ installvimdiff: $(DEST_BIN)/$(VIMDIFFTARGET)
 installgvimdiff: $(DEST_BIN)/$(GVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EXTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EXTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EXTARGET)
 
 $(DEST_BIN)/$(VIEWTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIEWTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(VIEWTARGET)
 
 $(DEST_BIN)/$(GVIMTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIMTARGET)
 
 $(DEST_BIN)/$(GVIEWTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIEWTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIEWTARGET)
 
 $(DEST_BIN)/$(RVIMTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIMTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RVIMTARGET)
 
 $(DEST_BIN)/$(RVIEWTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIEWTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RVIEWTARGET)
 
 $(DEST_BIN)/$(RGVIMTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIMTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RGVIMTARGET)
 
 $(DEST_BIN)/$(RGVIEWTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIEWTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RGVIEWTARGET)
 
 $(DEST_BIN)/$(VIMDIFFTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIMDIFFTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(VIMDIFFTARGET)
 
 $(DEST_BIN)/$(GVIMDIFFTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMDIFFTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EVIMTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIMTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EVIMTARGET)
 
 $(DEST_BIN)/$(EVIEWTARGET): $(DEST_BIN)
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIEWTARGET)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EVIEWTARGET)
 
 # Create links for the manual pages with various names to vim.	This is only
 # done when the links (or manpages with the same name) don't exist yet.
