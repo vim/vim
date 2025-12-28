@@ -8570,9 +8570,9 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18995)
 
 /*
- * Not stable now.
+ * Make conpty default on Windows 11
  */
-#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 22000)
 // Notes:
 // Win 10 22H2 Final is build 19045, it's conpty is widely used.
 // Strangely, 19045 is newer but is a lower build number than the 2020 insider
