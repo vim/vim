@@ -4175,7 +4175,17 @@ channel_handle_events(int only_keep_open)
 	    if (fd == INVALID_FD)
 		continue;
 
-	    int r = channel_wait(channel, fd, 0);
+	    // In normal cases, a timeout of 0 is sufficient.
+	    //
+	    // But, in Windows conpty terminals, the final output of a
+	    // terminated process may be missed.  In this case, in order for
+	    // Vim to read the final output, it is necessary to set the timeout
+	    // to 1 msec or more.  It seems that the final output can be
+	    // received by calling Sleep() once within channel_wait().  Note
+	    // that ch_killing can only be TRUE in conpty terminals, so it has
+	    // no side effects in environments other than conpty.
+	    int r = channel_wait(channel, fd, (channel->ch_killing &&
+			(part == PART_OUT || part == PART_ERR)) ? 1 : 0);
 
 	    if (r == CW_READY)
 		channel_read(channel, part, "channel_handle_events");

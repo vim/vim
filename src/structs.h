@@ -2716,8 +2716,14 @@ struct channel_S {
 				// reference, the job refers to the channel.
     int		ch_job_killed;	// TRUE when there was a job and it was killed
 				// or we know it died.
-    int		ch_anonymous_pipe;  // ConPTY
-    int		ch_killing;	    // TerminateJobObject() was called
+    int		ch_anonymous_pipe;  // Indicates that anonymous pipes are being
+				    // used for communication in the Windows
+				    // ConPTY terminal.
+    int		ch_killing;	    // Indicates that the job associated with
+				    // the channel is terminating.  It becomes
+				    // TRUE when TerminateJobObject() was
+				    // called or the process associated with
+				    // the job had exited (only ConPTY).
 
     int		ch_refcount;	// reference count
     int		ch_copyID;
