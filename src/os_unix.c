@@ -9416,7 +9416,7 @@ socket_server_list_sockets(void)
 
 	    // Try sending an ALIVE command. This is more assuring than a
 	    // simple connect, and *also seems to make tests less flaky*.
-	    if (!socket_server_check_alive(buf))
+	    if (!socket_server_check_alive(buf.string))
 		continue;
 
 	    ga_concat_len(&str, (char_u *)dp->d_name, buf.length - (path.length + 1));
