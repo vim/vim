@@ -2454,7 +2454,7 @@ typedef enum {
 typedef enum {
     STL_MODE_SINGLE,	    // Does not accept line breaks "%@"
     STL_MODE_MULTI,	    // Accept line breaks "%@"
-    STL_MODE_COUNT_LBREAKS, // Just count line breaks "%@"
+    STL_MODE_GET_RENDERED_HEIGHT,   // Just get stl rendered height
 } stl_mode_T;
 
 // Return value of match_keyprotocol()

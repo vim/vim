@@ -4394,20 +4394,20 @@ build_stl_str_hl_mline(
 }
 
     int
-count_linebreaks_from_stl_str(
+get_stl_rendered_height(
     win_T	*wp,
     char_u	*fmt,
     char_u	*opt_name,      // option name corresponding to "fmt"
     int		opt_scope)	// scope for "opt_name"
 {
-    int lbreaks = 0;
+    int rendered_height = 0;
     char_u	buf[MAXPATHL] = {0};
 
-    (void)build_stl_str_hl_local(STL_MODE_COUNT_LBREAKS,
+    (void)build_stl_str_hl_local(STL_MODE_GET_RENDERED_HEIGHT,
 	    wp, buf, sizeof(buf), &fmt,
-	    opt_name, opt_scope, 0, 0, NULL, NULL, &lbreaks);
-    HH_ch_log("lbreaks:%d, fmt:\"%s\"", lbreaks, fmt);
-    return lbreaks;
+	    opt_name, opt_scope, 0, 0, NULL, NULL, &rendered_height);
+    HH_ch_log("rendered_height:%d, fmt:\"%s\"", rendered_height, fmt);
+    return rendered_height;
 }
 
 /*
@@ -4417,9 +4417,15 @@ count_linebreaks_from_stl_str(
  *  STL_MODE_MULTI:
  *  - Accept line breaks
  *  - Update fmt_arg to the start of the next line or last NUL position
- *  STL_MODE_COUNT_LBREAKS:
- *  - Just count line breaks
- *  - Update lbreaks (if not NULL)
+ *  STL_MODE_GET_RENDERED_HEIGHT:
+ *  - Just get stl rendered height
+ *  - Update rendered_height (if not NULL)
+ *
+ * NOTE:
+ * Line break counting is performed here because `%{% ... %}` items
+ * are re-evaluated on redraw and may change the final rendered text.
+ * Therefore, layout decisions must be based on the fully evaluated statusline
+ * string, not on pre-evaluation parsing.
  */
 static int
 build_stl_str_hl_local(
@@ -4434,7 +4440,7 @@ build_stl_str_hl_local(
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
     stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
-    int		*lbreaks)	// return: nr of line breaks (can be NULL)
+    int		*rendered_height)   // return: stl rendered height (can be NULL)
 {
     linenr_T	lnum;
     colnr_T	len;
@@ -4478,7 +4484,7 @@ build_stl_str_hl_local(
     // matter?
     // int	called_emsg_before = called_emsg;
     int		did_emsg_before = did_emsg;
-    int		lbreak_num = 0;		// Number of line breaks
+    int		rheight = 1;	// stl rendered height
 
     HH_ch_log("in. mode:%d, *fmt_arg:%p \"%s\"", mode, *fmt_arg, *fmt_arg);
     // When inside update_screen() we do not want redrawing a statusline,
@@ -4625,7 +4631,7 @@ build_stl_str_hl_local(
 		break;
 	    }
 	    else
-		lbreak_num++;
+		rheight++;
 	}
 	if (*s == '%')
 	{
@@ -5288,7 +5294,7 @@ build_stl_str_hl_local(
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
-    //if (mode == STL_MODE_MULTI || mode == STL_MODE_COUNT_LBREAKS)
+    //if (mode == STL_MODE_MULTI || mode == STL_MODE_GET_RENDERED_HEIGHT)
     if (mode == STL_MODE_MULTI)
     {
 #ifdef FEAT_EVAL
@@ -5309,10 +5315,10 @@ build_stl_str_hl_local(
 #endif
     }
 
-    if (mode == STL_MODE_COUNT_LBREAKS)
+    if (mode == STL_MODE_GET_RENDERED_HEIGHT)
     {
-	if (lbreaks != NULL)
-	    *lbreaks = lbreak_num;
+	if (rendered_height != NULL)
+	    *rendered_height = rheight;
 	return 0;
     }
 

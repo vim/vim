@@ -4048,14 +4048,13 @@ struct window_S
 				    // status/command/winbar line(s)
     int		w_prev_winrow;	    // previous winrow used for 'splitkeep'
     int		w_prev_height;	    // previous height used for 'splitkeep'
-
-    int		w_stl_lbreaks;	    // number of line breaks ("%@") in 'stl'
-				    // option
     int		w_status_height;    // number of status lines.
 				    // If 'statuslineopt' was changed, this
 				    // member will be the previous value until
 				    // call function
 				    // frame_change_statusline_height().
+    int		w_stlh_desired;	    // desired statusline height
+				    // (Number of "%@" in 'stl' option + 1)
     int		w_wincol;	    // Leftmost column of window in screen.
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).

@@ -95,7 +95,7 @@ static int split_disallowed = 0;
 static int close_disallowed = 0;
 
 #if defined(FEAT_STL_OPT)
-static int stl_lbreaks = 0;
+static int stlh_desired = STATUS_HEIGHT;
 static int stlo_fh = FALSE;
 static int stlo_mh = STATUS_HEIGHT;
 #endif
@@ -7673,7 +7673,7 @@ last_status_rec(frame_T *fr, int statusline)
 fitting_statusline_height_value(void)
 {
     char_u *l_p_stl = *curwin->w_p_stl == NUL ? p_stl : curwin->w_p_stl;
-    int *l_lbreaks;
+    int *l_stlh_desired;
     int l_stlo_fh;
     int l_stlo_mh;
     char_u *opt_name = (char_u *)"statusline";
@@ -7682,13 +7682,13 @@ fitting_statusline_height_value(void)
     if (*curwin->w_p_stl == NUL)
     {
 	l_p_stl = p_stl;
-	l_lbreaks = &stl_lbreaks;
+	l_stlh_desired = &stlh_desired;
 	opt_scope = 0;
     }
     else
     {
 	l_p_stl = curwin->w_p_stl;
-	l_lbreaks = &curwin->w_stl_lbreaks;
+	l_stlh_desired = &curwin->w_stlh_desired;
 	opt_scope = OPT_LOCAL;
     }
 
@@ -7704,10 +7704,10 @@ fitting_statusline_height_value(void)
     }
 
     if (!l_stlo_fh && l_stlo_mh > 1)
-	*l_lbreaks = count_linebreaks_from_stl_str(curwin, l_p_stl,
+	*l_stlh_desired = get_stl_rendered_height(curwin, l_p_stl,
 		opt_name, opt_scope);
     else
-	*l_lbreaks = 0;
+	*l_stlh_desired = 1;
 
     return;
 }
@@ -7837,13 +7837,13 @@ statusline_height(win_T *wp UNUSED)
 
     if (!fixed)
     {
-	int lbreaks;
+	int l_stlh_desired;
 
 	if (wp != NULL && *wp->w_p_stl != NUL)
-	    lbreaks = wp->w_stl_lbreaks;
+	    l_stlh_desired = wp->w_stlh_desired;
 	else
-	    lbreaks = stl_lbreaks;
-	stl_height = MIN(lbreaks + 1, stl_height);
+	    l_stlh_desired = stlh_desired;
+	stl_height = MAX(1, MIN(l_stlh_desired, stl_height));
     }
 
     if (wp == NULL)
