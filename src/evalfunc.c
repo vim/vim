@@ -1331,7 +1331,6 @@ static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
 static argcheck_T arg1_tsquerycursor[] = {arg_tsquerycursor};
 static argcheck_T arg1_tsquery[] = {arg_tsquery};
 static argcheck_T arg1_tsparser[] = {arg_tsparser};
-static argcheck_T arg1_tstree[] = {arg_tstree};
 static argcheck_T arg2_tsparser_string[] = {arg_tsparser, arg_string};
 static argcheck_T arg2_tsparser_list[] = {arg_tsparser, arg_list_any};
 static argcheck_T arg2_tsquerycursor_number[] = {arg_tsquerycursor, arg_number};
@@ -1409,7 +1408,6 @@ static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool}
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_tsnode_number_bool[] = {arg_tsnode, arg_number, arg_bool};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg3_tsparser_string_tstree[] = {arg_tsparser, arg_string, arg_tstree};
 static argcheck_T arg3_tsquerycursor_tsquery_tsnode[] = {arg_tsquerycursor, arg_tsquery, arg_tsnode};
 static argcheck_T arg4_tsnode_tuple_tuple_bool[] = {arg_tsnode, arg_tuple_any, arg_tuple_any, arg_bool};
 static argcheck_T arg4_tsparser_buffer_number_tstree[] = {arg_tsparser, arg_buffer, arg_number, arg_tstree};
@@ -3292,10 +3290,8 @@ static const funcentry_T global_functions[] =
 			TS_FUNC(f_tsnode_descendant_for_range)},
     {"tsparser_new",	0, 0, 0,	    NULL,
 			TS_OPRET(ret_tsparser),	TS_FUNC(f_tsparser_new)},
-    {"tsparser_parse_buf", 3, 4, FEARG_1,   arg4_tsparser_buffer_number_tstree,
-			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_buf)},
-    {"tsparser_parse_string", 2, 3, FEARG_1, arg3_tsparser_string_tstree,
-			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse_string)},
+    {"tsparser_parse",	3, 4, FEARG_1,	    arg4_tsparser_buffer_number_tstree,
+			TS_OPRET(ret_tstree), TS_FUNC(f_tsparser_parse)},
     {"tsparser_reset",	1, 1, FEARG_1,	    arg1_tsparser,
 			ret_void,	    TS_FUNC(f_tsparser_reset)},
     {"tsparser_set_included_ranges", 2, 2, FEARG_1, arg2_tsparser_list,

@@ -1085,12 +1085,6 @@ tsvim_parser_parse(
     (void)timeout;
 #endif
 
-    if (read == NULL)
-    {
-	char *str = userdata;
-        return ts_parser_parse_string(parser, last_tree, str, STRLEN(str));
-    }
-
     if (enc_utf8)
 	input.encoding = TSInputEncodingUTF8;
     else if (enc_unicode == 2)
@@ -1175,15 +1169,13 @@ parse_buf_read_callback(
 /*
  * Parse the given buffer or string using the parser and return the result
  * TSTree if is completed within the timeout, else NULL. If "timeout" is
- * negative, then there will be no timeout. If "buf" is NULL and "string" is
- * not, then "timeout" will be ignored and the string will be parsed fully.
+ * negative, then there will be no timeout.
  */
     static opaque_T *
 tsparser_parse(
 	opaque_T *parser,
 	opaque_T *last_tree,
 	buf_T *buf,
-	char_u *str,
 	long timeout)
 {
     TSTree	*ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree)->tree;
@@ -1197,12 +1189,8 @@ tsparser_parse(
 	return NULL;
     }
 
-    if (buf == NULL)
-	res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
-		NULL, str, 0);
-    else
-	res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
-		parse_buf_read_callback, buf, timeout);
+    res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
+	    parse_buf_read_callback, buf, timeout);
 
     if (res == NULL)
 	return NULL;
@@ -1396,7 +1384,7 @@ f_tsparser_set_language(typval_T *argvars, typval_T *rettv UNUSED)
  * "tsparser_parse_buf()" function
  */
     void
-f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
+f_tsparser_parse(typval_T *argvars, typval_T *rettv)
 {
     if (check_for_opaque_arg(argvars, 0) == FAIL
 	    || check_for_buffer_arg(argvars, 1) == FAIL
@@ -1418,36 +1406,7 @@ f_tsparser_parse_buf(typval_T *argvars, typval_T *rettv)
 	    return;
 
 	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
-		buf, NULL, argvars[2].vval.v_number);
-
-	rettv->v_type = VAR_OPAQUE;
-	rettv->vval.v_opaque = res;
-    }
-}
-
-/*
- * "tsparser_parse_string()" function
- */
-    void
-f_tsparser_parse_string(typval_T *argvars, typval_T *rettv)
-{
-    if (check_for_opaque_arg(argvars, 0) == FAIL
-	    || check_for_string_arg(argvars, 1) == FAIL
-	    || check_for_opt_opaque_arg(argvars, 2) == FAIL)
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL
-	    || check_for_opt_opaque_type_arg(argvars, 2, &tstree_type) == FAIL)
-	return;
-
-    {
-	char_u	    *str = argvars[1].vval.v_string;
-	opaque_T    *res;
-        opaque_T    *oldtree =
-            argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
-
-	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
-		NULL, str, 0);
+		buf, argvars[2].vval.v_number);
 
 	rettv->v_type = VAR_OPAQUE;
 	rettv->vval.v_opaque = res;
