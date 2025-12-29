@@ -249,8 +249,8 @@ tspoint_to_tuple(TSPoint *point)
     if (t == NULL)
 	return NULL;
 
-    tuple_set_number(t, 0, point->row);
-    tuple_set_number(t, 1, point->column);
+    tuple_set_number(t, 0, MIN((varnumber_T)point->row + 1, UINT32_MAX));
+    tuple_set_number(t, 1, MIN((varnumber_T)point->column + 1, UINT32_MAX));
     t->tv_refcount++;
 
     return t;
@@ -281,8 +281,8 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
 	return FAIL;
     }
 
-    point->row = row->vval.v_number;
-    point->column = col->vval.v_number;
+    point->row = row->vval.v_number - 1;
+    point->column = col->vval.v_number - 1;
     return OK;
 }
 
