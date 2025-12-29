@@ -797,7 +797,7 @@ tsparser_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 
     switch ((TSVimParserProperty)prop->opp_idx)
     {
-	case TPPROP_INCLUDED_RANGES:
+	case TPPROP_INCLUDED_RANGES:	    // included_ranges
 	{
 	    tuple_T	    *ret;
 	    const TSRange   *ranges;
@@ -1477,10 +1477,7 @@ f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
     len = list_len(argvars[1].vval.v_list);
 
     if (len == 0)
-    {
-	semsg(_(e_invalid_argument_str), "empty list");
 	return;
-    }
 
     ranges = ALLOC_MULT(TSRange, len);
 
