@@ -742,7 +742,8 @@ tsquerymatch_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rett
 
 typedef enum
 {
-    TRPROP_ROOT = 0,
+    TRPROP_INCLUDED_RANGES = 0,
+    TRPROP_ROOT
 } TSVimTreeProperty;
 
     static int
@@ -754,7 +755,7 @@ tstree_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
     {
 	case TRPROP_ROOT:		    // root
 	{
-	    TSNode node = ts_tree_root_node(OP2TSTREE(tree)->tree);
+	    TSNode node = ts_tree_root_node(tree->tree);
 	    opaque_T *res = new_tsnode(&node, op);
 
 	    if (res == NULL)
@@ -763,9 +764,58 @@ tstree_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
 	    rettv->vval.v_opaque = res;
 	}
 	    break;
+	case TRPROP_INCLUDED_RANGES:	    // included_ranges
+	{
+	    tuple_T	*ret;
+	    TSRange	*ranges;
+	    uint32_t	count;
+
+	    ranges = ts_tree_included_ranges(tree->tree, &count);
+
+	    ret = tsrange_array_to_tuple(ranges, count);
+	    vim_free(ranges);
+
+	    if (ret == NULL)
+		return FAIL;
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = ret;
+	}
+	    break;
     }
     return OK;
 }
+
+typedef enum
+{
+    TPPROP_INCLUDED_RANGES = 0
+} TSVimParserProperty;
+
+    static int
+tsparser_property_func(opaque_T *op, opaque_property_T *prop, typval_T *rettv)
+{
+    TSVimParser *parser = OP2TSPARSER(op);
+
+    switch ((TSVimParserProperty)prop->opp_idx)
+    {
+	case TPPROP_INCLUDED_RANGES:
+	{
+	    tuple_T	    *ret;
+	    const TSRange   *ranges;
+	    uint32_t	    count;
+
+	    ranges = ts_parser_included_ranges(parser->parser, &count);
+	    ret = tsrange_array_to_tuple(ranges, count);
+
+	    if (ret == NULL)
+		return FAIL;
+	    rettv->v_type = VAR_TUPLE;
+	    rettv->vval.v_tuple = ret;
+	}
+	    break;
+    }
+    return OK;
+}
+
 
 static type_T *number_number[] = {&t_number, &t_number};
 static type_T t_tspoint = {
@@ -776,12 +826,15 @@ static type_T *tsrange_members[] = {&t_tspoint, &t_number, &t_tspoint, &t_number
 static type_T t_tsrange = {
     VAR_TUPLE, 4, 4, TTFLAG_STATIC, &t_any, NULL, tsrange_members, NULL
 };
+static type_T t_tsrange_tuple = {
+    VAR_TUPLE, -1, 0, TTFLAG_STATIC, &t_tsrange, NULL, NULL, NULL
+};
 
 static type_T t_tscapture = {
     VAR_LIST, -1, 0, TTFLAG_STATIC, &t_tsnode, NULL, NULL, NULL
 };
 
-static type_T t_tscapturesdict = {
+static type_T t_tscaptures_dict = {
     VAR_DICT, -1, 0,TTFLAG_STATIC, &t_tscapture, NULL, NULL, NULL
 };
 
@@ -810,41 +863,47 @@ type_T t_tsquerymatch = {
 };
 
 static opaque_property_T tsnode_properties[] = {
-    {NPROP_CHILD_COUNT,		    OPPROPNAME("child_count"), &t_number},
-    {NPROP_END_BYTE,		    OPPROPNAME("end_byte"), &t_number},
-    {NPROP_END_POINT,		    OPPROPNAME("end_point"), &t_tspoint},
-    {NPROP_EXTRA,		    OPPROPNAME("extra"), &t_bool},
-    {NPROP_HAS_CHANGES,		    OPPROPNAME("has_changes"), &t_bool},
-    {NPROP_HAS_ERROR,		    OPPROPNAME("has_error"), &t_bool},
-    {NPROP_MISSING,		    OPPROPNAME("missing"), &t_bool},
-    {NPROP_NAMED,		    OPPROPNAME("named"), &t_bool},
-    {NPROP_NAMED_CHILD_COUNT,	    OPPROPNAME("named_child_count"), &t_number},
-    {NPROP_NEXT_NAMED_SIBLING,	    OPPROPNAME("next_named_sibling"), &t_tsnode},
-    {NPROP_NEXT_SIBLING,	    OPPROPNAME("next_sibling"), &t_tsnode},
-    {NPROP_PARENT,		    OPPROPNAME("parent"), &t_tsnode},
-    {NPROP_PREV_NAMED_SIBLING,	    OPPROPNAME("prev_named_sibling"), &t_tsnode},
-    {NPROP_PREV_SIBLING,	    OPPROPNAME("prev_sibling"), &t_tsnode},
-    {NPROP_RANGE,		    OPPROPNAME("range"), &t_tsrange},
-    {NPROP_START_BYTE,		    OPPROPNAME("start_byte"), &t_number},
-    {NPROP_START_POINT,		    OPPROPNAME("start_point"), &t_tspoint},
-    {NPROP_STRING,		    OPPROPNAME("string"), &t_string},
-    {NPROP_SYMBOL,		    OPPROPNAME("symbol"), &t_number},
-    {NPROP_TREE,		    OPPROPNAME("tree"), &t_tstree},
-    {NPROP_TYPE,		    OPPROPNAME("type"), &t_string},
+    {NPROP_CHILD_COUNT,		OPPROPNAME("child_count"), &t_number},
+    {NPROP_END_BYTE,		OPPROPNAME("end_byte"), &t_number},
+    {NPROP_END_POINT,		OPPROPNAME("end_point"), &t_tspoint},
+    {NPROP_EXTRA,		OPPROPNAME("extra"), &t_bool},
+    {NPROP_HAS_CHANGES,		OPPROPNAME("has_changes"), &t_bool},
+    {NPROP_HAS_ERROR,		OPPROPNAME("has_error"), &t_bool},
+    {NPROP_MISSING,		OPPROPNAME("missing"), &t_bool},
+    {NPROP_NAMED,		OPPROPNAME("named"), &t_bool},
+    {NPROP_NAMED_CHILD_COUNT,	OPPROPNAME("named_child_count"), &t_number},
+    {NPROP_NEXT_NAMED_SIBLING,	OPPROPNAME("next_named_sibling"), &t_tsnode},
+    {NPROP_NEXT_SIBLING,	OPPROPNAME("next_sibling"), &t_tsnode},
+    {NPROP_PARENT,		OPPROPNAME("parent"), &t_tsnode},
+    {NPROP_PREV_NAMED_SIBLING,	OPPROPNAME("prev_named_sibling"), &t_tsnode},
+    {NPROP_PREV_SIBLING,	OPPROPNAME("prev_sibling"), &t_tsnode},
+    {NPROP_RANGE,		OPPROPNAME("range"), &t_tsrange},
+    {NPROP_START_BYTE,		OPPROPNAME("start_byte"), &t_number},
+    {NPROP_START_POINT,		OPPROPNAME("start_point"), &t_tspoint},
+    {NPROP_STRING,		OPPROPNAME("string"), &t_string},
+    {NPROP_SYMBOL,		OPPROPNAME("symbol"), &t_number},
+    {NPROP_TREE,		OPPROPNAME("tree"), &t_tstree},
+    {NPROP_TYPE,		OPPROPNAME("type"), &t_string},
 };
 
 static opaque_property_T tsquerymatch_properties[] = {
-    {QMPROP_CAPTURES,		    OPPROPNAME("captures"), &t_tscapturesdict},
-    {QMPROP_ID,			    OPPROPNAME("id"), &t_number},
-    {QMPROP_PATTERN_INDEX,	    OPPROPNAME("pattern_index"), &t_number},
+    {QMPROP_CAPTURES,		OPPROPNAME("captures"), &t_tscaptures_dict},
+    {QMPROP_ID,			OPPROPNAME("id"), &t_number},
+    {QMPROP_PATTERN_INDEX,	OPPROPNAME("pattern_index"), &t_number},
 };
 
 static opaque_property_T tstree_properties[] = {
-    {TRPROP_ROOT,		    OPPROPNAME("root"), &t_tsnode},
+    {TRPROP_INCLUDED_RANGES,	OPPROPNAME("included_ranges"), &t_tsrange_tuple},
+    {TRPROP_ROOT,		OPPROPNAME("root"), &t_tsnode}
+};
+
+static opaque_property_T tsparser_properties[] = {
+    {TPPROP_INCLUDED_RANGES,	OPPROPNAME("included_ranges"), &t_tsrange_tuple},
 };
 
 static opaque_type_T tsparser_type = {
-    (char_u *)"TSParser", 0, NULL, tsparser_free_func, tsparser_equal_func, NULL, NULL
+    (char_u *)"TSParser", ARRAY_LENGTH(tsparser_properties), tsparser_properties,
+    tsparser_free_func, tsparser_equal_func, NULL, tsparser_property_func
 };
 
 static opaque_type_T tstree_type = {
@@ -1448,35 +1507,6 @@ exit:
 }
 
 /*
- * "tsparser_included_ranges()" function
- */
-    void
-f_tsparser_included_ranges(typval_T *argvars, typval_T *rettv)
-{
-    tuple_T	    *ret;
-    const TSRange   *ranges;
-    uint32_t	    count;
-    opaque_T	    *parser;
-
-    if (check_for_opaque_arg(argvars, 0) == FAIL)
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
-	return;
-
-    parser = argvars[0].vval.v_opaque;
-    ranges = ts_parser_included_ranges(OP2TSPARSER(parser)->parser, &count);
-
-    ret = tsrange_array_to_tuple(ranges, count);
-
-    if (ret == NULL)
-	return;
-
-    rettv->v_type = VAR_TUPLE;
-    rettv->vval.v_tuple = ret;
-}
-
-/*
  * "tsparser_reset()" function
  */
     void
@@ -1527,39 +1557,6 @@ f_tstree_edit(typval_T *argvars, typval_T *rettv UNUSED)
     edit.new_end_point = new_end_point;
 
     ts_tree_edit(OP2TSTREE(argvars[0].vval.v_opaque)->tree, &edit);
-}
-
-/*
- * TODO: convert this and tsparser_included_ranges into an opaque property
- */
-/*
- * "tstree_included_ranges()" function
- */
-    void
-f_tstree_included_ranges(typval_T *argvars, typval_T *rettv)
-{
-    tuple_T	*ret;
-    TSRange	*ranges;
-    uint32_t	count;
-    opaque_T	*tree;
-
-    if (check_for_opaque_arg(argvars, 0) == FAIL)
-	return;
-
-    if (check_for_opaque_type_arg(argvars, 0, &tstree_type) == FAIL)
-	return;
-
-    tree = argvars[0].vval.v_opaque;
-    ranges = ts_tree_included_ranges(OP2TSTREE(tree)->tree, &count);
-
-    ret = tsrange_array_to_tuple(ranges, count);
-    vim_free(ranges);
-
-    if (ret == NULL)
-	return;
-
-    rettv->v_type = VAR_TUPLE;
-    rettv->vval.v_tuple = ret;
 }
 
 /*
