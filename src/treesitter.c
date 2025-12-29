@@ -1612,8 +1612,8 @@ f_tsnode_child(typval_T *argvars, typval_T *rettv)
     if (check_for_opaque_type_arg(argvars, 0, &tsnode_type) == FAIL)
 	return;
 
-    if (argvars[3].v_type != VAR_UNKNOWN)
-	named = argvars[3].vval.v_number ? true : false;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	named = argvars[2].vval.v_number ? true : false;
 
     if (named)
 	new = ts_node_named_child(
