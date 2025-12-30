@@ -6132,7 +6132,7 @@ exec_instructions(ectx_T *ectx)
 			if (var_any_get_oc_member(ufunc->uf_class, iptr, tv) == FAIL)
 			    goto on_error;
 		    }
-		    if (tv->v_type == VAR_OPAQUE)
+		    else if (tv->v_type == VAR_OPAQUE)
 		    {
 			if (dict_stack_save(tv) == FAIL)
 			    goto on_fatal_error;
