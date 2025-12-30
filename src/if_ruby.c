@@ -244,7 +244,11 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #  define rb_check_type			dll_rb_check_type
 # endif
 # ifdef USE_TYPEDDATA
-#  define rb_check_typeddata		dll_rb_check_typeddata
+#  if RUBY_VERSION >= 40
+#    define rbimpl_check_typeddata		dll_rbimpl_check_typeddata
+#  else
+#    define define rb_check_typeddata		dll_rb_check_typeddata
+#  endif
 # endif
 # define rb_class_path			dll_rb_class_path
 # ifdef USE_TYPEDDATA
@@ -373,7 +377,11 @@ VALUE *dll_rb_cTrueClass;
 static VALUE (*dll_rb_class_new_instance) (int,VALUE*,VALUE);
 static void (*dll_rb_check_type) (VALUE,int);
 # ifdef USE_TYPEDDATA
+#  if RUBY_VERSION >= 40
+static void *(*dll_rbimpl_check_typeddata) (VALUE,const rb_data_type_t *);
+#  else
 static void *(*dll_rb_check_typeddata) (VALUE,const rb_data_type_t *);
+#  endif
 # endif
 static VALUE (*dll_rb_class_path) (VALUE);
 # ifdef USE_TYPEDDATA
@@ -632,7 +640,11 @@ static struct
     {"rb_class_new_instance", (RUBY_PROC*)&dll_rb_class_new_instance},
     {"rb_check_type", (RUBY_PROC*)&dll_rb_check_type},
 # ifdef USE_TYPEDDATA
+#  if RUBY_VERSION >= 40
+    {"rbimpl_check_typeddata", (RUBY_PROC*)&dll_rbimpl_check_typeddata},
+#  else
     {"rb_check_typeddata", (RUBY_PROC*)&dll_rb_check_typeddata},
+#  endif
 # endif
     {"rb_class_path", (RUBY_PROC*)&dll_rb_class_path},
 # ifdef USE_TYPEDDATA
