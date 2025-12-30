@@ -249,10 +249,10 @@ tspoint_to_tuple(TSPoint *point)
     if (t == NULL)
 	return NULL;
 
-    // Tree-sitter uses uint32_t, while colnr_T uses int, so we must prevent
-    // overflows.
-    tuple_set_number(t, 0, MIN((varnumber_T)point->row + 1, INT32_MAX));
-    tuple_set_number(t, 1, MIN((varnumber_T)point->column + 1, INT32_MAX));
+    // Tree-sitter uses uint32_t, while linenr_T and colnr_T use signed
+    // integers, so prevent overflows.
+    tuple_set_number(t, 0, MIN((varnumber_T)point->row + 1, MAXLNUM));
+    tuple_set_number(t, 1, MIN((varnumber_T)point->column + 1, MAXCOL));
     t->tv_refcount++;
 
     return t;
@@ -287,8 +287,8 @@ tuple_to_tspoint(tuple_T *tuple, TSPoint *point)
 	return FAIL;
     }
 
-    point->row = n_row == INT32_MAX ? n_row : n_row - 1;
-    point->column = n_col == INT32_MAX ? n_col : n_col - 1;
+    point->row = n_row == MAXLNUM ? n_row : n_row - 1;
+    point->column = n_col == MAXCOL ? n_col : n_col - 1;
     return OK;
 }
 
