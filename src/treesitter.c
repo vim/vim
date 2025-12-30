@@ -1438,7 +1438,7 @@ f_tsparser_parse(typval_T *argvars, typval_T *rettv)
 	    }
 
 	    tuple_set_opaque(ret, 0, res);
-	    tuple_set_number(ret, 1, took);
+	    tuple_set_number(ret, 1, MIN(took, argvars[2].vval.v_number));
 	    ret->tv_refcount++;
 	}
 	else
