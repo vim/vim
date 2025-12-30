@@ -1066,8 +1066,9 @@ parser_decode_callback(const uint8_t *string, uint32_t length, int32_t *code_poi
 }
 
 /*
- * Parse using the given read function. If "read" is NULL, then "userdata" is
- * assumed to be a string to be parsed, and "timeout" will be ignored.
+ * Parse using the given read function. "took" is set to the amount of time in
+ * milliseconds the parse took. If "timeout" is below zero or less, then "took"
+ * is not set.
  */
     static TSTree *
 tsvim_parser_parse(
@@ -1079,7 +1080,8 @@ tsvim_parser_parse(
 	    TSPoint position,
 	    uint32_t *bytes_read),
 	void *userdata,
-	long timeout
+	long timeout,
+	long *took
 	)
 {
     TSInput	    input;
@@ -1111,7 +1113,7 @@ tsvim_parser_parse(
     input.payload = userdata;
     input.read = read;
 
-    if (timeout >= 0)
+    if (timeout > 0)
     {
 #ifdef ELAPSED_FUNC
 	ELAPSED_INIT(progress_ctx.start);
@@ -1122,6 +1124,11 @@ tsvim_parser_parse(
 	memset(&opts, 0, sizeof(opts));
 #endif
 	res = ts_parser_parse_with_options(parser, last_tree, input, opts);
+#ifdef ELAPSED_FUNC
+	*took = ELAPSED_FUNC(progress_ctx.start);
+#else
+	*took = timeout;
+#endif
     }
     else
 	res = ts_parser_parse(parser, last_tree, input);
@@ -1175,14 +1182,16 @@ parse_buf_read_callback(
 /*
  * Parse the given buffer or string using the parser and return the result
  * TSTree if is completed within the timeout, else NULL. If "timeout" is
- * negative, then there will be no timeout.
+ * negative or zero, then there will be no timeout. "took" is set the amount of
+ * time elapsed, see tsvim_parser_parse() for more information.
  */
     static opaque_T *
 tsparser_parse(
 	opaque_T *parser,
 	opaque_T *last_tree,
 	buf_T *buf,
-	long timeout)
+	long timeout,
+	long *took)
 {
     TSTree	*ltree = last_tree == NULL ? NULL : OP2TSTREE(last_tree)->tree;
     TSTree	*res;
@@ -1196,7 +1205,7 @@ tsparser_parse(
     }
 
     res = tsvim_parser_parse(OP2TSPARSER(parser)->parser, ltree,
-	    parse_buf_read_callback, buf, timeout);
+	    parse_buf_read_callback, buf, timeout, took);
 
     if (res == NULL)
 	return NULL;
@@ -1407,15 +1416,28 @@ f_tsparser_parse(typval_T *argvars, typval_T *rettv)
 	opaque_T    *res;
         opaque_T    *oldtree =
             argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
+	long	    took;
 
 	if (buf == NULL)
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = -1;
 	    return;
+	}
 
 	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
-		buf, argvars[2].vval.v_number);
+		buf, argvars[2].vval.v_number, &took);
 
-	rettv->v_type = VAR_OPAQUE;
-	rettv->vval.v_opaque = res;
+	if (res != NULL)
+	{
+	    rettv->v_type = VAR_OPAQUE;
+	    rettv->vval.v_opaque = res;
+	}
+	else
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = took;
+	}
     }
 }
 
