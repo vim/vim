@@ -1439,6 +1439,7 @@ f_tsparser_parse(typval_T *argvars, typval_T *rettv)
 
 	    tuple_set_opaque(ret, 0, res);
 	    tuple_set_number(ret, 1, took);
+	    ret->tv_refcount++;
 	}
 	else
 	    // Return null if no TSTree returned
