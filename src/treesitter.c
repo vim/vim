@@ -1453,15 +1453,18 @@ f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
     uint32_t	i = 0;
 
     if (check_for_opaque_arg(argvars, 0) == FAIL
-	    || check_for_list_arg(argvars, 1) == FAIL)
+	    || check_for_list_or_tuple_arg(argvars, 1) == FAIL)
 	return;
 
     if (check_for_opaque_type_arg(argvars, 0, &tsparser_type) == FAIL)
 	return;
 
-    // The list contains tuples in the format of:
+    // The list/tuple contains tuples in the format of:
     // ((start_point), start_byte, (end_point), end_byte)
-    len = list_len(argvars[1].vval.v_list);
+    if (argvars[1].v_type == VAR_LIST)
+	len = list_len(argvars[1].vval.v_list);
+    else
+	len = tuple_len(argvars[1].vval.v_tuple);
 
     if (len == 0)
 	return;
@@ -1471,17 +1474,31 @@ f_tsparser_set_included_ranges(typval_T *argvars, typval_T *rettv)
     if (ranges == NULL)
 	return;
 
-    FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
-    {
-	if (li->li_tv.v_type != VAR_TUPLE)
+    if (argvars[1].v_type == VAR_LIST)
+	FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
 	{
-	    semsg(_(e_invalid_argument_str), "list of tuples required");
-	    goto exit;
+	    if (li->li_tv.v_type != VAR_TUPLE)
+	    {
+		semsg(_(e_invalid_argument_str), "list of tuples required");
+		goto exit;
+	    }
+	    if (tuple_to_tsrange(li->li_tv.vval.v_tuple, ranges + i) == FAIL)
+		goto exit;
+	    i++;
 	}
-	if (tuple_to_tsrange(li->li_tv.vval.v_tuple, ranges + i) == FAIL)
-	    goto exit;
-	i++;
-    }
+    else
+	for (; i < len; i++)
+	{
+	    typval_T *tv = TUPLE_ITEM(argvars[1].vval.v_tuple, i);
+
+	    if (tv->v_type != VAR_TUPLE)
+	    {
+		semsg(_(e_invalid_argument_str), "tuple of tuples required");
+		goto exit;
+	    }
+	    if (tuple_to_tsrange(tv->vval.v_tuple, ranges + i) == FAIL)
+		goto exit;
+	}
 
     rettv->vval.v_number = ts_parser_set_included_ranges(
 	    OP2TSPARSER(argvars[0].vval.v_opaque)->parser, ranges, len);
