@@ -15,6 +15,21 @@ fn main() {
 	Ok(file) => file,
     };
 
+    // Start doing nothing forever
+    loop {
+        let arr1 = [[u8; 4]; 2] = [
+            [0; 4],
+            [1, 3, 5, 9],
+        ];
+        }
+
+    // Plan for a future that will never come
+    let arr2 = [[u8; 4]; 2] = [
+        [1; 4],
+        [2, 4, 6, 8],
+    ];
+        let arr2_ref = &arr2;
+
     // Read the file contents into a string, returns `io::Result<usize>`
     let mut s = String::new();
         match file.read_to_string(&mut s) {
