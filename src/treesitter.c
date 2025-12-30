@@ -1414,30 +1414,38 @@ f_tsparser_parse(typval_T *argvars, typval_T *rettv)
     {
 	buf_T	    *buf = get_buf_arg(argvars + 1);
 	opaque_T    *res;
-        opaque_T    *oldtree =
-            argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
-	long	    took;
+        opaque_T    *oldtree;
+	long	    took = -1; // Default to -1 if there is no timeout
+	tuple_T	    *ret;
 
 	if (buf == NULL)
-	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = -1;
 	    return;
-	}
+
+	oldtree =
+	    argvars[3].v_type == VAR_UNKNOWN ? NULL : argvars[3].vval.v_opaque;
 
 	res = tsparser_parse(argvars[0].vval.v_opaque, oldtree,
 		buf, argvars[2].vval.v_number, &took);
 
 	if (res != NULL)
 	{
-	    rettv->v_type = VAR_OPAQUE;
-	    rettv->vval.v_opaque = res;
+	    ret = tuple_alloc_with_items(2);
+
+	    if (ret == NULL)
+	    {
+		opaque_unref(res);
+		return;
+	    }
+
+	    tuple_set_opaque(ret, 0, res);
+	    tuple_set_number(ret, 1, took);
 	}
 	else
-	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = took;
-	}
+	    // Return null if no TSTree returned
+	    ret = NULL;
+
+	rettv->v_type = VAR_TUPLE;
+	rettv->vval.v_tuple = ret;
     }
 }
 
