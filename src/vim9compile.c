@@ -2075,7 +2075,7 @@ compile_lhs_set_oc_member_type(
     // only inside the class where it is defined.
     if ((m->ocm_access != VIM_ACCESS_ALL) &&
 	    ((is_object && !inside_class(cctx, cl))
-	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
+	     || (!is_object && cctx->ctx_ufunc->uf_defclass != cl)))
     {
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 	    ? e_cannot_access_protected_variable_str
