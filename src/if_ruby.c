@@ -247,7 +247,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #  if RUBY_VERSION >= 40
 #    define rbimpl_check_typeddata		dll_rbimpl_check_typeddata
 #  else
-#    define define rb_check_typeddata		dll_rb_check_typeddata
+#    define rb_check_typeddata		dll_rb_check_typeddata
 #  endif
 # endif
 # define rb_class_path			dll_rb_class_path
