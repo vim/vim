@@ -898,12 +898,12 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 	    cells = (*mb_ptr2cells)(p);
 	    c_len = (*mb_ptr2len)(p);
-	    if (col + cells > wp->w_width
-# ifdef FEAT_RIGHTLEFT
-		    - (wp->w_p_rl ? col : 0)
-# endif
-		    )
+	    if (col + cells > wp->w_width)
 		break;
+# ifdef FEAT_RIGHTLEFT
+	    if (wp->w_p_rl)
+		idx = off + wp->w_width - col - cells;
+# endif
 	    ScreenLines[idx] = *p;
 	    if (enc_utf8)
 	    {
@@ -1270,35 +1270,33 @@ fold_line(
     col = text_to_screenline(wp, text, col);
 
     // Fill the rest of the line with the fold filler
-# ifdef FEAT_RIGHTLEFT
-    if (wp->w_p_rl)
-	col -= txtcol;
-# endif
-    while (col < wp->w_width
-# ifdef FEAT_RIGHTLEFT
-		    - (wp->w_p_rl ? txtcol : 0)
-# endif
-	    )
+    while (col < wp->w_width)
     {
 	int c = wp->w_fill_chars.fold;
+	int idx = off + col;
+
+# ifdef FEAT_RIGHTLEFT
+	if (wp->w_p_rl)
+	    idx = off + wp->w_width - 1 - col;
+# endif
 
 	if (enc_utf8)
 	{
 	    if (c >= 0x80)
 	    {
-		ScreenLinesUC[off + col] = c;
-		ScreenLinesC[0][off + col] = 0;
-		ScreenLines[off + col] = 0x80; // avoid storing zero
+		ScreenLinesUC[idx] = c;
+		ScreenLinesC[0][idx] = 0;
+		ScreenLines[idx] = 0x80; // avoid storing zero
 	    }
 	    else
 	    {
-		ScreenLinesUC[off + col] = 0;
-		ScreenLines[off + col] = c;
+		ScreenLinesUC[idx] = 0;
+		ScreenLines[idx] = c;
 	    }
-	    col++;
 	}
 	else
-	    ScreenLines[off + col++] = c;
+	    ScreenLines[idx] = c;
+	++col;
     }
 
     if (text != buf)
