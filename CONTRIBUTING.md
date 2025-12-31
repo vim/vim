@@ -46,6 +46,15 @@ When merging PRs into Vim, the current maintainer @chrisbra usually adds missing
 anybody that explicitly *ACK*s a pull request as a statement that those
 approvers are happy with that particular change.
 
+## Using AI
+
+When using AI for contributions, please disclose this. Any AI-generated code
+must follow the Vim code style. In particular, [test_codestyle.vim][18]
+must not report any failures. Check the CI output for any test failures.
+
+Ensure that changes are properly tested. Do not submit a single PR that
+addresses multiple unrelated issues.
+
 # Reporting issues
 
 We use GitHub [issues][17], but that is not a requirement. Writing to the Vim
@@ -160,3 +169,4 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
 [17]: https://github.com/vim/vim/issues
+[18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim
