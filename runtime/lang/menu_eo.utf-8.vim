@@ -1,5 +1,5 @@
 " Menu Translations:	Esperanto
-" Maintainer:		Dominique PELLE <dominique.pelle@free.fr>
+" Maintainer:		Dominique PELLE <dominique.pelle@free.fr> (invalid)
 " Last Change:		2012 May 01
 " Original translations
 " 

@@ -1,7 +1,7 @@
 " Name:         peachpuff
 " Description:  This color scheme uses a peachpuff background (what you've expected when it's " called peachpuff?).
 " Author:       Original author David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-" Maintainer:   Original maintainer David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
+" Maintainer:   Original maintainer David Ne\v{c}as (Yeti) <yeti@physics.muni.cz> (invalid)
 " URL:          https://github.com/vim/colorschemes
 " License:      Same as Vim
 " Last Change:  2025 Oct 14

@@ -1,6 +1,6 @@
 # Aap recipe for Swedish Vim spell files.
 #
-# Maintainer: Mattias Winther <vim@mattias.winthernet.se>
+# Maintainer: Mattias Winther <vim@mattias.winthernet.se> (invalid)
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):

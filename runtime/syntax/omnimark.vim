@@ -1,7 +1,7 @@
 vim9script
 # Vim syntax file
 # Language:    OmniMark
-# Maintainer:  Peter Kenny <kennypete.t2o3y@aleeas.com>
+# Maintainer:  Peter Kenny <kennypete.t2o3y@aleeas.com> (invalid)
 # Previous Maintainer: Paul Terray <mailto:terray@4dconcept.fr>
 # Last Change: 2025-03-23
 # License:     Vim (see :help license)

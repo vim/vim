@@ -1,5 +1,5 @@
 " Vim plugin with helper function(s) for --remote-wait
-" Maintainer: Flemming Madsen <fma@cci.dk>
+" Maintainer: Flemming Madsen <fma@cci.dk> (invalid)
 " Last Change: 2008 May 29
 
 " Has this already been loaded?

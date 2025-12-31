@@ -1,5 +1,5 @@
 " Menu Translations:	UK English
-" Maintainer:		Mike Williams <mrw@eandem.co.uk>
+" Maintainer:		Mike Williams <mrw@eandem.co.uk> (invalid)
 " Last Change:		2003 Feb 10
 
 " Quit when menu translations have already been done.

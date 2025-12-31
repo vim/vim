@@ -1,6 +1,6 @@
 " Name:         darkblue
 " Description:  For those who prefer dark background
-" Author:       Original author Bohdan Vlasyuk <bohdan@vstu.edu.ua>
+" Author:       Original author Bohdan Vlasyuk <bohdan@vstu.edu.ua> (invalid)
 " URL:          https://github.com/vim/colorschemes
 " License:      Same as Vim
 " Last Change:  2025 Oct 14
