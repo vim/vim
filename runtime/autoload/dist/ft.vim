@@ -1878,7 +1878,7 @@ const ft_from_ext = {
   "lib": "faust",
   # Fennel
   "fnl": "fennel",
-  "fnml": "fennel",
+  "fnlm": "fennel",
   # Libreoffice config files
   "xcu": "xml",
   "xlb": "xml",
