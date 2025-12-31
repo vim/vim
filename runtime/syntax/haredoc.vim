@@ -2,7 +2,7 @@ vim9script
 
 # Vim syntax file.
 # Language:    Haredoc (Hare documentation format)
-# Maintainer:  Amelia Clarke <selene@perilune.dev>
+# Maintainer:  Amelia Clarke <selene@perilune.dev> (invalid)
 # Last Change: 2025 Aug 14
 # Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
 

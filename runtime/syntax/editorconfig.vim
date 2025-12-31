@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:     EditorConfig
-" Maintainer:   Gregory Anders <greg@gpanders.com>
+" Maintainer:   Gregory Anders <greg@gpanders.com> (invalid)
 " Last Change:  2023-07-20
 
 if exists('b:current_syntax')

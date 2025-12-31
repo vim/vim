@@ -2,7 +2,7 @@ vim9script
 
 # Vim filetype plugin.
 # Language:     Hare
-# Maintainer:   Amelia Clarke <selene@perilune.dev>
+# Maintainer:   Amelia Clarke <selene@perilune.dev> (invalid)
 # Last Updated: 2025 Sep 06
 # Upstream:     https://git.sr.ht/~sircmpwn/hare.vim
 
