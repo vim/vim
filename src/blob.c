@@ -190,15 +190,18 @@ blob_equal(
 
     if (b1 == b2)
 	return TRUE;
+    
+    // empty and NULL are considered the same
+    if ((b1 == NULL || blob_len(b1) == 0) && 
+        (b2 == NULL || blob_len(b2) == 0))
+	return TRUE;
+    
     if (b1 == NULL || b2 == NULL)
 	return FALSE;
 	
     len1 = b1->bv_ga.ga_len;
     len2 = b2->bv_ga.ga_len;
 
-    // empty and NULL are considered the same
-    if (len1 == 0 && len2 == 0)
-	return TRUE;
     if (len1 != len2)
 	return FALSE;
 
@@ -368,9 +371,8 @@ string2blob(char_u *str)
     {
 	if (!vim_isxdigit(s[1]))
 	    goto failed;
-	if (ga_grow(&blob->bv_ga, 1) == FAIL)
+	if (ga_append(&blob->bv_ga, (hex2nr(s[0]) << 4) + hex2nr(s[1])) == FAIL)
 	    goto failed;
-	ga_append(&blob->bv_ga, (hex2nr(s[0]) << 4) + hex2nr(s[1]));
 	s += 2;
 	if (*s == '.' && vim_isxdigit(s[1]))
 	    ++s;
@@ -399,7 +401,6 @@ blob_slice(
 	int		exclusive,
 	typval_T	*rettv)
 {
-    // Inicializar rettv primero
     clear_tv(rettv);
     rettv->v_type = VAR_BLOB;
     rettv->vval.v_blob = NULL;
@@ -419,7 +420,7 @@ blob_slice(
 	
     if (n1 >= len || n2 < 0 || n1 > n2)
     {
-	// Ya está inicializado como blob NULL
+	// Already initialized as NULL blob
 	return OK;
     }
     else
@@ -438,7 +439,6 @@ blob_slice(
 	    for (i = n1; i <= n2; i++)
 		blob_set(new_blob, i - n1, blob_get(blob, i));
 
-	    clear_tv(rettv);
 	    rettv_blob_set(rettv, new_blob);
 	}
     }
@@ -692,7 +692,8 @@ blob_filter_map(
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
     int prev_lock = b->bv_lock;
-    b->bv_lock = VAR_LOCKED;
+    if (b->bv_lock == 0)
+	b->bv_lock = VAR_LOCKED;
 
     // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
