@@ -72,17 +72,29 @@ blob_copy(blob_T *from, typval_T *to)
 
     if (rettv_blob_alloc(to) == FAIL)
 	return FAIL;
+    
+    if (to->vval.v_blob == NULL)
+	return FAIL;
 
     len = from->bv_ga.ga_len;
     if (len > 0)
     {
-	to->vval.v_blob->bv_ga.ga_data =
-	    vim_memsave(from->bv_ga.ga_data, len);
-	if (to->vval.v_blob->bv_ga.ga_data == NULL)
-	    len = 0;
+	char_u *new_data = vim_memsave(from->bv_ga.ga_data, len);
+	if (new_data == NULL)
+	{
+	    blob_free(to->vval.v_blob);
+	    to->vval.v_blob = NULL;
+	    return FAIL;
+	}
+	to->vval.v_blob->bv_ga.ga_data = new_data;
+	to->vval.v_blob->bv_ga.ga_len = len;
+	to->vval.v_blob->bv_ga.ga_maxlen = len;
     }
-    to->vval.v_blob->bv_ga.ga_len = len;
-    to->vval.v_blob->bv_ga.ga_maxlen = len;
+    else
+    {
+	to->vval.v_blob->bv_ga.ga_len = 0;
+	to->vval.v_blob->bv_ga.ga_maxlen = 0;
+    }
 
     return OK;
 }
@@ -90,6 +102,9 @@ blob_copy(blob_T *from, typval_T *to)
     void
 blob_free(blob_T *b)
 {
+    if (b == NULL)
+	return;
+	
     ga_clear(&b->bv_ga);
     vim_free(b);
 }
@@ -147,13 +162,19 @@ blob_set_append(blob_T *blob, int idx, int byte)
 
     // Allow for appending a byte.  Setting a byte beyond
     // the end is an error otherwise.
-    if (idx < gap->ga_len
-	    || (idx == gap->ga_len && ga_grow(gap, 1) == OK))
+    if (idx == gap->ga_len)
+    {
+	if (ga_grow(gap, 1) == OK)
+	{
+	    blob_set(blob, idx, byte);
+	    ++gap->ga_len;
+	}
+    }
+    else if (idx < gap->ga_len)
     {
 	blob_set(blob, idx, byte);
-	if (idx == gap->ga_len)
-	    ++gap->ga_len;
     }
+    // idx > gap->ga_len is an error, do nothing
 }
 
 /*
@@ -165,13 +186,18 @@ blob_equal(
     blob_T	*b2)
 {
     int	    i;
-    int	    len1 = blob_len(b1);
-    int	    len2 = blob_len(b2);
+    int	    len1, len2;
+
+    if (b1 == b2)
+	return TRUE;
+    if (b1 == NULL || b2 == NULL)
+	return FALSE;
+	
+    len1 = b1->bv_ga.ga_len;
+    len2 = b2->bv_ga.ga_len;
 
     // empty and NULL are considered the same
     if (len1 == 0 && len2 == 0)
-	return TRUE;
-    if (b1 == b2)
 	return TRUE;
     if (len1 != len2)
 	return FALSE;
@@ -213,7 +239,7 @@ read_blob(FILE *fd, typval_T *rettv, off_T offset, off_T size_arg)
     else
     {
 	// limit the offset to not go before the start of the file
-	if (-offset > st.st_size
+	if (offset < -st.st_size
 #ifdef S_ISCHR
 		    && !S_ISCHR(st.st_mode)
 #endif
@@ -328,17 +354,21 @@ blob2items(typval_T *argvars, typval_T *rettv)
     blob_T *
 string2blob(char_u *str)
 {
-    blob_T  *blob = blob_alloc();
+    blob_T  *blob;
     char_u  *s = str;
 
+    blob = blob_alloc();
     if (blob == NULL)
 	return NULL;
+	
     if (s[0] != '0' || (s[1] != 'z' && s[1] != 'Z'))
 	goto failed;
     s += 2;
     while (vim_isxdigit(*s))
     {
 	if (!vim_isxdigit(s[1]))
+	    goto failed;
+	if (ga_grow(&blob->bv_ga, 1) == FAIL)
 	    goto failed;
 	ga_append(&blob->bv_ga, (hex2nr(s[0]) << 4) + hex2nr(s[1]));
 	s += 2;
@@ -369,6 +399,11 @@ blob_slice(
 	int		exclusive,
 	typval_T	*rettv)
 {
+    // Inicializar rettv primero
+    clear_tv(rettv);
+    rettv->v_type = VAR_BLOB;
+    rettv->vval.v_blob = NULL;
+
     if (n1 < 0)
     {
 	n1 = len + n1;
@@ -381,11 +416,11 @@ blob_slice(
 	n2 = len - (exclusive ? 0 : 1);
     if (exclusive)
 	--n2;
+	
     if (n1 >= len || n2 < 0 || n1 > n2)
     {
-	clear_tv(rettv);
-	rettv->v_type = VAR_BLOB;
-	rettv->vval.v_blob = NULL;
+	// Ya está inicializado como blob NULL
+	return OK;
     }
     else
     {
@@ -458,7 +493,6 @@ blob_slice_or_index(
 	return blob_slice(blob, len, n1, n2, exclusive, rettv);
     else
 	return blob_index(blob, len, n1, rettv);
-    return OK;
 }
 
 /*
@@ -658,8 +692,7 @@ blob_filter_map(
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
     int prev_lock = b->bv_lock;
-    if (b->bv_lock == 0)
-	b->bv_lock = VAR_LOCKED;
+    b->bv_lock = VAR_LOCKED;
 
     // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
