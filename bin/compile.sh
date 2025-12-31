@@ -1,11 +1,13 @@
-#!/usr/bin/env fish
+#!/bin/sh
 # Compiles the program with clang.
 
-cd (status dirname)/..
+cd $(dirname "$0")/../
 
-export CC=clang
+CC=clang
+
+export CC_OVERRIDE=$CC
 ./configure
 
 cd src/
 make
-cd -
+cd - 2 > /dev/null

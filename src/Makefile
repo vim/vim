@@ -250,11 +250,10 @@
 #      "sudo fixPrecomps".  Also see CONF_OPT_DARWIN below.
 # }}}
 
-
 #DO NOT CHANGE the next line, we need it for configure to find the compiler
 #instead of using the default from the "make" program.
 #Use a line further down to change the value for CC.
-CC=clang
+CC=
 
 # Change and use these defines if configure cannot find your Motif stuff.
 # Unfortunately there is no "standard" location for Motif. {{{
@@ -580,7 +579,8 @@ CClink = $(CC)
 # again.
 #CC = cc
 #CC = gcc
-CC = clang
+#CC = clang
+#CC = $(CC_OVERRIDE)
 
 # COMPILER FLAGS - change as you please. Either before running {{{1
 # configure or afterwards. For examples see below.
