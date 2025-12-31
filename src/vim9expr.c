@@ -508,7 +508,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		((type->tt_type == VAR_OBJECT
 		  && !inside_class_hierarchy(cctx, cl))
 		 || (type->tt_type == VAR_CLASS
-		     && cctx->ctx_ufunc->uf_class != cl)))
+		     && cctx->ctx_ufunc->uf_defclass != cl)))
 	{
 	    semsg(_(e_cannot_access_protected_method_str), name);
 	    goto done;

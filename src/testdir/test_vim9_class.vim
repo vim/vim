@@ -11832,4 +11832,41 @@ func Test_class_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test if class members can be accessed via a lambda inside a object/class
+" method.
+func Test_class_member_lambda()
+  let lines =<< trim END
+    vim9script
+    class A
+      static var regular: string
+      static var _protected: string
+
+      static def RegularMethod(): string
+        return A.regular
+      enddef
+
+      static def _ProtectedMethod(): string
+        return A._protected
+      enddef
+
+      def new()
+        var FuncA: func = () => {
+          A.regular = "regular"
+          assert_equal("regular", A.RegularMethod())
+        }
+        var FuncB: func = () => {
+          A._protected = "protected"
+          assert_equal("protected", A._ProtectedMethod())
+        }
+
+        FuncA()
+        FuncB()
+      enddef
+    endclass
+
+    A.new()
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
