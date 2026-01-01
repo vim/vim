@@ -600,6 +600,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
     {
 	// Draw 'showbreak' at the start of each broken line.
 	wlv->p_extra = sbr;
+	wlv->is_extra = 1;
 	wlv->c_extra = NUL;
 	wlv->c_final = NUL;
 	wlv->n_extra = (int)STRLEN(sbr);
