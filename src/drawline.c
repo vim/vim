@@ -605,7 +605,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	wlv->c_final = NUL;
 	wlv->n_extra = (int)STRLEN(sbr);
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
-        wlv->sbr_padding += MB_CHARLEN(sbr);
+	wlv->sbr_padding += MB_CHARLEN(sbr);
 
 	// Correct start of highlighted area for 'showbreak'.
 	if (wlv->fromcol >= wlv->vcol && wlv->fromcol < wlv->vcol_sbr)
@@ -953,8 +953,8 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 # endif
 
     if (wlv->draw_color_col)
-        wlv->draw_color_col =
-            advance_color_col(VCOL_HLC - wlv->sbr_padding, &wlv->color_cols);
+	wlv->draw_color_col =
+	    advance_color_col(VCOL_HLC - wlv->sbr_padding, &wlv->color_cols);
 
     if (((wp->w_p_cuc
 		    && (int)wp->w_virtcol >= VCOL_HLC - wlv->eol_hl_off
@@ -997,8 +997,8 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    if (wlv->line_attr != 0)
 		attr = hl_combine_attr(attr, wlv->line_attr);
 # endif
-            if (wp->w_p_cuc &&
-                VCOL_HLC == (long)wp->w_virtcol - wlv->lbr_padding
+	    if (wp->w_p_cuc &&
+		    VCOL_HLC == (long)wp->w_virtcol - wlv->lbr_padding
 		    && wlv->lnum != wp->w_cursor.lnum)
 		attr = hl_combine_attr(attr, HL_ATTR(HLF_CUC));
 	    else if (wlv->draw_color_col && VCOL_HLC - wlv->sbr_padding == *wlv->color_cols)
@@ -1378,8 +1378,8 @@ win_line(
 	// Check for columns to display for 'colorcolumn'.
 	wlv.color_cols = wp->w_p_cc_cols;
 	if (wlv.color_cols != NULL)
-            wlv.draw_color_col =
-                advance_color_col(VCOL_HLC - wlv.sbr_padding, &wlv.color_cols);
+	    wlv.draw_color_col =
+		advance_color_col(VCOL_HLC - wlv.sbr_padding, &wlv.color_cols);
 #endif
 
 #ifdef FEAT_TERMINAL
@@ -3150,21 +3150,21 @@ win_line(
 		    wlv.c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 		    wlv.c_final = NUL;
 # ifdef FEAT_PROP_POPUP
-                    if (wlv.n_extra > 0 && c != TAB)
-                    {
-                        in_linebreak = TRUE;
+		    if (wlv.n_extra > 0 && c != TAB)
+		    {
+			in_linebreak = TRUE;
 
 			// edge case: current col is colorcol
 			if (wlv.draw_color_col && VCOL_HLC == *wlv.color_cols)
-                        {
-                            vcol_save_attr = wlv.char_attr;
-                            wlv.char_attr =
-                                hl_combine_attr(wlv.char_attr, HL_ATTR(HLF_MC));
-                        }
+			{
+			    vcol_save_attr = wlv.char_attr;
+			    wlv.char_attr =
+				hl_combine_attr(wlv.char_attr, HL_ATTR(HLF_MC));
+			}
 
 			wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
-                        wlv.is_extra = 1;
-                    }
+			wlv.is_extra = 1;
+		    }
 # endif
 		    if (VIM_ISWHITE(c))
 		    {
@@ -4022,8 +4022,8 @@ win_line(
 #ifdef FEAT_SYN_HL
 	// advance to the next 'colorcolumn'
 	if (wlv.draw_color_col)
-            wlv.draw_color_col =
-                advance_color_col(VCOL_HLC - wlv.sbr_padding, &wlv.color_cols);
+	    wlv.draw_color_col =
+		advance_color_col(VCOL_HLC - wlv.sbr_padding, &wlv.color_cols);
 
 	// Highlight the cursor column if 'cursorcolumn' is set.  But don't
 	// highlight the cursor position itself.
@@ -4488,7 +4488,7 @@ win_line(
 
 
 	if (wlv.n_extra == 0)
-            wlv.is_extra = 0;
+	    wlv.is_extra = 0;
 
     }	// for every character in the line
 #ifdef FEAT_PROP_POPUP
