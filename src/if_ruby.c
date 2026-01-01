@@ -244,6 +244,9 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #  define rb_check_type			dll_rb_check_type
 # endif
 # ifdef USE_TYPEDDATA
+#  if RUBY_VERSION >= 40
+#    define rbimpl_check_typeddata		dll_rbimpl_check_typeddata
+#  endif
 #  define rb_check_typeddata		dll_rb_check_typeddata
 # endif
 # define rb_class_path			dll_rb_class_path
@@ -373,6 +376,9 @@ VALUE *dll_rb_cTrueClass;
 static VALUE (*dll_rb_class_new_instance) (int,VALUE*,VALUE);
 static void (*dll_rb_check_type) (VALUE,int);
 # ifdef USE_TYPEDDATA
+#  if RUBY_VERSION >= 40
+static void *(*dll_rbimpl_check_typeddata) (VALUE,const rb_data_type_t *);
+#  endif
 static void *(*dll_rb_check_typeddata) (VALUE,const rb_data_type_t *);
 # endif
 static VALUE (*dll_rb_class_path) (VALUE);
