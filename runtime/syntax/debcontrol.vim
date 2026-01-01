@@ -98,7 +98,7 @@ syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-Cvs: *" end="$" contains=debcontrolVcsCvs oneline keepend
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-Git: *" end="$" contains=debcontrolVcsGit oneline keepend
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^Rules-Requires-Root: *" end="$" contains=debcontrolR3 oneline
-syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(Build-\)\=Essential: *" end="$" contains=debcontrolYesNo oneline
+syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(\%(Build-\)\=Essential\|Protected\): *" end="$" contains=debcontrolYesNo oneline
 
 syn region debcontrolStrictField matchgroup=debcontrolDeprecatedKey start="^\%(XS-\)\=DM-Upload-Allowed: *" end="$" contains=debcontrolDmUpload oneline
 
