@@ -1,4 +1,4 @@
-" Maintainer:  Drew Vogel <dvogel@sidejump.org> (invalid)
+" Maintainer:  Drew Vogel <dvogel@sidejump.org>
 " Last Change: 2021 Jul 25
 
 " Similar in spirit to rgb.txt, this plugin establishes a human-friendly name

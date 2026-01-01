@@ -1,5 +1,5 @@
 " Menu Translations:	Francais
-" Maintainer:		Adrien Beau <version.francaise@free.fr> (invalid)
+" Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
 " Contributors:		David Blanchet <david.blanchet@free.fr>
 " 			Gabriel Dupras <gabrieldupras@gmail.com>

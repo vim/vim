@@ -1,5 +1,5 @@
 " Menu Translations:	Polish
-" Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl ) (invalid)
+" Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl )
 " Initial Translation:	Marcin Dalecki <martin@dalecki.de>
 " Last Change: 17 May  2010
 " Generated from menu_pl_pl.utf-8.vim, DO NOT EDIT

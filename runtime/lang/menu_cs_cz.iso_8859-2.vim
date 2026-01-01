@@ -1,5 +1,5 @@
 " Menu Translations:    Czech (ISO-8859-2)
-" Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net> (invalid)
+" Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net>
 " Previous maintainer:  Jiri Brezina
 " Based on:             menu.vim (2012-10-21)
 " Generated from menu_cs_cz.utf-8.vim, DO NOT EDIT

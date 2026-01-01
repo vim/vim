@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Man page
-" Maintainer:	Jason Franklin <vim@justemail.net> (invalid)
+" Maintainer:	Jason Franklin <vim@justemail.net>
 " Previous Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Previous Maintainer:	Gautam H. Mudunuri <gmudunur@informatica.com>
 " Version Info:

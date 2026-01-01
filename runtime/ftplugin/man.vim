@@ -1,6 +1,6 @@
 " Vim filetype plugin file
 " Language:	man
-" Maintainer:	Jason Franklin <vim@justemail.net> (invalid)
+" Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
 " Last Change:	2024 Jun 06 (disabled the q mapping, #8210)

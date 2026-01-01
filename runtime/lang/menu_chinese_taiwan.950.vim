@@ -1,5 +1,5 @@
 " Menu Translations:	Traditional Chinese
-" Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw> (invalid)
+" Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
 " Last Change:		2012 May 01
 " Generated from menu_zh_tw.utf-8.vim, DO NOT EDIT
 

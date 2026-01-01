@@ -2,7 +2,7 @@ vim9script
 
 # Helper functions for Hare.
 # Language:     Hare
-# Maintainer:   Amelia Clarke <selene@perilune.dev> (invalid)
+# Maintainer:   Amelia Clarke <selene@perilune.dev>
 # Last Updated: 2025 Sep 06
 # Upstream:     https://git.sr.ht/~sircmpwn/hare.vim
 

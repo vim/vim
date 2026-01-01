@@ -1,6 +1,6 @@
 " Menu Translations: Português
 " adaptado de pt_br.
-" Maintainer: Duarte Henriques <duarte_henriques@myrealbox.com> (invalid)
+" Maintainer: Duarte Henriques <duarte_henriques@myrealbox.com>
 " Last Change: 2024 Aug 22
 " Original translations
 

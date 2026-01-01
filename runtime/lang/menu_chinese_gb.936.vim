@@ -1,5 +1,5 @@
 " Menu Translations:    Simplified Chinese
-" Maintainer:           Ada (Haowen) Yu <me@yuhaowen.com> (invalid)
+" Maintainer:           Ada (Haowen) Yu <me@yuhaowen.com>
 " Previous Maintainer:  Shun Bai <baishunde@gmail.com>, Yuheng Xie <elephant@linux.net.cn>
 " Last Change:          2022 July 9
 " Generated from menu_zh_cn.utf-8.vim, DO NOT EDIT

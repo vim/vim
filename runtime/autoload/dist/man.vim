@@ -1,6 +1,6 @@
 " Vim filetype plugin autoload file
 " Language:	man
-" Maintainer:	Jason Franklin <jason@oneway.dev> (invalid)
+" Maintainer:	Jason Franklin <jason@oneway.dev>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
 " Last Change: 	2024 Jan 17 (make it work on AIX, see #13847)

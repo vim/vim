@@ -1,4 +1,4 @@
-" Maintainer:  Drew Vogel <dvogel@sidejump.org> (invalid)
+" Maintainer:  Drew Vogel <dvogel@sidejump.org>
 " Last Change: 2024 Mar 20
 "
 " Replaced rgb.txt as the source of de facto standard color names. This is

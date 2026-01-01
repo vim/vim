@@ -1,5 +1,5 @@
 " Menu Translations:	Ukrainian
-" Maintainer:		Bohdan Vlasyuk <bohdan@vstu.edu.ua> (invalid)
+" Maintainer:		Bohdan Vlasyuk <bohdan@vstu.edu.ua>
 " Last Change:		11 Oct 2001
 " Original translations
 
