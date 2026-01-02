@@ -4308,6 +4308,7 @@ struct window_S
     scrollbar_T	w_scrollbars[2];	// vert. Scrollbars for this window
 #endif
     linenr_T	w_nrwidth_line_count;	// line count when ml_nrwidth_width
+					// was computed.
     long	w_nuw_cached;		// 'numberwidth' option cached
     int		w_nrwidth_width;	// nr of chars to print line count.
 
