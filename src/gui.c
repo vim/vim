@@ -5308,26 +5308,26 @@ gui_do_findrepl(
 
     ga_init2(&ga, 1, 100);
     if (type == FRD_REPLACEALL)
-	ga_concat(&ga, (char_u *)"%s/");
+	ga_concat_len(&ga, (char_u *)"%s/", 3);
 
-    ga_concat(&ga, (char_u *)"\\V");
+    ga_concat_len(&ga, (char_u *)"\\V", 2);
     if (flags & FRD_MATCH_CASE)
-	ga_concat(&ga, (char_u *)"\\C");
+	ga_concat_len(&ga, (char_u *)"\\C", 2);
     else
-	ga_concat(&ga, (char_u *)"\\c");
+	ga_concat_len(&ga, (char_u *)"\\c", 2);
     if (flags & FRD_WHOLE_WORD)
-	ga_concat(&ga, (char_u *)"\\<");
+	ga_concat_len(&ga, (char_u *)"\\<", 2);
     // escape slash and backslash
     p = vim_strsave_escaped(find_text, (char_u *)"/\\");
     if (p != NULL)
 	ga_concat(&ga, p);
     vim_free(p);
     if (flags & FRD_WHOLE_WORD)
-	ga_concat(&ga, (char_u *)"\\>");
+	ga_concat_len(&ga, (char_u *)"\\>", 2);
 
     if (type == FRD_REPLACEALL)
     {
-	ga_concat(&ga, (char_u *)"/");
+	ga_concat_len(&ga, (char_u *)"/", 1);
 	// Escape slash and backslash.
 	// Also escape tilde and ampersand if 'magic' is set.
 	p = vim_strsave_escaped(repl_text,
@@ -5335,7 +5335,7 @@ gui_do_findrepl(
 	if (p != NULL)
 	    ga_concat(&ga, p);
 	vim_free(p);
-	ga_concat(&ga, (char_u *)"/g");
+	ga_concat_len(&ga, (char_u *)"/g", 2);
     }
     ga_append(&ga, NUL);
 

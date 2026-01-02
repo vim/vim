@@ -2580,30 +2580,29 @@ type_name_tuple(type_T *type, char **tofree)
 
     if (type->tt_argcount <= 0)
 	// empty tuple
-	ga_concat(&ga, (char_u *)"any");
+	ga_concat_len(&ga, (char_u *)"any", 3);
     else
     {
 	if (type->tt_args == NULL)
-	    ga_concat(&ga, (char_u *)"[unknown]");
+	    ga_concat_len(&ga, (char_u *)"[unknown]", 9);
 	else
 	{
 	    for (i = 0; i < type->tt_argcount; ++i)
 	    {
-		char	*arg_type;
-		int	len;
+		string_T    arg_type;
 
-		arg_type = type_name(type->tt_args[i], &arg_free);
+		arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
 		if (i > 0)
 		{
 		    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 		    ga.ga_len += 2;
 		}
-		len = (int)STRLEN(arg_type);
-		if (ga_grow(&ga, len + 8) == FAIL)
+		arg_type.length = STRLEN(arg_type.string);
+		if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 		    goto failed;
 		if (varargs && i == type->tt_argcount - 1)
-		    ga_concat(&ga, (char_u *)"...");
-		ga_concat(&ga, (char_u *)arg_type);
+		    ga_concat_len(&ga, (char_u *)"...", 3);
+		ga_concat_len(&ga, arg_type.string, arg_type.length);
 		VIM_CLEAR(arg_free);
 	    }
 	}
@@ -2670,31 +2669,35 @@ type_name_func(type_T *type, char **tofree)
 
     for (i = 0; i < type->tt_argcount; ++i)
     {
-	char *arg_type;
-	int  len;
+	string_T    arg_type;
 
 	if (type->tt_args == NULL)
-	    arg_type = "[unknown]";
+	{
+	    arg_type.string = (char_u *)"[unknown]";
+	    arg_type.length = 9;
+	}
 	else
-	    arg_type = type_name(type->tt_args[i], &arg_free);
+	{
+	    arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
+	    arg_type.length = STRLEN(arg_type.string);
+	}
 	if (i > 0)
 	{
 	    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 	    ga.ga_len += 2;
 	}
-	len = (int)STRLEN(arg_type);
-	if (ga_grow(&ga, len + 8) == FAIL)
+	if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 	    goto failed;
 	if (varargs && i == type->tt_argcount - 1)
-	    ga_concat(&ga, (char_u *)"...");
+	    ga_concat_len(&ga, (char_u *)"...", 3);
 	else if (i >= type->tt_min_argcount)
 	    *((char *)ga.ga_data + ga.ga_len++) = '?';
-	ga_concat(&ga, (char_u *)arg_type);
+	ga_concat_len(&ga, arg_type.string, arg_type.length);
 	VIM_CLEAR(arg_free);
     }
     if (type->tt_argcount < 0)
 	// any number of arguments
-	ga_concat(&ga, (char_u *)"...");
+	ga_concat_len(&ga, (char_u *)"...", 3);
 
     if (type->tt_member == &t_void)
 	STRCPY((char *)ga.ga_data + ga.ga_len, ")");
