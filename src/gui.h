@@ -389,6 +389,9 @@ typedef struct Gui
     char_u	*browse_fname;	    // file name from filedlg
 
     guint32	event_time;
+# ifdef GDK_WINDOWING_WAYLAND
+    _Bool	is_wayland;           // active gdk backend in gtk is wayland
+# endif
 #endif	// FEAT_GUI_GTK
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
