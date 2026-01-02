@@ -1090,4 +1090,38 @@ func Test_terminal_ansi_color_windows_cui()
   call assert_equal(expected_colors, term_scrape(buf, 1)[:len_to_check-1]->map({_, v -> v['bg']}))
 endfunc
 
+func Test_terminal_backspace_on_windows()
+  if !has('win32')
+    throw 'Skipped: only for the Windows CUI'
+  endif
+  " Specify a simple prompt for easy comparison
+  let save_prompt = $PROMPT
+  let $PROMPT = '>'
+
+  " Return the prompt line before the cursor
+  func s:get_cmd_prompt(buf)
+    let cur = term_getcursor(a:buf)
+    return term_getline(a:buf, cur[0])[:cur[1]-2]
+  endfunc
+
+  let buf = term_start('cmd.exe')
+  call WaitForAssert({-> assert_equal('>', s:get_cmd_prompt(buf))}, 100)
+
+  " Verify sent characters are echoed back
+  call term_sendkeys(buf, 'foo bar')
+  call WaitForAssert({-> assert_equal('>foo bar', s:get_cmd_prompt(buf))}, 100)
+  " Backspace should delete a character in front of the cursor
+  call term_sendkeys(buf, "\<BS>")
+  call WaitForAssert({-> assert_equal('>foo ba', s:get_cmd_prompt(buf))}, 100)
+  " Ctrl+H behaves like Backspace
+  call term_sendkeys(buf, "\<C-H>")
+  call WaitForAssert({-> assert_equal('>foo b', s:get_cmd_prompt(buf))}, 100)
+  " Send a total of four BS and Ctrl+H to erase four characters.
+  call term_sendkeys(buf, "\<BS>\<BS>\<C-H>\<C-H>")
+  call WaitForAssert({-> assert_equal('>f', s:get_cmd_prompt(buf))}, 100)
+
+  delfunc s:get_cmd_prompt
+  let $PROMPT = save_prompt
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
