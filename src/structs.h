@@ -343,6 +343,8 @@ typedef struct
 # define w_p_siso w_onebuf_opt.wo_siso	// 'sidescrolloff' local value
     long	wo_so;
 # define w_p_so w_onebuf_opt.wo_so	// 'scrolloff' local value
+    long	wo_sop;
+# define w_p_sop w_onebuf_opt.wo_sop  // 'scrolloffpad' local value
 #ifdef FEAT_TERMINAL
     char_u	*wo_twk;
 # define w_p_twk w_onebuf_opt.wo_twk	// 'termwinkey'
