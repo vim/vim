@@ -522,6 +522,7 @@ jobs:
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, ttytype: conpty }
           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
           - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
           - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
@@ -616,11 +617,13 @@ jobs:
           call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
           7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
-          echo %COL_GREEN%Download winpty%COL_RESET%
-          call :downloadfile %WINPTY_URL% downloads\winpty.zip
-          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
-          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
-          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+          if not "${{ matrix.ttytype }}" == "conpty" (
+            echo %COL_GREEN%Download winpty%COL_RESET%
+            call :downloadfile %WINPTY_URL% downloads\winpty.zip
+            7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+            copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
+            copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+          )
 
           echo %COL_GREEN%Download libsodium%COL_RESET%
           if "${{ matrix.toolchain }}"=="msvc" (
