@@ -430,7 +430,7 @@ func Test_menu_special()
   call feedkeys(":emenu n Test.Sign\<CR>", 'x')
   call assert_equal("m\tn", getline(1))
   set cpo-=<
-  close!
+  bw!
   nunmenu Test.Sign
 endfunc
 
@@ -468,7 +468,7 @@ func Test_emenu_cmd()
   2emenu Test.foo
   call assert_equal(['aaaa', 'xxxx'], getline(1, 2))
   xunmenu Test.foo
-  close!
+  bw!
 endfunc
 
 " Test for PopUp menus
