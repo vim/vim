@@ -3681,8 +3681,10 @@ mch_early_init(void)
      * threads’ quality of service classes clamped.
      */
 #ifdef MACOS_X
+# ifdef MAC_OS_X_VERSION_10_7
     integer_t policy = TASK_DEFAULT_APPLICATION;
     task_policy_set(mach_task_self(), TASK_CATEGORY_POLICY, &policy, 1);
+# endif
 #endif
 }
 
