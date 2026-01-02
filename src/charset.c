@@ -773,7 +773,7 @@ chartabsize(char_u *p, colnr_T col)
     RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, p, col)
 }
 
-#if defined(FEAT_LINEBREAK)
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int
 win_chartabsize(win_T *wp, char_u *p, colnr_T col)
 {
@@ -1226,11 +1226,11 @@ win_lbr_chartabsize(
     win_T	*wp = cts->cts_win;
 #if defined(FEAT_PROP_POPUP) || defined(FEAT_LINEBREAK)
     char_u	*line = cts->cts_line; // start of the line
+    int		size;
 #endif
     char_u	*s = cts->cts_ptr;
     colnr_T	vcol = cts->cts_vcol;
 #ifdef FEAT_LINEBREAK
-    int		size;
     int		mb_added = 0;
     int		n;
     char_u	*sbr;
