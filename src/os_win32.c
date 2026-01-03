@@ -9077,7 +9077,7 @@ GetWin32Error(void)
     static char	*oldmsg = NULL;
     char	*acp_msg = NULL;
     DWORD	acp_len;
-    char_u	*enc_msg = NULL;
+    char	*enc_msg = NULL;
     int		enc_len = 0;
 
     // get formatted message from OS
@@ -9094,7 +9094,7 @@ GetWin32Error(void)
 	oldmsg = NULL;
     }
 
-    acp_to_enc(acp_msg, (int)acp_len, &enc_msg, &enc_len);
+    acp_to_enc((char_u *)acp_msg, (int)acp_len, (char_u **)&enc_msg, &enc_len);
     LocalFree(acp_msg);
     if (enc_msg == NULL)
 	return NULL;
