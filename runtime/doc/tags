@@ -8329,7 +8329,6 @@ help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
-help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*

@@ -3575,26 +3575,26 @@ func Test_diff_inline_word_wordgap()
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
   " Test merging with small punctuation/whitespace gaps
-  call WriteDiffFiles(buf, ["foo bar test", "one-two-three"], 
+  call WriteDiffFiles(buf, ["foo bar test", "one-two-three"],
         \ ["foo baz test", "ONE-TWO-THREE"])
-  
+
   " wordgap:0 should not merge
-  call VerifyInternal(buf, "Test_diff_inline_wordgap_01", 
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_01",
         \ " diffopt+=inline:word,wordgap:0")
-  
+
   " wordgap:2 (default) should merge small gaps
-  call VerifyInternal(buf, "Test_diff_inline_wordgap_02", 
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_02",
         \ " diffopt+=inline:word,wordgap:2")
-  
+
   " Test with multiple punctuation characters
-  call WriteDiffFiles(buf, ["a...b...c", "x..y..z"], 
+  call WriteDiffFiles(buf, ["a...b...c", "x..y..z"],
         \ ["A...B...C", "X..Y..Z"])
-  call VerifyInternal(buf, "Test_diff_inline_wordgap_03", 
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_03",
         \ " diffopt+=inline:word,wordgap:2,icase")
-  
+
   " Test that word characters prevent merging
   call WriteDiffFiles(buf, ["fooABCbar"], ["fooXYZbar"])
-  call VerifyInternal(buf, "Test_diff_inline_wordgap_04", 
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_04",
         \ " diffopt+=inline:word,wordgap:5")
 
   call StopVimInTerminal(buf)
