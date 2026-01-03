@@ -2481,7 +2481,7 @@ func Test_diff_inline()
   call VerifyInternal(buf, "Test_diff_inline_01", " diffopt+=inline:simple")
 
   call VerifyInternal(buf, "Test_diff_inline_03", " diffopt+=inline:char")
-  call VerifyInternal(buf, "Test_diff_inline_04", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_04", " diffopt+=inline:word,wordgap:0")
 
   " multiple inline values will the last one
   call VerifyInternal(buf, "Test_diff_inline_01", " diffopt+=inline:none,inline:char,inline:simple")
@@ -2500,7 +2500,7 @@ func Test_diff_inline()
   " icase simple scenarios
   call VerifyInternal(buf, "Test_diff_inline_07", " diffopt+=inline:simple,icase")
   call VerifyInternal(buf, "Test_diff_inline_08", " diffopt+=inline:char,icase")
-  call VerifyInternal(buf, "Test_diff_inline_09", " diffopt+=inline:word,icase")
+  call VerifyInternal(buf, "Test_diff_inline_09", " diffopt+=inline:word,icase,wordgap:0")
 
   " diff algorithms should affect highlight
   call WriteDiffFiles(buf, ["apples and oranges"], ["oranges and apples"])
@@ -2524,22 +2524,22 @@ func Test_diff_inline()
 
   " word diff: always use first buffer's iskeyword and ignore others' for consistency
   call WriteDiffFiles(buf, ["foo+bar test"], ["foo+baz test"])
-  call VerifyInternal(buf, "Test_diff_inline_word_01", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_word_01", " diffopt+=inline:word,wordgap:0")
 
   call term_sendkeys(buf, ":set iskeyword+=+\<CR>:diffupdate\<CR>")
-  call VerifyInternal(buf, "Test_diff_inline_word_02", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_word_02", " diffopt+=inline:word,wordgap:0")
 
   call term_sendkeys(buf, ":set iskeyword&\<CR>:wincmd w\<CR>")
   call term_sendkeys(buf, ":set iskeyword+=+\<CR>:wincmd w\<CR>:diffupdate\<CR>")
   " Use the previous screen dump as 2nd buffer's iskeyword does not matter
-  call VerifyInternal(buf, "Test_diff_inline_word_01", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_word_01", " diffopt+=inline:word,wordgap:0")
 
   call term_sendkeys(buf, ":windo set iskeyword&\<CR>:1wincmd w\<CR>")
 
   " word diff: test handling of multi-byte characters. Only alphanumeric chars
   " (e.g. Greek alphabet, but not CJK/emoji) count as words.
   call WriteDiffFiles(buf, ["🚀⛵️一二三ひらがなΔέλτα Δelta foobar"], ["🚀🛸一二四ひらなδέλτα δelta foobar"])
-  call VerifyInternal(buf, "Test_diff_inline_word_03", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_word_03", " diffopt+=inline:word,wordgap:0")
 
   " char diff: should slide highlight to whitespace boundary if possible for
   " better readability (by using forced indent-heuristics). A wrong result
@@ -2571,11 +2571,11 @@ func Test_diff_inline()
         \ ["this   is   ", "sometest text foo", "baz abc def ", "one", "word another word", "additional line"],
         \ ["this is some test", "texts", "foo bar abX Yef     ", "oneword another word"])
   call VerifyInternal(buf, "Test_diff_inline_multiline_01", " diffopt+=inline:char,iwhite")
-  call VerifyInternal(buf, "Test_diff_inline_multiline_02", " diffopt+=inline:word,iwhite")
+  call VerifyInternal(buf, "Test_diff_inline_multiline_02", " diffopt+=inline:word,iwhite,wordgap:0")
   call VerifyInternal(buf, "Test_diff_inline_multiline_03", " diffopt+=inline:char,iwhiteeol")
-  call VerifyInternal(buf, "Test_diff_inline_multiline_04", " diffopt+=inline:word,iwhiteeol")
+  call VerifyInternal(buf, "Test_diff_inline_multiline_04", " diffopt+=inline:word,iwhiteeol,wordgap:0")
   call VerifyInternal(buf, "Test_diff_inline_multiline_05", " diffopt+=inline:char,iwhiteall")
-  call VerifyInternal(buf, "Test_diff_inline_multiline_06", " diffopt+=inline:word,iwhiteall")
+  call VerifyInternal(buf, "Test_diff_inline_multiline_06", " diffopt+=inline:word,iwhiteall,wordgap:0")
 
   " newline should be highlighted too when 'list' is set
   call term_sendkeys(buf, ":windo set list\<CR>")
@@ -2621,11 +2621,11 @@ func Test_diff_inline_multibuffer()
         \ ["This+is=another-setence"],
         \ ["That+is=a-setence"])
   call term_sendkeys(buf, ":set iskeyword+=+\<CR>:2wincmd w\<CR>:set iskeyword+=-\<CR>:1wincmd w\<CR>")
-  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word,wordgap:0")
   call term_sendkeys(buf, ":diffoff\<CR>")
-  call VerifyInternal(buf, "Test_diff_inline_multibuffer_05", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_05", " diffopt+=inline:word,wordgap:0")
   call term_sendkeys(buf, ":diffthis\<CR>")
-  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word,wordgap:0")
 
   " Test multi-buffer char diff refinement, and that removing a buffer from
   " diff will update the others properly.
@@ -3562,6 +3562,40 @@ func Test_diff_add_prop_in_autocmd()
   let buf = RunVimInTerminal('-S Xtest_diff_add_prop_in_autocmd', {})
   call term_sendkeys(buf, ":diffsplit Xdiffsplit_file\<CR>")
   call VerifyScreenDump(buf, 'Test_diff_add_prop_in_autocmd_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test wordgap option for inline word diff refinement
+func Test_diff_inline_word_wordgap()
+  CheckScreendump
+
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " Test merging with small punctuation/whitespace gaps
+  call WriteDiffFiles(buf, ["foo bar test", "one-two-three"], 
+        \ ["foo baz test", "ONE-TWO-THREE"])
+  
+  " wordgap:0 should not merge
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_01", 
+        \ " diffopt+=inline:word,wordgap:0")
+  
+  " wordgap:2 (default) should merge small gaps
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_02", 
+        \ " diffopt+=inline:word,wordgap:2")
+  
+  " Test with multiple punctuation characters
+  call WriteDiffFiles(buf, ["a...b...c", "x..y..z"], 
+        \ ["A...B...C", "X..Y..Z"])
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_03", 
+        \ " diffopt+=inline:word,wordgap:2,icase")
+  
+  " Test that word characters prevent merging
+  call WriteDiffFiles(buf, ["fooABCbar"], ["fooXYZbar"])
+  call VerifyInternal(buf, "Test_diff_inline_wordgap_04", 
+        \ " diffopt+=inline:word,wordgap:5")
 
   call StopVimInTerminal(buf)
 endfunc
