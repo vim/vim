@@ -4881,7 +4881,7 @@ getpos({expr})						*getpos()*
 
 		The visual marks '< and '> refer to the beginning and end of
 		the visual selection relative to the buffer. Note that this
-		differs from |setpos()|, where they are reltaive to the cursor.
+		differs from |setpos()|, where they are relative to the cursor.
 
 		Note that for '< and '> Visual mode matters: when it is "V"
 		(visual line mode) the column of '< is zero and the column of
