@@ -1584,9 +1584,26 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
     {
 	// don't use VTERM_KEY_ENTER, it may do an unwanted conversion
 
-				// don't use VTERM_KEY_BACKSPACE, it always
-				// becomes 0x7f DEL
-	case K_BS:		c = term_backspace_char; break;
+	case K_BS:
+#ifdef MSWIN
+	    // In ConPTY, we must use VTERM_KEY_BACKSPACE, otherwise it will
+	    // delete one word, equivalent to Alt+Backspace.
+	    if (term->tl_conpty)
+		key = VTERM_KEY_BACKSPACE;
+	    else
+#endif
+		// don't use VTERM_KEY_BACKSPACE, it always becomes 0x7f DEL
+		c = term_backspace_char;
+	    break;
+
+#ifdef MSWIN
+	case BS:
+	    // In ConPTY, we must use VTERM_KEY_BACKSPACE, otherwise it will
+	    // delete one word, equivalent to Alt+Backspace.
+	    if (term->tl_conpty)
+		key = VTERM_KEY_BACKSPACE;
+	    break;
+#endif
 
 	case ESC:		key = VTERM_KEY_ESCAPE; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
