@@ -4037,14 +4037,12 @@ did_set_signcolumn(optset_T *args)
 
     if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	return e_invalid_argument;
-#if defined(FEAT_LINEBREAK)
     // When changing the 'signcolumn' to or from 'number', recompute the
     // width of the number column if 'number' or 'relativenumber' is set.
     if (((*args->os_oldval.string == 'n' && args->os_oldval.string[1] == 'u')
 		|| (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) =='u'))
 	    && (curwin->w_p_nu || curwin->w_p_rnu))
 	curwin->w_nrwidth_line_count = 0;
-#endif
 
     return NULL;
 }
