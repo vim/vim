@@ -4309,8 +4309,10 @@ struct window_S
 #endif
     linenr_T	w_nrwidth_line_count;	// line count when ml_nrwidth_width
 					// was computed.
-    long	w_nuw_cached;		// 'numberwidth' option cached
     int		w_nrwidth_width;	// nr of chars to print line count.
+#if defined(FEAT_LINEBREAK)
+    long	w_nuw_cached;		// 'numberwidth' option cached
+#endif
 
 #ifdef FEAT_QUICKFIX
     qf_info_T	*w_llist;		// Location list for this window
