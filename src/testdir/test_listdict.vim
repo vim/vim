@@ -1657,4 +1657,473 @@ def Test_id_with_dict()
   assert_equal('', id(null_channel))
   assert_equal('', id(null_job))
 enddef
+
+" Test for adding an item to a List with type list<any> by using the list
+" length as the index
+def Test_list_length_as_index()
+  # Append a new item to a list (vim9script)
+  var lines =<< trim END
+    var l = []
+    l[0] = 'abc'
+    assert_equal(['abc'], l)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Type check when adding a new item
+  lines =<< trim END
+    var l: list<string>
+    l[0] = 10
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 2)
+
+  # In legacy script, appending a new item to a list should fail.
+  lines =<< trim END
+    let l = []
+    let l[0] = 'abc'
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # Append a new item to a dict which is part of another list
+  lines =<< trim END
+    var inner: dict<string> = {}
+    var outer: list<any> = [inner]
+
+    outer[0] = {a: 'xxx'}
+    assert_equal([{'a': 'xxx'}], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Append a new item to a list which is part of another tuple
+  lines =<< trim END
+    var inner: list<string>
+    var outer: tuple<any> = (inner,)
+
+    outer[0][0] = 'aaa'
+    assert_equal((['aaa'],), outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Append a new item to a list which is part of another list
+  lines =<< trim END
+    var inner: list<dict<string>>
+    var outer: list<any> = [inner]
+
+    outer[0][0] = {a: ''}
+    assert_equal([[{'a': ''}]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Type check
+  lines =<< trim END
+    var inner: list<dict<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = {a: 0z10}
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got dict<blob>', 3)
+
+  # In legacy script, appending a new item to a list which is part of another
+  # list should fail.
+  lines =<< trim END
+    let inner = []
+    let outer = [inner]
+
+    let outer[0][0] = {'a': ''}
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # appending an item to a nested list
+  lines =<< trim END
+    var inner: list<list<dict<string>>>
+    var outer: list<any> = [inner]
+
+    outer[0][0] = []
+    outer[0][0][0] = {a: 'abc'}
+    assert_equal([[[{'a': 'abc'}]]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<list<dict<string>>>
+    var outer: list<any> = [inner]
+    outer[0][0] = []
+    outer[0][0][0] = {a: 0z10}
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got dict<blob>', 4)
+
+  # legacy script
+  lines =<< trim END
+    let inner = [[]]
+    let outer = [inner]
+    let outer[0][0][0] = {'a': 'abc'}
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # adding a new blob to a list of blobs
+  lines =<< trim END
+    var inner: list<blob>
+    var outer: list<any> = [inner]
+    outer[0][0] = 0z10
+    assert_equal([[0z10]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<blob>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected blob but got number', 3)
+
+  # adding a new tuple to a list of tuples
+  lines =<< trim END
+    var inner: list<tuple<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = ('abc',)
+    assert_equal([[('abc',)]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<tuple<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = ['abc']
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<string>', 3)
+
+  # adding a new string to a list of strings
+  lines =<< trim END
+    var inner: list<string>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'xx'
+    assert_equal([['xx']], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<string>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # adding a new number to a list of numbers
+  lines =<< trim END
+    var inner: list<number>
+    var outer: list<any> = [inner]
+    outer[0][0] = 1234
+    assert_equal([[1234]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<number>
+    var outer: list<any> = [inner]
+    outer[0][0] = ''
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # adding a new float to a list of floats
+  lines =<< trim END
+    var inner: list<float>
+    var outer: list<any> = [inner]
+    outer[0][0] = 2.0
+    assert_equal([[2.0]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<float>
+    var outer: list<any> = [inner]
+    outer[0][0] = ''
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected float but got string', 3)
+
+  # adding a new bool to a list of bools
+  lines =<< trim END
+    var inner: list<bool>
+    var outer: list<any> = [inner]
+    outer[0][0] = true
+    assert_equal([[true]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<bool>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'a'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected bool but got string', 3)
+
+  # adding a new funcref to a list of funcrefs
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = function('min')
+    assert_equal([[function('min')]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # adding a new lambda to a list of funcrefs
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = () => 'x'
+    assert_match("\[\[function('<lambda>\d\+')]]", string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'min'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected func(...): unknown but got string', 3)
+
+  # adding a new job to a list of jobs
+  lines =<< trim END
+    var inner: list<job>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_job()
+    assert_equal('[[''no process'']]', string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<job>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_channel()
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got channel', 3)
+
+  # adding a new channel to a list of channels
+  lines =<< trim END
+    var inner: list<channel>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_channel()
+    assert_equal('[[''channel fail'']]', string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<channel>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_job()
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected channel but got job', 3)
+
+  # adding a new object to a list of objects
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    assert_equal('[[object of A {}]]', string(outer))
+    def Fn()
+      var Finner: list<A>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = A.new()
+      assert_equal('[[object of A {}]]', string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>', 8)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn()
+      var inner: list<A>
+      var outer: list<any> = [inner]
+      outer[0][0] = B.new()
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>', 3)
+
+  # adding a new enum to a list of enums
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    var inner: list<Color>
+    var outer: list<any> = [inner]
+    outer[0][0] = Color.BLUE
+    assert_equal("[[enum Color.BLUE {name: 'BLUE', ordinal: 1}]]", string(outer))
+    def Fn()
+      var Finner: list<Color>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = Color.GREEN
+      assert_equal("[[enum Color.GREEN {name: 'GREEN', ordinal: 2}]]", string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    enum Shape
+      CIRCLE,
+      SQUARE
+    endenum
+    var inner: list<Color>
+    var outer: list<any> = [inner]
+    outer[0][0] = Shape.CIRCLE
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected enum<Color> but got enum<Shape>', 13)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    enum Shape
+      CIRCLE,
+      SQUARE
+    endenum
+    def Fn()
+      var inner: list<Color>
+      var outer: list<any> = [inner]
+      outer[0][0] = Shape.CIRCLE
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected enum<Color> but got enum<Shape>', 3)
+
+  # adding a new string to a list of strings (using type alias)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    var inner: list<StrType>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'abc'
+    assert_equal([['abc']], outer)
+
+    def Fn()
+      var Finner: list<StrType>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = 'abc'
+      assert_equal([['abc']], Fouter)
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # type check (using type alias in a script)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    var inner: list<StrType>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 5)
+
+  # type check (using type alias in a method)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    def Fn()
+      var inner: list<StrType>
+      var outer: list<any> = [inner]
+      outer[0][0] = 10
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # append to a List object variable which is part of another list
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    outer[0][0].l[0] = 'abc'
+    assert_equal("[[object of A {l: ['abc']}]]", string(outer))
+
+    def Fn()
+      var Finner: list<A>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = A.new()
+      Fouter[0][0].l[0] = 'abc'
+      assert_equal("[[object of A {l: ['abc']}]]", string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    outer[0][0].l[0] = 0z10
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got blob', 8)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+    def Fn()
+      var inner: list<A>
+      var outer: list<any> = [inner]
+      outer[0][0] = A.new()
+      outer[0][0].l[0] = 0z10
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got blob', 4)
+enddef
+
 " vim: shiftwidth=2 sts=2 expandtab

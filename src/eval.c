@@ -2470,6 +2470,18 @@ set_var_lval(
 							      NULL, 0) == FAIL)
 	    return;
 
+	// If the lval is a List and the type of the list is not yet set,
+	// then set the item type from the declared type of the variable.
+	if (in_vim9script() && rettv->v_type == VAR_LIST
+				&& rettv->vval.v_list != NULL
+				&& rettv->vval.v_list->lv_type == NULL)
+	{
+	    if (lp->ll_tv->v_type == VAR_LIST
+		    && lp->ll_tv->vval.v_list != NULL
+		    && lp->ll_tv->vval.v_list->lv_type != NULL)
+		set_tv_type(rettv, lp->ll_tv->vval.v_list->lv_type);
+	}
+
 	if (lp->ll_newkey != NULL)
 	{
 	    if (op != NULL && *op != '=')
