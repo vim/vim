@@ -1438,4 +1438,135 @@ func Test_smoothscroll_listchars_eol()
   bwipe!
 endfunc
 
+func Test_scrolloffpad_basic()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set scrolloff=10
+      set scrolloffpad=5
+      enew!
+      call setline(1, map(range(1, 100), 'printf("line %d", v:val)'))
+      normal! gg
+  END
+  call writefile(lines, 'XScrolloffpadBasic', 'D')
+
+  let buf = RunVimInTerminal('-S XScrolloffpadBasic', {'rows': 20, 'cols': 80})
+
+  " Enabled: scrolloffpad > 0, expect EOF centering/padding
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! G\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_basic_1', {})
+
+  " Beginning-of-file is unchanged (Top)
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! gg\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_basic_2', {})
+
+  " Gating: disable scrolloffpad, then go to EOF again
+  " Expect normal EOF behavior (no extra centering/padding)
+  call term_sendkeys(buf, "\<Esc>:\<C-U>set scrolloffpad=0\<CR>")
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! G\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_basic_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_scrolloffpad_in_diff_mode()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckFeature diff
+
+  let lines =<< trim END
+      set scrolloff=10
+      set scrolloffpad=1
+
+      enew
+      call setline(1, map(range(1, 100), {_, v -> 'line ' . v}))
+      diffthis
+
+      vnew
+      call setline(1, map(range(1, 100), {_, v -> 'line ' . v}))
+      " Make buffers minimally different to avoid diff folding everything.
+      call setline(50, 'DIFF LINE 50')
+      diffthis
+
+      windo normal! zR
+      windo normal! gg
+      wincmd =
+  END
+  call writefile(lines, 'XScrolloffpadDiff', 'D')
+
+  let buf = RunVimInTerminal('-S XScrolloffpadDiff', #{rows: 20, cols: 80})
+
+  " Near EOF with real text visible in both windows
+  call term_sendkeys(buf, "\<Esc>:\<C-U>windo normal! 99G\<CR>")
+  call term_sendkeys(buf, "\<Esc>:\<C-U>wincmd t\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_diff_1', {})
+
+  " EOF in both windows: expect synced padding/centering behavior
+  call term_sendkeys(buf, "\<Esc>:\<C-U>windo normal! G\<CR>")
+  call term_sendkeys(buf, "\<Esc>:\<C-U>wincmd t\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_diff_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_scrolloffpad_with_folds()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckFeature folding
+
+  let lines =<< trim END
+      set scrolloff=10
+      set scrolloffpad=1
+
+      enew
+      call setline(1, map(range(1, 120), {_, v -> 'line ' . v}))
+
+      " Create a large fold near the end of the file.
+      " Fold lines 60-110, leaving 111-120 visible after the fold.
+      set foldmethod=manual
+      set foldenable
+      normal! gg
+      normal! 60G
+      normal! zf50j
+      normal! gg
+  END
+  call writefile(lines, 'XScrolloffpadFolds', 'D')
+
+  let buf = RunVimInTerminal('-S XScrolloffpadFolds', #{rows: 20, cols: 80})
+
+  " Case 1: Jump to end-of-file
+  " With folds present, scrolloffpad should still
+  " keep the cursor positioned with padding below EOF
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! G\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_folds_1', {})
+
+  " Case 2: Move to the folded line to ensure the fold is actually in view
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! 60G\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_folds_2', {})
+
+  " Case 3: Close the fold explicitly and go to EOF again
+  " Behavior should remain stable with closed folds
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! zc\<CR>")
+  call term_sendkeys(buf, "\<Esc>:\<C-U>normal! G\<CR>")
+  call term_sendkeys(buf, "\<C-L>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_scrolloffpad_folds_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
