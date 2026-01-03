@@ -773,7 +773,7 @@ chartabsize(char_u *p, colnr_T col)
     RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, p, col)
 }
 
-#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+#if defined(FEAT_LINEBREAK)
     int
 win_chartabsize(win_T *wp, char_u *p, colnr_T col)
 {
@@ -1265,6 +1265,7 @@ win_lbr_chartabsize(
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int has_lcs_eol = wp->w_p_list && wp->w_lcs_chars.eol != NUL;
 
+# ifdef FEAT_LINEBREAK
     /*
      * First get the normal size, without 'linebreak' or text properties
      */
@@ -1275,7 +1276,7 @@ win_lbr_chartabsize(
 	// for a NUL character in the text.
 	size = has_lcs_eol ? 1 : 0;
     }
-# ifdef FEAT_LINEBREAK
+
     int is_doublewidth = has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1;
 # endif
 
@@ -1338,6 +1339,7 @@ win_lbr_chartabsize(
 		    else
 			size += cells;
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
+#  ifdef FEAT_LINEBREAK
 		    if (*s == TAB)
 		    {
 			// tab size changes because of the inserted text
@@ -1345,10 +1347,13 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+#  endif
+#  ifdef FEAT_PROP_POPUP
 		    if (tp->tp_col == MAXCOL && (tp->tp_flags
 				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
 			// count extra line for property above/below
 			++cts->cts_prop_lines;
+#  endif
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
