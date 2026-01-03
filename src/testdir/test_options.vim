@@ -1515,7 +1515,10 @@ func Test_local_scrolloffpad()
   call assert_equal(2, &sop)
   setlocal sop=-1
   call assert_equal(-1, &l:sop)
-  call assert_equal(1, &sop)  " Uses global value because local is negative
+  call assert_equal(1, &sop)  " Uses global value because local is -1
+  call assert_fails("setlocal sop=-2", 'E474:')
+  call assert_equal(-1, &l:sop)
+  call assert_equal(1, &sop)
   call assert_fails("setlocal sop=foo", 'E521:')
   close
   let &g:sop = save_g_sop
