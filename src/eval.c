@@ -6799,13 +6799,13 @@ var2fpos(
     char_u		*name;
     static pos_T	pos;
     pos_T		*pp;
+    int			error = FALSE;
 
     // Argument can be [lnum, col, coladd].
     if (varp->v_type == VAR_LIST)
     {
 	list_T		*l;
 	int		len;
-	int		error = FALSE;
 	listitem_T	*li;
 
 	l = varp->vval.v_list;
@@ -6857,11 +6857,16 @@ var2fpos(
     if (name == NULL)
 	return NULL;
 
+    error = TRUE;
     pos.lnum = 0;
-    if (name[0] == '.' && (!in_vim9script() || name[1] == NUL))
+    if (name[0] == '.')
     {
-	// cursor
-	pos = curwin->w_cursor;
+	if (!in_vim9script() || name[1] == NUL)
+	{
+	    error = FALSE;
+	    // cursor
+	    pos = curwin->w_cursor;
+	}
     }
     else if (name[0] == 'v' && name[1] == NUL)
     {
@@ -6871,14 +6876,17 @@ var2fpos(
 	else
 	    pos = curwin->w_cursor;
     }
-    else if (name[0] == '\'' && (!in_vim9script()
-					|| (name[1] != NUL && name[2] == NUL)))
+    else if (name[0] == '\'')
     {
-	// mark
-	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
-	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
-	    return NULL;
-	pos = *pp;
+	if (!in_vim9script() || (name[1] != NUL && name[2] == NUL))
+	{
+	    error = FALSE;
+	    // mark
+	    pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
+	    if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
+		return NULL;
+	    pos = *pp;
+	}
     }
     if (pos.lnum != 0)
     {
@@ -6929,7 +6937,7 @@ var2fpos(
 	}
 	return &pos;
     }
-    if (in_vim9script())
+    if (in_vim9script() && error)
 	semsg(_(e_invalid_value_for_line_number_str), name);
     return NULL;
 }

@@ -804,6 +804,10 @@ def Test_col()
   v9.CheckSourceDefAndScriptFailure(['col(true)'], ['E1013: Argument 1: type mismatch, expected string but got bool', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['col(".", [])'], ['E1013: Argument 2: type mismatch, expected number but got list<any>', 'E1210: Number required for argument 2'])
   v9.CheckSourceDefExecAndScriptFailure(['col("")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefExecAndScriptFailure(['col(".1")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefAndScriptSuccess(['col(".")'])
+  v9.CheckSourceDefExecAndScriptFailure(['col("\''a1")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefAndScriptSuccess(['col("\''a")'])
   bw!
 enddef
 
