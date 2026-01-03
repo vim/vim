@@ -96,16 +96,10 @@ setmark_pos(int c, pos_T *pos, int fnum)
 
     if (c == '<' || c == '>')
     {
-	pos_T	*startp = &buf->b_visual.vi_start;
-	pos_T	*endp = &buf->b_visual.vi_end;
-
-	// Apply the same logic as in getmark_buf_fnum() to handle reversed
-	// visual selections consistently.
-	if (((c == '<') == LT_POS(*startp, *endp) || endp->lnum == 0)
-							  && startp->lnum != 0)
-	    *startp = *pos;
+	if (c == '<')
+	    buf->b_visual.vi_start = *pos;
 	else
-	    *endp = *pos;
+	    buf->b_visual.vi_end = *pos;
 	if (buf->b_visual.vi_mode == NUL)
 	    // Visual_mode has not yet been set, use a sane default.
 	    buf->b_visual.vi_mode = 'v';
