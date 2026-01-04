@@ -647,7 +647,7 @@ def Test_disassemble_list_assign()
         '\d STORE $2\_s*' ..
         '\[x, y; l\] = g:stringlist\_s*' ..
         '\d LOADG g:stringlist\_s*' ..
-        '\d CHECKTYPE list<any> stack\[-1\]\_s*' ..
+        '\d CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
         '\d CHECKLEN >= 2\_s*' ..
         '\d\+ ITEM 0\_s*' ..
         '\d\+ CHECKTYPE string stack\[-1\] var 1\_s*' ..
