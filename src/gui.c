@@ -4979,13 +4979,15 @@ xy2win(int x, int y, mouse_find_T popup)
 	else
 	    update_mouseshape(SHAPE_IDX_MORE);
     }
-    else if (row > wp->w_height)	// below status line
+    else if (row >= wp->w_height + wp->w_status_height)	// below status line
 	update_mouseshape(SHAPE_IDX_CLINE);
     else if (!(State & MODE_CMDLINE) && wp->w_vsep_width > 0 && col == wp->w_width
-	    && (row != wp->w_height || !stl_connected(wp)) && msg_scrolled == 0)
+	    && (!(row >= wp->w_height && row < wp->w_height
+	    + wp->w_status_height) || !stl_connected(wp)) && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_VSEP);
     else if (!(State & MODE_CMDLINE) && wp->w_status_height > 0
-				  && row == wp->w_height && msg_scrolled == 0)
+	    && row >= wp->w_height && row < wp->w_height + wp->w_status_height
+	    && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_STATUS);
     else
 	update_mouseshape(-2);
