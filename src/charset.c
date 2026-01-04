@@ -773,7 +773,7 @@ chartabsize(char_u *p, colnr_T col)
     RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, p, col)
 }
 
-#if defined(FEAT_LINEBREAK)
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int
 win_chartabsize(win_T *wp, char_u *p, colnr_T col)
 {
@@ -1265,11 +1265,11 @@ win_lbr_chartabsize(
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int has_lcs_eol = wp->w_p_list && wp->w_lcs_chars.eol != NUL;
 
-# ifdef FEAT_LINEBREAK
     /*
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+# ifdef FEAT_LINEBREAK
     if (*s == NUL)
     {
 	// 1 cell for EOL list char (if present), as opposed to the two cell ^@
