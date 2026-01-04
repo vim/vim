@@ -1348,12 +1348,10 @@ win_lbr_chartabsize(
 			size += tab_size;
 		    }
 #  endif
-#  ifdef FEAT_PROP_POPUP
 		    if (tp->tp_col == MAXCOL && (tp->tp_flags
 				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
 			// count extra line for property above/below
 			++cts->cts_prop_lines;
-#  endif
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
