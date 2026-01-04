@@ -309,8 +309,9 @@
 #endif
 
 /*
- * +statusline		'statusline', 'rulerformat' and special format of
- *			'titlestring' and 'iconstring' options.
+ * +statusline		'statusline', 'statuslineopt', 'rulerformat' and
+ *			special format of 'titlestring' and 'iconstring'
+ *			options.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT

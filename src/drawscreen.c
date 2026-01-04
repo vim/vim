@@ -450,6 +450,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
     int		row;
     int		fillchar;
     int		attr;
+    int		i;
     static int  busy = FALSE;
 
     // It's possible to get here recursively when 'statusline' (indirectly)
@@ -528,8 +529,6 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	}
 	else if (has_mbyte)
 	{
-	    int	i;
-
 	    // Count total number of display cells.
 	    plen = mb_string2cells(p, -1);
 
@@ -553,7 +552,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	}
 
 	screen_puts(p, row, wp->w_wincol, attr);
-	screen_fill(row, row + 1, plen + wp->w_wincol,
+	for (i = 0; i < wp->w_status_height; i++)
+	    screen_fill(row + i, row + i + 1, plen + wp->w_wincol,
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
 	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
 		&& (this_ru_col - plen) > (NameBufflen + 1))
@@ -583,7 +583,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr, wp);
-	screen_putchar(fillchar, row, W_ENDCOL(wp), attr);
+	for (i = 0; i < wp->w_status_height; i++)
+	    screen_putchar(fillchar, row + i, W_ENDCOL(wp), attr);
     }
     busy = FALSE;
 }
