@@ -1523,8 +1523,8 @@ win_lbr_chartabsize(
 #  ifdef FEAT_PROP_POPUP
     size += cts->cts_first_char;
 #  endif
-    return size;
 # endif
+    return size;
 #endif
 }
 
