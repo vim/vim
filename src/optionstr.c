@@ -4035,6 +4035,7 @@ did_set_signcolumn(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
+#if defined(FEAT_LINEBREAK)
     if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	return e_invalid_argument;
     // When changing the 'signcolumn' to or from 'number', recompute the
@@ -4043,6 +4044,7 @@ did_set_signcolumn(optset_T *args)
 		|| (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) =='u'))
 	    && (curwin->w_p_nu || curwin->w_p_rnu))
 	curwin->w_nrwidth_line_count = 0;
+#endif
 
     return NULL;
 }
