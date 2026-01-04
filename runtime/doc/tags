@@ -1034,7 +1034,10 @@ $quote	eval.txt	/*$quote*
 'stal'	options.txt	/*'stal'*
 'startofline'	options.txt	/*'startofline'*
 'statusline'	options.txt	/*'statusline'*
+'statuslineopt'	options.txt	/*'statuslineopt'*
 'stl'	options.txt	/*'stl'*
+'stl-@'	options.txt	/*'stl-@'*
+'stlo'	options.txt	/*'stlo'*
 'stmp'	options.txt	/*'stmp'*
 'stpl'	options.txt	/*'stpl'*
 'sts'	options.txt	/*'sts'*

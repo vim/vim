@@ -1691,7 +1691,8 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define MIN_COLUMNS	12	// minimal columns for screen
 #define MIN_LINES	2	// minimal lines for screen
 #define MIN_CMDHEIGHT	1	// minimal height for command line
-#define STATUS_HEIGHT	1	// height of a status line under a window
+#define STATUS_HEIGHT	1	// default height of a status line under a
+				// window
 #ifdef FEAT_MENU		// height of a status line under a window
 # define WINBAR_HEIGHT(wp)	(wp)->w_winbar_height
 # define VISIBLE_HEIGHT(wp)	((wp)->w_height + (wp)->w_winbar_height)
@@ -2449,6 +2450,13 @@ typedef enum {
     ESTACK_STACK,
     ESTACK_SCRIPT,
 } estack_arg_T;
+
+// Argument for build_stl_str_hl_local().
+typedef enum {
+    STL_MODE_SINGLE,	    // Does not accept line breaks "%@"
+    STL_MODE_MULTI,	    // Accept line breaks "%@"
+    STL_MODE_GET_RENDERED_HEIGHT,   // Just get stl rendered height
+} stl_mode_T;
 
 // Return value of match_keyprotocol()
 typedef enum {

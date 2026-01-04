@@ -2729,6 +2729,9 @@ func Test_set_option_window_global_local_all()
       elseif opt == 'listchars'
         exe 'setl ' .. opt .. '=tab:>>'
         exe 'setg ' .. opt .. '=tab:++'
+      elseif opt == 'statuslineopt'
+        exe 'setl ' .. opt .. '=maxheight:4'
+        exe 'setg ' .. opt .. '=maxheight:5,fixedheight'
       elseif opt == 'virtualedit'
         exe 'setl ' .. opt .. '=all'
         exe 'setg ' .. opt .. '=block'
@@ -2748,6 +2751,8 @@ func Test_set_option_window_global_local_all()
         call assert_equal('vert:+,fold:+', eval('&g:' .. opt), 'option:' .. opt)
       elseif opt == 'listchars'
         call assert_equal('tab:++', eval('&g:' .. opt), 'option:' .. opt)
+      elseif opt == 'statuslineopt'
+        call assert_equal('maxheight:5,fixedheight', eval('&g:' .. opt), 'option:' .. opt)
       elseif opt == 'virtualedit'
         call assert_equal('block', eval('&g:' .. opt), 'option:' .. opt)
       else
