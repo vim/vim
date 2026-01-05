@@ -2775,9 +2775,9 @@ win_line(
 		}
 
 		wlv.extra_for_textprop = FALSE;
-#ifdef FEAT_LINEBREAK
+# ifdef FEAT_LINEBREAK
 		in_linebreak = FALSE;
-#endif
+# endif
 	    }
 #endif
 	}
