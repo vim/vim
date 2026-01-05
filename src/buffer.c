@@ -707,7 +707,7 @@ aucmd_abort:
     // If the buffer was in curwin and the window has changed, go back to that
     // window, if it still exists.  This avoids that ":edit x" triggering a
     // "tabnext" BufUnload autocmd leaves a window behind without a buffer.
-    if (is_curwin && curwin != the_curwin &&  win_valid_any_tab(the_curwin))
+    if (is_curwin && curwin != the_curwin && win_valid_any_tab(the_curwin))
     {
 	block_autocmds();
 	goto_tabpage_win(the_curtab, the_curwin);
@@ -782,15 +782,12 @@ aucmd_abort:
 
     /*
      * Remove the buffer from the list.
+     * Do not wipe out the buffer if it is used in a window.
      */
-    if (wipe_buf)
+    if (wipe_buf && buf->b_nwindows <= 0)
     {
 	tabpage_T	*tp;
 	win_T		*wp;
-
-	// Do not wipe out the buffer if it is used in a window.
-	if (buf->b_nwindows > 0)
-	    return FALSE;
 
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    mark_forget_file(wp, buf->b_fnum);
