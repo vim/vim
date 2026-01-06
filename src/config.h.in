@@ -412,9 +412,6 @@
 /* Define if you want to use sockets for clientserver communication. */
 #undef WANT_SOCKETSERVER
 
-/* Define if you want to use sockets for clientserver communication if it makes sense. */
-#undef MAYBE_SOCKETSERVER
-
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
 

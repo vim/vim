@@ -2368,15 +2368,13 @@ AC_ARG_ENABLE(socketserver,
 	[  --enable-socketserver Use sockets for clientserver communication.],
 	[enable_socketserver=$enableval],
 	AS_IF([test "x$features" = xtiny],
-			[enable_socketserver=no_auto
+			[enable_socketserver=no_msg
 			 AC_MSG_RESULT([cannot use socketserver with tiny features])],
-			[enable_socketserver=auto]))
+			[enable_socketserver=yes]))
+
 if test "$enable_socketserver" = "yes"; then
   AC_DEFINE(WANT_SOCKETSERVER)
   AC_MSG_RESULT([yes])
-elif test "$enable_socketserver" = "auto"; then
-  AC_DEFINE(MAYBE_SOCKETSERVER)
-  AC_MSG_RESULT([auto])
 elif test "$enable_socketserver" = "no"; then
   AC_MSG_RESULT([no])
 fi
