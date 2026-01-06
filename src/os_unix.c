@@ -155,8 +155,9 @@ Display	    *x11_display = NULL;
 # define SOCKET_SERVER_MAX_CMD_SIZE 16384
 # define SOCKET_SERVER_MAX_MSG 6
 
-static int socket_server_fd = -1;
-static char_u *socket_server_path = NULL;
+static int	socket_server_fd = -1;
+static char_u	*socket_server_path = NULL;
+static char_u	*socket_server_name; // Pointer to socket_server_path
 
 typedef enum {
     SS_MSG_TYPE_ENCODING    = 'e',  // Encoding of message.
@@ -9314,6 +9315,7 @@ socket_server_init(char_u *name)
     }
 
     serverName = vim_strsave(socket_server_path);
+    socket_server_name = vim_strrchr(socket_server_path, '/') + 1;
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_SEND_SERVER, serverName, -1);
 #endif
@@ -9349,6 +9351,7 @@ socket_server_uninit(void)
 	mch_remove(socket_server_path);
 	vim_free(socket_server_path);
 	socket_server_path = NULL;
+	socket_server_name = NULL;
     }
 #ifdef FEAT_GUI_GTK
     if (gui.in_use)
@@ -9407,6 +9410,14 @@ socket_server_list_sockets(void)
 	if (dirp == NULL)
 	    continue;
 
+	// Don't want to send to ourselves, but we do want to list our
+	// server name (if we are a server).
+	if (socket_server_name != NULL)
+	{
+	    ga_concat(&str, socket_server_name);
+	    ga_append(&str, '\n');
+	}
+
 	// Loop through directory
 	while ((dp = readdir(dirp)) != NULL)
 	{
@@ -9416,20 +9427,17 @@ socket_server_list_sockets(void)
 	    buf.length = vim_snprintf_safelen((char *)buf.string, sizeof(addr.sun_path),
 		"%s/%s", path.string, dp->d_name);
 
-	    // Don't want to send to ourselves, but we do want to list our
-	    // server name (if we are a server).
-	    if (socket_server_path == NULL
-		    || STRCMP(socket_server_path, buf.string) != 0)
-	    {
+	    if (socket_server_path != NULL
+		    && STRCMP(socket_server_path, buf.string) == 0)
+		continue;
 
-		// Try sending an ALIVE command. This is more assuring than a
-		// simple connect, and *also seems to make tests less flaky*.
-		//
-		// We could also use a lock file which may be better, but this
-		// has worked fine so far... - 64bitman
-		if (!socket_server_check_alive(buf.string))
-		    continue;
-	    }
+	    // Try sending an ALIVE command. This is more assuring than a
+	    // simple connect, and *also seems to make tests less flaky*.
+	    //
+	    // We could also use a lock file which may be better, but this
+	    // has worked fine so far... - 64bitman
+	    if (!socket_server_check_alive(buf.string))
+		continue;
 
 	    ga_concat_len(&str, (char_u *)dp->d_name, buf.length - (path.length + 1));
 	    ga_append(&str, '\n');
