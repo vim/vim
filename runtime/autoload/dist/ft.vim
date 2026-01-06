@@ -2234,6 +2234,8 @@ const ft_from_ext = {
   "k": "kwt",
   # Kivy
   "kv": "kivy",
+  # Koka
+  "kk": "koka",
   # Kos
   "kos": "kos",
   # Kotlin
