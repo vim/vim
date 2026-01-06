@@ -1,5 +1,12 @@
 src/testdir/test42.in diff
 
+# The old test .ok files are expected to use LF line endings, even on Windows.
+# In src/testdir/Make_mvc.mak and src/testdir/Make_ming.mak, the test result
+# files .out are converted to LF line endings before being compared.
+# Therefore, if the .ok files' line endings are not specified and are
+# converted to CRLF, the comparison between .ok and .out will fail.
+src/testdir/test*.ok text eol=lf
+
 # `vim.pot` is updated every time any of the *.c files are modified.  And as it
 # contains line numbers for strings from *.c files, inserting a line into a
 # single .c file may cause many lines in the `vim.pot` file to be updated.
@@ -24,7 +31,7 @@ src/po/vim.pot -diff
 src/po/vim.pot diff=ignore_vim_pot
 
 # GitHub reacts to the `linguist-generated` attribute, by ignoring marked files
-# for the repository's language statistics and hiddning changes in these files
+# for the repository's language statistics and hiding changes in these files
 # by default in diffs.
 #
 # https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
