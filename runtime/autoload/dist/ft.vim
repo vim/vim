@@ -1917,6 +1917,9 @@ const ft_from_ext = {
   # Diff files
   "diff": "diff",
   "rej": "diff",
+  # Djot
+  "dj": "djot",
+  "djot": "djot",
   # DOT
   "dot": "dot",
   "gv": "dot",
