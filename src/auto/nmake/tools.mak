@@ -23,7 +23,7 @@ PSFLAGS = -NoLogo -NoProfile -Command
 !ERROR The PowerShell program version 3.0 or higher is required for work.
 !ENDIF
 
-!IF ![echo $(COMSPEC) | 1> nul find "cmd.exe"]
+!IF ![echo $(COMSPEC) | 1> nul $(SYSTEMROOT)\System32\find.exe "cmd.exe"]
 CMD = $(COMSPEC)
 !ELSE
 CMD = $(SYSTEMROOT)\System32\cmd.exe
