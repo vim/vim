@@ -1154,7 +1154,8 @@ end_visual_mode_keep_button(void)
     // we need to paste it somewhere while we still own the selection.
     // Only do this when the clipboard is already owned.  Don't want to grab
     // the selection when hitting ESC.
-    if (clip_star.available && clip_star.owned)
+    if ((clip_star.available && clip_star.owned)
+	    || (clip_plus.available && clip_plus.owned))
 	clip_auto_select();
 
 # if defined(FEAT_EVAL)
