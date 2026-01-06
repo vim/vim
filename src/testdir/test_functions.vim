@@ -2161,9 +2161,9 @@ func Test_executable_single_character_dir()
   endif
 
   let save_path = $PATH
-  " a: single character name without path seperator
-  " b: single character name with path seperator
-  " c: single character name without path seperator at last of PATH
+  " a: single character name without path separator
+  " b: single character name with path separator
+  " c: single character name without path separator at last of PATH
   let $PATH = [
         \ fnamemodify('./Xpath/a', ':p:h'),
         \ fnamemodify('./Xpath/b', ':p'),

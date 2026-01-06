@@ -46,7 +46,7 @@ struct vwl_seat_S {
     struct wl_seat  *proxy;
     char	    *label;	    // Name of seat as text (e.g. seat0,
 				    // seat1...).
-    uint32_t	    capabilities;   // Bitmask of the capabilites of the seat
+    uint32_t	    capabilities;   // Bitmask of the capabilities of the seat
 				    // (pointer, keyboard, touch).
 };
 

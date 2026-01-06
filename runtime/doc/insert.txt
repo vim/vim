@@ -1720,7 +1720,7 @@ Complete:
 Notes
 
 - It doesn't complete command arguments that rely on 'shellcmd' completion
-  type in Windows and WSL due to general slowness of canditate gathering,
+  type in Windows and WSL due to general slowness of candidate gathering,
   e.g.
 >
      terminal dir
