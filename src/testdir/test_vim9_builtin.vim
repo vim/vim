@@ -804,6 +804,10 @@ def Test_col()
   v9.CheckSourceDefAndScriptFailure(['col(true)'], ['E1013: Argument 1: type mismatch, expected string but got bool', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['col(".", [])'], ['E1013: Argument 2: type mismatch, expected number but got list<any>', 'E1210: Number required for argument 2'])
   v9.CheckSourceDefExecAndScriptFailure(['col("")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefExecAndScriptFailure(['col(".1")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefAndScriptSuccess(['col(".")'])
+  v9.CheckSourceDefExecAndScriptFailure(['col("\''a1")'], 'E1209: Invalid value for a line number')
+  v9.CheckSourceDefAndScriptSuccess(['col("\''a")'])
   bw!
 enddef
 
@@ -3471,6 +3475,14 @@ def Test_readfile()
   v9.CheckSourceDefExecAndScriptFailure(['readfile("")'], 'E1175: Non-empty string required for argument 1')
 enddef
 
+def Test_redraw_listener_add()
+  v9.CheckSourceDefAndScriptFailure(['redraw_listener_add("1")'], ['E1013: Argument 1: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 1'])
+enddef
+
+def Test_redraw_listener_remove()
+  v9.CheckSourceDefAndScriptFailure(['redraw_listener_remove("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
+enddef
+
 def Test_reduce()
   v9.CheckSourceDefAndScriptFailure(['reduce({a: 10}, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1253: String, List, Tuple or Blob required for argument 1'])
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))
@@ -4758,6 +4770,9 @@ def Test_term_gettty()
     CheckFeature terminal
   else
     var buf = g:Run_shell_in_terminal({})
+    if has('win32') && buf->term_getjob()->job_info()['tty_type'] == 'conpty'
+      throw 'Skipped: When using conpty, term_gettty() always returns an empty string.'
+    endif
     term_gettty(buf, true)->assert_notequal('')
     g:StopShellInTerminal(buf)
   endif

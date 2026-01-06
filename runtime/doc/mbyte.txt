@@ -1,4 +1,4 @@
-*mbyte.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*mbyte.txt*	For Vim version 9.1.  Last change: 2025 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -601,7 +601,7 @@ Each field means:
 - AVE:	    AVERAGE_WIDTH field.  Ten times average width in pixels.
 - CR:	    CHARSET_REGISTRY field.  The name of the charset group.
 - CE:	    CHARSET_ENCODING field.  The rest of the charset name.  For some
-	    charsets, such as JIS X 0208, if this field is 0, code points has
+	    charsets, such as JIS X 0208, if this field is 0, codepoints has
 	    the same value as GL, and GR if 1.
 
 For example, in case of a 16 dots font corresponding to JIS X 0208, it is

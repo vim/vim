@@ -40,7 +40,7 @@
 
   4. Advanced combinations:
      - ciwnew<ESC>    - Change current word to "new"
-     - yss"<ESC>      - Wrap entire line in quotes (vim-surround plugin style)
+     - ciw"<CTRL-R>-"<ESC> - Wrap current word in quotes
      - gUit           - Uppercase inner HTML tag content
      - va"p           - Select quoted text and paste over it
 
@@ -281,6 +281,7 @@ REFERENCE: 	Marks 		:h marks
      - "+/"*  - System clipboard (OS dependent)
      - "_     - Blackhole (discard deleted/yanked text)
      - "=     - Expression register
+     - "-     - Small delete register
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

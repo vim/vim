@@ -82,6 +82,9 @@
 #define PV_FF		OPT_BUF(BV_FF)
 #define PV_FLP		OPT_BUF(BV_FLP)
 #define PV_FO		OPT_BUF(BV_FO)
+#ifdef HAVE_FSYNC
+# define PV_FS		OPT_BOTH(OPT_BUF(BV_FS))
+#endif
 #define PV_FT		OPT_BUF(BV_FT)
 #define PV_IMI		OPT_BUF(BV_IMI)
 #define PV_IMS		OPT_BUF(BV_IMS)
@@ -618,7 +621,7 @@ static struct vimoption options[] =
 				(char_u *)0L}
 			    SCTX_INIT},
     {"clipboard",   "cb",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 			    (char_u *)&p_cb, PV_NONE, did_set_clipboard, expand_set_clipboard,
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 			    {(char_u *)"autoselect,exclude:cons\\|linux",
@@ -632,7 +635,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"clipmethod", "cpm",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
 			    {(char_u *)"wayland,x11", (char_u *)0L}
@@ -1172,7 +1175,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"fsync",       "fs",   P_BOOL|P_SECURE|P_VI_DEF,
 #ifdef HAVE_FSYNC
-			    (char_u *)&p_fs, PV_NONE, NULL, NULL,
+			    (char_u *)&p_fs, PV_FS, NULL, NULL,
 			    {(char_u *)TRUE, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

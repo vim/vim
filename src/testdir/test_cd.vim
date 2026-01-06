@@ -224,15 +224,48 @@ func Test_cd_completion()
 
   if has('win32')
     " Test Windows absolute path completion
+    let saved_cwd = getcwd()
+
     " Retrieve a suitable dir in the current drive
-    let dir = readdir('/', 'isdirectory("/" .. v:val) && len(v:val) > 2')[-1]
+    for d in readdir('/', 'isdirectory("/" .. v:val) && len(v:val) > 2')
+      " Paths containing '$' such as "$RECYCLE.BIN" are skipped because
+      " they are considered environment variables and completion does not
+      " work.
+      if d =~ '\V$'
+        continue
+      endif
+      " Skip directories that we don't have permission to "cd" into by
+      " actually "cd"ing into them and making sure they don't fail.
+      " Directory "System Volume Information" is an example of this.
+      try
+        call chdir('/' .. d)
+        let dir = d
+        " Yay! We found a suitable dir!
+        break
+      catch /:E472:/
+        " Just skip directories where "cd" fails
+        continue
+      finally
+        call chdir(saved_cwd)
+      endtry
+    endfor
+    if !exists('dir')
+      throw 'Skipped: no testable directories found in the current drive root'
+    endif
+
     " Get partial path
     let partial = dir[0:-2]
-    " Get the current drive letter
-    let old = chdir('/' . dir)
+    " Get the current drive letter and full path of the target dir
+    call chdir('/' .. dir)
     let full = getcwd()
     let drive = full[0]
-    call chdir(old)
+    call chdir(saved_cwd)
+
+    " Spaces are escaped in command line completion. Next, in assert_match(),
+    " the backslash added by the first escape also needs to be escaped
+    " separately, so the escape is doubled.
+    let want_full = escape(escape(full, ' '), '\')
+    let want_dir = escape(escape(dir, ' '), '\')
 
     for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
       for sep in [ '/', '\']
@@ -240,16 +273,16 @@ func Test_cd_completion()
         " Explicit drive letter
         call feedkeys(':' .. cmd .. ' ' .. drive .. ':' .. sep ..
                      \  partial .. "\<C-A>\<C-B>\"\<CR>", 'tx')
-        call assert_match(full, @:)
+        call assert_match(want_full, @:)
 
         " Implicit drive letter
         call feedkeys(':' .. cmd .. ' ' .. sep .. partial .. "\<C-A>\<C-B>\"\<CR>", 'tx')
-        call assert_match('/' .. dir .. '/', @:)
+        call assert_match('/' .. want_dir .. '/', @:)
 
         " UNC path
         call feedkeys(':' .. cmd .. ' ' .. sep .. sep .. $COMPUTERNAME .. sep ..
                      \ drive .. '$' .. sep .. partial .."\<C-A>\<C-B>\"\<CR>", 'tx')
-        call assert_match('//' .. $COMPUTERNAME .. '/' .. drive .. '$/' .. dir .. '/' , @:)
+        call assert_match('//' .. $COMPUTERNAME .. '/' .. drive .. '$/' .. want_dir .. '/' , @:)
 
       endfor
     endfor

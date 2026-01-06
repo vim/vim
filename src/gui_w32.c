@@ -315,6 +315,10 @@ gui_mch_set_rendering_options(char_u *s)
 # define SPI_SETWHEELSCROLLCHARS	0x006D
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+# define DWMWA_USE_IMMERSIVE_DARK_MODE	20
+#endif
+
 #ifndef DWMWA_CAPTION_COLOR
 # define DWMWA_CAPTION_COLOR		35
 #endif
@@ -416,6 +420,16 @@ static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENES
 static HINSTANCE hLibDwm = NULL;
 static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD);
 static void dyn_dwm_load(void);
+
+static int fullscreen_on = FALSE;
+
+#ifdef FEAT_GUI_DARKTHEME
+
+static HINSTANCE hUxThemeLib = NULL;
+static DWORD (WINAPI *pSetPreferredAppMode)(DWORD) = NULL;
+static void (WINAPI *pFlushMenuThemes)(void) = NULL;
+static void dyn_uxtheme_load(void);
+#endif
 
     static int WINAPI
 stubGetSystemMetricsForDpi(int nIndex, UINT dpi UNUSED)
@@ -3116,6 +3130,118 @@ gui_mch_set_curtab(int nr)
 
 #endif
 
+#ifdef FEAT_GUI_DARKTHEME
+extern BOOL win10_22H2_or_later; // this is in os_win32.c
+
+    void
+gui_mch_set_dark_theme(int dark)
+{
+    if (!win10_22H2_or_later)
+	return;
+
+    if (pDwmSetWindowAttribute != NULL)
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark,
+		sizeof(dark));
+
+    if (pSetPreferredAppMode != NULL)
+	pSetPreferredAppMode(dark);
+
+    if (pFlushMenuThemes != NULL)
+	pFlushMenuThemes();
+}
+
+    static void
+dyn_uxtheme_load(void)
+{
+    hUxThemeLib = vimLoadLib("uxtheme.dll");
+    if (hUxThemeLib == NULL)
+	return;
+
+    pSetPreferredAppMode = (DWORD (WINAPI *)(DWORD))
+	GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(135));
+    pFlushMenuThemes = (void (WINAPI *)(void))
+	GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(136));
+
+    if (pSetPreferredAppMode == NULL || pFlushMenuThemes == NULL)
+    {
+	FreeLibrary(hUxThemeLib);
+	hUxThemeLib = NULL;
+	return;
+    }
+}
+
+#endif // FEAT_GUI_DARKTHEME
+
+/*
+ * When flag is true, set fullscreen on.
+ * When flag is false, set fullscreen off.
+ */
+    void
+gui_mch_set_fullscreen(int flag)
+{
+    static RECT normal_rect;
+    static LONG_PTR normal_style, normal_exstyle;
+    HMONITOR	mon;
+    MONITORINFO	moninfo;
+    RECT	rc;
+
+    if (!full_screen) // Windows not set yet.
+	return;
+
+    if (flag)
+    {
+	if (fullscreen_on)
+	    return;
+
+	// Enter fullscreen mode
+	GetWindowRect(s_hwnd, &rc);
+
+	moninfo.cbSize = sizeof(MONITORINFO);
+	mon = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+	if (mon == NULL || !GetMonitorInfo(mon, &moninfo))
+	    return;
+
+	// Save current window state
+	GetWindowRect(s_hwnd, &normal_rect);
+	normal_style = GetWindowLongPtr(s_hwnd, GWL_STYLE);
+	normal_exstyle = GetWindowLongPtr(s_hwnd, GWL_EXSTYLE);
+
+	// Set fullscreen styles
+	SetWindowLongPtr(s_hwnd, GWL_STYLE,
+		normal_style & ~(WS_CAPTION | WS_THICKFRAME));
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE,
+		normal_exstyle & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
+		    WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+	SetWindowPos(s_hwnd, NULL,
+		moninfo.rcMonitor.left,
+		moninfo.rcMonitor.top,
+		moninfo.rcMonitor.right - moninfo.rcMonitor.left,
+		moninfo.rcMonitor.bottom - moninfo.rcMonitor.top,
+		SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+	fullscreen_on = TRUE;
+    }
+    else
+    {
+	if (!fullscreen_on)
+	    return;
+
+	// Exit fullscreen mode
+	SetWindowLongPtr(s_hwnd, GWL_STYLE, normal_style);
+	SetWindowLongPtr(s_hwnd, GWL_EXSTYLE, normal_exstyle);
+
+	// Restore original window position and size
+	SetWindowPos(s_hwnd, NULL,
+		normal_rect.left,
+		normal_rect.top,
+		normal_rect.right - normal_rect.left,
+		normal_rect.bottom - normal_rect.top,
+		SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+	fullscreen_on = FALSE;
+    }
+}
+
 /*
  * ":simalt" command.
  */
@@ -5646,6 +5772,10 @@ gui_mch_init(void)
 
     load_dpi_func();
 
+#ifdef FEAT_GUI_DARKTHEME
+    dyn_uxtheme_load();
+#endif
+
     dyn_dwm_load();
 
     s_dpi = pGetDpiForSystem();
@@ -7066,14 +7196,12 @@ gui_mch_menu_grey(
      * is this a toolbar button?
      */
     if (menu->submenu_id == (HMENU)-1)
-    {
 	SendMessage(s_toolbarhwnd, TB_ENABLEBUTTON,
-	    (WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0));
-    }
+		(WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0));
     else
 # endif
-    (void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
-		    menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
+	(void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
+		menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
 
 # ifdef FEAT_TEAROFF
     if ((menu->parent != NULL) && (IsWindow(menu->parent->tearoff_handle)))

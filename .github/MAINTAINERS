@@ -127,9 +127,12 @@ runtime/ftplugin/asy.vim				@avidseeker
 runtime/ftplugin/autohotkey.vim				@telemachus
 runtime/ftplugin/awk.vim				@dkearns
 runtime/ftplugin/basic.vim				@dkearns
+runtime/ftplugin/bicep.vim				@scottmckendry
+runtime/ftplugin/bicep-params.vim				@scottmckendry
 runtime/ftplugin/brighterscript.vim			@ribru17
 runtime/ftplugin/brightscript.vim			@ribru17
 runtime/ftplugin/bst.vim				@tpope
+runtime/ftplugin/bpftrace.vim				@sgruszka
 runtime/ftplugin/c3.vim					@ttytm
 runtime/ftplugin/cabal.vim				@ribru17
 runtime/ftplugin/cedar.vim				@ribru17
@@ -227,6 +230,8 @@ runtime/ftplugin/less.vim				@genoma
 runtime/ftplugin/lex.vim				@ribru17
 runtime/ftplugin/lf.vim					@andis-sprinkis
 runtime/ftplugin/liquid.vim				@tpope
+runtime/ftplugin/logtalk.dict		@pmoura
+runtime/ftplugin/logtalk.vim		@pmoura
 runtime/ftplugin/lua.vim				@dkearns
 runtime/ftplugin/lynx.vim				@dkearns
 runtime/ftplugin/m17ndb.vim				@dseomn
@@ -335,6 +340,7 @@ runtime/import/dist/vimhighlight.vim			@lacygoill
 runtime/indent/arduino.vim				@k-takata
 runtime/indent/astro.vim				@wuelnerdotexe
 runtime/indent/basic.vim				@dkearns
+runtime/indent/bpftrace.vim				@sgruszka
 runtime/indent/bst.vim					@tpope
 runtime/indent/cdl.vim					@dkearns
 runtime/indent/chatito.vim				@ObserverOfTime
@@ -381,6 +387,7 @@ runtime/indent/ld.vim					@dkearns
 runtime/indent/lf.vim					@andis-sprinkis
 runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
+runtime/indent/logtalk.vim				@pmoura
 runtime/indent/lua.vim					@marcuscf
 runtime/indent/m17ndb.vim				@dseomn
 runtime/indent/make.vim					@dkearns
@@ -453,6 +460,7 @@ runtime/syntax/asy.vim					@avidseeker
 runtime/syntax/autohotkey.vim				@mmikeww
 runtime/syntax/awk.vim					@dkearns
 runtime/syntax/basic.vim				@dkearns
+runtime/syntax/bpftrace.vim				@sgruszka
 runtime/syntax/bst.vim					@tpope
 runtime/syntax/bzl.vim					@dbarnett
 runtime/syntax/bzr.vim					@hdima
@@ -557,6 +565,7 @@ runtime/syntax/less.vim					@genoma
 runtime/syntax/lf.vim					@andis-sprinkis
 runtime/syntax/liquid.vim				@tpope
 runtime/syntax/log.vim					@mao-yining
+runtime/syntax/logtalk.vim				@pmoura
 runtime/syntax/lua.vim					@marcuscf
 runtime/syntax/lynx.vim					@dkearns
 runtime/syntax/lyrics.vim				@ObserverOfTime

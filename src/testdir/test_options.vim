@@ -522,15 +522,21 @@ func Test_set_completion_string_values()
   call assert_equal('unload', getcompletion('set bufhidden=', 'cmdline')[1])
   call assert_equal('nowrite', getcompletion('set buftype=', 'cmdline')[1])
   call assert_equal('internal', getcompletion('set casemap=', 'cmdline')[1])
-  if exists('+clipboard')
+  if has('clipboard')
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
   endif
-  if exists('+clipmethod')
-    if has('unix') || has('vms')
-      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
-    else
-      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
-    endif
+  if has('wayland_clipboard')
+    call assert_match('wayland', getcompletion('set clipmethod=w', 'cmdline')[0])
+  endif
+  if has('xterm_clipboard')
+    call assert_match('x11', getcompletion('set clipmethod=x', 'cmdline')[0])
+  endif
+  if has('eval')
+    let v:clipproviders["first"] = {}
+    let v:clipproviders["second"] = {}
+
+    call assert_match('first', getcompletion('set clipmethod=f', 'cmdline')[0])
+    call assert_match('second', getcompletion('set clipmethod=s', 'cmdline')[0])
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])
@@ -1675,25 +1681,34 @@ endfunc
 
 " Test for setting boolean global-local option value
 func Test_set_boolean_global_local_option()
-  setglobal autoread
-  setlocal noautoread
+  CheckUnix
+
+  setglobal autoread fsync
+  setlocal noautoread nofsync
   call assert_equal(1, &g:autoread)
   call assert_equal(0, &l:autoread)
   call assert_equal(0, &autoread)
+  call assert_equal(1, &g:fsync)
+  call assert_equal(0, &l:fsync)
+  call assert_equal(0, &fsync)
 
   " :set {option}< set the effective value of {option} to its global value.
-  set autoread<
+  set autoread< fsync<
   call assert_equal(1, &l:autoread)
   call assert_equal(1, &autoread)
+  call assert_equal(1, &l:fsync)
+  call assert_equal(1, &fsync)
 
   " :setlocal {option}< removes the local value, so that the global value will be used.
-  setglobal noautoread
-  setlocal autoread
-  setlocal autoread<
+  setglobal noautoread nofsync
+  setlocal autoread fsync
+  setlocal autoread< fsync<
   call assert_equal(-1, &l:autoread)
   call assert_equal(0, &autoread)
+  call assert_equal(-1, &l:fsync)
+  call assert_equal(0, &fsync)
 
-  set autoread&
+  set autoread& fsync&
 endfunc
 
 func Test_set_in_sandbox()

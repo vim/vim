@@ -156,6 +156,11 @@ static char *(features[]) =
 #else
 	"-clipboard",
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	"+clipboard_provider",
+#else
+	"-clipboard_provider",
+#endif
 	"+cmdline_compl",
 	"+cmdline_hist",
 	"+cmdline_info",
@@ -729,6 +734,226 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    2062,
+/**/
+    2061,
+/**/
+    2060,
+/**/
+    2059,
+/**/
+    2058,
+/**/
+    2057,
+/**/
+    2056,
+/**/
+    2055,
+/**/
+    2054,
+/**/
+    2053,
+/**/
+    2052,
+/**/
+    2051,
+/**/
+    2050,
+/**/
+    2049,
+/**/
+    2048,
+/**/
+    2047,
+/**/
+    2046,
+/**/
+    2045,
+/**/
+    2044,
+/**/
+    2043,
+/**/
+    2042,
+/**/
+    2041,
+/**/
+    2040,
+/**/
+    2039,
+/**/
+    2038,
+/**/
+    2037,
+/**/
+    2036,
+/**/
+    2035,
+/**/
+    2034,
+/**/
+    2033,
+/**/
+    2032,
+/**/
+    2031,
+/**/
+    2030,
+/**/
+    2029,
+/**/
+    2028,
+/**/
+    2027,
+/**/
+    2026,
+/**/
+    2025,
+/**/
+    2024,
+/**/
+    2023,
+/**/
+    2022,
+/**/
+    2021,
+/**/
+    2020,
+/**/
+    2019,
+/**/
+    2018,
+/**/
+    2017,
+/**/
+    2016,
+/**/
+    2015,
+/**/
+    2014,
+/**/
+    2013,
+/**/
+    2012,
+/**/
+    2011,
+/**/
+    2010,
+/**/
+    2009,
+/**/
+    2008,
+/**/
+    2007,
+/**/
+    2006,
+/**/
+    2005,
+/**/
+    2004,
+/**/
+    2003,
+/**/
+    2002,
+/**/
+    2001,
+/**/
+    2000,
+/**/
+    1999,
+/**/
+    1998,
+/**/
+    1997,
+/**/
+    1996,
+/**/
+    1995,
+/**/
+    1994,
+/**/
+    1993,
+/**/
+    1992,
+/**/
+    1991,
+/**/
+    1990,
+/**/
+    1989,
+/**/
+    1988,
+/**/
+    1987,
+/**/
+    1986,
+/**/
+    1985,
+/**/
+    1984,
+/**/
+    1983,
+/**/
+    1982,
+/**/
+    1981,
+/**/
+    1980,
+/**/
+    1979,
+/**/
+    1978,
+/**/
+    1977,
+/**/
+    1976,
+/**/
+    1975,
+/**/
+    1974,
+/**/
+    1973,
+/**/
+    1972,
+/**/
+    1971,
+/**/
+    1970,
+/**/
+    1969,
+/**/
+    1968,
+/**/
+    1967,
+/**/
+    1966,
+/**/
+    1965,
+/**/
+    1964,
+/**/
+    1963,
+/**/
+    1962,
+/**/
+    1961,
+/**/
+    1960,
+/**/
+    1959,
+/**/
+    1958,
+/**/
+    1957,
+/**/
+    1956,
+/**/
+    1955,
+/**/
+    1954,
+/**/
+    1953,
 /**/
     1952,
 /**/
@@ -5197,8 +5422,7 @@ intro_message(
     if (blanklines < 0)
 	blanklines = 0;
 
-    // Show the sponsor and register message one out of four times, the Uganda
-    // message two out of four times.
+    // Show the sponsor and Uganda message two out of four times
     sponsor = (int)time(NULL);
     sponsor = ((sponsor & 2) == 0) - ((sponsor & 4) == 0);
 
@@ -5222,15 +5446,11 @@ intro_message(
 	    if (sponsor != 0)
 	    {
 		if (strstr(p, "children") != NULL)
-		    p = sponsor < 0
-			? N_("Sponsor Vim development!")
-			: N_("Become a registered Vim user!");
+		    p = N_("Sponsor Vim development!");
 		else if (strstr(p, "Kuwasha") != NULL)
-		    p = sponsor < 0
-			? N_("type  :help sponsor<Enter>    for information ")
-			: N_("type  :help register<Enter>   for information ");
+		    p = N_("type  :help sponsor<Enter>    for information ");
 		else if (strstr(p, "Orphans") != NULL)
-		    p = N_("menu  Help->Sponsor/Register  for information    ");
+		    p = N_("menu  Help->Sponsor  for information    ");
 	    }
 	    if (*p != NUL)
 		do_intro_line(row, (char_u *)_(p), i == 2, 0);

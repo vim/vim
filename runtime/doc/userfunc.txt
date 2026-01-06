@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Oct 28
+*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Dec 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -80,11 +80,11 @@ See |:verbose-cmd| for more information.
 			matching |:endfunction|.
 								*E1267*
 			The name must be made of alphanumeric characters and
-			'_', and must start with a capital or "s:" (see
-			above).  Note that using "b:" or "g:" is not allowed.
-			(since patch 7.4.260 E884 is given if the function
-			name has a colon in the name, e.g. for "foo:bar()".
-			Before that patch no error was given).
+			'_' and must start with a capital or "s:" (see above).
+			Note that using "b:", "l:", etc. is not allowed (since
+			patch 7.4.260 E884 is given if the function name has a
+			colon, e.g. for "foo:bar()"), while a leading "g:" is
+			skipped and still requires a following capital letter.
 
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >

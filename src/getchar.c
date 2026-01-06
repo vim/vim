@@ -439,7 +439,7 @@ stuff_empty(void)
 #if defined(FEAT_EVAL)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
- * redbuf2.
+ * readbuf2.
  */
     int
 readbuf1_empty(void)
@@ -4288,7 +4288,7 @@ getcmdkeycmd(
 	}
 	else if (c1 == K_SNR)
 	{
-	    ga_concat(&line_ga, (char_u *)"<SNR>");
+	    ga_concat_len(&line_ga, (char_u *)"<SNR>", 5);
 	}
 	else
 	{

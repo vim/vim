@@ -1,5 +1,7 @@
 " Tests for the "sort()" function and for the ":sort" command.
 
+import './util/vim9.vim' as v9
+
 func Compare1(a, b) abort
   call sort(range(3), 'Compare2')
   return a:a - a:b
@@ -1498,7 +1500,7 @@ func Test_sort_followed_by_cmd()
   call setline(1, ['3b', '1c', '2a'])
   %sort /\d\+/ " sort alphabetically
   call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 " Test for :sort using last search pattern
@@ -1508,7 +1510,7 @@ func Test_sort_last_search_pat()
   call setline(1, ['3b', '1c', '2a'])
   sort //
   call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 " Test for :sort with no last search pattern
@@ -1538,7 +1540,7 @@ func Test_sort_with_marks()
   call assert_equal(2, line("'a"))
   call assert_equal(3, line("'b"))
   call assert_equal(1, line("'c"))
-  close!
+  bw!
 endfunc
 
 " Test for sort() using a dict function
@@ -1555,6 +1557,32 @@ func Test_sort_using_dict_func()
   let d = #{order: 'reverse'}
   call assert_equal([3, 2, 1], sort([2, 1, 3], 'DictSort', d))
   delfunc DictSort
+endfunc
+
+" Test for using sort() function with a funcref and large numbers
+func Test_sort_funcref_with_large_number()
+  let lines =<< trim END
+    call assert_equal(
+        \ [
+        \  (188325333471071, 188931909913550),
+        \  (229539777187355, 229539777187355),
+        \  (245727634348687, 249469249579525),
+        \  (264028451845520, 265514296554744),
+        \  (375117820166731, 378942174241518),
+        \  (487766135067138, 491977135306566),
+        \  (535474757750378, 535849288071548)
+        \ ],
+        \ [
+        \  (229539777187355, 229539777187355),
+        \  (487766135067138, 491977135306566),
+        \  (188325333471071, 188931909913550),
+        \  (264028451845520, 265514296554744),
+        \  (245727634348687, 249469249579525),
+        \  (375117820166731, 378942174241518),
+        \  (535474757750378, 535849288071548)
+        \ ]->sort(LSTART a, b LMIDDLE a[0] - b[0] LEND))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

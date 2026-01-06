@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*various.txt*	For Vim version 9.1.  Last change: 2025 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -379,6 +379,7 @@ T  *+cindent*		'cindent', C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
+   *+clipboard_provider*  |clipboard-providers| support compiled-in
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
 T  *+cmdline_info*	'showcmd' and 'ruler'; Always enabled since

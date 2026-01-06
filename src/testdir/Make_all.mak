@@ -50,6 +50,7 @@ TEST_VIM9 = \
 	test_vim9_func \
 	test_vim9_generics \
 	test_vim9_import \
+	test_vim9_interface \
 	test_vim9_python3 \
 	test_vim9_script \
 	test_vim9_typealias
@@ -66,6 +67,7 @@ TEST_VIM9_RES = \
 	test_vim9_func.res \
 	test_vim9_generics.res \
 	test_vim9_import.res \
+	test_vim9_interface.res \
 	test_vim9_python3.res \
 	test_vim9_script.res \
 	test_vim9_typealias.res
@@ -249,6 +251,7 @@ NEW_TESTS = \
 	test_plugin_man \
 	test_plugin_matchparen \
 	test_plugin_netrw \
+	test_plugin_osc52 \
 	test_plugin_tar \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
@@ -524,6 +527,7 @@ NEW_TESTS_RES = \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \
 	test_plugin_netrw.res \
+	test_plugin_osc52.res \
 	test_plugin_tar.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \

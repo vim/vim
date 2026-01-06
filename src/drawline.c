@@ -1755,7 +1755,7 @@ win_line(
     }
 #endif
 
-#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+#if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
     colnr_T vcol_first_char = 0;
     if (wp->w_p_lbr && number_only == 0)
     {
@@ -2775,7 +2775,9 @@ win_line(
 		}
 
 		wlv.extra_for_textprop = FALSE;
+# ifdef FEAT_LINEBREAK
 		in_linebreak = FALSE;
+# endif
 	    }
 #endif
 	}

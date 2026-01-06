@@ -1372,6 +1372,11 @@ check_type_maybe(
 			     || (actual->tt_flags & TTFLAG_FLOAT_OK)))
 		// Using a number where a float is expected is OK here.
 		return OK;
+	    if (expected->tt_type == VAR_LIST
+		    && actual->tt_type == VAR_TUPLE
+		    && (expected->tt_flags & TTFLAG_TUPLE_OK))
+		// Using a tuple where a list is expected is OK here.
+		return OK;
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
 	    return FAIL;
@@ -2580,30 +2585,29 @@ type_name_tuple(type_T *type, char **tofree)
 
     if (type->tt_argcount <= 0)
 	// empty tuple
-	ga_concat(&ga, (char_u *)"any");
+	ga_concat_len(&ga, (char_u *)"any", 3);
     else
     {
 	if (type->tt_args == NULL)
-	    ga_concat(&ga, (char_u *)"[unknown]");
+	    ga_concat_len(&ga, (char_u *)"[unknown]", 9);
 	else
 	{
 	    for (i = 0; i < type->tt_argcount; ++i)
 	    {
-		char	*arg_type;
-		int	len;
+		string_T    arg_type;
 
-		arg_type = type_name(type->tt_args[i], &arg_free);
+		arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
 		if (i > 0)
 		{
 		    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 		    ga.ga_len += 2;
 		}
-		len = (int)STRLEN(arg_type);
-		if (ga_grow(&ga, len + 8) == FAIL)
+		arg_type.length = STRLEN(arg_type.string);
+		if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 		    goto failed;
 		if (varargs && i == type->tt_argcount - 1)
-		    ga_concat(&ga, (char_u *)"...");
-		ga_concat(&ga, (char_u *)arg_type);
+		    ga_concat_len(&ga, (char_u *)"...", 3);
+		ga_concat_len(&ga, arg_type.string, arg_type.length);
 		VIM_CLEAR(arg_free);
 	    }
 	}
@@ -2626,23 +2630,27 @@ failed:
     static char *
 type_name_class_or_obj(char *name, type_T *type, char **tofree)
 {
-    char_u *class_name;
+    string_T	class_name;
 
     if (type->tt_class != NULL)
     {
-	class_name = type->tt_class->class_name;
+	class_name.string = type->tt_class->class_name.string;
+	class_name.length = type->tt_class->class_name.length;
 	if (IS_ENUM(type->tt_class))
 	    name = "enum";
     }
     else
-	class_name = (char_u *)"any";
+    {
+	class_name.string = (char_u *)"any";
+	class_name.length = 3;
+    }
 
-    size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+    size_t len = STRLEN(name) + class_name.length + 3;
     *tofree = alloc(len);
     if (*tofree == NULL)
 	return name;
 
-    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+    vim_snprintf(*tofree, len, "%s<%s>", name, class_name.string);
     return *tofree;
 }
 
@@ -2666,31 +2674,35 @@ type_name_func(type_T *type, char **tofree)
 
     for (i = 0; i < type->tt_argcount; ++i)
     {
-	char *arg_type;
-	int  len;
+	string_T    arg_type;
 
 	if (type->tt_args == NULL)
-	    arg_type = "[unknown]";
+	{
+	    arg_type.string = (char_u *)"[unknown]";
+	    arg_type.length = 9;
+	}
 	else
-	    arg_type = type_name(type->tt_args[i], &arg_free);
+	{
+	    arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
+	    arg_type.length = STRLEN(arg_type.string);
+	}
 	if (i > 0)
 	{
 	    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 	    ga.ga_len += 2;
 	}
-	len = (int)STRLEN(arg_type);
-	if (ga_grow(&ga, len + 8) == FAIL)
+	if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 	    goto failed;
 	if (varargs && i == type->tt_argcount - 1)
-	    ga_concat(&ga, (char_u *)"...");
+	    ga_concat_len(&ga, (char_u *)"...", 3);
 	else if (i >= type->tt_min_argcount)
 	    *((char *)ga.ga_data + ga.ga_len++) = '?';
-	ga_concat(&ga, (char_u *)arg_type);
+	ga_concat_len(&ga, arg_type.string, arg_type.length);
 	VIM_CLEAR(arg_free);
     }
     if (type->tt_argcount < 0)
 	// any number of arguments
-	ga_concat(&ga, (char_u *)"...");
+	ga_concat_len(&ga, (char_u *)"...", 3);
 
     if (type->tt_member == &t_void)
 	STRCPY((char *)ga.ga_data + ga.ga_len, ")");
@@ -2812,7 +2824,7 @@ check_typval_is_value(typval_T *tv)
 	    {
 		class_T *cl = tv->vval.v_class;
 		char_u *class_name = (cl == NULL) ? (char_u *)""
-							: cl->class_name;
+							: cl->class_name.string;
 		if (cl != NULL && IS_ENUM(cl))
 		    semsg(_(e_using_enum_as_value_str), class_name);
 		else
@@ -2844,11 +2856,11 @@ check_type_is_value(type_T *type)
 	case VAR_CLASS:
 	    if (type->tt_class != NULL && IS_ENUM(type->tt_class))
 		semsg(_(e_using_enum_as_value_str),
-			type->tt_class->class_name);
+			type->tt_class->class_name.string);
 	    else
 		semsg(_(e_using_class_as_value_str),
 			type->tt_class == NULL ? (char_u *)""
-			: type->tt_class->class_name);
+			: type->tt_class->class_name.string);
 	    return FAIL;
 
 	case VAR_TYPEALIAS:

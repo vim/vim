@@ -1,0 +1,70 @@
+*osc52.txt*   For Vim version 9.1.  Last change:  2025 Dec 18
+
+
+			  VIM REFERENCE MANUAL
+
+Use the OSC 52 terminal command for clipboard support
+==============================================================================
+
+1. OVERVIEW					        *osc52-overview*
+
+The osc52.vim plugin provides support for the OSC 52 terminal command, which
+allows an application to access the clipboard by communicating with the
+terminal.  This is useful in situations such as if you are in a SSH session.
+
+                                                        *osc52-support*
+In order for this plugin to work, the terminal Vim is running in must
+recognize and handle the OSC 52 escape sequence.  You can easily check this
+online.  Additionally, while yanking is guaranteed to work, some terminals
+don't implement the paste functionality.  If the terminal doesn't support
+pasting, then Vim will just block waiting for the data which will never come.
+In this case just press Ctrl-C to cancel the operation.
+
+                                                        *osc52-selections*
+Note that this only applies to users on Wayland or X11 platforms
+
+Some terminals support the selection type parameter in the OSC 52 command.
+This originates from X11, and some terminals check this parameter and handle
+it accordingly.  If your terminal handles this parameter, then the "+"
+register corresponds to the regular selection, and the "*" register
+corresponds to the primary selection.  If your terminal does not handle it,
+then it is up to the terminal to handle what selection to use.
+
+2. HOW TO USE THE PLUGIN                                *osc52-how-to-use*
+
+The osc52.vim package relies on Vim's clipboard provider functionality, see
+|clipboard-providers|.  To enable it, add the following to your |vimrc|: >vim
+        packadd osc52
+        set clipmethod+=osc52
+<
+This appends "osc52" to |clipmethod|, causing Vim to try it only after any
+earlier clipboard methods.  This allows Vim to use the system clipboard
+directly when available, and automatically fall back to OSC 52 method when it
+is not (for example, when running over SSH).
+
+Note: that this fallback behavior applies only on platforms that use
+|clipmethod| for accessing the clipboard.  On macOS and Windows, Vim does not
+use |clipmethod|, so this behaviour won't happen.  Instead if OSC 52 support is
+detected and "osc52" is the only value in |clipmethod|, then it will always be
+used.
+
+You can check whether the osc52.vim provider is active by inspecting
+|v:clipmethod|.  If it contains "osc52", the plugin is enabled.
+
+Note: terminal multiplexers such as tmux may interfere with automatic OSC 52
+detection.
+
+                                                        *g:osc52_force_avail*
+In most cases, the plugin should automatically detect and work if your
+terminal supports the OSC 52 command.  Internally, it does this by sending the
+Primary Device Attributes (DA1) query.  You may force enable the plugin by
+setting |g:osc52_force_avail| to true.
+
+                                                        *g:osc52_disable_paste*
+If your terminal does not support pasting via OSC 52, or has it disabled, then
+it is a good idea to set g:osc52_disable_paste to TRUE.  This will cause an
+empty string to be returned when Vim attempts to query the osc52.vim provider,
+instead of doing a blocking wait, as said in |osc52-support|.
+
+==============================================================================
+vim:tw=78:ts=8:fo=tcq2:ft=help:

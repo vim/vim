@@ -563,7 +563,7 @@ parse_argument_types(
 			{
 			    if (obj_members != NULL
 				    && STRCMP(aname,
-					obj_members[om].ocm_name) == 0)
+					obj_members[om].ocm_name.string) == 0)
 			    {
 				type = obj_members[om].ocm_type;
 				break;
@@ -1405,7 +1405,7 @@ get_function_body(
 	    // For a :def function "python << EOF" concatenates all the lines,
 	    // to be used for the instruction later.
 	    ga_concat(&heredoc_ga, theline);
-	    ga_concat(&heredoc_ga, (char_u *)"\n");
+	    ga_concat_len(&heredoc_ga, (char_u *)"\n", 1);
 	    p = vim_strnsave((char_u *)"", 0);
 	}
 	else
@@ -4524,7 +4524,8 @@ trans_function_name_ext(
 	else if (lv.ll_tv->v_type == VAR_CLASS
 					     && lv.ll_tv->vval.v_class != NULL)
 	{
-	    name = vim_strsave(lv.ll_tv->vval.v_class->class_name);
+	    name = vim_strnsave(lv.ll_tv->vval.v_class->class_name.string,
+		lv.ll_tv->vval.v_class->class_name.length);
 	    *pp = end;
 	}
 	else if (lv.ll_tv->v_type == VAR_PARTIAL
@@ -5955,7 +5956,7 @@ defcompile_function(ufunc_T *ufunc, class_T *cl)
 	(void)compile_def_function(ufunc, FALSE, compile_type, NULL);
     else
 	smsg(_("Function %s%s%s does not need compiling"),
-				cl != NULL ? cl->class_name : (char_u *)"",
+				cl != NULL ? cl->class_name.string : (char_u *)"",
 				cl != NULL ? (char_u *)"." : (char_u *)"",
 				ufunc->uf_name);
 }

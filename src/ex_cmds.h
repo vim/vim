@@ -693,8 +693,8 @@ EXCMD(CMD_help,		"help",		ex_help,
 	EX_BANG|EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
 EXCMD(CMD_helpclose,	"helpclose",	ex_helpclose,
-	EX_RANGE|EX_COUNT|EX_TRLBAR,
-	ADDR_OTHER),
+	EX_TRLBAR,
+	ADDR_NONE),
 EXCMD(CMD_helpfind,	"helpfind",	ex_helpfind,
 	EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
@@ -1647,8 +1647,8 @@ EXCMD(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_tlunmenu,	"tlunmenu",	ex_menu,
-	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
-	ADDR_OTHER),
+	EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_tmenu,	"tmenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
@@ -1973,6 +1973,8 @@ struct exarg
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
+    class_T	*ea_class;		// Name of class being defined. Used by :class
+				// and :enum commands.
 #endif
 };
 

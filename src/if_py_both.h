@@ -1039,7 +1039,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	char buf[NUMBUFLEN];
 
 	// For backwards compatibility numbers are stored as strings.
-	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
+	sprintf(buf, "%lld", (long long)our_tv->vval.v_number);
 	ret = PyString_FromString((char *)buf);
     }
     else if (our_tv->v_type == VAR_FLOAT)

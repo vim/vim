@@ -876,4 +876,26 @@ func Test_blob_items()
   call v9.CheckSourceLegacyAndVim9Success(lines)
 endfunc
 
+" Test for setting a byte in a blob with invalid value
+func Test_blob_byte_set_invalid_value()
+  let lines =<< trim END
+    VAR b = 0zD0C3E4E18E1B
+    LET b[0] = 229539777187355
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1239: Invalid value for blob:')
+endfunc
+
+" Test when converting a blob to a string, and there is an empty line (newline
+" followed directly by another newline).
+func Test_blob2str_empty_line()
+  let stuff =<< trim END
+  Hello
+
+  World!
+  END
+
+  let b = str2blob(stuff)
+  call assert_equal(['Hello', '', 'World!'], blob2str(b))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

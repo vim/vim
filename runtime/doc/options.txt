@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Nov 27
+*options.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1815,13 +1815,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 						  for X-windows, "" otherwise)
 			global
 			{only in GUI versions or when the |+xterm_clipboard|
-			or |+wayland_clipboard| features are included}
+			or |+wayland_clipboard| features or
+			|+clipboard_provider| features are included}
 	This option is a list of comma-separated names.
 	Note: if one of the items is "exclude:", then you can't add an item
 	after that.  Therefore do not append an item with += but use ^= to
 	prepend, e.g.: >
 		set clipboard^=unnamed
 <	When using the GUI see |'go-A'|.
+	When using the |clipboard-providers| feature, only the "unnamed" and
+	"unnamedplus" features will be recognized  If compiled without the
+	|+clipboard| feature but compiled with the |+clipboard_provider|
+	feature, then they will be the only values allowed and the other
+	values will be invalid.
 	These names are recognized:
 
 						*clipboard-unnamed*
@@ -1845,9 +1851,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			'*'.  If Wayland is being used and the compositor does
 			not support the primary selection then the regular
 			selection is used in its place.  Only available with
-			the |+X11| or
-			|+wayland_clipboard| feature.  Availability can be
-			checked with: >
+			the |+X11| or |+wayland_clipboard| feature.
+			Availability can be checked with: >
 			if has('unnamedplus')
 <
 						*clipboard-autoselect*
@@ -1912,18 +1917,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 for VMS: "x11",
 				 otherwise: "")
 			global
-			{only when the |+xterm_clipboard| or
-			|+wayland_clipboard| features are included}
-	Specifies which method of accessing the system clipboard is used,
-	depending on which method works first or is available.  Supported
-	methods are:
+			{only when the |+xterm_clipboard|, |+wayland_clipboard|,
+			or |+eval| features are included}
+	Specifies which method of accessing the system clipboard (or clipboard
+	provider) is used.  Methods are tried in the order given; the first
+	working method is used.  Supported methods are:
 		wayland		Wayland selections
 		x11		X11 selections
+		<name>		Use a clipboard provider with the given name
 
 	Note: This option is ignored when either the GUI is running or if Vim
 	is run on a system without Wayland or X11 support, such as Windows or
-	macOS.  The GUI or system way of accessing the clipboard is always
-	used instead.
+	macOS.  The GUI or system way of accessing the clipboard is used
+	instead, meaning |v:clipmethod| will be set to "none".  The
+	exception to this is the |clipboard-providers| feature, in which if
+	a clipboard provider is being used, then it will override the existing
+	clipboard functionality.
 
 	The option value is a list of comma separated items.  The list is
 	parsed left to right in order, and the first method that Vim
@@ -3202,9 +3211,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		internal	Use the internal diff library.  This is
 				ignored when 'diffexpr' is set.  *E960*
 				When running out of memory when writing a
-				buffer this item will be ignored for diffs
-				involving that buffer.  Set the 'verbose'
-				option to see when this happens.
+				buffer or the diff is larger than 1 GB this
+				item will be ignored for diffs involving that
+				buffer.  Set the 'verbose' option to see when
+				this happens.
 
 		iwhite		Ignore changes in amount of white space.  Adds
 				the "-b" flag to the "diff" command if
@@ -4264,7 +4274,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fsync'* *'fs'* *'nofsync'* *'nofs'*
 'fsync' 'fs'		boolean	(default on)
-			global
+			global or local to buffer |global-local|
 	When on, the library function fsync() will be called after writing a
 	file.  This will flush a file to disk, ensuring that it is safely
 	written even on filesystems which do metadata-only journaling.  This
@@ -4273,6 +4283,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	turning this off increases the chances of data loss after a crash.  On
 	systems without an fsync() implementation, this variable is always
 	off.
+	This is a |global-local| option, so it can be set per buffer, for
+	example when writing to a slow filesystem.
 	Also see 'swapsync' for controlling fsync() on swap files.
 	'fsync' also applies to |writefile()| (unless a flag is used to
 	overrule it) and when writing undo files (see |undo-persistence|).
@@ -4522,11 +4534,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		choices.
 								*'go-C'*
 	  'C'	Use |hl-TitleBar| and |hl-TitleBarNC| if available.
-		Currently only works for MS-Window GUI.
+		Currently only works for MS-Windows GUI.
 		See |gui-w32-title-bar| for details.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
-		GTK+ GUI.
+		MS-Windows and GTK+ GUI.
 								*'go-e'*
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
@@ -4562,6 +4574,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-T'*
 	  'T'	Include Toolbar.  Currently only in Win32, GTK+, Motif and
 		Photon GUIs.
+								*'go-s'*
+	  's'	Enable fullscreen mode.  Currently only supported in the
+		MS-Windows GUI version.  When set, the window will occupy the
+		entire screen and remove window decorations.  Define custom
+		mappings to toggle this mode conveniently.  For detailed usage
+		instructions, see |gui-w32-fullscreen|.
 								*'go-r'*
 	  'r'	Right-hand scrollbar is always present.
 								*'go-R'*
@@ -6023,7 +6041,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When the number of matches exceeds this value, Vim shows ">" instead
 	of the exact count to keep searching fast.
 	Note: larger values may impact performance.
-	The value must be between 1 and 9999.
+	The value must be between 1 and 9999.  See also the |searchcount()|
+	function.
 
 						*'menuitems'* *'mis'*
 'menuitems' 'mis'	number	(default 25)
@@ -7844,7 +7863,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		"search hit TOP, continuing at BOTTOM" messages are only
 		indicated by a "W" (Mnemonic: Wrapped) letter before the
 		search count statistics.  The maximum limit can be set with
-		the 'maxsearchcount' option.
+		the 'maxsearchcount' option, see also |searchcount()|
+		function.
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as

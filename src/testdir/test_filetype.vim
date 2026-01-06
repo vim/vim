@@ -140,7 +140,8 @@ def s:GetFilenameChecks(): dict<list<string>>
     bdf: ['file.bdf'],
     beancount: ['file.beancount'],
     bib: ['file.bib'],
-    bicep: ['file.bicep', 'file.bicepparam'],
+    bicep: ['file.bicep'],
+    bicep-params: ['file.bicepparam'],
     bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file', 'foobar.zone'],
     bitbake: ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf',
       'project-spec/configs/zynqmp-generic-xczu7ev.conf'],
@@ -148,6 +149,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     blank: ['file.bl'],
     blueprint: ['file.blp'],
     bp: ['Android.bp'],
+    bpftrace: ['file.bt'],
     brighterscript: ['file.bs'],
     brightscript: ['file.brs'],
     bsdl: ['file.bsd', 'file.bsdl'],
@@ -240,6 +242,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     dictdconf: ['dictd.conf', 'dictdfile.conf', 'dictd-file.conf'],
     diff: ['file.diff', 'file.rej'],
     dircolors: ['.dir_colors', '.dircolors', '/etc/DIR_COLORS', 'any/etc/DIR_COLORS'],
+    djot: ['file.dj', 'file.djot'],
     dnsmasq: ['/etc/dnsmasq.conf', '/etc/dnsmasq.d/file', 'any/etc/dnsmasq.conf', 'any/etc/dnsmasq.d/file'],
     dockerfile: ['Containerfile', 'Dockerfile', 'dockerfile', 'file.Dockerfile', 'file.dockerfile', 'Dockerfile.debian', 'Containerfile.something'],
     dosbatch: ['file.bat'],
@@ -290,13 +293,14 @@ def s:GetFilenameChecks(): dict<list<string>>
     falcon: ['file.fal'],
     fan: ['file.fan', 'file.fwt'],
     faust: ['file.dsp', 'file.lib'],
-    fennel: ['file.fnl', '.fennelrc', 'fennelrc'],
+    fennel: ['file.fnl', '.fennelrc', 'fennelrc', 'file.fnlm'],
     fetchmail: ['.fetchmailrc'],
     fga: ['file.fga'],
     fgl: ['file.4gl', 'file.4gh', 'file.m4gl'],
     firrtl: ['file.fir'],
     fish: ['file.fish'],
     flix: ['file.flix'],
+    fluent: ['file.ftl'],
     focexec: ['file.fex', 'file.focexec'],
     form: ['file.frm'],
     forth: ['file.ft', 'file.fth', 'file.4th'],
@@ -380,6 +384,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     http: ['file.http'],
     hurl: ['file.hurl'],
     hy: ['file.hy', '.hy-history'],
+    hylo: ['file.hylo'],
     hyprlang: ['hyprlock.conf', 'hyprland.conf', 'hypridle.conf', 'hyprpaper.conf', '/hypr/foo.conf'],
     i3config: ['/home/user/.i3/config', '/home/user/.config/i3/config', '/etc/i3/config', '/etc/xdg/i3/config'],
     ibasic: ['file.iba', 'file.ibi'],
@@ -428,6 +433,8 @@ def s:GetFilenameChecks(): dict<list<string>>
     kitty: ['kitty.conf', '~/.config/kitty/colorscheme.conf'],
     kivy: ['file.kv'],
     kix: ['file.kix'],
+    koka: ['file.kk'],
+    kos: ['file.kos'],
     kotlin: ['file.kt', 'file.ktm', 'file.kts'],
     krl: ['file.sub', 'file.Sub', 'file.SUB'],
     kscript: ['file.ks'],
@@ -573,10 +580,12 @@ def s:GetFilenameChecks(): dict<list<string>>
     neomuttrc: ['Neomuttrc', '.neomuttrc', '.neomuttrc-file', '/.neomutt/neomuttrc', '/.neomutt/neomuttrc-file', 'Neomuttrc', 'Neomuttrc-file', 'any/.neomutt/neomuttrc', 'any/.neomutt/neomuttrc-file', 'neomuttrc', 'neomuttrc-file' ],
     netrc: ['.netrc'],
     nginx: ['file.nginx', 'nginxfile.conf', 'filenginx.conf', 'any/etc/nginx/file', 'any/usr/local/nginx/conf/file', 'any/nginx/file.conf'],
+    nickel: ['file.ncl'],
     nim: ['file.nim', 'file.nims', 'file.nimble'],
     ninja: ['file.ninja'],
     nix: ['file.nix'],
     norg: ['file.norg'],
+    nq: ['file.nq'],
     nqc: ['file.nqc'],
     nroff: ['file.tr', 'file.nr', 'file.roff', 'file.tmac', 'tmac.file'],
     nsis: ['file.nsi', 'file.nsh'],
@@ -667,7 +676,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     raku: ['file.pm6', 'file.p6', 'file.t6', 'file.pod6', 'file.raku', 'file.rakumod', 'file.rakudoc', 'file.rakutest'],
     raml: ['file.raml'],
     rapid: ['file.sysx', 'file.Sysx', 'file.SysX', 'file.SYSx', 'file.SYSX', 'file.modx', 'file.Modx', 'file.ModX', 'file.MODx', 'file.MODX'],
-    rasi: ['file.rasi'],
+    rasi: ['file.rasi', 'file.rasinc'],
     ratpoison: ['.ratpoisonrc', 'ratpoisonrc'],
     rbs: ['file.rbs'],
     rc: ['file.rc', 'file.rch'],
@@ -826,7 +835,34 @@ def s:GetFilenameChecks(): dict<list<string>>
               'any/etc/systemd/system/.#', 'any/etc/systemd/system/.#-file',
               'any/etc/systemd/system/file.d/.#',
               'any/etc/systemd/system/file.d/.#-file',
-              'any/etc/systemd/system/file.d/file.conf'],
+              'any/etc/systemd/system/file.d/file.conf',
+              'any/containers/systemd/file.artifact',
+              'any/containers/systemd/file.build',
+              'any/containers/systemd/file.container',
+              'any/containers/systemd/file.image',
+              'any/containers/systemd/file.kube',
+              'any/containers/systemd/file.network',
+              'any/containers/systemd/file.pod',
+              'any/containers/systemd/file.volume',
+              'any/containers/systemd/users/any/file.artifact',
+              'any/containers/systemd/users/any/file.build',
+              'any/containers/systemd/users/any/file.container',
+              'any/containers/systemd/users/any/file.image',
+              'any/containers/systemd/users/any/file.kube',
+              'any/containers/systemd/users/any/file.network',
+              'any/containers/systemd/users/any/file.pod',
+              'any/containers/systemd/users/any/file.volume',
+              'any/containers/systemd/users/file.artifact',
+              'any/containers/systemd/users/file.build',
+              'any/containers/systemd/users/file.container',
+              'any/containers/systemd/users/file.image',
+              'any/containers/systemd/users/file.kube',
+              'any/containers/systemd/users/file.network',
+              'any/containers/systemd/users/file.pod',
+              'any/containers/systemd/users/file.volume',
+              'any/containers/systemd/some.d/file.conf',
+              'etc/containers/systemd/users/1111/some.d/file.conf',
+              'etc/containers/systemd/users/some.d/file.conf'],
     systemverilog: ['file.sv', 'file.svh'],
     tablegen: ['file.td'],
     tags: ['tags'],
@@ -1093,6 +1129,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/regina']],
     janet:  [['#!/path/janet']],
     dart:   [['#!/path/dart']],
+    bpftrace:  [['#!/path/bpftrace']],
     vim:    [['#!/path/vim']],
   }
 enddef
@@ -3231,9 +3268,9 @@ endfunc
 func Test_m4_format()
   filetype on
 
-  call mkdir('Xm4', 'D')
+  call mkdir('Xm4', 'R')
   cd Xm4
-  call writefile([''], 'alocal.m4', 'D')
+  call writefile([''], 'alocal.m4')
   split alocal.m4
   call assert_equal('m4', &filetype)
   bwipe!
@@ -3244,6 +3281,36 @@ func Test_m4_format()
   bwipe!
 
   cd -
+  filetype off
+endfunc
+
+" Erlang Application Resource File
+func Test_app_file()
+  filetype on
+
+  call writefile(['% line comment', '{application, xfile1,'], 'xfile1.app', 'D')
+  split xfile1.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
+  call writefile(['% line comment', "{application, 'Xfile2',"], 'Xfile2.app', 'D')
+  split Xfile2.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
+  call writefile([' % line comment',
+        \ ' ',
+        \ ' % line comment',
+        \ ' { ',
+        \ ' % line comment ',
+        \ ' application , ',
+        \ ' % line comment ',
+        \ ' xfile3 , '],
+        \ 'xfile3.app', 'D')
+  split xfile3.app
+  call assert_equal('erlang', &filetype)
+  bwipe!
+
   filetype off
 endfunc
 

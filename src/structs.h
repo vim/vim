@@ -1532,7 +1532,7 @@ struct type_S {
     vartype_T	    tt_type;
     int8_T	    tt_argcount;    // for func, incl. vararg, -1 for unknown
     int8_T	    tt_min_argcount; // number of non-optional arguments
-    char_u	    tt_flags;	    // TTFLAG_ values
+    short_u	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
@@ -1551,9 +1551,14 @@ typedef struct {
 #define TTFLAG_CONST	    0x20    // cannot be changed
 #define TTFLAG_SUPER	    0x40    // object from "super".
 #define TTFLAG_GENERIC	    0x80    // generic type
+#define TTFLAG_TUPLE_OK	    0x100   // tuple can be used for a list
 
 #define IS_GENERIC_TYPE(type)	\
     ((type->tt_flags & TTFLAG_GENERIC) == TTFLAG_GENERIC)
+
+// Type check flags
+#define TYPECHK_NUMBER_OK	0x1	// number is accepted for a float
+#define TYPECHK_TUPLE_OK	0x2	// tuple is accepted for a list
 
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class
@@ -1580,7 +1585,7 @@ typedef enum {
  * Entry for an object or class member variable.
  */
 typedef struct {
-    char_u	*ocm_name;	// allocated
+    string_T	ocm_name;	// allocated
     omacc_T	ocm_access;
     type_T	*ocm_type;
     int		ocm_flags;
@@ -1606,7 +1611,7 @@ struct itf2class_S {
 // Also used for an interface (class_flags has CLASS_INTERFACE).
 struct class_S
 {
-    char_u	*class_name;		// allocated
+    string_T	class_name;		// allocated
     int		class_flags;		// CLASS_ flags
 
     int		class_refcount;
@@ -2282,6 +2287,9 @@ typedef struct {
 
     // pointer to the lines concatenated for a lambda.
     char_u	*eval_tofree_lambda;
+
+    // pointer to name of class being constructed
+    class_T	*eval_class;
 } evalarg_T;
 
 // Flag for expression evaluation.
@@ -2713,8 +2721,14 @@ struct channel_S {
 				// reference, the job refers to the channel.
     int		ch_job_killed;	// TRUE when there was a job and it was killed
 				// or we know it died.
-    int		ch_anonymous_pipe;  // ConPTY
-    int		ch_killing;	    // TerminateJobObject() was called
+    int		ch_anonymous_pipe;  // Indicates that anonymous pipes are being
+				    // used for communication in the Windows
+				    // ConPTY terminal.
+    int		ch_killing;	    // Indicates that the job associated with
+				    // the channel is terminating.  It becomes
+				    // TRUE when TerminateJobObject() was
+				    // called or the process associated with
+				    // the job had exited (only ConPTY).
 
     int		ch_refcount;	// reference count
     int		ch_copyID;
@@ -2863,6 +2877,19 @@ struct listener_S
     listener_T	*lr_next;
     int		lr_id;
     callback_T	lr_callback;
+};
+
+// Structure used for listeners added with redraw_listener_add().
+typedef struct redraw_listener_S redraw_listener_T;
+struct redraw_listener_S
+{
+    redraw_listener_T	*rl_next;
+    int			rl_id;
+    struct
+    {
+	callback_T	on_start;
+	callback_T	on_end;
+    }			rl_callbacks;
 };
 #endif
 
@@ -3364,6 +3391,9 @@ struct file_buffer
     char_u	*b_p_fex;	// 'formatexpr'
     long_u	b_p_fex_flags;	// flags for 'formatexpr'
 #endif
+#ifdef HAVE_FSYNC
+    int		b_p_fs;		// 'fsync'
+#endif
 #ifdef FEAT_CRYPT
     char_u	*b_p_key;	// 'key'
 #endif
@@ -3680,9 +3710,10 @@ typedef void diffline_T;
 typedef void diffline_change_T;
 #endif
 
-#define SNAP_HELP_IDX	0
-#define SNAP_AUCMD_IDX	1
-#define SNAP_COUNT	2
+#define SNAP_HELP_IDX	    0
+#define SNAP_AUCMD_IDX	    1
+#define SNAP_QUICKFIX_IDX   2
+#define SNAP_COUNT	    3
 
 /*
  * Tab pages point to the top frame of each tab page.
@@ -4874,12 +4905,20 @@ typedef enum {
 
 // Symbolic names for some registers.
 #define DELETION_REGISTER	36
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(HAVE_CLIPMETHOD)
 # define STAR_REGISTER		37
 #  if defined(FEAT_X11) || defined(FEAT_WAYLAND)
 #   define PLUS_REGISTER	38
+#   define REAL_PLUS_REGISTER	PLUS_REGISTER
 #  else
 #   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
+#   ifdef FEAT_EVAL
+// Make it so that if clipmethod is "none", the plus register is not available,
+// but if clipmethod is a provider, then expose the plus register for use.
+#    define REAL_PLUS_REGISTER	38
+#   else
+#    define REAL_PLUS_REGISTER	STAR_REGISTER
+#   endif
 #  endif
 #endif
 #ifdef FEAT_DND
@@ -4890,10 +4929,14 @@ typedef enum {
 # ifdef FEAT_DND
 #  define NUM_REGISTERS		(TILDE_REGISTER + 1)
 # else
-#  define NUM_REGISTERS		(PLUS_REGISTER + 1)
+#  define NUM_REGISTERS		(REAL_PLUS_REGISTER + 1)
 # endif
 #else
-# define NUM_REGISTERS		37
+# ifdef HAVE_CLIPMETHOD
+#  define NUM_REGISTERS		(REAL_PLUS_REGISTER + 1)
+# else
+#  define NUM_REGISTERS		37
+# endif
 #endif
 
 // structure used by block_prep, op_delete and op_yank for blockwise operators

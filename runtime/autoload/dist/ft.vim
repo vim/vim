@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Nov 30
+# Last Change:		2026 Jan 06
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -27,6 +27,28 @@ export def Check_inp()
       n += 1
     endwhile
   endif
+enddef
+
+# Erlang Application Resource Files (*.app.src is matched by extension)
+# See: https://erlang.org/doc/system/applications
+export def FTapp()
+  if exists("g:filetype_app")
+    exe "setf " .. g:filetype_app
+    return
+  endif
+  const pat = '^\s*{\s*application\s*,\s*\(''\=\)' .. expand("%:t:r:r") .. '\1\s*,'
+  var line: string
+  for lnum in range(1, min([line("$"), 100]))
+    line = getline(lnum)
+    # skip Erlang comments, might be something else
+    if line =~ '^\s*%' || line =~ '^\s*$'
+      continue
+    elseif line =~ '^\s*{' &&
+	getline(lnum, lnum + 9)->filter((_, v) => v !~ '^\s*%')->join(' ') =~# pat
+      setf erlang
+    endif
+    return
+  endfor
 enddef
 
 # This function checks for the kind of assembly that is wanted by the user, or
@@ -1724,7 +1746,7 @@ const ft_from_ext = {
   "bst": "bst",
   # Bicep
   "bicep": "bicep",
-  "bicepparam": "bicep",
+  "bicepparam": "bicep-params",
   # BIND zone
   "zone": "bindzone",
   # Blank
@@ -1736,6 +1758,8 @@ const ft_from_ext = {
   # BSDL
   "bsd": "bsdl",
   "bsdl": "bsdl",
+  # Bpftrace
+  "bt": "bpftrace",
   # C3
   "c3": "c3",
   "c3i": "c3",
@@ -1852,6 +1876,9 @@ const ft_from_ext = {
   "elv": "elvish",
   # Faust
   "lib": "faust",
+  # Fennel
+  "fnl": "fennel",
+  "fnlm": "fennel",
   # Libreoffice config files
   "xcu": "xml",
   "xlb": "xml",
@@ -1890,6 +1917,9 @@ const ft_from_ext = {
   # Diff files
   "diff": "diff",
   "rej": "diff",
+  # Djot
+  "dj": "djot",
+  "djot": "djot",
   # DOT
   "dot": "dot",
   "gv": "dot",
@@ -1952,6 +1982,8 @@ const ft_from_ext = {
   "fish": "fish",
   # Flix
   "flix": "flix",
+  # Fluent
+  "ftl": "fluent",
   # Focus Executable
   "fex": "focexec",
   "focexec": "focexec",
@@ -2094,6 +2126,8 @@ const ft_from_ext = {
   "tmpl": "template",
   # Hurl
   "hurl": "hurl",
+  # Hylo
+  "hylo": "hylo",
   # Hyper Builder
   "hb": "hb",
   # Httest
@@ -2203,6 +2237,10 @@ const ft_from_ext = {
   "k": "kwt",
   # Kivy
   "kv": "kivy",
+  # Koka
+  "kk": "koka",
+  # Kos
+  "kos": "kos",
   # Kotlin
   "kt": "kotlin",
   "ktm": "kotlin",
@@ -2335,6 +2373,8 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # Nickel
+  "ncl": "nickel",
   # Nim file
   "nim": "nim",
   "nims": "nim",
@@ -2347,6 +2387,8 @@ const ft_from_ext = {
   "norg": "norg",
   # Novell netware batch files
   "ncf": "ncf",
+  # N-Quads
+  "nq": "nq",
   # Not Quite C
   "nqc": "nqc",
   # NSE - Nmap Script Engine - uses Lua syntax
@@ -2974,6 +3016,7 @@ const ft_from_ext = {
   "usd": "usd",
   # Rofi stylesheet
   "rasi": "rasi",
+  "rasinc": "rasi",
   # Zsh module
   # mdd: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L285-L288
   # mdh, pro: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L268-L271

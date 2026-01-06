@@ -94,6 +94,7 @@ RUN_VIMPROG = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind failed
 	-rm -f opt_test.vim test_result.log $(CLEANUP_FILES)
+	-rm -f gen_opt_test.log
 	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
 	-rm -f asan.* asan_test_*
@@ -188,8 +189,8 @@ opt_test.vim: $(GEN_OPT_DEPS)
 	else \
 		$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS) ; \
 	fi
-	@if test -f test.log; then \
-		cat test.log; \
+	@if test -f gen_opt_test.log; then \
+		cat gen_opt_test.log; \
 		exit 1; \
 	fi
 

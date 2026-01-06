@@ -1,4 +1,4 @@
-*print.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*print.txt*	For Vim version 9.1.  Last change: 2025 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -304,7 +304,7 @@ another font will be used as follows:
   if o: is missing, then use b:
 
 Some CJK fonts do not contain characters for codes in the ASCII code range.
-Also, some characters in the CJK ASCII code ranges differ in a few code points
+Also, some characters in the CJK ASCII code ranges differ in a few codepoints
 from traditional ASCII characters.  There are two additional fields to control
 printing of characters in the ASCII code range.
 

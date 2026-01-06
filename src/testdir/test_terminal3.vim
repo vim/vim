@@ -46,9 +46,11 @@ func Test_terminal_shell_option()
     " the %PATH%, "term dir" succeeds unintentionally.  Use dir.com instead.
     try
       term dir.com /b runtest.vim
-      call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
-    catch /CreateProcess/
-      " ignore
+      throw 'dir.com without a shell must fail, so you will never get here'
+    catch /CreateProcess failed/
+      " ignore:
+      " winpty simply fails with "CreateProcess failed".
+      " compty fails with "CreateProcess failed: {localized failure reason}".
     endtry
     bwipe!
 
@@ -1035,6 +1037,91 @@ func Test_terminal_visual_empty_listchars()
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars2', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_terminal_ansi_color_windows_cui()
+  if !has('win32') || has('gui_running')
+    throw 'Skipped: only for the Windows CUI'
+  endif
+  if exists('$APPVEYOR')
+    throw 'Skipped: this test cannot be performed because AppVeyor does not support ANSI escape sequences'
+  endif
+
+  call assert_equal('dark', &background)
+
+  " Outputs 16 ANSI colors as background colors
+  let ansi = ''
+  for i in range(16)
+    let ansi ..= printf("\e[%dm%X", i + (i < 8 ? 40 : 92), i)
+  endfor
+  let ansi ..= "\e[40m\n"
+  call writefile([ansi], 'XANSIcolor', 'D')
+
+  let expected_chars = '0123456789ABCDEF'
+  let expected_colors = [
+        \ '#000000', '#e00000', '#00e000', '#e0e000',
+        \ '#0000e0', '#e000e0', '#00e0e0', '#e0e0e0',
+        \ '#808080', '#ff4040', '#40ff40', '#ffff40',
+        \ '#4040ff', '#ff40ff', '#40ffff', '#ffffff',
+        \ ]
+
+  " Ideally, 16 colors should be checked. However, in the current CI
+  " environment, the 16th color is something other than white, and we don't
+  " know the cause nor solution. After discussion, we decided to check only 15
+  " colors for the time being.
+  " FIXME: Check all 16 colors in the future.
+  let len_to_check = 15
+  let expected_colors = expected_colors[:len_to_check-1]
+
+  " First, make sure vim can display correct ANSI color text in terminal.
+  let buf = term_start("cmd /C type XANSIcolor")
+  call WaitForAssert({-> assert_equal(expected_chars, term_scrape(buf, 1)[:15]->map({_, v -> v['chars']})->join(''))})
+  call assert_equal(expected_colors, term_scrape(buf, 1)[:len_to_check-1]->map({_, v -> v['bg']}))
+  bwipeout!
+
+  " Next, check if vim can do the same thing in the vim terminal in terminal.
+  let lines = [
+        \ 'call term_start("cmd /C type XANSIcolor")'
+        \ ]
+  call writefile(lines, 'XloadANSI', 'D')
+  let cmd = GetVimCommandCleanTerm()
+  let buf = term_start(cmd .. '-S XloadANSI')
+  call WaitForAssert({-> assert_equal(expected_chars, term_scrape(buf, 1)[:15]->map({_, v -> v['chars']})->join(''))})
+  call assert_equal(expected_colors, term_scrape(buf, 1)[:len_to_check-1]->map({_, v -> v['bg']}))
+endfunc
+
+func Test_terminal_backspace_on_windows()
+  if !has('win32')
+    throw 'Skipped: only for the Windows CUI'
+  endif
+  " Specify a simple prompt for easy comparison
+  let save_prompt = $PROMPT
+  let $PROMPT = '>'
+
+  " Return the prompt line before the cursor
+  func s:get_cmd_prompt(buf)
+    let cur = term_getcursor(a:buf)
+    return term_getline(a:buf, cur[0])[:cur[1]-2]
+  endfunc
+
+  let buf = term_start('cmd.exe')
+  call WaitForAssert({-> assert_equal('>', s:get_cmd_prompt(buf))}, 100)
+
+  " Verify sent characters are echoed back
+  call term_sendkeys(buf, 'foo bar')
+  call WaitForAssert({-> assert_equal('>foo bar', s:get_cmd_prompt(buf))}, 100)
+  " Backspace should delete a character in front of the cursor
+  call term_sendkeys(buf, "\<BS>")
+  call WaitForAssert({-> assert_equal('>foo ba', s:get_cmd_prompt(buf))}, 100)
+  " Ctrl+H behaves like Backspace
+  call term_sendkeys(buf, "\<C-H>")
+  call WaitForAssert({-> assert_equal('>foo b', s:get_cmd_prompt(buf))}, 100)
+  " Send a total of four BS and Ctrl+H to erase four characters.
+  call term_sendkeys(buf, "\<BS>\<BS>\<C-H>\<C-H>")
+  call WaitForAssert({-> assert_equal('>f', s:get_cmd_prompt(buf))}, 100)
+
+  delfunc s:get_cmd_prompt
+  let $PROMPT = save_prompt
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

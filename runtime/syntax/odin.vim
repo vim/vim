@@ -4,7 +4,7 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2025-03-28
+# Last Change: 2025-12-06
 
 if exists("b:current_syntax")
   finish
@@ -53,12 +53,12 @@ syntax region odinAttribute
       \ start="@\ze(" end="\ze)"
       \ transparent oneline
 
-syntax match odinInteger "\-\?\<\d\+\>" display
-syntax match odinFloat "\-\?\<[0-9][0-9_]*\%(\.[0-9][0-9_]*\)\%([eE][+-]\=[0-9_]\+\)\=" display
-syntax match odinHex "\<0[xX][0-9A-Fa-f]\+\>" display
-syntax match odinDoz "\<0[zZ][0-9a-bA-B]\+\>" display
-syntax match odinOct "\<0[oO][0-7]\+\>" display
-syntax match odinBin "\<0[bB][01]\+\>" display
+syntax match odinInteger "\v-?<[0-9]+%(_[0-9]+)*>" display
+syntax match odinFloat "\v-?<[0-9]+%(_[0-9]+)*%(\.[0-9]+%(_[0-9]+)*)%([eE][+-]=[0-9]+%(_[0-9]+)*)=" display
+syntax match odinHex "\v<0[xX][0-9A-Fa-f]+%(_[0-9A-Fa-f]+)*>" display
+syntax match odinDoz "\v<0[zZ][0-9A-Ba-b]+%(_[0-9A-Ba-b]+)*>" display
+syntax match odinOct "\v<0[oO][0-7]+%(_[0-7]+)*>" display
+syntax match odinBin "\v<0[bB][01]+%(_[01]+)*>" display
 
 syntax match odinAddressOf "&" display
 syntax match odinDeref "\^" display

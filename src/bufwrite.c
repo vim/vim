@@ -229,6 +229,16 @@ buf_write_bytes(struct bw_info *ip)
 		    else
 			c = buf[wlen];
 		}
+		// Check that there is enough space
+		if (!(flags & FIO_LATIN1))
+		{
+		    size_t need = (flags & FIO_UCS4) ? 4 : 2;
+		    if ((flags & FIO_UTF16) && c >= 0x10000)
+			need = 4;
+
+		    if ((size_t)(p - ip->bw_conv_buf) + need > ip->bw_conv_buflen)
+			return FAIL;
+		}
 
 		if (ucs2bytes(c, &p, flags) && !ip->bw_conv_error)
 		{
@@ -1698,11 +1708,13 @@ buf_write(
 	wb_flags = get_fio_flags(fenc);
 	if (wb_flags & (FIO_UCS2 | FIO_UCS4 | FIO_UTF16 | FIO_UTF8))
 	{
+	    // overallocate a bit, in case we read incomplete multi-byte chars
+	    int size = bufsize + CONV_RESTLEN;
 	    // Need to allocate a buffer to translate into.
 	    if (wb_flags & (FIO_UCS2 | FIO_UTF16 | FIO_UTF8))
-		write_info.bw_conv_buflen = bufsize * 2;
+		write_info.bw_conv_buflen = size * 2;
 	    else // FIO_UCS4
-		write_info.bw_conv_buflen = bufsize * 4;
+		write_info.bw_conv_buflen = size * 4;
 	    write_info.bw_conv_buf = alloc(write_info.bw_conv_buflen);
 	    if (write_info.bw_conv_buf == NULL)
 		end = 0;
@@ -2199,7 +2211,8 @@ restore_backup:
 	// For a device do try the fsync() but don't complain if it does not
 	// work (could be a pipe).
 	// If the 'fsync' option is FALSE, don't fsync().  Useful for laptops.
-	if (p_fs && vim_fsync(fd) != 0 && !device)
+	if ((buf->b_p_fs >= 0 ? buf->b_p_fs : p_fs) && vim_fsync(fd) != 0
+		&& !device)
 	{
 	    errmsg = (char_u *)_(e_fsync_failed);
 	    end = 0;

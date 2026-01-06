@@ -303,13 +303,14 @@ typedef enum {
 #define GO_ASELPLUS	'P'		// autoselectPlus
 #define GO_RIGHT	'r'		// use right scrollbar
 #define GO_VRIGHT	'R'		// right scrollbar with vert split
+#define GO_FULLSCREEN	's'		// enter fullscreen
 #define GO_TEAROFF	't'		// add tear-off menu items
 #define GO_TOOLBAR	'T'		// add toolbar
 #define GO_FOOTER	'F'		// add footer
 #define GO_VERTICAL	'v'		// arrange dialog buttons vertically
 #define GO_KEEPWINSIZE	'k'		// keep GUI window size
 // all possible flags for 'go'
-#define GO_ALL		"!aAbcCdefFghilLmMpPrRtTvk"
+#define GO_ALL		"!aAbcCdefFghilLmMpPrRstTvk"
 
 // flags for 'comments' option
 #define COM_NEST	'n'		// comments strings nest
@@ -505,7 +506,7 @@ EXTERN int	p_cdh;		// 'cdhome'
 EXTERN char_u	*p_cino;	// 'cinoptions'
 EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
-#ifdef FEAT_CLIPBOARD
+#ifdef HAVE_CLIPMETHOD
 EXTERN char_u	*p_cb;		// 'clipboard'
 EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
@@ -1222,6 +1223,9 @@ enum
     , BV_FF
     , BV_FLP
     , BV_FO
+#ifdef HAVE_FSYNC
+    , BV_FS
+#endif
     , BV_FT
     , BV_IMI
     , BV_IMS
