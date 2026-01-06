@@ -1543,11 +1543,12 @@ do_buffer_ext(
 	 * Then prefer the buffer we most recently visited.
 	 * Else try to find one that is loaded, after the current buffer,
 	 * then before the current buffer.
-	 * Finally use any buffer.
+	 * Finally use any buffer.  Skip buffers that are closing throughout.
 	 */
 	buf = NULL;	// selected buffer
 	bp = NULL;	// used when no loaded buffer found
-	if (au_new_curbuf.br_buf != NULL && bufref_valid(&au_new_curbuf))
+	if (au_new_curbuf.br_buf != NULL && bufref_valid(&au_new_curbuf)
+		&& !au_new_curbuf.br_buf->b_locked_split)
 	    buf = au_new_curbuf.br_buf;
 	else if (curwin->w_jumplistlen > 0)
 	{
@@ -1564,8 +1565,9 @@ do_buffer_ext(
 		if (buf != NULL)
 		{
 		    // Skip current and unlisted bufs.  Also skip a quickfix
-		    // buffer, it might be deleted soon.
-		    if (buf == curbuf || !buf->b_p_bl || bt_quickfix(buf))
+		    // or closing buffer, it might be deleted soon.
+		    if (buf == curbuf || !buf->b_p_bl || bt_quickfix(buf)
+			    || buf->b_locked_split)
 			buf = NULL;
 		    else if (buf->b_ml.ml_mfp == NULL)
 		    {
@@ -1603,7 +1605,7 @@ do_buffer_ext(
 		}
 		// in non-help buffer, try to skip help buffers, and vv
 		if (buf->b_help == curbuf->b_help && buf->b_p_bl
-			    && !bt_quickfix(buf))
+			    && !bt_quickfix(buf) && !buf->b_locked_split)
 		{
 		    if (buf->b_ml.ml_mfp != NULL)   // found loaded buffer
 			break;
@@ -1621,7 +1623,8 @@ do_buffer_ext(
 	if (buf == NULL)	// No loaded buffer, find listed one
 	{
 	    FOR_ALL_BUFFERS(buf)
-		if (buf->b_p_bl && buf != curbuf && !bt_quickfix(buf))
+		if (buf->b_p_bl && buf != curbuf && !bt_quickfix(buf)
+			&& !buf->b_locked_split)
 		    break;
 	}
 	if (buf == NULL)	// Still no buffer, just take one
@@ -1630,7 +1633,7 @@ do_buffer_ext(
 		buf = curbuf->b_next;
 	    else
 		buf = curbuf->b_prev;
-	    if (bt_quickfix(buf))
+	    if (bt_quickfix(buf) || (buf != curbuf && buf->b_locked_split))
 		buf = NULL;
 	}
     }
