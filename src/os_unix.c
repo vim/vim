@@ -9417,8 +9417,9 @@ socket_server_list_sockets(void)
 		"%s/%s", path.string, dp->d_name);
 
 	    // Don't want to send to ourselves, but we do want to list our
-	    // server name.
-	    if (STRCMP(socket_server_path, buf.string) != 0)
+	    // server name (if we are a server).
+	    if (socket_server_path == NULL
+		    || STRCMP(socket_server_path, buf.string) != 0)
 	    {
 
 		// Try sending an ALIVE command. This is more assuring than a
