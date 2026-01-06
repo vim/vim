@@ -3,7 +3,7 @@
 " Maintainer:           D. Ben Knoble <ben.knoble+github@gmail.com>
 " Previous Maintainer:  Will Langstroth <will@langstroth.com>
 " URL:                  https://github.com/benknoble/vim-racket
-" Last Change:          2025 Aug 09
+" Last Change:          2026 Jan 06
 
 if exists("b:did_ftplugin")
   finish
@@ -24,12 +24,10 @@ setlocal formatoptions+=r
 
 setlocal commentstring=;;\ %s
 
-setlocal formatprg=raco\ fmt
-
 " Undo our settings when the filetype changes away from Racket
 " (this should be amended if settings/mappings are added above!)
 let b:undo_ftplugin =
-      \  "setlocal iskeyword< shiftwidth< softtabstop< comments< formatoptions< formatprg<"
+      \  "setlocal iskeyword< shiftwidth< softtabstop< comments< formatoptions<"
       \. " | setlocal commentstring<"
 
 if !exists("no_plugin_maps") && !exists("no_racket_maps")

@@ -2,7 +2,7 @@
 " Language:		awk, nawk, gawk, mawk
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Antonio Colombo <azc100@gmail.com>
-" Last Change:		2024 Jan 14
+" Last Change:		2026 Jan 06
 
 " This plugin was prepared by Mark Sikora
 " This plugin was updated as proposed by Doug Kearns
@@ -31,10 +31,6 @@ let b:undo_ftplugin = "setl fo< com< cms< def< sua<"
 if exists("g:awk_is_gawk")
   setlocal include=@include
   setlocal suffixesadd+=.gawk
-  if has("unix") || has("win32unix")
-    setlocal formatprg=gawk\ -f-\ -o/dev/stdout
-    let b:undo_ftplugin .= " | setl fp<"
-  endif
 
   " Disabled by default for security reasons.
   if dist#vim#IsSafeExecutable('awk', 'gawk')

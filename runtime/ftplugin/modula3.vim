@@ -1,8 +1,7 @@
 " Vim filetype plugin file
 " Language:	Modula-3
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:	2024 Jan 14
-" 		2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
+" Last Change:	2026 Jan 06
 
 if exists("b:did_ftplugin")
   finish
@@ -16,9 +15,8 @@ setlocal comments=s0:(*,mb:\ ,ex:*)
 setlocal commentstring=(*\ %s\ *)
 setlocal formatoptions-=t formatoptions+=croql
 setlocal suffixesadd+=.m3
-setlocal formatprg=m3pp
 
-let b:undo_ftplugin = "setlocal com< cms< fo< fp< sua<"
+let b:undo_ftplugin = "setlocal com< cms< fo< sua<"
 
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_words = '\<REPEAT\>:\<UNTIL\>,' ..
