@@ -7871,6 +7871,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		      if (ct->ct_type->tt_type == VAR_FLOAT
 			      && (ct->ct_type->tt_flags & TTFLAG_NUMBER_OK))
 			  typename = "float|number";
+		      else if (ct->ct_type->tt_type == VAR_LIST
+			      && (ct->ct_type->tt_flags & TTFLAG_TUPLE_OK))
+			  typename = "list<any>|tuple<any>";
 		      else
 			  typename = type_name(ct->ct_type, &tofree);
 

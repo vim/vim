@@ -1372,6 +1372,11 @@ check_type_maybe(
 			     || (actual->tt_flags & TTFLAG_FLOAT_OK)))
 		// Using a number where a float is expected is OK here.
 		return OK;
+	    if (expected->tt_type == VAR_LIST
+		    && actual->tt_type == VAR_TUPLE
+		    && (expected->tt_flags & TTFLAG_TUPLE_OK))
+		// Using a tuple where a list is expected is OK here.
+		return OK;
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
 	    return FAIL;
