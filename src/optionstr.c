@@ -35,7 +35,7 @@ static char *(p_tplo_align_values[]) = {"left", "right", NULL};
 #endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()
-static char *(p_dip_values[]) = {"filler", "anchor", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "inline:", "linematch:", NULL};
+static char *(p_dip_values[]) = {"filler", "anchor", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "inline:", "linematch:", "wordgap:", NULL};
 static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "histogram", NULL};
 static char *(p_dip_inline_values[]) = {"none", "simple", "char", "word", NULL};
 #endif
