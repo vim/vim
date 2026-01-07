@@ -2134,7 +2134,7 @@ INIT(= CLIENTSERVER_METHOD_NONE);
 EXTERN char_u *client_socket INIT(= NULL);
 #endif
 
-// If the <xOSC> key should be propogated from vgetc()
+// If the <xOSC> key should be propagated from vgetc()
 EXTERN int allow_osc_key INIT(= 0);
 
 #ifdef FEAT_EVAL

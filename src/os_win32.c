@@ -5538,7 +5538,7 @@ mch_call_shell(
 	}
     }
     // do not execute anything from the current directory by setting the
-    // environemnt variable $NoDefaultCurrentDirectoryInExePath
+    // environment variable $NoDefaultCurrentDirectoryInExePath
     oldval = vim_getenv((char_u *)"NoDefaultCurrentDirectoryInExePath",
 	    &must_free);
     vim_setenv((char_u *)"NoDefaultCurrentDirectoryInExePath", (char_u *)"1");
