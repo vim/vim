@@ -4670,6 +4670,7 @@ endfunc
 
 func Test_popup_conceal_wrap()
   CheckFeature conceal
+  CheckScreendump
 
   " Test that concealed text in popup windows doesn't cause truncation
   let lines =<< trim END
