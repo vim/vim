@@ -59,7 +59,7 @@
 
 MNEMONIC: into register(") named (a) (y)ank (i)nner (w)ord
 
-  3. Navigate forward to the word 'cookie' (fk or 2fc or $2b or /co<ENTER>)
+  3. Navigate forward to the word 'cookie' (fk or 3fc or $2b or /co<ENTER>)
      and type   "byiw
 
   4. Navigate to any point on the word 'Vince' and type   ciw<CTRL-R>a<ESC>
