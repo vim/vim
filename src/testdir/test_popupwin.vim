@@ -4668,4 +4668,43 @@ func Test_popup_getwininfo_tabnr()
   tabonly
 endfunc
 
+func Test_popup_conceal_wrap()
+  CheckFeature conceal
+
+  " Test that concealed text in popup windows doesn't cause truncation
+  let lines =<< trim END
+    call setline(1, range(1, 20))
+
+    " Create popup with concealed text
+    let text = "Here is a SECRET word that will be hidden."
+    let winid = popup_create([text], #{
+          \ line: 3,
+          \ col: 10,
+          \ minwidth: 40,
+          \ maxwidth: 40,
+          \ border: [],
+          \ wrap: 1,
+          \ })
+
+    " Set up conceal
+    call win_execute(winid, 'setlocal conceallevel=2')
+    call win_execute(winid, 'setlocal concealcursor=nvic')
+    call win_execute(winid, 'syntax match HiddenSecret /SECRET/ conceal containedin=ALL')
+  END
+  call writefile(lines, 'XtestPopupConceal', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupConceal', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_conceal_01', {})
+
+  " Test with longer text that wraps
+  call term_sendkeys(buf, ":call popup_close(winid)\<CR>")
+  call term_sendkeys(buf, ":let text2 = 'Here is a SECRET word that will be hidden. And more text here.'\<CR>")
+  call term_sendkeys(buf, ":let winid2 = popup_create([text2], #{line: 3, col: 10, minwidth: 40, maxwidth: 40, border: [], wrap: 1})\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid2, 'setlocal conceallevel=2')\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid2, 'setlocal concealcursor=nvic')\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid2, 'syntax match HiddenSecret /SECRET/ conceal containedin=ALL')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_conceal_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
