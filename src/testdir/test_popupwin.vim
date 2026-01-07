@@ -4705,6 +4705,16 @@ func Test_popup_conceal_wrap()
   call term_sendkeys(buf, ":call win_execute(winid2, 'syntax match HiddenSecret /SECRET/ conceal containedin=ALL')\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_conceal_02', {})
 
+  " Test with TAB characters (uses n_extra)
+  call term_sendkeys(buf, ":call popup_close(winid2)\<CR>")
+  call term_sendkeys(buf, ":let text3 = \"Here\\tis\\ta SECRET word\\twith\\ttabs.\"\<CR>")
+  call term_sendkeys(buf, ":let winid3 = popup_create([text3], #{line: 3, col: 10, minwidth: 40, maxwidth: 40, border: [], wrap: 1})\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid3, 'setlocal conceallevel=2')\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid3, 'setlocal concealcursor=nvic')\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid3, 'setlocal list listchars=tab:>-')\<CR>")
+  call term_sendkeys(buf, ":call win_execute(winid3, 'syntax match HiddenSecret /SECRET/ conceal containedin=ALL')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_conceal_03', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
