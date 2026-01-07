@@ -69,6 +69,16 @@ endif
 " Use the script for source code screendump testing.  It sources other scripts,
 " therefore we must "cd" there.
 cd ../../src/testdir
+
+let s:vimcmdSyntaxFname = fnameescape(syntaxDir .. '/testdir/vimcmd')
+
+" Adapt "runtime/syntax/testdir/vimcmd" for "src/testdir/util/shared.vim".
+if filereadable(s:vimcmdSyntaxFname)
+  call delete('vimcmd')
+  call filecopy(s:vimcmdSyntaxFname, 'vimcmd')
+  exe 'au ExitPre <buffer> call delete("' .. fnameescape(getcwd() .. '/vimcmd') .. '")'
+endif
+
 source util/screendump.vim
 source util/term_util.vim
 exe 'cd ' .. fnameescape(syntaxDir)
