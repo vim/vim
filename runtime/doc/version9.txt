@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
+*version9.txt*	For Vim version 9.1.  Last change: 2026 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41831,6 +41831,7 @@ Functions: ~
 |id()|			get unique identifier for a Dict, List, Object,
 			Channel or Blob variable
 |list2tuple()|		turn a List of items into a Tuple
+|listener_add()|	add a callback to listen to changes
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |ngettext()|		lookup single/plural message translation
@@ -41882,11 +41883,13 @@ Commands: ~
 
 Ex-Commands: ~
 
+|:clipreset|		choose a new method for accessing the clipboard
 |:iput|			like |:put| but adjust indent
 |:pbuffer|		Edit buffer [N] from the buffer list in the preview
 			window
 |:redrawtabpanel|	Force updating the 'tabpanel'.
 |:uniq|			Deduplicate text in the current buffer.
+|:wlrestore|		reinitialize the wayland compositor connection
 
 Options: ~
 
@@ -41905,6 +41908,7 @@ Options: ~
 'lhistory'		Size of the location list stack |quickfix-stack|
 'maxsearchcount'	Set the maximum number for search-stat |shm-S|
 'messagesopt'		configure |:messages| and |hit-enter| prompt
+'osctimeoutlen'		OSC terminator receive timeout
 'pumborder'		define popup border and decorations
 'pummaxwidth'		maximum width for the completion popup menu
 'showtabpanel'		When to show the |tabpanel|
@@ -41912,12 +41916,12 @@ Options: ~
 'tabpanel'		Optional vertical panel for displaying tabpages
 			|tabpanel|
 'tabpanelopt'		Optional settings for the |tabpanel|
-'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
+'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 'winfixbuf'		Keep buffer focused in a window
 'wlseat'		Specify Wayland seat to use for the |wayland| feature
 'wlsteal'		Steal focus to access the |wayland| clipboard
-'wltimeout'		Specify the connection timeout for the |wayland|
+'wltimeoutlen'		Specify the connection timeout for the |wayland|
 			compositor
 
 Vim Variables: ~
@@ -41925,8 +41929,8 @@ Vim Variables: ~
 |v:clipproviders|	A dictionary containing clipboard providers
 			configuration |clipboard-providers|.
 |v:stacktrace|		The most recent caught exception.
-|v:t_enumvalue|		Value of |enumvalue|.
 |v:t_enum|		Value of |enum| type.
+|v:t_enumvalue|		Value of |enumvalue|.
 |v:t_tuple|		Value of |Tuple| type.
 |v:termda1|		The escape sequence returned for the primary device
 			attribute query (DA1).
