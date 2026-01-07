@@ -721,19 +721,19 @@ add_menu_path(
 		if (tearpath != NULL)
 		{
 		    char_u  *s;
-		    int	    idx;
+		    int	    len;
 
 		    STRCPY(tearpath, menu_path);
-		    idx = (int)(next_name - path_name - 1);
-		    for (s = tearpath; *s && s < tearpath + idx; MB_PTR_ADV(s))
+		    len = (int)(next_name - path_name - 1);
+		    for (s = tearpath; *s && s < tearpath + len; MB_PTR_ADV(s))
 		    {
 			if ((*s == '\\' || *s == Ctrl_V) && s[1])
 			{
-			    ++idx;
+			    ++len;
 			    ++s;
 			}
 		    }
-		    tearpath[idx] = NUL;
+		    tearpath[len] = NUL;
 		    gui_add_tearoff(tearpath, pri_tab, pri_idx);
 		    vim_free(tearpath);
 		}
