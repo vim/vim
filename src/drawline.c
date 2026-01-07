@@ -4177,11 +4177,11 @@ win_line(
 		//
 		// For popup windows with fixed width, don't advance col
 		// to allow full text to be displayed.
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		int adjust_col = !WIN_IS_POPUP(wp);
-#else
+# else
 		int adjust_col = TRUE;
-#endif
+# endif
 		if (wlv.n_extra > 0)
 		{
 		    wlv.vcol += wlv.n_extra;
