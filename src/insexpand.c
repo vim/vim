@@ -7217,6 +7217,10 @@ ins_complete(int c, int enable_pum)
     save_w_leftcol = curwin->w_leftcol;
     n = ins_compl_next(TRUE, ins_compl_key2count(c), insert_match);
 
+    // Reset autocompletion timer expiry flag
+    if (compl_autocomplete)
+	compl_time_slice_expired = FALSE;
+
     // may undisplay the popup menu
     ins_compl_upd_pum();
 
