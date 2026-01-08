@@ -1,11 +1,13 @@
-src/testdir/test42.in diff
-
 # The old test .ok files are expected to use LF line endings, even on Windows.
 # In src/testdir/Make_mvc.mak and src/testdir/Make_ming.mak, the test result
 # files .out are converted to LF line endings before being compared.
 # Therefore, if the .ok files' line endings are not specified and are
 # converted to CRLF, the comparison between .ok and .out will fail.
 src/testdir/test*.ok text eol=lf
+
+# This ok file contains literal CR LF endings. Should not be touched by git,
+# so handle as binary
+src/testdir/test21.ok -text
 
 # `vim.pot` is updated every time any of the *.c files are modified.  And as it
 # contains line numbers for strings from *.c files, inserting a line into a
