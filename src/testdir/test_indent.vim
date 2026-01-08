@@ -384,4 +384,40 @@ func Test_mouse_shape_indent_norm_with_gq()
   call delete('Xmouseshapes')
 endfunc
 
+" Test for YAML indentation with list items containing mapping keys
+func Test_yaml_indent_list_with_mapping()
+  new
+  setl sw=2
+  " Ensure the yaml indent file can be loaded fresh
+  if exists('*GetYAMLIndent')
+    delfunction GetYAMLIndent
+  endif
+  runtime! indent/yaml.vim
+
+  " Test case: list items with mapping keys should preserve correct indentation
+  " when using =G (re-indent entire file)
+  call setline(1, [
+        \ 'list:',
+        \ '  - element1:',
+        \ '      foo: bar',
+        \ '  - element2:',
+        \ '      foo: bar'
+        \ ])
+
+  " Apply =G to re-indent the entire file
+  normal! gg=G
+
+  " Verify that indentation is preserved correctly
+  " Content under '- element1:' should be at indent 6 (not 4)
+  call assert_equal([
+        \ 'list:',
+        \ '  - element1:',
+        \ '      foo: bar',
+        \ '  - element2:',
+        \ '      foo: bar'
+        \ ], getline(1, '$'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
