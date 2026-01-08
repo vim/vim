@@ -7,6 +7,10 @@ src/testdir/test42.in diff
 # converted to CRLF, the comparison between .ok and .out will fail.
 src/testdir/test*.ok text eol=lf
 
+# The files contains literal CR LF endings. Should not be touched, so handle
+# as binary
+src/testdir/test21.ok -text
+
 # `vim.pot` is updated every time any of the *.c files are modified.  And as it
 # contains line numbers for strings from *.c files, inserting a line into a
 # single .c file may cause many lines in the `vim.pot` file to be updated.
