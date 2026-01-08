@@ -6157,6 +6157,7 @@ endfunc
 
 " Issue 19114
 func Test_fuzzy_filenames_compl_autocompl()
+  CheckScreendump
   let dir = 'Xtempdir'
   call mkdir(dir, 'pR')
   call writefile([], dir .. '/.name')
