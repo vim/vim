@@ -49,7 +49,6 @@ static int	append_arg_number(win_T *wp, char_u *buf, size_t buflen, int add_file
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
 static int	bt_nofileread(buf_T *buf);
-static void	no_write_message_buf(buf_T *buf);
 static int	do_buffer_ext(int action, int start, int dir, int count, int flags);
 
 #ifdef UNIX
@@ -2079,8 +2078,8 @@ do_autochdir(void)
 }
 #endif
 
-    static void
-no_write_message_buf(buf_T *buf UNUSED)
+    void
+no_write_message_buf(buf_T *buf)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(buf->b_term))
