@@ -10976,6 +10976,7 @@ termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
 termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
 termda1-variable	eval.txt	/*termda1-variable*
+termdebug	terminal.txt	/*termdebug*
 termdebug-commands	terminal.txt	/*termdebug-commands*
 termdebug-communication	terminal.txt	/*termdebug-communication*
 termdebug-customizing	terminal.txt	/*termdebug-customizing*

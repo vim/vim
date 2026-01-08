@@ -1,10 +1,10 @@
-*popup.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*popup.txt*	For Vim version 9.1.  Last change: 2026 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-Displaying text in a floating window.	*popup* *popup-window* *popupwin*
+Displaying text in a popup window.	*popup* *popup-window* *popupwin*
 
 
 1. Introduction			|popup-intro|
