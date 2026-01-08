@@ -7210,6 +7210,7 @@ ins_complete(int c, int enable_pum)
     compl_curr_buf = curwin->w_buffer;
     compl_shown_match = compl_curr_match;
     compl_shows_dir = compl_direction;
+    compl_num_bests = 0;
 
     // Find next match (and following matches).
     save_w_wrow = curwin->w_wrow;
