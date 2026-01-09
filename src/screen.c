@@ -4765,6 +4765,7 @@ static struct charstab lcstab[] =
     CHARSTAB_ENTRY(&lcs_chars.tab2,	    "tab"),
     CHARSTAB_ENTRY(&lcs_chars.trail,	    "trail"),
     CHARSTAB_ENTRY(&lcs_chars.lead,	    "lead"),
+    CHARSTAB_ENTRY(&lcs_chars.leadtab2,	    "leadtab"),
 #ifdef FEAT_CONCEAL
     CHARSTAB_ENTRY(&lcs_chars.conceal,	    "conceal"),
 #else
@@ -4834,6 +4835,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			*(tab[i].cp) = NUL;
 		lcs_chars.tab1 = NUL;
 		lcs_chars.tab3 = NUL;
+		lcs_chars.leadtab1 = NUL;
+		lcs_chars.leadtab3 = NUL;
 
 		if (multispace_len > 0)
 		{
@@ -4969,7 +4972,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
 					 tab[i].name.string);
-		if (tab[i].cp == &lcs_chars.tab2)
+		if (tab[i].cp == &lcs_chars.tab2 ||
+		    tab[i].cp == &lcs_chars.leadtab2)
 		{
 		    if (*s == NUL)
 			return field_value_err(errbuf, errbuflen,
@@ -5000,9 +5004,14 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    lcs_chars.tab2 = c2;
 			    lcs_chars.tab3 = c3;
 			}
+			else if (tab[i].cp == &lcs_chars.leadtab2)
+			{
+			    lcs_chars.leadtab1 = c1;
+			    lcs_chars.leadtab2 = c2;
+			    lcs_chars.leadtab3 = c3;
+			}
 			else if (tab[i].cp != NULL)
 			    *(tab[i].cp) = c1;
-
 		    }
 		    p = s;
 		    break;

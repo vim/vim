@@ -3913,6 +3913,9 @@ typedef struct
     int		tab3;
     int		trail;
     int		lead;
+    int		leadtab1;
+    int		leadtab2;
+    int		leadtab3;
     int		*multispace;
     int		*leadmultispace;
 #ifdef FEAT_CONCEAL
