@@ -3804,4 +3804,6 @@ EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
 	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
 EXTERN char e_no_redraw_listener_callbacks_defined[]
 	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
+EXTERN char e_leadtab_requires_tab[]
+	INIT(= N_("E1572: Listchars element leadtab requires tab to be specified"));
 #endif
