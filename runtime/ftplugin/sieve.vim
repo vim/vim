@@ -2,7 +2,7 @@
 " Language:             Sieve filtering language input file
 " Maintainer:           This runtime file is looking for a new maintainer.
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2025 Feb 20
+" Latest Revision:      2026 Jan 09
 
 if exists("b:did_ftplugin")
   finish
@@ -16,4 +16,7 @@ setlocal formatoptions-=t formatoptions+=croql
 
 " https://datatracker.ietf.org/doc/html/rfc5228#section-2.2 says
 " "newlines (CRLF, never just CR or LF)"
-setlocal fileformat=dos
+" Use CRLF for new files only; preserve existing line endings
+if expand('%:p') !=# '' && !filereadable(expand('%:p'))
+  setlocal fileformat=dos
+endif
