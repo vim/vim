@@ -4207,6 +4207,43 @@ func Test_popupwin_latin1_encoding()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_non_focusable()
+  let winid = win_getid()
+  let popup_winid = popup_create(['hello', 'world'], #{line: 1, col: 2})
+  call assert_equal(0, popup_getoptions(popup_winid)['focusable'])
+  call assert_equal(winid, win_getid())
+  call win_gotoid(popup_winid)
+  call assert_equal(winid, win_getid())
+  call popup_close(popup_winid)
+endfunc
+
+func Test_popupwin_focus()
+  let winid = win_getid()
+  let popup_winid = popup_create(['hello', 'world'], #{line: 1, col: 2, focusable: 1})
+  call assert_equal(1, popup_getoptions(popup_winid)['focusable'])
+  call assert_equal(winid, win_getid())
+
+  " first focus to popup window
+  let win_gotoid_result = win_gotoid(popup_winid)
+  call assert_equal(1, win_gotoid_result)
+  call assert_equal(popup_winid, win_getid())
+
+  " focus back to main window
+  let win_gotoid_result = win_gotoid(winid)
+  call assert_equal(1, win_gotoid_result)
+  call assert_equal(winid, win_getid())
+
+  " second focus to popup window
+  let win_gotoid_result = win_gotoid(popup_winid)
+  call assert_equal(1, win_gotoid_result)
+  call assert_equal(popup_winid, win_getid())
+
+  " TODO: we shouldn't be needing this.
+  " popup_close should automatically go to the correct last winid.
+  call win_gotoid(winid)
+  call popup_close(popup_winid)
+endfunc
+
 func Test_popupwin_atcursor_far_right()
   new
 
