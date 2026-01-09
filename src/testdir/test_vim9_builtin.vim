@@ -1,10 +1,8 @@
 " Test using builtin functions in the Vim9 script language.
 
 source util/screendump.vim
+source util/socketserver.vim
 import './util/vim9.vim' as v9
-
-" Socket backend for remote functions require the socket server to be running
-CheckSocketServer
 
 " Test for passing too many or too few arguments to builtin functions
 func Test_internalfunc_arg_error()
@@ -3527,12 +3525,17 @@ enddef
 
 def Test_remote_expr()
   CheckFeature clientserver
-  CheckEnv DISPLAY
+  TrySocketServer
+
+  if !g:socketserver_only
+    CheckEnv DISPLAY
+  endif
   v9.CheckSourceDefAndScriptFailure(['remote_expr(1, "b")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['remote_expr("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckSourceDefAndScriptFailure(['remote_expr("a", "b", 3)'], ['E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3'])
   v9.CheckSourceDefAndScriptFailure(['remote_expr("a", "b", "c", "d")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
-  v9.CheckSourceDefExecAndScriptFailure(['remote_expr("", "")'], 'E241: Unable to send to ')
+
+    v9.CheckSourceDefExecAndScriptFailure(['remote_expr("", "")'], 'E241: Unable to send to ')
 enddef
 
 def Test_remote_foreground()
@@ -3548,7 +3551,10 @@ enddef
 
 def Test_remote_peek()
   CheckFeature clientserver
-  CheckEnv DISPLAY
+  TrySocketServer
+  if !g:socketserver_only
+    CheckEnv DISPLAY
+  endif
   v9.CheckSourceDefAndScriptFailure(['remote_peek(0z10)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['remote_peek("a5b6c7", [1])'], ['E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2'])
   v9.CheckSourceDefExecAndScriptFailure(['remote_peek("")'], 'E573: Invalid server id used')
@@ -3564,7 +3570,10 @@ enddef
 
 def Test_remote_send()
   CheckFeature clientserver
-  CheckEnv DISPLAY
+  TrySocketServer
+  if !g:socketserver_only
+    CheckEnv DISPLAY
+  endif
   v9.CheckSourceDefAndScriptFailure(['remote_send(1, "b")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['remote_send("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckSourceDefAndScriptFailure(['remote_send("a", "b", 3)'], ['E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3'])
@@ -3573,7 +3582,10 @@ enddef
 
 def Test_remote_startserver()
   CheckFeature clientserver
-  CheckEnv DISPLAY
+  TrySocketServer
+  if !g:socketserver_only
+    CheckEnv DISPLAY
+  endif
   v9.CheckSourceDefAndScriptFailure(['remote_startserver({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', 'E1174: String required for argument 1'])
 enddef
 
