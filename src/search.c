@@ -1618,9 +1618,7 @@ do_search(
 	if (dircp != NULL)
 	    *dircp = search_delim; // restore second '/' or '?' for normal_cmd()
 
-	if (!shortmess(SHM_SEARCH)
-		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
-			    || (dirc == '?' && LT_POS(curwin->w_cursor, pos))))
+	if (!shortmess(SHM_SEARCH) && sia && sia->sa_wrapped)
 	    show_top_bot_msg = TRUE;
 
 	if (c == FAIL)
