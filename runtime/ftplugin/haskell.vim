@@ -13,11 +13,17 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-let b:undo_ftplugin = "setl com< cms< fo<"
+let b:undo_ftplugin = "setl com< cms< fo< su< sua< inex< inc<"
 
 setlocal comments=s1fl:{-,mb:-,ex:-},:-- commentstring=--\ %s
 setlocal formatoptions-=t formatoptions+=croql
 setlocal omnifunc=haskellcomplete#Complete
+
+setlocal suffixes+=.hi
+setlocal suffixesadd=.hs,.lhs,.hsc
+
+setlocal includeexpr=findfile(tr(v:fname,'.','/'),'.;')
+setlocal include=^import\\>\\%(\\s\\+safe\\>\\)\\?\\%(\\s\\+qualified\\>\\)\\?
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
