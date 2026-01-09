@@ -6973,6 +6973,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|lambda| or a |Funcref|.  See |option-value-function| for more
 	information.
 
+	It is not allowed to change the window layout or wipe buffers when
+	using this function.
+
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
