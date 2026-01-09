@@ -955,8 +955,7 @@
 /*
  * +socketserver	 Use UNIX domain sockets for clientserver communication
  */
-#if defined(UNIX) && (defined(WANT_SOCKETSERVER) || \
-	(defined(MAYBE_SOCKETSERVER) && !defined(HAVE_X11)))
+#if defined(UNIX) && defined(WANT_SOCKETSERVER)
 #define FEAT_SOCKETSERVER
 #endif
 

@@ -329,12 +329,12 @@ func CheckGithubActions()
   endif
 endfunc
 
-command CheckSocketServer call CheckSocketServer()
-func CheckSocketServer()
-  if v:servername == ""
+command RunSocketServer call RunSocketServer()
+func RunSocketServer()
+  if has("socketserver") && v:servername == ""
     try
       call remote_startserver('VIMSOCKETSERVERTEST')
-    catch /^Vim\%((\a\+)\)\=:E240:/ " not possible to start a remote server
+    catch " not possible to start a remote server
       throw 'Skipped: Cannot start remote server'
     endtry
   endif

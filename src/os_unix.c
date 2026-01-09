@@ -155,8 +155,8 @@ Display	    *x11_display = NULL;
 # define SOCKET_SERVER_MAX_CMD_SIZE 16384
 # define SOCKET_SERVER_MAX_MSG 6
 
-static int socket_server_fd = -1;
-static char_u *socket_server_path = NULL;
+static int	socket_server_fd = -1;
+static char_u	*socket_server_path = NULL;
 
 typedef enum {
     SS_MSG_TYPE_ENCODING    = 'e',  // Encoding of message.
@@ -9416,10 +9416,19 @@ socket_server_list_sockets(void)
 	    buf.length = vim_snprintf_safelen((char *)buf.string, sizeof(addr.sun_path),
 		"%s/%s", path.string, dp->d_name);
 
-	    // Try sending an ALIVE command. This is more assuring than a
-	    // simple connect, and *also seems to make tests less flaky*.
-	    if (!socket_server_check_alive(buf.string))
-		continue;
+	    // Don't want to send to ourselves, but we do want to list our
+	    // server name (if we are a server).
+	    if (socket_server_path == NULL
+		    || STRCMP(socket_server_path, buf.string) != 0)
+	    {
+		// Try sending an ALIVE command. This is more assuring than a
+		// simple connect, and *also seems to make tests less flaky*.
+		//
+		// We could also use a lock file which may be better, but this
+		// has worked fine so far... - 64bitman
+		if (!socket_server_check_alive(buf.string))
+		    continue;
+	    }
 
 	    ga_concat_len(&str, (char_u *)dp->d_name, buf.length - (path.length + 1));
 	    ga_append(&str, '\n');
