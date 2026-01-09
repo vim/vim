@@ -23,6 +23,7 @@ let b:undo_ftplugin = "setlocal comments< commentstring< expandtab< formatoption
 
 setlocal comments=fb:.. commentstring=..\ %s expandtab
 setlocal formatoptions+=tcroql
+setlocal suffixesadd=.rst
 
 " reStructuredText standard recommends that tabs be expanded to 8 spaces
 " The choice of 3-space indentation is to provide slightly better support for
