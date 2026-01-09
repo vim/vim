@@ -3261,9 +3261,9 @@ win_line(
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
-		    int lcs_tab1 = wp->w_lcs_chars.tab1;
-		    int lcs_tab2 = wp->w_lcs_chars.tab2;
-		    int lcs_tab3 = wp->w_lcs_chars.tab3;
+		    int	    lcs_tab1 = wp->w_lcs_chars.tab1;
+		    int	    lcs_tab2 = wp->w_lcs_chars.tab2;
+		    int	    lcs_tab3 = wp->w_lcs_chars.tab3;
 
 		    // check if leadtab is set in linechars
 		    if (wp->w_p_list && wp->w_lcs_chars.leadtab1 != NUL &&
@@ -3399,7 +3399,7 @@ win_line(
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
-			    wlv.c_extra = lcs_tab2;
+			wlv.c_extra = lcs_tab2;
 			wlv.c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
