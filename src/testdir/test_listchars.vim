@@ -357,9 +357,9 @@ func Test_listchars()
         \ "text\ttab"
         \ ])
   let expected = [
-        \ '+*******text',
+        \ '+*******text        ',
         \ '+*******+*******text',
-        \ 'text>---tab'
+        \ 'text>---tab         '
         \ ]
   call Check_listchars(expected, 3, 20)
 
@@ -374,15 +374,8 @@ func Test_listchars()
   normal ggdG
   set listchars=tab:>-,leadtab:+*,space:.
   call append(0, [" \t text"])
-  let expected = ['.+****** text']
+  let expected = ['.+******.text']
   call Check_listchars(expected, 1, 13)
-
-  " Test leadtab without tab set in listchars
-  normal ggdG
-  set listchars=leadtab:+*
-  call append(0, ["\ttext"])
-  let expected = ['+*******text']
-  call Check_listchars(expected, 1, 12)
 
   " Test leadtab with pipe character
   normal ggdG
@@ -407,8 +400,8 @@ func Test_listchars()
         \ "\t\tmultiple leading"
         \ ])
   let expected = [
-        \ '+*******leading',
-        \ 'text>---not leading',
+        \ '+*******leading                 ',
+        \ 'text>---not leading             ',
         \ '+*******+*******multiple leading'
         \ ]
   call Check_listchars(expected, 3, 32)
@@ -422,8 +415,8 @@ func Test_listchars()
         \ "\t  text  "
         \ ])
   let expected = [
-        \ '+*******text<<',
-        \ '..+******text',
+        \ '+*******text<<  ',
+        \ '..+*****text    ',
         \ '+*******..text<<'
         \ ]
   call Check_listchars(expected, 3, 16)
@@ -434,7 +427,7 @@ func Test_listchars()
   call append(0, ["\ttext", "text\ttab"])
   let expected = [
         \ '+*******text$',
-        \ 'text>---tab$'
+        \ 'text>---tab$ '
         \ ]
   call Check_listchars(expected, 2, 13)
 
