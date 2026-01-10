@@ -4,7 +4,7 @@ vim9script
 # Language:           METAFONT
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Andreas Scherer <andreas.scherer@pobox.com>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2026 Jan 10
 
 if exists("b:current_syntax")
   finish

@@ -3,7 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2023 Dec 26
+# Latest Revision:    2026 Jan 10
 
 # Typesetting {{{
 import autoload './typeset.vim'
@@ -30,14 +30,21 @@ export def StopJobs()
 enddef
 
 export def Log(bufname: string)
-  execute 'edit' typeset.LogPath(bufname)
+  var logpath = typeset.LogPath(bufname)
+
+  if filereadable(logpath)
+    execute 'edit' typeset.LogPath(bufname)
+    return
+  endif
+
+  echomsg $'[ConTeXt] No log file found ({logpath})'
 enddef
 # }}}
 
 # Completion {{{
 def BinarySearch(base: string, keywords: list<string>): list<string>
-  const pat = '^' .. base
-  const len = len(keywords)
+  var pat = '^' .. base
+  var len = len(keywords)
   var res = []
   var lft = 0
   var rgt = len
