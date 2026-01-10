@@ -6979,7 +6979,7 @@ func Test_quickfixtextfunc_wipes_buffer()
     set quickfixtextfunc=QFexpr
     lad "['0:4:e']"
     lw
-  catch /^Vim\%((\S\+)\)\=:E937:/
+  catch /^Vim\%((\S\+)\)\=:E565:/
     let g:crash='caught'
   endtry
   " close location list window

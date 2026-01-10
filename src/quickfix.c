@@ -5097,9 +5097,7 @@ call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
 	args[0].vval.v_dict = d;
 
 	qftf_list = NULL;
-	window_layout_lock();
-	curwin->w_locked = TRUE;
-	curbuf->b_locked = TRUE;
+	textlock++;
 	if (call_callback(cb, 0, &rettv, 1, args) != FAIL)
 	{
 	    if (rettv.v_type == VAR_LIST)
@@ -5109,9 +5107,7 @@ call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
 	    }
 	    clear_tv(&rettv);
 	}
-	curbuf->b_locked = FALSE;
-	curwin->w_locked = FALSE;
-	window_layout_unlock();
+	textlock--;
 	dict_unref(d);
     }
 
