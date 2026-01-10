@@ -3799,11 +3799,11 @@ EXTERN char e_osc_response_timed_out[]
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
 #endif
-EXTERN char e_leadtab_requires_tab[]
-	INIT(= N_("E1572: Listchars element leadtab requires tab to be specified"));
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
 	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
 EXTERN char e_no_redraw_listener_callbacks_defined[]
 	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
 #endif
+EXTERN char e_leadtab_requires_tab[]
+	INIT(= N_("E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"));

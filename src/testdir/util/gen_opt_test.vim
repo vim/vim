@@ -251,7 +251,7 @@ let test_values = {
       \		'multispace:xxxy', 'lead:x', 'tab:xy,leadtab:xyz', 'leadmultispace:xxxy',
       \		'trail:x', 'extends:x', 'precedes:x', 'conceal:x', 'nbsp:x',
       \		'eol:\\x24', 'eol:\\u21b5', 'eol:\\U000021b5', 'eol:x,space:y'],
-      \		['xxx', 'eol:']],
+      \		['xxx', 'eol:', 'leadtab:xyz']],
       \ 'matchpairs': [['', '(:)', '(:),<:>'], ['xxx']],
       \ 'maxsearchcount': [[1, 10, 100, 1000], [0, -1, 10000]],
       \ 'messagesopt': [['hit-enter,history:1', 'hit-enter,history:10000',

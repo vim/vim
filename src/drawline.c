@@ -1660,7 +1660,7 @@ win_line(
 		--trailcol;
 	    trailcol += (colnr_T)(ptr - line);
 	}
-	// find end of leading whitespace or tab
+	// find end of leading whitespace
 	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL ||
 	    wp->w_lcs_chars.leadtab1 != NUL)
 	{
@@ -3265,7 +3265,7 @@ win_line(
 		    int	    lcs_tab2 = wp->w_lcs_chars.tab2;
 		    int	    lcs_tab3 = wp->w_lcs_chars.tab3;
 
-		    // check if leadtab is set in linechars
+		    // check if leadtab is set in 'listchars'
 		    if (wp->w_p_list && wp->w_lcs_chars.leadtab1 != NUL &&
 			(leadcol == 0 || ptr < line + leadcol))
 		    {
@@ -3399,7 +3399,7 @@ win_line(
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
-			wlv.c_extra = lcs_tab2;
+			    wlv.c_extra = lcs_tab2;
 			wlv.c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,

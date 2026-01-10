@@ -5031,9 +5031,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     }
 
     if (is_listchars && lcs_chars.leadtab2 != NUL && lcs_chars.tab2 == NUL)
-    {
 	return e_leadtab_requires_tab;
-    }
 
     if (apply)
     {
