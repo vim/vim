@@ -4763,9 +4763,9 @@ static struct charstab lcstab[] =
     CHARSTAB_ENTRY(&lcs_chars.prec,	    "precedes"),
     CHARSTAB_ENTRY(&lcs_chars.space,	    "space"),
     CHARSTAB_ENTRY(&lcs_chars.tab2,	    "tab"),
+    CHARSTAB_ENTRY(&lcs_chars.leadtab2,	    "leadtab"),
     CHARSTAB_ENTRY(&lcs_chars.trail,	    "trail"),
     CHARSTAB_ENTRY(&lcs_chars.lead,	    "lead"),
-    CHARSTAB_ENTRY(&lcs_chars.leadtab2,	    "leadtab"),
 #ifdef FEAT_CONCEAL
     CHARSTAB_ENTRY(&lcs_chars.conceal,	    "conceal"),
 #else
@@ -5032,7 +5032,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 
     if (is_listchars && lcs_chars.leadtab2 != NUL && lcs_chars.tab2 == NUL)
     {
-        return e_leadtab_requires_tab;
+	return e_leadtab_requires_tab;
     }
 
     if (apply)
