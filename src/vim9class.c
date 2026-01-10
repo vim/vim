@@ -1895,6 +1895,13 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 	    break;
     }
 
+    if (i >= en->class_class_member_count)
+	// When adding enum values to an enum, the index value should be less
+	// than the member count.  It will be greater only when appending a
+	// new item to a list of enums.  In this case, skip setting the enum
+	// name and ordinal (as this is a dummy enum object)
+	return;
+
     // First object variable is the name
     ocmember_T *value_ocm = en->class_class_members + i;
     typval_T *name_tv = (typval_T *)(enval + 1);
@@ -3631,6 +3638,36 @@ obj_lock_const_vars(object_T *obj)
 	    item_lock(mtv, DICT_MAXNEST, TRUE, TRUE);
 	}
     }
+}
+
+/*
+ * Create a new instance of class "cl"
+ */
+    object_T *
+alloc_object(class_T *cl)
+{
+    object_T	*obj;
+    int		sz;
+
+    if (cl == NULL)
+	return NULL;
+
+    sz = sizeof(object_T) + cl->class_obj_member_count * sizeof(typval_T);
+    obj = alloc_clear(sz);
+    if (obj == NULL)
+	return NULL;
+
+    obj->obj_class = cl;
+    ++cl->class_refcount;
+    obj->obj_refcount = 1;
+    object_created(obj);
+
+    // When creating an enum value object, initialize the name and ordinal
+    // object variables.
+    if (IS_ENUM(cl))
+	enum_set_internal_obj_vars(cl, obj);
+
+    return obj;
 }
 
 /*

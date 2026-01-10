@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Dec 27
+*eval.txt*	For Vim version 9.1.  Last change: 2026 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -467,7 +467,13 @@ Changing the order of items in a list: >
 	:call reverse(list)		" reverse the order of items
 	:call uniq(sort(list))		" sort and remove duplicates
 
-
+In a Vim9 script or a def method, a new item can be appended to a List by
+using the list length as the index: >
+    vim9script
+    var l: list<string>
+    l[0] = 'a'
+    l[1] = 'b'
+<
 For loop ~
 
 The |:for| loop executes commands for each item in a List, Tuple, String or
