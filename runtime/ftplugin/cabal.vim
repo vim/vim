@@ -8,6 +8,10 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+compiler cabal
+
+let b:undo_ftplugin = 'compiler make'
+
 setl comments=:-- commentstring=--\ %s
 
-let b:undo_ftplugin = 'setl com< cms<'
+let b:undo_ftplugin .= '| setl com< cms<'
