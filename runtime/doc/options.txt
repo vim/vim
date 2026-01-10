@@ -5797,6 +5797,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 				---+---+--XXX ~
 			Where "XXX" denotes the first non-blank characters in
 			the line.
+							lcs-leadtab
+	  leadtab:c...
+			leadtab:xy[z] Like |lcs-tab|, but only for leading
+			tabs. When omitted, the "tab" setting is used for
+			leading tabs.
+			The "tab" option must be set for this to work.
+			You can combine it with "tab:", for example:
+			`:set listchars=tab:>-,leadtab:\.`
+			This shows leading tabs as periods(.) and other tabs
+			as ">--".
 							*lcs-trail*
 	  trail:c	Character to show for trailing spaces.  When omitted,
 			trailing spaces are blank.  Overrides the "space" and
