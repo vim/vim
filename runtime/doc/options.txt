@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 07
+*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4278,11 +4278,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, the library function fsync() will be called after writing a
 	file.  This will flush a file to disk, ensuring that it is safely
 	written even on filesystems which do metadata-only journaling.  This
-	will force the harddrive to spin up on Linux systems running in laptop
-	mode, so it may be undesirable in some situations.  Be warned that
-	turning this off increases the chances of data loss after a crash.  On
-	systems without an fsync() implementation, this variable is always
-	off.
+	will force the hard drive to spin up on Linux systems running in
+	laptop mode, so it may be undesirable in some situations.  Be warned
+	that turning this off increases the chances of data loss after a
+	crash.  On systems without an fsync() implementation, this variable is
+	always off.
 	This is a |global-local| option, so it can be set per buffer, for
 	example when writing to a slow filesystem.
 	Also see 'swapsync' for controlling fsync() on swap files.
