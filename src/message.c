@@ -4207,7 +4207,7 @@ msg_advance(int col)
     void
 msg_warn_missing_clipboard(void)
 {
-    if (!global_busy && !did_warn_clipboard)
+    if (!global_busy && !did_warn_clipboard && silence_w23_w24_msg == 0)
     {
 #ifdef FEAT_CLIPBOARD
 	msg(_("W23: Clipboard register not available, using register 0"));
