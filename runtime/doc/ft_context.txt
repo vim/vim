@@ -1,8 +1,8 @@
-*ft_context.txt*	For Vim version 9.1.  Last change: 2024 Jan 01
+*ft_context.txt*	For Vim version 9.2.  Last change: 2026 Jan 10
 
 This is the documentation for the ConTeXt filetype plugin.
 
-NOTE: the plugin requires +vim9script.
+NOTE: the plugin requires |+vim9script|.
 
 ==============================================================================
 CONTENTS						*context.vim* *ft-context*
@@ -19,11 +19,11 @@ Introduction ~
 ConTeXt, similarly to LaTeX, is a macro-based typesetting system built on TeX:
 >
 	https://wiki.contextgarden.net
-	https://wiki.contextgarden.net/Vim
+	https://wiki.contextgarden.net/Input_and_compilation/Text_editors/Vim
 <
 The ConTeXt plugin provides syntax highlighting, completion and support for
 typesetting ConTeXt documents. The recommended way to typeset a document is to
-use |:ConTeXt|. This will invoke the `mtxrun` script that is found in `$PATH`.
+use |:ConTeXt|, which invokes the `mtxrun` script that is found in $PATH.
 
 For more fine grained control over the command and its environment,
 `context.Typeset()` can be used directly (or `context#Typeset()` from legacy
@@ -32,26 +32,31 @@ Vim script). For instance, if a version of ConTeXt is installed in
 >
 	import autoload 'context.vim'
 
+	var os = "linux"    # Update to match your system
+	var arch = "arm64"  # Update to match your system
+
 	def MyConTeXt()
-	    const env = {'PATH':
-	      printf("%s/context/tex/texmf-<os>-<arch>/bin:%s", $HOME, $PATH)}
-	    context.Typeset("%", env)
+	  var env = {
+	    'PATH': $'{$HOME}/context/tex/texmf-{os}-{arch}/bin:{$PATH}'
+	  }
+	  context.Typeset("%", env)
 	enddef
 
-This code may go in `~/.vim/after/ftplugin/context.vim`. A mapping can then be
-defined to invoke the custom command:
->
 	nnoremap <silent><buffer><leader>t <scriptcmd>MyConTeXt()<cr>
 <
+This code should go in `~/.vim/after/ftplugin/context.vim`.
+
 `context.Typeset()` accepts a third optional argument to specify a custom
 typesetting command. That must be a function that takes a path and returns the
-command as a List. For example:
+command as a |list|. For example:
 >
 	def ConTeXtCustomCommand(path: string): list<string>
 	  return ['mtxrun', '--script', 'context', '--nonstopmode', path]
 	enddef
 
-	context.ConTeXtTypeset("%", v:none, ConTeXtCustomCommand)
+	def MyContext()
+	    context.Typeset("%", v:none, ConTeXtCustomCommand)
+	enddef
 <
 Large projects are often organized as a root document and various chapter
 files. When editing a chapter file, it is convenient to invoke |:ConTeXt|
@@ -67,7 +72,7 @@ one in the current buffer. The root document does not have to be opened in
 Vim.
 
 To extend completion and syntax highlighting, you may generate supporting
-files using ConTeXt and add them to your configuration. If you configuration
+files using ConTeXt and add them to your configuration. If your configuration
 resides in `~/.vim`, you may use these commands:
 >
 	mkdir -p ~/.vim/syntax/shared
@@ -81,7 +86,8 @@ The last command will create the following syntax files:
 - `context-data-metafun.vim`;
 - `context-data-tex.vim`.
 
-The same command can be used to update those syntax files.
+If present, such files will be automatically loaded to enhance syntax
+highlighting. The same command can be used to update those syntax files.
 
 							*ft-context-commands*
 Commands ~
@@ -109,8 +115,9 @@ and this option is not set, standard `make` is used. If this option is set,
 >
 	g:context_ignore_makefile = 0
 <
-NOTE: before using |:make|, set the working directory of the buffer to the
-directory of the file to be typeset.
+NOTE: before using |:make|, ensure that the working directory of the buffer is
+set to the directory of the file you want to typeset. Additionally, be aware
+that |:make| searches for `mtxrun in $PATH.
 
 					*'g:context_extra_options'*
 A list of additional options to pass to `mtxrun`.
@@ -135,11 +142,11 @@ When set, do not define any mappings.
 							*ft-context-mappings*
 Mappings ~
 
-tp			"reflow TeX paragraph".
+tp			"reflow TeX paragraph" (motion).
 
-i$			"inside inline math block".
+i$			"inside inline math block" (text object selection).
 
-a$			"around inline math block".
+a$			"around inline math block" (text object selection).
 
 ]]			[count] start of sections forward.
 
