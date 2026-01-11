@@ -38,3 +38,5 @@ src/po/vim.pot diff=ignore_vim_pot
 #
 # https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
 src/po/vim.pot linguist-generated=true
+
+runtime/syntax/testdir/input/vim_ex_help.vim -text diff linguist-language=vim linguist-detectable=true
