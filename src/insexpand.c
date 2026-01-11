@@ -7210,11 +7210,16 @@ ins_complete(int c, int enable_pum)
     compl_curr_buf = curwin->w_buffer;
     compl_shown_match = compl_curr_match;
     compl_shows_dir = compl_direction;
+    compl_num_bests = 0;
 
     // Find next match (and following matches).
     save_w_wrow = curwin->w_wrow;
     save_w_leftcol = curwin->w_leftcol;
     n = ins_compl_next(TRUE, ins_compl_key2count(c), insert_match);
+
+    // Reset autocompletion timer expiry flag
+    if (compl_autocomplete)
+	compl_time_slice_expired = FALSE;
 
     // may undisplay the popup menu
     ins_compl_upd_pum();

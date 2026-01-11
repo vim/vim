@@ -2509,9 +2509,9 @@ do_wqall(exarg_T *eap)
     FOR_ALL_BUFFERS(buf)
     {
 #ifdef FEAT_TERMINAL
-	if (exiting && term_job_running(buf->b_term))
+	if (exiting && !eap->forceit && term_job_running(buf->b_term))
 	{
-	    no_write_message_nobang(buf);
+	    no_write_message_buf(buf);
 	    ++error;
 	}
 	else

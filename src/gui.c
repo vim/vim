@@ -152,7 +152,7 @@ gui_start(char_u *arg UNUSED)
 	choose_clipmethod();
 #endif
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) && defined(FEAT_GUI_GTK)
     // Install socket server listening socket if we are running it
     if (socket_server_valid())
 	gui_gtk_init_socket_server();

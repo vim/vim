@@ -1,4 +1,4 @@
-*change.txt*	For Vim version 9.1.  Last change: 2025 Dec 18
+*change.txt*	For Vim version 9.1.  Last change: 2026 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1777,7 +1777,9 @@ l	Long lines are not broken in insert mode: When a line was longer than
 	automatically format it.
 							*fo-m*
 m	Also break at a multibyte character above 255.  This is useful for
-	Asian text where every character is a word on its own.
+	Asian text where every character is a word on its own.  Note that
+	line breaks may also be added after punctuation characters such as
+	colons to match the CJK linebreaking rules.
 							*fo-M*
 M	When joining lines, don't insert a space before or after a multibyte
 	character.  Overrules the 'B' flag.

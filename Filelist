@@ -248,6 +248,7 @@ SRC_ALL =	\
 		src/testdir/util/view_util.vim \
 		src/testdir/util/vim9.vim \
 		src/testdir/util/window_manager.vim \
+		src/testdir/util/socketserver.vim \
 		src/testdir/viewdumps.vim \
 		src/proto.h \
 		src/protodef.h \
