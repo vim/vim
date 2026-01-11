@@ -3,7 +3,7 @@
 " Maintainer:  Debian Vim Maintainers
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2026 Jan 01
+" Last Change: 2026 Jan 10
 " URL: https://salsa.debian.org/vim-team/vim-debian/blob/main/syntax/debcontrol.vim
 
 " Standard syntax initialization
@@ -81,7 +81,7 @@ syn case ignore
 " Catch-all for the legal fields
 syn region debcontrolField matchgroup=debcontrolKey start="^\%(XSBC-Original-\)\=Maintainer: " end="$" contains=debcontrolVariable,debcontrolEmail oneline
 syn region debcontrolField matchgroup=debcontrolKey start="^\%(Standards-Version\|Bugs\|Origin\|X[SB]-Python-Version\|\%(XS-\)\=Vcs-Mtn\|\%(XS-\)\=Testsuite\%(-Triggers\)\=\|Build-Profiles\|Build-Driver\|Tag\|Subarchitecture\|Kernel-Version\|Installer-Menu-Item\): " end="$" contains=debcontrolVariable oneline
-syn region debcontrolMultiField matchgroup=debcontrolKey start="^\%(Build-\%(Conflicts\|Depends\)\%(-Arch\|-Indep\)\=\|\%(Pre-\)\=Depends\|Recommends\|Suggests\|Breaks\|Enhances\|Replaces\|Conflicts\|Provides\|Built-Using\|Static-Built-Using\|Uploaders\|X[SBC]\{0,3\}\%(Private-\)\=-[-a-zA-Z0-9]\+\): *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment
+syn region debcontrolMultiField matchgroup=debcontrolKey start="^\%(Build-\%(Conflicts\|Depends\)\%(-Arch\|-Indep\)\=\|\%(Pre-\)\=Depends\|Recommends\|Suggests\|Breaks\|Enhances\|Replaces\|Conflicts\|Provides\|Built-Using\|Static-Built-Using\|X[SBC]\{0,3\}\%(Private-\)\=-[-a-zA-Z0-9]\+\): *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment
 syn region debcontrolMultiField matchgroup=debcontrolKey start="^Uploaders: *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolEmail,debcontrolVariable,debcontrolComment
 syn region debcontrolMultiFieldSpell matchgroup=debcontrolKey start="^Description: *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment,@Spell
 
