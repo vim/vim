@@ -12,11 +12,13 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-let b:undo_ftplugin = 'setl com< cms< fo<'
+let b:undo_ftplugin = 'setl com< cms< fo< inc<'
 
 setlocal formatoptions+=croql formatoptions-=t
 setlocal commentstring=(*\ %s\ *)
 setlocal comments=sr:(*,mb:*,ex:*)
+
+setlocal include=^\\s*use\\>
 
 if exists('loaded_matchit')
   let b:match_ignorecase = 0
