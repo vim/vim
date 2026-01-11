@@ -1098,7 +1098,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     fill_exarg_from_cctx(eap, cctx);
 
     eap->forceit = FALSE;
-    // We use the special <Lamba>99 name, but it's not really a lambda.
+    // We use the special <lambda>99 name, but it's not really a lambda.
     lambda_name = get_lambda_name();
     lambda_name.string = vim_strnsave(lambda_name.string, lambda_name.length);
     if (lambda_name.string == NULL)

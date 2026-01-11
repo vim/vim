@@ -1317,7 +1317,7 @@ au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call dist#ft#FThtml()
 "   zsql (zope sql method)
 au BufNewFile,BufRead *.zsql			call dist#ft#SQL()
 
-" Detect by extention
+" Detect by extension
 au BufNewFile,BufRead *				call dist#ft#DetectFromExt()
 augroup END
 
