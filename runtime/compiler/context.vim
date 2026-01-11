@@ -4,9 +4,7 @@ vim9script
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
 # Contributors:       Enno Nagel
-# Last Change:        2024 Mar 29
-#                     2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
-#                     2025 Mar 11 by The Vim Project (add comment for Dispatch)
+# Last Change:        2026 Jan 10
 
 if exists("g:current_compiler")
   finish
@@ -16,7 +14,6 @@ import autoload '../autoload/context.vim'
 
 g:current_compiler = 'context'
 
-# CompilerSet makeprg=context
 if get(b:, 'context_ignore_makefile', get(g:, 'context_ignore_makefile', 0)) ||
   (!filereadable('Makefile') && !filereadable('makefile'))
   var makeprg =  join(context.ConTeXtCmd(shellescape(expand('%:p:t'))), ' ')
@@ -30,14 +27,14 @@ const context_errorformat = join([
   "%-Qclose source%.%#> %f",
   "%-Popen source%.%#name '%f'",
   "%-Qclose source%.%#name '%f'",
-  "tex %trror%.%#error on line %l in file %f: %m",
+  "%E! %m",
+  "%Ztex %trror%.%#error on line %l in file %f",
   "%Elua %trror%.%#error on line %l in file %f:",
   "%+Emetapost %#> error: %#",
   "%Emetafun%.%#error: %m",
-  "! error: %#%m",
   "%-C %#",
   "%C! %m",
-  "%Z[ctxlua]%m",
+  "%Z%.%#[ctxlua]:%l:%m",
   "%+C<*> %.%#",
   "%-C%.%#",
   "%Z...%m",
