@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Jan 02
+" Last Change:		2026 Jan 11
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -1317,7 +1317,7 @@ au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call dist#ft#FThtml()
 "   zsql (zope sql method)
 au BufNewFile,BufRead *.zsql			call dist#ft#SQL()
 
-" Detect by extention
+" Detect by extension
 au BufNewFile,BufRead *				call dist#ft#DetectFromExt()
 augroup END
 

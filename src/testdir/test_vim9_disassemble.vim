@@ -3808,7 +3808,7 @@ def Test_disassemble_tuple_concatenate()
   unlet g:instr
 enddef
 
-" Disassemble the code generated for a constant tupe
+" Disassemble the code generated for a constant tuple
 def Test_disassemble_tuple_const()
   var lines =<< trim END
     vim9script

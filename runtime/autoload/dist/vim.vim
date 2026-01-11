@@ -1,9 +1,9 @@
 " Vim runtime support library,
 " runs the Vim9 script version or legacy script version
-" on demand (mostly for Neovim compatability)
+" on demand (mostly for Neovim compatibility)
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 27
+" Last Change:	2026 Jan 11
 
 
 " enable the zip and gzip plugin by default, if not set

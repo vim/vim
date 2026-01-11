@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jan 06
+# Last Change:		2026 Jan 11
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -98,7 +98,7 @@ export def FTasmsyntax()
       b:asmsyntax = "masm"
       return
     elseif line =~ 'Texas Instruments Incorporated' || (line =~ '^\*' && !is_slash_star_encountered)
-      # tiasm uses `* commment`, but detection is unreliable if '/*' is seen
+      # tiasm uses `* comment`, but detection is unreliable if '/*' is seen
       b:asmsyntax = "tiasm"
       return
     elseif ((line =~? '\.title\>\|\.ident\>\|\.macro\>\|\.subtitle\>\|\.library\>'))
@@ -1506,7 +1506,7 @@ export def FTdsp()
 
   # Test the file contents
   for line in getline(1, 200)
-    # Chech for comment style
+    # Check for comment style
     if line =~ '^#.*'
       setf make
       return
