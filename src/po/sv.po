@@ -1,21 +1,20 @@
 # Swedish translation for Vim.
-# Copyright (C) 2003-2025 Free Software Foundation, Inc.
+# Copyright (C) 2003-2026 Free Software Foundation, Inc.
 # Johan Svedberg <johan@svedberg.com>, 2003-2007.
-# Daniel Nylander <po@danielnylander.se>, 2025.
+# Daniel Nylander <po@danielnylander.se>, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 9.1\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-11-27 21:26+0000\n"
-"PO-Revision-Date: 2025-12-16 19:53+0100\n"
-"Last-Translator: Daniel Nylander <github@danielnylander.se>\n"
+"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"PO-Revision-Date: 2026-01-11 14:27+0100\n"
+"Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2025-12-15 06:22+0000\n"
 "X-Generator: Poedit 3.8\n"
 
 msgid "ERROR: "
@@ -3815,13 +3814,13 @@ msgid "Running modeless, typed text is inserted"
 msgstr "Kör lägeslöst, skriven text blir infogad"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "meny Redigera->Globala inställningar->Växla infogningsläge  "
+msgstr "meny  Redigera->Globala inställningar->Växla infogningsläge  "
 
 msgid "                              for two modes      "
 msgstr "                              för två lägen      "
 
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "meny  Redigera->Globala Inställningar->Växla Vi Komptaibel"
+msgstr "meny  Redigera->Globala inställningar->Växla Vi-kompatibel"
 
 msgid "                              for Vim defaults   "
 msgstr "                              för Vim-defaults   "
@@ -3829,17 +3828,11 @@ msgstr "                              för Vim-defaults   "
 msgid "Sponsor Vim development!"
 msgstr "Stöd utvecklingen av Vim!"
 
-msgid "Become a registered Vim user!"
-msgstr "Bli en registrerad Vim-användare!"
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "skriv  :help sponsor<Enter>     för information "
 
-msgid "type  :help register<Enter>   for information "
-msgstr "skriv  :help register<Enter>    för information "
-
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "meny  Hjälp->Stöd/Registrera           för information    "
+msgid "menu  Help->Sponsor  for information    "
+msgstr "meny  Hjälp->Sponsra  för information    "
 
 msgid "global"
 msgstr "global"
@@ -8310,8 +8303,8 @@ msgid "E1238: Blob required for argument %d"
 msgstr "E1238: Blob krävs för argument %d"
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: Ogiltigt värde för blob: %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
+msgstr "E1239: Ogiltigt värde för blob: 0x%lX"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: Resulterande texten är för lång"
@@ -9027,6 +9020,9 @@ msgstr "E1435: Enum kan endast användas i ett skript"
 msgid "E1436: Interface can only be used in a script"
 msgstr "E1436: Gränssnitt kan endast användas i ett skript"
 
+msgid "E1437: Can only compare Object with Object"
+msgstr "E1437: Kan endast jämföra objekt med objekt"
+
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Kan inte blanda positionella och icke-positionella argument: %s"
@@ -9283,6 +9279,13 @@ msgstr "E1568: OSC-kommandots svar har överstigit tidsgränsen: %.*s"
 
 msgid "E1569: Cannot use listener_add in a listener callback"
 msgstr "E1569: Kan inte använda listener_add i en lyssnaråterkoppling"
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr ""
+"E1570: Kan inte använda redraw_listener_add i ett redraw listener-återanrop"
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
+msgstr "E1571: Måste ange minst ett återanrop för redraw_listener_add"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -11200,6 +11203,19 @@ msgstr "flaggor för användning av flikpanel"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "Du har upptäckt kommandoradsfönstret! Du kan stänga det med \":q\"."
+
+#~ msgid "Become a registered Vim user!"
+#~ msgstr "Bli en registrerad Vim-användare!"
+
+#~ msgid "type  :help register<Enter>   for information "
+#~ msgstr "skriv  :help register<Enter>    för information "
+
+#~ msgid "menu  Help->Sponsor/Register  for information    "
+#~ msgstr "meny  Hjälp->Stöd/Registrera           för information    "
+
+#, c-format
+#~ msgid "E1239: Invalid value for blob: %d"
+#~ msgstr "E1239: Ogiltigt värde för blob: %d"
 
 #, fuzzy
 #~ msgid "W23: Clipboard register + not available, using register 0"
