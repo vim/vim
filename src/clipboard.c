@@ -890,7 +890,7 @@ clip_process_selection(
 	printf("Selection ended: (%ld,%d) to (%ld,%d)\n", cb->start.lnum,
 		cb->start.col, cb->end.lnum, cb->end.col);
 #endif
-	if (clip_isautosel_star()
+	if (clip_isautosel_star() || clip_isautosel_plus()
 		|| (
 #ifdef FEAT_GUI
 		    gui.in_use ? (vim_strchr(p_go, GO_ASELML) != NULL) :
@@ -1119,13 +1119,17 @@ clip_scroll_selection(
 }
 
 /*
- * Copy the currently selected area into the '*' register so it will be
+ * Copy the currently selected area into the '*' or '+' register so it will be
  * available for pasting.
- * When "both" is TRUE also copy to the '+' register.
+ * When "both" is TRUE also copy to the other register.
  */
     void
 clip_copy_modeless_selection(int both UNUSED)
 {
+    // The info for the modeless selection is stored in '*' register, however if
+    // we are using the '+' register for modeless autoselect, we copy to
+    // clip_plus instead while using the info in clip_star.
+    Clipboard_T *cbd = clip_isautosel_plus() ? &clip_plus : &clip_star;
     char_u	*buffer;
     char_u	*bufp;
     int		row;
@@ -1297,23 +1301,24 @@ clip_copy_modeless_selection(int both UNUSED)
 	*bufp++ = NL;
 
     // First cleanup any old selection and become the owner.
-    clip_free_selection(&clip_star);
-    clip_own_selection(&clip_star);
+    clip_free_selection(cbd);
+    clip_own_selection(cbd);
 
     // Yank the text into the '*' register.
-    clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), &clip_star);
+    clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), cbd);
 
     // Make the register contents available to the outside world.
-    clip_gen_set_selection(&clip_star);
+    clip_gen_set_selection(cbd);
 
 #ifdef FEAT_X11
     if (both)
     {
+	Clipboard_T *other = cbd == &clip_star ? &clip_plus : &clip_star;
 	// Do the same for the '+' register.
-	clip_free_selection(&clip_plus);
-	clip_own_selection(&clip_plus);
-	clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), &clip_plus);
-	clip_gen_set_selection(&clip_plus);
+	clip_free_selection(other);
+	clip_own_selection(other);
+	clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), other);
+	clip_gen_set_selection(other);
     }
 #endif
     vim_free(buffer);
