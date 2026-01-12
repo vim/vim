@@ -699,6 +699,7 @@ runtime/syntax/xs.vim					@petdance
 runtime/syntax/xslt.vim					@Boobies
 runtime/syntax/zserio.vim				@dpelle
 runtime/syntax/zsh.vim					@chrisbra
+runtime/tools/preproc_indent.vim			@h-east
 runtime/tutor/tutor1.eo					@dpelle
 runtime/tutor/tutor1.fr					@dpelle
 runtime/tutor/tutor1.ru					@RestorerZ

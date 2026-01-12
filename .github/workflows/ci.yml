@@ -84,7 +84,7 @@ jobs:
             architecture: arm64
           - features: normal
             compiler: gcc
-            extra: [vimtags, proto]
+            extra: [vimtags, proto, preproc_indent]
           - features: huge
             compiler: gcc
             extra: [no_x11_wl]
@@ -360,6 +360,16 @@ jobs:
           # This will exit with an error code if the generated proto files differ from source
           (
             git diff --exit-code -- src/proto/
+            true
+          )
+
+      - name: Check preprocessor indent
+        if: contains(matrix.extra, 'preproc_indent')
+        run: |
+          # This will exit with an error code if the files differ from source
+          (
+            "${SRCDIR}"/vim -u NONE --not-a-term -esNX +"cd runtime/tools" -S preproc_indent.vim
+            git diff --exit-code -- src/*.[ch] src/xxd/xxd.c
             true
           )
 
