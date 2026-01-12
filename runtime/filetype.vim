@@ -920,9 +920,9 @@ au BufNewFile,BufRead INDEX,INFO
 au BufNewFile,BufRead */etc/protocols		setf protocols
 
 " Python, Python Shell Startup and Python Stub Files
-" Quixote (Python-based web framework) and IPython
+" Quixote (Python-based web framework), IPython and Execubot
 au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,.python_history,.jline-jython.history	setf python
-au BufNewFile,BufRead *.ipy,*.ptl,*.pyi,SConstruct		   setf python
+au BufNewFile,BufRead *.ipy,*.ptl,*.pyi,*.pye,SConstruct		   setf python
 
 " RCS file
 au BufNewFile,BufRead *\,v			setf rcs
