@@ -2142,3 +2142,6 @@ EXTERN int allow_osc_key INIT(= 0);
 EXTERN redraw_listener_T *redraw_listeners INIT(= NULL);
 EXTERN bool inside_redraw_on_start_cb INIT(= false);
 #endif
+
+// If greater than zero, then silence the W23/W24 warning.
+EXTERN int silence_w23_w24_msg INIT( = false);

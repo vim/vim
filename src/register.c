@@ -2446,6 +2446,7 @@ ex_display(exarg_T *eap)
     int		type;
     string_T	insert;
 
+    silence_w23_w24_msg++;
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
@@ -2609,6 +2610,7 @@ ex_display(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
+    silence_w23_w24_msg--;
 }
 
 /*
