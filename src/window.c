@@ -90,6 +90,10 @@ static int split_disallowed = 0;
 // autocommands mess up the window structure.
 static int close_disallowed = 0;
 
+// When non-zero changing the window frame structure is forbidden.  Used
+// to avoid that winframe_remove() is called recursively
+static int frame_locked = 0;
+
 /*
  * Disallow changing the window layout (split window, close window, move
  * window).  Resizing is still allowed.
@@ -109,6 +113,12 @@ window_layout_unlock(void)
 {
     --split_disallowed;
     --close_disallowed;
+}
+
+    int
+frames_locked(void)
+{
+    return frame_locked;
 }
 
 /*
@@ -3577,6 +3587,8 @@ winframe_remove(
     if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	return NULL;
 
+    frame_locked++;
+
     // Save the position of the containing frame (which will also contain the
     // altframe) before we remove anything, to recompute window positions later.
     wp = frame2win(frp_close->fr_parent);
@@ -3681,6 +3693,8 @@ winframe_remove(
 	frame_flatten(frp2);
     else
 	*unflat_altfr = frp2;
+
+    frame_locked--;
 
     return wp;
 }
