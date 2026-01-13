@@ -31,7 +31,7 @@ let b:undo_ftplugin = "setlocal com< cms< fo<"
 if exists("loaded_matchit") && !exists("b:match_words")
   let s:line_start = '\%(^\s*\)\@<='
   let b:match_words =
-	\ s:line_start .. 'if\s*(.*)\s*then\>:' ..
+	\ s:line_start .. 'if\s*!\?\s*(.*)\s*then\>:' ..
 	\   s:line_start .. 'else\s\+if\s*(.*)\s*then\>:' .. s:line_start .. 'else\>:' ..
 	\   s:line_start .. 'endif\>,' ..
 	\ s:line_start .. '\%(\<foreach\s\+\h\w*\|while\)\s*(:' ..
