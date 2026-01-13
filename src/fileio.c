@@ -585,12 +585,12 @@ readfile(
 		else
 		{
 		    filemess(curbuf, sfname, (char_u *)(
-# ifdef EFBIG
+#ifdef EFBIG
 			    (errno == EFBIG) ? _("[File too big]") :
-# endif
-# ifdef EOVERFLOW
+#endif
+#ifdef EOVERFLOW
 			    (errno == EOVERFLOW) ? _("[File too big]") :
-# endif
+#endif
 						_("[Permission Denied]")), 0);
 		    curbuf->b_p_ro = TRUE;	// must use "w!" now
 		}
@@ -1695,7 +1695,7 @@ retry:
 		{
 		    found_bad = FALSE;
 
-#  ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
+# ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
 		    if (codepage == CP_UTF8)
 		    {
 			// Handle CP_UTF8 input ourselves to be able to handle
@@ -1725,7 +1725,7 @@ retry:
 			}
 		    }
 		    else
-#  endif
+# endif
 		    {
 			// We don't know how long the byte sequence is, try
 			// from one to three bytes.
@@ -2732,10 +2732,10 @@ failed:
 							    FALSE, NULL, eap);
 	if (msg_scrolled == n)
 	    msg_scroll = m;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	if (aborting())	    // autocmds may abort script processing
 	    goto theend;
-# endif
+#endif
     }
 
     if (!(recoverymode && error))
@@ -3323,11 +3323,11 @@ get_win_fio_flags(char_u *ptr)
     cp = encname2codepage(ptr);
     if (cp == 0)
     {
-#  ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
+# ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
 	if (STRCMP(ptr, "utf-8") == 0)
 	    cp = CP_UTF8;
 	else
-#  endif
+# endif
 	    return 0;
     }
     return FIO_PUT_CP(cp) | FIO_CODEPAGE;
@@ -4456,9 +4456,9 @@ buf_check_timestamp(
 			if (emsg_silent == 0 && !in_assert_fails)
 			{
 			    out_flush();
-    #ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			    if (!focus)
-    #endif
+#endif
 				// give the user some time to think about it
 				ui_delay(1004L, TRUE);
 

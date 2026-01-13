@@ -4292,14 +4292,14 @@ resettitle(void)
     mch_settitle(lasttitle, lasticon);
 }
 
-# if defined(EXITFREE)
+#if defined(EXITFREE)
     void
 free_titles(void)
 {
     vim_free(lasttitle);
     vim_free(lasticon);
 }
-# endif
+#endif
 
 
 #if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE)
@@ -4363,10 +4363,10 @@ build_stl_str_hl(
     char_u	*p;
     char_u	*s;
     int		byteval;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     int		use_sandbox;
     int		save_VIsual_active;
-#endif
+# endif
     int		empty_line;
     long	l;
     long	n;
@@ -4380,15 +4380,15 @@ build_stl_str_hl(
     int		itemcnt;
     int		curitem;
     int		groupdepth;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     int		evaldepth;
-#endif
+# endif
     int		minwid;
     int		maxwid;
     int		zeropad;
     char_u	base;
     char_u	opt;
-#define TMPLEN 70
+# define TMPLEN 70
     char_u	buf_tmp[TMPLEN];
     char_u	*usefmt = fmt;
     stl_hlrec_T *sp;
@@ -4418,7 +4418,7 @@ build_stl_str_hl(
 	stl_separator_locations = ALLOC_MULT(int, stl_items_len);
     }
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     // if "fmt" was set insecurely it needs to be evaluated in the sandbox
     use_sandbox = was_set_insecurely(wp, opt_name, opt_scope);
 
@@ -4438,7 +4438,7 @@ build_stl_str_hl(
 
 	do_unlet((char_u *)"g:statusline_winid", TRUE);
     }
-#endif
+# endif
 
     if (fillchar == 0)
 	fillchar = ' ';
@@ -4472,9 +4472,9 @@ build_stl_str_hl(
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
 
     groupdepth = 0;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     evaldepth = 0;
-#endif
+# endif
     p = out;
     curitem = 0;
     prevchar_isflag = TRUE;
@@ -4751,7 +4751,7 @@ build_stl_str_hl(
 	    curitem++;
 	    continue;
 	}
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	// Denotes end of expanded %{} block
 	if (*s == '}' && evaldepth > 0)
 	{
@@ -4759,7 +4759,7 @@ build_stl_str_hl(
 	    evaldepth--;
 	    continue;
 	}
-#endif
+# endif
 	if (vim_strchr(STL_ALL, *s) == NULL)
 	{
 	    if (*s == NUL)  // can happen with "%0"
@@ -4803,9 +4803,9 @@ build_stl_str_hl(
 
 	case STL_VIM_EXPR: // '{'
 	{
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    char_u  *block_start = s - 1;
-#endif
+# endif
 	    int	    reevaluate = (*s == '%');
 	    char_u  *t;
 	    buf_T   *save_curbuf;
@@ -4826,7 +4826,7 @@ build_stl_str_hl(
 	    else
 		*p = NUL;
 	    p = t;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
 							 "%d", curbuf->b_fnum);
 	    set_internal_string_var((char_u *)"g:actual_curbuf", buf_tmp);
@@ -4896,7 +4896,7 @@ build_stl_str_hl(
 		    continue;
 		}
 	    }
-#endif
+# endif
 	    break;
 	}
 	case STL_LINE:
@@ -4954,11 +4954,11 @@ build_stl_str_hl(
 		str = buf_tmp;
 	    break;
 	case STL_PAGENUM:
-#if defined(FEAT_PRINTER) || defined(FEAT_GUI_TABLINE)
+# if defined(FEAT_PRINTER) || defined(FEAT_GUI_TABLINE)
 	    num = printer_page_num;
-#else
+# else
 	    num = 0;
-#endif
+# endif
 	    break;
 
 	case STL_BUFNO:
@@ -4969,12 +4969,12 @@ build_stl_str_hl(
 	    base = 'X';
 	    // FALLTHROUGH
 	case STL_OFFSET:
-#ifdef FEAT_BYTEOFF
+# ifdef FEAT_BYTEOFF
 	    l = ml_find_line_or_offset(wp->w_buffer, wp->w_cursor.lnum, NULL);
 	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY) || l < 0
 		       ? 0L : l + 1 + ((State & MODE_INSERT) == 0 && empty_line
 				? 0 : (int)wp->w_cursor.col);
-#endif
+# endif
 	    break;
 
 	case STL_BYTEVAL_X:
@@ -5028,7 +5028,7 @@ build_stl_str_hl(
 	    }
 	    break;
 
-#if defined(FEAT_QUICKFIX)
+# if defined(FEAT_QUICKFIX)
 	case STL_PREVIEWFLAG:
 	case STL_PREVIEWFLAG_ALT:
 	    itemisflag = TRUE;
@@ -5043,7 +5043,7 @@ build_stl_str_hl(
 			    ? _(msg_loclist)
 			    : _(msg_qflist));
 	    break;
-#endif
+# endif
 
 	case STL_MODIFIED:
 	case STL_MODIFIED_ALT:
@@ -5195,10 +5195,10 @@ build_stl_str_hl(
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (usefmt != fmt)
 	vim_free(usefmt);
-#endif
+# endif
 
     width = vim_strsize(out);
     if (maxwidth > 0 && width > maxwidth)

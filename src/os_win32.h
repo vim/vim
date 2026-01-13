@@ -23,8 +23,8 @@
 # define HAVE_MATH_H
 #endif
 #ifndef __GNUC__
-#define HAVE_STRICMP
-#define HAVE_STRNICMP
+# define HAVE_STRICMP
+# define HAVE_STRNICMP
 #endif
 #ifndef HAVE_STRFTIME
 # define HAVE_STRFTIME		// guessed

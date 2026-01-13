@@ -911,13 +911,13 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 		if (*p < 0x80 && u8cc[0] == 0)
 		{
 		    ScreenLinesUC[idx] = 0;
-#ifdef FEAT_ARABIC
+# ifdef FEAT_ARABIC
 		    prev_c = u8c;
-#endif
+# endif
 		}
 		else
 		{
-#ifdef FEAT_ARABIC
+# ifdef FEAT_ARABIC
 		    if (p_arshape && !p_tbidi && ARABIC_CHAR(u8c))
 		    {
 			// Do Arabic shaping.
@@ -948,7 +948,7 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 		    }
 		    else
 			prev_c = u8c;
-#endif
+# endif
 		    // Non-BMP character: display as ? or fullwidth ?.
 		    ScreenLinesUC[idx] = u8c;
 		    for (i = 0; i < Screen_mco; ++i)
@@ -981,11 +981,11 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	    len = n;
 	if (len > 0)
 	{
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		mch_memmove(current_ScreenLine, text, len);
 	    else
-#endif
+# endif
 		mch_memmove(current_ScreenLine + col, text, len);
 	    col += len;
 	}
@@ -1125,8 +1125,8 @@ fold_line(
 	++col;
     }
 
-#ifdef FEAT_RIGHTLEFT
-# define RL_MEMSET(p, v, l) \
+# ifdef FEAT_RIGHTLEFT
+#  define RL_MEMSET(p, v, l) \
     do { \
 	if (wp->w_p_rl) \
 	    for (ri = 0; ri < (l); ++ri) \
@@ -1135,13 +1135,13 @@ fold_line(
 	    for (ri = 0; ri < (l); ++ri) \
 	       ScreenAttrs[off + (p) + ri] = v; \
     } while (0)
-#else
-# define RL_MEMSET(p, v, l) \
+# else
+#  define RL_MEMSET(p, v, l) \
     do { \
 	for (ri = 0; ri < l; ++ri) \
 	    ScreenAttrs[off + (p) + ri] = v; \
     } while (0)
-#endif
+# endif
 
     // 2. Add the 'foldcolumn'
     //    Reduce the width when there is not enough space.
@@ -1162,11 +1162,11 @@ fold_line(
 		ch = mb_ptr2char_adv(&p);
 	    else
 		ch = *p++;
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		idx = off + wp->w_width - i - 1 - col;
 	    else
-#endif
+# endif
 		idx = off + col + i;
 	    if (enc_utf8)
 	    {
@@ -1194,7 +1194,7 @@ fold_line(
     // text
     RL_MEMSET(col, HL_ATTR(HLF_FL), wp->w_width - col);
 
-#ifdef FEAT_SIGNS
+# ifdef FEAT_SIGNS
     // If signs are being displayed, add two spaces.
     if (signcolumn_on(wp))
     {
@@ -1203,18 +1203,18 @@ fold_line(
 	{
 	    if (len > 2)
 		len = 2;
-# ifdef FEAT_RIGHTLEFT
+#  ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
 		copy_text_attr(off + wp->w_width - len - col,
 					(char_u *)"  ", len, HL_ATTR(HLF_FL));
 	    else
-# endif
+#  endif
 		copy_text_attr(off + col, (char_u *)"  ", len, HL_ATTR(HLF_FL));
 	    col += len;
 	}
     }
-#endif
+# endif
 
     // 3. Add the 'number' or 'relativenumber' column
     if (wp->w_p_nu || wp->w_p_rnu)
@@ -1246,13 +1246,13 @@ fold_line(
 	    }
 
 	    vim_snprintf((char *)buf, sizeof(buf), fmt, w, num);
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
 		copy_text_attr(off + wp->w_width - len - col, buf, len,
 							     HL_ATTR(HLF_FL));
 	    else
-#endif
+# endif
 		copy_text_attr(off + col, buf, len, HL_ATTR(HLF_FL));
 	    col += len;
 	}
@@ -1270,14 +1270,14 @@ fold_line(
     col = text_to_screenline(wp, text, col);
 
     // Fill the rest of the line with the fold filler
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
 	col -= txtcol;
-#endif
+# endif
     while (col < wp->w_width
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 		    - (wp->w_p_rl ? txtcol : 0)
-#endif
+# endif
 	    )
     {
 	int c = wp->w_fill_chars.fold;
@@ -1354,7 +1354,7 @@ fold_line(
 	}
     }
 
-#ifdef FEAT_SYN_HL
+# ifdef FEAT_SYN_HL
     // Show colorcolumn in the fold line, but let cursorcolumn override it.
     if (wp->w_p_cc_cols)
     {
@@ -1389,7 +1389,7 @@ fold_line(
 	    ScreenAttrs[off + txtcol] = hl_combine_attr(
 				 ScreenAttrs[off + txtcol], HL_ATTR(HLF_CUC));
     }
-#endif
+# endif
 
     screen_line(wp, row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width,
 	    -1, 0);
@@ -2148,11 +2148,11 @@ win_update(win_T *wp)
 		else if (!scrolled_down)
 		    srow += wp->w_lines[idx].wl_size;
 		++idx;
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
 		if (idx < wp->w_lines_valid && wp->w_lines[idx].wl_valid)
 		    lnum = wp->w_lines[idx].wl_lnum;
 		else
-# endif
+#endif
 		    ++lnum;
 	    }
 	    srow += mid_start;
@@ -2842,19 +2842,19 @@ update_prepare(void)
 {
     cursor_off();
     updating_screen = TRUE;
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     // Remove the cursor before starting to do anything, because scrolling may
     // make it difficult to redraw the text under it.
     if (gui.in_use)
 	gui_undraw_cursor();
-#endif
-#ifdef FEAT_SEARCH_EXTRA
+# endif
+# ifdef FEAT_SEARCH_EXTRA
     start_search_hl();
-#endif
-#ifdef FEAT_PROP_POPUP
+# endif
+# ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.
     may_update_popup_mask(must_redraw);
-#endif
+# endif
 }
 
 /*
@@ -2908,9 +2908,9 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
     if (!doit || updating_screen
 	    || State == MODE_ASKMORE || State == MODE_HITRETURN
 	    || msg_scrolled
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    || gui.starting
-#endif
+# endif
 	    || starting)
 	return;
 
@@ -2925,10 +2925,10 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 	    win_redr_status(wp, FALSE);
     }
 
-#if defined(FEAT_TABPANEL)
+# if defined(FEAT_TABPANEL)
     if (redraw_tabpanel)
 	draw_tabpanel();
-#endif
+# endif
 
     update_finish();
 }
@@ -2948,13 +2948,13 @@ updateWindow(win_T *wp)
 
     update_prepare();
 
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     // When Visual area changed, may have to update selection.
     if (clip_star.available && clip_isautosel_star())
 	clip_update_selection(&clip_star);
     if (clip_plus.available && clip_isautosel_plus())
 	clip_update_selection(&clip_plus);
-#endif
+# endif
 
     win_update(wp);
 
@@ -2962,10 +2962,10 @@ updateWindow(win_T *wp)
     if (redraw_tabline)
 	draw_tabline();
 
-#if defined(FEAT_TABPANEL)
+# if defined(FEAT_TABPANEL)
     if (redraw_tabpanel)
 	draw_tabpanel();
-#endif
+# endif
 
     if (wp->w_redr_status || p_ru
 # ifdef FEAT_STL_OPT
@@ -2974,10 +2974,10 @@ updateWindow(win_T *wp)
 	    )
 	win_redr_status(wp, FALSE);
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     // Display popup windows on top of everything.
     update_popups(win_update);
-#endif
+# endif
 
     update_finish();
 }
@@ -3250,9 +3250,9 @@ redraw_all_later(int type)
 redraw_all_windows_later(int type)
 {
     redraw_all_later(type);
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     popup_redraw_all();		// redraw all popup windows
-#endif
+# endif
 }
 #endif
 

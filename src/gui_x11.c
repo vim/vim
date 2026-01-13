@@ -380,10 +380,10 @@ static XtResource vim_resources[] =
 # ifdef FONTSET_ALWAYS
 	XtNmenuFontSet,
 	XtCMenuFontSet,
-#else
+# else
 	XtNmenuFont,
 	XtCMenuFont,
-#endif
+# endif
 	XtRString,
 	sizeof(char *),
 	XtOffsetOf(gui_T, rsrc_menu_font_name),
@@ -1162,9 +1162,9 @@ gui_mch_prepare(int *argc, char **argv)
 # define CARDINAL (Cardinal *)
 #else
 # if XtSpecificationRelease == 4
-# define CARDINAL (Cardinal *)
+#  define CARDINAL (Cardinal *)
 # else
-# define CARDINAL (int *)
+#  define CARDINAL (int *)
 # endif
 #endif
 
@@ -1184,7 +1184,7 @@ gui_mch_init_check(void)
 		cmdline_options, XtNumber(cmdline_options),
 		CARDINAL &gui_argc, gui_argv);
 
-# if defined(LC_NUMERIC)
+#if defined(LC_NUMERIC)
     {
 	// The call to XtOpenDisplay() may have set the locale from the
 	// environment. Set LC_NUMERIC to "C" to make sure that strtod() uses a
@@ -1194,7 +1194,7 @@ gui_mch_init_check(void)
 	if (p == NULL || strcmp(p, "C") != 0)
 	   setlocale(LC_NUMERIC, "C");
     }
-# endif
+#endif
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
@@ -1574,7 +1574,7 @@ gui_init_menu_font(void)
 {
     XrmValue from, to;
 
-#ifdef FONTSET_ALWAYS
+# ifdef FONTSET_ALWAYS
     from.addr = (char *)gui.rsrc_menu_font_name;
     from.size = strlen(from.addr);
     to.addr = (XtPointer)&gui.menu_fontset;
@@ -1584,7 +1584,7 @@ gui_init_menu_font(void)
     {
 	// Failed. What to do?
     }
-#else
+# else
     from.addr = (char *)gui.rsrc_menu_font_name;
     from.size = strlen(from.addr);
     to.addr = (XtPointer)&gui.menu_font;
@@ -1594,7 +1594,7 @@ gui_init_menu_font(void)
     {
 	// Failed. What to do?
     }
-#endif
+# endif
 }
 #endif
 
@@ -2101,7 +2101,7 @@ fontset_height(
     return extents->max_logical_extent.height;
 }
 
-#if 0
+# if 0
 // NOT USED YET
     static int
 fontset_descent(XFontSet fs)
@@ -2111,7 +2111,7 @@ fontset_descent(XFontSet fs)
     extents = XExtentsOfFontSet (fs);
     return extents->max_logical_extent.height + extents->max_logical_extent.y;
 }
-#endif
+# endif
 
     static int
 fontset_ascent(XFontSet fs)
@@ -2808,9 +2808,9 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
 
     gui_mch_menu_hidden(menu, False);
     if (grey
-#ifdef FEAT_GUI_MOTIF
+# ifdef FEAT_GUI_MOTIF
 	    || !menu->sensitive
-#endif
+# endif
        )
 	XtSetSensitive(menu->id, False);
     else

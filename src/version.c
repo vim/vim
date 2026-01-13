@@ -41,13 +41,13 @@ init_longVersion(void)
      * VAX C can't concatenate strings in the preprocessor.
      */
     strcpy(longVersion, VIM_VERSION_LONG_DATE);
-#ifdef BUILD_DATE
+#  ifdef BUILD_DATE
     strcat(longVersion, BUILD_DATE);
-#else
+#  else
     strcat(longVersion, __DATE__);
     strcat(longVersion, " ");
     strcat(longVersion, __TIME__);
-#endif
+#  endif
     strcat(longVersion, ")");
 }
 
@@ -60,11 +60,11 @@ init_longVersion(void)
     if (longVersion != NULL)
 	return;
 
-#ifdef BUILD_DATE
+#  ifdef BUILD_DATE
     char *date_time = BUILD_DATE;
-#else
+#  else
     char *date_time = __DATE__ " " __TIME__;
-#endif
+#  endif
     char *msg = _("%s (%s, compiled %s)");
     size_t len = strlen(msg)
 	+ strlen(VIM_VERSION_LONG_ONLY)
@@ -684,11 +684,11 @@ static char *(features[]) =
 	"-X11",
 # endif
 #endif
-# ifdef FEAT_XATTR
+#ifdef FEAT_XATTR
 	"+xattr",
-# else
+#else
 	"-xattr",
-# endif
+#endif
 #ifdef FEAT_XFONTSET
 	"+xfontset",
 #else
@@ -5353,14 +5353,14 @@ list_version(void)
     version_msg(_("Compilation: "));
     version_msg((char *)all_cflags);
     version_msg("\n");
-#ifdef VMS
+# ifdef VMS
     if (*compiler_version != NUL)
     {
 	version_msg(_("Compiler: "));
 	version_msg((char *)compiler_version);
 	version_msg("\n");
     }
-#endif
+# endif
     version_msg(_("Linking: "));
     version_msg((char *)all_lflags);
 #endif
@@ -5430,9 +5430,9 @@ intro_message(
 	NULL,
 	NULL,
 	NULL,
-#ifdef MODIFIED_BY
+# ifdef MODIFIED_BY
 	NULL,
-#endif
+# endif
 	NULL,
 	NULL,
 	NULL,

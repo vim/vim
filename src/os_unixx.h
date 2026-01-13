@@ -77,7 +77,7 @@
  * I don't understand why we don't want termios.h for apollo.
  */
 #if defined(HAVE_TERMIOS_H) && !defined(apollo)
-#  include <termios.h>
+# include <termios.h>
 #else
 # ifdef HAVE_TERMIO_H
 #  include <termio.h>

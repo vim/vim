@@ -2454,7 +2454,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     for (i = 0; i < 8; ++i)
 	wp->w_border_char[i] = 0;
 
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
@@ -2466,7 +2466,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	add_border_left_right_padding(wp);
 	parse_completepopup(wp);
     }
-# endif
+#endif
 
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
@@ -2914,10 +2914,10 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 
     id = (int)tv_get_number(argvars);
     if (
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 	// if the popup contains a terminal it will become hidden
 	curbuf->b_term == NULL &&
-# endif
+#endif
 	    ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
@@ -3112,9 +3112,9 @@ error_if_popup_window(int also_with_term UNUSED)
     // commands are disallowed then.  When a terminal runs in the popup most
     // things are allowed.  When a terminal is finished it can be closed.
     if (WIN_IS_POPUP(curwin)
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 	    && (also_with_term || curbuf->b_term == NULL)
-# endif
+#endif
 	    )
     {
 	error_for_popup_window();
@@ -3569,13 +3569,13 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 		wp->w_popup_close == POPCLOSE_BUTTON ? "button"
 		: wp->w_popup_close == POPCLOSE_CLICK ? "click" : "none"));
 
-# if defined(FEAT_TIMERS)
+#if defined(FEAT_TIMERS)
     dict_add_number(dict, "time", wp->w_popup_timer != NULL
 	    ?  (long)wp->w_popup_timer->tr_interval : 0L);
-# endif
+#endif
 }
 
-# if defined(FEAT_TERMINAL)
+#if defined(FEAT_TERMINAL)
 /*
  * Return TRUE if the current window is running a terminal in a popup window.
  * Return FALSE when the job has ended.
@@ -3591,7 +3591,7 @@ error_if_term_popup_window(void)
     }
     return FALSE;
 }
-# endif
+#endif
 
 /*
  * Reset all the "handled_flag" flags in global popup windows and popup windows
@@ -4986,7 +4986,7 @@ popup_set_title(win_T *wp)
     redraw_win_later(wp, UPD_VALID);
 }
 
-# if defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 /*
  * If there is a preview window, update the title.
  * Used after changing directory.
@@ -4999,6 +4999,6 @@ popup_update_preview_title(void)
     if (wp != NULL)
 	popup_set_title(wp);
 }
-# endif
+#endif
 
 #endif // FEAT_PROP_POPUP

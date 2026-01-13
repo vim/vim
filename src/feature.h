@@ -221,7 +221,7 @@
 #endif
 #ifdef FEAT_ARABIC
 # ifndef FEAT_RIGHTLEFT
-#   define FEAT_RIGHTLEFT
+#  define FEAT_RIGHTLEFT
 # endif
 #endif
 
@@ -956,7 +956,7 @@
  * +socketserver	 Use UNIX domain sockets for clientserver communication
  */
 #if defined(UNIX) && defined(WANT_SOCKETSERVER)
-#define FEAT_SOCKETSERVER
+# define FEAT_SOCKETSERVER
 #endif
 
 /*

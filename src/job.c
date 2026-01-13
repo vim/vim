@@ -2019,18 +2019,18 @@ job_to_string_buf(typval_T *varp, char_u *buf)
     status = job->jv_status == JOB_FAILED ? "fail"
 		    : job->jv_status >= JOB_ENDED ? "dead"
 		    : "run";
-# ifdef UNIX
+#ifdef UNIX
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s", (long)job->jv_pid, status);
-# elif defined(MSWIN)
+#elif defined(MSWIN)
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s",
 		(long)job->jv_proc_info.dwProcessId,
 		status);
-# else
+#else
     // fall-back
     vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
-# endif
+#endif
     return buf;
 }
 

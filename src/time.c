@@ -65,11 +65,11 @@ vim_localtime(
     time_T
 vim_time(void)
 {
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     return time_for_testing == 0 ? time(NULL) : time_for_testing;
-# else
+#else
     return time(NULL);
-# endif
+#endif
 }
 
 /*
@@ -129,9 +129,9 @@ get_ctime(time_t thetime, int add_newline)
 
 #if defined(FEAT_EVAL)
 
-#if defined(MACOS_X)
-# include <time.h>	// for time_t
-#endif
+# if defined(MACOS_X)
+#  include <time.h>	// for time_t
+# endif
 
 /*
  * "localtime()" function
@@ -267,14 +267,14 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
     proftime_T	tm;
     if (list2proftime(&argvars[0], &tm) == OK)
     {
-# ifdef MSWIN
+#  ifdef MSWIN
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
-# else
+#  else
 	static char buf[50];
 	long usec = tm.tv_fsec / (TV_FSEC_SEC / 1000000);
 	vim_snprintf(buf, sizeof(buf), "%3ld.%06ld", (long)tm.tv_sec, usec);
 	rettv->vval.v_string = vim_strsave((char_u *)buf);
-# endif
+#  endif
     }
     else if (in_vim9script())
 	emsg(_(e_invalid_argument));
@@ -313,7 +313,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-# ifdef MSWIN
+#  ifdef MSWIN
     WCHAR	    result_buf[256];
     WCHAR	    *wp;
 
@@ -324,7 +324,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	result_buf[0] = NUL;
     rettv->vval.v_string = utf16_to_enc(result_buf, NULL);
     vim_free(wp);
-# else
+#  else
     char_u	    result_buf[256];
     vimconv_T   conv;
     char_u	    *enc;
@@ -349,7 +349,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
     // Release conversion descriptors
     convert_setup(&conv, NULL, NULL);
     vim_free(enc);
-# endif
+#  endif
 }
 # endif
 
@@ -498,7 +498,7 @@ timer_callback(timer_T *timer)
     typval_T	rettv;
     typval_T	argv[2];
 
-#ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
     if (ch_log_active())
     {
 	callback_T *cb = &timer->tr_callback;
@@ -506,7 +506,7 @@ timer_callback(timer_T *timer)
 	ch_log(NULL, "invoking timer callback %s",
 	       cb->cb_partial != NULL ? cb->cb_partial->pt_name : cb->cb_name);
     }
-#endif
+#  endif
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = (varnumber_T)timer->tr_id;
@@ -516,9 +516,9 @@ timer_callback(timer_T *timer)
     call_callback(&timer->tr_callback, -1, &rettv, 1, argv);
     clear_tv(&rettv);
 
-#ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
     ch_log(NULL, "timer callback finished");
-#endif
+#  endif
 }
 
 /*
@@ -633,7 +633,7 @@ check_due_timer(void)
     if (did_one)
 	redraw_after_callback(need_update_screen, FALSE);
 
-#ifdef FEAT_BEVAL_TERM
+#  ifdef FEAT_BEVAL_TERM
     if (bevalexpr_due_set)
     {
 	this_due = proftime_time_left(&bevalexpr_due, &now);
@@ -655,11 +655,11 @@ check_due_timer(void)
 	else if (next_due == -1 || next_due > this_due)
 	    next_due = this_due;
     }
-#endif
-#ifdef FEAT_TERMINAL
+#  endif
+#  ifdef FEAT_TERMINAL
     // Some terminal windows may need their buffer updated.
     next_due = term_check_timers(next_due, &now);
-#endif
+#  endif
 
     return current_id != last_timer_id ? 1 : next_due;
 }
@@ -799,7 +799,7 @@ timer_valid(timer_T *timer)
     return FALSE;
 }
 
-# if defined(EXITFREE)
+#  if defined(EXITFREE)
     void
 timer_free_all(void)
 {
@@ -810,7 +810,7 @@ timer_free_all(void)
 	free_timer(timer);
     }
 }
-# endif
+#  endif
 
 /*
  * "timer_info([timer])" function

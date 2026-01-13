@@ -863,11 +863,11 @@ do_cmdline(
 		    break;
 		}
 	    }
-#ifdef FEAT_PROFILE
+# ifdef FEAT_PROFILE
 	    else if (do_profiling == PROF_YES
 			    && getline_equal(fgetline, cookie, getsourceline))
 		script_line_end();
-#endif
+# endif
 
 	    // Check if a sourced file hit a ":finish" command.
 	    if (source_finished(fgetline, cookie))
@@ -1746,10 +1746,10 @@ comment_start(char_u *p, int starts_with_colon UNUSED)
     return *p == '"';
 }
 
-# define CURRENT_WIN_NR current_win_nr(curwin)
-# define LAST_WIN_NR current_win_nr(NULL)
-# define CURRENT_TAB_NR current_tab_nr(curtab)
-# define LAST_TAB_NR current_tab_nr(NULL)
+#define CURRENT_WIN_NR current_win_nr(curwin)
+#define LAST_WIN_NR current_win_nr(NULL)
+#define CURRENT_TAB_NR current_tab_nr(curtab)
+#define LAST_TAB_NR current_tab_nr(NULL)
 
 /*
  * Execute one Ex command.
@@ -6576,9 +6576,9 @@ tabpage_close(int forceit)
 	close_others(TRUE, forceit);
     if (ONE_WINDOW)
 	ex_win_close(forceit, curwin, NULL);
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-# endif
+#endif
 }
 
 /*
@@ -6619,9 +6619,9 @@ ex_only(exarg_T *eap)
 {
     if (window_layout_locked(CMD_only))
 	return;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-# endif
+#endif
     if (eap->addr_count > 0)
     {
 	win_T   *wp;
@@ -6743,9 +6743,9 @@ ex_exit(exarg_T *eap)
 	if (only_one_window())	    // quit last window, exit Vim
 	    getout(0);
 	not_exiting();
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
-# endif
+#endif
 	// Quit current window, may free the buffer.
 	win_close(curwin, !buf_hide(curwin->w_buffer));
     }
@@ -7246,7 +7246,7 @@ ex_splitview(exarg_T *eap)
 	    goto theend;
 	eap->arg = fname;
     }
-# ifdef FEAT_BROWSE
+#ifdef FEAT_BROWSE
     else if ((cmdmod.cmod_flags & CMOD_BROWSE)
 	    && eap->cmdidx != CMD_vnew
 	    && eap->cmdidx != CMD_new)
@@ -7307,9 +7307,9 @@ ex_splitview(exarg_T *eap)
 	do_exedit(eap, old_curwin);
     }
 
-# ifdef FEAT_BROWSE
+#ifdef FEAT_BROWSE
     cmdmod.cmod_flags = save_cmod_flags;
-# endif
+#endif
 
 theend:
     vim_free(fname);
@@ -7475,9 +7475,9 @@ ex_resize(exarg_T *eap)
 	    ;
     }
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-# endif
+#endif
     n = atol((char *)eap->arg);
     if (cmdmod.cmod_split & WSP_VERT)
     {
@@ -8126,7 +8126,7 @@ changedir_func(
 #endif
     {
 	// use NameBuff for home directory name
-# ifdef VMS
+#ifdef VMS
 	char_u	*p;
 
 	p = mch_getenv((char_u *)"SYS$LOGIN");
@@ -8134,9 +8134,9 @@ changedir_func(
 	    NameBuff[0] = NUL;
 	else
 	    vim_strncpy(NameBuff, p, MAXPATHL - 1);
-# else
+#else
 	expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
-# endif
+#endif
 	new_dir = NameBuff;
     }
     dir_differs = pdir == NULL
@@ -8283,13 +8283,13 @@ do_sleep(long msec, int hide_cursor)
 {
     long	done = 0;
     long	wait_now;
-# ifdef ELAPSED_FUNC
+#ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
 
     // Remember at what time we started, so that we know how much longer we
     // should wait after waiting for a bit.
     ELAPSED_INIT(start_tv);
-# endif
+#endif
 
     if (hide_cursor)
 	cursor_sleep();
@@ -8331,13 +8331,13 @@ do_sleep(long msec, int hide_cursor)
 	parse_queued_messages();
 #endif
 
-# ifdef ELAPSED_FUNC
+#ifdef ELAPSED_FUNC
 	// actual time passed
 	done = ELAPSED_FUNC(start_tv);
-# else
+#else
 	// guestimate time passed (will actually be more)
 	done += wait_now;
-# endif
+#endif
     }
 
     // If CTRL-C was typed to interrupt the sleep, drop the CTRL-C from the
@@ -9449,7 +9449,7 @@ ex_checkpath(exarg_T *eap)
 	    (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit, FALSE);
 }
 
-#if defined(FEAT_QUICKFIX)
+# if defined(FEAT_QUICKFIX)
 /*
  * ":psearch"
  */
@@ -9460,7 +9460,7 @@ ex_psearch(exarg_T *eap)
     ex_findpat(eap);
     g_do_tagpreview = 0;
 }
-#endif
+# endif
 
     static void
 ex_findpat(exarg_T *eap)
@@ -10052,12 +10052,12 @@ eval_vars(
 
 #ifdef FEAT_CLIENTSERVER
 	case SPEC_CLIENT:	// Source of last submitted input
-#ifdef MSWIN
+# ifdef MSWIN
 		sprintf((char *)strbuf, PRINTF_HEX_LONG_U,
 							(long_u)clientWindow);
 		result = strbuf;
-#else
-# ifdef FEAT_SOCKETSERVER
+# else
+#  ifdef FEAT_SOCKETSERVER
 		if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 		{
 		    if (client_socket == NULL)
@@ -10065,16 +10065,16 @@ eval_vars(
 		    else
 			result = client_socket;
 		}
-# endif
-# ifdef FEAT_X11
+#  endif
+#  ifdef FEAT_X11
 		if (clientserver_method == CLIENTSERVER_METHOD_X11)
 		{
 		    sprintf((char *)strbuf, PRINTF_HEX_LONG_U,
 							(long_u)clientWindow);
 		    result = strbuf;
 		}
+#  endif
 # endif
-#endif
 		break;
 #endif
 	}
@@ -10408,9 +10408,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     start_global_changes();
 # endif
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     inc_clip_provider();
-#endif
+# endif
 
     // First set the marks for all lines closed/open.
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
@@ -10423,9 +10423,9 @@ ex_folddo(exarg_T *eap)
 # ifdef FEAT_CLIPBOARD
     end_global_changes();
 # endif
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
-#endif
+# endif
 }
 #endif
 

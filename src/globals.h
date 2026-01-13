@@ -405,161 +405,161 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 // t_unknown - used for when the type is really unknown, e.g. global variables.
 // Also for when a function may or may not return something.
-#define t_unknown		(static_types[0])
-#define t_const_unknown		(static_types[1])
+# define t_unknown		(static_types[0])
+# define t_const_unknown		(static_types[1])
 
 // t_any -  used for when the type can be anything, but excludes "void".
-#define t_any			(static_types[2])
-#define t_const_any		(static_types[3])
+# define t_any			(static_types[2])
+# define t_const_any		(static_types[3])
 
 // t_void - used for a function not returning anything.
-#define t_void			(static_types[4])
-#define t_const_void		(static_types[5])
+# define t_void			(static_types[4])
+# define t_const_void		(static_types[5])
 
-#define t_bool			(static_types[6])
-#define t_const_bool		(static_types[7])
+# define t_bool			(static_types[6])
+# define t_const_bool		(static_types[7])
 
-#define t_null			(static_types[8])
-#define t_const_null		(static_types[9])
+# define t_null			(static_types[8])
+# define t_const_null		(static_types[9])
 
-#define t_none			(static_types[10])
-#define t_const_none		(static_types[11])
+# define t_none			(static_types[10])
+# define t_const_none		(static_types[11])
 
-#define t_number		(static_types[12])
-#define t_const_number		(static_types[13])
+# define t_number		(static_types[12])
+# define t_const_number		(static_types[13])
 
 // t_number_bool - number that can be used as a bool
-#define t_number_bool		(static_types[14])
-#define t_const_number_bool	(static_types[15])
+# define t_number_bool		(static_types[14])
+# define t_const_number_bool	(static_types[15])
 
 // t_number_float - number that can be used as a float
-#define t_number_float		(static_types[16])
-#define t_const_number_float	(static_types[17])
+# define t_number_float		(static_types[16])
+# define t_const_number_float	(static_types[17])
 
-#define t_float			(static_types[18])
-#define t_const_float		(static_types[19])
+# define t_float			(static_types[18])
+# define t_const_float		(static_types[19])
 
-#define t_string		(static_types[20])
-#define t_const_string		(static_types[21])
+# define t_string		(static_types[20])
+# define t_const_string		(static_types[21])
 
-#define t_blob			(static_types[22])
-#define t_const_blob		(static_types[23])
+# define t_blob			(static_types[22])
+# define t_const_blob		(static_types[23])
 
-#define t_blob_null		(static_types[24])
-#define t_const_blob_null	(static_types[25])
+# define t_blob_null		(static_types[24])
+# define t_const_blob_null	(static_types[25])
 
-#define t_job			(static_types[26])
-#define t_const_job		(static_types[27])
+# define t_job			(static_types[26])
+# define t_const_job		(static_types[27])
 
-#define t_channel		(static_types[28])
-#define t_const_channel		(static_types[29])
+# define t_channel		(static_types[28])
+# define t_const_channel		(static_types[29])
 
 // t_number_or_string - Special value used for @#.
-#define t_number_or_string	(static_types[30])
-#define t_const_number_or_string (static_types[31])
+# define t_number_or_string	(static_types[30])
+# define t_const_number_or_string (static_types[31])
 
 // t_func_unknown - function with any arguments and no or unknown return value
-#define t_func_unknown		(static_types[32])
-#define t_const_func_unknown	(static_types[33])
+# define t_func_unknown		(static_types[32])
+# define t_const_func_unknown	(static_types[33])
 
 // t_func_void - function with any arguments and no return value
-#define t_func_void		(static_types[34])
-#define t_const_func_void	(static_types[35])
+# define t_func_void		(static_types[34])
+# define t_const_func_void	(static_types[35])
 
-#define t_func_any		(static_types[36])
-#define t_const_func_any	(static_types[37])
+# define t_func_any		(static_types[36])
+# define t_const_func_any	(static_types[37])
 
-#define t_func_number		(static_types[38])
-#define t_const_func_number	(static_types[39])
+# define t_func_number		(static_types[38])
+# define t_const_func_number	(static_types[39])
 
-#define t_func_string		(static_types[40])
-#define t_const_func_string	(static_types[41])
+# define t_func_string		(static_types[40])
+# define t_const_func_string	(static_types[41])
 
-#define t_func_bool		(static_types[42])
-#define t_const_func_bool	(static_types[43])
+# define t_func_bool		(static_types[42])
+# define t_const_func_bool	(static_types[43])
 
 // t_func_0_void - function without arguments and nor return value
-#define t_func_0_void		(static_types[44])
-#define t_const_func_0_void	(static_types[45])
+# define t_func_0_void		(static_types[44])
+# define t_const_func_0_void	(static_types[45])
 
-#define t_func_0_any		(static_types[46])
-#define t_const_func_0_any	(static_types[47])
+# define t_func_0_any		(static_types[46])
+# define t_const_func_0_any	(static_types[47])
 
-#define t_func_0_number		(static_types[48])
-#define t_const_func_0_number	(static_types[49])
+# define t_func_0_number		(static_types[48])
+# define t_const_func_0_number	(static_types[49])
 
-#define t_func_0_string		(static_types[50])
-#define t_const_func_0_string	(static_types[51])
+# define t_func_0_string		(static_types[50])
+# define t_const_func_0_string	(static_types[51])
 
-#define t_list_any		(static_types[52])
-#define t_const_list_any	(static_types[53])
+# define t_list_any		(static_types[52])
+# define t_const_list_any	(static_types[53])
 
-#define t_dict_any		(static_types[54])
-#define t_const_dict_any	(static_types[55])
+# define t_dict_any		(static_types[54])
+# define t_const_dict_any	(static_types[55])
 
-#define t_list_empty		(static_types[56])
-#define t_const_list_empty	(static_types[57])
+# define t_list_empty		(static_types[56])
+# define t_const_list_empty	(static_types[57])
 
-#define t_dict_empty		(static_types[58])
-#define t_const_dict_empty	(static_types[59])
+# define t_dict_empty		(static_types[58])
+# define t_const_dict_empty	(static_types[59])
 
-#define t_list_bool		(static_types[60])
-#define t_const_list_bool	(static_types[61])
+# define t_list_bool		(static_types[60])
+# define t_const_list_bool	(static_types[61])
 
-#define t_list_number		(static_types[62])
-#define t_const_list_number	(static_types[63])
+# define t_list_number		(static_types[62])
+# define t_const_list_number	(static_types[63])
 
-#define t_list_string		(static_types[64])
-#define t_const_list_string	(static_types[65])
+# define t_list_string		(static_types[64])
+# define t_const_list_string	(static_types[65])
 
-#define t_list_job		(static_types[66])
-#define t_const_list_job	(static_types[67])
+# define t_list_job		(static_types[66])
+# define t_const_list_job	(static_types[67])
 
-#define t_list_dict_any		(static_types[68])
-#define t_const_list_dict_any	(static_types[69])
+# define t_list_dict_any		(static_types[68])
+# define t_const_list_dict_any	(static_types[69])
 
-#define t_list_list_any		(static_types[70])
-#define t_const_list_list_any	(static_types[71])
+# define t_list_list_any		(static_types[70])
+# define t_const_list_list_any	(static_types[71])
 
-#define t_list_list_number	(static_types[72])
-#define t_const_list_list_number (static_types[73])
+# define t_list_list_number	(static_types[72])
+# define t_const_list_list_number (static_types[73])
 
-#define t_list_list_string	(static_types[74])
-#define t_const_list_list_string (static_types[75])
+# define t_list_list_string	(static_types[74])
+# define t_const_list_list_string (static_types[75])
 
-#define t_list_list_list_number	(static_types[76])
-#define t_const_list_list_list_number (static_types[77])
+# define t_list_list_list_number	(static_types[76])
+# define t_const_list_list_list_number (static_types[77])
 
-#define t_dict_bool		(static_types[78])
-#define t_const_dict_bool	(static_types[79])
+# define t_dict_bool		(static_types[78])
+# define t_const_dict_bool	(static_types[79])
 
-#define t_dict_number		(static_types[80])
-#define t_const_dict_number	(static_types[81])
+# define t_dict_number		(static_types[80])
+# define t_const_dict_number	(static_types[81])
 
-#define t_dict_string		(static_types[82])
-#define t_const_dict_string	(static_types[83])
+# define t_dict_string		(static_types[82])
+# define t_const_dict_string	(static_types[83])
 
-#define t_super			(static_types[84])
-#define t_const_super		(static_types[85])
+# define t_super			(static_types[84])
+# define t_const_super		(static_types[85])
 
-#define t_object_any		(static_types[86])
-#define t_const_object_any	(static_types[87])
+# define t_object_any		(static_types[86])
+# define t_const_object_any	(static_types[87])
 
-#define t_class			(static_types[88])
-#define t_const_class		(static_types[89])
+# define t_class			(static_types[88])
+# define t_const_class		(static_types[89])
 
-#define t_typealias		(static_types[90])
-#define t_const_typealias	(static_types[91])
+# define t_typealias		(static_types[90])
+# define t_const_typealias	(static_types[91])
 
-#define t_tuple_any		(static_types[92])
-#define t_const_tuple_any	(static_types[93])
+# define t_tuple_any		(static_types[92])
+# define t_const_tuple_any	(static_types[93])
 
-#define t_tuple_empty		(static_types[94])
-#define t_const_tuple_empty	(static_types[95])
+# define t_tuple_empty		(static_types[94])
+# define t_const_tuple_empty	(static_types[95])
 
 
 EXTERN type_T static_types[96]
-#ifdef DO_INIT
+# ifdef DO_INIT
 = {
     // 0: t_unknown
     {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
@@ -753,7 +753,7 @@ EXTERN type_T static_types[96]
     {VAR_TUPLE, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 }
-#endif
+# endif
 ;
 
 EXTERN int	did_source_packages INIT(= FALSE);
@@ -875,12 +875,12 @@ EXTERN int	gui_prev_topfill INIT(= 0);
 # endif
 #endif
 
-# ifdef FEAT_MOUSESHAPE
+#ifdef FEAT_MOUSESHAPE
 EXTERN int	drag_status_line INIT(= FALSE);	// dragging the status line
 EXTERN int	postponed_mouseshape INIT(= FALSE); // postponed updating the
 						    // mouse pointer shape
 EXTERN int	drag_sep_line INIT(= FALSE);	// dragging vert separator
-# endif
+#endif
 
 
 #ifdef FEAT_DIFF
@@ -1351,14 +1351,14 @@ EXTERN int (*mb_ptr2char)(char_u *p) INIT(= latin_ptr2char);
 // terminated.
 EXTERN int (*mb_head_off)(char_u *base, char_u *p) INIT(= latin_head_off);
 
-# if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
+#if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
 // Pointers to functions and variables to be loaded at runtime
 EXTERN size_t (*iconv) (iconv_t cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
 EXTERN iconv_t (*iconv_open) (const char *tocode, const char *fromcode);
 EXTERN int (*iconv_close) (iconv_t cd);
 EXTERN int (*iconvctl) (iconv_t cd, int request, void *argument);
 EXTERN int* (*iconv_errno) (void);
-# endif
+#endif
 
 
 #ifdef FEAT_XIM
@@ -1627,9 +1627,9 @@ EXTERN int	aucmd_cmdline_changed_count INIT(= 0);
 
 EXTERN int	did_cursorhold INIT(= TRUE);  // set when CursorHold t'gerd
 EXTERN pos_T	last_cursormoved	      // for CursorMoved event
-# ifdef DO_INIT
+#ifdef DO_INIT
 		    = {0, 0, 0}
-# endif
+#endif
 		    ;
 
 EXTERN int	postponed_split INIT(= 0);  // for CTRL-W CTRL-] command

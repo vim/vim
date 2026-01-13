@@ -541,17 +541,17 @@ vwl_seat_destroy(vwl_seat_T *self)
     static void
 vwl_connection_destroy(vwl_connection_T *self)
 {
-#ifdef FEAT_WAYLAND_CLIPBOARD
+# ifdef FEAT_WAYLAND_CLIPBOARD
     VWL_DESTROY_GOBJECT(self, ext_data_control_manager_v1)
     VWL_DESTROY_GOBJECT(self, zwlr_data_control_manager_v1)
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
+#  ifdef FEAT_WAYLAND_CLIPBOARD_FS
     VWL_DESTROY_GOBJECT(self, wl_data_device_manager)
     VWL_DESTROY_GOBJECT(self, wl_shm)
     VWL_DESTROY_GOBJECT(self, wl_compositor)
     VWL_DESTROY_GOBJECT(self, xdg_wm_base)
     VWL_DESTROY_GOBJECT(self, zwp_primary_selection_device_manager_v1)
+#  endif
 # endif
-#endif
 
     for (int i = 0; i < self->gobjects.seats.ga_len; i++)
 	vwl_seat_destroy(((vwl_seat_T **)self->gobjects.seats.ga_data)[i]);
@@ -592,7 +592,7 @@ vwl_connection_get_seat(vwl_connection_T *self, const char *label)
     return NULL;
 }
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 /*
  * Get keyboard object from seat and return it. NULL is returned on
  * failure such as when a keyboard is not available for seat.
@@ -605,7 +605,7 @@ vwl_seat_get_keyboard(vwl_seat_T *self)
 
     return wl_seat_get_keyboard(self->proxy);
 }
-#endif
+# endif
 
 #endif
 
@@ -896,7 +896,7 @@ vwl_connection_get_data_device_manager(
 	if (zwlr_data_control_manager_v1_get_version(manager->proxy) >= 2)
 	    *supported |= WAYLAND_SELECTION_PRIMARY;
     }
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
     else if (self->gobjects.wl_data_device_manager != NULL
 	    && req_sel == WAYLAND_SELECTION_REGULAR)
     {
@@ -916,7 +916,7 @@ vwl_connection_get_data_device_manager(
 
 	    *supported |= WAYLAND_SELECTION_PRIMARY;
 	}
-#endif
+# endif
 
     if (!(*supported & req_sel))
     {
@@ -944,7 +944,7 @@ vwl_data_device_manager_get_data_device(
 	    device->proxy = zwlr_data_control_manager_v1_get_data_device(
 		    self->proxy, seat->proxy);
 	    break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	case VWL_DATA_PROTOCOL_CORE:
 	    device->proxy = wl_data_device_manager_get_data_device(
 		    self->proxy, seat->proxy);
@@ -953,7 +953,7 @@ vwl_data_device_manager_get_data_device(
 	    device->proxy = zwp_primary_selection_device_manager_v1_get_device(
 		    self->proxy, seat->proxy);
 	    break;
-#endif
+# endif
 	default:
 	    vim_free(device);
 	    return NULL;
@@ -978,7 +978,7 @@ vwl_data_device_manager_create_data_source(vwl_data_device_manager_T *self)
 	    source->proxy = zwlr_data_control_manager_v1_create_data_source(
 		    self->proxy);
 	    break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	case VWL_DATA_PROTOCOL_CORE:
 	    source->proxy = wl_data_device_manager_create_data_source(
 		    self->proxy);
@@ -988,7 +988,7 @@ vwl_data_device_manager_create_data_source(vwl_data_device_manager_T *self)
 		zwp_primary_selection_device_manager_v1_create_source(
 			self->proxy);
 	    break;
-#endif
+# endif
 	default:
 	    vim_free(source);
 	    return NULL;
@@ -1018,19 +1018,19 @@ vwl_data_device_wrap_offer_proxy(vwl_data_device_T *self, void *proxy)
     return offer;
 }
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-# define VWL_CODE_DATA_PROXY_FS_DESTROY(type) \
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
+#  define VWL_CODE_DATA_PROXY_FS_DESTROY(type) \
     case VWL_DATA_PROTOCOL_CORE: \
 	wl_data_##type##_destroy(self->proxy); \
 	break; \
     case VWL_DATA_PROTOCOL_PRIMARY: \
 	zwp_primary_selection_##type##_v1_destroy(self->proxy); \
 	break;
-#else
-# define VWL_CODE_DATA_PROXY_FS_DESTROY(type)
-#endif
+# else
+#  define VWL_CODE_DATA_PROXY_FS_DESTROY(type)
+# endif
 
-#define VWL_FUNC_DATA_PROXY_DESTROY(type) \
+# define VWL_FUNC_DATA_PROXY_DESTROY(type) \
 	void \
     vwl_data_##type##_destroy(vwl_data_##type##_T *self) \
     { \
@@ -1067,14 +1067,14 @@ vwl_data_offer_destroy(vwl_data_offer_T *self)
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_offer_v1_destroy(self->proxy);
 	    break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	case VWL_DATA_PROTOCOL_CORE:
 	    wl_data_offer_destroy(self->proxy);
 	    break;
 	case VWL_DATA_PROTOCOL_PRIMARY:
 	    zwp_primary_selection_offer_v1_destroy(self->proxy);
 	    break;
-#endif
+# endif
 	default:
 	    break;
     }
@@ -1093,7 +1093,7 @@ vwl_data_device_manager_discard(vwl_data_device_manager_T *self)
     vim_free(self);
 }
 
-#define VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(device_type, offer_type) \
+# define VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(device_type, offer_type) \
 	static void \
     device_type##_listener_event_data_offer( \
 	    void *data, \
@@ -1107,7 +1107,7 @@ vwl_data_device_manager_discard(vwl_data_device_manager_T *self)
 
 // We want to set the offer to NULL after the selection callback, because the
 // callback may free the offer, and we don't want a dangling pointer.
-#define VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(device_type, offer_type) \
+# define VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(device_type, offer_type) \
 	static void \
     device_type##_listener_event_selection( \
 	    void *data, \
@@ -1120,7 +1120,7 @@ vwl_data_device_manager_discard(vwl_data_device_manager_T *self)
 	self->offer = NULL; \
     } \
 
-#define VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(device_type, offer_type) \
+# define VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(device_type, offer_type) \
 	static void \
     device_type##_listener_event_primary_selection( \
 	    void *data, \
@@ -1133,7 +1133,7 @@ vwl_data_device_manager_discard(vwl_data_device_manager_T *self)
 	self->offer = NULL; \
     }
 
-#define VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(device_type) \
+# define VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(device_type) \
 	static void \
     device_type##_listener_event_finished( \
 	    void *data, \
@@ -1147,11 +1147,11 @@ VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
     ext_data_control_device_v1, ext_data_control_offer_v1)
 VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
     zwlr_data_control_device_v1, zwlr_data_control_offer_v1)
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(wl_data_device, wl_data_offer)
 VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
 	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1)
-#endif
+# endif
 
 VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(
     ext_data_control_device_v1, ext_data_control_offer_v1
@@ -1165,13 +1165,13 @@ VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
 VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
     zwlr_data_control_device_v1, zwlr_data_control_offer_v1
 )
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(
     wl_data_device, wl_data_offer
 )
 VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
 	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1)
-#endif
+# endif
 
 VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(ext_data_control_device_v1)
 VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(zwlr_data_control_device_v1)
@@ -1192,7 +1192,7 @@ static const struct zwlr_data_control_device_v1_listener
 	    zwlr_data_control_device_v1_listener_event_primary_selection,
 	.finished = zwlr_data_control_device_v1_listener_event_finished
 };
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 static const struct wl_data_device_listener wl_data_device_listener = {
     .data_offer = wl_data_device_listener_event_data_offer,
     .selection = wl_data_device_listener_event_selection,
@@ -1203,9 +1203,9 @@ static const struct zwp_primary_selection_device_v1_listener
 	.selection =
 	    zwp_primary_selection_device_v1_listener_event_primary_selection,
 };
-#  endif
+# endif
 
-#  define VWL_FUNC_DATA_SOURCE_EVENT_SEND(source_type) \
+# define VWL_FUNC_DATA_SOURCE_EVENT_SEND(source_type) \
 	static void \
     source_type##_listener_event_send( \
 	    void *data, struct source_type *source UNUSED, \
@@ -1215,7 +1215,7 @@ static const struct zwp_primary_selection_device_v1_listener
 	self->listener->send(self->data, self, mime_type, fd); \
     }
 
-#  define VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(source_type) \
+# define VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(source_type) \
 	static void \
     source_type##_listener_event_cancelled( \
 	    void *data, struct source_type *source UNUSED) \
@@ -1226,17 +1226,17 @@ static const struct zwp_primary_selection_device_v1_listener
 
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(zwlr_data_control_source_v1)
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(wl_data_source)
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(zwp_primary_selection_source_v1)
-#endif
+# endif
 
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(zwlr_data_control_source_v1)
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(wl_data_source)
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(zwp_primary_selection_source_v1)
-#endif
+# endif
 
 static const struct ext_data_control_source_v1_listener
     ext_data_control_source_v1_listener = {
@@ -1248,7 +1248,7 @@ static const struct zwlr_data_control_source_v1_listener
 	.send = zwlr_data_control_source_v1_listener_event_send,
 	.cancelled = zwlr_data_control_source_v1_listener_event_cancelled
 };
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 static const struct wl_data_source_listener wl_data_source_listener = {
     .send = wl_data_source_listener_event_send,
     .cancelled = wl_data_source_listener_event_cancelled
@@ -1258,9 +1258,9 @@ static const struct zwp_primary_selection_source_v1_listener
 	.send = zwp_primary_selection_source_v1_listener_event_send,
 	.cancelled = zwp_primary_selection_source_v1_listener_event_cancelled
 };
-#endif
+# endif
 
-#define VWL_FUNC_DATA_OFFER_EVENT_OFFER(offer_type) \
+# define VWL_FUNC_DATA_OFFER_EVENT_OFFER(offer_type) \
 	static void \
     offer_type##_listener_event_offer( \
 	    void *data, \
@@ -1285,10 +1285,10 @@ static const struct zwp_primary_selection_source_v1_listener
 
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(ext_data_control_offer_v1)
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(zwlr_data_control_offer_v1)
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(wl_data_offer)
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(zwp_primary_selection_offer_v1)
-#endif
+# endif
 
 static const struct ext_data_control_offer_v1_listener
     ext_data_control_offer_v1_listener = {
@@ -1298,7 +1298,7 @@ static const struct zwlr_data_control_offer_v1_listener
     zwlr_data_control_offer_v1_listener = {
 	.offer = zwlr_data_control_offer_v1_listener_event_offer
 };
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 static const struct wl_data_offer_listener
     wl_data_offer_listener = {
 	.offer = wl_data_offer_listener_event_offer
@@ -1307,10 +1307,10 @@ static const struct zwp_primary_selection_offer_v1_listener
     zwp_primary_selection_offer_v1_listener = {
 	.offer = zwp_primary_selection_offer_v1_listener_event_offer
 };
-#endif
+# endif
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-# define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type) \
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
+#  define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type) \
     case VWL_DATA_PROTOCOL_CORE: \
 	wl_data_##type##_add_listener(self->proxy, \
 		&wl_data_##type##_listener, self); \
@@ -1319,11 +1319,11 @@ static const struct zwp_primary_selection_offer_v1_listener
 	zwp_primary_selection_##type##_v1_add_listener(self->proxy, \
 		&zwp_primary_selection_##type##_v1_listener, self); \
 	break;
-#else
-# define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type)
-#endif
+# else
+#  define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type)
+# endif
 
-#define VWL_FUNC_DATA_PROXY_ADD_LISTENER(type) \
+# define VWL_FUNC_DATA_PROXY_ADD_LISTENER(type) \
 	void \
     vwl_data_##type##_add_listener( \
 	    vwl_data_##type##_T *self, \
@@ -1378,11 +1378,11 @@ vwl_data_device_set_selection(
 	    case VWL_DATA_PROTOCOL_WLR:
 		zwlr_data_control_device_v1_set_selection(self->proxy, proxy);
 		break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	    case VWL_DATA_PROTOCOL_CORE:
 		wl_data_device_set_selection(self->proxy, proxy, serial);
 		break;
-#endif
+# endif
 	    default:
 		break;
 	}
@@ -1401,12 +1401,12 @@ vwl_data_device_set_selection(
 			self->proxy, proxy
 			);
 		break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	    case VWL_DATA_PROTOCOL_PRIMARY:
 		zwp_primary_selection_device_v1_set_selection(
 			self->proxy, proxy, serial);
 		break;
-#endif
+# endif
 	    default:
 		break;
 	}
@@ -1424,14 +1424,14 @@ vwl_data_source_offer(vwl_data_source_T *self, const char *mime_type)
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_source_v1_offer(self->proxy, mime_type);
 	    break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	case VWL_DATA_PROTOCOL_CORE:
 	    wl_data_source_offer(self->proxy, mime_type);
 	    break;
 	case VWL_DATA_PROTOCOL_PRIMARY:
 	    zwp_primary_selection_source_v1_offer(self->proxy, mime_type);
 	    break;
-#endif
+# endif
 	default:
 	    break;
     }
@@ -1451,14 +1451,14 @@ vwl_data_offer_receive(
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_offer_v1_receive(self->proxy, mime_type, fd);
 	    break;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 	case VWL_DATA_PROTOCOL_CORE:
 	    wl_data_offer_receive(self->proxy, mime_type, fd);
 	    break;
 	case VWL_DATA_PROTOCOL_PRIMARY:
 	    zwp_primary_selection_offer_v1_receive(self->proxy, mime_type, fd);
 	    break;
-#endif
+# endif
 	default:
 	    break;
     }

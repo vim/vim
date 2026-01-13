@@ -1177,7 +1177,7 @@ lbr_chartabsize(chartabsize_T *cts)
 # endif
 # ifdef FEAT_PROP_POPUP
 	&& !cts->cts_has_prop_with_text
-#endif
+# endif
        )
     {
 #endif
@@ -1549,13 +1549,13 @@ win_nolbr_chartabsize(
 
     if (*s == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
     {
-# ifdef FEAT_VARTABS
+#ifdef FEAT_VARTABS
 	return tabstop_padding(col, wp->w_buffer->b_p_ts,
 				    wp->w_buffer->b_p_vts_array);
-# else
+#else
 	n = wp->w_buffer->b_p_ts;
 	return (int)(n - (col % n));
-# endif
+#endif
     }
     n = ptr2cells(s);
     // Add one cell for a double-width character in the last column of the

@@ -74,9 +74,9 @@ ses_fname(FILE *fd, buf_T *buf, unsigned *flagp, int add_eol)
     if (buf->b_sfname != NULL
 	    && flagp == &ssop_flags
 	    && (ssop_flags & (SSOP_CURDIR | SSOP_SESDIR))
-#ifdef FEAT_AUTOCHDIR
+# ifdef FEAT_AUTOCHDIR
 	    && !p_acd
-#endif
+# endif
 	    && !did_lcd)
 	name = buf->b_sfname;
     else
@@ -141,12 +141,12 @@ ses_arglist(
     static int
 ses_do_win(win_T *wp)
 {
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     if (bt_terminal(wp->w_buffer))
 	return !term_is_finished(wp->w_buffer)
 	    && (ssop_flags & SSOP_TERMINAL)
 	    && term_should_restore(wp->w_buffer);
-#endif
+# endif
     if (wp->w_buffer->b_fname == NULL
 	    // When 'buftype' is "nofile" can't restore the window contents.
 	    || bt_nofilename(wp->w_buffer))
@@ -397,7 +397,7 @@ put_view(
 	    // No file in this buffer, just make it empty.
 	    if (put_line(fd, "enew") == FAIL)
 		return FAIL;
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
 	    if (wp->w_buffer->b_ffname != NULL)
 	    {
 		// The buffer does have a name, but it's not a file name.
@@ -405,7 +405,7 @@ put_view(
 			|| ses_fname(fd, wp->w_buffer, flagp, TRUE) == FAIL)
 		    return FAIL;
 	    }
-#endif
+# endif
 	    do_cursor = FALSE;
 	}
     }
@@ -441,10 +441,10 @@ put_view(
     if (*flagp & (SSOP_OPTIONS | SSOP_LOCALOPTIONS))
 	f = makeset(fd, OPT_LOCAL,
 			     flagp == &vop_flags || !(*flagp & SSOP_OPTIONS));
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     else if (*flagp & SSOP_FOLDS)
 	f = makefoldset(fd);
-#endif
+# endif
     else
 	f = OK;
     curwin = save_curwin;
@@ -452,7 +452,7 @@ put_view(
     if (f == FAIL)
 	return FAIL;
 
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     // Save Folds when 'buftype' is empty and for help files.
     if ((*flagp & SSOP_FOLDS)
 	    && wp->w_buffer->b_ffname != NULL
@@ -461,7 +461,7 @@ put_view(
 	if (put_folds(fd, wp) == FAIL)
 	    return FAIL;
     }
-#endif
+# endif
 
     // Set the cursor after creating folds, since that moves the cursor.
     if (do_cursor)
@@ -534,7 +534,7 @@ put_view(
     return OK;
 }
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     static int
 store_session_globals(FILE *fd)
 {
@@ -600,7 +600,7 @@ store_session_globals(FILE *fd)
     }
     return OK;
 }
-#endif
+# endif
 
 /*
  * Write openfile commands for the current buffers to an .exrc file.
@@ -626,24 +626,24 @@ makeopens(
     int		next_arg_idx = 0;
     int		ret = FAIL;
     tabpage_T	*tp;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     hashtab_T	terminal_bufs;
 
     hash_init(&terminal_bufs);
-#endif
+# endif
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		// Save ALL buffers
 
     // Begin by setting the this_session variable, and then other
     // sessionable variables.
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (put_line(fd, "let v:this_session=expand(\"<sfile>:p\")") == FAIL)
 	goto fail;
     if (ssop_flags & SSOP_GLOBALS)
 	if (store_session_globals(fd) == FAIL)
 	    goto fail;
-#endif
+# endif
 
     // Close all windows and tabs but one.
     if (put_line(fd, "silent only") == FAIL)
@@ -725,7 +725,7 @@ makeopens(
 	    goto fail;
     }
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (gui.in_use && (ssop_flags & SSOP_WINPOS))
     {
 	int	x, y;
@@ -737,7 +737,7 @@ makeopens(
 		goto fail;
 	}
     }
-#endif
+# endif
 
     // When there are two or more tabpages and 'showtabline' is 1 the tabline
     // will be displayed when creating the next tab.  That resizes the windows
@@ -903,11 +903,11 @@ makeopens(
 		continue;
 	    if (put_view(fd, wp, tp, wp != edited_win, &ssop_flags,
 							 cur_arg_idx,
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 							 &terminal_bufs
-#else
+# else
 							 NULL
-#endif
+# endif
 		 ) == FAIL)
 		goto fail;
 	    if (nr > 1 && put_line(fd, "wincmd w") == FAIL)
@@ -990,9 +990,9 @@ makeopens(
 
     ret = OK;
 fail:
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     hash_clear_all(&terminal_bufs, 0);
-#endif
+# endif
     return ret;
 }
 
@@ -1040,11 +1040,11 @@ get_view_file(int c)
 	    else if (vim_ispathsep(*p))
 	    {
 		*s++ = '=';
-#if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA) || defined(VMS)
+# if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA) || defined(VMS)
 		if (*p == ':')
 		    *s++ = '-';
 		else
-#endif
+# endif
 		    *s++ = '+';
 	    }
 	    else
@@ -1343,10 +1343,10 @@ ex_mkrc(exarg_T	*eap)
 	    if (put_line(fd, "let &g:so = s:so_save | let &g:siso = s:siso_save")
 								      == FAIL)
 		failed = TRUE;
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
 	    if (no_hlsearch && put_line(fd, "nohlsearch") == FAIL)
 		failed = TRUE;
-#endif
+# endif
 	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
 		failed = TRUE;
 	    if (eap->cmdidx == CMD_mksession)

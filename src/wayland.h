@@ -32,10 +32,10 @@ typedef enum {
     VWL_DATA_PROTOCOL_NONE,
     VWL_DATA_PROTOCOL_EXT,
     VWL_DATA_PROTOCOL_WLR,
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
     VWL_DATA_PROTOCOL_CORE,
     VWL_DATA_PROTOCOL_PRIMARY
-#endif
+# endif
 } vwl_data_protocol_T;
 
 #endif // FEAT_WAYLAND_CLIPBOARD
@@ -151,11 +151,11 @@ struct vwl_data_device_manager_S {
     vwl_data_protocol_T protocol;
 };
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
 
 // Dummy functions to handle keyboard events we don't care about.
 
-#define VWL_FUNCS_DUMMY_KEYBOARD_EVENTS() \
+#  define VWL_FUNCS_DUMMY_KEYBOARD_EVENTS() \
     static void \
 clip_wl_fs_keyboard_listener_keymap( \
     void		*data UNUSED, \
@@ -204,7 +204,7 @@ clip_wl_fs_keyboard_listener_repeat_info( \
 { \
 }
 
-#endif
+# endif
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 

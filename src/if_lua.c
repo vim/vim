@@ -17,25 +17,25 @@
 #include <lauxlib.h>
 
 #if __STDC_VERSION__ >= 199901L
-#  define LUAV_INLINE inline
+# define LUAV_INLINE inline
 #else
-#  define LUAV_INLINE
+# define LUAV_INLINE
 #endif
 
 // Only do the following when the feature is enabled.  Needed for "make
 // depend".
 #if defined(FEAT_LUA)
 
-#define LUAVIM_CHUNKNAME "vim chunk"
-#define LUAVIM_NAME "vim"
-#define LUAVIM_EVALNAME "luaeval"
-#define LUAVIM_EVALHEADER "local _A=select(1,...) return "
+# define LUAVIM_CHUNKNAME "vim chunk"
+# define LUAVIM_NAME "vim"
+# define LUAVIM_EVALNAME "luaeval"
+# define LUAVIM_EVALHEADER "local _A=select(1,...) return "
 
-#ifdef LUA_RELEASE
-# define LUAVIM_VERSION LUA_RELEASE
-#else
-# define LUAVIM_VERSION LUA_VERSION
-#endif
+# ifdef LUA_RELEASE
+#  define LUAVIM_VERSION LUA_RELEASE
+# else
+#  define LUAVIM_VERSION LUA_VERSION
+# endif
 
 typedef buf_T *luaV_Buffer;
 typedef win_T *luaV_Window;
@@ -73,14 +73,14 @@ static const char LUA___CALL[] = "__call";
 
 static const char LUAVIM_UDATA_CACHE[] = "luaV_udata_cache";
 
-#define luaV_getfield(L, s) \
+# define luaV_getfield(L, s) \
     lua_pushlightuserdata((L), (void *)(s)); \
     lua_rawget((L), LUA_REGISTRYINDEX)
-#define luaV_checksandbox(L) \
+# define luaV_checksandbox(L) \
     if (sandbox) luaL_error((L), "not allowed in sandbox")
-#define luaV_msg(L) luaV_msgfunc((L), (msgfunc_T) msg)
-#define luaV_emsg(L) luaV_msgfunc((L), (msgfunc_T) emsg)
-#define luaV_checktypval(L, a, v, msg) \
+# define luaV_msg(L) luaV_msgfunc((L), (msgfunc_T) msg)
+# define luaV_emsg(L) luaV_msgfunc((L), (msgfunc_T) emsg)
+# define luaV_checktypval(L, a, v, msg) \
     do { \
 	if (luaV_totypval(L, a, v) == FAIL) \
 	    luaL_error(L, msg ": cannot convert value"); \
@@ -93,148 +93,148 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 static int luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 static void luaV_call_lua_func_free(void *state);
 
-#if LUA_VERSION_NUM <= 501
-#define luaV_register(L, l) luaL_register(L, NULL, l)
-#define luaL_typeerror luaL_typerror
-#else
-#define luaV_register(L, l) luaL_setfuncs(L, l, 0)
-#endif
+# if LUA_VERSION_NUM <= 501
+#  define luaV_register(L, l) luaL_register(L, NULL, l)
+#  define luaL_typeerror luaL_typerror
+# else
+#  define luaV_register(L, l) luaL_setfuncs(L, l, 0)
+# endif
 
-#ifdef DYNAMIC_LUA
+# ifdef DYNAMIC_LUA
 
-#ifdef MSWIN
-# define load_dll vimLoadLib
-# define symbol_from_dll GetProcAddress
-# define close_dll FreeLibrary
-# define load_dll_error GetWin32Error
-#else
-# include <dlfcn.h>
-# define HANDLE void*
-# define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
-# define symbol_from_dll dlsym
-# define close_dll dlclose
-# define load_dll_error dlerror
-#endif
+#  ifdef MSWIN
+#   define load_dll vimLoadLib
+#   define symbol_from_dll GetProcAddress
+#   define close_dll FreeLibrary
+#   define load_dll_error GetWin32Error
+#  else
+#   include <dlfcn.h>
+#   define HANDLE void*
+#   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#   define symbol_from_dll dlsym
+#   define close_dll dlclose
+#   define load_dll_error dlerror
+#  endif
 
 // lauxlib
-#if LUA_VERSION_NUM <= 501
-#define luaL_register dll_luaL_register
-#define luaL_prepbuffer dll_luaL_prepbuffer
-#define luaL_openlib dll_luaL_openlib
-#define luaL_typerror dll_luaL_typerror
-#define luaL_loadfile dll_luaL_loadfile
-#define luaL_loadbuffer dll_luaL_loadbuffer
-#else
-#define luaL_prepbuffsize dll_luaL_prepbuffsize
-#define luaL_setfuncs dll_luaL_setfuncs
-#define luaL_loadfilex dll_luaL_loadfilex
-#define luaL_loadbufferx dll_luaL_loadbufferx
-#define luaL_argerror dll_luaL_argerror
-#endif
-#if LUA_VERSION_NUM >= 504
-#define luaL_typeerror dll_luaL_typeerror
-#endif
-#define luaL_checkany dll_luaL_checkany
-#define luaL_checklstring dll_luaL_checklstring
-#define luaL_checkinteger dll_luaL_checkinteger
-#define luaL_optinteger dll_luaL_optinteger
-#define luaL_checktype dll_luaL_checktype
-#define luaL_error dll_luaL_error
-#define luaL_newstate dll_luaL_newstate
-#define luaL_buffinit dll_luaL_buffinit
-#define luaL_addlstring dll_luaL_addlstring
-#define luaL_pushresult dll_luaL_pushresult
-#define luaL_loadstring dll_luaL_loadstring
-#define luaL_ref dll_luaL_ref
-#define luaL_unref dll_luaL_unref
+#  if LUA_VERSION_NUM <= 501
+#   define luaL_register dll_luaL_register
+#   define luaL_prepbuffer dll_luaL_prepbuffer
+#   define luaL_openlib dll_luaL_openlib
+#   define luaL_typerror dll_luaL_typerror
+#   define luaL_loadfile dll_luaL_loadfile
+#   define luaL_loadbuffer dll_luaL_loadbuffer
+#  else
+#   define luaL_prepbuffsize dll_luaL_prepbuffsize
+#   define luaL_setfuncs dll_luaL_setfuncs
+#   define luaL_loadfilex dll_luaL_loadfilex
+#   define luaL_loadbufferx dll_luaL_loadbufferx
+#   define luaL_argerror dll_luaL_argerror
+#  endif
+#  if LUA_VERSION_NUM >= 504
+#   define luaL_typeerror dll_luaL_typeerror
+#  endif
+#  define luaL_checkany dll_luaL_checkany
+#  define luaL_checklstring dll_luaL_checklstring
+#  define luaL_checkinteger dll_luaL_checkinteger
+#  define luaL_optinteger dll_luaL_optinteger
+#  define luaL_checktype dll_luaL_checktype
+#  define luaL_error dll_luaL_error
+#  define luaL_newstate dll_luaL_newstate
+#  define luaL_buffinit dll_luaL_buffinit
+#  define luaL_addlstring dll_luaL_addlstring
+#  define luaL_pushresult dll_luaL_pushresult
+#  define luaL_loadstring dll_luaL_loadstring
+#  define luaL_ref dll_luaL_ref
+#  define luaL_unref dll_luaL_unref
 // lua
-#if LUA_VERSION_NUM <= 501
-#define lua_tonumber dll_lua_tonumber
-#define lua_tointeger dll_lua_tointeger
-#define lua_call dll_lua_call
-#define lua_pcall dll_lua_pcall
-#else
-#define lua_tonumberx dll_lua_tonumberx
-#define lua_tointegerx dll_lua_tointegerx
-#define lua_callk dll_lua_callk
-#define lua_pcallk dll_lua_pcallk
-#define lua_getglobal dll_lua_getglobal
-#define lua_setglobal dll_lua_setglobal
-#endif
-#if LUA_VERSION_NUM <= 502
-#define lua_replace dll_lua_replace
-#define lua_remove dll_lua_remove
-#endif
-#if LUA_VERSION_NUM >= 503
-#define lua_rotate dll_lua_rotate
-#define lua_copy dll_lua_copy
-#endif
-#define lua_typename dll_lua_typename
-#define lua_close dll_lua_close
-#define lua_gettop dll_lua_gettop
-#define lua_settop dll_lua_settop
-#define lua_pushvalue dll_lua_pushvalue
-#define lua_isnumber dll_lua_isnumber
-#define lua_isstring dll_lua_isstring
-#define lua_type dll_lua_type
-#define lua_rawequal dll_lua_rawequal
-#define lua_toboolean dll_lua_toboolean
-#define lua_tolstring dll_lua_tolstring
-#define lua_touserdata dll_lua_touserdata
-#define lua_pushnil dll_lua_pushnil
-#define lua_pushnumber dll_lua_pushnumber
-#define lua_pushinteger dll_lua_pushinteger
-#define lua_pushlstring dll_lua_pushlstring
-#define lua_pushstring dll_lua_pushstring
-#define lua_pushfstring dll_lua_pushfstring
-#define lua_pushcclosure dll_lua_pushcclosure
-#define lua_pushboolean dll_lua_pushboolean
-#define lua_pushlightuserdata dll_lua_pushlightuserdata
-#define lua_getfield dll_lua_getfield
-#define lua_rawget dll_lua_rawget
-#define lua_rawgeti dll_lua_rawgeti
-#define lua_createtable dll_lua_createtable
-#define lua_settable dll_lua_settable
-#if LUA_VERSION_NUM >= 504
- #define lua_newuserdatauv dll_lua_newuserdatauv
-#else
- #define lua_newuserdata dll_lua_newuserdata
-#endif
-#define lua_getmetatable dll_lua_getmetatable
-#define lua_setfield dll_lua_setfield
-#define lua_rawset dll_lua_rawset
-#define lua_rawseti dll_lua_rawseti
-#define lua_setmetatable dll_lua_setmetatable
-#define lua_next dll_lua_next
+#  if LUA_VERSION_NUM <= 501
+#   define lua_tonumber dll_lua_tonumber
+#   define lua_tointeger dll_lua_tointeger
+#   define lua_call dll_lua_call
+#   define lua_pcall dll_lua_pcall
+#  else
+#   define lua_tonumberx dll_lua_tonumberx
+#   define lua_tointegerx dll_lua_tointegerx
+#   define lua_callk dll_lua_callk
+#   define lua_pcallk dll_lua_pcallk
+#   define lua_getglobal dll_lua_getglobal
+#   define lua_setglobal dll_lua_setglobal
+#  endif
+#  if LUA_VERSION_NUM <= 502
+#   define lua_replace dll_lua_replace
+#   define lua_remove dll_lua_remove
+#  endif
+#  if LUA_VERSION_NUM >= 503
+#   define lua_rotate dll_lua_rotate
+#   define lua_copy dll_lua_copy
+#  endif
+#  define lua_typename dll_lua_typename
+#  define lua_close dll_lua_close
+#  define lua_gettop dll_lua_gettop
+#  define lua_settop dll_lua_settop
+#  define lua_pushvalue dll_lua_pushvalue
+#  define lua_isnumber dll_lua_isnumber
+#  define lua_isstring dll_lua_isstring
+#  define lua_type dll_lua_type
+#  define lua_rawequal dll_lua_rawequal
+#  define lua_toboolean dll_lua_toboolean
+#  define lua_tolstring dll_lua_tolstring
+#  define lua_touserdata dll_lua_touserdata
+#  define lua_pushnil dll_lua_pushnil
+#  define lua_pushnumber dll_lua_pushnumber
+#  define lua_pushinteger dll_lua_pushinteger
+#  define lua_pushlstring dll_lua_pushlstring
+#  define lua_pushstring dll_lua_pushstring
+#  define lua_pushfstring dll_lua_pushfstring
+#  define lua_pushcclosure dll_lua_pushcclosure
+#  define lua_pushboolean dll_lua_pushboolean
+#  define lua_pushlightuserdata dll_lua_pushlightuserdata
+#  define lua_getfield dll_lua_getfield
+#  define lua_rawget dll_lua_rawget
+#  define lua_rawgeti dll_lua_rawgeti
+#  define lua_createtable dll_lua_createtable
+#  define lua_settable dll_lua_settable
+#  if LUA_VERSION_NUM >= 504
+#   define lua_newuserdatauv dll_lua_newuserdatauv
+#  else
+#   define lua_newuserdata dll_lua_newuserdata
+#  endif
+#  define lua_getmetatable dll_lua_getmetatable
+#  define lua_setfield dll_lua_setfield
+#  define lua_rawset dll_lua_rawset
+#  define lua_rawseti dll_lua_rawseti
+#  define lua_setmetatable dll_lua_setmetatable
+#  define lua_next dll_lua_next
 // libs
-#define luaopen_base dll_luaopen_base
-#define luaopen_table dll_luaopen_table
-#define luaopen_string dll_luaopen_string
-#define luaopen_math dll_luaopen_math
-#define luaopen_io dll_luaopen_io
-#define luaopen_os dll_luaopen_os
-#define luaopen_package dll_luaopen_package
-#define luaopen_debug dll_luaopen_debug
-#define luaL_openlibs dll_luaL_openlibs
+#  define luaopen_base dll_luaopen_base
+#  define luaopen_table dll_luaopen_table
+#  define luaopen_string dll_luaopen_string
+#  define luaopen_math dll_luaopen_math
+#  define luaopen_io dll_luaopen_io
+#  define luaopen_os dll_luaopen_os
+#  define luaopen_package dll_luaopen_package
+#  define luaopen_debug dll_luaopen_debug
+#  define luaL_openlibs dll_luaL_openlibs
 
 // lauxlib
-#if LUA_VERSION_NUM <= 501
+#  if LUA_VERSION_NUM <= 501
 void (*dll_luaL_register) (lua_State *L, const char *libname, const luaL_Reg *l);
 char *(*dll_luaL_prepbuffer) (luaL_Buffer *B);
 void (*dll_luaL_openlib) (lua_State *L, const char *libname, const luaL_Reg *l, int nup);
 int (*dll_luaL_typerror) (lua_State *L, int narg, const char *tname);
 int (*dll_luaL_loadfile) (lua_State *L, const char *filename);
 int (*dll_luaL_loadbuffer) (lua_State *L, const char *buff, size_t sz, const char *name);
-#else
+#  else
 char *(*dll_luaL_prepbuffsize) (luaL_Buffer *B, size_t sz);
 void (*dll_luaL_setfuncs) (lua_State *L, const luaL_Reg *l, int nup);
 int (*dll_luaL_loadfilex) (lua_State *L, const char *filename, const char *mode);
 int (*dll_luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 int (*dll_luaL_argerror) (lua_State *L, int numarg, const char *extramsg);
-#endif
-#if LUA_VERSION_NUM >= 504
+#  endif
+#  if LUA_VERSION_NUM >= 504
 int (*dll_luaL_typeerror) (lua_State *L, int narg, const char *tname);
-#endif
+#  endif
 void (*dll_luaL_checkany) (lua_State *L, int narg);
 const char *(*dll_luaL_checklstring) (lua_State *L, int numArg, size_t *l);
 lua_Integer (*dll_luaL_checkinteger) (lua_State *L, int numArg);
@@ -247,18 +247,18 @@ void (*dll_luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
 void (*dll_luaL_pushresult) (luaL_Buffer *B);
 int (*dll_luaL_loadstring) (lua_State *L, const char *s);
 int (*dll_luaL_ref) (lua_State *L, int idx);
-#if LUA_VERSION_NUM <= 502
+#  if LUA_VERSION_NUM <= 502
 void (*dll_luaL_unref) (lua_State *L, int idx, int n);
-#else
+#  else
 void (*dll_luaL_unref) (lua_State *L, int idx, lua_Integer n);
-#endif
+#  endif
 // lua
-#if LUA_VERSION_NUM <= 501
+#  if LUA_VERSION_NUM <= 501
 lua_Number (*dll_lua_tonumber) (lua_State *L, int idx);
 lua_Integer (*dll_lua_tointeger) (lua_State *L, int idx);
 void (*dll_lua_call) (lua_State *L, int nargs, int nresults);
 int (*dll_lua_pcall) (lua_State *L, int nargs, int nresults, int errfunc);
-#else
+#  else
 lua_Number (*dll_lua_tonumberx) (lua_State *L, int idx, int *isnum);
 lua_Integer (*dll_lua_tointegerx) (lua_State *L, int idx, int *isnum);
 void (*dll_lua_callk) (lua_State *L, int nargs, int nresults, int ctx,
@@ -267,15 +267,15 @@ int (*dll_lua_pcallk) (lua_State *L, int nargs, int nresults, int errfunc,
 	int ctx, lua_CFunction k);
 void (*dll_lua_getglobal) (lua_State *L, const char *var);
 void (*dll_lua_setglobal) (lua_State *L, const char *var);
-#endif
-#if LUA_VERSION_NUM <= 502
+#  endif
+#  if LUA_VERSION_NUM <= 502
 void (*dll_lua_replace) (lua_State *L, int idx);
 void (*dll_lua_remove) (lua_State *L, int idx);
-#endif
-#if LUA_VERSION_NUM >= 503
+#  endif
+#  if LUA_VERSION_NUM >= 503
 void  (*dll_lua_rotate) (lua_State *L, int idx, int n);
 void (*dll_lua_copy) (lua_State *L, int fromidx, int toidx);
-#endif
+#  endif
 const char *(*dll_lua_typename) (lua_State *L, int tp);
 void       (*dll_lua_close) (lua_State *L);
 int (*dll_lua_gettop) (lua_State *L);
@@ -298,28 +298,28 @@ void (*dll_lua_pushcclosure) (lua_State *L, lua_CFunction fn, int n);
 void (*dll_lua_pushboolean) (lua_State *L, int b);
 void (*dll_lua_pushlightuserdata) (lua_State *L, void *p);
 void (*dll_lua_getfield) (lua_State *L, int idx, const char *k);
-#if LUA_VERSION_NUM <= 502
+#  if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawget) (lua_State *L, int idx);
 void (*dll_lua_rawgeti) (lua_State *L, int idx, int n);
-#else
+#  else
 int (*dll_lua_rawget) (lua_State *L, int idx);
 int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
-#endif
+#  endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
 void (*dll_lua_settable) (lua_State *L, int idx);
-#if LUA_VERSION_NUM >= 504
+#  if LUA_VERSION_NUM >= 504
 void *(*dll_lua_newuserdatauv) (lua_State *L, size_t sz, int nuvalue);
-#else
+#  else
 void *(*dll_lua_newuserdata) (lua_State *L, size_t sz);
-#endif
+#  endif
 int (*dll_lua_getmetatable) (lua_State *L, int objindex);
 void (*dll_lua_setfield) (lua_State *L, int idx, const char *k);
 void (*dll_lua_rawset) (lua_State *L, int idx);
-#if LUA_VERSION_NUM <= 502
+#  if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawseti) (lua_State *L, int idx, int n);
-#else
+#  else
 void (*dll_lua_rawseti) (lua_State *L, int idx, lua_Integer n);
-#endif
+#  endif
 int (*dll_lua_setmetatable) (lua_State *L, int objindex);
 int (*dll_lua_next) (lua_State *L, int idx);
 // libs
@@ -341,23 +341,23 @@ typedef struct {
 
 static const luaV_Reg luaV_dll[] = {
     // lauxlib
-#if LUA_VERSION_NUM <= 501
+#  if LUA_VERSION_NUM <= 501
     {"luaL_register", (luaV_function) &dll_luaL_register},
     {"luaL_prepbuffer", (luaV_function) &dll_luaL_prepbuffer},
     {"luaL_openlib", (luaV_function) &dll_luaL_openlib},
     {"luaL_typerror", (luaV_function) &dll_luaL_typerror},
     {"luaL_loadfile", (luaV_function) &dll_luaL_loadfile},
     {"luaL_loadbuffer", (luaV_function) &dll_luaL_loadbuffer},
-#else
+#  else
     {"luaL_prepbuffsize", (luaV_function) &dll_luaL_prepbuffsize},
     {"luaL_setfuncs", (luaV_function) &dll_luaL_setfuncs},
     {"luaL_loadfilex", (luaV_function) &dll_luaL_loadfilex},
     {"luaL_loadbufferx", (luaV_function) &dll_luaL_loadbufferx},
     {"luaL_argerror", (luaV_function) &dll_luaL_argerror},
-#endif
-#if LUA_VERSION_NUM >= 504
+#  endif
+#  if LUA_VERSION_NUM >= 504
     {"luaL_typeerror", (luaV_function) &dll_luaL_typeerror},
-#endif
+#  endif
     {"luaL_checkany", (luaV_function) &dll_luaL_checkany},
     {"luaL_checklstring", (luaV_function) &dll_luaL_checklstring},
     {"luaL_checkinteger", (luaV_function) &dll_luaL_checkinteger},
@@ -372,27 +372,27 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_ref", (luaV_function) &dll_luaL_ref},
     {"luaL_unref", (luaV_function) &dll_luaL_unref},
     // lua
-#if LUA_VERSION_NUM <= 501
+#  if LUA_VERSION_NUM <= 501
     {"lua_tonumber", (luaV_function) &dll_lua_tonumber},
     {"lua_tointeger", (luaV_function) &dll_lua_tointeger},
     {"lua_call", (luaV_function) &dll_lua_call},
     {"lua_pcall", (luaV_function) &dll_lua_pcall},
-#else
+#  else
     {"lua_tonumberx", (luaV_function) &dll_lua_tonumberx},
     {"lua_tointegerx", (luaV_function) &dll_lua_tointegerx},
     {"lua_callk", (luaV_function) &dll_lua_callk},
     {"lua_pcallk", (luaV_function) &dll_lua_pcallk},
     {"lua_getglobal", (luaV_function) &dll_lua_getglobal},
     {"lua_setglobal", (luaV_function) &dll_lua_setglobal},
-#endif
-#if LUA_VERSION_NUM <= 502
+#  endif
+#  if LUA_VERSION_NUM <= 502
     {"lua_replace", (luaV_function) &dll_lua_replace},
     {"lua_remove", (luaV_function) &dll_lua_remove},
-#endif
-#if LUA_VERSION_NUM >= 503
+#  endif
+#  if LUA_VERSION_NUM >= 503
     {"lua_rotate", (luaV_function) &dll_lua_rotate},
     {"lua_copy", (luaV_function) &dll_lua_copy},
-#endif
+#  endif
     {"lua_typename", (luaV_function) &dll_lua_typename},
     {"lua_close", (luaV_function) &dll_lua_close},
     {"lua_gettop", (luaV_function) &dll_lua_gettop},
@@ -419,11 +419,11 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_rawgeti", (luaV_function) &dll_lua_rawgeti},
     {"lua_createtable", (luaV_function) &dll_lua_createtable},
     {"lua_settable", (luaV_function) &dll_lua_settable},
-#if LUA_VERSION_NUM >= 504
+#  if LUA_VERSION_NUM >= 504
     {"lua_newuserdatauv", (luaV_function) &dll_lua_newuserdatauv},
-#else
+#  else
     {"lua_newuserdata", (luaV_function) &dll_lua_newuserdata},
-#endif
+#  endif
     {"lua_getmetatable", (luaV_function) &dll_lua_getmetatable},
     {"lua_setfield", (luaV_function) &dll_lua_setfield},
     {"lua_rawset", (luaV_function) &dll_lua_rawset},
@@ -470,17 +470,17 @@ lua_link_init(char *libname, int verbose)
     }
     return OK;
 }
-#endif // DYNAMIC_LUA
+# endif // DYNAMIC_LUA
 
-#if defined(DYNAMIC_LUA)
+# if defined(DYNAMIC_LUA)
     int
 lua_enabled(int verbose)
 {
     return lua_link_init((char *)p_luadll, verbose) == OK;
 }
-#endif
+# endif
 
-#if LUA_VERSION_NUM > 501 && LUA_VERSION_NUM < 504
+# if LUA_VERSION_NUM > 501 && LUA_VERSION_NUM < 504
     static int
 luaL_typeerror(lua_State *L, int narg, const char *tname)
 {
@@ -488,7 +488,7 @@ luaL_typeerror(lua_State *L, int narg, const char *tname)
 	    tname, luaL_typename(L, narg));
     return luaL_argerror(L, narg, msg);
 }
-#endif
+# endif
 
     static LUAV_INLINE void
 luaV_getudata(lua_State *L, void *v)
@@ -553,9 +553,9 @@ luaV_checkcache(lua_State *L, void *p)
     return p;
 }
 
-#define luaV_unbox(L,luatyp,ud) (*((luatyp *) lua_touserdata((L),(ud))))
+# define luaV_unbox(L,luatyp,ud) (*((luatyp *) lua_touserdata((L),(ud))))
 
-#define luaV_checkvalid(L,luatyp,ud) \
+# define luaV_checkvalid(L,luatyp,ud) \
     luaV_checkcache((L), (void *) luaV_unbox((L),luatyp,(ud)))
 
     static void *
@@ -832,7 +832,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
     lua_pop(L, 2); // original and modified strings
 }
 
-#define luaV_newtype(typ,tname,luatyp,luatname) \
+# define luaV_newtype(typ,tname,luatyp,luatname) \
 	static luatyp * \
     luaV_new##tname(lua_State *L, typ *obj) \
     { \
@@ -844,7 +844,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 	return o; \
     }
 
-#define luaV_pushtype(typ,tname,luatyp) \
+# define luaV_pushtype(typ,tname,luatyp) \
 	static luatyp * \
     luaV_push##tname(lua_State *L, typ *obj) \
     { \
@@ -865,7 +865,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 	return o; \
     }
 
-#define luaV_type_tostring(tname,luatname) \
+# define luaV_type_tostring(tname,luatname) \
 	static int \
     luaV_##tname##_tostring(lua_State *L) \
     { \
@@ -1077,7 +1077,7 @@ luaV_dict_len(lua_State *L)
     static int
 luaV_dict_iter(lua_State *L UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(1));
     int n = lua_tointeger(L, lua_upvalueindex(2));
     dictitem_T *di;
@@ -1091,9 +1091,9 @@ luaV_dict_iter(lua_State *L UNUSED)
     lua_pushinteger(L, n - 1);
     lua_replace(L, lua_upvalueindex(2));
     return 2;
-#else
+# else
     return 0;
-#endif
+# endif
 }
 
     static int
@@ -1469,9 +1469,9 @@ luaV_buffer_newindex(lua_State *L)
 {
     buf_T *b = (buf_T *) luaV_checkvalid(L, luaV_Buffer, 1);
     linenr_T n = (linenr_T) luaL_checkinteger(L, 2);
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
     luaV_checksandbox(L);
-#endif
+# endif
     if (n < 1 || n > b->b_ml.ml_line_count)
 	luaL_error(L, "invalid line number");
     if (lua_isnil(L, 3)) // delete line
@@ -1543,9 +1543,9 @@ luaV_buffer_insert(lua_State *L)
     linenr_T n = (linenr_T) luaL_optinteger(L, 3, last);
     buf_T *buf;
     luaL_checktype(L, 2, LUA_TSTRING);
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
     luaV_checksandbox(L);
-#endif
+# endif
     // fix insertion line
     if (n < 0) n = 0;
     if (n > last) n = last;
@@ -1661,9 +1661,9 @@ luaV_window_newindex(lua_State *L)
     int v = luaL_checkinteger(L, 3);
     if (strncmp(s, "line", 4) == 0)
     {
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
 	luaV_checksandbox(L);
-#endif
+# endif
 	if (v < 1 || v > w->w_buffer->b_ml.ml_line_count)
 	    luaL_error(L, "line out of range");
 	w->w_cursor.lnum = v;
@@ -1671,9 +1671,9 @@ luaV_window_newindex(lua_State *L)
     }
     else if (strncmp(s, "col", 3) == 0)
     {
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
 	luaV_checksandbox(L);
-#endif
+# endif
 	w->w_cursor.col = v - 1;
 	w->w_set_curswant = TRUE;
 	update_screen(UPD_VALID);
@@ -1681,9 +1681,9 @@ luaV_window_newindex(lua_State *L)
     else if (strncmp(s, "width", 5) == 0)
     {
 	win_T *win = curwin;
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
-#endif
+# endif
 	curwin = w;
 	win_setwidth(v);
 	curwin = win;
@@ -1691,9 +1691,9 @@ luaV_window_newindex(lua_State *L)
     else if (strncmp(s, "height", 6) == 0)
     {
 	win_T *win = curwin;
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
-#endif
+# endif
 	curwin = w;
 	win_setheight(v);
 	curwin = win;
@@ -2161,9 +2161,9 @@ luaV_window(lua_State *L)
 luaV_open(lua_State *L)
 {
     char_u *s = NULL;
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
     luaV_checksandbox(L);
-#endif
+# endif
     if (lua_isstring(L, 1)) s = (char_u *) lua_tostring(L, 1);
     luaV_pushbuffer(L, buflist_new(s, NULL, 1L, BLN_LISTED));
     return 1;
@@ -2401,7 +2401,7 @@ luaV_pushversion(lua_State *L)
     return 0;
 }
 
-#define LUA_VIM_FN_CODE \
+# define LUA_VIM_FN_CODE \
     "vim.fn = setmetatable({}, {\n"\
     "  __index = function (t, key)\n"\
     "    local function _fn(...)\n"\
@@ -2412,7 +2412,7 @@ luaV_pushversion(lua_State *L)
     "  end\n"\
     " })"
 
-#define LUA_VIM_UPDATE_PACKAGE_PATHS \
+# define LUA_VIM_UPDATE_PACKAGE_PATHS \
     "local last_vim_paths = {}\n"\
     "vim._update_package_paths = function ()\n"\
     "  local cur_vim_paths = {}\n"\
@@ -2477,7 +2477,7 @@ luaV_pushversion(lua_State *L)
     "  last_vim_paths = cur_vim_paths\n"\
     "end"
 
-#define LUA_VIM_SETUP_VARIABLE_DICTS \
+# define LUA_VIM_SETUP_VARIABLE_DICTS \
     "do\n"\
     "  local function make_dict_accessor(scope)\n"\
     "    local mt = {}\n"\
@@ -2605,13 +2605,13 @@ lua_init(void)
     if (lua_isopen())
 	return OK;
 
-#ifdef DYNAMIC_LUA
+# ifdef DYNAMIC_LUA
     if (!lua_enabled(TRUE))
     {
 	emsg(_("Lua library cannot be loaded."));
 	return FAIL;
     }
-#endif
+# endif
     L = luaV_newstate();
 
     return OK;
@@ -2700,9 +2700,9 @@ ex_luado(exarg_T *eap)
 
 	if (lua_isstring(L, -1)) // update line?
 	{
-#ifdef HAVE_SANDBOX
+# ifdef HAVE_SANDBOX
 	    luaV_checksandbox(L);
-#endif
+# endif
 	    ml_replace(l, luaV_toline(L, -1), TRUE);
 	    changed_bytes(l, 0);
 	    lua_pop(L, 1); // result from luaV_toline
@@ -2727,7 +2727,7 @@ ex_luafile(exarg_T *eap)
     }
 }
 
-#define luaV_freetype(typ,tname) \
+# define luaV_freetype(typ,tname) \
 	void \
     lua_##tname##_free(typ *o) \
     { \

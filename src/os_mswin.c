@@ -2645,7 +2645,7 @@ struct charset_pair
     BYTE	charset;
 };
 
-#define STRING_INIT(s) \
+# define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
 static struct charset_pair
 charset_pairs[] =
@@ -2699,7 +2699,7 @@ quality_pairs[] = {
 # endif
     {STRING_INIT("DEFAULT"),		DEFAULT_QUALITY}
 };
-#undef STRING_INIT
+# undef STRING_INIT
 
 /*
  * Convert a charset ID to a name.
@@ -2739,7 +2739,7 @@ quality_id2name(DWORD id)
 
 // The default font height in 100% scaling (96dpi).
 // (-16 in 96dpi equates to roughly 12pt)
-#define DEFAULT_FONT_HEIGHT	(-16)
+# define DEFAULT_FONT_HEIGHT	(-16)
 
 static const LOGFONTW s_lfDefault =
 {

@@ -159,9 +159,9 @@ typedef struct
 #endif
 #ifdef FEAT_GUI
     GuiFont	sg_font;	// GUI font handle
-#ifdef FEAT_XFONTSET
+# ifdef FEAT_XFONTSET
     GuiFontset	sg_fontset;	// GUI fontset handle
-#endif
+# endif
     char_u	*sg_font_name;  // GUI font or fontset name
     int		sg_gui_attr;    // Screen attr for GUI mode
 #endif
@@ -2396,18 +2396,18 @@ hl_do_font(
 	// fontset.  Same for the Menu group.
 	if (do_normal)
 	    gui_init_font(arg, TRUE);
-#   if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
+#  if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	if (do_menu)
 	{
-#    ifdef FONTSET_ALWAYS
+#   ifdef FONTSET_ALWAYS
 	    gui.menu_fontset = HL_TABLE()[idx].sg_fontset;
-#    else
+#   else
 	    // YIKES!  This is a bug waiting to crash the program
 	    gui.menu_font = HL_TABLE()[idx].sg_fontset;
-#    endif
+#   endif
 	    gui_mch_new_menu_font();
 	}
-#    ifdef FEAT_BEVAL_GUI
+#   ifdef FEAT_BEVAL_GUI
 	if (do_tooltip)
 	{
 	    // The Athena widget set could not handle switching between
@@ -2418,8 +2418,8 @@ hl_do_font(
 	    gui.tooltip_fontset = (XFontSet)HL_TABLE()[idx].sg_fontset;
 	    gui_mch_new_tooltip_font();
 	}
-#    endif
 #   endif
+#  endif
     }
     else
 # endif
@@ -2433,15 +2433,15 @@ hl_do_font(
 	{
 	    if (do_normal)
 		gui_init_font(arg, FALSE);
-#ifndef FONTSET_ALWAYS
-# if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
+# ifndef FONTSET_ALWAYS
+#  if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	    if (do_menu)
 	    {
 		gui.menu_font = HL_TABLE()[idx].sg_font;
 		gui_mch_new_menu_font();
 	    }
+#  endif
 # endif
-#endif
 	}
     }
 }
@@ -2461,33 +2461,33 @@ color_name2handle(char_u *name)
 
     if (STRICMP(name, "fg") == 0 || STRICMP(name, "foreground") == 0)
     {
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
+# if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
 	if (gui.in_use)
-#endif
-#ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
 	    return gui.norm_pixel;
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_fg_gui_color != INVALCOLOR)
 	    return cterm_normal_fg_gui_color;
 	// Guess that the foreground is black or white.
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
-#endif
+# endif
     }
     if (STRICMP(name, "bg") == 0 || STRICMP(name, "background") == 0)
     {
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
+# if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
 	if (gui.in_use)
-#endif
-#ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
 	    return gui.back_pixel;
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_bg_gui_color != INVALCOLOR)
 	    return cterm_normal_bg_gui_color;
 	// Guess that the background is white or black.
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
-#endif
+# endif
     }
 
     return GUI_GET_COLOR(name);
@@ -2544,7 +2544,7 @@ decode_hex_color(char_u *hex)
     return gui_adjust_rgb(color);
 }
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 // Returns the color currently mapped to the given name or INVALCOLOR if no
 // such name exists in the color table. The convention is to use lowercase for
 // all keys in the v:colornames dictionary. The value can be either a string in
@@ -2590,7 +2590,7 @@ colorname2rgb(char_u *name)
     return INVALCOLOR;
 }
 
-#endif
+# endif
 
     guicolor_T
 gui_get_color_cmn(char_u *name)
@@ -2647,7 +2647,7 @@ gui_get_color_cmn(char_u *name)
     if (entry != NULL)
 	return gui_adjust_rgb((guicolor_T)entry->key);
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     /*
      * Not a traditional color. Load additional color aliases and then consult the alias table.
      */
@@ -2660,9 +2660,9 @@ gui_get_color_cmn(char_u *name)
     }
 
     return color;
-#else
+# else
     return INVALCOLOR;
-#endif
+# endif
 }
 
     guicolor_T
@@ -2692,7 +2692,7 @@ static garray_T	cterm_attr_table = {0, 0, 0, 0, NULL};
 #ifdef FEAT_GUI
 static garray_T	gui_attr_table = {0, 0, 0, 0, NULL};
 
-#define GUI_ATTR_ENTRY(idx) ((attrentry_T *)gui_attr_table.ga_data)[idx]
+# define GUI_ATTR_ENTRY(idx) ((attrentry_T *)gui_attr_table.ga_data)[idx]
 #endif
 
 /*
@@ -2726,9 +2726,9 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 			    && aep->ae_u.gui.sp_color
 						    == taep->ae_u.gui.sp_color
 			    && aep->ae_u.gui.font == taep->ae_u.gui.font
-#  ifdef FEAT_XFONTSET
+# ifdef FEAT_XFONTSET
 			    && aep->ae_u.gui.fontset == taep->ae_u.gui.fontset
-#  endif
+# endif
 			    ))
 		    ||
 #endif
@@ -2844,11 +2844,11 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     attrentry_T		at_en;
 
     CLEAR_FIELD(at_en);
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.ul_rgb = INVALCOLOR;
-#endif
+# endif
     at_en.ae_attr = attr;
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
@@ -3287,11 +3287,11 @@ highlight_has_attr(
     if (id <= 0 || id > highlight_ga.ga_len)
 	return NULL;
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
     if (modec == 'g')
 	attr = HL_TABLE()[id - 1].sg_gui;
     else
-#endif
+# endif
     {
 	if (modec == 'c')
 	    attr = HL_TABLE()[id - 1].sg_cterm;
@@ -3536,11 +3536,11 @@ set_hl_attr(
     // highlighting attributes, need to allocate an attr number.
     if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 &&
 	sgp->sg_cterm_ul == 0 && sgp->sg_cterm_font == 0
-# ifdef FEAT_TERMGUICOLORS
+#ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
 	    && sgp->sg_gui_sp == INVALCOLOR
-# endif
+#endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
     else
@@ -3550,7 +3550,7 @@ set_hl_attr(
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 	at_en.ae_u.cterm.ul_color = sgp->sg_cterm_ul;
 	at_en.ae_u.cterm.font = sgp->sg_cterm_font;
-# ifdef FEAT_TERMGUICOLORS
+#ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
 	// Only use the underline/undercurl color when used, it may clear the
@@ -3568,7 +3568,7 @@ set_hl_attr(
 	    at_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
 	    at_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
 	}
-# endif
+#endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }
 }
@@ -3941,9 +3941,9 @@ combine_stl_hlt(
 	CLEAR_POINTER(&hlt[hlcnt + i]);
 	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
 	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	hlt[hlcnt + i].sg_gui = highlight_attr[hlf];
-#  endif
+# endif
     }
     else
 	mch_memmove(&hlt[hlcnt + i],
@@ -3965,11 +3965,11 @@ combine_stl_hlt(
 	hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
     if (hlt[id - 1].sg_cterm_font != hlt[id_S - 1].sg_cterm_font)
 	hlt[hlcnt + i].sg_cterm_font = hlt[id - 1].sg_cterm_font;
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
     hlt[hlcnt + i].sg_gui ^=
 	hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
-#  endif
-#  ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
     if (hlt[id - 1].sg_gui_fg != hlt[id_S - 1].sg_gui_fg)
 	hlt[hlcnt + i].sg_gui_fg = hlt[id - 1].sg_gui_fg;
     if (hlt[id - 1].sg_gui_bg != hlt[id_S - 1].sg_gui_bg)
@@ -3978,11 +3978,11 @@ combine_stl_hlt(
 	hlt[hlcnt + i].sg_gui_sp = hlt[id - 1].sg_gui_sp;
     if (hlt[id - 1].sg_font != hlt[id_S - 1].sg_font)
 	hlt[hlcnt + i].sg_font = hlt[id - 1].sg_font;
-#   ifdef FEAT_XFONTSET
+#  ifdef FEAT_XFONTSET
     if (hlt[id - 1].sg_fontset != hlt[id_S - 1].sg_fontset)
 	hlt[hlcnt + i].sg_fontset = hlt[id - 1].sg_fontset;
-#   endif
 #  endif
+# endif
     highlight_ga.ga_len = hlcnt + i + 1;
     set_hl_attr(hlcnt + i);	// At long last we can apply
     table[i] = syn_id2attr(hlcnt + i + 1);
@@ -4982,7 +4982,7 @@ hldict_attr_to_str(
 // Temporary buffer used to store the command string produced by hlset().
 // IObuff cannot be used for this as the error messages produced by hlset()
 // internally use IObuff.
-#define	HLSETBUFSZ  512
+# define	HLSETBUFSZ  512
 static char_u hlsetBuf[HLSETBUFSZ + 1];
 
 /*

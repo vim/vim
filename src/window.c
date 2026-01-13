@@ -1476,11 +1476,11 @@ win_split_ins(
 	if (size != 0)
 	    p_wiw = size;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	// When 'guioptions' includes 'L' or 'R' may have to add scrollbars.
 	if (gui.in_use)
 	    gui_init_which_components(NULL);
-# endif
+#endif
     }
     else
     {
@@ -3120,11 +3120,11 @@ make_win_info_dict(
 	tv.vval.v_number = topline;
 	if (dict_add_tv(d, "topline", &tv) == FAIL)
 	    break;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	tv.vval.v_number = topfill;
-#else
+# else
 	tv.vval.v_number = 0;
-#endif
+# endif
 	if (dict_add_tv(d, "topfill", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = leftcol;
@@ -3228,15 +3228,15 @@ check_window_scroll_resize(
 	    int width = wp->w_width - wp->w_last_width;
 	    int height = wp->w_height - wp->w_last_height;
 	    int topline = wp->w_topline - wp->w_last_topline;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    int topfill = wp->w_topfill - wp->w_last_topfill;
-#endif
+# endif
 	    int leftcol = wp->w_leftcol - wp->w_last_leftcol;
 	    int skipcol = wp->w_skipcol - wp->w_last_skipcol;
 	    dict_T *d = make_win_info_dict(width, height, topline,
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 							    topfill,
-#endif
+# endif
 							    leftcol, skipcol);
 	    if (d == NULL)
 		break;
@@ -3252,9 +3252,9 @@ check_window_scroll_resize(
 	    tot_width += abs(width);
 	    tot_height += abs(height);
 	    tot_topline += abs(topline);
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    tot_topfill += abs(topfill);
-#endif
+# endif
 	    tot_leftcol += abs(leftcol);
 	    tot_skipcol += abs(skipcol);
 	}
@@ -4646,16 +4646,16 @@ win_init_size(void)
 alloc_tabpage(void)
 {
     tabpage_T	*tp;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     int		i;
-# endif
+#endif
 
 
     tp = ALLOC_CLEAR_ONE(tabpage_T);
     if (tp == NULL)
 	return NULL;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     // init t: variables
     tp->tp_vars = dict_alloc_id(aid_newtabpage_tvars);
     if (tp->tp_vars == NULL)
@@ -4664,15 +4664,15 @@ alloc_tabpage(void)
 	return NULL;
     }
     init_var_dict(tp->tp_vars, &tp->tp_winvar, VAR_SCOPE);
-# endif
+#endif
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     for (i = 0; i < 3; i++)
 	tp->tp_prev_which_scrollbars[i] = -1;
-# endif
-# ifdef FEAT_DIFF
+#endif
+#ifdef FEAT_DIFF
     tp->tp_diff_invalid = TRUE;
-# endif
+#endif
     tp->tp_ch_used = p_ch;
 
     return tp;
@@ -4683,10 +4683,10 @@ free_tabpage(tabpage_T *tp)
 {
     int idx;
 
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
     diff_clear(tp);
-# endif
-# ifdef FEAT_PROP_POPUP
+#endif
+#ifdef FEAT_PROP_POPUP
     while (tp->tp_first_popupwin != NULL)
 	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id, TRUE);
 #endif
@@ -5243,10 +5243,10 @@ goto_tabpage_win(tabpage_T *tp, win_T *wp)
     if (curtab == tp && win_valid(wp))
     {
 	win_enter(wp, TRUE);
-# ifdef FEAT_GUI_TABLINE
+#ifdef FEAT_GUI_TABLINE
 	if (gui_use_tabline())
 	    gui_mch_set_curtab(tabpage_index(curtab));
-# endif
+#endif
     }
 }
 
@@ -7669,9 +7669,9 @@ only_one_window(void)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != NULL
 		&& (!((bt_help(wp->w_buffer) && !bt_help(curbuf))
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
-# endif
+#endif
 	     ) || wp == curwin) && !is_aucmd_win(wp))
 	    ++count;
     return (count <= 1);

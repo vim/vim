@@ -1288,11 +1288,11 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
 }
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     static int
 test_gui_drop_files(dict_T *args UNUSED)
 {
-#  if defined(HAVE_DROP_FILE)
+# if defined(HAVE_DROP_FILE)
     int		row;
     int		col;
     int_u	mods;
@@ -1343,12 +1343,12 @@ test_gui_drop_files(dict_T *args UNUSED)
 	gui_handle_drop(TEXT_X(col - 1), TEXT_Y(row - 1), mods, fnames, count);
     else
 	vim_free(fnames);
-#  endif
+# endif
 
     return TRUE;
 }
 
-#if defined(FIND_REPLACE_DIALOG)
+# if defined(FIND_REPLACE_DIALOG)
     static int
 test_gui_find_repl(dict_T *args)
 {
@@ -1375,7 +1375,7 @@ test_gui_find_repl(dict_T *args)
 
     return retval;
 }
-#endif
+# endif
 
     static int
 test_gui_mouse_event(dict_T *args)
@@ -1464,10 +1464,10 @@ test_gui_scrollbar(dict_T *args)
 	return FALSE;
     }
     gui_drag_scrollbar(sb, value, dragging);
-#  ifndef USE_ON_FLY_SCROLL
+# ifndef USE_ON_FLY_SCROLL
     // need to loop through normal_cmd() to handle the scroll events
     exec_normal(FALSE, TRUE, FALSE);
-#  endif
+# endif
 
     return TRUE;
 }
@@ -1475,7 +1475,7 @@ test_gui_scrollbar(dict_T *args)
     static int
 test_gui_tabline_event(dict_T *args UNUSED)
 {
-#  ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
     int		tabnr;
 
     if (!dict_has_key(args, "tabnr"))
@@ -1484,15 +1484,15 @@ test_gui_tabline_event(dict_T *args UNUSED)
     tabnr = (int)dict_get_number(args, "tabnr");
 
     return send_tabline_event(tabnr);
-#  else
+# else
     return FALSE;
-#  endif
+# endif
 }
 
     static int
 test_gui_tabmenu_event(dict_T *args UNUSED)
 {
-#  ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
     int	tabnr;
     int	item;
 
@@ -1504,15 +1504,15 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
     item = (int)dict_get_number(args, "item");
 
     send_tabline_menu_event(tabnr, item);
-#  endif
+# endif
     return TRUE;
 }
-# endif
+#endif
 
     void
 f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef MSWIN
+#ifdef MSWIN
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = FALSE;
 
@@ -1530,13 +1530,13 @@ f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u *event = tv_get_string(&argvars[0]);
     rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 
-# endif
+#endif
 }
 
     void
 f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     char_u	*event;
 
     rettv->v_type = VAR_BOOL;
@@ -1556,14 +1556,14 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     event = tv_get_string(&argvars[0]);
     if (STRCMP(event, "dropfiles") == 0)
 	rettv->vval.v_number = test_gui_drop_files(argvars[1].vval.v_dict);
-#  if defined(FIND_REPLACE_DIALOG)
+# if defined(FIND_REPLACE_DIALOG)
     else if (STRCMP(event, "findrepl") == 0)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
-#  endif
-#  ifdef MSWIN
+# endif
+# ifdef MSWIN
     else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0 || STRCMP(event, "set_keycode_trans_strategy") == 0)
 	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
-#  endif
+# endif
     else if (STRCMP(event, "mouse") == 0)
 	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "scrollbar") == 0)
@@ -1577,7 +1577,7 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	semsg(_(e_invalid_argument_str), event);
 	return;
     }
-# endif
+#endif
 }
 
     void
