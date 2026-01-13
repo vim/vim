@@ -49,7 +49,7 @@ static int diff_need_update = FALSE; // ex_diffupdate needs to be called
 static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF | DIFF_INLINE_CHAR;
 
 static long diff_algorithm = XDF_INDENT_HEURISTIC;
-static int diff_word_gap = 2;
+static int diff_word_gap = 5;  // gap threshold for inline:word
 
 #define LBUFLEN 50		// length of line in diff file
 
@@ -3031,19 +3031,6 @@ diffopt_changed(void)
 	    // linematch does not make sense without filler set
 	    diff_flags_new |= DIFF_FILLER;
 	}
-	else if (STRNCMP(p, "wordgap:", 8) == 0)
-	{
-	    p += 8;
-	    if (VIM_ISDIGIT(*p))
-	    {
-		diff_word_gap = getdigits(&p);
-		// clamp to reasonable range of 0 to 5
-		if (diff_word_gap < 0)
-		    diff_word_gap = 0;
-		if (diff_word_gap > 5)
-		    diff_word_gap = 5;
-	    }
-	}
 
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
@@ -3439,9 +3426,9 @@ diff_refine_inline_word_highlight(diff_T *dp_orig, garray_T *linemap, int idx1,
 	    int gap_size = gap_end - gap_start;
 
 	    // Merge adjacent diff blocks separated by small gaps to reduce visual
-	    // fragmentation.  Gap threshold is configurable via 'wordgap' in 'diffopt'
-	    // (default:  2 bytes). Handles common separators (spaces, punctuation)
-	    // while preserving distinct changes.
+	    // fragmentation. Gap threshold is set to 5 bytes which handles most
+	    // common separators (spaces, punctuation, short variable names) while
+	    // still preserving visually distinct changes.
 	    if (gap_size <= 0 || gap_size > diff_word_gap)
 	    {
 		dp = dp->df_next;
