@@ -85,9 +85,9 @@ static int	KeyNoremap = 0;	    // remapping flags
 #ifdef FEAT_NORMAL
 // Add extra space to handle large OSC responses in bigger chunks (improve
 // performance)
-#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
+# define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
 #else // Tiny version
-#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
+# define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
 #endif
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
@@ -1575,9 +1575,9 @@ save_typeahead(tasave_T *tp)
     readbuf1.bh_first.b_next = NULL;
     tp->save_readbuf2 = readbuf2;
     readbuf2.bh_first.b_next = NULL;
-# ifdef USE_INPUT_BUF
+#ifdef USE_INPUT_BUF
     tp->save_inputbuf = get_input_buf();
-# endif
+#endif
 }
 
 /*
@@ -1601,9 +1601,9 @@ restore_typeahead(tasave_T *tp, int overwrite UNUSED)
     readbuf1 = tp->save_readbuf1;
     free_buff(&readbuf2);
     readbuf2 = tp->save_readbuf2;
-# ifdef USE_INPUT_BUF
+#ifdef USE_INPUT_BUF
     set_input_buf(tp->save_inputbuf, overwrite);
-# endif
+#endif
 }
 
 /*
@@ -2441,12 +2441,12 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     if (called_emsg != called_emsg_start)
 	return;
 
-#ifdef MESSAGE_QUEUE
+# ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
     // a callback where it was not expected.  Some plugins use getchar(1) in a
     // loop to await a message, therefore make sure we check for messages here.
     parse_queued_messages();
-#endif
+# endif
 
     if (cursor_flag == 'h')
 	cursor_sleep();
@@ -2538,11 +2538,11 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
-#endif
+# endif
 		    for (wp = firstwin; wp != win && wp != NULL;
 							       wp = wp->w_next)
 			++winnr;
@@ -2668,13 +2668,13 @@ parse_queued_messages(void)
 	if (has_sound_callback_in_queue())
 	    invoke_sound_callback();
 # endif
-#ifdef SIGUSR1
+# ifdef SIGUSR1
 	if (got_sigusr1)
 	{
 	    apply_autocmds(EVENT_SIGUSR1, NULL, NULL, FALSE, curbuf);
 	    got_sigusr1 = FALSE;
 	}
-#endif
+# endif
 	break;
     }
 

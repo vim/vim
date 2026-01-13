@@ -831,7 +831,7 @@ ex_terminal(exarg_T *eap)
 
 	// Note: Keep this in sync with get_terminalopt_name.
 
-# define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
+#define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
 				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
 	if (OPTARG_HAS("close"))
 	    opt.jo_term_finish = 'c';
@@ -918,7 +918,7 @@ ex_terminal(exarg_T *eap)
 	    semsg(_(e_invalid_attribute_str), cmd);
 	    goto theend;
 	}
-# undef OPTARG_HAS
+#undef OPTARG_HAS
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
@@ -1110,10 +1110,10 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
-#ifdef MSWIN
+# ifdef MSWIN
     if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
 	return FAIL;
-#endif
+# endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
     if (put_eol(fd) != OK)
@@ -2980,7 +2980,7 @@ terminal_loop(int blocking)
 		goto theend;
 	    }
 	}
-# ifdef MSWIN
+#ifdef MSWIN
 	if (!enc_utf8 && has_mbyte && raw_c >= 0x80)
 	{
 	    WCHAR   wc;
@@ -2991,7 +2991,7 @@ terminal_loop(int blocking)
 	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
 		raw_c = wc;
 	}
-# endif
+#endif
 	if (send_keys_to_term(curbuf->b_term, raw_c, mod_mask, TRUE) != OK)
 	{
 	    if (raw_c == K_MOUSEMOVE)
@@ -4425,40 +4425,40 @@ init_default_colors(term_T *term)
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
-#  ifdef VIMDLL
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
 	    if (!gui.in_use)
-#  endif
+# endif
 	    {
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
 	    }
-# endif
+#endif
 	}
-# ifdef FEAT_TERMRESPONSE
+#ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_fg_color(&fg->red, &fg->green, &fg->blue);
-# endif
+#endif
 
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
-#  ifdef VIMDLL
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
 	    if (!gui.in_use)
-#  endif
+# endif
 	    {
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
 	    }
-# endif
+#endif
 	}
-# ifdef FEAT_TERMRESPONSE
+#ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_bg_color(&bg->red, &bg->green, &bg->blue);
-# endif
+#endif
     }
 }
 
@@ -4471,12 +4471,12 @@ init_default_colors(term_T *term)
 term_use_palette(void)
 {
     if (0
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    || gui.in_use
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	    || p_tgc
-#endif
+# endif
        )
 	return TRUE;
     return FALSE;
@@ -6967,11 +6967,11 @@ term_send_eof(channel_T *ch)
 					(int)STRLEN(term->tl_eof_chars), NULL);
 		channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
 	    }
-# ifdef MSWIN
+#ifdef MSWIN
 	    else
 		// Default: CTRL-D
 		channel_send(ch, PART_IN, (char_u *)"\004\r", 2, NULL);
-# endif
+#endif
 	}
 }
 
@@ -6983,7 +6983,7 @@ term_getjob(term_T *term)
 }
 #endif
 
-# if defined(MSWIN)
+#if defined(MSWIN)
 
 ///////////////////////////////////////
 // 2. MS-Windows implementation.
@@ -7216,7 +7216,7 @@ conpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7224,7 +7224,7 @@ conpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7322,9 +7322,9 @@ use_conpty(void)
     return has_conpty;
 }
 
-#define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
-#define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
-#define WINPTY_MOUSE_MODE_FORCE		2
+# define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
+# define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
+# define WINPTY_MOUSE_MODE_FORCE		2
 
 void* (*winpty_config_new)(UINT64, void*);
 void* (*winpty_open)(void*, void*);
@@ -7343,7 +7343,7 @@ LPCWSTR (*winpty_error_msg)(void*);
 BOOL (*winpty_set_size)(void*, int, int, void*);
 HANDLE (*winpty_agent_process)(void*);
 
-#define WINPTY_DLL "winpty.dll"
+# define WINPTY_DLL "winpty.dll"
 
 static HINSTANCE hWinPtyDLL = NULL;
 
@@ -7554,7 +7554,7 @@ winpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7562,7 +7562,7 @@ winpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7795,7 +7795,7 @@ terminal_enabled(void)
     return dyn_winpty_init(FALSE) == OK || dyn_conpty_init(FALSE) == OK;
 }
 
-# else
+#else
 
 ///////////////////////////////////////
 // 3. Unix-like implementation.
@@ -7820,7 +7820,7 @@ term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	return FAIL;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7828,7 +7828,7 @@ term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     // This may change a string in "argvar".
     term->tl_job = job_start(argvar, argv, opt, &term->tl_job);
@@ -7891,6 +7891,6 @@ term_report_winsize(term_T *term, int rows, int cols)
 	mch_signal_job(term->tl_job, (char_u *)"winch");
 }
 
-# endif
+#endif
 
 #endif // FEAT_TERMINAL

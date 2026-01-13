@@ -300,9 +300,9 @@ get_sign_display_info(
     }
 
     if (wlv->row == wlv->startrow
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    + wlv->filler_lines && wlv->filler_todo <= 0
-#endif
+# endif
        )
     {
 	text_sign = (wlv->sattr.sat_text != NULL) ? wlv->sattr.sat_typenr : 0;
@@ -1356,9 +1356,9 @@ win_line(
 	    else
 	    {
 		did_emsg = save_did_emsg;
-#ifdef SYN_TIME_LIMIT
+# ifdef SYN_TIME_LIMIT
 		if (!wp->w_s->b_syn_slow)
-#endif
+# endif
 		{
 		    has_syntax = TRUE;
 		    extra_check = TRUE;
@@ -2724,9 +2724,9 @@ win_line(
 		    // If a double-width char doesn't fit display a '>' in the
 		    // last column.
 		    if ((
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (wlv.col <= 0) :
-# endif
+#endif
 				    (wlv.col >= wp->w_width - 1))
 			    && (*mb_char2cells)(mb_c) == 2)
 		    {
@@ -2853,10 +2853,10 @@ win_line(
 			// Illegal UTF-8 byte: display as <xx>.
 			// Non-BMP character : display as ? or fullwidth ?.
 			transchar_hex(wlv.extra, mb_c);
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
 			if (wp->w_p_rl)		// reverse
 			    rl_mirror(wlv.extra);
-# endif
+#endif
 			wlv.p_extra = wlv.extra;
 			c = *wlv.p_extra;
 			mb_c = mb_ptr2char_adv(&wlv.p_extra);
@@ -2951,9 +2951,9 @@ win_line(
 		// last column; the character is displayed at the start of the
 		// next line.
 		if ((
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (wlv.col <= 0) :
-# endif
+#endif
 				(wlv.col >= wp->w_width - 1))
 			&& (*mb_char2cells)(mb_c) == 2)
 		{
@@ -3417,9 +3417,9 @@ win_line(
 				&& wlv.tocol > wlv.vcol
 				&& VIsual_mode != Ctrl_V
 				&& (
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
 				    wp->w_p_rl ? (wlv.col >= 0) :
-# endif
+#endif
 				    (wlv.col < wp->w_width))
 				&& !(noinvcur
 				    && lnum == wp->w_cursor.lnum
@@ -3572,13 +3572,13 @@ win_line(
 					    || (wp->w_p_list &&
 						wp->w_lcs_chars.eol > 0)))
 			wlv.char_attr = wlv.line_attr;
-#ifdef FEAT_SIGNS
+# ifdef FEAT_SIGNS
 		    // At end of line: if Sign is present with line highlight, reset char_attr
 		    // but not when cursorline is active
 		    if (sign_present && wlv.sattr.sat_linehl > 0 && wlv.draw_state == WL_LINE
 			 && !(wp->w_p_cul && lnum == wp->w_cursor.lnum))
 			wlv.char_attr = wlv.sattr.sat_linehl;
-#endif
+# endif
 # ifdef FEAT_DIFF
 		    if (wlv.diff_hlf == HLF_TXD || wlv.diff_hlf == HLF_TXA)
 		    {

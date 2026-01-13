@@ -156,9 +156,9 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     int		fish_like;
     char_u	*shname;
     int		powershell;
-# ifdef MSWIN
+#ifdef MSWIN
     int		double_quotes;
-# endif
+#endif
 
     // Only csh and similar shells expand '!' within single quotes.  For sh and
     // the like we must not put a backslash before it, it will be taken
@@ -173,24 +173,24 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // PowerShell uses its own version for quoting single quotes
     shname = gettail(p_sh);
     powershell = strstr((char *)shname, "pwsh") != NULL;
-# ifdef MSWIN
+#ifdef MSWIN
     powershell = powershell || strstr((char *)shname, "powershell") != NULL;
     // PowerShell only accepts single quotes so override shellslash.
     double_quotes = !powershell && !p_ssl;
-# endif
+#endif
 
     // First count the number of extra bytes required.
     length = (unsigned)STRLEN(string) + 3;  // two quotes and a trailing NUL
     for (p = string; *p != NUL; MB_PTR_ADV(p))
     {
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	{
 	    if (*p == '"')
 		++length;		// " -> ""
 	}
 	else
-# endif
+#endif
 	if (*p == '\'')
 	{
 	    if (powershell)
@@ -221,16 +221,16 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	d = escaped_string;
 
 	// add opening quote
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	    *d++ = '"';
 	else
-# endif
+#endif
 	    *d++ = '\'';
 
 	for (p = string; *p != NUL; )
 	{
-# ifdef MSWIN
+#ifdef MSWIN
 	    if (double_quotes)
 	    {
 		if (*p == '"')
@@ -242,7 +242,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 		}
 	    }
 	    else
-# endif
+#endif
 	    if (*p == '\'')
 	    {
 		if (powershell)
@@ -288,11 +288,11 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	}
 
 	// add terminating quote and finish with a NUL
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	    *d++ = '"';
 	else
-# endif
+#endif
 	    *d++ = '\'';
 	*d = NUL;
     }
@@ -2933,7 +2933,7 @@ format_overflow_error(const char *pstart)
 	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
 }
 
-#define MAX_ALLOWED_STRING_WIDTH 1048576    // 1 MiB
+# define MAX_ALLOWED_STRING_WIDTH 1048576    // 1 MiB
 
     static int
 get_unsigned_int(
@@ -2981,7 +2981,7 @@ parse_fmt_types(
     int		any_arg = 0;
     int		arg_idx;
 
-#define CHECK_POS_ARG do { \
+# define CHECK_POS_ARG do { \
     if (any_pos && any_arg) \
     { \
 	semsg(_( e_cannot_mix_positional_and_non_positional_str), fmt); \

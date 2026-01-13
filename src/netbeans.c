@@ -211,9 +211,9 @@ netbeans_connect(char *params, int doabort)
 	if (nb_channel != NULL)
 	{
 	    // success
-# ifdef FEAT_BEVAL_GUI
+#ifdef FEAT_BEVAL_GUI
 	    bevalServers |= BEVAL_NETBEANS;
-# endif
+#endif
 
 	    // success, login
 	    vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
@@ -3046,33 +3046,33 @@ netbeans_draw_multisign_indicator(int row)
     int i;
     int y;
     int x;
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_t *cr = NULL;
-#else
+# else
     GdkDrawable *drawable = gui.drawarea->window;
-#endif
+# endif
 
     if (!NETBEANS_OPEN)
 	return;
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cr = cairo_create(gui.surface);
     cairo_set_source_rgba(cr,
 	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
 	    gui.fgcolor->alpha);
-#endif
+# endif
 
     x = 0;
     y = row * gui.char_height + 2;
 
     for (i = 0; i < gui.char_height - 3; i++)
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
 	cairo_rectangle(cr, x+2, y++, 1, 1);
-#else
+# else
 	gdk_draw_point(drawable, gui.text_gc, x+2, y++);
-#endif
+# endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_rectangle(cr, x+0, y, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+4, y++, 1, 1);
@@ -3080,7 +3080,7 @@ netbeans_draw_multisign_indicator(int row)
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+3, y++, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
-#else
+# else
     gdk_draw_point(drawable, gui.text_gc, x+0, y);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+4, y++);
@@ -3088,11 +3088,11 @@ netbeans_draw_multisign_indicator(int row)
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+3, y++);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
-#endif
+# endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-#endif
+# endif
 }
 #endif // FEAT_GUI_GTK
 

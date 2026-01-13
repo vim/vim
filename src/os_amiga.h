@@ -165,7 +165,7 @@ typedef long off_t;
 
 #ifdef FEAT_VIMINFO
 # ifndef VIMINFO_FILE
-# define VIMINFO_FILE	"VIM:.viminfo"
+#  define VIMINFO_FILE	"VIM:.viminfo"
 # endif
 #endif
 

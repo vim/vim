@@ -27,7 +27,7 @@
 
 #include "vim.h"
 #ifdef USE_GRESOURCE
-#include "auto/gui_gtk_gresources.h"
+# include "auto/gui_gtk_gresources.h"
 #endif
 
 #ifdef FEAT_GUI_GNOME
@@ -145,7 +145,7 @@ static const GtkTargetEntry dnd_targets[] =
  * "Monospace" is a standard font alias that should be present
  * on all proper Pango/fontconfig installations.
  */
-# define DEFAULT_FONT	"Monospace 12"
+#define DEFAULT_FONT	"Monospace 12"
 
 #if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
 # define USE_GNOME_SESSION
@@ -706,12 +706,12 @@ gui_mch_prepare(int *argc, char **argv)
 gui_mch_free_all(void)
 {
     vim_free(gui_argv);
-#if defined(USE_GNOME_SESSION)
+# if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
-#endif
-#ifdef TRACK_RESIZE_HISTORY
+# endif
+# ifdef TRACK_RESIZE_HISTORY
     free_all_resize_hist();
-#endif
+# endif
 }
 #endif
 
@@ -2036,11 +2036,11 @@ scroll_event(GtkWidget *widget,
     int_u   vim_modifiers;
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
-#if !GTK_CHECK_VERSION(3,22,0)
+# if !GTK_CHECK_VERSION(3,22,0)
     static guint32 last_smooth_event_time;
-#endif
-#define DT_X11     1
-#define DT_WAYLAND 2
+# endif
+# define DT_X11     1
+# define DT_WAYLAND 2
     static int display_type;
     if (!display_type)
 	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
@@ -2071,30 +2071,30 @@ scroll_event(GtkWidget *widget,
 		// this event tells us to stop, without an actual moving
 		return FALSE;
 	    }
-#if GTK_CHECK_VERSION(3,22,0)
+# if GTK_CHECK_VERSION(3,22,0)
 	    if (gdk_device_get_axes(event->device) & GDK_AXIS_FLAG_WHEEL)
 		// this is from a wheel (as oppose to a touchpad / trackpoint)
-#else
+# else
 	    if (event->time - last_smooth_event_time > 50)
 		// reset our accumulations after 50ms of silence
-#endif
+# endif
 		acc_x = acc_y = 0;
 	    acc_x += event->delta_x;
 	    acc_y += event->delta_y;
-#if !GTK_CHECK_VERSION(3,22,0)
+# if !GTK_CHECK_VERSION(3,22,0)
 	    last_smooth_event_time = event->time;
-#endif
+# endif
 	    break;
 #endif
 	default: // This shouldn't happen
 	    return FALSE;
     }
 
-# ifdef FEAT_XIM
+#ifdef FEAT_XIM
     // cancel any preediting
     if (im_is_preediting())
 	xim_reset();
-# endif
+#endif
 
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
@@ -2132,8 +2132,8 @@ scroll_event(GtkWidget *widget,
 	// for X11 we deal with unsmooth events, and so ignore the smooth ones
 	;
     else
-#undef DT_X11
-#undef DT_WAYLAND
+# undef DT_X11
+# undef DT_WAYLAND
 #endif
 	gui_send_mouse_event(button, (int)event->x, (int)event->y,
 		FALSE, vim_modifiers);
@@ -3179,9 +3179,9 @@ update_window_manager_hints(int force_width, int force_height)
     // otherwise the hints don't work.
     width  = gui_get_base_width();
     height = gui_get_base_height();
-# ifdef FEAT_MENU
+#ifdef FEAT_MENU
     height += tabline_height() * gui.char_height;
-# endif
+#endif
     width  += get_menu_tool_width();
     height += get_menu_tool_height();
 
@@ -4846,16 +4846,16 @@ gui_mch_set_shellsize(int width, int height,
     else
 	update_window_manager_hints(width, height);
 
-# if !GTK_CHECK_VERSION(3,0,0)
-#  if 0
+#if !GTK_CHECK_VERSION(3,0,0)
+# if 0
     if (!resize_idle_installed)
     {
 	g_idle_add_full(GDK_PRIORITY_EVENTS + 10,
 			&force_shell_resize_idle, NULL, NULL);
 	resize_idle_installed = TRUE;
     }
-#  endif
-# endif // !GTK_CHECK_VERSION(3,0,0)
+# endif
+#endif // !GTK_CHECK_VERSION(3,0,0)
     /*
      * Wait until all events are processed to prevent a crash because the
      * real size of the drawing area doesn't reflect Vim's internal ideas.

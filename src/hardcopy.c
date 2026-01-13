@@ -559,7 +559,7 @@ ex_hardcopy(exarg_T *eap)
     CLEAR_FIELD(settings);
     settings.has_color = TRUE;
 
-# ifdef FEAT_POSTSCRIPT
+#ifdef FEAT_POSTSCRIPT
     if (*eap->arg == '>')
     {
 	char	*errormsg = NULL;
@@ -575,7 +575,7 @@ ex_hardcopy(exarg_T *eap)
     }
     else if (*eap->arg != NUL)
 	settings.arguments = eap->arg;
-# endif
+#endif
 
     /*
      * Initialise for printing.  Ask the user for settings, unless forceit is
@@ -939,7 +939,7 @@ hardcopy_line(
     return col;
 }
 
-# if defined(FEAT_POSTSCRIPT)
+#if defined(FEAT_POSTSCRIPT)
 
 /*
  * PS printer stuff.
@@ -970,9 +970,9 @@ hardcopy_line(
  * http://www.adobe.com
  */
 
-#define PRT_PS_DEFAULT_DPI	    (72)    // Default user space resolution
-#define PRT_PS_DEFAULT_FONTSIZE     (10)
-#define PRT_PS_DEFAULT_BUFFER_SIZE  (80)
+# define PRT_PS_DEFAULT_DPI	    (72)    // Default user space resolution
+# define PRT_PS_DEFAULT_FONTSIZE     (10)
+# define PRT_PS_DEFAULT_BUFFER_SIZE  (80)
 
 struct prt_mediasize_S
 {
@@ -981,7 +981,7 @@ struct prt_mediasize_S
     float	height;
 };
 
-#define PRT_MEDIASIZE_LEN  ARRAY_LENGTH(prt_mediasize)
+# define PRT_MEDIASIZE_LEN  ARRAY_LENGTH(prt_mediasize)
 
 static struct prt_mediasize_S prt_mediasize[] =
 {
@@ -1012,10 +1012,10 @@ struct prt_ps_font_S
     char	*(ps_fontname[4]);
 };
 
-#define PRT_PS_FONT_ROMAN	(0)
-#define PRT_PS_FONT_BOLD	(1)
-#define PRT_PS_FONT_OBLIQUE	(2)
-#define PRT_PS_FONT_BOLDOBLIQUE (3)
+# define PRT_PS_FONT_ROMAN	(0)
+# define PRT_PS_FONT_BOLD	(1)
+# define PRT_PS_FONT_OBLIQUE	(2)
+# define PRT_PS_FONT_BOLDOBLIQUE (3)
 
 // Standard font metrics for Courier family
 static struct prt_ps_font_S prt_ps_courier_font =
@@ -1055,14 +1055,14 @@ struct prt_ps_charset_S
 };
 
 
-#define CS_JIS_C_1978   (0x01)
-#define CS_JIS_X_1983   (0x02)
-#define CS_JIS_X_1990   (0x04)
-#define CS_NEC		(0x08)
-#define CS_MSWINDOWS	(0x10)
-#define CS_CP932	(0x20)
-#define CS_KANJITALK6	(0x40)
-#define CS_KANJITALK7   (0x80)
+# define CS_JIS_C_1978   (0x01)
+# define CS_JIS_X_1983   (0x02)
+# define CS_JIS_X_1990   (0x04)
+# define CS_NEC		(0x08)
+# define CS_MSWINDOWS	(0x10)
+# define CS_CP932	(0x20)
+# define CS_KANJITALK6	(0x40)
+# define CS_KANJITALK7   (0x80)
 
 // Japanese encodings and charsets
 static struct prt_ps_encoding_S j_encodings[] =
@@ -1088,13 +1088,13 @@ static struct prt_ps_charset_S j_charsets[] =
     {"KANJITALK7",  "90pv",     CS_KANJITALK7}
 };
 
-#define CS_GB_2312_80       (0x01)
-#define CS_GBT_12345_90     (0x02)
-#define CS_GBK2K	    (0x04)
-#define CS_SC_MAC	    (0x08)
-#define CS_GBT_90_MAC	    (0x10)
-#define CS_GBK		    (0x20)
-#define CS_SC_ISO10646      (0x40)
+# define CS_GB_2312_80       (0x01)
+# define CS_GBT_12345_90     (0x02)
+# define CS_GBK2K	    (0x04)
+# define CS_SC_MAC	    (0x08)
+# define CS_GBT_90_MAC	    (0x10)
+# define CS_GBK		    (0x20)
+# define CS_SC_ISO10646      (0x40)
 
 // Simplified Chinese encodings and charsets
 static struct prt_ps_encoding_S sc_encodings[] =
@@ -1118,19 +1118,19 @@ static struct prt_ps_charset_S sc_charsets[] =
     {"ISO10646",    "UniGB",    CS_SC_ISO10646}
 };
 
-#define CS_CNS_PLANE_1      (0x01)
-#define CS_CNS_PLANE_2      (0x02)
-#define CS_CNS_PLANE_1_2    (0x04)
-#define CS_B5		    (0x08)
-#define CS_ETEN		    (0x10)
-#define CS_HK_GCCS	    (0x20)
-#define CS_HK_SCS	    (0x40)
-#define CS_HK_SCS_ETEN	    (0x80)
-#define CS_MTHKL	    (0x100)
-#define CS_MTHKS	    (0x200)
-#define CS_DLHKL	    (0x400)
-#define CS_DLHKS	    (0x800)
-#define CS_TC_ISO10646	    (0x1000)
+# define CS_CNS_PLANE_1      (0x01)
+# define CS_CNS_PLANE_2      (0x02)
+# define CS_CNS_PLANE_1_2    (0x04)
+# define CS_B5		    (0x08)
+# define CS_ETEN		    (0x10)
+# define CS_HK_GCCS	    (0x20)
+# define CS_HK_SCS	    (0x40)
+# define CS_HK_SCS_ETEN	    (0x80)
+# define CS_MTHKL	    (0x100)
+# define CS_MTHKS	    (0x200)
+# define CS_DLHKL	    (0x400)
+# define CS_DLHKS	    (0x800)
+# define CS_TC_ISO10646	    (0x1000)
 
 // Traditional Chinese encodings and charsets
 static struct prt_ps_encoding_S tc_encodings[] =
@@ -1164,10 +1164,10 @@ static struct prt_ps_charset_S tc_charsets[] =
     {"ISO10646",    "UniCNS",   CS_TC_ISO10646}
 };
 
-#define CS_KR_X_1992	    (0x01)
-#define CS_KR_MAC	    (0x02)
-#define CS_KR_X_1992_MS     (0x04)
-#define CS_KR_ISO10646      (0x08)
+# define CS_KR_X_1992	    (0x01)
+# define CS_KR_MAC	    (0x02)
+# define CS_KR_X_1992_MS     (0x04)
+# define CS_KR_ISO10646      (0x08)
 
 // Korean encodings and charsets
 static struct prt_ps_encoding_S k_encodings[] =
@@ -1249,9 +1249,9 @@ struct prt_ps_resource_S
 };
 
 // Types of PS resource file currently used
-#define PRT_RESOURCE_TYPE_PROCSET   (0)
-#define PRT_RESOURCE_TYPE_ENCODING  (1)
-#define PRT_RESOURCE_TYPE_CMAP      (2)
+# define PRT_RESOURCE_TYPE_PROCSET   (0)
+# define PRT_RESOURCE_TYPE_ENCODING  (1)
+# define PRT_RESOURCE_TYPE_CMAP      (2)
 
 // The PS prolog file version number has to match - if the prolog file is
 // updated, increment the number in the file and here.  Version checking was
@@ -1262,8 +1262,8 @@ struct prt_ps_resource_S
 // VIM      Prolog  CIDProlog
 // 6.2      1.3
 // 7.0      1.4	    1.0
-#define PRT_PROLOG_VERSION  ((char_u *)"1.4")
-#define PRT_CID_PROLOG_VERSION  ((char_u *)"1.0")
+# define PRT_PROLOG_VERSION  ((char_u *)"1.4")
+# define PRT_CID_PROLOG_VERSION  ((char_u *)"1.0")
 
 // String versions of PS resource types - indexed by constants above so don't
 // re-order!
@@ -1275,23 +1275,23 @@ static char *prt_resource_types[] =
 };
 
 // Strings to look for in a PS resource file
-#define PRT_RESOURCE_HEADER	    "%!PS-Adobe-"
-#define PRT_RESOURCE_RESOURCE	    "Resource-"
-#define PRT_RESOURCE_PROCSET	    "ProcSet"
-#define PRT_RESOURCE_ENCODING	    "Encoding"
-#define PRT_RESOURCE_CMAP	    "CMap"
+# define PRT_RESOURCE_HEADER	    "%!PS-Adobe-"
+# define PRT_RESOURCE_RESOURCE	    "Resource-"
+# define PRT_RESOURCE_PROCSET	    "ProcSet"
+# define PRT_RESOURCE_ENCODING	    "Encoding"
+# define PRT_RESOURCE_CMAP	    "CMap"
 
 
 // Data for table based DSC comment recognition, easy to extend if VIM needs to
 // read more comments.
-#define PRT_DSC_MISC_TYPE	    (-1)
-#define PRT_DSC_TITLE_TYPE	    (1)
-#define PRT_DSC_VERSION_TYPE	    (2)
-#define PRT_DSC_ENDCOMMENTS_TYPE    (3)
+# define PRT_DSC_MISC_TYPE	    (-1)
+# define PRT_DSC_TITLE_TYPE	    (1)
+# define PRT_DSC_VERSION_TYPE	    (2)
+# define PRT_DSC_ENDCOMMENTS_TYPE    (3)
 
-#define PRT_DSC_TITLE		    "%%Title:"
-#define PRT_DSC_VERSION		    "%%Version:"
-#define PRT_DSC_ENDCOMMENTS	    "%%EndComments:"
+# define PRT_DSC_TITLE		    "%%Title:"
+# define PRT_DSC_VERSION		    "%%Version:"
+# define PRT_DSC_ENDCOMMENTS	    "%%EndComments:"
 
 struct prt_dsc_comment_S
 {
@@ -1308,7 +1308,7 @@ struct prt_dsc_line_S
 };
 
 
-#define SIZEOF_CSTR(s)      (sizeof(s) - 1)
+# define SIZEOF_CSTR(s)      (sizeof(s) - 1)
 static struct prt_dsc_comment_S prt_dsc_table[] =
 {
     {PRT_DSC_TITLE,       SIZEOF_CSTR(PRT_DSC_TITLE),     PRT_DSC_TITLE_TYPE},
@@ -1571,7 +1571,7 @@ prt_def_var(char *name, double value, int prec)
 }
 
 // Convert size from font space to user space at current font scale
-#define PRT_PS_FONT_TO_USER(scale, size)    ((size) * ((scale)/1000.0))
+# define PRT_PS_FONT_TO_USER(scale, size)    ((size) * ((scale)/1000.0))
 
     static void
 prt_flush_buffer(void)
@@ -1684,12 +1684,12 @@ prt_find_resource(char *name, struct prt_ps_resource_S *resource)
 }
 
 // PS CR and LF characters have platform independent values
-#define PSLF  (0x0a)
-#define PSCR  (0x0d)
+# define PSLF  (0x0a)
+# define PSCR  (0x0d)
 
 // Static buffer to read initial comments in a resource file, some can have a
 // couple of KB of comments!
-#define PRT_FILE_BUFFER_LEN (2048)
+# define PRT_FILE_BUFFER_LEN (2048)
 struct prt_resfile_buffer_S
 {
     char_u  buffer[PRT_FILE_BUFFER_LEN];
@@ -1990,7 +1990,7 @@ prt_dsc_text(char *comment, char *text)
     prt_write_file(prt_line_buffer);
 }
 
-#define prt_dsc_atend(c)	prt_dsc_text((c), "atend")
+# define prt_dsc_atend(c)	prt_dsc_text((c), "atend")
 
     static void
 prt_dsc_ints(char *comment, int count, int *ints)
@@ -2340,7 +2340,7 @@ mch_print_init(
     struct prt_ps_encoding_S *p_mbenc_first;
     struct prt_ps_charset_S  *p_mbchar = NULL;
 
-#if 0
+# if 0
     /*
      * TODO:
      * If "forceit" is false: pop up a dialog to select:
@@ -2356,7 +2356,7 @@ mch_print_init(
      */
     if (forceit)
 	s_pd.Flags |= PD_RETURNDEFAULT;
-#endif
+# endif
 
     /*
      * Set up font and encoding.
@@ -2923,11 +2923,11 @@ mch_print_begin(prt_settings_T *psettings)
 	prt_dsc_resources(NULL, "encoding", buffer);
     }
     prt_dsc_requirements(prt_duplex, prt_tumble, prt_collate,
-#ifdef FEAT_SYN_HL
+# ifdef FEAT_SYN_HL
 					psettings->do_syntax
-#else
+# else
 					0
-#endif
+# endif
 					, prt_num_copies);
     prt_dsc_noarg("EndComments");
 
@@ -3453,5 +3453,5 @@ mch_print_set_fg(long_u fgcol)
     prt_need_fgcol = TRUE;
 }
 
-# endif //FEAT_POSTSCRIPT
+#endif //FEAT_POSTSCRIPT
 #endif //FEAT_PRINTER

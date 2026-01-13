@@ -1787,10 +1787,10 @@ get_menu_index(vimmenu_T *menu, int state)
 	idx = MENU_INDEX_INSERT;
     else if (state & MODE_CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     else if (term_use_loop())
 	idx = MENU_INDEX_TERMINAL;
-#endif
+# endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1948,10 +1948,10 @@ menu_is_tearoff(char_u *name UNUSED)
     static int
 get_menu_mode(void)
 {
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     if (term_use_loop())
 	return MENU_INDEX_TERMINAL;
-#endif
+# endif
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -2020,12 +2020,12 @@ show_popupmenu(void)
 	gui_mch_show_popupmenu(menu);
     }
 # endif
-#  if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
+# if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
     else
-#  endif
-#  if defined(FEAT_TERM_POPUP_MENU)
+# endif
+# if defined(FEAT_TERM_POPUP_MENU)
 	pum_show_popupmenu(menu);
-#  endif
+# endif
 }
 #endif
 
@@ -2102,9 +2102,9 @@ gui_update_menus_recurse(vimmenu_T *menu, int mode)
 	// Never hide a toplevel menu, it may make the menubar resize or
 	// disappear. Same problem for ToolBar items.
 	if (vim_strchr(p_go, GO_GREY) != NULL || menu->parent == NULL
-#  ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 		|| menu_is_toolbar(menu->parent->name)
-#  endif
+# endif
 		   )
 	    gui_mch_menu_grey(menu, grey);
 	else
@@ -2271,11 +2271,11 @@ gui_add_tearoff(char_u *tearpath, int *pri_tab, int pri_idx)
     t = pri_tab[pri_idx + 1];
     pri_tab[pri_idx + 1] = 1;
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     menuarg.iconfile = NULL;
     menuarg.iconidx = -1;
     menuarg.icon_builtin = FALSE;
-#endif
+# endif
     menuarg.noremap[0] = REMAP_NONE;
     menuarg.silent[0] = TRUE;
 

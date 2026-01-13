@@ -4177,9 +4177,9 @@ globpath(
 #if defined(MSWIN)
     // Using the platform's path separator (\) makes vim incorrectly
     // treat it as an escape character, use '/' instead.
-    #define TMP_PATHSEPSTR "/"
+# define TMP_PATHSEPSTR "/"
 #else
-    #define TMP_PATHSEPSTR PATHSEPSTR
+# define TMP_PATHSEPSTR PATHSEPSTR
 #endif
 
     // Loop over all entries in {path}.

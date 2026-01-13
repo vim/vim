@@ -35,7 +35,7 @@ set_ref_in_buffers(int copyID)
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_prompt_interrupt, copyID);
 # endif
-#ifdef FEAT_COMPL_FUNC
+# ifdef FEAT_COMPL_FUNC
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_cfu_cb, copyID);
 	if (!abort)
@@ -45,7 +45,7 @@ set_ref_in_buffers(int copyID)
 	if (!abort && bp->b_p_cpt_cb != NULL)
 	    abort = abort || set_ref_in_cpt_callbacks(bp->b_p_cpt_cb,
 		    bp->b_p_cpt_count, copyID);
-#endif
+# endif
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_tfu_cb, copyID);
 	if (!abort)
@@ -673,7 +673,7 @@ get_buffer_info(buf_T *buf)
 	dict_add_list(dict, "windows", windows);
     }
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     // List of popup windows displaying this buffer
     windows = list_alloc();
     if (windows != NULL)
@@ -688,9 +688,9 @@ get_buffer_info(buf_T *buf)
 
 	dict_add_list(dict, "popups", windows);
     }
-#endif
+# endif
 
-#ifdef FEAT_SIGNS
+# ifdef FEAT_SIGNS
     if (buf->b_signlist != NULL)
     {
 	// List of signs placed in this buffer
@@ -701,11 +701,11 @@ get_buffer_info(buf_T *buf)
 	    dict_add_list(dict, "signs", signs);
 	}
     }
-#endif
+# endif
 
-#ifdef FEAT_VIMINFO
+# ifdef FEAT_VIMINFO
     dict_add_number(dict, "lastused", buf->b_last_used);
-#endif
+# endif
 
     return dict;
 }
@@ -942,9 +942,9 @@ f_setline(typval_T *argvars, typval_T *rettv)
 switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 {
     block_autocmds();
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     ++disable_fold_update;
-#endif
+# endif
     set_bufref(save_curbuf, curbuf);
     --curbuf->b_nwindows;
     curbuf = buf;
@@ -959,9 +959,9 @@ switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 restore_buffer(bufref_T *save_curbuf)
 {
     unblock_autocmds();
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     --disable_fold_update;
-#endif
+# endif
     // Check for valid buffer, just in case.
     if (bufref_valid(save_curbuf))
     {

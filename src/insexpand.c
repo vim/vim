@@ -18,29 +18,29 @@
  * Note: If you change CTRL-X submode, you must also maintain ctrl_x_msgs[] and
  * ctrl_x_mode_names[] below.
  */
-# define CTRL_X_WANT_IDENT	0x100
+#define CTRL_X_WANT_IDENT	0x100
 
-# define CTRL_X_NORMAL		0  // CTRL-N CTRL-P completion, default
-# define CTRL_X_NOT_DEFINED_YET	1
-# define CTRL_X_SCROLL		2
-# define CTRL_X_WHOLE_LINE	3
-# define CTRL_X_FILES		4
-# define CTRL_X_TAGS		(5 + CTRL_X_WANT_IDENT)
-# define CTRL_X_PATH_PATTERNS	(6 + CTRL_X_WANT_IDENT)
-# define CTRL_X_PATH_DEFINES	(7 + CTRL_X_WANT_IDENT)
-# define CTRL_X_FINISHED		8
-# define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
-# define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
-# define CTRL_X_CMDLINE		11
-# define CTRL_X_FUNCTION	12
-# define CTRL_X_OMNI		13
-# define CTRL_X_SPELL		14
-# define CTRL_X_LOCAL_MSG	15	// only used in "ctrl_x_msgs"
-# define CTRL_X_EVAL		16	// for builtin function complete()
-# define CTRL_X_CMDLINE_CTRL_X	17	// CTRL-X typed in CTRL_X_CMDLINE
-# define CTRL_X_REGISTER	18	// complete words from registers
+#define CTRL_X_NORMAL		0  // CTRL-N CTRL-P completion, default
+#define CTRL_X_NOT_DEFINED_YET	1
+#define CTRL_X_SCROLL		2
+#define CTRL_X_WHOLE_LINE	3
+#define CTRL_X_FILES		4
+#define CTRL_X_TAGS		(5 + CTRL_X_WANT_IDENT)
+#define CTRL_X_PATH_PATTERNS	(6 + CTRL_X_WANT_IDENT)
+#define CTRL_X_PATH_DEFINES	(7 + CTRL_X_WANT_IDENT)
+#define CTRL_X_FINISHED		8
+#define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
+#define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
+#define CTRL_X_CMDLINE		11
+#define CTRL_X_FUNCTION	12
+#define CTRL_X_OMNI		13
+#define CTRL_X_SPELL		14
+#define CTRL_X_LOCAL_MSG	15	// only used in "ctrl_x_msgs"
+#define CTRL_X_EVAL		16	// for builtin function complete()
+#define CTRL_X_CMDLINE_CTRL_X	17	// CTRL-X typed in CTRL_X_CMDLINE
+#define CTRL_X_REGISTER	18	// complete words from registers
 
-# define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
+#define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 
 // Message for CTRL-X mode, index is ctrl_x_mode.
 static char *ctrl_x_msgs[] =
@@ -116,12 +116,12 @@ struct compl_S
 };
 
 // values for cp_flags
-# define CP_ORIGINAL_TEXT   1	// the original text when the expansion begun
-# define CP_FREE_FNAME	    2	// cp_fname is allocated
-# define CP_CONT_S_IPOS	    4	// use CONT_S_IPOS for compl_cont_status
-# define CP_EQUAL	    8	// ins_compl_equal() always returns TRUE
-# define CP_ICASE	    16	// ins_compl_equal() ignores case
-# define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
+#define CP_ORIGINAL_TEXT   1	// the original text when the expansion begun
+#define CP_FREE_FNAME	    2	// cp_fname is allocated
+#define CP_CONT_S_IPOS	    4	// use CONT_S_IPOS for compl_cont_status
+#define CP_EQUAL	    8	// ins_compl_equal() always returns TRUE
+#define CP_ICASE	    16	// ins_compl_equal() ignores case
+#define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
 
 /*
  * All the current matches are stored in a list.
@@ -223,15 +223,15 @@ static int	  compl_hi_on_autocompl_longest = FALSE;    // apply "PreInsert" high
 
 // List of flags for method of completion.
 static int	  compl_cont_status = 0;
-# define CONT_ADDING	1	// "normal" or "adding" expansion
-# define CONT_INTRPT	(2 + 4)	// a ^X interrupted the current expansion
+#define CONT_ADDING	1	// "normal" or "adding" expansion
+#define CONT_INTRPT	(2 + 4)	// a ^X interrupted the current expansion
 				// it's set only iff N_ADDS is set
-# define CONT_N_ADDS	4	// next ^X<> will add-new or expand-current
-# define CONT_S_IPOS	8	// next ^X<> will set initial_pos?
+#define CONT_N_ADDS	4	// next ^X<> will add-new or expand-current
+#define CONT_S_IPOS	8	// next ^X<> will set initial_pos?
 				// if so, word-wise-expansion will set SOL
-# define CONT_SOL	16	// pattern includes start of line, just for
+#define CONT_SOL	16	// pattern includes start of line, just for
 				// word-wise expansion, not set for ^X^L
-# define CONT_LOCAL	32	// for ctrl_x_mode 0, ^X^P/^X^N do a local
+#define CONT_LOCAL	32	// for ctrl_x_mode 0, ^X^P/^X^N do a local
 				// expansion, (eg use complete=.)
 
 static int	  compl_opt_refresh_always = FALSE;
@@ -273,13 +273,13 @@ static int  get_compl_len(void);
 static void ins_compl_restart(void);
 static void ins_compl_set_original_text(char_u *str, size_t len);
 static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
-# if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
+#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
 static void get_cpt_func_completion_matches(callback_T *cb);
 static callback_T *get_callback_if_cpt_func(char_u *p, int idx);
-# endif
+#endif
 static int setup_cpt_sources(void);
 static int is_cpt_func_refresh_always(void);
 static void cpt_sources_clear(void);
@@ -1953,18 +1953,18 @@ ins_compl_dictionaries(
 	    // backticks (for security, the 'dict' option may have been set in
 	    // a modeline).
 	    copy_option_part(&dict, buf, LSIZE, ",");
-# ifdef FEAT_SPELL
+#ifdef FEAT_SPELL
 	    if (!thesaurus && STRCMP(buf, "spell") == 0)
 		count = -1;
 	    else
-# endif
+#endif
 		if (vim_strchr(buf, '`') != NULL
 		    || expand_wildcards(1, &buf, &count, &files,
 						     EW_FILE|EW_SILENT) != OK)
 		count = 0;
 	}
 
-# ifdef FEAT_SPELL
+#ifdef FEAT_SPELL
 	if (count == -1)
 	{
 	    // Complete from active spelling.  Skip "\<" in the pattern, we
@@ -1976,7 +1976,7 @@ ins_compl_dictionaries(
 	    spell_dump_compl(ptr, regmatch.rm_ic, &dir, 0);
 	}
 	else
-# endif
+#endif
 	    if (count > 0)	// avoid warning for using "files" uninit
 	{
 	    ins_compl_files(count, files, thesaurus, flags, &regmatch, buf,
@@ -3432,12 +3432,12 @@ copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
     void
 set_buflocal_cpt_callbacks(buf_T *buf UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (buf == NULL || cpt_cb_count == 0)
 	return;
     (void)copy_cpt_callbacks(&buf->b_p_cpt_cb, &buf->b_p_cpt_count, cpt_cb,
 	    cpt_cb_count);
-#endif
+# endif
 }
 
 /*
@@ -4030,14 +4030,14 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 {
     int		ret = OK;
     listitem_T	*item;
-#define CI_WHAT_MODE		    0x01
-#define CI_WHAT_PUM_VISIBLE	    0x02
-#define CI_WHAT_ITEMS		    0x04
-#define CI_WHAT_SELECTED	    0x08
-#define CI_WHAT_COMPLETED	    0x10
-#define CI_WHAT_MATCHES		    0x20
-#define CI_WHAT_PREINSERTED_TEXT    0x40
-#define CI_WHAT_ALL		    0xff
+# define CI_WHAT_MODE		    0x01
+# define CI_WHAT_PUM_VISIBLE	    0x02
+# define CI_WHAT_ITEMS		    0x04
+# define CI_WHAT_SELECTED	    0x08
+# define CI_WHAT_COMPLETED	    0x10
+# define CI_WHAT_MATCHES		    0x20
+# define CI_WHAT_PREINSERTED_TEXT    0x40
+# define CI_WHAT_ALL		    0xff
     int		what_flag;
 
     if (what_list == NULL)
