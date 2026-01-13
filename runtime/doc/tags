@@ -948,6 +948,7 @@ $quote	eval.txt	/*$quote*
 'scrollfocus'	options.txt	/*'scrollfocus'*
 'scrolljump'	options.txt	/*'scrolljump'*
 'scrolloff'	options.txt	/*'scrolloff'*
+'scrolloffpad'	options.txt	/*'scrolloffpad'*
 'scrollopt'	options.txt	/*'scrollopt'*
 'scs'	options.txt	/*'scs'*
 'sect'	options.txt	/*'sect'*

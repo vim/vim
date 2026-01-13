@@ -280,6 +280,15 @@ update_topline_redraw(void)
 }
 
 /*
+ * Return TRUE if 'scrolloff' > 0 and 'scrolloffpad' is active,
+ */
+    static int
+use_scrolloffpad(void)
+{
+	return get_scrolloff_value() > 0 && get_scrolloffpad_value() > 0;
+}
+
+/*
  * Update curwin->w_topline to move the cursor onto the screen.
  */
     void
@@ -436,7 +445,7 @@ update_topline(void)
 	if (!(curwin->w_valid & VALID_BOTLINE_AP))
 	    validate_botline();
 
-	if (curwin->w_botline <= curbuf->b_ml.ml_line_count)
+	if (curwin->w_botline <= curbuf->b_ml.ml_line_count || use_scrolloffpad())
 	{
 	    if (curwin->w_cursor.lnum < curwin->w_botline)
 	    {
@@ -452,7 +461,7 @@ update_topline(void)
 		// Cursor is (a few lines) above botline, check if there are
 		// 'scrolloff' window lines below the cursor.  If not, need to
 		// scroll.
-		n = curwin->w_empty_rows;
+		n = use_scrolloffpad() ? 0 : curwin->w_empty_rows;
 		loff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
 		// In a fold go to its last line.
@@ -2341,20 +2350,42 @@ botline_forw(lineoff_T *lp)
     else
 #endif
     {
+	/*
+	 * When 'scrolloffpad' is enabled we may already be past EOF.  In that
+	 * case, keep lnum from growing further and just add a virtual screen
+	 * line.  When disabled, keep the old behavior (advance lnum and stop
+	 * with MAXCOL).
+	 */
+	if (use_scrolloffpad() && lp->lnum > curbuf->b_ml.ml_line_count)
+	{
+	    lp->height = 1;
+#ifdef FEAT_DIFF
+	    lp->fill = 0;
+#endif
+	    return;
+	}
+
 	++lp->lnum;
 #ifdef FEAT_DIFF
 	lp->fill = 0;
 #endif
 	if (lp->lnum > curbuf->b_ml.ml_line_count)
-	    lp->height = MAXCOL;
+	{
+	    if (use_scrolloffpad())
+		lp->height = 1;
+	    else
+		lp->height = MAXCOL;
+	}
 	else
 #ifdef FEAT_FOLDING
 	    if (hasFolding(lp->lnum, NULL, &lp->lnum))
-	    // Add a closed fold
-	    lp->height = 1;
-	else
+	    {
+		// Add a closed fold.
+		lp->height = 1;
+	    }
+	    else
 #endif
-	    lp->height = PLINES_NOFILL(lp->lnum);
+		lp->height = PLINES_NOFILL(lp->lnum);
     }
 }
 
@@ -2546,6 +2577,12 @@ set_empty_rows(win_T *wp, int used)
     void
 scroll_cursor_bot(int min_scroll, int set_topbot)
 {
+    if (use_scrolloffpad())
+	{
+		scroll_cursor_halfway(FALSE, TRUE);
+		return;
+	}
+
     int		used;
     int		scrolled = 0;
     int		extra = 0;
@@ -2868,6 +2905,9 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #endif
     topline = loff.lnum;
 
+	if (use_scrolloffpad())
+		atend = TRUE;
+
     int want_height;
     int do_sms = curwin->w_p_wrap && curwin->w_p_sms;
     if (do_sms)
@@ -3042,7 +3082,8 @@ cursor_correct(void)
     if (curwin->w_botline == curbuf->b_ml.ml_line_count + 1
 	    && mouse_dragging == 0)
     {
-	below_wanted = 0;
+	if (!use_scrolloffpad())
+		below_wanted = 0;
 	max_off = (curwin->w_height - 1) / 2;
 	if (above_wanted > max_off)
 	    above_wanted = max_off;

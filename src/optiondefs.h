@@ -209,6 +209,7 @@
 #define PV_SMS		OPT_WIN(WV_SMS)
 #define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
 #define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
+#define PV_SOP		OPT_BOTH(OPT_WIN(WV_SOP))
 #ifdef FEAT_SPELL
 # define PV_SPELL	OPT_WIN(WV_SPELL)
 #endif
@@ -2257,6 +2258,9 @@ static struct vimoption options[] =
     {"scrolloff",   "so",   P_NUM|P_VI_DEF|P_VIM|P_RALL,
 			    (char_u *)&p_so, PV_SO, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
+    {"scrolloffpad", "sop", P_NUM|P_VI_DEF|P_VIM|P_RALL,
+				(char_u *)&p_sop, PV_SOP, NULL, NULL,
+				{(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"scrollopt",   "sbo",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_sbo, PV_NONE, did_set_scrollopt, expand_set_scrollopt,
 			    {(char_u *)"ver,jump", (char_u *)0L}
