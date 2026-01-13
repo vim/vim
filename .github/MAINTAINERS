@@ -48,6 +48,7 @@ runtime/colors/wildcharm.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zaibatsu.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zellner.vim				@habamax @romainl @neutaaaaan
 runtime/compiler/biome.vim				@Konfekt
+runtime/compiler/cabal.vim				@mateoxh
 runtime/compiler/checkstyle.vim				@dkearns
 runtime/compiler/cm3.vim				@dkearns
 runtime/compiler/context.vim				@lifepillar
