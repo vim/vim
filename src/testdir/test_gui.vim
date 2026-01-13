@@ -1248,6 +1248,19 @@ func Test_gui_mouse_event()
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
 
+  " Test P option (use '+' register for modeless)
+  set guioptions+=AP
+  call cursor(1, 6)
+  redraw!
+  let @+ = ''
+  let args = #{button: 2, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call assert_equal('wo thr', @+)
+
   set mouse&
   let &guioptions = save_guioptions
   bw!

@@ -795,7 +795,8 @@ do_mouse(
 #endif
 
 #if defined(FEAT_CLIPBOARD)
-    if ((jump_flags & IN_OTHER_WIN) && !VIsual_active && clip_star.available)
+    if ((jump_flags & IN_OTHER_WIN) && !VIsual_active &&
+	    (clip_star.available || clip_plus.available))
     {
 	clip_modeless(which_button, is_click, is_drag);
 	return FALSE;

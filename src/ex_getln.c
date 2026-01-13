@@ -1347,7 +1347,7 @@ cmdline_left_right_mouse(int c, int *ignore_drag_release)
 	if (!mouse_has(MOUSE_COMMAND))
 	    return;
 # ifdef FEAT_CLIPBOARD
-    if (mouse_row < cmdline_row && clip_star.available)
+    if (mouse_row < cmdline_row && (clip_star.available || clip_plus.available))
     {
 	int	    button, is_click, is_drag;
 
