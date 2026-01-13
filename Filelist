@@ -27,7 +27,7 @@ SRC_ALL =	\
 		ci/if_feat_check.vim \
 		ci/lychee.toml \
 		ci/setup-xvfb.sh \
-		ci/setup-sway.sh \
+		ci/build-treesitter.sh \
 		ci/remove_snap.sh \
 		ci/ddebs.list \
 		ci/pinned-pkgs \
@@ -188,6 +188,8 @@ SRC_ALL =	\
 		src/winclip.c \
 		src/window.c \
 		src/xxd/xxd.c \
+		src/treesitter.c \
+		src/opaque.c \
 		src/testdir/*.in \
 		src/testdir/*.py \
 		src/testdir/Make_all.mak \
@@ -376,6 +378,8 @@ SRC_ALL =	\
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
+		src/proto/treesitter.pro \
+		src/proto/opaque.pro \
 		src/libvterm/.bzrignore \
 		src/libvterm/.gitignore \
 		src/libvterm/LICENSE \

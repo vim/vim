@@ -2432,6 +2432,45 @@ AC_ARG_ENABLE(fontset,
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
+AC_MSG_CHECKING(--enable-treesitter argument)
+AC_ARG_ENABLE(treesitter,
+	[  --enable-treesitter     Include Treesitter integration.], ,
+	[enable_treesitter="auto"])
+AC_MSG_RESULT($enable_treesitter)
+
+if test "$enable_treesitter" == auto || "$enable_treesitter" == yes; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  AC_MSG_CHECKING(for treesitter)
+
+  if "$PKG_CONFIG" --exists 'tree-sitter'; then
+    AC_MSG_RESULT([yes])
+
+    AC_DEFINE(FEAT_TREESITTER)
+
+    TREESITTER_CPPFLAGS=`$PKG_CONFIG --cflags-only-I tree-sitter`
+    TREESITTER_CFLAGS=`$PKG_CONFIG --cflags-only-other tree-sitter`
+    CPPFLAGS="$CPPFLAGS $TREESITTER_CPPFLAGS"
+    CFLAGS="$CFLAGS $TREESITTER_CFLAGS"
+    TREESITTER_LIBS=`$PKG_CONFIG --libs tree-sitter`
+    TREESITTER_SRC="treesitter.c"
+    TREESITTER_OBJ="objects/treesitter.o"
+
+    AC_SUBST(TREESITTER_CPPFLAGS)
+    AC_SUBST(TREESITTER_CFLAGS)
+    AC_SUBST(TREESITTER_LIBS)
+    AC_SUBST(TREESITTER_SRC)
+    AC_SUBST(TREESITTER_OBJ)
+  else
+    AC_MSG_RESULT(no)
+    enable_treesitter=no
+  fi
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+fi
+
+
 AC_MSG_CHECKING(if shm_open is available)
 cppflags_save=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $X_CFLAGS"

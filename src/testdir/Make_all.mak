@@ -368,7 +368,9 @@ NEW_TESTS = \
 	test_xxd \
 	test_alot_latin \
 	test_alot_utf8 \
-	test_alot
+	test_alot \
+	test_opaque \
+	test_treesitter
 
 # Test targets that use runtest.vim.
 # Keep test_alot*.res as the last one, sort the others.
@@ -626,4 +628,6 @@ NEW_TESTS_RES = \
 	test_xxd.res \
 	test_alot_latin.res \
 	test_alot_utf8.res \
-	test_alot.res
+	test_alot.res \
+	test_opaque.res \
+	test_treesitter.res

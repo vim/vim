@@ -1122,6 +1122,7 @@ static char *reserved[] = {
     "null_job",
     "null_list",
     "null_object",
+    "null_opaque",
     "null_partial",
     "null_string",
     "null_tuple",

@@ -754,6 +754,7 @@ OBJ = \
 	$(OUTDIR)\mouse.obj \
 	$(OUTDIR)\move.obj \
 	$(OUTDIR)\normal.obj \
+	$(OUTDIR)\opaque.obj \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
 	$(OUTDIR)\optionstr.obj \
@@ -1715,11 +1716,14 @@ $(OUTDIR)/channel.obj: $(OUTDIR) channel.c $(INCL)
 
 $(OUTDIR)/normal.obj: $(OUTDIR) normal.c $(INCL) nv_cmdidxs.h nv_cmds.h
 
+$(OUTDIR)/opaque.obj: $(OUTDIR) opaque.c $(INCL)
+
 $(OUTDIR)/option.obj: $(OUTDIR) option.c $(INCL) optiondefs.h
 
 $(OUTDIR)/optionstr.obj: $(OUTDIR) optionstr.c $(INCL)
 
 $(OUTDIR)/ops.obj: $(OUTDIR) ops.c $(INCL)
+
 
 $(OUTDIR)/os_mswin.obj: $(OUTDIR) os_mswin.c $(INCL)
 
@@ -1996,6 +2000,7 @@ proto.h: \
 	proto/move.pro \
 	proto/mbyte.pro \
 	proto/normal.pro \
+	proto/opaque.pro \
 	proto/ops.pro \
 	proto/option.pro \
 	proto/optionstr.pro \
