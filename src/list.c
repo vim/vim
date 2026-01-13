@@ -792,8 +792,10 @@ list_append_new_item(list_T *l)
 	case VAR_PARTIAL: tv.vval.v_partial = NULL; break;
 	case VAR_LIST: tv.vval.v_list = list_alloc(); break;
 	case VAR_DICT: tv.vval.v_dict = dict_alloc(); break;
+#ifdef FEAT_JOB_CHANNEL
 	case VAR_JOB: tv.vval.v_job = NULL; break;
 	case VAR_CHANNEL: tv.vval.v_channel = NULL; break;
+#endif
 	case VAR_CLASS:
 	    if (l->lv_type != NULL && l->lv_type->tt_member != NULL)
 		tv.vval.v_class = l->lv_type->tt_member->tt_class;
