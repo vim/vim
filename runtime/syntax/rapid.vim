@@ -2,7 +2,7 @@
 " Language: ABB Rapid Command
 " Maintainer: Patrick Meiser-Knosowski <knosowski@graeffrobotics.de>
 " Version: 2.3.0
-" Last Change: 21. Jul 2023
+" Last Change: 28. Oct 2025
 " Credits: Thanks for beta testing to Thomas Baginski
 "
 " Suggestions of improvement are very welcome. Please email me!
@@ -187,6 +187,8 @@ else
   syn keyword rapidType cameradev cameratarget 
   " arc Weldguide and MultiPass data types
   syn keyword rapidType adaptdata trackdata multidata 
+  " GAP
+  syn keyword rapidType partdata partadv ee_event menudata
   " dispense data types
   syn keyword rapidType beaddata equipdata
   " Spot data types
@@ -224,7 +226,7 @@ else
   syn keyword rapidType buatypenum buatechnum buadirnum 
   highlight default link rapidType Type
   " Storage class
-  syn keyword rapidStorageClass LOCAL TASK VAR PERS CONST ALIAS NOVIEW NOSTEPIN VIEWONLY READONLY SYSMODULE INOUT
+  syn keyword rapidStorageClass LOCAL TASK VAR PERS CONST ALIAS NOVIEW NOSTEPIN VIEWONLY READONLY SYSMODULE INOUT REF
   highlight default link rapidStorageClass StorageClass
   " Not a typedef but I like to have those highlighted different then types,
   " structures or strorage classes
@@ -307,7 +309,7 @@ else
   syn keyword rapidMovement MoveAbsJ MoveC MoveExtJ MoveJ MoveL 
   syn keyword rapidMovement MoveCAO MoveCDO MoveCGO MoveCSync MoveJAO MoveJDO MoveJGO MoveJSync MoveLAO MoveLDO MoveLGO MoveLSync 
   syn keyword rapidMovement SearchC SearchExtJ SearchL
-  syn keyword rapidMovement TriggC TriggJ TriggL TriggJIOs TriggLIOs
+  syn keyword rapidMovement TriggAbsJ TriggC TriggJ TriggL TriggJIOs TriggLIOs
   " Arc instructions
   syn keyword rapidMovement ArcC ArcC1 ArcC2 ArcCEnd ArcC1End ArcC2End ArcCStart ArcC1Start ArcC2Start 
   syn keyword rapidMovement ArcL ArcL1 ArcL2 ArcLEnd ArcL1End ArcL2End ArcLStart ArcL1Start ArcL2Start ArcMoveExtJ 
@@ -383,6 +385,10 @@ else
 
   " Structure value {{{
   " rapid structrure values. added to be able to conceal them
+  if getbufvar('%', "&buftype")=="quickfix"
+    " don't conceal in quickfix window
+    setlocal conceallevel=0 concealcursor=
+  endif
   syn region rapidConcealableString matchgroup=rapidConcealableString start=/"/ skip=/""/ end=/"/ oneline keepend extend contained contains=rapidStringDoubleQuote,rapidEscapedBackSlash,rapidCharCode,rapidErrorSingleBackslash,rapidErrorStringTooLong,@Spell conceal 
   highlight default link rapidConcealableString String
   syn region rapidStructVal matchgroup=rapidStructDelimiter start=/\[/ end=/\]/ contains=rapidStructVal,rapidBoolean,rapidDec,rapidHex,rapidOct,rapidBin,rapidFloat,rapidConcealableString,rapidDelimiter,rapidConstant,rapidErrNo,rapidIntNo,rapidOperator keepend extend conceal cchar=* 
@@ -520,6 +526,11 @@ else
   syn keyword rapidConstant AW_IGNI_ERR AW_EQIP_ERR AW_START_ERR AW_STOP_ERR AW_TRACK_ERR AW_TRACKCORR_ERR AW_TRACKSTA_ERR AW_USERSIG_ERR AW_WELD_ERR AW_WIRE_ERR
   " EGM egmframetype
   syn keyword rapidConstant EGM_FRAME_BASE EGM_FRAME_TOOL EGM_FRAME_WOBJ EGM_FRAME_WORLD EGM_FRAME_JOINT
+  " EGM egmstate
+  syn keyword rapidConstant EGM_STATE_DISCONNECTED EGM_STATE_CONNECTED EGM_STATE_RUNNING
+  " EGM egmstopmode
+  syn keyword rapidConstant EGM_STOP_HOLD EGM_STOP_RAMP_DOWN
+  syn keyword rapidConstant EGM_MAX_RAPID_DNUM
   " Events
   syn keyword rapidConstant EE_START EE_CYCLE_START EE_PROC_START EE_PRE_PROD EE_CLOSE_JIG EE_INDEX EE_PRE_PART EE_POST_PART EE_OPEN_JIG EE_SERVICE EE_POST_PROD EE_ABORT EE_WAIT_ORDER EE_POST_PROC
   syn keyword rapidConstant EE_POWERON EE_POWERON_OR_START EE_RESTART EE_START_OR_RESTART EE_STOP EE_QSTOP EE_STOP_OR_QSTOP EE_RESET EE_STEP EE_STEP_FWD EE_STEP_BCK EE_BEFORE_INIT EE_AFTER_INIT EE_BEFORE_PROD EE_AFTER_PROD EE_BEFORE_MENU EE_AFTER_MENU
