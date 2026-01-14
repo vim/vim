@@ -146,7 +146,7 @@ function GetYAMLIndent(lnum)
             " Previous mapping key is in a list item (- key:)
             " The key effectively starts at indent + 2 (after "- ")
             " Content under it should be indented relative to the key position
-            return indent(prevmapline) + 2 + shiftwidth()
+            return indent(prevmapline) + 2
         else
             return indent(prevmapline)
         endif
