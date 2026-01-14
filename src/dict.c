@@ -1038,17 +1038,13 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
-	    if (evaluate)
-		clear_tv(&tvkey);
+	    clear_tv(&tvkey);
 	    goto failret;
 	}
 	if (check_typval_is_value(&tv) == FAIL)
 	{
-	    if (evaluate)
-	    {
-		clear_tv(&tvkey);
-		clear_tv(&tv);
-	    }
+	    clear_tv(&tvkey);
+	    clear_tv(&tv);
 	    goto failret;
 	}
 	if (evaluate)
