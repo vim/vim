@@ -1268,10 +1268,7 @@ static const struct zwp_primary_selection_source_v1_listener
 	    const char *mime_type) \
     { \
 	vwl_data_offer_T *self = data; \
-	if (STRCMP(mime_type, wayland_vim_special_mime) == 0) \
-	    self->from_vim = true; \
-	else if (!self->from_vim && \
-		self->listener->offer(self->data, self, mime_type)) \
+	if (self->listener->offer(self->data, self, mime_type)) \
 	{ \
 	    char *mime = (char *)vim_strsave((char_u *)mime_type); \
 	    if (ga_grow(&self->mime_types, 1) == FAIL) \
