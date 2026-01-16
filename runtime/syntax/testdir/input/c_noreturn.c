@@ -1,3 +1,7 @@
+// C functions - _Noreturn function specifier (since C11)(deprecated in C23)
+
+// Source: https://en.cppreference.com/w/c/language/noreturn.html
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdnoreturn.h>
@@ -16,3 +20,4 @@ int main(void)
     exit_now(2);
     puts("This code is never executed.");
 }
+

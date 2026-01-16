@@ -1,3 +1,7 @@
+// C++ attributes - noreturn (since C++11)
+
+// Source: https://en.cppreference.com/w/c/language/noreturn.html [modified by Vim Project]
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,3 +17,4 @@ int main(void)
     error_exit("Assume something is wrong");
     puts("This code is never executed.");
 }
+
