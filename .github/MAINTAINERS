@@ -289,6 +289,7 @@ runtime/ftplugin/readline.vim				@dkearns
 runtime/ftplugin/remind.vim				@joereynolds
 runtime/ftplugin/rescript.vim				@ribru17
 runtime/ftplugin/routeros.vim				@zainin
+runtime/ftplugin/roto.vim				@bsamseth
 runtime/ftplugin/rst.vim				@marshallward
 runtime/ftplugin/ruby.vim				@tpope @dkearns
 runtime/ftplugin/rust.vim				@lilyball

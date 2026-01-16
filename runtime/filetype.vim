@@ -974,6 +974,9 @@ au BufNewFile,BufRead [rR]antfile,*.rant,[rR]akefile,*.rake	setf ruby
 " Rust
 au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
 
+" Roto
+au BufNewFile,BufRead *.roto			setf roto
+
 " Sather, TI linear assembly
 au BufNewFile,BufRead *.sa			call dist#ft#FTsa()
 

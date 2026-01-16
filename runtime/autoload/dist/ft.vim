@@ -2594,6 +2594,8 @@ const ft_from_ext = {
   "roc": "roc",
   # RON (Rusty Object Notation)
   "ron": "ron",
+  # Roto
+  "roto": "roto",
   # MikroTik RouterOS script
   "rsc": "routeros",
   # Rpcgen
