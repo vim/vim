@@ -124,8 +124,6 @@ struct vwl_data_offer_S {
     void			*data;	    // Should be same as parent data
 					    // device.
     garray_T			mime_types;
-    bool			from_vim;   // If offer came from us setting the
-					    // selection.
 
     const vwl_data_offer_listener_T *listener;
     vwl_data_protocol_T		    protocol;

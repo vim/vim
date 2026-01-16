@@ -689,9 +689,6 @@ vim_main2(void)
     if (!gui.in_use)
 #  endif
     {
-	sprintf(wayland_vim_special_mime, "application/x-vim-instance-%ld",
-		mch_get_pid());
-
 	if (wayland_init_connection(wayland_display_name) == OK)
 	{
 	    TIME_MSG("connected to Wayland display");
