@@ -1,3 +1,5 @@
+#!/bin/bash
+
 curl --http2 --tlsv1.2 -O https://example.com/file.txt
 wget --inet6-only https://example.com/file.txt
 gzip -9 file
