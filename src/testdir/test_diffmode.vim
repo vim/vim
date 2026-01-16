@@ -3566,7 +3566,7 @@ func Test_diff_add_prop_in_autocmd()
   call StopVimInTerminal(buf)
 endfunc
 
-" this was causing a use-after-free by callig winframe_remove() rerursively
+" this was causing a use-after-free by calling winframe_remove() recursively
 func Test_diffexpr_wipe_buffers()
   CheckRunVimInTerminal
 
