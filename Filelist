@@ -1123,6 +1123,8 @@ LANG_GEN = \
 		runtime/tutor/sr/vim-01-beginner.tutor.json \
 		runtime/tutor/sr/vim-02-beginner.tutor \
 		runtime/tutor/sr/vim-02-beginner.tutor.json \
+		runtime/tutor/zh/vim-01-beginner.tutor \
+		runtime/tutor/zh/vim-01-beginner.tutor.json \
 		runtime/tutor/tutor1.?? \
 		runtime/tutor/tutor1.??_?? \
 		runtime/tutor/tutor1.bar \
