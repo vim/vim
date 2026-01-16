@@ -3462,6 +3462,8 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	{
 	    win->w_buffer = firstbuf;
 	    ++firstbuf->b_nwindows;
+	    if (win == curwin)
+		curbuf = curwin->w_buffer;
 	    win_init_empty(win);
 	}
 	return;
