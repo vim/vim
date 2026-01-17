@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 03
+*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4727,7 +4727,7 @@ getloclist({nr} [, {what}])				*getloclist()*
 			:echo getloclist(3, {'all': 0})
 			:echo getloclist(5, {'filewinid': 0})
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>> or dict<any>
 
 
 getmarklist([{buf}])					*getmarklist()*
@@ -5008,7 +5008,7 @@ getqflist([{what}])					*getqflist()*
 			:echo getqflist({'nr': 2, 'title': 1})
 			:echo getqflist({'lines' : ["F1:10:L10"]})
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>> or dict<any>
 
 
 getreg([{regname} [, 1 [, {list}]]])			*getreg()*
