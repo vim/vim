@@ -84,7 +84,7 @@ an <silent> 9999.40 &Help.&Find\.\.\.	:call <SID>Helpfind()<CR>
 an 9999.45 &Help.-sep1-			<Nop>
 an 9999.50 &Help.&Credits		:help credits<CR>
 an 9999.60 &Help.Co&pying		:help copying<CR>
-an 9999.70 &Help.&Sponsor	  :help sponsor<CR>
+an 9999.70 &Help.&Sponsor	  	:help sponsor<CR>
 an 9999.70 &Help.O&rphans		:help kcc<CR>
 an 9999.75 &Help.-sep2-			<Nop>
 an 9999.80 &Help.&Version		:version<CR>
@@ -98,7 +98,7 @@ if exists(':tlmenu')
   tlnoremenu 9999.45 &Help.-sep1-			<Nop>
   tlnoremenu 9999.50 &Help.&Credits			<C-W>:help credits<CR>
   tlnoremenu 9999.60 &Help.Co&pying			<C-W>:help copying<CR>
-  tlnoremenu 9999.70 &Help.&Sponsor/Register		<C-W>:help sponsor<CR>
+  tlnoremenu 9999.70 &Help.&Sponsor			<C-W>:help sponsor<CR>
   tlnoremenu 9999.70 &Help.O&rphans			<C-W>:help kcc<CR>
   tlnoremenu 9999.75 &Help.-sep2-			<Nop>
   tlnoremenu 9999.80 &Help.&Version			<C-W>:version<CR>
