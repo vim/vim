@@ -6593,6 +6593,9 @@ tabpage_close_other(tabpage_T *tp, int forceit)
     int		done = 0;
     win_T	*wp;
 
+    if (window_layout_locked(CMD_SIZE))
+	return;
+
     trigger_tabclosedpre(tp, TRUE);
 
     // Limit to 1000 windows, autocommands may add a window while we close

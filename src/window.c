@@ -124,7 +124,8 @@ frames_locked(void)
 /*
  * When the window layout cannot be changed give an error and return TRUE.
  * "cmd" indicates the action being performed and is used to pick the relevant
- * error message.
+ * error message.  When closing window(s) and the command isn't easy to know,
+ * passing CMD_SIZE will also work.
  */
     int
 window_layout_locked(enum CMD_index cmd)
@@ -2530,6 +2531,8 @@ close_windows(
 	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin)
 		&& !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 	{
+	    if (window_layout_locked(CMD_SIZE))
+		goto theend;  // Only give one error message.
 	    if (win_close(wp, FALSE) == FAIL)
 		// If closing the window fails give up, to avoid looping
 		// forever.
@@ -2551,6 +2554,8 @@ close_windows(
 		if (wp->w_buffer == buf
 		    && !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 		{
+		    if (window_layout_locked(CMD_SIZE))
+			goto theend;  // Only give one error message.
 		    win_close_othertab(wp, FALSE, tp);
 
 		    // Start all over, the tab page may be closed and
@@ -2560,6 +2565,7 @@ close_windows(
 		}
     }
 
+theend:
     if (RedrawingDisabled > 0)
 	--RedrawingDisabled;
 
@@ -3420,6 +3426,10 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     tabpage_T   *ptp = NULL;
     int		free_tp = FALSE;
 
+    // Commands that may call win_close_othertab() already check this, but
+    // check here again just in case.
+    if (window_layout_locked(CMD_SIZE))
+	return;
     // Get here with win->w_buffer == NULL when win_close() detects the tab
     // page changed.
     if (win_locked(win) || (win->w_buffer != NULL
