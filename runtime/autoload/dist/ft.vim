@@ -2827,6 +2827,8 @@ const ft_from_ext = {
   "txi": "texinfo",
   # Thrift (Apache)
   "thrift": "thrift",
+  # Tiger
+  "tig": "tiger",
   # TLA+
   "tla": "tla",
   # TPP - Text Presentation Program

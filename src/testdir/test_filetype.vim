@@ -886,6 +886,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     tf: ['file.tf', '.tfrc', 'tfrc'],
     thrift: ['file.thrift'],
     tidy: ['.tidyrc', 'tidyrc', 'tidy.conf'],
+    tiger: ['file.tig'],
     tilde: ['file.t.html'],
     tla: ['file.tla'],
     tli: ['file.tli'],
