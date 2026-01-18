@@ -1,4 +1,4 @@
-*ft_context.txt*	For Vim version 9.2.  Last change: 2026 Jan 10
+*ft_context.txt*	For Vim version 9.2.  Last change: 2026 Jan 18
 
 This is the documentation for the ConTeXt filetype plugin.
 
@@ -117,7 +117,7 @@ and this option is not set, standard `make` is used. If this option is set,
 <
 NOTE: before using |:make|, ensure that the working directory of the buffer is
 set to the directory of the file you want to typeset. Additionally, be aware
-that |:make| searches for `mtxrun in $PATH.
+that |:make| searches for `mtxrun` in $PATH.
 
 					*'g:context_extra_options'*
 A list of additional options to pass to `mtxrun`.
