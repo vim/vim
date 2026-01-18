@@ -179,6 +179,9 @@
 #ifdef HAVE_DUP
 # undef HAVE_DUP
 #endif
+#ifdef HAVE_FSYNC
+# undef HAVE_FSYNC
+#endif
 
 // Avoid redefining TRUE/FALSE in vterm.h.
 #ifdef TRUE
