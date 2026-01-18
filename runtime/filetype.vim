@@ -535,7 +535,6 @@ au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 
 " HTML (.stm for server side, .shtml is server-side or superhtml)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
-au BufNewFile,BufRead *.cshtml			setf html
 
 " Host config
 au BufNewFile,BufRead */etc/host.conf		setf hostconf

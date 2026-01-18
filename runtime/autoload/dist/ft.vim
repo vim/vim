@@ -2559,6 +2559,9 @@ const ft_from_ext = {
   "rakumod": "raku",
   "rakudoc": "raku",
   "rakutest": "raku",
+  # Razor
+  "cshtml": "razor",
+  "razor": "razor",
   # Renderman Interface Bytestream
   "rib": "rib",
   # Rego Policy Language
