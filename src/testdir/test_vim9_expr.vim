@@ -231,6 +231,38 @@ def Test_expr1_falsy()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # falsy operator with objects and enum values
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    var c = C.new()
+    assert_equal(c, c ?? 'falsy')
+    assert_equal('truthy', !c ?? 'truthy')
+    assert_equal('falsy', null_object ?? 'falsy')
+    assert_equal(true, !null_object ?? 'truthy')
+
+    enum Color
+      Red,
+      Blue
+    endenum
+    assert_equal(Color.Red, Color.Red ?? 'falsy')
+    assert_equal('truthy', !Color.Red ?? 'truthy')
+
+    def Fn()
+      var c2 = C.new()
+      assert_equal(c2, c2 ?? 'falsy')
+      assert_equal('truthy', !c2 ?? 'truthy')
+      assert_equal('falsy', null_object ?? 'falsy')
+      assert_equal(true, !null_object ?? 'truthy')
+      assert_equal(Color.Red, Color.Red ?? 'falsy')
+      assert_equal('truthy', !Color.Red ?? 'truthy')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
   var msg = "White space required before and after '??'"
   call v9.CheckDefAndScriptFailure(["var x = 1?? 'one' : 'two'"], msg, 1)
   call v9.CheckDefAndScriptFailure(["var x = 1 ??'one' : 'two'"], msg, 1)
