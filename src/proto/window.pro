@@ -28,7 +28,7 @@ void close_windows(buf_T *buf, int keep_curwin);
 int last_window(void);
 int one_window(void);
 int win_close(win_T *win, int free_buf);
-void trigger_tabclosedpre(tabpage_T *tp, int directly);
+void trigger_tabclosedpre(tabpage_T *tp);
 void snapshot_windows_scroll_size(void);
 void may_make_initial_scroll_size_snapshot(void);
 void may_trigger_win_scrolled_resized(void);

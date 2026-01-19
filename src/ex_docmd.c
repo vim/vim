@@ -6568,7 +6568,9 @@ tabpage_close(int forceit)
     if (window_layout_locked(CMD_tabclose))
 	return;
 
-    trigger_tabclosedpre(curtab, TRUE);
+    trigger_tabclosedpre(curtab);
+    curtab->tp_did_tabclosedpre = TRUE;
+    tabpage_T *save_curtab = curtab;
 
     // First close all the windows but the current one.  If that worked then
     // close the last window in this tab, that will close it.
@@ -6576,6 +6578,10 @@ tabpage_close(int forceit)
 	close_others(TRUE, forceit);
     if (ONE_WINDOW)
 	ex_win_close(forceit, curwin, NULL);
+    if (curtab == save_curtab)
+	// When closing the tab page failed, reset tp_did_tabclosedpre so that
+	// TabClosedPre behaves consistently on next :close vs :tabclose.
+	curtab->tp_did_tabclosedpre = FALSE;
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
@@ -6596,7 +6602,8 @@ tabpage_close_other(tabpage_T *tp, int forceit)
     if (window_layout_locked(CMD_SIZE))
 	return;
 
-    trigger_tabclosedpre(tp, TRUE);
+    trigger_tabclosedpre(tp);
+    tp->tp_did_tabclosedpre = TRUE;
 
     // Limit to 1000 windows, autocommands may add a window while we close
     // one.  OK, so I'm paranoid...
@@ -6605,10 +6612,22 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 	wp = tp->tp_firstwin;
 	ex_win_close(forceit, wp, tp);
 
-	// Autocommands may delete the tab page under our fingers and we may
-	// fail to close a window with a modified buffer.
-	if (!valid_tabpage(tp) || tp->tp_firstwin == wp)
+	// Autocommands may delete the tab page under our fingers.
+	if (!valid_tabpage(tp))
 	    break;
+	// We may fail to close a window with a modified buffer.
+	if (tp->tp_firstwin == wp)
+	{
+	    done = 1000;
+	    break;
+	}
+    }
+    if (done >= 1000)
+    {
+	// When closing the tab page failed, reset tp_did_tabclosedpre so that
+	// TabClosedPre behaves consistently on next :close vs :tabclose.
+	tp->tp_did_tabclosedpre = FALSE;
+	return;
     }
 
     apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);

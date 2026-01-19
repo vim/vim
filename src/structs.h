@@ -3743,6 +3743,7 @@ struct tabpage_S
     int		    tp_prev_which_scrollbars[3];
 				    // previous value of which_scrollbars
 #endif
+    int		    tp_did_tabclosedpre;  // whether TabClosedPre was triggered
 
     char_u	    *tp_localdir;	// absolute path of local directory or
 					// NULL
