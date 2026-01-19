@@ -25,7 +25,7 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring< include< define< keywordprg< omnifunc<
+    setl fo< isk< com< tw< commentstring< include< define< keywordprg< omnifunc< path<
     sil! delc -buffer VimKeywordPrg
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
@@ -134,6 +134,10 @@ endif
 if &tw == 0
   setlocal tw=78
 endif
+
+" set 'path' to common Vim directories
+setlocal path-=/usr/include
+setlocal path+=pack/**,runtime/**,autoload/**,colors/**,compiler/**,ftplugin/**,indent/**,keymap/**,macros/**,plugin/**,syntax/**,after/**
 
 if !exists("no_plugin_maps") && !exists("no_vim_maps")
   let b:did_add_maps = 1
