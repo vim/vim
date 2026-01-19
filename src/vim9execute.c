@@ -8131,12 +8131,15 @@ tv2bool(typval_T *tv)
 	case VAR_OBJECT:
 	    return tv->vval.v_object != NULL;
 
+	case VAR_CLASS:
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(tv);
+	    break;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_INSTR:
-	case VAR_CLASS:
-	case VAR_TYPEALIAS:
 	    break;
     }
     return FALSE;
