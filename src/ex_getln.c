@@ -1994,7 +1994,7 @@ getcmdline_int(
 
 	int key_is_wc = (c == p_wc && KeyTyped) || c == p_wcm;
 	if ((cmdline_pum_active() || wild_menu_showing || did_wild_list)
-		&& !key_is_wc)
+		&& !key_is_wc && xpc.xp_numfiles > 0)
 	{
 	    // Ctrl-Y: Accept the current selection and close the popup menu.
 	    // Ctrl-E: cancel the cmdline popup menu and return the original
