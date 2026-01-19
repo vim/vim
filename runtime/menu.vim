@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Jan 18
+" Last Change:	2026 Jan 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
@@ -84,7 +84,7 @@ an <silent> 9999.40 &Help.&Find\.\.\.	:call <SID>Helpfind()<CR>
 an 9999.45 &Help.-sep1-			<Nop>
 an 9999.50 &Help.&Credits		:help credits<CR>
 an 9999.60 &Help.Co&pying		:help copying<CR>
-an 9999.70 &Help.&Sponsor	  	:help sponsor<CR>
+an 9999.70 &Help.&Sponsor		:help sponsor<CR>
 an 9999.70 &Help.O&rphans		:help kcc<CR>
 an 9999.75 &Help.-sep2-			<Nop>
 an 9999.80 &Help.&Version		:version<CR>
@@ -175,7 +175,7 @@ vnoremenu 20.340 &Edit.Cu&t<Tab>"+x		"+x
 vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
 if exists(':tlmenu')
-  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y 	<C-W>:<C-Y><CR>
+  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-W>:<C-Y><CR>
 endif
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
@@ -748,14 +748,14 @@ def s:BMShow()
 
   # Remove old menu, if it exists; keep one entry to avoid a torn off menu to
   # disappear.  Use try/catch to avoid setting v:errmsg
-  try 
-    unmenu &Buffers 
-  catch 
+  try
+    unmenu &Buffers
+  catch
   endtry
   exe 'noremenu ' .. g:bmenu_priority .. ".1 &Buffers.Dummy l"
-  try 
-    unmenu! &Buffers 
-  catch 
+  try
+    unmenu! &Buffers
+  catch
   endtry
 
   # create new menu
