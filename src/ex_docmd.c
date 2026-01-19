@@ -6062,9 +6062,9 @@ ex_highlight(exarg_T *eap)
  * (because of an error).  May need to restore the terminal mode.
  */
     void
-not_exiting(void)
+not_exiting(int save_exiting)
 {
-    exiting = FALSE;
+    exiting = save_exiting;
     settmode(TMODE_RAW);
 }
 
@@ -6139,6 +6139,7 @@ ex_quit(exarg_T *eap)
     netbeansForcedQuit = eap->forceit;
 #endif
 
+    int save_exiting = exiting;
     /*
      * If there is only one relevant window we will exit.
      */
@@ -6151,7 +6152,7 @@ ex_quit(exarg_T *eap)
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit, TRUE)))
     {
-	not_exiting();
+	not_exiting(save_exiting);
     }
     else
     {
@@ -6163,7 +6164,7 @@ ex_quit(exarg_T *eap)
 	// :h|wincmd w|q      - quit
 	if (only_one_window() && (ONE_WINDOW || eap->addr_count == 0))
 	    getout(0);
-	not_exiting();
+	not_exiting(save_exiting);
 #ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 #endif
@@ -6219,10 +6220,11 @@ ex_quit_all(exarg_T *eap)
 {
     if (before_quit_all(eap) == FAIL)
 	return;
+    int save_exiting = exiting;
     exiting = TRUE;
     if (eap->forceit || !check_changed_any(FALSE, FALSE))
 	getout(0);
-    not_exiting();
+    not_exiting(save_exiting);
 }
 
 /*
@@ -6725,6 +6727,7 @@ ex_exit(exarg_T *eap)
 	return;
     }
 
+    int save_exiting = exiting;
     /*
      * we plan to exit if there is only one relevant window
      */
@@ -6739,13 +6742,13 @@ ex_exit(exarg_T *eap)
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit, FALSE)))
     {
-	not_exiting();
+	not_exiting(save_exiting);
     }
     else
     {
 	if (only_one_window())	    // quit last window, exit Vim
 	    getout(0);
-	not_exiting();
+	not_exiting(save_exiting);
 #ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 #endif
