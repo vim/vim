@@ -1,44 +1,99 @@
-.TH VIMTUTOR 1 "2001 April 2"
+.TH VIMTUTOR 1 "2024 December 03"
 .SH 名前
 vimtutor \- Vim チュートリアル
 .SH 書式
 .br
-.B vimtutor [\-g] [language]
+.B vimtutor [\-l | \-\-language ISO639] [\-c | \-\-chapter NUMBER] [\-g | \-\-gui] [ISO639]
+.br
+.B vimtutor [\-h | \-\-help]
+.br
+.B vimtutor [\-\-list]
 .SH 説明
 .B Vim
 のチュートリアルを起動します。
-演習ファイルのコピーを使って実施するので、オリジナルの演習ファイルを壊してしまう心配はありません。
 .PP
 .B Vim
 を初めて学ぶ人向けのチュートリアルです。
+省略可能な [ISO639] 引数は "ja" や "es" のような 2 または 3 文字の言語名です。
 .PP
-引数に \-g を指定すると GUI 版の vim が利用可能であれば vim ではなく gvim
-を使って vimtutor が開始します。gvim が見つからないときは Vim が使用されます。
-.PP
-[language] 引数は "ja" や "es" などの二文字の言語名です。
-[language] 引数を省略した場合はロケールの言語が使われます。
-翻訳された演習ファイルがある場合は、そのファイルが使われます。
-ない場合は英語のファイルが使われます。
+.B vimtutor
+は演習ファイルの一時的なコピーを開くので、オリジナルの演習ファイルを上書きしてしまう心配はありません。
 .PP
 .B Vim
-は Vi 互換モードで起動されます。
+は常に
+.B Vi
+非互換モードで起動されます。
+.SH オプション
+.TP
+.BR \-l ", " \-\-language\ \fIISO639\fR
+2 または 3 文字の言語コードを設定します。
+例: 'ja', 'es', 'bar'
+ロケールの言語が使用可能であればそれが使われ、なければ英語がデフォルトとして使われます。
+.TP
+.BR \-c ", " \-\-chapter\ \fINUMBER\fR
+章番号を設定します。
+デフォルトは第 1 章です。
+.TP
+.BR \-g ", " \-\-gui
+使用可能であれば
+.B vimtutor
+を GUI 版の vim を使って開始します。そうでなければコンソール版の vim を使用します。
+.TP
+.BR \-h ", " \-\-help
+使い方を表示します。
+.TP
+.BR \-\-list
+章と言語の一覧を表示します。
+.SH 例
+.B vimtutor
+をドイツ語の第 1 章で開始するには:
+.PP
+.nf
+.RS
+vimtutor de
+.RE
+.fi
+.PP
+英語の第 2 章の場合は:
+.PP
+.nf
+.RS
+vimtutor -c2
+.RE
+.fi
+.PP
+GUI でバイエルン語の第 1 章を開始する際の長い形式のコマンドは:
+.PP
+.nf
+.RS
+vimtutor --language bar --chapter 1 --gui
+.RE
+.fi
 .SH ファイル
 .TP 15
-/usr/local/lib/vim/tutor/tutor[.language]
+/usr/local/share/vim/vim??/tutor/tutor1[.language]
 .B Vimtutor
-の演習ファイル。
+の第 1 章の演習ファイル。
 .TP 15
-/usr/local/lib/vim/tutor/tutor.vim
-演習ファイルをコピーするための Vim スクリプト。
-.SH 著者
+/usr/local/share/vim/vim??/tutor/tutor2[.language]
 .B Vimtutor
-は、Colorado State University の Charles Smith のアイデアを基に、
+の第 2 章の演習ファイル。
+.TP 15
+/usr/local/share/vim/vim??/tutor/tutor.vim
+.B Vimtutor
+の演習ファイルをコピーするための
+.B Vim
+スクリプト。
+.SH 著者
+.B The Vi Tutorial
+は、元々 Colorado State University の Charles Smith のアイデアを基に、
 Colorado School of Mines の Michael C. Pierce と Robert K. Ware
-の両名によって Vi 向けに作成されたものを基にしています。
-E-mail: bware@mines.colorado.edu (現在は無効).
-.br
+の両名によって Vi 向けに作成されました。
+.B E-mail: bware@mines.colorado.edu (現在は無効).
+.PP
 .B Vim
 に合わせて Bram Moolenaar が変更を加えました。
+.PP
 翻訳者の名前は演習ファイルを参照してください。
 .SH 関連項目
 vim(1)
