@@ -730,7 +730,7 @@ jobs:
       - name: Check version
         shell: cmd
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%
           if "${{ matrix.GUI }}"=="yes" (
             start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
             type version.txt
@@ -780,7 +780,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -797,7 +797,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%
