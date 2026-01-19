@@ -530,6 +530,10 @@ au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
+" Tiltfile
+" Also see Tiltfile.* below.
+au BufNewFile,BufRead Tiltfile,tiltfile,*.[tT]iltfile	setf tiltfile
+
 " Translate shell
 au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 
@@ -1547,6 +1551,9 @@ au BufNewFile,BufRead .tcshrc*	call dist#ft#SetFileTypeShell("tcsh")
 
 " csh scripts ending in a star
 au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
+
+" Tiltfile
+au BufNewFile,BufRead Tiltfile.*	call s:StarSetf('tiltfile')
 
 " tmux configuration with arbitrary extension
 au BufNewFile,BufRead {.,}tmux*.conf*		call s:StarSetf('tmux')
