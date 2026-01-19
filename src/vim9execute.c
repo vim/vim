@@ -8127,12 +8127,15 @@ tv2bool(typval_T *tv)
 #endif
 	case VAR_BLOB:
 	    return tv->vval.v_blob != NULL && tv->vval.v_blob->bv_ga.ga_len > 0;
+
+	case VAR_OBJECT:
+	    return tv->vval.v_object != NULL;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_INSTR:
 	case VAR_CLASS:
-	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
 	    break;
     }

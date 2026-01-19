@@ -1084,8 +1084,11 @@ empty list and dict is falsy:
 	special		true or v:true
 	job		when not NULL
 	channel		when not NULL
-	class		when not NULL
-	object		when not NULL (TODO: when isTrue() returns true)
+	class		not applicable
+	object		when not NULL
+	enum		not applicable
+	enum value	always
+	typealias	not applicable
 
 The boolean operators "||" and "&&" expect the values to be boolean, zero or
 one: >
