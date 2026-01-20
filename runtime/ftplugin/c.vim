@@ -16,7 +16,7 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< com< ofu< cms< def< inc< | if has('vms') | setl isk< | endif"
+let b:undo_ftplugin = "setl fo< com< ofu< cms< def< inc< kp< | if has('vms') | setl isk< | endif"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
@@ -38,6 +38,15 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://
 " In VMS C keywords contain '$' characters.
 if has("vms")
   setlocal iskeyword+=$
+endif
+
+" Use :Man for a nicer manual that also works in GUI
+runtime ftplugin/man.vim
+
+if exists(":Man") == 2
+  setlocal keywordprg=:Man\ -s2,3
+else
+  setlocal keywordprg=man\ -s2,3
 endif
 
 " When the matchit plugin is loaded, this makes the % command skip parens and
