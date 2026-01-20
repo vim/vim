@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jan 11
+# Last Change:		2026 Jan 20
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -3033,6 +3033,9 @@ const ft_from_ext = {
   "blp": "blueprint",
   # Blueprint build system file
   "bp": "bp",
+  # Tiltfile
+  "Tiltfile": "tiltfile",
+  "tiltfile": "tiltfile"
 }
 # Key: file name (the final path component, excluding the drive and root)
 # Value: filetype
@@ -3319,6 +3322,9 @@ const ft_from_name = {
   # TF (TinyFugue) mud client
   ".tfrc": "tf",
   "tfrc": "tf",
+  # Tilefile
+  "Tiltfile": "tiltfile",
+  "tiltfile": "tiltfile",
   # Trustees
   "trustees.conf": "trustees",
   # Vagrant (uses Ruby syntax)
