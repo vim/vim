@@ -79,6 +79,15 @@ syn match debcontrolComment "^#.*$" contains=@Spell
 " (from BuildProfiles.pm) as the de facto spec
 syn match debcontrolBuildProfile "<\@<!<\s*!\=[-?/;:=@%*~A-Za-z0-9+.]\+\%(\s\+!\=[-?/;:=@%*~A-Za-z0-9+.]\+\)*\s*>" contained
 
+" Architecture specification for a package relationship
+let s:all_archs = join(g:debArchitectureKernelAnyArch, '\|')
+      \. '\|'
+      \. join(g:debArchitectureAnyKernelArch, '\|')
+      \. '\|'
+      \. join(g:debArchitectureArchs, '\|')
+exe 'syn match debcontrolArchSpec "\[\s*!\=\%('. s:all_archs .'\)\%(\s\+!\=\%('. s:all_archs. '\)\)*\s*\]" contained'
+unlet s:all_archs
+
 syn case ignore
 
 " Handle all fields from deb-src-control(5)
@@ -87,7 +96,7 @@ syn case ignore
 syn region debcontrolField matchgroup=debcontrolKey start="^\%(XSBC-Original-\)\=Maintainer: " end="$" contains=debcontrolVariable,debcontrolEmail oneline
 syn region debcontrolField matchgroup=debcontrolKey start="^Build-Profiles: " end="$" contains=debcontrolVariable,debcontrolBuildProfile oneline
 syn region debcontrolField matchgroup=debcontrolKey start="^\%(Standards-Version\|Bugs\|Origin\|X[SB]-Python-Version\|\%(XS-\)\=Vcs-Mtn\|\%(XS-\)\=Testsuite\%(-Triggers\)\=\|Build-Driver\|Tag\|Subarchitecture\|Kernel-Version\|Installer-Menu-Item\): " end="$" contains=debcontrolVariable oneline
-syn region debcontrolMultiField matchgroup=debcontrolKey start="^\%(Build-\%(Conflicts\|Depends\)\%(-Arch\|-Indep\)\=\|\%(Pre-\)\=Depends\|Recommends\|Suggests\|Breaks\|Enhances\|Replaces\|Conflicts\|Provides\|Built-Using\|Static-Built-Using\): *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment,debcontrolBuildProfile
+syn region debcontrolMultiField matchgroup=debcontrolKey start="^\%(Build-\%(Conflicts\|Depends\)\%(-Arch\|-Indep\)\=\|\%(Pre-\)\=Depends\|Recommends\|Suggests\|Breaks\|Enhances\|Replaces\|Conflicts\|Provides\|Built-Using\|Static-Built-Using\): *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment,debcontrolBuildProfile,debcontrolArchSpec
 syn region debcontrolMultiField matchgroup=debcontrolKey start="^X[SBC]\{0,3\}\%(Private-\)\=-[-a-zA-Z0-9]\+: *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment
 syn region debcontrolMultiField matchgroup=debcontrolKey start="^Uploaders: *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolEmail,debcontrolVariable,debcontrolComment
 syn region debcontrolMultiFieldSpell matchgroup=debcontrolKey start="^Description: *" skip="^[ \t]" end="^$"me=s-1 end="^[^ \t#]"me=s-1 contains=debcontrolVariable,debcontrolComment,@Spell
@@ -122,6 +131,7 @@ hi def link debcontrolPriority      Normal
 hi def link debcontrolSection       Normal
 hi def link debcontrolPackageType   Normal
 hi def link debcontrolVariable      Identifier
+hi def link debcontrolArchSpec      Identifier
 hi def link debcontrolBuildProfile  Identifier
 hi def link debcontrolEmail         Identifier
 hi def link debcontrolVcsSvn        Identifier
