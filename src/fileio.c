@@ -4822,7 +4822,7 @@ create_readdirex_item(char_u *path, char_u *name)
 {
     dict_T	*item;
     char	*p;
-    size_t	len;
+    size_t	pathlen, len;
     stat_T	st;
     int		ret, link = FALSE;
     varnumber_T	size;
@@ -4836,11 +4836,15 @@ create_readdirex_item(char_u *path, char_u *name)
 	return NULL;
     item->dv_refcount++;
 
-    len = STRLEN(path) + 1 + STRLEN(name) + 1;
+    pathlen = STRLEN(path);
+    len = pathlen + 1 + STRLEN(name) + 1;
     p = alloc(len);
     if (p == NULL)
 	goto theend;
-    vim_snprintf(p, len, "%s/%s", path, name);
+    if (pathlen > 0 && path[pathlen - 1] == '/')
+	vim_snprintf(p, len, "%s%s", path, name);
+    else
+	vim_snprintf(p, len, "%s/%s", path, name);
     ret = mch_lstat(p, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {
