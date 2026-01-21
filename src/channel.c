@@ -1643,12 +1643,12 @@ channel_listen_unix(
     channel->ch_port = 0;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
-    #ifdef FEAT_GUI
+#ifdef FEAT_GUI
     channel_gui_register_one(channel, PART_SOCK);
-    #endif
+#endif
 
     return channel;
-    }
+}
 
      void
 ch_close_part(channel_T *channel, ch_part_T part)
