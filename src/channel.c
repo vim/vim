@@ -1261,8 +1261,6 @@ channel_open_func(typval_T *argvars)
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
-    (void)is_ipv6;  // unused
-
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
@@ -1362,7 +1360,6 @@ channel_listen_func(typval_T *argvars)
     char_u	*p;
     char	*rest;
     int		port;
-    int		is_ipv6 = FALSE;
     int		is_unix = FALSE;
     jobopt_T    opt;
     channel_T	*channel = NULL;
@@ -1392,7 +1389,6 @@ channel_listen_func(typval_T *argvars)
     else if (*address == '[')
     {
 	// ipv6 address
-	is_ipv6 = TRUE;
 	p = vim_strchr(address + 1, ']');
 	if (p == NULL || *++p != ':')
 	{
@@ -4087,7 +4083,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	if (channel->ch_listen)
 	{
 	    sock_T		newfd;
-	    socklen_t		len;
+	    socklen_t		socklen;
 	    channel_T		*newchannel;
 	    typval_T		argv[2];
 	    char_u		namebuf[256];
@@ -4099,8 +4095,8 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	        ch_error(NULL, "Cannot allocate channel.");
 	        return;
 	    }
-	    len = sizeof(client);
-	    newfd = accept(fd, (struct sockaddr*)&client, &len);
+	    socklen = sizeof(client);
+	    newfd = accept(fd, (struct sockaddr*)&client, &socklen);
 	    if (newfd < 0)
 	    {
 		ch_error(NULL, "Cannot accept channel.");
