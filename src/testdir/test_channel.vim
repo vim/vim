@@ -556,7 +556,7 @@ func Test_raw_pipe()
   " ch_canread().
   " Also test the non-blocking option.
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
+        \ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
 
@@ -639,7 +639,7 @@ func Test_raw_pipe_blob()
   " ch_canread().
   " Also test the non-blocking option.
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
+        \ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
 
@@ -713,7 +713,7 @@ endfunc
 func Test_nl_read_file()
   call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput', 'D')
   let g:job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in_io': 'file', 'in_name': 'Xinput'})
+        \ {'in_io': 'file', 'in_name': 'Xinput'})
   call assert_equal("run", job_status(g:job))
   try
     let handle = job_getchannel(g:job)
@@ -729,7 +729,7 @@ endfunc
 
 func Test_nl_write_out_file()
   let g:job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_io': 'file', 'out_name': 'Xoutput'})
+        \ {'out_io': 'file', 'out_name': 'Xoutput'})
   call assert_equal("run", job_status(g:job))
   try
     let handle = job_getchannel(g:job)
@@ -746,7 +746,7 @@ endfunc
 
 func Test_nl_write_err_file()
   let g:job = job_start(s:python . " test_channel_pipe.py",
-	\ {'err_io': 'file', 'err_name': 'Xoutput'})
+        \ {'err_io': 'file', 'err_name': 'Xoutput'})
   call assert_equal("run", job_status(g:job))
   try
     let handle = job_getchannel(g:job)
@@ -762,7 +762,7 @@ endfunc
 
 func Test_nl_write_both_file()
   let g:job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_io': 'file', 'out_name': 'Xoutput', 'err_io': 'out'})
+        \ {'out_io': 'file', 'out_name': 'Xoutput', 'err_io': 'out'})
   call assert_equal("run", job_status(g:job))
   try
     let handle = job_getchannel(g:job)
@@ -929,7 +929,7 @@ endfunc
 
 func Test_pipe_both_to_buffer()
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_io': 'buffer', 'out_name': 'pipe-err', 'err_io': 'out'})
+        \ {'out_io': 'buffer', 'out_name': 'pipe-err', 'err_io': 'out'})
   call assert_equal("run", job_status(job))
   let handle = job_getchannel(job)
   call assert_equal(bufnr('pipe-err'), ch_getbufnr(handle, 'out'))
@@ -1037,7 +1037,7 @@ endfunc
 
 func Test_pipe_to_nameless_buffer()
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_io': 'buffer'})
+        \ {'out_io': 'buffer'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -1056,7 +1056,7 @@ func Test_pipe_to_buffer_json()
   CheckFunction reltimefloat
 
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_io': 'buffer', 'out_mode': 'json'})
+        \ {'out_io': 'buffer', 'out_mode': 'json'})
   call assert_equal("run", job_status(job))
   try
     let handle = job_getchannel(job)
@@ -1089,9 +1089,9 @@ func Test_pipe_io_two_buffers()
   set buftype=nofile
 
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in_io': 'buffer', 'in_name': 'pipe-input', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-output',
-	\  'block_write': 1})
+        \ {'in_io': 'buffer', 'in_name': 'pipe-input', 'in_top': 0,
+        \  'out_io': 'buffer', 'out_name': 'pipe-output',
+        \  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Gaecho hello\<CR>"
@@ -1120,9 +1120,9 @@ func Test_pipe_io_one_buffer()
   set buftype=nofile
 
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'in_io': 'buffer', 'in_name': 'pipe-io', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-io',
-	\  'block_write': 1})
+        \ {'in_io': 'buffer', 'in_name': 'pipe-io', 'in_top': 0,
+        \  'out_io': 'buffer', 'out_name': 'pipe-io',
+        \  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Goecho hello\<CR>"
@@ -1151,9 +1151,9 @@ func Test_write_to_buffer_and_scroll()
       wincmd w
       call deletebufline('Xscrollbuffer', 1, '$')
       if has('win32')
-	let cmd = ['cmd', '/c', 'echo sometext']
+        let cmd = ['cmd', '/c', 'echo sometext']
       else
-	let cmd = [&shell, &shellcmdflag, 'echo sometext']
+        let cmd = [&shell, &shellcmdflag, 'echo sometext']
       endif
       call job_start(cmd, #{out_io: 'buffer', out_name: 'Xscrollbuffer'})
   END
@@ -1170,7 +1170,7 @@ func Test_pipe_null()
   " We cannot check that no I/O works, we only check that the job starts
   " properly.
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in_io': 'null'})
+        \ {'in_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('something', ch_read(job))
@@ -1179,7 +1179,7 @@ func Test_pipe_null()
   endtry
 
   let job = job_start(s:python . " test_channel_pipe.py err-out",
-	\ {'out_io': 'null'})
+        \ {'out_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('err-out', ch_read(job, {"part": "err"}))
@@ -1188,7 +1188,7 @@ func Test_pipe_null()
   endtry
 
   let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'err_io': 'null'})
+        \ {'err_io': 'null'})
   call assert_equal("run", job_status(job))
   try
     call assert_equal('something', ch_read(job))
@@ -1271,10 +1271,10 @@ func Test_out_cb()
     let g:Ch_errmsg = self.thisis . a:msg
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'out_cb': dict.outHandler,
-	\  'out_mode': 'json',
-	\  'err_cb': dict.errHandler,
-	\  'err_mode': 'json'})
+        \ {'out_cb': dict.outHandler,
+        \  'out_mode': 'json',
+        \  'err_cb': dict.errHandler,
+        \  'err_mode': 'json'})
   call assert_equal("run", job_status(job))
   call test_garbagecollect_now()
   try
@@ -1320,8 +1320,8 @@ func Test_out_close_cb()
     let s:counter += 1
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py quit now",
-	\ {'out_cb': 'OutHandler',
-	\  'close_cb': 'CloseHandler'})
+        \ {'out_cb': 'OutHandler',
+        \  'close_cb': 'CloseHandler'})
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))
   try
@@ -1340,7 +1340,7 @@ func Test_read_in_close_cb()
     let g:Ch_received = ch_read(a:chan)
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py quit now",
-	\ {'close_cb': 'CloseHandler'})
+        \ {'close_cb': 'CloseHandler'})
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))
   try
@@ -1360,7 +1360,7 @@ func Test_read_in_close_cb_incomplete()
     endwhile
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py incomplete",
-	\ {'close_cb': 'CloseHandler'})
+        \ {'close_cb': 'CloseHandler'})
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))
   try
@@ -1427,7 +1427,7 @@ func Test_exit_cb_wipes_buf()
   let g:wipe_buf = bufnr('')
 
   let job = job_start(has('win32') ? 'cmd /D /c echo:' : ['true'],
-	\ {'exit_cb': 'ExitCbWipe'})
+        \ {'exit_cb': 'ExitCbWipe'})
   let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
   call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
@@ -2265,16 +2265,16 @@ func Test_zz_nl_err_to_out_pipe()
     let found_stop = 0
     for l in loglines
       if l =~ 'Test_zz_nl_err_to_out_pipe'
-	let found_test = 1
+        let found_test = 1
       endif
       if l =~ 'SEND on.*echo something'
-	let found_send = 1
+        let found_send = 1
       endif
       if l =~ 'RECV on.*something'
-	let found_recv = 1
+        let found_recv = 1
       endif
       if l =~ 'Stopping job with'
-	let found_stop = 1
+        let found_stop = 1
       endif
     endfor
     call assert_equal(1, found_test)
@@ -2769,13 +2769,13 @@ func LspTests(port)
       call ch_log('Test_listen()')
       let server = ch_listen('127.0.0.1:12345', {'callback': function('s:test_listen_accept')})
       if ch_status(server) == 'fail'
-  	call assert_report("Can't listen channel")
-  	return
+          call assert_report("Can't listen channel")
+          return
       endif
       let handle = ch_open('127.0.0.1:12345', s:chopt)
       if ch_status(handle) == 'fail'
-  	call assert_report("Can't open channel")
-  	return
+          call assert_report("Can't open channel")
+          return
       endif
       call ch_sendraw(handle, 'hello')
       call WaitFor('"" != g:server_received_msg')

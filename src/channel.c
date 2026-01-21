@@ -4092,8 +4092,8 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    newchannel = add_channel();
 	    if (newchannel == NULL)
 	    {
-	        ch_error(NULL, "Cannot allocate channel.");
-	        return;
+		ch_error(NULL, "Cannot allocate channel.");
+		return;
 	    }
 	    socklen = sizeof(client);
 	    newfd = accept(fd, (struct sockaddr*)&client, &socklen);
