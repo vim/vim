@@ -1261,6 +1261,8 @@ channel_open_func(typval_T *argvars)
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
+    (void)is_ipv6;  // unused
+
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
@@ -1468,7 +1470,6 @@ channel_listen(
     struct hostent	*host;
     int			val = 1;
     channel_T		*channel;
-    int			ret;
 
     channel = add_channel();
     if (channel == NULL)
@@ -1553,7 +1554,7 @@ channel_listen(
     channel->ch_listen = TRUE;
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
-    channel->ch_hostname = vim_strsave((char_u *)hostname);
+    channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
     channel->ch_port = port_in;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
@@ -1642,16 +1643,16 @@ channel_listen_unix(
     channel->ch_listen = TRUE;
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
-    channel->ch_hostname = vim_strsave((char_u *)path);
+    channel->ch_hostname = (char *)vim_strsave((char_u *)path);
     channel->ch_port = 0;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
-#ifdef FEAT_GUI
+    #ifdef FEAT_GUI
     channel_gui_register_one(channel, PART_SOCK);
-#endif
+    #endif
 
     return channel;
-}
+    }
 
      void
 ch_close_part(channel_T *channel, ch_part_T part)
@@ -4086,7 +4087,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	if (channel->ch_listen)
 	{
 	    sock_T		newfd;
-	    int			len;
+	    socklen_t		len;
 	    channel_T		*newchannel;
 	    typval_T		argv[2];
 	    char_u		namebuf[256];
@@ -4095,8 +4096,8 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    newchannel = add_channel();
 	    if (newchannel == NULL)
 	    {
-		ch_error(NULL, "Cannot allocate channel.");
-		return;
+	        ch_error(NULL, "Cannot allocate channel.");
+	        return;
 	    }
 	    len = sizeof(client);
 	    newfd = accept(fd, (struct sockaddr*)&client, &len);
