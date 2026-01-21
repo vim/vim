@@ -4121,6 +4121,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    argv[1].vval.v_string = vim_strsave(namebuf);
 	    invoke_callback(newchannel, &channel->ch_callback, argv);
 	    --safe_to_invoke_callback;
+	    clear_tv(&argv[1]);
 	    return;
 	}
 	if (use_socket)
