@@ -34,7 +34,7 @@ exe 'syn keyword debcontrolArchitecture contained '. join(g:debArchitectureKerne
 exe 'syn keyword debcontrolArchitecture contained '. join(g:debArchitectureAnyKernelArch)
 exe 'syn keyword debcontrolArchitecture contained '. join(g:debArchitectureArchs)
 
-" Keep in sync with https://metadata.ftp-master.org/sections.822
+" Keep in sync with https://metadata.ftp-master.debian.org/sections.822
 " curl -q https://metadata.ftp-master.debian.org/sections.822 2>/dev/null| grep-dctrl -n --not -FSection -sSection  / -
 let s:sections = [
       \ 'admin', 'cli-mono', 'comm', 'database', 'debian-installer', 'debug'
