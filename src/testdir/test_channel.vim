@@ -2756,15 +2756,41 @@ func LspTests(port)
   call assert_fails('call ch_sendexpr(ch, "abc")', 'E1206:')
   call assert_fails('call ch_evalexpr(ch, #{method: "ping"}, #{callback: "LspOtCb"})', 'E917:')
   " call ch_logfile('', 'w')
-endfunc
+  endfunc
 
-func Test_channel_lsp_mode()
+  let g:server_received_addr = ''
+  let g:server_received_msg = ''
+  func s:test_listen_accept(ch, addr)
+      let g:server_received_addr = a:addr
+      let g:server_received_msg = ch_readraw(a:ch)
+  endfunction
+
+  func Test_listen()
+      call ch_log('Test_listen()')
+      let server = ch_listen('127.0.0.1:12345', {'callback': function('s:test_listen_accept')})
+      if ch_status(server) == 'fail'
+  	call assert_report("Can't listen channel")
+  	return
+      endif
+      let handle = ch_open('127.0.0.1:12345', s:chopt)
+      if ch_status(handle) == 'fail'
+  	call assert_report("Can't open channel")
+  	return
+      endif
+      call ch_sendraw(handle, 'hello')
+      call WaitFor('"" != g:server_received_msg')
+      call ch_close(handle)
+      call ch_close(server)
+      call assert_equal('hello', g:server_received_msg)
+  endfunc
+
+  func Test_channel_lsp_mode()
   " The channel lsp mode test is flaky and gives the same error.
   let g:giveup_same_error = 0
   call RunServer('test_channel_lsp.py', 'LspTests', [])
-endfunc
+  endfunc
 
-func Test_error_callback_terminal()
+  func Test_error_callback_terminal()
   CheckUnix
   CheckFeature terminal
   let g:out = ''
