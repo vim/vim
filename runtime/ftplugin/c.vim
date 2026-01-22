@@ -41,7 +41,7 @@ if has("vms")
 endif
 
 " Use terminal window for gui
-if has('gui_running')
+if has('gui_running') && has('terminal')
   setlocal keywordprg=:CKeywordPrg
 
   command! -buffer -nargs=1 -count CKeywordPrg call s:CKeywordPrg(<q-args>, <count>)
