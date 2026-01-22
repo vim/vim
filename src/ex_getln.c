@@ -1871,7 +1871,7 @@ getcmdline_int(
 				// that occurs while typing a command should
 				// cause the command not to be executed.
 
-	if (stuff_empty() && typebuf.tb_len == 0)
+	if (ex_normal_busy == 0 && stuff_empty() && typebuf.tb_len == 0)
 	    // There is no pending input from sources other than user input, so
 	    // Vim is going to wait for the user to type a key.  Consider the
 	    // command line typed even if next key will trigger a mapping.
