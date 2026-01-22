@@ -5161,11 +5161,11 @@ convert_setup_ext(
     from_prop = enc_canon_props(from);
     to_prop = enc_canon_props(to);
     if (from_unicode_is_utf8)
-	from_is_utf8 = from_prop & ENC_UNICODE;
+	from_is_utf8 = from_prop == ENC_UNICODE;  // Only exact UTF-8, not UTF-16 etc
     else
 	from_is_utf8 = from_prop == ENC_UNICODE;
     if (to_unicode_is_utf8)
-	to_is_utf8 = to_prop & ENC_UNICODE;
+	to_is_utf8 = to_prop == ENC_UNICODE;  // Only exact UTF-8, not UTF-16 etc
     else
 	to_is_utf8 = to_prop == ENC_UNICODE;
 
