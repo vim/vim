@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jan 20
+# Last Change:		2026 Jan 23
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -3302,6 +3302,9 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
+  # skhd (simple hotkey daemon for macOS)
+  ".skhdrc": "skhd",
+  "skhdrc": "skhd",
   # SLRN
   ".slrnrc": "slrnrc",
   # Squid
