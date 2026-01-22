@@ -16,7 +16,7 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< com< ofu< cms< def< inc< kp< | if has('vms') | setl isk< | endif"
+let b:undo_ftplugin = "setl fo< com< ofu< cms< def< inc< | if has('vms') | setl isk< | endif"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
@@ -40,13 +40,21 @@ if has("vms")
   setlocal iskeyword+=$
 endif
 
-" Use :Man for a nicer manual that also works in GUI
-runtime ftplugin/man.vim
+" Use terminal window for gui
+if has('gui_running')
+  setlocal keywordprg=:CKeywordPrg
 
-if exists(":Man") == 2
-  setlocal keywordprg=:Man\ -s2,3
-else
-  setlocal keywordprg=man\ -s2,3
+  command! -buffer -nargs=1 -count CKeywordPrg call s:CKeywordPrg(<q-args>, <count>)
+
+  function! s:CKeywordPrg(arg, count) abort
+    if a:count > 0
+      exe printf('term ++close man -s %d %s', a:count, a:arg)
+    else
+      exe printf('term ++close man %s', a:arg)
+    endif
+  endfunction
+
+  let b:undo_ftplugin .= ' | setl pa< | sil! delc -buffer CKeywordPrg | sil! delf s:CKeywordPrg'
 endif
 
 " When the matchit plugin is loaded, this makes the % command skip parens and
