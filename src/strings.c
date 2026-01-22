@@ -1318,18 +1318,18 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 		if (from_encoding_raw != NULL)
 		{
 		    char_u *s = enc_skipped;
-		    char_u *d = from_encoding_raw;
+		    char_u *pe = from_encoding_raw;
 
 		    // Convert to lowercase and replace '_' with '-'
 		    while (*s != NUL)
 		    {
 			if (*s == '_')
-			    *d++ = '-';
+			    *pe++ = '-';
 			else
-			    *d++ = TOLOWER_ASC(*s);
+			    *pe++ = TOLOWER_ASC(*s);
 			++s;
 		    }
-		    *d = NUL;
+		    *pe = NUL;
 
 		    // Add hyphen before digit: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
 		    char_u *p = from_encoding_raw;
