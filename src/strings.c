@@ -1450,7 +1450,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	    if (from_encoding != NULL)
 	    {
 		// Use raw encoding name for convert_string to preserve encoding details
-		converted_str = convert_string(str, 
+		converted_str = convert_string(str,
 			from_encoding_raw ? from_encoding_raw : from_encoding, p_enc);
 		vim_free(str);
 		if (converted_str == NULL)
