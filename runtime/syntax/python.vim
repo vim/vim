@@ -99,7 +99,8 @@ endif
 "
 " python3 -c 'import keyword, pprint; pprint.pprint(keyword.kwlist + keyword.softkwlist, compact=True)'
 "
-syn keyword pythonStatement	False None True
+syn keyword pythonBoolean	False True
+syn keyword pythonConstant	None
 syn keyword pythonStatement	as assert break continue del global
 syn keyword pythonStatement	lambda nonlocal pass return with yield
 syn keyword pythonStatement	class nextgroup=pythonClass skipwhite
@@ -298,8 +299,8 @@ endif
 if !exists("python_no_builtin_highlight")
   " built-in constants
   " 'False', 'True', and 'None' are also reserved words in Python 3
-  syn keyword pythonBuiltin	False True None
-  syn keyword pythonBuiltin	NotImplemented Ellipsis __debug__
+  syn keyword pythonBoolean	False True
+  syn keyword pythonConstant	None NotImplemented Ellipsis __debug__
   " constants added by the `site` module
   syn keyword pythonBuiltin	quit exit copyright credits license
   " built-in functions
@@ -369,13 +370,6 @@ if exists("python_space_error_highlight")
   syn match   pythonSpaceError	display "\t\+ "
 endif
 
-" Built-in Constants
-" https://docs.python.org/3/library/constants.html
-if exists("python_constant_highlight")
-  syn keyword pythonBoolean	False True
-  syn keyword pythonConstant	None NotImplemented Ellipsis __debug__
-endif
-
 " Do not spell doctests inside strings.
 " Notice that the end of a string, either ''', or """, will end the contained
 " doctest too.  Thus, we do *not* need to have it as an end pattern.
@@ -400,6 +394,8 @@ endif
 syn sync match pythonSync grouphere NONE "^\%(def\|class\|async\s\+def\)\s\+\h\w*\s*[(:]"
 
 " The default highlight links.  Can be overridden later.
+hi def link pythonBoolean		Statement
+hi def link pythonConstant		Statement
 hi def link pythonStatement		Statement
 hi def link pythonConditional		Conditional
 hi def link pythonRepeat		Repeat
@@ -430,6 +426,8 @@ if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
 if !exists("python_no_builtin_highlight")
+  hi def link pythonBoolean		Function
+  hi def link pythonConstant		Function
   hi def link pythonBuiltin		Function
   hi def link pythonEllipsis		pythonBuiltin
 endif
