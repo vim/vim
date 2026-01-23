@@ -41,7 +41,7 @@ if has("vms")
 endif
 
 " Use terminal window for gui
-if has('gui_running') && has('terminal')
+if has('gui_running') && exists(':terminal') == 2
   setlocal keywordprg=:CKeywordPrg
 
   command! -buffer -nargs=1 -count CKeywordPrg call s:CKeywordPrg(<q-args>, <count>)
@@ -54,7 +54,7 @@ if has('gui_running') && has('terminal')
     endif
   endfunction
 
-  let b:undo_ftplugin .= ' | setl pa< | sil! delc -buffer CKeywordPrg | sil! delf s:CKeywordPrg'
+  let b:undo_ftplugin .= ' | setl kp< | sil! delc -buffer CKeywordPrg'
 endif
 
 " When the matchit plugin is loaded, this makes the % command skip parens and
