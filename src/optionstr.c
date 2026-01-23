@@ -75,7 +75,7 @@ static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
     "borderhighlight:", "close:", "height:", "highlight:", "resize:",
     "shadow:", "width:", NULL};
-static char *(p_popup_pvp_option_values[]) = {"align:", "border:",
+static char *(p_popup_pvp_option_values[]) = {"border:",
     "borderhighlight:", "close:", "height:", "highlight:", "resize:",
     "shadow:", "width:", NULL};
 static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};

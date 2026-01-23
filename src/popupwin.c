@@ -2456,7 +2456,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
     }
 
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
