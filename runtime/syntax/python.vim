@@ -426,8 +426,8 @@ if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
 if !exists("python_no_builtin_highlight")
-  hi def link pythonBoolean		Function
-  hi def link pythonConstant		Function
+  hi! def link pythonBoolean		Function
+  hi! def link pythonConstant		Function
   hi def link pythonBuiltin		Function
   hi def link pythonEllipsis		pythonBuiltin
 endif
@@ -442,8 +442,8 @@ if !exists("python_no_doctest_highlight")
   hi def link pythonDoctestValue	Define
 endif
 if exists("python_constant_highlight")
-  hi def link pythonBoolean		Boolean
-  hi def link pythonConstant		Constant
+  hi! def link pythonBoolean		Boolean
+  hi! def link pythonConstant		Constant
 endif
 
 let b:current_syntax = "python"
