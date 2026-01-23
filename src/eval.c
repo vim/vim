@@ -3646,7 +3646,15 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    int		error = FALSE;
 
 	    if (op_falsy)
+	    {
+		// Is this typeval supported with the falsy operator?
+		if (check_typval_is_value(rettv) == FAIL)
+		{
+		    clear_tv(rettv);
+		    return FAIL;
+		}
 		result = tv2bool(rettv);
+	    }
 	    else if (vim9script)
 		result = tv_get_bool_chk(rettv, &error);
 	    else if (tv_get_number_chk(rettv, &error) != 0)
@@ -5376,7 +5384,15 @@ eval9_leader(
 	while (VIM_ISWHITE(end_leader[-1]))
 	    --end_leader;
 	if (vim9script && end_leader[-1] == '!')
+	{
+	    // Is this typeval supported with the ! operator?
+	    if (check_typval_is_value(rettv) == FAIL)
+	    {
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    val = tv2bool(rettv);
+	}
 	else
 	    val = tv_get_number_chk(rettv, &error);
     }
