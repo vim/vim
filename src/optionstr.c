@@ -4219,9 +4219,11 @@ did_set_statuslineopt(optset_T *args)
 
     if (*varp != empty_option)
     {
+	// Update the maxheight value to the actual value set.
+	// Note: Must be changed if p_stlo_values are changed.
 	free_string_option(*varp);
 	vim_snprintf((char *)IObuff, IOSIZE, "maxheight:%d",
-		curwin->w_status_height);
+		statusline_height(NULL));
 	*varp = vim_strsave(IObuff);
     }
 

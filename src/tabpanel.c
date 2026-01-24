@@ -418,37 +418,6 @@ draw_tabpanel_with_highlight(
 }
 
 /*
- * tabpanel drawing behavior if 'tabpanel' option is NOT empty.
- */
-    static void
-draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
-{
-    char_u	*p;
-    int		p_crb_save;
-    char_u	buf[IOSIZE];
-    stl_hlrec_T *hltab;
-    stl_hlrec_T *tabtab;
-
-    // Temporarily reset 'cursorbind', we don't want a side effect from moving
-    // the cursor away and back.
-    p_crb_save = pargs->cwp->w_p_crb;
-    pargs->cwp->w_p_crb = FALSE;
-
-    // Make a copy, because the statusline may include a function call that
-    // might change the option value and free the memory.
-    p = vim_strsave(pargs->user_defined);
-
-    (void)build_stl_str_hl(pargs->cwp, buf, sizeof(buf),
-	    p, opt_name, opt_scope, TPL_FILLCHAR,
-	    pargs->col_end - pargs->col_start, &hltab, &tabtab);
-
-    vim_free(p);
-    pargs->cwp->w_p_crb = p_crb_save;
-
-    draw_tabpanel_with_highlight(tplmode, buf, hltab, pargs);
-}
-
-/*
  * do something by tplmode for drawing tabpanel.
  */
     static void
@@ -529,7 +498,12 @@ do_by_tplmode(
 		    break;
 
 		buf[0] = NUL;
-		(void)build_stl_str_hl_mline_nl(args.cwp, buf, sizeof(buf),
+#ifdef ENABLE_STL_MODE_MULTI_NL
+		(void)build_stl_str_hl_mline_nl
+#else
+		(void)build_stl_str_hl_mline
+#endif
+			(args.cwp, buf, sizeof(buf),
 			&usefmt, opt_name, opt_scope, TPL_FILLCHAR,
 			args.col_end - args.col_start, &hltab, &tabtab);
 
