@@ -4394,6 +4394,25 @@ build_stl_str_hl_mline(
 	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
 }
 
+#ifdef ENABLE_STL_MODE_MULTI_NL
+    int
+build_stl_str_hl_mline_nl(
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt,		// (in/out)
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+{
+    return build_stl_str_hl_local(STL_MODE_MULTI_NL, wp, out, outlen, fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+#endif
+
     int
 get_stl_rendered_height(
     win_T	*wp,
@@ -4611,7 +4630,23 @@ build_stl_str_hl_local(
 	 * Handle up to the next '%' or the end.
 	 */
 	while (*s != NUL && *s != '%' && p + 1 < out + outlen)
+#ifdef ENABLE_STL_MODE_MULTI_NL
+	{
+	    if (*s == '\n' || *s == '\r')
+	    {
+		if (mode == STL_MODE_MULTI_NL)
+		{
+		    s++;
+		    goto find_linebreak;
+		}
+		else if (mode == STL_MODE_GET_RENDERED_HEIGHT)
+		    rheight++;
+	    }
+#endif
 	    *p++ = *s++;
+#ifdef ENABLE_STL_MODE_MULTI_NL
+	}
+#endif
 	if (*s == NUL || p + 1 >= out + outlen)
 	    break;
 
@@ -4624,12 +4659,16 @@ build_stl_str_hl_local(
 
 	if (*s == STL_LINEBREAK)
 	{
-	    if (mode == STL_MODE_MULTI)
+	    if (mode == STL_MODE_MULTI
+#ifdef ENABLE_STL_MODE_MULTI_NL
+		    || mode == STL_MODE_MULTI_NL
+#endif
+	       )
 	    {
 		s++;
 		break;
 	    }
-	    else
+	    else if (mode == STL_MODE_GET_RENDERED_HEIGHT)
 		rheight++;
 	}
 	if (*s == '%')
@@ -5289,12 +5328,16 @@ build_stl_str_hl_local(
 	    vim_free(str);
 	curitem++;
     }
+find_linebreak:
     *p = NUL;
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
-    //if (mode == STL_MODE_MULTI || mode == STL_MODE_GET_RENDERED_HEIGHT)
-    if (mode == STL_MODE_MULTI)
+    if (mode == STL_MODE_MULTI
+#ifdef ENABLE_STL_MODE_MULTI_NL
+		    || mode == STL_MODE_MULTI_NL
+#endif
+       )
     {
 # ifdef FEAT_EVAL
 	if (usefmt != fmt)

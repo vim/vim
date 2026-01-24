@@ -2451,11 +2451,17 @@ typedef enum {
     ESTACK_SCRIPT,
 } estack_arg_T;
 
+// For temporarily backward compatibility, to be removed soon.
+#define ENABLE_STL_MODE_MULTI_NL
+
 // Argument for build_stl_str_hl_local().
 typedef enum {
     STL_MODE_SINGLE,	    // Does not accept line breaks "%@"
     STL_MODE_MULTI,	    // Accept line breaks "%@"
     STL_MODE_GET_RENDERED_HEIGHT,   // Just get stl rendered height
+#ifdef ENABLE_STL_MODE_MULTI_NL
+    STL_MODE_MULTI_NL,	    // Accept line breaks "%@" and "\n"
+#endif
 } stl_mode_T;
 
 // Return value of match_keyprotocol()
