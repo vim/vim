@@ -3523,6 +3523,132 @@ func Test_previewpopup_pum_pbuffer()
   call s:run_preview_popuppum(lines, 'pbuffer')
 endfunc
 
+func Test_previewpopup_border()
+  CheckScreendump
+  CheckFeature quickfix
+  call writefile(range(1, 20), 'Xppfile', 'D')
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two', 'three'])
+    hi BorderColor ctermbg=lightcyan guibg=lightcyan
+  END
+  call writefile(lines, 'XtestPPBorder', 'D')
+  let buf = RunVimInTerminal('-S XtestPPBorder', #{rows: 14})
+  call TermWait(buf, 25)
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:single\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_1', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:double\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_2', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:round\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_3', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:ascii\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_4', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:single,borderhighlight:BorderColor\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_5', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:on,borderhighlight:BorderColor\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_6', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:off\<CR>")
+  call term_sendkeys(buf, ":pedit Xppfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_7', {})
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_previewpopup_border_mouse()
+  CheckScreendump
+  CheckFeature quickfix
+
+  call writefile(range(1, 20), 'XppMousefile', 'D')
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two', 'three'])
+    hi BorderColor ctermbg=lightcyan guibg=lightcyan
+	set mouse=
+	set previewpopup=height:4,width:40
+  END
+  call writefile(lines, 'XtestPPBorderMouse', 'D')
+  let buf = RunVimInTerminal('-S XtestPPBorderMouse', #{rows: 14})
+
+  call TermWait(buf, 25)
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_1', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set mouse=a\<CR>:\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_2', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,resize:off\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_3', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,resize:on,close:off\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_4', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:single,close:off\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_5', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:single,close:on\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_6', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,border:single,close:off\<CR>")
+  call term_sendkeys(buf, ":pedit XppMousefile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_border_mouse_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_previewpopup_shadow()
+  CheckScreendump
+  CheckFeature quickfix
+
+  call writefile(range(1, 20), 'XppShadowfile', 'D')
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two', 'three'])
+    hi BorderColor ctermbg=lightcyan guibg=lightcyan
+  END
+  call writefile(lines, 'XtestPPShadow', 'D')
+  let buf = RunVimInTerminal('-S XtestPPShadow', #{rows: 14})
+
+  call TermWait(buf, 25)
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,shadow:on\<CR>")
+  call term_sendkeys(buf, ":pedit XppShadowfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_shadow_1', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":set previewpopup=height:4,width:40,shadow:off\<CR>")
+  call term_sendkeys(buf, ":pedit XppShadowfile\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_previewpopup_shadow_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Get_popupmenu_lines()
   let lines =<< trim END
       set completeopt+=preview,popup
