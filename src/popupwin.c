@@ -1990,7 +1990,7 @@ parse_popup_option(win_T *wp, int is_preview)
 
 	    if ((!on && !off))
 		return FAIL;
-	    on = on && mouse_has(MOUSE_INSERT) && border_enabled;
+	    on = on && mouse_has(MOUSE_INSERT) && (border_enabled || is_preview);
 	    if (wp != NULL)
 		wp->w_popup_close = on ? POPCLOSE_BUTTON : POPCLOSE_NONE;
 	}
