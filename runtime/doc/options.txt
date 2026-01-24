@@ -8590,6 +8590,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 				Check whether {n} is applicable to all windows
 				on all tab pages, and if not, set it to the
 				closest possible value.
+				The option value is updated to the actual
+				applied value.  For example, setting
+				maxheight:999 may result in a smaller value
+				depending on the available space.
 				When {n} is set to 2 or more, you can use "@"
 				in 'statusline' to display information on
 				multiple lines in the status line.
@@ -8785,11 +8789,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel.  |g:actual_curtabpage| represents current tab's label number.
-	The option value can contain "\n" to force line breaks: >
+	You can use "%@" or "\n" to insert a new line: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
-		  return printf("(%2d)\n  %%f", g:actual_curtabpage)
+		  return "(" .. g:actual_curtabpage .. ")%@  %f"
 		endfunction
 <
 	The result is:

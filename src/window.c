@@ -42,7 +42,6 @@ static int leave_tabpage(buf_T *new_curbuf, int trigger_leave_autocmds);
 static void enter_tabpage(tabpage_T *tp, buf_T *old_curbuf, int trigger_enter_autocmds, int trigger_leave_autocmds);
 static void frame_fix_height(win_T *wp);
 static int frame_minheight(frame_T *topfrp, win_T *next_curwin);
-static int frame_wincount_in_height(frame_T *topfrp);
 static int may_open_tabpage(void);
 static int win_enter_ext(win_T *wp, int flags);
 static void win_free(win_T *wp, tabpage_T *tp);
@@ -2323,12 +2322,8 @@ win_equal_rec(
 		extra_sep = statusline_height(NULL);
 	    else
 		extra_sep = 0;
-#if 0
 	    totwincount = (n + extra_sep) / (p_wmh
 		    + statusline_height(NULL));
-#else
-	    totwincount = frame_wincount_in_height(topfr);
-#endif
 	    has_next_curwin = frame_has_win(topfr, next_curwin);
 
 	    /*
@@ -4388,40 +4383,6 @@ frame_minheight(frame_T *topfrp, win_T *next_curwin)
     }
 
     return m;
-}
-
-/*
- * Compute the window count in height for frame "topfrp".
- */
-static int
-frame_wincount_in_height(frame_T *topfrp)
-{
-    frame_T	*frp;
-    int		c = 0;
-    int		n;
-
-    if (topfrp->fr_win != NULL)
-	c = 1;
-    else if (topfrp->fr_layout == FR_ROW)
-    {
-	// get the minimal height from each frame in this row
-	c = 0;
-	FOR_ALL_FRAMES(frp, topfrp->fr_child)
-	{
-	    n = frame_wincount_in_height(frp);
-	    if (n > c)
-		c = n;
-	}
-    }
-    else
-    {
-	// Add up the minimal heights for all frames in this column.
-	c = 0;
-	FOR_ALL_FRAMES(frp, topfrp->fr_child)
-	    c += frame_wincount_in_height(frp);
-    }
-
-    return c;
 }
 
 /*
@@ -7762,16 +7723,20 @@ statuslineopt_changed(
 
 /*
  * Return the number of lines used by the status line.
+ * "wp" is not used currently because 'statuslineopt' is a global option.
+ * NULL is passed when called from layout calculations (e.g. 'laststatus')
+ * where no specific window context is available.
  */
     int
 statusline_height(win_T *wp UNUSED)
 {
-    int stl_height = STATUS_HEIGHT;
+    return
 #if defined(FEAT_STL_OPT)
-    stl_height = stlo_mh;
+	stlo_mh
+#else
+	STATUS_HEIGHT
 #endif
-
-    return stl_height;
+	;
 }
 
 /*

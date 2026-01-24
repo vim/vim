@@ -1385,7 +1385,6 @@ enum
 #endif
 #ifdef FEAT_STL_OPT
     , WV_STL
-    , WV_STLO
 #endif
     , WV_WFB
     , WV_WFH

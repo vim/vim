@@ -4394,7 +4394,7 @@ build_stl_str_hl_mline(
 	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
 }
 
-#ifdef ENABLE_STL_MODE_MULTI_NL
+# ifdef ENABLE_STL_MODE_MULTI_NL
     int
 build_stl_str_hl_mline_nl(
     win_T	*wp,
@@ -4411,7 +4411,7 @@ build_stl_str_hl_mline_nl(
     return build_stl_str_hl_local(STL_MODE_MULTI_NL, wp, out, outlen, fmt,
 	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
 }
-#endif
+# endif
 
     int
 get_stl_rendered_height(
@@ -4630,7 +4630,7 @@ build_stl_str_hl_local(
 	 * Handle up to the next '%' or the end.
 	 */
 	while (*s != NUL && *s != '%' && p + 1 < out + outlen)
-#ifdef ENABLE_STL_MODE_MULTI_NL
+# ifdef ENABLE_STL_MODE_MULTI_NL
 	{
 	    if (*s == '\n' || *s == '\r')
 	    {
@@ -4642,11 +4642,11 @@ build_stl_str_hl_local(
 		else if (mode == STL_MODE_GET_RENDERED_HEIGHT)
 		    rheight++;
 	    }
-#endif
+# endif
 	    *p++ = *s++;
-#ifdef ENABLE_STL_MODE_MULTI_NL
+# ifdef ENABLE_STL_MODE_MULTI_NL
 	}
-#endif
+# endif
 	if (*s == NUL || p + 1 >= out + outlen)
 	    break;
 
@@ -4660,9 +4660,9 @@ build_stl_str_hl_local(
 	if (*s == STL_LINEBREAK)
 	{
 	    if (mode == STL_MODE_MULTI
-#ifdef ENABLE_STL_MODE_MULTI_NL
+# ifdef ENABLE_STL_MODE_MULTI_NL
 		    || mode == STL_MODE_MULTI_NL
-#endif
+# endif
 	       )
 	    {
 		s++;
@@ -5328,17 +5328,26 @@ build_stl_str_hl_local(
 	    vim_free(str);
 	curitem++;
     }
+# ifdef ENABLE_STL_MODE_MULTI_NL
 find_linebreak:
+# endif
     *p = NUL;
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
     if (mode == STL_MODE_MULTI
-#ifdef ENABLE_STL_MODE_MULTI_NL
+# ifdef ENABLE_STL_MODE_MULTI_NL
 		    || mode == STL_MODE_MULTI_NL
-#endif
+# endif
        )
     {
+	// In multi-line mode, ownership of the format buffer is transferred
+	// back to the caller via *fmt_arg.
+	// When "%!" evaluation occurred (usefmt != fmt), "usefmt" is the newly
+	// allocated eval result and "fmt" is the caller's original buffer
+	// which is no longer needed.  "s" points into "usefmt", so we free
+	// "fmt" and shift the remaining format string within "usefmt" for the
+	// caller's next iteration.
 # ifdef FEAT_EVAL
 	if (usefmt != fmt)
 	    vim_free(fmt);
@@ -5351,6 +5360,8 @@ find_linebreak:
     }
     else
     {
+	// In single-line mode, the caller retains ownership of its buffer.
+	// Free the eval result if "%!" was used.
 # ifdef FEAT_EVAL
 	if (usefmt != fmt)
 	    vim_free(usefmt);
