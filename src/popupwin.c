@@ -2451,7 +2451,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
 	    wp->w_popup_close = POPCLOSE_BUTTON;
 	}
-	add_border_left_right_padding(wp);
+	for (i = 0; i < 4; ++i)
+	    wp->w_popup_border[i] = 1;
 	parse_previewpopup(wp);
 	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
     }
