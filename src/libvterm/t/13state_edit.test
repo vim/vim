@@ -268,7 +268,7 @@ PUSH "\e[2\"q"
 PUSH "\eP\$q\"q\e\\"
   output "\eP1\$r2\"q\e\\"
 
-WANTSTATE -s+m
+WANTSTATE -s+Pm
 
 !ICH move+erase emuation
 RESET
@@ -278,12 +278,14 @@ PUSH "ACD"
 PUSH "\e[2D"
   ?cursor = 0,1
 PUSH "\e[@"
+  premove 0..1,79..80
   moverect 0..1,1..79 -> 0..1,2..80
   erase 0..1,1..2
   ?cursor = 0,1
 PUSH "B"
   ?cursor = 0,2
 PUSH "\e[3@"
+  premove 0..1,77..80
   moverect 0..1,2..77 -> 0..1,5..80
   erase 0..1,2..5
 
@@ -295,10 +297,12 @@ PUSH "ABBC"
 PUSH "\e[3D"
   ?cursor = 0,1
 PUSH "\e[P"
+  premove 0..1,1..2
   moverect 0..1,2..80 -> 0..1,1..79
   erase 0..1,79..80
   ?cursor = 0,1
 PUSH "\e[3P"
+  premove 0..1,1..4
   moverect 0..1,4..80 -> 0..1,1..77
   erase 0..1,77..80
   ?cursor = 0,1
