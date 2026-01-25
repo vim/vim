@@ -1276,6 +1276,45 @@ string_from_blob(blob_T *blob, long *start_idx)
 }
 
 /*
+ * Normalize encoding name for iconv by adding hyphens.
+ * For example: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
+ * Returns allocated string or NULL on allocation failure.
+ */
+    static char_u *
+normalize_encoding_name(char_u *enc_skipped)
+{
+    char_u *from_encoding_raw = alloc(STRLEN(enc_skipped) + 3);
+    if (from_encoding_raw == NULL)
+	return NULL;
+
+    char_u *s = enc_skipped;
+    char_u *pe = from_encoding_raw;
+
+    // Convert to lowercase and replace '_' with '-'
+    while (*s != NUL)
+    {
+	if (*s == '_')
+	    *pe++ = '-';
+	else
+	    *pe++ = TOLOWER_ASC(*s);
+	++s;
+    }
+    *pe = NUL;
+
+    // Add hyphen before digit: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
+    char_u *p = from_encoding_raw;
+    if ((STRNCMP(p, "ucs", 3) == 0 && VIM_ISDIGIT(p[3]) && p[3] != '\0' && p[4] != '-') ||
+	(STRNCMP(p, "utf", 3) == 0 && VIM_ISDIGIT(p[3]) && p[3] != '\0' && p[4] != '-'))
+    {
+	// Insert hyphen after "ucs" or "utf": "ucs2" -> "ucs-2"
+	mch_memmove(p + 4, p + 3, STRLEN(p + 3) + 1);
+	p[3] = '-';
+    }
+
+    return from_encoding_raw;
+}
+
+/*
  * "blob2str()" function
  * Converts a blob to a string, ensuring valid UTF-8 encoding.
  */
@@ -1314,33 +1353,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 
 		// For iconv, preserve the endianness suffix by creating a normalized
 		// version with hyphens: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
-		from_encoding_raw = alloc(STRLEN(enc_skipped) + 3);
-		if (from_encoding_raw != NULL)
-		{
-		    char_u *s = enc_skipped;
-		    char_u *pe = from_encoding_raw;
-
-		    // Convert to lowercase and replace '_' with '-'
-		    while (*s != NUL)
-		    {
-			if (*s == '_')
-			    *pe++ = '-';
-			else
-			    *pe++ = TOLOWER_ASC(*s);
-			++s;
-		    }
-		    *pe = NUL;
-
-		    // Add hyphen before digit: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
-		    char_u *p = from_encoding_raw;
-		    if ((STRNCMP(p, "ucs", 3) == 0 && VIM_ISDIGIT(p[3]) && p[3] != '\0' && p[4] != '-') ||
-			(STRNCMP(p, "utf", 3) == 0 && VIM_ISDIGIT(p[3]) && p[3] != '\0' && p[4] != '-'))
-		    {
-			// Insert hyphen after "ucs" or "utf": "ucs2" -> "ucs-2"
-			mch_memmove(p + 4, p + 3, STRLEN(p + 3) + 1);
-			p[3] = '-';
-		    }
-		}
+		from_encoding_raw = normalize_encoding_name(enc_skipped);
 	    }
 	}
     }
