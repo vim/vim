@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2026 Jan 19
+*vim9.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2515,10 +2515,11 @@ following time: >vim9
 	FlexArgs = (...values: list<string>): string => join(values, ', ')
 	echo FlexArgs('3', '2', '1', 'GO!')
 <
-				*E1211* *E1217* *E1218* *E1219* *E1220* *E1221* *E1222*
-				*E1223* *E1224* *E1225* *E1226* *E1228* *E1235* *E1238*
-				*E1251* *E1253* *E1256* *E1297* *E1298* *E1301* *E1528*
-				*E1529* *E1530* *E1531* *E1534*
+				*E1211* *E1217* *E1218* *E1219* *E1220*
+				*E1221* *E1222* *E1223* *E1224* *E1225*
+				*E1226* *E1228* *E1235* *E1238* *E1251*
+				*E1253* *E1256* *E1297* *E1298* *E1301*
+				*E1528* *E1529* *E1530* *E1531* *E1534*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.  The following one-line |:vim9| commands, calling builtin functions,
 demonstrate many of those type-checking errors: >vim9
@@ -3077,7 +3078,7 @@ Currently, Vim does not support:
 ==============================================================================
 
 6. Namespace, Import and Export
-					*vim9script* *vim9-export* *vim9-import*
+				*vim9script* *vim9-export* *vim9-import*
 
 A Vim9 script can be written to be imported.  This means that some items are
 intentionally exported, made available to other scripts.  When the exporting
