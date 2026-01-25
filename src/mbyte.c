@@ -5160,8 +5160,14 @@ convert_setup_ext(
 
     from_prop = enc_canon_props(from);
     to_prop = enc_canon_props(to);
-    from_is_utf8 = from_prop == ENC_UNICODE;
-    to_is_utf8 = to_prop == ENC_UNICODE;
+    if (from_unicode_is_utf8)
+	from_is_utf8 = from_prop & ENC_UNICODE;
+    else
+	from_is_utf8 = from_prop == ENC_UNICODE;
+    if (to_unicode_is_utf8)
+	to_is_utf8 = to_prop & ENC_UNICODE;
+    else
+	to_is_utf8 = to_prop == ENC_UNICODE;
 
     if ((from_prop & ENC_LATIN1) && to_is_utf8)
     {
