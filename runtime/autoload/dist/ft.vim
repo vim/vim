@@ -2373,6 +2373,9 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # NetLinx
+  "axs": "netlinx",
+  "axi": "netlinx",
   # Nickel
   "ncl": "nickel",
   # Nim file
