@@ -69,6 +69,12 @@ function! s:RustfmtWriteMode()
 endfunction
 
 function! s:RustfmtConfigOptions()
+    let default = '--edition 2018'
+
+    if !get(g:, 'rustfmt_find_toml', 0)
+        return default
+    endif
+
     let l:rustfmt_toml = findfile('rustfmt.toml', expand('%:p:h') . ';')
     if l:rustfmt_toml !=# ''
         return '--config-path '.shellescape(fnamemodify(l:rustfmt_toml, ":p"))
