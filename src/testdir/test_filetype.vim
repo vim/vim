@@ -741,6 +741,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     simula: ['file.sim'],
     sinda: ['file.sin', 'file.s85'],
     sisu: ['file.sst', 'file.ssm', 'file.ssi', 'file.-sst', 'file._sst', 'file.sst.meta', 'file.-sst.meta', 'file._sst.meta'],
+    skhd: ['.skhdrc', 'skhdrc'],
     skill: ['file.il', 'file.ils', 'file.cdf'],
     slang: ['file.sl'],
     slice: ['file.ice'],

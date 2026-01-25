@@ -3305,6 +3305,9 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
+  # skhd (simple hotkey daemon for macOS)
+  ".skhdrc": "skhd",
+  "skhdrc": "skhd",
   # SLRN
   ".slrnrc": "slrnrc",
   # Squid

@@ -658,6 +658,7 @@ runtime/syntax/scss.vim					@tpope
 runtime/syntax/sed.vim					@dkearns
 runtime/syntax/shared/debversions.vim			@jamessan
 runtime/syntax/shaderslang.vim				@mTvare6
+runtime/syntax/skhd.vim					@kiyoon
 runtime/syntax/solidity.vim				@coti-z
 runtime/syntax/spajson.vim				@dseomn
 runtime/syntax/spec.vim					@ignatenkobrain
