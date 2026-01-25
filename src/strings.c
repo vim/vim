@@ -1370,24 +1370,19 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
     }
 
     // Special handling for UTF-16/UCS-2/UTF-32/UCS-4 encodings: convert entire blob before splitting by newlines
-    if (from_encoding != NULL && (STRNCMP(from_encoding, "utf-16", 6) == 0
-				   || STRNCMP(from_encoding, "utf16", 5) == 0
-				   || STRNCMP(from_encoding, "ucs-2", 5) == 0
-				   || STRNCMP(from_encoding, "ucs2", 4) == 0
-				   || STRNCMP(from_encoding, "utf-32", 6) == 0
-				   || STRNCMP(from_encoding, "utf32", 5) == 0
-				   || STRNCMP(from_encoding, "ucs-4", 5) == 0
-				   || STRNCMP(from_encoding, "ucs4", 4) == 0))
+    int from_prop = enc_canon_props(from_encoding);
+    if (from_encoding != NULL && (from_prop & (ENC_2BYTE | ENC_4BYTE | ENC_2WORD)))
     {
 	// Build a temporary buffer from the blob as a whole
 	// Don't use string_from_blob() because it treats NUL as line separator
 	garray_T blob_ga;
-	ga_init2(&blob_ga, 1, blen + 2);
+	int nul_size = (from_prop & (ENC_4BYTE)) ? 4 : 2;
+	ga_init2(&blob_ga, 1, blen + nul_size);
 	for (long i = 0; i < blen; i++)
 	    ga_append(&blob_ga, (int)(unsigned char)blob_get(blob, i));
-	// UTF-16 requires 2-byte NUL terminator
-	ga_append(&blob_ga, NUL);
-	ga_append(&blob_ga, NUL);
+	// Add NUL terminator (2 bytes for UTF-16/UCS-2, 4 bytes for UTF-32/UCS-4)
+	for (int i = 0; i < nul_size; i++)
+	    ga_append(&blob_ga, NUL);
 
 	// Convert the entire blob at once
 	vimconv_T vimconv;
