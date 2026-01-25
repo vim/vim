@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jan 20
+# Last Change:		2026 Jan 25
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2373,6 +2373,9 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # NetLinx
+  "axs": "netlinx",
+  "axi": "netlinx",
   # Nickel
   "ncl": "nickel",
   # Nim file
