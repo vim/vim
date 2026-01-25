@@ -7975,6 +7975,7 @@ g:rustfmt_command	ft_rust.txt	/*g:rustfmt_command*
 g:rustfmt_detect_version	ft_rust.txt	/*g:rustfmt_detect_version*
 g:rustfmt_emit_files	ft_rust.txt	/*g:rustfmt_emit_files*
 g:rustfmt_fail_silently	ft_rust.txt	/*g:rustfmt_fail_silently*
+g:rustfmt_find_toml	ft_rust.txt	/*g:rustfmt_find_toml*
 g:rustfmt_options	ft_rust.txt	/*g:rustfmt_options*
 g:statusline_winid	options.txt	/*g:statusline_winid*
 g:syntax_on	syntax.txt	/*g:syntax_on*
