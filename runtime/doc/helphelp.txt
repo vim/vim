@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Dec 02
+*helphelp.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -418,8 +418,9 @@ STYLE
 If your Vim has 'modeline' enabled, Vim should follow the preferred style
 automatically when editing built-in help files.
 
-Vim help files should be formatted for a 'textwidth' of 78 characters, so they
-look good in a typical 80 x 24 terminal window.
+Vim help files should be formatted for a 'textwidth' of 78 characters (with
+'conceal' enabled), so they look good in a typical 80 x 24 terminal window;
+use `:set colorcolumn=+0` as a visual guide.
 
 Use two spaces between the final dot of a sentence of the first letter of the
 next sentence.  Like this.
