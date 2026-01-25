@@ -367,7 +367,10 @@ public:
     AdjustedGlyphRun(
 	    const DWRITE_GLYPH_RUN *glyphRun,
 	    FLOAT cellWidth,
-	    FLOAT &accum) :
+	    FLOAT &accum,
+	    const INT *lpDx,
+	    int *glyphIndex,
+	    int cchText) :
 	DWRITE_GLYPH_RUN(*glyphRun),
 	mAccum(accum),
 	mDelta(0.0f),
@@ -377,7 +380,18 @@ public:
 	for (UINT32 i = 0; i < glyphRun->glyphCount; ++i)
 	{
 	    FLOAT orig = glyphRun->glyphAdvances[i];
-	    FLOAT adjusted = adjustToCell(orig, cellWidth);
+	    FLOAT adjusted;
+
+	    if (*glyphIndex < cchText)
+	    {
+		adjusted = FLOAT(lpDx[*glyphIndex]);
+		(*glyphIndex)++;
+	    }
+	    else
+	    {
+		adjusted = adjustToCell(orig, cellWidth);
+	    }
+
 	    mAdjustedAdvances[i] = adjusted;
 	    mDelta += adjusted - orig;
 	}
@@ -403,9 +417,12 @@ struct TextRendererContext {
     // const fields.
     COLORREF color;
     FLOAT cellWidth;
+    const INT *lpDx;
+    int cchText;
 
     // working fields.
     FLOAT offsetX;
+    int glyphIndex;
 };
 
 class TextRenderer FINAL : public IDWriteTextRenderer
@@ -497,7 +514,8 @@ public:
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
-		context->offsetX);
+		context->offsetX, context->lpDx, &context->glyphIndex,
+		context->cchText);
 
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
 	if (pDWC_->mDWriteFactory2 != NULL)
@@ -1040,7 +1058,8 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
 	TextRenderer renderer(this);
-	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
+	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
+		0.0f, 0 };
 	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
