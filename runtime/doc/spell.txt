@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
+*spell.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -515,10 +515,6 @@ The older, OpenOffice 2 files may be used if this doesn't work:
 	http://wiki.services.openoffice.org/wiki/Dictionaries
 You can also use a plain word list.  The results are the same, the choice
 depends on what word lists you can find.
-
-If you install Aap (from www.a-a-p.org) you can use the recipes in the
-runtime/spell/??/ directories.  Aap will take care of downloading the files,
-apply patches needed for Vim and build the .spl file.
 
 Make sure your current locale is set properly, otherwise Vim doesn't know what
 characters are upper/lower case letters.  If the locale isn't available (e.g.,

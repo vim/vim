@@ -1,4 +1,4 @@
-*netbeans.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*netbeans.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Gordon Prieur et al.
@@ -48,7 +48,7 @@ VimIntegration, description of various projects doing Vim Integration:
 
 Projects using the NetBeans protocol of Vim are or were:
 - Agide, an IDE for the AAP project, written in Python (now replaced by
-  |:Termdebug|): http://www.a-a-p.org
+  |:Termdebug|): http://www.a-a-p.org (link now dead)
 - Clewn, a gdb integration into Vim, written in C:
 	http://clewn.sourceforge.net/
 - Pyclewn, a gdb integration into Vim, written in Python:
@@ -262,8 +262,8 @@ connection has been established.
 The communication between the Vim Controller and Vim uses plain text
 messages.  This protocol was first designed to work with the external editor
 module of NetBeans.  Later it was extended to work with Agide (A-A-P GUI IDE,
-see http://www.a-a-p.org) and then with other IDE.  The extensions are marked
-with "version 2.1".
+formerly http://www.a-a-p.org, link now dead) and then with other IDE.
+The extensions are marked with "version 2.1".
 
 Version 2.2 of the protocol has several minor changes which should only affect
 NetBeans users (ie, not Agide users).  However, a bug was fixed which could
