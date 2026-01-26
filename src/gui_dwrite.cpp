@@ -21,6 +21,7 @@
 #include <windows.h>
 #include <crtdbg.h>
 #include <assert.h>
+#include <stdio.h>
 #include <math.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
@@ -804,28 +805,25 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	// Use lfHeight of the LOGFONT as font size.
 	fontSize = float(logFont.lfHeight);
 
+	DWRITE_FONT_METRICS fontMetrics;
+	font->GetMetrics(&fontMetrics);
+
+	// Convert lfHeight to DirectWrite font size
 	if (fontSize < 0)
 	{
-	    // Negative lfHeight represents the size of the em unit.
+	    // Negative lfHeight represents the font's em height in pixels
 	    fontSize = -fontSize;
 	}
-	else
+	else if (fontSize > 0)
 	{
-	    // Positive lfHeight represents the cell height (ascent +
-	    // descent).
-	    DWRITE_FONT_METRICS fontMetrics;
-	    font->GetMetrics(&fontMetrics);
-
-	    // Convert the cell height (ascent + descent) from design units
-	    // to ems.
-	    float cellHeight = static_cast<float>(
-		    fontMetrics.ascent + fontMetrics.descent)
-		/ fontMetrics.designUnitsPerEm;
-
-	    // Divide the font size by the cell height to get the font em
-	    // size.
-	    fontSize /= cellHeight;
+	    // Positive lfHeight represents the font's cell height (ascent + descent)
+	    // Convert to em height
+	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
+		/ float(fontMetrics.ascent + fontMetrics.descent);
 	}
+
+	// Scale by ascent ratio to match GDI rendering size
+	fontSize = ceil(fontSize * float(fontMetrics.ascent) / float(fontMetrics.designUnitsPerEm));
     }
 
     // The text format includes a locale name. Ideally, this would be the
