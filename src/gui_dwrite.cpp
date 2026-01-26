@@ -307,6 +307,8 @@ struct DWriteContext {
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
+    FLOAT mFontSize;       // Font size in pixels (em height)
+    FLOAT mFontAscent;     // Font ascent in pixels
 
     D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
 
@@ -419,6 +421,7 @@ struct TextRendererContext {
     FLOAT cellWidth;
     const INT *lpDx;
     int cchText;
+    FLOAT baselineY;  // Fixed baseline Y coordinate
 
     // working fields.
     FLOAT offsetX;
@@ -513,6 +516,11 @@ public:
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
+	// Use fixed baseline Y from context instead of DirectWrite's
+	// baselineOriginY to prevent vertical shifts when font fallback
+	// occurs (e.g., for CJK characters).
+	FLOAT fixedBaselineY = context->baselineY;
+
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
 		context->offsetX, context->lpDx, &context->glyphIndex,
 		context->cchText);
@@ -544,7 +552,7 @@ public:
 		    pDWC_->mRT->DrawGlyphRun(
 			    D2D1::Point2F(
 				colorGlyphRun->baselineOriginX,
-				colorGlyphRun->baselineOriginY),
+				fixedBaselineY),
 			    &colorGlyphRun->glyphRun,
 			    pDWC_->mBrush,
 			    DWRITE_MEASURING_MODE_NATURAL);
@@ -560,7 +568,7 @@ public:
 	pDWC_->mRT->DrawGlyphRun(
 		D2D1::Point2F(
 		    baselineOriginX + context->offsetX,
-		    baselineOriginY),
+		    fixedBaselineY),
 		&adjustedGlyphRun,
 		pDWC_->SolidBrush(context->color),
 		DWRITE_MEASURING_MODE_NATURAL);
@@ -637,6 +645,8 @@ DWriteContext::DWriteContext() :
     mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
+    mFontSize(0.0f),
+    mFontAscent(0.0f),
     mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
 {
     HRESULT hr;
@@ -1057,9 +1067,18 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
+	// Calculate baseline using a fixed formula based on cell geometry.
+	// Do NOT use GetLineMetrics() because it returns different values
+	// depending on text content (e.g., when CJK characters trigger
+	// font fallback, the metrics change).
+	// Use the same baseline calculation for all text to prevent
+	// vertical shifts during redraw.
+	FLOAT baselineY = floorf(FLOAT(y) + FLOAT(h) * 0.83f + 0.5f);
+
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
-		0.0f, 0 };
+		baselineY, 0.0f, 0 };
+
 	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
