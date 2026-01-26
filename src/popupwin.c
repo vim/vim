@@ -1988,7 +1988,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off))
+	    if (!on && !off)
 		return FAIL;
 	    on = on && mouse_has(MOUSE_INSERT) && (border_enabled || is_preview);
 	    if (wp != NULL)
@@ -2000,7 +2000,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off))
+	    if (!on && !off)
 		return FAIL;
 	    if (wp != NULL)
 	    {
@@ -2016,7 +2016,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 
-	    if ((!on && !off))
+	    if (!on && !off)
 		return FAIL;
 	    if (wp != NULL)
 		wp->w_popup_shadow = on ? 1 : 0;
