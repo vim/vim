@@ -805,6 +805,10 @@ RT_ALL =	\
 		runtime/tutor/en/vim-01-beginner.tutor.json \
 		runtime/tutor/en/vim-02-beginner.tutor \
 		runtime/tutor/en/vim-02-beginner.tutor.json \
+		runtime/tutor/sv/vim-01-beginner.tutor \
+		runtime/tutor/sv/vim-01-beginner.tutor.json \
+		runtime/tutor/sv/vim-02-beginner.tutor \
+		runtime/tutor/sv/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
@@ -1104,6 +1108,9 @@ LANG_GEN = \
 		runtime/doc/*-pl.UTF-8.1 \
 		runtime/doc/*-ru.1 \
 		runtime/doc/*-ru.UTF-8.1 \
+		runtime/doc/*-sv.1 \
+		runtime/doc/*-sv.UTF-8.1 \
+		runtime/doc/*.svx \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \

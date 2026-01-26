@@ -449,6 +449,61 @@ xxd-ru.UTF-8.1 : xxd-ru.1
 		1>nul New-Item -Path . -Name $@ -ItemType file -Force
 !ENDIF
 
+evim-sv.UTF-8.1 : evim-sv.1
+!IF DEFINED (ICONV)
+	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
+!ELSE
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
+	$(PS) $(PSFLAGS) \
+		[IO.File]::ReadAllText(\"$?\", \
+		[Text.Encoding]::GetEncoding(28599)) ^| \
+		1>nul New-Item -Path . -Name $@ -ItemType file -Force
+!ENDIF
+
+vim-sv.UTF-8.1 : vim-sv.1
+!IF DEFINED (ICONV)
+	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
+!ELSE
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
+	$(PS) $(PSFLAGS) \
+		[IO.File]::ReadAllText(\"$?\", \
+		[Text.Encoding]::GetEncoding(28599)) ^| \
+		1>nul New-Item -Path . -Name $@ -ItemType file -Force
+!ENDIF
+
+vimdiff-sv.UTF-8.1 : vimdiff-sv.1
+!IF DEFINED (ICONV)
+	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
+!ELSE
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
+	$(PS) $(PSFLAGS) \
+		[IO.File]::ReadAllText(\"$?\", \
+		[Text.Encoding]::GetEncoding(28599)) ^| \
+		1>nul New-Item -Path . -Name $@ -ItemType file -Force
+!ENDIF
+
+vimtutor-sv.UTF-8.1 : vimtutor-sv.1
+!IF DEFINED (ICONV)
+	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
+!ELSE
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
+	$(PS) $(PSFLAGS) \
+		[IO.File]::ReadAllText(\"$?\", \
+		[Text.Encoding]::GetEncoding(28599)) ^| \
+		1>nul New-Item -Path . -Name $@ -ItemType file -Force
+!ENDIF
+
+xxd-sv.UTF-8.1 : xxd-sv.1
+!IF DEFINED (ICONV)
+	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
+!ELSE
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
+	$(PS) $(PSFLAGS) \
+		[IO.File]::ReadAllText(\"$?\", \
+		[Text.Encoding]::GetEncoding(28599)) ^| \
+		1>nul New-Item -Path . -Name $@ -ItemType file -Force
+!ENDIF
+
 evim-tr.UTF-8.1 : evim-tr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-9 -t UTF-8 $? >$@
