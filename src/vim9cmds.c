@@ -596,6 +596,11 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_elseif_without_if));
 	return NULL;
     }
+    if (scope->se_u.se_if.is_seen_else)
+    {
+	emsg(_(e_elseif_after_else));
+	return NULL;
+    }
     unwind_locals(cctx, scope->se_local_count, TRUE);
     if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
 	// the previous if block didn't end in a "return" or a "throw"
@@ -743,6 +748,11 @@ compile_else(char_u *arg, cctx_T *cctx)
     if (scope == NULL || scope->se_type != IF_SCOPE)
     {
 	emsg(_(e_else_without_if));
+	return NULL;
+    }
+    if (scope->se_u.se_if.is_seen_else)
+    {
+	emsg(_(e_multiple_else));
 	return NULL;
     }
     unwind_locals(cctx, scope->se_local_count, TRUE);
