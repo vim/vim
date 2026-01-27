@@ -1,17 +1,14 @@
 " Vim syntax file
 " Language:    env
 " Maintainer:  DuckAfire <duckafire@gmail.com>
-" Last Change: 2026 Jan 26
-" Version:      0
+" Last Change: 2026 Jan 27
+" Version:     1
 " Changelog:
 " 0. Create syntax file.
+" 1. Remove unused variable (g:main_syntax).
 
-if !exists("main_syntax")
-	if exists("b:current_syntax")
-		finish
-	endif
-
-	let main_syntax = "env"
+if exists("b:current_syntax")
+	finish
 endif
 
 sy match   envField   nextgroup=envValue         /^\h\(\w\|\.\)*/
