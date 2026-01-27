@@ -935,13 +935,31 @@ channel_open(
 	return NULL;
     }
 
+    // Count the number of addresses for timeout distribution
+    int addr_count = 0;
     for (addr = res; addr != NULL; addr = addr->ai_next)
+	addr_count++;
+
+    // On Mac and Solaris a zero timeout almost never works.  Waiting for
+    // one millisecond already helps a lot.  Later Mac systems (using IPv6)
+    // need more time, 15 milliseconds appears to work well.
+    // Let's do it for all systems, because we don't know why this is
+    // needed.
+    if (waittime == 0)
+	waittime = 15;
+
+    int addr_index = 0;
+    for (addr = res; addr != NULL; addr = addr->ai_next, addr_index++)
     {
 	const char  *dst = hostname;
 # ifdef HAVE_INET_NTOP
 	const void  *src = NULL;
 	char	    buf[NUMBUFLEN];
 # endif
+	int	    try_waittime;
+	int	    before_waittime;
+	int	    consumed;
+	int	    remaining_addrs;
 
 	if (addr->ai_family == AF_INET6)
 	{
@@ -974,18 +992,44 @@ channel_open(
 
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
-	// On Mac and Solaris a zero timeout almost never works.  Waiting for
-	// one millisecond already helps a lot.  Later Mac systems (using IPv6)
-	// need more time, 15 milliseconds appears to work well.
-	// Let's do it for all systems, because we don't know why this is
-	// needed.
-	if (waittime == 0)
-	    waittime = 15;
+	// Distribute the timeout across addresses for better fallback behavior.
+	// This implements a simplified version of Happy Eyeballs (RFC 8305).
+	if (addr->ai_next == NULL)
+	    try_waittime = waittime;
+	else if (addr_index == 0)
+	{
+	    if (waittime > 500)
+		try_waittime = 250;
+	    else if (waittime > 30)
+		try_waittime = waittime / 2;
+	    else
+		try_waittime = waittime;
+	}
+	else
+	{
+	    remaining_addrs = addr_count - addr_index;
+	    try_waittime = waittime / remaining_addrs;
+	}
 
+	before_waittime = try_waittime;
 	sd = channel_connect(channel, addr->ai_addr, (int)addr->ai_addrlen,
-								   &waittime);
+							   &try_waittime);
+
+	// Update the overall waittime based on consumed time
+	consumed = before_waittime - try_waittime;
+	waittime -= consumed;
+	if (waittime < 0)
+	    waittime = 0;
+
 	if (sd >= 0)
 	    break;
+
+	// If we have no time left, stop trying
+	if (waittime <= 0 && addr->ai_next != NULL)
+	{
+	    ch_log(channel, "Out of time, stopping connection attempts");
+	    break;
+	}
     }
 
     freeaddrinfo(res);
