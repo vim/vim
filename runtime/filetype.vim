@@ -1028,7 +1028,7 @@ au BufNewFile,BufRead *.decl,*.dcl,*.dec
 " NOTE: Patterns ending in a star are further down, these have lower priority.
 au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,.bash[_-]history,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,*.bats,*.cygport call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
-au BufNewFile,BufRead */etc/profile,.profile,*.sh call dist#ft#SetFileTypeSH(getline(1))
+au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.envrc,.envrc.* call dist#ft#SetFileTypeSH(getline(1))
 " Shell script (Arch Linux) or PHP file (Drupal)
 au BufNewFile,BufRead *.install
 	\ if getline(1) =~ '<?php' |
@@ -1412,7 +1412,7 @@ au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
 au BufNewFile,BufRead s6-*			call s:StarSetf('execline')
 
 " Env
-au BufNewFile,BufRead *.env{rc,},.env{rc,}{.*,} setf env
+au BufNewFile,BufRead *.env,.env{.*,} setf env
 
 " Fvwm
 au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')
