@@ -21,7 +21,6 @@
 #include <windows.h>
 #include <crtdbg.h>
 #include <assert.h>
-#include <stdio.h>
 #include <math.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
