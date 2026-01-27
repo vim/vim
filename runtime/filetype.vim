@@ -1412,7 +1412,7 @@ au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
 au BufNewFile,BufRead s6-*			call s:StarSetf('execline')
 
 " Env
-au BufNewFile,BufRead *.env{rc,} .env{rc,}{.*,} setf env
+au BufNewFile,BufRead *.env{rc,},.env{rc,}{.*,} setf env
 
 " Fvwm
 au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')
