@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 11
+*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8748,7 +8748,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel.  |g:actual_curtabpage| represents current tab's label number.
-	The option value can contain line breaks: >
+	The option value can contain "\n" to force line breaks: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
@@ -8766,6 +8766,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 	|           |
 <
+	Note: using "\n" is considered experimental and may change in the
+	future; a %-atom may be used instead.
+
 					*'tabpanelopt'* *'tplo'*
 'tabpanelopt' 'tplo'	string	(default "")
 			global
