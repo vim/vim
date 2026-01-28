@@ -1948,7 +1948,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 prt_check_resource(struct prt_ps_resource_S *resource, char_u *version)
 {
     // Version number m.n should match, the revision number does not matter
-    if (STRNCMP(resource->version, version, STRLEN(version)))
+    if (STRNCMP(resource->version, version, STRLEN(version)) != 0)
     {
 	semsg(_(e_str_resource_file_has_wrong_version),
 		resource->name);
