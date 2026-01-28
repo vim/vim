@@ -1,10 +1,8 @@
 " Tests for ":highlight" and highlighting.
 
-source view_util.vim
-source screendump.vim
-source check.vim
-source script_util.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+source util/script_util.vim
+import './util/vim9.vim' as v9
 
 func ClearDict(d)
   for k in keys(a:d)
@@ -822,7 +820,7 @@ endfunc
 " Test for 'highlight' option
 func Test_highlight_opt()
   let save_hl = &highlight
-  call assert_fails('set highlight=j:b', 'E474:')
+  call assert_fails('set highlight=K:b', 'E474:')
   set highlight=f\ r
   call assert_equal('f r', &highlight)
   set highlight=fb
@@ -1087,7 +1085,7 @@ func Test_colornames_assignment_and_unassignment()
   let v:colornames['x1'] = '#111111'
   call assert_equal(v:colornames['x1'], '#111111')
   unlet v:colornames['x1']
-  call assert_fails("echo v:colornames['x1']")
+  call assert_fails("echo v:colornames['x1']", 'E716: Key not present in Dictionary: "x1"')
 endfunc
 
 " Test for the hlget() function

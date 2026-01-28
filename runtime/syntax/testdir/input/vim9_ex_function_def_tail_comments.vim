@@ -1,7 +1,7 @@
 vim9script
-
 # Vim9 :function and :def tail comments
 # VIM_TEST_SETUP unlet! g:vimsyn_folding
+
 
 fun Test1() abort		" fun
   return 1
@@ -42,3 +42,4 @@ endfun				" endfun
 for d in range(1, 6)
   exec $'echo Test{d}()'
 endfor
+

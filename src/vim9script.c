@@ -13,11 +13,6 @@
 
 #include "vim.h"
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
 /*
  * Return TRUE when currently using Vim9 script syntax.
  * Does not go up the stack, a ":function" inside vim9script uses legacy
@@ -33,7 +28,7 @@ in_vim9script(void)
 		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when currently in a script with script version smaller than
  * "max_version" or command modifiers forced it.
@@ -146,7 +141,7 @@ ex_vim9script(exarg_T *eap UNUSED)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * When in Vim9 script give an error and return FAIL.
  */
@@ -210,7 +205,7 @@ vim9_comment_start(char_u *p)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * "++nr" and "--nr" commands.
@@ -479,13 +474,7 @@ handle_import(
 	res = handle_import_fname(from_name, is_autoload, &sid);
 	vim_free(from_name);
     }
-    else if (mch_isFullName(tv.vval.v_string)
-#ifdef BACKSLASH_IN_FILENAME
-	    // On MS-Windows omitting the drive is still handled like an
-	    // absolute path, not using 'runtimepath'.
-	    || *tv.vval.v_string == '/' || *tv.vval.v_string == '\\'
-#endif
-	    )
+    else if (mch_isFullName(tv.vval.v_string))
     {
 	// Absolute path: "/tmp/name.vim"
 	res = handle_import_fname(tv.vval.v_string, is_autoload, &sid);
@@ -846,8 +835,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     // parse type, check for reserved name
     p = skipwhite(p + 1);
-    type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL || check_reserved_name(name, FALSE) == FAIL)
+    type = parse_type(&p, &si->sn_type_list, NULL, NULL, TRUE);
+    if (type == NULL
+	    || check_reserved_name(name, FALSE) == FAIL
+	    || !valid_declaration_type(type))
     {
 	vim_free(name);
 	return p;

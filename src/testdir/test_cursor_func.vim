@@ -1,7 +1,5 @@
 " Tests for cursor() and other functions that get/set the cursor position
 
-source check.vim
-
 func Test_wrong_arguments()
   call assert_fails('call cursor(1. 3)', 'E474:')
   call assert_fails('call cursor(test_null_list())', 'E474:')

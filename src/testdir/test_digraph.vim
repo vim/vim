@@ -1,8 +1,6 @@
 " Tests for digraphs
 
-source check.vim
 CheckFeature digraphs
-source term_util.vim
 
 func Put_Dig(chars)
   exe "norm! o\<c-k>".a:chars
@@ -614,5 +612,16 @@ func Test_digraph_getlist_function()
   call assert_fails('call digraph_getlist(0z12)', 'E1212: Bool required for argument 1')
 endfunc
 
+func Test_digraph_angle_bracket_patch()
+  " Ensure that the deprecated angle brackets 2329/232A ('</','/>') are not used
+  call assert_notequal('〈', digraph_get('</'))
+  call assert_notequal('〉', digraph_get('/>'))
+  " Ensure that the CJK angle brackets 3008/3009 ('</','/>') are used
+  call assert_equal('〈', digraph_get('</'))
+  call assert_equal('〉', digraph_get('/>'))
+  " Ensure that the mathematical angle brackets 27E8/27E9 ('<[',']>') are defined
+  call assert_equal('⟨', digraph_get('<['))
+  call assert_equal('⟩', digraph_get(']>'))
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

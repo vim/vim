@@ -33,6 +33,7 @@ Pmenu
 PmenuSbar
 PmenuSel
 PmenuThumb
+PmenuShadow
 Question
 Scrollbar
 Search
@@ -51,6 +52,8 @@ TabLineFill
 TabLineSel
 Terminal
 Title
+TitleBar
+TitleBarNC
 TOhtmlProgress
 TOhtml-progress-color
 ToolbarButton

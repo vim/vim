@@ -398,18 +398,6 @@ vim_findfile_init(
 	    search_ctx->ffsc_start_dir.length);
 	if (search_ctx->ffsc_start_dir.string == NULL)
 	    goto error_return;
-
-#ifdef BACKSLASH_IN_FILENAME
-	// A path that starts with "/dir" is relative to the drive, not to the
-	// directory (but not for "//machine/dir").  Only use the drive name.
-	if ((*path == '/' || *path == '\\')
-		&& path[1] != path[0]
-		&& search_ctx->ffsc_start_dir.string[1] == ':')
-	{
-	    search_ctx->ffsc_start_dir.string[2] = NUL;
-	    search_ctx->ffsc_start_dir.length = 2;
-	}
-#endif
     }
 
     /*
@@ -1750,13 +1738,13 @@ find_file_in_path(
 	    file_to_find, search_ctx);
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_findfile(void)
 {
     VIM_CLEAR_STRING(ff_expand_buffer);
 }
-# endif
+#endif
 
 /*
  * Find the directory name "ptr[len]" in the path.
@@ -1801,13 +1789,13 @@ find_file_in_path_option(
     static int		did_findfile_init = FALSE;
     char_u		*file_name = NULL;
     int			rel_to_curdir;
-# ifdef AMIGA
+#ifdef AMIGA
     struct Process	*proc = (struct Process *)FindTask(0L);
     APTR		save_winptr = proc->pr_WindowPtr;
 
     // Avoid a requester here for a volume that doesn't exist.
     proc->pr_WindowPtr = (APTR)-1L;
-# endif
+#endif
     static size_t	file_to_findlen = 0;
 
     if (first == TRUE)
@@ -1820,11 +1808,10 @@ find_file_in_path_option(
 	// copy file name into NameBuff, expanding environment variables
 	save_char = ptr[len];
 	ptr[len] = NUL;
-	expand_env_esc(ptr, NameBuff, MAXPATHL, FALSE, TRUE, NULL);
+	file_to_findlen = expand_env_esc(ptr, NameBuff, MAXPATHL, FALSE, TRUE, NULL);
 	ptr[len] = save_char;
 
 	vim_free(*file_to_find);
-	file_to_findlen = STRLEN(NameBuff);
 	*file_to_find = vim_strnsave(NameBuff, file_to_findlen);
 	if (*file_to_find == NULL)	// out of memory
 	{
@@ -1854,16 +1841,16 @@ find_file_in_path_option(
     if (vim_isAbsName(*file_to_find)
 	    // "..", "../path", "." and "./path": don't use the path_option
 	    || rel_to_curdir
-# if defined(MSWIN)
+#if defined(MSWIN)
 	    // handle "\tmp" as absolute path
 	    || vim_ispathsep((*file_to_find)[0])
 	    // handle "c:name" as absolute path
 	    || ((*file_to_find)[0] != NUL && (*file_to_find)[1] == ':')
-# endif
-# ifdef AMIGA
+#endif
+#ifdef AMIGA
 	    // handle ":tmp" as absolute path
 	    || (*file_to_find)[0] == ':'
-# endif
+#endif
        )
     {
 	/*
@@ -2012,9 +1999,9 @@ find_file_in_path_option(
     }
 
 theend:
-# ifdef AMIGA
+#ifdef AMIGA
     proc->pr_WindowPtr = save_winptr;
-# endif
+#endif
     return file_name;
 }
 
@@ -2188,7 +2175,7 @@ file_name_in_line(
     return find_file_name_in_path(ptr, len, options, count, rel_fname);
 }
 
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     static char_u *
 eval_includeexpr(char_u *ptr, int len)
 {
@@ -2199,14 +2186,14 @@ eval_includeexpr(char_u *ptr, int len)
     current_sctx = curbuf->b_p_script_ctx[BV_INEX];
 
     res = eval_to_string_safe(curbuf->b_p_inex,
-	    was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL),
+	    was_set_insecurely(curwin, (char_u *)"includeexpr", OPT_LOCAL),
 								   TRUE, TRUE);
 
     set_vim_var_string(VV_FNAME, NULL, 0);
     current_sctx = save_sctx;
     return res;
 }
-# endif
+#endif
 
 /*
  * Return the name of the file ptr[len] in 'path'.
@@ -2222,14 +2209,14 @@ find_file_name_in_path(
 {
     char_u	*file_name;
     int		c;
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     char_u	*tofree = NULL;
-# endif
+#endif
 
     if (len == 0)
 	return NULL;
 
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     if ((options & FNAME_INCL) && *curbuf->b_p_inex != NUL)
     {
 	tofree = eval_includeexpr(ptr, len);
@@ -2239,7 +2226,7 @@ find_file_name_in_path(
 	    len = (int)STRLEN(ptr);
 	}
     }
-# endif
+#endif
 
     if (options & FNAME_EXP)
     {
@@ -2249,7 +2236,7 @@ find_file_name_in_path(
 	file_name = find_file_in_path(ptr, len, options & ~FNAME_MESS,
 				  TRUE, rel_fname, &file_to_find, &search_ctx);
 
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
 	/*
 	 * If the file could not be found in a normal way, try applying
 	 * 'includeexpr' (unless done already).
@@ -2266,7 +2253,7 @@ find_file_name_in_path(
 				  TRUE, rel_fname, &file_to_find, &search_ctx);
 	    }
 	}
-# endif
+#endif
 	if (file_name == NULL && (options & FNAME_MESS))
 	{
 	    c = ptr[len];
@@ -2290,9 +2277,9 @@ find_file_name_in_path(
     else
 	file_name = vim_strnsave(ptr, len);
 
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     vim_free(tofree);
-# endif
+#endif
 
     return file_name;
 }
@@ -2338,11 +2325,11 @@ gettail_dir(char_u *fname)
     int
 vim_ispathlistsep(int c)
 {
-# ifdef UNIX
+#ifdef UNIX
     return (c == ':');
-# else
+#else
     return (c == ';');	// might not be right for every system...
-# endif
+#endif
 }
 
 /*
@@ -2473,12 +2460,12 @@ expand_path_option(
 	if (ga_grow(gap, 1) == FAIL)
 	    break;
 
-# if defined(MSWIN)
+#if defined(MSWIN)
 	// Avoid the path ending in a backslash, it fails when a comma is
 	// appended.
 	if (buf[buflen - 1] == '\\')
 	    buf[buflen - 1] = '/';
-# endif
+#endif
 
 	p = vim_strnsave(buf, buflen);
 	if (p == NULL)
@@ -2510,9 +2497,9 @@ get_path_cutoff(char_u *fname, garray_T *gap)
 	int j = 0;
 
 	while ((fname[j] == path_part[i][j]
-# if defined(MSWIN)
+#if defined(MSWIN)
 		|| (vim_ispathsep(fname[j]) && vim_ispathsep(path_part[i][j]))
-# endif
+#endif
 			     ) && fname[j] != NUL && path_part[i][j] != NUL)
 	    j++;
 	if (j > maxlen)
@@ -2651,13 +2638,13 @@ uniquefy_paths(
 	     */
 	    short_name = shorten_fname(path, curdir);
 	    if (short_name != NULL && short_name > path + 1
-# if defined(MSWIN)
+#if defined(MSWIN)
 		    // On windows,
 		    //	    shorten_fname("c:\a\a.txt", "c:\a\b")
 		    // returns "\a\a.txt", which is not really the short
 		    // name, hence:
 		    && !vim_ispathsep(*short_name)
-# endif
+#endif
 		)
 	    {
 		vim_snprintf((char *)path, MAXPATHL, ".%s%s", PATHSEPSTR, short_name);
@@ -2792,7 +2779,7 @@ simplify_filename(char_u *filename)
     }
     start = p;	    // remember start after "c:/" or "/" or "///"
     p_end = p + STRLEN(p);
-#ifdef UNIX
+# ifdef UNIX
     // Posix says that "//path" is unchanged but "///path" is "/path".
     if (start > filename + 2)
     {
@@ -2800,7 +2787,7 @@ simplify_filename(char_u *filename)
 	p_end -= (size_t)(p - (filename + 1));
 	start = p = filename + 1;
     }
-#endif
+# endif
 
     do
     {
@@ -2992,12 +2979,15 @@ simplify_filename(char_u *filename)
 	    p = getnextcomp(p);
 	}
     } while (*p != NUL);
-#endif // !AMIGA
 
     return (size_t)(p_end - filename);
+#else
+    // Don't touch Amiga filenames
+    return STRLEN(filename);
+#endif // !AMIGA
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "simplify()" function
  */

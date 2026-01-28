@@ -1,4 +1,4 @@
-.TH VIM 1 "2024 Aug 12"
+.TH VIM 1 "2025 Jun 27"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -404,6 +404,9 @@ Will prompt for a crypt key.
 Don't connect to the X server.  Shortens startup time in a terminal, but the
 window title and clipboard will not be used.
 .TP
+\-Y
+Don't connect to the wayland compositor
+.TP
 \-y
 Start
 .B Vim
@@ -496,7 +499,14 @@ List the names of all Vim servers that can be found.
 .TP
 \-\-servername {name}
 Use {name} as the server name.  Used for the current Vim, unless used with a
-\-\-remote argument, then it's the name of the server to connect to.
+\-\-remote argument, then it's the name of the server to connect to.  If the
+socketserver backend is being used, if the name starts with "/", "./", or "../",
+it is taken as either an absolute, relative or relative path to the socket.
+.TP
+\-\-clientserver {backend}
+Use {backend} as the backend for clientserver functionality, either "socket" or
+"x11" respectively.  Only available when compiled with both socketserver and X11
+features present
 .TP
 \-\-socketid {id}
 GTK GUI only: Use the GtkPlug mechanism to run gVim in another window.
@@ -559,7 +569,7 @@ initializations (first one found is used).
 System wide gvim initializations.
 .TP
 ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-Your personal 
+Your personal
 .B gVim
 initializations (first one found is used).
 .TP
@@ -567,7 +577,7 @@ initializations (first one found is used).
 Script used for the ":options" command, a nice way to view and set options.
 .TP
 /usr/local/share/vim/vim??/menu.vim
-System wide menu initializations for 
+System wide menu initializations for
 .B gVim.
 .TP
 /usr/local/share/vim/vim??/bugreport.vim

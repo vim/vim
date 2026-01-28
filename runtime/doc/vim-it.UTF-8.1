@@ -1,4 +1,4 @@
-.TH VIM 1 "12 agosto 2024"
+.TH VIM 1 "27 giugno 2025"
 .SH NOME
 vim \- VI Migliorato, un editor di testi per programmatori
 .SH SINTASSI
@@ -404,6 +404,9 @@ nella scrittura dei file.  Verrà chiesta una chiave di cifratura.
 Non connettersi al server X.  Vim parte più rapidamente,
 ma il titolo della finestra e la clipboard non sono usati.
 .TP
+\-Y
+Non connettersi al compositore Wayland.
+.TP
 \-y
 Eseguire
 .B Vim
@@ -496,8 +499,17 @@ Come \-\-remote\-wait, ma senza avvisare se non si trova un server.
 Elenca i nomi di tutti i server Vim disponibili.
 .TP
 \-\-servername {nome}
-Usa {nome} come nome server.  Usato per il Vim corrente, a meno che sia usato
-con l'argomento \-\-remote, nel qual caso indica il server a cui connettersi.
+Usa {nome} come nome del server usato per il Vim corrente, a meno che sia
+usato con l'argomento \-\-remote, nel qual caso indica il server a cui
+connettersi.
+Quando si sta usando il server a socket [socketserver backend], se il nome
+inizia con "/", "./", o "../", è considerato come il percorso, assoluto o
+relativo per arrivare al socket.
+.TP
+\-\-clientserver {backend}
+Usare {backend} come interfaccia per la funzionalità client/server,
+rispettivamente, o "socket" o "x11".  Disponibile solo se Vim è stato
+compilato con le due funzionalità socketserver e X11.
 .TP
 \-\-socketid {id}
 Solo per GUI GTK: Usa meccanismo GtkPlug per eseguire gVim in un'altra finestra.
@@ -564,8 +576,9 @@ Inizializzazioni personali di
 .B gVim
 (viene utilizzata la prima trovata).
 .TP
-/usr/local/share/vim/optwin.vim
-Script Vim usato dal comando ":options", maniera elegante per visualizzare e impostare opzioni.
+/usr/local/share/vim/vim??/optwin.vim
+Script Vim usato dal comando ":options", maniera elegante per visualizzare
+e impostare opzioni.
 .TP
 /usr/local/share/vim/vim??/menu.vim
 Inizializzazioni del menù

@@ -1,11 +1,10 @@
 " Tests for defining text property types and adding text properties to the
 " buffer.
 
-source check.vim
 CheckFeature textprop
 
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
@@ -4263,6 +4262,161 @@ func Test_text_after_nowrap_list()
   call VerifyScreenDump(buf, 'Test_text_after_nowrap_list_1', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_text_after_wrap_showbreak()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set cursorline
+    set shiftwidth=4
+
+    set breakindent
+    set showbreak=>\ 
+    set breakindentopt=shift:2,min:64
+
+    call setline(1, ['        " 1234567890', 'foo', 'bar'])
+
+    call prop_type_add('Test', {
+          \ 'highlight': 'Visual',
+          \ 'priority': 10,
+          \ 'combine': v:true,
+          \ })
+    call prop_add(1, 0, #{
+          \ type: 'Test',
+          \ bufnr: bufnr('%'),
+          \ text: 'aaaa890 123 456 789',
+          \ text_wrap: 'wrap',
+          \ text_align: 'after'
+          \ })
+  END
+  call writefile(lines, 'XTestAfterWrapShowbreak', 'D')
+  let buf = RunVimInTerminal('-S XTestAfterWrapShowbreak', #{rows: 8, cols: 20})
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_01', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_02', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_03', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_02', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_01', {})
+
+  call term_sendkeys(buf, '$x0')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_04', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_05', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_06', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_05', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_04', {})
+
+  call term_sendkeys(buf, ":set list listchars=eol:$\<CR>")
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_07', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_08', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_09', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_08', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_07', {})
+
+  call term_sendkeys(buf, '$x0')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_10', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_11', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_12', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_11', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_10', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_text_eol_long_wrap_smoothscroll()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, [repeat('0123456789', 5), 'foo', 'bar'])
+    normal! G$
+    call prop_type_add('Test', #{highlight: 'ErrorMsg'})
+    call prop_add(1, 51, #{type: 'Test', text: repeat('x', 145), text_wrap: 'wrap'})
+
+    set cursorline scrolloff=0 showbreak=>\  smoothscroll
+  END
+  call writefile(lines, 'XTestEolLongWrapSms', 'D')
+  let buf = RunVimInTerminal('-S XTestEolLongWrapSms', #{rows: 8, cols: 50})
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_01', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_02', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_03', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_04', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_05', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_06', {})
+
+  call term_sendkeys(buf, 'gg$xG$')
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_07', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_08', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_09', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_10', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_11', {})
+
+  call term_sendkeys(buf, "zb:set list listchars=eol:$ | echo\<CR>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_12', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_13', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_14', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_15', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_16', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_17', {})
+
+  call term_sendkeys(buf, 'gg$xG$')
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_18', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_19', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_20', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_21', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_22', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_text_eol_virtcol()
+  new
+  call prop_type_add('test', #{highlight: 'ErrorMsg'})
+  call setline(1, repeat(['1234567890'], 6))
+
+  for [ln, tx] in [[2, 'a'], [3, 'ab'], [4, 'abc'], [5, 'abcd'], [6, 'αβγ口']]
+    let co = col([ln, '$'])
+    call assert_equal(11, virtcol([ln, '$']))
+    call prop_add(ln, co, #{type: 'test', text: tx})
+    call assert_equal(11 + strwidth(tx), virtcol([ln, '$']))
+  endfor
+
+  bwipe!
+  call prop_type_delete('test')
 endfunc
 
 func Test_text_below_nowrap()

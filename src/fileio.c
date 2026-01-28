@@ -585,12 +585,12 @@ readfile(
 		else
 		{
 		    filemess(curbuf, sfname, (char_u *)(
-# ifdef EFBIG
+#ifdef EFBIG
 			    (errno == EFBIG) ? _("[File too big]") :
-# endif
-# ifdef EOVERFLOW
+#endif
+#ifdef EOVERFLOW
 			    (errno == EOVERFLOW) ? _("[File too big]") :
-# endif
+#endif
 						_("[Permission Denied]")), 0);
 		    curbuf->b_p_ro = TRUE;	// must use "w!" now
 		}
@@ -1695,7 +1695,7 @@ retry:
 		{
 		    found_bad = FALSE;
 
-#  ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
+# ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
 		    if (codepage == CP_UTF8)
 		    {
 			// Handle CP_UTF8 input ourselves to be able to handle
@@ -1725,7 +1725,7 @@ retry:
 			}
 		    }
 		    else
-#  endif
+# endif
 		    {
 			// We don't know how long the byte sequence is, try
 			// from one to three bytes.
@@ -2732,10 +2732,10 @@ failed:
 							    FALSE, NULL, eap);
 	if (msg_scrolled == n)
 	    msg_scroll = m;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	if (aborting())	    // autocmds may abort script processing
 	    goto theend;
-# endif
+#endif
     }
 
     if (!(recoverymode && error))
@@ -2750,7 +2750,7 @@ theend:
     return retval;
 }
 
-#if defined(OPEN_CHR_FILES) || defined(PROTO)
+#if defined(OPEN_CHR_FILES)
 /*
  * Returns TRUE if the file name argument is of the form "/dev/fd/\d\+",
  * which is the name of files used for process substitution output by
@@ -2955,7 +2955,7 @@ readfile_charconvert(
 }
 #endif
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Check for magic number used for encryption.  Applies to the current buffer.
  * If found, the magic number is removed from ptr[*sizep] and *sizep and
@@ -3068,7 +3068,7 @@ check_file_readonly(
 	);
 }
 
-#if defined(HAVE_FSYNC) || defined(PROTO)
+#if defined(HAVE_FSYNC)
 /*
  * Call fsync() with Mac-specific exception.
  * Return fsync() result: zero for success.
@@ -3189,7 +3189,8 @@ msg_add_lines(
 
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		"%s%ldL, %lldB", insert_space ? " " : "", lnum, (varnumber_T)nchars);
+		// l10n: L as in line, B as in byte
+		_("%s%ldL, %lldB"), insert_space ? " " : "", lnum, (varnumber_T)nchars);
     else
     {
 	len += vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
@@ -3304,7 +3305,7 @@ get_fio_flags(char_u *ptr)
     return 0;
 }
 
-#if defined(MSWIN) || defined(PROTO)
+#if defined(MSWIN)
 /*
  * Check "ptr" for a MS-Windows codepage name and return the FIO_ flags needed
  * for the conversion MS-Windows can do for us.  Also accept "utf-8".
@@ -3322,18 +3323,18 @@ get_win_fio_flags(char_u *ptr)
     cp = encname2codepage(ptr);
     if (cp == 0)
     {
-#  ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
+# ifdef CP_UTF8	// VC 4.1 doesn't define CP_UTF8
 	if (STRCMP(ptr, "utf-8") == 0)
 	    cp = CP_UTF8;
 	else
-#  endif
+# endif
 	    return 0;
     }
     return FIO_PUT_CP(cp) | FIO_CODEPAGE;
 }
 #endif
 
-#if defined(MACOS_CONVERT) || defined(PROTO)
+#if defined(MACOS_CONVERT)
 /*
  * Check "ptr" for a Carbon supported encoding and return the FIO_ flags
  * needed for the internal conversion to/from utf-8 or latin1.
@@ -3544,8 +3545,7 @@ shorten_fnames(int force)
 
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_HAIKU) \
-	|| defined(PROTO)
+	|| defined(FEAT_GUI_HAIKU)
 /*
  * Shorten all filenames in "fnames[count]" by current directory.
  */
@@ -4456,9 +4456,9 @@ buf_check_timestamp(
 			if (emsg_silent == 0 && !in_assert_fails)
 			{
 			    out_flush();
-    #ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			    if (!focus)
-    #endif
+#endif
 				// give the user some time to think about it
 				ui_delay(1004L, TRUE);
 
@@ -4822,7 +4822,7 @@ create_readdirex_item(char_u *path, char_u *name)
 {
     dict_T	*item;
     char	*p;
-    size_t	len;
+    size_t	pathlen, len;
     stat_T	st;
     int		ret, link = FALSE;
     varnumber_T	size;
@@ -4836,11 +4836,15 @@ create_readdirex_item(char_u *path, char_u *name)
 	return NULL;
     item->dv_refcount++;
 
-    len = STRLEN(path) + 1 + STRLEN(name) + 1;
+    pathlen = STRLEN(path);
+    len = pathlen + 1 + STRLEN(name) + 1;
     p = alloc(len);
     if (p == NULL)
 	goto theend;
-    vim_snprintf(p, len, "%s/%s", path, name);
+    if (pathlen > 0 && path[pathlen - 1] == '/')
+	vim_snprintf(p, len, "%s%s", path, name);
+    else
+	vim_snprintf(p, len, "%s/%s", path, name);
     ret = mch_lstat(p, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {
@@ -4948,7 +4952,7 @@ compare_readdir_item(const void *s1, const void *s2)
 }
 #endif
 
-#if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(TEMPDIRNAMES) || defined(FEAT_EVAL)
 /*
  * Core part of "readdir()" and "readdirex()" function.
  * Retrieve the list of files/directories of "path" into "gap".
@@ -5217,7 +5221,7 @@ delete_recursive(char_u *name)
 }
 #endif
 
-#if defined(TEMPDIRNAMES) || defined(PROTO)
+#if defined(TEMPDIRNAMES)
 static long	temp_count = 0;		// Temp filename counter.
 
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
@@ -5351,14 +5355,13 @@ vim_tempname(
 	    long	nr;
 	    long	off;
 # endif
+	    size_t	itmplen;
 
 	    // Expand $TMP, leave room for "/v1100000/999999999".
 	    // Skip the directory check if the expansion fails.
-	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
+	    itmplen = expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
 	    if (itmp[0] != '$' && mch_isdir(itmp))
 	    {
-		size_t	itmplen = STRLEN(itmp);
-
 		// directory exists
 		if (!after_pathsep(itmp, itmp + itmplen))
 		{
@@ -5529,7 +5532,7 @@ vim_tempname(
 #endif // TEMPDIRNAMES
 }
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * Convert all backslashes in fname to forward slashes in-place, unless when
  * it looks like a URL.
@@ -5840,7 +5843,7 @@ file_pat_to_reg_pat(
     return reg_pat;
 }
 
-#if defined(EINTR) || defined(PROTO)
+#if defined(EINTR)
 /*
  * Version of read() that retries when interrupted by EINTR (possibly
  * by a SIGWINCH).

@@ -156,9 +156,9 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     int		fish_like;
     char_u	*shname;
     int		powershell;
-# ifdef MSWIN
+#ifdef MSWIN
     int		double_quotes;
-# endif
+#endif
 
     // Only csh and similar shells expand '!' within single quotes.  For sh and
     // the like we must not put a backslash before it, it will be taken
@@ -173,28 +173,28 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // PowerShell uses its own version for quoting single quotes
     shname = gettail(p_sh);
     powershell = strstr((char *)shname, "pwsh") != NULL;
-# ifdef MSWIN
+#ifdef MSWIN
     powershell = powershell || strstr((char *)shname, "powershell") != NULL;
     // PowerShell only accepts single quotes so override shellslash.
     double_quotes = !powershell && !p_ssl;
-# endif
+#endif
 
     // First count the number of extra bytes required.
     length = (unsigned)STRLEN(string) + 3;  // two quotes and a trailing NUL
     for (p = string; *p != NUL; MB_PTR_ADV(p))
     {
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	{
 	    if (*p == '"')
 		++length;		// " -> ""
 	}
 	else
-# endif
+#endif
 	if (*p == '\'')
 	{
 	    if (powershell)
-		length +=2;		// ' => ''
+		length += 2;		// ' => ''
 	    else
 		length += 3;		// ' => '\''
 	}
@@ -221,16 +221,16 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	d = escaped_string;
 
 	// add opening quote
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	    *d++ = '"';
 	else
-# endif
+#endif
 	    *d++ = '\'';
 
 	for (p = string; *p != NUL; )
 	{
-# ifdef MSWIN
+#ifdef MSWIN
 	    if (double_quotes)
 	    {
 		if (*p == '"')
@@ -242,7 +242,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 		}
 	    }
 	    else
-# endif
+#endif
 	    if (*p == '\'')
 	    {
 		if (powershell)
@@ -288,11 +288,11 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	}
 
 	// add terminating quote and finish with a NUL
-# ifdef MSWIN
+#ifdef MSWIN
 	if (double_quotes)
 	    *d++ = '"';
 	else
-# endif
+#endif
 	    *d++ = '\'';
 	*d = NUL;
     }
@@ -346,7 +346,7 @@ vim_strup(
 	*p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL)
 /*
  * Make string "s" all upper-case and return it in allocated memory.
  * Handles multi-byte characters as well as possible.
@@ -538,7 +538,7 @@ vim_strlen_maxlen(char *s, size_t maxlen)
     return i;
 }
 
-#if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
+#if !defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)
 /*
  * Compare two strings, ignoring case, using current locale.
  * Doesn't work for multi-byte characters.
@@ -563,7 +563,7 @@ vim_stricmp(char *s1, char *s2)
 }
 #endif
 
-#if (!defined(HAVE_STRNCASECMP) && !defined(HAVE_STRNICMP)) || defined(PROTO)
+#if !defined(HAVE_STRNCASECMP) && !defined(HAVE_STRNICMP)
 /*
  * Compare two strings, for length "len", ignoring case, using current locale.
  * Doesn't work for multi-byte characters.
@@ -755,7 +755,7 @@ sort_strings(
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL)
 /*
  * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
  * When "s" is NULL FALSE is returned.
@@ -795,7 +795,7 @@ concat_str(char_u *str1, char_u *str2)
     return dest;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_RIGHTLEFT) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_RIGHTLEFT)
 /*
  * Reverse text into allocated memory.
  * Returns the allocated string, NULL when out of memory.
@@ -825,7 +825,7 @@ reverse_text(char_u *s)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return string "str" in ' quotes, doubling ' characters.
  * If "str" is NULL an empty string is assumed.
@@ -884,16 +884,15 @@ string_count(char_u *haystack, char_u *needle, int ic)
     if (p == NULL || needle == NULL || *needle == NUL)
 	return 0;
 
+    size_t  needlelen = STRLEN(needle);
     if (ic)
     {
-	size_t len = STRLEN(needle);
-
 	while (*p != NUL)
 	{
-	    if (MB_STRNICMP(p, needle, len) == 0)
+	    if (MB_STRNICMP(p, needle, needlelen) == 0)
 	    {
 		++n;
-		p += len;
+		p += needlelen;
 	    }
 	    else
 		MB_PTR_ADV(p);
@@ -903,7 +902,7 @@ string_count(char_u *haystack, char_u *needle, int ic)
 	while ((next = (char_u *)strstr((char *)p, (char *)needle)) != NULL)
 	{
 	    ++n;
-	    p = next + STRLEN(needle);
+	    p = next + needlelen;
 	}
 
     return n;
@@ -911,7 +910,7 @@ string_count(char_u *haystack, char_u *needle, int ic)
 
 /*
  * Make a typval_T of the first character of "input" and store it in "output".
- * Return OK or FAIL.
+ * Return -1 on failure or v_string's length on success.
  */
     static int
 copy_first_char_to_tv(char_u *input, typval_T *output)
@@ -920,15 +919,15 @@ copy_first_char_to_tv(char_u *input, typval_T *output)
     int		len;
 
     if (input == NULL || output == NULL)
-	return FAIL;
+	return -1;
 
     len = has_mbyte ? mb_ptr2len(input) : 1;
     STRNCPY(buf, input, len);
     buf[len] = NUL;
     output->v_type = VAR_STRING;
-    output->vval.v_string = vim_strsave(buf);
+    output->vval.v_string = vim_strnsave(buf, len);
 
-    return output->vval.v_string == NULL ? FAIL : OK;
+    return output->vval.v_string == NULL ? -1 : len;
 }
 
 /*
@@ -963,9 +962,9 @@ string_filter_map(
     ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
-	if (copy_first_char_to_tv(p, &tv) == FAIL)
+	len = copy_first_char_to_tv(p, &tv);
+	if (len < 0)
 	    break;
-	len = (int)STRLEN(tv.vval.v_string);
 
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
@@ -1026,9 +1025,10 @@ string_reduce(
 	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "String");
 	    return;
 	}
-	if (copy_first_char_to_tv(p, rettv) == FAIL)
+	len = copy_first_char_to_tv(p, rettv);
+	if (len < 0)
 	    return;
-	p += STRLEN(rettv->vval.v_string);
+	p += len;
     }
     else if (check_for_string_arg(argvars, 2) == FAIL)
 	return;
@@ -1041,9 +1041,9 @@ string_reduce(
     for ( ; *p != NUL; p += len)
     {
 	argv[0] = *rettv;
-	if (copy_first_char_to_tv(p, &argv[1]) == FAIL)
+	len = copy_first_char_to_tv(p, &argv[1]);
+	if (len < 0)
 	    break;
-	len = (int)STRLEN(argv[1].vval.v_string);
 
 	r = eval_expr_typval(expr, TRUE, argv, 2, fc, rettv);
 
@@ -1221,17 +1221,12 @@ convert_string(char_u *str, char_u *from, char_u *to)
     static void
 blob_from_string(char_u *str, blob_T *blob)
 {
-    size_t len = STRLEN(str);
+    char_u  *p;
 
-    for (size_t i = 0; i < len; i++)
+    for (p = str; *p != NUL; ++p)
     {
-	int	ch = str[i];
-
-	if (str[i] == NL)
-	    // Translate newlines in the string to NUL character
-	    ch = NUL;
-
-	ga_append(&blob->bv_ga, ch);
+	// Translate newlines in the string to NUL character
+	ga_append(&blob->bv_ga, (*p == NL) ? NUL : (int)*p);
     }
 }
 
@@ -1239,6 +1234,8 @@ blob_from_string(char_u *str, blob_T *blob)
  * Return a string created from the bytes in blob starting at "start_idx".
  * A NL character in the blob indicates end of string.
  * A NUL character in the blob is translated to a NL.
+ * If a newline is followed by another newline (empty line), then an empty
+ * allocated string is returned and "start_idx" is moved forward by one byte.
  * On return, "start_idx" points to next byte to process in blob.
  */
     static char_u *
@@ -1247,6 +1244,7 @@ string_from_blob(blob_T *blob, long *start_idx)
     garray_T	str_ga;
     long	blen;
     int		idx;
+    char_u	*ret_str = NULL;
 
     ga_init2(&str_ga, sizeof(char), 80);
 
@@ -1267,9 +1265,10 @@ string_from_blob(blob_T *blob, long *start_idx)
 	ga_append(&str_ga, byte);
     }
 
-    ga_append(&str_ga, NUL);
-
-    char_u *ret_str = vim_strsave(str_ga.ga_data);
+    if (str_ga.ga_data != NULL)
+	ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    else
+	ret_str = vim_strsave((char_u *)"");
     *start_idx = idx;
 
     ga_clear(&str_ga);
@@ -1407,7 +1406,7 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	char_u	*str = li->li_tv.vval.v_string;
 
 	if (str == NULL)
-	    continue;
+	    str = (char_u *)"";
 
 	if (to_encoding != NULL)
 	{
@@ -2310,6 +2309,151 @@ f_trim(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
 
+/*
+ * Decodes a URI-encoded string.
+ *
+ * Parameters:
+ *   str - The URI-encoded input string (may contain %XX sequences and '+').
+ *
+ * Returns:
+ *   A newly allocated string with URI encoding decoded:
+ *     - %XX sequences are converted to the corresponding character.
+ *     - If the input is malformed (e.g., incomplete % sequence), the original
+ *       characters are copied.
+ *   The output string will never be longer than the input string.
+ *   The caller is responsible for freeing the returned string.
+ *
+ * Returns NULL if input is NULL or memory allocation fails.
+ */
+    static char_u *
+uri_decode(char_u *str)
+{
+    if (str == NULL)
+	return NULL;
+
+    size_t len = STRLEN(str);
+
+    char_u *decoded = alloc(len + 1);
+    if (!decoded)
+	return NULL;
+
+    char_u	*p = decoded;
+    size_t	i = 0;
+
+    while (i < len)
+    {
+	if (str[i] == '%')
+	{
+	    if (i + 2 >= len)
+	    {
+		// Malformed encoding
+		*p++ = str[i++];
+		if (str[i] != NUL)
+		    *p++ = str[i++];
+	    }
+	    else
+	    {
+		int val = hexhex2nr(&str[i + 1]);
+		if (val != -1)
+		{
+		    *p++ = (char_u)val;
+		    i += 3;
+		}
+		else
+		{
+		    // invalid hex digits following "%"
+		    for (int j = 0; j < 3; j++)
+			*p++ = str[i++];
+		}
+	    }
+
+	}
+	else
+	    *p++ = str[i++];
+    }
+
+    *p = NUL;
+
+    return decoded;
+}
+
+/*
+ * "uri_decode({str})" function
+ */
+    void
+f_uridecode(typval_T *argvars, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    rettv->vval.v_string = uri_decode(tv_get_string(&argvars[0]));
+}
+
+/*
+ * Encodes a string for safe use in a URI.
+ *
+ * Parameters:
+ *   str - The input string to encode.
+ *
+ * Returns:
+ *   A newly allocated string where:
+ *     - Alphanumeric characters and '-', '_', '.', '~' are left unchanged.
+ *     - All other bytes are encoded as %XX (uppercase hex).
+ *   The caller is responsible for freeing the returned string.
+ *
+ *   Returns NULL if input is NULL or memory allocation fails.
+ */
+    static char_u *
+uri_encode(char_u *str)
+{
+    if (str == NULL)
+	return NULL;
+
+    size_t len = STRLEN(str);
+
+    // Worst case: every character needs encoding => 3x size + 1 for null
+    // terminator
+    char_u *encoded = alloc(len * 3 + 1);
+    if (encoded == NULL)
+	return NULL;
+
+    char_u *p = encoded;
+
+    for (size_t i = 0; i < len; ++i)
+    {
+	char_u c = str[i];
+	if (ASCII_ISALNUM(c) || c == '-' || c == '_' || c == '.' || c == '~')
+	    *p++ = c;
+	else
+	{
+	    sprintf((char *)p, "%%%02X", c);
+	    p += 3;
+	}
+    }
+
+    *p = NUL;
+
+    return encoded;
+}
+
+/*
+ * "uri_encode({str})" function
+ */
+    void
+f_uriencode(typval_T *argvars, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    rettv->vval.v_string = uri_encode(tv_get_string(&argvars[0]));
+}
+
 static char *e_printf = N_(e_insufficient_arguments_for_printf);
 
 /*
@@ -2503,7 +2647,7 @@ vim_snprintf_safelen(char *str, size_t str_m, const char *fmt, ...)
     int	    str_l;
 
     va_start(ap, fmt);
-    str_l = vim_vsnprintf(str, str_m, fmt, ap);
+    str_l = vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
     va_end(ap);
 
     if (str_l < 0)
@@ -2705,6 +2849,12 @@ adjust_types(
     int *num_posarg,
     const char *type)
 {
+    if (arg <= 0)
+    {
+	semsg(_( e_invalid_format_specifier_str), type);
+	return FAIL;
+    }
+
     if (*ap_types == NULL || *num_posarg < arg)
     {
 	int	    idx;
@@ -2738,7 +2888,8 @@ adjust_types(
 	    {
 		switch (pt[0])
 		{
-		    case 'd': case 'i': break;
+		    case 'd':
+		    case 'i': break;
 		    default:
 			semsg(_(e_positional_num_field_spec_reused_str_str), arg, format_typename((*ap_types)[arg - 1]), format_typename(type));
 			return FAIL;
@@ -2782,7 +2933,7 @@ format_overflow_error(const char *pstart)
 	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
 }
 
-#define MAX_ALLOWED_STRING_WIDTH 1048576    // 1 MiB
+# define MAX_ALLOWED_STRING_WIDTH 1048576    // 1 MiB
 
     static int
 get_unsigned_int(
@@ -2830,7 +2981,7 @@ parse_fmt_types(
     int		any_arg = 0;
     int		arg_idx;
 
-#define CHECK_POS_ARG do { \
+# define CHECK_POS_ARG do { \
     if (any_pos && any_arg) \
     { \
 	semsg(_( e_cannot_mix_positional_and_non_positional_str), fmt); \

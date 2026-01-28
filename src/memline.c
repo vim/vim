@@ -44,9 +44,7 @@
 
 #include "vim.h"
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>
-#endif
+#include <time.h>
 
 #if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    // for Open() and Close()
@@ -423,7 +421,7 @@ error:
     return FAIL;
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
  * used then disable the swapfile, to avoid plain text being written to disk,
@@ -518,10 +516,10 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
 	return;
-#endif
+# endif
 
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
@@ -1138,7 +1136,7 @@ add_b0_fenc(
     static int
 swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
 {
-#if defined(HAVE_SYSINFO) && defined(HAVE_SYSINFO_UPTIME)
+# if defined(HAVE_SYSINFO) && defined(HAVE_SYSINFO_UPTIME)
     stat_T	    st;
     struct sysinfo  sinfo;
 
@@ -2134,7 +2132,7 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(MSWIN) || defined(PROTO)
+#if defined(UNIX) || defined(MSWIN)
 /*
  * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
@@ -2174,7 +2172,7 @@ make_percent_swname(char_u *dir, char_u *dir_end, char_u *name)
 static int process_still_running;
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return information found in swapfile "fname" in dictionary "d".
  * This is used by the swapinfo() function.
@@ -2406,11 +2404,11 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
      */
     char_u	*p;
     int		i;
-# ifndef MSWIN
+#ifndef MSWIN
     int	    shortname = curbuf->b_shortname;
 
     curbuf->b_shortname = FALSE;
-# endif
+#endif
 
     num_names = 0;
 
@@ -2451,16 +2449,16 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
     else
 	++num_names;
 
-# ifndef MSWIN
+#ifndef MSWIN
     /*
      * Also try with 'shortname' set, in case the file is on a DOS filesystem.
      */
     curbuf->b_shortname = TRUE;
-#ifdef VMS
+# ifdef VMS
     names[num_names] = modname(path, (char_u *)"_sw%", FALSE);
-#else
+# else
     names[num_names] = modname(path, (char_u *)".sw?", FALSE);
-#endif
+# endif
     if (names[num_names] == NULL)
 	goto end;
 
@@ -2475,12 +2473,12 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
 	vim_free(names[num_names]);
     else
 	++num_names;
-# endif
+#endif
 
 end:
-# ifndef MSWIN
+#ifndef MSWIN
     curbuf->b_shortname = shortname;
-# endif
+#endif
 
     return num_names;
 }
@@ -3535,8 +3533,8 @@ ml_append_flags(
 }
 
 
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP) \
-	|| defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP)
+
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -4569,7 +4567,7 @@ ml_lineadd(buf_T *buf, int count)
     }
 }
 
-#if defined(HAVE_READLINK) || defined(PROTO)
+#if defined(HAVE_READLINK)
 /*
  * Resolve a symlink in the last component of a file name.
  * Note that f_resolve() does it for every part of the path, we don't do that
@@ -5527,7 +5525,7 @@ ml_setflags(buf_T *buf)
     }
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * If "data" points to a data block encrypt the text in it and return a copy
  * in allocated memory.  Return NULL when out of memory.
@@ -5678,10 +5676,10 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 #endif
 
 
-#if defined(FEAT_BYTEOFF) || defined(PROTO)
+#if defined(FEAT_BYTEOFF)
 
-#define MLCS_MAXL 800	// max no of lines in chunk
-#define MLCS_MINL 400   // should be half of MLCS_MAXL
+# define MLCS_MAXL 800	// max no of lines in chunk
+# define MLCS_MINL 400   // should be half of MLCS_MAXL
 
 /*
  * Keep information for finding byte offset of a line, updtype may be one of:
@@ -5824,7 +5822,7 @@ ml_updatechunk(
 		    end_idx = count - 1;
 		    linecnt += rest;
 		}
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		if (buf->b_has_textprop)
 		{
 		    int i;
@@ -5837,7 +5835,7 @@ ml_updatechunk(
 				      + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
 		}
 		else
-#endif
+# endif
 		{
 		    if (idx == 0) // first line in block, text at the end
 			text_end = dp->db_txt_end;
@@ -5997,9 +5995,9 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 
     while ((lnum != 0 && curline < lnum) || (offset != 0 && size < offset))
     {
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	size_t textprop_total = 0;
-#endif
+# endif
 
 	if (curline > buf->b_ml.ml_line_count
 		|| (hp = ml_find_line(buf, curline, ML_FIND)) == NULL)
@@ -6025,7 +6023,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    extra = 0;
 	    for (;;)
 	    {
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		size_t textprop_size = 0;
 
 		if (buf->b_has_textprop)
@@ -6038,20 +6036,20 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 				  : ((dp->db_index[idx - 1]) & DB_INDEX_MASK));
 		    textprop_size = (l2 - l1) - (STRLEN(l1) + 1);
 		}
-#endif
+# endif
 		if (!(offset >= size
 			+ text_end - (int)((dp->db_index[idx]) & DB_INDEX_MASK)
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 			- (long)(textprop_total + textprop_size)
-#endif
+# endif
 			+ ffdos))
 		    break;
 
 		if (ffdos)
 		    size++;
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		textprop_total += textprop_size;
-#endif
+# endif
 		if (idx == count - 1)
 		{
 		    extra = 1;
@@ -6060,7 +6058,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		idx++;
 	    }
 	}
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	if (buf->b_has_textprop && lnum != 0)
 	{
 	    int i;
@@ -6075,11 +6073,11 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    }
 	}
 	else
-#endif
+# endif
 	    len = text_end - ((dp->db_index[idx]) & DB_INDEX_MASK)
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 				- (long)textprop_total
-#endif
+# endif
 				;
 	size += len;
 	if (offset != 0 && size >= offset)
@@ -6091,9 +6089,9 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    else
 		*offp = offset - size + len
 		     - (text_end - ((dp->db_index[idx - 1]) & DB_INDEX_MASK))
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		     + (long)textprop_total
-#endif
+# endif
 		     ;
 	    curline += idx - start_idx + extra;
 	    if (curline > buf->b_ml.ml_line_count)

@@ -1,8 +1,7 @@
 " Test for the new-tutor plugin
 
-source screendump.vim
-source check.vim
-source script_util.vim
+source util/screendump.vim
+source util/script_util.vim
 
 func SetUp()
   set nocompatible
@@ -11,7 +10,7 @@ endfunc
 
 func Test_auto_enable_interactive()
   Tutor
-  call assert_equal('nofile', &buftype)
+  call assert_equal('nowrite', &buftype)
   call assert_match('tutor#EnableInteractive', b:undo_ftplugin)
 
   edit Xtutor/Xtest.tutor

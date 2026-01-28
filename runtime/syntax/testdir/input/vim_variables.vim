@@ -1,5 +1,6 @@
 " Vim variable highlighting
 
+
 " :let
 
 let foo = expr

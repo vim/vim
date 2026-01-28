@@ -4,7 +4,6 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-source check.vim
 CheckMSWindows
 
 func TestIt(file, bits, expected)

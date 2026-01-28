@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
 #define MENUDEPTH   10		// maximum depth of menus
 
@@ -721,19 +721,19 @@ add_menu_path(
 		if (tearpath != NULL)
 		{
 		    char_u  *s;
-		    int	    idx;
+		    int	    len;
 
 		    STRCPY(tearpath, menu_path);
-		    idx = (int)(next_name - path_name - 1);
-		    for (s = tearpath; *s && s < tearpath + idx; MB_PTR_ADV(s))
+		    len = (int)(next_name - path_name - 1);
+		    for (s = tearpath; *s && s < tearpath + len; MB_PTR_ADV(s))
 		    {
 			if ((*s == '\\' || *s == Ctrl_V) && s[1])
 			{
-			    ++idx;
+			    ++len;
 			    ++s;
 			}
 		    }
-		    tearpath[idx] = NUL;
+		    tearpath[len] = NUL;
 		    gui_add_tearoff(tearpath, pri_tab, pri_idx);
 		    vim_free(tearpath);
 		}
@@ -1772,7 +1772,7 @@ popup_mode_name(char_u *name, int idx)
     return p;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Return the index into the menu->strings or menu->noremap arrays for the
  * current state.  Returns MENU_INDEX_INVALID if there is no mapping for the
@@ -1787,10 +1787,10 @@ get_menu_index(vimmenu_T *menu, int state)
 	idx = MENU_INDEX_INSERT;
     else if (state & MODE_CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     else if (term_use_loop())
 	idx = MENU_INDEX_TERMINAL;
-#endif
+# endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1889,7 +1889,7 @@ menu_is_popup(char_u *name)
     return (STRNCMP(name, "PopUp", 5) == 0);
 }
 
-#if (defined(FEAT_GUI_MOTIF) && (XmVersion <= 1002)) || defined(PROTO)
+#if defined(FEAT_GUI_MOTIF) && (XmVersion <= 1002)
 /*
  * Return TRUE if "name" is part of a popup menu.
  */
@@ -1943,15 +1943,15 @@ menu_is_tearoff(char_u *name UNUSED)
 #endif
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU)
 
     static int
 get_menu_mode(void)
 {
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     if (term_use_loop())
 	return MENU_INDEX_TERMINAL;
-#endif
+# endif
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -2020,16 +2020,16 @@ show_popupmenu(void)
 	gui_mch_show_popupmenu(menu);
     }
 # endif
-#  if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
+# if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
     else
-#  endif
-#  if defined(FEAT_TERM_POPUP_MENU)
+# endif
+# if defined(FEAT_TERM_POPUP_MENU)
 	pum_show_popupmenu(menu);
-#  endif
+# endif
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 
 /*
  * Check that a pointer appears in the menu tree.  Used to protect from using
@@ -2102,9 +2102,9 @@ gui_update_menus_recurse(vimmenu_T *menu, int mode)
 	// Never hide a toplevel menu, it may make the menubar resize or
 	// disappear. Same problem for ToolBar items.
 	if (vim_strchr(p_go, GO_GREY) != NULL || menu->parent == NULL
-#  ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 		|| menu_is_toolbar(menu->parent->name)
-#  endif
+# endif
 		   )
 	    gui_mch_menu_grey(menu, grey);
 	else
@@ -2140,7 +2140,7 @@ gui_update_menus(int modes)
 }
 
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(PROTO)
+    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
 /*
  * Check if a key is used as a mnemonic for a toplevel menu.
  * Case of the key is ignored.
@@ -2161,7 +2161,7 @@ gui_is_menu_shortcut(int key)
 # endif
 #endif // FEAT_GUI
 
-#if (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF)) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF)
 
 /*
  * Deal with tearoff items that are added like a menu item.
@@ -2271,11 +2271,11 @@ gui_add_tearoff(char_u *tearpath, int *pri_tab, int pri_idx)
     t = pri_tab[pri_idx + 1];
     pri_tab[pri_idx + 1] = 1;
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     menuarg.iconfile = NULL;
     menuarg.iconidx = -1;
     menuarg.icon_builtin = FALSE;
-#endif
+# endif
     menuarg.noremap[0] = REMAP_NONE;
     menuarg.silent[0] = TRUE;
 
@@ -2595,7 +2595,7 @@ winbar_click(win_T *wp, int col)
 
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_TERM_POPUP_MENU) || defined(FEAT_GUI_HAIKU) \
-	|| defined(FEAT_BEVAL_TIP) || defined(PROTO)
+	|| defined(FEAT_BEVAL_TIP)
 /*
  * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy.
  */

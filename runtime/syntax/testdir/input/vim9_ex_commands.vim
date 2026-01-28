@@ -1,10 +1,8 @@
 vim9script
-
 # Vim9 Ex commands
 
+
 # START NOT MATCHED
-:@
-:@@
 :Next
 :X
 # END NOT MATCHED
@@ -14,8 +12,8 @@ vim9script
 : help
  : help # FIXME
 
-:2match
-:3match
+:@
+
 :abbreviate
 :abclear
 :aboveleft
@@ -540,6 +538,7 @@ vim9script
 :undojoin
 :undolist
 :unhide
+:uniq
 :unlockvar
 :unmap
 :unmenu
@@ -597,8 +596,6 @@ Foo() | help
 Foo() |help
 Foo()| help
 
-Foo() | 2match
-Foo() | 3match
 Foo() | abbreviate
 Foo() | abclear
 Foo() | aboveleft
@@ -1121,6 +1118,7 @@ Foo() | undo
 Foo() | undojoin
 Foo() | undolist
 Foo() | unhide
+Foo() | uniq
 Foo() | unlockvar
 Foo() | unmap
 Foo() | unmenu

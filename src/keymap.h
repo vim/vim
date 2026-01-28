@@ -279,6 +279,8 @@ enum key_extra
     , KE_S_BS = 105		// shift + <BS>
     , KE_SID = 106		// <SID> special key, followed by {nr};
     , KE_ESC = 107		// used for K_ESC
+    , KE_WILD = 108		// triggers wildmode completion
+    , KE_OSC = 109		// finished OSC sequence
 };
 
 /*
@@ -477,6 +479,7 @@ enum key_extra
 #define K_MOUSERIGHT	TERMCAP2KEY(KS_EXTRA, KE_MOUSERIGHT)
 
 #define K_CSI		TERMCAP2KEY(KS_EXTRA, KE_CSI)
+#define K_OSC		TERMCAP2KEY(KS_EXTRA, KE_OSC)
 #define K_SNR		TERMCAP2KEY(KS_EXTRA, KE_SNR)
 #define K_PLUG		TERMCAP2KEY(KS_EXTRA, KE_PLUG)
 #define K_CMDWIN	TERMCAP2KEY(KS_EXTRA, KE_CMDWIN)
@@ -490,6 +493,8 @@ enum key_extra
 #define K_COMMAND	TERMCAP2KEY(KS_EXTRA, KE_COMMAND)
 #define K_SCRIPT_COMMAND TERMCAP2KEY(KS_EXTRA, KE_SCRIPT_COMMAND)
 #define K_SID		TERMCAP2KEY(KS_EXTRA, KE_SID)
+
+#define K_WILD		TERMCAP2KEY(KS_EXTRA, KE_WILD)
 
 // Bits for modifier mask
 // 0x01 cannot be used, because the modifier must be 0x02 or higher

@@ -1,8 +1,6 @@
 " Tests for the substitute (:s) command
 
-source shared.vim
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 " NOTE: This needs to be the first test to be
 "       run in the file, since it depends on

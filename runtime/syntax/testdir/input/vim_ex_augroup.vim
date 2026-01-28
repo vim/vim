@@ -1,7 +1,7 @@
 " Vim :augroup command
 " VIM_TEST_SETUP let g:vimsyn_folding = "a"
 " VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
-" VIM_TEST_SETUP highlight link vimAugroupName Todo
+" VIM_TEST_SETUP hi link vimAugroupName Todo
 
 
 augroup foo
@@ -41,14 +41,16 @@ augroup  \"\| | autocmd! | augroup END
 augroup! \"\|
 
 
+" trailing bar and tail comments
+
 augroup  foo"comment
-  au!
-  au BufRead * echo "Foo"
+  autocmd!
+  autocmd BufRead * echo "Foo"
 augroup END"comment
 
 augroup  foo|echo "Foo"
-  au!
-  au BufRead * echo "Foo"
+  autocmd!
+  autocmd BufRead * echo "Foo"
 augroup END|echo "Foo"
 
 augroup! foo"comment
@@ -56,7 +58,14 @@ augroup! foo|echo "Foo"
 
 
 " list groups
+
 augroup
 augroup | echo "Foo"
 augroup " comment
+
+
+" groups named END*
+
+augroup ending
+augroup END
 

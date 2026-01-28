@@ -1,9 +1,7 @@
 " Test import/export of the Vim9 script language.
 " Also the autoload mechanism.
 
-source check.vim
-source term_util.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:export_script_lines =<< trim END
   vim9script
@@ -3692,6 +3690,31 @@ def Test_import_member_initializer()
     endclass
     assert_equal('SomeKey', C1.new().unique_object_id)
     assert_equal('SomeKey', C2.new().unique_object_id)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_import_name_conflict_with_local_variable()
+  var lines =<< trim END
+    vim9script
+
+    export class Foo
+      def Method(): string
+        return 'Method'
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9.vim'
+
+    function! s:Main() abort
+      let Xvim9 = s:Xvim9.Foo.new()
+      call assert_equal('Method', Xvim9.Method())
+    endfunction
+
+    call s:Main()
   END
   v9.CheckScriptSuccess(lines)
 enddef

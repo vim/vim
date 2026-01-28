@@ -3,23 +3,23 @@
 ==============================================================================
 
    Vim estas tre potenca redaktilo, kiu havas multajn komandojn, tro da ili
-   por æion klarigi en instruilo kiel æi tiu. Æi tiu instruilo estas
-   fasonita por priskribi sufiæajn komandojn, por ke vi kapablu uzi Vim
-   kun sufiæa facileco.
+   por Ä‰ion klarigi en instruilo kiel Ä‰i tiu. Äˆi tiu instruilo estas
+   fasonita por priskribi sufiÄ‰ajn komandojn, por ke vi kapablu uzi Vim
+   kun sufiÄ‰a facileco.
 
    La tempo bezonata por plenumi la kurson estas 30 minutoj, kaj dependas
    de kiom da tempo estas uzata por eksperimenti.
 
    ATENTU:
-   La komandoj en la lecionoj şanøos la tekston. Kopiu tiun æi dosieron
-   por ekzerci vin (se vi lanæis "vimtutor", tiam estas jam kopio).
+   La komandoj en la lecionoj ÅanÄos la tekston. Kopiu tiun Ä‰i dosieron
+   por ekzerci vin (se vi lanÄ‰is "vimtutor", tiam estas jam kopio).
 
-   Gravas memori, ke æi tiu instruilo estas organizata por instrui per
+   Gravas memori, ke Ä‰i tiu instruilo estas organizata por instrui per
    la uzo. Tio signifas, ke vi devas plenumi la komandojn por bone lerni
    ilin. Se vi nur legas la tekston, vi forgesos la komandojn!
 
-   Nun, certigu, ke la majuskla baskulo NE estas en reøimo majuskla,
-   kaj premu la klavon  j  sufiæe da fojoj por movi la kursoron, kaj por
+   Nun, certigu, ke la majuskla baskulo NE estas en reÄimo majuskla,
+   kaj premu la klavon  j  sufiÄ‰e da fojoj por movi la kursoron, kaj por
    ke la leciono 1.1 plenigu la ekranon.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,60 +32,60 @@
    < h       l >           La klavo l estas la plej dekstra kaj movas dekstren.
          j                 La klavo j aspektas kiel malsuprena sago.
          v
-  1. Movu la kursoron sur la ekrano øis kiam vi sentas vin komforta.
+  1. Movu la kursoron sur la ekrano Äis kiam vi sentas vin komforta.
 
-  2. Premu la klavon (j) øis kiam øi ripetas.
-     Vi nun scias, kiel moviøi al la sekvanta leciono
+  2. Premu la klavon (j) Äis kiam Äi ripetas.
+     Vi nun scias, kiel moviÄi al la sekvanta leciono
 
-  3. Uzante la malsuprenan klavon, moviøu al la leciono 1.2.
+  3. Uzante la malsuprenan klavon, moviÄu al la leciono 1.2.
 
 RIMARKO: Se vi dubas pri tio, kion vi premis, premu <ESK> por reiri al
-         la normala reøimo. Tiam repremu la deziratan komandon.
+         la normala reÄimo. Tiam repremu la deziratan komandon.
 
-RIMARKO: La klavoj de la kursoro devus ankaı funkcii. Sed uzante hjkl,
-         vi kapablos moviøi pli rapide post kiam vi kutimiøos.
+RIMARKO: La klavoj de la kursoro devus ankaÅ­ funkcii. Sed uzante hjkl,
+         vi kapablos moviÄi pli rapide post kiam vi kutimiÄos.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            Leciono 1.1.2:  ELIRI EL VIM
 
 
-  !! RIMARKO: Antaı ol plenumi iujn subajn paşojn ajn, legu la tutan lecionon!!
+  !! RIMARKO: AntaÅ­ ol plenumi iujn subajn paÅojn ajn, legu la tutan lecionon!!
 
-  1. Premu la klavon <ESK> (por certigi, ke vi estas en normala reøimo).
+  1. Premu la klavon <ESK> (por certigi, ke vi estas en normala reÄimo).
 
   2. Tajpu:       :q! <Enenklavo>.
-     Tio eliras el la rekdaktilo, SEN konservi la şanøojn, kiujn vi faris.
+     Tio eliras el la rekdaktilo, SEN konservi la ÅanÄojn, kiujn vi faris.
 
-  3. Kiam vi vidas la şelinviton, tajpu la komandon kiun vi uzis por eniri
-     en æi tiu instruilo. Tio estus:   vimtutor <Enenklavo>
+  3. Kiam vi vidas la Åelinviton, tajpu la komandon kiun vi uzis por eniri
+     en Ä‰i tiu instruilo. Tio estus:   vimtutor <Enenklavo>
 
-  4. Se vi memoris tiujn paşojn kaj sentas vin memfida, plenumu la paşojn
-     1 øis 3 por eliri kaj reeniri la redaktilon.
+  4. Se vi memoris tiujn paÅojn kaj sentas vin memfida, plenumu la paÅojn
+     1 Äis 3 por eliri kaj reeniri la redaktilon.
 
-RIMARKO: :q! <Enenklavo> eliras sen konservi la şanøojn, kiujn vi faris.
-         Post kelkaj lecionoj, vi lernos kiel konservi la şanøojn al dosiero.
+RIMARKO: :q! <Enenklavo> eliras sen konservi la ÅanÄojn, kiujn vi faris.
+         Post kelkaj lecionoj, vi lernos kiel konservi la ÅanÄojn al dosiero.
 
-  5. Movu la kursoron suben øis la leciono 1.3.
+  5. Movu la kursoron suben Äis la leciono 1.3.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Leciono 1.1.3:  REDAKTO DE TEKSTO - FORVIŞO
+                   Leciono 1.1.3:  REDAKTO DE TEKSTO - FORVIÅœO
 
 
-             ** Premu  x  por forvişi la signon sub la kursoro. **
+             ** Premu  x  por forviÅi la signon sub la kursoro. **
 
   1. Movu la kursoron al la suba linio markita per --->.
 
-  2. Por korekti la erarojn, movu la kursoron øis kiam øi estas sur la
-     forvişenda signo.
+  2. Por korekti la erarojn, movu la kursoron Äis kiam Äi estas sur la
+     forviÅenda signo.
 
-  3. Premu la klavon  x  por forvişi la nedeziratan signon.
+  3. Premu la klavon  x  por forviÅi la nedeziratan signon.
 
-  4. Ripetu paşojn 2 øis 4 øis kiam la frazo estas øusta.
+  4. Ripetu paÅojn 2 Äis 4 Äis kiam la frazo estas Äusta.
 
 
 ---> La boovinno saaltiss ssur laa luuno.
 
-  5. Post kiam la linio estas øusta, iru al la leciono 1.4
+  5. Post kiam la linio estas Äusta, iru al la leciono 1.4
 
 RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
 
@@ -100,17 +100,17 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
   1. Movu la kursoron al la unua suba linio markita per --->.
 
   2. Por igi la unuan linion sama kiel la dua, movu la kursoron sur la unuan
-     signon antaı kie la teksto estas enmetenda.
+     signon antaÅ­ kie la teksto estas enmetenda.
 
   3. Premu  i  kaj tajpu la bezonatajn aldonojn.
 
   4. Premu <ESK> kiam la eraroj estas korektitaj por reiri al la normala
-     reøimo. Ripetu la paşojn 2 øis 4 por korekti la frazon.
+     reÄimo. Ripetu la paÅojn 2 Äis 4 por korekti la frazon.
 
----> Mank en æi linio.
----> Mankas teksto en æi tiu linio.
+---> Mank en Ä‰i linio.
+---> Mankas teksto en Ä‰i tiu linio.
 
-  5. Kiam vi sentas vin komforta pri enmeto de teksto, moviøu al la
+  5. Kiam vi sentas vin komforta pri enmeto de teksto, moviÄu al la
      leciono 1.5.
 
 
@@ -127,17 +127,17 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
   2. Premu majusklan  A  kaj tajpu la bezonatajn aldonojn.
 
   3. Post kiam la teksto estas aldonita, premu <ESK> por reiri al la normala
-     reøimo.
+     reÄimo.
 
   4. Movu la kursoron al la dua linio markita per ---> kaj ripetu la
-     paşojn 2 kaj 3 por korekti la frazon.
+     paÅojn 2 kaj 3 por korekti la frazon.
 
 ---> Mankas teksto el ti
      Mankas teksto el tiu linio.
----> Mankas ankaı teks
-     Mankas ankaı teksto æi tie.
+---> Mankas ankaÅ­ teks
+     Mankas ankaÅ­ teksto Ä‰i tie.
 
-  5 Kiam vi sentas vin komforta pri postaldono de teksto, moviøu al la
+  5 Kiam vi sentas vin komforta pri postaldono de teksto, moviÄu al la
     leciono 1.6
 
 
@@ -146,95 +146,95 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
 
                 ** Uzu  :wq  por konservi dosieron kaj eliri. **
 
-  !! RIMARKO: Antaı ol plenumi iun suban paşon ajn, legu la tutan lecionon!!
+  !! RIMARKO: AntaÅ­ ol plenumi iun suban paÅon ajn, legu la tutan lecionon!!
 
   1. Eliru el la instruilo kiel vi faris en la leciono 1.1.2:  :q!
-     Aı, se vi havas atingon al alia terminalo, faru tion, kio sekvas tie.
+     AÅ­, se vi havas atingon al alia terminalo, faru tion, kio sekvas tie.
 
-  2. Æe la şelinvito, tajpu æi tiun komandon:  vim tutor <Enenklavo>
-     'vim' estas la komando por lanæi la redaktilon Vim, 'tutor' estas la
+  2. Äˆe la Åelinvito, tajpu Ä‰i tiun komandon:  vim tutor <Enenklavo>
+     'vim' estas la komando por lanÄ‰i la redaktilon Vim, 'tutor' estas la
      dosiernomo de la dosiero, kiun vi volas redakti.  Uzu dosieron, kiu
-     şanøeblas.
+     ÅanÄeblas.
 
-  3. Enmetu kaj forvişu tekston, kiel vi lernis en la antaıaj lecionoj.
+  3. Enmetu kaj forviÅu tekston, kiel vi lernis en la antaÅ­aj lecionoj.
 
-  4. Konservu la dosieron kun şanøoj kaj eliru el Vim per:  :wq  <Enenklavo>
+  4. Konservu la dosieron kun ÅanÄoj kaj eliru el Vim per:  :wq  <Enenklavo>
 
-  5. Se vi eliris el la instruilo vimtutor en paşo 1, restartigu la instruilon
-     vimtutor kaj moviøu suben al la sekvanta resumo.
+  5. Se vi eliris el la instruilo vimtutor en paÅo 1, restartigu la instruilon
+     vimtutor kaj moviÄu suben al la sekvanta resumo.
 
-  6. Post kiam vi legis la suprajn paşojn, kaj komprenis ilin: faru ilin.
+  6. Post kiam vi legis la suprajn paÅojn, kaj komprenis ilin: faru ilin.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 Leciono 1.1 RESUMO
 
 
-  1. La kursoro moviøas aı per la sagoklavoj, aı per la klavoj hjkl.
+  1. La kursoro moviÄas aÅ­ per la sagoklavoj, aÅ­ per la klavoj hjkl.
         h (liven)     j (suben)      k (supren)     l (dekstren)
 
-  2. Por lanæi Vim el la şelinvito, tajpu:  vim DOSIERNOMO <Enenklavo>
+  2. Por lanÄ‰i Vim el la Åelinvito, tajpu:  vim DOSIERNOMO <Enenklavo>
 
-  3. Por eliri el Vim, tajpu:  <ESK>  :q! <Enenklavo>  por rezigni la şanøojn
+  3. Por eliri el Vim, tajpu:  <ESK>  :q! <Enenklavo>  por rezigni la ÅanÄojn
 
-  4. Por forvişi la signojn æe la pozicio de la kursoro, tajpu:  x
+  4. Por forviÅi la signojn Ä‰e la pozicio de la kursoro, tajpu:  x
 
-  5. Por enmeti aı postaldoni tekston, tajpu:
+  5. Por enmeti aÅ­ postaldoni tekston, tajpu:
           i  tajpu enmetendan tekston        <ESK>
-             enmetas tekston antaı la kursoro
+             enmetas tekston antaÅ­ la kursoro
 
           A  tajpu la postaldonendan tekston <ESK>
              postaldonas post la kursoro
 
-RIMARKO: Premo de <ESK> iras al la normala reøimo, aı rezignas la
-         nedeziratan aı parte plenumita komando.
+RIMARKO: Premo de <ESK> iras al la normala reÄimo, aÅ­ rezignas la
+         nedeziratan aÅ­ parte plenumita komando.
 
-Nun daırigu al la leciono 2.
+Nun daÅ­rigu al la leciono 2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                        Leciono 1.2.1: KOMANDOJ DE FORVIŞO
+                        Leciono 1.2.1: KOMANDOJ DE FORVIÅœO
 
 
-                      ** Tajpu  dw  por forvişi vorton. **
+                      ** Tajpu  dw  por forviÅi vorton. **
 
-  1. Premu  <ESK>  por certigi, ke vi estas en normala reøimo.
+  1. Premu  <ESK>  por certigi, ke vi estas en normala reÄimo.
 
   2. Movu la kursoron al la suba linio markita per --->.
 
-  3. Movu la kursoron al la komenco de vorto, kiu forvişendas.
+  3. Movu la kursoron al la komenco de vorto, kiu forviÅendas.
 
-  4. Tajpu   dw   por forvişi la vorton.
+  4. Tajpu   dw   por forviÅi la vorton.
 
   RIMARKO: La litero  d  aperos en la lasta linio sur la ekrano kiam vi
-           tajpas øin. Vim atendas øis kiam vi tajpas  w .  Se vi vidas
+           tajpas Äin. Vim atendas Äis kiam vi tajpas  w .  Se vi vidas
            alian signon ol  d  vi tajpis ion mise; premu  <ESK>  kaj
            rekomencu.
 
----> Estas iuj vortoj kiuj Zamenhof ne devus esti akuzativo en æi tiu frazo.
+---> Estas iuj vortoj kiuj Zamenhof ne devus esti akuzativo en Ä‰i tiu frazo.
 
-  5. Ripetu paşojn 3 kaj 4 øis kiam la frazo estas øusta kaj moviøu al la
+  5. Ripetu paÅojn 3 kaj 4 Äis kiam la frazo estas Äusta kaj moviÄu al la
      leciono 2.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     Leciono 1.2.2: PLIAJ KOMANDOJ DE FORVIŞO
+                     Leciono 1.2.2: PLIAJ KOMANDOJ DE FORVIÅœO
 
 
-               ** Tajpu  d$  por forvişi la finon de la linio. **
+               ** Tajpu  d$  por forviÅi la finon de la linio. **
 
-  1. Premu  <ESK>  por certigi, ke vi estas en normala reøimo.
+  1. Premu  <ESK>  por certigi, ke vi estas en normala reÄimo.
 
   2. Movu la kursoron al la suba linio markita per --->.
 
-  3. Movu la kursoron æe la fino de la øusta linio (POST la unua . ).
+  3. Movu la kursoron Ä‰e la fino de la Äusta linio (POST la unua . ).
 
-  4. Tajpu   d$   por forivişi øis la fino de la linio.
+  4. Tajpu   d$   por foriviÅi Äis la fino de la linio.
 
----> Iu tajpis la finon de æi tiu linio dufoje. fino de æi tiu linio dufoje.
+---> Iu tajpis la finon de Ä‰i tiu linio dufoje. fino de Ä‰i tiu linio dufoje.
 
 
-  5. Moviøu al la leciono 2.3 por kompreni kio okazas.
+  5. MoviÄu al la leciono 2.3 por kompreni kio okazas.
 
 
 
@@ -242,8 +242,8 @@ Nun daırigu al la leciono 2.
                      Leciono 1.2.3: PRI OPERATOROJ KAJ MOVOJ
 
 
-  Multaj komandoj, kiuj şanøas la tekston, estas faritaj de operatoro kaj
-  movo. La formato de komando de forvişo per la operatoro de forvişo  d
+  Multaj komandoj, kiuj ÅanÄas la tekston, estas faritaj de operatoro kaj
+  movo. La formato de komando de forviÅo per la operatoro de forviÅo  d
   estas kiel sekvas:
 
        d   movo
@@ -253,52 +253,52 @@ Nun daırigu al la leciono 2.
     movo   - estas tio, pri kio la operatoro operacios (listigita sube)
 
   Mallonga listo de movoj:
-    w - øis la komenco de la sekvanta vorto, krom øia unua signo.
-    e - øis la fino de la nuna vorto, krom la lasta signo.
-    $ - øis la fino de la linio, krom la lasta signo.
+    w - Äis la komenco de la sekvanta vorto, krom Äia unua signo.
+    e - Äis la fino de la nuna vorto, krom la lasta signo.
+    $ - Äis la fino de la linio, krom la lasta signo.
 
-  Do tajpo de   'de'   forvişos ekde la kursoro øis la fino de la vorto.
+  Do tajpo de   'de'   forviÅos ekde la kursoro Äis la fino de la vorto.
 
-RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
+RIMARKO: Premo de nur la movo en Normala reÄimo sen operatoro movos
          la kursoron kiel specifite.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                        Leciono 1.2.4: UZI NOMBRON POR MOVO
 
-             ** Tajpo de nombro antaı movo ripetas øin laıfoje. **
+             ** Tajpo de nombro antaÅ­ movo ripetas Äin laÅ­foje. **
 
-  1. Movu la kursoron æe la komenco de la suba linio markita per --->.
+  1. Movu la kursoron Ä‰e la komenco de la suba linio markita per --->.
 
-  2. Tajpu  2w  por movi la kursoron je du vortoj antaıen.
+  2. Tajpu  2w  por movi la kursoron je du vortoj antaÅ­en.
 
-  3. Tajpu  3e  por movi la kursoron æe la fino de la tria vorto antaıen.
+  3. Tajpu  3e  por movi la kursoron Ä‰e la fino de la tria vorto antaÅ­en.
 
-  4. Tajpu  0  (nul) por moviøi æe la komenco de la linio.
+  4. Tajpu  0  (nul) por moviÄi Ä‰e la komenco de la linio.
 
 
-  5. Ripetu paşojn 2 øis 3 kun malsamaj nombroj.
+  5. Ripetu paÅojn 2 Äis 3 kun malsamaj nombroj.
 
----> Tio estas nur linio kun vortoj, kie vi povas moviøi.
+---> Tio estas nur linio kun vortoj, kie vi povas moviÄi.
 
-  6. Moviøu al la leciono 2.5.
+  6. MoviÄu al la leciono 2.5.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    Leciono 1.2.5: UZI NOMBRON POR FORVIŞI PLI
+                    Leciono 1.2.5: UZI NOMBRON POR FORVIÅœI PLI
 
 
-            ** Tajpo de nombro kun operatoro ripetas øin laıfoje. **
+            ** Tajpo de nombro kun operatoro ripetas Äin laÅ­foje. **
 
-  En la kombina¼o de la operatoro de forvişo, kaj movo kiel menciita
-  æi-supre, eblas aldoni nombron antaı la movo por pli forvişi:
+  En la kombinaÄµo de la operatoro de forviÅo, kaj movo kiel menciita
+  Ä‰i-supre, eblas aldoni nombron antaÅ­ la movo por pli forviÅi:
         d  nombro   movo
 
-  1. Movu la kursoron æe la unua MAJUSKLA vorto en la linio markita per --->.
+  1. Movu la kursoron Ä‰e la unua MAJUSKLA vorto en la linio markita per --->.
 
-  2. Tajpu  d2w  por forvişi la du MAJUSKLAJN vortojn.
+  2. Tajpu  d2w  por forviÅi la du MAJUSKLAJN vortojn.
 
-  3. Ripetu paşojn 1 øis 2 per malsama nombro por forvişi la sinsekvajn
+  3. Ripetu paÅojn 1 Äis 2 per malsama nombro por forviÅi la sinsekvajn
      MAJUSKLAJN vortojn per unu komando.
 
 ---> Tiu AB CDE linio FGHI JK LMN OP de vortoj estas Q RS TUV purigita.
@@ -308,22 +308,22 @@ RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
                     Leciono 1.2.6: OPERACII SUR LINIOJ
 
 
-                   ** Tajpu  dd  por forvişi tutan linion. **
+                   ** Tajpu  dd  por forviÅi tutan linion. **
 
-  Pro la ofteco de forvişo de tuta linio, la verkisto de Vi decidis, ke
-  estus pli facile simple tajpi du d-ojn  por forvişi linion.
+  Pro la ofteco de forviÅo de tuta linio, la verkisto de Vi decidis, ke
+  estus pli facile simple tajpi du d-ojn  por forviÅi linion.
 
   1. Movu la kursoron sur la duan linion en la suba frazo.
-  2. Tajpu  dd  por forvişi la linion.
-  3. Nun moviøu al la kvara linio.
-  4. Tajpu   2dd   por forvişi du liniojn.
+  2. Tajpu  dd  por forviÅi la linion.
+  3. Nun moviÄu al la kvara linio.
+  4. Tajpu   2dd   por forviÅi du liniojn.
 
----> 1)  Rozoj estas ruøaj,
----> 2)  Şlimo estas amuza,
+---> 1)  Rozoj estas ruÄaj,
+---> 2)  Åœlimo estas amuza,
 ---> 3)  Violoj estas bluaj,
----> 4)  Mi havas aıton,
----> 5)  Horloøoj diras kioma horo estas,
----> 6)  Sukero estas dolæa,
+---> 4)  Mi havas aÅ­ton,
+---> 5)  HorloÄoj diras kioma horo estas,
+---> 6)  Sukero estas dolÄ‰a,
 ---> 7)  Kaj tiel vi estas.
 
 
@@ -333,43 +333,43 @@ RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
 
  ** Premu u por malfari la lastajn komandojn, U por ripari la tutan linion. **
 
-  1. Movu la kursoron æe la suba linio markita per ---> kaj metu øin sur
+  1. Movu la kursoron Ä‰e la suba linio markita per ---> kaj metu Äin sur
      la unuan eraron.
-  2. Tajpu  x  por forvişi la unuan nedeziratan signon.
+  2. Tajpu  x  por forviÅi la unuan nedeziratan signon.
   3. Nun tajpu  u  por malfari la lastan plenumitan komandon.
-  4. Æi-foje, riparu æiujn erarojn en la linio kaj øia originala stato.
-  5. Nun tajpu majusklan  U  por igi la linion al øia antaıa stato.
-  6. Nun tajpu  u  kelkfoje por malfari la  U  kaj antaıajn komandojn.
+  4. Äˆi-foje, riparu Ä‰iujn erarojn en la linio kaj Äia originala stato.
+  5. Nun tajpu majusklan  U  por igi la linion al Äia antaÅ­a stato.
+  6. Nun tajpu  u  kelkfoje por malfari la  U  kaj antaÅ­ajn komandojn.
   7. Nun tajpu CTRL-R (premante la CTRL klavon dum vi premas R) kelkfoje
      por refari la komandojn (malfari la malfarojn).
 
----> Koorektii la erarojn sur tiuu æi liniio kaj remettu illlin per malfaro.
+---> Koorektii la erarojn sur tiuu Ä‰i liniio kaj remettu illlin per malfaro.
 
-  8. Tiuj estas tre utilaj komandoj.  Nun moviøu al la leciono 1.2 RESUMO.
+  8. Tiuj estas tre utilaj komandoj.  Nun moviÄu al la leciono 1.2 RESUMO.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 Leciono 1.2 RESUMO
 
 
-  1. Por forvişi ekde la kursoro øis la sekvanta vorto, tajpu:    dw
-  2. Por forvişi ekde la kursoro øis la fino de la linio, tajpu:  d$
-  3. Por forvişi tutan linion, tajpu:                             dd
+  1. Por forviÅi ekde la kursoro Äis la sekvanta vorto, tajpu:    dw
+  2. Por forviÅi ekde la kursoro Äis la fino de la linio, tajpu:  d$
+  3. Por forviÅi tutan linion, tajpu:                             dd
 
-  4. Por ripeti movon, antaımetu nombron:                         2w
-  5. La formato de şanøa komando estas:
+  4. Por ripeti movon, antaÅ­metu nombron:                         2w
+  5. La formato de ÅanÄa komando estas:
            operatoro   [nombro]   movo
 
      kie:
-       operatoro - estas tio, kio farendas, kiel  d  por forvişi
+       operatoro - estas tio, kio farendas, kiel  d  por forviÅi
        [nombro]  - estas opcia nombro por ripeti la movon
        movo      - movas sur la teksto por operacii, kiel ekzemple  w (vorto),
-                   $ (øis fino de linio), ktp.
+                   $ (Äis fino de linio), ktp.
 
-  6. Por moviøi al la komenco de la linio, uzu nul:  0
+  6. Por moviÄi al la komenco de la linio, uzu nul:  0
 
-  7. Por malfari antaıajn agojn, tajpu:               u (minuskla u)
-     Por malfari æiujn şanøojn sur la linio, tajpu:   U (majuskla U)
+  7. Por malfari antaÅ­ajn agojn, tajpu:               u (minuskla u)
+     Por malfari Ä‰iujn ÅanÄojn sur la linio, tajpu:   U (majuskla U)
      Por refari la malfarojn, tajpu:                  CTRL-R
 
 
@@ -377,111 +377,111 @@ RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
                          Leciono 3.1 LA KOMANDO DE METO
 
 
-    ** Tajpu  p  por meti tekston forvişitan antaıe post la kursoro. **
+    ** Tajpu  p  por meti tekston forviÅitan antaÅ­e post la kursoro. **
 
-  1. Movu la kursoron æe la unua suba linio markita per --->.
+  1. Movu la kursoron Ä‰e la unua suba linio markita per --->.
 
-  2. Tajpu  dd  por forvişi la linion kaj konservi øin ene de reøistro de Vim.
+  2. Tajpu  dd  por forviÅi la linion kaj konservi Äin ene de reÄistro de Vim.
 
-  3. Movu la kursoron æe la linio c), SUPER kie la forvişita linio devus esti.
+  3. Movu la kursoron Ä‰e la linio c), SUPER kie la forviÅita linio devus esti.
 
   4. Tajpu  p  por meti la linion sub la kursoron.
 
-  5. Ripetu la paşojn 2 øis 4 por meti æiujn liniojn en la øusta ordo.
+  5. Ripetu la paÅojn 2 Äis 4 por meti Ä‰iujn liniojn en la Äusta ordo.
 
----> d) Æu ankaı vi povas lerni?
+---> d) Äˆu ankaÅ­ vi povas lerni?
 ---> b) Violoj estas bluaj,
 ---> c) Inteligenteco lerneblas,
----> a) Rozoj estas ruøaj,
+---> a) Rozoj estas ruÄaj,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     Leciono 3.2 LA KOMANDO DE ANSTATAİIGO
+                     Leciono 3.2 LA KOMANDO DE ANSTATAÅ¬IGO
 
 
-       ** Tajpu  rx  por anstataıigi la signon æe la kursoro per  x . **
+       ** Tajpu  rx  por anstataÅ­igi la signon Ä‰e la kursoro per  x . **
 
 
-  1. Movu la kursoron æe la unua suba linio markita per --->.
+  1. Movu la kursoron Ä‰e la unua suba linio markita per --->.
 
-  2. Movu la kursoron øis la unua eraro.
+  2. Movu la kursoron Äis la unua eraro.
 
   3. Tajpu  r  kaj la signon, kiu devus esti tie.
 
-  4. Ripetu paşojn 2 kaj 3 øis kiam la unua linio egalas la duan.
+  4. Ripetu paÅojn 2 kaj 3 Äis kiam la unua linio egalas la duan.
 
----> Kiem tiu lanio estis tajpita, iu pramis la naøuftajn klovojn!
----> Kiam tiu linio estis tajpita, iu premis la neøustajn klavojn!
+---> Kiem tiu lanio estis tajpita, iu pramis la naÄuftajn klovojn!
+---> Kiam tiu linio estis tajpita, iu premis la neÄustajn klavojn!
 
-  5. Nun moviøu al la leciono 3.3.
+  5. Nun moviÄu al la leciono 3.3.
 
 RIMARKO: Memoru, ke vi devus lerni per uzo, kaj ne per memorado.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                       Leciono 3.3 LA OPERATORO DE ŞANØO
+                       Leciono 3.3 LA OPERATORO DE ÅœANÄœO
 
 
-              ** Por şanøi øis la fino de la vorto, tajpu  ce . **
+              ** Por ÅanÄi Äis la fino de la vorto, tajpu  ce . **
 
-  1. Movu la kursoron æe la unua suba linio markita per --->.
+  1. Movu la kursoron Ä‰e la unua suba linio markita per --->.
 
   2. Metu la kursoron sur la  d  en  lduzw
 
-  3. Tajpu  ce  kaj la øustan vorton (en tiu æi kazo, tajpu inio ).
+  3. Tajpu  ce  kaj la Äustan vorton (en tiu Ä‰i kazo, tajpu inio ).
 
-  4. Premu <ESK> kaj moviøu al la sekvanta signo, kiu bezonas şanøon.
+  4. Premu <ESK> kaj moviÄu al la sekvanta signo, kiu bezonas ÅanÄon.
 
-  5. Ripetu la paşojn 3 kaj 4 øis kiam la unua frazo egalas la duan.
+  5. Ripetu la paÅojn 3 kaj 4 Äis kiam la unua frazo egalas la duan.
 
----> Tiu lduzw havas kelkajn vortojn, kiii bezas şanøon per la şanøooto.
----> Tiu linio havas kelkajn vortojn, kiuj bezonas şanøon per la şanøoperatoro.
+---> Tiu lduzw havas kelkajn vortojn, kiii bezas ÅanÄon per la ÅanÄooto.
+---> Tiu linio havas kelkajn vortojn, kiuj bezonas ÅanÄon per la ÅanÄoperatoro.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                         Leciono 3.4 PLIAJ ŞANØOJ PER c
+                         Leciono 3.4 PLIAJ ÅœANÄœOJ PER c
 
 
-       ** La operatoro de şanøo uzeblas kun la sama movo kiel forvişo. **
+       ** La operatoro de ÅanÄo uzeblas kun la sama movo kiel forviÅo. **
 
-  1. La operatoro de şanøo funkcias sammaniere kiel forvişo. La formato estas:
+  1. La operatoro de ÅanÄo funkcias sammaniere kiel forviÅo. La formato estas:
 
        c    [nombro]   movo
 
   2. La movoj estas samaj, kiel ekzemple   w (vorto) kaj $ (fino de linio).
 
-  3. Moviøu æe la unua suba linio markita per --->.
+  3. MoviÄu Ä‰e la unua suba linio markita per --->.
 
   4. Movu la kursoron al la unua eraro.
 
   5. Tajpu  c$  kaj tajpu la reston de la linio kiel la dua kaj premu <ESK>.
 
----> La fino de æi tiu linio bezonas helpon por igi øin same kiel la dua.
----> La fino de æi tiu linio bezonas korektojn per uzo de la komando  c$
+---> La fino de Ä‰i tiu linio bezonas helpon por igi Äin same kiel la dua.
+---> La fino de Ä‰i tiu linio bezonas korektojn per uzo de la komando  c$
 
-RIMARKO:  Vi povas uzi la klavon Retropaşo por korekti erarojn dum vi tajpas.
+RIMARKO:  Vi povas uzi la klavon RetropaÅo por korekti erarojn dum vi tajpas.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 Leciono 1.3 RESUMO
 
 
-  1. Por remeti tekston, kiun vi ¼us forvişis, tajpu  p. Tio metas la
-     forvişitan tekston POST la kursoro (se linio estis forvişita, øi
+  1. Por remeti tekston, kiun vi Äµus forviÅis, tajpu  p. Tio metas la
+     forviÅitan tekston POST la kursoro (se linio estis forviÅita, Äi
      iros en la linion sub la kursoro).
 
-  2. Por anstataıigi la signon sub la kursoro, tajpu  r  kaj tiam la signon
+  2. Por anstataÅ­igi la signon sub la kursoro, tajpu  r  kaj tiam la signon
      kion vi deziras havi tie.
 
-  3. La operatoro de şanøo ebligas al vi şanøi ekde la kursoro, øis kie
-     la movo iras.  Ekz. tajpu  ce  por şanøi ekde la kursoro øis la fino
-     de la vorto,  c$  por şanøi øis la fino de la linio.
+  3. La operatoro de ÅanÄo ebligas al vi ÅanÄi ekde la kursoro, Äis kie
+     la movo iras.  Ekz. tajpu  ce  por ÅanÄi ekde la kursoro Äis la fino
+     de la vorto,  c$  por ÅanÄi Äis la fino de la linio.
 
-  4. La formato de şanøo estas:
+  4. La formato de ÅanÄo estas:
 
          c    [nombro]   movo
 
-Nun daırigu al la sekvanta leciono.
+Nun daÅ­rigu al la sekvanta leciono.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -489,99 +489,99 @@ Nun daırigu al la sekvanta leciono.
 
 
   ** Tajpu CTRL-G por montri vian pozicion en la dosiero kaj la dosierstaton.
-     Tajpu  G  por moviøi al linio en la dosiero. **
+     Tajpu  G  por moviÄi al linio en la dosiero. **
 
-  RIMARKO: Legu la tutan lecionon antaı ol plenumi iun paşon ajn!!
+  RIMARKO: Legu la tutan lecionon antaÅ­ ol plenumi iun paÅon ajn!!
 
   1. Premu la klavon Ctrl kaj premu  g . Oni nomas tion CTRL-G.
-     Mesaøo aperos æe la suba parto de la paøo kun la dosiernomo kaj la
-     pozicio en la dosiero. Memoru la numeron de la linio por paşo 3.
+     MesaÄo aperos Ä‰e la suba parto de la paÄo kun la dosiernomo kaj la
+     pozicio en la dosiero. Memoru la numeron de la linio por paÅo 3.
 
-  RIMARKO: Vi eble vidas la pozicion de la kursoro æe la suba dekstra
+  RIMARKO: Vi eble vidas la pozicion de la kursoro Ä‰e la suba dekstra
            angulo de la ekrano. Tio okazas kiam la agordo 'ruler' estas
-           şaltita (vidu  :help 'ruler')
+           Åaltita (vidu  :help 'ruler')
 
-  2. Premu  G  por moviøi æe la subo de la dosiero.
-     Tajpu gg  por moviøi æe la komenco de la dosiero.
+  2. Premu  G  por moviÄi Ä‰e la subo de la dosiero.
+     Tajpu gg  por moviÄi Ä‰e la komenco de la dosiero.
 
   3. Tajpu la numeron de la linio kie vi estis kaj poste G .  Tio removos
      vin al la linio, kie vi estis kiam vi unue premis CTRL-G.
 
-  4. Se vi sentas vin komforta, plenumu paşojn 1 øis 3.
+  4. Se vi sentas vin komforta, plenumu paÅojn 1 Äis 3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                        Leciono 1.4.2: LA KOMANDO DE SERÆO
+                        Leciono 1.4.2: LA KOMANDO DE SERÄˆO
 
 
-             ** Tajpu  /  kaj poste frazon por seræi la frazon. **
+             ** Tajpu  /  kaj poste frazon por serÄ‰i la frazon. **
 
-  1. En normala reøimo, tajpu la  /  signon.  Rimarku, ke øi kaj la kursoro
-     aperas æe la suba parto de la ekrano kiel por la  :  komando.
+  1. En normala reÄimo, tajpu la  /  signon.  Rimarku, ke Äi kaj la kursoro
+     aperas Ä‰e la suba parto de la ekrano kiel por la  :  komando.
 
   2. Nun tajpu 'errarro' <Enenklavo>.
-     Tio estas la vorto, kion vi volas seræi.
+     Tio estas la vorto, kion vi volas serÄ‰i.
 
-  3. Por seræi la saman frazon denove, simple tajpu  n .
-     Por seræi la saman frazon denove en la retrodirekto, tajpu  N .
+  3. Por serÄ‰i la saman frazon denove, simple tajpu  n .
+     Por serÄ‰i la saman frazon denove en la retrodirekto, tajpu  N .
 
-  4. Por seræi frazon en la retrodirekto, uzu  ?  anstataı  / .
+  4. Por serÄ‰i frazon en la retrodirekto, uzu  ?  anstataÅ­  / .
 
   5. Por reiri tien, el kie vi venis, premu  CTRL-O (Premu Ctrl kaj o
-     literon o).  Ripetu por pli retroiri.  CTRL-I iras antaıen.
+     literon o).  Ripetu por pli retroiri.  CTRL-I iras antaÅ­en.
 
 ---> "errarro" ne estas maniero por literumi eraro; errarro estas eraro.
 
-RIMARKO: Kiam la seræo atingas la finon de la dosiero, øi daıras æe la
-         komenco, krom se la agordo 'wrapscan' estas malşaltita.
+RIMARKO: Kiam la serÄ‰o atingas la finon de la dosiero, Äi daÅ­ras Ä‰e la
+         komenco, krom se la agordo 'wrapscan' estas malÅaltita.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     Leciono 1.4.3: SERÆO DE KONGRUAJ KRAMPOJ
+                     Leciono 1.4.3: SERÄˆO DE KONGRUAJ KRAMPOJ
 
 
-                 ** Tajpu  %  por trovi kongruan ), ] aı  } **
+                 ** Tajpu  %  por trovi kongruan ), ] aÅ­  } **
 
-  1. Poziciu la kursoron sur iun (, [ aı { en la linio markita per --->.
+  1. Poziciu la kursoron sur iun (, [ aÅ­ { en la linio markita per --->.
 
   2. Nun tajpu la  %  signon.
 
-  3. La kursoro moviøas al la kongrua krampo.
+  3. La kursoro moviÄas al la kongrua krampo.
 
   4. Tajpu  %  por movi la kursoron al la alia kongrua krampo.
 
   5. Movu la kursoron al la alia (, ), [, ], {, } kaj observu tion,
      kion  %  faras.
 
----> Æi tiu ( estas testa linio kun (-oj, [-oj, ]-oj kaj {-oj, }-oj en øi. ))
+---> Äˆi tiu ( estas testa linio kun (-oj, [-oj, ]-oj kaj {-oj, }-oj en Äi. ))
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     Leciono 1.4.4: LA KOMANDO DE ANSTATAıIGO
+                     Leciono 1.4.4: LA KOMANDO DE ANSTATAÅ­IGO
 
 
-     ** Tajpu  :s/malnova/nova/g  por anstataıigi 'nova' per 'malnova'. **
+     ** Tajpu  :s/malnova/nova/g  por anstataÅ­igi 'nova' per 'malnova'. **
 
   1. Movu la kursoron al la suba linio markita per --->.
 
-  2. Tajpu  :s/laa/la <Enenklavo> .  Rimarku, ke la komando şanøas nur la
-     unuan okaza¼on de "laa" en la linio.
+  2. Tajpu  :s/laa/la <Enenklavo> .  Rimarku, ke la komando ÅanÄas nur la
+     unuan okazaÄµon de "laa" en la linio.
 
   3. Nun tajpu  :s/laa/la/g .  Aldono de  g  opcio signifas mallokan
-     anstataıigon en la linio. Øi şanøas æiujn okaza¼ojn de "laa" en la
+     anstataÅ­igon en la linio. Äœi ÅanÄas Ä‰iujn okazaÄµojn de "laa" en la
      linio.
 
 ---> laa plej bona tempo por vidi florojn estas en laa printempo.
 
-  4. Por şanøi æiujn okaza¼ojn de iu æena signo inter du linioj,
+  4. Por ÅanÄi Ä‰iujn okazaÄµojn de iu Ä‰ena signo inter du linioj,
      tajpu    :#,#s/malnova/nova/g   kie #,# estas la numeroj de linioj de la
-                                     intervalo de la linioj kie la anstataıigo
+                                     intervalo de la linioj kie la anstataÅ­igo
                                      okazos.
-     Tajpu    :%s/malnova/nova/g     por şanøi æiujn okaza¼ojn en la tuta
+     Tajpu    :%s/malnova/nova/g     por ÅanÄi Ä‰iujn okazaÄµojn en la tuta
                                      dosiero.
-     Tajpu    :s/malnova/nova/gc     por trovi æiujn okaza¼ojn en la tuta
-                                     dosiero, kun invitilo æu anstataıigi
-                                     aı ne.
+     Tajpu    :s/malnova/nova/gc     por trovi Ä‰iujn okazaÄµojn en la tuta
+                                     dosiero, kun invitilo Ä‰u anstataÅ­igi
+                                     aÅ­ ne.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -592,20 +592,20 @@ RIMARKO: Kiam la seræo atingas la finon de la dosiero, øi daıras æe la
      numero G  movas la kursoron al numero de tiu linio.
            gg  movas la kursoron al la unua linio.
 
-  2. Tajpo de  /  kaj frazon seræas la frazon antaıen.
-     Tajpo de  ?  kaj frazon seræas la frazon malantaıen.
-     Post seræo, tajpu n por trovi la sekvantan okaza¼on en la sama direkto aı
-     N por seræi en la mala direkto.
-     CTRL-O movas vin al la antaıaj pozicioj, CTRL-I al la novaj pozicioj.
+  2. Tajpo de  /  kaj frazon serÄ‰as la frazon antaÅ­en.
+     Tajpo de  ?  kaj frazon serÄ‰as la frazon malantaÅ­en.
+     Post serÄ‰o, tajpu n por trovi la sekvantan okazaÄµon en la sama direkto aÅ­
+     N por serÄ‰i en la mala direkto.
+     CTRL-O movas vin al la antaÅ­aj pozicioj, CTRL-I al la novaj pozicioj.
 
-  3. Tajpo de  %  kiam la kursoro estas sur (,),[,],{ aı } moviøas al øia
+  3. Tajpo de  %  kiam la kursoro estas sur (,),[,],{ aÅ­ } moviÄas al Äia
      kongruo.
 
-  4. Por anstataıigi 'nova' en la unua 'malnova' en linio :s/malnova/nova
-     Por anstataıigi 'nova' en æiuj 'malnova'-oj en linio :s/malnova/nova/g
-     Por anstataıigi frazon inter du #-aj linioj          :#,#s/malnova/nova/g
-     Por anstataıigi æiujn okaza¼ojn en la dosiero        :%s/malnova/nova/g
-     Por demandi konfirmon æiu-foje, aldonu 'c'           :%s/malnova/nova/gc
+  4. Por anstataÅ­igi 'nova' en la unua 'malnova' en linio :s/malnova/nova
+     Por anstataÅ­igi 'nova' en Ä‰iuj 'malnova'-oj en linio :s/malnova/nova/g
+     Por anstataÅ­igi frazon inter du #-aj linioj          :#,#s/malnova/nova/g
+     Por anstataÅ­igi Ä‰iujn okazaÄµojn en la dosiero        :%s/malnova/nova/g
+     Por demandi konfirmon Ä‰iu-foje, aldonu 'c'           :%s/malnova/nova/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -614,20 +614,20 @@ RIMARKO: Kiam la seræo atingas la finon de la dosiero, øi daıras æe la
 
      ** Tajpu  :!  sekvata de ekstera komando por plenumi la komandon. **
 
-  1. Tajpu la konatan komandon  :  por pozicii la kursoron æe la suba parto
+  1. Tajpu la konatan komandon  :  por pozicii la kursoron Ä‰e la suba parto
      de la ekrano. Tio ebligas tajpadon de komando en komanda linio.
 
   2. Nun tajpu la  !  (krisigno) signon. Tio ebligas al vi plenumi iun
-     eksteran şelan komandon ajn.
+     eksteran Åelan komandon ajn.
 
   3. Ekzemple, tajpu  ls  post ! kaj tajpu <Enenklavo>. Tio listigos la
-     enhavon de la dosierujo, same kiel se vi estis en şela invito.
-     Aı uzu  :!dir  se ls ne funkcias.
+     enhavon de la dosierujo, same kiel se vi estis en Åela invito.
+     AÅ­ uzu  :!dir  se ls ne funkcias.
 
-RIMARKO: Eblas plenumi iun eksteran komandon ajn tiamaniere, ankaı kun
+RIMARKO: Eblas plenumi iun eksteran komandon ajn tiamaniere, ankaÅ­ kun
          argumentoj.
 
-RIMARKO: Æiuj  :  komandoj devas finiøi per tajpo de <Enenklavo>
+RIMARKO: Äˆiuj  :  komandoj devas finiÄi per tajpo de <Enenklavo>
          Ekde nun, ni ne plu mencios tion.
 
 
@@ -635,25 +635,25 @@ RIMARKO: Æiuj  :  komandoj devas finiøi per tajpo de <Enenklavo>
                     Leciono 1.5.2: PLI PRI KONSERVO DE DOSIERO
 
 
-   ** Por konservi la faritajn şanøojn en la teksto, tajpu  :w DOSIERNOMO. **
+   ** Por konservi la faritajn ÅanÄojn en la teksto, tajpu  :w DOSIERNOMO. **
 
-  1. Tajpu  !dir  aı  !ls  por akiri liston de via dosierujo.
+  1. Tajpu  !dir  aÅ­  !ls  por akiri liston de via dosierujo.
      Vi jam scias, ke vi devas tajpi <Enenklavo> post tio.
 
-  2. Elektu dosieron, kiu ankoraı ne ekzistas, kiel ekzemple TESTO.
+  2. Elektu dosieron, kiu ankoraÅ­ ne ekzistas, kiel ekzemple TESTO.
 
   3. Nun tajpu:   :w TESTO   (kie TESTO estas la elektita dosiernomo)
 
   4. Tio konservas la tutan dosieron (instruilon de Vim) kun la nomo TESTO.
-     Por kontroli tion, tajpu   :!dir   aı   :!ls   denove por vidigi vian
+     Por kontroli tion, tajpu   :!dir   aÅ­   :!ls   denove por vidigi vian
      dosierujon.
 
-RIMARKO: Se vi volus eliri el Vim kaj restartigi øin denove per  vim TESTO,
+RIMARKO: Se vi volus eliri el Vim kaj restartigi Äin denove per  vim TESTO,
          la dosiero estus precize same kiel kopio de la instruilo kiam vi
-         konservis øin.
+         konservis Äin.
 
-  5. Nun forvişu la dosieron tajpante (VINDOZO):    :!del TESTO
-                                   aı (UNIKSO):     :!rm TESTO
+  5. Nun forviÅu la dosieron tajpante (VINDOZO):    :!del TESTO
+                                   aÅ­ (UNIKSO):     :!rm TESTO
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -665,20 +665,20 @@ RIMARKO: Se vi volus eliri el Vim kaj restartigi øin denove per  vim TESTO,
   1. Movu la kursoron al tiu linio.
 
   2. Premu  v  kaj movu la kursoron al la kvina suba ero.  Rimarku, ke la
-     teksto emfaziøas.
+     teksto emfaziÄas.
 
-  3. Premu la  :  signon.  Æe la fino de la ekrano  :'<,'>  aperos.
+  3. Premu la  :  signon.  Äˆe la fino de la ekrano  :'<,'>  aperos.
 
-  4. Tajpu  w TESTO  , kie TESTO estas dosiernomo, kiu ankoraı ne ekzistas.
-     Kontrolu, ke vi vidas  :'<,'>w TESTO  antaı ol premi <Enenklavo>.
+  4. Tajpu  w TESTO  , kie TESTO estas dosiernomo, kiu ankoraÅ­ ne ekzistas.
+     Kontrolu, ke vi vidas  :'<,'>w TESTO  antaÅ­ ol premi <Enenklavo>.
 
   5. Vim konservos la apartigitajn liniojn al la dosiero TESTO.  Uzu  :dir
-     aı  :!ls  por vidigi øin.  Ne forvişu øin.  Ni uzos øin en la sekvanta
+     aÅ­  :!ls  por vidigi Äin.  Ne forviÅu Äin.  Ni uzos Äin en la sekvanta
      leciono.
 
 RIMARKO: Premo de  v  komencas Viduman apartigon.  Vi povas movi la kursoron
-         por pligrandigi aı malpligrandigi la apartigon. Tiam vi povas uzi
-         operatoron por plenumi ion kun la teksto.  Ekzemple,  d  forvişas
+         por pligrandigi aÅ­ malpligrandigi la apartigon. Tiam vi povas uzi
+         operatoron por plenumi ion kun la teksto.  Ekzemple,  d  forviÅas
          la tekston.
 
 
@@ -688,21 +688,21 @@ RIMARKO: Premo de  v  komencas Viduman apartigon.  Vi povas movi la kursoron
 
          ** Por enmeti la enhavon de dosiero, tajpu  :r DOSIERNOMON **
 
-  1. Movu la kursoron tuj super æi tiu linio.
+  1. Movu la kursoron tuj super Ä‰i tiu linio.
 
-RIMARKO: Post plenumo de paşo 2, vi vidos tekston el la leciono 5.3.  Tiam
-         moviøu SUBEN por vidi tiun lecionon denove.
+RIMARKO: Post plenumo de paÅo 2, vi vidos tekston el la leciono 5.3.  Tiam
+         moviÄu SUBEN por vidi tiun lecionon denove.
 
   2. Nun akiru vian dosieron TESTO uzante la komandon   :r TESTO   kie TESTO
      estas la nomo de la dosiero, kiun vi uzis.
      La dosiero, kion vi akiras, estas metita sub la linio de la kursoro.
 
-  3. Por kontroli, æu la dosiero akiriøis, retromovu la kursoron kaj rimarku,
+  3. Por kontroli, Ä‰u la dosiero akiriÄis, retromovu la kursoron kaj rimarku,
      ke estas nun du kopioj de la leciono 5.3, la originala kaj la versio mem
      de la dosiero.
 
 RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
-        :r !ls  legas la eliron de la komando ls kaj metas øin sub la
+        :r !ls  legas la eliron de la komando ls kaj metas Äin sub la
         kursoron.
 
 
@@ -715,7 +715,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
       Iuj utilaj ekzemploj estas:
         (VINDOZO)          (UNIKSO)
          :!dir              :!ls            - listigas dosierujon
-         :!del DOSIERNOMO   :!rm DOSIERNOMO - forvişas la dosieron DOSIERNOMO
+         :!del DOSIERNOMO   :!rm DOSIERNOMO - forviÅas la dosieron DOSIERNOMO
 
   2.  :w DOSIERNOMO  konservas la nunan dosieron de Vim al disko kun la
       nomo DOSIERNOMO.
@@ -724,9 +724,9 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
       dosiero DOSIERNOMO.
 
   4. :r DOSIERNOMO  akiras la dosieron DOSIERNOMO el la disko kaj metas
-     øin sub la pozicion de la kursoro.
+     Äin sub la pozicion de la kursoro.
 
-  5. :r !dir  legas la eligon de la komando dir kaj metas øin sub la
+  5. :r !dir  legas la eligon de la komando dir kaj metas Äin sub la
      pozicion de la kursoro.
 
 
@@ -734,20 +734,20 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
                        Leciono 1.6.1: LA KOMANDO DE MALFERMO
 
 
-  ** Tajpu o por malfermi linion sub la kursoro kaj eniri Enmetan reøimon. **
+  ** Tajpu o por malfermi linion sub la kursoro kaj eniri Enmetan reÄimon. **
 
   1. Movu la kursoron al la suba linio markita per --->.
 
   2. Tajpu la minusklan literon  o  por malfermi linion SUB la kursoro kaj
-     eniri la Enmetan reøimon.
+     eniri la Enmetan reÄimon.
 
-  3. Nun tajpu tekston kaj premu <ESK> por eliri el la Enmeta reøimo.
+  3. Nun tajpu tekston kaj premu <ESK> por eliri el la Enmeta reÄimo.
 
----> Post tajpo de  o  la kursoro moviøas al la malfermata linio en
-     Enmeta reøimo.
+---> Post tajpo de  o  la kursoro moviÄas al la malfermata linio en
+     Enmeta reÄimo.
 
   4. Por malfermi linion SUPER la kursoro, nur tajpu majusklan  O  ,
-     anstataı minusklan  o.  Provu tion per la suba linio.
+     anstataÅ­ minusklan  o.  Provu tion per la suba linio.
 
 ---> Malfermu linion SUPER tiu tajpante O dum la kursoro estas sur tiu linio.
 
@@ -758,105 +758,105 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
 
                   ** Tajpu  a  por enmeti POST la kursoro. **
 
-  1. Movu la kursoron æe la komenco de la linio markita per --->.
+  1. Movu la kursoron Ä‰e la komenco de la linio markita per --->.
 
-  2. Premu  e  øis kiam la kursoro estas æe la fino de  li.
+  2. Premu  e  Äis kiam la kursoro estas Ä‰e la fino de  li.
 
   3. Tajpu  a  (minuskle) por aldoni tekston POST la kursoro.
 
-  4. Kompletigu la vorton same kiel la linio sub øi.  Premu <ESK> por
-     eliri el la Enmeta reøimo.
+  4. Kompletigu la vorton same kiel la linio sub Äi.  Premu <ESK> por
+     eliri el la Enmeta reÄimo.
 
-  5. Uzu  e  por moviøi al la sekvanta nekompleta vorto kaj ripetu
-     paşojn 3 kaj 4.
+  5. Uzu  e  por moviÄi al la sekvanta nekompleta vorto kaj ripetu
+     paÅojn 3 kaj 4.
 
----> Æi tiu lin ebligos vin ekz vin postal tekston al linio.
----> Æi tiu linio ebligos vin ekzerci vin postaldoni tekston al linio.
+---> Äˆi tiu lin ebligos vin ekz vin postal tekston al linio.
+---> Äˆi tiu linio ebligos vin ekzerci vin postaldoni tekston al linio.
 
-RIMARKO: Æiu  a, i kaj A  iras al la sama Enmeta reøimo, la nura malsamo
+RIMARKO: Äˆiu  a, i kaj A  iras al la sama Enmeta reÄimo, la nura malsamo
          estas tie, kie la signoj estas enmetitaj.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    Leciono 1.6.3: ALIA MANIERO POR ANSTATAİIGI
+                    Leciono 1.6.3: ALIA MANIERO POR ANSTATAÅ¬IGI
 
 
-          ** Tajpu majusklan  R  por anstataıigi pli ol unu signo. **
+          ** Tajpu majusklan  R  por anstataÅ­igi pli ol unu signo. **
 
   1. Movu la kursoron al la unua suba linio markita per --->.  Movu la
      kursoron al la komenco de la unua  xxx .
 
-  2. Nun premu  R  kaj tajpu la nombron sub øi en la dua linio, por ke øi
-     anstataıigu la xxx .
+  2. Nun premu  R  kaj tajpu la nombron sub Äi en la dua linio, por ke Äi
+     anstataÅ­igu la xxx .
 
-  3. Premu <ESK> por foriri el la Anstataıiga reøimo. Rimarku, ke la cetera
-     parto de la linio restas neşanøata.
+  3. Premu <ESK> por foriri el la AnstataÅ­iga reÄimo. Rimarku, ke la cetera
+     parto de la linio restas neÅanÄata.
 
-  4. Ripetu la paşojn por anstataıigi la restantajn xxx.
+  4. Ripetu la paÅojn por anstataÅ­igi la restantajn xxx.
 
 ---> Aldono de 123 al xxx donas al vi xxx.
 ---> Aldono de 123 al 456 donas al vi 579.
 
-RIMARKO: Anstataıiga reøimo estas same kiel Enmeta reøimo, sed æiu signo
-         tajpita forvişas ekzistan signon.
+RIMARKO: AnstataÅ­iga reÄimo estas same kiel Enmeta reÄimo, sed Ä‰iu signo
+         tajpita forviÅas ekzistan signon.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                       Leciono 1.6.4: KOPII KAJ ALGLUI TEKSTON
 
 
-     ** Uzu la  y  operatoron por kopii tekston, kaj  p  por alglui øin **
+     ** Uzu la  y  operatoron por kopii tekston, kaj  p  por alglui Äin **
 
 
   1. Iru al la suba linio markita per ---> kaj poziciu la kursoron post "a)".
 
-  2. Komencu la Viduman reøimon per  v  kaj movu la kursoron tuj antaı "unua".
+  2. Komencu la Viduman reÄimon per  v  kaj movu la kursoron tuj antaÅ­ "unua".
 
   3. Tajpu  y  por kopii la emfazitan tekston.
 
-  4. Movu la kursoron æe la fino de la linio:  j$
+  4. Movu la kursoron Ä‰e la fino de la linio:  j$
 
   5. Tajpu  p  por alglui la tekston.  Tiam tajpu:  a dua <ESK> .
 
-  6. Uzu Viduman reøimon por apartigi " ero.", kopiu øin per  y , moviøu
-     æe la fino de la sekvanta linio per  j$  kaj algluu la tekston tie
+  6. Uzu Viduman reÄimon por apartigi " ero.", kopiu Äin per  y , moviÄu
+     Ä‰e la fino de la sekvanta linio per  j$  kaj algluu la tekston tie
      per  p .
 
 ---> a) tio estas la unua ero.
      b)
 
-RIMARKO: vi povas ankaı uzi  y  kiel operatoro;  yw  kopias unu vorton.
+RIMARKO: vi povas ankaÅ­ uzi  y  kiel operatoro;  yw  kopias unu vorton.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            Leciono 1.6.5: AGORDI OPCION
 
 
-         ** Agordu opcion por ke seræo aı anstataıigo ignoru usklecon **
+         ** Agordu opcion por ke serÄ‰o aÅ­ anstataÅ­igo ignoru usklecon **
 
-  1. Seræu 'ignori' per tajpo de /ignori <Enenklavo>
+  1. SerÄ‰u 'ignori' per tajpo de /ignori <Enenklavo>
      Ripetu plurfoje premante  n .
 
-  2. Şaltu la opcion 'ic' (ignori usklecon) per:   :set ic
+  2. Åœaltu la opcion 'ic' (ignori usklecon) per:   :set ic
 
-  3. Nun seræu 'ignori' denove premante  n
+  3. Nun serÄ‰u 'ignori' denove premante  n
      Rimarku, ke Ignori kaj IGNORI estas nun troveblas.
 
-  4. Şaltu la opciojn 'hlsearch' kaj 'incsearch':   :set hls is
+  4. Åœaltu la opciojn 'hlsearch' kaj 'incsearch':   :set hls is
 
-  5. Nun retajpu la seræan komandon kaj vidu kio okazas:  /ignore <Enenklavo>
+  5. Nun retajpu la serÄ‰an komandon kaj vidu kio okazas:  /ignore <Enenklavo>
 
-  6. Por malşalti ignoron de uskleco:  :set noic
+  6. Por malÅalti ignoron de uskleco:  :set noic
 
 RIMARKO: Por forigi emfazon de kongruo, tajpu:   :nohlsearch
-RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
+RIMARKO: Se vi deziras ignori usklecon por nur unu serÄ‰a komando, uzu  \c
          en la frazo:  /ignore\c  <Enenklavo>
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 Leciono 1.6 RESUMO
 
-  1. Tajpu  o  por malfermi linion SUB la kursoro kaj eki en Enmeta reøimo.
+  1. Tajpu  o  por malfermi linion SUB la kursoro kaj eki en Enmeta reÄimo.
   1. Tajpu  O  por malfermi linion SUPER la kursoro.
 
   2. Tajpu  a  por enmeti tekston POST la kursoro.
@@ -864,18 +864,18 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
   3. La  e  komando movas la kursoron al la fino de vorto.
 
-  4. la  y  operatoro kopias tekston,  p  algluas øin.
+  4. la  y  operatoro kopias tekston,  p  algluas Äin.
 
-  5. Tajpo de majuskla  R  eniras la Anstataıigan reøimon øis kiam
+  5. Tajpo de majuskla  R  eniras la AnstataÅ­igan reÄimon Äis kiam
      <ESK> estas premita.
 
-  6. Tajpo de ":set xxx" şaltas la opcion "xxx".  Iuj opcioj estas:
-        'ic' 'ignorecase'     ignori usklecon dum seræo
-        'is' 'incsearch'      montru partan kongruon dum seræo
-        'hls' 'hlsearch'      emfazas æiujn kongruajn frazojn
-     Vi povas uzi aı la longan, aı la mallongan nomon de opcio.
+  6. Tajpo de ":set xxx" Åaltas la opcion "xxx".  Iuj opcioj estas:
+        'ic' 'ignorecase'     ignori usklecon dum serÄ‰o
+        'is' 'incsearch'      montru partan kongruon dum serÄ‰o
+        'hls' 'hlsearch'      emfazas Ä‰iujn kongruajn frazojn
+     Vi povas uzi aÅ­ la longan, aÅ­ la mallongan nomon de opcio.
 
-  7. Antaıaldonu "no" por malşalti la opcion:  :set noic
+  7. AntaÅ­aldonu "no" por malÅalti la opcion:  :set noic
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -884,10 +884,10 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
                           ** Uzu la helpan sistemon **
 
-  Vim havas ampleksan helpan sistemon. Por komenciøi, provu unu el la tiuj
+  Vim havas ampleksan helpan sistemon. Por komenciÄi, provu unu el la tiuj
   tri:
-        - premu la klavon <HELPO> (se vi havas øin)
-        - premu la klavon <F1> (se vi havas øin)
+        - premu la klavon <HELPO> (se vi havas Äin)
+        - premu la klavon <F1> (se vi havas Äin)
         - tajpu   :help <Enenklavo>
 
   Legu la tekston en la helpfenestro por trovi kiel helpo funkcias.
@@ -909,8 +909,8 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
                          ** Ebligu kapablojn de Vim **
 
-  Vim havas multe pli da kapabloj ol Vi, sed la plej multaj estas defaılte
-  malşaltitaj.  Por ekuzi la kapablojn, vi devas krei dosieron "vimrc".
+  Vim havas multe pli da kapabloj ol Vi, sed la plej multaj estas defaÅ­lte
+  malÅaltitaj.  Por ekuzi la kapablojn, vi devas krei dosieron "vimrc".
 
   1. Ekredaktu la dosieron "vimrc".  Tio dependas de via sistemo:
       :e ~/.vimrc          por Unikso
@@ -922,8 +922,8 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
   3. Konservu la dosieron per:
       :w
 
-  La sekvantan fojon, kiam vi lanæas Vim, øi uzos sintaksan emfazon.
-  Vi povas aldoni æiujn viajn preferatajn agordojn al tiu dosiero "vimrc".
+  La sekvantan fojon, kiam vi lanÄ‰as Vim, Äi uzos sintaksan emfazon.
+  Vi povas aldoni Ä‰iujn viajn preferatajn agordojn al tiu dosiero "vimrc".
   Por pli da informoj, tajpu  :help vimrc-intro
 
 
@@ -933,9 +933,9 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
              ** Kompletigo de komanda linio per CTRL-D kaj <TAB> **
 
-  1. Certigu ke Vim estas en kongrua reøimo:  :set nocp
+  1. Certigu ke Vim estas en kongrua reÄimo:  :set nocp
 
-  2. Rigardu tiujn dosierojn, kiuj ekzistas en la dosierujo:  :!ls  aı  :!dir
+  2. Rigardu tiujn dosierojn, kiuj ekzistas en la dosierujo:  :!ls  aÅ­  :!dir
 
   3. Tajpu la komencon de komando:  :e
 
@@ -945,7 +945,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
   6. Nun aldonu spaceton kaj la komencon de ekzistanta nomo:  :edit DOSI
 
-  7. Premu d<TAB>.  Vim kompletigos la nomon (se øi estas unika)
+  7. Premu d<TAB>.  Vim kompletigos la nomon (se Äi estas unika)
 
 RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
          <TAB>.  Estas aparte utila por  :help .
@@ -954,7 +954,7 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
                                 Leciono 1.7 RESUMO
 
 
-  1. Tajpu  :help  aı premu <F1> aı <Helpo>  por malfermi helpan fenestron.
+  1. Tajpu  :help  aÅ­ premu <F1> aÅ­ <Helpo>  por malfermi helpan fenestron.
 
   2. Tajpu  :help kmd  por trovi helpon pri  kmd.
 
@@ -964,15 +964,15 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   5. Kreu komencan skripton vimrc por konservi viajn agordojn.
 
-  6. Kiam vi tajpas  :  komandon, premu CTRL-D por vidi æiujn kompleteblojn.
+  6. Kiam vi tajpas  :  komandon, premu CTRL-D por vidi Ä‰iujn kompleteblojn.
      Premu <TAB> por uzi unu kompletigon.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Tio konkludas la instruilon de Vim.  Øi celis doni mallongan superrigardon
-  de la redaktilo Vim, nur tion kio sufiæas por ebligi al vi facilan uzon de
-  la redaktilo. Estas nepre nekompleta, æar Vim havas multajn multajn pliajn
+  Tio konkludas la instruilon de Vim.  Äœi celis doni mallongan superrigardon
+  de la redaktilo Vim, nur tion kio sufiÄ‰as por ebligi al vi facilan uzon de
+  la redaktilo. Estas nepre nekompleta, Ä‰ar Vim havas multajn multajn pliajn
   komandojn. Legu la manlibron: ":help user-manual".
 
   Tiu instruilo estis verkita de Michael C. Pierce kaj Robert K. Ware,
@@ -980,12 +980,12 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
   ideojn provizitajn de Charles Smith el la Stata Universitato de Koloradio
   (Colorado State University)
 
-  Retpoşto: bware@mines.colorado.edu.
+  RetpoÅto: bware@mines.colorado.edu.
 
   Modifita por Vim de Bram Moolenaar.
 
-  Esperantigita fare de Dominique Pellé, 2008-04-01
-  Retpoşto: dominique.pelle@gmail.com
-  Lasta şanøo: 2020-07-19
+  Esperantigita fare de Dominique PellÃ©, 2008-04-01
+  RetpoÅto: dominique.pelle@gmail.com
+  Lasta ÅanÄo: 2020-07-19
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

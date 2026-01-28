@@ -1,8 +1,6 @@
 " Test for python 3 commands.
 
-source check.vim
 CheckFeature python3
-source shared.vim
 
 func Create_vim_list()
   return [1]
@@ -30,6 +28,7 @@ func Test_AAA_python3_setup()
     py37_exception_repr = re.compile(r'([^\(\),])(\)+)$')
     py39_type_error_pattern = re.compile(r'\w+\.([^(]+\(\) takes)')
     py310_type_error_pattern = re.compile(r'takes (\d+) positional argument but (\d+) were given')
+    py314_type_error_tuple_pattern = re.compile(r'must be (\d+)-item tuple')
 
     def emsg(ei):
       return ei[0].__name__ + ':' + repr(ei[1].args)
@@ -66,6 +65,8 @@ func Test_AAA_python3_setup()
                         # Python 3.9 reports errors like "vim.command() takes ..." instead of "command() takes ..."
                         msg = py39_type_error_pattern.sub(r'\1', msg)
                         msg = py310_type_error_pattern.sub(r'takes exactly \1 positional argument (\2 given)', msg)
+                        # Python 3.14 has specific error messages for Tuple's
+                        msg = py314_type_error_tuple_pattern.sub(r'must be \1-item sequence', msg)
                 elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
                     msg = repr((TypeError, TypeError('expected bytes with no null')))
                 else:
@@ -304,7 +305,12 @@ endfunc
 
 " Test vim.eval() with various types.
 func Test_python3_vim_eval()
-  call assert_equal("\n8",             execute('py3 print(vim.eval("3+5"))'))
+  call assert_equal("\n2061300532912", execute('py3 print(vim.eval("2061300532912"))'))
+  call assert_equal("\n9223372036854775807", execute('py3 print(vim.eval("9223372036854775807"))'))
+  call assert_equal("\n-9223372036854775807",execute('py3 print(vim.eval("-9223372036854775807"))'))
+  call assert_equal("\n2147483648",  execute('py3 print(vim.eval("2147483648"))'))
+  call assert_equal("\n-2147483649", execute('py3 print(vim.eval("-2147483649"))'))
+  call assert_equal("\n8",           execute('py3 print(vim.eval("3+5"))'))
   call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
   call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
   call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
@@ -512,7 +518,7 @@ func Test_python3_range2()
   call AssertException(["let x = py3eval('r.abc')"],
         \ "Vim(let):AttributeError: 'vim.range' object has no attribute 'abc'")
 
-  close!
+  bw!
 endfunc
 
 " Test for the python tabpage object
@@ -989,7 +995,7 @@ func Test_python3_lockedvar()
 
   call assert_equal([0, 1, 2, 3], l)
   unlockvar! l
-  close!
+  bw!
 endfunc
 
 " Test for calling a function
@@ -1018,7 +1024,7 @@ func Test_python3_function_call()
   delfunction New
   py3 ee('f(1, 2, 3)')
   call assert_equal("f(1, 2, 3):(<class 'vim.error'>, error('Vim:E117: Unknown function: New',))", getline(2))
-  close!
+  bw!
   delfunction DictNew
 endfunc
 
@@ -2921,7 +2927,7 @@ func Test_python3_chdir()
   EOF
   call assert_equal(["b'testdir'", 'Xp3cdfile', "b'src'", 'testdir/Xp3cdfile',
         \"b'testdir'", 'Xp3cdfile'], getline(2, '$'))
-  close!
+  bw!
   call AssertException(["py3 vim.chdir(None)"], "Vim(py3):TypeError:")
 endfunc
 
@@ -4133,7 +4139,7 @@ func Test_python3_errors()
   for i in range(n_expected > n_actual ? n_expected : n_actual)
     call assert_equal(i >= n_expected ? '' : expected[i], i >= n_actual ? '' : actual[i])
   endfor
-  close!
+  bw!
 endfunc
 
 " Test import
@@ -4189,7 +4195,7 @@ func Test_python3_import()
     pythonx/topmodule/submodule/subsubmodule/subsubsubmodule.py
   END
   call assert_equal(expected, getline(2, '$'))
-  close!
+  bw!
 
   " Try to import a non-existing module with a dot (.)
   call AssertException(['py3 import a.b.c'], "No module named 'a'")
@@ -4227,7 +4233,7 @@ func Test_python3_exception()
     vim.bindeval("Exe('xxx_non_existent_command_xxx')"):(<class 'vim.error'>, error('Vim:E492: Not an editor command: xxx_non_existent_command_xxx',))
   END
   call assert_equal(expected, getline(2, '$'))
-  close!
+  bw!
 endfunc
 
 " Regression: interrupting vim.command propagates to next vim.command
@@ -4271,7 +4277,7 @@ func Test_python3_keyboard_interrupt()
   END
   call assert_equal(expected, getline(2, '$'))
   call assert_equal('', output)
-  close!
+  bw!
 endfunc
 
 " Regression: Iterator for a Vim object should hold a reference.

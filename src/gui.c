@@ -25,7 +25,7 @@ static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guico
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
 static int gui_xy2colrow(int x, int y, int *colp);
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 static int gui_has_tabline(void);
 #endif
 static void gui_do_scrollbar(win_T *wp, int which, int enable);
@@ -146,6 +146,23 @@ gui_start(char_u *arg UNUSED)
 	    emsg(msg);
 #endif
     }
+#ifdef HAVE_CLIPMETHOD
+    else
+	// Reset clipmethod to CLIPMETHOD_NONE
+	choose_clipmethod();
+#endif
+
+#if defined(FEAT_SOCKETSERVER) && defined(FEAT_GUI_GTK)
+    // Install socket server listening socket if we are running it
+    if (socket_server_valid())
+	gui_gtk_init_socket_server();
+#endif
+
+#ifdef FEAT_GUI_MSWIN
+    // Enable fullscreen mode
+    if (vim_strchr(p_go, GO_FULLSCREEN) != NULL)
+       gui_mch_set_fullscreen(TRUE);
+#endif
 
     vim_free(old_term);
 
@@ -393,7 +410,7 @@ gui_init_check(void)
 	return result;
     }
 
-    gui.shell_created = FALSE;
+    gui.shell_created = false;
     gui.dying = FALSE;
     gui.in_focus = TRUE;		// so the guicursor setting works
     gui.dragged_sb = SBAR_NONE;
@@ -714,7 +731,7 @@ gui_init(void)
     gui_init_which_components(NULL);
 
     // All components of the GUI have been created now
-    gui.shell_created = TRUE;
+    gui.shell_created = true;
 
 #ifdef FEAT_GUI_MSWIN
     // Set the shell size, adjusted for the screen size.  For GTK this only
@@ -850,7 +867,7 @@ gui_exit(int rc)
 }
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(PROTO)
+	|| defined(FEAT_GUI_PHOTON)
 # define NEED_GUI_UPDATE_SCREEN 1
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
@@ -1069,10 +1086,10 @@ gui_get_wide_font(void)
     return OK;
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 /*
  * Set list of ascii characters that combined can create ligature.
- * Store them in char map for quick access from gui_gtk2_draw_string.
+ * Store them in char map for quick access from gui_gtk_draw_string.
  */
     void
 gui_set_ligatures(void)
@@ -1401,7 +1418,7 @@ gui_update_cursor(
     gui.highlight_mask = old_hl_mask;
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
     static void
 gui_position_menu(void)
 {
@@ -2524,7 +2541,7 @@ gui_outstr_nowrap(
      */
 #ifdef FEAT_GUI_GTK
     // The value returned is the length in display cells
-    len = gui_gtk2_draw_string(gui.row, col, s, len, draw_flags);
+    len = gui_gtk_draw_string(gui.row, col, s, len, draw_flags);
 #else
     if (enc_utf8)
     {
@@ -3251,6 +3268,8 @@ button_set:
      */
     if ((State == MODE_NORMAL || State == MODE_NORMAL_BUSY
 						      || (State & MODE_INSERT))
+	    && X_2_COL(x) >= firstwin->w_wincol
+	    && X_2_COL(x) < firstwin->w_wincol + topframe->fr_width
 	    && Y_2_ROW(y) >= topframe->fr_height + firstwin->w_winrow
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
@@ -3436,7 +3455,7 @@ gui_xy2colrow(int x, int y, int *colp)
     return row;
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Callback function for when a menu entry has been selected.
  */
@@ -3469,7 +3488,7 @@ static int	prev_which_scrollbars[3];
 gui_init_which_components(char_u *oldval UNUSED)
 {
 #ifdef FEAT_GUI_DARKTHEME
-    static int	prev_dark_theme = -1;
+    static int	prev_dark_theme = FALSE;
     int		using_dark_theme = FALSE;
 #endif
 #ifdef FEAT_MENU
@@ -3481,6 +3500,13 @@ gui_init_which_components(char_u *oldval UNUSED)
 #endif
 #ifdef FEAT_GUI_TABLINE
     int		using_tabline;
+#endif
+#ifdef FEAT_GUI_MSWIN
+    static int	prev_titlebar = FALSE;
+    int		using_titlebar = FALSE;
+
+    static int	prev_fullscreen = FALSE;
+    int		using_fullscreen = FALSE;
 #endif
 #if defined(FEAT_MENU)
     static int	prev_tearoff = -1;
@@ -3551,6 +3577,14 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_GREY:
 		// make menu's have grey items, ignored here
 		break;
+#ifdef FEAT_GUI_MSWIN
+	    case GO_TITLEBAR:
+		using_titlebar = TRUE;
+		break;
+	    case GO_FULLSCREEN:
+		using_fullscreen = TRUE;
+		break;
+#endif
 #ifdef FEAT_TOOLBAR
 	    case GO_TOOLBAR:
 		using_toolbar = TRUE;
@@ -3571,6 +3605,20 @@ gui_init_which_components(char_u *oldval UNUSED)
 
     need_set_size = 0;
     fix_size = FALSE;
+
+#ifdef FEAT_GUI_MSWIN
+    if (using_titlebar != prev_titlebar)
+    {
+	gui_mch_set_titlebar_colors();
+	prev_titlebar = using_titlebar;
+    }
+
+    if (using_fullscreen != prev_fullscreen)
+    {
+	gui_mch_set_fullscreen(using_fullscreen);
+	prev_fullscreen = using_fullscreen;
+    }
+#endif
 
 #ifdef FEAT_GUI_DARKTHEME
     if (using_dark_theme != prev_dark_theme)
@@ -3699,7 +3747,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 	shell_new_rows();	// recompute window positions and heights
 }
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 /*
  * Return TRUE if the GUI is taking care of the tabline.
  * It may still be hidden if 'showtabline' is zero.
@@ -4709,7 +4757,7 @@ init_gui_options(void)
     }
 }
 
-#if defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_X11)
     void
 gui_new_scrollbar_colors(void)
 {
@@ -4741,6 +4789,10 @@ gui_focus_change(int in_focus)
 #if 1
     gui.in_focus = in_focus;
     out_flush_cursor(TRUE, FALSE);
+
+# ifdef FEAT_GUI_MSWIN
+    gui_mch_set_titlebar_colors();
+# endif
 
 # ifdef FEAT_XIM
     xim_set_focus(in_focus);
@@ -4911,7 +4963,12 @@ xy2win(int x, int y, mouse_find_T popup)
 	return NULL;
     wp = mouse_find_win(&row, &col, popup);
     if (wp == NULL)
+    {
+#ifdef FEAT_MOUSESHAPE
+	update_mouseshape(-2);
+#endif
 	return NULL;
+    }
 #ifdef FEAT_MOUSESHAPE
     if (State == MODE_HITRETURN || State == MODE_ASKMORE)
     {
@@ -4981,10 +5038,10 @@ ex_gui(exarg_T *eap)
 	ex_next(eap);
 }
 
-#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+#if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_GUI_HAIKU)) \
-	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
+	    && defined(FEAT_TOOLBAR)
 /*
  * This is shared between Haiku, Motif, and GTK.
  */
@@ -5019,7 +5076,7 @@ gui_find_bitmap(char_u *name, char_u *buffer, char *ext)
     return OK;
 }
 
-# if !defined(FEAT_GUI_GTK) || defined(PROTO)
+# if !defined(FEAT_GUI_GTK)
 /*
  * Given the name of the "icon=" argument, try finding the bitmap file for the
  * icon.  If it is an absolute path name, use it as it is.  Otherwise append
@@ -5039,8 +5096,7 @@ gui_find_iconfile(char_u *name, char_u *buffer, char *ext)
 # endif
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU)
     void
 display_errors(void)
 {
@@ -5070,7 +5126,7 @@ display_errors(void)
 }
 #endif
 
-#if defined(NO_CONSOLE_INPUT) || defined(PROTO)
+#if defined(NO_CONSOLE_INPUT)
 /*
  * Return TRUE if still starting up and there is no place to enter text.
  * For GTK and X11 we check if stderr is not a tty, which means we were
@@ -5089,8 +5145,7 @@ no_console_input(void)
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) \
-	|| defined(NEED_GUI_UPDATE_SCREEN) \
-	|| defined(PROTO)
+	|| defined(NEED_GUI_UPDATE_SCREEN)
 /*
  * Update the current window and the screen.
  */
@@ -5155,7 +5210,7 @@ gui_update_screen(void)
 }
 #endif
 
-#if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
+#if defined(FIND_REPLACE_DIALOG)
 /*
  * Get the text to use in a find/replace dialog.  Uses the last search pattern
  * if the argument is empty.
@@ -5253,26 +5308,26 @@ gui_do_findrepl(
 
     ga_init2(&ga, 1, 100);
     if (type == FRD_REPLACEALL)
-	ga_concat(&ga, (char_u *)"%s/");
+	ga_concat_len(&ga, (char_u *)"%s/", 3);
 
-    ga_concat(&ga, (char_u *)"\\V");
+    ga_concat_len(&ga, (char_u *)"\\V", 2);
     if (flags & FRD_MATCH_CASE)
-	ga_concat(&ga, (char_u *)"\\C");
+	ga_concat_len(&ga, (char_u *)"\\C", 2);
     else
-	ga_concat(&ga, (char_u *)"\\c");
+	ga_concat_len(&ga, (char_u *)"\\c", 2);
     if (flags & FRD_WHOLE_WORD)
-	ga_concat(&ga, (char_u *)"\\<");
+	ga_concat_len(&ga, (char_u *)"\\<", 2);
     // escape slash and backslash
     p = vim_strsave_escaped(find_text, (char_u *)"/\\");
     if (p != NULL)
 	ga_concat(&ga, p);
     vim_free(p);
     if (flags & FRD_WHOLE_WORD)
-	ga_concat(&ga, (char_u *)"\\>");
+	ga_concat_len(&ga, (char_u *)"\\>", 2);
 
     if (type == FRD_REPLACEALL)
     {
-	ga_concat(&ga, (char_u *)"/");
+	ga_concat_len(&ga, (char_u *)"/", 1);
 	// Escape slash and backslash.
 	// Also escape tilde and ampersand if 'magic' is set.
 	p = vim_strsave_escaped(repl_text,
@@ -5280,7 +5335,7 @@ gui_do_findrepl(
 	if (p != NULL)
 	    ga_concat(&ga, p);
 	vim_free(p);
-	ga_concat(&ga, (char_u *)"/g");
+	ga_concat_len(&ga, (char_u *)"/g", 2);
     }
     ga_append(&ga, NUL);
 
@@ -5366,7 +5421,7 @@ gui_do_findrepl(
 
 #endif
 
-#if defined(HAVE_DROP_FILE) || defined(PROTO)
+#if defined(HAVE_DROP_FILE)
 /*
  * Jump to the window at specified point (x, y).
  */

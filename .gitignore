@@ -11,6 +11,7 @@ src/objects
 src/po/big5corr
 src/po/sjiscorr
 src/types.vim
+src/tmp_make
 
 # We do need src/auto/configure.
 src/auto/config.cache
@@ -22,6 +23,8 @@ src/auto/osdef.h
 src/auto/link.log
 src/auto/link.sed
 src/auto/pathdef.c
+src/auto/wayland/*.c
+src/auto/wayland/*.h
 
 # Windows
 *.exe
@@ -64,7 +67,6 @@ src/xxd/xxd.dSYM
 *~
 *.pyc
 *.log
-src/po/vim.pot
 src/tags
 /tags
 /GPATH

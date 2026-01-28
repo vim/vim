@@ -1,6 +1,6 @@
 // VIM_TEST_SETUP let g:java_highlight_functions = 'style'
+// VIM_TEST_SETUP let g:java_highlight_generics = 1
 // VIM_TEST_SETUP set encoding=utf-8 termencoding=utf-8
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -67,8 +67,8 @@ abstract class StyleMethodsTests
 	protected static final synchronized strictfp void ascii$99_()
 	{ ascii$98_(); }
 
-	@SuppressWarnings("strictfp")
-	protected static final synchronized strictfp <α, β> Τʬ<α>[] μʭʭ$99_(
+	@SuppressWarnings("strictfp") protected
+	static final synchronized strictfp <α, β> Τʬ<α>[] μʭʭ$99_(
 			java.util.function.Function<β, Τʬ<α>[][]> ƒ)
 	{
 		return
@@ -76,6 +76,14 @@ abstract class StyleMethodsTests
 	}
 
 	public static Class<?> classLock() { return StyleMethodsTests.class; }
+
+	public <E extends Comparable<? super E>> java.util.List<E> filter(
+			java.util.function.Predicate<? super E> filter,
+			java.util.List<? extends E> cs)
+	{
+		return cs.stream().filter(filter)
+			.collect(java.util.stream.Collectors.toUnmodifiableList());
+	}
 
 	@Override @SuppressWarnings("cast")
 	public String toString() { return (String) "StyleMethodsTests"; }

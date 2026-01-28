@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 /*
  * Get the index of the current instruction.
@@ -253,8 +248,8 @@ compile_lock_unlock(
 		if (*end != '.' && *end != '[')
 		{
 		    // Push the class of the bare class variable name
-		    name = cl->class_name;
-		    len = (int)STRLEN(name);
+		    name = cl->class_name.string;
+		    len = (int)cl->class_name.length;
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
@@ -292,7 +287,7 @@ compile_lock_unlock(
 #ifdef LOG_LOCKVAR
 	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
 #endif
-	    if (compile_load(&name, name + len, cctx, FALSE, FALSE) == FAIL)
+	    if (compile_load(&name, len, name + len, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    isn = ISN_LOCKUNLOCK;
 	}
@@ -1130,8 +1125,9 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		}
 		p = skipwhite(p + 1);
-		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
-		if (lhs_type == NULL)
+		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc,
+								cctx, TRUE);
+		if (lhs_type == NULL || !valid_declaration_type(lhs_type))
 		    goto failed;
 	    }
 
@@ -1176,7 +1172,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
-			&& need_type_where(item_type, lhs_type, FALSE, -1,
+			&& need_type_where(item_type, lhs_type, 0, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
 		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_FINAL,
@@ -1251,7 +1247,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&forscope->fs_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 	// At end of ":for" scope jump back to the FOR instruction.
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -1378,7 +1374,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&whilescope->ws_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 #ifdef FEAT_PROFILE
 	// count the endwhile before jumping
@@ -2044,25 +2040,40 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		argcount = 0;
     int		defer_var_idx;
     type_T	*type = NULL;
-    int		func_idx;
+    int		func_idx = -1;
 
-    // Get a funcref for the function name.
-    // TODO: better way to find the "(".
-    paren = vim_strchr(arg, '(');
-    if (paren == NULL)
+    if (*arg == '(')
     {
-	semsg(_(e_missing_parenthesis_str), arg);
-	return NULL;
+	// a lambda function
+	if (compile_lambda(&arg, cctx) != OK)
+	    return NULL;
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
     }
-    *paren = NUL;
-    func_idx = find_internal_func(arg);
-    if (func_idx >= 0)
-	// TODO: better type
-	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
-							   &t_func_any, FALSE);
-    else if (compile_expr0(&arg, cctx) == FAIL)
-	return NULL;
-    *paren = '(';
+    else
+    {
+	// Get a funcref for the function name.
+	// TODO: better way to find the "(".
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
+	*paren = NUL;
+	func_idx = find_internal_func(arg);
+	if (func_idx >= 0)
+	    // TODO: better type
+	    generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
+		    &t_func_any, FALSE);
+	else if (compile_expr0(&arg, cctx) == FAIL)
+	    return NULL;
+	*paren = '(';
+    }
 
     // check for function type
     if (cctx->ctx_skip != SKIP_YES)
@@ -2614,7 +2625,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
 					 FALSE, FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
-	if (need_type(&t_string, lhs->lhs_member_type, FALSE,
+	if (need_type(&t_string, lhs->lhs_member_type, 0,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return NULL;
 	if (cctx->ctx_skip == SKIP_YES)
@@ -2640,7 +2651,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
     return compile_exec(line, eap, cctx);
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
     char_u *
 compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
@@ -2696,7 +2707,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    int save_flags = cmdmod.cmod_flags;
 
 	    generate_LEGACY_EVAL(cctx, p);
-	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, FALSE, -1,
+	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, 0, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		return NULL;
 	    cmdmod.cmod_flags |= CMOD_LEGACY;
@@ -2727,7 +2738,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, FALSE,
+		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, 0,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;
 	    }

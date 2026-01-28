@@ -1,8 +1,5 @@
 " Tests for register operations
 
-source check.vim
-source view_util.vim
-
 " This test must be executed first to check for empty and unset registers.
 func Test_aaa_empty_reg_test()
   call assert_fails('normal @@', 'E748:')
@@ -168,6 +165,7 @@ func Test_register_one()
 endfunc
 
 func Test_recording_status_in_ex_line()
+  set noruler
   norm qx
   redraw!
   call assert_equal('recording @x', Screenline(&lines))
@@ -178,6 +176,17 @@ func Test_recording_status_in_ex_line()
   norm q
   redraw!
   call assert_equal('', Screenline(&lines))
+  set ruler
+  norm qx
+  redraw!
+  call assert_match('recording @x\s*0,0-1\s*All', Screenline(&lines))
+  set shortmess=q
+  redraw!
+  call assert_match('recording\s*0,0-1\s*All', Screenline(&lines))
+  set shortmess&
+  norm q
+  redraw!
+  call assert_match('\s*0,0-1\s*All', Screenline(&lines))
 endfunc
 
 " Check that replaying a typed sequence does not use an Esc and following
@@ -511,6 +520,38 @@ func Test_clipboard_regs()
   bwipe!
 endfunc
 
+" When clipboard registers (* and +) are supported, check that they are
+" independent for direct writes.
+func Test_clipboard_regs_separate()
+  CheckNotGui
+  CheckFeature clipboard_working
+  CheckTwoClipboards
+
+  new
+  call setline(1, ['foo'])
+
+  " Check that various clipboard options do not result in one register
+  " affecting the other.
+  for clip in ['', 'autoselect', 'unnamed', 'unnamedplus']
+    :execute 'set clipboard=' . clip
+    " check that * does not affect +
+    let @* = 'xxx'
+    let @+ = 'xxx'
+    :normal "*yw
+    call assert_equal('foo', getreg('*'))
+    call assert_equal('xxx', getreg('+'))
+
+    " check that + does not affect *
+    let @* = 'xxx'
+    :normal "+yw
+    call assert_equal('foo', getreg('+'))
+    call assert_equal('xxx', getreg('*'))
+  endfor
+
+  set clipboard&vim
+  bwipe!
+endfunc
+
 " Test unnamed for both clipboard registers (* and +)
 func Test_clipboard_regs_both_unnamed()
   CheckNotGui
@@ -573,7 +614,7 @@ func Test_execute_register()
   new
   call feedkeys("@=\<BS>ax\<CR>y", 'xt')
   call assert_equal(['x', 'y'], getline(1, '$'))
-  close!
+  bw!
 
   " cannot execute a register in operator pending mode
   call assert_beeps('normal! c@r')
@@ -683,32 +724,70 @@ func Test_v_register()
     exec 'normal! "' .. v:register .. 'P'
   endfunc
   nnoremap <buffer> <plug>(test) :<c-u>call s:Put()<cr>
+  xnoremap <buffer> <plug>(test) :<c-u>call s:Put()<cr>
   nmap <buffer> S <plug>(test)
+  xmap <buffer> S <plug>(test)
 
   let @z = "testz\n"
   let @" = "test@\n"
 
   let s:register = ''
   call feedkeys('"_ddS', 'mx')
-  call assert_equal('test@', getline('.'))  " fails before 8.2.0929
   call assert_equal('"', s:register)        " fails before 8.2.0929
+  call assert_equal('test@', getline('.'))  " fails before 8.2.0929
+
+  let s:register = ''
+  call feedkeys('V"_dS', 'mx')
+  call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
 
   let s:register = ''
   call feedkeys('"zS', 'mx')
   call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
 
   let s:register = ''
   call feedkeys('"zSS', 'mx')
   call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
+
+  let s:register = ''
+  call feedkeys("\"z\<Ignore>S", 'mx')
+  call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
 
   let s:register = ''
   call feedkeys('"_S', 'mx')
   call assert_equal('_', s:register)
 
   let s:register = ''
+  call feedkeys('V"zS', 'mx')
+  call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
+
+  let s:register = ''
+  call feedkeys('V"zSS', 'mx')
+  call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
+
+  let s:register = ''
+  call feedkeys("V\"z\<Ignore>S", 'mx')
+  call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
+
+  let s:register = ''
+  call feedkeys('V"_S', 'mx')
+  call assert_equal('_', s:register)
+
+  let s:register = ''
   normal "_ddS
   call assert_equal('"', s:register)        " fails before 8.2.0929
   call assert_equal('test@', getline('.'))  " fails before 8.2.0929
+
+  let s:register = ''
+  normal V"_dS
+  call assert_equal('"', s:register)
+  call assert_equal('test@', getline('.'))
 
   let s:register = ''
   execute 'normal "z:call' "s:Put()\n"
@@ -1092,20 +1171,20 @@ func Test_clipboard_regs_not_working()
 endfunc
 
 " Check for W23 with a Vim with clipboard support,
-" but when the connection to the X11 server does not work
+" but when there is no available clipmethod
 func Test_clipboard_regs_not_working2()
   CheckNotMac
   CheckRunVimInTerminal
   CheckFeature clipboard
-  let display=$DISPLAY
-  unlet $DISPLAY
+  set clipmethod=
   " Run in a separate Vim instance because changing 'encoding' may cause
   " trouble for later tests.
   let lines =<< trim END
-      unlet $DISPLAY
+      set clipmethod=
       call setline(1, 'abcdefg')
       let a=execute(':norm! "+yy')
       call writefile([a], 'Xclipboard_result.txt')
+      set clipmethod&
   END
   call writefile(lines, 'XTest_clipboard', 'D')
   let buf = RunVimInTerminal('-S XTest_clipboard', {})
@@ -1113,7 +1192,7 @@ func Test_clipboard_regs_not_working2()
   call StopVimInTerminal(buf)
   let result = readfile('Xclipboard_result.txt')
   call assert_match("^\\nW23:", result[0])
-  let $DISPLAY=display
+  set clipmethod&
 endfunc
 
 " This caused use-after-free
@@ -1211,6 +1290,13 @@ func Test_insert_small_delete_linewise()
   exe ":norm! \"-cc\<C-R>-"
   call assert_equal(['foo', ''], getline(1, '$'))
   bwipe!
+endfunc
+
+func Test_writing_readonly_regs()
+  call assert_fails('let @. = "foo"', 'E354:')
+  call assert_fails('let @% = "foo"', 'E354:')
+  call assert_fails('let @: = "foo"', 'E354:')
+  call assert_fails('let @~ = "foo"', 'E354:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

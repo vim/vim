@@ -12,7 +12,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 
 #define FOR_ALL_JOBS(job) \
     for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
@@ -838,7 +838,7 @@ free_jobs_to_free_later(void)
     }
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 job_free_all(void)
 {
@@ -891,7 +891,7 @@ job_still_useful(job_T *job)
     return job_need_end_check(job) || job_channel_still_useful(job);
 }
 
-#if defined(GUI_MAY_FORK) || defined(GUI_MAY_SPAWN) || defined(PROTO)
+#if defined(GUI_MAY_FORK) || defined(GUI_MAY_SPAWN)
 /*
  * Return TRUE when there is any running job that we care about.
  */
@@ -915,7 +915,7 @@ job_any_running(void)
 # define USE_ARGV
 #endif
 
-#if !defined(USE_ARGV) || defined(PROTO)
+#if !defined(USE_ARGV)
 /*
  * Escape one argument for an external command.
  * Returns the escaped string in allocated memory.  NULL when out of memory.
@@ -1452,7 +1452,7 @@ job_start(
 	for (i = 0; i < argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat(&ga, (char_u *)"  ");
+		ga_concat_len(&ga, (char_u *)"  ", 2);
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
 	ga_append(&ga, NUL);
@@ -2019,18 +2019,18 @@ job_to_string_buf(typval_T *varp, char_u *buf)
     status = job->jv_status == JOB_FAILED ? "fail"
 		    : job->jv_status >= JOB_ENDED ? "dead"
 		    : "run";
-# ifdef UNIX
+#ifdef UNIX
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s", (long)job->jv_pid, status);
-# elif defined(MSWIN)
+#elif defined(MSWIN)
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s",
 		(long)job->jv_proc_info.dwProcessId,
 		status);
-# else
+#else
     // fall-back
     vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
-# endif
+#endif
     return buf;
 }
 

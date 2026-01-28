@@ -1,7 +1,5 @@
 " Tests for Vim buffer
 
-source check.vim
-
 " Test for the :bunload command with an offset
 func Test_bunload_with_offset()
   %bwipe!
@@ -169,6 +167,17 @@ func Test_bnext_bprev_help()
   b XHelp1
   blast   | call assert_equal(b4, bufnr())
 
+  " Cycling through help buffers works even if they aren't listed.
+  b XHelp1
+  setlocal nobuflisted
+  bnext | call assert_equal(b3, bufnr())
+  bnext | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b3, bufnr())
+  setlocal nobuflisted
+  bprev | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b3, bufnr())
+  bnext | call assert_equal(b1, bufnr())
+
   %bwipe!
 endfunc
 
@@ -214,6 +223,14 @@ func Test_buffer_error()
   call assert_fails('buffer bar', 'E94:')
   call assert_fails('buffer 0', 'E939:')
 
+  %bwipe
+endfunc
+
+func Test_bwipe_during_save()
+  set charconvert=execute('%bw!')
+  call assert_fails('write ++enc=lmao boom', 'E937:')
+
+  set charconvert&
   %bwipe
 endfunc
 
@@ -572,35 +589,294 @@ endfunc
 func Test_closed_buffer_still_in_window()
   %bw!
 
+  let s:fired = 0
   let s:w = win_getid()
   new
   let s:b = bufnr()
   setl bufhidden=wipe
-
   augroup ViewClosedBuffer
     autocmd!
-    autocmd BufUnload * ++once call assert_fails(
-          \ 'call win_execute(s:w, "' .. s:b .. 'b")', 'E1546:')
+    autocmd BufUnload * ++once let s:fired += 1 | call assert_fails(
+          \ 'call win_execute(s:w, "' .. s:b .. 'buffer")', 'E1546:')
   augroup END
   quit!
   " Previously resulted in s:b being curbuf while unloaded (no memfile).
+  call assert_equal(1, s:fired)
   call assert_equal(1, bufloaded(bufnr()))
   call assert_equal(0, bufexists(s:b))
+  %bw!
+
+  new flobby
+  let s:w = win_getid()
+  let s:b = bufnr()
+  setl bufhidden=wipe
+  augroup ViewClosedBuffer
+    autocmd!
+    autocmd BufUnload * ++once let s:fired += 1
+          \| wincmd p
+          \| call assert_notequal(s:w, win_getid())
+          \| call assert_notequal(s:b, bufnr())
+          \| execute s:b 'sbuffer'
+          \| call assert_equal(s:w, win_getid())
+          \| call assert_equal(s:b, bufnr())
+  augroup END
+  " Not a problem if 'switchbuf' switches to an existing window instead.
+  set switchbuf=useopen
+  quit!
+  call assert_equal(2, s:fired)
+  call assert_equal(0, bufexists(s:b))
+  set switchbuf&
+  %bw!
+
+  edit floob
+  let s:b = bufnr()
+  enew
+  augroup ViewClosedBuffer
+    autocmd!
+    autocmd BufWipeout * ++once let s:fired += 1
+          \| call assert_fails(s:b .. 'sbuffer | wincmd p', 'E1546:')
+          \| call assert_equal(1, winnr('$')) " :sbuffer shouldn't have split.
+  augroup END
+  " Used to be a heap UAF.
+  execute s:b 'bwipeout!'
+  call assert_equal(3, s:fired)
+  call assert_equal(0, bufexists(s:b))
+  %bw!
+
+  edit flarb
+  let s:b = bufnr()
+  enew
+  let b2 = bufnr()
+  augroup ViewClosedBuffer
+    autocmd!
+    autocmd BufWipeout * ++once let s:fired += 1
+          \| call assert_fails(s:b .. 'sbuffer', 'E1159:')
+  augroup END
+  " :sbuffer still should fail if curbuf is closing, even if it's not the target
+  " buffer (as switching buffers can fail after the split)
+  bwipeout!
+  call assert_equal(4, s:fired)
+  call assert_equal(0, bufexists(b2))
+  %bw!
 
   let s:w = win_getid()
   split
   new
   let s:b = bufnr()
-
   augroup ViewClosedBuffer
     autocmd!
-    autocmd BufWipeout * ++once call win_gotoid(s:w)
-          \| call assert_fails(s:b .. 'b', 'E1546:') | wincmd p
+    autocmd BufWipeout * ++once let s:fired += 1 | call win_gotoid(s:w)
+          \| call assert_fails(s:b .. 'buffer', 'E1546:') | wincmd p
   augroup END
   bw! " Close only this buffer first; used to be a heap UAF.
+  call assert_equal(5, s:fired)
 
-  unlet! s:w s:b
+  unlet! s:w s:b s:fired
   autocmd! ViewClosedBuffer
+  %bw!
+endfunc
+
+" Cursor position should be restored when switching to a buffer previously
+" viewed in a window, regardless of whether it's visible in another one.
+func Test_switch_to_previously_viewed_buffer()
+  set nostartofline
+  new Xviewbuf
+  call setline(1, range(1, 200))
+  let oldwin = win_getid()
+  vsplit
+
+  call cursor(100, 3)
+  call assert_equal('100', getline('.'))
+  edit Xotherbuf
+  buffer Xviewbuf
+  call assert_equal([0, 100, 3, 0], getpos('.'))
+  call assert_equal('100', getline('.'))
+
+  edit Xotherbuf
+  wincmd p
+  normal! gg10dd
+  wincmd p
+  buffer Xviewbuf
+  call assert_equal([0, 90, 3, 0], getpos('.'))
+  call assert_equal('100', getline('.'))
+
+  edit Xotherbuf
+  wincmd p
+  normal! ggP
+  wincmd p
+  buffer Xviewbuf
+  call assert_equal([0, 100, 3, 0], getpos('.'))
+  call assert_equal('100', getline('.'))
+
+  edit Xotherbuf
+  wincmd p
+  normal! 96gg10ddgg
+  wincmd p
+  buffer Xviewbuf
+  " The original cursor line was deleted, so cursor is restored to the start
+  " of the line before the deleted range.
+  call assert_equal([0, 95, 1, 0], getpos('.'))
+  call assert_equal('95', getline('.'))
+
+  normal! u
+  exe win_id2win(oldwin) .. 'close'
+  setlocal bufhidden=hide
+
+  call cursor(200, 3)
+  call assert_equal('200', getline('.'))
+  edit Xotherbuf
+  buffer Xviewbuf
+  call assert_equal([0, 200, 3, 0], getpos('.'))
+  call assert_equal('200', getline('.'))
+
+  bwipe! Xotherbuf
+  bwipe! Xviewbuf
+  set startofline&
+endfunc
+
+func Test_bdelete_skip_closing_bufs()
+  set hidden
+  let s:fired = 0
+
+  edit foo
+  edit bar
+  let s:next_new_bufnr = bufnr('$') + 1
+  augroup SkipClosing
+    autocmd!
+    " Only window and other buffer is closing.
+    " No choice but to switch to a new, empty buffer.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('bar', bufname())
+          \| bdelete
+          \| call assert_equal('', bufname())
+          \| call assert_equal(s:next_new_bufnr, bufnr())
+  augroup END
+  bdelete foo
+  call assert_equal(1, s:fired)
+  unlet! s:next_new_bufnr
+  %bw!
+
+  edit baz
+  edit bar
+  edit fleb
+  edit foo
+  augroup SkipClosing
+    autocmd!
+    " Only window, au_new_curbuf is NOT closing; should end up there.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('foo', bufname())
+          \| bwipeout
+          \| call assert_equal('bar', bufname())
+  augroup END
+  buffer baz
+  buffer foo
+  augroup SkipClosing
+    autocmd BufLeave * ++once ++nested bdelete baz
+  augroup END
+  edit bar
+  call assert_equal(2, s:fired)
+  %bw!
+
+  edit baz
+  edit bar
+  edit fleb
+  edit foo
+  augroup SkipClosing
+    autocmd!
+    " Like above, but au_new_curbuf IS closing.
+    " Should use the most recent jumplist buffer instead.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('foo', bufname())
+          \| bwipeout
+          \| call assert_equal('baz', bufname())
+  augroup END
+  buffer baz
+  buffer foo
+  augroup SkipClosing
+    autocmd BufLeave * ++once ++nested bdelete bar
+  augroup END
+  edit bar
+  call assert_equal(3, s:fired)
+  %bw!
+
+  edit foo
+  edit floob
+  edit baz
+  edit bar
+  augroup SkipClosing
+    autocmd!
+    " Only window, most recent buffer in jumplist is closing.
+    " Should switch to the next most-recent buffer in the jumplist instead.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('bar', bufname())
+          \| bdelete
+          \| call assert_equal('floob', bufname())
+  augroup END
+  buffer baz
+  buffer floob
+  buffer foo
+  buffer bar
+  bdelete foo
+  call assert_equal(4, s:fired)
+  %bw!
+
+  edit foo
+  edit baz
+  edit bar
+  edit floob
+  edit bazinga
+  augroup SkipClosing
+    autocmd!
+    " Only window, most recent jumplist buffer is gone, next most-recent is
+    " closing.  Should switch to the 3rd most-recent jumplist buffer.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('bar', bufname())
+          \| bwipeout
+          \| call assert_equal('baz', bufname())
+  augroup END
+  buffer bazinga
+  buffer baz
+  buffer floob
+  buffer foo
+  buffer bar
+  noautocmd bdelete foo
+  bdelete floob
+  call assert_equal(5, s:fired)
+  %bw!
+
+  edit foo
+  edit baz
+  edit floob
+  edit bazinga
+  edit bar
+  augroup SkipClosing
+    autocmd!
+    " Like above, but jumplist cleared, no next buffer in the buffer list and
+    " previous buffer is closing.  Should switch to the buffer before previous.
+    autocmd BufDelete * ++once let s:fired += 1
+          \| call assert_equal(1, winnr('$'))
+          \| call assert_equal('bar', bufname())
+          \| bunload
+          \| call assert_equal('floob', bufname())
+  augroup END
+  buffer bazinga
+  buffer baz
+  buffer floob
+  buffer foo
+  buffer bar
+  noautocmd bdelete foo
+  clearjumps
+  bdelete bazinga
+  call assert_equal(6, s:fired)
+
+  unlet! s:fired
+  autocmd! SkipClosing
+  set hidden&
   %bw!
 endfunc
 

@@ -61,6 +61,7 @@ void mch_delay(long msec, int flags);
 int mch_remove(char_u *name);
 void mch_breakcheck(int force);
 long_u mch_total_mem(int special);
+int mch_expandpath(garray_T *gap, char_u *path, int flags);
 int mch_wrename(WCHAR *wold, WCHAR *wnew);
 int mch_rename(const char *pszOldFile, const char *pszNewFile);
 char *default_shell(void);

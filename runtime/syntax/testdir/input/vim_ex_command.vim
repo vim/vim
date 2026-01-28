@@ -1,15 +1,15 @@
 " Vim :command, :delcommand and :comclear commands
-" VIM_TEST_SETUP highlight link vimUserCmdName Todo
-" VIM_TEST_SETUP highlight link vimDelcommandName Todo
+" VIM_TEST_SETUP hi link vimUserCmdName Todo
+" VIM_TEST_SETUP hi link vimDelcommandName Todo
 
 
-" list
+" List
 
 command
 command F
 
 
-" define
+" Define
 
 command  Foo echo "Foo"
 command! Foo echo "Foo"
@@ -53,7 +53,7 @@ def Foo2()
 enddef
 
 
-" multiline define
+" Multiline define
 
 command! -addr=lines
       \ -bang
@@ -112,12 +112,12 @@ command!
       \ echo "Bar"
 
 
-" errors
+" Errors
 
 command! -badattr=arguments -bang -badattr -nargs=* Foo echo "Foo"
 
 
-" delete
+" Delete
 
 delcommand Foo
 delcommand -buffer Foo
@@ -141,4 +141,56 @@ com Foo call system('ls')
 " Issue #17001 (Wrong vimUserCmdAttrError highlighting in vim.vim)
 
 command! -bang -nargs=* -complete=file Make AsyncRun -program=make @ <args>
+
+
+" Issue #17326 (syntax highlighting breaks with complex :s comamnd)
+
+command -range=% -nargs=? -bang Tb {
+    if "<bang>" == "!"
+        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ",         "•", "g")/ge
+    endif
+    if "<args>" == ""
+        :<line1>,<line2>!column -t
+    else
+        :<line1>,<line2>!column -t -s'<args>'
+    endif
+    if "<bang>" == "!"
+        :<line1>,<line2>s/•/ /ge
+    endif
+}
+
+command -range=% -nargs=? -bang Tb :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+
+
+" Unreported issue (:map with trailing bar in replacement text)
+
+command! Foo
+      \ map lhs rhs |
+      \ abbreviate foo bar |
+      \ echo "Foo"
+
+
+" Issue #18414 (Syntax group vimUserCmdReplacement lacking a keepend?)
+
+def Vim9Context()
+  command! MyFunction MyFunc()
+  # I am a comment
+
+  command! ToggleWrap setlocal wrap!
+  # I am a comment but I didn't get highlighted
+enddef
+
+command! MyFunction call MyFunc()
+" I am a comment
+
+command! ToggleWrap setlocal wrap!
+" I am a comment but I didn't get highlighted
+
+
+" Issue #18448 (comment for subsequent command is not highlighted)
+
+def Vim9Context()
+  command! -nargs=1 -complete=file Rg :term rg <args>
+  # command! -nargs=1 -complete=file Rg :term ++shell rg <args>
+enddef
 

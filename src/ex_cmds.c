@@ -644,6 +644,231 @@ sortend:
 }
 
 /*
+ * ":uniq".
+ */
+    void
+ex_uniq(exarg_T *eap)
+{
+    regmatch_T	regmatch;
+    int		len;
+    linenr_T	lnum;
+    long	maxlen = 0;
+    linenr_T	count = eap->line2 - eap->line1 + 1;
+    char_u	*p;
+    char_u	*s;
+    char_u	save_c = 0;		// temporary character storage
+    int		keep_only_unique = FALSE;
+    int		keep_only_not_unique = eap->forceit ? TRUE : FALSE;
+    long	deleted = 0;
+    colnr_T	start_col;
+    colnr_T	end_col;
+    int		change_occurred = FALSE; // Buffer contents changed.
+
+    // Uniq one line is really quick!
+    if (count <= 1)
+	return;
+
+    if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
+	return;
+    sortbuf1 = NULL;
+    regmatch.regprog = NULL;
+
+    sort_abort = sort_ic = sort_lc = sort_rx = sort_nr = 0;
+    sort_flt = 0;
+
+    for (p = eap->arg; *p != NUL; ++p)
+    {
+	if (VIM_ISWHITE(*p))
+	    ;
+	else if (*p == 'i')
+	    sort_ic = TRUE;
+	else if (*p == 'l')
+	    sort_lc = TRUE;
+	else if (*p == 'r')
+	    sort_rx = TRUE;
+	else if (*p == 'u')
+	{
+	    // 'u' is only valid when '!' is not given.
+	    if (!keep_only_not_unique)
+		keep_only_unique = TRUE;
+	}
+	else if (*p == '"')	// comment start
+	    break;
+	else if (eap->nextcmd == NULL && check_nextcmd(p) != NULL)
+	{
+	    eap->nextcmd = check_nextcmd(p);
+	    break;
+	}
+	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
+	{
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
+		goto uniqend;
+	    *s = NUL;
+	    // Use last search pattern if uniq pattern is empty.
+	    if (s == p + 1)
+	    {
+		if (last_search_pat() == NULL)
+		{
+		    emsg(_(e_no_previous_regular_expression));
+		    goto uniqend;
+		}
+		regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
+	    }
+	    else
+		regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
+	    if (regmatch.regprog == NULL)
+		goto uniqend;
+	    p = s;		// continue after the regexp
+	    regmatch.rm_ic = p_ic;
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), p);
+	    goto uniqend;
+	}
+    }
+
+    // Find the length of the longest line.
+    for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
+    {
+	len = ml_get_len(lnum);
+	if (maxlen < len)
+	    maxlen = len;
+
+	if (got_int)
+	    goto uniqend;
+    }
+
+    // Allocate a buffer that can hold the longest line.
+    sortbuf1 = alloc(maxlen + 1);
+    if (sortbuf1 == NULL)
+	goto uniqend;
+
+    // Delete lines according to options.
+    int match_continue = FALSE;
+    int next_is_unmatch = FALSE;
+    int is_match;
+    linenr_T done_lnum = eap->line1 - 1;
+    linenr_T delete_lnum = 0;
+    for (linenr_T i = 0; i < count; ++i)
+    {
+	linenr_T get_lnum = eap->line1 + i;
+
+	s = ml_get(get_lnum);
+	len = ml_get_len(get_lnum);
+
+	start_col = 0;
+	end_col = len;
+	if (regmatch.regprog != NULL && vim_regexec(&regmatch, s, 0))
+	{
+	    if (sort_rx)
+	    {
+		start_col = (colnr_T)(regmatch.startp[0] - s);
+		end_col = (colnr_T)(regmatch.endp[0] - s);
+	    }
+	    else
+		start_col = (colnr_T)(regmatch.endp[0] - s);
+	}
+	else
+	    if (regmatch.regprog != NULL)
+		end_col = 0;
+	if (end_col > 0)
+	{
+	    save_c = s[end_col];
+	    s[end_col] = NUL;
+	}
+
+	is_match = i > 0 ? !string_compare(&s[start_col], sortbuf1) : FALSE;
+	delete_lnum = 0;
+	if (next_is_unmatch)
+	{
+	    is_match = FALSE;
+	    next_is_unmatch = FALSE;
+	}
+
+	if (!keep_only_unique && !keep_only_not_unique)
+	{
+	    if (is_match)
+		delete_lnum = get_lnum;
+	    else
+		STRCPY(sortbuf1, &s[start_col]);
+	}
+	else if (keep_only_not_unique)
+	{
+	    if (is_match)
+	    {
+		done_lnum = get_lnum - 1;
+		delete_lnum = get_lnum;
+		match_continue = TRUE;
+	    }
+	    else
+	    {
+		if (i > 0 && !match_continue && get_lnum - 1 > done_lnum)
+		{
+		    delete_lnum = get_lnum - 1;
+		    next_is_unmatch = TRUE;
+		}
+		else if (i >= count - 1)
+		    delete_lnum = get_lnum;
+		match_continue = FALSE;
+		STRCPY(sortbuf1, &s[start_col]);
+	    }
+	}
+	else // keep_only_unique
+	{
+	    if (is_match)
+	    {
+		if (!match_continue)
+		    delete_lnum = get_lnum - 1;
+		else
+		    delete_lnum = get_lnum;
+		match_continue = TRUE;
+	    }
+	    else
+	    {
+		if (i == 0 && match_continue)
+		    delete_lnum = get_lnum;
+		match_continue = FALSE;
+		STRCPY(sortbuf1, &s[start_col]);
+	    }
+	}
+
+	if (end_col > 0)
+	    s[end_col] = save_c;
+
+	if (delete_lnum > 0)
+	{
+	    ml_delete(delete_lnum);
+	    i -= get_lnum - delete_lnum + 1;
+	    count--;
+	    deleted++;
+	    change_occurred = TRUE;
+	}
+
+	fast_breakcheck();
+	if (got_int)
+	    goto uniqend;
+    }
+
+    // Adjust marks for deleted lines and prepare for displaying.
+    mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+    msgmore(-deleted);
+
+    if (change_occurred)
+	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
+    curwin->w_cursor.lnum = eap->line1;
+    beginline(BL_WHITE | BL_FIX);
+
+uniqend:
+    vim_free(sortbuf1);
+    vim_regfree(regmatch.regprog);
+    if (got_int)
+	emsg(_(e_interrupted));
+}
+
+/*
  * :move command - move lines line1-line2 to line dest
  *
  * return FAIL for failure, OK otherwise
@@ -852,7 +1077,7 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
 
 static char_u	*prevcmd = NULL;	// the previous command
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_prev_shellcmd(void)
 {
@@ -1028,7 +1253,7 @@ do_bang(
 	msg_putchar('!');
 	msg_outtrans(newcmd);
 	msg_clr_eos();
-	windgoto(msg_row, msg_col);
+	windgoto(msg_row, cmdline_col_off + msg_col);
 
 	do_shell(newcmd, 0);
     }
@@ -1179,7 +1404,7 @@ do_filter(
     if (cmd_buf == NULL)
 	goto filterend;
 
-    windgoto((int)Rows - 1, 0);
+    windgoto((int)Rows - 1, cmdline_col_off);
     cursor_on();
 
     /*
@@ -1434,7 +1659,7 @@ do_shell(
     // This windgoto is required for when the '\n' resulted in a "delete line
     // 1" command to the terminal.
     if (!swapping_screen())
-	windgoto(msg_row, msg_col);
+	windgoto(msg_row, cmdline_col_off + msg_col);
     cursor_on();
     (void)call_shell(cmd, SHELL_COOKED | flags);
     did_check_timestamps = FALSE;
@@ -2273,6 +2498,7 @@ do_wqall(exarg_T *eap)
     buf_T	*buf;
     int		error = 0;
     int		save_forceit = eap->forceit;
+    int		save_exiting = exiting;
 
     if (eap->cmdidx == CMD_xall || eap->cmdidx == CMD_wqall)
     {
@@ -2284,9 +2510,9 @@ do_wqall(exarg_T *eap)
     FOR_ALL_BUFFERS(buf)
     {
 #ifdef FEAT_TERMINAL
-	if (exiting && term_job_running(buf->b_term))
+	if (exiting && !eap->forceit && term_job_running(buf->b_term))
 	{
-	    no_write_message_nobang(buf);
+	    no_write_message_buf(buf);
 	    ++error;
 	}
 	else
@@ -2339,7 +2565,7 @@ do_wqall(exarg_T *eap)
     {
 	if (!error)
 	    getout(0);		// exit Vim
-	not_exiting();
+	not_exiting(save_exiting);
     }
 }
 
@@ -4469,7 +4695,7 @@ ex_substitute(exarg_T *eap)
 			    msg_no_more = FALSE;
 			    msg_scroll = i;
 			    showruler(TRUE);
-			    windgoto(msg_row, msg_col);
+			    windgoto(msg_row, cmdline_col_off + msg_col);
 			    RedrawingDisabled = save_RedrawingDisabled;
 
 #ifdef USE_ON_FLY_SCROLL
@@ -5264,12 +5490,18 @@ ex_global(exarg_T *eap)
 	}
 	else
 	{
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	    inc_clip_provider();
+#endif
 #ifdef FEAT_CLIPBOARD
 	    start_global_changes();
 #endif
 	    global_exe(cmd);
 #ifdef FEAT_CLIPBOARD
 	    end_global_changes();
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	    dec_clip_provider();
 #endif
 	}
 
@@ -5354,7 +5586,7 @@ set_old_sub(char_u *val)
 }
 #endif // FEAT_VIMINFO
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_old_sub(void)
 {
@@ -5362,7 +5594,7 @@ free_old_sub(void)
 }
 #endif
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Set up for a tagpreview.
  * Makes the preview window the current window.
@@ -5646,7 +5878,7 @@ skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp)
     return p;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * List v:oldfiles in a nice way.
  */

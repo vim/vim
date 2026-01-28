@@ -1,10 +1,7 @@
 " Tests for editing the command line.
 
-source check.vim
-source screendump.vim
-source view_util.vim
-source shared.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func SetUp()
   func SaveLastScreenLine()
@@ -165,6 +162,16 @@ func Test_complete_wildmenu()
   call feedkeys(":sign un zz\<Left>\<Left>\<Left>\<Tab>\<Tab>\<C-Y> yy\<C-B>\"\<CR>", 'tx')
   call assert_equal('"sign unplace yy zz', @:)
 
+  " This used to crash
+  call feedkeys(":sign un\<Tab>\<S-Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  " Ctrl-Y is inserted literally like before 9.1.1714
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+  " Also test Ctrl-Y after Ctrl-A with selected item (the result is the same)
+  call feedkeys(":sign un\<Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+  call feedkeys(":sign un\<Tab>\<Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+
   " cleanup
   %bwipe
   set nowildmenu
@@ -179,32 +186,40 @@ func Test_wildmenu_screendump()
   call writefile(lines, 'XTest_wildmenu', 'D')
 
   " Test simple wildmenu
-  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8})
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': rows})
   call term_sendkeys(buf, ":vim\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vim9cmd') + 1)], g:test_timeout, ((rows - 1), '\<vimgrepadd\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_1', {})
 
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vim9script') + 1)], g:test_timeout, ((rows - 1), '\<vimgrepadd\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_2', {})
 
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vimgrep') + 1)], g:test_timeout, ((rows - 1), '\<vimgrepadd\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_3', {})
 
   " Looped back to the original value
   call term_sendkeys(buf, "\<Tab>\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vim') + 1)], g:test_timeout, ((rows - 1), '\<vimgrepadd\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_4', {})
 
   " Test that the wild menu is cleared properly
   call term_sendkeys(buf, " ")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vim ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_5', {})
 
   " Test that a different wildchar still works
   call term_sendkeys(buf, "\<Esc>:set wildchar=<Esc>\<CR>")
   call term_sendkeys(buf, ":vim\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':vim9cmd') + 1)], g:test_timeout, ((rows - 1), '\<vimgrepadd\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_1', {})
 
   " Double-<Esc> is a hard-coded method to escape while wildchar=<Esc>. Make
   " sure clean up is properly done in edge case like this.
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_6', {})
 
   " clean up
@@ -214,27 +229,36 @@ endfunc
 func Test_wildmenu_with_input_func()
   CheckScreendump
 
-  let buf = RunVimInTerminal('-c "set wildmenu"', {'rows': 8})
+  let rows = 8
+  let buf = RunVimInTerminal('-c "set wildmenu"', {'rows': rows})
 
   call term_sendkeys(buf, ":call input('Command? ', '', 'command')\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_1', {})
   call term_sendkeys(buf, "ech\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo') + 1)], g:test_timeout, ((rows - 1), '\<echowindow\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_2', {})
   call term_sendkeys(buf, "\<Space>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo ') + 1)], g:test_timeout, ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_3', {})
   call term_sendkeys(buf, "bufn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo bufname(') + 1)], g:test_timeout, ((rows - 1), '\<bufnr(\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_4', {})
   call term_sendkeys(buf, "\<CR>")
 
   call term_sendkeys(buf, ":set wildoptions+=pum\<CR>")
 
   call term_sendkeys(buf, ":call input('Command? ', '', 'command')\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_5', {})
   call term_sendkeys(buf, "ech\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo') + 1)], g:test_timeout, ((rows - 1), '\<echowindow\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_6', {})
   call term_sendkeys(buf, "\<Space>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo ') + 1)], g:test_timeout, ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_7', {})
   call term_sendkeys(buf, "bufn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Command? echo bufname(') + 1)], g:test_timeout, ((rows - 1), '\<bufnr(\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_input_func_8', {})
   call term_sendkeys(buf, "\<CR>")
 
@@ -251,11 +275,14 @@ func Test_redraw_in_autocmd()
   END
   call writefile(lines, 'XTest_redraw', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_redraw', {'rows': 8})
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_redraw', {'rows': rows})
   call term_sendkeys(buf, ":for i in range(3)\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':  ') + 1)])
   call VerifyScreenDump(buf, 'Test_redraw_in_autocmd_1', {})
 
   call term_sendkeys(buf, "let i =")
+  call WaitForTermCurPosAndLinesToMatch(buf, [(rows - 1), (strlen(':  let i =') + 1)], g:test_timeout, (rows, '^$'))
   call VerifyScreenDump(buf, 'Test_redraw_in_autocmd_2', {})
 
   " clean up
@@ -273,22 +300,28 @@ func Test_redrawstatus_in_autocmd()
   END
   call writefile(lines, 'XTest_redrawstatus', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_redrawstatus', {'rows': 8})
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_redrawstatus', {'rows': rows})
   " :redrawstatus is postponed if messages have scrolled
   call term_sendkeys(buf, ":echo \"one\\ntwo\\nthree\\nfour\"\<CR>")
   call term_sendkeys(buf, ":foobar")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':foobar') + 1)])
   call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_1', {})
   " it is not postponed if messages have not scrolled
   call term_sendkeys(buf, "\<Esc>:for in in range(3)")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':for in in range(3)') + 1)], g:test_timeout, ((rows - 1), ':for in in range(3)$'))
   call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_2', {})
   " with cmdheight=1 messages have scrolled when typing :endfor
   call term_sendkeys(buf, "\<CR>:endfor")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':  :endfor') + 1)], g:test_timeout, (rows, '^:  :endfor$'))
   call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_3', {})
   call term_sendkeys(buf, "\<CR>:set cmdheight=2\<CR>")
   " with cmdheight=2 messages haven't scrolled when typing :for or :endfor
   call term_sendkeys(buf, ":for in in range(3)")
+  call WaitForTermCurPosAndLinesToMatch(buf, [(rows - 1), (strlen(':for in in range(3)') + 1)], g:test_timeout, ((rows - 2), ':for in in range(3)$'))
   call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_4', {})
   call term_sendkeys(buf, "\<CR>:endfor")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':  :endfor') + 1)], g:test_timeout, ((rows - 2), '::endfor$'))
   call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_5', {})
 
   " clean up
@@ -317,37 +350,50 @@ func Test_changing_cmdheight()
   END
   call writefile(lines, 'XTest_cmdheight', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_cmdheight', {'rows': 8})
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_cmdheight', {'rows': rows})
   call term_sendkeys(buf, ":resize -3\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (4, '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_1', {})
 
   " :resize now also changes 'cmdheight' accordingly
   call term_sendkeys(buf, ":set cmdheight+=1\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (3, '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_2', {})
 
   " using more space moves the status line up
   call term_sendkeys(buf, ":set cmdheight+=1\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (3, '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_3', {})
 
   " reducing cmdheight moves status line down
   call term_sendkeys(buf, ":set cmdheight-=3\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (5, '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_4', {})
 
   " reducing window size and then setting cmdheight
   call term_sendkeys(buf, ":resize -1\<CR>")
   call term_sendkeys(buf, ":set cmdheight=1\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, ((rows - 1), '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_5', {})
+
+  " fence off identical screendumps
+  call term_sendkeys(buf, ":echo '.'\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '^\.$'))
 
   " setting 'cmdheight' works after outputting two messages
   call term_sendkeys(buf, ":call EchoTwo()\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, ((rows - 1), '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_6', {})
 
   " increasing 'cmdheight' doesn't clear the messages that need hit-enter
   call term_sendkeys(buf, ":call EchoOne()\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Press ENTER or type command to continue') + 1)])
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_7', {})
 
   " window commands do not reduce 'cmdheight' to value lower than :set by user
   call term_sendkeys(buf, "\<CR>:wincmd _\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, ((rows - 2), '\<All$'))
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_8', {})
 
   " clean up
@@ -357,7 +403,9 @@ endfunc
 func Test_cmdheight_tabline()
   CheckScreendump
 
-  let buf = RunVimInTerminal('-c "set ls=2" -c "set stal=2" -c "set cmdheight=1"', {'rows': 6})
+  let rows = 6
+  let buf = RunVimInTerminal('-c "set ls=2" -c "set stal=2" -c "set cmdheight=1"', {'rows': rows})
+  call WaitForTermCurPosAndLinesToMatch(buf, [2, 1], g:test_timeout, ((rows - 1), '\<All$'), (rows, '^$'))
   call VerifyScreenDump(buf, 'Test_cmdheight_tabline_1', {})
 
   " clean up
@@ -492,6 +540,7 @@ func Test_highlight_completion()
   call assert_equal("\"hi link Aardig NONE", getreg(':'))
 
   " A cleared group does not show up in completions.
+  hi clear Added
   hi Anders ctermfg=green
   call assert_equal(['Aardig', 'Anders'], getcompletion('A', 'highlight'))
   hi clear Aardig
@@ -767,6 +816,11 @@ func Test_getcompletion()
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
 
+  let l = getcompletion('', 'retab')
+  call assert_true(index(l, '-indentonly') >= 0)
+  let l = getcompletion('not', 'retab')
+  call assert_equal([], l)
+
   let l = getcompletion('.', 'shellcmd')
   call assert_equal(['./', '../'], filter(l, 'v:val =~ "\\./"'))
   call assert_equal(-1, match(l[2:], '^\.\.\?/$'))
@@ -823,6 +877,8 @@ func Test_getcompletion()
   call assert_equal([], l)
   let l = getcompletion('autocmd BufEnter * map <bu', 'cmdline')
   call assert_equal(['<buffer>'], l)
+  let l = getcompletion('retab! ', 'cmdline')
+  call assert_true(index(l, '-indentonly') >= 0)
 
   func T(a, c, p)
     let g:cmdline_compl_params = [a:a, a:c, a:p]
@@ -875,6 +931,18 @@ func Test_getcompletion()
   call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E866:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
+endfunc
+
+func Test_getcompletiontype()
+  call assert_fails('call getcompletiontype()', 'E119:')
+  call assert_fails('call getcompletiontype({})', 'E1174:')
+  call assert_equal('command', getcompletiontype(''))
+  call assert_equal('', getcompletiontype('dummy '))
+  call assert_equal('', getcompletiontype('ls '))
+  call assert_equal('dir_in_path', getcompletiontype('cd '))
+  call assert_equal('var', getcompletiontype('let v:n'))
+  call assert_equal('function', getcompletiontype('call tag'))
+  call assert_equal('help', getcompletiontype('help '))
 endfunc
 
 func Test_multibyte_expression()
@@ -1316,11 +1384,12 @@ endfunc
 
 func Test_cmdline_complete_expression()
   let g:SomeVar = 'blah'
-  for cmd in ['exe', 'echo', 'echon', 'echomsg']
+  for cmd in ['exe', 'echo', 'echon', 'echomsg', 'echoerr',
+        \ 'echoconsole', 'echowindow']
     call feedkeys(":" .. cmd .. " SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
-    call assert_match('"' .. cmd .. ' SomeVar', @:)
+    call assert_match('"' .. cmd .. ' SomeVar', @:, cmd)
     call feedkeys(":" .. cmd .. " foo SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
-    call assert_match('"' .. cmd .. ' foo SomeVar', @:)
+    call assert_match('"' .. cmd .. ' foo SomeVar', @:, cmd)
   endfor
   unlet g:SomeVar
 endfunc
@@ -1651,8 +1720,10 @@ func Test_cmdline_complete_various()
   " completion after a :global command
   call feedkeys(":g/a/chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"g/a/chistory', @:)
+  set wildchar=0
   call feedkeys(":g/a\\/chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"g/a\\/chist\t", @:)
+  set wildchar&
 
   " use <Esc> as the 'wildchar' for completion
   set wildchar=<Esc>
@@ -1800,7 +1871,7 @@ func Test_lnum_and_pattern_as_range()
   2/foo/yank
   call assert_equal("foo 3\n", @")
   call assert_equal(1, line('.'))
-  close!
+  bw!
 endfunc
 
 " Tests for getcmdline(), getcmdpos() and getcmdtype()
@@ -1889,9 +1960,10 @@ func Test_verbose_option()
   [SCRIPT]
   call writefile(lines, 'XTest_verbose', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_verbose', {'rows': 12})
-  call TermWait(buf, 50)
+  let rows = 12
+  let buf = RunVimInTerminal('-S XTest_verbose', {'rows': rows})
   call term_sendkeys(buf, ":DoSomething\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('Press ENTER or type command to continue') + 1)])
   call VerifyScreenDump(buf, 'Test_verbose_option_1', {})
 
   " clean up
@@ -1999,10 +2071,11 @@ func Test_cmdlineclear_tabenter()
   [SCRIPT]
 
   call writefile(lines, 'XtestCmdlineClearTabenter', 'D')
-  let buf = RunVimInTerminal('-S XtestCmdlineClearTabenter', #{rows: 10})
-  call TermWait(buf, 25)
+  let rows = 10
+  let buf = RunVimInTerminal('-S XtestCmdlineClearTabenter', #{rows: rows})
   " in one tab make the command line higher with CTRL-W -
   call term_sendkeys(buf, ":tabnew\<cr>\<C-w>-\<C-w>-gtgt")
+  call WaitForTermCurPosAndLinesToMatch(buf, [2, 1], g:test_timeout, (rows, '\<All$'))
   call VerifyScreenDump(buf, 'Test_cmdlineclear_tabenter', {})
 
   call StopVimInTerminal(buf)
@@ -2156,7 +2229,7 @@ func Test_cmdline_ctrl_g()
   " 'insertmode'
   call feedkeys(":set im\<cr>\<C-L>:\<C-\>\<C-G>12\<C-L>:set noim\<cr>", 'xt')
   call assert_equal('ab12xyc', getline(1))
-  close!
+  bw!
 endfunc
 
 " Test for 'wildmode'
@@ -2249,8 +2322,11 @@ func Wildmode_tests()
   " when using longest completion match, matches shorter than the argument
   " should be ignored (happens with :help)
   set wildmode=longest,full
-  call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"help a', @:)
+  " XXX: This test is incorrect.  ':help a*' will never yield 'help a'
+  "   because '`a' exists as a menu item.  The intent was to test a case
+  "   handled by nextwild().
+  " call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
+  " call assert_equal('"help a', @:)
   " non existing file
   call feedkeys(":e a1b2y3z4\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e a1b2y3z4', @:)
@@ -2583,6 +2659,84 @@ func Test_recalling_cmdline()
   cunmap <Plug>(save-cmdline)
 endfunc
 
+func Test_recalling_cmdline_with_mappings()
+  CheckFeature cmdline_hist
+
+  cnoremap <F2> <Cmd>let g:cmdline = getcmdline()<CR>
+  cnoremap <CR> <CR>
+  cnoremap <Up> <Up>
+  let save_a = ['a', getreg('a'), getregtype('a')]
+
+  call feedkeys(":echo 'foo'\<CR>", 'tx')
+  call assert_equal("echo 'foo'", @:)
+  call feedkeys(":echo 'bar'\<CR>", 'tx')
+  call assert_equal("echo 'bar'", @:)
+
+  call assert_equal("echo 'bar'", histget(':', -1))
+  call assert_equal("echo 'foo'", histget(':', -2))
+
+  let g:cmdline = ''
+  " This command comes completely from a mapping.
+  nmap <F3> :echo 'baz'<F2><CR>
+  call feedkeys("\<F3>", 'tx')
+  call assert_equal('baz', Screenline(&lines)->trim())
+  call assert_equal("echo 'baz'", g:cmdline)
+  call assert_equal("echo 'bar'", @:)
+  call assert_equal("echo 'bar'", histget(':', -1))
+  call assert_equal("echo 'foo'", histget(':', -2))
+
+  let g:cmdline = ''
+  " A command coming from :normal is ignored in the history even if the keys
+  " don't explicitly leave Cmdline mode.
+  exe "normal :echo 'baz'\<F2>"
+  call assert_equal("echo 'baz'", g:cmdline)
+  call assert_equal("echo 'bar'", @:)
+  call assert_equal("echo 'bar'", histget(':', -1))
+  call assert_equal("echo 'foo'", histget(':', -2))
+
+  if has('unix')
+    new
+    call setline(1, ['aaa'])
+    setlocal formatprg=cat
+    " Formatting with non-typed "gq" should not change cmdline history.
+    normal! gqgq
+    call assert_equal(":.!cat", Screenline(&lines)->trim())
+    call assert_equal("echo 'bar'", @:)
+    call assert_equal("echo 'bar'", histget(':', -1))
+    call assert_equal("echo 'foo'", histget(':', -2))
+    bwipe!
+  endif
+
+  " This case can still be considered a typed command.
+  call timer_start(1, {-> feedkeys("\<CR>", 't')})
+  call feedkeys(":\<Up>\<Up>", 'tx!')
+  call assert_equal('foo', Screenline(&lines)->trim())
+  call assert_equal("echo 'foo'", @:)
+  call assert_equal("echo 'foo'", histget(':', -1))
+  call assert_equal("echo 'bar'", histget(':', -2))
+
+  call feedkeys(":\<Up>\<F2>\<Esc>", 'tx')
+  call assert_equal("echo 'foo'", g:cmdline)
+  call assert_equal("echo 'foo'", @:)
+
+  " A command from an executed register is also ignored in the history.
+  call feedkeys(':let @a=":echo ''zzz''\<cr>"' .. "\<CR>", 'tx')
+  call feedkeys(":norm @a\<cr>", 'tx')
+  call assert_equal('zzz', Screenline(&lines)->trim())
+  call assert_equal('norm @a', @:)
+  call assert_equal('norm @a', histget(':', -1))
+  call assert_equal('let @a=":echo ''zzz''\<cr>"', histget(':', -2))
+  call assert_equal("echo 'foo'", histget(':', -3))
+  call assert_equal("echo 'bar'", histget(':', -4))
+
+  unlet g:cmdline
+  call call('setreg', save_a)
+  cunmap <F2>
+  cunmap <CR>
+  cunmap <Up>
+  nunmap <F3>
+endfunc
+
 func Test_cmd_map_cmdlineChanged()
   let g:log = []
   cnoremap <F1> l<Cmd><CR>s
@@ -2676,59 +2830,72 @@ func Test_wildmenu_pum()
   [CODE]
   call writefile(commands, 'Xtest', 'D')
 
-  let buf = RunVimInTerminal('-S Xtest', #{rows: 10})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xtest', #{rows: rows})
 
   call term_sendkeys(buf, ":sign \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_01', {})
 
   " going down the popup menu using <Down>
   call term_sendkeys(buf, "\<Down>\<Down>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign list') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_02', {})
 
   " going down the popup menu using <C-N>
   call term_sendkeys(buf, "\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign place') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_03', {})
 
   " going up the popup menu using <C-P>
   call term_sendkeys(buf, "\<C-P>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign list') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_04', {})
 
   " going up the popup menu using <Up>
   call term_sendkeys(buf, "\<Up>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign jump') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_05', {})
 
   " pressing <C-E> should end completion and go back to the original match
   call term_sendkeys(buf, "\<C-E>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign ') + 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_06', {})
 
   " pressing <C-Y> should select the current match and end completion
   call term_sendkeys(buf, "\<Tab>\<C-P>\<C-P>\<C-Y>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_07', {})
 
   " With 'wildmode' set to 'longest,full', completing a match should display
   " the longest match, the wildmenu should not be displayed.
   call term_sendkeys(buf, ":\<C-U>set wildmode=longest,full\<CR>")
-  call TermWait(buf)
   call term_sendkeys(buf, ":sign u\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_08', {})
 
   " pressing <Tab> should display the wildmenu
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
 
   " pressing <Tab> second time should select the next entry in the menu
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
 
   call term_sendkeys(buf, ":\<C-U>set wildmode=full\<CR>")
   " showing popup menu in different columns in the cmdline
   call term_sendkeys(buf, ":sign define \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define culhl=') + 1)], g:test_timeout, ((rows - 1), '\<texthl=\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_11', {})
 
   call term_sendkeys(buf, " \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define culhl= culhl=') + 1)], g:test_timeout, ((rows - 1), '\<texthl=\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_12', {})
 
   call term_sendkeys(buf, " \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define culhl= culhl= culhl=') + 1)], g:test_timeout, ((rows - 1), '\<texthl=\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_13', {})
 
   " Directory name completion
@@ -2738,77 +2905,99 @@ func Test_wildmenu_pum()
   call writefile([], 'Xnamedir/XdirA/XdirB/XfileC')
 
   call term_sendkeys(buf, "\<C-U>e Xnamedi\<Tab>\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e Xnamedir/XdirA/') + 1)], g:test_timeout, ((rows - 1), '\<XfileA\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_14', {})
 
   " Pressing <Right> on a directory name should go into that directory
   call term_sendkeys(buf, "\<Right>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e Xnamedir/XdirA/XdirB/') + 1)], g:test_timeout, ((rows - 1), '\<XfileB\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_15', {})
 
   " Pressing <Left> on a directory name should go to the parent directory
   call term_sendkeys(buf, "\<Left>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e Xnamedir/XdirA/') + 1)], g:test_timeout, ((rows - 1), '\<XfileA\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_16', {})
 
   " Pressing <C-A> when the popup menu is displayed should list all the
-  " matches but the popup menu should still remain
+  " matches but the popup menu should still remain (FIXME: the menu goes away)
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-A>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define jump list place undefine unplace') + 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_17', {})
 
   " Pressing <C-D> when the popup menu is displayed should remove the popup
   " menu
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-D>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)], g:test_timeout, ((rows - 1), '^define$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_18', {})
 
   " Pressing <S-Tab> should open the popup menu with the last entry selected
   call term_sendkeys(buf, "\<C-U>\<CR>:sign \<S-Tab>\<C-P>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_19', {})
 
   " Pressing <Esc> should close the popup menu and cancel the cmd line
   call term_sendkeys(buf, "\<C-U>\<CR>:sign \<Tab>\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '^$'), ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_20', {})
 
   " Typing a character when the popup is open, should close the popup
   call term_sendkeys(buf, ":sign \<Tab>x")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign definex') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_21', {})
 
   " When the popup is open, entering the cmdline window should close the popup
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-F>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [6, (strlen(':sign define') + 1)], g:test_timeout, (rows, '^You discovered the command-line window! You can close it with ":q"\.'))
+  call WaitFor({buf_ -> {-> term_scrape(buf, 6)->slice(1, 5)->filter({_, v -> v.fg == '#af5f00'})->len() == 4}}(buf), g:test_timeout)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_22', {})
   call term_sendkeys(buf, ":q\<CR>")
 
   " After the last popup menu item, <C-N> should show the original string
   call term_sendkeys(buf, ":sign u\<Tab>\<C-N>\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign u') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_23', {})
 
   " Use the popup menu for the command name
   call term_sendkeys(buf, "\<C-U>bu\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':bufdo') + 1)], g:test_timeout, ((rows - 1), '\<bunload\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_24', {})
 
   " Pressing the left arrow should remove the popup menu
   call term_sendkeys(buf, "\<Left>\<Left>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':bufdo') + 0)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_25', {})
 
   " Pressing <BS> should remove the popup menu and erase the last character
   call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<BS>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign defin') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_26', {})
 
   " Pressing <C-W> should remove the popup menu and erase the previous word
   call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<C-W>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_27', {})
 
   " Pressing <C-U> should remove the popup menu and erase the entire line
   call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<C-U>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_28', {})
 
   " Using <C-E> to cancel the popup menu and then pressing <Up> should recall
   " the cmdline from history
   call term_sendkeys(buf, "sign xyz\<Esc>:sign \<Tab>\<C-E>\<Up>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign xyz') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_29', {})
 
-  " Check "list" still works
+  " Check that when "longest" produces no result, "list" works
   call term_sendkeys(buf, "\<C-U>set wildmode=longest,list\<CR>")
   call term_sendkeys(buf, ":cn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cn') + 1)], g:test_timeout, ((rows - 1), '\<cnoremenu$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
+  " No-op?
+  call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
   call term_sendkeys(buf, "s")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cns') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
 
   " Tests a directory name contained full-width characters.
@@ -2819,35 +3008,41 @@ func Test_wildmenu_pum()
 
   call term_sendkeys(buf, "\<C-U>set wildmode&\<CR>")
   call term_sendkeys(buf, ":\<C-U>e Xnamedir/あいう/\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strwidth(':e Xnamedir/あいう/123') + 1)], g:test_timeout, ((rows - 1), '\<xyz\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_32', {})
 
   " Pressing <C-A> when the popup menu is displayed should list all the
   " matches and pressing a key after that should remove the popup menu
   call term_sendkeys(buf, "\<C-U>set wildmode=full\<CR>")
   call term_sendkeys(buf, ":sign \<Tab>\<C-A>x")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define jump list place undefine unplacex') + 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_33', {})
 
   " Pressing <C-A> when the popup menu is displayed should list all the
   " matches and pressing <Left> after that should move the cursor
   call term_sendkeys(buf, "\<C-U>abc\<Esc>")
   call term_sendkeys(buf, ":sign \<Tab>\<C-A>\<Left>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define jump list place undefine unplace') + 0)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_34', {})
 
   " When <C-A> displays a lot of matches (screen scrolls), all the matches
   " should be displayed correctly on the screen.
   call term_sendkeys(buf, "\<End>\<C-U>Tcmd \<Tab>\<C-A>\<Left>\<Left>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(' aaa') + 0)], g:test_timeout, (rows, '^\saaaa$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_35', {})
 
   " After using <C-A> to expand all the filename matches, pressing <Up>
   " should not open the popup menu again.
   call term_sendkeys(buf, "\<C-E>\<C-U>:cd Xnamedir/XdirA\<CR>")
   call term_sendkeys(buf, ":e \<Tab>\<C-A>\<Up>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e XdirB/ XfileB') + 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_36', {})
   call term_sendkeys(buf, "\<C-E>\<C-U>:cd -\<CR>")
 
   " After using <C-A> to expand all the matches, pressing <S-Tab> used to
   " crash Vim
   call term_sendkeys(buf, ":sign \<Tab>\<C-A>\<S-Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define jump list place undefine unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_37', {})
 
   " After removing the pum the command line is redrawn
@@ -2855,6 +3050,7 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, ":edit bar\<CR>")
   call term_sendkeys(buf, ":ls\<CR>")
   call term_sendkeys(buf, ":com\<Tab> ")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':comclear ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_38', {})
   call term_sendkeys(buf, "\<C-U>\<CR>")
 
@@ -2862,53 +3058,135 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, ":call SetupStatusline()\<CR>")
   call term_sendkeys(buf, ":si\<Tab>")
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, ((rows - 1), '^status\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_39', {})
 
   " Esc still works to abort the command when 'tabline' is set
   call term_sendkeys(buf, ":call SetupTabline()\<CR>")
   call term_sendkeys(buf, ":si\<Tab>")
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [2, 1], g:test_timeout, ((rows - 1), '^bar\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_40', {})
 
   " popup is cleared also when 'lazyredraw' is set
   call term_sendkeys(buf, ":set showtabline=1 laststatus=1 lazyredraw\<CR>")
   call term_sendkeys(buf, ":call DoFeedKeys()\<CR>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':abbreviate') + 1)], g:test_timeout, ((rows - 1), '\<abstract\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_41', {})
   call term_sendkeys(buf, "\<Esc>")
 
   " Pressing <PageDown> should scroll the menu downward
   call term_sendkeys(buf, ":sign \<Tab>\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_42', {})
   call term_sendkeys(buf, "\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_43', {})
   call term_sendkeys(buf, "\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_44', {})
   call term_sendkeys(buf, "\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_45', {})
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<Down>\<Down>\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_46', {})
 
   " Pressing <PageUp> should scroll the menu upward
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<PageUp>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign ') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_47', {})
   call term_sendkeys(buf, "\<PageUp>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_48', {})
   call term_sendkeys(buf, "\<PageUp>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign jump') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_49', {})
   call term_sendkeys(buf, "\<PageUp>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_50', {})
 
   " pressing <C-E> to end completion should work in middle of the line too
   call term_sendkeys(buf, "\<Esc>:set wildchazz\<Left>\<Left>\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':set wildcharzz') - 1)], g:test_timeout, ((rows - 1), '\<wildcharm\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_51', {})
   call term_sendkeys(buf, "\<C-E>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':set wildchazz') - 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_52', {})
 
   " pressing <C-Y> should select the current match and end completion
   call term_sendkeys(buf, "\<Esc>:set wildchazz\<Left>\<Left>\<Tab>\<C-Y>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':set wildcharzz') - 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_53', {})
 
-  call term_sendkeys(buf, "\<C-U>\<CR>")
+  call term_sendkeys(buf, "\<Esc>:set showtabline& laststatus& lazyredraw&\<CR>")
+
+  " "longest:list" shows list whether it finds a candidate or not
+  call term_sendkeys(buf, ":set wildmode=longest:list,full wildoptions&\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cn') + 1)], g:test_timeout, ((rows - 1), '\<cnoremenu$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_55', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cnewer') + 1)], g:test_timeout, ((rows - 1), '\<cnoremenu\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_56', {})
+  call term_sendkeys(buf, "\<Esc>:sign u\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)], g:test_timeout, ((rows - 1), '\<unplace$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_57', {})
+
+  " "longest:full" shows wildmenu whether it finds a candidate or not; item not selected
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest:full,full\<CR>")
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_58', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_59', {})
+  call term_sendkeys(buf, "\<Esc>:cn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cn') + 1)], g:test_timeout, ((rows - 1), '\<cnoremenu\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_60', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cnewer') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_61', {})
+
+  " If "longest,full" finds a candidate, wildmenu is not shown
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,full\<CR>")
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)], g:test_timeout, ((rows - 1), '\~\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_62', {})
+  " Subsequent wildchar shows wildmenu
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_63', {})
+
+  " 'longest' does not find candidate, and displays menu without selecting item
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,noselect\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':cn') + 1)], g:test_timeout, ((rows - 1), '\<cnoremenu\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_64', {})
+
+  " If "longest" finds no candidate in "longest,full", "full" is used
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,full\<CR>")
+  call term_sendkeys(buf, ":set wildoptions=pum\<CR>")
+  call term_sendkeys(buf, ":sign un\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
+
+  " Similarly for "longest,noselect:full"
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,noselect:full\<CR>")
+  call term_sendkeys(buf, ":sign un\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_65', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
+
+  call term_sendkeys(buf, "\<C-U>\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -2942,11 +3220,14 @@ func Test_wildmenu_with_pum_foldexpr()
       normal ggzfj
   END
   call writefile(lines, 'Xpumfold', 'D')
-  let buf = RunVimInTerminal('-S Xpumfold', #{rows: 10})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xpumfold', #{rows: rows})
   call term_sendkeys(buf, ":set\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':set') + 1)], g:test_timeout, ((rows - 1), '\<setlocal\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_with_pum_foldexpr_1', {})
 
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_with_pum_foldexpr_2', {})
 
   call StopVimInTerminal(buf)
@@ -2966,13 +3247,12 @@ func Test_wildmenu_pum_from_terminal()
   let pcmd = python .. ' -c "import sys; sys.stdout.write(sys.stdin.read())"'
   call add(cmds, "call term_start('" .. pcmd .. "')")
   call writefile(cmds, 'Xtest', 'D')
-  let buf = RunVimInTerminal('-S Xtest', #{rows: 10})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xtest', #{rows: rows})
   call term_sendkeys(buf, "\r\r\r")
-  call term_wait(buf)
   call term_sendkeys(buf, "\<C-W>:sign \<Tab>")
-  call term_wait(buf)
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+0,0-1\s\+All$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_term_01', {})
-  call term_wait(buf)
   call StopVimInTerminal(buf)
 endfunc
 
@@ -2987,34 +3267,43 @@ func Test_wildmenu_pum_odd_wildchar()
     set wildchar=<C-E>
   END
   call writefile(lines, 'XwildmenuTest', 'D')
-  let buf = RunVimInTerminal('-S XwildmenuTest', #{rows: 10})
+  let rows = 10
+  let buf = RunVimInTerminal('-S XwildmenuTest', #{rows: rows})
 
   call term_sendkeys(buf, ":\<C-E>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':!') + 1)], g:test_timeout, ((rows - 1), '^\s>\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_1', {})
 
   " <C-E> being a wildchar takes priority over its original functionality
   call term_sendkeys(buf, "\<C-E>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':#') + 1)])
+  call WaitFor({buf_ -> {-> term_scrape(buf_, 2)->slice(0, 15)->map({_, v -> v.bg}) == repeat(['#e0e0e0'], 15)}}(buf), g:test_timeout)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_2', {})
 
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'), ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_3', {})
 
   " Escape key can be wildchar too. Double-<Esc> is hard-coded to escape
   " command-line, and we need to make sure to clean up properly.
   call term_sendkeys(buf, ":set wildchar=<Esc>\<CR>")
   call term_sendkeys(buf, ":\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':!') + 1)], g:test_timeout, ((rows - 1), '^\s>\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_1', {})
 
   call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'), ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_3', {})
 
   " <C-\> can also be wildchar. <C-\><C-N> however will still escape cmdline
   " and we again need to make sure we clean up properly.
   call term_sendkeys(buf, ":set wildchar=<C-\\>\<CR>")
   call term_sendkeys(buf, ":\<C-\>\<C-\>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':!') + 1)], g:test_timeout, ((rows - 1), '^\s>\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_1', {})
 
   call term_sendkeys(buf, "\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'), ((rows - 1), '^\~\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_odd_wildchar_3', {})
 
   call StopVimInTerminal(buf)
@@ -3030,10 +3319,20 @@ func Test_wildmenu_pum_rightleft()
     set rightleft
   END
   call writefile(lines, 'Xwildmenu_pum_rl', 'D')
-  let buf = RunVimInTerminal('-S Xwildmenu_pum_rl', #{rows: 10, cols: 50})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_rl', #{rows: rows, cols: 50})
 
   call term_sendkeys(buf, ":sign \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+\~$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_rl', {})
+
+  " Behavior is the same when using 'keymap'.
+  call term_sendkeys(buf, "\<Esc>:set keymap=dvorak\<CR>")
+  " ";gul" -> "sign" when using Dvorak keymap.
+  call term_sendkeys(buf, ":\<C-^>;gul \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign define') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+\~$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_rl', {})
+  call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
 endfunc
@@ -3052,9 +3351,11 @@ func Test_wildmenu_pum_hl_nonfirst()
   END
 
   call writefile(lines, 'Xwildmenu_pum_hl_nonf', 'D')
-  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl_nonf', #{rows: 10, cols: 50})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl_nonf', #{rows: rows, cols: 50})
 
   call term_sendkeys(buf, ":MyCmd ne\<tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':MyCmd ne') + 1)], g:test_timeout, ((rows - 1), '\<aoneC\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_nonf', {})
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
@@ -3070,22 +3371,88 @@ func Test_wildmenu_pum_hl_match()
     hi PmenuMatch     ctermfg=4 ctermbg=225
   END
   call writefile(lines, 'Xwildmenu_pum_hl', 'D')
-  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: 10, cols: 50})
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: rows, cols: 50})
 
   call term_sendkeys(buf, ":sign plc\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign place') + 1)], g:test_timeout, ((rows - 1), '\<unplace\s\+$'))
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_1', {})
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_2', {})
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign plc') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_3', {})
   call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
-  call TermWait(buf)
   call term_sendkeys(buf, ":sign un\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign undefine') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_4', {})
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign unplace') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_5', {})
   call term_sendkeys(buf, "\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':sign un') + 1)])
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_6', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting of matched text in cmdline completion popup menu provided
+" by a command completed with customlist.
+func Test_wildmenu_pum_hl_match_list()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  cterm=reverse
+    hi PmenuMatch     cterm=reverse
+    command -nargs=1 -complete=customlist,ListComplete ListT echo <q-args>
+    func ListComplete(A, B, C)
+      return ['hello/world', 'hello/wonderful']->matchfuzzy(a:A)
+    endfunc
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: rows, cols: 50})
+
+  call term_sendkeys(buf, ":ListT hewo\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':ListT hello/world') + 1)], g:test_timeout, ((rows - 1), '\<hello/wonderful\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_list_1', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call term_sendkeys(buf, ":ListT hewo\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':ListT hello/world') + 1)], g:test_timeout, ((rows - 1), '\<hello/wonderful\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_list_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting of matched text in cmdline completion popup menu provided
+" by a custom 'findfunc'
+func Test_wildmenu_pum_hl_match_findfunc()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  cterm=reverse
+    hi PmenuMatch     cterm=reverse
+    func FindComplete(cmdarg, cmdcomplete)
+      return ['hello/world', 'hello/wonderful']->matchfuzzy(a:cmdarg)
+    endfunc
+    set findfunc=FindComplete
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: rows, cols: 50})
+
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':find hello/world') + 1)], g:test_timeout, ((rows - 1), '\<hello/wonderful\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_1', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':find hello/world') + 1)], g:test_timeout, ((rows - 1), '\<hello/wonderful\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_2', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
@@ -3094,12 +3461,14 @@ endfunc
 " Test for completion after a :substitute command followed by a pipe (|)
 " character
 func Test_cmdline_complete_substitute()
+  set wildchar=0
   call feedkeys(":s | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s | \t", @:)
   call feedkeys(":s/ | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/ | \t", @:)
   call feedkeys(":s/one | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/one | \t", @:)
+  set wildchar&
   call feedkeys(":s/one/ | \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"s/one/ | \t", @:)
   call feedkeys(":s/one/two | \t\<C-B>\"\<CR>", 'xt')
@@ -3192,10 +3561,10 @@ func Test_fuzzy_completion_bufname_fullpath()
   edit Xcmd/Xstate/Xfile.js
   cd Xcmd/Xstate
   enew
-  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b CmdStateFile', @:)
+  call feedkeys(":b cmdstatefile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b cmdstatefile', @:)
   set wildoptions=fuzzy
-  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call feedkeys(":b cmdstatefile\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_match('Xcmd/Xstate/Xfile.js$', @:)
   cd -
   set wildoptions&
@@ -3474,7 +3843,7 @@ func Test_fuzzy_completion_mapname()
   nmap <Plug>state :
   nmap <Plug>FendingOff :
   call feedkeys(":nmap <Plug>fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>goformat <Plug>fendoff", @:)
+  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>fendoff <Plug>goformat", @:)
   nunmap <Plug>format
   nunmap <Plug>goformat
   nunmap <Plug>TestFOrmat
@@ -3646,7 +4015,7 @@ func Test_fuzzy_completion_cmd_sort_results()
   command T123FendingOff :
   set wildoptions=fuzzy
   call feedkeys(":T123fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123goformat T123fendoff', @:)
+  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123fendoff T123goformat', @:)
   delcommand T123format
   delcommand T123goformat
   delcommand T123TestFOrmat
@@ -4128,6 +4497,7 @@ func Test_rulerformat_position()
   call term_sendkeys(buf, ":set ruler rulerformat=longish\<CR>")
   call term_sendkeys(buf, ":set laststatus=0 winwidth=1\<CR>")
   call term_sendkeys(buf, "\<C-W>v\<C-W>|\<C-W>p")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 20], g:test_timeout, (1, '|$'))
   call VerifyScreenDump(buf, 'Test_rulerformat_position', {})
 
   " clean up
@@ -4145,10 +4515,11 @@ func Test_rulerformat_function()
   END
   call writefile(lines, 'Xrulerformat_function', 'D')
 
-  let buf = RunVimInTerminal('-S Xrulerformat_function', #{rows: 2, cols: 40})
+  let rows = 2
+  let buf = RunVimInTerminal('-S Xrulerformat_function', #{rows: rows, cols: 40})
   call term_sendkeys(buf, ":set ruler rulerformat=%!TestRulerFn()\<CR>")
   call term_sendkeys(buf, ":redraw!\<CR>")
-  call term_wait(buf)
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '^\s\+10,20\s\+30%$'))
   call VerifyScreenDump(buf, 'Test_rulerformat_function', {})
 
   " clean up
@@ -4187,6 +4558,8 @@ func Test_custom_completion()
 
   call feedkeys(":Test1 \<C-R>=Check_custom_completion()\<CR>\<Esc>", "xt")
   call feedkeys(":Test2 \<C-R>=Check_customlist_completion()\<CR>\<Esc>", "xt")
+  call assert_equal('custom,CustomComplete1', getcompletiontype('Test1 '))
+  call assert_equal('customlist,CustomComplete2', getcompletiontype('Test2 '))
 
   call assert_fails("call getcompletion('', 'custom')", 'E475:')
   call assert_fails("call getcompletion('', 'customlist')", 'E475:')
@@ -4307,47 +4680,697 @@ func Test_cmdcomplete_info()
     autocmd CmdlineLeavePre * call expand('test_cmdline.*')
     autocmd CmdlineLeavePre * let g:cmdcomplete_info = string(cmdcomplete_info())
   augroup END
-  new
-  call assert_equal({}, cmdcomplete_info())
-  call feedkeys(":h echom\<cr>", "tx") " No expansion
-  call assert_equal('{}', g:cmdcomplete_info)
-  call feedkeys(":h echoms\<tab>\<cr>", "tx")
-  call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
-        \ g:cmdcomplete_info)
 
-  set wildoptions=pum
-  call feedkeys(":h echoms\<tab>\<cr>", "tx")
-  call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
-        \ g:cmdcomplete_info)
-  bw!
-  set wildoptions&
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  call assert_equal({}, cmdcomplete_info())
+
+  for trig in ["\<Tab>", "\<F8>"]
+    new
+    call assert_equal({}, cmdcomplete_info())
+    call feedkeys(":h echom\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': ''h echoms'', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+
+    set wildoptions=pum
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': ''h echoms'', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+    bw!
+    set wildoptions&
+  endfor
+
+  " wildtrigger() should not show matches when prefix is invalid
+  for pat in ["", " ", "22"]
+    call feedkeys($":{pat}\<F8>\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+  endfor
+
+  augroup test_CmdlineLeavePre | autocmd! | augroup END
+  call test_override("char_avail", 0)
+  unlet g:cmdcomplete_info
+  cunmap <F8>
 endfunc
 
 func Test_redrawtabpanel_error()
   CheckNotFeature tabpanel
   call assert_fails(':redrawtabpanel', 'E1547:')
+endfunc
+
+" Test wildcharm completion for '/' and '?' search
+func Test_search_complete()
+  CheckOption incsearch
+  set wildcharm=<c-z>
+
+  " Disable char_avail so that expansion of commandline works
+  call test_override("char_avail", 1)
+
+  func GetComplInfo()
+    let g:compl_info = cmdcomplete_info()
+    return ''
+  endfunc
+
+  new
+  cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  " Pressing <Tab> inserts tab character
+  set wildchar=0
+  call setline(1, "x\t")
+  call feedkeys("/x\t\r", "tx")
+  call assert_equal("x\t", @/)
+  set wildchar&
+
+  call setline(1, ['the', 'these', 'thethe', 'thethere', 'foobar'])
+
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
+    " Test menu first item and order
+    call feedkeys($"gg2j/t{trig}\<f9>", 'tx')
+    call assert_equal(['the', 'thethere', 'there', 'these', 'thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?t{trig}\<f9>", 'tx')
+    call assert_equal(['these', 'the', 'there', 'thethere', 'thethe'], g:compl_info.matches)
+
+    " <c-n> and <c-p> cycle through menu items
+    call feedkeys($"gg/the{trig}\<cr>", 'tx')
+    call assert_equal('these', getline('.'))
+    call feedkeys($"gg/the{trig}\<c-n>\<cr>", 'tx')
+    call assert_equal('thethe', getline('.'))
+    call feedkeys($"gg/the{trig}".repeat("\<c-n>", 5)."\<cr>", 'tx')
+    call assert_equal('these', getline('.'))
+    call feedkeys($"G?the{trig}\<cr>", 'tx')
+    call assert_equal('thethere', getline('.'))
+    call feedkeys($"G?the{trig}".repeat("\<c-p>", 5)."\<cr>", 'tx')
+    call assert_equal('thethere', getline('.'))
+
+    " Beginning of word pattern (<) retains '<'
+    call feedkeys($"gg2j/\\<t{trig}\<f9>", 'tx')
+    call assert_equal(['\<thethere', '\<the', '\<these', '\<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?\\<t{trig}\<f9>", 'tx')
+    call assert_equal(['\<these', '\<the', '\<thethere', '\<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j/\\v<t{trig}\<f9>", 'tx')
+    call assert_equal(['\v<thethere', '\v<the', '\v<these', '\v<thethe'], g:compl_info.matches)
+    call feedkeys($"gg2j?\\v<th{trig}\<f9>", 'tx')
+    call assert_equal(['\v<these', '\v<the', '\v<thethere', '\v<thethe'], g:compl_info.matches)
+  endfor
+
+  " Ctrl-G goes from one match to the next, after menu is opened
+  set incsearch
+  " first match
+  call feedkeys("gg/the\<c-z>\<c-n>\<c-g>\<cr>", 'tx')
+  call assert_equal('thethe', getline('.'))
+  " second match
+  call feedkeys("gg/the\<c-z>\<c-n>\<c-g>\<c-g>\<cr>", 'tx')
+  call assert_equal('thethere', getline('.'))
+  call assert_equal([0, 0, 0, 0], getpos('"'))
+
+  " CTRL-T goes to the previous match
+  " first match
+  call feedkeys("G?the\<c-z>".repeat("\<c-n>", 2)."\<c-t>\<cr>", 'tx')
+  call assert_equal('thethere', getline('.'))
+  " second match
+  call feedkeys("G?the\<c-z>".repeat("\<c-n>", 2).repeat("\<c-t>", 2)."\<cr>", 'tx')
+  call assert_equal('thethe', getline('.'))
+
+  " wild menu is cleared properly
+  call feedkeys("/the\<c-z>\<esc>/\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("/the\<c-z>\<c-e>\<f9>", 'tx')
+  call assert_equal([], g:compl_info.matches)
+
+  " Do not expand if offset is present (/pattern/offset and ?pattern?offset)
+  for pat in ["/", "/2", "/-3", "\\/"]
+    call feedkeys("/the" . pat . "\<c-z>\<f9>", 'tx')
+    call assert_equal({}, g:compl_info)
+  endfor
+  for pat in ["?", "?2", "?-3", "\\\\?"]
+    call feedkeys("?the" . pat . "\<c-z>\<f9>", 'tx')
+    call assert_equal({}, g:compl_info)
+  endfor
+
+  " Last letter of match is multibyte
+  call setline('$', ['theΩ'])
+  call feedkeys("gg/th\<c-z>\<f9>", 'tx')
+  call assert_equal(['these', 'thethe', 'the', 'thethere', 'there', 'theΩ'],
+        \ g:compl_info.matches)
+
+  " Identical words
+  call setline(1, ["foo", "foo", "foo", "foobar"])
+  call feedkeys("gg/f\<c-z>\<f9>", 'tx')
+  call assert_equal(['foo', 'foobar'], g:compl_info.matches)
+
+  " Exact match
+  call feedkeys("/foo\<c-z>\<f9>", 'tx')
+  call assert_equal(['foo', 'foobar'], g:compl_info.matches)
+
+  " Match case correctly
+  %d
+  call setline(1, ["foobar", "Foobar", "fooBAr", "FooBARR"])
+
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['fooBAr', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("gg/\\cFo\<tab>\<f9>", 'tx')
+  call assert_equal(['\cFoobar', '\cFooBAr', '\cFooBARR'], g:compl_info.matches)
+
+  set ignorecase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'fooBAr', 'fooBARR'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBAr', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal(['FOobar', 'FOoBAr', 'FOoBARR'], g:compl_info.matches)
+  call feedkeys("gg/\\Cfo\<tab>\<f9>", 'tx')
+  call assert_equal(['\CfooBAr', '\Cfoobar'], g:compl_info.matches)
+
+  set smartcase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'fooBAr', 'foobarr'], g:compl_info.matches)
+  call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/FO\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+
+  " Issue #17680 (getcompletion() does not support search completion)
+  let result = getcompletion('%s/', 'cmdline')
+  call assert_equal([], result)
+
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal(['foobar', 'foobarr'], g:compl_info.matches)
+  call feedkeys("gg/\\Cfo\<tab>\<f9>", 'tx')
+  call assert_equal(['\CfooBAr', '\Cfoobar'], g:compl_info.matches)
+  call feedkeys("gg/\\cFo\<tab>\<f9>", 'tx')
+  call assert_equal(['\cFoobar', '\cFooBAr', '\cFooBARR'], g:compl_info.matches)
+
+  set wildoptions+=exacttext ignorecase& smartcase&
+  call feedkeys("gg/F\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal([], g:compl_info.matches)
+  call feedkeys("gg/r\\n.\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar', 'r\nfooBAr', 'r\nFooBARR'], g:compl_info.matches)
+
+  set ignorecase
+  call feedkeys("gg/F\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/R\\n.\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar', 'r\nfooBAr', 'r\nFooBARR'], g:compl_info.matches)
+
+  set smartcase
+  call feedkeys("gg/f\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/foob\<tab>\<f9>", 'tx')
+  call assert_equal(['Foobar', 'fooBAr', 'FooBARR', 'foobar'], g:compl_info.matches)
+  call feedkeys("gg/R\\n.\<tab>\<f9>", 'tx')
+  call assert_equal({}, g:compl_info)
+  call feedkeys("gg/r\\n.*\\n\<tab>\<f9>", 'tx')
+  call assert_equal(['r\nFoobar\nfooBAr', 'r\nfooBAr\nFooBARR'], g:compl_info.matches)
+
+  " Issue #17858
+  %d
+  set wildcharm=0 incsearch& ignorecase& smartcase& wildoptions&
+  setlocal iskeyword=!-~,192-255
+  let l:lines = ['th=~/foo', 'these', 'tho']
+  call setline(1, l:lines)
+  call feedkeys("G/th\<tab>\<f9>", 'tx')
+  call assert_equal(l:lines, g:compl_info.matches)
+
+  bw!
+  call test_override("char_avail", 0)
+  delfunc GetComplInfo
+  unlet! g:compl_info
+endfunc
+
+func Test_search_wildmenu_screendump()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call test_override('alloc_lines', 1)
+    set wildmenu wildcharm=<f5>
+    call setline(1, ['the', 'these', 'the', 'foobar', 'thethe', 'thethere'])
+  [SCRIPT]
+  call writefile(lines, 'XTest_search_wildmenu', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': rows})
+
+  " Pattern has newline at EOF
+  call term_sendkeys(buf, "gg2j/e\\n\<f5>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/e\nfoobar') + 1)], g:test_timeout, ((rows - 1), '\<e\\nthe\s\+$'))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_1', {})
+
+  " longest:full
+  call term_sendkeys(buf, "\<esc>:set wim=longest,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/the') + 1)])
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_2', {})
+
+  " list:full
+  call term_sendkeys(buf, "\<esc>:set wim=list,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/t') + 1)], g:test_timeout, ((rows - 1), '\<there$'))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_3', {})
+
+  " noselect:full
+  call term_sendkeys(buf, "\<esc>:set wim=noselect,full\<cr>")
+  call term_sendkeys(buf, "gg/t\<f5>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/t') + 1)], g:test_timeout, ((rows - 1), '\<there\s\+$'))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_4', {})
+
+  " Multiline
+  call term_sendkeys(buf, "\<esc>gg/t.*\\n.*\\n.\<tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/t.*\n.*\n.') + 1)], g:test_timeout, ((rows - 1), escape('\<t.*\n.*\n.he\s\+$', '.*n')))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_5', {})
+
+  " 'incsearch' is redrawn after accepting completion
+  call term_sendkeys(buf, "\<esc>:set wim=full\<cr>")
+  call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(buf, "/th")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/th') + 1)])
+  call WaitFor({buf_ -> {-> term_scrape(buf, 6)->filter({_, v -> v.bg == '#ffff40'})->len() == 4}}(buf), g:test_timeout)
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_6', {})
+  call term_sendkeys(buf, "\<f5>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/these') + 1)], g:test_timeout, ((rows - 1), '\<there\s\+$'))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_7', {})
+  call term_sendkeys(buf, "\<c-n>\<c-y>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/the') + 1)])
+  call WaitFor({buf_ -> {-> term_scrape(buf, 6)->filter({_, v -> v.bg == '#ffff40'})->len() == 6}}(buf), g:test_timeout)
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_8', {})
+
+  " 'incsearch' highlight is restored after dismissing popup (Ctrl_E)
+  call term_sendkeys(buf, "\<esc>:set wop=pum is hls&\<cr>")
+  call term_sendkeys(buf, "gg/th\<tab>\<c-e>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/th') + 1)])
+  call WaitFor({buf_ -> {-> term_scrape(buf, 2)->filter({_, v -> term_getattr(v.attr, 'reverse')})->len() == 2}}(buf), g:test_timeout)
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_9', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #17858
+func Test_search_wildmenu_iminsert()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wop=pum imi=1
+    setlocal iskeyword=!-~,192-255
+    call setline(1, [
+          \ "global toggle global-local global/local glyphs toggles English",
+          \ "accordingly. toggled accordingly single-byte",
+          \ ])
+    call cursor(2, 42)
+  [SCRIPT]
+  call writefile(lines, 'XTest_search_wildmenu', 'D')
+  let rows = 12
+  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': rows})
+
+  call term_sendkeys(buf, "/gl\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('/global') + 1)], g:test_timeout, ((rows - 1), '\<gle-byte\s\+$'))
+  call VerifyScreenDump(buf, 'Test_search_wildmenu_iminsert', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test wildcharm completion for :s and :g with range
+func Test_range_complete()
+  set wildcharm=<c-z>
+
+  " Disable char_avail so that expansion of commandline works
+  call test_override("char_avail", 1)
+
+  func GetComplInfo()
+    let g:compl_info = cmdcomplete_info()
+    return ''
+  endfunc
+  new
+  cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  call setline(1, ['ab', 'ba', 'ca', 'af'])
+
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
+    call feedkeys($":%s/a{trig}\<f9>", 'xt')
+    call assert_equal(['ab', 'a', 'af'], g:compl_info.matches)
+    call feedkeys($":vim9cmd :%s/a{trig}\<f9>", 'xt')
+    call assert_equal(['ab', 'a', 'af'], g:compl_info.matches)
+  endfor
+
+  call feedkeys(":%s/\<c-z>\<f9>", 'xt')
+  call assert_equal({}, g:compl_info)
+
+  for cmd in ['s', 'g']
+    call feedkeys($":1,2{cmd}/a\<c-z>\<f9>", 'xt')
+    call assert_equal(['ab', 'a'], g:compl_info.matches)
+  endfor
+
+  1
+  call feedkeys(":.,+2s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['ab', 'a'], g:compl_info.matches)
+
+  /f
+  call feedkeys(":1,s/b\<c-z>\<f9>", 'xt')
+  call assert_equal(['b', 'ba'], g:compl_info.matches)
+
+  /c
+  call feedkeys(":\\?,4s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af'], g:compl_info.matches)
+
+  %s/c/c/
+  call feedkeys(":1,\\&s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['ab', 'a'], g:compl_info.matches)
+
+  3
+  normal! ma
+  call feedkeys(":'a,$s/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af'], g:compl_info.matches)
+
+  " Line number followed by a search pattern ([start]/pattern/[command])
+  call feedkeys("3/a\<c-z>\<f9>", 'xt')
+  call assert_equal(['a', 'af', 'ab'], g:compl_info.matches)
+
+  bw!
+  call test_override("char_avail", 0)
+  delfunc GetComplInfo
+  unlet! g:compl_info
+  set wildcharm=0
+endfunc
+
+" With 'noselect' in 'wildmode', ensure that the popup menu (pum) does not retain
+" its scroll position after reopening. The menu should open showing the top items,
+" regardless of previous scrolling.
+func Test_pum_scroll_noselect()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command! -nargs=* -complete=customlist,TestFn TestCmd echo
+    func TestFn(a, b, c)
+      return map(range(1, 50), 'printf("a%d", v:val)')
+    endfunc
+    set wildmode=noselect,full
+    set wildoptions=pum
+    set wildmenu
+    set noruler
+  [SCRIPT]
+  call writefile(lines, 'XTest_pum_scroll', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S XTest_pum_scroll', {'rows': rows})
+
+  call term_sendkeys(buf, ":TestCmd \<tab>" . repeat("\<c-n>", 20))
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TestCmd a20') + 1)], g:test_timeout, ((rows - 1), '\<a23\s\+$'))
+  call VerifyScreenDump(buf, 'Test_pum_scroll_noselect_1', {})
+
+  call term_sendkeys(buf, "\<esc>:TestCmd \<tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TestCmd ') + 1)], g:test_timeout, ((rows - 1), '\<a9\s\+$'))
+  call VerifyScreenDump(buf, 'Test_pum_scroll_noselect_2', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" CmdlineChanged shouldn't trigger if command-line text is unchanged
+func Test_cmdline_changed()
+  let g:cmdchg_count = 0
+  let g:cmdprefix = ''
+  augroup test_CmdlineAugrp | autocmd!
+    autocmd CmdlineChanged * if getcmdline() =~ g:cmdprefix | let g:cmdchg_count += 1 | endif
+  augroup END
+
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  new
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+  set wildmenu
+  set wildmode=full
+
+  let g:cmdprefix = 'echomsg'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":echomsg{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once only for 'g', not again for <Tab>
+  endfor
+
+  let g:cmdprefix = 'echo'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " (once for 'h' and) once for 'o'
+  endfor
+
+  set wildmode=noselect,full
+  let g:cmdprefix = 'ech'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once for 'h', not again for <tab>
+  endfor
+
+  command! -nargs=+ -complete=custom,TestComplete Test echo
+
+  func TestComplete(arglead, cmdline, cursorpos)
+    return "AbC"
+  endfunc
+
+  set wildoptions=fuzzy wildmode=full
+  let g:cmdprefix = 'Test \(AbC\|abc\)'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":Test abc{trig}", "tx")
+    call assert_equal(2, g:cmdchg_count) " once for 'c', again for 'AbC'
+  endfor
+
+  bw!
+  set wildmode& wildmenu& wildoptions&
+  augroup test_CmdlineAugrp | autocmd! | augroup END
+  unlet g:cmdchg_count
+  unlet g:cmdprefix
+  delfunc TestComplete
+  delcommand Test
+  call test_override("char_avail", 0)
+endfunc
+
+func Test_wildtrigger_update_screen()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command! -nargs=* -complete=customlist,TestFn TestCmd echo
+    func TestFn(cmdarg, b, c)
+      if a:cmdarg == 'ax'
+        return []
+      else
+        return map(range(1, 5), 'printf("abc%d", v:val)')
+      endif
+    endfunc
+    set wildmode=noselect,full
+    set wildoptions=pum
+    set wildmenu
+    cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildtrigger', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S XTest_wildtrigger', {'rows': rows})
+
+  call term_sendkeys(buf, ":TestCmd a\<F8>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TermCmd a') + 1)], g:test_timeout, ((rows - 1), '\<abc5\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_1', {})
+
+  " Typing a character when pum is open does not close the pum window
+  " This is needed to prevent pum window from flickering during
+  " ':h cmdline-autocompletion'.
+  call term_sendkeys(buf, "x")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TermCmd ax') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_2', {})
+
+  " pum is closed when no completion candidates are available
+  call term_sendkeys(buf, "\<F8>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TermCmd ax') + 1)], g:test_timeout, ((rows - 1), '^\~\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_3', {})
+
+  call term_sendkeys(buf, "\<BS>\<F8>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TermCmd a') + 1)], g:test_timeout, ((rows - 1), '\<abc5\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_1', {})
+
+  call term_sendkeys(buf, "x")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':TermCmd ax') + 1)])
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_2', {})
+
+  " pum is closed when leaving cmdline mode
+  call term_sendkeys(buf, "\<Esc>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [1, 1], g:test_timeout, (rows, '\<All$'), ((rows - 1), '^\~\s\+$'))
+  call VerifyScreenDump(buf, 'Test_wildtrigger_update_screen_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #17969: With 'noselect', the popup menu should appear next to the
+" environment variable being expanded. Disable 'showtail' when completing
+" file paths when 'noselect' is present.
+func Test_noselect_expand_env_var()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildoptions=pum wildmode=noselect,full
+    let $TESTDIR = 'a/b'
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu', 'D')
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': rows})
+
+  call mkdir('a/b/c', 'pR')
+  call writefile(['asdf'], 'a/b/fileXname1')
+  call writefile(['foo'], 'a/b/fileXname2')
+
+  call term_sendkeys(buf, ":e $TESTDIR/\<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e $TESTDIR/') + 1)], g:test_timeout, ((rows - 1), '\<a/b/fileXname2\s\+$'))
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e a/b/c/') + 1)], g:test_timeout, ((rows - 1), '\<a/b/fileXname2\s\+$'))
+  call VerifyScreenDump(buf, 'Test_expand_env_var_2', {})
+
+  call term_sendkeys(buf, "\<C-P>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':e $TESTDIR/') + 1)], g:test_timeout, ((rows - 1), '\<a/b/fileXname2\s\+$'))
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue #18035: long lines should not get listed twice in the menu when
+" 'wildmode' contains 'noselect'
+func Test_long_line_noselect()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildoptions=pum wildmode=noselect,full
+    command -nargs=1 -complete=custom,Entries DoubleEntry echo
+    func Entries(a, b, c)
+      return 'loooooooooooooooong quite loooooooooooong, really loooooooooooong, probably too looooooooooooooooooooooooooong entry'
+    endfunc
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu', 'D')
+  let rows = 8
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': rows, 'cols': 60})
+
+  call term_sendkeys(buf, ":DoubleEntry \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':DoubleEntry ') + 1)], g:test_timeout, ((rows - 1), '\<rea>$'))
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:DoubleEntry \<Tab>\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen('ong entry') + 1)], g:test_timeout, ((rows - 3), '\<rea>$'))
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_2', {})
+
+  call term_sendkeys(buf, "\<Esc>:DoubleEntry \<Tab>\<C-N>\<C-N>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [(rows - 2), (strlen(':DoubleEntry ') + 1)], g:test_timeout, ((rows - 3), '\<rea>$'))
+  call VerifyScreenDump(buf, 'Test_long_line_noselect_3', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_CmdlineLeave_vchar_keys()
+  func OnLeave()
+    let g:leave_key = v:char
+  endfunction
+
+  new
+  for event in ["CmdlineLeavePre", "CmdlineLeave"]
+    exec "autocmd" event "* :call OnLeave()"
+    for key in ["\<C-C>", "\<Esc>", "\<CR>"]
+      call feedkeys($":echo{key}", 'tx')
+      call assert_equal(key, g:leave_key)
+    endfor
+    exec "autocmd!" event
+  endfor
+  bwipe!
+  delfunc OnLeave
+  unlet g:leave_key
+endfunc
+
+" Skip wildmenu during history navigation via Up/Down keys
+func Test_skip_wildtrigger_hist_navigation()
+  call test_override("char_avail", 1)
+  set wildmenu wildmode=noselect,full
+  augroup TestSkipWildtrigger | autocmd!
+    autocmd CmdlineChanged : call wildtrigger()
+  augroup END
+  cnoremap <expr> <Up>   wildmenumode() ? "\<C-E>\<Up>"   : "\<Up>"
+  cnoremap <expr> <Down> wildmenumode() ? "\<C-E>\<Down>" : "\<Down>"
+
+  call feedkeys(":echom \"foo\"", "tx")
+  call feedkeys(":echom \"foobar\"", "tx")
+
+  call feedkeys(":ech\<Up>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foobar"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foo"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<Down>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"echom "foobar"', @:)
+  call feedkeys(":ech\<Up>\<Up>\<Down>\<Down>\<C-B>\"\<CR>", "tx")
+  call assert_equal('"ech', @:)
+
+  call test_override("char_avail", 0)
+  set wildmenu& wildmode& wildoptions&
+  augroup TestSkipWildtrigger | autocmd! | augroup END
+  cunmap <Up>
+  cunmap <Down>
+endfunc
+
+" Issue 18298: wildmenu should be dismissed after wildtrigger and whitespace
+func Test_update_screen_after_wildtrigger()
+  CheckScreendump
+  let lines =<< trim [SCRIPT]
+    call test_override("char_avail", 1)
+    set wildmode=noselect:lastused,full wildmenu wildoptions=pum
+    autocmd CmdlineChanged : if getcmdcompltype() != 'shellcmd' | call wildtrigger() | endif
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildtrigger', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S XTest_wildtrigger', {'rows': rows})
+
+  call term_sendkeys(buf, ":term foo")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':term foo') + 1)])
+  call VerifyScreenDump(buf, 'Test_update_screen_wildtrigger_1', {})
+
+  call term_sendkeys(buf, "\<esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_breaklist_args_fails()
+  call assert_match('No breakpoints defined', execute(':breaklist'))
+  call assert_fails(':breaklist extra', 'E488:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

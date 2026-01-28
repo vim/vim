@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 #ifdef VMS
 # include <float.h>
@@ -97,6 +97,7 @@ static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
+static void f_items(typval_T *argvars, typval_T *rettv);
 static void f_keytrans(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
@@ -228,7 +229,7 @@ check_arg_type(
 	type_T		*actual,
 	argcontext_T	*context)
 {
-    return need_type(actual, expected, FALSE,
+    return need_type(actual, expected, 0,
 	    context->arg_idx - context->arg_count, context->arg_idx + 1,
 	    context->arg_cctx, FALSE, FALSE);
 }
@@ -242,7 +243,7 @@ check_arg_type_mod(
 	type_T		*actual,
 	argcontext_T	*context)
 {
-    if (need_type(actual, expected, FALSE,
+    if (need_type(actual, expected, 0,
 	    context->arg_idx - context->arg_count, context->arg_idx + 1,
 	    context->arg_cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
@@ -726,10 +727,11 @@ arg_list_tuple_dict_blob_or_string(
 	    || type->tt_type == VAR_STRING
 	    || type_any_or_unknown(type))
 	return OK;
-    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+
+    semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr),
+						 context->arg_idx + 1);
     return FAIL;
 }
-
 
 /*
  * Check second argument of map(), filter(), foreach().
@@ -1248,14 +1250,14 @@ static argcheck_T arg1_list_number[] = {arg_list_number};
 static argcheck_T arg1_reverse[] = {arg_reverse};
 static argcheck_T arg1_list_or_tuple_or_dict[] = {arg_list_or_tuple_or_dict};
 static argcheck_T arg1_list_string[] = {arg_list_string};
-static argcheck_T arg1_string_list_tuple_or_dict[] = {arg_string_list_tuple_or_dict};
+static argcheck_T arg1_list_tuple_dict_blob_or_string[] = {arg_list_tuple_dict_blob_or_string};
 static argcheck_T arg1_lnum[] = {arg_lnum};
 static argcheck_T arg1_number[] = {arg_number};
 static argcheck_T arg1_string[] = {arg_string};
 static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
-static argcheck_T arg2_any_buffer[] = {arg_any, arg_buffer};
+static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1298,6 +1300,7 @@ static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_nu
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
 static argcheck_T arg2_list_or_tuple_string[] = {arg_list_or_tuple, arg_string};
+static argcheck_T arg3_any_buffer_bool[] = {arg_any, arg_buffer, arg_bool};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
@@ -1798,6 +1801,30 @@ ret_remove(int argcount,
 }
 
     static type_T *
+ret_max_min(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	type_T *t = argtypes[0].type_decl;
+	if (t->tt_type == VAR_LIST || t->tt_type == VAR_DICT)
+	    t = t->tt_member;
+	else
+	    t = &t_any;
+	*decl_type = t;
+
+	t = argtypes[0].type_curr;
+	if (t->tt_type == VAR_LIST || t->tt_type == VAR_DICT)
+	    t = t->tt_member;
+	else
+	    t = &t_any;
+	return t;
+    }
+    return &t_any;
+}
+
+    static type_T *
 ret_getreg(int argcount,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type)
@@ -1908,7 +1935,7 @@ typedef struct
 # define TERM_FUNC(name) NULL
 #endif
 
-static funcentry_T global_functions[] =
+static const funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_any,	    f_abs},
@@ -2086,7 +2113,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_charcol},
     {"charidx",		2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_charidx},
-    {"chdir",		1, 1, FEARG_1,	    arg1_string,
+    {"chdir",		1, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_chdir},
     {"cindent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_cindent},
@@ -2104,8 +2131,6 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_complete_check},
     {"complete_info",	0, 1, FEARG_1,	    arg1_list_string,
 			ret_dict_any,	    f_complete_info},
-    {"complete_match",	0, 2, 0,	    NULL,
-			ret_list_any,	    f_complete_match},
     {"confirm",		1, 4, FEARG_1,	    arg4_string_string_number_string,
 			ret_number,	    f_confirm},
     {"copy",		1, 1, FEARG_1,	    NULL,
@@ -2280,6 +2305,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcmdwintype},
     {"getcompletion",	2, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_list_string,    f_getcompletion},
+    {"getcompletiontype", 1, 1, FEARG_1,    arg1_string,
+			ret_string,	    f_getcompletiontype},
     {"getcurpos",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_getcurpos},
     {"getcursorcharpos", 0, 1, FEARG_1,	    arg1_number,
@@ -2430,7 +2457,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_string_list_tuple_or_dict,
+    {"items",		1, 1, FEARG_1,	    arg1_list_tuple_dict_blob_or_string,
 			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
@@ -2478,7 +2505,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_list2str},
     {"list2tuple",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_tuple_any,	    f_list2tuple},
-    {"listener_add",	1, 2, FEARG_2,	    arg2_any_buffer,
+    {"listener_add",	1, 3, FEARG_2,	    arg3_any_buffer_bool,
 			ret_number,	    f_listener_add},
     {"listener_flush",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_void,	    f_listener_flush},
@@ -2537,7 +2564,7 @@ static funcentry_T global_functions[] =
     {"matchstrpos",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_any,	    f_matchstrpos},
     {"max",		1, 1, FEARG_1,	    arg1_list_or_tuple_or_dict,
-			ret_number,	    f_max},
+			ret_max_min,	    f_max},
     {"menu_info",	1, 2, FEARG_1,	    arg2_string,
 			ret_dict_any,
 #ifdef FEAT_MENU
@@ -2547,7 +2574,7 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"min",		1, 1, FEARG_1,	    arg1_list_or_tuple_or_dict,
-			ret_number,	    f_min},
+			ret_max_min,	    f_min},
     {"mkdir",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number_bool,    f_mkdir},
     {"mode",		0, 1, FEARG_1,	    arg1_bool,
@@ -2623,9 +2650,11 @@ static funcentry_T global_functions[] =
     {"popup_settext",	2, 2, FEARG_1,	    arg2_number_string_or_list,
 			ret_void,	    PROP_FUNC(f_popup_settext)},
     {"popup_show",	1, 1, FEARG_1,	    arg1_number,
-			ret_void,	    PROP_FUNC(f_popup_show)},
+			ret_number,	    PROP_FUNC(f_popup_show)},
     {"pow",		2, 2, FEARG_1,	    arg2_float_or_nr,
 			ret_float,	    f_pow},
+    {"preinserted",	0, 0, 0,	    NULL,
+			ret_number_bool,    f_preinserted},
     {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	    arg119_printf,
@@ -2700,6 +2729,10 @@ static funcentry_T global_functions[] =
 			ret_list_dict_any,  f_readdirex},
     {"readfile",	1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_list_string,    f_readfile},
+    {"redraw_listener_add", 1, 1, FEARG_1,  arg1_dict_any,
+			ret_number,	    f_redraw_listener_add},
+    {"redraw_listener_remove", 1, 1, FEARG_1, arg1_number,
+			ret_void,	    f_redraw_listener_remove},
     {"reduce",		2, 3, FEARG_1,	    arg23_reduce,
 			ret_any,	    f_reduce},
     {"reg_executing",	0, 0, 0,	    NULL,
@@ -2814,7 +2847,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_settagstack},
     {"setwinvar",	3, 3, FEARG_3,	    arg3_number_string_any,
 			ret_void,	    f_setwinvar},
-    {"sha256",		1, 1, FEARG_1,	    arg1_string,
+    {"sha256",		1, 1, FEARG_1,	    arg1_string_or_blob,
 			ret_string,
 #ifdef FEAT_CRYPT
 	    f_sha256
@@ -3112,6 +3145,10 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
+    {"uri_decode",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_uridecode},
+    {"uri_encode",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_uriencode},
     {"utf16idx",	2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_utf16idx},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
@@ -3124,6 +3161,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
+    {"wildtrigger",	0, 0, 0,	    NULL,
+			ret_void,	    f_wildtrigger},
     {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
 			ret_string,	    f_win_execute},
     {"win_findbuf",	1, 1, FEARG_1,	    arg1_number,
@@ -3326,7 +3365,7 @@ internal_func_check_arg_types(
 		return FAIL;
     }
 
-    argcheck_T	*argchecks = global_functions[idx].f_argcheck;
+    const argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
     if (argchecks == NULL)
 	return OK;
@@ -3944,6 +3983,17 @@ f_call(typval_T *argvars, typval_T *rettv)
 	{
 	    emsg_funcname(e_unknown_function_str, func);
 	    return;
+	}
+	if (*p == '<')
+	{
+	    // generic function
+	    char_u *s = append_generic_func_type_args(tofree, STRLEN(tofree),
+									&p);
+	    if (s != NULL)
+	    {
+		vim_free(tofree);
+		tofree = s;
+	    }
 	}
 	func = tofree;
     }
@@ -4586,7 +4636,7 @@ execute_redir_str(char_u *value, int value_len)
     redir_execute_ga.ga_len += len;
 }
 
-#if defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_LUA)
 /*
  * Get next line from a string containing NL separated lines.
  * Called by do_cmdline() to get the next line.
@@ -5102,7 +5152,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		++ex_normal_busy;
 		++in_feedkeys;
 	    }
+	    ++allow_osc_key;
 	    exec_normal(TRUE, lowlevel, TRUE);
+	    --allow_osc_key;
 	    if (!dangerous)
 	    {
 		--ex_normal_busy;
@@ -5162,6 +5214,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     partial_T   *arg_pt = NULL;
     char_u	*trans_name = NULL;
     int		is_global = FALSE;
+    char_u	*start_bracket = NULL;
 
     if (in_vim9script()
 	    && (check_for_string_or_func_arg(argvars, 0) == FAIL
@@ -5199,6 +5252,13 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	name = s;
 	trans_name = save_function_name(&name, &is_global, FALSE,
 		   TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL);
+	if (*name == '<')
+	{
+	    // generic function
+	    start_bracket = name;
+	    if (skip_generic_func_type_args(&name) == FAIL)
+		goto theend;
+	}
 	if (*name != NUL)
 	    s = NULL;
     }
@@ -5341,6 +5401,9 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		else if (is_funcref)
 		{
 		    pt->pt_func = find_func(trans_name, is_global);
+		    if (IS_GENERIC_FUNC(pt->pt_func) && start_bracket != NULL)
+			pt->pt_func = eval_generic_func(pt->pt_func, s,
+							&start_bracket);
 		    func_ptr_ref(pt->pt_func);
 		    vim_free(name);
 		}
@@ -5363,8 +5426,19 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	{
 	    // result is a VAR_FUNC
 	    rettv->v_type = VAR_FUNC;
-	    rettv->vval.v_string = name;
-	    func_ref(name);
+	    if (start_bracket == NULL)
+	    {
+		rettv->vval.v_string = name;
+		func_ref(name);
+	    }
+	    else
+	    {
+		// generic function
+		STRCPY(IObuff, name);
+		STRCAT(IObuff, start_bracket);
+		rettv->vval.v_string = vim_strsave(IObuff);
+		vim_free(name);
+	    }
 	}
     }
 theend:
@@ -6101,8 +6175,17 @@ getregionpos(
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
+#ifdef FEAT_LINEBREAK
+	int	lbr_saved = reset_lbr();
+#endif
+
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
+
+#ifdef FEAT_LINEBREAK
+	restore_lbr(lbr_saved);
+#endif
+
 	oap->motion_type = MBLOCK;
 	oap->inclusive = TRUE;
 	oap->op_type = OP_NOP;
@@ -6730,6 +6813,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"socketserver",
+#ifdef FEAT_SOCKETSERVER
+		1
+#else
+		0
+#endif
+		},
 	{"balloon_eval",
 #ifdef FEAT_BEVAL_GUI
 		1
@@ -6754,7 +6844,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{"builtin_terms", 1},
 	{"all_builtin_terms", 1},
 	{"browsefilter",
-#if defined(FEAT_BROWSE) && (defined(USE_FILE_CHOOSER) \
+#if defined(FEAT_BROWSE) && (defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
 		1
@@ -6786,6 +6876,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"clipboard",
 #ifdef FEAT_CLIPBOARD
+		1
+#else
+		0
+#endif
+		},
+	{"clipboard_provider",
+#ifdef FEAT_CLIPBOARD_PROVIDER
 		1
 #else
 		0
@@ -7488,13 +7585,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"unnamedplus",
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-		1
-#else
-		0
-#endif
-		},
 	{"user-commands", 1},    // was accidentally included in 5.4
 	{"user_commands", 1},
 	{"vartabs",
@@ -7523,6 +7613,27 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{"vreplace", 1},
 	{"vtp",
 #ifdef FEAT_VTP
+		1
+#else
+		0
+#endif
+		},
+	{"wayland",
+#ifdef FEAT_WAYLAND
+		1
+#else
+		0
+#endif
+		},
+	{"wayland_clipboard",
+#ifdef FEAT_WAYLAND_CLIPBOARD
+		1
+#else
+		0
+#endif
+		},
+	{"wayland_focus_steal",
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
 		1
 #else
 		0
@@ -7819,7 +7930,27 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
-	    n = clip_star.available;
+	    n = clipmethod == CLIPMETHOD_PROVIDER ? TRUE : clip_star.available;
+#endif
+	}
+	else if (STRICMP(name, "unnamedplus") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_CLIPBOARD
+	    // The + register is available when clipmethod is set to a provider,
+	    // but becomes unavailable if on a platform that doesn't support it
+	    // and clipmethod is "none".
+	    // (Windows, MacOS).
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+	    n = TRUE;
+# elif defined(FEAT_EVAL)
+	    if (clipmethod == CLIPMETHOD_PROVIDER)
+		n = TRUE;
+	    else
+		n = FALSE;
+# else
+	    n = FALSE;
+# endif
 #endif
 	}
     }
@@ -8658,6 +8789,26 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "items(dict)" function
+ */
+    static void
+f_items(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type == VAR_STRING)
+	string2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
+	list2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_BLOB)
+	blob2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_DICT)
+	dict2items(argvars, rettv);
+    else
+	semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr), 1);
+}
+
+/*
  * "keytrans()" function
  */
     static void
@@ -8833,19 +8984,18 @@ f_line(typval_T *argvars, typval_T *rettv)
 	{
 	    if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
 	    {
+		// With 'splitkeep' != cursor and in diff mode, prevent that the
+		// window scrolls and keep the topline.
+		if (*p_spk != 'c'
 #ifdef FEAT_DIFF
-		// in diff mode, prevent that the window scrolls
-		// and keep the topline
-		if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
-		    skip_update_topline = TRUE;
+		|| (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
 #endif
+		)
+		    skip_update_topline = TRUE;
 		check_cursor();
 		fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	    }
-#ifdef FEAT_DIFF
-	    if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
-		skip_update_topline = FALSE;
-#endif
+	    skip_update_topline = FALSE;
 	    restore_win_noblock(&switchwin, TRUE);
 	}
     }
@@ -9451,17 +9601,18 @@ f_matchstrpos(typval_T *argvars, typval_T *rettv)
 max_min(typval_T *argvars, typval_T *rettv, int domax)
 {
     varnumber_T	n = 0;
-    varnumber_T	i;
-    int		error = FALSE;
 
     if (in_vim9script() &&
 	    check_for_list_or_tuple_or_dict_arg(argvars, 0) == FAIL)
 	return;
 
+    rettv->vval.v_number = 0;
+
     if (argvars[0].v_type == VAR_LIST)
     {
 	list_T		*l;
 	listitem_T	*li;
+	typval_T	*tv = NULL;
 
 	l = argvars[0].vval.v_list;
 	if (l != NULL && l->lv_len > 0)
@@ -9473,42 +9624,44 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		else
 		    n = l->lv_u.nonmat.lv_start + ((varnumber_T)l->lv_len - 1)
 						    * l->lv_u.nonmat.lv_stride;
+		rettv->vval.v_number = n;
 	    }
 	    else
 	    {
-		li = l->lv_first;
-		if (li != NULL)
+		FOR_ALL_LIST_ITEMS(l, li)
 		{
-		    n = tv_get_number_chk(&li->li_tv, &error);
-		    if (error)
-			return; // type error; errmsg already given
-		    for (;;)
+		    if (tv == NULL)
+			tv = &li->li_tv;
+		    else
 		    {
-			li = li->li_next;
-			if (li == NULL)
-			    break;
-			i = tv_get_number_chk(&li->li_tv, &error);
-			if (error)
-			    return; // type error; errmsg already given
-			if (domax ? i > n : i < n)
-			    n = i;
+			int res;
+			if (typval_compare2(&li->li_tv, tv,
+				domax ? EXPR_GREATER : EXPR_SMALLER, FALSE, &res) == FAIL)
+			    return;
+			if (res == OK)
+			    tv = &li->li_tv;
 		    }
 		}
+
+		if (tv != NULL)
+		    copy_tv(tv, rettv);
 	    }
 	}
     }
     else if (argvars[0].v_type == VAR_TUPLE)
     {
-	n = tuple_max_min(argvars[0].vval.v_tuple, domax, &error);
-	if (error)
-	    return;
+	typval_T *tv;
+
+	tv = tuple_max_min(argvars[0].vval.v_tuple, domax);
+	if (tv != NULL)
+	    copy_tv(tv, rettv);
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
 	dict_T		*d;
-	int		first = TRUE;
 	hashitem_T	*hi;
 	int		todo;
+	typval_T	*tv = NULL;
 
 	d = argvars[0].vval.v_dict;
 	if (d != NULL)
@@ -9519,24 +9672,26 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    --todo;
-		    i = tv_get_number_chk(&HI2DI(hi)->di_tv, &error);
-		    if (error)
-			return; // type error; errmsg already given
-		    if (first)
+		    if (tv == NULL)
+			tv = &HI2DI(hi)->di_tv;
+		    else
 		    {
-			n = i;
-			first = FALSE;
+			int res;
+			if (typval_compare2(&HI2DI(hi)->di_tv, tv,
+				domax ? EXPR_GREATER : EXPR_SMALLER, FALSE, &res) == FAIL)
+			    return;
+			if (res == OK)
+			    tv = &HI2DI(hi)->di_tv;
 		    }
-		    else if (domax ? i > n : i < n)
-			n = i;
 		}
 	    }
 	}
+
+	if (tv != NULL)
+	    copy_tv(tv, rettv);
     }
     else
 	semsg(_(e_argument_of_str_must_be_list_or_dictionary), domax ? "max()" : "min()");
-
-    rettv->vval.v_number = n;
 }
 
 /*
@@ -9557,7 +9712,7 @@ f_min(typval_T *argvars, typval_T *rettv)
     max_min(argvars, rettv, FALSE);
 }
 
-#if defined(FEAT_MZSCHEME) || defined(PROTO)
+#if defined(FEAT_MZSCHEME)
 /*
  * "mzeval()" function
  */
@@ -9972,11 +10127,11 @@ init_srand(UINT32_T *x)
 #if defined(FEAT_RELTIME)
 	proftime_T res;
 	profile_start(&res);
-#  if defined(MSWIN)
+# if defined(MSWIN)
 	*x = (UINT32_T)res.LowPart;
-#  else
+# else
 	*x = (UINT32_T)res.tv_fsec;
-#  endif
+# endif
 #else
 	*x = vim_time();
 #endif
@@ -11370,7 +11525,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 /*
  * Translate a register type string to the yank type and block length
  */
-    static int
+    int
 get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
 {
     char_u *stropt = *pp;
@@ -11629,20 +11784,33 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 
 #ifdef FEAT_CRYPT
 /*
- * "sha256({string})" function
+ * "sha256({expr})" function
  */
     static void
 f_sha256(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
+    int		len;
 
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_string_or_blob_arg(argvars, 0) == FAIL)
 	return;
 
-    p = tv_get_string(&argvars[0]);
-    rettv->vval.v_string = vim_strsave(
-				    sha256_bytes(p, (int)STRLEN(p), NULL, 0));
     rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob_T *blob = argvars[0].vval.v_blob;
+	p = blob != NULL ? (char_u *)blob->bv_ga.ga_data : (char_u *)"";
+	len = blob != NULL ? blob->bv_ga.ga_len : 0;
+	rettv->vval.v_string = vim_strsave(sha256_bytes(p, len, NULL, 0));
+    }
+    else
+    {
+	p = tv_get_string(&argvars[0]);
+	rettv->vval.v_string = vim_strsave(
+				    sha256_bytes(p, (int)STRLEN(p), NULL, 0));
+    }
 }
 #endif // FEAT_CRYPT
 
@@ -12148,11 +12316,11 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
     {
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	if (USE_24BIT)
 	    modec = 'g';
 	else
-#endif
+# endif
 	    if (t_colors > 1)
 		modec = 'c';
 	    else
@@ -12489,9 +12657,11 @@ f_type(typval_T *argvars, typval_T *rettv)
 		}
 		break;
 	    }
+	case VAR_VOID:
+	    emsg(_(e_cannot_use_void_value));
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
-	case VAR_VOID:
 	    internal_error_no_abort("f_type(UNKNOWN)");
 	    n = -1;
 	    break;

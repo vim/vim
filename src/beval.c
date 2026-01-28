@@ -10,7 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP)
 /*
  * Find text under the mouse position "row" / "col".
  * If "getword" is TRUE the returned text in "*textp" is not the whole line but
@@ -130,7 +130,7 @@ find_word_under_cursor(
 }
 #endif
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL)
 
 /*
  * Get the text and position to be evaluated for "beval".
@@ -207,16 +207,16 @@ post_balloon(BalloonEval *beval UNUSED, char_u *mesg, list_T *list UNUSED)
 can_use_beval(void)
 {
     return (0
-#ifdef FEAT_BEVAL_GUI
+# ifdef FEAT_BEVAL_GUI
 		|| (gui.in_use && p_beval)
-#endif
-#ifdef FEAT_BEVAL_TERM
-		|| (
-# ifdef FEAT_GUI
-		    !gui.in_use &&
 # endif
+# ifdef FEAT_BEVAL_TERM
+		|| (
+#  ifdef FEAT_GUI
+		    !gui.in_use &&
+#  endif
 		    p_bevalterm)
-#endif
+# endif
 	     ) && msg_scrolled == 0;
 }
 
@@ -235,7 +235,6 @@ bexpr_eval(
 {
     win_T	*cw;
     long	winnr = 0;
-    buf_T	*save_curbuf;
     int		use_sandbox;
     static char_u  *result = NULL;
     size_t	len;
@@ -254,15 +253,8 @@ bexpr_eval(
     set_vim_var_string(VV_BEVAL_TEXT, text, -1);
     vim_free(text);
 
-    /*
-     * Temporarily change the curbuf, so that we can determine whether
-     * the buffer-local balloonexpr option was set insecurely.
-     */
-    save_curbuf = curbuf;
-    curbuf = wp->w_buffer;
-    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
-				    *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
-    curbuf = save_curbuf;
+    use_sandbox = was_set_insecurely(wp, (char_u *)"balloonexpr",
+			    *wp->w_buffer->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
     if (use_sandbox)
 	++sandbox;
     ++textlock;
@@ -312,13 +304,13 @@ bexpr_eval(
     void
 general_beval_cb(BalloonEval *beval, int state UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     win_T	*wp;
     int		col;
     linenr_T	lnum;
     char_u	*text;
     char_u	*bexpr;
-#endif
+# endif
     static int	recursive = FALSE;
 
     // Don't do anything when 'ballooneval' is off, messages scrolled the
@@ -332,7 +324,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	return;
     recursive = TRUE;
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
 	bexpr = (*wp->w_buffer->b_p_bexpr == NUL) ? p_bexpr
@@ -344,11 +336,11 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    return;
 	}
     }
-#endif
-#ifdef FEAT_NETBEANS_INTG
+# endif
+# ifdef FEAT_NETBEANS_INTG
     if (bevalServers & BEVAL_NETBEANS)
 	netbeans_beval_cb(beval, state);
-#endif
+# endif
 
     recursive = FALSE;
 }

@@ -1,8 +1,6 @@
 " Tests for Unicode manipulations
 
-source check.vim
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 " Visual block Insert adjusts for multi-byte char
 func Test_visual_block_insert()

@@ -1,11 +1,11 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 May 14
+" Last Change:	2025 Nov 27
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
-let buf = bufnr('option-window')
+let buf = bufexists('option-window') ? bufnr('option-window') : -1
 if buf >= 0
   let winids = win_findbuf(buf)
   if len(winids) > 0
@@ -283,6 +283,8 @@ call <SID>AddOption("ignorecase", gettext("ignore case when using a search patte
 call <SID>BinOptionG("ic", &ic)
 call <SID>AddOption("smartcase", gettext("override 'ignorecase' when pattern has upper case characters"))
 call <SID>BinOptionG("scs", &scs)
+call <SID>AddOption("maxsearchcount", gettext("maximum number for the search count feature"))
+call <SID>OptionG("msc", &msc)
 call <SID>AddOption("casemap", gettext("what method to use for changing case of letters"))
 call <SID>OptionG("cmp", &cmp)
 call <SID>AddOption("maxmempattern", gettext("maximum amount of memory in Kbyte used for pattern matching"))
@@ -371,7 +373,7 @@ call <SID>AddOption("sidescrolloff", gettext("minimal number of columns to keep 
 call append("$", " \tset siso=" . &siso)
 call <SID>AddOption("display", gettext("include \"lastline\" to show the last line even if it doesn't fit\ninclude \"uhex\" to show unprintable characters as a hex number"))
 call <SID>OptionG("dy", &dy)
-call <SID>AddOption("fillchars", gettext("characters to use for the status line, folds, diffs, buffer text, filler lines and truncation in the completion menu"))
+call <SID>AddOption("fillchars", gettext("characters to use for the status line, folds, diffs,\nbuffer text, filler lines and truncation in the completion menu"))
 call <SID>OptionG("fcs", &fcs)
 call <SID>AddOption("cmdheight", gettext("number of lines used for the command-line"))
 call append("$", " \tset ch=" . &ch)
@@ -630,7 +632,8 @@ if has("win32")
   call <SID>AddOption("restorescreen", gettext("restore the screen contents when exiting Vim"))
   call <SID>BinOptionG("rs", &rs)
 endif
-
+call <SID>AddOption("osctimeoutlen", gettext("timeout used for terminal OSC responses"))
+call <SID>OptionG("ost", &ost)
 
 call <SID>Header(gettext("using the mouse"))
 call <SID>AddOption("mouse", gettext("list of flags for using the mouse"))
@@ -684,7 +687,9 @@ if has("gui")
     endif
     call <SID>AddOption("guiheadroom", gettext("room (in pixels) left above/below the window"))
     call append("$", " \tset ghr=" . &ghr)
-    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complex shapes"))
+  endif
+  if has("gui_gtk") || has("gui_win32")
+    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complex\nshapes"))
     call <SID>OptionG("gli", &gli)
   endif
   if has("directx")
@@ -694,7 +699,7 @@ if has("gui")
   call <SID>AddOption("guipty", gettext("use a pseudo-tty for I/O to external commands"))
   call <SID>BinOptionG("guipty", &guipty)
   if has("browse")
-    call <SID>AddOption("browsedir", gettext("\"last\", \"buffer\" or \"current\": which directory used for the file browser"))
+    call <SID>AddOption("browsedir", gettext("\"last\", \"buffer\" or \"current\": which directory used for\nthe file browser"))
     call <SID>OptionG("bsdir", &bsdir)
   endif
   if has("multi_lang")
@@ -717,7 +722,7 @@ if has("gui")
       call <SID>BinOptionG("beval", &beval)
     endif
     if has("balloon_eval_term")
-      call <SID>AddOption("balloonevalterm", gettext("use balloon evaluation in the terminal"))
+      call <SID>AddOption("balloonevalterm", gettext(" \nuse balloon evaluation in the terminal"))
       call <SID>BinOptionG("bevalterm", &beval)
     endif
     if has("eval")
@@ -806,6 +811,20 @@ call <SID>OptionG("slm", &slm)
 if has("clipboard")
   call <SID>AddOption("clipboard", gettext("\"unnamed\" to use the * register like unnamed register\n\"autoselect\" to always put selected text on the clipboard"))
   call <SID>OptionG("cb", &cb)
+  call <SID>AddOption("clipmethod", gettext("Ordered list of possible methods for accessing the clipboard"))
+  call <SID>OptionG("cpm", &cpm)
+endif
+if has("wayland_clipboard")
+  call <SID>AddOption("wltimeoutlen", gettext("Timeout to use when polling for data to read or write in wayland"))
+  call <SID>OptionG("wtm", &wtm)
+endif
+if has('wayland')
+  call <SID>AddOption("wlseat", gettext("Wayland seat to use"))
+  call <SID>OptionG("wse", &wse)
+endif
+if has("wayland_focus_steal")
+  call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to access the clipboard"))
+  call <SID>BinOptionG("wst", &wst)
 endif
 call <SID>AddOption("keymodel", gettext("\"startsel\" and/or \"stopsel\"; what special keys can do"))
 call <SID>OptionG("km", &km)
@@ -841,6 +860,8 @@ call append("$", " \tset bs=" . &bs)
 call <SID>AddOption("comments", gettext("definition of what comment lines look like"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("com")
+call <SID>AddOption("commentstring", gettext("template for comments; used to put the marker in"))
+call <SID>OptionL("cms")
 call <SID>AddOption("formatoptions", gettext("list of flags that tell how automatic formatting works"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("fo")
@@ -855,12 +876,19 @@ endif
 if has("insert_expand")
   call <SID>AddOption("complete", gettext("specifies how Insert mode completion works for CTRL-N and CTRL-P"))
   call append("$", "\t" .. s:local_to_buffer)
-  call <SID>OptionL("cfc")
-  call <SID>AddOption("completefuzzycollect", gettext("use fuzzy collection for specific completion modes"))
   call <SID>OptionL("cpt")
+  call <SID>AddOption("autocomplete", gettext("automatic completion in insert mode"))
+  call append("$", "\t" .. s:global_or_local)
+  call <SID>BinOptionG("ac", &ac)
+  call <SID>AddOption("autocompletetimeout", gettext(" \ninitial decay timeout for 'autocomplete' algorithm"))
+  call append("$", " \tset act=" . &act)
+  call <SID>AddOption("completetimeout", gettext(" \ninitial decay timeout for CTRL-N and CTRL-P completion"))
+  call append("$", " \tset cto=" . &cto)
+  call <SID>AddOption("autocompletedelay", gettext(" \ndelay in msec before menu appears after typing"))
+  call append("$", " \tset acl=" . &acl)
   call <SID>AddOption("completeopt", gettext("whether to use a popup menu for Insert mode completion"))
   call <SID>OptionL("cot")
-  call <SID>AddOption("completeitemalign", gettext("popup menu item align order"))
+  call <SID>AddOption("completeitemalign", gettext(" \npopup menu item align order"))
   call <SID>OptionG("cia", &cia)
   if exists("+completepopup")
     call <SID>AddOption("completepopup", gettext("options for the Insert mode completion info popup"))
@@ -872,6 +900,8 @@ if has("insert_expand")
   call <SID>OptionG("pw", &pw)
   call <SID>AddOption("pummaxwidth", gettext("maximum width of the popup menu"))
   call <SID>OptionG("pmw", &pmw)
+  call <SID>AddOption("pumborder", gettext("popup border style"))
+  call <SID>OptionG("pb", &pb)
   call <SID>AddOption("completefunc", gettext("user defined function for Insert mode completion"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("cfu")
@@ -1009,8 +1039,6 @@ if has("folding")
   call <SID>AddOption("foldminlines", gettext("minimum number of screen lines for a fold to be closed"))
   call append("$", "\t" .. s:local_to_window)
   call <SID>OptionL("fml")
-  call <SID>AddOption("commentstring", gettext("template for comments; used to put the marker in"))
-  call <SID>OptionL("cms")
   call <SID>AddOption("foldmethod", gettext("folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n\"syntax\" or \"diff\""))
   call append("$", "\t" .. s:local_to_window)
   call <SID>OptionL("fdm")
@@ -1038,6 +1066,9 @@ if has("diff")
   call <SID>OptionG("dip", &dip)
   call <SID>AddOption("diffexpr", gettext("expression used to obtain a diff file"))
   call <SID>OptionG("dex", &dex)
+  call <SID>AddOption("diffanchors", gettext("list of addresses for anchoring a diff"))
+  call append("$", "\t" .. s:global_or_local)
+  call <SID>OptionG("dia", &dia)
   call <SID>AddOption("patchexpr", gettext("expression used to patch a file"))
   call <SID>OptionG("pex", &pex)
 endif
@@ -1235,7 +1266,7 @@ if has("quickfix")
   call <SID>AddOption("makeencoding", gettext("encoding of the \":make\" and \":grep\" output"))
   call append("$", "\t" .. s:global_or_local)
   call <SID>OptionG("menc", &menc)
-  call <SID>AddOption("quickfixtextfunc", gettext("function to display text in the quickfix window"))
+  call <SID>AddOption("quickfixtextfunc", gettext(" \nfunction to display text in the quickfix window"))
   call <SID>OptionG("qftf", &qftf)
 endif
 
@@ -1254,8 +1285,6 @@ call <SID>AddOption("isfname", gettext("specifies the characters in a file name"
 call <SID>OptionG("isf", &isf)
 call <SID>AddOption("isident", gettext("specifies the characters in an identifier"))
 call <SID>OptionG("isi", &isi)
-call <SID>AddOption("isexpand", gettext("defines trigger strings for complete_match()"))
-call append("$", "\t" .. s:local_to_buffer)
 call <SID>AddOption("iskeyword", gettext("specifies the characters in a keyword"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("isk")
@@ -1437,7 +1466,7 @@ if exists("&pythonthreedll")
   call <SID>OptionG("pythonthreedll", &pythonthreedll)
 endif
 if exists("&pythonthreehome")
-  call <SID>AddOption("pythonthreehome", gettext("name of the Python 3 home directory"))
+  call <SID>AddOption("pythonthreehome", gettext(" \nname of the Python 3 home directory"))
   call <SID>OptionG("pythonthreehome", &pythonthreehome)
 endif
 if exists("&rubydll")
@@ -1455,9 +1484,12 @@ if exists("&mzschemedll")
   call <SID>OptionG("mzschemegcdll", &mzschemegcdll)
 endif
 if has("tabpanel")
-  call <SID>AddOption("showtabpanel", gettext("0, 1 or 2; when to use a tab pages in tabpanel"))
+  call <SID>AddOption("showtabpanel", gettext("0, 1 or 2; when to use the tabpanel"))
+  call <SID>OptionG("showtabpanel", &showtabpanel)
   call <SID>AddOption("tabpanel", gettext("custom tab pages in tabpanel"))
+  call <SID>OptionG("tabpanel", &tabpanel)
   call <SID>AddOption("tabpanelopt", gettext("options for using tabpanel"))
+  call <SID>OptionG("tabpanelopt", &tabpanelopt)
 endif
 
 set cpo&vim

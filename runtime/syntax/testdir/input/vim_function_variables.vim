@@ -1,5 +1,6 @@
 " Vim function variable highlighting
 
+
 function Foo()
   " :let
 

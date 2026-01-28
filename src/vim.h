@@ -7,7 +7,7 @@
  */
 
 #ifndef VIM__H
-# define VIM__H
+#define VIM__H
 
 #include "protodef.h"
 
@@ -17,14 +17,18 @@
 # define MSWIN
 #endif
 
-#if defined(MSWIN) && !defined(PROTO)
+#if defined(MSWIN)
 # include <io.h>
 #endif
 
 // ============ the header file puzzle: order matters =========
 
 #ifdef HAVE_CONFIG_H	// GNU autoconf (or something else) was here
-# include "auto/config.h"
+# ifdef VMS
+#  include "config.h"   /* Rely on /INCLUDE to find it. */
+# else
+#  include "auto/config.h"
+# endif /* def VMS [else] */
 # define HAVE_PATHDEF
 
 /*
@@ -34,6 +38,22 @@
  */
 # if (VIM_SIZEOF_INT == 0)
 #  error configure did not run properly.  Check auto/config.log.
+# endif
+
+/*
+ * NeXTSTEP / OPENSTEP support deprecation
+ *
+ * NeXT hardware was discontinued in 1993, and the last OPENSTEP release
+ * (4.2) shipped in 1996–1997. No known users remain today.
+ *
+ * To simplify maintenance, NeXT support is formally deprecated. If you hit
+ * this error, please report it to the Vim maintainers.
+ *
+ * This guard will be removed once the remaining NeXT-specific code paths
+ * are deleted in a future release.
+ */
+# if defined(NeXT) || defined(__NeXT__)
+#  error "NeXTSTEP / OPENSTEP support has been deprecated."
 # endif
 
 # if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__) || defined(__GNU__)
@@ -162,7 +182,7 @@
 # endif
 #endif
 #if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
-#  define VIM_SIZEOF_INT __SIZEOF_INT__
+# define VIM_SIZEOF_INT __SIZEOF_INT__
 #endif
 
 #if VIM_SIZEOF_INT < 4 && !defined(PROTO)
@@ -192,6 +212,10 @@
 // +x11 is only enabled when it's both available and wanted.
 #if defined(HAVE_X11) && defined(WANT_X11)
 # define FEAT_X11
+#endif
+
+#if defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+# define FEAT_WAYLAND
 #endif
 
 #ifdef NO_X11_INCLUDES
@@ -248,15 +272,17 @@
 # include <clib/exec_protos.h>
 #endif
 
-#ifdef __HAIKU__
-# include "os_haiku.h"
-# define __ARGS(x)  x
+#ifndef PROTO
+# ifdef __HAIKU__
+#  include "os_haiku.h"
+#  define __ARGS(x)  x
+# endif
 #endif
 
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    // bring lots of system header files
-#else
+#elif !defined(PROTO)
   // For all non-Unix systems: use old-fashioned signal().
 # define mch_signal(signum, sighandler) signal(signum, sighandler)
 #endif
@@ -290,24 +316,26 @@
 // a concrete example, gcc-3.2 enforces exception specifications, and
 // glibc-2.2.5 has them in their system headers.
 #if !defined(__cplusplus) && defined(UNIX) \
-	&& !defined(MACOS_X) // MACOS_X doesn't yet support osdef.h
+       && !defined(MACOS_X) // MACOS_X doesn't yet support osdef.h
 # include "auto/osdef.h"	// bring missing declarations in
 #endif
 
-#ifdef AMIGA
-# include "os_amiga.h"
-#endif
+#ifndef PROTO
+# ifdef AMIGA
+#  include "os_amiga.h"
+# endif
 
-#ifdef MSWIN
-# include "os_win32.h"
-#endif
+# ifdef MSWIN
+#  include "os_win32.h"
+# endif
 
-#if defined(MACOS_X)
-# include "os_mac.h"
-#endif
+# if defined(MACOS_X)
+#  include "os_mac.h"
+# endif
 
-#ifdef __QNX__
-# include "os_qnx.h"
+# ifdef __QNX__
+#  include "os_qnx.h"
+# endif
 #endif
 
 #ifdef X_LOCALE
@@ -341,7 +369,7 @@
 #  define PATH_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<")
 #  define SHELL_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<>();&")
 # endif
-#  define BUFFER_ESC_CHARS ((char_u *)" \t\n*?[`$\\%#'\"|!<")
+# define BUFFER_ESC_CHARS ((char_u *)" \t\n*?[`$\\%#'\"|!<")
 #endif
 
 // length of a buffer to store a number in ASCII (64 bits binary + NUL)
@@ -413,11 +441,7 @@ typedef __int64 off_T;
 #  define vim_ftell _ftelli64
 # endif
 #else
-# ifdef PROTO
-typedef long off_T;
-# else
 typedef off_t off_T;
-# endif
 # ifdef HAVE_FSEEKO
 #  define vim_lseek lseek
 #  define vim_ftell ftello
@@ -518,6 +542,7 @@ typedef long long vimlong_T;
 
 // for offsetof()
 #include <stddef.h>
+#include <stdbool.h>
 
 #if defined(HAVE_SYS_SELECT_H) && \
 	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
@@ -855,6 +880,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_FINDFUNC		61
 #define EXPAND_HIGHLIGHT_GROUP  62
 #define EXPAND_FILETYPECMD	63
+#define EXPAND_PATTERN_IN_BUF	64
+#define EXPAND_RETAB		65
 
 
 // Values for exmode_active (0 is no exmode)
@@ -889,7 +916,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_NOERROR		    0x800  // sets EW_NOERROR
 #define WILD_BUFLASTUSED	    0x1000
 #define BUF_DIFF_FILTER		    0x2000
-#define WILD_KEEP_SOLE_ITEM	    0x4000
+#define WILD_NOSELECT		    0x4000
+#define WILD_MAY_EXPAND_PATTERN	    0x8000
+#define WILD_FUNC_TRIGGER	    0x10000 // called from wildtrigger()
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
@@ -921,10 +950,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 
 #if defined(FEAT_TABPANEL)
 # define COLUMNS_WITHOUT_TPL()		(Columns - tabpanel_width())
-# define TPL_LCOL(W)			tabpanel_leftcol(W)
+# define TPL_LCOL()			tabpanel_leftcol()
 #else
 # define COLUMNS_WITHOUT_TPL()		Columns
-# define TPL_LCOL(W)			0
+# define TPL_LCOL()			0
 #endif
 
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
@@ -1285,6 +1314,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WSP_ABOVE	0x80	// put new window above/left
 #define WSP_NEWLOC	0x100	// don't copy location list
 #define WSP_FORCE_ROOM	0x200	// ignore "not enough room" errors
+#define WSP_QUICKFIX	0x400	// creating the quickfix window
 
 /*
  * arguments for gui_set_shellsize()
@@ -1545,6 +1575,8 @@ typedef enum
     , HLF_PSX	    // popup menu selected item "menu" (extra text)
     , HLF_PSB	    // popup menu scrollbar
     , HLF_PST	    // popup menu scrollbar thumb
+    , HLF_PMB	    // popup menu border
+    , HLF_PMS	    // popup menu shadow
     , HLF_TP	    // tabpage line
     , HLF_TPS	    // tabpage line selected
     , HLF_TPF	    // tabpage line filler
@@ -1558,6 +1590,7 @@ typedef enum
     , HLF_TPL	    // tabpanel
     , HLF_TPLS	    // tabpanel selected
     , HLF_TPLF	    // tabpanel filler
+    , HLF_PRI	    // "preinsert" in 'completeopt'
     , HLF_COUNT	    // MUST be the last one
 } hlf_T;
 
@@ -1567,10 +1600,10 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', 'E', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', \
+		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', 'j', 'H', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z', 'g', \
-		  '%', '^', '&' }
+		  '%', '^', '&', 'I'}
 
 /*
  * Values for behaviour in spell_move_to
@@ -1802,9 +1835,9 @@ void *vim_memset(void *, int, size_t);
 // STRICMP() only handles the system locale version, which often does not
 // handle non-ascii properly.
 
-# define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
-# define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
-# define MB_STRNICMP2(d, s, n1, n2)	mb_strnicmp2((char_u *)(d), (char_u *)(s), (n1), (n2))
+#define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
+#define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
+#define MB_STRNICMP2(d, s, n1, n2)	mb_strnicmp2((char_u *)(d), (char_u *)(s), (n1), (n2))
 
 #define STRCAT(d, s)	    strcat((char *)(d), (char *)(s))
 #define STRNCAT(d, s, n)    strncat((char *)(d), (char *)(s), (size_t)(n))
@@ -1904,7 +1937,7 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 # define USE_INPUT_BUF
 #endif
 
-#ifndef EINTR
+#if !defined(EINTR) && !defined(PROTO)
 # define read_eintr(fd, buf, count) vim_read((fd), (buf), (count))
 # define write_eintr(fd, buf, count) vim_write((fd), (buf), (count))
 #endif
@@ -1998,20 +2031,26 @@ typedef enum {
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it
  * for global variables to avoid that.
  */
-#ifdef PROTO
-typedef long  time_T;
-#else
-# ifdef MSWIN
+#ifdef MSWIN
 typedef __time64_t  time_T;
-# else
+#else
 typedef time_t	    time_T;
-# endif
 #endif
 
 #ifdef _WIN64
 typedef __int64 sock_T;
 #else
 typedef int sock_T;
+#endif
+
+// The clipboard provider feature uses clipmethod as well but should be separate
+// from the clipboard code.
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
+# define HAVE_CLIPMETHOD
+#endif
+
+#if defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+# define FEAT_CLIPBOARD_PROVIDER
 #endif
 
 // Include option.h before structs.h, because the number of window-local and
@@ -2066,6 +2105,9 @@ typedef int sock_T;
 
 // Lowest button code for using the mouse wheel (xterm only)
 #define MOUSEWHEEL_LOW		0x60
+
+// Lowest button code for extra mouse buttons 8-11
+#define MOUSESIDEBUTTONS_LOW		0xa0
 
 #define MOUSE_CLICK_MASK	0x03
 
@@ -2224,7 +2266,13 @@ typedef int sock_T;
 #define VV_TYPE_ENUMVALUE 109
 #define VV_STACKTRACE	110
 #define VV_TYPE_TUPLE	111
-#define VV_LEN		112	// number of v: vars
+#define VV_WAYLAND_DISPLAY 112
+#define VV_CLIPMETHOD 113
+#define VV_TERMDA1 114
+#define VV_TERMOSC 115
+#define VV_VIM_DID_INIT		116
+#define VV_CLIPPROVIDERS 117
+#define VV_LEN		118	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2255,6 +2303,16 @@ typedef int sock_T;
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
 #define TABSTOP_MAX 9999
+
+#ifdef HAVE_CLIPMETHOD
+typedef enum {
+    CLIPMETHOD_FAIL,
+    CLIPMETHOD_NONE,
+    CLIPMETHOD_WAYLAND,
+    CLIPMETHOD_X11,
+    CLIPMETHOD_PROVIDER
+} clipmethod_T;
+#endif
 
 #ifdef FEAT_CLIPBOARD
 
@@ -2294,13 +2352,13 @@ typedef struct
     short_u	origin_end_col;
     short_u	word_start_col;
     short_u	word_end_col;
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     // limits for selection inside a popup window
     short_u	min_col;
     short_u	max_col;
     short_u	min_row;
     short_u	max_row;
-#endif
+# endif
 
     pos_T	prev;		// Previous position
     short_u	state;		// Current selection state
@@ -2332,6 +2390,8 @@ typedef struct _stat64 stat_T;
 #else
 typedef struct stat stat_T;
 #endif
+
+typedef struct soundcb_S soundcb_T;
 
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(__MINGW32__)
 # define ATTRIBUTE_FORMAT_PRINTF(fmt_idx, arg_idx) \
@@ -2476,7 +2536,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # define USE_MCH_ERRMSG
 #endif
 
-# if defined(FEAT_EVAL) \
+#if defined(FEAT_EVAL) \
 	&& (!defined(FEAT_GUI_MSWIN) || !defined(FEAT_MBYTE_IME))
 // Whether IME is supported by im_get_status() defined in mbyte.c.
 // For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME is defined.
@@ -2497,7 +2557,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 
 // This must come after including proto.h.
 // For VMS this is defined in macros.h.
-#if !defined(MSWIN) && !defined(VMS)
+#if !defined(MSWIN) && !defined(VMS) && !defined(PROTO)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
@@ -2539,21 +2599,21 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 
 #ifdef _MSC_VER
 // Avoid useless warning "conversion from X to Y of greater size".
- #pragma warning(disable : 4312)
+# pragma warning(disable : 4312)
 // Avoid warning for old style function declarators
- #pragma warning(disable : 4131)
+# pragma warning(disable : 4131)
 // Avoid warning for conversion to type with smaller range
- #pragma warning(disable : 4244)
+# pragma warning(disable : 4244)
 // Avoid warning for conversion to larger size
- #pragma warning(disable : 4306)
+# pragma warning(disable : 4306)
 // Avoid warning for unreferenced formal parameter
- #pragma warning(disable : 4100)
+# pragma warning(disable : 4100)
 // Avoid warning for differs in indirection to slightly different base type
- #pragma warning(disable : 4057)
+# pragma warning(disable : 4057)
 // Avoid warning for constant conditional expression
- #pragma warning(disable : 4127)
+# pragma warning(disable : 4127)
 // Avoid warning for assignment within conditional
- #pragma warning(disable : 4706)
+# pragma warning(disable : 4706)
 #endif
 
 // Note: a NULL argument for vim_realloc() is not portable, don't use it.
@@ -2631,12 +2691,6 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #  endif
 # else
 #  define X_DISPLAY	xterm_dpy
-# endif
-#endif
-
-#if defined(FEAT_BROWSE) && defined(GTK_CHECK_VERSION)
-# if GTK_CHECK_VERSION(2,4,0)
-#  define USE_FILE_CHOOSER
 # endif
 #endif
 
@@ -2754,7 +2808,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 // values for vim_handle_signal() that are not a signal
 #define SIGNAL_BLOCK	(-1)
 #define SIGNAL_UNBLOCK  (-2)
-#if !defined(UNIX) && !defined(VMS)
+#if !defined(UNIX) && !defined(VMS) && !defined(PROTO)
 # define vim_handle_signal(x) 0
 #endif
 
@@ -2955,9 +3009,6 @@ long elapsed(struct timeval *start_tv);
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)
-# ifdef PROTO
-typedef int DWORD;
-# endif
 typedef DWORD elapsed_T;
 # ifndef PROTO
 long elapsed(DWORD start_tick);
@@ -3014,8 +3065,9 @@ long elapsed(DWORD start_tick);
 #define EVAL_VAR_IMPORT		4   // may return special variable for import
 #define EVAL_VAR_NO_FUNC	8   // do not look for a function
 
-// Maximum number of characters that can be fuzzy matched
-#define MAX_FUZZY_MATCHES	256
+// Fuzzy matching
+#define FUZZY_MATCH_MAX_LEN	1024    // max characters that can be matched
+#define FUZZY_SCORE_NONE	INT_MIN // invalid fuzzy score
 
 // flags for equal_type()
 #define ETYPE_ARG_UNKNOWN 1

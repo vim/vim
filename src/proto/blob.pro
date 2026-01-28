@@ -13,6 +13,7 @@ int blob_equal(blob_T *b1, blob_T *b2);
 int read_blob(FILE *fd, typval_T *rettv, off_T offset, off_T size_arg);
 int write_blob(FILE *fd, blob_T *blob);
 char_u *blob2string(blob_T *blob, char_u **tofree, char_u *numbuf);
+void blob2items(typval_T *argvars, typval_T *rettv);
 blob_T *string2blob(char_u *str);
 int blob_slice_or_index(blob_T *blob, int is_range, varnumber_T n1, varnumber_T n2, int exclusive, typval_T *rettv);
 int check_blob_index(long bloblen, varnumber_T n1, int quiet);

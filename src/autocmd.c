@@ -630,7 +630,7 @@ autocmd_init(void)
     CLEAR_FIELD(aucmd_win);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_autocmds(void)
 {
@@ -850,7 +850,7 @@ check_ei(char_u *ei)
     return OK;
 }
 
-# if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 
 /*
  * Add "what" to 'eventignore' to skip loading syntax highlighting for every
@@ -896,7 +896,7 @@ au_event_restore(char_u *old_ei)
 	vim_free(old_ei);
     }
 }
-# endif  // FEAT_SYN_HL
+#endif  // FEAT_SYN_HL
 
 /*
  * do_autocmd() -- implements the :autocmd command.  Can be used in the
@@ -1673,7 +1673,7 @@ aucmd_prepbuf(
 #endif
 
 	(void)win_split_ins(0, WSP_TOP | WSP_FORCE_ROOM, auc_win, 0, NULL);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
 	p_acd = save_acd;
@@ -1749,7 +1749,7 @@ win_found:
 	    close_tabpage(curtab);
 
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	unblock_autocmds();
 
 	save_curwin = win_find_by_id(aco->save_curwin_id);
@@ -1814,10 +1814,10 @@ win_found:
 		    && bufref_valid(&aco->new_curbuf)
 		    && aco->new_curbuf.br_buf->b_ml.ml_mfp != NULL)
 	    {
-# if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 		if (curwin->w_s == &curbuf->b_s)
 		    curwin->w_s = &aco->new_curbuf.br_buf->b_s;
-# endif
+#endif
 		--curbuf->b_nwindows;
 		curbuf = aco->new_curbuf.br_buf;
 		curwin->w_buffer = curbuf;
@@ -2030,7 +2030,7 @@ has_cmdundefined(void)
     return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
@@ -2041,7 +2041,7 @@ has_textyankpost(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a CompleteChanged autocommand defined.
  */
@@ -2052,7 +2052,7 @@ has_completechanged(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a ModeChanged autocommand defined.
  */
@@ -2530,14 +2530,14 @@ BYPASS_AU:
     return retval;
 }
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 static char_u	*old_termresponse = NULL;
 static char_u	*old_termu7resp = NULL;
 static char_u	*old_termblinkresp = NULL;
 static char_u	*old_termrbgresp = NULL;
 static char_u	*old_termrfgresp = NULL;
 static char_u	*old_termstyleresp = NULL;
-# endif
+#endif
 
 /*
  * Block triggering autocommands until unblock_autocmd() is called.
@@ -2546,7 +2546,7 @@ static char_u	*old_termstyleresp = NULL;
     void
 block_autocmds(void)
 {
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     // Remember the value of v:termresponse.
     if (autocmd_blocked == 0)
     {
@@ -2557,7 +2557,7 @@ block_autocmds(void)
 	old_termrfgresp = get_vim_var_str(VV_TERMRFGRESP);
 	old_termstyleresp = get_vim_var_str(VV_TERMSTYLERESP);
     }
-# endif
+#endif
     ++autocmd_blocked;
 }
 
@@ -2566,7 +2566,7 @@ unblock_autocmds(void)
 {
     --autocmd_blocked;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     // When v:termresponse, etc, were set while autocommands were blocked,
     // trigger the autocommands now.  Esp. useful when executing a shell
     // command during startup (vimdiff).
@@ -2598,7 +2598,7 @@ unblock_autocmds(void)
 	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"cursorshape", NULL, FALSE, curbuf);
 	}
     }
-# endif
+#endif
 }
 
     int
@@ -2678,7 +2678,7 @@ auto_next_pat(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get the script context where autocommand "acp" is defined.
  */
@@ -2929,7 +2929,7 @@ has_tabclosedpre(void)
     return (first_autopat[(int)EVENT_TABCLOSEDPRE] != NULL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if autocmd is supported.
  */

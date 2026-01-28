@@ -1,8 +1,6 @@
 " Test for completion menu
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
@@ -216,8 +214,9 @@ func Test_popup_complete()
   call feedkeys("aM\<f5>\<enter>\<esc>", 'tx')
   call assert_equal(["March", "M", "March"], getline(1,4))
   %d
-endfunc
 
+  set completeopt&
+endfunc
 
 func Test_popup_completion_insertmode()
   new
@@ -843,7 +842,7 @@ func Test_popup_position()
                 123
   END
   call writefile(lines, 'Xtest', 'D')
-  let buf = RunVimInTerminal('Xtest', {})
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
   " default pumwidth in left window: overlap in right window
@@ -972,10 +971,24 @@ func Test_mouse_popup_position()
   call VerifyScreenDump(buf, 'Test_mouse_popup_position_01', {})
   call term_sendkeys(buf, "\<Esc>")
 
+  call term_sendkeys(buf, ":set pumborder=double,margin,shadow\<CR>")
+  call term_sendkeys(buf, ":call Trigger(45)\<CR>")
+  call TermWait(buf, 30)
+  call VerifyScreenDump(buf, 'Test_mouse_popup_position_02', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":set pumborder=\<CR>")
+
   if has('rightleft')
     call term_sendkeys(buf, ":set rightleft\<CR>")
     call term_sendkeys(buf, ":call Trigger(50 + 1 - 45)\<CR>")
-    call VerifyScreenDump(buf, 'Test_mouse_popup_position_02', {})
+    call VerifyScreenDump(buf, 'Test_mouse_popup_position_03', {})
+
+    call term_sendkeys(buf, ":set pumborder=ascii,margin,shadow\<CR>")
+    call term_sendkeys(buf, ":call Trigger(50 + 1 - 45)\<CR>")
+    call TermWait(buf, 30)
+    call VerifyScreenDump(buf, 'Test_mouse_popup_position_04', {})
+    call term_sendkeys(buf, ":set pumborder=\<CR>")
+
     call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
   endif
 
@@ -1080,6 +1093,7 @@ func Test_popup_complete_info_01()
   setlocal thesaurus=Xdummy.txt
   setlocal omnifunc=syntaxcomplete#Complete
   setlocal completefunc=syntaxcomplete#Complete
+  setlocal completeopt+=noinsert
   setlocal spell
   for [keys, mode_name] in [
         \ ["", ''],
@@ -1149,6 +1163,7 @@ func Test_popup_complete_info_02()
     \     {'word': 'Apr', 'menu': 'April', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
     \     {'word': 'May', 'menu': 'May', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}
     \   ],
+    \   'preinserted_text': '',
     \   'selected': 0,
     \ }
 
@@ -1156,7 +1171,7 @@ func Test_popup_complete_info_02()
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
 
-  let g:compl_what = ['mode', 'pum_visible', 'selected']
+  let g:compl_what = ['mode', 'pum_visible', 'preinserted_text', 'selected']
   call remove(d, 'items')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
@@ -1164,6 +1179,7 @@ func Test_popup_complete_info_02()
   let g:compl_what = ['mode']
   call remove(d, 'selected')
   call remove(d, 'pum_visible')
+  call remove(d, 'preinserted_text')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
   bwipe!
@@ -1177,6 +1193,7 @@ func Test_popup_complete_info_no_pum()
         \   'mode': '',
         \   'pum_visible': 0,
         \   'items': [],
+        \   'preinserted_text': '',
         \   'selected': -1,
         \  }
   call assert_equal( d, complete_info() )
@@ -1514,8 +1531,7 @@ endfunc
 func Test_pum_completefuzzycollect()
   CheckScreendump
   let lines =<< trim END
-    set completefuzzycollect=keyword,files
-    set completeopt=menu,menuone
+    set completeopt=menu,menuone,fuzzy
   END
   call writefile(lines, 'Xscript', 'D')
   let  buf = RunVimInTerminal('-S Xscript', {})
@@ -2215,5 +2231,193 @@ func Test_pum_clear_when_switch_tab_or_win()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_pum_position_when_wrap()
+  CheckScreendump
+  let lines =<< trim END
+    func Omni_test(findstart, base)
+      if a:findstart
+        return col(".")
+      endif
+      return ['foo', 'bar', 'foobar']
+    endfunc
+    set omnifunc=Omni_test
+    set wrap
+    set cot+=noinsert
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('-S Xtest', #{rows: 15, cols: 25})
+
+  let long_text = repeat('abcde ', 20)
+  call term_sendkeys(buf, "i" .. long_text)
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "5|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line1', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "30|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line2', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "55|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line3', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "85|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line4', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 100)
+
+  call term_sendkeys(buf, "108|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line5', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 100)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test that Vim does not crash when completion inside cmdwin opens a 'info'
+" preview window.
+func Test_popup_complete_cmdwin_preview()
+  func! CompleteWithPreview(findstart, base)
+    if a:findstart
+      return getline('.')->strpart(0, col('.') - 1)
+    endif
+    return [#{word: 'echo', info: 'bar'}, #{word: 'echomsg', info: 'baz'}]
+  endfunc
+  set omnifunc=CompleteWithPreview
+  call feedkeys("q:if\<C-X>\<C-O>\<C-N>\<ESC>\<CR>", 'tx!')
+  set omnifunc&
+endfunc
+
+func Test_popup_border()
+  CheckScreendump
+
+  let lines =<< trim END
+    123456789_123456789_123456789_a
+    123456789_123456789_123456789_b
+
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
+
+  func TestPumPosition(buf, spaces, dumpfile)
+    call term_sendkeys(a:buf, $"GS{repeat(' ', a:spaces)}1\<C-N>")
+    call TermWait(a:buf, 10)
+    call VerifyScreenDump(a:buf, a:dumpfile, {'rows': 8})
+    call term_sendkeys(a:buf, "\<Esc>u")
+  endfunc
+
+  func TestPumPositionStart(buf, spaces, dumpfile)
+    call term_sendkeys(a:buf, ":set pumborder=double\<CR>")
+    call TestPumPosition(a:buf, a:spaces, a:dumpfile)
+    call term_sendkeys(a:buf, ":set pumborder=double,margin\<CR>")
+    call TestPumPosition(a:buf, a:spaces, $'{a:dumpfile}_m')
+  endfunc
+
+  " pum starts at the edge
+  for space_count in [0, 1, 2, 5]
+    call TestPumPositionStart(buf, space_count,
+          \ $'Test_popup_border_start_{space_count}')
+  endfor
+
+  if has('rightleft')
+    call term_sendkeys(buf, ":set rightleft\<CR>")
+    for space_count in [0, 1, 2, 5]
+      call TestPumPositionStart(buf, space_count,
+            \ $'Test_popup_border_start_rtl_{space_count}')
+    endfor
+    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
+  endif
+
+  " pum ends at the edge
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call term_sendkeys(buf, "\<C-W>l")
+  for i in range(2)
+    let rtl = ''
+    if i == 1 && has('rightleft')
+      call term_sendkeys(buf, "\<C-W>h")
+      call term_sendkeys(buf, ":set rightleft\<CR>")
+      let rtl = 'rtl_'
+    endif
+
+    call term_sendkeys(buf, ":set pumborder=double\<CR>")
+    for space_count in [5, 6, 20, 21, 22]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}{space_count}')
+    endfor
+
+    call term_sendkeys(buf, ":set pumborder=double,margin\<CR>")
+    for space_count in [4, 5, 19, 20, 21]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}m_{space_count}')
+    endfor
+
+    call term_sendkeys(buf, ":set pumborder=double,margin,shadow\<CR>")
+    for space_count in [2, 3, 17, 18, 19]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}m_s_{space_count}')
+    endfor
+
+    if i == 1 && has('rightleft')
+      call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
+    endif
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_shadow_hiddenchar()
+  CheckScreendump
+
+  let lines =<< trim END
+    bold italic underline reverse normal
+    italic underline reverse normal bold
+    underline reverse normal bold italic
+    reverse normal bold italic underline
+    normal bold italic underline reverse
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
+
+  call term_sendkeys(buf, ":set completeopt=menuone,noselect pumborder=shadow\<CR>")
+  call term_sendkeys(buf, ":hi BoldGrp cterm=bold\<CR>")
+  call term_sendkeys(buf, ":hi ItalicGrp cterm=italic,underline\<CR>")
+  call term_sendkeys(buf, ":hi ReverseGrp cterm=reverse\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"BoldGrp\", \"bold\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ItalicGrp\", \"italic\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ItalicGrp\", \"underline\")\<CR>")
+  call term_sendkeys(buf, ":call matchadd(\"ReverseGrp\", \"reverse\")\<CR>")
+
+  call term_sendkeys(buf, "i\<C-N>")
+  call TermWait(buf, 10)
+  call VerifyScreenDump(buf, 'Test_popup_shadow_hiddenchar_1', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>wwi\<C-N>")
+  call TermWait(buf, 10)
+  call VerifyScreenDump(buf, 'Test_popup_shadow_hiddenchar_2', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

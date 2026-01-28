@@ -1,8 +1,7 @@
 " Ex commands
 
+
 " START NOT MATCHED
-:@
-:@@
 :Next
 :Print
 :X
@@ -13,8 +12,8 @@
 : help
  : help # FIXME
 
-:2match
-:3match
+:@
+
 :append
     text
 .
@@ -540,6 +539,7 @@
 :unabbreviate
 :unabbreviate
 :unhide
+:uniq
 :unlet
 :unlockvar
 :unmap
@@ -597,8 +597,6 @@ call Foo() | help
 call Foo() |help
 call Foo()| help
 
-call Foo() | 2match
-call Foo() | 3match
 " FIXME
 call Foo() | append
     text
@@ -1126,6 +1124,7 @@ call Foo() | undolist
 call Foo() | unabbreviate
 call Foo() | unabbreviate
 call Foo() | unhide
+call Foo() | uniq
 call Foo() | unlet
 call Foo() | unlockvar
 call Foo() | unmap

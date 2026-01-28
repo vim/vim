@@ -1,6 +1,8 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Apr 10
+*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Dec 15
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	by Bram Moolenaar
+
 
 			      Set your settings
 
@@ -308,6 +310,7 @@ This switches on three very clever mechanisms:
 
 
 				*restore-cursor* *last-position-jump*  >vim
+
     augroup RestoreCursor
       autocmd!
       autocmd BufReadPost *
@@ -335,8 +338,8 @@ This only works in a Vim script file, not when typing commands at the
 command line.
 
 >
-	command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
-		  \ | wincmd p | diffthis
+	command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
+		  \ | diffthis | wincmd p | diffthis
 
 This adds the ":DiffOrig" command.  Use this in a modified buffer to see the
 differences with the file it was loaded from.  See |diff| and |:DiffOrig|.
@@ -396,13 +399,17 @@ The ":map" command (with no arguments) lists your current mappings.  At
 least the ones for Normal mode.  More about mappings in section |40.1|.
 
 ==============================================================================
-*05.5*	Adding a package  *add-package* *matchit-install* *package-matchit*
+*05.5*	Adding a package  *add-package*
 
 A package is a set of files that you can add to Vim.  There are two kinds of
 packages: optional and automatically loaded on startup.
 
 The Vim distribution comes with a few packages that you can optionally use.
-For example, the matchit plugin.  This plugin makes the "%" command jump to
+
+------------------------------------------------------------------------------
+Adding the matchit package		*matchit-install* *package-matchit*
+------------------------------------------------------------------------------
+For example, the matchit package  This plugin makes the "%" command jump to
 matching HTML tags, if/else/endif in Vim scripts, etc.  Very useful, although
 it's not backwards compatible (that's why it is not enabled by default).
 
@@ -431,7 +438,9 @@ an archive or as a repository.  For an archive you can follow these steps:
 	   Here "fancytext" is the name of the package, it can be anything
 	   else.
 
+------------------------------------------------------------------------------
 Adding the editorconfig package *editorconfig-install* *package-editorconfig*
+------------------------------------------------------------------------------
 
 Similar to the matchit package, to load the distributed editorconfig plugin
 when Vim starts, add the following line to your vimrc file: >
@@ -441,7 +450,9 @@ After restarting your Vim, the plugin is active and you can read about it at: >
 	:h editorconfig.txt
 
 
+------------------------------------------------------------------------------
 Adding the comment package		*comment-install* *package-comment*
+------------------------------------------------------------------------------
 
 Load the plugin with this command: >
 	packadd comment
@@ -454,7 +465,9 @@ the package loaded.  Once the package is loaded, read about it at: >
 	:h comment.txt
 
 
+------------------------------------------------------------------------------
 Adding the nohlsearch package	*nohlsearch-install* *package-nohlsearch*
+------------------------------------------------------------------------------
 
 Load the plugin with this command: >
 	packadd nohlsearch
@@ -468,7 +481,9 @@ To disable the effect of the plugin after it has been loaded: >
 	au! nohlsearch
 <
 
+------------------------------------------------------------------------------
 Adding the highlight-yank package	*hlyank-install* *package-hlyank*
+------------------------------------------------------------------------------
 
 Load the plugin with this command: >
 	packadd hlyank
@@ -493,6 +508,20 @@ To highlight in visual mode, use: >
 
 To disable the effect of the plugin after it has been loaded: >
 	au! hlyank
+
+------------------------------------------------------------------------------
+Adding the osc52 package		*osc52-install* *package-osc52*
+------------------------------------------------------------------------------
+
+Load the plugin with this command: >
+	packadd osc52
+<
+The osc52.vim package provides support for the OSC 52 terminal command, which
+allows an application to access the clipboard by communicating directly with
+your terminal.
+
+Once the package is loaded, read about it at: >
+	:h osc52.txt
 
 More information about packages can be found here: |packages|.
 
@@ -536,7 +565,8 @@ when you use Vim.  There are only two steps for adding a global plugin:
 GETTING A GLOBAL PLUGIN
 
 Where can you find plugins?
-- Some are always loaded, you can see them in the directory $VIMRUNTIME/plugin.
+- Some are always loaded, you can see them in the directory
+  $VIMRUNTIME/plugin.
 - Some come with Vim.  You can find them in the directory $VIMRUNTIME/macros
   and its sub-directories and under $VIM/vimfiles/pack/dist/opt/.
 - Download from the net.  There is a large collection on http://www.vim.org.

@@ -1,9 +1,6 @@
 " Tests for startup.
 
-source shared.vim
-source screendump.vim
-source term_util.vim
-source check.vim
+source util/screendump.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -72,6 +69,36 @@ func Test_after_comes_later()
 
   call delete('Xtestout')
   call delete('Xsequence')
+endfunc
+
+func Test_vim_did_init()
+  let before =<< trim [CODE]
+    set nocp viminfo+=nviminfo
+    set guioptions+=M
+    set loadplugins
+    set rtp=Xhere
+    set nomore
+  [CODE]
+
+  let after =<< trim [CODE]
+    redir! > Xtestout
+    echo g:var_vimrc
+    echo g:var_plugin
+    redir END
+    quit
+  [CODE]
+
+  call writefile(['let g:var_vimrc=v:vim_did_init'], 'Xvimrc', 'D')
+  call mkdir('Xhere/plugin', 'pR')
+  call writefile(['let g:var_plugin=v:vim_did_init'], 'Xhere/plugin/here.vim')
+
+  if RunVim(before, after, '-u Xvimrc')
+    let lines = readfile('Xtestout')
+    call assert_equal('0', lines[1])
+    call assert_equal('1', lines[2])
+  endif
+
+  call delete('Xtestout')
 endfunc
 
 func Test_pack_in_rtp_when_plugins_run()
@@ -526,7 +553,7 @@ func Test_geometry()
       " Depending on the GUI library and the windowing system the final size
       " might be a bit different, allow for some tolerance.  Tuned based on
       " actual failures.
-      call assert_inrange(31, 35, str2nr(lines[0]))
+      call assert_inrange(30, 35, str2nr(lines[0]))
       " for some reason, the window may contain fewer lines than requested
       " for GTK, so allow some tolerance
       call assert_inrange(8, 13,  str2nr(lines[1]))
@@ -559,7 +586,7 @@ func Test_invalid_args()
   CheckUnix
   CheckNotGui
 
-  for opt in ['-Y', '--does-not-exist']
+  for opt in ['-K', '--does-not-exist']
     let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])

@@ -1,6 +1,8 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Apr 27
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Dec 13
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	by Bram Moolenaar
+
 
 			      Write a Vim script
 
@@ -30,10 +32,10 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Let's start with some nomenclature. A Vim script is any file that Vim can
-interpret and execute.  This includes files written in Vim's scripting language
-like for example .vim files or configuration files like .vimrc and .gvimrc.
-These scripts may define functions, commands and settings that Vim uses to
-customize and extend its behavior.
+interpret and execute.  This includes files written in Vim's scripting
+language like for example .vim files or configuration files like .vimrc and
+.gvimrc.  These scripts may define functions, commands and settings that Vim
+uses to customize and extend its behavior.
 
 						*vim-script-notation*
 The correct notation is "Vim script" (or "Vim9 script" when refering to the
@@ -125,8 +127,8 @@ make such a loop, it can be written much more compact: >
 	  echo $"count is {i}"
 	endfor
 
-We won't explain how `for`, `range()`and `$"string"` work until later.  Follow
-the links if you are impatient.
+We won't explain how `for`, `range()` and `$"string"` work until later.
+Follow the links if you are impatient.
 
 
 TRYING OUT EXAMPLES
@@ -749,7 +751,7 @@ String manipulation:					*string-functions*
 	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
-	printf()		format a string according to % items
+	printf()		format a string according to "%" items
 	escape()		escape characters in a string with a '\'
 	shellescape()		escape a string for use with a shell command
 	fnameescape()		escape a file name for use with a Vim command
@@ -762,7 +764,8 @@ String manipulation:					*string-functions*
 	charclass()		class of a character
 	match()			position where a pattern matches in a string
 	matchbufline()		all the matches of a pattern in a buffer
-	matchend()		position where a pattern match ends in a string
+	matchend()		position where a pattern match ends in a
+				string
 	matchfuzzy()		fuzzy matches a string in a list of strings
 	matchfuzzypos()		fuzzy matches a string in a list of strings
 	matchstr()		match of a pattern in a string
@@ -806,6 +809,9 @@ String manipulation:					*string-functions*
 	ngettext()		lookup single/plural message translation
 	str2blob()		convert a list of strings into a blob
 	blob2str()		convert a blob into a list of strings
+	items()			get List of String index-character pairs
+	uri_encode()		URI-encode a string
+	uri_decode()		URI-decode a string
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
@@ -832,12 +838,12 @@ List manipulation:					*list-functions*
 	range()			return a List with a sequence of numbers
 	string()		String representation of a List
 	call()			call a function with List as arguments
-	index()			index of a value in a List or Blob
-	indexof()		index in a List or Blob where an expression
-				evaluates to true
+	index()			index of a value in a List
+	indexof()		index in a List where an expression is true
 	max()			maximum value in a List
 	min()			minimum value in a List
-	count()			count number of times a value appears in a List
+	count()			count number of times a value appears in a
+				List
 	repeat()		repeat a List multiple times
 	flatten()		flatten a List
 	flattennew()		flatten a copy of a List
@@ -918,6 +924,9 @@ Blob manipulation:					*blob-functions*
 	blob2list()		get a list of numbers from a blob
 	list2blob()		get a blob from a list of numbers
 	reverse()		reverse the order of numbers in a blob
+	index()			index of a value in a Blob
+	indexof()		index in a Blob where an expression is true
+	items()			get List of Blob index-value pairs
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -1112,6 +1121,8 @@ Command line:					*command-line-functions*
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
 	getcompletion()		list of command-line completion matches
+	getcompletiontype()	get the type of the command-line completion
+				for specified string
 	fullcommand()		get full command name
 	cmdcomplete_info()	get command-line completion information
 
@@ -1126,8 +1137,7 @@ Insert mode completion:				*completion-functions*
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
 	complete_info()		get current completion information
-	complete_match()	get insert completion start match col and
-				trigger text
+	preinserted()		check if text is inserted after cursor
 	pumvisible()		check if the popup menu is displayed
 	pum_getpos()		position and size of popup menu if visible
 
@@ -1231,11 +1241,13 @@ Mappings and Menus:			    *mapping-functions*
 	mapset()		restore a mapping
 	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
+	wildtrigger()		start wildcard expansion
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
 	assert_equalfile()	assert that two file contents are equal
-	assert_notequal()	assert that two expressions values are not equal
+	assert_notequal()	assert that two expressions values are not
+				equal
 	assert_inrange()	assert that an expression is inside a range
 	assert_match()		assert that a pattern matches the value
 	assert_notmatch()	assert that a pattern does not match the value
@@ -1453,13 +1465,16 @@ Various:					*various-functions*
 
 	luaeval()		evaluate |Lua| expression
 	mzeval()		evaluate |MzScheme| expression
-	perleval()		evaluate Perl expression (|+perl|)
-	py3eval()		evaluate Python expression (|+python3|)
-	pyeval()		evaluate Python expression (|+python|)
+	perleval()		evaluate Perl expression
+	py3eval()		evaluate Python expression
+	pyeval()		evaluate Python expression
 	pyxeval()		evaluate |python_x| expression
 	rubyeval()		evaluate |Ruby| expression
 
 	debugbreak()		interrupt a program being debugged
+
+	redraw_listener_add()   add callbacks to listen for redraws
+	redraw_listener_remove()    remove a redraw listener
 
 ==============================================================================
 *41.7*	Defining a function
@@ -1583,7 +1598,7 @@ once for every line in the range, with the cursor in that line.  Example: >
 
 If you call this function with: >
 
-	:10,15Number()
+	:10,15call Number()
 
 The function will be called six times, starting on line 10 and ending on line
 15.

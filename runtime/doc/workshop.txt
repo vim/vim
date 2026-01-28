@@ -1,7 +1,7 @@
-*workshop.txt*  For Vim version 9.1.  Last change: 2019 Jan 17
+*workshop.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Gordon Prieur
+		  VIM REFERENCE MANUAL	  by Gordon Prieur
 
 
 Sun Visual WorkShop Features			*workshop* *workshop-support*

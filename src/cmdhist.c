@@ -37,7 +37,7 @@ get_histentry(int hist_type)
     return history[hist_type];
 }
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
     void
 set_histentry(int hist_type, histentry_T *entry)
 {
@@ -51,7 +51,7 @@ get_hisidx(int hist_type)
     return &hisidx[hist_type];
 }
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
     int *
 get_hisnum(int hist_type)
 {
@@ -365,7 +365,7 @@ add_to_history(
 	last_maptick = maptick;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Get identifier of newest history entry.
@@ -668,7 +668,7 @@ f_histnr(typval_T *argvars UNUSED, typval_T *rettv)
 }
 #endif // FEAT_EVAL
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Very specific function to remove the value in ":set key=val" from the
  * history.

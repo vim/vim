@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 // The names of packages that once were loaded are remembered.
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 #endif
@@ -70,7 +70,7 @@ estack_push(etype_T type, char_u *name, long lnum)
     return entry;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add a user function to the execution stack.
  */
@@ -188,51 +188,76 @@ estack_sfile(estack_arg_T which UNUSED)
 	entry = ((estack_T *)exestack.ga_data) + idx;
 	if (entry->es_name != NULL)
 	{
-	    long    lnum = 0;
-	    char_u  *type_name = (char_u *)"";
-	    char_u  *class_name = (char_u *)"";
+	    long	lnum = 0;
+	    size_t	added = 0;
+	    string_T	type_name = {(char_u *)"", 0};
+	    string_T	class_name = {(char_u *)"", 0};
+	    string_T	es_name = {entry->es_name, STRLEN(entry->es_name)};
 
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
-		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
-		    default: type_name = (char_u *)""; break;
+		    case ETYPE_SCRIPT:
+			type_name.string = (char_u *)"script ";
+			type_name.length = 7;
+			break;
+		    case ETYPE_UFUNC:
+			type_name.string = (char_u *)"function ";
+			type_name.length = 9;
+			break;
+		    default:
+			break;
 		}
 		last_type = entry->es_type;
 	    }
 	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
-		class_name = entry->es_info.ufunc->uf_class->class_name;
+	    {
+		class_name.string = entry->es_info.ufunc->uf_class->class_name.string;
+		class_name.length = entry->es_info.ufunc->uf_class->class_name.length;
+	    }
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+
+	    len = es_name.length + type_name.length + class_name.length + 26;
 	    if (ga_grow(&ga, (int)len) == FAIL)
 		break;
-	    ga_concat(&ga, type_name);
-	    if (*class_name != NUL)
+	    ga_concat_len(&ga, type_name.string, type_name.length);
+	    // For class methods prepend "<class name>." to the function name.
+	    if (*class_name.string != NUL)
 	    {
-		// For class methods prepend "<class name>." to the function name.
-		ga_concat(&ga, (char_u *)"<SNR>");
-		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23,
-		       "%d_", entry->es_info.ufunc->uf_script_ctx.sc_sid);
-		ga_concat(&ga, class_name);
-		ga_append(&ga, '.');
+		added = vim_snprintf_safelen(
+		    (char *)ga.ga_data + ga.ga_len,
+		    len - (size_t)ga.ga_len,
+		    "<SNR>%d_%s.",
+		    entry->es_info.ufunc->uf_script_ctx.sc_sid,
+		    class_name.string);
+
+		ga.ga_len += (int)added;
 	    }
-	    ga_concat(&ga, entry->es_name);
+	    ga_concat_len(&ga, es_name.string, es_name.length);
 	    // For the bottom entry of <sfile>: do not add the line number, it is used in
 	    // <slnum>.  Also leave it out when the number is not set.
 	    if (lnum != 0)
-		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
-			lnum);
+	    {
+		added = vim_snprintf_safelen(
+		    (char *)ga.ga_data + ga.ga_len,
+		    len - (size_t)ga.ga_len,
+		    "[%ld]",
+		    lnum);
+
+		ga.ga_len += (int)added;
+	    }
 	    if (idx != exestack.ga_len - 1)
-		ga_concat(&ga, (char_u *)"..");
+		ga_concat_len(&ga, (char_u *)"..", 2);
 	}
     }
 
-    ga_append(&ga, '\0');
+    // Only NUL-terminate when not returning NULL.
+    if (ga.ga_data != NULL)
+	ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 #endif
 }
@@ -758,7 +783,7 @@ source_in_path(char_u *path, char_u *name, int flags, int *ret_sid)
     return do_in_path_and_pp(path, name, flags, source_callback, ret_sid);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Find "name" in 'runtimepath'. If found a new scriptitem is created for it
@@ -1128,43 +1153,51 @@ ExpandRTDir_int(
 {
     for (int i = 0; dirnames[i] != NULL; ++i)
     {
-	size_t		buf_len = STRLEN(dirnames[i]) + pat_len + 22;
+	const size_t	buf_len = STRLEN(dirnames[i]) + pat_len + 64;
 	char		*buf = alloc(buf_len);
 	if (buf == NULL)
 	{
 	    ga_clear_strings(gap);
 	    return;
 	}
-	char		*tail = buf + 15;
-	size_t		tail_buflen = buf_len - 15;
 	int		glob_flags = 0;
 	int		expand_dirs = FALSE;
 
-	if (*(dirnames[i]) == NUL)  // empty dir used for :runtime
-	    vim_snprintf(tail, tail_buflen, "%s*.vim", pat);
-	else
-	    vim_snprintf(tail, tail_buflen, "%s/%s*.vim", dirnames[i], pat);
+	// Build base pattern
+	vim_snprintf(buf, buf_len, "%s%s%s%s",
+		     *dirnames[i] ? dirnames[i] : "", *dirnames[i] ? "/" : "",
+		     pat, "*.vim");
 
 expand:
 	if ((flags & DIP_NORTP) == 0)
-	    globpath(p_rtp, (char_u *)tail, gap, glob_flags, expand_dirs);
+	    globpath(p_rtp, (char_u *)buf, gap, glob_flags, expand_dirs);
 
 	if (flags & DIP_START)
 	{
-	    memcpy(tail - 15, "pack/*/start/*/", 15);
-	    globpath(p_pp, (char_u *)tail - 15, gap, glob_flags, expand_dirs);
+	    // Build complete search path: pack/*/start/*/dirnames[i]/pat*.vim
+	    vim_snprintf(buf, buf_len, "pack/*/start/*/%s%s%s%s",
+			 *dirnames[i] ? dirnames[i] : "",
+			 *dirnames[i] ? "/" : "",
+			 pat,
+			 expand_dirs ? "*" : "*.vim");
+	    globpath(p_pp, (char_u *)buf, gap, glob_flags, expand_dirs);
 	}
 
 	if (flags & DIP_OPT)
 	{
-	    memcpy(tail - 13, "pack/*/opt/*/", 13);
-	    globpath(p_pp, (char_u *)tail - 13, gap, glob_flags, expand_dirs);
+	    // Build complete search path: pack/*/opt/*/dirnames[i]/pat*.vim
+	    vim_snprintf(buf, buf_len, "pack/*/opt/*/%s%s%s%s",
+			 *dirnames[i] ? dirnames[i] : "",
+			 *dirnames[i] ? "/" : "", pat,
+			 expand_dirs ? "*" : "*.vim");
+	    globpath(p_pp, (char_u *)buf, gap, glob_flags, expand_dirs);
 	}
 
-	if (*(dirnames[i]) == NUL && !expand_dirs)
+	// Second round for directories
+	if (*dirnames[i] == NUL && !expand_dirs)
 	{
 	    // expand dir names in another round
-	    vim_snprintf(tail, tail_buflen, "%s*", pat);
+	    vim_snprintf(buf, buf_len, "%s*", pat);
 	    glob_flags = WILD_ADD_SLASH;
 	    expand_dirs = TRUE;
 	    goto expand;
@@ -1175,8 +1208,10 @@ expand:
 
     int pat_pathsep_cnt = 0;
     for (size_t i = 0; i < pat_len; ++i)
+    {
 	if (vim_ispathsep(pat[i]))
 	    ++pat_pathsep_cnt;
+    }
 
     for (int i = 0; i < gap->ga_len; ++i)
     {
@@ -1191,9 +1226,11 @@ expand:
 
 	int match_pathsep_cnt = (e > s && e[-1] == '/') ? -1 : 0;
 	for (s = e; s > match; MB_PTR_BACK(match, s))
+	{
 	    if (s < match || (vim_ispathsep(*s)
 				     && ++match_pathsep_cnt > pat_pathsep_cnt))
 		break;
+	}
 	++s;
 	if (s != match)
 	    mch_memmove(match, s, e - s + 1);
@@ -1407,7 +1444,7 @@ ex_source(exarg_T *eap)
 	cmd_source(eap->arg, eap);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * ":options"
  */
@@ -1430,7 +1467,7 @@ ex_options(
  * ":source" and associated commands.
  */
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the address holding the next breakpoint line for a source cookie.
  */
@@ -2036,7 +2073,7 @@ do_source(
 }
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * ":scriptnames"
@@ -2094,7 +2131,7 @@ ex_scriptnames(exarg_T *eap)
     }
 }
 
-# if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+# if defined(BACKSLASH_IN_FILENAME)
 /*
  * Fix slashes in the list of script names for 'shellslash'.
  */
@@ -2131,7 +2168,7 @@ get_scriptname(scid_T id)
     return SCRIPT_ITEM(id)->sn_name;
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_scriptnames(void)
 {
@@ -2521,7 +2558,7 @@ getsourceline(
 		ga_concat(&ga, p + 1);
 	    else if (*p == '|')
 	    {
-		ga_concat(&ga, (char_u *)" ");
+		ga_concat_len(&ga, (char_u *)" ", 1);
 		ga_concat(&ga, p);
 	    }
 	    for (;;)
@@ -2546,7 +2583,7 @@ getsourceline(
 			ga_concat(&ga, p + 1);
 		    else
 		    {
-			ga_concat(&ga, (char_u *)" ");
+			ga_concat_len(&ga, (char_u *)" ", 1);
 			ga_concat(&ga, p);
 		    }
 		}
@@ -2665,7 +2702,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * ":finish": Mark a sourced file as finished.
  */

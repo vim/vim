@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2025 Mar 25
+*testing.txt*	For Vim version 9.1.  Last change: 2025 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -26,7 +26,7 @@ There are two types of tests added over time:
 
 						*new-style-testing*
 New tests should be added as new style tests.  The test scripts are named
-test_<feature>.vim (replace <feature> with the feature under test). These use
+test_<feature>.vim (replace <feature> with the feature under test).  These use
 functions such as |assert_equal()| to keep the test commands and the expected
 result in one place.
 						*old-style-testing*
@@ -58,7 +58,7 @@ test_autochdir()					*test_autochdir()*
 
 test_feedinput({string})				*test_feedinput()*
 		Characters in {string} are queued for processing as if they
-		were typed by the user. This uses a low level input buffer.
+		were typed by the user.  This uses a low level input buffer.
 		This function works only when with |+unix| or GUI is running.
 
 		Can also be used as a |method|: >
@@ -96,7 +96,7 @@ test_getvalue({name})					*test_getvalue()*
 						*test_gui_event()*
 test_gui_event({event}, {args})
 		Generate a GUI {event} with arguments {args} for testing Vim
-		functionality. This function works only when the GUI is
+		functionality.  This function works only when the GUI is
 		running.
 
 		{event} is a String and the supported values are:
@@ -116,7 +116,7 @@ test_gui_event({event}, {args})
 		    files:	List of file names
 		    row:	window row number
 		    col:	window column number
-		    modifiers:	key modifiers. The supported values are:
+		    modifiers:	key modifiers.  The supported values are:
 				    0x4	Shift
 				    0x8	Alt
 				   0x10	Ctrl
@@ -131,7 +131,7 @@ test_gui_event({event}, {args})
 		  in {args} are:
 		    find_text:	string to find.
 		    repl_text:	replacement string.
-		    flags:	flags controlling the find/replace. Supported
+		    flags:	flags controlling the find/replace.  Supported
 				values are:
 				    1	search next string (find dialog)
 				    2	search next string (replace dialog)
@@ -176,7 +176,7 @@ test_gui_event({event}, {args})
 		  Set or drag the left, right or horizontal scrollbar.  Only
 		  works when the scrollbar actually exists.  The supported
 		  items in {args} are:
-		    which:	Selects the scrollbar. The supported values
+		    which:	Selects the scrollbar.  The supported values
 				are:
 				    left  Left scrollbar of the current window
 				    right Right scrollbar of the current window
@@ -202,14 +202,14 @@ test_gui_event({event}, {args})
 
 		"tabline":
 		  Inject a mouse click event on the tabline to select a
-		  tabpage. The supported items in {args} are:
+		  tabpage.  The supported items in {args} are:
 		    tabnr:	tab page number
 
 		"tabmenu":
-		  Inject an event to select a tabline menu entry. The
+		  Inject an event to select a tabline menu entry.  The
 		  supported items in {args} are:
 		    tabnr:	tab page number
-		    item:	tab page menu item number. 1 for the first
+		    item:	tab page menu item number.  1 for the first
 				menu item, 2 for the second item and so on.
 
 		After injecting the GUI events you probably should call
@@ -299,7 +299,7 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 				    8	alt is pressed
 				Note: These values are different from the
 				mouse modifiers.
-		    execute:	Optional. Similar to |feedkeys()| mode x.
+		    execute:	Optional.  Similar to |feedkeys()| mode x.
 				When this is included and set to true
 				(non-zero) then Vim will process any buffered
 				unprocessed key events.  All other {args}
@@ -307,8 +307,8 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 
 		"set_keycode_trans_strategy":
 		  |w32-experimental-keycode-trans-strategy|
-		  Switch the keycode translation method. The supported methods
-		  are:
+		  Switch the keycode translation method.  The supported
+		  methods are:
 		    experimental:   The method used after Patch v8.2.4807
 				    using ToUnicode() Win API call.
 		    classic:	    The method used pre Patch v8.2.4807
@@ -323,55 +323,55 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 		Return type: |vim9-boolean|
 
 test_null_blob()					*test_null_blob()*
-		Return a |Blob| that is null. Only useful for testing.
+		Return a |Blob| that is null.  Only useful for testing.
 
 		Return type: |Blob|
 
 test_null_channel()					*test_null_channel()*
-		Return a |Channel| that is null. Only useful for testing.
+		Return a |Channel| that is null.  Only useful for testing.
 		{only available when compiled with the +channel feature}
 
 		Return type: |Channel|
 
 test_null_dict()					*test_null_dict()*
-		Return a |Dict| that is null. Only useful for testing.
+		Return a |Dict| that is null.  Only useful for testing.
 
 		Return type: dict<any>
 
 test_null_function()					*test_null_function()*
-		Return a |Funcref| that is null. Only useful for testing.
+		Return a |Funcref| that is null.  Only useful for testing.
 
 		Return type: func(...): unknown
 
 test_null_job()						*test_null_job()*
-		Return a |Job| that is null. Only useful for testing.
+		Return a |Job| that is null.  Only useful for testing.
 		{only available when compiled with the +job feature}
 
 		Return type: |job|
 
 test_null_list()					*test_null_list()*
-		Return a |List| that is null. Only useful for testing.
+		Return a |List| that is null.  Only useful for testing.
 
 		Return type: list<any>
 
 test_null_partial()					*test_null_partial()*
-		Return a |Partial| that is null. Only useful for testing.
+		Return a |Partial| that is null.  Only useful for testing.
 
 		Return type: func(...): unknown
 
 test_null_string()					*test_null_string()*
-		Return a |String| that is null. Only useful for testing.
+		Return a |String| that is null.  Only useful for testing.
 
 		Return type: |String|
 
 test_null_tuple()					*test_null_tuple()*
-		Return a |Tuple| that is null. Only useful for testing.
+		Return a |Tuple| that is null.  Only useful for testing.
 
 		Return type: |Tuple|
 
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
-		looks like it still has the default value. Use like this: >
+		looks like it still has the default value.  Use like this: >
 			set ambiwidth=double
 			call test_option_not_set('ambiwidth')
 <		Now the 'ambiwidth' option behaves like it was never changed,
@@ -384,8 +384,8 @@ test_option_not_set({name})				*test_option_not_set()*
 		Return type: |Number|
 
 test_override({name}, {val})				*test_override()*
-		Overrides certain parts of Vim's internal processing to be able
-		to run tests. Only to be used for testing Vim!
+		Overrides certain parts of Vim's internal processing to be
+		able to run tests.  Only to be used for testing Vim!
 		The override is enabled when {val} is non-zero and removed
 		when {val} is zero.
 		Current supported values for {name} are:
@@ -422,7 +422,7 @@ test_override({name}, {val})				*test_override()*
 
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a
-		script the "starting" variable is non-zero. This is usually a
+		script the "starting" variable is non-zero.  This is usually a
 		good thing (tests run faster), but sometimes this changes
 		behavior in a way that the test doesn't work properly.
 		When using: >
@@ -481,12 +481,12 @@ test_srand_seed([{seed}])				*test_srand_seed()*
 		Return type: |Number|
 
 test_unknown()						*test_unknown()*
-		Return a value with unknown type. Only useful for testing.
+		Return a value with unknown type.  Only useful for testing.
 
 		Return type: unknown
 
 test_void()						*test_void()*
-		Return a value with void type. Only useful for testing.
+		Return a value with void type.  Only useful for testing.
 
 		Return type: void
 
@@ -565,7 +565,7 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		error message.  Also see |assert-return|.
 							*E856*
 		When {error} is a string it must be found literally in the
-		first reported error. Most often this will be the error code,
+		first reported error.  Most often this will be the error code,
 		including the colon, e.g. "E123:". >
 			call assert_fails('bad cmd', 'E987:')
 <
@@ -575,8 +575,8 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 			call assert_fails('cmd', ['E987:.*expected bool'])
 <		The second pattern, if present, is matched against the last
 		reported error.
-		If there is only one error then both patterns must match. This
-		can be used to check that there is only one error.
+		If there is only one error then both patterns must match.
+		This can be used to check that there is only one error.
 		To only match the last error use an empty string for the first
 		error: >
 			call assert_fails('cmd', ['', 'E987:'])
@@ -586,7 +586,7 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 							*E1115*
 		When {lnum} is present and not negative, and the {error}
 		argument is present and matches, then this is compared with
-		the line number at which the error was reported. That can be
+		the line number at which the error was reported.  That can be
 		the line number in a function or in a script.
 							*E1116*
 		When {context} is present it is used as a pattern and matched
@@ -609,7 +609,7 @@ assert_false({actual} [, {msg}])			*assert_false()*
 		location of the assert when run from a script.
 		Also see |assert-return|.
 
-		A value is false when it is zero. When {actual} is not a
+		A value is false when it is zero.  When {actual} is not a
 		number the assert fails.
 
 		Can also be used as a |method|: >

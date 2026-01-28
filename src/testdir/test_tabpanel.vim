@@ -1,13 +1,39 @@
 " Tests for tabpanel
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 CheckFeature tabpanel
 
 function s:reset()
   set tabpanel&
   set tabpanelopt&
   set showtabpanel&
+endfunc
+
+function Test_tabpanel_showtabpanel_eq_0()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    call setbufline(bufnr(), 1, ['aaa','bbb','ccc','ddd'])
+    tabnew 0000
+  END
+  call writefile(lines, 'XTest_tabpanel_stpl_eq_0', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_stpl_eq_0', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_0', {})
+  call term_sendkeys(buf, ":tabnext\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_1', {})
+  call term_sendkeys(buf, ":set showtabpanel=2\<CR>")
+  call term_sendkeys(buf, ":vsp aaa\<CR>:vsp bbb\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_2', {})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_3', {})
+  call term_sendkeys(buf, ":wincmd |\<CR>")
+  call term_sendkeys(buf, ":set showtabpanel=2\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_2', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 function Test_tabpanel_showtabpanel_eq_1()
@@ -68,6 +94,45 @@ function Test_tabpanel_with_vsplit()
   call StopVimInTerminal(buf)
 endfunc
 
+func Call_cmd_funcs()
+  let g:results = [getcmdpos(), getcmdscreenpos(), getcmdline()]
+endfunc
+
+function Test_tabpanel_cmdline()
+  let save_showtabline = &showtabline
+  let g:results = []
+  cnoremap <expr> <F2> Call_cmd_funcs()
+
+  set showtabline=0 showtabpanel=0
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 2, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 5, 'pwd'], g:results)
+
+  set showtabline=2 showtabpanel=2 tabpanelopt=columns:20,align:left
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 22, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 25, 'pwd'], g:results)
+
+  set showtabline=2 showtabpanel=2 tabpanelopt+=align:right
+  call Call_cmd_funcs()
+  call assert_equal([0, 0, ''], g:results)
+  call feedkeys(":\<F2>\<Esc>", "xt")
+  call assert_equal([1, 2, ''], g:results)
+  call feedkeys(":pwd\<F2>\<Esc>", "xt")
+  call assert_equal([4, 5, 'pwd'], g:results)
+
+  unlet g:results
+  cunmap <F2>
+  call s:reset()
+  let &showtabline = save_showtabline
+endfunc
+
 function Test_tabpanel_mouse()
   let save_showtabline = &showtabline
   let save_mouse = &mouse
@@ -91,16 +156,42 @@ function Test_tabpanel_mouse()
   call test_setmouse(3, 1)
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
-
-  " Confirm that tabpagenr() does not change when dragging outside the tabpanel
-  call test_setmouse(3, 30)
+  call test_setmouse(&lines, 1)
   call feedkeys("\<LeftMouse>", 'xt')
-  call test_setmouse(1, 30)
+  call assert_equal(1, tabpagenr())
+
+  " Drag the active tab page
+  tablast
+  call test_setmouse(3, 1)
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
+  call test_setmouse(2, 1)
   call feedkeys("\<LeftDrag>", 'xt')
   call assert_equal(3, tabpagenr())
+  call feedkeys("\<LeftRelease>", 'xt')
+  tabmove $
 
-  call feedkeys("\<LeftMouse>", 'xt')
+  " Drag the inactive tab page
+  tablast
+  call test_setmouse(2, 1)
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(2, tabpagenr())
+  call feedkeys("\<LeftRelease>", 'xt')
+  tabmove 2
+
+  " Confirm that tabpagenr() does not change when dragging outside the tabpanel
+  tablast
+  call test_setmouse(3, 30)
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
+  call test_setmouse(1, 30)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_equal(3, tabpagenr())
+
+  " Test getmousepos()
   call test_setmouse(2, 3)
+  call feedkeys("\<LeftMouse>", 'xt')
   let pos = getmousepos()
   call assert_equal(0, pos['winid'])
   call assert_equal(0, pos['winrow'])
@@ -174,6 +265,27 @@ function Test_tabpanel_drawing()
     call term_sendkeys(buf, '\' .. n)
     call VerifyScreenDump(buf, 'Test_tabpanel_drawing_' .. n, {})
   endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_drawing_2()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=align:right,vert
+    call setbufline(bufnr(), 1, ['', 'aaa'])
+  END
+  call writefile(lines, 'XTest_tabpanel_drawing_2', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_drawing_2', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, "ggo")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_2_0', {})
+
+  call term_sendkeys(buf, "\<Esc>u:set tabpanelopt+=align:left\<CR>")
+  call term_sendkeys(buf, "ggo")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_2_1', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -334,7 +446,7 @@ function Test_tabpanel_visual()
   let lines =<< trim END
     set showtabpanel=2
     set tabpanelopt=columns:10
-    set showtabline=0
+    set showtabline=0 laststatus=2
     tabnew
     call setbufline(bufnr(), 1, ['aaa1 bbb1 ccc1 ddd1', 'aaa2 bbb2 ccc2 ddd2', 'aaa3 bbb3 ccc3 ddd3', 'aaa4 bbb4 ccc4 ddd4'])
   END
@@ -382,7 +494,7 @@ function Test_tabpanel_tabline_and_tabpanel()
     set showtabpanel=2
     set tabpanelopt=columns:10,vert
     set fillchars=tpl_vert:│
-    set showtabline=2
+    set showtabline=2 laststatus=2
     e aaa.txt
     tabnew
     e bbb.txt
@@ -653,4 +765,75 @@ function Test_tabpanel_error()
   set tabpanel&vim
   set showtabpanel&vim
 endfunc
+
+function Test_tabpanel_with_msg_scrolled()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew
+    set modified
+    tabfirst
+  END
+  call writefile(lines, 'XTest_tabpanel_with_msg_scrolled', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_msg_scrolled', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_0', {})
+  call term_sendkeys(buf, ":qa\<CR>")
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_with_cmdline_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew aaa
+    set wildoptions+=pum
+    func TimerCb(timer)
+      tabnew bbb
+    endfunc
+    call timer_start(100, 'TimerCb')
+  END
+  call writefile(lines, 'XTest_tabpanel_with_cmdline_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_cmdline_pum', {'rows': 10, 'cols': 45})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+  call term_sendkeys(buf, ":set\<Tab>")
+  call term_wait(buf, 120)
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_1', {})
+  call term_sendkeys(buf, "\<Esc>:tabclose\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_with_cmdline_no_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew aaa
+    set wildoptions-=pum
+  END
+  call writefile(lines, 'XTest_tabpanel_with_cmdline_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_cmdline_pum', {'rows': 10, 'cols': 45})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_0', {})
+  call term_sendkeys(buf, ":tabne\<Tab>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_1', {})
+  call term_sendkeys(buf, "\<Esc>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

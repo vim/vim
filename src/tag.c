@@ -163,33 +163,32 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
 // Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Reads the 'tagfunc' option value and convert that to a callback value.
  * Invoked when the 'tagfunc' option is set. The option value can be a name of
  * a function (string), or function(<name>) or funcref(<name>) or a lambda.
  */
     char *
-did_set_tagfunc(optset_T *args UNUSED)
+did_set_tagfunc(optset_T *args)
 {
-#ifdef FEAT_EVAL
-    free_callback(&tfu_cb);
-    free_callback(&curbuf->b_tfu_cb);
+    int	retval;
 
-    if (*curbuf->b_p_tfu == NUL)
-	return NULL;
+    if (args->os_flags & OPT_LOCAL)
+	retval = option_set_callback_func(args->os_newval.string,
+							    &curbuf->b_tfu_cb);
+    else
+    {
+	retval = option_set_callback_func(args->os_newval.string, &tfu_cb);
+	if (retval == OK && !(args->os_flags & OPT_GLOBAL))
+	    set_buflocal_tfu_callback(curbuf);
+    }
 
-    if (option_set_callback_func(curbuf->b_p_tfu, &tfu_cb) == FAIL)
-	return e_invalid_argument;
-
-    copy_callback(&curbuf->b_tfu_cb, &tfu_cb);
-#endif
-
-    return NULL;
+    return retval == FAIL ? e_invalid_argument : NULL;
 }
 #endif
 
-# if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_tagfunc_option(void)
 {
@@ -197,9 +196,9 @@ free_tagfunc_option(void)
     free_callback(&tfu_cb);
 # endif
 }
-# endif
+#endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mark the global 'tagfunc' callback with "copyID" so that it is not garbage
  * collected.
@@ -936,9 +935,9 @@ end_do_tag:
     if (use_tagstack && tagstackidx <= curwin->w_tagstacklen)
 	curwin->w_tagstackidx = tagstackidx;
     postponed_split = 0;	// don't split next time
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
     g_do_tagpreview = 0;	// don't do tag preview next time
-# endif
+#endif
 
     vim_free(tofree);
 #ifdef FEAT_CSCOPE
@@ -975,7 +974,7 @@ print_tag_list(
     taglen = (int)(tagp.tagname_end - tagp.tagname + 2);
     if (taglen < 18)
 	taglen = 18;
-    if (taglen > Columns - 25)
+    if (taglen > cmdline_width - 25)
 	taglen = MAXCOL;
     if (msg_col == 0)
 	msg_didout = FALSE;	// overwrite previous message
@@ -1055,7 +1054,7 @@ print_tag_list(
 		attr = HL_ATTR(HLF_CM);
 		while (*p && *p != '\r' && *p != '\n')
 		{
-		    if (msg_col + ptr2cells(p) >= Columns)
+		    if (msg_col + ptr2cells(p) >= cmdline_width)
 		    {
 			msg_putchar('\n');
 			if (got_int)
@@ -1103,7 +1102,7 @@ print_tag_list(
 
 	while (p != command_end)
 	{
-	    if (msg_col + (*p == TAB ? 1 : ptr2cells(p)) > Columns)
+	    if (msg_col + (*p == TAB ? 1 : ptr2cells(p)) > cmdline_width)
 		msg_putchar('\n');
 	    if (got_int)
 		break;
@@ -1516,11 +1515,11 @@ find_tagfunc_tags(
 	    break;
 	}
 
-#ifdef FEAT_EMACS_TAGS
+# ifdef FEAT_EMACS_TAGS
 	len = 3;
-#else
+# else
 	len = 2;
-#endif
+# endif
 	res_name = NULL;
 	res_fname = NULL;
 	res_cmd = NULL;
@@ -1582,9 +1581,9 @@ find_tagfunc_tags(
 
 	    *p++ = MT_GL_OTH + 1;   // mtt
 	    *p++ = TAG_SEP;	    // no tag file name
-#ifdef FEAT_EMACS_TAGS
+# ifdef FEAT_EMACS_TAGS
 	    *p++ = TAG_SEP;
-#endif
+# endif
 
 	    STRCPY(p, res_name);
 	    p += STRLEN(p);
@@ -2200,11 +2199,11 @@ findtags_start_state_handler(
     // When "!_TAG_FILE_SORTED" found: start binary search if
     // flag set.
     // For cscope, it's always linear.
-# ifdef FEAT_CSCOPE
+#ifdef FEAT_CSCOPE
     if (st->linear || use_cscope)
-# else
+#else
     if (st->linear)
-# endif
+#endif
 	st->state = TS_LINEAR;
     else if (st->tag_file_sorted == NUL)
 	st->state = TS_BINARY;
@@ -3220,10 +3219,10 @@ find_tags(
 	if (st.stop_searching || st.linear || (!p_ic && noic) ||
 						st.orgpat->regmatch.rm_ic)
 	    break;
-# ifdef FEAT_CSCOPE
+#ifdef FEAT_CSCOPE
 	if (use_cscope)
 	    break;
-# endif
+#endif
 
 	// try another time while ignoring case
 	st.orgpat->regmatch.rm_ic = TRUE;
@@ -3279,7 +3278,7 @@ found_tagfile_cb(char_u *fname, void *cookie UNUSED)
     ((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] = tag_fname;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_tag_stuff(void)
 {
@@ -3850,6 +3849,15 @@ jumpto_tag(
     if (getfile_result == GETFILE_UNUSED
 				  && (postponed_split || cmdmod.cmod_tab != 0))
     {
+	if (swb_flags & SWB_VSPLIT)
+	    // If 'switchbuf' contains 'vsplit', then use a new vertically
+	    // split window.
+	    cmdmod.cmod_split |= WSP_VERT;
+
+	if ((swb_flags & SWB_NEWTAB) && cmdmod.cmod_tab == 0)
+	    // If 'switchbuf' contains 'newtab', then use a new tabpage
+	    cmdmod.cmod_tab = tabpage_index(curtab) + 1;
+
 	if (win_split(postponed_split > 0 ? postponed_split : 0,
 						postponed_split_flags) == FAIL)
 	{
@@ -4330,7 +4338,7 @@ expand_tags(
     return ret;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add a tag field to the dictionary "dict".
  * Return OK or FAIL.
@@ -4672,14 +4680,14 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     dictitem_T	*di;
     list_T	*l = NULL;
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     // not allowed to alter the tag stack entries from inside tagfunc
     if (tfu_in_use)
     {
 	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
 	return FAIL;
     }
-#endif
+# endif
 
     if ((di = dict_find(d, (char_u *)"items", -1)) != NULL)
     {

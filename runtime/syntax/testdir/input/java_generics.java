@@ -1,7 +1,12 @@
 // VIM_TEST_SETUP let g:java_highlight_functions = 'style'
 // VIM_TEST_SETUP let g:java_highlight_generics = 1
+// VIM_TEST_SETUP let g:java_highlight_java_lang = 1
+
+
 // VIM_TEST_SETUP hi link javaGenericsC1 Todo
 // VIM_TEST_SETUP hi link javaGenericsC2 Error
+// VIM_TEST_SETUP hi link javaWildcardBound Error
+
 
 import java.math.BigInteger;
 import java.util.function.Consumer;
@@ -107,6 +112,23 @@ class GenericsTests<T extends Number & Comparable<? super T>, U>
 			case Hex<?>(Long h) -> Long.toHexString(h);
 			default -> Long.toString(x.value());
 		}, x.radix());
+	}
+
+	static Class<?> eitherComparableOrIterable(Object o)
+	{
+		final boolean comparable;
+		return ((comparable = o instanceof Comparable) ^
+						o instanceof Iterable)
+			? (comparable)
+				? Comparable.class
+				: Iterable.class
+			: java.lang.Class.class;
+	}
+
+	<A, T extends java.util.function.Supplier<A>,
+		B, U extends java.util.function.Supplier<B>> U convert(T o)
+	{
+		throw new UnsupportedOperationException("TODO");
 	}
 
 	@java.lang.annotation.Target(

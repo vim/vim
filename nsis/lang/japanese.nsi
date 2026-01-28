@@ -32,14 +32,14 @@ LangString ^InstallBtn       ${LANG_JAPANESE} \
 ##############################################################################
 
 LicenseLangString page_lic_file 0 "..\lang\LICENSE.nsis.txt"
-#LicenseLangString page_lic_file ${LANG_JAPANESE} "..\lang\LICENSE.ja.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_JAPANESE} "..\lang\LICENSE.ja.txt"
 
 ##############################################################################
 # Translated README.txt file, which is opened after installation          {{{1
 ##############################################################################
 
 LangString vim_readme_file 0 "README.txt"
-#LangString vim_readme_file ${LANG_JAPANESE} "README.ja.txt"
+#LangString vim_readme_file ${LANG_JAPANESE} "README.jax.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

@@ -2,10 +2,7 @@
 " leaks under valgrind.  That is because when fork/exec fails memory is not
 " freed.  Since the process exits right away it's not a real leak.
 
-source check.vim
 CheckFeature terminal
-
-source shared.vim
 
 func Test_terminal_redir_fails()
   CheckUnix

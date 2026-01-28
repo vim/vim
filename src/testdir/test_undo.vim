@@ -3,8 +3,7 @@
 " undo-able pieces.  Do that by setting 'undolevels'.
 " Also tests :earlier and :later.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_undotree()
   new
@@ -219,7 +218,7 @@ func Test_undo_del_chars()
   call BackOne('3-456')
   call BackOne('23-456')
   call BackOne('123-456')
-  call assert_fails("BackOne('123-456')")
+  call assert_fails("BackOne('123-456')", "E492: Not an editor command: BackOne('123-456')")
 
   :" Delete three other characters and go back in time with g-
   call feedkeys('$x', 'xt')
@@ -235,7 +234,7 @@ func Test_undo_del_chars()
   call BackOne('3-456')
   call BackOne('23-456')
   call BackOne('123-456')
-  call assert_fails("BackOne('123-456')")
+  call assert_fails("BackOne('123-456')", "E492: Not an editor command: BackOne('123-456')")
   normal 10g+
   call assert_equal('123-', getline(1))
 
@@ -911,6 +910,17 @@ func Test_load_existing_undofile()
   let mess = execute(":norm! \<c-r>")
   call assert_equal(['one', 'two', 'three'], getline(1, '$'))
   call assert_match('Already at newest change', mess)
+  bw!
+endfunc
+
+func Test_restore_cursor_position_after_undo()
+  CheckFeature persistent_undo
+  sp samples/test_undo.txt
+
+  3 | exe "norm! gqk" | undojoin | 1 delete
+  call assert_equal(1, line('.'))
+  norm! u
+  call assert_equal(3, line('.'))
   bw!
 endfunc
 

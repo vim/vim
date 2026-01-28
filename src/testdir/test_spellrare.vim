@@ -1,6 +1,5 @@
 " Test spell checking
 
-source check.vim
 CheckFeature spell
 
 " Test spellbadword() with argument, specifically to move to "rare" words

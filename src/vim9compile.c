@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 // Functions defined with :def are stored in this growarray.
 // They are never removed, so that they can be found by index.
@@ -531,12 +526,16 @@ use_typecheck(type_T *actual, type_T *expected)
  * - return FAIL.
  * If "actual_is_const" is TRUE then the type won't change at runtime, do not
  * generate a TYPECHECK.
+ * If "typechk_flags" has TYPECHK_NUMBER_OK, then a number is accepted for
+ * a float.
+ * If "typechk_flags" has TYPECHK_TUPLE_OK, then a tuple is accepted for a
+ * list.
  */
     int
 need_type_where(
 	type_T	*actual,
 	type_T	*expected,
-	int	number_ok,	// expect VAR_FLOAT but VAR_NUMBER is OK
+	int	typechk_flags,	// acceptable types (type check flags)
 	int	offset,
 	where_T	where,
 	cctx_T	*cctx,
@@ -572,7 +571,7 @@ need_type_where(
     // If the actual type can be the expected type add a runtime check.
     if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
-	generate_TYPECHECK(cctx, expected, number_ok, offset,
+	generate_TYPECHECK(cctx, expected, typechk_flags, offset,
 		where.wt_kind == WT_VARIABLE, where.wt_index);
 	return OK;
     }
@@ -586,7 +585,7 @@ need_type_where(
 need_type(
 	type_T	*actual,
 	type_T	*expected,
-	int	number_ok,  // when expected is float number is also OK
+	int	typechk_flags,	// acceptable types (type check flags)
 	int	offset,
 	int	arg_idx,
 	cctx_T	*cctx,
@@ -600,7 +599,7 @@ need_type(
 	where.wt_index = arg_idx;
 	where.wt_kind = WT_ARGUMENT;
     }
-    return need_type_where(actual, expected, number_ok, offset, where,
+    return need_type_where(actual, expected, typechk_flags, offset, where,
 						cctx, silent, actual_is_const);
 }
 
@@ -1032,10 +1031,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     compiletype_T   compile_type;
     int		funcref_isn_idx = -1;
     lvar_T	*lvar = NULL;
+    char_u	*bracket_start = NULL;
 
     if (eap->forceit)
     {
-	emsg(_(e_cannot_use_bang_with_nested_def));
+	semsg(_(e_cannot_use_bang_with_nested_def_str),
+		eap->cmdidx == CMD_def ? ":def" : ":function");
 	return NULL;
     }
 
@@ -1046,6 +1047,14 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    ++name_end;
 	set_nextcmd(eap, name_end);
     }
+
+    if (*name_end == '<')
+    {
+	bracket_start = name_end;
+	if (skip_generic_func_type_args(&name_end) == FAIL)
+	    return NULL;
+    }
+
     if (name_end == name_start || *skipwhite(name_end) != '(')
     {
 	if (!ends_excmd2(name_start, name_end))
@@ -1063,6 +1072,11 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    return NULL;
 	return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
     }
+
+    if (bracket_start != NULL)
+	// generic function.  The function name ends before the list of types
+	// (opening angle bracket).
+	name_end = bracket_start;
 
     // Only g:Func() can use a namespace.
     if (name_start[1] == ':' && !is_global)
@@ -1084,7 +1098,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     fill_exarg_from_cctx(eap, cctx);
 
     eap->forceit = FALSE;
-    // We use the special <Lamba>99 name, but it's not really a lambda.
+    // We use the special <lambda>99 name, but it's not really a lambda.
     lambda_name = get_lambda_name();
     lambda_name.string = vim_strnsave(lambda_name.string, lambda_name.length);
     if (lambda_name.string == NULL)
@@ -1103,7 +1117,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
 
-    ufunc = define_function(eap, lambda_name.string, lines_to_free, 0, NULL, 0);
+    ufunc = define_function(eap, lambda_name.string, lines_to_free, 0, NULL, 0,
+									cctx);
 
     KeyTyped = save_KeyTyped;
 
@@ -1453,7 +1468,9 @@ vim9_declare_error(char_u *name)
     static int
 valid_dest_reg(int name)
 {
-    if ((name == '@' || valid_yank_reg(name, FALSE)) && name != '.')
+    if (name == '@')
+       name = '"';
+    if (name == '/' || name == '=' || valid_yank_reg(name, TRUE))
 	return TRUE;
     emsg_invreg(name);
     return FAIL;
@@ -1614,8 +1631,8 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 
     if (IS_ENUM(cl))
     {
-	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name,
-		m->ocm_name);
+	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name.string,
+		m->ocm_name.string);
 	return FALSE;
     }
 
@@ -1630,7 +1647,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 				? e_cannot_access_protected_variable_str
 				: e_variable_is_not_writable_str;
-	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+	emsg_var_cl_define(msg, m->ocm_name.string, 0, cl);
 	return FALSE;
     }
 
@@ -1745,7 +1762,7 @@ compile_lhs_class_variable(
 	// A class variable can be accessed without the class name
 	// only inside a class.
 	semsg(_(e_class_variable_str_accessible_only_inside_class_str),
-		lhs->lhs_name, defcl->class_name);
+		lhs->lhs_name, defcl->class_name.string);
 	return FAIL;
     }
 
@@ -2042,7 +2059,7 @@ compile_lhs_set_oc_member_type(
 	if (!inside_class(cctx, cl))
 	{
 	    semsg(_(e_enumvalue_str_cannot_be_modified),
-		    cl->class_name, m->ocm_name);
+		    cl->class_name.string, m->ocm_name.string);
 	    return FAIL;
 	}
 	if (lhs->lhs_type->tt_type == VAR_OBJECT &&
@@ -2051,7 +2068,7 @@ compile_lhs_set_oc_member_type(
 	    char *msg = lhs->lhs_member_idx == 0 ?
 		e_enum_str_name_cannot_be_modified :
 		e_enum_str_ordinal_cannot_be_modified;
-	    semsg(_(msg), cl->class_name);
+	    semsg(_(msg), cl->class_name.string);
 	    return FAIL;
 	}
     }
@@ -2062,12 +2079,12 @@ compile_lhs_set_oc_member_type(
     // only inside the class where it is defined.
     if ((m->ocm_access != VIM_ACCESS_ALL) &&
 	    ((is_object && !inside_class(cctx, cl))
-	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
+	     || (!is_object && cctx->ctx_ufunc->uf_defclass != cl)))
     {
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 	    ? e_cannot_access_protected_variable_str
 	    : e_variable_is_not_writable_str;
-	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+	emsg_var_cl_define(msg, m->ocm_name.string, 0, cl);
 	return FAIL;
     }
 
@@ -2104,8 +2121,9 @@ compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
 	}
 
 	p = skipwhite(var_end + 1);
-	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
-	if (lhs->lhs_type == NULL)
+	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
+	if (lhs->lhs_type == NULL
+		|| !valid_declaration_type(lhs->lhs_type))
 	    return FAIL;
 
 	lhs->lhs_has_type = TRUE;
@@ -2507,7 +2525,7 @@ compile_load_lhs(
 	if (rhs_type != NULL && member_type != NULL
 		&& vartype != VAR_OBJECT && vartype != VAR_CLASS
 		&& rhs_type != &t_void
-		&& need_type(rhs_type, member_type, FALSE,
+		&& need_type(rhs_type, member_type, 0,
 					    -3, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
 
@@ -2666,13 +2684,13 @@ compile_assign_unlet(
 	    if (range)
 	    {
 		type = get_type_on_stack(cctx, 1);
-		if (need_type(type, &t_number, FALSE,
+		if (need_type(type, &t_number, 0,
 					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    }
 	    type = get_type_on_stack(cctx, 0);
 	    if ((dest_type != VAR_BLOB && type->tt_type != VAR_SPECIAL)
-		    && need_type(type, &t_number, FALSE,
+		    && need_type(type, &t_number, 0,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
@@ -3027,7 +3045,7 @@ compile_assign_list_check_rhs_type(cctx_T *cctx, cac_T *cac)
 
     if (need_type(stacktype,
 		  stacktype->tt_type == VAR_TUPLE ? &t_tuple_any : &t_list_any,
-		  FALSE, -1, 0, cctx, FALSE, FALSE) == FAIL)
+		  TYPECHK_TUPLE_OK, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
 
     if (stacktype->tt_type == VAR_TUPLE)
@@ -3158,6 +3176,8 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
     int		ret = OK;
     char_u	*whitep;
     lhs_T	*lhs = &cac->cac_lhs;
+    lvar_T	*lvp;
+    lvar_T	save_lhs_lvar;
 
     // Compile the expression.
     if (cac->cac_incdec)
@@ -3166,7 +3186,14 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
     // Temporarily hide the new local variable here, it is
     // not available to this expression.
     if (lhs->lhs_new_local)
+    {
 	--cctx->ctx_locals.ga_len;
+
+	// Save the local variable value (compiling the RHS expression may
+	// create new local variables).
+	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + cctx->ctx_locals.ga_len;
+	save_lhs_lvar = *lvp;
+    }
     whitep = cac->cac_op + cac->cac_oplen;
 
     if (may_get_next_line_error(whitep, &cac->cac_nextc, cctx) == FAIL)
@@ -3178,7 +3205,15 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
 
     ret = compile_expr0_ext(&cac->cac_nextc, cctx, &cac->cac_is_const);
     if (lhs->lhs_new_local)
+    {
+	// Restore the local variable value.  Update lhs_lvar as the index of
+	// the local variable might have changed.
+	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + cctx->ctx_locals.ga_len;
+	*lvp = save_lhs_lvar;
+	lhs->lhs_lvar = lvp;
+
 	++cctx->ctx_locals.ga_len;
+    }
 
     return ret;
 }
@@ -3249,7 +3284,7 @@ compile_assign_valid_rhs_type(
 	    !has_list_index(cac->cac_var_start + lhs->lhs_varlen, cctx))
 	use_type = lhs->lhs_member_type;
 
-    if (need_type_where(rhs_type, use_type, FALSE, -1, where, cctx, FALSE,
+    if (need_type_where(rhs_type, use_type, 0, -1, where, cctx, FALSE,
 						cac->cac_is_const) == FAIL)
 	return FALSE;
 
@@ -3311,7 +3346,7 @@ compile_assign_check_type(cctx_T *cctx, cac_T *cac)
 
 	if (*cac->cac_nextc != '=')
 	{
-	    if (need_type(rhs_type, lhs_type, FALSE, -1, 0, cctx, FALSE,
+	    if (need_type(rhs_type, lhs_type, 0, -1, 0, cctx, FALSE,
 							FALSE) == FAIL)
 		return FAIL;
 	}
@@ -3422,6 +3457,27 @@ compile_assign_rhs(cctx_T *cctx, cac_T *cac)
 }
 
 /*
+ * Returns OK if "type" supports compound operator "op_arg" (e.g. +=, -=, %=,
+ * etc.).  Compound operators are not supported with a tuple and a dict.
+ * Returns FAIL if compound operator is not supported.
+ */
+    static int
+check_type_supports_compound_op(type_T *type, char_u op_arg)
+{
+    if (type->tt_type == VAR_TUPLE || type->tt_type == VAR_DICT)
+    {
+	char_u	op[2];
+
+	op[0] = op_arg;
+	op[1] = NUL;
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
  * Compile a compound op assignment statement (+=, -=, *=, %=, etc.)
  */
     static int
@@ -3431,32 +3487,36 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
     type_T	    *expected;
     type_T	    *stacktype = NULL;
 
-    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE)
-    {
-	// compound operators are not supported with a tuple
-	char_u	op[2];
-
-	op[0] = *cac->cac_op;
-	op[1] = NUL;
-	semsg(_(e_wrong_variable_type_for_str_equal), op);
+    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE
+	    && check_type_supports_compound_op(cac->cac_lhs.lhs_type,
+							*cac->cac_op) == FAIL)
 	return FAIL;
-    }
 
     if (*cac->cac_op == '.')
     {
-	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
+	expected = lhs->lhs_member_type;
+	stacktype = get_type_on_stack(cctx, 0);
+	if (expected != &t_string
+		&& need_type(stacktype, expected, 0, -1, 0, cctx,
+					FALSE, FALSE) == FAIL)
+	    return FAIL;
+	else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
     }
     else
     {
 	expected = lhs->lhs_member_type;
 	stacktype = get_type_on_stack(cctx, 0);
+
+	if (check_type_supports_compound_op(expected, *cac->cac_op) == FAIL)
+	    return FAIL;
+
 	if (
 		// If variable is float operation with number is OK.
 		!(expected == &t_float && (stacktype == &t_number
 					|| stacktype == &t_number_bool))
-		&& need_type(stacktype, expected, TRUE, -1, 0, cctx,
-					FALSE, FALSE) == FAIL)
+		&& need_type(stacktype, expected, TYPECHK_NUMBER_OK, -1, 0,
+						cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
     }
 
@@ -3603,7 +3663,7 @@ compile_assign_process_variables(
 	    SOURCING_LNUM = cac->cac_start_lnum;
 	    if (cac->cac_lhs.lhs_has_type
 		    && need_type(&t_list_string, cac->cac_lhs.lhs_type,
-			FALSE, -1, 0, cctx, FALSE, FALSE) == FAIL)
+				0, -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
 	else
@@ -4062,8 +4122,8 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 		// determined at run time.  Add a runtime type check.
 		where_T	where = WHERE_INIT;
 		where.wt_kind = WT_MEMBER;
-		where.wt_func_name = (char *)m->ocm_name;
-		if (need_type_where(type, m->ocm_type, FALSE, -1,
+		where.wt_func_name = (char *)m->ocm_name.string;
+		if (need_type_where(type, m->ocm_type, 0, -1,
 					where, cctx, FALSE, FALSE) == FAIL)
 		    return FAIL;
 	    }
@@ -4168,7 +4228,7 @@ compile_def_function_default_args(
 	    ufunc->uf_arg_types[arg_idx] = val_type;
 	}
 	else if (need_type_where(val_type, ufunc->uf_arg_types[arg_idx],
-		    FALSE, -1, where, cctx, FALSE, FALSE) == FAIL)
+		    0, -1, where, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
 
 	if (generate_STORE(cctx, ISN_STORE, i - count - off, NULL) == FAIL)
@@ -4728,6 +4788,14 @@ compile_def_function_body(
 		    emsg(_(e_class_can_only_be_used_in_script));
 		    return FAIL;
 
+	    case CMD_enum:
+		    emsg(_(e_enum_can_only_be_used_in_script));
+		    return FAIL;
+
+	    case CMD_interface:
+		    emsg(_(e_interface_can_only_be_used_in_script));
+		    return FAIL;
+
 	    case CMD_type:
 		    emsg(_(e_type_can_only_be_used_in_script));
 		    return FAIL;
@@ -4770,15 +4838,32 @@ compile_dfunc_scope_end_missing(cctx_T *cctx)
     if (cctx->ctx_scope == NULL)
 	return FALSE;
 
-    if (cctx->ctx_scope->se_type == IF_SCOPE)
-	emsg(_(e_missing_endif));
-    else if (cctx->ctx_scope->se_type == WHILE_SCOPE)
-	emsg(_(e_missing_endwhile));
-    else if (cctx->ctx_scope->se_type == FOR_SCOPE)
-	emsg(_(e_missing_endfor));
-    else
-	emsg(_(e_missing_rcurly));
-
+    switch (cctx->ctx_scope->se_type)
+    {
+	case IF_SCOPE:
+	    emsg(_(e_missing_endif));
+	    break;
+	case WHILE_SCOPE:
+	    emsg(_(e_missing_endwhile));
+	    break;
+	case FOR_SCOPE:
+	    emsg(_(e_missing_endfor));
+	    break;
+	case TRY_SCOPE:
+	    emsg(_(e_missing_endtry));
+	    break;
+	case BLOCK_SCOPE:
+	    // end block scope from :try (maybe)
+	    compile_endblock(cctx);
+	    if (cctx->ctx_scope != NULL
+		    && cctx->ctx_scope->se_type == TRY_SCOPE)
+		emsg(_(e_missing_endtry));
+	    else
+		emsg(_(e_missing_rcurly));
+	    break;
+	default:
+	    emsg(_(e_missing_rcurly));
+    }
     return TRUE;
 }
 
@@ -5170,7 +5255,7 @@ link_def_function(ufunc_T *ufunc)
     ++dfunc->df_refcount;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free all functions defined with ":def".
  */

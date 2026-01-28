@@ -1,7 +1,7 @@
 " Vim :def command
 
 
-" list
+" List
 
 def
 def Foo
@@ -13,7 +13,7 @@ def Foo | echo "Foo"
 def Foo " comment
 
 
-" definition
+" Definition
 
 " empty definition
 def Foo()
@@ -60,7 +60,7 @@ def s:ls()
 enddef
 
 
-" return types
+" Return types
 
 def Foo(): void
 enddef
@@ -88,7 +88,7 @@ def Foo()
 enddef # comment
 
 
-" parameters
+" Parameters
 
 def Foo(x: bool, y = 42, z: string = "zed")
 enddef
@@ -105,7 +105,7 @@ def Test(lines: list<number> = [line('.'), line('.')]): void
 enddef
 
 
-" comments
+" Comments
 
 def Foo()
   # Vim9-script comment
@@ -113,13 +113,13 @@ def Foo()
 enddef
 
 
-" leading command separator
+" Leading command separator
 
 echo "Foo" | def Foo()
 enddef
 
 
-" command modifiers
+" Command modifiers
 
 silent! def Foo()
 enddef

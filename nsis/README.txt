@@ -35,7 +35,7 @@ Preparatory stage
     and for the 64-bit version — "winpty.dll" from x64/bin to "winpty64.dll".
     Put the renamed file and "winpty-agent.exe" in "../.." (above the "vim91"
     directory).  However, you can specify a different directory by specifying
-    the appropriate makefile value. How to do this is described below. 
+    the appropriate makefile value. How to do this is described below.
 
 6.  To use stronger encryption, add the Sodium library.  You can get it here:
 	https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19-msvc.zip
@@ -64,7 +64,7 @@ Preparatory stage
 
     The default <GETTEXT directory> is "../..".  However, you can specify a
     different directory by specifying the appropriate makefile value. How to do
-    this is described below. 
+    this is described below.
 
 8.  Install NSIS if you didn't do that already.
     Download Unicode version the ShellExecAsUser plug-in for NSIS from:
@@ -80,7 +80,7 @@ Installer assembly stage
     After the installer is created and you copy it to the desired location, run
     the following command in the "/nsis" directory
 	    nmake.exe -lf Make_mvc.mak clean
-    
+
     On UNIX-like systems, go to the "/nsis" directory and type the command
 	    make -f Makefile [variables] all
 
@@ -101,8 +101,12 @@ Variables and their values available for building the installer (not mandatory):
     "HAVE_NLS=0"	— do not add native language support.
     "HAVE_MULTI_LANG=0" — to create an English-only the installer.
     "WIN64=1"		— to create a 64-bit the installer.
+    "ARM64=1"		— to create the installer for ARM64. The WIN64 variable
+			    must be set to 1.
     "X=<scriptcmd>"	— executes scriptcmd in script.  If multiple scriptcmd
 			    are specified, they are separated by a semicolon.
 			    Example "X=OutFile MyVim.exe;XPMode on"
     "MKNSIS=<dir>"	— the directory where the "makensis.exe" program is
 			    located.
+
+Note: for icons used in the installer, see the README.txt in the icons.zip

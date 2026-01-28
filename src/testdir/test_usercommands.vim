@@ -1,9 +1,8 @@
 " Tests for user defined commands
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 " Test for <mods> in user defined commands
 function Test_cmdmods()
@@ -392,6 +391,7 @@ func Test_CmdCompletion()
     exe 'delcommand ' .. cmd
   endfor
   delcommand MissingFeature
+  delcommand RunSocketServer
 
   command! DoCmd1 :
   command! DoCmd2 :
@@ -425,6 +425,10 @@ func Test_CmdCompletion()
   com! -nargs=1 -complete=behave DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd mswin xterm', @:)
+
+  com! -nargs=1 -complete=retab DoCmd :
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd -indentonly', @:)
 
   " Test for file name completion
   com! -nargs=1 -complete=file DoCmd :

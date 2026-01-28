@@ -12,7 +12,7 @@
  */
 #include "vim.h"
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Optional encryption support.
  * Mohsin Ahmed, mosh@sasi.com, 1998-09-24
@@ -23,8 +23,8 @@
  * most countries.  There are a few exceptions, but that still should not be a
  * problem since this code was originally created in Europe and India.
  *
- * Blowfish addition originally made by Mohsin Ahmed,
- * http://www.cs.albany.edu/~mosh 2010-03-14
+ * Blowfish addition originally made by Mohsin Ahmed (2010‑03‑14).
+ * Original link (www.cs.albany.edu/~mosh) is no longer available.
  * Based on blowfish by Bruce Schneier (http://www.schneier.com/blowfish.html)
  * and sha256 by Christophe Devine.
  */
@@ -77,7 +77,7 @@ typedef struct {
 static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
-# if defined(FEAT_SODIUM) || defined(PROTO)
+#if defined(FEAT_SODIUM)
 static void crypt_long_long_to_char(long long n, char_u *s);
 static void crypt_int_to_char(int n, char_u *s);
 static long long crypt_char_to_long_long(char_u *s);
@@ -191,7 +191,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     // to avoid that a text file is recognized as encrypted.
 };
 
-#if defined(FEAT_SODIUM) || defined(PROTO)
+#if defined(FEAT_SODIUM)
 typedef struct {
     size_t	    count;
     unsigned char   key[crypto_box_SEEDBYTES];
@@ -332,7 +332,7 @@ load_sodium(void)
 }
 # endif
 
-# if defined(DYNAMIC_SODIUM) || defined(PROTO)
+# if defined(DYNAMIC_SODIUM)
     int
 sodium_enabled(int verbose)
 {
@@ -437,7 +437,7 @@ crypt_get_header_len(int method_nr)
 }
 
 
-#if defined(FEAT_SODIUM) || defined(PROTO)
+#if defined(FEAT_SODIUM)
 /*
  * Get maximum crypt method specific length of the file header in bytes.
  */
@@ -780,12 +780,17 @@ crypt_decode_inplace(
     void
 crypt_free_key(char_u *key)
 {
-    char_u *p;
-
+    // Create a safe memset which cannot be optimized away by compiler
+    static void *(* volatile vim_memset_safe)(void *s, int c, size_t n) =
+	memset;
     if (key != NULL)
     {
-	for (p = key; *p != NUL; ++p)
-	    *p = 0;
+#ifdef FEAT_SODIUM
+	if (sodium_init() >= 0)
+	    sodium_memzero(key, STRLEN(key));
+	else
+#endif
+	    vim_memset_safe(key, 0, STRLEN(key));
 	vim_free(key);
     }
 }
@@ -919,7 +924,7 @@ crypt_sodium_init_(
     char_u		*key UNUSED,
     crypt_arg_T		*arg UNUSED)
 {
-# ifdef FEAT_SODIUM
+#ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     unsigned char	dkey[crypto_box_SEEDBYTES]; // 32
     sodium_state_T	*sd_state;
@@ -941,14 +946,14 @@ crypt_sodium_init_(
 	memlimit = crypto_pwhash_MEMLIMIT_INTERACTIVE;
 	alg = crypto_pwhash_ALG_DEFAULT;
 
-#if 0
+# if 0
 	// For testing
 	if (state->method_nr == CRYPT_M_SOD2)
 	{
 	    opslimit = crypto_pwhash_OPSLIMIT_MODERATE;
 	    memlimit = crypto_pwhash_MEMLIMIT_MODERATE;
 	}
-#endif
+# endif
 
 	// derive a key from the password
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
@@ -1012,12 +1017,12 @@ crypt_sodium_init_(
 	alg = crypt_char_to_int(p);
 	p += sizeof(alg);
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	crypt_sodium_report_hash_params(opslimit,
 					    crypto_pwhash_OPSLIMIT_INTERACTIVE,
 		(size_t)memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 		alg, crypto_pwhash_ALG_DEFAULT);
-#endif
+# endif
 
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
 			  arg->cat_salt, opslimit, (size_t)memlimit, alg) != 0)
@@ -1042,10 +1047,10 @@ crypt_sodium_init_(
     state->method_state = sd_state;
 
     return OK;
-# else
+#else
     emsg(_(e_libsodium_not_built_in));
     return FAIL;
-# endif
+#endif
 }
 
 /*
@@ -1185,7 +1190,7 @@ crypt_sodium_buffer_encode(
     char_u	**buf_out UNUSED,
     int		last UNUSED)
 {
-# ifdef FEAT_SODIUM
+#ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     unsigned long long	out_len;
     char_u		*ptr;
@@ -1218,9 +1223,9 @@ crypt_sodium_buffer_encode(
     sod_st->count++;
     return out_len + (first
 		      ? crypto_secretstream_xchacha20poly1305_HEADERBYTES : 0);
-# else
+#else
     return -1;
-# endif
+#endif
 }
 
 /*
@@ -1235,7 +1240,7 @@ crypt_sodium_buffer_decode(
     char_u	**buf_out UNUSED,
     int		last UNUSED)
 {
-# ifdef FEAT_SODIUM
+#ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     sodium_state_T *sod_st = state->method_state;
     unsigned char  tag;
@@ -1277,12 +1282,12 @@ crypt_sodium_buffer_decode(
     if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL && !last)
 	emsg(_(e_libsodium_decryption_failed_premature));
     return (long) out_len;
-# else
+#else
     return -1;
-# endif
+#endif
 }
 
-# if defined(FEAT_SODIUM) || defined(PROTO)
+#if defined(FEAT_SODIUM)
     void
 crypt_sodium_lock_key(char_u *key)
 {
@@ -1314,7 +1319,7 @@ crypt_sodium_randombytes_random(void)
     return randombytes_random();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+# if defined(FEAT_EVAL)
     static void
 crypt_sodium_report_hash_params(
 	unsigned long long opslimit,
@@ -1342,7 +1347,7 @@ crypt_sodium_report_hash_params(
 	verbose_leave();
     }
 }
-#endif
+# endif
 
     static void
 crypt_long_long_to_char(long long n, char_u *s)
@@ -1400,6 +1405,6 @@ crypt_char_to_int(char_u *s)
     }
     return retval;
 }
-# endif
+#endif
 
 #endif // FEAT_CRYPT

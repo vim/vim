@@ -239,15 +239,9 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>	// for time_t
-#endif
-
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>	// for time_t
-#endif
+#include <time.h>	// for time_t
 
 // Special byte values for <byte>.  Some are only used in the tree for
 // postponed prefixes, some only in the other trees.  This is a bit messy...
@@ -2085,10 +2079,10 @@ spell_check_msm(void)
  * compressing the tree.
  * Based on code from Olaf Seibert.
  */
-#define PRINTLINESIZE	1000
-#define PRINTWIDTH	6
+# define PRINTLINESIZE	1000
+# define PRINTWIDTH	6
 
-#define PRINTSOME(l, depth, fmt, a1, a2) vim_snprintf(l + depth * PRINTWIDTH, \
+# define PRINTSOME(l, depth, fmt, a1, a2) vim_snprintf(l + depth * PRINTWIDTH, \
 	    PRINTLINESIZE - PRINTWIDTH * depth, fmt, a1, a2)
 
 static char line1[PRINTLINESIZE];

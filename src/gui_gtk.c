@@ -101,7 +101,7 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 static void recent_func_log_func(
 	const gchar *log_domain,
 	GLogLevelFlags log_level,
@@ -420,7 +420,7 @@ toolbar_button_focus_in_event(GtkWidget *widget UNUSED,
 }
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
 
     void
 gui_gtk_register_stock_icons(void)
@@ -531,7 +531,7 @@ gui_gtk_register_stock_icons(void)
 
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
 /*
  * Translate Vim's mnemonic tagging to GTK+ style and convert to UTF-8
@@ -846,7 +846,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 }
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Enable or disable accelerators for the toplevel menus.
  */
@@ -920,7 +920,7 @@ get_menu_position(vimmenu_T *menu)
 #endif // FEAT_TOOLBAR
 
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_menu_set_tip(vimmenu_T *menu)
 {
@@ -944,7 +944,7 @@ gui_mch_menu_set_tip(vimmenu_T *menu)
 #endif // FEAT_TOOLBAR
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Destroy the machine specific menu widget.
  */
@@ -1185,51 +1185,10 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
     gui_mch_update();
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * Implementation of the file selector related stuff
  */
-
-#ifndef USE_FILE_CHOOSER
-    static void
-browse_ok_cb(GtkWidget *widget UNUSED, gpointer cbdata)
-{
-    gui_T *vw = (gui_T *)cbdata;
-
-    if (vw->browse_fname != NULL)
-	g_free(vw->browse_fname);
-
-    vw->browse_fname = (char_u *)g_strdup(gtk_file_selection_get_filename(
-					GTK_FILE_SELECTION(vw->filedlg)));
-    gtk_widget_hide(vw->filedlg);
-}
-
-    static void
-browse_cancel_cb(GtkWidget *widget UNUSED, gpointer cbdata)
-{
-    gui_T *vw = (gui_T *)cbdata;
-
-    if (vw->browse_fname != NULL)
-    {
-	g_free(vw->browse_fname);
-	vw->browse_fname = NULL;
-    }
-    gtk_widget_hide(vw->filedlg);
-}
-
-    static gboolean
-browse_destroy_cb(GtkWidget *widget UNUSED)
-{
-    if (gui.browse_fname != NULL)
-    {
-	g_free(gui.browse_fname);
-	gui.browse_fname = NULL;
-    }
-    gui.filedlg = NULL;
-    gtk_main_quit();
-    return FALSE;
-}
-#endif
 
 /*
  * Put up a file requester.
@@ -1249,13 +1208,11 @@ gui_mch_browse(int saving,
 	       char_u *initdir,
 	       char_u *filter)
 {
-#ifdef USE_FILE_CHOOSER
 # if GTK_CHECK_VERSION(3,20,0)
     GtkFileChooserNative	*fc;
 # else
     GtkWidget			*fc;
 # endif
-#endif
     char_u		dirbuf[MAXPATHL];
     guint		log_handler;
     const gchar		*domain = "Gtk";
@@ -1278,7 +1235,6 @@ gui_mch_browse(int saving,
     log_handler = g_log_set_handler(domain, G_LOG_LEVEL_WARNING,
 						  recent_func_log_func, NULL);
 
-#ifdef USE_FILE_CHOOSER
     // We create the dialog each time, so that the button text can be "Open"
     // or "Save" according to the action.
 # if GTK_CHECK_VERSION(3,20,0)
@@ -1352,7 +1308,7 @@ gui_mch_browse(int saving,
     if (gtk_native_dialog_run(GTK_NATIVE_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
 # else
     if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
-#endif
+# endif
     {
 	char *filename;
 
@@ -1366,43 +1322,6 @@ gui_mch_browse(int saving,
     gtk_widget_destroy(GTK_WIDGET(fc));
 # endif
 
-#else // !USE_FILE_CHOOSER
-
-    if (gui.filedlg == NULL)
-    {
-	GtkFileSelection	*fs;	// shortcut
-
-	gui.filedlg = gtk_file_selection_new((const gchar *)title);
-	gtk_window_set_modal(GTK_WINDOW(gui.filedlg), TRUE);
-	gtk_window_set_transient_for(GTK_WINDOW(gui.filedlg),
-						     GTK_WINDOW(gui.mainwin));
-	fs = GTK_FILE_SELECTION(gui.filedlg);
-
-	gtk_container_border_width(GTK_CONTAINER(fs), 4);
-
-	gtk_signal_connect(GTK_OBJECT(fs->ok_button),
-		"clicked", GTK_SIGNAL_FUNC(browse_ok_cb), &gui);
-	gtk_signal_connect(GTK_OBJECT(fs->cancel_button),
-		"clicked", GTK_SIGNAL_FUNC(browse_cancel_cb), &gui);
-	// gtk_signal_connect() doesn't work for destroy, it causes a hang
-	gtk_signal_connect_object(GTK_OBJECT(gui.filedlg),
-		"destroy", GTK_SIGNAL_FUNC(browse_destroy_cb),
-		GTK_OBJECT(gui.filedlg));
-    }
-    else
-	gtk_window_set_title(GTK_WINDOW(gui.filedlg), (const gchar *)title);
-
-    // Concatenate "initdir" and "dflt".
-    if (dflt != NULL && *dflt != NUL
-			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
-	STRCAT(dirbuf, dflt);
-
-    gtk_file_selection_set_filename(GTK_FILE_SELECTION(gui.filedlg),
-						      (const gchar *)dirbuf);
-
-    gtk_widget_show(gui.filedlg);
-    gtk_main();
-#endif // !USE_FILE_CHOOSER
     g_log_remove_handler(domain, log_handler);
 
     CONVERT_TO_UTF8_FREE(title);
@@ -1485,7 +1404,7 @@ gui_mch_browsedir(
 
 #endif	// FEAT_BROWSE
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)
@@ -1880,7 +1799,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 #endif // FEAT_GUI_DIALOG
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
@@ -1944,12 +1863,12 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	gtk_menu_popup_at_pointer(GTK_MENU(menu->submenu_id),
 				  (GdkEvent *)&trigger);
     }
-#else
+# else
     gtk_menu_popup(GTK_MENU(menu->submenu_id),
 		   NULL, NULL,
 		   (GtkMenuPositionFunc)NULL, NULL,
 		   3U, gui.event_time);
-#endif
+# endif
 }
 
 // Ugly global variable to pass "mouse_pos" flag from gui_make_popup() to
@@ -2213,7 +2132,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     int		wword = FALSE;
     int		mcase = !p_ic;
     char_u	*conv_buffer = NULL;
-#   define CONV(message) convert_localized_message(&conv_buffer, (message))
+#define CONV(message) convert_localized_message(&conv_buffer, (message))
 
     frdp = (do_replace) ? (&repl_widgets) : (&find_widgets);
 
@@ -2681,7 +2600,7 @@ ex_helpfind(exarg_T *eap UNUSED)
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
     static void
 recent_func_log_func(const gchar *log_domain UNUSED,
 		     GLogLevelFlags log_level UNUSED,

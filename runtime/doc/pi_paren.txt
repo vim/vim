@@ -1,7 +1,7 @@
-*pi_paren.txt*  For Vim version 9.1.  Last change: 2024 Nov 04
+*pi_paren.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Highlighting matching parens			*matchparen*

@@ -159,8 +159,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 #endif
 
 
-#ifndef PROTO
-
 #ifdef VMS
 # include <unixio.h>
 # include <unixlib.h>
@@ -198,8 +196,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # include <sys/file.h>
 #endif
 
-#endif // PROTO
-
 #ifdef VMS
 typedef struct dsc$descriptor   DESC;
 #endif
@@ -234,7 +230,7 @@ typedef struct dsc$descriptor   DESC;
 
 #ifndef USR_VIMRC_FILE
 # ifdef VMS
-# define USR_VIMRC_FILE  "sys$login:.vimrc"
+#  define USR_VIMRC_FILE  "sys$login:.vimrc"
 # else
 #  define USR_VIMRC_FILE "$HOME/.vimrc"
 # endif
@@ -245,7 +241,7 @@ typedef struct dsc$descriptor   DESC;
 # ifdef VMS
 #  define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
 # else
-#   define USR_VIMRC_FILE2	"~/.vim/vimrc"
+#  define USR_VIMRC_FILE2	"~/.vim/vimrc"
 # endif
 #endif
 
@@ -363,8 +359,8 @@ typedef struct dsc$descriptor   DESC;
 #  ifdef RUNTIME_GLOBAL
 #   ifdef RUNTIME_GLOBAL_AFTER
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.vim/after"
-#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER "/after,$XDG_CONFIG_HOME/vim/after"
-#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER "/after,~/.config/vim/after"
+#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",$XDG_CONFIG_HOME/vim/after"
+#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.config/vim/after"
 #    define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER
 #   else
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
@@ -437,7 +433,7 @@ typedef struct dsc$descriptor   DESC;
 #  define mch_memmove(to, from, len) bcopy((char *)(from), (char *)(to), len)
 # else
     // ifdef USEMEMCPY
-#   define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
+#  define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
 # endif
 #endif
 

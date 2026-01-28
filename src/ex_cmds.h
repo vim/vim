@@ -234,7 +234,7 @@ EXCMD(CMD_breakdel,	"breakdel",	ex_breakdel,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_breaklist,	"breaklist",	ex_breaklist,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_browse,	"browse",	ex_wrongmodifier,
 	EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_CMDWIN|EX_LOCK_OK,
@@ -352,6 +352,9 @@ EXCMD(CMD_chistory,	"chistory",	qf_history,
 	ADDR_UNSIGNED),
 EXCMD(CMD_clist,	"clist",	qf_list,
 	EX_BANG|EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+EXCMD(CMD_clipreset,	"clipreset",	ex_clipreset,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_clast,	"clast",	ex_cc,
 	EX_RANGE|EX_COUNT|EX_TRLBAR|EX_BANG,
@@ -486,7 +489,7 @@ EXCMD(CMD_diffupdate,	"diffupdate",	ex_diffupdate,
 	EX_BANG|EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_diffget,	"diffget",	ex_diffgetput,
-	EX_RANGE|EX_EXTRA|EX_TRLBAR|EX_MODIFY,
+	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_MODIFY,
 	ADDR_LINES),
 EXCMD(CMD_diffoff,	"diffoff",	ex_diffoff,
 	EX_BANG|EX_TRLBAR,
@@ -495,7 +498,7 @@ EXCMD(CMD_diffpatch,	"diffpatch",	ex_diffpatch,
 	EX_EXTRA|EX_FILE1|EX_TRLBAR|EX_MODIFY,
 	ADDR_NONE),
 EXCMD(CMD_diffput,	"diffput",	ex_diffgetput,
-	EX_RANGE|EX_EXTRA|EX_TRLBAR,
+	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR,
 	ADDR_LINES),
 EXCMD(CMD_diffsplit,	"diffsplit",	ex_diffsplit,
 	EX_EXTRA|EX_FILE1|EX_TRLBAR,
@@ -690,8 +693,8 @@ EXCMD(CMD_help,		"help",		ex_help,
 	EX_BANG|EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
 EXCMD(CMD_helpclose,	"helpclose",	ex_helpclose,
-	EX_RANGE|EX_COUNT|EX_TRLBAR,
-	ADDR_OTHER),
+	EX_TRLBAR,
+	ADDR_NONE),
 EXCMD(CMD_helpfind,	"helpfind",	ex_helpfind,
 	EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
@@ -1644,8 +1647,8 @@ EXCMD(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_tlunmenu,	"tlunmenu",	ex_menu,
-	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
-	ADDR_OTHER),
+	EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_tmenu,	"tmenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
@@ -1700,6 +1703,9 @@ EXCMD(CMD_unabbreviate,	"unabbreviate",	ex_abbreviate,
 EXCMD(CMD_unhide,	"unhide",	ex_buffer_all,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
 	ADDR_OTHER),
+EXCMD(CMD_uniq,		"uniq",		ex_uniq,
+	EX_RANGE|EX_DFLALL|EX_WHOLEFOLD|EX_BANG|EX_EXTRA|EX_NOTRLCOM|EX_MODIFY,
+	ADDR_LINES),
 EXCMD(CMD_unlet,	"unlet",	ex_unlet,
 	EX_BANG|EX_EXTRA|EX_NEEDARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
@@ -1804,6 +1810,9 @@ EXCMD(CMD_windo,	"windo",	ex_listdo,
 	ADDR_WINDOWS),
 EXCMD(CMD_winpos,	"winpos",	ex_winpos,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+EXCMD(CMD_wlrestore,	"wlrestore",	ex_wlrestore,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_BANG,
 	ADDR_NONE),
 EXCMD(CMD_wnext,	"wnext",	ex_wnext,
 	EX_RANGE|EX_BANG|EX_FILE1|EX_ARGOPT|EX_TRLBAR,
@@ -1935,9 +1944,9 @@ struct exarg
     char_u	*nextcmd;	// next command (NULL if none)
     char_u	*cmd;		// the name of the command (except for :make)
     char_u	**cmdlinep;	// pointer to pointer of allocated cmdline
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     char_u	*cmdline_tofree; // free later
-#endif
+# endif
     cmdidx_T	cmdidx;		// the index for the command
     long	argt;		// flags for the command
     int		skip;		// don't execute the command, only parse it
@@ -1962,17 +1971,19 @@ struct exarg
     char	*errmsg;	// returned error message
     char_u	*(*ea_getline)(int, void *, int, getline_opt_T);
     void	*cookie;	// argument for getline()
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
-#endif
+    class_T	*ea_class;		// Name of class being defined. Used by :class
+				// and :enum commands.
+# endif
 };
 
-#define FORCE_BIN 1		// ":edit ++bin file"
-#define FORCE_NOBIN 2		// ":edit ++nobin file"
+# define FORCE_BIN 1		// ":edit ++bin file"
+# define FORCE_NOBIN 2		// ":edit ++nobin file"
 
 // Values for "flags"
-#define EXFLAG_LIST	0x01	// 'l': list
-#define EXFLAG_NR	0x02	// '#': number
-#define EXFLAG_PRINT	0x04	// 'p': print
+# define EXFLAG_LIST	0x01	// 'l': list
+# define EXFLAG_NR	0x02	// '#': number
+# define EXFLAG_PRINT	0x04	// 'p': print
 
 #endif

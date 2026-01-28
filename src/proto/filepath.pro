@@ -55,6 +55,7 @@ int vim_fexists(char_u *fname);
 int expand_wildcards_eval(char_u **pat, int *num_file, char_u ***file, int flags);
 int expand_wildcards(int num_pat, char_u **pat, int *num_files, char_u ***files, int flags);
 int match_suffix(char_u *fname);
+int dos_expandpath(garray_T *gap, char_u *path, size_t wildoff, int flags, int didstar);
 int unix_expandpath(garray_T *gap, char_u *path, size_t wildoff, int flags, int didstar);
 int gen_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);
 void addfile(garray_T *gap, char_u *f, int flags);

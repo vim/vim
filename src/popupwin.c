@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 
 typedef struct {
     char	*pp_name;
@@ -1219,8 +1219,10 @@ popup_adjust_position(win_T *wp)
     int		center_hor = FALSE;
     int		allow_adjust_left = !wp->w_popup_fixed;
     int		top_extra = popup_top_extra(wp);
-    int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1];
-    int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2];
+    int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1]
+		    + (wp->w_popup_shadow ? 2 : 0);
+    int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2]
+		    + wp->w_popup_shadow;
     int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
     int		extra_height = top_extra + bot_extra;
     int		extra_width = left_extra + right_extra;
@@ -1403,7 +1405,15 @@ popup_adjust_position(win_T *wp)
 
     // start at the desired first line
     if (wp->w_firstline > 0)
-	wp->w_topline = wp->w_firstline;
+    {
+	// If firstline is beyond the buffer content, reset it to auto-position.
+	// This can happen when the popup was scrolled and then the buffer
+	// content was changed to have fewer lines.
+	if (wp->w_firstline > wp->w_buffer->b_ml.ml_line_count)
+	    wp->w_firstline = 0;
+	else
+	    wp->w_topline = wp->w_firstline;
+    }
     if (wp->w_topline < 1)
 	wp->w_topline = 1;
     else if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
@@ -1528,11 +1538,7 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_has_scrollbar && wp->w_minwidth > 0)
 	{
 	    int off = wp->w_width - maxwidth;
-
-	    if (off > right_extra)
-		extra_width -= right_extra;
-	    else
-		extra_width -= off;
+	    extra_width -= MIN(off, right_extra);
 	    wp->w_width = maxwidth_no_scrollbar;
 	}
 	else
@@ -1629,8 +1635,11 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_popup_pos == POPPOS_TOPRIGHT
 		|| wp->w_popup_pos == POPPOS_TOPLEFT)
     {
+
+	int check_height = (wp->w_popup_flags & POPF_INFO) ? wp->w_height
+						    : w_height_before_limit;
 	if (wp != popup_dragwin
-		&& wantline + (wp->w_height + extra_height) - 1 > Rows
+		&& wantline + (check_height + extra_height) - 1 > Rows
 		&& wantline * 2 > Rows
 		&& (wp->w_popup_flags & POPF_POSINVERT))
 	{
@@ -1638,6 +1647,8 @@ popup_adjust_position(win_T *wp)
 	    // make bottom aligned and recompute the height
 	    wp->w_height = w_height_before_limit;
 	    wp->w_winrow = wantline - 2 - wp->w_height - extra_height;
+	    if (wp->w_popup_flags & POPF_INFO)
+		wp->w_winrow += extra_height + 2;
 	    if (wp->w_winrow < 0)
 	    {
 		wp->w_height += wp->w_winrow;
@@ -1775,6 +1786,21 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     curbuf = curwin->w_buffer;
 }
 
+#define SET_BORDER_CHARS(a0, a1, a2, a3, a4, a5, a6, a7)    \
+    do {						    \
+	if (wp != NULL)					    \
+	{						    \
+	    wp->w_border_char[0] = (a0);		    \
+	    wp->w_border_char[1] = (a1);		    \
+	    wp->w_border_char[2] = (a2);		    \
+	    wp->w_border_char[3] = (a3);		    \
+	    wp->w_border_char[4] = (a4);		    \
+	    wp->w_border_char[5] = (a5);		    \
+	    wp->w_border_char[6] = (a6);		    \
+	    wp->w_border_char[7] = (a7);		    \
+	}						    \
+    } while (0)
+
 /*
  * Parse the 'previewpopup' or 'completepopup' option and apply the values to
  * window "wp" if it is not NULL.
@@ -1788,6 +1814,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	!is_preview ? p_cpp :
 #endif
 	p_pvp;
+    int	    border_enabled = FALSE;
 
     if (wp != NULL)
 	wp->w_popup_flags &= ~POPF_INFO_MENU;
@@ -1840,28 +1867,159 @@ parse_popup_option(win_T *wp, int is_preview)
 
 		*p = NUL;
 		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-						s + 10, OPT_FREE|OPT_LOCAL, 0);
+			s + 10, OPT_FREE|OPT_LOCAL, 0);
 		*p = c;
+	    }
+	}
+	else if (STRNCMP(s, "borderhighlight:", 16) == 0)
+	{
+	    char_u	*arg = s + 16;
+
+	    if (*arg == NUL || *arg == ',')
+		return FAIL;
+	    if (wp != NULL)
+	    {
+		for (int i = 0; i < 4; ++i)
+		{
+		    VIM_CLEAR(wp->w_border_highlight[i]);
+		    wp->w_border_highlight[i] = vim_strnsave(arg, p - arg);
+		}
 	    }
 	}
 	else if (STRNCMP(s, "border:", 7) == 0)
 	{
-	    // Note: Keep this in sync with p_popup_option_border_values.
 	    char_u	*arg = s + 7;
-	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
-	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
 	    int		i;
+	    int		token_len = p - arg;
+	    char_u	*token;
+	    // Use box-drawing characters only when 'encoding' is "utf-8" and
+	    // 'ambiwidth' is "single".
+	    int		can_use_box_chars = (enc_utf8 && *p_ambw == 's');
 
-	    if (!on && !off)
+	    if (token_len == 0
+			|| (STRNCMP(arg, "off", 3) == 0 && arg + 3 == p))
+	    {
+		if (wp != NULL)
+		{
+		    for (i = 0; i < 4; ++i)
+			wp->w_popup_border[i] = 0;
+		    SET_BORDER_CHARS(0, 0, 0, 0, 0, 0, 0, 0);
+		    // only show the X for close when there is a border
+		    wp->w_popup_close = POPCLOSE_NONE;
+		}
+		continue;
+	    }
+
+	    token = vim_strnsave(arg, token_len);
+	    if (token == NULL)
 		return FAIL;
+
+	    if ((can_use_box_chars && (STRCMP(token, "single") == 0
+			    || STRCMP(token, "double") == 0
+			    || STRCMP(token, "on") == 0
+			    || STRCMP(token, "round") == 0))
+		    || STRCMP(token, "ascii") == 0
+		    || (STRNCMP(token, "custom:", 7) == 0))
+	    {
+		if (STRCMP(token, "single") == 0)
+		    SET_BORDER_CHARS(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			    0x250c, 0x2510, 0x2518, 0x2514); // ┌ ┐ ┘ └
+		else if (STRCMP(token, "double") == 0)
+		    SET_BORDER_CHARS(0x2550, 0x2551, 0x2550, 0x2551, // ═ ║ ═ ║
+			    0x2554, 0x2557, 0x255D, 0x255A); // ╔ ╗ ╝  ╚
+		else if (STRCMP(token, "round") == 0)
+		    SET_BORDER_CHARS(0x2500, 0x2502, 0x2500, 0x2502, // ─ │ ─ │
+			    0x256d, 0x256e, 0x256f, 0x2570); // ╭ ╮ ╯ ╰
+		else if (STRCMP(token, "on") == 0)
+		    SET_BORDER_CHARS(0, 0, 0, 0, 0, 0, 0, 0);
+		else if (STRCMP(token, "ascii") == 0)
+		    SET_BORDER_CHARS('-', '|', '-', '|', '+', '+', '+', '+');
+		else if (STRNCMP(token, "custom:", 7) == 0)
+		{
+		    char_u	*q = token + 7;
+		    int		out[8];
+		    int		failed = FALSE;
+
+		    SET_BORDER_CHARS(0, 0, 0, 0, 0, 0, 0, 0);
+
+		    for (i = 0; i < 8 && !failed; i++)
+		    {
+			if (*q == NUL)
+			    failed = TRUE;
+			else
+			{
+			    out[i] = mb_ptr2char(q);
+			    mb_ptr2char_adv(&q);
+			    if (i < 7)
+			    {
+				if (*q != ';')
+				    failed = TRUE; // must be semicolon
+				q++;
+			    }
+			}
+		    }
+		    if (failed || *q != NUL) // must end exactly after the 8th char
+		    {
+			vim_free(token);
+			return FAIL;
+		    }
+		    SET_BORDER_CHARS(out[0], out[1], out[2], out[3], out[4],
+			    out[5], out[6], out[7]);
+		}
+	    }
+	    else
+	    {
+		vim_free(token);
+		return FAIL;
+	    }
+
 	    if (wp != NULL)
 	    {
 		for (i = 0; i < 4; ++i)
-		    wp->w_popup_border[i] = on ? 1 : 0;
-		if (off)
-		    // only show the X for close when there is a border
-		    wp->w_popup_close = POPCLOSE_NONE;
+		    wp->w_popup_border[i] = 1;
 	    }
+	    border_enabled = TRUE;
+
+	    vim_free(token);
+	}
+	else if (STRNCMP(s, "close:", 6) == 0)
+	{
+	    char_u	*arg = s + 6;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    on = on && mouse_has(MOUSE_INSERT) && border_enabled;
+	    if (wp != NULL)
+		wp->w_popup_close = on ? POPCLOSE_BUTTON : POPCLOSE_NONE;
+	}
+	else if (STRNCMP(s, "resize:", 7) == 0)
+	{
+	    char_u	*arg = s + 7;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    if (wp != NULL)
+	    {
+		if (on && mouse_has(MOUSE_INSERT))
+		    wp->w_popup_flags |= POPF_RESIZE;
+		else
+		    wp->w_popup_flags &= ~POPF_RESIZE;
+	    }
+	}
+	else if (STRNCMP(s, "shadow:", 7) == 0)
+	{
+	    char_u	*arg = s + 7;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+
+	    if ((!on && !off) || is_preview)
+		return FAIL;
+	    if (wp != NULL)
+		wp->w_popup_shadow = on ? 1 : 0;
 	}
 	else if (STRNCMP(s, "align:", 6) == 0)
 	{
@@ -2092,6 +2250,14 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     else if (popup_is_notification(type))
 	tabnr = -1;  // show on all tabs
 
+    if (buf != NULL && buf->b_locked_split)
+    {
+	// disallow opening a popup to a closing buffer, which like splitting,
+	// can result in more windows displaying it
+	emsg(_(e_cannot_open_a_popup_window_to_a_closing_buffer));
+	return NULL;
+    }
+
     // Create the window and buffer.
     wp = win_alloc_popup_win();
     if (wp == NULL)
@@ -2282,21 +2448,26 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	parse_previewpopup(wp);
 	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
     }
-# ifdef FEAT_QUICKFIX
-    if (type == TYPE_INFO)
-    {
-	wp->w_popup_pos = POPPOS_TOPLEFT;
-	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
-	wp->w_popup_close = POPCLOSE_BUTTON;
-	add_border_left_right_padding(wp);
-	parse_completepopup(wp);
-    }
-# endif
 
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
     for (i = 0; i < 8; ++i)
 	wp->w_border_char[i] = 0;
+
+#ifdef FEAT_QUICKFIX
+    if (type == TYPE_INFO)
+    {
+	wp->w_popup_pos = POPPOS_TOPLEFT;
+	if (mouse_has(MOUSE_INSERT))
+	{
+	    wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
+	    wp->w_popup_close = POPCLOSE_BUTTON;
+	}
+	add_border_left_right_padding(wp);
+	parse_completepopup(wp);
+    }
+#endif
+
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
     wp->w_filter_mode = MODE_ALL;
@@ -2421,11 +2592,17 @@ back_to_prevwin(win_T *wp)
 
 /*
  * Close popup "wp" and invoke any close callback for it.
+ * Careful: callback function might have freed the popup window already
  */
     static void
 popup_close_and_callback(win_T *wp, typval_T *arg)
 {
-    int id = wp->w_id;
+    int id;
+
+    if (!win_valid(wp))
+       return;
+
+    id = wp->w_id;
 
 #ifdef FEAT_TERMINAL
     if (wp == curwin && curbuf->b_term != NULL)
@@ -2737,10 +2914,10 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 
     id = (int)tv_get_number(argvars);
     if (
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 	// if the popup contains a terminal it will become hidden
 	curbuf->b_term == NULL &&
-# endif
+#endif
 	    ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
@@ -2808,6 +2985,9 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     int		id;
     win_T	*wp;
 
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = -1;
+
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
@@ -2822,6 +3002,8 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp->w_popup_flags & POPF_INFO)
 	pum_position_info_popup(wp);
 #endif
+
+    rettv->vval.v_number = 0;
 }
 
 /*
@@ -2930,9 +3112,9 @@ error_if_popup_window(int also_with_term UNUSED)
     // commands are disallowed then.  When a terminal runs in the popup most
     // things are allowed.  When a terminal is finished it can be closed.
     if (WIN_IS_POPUP(curwin)
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 	    && (also_with_term || curbuf->b_term == NULL)
-# endif
+#endif
 	    )
     {
 	error_for_popup_window();
@@ -3387,13 +3569,13 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 		wp->w_popup_close == POPCLOSE_BUTTON ? "button"
 		: wp->w_popup_close == POPCLOSE_CLICK ? "click" : "none"));
 
-# if defined(FEAT_TIMERS)
+#if defined(FEAT_TIMERS)
     dict_add_number(dict, "time", wp->w_popup_timer != NULL
 	    ?  (long)wp->w_popup_timer->tr_interval : 0L);
-# endif
+#endif
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * Return TRUE if the current window is running a terminal in a popup window.
  * Return FALSE when the job has ended.
@@ -3409,7 +3591,7 @@ error_if_term_popup_window(void)
     }
     return FALSE;
 }
-# endif
+#endif
 
 /*
  * Reset all the "handled_flag" flags in global popup windows and popup windows
@@ -3592,20 +3774,6 @@ popup_do_filter(int c)
 	if (wp->w_filter_cb.cb_name != NULL
 		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
-
-    // when Ctrl-C and no popup has been processed (res is still FALSE)
-    // Try to find and close a popup that has no filter callback
-    if (c == Ctrl_C && res == FALSE)
-    {
-	popup_reset_handled(POPUP_HANDLED_2);
-	wp = find_next_popup(FALSE, POPUP_HANDLED_2);
-	if (wp != NULL)
-	{
-	    popup_close_with_retval(wp, -1);
-	    res = TRUE;
-	}
-    }
-
 
     if (must_redraw > was_must_redraw)
     {
@@ -4136,7 +4304,6 @@ update_popups(void (*win_update)(win_T *wp))
 	else
 	    wp->w_popup_flags &= ~POPF_ON_CMDLINE;
 
-
 	// We can only use these line drawing characters when 'encoding' is
 	// "utf-8" and 'ambiwidth' is "single".
 	if (enc_utf8 && *p_ambw == 's')
@@ -4359,6 +4526,18 @@ update_popups(void (*win_update)(win_T *wp))
 			popup_attr);
 	}
 
+	// right shadow
+	if (wp->w_popup_shadow)
+	{
+	    int col = wincol + total_width;
+	    for (i = 0; i < total_height; ++i)
+	    {
+		row = wp->w_winrow + i + 1;
+		put_shadow_char(row, col);
+		put_shadow_char(row, col + 1);
+	    }
+	}
+
 	if (wp->w_popup_padding[2] > 0)
 	{
 	    // bottom padding
@@ -4372,7 +4551,7 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    // bottom border
 	    row = wp->w_winrow + total_height - 1;
-	    screen_fill(row , row + 1,
+	    screen_fill(row, row + 1,
 		    wincol < 0 ? 0 : wincol,
 		    wincol + total_width,
 		    wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
@@ -4383,6 +4562,15 @@ update_popups(void (*win_update)(win_T *wp))
 		buf[mb_char2bytes(border_char[6], buf)] = NUL;
 		screen_puts(buf, row, wincol + total_width - 1, border_attr[2]);
 	    }
+	}
+
+	if (wp->w_popup_shadow)
+	{
+	    // bottom shadow
+	    row = wp->w_winrow + total_height;
+	    for (int col = 2 + (wincol < 0 ? 0 : wincol);
+		    col < wincol + total_width; col++)
+		put_shadow_char(row, col);
 	}
 
 	if (wp->w_popup_close == POPCLOSE_BUTTON)
@@ -4464,7 +4652,7 @@ popup_is_popup(win_T *wp)
     return wp->w_popup_flags != 0;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Find an existing popup used as the preview window, in the current tab page.
  * Return NULL if not found.
@@ -4532,7 +4720,7 @@ f_popup_findpreview(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * Create a popup to be used as the preview or info window.
  * NOTE: this makes the popup the current window, so that the file can be
@@ -4615,7 +4803,7 @@ popup_overlaps_cmdline(void)
     return popup_on_cmdline;
 }
 
-#if defined(HAS_MESSAGE_WINDOW) || defined(PROTO)
+#if defined(HAS_MESSAGE_WINDOW)
 
 /*
  * Get the message window.
@@ -4798,7 +4986,7 @@ popup_set_title(win_T *wp)
     redraw_win_later(wp, UPD_VALID);
 }
 
-# if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
 /*
  * If there is a preview window, update the title.
  * Used after changing directory.
@@ -4811,6 +4999,6 @@ popup_update_preview_title(void)
     if (wp != NULL)
 	popup_set_title(wp);
 }
-# endif
+#endif
 
 #endif // FEAT_PROP_POPUP

@@ -1,5 +1,6 @@
 " Vim :loadkeymap command
 
+
 scriptencoding utf-8
 
 let b:keymap_name = "syntax-test"
@@ -20,5 +21,7 @@ c              <char-0103>     Special notation allowed in RHS - octal
 
 " Vim-script comment characters
 # <char-0x00a3>                Line should not match as a Vim9-script comment
-\" “                           Line should not match as a legacy-script comment
+" Line should not match as a legacy-script comment
+\" “
 : "                            Line should not match as a legacy-script comment
+

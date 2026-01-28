@@ -16,4 +16,5 @@
 ( cd ${HOME} ; $pwd ) | wc -c
 ( cd ${HOME} ) | wc -c
 ((n=1+2))
+# this is a syntax error, "let" is not a keyword in dash
 let n=1+2

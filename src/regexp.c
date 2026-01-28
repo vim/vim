@@ -50,7 +50,7 @@ toggle_Magic(int x)
     return Magic(x);
 }
 
-#ifdef FEAT_RELTIME
+#if defined(FEAT_RELTIME)
 static int timeout_nesting = 0;
 
 /*
@@ -80,7 +80,7 @@ disable_regexp_timeout(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 # ifdef FEAT_RELTIME
 static sig_atomic_t *saved_timeout_flag;
 # endif
@@ -362,7 +362,7 @@ static int	regnzpar;	// \z() count.
 static int	re_has_z;	// \z item detected
 #endif
 static unsigned	regflags;	// RF_ flags for prog
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 static int	had_eol;	// TRUE when EOL found by vim_regcomp()
 #endif
 
@@ -1253,7 +1253,11 @@ typedef enum
 // note:
 //     submatch is available only if FEAT_EVAL is defined.
     static void
-reg_getline_common(linenr_T lnum, reg_getline_flags_T flags, char_u **line, colnr_T *length)
+reg_getline_common(
+    linenr_T		lnum,
+    reg_getline_flags_T	flags,
+    char_u		**line,
+    colnr_T		*length)
 {
     int get_line = flags & RGLF_LINE;
     int get_length = flags & RGLF_LENGTH;
@@ -1565,6 +1569,7 @@ reg_nextline(void)
  * Returns RA_FAIL, RA_NOMATCH or RA_MATCH.
  * If "bytelen" is not NULL, it is set to the byte length of the match in the
  * last line.
+ * Optional: ignore case if rex.reg_ic is set.
  */
     static int
 match_with_backref(
@@ -1609,7 +1614,9 @@ match_with_backref(
 	else
 	    len = (int)reg_getline_len(clnum) - ccol;
 
-	if (cstrncmp(p + ccol, rex.input, &len) != 0)
+	// Use case-insensitive compare if rex.reg_ic is set
+	if ((!rex.reg_ic && cstrncmp(p + ccol, rex.input, &len) != 0)
+	    || (rex.reg_ic && MB_STRNICMP(p + ccol, rex.input, len) != 0))
 	    return RA_NOMATCH;  // doesn't match
 	if (bytelen != NULL)
 	    *bytelen += len;
@@ -1722,7 +1729,8 @@ mb_decompose(int c, int *c1, int *c2, int *c3)
     else
     {
 	*c1 = c;
-	*c2 = *c3 = 0;
+	*c2 = 0;
+	*c3 = 0;
     }
 }
 
@@ -2136,12 +2144,12 @@ vim_regsub_multi(
     return result;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 // When nesting more than a couple levels it's probably a mistake.
 # define MAX_REGSUB_NESTING 4
 static char_u   *eval_result[MAX_REGSUB_NESTING] = {NULL, NULL, NULL, NULL};
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_resub_eval_result(void)
 {
@@ -3017,7 +3025,7 @@ vim_regfree(regprog_T *prog)
 	prog->engine->regfree(prog);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_regexp_stuff(void)
 {
@@ -3042,7 +3050,7 @@ report_re_switch(char_u *pat)
 }
 #endif
 
-#if defined(FEAT_X11) || defined(PROTO)
+#if defined(FEAT_X11)
 /*
  * Return whether "prog" is currently being executed.
  */
@@ -3129,7 +3137,7 @@ vim_regexec_string(
     return result > 0;
 }
 
-#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11)
 /*
  * Note: "*prog" may be freed and changed.
  * Return TRUE if there is a match, FALSE if not.

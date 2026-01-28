@@ -9,7 +9,8 @@
  * FIPS-180-2 compliant SHA-256 implementation
  * GPL by Christophe Devine, applies to older version.
  * Modified for md5deep, in public domain.
- * Modified For Vim, Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ * Modified For Vim, Mohsin Ahmed,
+ * (original link www.cs.albany.edu/~mosh no longer available)
  * Mohsin Ahmed states this work is distributed under the VIM License or GPL,
  * at your choice.
  *
@@ -24,7 +25,7 @@
 
 #if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 
-#define GET_UINT32(n, b, i)		    \
+# define GET_UINT32(n, b, i)		    \
 {					    \
     (n) = ( (UINT32_T)(b)[(i)	 ] << 24)   \
 	| ( (UINT32_T)(b)[(i) + 1] << 16)   \
@@ -32,7 +33,7 @@
 	| ( (UINT32_T)(b)[(i) + 3]	);  \
 }
 
-#define PUT_UINT32(n,b,i)		  \
+# define PUT_UINT32(n,b,i)		  \
 {					  \
     (b)[(i)    ] = (char_u)((n) >> 24);   \
     (b)[(i) + 1] = (char_u)((n) >> 16);   \
@@ -79,25 +80,25 @@ sha256_process(context_sha256_T *ctx, char_u data[64])
     GET_UINT32(W[14], data, 56);
     GET_UINT32(W[15], data, 60);
 
-#define  SHR(x, n) (((x) & 0xFFFFFFFF) >> (n))
-#define ROTR(x, n) (SHR(x, n) | ((x) << (32 - (n))))
+# define  SHR(x, n) (((x) & 0xFFFFFFFF) >> (n))
+# define ROTR(x, n) (SHR(x, n) | ((x) << (32 - (n))))
 
-#define S0(x) (ROTR(x, 7) ^ ROTR(x, 18) ^  SHR(x, 3))
-#define S1(x) (ROTR(x, 17) ^ ROTR(x, 19) ^  SHR(x, 10))
+# define S0(x) (ROTR(x, 7) ^ ROTR(x, 18) ^  SHR(x, 3))
+# define S1(x) (ROTR(x, 17) ^ ROTR(x, 19) ^  SHR(x, 10))
 
-#define S2(x) (ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
-#define S3(x) (ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
+# define S2(x) (ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
+# define S3(x) (ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
 
-#define F0(x, y, z) (((x) & (y)) | ((z) & ((x) | (y))))
-#define F1(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
+# define F0(x, y, z) (((x) & (y)) | ((z) & ((x) | (y))))
+# define F1(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
 
-#define R(t)				\
+# define R(t)				\
 (					\
     W[t] = S1(W[(t) -  2]) + W[(t) -  7] +	\
 	   S0(W[(t) - 15]) + W[(t) - 16]	\
 )
 
-#define P(a,b,c,d,e,f,g,h,x,K)		     \
+# define P(a,b,c,d,e,f,g,h,x,K)		     \
 {					     \
     temp1 = (h) + S3(e) + F1(e, f, g) + (K) + (x); \
     temp2 = S2(a) + F0(a, b, c);	     \
@@ -262,7 +263,7 @@ sha256_finish(context_sha256_T *ctx, char_u digest[32])
 }
 #endif // FEAT_CRYPT || FEAT_PERSISTENT_UNDO
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Returns hex digest of "buf[buf_len]" in a static array.
  * if "salt" is not NULL also do "salt[salt_len]".

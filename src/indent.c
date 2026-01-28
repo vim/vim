@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_VARTABS) || defined(PROTO)
+#if defined(FEAT_VARTABS)
 
 /*
  * Set the integer values corresponding to the string setting of 'vartabstop'.
@@ -299,7 +299,7 @@ tabstop_eq(int *ts1, int *ts2)
     return TRUE;
 }
 
-# if defined(FEAT_BEVAL) || defined(PROTO)
+# if defined(FEAT_BEVAL)
 /*
  * Copy a tabstop array, allocating space for the new array.
  */
@@ -428,7 +428,7 @@ get_indent_lnum(linenr_T lnum)
 #endif
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Count the size (in window cells) of the indent in line "lnum" of buffer
  * "buf".
@@ -474,7 +474,7 @@ get_indent_str(
     return count;
 }
 
-#ifdef FEAT_VARTABS
+#if defined(FEAT_VARTABS)
 /*
  * Count the size (in window cells) of the indent in line "ptr", using
  * variable tabstops.
@@ -870,7 +870,7 @@ get_number_indent(linenr_T lnum)
     return (int)col;
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Check "briopt" as 'breakindentopt' and update the members of "wp".
  * This is called when 'breakindentopt' is changed and when a window is
@@ -1216,9 +1216,9 @@ may_do_si(void)
 {
     return curbuf->b_p_si
 	&& !curbuf->b_p_cin
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	&& *curbuf->b_p_inde == NUL
-# endif
+#endif
 	&& !p_paste;
 }
 
@@ -1716,21 +1716,29 @@ ex_retab(exarg_T *eap)
     char_u	*new_ts_str;		// string value of tab argument
 #else
     int		temp;
-    int		new_ts;
+    int		new_ts = 0;
 #endif
     int		save_list;
     linenr_T	first_line = 0;		// first changed line
     linenr_T	last_line = 0;		// last changed line
+    int		is_indent_only = 0;	// Only process leading whitespace
 
     save_list = curwin->w_p_list;
     curwin->w_p_list = 0;	    // don't want list mode here
 
+    ptr = eap->arg;
+    if (STRNCMP(ptr, "-indentonly", 11) == 0 && IS_WHITE_OR_NUL(ptr[11]))
+    {
+	is_indent_only = 1;
+	ptr = skipwhite(ptr + 11);
+    }
+
 #ifdef FEAT_VARTABS
-    new_ts_str = eap->arg;
-    if (tabstop_set(eap->arg, &new_vts_array) == FAIL)
+    new_ts_str = ptr;
+    if (tabstop_set(ptr, &new_vts_array) == FAIL)
 	return;
-    while (vim_isdigit(*(eap->arg)) || *(eap->arg) == ',')
-	++(eap->arg);
+    while (vim_isdigit(*ptr) || *ptr == ',')
+	++ptr;
 
     // This ensures that either new_vts_array and new_ts_str are freshly
     // allocated, or new_vts_array points to an existing array and new_ts_str
@@ -1741,19 +1749,26 @@ ex_retab(exarg_T *eap)
 	new_ts_str = NULL;
     }
     else
-	new_ts_str = vim_strnsave(new_ts_str, eap->arg - new_ts_str);
+	new_ts_str = vim_strnsave(new_ts_str, ptr - new_ts_str);
 #else
-    ptr = eap->arg;
-    new_ts = getdigits(&ptr);
-    if (new_ts < 0 && *eap->arg == '-')
+    if (ptr[0] != NUL && (ptr[0] != '0' || ptr[1] != NUL))
     {
-	emsg(_(e_argument_must_be_positive));
-	return;
-    }
-    if (new_ts < 0 || new_ts > TABSTOP_MAX)
-    {
-	semsg(_(e_invalid_argument_str), eap->arg);
-	return;
+	char_u	*end;
+
+	if (strtol((char *)ptr, (char **)&end, 10) <= 0)
+	{
+	    if (ptr != end)
+		emsg(_(e_argument_must_be_positive));
+	    else
+		semsg(_(e_invalid_argument_str), ptr);
+	    return;
+	}
+	new_ts = getdigits(&ptr);
+	if (new_ts < 0 || new_ts > TABSTOP_MAX)
+	{
+	    semsg(_(e_invalid_argument_str), eap->arg);
+	    return;
+	}
     }
     if (new_ts == 0)
 	new_ts = curbuf->b_p_ts;
@@ -1854,6 +1869,9 @@ ex_retab(exarg_T *eap)
 		}
 		got_tab = FALSE;
 		num_spaces = 0;
+
+		if (is_indent_only)
+		    break;
 	    }
 	    if (ptr[col] == NUL)
 		break;
@@ -1927,7 +1945,7 @@ ex_retab(exarg_T *eap)
     u_clearline();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get indent level from 'indentexpr'.
  */
@@ -1940,8 +1958,8 @@ get_expr_indent(void)
     colnr_T	save_curswant;
     int		save_set_curswant;
     int		save_State;
-    int		use_sandbox = was_set_insecurely((char_u *)"indentexpr",
-								   OPT_LOCAL);
+    int		use_sandbox = was_set_insecurely(curwin,
+					    (char_u *)"indentexpr", OPT_LOCAL);
     sctx_T	save_sctx = current_sctx;
 
     // Save and restore cursor position and curswant, in case it was changed
@@ -2284,7 +2302,7 @@ fix_indent(void)
 	do_c_expr_indent();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "indent()" function
  */

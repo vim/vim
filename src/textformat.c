@@ -915,7 +915,7 @@ op_format(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Implementation of the format operator 'gq' for when using 'formatexpr'.
  */
@@ -938,8 +938,8 @@ fex_format(
     long	count,
     int		c)	// character to be inserted
 {
-    int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
-								   OPT_LOCAL);
+    int		use_sandbox = was_set_insecurely(curwin,
+					    (char_u *)"formatexpr", OPT_LOCAL);
     int		r;
     char_u	*fex;
     sctx_T	save_sctx = current_sctx;
@@ -1145,9 +1145,9 @@ format_lines(
 			if (cindent_on())
 			{
 			    indent =
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 				 *curbuf->b_p_inde != NUL ? get_expr_indent() :
-# endif
+#endif
 				 get_c_indent();
 			}
 			else

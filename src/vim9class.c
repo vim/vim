@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 static class_T *first_class = NULL;
 static class_T *next_nonref_class = NULL;
@@ -101,8 +96,8 @@ parse_member(
 	    return FAIL;
 	}
 	type_arg = skipwhite(colon + 1);
-	type = parse_type(&type_arg, type_list, TRUE);
-	if (type == NULL)
+	type = parse_type(&type_arg, type_list, NULL, NULL, TRUE);
+	if (type == NULL || !valid_declaration_type(type))
 	    return FAIL;
 	*has_type = TRUE;
     }
@@ -140,6 +135,7 @@ parse_member(
 	if (*init_arg != NUL && !vim9_comment_start(init_arg))
 	{
 	    semsg(_(e_trailing_characters_str), init_arg);
+	    clear_evalarg(&evalarg, NULL);
 	    return FAIL;
 	}
 
@@ -158,19 +154,6 @@ parse_member(
     *type_ret = type;
     return OK;
 }
-
-typedef struct oc_newmember_S oc_newmember_T;
-struct oc_newmember_S
-{
-    garray_T	*gap;
-    char_u	*varname;
-    char_u	*varname_end;
-    int		has_public;
-    int		has_final;
-    int		has_type;
-    type_T	*type;
-    char_u	*init_expr;
-};
 
 /*
  * Add a member to an object or a class.
@@ -193,7 +176,13 @@ add_member(
     if (ga_grow(gap, 1) == FAIL)
 	return FAIL;
     ocmember_T *m = ((ocmember_T *)gap->ga_data) + gap->ga_len;
-    m->ocm_name = vim_strnsave(varname, varname_end - varname);
+    m->ocm_name.length = (size_t)(varname_end - varname);
+    m->ocm_name.string = vim_strnsave(varname, m->ocm_name.length);
+    if (m->ocm_name.string == NULL)
+    {
+	m->ocm_name.length = 0;
+	return FAIL;
+    }
     m->ocm_access = has_public ? VIM_ACCESS_ALL
 		      : *varname == '_' ? VIM_ACCESS_PRIVATE : VIM_ACCESS_READ;
     if (has_final)
@@ -242,7 +231,12 @@ add_members_to_class(
 	// parent members need to be copied
 	ocmember_T	*m = *members + i;
 	*m = parent_members[i];
-	m->ocm_name = vim_strsave(m->ocm_name);
+	m->ocm_name.string = vim_strnsave(m->ocm_name.string, m->ocm_name.length);
+	if (m->ocm_name.string == NULL)
+	{
+	    m->ocm_name.length = 0;
+	    return FAIL;
+	}
 	if (m->ocm_init != NULL)
 	    m->ocm_init = vim_strsave(m->ocm_init);
     }
@@ -264,7 +258,7 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
     if (idx >= (is_method ? itf->class_obj_method_count
 				   : itf->class_obj_member_count))
     {
-	siemsg("index %d out of range for interface %s", idx, itf->class_name);
+	siemsg("index %d out of range for interface %s", idx, itf->class_name.string);
 	return 0;
     }
 
@@ -297,7 +291,7 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
     if (i2c == NULL)
     {
 	siemsg("class %s not found on interface %s",
-					      cl->class_name, itf->class_name);
+					      cl->class_name.string, itf->class_name.string);
 	return 0;
     }
 
@@ -323,7 +317,7 @@ validate_extends_class(
     typval_T	tv;
     int		success = FALSE;
 
-    if (STRCMP(cl->class_name, extends_name) == 0)
+    if (STRCMP(cl->class_name.string, extends_name) == 0)
     {
 	semsg(_(e_cannot_extend_str), extends_name);
 	return success;
@@ -356,6 +350,32 @@ validate_extends_class(
     clear_tv(&tv);
 
     return success;
+}
+
+/*
+ * Check a generic method is extended by a generic method and the number of
+ * type variables match.
+ */
+    static int
+validate_extends_generic_method(
+    class_T *super_cl,
+    ufunc_T *super_fp,
+    ufunc_T *cl_fp)
+{
+    char	*msg = NULL;
+
+    if (cl_fp->uf_generic_argcount == super_fp->uf_generic_argcount)
+	return TRUE;
+
+    if (super_fp->uf_generic_argcount == 0)
+	msg = e_concrete_method_str_override_with_generic_method_in_class_str;
+    else if (cl_fp->uf_generic_argcount == 0)
+	msg = e_generic_method_str_override_with_concrete_method_in_class_str;
+    else
+	msg = e_generic_method_str_type_arguments_mismatch_in_class_str;
+
+    semsg(_(msg), cl_fp->uf_name, super_cl->class_name.string);
+    return FALSE;
 }
 
 /*
@@ -397,13 +417,20 @@ validate_extends_methods(
 		int	priv_method = (*qstr == '_');
 		if (priv_method)
 		    qstr++;
-		if (STRCMP(pstr, qstr) == 0 && priv_method != extends_private)
+		if (STRCMP(pstr, qstr) == 0)
 		{
-		    // Method access is different between the super class and
-		    // the subclass
-		    semsg(_(e_method_str_of_class_str_has_different_access),
-			    cl_fp[j]->uf_name, super->class_name);
-		    return FALSE;
+		    if (priv_method != extends_private)
+		    {
+			// Method access is different between the super class
+			// and the subclass
+			semsg(_(e_method_str_of_class_str_has_different_access),
+				cl_fp[j]->uf_name, super->class_name.string);
+			return FALSE;
+		    }
+
+		    if (!validate_extends_generic_method(super,
+						extends_methods[i], cl_fp[j]))
+			    return FALSE;
 		}
 	    }
 	}
@@ -434,8 +461,8 @@ extends_check_dup_members(
     {
 	class_T	    *p_cl = extends_cl;
 	ocmember_T  *c_m = members + c_i;
-	char_u	    *pstr = (*c_m->ocm_name == '_')
-					? c_m->ocm_name + 1 : c_m->ocm_name;
+	char_u	    *pstr = (*c_m->ocm_name.string == '_')
+				    ? c_m->ocm_name.string + 1 : c_m->ocm_name.string;
 
 	// Check in all the parent classes in the lineage
 	while (p_cl != NULL)
@@ -452,11 +479,11 @@ extends_check_dup_members(
 	    for (int p_i = 0; p_i < p_member_count; p_i++)
 	    {
 		ocmember_T	*p_m = p_members + p_i;
-		char_u	*qstr = (*p_m->ocm_name == '_')
-		    ? p_m->ocm_name + 1 : p_m->ocm_name;
+		char_u	*qstr = (*p_m->ocm_name.string == '_')
+		    ? p_m->ocm_name.string + 1 : p_m->ocm_name.string;
 		if (STRCMP(pstr, qstr) == 0)
 		{
-		    semsg(_(e_duplicate_variable_str), c_m->ocm_name);
+		    semsg(_(e_duplicate_variable_str), c_m->ocm_name.string);
 		    return FALSE;
 		}
 	    }
@@ -509,11 +536,11 @@ extends_check_intf_var_type(
 		where_T		where = WHERE_INIT;
 		ocmember_T	*p_m = p_members + p_i;
 
-		if (STRCMP(p_m->ocm_name, c_m->ocm_name) != 0)
+		if (STRCMP(p_m->ocm_name.string, c_m->ocm_name.string) != 0)
 		    continue;
 
 		// Ensure the type is matching.
-		where.wt_func_name = (char *)c_m->ocm_name;
+		where.wt_func_name = (char *)c_m->ocm_name.string;
 		where.wt_kind = WT_MEMBER;
 
 		if (check_type(p_m->ocm_type, c_m->ocm_type, TRUE,
@@ -623,14 +650,14 @@ intf_variable_present(
 	ocmember_T	*m = &cl_mt[cl_i];
 	where_T		where = WHERE_INIT;
 
-	if (STRCMP(if_var->ocm_name, m->ocm_name) != 0)
+	if (STRCMP(if_var->ocm_name.string, m->ocm_name.string) != 0)
 	    continue;
 
 	// Ensure the access type is same
 	if (if_var->ocm_access != m->ocm_access)
 	{
 	    semsg(_(e_variable_str_of_interface_str_has_different_access),
-		    if_var->ocm_name, intf_class_name);
+		    if_var->ocm_name.string, intf_class_name);
 	    return FALSE;
 	}
 
@@ -643,7 +670,7 @@ intf_variable_present(
 	}
 	else
 	{
-	    where.wt_func_name = (char *)m->ocm_name;
+	    where.wt_func_name = (char *)m->ocm_name.string;
 	    where.wt_kind = WT_MEMBER;
 	    if (check_type(if_var->ocm_type, m->ocm_type, TRUE,
 							    where) == FAIL)
@@ -691,7 +718,7 @@ validate_interface_variables(
 							cl_count, extends_cl))
 	{
 	    semsg(_(e_variable_str_of_interface_str_not_implemented),
-		    if_ms[if_i].ocm_name, intf_class_name);
+		    if_ms[if_i].ocm_name.string, intf_class_name);
 	    return FALSE;
 	}
     }
@@ -733,8 +760,7 @@ intf_method_present(
 
     for (int cl_i = 0; cl_i < cl_count; ++cl_i)
     {
-	char_u *cl_name = cl_fp[cl_i]->uf_name;
-	if (STRCMP(if_ufunc->uf_name, cl_name) == 0)
+	if (STRCMP(if_ufunc->uf_name, cl_fp[cl_i]->uf_name) == 0)
 	{
 	    // Ensure the type is matching.
 	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i]))
@@ -887,7 +913,7 @@ add_interface_from_super_class(
     char_u	*intf_name;
 
     // Add the interface name to "impl_gap"
-    intf_name = vim_strsave(ifcl->class_name);
+    intf_name = vim_strnsave(ifcl->class_name.string, ifcl->class_name.length);
     if (intf_name == NULL)
 	return FALSE;
 
@@ -961,7 +987,7 @@ check_func_arg_names(
 		for (int mi = 0; mi < mgap->ga_len; ++mi)
 		{
 		    char_u *mname =
-				((ocmember_T *)mgap->ga_data + mi)->ocm_name;
+				((ocmember_T *)mgap->ga_data + mi)->ocm_name.string;
 		    if (STRCMP(aname, mname) == 0)
 		    {
 			if (uf->uf_script_ctx.sc_sid > 0)
@@ -1008,29 +1034,50 @@ is_duplicate_variable(
     char_u	*varname,
     char_u	*varname_end)
 {
-    char_u	*name = vim_strnsave(varname, varname_end - varname);
-    char_u	*pstr = (*name == '_') ? name + 1 : name;
+    string_T	pstr = {varname, (size_t)(varname_end - varname)};  // Note: the .string field may
+								    // point to a string longer
+								    // than the .length field.
+								    // So we need to use STRNCMP()
+								    // to compare it.
     int		dup = FALSE;
 
+    // Step over a leading '_'.
+    if (*pstr.string == '_')
+    {
+	pstr.string++;
+	pstr.length--;
+    }
+
+    // loop == 1: class variables, loop == 2: object variables
     for (int loop = 1; loop <= 2; loop++)
     {
-	// loop == 1: class variables, loop == 2: object variables
 	garray_T    *vgap = (loop == 1) ? class_members : obj_members;
 	for (int i = 0; i < vgap->ga_len; ++i)
 	{
 	    ocmember_T *m = ((ocmember_T *)vgap->ga_data) + i;
-	    char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1
-						    : m->ocm_name;
-	    if (STRCMP(pstr, qstr) == 0)
+	    string_T	qstr = {m->ocm_name.string, m->ocm_name.length};
+
+	    // Step over a leading '_'.
+	    if (*qstr.string == '_')
 	    {
-		semsg(_(e_duplicate_variable_str), name);
+		qstr.string++;
+		qstr.length--;
+	    }
+
+	    if (pstr.length == qstr.length
+		&& STRNCMP(pstr.string, qstr.string, pstr.length) == 0)
+	    {
+		char_u	save_c = *varname_end;
+
+		*varname_end = NUL;
+		semsg(_(e_duplicate_variable_str), varname);
+		*varname_end = save_c;
 		dup = TRUE;
 		break;
 	    }
 	}
     }
 
-    vim_free(name);
     return dup;
 }
 
@@ -1215,16 +1262,19 @@ update_member_method_lookup_table(
     if2cl->i2c_is_method = FALSE;
 
     for (int if_i = 0; if_i < ifcl->class_obj_member_count; ++if_i)
+    {
+	char_u  *ocm_name = ifcl->class_obj_members[if_i].ocm_name.string;
+
 	for (int cl_i = 0; cl_i < cl->class_obj_member_count; ++cl_i)
 	{
-	    if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
-				cl->class_obj_members[cl_i].ocm_name) == 0)
+	    if (STRCMP(ocm_name, cl->class_obj_members[cl_i].ocm_name.string) == 0)
 	    {
 		int *table = (int *)(if2cl + 1);
 		table[if_i] = cl_i;
 		break;
 	    }
 	}
+    }
 
     // Table for methods.
     if2cl = alloc_clear(sizeof(itf2class_T)
@@ -1238,10 +1288,12 @@ update_member_method_lookup_table(
 
     for (int if_i = 0; if_i < ifcl->class_obj_method_count; ++if_i)
     {
-	int done = FALSE;
+	int	done = FALSE;
+	char_u	*if_name = ifcl->class_obj_methods[if_i]->uf_name;
+
 	for (int cl_i = 0; cl_i < objmethods->ga_len; ++cl_i)
 	{
-	    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
+	    if (STRCMP(if_name,
 			((ufunc_T **)objmethods->ga_data)[cl_i]->uf_name) == 0)
 	    {
 		int *table = (int *)(if2cl + 1);
@@ -1265,11 +1317,10 @@ update_member_method_lookup_table(
 
 		while (!done && parent != NULL && parent != ifcl)
 		{
-
 		    for (int cl_i = 0;
 			    cl_i < parent->class_obj_method_count_child; ++cl_i)
 		    {
-			if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
+			if (STRCMP(if_name,
 				    parent->class_obj_methods[cl_i]->uf_name)
 				== 0)
 			{
@@ -1407,7 +1458,7 @@ add_default_constructor(
     int		is_enum = IS_ENUM(cl);
 
     ga_init2(&fga, 1, 1000);
-    ga_concat(&fga, (char_u *)"new(");
+    ga_concat_len(&fga, (char_u *)"new(", 4);
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
 	if (i < 2 && is_enum)
@@ -1418,13 +1469,13 @@ add_default_constructor(
 	    continue;
 
 	if (i > (is_enum ? 2 : 0))
-	    ga_concat(&fga, (char_u *)", ");
-	ga_concat(&fga, (char_u *)"this.");
+	    ga_concat_len(&fga, (char_u *)", ", 2);
+	ga_concat_len(&fga, (char_u *)"this.", 5);
 	ocmember_T *m = cl->class_obj_members + i;
-	ga_concat(&fga, (char_u *)m->ocm_name);
-	ga_concat(&fga, (char_u *)" = v:none");
+	ga_concat_len(&fga, (char_u *)m->ocm_name.string, m->ocm_name.length);
+	ga_concat_len(&fga, (char_u *)" = v:none", 9);
     }
-    ga_concat(&fga, (char_u *)")\nenddef\n");
+    ga_concat_len(&fga, (char_u *)")\nenddef\n", 9);	// Note: not 11!
     ga_append(&fga, NUL);
 
     exarg_T fea;
@@ -1436,7 +1487,8 @@ add_default_constructor(
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
     ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS,
-			    cl->class_obj_members, cl->class_obj_member_count);
+			    cl->class_obj_members, cl->class_obj_member_count,
+			    NULL);
 
     ga_clear_strings(&lines_to_free);
     vim_free(fga.ga_data);
@@ -1519,7 +1571,7 @@ add_classfuncs_objmethods(
 		// methods may be overruled, then "super.Method()" is used to
 		// find a method from the parent.
 		ufunc_T *pf = (extends_cl->class_obj_methods)[i];
-		(*fup)[gap->ga_len + i] = copy_function(pf);
+		(*fup)[gap->ga_len + i] = copy_function(pf, 0);
 
 		// If the child class overrides a function from the parent
 		// the signature must be equal.
@@ -1610,21 +1662,30 @@ is_duplicate_enum(
     char_u	*varname,
     char_u	*varname_end)
 {
-    char_u	*name = vim_strnsave(varname, varname_end - varname);
+    string_T	name = {varname, (size_t)(varname_end - varname)};  // Note: the .string field may
+								    // point to a string longer
+								    // than the .length field.
+								    // So we need to use STRNCMP()
+								    // to compare it.
     int		dup = FALSE;
 
     for (int i = 0; i < enum_gap->ga_len; ++i)
     {
 	ocmember_T *m = ((ocmember_T *)enum_gap->ga_data) + i;
-	if (STRCMP(name, m->ocm_name) == 0)
+
+	if (name.length == m->ocm_name.length
+	    && STRNCMP(name.string, m->ocm_name.string, name.length) == 0)
 	{
-	    semsg(_(e_duplicate_enum_str), name);
+	    char_u  save_c = *varname_end;
+
+	    *varname_end = NUL;
+	    semsg(_(e_duplicate_enum_str), varname);
+	    *varname_end = save_c;
 	    dup = TRUE;
 	    break;
 	}
     }
 
-    vim_free(name);
     return dup;
 }
 
@@ -1644,6 +1705,7 @@ enum_parse_values(
     evalarg_T	evalarg;
     char_u	*p = line;
     char	initexpr_buf[1024];
+    size_t	initexpr_buflen;
     char_u	last_char = NUL;
     int		rc = OK;
 
@@ -1671,7 +1733,7 @@ enum_parse_values(
 	p = skipwhite(eni_name_end);
 
 	char_u	*init_expr = NULL;
-	if (*p == '(')
+	if (*p == '(' || *p == '<')
 	{
 	    if (VIM_ISWHITE(p[-1]))
 	    {
@@ -1684,7 +1746,7 @@ enum_parse_values(
 	    p = eni_name_start;
 	    (void)skip_expr_concatenate(&p, &expr_start, &expr_end, &evalarg);
 
-	    while (*expr_start && *expr_start != '(')
+	    while (*expr_start && *expr_start != '(' && *expr_start != '<')
 		expr_start++;
 
 	    if (expr_end > expr_start)
@@ -1692,17 +1754,18 @@ enum_parse_values(
 	}
 
 	if (init_expr == NULL)
-	    vim_snprintf(initexpr_buf, sizeof(initexpr_buf), "%s.new()",
-						    en->class_name);
+	    initexpr_buflen = vim_snprintf_safelen(
+		initexpr_buf, sizeof(initexpr_buf), "%s.new()", en->class_name.string);
 	else
 	{
-	    vim_snprintf(initexpr_buf, sizeof(initexpr_buf), "%s.new%s",
-					    en->class_name, init_expr);
+	    initexpr_buflen = vim_snprintf_safelen(
+		initexpr_buf, sizeof(initexpr_buf), "%s.new%s", en->class_name.string,
+		init_expr);
 	    vim_free(init_expr);
 	}
 	if (add_member(gap, eni_name_start, eni_name_end, FALSE,
 				TRUE, TRUE, TRUE, &en->class_object_type,
-				vim_strsave((char_u *)initexpr_buf)) == FAIL)
+				vim_strnsave((char_u *)initexpr_buf, initexpr_buflen)) == FAIL)
 	    break;
 
 	++*num_enum_values;
@@ -1763,18 +1826,18 @@ enum_add_values_member(
     int		rc = FAIL;
 
     ga_init2(&fga, 1, 1000);
-    ga_concat(&fga, (char_u *)"[");
+    ga_concat_len(&fga, (char_u *)"[", 1);
     for (int i = 0; i < num_enum_values; ++i)
     {
 	ocmember_T *m = ((ocmember_T *)gap->ga_data) + i;
 
 	if (i > 0)
-	    ga_concat(&fga, (char_u *)", ");
-	ga_concat(&fga, en->class_name);
-	ga_concat(&fga, (char_u *)".");
-	ga_concat(&fga, (char_u *)m->ocm_name);
+	    ga_concat_len(&fga, (char_u *)", ", 2);
+	ga_concat_len(&fga, en->class_name.string, en->class_name.length);
+	ga_concat_len(&fga, (char_u *)".", 1);
+	ga_concat_len(&fga, (char_u *)m->ocm_name.string, m->ocm_name.length);
     }
-    ga_concat(&fga, (char_u *)"]");
+    ga_concat_len(&fga, (char_u *)"]", 1);
     ga_append(&fga, NUL);
 
     char_u *varname = (char_u *)"values";
@@ -1792,7 +1855,7 @@ enum_add_values_member(
     }
 
     rc = add_member(gap, varname, varname + 6, FALSE, FALSE, TRUE, TRUE, type,
-					vim_strsave((char_u *)fga.ga_data));
+					vim_strnsave((char_u *)fga.ga_data, fga.ga_len));
 
 done:
     vim_free(fga.ga_data);
@@ -1832,11 +1895,19 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 	    break;
     }
 
+    if (i >= en->class_class_member_count)
+	// When adding enum values to an enum, the index value should be less
+	// than the member count.  It will be greater only when appending a
+	// new item to a list of enums.  In this case, skip setting the enum
+	// name and ordinal (as this is a dummy enum object)
+	return;
+
     // First object variable is the name
     ocmember_T *value_ocm = en->class_class_members + i;
     typval_T *name_tv = (typval_T *)(enval + 1);
     name_tv->v_type = VAR_STRING;
-    name_tv->vval.v_string = vim_strsave(value_ocm->ocm_name);
+    name_tv->vval.v_string =
+	vim_strnsave(value_ocm->ocm_name.string, value_ocm->ocm_name.length);
 
     // Second object variable is the ordinal
     typval_T *ord_tv = (typval_T *)(name_tv + 1);
@@ -1855,6 +1926,7 @@ ex_class(exarg_T *eap)
     int		is_class = eap->cmdidx == CMD_class;
     int		is_abstract = eap->cmdidx == CMD_abstract;
     int		is_enum = eap->cmdidx == CMD_enum;
+    int		added_enum_values = FALSE;
     int		is_interface;
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
@@ -2047,14 +2119,17 @@ early_ret:
 	cl->class_flags = CLASS_ABSTRACT;
 
     cl->class_refcount = 1;
-    cl->class_name = vim_strnsave(name_start, name_end - name_start);
-    if (cl->class_name == NULL)
+    cl->class_name.length = (size_t)(name_end - name_start);
+    cl->class_name.string = vim_strnsave(name_start, cl->class_name.length);
+    if (cl->class_name.string == NULL)
 	goto cleanup;
 
     cl->class_type.tt_type = VAR_CLASS;
     cl->class_type.tt_class = cl;
     cl->class_object_type.tt_type = VAR_OBJECT;
     cl->class_object_type.tt_class = cl;
+
+    eap->ea_class = cl;
 
     // Add the class to the script-local variables.
     // TODO: handle other context, e.g. in a function
@@ -2063,7 +2138,7 @@ early_ret:
     tv.v_type = VAR_CLASS;
     tv.vval.v_class = cl;
     SOURCING_LNUM = start_lnum;
-    int rc = set_var_const(cl->class_name, 0, NULL, &tv, FALSE, 0, 0);
+    int rc = set_var_const(cl->class_name.string, 0, NULL, &tv, FALSE, 0, 0);
     if (rc == FAIL)
 	goto cleanup;
 
@@ -2174,9 +2249,12 @@ early_ret:
 		break;
 
 	    if (enum_end)
+	    {
 		// Add the enum "values" class variable.
 		enum_add_values_member(cl, &classmembers, num_enum_values,
 							&type_list);
+		added_enum_values = TRUE;
+	    }
 	    continue;
 	}
 
@@ -2377,8 +2455,7 @@ early_ret:
 	//	  enddef
 	//	  static def ClassFunction()
 	//	  enddef
-	// TODO:
-	//	  def <Tval> someMethod()
+	//	  def someMethod<typeA, typeB>()
 	//	  enddef
 	else if (checkforcmd(&p, "def", 3))
 	{
@@ -2430,33 +2507,32 @@ early_ret:
 	    else
 		class_flags = abstract_method ? CF_ABSTRACT_METHOD : CF_CLASS;
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
-			class_flags, objmembers.ga_data, objmembers.ga_len);
+			class_flags, objmembers.ga_data, objmembers.ga_len,
+			NULL);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)
 	    {
-		char_u	*name = uf->uf_name;
-
 		if (is_new && !is_valid_constructor(uf, is_abstract,
 								has_static))
 		{
 		    // private variables are not supported in an interface
 		    semsg(_(e_protected_method_not_supported_in_interface),
-			    name);
+			    uf->uf_name);
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
 
 		// check for builtin method
-		if (!is_new && SAFE_islower(*name) &&
+		if (!is_new && SAFE_islower(*uf->uf_name) &&
 					!object_check_builtin_method_sig(uf))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
 
-		// Check the name isn't used already.
-		if (is_duplicate_method(&classfunctions, &objmethods, name))
+		// Check the uf_name isn't used already.
+		if (is_duplicate_method(&classfunctions, &objmethods, uf->uf_name))
 		{
 		    success = FALSE;
 		    func_clear_free(uf, FALSE);
@@ -2496,9 +2572,10 @@ early_ret:
 
     vim_free(theline);
 
-    if (success && is_enum && num_enum_values == 0)
+    if (success && is_enum && (num_enum_values == 0 || !added_enum_values))
 	// Empty enum statement. Add an empty "values" class variable
-	success = enum_add_values_member(cl, &classmembers, 0, &type_list);
+	success = enum_add_values_member(cl, &classmembers, num_enum_values,
+								&type_list);
 
     /*
      * Check a few things
@@ -2638,7 +2715,10 @@ early_ret:
 	// Allocate a typval for each class member and initialize it.
 	if ((is_class || is_enum) && cl->class_class_member_count > 0)
 	    if (add_class_members(cl, eap, &type_list) == FAIL)
-		goto cleanup;
+	    {
+		cl->class_type_list = type_list;
+		return;
+	    }
 
 	cl->class_type_list = type_list;
 
@@ -2676,7 +2756,7 @@ cleanup:
 	for (int i = 0; i < gap->ga_len; ++i)
 	{
 	    ocmember_T *m = ((ocmember_T *)gap->ga_data) + i;
-	    vim_free(m->ocm_name);
+	    VIM_CLEAR_STRING(m->ocm_name);
 	    vim_free(m->ocm_init);
 	}
 	ga_clear(gap);
@@ -2837,7 +2917,7 @@ ex_type(exarg_T *eap)
     }
 
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
-    type_T *type = parse_type(&arg, &si->sn_type_list, TRUE);
+    type_T *type = parse_type(&arg, &si->sn_type_list, NULL, NULL, TRUE);
     if (type == NULL)
 	return;
 
@@ -2917,7 +2997,7 @@ get_member_tv(
 				!class_instance_of(current_class, cl)))
     {
 	emsg_var_cl_define(e_cannot_access_protected_variable_str,
-							m->ocm_name, 0, cl);
+							m->ocm_name.string, 0, cl);
 	return FAIL;
     }
 
@@ -2953,6 +3033,7 @@ call_oc_method(
     char_u	*name_end,
     evalarg_T	*evalarg,
     char_u	**arg,
+    gfargs_tab_T	*gfatab,	// generic types
     typval_T	*rettv)
 {
     ufunc_T	*fp;
@@ -2975,8 +3056,8 @@ call_oc_method(
 	if (*name == '_')
 	{
 	    // Protected object or class funcref variable
-	    semsg(_(e_cannot_access_protected_variable_str), ocm->ocm_name,
-		    cl->class_name);
+	    semsg(_(e_cannot_access_protected_variable_str), ocm->ocm_name.string,
+		    cl->class_name.string);
 	    return FAIL;
 	}
 
@@ -3001,6 +3082,14 @@ call_oc_method(
 	return FAIL;
     }
 
+    // process generic function call
+    if (fp != NULL)
+    {
+	fp = generic_func_get(fp, gfatab);
+	if (fp == NULL)
+	    return FAIL;
+    }
+
     char_u *argp = name_end;
     int ret = get_func_arguments(&argp, evalarg, 0, argvars, &argcount, FALSE);
     if (ret == FAIL)
@@ -3014,6 +3103,8 @@ call_oc_method(
 	funcexe.fe_object = rettv->vval.v_object;
 	++funcexe.fe_object->obj_refcount;
     }
+    if (evalarg != NULL)
+	funcexe.fe_cctx = evalarg->eval_cctx;
 
     // Clear the class or object after calling the function, in
     // case the refcount is one.
@@ -3086,6 +3177,8 @@ class_object_index(
     evalarg_T	*evalarg,
     int		verbose UNUSED)	// give error messages
 {
+    int	ret = FAIL;
+
     if (VIM_ISWHITE((*arg)[1]))
     {
 	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
@@ -3119,10 +3212,28 @@ class_object_index(
 	return FAIL;
     }
 
+    gfargs_tab_T    gfatab;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (*name_end == '<')
+    {
+	cctx_T	    *cctx = NULL;
+
+	if (evalarg != NULL)
+	    cctx = evalarg->eval_cctx;
+
+	// calling a generic method
+	name_end = parse_generic_func_type_args(name, len, name + len,
+						&gfatab, cctx);
+	if (name_end == NULL)
+	    goto done;
+    }
+
     if (*name_end == '(')
 	// Invoke the class or object method
-	return call_oc_method(cl, name, len, name_end, evalarg, arg, rettv);
-
+	ret = call_oc_method(cl, name, len, name_end, evalarg, arg,
+							&gfatab, rettv);
     else if (rettv->v_type == VAR_OBJECT || rettv->v_type == VAR_CLASS)
     {
 	// Search in the object member variable table and the class member
@@ -3131,7 +3242,8 @@ class_object_index(
 	if (get_member_tv(cl, is_object, name, len, NULL, rettv) == OK)
 	{
 	    *arg = name_end;
-	    return OK;
+	    ret = OK;
+	    goto done;
 	}
 
 	// could be a class method or an object method
@@ -3140,25 +3252,30 @@ class_object_index(
 	if (fp != NULL)
 	{
 	    // Protected methods are not accessible outside the class
-	    if (*name == '_')
+	    if (fp->uf_defclass != evalarg->eval_class
+		    && *name == '_')
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 
 	    if (obj_method_to_partial_tv(is_object ? rettv->vval.v_object :
 						NULL, fp, rettv) == FAIL)
-		return FAIL;
+		goto done;
 
 	    *arg = name_end;
-	    return OK;
+	    ret = OK;
+	    goto done;
 	}
 
 	if (did_emsg == did_emsg_save)
 	    member_not_found_msg(cl, rettv->v_type, name, len);
     }
 
-    return FAIL;
+done:
+    generic_func_args_table_clear(&gfatab);
+
+    return ret;
 }
 
 /*
@@ -3195,6 +3312,13 @@ find_class_func(char_u **arg)
 
     fp = method_lookup(cl, tv.v_type, fname, len, NULL);
 
+    if (fp != NULL)
+    {
+	fp = eval_generic_func(fp, fname, &fname_end);
+	if (fp != NULL)
+	    *arg = fname_end;
+    }
+
 fail_after_eval:
     clear_tv(&tv);
     return fp;
@@ -3228,15 +3352,15 @@ class_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 	ocmember_T *m = &cl->class_class_members[i];
 	if (namelen)
 	{
-	    if (STRNCMP(name, m->ocm_name, namelen) == 0
-		    && m->ocm_name[namelen] == NUL)
+	    if (namelen == m->ocm_name.length
+		&& STRNCMP(name, m->ocm_name.string, namelen) == 0)
 	    {
 		ret_m = m;
 		ret_idx = i;
 		break;
 	    }
 	}
-	else if (STRCMP(name, m->ocm_name) == 0)
+	else if (STRCMP(name, m->ocm_name.string) == 0)
 	{
 	    ret_m = m;
 	    ret_idx = i;
@@ -3314,15 +3438,15 @@ object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 	ocmember_T  *m = &cl->class_obj_members[i];
 	if (namelen)
 	{
-	    if (STRNCMP(name, m->ocm_name, namelen) == 0
-		    && m->ocm_name[namelen] == NUL)
+	    if (namelen == m->ocm_name.length
+		&& STRNCMP(name, m->ocm_name.string, namelen) == 0)
 	    {
 		ret_m = m;
 		ret_idx = i;
 		break;
 	    }
 	}
-	else if (STRCMP(name, m->ocm_name) == 0)
+	else if (STRCMP(name, m->ocm_name.string) == 0)
 	{
 	    ret_m = m;
 	    ret_idx = i;
@@ -3392,8 +3516,8 @@ member_lookup(
 {
     if (v_type == VAR_CLASS)
 	return class_member_lookup(cl, name, namelen, idx);
-    else
-	return object_member_lookup(cl, name, namelen, idx);
+
+    return object_member_lookup(cl, name, namelen, idx);
 }
 
 /*
@@ -3492,7 +3616,7 @@ oc_var_check_ro(class_T *cl, ocmember_T *m)
     if (m->ocm_flags & (OCMFLAG_FINAL | OCMFLAG_CONST))
     {
 	semsg(_(e_cannot_change_readonly_variable_str_in_class_str),
-		m->ocm_name, cl->class_name);
+		m->ocm_name.string, cl->class_name.string);
 	return TRUE;
     }
     return FALSE;
@@ -3514,6 +3638,36 @@ obj_lock_const_vars(object_T *obj)
 	    item_lock(mtv, DICT_MAXNEST, TRUE, TRUE);
 	}
     }
+}
+
+/*
+ * Create a new instance of class "cl"
+ */
+    object_T *
+alloc_object(class_T *cl)
+{
+    object_T	*obj;
+    int		sz;
+
+    if (cl == NULL)
+	return NULL;
+
+    sz = sizeof(object_T) + cl->class_obj_member_count * sizeof(typval_T);
+    obj = alloc_clear(sz);
+    if (obj == NULL)
+	return NULL;
+
+    obj->obj_class = cl;
+    ++cl->class_refcount;
+    obj->obj_refcount = 1;
+    object_created(obj);
+
+    // When creating an enum value object, initialize the name and ordinal
+    // object variables.
+    if (IS_ENUM(cl))
+	enum_set_internal_obj_vars(cl, obj);
+
+    return obj;
 }
 
 /*
@@ -3555,7 +3709,7 @@ class_free(class_T *cl)
     // Freeing what the class contains may recursively come back here.
     // Clear "class_name" first, if it is NULL the class does not need to
     // be freed.
-    VIM_CLEAR(cl->class_name);
+    VIM_CLEAR_STRING(cl->class_name);
 
     class_unref(cl->class_extends);
 
@@ -3578,7 +3732,7 @@ class_free(class_T *cl)
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	ocmember_T *m = &cl->class_class_members[i];
-	vim_free(m->ocm_name);
+	VIM_CLEAR_STRING(m->ocm_name);
 	vim_free(m->ocm_init);
 	if (cl->class_members_tv != NULL)
 	    clear_tv(&cl->class_members_tv[i]);
@@ -3589,7 +3743,7 @@ class_free(class_T *cl)
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
 	ocmember_T *m = &cl->class_obj_members[i];
-	vim_free(m->ocm_name);
+	VIM_CLEAR_STRING(m->ocm_name);
 	vim_free(m->ocm_init);
     }
     vim_free(cl->class_obj_members);
@@ -3597,6 +3751,10 @@ class_free(class_T *cl)
     for (int i = 0; i < cl->class_class_function_count; ++i)
     {
 	ufunc_T *uf = cl->class_class_functions[i];
+	// For an enum class, the constructor function names are cleared.  Set
+	// the name back, so that clearing the function will work properly.
+	if (IS_ENUM(cl) && IS_CONSTRUCTOR_METHOD(uf) && *uf->uf_name == NUL)
+	    STRCPY(uf->uf_name, "new");
 	func_clear_free(uf, FALSE);
     }
     vim_free(cl->class_class_functions);
@@ -3616,12 +3774,107 @@ class_free(class_T *cl)
 }
 
 /*
+ * Returns the number of references from the class members of class "cl" to cl"
+ * itself.
+ */
+    static int
+class_get_selfrefs(class_T *cl)
+{
+    int		self_refs = 0;
+    typval_T	*tv;
+
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	tv = &cl->class_members_tv[i];
+	if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL
+		&& tv->vval.v_object->obj_class == cl
+		&& (tv->vval.v_object->obj_refcount == 1
+		    || (IS_ENUM(cl) && tv->vval.v_object->obj_refcount == 2)))
+	    self_refs++;
+    }
+
+    return self_refs;
+}
+
+/*
+ * Returns TRUE if enum "cl" can be freed.  An enum can be freed, if the enum
+ * values are no longer referenced and the "values" class member is also not
+ * referenced.
+ */
+    static int
+can_free_enum(class_T *cl)
+{
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	typval_T	*tv = &cl->class_members_tv[i];
+	ocmember_T	*ocm = &cl->class_class_members[i];
+
+	if (tv->v_type != VAR_OBJECT && tv->v_type != VAR_LIST)
+	    // In an enum, the first set of class members are the enum values.
+	    // Followed by the "values" member which is a List of enum values.
+	    // If all of those members are no longer referenced, then the enum
+	    // may be freed.
+	    return TRUE;
+
+	if (tv->v_type == VAR_LIST
+		&& tv->vval.v_list->lv_type->tt_member->tt_type == VAR_OBJECT
+		&& tv->vval.v_list->lv_type->tt_member->tt_class == cl
+		&& STRCMP(ocm->ocm_name.string, "values") == 0)
+	{
+	    // "values" class member is referenced outside
+	    if (tv->vval.v_list->lv_refcount > 1)
+		return FALSE;
+	    break;
+	}
+
+	if (tv->vval.v_object->obj_refcount > 2)
+	    // enum value is referenced outside
+	    return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Returns TRUE if class "cl" has no references outside of the references from
+ * it's own class members and can be freed.  If it is an enum, then checks
+ * whether the enum values and the "values" members are referenced elsewhere.
+ */
+    static int
+can_free_class(class_T *cl)
+{
+    int		can_free = FALSE;
+    int		self_refs = 0;
+
+    if (IS_ENUM(cl) && !can_free_enum(cl))
+	return FALSE;
+
+    if (cl->class_refcount > 0)
+	self_refs = class_get_selfrefs(cl);
+
+    // If the class is no longer referenced or only referenced from it's own
+    // class member, then it can be freed.
+    if (cl->class_refcount <= 0 || cl->class_refcount == self_refs)
+	can_free = TRUE;
+
+    return can_free;
+}
+
+/*
  * Unreference a class.  Free it when the reference count goes down to zero.
  */
     void
 class_unref(class_T *cl)
 {
-    if (cl != NULL && --cl->class_refcount <= 0 && cl->class_name != NULL)
+    if (cl == NULL)
+	return;
+
+    --cl->class_refcount;
+
+    if (cl->class_name.string == NULL)
+	return;
+
+    if (can_free_class(cl))
 	class_free(cl);
 }
 
@@ -3789,7 +4042,7 @@ emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl)
     ocmember_T	*m;
     class_T	*cl_def = class_defining_member(cl, name, len, &m);
     if (cl_def != NULL)
-	semsg(_(msg), m->ocm_name, cl_def->class_name);
+	semsg(_(msg), m->ocm_name.string, cl_def->class_name.string);
     else
 	emsg(_(e_internal_error_please_report_a_bug));
 }
@@ -3809,7 +4062,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_class_method_str_accessible_only_using_class_str),
-		    method_name, cl->class_name);
+		    method_name, cl->class_name.string);
     }
     else if ((v_type == VAR_CLASS)
 	    && (object_method_idx(cl, name, len) >= 0))
@@ -3819,11 +4072,11 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_object_method_str_accessible_only_using_object_str),
-		    method_name, cl->class_name);
+		    method_name, cl->class_name.string);
     }
     else
 	semsg(_(e_method_not_found_on_class_str_str), method_name,
-		cl->class_name);
+		cl->class_name.string);
     vim_free(method_name);
 }
 
@@ -3839,24 +4092,24 @@ member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	if (class_member_idx(cl, name, len) >= 0)
 	    semsg(_(e_class_variable_str_accessible_only_using_class_str),
-		    varname, cl->class_name);
+		    varname, cl->class_name.string);
 	else
 	    semsg(_(e_variable_not_found_on_object_str_str), varname,
-		    cl->class_name);
+		    cl->class_name.string);
     }
     else
     {
 	if (object_member_idx(cl, name, len) >= 0)
 	    semsg(_(e_object_variable_str_accessible_only_using_object_str),
-		    varname, cl->class_name);
+		    varname, cl->class_name.string);
 	else
 	{
 	    if (IS_ENUM(cl))
 		semsg(_(e_enum_value_str_not_found_in_enum_str),
-			varname, cl->class_name);
+			varname, cl->class_name.string);
 	    else
 		semsg(_(e_class_variable_str_not_found_in_class_str),
-			varname, cl->class_name);
+			varname, cl->class_name.string);
 	}
     }
     vim_free(varname);
@@ -3891,7 +4144,7 @@ defcompile_classes_in_script(void)
 {
     for (class_T *cl = first_class; cl != NULL; cl = cl->class_next_used)
     {
-	if (eval_variable(cl->class_name, 0, 0, NULL, NULL,
+	if (eval_variable(cl->class_name.string, 0, 0, NULL, NULL,
 			EVAL_VAR_NOAUTOLOAD | EVAL_VAR_NO_FUNC) != FAIL)
 	    defcompile_class(cl);
     }
@@ -4038,28 +4291,30 @@ object2string(
 
     if (cl != NULL && IS_ENUM(cl))
     {
-	ga_concat(&ga, (char_u *)"enum ");
-	ga_concat(&ga, cl->class_name);
+	ga_concat_len(&ga, (char_u *)"enum ", 5);
+	ga_concat_len(&ga, cl->class_name.string, cl->class_name.length);
 	char_u *enum_name = ((typval_T *)(obj + 1))->vval.v_string;
-	ga_concat(&ga, (char_u *)".");
+	ga_concat_len(&ga, (char_u *)".", 1);
 	ga_concat(&ga, enum_name);
     }
     else
     {
-	ga_concat(&ga, (char_u *)"object of ");
-	ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
-		: cl->class_name);
+	ga_concat_len(&ga, (char_u *)"object of ", 10);
+	if (cl == NULL)
+	    ga_concat_len(&ga, (char_u *)"[unknown]", 9);
+	else
+	    ga_concat_len(&ga, cl->class_name.string, cl->class_name.length);
     }
     if (cl != NULL)
     {
-	ga_concat(&ga, (char_u *)" {");
+	ga_concat_len(&ga, (char_u *)" {", 2);
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
 	    if (i > 0)
-		ga_concat(&ga, (char_u *)", ");
+		ga_concat_len(&ga, (char_u *)", ", 2);
 	    ocmember_T *m = &cl->class_obj_members[i];
-	    ga_concat(&ga, m->ocm_name);
-	    ga_concat(&ga, (char_u *)": ");
+	    ga_concat_len(&ga, m->ocm_name.string, m->ocm_name.length);
+	    ga_concat_len(&ga, (char_u *)": ", 2);
 	    char_u *tf = NULL;
 	    char_u *s = echo_string_core((typval_T *)(obj + 1) + i,
 					 &tf, numbuf, copyID, echo_style,
@@ -4074,7 +4329,7 @@ object2string(
 	    }
 	    line_breakcheck();
 	}
-	ga_concat(&ga, (char_u *)"}");
+	ga_concat_len(&ga, (char_u *)"}", 1);
     }
     if (ok == FAIL)
     {

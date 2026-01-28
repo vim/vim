@@ -1,0 +1,55 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH EVIM 1 "12 augusti 2024"
+.SH NAMN
+evim  enkel Vim, redigera en fil med Vim och konfigurera för lägeslös
+redigering
+.SH SYNOPSIS
+.br
+\fBevim\fP [flaggor] [fil ..]
+.br
+\fBeview\fP
+.SH BESKRIVNING
+\fBeVim\fP startar \fBVim\fP och ställer in flaggor så att det fungerar som en
+lägeslös redigerare.  Det är fortfarande Vim, men används som en
+pek\-och\-klicka\-redigerare.  Det känns ungefär som att använda Notepad i
+MS\-Windows.  \fBeVim\fP körs alltid i grafiskt gränssnitt, för att möjliggöra
+användning av menyer och verktygsfält.
+.PP
+Endast för personer som verkligen inte kan arbeta med Vim på normalt
+sätt. Redigeringen blir mycket mindre effektiv.
+.PP
+\fBeview\fP är detsamma, men startar i skrivskyddat läge.  Det fungerar precis
+som evim \-R.
+.PP
+Se vim(1) för mer information om Vim, flaggor etc.
+.PP
+Flaggan "insertmode" är inställt så att man kan skriva text direkt.
+.br
+Mappningar är inställda så att kopiera och klistra in fungerar med
+MS\-Windows\-tangenterna. CTRL\-X klipper ut text, CTRL\-C kopierar text och
+CTRL\-V klistrar in text. Använd CTRL\-Q för att få den ursprungliga
+funktionen för CTRL\-V.
+.SH FLAGGOR
+Se vim(1).
+.SH FILER
+.TP  15
+/usr/local/share/vim/vim??/evim.vim
+Skriptet som läses in för att initialisera eVim.
+.br
+\fIvim??\fP är ett kort versionsnummer, till exempel vim91 för \fBVim 9.1\fP
+.SH AKA
+Även känt som "Vim för gumbies".  När du använder evim förväntas du ta en
+näsduk, göra en knut i varje hörn och bära den på huvudet.
+.SH "SE ÄVEN"
+vim(1)
+.SH UPPHOVSPERSON
+Det mesta av \fBVim\fP en har skapats av Bram Moolenaar, med stor hjälp från
+andra.  Se menyn Hjälp/Tack till.
+.SH SVENSK ÖVERSÄTTNING
+Vim översattes ursprungligen av Johan Svedberg 2003-2007 och har under 2025
+uppdaterats av Daniel Nylander, speciellt manualsidor samt själva Vim.
+Om du hittar fel i översättningen, kontakta <tp-sv@listor.tp-sv.se>.

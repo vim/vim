@@ -177,6 +177,9 @@ void mbyte_im_set_active(int active_arg);
 #  include "profiler.pro"
 # endif
 # include "quickfix.pro"
+# ifdef FEAT_WAYLAND
+#  include "wayland.pro"
+# endif
 # include "regexp.pro"
 # include "register.pro"
 # include "scriptfile.pro"
@@ -185,6 +188,7 @@ void mbyte_im_set_active(int active_arg);
 # if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 #  include "sha256.pro"
 # endif
+# include "fuzzy.pro"
 # include "search.pro"
 # ifdef FEAT_SIGNS
 #  include "sign.pro"
@@ -227,6 +231,7 @@ void mbyte_im_set_active(int active_arg);
 #  include "vim9compile.pro"
 #  include "vim9execute.pro"
 #  include "vim9expr.pro"
+#  include "vim9generics.pro"
 #  include "vim9instr.pro"
 #  include "vim9type.pro"
 # endif
@@ -332,7 +337,6 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 # if defined(FEAT_PERL) && !defined(IN_PERL_FILE)
 #  define CV void
 #  include "if_perl.pro"
-#  include "if_perlsfio.pro"
 # endif
 
 # ifdef MACOS_CONVERT

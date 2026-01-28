@@ -1,0 +1,104 @@
+# skhd configuration file
+# This is a comment
+
+# Basic key bindings with modifiers
+alt - h : yabai -m window --focus west
+shift + cmd - j : yabai -m window --focus south
+ctrl + alt + shift - k : yabai -m window --focus north
+fn - l : yabai -m window --focus east
+
+# Using hex keycodes
+cmd - 0x2A : open -a "Finder"
+
+# Function keys
+cmd - f1 : echo "F1 pressed"
+alt - f12 : echo "F12 pressed"
+
+# Special keys
+cmd - return : open -a "Terminal"
+alt - tab : yabai -m window --focus recent
+ctrl - escape : yabai -m space --balance
+shift - delete : rm -rf ~/.Trash/*
+cmd - space : open -a "Spotlight"
+
+# Arrow keys
+alt - left : yabai -m window --focus west
+alt - right : yabai -m window --focus east
+alt - up : yabai -m window --focus north
+alt - down : yabai -m window --focus south
+
+# Media keys
+cmd - sound_up : osascript -e "set volume output volume 100"
+cmd - mute : osascript -e "set volume output muted true"
+cmd - play : osascript -e "tell app \"Music\" to playpause"
+cmd - brightness_up : echo "brightness up"
+
+# yabai subcommands
+alt - w : yabai -m window --close
+alt - s : yabai -m space --create
+alt - d : yabai -m display --focus next
+
+# Mode definitions
+:: default : yabai -m config active_window_border_color 0xff775759
+:: resize @ : yabai -m config active_window_border_color 0xffd75f5f
+
+# Mode switching
+default < alt - r ; resize
+resize < escape ; default
+resize < alt - r ; default
+
+# Mode with passthrough
+:: passthrough
+
+passthrough < cmd + shift + alt - p ; default
+
+# Application-specific bindings
+alt - t [
+    "iTerm2" : echo "iTerm2 specific"
+    "Google Chrome" : echo "Chrome specific"
+    * : open -a "Terminal"
+]
+
+ctrl - n [
+    "Finder" : open -a "Notes"
+    * ~
+]
+
+# .blacklist directive
+.blacklist [
+    "Alfred"
+    "1Password"
+]
+
+# .load directive
+.load "/path/to/other/skhdrc"
+
+# Multi-line command with backslash continuation
+alt + shift - m : yabai -m window --toggle zoom-fullscreen; \
+                  yabai -m window --toggle border
+
+# Complex binding with subcommands
+hyper - 1 : yabai -m window --space 1; \
+            yabai -m space --focus 1
+
+# Using lalt, ralt, lcmd, rcmd, lshift, rshift, lctrl, rctrl
+lalt - a : echo "left alt"
+ralt - a : echo "right alt"
+lcmd - b : echo "left cmd"
+rcmd - b : echo "right cmd"
+lshift - c : echo "left shift"
+rshift - c : echo "right shift"
+lctrl - d : echo "left ctrl"
+rctrl - d : echo "right ctrl"
+
+# Meh and hyper modifiers
+meh - x : echo "meh (ctrl+alt+shift)"
+hyper - y : echo "hyper (ctrl+alt+shift+cmd)"
+
+# Additional modifiers: option and super are aliases
+option - z : echo "option is alt alias"
+super - z : echo "super is cmd alias"
+
+# End of configuration
+
+# vim:ft=skhd:

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 
 # define SEARCH_HL_PRIORITY 0
 
@@ -21,7 +21,7 @@
  * Add match to the match list of window "wp".
  * If "pat" is not NULL the pattern will be highlighted with the group "grp"
  * with priority "prio".
- * If "pos_list" is not NULL the list of posisions defines the highlights.
+ * If "pos_list" is not NULL the list of positions defines the highlights.
  * Optionally, a desired ID "id" can be specified (greater than or equal to 1).
  * If no particular ID is desired, -1 must be specified for "id".
  * Return ID of added match, -1 on failure.
@@ -38,7 +38,7 @@ match_add(
 {
     matchitem_T	*cur;
     matchitem_T	*prev;
-    matchitem_T	*m;
+    matchitem_T	*m = NULL;
     int		hlg_id;
     regprog_T	*regprog = NULL;
     int		rtype = UPD_SOME_VALID;
@@ -86,15 +86,12 @@ match_add(
     // Build new match.
     m = ALLOC_CLEAR_ONE(matchitem_T);
     if (m == NULL)
-	return -1;
+	goto fail;
     if (pos_list != NULL && pos_list->lv_len > 0)
     {
 	m->mit_pos_array = ALLOC_CLEAR_MULT(llpos_T, pos_list->lv_len);
 	if (m->mit_pos_array == NULL)
-	{
-	    vim_free(m);
-	    return -1;
-	}
+	    goto fail;
 	m->mit_pos_count = pos_list->lv_len;
     }
     m->mit_id = id;
@@ -213,9 +210,13 @@ match_add(
     return id;
 
 fail:
-    vim_free(m->mit_pattern);
-    vim_free(m->mit_pos_array);
-    vim_free(m);
+    vim_regfree(regprog);
+    if (m != NULL)
+    {
+	vim_free(m->mit_pattern);
+	vim_free(m->mit_pos_array);
+	vim_free(m);
+    }
     return -1;
 }
 
@@ -865,11 +866,11 @@ get_prevcol_hl_flag(win_T *wp, match_T *search_hl, long curcol)
     int		prevcol_hl_flag = FALSE;
     matchitem_T *cur;			// points to the match list
 
-#if defined(FEAT_PROP_POPUP)
+# if defined(FEAT_PROP_POPUP)
     // don't do this in a popup window
     if (popup_is_popup(wp))
 	return FALSE;
-#endif
+# endif
 
     // we're not really at that column when skipping some text
     if ((long)(wp->w_p_wrap ? wp->w_skipcol : wp->w_leftcol) > prevcol)
@@ -936,7 +937,7 @@ get_search_match_hl(win_T *wp, match_T *search_hl, long col, int *char_attr)
 
 #endif // FEAT_SEARCH_EXTRA
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 # ifdef FEAT_SEARCH_EXTRA
     static int
 matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
@@ -964,7 +965,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     return OK;
 }
-#endif
+# endif
 
 /*
  * "clearmatches()" function
@@ -972,7 +973,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     void
 f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     win_T   *win;
 
     if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
@@ -981,7 +982,7 @@ f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     win = get_optional_window(argvars, 0);
     if (win != NULL)
 	clear_matches(win);
-#endif
+# endif
 }
 
 /*
@@ -1062,7 +1063,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     list_T	*l;
     listitem_T	*li;
     dict_T	*d;
@@ -1171,7 +1172,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	}
 	rettv->vval.v_number = 0;
     }
-#endif
+# endif
 }
 
 /*
@@ -1356,7 +1357,7 @@ f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 }
 #endif
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 /*
  * ":[N]match {group} {pattern}"
  * Sets nextcmd to the start of the next command, if any.  Also called when

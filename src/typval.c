@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Allocate memory for a variable type-value, and make it empty (0 or NULL
@@ -283,7 +283,7 @@ tv_get_bool_or_number_chk(
 		{
 		    class_T *cl = varp->vval.v_object->obj_class;
 		    if (cl != NULL && IS_ENUM(cl))
-			semsg(_(e_using_enum_str_as_number), cl->class_name);
+			semsg(_(e_using_enum_str_as_number), cl->class_name.string);
 		    else
 			emsg(_(e_using_object_as_number));
 		}
@@ -391,15 +391,15 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_using_special_value_as_float));
 	    break;
 	case VAR_JOB:
-# ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    emsg(_(e_using_job_as_float));
 	    break;
-# endif
+#endif
 	case VAR_CHANNEL:
-# ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    emsg(_(e_using_channel_as_float));
 	    break;
-# endif
+#endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_float));
 	    break;
@@ -697,7 +697,7 @@ check_for_opt_nonnull_dict_arg(typval_T *args, int idx)
 	    || check_for_nonnull_dict_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Give an error and return FAIL unless "args[idx]" is a channel or a job.
  */
@@ -823,7 +823,6 @@ check_for_opt_lnum_arg(typval_T *args, int idx)
 	    || check_for_lnum_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a blob.
  */
@@ -837,7 +836,6 @@ check_for_string_or_blob_arg(typval_T *args, int idx)
     }
     return OK;
 }
-#endif
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a list.
@@ -1250,7 +1248,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 		{
 		    class_T *cl = varp->vval.v_object->obj_class;
 		    if (cl != NULL && IS_ENUM(cl))
-			semsg(_(e_using_enum_str_as_string), cl->class_name);
+			semsg(_(e_using_enum_str_as_string), cl->class_name.string);
 		    else
 			emsg(_(e_using_object_as_string));
 		}
@@ -1357,9 +1355,11 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
  */
-    void
+    int
 copy_tv(typval_T *from, typval_T *to)
 {
+    int		ret = OK;
+
     to->v_type = from->v_type;
     to->v_lock = 0;
     switch (from->v_type)
@@ -1465,40 +1465,40 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    ret = FAIL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	    internal_error_no_abort("copy_tv(UNKNOWN)");
+	    ret = FAIL;
 	    break;
     }
+
+    return ret;
 }
 
 /*
  * Compare "tv1" and "tv2".
- * Put the result in "tv1".  Caller should clear "tv2".
  */
     int
-typval_compare(
+typval_compare2(
     typval_T	*tv1,	// first operand
     typval_T	*tv2,	// second operand
-    exprtype_T	type,   // operator
-    int		ic)     // ignore case
+    exprtype_T	type,	// operator
+    int		ic,	// ignore case
+    int		*res)	// comparison result
 {
     varnumber_T	n1, n2;
-    int		res = 0;
     int		type_is = type == EXPR_IS || type == EXPR_ISNOT;
 
     if (check_typval_is_value(tv1) == FAIL
 	|| check_typval_is_value(tv2) == FAIL)
-    {
-	clear_tv(tv1);
 	return FAIL;
-    }
     else if (type_is && tv1->v_type != tv2->v_type)
     {
 	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
-	n1 = (type == EXPR_ISNOT);
+	*res = (type == EXPR_ISNOT);
     }
     else if (((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
 		|| (tv2->v_type == VAR_SPECIAL
@@ -1508,67 +1508,41 @@ typval_compare(
     {
 	n1 = typval_compare_null(tv1, tv2);
 	if (n1 == MAYBE)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	if (type == EXPR_NEQUAL)
 	    n1 = !n1;
+	*res = n1;
     }
     else if (tv1->v_type == VAR_BLOB || tv2->v_type == VAR_BLOB)
     {
-	if (typval_compare_blob(tv1, tv2, type, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_blob(tv1, tv2, type, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
     {
-	if (typval_compare_list(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_list(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_TUPLE || tv2->v_type == VAR_TUPLE)
     {
-	if (typval_compare_tuple(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_tuple(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_OBJECT || tv2->v_type == VAR_OBJECT)
     {
-	if (typval_compare_object(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_object(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_DICT || tv2->v_type == VAR_DICT)
     {
-	if (typval_compare_dict(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_dict(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
     else if (tv1->v_type == VAR_FUNC || tv2->v_type == VAR_FUNC
 	|| tv1->v_type == VAR_PARTIAL || tv2->v_type == VAR_PARTIAL)
     {
-	if (typval_compare_func(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_func(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
 
     // If one of the two variables is a float, compare as a float.
@@ -1583,10 +1557,7 @@ typval_compare(
 	if (!error)
 	    f2 = tv_get_float_chk(tv2, &error);
 	if (error)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	n1 = FALSE;
 	switch (type)
 	{
@@ -1602,6 +1573,7 @@ typval_compare(
 	    case EXPR_MATCH:
 	    default:  break;  // avoid gcc warning
 	}
+	*res = n1;
     }
 
     // If one of the two variables is a number, compare as a number.
@@ -1615,10 +1587,7 @@ typval_compare(
 	if (!error)
 	    n2 = tv_get_number_chk(tv2, &error);
 	if (error)
-	{
-	    clear_tv(tv1);
 	    return FAIL;
-	}
 	switch (type)
 	{
 	    case EXPR_IS:
@@ -1633,6 +1602,7 @@ typval_compare(
 	    case EXPR_MATCH:
 	    default:  break;  // avoid gcc warning
 	}
+	*res = n1;
     }
     else if (in_vim9script() && (tv1->v_type == VAR_BOOL
 				    || tv2->v_type == VAR_BOOL
@@ -1643,7 +1613,6 @@ typval_compare(
 	{
 	    semsg(_(e_cannot_compare_str_with_str),
 		       vartype_name(tv1->v_type), vartype_name(tv2->v_type));
-	    clear_tv(tv1);
 	    return FAIL;
 	}
 	n1 = tv1->vval.v_number;
@@ -1657,9 +1626,9 @@ typval_compare(
 	    default:
 		semsg(_(e_invalid_operation_for_str),
 						   vartype_name(tv1->v_type));
-		clear_tv(tv1);
 		return FAIL;
 	}
+	*res = n1;
     }
 #ifdef FEAT_JOB_CHANNEL
     else if (tv1->v_type == tv2->v_type
@@ -1672,27 +1641,47 @@ typval_compare(
 	    n1 = tv1->vval.v_job == tv2->vval.v_job;
 	if (type == EXPR_NEQUAL)
 	    n1 = !n1;
+	*res = n1;
     }
 #endif
     else
     {
-	if (typval_compare_string(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
+	if (typval_compare_string(tv1, tv2, type, ic, res) == FAIL)
 	    return FAIL;
-	}
-	n1 = res;
     }
+
+    return OK;
+}
+
+/*
+ * Compare "tv1" and "tv2".
+ * Put the result in "tv1".  Caller should clear "tv2".
+ */
+    int
+typval_compare(
+    typval_T	*tv1,	// first operand
+    typval_T	*tv2,	// second operand
+    exprtype_T	type,   // operator
+    int		ic)     // ignore case
+{
+    int res;
+
+    if (typval_compare2(tv1, tv2, type, ic, &res) == FAIL)
+    {
+	clear_tv(tv1);
+	return FAIL;
+    }
+
     clear_tv(tv1);
     if (in_vim9script())
     {
 	tv1->v_type = VAR_BOOL;
-	tv1->vval.v_number = n1 ? VVAL_TRUE : VVAL_FALSE;
+	tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
     }
     else
     {
 	tv1->v_type = VAR_NUMBER;
-	tv1->vval.v_number = n1;
+	tv1->vval.v_number = res;
     }
 
     return OK;
@@ -1897,6 +1886,11 @@ typval_compare_object(
     {
 	*res = obj1 == obj2 ? res_match : !res_match;
 	return OK;
+    }
+    else if (tv1->v_type != tv2->v_type)
+    {
+	emsg(_(e_can_only_compare_object_with_object));
+	return FAIL;
     }
 
     *res = object_equal(obj1, obj2, ic) ? res_match : !res_match;

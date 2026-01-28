@@ -183,4 +183,10 @@ class MethodReferencesTests
 			return T::toString;	/* "e" */
 		}
 	}
+
+	static {
+		((Supplier<Class<?>>)((Supplier<C2.C21>)()->new
+			<Object>C2().new <Object> C21(new<Object>
+				C1< Object >((C1<?>)null)))::getClass).get();
+	}
 }

@@ -9,6 +9,12 @@
 /* Define unless no X support found */
 #undef HAVE_X11
 
+/* Define unless no Wayland support found */
+#undef HAVE_WAYLAND
+
+/* Define if you want focus stealing support with Wayland clipboard  */
+#undef FEAT_WAYLAND_CLIPBOARD_FS
+
 /* Define when terminfo support found */
 #undef TERMINFO
 
@@ -392,7 +398,7 @@
 #undef HAVE_SYSMOUSE
 
 /* Define if you want to include the Cscope interface. */
-#undef FEAT_CSCOPE
+#undef ENABLE_CSCOPE
 
 /* Define if you don't want to include right-left support. */
 #undef DISABLE_RIGHTLEFT
@@ -402,6 +408,9 @@
 
 /* Define if you want to always define a server name at vim startup. */
 #undef FEAT_AUTOSERVERNAME
+
+/* Define if you want to use sockets for clientserver communication. */
+#undef WANT_SOCKETSERVER
 
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
@@ -504,6 +513,9 @@
 
 /* Define if we have flock() */
 #undef HAVE_FLOCK
+
+/* Define if we have shm_open() */
+#undef HAVE_SHM_OPEN
 
 /* Define to inline symbol or empty */
 #undef inline

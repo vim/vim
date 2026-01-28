@@ -355,7 +355,7 @@ form_realize(GtkWidget *widget)
 
 
 // After reading the documentation at
-// http://developer.gnome.org/doc/API/2.0/gtk/gtk-changes-2-0.html
+// https://www.manpagez.com/html/gtk2/gtk2-2.24.29/gtk-changes-2-0.php
 // I think it should be possible to remove this function when compiling
 // against gtk-2.0.  It doesn't seem to cause problems, though.
 //
@@ -745,7 +745,10 @@ form_realize_child(GtkForm *form, GtkFormChild *child)
 }
 
     static void
-form_position_child(GtkForm *form, GtkFormChild *child, gboolean force_allocate)
+form_position_child(
+    GtkForm		*form,
+    GtkFormChild	*child,
+    gboolean		force_allocate)
 {
     gint x;
     gint y;

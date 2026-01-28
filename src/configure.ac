@@ -1,8 +1,39 @@
-dnl configure.ac: autoconf script for Vim
+dnl +----------------------------------------------------------------------+
+dnl   configure.ac: autoconf script for Vim
+dnl +----------------------------------------------------------------------+
+dnl
+dnl   This file is processed by autoconf to generate the 'configure' script.
+dnl
+dnl   ==> IMPORTANT NOTE FOR DEVELOPERS <==
+dnl
+dnl   Do NOT run 'autoconf' directly on this file.  You must use the provided
+dnl   make target, like this:
+dnl
+dnl     make autoconf
+dnl
+dnl   This is required because the Makefile handles placing the generated
+dnl   script into its final location: 'auto/configure'.
+dnl
+dnl +----------------------------------------------------------------------+
 
-dnl Process this file with autoconf 2.71 to produce "configure".
+dnl You should use Autoconf 2.72 but to simplify CI on Ubuntu 24.04 we only
+dnl use AC_PREREQ([2.71])
+AC_PREREQ([2.71])
 
+dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
+dnl provides PACKAGE_* macros, used by Autoconf on UNIX to inject version
+dnl info into config.h, --version output, and "make dist".
+dnl
+dnl Vim does not rely on that: versioning is centralized in
+dnl version.h/version.c, dnl which ensures a single cross-platform source of
+dnl truth for both UNIX and non-UNIX platforms.
+dnl
+dnl Therefore we call AC_INIT without arguments.
 AC_INIT
+
+dnl Use vim.h as the source-tree anchor: AC_CONFIG_SRCDIR verifies that
+dnl configure is run in (or pointed to) the correct source directory.
+dnl vim.h is always present at the top level.
 AC_CONFIG_SRCDIR([vim.h])
 AC_CONFIG_HEADERS(auto/config.h:config.h.in)
 
@@ -25,8 +56,12 @@ AC_EXEEXT
 
 AC_HEADER_SYS_WAIT
 
+if test -z "$PKG_CONFIG"; then
+  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
+fi
+
 dnl Check that the C99 features that Vim uses are supported:
-if test x"$ac_cv_prog_cc_c99" != xno; then
+if test x"$ac_cv_prog_cc_c99" = xno; then
   dnl If the compiler doesn't explicitly support C99, then check
   dnl for the specific features Vim uses
 
@@ -748,7 +783,6 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
       LUA_SRC="if_lua.c"
       LUA_OBJ="objects/if_lua.o"
-      LUA_PRO="if_lua.pro"
       AC_DEFINE(FEAT_LUA)
     fi
     if test "$enable_luainterp" = "dynamic"; then
@@ -813,7 +847,6 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
   fi
   AC_SUBST(LUA_SRC)
   AC_SUBST(LUA_OBJ)
-  AC_SUBST(LUA_PRO)
   AC_SUBST(LUA_LIBS)
   AC_SUBST(LUA_CFLAGS)
   AC_SUBST(LUA_CFLAGS_EXTRA)
@@ -1072,7 +1105,6 @@ if test "$enable_mzschemeinterp" = "yes"; then
     if test $mzs_ok = yes; then
       MZSCHEME_SRC="if_mzsch.c"
       MZSCHEME_OBJ="objects/if_mzsch.o"
-      MZSCHEME_PRO="if_mzsch.pro"
       AC_DEFINE(FEAT_MZSCHEME)
     else
       MZSCHEME_CFLAGS=
@@ -1083,7 +1115,6 @@ if test "$enable_mzschemeinterp" = "yes"; then
   fi
   AC_SUBST(MZSCHEME_SRC)
   AC_SUBST(MZSCHEME_OBJ)
-  AC_SUBST(MZSCHEME_PRO)
   AC_SUBST(MZSCHEME_LIBS)
   AC_SUBST(MZSCHEME_CFLAGS)
   AC_SUBST(MZSCHEME_EXTRA)
@@ -1211,9 +1242,9 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
 	  fi
 	fi
 	PERL_LIBS=$perllibs
-	PERL_SRC="auto/if_perl.c if_perlsfio.c"
-	PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o"
-	PERL_PRO="if_perl.pro if_perlsfio.pro"
+	PERL_SRC="auto/if_perl.c"
+	PERL_OBJ="objects/if_perl.o"
+	PERL_PRO="proto/if_perl.pro"
 	AC_DEFINE(FEAT_PERL)
       fi
      fi
@@ -1239,7 +1270,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
     if test -n "$PERL"; then
       PERL_DIR="$dir"
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
-      PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
+      PERL_OBJ="objects/if_perl.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
     dnl Perl on Mac OS X 10.5 adds "-arch" flags but these should only
@@ -2039,7 +2070,6 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 	  AC_DEFINE(FEAT_TCL)
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
-	  TCL_PRO=if_tcl.pro
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
 	fi
       fi
@@ -2059,7 +2089,6 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 fi
 AC_SUBST(TCL_SRC)
 AC_SUBST(TCL_OBJ)
-AC_SUBST(TCL_PRO)
 AC_SUBST(TCL_CFLAGS)
 AC_SUBST(TCL_CFLAGS_EXTRA)
 AC_SUBST(TCL_LIBS)
@@ -2128,7 +2157,6 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
-	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
 	if test "$enable_rubyinterp" = "dynamic"; then
 	  libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_ALIASES']].split[[0]]"`
@@ -2156,7 +2184,6 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 fi
 AC_SUBST(RUBY_SRC)
 AC_SUBST(RUBY_OBJ)
-AC_SUBST(RUBY_PRO)
 AC_SUBST(RUBY_CFLAGS)
 AC_SUBST(RUBY_CFLAGS_EXTRA)
 AC_SUBST(RUBY_LIBS)
@@ -2164,10 +2191,10 @@ AC_SUBST(RUBY_LIBS)
 AC_MSG_CHECKING(--enable-cscope argument)
 AC_ARG_ENABLE(cscope,
 	[  --enable-cscope         Include cscope interface.], ,
-	[enable_cscope="no"])
+	[enable_cscope="yes"])
 AC_MSG_RESULT($enable_cscope)
 if test "$enable_cscope" = "yes"; then
-  AC_DEFINE(FEAT_CSCOPE)
+  AC_DEFINE(ENABLE_CSCOPE)
 fi
 
 AC_MSG_CHECKING(--disable-netbeans argument)
@@ -2336,6 +2363,22 @@ if test "$enable_autoservername" = "yes"; then
   AC_DEFINE(FEAT_AUTOSERVERNAME)
 fi
 
+AC_MSG_CHECKING(--enable-socketserver argument)
+AC_ARG_ENABLE(socketserver,
+	[  --enable-socketserver Use sockets for clientserver communication.],
+	[enable_socketserver=$enableval],
+	AS_IF([test "x$features" = xtiny],
+			[enable_socketserver=no_msg
+			 AC_MSG_RESULT([cannot use socketserver with tiny features])],
+			[enable_socketserver=yes]))
+
+if test "$enable_socketserver" = "yes"; then
+  AC_DEFINE(WANT_SOCKETSERVER)
+  AC_MSG_RESULT([yes])
+elif test "$enable_socketserver" = "no"; then
+  AC_MSG_RESULT([no])
+fi
+
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
@@ -2388,6 +2431,83 @@ AC_ARG_ENABLE(fontset,
 	[enable_fontset="no"])
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
+
+AC_MSG_CHECKING(if shm_open is available)
+cppflags_save=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		   [#include <sys/mman.h>
+		    #include <sys/stat.h>
+		    #include <fcntl.h>], [shm_open("/test", O_CREAT, 0600);])],
+		   AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SHM_OPEN),
+		   AC_MSG_RESULT(no))
+CPPFLAGS=$cppflags_save
+
+AC_MSG_CHECKING(--with-wayland argument)
+AC_ARG_WITH(wayland,
+	[  --with-wayland	  Include support for the Wayland protocol.],
+	[with_wayland=$withval],
+	AS_IF([test "x$features" = xtiny],
+			[with_wayland=no
+			 AC_MSG_RESULT([cannot use wayland with tiny features])],
+			[with_wayland=yes
+			 AC_MSG_RESULT([yes])]))
+
+if test "$with_wayland" = yes; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  AC_MSG_CHECKING(for wayland)
+  if "$PKG_CONFIG" --exists 'wayland-client'; then
+    AC_MSG_RESULT([yes])
+
+    AC_MSG_CHECKING(--enable-wayland-focus-steal argument)
+    AC_ARG_ENABLE(wayland-focus-steal,
+		  [AS_HELP_STRING([--enable-wayland-focus-steal],
+                          [Include focus stealing support for Wayland clipboard.])],
+		  [enable_wayland_fs=$enableval],
+		  enable_wayland_fs="yes")
+
+    AS_IF([test "$enable_wayland_fs" = "yes"],
+          [AC_MSG_RESULT([yes])
+          AC_DEFINE(FEAT_WAYLAND_CLIPBOARD_FS)],
+          [AC_MSG_RESULT([no])])
+
+    AC_DEFINE(HAVE_WAYLAND)
+    WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags-only-other wayland-client`
+    CPPFLAGS="$CPPFLAGS $WAYLAND_CPPFLAGS"
+    CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
+    WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
+    WAYLAND_SRC=" \
+      auto/wayland/wlr-data-control-unstable-v1.c \
+      auto/wayland/ext-data-control-v1.c \
+      wayland.c"
+    WAYLAND_OBJ=" \
+      objects/wlr-data-control-unstable-v1.o \
+      objects/ext-data-control-v1.o \
+      objects/wayland.o"
+
+    AS_IF([test "$enable_wayland_fs" = "yes"],
+          [AS_VAR_APPEND([WAYLAND_SRC], " \
+            auto/wayland/xdg-shell.c \
+            auto/wayland/primary-selection-unstable-v1.c")
+           AS_VAR_APPEND([WAYLAND_OBJ], " \
+            objects/xdg-shell.o \
+            objects/primary-selection-unstable-v1.o")])
+
+    AC_SUBST(WAYLAND_CPPFLAGS)
+    AC_SUBST(WAYLAND_CFLAGS)
+    AC_SUBST(WAYLAND_LIBS)
+    AC_SUBST(WAYLAND_SRC)
+    AC_SUBST(WAYLAND_OBJ)
+  else
+    AC_MSG_RESULT(no)
+    with_wayland=no
+  fi
+CPPFLAGS=$cppflags_save
+CFLAGS=$cflags_save
+fi
 
 test -z "$with_x" && with_x=yes
 test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
@@ -2657,7 +2777,8 @@ AC_DEFUN(AM_PATH_GTK,
 	     dnl We should be using PKG_CHECK_MODULES() instead of this hack.
 	     dnl But I guess the dependency on pkgconfig.m4 is not wanted or
 	     dnl something like that.
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -2669,6 +2790,7 @@ AC_DEFUN(AM_PATH_GTK,
 	     AC_MSG_RESULT([yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version])
 	   ],
 	   [
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -2688,8 +2810,10 @@ AC_DEFUN(AM_PATH_GTK,
   gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -2736,6 +2860,7 @@ main ()
     [gtktest_success="yes"; AC_MSG_RESULT(yes)],
     [gtktest_success="no"; AC_MSG_RESULT(no)],
     [echo $ac_n "cross compiling; assumed OK... $ac_c"])
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -2745,6 +2870,7 @@ main ()
     ifelse([$2], , :, [$2])
   else
     dnl Reset flags sourced from pkg-config if the compilation test failed.
+    GTK_CPPFLAGS=""
     GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
@@ -2753,6 +2879,7 @@ main ()
     fi
   fi
 
+  AC_SUBST(GTK_CPPFLAGS)
   AC_SUBST(GTK_CFLAGS)
   AC_SUBST(GTK_LIBS)
 ])
@@ -2800,7 +2927,7 @@ AC_DEFUN([GNOME_INIT_HOOK],
       AC_MSG_RESULT(yes)
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
-      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags-only-I libgnomeui-2.0`
 
       dnl On FreeBSD we need -pthread but pkg-config doesn't include it.
       dnl This might not be the right way but it works for me...
@@ -2827,10 +2954,6 @@ AC_DEFUN([GNOME_INIT],[
 	GNOME_INIT_HOOK([],fail)
 ])
 
-if test -z "$PKG_CONFIG"; then
-  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
-fi
-
 dnl ---------------------------------------------------------------------------
 dnl Check for GTK3. If it succeeds, skip the check for GTK2.
 dnl ---------------------------------------------------------------------------
@@ -2848,8 +2971,8 @@ if test -z "$SKIP_GTK3"; then
     AM_PATH_GTK(3.0.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"])
-    if test -n "$GTK_CFLAGS"; then
+		 GUI_INC_LOC="$GTK_CPPFLAGS"])
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
       SKIP_MOTIF=YES
@@ -2879,8 +3002,8 @@ if test -z "$SKIP_GTK2"; then
     AM_PATH_GTK(2.2.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"])
-    if test -n "$GTK_CFLAGS"; then
+		 GUI_INC_LOC="$GTK_CPPFLAGS"])
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
@@ -3375,7 +3498,6 @@ CPPFLAGS=$cppflags_save
 fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_PROG_GCC_TRADITIONAL
 AC_C_CONST
 AC_C_VOLATILE
 AC_TYPE_MODE_T
@@ -3519,8 +3641,13 @@ AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
   [
     AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
-#ifdef HAVE_TERMCAP_H
+#ifdef HAVE_TERM_H
+# include <term.h>
+#elif defined(HAVE_TERMCAP_H)
 # include <termcap.h>
+#else
+  /* forward declare tgoto */
+  extern char *tgoto(const char *, int, int);
 #endif
 #ifdef HAVE_STRING_H
 # include <string.h>
@@ -3781,15 +3908,21 @@ fi
 if test "$enable_canberra" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
-    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+    canberra_cppflags=`$PKG_CONFIG --cflags-only-I libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags-only-other libcanberra 2>/dev/null`
   fi
   if test "x$canberra_lib" = "x"; then
     canberra_lib=-lcanberra
+    canberra_cppflags=-D_REENTRANT
     canberra_cflags=-D_REENTRANT
   fi
   AC_MSG_CHECKING(for libcanberra)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  if `echo "$CPPFLAGS" | grep -v "$canberra_cppflags" 2>/dev/null`; then
+    CPPFLAGS="$CPPFLAGS $canberra_cflags"
+  fi
   if `echo "$CFLAGS" | grep -v "$canberra_cflags" 2>/dev/null`; then
     CFLAGS="$CFLAGS $canberra_cflags"
   fi
@@ -3800,7 +3933,7 @@ if test "$enable_canberra" = "yes"; then
      ca_context *hello;
      ca_context_create(&hello);])],
        AC_MSG_RESULT(yes); AC_DEFINE(HAVE_CANBERRA),
-       AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+       AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS", CPPFLAGS="ac_save_CPPFLAGS")
 fi
 
 AC_MSG_CHECKING(--enable-libsodium argument)
@@ -3822,15 +3955,19 @@ fi
 if test "$enable_libsodium" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
-    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+    libsodium_cppflags=`$PKG_CONFIG --cflags-only-I libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags-only-other libsodium 2>/dev/null`
   fi
   if test "x$libsodium_lib" = "x"; then
     libsodium_lib=-lsodium
+    libsodium_cppflags=
     libsodium_cflags=
   fi
   AC_MSG_CHECKING(for libsodium)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $libsodium_cppflags"
   CFLAGS="$CFLAGS $libsodium_cflags"
   LIBS="$LIBS $libsodium_lib"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([
@@ -3838,7 +3975,7 @@ if test "$enable_libsodium" = "yes"; then
       ], [
      printf("%d", sodium_init()); ])],
        AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SODIUM),
-       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"; CPPFLAGS="$ac_save_CPPFLAGS")
 fi
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
@@ -4098,11 +4235,13 @@ else
   AC_MSG_RESULT(yes)
 fi
 
-if test "x$GTK_CFLAGS" != "x"; then
+if test "x$GTK_CPPFLAGS" != "x"; then
   dnl pango_shape_full() is new, fall back to pango_shape().
   AC_MSG_CHECKING(for pango_shape_full)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
   AC_LINK_IFELSE([AC_LANG_PROGRAM(
@@ -4110,6 +4249,7 @@ if test "x$GTK_CFLAGS" != "x"; then
   [ pango_shape_full(NULL, 0, NULL, 0, NULL, NULL); ])],
 	  AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PANGO_SHAPE_FULL),
 	  AC_MSG_RESULT(no))
+  CPPFLAGS="$ac_save_CPPFLAGS"
   CFLAGS="$ac_save_CFLAGS"
   LIBS="$ac_save_LIBS"
 fi
@@ -4684,7 +4824,7 @@ dnl (e.g. ino_t and off_t), all of Vim's modules must be compiled with a
 dnl consistent value.  It's therefore safest to force the use of the define
 dnl if it's present in any of the *_CFLAGS variables.
 AC_MSG_CHECKING(whether we need to force -D_FILE_OFFSET_BITS=64)
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CPPFLAGS $CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CPPFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(_FILE_OFFSET_BITS, 64)
 else

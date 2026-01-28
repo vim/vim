@@ -1,14 +1,10 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 
-source shared.vim
-source mouse.vim
-source view_util.vim
-source term_util.vim
+source util/mouse.vim
 
 func s:TermGuiColorsTest()
   CheckNotMSWindows
@@ -1072,7 +1068,7 @@ func Test_mouse_alt_leftclick()
   bw!
 endfunc
 
-func Test_xterm_mouse_click_in_fold_columns()
+func Run_test_xterm_mouse_click_in_fold_columns()
   new
   let save_mouse = &mouse
   let save_term = &term
@@ -1122,6 +1118,15 @@ func Test_xterm_mouse_click_in_fold_columns()
   let &term = save_term
   let &mouse = save_mouse
   bwipe!
+endfunc
+
+func Test_xterm_mouse_click_in_fold_columns()
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars+=foldclose:▶
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars-=foldclose:▶ fillchars+=foldclose:!
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars&
 endfunc
 
 " Left or right click in Ex command line sets position of the cursor.
@@ -1636,72 +1641,60 @@ func Test_mouse_termcodes()
   %bw!
 endfunc
 
-" This only checks if the sequence is recognized.
-func Test_term_rgb_response()
-  set t_RF=x
-  set t_RB=y
+" Test buttons 8 and 9 for xterm-like terminal mouse support
+func Test_term_mouse_side_buttons()
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm
+  call WaitForResponses()
 
-  " response to t_RF, 4 digits
-  let red = 0x12
-  let green = 0x34
-  let blue = 0x56
-  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrfgresp)
+  for ttymouse_val in g:Ttymouse_values
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
 
-  " response to t_RF, 2 digits
-  let red = 0x78
-  let green = 0x9a
-  let blue = 0xbc
-  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrfgresp)
+    let mouse_codes = [
+          \ ["<X1Mouse>", TerminalEscapeCode(128, 1, 1, 'M')],
+          \ ["<X1Drag>", TerminalEscapeCode(128+32, 1, 1, 'M')],
+          \ ["<X2Mouse>", TerminalEscapeCode(129, 1, 1, 'M')],
+          \ ["<X2Drag>", TerminalEscapeCode(129+32, 1, 1, 'M')],
+          \ ["<S-X1Mouse>", TerminalEscapeCode(128+4, 1, 1, 'M')],
+          \ ["<S-X2Mouse>", TerminalEscapeCode(129+4, 1, 1, 'M')],
+          \ ["<M-X1Mouse>", TerminalEscapeCode(128+8, 1, 1, 'M')],
+          \ ["<M-X2Mouse>", TerminalEscapeCode(129+8, 1, 1, 'M')],
+          \ ["<C-X1Mouse>", TerminalEscapeCode(128+16, 1, 1, 'M')],
+          \ ["<C-X2Mouse>", TerminalEscapeCode(129+16, 1, 1, 'M')],
+          \ ]
 
-  " response to t_RB, 4 digits, dark
-  set background=light
-  eval 'background'->test_option_not_set()
-  let red = 0x29
-  let green = 0x4a
-  let blue = 0x6b
-  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('dark', &background)
+    for [outstr, code] in mouse_codes
+      exe "normal ggC\<C-K>" . code
+      call assert_equal(outstr, getline(1), msg)
+    endfor
+  endfor
 
-  " response to t_RB, 4 digits, light
-  set background=dark
-  call test_option_not_set('background')
-  let red = 0x81
-  let green = 0x63
-  let blue = 0x65
-  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('light', &background)
+  " ttymouse_val 'sgr'
+  let msg = 'ttymouse=sgr'
+  exe 'set ttymouse=sgr'
 
-  " response to t_RB, 2 digits, dark
-  set background=light
-  call test_option_not_set('background')
-  let red = 0x47
-  let green = 0x59
-  let blue = 0x5b
-  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('dark', &background)
+  let mouse_codes = [
+        \ ["<X1Mouse>", TerminalEscapeCode(128, 1, 1, 'M')],
+        \ ["<X1Release>", TerminalEscapeCode(128, 1, 1, 'm')],
+        \ ["<X2Mouse>", TerminalEscapeCode(129, 1, 1, 'M')],
+        \ ["<X2Release>", TerminalEscapeCode(129, 1, 1, 'm')],
+        \ ]
 
-  " response to t_RB, 2 digits, light
-  set background=dark
-  call test_option_not_set('background')
-  let red = 0x83
-  let green = 0xa4
-  let blue = 0xc2
-  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('light', &background)
+  for [outstr, code] in mouse_codes
+    exe "normal ggC\<C-K>" . code
+    call assert_equal(outstr, getline(1), msg)
+  endfor
 
-  set t_RF= t_RB=
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  call test_override('no_query_mouse', 0)
+  bwipe!
 endfunc
 
 " This only checks if the sequence is recognized.
@@ -2589,6 +2582,43 @@ func Test_mapping_kitty_function_keys()
   set timeoutlen&
 endfunc
 
+func Test_mapping_kitty_function_keys2()
+  " uses the CSI {number}; {modifiers} ~ form
+  new
+  set timeoutlen=10
+
+  let maps = [
+        \    ['<F3>', '13', 0],
+        \    ['<S-F3>', '13', 2],
+        \    ['<C-F3>', '13', 5],
+        \    ['<C-S-F3>', '13', 6],
+        \
+        \    ['<F5>', '15', 0],
+        \    ['<S-F5>', '15', 2],
+        \    ['<C-F5>', '15', 5],
+        \    ['<C-S-F5>', '15', 6],
+        \ ]
+
+  for map in maps
+    call RunTest_mapping_funckey(map[0], function('GetEscCodeFunckey2'), map[1], map[2])
+  endfor
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_mapping_kitty_shift_enter()
+  new
+  set timeoutlen=10
+
+  imap <buffer> <S-CR> YYYY
+  call feedkeys(printf("i123 %s\<esc>", GetEscCodeCSIu("\<cr>", 2)),'Lx!')
+  call assert_equal('123 YYYY', getline(1))
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
 func Test_insert_literal()
   set timeoutlen=10
 
@@ -2805,6 +2835,116 @@ func Test_xterm_direct_no_termguicolors()
   " cleanup
   bw!
   close
+endfunc
+
+func Test_da1_handling()
+  call feedkeys("\<Esc>[?62,52;c", 'Lx!')
+  call assert_equal("\<Esc>[?62,52;c", v:termda1)
+endfunc
+
+" Test if OSC terminal responses are captured correctly
+func Test_term_response_osc()
+  " Test if large OSC responses (that must be processed in chunks) are handled
+  let data = repeat('a', 3000)
+
+  call feedkeys("\<Esc>]12;" .. data .. "\<Esc>\\", 'Lx!')
+  call assert_equal("\<Esc>]12;" .. data .. "\<Esc>\\", v:termosc)
+
+  " Test small OSC responses
+  call feedkeys("\<Esc>]15;hello world!\x07", 'Lx!')
+  call assert_equal("\<Esc>]15;hello world!\x07", v:termosc)
+endfunc
+
+" Test if xOSC key is emitted.
+func Test_term_response_xosc_key()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    func Test()
+      while getcharstr(-1) != "\<xOSC>"
+      endwhile
+      call writefile(["done"], 'XTestResult')
+    endfunc
+  END
+  call writefile(lines, 'XTest', 'D')
+  defer delete('XTestResult')
+
+  let buf = RunVimInTerminal("-S XTest", {'rows': 10})
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>:call Test()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>]52;hello;\<Esc>\\")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal(["done"], readfile('XTestResult'))})
+  call StopVimInTerminal(buf)
+endfunc
+
+" This only checks if the sequence is recognized.
+func Test_term_rgb_response()
+  set t_RF=x
+  set t_RB=y
+
+  " response to t_RF, 4 digits
+  let red = 0x12
+  let green = 0x34
+  let blue = 0x56
+  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RF, 2 digits
+  let red = 0x78
+  let green = 0x9a
+  let blue = 0xbc
+  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RB, 4 digits, dark
+  set background=light
+  eval 'background'->test_option_not_set()
+  let red = 0x29
+  let green = 0x4a
+  let blue = 0x6b
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 4 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x81
+  let green = 0x63
+  let blue = 0x65
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+
+  " response to t_RB, 2 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x47
+  let green = 0x59
+  let blue = 0x5b
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 2 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x83
+  let green = 0xa4
+  let blue = 0xc2
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+
+  set t_RF= t_RB=
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

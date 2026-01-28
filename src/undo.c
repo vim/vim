@@ -138,7 +138,7 @@ static int	undo_undoes = FALSE;
 
 static int	lastmark = 0;
 
-#if defined(U_DEBUG) || defined(PROTO)
+#if defined(U_DEBUG)
 /*
  * Check the undo structures for being valid.  Print a warning when something
  * looks wrong.
@@ -687,15 +687,6 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(MSWIN)
-	/*
-	 * With Amiga we can't handle big undo's, because
-	 * then u_alloc_line would have to allocate a block larger than 32K
-	 */
-    if (size >= 8000)
-	goto nomem;
-#endif
-
     /*
      * add lines in front of entry list
      */
@@ -769,7 +760,7 @@ nomem:
     return FAIL;
 }
 
-#if defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_PERSISTENT_UNDO)
 
 # define UF_START_MAGIC	    "Vim\237UnDo\345"  // magic at start of undofile
 # define UF_START_MAGIC_LEN	9
@@ -821,19 +812,19 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
     stat_T	st;
     char_u	*ffname = buf_ffname;
     size_t	ffnamelen;
-#ifdef HAVE_READLINK
+# ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
-#endif
+# endif
 
     if (ffname == NULL)
 	return NULL;
 
-#ifdef HAVE_READLINK
+# ifdef HAVE_READLINK
     // Expand symlink in the file name, so that we put the undo file with the
     // actual file instead of with the symlink.
     if (resolve_symlink(ffname, fname_buf) == OK)
 	ffname = fname_buf;
-#endif
+# endif
 
     ffnamelen = STRLEN(ffname);
     // Loop over 'undodir'.  When reading find the first file that exists.
@@ -851,20 +842,20 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 		break;
 	    p = gettail(undo_file_name);
 	    plen = (size_t)(ffnamelen - (p - undo_file_name));
-#ifdef VMS
+# ifdef VMS
 	    // VMS can not handle more than one dot in the filenames
 	    // use "dir/name" -> "dir/_un_name" - add _un_
 	    // at the beginning to keep the extension
 	    mch_memmove(p + 4,  p, plen + 1);
 	    mch_memmove(p, "_un_", 4);
 
-#else
+# else
 	    // Use same directory as the ffname,
 	    // "dir/name" -> "dir/.name.un~"
 	    mch_memmove(p + 1, p, plen + 1);
 	    *p = '.';
 	    STRCPY(p + plen + 1, ".un~");
-#endif
+# endif
 	}
 	else
 	{
@@ -925,7 +916,7 @@ u_free_uhp(u_header_T *uhp)
     static int
 undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	size_t	len_todo = len;
@@ -949,13 +940,13 @@ undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
 	}
 	return OK;
     }
-#endif
+# endif
     if (fwrite(ptr, len, (size_t)1, bi->bi_fp) != 1)
 	return FAIL;
     return OK;
 }
 
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     static int
 undo_flush(bufinfo_T *bi)
 {
@@ -970,7 +961,7 @@ undo_flush(bufinfo_T *bi)
     }
     return OK;
 }
-#endif
+# endif
 
 /*
  * Write "ptr[len]" and crypt the bytes when needed.
@@ -979,7 +970,7 @@ undo_flush(bufinfo_T *bi)
     static int
 fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     char_u  *copy;
     char_u  small_buf[100];
     size_t  i;
@@ -1003,7 +994,7 @@ fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 	    vim_free(copy);
 	return i == 1 ? OK : FAIL;
     }
-#endif
+# endif
     return undo_write(bi, ptr, len);
 }
 
@@ -1037,7 +1028,7 @@ put_header_ptr(bufinfo_T *bi, u_header_T *uhp)
     static int
 undo_read_4c(bufinfo_T *bi)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	char_u  buf[4];
@@ -1047,14 +1038,14 @@ undo_read_4c(bufinfo_T *bi)
 	n = ((unsigned)buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
 	return n;
     }
-#endif
+# endif
     return get4c(bi->bi_fp);
 }
 
     static int
 undo_read_2c(bufinfo_T *bi)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	char_u  buf[2];
@@ -1064,14 +1055,14 @@ undo_read_2c(bufinfo_T *bi)
 	n = (buf[0] << 8) + buf[1];
 	return n;
     }
-#endif
+# endif
     return get2c(bi->bi_fp);
 }
 
     static int
 undo_read_byte(bufinfo_T *bi)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	char_u  buf[1];
@@ -1079,14 +1070,14 @@ undo_read_byte(bufinfo_T *bi)
 	undo_read(bi, buf, (size_t)1);
 	return buf[0];
     }
-#endif
+# endif
     return getc(bi->bi_fp);
 }
 
     static time_t
 undo_read_time(bufinfo_T *bi)
 {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	char_u  buf[8];
@@ -1098,7 +1089,7 @@ undo_read_time(bufinfo_T *bi)
 	    n = (n << 8) + buf[i];
 	return n;
     }
-#endif
+# endif
     return get8ctime(bi->bi_fp);
 }
 
@@ -1111,7 +1102,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 {
     int retval = OK;
 
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
 	int	size_todo = (int)size;
@@ -1143,7 +1134,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 	}
     }
     else
-#endif
+# endif
     if (fread(buffer, size, 1, bi->bi_fp) != 1)
 	retval = FAIL;
 
@@ -1177,10 +1168,10 @@ read_string_decrypt(bufinfo_T *bi, int len)
     // In case there are text properties there already is a NUL, but
     // checking for that is more expensive than just adding a dummy byte.
     ptr[len] = NUL;
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi->bi_state != NULL && bi->bi_buffer == NULL)
 	crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
-#endif
+# endif
     return ptr;
 }
 
@@ -1200,7 +1191,7 @@ serialize_header(bufinfo_T *bi, char_u *hash)
 
     // If the buffer is encrypted then all text bytes following will be
     // encrypted.  Numbers and other info is not crypted.
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (*buf->b_p_key != NUL)
     {
 	char_u *header;
@@ -1234,7 +1225,7 @@ serialize_header(bufinfo_T *bi, char_u *hash)
 	}
     }
     else
-#endif
+# endif
 	undo_write_bytes(bi, (long_u)UF_VERSION, 2);
 
 
@@ -1329,9 +1320,9 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
     if (uhp == NULL)
 	return NULL;
     CLEAR_POINTER(uhp);
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     uhp->uh_magic = UH_MAGIC;
-#endif
+# endif
     uhp->uh_next.seq = undo_read_4c(bi);
     uhp->uh_prev.seq = undo_read_4c(bi);
     uhp->uh_alt_next.seq = undo_read_4c(bi);
@@ -1445,9 +1436,9 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     if (uep == NULL)
 	return NULL;
     CLEAR_POINTER(uep);
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
-#endif
+# endif
     uep->ue_top = undo_read_4c(bi);
     uep->ue_bot = undo_read_4c(bi);
     uep->ue_lcount = undo_read_4c(bi);
@@ -1558,18 +1549,18 @@ u_write_undo(
     u_header_T	*uhp;
     char_u	*file_name;
     int		mark;
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     int		headers_written = 0;
-#endif
+# endif
     int		fd;
     FILE	*fp = NULL;
     int		perm;
     int		write_ok = FALSE;
-#ifdef UNIX
+# ifdef UNIX
     int		st_old_valid = FALSE;
     stat_T	st_old;
     stat_T	st_new;
-#endif
+# endif
     bufinfo_T	bi;
 
     CLEAR_FIELD(bi);
@@ -1600,17 +1591,17 @@ u_write_undo(
     perm = 0600;
     if (buf->b_ffname != NULL)
     {
-#ifdef UNIX
+# ifdef UNIX
 	if (mch_stat((char *)buf->b_ffname, &st_old) >= 0)
 	{
 	    perm = st_old.st_mode;
 	    st_old_valid = TRUE;
 	}
-#else
+# else
 	perm = mch_getperm(buf->b_ffname);
 	if (perm < 0)
 	    perm = 0600;
-#endif
+# endif
     }
 
     // strip any s-bit and executable bit
@@ -1689,12 +1680,12 @@ u_write_undo(
 	verbose_leave();
     }
 
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     // Check there is no problem in undo info before writing.
     u_check(FALSE);
-#endif
+# endif
 
-#ifdef UNIX
+# ifdef UNIX
     /*
      * Try to set the group of the undo file same as the original file. If
      * this fails, set the protection bits for the group same as the
@@ -1703,16 +1694,16 @@ u_write_undo(
     if (st_old_valid
 	    && mch_stat((char *)file_name, &st_new) >= 0
 	    && st_new.st_gid != st_old.st_gid
-# ifdef HAVE_FCHOWN  // sequent-ptx lacks fchown()
+#  ifdef HAVE_FCHOWN  // sequent-ptx lacks fchown()
 	    && fchown(fd, (uid_t)-1, st_old.st_gid) != 0
-# endif
+#  endif
        )
 	mch_setperm(file_name, (perm & 0707) | ((perm & 07) << 3));
-# if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
+#  if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
     if (buf->b_ffname != NULL)
 	mch_copy_sec(buf->b_ffname, file_name);
+#  endif
 # endif
-#endif
 
     fp = fdopen(fd, "w");
     if (fp == NULL)
@@ -1745,9 +1736,9 @@ u_write_undo(
 	if (uhp->uh_walk != mark)
 	{
 	    uhp->uh_walk = mark;
-#ifdef U_DEBUG
+# ifdef U_DEBUG
 	    ++headers_written;
-#endif
+# endif
 	    if (serialize_uhp(&bi, uhp) == FAIL)
 		goto write_error;
 	}
@@ -1769,36 +1760,37 @@ u_write_undo(
 
     if (undo_write_bytes(&bi, (long_u)UF_HEADER_END_MAGIC, 2) == OK)
 	write_ok = TRUE;
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     if (headers_written != buf->b_u_numhead)
     {
 	semsg("Written %ld headers, ...", headers_written);
 	semsg("... but numhead is %ld", buf->b_u_numhead);
     }
-#endif
+# endif
 
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi.bi_state != NULL && undo_flush(&bi) == FAIL)
 	write_ok = FALSE;
-#endif
+# endif
 
-#if defined(UNIX) && defined(HAVE_FSYNC)
-    if (p_fs && fflush(fp) == 0 && vim_fsync(fd) != 0)
+# if defined(UNIX) && defined(HAVE_FSYNC)
+    if ((buf->b_p_fs >= 0 ? buf->b_p_fs : p_fs) && fflush(fp) == 0
+	    && vim_fsync(fd) != 0)
 	write_ok = FALSE;
-#endif
+# endif
 
 write_error:
     fclose(fp);
     if (!write_ok)
 	semsg(_(e_write_error_in_undo_file_str), file_name);
 
-#if defined(MSWIN)
+# if defined(MSWIN)
     // Copy file attributes; for systems where this can only be done after
     // closing the file.
     if (buf->b_ffname != NULL)
 	(void)mch_copy_file_attribute(buf->b_ffname, file_name);
-#endif
-#ifdef HAVE_ACL
+# endif
+# ifdef HAVE_ACL
     if (buf->b_ffname != NULL)
     {
 	vim_acl_T	    acl;
@@ -1808,14 +1800,14 @@ write_error:
 	mch_set_acl(file_name, acl);
 	mch_free_acl(acl);
     }
-#endif
+# endif
 
 theend:
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi.bi_state != NULL)
 	crypt_free_state(bi.bi_state);
     vim_free(bi.bi_buffer);
-#endif
+# endif
     if (file_name != name)
 	vim_free(file_name);
 }
@@ -1850,13 +1842,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     u_header_T	**uhp_table = NULL;
     char_u	read_hash[UNDO_HASH_SIZE];
     char_u	magic_buf[UF_START_MAGIC_LEN];
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     int		*uhp_table_used;
-#endif
-#ifdef UNIX
+# endif
+# ifdef UNIX
     stat_T	st_orig;
     stat_T	st_undo;
-#endif
+# endif
     bufinfo_T	bi;
 
     CLEAR_FIELD(bi);
@@ -1870,7 +1862,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	if (file_name == NULL)
 	    return;
 
-#ifdef UNIX
+# ifdef UNIX
 	// For safety we only read an undo file if the owner is equal to the
 	// owner of the text file or equal to the current user.
 	if (mch_stat((char *)orig_name, &st_orig) >= 0
@@ -1887,7 +1879,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	    }
 	    return;
 	}
-#endif
+# endif
     }
     else
 	file_name = name;
@@ -1921,7 +1913,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     version = get2c(fp);
     if (version == UF_VERSION_CRYPT)
     {
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
 	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file_str),
@@ -1946,10 +1938,10 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	    bi.bi_avail = 0;
 	    bi.bi_used = 0;
 	}
-#else
+# else
 	semsg(_(e_undo_file_is_encrypted_str), file_name);
 	goto error;
-#endif
+# endif
     }
     else if (version != UF_VERSION)
     {
@@ -2063,12 +2055,12 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	goto error;
     }
 
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     uhp_table_used = alloc_clear(sizeof(int) * num_head + 1);
-# define SET_FLAG(j) ++uhp_table_used[j]
-#else
-# define SET_FLAG(j)
-#endif
+#  define SET_FLAG(j) ++uhp_table_used[j]
+# else
+#  define SET_FLAG(j)
+# endif
 
     // We have put all of the headers into a table. Now we iterate through the
     // table and swizzle each sequence number we have stored in uh_*_seq into
@@ -2153,13 +2145,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     curbuf->b_u_synced = TRUE;
     vim_free(uhp_table);
 
-#ifdef U_DEBUG
+# ifdef U_DEBUG
     for (i = 0; i < num_head; ++i)
 	if (uhp_table_used[i] == 0)
 	    semsg("uhp_table entry %ld not used, leaking memory", i);
     vim_free(uhp_table_used);
     u_check(TRUE);
-#endif
+# endif
 
     if (name != NULL)
 	smsg(_("Finished reading undo file %s"), file_name);
@@ -2176,11 +2168,11 @@ error:
     }
 
 theend:
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
     if (bi.bi_state != NULL)
 	crypt_free_state(bi.bi_state);
     vim_free(bi.bi_buffer);
-#endif
+# endif
     if (fp != NULL)
 	fclose(fp);
     if (file_name != name)
@@ -2729,7 +2721,6 @@ u_undoredo(int undo)
 
 	// Decide about the cursor position, depending on what text changed.
 	// Don't set it yet, it may be invalid if lines are going to be added.
-	if (top < newlnum)
 	{
 	    // If the saved cursor is somewhere in this undo block, move it to
 	    // the remembered position.  Makes "gwap" put the cursor back
@@ -2738,9 +2729,12 @@ u_undoredo(int undo)
 	    if (lnum >= top && lnum <= top + newsize + 1)
 	    {
 		new_curpos = curhead->uh_cursor;
-		newlnum = new_curpos.lnum - 1;
+
+		// We don't want other entries to override saved cursor
+		// position.
+		newlnum = -1;
 	    }
-	    else
+	    else if (top < newlnum)
 	    {
 		// Use the first line that actually changed.  Avoids that
 		// undoing auto-formatting puts the cursor in the previous
@@ -3643,7 +3637,7 @@ curbufIsChanged(void)
     return bufIsChanged(curbuf);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * For undotree(): Append the list of undo blocks at "first_uhp" to "list".
@@ -3696,7 +3690,7 @@ f_undofile(typval_T *argvars, typval_T *rettv)
 	return;
 
     rettv->v_type = VAR_STRING;
-#ifdef FEAT_PERSISTENT_UNDO
+# ifdef FEAT_PERSISTENT_UNDO
     {
 	char_u *fname = tv_get_string(&argvars[0]);
 
@@ -3714,11 +3708,11 @@ f_undofile(typval_T *argvars, typval_T *rettv)
 	    vim_free(ffname);
 	}
     }
-#else
+# else
     rettv->vval.v_string = NULL;
-#endif
+# endif
 }
-#ifdef FEAT_PERSISTENT_UNDO
+# ifdef FEAT_PERSISTENT_UNDO
 /*
  * Reset undofile option and delete the undofile
  */
@@ -3739,7 +3733,7 @@ u_undofile_reset_and_delete(buf_T *buf)
 
     set_option_value_give_err((char_u *)"undofile", 0L, NULL, OPT_LOCAL);
 }
- #endif
+# endif
 
 /*
  * "undotree(expr)" function

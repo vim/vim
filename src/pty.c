@@ -182,7 +182,7 @@ setup_slavepty(int fd)
 }
 
 #if defined(HAVE_POSIX_OPENPT) && !defined(PTY_DONE)
-#define PTY_DONE
+# define PTY_DONE
     int
 mch_openpty(char **ttyn)
 {
@@ -212,7 +212,7 @@ mch_openpty(char **ttyn)
 #endif
 
 #if defined(OSX) && !defined(PTY_DONE)
-#define PTY_DONE
+# define PTY_DONE
     int
 mch_openpty(char **ttyn)
 {
@@ -229,7 +229,7 @@ mch_openpty(char **ttyn)
 
 #if (defined(sequent) || defined(_SEQUENT_)) && defined(HAVE_GETPSEUDOTTY) \
 	&& !defined(PTY_DONE)
-#define PTY_DONE
+# define PTY_DONE
     int
 mch_openpty(char **ttyn)
 {
@@ -241,9 +241,9 @@ mch_openpty(char **ttyn)
 
     if ((f = getpseudotty(&s, &m)) < 0)
 	return -1;
-#ifdef _SEQUENT_
+# ifdef _SEQUENT_
     fvhangup(s);
-#endif
+# endif
     vim_strncpy((char_u *)PtyName, (char_u *)m, sizeof(PtyName) - 1);
     vim_strncpy((char_u *)TtyName, (char_u *)s, sizeof(TtyName) - 1);
     initmaster(f);
@@ -253,7 +253,7 @@ mch_openpty(char **ttyn)
 #endif
 
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
-#define PTY_DONE
+# define PTY_DONE
     int
 mch_openpty(char **ttyn)
 {
@@ -281,7 +281,7 @@ mch_openpty(char **ttyn)
 
 // NOTE: Even though HPUX can have /dev/ptmx, the code below doesn't work!
 // Same for Mac OS X Leopard (10.5).
-#define PTY_DONE
+# define PTY_DONE
     int
 mch_openpty(char **ttyn)
 {
@@ -314,11 +314,11 @@ mch_openpty(char **ttyn)
 #endif
 
 #if defined(_AIX) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
-#define PTY_DONE
+# define PTY_DONE
 
-#ifdef _IBMR2
+# ifdef _IBMR2
 static int aixhack = -1;
-#endif
+# endif
 
     int
 mch_openpty(char **ttyn)
@@ -394,7 +394,7 @@ mch_openpty(char **ttyn)
 		close(f);
 		continue;
 	    }
-#if defined(SUN_SYSTEM) && defined(TIOCGPGRP) && !defined(SUNOS3)
+# if defined(SUN_SYSTEM) && defined(TIOCGPGRP) && !defined(SUNOS3)
 	    // Hack to ensure that the slave side of the pty is
 	    // unused. May not work in anything other than SunOS4.1
 	    {
@@ -407,7 +407,7 @@ mch_openpty(char **ttyn)
 		    continue;
 		}
 	    }
-#endif
+# endif
 	    initmaster(f);
 	    *ttyn = TtyName;
 	    return f;
@@ -423,7 +423,7 @@ mch_openpty(char **ttyn)
     int
 mch_isatty(int fd)
 {
-# if defined(I_STR) && defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS) \
+#if defined(I_STR) && defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS) \
 	&& defined(SUN_SYSTEM)
     // On SunOS, isatty() for /dev/ptmx returns false or sometimes can hang up
     // in the inner ioctl(), and therefore first determine whether "fd" is a
@@ -439,7 +439,7 @@ mch_isatty(int fd)
 	// Trick: return 2 in order to advice the caller that "fd" is a master
 	// device. cf. src/os_unix.c:get_tty_fd()
 	return 2;
-# endif
+#endif
     return isatty(fd);
 }
 

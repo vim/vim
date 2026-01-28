@@ -540,10 +540,9 @@ fname2fnum(xfmark_T *fm)
 #endif
 		))
     {
-	int len;
+	size_t len;
 
-	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	len = (int)STRLEN(NameBuff);
+	len = expand_env((char_u *)"~/", NameBuff, MAXPATHL);
 	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
     else
@@ -784,6 +783,11 @@ show_one_mark(
 	if (name == NULL && current)
 	{
 	    name = mark_line(p, 15);
+	    if (name == NULL)
+	    {
+		emsg(_(e_out_of_memory));
+		return;
+	    }
 	    mustfree = TRUE;
 	}
 	if (!message_filtered(name))
@@ -1027,6 +1031,25 @@ ex_changes(exarg_T *eap UNUSED)
 	    *lp += amount_after; \
     }
 
+// Like one_adjust_nodel(), but if the position is within the deleted range,
+// move it to the start of the line before the range.
+#define one_adjust_cursor(pp) \
+    { \
+	pos_T *posp = pp; \
+	if (posp->lnum >= line1 && posp->lnum <= line2) \
+	{ \
+	    if (amount == MAXLNUM) /* line with cursor is deleted */ \
+	    { \
+		posp->lnum = MAX(line1 - 1, 1); \
+		posp->col = 0; \
+	    } \
+	    else /* keep cursor on the same line */ \
+		posp->lnum += amount; \
+	} \
+	else if (amount_after && posp->lnum > line2) \
+	    posp->lnum += amount_after; \
+    }
+
 /*
  * Adjust marks between "line1" and "line2" (inclusive) to move "amount" lines.
  * Must be called before changed_*(), appended_lines() or deleted_lines().
@@ -1071,6 +1094,7 @@ mark_adjust_internal(
     linenr_T	*lp;
     win_T	*win;
     tabpage_T	*tab;
+    wininfo_T	*wip;
     static pos_T initpos = {1, 0, 0};
 
     if (line2 < line1 && amount_after == 0L)	    // nothing to do
@@ -1188,21 +1212,7 @@ mark_adjust_internal(
 		    win->w_topfill = 0;
 #endif
 		}
-		if (win->w_cursor.lnum >= line1 && win->w_cursor.lnum <= line2)
-		{
-		    if (amount == MAXLNUM) // line with cursor is deleted
-		    {
-			if (line1 <= 1)
-			    win->w_cursor.lnum = 1;
-			else
-			    win->w_cursor.lnum = line1 - 1;
-			win->w_cursor.col = 0;
-		    }
-		    else		// keep cursor on the same line
-			win->w_cursor.lnum += amount;
-		}
-		else if (amount_after && win->w_cursor.lnum > line2)
-		    win->w_cursor.lnum += amount_after;
+		one_adjust_cursor(&(win->w_cursor));
 	    }
 
 #ifdef FEAT_FOLDING
@@ -1217,6 +1227,10 @@ mark_adjust_internal(
     // adjust diffs
     diff_mark_adjust(line1, line2, amount, amount_after);
 #endif
+
+    // adjust per-window "last cursor" positions
+    FOR_ALL_BUF_WININFO(curbuf, wip)
+	one_adjust_cursor(&(wip->wi_fpos));
 }
 
 // This code is used often, needs to be fast.
@@ -1412,7 +1426,7 @@ set_last_cursor(win_T *win)
 	win->w_buffer->b_last_cursor = win->w_cursor;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_marks(void)
 {
@@ -1424,7 +1438,7 @@ free_all_marks(void)
 }
 #endif
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 /*
  * Return a pointer to the named file marks.
  */
@@ -1435,7 +1449,7 @@ get_namedfm(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add information about mark 'mname' to list 'l'
  */
@@ -1464,7 +1478,7 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 
     list_append_number(lpos, bufnr);
     list_append_number(lpos, pos->lnum);
-    list_append_number(lpos, pos->col + 1);
+    list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
     if (dict_add_string(d, "mark", mname) == FAIL

@@ -27,7 +27,7 @@
 
 #include "vim.h"
 #ifdef USE_GRESOURCE
-#include "auto/gui_gtk_gresources.h"
+# include "auto/gui_gtk_gresources.h"
 #endif
 
 #ifdef FEAT_GUI_GNOME
@@ -56,29 +56,7 @@
 extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockItemBehavior beh);
 #endif
 
-#if !defined(FEAT_GUI_GTK) && defined(PROTO)
-// When generating prototypes we don't want syntax errors.
-# define GdkAtom int
-# define GdkEventExpose int
-# define GdkEventFocus int
-# define GdkEventVisibility int
-# define GdkEventProperty int
-# define GtkContainer int
-# define GtkTargetEntry int
-# define GtkType int
-# define GtkWidget int
-# define gint int
-# define gpointer int
-# define guint int
-# define GdkEventKey int
-# define GdkEventSelection int
-# define GtkSelectionData int
-# define GdkEventMotion int
-# define GdkEventButton int
-# define GdkDragContext int
-# define GdkEventConfigure int
-# define GdkEventClient int
-#else
+#if defined(FEAT_GUI_GTK)
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
 #  include <gtk/gtkx.h>
@@ -97,6 +75,13 @@ extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockI
 
 #ifdef HAVE_X11_SUNKEYSYM_H
 # include <X11/Sunkeysym.h>
+#endif
+
+#ifdef FEAT_SOCKETSERVER
+# include <glib-unix.h>
+
+// Used to track the source for the listening socket
+static uint socket_server_source_id = 0;
 #endif
 
 /*
@@ -160,7 +145,7 @@ static const GtkTargetEntry dnd_targets[] =
  * "Monospace" is a standard font alias that should be present
  * on all proper Pango/fontconfig installations.
  */
-# define DEFAULT_FONT	"Monospace 12"
+#define DEFAULT_FONT	"Monospace 12"
 
 #if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
 # define USE_GNOME_SESSION
@@ -716,17 +701,17 @@ gui_mch_prepare(int *argc, char **argv)
     gui_argv[gui_argc] = NULL;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 gui_mch_free_all(void)
 {
     vim_free(gui_argv);
-#if defined(USE_GNOME_SESSION)
+# if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
-#endif
-#ifdef TRACK_RESIZE_HISTORY
+# endif
+# ifdef TRACK_RESIZE_HISTORY
     free_all_resize_hist();
-#endif
+# endif
 }
 #endif
 
@@ -1095,7 +1080,7 @@ focus_out_event(GtkWidget *widget UNUSED,
  * plus the NUL terminator.  Returns the length in bytes.
  *
  * event->string is evil; see here why:
- * http://developer.gnome.org/doc/API/2.0/gdk/gdk-Event-Structures.html#GdkEventKey
+ * https://www.manpagez.com/html/gdk2/gdk2-2.24.24/gdk2-Event-Structures.php#GdkEventKey
  */
     static int
 keyval_to_string(unsigned int keyval, char_u *string)
@@ -1732,15 +1717,6 @@ gui_mch_init_check(void)
     }
 #endif
 
-#if GTK_CHECK_VERSION(3,10,0)
-    // Vim currently assumes that Gtk means X11, so it cannot use native Gtk
-    // support for other backends such as Wayland.
-    //
-    // Use an environment variable to enable unfinished Wayland support.
-    if (getenv("GVIM_ENABLE_WAYLAND") == NULL)
-	gdk_set_allowed_backends ("x11");
-#endif
-
 #ifdef FEAT_GUI_GNOME
     if (gtk_socket_id == 0)
 	using_gnome = 1;
@@ -1891,7 +1867,7 @@ gui_gtk_get_pointer(GtkWidget       *widget,
     return gdk_window_get_device_position(win, dev , x, y, state);
 }
 
-# if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+# if defined(FEAT_GUI_TABLINE)
     static GdkWindow *
 gui_gtk_window_at_position(GtkWidget *widget,
 			   gint      *x,
@@ -2060,11 +2036,11 @@ scroll_event(GtkWidget *widget,
     int_u   vim_modifiers;
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
-#if !GTK_CHECK_VERSION(3,22,0)
+# if !GTK_CHECK_VERSION(3,22,0)
     static guint32 last_smooth_event_time;
-#endif
-#define DT_X11     1
-#define DT_WAYLAND 2
+# endif
+# define DT_X11     1
+# define DT_WAYLAND 2
     static int display_type;
     if (!display_type)
 	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
@@ -2095,30 +2071,30 @@ scroll_event(GtkWidget *widget,
 		// this event tells us to stop, without an actual moving
 		return FALSE;
 	    }
-#if GTK_CHECK_VERSION(3,22,0)
+# if GTK_CHECK_VERSION(3,22,0)
 	    if (gdk_device_get_axes(event->device) & GDK_AXIS_FLAG_WHEEL)
 		// this is from a wheel (as oppose to a touchpad / trackpoint)
-#else
+# else
 	    if (event->time - last_smooth_event_time > 50)
 		// reset our accumulations after 50ms of silence
-#endif
+# endif
 		acc_x = acc_y = 0;
 	    acc_x += event->delta_x;
 	    acc_y += event->delta_y;
-#if !GTK_CHECK_VERSION(3,22,0)
+# if !GTK_CHECK_VERSION(3,22,0)
 	    last_smooth_event_time = event->time;
-#endif
+# endif
 	    break;
 #endif
 	default: // This shouldn't happen
 	    return FALSE;
     }
 
-# ifdef FEAT_XIM
+#ifdef FEAT_XIM
     // cancel any preediting
     if (im_is_preediting())
 	xim_reset();
-# endif
+#endif
 
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
@@ -2156,8 +2132,8 @@ scroll_event(GtkWidget *widget,
 	// for X11 we deal with unsmooth events, and so ignore the smooth ones
 	;
     else
-#undef DT_X11
-#undef DT_WAYLAND
+# undef DT_X11
+# undef DT_WAYLAND
 #endif
 	gui_send_mouse_event(button, (int)event->x, (int)event->y,
 		FALSE, vim_modifiers);
@@ -2697,6 +2673,53 @@ global_event_filter(GdkXEvent *xev,
 }
 #endif // !USE_GNOME_SESSION
 
+#if defined(FEAT_SOCKETSERVER)
+
+/*
+ * Callback for new events from the socket server listening socket
+ */
+    static int
+socket_server_poll_in(int fd UNUSED, GIOCondition cond, void *user_data UNUSED)
+{
+    if (cond & G_IO_IN)
+	socket_server_accept_client();
+    else if (cond & (G_IO_ERR | G_IO_HUP))
+    {
+	socket_server_uninit();
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Initialize socket server for use in the GUI (does not actually initialize the
+ * socket server, only attaches a source).
+ */
+    void
+gui_gtk_init_socket_server(void)
+{
+    if (socket_server_source_id > 0)
+	return;
+    // Register source for file descriptor to global default context
+    socket_server_source_id = g_unix_fd_add(socket_server_get_fd(),
+	    G_IO_IN | G_IO_ERR | G_IO_HUP, socket_server_poll_in, NULL);
+}
+
+/*
+ * Remove the source for the socket server listening socket.
+ */
+    void
+gui_gtk_uninit_socket_server(void)
+{
+    if (socket_server_source_id > 0)
+    {
+	g_source_remove(socket_server_source_id);
+	socket_server_source_id = 0;
+    }
+}
+
+#endif
 
 /*
  * Setup the window icon & xcmdsrv comm after the main window has been realized.
@@ -2704,6 +2727,10 @@ global_event_filter(GdkXEvent *xev,
     static void
 mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#include "../runtime/vim16x16.xpm"
+#include "../runtime/vim32x32.xpm"
+#include "../runtime/vim48x48.xpm"
+
     GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
 
     // When started with "--echo-wid" argument, write window ID on stdout.
@@ -2718,10 +2745,29 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 
     if (vim_strchr(p_go, GO_ICON) != NULL)
     {
-	/*
-	 * Add an icon to the main window. For fun and convenience of the user.
-	 */
-	gtk_window_set_icon_name(GTK_WINDOW(gui.mainwin), "gvim");
+	GtkIconTheme *icon_theme;
+
+	icon_theme = gtk_icon_theme_get_default();
+
+	if (icon_theme && gtk_icon_theme_has_icon(icon_theme, "gvim"))
+	    gtk_window_set_icon_name(GTK_WINDOW(gui.mainwin), "gvim");
+	else
+	{
+	    /*
+	     * Add an icon to the main window. For fun and convenience of the user.
+	     */
+	    GList *icons = NULL;
+
+	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim16x16));
+	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim32x32));
+	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim48x48));
+
+	    gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
+
+	    // TODO: is this type cast OK?
+	    g_list_foreach(icons, (GFunc)(void *)&g_object_unref, NULL);
+	    g_list_free(icons);
+	}
     }
 
 #if !defined(USE_GNOME_SESSION)
@@ -2737,7 +2783,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	setup_save_yourself();
 
 #ifdef FEAT_CLIENTSERVER
-    if (gui_mch_get_display())
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 && gui_mch_get_display())
     {
 	if (serverName == NULL && serverDelayedStartName != NULL)
 	{
@@ -3133,9 +3179,9 @@ update_window_manager_hints(int force_width, int force_height)
     // otherwise the hints don't work.
     width  = gui_get_base_width();
     height = gui_get_base_height();
-# ifdef FEAT_MENU
+#ifdef FEAT_MENU
     height += tabline_height() * gui.char_height;
-# endif
+#endif
     width  += get_menu_tool_width();
     height += get_menu_tool_height();
 
@@ -3190,7 +3236,7 @@ update_window_manager_hints(int force_width, int force_height)
     }
 }
 
-#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+#if defined(FEAT_GUI_DARKTHEME)
     void
 gui_mch_set_dark_theme(int dark)
 {
@@ -3303,7 +3349,7 @@ set_toolbar_style(GtkToolbar *toolbar)
 
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 static int ignore_tabline_evt = FALSE;
 static GtkWidget *tabline_menu;
 # if !GTK_CHECK_VERSION(3,0,0)
@@ -4122,7 +4168,7 @@ gui_mch_init(void)
     return OK;
 }
 
-#if defined(USE_GNOME_SESSION) || defined(PROTO)
+#if defined(USE_GNOME_SESSION)
 /*
  * This is called from gui_start() after a fork() has been done.
  * We have to tell the session manager our new PID.
@@ -4800,16 +4846,16 @@ gui_mch_set_shellsize(int width, int height,
     else
 	update_window_manager_hints(width, height);
 
-# if !GTK_CHECK_VERSION(3,0,0)
-#  if 0
+#if !GTK_CHECK_VERSION(3,0,0)
+# if 0
     if (!resize_idle_installed)
     {
 	g_idle_add_full(GDK_PRIORITY_EVENTS + 10,
 			&force_shell_resize_idle, NULL, NULL);
 	resize_idle_installed = TRUE;
     }
-#  endif
-# endif // !GTK_CHECK_VERSION(3,0,0)
+# endif
+#endif // !GTK_CHECK_VERSION(3,0,0)
     /*
      * Wait until all events are processed to prevent a crash because the
      * real size of the drawing area doesn't reflect Vim's internal ideas.
@@ -4832,7 +4878,7 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 	vim_free(title);
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
     void
 gui_mch_enable_menu(int showit)
 {
@@ -4858,7 +4904,7 @@ gui_mch_enable_menu(int showit)
 }
 #endif // FEAT_MENU
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_show_toolbar(int showit)
 {
@@ -5136,7 +5182,7 @@ static PangoEngineShape *default_shape_engine = NULL;
 
 /*
  * Create a map from ASCII characters in the range [32,126] to glyphs
- * of the current font.  This is used by gui_gtk2_draw_string() to skip
+ * of the current font.  This is used by gui_gtk_draw_string() to skip
  * the itemize and shaping process for the most common case.
  */
     static void
@@ -5363,7 +5409,7 @@ gui_mch_get_font(char_u *name, int report_error)
     return font;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -5402,7 +5448,10 @@ gui_mch_free_font(GuiFont font)
  * monospace fonts as it's unlikely other fonts would be useful.
  */
     void
-gui_mch_expand_font(optexpand_T *args, void *param, int (*add_match)(char_u *val))
+gui_mch_expand_font(
+    optexpand_T	*args,
+    void	*param,
+    int		(*add_match)(char_u *val))
 {
     PangoFontFamily	**font_families = NULL;
     int			n_families = 0;
@@ -5848,7 +5897,7 @@ draw_under(int flags, int row, int col, int cells)
 }
 
     int
-gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
+gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 {
     char_u	*conv_buf = NULL;   // result of UTF-8 conversion
     char_u	*new_conv_buf;
@@ -6010,8 +6059,8 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 	    backup_ch = *(cs + slen);
 	    *(cs + slen) = NUL;
 	}
-	len_sum += gui_gtk2_draw_string_ext(row, col + len_sum,
-						 cs, slen, flags, needs_pango);
+	len_sum += gui_gtk_draw_string_ext(row, col + len_sum, cs, slen, flags,
+					    needs_pango);
 	if (slen < len)
 	    *(cs + slen) = backup_ch;
 	cs += slen;
@@ -6023,7 +6072,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 }
 
     int
-gui_gtk2_draw_string_ext(
+gui_gtk_draw_string_ext(
 	int	row,
 	int	col,
 	char_u	*s,
@@ -6298,7 +6347,7 @@ gui_mch_haskey(char_u *name)
     return FAIL;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the text window-id and display.  Only required for X-based GUI's
  */
@@ -6450,7 +6499,7 @@ gui_mch_iconify(void)
     gtk_window_iconify(GTK_WINDOW(gui.mainwin));
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -7044,7 +7093,7 @@ clip_mch_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
-#if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
+#if defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
     int
 clip_gtk_owner_exists(Clipboard_T *cbd)
 {
@@ -7053,7 +7102,7 @@ clip_gtk_owner_exists(Clipboard_T *cbd)
 #endif
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Make a menu item appear either active or not active (grey or not grey).
  */
@@ -7203,7 +7252,7 @@ gui_mch_mousehide(int hide)
     }
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 
 # if GTK_CHECK_VERSION(3,0,0)
 static const char * mshape_css_names[] =
@@ -7306,7 +7355,7 @@ mch_set_mouse_shape(int shape)
 #endif // FEAT_MOUSESHAPE
 
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#if defined(FEAT_SIGN_ICONS)
 /*
  * Signs are currently always 2 chars wide.  With GTK+ 2, the image will be
  * scaled down if the current font is not big enough, or scaled up if the image

@@ -26,6 +26,12 @@
 
 #include "os_unixx.h"	    // unix includes for os_unix.c only
 
+#ifdef HAVE_SHM_OPEN
+# include <sys/mman.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+#endif
+
 #ifdef USE_XSMP
 # include <X11/SM/SMlib.h>
 #endif
@@ -135,12 +141,128 @@ static void sig_sysmouse SIGPROTOARG;
 #  include <X11/StringDefs.h>
 static Widget	xterm_Shell = (Widget)0;
 static void clip_update(void);
-static void xterm_update(void);
 # endif
 
 Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
+
+#if defined(FEAT_SOCKETSERVER)
+# include <sys/socket.h>
+# include <sys/un.h>
+
+# define SOCKET_SERVER_MAX_BACKLOG 5
+# define SOCKET_SERVER_MAX_CMD_SIZE 16384
+# define SOCKET_SERVER_MAX_MSG 6
+
+static int	socket_server_fd = -1;
+static char_u	*socket_server_path = NULL;
+
+typedef enum {
+    SS_MSG_TYPE_ENCODING    = 'e',  // Encoding of message.
+    SS_MSG_TYPE_STRING	    = 'c',  // Script to execute or reply string.
+    SS_MSG_TYPE_SERIAL	    = 's',  // Serial of pending command
+    SS_MSG_TYPE_CODE	    = 'r',  // Result code for an expression sent
+    SS_MSG_TYPE_SENDER	    = 'd'   // Location of socket for the client that
+				    // sent the command.
+} ss_msg_type_T;
+
+typedef enum {
+    SS_CMD_TYPE_EXPR	    = 'E',  // An expression
+    SS_CMD_TYPE_KEYSTROKES  = 'K',  // Series of keystrokes
+    SS_CMD_TYPE_REPLY	    = 'R',  // Reply from an expression
+    SS_CMD_TYPE_NOTIFY	    = 'N',  // A notification
+    SS_CMD_TYPE_ALIVE	    = 'A',  // Check if server is still responsive
+} ss_cmd_type_T;
+
+// Represents a message in a command. A command can contain multiple messages.
+// Each message starts with a single byte representing the type, then a uint32
+// representing the length of the contents, and then the actual contents.
+// Everything is in native byte order.
+//
+// While contents may contain NULL characters, such as when it is a number, it
+// is always NULL terminated. Note that the NULL terminator does not count in
+// the length.
+typedef struct {
+    char_u	msg_type;	    // Type of message
+    uint32_t	msg_len;	    // Total length of contents
+    char_u	*msg_contents;	    // Actual contents of message
+} ss_msg_T;
+
+// Represents a command sent over a socket. Each socket starts with a byte
+// representing the type, then a uint32 representing the number of messages,
+// then a uint32 representing the total size of the messages in bytes, and then
+// the actual messages. Everything is in native byte order.
+typedef struct {
+    char_u	cmd_type;			    // Type of command
+    uint32_t	cmd_num;			    // Number of messages
+    uint32_t	cmd_len;			    // Combined size of all
+						    // messages
+    ss_msg_T	cmd_msgs[SOCKET_SERVER_MAX_MSG];    // Array of messages
+} ss_cmd_T;
+
+# define SS_CMD_INFO_SIZE (sizeof(char_u) + (sizeof(uint32_t) * 2))
+# define SS_MSG_INFO_SIZE (sizeof(char_u) + sizeof(uint32_t))
+
+// Represents a pending reply from a command sent to a Vim server. When a
+// command is sent out, we generate unique serial number with it. When we
+// receive any reply, we check which pending command has a matching serial
+// number, and is therefore the reply for that pending command.
+//
+// The reason we just don't use the existing fd created by the connect() call,
+// and communicate using that, is that it can't handle recursive calls, ex:
+// call remote_expr('B', 'remote_expr("A", "<expr>")')
+//
+// This idea is taken from the existing X server functionality
+typedef struct ss_pending_cmd_S {
+    uint32_t	serial;		    // Serial number expected in result
+    char_u	code;		    // Result code, can be 0 or -1.
+    char_u	*result;	    // Result of command
+
+    struct ss_pending_cmd_S *next;  // Next in list
+} ss_pending_cmd_T;
+
+ss_pending_cmd_T *ss_pending_cmds;
+
+// Serial is always greater than zero
+static uint32_t ss_serial = 0;
+
+// Represents a reply from a server2client call. Each client that calls a
+// server2client call to us has its own ss_reply_T. Each time a client sends
+// data using server2client, Vim creates a ss_reply_T if it doesn't exist and
+// adds the string to the array. When remote_read is called, the server id is
+// used to find the specific ss_reply_T, and a single string is popped from the
+// array.
+//
+// This idea is taken from the existing X server functionality
+typedef struct {
+    char_u *sender;
+    garray_T strings;
+} ss_reply_T;
+
+static garray_T ss_replies;
+
+static char_u *socket_server_get_path_from_name(char_u *name);
+static int socket_server_connect(char_u *name, char_u **path, int silent);
+static void socket_server_init_pending_cmd(ss_pending_cmd_T *pending);
+static void socket_server_pop_pending_cmd(ss_pending_cmd_T *pending);
+static void socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type);
+static int socket_server_append_msg(ss_cmd_T *cmd, char_u type,
+	char_u *contents, int len);
+static void socket_server_free_cmd(ss_cmd_T *cmd);
+static char_u *socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz);
+static int socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout);
+static int socket_server_write(int sock_fd, char_u *data, size_t sz,
+	int timeout);
+static ss_reply_T *socket_server_get_reply(char_u *sender, int *index);
+static ss_reply_T *socket_server_add_reply(char_u *sender);
+static void socket_server_remove_reply(char_u *sender);
+static void socket_server_exec_cmd(ss_cmd_T *cmd, int fd);
+static int socket_server_dispatch(int timeout);
+static int socket_server_check_alive(char_u *name);
+static int socket_server_name_is_valid(char_u *name);
+
+#endif // FEAT_SOCKETSERVER
 
 static int ignore_sigtstp = FALSE;
 
@@ -492,7 +614,7 @@ mch_char_avail(void)
     return WaitForChar(0L, NULL, FALSE);
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * Check for any pending input or messages.
  */
@@ -503,7 +625,7 @@ mch_check_messages(void)
 }
 #endif
 
-#if defined(HAVE_TOTAL_MEM) || defined(PROTO)
+#if defined(HAVE_TOTAL_MEM)
 # ifdef HAVE_SYS_RESOURCE_H
 #  include <sys/resource.h>
 # endif
@@ -778,13 +900,13 @@ check_stack_growth(char *p)
 }
 #endif
 
-#if defined(HAVE_STACK_LIMIT) || defined(PROTO)
+#if defined(HAVE_STACK_LIMIT)
 static char *stack_limit = NULL;
 
-#if defined(_THREAD_SAFE) && defined(HAVE_PTHREAD_NP_H)
-# include <pthread.h>
-# include <pthread_np.h>
-#endif
+# if defined(_THREAD_SAFE) && defined(HAVE_PTHREAD_NP_H)
+#  include <pthread.h>
+#  include <pthread_np.h>
+# endif
 
 /*
  * Find out until how var the stack can grow without getting into trouble.
@@ -802,13 +924,13 @@ get_stack_limit(void)
     // limit doesn't fit in a long (rlim_cur might be "long long").
     if (getrlimit(RLIMIT_STACK, &rlp) == 0
 	    && rlp.rlim_cur < ((rlim_t)1 << (sizeof(long_u) * 8 - 1))
-#  ifdef RLIM_INFINITY
+# ifdef RLIM_INFINITY
 	    && rlp.rlim_cur != RLIM_INFINITY
-#  endif
+# endif
        )
     {
 	lim = (long)rlp.rlim_cur;
-#if defined(_THREAD_SAFE) && defined(HAVE_PTHREAD_NP_H)
+# if defined(_THREAD_SAFE) && defined(HAVE_PTHREAD_NP_H)
 	{
 	    pthread_attr_t  attr;
 	    size_t	    size;
@@ -824,7 +946,7 @@ get_stack_limit(void)
 	    }
 	    pthread_attr_destroy(&attr);
 	}
-#endif
+# endif
 	if (stack_grows_downwards)
 	{
 	    stack_limit = (char *)((long)&i - (lim / 16L * 15L));
@@ -955,11 +1077,11 @@ sig_tstp SIGDEFARG(sigarg)
     else
 	got_tstp = TRUE;
 
-#if !defined(__ANDROID__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
+# if !defined(__ANDROID__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
     // This is not required on all systems.  On some systems (at least Android,
     // OpenBSD, and DragonFlyBSD) this breaks suspending with CTRL-Z.
     mch_signal(SIGTSTP, sig_tstp);
-#endif
+# endif
 }
 #endif
 
@@ -1010,10 +1132,9 @@ sig_alarm SIGDEFARG(sigarg)
 }
 #endif
 
-#if (defined(HAVE_SETJMP_H) \
+#if defined(HAVE_SETJMP_H) \
 	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
-	    || defined(FEAT_LIBCALL))) \
-    || defined(PROTO)
+	    || defined(FEAT_LIBCALL))
 # define USING_SETJMP 1
 
 // argument to SETJMP()
@@ -1303,33 +1424,43 @@ sigcont_handler SIGDEFARG(sigarg)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-# ifdef USE_SYSTEM
+#if defined(FEAT_CLIPBOARD)
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
 # endif
 
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Called when Vim is going to sleep or execute a shell command.
- * We can't respond to requests for the X selections.  Lose them, otherwise
- * other applications will hang.  But first copy the text to cut buffer 0.
+ * We can't respond to requests for the X or Wayland selections.
+ * Lose them, otherwise other applications will hang.  But first
+ * copy the text to cut buffer 0 (for X11). Wayland users must have
+ * a clipboard manager to replicate such behaviour.
  */
     static void
 loose_clipboard(void)
 {
     if (clip_star.owned || clip_plus.owned)
     {
+#  ifdef FEAT_X11
 	x11_export_final_selection();
+#  endif
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
+#  ifdef FEAT_X11
 	if (x11_display != NULL)
 	    XFlush(x11_display);
+#  endif
     }
 }
+# endif
 
-# ifdef USE_SYSTEM
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Save clipboard text to restore later.
  */
@@ -1343,7 +1474,7 @@ save_clipboard(void)
 }
 
 /*
- * Restore clipboard text if no one own the X selection.
+ * Restore clipboard text if no one own the X/Wayland selection.
  */
     static void
 restore_clipboard(void)
@@ -1385,7 +1516,8 @@ mch_suspend(void)
     settmode(TMODE_COOK);
     out_flush();	    // needed to disable mouse on some systems
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     loose_clipboard();
 # endif
 # if defined(SIGCONT)
@@ -1515,7 +1647,7 @@ set_signals(void)
 #endif
 }
 
-#if defined(SIGINT) || defined(PROTO)
+#if defined(SIGINT)
 /*
  * Catch CTRL-C (only works while in Cooked mode).
  */
@@ -1717,9 +1849,9 @@ x_error_handler(Display *dpy, XErrorEvent *error_event)
     // like the best alternative.  Do preserve files, in case we crash.
     ml_sync_all(FALSE, FALSE);
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (!gui.in_use)
-#endif
+# endif
 	msg((char *)IObuff);
 
     return 0;		// NOTREACHED
@@ -1745,10 +1877,10 @@ x_connect_to_server(void)
     if (exiting || v_dying)
 	return FALSE;
 
-#if defined(FEAT_CLIENTSERVER)
+# if defined(FEAT_CLIENTSERVER)
     if (x_force_connect)
 	return TRUE;
-#endif
+# endif
     if (x_no_connect)
 	return FALSE;
 
@@ -1767,8 +1899,8 @@ x_connect_to_server(void)
     return TRUE;
 }
 
-#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-# if defined(USING_SETJMP)
+# if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+#  if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
@@ -1777,11 +1909,11 @@ x_IOerror_check(Display *dpy UNUSED)
 {
     // This function should not return, it causes exit().  Longjump instead.
     LONGJMP(lc_jump_env, 1);
-#  if defined(VMS) || defined(__CYGWIN__)
+#   if defined(VMS) || defined(__CYGWIN__)
     return 0;  // avoid the compiler complains about missing return value
-#  endif
+#   endif
 }
-# endif
+#  endif
 
 /*
  * An X IO Error handler, used to catch terminal errors.
@@ -1799,9 +1931,9 @@ x_IOerror_handler(Display *dpy UNUSED)
 
     // This function should not return, it causes exit().  Longjump instead.
     LONGJMP(x_jump_env, 1);
-# if defined(VMS) || defined(__CYGWIN__)
+#  if defined(VMS) || defined(__CYGWIN__)
     return 0;  // avoid the compiler complains about missing return value
-# endif
+#  endif
 }
 
 /*
@@ -1810,14 +1942,14 @@ x_IOerror_handler(Display *dpy UNUSED)
  * (e.g. through tmux).
  */
     static void
-may_restore_clipboard(void)
+may_restore_x11_clipboard(void)
 {
     // No point in restoring the connecting if we are exiting or dying.
     if (!exiting && !v_dying && xterm_dpy_retry_count > 0)
     {
 	--xterm_dpy_retry_count;
 
-# ifndef LESSTIF_VERSION
+#  ifndef LESSTIF_VERSION
 	// This has been reported to avoid Vim getting stuck.
 	if (app_context != (XtAppContext)NULL)
 	{
@@ -1825,7 +1957,7 @@ may_restore_clipboard(void)
 	    app_context = (XtAppContext)NULL;
 	    x11_display = NULL; // freed by XtDestroyApplicationContext()
 	}
-# endif
+#  endif
 
 	setup_term_clip();
 	get_x11_title(FALSE);
@@ -1844,15 +1976,16 @@ ex_xrestore(exarg_T *eap)
 	xterm_display = (char *)vim_strnsave(eap->arg, arglen);
 	xterm_display_allocated = TRUE;
     }
-    smsg(_("restoring display %s"), xterm_display == NULL
+    smsg(_("restoring X11 display %s"), xterm_display == NULL
 		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
 
     clear_xterm_clip();
     x11_window = 0;
     xterm_dpy_retry_count = 5;  // Try reconnecting five times
-    may_restore_clipboard();
+    may_restore_x11_clipboard();
+    choose_clipmethod();
 }
-#endif
+# endif
 
 /*
  * Test if "dpy" and x11_window are valid by getting the window title.
@@ -1896,10 +2029,10 @@ get_x11_windis(void)
 {
     char	    *winid;
     static int	    result = -1;
-#define XD_NONE	 0	// x11_display not set here
-#define XD_HERE	 1	// x11_display opened here
-#define XD_GUI	 2	// x11_display used from gui.dpy
-#define XD_XTERM 3	// x11_display used from xterm_dpy
+# define XD_NONE	 0	// x11_display not set here
+# define XD_HERE	 1	// x11_display opened here
+# define XD_GUI	 2	// x11_display used from gui.dpy
+# define XD_XTERM 3	// x11_display used from xterm_dpy
     static int	    x11_display_from = XD_NONE;
     static int	    did_set_error_handler = FALSE;
 
@@ -1910,7 +2043,7 @@ get_x11_windis(void)
 	did_set_error_handler = TRUE;
     }
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
     if (gui.in_use)
     {
 	/*
@@ -1937,7 +2070,7 @@ get_x11_windis(void)
 	x11_display = NULL;
 	x11_display_from = XD_NONE;
     }
-#endif
+# endif
 
     // When started with the "-X" argument, don't try connecting.
     if (!x_connect_to_server())
@@ -1952,7 +2085,7 @@ get_x11_windis(void)
     if (x11_window == 0 && (winid = getenv("WINDOWID")) != NULL)
 	x11_window = (Window)atol(winid);
 
-#ifdef FEAT_XCLIPBOARD
+# ifdef FEAT_XCLIPBOARD
     if (xterm_dpy == x11_display)
 	// x11_display may have been set to xterm_dpy elsewhere
 	x11_display_from = XD_XTERM;
@@ -1982,7 +2115,7 @@ get_x11_windis(void)
 	}
 	return OK;
     }
-#endif
+# endif
 
     if (x11_window == 0 || x11_display == NULL)
 	result = -1;
@@ -1992,17 +2125,17 @@ get_x11_windis(void)
 
     if (x11_window != 0 && x11_display == NULL)
     {
-#ifdef SET_SIG_ALARM
+# ifdef SET_SIG_ALARM
 	sighandler_T sig_save;
-#endif
-#ifdef ELAPSED_FUNC
+# endif
+# ifdef ELAPSED_FUNC
 	elapsed_T start_tv;
 
 	if (p_verbose > 0)
 	    ELAPSED_INIT(start_tv);
-#endif
+# endif
 
-#ifdef SET_SIG_ALARM
+# ifdef SET_SIG_ALARM
 	/*
 	 * Opening the Display may hang if the DISPLAY setting is wrong, or
 	 * the network connection is bad.  Set an alarm timer to get out.
@@ -2010,15 +2143,15 @@ get_x11_windis(void)
 	sig_alarm_called = FALSE;
 	sig_save = mch_signal(SIGALRM, sig_alarm);
 	alarm(2);
-#endif
+# endif
 	x11_display = XOpenDisplay(NULL);
 
-#ifdef SET_SIG_ALARM
+# ifdef SET_SIG_ALARM
 	alarm(0);
 	mch_signal(SIGALRM, sig_save);
 	if (p_verbose > 0 && sig_alarm_called)
 	    verb_msg(_("Opening the X display timed out"));
-#endif
+# endif
 	if (x11_display != NULL)
 	{
 # ifdef ELAPSED_FUNC
@@ -2182,11 +2315,11 @@ get_x11_thing(
 // systems X_HAVE_UTF8_STRING may be defined in a header file but
 // Xutf8SetWMProperties() is not in the X11 library.  Configure checks for
 // that and defines HAVE_XUTF8SETWMPROPERTIES.
-#if defined(X_HAVE_UTF8_STRING)
-# if X_HAVE_UTF8_STRING && HAVE_XUTF8SETWMPROPERTIES
-#  define USE_UTF8_STRING
+# if defined(X_HAVE_UTF8_STRING)
+#  if X_HAVE_UTF8_STRING && HAVE_XUTF8SETWMPROPERTIES
+#   define USE_UTF8_STRING
+#  endif
 # endif
-#endif
 
 /*
  * Set x11 Window Title
@@ -2199,18 +2332,18 @@ set_x11_title(char_u *title)
 	// XmbSetWMProperties() and Xutf8SetWMProperties() should use a STRING
 	// when possible, COMPOUND_TEXT otherwise.  COMPOUND_TEXT isn't
 	// supported everywhere and STRING doesn't work for multi-byte titles.
-#ifdef USE_UTF8_STRING
+# ifdef USE_UTF8_STRING
     if (enc_utf8)
 	Xutf8SetWMProperties(x11_display, x11_window, (const char *)title,
 					     NULL, NULL, 0, NULL, NULL, NULL);
     else
-#endif
+# endif
     {
-#if XtSpecificationRelease >= 4
-# ifdef FEAT_XFONTSET
+# if XtSpecificationRelease >= 4
+#  ifdef FEAT_XFONTSET
 	XmbSetWMProperties(x11_display, x11_window, (const char *)title,
 					     NULL, NULL, 0, NULL, NULL, NULL);
-# else
+#  else
 	XTextProperty	text_prop;
 	char		*c_title = (char *)title;
 
@@ -2218,10 +2351,10 @@ set_x11_title(char_u *title)
 	(void)XStringListToTextProperty(&c_title, 1, &text_prop);
 	XSetWMProperties(x11_display, x11_window, &text_prop,
 					     NULL, NULL, 0, NULL, NULL, NULL);
-# endif
-#else
+#  endif
+# else
 	XStoreName(x11_display, x11_window, (char *)title);
-#endif
+# endif
     }
     XFlush(x11_display);
 }
@@ -2235,28 +2368,28 @@ set_x11_title(char_u *title)
 set_x11_icon(char_u *icon)
 {
     // See above for comments about using X*SetWMProperties().
-#ifdef USE_UTF8_STRING
+# ifdef USE_UTF8_STRING
     if (enc_utf8)
 	Xutf8SetWMProperties(x11_display, x11_window, NULL, (const char *)icon,
 						   NULL, 0, NULL, NULL, NULL);
     else
-#endif
+# endif
     {
-#if XtSpecificationRelease >= 4
-# ifdef FEAT_XFONTSET
+# if XtSpecificationRelease >= 4
+#  ifdef FEAT_XFONTSET
 	XmbSetWMProperties(x11_display, x11_window, NULL, (const char *)icon,
 						   NULL, 0, NULL, NULL, NULL);
-# else
+#  else
 	XTextProperty	text_prop;
 	char		*c_icon = (char *)icon;
 
 	(void)XStringListToTextProperty(&c_icon, 1, &text_prop);
 	XSetWMProperties(x11_display, x11_window, NULL, &text_prop,
 						   NULL, 0, NULL, NULL, NULL);
-# endif
-#else
+#  endif
+# else
 	XSetIconName(x11_display, x11_window, (char *)icon);
-#endif
+# endif
     }
     XFlush(x11_display);
 }
@@ -2450,7 +2583,7 @@ vim_is_xterm(char_u *name)
 		|| STRCMP(name, "builtin_xterm") == 0);
 }
 
-#if defined(FEAT_MOUSE_XTERM) || defined(PROTO)
+#if defined(FEAT_MOUSE_XTERM)
 /*
  * Return TRUE if "name" appears to be that of a terminal
  * known to support the xterm-style mouse protocol.
@@ -2503,7 +2636,7 @@ vim_is_iris(char_u *name)
 	    || STRCMP(name, "builtin_iris-ansi") == 0);
 }
 
-#if defined(VMS) || defined(PROTO)
+#if defined(VMS)
 /*
  * Return TRUE if "name" is a vt300-like terminal name.
  */
@@ -2847,7 +2980,7 @@ mch_isFullName(char_u *fname)
 #endif
 }
 
-#if defined(USE_FNAME_CASE) || defined(PROTO)
+#if defined(USE_FNAME_CASE)
 /*
  * Set the case of the file name, if it already exists.  This will cause the
  * file name to remain exactly the same.
@@ -2955,7 +3088,7 @@ mch_setperm(char_u *name, long perm)
 		    (mode_t)perm) == 0 ? OK : FAIL);
 }
 
-#if defined(HAVE_FCHMOD) || defined(PROTO)
+#if defined(HAVE_FCHMOD)
 /*
  * Set file permission for open file "fd" to "perm".
  * Return FAIL for failure, OK otherwise.
@@ -2967,7 +3100,7 @@ mch_fsetperm(int fd, long perm)
 }
 #endif
 
-#if defined(HAVE_ACL) || defined(PROTO)
+#if defined(HAVE_ACL)
 # ifdef HAVE_SYS_ACL_H
 #  include <sys/acl.h>
 # endif
@@ -2982,7 +3115,7 @@ typedef struct vim_acl_solaris_T {
 } vim_acl_solaris_T;
 # endif
 
-#if defined(HAVE_SELINUX) || defined(PROTO)
+# if defined(HAVE_SELINUX)
 /*
  * Copy security info from "from_file" to "to_file".
  */
@@ -3036,9 +3169,9 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     freecon(to_context);
     freecon(from_context);
 }
-#endif // HAVE_SELINUX
+# endif // HAVE_SELINUX
 
-#if defined(HAVE_SMACK) && !defined(PROTO)
+# if defined(HAVE_SMACK) && !defined(PROTO)
 /*
  * Copy security info from "from_file" to "to_file".
  */
@@ -3116,9 +3249,9 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 	}
     }
 }
-#endif // HAVE_SMACK
+# endif // HAVE_SMACK
 
-#ifdef FEAT_XATTR
+# if defined(FEAT_XATTR)
 /*
  * Copy extended attributes from_file to to_file
  */
@@ -3207,7 +3340,7 @@ error_exit:
     if (errmsg != NULL)
 	emsg(_(errmsg));
 }
-#endif
+# endif
 
 /*
  * Return a pointer to the ACL of file "fname" in allocated memory.
@@ -3217,17 +3350,17 @@ error_exit:
 mch_get_acl(char_u *fname UNUSED)
 {
     vim_acl_T	ret = NULL;
-#ifdef HAVE_POSIX_ACL
+# ifdef HAVE_POSIX_ACL
     ret = (vim_acl_T)acl_get_file((char *)fname, ACL_TYPE_ACCESS);
-#else
-#ifdef HAVE_SOLARIS_ZFS_ACL
+# else
+#  ifdef HAVE_SOLARIS_ZFS_ACL
     acl_t *aclent;
 
     if (acl_get((char *)fname, 0, &aclent) < 0)
 	return NULL;
     ret = (vim_acl_T)aclent;
-#else
-#ifdef HAVE_SOLARIS_ACL
+#  else
+#   ifdef HAVE_SOLARIS_ACL
     vim_acl_solaris_T   *aclent;
 
     aclent = malloc(sizeof(vim_acl_solaris_T));
@@ -3251,8 +3384,8 @@ mch_get_acl(char_u *fname UNUSED)
 	return NULL;
     }
     ret = (vim_acl_T)aclent;
-#else
-#if defined(HAVE_AIX_ACL)
+#   else
+#    if defined(HAVE_AIX_ACL)
     int		aclsize;
     struct acl *aclent;
 
@@ -3279,10 +3412,10 @@ mch_get_acl(char_u *fname UNUSED)
 	}
     }
     ret = (vim_acl_T)aclent;
-#endif // HAVE_AIX_ACL
-#endif // HAVE_SOLARIS_ACL
-#endif // HAVE_SOLARIS_ZFS_ACL
-#endif // HAVE_POSIX_ACL
+#    endif // HAVE_AIX_ACL
+#   endif // HAVE_SOLARIS_ACL
+#  endif // HAVE_SOLARIS_ZFS_ACL
+# endif // HAVE_POSIX_ACL
     return ret;
 }
 
@@ -3294,22 +3427,22 @@ mch_set_acl(char_u *fname UNUSED, vim_acl_T aclent)
 {
     if (aclent == NULL)
 	return;
-#ifdef HAVE_POSIX_ACL
+# ifdef HAVE_POSIX_ACL
     acl_set_file((char *)fname, ACL_TYPE_ACCESS, (acl_t)aclent);
-#else
-#ifdef HAVE_SOLARIS_ZFS_ACL
+# else
+#  ifdef HAVE_SOLARIS_ZFS_ACL
     acl_set((char *)fname, (acl_t *)aclent);
-#else
-#ifdef HAVE_SOLARIS_ACL
+#  else
+#   ifdef HAVE_SOLARIS_ACL
     acl((char *)fname, SETACL, ((vim_acl_solaris_T *)aclent)->acl_cnt,
 	    ((vim_acl_solaris_T *)aclent)->acl_entry);
-#else
-#ifdef HAVE_AIX_ACL
+#   else
+#    ifdef HAVE_AIX_ACL
     chacl((char *)fname, aclent, ((struct acl *)aclent)->acl_len);
-#endif // HAVE_AIX_ACL
-#endif // HAVE_SOLARIS_ACL
-#endif // HAVE_SOLARIS_ZFS_ACL
-#endif // HAVE_POSIX_ACL
+#    endif // HAVE_AIX_ACL
+#   endif // HAVE_SOLARIS_ACL
+#  endif // HAVE_SOLARIS_ZFS_ACL
+# endif // HAVE_POSIX_ACL
 }
 
     void
@@ -3317,22 +3450,22 @@ mch_free_acl(vim_acl_T aclent)
 {
     if (aclent == NULL)
 	return;
-#ifdef HAVE_POSIX_ACL
+# ifdef HAVE_POSIX_ACL
     acl_free((acl_t)aclent);
-#else
-#ifdef HAVE_SOLARIS_ZFS_ACL
+# else
+#  ifdef HAVE_SOLARIS_ZFS_ACL
     acl_free((acl_t *)aclent);
-#else
-#ifdef HAVE_SOLARIS_ACL
+#  else
+#   ifdef HAVE_SOLARIS_ACL
     free(((vim_acl_solaris_T *)aclent)->acl_entry);
     free(aclent);
-#else
-#ifdef HAVE_AIX_ACL
+#   else
+#    ifdef HAVE_AIX_ACL
     free(aclent);
-#endif // HAVE_AIX_ACL
-#endif // HAVE_SOLARIS_ACL
-#endif // HAVE_SOLARIS_ZFS_ACL
-#endif // HAVE_POSIX_ACL
+#    endif // HAVE_AIX_ACL
+#   endif // HAVE_SOLARIS_ACL
+#  endif // HAVE_SOLARIS_ZFS_ACL
+# endif // HAVE_POSIX_ACL
 }
 #endif
 
@@ -3542,9 +3675,20 @@ mch_early_init(void)
     signal_stack = alloc(get_signal_stack_size());
     init_signal_stack();
 #endif
+
+    /*
+     * Inform the macOS scheduler that Vim renders UI, and so shouldn’t have its
+     * threads’ quality of service classes clamped.
+     */
+#ifdef MACOS_X
+# ifdef MAC_OS_X_VERSION_10_7
+    integer_t policy = TASK_DEFAULT_APPLICATION;
+    task_policy_set(mach_task_self(), TASK_CATEGORY_POLICY, &policy, 1);
+# endif
+#endif
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 mch_free_mem(void)
 {
@@ -3611,7 +3755,7 @@ exit_scroll(void)
     {
 	restore_cterm_colors();		// get original colors back
 	msg_clr_eos_force();		// clear the rest of the display
-	windgoto((int)Rows - 1, 0);	// may have moved the cursor
+	windgoto((int)Rows - 1, cmdline_col_off); // may have moved the cursor
     }
 }
 
@@ -3634,6 +3778,10 @@ mch_exit(int r)
 
 #if defined(FEAT_X11) && defined(FEAT_CLIPBOARD)
     x11_export_final_selection();
+#endif
+
+#ifdef FEAT_SOCKETSERVER
+    socket_server_uninit();
 #endif
 
 #ifdef FEAT_GUI
@@ -3729,7 +3877,7 @@ get_tty_fd(int fd)
 {
     int		tty_fd = fd;
 
-#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+# if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
     // On SunOS: Get the terminal parameters from "fd", or the slave device of
     // "fd" when it is a master device.
     if (mch_isatty(fd) > 1)
@@ -3744,7 +3892,7 @@ get_tty_fd(int fd)
 	if (tty_fd < 0)
 	    return -1;
     }
-#endif
+# endif
     return tty_fd;
 }
 
@@ -3758,16 +3906,16 @@ mch_tcgetattr(int fd, void *term)
     if (tty_fd < 0)
 	return -1;
 
-#ifdef NEW_TTY_SYSTEM
-# ifdef HAVE_TERMIOS_H
+# ifdef NEW_TTY_SYSTEM
+#  ifdef HAVE_TERMIOS_H
     retval = tcgetattr(tty_fd, (struct termios *)term);
-# else
+#  else
     retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
-# endif
-#else
+#  endif
+# else
     // for "old" tty systems
     retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
-#endif
+# endif
     if (tty_fd != fd)
 	close(tty_fd);
     return retval;
@@ -3778,14 +3926,14 @@ mch_settmode(tmode_T tmode)
 {
     static int first = TRUE;
 
-#ifdef NEW_TTY_SYSTEM
-# ifdef HAVE_TERMIOS_H
+# ifdef NEW_TTY_SYSTEM
+#  ifdef HAVE_TERMIOS_H
     static struct termios told;
 	   struct termios tnew;
-# else
+#  else
     static struct termio told;
 	   struct termio tnew;
-# endif
+#  endif
 
     if (first)
     {
@@ -3801,23 +3949,23 @@ mch_settmode(tmode_T tmode)
 	tnew.c_iflag &= ~(ICRNL |
 		(T_XON == NULL || *T_XON == NUL ? IXON : 0));
 	tnew.c_lflag &= ~(ICANON | ECHO | ISIG | ECHOE
-# if defined(IEXTEN)
+#  if defined(IEXTEN)
 		    | IEXTEN	    // IEXTEN enables typing ^V on SOLARIS
-# endif
+#  endif
 				);
-# ifdef ONLCR
+#  ifdef ONLCR
 	// Don't map NL -> CR NL, we do it ourselves.
 	// Also disable expanding tabs if possible.
-#  ifdef XTABS
+#   ifdef XTABS
 	tnew.c_oflag &= ~(ONLCR | XTABS);
-#  else
-#   ifdef TAB3
-	tnew.c_oflag &= ~(ONLCR | TAB3);
 #   else
+#    ifdef TAB3
+	tnew.c_oflag &= ~(ONLCR | TAB3);
+#    else
 	tnew.c_oflag &= ~ONLCR;
+#    endif
 #   endif
 #  endif
-# endif
 	tnew.c_cc[VMIN] = 1;		// return after 1 char
 	tnew.c_cc[VTIME] = 0;		// don't wait
     }
@@ -3830,7 +3978,7 @@ mch_settmode(tmode_T tmode)
 	tnew.c_cc[VTIME] = 0;		// don't wait
     }
 
-# if defined(HAVE_TERMIOS_H)
+#  if defined(HAVE_TERMIOS_H)
     {
 	int	n = 10;
 
@@ -3840,17 +3988,17 @@ mch_settmode(tmode_T tmode)
 						   && errno == EINTR && n > 0)
 	    --n;
     }
-# else
+#  else
     ioctl(read_cmd_fd, TCSETA, &tnew);
-# endif
+#  endif
 
-#else
+# else
     /*
      * for "old" tty systems
      */
-# ifndef TIOCSETN
-#  define TIOCSETN TIOCSETP	// for hpux 9.0
-# endif
+#  ifndef TIOCSETN
+#   define TIOCSETN TIOCSETP	// for hpux 9.0
+#  endif
     static struct sgttyb ttybold;
 	   struct sgttyb ttybnew;
 
@@ -3869,7 +4017,7 @@ mch_settmode(tmode_T tmode)
     else if (tmode == TMODE_SLEEP)
 	ttybnew.sg_flags &= ~(ECHO);
     ioctl(read_cmd_fd, TIOCSETN, &ttybnew);
-#endif
+# endif
     mch_cur_tmode = tmode;
 }
 
@@ -3910,12 +4058,12 @@ get_stty(void)
     int
 get_tty_info(int fd, ttyinfo_T *info)
 {
-#ifdef NEW_TTY_SYSTEM
-# ifdef HAVE_TERMIOS_H
+# ifdef NEW_TTY_SYSTEM
+#  ifdef HAVE_TERMIOS_H
     struct termios keys;
-# else
+#  else
     struct termio keys;
-# endif
+#  endif
 
     if (mch_tcgetattr(fd, &keys) != -1)
     {
@@ -3931,7 +4079,7 @@ get_tty_info(int fd, ttyinfo_T *info)
 	    info->nl_does_cr = FALSE;
 	return OK;
     }
-#else
+# else
     // for "old" tty systems
     struct sgttyb keys;
 
@@ -3943,7 +4091,7 @@ get_tty_info(int fd, ttyinfo_T *info)
 	info->nl_does_cr = TRUE;
 	return OK;
     }
-#endif
+# endif
     return FAIL;
 }
 
@@ -4115,7 +4263,7 @@ mch_setmouse(int on)
 #endif
 }
 
-#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+#if defined(FEAT_BEVAL_TERM)
 /*
  * Called when 'balloonevalterm' changed.
  */
@@ -4132,14 +4280,14 @@ mch_bevalterm_changed(void)
     void
 check_mouse_termcode(void)
 {
-# ifdef FEAT_MOUSE_XTERM
+#ifdef FEAT_MOUSE_XTERM
     if (use_xterm_mouse()
 # ifdef FEAT_MOUSE_URXVT
 	    && use_xterm_mouse() != 3
 # endif
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
     {
 	set_mouse_termcode(KS_MOUSE, (char_u *)(term_is_8bit(T_NAME)
@@ -4154,81 +4302,81 @@ check_mouse_termcode(void)
     }
     else
 	del_mouse_termcode(KS_MOUSE);
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_GPM
+#ifdef FEAT_MOUSE_GPM
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_GPM_MOUSE, (char_u *)"\033MG");
     else
 	del_mouse_termcode(KS_GPM_MOUSE);
-# endif
+#endif
 
-# ifdef FEAT_SYSMOUSE
+#ifdef FEAT_SYSMOUSE
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_MOUSE, (char_u *)"\033MS");
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_JSB
     // Conflicts with xterm mouse: "\033[" and "\033[M" ???
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_JSBTERM_MOUSE, (char_u *)"\033[0~zw");
     else
 	del_mouse_termcode(KS_JSBTERM_MOUSE);
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_NET
+#ifdef FEAT_MOUSE_NET
     // There is no conflict, but one may type "ESC }" from Insert mode.  Don't
     // define it in the GUI or when using an xterm.
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_NETTERM_MOUSE, (char_u *)"\033}");
     else
 	del_mouse_termcode(KS_NETTERM_MOUSE);
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_DEC
+#ifdef FEAT_MOUSE_DEC
     // Conflicts with xterm mouse: "\033[" and "\033[M"
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_DEC_MOUSE, (char_u *)(term_is_8bit(T_NAME)
 							  ? "\233" : "\033["));
     else
 	del_mouse_termcode(KS_DEC_MOUSE);
-# endif
-# ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
     // same conflict as the dec mouse
     if (!use_xterm_mouse()
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
 	set_mouse_termcode(KS_PTERM_MOUSE, (char_u *)"\033[");
     else
 	del_mouse_termcode(KS_PTERM_MOUSE);
-# endif
-# ifdef FEAT_MOUSE_URXVT
+#endif
+#ifdef FEAT_MOUSE_URXVT
     if (use_xterm_mouse() == 3
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
     {
 	set_mouse_termcode(KS_URXVT_MOUSE, (char_u *)(term_is_8bit(T_NAME)
@@ -4242,11 +4390,11 @@ check_mouse_termcode(void)
     }
     else
 	del_mouse_termcode(KS_URXVT_MOUSE);
-# endif
+#endif
     if (use_xterm_mouse() == 4
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    && !gui.in_use
-# endif
+#endif
 	    )
     {
 	set_mouse_termcode(KS_SGR_MOUSE, (char_u *)(term_is_8bit(T_NAME)
@@ -4321,9 +4469,9 @@ mch_get_shellsize(void)
 	{
 	    columns = ts.ts_cols;
 	    rows = ts.ts_lines;
-#  ifdef FEAT_EVAL
+#   ifdef FEAT_EVAL
 	    ch_log(NULL, "Got size with TIOCGSIZE: %ld x %ld", columns, rows);
-#  endif
+#   endif
 	}
     }
 #  endif // TIOCGSIZE
@@ -4339,31 +4487,31 @@ mch_get_shellsize(void)
 	if ((p = (char_u *)getenv("LINES")))
 	{
 	    rows = atoi((char *)p);
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    ch_log(NULL, "Got 'lines' from $LINES: %ld", rows);
-#  endif
+# endif
 	}
 	if ((p = (char_u *)getenv("COLUMNS")))
 	{
 	    columns = atoi((char *)p);
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    ch_log(NULL, "Got 'columns' from $COLUMNS: %ld", columns);
-#  endif
+# endif
 	}
     }
 
-#ifdef HAVE_TGETENT
+# ifdef HAVE_TGETENT
     /*
      * 3. try reading "co" and "li" entries from termcap
      */
     if (columns == 0 || rows == 0)
     {
 	getlinecol(&columns, &rows);
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
 	ch_log(NULL, "Got size from termcap: %ld x %ld", columns, rows);
-# endif
+#  endif
     }
-#endif
+# endif
 
     /*
      * 4. If everything fails, use the old values
@@ -4390,9 +4538,9 @@ mch_calc_cell_size(struct cellsize *cs_out)
    int retval = -1;
    retval = ioctl(fd, TIOCGWINSZ, &ws);
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
    ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
-#endif
+# endif
 
    if (retval == -1 || ws.ws_col == 0 || ws.ws_row == 0)
    {
@@ -4409,12 +4557,12 @@ mch_calc_cell_size(struct cellsize *cs_out)
    cs_out->cs_xpixel = x_cell_size;
    cs_out->cs_ypixel = y_cell_size;
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
    ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
-#endif
+# endif
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
 /*
  * Report the windows size "rows" and "cols" to tty "fd".
  */
@@ -4428,7 +4576,7 @@ mch_report_winsize(int fd, int rows, int cols)
     if (tty_fd < 0)
 	return FAIL;
 
-# if defined(TIOCSWINSZ)
+#  if defined(TIOCSWINSZ)
     struct winsize ws;
 
     ws.ws_col = cols;
@@ -4452,19 +4600,19 @@ mch_report_winsize(int fd, int rows, int cols)
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
     ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");
-# elif defined(TIOCSSIZE)
+#  elif defined(TIOCSSIZE)
     struct ttysize ts;
 
     ts.ts_cols = cols;
     ts.ts_lines = rows;
     retval = ioctl(tty_fd, TIOCSSIZE, &ts);
     ch_log(NULL, "ioctl(TIOCSSIZE) %s", retval == 0 ? "success" : "failed");
-# endif
+#  endif
     if (tty_fd != fd)
 	close(tty_fd);
     return retval == 0 ? OK : FAIL;
 }
-#endif
+# endif
 
 /*
  * Try to set the window size to Rows and Columns.
@@ -4512,11 +4660,11 @@ wait4pid(pid_t child, waitstatus *status)
 	// wait() sometimes hangs for no obvious reason.  Use waitpid()
 	// instead and loop (like the GUI). Also needed for other interfaces,
 	// they might call system().
-# ifdef __NeXT__
+#ifdef __NeXT__
 	wait_pid = wait4(child, status, WNOHANG, (struct rusage *)0);
-# else
+#else
 	wait_pid = waitpid(child, status, WNOHANG);
-# endif
+#endif
 	if (wait_pid == 0)
 	{
 	    // Wait for 1 to 10 msec before trying again.
@@ -4526,9 +4674,9 @@ wait4pid(pid_t child, waitstatus *status)
 	    continue;
 	}
 	if (wait_pid <= 0
-# ifdef ECHILD
+#ifdef ECHILD
 		&& errno == ECHILD
-# endif
+#endif
 	   )
 	    break;
     }
@@ -4646,11 +4794,11 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
     // Leaving out O_NOCTTY may lead to waitpid() always returning
     // 0 on Mac OS X 10.7 thereby causing freezes. Let's assume
     // adding O_NOCTTY always works when defined.
-#ifdef O_NOCTTY
+# ifdef O_NOCTTY
     *pty_slave_fd = open(tty_name, O_RDWR | O_NOCTTY | O_EXTRA, 0);
-#else
+# else
     *pty_slave_fd = open(tty_name, O_RDWR | O_EXTRA, 0);
-#endif
+# endif
     if (*pty_slave_fd < 0)
     {
 	close(*pty_master_fd);
@@ -4672,21 +4820,21 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
     static void
 may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
 {
-# ifdef SIGINT
+#ifdef SIGINT
     if (c == Ctrl_C || c == intr_char)
     {
-#  ifdef HAVE_SETSID
+# ifdef HAVE_SETSID
 	kill(-pid, SIGINT);
-#  else
+# else
 	kill(0, SIGINT);
-#  endif
+# endif
 	if (wpid > 0)
 	    kill(wpid, SIGINT);
     }
-# endif
+#endif
 }
 
-#if !defined(USE_SYSTEM) || defined(FEAT_TERMINAL) || defined(PROTO)
+#if !defined(USE_SYSTEM) || defined(FEAT_TERMINAL)
 
 /*
  * Parse "cmd" and return the result in "argvp" which is an allocated array of
@@ -4823,10 +4971,10 @@ mch_call_shell_system(
     char_u	*cmd,
     int		options)	// SHELL_*, see vim.h
 {
-#ifdef VMS
+# ifdef VMS
     char	*ifn = NULL;
     char	*ofn = NULL;
-#endif
+# endif
     tmode_T	tmode = cur_tmode;
     char_u	*newcmd;	// only needed for unix
     int		x;
@@ -4836,8 +4984,11 @@ mch_call_shell_system(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	    // set to normal mode
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
+#  if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
     save_clipboard();
+#  endif
     loose_clipboard();
 # endif
 
@@ -4899,7 +5050,8 @@ mch_call_shell_system(
 	settmode(TMODE_RAW);	// set to raw mode
     }
     resettitle();
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     restore_clipboard();
 # endif
     return x;
@@ -5168,7 +5320,7 @@ mch_call_shell_fork(
 	     * different on different machines. This may cause a warning
 	     * message with strict compilers, don't worry about it.
 	     * Call _exit() instead of exit() to avoid closing the connection
-	     * to the X server (esp. with GTK, which uses atexit()).
+	     * to the X/Wayland server (esp. with GTK, which uses atexit()).
 	     */
 	    execvp(argv[0], argv);
 	    _exit(EXEC_FAILED);	    // exec failed, return failure code
@@ -5406,7 +5558,7 @@ mch_call_shell_fork(
 				else
 				    msg_outtrans_len(ta_buf + i, 1);
 			    }
-			    windgoto(msg_row, msg_col);
+			    windgoto(msg_row, cmdline_col_off + msg_col);
 			    out_flush();
 			}
 
@@ -5437,11 +5589,11 @@ mch_call_shell_fork(
 		    {
 			// CTRL-C sends a signal to the child, we ignore it
 			// ourselves
-#  ifdef HAVE_SETSID
+# ifdef HAVE_SETSID
 			kill(-pid, SIGINT);
-#  else
+# else
 			kill(0, SIGINT);
-#  endif
+# endif
 			if (wpid > 0)
 			    kill(wpid, SIGINT);
 			got_int = FALSE;
@@ -5528,7 +5680,7 @@ mch_call_shell_fork(
 			    msg_puts((char *)buffer);
 			}
 
-			windgoto(msg_row, msg_col);
+			windgoto(msg_row, cmdline_col_off + msg_col);
 			cursor_on();
 			out_flush();
 			if (got_int)
@@ -5586,6 +5738,11 @@ mch_call_shell_fork(
 		    // Handle any X events, e.g. serving the clipboard.
 		    clip_update();
 # endif
+# ifdef FEAT_WAYLAND
+		    // Handle Wayland events such as sending data as the source
+		    // client.
+		    wayland_update();
+# endif
 		}
 finished:
 		p_more = p_more_save;
@@ -5612,7 +5769,7 @@ finished:
 		    close(toshell_fd);
 		close(fromshell_fd);
 	    }
-# if defined(FEAT_XCLIPBOARD) && defined(FEAT_X11)
+# if (defined(FEAT_XCLIPBOARD) && defined(FEAT_X11)) || defined(FEAT_WAYLAND)
 	    else
 	    {
 		long delay_msec = 1;
@@ -5623,8 +5780,8 @@ finished:
 		    out_str_t_TE();
 
 		/*
-		 * Similar to the loop above, but only handle X events, no
-		 * I/O.
+		 * Similar to the loop above, but only handle X and Wayland
+		 * events, no I/O.
 		 */
 		for (;;)
 		{
@@ -5639,11 +5796,11 @@ finished:
 #  endif
 			got_int = FALSE;
 		    }
-# ifdef __NeXT__
+#  ifdef __NeXT__
 		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
-# else
+#  else
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-# endif
+#  endif
 		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
@@ -5651,8 +5808,15 @@ finished:
 			break;
 		    }
 
+#  if defined(FEAT_XCLIPBOARD) && defined(FEAT_X11)
 		    // Handle any X events, e.g. serving the clipboard.
 		    clip_update();
+#  endif
+#  ifdef FEAT_WAYLAND
+		    // Handle Wayland events such as sending data as the source
+		    // client.
+		    wayland_update();
+#  endif
 
 		    // Wait for 1 to 10 msec. 1 is faster but gives the child
 		    // less time, gradually wait longer.
@@ -5765,7 +5929,7 @@ mch_call_shell(
 #endif
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     void
 mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 {
@@ -5903,11 +6067,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	{
 	    char *term = (char *)T_NAME;
 
-#ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 	    if (term_is_gui(T_NAME))
 		// In the GUI 'term' is not what we want, use $TERM.
 		term = getenv("TERM");
-#endif
+#  endif
 	    // Use 'term' or $TERM if it starts with "xterm", otherwise fall
 	    // back to "xterm" or "xterm-color".
 	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
@@ -5960,11 +6124,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	{
 	    // push stream discipline modules
 	    setup_slavepty(pty_slave_fd);
-#  ifdef TIOCSCTTY
+# ifdef TIOCSCTTY
 	    // Try to become controlling tty (probably doesn't work,
 	    // unless run by root)
 	    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
-#  endif
+# endif
 	}
 
 	// set up stdin for the child
@@ -6254,10 +6418,10 @@ mch_signal_job(job_T *job, char_u *how)
 	sig = SIGINT;
     else if (STRCMP(how, "kill") == 0)
 	sig = SIGKILL;
-#ifdef SIGWINCH
+# ifdef SIGWINCH
     else if (STRCMP(how, "winch") == 0)
 	sig = SIGWINCH;
-#endif
+# endif
     else if (SAFE_isdigit(*how))
 	sig = atoi((char *)how);
     else
@@ -6289,7 +6453,7 @@ mch_clear_job(job_T *job)
 }
 #endif
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
     int
 mch_create_pty_channel(job_T *job, jobopt_T *options)
 {
@@ -6471,13 +6635,13 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 {
     int		ret;
     int		result;
-#if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
+# if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
     static int	busy = FALSE;
 
     // May retry getting characters after an event was handled.
-# define MAY_LOOP
+#  define MAY_LOOP
 
-# ifdef ELAPSED_FUNC
+#  ifdef ELAPSED_FUNC
     // Remember at what time we started, so that we know how much longer we
     // should wait after being interrupted.
     long	start_msec = msec;
@@ -6485,52 +6649,80 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 
     if (msec > 0)
 	ELAPSED_INIT(start_tv);
-# endif
+#  endif
 
     // Handle being called recursively.  This may happen for the session
     // manager stuff, it may save the file, which does a breakcheck.
     if (busy)
 	return 0;
-#endif
+# endif
 
-#ifdef MAY_LOOP
+# ifdef MAY_LOOP
     for (;;)
-#endif
+# endif
     {
-#ifdef MAY_LOOP
+# ifdef MAY_LOOP
 	int		finished = TRUE; // default is to 'loop' just once
-# ifdef FEAT_MZSCHEME
+#  ifdef FEAT_MZSCHEME
 	int		mzquantum_used = FALSE;
+#  endif
 # endif
-#endif
-#ifndef HAVE_SELECT
+# ifdef FEAT_WAYLAND
+	int		wayland_fd = -1;
+# endif
+# ifndef HAVE_SELECT
 			// each channel may use in, out and err
-	struct pollfd   fds[6 + 3 * MAX_OPEN_CHANNELS];
+	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
 	int		nfd;
-# ifdef FEAT_XCLIPBOARD
+#  ifdef FEAT_SOCKETSERVER
+	int		socket_server_idx = -1;
+#  endif
+#  ifdef FEAT_WAYLAND_CLIPBOARD
+	int             wayland_idx = -1;
+#  endif
+#  ifdef FEAT_XCLIPBOARD
 	int		xterm_idx = -1;
-# endif
-# ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 	int		gpm_idx = -1;
-# endif
-# ifdef USE_XSMP
+#  endif
+#  ifdef USE_XSMP
 	int		xsmp_idx = -1;
-# endif
+#  endif
 	int		towait = (int)msec;
 
-# ifdef FEAT_MZSCHEME
+#  ifdef FEAT_MZSCHEME
 	mzvim_check_threads();
 	if (mzthreads_allowed() && p_mzq > 0 && (msec < 0 || msec > p_mzq))
 	{
 	    towait = (int)p_mzq;    // don't wait longer than 'mzquantum'
 	    mzquantum_used = TRUE;
 	}
-# endif
+#  endif
 	fds[0].fd = fd;
 	fds[0].events = POLLIN;
 	nfd = 1;
 
-# ifdef FEAT_XCLIPBOARD
+#  ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    socket_server_idx = nfd;
+	    fds[nfd].fd = socket_server_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+#  endif
+
+#  ifdef FEAT_WAYLAND
+	if ((wayland_fd = wayland_prepare_read()) >= 0)
+	{
+	    wayland_idx = nfd;
+	    fds[nfd].fd = wayland_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+#  endif
+#  ifdef FEAT_XCLIPBOARD
 	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
@@ -6539,8 +6731,8 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    fds[nfd].events = POLLIN;
 	    nfd++;
 	}
-# endif
-# ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 	if (check_for_gpm != NULL && gpm_flag && gpm_fd >= 0)
 	{
 	    gpm_idx = nfd;
@@ -6548,8 +6740,8 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    fds[nfd].events = POLLIN;
 	    nfd++;
 	}
-# endif
-# ifdef USE_XSMP
+#  endif
+#  ifdef USE_XSMP
 	if (xsmp_icefd != -1)
 	{
 	    xsmp_idx = nfd;
@@ -6557,10 +6749,10 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    fds[nfd].events = POLLIN;
 	    nfd++;
 	}
-# endif
-#ifdef FEAT_JOB_CHANNEL
+#  endif
+#  ifdef FEAT_JOB_CHANNEL
 	nfd = channel_poll_setup(nfd, &fds, &towait);
-#endif
+#  endif
 	if (interrupted != NULL)
 	    *interrupted = FALSE;
 
@@ -6570,13 +6762,31 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	if (result == 0 && interrupted != NULL && ret > 0)
 	    *interrupted = TRUE;
 
-# ifdef FEAT_MZSCHEME
+#  ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
 	    // MzThreads scheduling is required and timeout occurred
 	    finished = FALSE;
-# endif
+#  endif
 
-# ifdef FEAT_XCLIPBOARD
+#  ifdef FEAT_SOCKETSERVER
+	if (socket_server_idx >= 0)
+	{
+	    if (fds[socket_server_idx].revents & POLLIN)
+	    {
+		if (socket_server_accept_client() == FAIL)
+		    socket_server_uninit();
+	    }
+	    else if (fds[socket_server_idx].revents & (POLLHUP | POLLERR))
+		socket_server_uninit();
+	}
+#  endif
+
+#  ifdef FEAT_WAYLAND
+	if (wayland_idx >= 0)
+	    wayland_poll_check(fds[wayland_idx].revents);
+#  endif
+
+#  ifdef FEAT_XCLIPBOARD
 	if (xterm_Shell != (Widget)0 && (fds[xterm_idx].revents & POLLIN))
 	{
 	    xterm_update();      // Maybe we should hand out clipboard
@@ -6584,12 +6794,12 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 		// Try again
 		finished = FALSE;
 	}
-# endif
-# ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 	if (gpm_idx >= 0 && (fds[gpm_idx].revents & POLLIN))
 	    *check_for_gpm = 1;
-# endif
-# ifdef USE_XSMP
+#  endif
+#  ifdef USE_XSMP
 	if (xsmp_idx >= 0 && (fds[xsmp_idx].revents & (POLLIN | POLLHUP)))
 	{
 	    if (fds[xsmp_idx].revents & POLLIN)
@@ -6607,14 +6817,14 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    if (--ret == 0)
 		finished = FALSE;	// Try again
 	}
-# endif
-#ifdef FEAT_JOB_CHANNEL
+#  endif
+#  ifdef FEAT_JOB_CHANNEL
 	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
 	    channel_poll_check(ret, &fds);
-#endif
+#  endif
 
-#else // HAVE_SELECT
+# else // HAVE_SELECT
 
 	struct timeval  tv;
 	struct timeval	*tvp;
@@ -6624,14 +6834,14 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	int		maxfd;
 	long		towait = msec;
 
-# ifdef FEAT_MZSCHEME
+#  ifdef FEAT_MZSCHEME
 	mzvim_check_threads();
 	if (mzthreads_allowed() && p_mzq > 0 && (msec < 0 || msec > p_mzq))
 	{
 	    towait = p_mzq;	// don't wait longer than 'mzquantum'
 	    mzquantum_used = TRUE;
 	}
-# endif
+#  endif
 
 	if (towait >= 0)
 	{
@@ -6650,14 +6860,34 @@ select_eintr:
 	FD_ZERO(&wfds);
 	FD_ZERO(&efds);
 	FD_SET(fd, &rfds);
-# ifndef __QNX__
+#  ifndef __QNX__
 	// For QNX select() always returns 1 if this is set.  Why?
 	FD_SET(fd, &efds);
-# endif
+#  endif
 	maxfd = fd;
 
-# ifdef FEAT_XCLIPBOARD
-	may_restore_clipboard();
+#  ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    FD_SET(socket_server_fd, &rfds);
+
+	    if (maxfd < socket_server_fd)
+		maxfd = socket_server_fd;
+	}
+#  endif
+
+#  ifdef FEAT_WAYLAND
+	if ((wayland_fd = wayland_prepare_read()) >= 0)
+	{
+	    FD_SET(wayland_fd, &rfds);
+
+	    if (maxfd < wayland_fd)
+		maxfd = wayland_fd;
+	}
+#  endif
+
+#  ifdef FEAT_XCLIPBOARD
+	may_restore_x11_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
 	    FD_SET(ConnectionNumber(xterm_dpy), &rfds);
@@ -6668,8 +6898,8 @@ select_eintr:
 	    // particularly, XFlush may cause this.
 	    xterm_update();
 	}
-# endif
-# ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 	if (check_for_gpm != NULL && gpm_flag && gpm_fd >= 0)
 	{
 	    FD_SET(gpm_fd, &rfds);
@@ -6677,8 +6907,8 @@ select_eintr:
 	    if (maxfd < gpm_fd)
 		maxfd = gpm_fd;
 	}
-# endif
-# ifdef USE_XSMP
+#  endif
+#  ifdef USE_XSMP
 	if (xsmp_icefd != -1)
 	{
 	    FD_SET(xsmp_icefd, &rfds);
@@ -6686,10 +6916,10 @@ select_eintr:
 	    if (maxfd < xsmp_icefd)
 		maxfd = xsmp_icefd;
 	}
-# endif
-# ifdef FEAT_JOB_CHANNEL
+#  endif
+#  ifdef FEAT_JOB_CHANNEL
 	maxfd = channel_select_setup(maxfd, &rfds, &wfds, &tv, &tvp);
-# endif
+#  endif
 	if (interrupted != NULL)
 	    *interrupted = FALSE;
 
@@ -6701,7 +6931,7 @@ select_eintr:
 	else if (interrupted != NULL && ret > 0)
 	    *interrupted = TRUE;
 
-# ifdef EINTR
+#  ifdef EINTR
 	if (ret == -1 && errno == EINTR)
 	{
 	    // Check whether the EINTR is caused by SIGTSTP
@@ -6718,9 +6948,9 @@ select_eintr:
 	    // SIGWINCH.
 	    if (do_resize)
 	    {
-#  ifdef FEAT_EVAL
+#   ifdef FEAT_EVAL
 		ch_log(NULL, "calling handle_resize() in RealWaitForChar()");
-#  endif
+#   endif
 		handle_resize();
 	    }
 
@@ -6730,22 +6960,34 @@ select_eintr:
 	    // external command after the process has finished.
 	    goto select_eintr;
 	}
-# endif
-# ifdef __TANDEM
+#  endif
+#  ifdef __TANDEM
 	if (ret == -1 && errno == ENOTSUP)
 	{
 	    FD_ZERO(&rfds);
 	    FD_ZERO(&efds);
 	    ret = 0;
 	}
-# endif
-# ifdef FEAT_MZSCHEME
+#  endif
+#  ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
 	    // loop if MzThreads must be scheduled and timeout occurred
 	    finished = FALSE;
-# endif
+#  endif
 
-# ifdef FEAT_XCLIPBOARD
+#  ifdef FEAT_SOCKETSERVER
+	if (ret > 0 && socket_server_fd != -1
+		&& FD_ISSET(socket_server_fd, &rfds)
+		&& socket_server_accept_client() == FAIL)
+	    socket_server_uninit();
+#  endif
+
+#  ifdef FEAT_WAYLAND
+	if (wayland_fd != -1)
+	    wayland_select_check(ret > 0 && FD_ISSET(wayland_fd, &rfds));
+#  endif
+
+#  ifdef FEAT_XCLIPBOARD
 	if (ret > 0 && xterm_Shell != (Widget)0
 		&& FD_ISSET(ConnectionNumber(xterm_dpy), &rfds))
 	{
@@ -6758,8 +7000,8 @@ select_eintr:
 		finished = FALSE;
 	    }
 	}
-# endif
-# ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 	if (ret > 0 && check_for_gpm != NULL && gpm_flag && gpm_fd >= 0)
 	{
 	    if (FD_ISSET(gpm_fd, &efds))
@@ -6767,8 +7009,8 @@ select_eintr:
 	    else if (FD_ISSET(gpm_fd, &rfds))
 		*check_for_gpm = 1;
 	}
-# endif
-# ifdef USE_XSMP
+#  endif
+#  ifdef USE_XSMP
 	if (ret > 0 && xsmp_icefd != -1)
 	{
 	    if (FD_ISSET(xsmp_icefd, &efds))
@@ -6788,38 +7030,45 @@ select_eintr:
 		    finished = FALSE;   // keep going if event was only one
 	    }
 	}
-# endif
-#ifdef FEAT_JOB_CHANNEL
+#  endif
+#  ifdef FEAT_JOB_CHANNEL
 	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
 	    (void)channel_select_check(ret, &rfds, &wfds);
-#endif
+#  endif
 
-#endif // HAVE_SELECT
+# endif // HAVE_SELECT
 
-#ifdef MAY_LOOP
+# ifdef MAY_LOOP
 	if (finished || msec == 0)
 	    break;
 
-# ifdef FEAT_CLIENTSERVER
-	if (server_waiting())
+#  if defined(FEAT_CLIENTSERVER)
+#   ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11 && server_waiting())
 	    break;
-# endif
+#   endif
+#   ifdef FEAT_SOCKETSERVER
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+		socket_server_waiting_accept())
+	    break;
+#   endif
+#  endif
 
 	// We're going to loop around again, find out for how long
 	if (msec > 0)
 	{
-# ifdef ELAPSED_FUNC
+#  ifdef ELAPSED_FUNC
 	    // Compute remaining wait time.
 	    msec = start_msec - ELAPSED_FUNC(start_tv);
-# else
+#  else
 	    // Guess we got interrupted halfway.
 	    msec = msec / 2;
-# endif
+#  endif
 	    if (msec <= 0)
 		break;	// waited long enough
 	}
-#endif
+# endif
     }
 
     return result;
@@ -6853,14 +7102,14 @@ mch_expandpath(
  * file is pointer to array of pointers to matched file names
  */
 
-#ifndef SEEK_SET
-# define SEEK_SET 0
-#endif
-#ifndef SEEK_END
-# define SEEK_END 2
-#endif
+# ifndef SEEK_SET
+#  define SEEK_SET 0
+# endif
+# ifndef SEEK_END
+#  define SEEK_END 2
+# endif
 
-#define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|"
+# define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|"
 
     int
 mch_expand_wildcards(
@@ -6886,24 +7135,24 @@ mch_expand_wildcards(
     size_t	commandlen;
     FILE	*fd;
     char_u	*buffer;
-#define STYLE_ECHO	0	// use "echo", the default
-#define STYLE_GLOB	1	// use "glob", for csh
-#define STYLE_VIMGLOB	2	// use "vimglob", for Posix sh
-#define STYLE_PRINT	3	// use "print -N", for zsh
-#define STYLE_BT	4	// `cmd` expansion, execute the pattern directly
-#define STYLE_GLOBSTAR	5	// use extended shell glob for bash (this uses extended
+# define STYLE_ECHO	0	// use "echo", the default
+# define STYLE_GLOB	1	// use "glob", for csh
+# define STYLE_VIMGLOB	2	// use "vimglob", for Posix sh
+# define STYLE_PRINT	3	// use "print -N", for zsh
+# define STYLE_BT	4	// `cmd` expansion, execute the pattern directly
+# define STYLE_GLOBSTAR	5	// use extended shell glob for bash (this uses extended
 				// globbing functionality using globstar, needs bash > 4)
     int		shell_style = STYLE_ECHO;
     int		check_spaces;
     static int	did_find_nul = FALSE;
     int		ampersand = FALSE;
-#define STRING_INIT(s) \
+# define STRING_INIT(s) \
 		{(char_u *)(s), STRLEN_LITERAL(s)}
 				// vimglob() function to define for Posix shell
     static string_T sh_vimglob_func = STRING_INIT("vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >");
 				// vimglob() function with globstar setting enabled, only for bash >= 4.X
     static string_T sh_globstar_opt = STRING_INIT("[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ");
-#undef STRING_INIT
+# undef STRING_INIT
 
 
     *num_file = 0;	// default: no files found
@@ -6989,9 +7238,9 @@ mch_expand_wildcards(
     {
 	// Count the length of the patterns in the same way as they are put in
 	// "command" below.
-#ifdef USE_SYSTEM
+# ifdef USE_SYSTEM
 	len += STRLEN(pat[i]) + 3;	// add space and two quotes
-#else
+# else
 	++len;				// add space
 	for (j = 0; pat[i][j] != NUL; ++j)
 	{
@@ -6999,7 +7248,7 @@ mch_expand_wildcards(
 		++len;		// may add a backslash
 	    ++len;
 	}
-#endif
+# endif
     }
     command = alloc(len);
     if (command == NULL)
@@ -7070,9 +7319,9 @@ mch_expand_wildcards(
 	    // When using system() always add extra quotes, because the shell
 	    // is started twice.  Otherwise put a backslash before special
 	    // characters, except inside ``.
-#ifdef USE_SYSTEM
+# ifdef USE_SYSTEM
 	    commandlen += vim_snprintf((char *)command + commandlen, len, " \"%s\"", pat[i]);
-#else
+# else
 	    int intick = FALSE;
 
 	    p = command + commandlen;
@@ -7105,7 +7354,7 @@ mch_expand_wildcards(
 	    }
 	    *p = NUL;
 	    commandlen = (size_t)(p - command);
-#endif
+# endif
 	}
     }
     if (flags & EW_SILENT)
@@ -7152,16 +7401,16 @@ mch_expand_wildcards(
 	 * However with USE_SYSTEM, I don't know how to turn off error messages
 	 * from the shell, so screen may still get messed up -- webb.
 	 */
-#ifndef USE_SYSTEM
+# ifndef USE_SYSTEM
 	if (!(flags & EW_SILENT))
-#endif
+# endif
 	{
 	    redraw_later_clear();	// probably messed up screen
 	    msg_putchar('\n');		// clear bottom line quickly
 	    cmdline_row = Rows - 1;	// continue on last line
-#ifdef USE_SYSTEM
+# ifdef USE_SYSTEM
 	    if (!(flags & EW_SILENT))
-#endif
+# endif
 	    {
 		msg(_(e_cannot_expand_wildcards));
 		msg_start();		// don't overwrite this message
@@ -7490,7 +7739,7 @@ have_dollars(int num, char_u **file)
     return FALSE;
 }
 
-#if !defined(HAVE_RENAME) || defined(PROTO)
+#if !defined(HAVE_RENAME)
 /*
  * Scaled-down version of rename(), which is missing in Xenix.
  * This version can only move regular files and will fail if the
@@ -7511,8 +7760,8 @@ mch_rename(const char *src, const char *dest)
 }
 #endif // !HAVE_RENAME
 
-#if defined(FEAT_MOUSE_GPM) || defined(PROTO)
-# if defined(DYNAMIC_GPM) || defined(PROTO)
+#if defined(FEAT_MOUSE_GPM)
+# if defined(DYNAMIC_GPM)
 /*
  * Initialize Gpm's symbols for dynamic linking.
  * Must be called only if libgpm_hinst is NULL.
@@ -7564,10 +7813,10 @@ gpm_open(void)
 {
     static Gpm_Connect gpm_connect; // Must it be kept till closing ?
 
-#ifdef DYNAMIC_GPM
+# ifdef DYNAMIC_GPM
     if (!gpm_available())
 	return 0;
-#endif
+# endif
 
     if (gpm_flag)
 	return 1; // already open
@@ -7643,11 +7892,11 @@ mch_gpm_process(void)
 
     Gpm_GetEvent(&gpm_event);
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     // Don't put events in the input queue now.
     if (hold_gui_events)
 	return 0;
-#endif
+# endif
 
     row = gpm_event.y - 1;
     col = gpm_event.x - 1;
@@ -7764,11 +8013,11 @@ sig_sysmouse SIGDEFARG(sigarg)
     int			buttons;
     static int		oldbuttons = 0;
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     // Don't put events in the input queue now.
     if (hold_gui_events)
 	return;
-#endif
+# endif
 
     mouse.operation = MOUSE_GETINFO;
     if (ioctl(1, FBIO_GETMODE, &video.vi_mode) != -1
@@ -7847,7 +8096,7 @@ mch_get_random(char_u *buf, int len)
     return dev_urandom_state;
 }
 
-#if defined(FEAT_LIBCALL) || defined(PROTO)
+#if defined(FEAT_LIBCALL)
 typedef char_u * (*STRPROCSTR)(char_u *);
 typedef char_u * (*INTPROCSTR)(int);
 typedef int (*STRPROCINT)(char_u *);
@@ -8017,7 +8266,7 @@ mch_libcall(
 }
 #endif
 
-#if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
 static int	xterm_trace = -1;	// default: disabled
 static int	xterm_button;
 
@@ -8241,7 +8490,7 @@ do_xterm_trace(void)
     return TRUE;
 }
 
-# if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD) || defined(PROTO)
+# if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD)
 /*
  * Destroy the display, window and app_context.  Required for GTK.
  */
@@ -8295,7 +8544,7 @@ clip_update(void)
  * nothing in the X event queue (& no timers pending), then we return
  * immediately.
  */
-    static void
+    void
 xterm_update(void)
 {
     XEvent event;
@@ -8311,7 +8560,7 @@ xterm_update(void)
 	{
 	    // There is an event to process.
 	    XtAppNextEvent(app_context, &event);
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
 	    {
 		XPropertyEvent *e = (XPropertyEvent *)&event;
 
@@ -8319,7 +8568,7 @@ xterm_update(void)
 		   && e->atom == commProperty && e->state == PropertyNewValue)
 		    serverEventProc(xterm_dpy, &event, 0);
 	    }
-#endif
+# endif
 	    XtDispatchEvent(&event);
 	}
 	else
@@ -8360,7 +8609,7 @@ clip_xterm_set_selection(Clipboard_T *cbd)
 #endif
 
 
-#if defined(USE_XSMP) || defined(PROTO)
+#if defined(USE_XSMP)
 /*
  * Code for X Session Management Protocol.
  */
@@ -8528,11 +8777,11 @@ xsmp_init(void)
 {
     char		errorstring[80];
     SmcCallbacks	smcallbacks;
-#if 0
+# if 0
     SmPropValue		smname;
     SmProp		smnameprop;
     SmProp		*smprops[1];
-#endif
+# endif
 
     if (p_verbose > 0)
 	verb_msg(_("XSMP opening connection"));
@@ -8588,7 +8837,7 @@ xsmp_init(void)
     }
     xsmp.iceconn = SmcGetIceConnection(xsmp.smcconn);
 
-#if 0
+# if 0
     // ID ourselves
     smname.value = "vim";
     smname.length = 3;
@@ -8599,7 +8848,7 @@ xsmp_init(void)
 
     smprops[0] = &smnameprop;
     SmcSetProperties(xsmp.smcconn, 1, smprops);
-#endif
+# endif
 }
 
 
@@ -8618,8 +8867,8 @@ xsmp_close(void)
 }
 #endif // USE_XSMP
 
-#if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(PROF_NSEC) || defined(PROTO)
+#if defined(FEAT_RELTIME)
+# if defined(PROF_NSEC)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
@@ -8695,10 +8944,10 @@ start_timeout(long msec)
 	timer_created = TRUE;
     }
 
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
     ch_log(NULL, "setting timeout timer to %d sec %ld nsec",
 	       (int)interval.it_value.tv_sec, (long)interval.it_value.tv_nsec);
-# endif
+#  endif
     ret = timer_settime(timer_id, 0, &interval, NULL);
     if (ret < 0)
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
@@ -8846,3 +9095,1605 @@ start_timeout(long msec)
 }
 # endif // PROF_NSEC
 #endif  // FEAT_RELTIME
+
+/*
+ * Create an anonymous/temporary file/object and return its file descriptor.
+ * Returns -1 on error.
+ */
+    int
+mch_create_anon_file(void)
+{
+    int fd = -1;
+#ifdef HAVE_SHM_OPEN
+    const char template[] = "/vimXXXXXX";
+
+    for (int i = 0; i < 100; i++)
+    {
+	mch_get_random((char_u*)template + 4, 6);
+
+	errno = 0;
+	fd = shm_open(template, O_CREAT | O_RDWR | O_EXCL, 0600);
+
+	if (fd >= 0 || errno != EEXIST)
+	    break;
+    }
+    // Remove object name from namespace
+    shm_unlink(template);
+#endif
+    // Last resort
+    if (fd == -1)
+    {
+	char_u	*tempname;
+	// get a name for the temp file
+	if ((tempname = vim_tempname('w', FALSE)) == NULL)
+	{
+	    emsg(_(e_cant_get_temp_file_name));
+	    return -1;
+	}
+	fd = mch_open((char *)tempname, O_CREAT | O_RDWR | O_EXCL, 0600);
+	mch_remove(tempname);
+	vim_free(tempname);
+    }
+    return fd;
+}
+
+#if defined(FEAT_SOCKETSERVER)
+
+/*
+ * Initialize socket server called "name" (the socket filename). If "name" is a
+ * path (starts with a '/', './', or '../'), it is assumed to be the path to
+ * the desired socket. If the socket path is already taken, append an
+ * incrementing number to the path until we find a socket filename that can be
+ * used. If NULL is passed as the name, the previous socket path is used (only
+ * if not NULL). Returns OK on success and FAIL on failure.
+ */
+    int
+socket_server_init(char_u *name)
+{
+    struct sockaddr_un	addr;
+    char_u		*path;
+    int			num_printed;
+    int			fd;
+    int			i = 1;
+
+    if (socket_server_valid() || (name == NULL && socket_server_path == NULL))
+	return FAIL;
+    if (name == NULL)
+	name = socket_server_path;
+
+    path = alloc(sizeof(addr.sun_path));
+
+    if (path == NULL)
+	return FAIL;
+
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (fd == -1)
+    {
+	vim_free(path);
+	return FAIL;
+    }
+
+    addr.sun_family = AF_UNIX;
+
+    // If name is not a path, find a common directory to place the
+    // socket.
+    if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
+	    STRNCMP(name, "../", 3) == 0)
+	num_printed =
+	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s", name);
+    else
+    {
+	const char_u	*dir;
+	char_u		*buf;
+
+	// Check if there are slashes in the name
+	if (vim_strchr(name, '/') != NULL)
+	{
+	    emsg(_(e_socket_name_no_slashes));
+	    goto fail;
+	}
+
+	dir = mch_getenv("XDG_RUNTIME_DIR");
+
+	if (dir == NULL)
+	{
+	    // Use $TMPDIR or /tmp if $XDG_RUNTIME_DIR is not set.
+	    const char_u    *tmpdir = mch_getenv("TMPDIR");
+	    size_t	    sz;
+
+	    if (tmpdir != NULL)
+		dir = tmpdir;
+	    else
+		dir = (char_u *)"/tmp";
+
+	    sz = STRLEN(dir) + 25;
+	    buf = alloc(sz);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    vim_snprintf((char *)buf, sz, "%s/vim-%lu", dir,
+		    (unsigned long int)getuid());
+	}
+	else
+	{
+	    buf = alloc(STRLEN(dir) + STRLEN("vim") + 2);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    sprintf((char *)buf, "%s/vim", dir);
+	}
+
+	// Always set directory permissions to 0700 for security
+	if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
+	{
+	    semsg(_("Failed creating socket directory: %s"), strerror(errno));
+	    vim_free(buf);
+	    goto fail;
+	}
+
+	num_printed = vim_snprintf((char *)path, sizeof(addr.sun_path),
+		"%s/%s", buf, name);
+
+	vim_free(buf);
+    }
+
+    // Check if path was too big
+    if ((size_t)num_printed >= sizeof(addr.sun_path))
+    {
+	emsg(_(e_socket_path_too_big));
+	goto fail;
+    }
+
+    vim_snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", path);
+
+    // Bind to a suitable path/address
+    while (i < 1000)
+    {
+	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr))
+		== -1)
+	{
+	    int fd2;
+
+	    if (errno != EADDRINUSE)
+	    {
+		emsg(_(e_socket_server_unavailable));
+		goto fail;
+	    }
+
+	    // If the socket is dead, remove it and try again
+	    fd2 = socket_server_connect((char_u *)addr.sun_path, NULL, TRUE);
+
+	    if (fd2 == -1)
+	    {
+		mch_remove(addr.sun_path);
+		continue;
+	    }
+	    else
+		close(fd2);
+	}
+	else
+	    break;
+
+	num_printed = vim_snprintf(addr.sun_path, sizeof(addr.sun_path),
+		"%s%d", path, i);
+
+	if ((size_t)num_printed >= sizeof(addr.sun_path))
+	{
+	    // Address too big
+	    emsg(_(e_socket_path_too_big));
+	    goto fail;
+	}
+
+	i++;
+    }
+
+    if (i >= 1000)
+    {
+	emsg(_(e_socket_server_unavailable));
+	goto fail;
+    }
+
+    // Start listening for connections
+    if (listen(fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
+	goto fail;
+
+    // Set global path and vvar to the absolute path
+    if ((socket_server_path = alloc(MAXPATHL)) == NULL)
+	goto fail;
+
+    socket_server_path[0] = NUL;
+
+    if (mch_FullName((char_u *)addr.sun_path, socket_server_path,
+		MAXPATHL, FALSE) == FAIL)
+    {
+	vim_free(socket_server_path);
+	goto fail;
+    }
+
+    serverName = vim_strsave(socket_server_path);
+# ifdef FEAT_EVAL
+    set_vim_var_string(VV_SEND_SERVER, serverName, -1);
+# endif
+
+    socket_server_fd = fd;
+
+# ifdef FEAT_GUI_GTK
+    if (gui.in_use)
+	// Initialize source for GUI if we are using it
+	gui_gtk_init_socket_server();
+# endif
+
+    vim_free(path);
+    return OK;
+fail:
+    close(fd);
+    vim_free(path);
+    socket_server_uninit();
+    return FAIL;
+}
+
+    void
+socket_server_uninit(void)
+{
+    if (socket_server_fd != -1)
+    {
+	close(socket_server_fd);
+	socket_server_fd = -1;
+    }
+
+    if (socket_server_path != NULL)
+    {
+	mch_remove(socket_server_path);
+	vim_free(socket_server_path);
+	socket_server_path = NULL;
+    }
+# ifdef FEAT_GUI_GTK
+    if (gui.in_use)
+	gui_gtk_uninit_socket_server();
+# endif
+}
+
+/*
+ * List available sockets that can be connected to, only in common directories
+ * that Vim knows about. Vim instances with custom socket paths will not be
+ * detected. Returns a newline separated string on success and NULL on failure.
+ */
+    char_u *
+socket_server_list_sockets(void)
+{
+    garray_T		str;
+    string_T		buf;
+    string_T		path;
+    DIR			*dirp;
+    struct dirent	*dp;
+    struct sockaddr_un	addr;
+    char_u		*known_dirs[] = {
+	mch_getenv("XDG_RUNTIME_DIR"),
+	mch_getenv("TMPDIR"),
+	(char_u *)"/tmp"
+    };
+
+    if ((buf.string = alloc(sizeof(addr.sun_path))) == NULL)
+	return NULL;
+    if ((path.string = alloc(sizeof(addr.sun_path))) == NULL)
+    {
+	vim_free(buf.string);
+	return NULL;
+    }
+    buf.length = 0;
+    path.length = 0;
+
+    ga_init2(&str, 1, 100);
+
+    for (size_t i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	char_u *dir = known_dirs[i];
+
+	if (dir == NULL)
+	    continue;
+
+	if (STRCMP(dir, "/tmp") == 0 ||
+		(known_dirs[1] != NULL && STRCMP(dir, known_dirs[1]) == 0))
+	    path.length = vim_snprintf_safelen((char *)path.string, sizeof(addr.sun_path),
+		"%s/vim-%lu", dir, (unsigned long int)getuid());
+	else
+	    path.length = vim_snprintf_safelen((char *)path.string, sizeof(addr.sun_path),
+		"%s/vim", dir);
+
+	dirp = opendir((char *)path.string);
+	if (dirp == NULL)
+	    continue;
+
+	// Loop through directory
+	while ((dp = readdir(dirp)) != NULL)
+	{
+	    if (STRCMP(dp->d_name, ".") == 0 || STRCMP(dp->d_name, "..") == 0)
+		continue;
+
+	    buf.length = vim_snprintf_safelen((char *)buf.string, sizeof(addr.sun_path),
+		"%s/%s", path.string, dp->d_name);
+
+	    // Don't want to send to ourselves, but we do want to list our
+	    // server name (if we are a server).
+	    if (socket_server_path == NULL
+		    || STRCMP(socket_server_path, buf.string) != 0)
+	    {
+		// Try sending an ALIVE command. This is more assuring than a
+		// simple connect, and *also seems to make tests less flaky*.
+		//
+		// We could also use a lock file which may be better, but this
+		// has worked fine so far... - 64bitman
+		if (!socket_server_check_alive(buf.string))
+		    continue;
+	    }
+
+	    ga_concat_len(&str, (char_u *)dp->d_name, buf.length - (path.length + 1));
+	    ga_append(&str, '\n');
+	}
+
+	closedir(dirp);
+
+	break;
+    }
+
+    vim_free(path.string);
+    vim_free(buf.string);
+
+    ga_append(&str, NUL);
+
+    return str.ga_data;
+}
+
+/*
+ * Called when the server has received a new command. If so, parse it and do the
+ * stuff it says, and possibly send back a reply. Returns OK if client was
+ * accepted, else FAIL.
+ */
+    int
+socket_server_accept_client(void)
+{
+    int	fd = accept(socket_server_fd, NULL, NULL);
+    ss_cmd_T cmd;
+
+    if (fd == -1)
+	return FAIL;
+
+    if (socket_server_decode_cmd(&cmd, fd, 1000) == FAIL)
+	goto exit;
+
+# ifdef FEAT_EVAL
+    ch_log(NULL, "accepted new client on socket %s", socket_server_path);
+# endif
+
+    socket_server_exec_cmd(&cmd, fd);
+    socket_server_free_cmd(&cmd);
+
+exit:
+    close(fd);
+    return OK;
+}
+
+/*
+ * Check if socket server is able to be used
+ */
+    int
+socket_server_valid(void)
+{
+    return socket_server_fd != -1 && socket_server_path != NULL;
+}
+
+/*
+ * If "name" is a pathless name such as "VIM", search known directories for the
+ * socket named "name", and return the alloc'ed path to it. If "name" starts
+ * with a '/', './' or '../', then a copy of "name" is returned. Returns NULL
+ * on failure or if no socket was found.
+ */
+    static char_u *
+socket_server_get_path_from_name(char_u *name)
+{
+    char_u	    *buf;
+    stat_T	    s;
+    const char_u    *known_dirs[] = {
+	mch_getenv("XDG_RUNTIME_DIR"),
+	mch_getenv("TMPDIR"),
+	(char_u *)"/tmp"
+    };
+
+    if (name == NULL)
+	return NULL;
+
+    // Ignore if name is a path
+    if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
+	    STRNCMP(name, "../", 3) == 0)
+	return vim_strsave(name);
+
+    buf = alloc(MAXPATHL);
+
+    if (buf == NULL)
+	return NULL;
+
+    for (size_t i = 0; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	const char_u *dir = known_dirs[i];
+
+	if (dir == NULL)
+	    continue;
+	else if (STRCMP(dir, "/tmp") == 0 ||
+		(known_dirs[1] != NULL && STRCMP(dir, known_dirs[1]) == 0))
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu/%s", dir,
+		    (unsigned long int)getuid(), name);
+	else
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+
+	if (mch_stat((char *)buf,&s) == 0 && S_ISSOCK(s.st_mode))
+	{
+	    if (STRCMP(buf, socket_server_path) == 0)
+		// Can't connect to itself
+		break;
+	    return buf;
+	}
+    }
+
+    vim_free(buf);
+    return NULL;
+}
+
+/*
+ * Send command to socket named "name". Returns 0 for OK, -1 on error.
+ */
+    int
+socket_server_send(
+	char_u *name,	    // Socket path or a general name
+	char_u *str,	    // What to send
+	char_u **result,    // Set to result of expr
+	char_u **receiver,  // Full path of "name"
+	int is_expr,	    // Is it an expression or keystrokes?
+	int timeout,	    // In milliseconds
+	int silent)	    // Don't complain if socket doesn't exist
+{
+    ss_cmd_T	    cmd;
+    int		    socket_fd;
+    size_t	    sz;
+    char_u	    *final;
+    char_u	    *path;
+# ifdef ELAPSED_FUNC
+    elapsed_T	    start_tv;
+# endif
+
+    if (!socket_server_valid())
+    {
+	emsg(_(e_socket_server_not_online));
+	return -1;
+    }
+
+    socket_fd = socket_server_connect(name, &path, silent);
+
+    if (socket_fd == -1)
+	return -1;
+
+# ifdef FEAT_EVAL
+    ch_log(NULL, "socket_server_send(%s, %s)", path, str);
+# endif
+
+    // Execute locally if target is ourselves
+    if (serverName != NULL && STRICMP(path, serverName) == 0)
+    {
+	vim_free(path);
+	close(socket_fd);
+	return sendToLocalVim(str, is_expr, result);
+    }
+
+    socket_server_init_cmd(&cmd,
+	    is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES);
+
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc, STRLEN(p_enc));
+
+    // Add +1 in case of empty string
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str) + 1);
+
+    // Tell server who we are so it can save our socket path internally for
+    // later use with server2client
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER, socket_server_path,
+	    STRLEN(socket_server_path));
+
+    if (is_expr)
+    {
+	ss_serial++;
+	socket_server_append_msg(&cmd, SS_MSG_TYPE_SERIAL,
+		(char_u *)&ss_serial, sizeof(ss_serial));
+    }
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL ||
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
+    {
+	if (final != NULL)
+	    emsg(_(e_failed_to_send_command_to_destination_program));
+
+	vim_free(path);
+	socket_server_free_cmd(&cmd);
+	close(socket_fd);
+	vim_free(final);
+	return -1;
+    }
+    socket_server_free_cmd(&cmd);
+    vim_free(final);
+
+
+    close(socket_fd);
+    if (!is_expr)
+    {
+	if (receiver != NULL)
+	    *receiver = path;
+	else
+	    vim_free(path);
+
+	// Exit, we aren't waiting for a response
+	return 0;
+    }
+
+    ss_pending_cmd_T pending;
+
+    socket_server_init_pending_cmd(&pending);
+
+# ifdef ELAPSED_FUNC
+    ELAPSED_INIT(start_tv);
+# endif
+
+    // Wait for server to send back result
+    while (socket_server_dispatch(500) >= 0)
+    {
+	if (pending.result != NULL)
+	    break;
+
+# ifdef ELAPSED_FUNC
+	if (ELAPSED_FUNC(start_tv) >= (timeout > 0 ? timeout : 1000))
+	    break;
+# endif
+    }
+
+    if (pending.result == NULL)
+    {
+	socket_server_pop_pending_cmd(&pending);
+	vim_free(path);
+	return -1;
+    }
+
+    if (result != NULL)
+	*result = pending.result;
+    else
+	vim_free(pending.result);
+
+    if (receiver != NULL)
+	*receiver = path;
+    else
+	vim_free(path);
+
+    socket_server_pop_pending_cmd(&pending);
+
+    return pending.code == 0 ? 0 : -1;
+}
+
+/*
+ * Wait for replies from "client" and place result in "str". Returns OK on
+ * success and FAIL on failure. Timeout is in milliseconds
+ */
+    int
+socket_server_read_reply(char_u *client, char_u **str, int timeout UNUSED)
+{
+    ss_reply_T	*reply = NULL;
+# ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+# endif
+
+    if (!socket_server_name_is_valid(client))
+	return -1;
+
+    if (!socket_server_valid())
+	return -1;
+
+# ifdef ELAPSED_FUNC
+    if (timeout > 0)
+	ELAPSED_INIT(start_tv);
+# endif
+
+    // Try seeing if there already is a reply in the queue
+    goto get_reply;
+
+    while (socket_server_dispatch(500) >= 0)
+    {
+	int fd;
+
+# ifdef ELAPSED_FUNC
+	if (timeout > 0 && ELAPSED_FUNC(start_tv) >= timeout)
+	    break;
+# endif
+
+get_reply:
+	reply = socket_server_get_reply(client, NULL);
+
+	if (reply != NULL)
+	    break;
+
+	// Check if sender is down by connecting to it as a test. A simple
+	// connect will do.
+	fd = socket_server_connect(client, NULL, TRUE);
+
+	if (fd == -1)
+	    return FAIL;
+	else
+	    close(fd);
+    }
+
+    if (reply == NULL || reply->strings.ga_data == NULL ||
+	    reply->strings.ga_len <= 0)
+    {
+	return FAIL;
+    }
+
+    // Consume the string
+    *str = ((char_u **)reply->strings.ga_data)[0];
+
+    for (int i = 1; i < reply->strings.ga_len; i++)
+    {
+	((char_u **)reply->strings.ga_data)[i - 1] =
+	    ((char_u **)reply->strings.ga_data)[i];
+    }
+    reply->strings.ga_len--;
+
+    if (reply->strings.ga_len < 1)
+	// Last string removed, remove the reply
+	socket_server_remove_reply(client);
+
+
+    return OK;
+}
+
+/*
+ * Check for any replies for "sender". Returns 1 if there is and places the
+ * reply in "str" without consuming it. Returns 0 if otherwise and -1 on
+ * error.
+ */
+    int
+socket_server_peek_reply(char_u *sender, char_u **str)
+{
+    ss_reply_T *reply;
+
+    if (!socket_server_name_is_valid(sender))
+	return -1;
+
+    if (!socket_server_valid())
+	return 0;
+
+    reply = socket_server_get_reply(sender, NULL);
+
+    if (reply != NULL && reply->strings.ga_len > 0)
+    {
+	if (str != NULL)
+	    *str = ((char_u **)reply->strings.ga_data)[0];
+	return 1;
+    }
+
+    return 0;
+}
+
+/*
+ * Send a string to "client" as a reply (notification). Returns OK on success
+ * and FAIL on failure.
+ */
+    int
+socket_server_send_reply(char_u *client, char_u *str)
+{
+    int socket_fd;
+    ss_cmd_T	cmd;
+    size_t	sz;
+    char_u	*final;
+
+    if (!socket_server_name_is_valid(client))
+	return FAIL;
+
+    if (!socket_server_valid())
+    {
+	emsg(_(e_socket_server_not_online));
+	return FAIL;
+    }
+
+    socket_fd = socket_server_connect(client, NULL, TRUE);
+
+    if (socket_fd == -1)
+	return FAIL;
+
+    socket_server_init_cmd(&cmd, SS_CMD_TYPE_NOTIFY);
+
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc, STRLEN(p_enc));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER,
+	    socket_server_path, STRLEN(socket_server_path));
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL ||
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
+    {
+	socket_server_free_cmd(&cmd);
+	close(socket_fd);
+	return FAIL;
+    }
+
+    socket_server_free_cmd(&cmd);
+    vim_free(final);
+    close(socket_fd);
+
+    return OK;
+}
+
+/*
+ * Connect to a socket using "name". "path" is set to the full path of "name"
+ * used to create the socket, only if its not NULL. Returns fd on success and -1
+ * on failure.
+ */
+    static int
+socket_server_connect(char_u *name, char_u **path, int silent)
+{
+    int			socket_fd;
+    int			res;
+    struct sockaddr_un	addr;
+
+    char_u *socket_path = socket_server_get_path_from_name(name);
+
+    if (socket_path == NULL)
+    {
+	if (!silent)
+	    semsg(_(e_no_registered_server_named_str), name);
+	return -1;
+    }
+    if (STRLEN(socket_path) >= sizeof(addr.sun_path))
+    {
+	// Path too big
+	vim_free(socket_path);
+	return -1;
+    }
+
+    socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (socket_fd == -1)
+    {
+	vim_free(socket_path);
+	return -1;
+    }
+
+    addr.sun_family = AF_UNIX;
+    vim_snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socket_path);
+
+    res = connect(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (res == -1)
+    {
+	if (!silent)
+	    semsg(_(e_socket_server_failed_connecting), socket_path,
+		    strerror(errno));
+	close(socket_fd);
+	vim_free(socket_path);
+	return -1;
+    }
+
+    if (path != NULL)
+	*path = socket_path;
+    else
+	vim_free(socket_path);
+
+    return socket_fd;
+
+}
+
+/*
+ * Add a new pending command to the list of pending commands. Returns OK on
+ * success and FAIL on failure
+ */
+    static void
+socket_server_init_pending_cmd(ss_pending_cmd_T *pending)
+{
+    pending->code = 0;
+    pending->result = NULL;
+    pending->serial = ss_serial;
+    pending->next = ss_pending_cmds;
+    ss_pending_cmds = pending;
+}
+
+/*
+ * Remove pending command from the list, does not free the result string.
+ */
+    static void
+socket_server_pop_pending_cmd(ss_pending_cmd_T *pending)
+{
+    if (ss_pending_cmds == pending)
+    {
+	ss_pending_cmds = pending->next;
+	return;
+    }
+
+    for (ss_pending_cmd_T *cmd = ss_pending_cmds; cmd != NULL; cmd = cmd->next)
+    {
+	if (cmd->next == pending)
+	{
+	    cmd->next = pending->next;
+	    return;
+	}
+    }
+}
+
+/*
+ * Initialize command structure to empty state
+ */
+    static void
+socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type)
+{
+    cmd->cmd_len = 0;
+    cmd->cmd_num = 0;
+    cmd->cmd_type = type;
+}
+
+/*
+ * Append a message to a command. Note that "len" is the length of contents.
+ * Returns OK on success and FAIL on failure
+ */
+    static int
+socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
+{
+    ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num;
+
+    if (cmd->cmd_num >= SOCKET_SERVER_MAX_MSG)
+	return FAIL;
+
+    // Check if command will be too big.
+    if (SS_CMD_INFO_SIZE + cmd->cmd_len + SS_MSG_INFO_SIZE + len
+	    > SOCKET_SERVER_MAX_CMD_SIZE)
+	return FAIL;
+
+    msg->msg_contents = alloc(len);
+
+    if (msg->msg_contents == NULL)
+	return FAIL;
+
+    msg->msg_type = type;
+    msg->msg_len = len;
+    memcpy(msg->msg_contents, contents, len);
+
+    cmd->cmd_len += SS_MSG_INFO_SIZE + len;
+    cmd->cmd_num++;
+
+    return OK;
+}
+
+/*
+ * Free all resources associated with a command object.
+ */
+    static void
+socket_server_free_cmd(ss_cmd_T *cmd)
+{
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	vim_free(msg->msg_contents);
+    }
+}
+
+/*
+ * Encode command struct and return the final message to send. Returns NULL on
+ * failure.
+ */
+    static char_u *
+socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz)
+{
+    size_t size;
+    char_u *buf;
+    char_u *start;
+
+    size = SS_CMD_INFO_SIZE + cmd->cmd_len;
+    buf = alloc(size);
+
+    if (buf == NULL)
+	return NULL;
+
+    start = buf;
+    memcpy(start, &cmd->cmd_type, sizeof(cmd->cmd_type));
+    start += sizeof(cmd->cmd_type);
+    memcpy(start, &cmd->cmd_num, sizeof(cmd->cmd_num));
+    start += sizeof(cmd->cmd_num);
+    memcpy(start, &cmd->cmd_len, sizeof(cmd->cmd_len));
+    start += sizeof(cmd->cmd_len);
+
+    // Append messages to buffer
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	memcpy(start, &msg->msg_type, sizeof(msg->msg_type));
+	start += sizeof(msg->msg_type);
+	memcpy(start, &msg->msg_len, sizeof(msg->msg_len));
+	start += sizeof(msg->msg_len);
+
+	memcpy(start, msg->msg_contents, msg->msg_len);
+	start += msg->msg_len;
+    }
+
+    *sz = size;
+
+    return buf;
+}
+
+/*
+ * Read from "socket_fd" an entire command and return the result in "cmd". The
+ * socket fd should be at the start of the command. Returns OK on success and
+ * FAIL on failure.
+ */
+    static int
+socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
+{
+    int		got_cmd_info	= FALSE; // Consists of type, num, and len
+    size_t	total_r		= 0;
+    char_u	*buf;
+    char_u	*cur;
+# ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+# endif
+
+    // We also poll the socket server listening file descriptor to handle
+    // recursive remote calls between Vim instances, such as when one Vim
+    // instance calls remote_expr for an expression that calls remote_expr to
+    // itself again.
+# ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_fd;
+    pfd.events = POLLIN;
+# else
+    fd_set	    rfds;
+    struct timeval  tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(socket_fd, &rfds);
+# endif
+
+    buf = alloc(SS_CMD_INFO_SIZE);
+
+    if (buf == NULL)
+	return FAIL;
+
+    // We may exit in the middle of the loop and free the messages, we don't
+    // want to free an uninitialized pointer.
+    memset(cmd, 0, sizeof(*cmd));
+
+# ifdef ELAPSED_FUNC
+    ELAPSED_INIT(start_tv);
+# endif
+
+    while (TRUE)
+    {
+	int ret;
+	ssize_t r = 0;
+
+# ifndef HAVE_SELECT
+	ret = poll(&pfd, 1, timeout);
+# else
+	tv.tv_sec = 0;
+	tv.tv_usec = 500 * 1000;
+	ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
+# endif
+	if (ret < 0)
+	    goto fail;
+	if (ret == 0)
+	    goto continue_loop;
+
+	// Get cmd info first so we know the total size of all messages, and
+	// can read it all in one go.
+	if (!got_cmd_info)
+	{
+	    r = read(socket_fd, buf + total_r, SS_CMD_INFO_SIZE - total_r);
+
+	    if ((size_t)r >= SS_CMD_INFO_SIZE - total_r)
+	    {
+		char_u *tmp;
+
+		got_cmd_info = TRUE;
+
+		memcpy(&cmd->cmd_type, buf, sizeof(cmd->cmd_type));
+		memcpy(&cmd->cmd_num, buf + sizeof(cmd->cmd_type),
+			sizeof(cmd->cmd_num));
+		memcpy(&cmd->cmd_len,
+			buf + sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num),
+			sizeof(cmd->cmd_len));
+
+		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG)
+		    // Too many messages to handle or invalid number
+		    goto fail;
+
+		if (cmd->cmd_num == 0)
+		    // No messages to read
+		    goto exit;
+
+		// Now that we now the total size of messages, we can realloc
+		// the buffer to contain all data
+		tmp = vim_realloc(buf, SS_CMD_INFO_SIZE + cmd->cmd_len);
+
+		if (tmp == NULL)
+		    goto fail;
+
+		buf = tmp;
+		cur = buf + SS_CMD_INFO_SIZE;
+
+		continue;
+	    }
+	}
+	else
+	{
+	    // Read message data
+	    r = read(socket_fd, cur + total_r, cmd->cmd_len - total_r);
+
+	    if ((size_t)r >= cmd->cmd_len - total_r)
+		break;
+	}
+
+	if (r == -1 || r == 0)
+	    goto fail;
+
+	total_r += r;
+
+continue_loop:
+# ifdef ELAPSED_FUNC
+	if (ELAPSED_FUNC(start_tv) >= timeout)
+	    goto fail;
+# endif
+    }
+
+    // Parse message data
+    for (uint32_t i = 0; i <  cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	memcpy(&msg->msg_type, cur, sizeof(msg->msg_type));
+	cur += sizeof(msg->msg_type);
+	memcpy(&msg->msg_len, cur, sizeof(msg->msg_len));
+	cur += sizeof(msg->msg_len);
+
+	msg->msg_contents = alloc(msg->msg_len + 1);
+
+	if (msg->msg_contents == NULL)
+	    goto fail;
+
+	memcpy(msg->msg_contents, cur, msg->msg_len);
+	msg->msg_contents[msg->msg_len] = 0; // NULL terminate it
+
+	// Move pointer to start of next message
+	cur += msg->msg_len;
+    }
+
+exit:
+    vim_free(buf);
+    return OK;
+fail:
+    socket_server_free_cmd(cmd);
+    vim_free(buf);
+    return FAIL;
+}
+
+/*
+ * Low level function that writes to a socket with a timeout in milliseconds.
+ * Returns OK on success and FAIL on failure.
+ */
+    static int
+socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
+{
+    char_u *cur = data;
+    size_t total_w = 0;
+# ifdef ELAPSED_FUNC
+    elapsed_T start_tv;
+# endif
+# ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_fd;
+    pfd.events = POLLOUT;
+# else
+    fd_set	    wfds;
+    struct timeval  tv;
+
+    FD_ZERO(&wfds);
+    FD_SET(socket_fd, &wfds);
+# endif
+
+# ifdef ELAPSED_FUNC
+    ELAPSED_INIT(start_tv);
+# endif
+
+    while (total_w < sz)
+    {
+	int ret;
+	ssize_t written;
+
+	errno = 0;
+# ifndef HAVE_SELECT
+	ret = poll(&pfd, 1, timeout);
+# else
+	tv.tv_sec = 0;
+	tv.tv_usec = 500 * 1000;
+	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
+# endif
+	if (ret < 0)
+	    return FAIL;
+	else if (ret == 0)
+	    goto continue_loop;
+
+	written = write(socket_fd, cur, sz - total_w);
+
+	if (written == -1)
+	    return FAIL;
+
+	total_w += written;
+
+continue_loop:
+# ifdef ELAPSED_FUNC
+	if (ELAPSED_FUNC(start_tv) >= timeout)
+	    return FAIL;
+# endif
+    }
+
+    return OK;
+}
+
+    static ss_reply_T *
+socket_server_get_reply(char_u *sender, int *index)
+{
+    for (int i = 0; i < ss_replies.ga_len; i++)
+    {
+	ss_reply_T *reply = ((ss_reply_T *)ss_replies.ga_data) + i;
+
+	if (STRCMP(reply->sender, sender) == 0)
+	{
+	    if (index != NULL)
+		*index = i;
+	    return reply;
+	}
+    }
+    return NULL;
+}
+
+/*
+ * Add reply to list of replies. Returns a pointer to the ss_reply_T that was
+ * initialized or was found.
+ */
+    static ss_reply_T *
+socket_server_add_reply(char_u *sender)
+{
+    ss_reply_T *reply;
+
+    if (ss_replies.ga_growsize == 0)
+	ga_init2(&ss_replies, sizeof(ss_reply_T), 1);
+
+    reply = socket_server_get_reply(sender, NULL);
+
+    if (reply == NULL && ga_grow(&ss_replies, 1) == OK)
+    {
+	reply = ((ss_reply_T *)ss_replies.ga_data) + ss_replies.ga_len++;
+
+	reply->sender = vim_strsave(sender);
+
+	if (reply->sender == NULL)
+	    return NULL;
+
+	ga_init2(&reply->strings, sizeof(char_u *), 5);
+    }
+
+    return reply;
+}
+
+    static void
+socket_server_remove_reply(char_u *sender)
+{
+    int index;
+    ss_reply_T *reply = socket_server_get_reply(sender, &index);
+
+    if (reply != NULL)
+    {
+	ss_reply_T *arr = ss_replies.ga_data;
+
+	// Free strings
+	vim_free(reply->sender);
+	ga_clear_strings(&reply->strings);
+
+	// Move all elements after the removed reply forward by one
+	for (int i = index + 1; i < ss_replies.ga_len; i++)
+	    arr[i - 1] = arr[i];
+	ss_replies.ga_len--;
+    }
+}
+
+/*
+ * Execute the actions given by command. "fd" is the socket of the client that
+ * sent the command.
+ */
+    static void
+socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
+{
+    char_u	    *str = NULL;
+    char_u	    *enc = NULL;
+    char_u	    *sender = NULL;
+    uint32_t	    serial = 0;
+    char_u	    rcode = 0;
+    char_u	    *to_free;
+    char_u	    *to_free2;
+
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	if (msg->msg_type == SS_MSG_TYPE_STRING)
+	    str = msg->msg_contents;
+	if (msg->msg_type == SS_MSG_TYPE_ENCODING)
+	    enc = msg->msg_contents;
+	if (msg->msg_type == SS_MSG_TYPE_SERIAL)
+	    memcpy(&serial, msg->msg_contents, sizeof(serial));
+	if (msg->msg_type == SS_MSG_TYPE_CODE)
+	    memcpy(&rcode, msg->msg_contents, sizeof(rcode));
+	else if (msg->msg_type == SS_MSG_TYPE_SENDER)
+	{
+	    sender = msg->msg_contents;
+
+	    // Save in global
+	    vim_free(client_socket);
+	    client_socket = vim_strsave(sender);
+	}
+    }
+
+# ifdef FEAT_EVAL
+    ch_log(NULL, "socket_server_exec_cmd(): encoding: %s, result: %s",
+	    enc == NULL ? (char_u *)"(null)" : enc,
+	    str == NULL ? (char_u *)"(null)" : str);
+# endif
+
+    if (cmd->cmd_type == SS_CMD_TYPE_EXPR ||
+	    cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
+    {
+	// Either an expression or keystrokes.
+	if (socket_server_valid() && enc != NULL && str != NULL)
+	{
+	    str = serverConvert(enc, str, &to_free);
+
+	    if (cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
+		server_to_input_buf(str);
+	    else if (sender != NULL)
+	    {
+		// Evaluate expression and send reply containing result
+		char_u	    *result;
+		size_t	    sz;
+		char_u	    *buf;
+		char_u	    code;
+
+		result = eval_client_expr_to_string(str);
+
+		code = result == NULL ? -1 : 0;
+
+		// Send reply
+		ss_cmd_T rcmd;
+
+		socket_server_init_cmd(&rcmd, SS_CMD_TYPE_REPLY);
+
+		// Don't care about errors, server will just ignore command if
+		// its missing something.
+		if (result != NULL)
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING, result,
+			    STRLEN(result) + 1); // We add +1 in case "result"
+						 // is an empty string.
+		else
+		    // An error occurred, return an error msg instead
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING,
+			    (char_u *)_(e_invalid_expression_received),
+			    STRLEN(e_invalid_expression_received));
+
+		socket_server_append_msg(&rcmd, SS_MSG_TYPE_CODE,
+			&code, sizeof(code));
+
+		socket_server_append_msg(&rcmd, SS_MSG_TYPE_ENCODING, p_enc,
+			STRLEN(p_enc));
+
+		socket_server_append_msg(&rcmd, SS_MSG_TYPE_SERIAL,
+			(char_u *)&serial, sizeof(serial));
+
+		buf = socket_server_encode_cmd(&rcmd, &sz);
+
+		if (buf != NULL)
+		{
+		    int fd2 = socket_server_connect(sender, NULL, TRUE);
+
+		    if (fd2 >= 0)
+			socket_server_write(fd2, buf, sz, 1000);
+		    vim_free(buf);
+		    close(fd2);
+		}
+
+		socket_server_free_cmd(&rcmd);
+		vim_free(result);
+	    }
+	    vim_free(to_free);
+	}
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_REPLY)
+    {
+	// A reply from a previous command we set up, update the corresponding
+	// pending command.
+	if (serial > 0 && str != NULL)
+	{
+	    for (ss_pending_cmd_T *pending = ss_pending_cmds; pending != NULL;
+		    pending = pending->next)
+	    {
+		if (serial == pending->serial && pending->result == NULL)
+		{
+		    str = serverConvert(enc, str, &to_free);
+
+		    pending->code = rcode;
+
+		    if (to_free == NULL)
+			pending->result = vim_strsave(str);
+		    else
+			pending->result = str;
+		    break;
+		}
+	    }
+	}
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_NOTIFY)
+    {
+	// Notification, execute autocommands and save the reply for later use
+	if (sender != NULL && str != NULL && enc != NULL)
+	{
+	    ss_reply_T *reply;
+
+	    str = serverConvert(enc, str, &to_free);
+	    sender = serverConvert(enc, sender, &to_free2);
+
+	    reply = socket_server_add_reply(sender);
+
+	    if (reply != NULL)
+		ga_copy_string(&reply->strings, str);
+
+	    apply_autocmds(EVENT_REMOTEREPLY, sender, str, TRUE, curbuf);
+
+	    vim_free(to_free);
+	    vim_free(to_free2);
+	}
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_ALIVE)
+    {
+	// Client wants to check if we are still responsive, send back a single
+	// byte as a YES.
+	char_u buf[1] = {1};
+# ifndef HAVE_SELECT
+	struct pollfd pfd;
+
+	pfd.fd = fd;
+	pfd.events = POLLIN;
+# else
+	fd_set		rfds;
+	struct timeval  tv;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+# endif
+
+	if (write(fd, buf, 1) == -1)
+	    return;
+
+	// Poll until client closes their end
+
+# ifndef HAVE_SELECT
+	poll(&pfd, 1, 1000);
+# else
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	select(fd + 1, &rfds, NULL, NULL, &tv);
+# endif
+	return;
+    }
+
+    // Command type is invalid, do nothing
+    return;
+}
+
+/*
+ * Poll the socket server fd until a new connection is accepted. Returns 0 on
+ * success, 1 if it timed out or if poll returned empty, and -1 on error.
+ */
+    static int
+socket_server_dispatch(int timeout)
+{
+    int ret;
+# ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_server_fd;
+    pfd.events = POLLIN;
+# else
+    fd_set	    rfds;
+    fd_set	    efds;
+    struct timeval  tv;
+
+    FD_ZERO(&rfds);
+    FD_ZERO(&efds);
+    FD_SET(socket_server_fd, &rfds);
+    FD_SET(socket_server_fd, &efds);
+# endif
+
+# ifndef HAVE_SELECT
+    ret = poll(&pfd, 1, timeout);
+# else
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
+    ret = select(socket_server_fd + 1, &rfds, NULL, &efds, &tv);
+# endif
+
+    if (ret < 0)
+	return -1;
+    else if (ret == 0)
+	return 1;
+
+# ifndef HAVE_SELECT
+    if (pfd.revents & POLLIN)
+# else
+    if (FD_ISSET(socket_server_fd, &rfds))
+# endif
+	{
+	    socket_server_accept_client();
+	    return 0;
+	}
+# ifndef HAVE_SELECT
+    else if (pfd.revents & (POLLHUP | POLLERR))
+# else
+    else if (FD_ISSET(socket_server_fd, &efds))
+# endif
+	// Connection was closed
+	return -1;
+    else
+	return 1;
+
+    return -1;
+}
+
+/*
+ * Check if socket "name" is responsive by sending an ALIVE command. This does
+ * not require the socket server to be active.
+ */
+    static int
+socket_server_check_alive(char_u *name)
+{
+    int	    socket_fd;
+    int	    ret;
+    size_t  sz;
+    char_u  *final;
+    char_u  buf[1] = {0};
+# ifndef HAVE_SELECT
+    struct pollfd pfd;
+# else
+    fd_set	    rfds;
+    struct timeval  tv;
+# endif
+
+    socket_fd = socket_server_connect(name, NULL, TRUE);
+
+    if (socket_fd == -1)
+	return FALSE;
+
+# ifndef HAVE_SELECT
+    pfd.fd = socket_fd;
+    pfd.events = POLLIN;
+# else
+    FD_ZERO(&rfds);
+    FD_SET(socket_fd, &rfds);
+# endif
+
+    ss_cmd_T cmd;
+
+    socket_server_init_cmd(&cmd, SS_CMD_TYPE_ALIVE);
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL ||
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
+    {
+	vim_free(final);
+	close(socket_fd);
+	return FALSE;
+    }
+    vim_free(final);
+
+    // Poll for response
+# ifndef HAVE_SELECT
+    ret = poll(&pfd, 1, 1000);
+# else
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
+# endif
+
+    if (ret > 0)
+	if (read(socket_fd, buf, 1) == -1)
+	{
+	    close(socket_fd);
+	    return FALSE;
+	}
+
+    close(socket_fd);
+    return buf[0] == 1;
+}
+
+/*
+ * Get file descriptor of listening socket
+ */
+    int
+socket_server_get_fd(void)
+{
+    return socket_server_fd;
+}
+
+
+/*
+ * Check if socket name is a valid name
+ */
+    static int
+socket_server_name_is_valid(char_u *name)
+{
+    if (STRLEN(name) == 0 || (name[0] != '/' && vim_strchr(name, '/') != NULL))
+    {
+	semsg(_(e_invalid_server_id_used_str), name);
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
+ * Returns TRUE if there are clients queued in the listening socket waiting to
+ * be accepted
+ */
+    int
+socket_server_waiting_accept(void)
+{
+    int ret;
+# ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_server_fd;
+    pfd.events = POLLIN;
+
+    ret = poll(&pfd, 1, 0);
+
+    if (ret > 0 && pfd.revents & POLLIN)
+	return TRUE;
+# else
+    fd_set	    rfds;
+    struct timeval  tv;
+
+    if (socket_server_fd == -1)
+	return FALSE;
+
+    FD_ZERO(&rfds);
+    FD_SET(socket_server_fd, &rfds);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    ret = select(socket_server_fd + 1, &rfds, NULL, NULL, &tv);
+
+    if (ret > 0 && FD_ISSET(socket_server_fd, &rfds))
+	return TRUE;
+# endif
+
+    return FALSE;
+}
+
+#endif // FEAT_SOCKETSERVER

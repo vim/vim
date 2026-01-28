@@ -1,10 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
-source view_util.vim
-import './vim9.vim' as v9
-source screendump.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 func Test_def_basic()
   def SomeFunc(): string
@@ -1004,7 +1001,18 @@ def Test_nested_function()
         enddef
       enddef
   END
-  v9.CheckDefFailure(lines, 'E1117:')
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :def')
+
+  lines =<< trim END
+      def Outer()
+        function Inner()
+          " comment
+        endfunc
+        function! Inner()
+        endfunc
+      enddef
+  END
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :function')
 
   lines =<< trim END
       vim9script
@@ -4759,6 +4767,20 @@ def Test_call_modified_import_func()
 
     assert_equal(4, setup)
     assert_equal(1, imp.done)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for assigning the return value of mkdir() to a new local variable.
+" This used to result in the "E1012: Type mismatch; expected list<any> but
+" got number" error message.
+def Test_assign_mkdir_ret_value()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var ret: number = mkdir('./foo/bar/baz', 'p')
+    enddef
+    defcompile
   END
   v9.CheckScriptSuccess(lines)
 enddef

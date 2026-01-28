@@ -1,10 +1,9 @@
-*helptoc.txt*   For Vim version 9.1.  Last change:  2025 May 04
+*helptoc.txt*   For Vim version 9.1.  Last change:  2025 Aug 10
 
 
 			  VIM REFERENCE MANUAL
 
 Interactive table of contents for help buffers and several other filetypes
-
 ==============================================================================
 
 
@@ -12,8 +11,11 @@ Interactive table of contents for help buffers and several other filetypes
 
 The helptoc.vim plugin provides one command, :HelpToc, which generates a
 hierarchical table of contents in a popup window, which is based on the
-structure of a Vim buffer.  It was designed initially for help buffers,
-but it also works with buffers of the following types:
+structure of a Vim buffer.  See |Helptoc-mappings| for a list of supported key
+mappings in the popup window.
+
+It was designed initially for help buffers, but it also works with buffers of
+the following types:
 	- asciidoc
 	- html
 	- man
@@ -176,7 +178,7 @@ brackets preceding and following each heading's text.
 
 3.7 vim						*HelpToc-vim-filetype*
 
-Vimscript and Vim9 script do not have headings or levels inherently like
+Vim script and Vim9 script do not have headings or levels inherently like
 markup languages.  However, Vim provides for |folds| defined by markers (|{{{|),
 which themselves may be succeeded by a number explicitly indicating the fold
 level.  This is the structure recognized and supported by helptoc.vim.

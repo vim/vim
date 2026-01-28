@@ -25,7 +25,7 @@
 // defines HAVE_ATTRIBUTE_UNUSED
 #ifdef HAVE_CONFIG_H
 # ifdef VMS
-#  include "[.auto]config.h"
+#  include "config.h"
 # else
 #  include "../auto/config.h"
 # endif
@@ -42,6 +42,9 @@
 #if defined(_MSC_VER)
 # define inline __inline
 #endif
+
+// Vim replacement for BUG()
+void xdl_bug(const char *msg);
 
 #if !defined(XINCLUDE_H)
 #define XINCLUDE_H

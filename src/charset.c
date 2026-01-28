@@ -773,7 +773,7 @@ chartabsize(char_u *p, colnr_T col)
     RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, p, col)
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int
 win_chartabsize(win_T *wp, char_u *p, colnr_T col)
 {
@@ -918,8 +918,9 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     // check for a virtual text at the end of a line or on an empty line
     if (len == MAXCOL && cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
-	(void)win_lbr_chartabsize(cts, NULL);
-	vcol += cts->cts_cur_text_width;
+	int head = 0;
+	(void)win_lbr_chartabsize(cts, &head);
+	vcol += cts->cts_cur_text_width + head;
 	// when properties are above or below the empty line must also be
 	// counted
 	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0)
@@ -1005,7 +1006,7 @@ vim_isfilec(int c)
     return (c >= 0x100 || (c > 0 && (g_chartab[c] & CT_FNAME_CHAR)));
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 /*
  * Return TRUE if 'c' is a valid file-name character, including characters left
  * out of 'isfname' to make "gf" work, such as comma, space, '@', etc.
@@ -1176,7 +1177,7 @@ lbr_chartabsize(chartabsize_T *cts)
 # endif
 # ifdef FEAT_PROP_POPUP
 	&& !cts->cts_has_prop_with_text
-#endif
+# endif
        )
     {
 #endif
@@ -1225,11 +1226,11 @@ win_lbr_chartabsize(
     win_T	*wp = cts->cts_win;
 #if defined(FEAT_PROP_POPUP) || defined(FEAT_LINEBREAK)
     char_u	*line = cts->cts_line; // start of the line
+    int		size;
 #endif
     char_u	*s = cts->cts_ptr;
     colnr_T	vcol = cts->cts_vcol;
 #ifdef FEAT_LINEBREAK
-    int		size;
     int		mb_added = 0;
     int		n;
     char_u	*sbr;
@@ -1268,20 +1269,23 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+# ifdef FEAT_LINEBREAK
     if (*s == NUL)
     {
 	// 1 cell for EOL list char (if present), as opposed to the two cell ^@
 	// for a NUL character in the text.
 	size = has_lcs_eol ? 1 : 0;
     }
-# ifdef FEAT_LINEBREAK
+
     int is_doublewidth = has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1;
 # endif
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
     {
+#  ifdef FEAT_LINEBREAK
 	int	    tab_size = size;
+#  endif
 	int	    charlen = *s == NUL ? 1 : mb_ptr2len(s);
 	int	    i;
 	int	    col = (int)(s - line);
@@ -1325,7 +1329,8 @@ win_lbr_chartabsize(
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
 					      &n_extra, &p, NULL, NULL, FALSE);
 #  ifdef FEAT_LINEBREAK
-			no_sbr = TRUE;  // don't use 'showbreak' now
+			if (text_prop_no_showbreak(tp))
+			    no_sbr = TRUE;  // don't use 'showbreak' now
 #  endif
 		    }
 		    else
@@ -1336,6 +1341,7 @@ win_lbr_chartabsize(
 		    else
 			size += cells;
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
+#  ifdef FEAT_LINEBREAK
 		    if (*s == TAB)
 		    {
 			// tab size changes because of the inserted text
@@ -1343,6 +1349,7 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+#  endif
 		    if (tp->tp_col == MAXCOL && (tp->tp_flags
 				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
 			// count extra line for property above/below
@@ -1518,8 +1525,8 @@ win_lbr_chartabsize(
 #  ifdef FEAT_PROP_POPUP
     size += cts->cts_first_char;
 #  endif
-    return size;
 # endif
+    return size;
 #endif
 }
 
@@ -1542,13 +1549,13 @@ win_nolbr_chartabsize(
 
     if (*s == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
     {
-# ifdef FEAT_VARTABS
+#ifdef FEAT_VARTABS
 	return tabstop_padding(col, wp->w_buffer->b_p_ts,
 				    wp->w_buffer->b_p_vts_array);
-# else
+#else
 	n = wp->w_buffer->b_p_ts;
 	return (int)(n - (col % n));
-# endif
+#endif
     }
     n = ptr2cells(s);
     // Add one cell for a double-width character in the last column of the
@@ -1700,8 +1707,7 @@ getvcol(
 	    {
 		incr = 1;	// NUL at end of line only takes one column
 #ifdef FEAT_PROP_POPUP
-		if (cts.cts_cur_text_width > 0)
-		    incr = cts.cts_cur_text_width;
+		incr += cts.cts_cur_text_width;
 		on_NUL = TRUE;
 #endif
 		break;
@@ -1878,7 +1884,7 @@ skipwhite(char_u *q)
     return p;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * skip over ' ', '\t' and '\n'.
  */
@@ -1922,7 +1928,7 @@ skipdigits(char_u *q)
     return p;
 }
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 /*
  * skip over binary digits
  */

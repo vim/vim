@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Jun 04
+" Last Change:	2026 Jan 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
@@ -84,7 +84,7 @@ an <silent> 9999.40 &Help.&Find\.\.\.	:call <SID>Helpfind()<CR>
 an 9999.45 &Help.-sep1-			<Nop>
 an 9999.50 &Help.&Credits		:help credits<CR>
 an 9999.60 &Help.Co&pying		:help copying<CR>
-an 9999.70 &Help.&Sponsor/Register	:help sponsor<CR>
+an 9999.70 &Help.&Sponsor		:help sponsor<CR>
 an 9999.70 &Help.O&rphans		:help kcc<CR>
 an 9999.75 &Help.-sep2-			<Nop>
 an 9999.80 &Help.&Version		:version<CR>
@@ -98,7 +98,7 @@ if exists(':tlmenu')
   tlnoremenu 9999.45 &Help.-sep1-			<Nop>
   tlnoremenu 9999.50 &Help.&Credits			<C-W>:help credits<CR>
   tlnoremenu 9999.60 &Help.Co&pying			<C-W>:help copying<CR>
-  tlnoremenu 9999.70 &Help.&Sponsor/Register		<C-W>:help sponsor<CR>
+  tlnoremenu 9999.70 &Help.&Sponsor			<C-W>:help sponsor<CR>
   tlnoremenu 9999.70 &Help.O&rphans			<C-W>:help kcc<CR>
   tlnoremenu 9999.75 &Help.-sep2-			<Nop>
   tlnoremenu 9999.80 &Help.&Version			<C-W>:version<CR>
@@ -175,7 +175,7 @@ vnoremenu 20.340 &Edit.Cu&t<Tab>"+x		"+x
 vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
 if exists(':tlmenu')
-  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y 	<C-W>:<C-Y><CR>
+  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-W>:<C-Y><CR>
 endif
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
@@ -693,7 +693,12 @@ def s:BMAdd()
     if s:bmenu_count == &menuitems && s:bmenu_short == 0
       s:BMShow()
     else
-      s:BMRedraw()
+      var name = expand("<afile>")
+      var num = str2nr(expand("<abuf>"))
+      if s:BMCanAdd(name, num)
+	s:BMFilename(name, num)
+	s:bmenu_count += 1
+      endif
     endif
   endif
 enddef
@@ -741,20 +746,16 @@ def s:BMShow()
   s:bmenu_count = 0
   s:bmenu_items = {}
 
-  s:BMRedraw()
-enddef
-
-def s:BMRedraw()
   # Remove old menu, if it exists; keep one entry to avoid a torn off menu to
   # disappear.  Use try/catch to avoid setting v:errmsg
-  try 
-    unmenu &Buffers 
-  catch 
+  try
+    unmenu &Buffers
+  catch
   endtry
   exe 'noremenu ' .. g:bmenu_priority .. ".1 &Buffers.Dummy l"
-  try 
-    unmenu! &Buffers 
-  catch 
+  try
+    unmenu! &Buffers
+  catch
   endtry
 
   # create new menu
@@ -767,30 +768,26 @@ def s:BMRedraw()
   unmenu &Buffers.Dummy
 
   # figure out how many buffers there are
-  var buffer_menu_items = []
   var buf = 1
   while buf <= bufnr('$')
-    var name = bufname(buf)
-    if s:BMCanAdd(name, buf)
-      add(buffer_menu_items, [substitute(name, ".", '\L\0', ""), name, buf])
+    if s:BMCanAdd(bufname(buf), buf)
+      s:bmenu_count = s:bmenu_count + 1
     endif
     buf += 1
   endwhile
-  s:bmenu_count = len(buffer_menu_items)
-
   if s:bmenu_count <= &menuitems
     s:bmenu_short = 0
   endif
 
   # iterate through buffer list, adding each buffer to the menu:
-  sort(buffer_menu_items)
-
-  var i = 0
-  for menu_item in buffer_menu_items
-    s:BMFilename(menu_item[1], menu_item[2], i)
-    i += 1
-  endfor
-
+  buf = 1
+  while buf <= bufnr('$')
+    var name = bufname(buf)
+    if s:BMCanAdd(name, buf)
+      call s:BMFilename(name, buf)
+    endif
+    buf += 1
+  endwhile
   s:bmenu_wait = 0
   aug buffer_list
     au!
@@ -799,8 +796,43 @@ def s:BMRedraw()
   aug END
 enddef
 
+def s:BMHash(name: string): number
+  # Create a sortable numeric hash of the name. This number has to be within
+  # the bounds of a signed 32-bit integer as this is what Vim GUI uses
+  # internally for the index.
+
+  # Make name all upper case, so that alphanumeric chars are between 32 and 96
+  var nm = toupper(name)
+
+  if char2nr(nm[0]) < 32 || char2nr(nm[0]) > 96
+    # We don't have an ASCII character, so just return the raw character value
+    # for first character (clamped to 2^31) and set the high bit to make it
+    # sort after other items. This means only the first character will be
+    # sorted, unfortunately.
+    return or(and(char2nr(nm), 0x7fffffff), 0x40000000)
+  endif
+
+  var sp: number
+  if has("ebcdic")
+    # HACK: Replace all non alphabetics with 'Z'
+    #       Just to make it work for now.
+    nm = substitute(nm, "[^A-Z]", 'Z', "g")
+    sp = char2nr('A') - 1
+  else
+    sp = char2nr(' ')
+  endif
+  # convert first five chars into a number for sorting by compressing each
+  # char into 5 bits (0-63), to a total of 30 bits. If any character is not
+  # ASCII, it will simply be clamped to prevent overflow.
+  return (max([0, min([63, char2nr(nm[0]) - sp])]) << 24) +
+    (max([0, min([63, char2nr(nm[1]) - sp])]) << 18) +
+    (max([0, min([63, char2nr(nm[2]) - sp])]) << 12) +
+    (max([0, min([63, char2nr(nm[3]) - sp])]) <<  6) +
+    max([0, min([63, char2nr(nm[4]) - sp])])
+enddef
+
 def s:BMHash2(name: string): string
-  var nm = substitute(name, ".", '\L\0', "")
+  var nm = tolower(name[0])
   if nm[0] < 'a' || nm[0] > 'z'
     return '&others.'
   elseif nm[0] <= 'd'
@@ -819,16 +851,17 @@ def s:BMHash2(name: string): string
 enddef
 
 " Insert a buffer name into the buffer menu.
-def s:BMFilename(name: string, num: number, index: number)
+def s:BMFilename(name: string, num: number)
   var munge = s:BMMunge(name, num)
+  var hash = s:BMHash(munge)
   var cmd: string
   if s:bmenu_short == 0
     s:bmenu_items[num] = munge
-    cmd = 'an ' .. g:bmenu_priority .. '.9999.' .. index .. ' &Buffers.' .. munge
+    cmd = 'an ' .. g:bmenu_priority .. '.' .. hash .. ' &Buffers.' .. munge
   else
     var menu_name = s:BMHash2(munge) .. munge
     s:bmenu_items[num] = menu_name
-    cmd = 'an ' .. g:bmenu_priority .. '.9999.0.' .. index .. ' &Buffers.' .. menu_name
+    cmd = 'an ' .. g:bmenu_priority .. '.' .. hash .. '.' .. hash .. ' &Buffers.' .. menu_name
   endif
   exe cmd .. ' :confirm b' .. num .. '<CR>'
 enddef

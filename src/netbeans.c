@@ -25,7 +25,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG)
 
 #ifndef MSWIN
 # include <netdb.h>
@@ -211,9 +211,9 @@ netbeans_connect(char *params, int doabort)
 	if (nb_channel != NULL)
 	{
 	    // success
-# ifdef FEAT_BEVAL_GUI
+#ifdef FEAT_BEVAL_GUI
 	    bevalServers |= BEVAL_NETBEANS;
-# endif
+#endif
 
 	    // success, login
 	    vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
@@ -2449,7 +2449,7 @@ netbeans_keyname(int key, char *buf)
     strcat(buf, name);
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL)
 /*
  * Function to be called for balloon evaluation.  Grabs the text under the
  * cursor and sends it to the debugger for evaluation.  The debugger should
@@ -2552,7 +2552,7 @@ netbeans_send_disconnect(void)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     int
 set_ref_in_nb_channel(int copyID)
 {
@@ -2569,7 +2569,7 @@ set_ref_in_nb_channel(int copyID)
 }
 #endif
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN)
 /*
  * Tell netbeans that the window was moved or resized.
  */
@@ -3004,7 +3004,7 @@ netbeans_is_guarded(linenr_T top, linenr_T bot)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_X11)
 /*
  * We have multiple signs to draw at the same location. Draw the
  * multi-sign indicator instead. This is the Motif version.
@@ -3046,33 +3046,33 @@ netbeans_draw_multisign_indicator(int row)
     int i;
     int y;
     int x;
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_t *cr = NULL;
-#else
+# else
     GdkDrawable *drawable = gui.drawarea->window;
-#endif
+# endif
 
     if (!NETBEANS_OPEN)
 	return;
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cr = cairo_create(gui.surface);
     cairo_set_source_rgba(cr,
 	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
 	    gui.fgcolor->alpha);
-#endif
+# endif
 
     x = 0;
     y = row * gui.char_height + 2;
 
     for (i = 0; i < gui.char_height - 3; i++)
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
 	cairo_rectangle(cr, x+2, y++, 1, 1);
-#else
+# else
 	gdk_draw_point(drawable, gui.text_gc, x+2, y++);
-#endif
+# endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_rectangle(cr, x+0, y, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+4, y++, 1, 1);
@@ -3080,7 +3080,7 @@ netbeans_draw_multisign_indicator(int row)
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+3, y++, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
-#else
+# else
     gdk_draw_point(drawable, gui.text_gc, x+0, y);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+4, y++);
@@ -3088,11 +3088,11 @@ netbeans_draw_multisign_indicator(int row)
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+3, y++);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
-#endif
+# endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-#endif
+# endif
 }
 #endif // FEAT_GUI_GTK
 

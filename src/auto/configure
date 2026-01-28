@@ -668,7 +668,7 @@ GNOME_LIBS
 GTK_LIBNAME
 GTK_LIBS
 GTK_CFLAGS
-PKG_CONFIG
+GTK_CPPFLAGS
 X_LIB
 X_EXTRA_LIBS
 X_LIBS
@@ -676,6 +676,11 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+WAYLAND_OBJ
+WAYLAND_SRC
+WAYLAND_LIBS
+WAYLAND_CFLAGS
+WAYLAND_CPPFLAGS
 TERM_TEST
 TERM_OBJ
 TERM_SRC
@@ -686,14 +691,12 @@ NETBEANS_SRC
 RUBY_LIBS
 RUBY_CFLAGS_EXTRA
 RUBY_CFLAGS
-RUBY_PRO
 RUBY_OBJ
 RUBY_SRC
 vi_cv_path_ruby
 TCL_LIBS
 TCL_CFLAGS_EXTRA
 TCL_CFLAGS
-TCL_PRO
 TCL_OBJ
 TCL_SRC
 vi_cv_path_tcl
@@ -724,14 +727,12 @@ MZSCHEME_MZC
 MZSCHEME_EXTRA
 MZSCHEME_CFLAGS
 MZSCHEME_LIBS
-MZSCHEME_PRO
 MZSCHEME_OBJ
 MZSCHEME_SRC
 vi_cv_path_mzscheme
 LUA_CFLAGS_EXTRA
 LUA_CFLAGS
 LUA_LIBS
-LUA_PRO
 LUA_OBJ
 LUA_SRC
 vi_cv_path_plain_lua
@@ -752,6 +753,7 @@ XCODE_SELECT
 CPP_MM
 CROSS_COMPILING
 BUILD_DATE_MSG
+PKG_CONFIG
 STRIP
 AWK
 FGREP
@@ -848,12 +850,15 @@ enable_netbeans
 enable_channel
 enable_terminal
 enable_autoservername
+enable_socketserver
 enable_multibyte
 enable_rightleft
 enable_arabic
 enable_farsi
 enable_xim
 enable_fontset
+with_wayland
+enable_wayland_focus_steal
 with_x
 enable_gui
 enable_gtk2_check
@@ -1527,12 +1532,16 @@ Optional Features:
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
   --enable-autoservername Automatically define servername at vim startup.
+  --enable-socketserver Use sockets for clientserver communication.
   --enable-multibyte      Include multibyte editing support.
   --disable-rightleft     Do not include Right-to-Left language support.
   --disable-arabic        Do not include Arabic language support.
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
+  --enable-wayland-focus-steal
+                          Include focus stealing support for Wayland
+                          clipboard.
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
@@ -1575,6 +1584,7 @@ Optional Packages:
   --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
+  --with-wayland	  Include support for the Wayland protocol.
   --with-x                use the X Window System
   --with-gnome-includes=DIR Specify location of GNOME headers
   --with-gnome-libs=DIR   Specify location of GNOME libs
@@ -2955,6 +2965,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 
@@ -4521,7 +4532,120 @@ printf "%s\n" "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 fi
 
 
-if test x"$ac_cv_prog_cc_c99" != xno; then
+if test -z "$PKG_CONFIG"; then
+  if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+printf "%s\n" "$PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+
+if test x"$ac_cv_prog_cc_c99" = xno; then
 
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for unsigned long long int" >&5
@@ -6141,7 +6265,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
       LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
       LUA_SRC="if_lua.c"
       LUA_OBJ="objects/if_lua.o"
-      LUA_PRO="if_lua.pro"
       printf "%s\n" "#define FEAT_LUA 1" >>confdefs.h
 
     fi
@@ -6206,7 +6329,6 @@ printf "%s\n" "yes" >&6; }
   if test "$fail_if_missing" = "yes" -a "$lua_ok" != "yes"; then
     as_fn_error $? "could not configure lua" "$LINENO" 5
   fi
-
 
 
 
@@ -6625,7 +6747,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     if test $mzs_ok = yes; then
       MZSCHEME_SRC="if_mzsch.c"
       MZSCHEME_OBJ="objects/if_mzsch.o"
-      MZSCHEME_PRO="if_mzsch.pro"
       printf "%s\n" "#define FEAT_MZSCHEME 1" >>confdefs.h
 
     else
@@ -6635,7 +6756,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
       MZSCHEME_MZC=
     fi
   fi
-
 
 
 
@@ -6839,9 +6959,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 	  fi
 	fi
 	PERL_LIBS=$perllibs
-	PERL_SRC="auto/if_perl.c if_perlsfio.c"
-	PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o"
-	PERL_PRO="if_perl.pro if_perlsfio.pro"
+	PERL_SRC="auto/if_perl.c"
+	PERL_OBJ="objects/if_perl.o"
+	PERL_PRO="proto/if_perl.pro"
 	printf "%s\n" "#define FEAT_PERL 1" >>confdefs.h
 
       fi
@@ -6867,7 +6987,7 @@ printf "%s\n" ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
     if test -n "$PERL"; then
       PERL_DIR="$dir"
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
-      PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
+      PERL_OBJ="objects/if_perl.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
                 PERL_LIBS=`echo "$PERL_LIBS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
@@ -8333,7 +8453,6 @@ printf "%s\n" "<not found>" >&6; }
 
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
-	  TCL_PRO=if_tcl.pro
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
 	fi
       fi
@@ -8353,7 +8472,6 @@ printf "%s\n" "too old; need Tcl version 8.0 or later" >&6; }
     as_fn_error $? "could not configure Tcl" "$LINENO" 5
   fi
 fi
-
 
 
 
@@ -8490,7 +8608,6 @@ printf "%s\n" "$rubyhdrdir" >&6; }
 
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
-	RUBY_PRO="if_ruby.pro"
 	printf "%s\n" "#define FEAT_RUBY 1" >>confdefs.h
 
 	if test "$enable_rubyinterp" = "dynamic"; then
@@ -8526,7 +8643,6 @@ fi
 
 
 
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-cscope argument" >&5
 printf %s "checking --enable-cscope argument... " >&6; }
 # Check whether --enable-cscope was given.
@@ -8534,14 +8650,14 @@ if test ${enable_cscope+y}
 then :
   enableval=$enable_cscope;
 else case e in #(
-  e) enable_cscope="no" ;;
+  e) enable_cscope="yes" ;;
 esac
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_cscope" >&5
 printf "%s\n" "$enable_cscope" >&6; }
 if test "$enable_cscope" = "yes"; then
-  printf "%s\n" "#define FEAT_CSCOPE 1" >>confdefs.h
+  printf "%s\n" "#define ENABLE_CSCOPE 1" >>confdefs.h
 
 fi
 
@@ -8963,6 +9079,36 @@ if test "$enable_autoservername" = "yes"; then
 
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-socketserver argument" >&5
+printf %s "checking --enable-socketserver argument... " >&6; }
+# Check whether --enable-socketserver was given.
+if test ${enable_socketserver+y}
+then :
+  enableval=$enable_socketserver; enable_socketserver=$enableval
+else case e in #(
+  e) if test "x$features" = xtiny
+then :
+  enable_socketserver=no_msg
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use socketserver with tiny features" >&5
+printf "%s\n" "cannot use socketserver with tiny features" >&6; }
+else case e in #(
+  e) enable_socketserver=yes ;;
+esac
+fi ;;
+esac
+fi
+
+
+if test "$enable_socketserver" = "yes"; then
+  printf "%s\n" "#define WANT_SOCKETSERVER 1" >>confdefs.h
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+elif test "$enable_socketserver" = "no"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-multibyte argument" >&5
 printf %s "checking --enable-multibyte argument... " >&6; }
 # Check whether --enable-multibyte was given.
@@ -9057,6 +9203,134 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_fontset" >&5
 printf "%s\n" "$enable_fontset" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if shm_open is available" >&5
+printf %s "checking if shm_open is available... " >&6; }
+cppflags_save=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mman.h>
+		    #include <sys/stat.h>
+		    #include <fcntl.h>
+int
+main (void)
+{
+shm_open("/test", O_CREAT, 0600);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SHM_OPEN 1" >>confdefs.h
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+CPPFLAGS=$cppflags_save
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-wayland argument" >&5
+printf %s "checking --with-wayland argument... " >&6; }
+
+# Check whether --with-wayland was given.
+if test ${with_wayland+y}
+then :
+  withval=$with_wayland; with_wayland=$withval
+else case e in #(
+  e) if test "x$features" = xtiny
+then :
+  with_wayland=no
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use wayland with tiny features" >&5
+printf "%s\n" "cannot use wayland with tiny features" >&6; }
+else case e in #(
+  e) with_wayland=yes
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; } ;;
+esac
+fi ;;
+esac
+fi
+
+
+if test "$with_wayland" = yes; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wayland" >&5
+printf %s "checking for wayland... " >&6; }
+  if "$PKG_CONFIG" --exists 'wayland-client'; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-wayland-focus-steal argument" >&5
+printf %s "checking --enable-wayland-focus-steal argument... " >&6; }
+    # Check whether --enable-wayland-focus-steal was given.
+if test ${enable_wayland_focus_steal+y}
+then :
+  enableval=$enable_wayland_focus_steal; enable_wayland_fs=$enableval
+else case e in #(
+  e) enable_wayland_fs="yes" ;;
+esac
+fi
+
+
+    if test "$enable_wayland_fs" = "yes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+          printf "%s\n" "#define FEAT_WAYLAND_CLIPBOARD_FS 1" >>confdefs.h
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+
+    printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
+
+    WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags-only-other wayland-client`
+    CPPFLAGS="$CPPFLAGS $WAYLAND_CPPFLAGS"
+    CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
+    WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
+    WAYLAND_SRC=" \
+      auto/wayland/wlr-data-control-unstable-v1.c \
+      auto/wayland/ext-data-control-v1.c \
+      wayland.c"
+    WAYLAND_OBJ=" \
+      objects/wlr-data-control-unstable-v1.o \
+      objects/ext-data-control-v1.o \
+      objects/wayland.o"
+
+    if test "$enable_wayland_fs" = "yes"
+then :
+  as_fn_append WAYLAND_SRC " \
+            auto/wayland/xdg-shell.c \
+            auto/wayland/primary-selection-unstable-v1.c"
+           as_fn_append WAYLAND_OBJ " \
+            objects/xdg-shell.o \
+            objects/primary-selection-unstable-v1.o"
+fi
+
+
+
+
+
+
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    with_wayland=no
+  fi
+CPPFLAGS=$cppflags_save
+CFLAGS=$cflags_save
+fi
 
 test -z "$with_x" && with_x=yes
 test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
@@ -10415,119 +10689,6 @@ fi
 
 
 
-if test -z "$PKG_CONFIG"; then
-  if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-printf "%s\n" "$PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG="no"
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-
 if test -z "$SKIP_GTK3"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
 printf %s "checking --disable-gtktest argument... " >&6; }
@@ -10574,7 +10735,8 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     	     	     	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     	     	     	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -10588,6 +10750,7 @@ printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_mic
 
 else case e in #(
   e)
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -10604,8 +10767,10 @@ fi
               gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -10668,6 +10833,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
 esac
 fi
 
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -10676,9 +10842,10 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
-        GTK_CFLAGS=""
+        GTK_CPPFLAGS=""
+    GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
     if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
@@ -10689,7 +10856,8 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
       SKIP_MOTIF=YES
@@ -10747,7 +10915,8 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     	     	     	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     	     	     	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -10761,6 +10930,7 @@ printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_mic
 
 else case e in #(
   e)
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -10777,8 +10947,10 @@ fi
               gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -10841,6 +11013,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
 esac
 fi
 
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -10849,9 +11022,10 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
-        GTK_CFLAGS=""
+        GTK_CPPFLAGS=""
+    GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
     if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
@@ -10862,7 +11036,8 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
@@ -10926,7 +11101,7 @@ printf %s "checking for libgnomeui-2.0... " >&6; }
 printf "%s\n" "yes" >&6; }
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
-      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags-only-I libgnomeui-2.0`
 
                   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FreeBSD" >&5
 printf %s "checking for FreeBSD... " >&6; }
@@ -12516,7 +12691,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 CPPFLAGS=$cppflags_save
 fi
 
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for an ANSI C-conforming const" >&5
 printf %s "checking for an ANSI C-conforming const... " >&6; }
 if test ${ac_cv_c_const+y}
@@ -13357,8 +13531,13 @@ else case e in #(
 /* end confdefs.h.  */
 
 #include "confdefs.h"
-#ifdef HAVE_TERMCAP_H
+#ifdef HAVE_TERM_H
+# include <term.h>
+#elif defined(HAVE_TERMCAP_H)
 # include <termcap.h>
+#else
+  /* forward declare tgoto */
+  extern char *tgoto(const char *, int, int);
 #endif
 #ifdef HAVE_STRING_H
 # include <string.h>
@@ -14355,18 +14534,18 @@ then :
 fi
 if test "$enable_largefile,$enable_year2038" != no,no
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC option to enable large file support" >&5
-printf %s "checking for $CC option to enable large file support... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CPPFLAGS option for large files" >&5
+printf %s "checking for $CPPFLAGS option for large files... " >&6; }
 if test ${ac_cv_sys_largefile_opts+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) ac_save_CC="$CC"
+  e) ac_save_CPPFLAGS=$CPPFLAGS
   ac_opt_found=no
-  for ac_opt in "none needed" "-D_FILE_OFFSET_BITS=64" "-D_LARGE_FILES=1" "-n32"; do
+  for ac_opt in "none needed" "-D_FILE_OFFSET_BITS=64" "-D_LARGE_FILES=1"; do
     if test x"$ac_opt" != x"none needed"
 then :
-  CC="$ac_save_CC $ac_opt"
+  CPPFLAGS="$ac_save_CPPFLAGS $ac_opt"
 fi
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14395,12 +14574,12 @@ then :
   if test x"$ac_opt" = x"none needed"
 then :
   # GNU/Linux s390x and alpha need _FILE_OFFSET_BITS=64 for wide ino_t.
-	 CC="$CC -DFTYPE=ino_t"
+	 CPPFLAGS="$CPPFLAGS -DFTYPE=ino_t"
 	 if ac_fn_c_try_compile "$LINENO"
 then :
 
 else case e in #(
-  e) CC="$CC -D_FILE_OFFSET_BITS=64"
+  e) CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
 	    if ac_fn_c_try_compile "$LINENO"
 then :
   ac_opt='-D_FILE_OFFSET_BITS=64'
@@ -14416,7 +14595,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
     test $ac_opt_found = no || break
   done
-  CC="$ac_save_CC"
+  CPPFLAGS=$ac_save_CPPFLAGS
 
   test $ac_opt_found = yes || ac_cv_sys_largefile_opts="support not detected" ;;
 esac
@@ -14440,16 +14619,14 @@ printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h
 
 printf "%s\n" "#define _LARGE_FILES 1" >>confdefs.h
  ;; #(
-  "-n32") :
-    CC="$CC -n32" ;; #(
   *) :
     as_fn_error $? "internal error: bad value for \$ac_cv_sys_largefile_opts" "$LINENO" 5 ;;
 esac
 
 if test "$enable_year2038" != no
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC option for timestamps after 2038" >&5
-printf %s "checking for $CC option for timestamps after 2038... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CPPFLAGS option for timestamps after 2038" >&5
+printf %s "checking for $CPPFLAGS option for timestamps after 2038... " >&6; }
 if test ${ac_cv_sys_year2038_opts+y}
 then :
   printf %s "(cached) " >&6
@@ -14559,16 +14736,22 @@ fi
 if test "$enable_canberra" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
-    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+    canberra_cppflags=`$PKG_CONFIG --cflags-only-I libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags-only-other libcanberra 2>/dev/null`
   fi
   if test "x$canberra_lib" = "x"; then
     canberra_lib=-lcanberra
+    canberra_cppflags=-D_REENTRANT
     canberra_cflags=-D_REENTRANT
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcanberra" >&5
 printf %s "checking for libcanberra... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  if `echo "$CPPFLAGS" | grep -v "$canberra_cppflags" 2>/dev/null`; then
+    CPPFLAGS="$CPPFLAGS $canberra_cflags"
+  fi
   if `echo "$CFLAGS" | grep -v "$canberra_cflags" 2>/dev/null`; then
     CFLAGS="$CFLAGS $canberra_cflags"
   fi
@@ -14631,16 +14814,20 @@ fi
 if test "$enable_libsodium" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
-    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+    libsodium_cppflags=`$PKG_CONFIG --cflags-only-I libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags-only-other libsodium 2>/dev/null`
   fi
   if test "x$libsodium_lib" = "x"; then
     libsodium_lib=-lsodium
+    libsodium_cppflags=
     libsodium_cflags=
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libsodium" >&5
 printf %s "checking for libsodium... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $libsodium_cppflags"
   CFLAGS="$CFLAGS $libsodium_cflags"
   LIBS="$LIBS $libsodium_lib"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14664,7 +14851,7 @@ printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SODIUM 1" >>confdefs.h
 
 else case e in #(
   e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no; try installing libsodium-dev" >&5
-printf "%s\n" "no; try installing libsodium-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS" ;;
+printf "%s\n" "no; try installing libsodium-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"; CPPFLAGS="$ac_save_CPPFLAGS" ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -15489,11 +15676,13 @@ else
 printf "%s\n" "yes" >&6; }
 fi
 
-if test "x$GTK_CFLAGS" != "x"; then
+if test "x$GTK_CPPFLAGS" != "x"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango_shape_full" >&5
 printf %s "checking for pango_shape_full... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15519,6 +15708,7 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS="$ac_save_CPPFLAGS"
   CFLAGS="$ac_save_CFLAGS"
   LIBS="$ac_save_LIBS"
 fi
@@ -16990,7 +17180,7 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we need to force -D_FILE_OFFSET_BITS=64" >&5
 printf %s "checking whether we need to force -D_FILE_OFFSET_BITS=64... " >&6; }
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CPPFLAGS $CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CPPFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
   printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h

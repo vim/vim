@@ -1,389 +1,389 @@
 ===============================================================================
-=    V í t e j t e   v   t u t o r i a l u   V I M       -    Verze 1.5       =
+=    V Ã­ t e j t e   v   t u t o r i a l u   V I M       -    Verze 1.5       =
 ===============================================================================
 
-     Vim je velmi vıkonnı editor, kterı má pøíli¹ mnoho pøíkazù na to, aby
-     mohly bıt v¹echny vysvìtlené ve vıuce jako tato. Tato vıuka obsahuje
-     dostateèné mno¾ství pøíkazù na to, aby bylo mo¾né pou¾ívat Vim jako
-     víceúèelovı editor.
+     Vim je velmi vÃ½konnÃ½ editor, kterÃ½ mÃ¡ pÅ™Ã­liÅ¡ mnoho pÅ™Ã­kazÅ¯ na to, aby
+     mohly bÃ½t vÅ¡echny vysvÄ›tlenÃ© ve vÃ½uce jako tato. Tato vÃ½uka obsahuje
+     dostateÄnÃ© mnoÅ¾stvÃ­ pÅ™Ã­kazÅ¯ na to, aby bylo moÅ¾nÃ© pouÅ¾Ã­vat Vim jako
+     vÃ­ceÃºÄelovÃ½ editor.
 
-     Pøibli¾nı èas potøebnı ke zvládnutí této vıuky je 25-30 minut, zále¾í
-     na tom, kolik èasu strávíte pøezku¹ováním.
+     PÅ™ibliÅ¾nÃ½ Äas potÅ™ebnÃ½ ke zvlÃ¡dnutÃ­ tÃ©to vÃ½uky je 25-30 minut, zÃ¡leÅ¾Ã­
+     na tom, kolik Äasu strÃ¡vÃ­te pÅ™ezkuÅ¡ovÃ¡nÃ­m.
 
-     Pøíkazy v lekcích upravují text. Vytvoø kopii tohoto souboru pro
-     procvièování (pøi startu "vimtutor" je ji¾ toto kopie).
+     PÅ™Ã­kazy v lekcÃ­ch upravujÃ­ text. VytvoÅ™ kopii tohoto souboru pro
+     procviÄovÃ¡nÃ­ (pÅ™i startu "vimtutor" je jiÅ¾ toto kopie).
 
-     Je dùle¾ité pamatovat, ¾e tato vıuka je vytvoøena pro vıuku pou¾íváním.
-     To znamená, ¾e je potøeba si pøíkazy vyzkou¹et pro jejich správné
-     nauèení. Pokud si jen ète¹ text, pøíkazy zapomene¹!
+     Je dÅ¯leÅ¾itÃ© pamatovat, Å¾e tato vÃ½uka je vytvoÅ™ena pro vÃ½uku pouÅ¾Ã­vÃ¡nÃ­m.
+     To znamenÃ¡, Å¾e je potÅ™eba si pÅ™Ã­kazy vyzkouÅ¡et pro jejich sprÃ¡vnÃ©
+     nauÄenÃ­. Pokud si jen ÄteÅ¡ text, pÅ™Ã­kazy zapomeneÅ¡!
 
-     Nyní se pøesvìdète, ¾e Caps-Lock NENÍ stlaèenı a nìkolikrát stisknìte
-     klávesu   j   aby se kurzor posunul natolik, ¾e lekce 1.1.1 zaplní celou
+     NynÃ­ se pÅ™esvÄ›dÄte, Å¾e Caps-Lock NENÃ stlaÄenÃ½ a nÄ›kolikrÃ¡t stisknÄ›te
+     klÃ¡vesu   j   aby se kurzor posunul natolik, Å¾e lekce 1.1.1 zaplnÃ­ celou
      obrazovku.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lekce 1.1.1:  POHYB KURZORU
 
 
-   ** Pro pohyb kurzoru pou¾ívej klávesy h,j,k,l jak je znázornìno ní¾e. **
+   ** Pro pohyb kurzoru pouÅ¾Ã­vej klÃ¡vesy h,j,k,l jak je znÃ¡zornÄ›no nÃ­Å¾e. **
 	     ^
-	     k		   Funkce: Klávesa h je vlevo a vykoná pohyb vlevo.
-       < h	 l >		   Klávesa l je vpravo a vykoná pohyb vpravo.
-	     j			   Klávesa j vypadá na ¹ipku dolu.
+	     k		   Funkce: KlÃ¡vesa h je vlevo a vykonÃ¡ pohyb vlevo.
+       < h	 l >		   KlÃ¡vesa l je vpravo a vykonÃ¡ pohyb vpravo.
+	     j			   KlÃ¡vesa j vypadÃ¡ na Å¡ipku dolu.
 	     v
-  1. Pohybuj kurzorem po obrazovce dokud si na to nezvykne¹.
+  1. Pohybuj kurzorem po obrazovce dokud si na to nezvykneÅ¡.
 
-  2. Dr¾ klávesu pro pohyb dolu (j), dokud se její funkce nezopakuje.
----> Teï ví¹ jak se pøesunout na následující lekci.
+  2. DrÅ¾ klÃ¡vesu pro pohyb dolu (j), dokud se jejÃ­ funkce nezopakuje.
+---> TeÄ vÃ­Å¡ jak se pÅ™esunout na nÃ¡sledujÃ­cÃ­ lekci.
 
-  3. Pou¾itím klávesy dolu pøejdi na lekci 1.1.2.
+  3. PouÅ¾itÃ­m klÃ¡vesy dolu pÅ™ejdi na lekci 1.1.2.
 
-Poznámka: Pokud si nìkdy nejsi jist nìèím, co jsi napsal, stlaè <ESC> pro
-          pøechod do Normálního módu. Poté pøepi¹ po¾adovanı pøíkaz.
+PoznÃ¡mka: Pokud si nÄ›kdy nejsi jist nÄ›ÄÃ­m, co jsi napsal, stlaÄ <ESC> pro
+          pÅ™echod do NormÃ¡lnÃ­ho mÃ³du. PotÃ© pÅ™epiÅ¡ poÅ¾adovanÃ½ pÅ™Ã­kaz.
 
-Poznámka: Kurzorové klávesy také fungují, av¹ak pou¾ívání hjkl je rychlej¹í
-          jakmile si na nìj zvykne¹.
+PoznÃ¡mka: KurzorovÃ© klÃ¡vesy takÃ© fungujÃ­, avÅ¡ak pouÅ¾Ã­vÃ¡nÃ­ hjkl je rychlejÅ¡Ã­
+          jakmile si na nÄ›j zvykneÅ¡.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.1.2: SPU©TÌNÍ A UKONÈENÍ VIM
+		     Lekce 1.1.2: SPUÅ TÄšNÃ A UKONÄŒENÃ VIM
 
 
-  !! POZNÁMKA: Pøed vykonáním tìchto krokù si pøeèti celou lekci!!
+  !! POZNÃMKA: PÅ™ed vykonÃ¡nÃ­m tÄ›chto krokÅ¯ si pÅ™eÄti celou lekci!!
 
-  1. Stlaè <ESC> (pro uji¹tìní, ¾e se nachází¹ v Normálním módu).
+  1. StlaÄ <ESC> (pro ujiÅ¡tÄ›nÃ­, Å¾e se nachÃ¡zÃ­Å¡ v NormÃ¡lnÃ­m mÃ³du).
 
-  2. Napi¹:			:q! <ENTER>.
+  2. NapiÅ¡:			:q! <ENTER>.
 
----> Tímto ukonèí¹ editor BEZ ulo¾ení zmìn, které si vykonal.
-     Pokud chce¹ ulo¾it zmìny a ukonèit editor napi¹:
+---> TÃ­mto ukonÄÃ­Å¡ editor BEZ uloÅ¾enÃ­ zmÄ›n, kterÃ© si vykonal.
+     Pokud chceÅ¡ uloÅ¾it zmÄ›ny a ukonÄit editor napiÅ¡:
 				:wq  <ENTER>
 
-  3. A¾ se dostane¹ na pøíkazovı øádek, napi¹ pøíkaz, kterım se dostane¹ zpìt
-     do této vıuky. To mù¾e bıt: vimtutor <ENTER>
-     Bì¾nì se pou¾ívá:		 vim tutor <ENTER>
+  3. AÅ¾ se dostaneÅ¡ na pÅ™Ã­kazovÃ½ Å™Ã¡dek, napiÅ¡ pÅ™Ã­kaz, kterÃ½m se dostaneÅ¡ zpÄ›t
+     do tÃ©to vÃ½uky. To mÅ¯Å¾e bÃ½t: vimtutor <ENTER>
+     BÄ›Å¾nÄ› se pouÅ¾Ã­vÃ¡:		 vim tutor <ENTER>
 
----> 'vim' znamená spu¹tìní editoru, 'tutor' je soubor k editaci.
+---> 'vim' znamenÃ¡ spuÅ¡tÄ›nÃ­ editoru, 'tutor' je soubor k editaci.
 
-  4. Pokud si tyto kroky spolehlivì pamatuje¹, vykonej kroky 1 a¾ 3, èím¾
-     ukonèí¹ a znovu spustí¹ editor. Potom pøesuò kurzor dolu na lekci 1.1.3.
+  4. Pokud si tyto kroky spolehlivÄ› pamatujeÅ¡, vykonej kroky 1 aÅ¾ 3, ÄÃ­mÅ¾
+     ukonÄÃ­Å¡ a znovu spustÃ­Å¡ editor. Potom pÅ™esuÅˆ kurzor dolu na lekci 1.1.3.
      
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.1.3: ÚPRAVA TEXTU - MAZÁNÍ
+		     Lekce 1.1.3: ÃšPRAVA TEXTU - MAZÃNÃ
 
 
-  ** Stisknutím klávesy  x  v Normálním módu sma¾e¹ znak na místì kurzoru. **
+  ** StisknutÃ­m klÃ¡vesy  x  v NormÃ¡lnÃ­m mÃ³du smaÅ¾eÅ¡ znak na mÃ­stÄ› kurzoru. **
 
-  1. Pøesuò kurzor ní¾e na øádek oznaèenı --->.
+  1. PÅ™esuÅˆ kurzor nÃ­Å¾e na Å™Ã¡dek oznaÄenÃ½ --->.
 
-  2. K odstranìní chyb pøejdi kurzorem na znak, kterı chce¹ smazat.
+  2. K odstranÄ›nÃ­ chyb pÅ™ejdi kurzorem na znak, kterÃ½ chceÅ¡ smazat.
 
-  3. Stlaè klávesu  x  k odstranìní nechtìnıch znakù.
+  3. StlaÄ klÃ¡vesu  x  k odstranÄ›nÃ­ nechtÄ›nÃ½ch znakÅ¯.
 
-  4. Opakuj kroky 2 a¾ 4 dokud není vìta správnì.
+  4. Opakuj kroky 2 aÅ¾ 4 dokud nenÃ­ vÄ›ta sprÃ¡vnÄ›.
 
----> Krááva skoèèilla pøess mìssíc.
+---> KrÃ¡Ã¡va skoÄÄilla pÅ™ess mÄ›ssÃ­c.
 
-  5. Pokud je vìta správnì, pøejdi na lekci 1.1.4.
+  5. Pokud je vÄ›ta sprÃ¡vnÄ›, pÅ™ejdi na lekci 1.1.4.
 
-POZNÁMKA: Nesna¾ se pouze zapamatovat pøedvádìné pøíkazy, uè se je pou¾íváním.
+POZNÃMKA: NesnaÅ¾ se pouze zapamatovat pÅ™edvÃ¡dÄ›nÃ© pÅ™Ã­kazy, uÄ se je pouÅ¾Ã­vÃ¡nÃ­m.
 
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.1.4: ÚPRAVA TEXTU - VKLÁDÁNÍ
-
-
-      ** Stlaèení klávesy  i  v Normálním módu umo¾òuje vkládání textu. **
-
-  1. Pøesuò kurzor na první øádek oznaèenı --->.
-
-  2. Pro upravení prvního øádku do podoby øádku druhého, pøesuò kurzor na
-     první znak za místo, kde má bıt text vlo¾enı.
-
-  3. Stlaè  i  a napi¹ potøebnı dodatek.
-
-  4. Po opravení ka¾dé chyby stlaè <ESC> pro návrat do Normálního módu.
-     Opakuj kroky 2 a¾ 4 dokud není vìta správnì.
-
----> Nìjakı txt na této .
----> Nìjakı text chybí na této øádce.
-
-  5. Pokud ji¾ ovládá¹ vkládání textu, pøejdi na následující shrnutí.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRNUTÍ LEKCE 1.1
+		     Lekce 1.1.4: ÃšPRAVA TEXTU - VKLÃDÃNÃ
 
 
-  1. Kurzorem se pohybuje pomocí ¹ipek nebo klávesami hjkl.
+      ** StlaÄenÃ­ klÃ¡vesy  i  v NormÃ¡lnÃ­m mÃ³du umoÅ¾Åˆuje vklÃ¡dÃ¡nÃ­ textu. **
+
+  1. PÅ™esuÅˆ kurzor na prvnÃ­ Å™Ã¡dek oznaÄenÃ½ --->.
+
+  2. Pro upravenÃ­ prvnÃ­ho Å™Ã¡dku do podoby Å™Ã¡dku druhÃ©ho, pÅ™esuÅˆ kurzor na
+     prvnÃ­ znak za mÃ­sto, kde mÃ¡ bÃ½t text vloÅ¾enÃ½.
+
+  3. StlaÄ  i  a napiÅ¡ potÅ™ebnÃ½ dodatek.
+
+  4. Po opravenÃ­ kaÅ¾dÃ© chyby stlaÄ <ESC> pro nÃ¡vrat do NormÃ¡lnÃ­ho mÃ³du.
+     Opakuj kroky 2 aÅ¾ 4 dokud nenÃ­ vÄ›ta sprÃ¡vnÄ›.
+
+---> NÄ›jakÃ½ txt na tÃ©to .
+---> NÄ›jakÃ½ text chybÃ­ na tÃ©to Å™Ã¡dce.
+
+  5. Pokud jiÅ¾ ovlÃ¡dÃ¡Å¡ vklÃ¡dÃ¡nÃ­ textu, pÅ™ejdi na nÃ¡sledujÃ­cÃ­ shrnutÃ­.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       SHRNUTÃ LEKCE 1.1
+
+
+  1. Kurzorem se pohybuje pomocÃ­ Å¡ipek nebo klÃ¡vesami hjkl.
 	h (vlevo)	j (dolu)	k (nahoru)	l (vpravo)
 
-  2. Pro spu¹tìní Vimu (z pøíkazového øádku) napi¹: vim SOUBOR <ENTER>
+  2. Pro spuÅ¡tÄ›nÃ­ Vimu (z pÅ™Ã­kazovÃ©ho Å™Ã¡dku) napiÅ¡: vim SOUBOR <ENTER>
 
-  3. Pro ukonèení Vimu napi¹: <ESC>  :q!  <ENTER>  bez ulo¾ení zmìn.
-	     	       anebo: <ESC>  :wq  <ENTER>  pro ulo¾ení zmìn.
+  3. Pro ukonÄenÃ­ Vimu napiÅ¡: <ESC>  :q!  <ENTER>  bez uloÅ¾enÃ­ zmÄ›n.
+	     	       anebo: <ESC>  :wq  <ENTER>  pro uloÅ¾enÃ­ zmÄ›n.
 
-  4. Pro smazání znaku pod kurzorem napi¹ v Normálním módu:  x
+  4. Pro smazÃ¡nÃ­ znaku pod kurzorem napiÅ¡ v NormÃ¡lnÃ­m mÃ³du:  x
 
-  5. Pro vkládání textu od místa kurzoru napi¹ v Normálním módu:
-	 i     vkládanı text	<ESC>
+  5. Pro vklÃ¡dÃ¡nÃ­ textu od mÃ­sta kurzoru napiÅ¡ v NormÃ¡lnÃ­m mÃ³du:
+	 i     vklÃ¡danÃ½ text	<ESC>
 
-POZNÁMKA: Stlaèení <ESC> tì pøemístí do Normálního módu nebo zru¹í nechtìnı
-      a èásteènì dokonèenı pøíkaz.
+POZNÃMKA: StlaÄenÃ­ <ESC> tÄ› pÅ™emÃ­stÃ­ do NormÃ¡lnÃ­ho mÃ³du nebo zruÅ¡Ã­ nechtÄ›nÃ½
+      a ÄÃ¡steÄnÄ› dokonÄenÃ½ pÅ™Ã­kaz.
 
-Nyní pokraèuj Lekcí 2.
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lekce 1.2.1: PØÍKAZY MAZÁNÍ
-
-
-	       ** Pøíkaz  dw  sma¾e znaky do konce slova. **
-
-  1. Stlaè  <ESC>  k ubezpeèení, ¾e jsi v Normálním módu.
-
-  2. Pøesuò kurzor ní¾e na øádek oznaèenı --->.
-
-  3. Pøesuò kurzor na zaèátek slova, které je potøeba smazat.
-
-  4. Napi¹   dw	 , aby slovo zmizelo.
-
-POZNÁMKA: Písmena dw se zobrazí na posledním øádku obrazovky jakmile je
-	  napí¹e¹. Kdy¾ napí¹e¹ nìco ¹patnì, stlaè  <ESC>  a zaèni znova.
-
----> Jsou tu nìjaká slova zábava, která nepatøí list do této vìty.
-
-  5. Opakuj kroky 3 a¾ 4 dokud není vìta správnì a pøejdi na lekci 1.2.2.
-
+NynÃ­ pokraÄuj LekcÃ­ 2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lekce 1.2.2: VÍCE PØÍKAZÙ MAZÁNÍ
+			Lekce 1.2.1: PÅ˜ÃKAZY MAZÃNÃ
 
 
-	   ** Napsání pøíkazu  d$  sma¾e v¹e a¾ do konce øádky. **
+	       ** PÅ™Ã­kaz  dw  smaÅ¾e znaky do konce slova. **
 
-  1. Stlaè  <ESC>  k ubezpeèení, ¾e jsi v Normálním módu.
+  1. StlaÄ  <ESC>  k ubezpeÄenÃ­, Å¾e jsi v NormÃ¡lnÃ­m mÃ³du.
 
-  2. Pøesuò kurzor ní¾e na øádek oznaèenı --->.
+  2. PÅ™esuÅˆ kurzor nÃ­Å¾e na Å™Ã¡dek oznaÄenÃ½ --->.
 
-  3. Pøesuò kurzor na konec správné vìty (ZA první teèku).
+  3. PÅ™esuÅˆ kurzor na zaÄÃ¡tek slova, kterÃ© je potÅ™eba smazat.
 
-  4. Napi¹  d$  ,aby jsi smazal znaky a¾ do konce øádku.
+  4. NapiÅ¡   dw	 , aby slovo zmizelo.
 
----> Nìkdo napsal konec této vìty dvakrát. konec této vìty dvakrát.
+POZNÃMKA: PÃ­smena dw se zobrazÃ­ na poslednÃ­m Å™Ã¡dku obrazovky jakmile je
+	  napÃ­Å¡eÅ¡. KdyÅ¾ napÃ­Å¡eÅ¡ nÄ›co Å¡patnÄ›, stlaÄ  <ESC>  a zaÄni znova.
 
+---> Jsou tu nÄ›jakÃ¡ slova zÃ¡bava, kterÃ¡ nepatÅ™Ã­ list do tÃ©to vÄ›ty.
 
-  5. Pøejdi na lekci 1.2.3 pro pochopení toho, co se stalo.
-
-
+  5. Opakuj kroky 3 aÅ¾ 4 dokud nenÃ­ vÄ›ta sprÃ¡vnÄ› a pÅ™ejdi na lekci 1.2.2.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  Lekce 1.2.3: ROZ©IØOVACÍ PØÍKAZY A OBJEKTY
+		      Lekce 1.2.2: VÃCE PÅ˜ÃKAZÅ® MAZÃNÃ
 
 
-  Formát mazacího pøíkazu  d  je následující:
+	   ** NapsÃ¡nÃ­ pÅ™Ã­kazu  d$  smaÅ¾e vÅ¡e aÅ¾ do konce Å™Ã¡dky. **
 
-	 [èíslo]   d   objekt     NEBO     d   [èíslo]   objekt
+  1. StlaÄ  <ESC>  k ubezpeÄenÃ­, Å¾e jsi v NormÃ¡lnÃ­m mÃ³du.
+
+  2. PÅ™esuÅˆ kurzor nÃ­Å¾e na Å™Ã¡dek oznaÄenÃ½ --->.
+
+  3. PÅ™esuÅˆ kurzor na konec sprÃ¡vnÃ© vÄ›ty (ZA prvnÃ­ teÄku).
+
+  4. NapiÅ¡  d$  ,aby jsi smazal znaky aÅ¾ do konce Å™Ã¡dku.
+
+---> NÄ›kdo napsal konec tÃ©to vÄ›ty dvakrÃ¡t. konec tÃ©to vÄ›ty dvakrÃ¡t.
+
+
+  5. PÅ™ejdi na lekci 1.2.3 pro pochopenÃ­ toho, co se stalo.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		  Lekce 1.2.3: ROZÅ IÅ˜OVACÃ PÅ˜ÃKAZY A OBJEKTY
+
+
+  FormÃ¡t mazacÃ­ho pÅ™Ã­kazu  d  je nÃ¡sledujÃ­cÃ­:
+
+	 [ÄÃ­slo]   d   objekt     NEBO     d   [ÄÃ­slo]   objekt
   Kde:
-    èíslo - udává kolikrát se pøíkaz vykoná (volitelné, vıchozí=1).
-    d - je pøíkaz mazání.
-    objekt - udává na èem se pøíkaz vykonává (vypsané ní¾e).
+    ÄÃ­slo - udÃ¡vÃ¡ kolikrÃ¡t se pÅ™Ã­kaz vykonÃ¡ (volitelnÃ©, vÃ½chozÃ­=1).
+    d - je pÅ™Ã­kaz mazÃ¡nÃ­.
+    objekt - udÃ¡vÃ¡ na Äem se pÅ™Ã­kaz vykonÃ¡vÃ¡ (vypsanÃ© nÃ­Å¾e).
 
-  Krátkı vıpis objektù:
-    w - od kurzoru do konce slova, vèetnì mezer.
+  KrÃ¡tkÃ½ vÃ½pis objektÅ¯:
+    w - od kurzoru do konce slova, vÄetnÄ› mezer.
     e - od kurzoru do konce slova, BEZ mezer.
-    $ - od kurzoru do konce øádku.
+    $ - od kurzoru do konce Å™Ã¡dku.
 
-POZNÁMKA:  Stlaèením klávesy objektu v Normálním módu se kurzor pøesune na
-           místo upøesnìné ve vıpisu objektù.
+POZNÃMKA:  StlaÄenÃ­m klÃ¡vesy objektu v NormÃ¡lnÃ­m mÃ³du se kurzor pÅ™esune na
+           mÃ­sto upÅ™esnÄ›nÃ© ve vÃ½pisu objektÅ¯.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.2.4: VİJIMKA Z 'PØÍKAZ-OBJEKT'
+		     Lekce 1.2.4: VÃJIMKA Z 'PÅ˜ÃKAZ-OBJEKT'
 
 
-    	          ** Napsáním   dd   sma¾e¹ celı øádek. **
+    	          ** NapsÃ¡nÃ­m   dd   smaÅ¾eÅ¡ celÃ½ Å™Ã¡dek. **
 
-  Vzhledem k èastosti mazání celého øádku se autoøi Vimu rozhodli, ¾e bude
-  jednodu¹í napsat prostì dvì d k smazání celého øádku.
+  Vzhledem k Äastosti mazÃ¡nÃ­ celÃ©ho Å™Ã¡dku se autoÅ™i Vimu rozhodli, Å¾e bude
+  jednoduÅ¡Ã­ napsat prostÄ› dvÄ› d k smazÃ¡nÃ­ celÃ©ho Å™Ã¡dku.
 
-  1. Pøesuò kurzor na druhı øádek spodního textu.
-  2. Napi¹  dd  pro smazání øádku.
-  3. Pøejdi na ètvrtı øádek.
-  4. Napi¹   2dd   (vzpomeò si  èíslo-pøíkaz-objekt) pro smazání dvou øádkù.
+  1. PÅ™esuÅˆ kurzor na druhÃ½ Å™Ã¡dek spodnÃ­ho textu.
+  2. NapiÅ¡  dd  pro smazÃ¡nÃ­ Å™Ã¡dku.
+  3. PÅ™ejdi na ÄtvrtÃ½ Å™Ã¡dek.
+  4. NapiÅ¡   2dd   (vzpomeÅˆ si  ÄÃ­slo-pÅ™Ã­kaz-objekt) pro smazÃ¡nÃ­ dvou Å™Ã¡dkÅ¯.
 
-      1)  Rù¾e jsou èervené,
-      2)  Bláto je zábavné,
-      3)  Fialky jsou modré,
-      4)  Mám auto,
-      5)  Hodinky ukazují èas,
-      6)  Cukr je sladkı,
+      1)  RÅ¯Å¾e jsou ÄervenÃ©,
+      2)  BlÃ¡to je zÃ¡bavnÃ©,
+      3)  Fialky jsou modrÃ©,
+      4)  MÃ¡m auto,
+      5)  Hodinky ukazujÃ­ Äas,
+      6)  Cukr je sladkÃ½,
       7)  A to jsi i ty.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			   Lekce 1.2.5: PØÍKAZ UNDO
+			   Lekce 1.2.5: PÅ˜ÃKAZ UNDO
 
 
-   ** Stlaè  u	pro vrácení posledního pøíkazu,  U  pro celou øádku. **
+   ** StlaÄ  u	pro vrÃ¡cenÃ­ poslednÃ­ho pÅ™Ã­kazu,  U  pro celou Å™Ã¡dku. **
 
-  1. Pøesuò kurzor ní¾e na øádek oznaèenı ---> a pøemísti ho na první chybu.
-  2. Napi¹  x  pro smazání prvního nechtìného znaku.
-  3. Teï napi¹  u  èím¾ vrátí¹ zpìt poslední vykonanı pøíkaz.
-  4. Nyní oprav v¹echny chyby na øádku pomocí pøíkazu  x  .
-  5. Napi¹ velké  U  èím¾ vrátí¹ øádek do pùvodního stavu.
-  6. Teï napi¹  u  nìkolikrát, èím¾ vrátí¹ zpìt pøíkaz  U  .
-  7. Stlaè CTRL-R (klávesu CTRL dr¾ stlaèenou a stiskni R) nìkolikrát,
-     èím¾ vrátí¹ zpìt pøedtím vrácené pøíkazy (redo).
+  1. PÅ™esuÅˆ kurzor nÃ­Å¾e na Å™Ã¡dek oznaÄenÃ½ ---> a pÅ™emÃ­sti ho na prvnÃ­ chybu.
+  2. NapiÅ¡  x  pro smazÃ¡nÃ­ prvnÃ­ho nechtÄ›nÃ©ho znaku.
+  3. TeÄ napiÅ¡  u  ÄÃ­mÅ¾ vrÃ¡tÃ­Å¡ zpÄ›t poslednÃ­ vykonanÃ½ pÅ™Ã­kaz.
+  4. NynÃ­ oprav vÅ¡echny chyby na Å™Ã¡dku pomocÃ­ pÅ™Ã­kazu  x  .
+  5. NapiÅ¡ velkÃ©  U  ÄÃ­mÅ¾ vrÃ¡tÃ­Å¡ Å™Ã¡dek do pÅ¯vodnÃ­ho stavu.
+  6. TeÄ napiÅ¡  u  nÄ›kolikrÃ¡t, ÄÃ­mÅ¾ vrÃ¡tÃ­Å¡ zpÄ›t pÅ™Ã­kaz  U  .
+  7. StlaÄ CTRL-R (klÃ¡vesu CTRL drÅ¾ stlaÄenou a stiskni R) nÄ›kolikrÃ¡t,
+     ÄÃ­mÅ¾ vrÃ¡tÃ­Å¡ zpÄ›t pÅ™edtÃ­m vrÃ¡cenÃ© pÅ™Ã­kazy (redo).
 
----> Opprav chybby nna toomto øádku a nahraï je pommocí undo.
+---> Opprav chybby nna toomto Å™Ã¡dku a nahraÄ je pommocÃ­ undo.
 
-  8. Toto jsou velmi u¾iteèné pøíkazy. Nyní pøejdi na souhrn Lekce 1.2.
+  8. Toto jsou velmi uÅ¾iteÄnÃ© pÅ™Ã­kazy. NynÃ­ pÅ™ejdi na souhrn Lekce 1.2.
 
   
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRNUTÍ LEKCE 1.2
+			       SHRNUTÃ LEKCE 1.2
 
 
-  1. Pro smazání znakù od kurzoru do konce slova napi¹:    dw
+  1. Pro smazÃ¡nÃ­ znakÅ¯ od kurzoru do konce slova napiÅ¡:    dw
 
-  2. Pro smazání znakù od kurzoru do konce øádku napi¹:    d$
+  2. Pro smazÃ¡nÃ­ znakÅ¯ od kurzoru do konce Å™Ã¡dku napiÅ¡:    d$
 
-  3. Pro smazání celého øádku napi¹:    dd
+  3. Pro smazÃ¡nÃ­ celÃ©ho Å™Ã¡dku napiÅ¡:    dd
 
-  4. Formát pøíkazu v Normálním módu je:
+  4. FormÃ¡t pÅ™Ã­kazu v NormÃ¡lnÃ­m mÃ³du je:
 
-       [èíslo]   pøíkaz   objekt    NEBO    pøíkaz     [èíslo]   objekt
+       [ÄÃ­slo]   pÅ™Ã­kaz   objekt    NEBO    pÅ™Ã­kaz     [ÄÃ­slo]   objekt
      kde:
-       èíslo - udává poèet opakování pøíkazu
-       pøíkaz - udává co je tøeba vykonat, napøíklad  d  ma¾e
-       objekt - udává rozsah pøíkazu, napøíklad  w  (slovo),
-		$ (do konce øádku), atd.
+       ÄÃ­slo - udÃ¡vÃ¡ poÄet opakovÃ¡nÃ­ pÅ™Ã­kazu
+       pÅ™Ã­kaz - udÃ¡vÃ¡ co je tÅ™eba vykonat, napÅ™Ã­klad  d  maÅ¾e
+       objekt - udÃ¡vÃ¡ rozsah pÅ™Ã­kazu, napÅ™Ã­klad  w  (slovo),
+		$ (do konce Å™Ã¡dku), atd.
 
-  5. Pro vrácení pøede¹lé èinnosti, napi¹:	u (malé u)
-     Pro vrácení v¹ech úprav na øádku napi¹:	U (velké U)
-     Pro vrácení vrácenıch úprav (redo) napi¹:	CTRL-R
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lekce 1.3.1: PØÍKAZ VLO®IT
-
-
-       ** Pøíka  p  vlo¾í poslední vymazanı text za kurzor. **
-
-  1. Pøesuò kurzor ní¾e na poslední øádek textu.
-
-  2. Napi¹  dd  pro smazání øádku a jeho ulo¾ení do bufferu.
-
-  3. Pøesuò kurzor Vİ©E tam, kam smazanı øádek patøí.
-
-  4. V Normálním módu napi¹  p  pro opìtné vlo¾ení øádku.
-
-  5. Opakuj kroky 2 a¾ 4 dokud øádky nebudou ve správném poøadí.
-
-     d) Také se doká¾e¹ vzdìlávat?
-     b) Fialky jsou modré,
-     c) Inteligence se uèí,
-     a) Rù¾e jsou èervené,
-
-
+  5. Pro vrÃ¡cenÃ­ pÅ™edeÅ¡lÃ© Äinnosti, napiÅ¡:	u (malÃ© u)
+     Pro vrÃ¡cenÃ­ vÅ¡ech Ãºprav na Å™Ã¡dku napiÅ¡:	U (velkÃ© U)
+     Pro vrÃ¡cenÃ­ vrÃ¡cenÃ½ch Ãºprav (redo) napiÅ¡:	CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lekce 1.3.2: PØÍKAZ NAHRAZENÍ
+			 Lekce 1.3.1: PÅ˜ÃKAZ VLOÅ½IT
 
 
-          ** Napsáním  r  a znaku se nahradí znak pod kurzorem. **
+       ** PÅ™Ã­ka  p  vloÅ¾Ã­ poslednÃ­ vymazanÃ½ text za kurzor. **
 
-  1. Pøesuò kurzor ní¾e na první øádek oznaèenı --->.
+  1. PÅ™esuÅˆ kurzor nÃ­Å¾e na poslednÃ­ Å™Ã¡dek textu.
 
-  2. Pøesuò kurzor na zaèátek první chyby.
+  2. NapiÅ¡  dd  pro smazÃ¡nÃ­ Å™Ã¡dku a jeho uloÅ¾enÃ­ do bufferu.
 
-  3. Napi¹  r  a potom znak, kterı nahradí chybu.
+  3. PÅ™esuÅˆ kurzor VÃÅ E tam, kam smazanÃ½ Å™Ã¡dek patÅ™Ã­.
 
-  4. Opakuj kroky 2 a¾ 3 dokud není první øádka správnì.
+  4. V NormÃ¡lnÃ­m mÃ³du napiÅ¡  p  pro opÄ›tnÃ© vloÅ¾enÃ­ Å™Ã¡dku.
 
---->  Kdi¾ byl pzán tento øádeg, nìkdu stla¾il ¹paqné klávesy!
---->  Kdy¾ byl psán tento øádek, nìkdo stlaèíl ¹patné klávesy!
+  5. Opakuj kroky 2 aÅ¾ 4 dokud Å™Ã¡dky nebudou ve sprÃ¡vnÃ©m poÅ™adÃ­.
 
-  5. Nyní pøejdi na Lekci 1.3.2.
-
-POZNÁMKA: Zapamatuj si, ¾e by ses mìl uèit pou¾íváním, ne zapamatováním.
+     d) TakÃ© se dokÃ¡Å¾eÅ¡ vzdÄ›lÃ¡vat?
+     b) Fialky jsou modrÃ©,
+     c) Inteligence se uÄÃ­,
+     a) RÅ¯Å¾e jsou ÄervenÃ©,
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		           Lekce 1.3.3: PØÍKAZ ÚPRAVY
+		       Lekce 1.3.2: PÅ˜ÃKAZ NAHRAZENÃ
 
 
-	  ** Pokud chce¹ zmìnit èást nebo celé slovo, napi¹  cw . **
+          ** NapsÃ¡nÃ­m  r  a znaku se nahradÃ­ znak pod kurzorem. **
 
-  1. Pøesuò kurzor ní¾e na první øádek oznaèenı --->.
+  1. PÅ™esuÅˆ kurzor nÃ­Å¾e na prvnÃ­ Å™Ã¡dek oznaÄenÃ½ --->.
 
-  2. Umísti kurzor na písmeno i v slovì øi»ok.
+  2. PÅ™esuÅˆ kurzor na zaÄÃ¡tek prvnÃ­ chyby.
 
-  3. Napi¹  cw  a oprav slovo (v tomto pøípadì napi¹ 'ádek'.)
+  3. NapiÅ¡  r  a potom znak, kterÃ½ nahradÃ­ chybu.
 
-  4. Stlaè <ESC> a pøejdi na dal¹í chybu (první znak, kterı tøeba zmìnit.)
+  4. Opakuj kroky 2 aÅ¾ 3 dokud nenÃ­ prvnÃ­ Å™Ã¡dka sprÃ¡vnÄ›.
 
-  5. Opakuj kroky 3 a¾ 4 dokud není první vìta stejná jako ta druhá.
+--->  KdiÅ¾ byl pzÃ¡n tento Å™Ã¡deg, nÄ›kdu stlaÅ¾il Å¡paqnÃ© klÃ¡vesy!
+--->  KdyÅ¾ byl psÃ¡n tento Å™Ã¡dek, nÄ›kdo stlaÄÃ­l Å¡patnÃ© klÃ¡vesy!
 
----> Tento øi»ok má nìkolik skic, které psadoinsa zmìnit pasdgf pøíkazu.
----> Tento øádek má nìkolik slov, které potøebují zmìnit pomocí pøíkazu.
+  5. NynÃ­ pÅ™ejdi na Lekci 1.3.2.
 
-V¹imni si, ¾e  cw  nejen nahrazuje slovo, ale také pøemístí do vkládání.
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lekce 1.3.4: VÍCE ZMÌN POU®ITÍM c
-
-
-   ** Pøíkaz pro úpravu se dru¾í se stejnımi objekty jako ten pro mazání. **
-
-  1. Pøíkaz pro úpravu pracuje stejnì jako pro mazání. Formát je:
-
-       [èíslo]   c   objekt	 NEBO	   c	[èíslo]   objekt
-
-  2. Objekty jsou také shodné, jako napø.: w (slovo), $ (konec øádku), atd.
-
-  3. Pøejdi ní¾e na první øádek oznaèenı --->.
-
-  4. Pøesuò kurzor na první rozdíl.
-
-  5. Napi¹  c$  pro upravení zbytku øádku podle toho druhého a stlaè <ESC>.
-
----> Konec tohoto øádku potøebuje pomoc, aby byl jako ten druhı.
----> Konec tohoto øádku potøebuje opravit pou¾itím pøíkazu  c$  .
+POZNÃMKA: Zapamatuj si, Å¾e by ses mÄ›l uÄit pouÅ¾Ã­vÃ¡nÃ­m, ne zapamatovÃ¡nÃ­m.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRNUTÍ LEKCE 1.3
+		           Lekce 1.3.3: PÅ˜ÃKAZ ÃšPRAVY
 
 
-  1. Pro vlo¾ení textu, kterı byl smazán, napi¹  p  . To vlo¾í smazanı text
-     ZA kurzor (pokud byl øádek smazanı, pøejde na øádek pod kurzorem).
+	  ** Pokud chceÅ¡ zmÄ›nit ÄÃ¡st nebo celÃ© slovo, napiÅ¡  cw . **
 
-  2. Pro nahrazení znaku pod kurzorem, napi¹  r  a potom znak, kterım
-     chce¹ pùvodní znak nahradit.
+  1. PÅ™esuÅˆ kurzor nÃ­Å¾e na prvnÃ­ Å™Ã¡dek oznaÄenÃ½ --->.
 
-  3. Pøíkaz na upravování umo¾òuje zmìnit specifikovanı objekt od kurzoru
-     do konce objektu. Napøíklad: Napi¹  cw  ,èím¾ zmìní¹ text od pozice
-     kurzoru do konce slova,  c$  zmìní text do konce øádku.
+  2. UmÃ­sti kurzor na pÃ­smeno i v slovÄ› Å™iÅ¥ok.
 
-  4. Formát pro nahrazování je:
+  3. NapiÅ¡  cw  a oprav slovo (v tomto pÅ™Ã­padÄ› napiÅ¡ 'Ã¡dek'.)
 
-	 [èíslo]   c   objekt      NEBO     c   [èíslo]   objekt
+  4. StlaÄ <ESC> a pÅ™ejdi na dalÅ¡Ã­ chybu (prvnÃ­ znak, kterÃ½ tÅ™eba zmÄ›nit.)
 
-Nyní pøejdi na následující lekci.
+  5. Opakuj kroky 3 aÅ¾ 4 dokud nenÃ­ prvnÃ­ vÄ›ta stejnÃ¡ jako ta druhÃ¡.
+
+---> Tento Å™iÅ¥ok mÃ¡ nÄ›kolik skic, kterÃ© psadoinsa zmÄ›nit pasdgf pÅ™Ã­kazu.
+---> Tento Å™Ã¡dek mÃ¡ nÄ›kolik slov, kterÃ© potÅ™ebujÃ­ zmÄ›nit pomocÃ­ pÅ™Ã­kazu.
+
+VÅ¡imni si, Å¾e  cw  nejen nahrazuje slovo, ale takÃ© pÅ™emÃ­stÃ­ do vklÃ¡dÃ¡nÃ­.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       Lekce 1.3.4: VÃCE ZMÄšN POUÅ½ITÃM c
+
+
+   ** PÅ™Ã­kaz pro Ãºpravu se druÅ¾Ã­ se stejnÃ½mi objekty jako ten pro mazÃ¡nÃ­. **
+
+  1. PÅ™Ã­kaz pro Ãºpravu pracuje stejnÄ› jako pro mazÃ¡nÃ­. FormÃ¡t je:
+
+       [ÄÃ­slo]   c   objekt	 NEBO	   c	[ÄÃ­slo]   objekt
+
+  2. Objekty jsou takÃ© shodnÃ©, jako napÅ™.: w (slovo), $ (konec Å™Ã¡dku), atd.
+
+  3. PÅ™ejdi nÃ­Å¾e na prvnÃ­ Å™Ã¡dek oznaÄenÃ½ --->.
+
+  4. PÅ™esuÅˆ kurzor na prvnÃ­ rozdÃ­l.
+
+  5. NapiÅ¡  c$  pro upravenÃ­ zbytku Å™Ã¡dku podle toho druhÃ©ho a stlaÄ <ESC>.
+
+---> Konec tohoto Å™Ã¡dku potÅ™ebuje pomoc, aby byl jako ten druhÃ½.
+---> Konec tohoto Å™Ã¡dku potÅ™ebuje opravit pouÅ¾itÃ­m pÅ™Ã­kazu  c$  .
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       SHRNUTÃ LEKCE 1.3
+
+
+  1. Pro vloÅ¾enÃ­ textu, kterÃ½ byl smazÃ¡n, napiÅ¡  p  . To vloÅ¾Ã­ smazanÃ½ text
+     ZA kurzor (pokud byl Å™Ã¡dek smazanÃ½, pÅ™ejde na Å™Ã¡dek pod kurzorem).
+
+  2. Pro nahrazenÃ­ znaku pod kurzorem, napiÅ¡  r  a potom znak, kterÃ½m
+     chceÅ¡ pÅ¯vodnÃ­ znak nahradit.
+
+  3. PÅ™Ã­kaz na upravovÃ¡nÃ­ umoÅ¾Åˆuje zmÄ›nit specifikovanÃ½ objekt od kurzoru
+     do konce objektu. NapÅ™Ã­klad: NapiÅ¡  cw  ,ÄÃ­mÅ¾ zmÄ›nÃ­Å¡ text od pozice
+     kurzoru do konce slova,  c$  zmÄ›nÃ­ text do konce Å™Ã¡dku.
+
+  4. FormÃ¡t pro nahrazovÃ¡nÃ­ je:
+
+	 [ÄÃ­slo]   c   objekt      NEBO     c   [ÄÃ­slo]   objekt
+
+NynÃ­ pÅ™ejdi na nÃ¡sledujÃ­cÃ­ lekci.
 
 
 
@@ -392,225 +392,225 @@ Nyní pøejdi na následující lekci.
 		      Lekce 1.4.1: POZICE A STATUS SOUBORU
 
 
-  ** Stlaè CTRL-g pro zobrazení své pozice v souboru a statusu souboru.
-     Stlaè SHIFT-G pro pøechod na øádek v souboru. **
+  ** StlaÄ CTRL-g pro zobrazenÃ­ svÃ© pozice v souboru a statusu souboru.
+     StlaÄ SHIFT-G pro pÅ™echod na Å™Ã¡dek v souboru. **
 
-  Poznámka: Pøeèti si celou lekci ne¾ zaène¹ vykonávat kroky!!
+  PoznÃ¡mka: PÅ™eÄti si celou lekci neÅ¾ zaÄneÅ¡ vykonÃ¡vat kroky!!
 
-  1. Dr¾ klávesu Ctrl stlaèenou a stiskni  g  . Vespod obrazovky se zobrazí
-     stavovı øádek s názvem souboru a øádkou na které se nachází¹. Zapamatuj
-     si èíslo øádku pro krok 3.
+  1. DrÅ¾ klÃ¡vesu Ctrl stlaÄenou a stiskni  g  . Vespod obrazovky se zobrazÃ­
+     stavovÃ½ Å™Ã¡dek s nÃ¡zvem souboru a Å™Ã¡dkou na kterÃ© se nachÃ¡zÃ­Å¡. Zapamatuj
+     si ÄÃ­slo Å™Ã¡dku pro krok 3.
 
-  2. Stlaè shift-G pro pøesun na konec souboru.
+  2. StlaÄ shift-G pro pÅ™esun na konec souboru.
 
-  3. Napi¹ èíslo øádku na kterém si se nacházel a stlaè shift-G. To tì
-     vrátí na øádek, na kterém jsi døíve stiskl Ctrl-g.
-     (Kdy¾ pí¹e¹ èísla, tak se NEZOBRAZUJÍ na obrazovce.)
+  3. NapiÅ¡ ÄÃ­slo Å™Ã¡dku na kterÃ©m si se nachÃ¡zel a stlaÄ shift-G. To tÄ›
+     vrÃ¡tÃ­ na Å™Ã¡dek, na kterÃ©m jsi dÅ™Ã­ve stiskl Ctrl-g.
+     (KdyÅ¾ pÃ­Å¡eÅ¡ ÄÃ­sla, tak se NEZOBRAZUJÃ na obrazovce.)
 
-  4. Pokud se cítí¹ schopnı vykonat tyto kroky, vykonej je.
+  4. Pokud se cÃ­tÃ­Å¡ schopnÃ½ vykonat tyto kroky, vykonej je.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lekce 1.4.2: PØÍKAZ VYHLEDÁVÁNÍ
+			Lekce 1.4.2: PÅ˜ÃKAZ VYHLEDÃVÃNÃ
 
 
-     ** Napi¹  /  následované øetìzcem pro vyhledání onoho øetìzce. **
+     ** NapiÅ¡  /  nÃ¡sledovanÃ© Å™etÄ›zcem pro vyhledÃ¡nÃ­ onoho Å™etÄ›zce. **
 
-  1. Stiskni / v Normálním módu.  V¹imni si, ¾e tento znak se spolu s
-     kurzorem zobrazí v dolní èásti obrazovky jako pøíkaz  :  .
+  1. Stiskni / v NormÃ¡lnÃ­m mÃ³du.  VÅ¡imni si, Å¾e tento znak se spolu s
+     kurzorem zobrazÃ­ v dolnÃ­ ÄÃ¡sti obrazovky jako pÅ™Ã­kaz  :  .
 
-  2. Nyní napi¹ 'chhybba' <ENTER>.  To je slovo, které chce¹ vyhledat.
+  2. NynÃ­ napiÅ¡ 'chhybba' <ENTER>.  To je slovo, kterÃ© chceÅ¡ vyhledat.
 
-  3. Pro vyhledání dal¹ího vısledku stejného øetìzce, jednodu¹e stlaè  n  .
-     Pro vyhledání dal¹ího vısledku stejného øetìzce opaènım smìrem, stiskni
+  3. Pro vyhledÃ¡nÃ­ dalÅ¡Ã­ho vÃ½sledku stejnÃ©ho Å™etÄ›zce, jednoduÅ¡e stlaÄ  n  .
+     Pro vyhledÃ¡nÃ­ dalÅ¡Ã­ho vÃ½sledku stejnÃ©ho Å™etÄ›zce opaÄnÃ½m smÄ›rem, stiskni
      Shift-N.
 
-  4. Pokud chce¹ vyhledat øetìzec v opaèném smìru, pou¾ij pøíkaz  ?  místo
-     pøíkazu  /  .
+  4. Pokud chceÅ¡ vyhledat Å™etÄ›zec v opaÄnÃ©m smÄ›ru, pouÅ¾ij pÅ™Ã­kaz  ?  mÃ­sto
+     pÅ™Ã­kazu  /  .
 
----> "chhybba" není zpùsob, jak hláskovat chyba; chhybba je chyba.
+---> "chhybba" nenÃ­ zpÅ¯sob, jak hlÃ¡skovat chyba; chhybba je chyba.
 
-Poznámka: Kdy¾ vyhledávání dosáhne konce souboru, bude pokraèovat na jeho
-          zaèátku.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lekce 1.4.3: VYHLEDÁVÁNÍ PÁROVÉ ZÁVORKY
-
-
-	      ** Napi¹  %  pro nalezení párové ),], nebo } . **
-
-  1. Pøemísti kurzor na kteroukoli (, [, nebo { v øádku oznaèeném --->.
-
-  2. Nyní napi¹ znak  %  .
-
-  3. Kurzor se pøemístí na odpovídající závorku.
-
-  4. Stlaè  %  pro pøesun kurzoru zpìt na otvírající závorku.
-
----> Toto ( je testovací øádek ('s, ['s ] a {'s } v nìm. ))
-
-Poznámka: Toto je velmi u¾iteèné pøí ladìní programu s chybìjícími
-          uzavíracími závorkami.
-
-
-
-
+PoznÃ¡mka: KdyÅ¾ vyhledÃ¡vÃ¡nÃ­ dosÃ¡hne konce souboru, bude pokraÄovat na jeho
+          zaÄÃ¡tku.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lekce 1.4.4: ZPÙSOB JAK ZMÌNIT CHYBY
+		   Lekce 1.4.3: VYHLEDÃVÃNÃ PÃROVÃ‰ ZÃVORKY
+
+
+	      ** NapiÅ¡  %  pro nalezenÃ­ pÃ¡rovÃ© ),], nebo } . **
+
+  1. PÅ™emÃ­sti kurzor na kteroukoli (, [, nebo { v Å™Ã¡dku oznaÄenÃ©m --->.
+
+  2. NynÃ­ napiÅ¡ znak  %  .
+
+  3. Kurzor se pÅ™emÃ­stÃ­ na odpovÃ­dajÃ­cÃ­ zÃ¡vorku.
+
+  4. StlaÄ  %  pro pÅ™esun kurzoru zpÄ›t na otvÃ­rajÃ­cÃ­ zÃ¡vorku.
+
+---> Toto ( je testovacÃ­ Å™Ã¡dek ('s, ['s ] a {'s } v nÄ›m. ))
+
+PoznÃ¡mka: Toto je velmi uÅ¾iteÄnÃ© pÅ™Ã­ ladÄ›nÃ­ programu s chybÄ›jÃ­cÃ­mi
+          uzavÃ­racÃ­mi zÃ¡vorkami.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lekce 1.4.4: ZPÅ®SOB JAK ZMÄšNIT CHYBY
 		      
 
-   ** Napi¹  :s/staré/nové/g  pro nahrazení slova 'nové' za 'staré'. **
+   ** NapiÅ¡  :s/starÃ©/novÃ©/g  pro nahrazenÃ­ slova 'novÃ©' za 'starÃ©'. **
 
-  1. Pøesuò kurzor na øádek oznaèenı --->.
+  1. PÅ™esuÅˆ kurzor na Å™Ã¡dek oznaÄenÃ½ --->.
 
-  2. Napi¹  :s/dobréé/dobré <ENTER> .  V¹imni si, ¾e tento pøíkaz zmìní pouze
-     první vıskyt v øádku.
+  2. NapiÅ¡  :s/dobrÃ©Ã©/dobrÃ© <ENTER> .  VÅ¡imni si, Å¾e tento pÅ™Ã­kaz zmÄ›nÃ­ pouze
+     prvnÃ­ vÃ½skyt v Å™Ã¡dku.
 
-  3. Nyní napi¹	 :s/dobréé/dobré/g  co¾ znamená celkové nahrazení v øádku.
-     Toto nahradí v¹echny vıskyty v øádku.
+  3. NynÃ­ napiÅ¡	 :s/dobrÃ©Ã©/dobrÃ©/g  coÅ¾ znamenÃ¡ celkovÃ© nahrazenÃ­ v Å™Ã¡dku.
+     Toto nahradÃ­ vÅ¡echny vÃ½skyty v Å™Ã¡dku.
 
----> dobréé suroviny a dobréé náèiní jsou základem dobréé kuchynì.
+---> dobrÃ©Ã© suroviny a dobrÃ©Ã© nÃ¡ÄinÃ­ jsou zÃ¡kladem dobrÃ©Ã© kuchynÄ›.
 
-  4. Pro zmìnu v¹ech vıskytù øetìzce mezi dvìma øádky,
-     Napi¹   :#,#s/staré/nové/g  kde #,# jsou èísla onìch øádek.
-     Napi¹   :%s/staré/nové/g    pro zmìnu v¹ech vıskytù v celém souboru.
-
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRNUTÍ LEKCE 1.4
-
-
-  1. Ctrl-g  vypí¹e tvou pozici v souboru a status souboru.
-     Shift-G  tì pøemístí na konec souboru.  Èíslo následované
-     Shift-G  tì pøesune na dané èíslo øádku.
-
-  2. Napsání  /  následované øetìzcem vyhledá øetìzec smìrem DOPØEDU.
-     Napsání  ?  následované øetìzcem vyhledá øetìzec smìrem DOZADU.
-     Napsání  n  po vyhledávání najde následující vıskyt øetìzce ve stejném
-     smìru, Shift-N ve smìru opaèném.
-
-  3. Stisknutí  %  kdy¾ je kurzor na (,),[,],{, nebo } najde odpovídající
-     párovou závorku.
-
-  4. Pro nahrazení nového za první starı v øádku napi¹     :s/staré/nové
-     Pro nahrazení nového za v¹echny staré v øádku napi¹   :s/staré/nové/g
-     Pro nahrazení øetìzcù mezi dvìmi øádkami # napi¹      :#,#s/staré/nové/g
-     Pro nahrazení v¹ech vıskytù v souboru napi¹	   :%s/staré/nové/g
-     Pro potvrzení ka¾dého nahrazení pøidej 'c'		   :%s/staré/nové/gc
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lekce 1.5.1: JAK VYKONAT VNÌJ©Í PØÍKAZ
-
-
-   ** Napi¹  :!  následované vnìj¹ím pøíkazem pro spu¹tìní pøíkazu. **
-
-  1. Napi¹ obvyklı pøíkaz  :  , kterı umístí kurzor na spodek obrazovky
-     To umo¾ní napsat pøíkaz.
-
-  2. Nyní stiskni  !  (vykøièník). To umo¾ní vykonat jakıkoliv vnìj¹í
-     pøíkaz z pøíkazového øádku.
-
-  3. Napøíklad napi¹  ls  za ! a stiskni <ENTER>.  Tento pøíkaz zobrazí
-     obsah tvého adresáøe jako v pøíkazovém øádku.
-     Vyzkou¹ej  :!dir  pokud ls nefunguje.
-
-Poznámka:  Takto je mo¾né vykonat jakıkoliv pøíkaz.
-
-Poznámka:  V¹echny pøíkazy  :  musí bıt dokonèené stisknutím <ENTER>
+  4. Pro zmÄ›nu vÅ¡ech vÃ½skytÅ¯ Å™etÄ›zce mezi dvÄ›ma Å™Ã¡dky,
+     NapiÅ¡   :#,#s/starÃ©/novÃ©/g  kde #,# jsou ÄÃ­sla onÄ›ch Å™Ã¡dek.
+     NapiÅ¡   :%s/starÃ©/novÃ©/g    pro zmÄ›nu vÅ¡ech vÃ½skytÅ¯ v celÃ©m souboru.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.5.2: VÍCE O UKLÁDÁNÍ SOUBORÙ
+			       SHRNUTÃ LEKCE 1.4
 
 
-	    ** Pro ulo¾ení zmìn v souboru napi¹  :w SOUBOR. **
+  1. Ctrl-g  vypÃ­Å¡e tvou pozici v souboru a status souboru.
+     Shift-G  tÄ› pÅ™emÃ­stÃ­ na konec souboru.  ÄŒÃ­slo nÃ¡sledovanÃ©
+     Shift-G  tÄ› pÅ™esune na danÃ© ÄÃ­slo Å™Ã¡dku.
 
-  1. Napi¹  :!dir  nebo  :!ls  pro vıpis aktuálního adresáøe.
-     U¾ ví¹, ¾e za tímto musí¹ stisknout <ENTER>.
+  2. NapsÃ¡nÃ­  /  nÃ¡sledovanÃ© Å™etÄ›zcem vyhledÃ¡ Å™etÄ›zec smÄ›rem DOPÅ˜EDU.
+     NapsÃ¡nÃ­  ?  nÃ¡sledovanÃ© Å™etÄ›zcem vyhledÃ¡ Å™etÄ›zec smÄ›rem DOZADU.
+     NapsÃ¡nÃ­  n  po vyhledÃ¡vÃ¡nÃ­ najde nÃ¡sledujÃ­cÃ­ vÃ½skyt Å™etÄ›zce ve stejnÃ©m
+     smÄ›ru, Shift-N ve smÄ›ru opaÄnÃ©m.
 
-  2. Vyber si název souboru, kterı je¹tì neexistuje, napøíklad TEST.
+  3. StisknutÃ­  %  kdyÅ¾ je kurzor na (,),[,],{, nebo } najde odpovÃ­dajÃ­cÃ­
+     pÃ¡rovou zÃ¡vorku.
 
-  3. Nyní napi¹:  :w TEST  (kde TEST je vybranı název souboru.)
+  4. Pro nahrazenÃ­ novÃ©ho za prvnÃ­ starÃ½ v Å™Ã¡dku napiÅ¡     :s/starÃ©/novÃ©
+     Pro nahrazenÃ­ novÃ©ho za vÅ¡echny starÃ© v Å™Ã¡dku napiÅ¡   :s/starÃ©/novÃ©/g
+     Pro nahrazenÃ­ Å™etÄ›zcÅ¯ mezi dvÄ›mi Å™Ã¡dkami # napiÅ¡      :#,#s/starÃ©/novÃ©/g
+     Pro nahrazenÃ­ vÅ¡ech vÃ½skytÅ¯ v souboru napiÅ¡	   :%s/starÃ©/novÃ©/g
+     Pro potvrzenÃ­ kaÅ¾dÃ©ho nahrazenÃ­ pÅ™idej 'c'		   :%s/starÃ©/novÃ©/gc
 
-  4. To ulo¾í celı soubor  (Vıuka Vimu)  pod názvem TEST.
-     Pro ovìøení napi¹ znovu :!dir  , èím¾ zobrazí¹ obsah adresáøe.
 
-Poznámka: Jakmile ukonèí¹ Vim a znovu ho spustí¹ s názvem souboru TEST,
-          soubor bude pøesná kopie vıuky, kdy¾ si ji ukládal.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Lekce 1.5.1: JAK VYKONAT VNÄšJÅ Ã PÅ˜ÃKAZ
 
-  5. Nyní odstraò soubor napsáním (MS-DOS):    :!del TEST
+
+   ** NapiÅ¡  :!  nÃ¡sledovanÃ© vnÄ›jÅ¡Ã­m pÅ™Ã­kazem pro spuÅ¡tÄ›nÃ­ pÅ™Ã­kazu. **
+
+  1. NapiÅ¡ obvyklÃ½ pÅ™Ã­kaz  :  , kterÃ½ umÃ­stÃ­ kurzor na spodek obrazovky
+     To umoÅ¾nÃ­ napsat pÅ™Ã­kaz.
+
+  2. NynÃ­ stiskni  !  (vykÅ™iÄnÃ­k). To umoÅ¾nÃ­ vykonat jakÃ½koliv vnÄ›jÅ¡Ã­
+     pÅ™Ã­kaz z pÅ™Ã­kazovÃ©ho Å™Ã¡dku.
+
+  3. NapÅ™Ã­klad napiÅ¡  ls  za ! a stiskni <ENTER>.  Tento pÅ™Ã­kaz zobrazÃ­
+     obsah tvÃ©ho adresÃ¡Å™e jako v pÅ™Ã­kazovÃ©m Å™Ã¡dku.
+     VyzkouÅ¡ej  :!dir  pokud ls nefunguje.
+
+PoznÃ¡mka:  Takto je moÅ¾nÃ© vykonat jakÃ½koliv pÅ™Ã­kaz.
+
+PoznÃ¡mka:  VÅ¡echny pÅ™Ã­kazy  :  musÃ­ bÃ½t dokonÄenÃ© stisknutÃ­m <ENTER>
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lekce 1.5.2: VÃCE O UKLÃDÃNÃ SOUBORÅ®
+
+
+	    ** Pro uloÅ¾enÃ­ zmÄ›n v souboru napiÅ¡  :w SOUBOR. **
+
+  1. NapiÅ¡  :!dir  nebo  :!ls  pro vÃ½pis aktuÃ¡lnÃ­ho adresÃ¡Å™e.
+     UÅ¾ vÃ­Å¡, Å¾e za tÃ­mto musÃ­Å¡ stisknout <ENTER>.
+
+  2. Vyber si nÃ¡zev souboru, kterÃ½ jeÅ¡tÄ› neexistuje, napÅ™Ã­klad TEST.
+
+  3. NynÃ­ napiÅ¡:  :w TEST  (kde TEST je vybranÃ½ nÃ¡zev souboru.)
+
+  4. To uloÅ¾Ã­ celÃ½ soubor  (VÃ½uka Vimu)  pod nÃ¡zvem TEST.
+     Pro ovÄ›Å™enÃ­ napiÅ¡ znovu :!dir  , ÄÃ­mÅ¾ zobrazÃ­Å¡ obsah adresÃ¡Å™e.
+
+PoznÃ¡mka: Jakmile ukonÄÃ­Å¡ Vim a znovu ho spustÃ­Å¡ s nÃ¡zvem souboru TEST,
+          soubor bude pÅ™esnÃ¡ kopie vÃ½uky, kdyÅ¾ si ji uklÃ¡dal.
+
+  5. NynÃ­ odstraÅˆ soubor napsÃ¡nÃ­m (MS-DOS):    :!del TEST
 			     nebo (Unix):      :!rm TEST
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekce 1.5.3: VİBÌROVİ PØÍKAZ ULO®ENÍ
+		     Lekce 1.5.3: VÃBÄšROVÃ PÅ˜ÃKAZ ULOÅ½ENÃ
 
 
-	    ** Pro ulo¾ení èásti souboru napi¹  :#,# w SOUBOR **
+	    ** Pro uloÅ¾enÃ­ ÄÃ¡sti souboru napiÅ¡  :#,# w SOUBOR **
 
-  1. Je¹tì jednou napi¹  :!dir  nebo  :!ls  pro vıpis aktuálního adresáøe
-     a vyber vhodnı název souboru jako napø. TEST.
+  1. JeÅ¡tÄ› jednou napiÅ¡  :!dir  nebo  :!ls  pro vÃ½pis aktuÃ¡lnÃ­ho adresÃ¡Å™e
+     a vyber vhodnÃ½ nÃ¡zev souboru jako napÅ™. TEST.
 
-  2. Pøesuò kurzor na vrch této stránky a stiskni  Ctrl-g  pro zobrazení
-     èísla øádku.  ZAPAMATUJ SI TOTO ÈÍSLO!
+  2. PÅ™esuÅˆ kurzor na vrch tÃ©to strÃ¡nky a stiskni  Ctrl-g  pro zobrazenÃ­
+     ÄÃ­sla Å™Ã¡dku.  ZAPAMATUJ SI TOTO ÄŒÃSLO!
 
-  3. Nyní se pøesuò na spodek této stránky a opìt stiskni Ctrl-g.
-     ZAPAMATUJ SI I ÈÍSLO TOHOTO ØÁDKU!
+  3. NynÃ­ se pÅ™esuÅˆ na spodek tÃ©to strÃ¡nky a opÄ›t stiskni Ctrl-g.
+     ZAPAMATUJ SI I ÄŒÃSLO TOHOTO Å˜ÃDKU!
 
-  4. Pro ulo¾ení POUZE èásti souboru, napi¹  :#,# w TEST  kde #,# jsou
-     èísla dvou zapamatovanıch øádkù (vrch, spodek) a TEST je název souboru.
+  4. Pro uloÅ¾enÃ­ POUZE ÄÃ¡sti souboru, napiÅ¡  :#,# w TEST  kde #,# jsou
+     ÄÃ­sla dvou zapamatovanÃ½ch Å™Ã¡dkÅ¯ (vrch, spodek) a TEST je nÃ¡zev souboru.
 
-  5. Znova se ujisti, ¾e tam ten soubor je pomocí  :!dir  ale NEODSTRAÒUJ ho.
+  5. Znova se ujisti, Å¾e tam ten soubor je pomocÃ­  :!dir  ale NEODSTRAÅ‡UJ ho.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		        Lekce 1.5.4: SLUÈOVÁNÍ SOUBORÙ
+		        Lekce 1.5.4: SLUÄŒOVÃNÃ SOUBORÅ®
 
 
-      	   ** K vlo¾ení obsahu souboru napi¹  :r NÁZEV_SOUBORU **
+      	   ** K vloÅ¾enÃ­ obsahu souboru napiÅ¡  :r NÃZEV_SOUBORU **
 
-  1. Napi¹  :!dir  pro uji¹tìní, ¾e soubor TEST stále existuje.
+  1. NapiÅ¡  :!dir  pro ujiÅ¡tÄ›nÃ­, Å¾e soubor TEST stÃ¡le existuje.
 
-  2. Pøesuò kurzor na vrch této stránky.
+  2. PÅ™esuÅˆ kurzor na vrch tÃ©to strÃ¡nky.
 
-POZNÁMKA: Po vykonání kroku 3 uvidí¹ lekci 1.5.3.   Potom se opìt pøesuò dolù
+POZNÃMKA: Po vykonÃ¡nÃ­ kroku 3 uvidÃ­Å¡ lekci 1.5.3.   Potom se opÄ›t pÅ™esuÅˆ dolÅ¯
           na tuto lekci.
 
-  3. Nyní vlo¾ soubor TEST pou¾itím pøíkazu  :r TEST  kde TEST je název
+  3. NynÃ­ vloÅ¾ soubor TEST pouÅ¾itÃ­m pÅ™Ã­kazu  :r TEST  kde TEST je nÃ¡zev
      souboru.
 
-POZNÁMKA: Soubor, kterı vkládá¹ se vlo¾í od místa, kde se nachází kurzor.
+POZNÃMKA: Soubor, kterÃ½ vklÃ¡dÃ¡Å¡ se vloÅ¾Ã­ od mÃ­sta, kde se nachÃ¡zÃ­ kurzor.
 
-  4. Pro potvrzení vlo¾ení souboru, pøesuò kurzor zpìt a v¹imni si, ¾e teï
-     má¹ dvì kopie lekce 1.5.3, originál a souborovou verzi.
+  4. Pro potvrzenÃ­ vloÅ¾enÃ­ souboru, pÅ™esuÅˆ kurzor zpÄ›t a vÅ¡imni si, Å¾e teÄ
+     mÃ¡Å¡ dvÄ› kopie lekce 1.5.3, originÃ¡l a souborovou verzi.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRNUTÍ LEKCE 1.5
+			       SHRNUTÃ LEKCE 1.5
 
 
-  1.  :!pøíkaz  vykoná vnìj¹í pøíkaz.
+  1.  :!pÅ™Ã­kaz  vykonÃ¡ vnÄ›jÅ¡Ã­ pÅ™Ã­kaz.
 
-      Nìkteré u¾iteèné pøíklady jsou:
+      NÄ›kterÃ© uÅ¾iteÄnÃ© pÅ™Ã­klady jsou:
 	 (MS-DOS)	  (Unix)
-	  :!dir		   :!ls		   -  zobrazí obsah souboru.
-	  :!del SOUBOR     :!rm SOUBOR     -  odstraní SOUBOR.
+	  :!dir		   :!ls		   -  zobrazÃ­ obsah souboru.
+	  :!del SOUBOR     :!rm SOUBOR     -  odstranÃ­ SOUBOR.
 
-  2.  :w SOUBOR  ulo¾í aktuální text jako SOUBOR na disk.
+  2.  :w SOUBOR  uloÅ¾Ã­ aktuÃ¡lnÃ­ text jako SOUBOR na disk.
 
-  3.  :#,#w SOUBOR  ulo¾í øádky od # do # do SOUBORU.
+  3.  :#,#w SOUBOR  uloÅ¾Ã­ Å™Ã¡dky od # do # do SOUBORU.
 
-  4.  :r SOUBOR  vybere z disku SOUBOR a vlo¾í ho do editovaného souboru
+  4.  :r SOUBOR  vybere z disku SOUBOR a vloÅ¾Ã­ ho do editovanÃ©ho souboru
       za pozici kurzoru.
 
 
@@ -619,112 +619,112 @@ POZNÁMKA: Soubor, kterı vkládá¹ se vlo¾í od místa, kde se nachází kurzor.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			  Lekce 1.6.1: PØÍKAZ OTEVØÍT
+			  Lekce 1.6.1: PÅ˜ÃKAZ OTEVÅ˜ÃT
 
 
-  ** Napi¹  o  pro vlo¾ení øádku pod kurzor a pøepnutí do Vkládacího módu. **
+  ** NapiÅ¡  o  pro vloÅ¾enÃ­ Å™Ã¡dku pod kurzor a pÅ™epnutÃ­ do VklÃ¡dacÃ­ho mÃ³du. **
 
-  1. Pøemísti kurzor ní¾e na øádek oznaèenı --->.
+  1. PÅ™emÃ­sti kurzor nÃ­Å¾e na Å™Ã¡dek oznaÄenÃ½ --->.
 
-  2. Napi¹  o (malé) pro vlo¾ení øádku POD kurzor a pøepnutí do
-     Vkládacího módu.
+  2. NapiÅ¡  o (malÃ©) pro vloÅ¾enÃ­ Å™Ã¡dku POD kurzor a pÅ™epnutÃ­ do
+     VklÃ¡dacÃ­ho mÃ³du.
 
-  3. Nyní zkopíruj øádek oznaèenı ---> a stiskni <ESC> pro ukonèení
-     Vkládacího módu.
+  3. NynÃ­ zkopÃ­ruj Å™Ã¡dek oznaÄenÃ½ ---> a stiskni <ESC> pro ukonÄenÃ­
+     VklÃ¡dacÃ­ho mÃ³du.
   
----> Po stisknutí  o  se kurzor pøemístí na vlo¾enı øádek do Vkládacího
-     módu.
+---> Po stisknutÃ­  o  se kurzor pÅ™emÃ­stÃ­ na vloÅ¾enÃ½ Å™Ã¡dek do VklÃ¡dacÃ­ho
+     mÃ³du.
 
-  4. Pro otevøení øádku NAD kurzorem jednodu¹e napi¹ velké  O  , místo
-     malého o. Vyzkou¹ej si to na následujícím øádku.
-Vlo¾ øádek nad tímto napsáním Shift-O po umístìní kurzoru na tento øádek.
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			  Lekce 1.6.2: PØÍKAZ PØIDAT
-
-
-	     ** Stiskni  a  pro vlo¾ení textu ZA kurzor. **
-
-  1. Pøesuò kurzor na ní¾e na konec øádky oznaèené --->
-     stisknutím $ v Normálním módu.
-
-  2. Stiskni  a  (malé) pro pøidání textu ZA znak, kterı je pod kurzorem.
-     (Velké  A  pøidá na konec øádku.)
-
-Poznámka: Tímto se vyhne¹ stisknutí  i  , posledního znaku, textu na vlo¾ení,
-          <ESC>, kurzor doprava, a nakonec  x  na pøidávání na konec øádku!
-
-  3. Nyní dokonèí první øádek. V¹imni si, ¾e pøidávání je vlastnì stejné jako
-     Vkládací mód, kromì místa, kam se text vkládá.
-
----> Tento øádek ti umo¾òuje nacvièit
----> Tento øádek ti umo¾òuje nacvièit pøidávání textu na konec øádky.
+  4. Pro otevÅ™enÃ­ Å™Ã¡dku NAD kurzorem jednoduÅ¡e napiÅ¡ velkÃ©  O  , mÃ­sto
+     malÃ©ho o. VyzkouÅ¡ej si to na nÃ¡sledujÃ­cÃ­m Å™Ã¡dku.
+VloÅ¾ Å™Ã¡dek nad tÃ­mto napsÃ¡nÃ­m Shift-O po umÃ­stÄ›nÃ­ kurzoru na tento Å™Ã¡dek.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lekce 1.6.3: JINİ ZPÙSOB NAHRAZOVÁNÍ
+			  Lekce 1.6.2: PÅ˜ÃKAZ PÅ˜IDAT
 
 
-         ** Napi¹ velké  R  pro nahrazení víc ne¾ jednoho znaku. **
+	     ** Stiskni  a  pro vloÅ¾enÃ­ textu ZA kurzor. **
 
-  1. Pøesuò kurzor na první øádek oznaèenı --->.
+  1. PÅ™esuÅˆ kurzor na nÃ­Å¾e na konec Å™Ã¡dky oznaÄenÃ© --->
+     stisknutÃ­m $ v NormÃ¡lnÃ­m mÃ³du.
 
-  2. Umísti kurzor na zaèátek prvního slova, které je odli¹né od druhého
-     øádku oznaèeného ---> (slovo 'poslední').
+  2. Stiskni  a  (malÃ©) pro pÅ™idÃ¡nÃ­ textu ZA znak, kterÃ½ je pod kurzorem.
+     (VelkÃ©  A  pÅ™idÃ¡ na konec Å™Ã¡dku.)
 
-  3. Nyní stiskni  R  a nahraï zbytek textu na prvním øádku pøepsáním
-     starého textu tak, aby byl první øádek stejnı jako ten druhı.
+PoznÃ¡mka: TÃ­mto se vyhneÅ¡ stisknutÃ­  i  , poslednÃ­ho znaku, textu na vloÅ¾enÃ­,
+          <ESC>, kurzor doprava, a nakonec  x  na pÅ™idÃ¡vÃ¡nÃ­ na konec Å™Ã¡dku!
 
----> Pro upravení prvního øádku do tvaru toho poslední na stranì pou¾ij kl.
----> Pro upravení prvního øádku do tvaru toho druhého, napi¹ R a novı text.
+  3. NynÃ­ dokonÄÃ­ prvnÃ­ Å™Ã¡dek. VÅ¡imni si, Å¾e pÅ™idÃ¡vÃ¡nÃ­ je vlastnÄ› stejnÃ© jako
+     VklÃ¡dacÃ­ mÃ³d, kromÄ› mÃ­sta, kam se text vklÃ¡dÃ¡.
 
-  4. V¹imni si, ¾e jakmile stiskne¹ <ESC> v¹echen nezmìnìnı text zùstává.
+---> Tento Å™Ã¡dek ti umoÅ¾Åˆuje nacviÄit
+---> Tento Å™Ã¡dek ti umoÅ¾Åˆuje nacviÄit pÅ™idÃ¡vÃ¡nÃ­ textu na konec Å™Ã¡dky.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lekce 1.6.3: JINÃ ZPÅ®SOB NAHRAZOVÃNÃ
+
+
+         ** NapiÅ¡ velkÃ©  R  pro nahrazenÃ­ vÃ­c neÅ¾ jednoho znaku. **
+
+  1. PÅ™esuÅˆ kurzor na prvnÃ­ Å™Ã¡dek oznaÄenÃ½ --->.
+
+  2. UmÃ­sti kurzor na zaÄÃ¡tek prvnÃ­ho slova, kterÃ© je odliÅ¡nÃ© od druhÃ©ho
+     Å™Ã¡dku oznaÄenÃ©ho ---> (slovo 'poslednÃ­').
+
+  3. NynÃ­ stiskni  R  a nahraÄ zbytek textu na prvnÃ­m Å™Ã¡dku pÅ™epsÃ¡nÃ­m
+     starÃ©ho textu tak, aby byl prvnÃ­ Å™Ã¡dek stejnÃ½ jako ten druhÃ½.
+
+---> Pro upravenÃ­ prvnÃ­ho Å™Ã¡dku do tvaru toho poslednÃ­ na stranÄ› pouÅ¾ij kl.
+---> Pro upravenÃ­ prvnÃ­ho Å™Ã¡dku do tvaru toho druhÃ©ho, napiÅ¡ R a novÃ½ text.
+
+  4. VÅ¡imni si, Å¾e jakmile stiskneÅ¡ <ESC> vÅ¡echen nezmÄ›nÄ›nÃ½ text zÅ¯stÃ¡vÃ¡.
 
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		         Lekce 1.6.4: NASTAVENÍ MO®NOSTÍ
+		         Lekce 1.6.4: NASTAVENÃ MOÅ½NOSTÃ
 
-  ** Nastav mo¾nost, ¾e vyhledávání anebo nahrazování nedbá velikosti písmen **
+  ** Nastav moÅ¾nost, Å¾e vyhledÃ¡vÃ¡nÃ­ anebo nahrazovÃ¡nÃ­ nedbÃ¡ velikosti pÃ­smen **
 
-  1. Vyhledej øetìzec 'ignore' napsáním:
+  1. Vyhledej Å™etÄ›zec 'ignore' napsÃ¡nÃ­m:
      /ignore
-     Zopakuj nìkolikrát stisknutí klávesy n.
+     Zopakuj nÄ›kolikrÃ¡t stisknutÃ­ klÃ¡vesy n.
 
-  2. Nastav mo¾nost 'ic' (Ignore case) napsáním pøíkazu:
+  2. Nastav moÅ¾nost 'ic' (Ignore case) napsÃ¡nÃ­m pÅ™Ã­kazu:
      :set ic
 
-  3. Nyní znovu vyhledej 'ignore' stisknutím: n
-     Nìkolikrát hledání zopakuj stisknutím klávesy n.
+  3. NynÃ­ znovu vyhledej 'ignore' stisknutÃ­m: n
+     NÄ›kolikrÃ¡t hledÃ¡nÃ­ zopakuj stisknutÃ­m klÃ¡vesy n.
 
-  4. Nastav mo¾nosti 'hlsearch' a 'incsearch':
+  4. Nastav moÅ¾nosti 'hlsearch' a 'incsearch':
      :set hls is
 
-  5. Nyní znovu vykonej vyhledávací pøíkaz a sleduj, co se stane:
+  5. NynÃ­ znovu vykonej vyhledÃ¡vacÃ­ pÅ™Ã­kaz a sleduj, co se stane:
      /ignore
 
-  6. Pro vypnutí zvırazòování vısledkù napi¹:
+  6. Pro vypnutÃ­ zvÃ½razÅˆovÃ¡nÃ­ vÃ½sledkÅ¯ napiÅ¡:
      :nohlsearch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       SHRHNUTÍ LEKCE 1.6
+			       SHRHNUTÃ LEKCE 1.6
 
 
-  1. Stisknutí  o  otevøe novı øádek POD kurzorem a umístí kurzor na vlo¾enı
-     øádek do Vkládacího módu.
-     Napsání velkého  O  otevøe øádek NAD øádkem, na kterém je kurzor.
+  1. StisknutÃ­  o  otevÅ™e novÃ½ Å™Ã¡dek POD kurzorem a umÃ­stÃ­ kurzor na vloÅ¾enÃ½
+     Å™Ã¡dek do VklÃ¡dacÃ­ho mÃ³du.
+     NapsÃ¡nÃ­ velkÃ©ho  O  otevÅ™e Å™Ã¡dek NAD Å™Ã¡dkem, na kterÃ©m je kurzor.
 
-  2. Stiskni  a  pro vlo¾ení textu ZA znak na pozici kurzoru.
-     Napsání velkého  A  automaticky pøidá text na konec øádku.
+  2. Stiskni  a  pro vloÅ¾enÃ­ textu ZA znak na pozici kurzoru.
+     NapsÃ¡nÃ­ velkÃ©ho  A  automaticky pÅ™idÃ¡ text na konec Å™Ã¡dku.
 
-  3. Stisknutí velkého  R  pøepne do Nahrazovacího módu, dokud
-     nestiskne¹ <ESC> pro jeho ukonèení.
+  3. StisknutÃ­ velkÃ©ho  R  pÅ™epne do NahrazovacÃ­ho mÃ³du, dokud
+     nestiskneÅ¡ <ESC> pro jeho ukonÄenÃ­.
 
-  4. Napsání ":set xxx" nastaví mo¾nosti "xxx".
+  4. NapsÃ¡nÃ­ ":set xxx" nastavÃ­ moÅ¾nosti "xxx".
 
 
 
@@ -734,21 +734,21 @@ Poznámka: Tímto se vyhne¹ stisknutí  i  , posledního znaku, textu na vlo¾ení,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      LEKCE 1.7: PØÍKAZY ON-LINE NÁPOVÌDY
+		      LEKCE 1.7: PÅ˜ÃKAZY ON-LINE NÃPOVÄšDY
 
 
-		   ** Pou¾ívej on-line systém nápovìdy **
+		   ** PouÅ¾Ã­vej on-line systÃ©m nÃ¡povÄ›dy **
 
-  Vim má obsáhlı on-line systém nápovìdy. Pro zaèátek vyzkou¹ej jeden z
-  následujících:
-	- stiskni klávesu <HELP> (pokud ji má¹)
-	- stiskni klávesu <F1>  (pokud ji má¹)
-	- napi¹  :help <ENTER>
+  Vim mÃ¡ obsÃ¡hlÃ½ on-line systÃ©m nÃ¡povÄ›dy. Pro zaÄÃ¡tek vyzkouÅ¡ej jeden z
+  nÃ¡sledujÃ­cÃ­ch:
+	- stiskni klÃ¡vesu <HELP> (pokud ji mÃ¡Å¡)
+	- stiskni klÃ¡vesu <F1>  (pokud ji mÃ¡Å¡)
+	- napiÅ¡  :help <ENTER>
 
-  Napi¹  :q <ENTER>  pro uzavøení okna nápovìdy.
+  NapiÅ¡  :q <ENTER>  pro uzavÅ™enÃ­ okna nÃ¡povÄ›dy.
 
-  Mù¾e¹ najít nápovìdu k jakémukoliv tématu pøidáním argumentu k
-  pøíkazu ":help". Zkus tyto (nezapomeò stisknout <ENTER>):
+  MÅ¯Å¾eÅ¡ najÃ­t nÃ¡povÄ›du k jakÃ©mukoliv tÃ©matu pÅ™idÃ¡nÃ­m argumentu k
+  pÅ™Ã­kazu ":help". Zkus tyto (nezapomeÅˆ stisknout <ENTER>):
 
 	:help w
 	:help c_<T
@@ -757,56 +757,56 @@ Poznámka: Tímto se vyhne¹ stisknutí  i  , posledního znaku, textu na vlo¾ení,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  LEKCE 1.8: VYTVOØENÍ INICIALIZAÈNÍHO SKRIPTU
+		  LEKCE 1.8: VYTVOÅ˜ENÃ INICIALIZAÄŒNÃHO SKRIPTU
 
 		        ** Zapni funkce editoru Vim **
 
-  Vim má daleko více funkcí ne¾ Vi, ale vìt¹ina z nich je vypnuta ve vıchozím
-  nastavení. Pro zapnutí nìkterıch vytvoø soubor "vimrc".
+  Vim mÃ¡ daleko vÃ­ce funkcÃ­ neÅ¾ Vi, ale vÄ›tÅ¡ina z nich je vypnuta ve vÃ½chozÃ­m
+  nastavenÃ­. Pro zapnutÃ­ nÄ›kterÃ½ch vytvoÅ™ soubor "vimrc".
 
-  1. Zaèni upravovat soubor "vimrc". Toto závisí na pou¾itém systému:
+  1. ZaÄni upravovat soubor "vimrc". Toto zÃ¡visÃ­ na pouÅ¾itÃ©m systÃ©mu:
 	:edit ~/.vimrc		pro Unix
 	:edit ~/_vimrc		pro MS-Windows
 
-  2. Nyní èti ukázkovı "vimrc" soubor:
+  2. NynÃ­ Äti ukÃ¡zkovÃ½ "vimrc" soubor:
 
 	:read $VIMRUNTIME/vimrc_example.vim
 
-  3. Ulo¾ soubor pomocí:
+  3. UloÅ¾ soubor pomocÃ­:
 
 	:write
 
-  Po pøí¹tím startu Vim se zapne zvırazòování syntaxe.
-  Do souboru "vimrc" mù¾e¹ pøidat v¹echny svoje upøednostòované nastavení.
+  Po pÅ™Ã­Å¡tÃ­m startu Vim se zapne zvÃ½razÅˆovÃ¡nÃ­ syntaxe.
+  Do souboru "vimrc" mÅ¯Å¾eÅ¡ pÅ™idat vÅ¡echny svoje upÅ™ednostÅˆovanÃ© nastavenÃ­.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Toto ukonèuje vıuku Vim, která byla my¹lená jako struènı pøehled
-  editoru Vim, tak akorát postaèující pro lehké a obstojné pou¾ívání editoru.
-  Tato vıuka má daleko od úplnosti, proto¾e Vim obsahuje podstatnì více
-  pøíkazù. Dále si pøeèti u¾ivatelskı manuál: ":help user-manual".
+  Toto ukonÄuje vÃ½uku Vim, kterÃ¡ byla myÅ¡lenÃ¡ jako struÄnÃ½ pÅ™ehled
+  editoru Vim, tak akorÃ¡t postaÄujÃ­cÃ­ pro lehkÃ© a obstojnÃ© pouÅ¾Ã­vÃ¡nÃ­ editoru.
+  Tato vÃ½uka mÃ¡ daleko od Ãºplnosti, protoÅ¾e Vim obsahuje podstatnÄ› vÃ­ce
+  pÅ™Ã­kazÅ¯. DÃ¡le si pÅ™eÄti uÅ¾ivatelskÃ½ manuÃ¡l: ":help user-manual".
 
-  Pro dal¹í studium je doporuèená kniha:
+  Pro dalÅ¡Ã­ studium je doporuÄenÃ¡ kniha:
 	Vim - Vi Improved - od Steve Oualline
 	Nakladatel: New Riders
-  První kniha urèená pro Vim. Obzvlá¹tì vhodná pro zaèáteèníky.
-  Obsahuje mno¾ství pøíkladù a obrázkù.
+  PrvnÃ­ kniha urÄenÃ¡ pro Vim. ObzvlÃ¡Å¡tÄ› vhodnÃ¡ pro zaÄÃ¡teÄnÃ­ky.
+  Obsahuje mnoÅ¾stvÃ­ pÅ™Ã­kladÅ¯ a obrÃ¡zkÅ¯.
   viz https://iccf-holland.org/click5.html
 
-  Tato kniha je star¹í a více vìnovaná Vi ne¾ Vim, ale také doporuèená:
+  Tato kniha je starÅ¡Ã­ a vÃ­ce vÄ›novanÃ¡ Vi neÅ¾ Vim, ale takÃ© doporuÄenÃ¡:
 	Learning the Vi Editor - od Linda Lamb
 	Nakladatel: O'Reilly & Associates Inc.
-  Je to dobrá kniha pro získání vìdomostí témìø o v¹em, co mù¾ete s Vi dìlat.
-  ©esté vydání obsahuje té¾ informace o Vim.
+  Je to dobrÃ¡ kniha pro zÃ­skÃ¡nÃ­ vÄ›domostÃ­ tÃ©mÄ›Å™ o vÅ¡em, co mÅ¯Å¾ete s Vi dÄ›lat.
+  Å estÃ© vydÃ¡nÃ­ obsahuje tÃ©Å¾ informace o Vim.
 
-  Tato vıuka byla napsaná autory Michael C. Pierce a Robert K. Ware,
-  Colorado School of Mines s pou¾itím my¹lenek od: Charles Smith,
+  Tato vÃ½uka byla napsanÃ¡ autory Michael C. Pierce a Robert K. Ware,
+  Colorado School of Mines s pouÅ¾itÃ­m myÅ¡lenek od: Charles Smith,
   Colorado State University.  E-mail: bware@mines.colorado.edu.
 
   Upravil pro Vim: Bram Moolenaar.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Pøeklad do èe¹tiny: Lubo¹ Turek
+  PÅ™eklad do ÄeÅ¡tiny: LuboÅ¡ Turek
   E-Mail: lubos.turek@gmail.com
   2007 Feb 28 

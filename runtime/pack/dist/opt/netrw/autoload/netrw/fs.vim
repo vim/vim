@@ -2,18 +2,18 @@
 " THESE FUNCTIONS DON'T COMMIT TO ANY BACKWARDS COMPATIBILITY. SO CHANGES AND
 " BREAKAGES IF USED OUTSIDE OF NETRW.VIM ARE EXPECTED.
 
-let s:slash = !exists('+shellslash') || &shellslash ? '/' : '\'
 
 " netrw#fs#PathJoin: Appends a new part to a path taking different systems into consideration {{{
 
 function! netrw#fs#PathJoin(...)
+    const slash = !exists('+shellslash') || &shellslash ? '/' : '\'
     let path = ""
 
     for arg in a:000
         if empty(path)
             let path = arg
         else
-            let path .= s:slash . arg
+            let path .= slash . arg
         endif
     endfor
 
@@ -25,7 +25,7 @@ endfunction
 
 function! netrw#fs#ComposePath(base, subdir)
     if has('amiga')
-        let ec = a:base[s:Strlen(a:base)-1]
+        let ec = a:base[strdisplaywidth(a:base)-1]
         if ec != '/' && ec != ':'
             let ret = a:base . '/' . a:subdir
         else
@@ -72,18 +72,15 @@ endfunction
 " }}}
 " netrw#fs#AbsPath: returns the full path to a directory and/or file {{{
 
-function! netrw#fs#AbsPath(filename)
-    let filename = a:filename
+function! netrw#fs#AbsPath(path)
+    let path = a:path->substitute('[\/]$', '', 'e')
 
-    if filename !~ '^/'
-        let filename = resolve(getcwd() . '/' . filename)
+    " Nothing to do
+    if isabsolutepath(path)
+        return path
     endif
 
-    if filename != "/" && filename =~ '/$'
-        let filename = substitute(filename, '/$', '', '')
-    endif
-
-    return filename
+    return path->fnamemodify(':p')->substitute('[\/]$', '', 'e')
 endfunction
 
 " }}}
@@ -180,7 +177,7 @@ function! netrw#fs#Remove(path)
     endif
 
     if result < 0
-        call netrw#ErrorMsg(netrw#LogLevel('WARNING'), printf('delete("%s") failed!', path), 71)
+        call netrw#msg#Notify('WARNING', printf('delete("%s") failed!', path))
     endif
 
     return result

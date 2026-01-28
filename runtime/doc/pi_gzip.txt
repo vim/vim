@@ -1,7 +1,7 @@
-*pi_gzip.txt*   For Vim version 9.1.  Last change: 2025 Mar 05
+*pi_gzip.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Editing compressed files with Vim		*gzip* *bzip2* *compress*

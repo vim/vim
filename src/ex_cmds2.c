@@ -126,9 +126,9 @@ check_changed(buf_T *buf, int flags)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+# if defined(FEAT_BROWSE)
 /*
  * When wanting to write a file without a file name, ask the user for a name.
  */
@@ -149,7 +149,7 @@ browse_save_fname(buf_T *buf)
 	buf->b_flags |= BF_NOTEDITED;
     vim_free(fname);
 }
-#endif
+# endif
 
 /*
  * Ask the user what to do when abandoning a changed buffer.
@@ -179,10 +179,10 @@ dialog_changed(
     {
 	int	empty_bufname;
 
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 	// May get file name, when there is none
 	browse_save_fname(buf);
-#endif
+# endif
 	empty_bufname = buf->b_fname == NULL ? TRUE : FALSE;
 	if (empty_bufname)
 	    buf_set_name(buf->b_fnum, (char_u *)"Untitled");
@@ -218,9 +218,9 @@ dialog_changed(
 	{
 	    if (bufIsChanged(buf2)
 		    && (buf2->b_ffname != NULL
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 			|| (cmdmod.cmod_flags & CMOD_BROWSE)
-#endif
+# endif
 			)
 		    && !bt_dontwrite(buf2)
 		    && !buf2->b_p_ro)
@@ -228,10 +228,10 @@ dialog_changed(
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf2);
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 		// May get file name, when there is none
 		browse_save_fname(buf2);
-#endif
+# endif
 		if (buf2->b_fname != NULL && check_overwrite(&ea, buf2,
 				  buf2->b_fname, buf2->b_ffname, FALSE) == OK)
 		    // didn't hit Cancel
@@ -536,6 +536,9 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     start_global_changes();
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
+#endif
 
     if (eap->cmdidx == CMD_windo
 	    || eap->cmdidx == CMD_tabdo
@@ -760,6 +763,9 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     end_global_changes();
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
+#endif
 }
 
 #ifdef FEAT_EVAL
@@ -835,9 +841,9 @@ ex_compiler(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
+#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON)
 
-# if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
 /*
  * Detect Python 3 or 2, and initialize 'pyxversion'.
  */

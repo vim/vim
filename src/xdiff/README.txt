@@ -1,6 +1,6 @@
 The files in this directory come from the xdiff implementation in git.
 You can find it here: https://github.com/git/git/tree/master/xdiff
-The files were last updated March 17, 2023 from git release v.2.40.0
+The files were last updated November 17, 2025 from git release v.2.52.0
 
 This is originally based on libxdiff, which can be found here:
 http://www.xmailserver.org/xdiff-lib.html
@@ -11,7 +11,8 @@ And since it's part of git it is expected to be reliable.
 The code is distributed under the GNU LGPL license.  It is included in the
 COPYING file.
 
-Changes in these files were made to avoid compiler warnings.
+Changes in these files were made to avoid compiler warnings, replacing function
+calls into Git core with Vim ones, and removing unused code such as xmerge.
 
 The /* */ comments are kept to make syncing to a newer version easier, do not
 change them to // comments!

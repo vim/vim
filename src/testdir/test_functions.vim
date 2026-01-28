@@ -1,10 +1,7 @@
 " Tests for various functions.
 
-source shared.vim
-source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -136,35 +133,57 @@ func Test_max()
   call assert_equal(0, max([]))
   call assert_equal(2, max([2]))
   call assert_equal(2, max([1, 2]))
+  call assert_equal(3, max([1.0, 2, 3]))
+  call assert_equal(3.0, max([1, 2, 3.0]))
   call assert_equal(2, max([1, 2, v:null]))
+
+  call assert_equal(0, max(()))
+  call assert_equal(2, max((2, )))
+  call assert_equal(2, max((1, 2)))
+  call assert_equal(3, max((1.0, 2, 3)))
+  call assert_equal(3.0, max((1, 2, 3.0)))
+  call assert_equal(2, max((1, 2, v:null)))
 
   call assert_equal(0, max({}))
   call assert_equal(2, max({'a':1, 'b':2}))
+
+  call assert_equal('abz', max(['abc', 'aba', 'abz']))
 
   call assert_fails('call max(1)', 'E712:')
   call assert_fails('call max(v:none)', 'E712:')
 
   " check we only get one error
-  call assert_fails('call max([#{}, [1]])', ['E728:', 'E728:'])
-  call assert_fails('call max(#{a: {}, b: [1]})', ['E728:', 'E728:'])
+  call assert_fails('call max([#{}, [1]])', ['E691:', 'E691:'])
+  call assert_fails('call max(#{a: {}, b: [1]})', ['E691:', 'E691:'])
 endfunc
 
 func Test_min()
   call assert_equal(0, min([]))
   call assert_equal(2, min([2]))
   call assert_equal(1, min([1, 2]))
-  call assert_equal(0, min([1, 2, v:null]))
+  call assert_equal(1, min([1, 2, 3.0]))
+  call assert_equal(1.0, min([1.0, 2]))
+  call assert_equal(v:null, min([1, 2, v:null]))
+
+  call assert_equal(0, min(()))
+  call assert_equal(2, min((2, )))
+  call assert_equal(1, min((1, 2)))
+  call assert_equal(1, min((1, 2, 3.0)))
+  call assert_equal(1.0, min((1.0, 2)))
+  call assert_equal(v:null, min((1, 2, v:null)))
 
   call assert_equal(0, min({}))
   call assert_equal(1, min({'a':1, 'b':2}))
 
+  call assert_equal('aba', min(['abc', 'aba', 'abz']))
+
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
-  call assert_fails('call min([1, {}])', 'E728:')
+  call assert_fails('call min([1, {}])', 'E735:')
 
   " check we only get one error
-  call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
-  call assert_fails('call min(#{a: [1], b: #{}})', ['E745:', 'E745:'])
+  call assert_fails('call min([[1], #{}])', ['E691:', 'E691:'])
+  call assert_fails('call min(#{a: [1], b: #{}})', ['E691:', 'E691:'])
 endfunc
 
 func Test_strwidth()
@@ -2119,6 +2138,41 @@ func Test_executable_longname()
   call writefile([], fname)
   call assert_equal(1, executable(fname))
   call delete(fname)
+endfunc
+
+func Test_executable_single_character_dir()
+  call mkdir('Xpath', 'R')
+  call mkdir('Xpath/a')
+  call mkdir('Xpath/b')
+  call mkdir('Xpath/c')
+  if has('win32')
+    call writefile([], 'Xpath/a/Xcmd1.bat')
+    call writefile([], 'Xpath/b/Xcmd2.bat')
+    call writefile([], 'Xpath/c/Xcmd3.bat')
+    let sep = ';'
+  else
+    call writefile([], 'Xpath/a/Xcmd1')
+    call writefile([], 'Xpath/b/Xcmd2')
+    call writefile([], 'Xpath/c/Xcmd3')
+    call setfperm('Xpath/a/Xcmd1', 'rwxr-xr-x')
+    call setfperm('Xpath/b/Xcmd2', 'rwxr-xr-x')
+    call setfperm('Xpath/c/Xcmd3', 'rwxr-xr-x')
+    let sep = ':'
+  endif
+
+  let save_path = $PATH
+  " a: single character name without path separator
+  " b: single character name with path separator
+  " c: single character name without path separator at last of PATH
+  let $PATH = [
+        \ fnamemodify('./Xpath/a', ':p:h'),
+        \ fnamemodify('./Xpath/b', ':p'),
+        \ fnamemodify('./Xpath/c', ':p:h')
+        \ ]->join(sep)
+  call assert_true(executable('Xcmd1'))
+  call assert_true(executable('Xcmd2'))
+  call assert_true(executable('Xcmd3'))
+  let $PATH = save_path
 endfunc
 
 func Test_hostname()
@@ -4109,7 +4163,8 @@ func Test_isabsolutepath()
     call assert_true(isabsolutepath('A:\Foo'))
     call assert_true(isabsolutepath('A:/Foo'))
     call assert_false(isabsolutepath('A:Foo'))
-    call assert_false(isabsolutepath('\Windows'))
+    call assert_true(isabsolutepath('\Windows'))
+    call assert_true(isabsolutepath('/Windows'))
     call assert_true(isabsolutepath('\\Server2\Share\Test\Foo.txt'))
   else
     call assert_true(isabsolutepath('/'))
@@ -4414,13 +4469,17 @@ func Test_str2blob()
     call assert_equal(0z, str2blob([""]))
     call assert_equal(0z, str2blob([]))
     call assert_equal(0z, str2blob(test_null_list()))
-    call assert_equal(0z, str2blob([test_null_string(), test_null_string()]))
+    call assert_equal(0z, str2blob([test_null_string()]))
+    call assert_equal(0z0A, str2blob([test_null_string(), test_null_string()]))
     call assert_fails("call str2blob('')", 'E1211: List required for argument 1')
     call assert_equal(0z61, str2blob(["a"]))
     call assert_equal(0z6162, str2blob(["ab"]))
     call assert_equal(0z610062, str2blob(["a\nb"]))
     call assert_equal(0z61620A6364, str2blob(["ab", "cd"]))
     call assert_equal(0z0A, str2blob(["", ""]))
+    call assert_equal(0z610A62, str2blob(["a", "b"]))
+    call assert_equal(0z610A0A62, str2blob(["a", "", "b"]))
+    call assert_equal(0z610A0A62, str2blob(["a", test_null_string(), "b"]))
 
     call assert_equal(0zC2ABC2BB, str2blob(["«»"]))
     call assert_equal(0zC59DC59F, str2blob(["ŝş"]))
@@ -4497,6 +4556,63 @@ func Test_blob2str()
     call assert_fails("call blob2str(0z6162, [])", 'E1206: Dictionary required for argument 2')
     call assert_fails("call blob2str(0z6162, {'encoding': []})", 'E730: Using a List as a String')
     call assert_fails("call blob2str(0z6162, {'encoding': 'ab12xy'})", 'E1515: Unable to convert from ''ab12xy'' encoding')
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Test for uri_encode() and uri_decode() functions
+func Test_uriencoding()
+  let lines =<< trim END
+    #" uri encoding
+    call assert_equal('a1%20b2', uri_encode('a1 b2'))
+    call assert_equal('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-', uri_encode('-?&/#+=:[]@-'))
+    call assert_equal('%22%3C%3E%5E%60%7B%7C%7D', uri_encode('"<>^`{|}'))
+    call assert_equal('%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5', 'αβγδε'->uri_encode())
+    call assert_equal('r%C3%A9sum%C3%A9', uri_encode('résumé'))
+    call assert_equal('%E4%BD%A0%E5%A5%BD', uri_encode('你好'))
+    call assert_equal('%F0%9F%98%8A%F0%9F%98%8A', uri_encode('😊😊'))
+    call assert_equal('-_.~', uri_encode('-_.~'))
+    call assert_equal('', uri_encode(''))
+    call assert_equal('%2520%2523', uri_encode('%20%23'))
+    call assert_equal('', uri_encode(test_null_string()))
+    call assert_equal('a', uri_encode('a'))
+    call assert_equal('%20', uri_encode(' '))
+    call assert_equal('%CE%B1', uri_encode('α'))
+    call assert_equal('c%3A%5Cmy%5Cdir%5Ca%20b%20c', uri_encode('c:\my\dir\a b c'))
+    call assert_fails('call uri_encode([])', 'E1174: String required for argument 1')
+
+    #" uri decoding
+    call assert_equal('a1 b2', uri_decode('a1%20b2'))
+    call assert_equal('-?&/#+=:[]@-', uri_decode('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-'))
+    call assert_equal('"<>^`{|}', uri_decode('%22%3C%3E%5E%60%7B%7C%7D'))
+    call assert_equal('αβγδε', '%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5'->uri_decode())
+    call assert_equal('résumé', uri_decode('r%C3%A9sum%C3%A9'))
+    call assert_equal('你好', uri_decode('%E4%BD%A0%E5%A5%BD'))
+    call assert_equal('😊😊', uri_decode('%F0%9F%98%8A%F0%9F%98%8A'))
+    call assert_equal('a+b', uri_decode('a+b'))
+    call assert_equal('-_.~', uri_decode('-_.~'))
+    call assert_equal('', uri_decode(''))
+    call assert_equal('%20%23', uri_decode('%2520%2523'))
+    call assert_equal('', uri_decode(test_null_string()))
+    call assert_equal('a', uri_decode('a'))
+    call assert_equal(' ', uri_decode('%20'))
+    call assert_equal('α', uri_decode('%CE%B1'))
+    call assert_equal('c:\my\dir\a b c', uri_decode('c%3A%5Cmy%5Cdir%5Ca%20b%20c'))
+    call assert_equal('%', uri_decode('%'))
+    call assert_equal('%3', uri_decode('%3'))
+    call assert_equal(';', uri_decode('%3b'))
+    call assert_equal('a%xyb', uri_decode('a%xyb'))
+    call assert_fails('call uri_decode([])', 'E1174: String required for argument 1')
+
+    #" control characters
+    VAR cstr = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10"
+    LET cstr ..= "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
+    VAR expected = ''
+    for i in range(1, 31)
+      LET expected ..= printf("%%%02X", i)
+    endfor
+    call assert_equal(expected, uri_encode(cstr))
+    call assert_equal(cstr, uri_decode(expected))
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc

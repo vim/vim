@@ -51,9 +51,6 @@
 #ifdef HAVE_PUTENV
 # undef HAVE_PUTENV
 #endif
-#ifdef HAVE_STDARG_H
-# undef HAVE_STDARG_H	// Python's config.h defines it as well.
-#endif
 #ifdef _POSIX_C_SOURCE
 # undef _POSIX_C_SOURCE	// pyconfig.h defines it as well.
 #endif
@@ -81,15 +78,6 @@
 #define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 #define PyBytes_FromStringAndSize   PyString_FromStringAndSize
-
-#if !defined(FEAT_PYTHON) && defined(PROTO)
-// Use this to be able to generate prototypes without python being used.
-# define PyObject Py_ssize_t
-# define PyThreadState Py_ssize_t
-# define PyTypeObject Py_ssize_t
-struct PyMethodDef { Py_ssize_t a; };
-# define PySequenceMethods Py_ssize_t
-#endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 # define PY_USE_CAPSULE
@@ -125,7 +113,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PY_CAN_RECURSE
 #endif
 
-#if defined(DYNAMIC_PYTHON) || defined(PROTO)
+#if defined(DYNAMIC_PYTHON)
 # ifndef DYNAMIC_PYTHON
 #  define HINSTANCE long_u		// for generating prototypes
 # endif
@@ -838,10 +826,6 @@ static int PythonMod_Init(void);
 ///////////////////////////////////////////////////////
 // 1. Python interpreter main program.
 
-#if PYTHON_API_VERSION < 1007 // Python 1.4
-typedef PyObject PyThreadState;
-#endif
-
 #ifndef PY_CAN_RECURSE
 static PyThreadState *saved_python_thread = NULL;
 
@@ -904,7 +888,7 @@ python_end(void)
     --recurse;
 }
 
-#if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+#if defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON3)
     int
 python_loaded(void)
 {
@@ -958,7 +942,7 @@ Python_Init(void)
 	site = PyImport_ImportModule("site");
 	if (site == NULL)
 	{
-	    emsg(_(e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded));
+	    emsg(_(e_sorry_this_command_is_disabled_python_site_module_could_not_be_loaded));
 	    goto fail;
 	}
 	Py_DECREF(site);
@@ -1016,7 +1000,12 @@ fail:
  * External interface
  */
     static void
-DoPyCommand(const char *cmd, dict_T* locals, rangeinitializer init_range, runner run, void *arg)
+DoPyCommand(
+    const char		*cmd,
+    dict_T*		locals,
+    rangeinitializer	init_range,
+    runner		run,
+    void		*arg)
 {
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
@@ -1555,17 +1544,6 @@ do_pyeval(char_u *str, dict_T *locals, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
 }
-
-// Don't generate a prototype for the next function, it generates an error on
-// newer Python versions.
-#if PYTHON_API_VERSION < 1007 /* Python 1.4 */ && !defined(PROTO)
-
-    char *
-Py_GetProgramName(void)
-{
-    return "vim";
-}
-#endif // Python 1.4
 
     int
 set_ref_in_python(int copyID)

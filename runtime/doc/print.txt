@@ -1,7 +1,7 @@
-*print.txt*     For Vim version 9.1.  Last change: 2024 May 11
+*print.txt*	For Vim version 9.1.  Last change: 2025 Dec 17
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Printing						*printing*
@@ -178,7 +178,7 @@ value for non-MS-Windows a trick is used: Adding "v:shell_error" will result
 in a non-zero number when the system() call fails.
 
 If the expression starts with s: or |<SID>|, then it is replaced with the
-script ID (|local-function|). Example: >
+script ID (|local-function|).  Example: >
 		set printexpr=s:MyPrintFile()
 		set printexpr=<SID>SomePrintFile()
 Otherwise, the expression is evaluated in the context of the script where the
@@ -304,7 +304,7 @@ another font will be used as follows:
   if o: is missing, then use b:
 
 Some CJK fonts do not contain characters for codes in the ASCII code range.
-Also, some characters in the CJK ASCII code ranges differ in a few code points
+Also, some characters in the CJK ASCII code ranges differ in a few codepoints
 from traditional ASCII characters.  There are two additional fields to control
 printing of characters in the ASCII code range.
 
@@ -444,8 +444,8 @@ you need to define your own PostScript font encoding vector.  Details on how
 to define a font encoding vector is beyond the scope of this help file, but
 you can find details in the PostScript Language Reference Manual, 3rd Edition,
 published by Addison-Wesley and available in PDF form at
-http://www.adobe.com/.  The following describes what you need to do for Vim to
-locate and use your print character encoding.
+https://www.adobe.com/.  The following describes what you need to do for Vim
+to locate and use your print character encoding.
 
 i.   Decide on a unique name for your encoding vector, one that does not clash
      with any of the recognized or standard encoding names that Vim uses (see
@@ -523,7 +523,7 @@ It is possible to define your own multibyte character set although this
 should not be attempted lightly.  A discussion on the process if beyond the
 scope of these help files.  You can find details on CMap (character map) files
 in the document 'Adobe CMap and CIDFont Files Specification, Version 1.0',
-available from http://www.adobe.com as a PDF file.
+available from https://www.adobe.com as a PDF file.
 
 ==============================================================================
 6. PostScript Printing Troubleshooting		*postscript-print-trouble*
@@ -545,8 +545,9 @@ There are a number of possible causes as to why the printing may have failed:
   not support the requested paper size.  By default Vim uses A4 paper.  Find
   out what size paper your printer normally uses and set the appropriate paper
   size with 'printoptions'.  If you cannot find the name of the paper used,
-  measure a sheet and compare it with the table of supported paper sizes listed
-  for 'printoptions', using the paper that is closest in both width AND height.
+  measure a sheet and compare it with the table of supported paper sizes
+  listed for 'printoptions', using the paper that is closest in both width AND
+  height.
   Note: The dimensions of actual paper may vary slightly from the ones listed.
   If there is no paper listed close enough, then you may want to try psresize
   from PSUtils, discussed below.
@@ -628,7 +629,7 @@ OpenVMS
 - Is apparently supported in the main code now (untested).
   See (link seems dead):
 
-    http://wwwthep.physik.uni-mainz.de/~plass/gv/
+    wwwthep.physik.uni-mainz.de/~plass/gv/
 
 MS-Windows
 

@@ -1,9 +1,5 @@
 " Test argument list commands
 
-source check.vim
-source shared.vim
-source term_util.vim
-
 func Reset_arglist()
   args a | %argd
 endfunc
@@ -776,7 +772,6 @@ func Test_crash_arglist_uaf()
   "%argdelete
   new one
   au BufAdd XUAFlocal :bw
-  "call assert_fails(':arglocal XUAFlocal', 'E163:')
   arglocal XUAFlocal
   au! BufAdd
   bw! XUAFlocal
@@ -789,6 +784,17 @@ func Test_crash_arglist_uaf()
   bw! XUAFlocal2
   bw! two
 
+  au! BufAdd
+endfunc
+
+" This was using freed memory again
+func Test_crash_arglist_uaf2()
+  new
+  au BufAdd XUAFlocal :bw
+  arglocal XUAFlocal
+  redraw!
+  put ='abc'
+  2#
   au! BufAdd
 endfunc
 

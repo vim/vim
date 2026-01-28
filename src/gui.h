@@ -234,7 +234,7 @@ typedef struct Gui
     int		in_focus;	    // Vim has input focus
     int		in_use;		    // Is the GUI being used?
     int		starting;	    // GUI will start in a little while
-    int		shell_created;	    // Has the shell been created yet?
+    bool	shell_created;	    // Has the shell been created yet?
     int		dying;		    // Is vim dying? Then output to terminal
     int		dofork;		    // Use fork() when GUI is starting
 #ifdef GUI_MAY_SPAWN
@@ -422,6 +422,11 @@ typedef struct Gui
     guicolor_T	currFgColor;	    // Current foreground text color
     guicolor_T	currBgColor;	    // Current background text color
     guicolor_T	currSpColor;	    // Current special text color
+
+    guicolor_T	title_bg_pixel;	    // window title bar color
+    guicolor_T	title_fg_pixel;	    // window title bar's text color
+    guicolor_T	titlenc_bg_pixel;   // window title bar color not current
+    guicolor_T	titlenc_fg_pixel;   // window title bar's text color not current
 #endif
 
 #ifdef FEAT_GUI_HAIKU

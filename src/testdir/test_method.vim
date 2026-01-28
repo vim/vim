@@ -1,7 +1,5 @@
 " Tests for ->method()
 
-source check.vim
-
 func Test_list_method()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3, 4], [1, 2, 3]->add(4))
@@ -78,7 +76,7 @@ func Test_string_method()
   eval "a\rb\ec"->strtrans()->assert_equal('a^Mb^[c')
   eval "aあb"->strwidth()->assert_equal(4)
   eval 'abc'->substitute('b', 'x', '')->assert_equal('axc')
-  call assert_fails('eval 123->items()', 'E1225:')
+  call assert_fails('eval 123->items()', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1')
 
   eval 'abc'->printf('the %s arg')->assert_equal('the abc arg')
 endfunc

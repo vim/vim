@@ -1,7 +1,6 @@
 " Tests for editing the command line.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_getcmdwintype()
   call feedkeys("q/:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
@@ -581,6 +580,35 @@ func Test_cmdwin_existing_bufname()
   call feedkeys("q::call CheckName()\<CR>:q\<CR>", 'ntx')
   0file
   delfunc CheckName
+endfunc
+
+func Test_cmdwin_showcmd()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    augroup vimHints | au! | augroup END
+    set showcmd
+  [SCRIPT]
+  call writefile(lines, 'XTest_cmdwin_showcmd', 'D')
+  let buf = RunVimInTerminal('-S XTest_cmdwin_showcmd', {'rows': 18})
+
+  for keys in ['q:', ":\<C-F>"]
+    call term_sendkeys(buf, keys)
+    call VerifyScreenDump(buf, 'Test_cmdwin_showcmd_1', {})
+    call term_sendkeys(buf, '"')
+    call WaitForAssert({-> assert_match('^: \+" *$', term_getline(buf, 18))})
+    call term_sendkeys(buf, 'x')
+    call WaitForAssert({-> assert_match('^: \+"x *$', term_getline(buf, 18))})
+    call term_sendkeys(buf, 'y')
+    call WaitForAssert({-> assert_match('^: \+"xy *$', term_getline(buf, 18))})
+    call term_sendkeys(buf, 'y')
+    call WaitForAssert({-> assert_match('^: \+$', term_getline(buf, 18))})
+    call term_sendkeys(buf, "\<C-C>\<C-C>")
+    call VerifyScreenDump(buf, 'Test_cmdwin_showcmd_2', {})
+  endfor
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

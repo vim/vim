@@ -60,11 +60,8 @@ coladvance_force(colnr_T wcol)
     if (wcol == MAXCOL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else
-    {
 	// Virtcol is valid
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wcol;
-    }
+	set_valid_virtcol(curwin, wcol);
     return rc;
 }
 
@@ -101,11 +98,8 @@ coladvance(colnr_T wantcol)
     if (wantcol == MAXCOL || rc == FAIL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else if (*ml_get_cursor() != TAB)
-    {
 	// Virtcol is valid when not on a TAB
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wantcol;
-    }
+	set_valid_virtcol(curwin, wantcol);
     return rc;
 }
 
@@ -216,10 +210,10 @@ coladvance2(
 	if (col > wcol || (!virtual_active() && one_more == 0))
 	{
 	    idx -= 1;
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	    // Don't count the chars from 'showbreak'.
 	    csize -= head;
-# endif
+#endif
 	    col -= csize;
 	}
 
@@ -771,7 +765,7 @@ copy_option_part(
     return len;
 }
 
-#ifndef HAVE_MEMSET
+#if !defined(HAVE_MEMSET) && !defined(PROTO)
     void *
 vim_memset(void *ptr, int c, size_t size)
 {
@@ -1059,6 +1053,7 @@ static struct key_name_entry
     {TRUE, NL, STRING_INIT("NewLine"), TRUE},
     {TRUE, NL, STRING_INIT("NL"), FALSE},
     {TRUE, K_ZERO, STRING_INIT("Nul"), FALSE},
+    {TRUE, OSC, STRING_INIT("OSC"), FALSE},
     {TRUE, K_PAGEDOWN, STRING_INIT("PageDown"), FALSE},
     {TRUE, K_PAGEUP, STRING_INIT("PageUp"), FALSE},
     {TRUE, K_PE, STRING_INIT("PasteEnd"), FALSE},
@@ -1117,6 +1112,7 @@ static struct key_name_entry
     {TRUE, K_XF4, STRING_INIT("xF4"), FALSE},
     {TRUE, K_XHOME, STRING_INIT("xHome"), FALSE},
     {TRUE, K_XLEFT, STRING_INIT("xLeft"), FALSE},
+    {TRUE, K_OSC, STRING_INIT("xOSC"), FALSE},
     {TRUE, K_XRIGHT, STRING_INIT("xRight"), FALSE},
     {TRUE, K_XUP, STRING_INIT("xUp"), FALSE},
     {TRUE, K_ZEND, STRING_INIT("zEnd"), FALSE},
@@ -2052,8 +2048,7 @@ same_directory(char_u *f1, char_u *f2)
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
 	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_NETBEANS_INTG) \
-	|| defined(PROTO)
+	|| defined(FEAT_NETBEANS_INTG)
 /*
  * Change to a file's directory.
  * Caller must call shorten_fnames()!
@@ -2088,7 +2083,7 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 }
 #endif
 
-#if defined(STAT_IGNORES_SLASH) || defined(PROTO)
+#if defined(STAT_IGNORES_SLASH)
 /*
  * Check if "name" ends in a slash and is not a directory.
  * Used for systems where stat() ignores a trailing slash on a file name.
@@ -2118,7 +2113,7 @@ vim_stat(const char *name, stat_T *stp)
 }
 #endif
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 
 /*
  * Handling of cursor and mouse pointer shapes in various modes.
@@ -2153,7 +2148,7 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-#define STRING_INIT(s) \
+#  define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
 static string_T mshape_names[] =
 {
@@ -2175,7 +2170,7 @@ static string_T mshape_names[] =
     STRING_INIT("up-arrow"),
     {NULL, 0}
 };
-#undef STRING_INIT
+#  undef STRING_INIT
 
 #  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
 # endif
@@ -2209,11 +2204,11 @@ parse_shape_opt(int what)
 	/*
 	 * Repeat for all comma separated parts.
 	 */
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	    modep = p_mouseshape;
 	else
-#endif
+# endif
 	    modep = p_guicursor;
 	while (*modep != NUL)
 	{
@@ -2260,14 +2255,14 @@ parse_shape_opt(int what)
 		    idx = all_idx--;
 		else if (round == 2)
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			// Set the default, for the missing parts
 			shape_table[idx].mshape = 0;
 		    }
 		    else
-#endif
+# endif
 		    {
 			// Set the defaults, for the missing parts
 			shape_table[idx].shape = SHAPE_BLOCK;
@@ -2280,7 +2275,7 @@ parse_shape_opt(int what)
 		// Parse the part after the colon
 		for (p = colonp + 1; *p && *p != ','; )
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			for (i = 0; ; ++i)
@@ -2306,7 +2301,7 @@ parse_shape_opt(int what)
 			}
 		    }
 		    else // if (what == SHAPE_MOUSE)
-#endif
+# endif
 		    {
 			/*
 			 * First handle the ones with a number argument.
@@ -2400,13 +2395,13 @@ parse_shape_opt(int what)
     // If the 's' flag is not given, use the 'v' cursor for 's'
     if (!found_ve)
     {
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	{
 	    shape_table[SHAPE_IDX_VE].mshape = shape_table[SHAPE_IDX_V].mshape;
 	}
 	else
-#endif
+# endif
 	{
 	    shape_table[SHAPE_IDX_VE].shape = shape_table[SHAPE_IDX_V].shape;
 	    shape_table[SHAPE_IDX_VE].percentage =
@@ -2426,7 +2421,7 @@ parse_shape_opt(int what)
 }
 
 # if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
+	|| defined(FEAT_MOUSESHAPE)
 /*
  * Return the index into shape_table[] for the current mode.
  * When "mouse" is TRUE, consider indexes valid for the mouse pointer.
@@ -2434,22 +2429,22 @@ parse_shape_opt(int what)
     int
 get_shape_idx(int mouse)
 {
-#ifdef FEAT_MOUSESHAPE
+#  ifdef FEAT_MOUSESHAPE
     if (mouse && (State == MODE_HITRETURN || State == MODE_ASKMORE))
     {
-# ifdef FEAT_GUI
+#   ifdef FEAT_GUI
 	int x, y;
 	gui_mch_getmouse(&x, &y);
 	if (Y_2_ROW(y) == Rows - 1)
 	    return SHAPE_IDX_MOREL;
-# endif
+#   endif
 	return SHAPE_IDX_MORE;
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
-#endif
+#  endif
     if (!mouse && State == MODE_SHOWMATCH)
 	return SHAPE_IDX_SM;
     if (State & VREPLACE_FLAG)
@@ -2477,9 +2472,9 @@ get_shape_idx(int mouse)
     }
     return SHAPE_IDX_N;
 }
-#endif
+# endif
 
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
 static int current_mouse_shape = 0;
 
 /*
@@ -2533,7 +2528,7 @@ update_mouseshape(int shape_idx)
 
 #endif // CURSOR_SHAPE
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mainly for tests: get the name of the current mouse shape.
  */
@@ -2542,7 +2537,7 @@ f_getmouseshape(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
     if (current_mouse_shape >= 0
 			      && current_mouse_shape < (int)MSHAPE_NAMES_COUNT)
 	rettv->vval.v_string = vim_strnsave(
@@ -2598,7 +2593,7 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free the memory allocated by get_user_name()
  */
@@ -2609,7 +2604,7 @@ free_username(void)
 }
 #endif
 
-#ifndef HAVE_QSORT
+#if !defined(HAVE_QSORT) && !defined(PROTO)
 /*
  * Our own qsort(), for systems that don't have it.
  * It's simple and slow.  From the K&R C book.
@@ -2676,9 +2671,9 @@ qsort(
  *  (history removed, not very interesting.  See the "screen" sources.)
  */
 
-#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
+#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(PROTO)
 
-#define EXTRASIZE 5		// increment to add to env. size
+# define EXTRASIZE 5		// increment to add to env. size
 
 static int  envsize = -1;	// current size of environment
 extern char **environ;		// the global which is your env.
@@ -2816,7 +2811,7 @@ vimpty_getenv(const char_u *string)
 
 #endif // !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
 
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL)
 /*
  * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
  * rights to write into.
@@ -2825,18 +2820,18 @@ vimpty_getenv(const char_u *string)
 filewritable(char_u *fname)
 {
     int		retval = 0;
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     int		perm = 0;
-#endif
+# endif
 
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     perm = mch_getperm(fname);
-#endif
+# endif
     if (
 # ifdef MSWIN
 	    mch_writable(fname) &&
 # else
-# if defined(UNIX) || defined(VMS)
+#  if defined(UNIX) || defined(VMS)
 	    (perm & 0222) &&
 #  endif
 # endif
@@ -2851,7 +2846,7 @@ filewritable(char_u *fname)
 }
 #endif
 
-#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO)
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
  * Returns -1 when encountering EOF.
@@ -2993,8 +2988,7 @@ elapsed(DWORD start_tick)
 
 #if defined(FEAT_JOB_CHANNEL) \
 	|| (defined(UNIX) && (!defined(USE_SYSTEM) \
-	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)))) \
-	|| defined(PROTO)
+	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL))))
 /*
  * Parse "cmd" and put the white-separated parts in "argv".
  * "argv" is an allocated array with "argc" entries and room for 4 more.
@@ -3101,7 +3095,7 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+# if defined(FEAT_JOB_CHANNEL)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;

@@ -1,7 +1,7 @@
-*gui_w32.txt*   For Vim version 9.1.  Last change: 2024 Jan 23
+*gui_w32.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Vim's Win32 Graphical User Interface			*gui-w32* *win32-gui*
@@ -235,7 +235,7 @@ The "* register reflects the contents of the clipboard.  |quotestar|
 
 When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same.  Thus you can yank to and paste from the clipboard
-without prepending "* to commands. If this doesn't work use the "unnamedplus"
+without prepending "* to commands.  If this doesn't work use the "unnamedplus"
 string in the 'clipboard' option.
 
 The 'a' flag in 'guioptions' is not included by default.  This means that text
@@ -394,7 +394,7 @@ printer installed this should also work: >
 	:w >>prn
 
 Vim supports a number of standard MS-Windows features.  Some of these are
-detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
+detailed elsewhere: see 'mouse', |win32-hidden-menus|.
 
 							*drag-n-drop-win32*
 You can drag and drop one or more files into the Vim window, where they will
@@ -458,17 +458,17 @@ Keycode translation strategy    *w32-experimental-keycode-trans-strategy*
 
 In Patch v8.2.4807 W32 GVIM was changed over to experimental keycode
 translation method with the aim to be able to use more keyboard shortcuts and
-especially supporting non-standard keyboard layouts. In order to implement
+especially supporting non-standard keyboard layouts.  In order to implement
 this support Win API TranslateMessage() call was dropped, and instead the
-recognition of keycode was changed over to ToUnicode() Win API call. This
+recognition of keycode was changed over to ToUnicode() Win API call.  This
 approach uncovered numerous corner cases, which are apparently covered by
 TranslateMessage() implementation, each of it is necessary to be dealt with on
-an individual basis. Therefore the decision was taken to declare this
+an individual basis.  Therefore the decision was taken to declare this
 functionality experimental for the time being and to recover "classic" keycode
 translation method as default again.
 
 Discussion about use of "experimental" keycode translation method will
-probably last some time yet. In the meantime, if you are impacted by this
+probably last some time yet.  In the meantime, if you are impacted by this
 change over back to "classic" keycode translation method in W32 GVIM, you can
 enable "experimental" translation method again in your vimrc using following
 snippet:
@@ -488,4 +488,41 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
         set VIM_KEYCODE_TRANS_STRATEGY=experimental
         gvim.exe
 <
+
+Title Bar						*gui-w32-title-bar*
+
+Starting with Windows 11, you can customize the gVim title bar (also known as
+the caption bar) by enabling the |'go-C'| option.
+
+Once enabled, the appearance is controlled by two highlighting groups:
+1. |hl-TitleBar|   -- Sets the color of the title bar for the active window.
+2. |hl-TitleBarNC| -- Sets the color of the title bar for inactive windows.
+
+To use the system's default title bar colors, set highlighting groups to
+`NONE`: >
+
+	hi TitleBar guibg=NONE guifg=NONE
+	hi TitleBarNC guibg=NONE guifg=NONE
+<
+
+Full Screen						*gui-w32-fullscreen*
+
+To enable fullscreen mode in the Windows GUI version of Vim, add the 's' flag
+to the 'guioptions' setting.
+
+For convenience, you can define a command or mapping to toggle fullscreen mode:
+>
+	command! ToggleFullscreen {
+		if &guioptions =~# 's'
+			set guioptions-=s
+		else
+			set guioptions+=s
+		endif
+	}
+
+	map <expr> <F11> &go =~# 's' ? ":se go-=s<CR>" : ":se go+=s<CR>"
+
+The fullscreen mode will occupy the entire screen area while hiding window
+decorations such as the title bar and borders.
+
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

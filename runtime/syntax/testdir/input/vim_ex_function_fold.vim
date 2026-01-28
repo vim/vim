@@ -3,7 +3,7 @@
 " VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
 
 
-" list
+" List
 
 function
 function Foo
@@ -15,7 +15,7 @@ function Foo | echo "Foo"
 function Foo " comment
 
 
-" definition
+" Definition
 
 " empty definition
 function Foo()
@@ -66,7 +66,45 @@ function <SID>Foo()
   return 42
 endfunction
 
+function b:dict.Foo()
+  return 42
+endfunction
+
+function w:dict.Foo()
+  return 42
+endfunction
+
+function t:dict.Foo()
+  return 42
+endfunction
+
+function g:dict.Foo()
+  return 42
+endfunction
+
+function s:dict.Foo()
+  return 42
+endfunction
+
+function v:dict.Foo()
+  return 42
+endfunction
+
+function Foo(arg)
+  let l:dict = {}
+  function l:dict.BAR()
+    return 42
+  endfunction
+  function a:arg.BAR()
+    return 42
+  endfunction
+endfunction
+
 function foo#bar#Foo()
+  return 42
+endfunction
+
+function g:foo#bar#Foo()
   return 42
 endfunction
 
@@ -75,7 +113,7 @@ function s:ls()
 endfunction
 
 
-" modifiers
+" Modifiers
 
 function Foo() range
 endfunction
@@ -140,7 +178,7 @@ function Foo()
 endfunction " comment
 
 
-" parameters
+" Parameters
 
 function Foo(x, y, z, ...)
   return 42
@@ -151,6 +189,14 @@ function Foo(
       \ y,
       \ z,
       \ ...)
+  return 42
+endfunction
+
+function Foo(
+        x,
+        y,
+        z,
+        ...)
   return 42
 endfunction
 
@@ -165,8 +211,15 @@ function Foo(
   return 42
 endfunction
 
+function Foo(
+        x,
+        y = 42,
+        z = "zed")
+  return 42
+endfunction
 
-" arguments
+
+" Arguments
 
 function Foo(a, b, c)
   echo a:a a:b a:c
@@ -179,7 +232,13 @@ function Foo(...)
 endfunction
 
 
-" comments
+" Issue #16243 (Vim script def parameters syntax highlight is wrong)
+
+function Test(lines = [line('.'), line('.')])
+endfunction
+
+
+" Comments
 
 function Foo()
   " Legacy-script comment
@@ -188,27 +247,27 @@ function Foo()
 endfunction
 
 
-" command modifiers
+" Command modifiers
 
 silent! function Foo()
 endfunction
 
 
-" leading command separator
+" Leading command separator
 
 echo "Foo" | function Foo()
 endfunction
 
 
-" delete function
+" Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
+" (function named /s:fu%\[nction]/)
 
-delfunction Foo
-delfunction foo.bar
-delfunction! Foo
-delfunction foo.bar
+func! s:func(_, func)
+    return a:func
+endfunc
 
 
-" fold-region ending
+" Fold-region ending
 
 function Foo()
   " endfunction

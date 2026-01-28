@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Apr 02
+# Last Change:  2025 Jun 22
 
 if exists("g:loaded_openPlugin") || &cp
   finish
@@ -12,14 +12,14 @@ g:loaded_openPlugin = 1
 
 import autoload 'dist/vim9.vim'
 
-command -complete=shellcmd -nargs=1 Launch vim9.Launch(trim(<q-args>))
+command -complete=shellcmd -nargs=1 Launch vim9.Launch(trim(<f-args>))
 
-# technically, -nargs=1 is correct, but this throws E480: No match 
+# technically, -nargs=1 is correct, but this throws E480: No match
 # when the argument contains a wildchar on Windows
-command -complete=file -nargs=* Open vim9.Open(trim(<q-args>))
+command -complete=file -nargs=* Open vim9.Open(trim(<f-args>))
 # Use URLOpen when you don't want completion to happen
 # (or because you want to avoid cmdline-special)
-command -nargs=1 URLOpen vim9.Open(trim(<q-args>))
+command -nargs=1 URLOpen vim9.Open(trim(<f-args>))
 
 const no_gx = get(g:, "nogx", get(g:, "netrw_nogx", false))
 if !no_gx
@@ -34,10 +34,12 @@ if !no_gx
   enddef
 
   if maparg('gx', 'n') == ""
-    nnoremap <unique> gx <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nmap gx <Plug>(open-word-under-cursor)
   endif
   if maparg('gx', 'x') == ""
-    xnoremap <unique> gx <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xmap gx <Plug>(open-word-under-cursor)
   endif
 endif
 
