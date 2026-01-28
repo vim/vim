@@ -2002,7 +2002,7 @@ def Test_if_elseif_else_fails()
       else
       endif
   END
-  v9.CheckDefFailure(lines, 'E583:')
+  v9.CheckSourceDefFailure(lines, 'E583:')
 
   lines =<< trim END
       var a = 3
@@ -2012,7 +2012,7 @@ def Test_if_elseif_else_fails()
       else
       endif
   END
-  v9.CheckDefFailure(lines, 'E584:')
+  v9.CheckSourceDefFailure(lines, 'E584:')
 
   lines =<< trim END
       var cond = true
