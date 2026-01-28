@@ -590,6 +590,70 @@ screen_line(
 	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
 	    redraw_this = FALSE;
 
+#ifdef FEAT_PROP_POPUP
+	// For popup with opacity windows: if drawing a space, show the
+	// underlying character with the popup's attributes blended in.
+	int opacity_blank = FALSE;
+	// Check if the popup is drawing a space and the background is the
+	// second cell of a wide character. Skip drawing to preserve the
+	// wide character that was drawn in the previous cell.
+	if (screen_opacity_popup != NULL
+		&& (flags & SLF_POPUP)
+		&& ScreenLines[off_from] == ' '
+		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
+		&& ScreenLines[off_to] == 0
+		&& off_to > 0
+		&& enc_utf8 && ScreenLinesUC[off_to - 1] != 0
+		&& utf_char2cells(ScreenLinesUC[off_to - 1]) == 2)
+	{
+	    // This is the second cell of a wide character. Don't overwrite it.
+	    opacity_blank = TRUE;
+	    redraw_this = FALSE;
+	}
+	else if (screen_opacity_popup != NULL
+		&& (flags & SLF_POPUP)
+		&& ScreenLines[off_from] == ' '
+		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
+		&& ScreenLines[off_to] != 0)
+	{
+	    int bg_char_cells = 1;
+	    if (enc_utf8 && ScreenLinesUC[off_to] != 0)
+		bg_char_cells = utf_char2cells(ScreenLinesUC[off_to]);
+
+	    // For wide background character, check if the next popup cell
+	    // is also a space.  If not, the wide char would be partially
+	    // covered by a popup character, so don't show it.
+	    if (bg_char_cells == 2)
+	    {
+		if (col + 1 >= endcol || off_from + 1 >= max_off_from
+						   || off_to + 1 >= max_off_to)
+		    // At the edge of the screen, skip wide char.
+		    goto skip_opacity;
+		int next_off_from = off_from + 1;
+		if (!(ScreenLines[next_off_from] == ' '
+			&& (!enc_utf8 || ScreenLinesUC[next_off_from] == 0)))
+		{
+		    // Next cell is not a space, don't show the wide char.
+		    goto skip_opacity;
+		}
+	    }
+
+	    opacity_blank = TRUE;
+	    // Keep the underlying character and blend its foreground color
+	    // from popup background color to original color.
+	    int popup_attr = get_wcr_attr(screen_opacity_popup);
+	    int blend = screen_opacity_popup->w_popup_blend;
+	    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
+						popup_attr, blend, TRUE);
+	    screen_char(off_to, row, col + coloff);
+	    // For wide background character, also update the second cell.
+	    if (bg_char_cells == 2)
+		ScreenAttrs[off_to + 1] = ScreenAttrs[off_to];
+	    redraw_this = FALSE;
+	}
+skip_opacity:
+#endif
+
 	if (redraw_this)
 	{
 	    /*
@@ -723,11 +787,24 @@ screen_line(
 		redraw_next = TRUE;
 #endif
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
+#ifdef FEAT_PROP_POPUP
+	    // For popup with opacity text: blend background with default (0)
+	    if (screen_opacity_popup != NULL
+		    && (flags & SLF_POPUP)
+		    && screen_opacity_popup->w_popup_blend > 0)
+	    {
+		int popup_attr = get_wcr_attr(screen_opacity_popup);
+		int blend = screen_opacity_popup->w_popup_blend;
+		// Blend popup attr with default background (0)
+		// FALSE = keep popup foreground color, blend background only
+		ScreenAttrs[off_to] = hl_blend_attr(0, popup_attr, blend, FALSE);
+	    }
+#endif
 
 	    // For simplicity set the attributes of second half of a
 	    // double-wide character equal to the first half.
 	    if (char_cells == 2)
-		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+		ScreenAttrs[off_to + 1] = ScreenAttrs[off_to];
 
 	    if (enc_dbcs != 0 && char_cells == 2)
 		screen_char_2(off_to, row, col + coloff);
@@ -752,9 +829,14 @@ screen_line(
 		screen_stop_highlight();
 	}
 
-	ScreenCols[off_to] = ScreenCols[off_from];
-	if (char_cells == 2)
-	    ScreenCols[off_to + 1] = ScreenCols[off_from + 1];
+#ifdef FEAT_PROP_POPUP
+	if (!opacity_blank)
+#endif
+	{
+	    ScreenCols[off_to] = ScreenCols[off_from];
+	    if (char_cells == 2)
+		ScreenCols[off_to + 1] = ScreenCols[off_from + 1];
+	}
 
 	off_to += char_cells;
 	off_from += char_cells;
@@ -1699,6 +1781,9 @@ screen_start_highlight(int attr)
 	{
 	    if (aep->ae_u.cterm.fg_rgb != INVALCOLOR)
 		term_fg_rgb_color(aep->ae_u.cterm.fg_rgb);
+	    else
+		// Reset to default foreground color (SGR 39)
+		out_str((char_u *)"\033[39m");
 	}
 	else
 #endif
@@ -2276,6 +2361,51 @@ screen_fill(
 		    // Skip if under a(nother) popup.
 		    && !skip_for_popup(row, col))
 	    {
+#ifdef FEAT_PROP_POPUP
+		// For popup with opacity: show underlying character with
+		// popup's background color applied.
+		if (screen_opacity_popup != NULL && c == ' ')
+		{
+		    // Skip if background is the second cell of a wide character.
+		    // Check if previous cell is a wide character.
+		    if (ScreenLines[off] == 0
+			    && off > 0
+			    && enc_utf8 && ScreenLinesUC[off - 1] != 0
+			    && utf_char2cells(ScreenLinesUC[off - 1]) == 2)
+			goto next_col;
+		}
+		if (screen_opacity_popup != NULL && c == ' '
+						       && ScreenLines[off] != 0)
+		{
+		    int bg_char_cells = 1;
+		    if (enc_utf8 && ScreenLinesUC[off] != 0)
+			bg_char_cells = utf_char2cells(ScreenLinesUC[off]);
+
+		    // For wide background character, check if the next cell
+		    // is also being filled with space.  If not, the wide char
+		    // would be partially covered, so don't show it.
+		    if (bg_char_cells == 2)
+		    {
+			if (col + 1 >= end_col)
+			    // At the edge, skip wide char.
+			    goto skip_opacity_fill;
+			// In screen_fill, we're filling with 'c' which is ' '.
+			// The next cell will also be filled with c2 (usually ' ').
+			// If c2 is not space, skip the wide char.
+			if (c2 != ' ')
+			    goto skip_opacity_fill;
+		    }
+
+		    int popup_attr = get_wcr_attr(screen_opacity_popup);
+		    int blend = screen_opacity_popup->w_popup_blend;
+		    // Blend both foreground and background for padding area
+		    ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],
+							popup_attr, blend, TRUE);
+		    screen_char(off, row, col);
+		    goto next_col;
+		}
+skip_opacity_fill:
+#endif
 #if defined(FEAT_GUI) || defined(UNIX)
 		// The bold trick may make a single row of pixels appear in
 		// the next character.  When a bold character is removed, the
@@ -2316,6 +2446,9 @@ screen_fill(
 		if (!did_delete || c != ' ')
 		    screen_char(off, row, col);
 	    }
+#ifdef FEAT_PROP_POPUP
+next_col:
+#endif
 	    ScreenCols[off] = -1;
 	    ++off;
 	    if (col == start_col)
