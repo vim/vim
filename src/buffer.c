@@ -5264,17 +5264,12 @@ build_stl_str_hl(
 	{
 	    char_u  *end = out + outputlen;
 
-	    if (has_mbyte)
+	    n = 0;
+	    while (width >= maxwidth)
 	    {
-		n = 0;
-		while (width >= maxwidth)
-		{
-		    width -= ptr2cells(s + n);
-		    n += (*mb_ptr2len)(s + n);
-		}
+		width -= ptr2cells(s + n);
+		n += (*mb_ptr2len)(s + n);
 	    }
-	    else
-		n = width - maxwidth + 1;
 	    p = s + n;
 	    mch_memmove(s + 1, p, (size_t)(end - p) + 1);	// +1 for NUL
 	    end -= (size_t)(p - (s + 1));
