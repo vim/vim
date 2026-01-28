@@ -423,7 +423,7 @@ sign_define({list})
 		and a "name" item for the sign name.
 
 		Returns 0 on success and -1 on failure.  When the one argument
-		{list} is used, then returns a List of values one for each
+		{list} is used, then returns a |List| of values one for each
 		defined sign.
 
 		Examples: >
@@ -487,7 +487,7 @@ sign_getdefined([{name}])				*sign_getdefined()*
 
 
 sign_getplaced([{buf} [, {dict}]])			*sign_getplaced()*
-		Return a list of signs placed in a buffer or all the buffers.
+		Return a |List| of signs placed in a buffer or all the buffers.
 		This is similar to the |:sign-place-list| command.
 
 		If the optional buffer name {buf} is specified, then only the
@@ -659,7 +659,7 @@ sign_placelist({list})				*sign_placelist()*
 		If {id} refers to an existing sign, then the existing sign is
 		modified to use the specified {name} and/or {priority}.
 
-		Returns a List of sign identifiers.  If failed to place a
+		Returns a |List| of sign identifiers.  If failed to place a
 		sign, the corresponding list item is set to -1.
 
 		Examples: >
@@ -703,7 +703,7 @@ sign_undefine({list})
 		signs.  Each list item is the name of a sign.
 
 		Returns 0 on success and -1 on failure.  For the one argument
-		{list} call, returns a list of values one for each undefined
+		{list} call, returns a |List| of values one for each undefined
 		sign.
 
 		Examples: >
@@ -787,7 +787,7 @@ sign_unplacelist({list})				*sign_unplacelist()*
 		    id		sign identifier.  If not specified, then all
 				the signs in the specified group are removed.
 
-		Returns a List where an entry is set to 0 if the corresponding
+		Returns a |List| where an entry is set to 0 if the corresponding
 		sign was successfully removed or -1 on failure.
 
 		Example: >

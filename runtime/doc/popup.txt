@@ -474,7 +474,7 @@ popup_hide({id})						*popup_hide()*
 
 
 popup_list()						 *popup_list()*
-		Return a List with the |window-ID| of all existing popups.
+		Return a |List| with the |window-ID| of all existing popups.
 
 		Return type: list<number> or list<any>
 

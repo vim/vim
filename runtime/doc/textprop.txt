@@ -320,7 +320,7 @@ prop_find({props} [, {direction}])			*prop_find()*
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
-		Returns a List with all the text properties in line {lnum}.
+		Returns a |List| with all the text properties in line {lnum}.
 
 		The following optional items are supported in {props}:
 		   bufnr	use this buffer instead of the current buffer
@@ -497,7 +497,7 @@ prop_type_get({name} [, {props}])			*prop_type_get()*
 
 
 prop_type_list([{props}])				*prop_type_list()*
-		Returns a list with all property type names.
+		Returns a |List| with all property type names.
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
