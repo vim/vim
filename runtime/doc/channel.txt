@@ -631,6 +631,23 @@ ch_info({handle})						*ch_info()*
 <
 		Return type: dict<any>
 
+ch_listen({address} [, {options}])				*ch_listen()*
+		Listen to a channel with {address}.  See |channel|.
+		Returns a Channel.  Use |ch_status()| to check for failure.
+
+		{address} has the form "hostname:port", e.g.,
+		"localhost:8765" or ":8765".
+
+		If {options} is given it must be a |Dictionary|.
+		See |channel-open-options|.
+
+		{only available when compiled with the |+channel| feature}
+
+		Can also be used as a |method|: >
+			GetAddress()->ch_listen()
+<
+		Return type: channel
+
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write String {msg} in the channel log file, if it was opened
 		with |ch_logfile()|.

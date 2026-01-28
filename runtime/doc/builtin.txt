@@ -106,6 +106,8 @@ ch_evalraw({handle}, {string} [, {options}])
 ch_getbufnr({handle}, {what})	Number	get buffer number for {handle}/{what}
 ch_getjob({channel})		Job	get the Job of {channel}
 ch_info({handle})		String	info about channel {handle}
+ch_listen({address} [, {options}])
+				Channel	listen on {address}
 ch_log({msg} [, {handle}])	none	write {msg} in the channel log file
 ch_logfile({fname} [, {mode}])	none	start logging channel activity
 ch_open({address} [, {options}])

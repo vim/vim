@@ -1287,23 +1287,24 @@ Testing:				    *test-functions*
 
 Inter-process communication:		    *channel-functions*
 	ch_canread()		check if there is something to read
-	ch_open()		open a channel
 	ch_close()		close a channel
 	ch_close_in()		close the in part of a channel
+	ch_evalexpr()		evaluate an expression over channel
+	ch_evalraw()		evaluate a raw string over channel
+	ch_getbufnr()		get the buffer number for a channel
+	ch_getjob()		get the Job of a channel
+	ch_info()		get information about a channel
+	ch_listen()		listen on a channel
+	ch_log()		write a message in the channel log
+	ch_logfile()		start logging channel activity
+	ch_open()		open a channel
 	ch_read()		read a message from a channel
 	ch_readblob()		read a Blob from a channel
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel
-	ch_evalexpr()		evaluate an expression over channel
-	ch_evalraw()		evaluate a raw string over channel
+	ch_setoptions()		set channel options
 	ch_status()		get status of a channel
-	ch_getbufnr()		get the buffer number of a channel
-	ch_getjob()		get the job associated with a channel
-	ch_info()		get channel information
-	ch_log()		write a message in the channel log file
-	ch_logfile()		set the channel log file
-	ch_setoptions()		set the options for a channel
 	json_encode()		encode an expression to a JSON string
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
