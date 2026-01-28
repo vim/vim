@@ -586,7 +586,6 @@ runtime/syntax/m17ndb.vim				@dseomn
 runtime/syntax/m3build.vim				@dkearns
 runtime/syntax/m3quake.vim				@dkearns
 runtime/syntax/mailcap.vim				@dkearns
-runtime/syntax/make.vim					@rohieb
 runtime/syntax/mallard.vim				@jhradilek
 runtime/syntax/markdown.vim				@tpope
 runtime/syntax/mbsync.vim				@fymyte
