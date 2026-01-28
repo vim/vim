@@ -139,9 +139,17 @@ function GetRustIndent(lnum)
     let l:standalone_close = line =~# '\V\^\s\*}\s\*\$'
     let l:standalone_where = line =~# '\V\^\s\*where\s\*\$'
     if l:standalone_open || l:standalone_close || l:standalone_where
-        " ToDo: we can search for more items than 'fn' and 'if'.
-        let [l:found_line, l:col, l:submatch] =
-                    \ searchpos('\<\(fn\)\|\(if\)\>', 'bnWp')
+        let l:orig_line = line('.')
+        let l:orig_col = col('.')
+        while 1
+            " ToDo: we can search for more items than 'fn' and 'if'.
+            let [l:found_line, l:col, l:submatch] =
+                        \ searchpos('\<\(fn\|if\)\>', 'bWp')
+            if l:found_line ==# 0 || !s:is_string_comment(l:found_line, l:col)
+                break
+            endif
+        endwhile
+        call cursor(l:orig_line, l:orig_col)
         if l:found_line !=# 0
             " Now we count the number of '{' and '}' in between the match
             " locations and the current line (there is probably a better
