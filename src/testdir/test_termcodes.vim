@@ -2776,6 +2776,29 @@ func Test_home_key_works()
   let &t_@7 = save_end
 endfunc
 
+func Test_avoid_keypad_if_ambiguous()
+  new
+  call feedkeys("\<Esc>P1+r6b68=1B4F48\<Esc>\\", 't') " kh <Home>
+  call feedkeys("\<Esc>P1+r4b31=1B4F48\<Esc>\\", 't') " K1 <kHome>
+  call feedkeys("i\<C-K>\<Esc>OH\<CR>\<Esc>", 't')
+  call feedkeys("\<Esc>P1+r4037=1B4F46\<Esc>\\", 't') " @7 <End>
+  call feedkeys("\<Esc>P1+r4b34=1B4F46\<Esc>\\", 't') " K4 <kEnd>
+  call feedkeys("i\<C-K>\<Esc>OF\<CR>\<Esc>", 't')
+  call feedkeys("\<Esc>P1+r6b50=1B5B357E\<Esc>\\", 't') " kP <PageUp>
+  call feedkeys("\<Esc>P1+r4b33=1B5B357E\<Esc>\\", 't') " K3 <kPageUp>
+  call feedkeys("i\<C-K>\<Esc>[5~\<CR>\<Esc>", 't')
+  call feedkeys("\<Esc>P1+r6b4e=1B5B367E\<Esc>\\", 't') " kN <PageDown>
+  call feedkeys("\<Esc>P1+r4b35=1B5B367E\<Esc>\\", 't') " K5 <kPageDown>
+  call feedkeys("i\<C-K>\<Esc>[6~\<CR>\<Esc>", 'tx')
+  call assert_equal([
+        \ '<Home>',
+        \ '<End>',
+        \ '<PageUp>',
+        \ '<PageDown>',
+        \ ''], getline(1, '$'))
+  bwipe!
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
