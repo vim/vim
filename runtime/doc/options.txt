@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 28
+*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4515,8 +4515,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		by a yank or delete operation for the "* register.
 		The same applies to the modeless selection.
 								*'go-P'*
-	  'P'	Like autoselect but using the "+ register instead of the "*
-		register.
+	  'P'	Like autoselect but only copy to the "+ register instead of
+		the "* register.
 								*'go-A'*
 	  'A'	Autoselect for the modeless selection.  Like 'a', but only
 		applies to the modeless selection.
