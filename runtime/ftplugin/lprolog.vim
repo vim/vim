@@ -2,8 +2,9 @@
 " Language:     LambdaProlog (Teyjus)
 " Maintainer:   Markus Mottl  <markus.mottl@gmail.com>
 " URL:          http://www.ocaml.info/vim/ftplugin/lprolog.vim
-" Last Change:  2025 Jun 08 - set 'comments', 'commentstring'
-"               2025 Apr 16 - set 'cpoptions' for line continuation
+" Last Change:  2025 Jan 06 - remove 'formatprg' (Vim Project)
+"               2025 Jun 08 - set 'comments', 'commentstring' (Vim Project)
+"               2025 Apr 16 - set 'cpoptions' for line continuation (Vim Project)
 "               2023 Aug 28 - added undo_ftplugin (Vim Project)
 "               2006 Feb 05
 "               2001 Sep 16 - fixed 'no_mail_maps'-bug (MM)
@@ -23,12 +24,9 @@ let b:did_ftplugin = 1
 " Error format
 setlocal efm=%+A./%f:%l.%c:\ %m
 
-" Formatting of comments
-setlocal formatprg=fmt\ -w75\ -p\\%
-
 setlocal comments=s1:/*,mb:*,ex:*/,:% commentstring=%\ %s
 
-let b:undo_ftplugin = "setlocal efm< fp< com< cms<"
+let b:undo_ftplugin = "setlocal efm< com< cms<"
 
 " Add mappings, unless the user didn't want this.
 if !exists("no_plugin_maps") && !exists("no_lprolog_maps")
