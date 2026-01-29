@@ -75,10 +75,13 @@ static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
     "borderhighlight:", "close:", "height:", "highlight:", "resize:",
     "shadow:", "width:", NULL};
-static char *(p_popup_pvp_option_values[]) = {"height:", "highlight:",
-    "width:", NULL};
+static char *(p_popup_pvp_option_values[]) = {"border:",
+    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
+    "shadow:", "width:", NULL};
 static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};
 static char *(p_popup_cpp_border_values[]) = {"single", "double", "round",
+    "ascii", "on", "off", "custom:", NULL};
+static char *(p_popup_pvp_border_values[]) = {"single", "double", "round",
     "ascii", "on", "off", "custom:", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
@@ -3415,6 +3418,7 @@ did_set_previewpopup(optset_T *args UNUSED)
     if (parse_previewpopup(NULL) == FAIL)
 	return e_invalid_argument;
 
+    popup_close_info();
     return NULL;
 }
 
@@ -3452,9 +3456,9 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches,
 	{
 	    return expand_set_opt_string(
 		    args,
-		    previewpopup ? p_popup_option_on_off_values
+		    previewpopup ? p_popup_pvp_border_values
 			: p_popup_cpp_border_values,
-		    (previewpopup ? ARRAY_LENGTH(p_popup_option_on_off_values)
+		    (previewpopup ? ARRAY_LENGTH(p_popup_pvp_border_values) - 1
 			: ARRAY_LENGTH(p_popup_cpp_border_values)) - 1,
 		    numMatches,
 		    matches);
