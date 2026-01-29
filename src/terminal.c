@@ -1482,9 +1482,17 @@ term_mouse_click(VTerm *vterm, int key)
     // For modeless selection mouse drag and release events are ignored, unless
     // they are preceded with a mouse down event
     static int	    ignore_drag_release = TRUE;
+    VTermState	    *state;
     VTermMouseState mouse_state;
 
-    vterm_state_get_mousestate(vterm_obtain_state(vterm), &mouse_state);
+
+    state = vterm_obtain_state(vterm);
+    if (state == NULL)
+    {
+	return FALSE;
+    }
+
+    vterm_state_get_mousestate(state, &mouse_state);
     if (mouse_state.flags == 0)
     {
 	// Terminal is not using the mouse, use modeless selection.

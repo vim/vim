@@ -42,7 +42,7 @@ server_to_input_buf(char_u *str)
     str = replace_termcodes(str, &ptr, 0, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
-    if (*ptr != NUL)	// trailing CTRL-V results in nothing
+    if (ptr != NULL && *ptr != NUL)	// trailing CTRL-V results in nothing
     {
 	/*
 	 * Add the string to the input stream.
