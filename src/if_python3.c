@@ -1517,14 +1517,36 @@ ex_py3(exarg_T *eap)
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
+	char *cmd = script == NULL ? (char *) eap->arg : (char *) script;
+
 	if (p_pyx == 0)
 	    p_pyx = 3;
 
-	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
-		NULL,
-		init_range_cmd,
-		(runner) run_cmd,
-		(void *) eap);
+	if (script == NULL && cmd[0] == '=')
+	{
+	    // ":py3 =expr" runs "print(expr)"
+	    size_t  len = 7 + STRLEN(cmd + 1) + 1;
+	    char    *tofree = alloc(len);
+
+	    if (tofree != NULL)
+	    {
+		vim_snprintf(tofree, len, "print(%s)", cmd + 1);
+		DoPyCommand(tofree,
+			NULL,
+			init_range_cmd,
+			(runner) run_cmd,
+			(void *) eap);
+		vim_free(tofree);
+	    }
+	}
+	else
+	{
+	    DoPyCommand(cmd,
+		    NULL,
+		    init_range_cmd,
+		    (runner) run_cmd,
+		    (void *) eap);
+	}
     }
     vim_free(script);
 }

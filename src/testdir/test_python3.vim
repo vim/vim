@@ -303,6 +303,21 @@ func Test_unicode()
   set encoding=utf8
 endfunc
 
+" Test command :py3= and variants
+func Test_python3_ex_eval()
+  call assert_equal("\n10", execute('python3 =10'))
+  call assert_equal("\n20", execute('python3=   20     '))
+  call assert_equal("\n30", execute('py3=    30     '))
+  call assert_equal("\n40", execute('py3=40'))
+
+  " On syntax error or evaluation error, stacktrace information is printed
+  call assert_fails('py3= 1/0', 'Traceback (most recent call last):')
+
+  python3 def raise_error(): raise RuntimeError("oops")
+  call assert_fails('python3 =print("nooo", raise_error())', 'Traceback (most recent call last):')
+  call assert_notmatch("nooo", execute(':messages'))
+endfunc
+
 " Test vim.eval() with various types.
 func Test_python3_vim_eval()
   call assert_equal("\n2061300532912", execute('py3 print(vim.eval("2061300532912"))'))

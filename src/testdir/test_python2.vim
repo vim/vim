@@ -53,6 +53,16 @@ func Test_AAA_python_setup()
   EOF
 endfunc
 
+" Test command :py= and variants
+func Test_python_ex_eval()
+  " python 2 tests are flaky, probably because of the softspace thing, so
+  " we'll use `trim()` to remove any spurious whitespace.
+  call assert_equal("10", trim(execute('python =10')))
+  call assert_equal("20", trim(execute('python=   20     ')))
+  call assert_equal("30", trim(execute('py=    30     ')))
+  call assert_equal("40", trim(execute('py=40')))
+endfunc
+
 func Test_pydo()
   new
 

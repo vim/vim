@@ -37,6 +37,10 @@ anymore.
 			Execute Python statement {stmt}.  A simple check if
 			the `:python` command is working: >
 				:python print "Hello"
+<
+			If {stmt} starts with "=" the rest of the chunk is
+			evaluated as an expression and printed. `:python
+			=expr` is equivalent to `:python print(expr)`
 
 :[range]py[thon] << [trim] [{endmarker}]
 {script}
@@ -63,7 +67,7 @@ Example: >
 	endfunction
 
 To see what version of Python you have: >
-	:python print(sys.version)
+	:python =sys.version
 
 There is no need to import sys, it's done by default.
 
@@ -841,7 +845,7 @@ the DLL from the registry, Vim will search the latest version of Python.
 <
 	To see what version of Python you have: >
 		:py3 import sys
-		:py3 print(sys.version)
+		:py3 =sys.version
 <							*:py3file*
 :[range]py3f[ile] {file}
 	The `:py3file` command works similar to `:pyfile`.
@@ -969,7 +973,7 @@ if the `:pyx` command is working: >
 
 To see what version of Python is being used: >
 	:pyx import sys
-	:pyx print(sys.version)
+	:pyx =sys.version
 <
 					*:pyxfile* *python_x-special-comments*
 The `:pyxfile` command works similar to `:pyfile`.  However you can add one of
