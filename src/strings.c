@@ -1350,7 +1350,7 @@ append_converted_string_to_list(
 		    vim_free(converted);
 		    return; // Stop processing
 		}
-		if (list_append_string(list, line, -1) == NULL)
+		if (list_append_string(list, line, -1) == FAIL)
 		{
 		    vim_free(line);
 		    vim_free(converted);
@@ -1361,7 +1361,7 @@ append_converted_string_to_list(
 	    else
 	    {
 		// Allocation failure: report error and stop processing
-		semsg(_(e_out_of_memory));
+		emsg(_(e_out_of_memory));
 		vim_free(converted);
 		return;
 	    }
@@ -1430,7 +1430,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 		from_encoding_raw = normalize_encoding_name(enc_skipped);
 		if (from_encoding_raw == NULL)
 		{
-		    emsg(_(e_outofmem));
+		    emsg(_(e_out_of_memory));
 		    VIM_CLEAR(from_encoding);
 		    return;
 		}
