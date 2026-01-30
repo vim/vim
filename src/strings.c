@@ -1350,7 +1350,12 @@ append_converted_string_to_list(
 		    vim_free(converted);
 		    return; // Stop processing
 		}
-		list_append_string(list, line, -1);
+		if (list_append_string(list, line, -1) == NULL)
+		{
+		    vim_free(line);
+		    vim_free(converted);
+		    return; // Stop processing on append failure
+		}
 		vim_free(line);
 	    }
 	    else
