@@ -4512,6 +4512,7 @@ func Test_blob2str()
     call assert_equal(["ab"], blob2str(0z6162))
     call assert_equal(["a\nb"], blob2str(0z610062))
     call assert_equal(["ab", "cd"], blob2str(0z61620A6364))
+    call assert_equal(["ab", "cd", ""], blob2str(0z61620A63640A))
 
     call assert_equal(["«»"], blob2str(0zC2ABC2BB))
     call assert_equal(["ŝş"], blob2str(0zC59DC59F))

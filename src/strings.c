@@ -1359,6 +1359,10 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	    break;
     }
 
+    // If the blob ends with a newline, we need to add another empty string.
+    if (blen > 0 && blob_get(blob, blen - 1) == NL)
+	list_append_string(rettv->vval.v_list, (char_u *)"", 0);
+
 done:
     vim_free(from_encoding);
 }
