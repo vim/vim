@@ -1431,7 +1431,9 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
     }
 
     // Special handling for UTF-16/UCS-2/UTF-32/UCS-4 encodings: convert entire blob before splitting by newlines
-    int from_prop = enc_canon_props(from_encoding);
+    int from_prop = 0;
+    if (from_encoding != NULL)
+	from_prop = enc_canon_props(from_encoding);
     if (from_encoding != NULL && (from_prop & (ENC_2BYTE | ENC_4BYTE | ENC_2WORD)))
     {
 	// Build a temporary buffer from the blob as a whole
