@@ -1488,9 +1488,7 @@ term_mouse_click(VTerm *vterm, int key)
 
     state = vterm_obtain_state(vterm);
     if (state == NULL)
-    {
 	return FALSE;
-    }
 
     vterm_state_get_mousestate(state, &mouse_state);
     if (mouse_state.flags == 0)
