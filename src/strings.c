@@ -1353,6 +1353,13 @@ append_converted_string_to_list(
 		list_append_string(list, line, -1);
 		vim_free(line);
 	    }
+	    else
+	    {
+		// Allocation failure: report error and stop processing
+		semsg(_(e_out_of_memory));
+		vim_free(converted);
+		return;
+	    }
 
 	    if (*p == NL)
 		p++;
