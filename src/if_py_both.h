@@ -6601,6 +6601,32 @@ run_eval(const char *cmd, dict_T *locals, void *arg
     PyErr_Clear();
 }
 
+    static void
+DoPyCommand(const char *cmd, dict_T *locals, rangeinitializer init_range, runner run, void *arg);
+
+    static void
+exec_py_cmd(char_u *script, exarg_T *eap)
+{
+    char_u *cmd = script == NULL ? eap->arg : script;
+    char_u *tofree = NULL;
+
+    if (script == NULL && cmd[0] == '=')
+    {
+	// ":py =expr" runs "print(expr)"
+	size_t  len = 7 + STRLEN(cmd + 1) + 1;
+	tofree = alloc(len);
+
+	if (tofree != NULL)
+	{
+	    vim_snprintf((char *)tofree, len, "print(%s)", cmd + 1);
+	    cmd = tofree;
+	}
+    }
+
+    DoPyCommand((const char *)cmd, NULL, init_range_cmd, (runner)run_cmd, (void *)eap);
+    vim_free(tofree);
+}
+
     static int
 set_ref_in_py(const int copyID)
 {

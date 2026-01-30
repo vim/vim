@@ -1095,35 +1095,10 @@ ex_python(exarg_T *eap)
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
-	char *cmd = script == NULL ? (char *) eap->arg : (char *) script;
-
 	if (p_pyx == 0)
 	    p_pyx = 2;
 
-        char_u  *cmd = script == NULL ? eap->arg : script;
-        char_u  *tofree = NULL;
-
-        if (p_pyx == 0)
-            p_pyx = 2;
-
-        if (script == NULL && cmd[0] == '=')
-        {
-            // ":py =expr" runs "print(expr)"
-            size_t  len = 7 + STRLEN(cmd + 1) + 1;
-            char_u  *tofree = alloc(len);
-
-            if (tofree != NULL)
-            {
-                vim_snprintf(tofree, len, "print(%s)", cmd + 1);
-                cmd = tofree;
-            }
-        }
-        DoPyCommand(cmd,
-                NULL,
-                init_range_cmd,
-                (runner) run_cmd,
-                (void *) eap);
-        vim_free(tofree);
+	exec_py_cmd(script, eap);
     }
     vim_free(script);
 }
