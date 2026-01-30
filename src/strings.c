@@ -1416,6 +1416,12 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 		// For iconv, preserve the endianness suffix by creating a normalized
 		// version with hyphens: "ucs2be" -> "ucs-2be", "utf16le" -> "utf-16le"
 		from_encoding_raw = normalize_encoding_name(enc_skipped);
+		if (from_encoding_raw == NULL)
+		{
+		    emsg(_(e_outofmem));
+		    VIM_CLEAR(from_encoding);
+		    return;
+		}
 	    }
 	}
     }
