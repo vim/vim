@@ -1364,8 +1364,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
     if (from_encoding != NULL && STRCMP(from_encoding, "none") == 0)
     {
 	validate_utf8 = FALSE;
-	vim_free(from_encoding);
-	from_encoding = NULL;
+	VIM_CLEAR(from_encoding);
 	VIM_CLEAR(from_encoding_raw);
     }
 
