@@ -452,11 +452,11 @@ clip_auto_select(void)
     int
 clip_isautosel_star(void)
 {
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASEL) != NULL
 	    && vim_strchr(p_go, GO_ASELPLUS) == NULL;
-#endif
+# endif
     return clip_autoselect_star;
 }
 
@@ -467,10 +467,10 @@ clip_isautosel_star(void)
     int
 clip_isautosel_plus(void)
 {
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASELPLUS) != NULL;
-#endif
+# endif
     return clip_autoselect_plus;
 }
 
