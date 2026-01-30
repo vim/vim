@@ -1100,31 +1100,30 @@ ex_python(exarg_T *eap)
 	if (p_pyx == 0)
 	    p_pyx = 2;
 
-	if (script == NULL && cmd[0] == '=')
-	{
-	    // ":py =expr" runs "print(expr)"
-	    size_t  len = 7 + STRLEN(cmd + 1) + 1;
-	    char    *tofree = alloc(len);
+        char_u  *cmd = script == NULL ? eap->arg : script;
+        char_u  *tofree = NULL;
 
-	    if (tofree != NULL)
-	    {
-		vim_snprintf(tofree, len, "print(%s)", cmd + 1);
-		DoPyCommand(tofree,
-			NULL,
-			init_range_cmd,
-			(runner) run_cmd,
-			(void *) eap);
-		vim_free(tofree);
-	    }
-	}
-	else
-	{
-	    DoPyCommand(cmd,
-		    NULL,
-		    init_range_cmd,
-		    (runner) run_cmd,
-		    (void *) eap);
-	}
+        if (p_pyx == 0)
+            p_pyx = 2;
+
+        if (script == NULL && cmd[0] == '=')
+        {
+            // ":py =expr" runs "print(expr)"
+            size_t  len = 7 + STRLEN(cmd + 1) + 1;
+            char_u  *tofree = alloc(len);
+
+            if (tofree != NULL)
+            {
+                vim_snprintf(tofree, len, "print(%s)", cmd + 1);
+                cmd = tofree;
+            }
+        }
+        DoPyCommand(cmd,
+                NULL,
+                init_range_cmd,
+                (runner) run_cmd,
+                (void *) eap);
+        vim_free(tofree);
     }
     vim_free(script);
 }
