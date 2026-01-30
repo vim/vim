@@ -5419,6 +5419,7 @@ eval9_leader(
 		    {
 			rettv->v_type = VAR_BOOL;
 			val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
+			type = VAR_BOOL;
 		    }
 		    else
 			f = !f;

@@ -4117,6 +4117,11 @@ def Test_expr9_not()
 
       assert_equal(false, ![1, 2, 3]->reverse())
       assert_equal(true, ![]->reverse())
+
+      # float
+      assert_equal(true, !0.0)
+      assert_equal(false, !1.0)
+      assert_equal(false, !25.678)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
