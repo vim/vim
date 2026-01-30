@@ -1,4 +1,4 @@
-*tagsrch.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*tagsrch.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -872,9 +872,9 @@ Common arguments for the commands above:
 	When excluded, a match is ignored when the line is recognized as a
 	comment (according to 'comments'), or the match is in a C comment
 	(after "//" or inside /* */).  Note that a match may be missed if a
-	line is recognized as a comment, but the comment ends halfway the line.
-	And if the line is a comment, but it is not recognized (according to
-	'comments') a match may be found in it anyway.  Example: >
+	line is recognized as a comment, but the comment ends halfway the
+	line.  And if the line is a comment, but it is not recognized
+	(according to 'comments') a match may be found in it anyway.  Example: >
 		/* comment
 		   foobar */
 <	A match for "foobar" is found, because this line is not recognized as

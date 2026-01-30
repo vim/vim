@@ -1,4 +1,4 @@
-*netbeans.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
+*netbeans.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Gordon Prieur et al.
@@ -390,7 +390,8 @@ addAnno serNum typeNum off len
 		   typeNum	number	sequence number of the annotation
 					defined with defineAnnoType for this
 					buffer
-		   off		number	offset where annotation is to be placed
+		   off		number	offset where annotation is to be
+					placed
 		   len		number	not used
 		In version 2.1 "lnum/col" can be used instead of "off".
 
@@ -645,7 +646,8 @@ getMark		Not implemented.
 getAnno serNum
 		Return the line number of the annotation in the buffer.
 		Argument:
-			serNum		serial number of this placed annotation
+			serNum		serial number of this placed
+					annotation
 		The reply is:
 			123 lnum	line number of the annotation
 			123 0		invalid annotation serial number

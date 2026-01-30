@@ -1,4 +1,4 @@
-*vi_diff.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*vi_diff.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -838,7 +838,8 @@ The following Ex commands are supported by Vi: ~
 `:delete`	delete lines
 `:edit`		edit a file
 `:exit`		same as `:xit`
-`:file`		show or set the current file name; Vi: without the column number
+`:file`		show or set the current file name; Vi: without the column
+		number
 `:global`	execute commands for matching lines
 `:insert`	insert text
 `:join`		join lines; Vi: not :join!
@@ -1360,7 +1361,8 @@ These are remarks about running the POSIX test suite:
 - ex test 368 fails because shell command isn't echoed in silent mode.
 - ex test 394 fails because "=" command output isn't visible in silent mode.
 - ex test 411 fails because test file is wrong, contains stray ':'.
-- ex test 475 and 476 fail because reprint output isn't visible in silent mode.
+- ex test 475 and 476 fail because reprint output isn't visible in silent
+  mode.
 - ex test 480 and 481 fail because the tags file has spaces instead of a tab.
 - ex test 502 fails because .exrc isn't read in silent mode.
 - ex test 509 fails because .exrc isn't read in silent mode. and exit code is

@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
+*pi_getscript.txt*  For Vim version 9.1.  Last change: 2026 Jan 30
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
@@ -57,7 +57,8 @@ The GetLatestVimScripts.dist file serves as an example and a template for your
 own personal list.  Feel free to remove all the scripts mentioned within it;
 the "important" part of it is the first two lines.
 
-Your computer needs to have wget or curl for GetLatestVimScripts to do its work.
+Your computer needs to have wget or curl for GetLatestVimScripts to do its
+work.
 
 	1. if compressed:  gunzip getscript.vmb.gz
 	2. Unix:

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Dec 27
+*quickfix.txt*  For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -491,8 +491,8 @@ entries parsed from lines.  The following shows how to use a custom
 
 EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 							*:cdo*
-:cdo[!] {cmd}		Execute {cmd} in each valid entry in the quickfix list.
-			It works like doing this: >
+:cdo[!] {cmd}		Execute {cmd} in each valid entry in the quickfix
+			list.  It works like doing this: >
 				:cfirst
 				:{cmd}
 				:cnext
@@ -2031,9 +2031,9 @@ case they have to precede the letter, e.g. '%+A' or '%-G':
 	%-		do not include the matching multi-line in any output
 	%+		include the whole matching line in the %m error string
 
-One prefix is only useful in combination with '+' or '-', namely %G.  It parses
-over lines containing general information like compiler version strings or
-other headers that can be skipped.
+One prefix is only useful in combination with '+' or '-', namely %G.  It
+parses over lines containing general information like compiler version strings
+or other headers that can be skipped.
 	%-G		ignore this message
 	%+G		general message
 
@@ -2201,8 +2201,8 @@ prints information about entering a directory in the form "Making all in dir".
    Making all in dir2		  ./dir1/dir2
    Making all in dir2		  ./dir1/dir2
 
-   This can be solved by printing absolute directories in the "enter directory"
-   message or by printing "leave directory" messages.
+   This can be solved by printing absolute directories in the "enter
+   directory" message or by printing "leave directory" messages.
 
 To avoid this problem, ensure to print absolute directory names and "leave
 directory" messages.

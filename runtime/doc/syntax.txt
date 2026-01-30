@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2026 Jan 27
+*syntax.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -487,10 +487,10 @@ specifying each command separately.
 				    *hl-TOhtmlProgress* *TOhtml-progress-color*
 When displayed, the progress bar will show colored boxes along the statusline
 as the HTML conversion proceeds.  By default, the background color as the
-current "DiffDelete" highlight group is used.  If "DiffDelete" and "StatusLine"
-have the same background color, TOhtml will automatically adjust the color to
-differ.  If you do not like the automatically selected colors, you can define
-your own highlight colors for the progress bar.  Example: >
+current "DiffDelete" highlight group is used.  If "DiffDelete" and
+"StatusLine" have the same background color, TOhtml will automatically adjust
+the color to differ.  If you do not like the automatically selected colors,
+you can define your own highlight colors for the progress bar.  Example: >
 
 	hi TOhtmlProgress guifg=#c0ffee ctermbg=7
 <
@@ -615,9 +615,9 @@ browsers; the <input> tags get pasted with the text.
 
 When "fallback" (default value), the same <input> elements are generated for
 older browsers, but newer browsers (detected by CSS feature query) hide the
-<input> elements and instead use generated content in an ::before pseudoelement
-to display the uncopyable text.  This method should work with the largest
-number of browsers, both old and new.
+<input> elements and instead use generated content in an ::before
+pseudoelement to display the uncopyable text.  This method should work with
+the largest number of browsers, both old and new.
 
 When "none", the <input> elements are not generated at all.  Only the
 generated-content method is used.  This means that old browsers, notably

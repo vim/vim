@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2026 Jan 10
+*eval.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2807,9 +2807,9 @@ v:sizeoflong	Number of bytes in a long.  Depends on how Vim was compiled.
 		expected result.
 
 				*v:sizeofpointer* *sizeofpointer-variable*
-v:sizeofpointer	Number of bytes in a pointer.  Depends on how Vim was compiled.
-		This is only useful for deciding whether a test will give the
-		expected result.
+v:sizeofpointer	Number of bytes in a pointer.  Depends on how Vim was
+		compiled.  This is only useful for deciding whether a test
+		will give the expected result.
 
 					*v:stacktrace* *stacktrace-variable*
 v:stacktrace	The stack trace of the exception most recently caught and
