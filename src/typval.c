@@ -411,11 +411,6 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_using_channel_as_float));
 	    break;
 #endif
-	case VAR_TSOBJECT:
-#ifdef FEAT_TREESITTER
-	    emsg(_(e_using_tsobject_as_float));
-#endif
-	    break;
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_float));
 	    break;
