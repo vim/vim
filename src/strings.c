@@ -1439,7 +1439,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	// Build a temporary buffer from the blob as a whole
 	// Don't use string_from_blob() because it treats NUL as line separator
 	garray_T blob_ga;
-	int nul_size = (from_prop & (ENC_4BYTE)) ? 4 : 2;
+	int nul_size = (from_prop & ENC_4BYTE) ? 4 : 2;
 	ga_init2(&blob_ga, 1, blen + nul_size);
 	for (long i = 0; i < blen; i++)
 	    ga_append(&blob_ga, (int)(unsigned char)blob_get(blob, i));
