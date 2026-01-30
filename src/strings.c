@@ -1318,6 +1318,68 @@ normalize_encoding_name(char_u *enc_skipped)
  * "blob2str()" function
  * Converts a blob to a string, ensuring valid UTF-8 encoding.
  */
+    static void
+append_converted_string_to_list(
+	char_u *converted,
+	int validate_utf8,
+	list_T *list,
+	char_u *from_encoding)
+{
+    if (converted != NULL)
+    {
+	// After conversion, the output is a valid UTF-8 string (NUL-terminated)
+	int converted_len = (int)STRLEN(converted);
+
+	// Split by newlines and add to list
+	char_u *p = converted;
+	char_u *end = converted + converted_len;
+	while (p < end)
+	{
+	    char_u *line_start = p;
+	    while (p < end && *p != NL)
+		p++;
+
+	    // Add this line to the result list
+	    char_u *line = vim_strnsave(line_start, p - line_start);
+	    if (line != NULL)
+	    {
+		if (validate_utf8 && !utf_valid_string(line, NULL))
+		{
+		    vim_free(line);
+		    semsg(_(e_str_encoding_from_failed), p_enc);
+		    vim_free(converted);
+		    return; // Stop processing
+		}
+		list_append_string(list, line, -1);
+		vim_free(line);
+	    }
+
+	    if (*p == NL)
+		p++;
+	}
+	vim_free(converted);
+    }
+    else
+    {
+	semsg(_(e_str_encoding_from_failed), from_encoding);
+    }
+}
+
+    static int
+append_validated_line_to_list(char_u *line, int validate_utf8, list_T *list)
+{
+    if (validate_utf8 && !utf_valid_string(line, NULL))
+    {
+	semsg(_(e_str_encoding_from_failed), p_enc);
+	vim_free(line);
+	return FAIL;
+    }
+
+    int ret = list_append_string(list, line, -1);
+    vim_free(line);
+    return ret;
+}
+
     void
 f_blob2str(typval_T *argvars, typval_T *rettv)
 {
@@ -1399,45 +1461,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	char_u *converted = string_convert_ext(&vimconv, (char_u *)blob_ga.ga_data, &inlen, NULL);
 	convert_setup(&vimconv, NULL, NULL);
 	ga_clear(&blob_ga);
-
-	if (converted != NULL)
-	{
-	    // After conversion, the output is a valid UTF-8 string (NUL-terminated)
-	    int converted_len = (int)STRLEN(converted);
-
-	    // Split by newlines and add to list
-	    char_u *p = converted;
-	    char_u *end = converted + converted_len;
-	    while (p < end)
-	    {
-		char_u *line_start = p;
-		while (p < end && *p != NL)
-		    p++;
-
-		// Add this line to the result list
-		char_u *line = vim_strnsave(line_start, p - line_start);
-		if (line != NULL)
-		{
-		    if (validate_utf8 && !utf_valid_string(line, NULL))
-		    {
-			vim_free(line);
-			semsg(_(e_str_encoding_from_failed), p_enc);
-			vim_free(converted);
-			goto done;
-		    }
-		    list_append_string(rettv->vval.v_list, line, -1);
-		    vim_free(line);
-		}
-
-		if (*p == NL)
-		    p++;
-	    }
-	    vim_free(converted);
-	}
-	else
-	{
-	    semsg(_(e_str_encoding_from_failed), from_encoding);
-	}
+	append_converted_string_to_list(converted, validate_utf8, rettv->vval.v_list, from_encoding);
     }
     else
     {
@@ -1446,40 +1470,27 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	while (idx < blen)
 	{
 	    char_u	*str;
-	    char_u	*converted_str;
 
 	    str = string_from_blob(blob, &idx);
 	    if (str == NULL)
 		break;
 
-	    converted_str = str;
 	    if (from_encoding != NULL)
 	    {
-		// Use raw encoding name for convert_string to preserve encoding details
-		converted_str = convert_string(str,
+		char_u *converted = convert_string(str,
 			from_encoding_raw ? from_encoding_raw : from_encoding, p_enc);
 		vim_free(str);
-		if (converted_str == NULL)
-		{
-		    semsg(_(e_str_encoding_from_failed), from_encoding);
-		    goto done;
-		}
+		str = converted;
 	    }
 
-	    if (validate_utf8)
+	    if (str == NULL)
 	    {
-		if (!utf_valid_string(converted_str, NULL))
-		{
-		    semsg(_(e_str_encoding_from_failed), p_enc);
-		    vim_free(converted_str);
-		    goto done;
-		}
+		semsg(_(e_str_encoding_from_failed), from_encoding);
+		goto done;
 	    }
 
-	    int ret = list_append_string(rettv->vval.v_list, converted_str, -1);
-	    vim_free(converted_str);
-	    if (ret == FAIL)
-		break;
+	    if (append_validated_line_to_list(str, validate_utf8, rettv->vval.v_list) == FAIL)
+		goto done;
 	}
     }
 

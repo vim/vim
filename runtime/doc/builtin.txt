@@ -1391,6 +1391,8 @@ blob2str({blob} [, {options}])				*blob2str()*
 <
 		Return type: list<string>
 
+		If `iconv` is not available, the encoding conversion will fail
+		silently, and the original, unconverted text will be returned.
 
 browse({save}, {title}, {initdir}, {default})		*browse()*
 		Put up a file requester.  This only works when "has("browse")"
