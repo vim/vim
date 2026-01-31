@@ -895,16 +895,73 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 #endif
 }
 
+static int s_vcol_cache_valid1 = FALSE;
+static int s_vcol_cache_valid2 = FALSE;
+
+    void
+invalidate_vcol_cache(void)
+{
+    s_vcol_cache_valid1 = FALSE;
+    s_vcol_cache_valid2 = FALSE;
+}
+
     void
 win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 {
+    static win_T    *old_win = NULL;
+    static char_u   *old_line = NULL;
+    static char_u   *saved_ptr = NULL;
+    static colnr_T  saved_vcol = 0;
+    colnr_T slen = len;
+    colnr_T col_save = 0;
     vimlong_T vcol = cts->cts_vcol;
+
 #ifdef FEAT_PROP_POPUP
     cts->cts_with_trailing = len == MAXCOL;
 #endif
+
+    if (slen == MAXCOL)
+    {
+	if (cts->cts_len != -1)
+	    slen = cts->cts_len;
+	else
+	    slen = STRLEN(cts->cts_line);
+    }
+    col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
+    if (slen - col_save > 4096)
+	col_save = slen - 4096;
+    if (s_vcol_cache_valid1
+	    && (old_win != NULL) && (old_win == cts->cts_win)
+	    && (old_line != NULL) && (old_line == cts->cts_line)
+	    && (saved_ptr >= cts->cts_line)
+	    && (saved_ptr < cts->cts_line + slen)
+#ifdef FEAT_PROP_POPUP
+	    && !cts->cts_has_prop_with_text
+#endif
+       )
+    {
+	cts->cts_ptr = saved_ptr;
+	cts->cts_vcol = vcol = saved_vcol;
+    }
+
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
     {
+	if ((cts->cts_ptr > cts->cts_line)
+		&& (cts->cts_ptr - cts->cts_line <= col_save)
+		&& (cts->cts_ptr + (*mb_ptr2len)(cts->cts_ptr) - cts->cts_line
+			>= col_save)
+#ifdef FEAT_PROP_POPUP
+		&& !cts->cts_has_prop_with_text
+#endif
+	   )
+	{
+	    saved_ptr = cts->cts_ptr;
+	    saved_vcol = vcol;
+	    old_win = cts->cts_win;
+	    old_line = cts->cts_line;
+	    s_vcol_cache_valid1 = TRUE;
+	}
 	vcol += win_lbr_chartabsize(cts, NULL);
 	if (vcol > MAXCOL)
 	{
@@ -1075,11 +1132,25 @@ init_chartabsize_arg(
 	char_u		*line,
 	char_u		*ptr)
 {
+    init_chartabsize_arg_len(cts, wp, lnum, col, line, ptr, -1);
+}
+
+    void
+init_chartabsize_arg_len(
+	chartabsize_T	*cts,
+	win_T		*wp,
+	linenr_T	lnum UNUSED,
+	colnr_T		col,
+	char_u		*line,
+	char_u		*ptr,
+	colnr_T		len)
+{
     CLEAR_POINTER(cts);
     cts->cts_win = wp;
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;
+    cts->cts_len = len;
 #ifdef FEAT_LINEBREAK
     cts->cts_bri_size = -1;
 #endif
@@ -1622,12 +1693,22 @@ getvcol(
 #ifdef FEAT_PROP_POPUP
     int		on_NUL = FALSE;
 #endif
+    colnr_T	col_save = 0;
+    static win_T    *old_win = NULL;
+    static char_u   *old_line = NULL;
+    static char_u   *saved_ptr = NULL;
+    static colnr_T  saved_vcol = 0;
+    static int	    old_cond = 0;
 
     vcol = 0;
     line = ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
 
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
     cts.cts_max_head_vcol = -1;
+
+    col_save = (colnr_T)((varnumber_T)pos->col * 4 / 5);
+    if (pos->col - col_save > 4096)
+	col_save = pos->col - 4096;
 
     /*
      * This function is used very often, do some speed optimizations.
@@ -1644,6 +1725,16 @@ getvcol(
 #endif
        )
     {
+	if (s_vcol_cache_valid2
+		&& (old_win != NULL) && (old_win == wp)
+		&& (old_line != NULL) && (old_line == line)
+		&& (saved_ptr >= line)
+		&& (saved_ptr < line + pos->col)
+		&& (old_cond == 1))
+	{
+	    ptr = saved_ptr;
+	    vcol = saved_vcol;
+	}
 	for (;;)
 	{
 	    head = 0;
@@ -1690,12 +1781,37 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
+	    if ((ptr > line)
+		    && (ptr - line <= col_save)
+		    && (next_ptr - line >= col_save))
+	    {
+		saved_ptr = next_ptr;
+		saved_vcol = vcol + incr;
+		old_win = wp;
+		old_line = line;
+		old_cond = 1;
+		s_vcol_cache_valid2 = TRUE;
+	    }
 	    vcol += incr;
 	    ptr = next_ptr;
 	}
     }
     else
     {
+	if (s_vcol_cache_valid2
+		&& (old_win != NULL) && (old_win == wp)
+		&& (old_line != NULL) && (old_line == line)
+		&& (saved_ptr >= line)
+		&& (saved_ptr < line + pos->col)
+		&& (old_cond == 2)
+#ifdef FEAT_PROP_POPUP
+		&& !cts.cts_has_prop_with_text
+#endif
+	   )
+	{
+	    cts.cts_ptr = saved_ptr;
+	    cts.cts_vcol = saved_vcol;
+	}
 	for (;;)
 	{
 	    // A tab gets expanded, depending on the current column.
@@ -1722,6 +1838,21 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
+	    if ((cts.cts_ptr > line)
+		    && (cts.cts_ptr - line <= col_save)
+		    && (next_ptr - line >= col_save)
+#ifdef FEAT_PROP_POPUP
+		    && !cts.cts_has_prop_with_text
+#endif
+	       )
+	    {
+		saved_ptr = next_ptr;
+		saved_vcol = cts.cts_vcol + incr;
+		old_win = wp;
+		old_line = line;
+		old_cond = 2;
+		s_vcol_cache_valid2 = TRUE;
+	    }
 	    cts.cts_vcol += incr;
 	    cts.cts_ptr = next_ptr;
 	}
