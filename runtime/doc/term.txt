@@ -1,4 +1,4 @@
-*term.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
+*term.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -196,8 +196,8 @@ try the entry ":ku=\233A:".
 
 Some termcap entries have the entry ":ku=\E[A:".  But the Amiga really sends
 "\233A".  On output "\E[" and "\233" are often equivalent, on input they
-aren't.  You will have to change the termcap entry, or change the key code with
-the :set command to fix this.
+aren't.  You will have to change the termcap entry, or change the key code
+with the :set command to fix this.
 
 Many cursor key codes start with an <Esc>.  Vim must find out if this is a
 single hit of the <Esc> key or the start of a cursor key sequence.  It waits

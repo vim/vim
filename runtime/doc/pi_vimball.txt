@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*pi_vimball.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 			       ----------------
 			       Vimball Archiver
@@ -9,13 +9,13 @@ Author:  Charles E. Campbell  <NcampObell@SdrPchip.AorgM-NOSPAM>
 Copyright: (c) 2004-2015 by Charles E. Campbell		*Vimball-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this
 	package, including vimballPlugin.vim, vimball.vim, and pi_vimball.txt.
-	except use "vimball" instead of "VIM".  Like anything else that's free,
-	vimball.vim and its associated files are provided *as is* and comes with
-	no warranty of any kind, either expressed or implied.  No guarantees
-	of merchantability.  No guarantees of suitability for any purpose.  By
-	using this plugin, you agree that in no event will the copyright
-	holder be liable for any damages resulting from the use of this
-	software. Use at your own risk!
+	except use "vimball" instead of "VIM".  Like anything else that's
+	free, vimball.vim and its associated files are provided *as is* and
+	comes with no warranty of any kind, either expressed or implied.  No
+	guarantees of merchantability.  No guarantees of suitability for any
+	purpose.  By using this plugin, you agree that in no event will the
+	copyright holder be liable for any damages resulting from the use of
+	this software. Use at your own risk!
 
 ==============================================================================
 1. Contents				*vba* *vimball* *vimball-contents*
@@ -248,8 +248,8 @@ WINDOWS							*vimball-windows*
 	13 : May 01, 2006 * exists("&acd") used to determine if the acd
 			    option exists
 	12 : May 01, 2006 * bugfix - the 'acd' option is not always defined
-	11 : Apr 27, 2006 * VimballList would create missing subdirectories that
-			    the vimball specified were needed.  Fixed.
+	11 : Apr 27, 2006 * VimballList would create missing subdirectories
+			    that the vimball specified were needed.  Fixed.
 	10 : Apr 27, 2006 * moved all setting saving/restoration to a pair of
 			    functions.  Included some more settings in them
 			    which frequently cause trouble.

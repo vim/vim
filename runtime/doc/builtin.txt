@@ -7982,8 +7982,8 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		value {expr}.  Examples: >
 			nr2char(64)		returns "@"
 			nr2char(32)		returns " "
-<		When {utf8} is omitted or zero, the current 'encoding' is used.
-		Example for "utf-8": >
+<		When {utf8} is omitted or zero, the current 'encoding' is
+		used.  Example for "utf-8": >
 			nr2char(300)		returns I with bow character
 <		When {utf8} is TRUE, always return UTF-8 characters.
 		Note that a NUL character in the file is specified with
@@ -8866,7 +8866,7 @@ redraw_listener_add({opts})				*redraw_listener_add()*
 		Return type: |Number|
 
 
-redraw_listener_remove({id})				*redraw_listener_remove()*
+redraw_listener_remove({id})			*redraw_listener_remove()*
 		Remove a redraw listener previously added with
 		|redraw_listener_add()|.  Returns FALSE when {id} could not be
 		found, TRUE when {id} was removed.
@@ -12659,7 +12659,8 @@ win_gettype([{nr}])					*win_gettype()*
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.
-		Return TRUE if successful, FALSE if the window cannot be found.
+		Return TRUE if successful, FALSE if the window cannot be
+		found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_gotoid()
