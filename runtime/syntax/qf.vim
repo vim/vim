@@ -20,7 +20,7 @@ syn match	qfWarning	"warning" contained
 syn match	qfNote		"note"    contained
 syn match	qfHint		"hint"    contained
 syn match	qfInfo		"info"    contained
-syn cluster	qfType	contains=qfError,qfWarning,qfNote,qfHint,qfInfo
+syn cluster	qfType		contains=qfError,qfWarning,qfNote,qfHint,qfInfo
 
 
 " The default highlighting.
