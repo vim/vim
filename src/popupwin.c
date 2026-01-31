@@ -852,23 +852,35 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    int		i;
 
 	    CHECK_LIST_MATERIALIZE(list);
-	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
-						     ++i, li = li->li_next)
+	    // Clear all highlights if list is empty
+	    if (list->lv_len == 0)
 	    {
-		str = tv_get_string(&li->li_tv);
-		if (*str != NUL)
+		for (i = 0; i < 4; ++i)
 		{
 		    vim_free(wp->w_border_highlight[i]);
-		    wp->w_border_highlight[i] = vim_strsave(str);
+		    wp->w_border_highlight[i] = NULL;
 		}
 	    }
-	    if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
-		for (i = 1; i < 4; ++i)
+	    else
+	    {
+		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
+						     ++i, li = li->li_next)
 		{
-		    vim_free(wp->w_border_highlight[i]);
-		    wp->w_border_highlight[i] =
-					vim_strsave(wp->w_border_highlight[0]);
+		    str = tv_get_string(&li->li_tv);
+		    if (*str != NUL)
+		    {
+			vim_free(wp->w_border_highlight[i]);
+			wp->w_border_highlight[i] = vim_strsave(str);
+		    }
 		}
+		if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
+		    for (i = 1; i < 4; ++i)
+		    {
+			vim_free(wp->w_border_highlight[i]);
+			wp->w_border_highlight[i] =
+					vim_strsave(wp->w_border_highlight[0]);
+		    }
+	    }
 	}
     }
 
@@ -3284,6 +3296,13 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef FEAT_PROP_POPUP
     int		old_blend;
 #endif
+    int		old_zindex;
+    int		old_popup_flags;
+    char_u	*old_scrollbar_highlight;
+    char_u	*old_thumb_highlight;
+    char_u	*old_border_highlight[4];
+    int		need_redraw = FALSE;
+    int		i;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3302,10 +3321,34 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef FEAT_PROP_POPUP
     old_blend = wp->w_popup_blend;
 #endif
+    old_zindex = wp->w_zindex;
+    old_popup_flags = wp->w_popup_flags;
+    old_scrollbar_highlight = wp->w_scrollbar_highlight;
+    old_thumb_highlight = wp->w_thumb_highlight;
+    for (i = 0; i < 4; i++)
+	old_border_highlight[i] = wp->w_border_highlight[i];
 
     (void)apply_options(wp, dict, FALSE);
 
+    // Check if visual options changed and redraw if needed
     if (old_firstline != wp->w_firstline)
+	need_redraw = TRUE;
+    if (old_zindex != wp->w_zindex)
+	need_redraw = TRUE;
+    if (old_popup_flags != wp->w_popup_flags)
+	need_redraw = TRUE;
+    if (old_scrollbar_highlight != wp->w_scrollbar_highlight)
+	need_redraw = TRUE;
+    if (old_thumb_highlight != wp->w_thumb_highlight)
+	need_redraw = TRUE;
+    for (i = 0; i < 4; i++)
+	if (old_border_highlight[i] != wp->w_border_highlight[i])
+	{
+	    need_redraw = TRUE;
+	    break;
+	}
+
+    if (need_redraw)
 	redraw_win_later(wp, UPD_NOT_VALID);
 #ifdef FEAT_PROP_POPUP
     // Force redraw if opacity value changed
