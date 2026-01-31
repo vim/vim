@@ -1860,7 +1860,6 @@ get_lval_subscript(
     int		flags,	    // GLV_ values
     class_T	*cl_exec)
 {
-    int		vim9script = in_vim9script();
     int		quiet = flags & GLV_QUIET;
     char_u	*key = NULL;
     int		len;
@@ -1908,7 +1907,7 @@ get_lval_subscript(
 		vartype_name(v_type));
 #endif
 
-	if (vim9script && lp->ll_valtype == NULL
+	if (current_script_is_vim9() && lp->ll_valtype == NULL
 		&& v != NULL
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
@@ -2468,7 +2467,10 @@ set_var_lval(
 	if (lp->ll_valtype != NULL
 		    && check_typval_arg_type(lp->ll_valtype, rettv,
 							      NULL, 0) == FAIL)
+	{
+	    lp->ll_name_end = NULL;
 	    return;
+	}
 
 	// If the lval is a List and the type of the list is not yet set,
 	// then set the item type from the declared type of the variable.
