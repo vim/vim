@@ -586,36 +586,6 @@ screen_line(
 	// Do not redraw if under the popup menu.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	    redraw_this = FALSE;
-#ifdef FEAT_PROP_POPUP
-	// For wide characters, if any part is blocked by a popup, clear both
-	// cells to avoid garbage showing through transparent popups.
-	if (char_cells == 2)
-	{
-	    int skip_second = skip_for_popup(row, col + coloff + 1);
-
-	    if (!redraw_this || skip_second)
-	    {
-		// Clear both cells in ScreenLines
-		ScreenLines[off_to] = ' ';
-		ScreenLines[off_to + 1] = ' ';
-		if (enc_utf8)
-		{
-		    ScreenLinesUC[off_to] = 0;
-		    ScreenLinesUC[off_to + 1] = 0;
-		}
-		ScreenAttrs[off_to] = 0;
-		ScreenAttrs[off_to + 1] = 0;
-
-		// Draw the cells that are not blocked
-		if (redraw_this)
-		    screen_char(off_to, row, col + coloff);
-		if (!skip_second)
-		    screen_char(off_to + 1, row, col + coloff + 1);
-
-		redraw_this = FALSE;
-	    }
-	}
-#endif
 
 	if (redraw_this)
 	{
