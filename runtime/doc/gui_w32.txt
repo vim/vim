@@ -1,4 +1,4 @@
-*gui_w32.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
+*gui_w32.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -512,12 +512,12 @@ to the 'guioptions' setting.
 
 For convenience, you can define a command or mapping to toggle fullscreen mode:
 >
-	command! ToggleFullscreen {
-		if &guioptions =~# 's'
-			set guioptions-=s
-		else
-			set guioptions+=s
-		endif
+	command ToggleFullscreen {
+	  if &guioptions =~# 's'
+	    set guioptions-=s
+	  else
+	    set guioptions+=s
+	  endif
 	}
 
 	map <expr> <F11> &go =~# 's' ? ":se go-=s<CR>" : ":se go+=s<CR>"
