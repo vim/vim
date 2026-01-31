@@ -3235,6 +3235,10 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     dict_T	*dict;
     int		id;
     win_T	*wp;
+    int		old_winrow;
+    int		old_wincol;
+    int		old_height;
+    int		old_width;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3250,11 +3254,21 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     dict = argvars[1].vval.v_dict;
 
+    // Save old position for redrawing
+    old_winrow = wp->w_winrow;
+    old_wincol = wp->w_wincol;
+    old_height = wp->w_height;
+    old_width = wp->w_width;
+
     apply_move_options(wp, dict);
 
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
     popup_adjust_position(wp);
+
+    // Redraw the old position to clear ghost images
+    if (old_winrow != wp->w_winrow || old_wincol != wp->w_wincol)
+	redraw_all_later(UPD_NOT_VALID);
 }
 
 /*
