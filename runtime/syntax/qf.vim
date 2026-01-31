@@ -18,9 +18,8 @@ syn match	qfText		".*"	 contained
 syn match	qfError		"error"	  contained
 syn match	qfWarning	"warning" contained
 syn match	qfNote		"note"    contained
-syn match	qfHint		"hint"    contained
 syn match	qfInfo		"info"    contained
-syn cluster	qfType		contains=qfError,qfWarning,qfNote,qfHint,qfInfo
+syn cluster	qfType		contains=qfError,qfWarning,qfNote,qfInfo
 
 
 " The default highlighting.
@@ -31,6 +30,10 @@ hi def link qfSeparator2	Delimiter
 hi def link qfText		Normal
 
 hi def link qfError		Error
+"hi def link qfError		DiagnosticError
+hi def link qfWarning		DiagnosticWarn
+hi def link qfNote		DiagnosticHint
+hi def link qfInfo		DiagnosticInfo
 
 let b:current_syntax = "qf"
 
