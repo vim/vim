@@ -307,6 +307,8 @@ struct DWriteContext {
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
+    FLOAT mFontSize;       // Font size in pixels (em height)
+    FLOAT mFontAscent;     // Font ascent in pixels
 
     D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
 
@@ -367,7 +369,10 @@ public:
     AdjustedGlyphRun(
 	    const DWRITE_GLYPH_RUN *glyphRun,
 	    FLOAT cellWidth,
-	    FLOAT &accum) :
+	    FLOAT &accum,
+	    const INT *lpDx,
+	    int *glyphIndex,
+	    int cchText) :
 	DWRITE_GLYPH_RUN(*glyphRun),
 	mAccum(accum),
 	mDelta(0.0f),
@@ -377,7 +382,18 @@ public:
 	for (UINT32 i = 0; i < glyphRun->glyphCount; ++i)
 	{
 	    FLOAT orig = glyphRun->glyphAdvances[i];
-	    FLOAT adjusted = adjustToCell(orig, cellWidth);
+	    FLOAT adjusted;
+
+	    if (*glyphIndex < cchText)
+	    {
+		adjusted = FLOAT(lpDx[*glyphIndex]);
+		(*glyphIndex)++;
+	    }
+	    else
+	    {
+		adjusted = adjustToCell(orig, cellWidth);
+	    }
+
 	    mAdjustedAdvances[i] = adjusted;
 	    mDelta += adjusted - orig;
 	}
@@ -403,9 +419,13 @@ struct TextRendererContext {
     // const fields.
     COLORREF color;
     FLOAT cellWidth;
+    const INT *lpDx;
+    int cchText;
+    FLOAT baselineY;  // Fixed baseline Y coordinate
 
     // working fields.
     FLOAT offsetX;
+    int glyphIndex;
 };
 
 class TextRenderer FINAL : public IDWriteTextRenderer
@@ -496,8 +516,14 @@ public:
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
+	// Use fixed baseline Y from context instead of DirectWrite's
+	// baselineOriginY to prevent vertical shifts when font fallback
+	// occurs (e.g., for CJK characters).
+	FLOAT fixedBaselineY = context->baselineY;
+
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
-		context->offsetX);
+		context->offsetX, context->lpDx, &context->glyphIndex,
+		context->cchText);
 
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
 	if (pDWC_->mDWriteFactory2 != NULL)
@@ -526,7 +552,7 @@ public:
 		    pDWC_->mRT->DrawGlyphRun(
 			    D2D1::Point2F(
 				colorGlyphRun->baselineOriginX,
-				colorGlyphRun->baselineOriginY),
+				fixedBaselineY),
 			    &colorGlyphRun->glyphRun,
 			    pDWC_->mBrush,
 			    DWRITE_MEASURING_MODE_NATURAL);
@@ -542,7 +568,7 @@ public:
 	pDWC_->mRT->DrawGlyphRun(
 		D2D1::Point2F(
 		    baselineOriginX + context->offsetX,
-		    baselineOriginY),
+		    fixedBaselineY),
 		&adjustedGlyphRun,
 		pDWC_->SolidBrush(context->color),
 		DWRITE_MEASURING_MODE_NATURAL);
@@ -619,6 +645,8 @@ DWriteContext::DWriteContext() :
     mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
+    mFontSize(0.0f),
+    mFontAscent(0.0f),
     mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
 {
     HRESULT hr;
@@ -776,28 +804,25 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	// Use lfHeight of the LOGFONT as font size.
 	fontSize = float(logFont.lfHeight);
 
+	DWRITE_FONT_METRICS fontMetrics;
+	font->GetMetrics(&fontMetrics);
+
+	// Convert lfHeight to DirectWrite font size
 	if (fontSize < 0)
 	{
-	    // Negative lfHeight represents the size of the em unit.
+	    // Negative lfHeight represents the font's em height in pixels
 	    fontSize = -fontSize;
 	}
-	else
+	else if (fontSize > 0)
 	{
-	    // Positive lfHeight represents the cell height (ascent +
-	    // descent).
-	    DWRITE_FONT_METRICS fontMetrics;
-	    font->GetMetrics(&fontMetrics);
-
-	    // Convert the cell height (ascent + descent) from design units
-	    // to ems.
-	    float cellHeight = static_cast<float>(
-		    fontMetrics.ascent + fontMetrics.descent)
-		/ fontMetrics.designUnitsPerEm;
-
-	    // Divide the font size by the cell height to get the font em
-	    // size.
-	    fontSize /= cellHeight;
+	    // Positive lfHeight represents the font's cell height (ascent + descent)
+	    // Convert to em height
+	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
+		/ float(fontMetrics.ascent + fontMetrics.descent);
 	}
+
+	// Scale by ascent ratio to match GDI rendering size
+	fontSize = ceil(fontSize * float(fontMetrics.ascent) / float(fontMetrics.designUnitsPerEm));
     }
 
     // The text format includes a locale name. Ideally, this would be the
@@ -1039,8 +1064,18 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
+	// Calculate baseline using a fixed formula based on cell geometry.
+	// Do NOT use GetLineMetrics() because it returns different values
+	// depending on text content (e.g., when CJK characters trigger
+	// font fallback, the metrics change).
+	// Use the same baseline calculation for all text to prevent
+	// vertical shifts during redraw.
+	FLOAT baselineY = floorf(FLOAT(y) + FLOAT(h) * 0.83f + 0.5f);
+
 	TextRenderer renderer(this);
-	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
+	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
+		baselineY, 0.0f, 0 };
+
 	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
