@@ -176,6 +176,11 @@ func Test_popup_with_border_and_padding()
   call popup_setoptions(winid, options)
   call assert_equal(options, popup_getoptions(winid))
 
+  " Check that borderhighlight can be cleared with empty list
+  call popup_setoptions(winid, #{borderhighlight: []})
+  let options_cleared = popup_getoptions(winid)
+  call assert_equal([], options_cleared.borderhighlight)
+
   " Check that range() doesn't crash
   call popup_setoptions(winid, #{
 	\ padding: range(1, 4),
