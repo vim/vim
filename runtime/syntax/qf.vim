@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Quickfix window
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Feb 07
+" Last Change:		2026 Jan 31
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a syntax file was already loaded
@@ -15,8 +15,13 @@ syn match	qfLineNr	"[^|]*"	 contained nextgroup=qfSeparator2 contains=@qfType
 syn match	qfSeparator2	"|"	 contained nextgroup=qfText
 syn match	qfText		".*"	 contained
 
-syn match	qfError		"error"	 contained
-syn cluster	qfType	contains=qfError
+syn match	qfError		"error"	  contained
+syn match	qfWarning	"warning" contained
+syn match	qfNote		"note"    contained
+syn match	qfHint		"hint"    contained
+syn match	qfInfo		"info"    contained
+syn cluster	qfType	contains=qfError,qfWarning,qfNote,qfHint,qfInfo
+
 
 " The default highlighting.
 hi def link qfFileName		Directory
