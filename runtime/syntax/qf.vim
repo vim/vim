@@ -28,12 +28,8 @@ hi def link qfLineNr		LineNr
 hi def link qfSeparator1	Delimiter
 hi def link qfSeparator2	Delimiter
 hi def link qfText		Normal
-
 hi def link qfError		Error
-"hi def link qfError		DiagnosticError
-hi def link qfWarning		DiagnosticWarn
-hi def link qfNote		DiagnosticHint
-hi def link qfInfo		DiagnosticInfo
+
 
 let b:current_syntax = "qf"
 
