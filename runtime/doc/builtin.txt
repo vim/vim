@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 17
+*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1389,6 +1389,9 @@ blob2str({blob} [, {options}])				*blob2str()*
 		Can also be used as a |method|: >
 			GetBlob()->blob2str()
 <
+		If `iconv` is not available and the encoding cannot be converted
+		using built-in conversion rules, an error will be reported.
+
 		Return type: list<string>
 
 
