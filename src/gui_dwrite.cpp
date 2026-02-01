@@ -1088,9 +1088,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     SafeRelease(&textLayout);
 
     if ((fuOptions & ETO_CLIPPED) && lprc != NULL)
-    {
 	mRT->PopAxisAlignedClip();
-    }
 }
 
     void
