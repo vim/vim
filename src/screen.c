@@ -2203,9 +2203,17 @@ screen_fill(
 	    // double wide-char clear out the right half.  Only needed in a
 	    // terminal.
 	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
-		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
+	    {
+		// start_col is the right half, clear the left half
+		int left_attr = ScreenAttrs[LineOffset[row] + start_col - 1];
+		screen_puts_len((char_u *)" ", 1, row, start_col - 1, left_attr);
+	    }
 	    if (end_col < screen_Columns && mb_fix_col(end_col, row) != end_col)
-		screen_puts_len((char_u *)" ", 1, row, end_col, 0);
+	    {
+		// end_col is the right half of a wide char, preserve its attribute
+		int right_attr = ScreenAttrs[LineOffset[row] + end_col];
+		screen_puts_len((char_u *)" ", 1, row, end_col, right_attr);
+	    }
 	}
 	/*
 	 * Try to use delete-line termcap code, when no attributes or in a
