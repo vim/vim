@@ -1,4 +1,4 @@
-*map.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*map.txt*	For Vim version 9.1.  Last change: 2026 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1695,7 +1695,8 @@ candidates as a Vim List.  Non-string items in the list are ignored.
 
 The function arguments are:
 	ArgLead		the leading portion of the argument currently being
-			completed on
+			completed on; note that this only captures the current
+			space-separated word, even when using "-nargs=1"
 	CmdLine		the entire command line
 	CursorPos	the cursor position in it (byte index)
 The function may use these for determining context.  For the "custom"
