@@ -583,12 +583,28 @@ screen_line(
 		redraw_this = TRUE;
 	}
 #endif
-	// Do not draw text but redraw attr under the popup menu.
+	// For transparent popup cells, update the background character
+	// so it shows through the popup.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	{
+	    ScreenLines[off_to] = ScreenLines[off_from];
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
+	    if (enc_utf8)
+	    {
+		ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
+		if (ScreenLinesUC[off_from] != 0)
+		{
+		    int	i;
+
+		    for (i = 0; i < Screen_mco; ++i)
+			ScreenLinesC[i][off_to] = ScreenLinesC[i][off_from];
+		}
+	    }
 	    if (char_cells == 2)
+	    {
+		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+	    }
 	    if (enc_dbcs != 0 && char_cells == 2)
 		screen_char_2(off_to, row, col + coloff);
 	    else
