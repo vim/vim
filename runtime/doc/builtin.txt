@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 31
+*builtin.txt*	For Vim version 9.1.  Last change: 2026 Feb 2
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12612,8 +12612,7 @@ win_findbuf({bufnr})					*win_findbuf()*
 		Can also be used as a |method|: >
 			GetBufnr()->win_findbuf()
 <
-		Return type: list<number> or list<any>
-
+		Return type: list<number>
 
 win_getid([{win} [, {tab}]])				*win_getid()*
 		Get the |window-ID| for the specified window.
