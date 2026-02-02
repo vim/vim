@@ -583,11 +583,18 @@ screen_line(
 		redraw_this = TRUE;
 	}
 #endif
-	// Do not redraw if under the popup menu.
+	// Do not draw text but redraw attr under the popup menu.
 	if (redraw_this && skip_for_popup(row, col + coloff))
-	    redraw_this = FALSE;
-
-	if (redraw_this)
+	{
+	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
+	    if (char_cells == 2)
+		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+	    if (enc_dbcs != 0 && char_cells == 2)
+		screen_char_2(off_to, row, col + coloff);
+	    else
+		screen_char(off_to, row, col + coloff);
+	}
+	else if (redraw_this)
 	{
 	    /*
 	     * Special handling when 'xs' termcap flag set (hpterm):
