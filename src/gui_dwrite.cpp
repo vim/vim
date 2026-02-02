@@ -820,9 +820,6 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
 		/ float(fontMetrics.ascent + fontMetrics.descent);
 	}
-
-	// Scale by ascent ratio to match GDI rendering size
-	fontSize = ceil(fontSize * float(fontMetrics.ascent) / float(fontMetrics.designUnitsPerEm));
     }
 
     // The text format includes a locale name. Ideally, this would be the
@@ -1055,6 +1052,15 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
     SetDrawingMode(DM_DIRECTX);
 
+    // Apply clipping if ETO_CLIPPED is specified
+    if ((fuOptions & ETO_CLIPPED) && lprc != NULL)
+    {
+	mRT->PushAxisAlignedClip(
+	    D2D1::RectF(FLOAT(lprc->left), FLOAT(lprc->top),
+			FLOAT(lprc->right), FLOAT(lprc->bottom)),
+	    D2D1_ANTIALIAS_MODE_ALIASED);
+    }
+
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
 
@@ -1080,6 +1086,9 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     }
 
     SafeRelease(&textLayout);
+
+    if ((fuOptions & ETO_CLIPPED) && lprc != NULL)
+	mRT->PopAxisAlignedClip();
 }
 
     void
