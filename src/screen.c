@@ -1362,7 +1362,8 @@ screen_puts_len(
 	if (!skip_for_popup(row, col - 1))
 	{
 	    ScreenLines[off - 1] = ' ';
-	    ScreenAttrs[off - 1] = 0;
+	    // Keep the original attribute to preserve background color
+	    // when drawing over popup windows.
 	    if (enc_utf8)
 	    {
 		ScreenLinesUC[off - 1] = 0;
