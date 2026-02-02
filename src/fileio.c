@@ -4480,7 +4480,7 @@ buf_check_timestamp(
 	// Reload the buffer.
 	buf_reload(buf, orig_mode, reload == RELOAD_DETECT);
 #ifdef FEAT_PERSISTENT_UNDO
-	if (buf->b_p_udf && buf->b_ffname != NULL)
+	if (bufref_valid(&bufref) && buf->b_p_udf && buf->b_ffname != NULL)
 	{
 	    char_u	    hash[UNDO_HASH_SIZE];
 	    buf_T	    *save_curbuf = curbuf;
