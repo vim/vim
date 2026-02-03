@@ -89,7 +89,9 @@ if !exists("*" .. expand("<SID>") .. "Help")
       endif
     endif
 
-    if pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
+    if stridx(post, '(') == 0
+      return topic .. '()'
+    elseif pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
       return ':' .. topic
     elseif pre =~# '\<v:$'
       return 'v:' .. topic
