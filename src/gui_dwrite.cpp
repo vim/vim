@@ -819,7 +819,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    // Positive lfHeight represents the font's cell height (ascent + descent)
 	    // Convert to em height
 	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
-		/ float(fontMetrics.ascent + fontMetrics.descent /*+ fontMetrics.lineGap*/);
+		/ float(fontMetrics.ascent + fontMetrics.descent + fontMetrics.lineGap);
 	}
     }
 
