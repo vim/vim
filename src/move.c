@@ -3238,11 +3238,11 @@ static int scroll_with_sms(int dir, long count, long *curscount)
     }
     curwin->w_p_sms = prev_sms;
 
-    return curwin->w_topline == prev_topline
+    return curwin->w_topline != prev_topline
 #ifdef FEAT_DIFF
-	&& curwin->w_topfill == prev_topfill
+	|| curwin->w_topfill != prev_topfill
 #endif
-	&& curwin->w_skipcol == prev_skipcol;
+	|| curwin->w_skipcol != prev_skipcol;
 }
 
 /*
@@ -3255,7 +3255,7 @@ static int scroll_with_sms(int dir, long count, long *curscount)
     int
 pagescroll(int dir, long count, int half)
 {
-    int		nochange = TRUE;
+    int		did_move = FALSE;
     int		buflen = curbuf->b_ml.ml_line_count;
     colnr_T	prev_col = curwin->w_cursor.col;
     colnr_T	prev_curswant = curwin->w_curswant;
@@ -3291,7 +3291,7 @@ pagescroll(int dir, long count, int half)
 	// (Try to) scroll the window unless already at the end of the buffer.
 	if (count > 0)
 	{
-	    nochange = scroll_with_sms(dir, count, &curscount);
+	    did_move = scroll_with_sms(dir, count, &curscount);
 	    curwin->w_cursor.lnum = prev_lnum;
 	    curwin->w_cursor.col = prev_col;
 	    curwin->w_curswant = prev_curswant;
@@ -3310,9 +3310,9 @@ pagescroll(int dir, long count, int half)
 	// Scroll [count] times 'window' or current window height lines.
 	count *= ((ONE_WINDOW && p_window > 0 && p_window < Rows - 1) ?
 				MAX(1, p_window - 2) : get_scroll_overlap(dir));
-	nochange = scroll_with_sms(dir, count, &count);
+	did_move = scroll_with_sms(dir, count, &count);
 
-	if (!nochange)
+	if (did_move)
 	{
 	    // Place cursor at top or bottom of window.
 	    validate_botline();
@@ -3330,19 +3330,19 @@ pagescroll(int dir, long count, int half)
     // Move cursor to first line of closed fold.
     foldAdjustCursor();
 #endif
-    nochange = nochange
-	&& prev_col == curwin->w_cursor.col
-	&& prev_lnum == curwin->w_cursor.lnum;
+    did_move = did_move
+	|| prev_col != curwin->w_cursor.col
+	|| prev_lnum != curwin->w_cursor.lnum;
 
     // Error if both the viewport and cursor did not change.
-    if (nochange)
+    if (!did_move)
 	beep_flush();
     else if (!curwin->w_p_sms)
 	beginline(BL_SOL | BL_FIX);
     else if (p_sol)
 	nv_g_home_m_cmd(&ca);
 
-    return nochange;
+    return did_move ? OK : FAIL;
 }
 
     void
