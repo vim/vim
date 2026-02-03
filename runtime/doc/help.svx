@@ -1,10 +1,10 @@
-*help.svx*	För Vim version 9.1.       Senaste ändring: 2025 Nov 01
+*help.svx*	För Vim version 9.1.       Senaste ändring: 2026 Feb 03
 
 			VIM - Huvudsaklig hjälpfil
-									           k
-         Flytta runt:  Använd markörtangenterna, eller "h" för att gå vänster,   h   l
-		       "j" för att gå neråt, "k" för att gå uppåt, "l" för höger.  j
-Stänga detta fönster:  Använd ":q<Enter>".
+									 k
+      Flytta runt:  Använd markörknapparna, eller "h" vänster,	       h   l
+		    "j" ner, "k" upp, "l" höger.			 j
+ Stäng detta fönster:  Använd ":q<Enter>".
 	 Avsluta Vim:  Använd ":qa!<Enter>" (var försiktig, alla ändring
                        förloras!).
 
@@ -237,7 +237,7 @@ Standardtillägg ~
 |pi_gzip.txt|      Läser och skriv komprimerade filer
 |pi_logipat.txt|   Logiska operatorer på mönster
 |pi_netrw.txt|     Läser och skriver filer över ett nätverk
-|pi_paren.txt|     Markera matchande paranteser
+|pi_paren.txt|     Markera matchande parenteser
 |pi_spec.txt|      Filtypstillägg för att jobba med rpm-specfiler
 |pi_tar.txt|       Tar-filsutforskare
 |pi_tutor.txt|     Interaktiv handledning för Vim
