@@ -12,6 +12,7 @@
 " 2025 Aug 12 by Vim Project (improve vimgoto script #17970))
 " 2025 Aug 16 by Vim Project set com depending on Vim9 or legacy script
 " 2026 Jan 26 by Vim Project set path to common Vim directories #19219
+" 2026 Feb 03 by Vim Project update s:Help to improve detecting functions #19320
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -89,7 +90,9 @@ if !exists("*" .. expand("<SID>") .. "Help")
       endif
     endif
 
-    if pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
+    if stridx(post, '(') == 0
+      return topic .. '()'
+    elseif pre =~# '^\s*:\=$' || pre =~# '\%(\\\||\)\@<!|\s*:\=$'
       return ':' .. topic
     elseif pre =~# '\<v:$'
       return 'v:' .. topic
