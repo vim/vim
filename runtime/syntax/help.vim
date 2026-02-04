@@ -58,7 +58,7 @@ if has_key(g:help_example_languages, "vim9")
   syn region vim9LegacyHeader_HelpExample
 	\ start=+" legacy Vim script comments may go here+
 	\ end="^\ze\s*vim9s\%[cript]\>"
-	\ contains=@vimLegacyTop,vimComment,vimLineComment
+	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
   syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
 endif
 

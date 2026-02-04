@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Dec 04
+" Last Change: 2026 Feb 04
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -111,7 +111,10 @@ function s:parse_vim_command(cmd)
 		exec '/^}\?\s*cmdnames\[\]\s*=\s*$/+1;/^};/-1yank'
 		%delete _
 		put
+		/EXCMD(CMD_block,/s/\s\+\/\/.*//
+		g/EXCMD(CMD_/,/),/j
 		g!/^EXCMD(/d
+
 
 		let lcmd = {}
 		for key in range(char2nr('a'), char2nr('z'))
@@ -124,7 +127,10 @@ function s:parse_vim_command(cmd)
 			if !empty(list)
 				" Small ascii character or other.
 				let key = (list[1][:0] =~# '\l') ? list[1][:0] : '~'
-				call add(lcmd[key], list[1])
+				let item.name = list[1]
+				let item.flags = {}
+				let item.flags.range = match(line, 'EX_RANGE') > 0
+				call add(lcmd[key], copy(item))
 			endif
 		endfor
 		quit!
@@ -134,20 +140,20 @@ function s:parse_vim_command(cmd)
 				let omit_idx = 0
 				if my > 0
 					let omit_idx = (key =~# '\l') ? 1 : 0
-					for idx in range(1, strlen(lcmd[key][my]))
+					for idx in range(1, strlen(lcmd[key][my].name))
 						let matched = 0
 						for pre in range(my - 1, 0, -1)
 							" Avoiding conflicts shortened command and special commands
 							" - weird abbreviations for delete. (See :help :d)
 							" - k{char} is used as mark. (See :help :k)
 							" - :s commsnds repeat. (See :help :substitute-repeat)
-							if lcmd[key][my][:idx] ==# lcmd[key][pre][:idx] ||
+							if lcmd[key][my].name[:idx] ==# lcmd[key][pre].name[:idx] ||
 							\	(key ==# 'd' &&
-							\		lcmd[key][my][:idx] =~# '^d\%[elete][lp]$')
+							\		lcmd[key][my].name[:idx] =~# '^d\%[elete][lp]$')
 							\	|| (key ==# 'k' &&
-							\		lcmd[key][my][:idx] =~# '^k[a-zA-Z]$')
+							\		lcmd[key][my].name[:idx] =~# '^k[a-zA-Z]$')
 							\	|| (key ==# 's' &&
-							\		lcmd[key][my][:idx] =~# '^s\%(c\%([^sr][^ip]\=\)\=$\|g\|i[^mlg]\=$\|I\|r[^e]\=$\)')
+							\		lcmd[key][my].name[:idx] =~# '^s\%(c\%([^sr][^ip]\=\)\=$\|g\|i[^mlg]\=$\|I\|r[^e]\=$\)')
 								let matched = 1
 								let omit_idx = idx + 1
 								break
@@ -159,15 +165,18 @@ function s:parse_vim_command(cmd)
 					endfor
 				endif
 
-				let item.name = lcmd[key][my]
+				let item = lcmd[key][my]
 				let item.type = s:get_vim_command_type(item.name)
 				if omit_idx + 1 < strlen(item.name)
 					let item.omit_idx = omit_idx
 					let item.syn_str = item.name[:omit_idx] . '[' . 
-					\		item.name[omit_idx+1:] . ']'
+					\		item.name[omit_idx + 1:] . ']'
+					let item.syn_pat = item.name[:omit_idx] . '\%[' .
+					\		item.name[omit_idx + 1:] . ']'
 				else
 					let item.omit_idx = -1
 					let item.syn_str = item.name
+					let item.syn_pat = item.name
 				endif
 				call add(a:cmd, copy(item))
 			endfor
@@ -313,10 +322,12 @@ function s:get_vim_command_type(cmd_name)
 		breaklist
 		browse
 		bufdo
+		buffer
 		call
 		catch
 		cdo
 		cfdo
+		change
 		chdir
 		change
 		class
@@ -355,10 +366,11 @@ function s:get_vim_command_type(cmd_name)
 		filetype
 		filter
 		final
-		folddoopen
 		folddoclosed
+		folddoopen
 		for
 		function
+		global
 		grep
 		grepadd
 		help
@@ -367,8 +379,8 @@ function s:get_vim_command_type(cmd_name)
 		history
 		if
 		import
-		interface
 		insert
+		interface
 		join
 		k
 		language
@@ -379,12 +391,18 @@ function s:get_vim_command_type(cmd_name)
 		lhelpgrep
 		lgrep
 		lgrepadd
-		lvimgrep
-		lvimgrepadd
-		make
+		lhelpgrep
+		lmake
+		loadkeymap
+		lgrep
+		lgrepadd
+		lockvar
 		lua
 		luado
 		luafile
+		lvimgrep
+		lvimgrepadd
+		make
 		map
 		mapclear
 		mark
@@ -392,8 +410,8 @@ function s:get_vim_command_type(cmd_name)
 		menutranslate
 		mzscheme
 		mzfile
+		mzscheme
 		noremap
-		new
 		normal
 		perl
 		perldo
@@ -403,13 +421,13 @@ function s:get_vim_command_type(cmd_name)
 		promptfind
 		promptrepl
 		public
-		python
-		pyfile
-		pydo
-		python3
 		py3
 		py3do
 		py3file
+		pydo
+		pyfile
+		python
+		python3
 		pythonx
 		pyx
 		pyxdo
@@ -432,6 +450,7 @@ function s:get_vim_command_type(cmd_name)
 		swapname
 		syntax
 		syntime
+		t
 		tabdo
 		tcl
 		tcldo
@@ -445,15 +464,18 @@ function s:get_vim_command_type(cmd_name)
 		unlockvar
 		unmap
 		var
+		vglobal
 		vim9script
 		vimgrep
 		vimgrepadd
 		while
 		wincmd
 		windo
+		window
+		write
+		z
 	EOL
-	" Required for original behavior
-	" \	'global', 'vglobal'
+
 	if index(exclude_list, a:cmd_name) != -1
 		let ret = 99
 	elseif a:cmd_name =~# '^\%(\%(un\)\?abbreviate\|noreabbrev\|\l\%(nore\|un\)\?abbrev\)$'
@@ -503,6 +525,48 @@ function s:append_syn_vimcmd(lnum, str_info, cmd_list, type)
 		call append(ret_lnum, str)
 		let ret_lnum += 1
 	endif
+	return s:append_syn_vimcmd_after_range(ret_lnum, a:str_info, a:cmd_list, a:type)
+endfunc
+
+" append post-range :syn-match variants
+function s:append_syn_vimcmd_after_range(lnum, str_info, cmd_list, type)
+	let cmd_list = filter(
+				\ copy(a:cmd_list),
+				\ { _, v -> v.flags.range && v.type == a:type })
+	let str_start = substitute(
+				\ a:str_info.start,
+				\ 'syn keyword vim\(\w\+\)\(.*\)',
+				\ 'syn match vim\1_\2',
+				\ '')
+	let str_end = a:str_info.end
+	let ret_lnum = a:lnum
+
+	let by_head = {}
+	for cmd in cmd_list
+		let head = cmd.name[0]
+		if !has_key(by_head, head)
+			let by_head[head] = []
+		endif
+		call add(by_head[head], cmd)
+	endfor
+
+	for head in sort(keys(by_head))
+		let str = str_start . ' "' . head
+		let tails = by_head[head]
+					\ ->map({ _, v -> v.syn_pat[1:] })
+					\ ->filter({ _, v -> !empty(v) })
+		if len(tails) == 1
+			let str .= tails[0]
+		elseif len(tails) > 1
+			let str .= '\%(' . tails->join('\|') . '\)'
+		endif
+		let str .= '\>"'
+		if !empty(str_end)
+			let str .= ' ' . str_end
+		endif
+		call append(ret_lnum, str)
+		let ret_lnum += 1
+	endfor
 	return ret_lnum
 endfunc
 

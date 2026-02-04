@@ -23,12 +23,12 @@ endfunction
 
 def Bar()
   debuggreedy
-  0debuggreedy
+  :0debuggreedy
 
   debuggreedy  # comment
-  0debuggreedy # comment
+  :0debuggreedy # comment
 
   debuggreedy  | echo "Foo"
-  0debuggreedy | echo "Foo"
+  :0debuggreedy | echo "Foo"
 enddef
 
