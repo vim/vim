@@ -1,4 +1,4 @@
-*map.txt*	For Vim version 9.1.  Last change: 2026 Feb 02
+*map.txt*	For Vim version 9.1.  Last change: 2026 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1659,7 +1659,9 @@ completion can be enabled:
 	-complete=scriptnames	sourced script names
 	-complete=shellcmd	Shell command
 	-complete=shellcmdline	First is a shell command and subsequent ones
-				are filenames.  The same behavior as |:!cmd|
+				are filenames.  The same behavior as |:!cmd|.
+				To get correct completion, |:command-nargs|
+				should be '*' or '+'
 	-complete=sign		|:sign| suboptions
 	-complete=syntax	syntax file names 'syntax'
 	-complete=syntime	|:syntime| suboptions
