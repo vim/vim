@@ -206,7 +206,8 @@ public:
 	IDWriteTextFormat* pTextFormat;
 	DWRITE_FONT_WEIGHT fontWeight;
 	DWRITE_FONT_STYLE  fontStyle;
-	Item() : hFont(NULL), pTextFormat(NULL) {}
+	FLOAT              fontAscent;
+	Item() : hFont(NULL), pTextFormat(NULL), fontAscent(0.0f) {}
     };
 
 private:
@@ -323,7 +324,7 @@ struct DWriteContext {
     void DiscardDeviceResources();
 
     HRESULT CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
-	    IDWriteTextFormat **ppTextFormat);
+	    IDWriteTextFormat **ppTextFormat, FLOAT *pFontAscent);
 
     HRESULT SetFontByLOGFONT(const LOGFONTW &logFont);
 
@@ -759,7 +760,7 @@ DWriteContext::DiscardDeviceResources()
 
     HRESULT
 DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
-	IDWriteTextFormat **ppTextFormat)
+	IDWriteTextFormat **ppTextFormat, FLOAT *pFontAscent)
 {
     // Most of this function is copied from: https://github.com/Microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/multimedia/DirectWrite/RenderTest/TextHelpers.cpp
     HRESULT hr = S_OK;
@@ -769,6 +770,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
     IDWriteFontFamily *fontFamily = NULL;
     IDWriteLocalizedStrings *localizedFamilyNames = NULL;
     float fontSize = 0;
+    DWRITE_FONT_METRICS fontMetrics = {};
 
     if (SUCCEEDED(hr))
     {
@@ -804,7 +806,6 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	// Use lfHeight of the LOGFONT as font size.
 	fontSize = float(logFont.lfHeight);
 
-	DWRITE_FONT_METRICS fontMetrics;
 	font->GetMetrics(&fontMetrics);
 
 	// Convert lfHeight to DirectWrite font size
@@ -818,7 +819,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    // Positive lfHeight represents the font's cell height (ascent + descent)
 	    // Convert to em height
 	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
-		/ float(fontMetrics.ascent + fontMetrics.descent);
+		/ float(fontMetrics.ascent + fontMetrics.descent + fontMetrics.lineGap);
 	}
     }
 
@@ -861,7 +862,12 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
     SafeRelease(&font);
 
     if (SUCCEEDED(hr))
+    {
 	*ppTextFormat = pTextFormat;
+	if (pFontAscent != NULL && fontMetrics.designUnitsPerEm != 0)
+	    *pFontAscent = fontSize * float(fontMetrics.ascent)
+		/ float(fontMetrics.designUnitsPerEm);
+    }
     else
 	SafeRelease(&pTextFormat);
 
@@ -873,8 +879,9 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 {
     HRESULT hr = S_OK;
     IDWriteTextFormat *pTextFormat = NULL;
+    FLOAT fontAscent = 0.0f;
 
-    hr = CreateTextFormatFromLOGFONT(logFont, &pTextFormat);
+    hr = CreateTextFormatFromLOGFONT(logFont, &pTextFormat, &fontAscent);
 
     if (SUCCEEDED(hr))
     {
@@ -883,6 +890,7 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 	mFontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont.lfWeight);
 	mFontStyle = logFont.lfItalic ? DWRITE_FONT_STYLE_ITALIC
 	    : DWRITE_FONT_STYLE_NORMAL;
+	mFontAscent = fontAscent;
     }
 
     return hr;
@@ -901,6 +909,7 @@ DWriteContext::SetFont(HFONT hFont)
 	    mTextFormat = item.pTextFormat;
 	    mFontWeight = item.fontWeight;
 	    mFontStyle = item.fontStyle;
+	    mFontAscent = item.fontAscent;
 	    mFallbackDC = false;
 	}
 	else
@@ -919,6 +928,7 @@ DWriteContext::SetFont(HFONT hFont)
 	item.pTextFormat = mTextFormat;
 	item.fontWeight = mFontWeight;
 	item.fontStyle = mFontStyle;
+	item.fontAscent = mFontAscent;
 	mFallbackDC = false;
     }
     else
@@ -1070,13 +1080,13 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
-	// Calculate baseline using a fixed formula based on cell geometry.
+	// Calculate baseline using font ascent from font metrics.
 	// Do NOT use GetLineMetrics() because it returns different values
 	// depending on text content (e.g., when CJK characters trigger
 	// font fallback, the metrics change).
-	// Use the same baseline calculation for all text to prevent
+	// Use the pre-calculated font ascent for all text to prevent
 	// vertical shifts during redraw.
-	FLOAT baselineY = floorf(FLOAT(y) + FLOAT(h) * 0.83f + 0.5f);
+	FLOAT baselineY = FLOAT(y) + mFontAscent;
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
