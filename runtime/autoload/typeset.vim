@@ -2,7 +2,7 @@ vim9script
 
 # Language:           Generic TeX typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
-# Latest Revision:    2026 Jan 10
+# Latest Revision:    2026 Feb 03
 
 # Constants and helpers {{{
 const SLASH = !exists("+shellslash") || &shellslash ? '/' : '\'
@@ -203,6 +203,7 @@ export def Typeset(
     env:   dict<string> = {}
     ): bool
   var fp   = fnamemodify(path, ':p')
+  var name = fnamemodify(fp, ':t')
   var wd   = fnamemodify(fp, ':h')
   var qfid = NewQuickfixList(fp)
 
@@ -216,7 +217,11 @@ export def Typeset(
     return false
   endif
 
-  var jobid = job_start(Cmd(path), {
+  # Make sure to pass only the base name of the path to Cmd as this usually
+  # works better with TeX commands (note that the command is executed inside
+  # the file's directory). For instance, ConTeXt writes the path in .synctex
+  # files, and full paths break syncing from the editor to the viewer.
+  var jobid = job_start(Cmd(name), {
     env: env,
     cwd: wd,
     in_io: "null",
