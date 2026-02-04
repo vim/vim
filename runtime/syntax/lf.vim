@@ -3,10 +3,10 @@
 " Maintainer: Andis Sprinkis <andis@sprinkis.com>
 " Former Maintainer: Cameron Wright
 " URL: https://github.com/andis-sprinkis/lf-vim
-" Last Change: 26 Oct 2025
+" Last Change: 4 Feb 2026
 "
 " The shell syntax highlighting is configurable. See $VIMRUNTIME/doc/syntax.txt
-" lf version: 39
+" lf version: 41
 
 if exists("b:current_syntax") | finish | endif
 
@@ -130,6 +130,7 @@ syn keyword lfOptions
   \ menufmt
   \ menuheaderfmt
   \ menuselectfmt
+  \ mergeindicators
   \ middle
   \ mouse
   \ nmaps
