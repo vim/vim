@@ -40,7 +40,7 @@ endfunction
 
 function Test_NetrwMakeDir(parentdir = $HOME, dirname = "NetrwMakeDir", symlink = 0) abort
     if a:symlink
-        " Plainly delegate, this device is necessary becaue feedkeys() can't
+        " Plainly delegate, this device is necessary because feedkeys() can't
         " access script functions directly.
         call s:NetrwMakeDir('')
         " wipe out the test buffer
@@ -79,7 +79,7 @@ function Test_NetrwMarkFileCopy_SameDir(dir = $HOME, symlink = 0) abort
     const newfile = netrw#fs#PathJoin(a:dir, newfilename)
 
     if a:symlink
-        " Plainly delegate, this device is necessary becaue feedkeys() can't
+        " Plainly delegate, this device is necessary because feedkeys() can't
         " access script functions directly.
         " set up
         new
@@ -202,7 +202,7 @@ func SetShell(shell)
             set shellxquote=
         endif
     else
-        call assert_report("Trying to select and unknown shell")
+        call assert_report("Trying to select an unknown shell")
     endif
 endfunc
 
@@ -445,7 +445,7 @@ endfunc
 
 func Test_netrw_dircopy_default()
   call SetShell('default')
- call s:test_netrw_dircopy()
+  call s:test_netrw_dircopy()
 endfunc
 
 func Test_netrw_dircopy_powershell()
