@@ -473,12 +473,19 @@ def IsHareModule(dir: string, depth: number): bool
   endif
 
   # Check all files in the directory before recursing into subdirectories.
-  return glob(dir .. '/*', true, true)
+  const items = glob(dir .. '/*', true, true)
     ->sort((a, b) => isdirectory(a) - isdirectory(b))
-    ->reduce((acc, n) => acc
-      || n =~ '\.ha$'
-      || isdirectory(n) && IsHareModule(n, depth - 1),
-    false)
+  for n in items
+    if isdirectory(n)
+      if IsHareModule(n, depth - 1)
+        return true
+      endif
+    elseif n =~ '\.ha$'
+      return true
+    endif
+  endfor
+
+  return false
 enddef
 
 # Determines whether a README file is inside a Hare module and should receive
