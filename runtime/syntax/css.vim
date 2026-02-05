@@ -13,6 +13,8 @@
 " 2026 Fev 03: add missing numberic units (baseline 2020)
 " 2026 Fev 03: add missing numberic units (baseline 2022)
 " 2026 Fev 03: add missing numberic units (baseline 2023)
+" 2026 Fev 03: replace \(\) with \%(\)
+" 2026 Fev 05: update changelog list
 
 " quit when a syntax file was already loaded
 if !exists("main_syntax")
