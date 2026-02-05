@@ -226,7 +226,7 @@ fun! tar#Browse(tarfile)
 
   " remove tar: Removing leading '/' from member names
   " Note: the message could be localized
-  if search('^tar: ') > 0 || search(g:tar_leading_pat) > 0
+  if search('^tar: ', 'w') > 0 || search(g:tar_leading_pat, 'w') > 0
     call append(3,'" Note: Path Traversal Attack detected!')
     let b:leading_slash = 1
     " remove the message output
