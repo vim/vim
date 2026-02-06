@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2026 Jan 18
+*terminal.txt*	For Vim version 9.1.  Last change: 2026 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -525,10 +525,12 @@ term_dumpdiff({filename}, {filename} [, {options}])
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
 				     instead of using 'termwinsize', but
-				     respecting the minimal size
+				     respecting the minimal size; valid range
+				     is from 0 to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
 				     instead of using 'termwinsize', but
-				     respecting the minimal size
+				     respecting the minimal size; valid range
+				     is from 0 to 1000
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -951,9 +953,10 @@ term_start({cmd} [, {options}])			*term_start()*
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
 				     instead of using 'termwinsize'; valid
-				     range is from zero to 1000
+				     range is from 0 to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize'; valid
+				     range is from 0 to 1000
 		   "vertical"	     split the window vertically; note that
 				     other window position can be defined with
 				     command modifiers, such as |:belowright|.

@@ -6315,6 +6315,8 @@ b:changelog_name	filetype.txt	/*b:changelog_name*
 b:clojure_syntax_keywords	syntax.txt	/*b:clojure_syntax_keywords*
 b:clojure_syntax_without_core_keywords	syntax.txt	/*b:clojure_syntax_without_core_keywords*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
+b:hare_indent_case	ft_hare.txt	/*b:hare_indent_case*
+b:hare_indent_match_switch	ft_hare.txt	/*b:hare_indent_match_switch*
 b:lf_shell_syntax	syntax.txt	/*b:lf_shell_syntax*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:rust_cargo_avoid_whole_workspace	ft_rust.txt	/*b:rust_cargo_avoid_whole_workspace*
@@ -7819,7 +7821,6 @@ g:hare_indent_match_switch	ft_hare.txt	/*g:hare_indent_match_switch*
 g:hare_makeprg_params	ft_hare.txt	/*g:hare_makeprg_params*
 g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
 g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
-g:hare_symbol_operators	ft_hare.txt	/*g:hare_symbol_operators*
 g:help_example_languages	helphelp.txt	/*g:help_example_languages*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
@@ -8313,6 +8314,8 @@ haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 hare	ft_hare.txt	/*hare*
+hare-folding	ft_hare.txt	/*hare-folding*
+hare-symbol-operators	ft_hare.txt	/*hare-symbol-operators*
 hare.vim	ft_hare.txt	/*hare.vim*
 has()	builtin.txt	/*has()*
 has-patch	builtin.txt	/*has-patch*

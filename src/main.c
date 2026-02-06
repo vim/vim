@@ -2181,7 +2181,7 @@ command_line_scan(mparm_T *parmp)
 		    usage();
 		else if (STRICMP(argv[0] + argv_idx, "version") == 0)
 		{
-		    Columns = 80;	// need to init Columns
+		    cmdline_width = Columns = 80;   // need to init Columns
 		    info_message = TRUE; // use mch_msg(), not mch_errmsg()
 # if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI) && !defined(VIMDLL)
 		    gui.starting = FALSE; // not starting GUI, will exit

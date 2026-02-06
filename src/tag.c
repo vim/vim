@@ -3347,7 +3347,7 @@ get_tagfname(
 	    if (tnp->tn_hf_idx > tag_fnames.ga_len || *p_hf == NUL)
 		return FAIL;
 	    ++tnp->tn_hf_idx;
-	    STRCPY(buf, p_hf);
+	    vim_strncpy(buf, p_hf, MAXPATHL - STRLEN_LITERAL("tags") - 1);
 	    STRCPY(gettail(buf), "tags");
 #ifdef BACKSLASH_IN_FILENAME
 	    slash_adjust(buf);

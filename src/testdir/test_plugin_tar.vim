@@ -126,3 +126,24 @@ def g:Test_tar_evil()
 
   bw!
 enddef
+
+def g:Test_tar_path_traversal_with_nowrapscan()
+  CopyFile("evil.tar")
+  defer delete("X.tar")
+  # Make sure we still find the tar warning (or leading slashes) even when
+  # wrapscan is off
+  set nowrapscan
+  e X.tar
+
+  ### Check header
+  assert_match('^" tar\.vim version v\d\+', getline(1))
+  assert_match('^" Browsing tarfile .*/X.tar', getline(2))
+  assert_match('^" Select a file with cursor and press ENTER, "x" to extract a file', getline(3))
+  assert_match('^" Note: Path Traversal Attack detected', getline(4))
+  assert_match('^$', getline(5))
+  assert_match('/etc/ax-pwn', getline(6))
+
+  assert_equal(1, b:leading_slash)
+
+  bw!
+enddef

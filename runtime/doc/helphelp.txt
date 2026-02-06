@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
+*helphelp.txt*	For Vim version 9.1.  Last change: 2026 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -326,6 +326,7 @@ At this moment translations are available for:
 	Japanese - multiple authors
 	Polish   - translated by Mikolaj Machowski
 	Russian  - translated by Vassily Ragosin
+	Swedish  - translated by Daniel Nylander
 See the Vim website to find them: http://www.vim.org/translations.php
 
 A set of translated help files consists of these files:
