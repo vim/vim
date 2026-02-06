@@ -52486,4 +52486,8 @@ Patch 9.1.2133
 Problem:  Another case of buffer overflow with 'helpfile'.
 Solution: Leave room for "tags" in the buffer (zeertzjq).
 
+Patch 9.1.2134
+Problem:  Terminal doesn't handle split UTF-8 sequence after ASCII.
+Solution: Only use one UTF-8 encoding state per vterm state (zeertzjq).
+
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable

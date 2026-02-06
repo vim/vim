@@ -1124,4 +1124,28 @@ func Test_terminal_backspace_on_windows()
   let $PROMPT = save_prompt
 endfunc
 
+func Test_terminal_split_utf8()
+  CheckUnix
+
+  let buf = term_start('cat', {})
+  let chan = buf->term_getjob()->job_getchannel()
+  call ch_sendraw(chan, "1: \xc3")
+  call WaitForAssert({-> assert_equal('1: ', term_getline(buf, 1))})
+  call ch_sendraw(chan, "\xa5\xcc\xb2\n")
+  call WaitForAssert({-> assert_equal('1: å̲', term_getline(buf, 1))})
+  call WaitForAssert({-> assert_equal('1: å̲', term_getline(buf, 2))})
+  call ch_sendraw(chan, "2: \xc3\xa5")
+  call WaitForAssert({-> assert_equal('2: å', term_getline(buf, 3))})
+  call ch_sendraw(chan, "\xcc\xb2\n")
+  call WaitForAssert({-> assert_equal('2: å̲', term_getline(buf, 3))})
+  call WaitForAssert({-> assert_equal('2: å̲', term_getline(buf, 4))})
+  call ch_sendraw(chan, "3: \xc3\xa5\xcc")
+  call WaitForAssert({-> assert_equal('3: å', term_getline(buf, 5))})
+  call ch_sendraw(chan, "\xb2\n")
+  call WaitForAssert({-> assert_equal('3: å̲', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('3: å̲', term_getline(buf, 6))})
+
+  exe buf .. "bwipe!"
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
