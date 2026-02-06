@@ -732,7 +732,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_AUTOCHDIR
     char_u	autocwd[MAXPATHL];
     int	apply_acd = FALSE;
-    char_u	*save_sfname;
+    char_u	*save_sfname = NULL;
 # endif
 
     // Getting and setting directory can be slow on some systems, only do
