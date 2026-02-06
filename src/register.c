@@ -186,6 +186,7 @@ valid_yank_reg(
 				    "/.%:"
 #endif
 					, regname) != NULL)
+	    || regname == '.'
 	    || regname == '#'
 	    || regname == '"'
 	    || regname == '-'
