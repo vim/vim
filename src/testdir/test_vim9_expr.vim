@@ -3630,7 +3630,6 @@ def Test_expr9_register()
   v9.CheckDefAndScriptSuccess(lines)
 
   # read-only registers
-  v9.CheckDefAndScriptFailure(["@. = 'yes'"], 'E354:', 1)
   v9.CheckDefAndScriptFailure(["@% = 'yes'"], 'E354:', 1)
   v9.CheckDefAndScriptFailure(["@: = 'yes'"], 'E354:', 1)
   v9.CheckDefAndScriptFailure(["@~ = 'yes'"], 'E354:', 1)

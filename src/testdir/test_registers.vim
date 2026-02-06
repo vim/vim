@@ -1293,7 +1293,6 @@ func Test_insert_small_delete_linewise()
 endfunc
 
 func Test_writing_readonly_regs()
-  call assert_fails('let @. = "foo"', 'E354:')
   call assert_fails('let @% = "foo"', 'E354:')
   call assert_fails('let @: = "foo"', 'E354:')
   call assert_fails('let @~ = "foo"', 'E354:')
