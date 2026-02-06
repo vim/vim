@@ -2709,7 +2709,7 @@ set_last_insert_str(char_u	*str)
 
     // Change redo buff
     ResetRedobuff();
-    AppendToRedobuffLit(s, -1);
+    AppendToRedobuffLit(str, -1);
 }
 
 #if defined(EXITFREE)
