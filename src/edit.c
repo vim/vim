@@ -2682,7 +2682,7 @@ set_last_insert_str(char_u	*str)
     size_t  len = str ? STRLEN(str) : 0;
 
     vim_free(last_insert.string);
-    last_insert.string = alloc(len * MB_MAXBYTES + 5);
+    last_insert.string = alloc(len * 3 + 5);
     if (last_insert.string == NULL)
     {
 	last_insert.length = 0;
@@ -2709,7 +2709,7 @@ set_last_insert_str(char_u	*str)
 
     // Change redo buff
     ResetRedobuff();
-    AppendToRedobuffLit(str, -1);
+    stuffReadbuff(str);
 }
 
 #if defined(EXITFREE)

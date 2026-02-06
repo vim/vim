@@ -2970,10 +2970,7 @@ write_reg_contents_ex(
     // Special case: '.' dot repeat register
     if (name == '.')
     {
-	ResetRedobuff();
-	stuffReadbuff(str);
-	// TODO: set_last_insert_str() does not work well...
-	//set_last_insert_str(str);
+	set_last_insert_str(str);
 	return;
     }
 
