@@ -110,3 +110,30 @@ enum E2
 
   @Override public String toString() { return name().toUpperCase(); }
 }
+
+class C2Alias<T>
+{
+  final T name; C2Alias(T name) { this.name = name; }
+
+  class Builder
+  {
+    final java.util.stream.Stream.Builder<T> builder =
+      java.util.stream.Stream.<T>builder();
+
+    C2Alias<T>.Builder add(T x)
+    {
+      builder.accept(x);
+      return this;
+    }
+
+    java.util.stream.Stream<T> build()
+    {
+      return builder.<T>build();
+    }
+  }
+
+  static <A> C2Alias<A>.Builder builder(A name)
+  {
+    return new C2Alias<>(name).new Builder();
+  }
+}
