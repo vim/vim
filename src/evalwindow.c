@@ -771,7 +771,10 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     restore_win_noblock(&switchwin, TRUE);
 # ifdef FEAT_AUTOCHDIR
     if (apply_acd)
+    {
+	vim_free(save_sfname);
 	do_autochdir();
+    }
     else
 # endif
 	if (cwd_status == OK)
@@ -780,6 +783,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_AUTOCHDIR
 	    if (save_sfname != NULL)
 	    {
+		vim_free(curbuf->b_sfname);
 		curbuf->b_sfname = save_sfname;
 		curbuf->b_fname = curbuf->b_sfname;
 	    }
