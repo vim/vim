@@ -2970,7 +2970,9 @@ write_reg_contents_ex(
     // Special case: '.' dot repeat register
     if (name == '.')
     {
-	ins_typebuf(str, REMAP_NONE, 0, TRUE, FALSE);
+	ResetRedobuff();
+	stuffReadbuff(str);
+	// TODO: set_last_insert_str() does not work well...
 	//set_last_insert_str(str);
 	return;
     }
