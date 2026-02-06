@@ -491,7 +491,7 @@ func RunTest()
       call ch_log('First screendump for ' .. in_name_and_out_name)
       " Make a screendump at the start of the file: failed/root_00.dump
       let fail = VerifyScreenDump(buf, root_00, DUMP_OPTS)
-      let nr = 0
+      let page_nr = 0
 
       " Accommodate the next code block to "buf"'s contingency for self
       " wipe-out.
@@ -501,8 +501,8 @@ func RunTest()
 	while s:CannotSeeLastLine(ruler)
 	  call term_sendkeys(buf, keys_a)
 	  let keys_a = keys_b
-	  let nr += 1
-	  let root_next = printf('%s_%02d', root, nr)
+	  let page_nr += 1
+	  let root_next = printf('%s_%02d', root, page_nr)
 	  let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
 	  let ruler = s:TermPollRuler(
 	      \ function('s:CannotDumpNextPage', [buf, ruler]),
@@ -517,13 +517,13 @@ func RunTest()
 	call delete('Xtestscript')
       endtry
 
-      let nr += 1
-      let pagename = printf('dumps/%s_%02d.dump', root, nr)
+      let page_nr += 1
+      let pagename = printf('dumps/%s_%02d.dump', root, page_nr)
 
       while filereadable(pagename)
 	call add(disused_pages, pagename)
-	let nr += 1
-	let pagename = printf('dumps/%s_%02d.dump', root, nr)
+	let page_nr += 1
+	let pagename = printf('dumps/%s_%02d.dump', root, page_nr)
       endwhile
 
       " redraw here to avoid the following messages to get mixed up with screen
