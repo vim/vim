@@ -832,6 +832,9 @@ func Test_stdin_no_newline()
   CheckScreendump
   CheckUnix
   CheckExecutable bash
+  " For some reason bash doesn't exit at the end of the test on FreeBSD &
+  " OpenBSD.
+  CheckNotBSD
 
   let $PS1 = 'TEST_PROMPT> '
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})

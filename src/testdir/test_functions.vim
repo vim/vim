@@ -3106,7 +3106,8 @@ func Test_readdirex_sort()
 
   " 6) Collation de_DE
   " Switch locale, this may not work on the CI system, if the locale isn't
-  " available
+  " available. Doesn't work on OpenBSD, which has minimal locale support.
+  CheckNotOpenBSD
   try
     lang collate de_DE
     let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
