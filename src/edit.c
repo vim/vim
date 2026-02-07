@@ -2730,6 +2730,11 @@ set_last_insert_str(char_u *str)
     // Update redo buffer for . command
     // Use the approach from spellsuggest.c
     ResetRedobuff();
+
+    // Skip the next restore
+    // NOTE: Used after executing autocommands and user functions.
+    skipRestoreRedobuff();
+
     if (str != NULL && *str != NUL)
     {
 	if (has_command)
