@@ -52512,4 +52512,9 @@ Problem:  Some tests are not valid on OpenBSD.
 Solution: Add CheckNotOpenBSD, use it to skip certain tests
           (Kevin Goodsell).
 
+Patch 9.1.2138
+Problem:  With 'autochdir' win_execute() can corrupt the buffer name, causing
+          :write to use wrong path.
+Solution: Save and restore b_fname when 'autochdir' is active (Ingo Karkat).
+
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
