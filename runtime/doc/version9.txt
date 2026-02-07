@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 06
+*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52501,5 +52501,10 @@ Problem:  search() is used to check for the message from tar that
           can fail. This can be seen, for example, when editing
           src/testdir/samples/evil.tar.
 Solution: Use the 'w' flag for search() (Kevin Goodsell)
+
+Patch 9.1.2136
+Problem:  :tab sbuffer may close old tabpage if BufLeave autocommand
+          splits window (after 9.1.0143).
+Solution: Only close other windows if the buffer will be unloaded (zeertzjq).
 
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
