@@ -518,9 +518,9 @@ syn match	vimBreakpointFilename	contained	"\<\%(\*\|\f\)\+\>"	skipwhite nextgrou
 syn match	vimBreakpointFunctionLine	contained	"\<\d\+\>"		skipwhite nextgroup=vimBreakpointFunction
 syn match	vimBreakpointFileLine	contained	"\<\d\+\>"		skipwhite nextgroup=vimBreakpointFilename
 
-syn keyword	vimBreakadd	breaka[dd]	skipwhite nextgroup=@vimBreakpointArg
-syn keyword	vimBreakdel	breakd[el]	skipwhite nextgroup=@vimBreakpointArg,vimBreakpointNumber,vimBreakpointGlob
-syn keyword	vimBreaklist	breakl[ist]	skipwhite nextgroup=vimComment,vim9Comment,vimSep
+syn keyword	vimBreakadd	contained	breaka[dd]	skipwhite nextgroup=@vimBreakpointArg
+syn keyword	vimBreakdel	contained	breakd[el]	skipwhite nextgroup=@vimBreakpointArg,vimBreakpointNumber,vimBreakpointGlob
+syn keyword	vimBreaklist	contained	breakl[ist]	skipwhite nextgroup=vimComment,vim9Comment,vimSep
 
 " :buffer {{{3
 " =======
@@ -534,8 +534,8 @@ syn match	vimCall_	contained	"call\=\>"	skipwhite nextgroup=vimVar,@vimFunc
 
 " :cd {{{3
 " ===
-" GEN_SYN_VIM: vimCommand cd, START_STR='syn keyword vimCd', END_STR='skipwhite nextgroup=vimCdBang,vimCdArg,vimComment,vim9Comment,vimCmdSep'
-syn match	vimCd	"\<chd\%[ir]\>"	skipwhite nextgroup=vimCdBang,vimCdArg,vimComment,vim9Comment,vimCmdSep
+" GEN_SYN_VIM: vimCommand cd, START_STR='syn keyword vimCd contained', END_STR='skipwhite nextgroup=vimCdBang,vimCdArg,vimComment,vim9Comment,vimCmdSep'
+syn match	vimCd	contained	"\<chd\%[ir]\>"	skipwhite nextgroup=vimCdBang,vimCdArg,vimComment,vim9Comment,vimCmdSep
 syn region	vimCdArg	contained
       \ start=+["#|]\@!\S+
       \ end="\ze\s*$"
@@ -668,7 +668,7 @@ syn region	vimExecute	contained
       \ contains=@vimContinue,@vimExprList,vim9Comment
       \ transparent
 
-syn region	vimEval
+syn region	vimEval	contained
       \ matchgroup=vimCommand
       \ start="\<ev\%[al]\>"
       \ skip=+\\|\|||\|\n\s*\%(\\\|["#]\\ \)+
@@ -780,7 +780,7 @@ syn match	vimMakeBang	contained	"\a\@1<=!"		skipwhite nextgroup=vimMakeArgs,vimC
 
 " :help, :helpgrep, :lhelpgrep {{{3
 " ============================
-syn keyword	vimHelp	h[elp]	skipwhite nextgroup=vimHelpBang,vimHelpArg,vimHelpEndCommand
+syn keyword	vimHelp	contained	h[elp]	skipwhite nextgroup=vimHelpBang,vimHelpArg,vimHelpEndCommand
 " TODO: match wildcards, ignoring exceptions?
 syn region	vimHelpArg	contained
       \ start="\S"
@@ -873,7 +873,7 @@ syn region	vimHiLink	contained
 " :history {{{3
 " ========
 " TODO: handle Vim9 "history" variable assignment (like `:wincmd =`, but a common variable name)
-syn keyword	vimHistory	his[tory]	skipwhite nextgroup=vimHistoryName,vimHistoryRange,vimCmdSep,vimComment,vim9Comment
+syn keyword	vimHistory	contained	his[tory]	skipwhite nextgroup=vimHistoryName,vimHistoryRange,vimCmdSep,vimComment,vim9Comment
 syn keyword	vimHistoryName	contained	c[md] s[earch] e[xpr] i[nput] d[ebug] a[ll]	skipwhite nextgroup=vimHistoryRange,vimCmdSep,vimComment,vim9Comment
 syn match	vimHistoryName	contained	"[:/?=@>]"			skipwhite nextgroup=vimHistoryRange,vimCmdSep,vimComment,vim9Comment
 syn match	vimHistoryRange	contained	"-\=\<\d\+\>\%(\s*,\)\="		skipwhite nextgroup=vimCmdSep,vimComment,vim9Comment
@@ -926,11 +926,11 @@ else
         \ transparent
 endif
 syn match	vimImportName	contained	"\%(\<as\s\+\)\@<=\h\w*\>"	skipwhite nextgroup=@vimComment
-syn keyword	vimImport		imp[ort]		skipwhite nextgroup=vimImportAutoload,vimImportFilename
+syn keyword	vimImport	contained	imp[ort]		skipwhite nextgroup=vimImportAutoload,vimImportFilename
 
 " :language {{{3
 " =========
-syn keyword 	vimLanguage		lan[guage]	skipwhite nextgroup=@vimLanguageName,vimLanguageCategory,vimSep,vimComment,vim9Comment
+syn keyword 	vimLanguage		contained	lan[guage]	skipwhite nextgroup=@vimLanguageName,vimLanguageCategory,vimSep,vimComment,vim9Comment
 syn keyword	vimLanguageCategory	contained	col[late] cty[pe] mes[sages] tim[e]	skipwhite nextgroup=@vimLanguageName
 
 " [language[_territory][.codeset][@modifier]] and the reserved "C" and "POSIX"
@@ -1119,7 +1119,7 @@ syn region	vimPromptArg	contained
       \ skip=+\n\s*\%(\\\|["#]\\ \)+
       \ end="$"
       \ contains=@vimContinue
-syn keyword	vimPrompt	promptf[ind] promptr[epl]	skipwhite nextgroup=vimPromptArg
+syn keyword	vimPrompt	contained	promptf[ind] promptr[epl]	skipwhite nextgroup=vimPromptArg
 
 " :redir {{{3
 " ======
@@ -1410,7 +1410,7 @@ syn keyword	vimSyncNone	contained	NONE
 " :syntime {{{3
 " ========
 syn keyword	vimSyntimeArg	contained	on off clear report	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
-syn keyword	vimSyntime		synti[me]		skipwhite nextgroup=vimSyntimeArg
+syn keyword	vimSyntime	contained	synti[me]		skipwhite nextgroup=vimSyntimeArg
 " :terminal {{{3
 " =========
 syn match	vimTerminal	contained	"\<ter\%[minal]\>"		skipwhite        nextgroup=vimTerminalOptions,vimTerminalCommand
@@ -1641,7 +1641,7 @@ syn match	vimFunctionMod	     contained	"\<\%(abort\|closure\|dict\|range\)\>"	s
 syn region	vimFunctionBody	contained
       \ start="^."
       \ matchgroup=vimCommand
-      \ end="\<endfu\%[nction]\>"
+      \ end="\<endf\%[unction]\>"
       \ skipwhite nextgroup=vimCmdSep,vimComment,vim9CommentError
       \ contains=@vimFunctionBodyList
 syn region	vimDefBody	contained
