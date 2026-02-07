@@ -614,4 +614,9 @@ func Test_wayland_handle_large_data()
   call assert_equal(l:contents, system('wl-paste -n -t TEXT'))
 endfunc
 
+" Test for heap buffer overflow in wayland log handler
+func Test_wayland_protocol_error_overflow()
+  exe "wlrestore " .. repeat('X', 4096)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
