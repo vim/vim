@@ -7,14 +7,11 @@
 "               Nikolai Weibull (Add CSS2 support)
 " URL:          https://github.com/vim-language-dept/css-syntax.vim
 " Maintainer:   Jay Sitter <jay@jaysitter.com>
-" Last Change:  2024 Mar 2
+" Last Change:  2026 Feb 07
+" Changelog:
+" 2026 Feb 03: replace \(\) with \%(\)
+" 2026 Feb 03: add missing numberic units (baseline 2015, 2020, 2022, 2023)
 " 2025 Nov 11: improve support for cssBoxProperties #18717
-" 2026 Fev 03: add missing numberic units (baseline 2015)
-" 2026 Fev 03: add missing numberic units (baseline 2020)
-" 2026 Fev 03: add missing numberic units (baseline 2022)
-" 2026 Fev 03: add missing numberic units (baseline 2023)
-" 2026 Fev 03: replace \(\) with \%(\)
-" 2026 Fev 05: update changelog list
 
 " quit when a syntax file was already loaded
 if !exists("main_syntax")
