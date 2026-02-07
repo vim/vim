@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Feb 04
+" Last Change:	   2026 Feb 07
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -321,11 +321,45 @@ syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelfunction,vimDoCommand,vimDoautocmd,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepAdd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimInsert,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPerl,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimSet,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
 
 syn cluster vim9CmdList	contains=vim9Abstract,vim9ClassBody,vim9Const,vim9EnumBody,vim9Export,vim9Final,vim9For,vim9InterfaceBody,vim9Type,vim9Var,vim9WinCmd
-syn match vimCmdStart	":\+"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,vimComment
+syn match vimCmdStart	contained	":\+"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,vimComment
 syn match vimCount	contained	"\d\+"
 syn match vimBang	      	contained	"!"
 syn match vimWhitespace	contained	"\s\+"
 syn match vimLeadingWhitespace	contained	"^\s\+"
+
+" :range {{{3
+syn match	vimRange	contained	"[*%]" skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+
+syn region	vimRangePattern	contained
+      \ matchgroup=Delimiter
+      \ start="/"
+      \ skip=+\\/\|\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ end="/"
+      \ skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+      \ contains=vimRangeSlashEscape,@vimContinue,@vimSubstList
+syn match	vimRangeSlashEscape	contained	"\\/"
+syn region	vimRangePattern	contained
+      \ matchgroup=Delimiter
+      \ start="?"
+      \ skip=+\\?\|\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ end="?"
+      \ skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+      \ contains=vimRangeQuestionEscape,@vimContinue,@vimSubstList
+syn match	vimRangeQuestionEscape	contained	"\\?"
+
+syn match	vimRangeOffset    contained	"[+-]\%(\d\+\)\=\|\d\+"                        skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_
+syn match	vimRangeLine	contained	"\%#=1\d\+"                                    skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_
+syn match	vimRangeLine	contained	"\%#=1[.$]"                                    skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+syn match	vimRangeLine	contained	"\%#=1'[[\]<>'`"^.(){}]"                       skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+syn match	vimRangeLine	contained	"\%#=1'[a-zA-Z0-9]"                            skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_
+" NOTE: needs leading ':' to distinguish \/ from line continuation in Vim script
+syn match	vimRangeLine	contained	"\%#=1\\[/?&]"                                 skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
+
+syn match	vimRangeSeparator	contained	"\%#=1[,;]" skipwhite nextgroup=vimRangeLine,vimRangePattern,vimRangeOffset,vimCmdStart,@vimCmdList,vimCommand,vimRangeSeparator
+
+syn cluster	vimRange	contains=vimRange,vimRangeLine,vimRangePattern,vimRangeOffset,vimRangeSeparator
 
 " :@ {{{3
 " ==
@@ -430,18 +464,18 @@ syn region	vimAutocmdPattern	contained
       \ skip="\\\\\|\\[,[:space:]]"
       \ end="\ze[,[:space:]]"
       \ end="$"
-      \ skipwhite skipnl nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock,@vimFunc,@vimCmdList,@vimAutocmdContinue
+      \ skipwhite skipnl nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock,@vimFunc,vimCmdStart,@vimRange,@vimCmdList,@vimAutocmdContinue
       \ contains=vimEnvvar,@vimWildcard,vimAutocmdPatternEscape
-syn match	vimAutocmdBufferPattern	contained	"<buffer\%(=\%(\d\+\|abuf\)\)\=>" skipwhite skipnl nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock,@vimFunc,@vimCmdList,@vimAutocmdContinue
+syn match	vimAutocmdBufferPattern	contained	"<buffer\%(=\%(\d\+\|abuf\)\)\=>" skipwhite skipnl nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock,@vimFunc,vimCmdStart,@vimRange,@vimCmdList,@vimAutocmdContinue
 syn match	vimAutocmdPatternSep	contained	","	                skipwhite skipnl nextgroup=@vimAutocmdPattern,@vimAutocmdContinue
 " trailing pattern separator comma allowed
-syn match	vimAutocmdPatternSep	contained	",\ze\s\+"	                skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,@vimCmdList,@vimAutocmdContinue
+syn match	vimAutocmdPatternSep	contained	",\ze\s\+"	                skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,vimCmdStart,@vimRange,@vimCmdList,@vimAutocmdContinue
 syn match	vimAutocmdPatternEscape	contained	"\\."
 syn cluster	vimAutocmdPattern		contains=vimAutocmdPattern,vimAutocmdBufferPattern
 
 " TODO: Vim9 requires '++' prefix
-syn match	vimAutocmdMod	contained	"\%(++\)\=\<nested\>" skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,@vimCmdList,@vimAutocmdContinue
-syn match	vimAutocmdMod	contained	"++once\>"	    skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,@vimCmdList,@vimAutocmdContinue
+syn match	vimAutocmdMod	contained	"\%(++\)\=\<nested\>" skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,vimCmdStart,@vimRange,@vimCmdList,@vimAutocmdContinue
+syn match	vimAutocmdMod	contained	"++once\>"	    skipwhite skipnl nextgroup=vimAutocmdMod,vimAutocmdBlock,vimCmdStart,@vimRange,@vimCmdList,@vimAutocmdContinue
 
 " higher priority than vimAutocmdGroup, assume no group is so named
 syn match	vimAutoEventGlob	contained	"*"	skipwhite nextgroup=@vimAutocmdPattern
@@ -2550,39 +2584,6 @@ syn region	vim9TypeArgs	contained
 
 " Beginners - Patterns that involve ^ {{{2
 " =========
-syn match	vimRange	contained	"[*%]" skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-
-syn region	vimRangePattern	contained
-      \ matchgroup=Delimiter
-      \ start="/"
-      \ skip=+\\/\|\n\s*\%(\\\|["#]\\ \)+
-      \ end="$"
-      \ end="/"
-      \ skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-      \ contains=vimRangeSlashEscape,@vimContinue,@vimSubstList
-syn match	vimRangeSlashEscape	contained	"\\/"
-syn region	vimRangePattern	contained
-      \ matchgroup=Delimiter
-      \ start="?"
-      \ skip=+\\?\|\n\s*\%(\\\|["#]\\ \)+
-      \ end="$"
-      \ end="?"
-      \ skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-      \ contains=vimRangeQuestionEscape,@vimContinue,@vimSubstList
-syn match	vimRangeQuestionEscape	contained	"\\?"
-
-syn match	vimRangeOffset    contained	"[+-]\%(\d\+\)\=\|\d\+"                        skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_ "contains=vimRangeOffsetSign
-syn match	vimRangeLine	contained	"\%#=1\d\+"                                    skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_
-syn match	vimRangeLine	contained	"\%#=1[.$]"                                    skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-syn match	vimRangeLine	contained	"\%#=1'[[\]<>'`"^.(){}]"                       skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-syn match	vimRangeLine	contained	"\%#=1'[a-zA-Z0-9]"                            skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,@vimCommand_
-" NOTE: needs leading ':' to distinguish \/ from line continuation in Vim script
-syn match	vimRangeLine	contained	"\%#=1\\[/?&]"                                 skipwhite nextgroup=vimRangeOffset,vimRangeSeparator,vimCmdStart,@vimCmdList,vimCommand
-
-syn match	vimRangeSeparator	contained	"\%#=1[,;]" skipwhite nextgroup=vimRangeLine,vimRangePattern,vimRangeOffset,vimCmdStart,@vimCmdList,vimCommand,vimRangeSeparator
-
-syn cluster	vimRange	contains=vimRange,vimRangeLine,vimRangePattern,vimRangeOffset,vimRangeSeparator
-
 syn cluster	vimCommand_	contains=vimCommand_,vim\u\w\+_
 
 Vim9 syn region	vim9LineComment	contained start=+\%#=1#\%({\@!\|{{\).*$+ skip=+\n\s*\%(\\\|#\\ \)+ end="$" contains=@vimCommentGroup,vimCommentString,vim9CommentTitle extend

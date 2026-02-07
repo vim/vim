@@ -65,7 +65,7 @@ echo | :'^
 echo | :'.
 
 
-1,10:print
+:1,10:print
 
 # range (with whitespace)
 
