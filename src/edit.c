@@ -2674,12 +2674,14 @@ set_last_insert(int c)
  * Set the last inserted text to str.
  */
     void
-set_last_insert_str(char_u	*str)
+set_last_insert_str(char_u *str)
 {
     char_u  *s;
     char_u  *p;
+    char_u  *text_start;
     int     c;
     size_t  len = str ? STRLEN(str) : 0;
+    int     has_command = FALSE;
 
     vim_free(last_insert.string);
     last_insert.string = alloc(len * 3 + 5);
@@ -2689,10 +2691,28 @@ set_last_insert_str(char_u	*str)
 	return;
     }
 
+    // Parse the input string to separate the command (i, a, o, etc.) from the
+    // text
     s = last_insert.string;
-    if (str != NULL)
+    p = str;
+    text_start = str;
+
+    // Check if the first character is an insert mode command
+    if (str != NULL && *str != NUL)
     {
-	for (p = str; *p != NUL; MB_PTR_ADV(p))
+	int first_char = *p;
+	if (first_char == 'i' || first_char == 'a' || first_char == 'o' ||
+	    first_char == 'O' || first_char == 'I' || first_char == 'A' ||
+	    first_char == 'c' || first_char == 's' || first_char == 'C' ||
+            first_char == 'S')
+	{
+	    has_command = TRUE;
+	    MB_PTR_ADV(p);  // Skip the command character
+	    text_start = p;
+	}
+
+	// Copy the text part to last_insert.string
+	for (; *p != NUL; MB_PTR_ADV(p))
 	{
 	    c = mb_ptr2char(p);
 	    // Use the CTRL-V only when entering a special char
@@ -2707,9 +2727,26 @@ set_last_insert_str(char_u	*str)
     last_insert.length = (size_t)(s - last_insert.string);
     last_insert_skip = 0;
 
-    // Change redo buff
+    // Update redo buffer for . command
+    // Use the approach from spellsuggest.c
     ResetRedobuff();
-    stuffReadbuff(str);
+    if (str != NULL && *str != NUL)
+    {
+	if (has_command)
+	{
+	    AppendCharToRedobuff(*str);
+	    for (p = text_start; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+	}
+	else
+	{
+	    for (p = str; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+	}
+
+	// ESC is already included in the string if user specified it
+	// Don't add an extra one
+    }
 }
 
 #if defined(EXITFREE)

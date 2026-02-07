@@ -2970,7 +2970,12 @@ write_reg_contents_ex(
     // Special case: '.' dot repeat register
     if (name == '.')
     {
-	set_last_insert_str(str);
+	char_u *p = vim_strnsave(str, (size_t)len);
+	if (p != NULL)
+	{
+	    set_last_insert_str(p);
+	    vim_free(p);
+	}
 	return;
     }
 
