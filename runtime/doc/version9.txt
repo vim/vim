@@ -52523,4 +52523,9 @@ Problem:  Buffer overflow in :wlrestore command, caused by assuming
 Solution: Use correct buffer size (512 bytes) in vim_vsnprintf()
           to properly truncate long messages.
 
+Patch 9.1.2140
+Problem:  tests: Test_wayland_protocol_error_overflow() fails
+          (after v9.1.2139)
+Solution: try/catch the expected error
+
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
