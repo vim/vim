@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Vim 9.0 (Tamil)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-01-06 14:41+0000\n"
-"PO-Revision-Date: 2026-02-08 20:53\n"
+"PO-Revision-Date: 2026-02-08 20:57\n"
 "Last-Translator: தமிழ்நேரம் <TamilNeram247@gmail.com>\n"
 "Language-Team: தமிழ்நேரம் <tamilneram247@gmail.com>\n"
 "Language: ta\n"
@@ -4255,181 +4255,183 @@ msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: படிக்க-மட்டும் மாறி \"%s\" ஐ மாற்ற முடியாது"
 
 msgid "E47: Error while reading errorfile"
-msgstr ""
+msgstr "E47: பிழை கோப்பைப் படிக்கும்போது பிழை"
 
 msgid "E48: Not allowed in sandbox"
-msgstr ""
+msgstr "E48: சாண்ட்பாக்சில் அனுமதிக்கப்படவில்லை"
 
 msgid "E49: Invalid scroll size"
-msgstr ""
+msgstr "E49: தவறான உருள் அளவு"
 
 msgid "E50: Too many \\z("
-msgstr ""
+msgstr "E50: அதிகமாக \\z("
 
 #, c-format
 msgid "E51: Too many %s("
-msgstr ""
+msgstr "E51: மிக அதிகமான %s("
 
 msgid "E52: Unmatched \\z("
-msgstr ""
+msgstr "E52: பொருத்தமற்ற \\z("
 
 #, c-format
 msgid "E53: Unmatched %s%%("
-msgstr ""
+msgstr "E53: பொருந்தாத %s%%("
 
 #, c-format
 msgid "E54: Unmatched %s("
-msgstr ""
+msgstr "E54: பொருந்தாத %s("
 
 #, c-format
 msgid "E55: Unmatched %s)"
-msgstr ""
+msgstr "E55: பொருந்தாத %s)"
 
 #, c-format
 msgid "E59: Invalid character after %s@"
-msgstr ""
+msgstr "E59: %s@க்குப் பிறகு தவறான எழுத்து"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
-msgstr ""
+msgstr "E60: மிகவும் சிக்கலான %s{...}s"
 
 #, c-format
 msgid "E61: Nested %s*"
-msgstr ""
+msgstr "E61: உள்ளமை %s*"
 
 #, c-format
 msgid "E62: Nested %s%c"
-msgstr ""
+msgstr "E62: உள்ளமைக்கப்பட்ட %s%c"
 
 msgid "E63: Invalid use of \\_"
-msgstr ""
+msgstr "E63: தவறான பயன்பாடு \\_"
 
 #, c-format
 msgid "E64: %s%c follows nothing"
-msgstr ""
+msgstr "E64: %s%c எதையும் பின்பற்றவில்லை"
 
 msgid "E65: Illegal back reference"
-msgstr ""
+msgstr "E65: சட்டவிரோத பின் குறிப்பு"
 
 msgid "E66: \\z( not allowed here"
-msgstr ""
+msgstr "E66: \\z( இங்கு அனுமதிக்கப்படவில்லை"
 
 msgid "E67: \\z1 - \\z9 not allowed here"
-msgstr ""
+msgstr "E67: \\z1 - \\z9 இங்கே அனுமதிக்கப்படவில்லை"
 
 msgid "E68: Invalid character after \\z"
-msgstr ""
+msgstr "E68: \\z க்குப் பிறகு தவறான எழுத்து"
 
 #, c-format
 msgid "E69: Missing ] after %s%%["
-msgstr ""
+msgstr "E69: %s%%க்குப் பிறகு ] காணவில்லை["
 
 #, c-format
 msgid "E70: Empty %s%%[]"
-msgstr ""
+msgstr "E70: வெறுமை %s%%[]"
 
 #, c-format
 msgid "E71: Invalid character after %s%%"
-msgstr ""
+msgstr "E71: %s%%க்குப் பிறகு தவறான எழுத்து"
 
 msgid "E72: Close error on swap file"
-msgstr ""
+msgstr "E72: ச்வாப் கோப்பில் பிழையை மூடு"
 
 msgid "E73: Tag stack empty"
-msgstr ""
+msgstr "E73: டேக் ச்டாக் காலியாக உள்ளது"
 
 msgid "E74: Command too complex"
-msgstr ""
+msgstr "E74: கட்டளை மிகவும் சிக்கலானது"
 
 msgid "E75: Name too long"
-msgstr ""
+msgstr "E75: பெயர் மிக நீளமானது"
 
 msgid "E76: Too many ["
-msgstr ""
+msgstr "E76: அதிகமாக ["
 
 msgid "E77: Too many file names"
-msgstr ""
+msgstr "E77: பல கோப்பு பெயர்கள்"
 
 msgid "E78: Unknown mark"
-msgstr ""
+msgstr "E78: தெரியாத குறி"
 
 #| msgid "--literal\t\tDon't expand wildcards"
 msgid "E79: Cannot expand wildcards"
-msgstr ""
+msgstr "E79: வைல்டு கார்டுகளை விரிவாக்க முடியாது"
 
 msgid "E80: Error while writing"
-msgstr ""
+msgstr "E80: எழுதும் போது பிழை"
 
 msgid "E81: Using <SID> not in a script context"
-msgstr ""
+msgstr "E81: <SID> ஐ ச்கிரிப்ட் சூழலில் பயன்படுத்தவில்லை"
 
 #| msgid "E254: Cannot allocate color %s"
 msgid "E82: Cannot allocate any buffer, exiting..."
-msgstr ""
+msgstr "E82: எந்த இடையகத்தையும் ஒதுக்க முடியாது, வெளியேறுகிறது..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
-msgstr ""
+msgstr "E83: மற்றொன்றைப் பயன்படுத்தி, இடையகத்தை ஒதுக்க முடியாது..."
 
 msgid "E84: No modified buffer found"
-msgstr ""
+msgstr "E84: மாற்றியமைக்கப்பட்ட இடையக எதுவும் இல்லை"
 
 msgid "E85: There is no listed buffer"
-msgstr ""
+msgstr "E85: பட்டியலிடப்பட்ட இடையக எதுவும் இல்லை"
 
 #, c-format
 msgid "E86: Buffer %ld does not exist"
-msgstr ""
+msgstr "E86: தாங்கல் %ld இல்லை"
 
 msgid "E87: Cannot go beyond last buffer"
-msgstr ""
+msgstr "E87: கடைசி இடையகத்திற்கு அப்பால் செல்ல முடியாது"
 
 msgid "E88: Cannot go before first buffer"
-msgstr ""
+msgstr "E88: முதல் இடையகத்திற்கு முன் செல்ல முடியாது"
 
 #, c-format
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
+"E89: %d இடையகத்திற்கான கடைசி மாற்றத்திற்குப் பிறகு எழுதவில்லை (மேலெடுக்க! "
+"சேர்)"
 
 #| msgid "E102: Can't find buffer \"%s\""
 msgid "E90: Cannot unload last buffer"
-msgstr ""
+msgstr "E90: கடைசி இடையகத்தை இறக்க முடியாது"
 
 msgid "E91: 'shell' option is empty"
-msgstr ""
+msgstr "E91: 'shell' விருப்பம் காலியாக உள்ளது"
 
 #, c-format
 msgid "E92: Buffer %d not found"
-msgstr ""
+msgstr "E92: இடையக %d கிடைக்கவில்லை"
 
 #, c-format
 msgid "E93: More than one match for %s"
-msgstr ""
+msgstr "E93: %sக்கு ஒன்றுக்கு மேற்பட்ட பொருத்தம்"
 
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr ""
+msgstr "E94: %sக்கு பொருந்தக்கூடிய இடையகம் இல்லை"
 
 msgid "E95: Buffer with this name already exists"
-msgstr ""
+msgstr "E95: இந்தப் பெயருடன் இடையகம் ஏற்கனவே உள்ளது"
 
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr ""
+msgstr "E96: %d இடையகங்களுக்கு மேல் வேறுபடுத்த முடியாது"
 
 #| msgid "E482: Can't create file %s"
 msgid "E97: Cannot create diffs"
-msgstr ""
+msgstr "E97: வேறுபாடுகளை உருவாக்க முடியாது"
 
 #| msgid "E485: Can't read file %s"
 msgid "E98: Cannot read diff output"
-msgstr ""
+msgstr "E98: வேறுபாடு வெளியீட்டைப் படிக்க முடியாது"
 
 msgid "E99: Current buffer is not in diff mode"
-msgstr ""
+msgstr "E99: தற்போதைய தாங்கல் வேறுபாடு பயன்முறையில் இல்லை"
 
 msgid "E100: No other buffer in diff mode"
-msgstr ""
+msgstr "E100: டிஃப் பயன்முறையில் வேறு எந்த இடையகமும் இல்லை"
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
 msgstr ""
@@ -4442,10 +4444,10 @@ msgstr "E102: \"%s\" இடையகத்தைக் கண்டுபிட�
 
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
-msgstr ""
+msgstr "E103: இடையக \"%s\" டிஃப் பயன்முறையில் இல்லை"
 
 msgid "E104: Escape not allowed in digraph"
-msgstr ""
+msgstr "E104: டிகிராப்பில் தப்பிக்க இசைவு இல்லை"
 
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr ""
