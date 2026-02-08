@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 06
+*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52501,5 +52501,31 @@ Problem:  search() is used to check for the message from tar that
           can fail. This can be seen, for example, when editing
           src/testdir/samples/evil.tar.
 Solution: Use the 'w' flag for search() (Kevin Goodsell)
+
+Patch 9.1.2136
+Problem:  :tab sbuffer may close old tabpage if BufLeave autocommand
+          splits window (after 9.1.0143).
+Solution: Only close other windows if the buffer will be unloaded (zeertzjq).
+
+Patch 9.1.2137
+Problem:  Some tests are not valid on OpenBSD.
+Solution: Add CheckNotOpenBSD, use it to skip certain tests
+          (Kevin Goodsell).
+
+Patch 9.1.2138
+Problem:  With 'autochdir' win_execute() can corrupt the buffer name, causing
+          :write to use wrong path.
+Solution: Save and restore b_fname when 'autochdir' is active (Ingo Karkat).
+
+Patch 9.1.2139
+Problem:  Buffer overflow in :wlrestore command, caused by assuming
+          wrong buffer length in vwl_log_handler() (Seungyeon Park)
+Solution: Use correct buffer size (512 bytes) in vim_vsnprintf()
+          to properly truncate long messages.
+
+Patch 9.1.2140
+Problem:  tests: Test_wayland_protocol_error_overflow() fails
+          (after v9.1.2139)
+Solution: try/catch the expected error
 
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable

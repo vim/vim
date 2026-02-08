@@ -732,6 +732,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_AUTOCHDIR
     char_u	autocwd[MAXPATHL];
     int	apply_acd = FALSE;
+    char_u	*save_sfname = NULL;
 # endif
 
     // Getting and setting directory can be slow on some systems, only do
@@ -754,6 +755,8 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     // apply 'acd' afterwards, otherwise restore the current directory.
     if (cwd_status == OK && p_acd)
     {
+	if (curbuf->b_sfname != NULL && curbuf->b_fname == curbuf->b_sfname)
+	    save_sfname = vim_strsave(curbuf->b_sfname);
 	do_autochdir();
 	apply_acd = mch_dirname(autocwd, MAXPATHL) == OK
 	    && STRCMP(cwd, autocwd) == 0;
@@ -768,11 +771,24 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     restore_win_noblock(&switchwin, TRUE);
 # ifdef FEAT_AUTOCHDIR
     if (apply_acd)
+    {
+	vim_free(save_sfname);
 	do_autochdir();
+    }
     else
 # endif
 	if (cwd_status == OK)
+	{
 	    mch_chdir((char *)cwd);
+# ifdef FEAT_AUTOCHDIR
+	    if (save_sfname != NULL)
+	    {
+		vim_free(curbuf->b_sfname);
+		curbuf->b_sfname = save_sfname;
+		curbuf->b_fname = curbuf->b_sfname;
+	    }
+# endif
+	}
 
     // Update the status line if the cursor moved.
     if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
