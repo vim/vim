@@ -4732,28 +4732,10 @@ function s:NetrwMakeDir(usrhost)
 
         " requested new local directory is neither a pre-existing file or
         " directory, so make it!
-        if exists("*mkdir")
-            if has("unix")
-                call mkdir(fullnewdir,"p",xor(0777, system("umask")))
-            else
-                call mkdir(fullnewdir,"p")
-            endif
+        if has("unix")
+            call mkdir(fullnewdir,"p",xor(0777, system("umask")))
         else
-            let netrw_origdir= netrw#fs#Cwd(1)
-            if s:NetrwLcd(b:netrw_curdir)
-                return
-            endif
-            call netrw#os#Execute("sil! !".g:netrw_localmkdir.g:netrw_localmkdiropt.' '.netrw#os#Escape(newdirname,1))
-            if v:shell_error != 0
-                let @@= ykeep
-                call netrw#msg#Notify('ERROR', printf('consider setting g:netrw_localmkdir<%s> to something that works', g:netrw_localmkdir))
-                return
-            endif
-            if !g:netrw_keepdir
-                if s:NetrwLcd(netrw_origdir)
-                    return
-                endif
-            endif
+            call mkdir(fullnewdir,"p")
         endif
 
         " on success refresh listing
@@ -5444,9 +5426,7 @@ function s:NetrwMarkFileCopy(islocal,...)
 
         " shell call
         let shell_cmd = printf("%s %s %s %s", copycmd, copycmdopt, args, tgt)
-        " call netrw#msg#Notify('WARNING', $"Executing cmd: system('{shell_cmd}')")
         call system(shell_cmd)
-
         if v:shell_error != 0
             if exists("b:netrw_curdir") && b:netrw_curdir != getcwd() && g:netrw_keepdir
                 call netrw#msg#Notify('ERROR', printf("copy failed; perhaps due to vim's current directory<%s> not matching netrw's (%s) (see :help netrw-cd)", getcwd(), b:netrw_curdir))
@@ -5471,15 +5451,7 @@ function s:NetrwMarkFileCopy(islocal,...)
         if tmpdir !~ '/'
             let tmpdir= curdir."/".tmpdir
         endif
-        if exists("*mkdir")
-            call mkdir(tmpdir)
-        else
-            call netrw#os#Execute("sil! !".g:netrw_localmkdir.g:netrw_localmkdiropt.' '.netrw#os#Escape(tmpdir,1))
-            if v:shell_error != 0
-                call netrw#msg#Notify('WARNING', printf("consider setting g:netrw_localmkdir<%s> to something that works", g:netrw_localmkdir))
-                return
-            endif
-        endif
+        call mkdir(tmpdir)
         if isdirectory(s:NetrwFile(tmpdir))
             if s:NetrwLcd(tmpdir)
                 return
@@ -5913,7 +5885,6 @@ function s:NetrwMarkFileMove(islocal)
 
         for fname in args
             let shell_cmd = printf("%s %s %s %s", movecmd, movecmdargs, fname, tgt)
-            " call netrw#msg#Notify('WARNING', $"Executing cmd: system('{shell_cmd}')")
             let ret= system(shell_cmd)
             if v:shell_error != 0
                 if exists("b:netrw_curdir") && b:netrw_curdir != getcwd() && !g:netrw_keepdir
