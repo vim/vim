@@ -9088,26 +9088,22 @@ then :
 else case e in #(
   e) if test "x$features" = xtiny
 then :
-  enable_socketserver=no_auto
+  enable_socketserver=no_msg
 			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use socketserver with tiny features" >&5
 printf "%s\n" "cannot use socketserver with tiny features" >&6; }
 else case e in #(
-  e) enable_socketserver=auto ;;
+  e) enable_socketserver=yes ;;
 esac
 fi ;;
 esac
 fi
+
 
 if test "$enable_socketserver" = "yes"; then
   printf "%s\n" "#define WANT_SOCKETSERVER 1" >>confdefs.h
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-elif test "$enable_socketserver" = "auto"; then
-  printf "%s\n" "#define MAYBE_SOCKETSERVER 1" >>confdefs.h
-
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: auto" >&5
-printf "%s\n" "auto" >&6; }
 elif test "$enable_socketserver" = "no"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }

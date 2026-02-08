@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*channel.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1583,8 +1583,8 @@ A LSP request message has the following format (expressed as a Vim Dict).  The
 	"params": <list|dict>
     }
 
-A LSP response message has the following format (expressed as a Vim Dict).  The
-"result" and "error" fields are optional: >
+A LSP response message has the following format (expressed as a Vim Dict).
+The "result" and "error" fields are optional: >
 
     {
 	"jsonrpc": "2.0",

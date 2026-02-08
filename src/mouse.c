@@ -795,7 +795,8 @@ do_mouse(
 #endif
 
 #if defined(FEAT_CLIPBOARD)
-    if ((jump_flags & IN_OTHER_WIN) && !VIsual_active && clip_star.available)
+    if ((jump_flags & IN_OTHER_WIN) && !VIsual_active &&
+	    (clip_star.available || clip_plus.available))
     {
 	clip_modeless(which_button, is_click, is_drag);
 	return FALSE;
@@ -1427,15 +1428,15 @@ get_pseudo_mouse_code(
     return (int)KE_IGNORE;	    // not recognized, ignore it
 }
 
-# define HMT_NORMAL	1
-# define HMT_NETTERM	2
-# define HMT_DEC	4
-# define HMT_JSBTERM	8
-# define HMT_PTERM	16
-# define HMT_URXVT	32
-# define HMT_GPM	64
-# define HMT_SGR	128
-# define HMT_SGR_REL	256
+#define HMT_NORMAL	1
+#define HMT_NETTERM	2
+#define HMT_DEC	4
+#define HMT_JSBTERM	8
+#define HMT_PTERM	16
+#define HMT_URXVT	32
+#define HMT_GPM	64
+#define HMT_SGR	128
+#define HMT_SGR_REL	256
 static int has_mouse_termcode = 0;
 
     void

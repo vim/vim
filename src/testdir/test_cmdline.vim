@@ -162,6 +162,16 @@ func Test_complete_wildmenu()
   call feedkeys(":sign un zz\<Left>\<Left>\<Left>\<Tab>\<Tab>\<C-Y> yy\<C-B>\"\<CR>", 'tx')
   call assert_equal('"sign unplace yy zz', @:)
 
+  " This used to crash
+  call feedkeys(":sign un\<Tab>\<S-Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  " Ctrl-Y is inserted literally like before 9.1.1714
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+  " Also test Ctrl-Y after Ctrl-A with selected item (the result is the same)
+  call feedkeys(":sign un\<Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+  call feedkeys(":sign un\<Tab>\<Tab>\<C-A>\<C-Y>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign undefine unplace\<C-Y>", @:)
+
   " cleanup
   %bwipe
   set nowildmenu
@@ -2665,10 +2675,20 @@ func Test_recalling_cmdline_with_mappings()
   call assert_equal("echo 'bar'", histget(':', -1))
   call assert_equal("echo 'foo'", histget(':', -2))
 
+  let g:cmdline = ''
   " This command comes completely from a mapping.
   nmap <F3> :echo 'baz'<F2><CR>
   call feedkeys("\<F3>", 'tx')
   call assert_equal('baz', Screenline(&lines)->trim())
+  call assert_equal("echo 'baz'", g:cmdline)
+  call assert_equal("echo 'bar'", @:)
+  call assert_equal("echo 'bar'", histget(':', -1))
+  call assert_equal("echo 'foo'", histget(':', -2))
+
+  let g:cmdline = ''
+  " A command coming from :normal is ignored in the history even if the keys
+  " don't explicitly leave Cmdline mode.
+  exe "normal :echo 'baz'\<F2>"
   call assert_equal("echo 'baz'", g:cmdline)
   call assert_equal("echo 'bar'", @:)
   call assert_equal("echo 'bar'", histget(':', -1))

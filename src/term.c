@@ -641,6 +641,12 @@ static tcap_entry_T builtin_kitty[] = {
     // have been used.
     {(int)KS_CTE,	"\033[>4;m\033[=0;1u"},
 
+    // t_RF request terminal foreground color
+    {(int)KS_RFG,	"\033]10;?\033\\"},
+
+    // t_RB request terminal background color
+    {(int)KS_RBG,	"\033]11;?\033\\"},
+
     {(int)KS_NAME,	NULL}  // end marker
 };
 

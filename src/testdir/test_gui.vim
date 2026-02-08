@@ -1248,6 +1248,19 @@ func Test_gui_mouse_event()
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
 
+  " Test P option (use '+' register for modeless)
+  set guioptions+=AP
+  call cursor(1, 6)
+  redraw!
+  let @+ = ''
+  let args = #{button: 2, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call assert_equal('wo thr', @+)
+
   set mouse&
   let &guioptions = save_guioptions
   bw!
@@ -1812,6 +1825,40 @@ func Test_Buffers_Menu()
   endfor
 
   %bw!
+endfunc
+
+" Test if 'guioptions=a' only copies to the primary selection and
+" 'guioptions=aP' only copies to the regular selection.
+func Test_guioptions_clipboard()
+  CheckX11BasedGui
+
+  set mouse=
+  let save_guioptions = &guioptions
+  set guioptions=a
+
+  let @+ = ""
+  let @* = ""
+
+  call setline(1, ['one two three', 'four five six'])
+  call cursor(1, 1)
+  call feedkeys("\<Esc>vee\<Esc>", "Lx!")
+
+  call assert_equal("one two", @*)
+  call assert_equal("", @+)
+
+  set guioptions=aP
+
+  let @+ = ""
+  let @* = ""
+
+  call cursor(1, 1)
+  call feedkeys("\<Esc>veee\<Esc>", "Lx!")
+
+  call assert_equal("one two three", @+)
+  call assert_equal("", @*)
+
+  set mouse&
+  let &guioptions = save_guioptions
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

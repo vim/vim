@@ -491,9 +491,9 @@ screen_line(
     if (endcol > Columns)
 	endcol = Columns;
 
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
     clip_may_clear_selection(row, row);
-# endif
+#endif
 
     off_from = (unsigned)(current_ScreenLine - ScreenLines);
     off_to = LineOffset[row] + coloff;
@@ -1159,14 +1159,14 @@ win_redr_custom(
 	    curattr = attr;
 	else if (hltab[n].userhl < 0)
 	    curattr = syn_id2attr(-hltab[n].userhl);
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 	else if (wp != NULL && wp != curwin && bt_terminal(wp->w_buffer)
 						   && wp->w_status_height != 0)
 	    curattr = highlight_stltermnc[hltab[n].userhl - 1];
 	else if (wp != NULL && bt_terminal(wp->w_buffer)
 						   && wp->w_status_height != 0)
 	    curattr = highlight_stlterm[hltab[n].userhl - 1];
-#endif
+# endif
 	else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
 	    curattr = highlight_stlnc[hltab[n].userhl - 1];
 	else
@@ -2122,9 +2122,9 @@ redraw_block(int row, int end, win_T *wp)
     int		col;
     int		width;
 
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
     clip_may_clear_selection(row, end - 1);
-# endif
+#endif
 
     if (wp == NULL)
     {

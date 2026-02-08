@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*insert.txt*	For Vim version 9.1.  Last change: 2026 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1720,7 +1720,7 @@ Complete:
 Notes
 
 - It doesn't complete command arguments that rely on 'shellcmd' completion
-  type in Windows and WSL due to general slowness of canditate gathering,
+  type in Windows and WSL due to general slowness of candidate gathering,
   e.g.
 >
      terminal dir

@@ -7196,14 +7196,12 @@ gui_mch_menu_grey(
      * is this a toolbar button?
      */
     if (menu->submenu_id == (HMENU)-1)
-    {
 	SendMessage(s_toolbarhwnd, TB_ENABLEBUTTON,
-	    (WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0));
-    }
+		(WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0));
     else
 # endif
-    (void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
-		    menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
+	(void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
+		menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
 
 # ifdef FEAT_TEAROFF
     if ((menu->parent != NULL) && (IsWindow(menu->parent->tearoff_handle)))

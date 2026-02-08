@@ -61,6 +61,8 @@ an "input/setup/java.vim" script file with the following lines:
 Both inline setup commands and setup scripts may be used at the same time, the
 script file will be sourced before any VIM_TEST_SETUP commands are executed.
 
+Every line of a source file must not be longer than 1425 (19 x 75) characters.
+
 If there is no further setup required, you can now run all tests:
 
 	make test
@@ -108,20 +110,6 @@ If they look OK, move them to the "dumps" directory:
 	...
 
 If you now run the test again, it will succeed.
-
-
-Limitations for syntax plugin tests
------------------------------------
-
-Do not compose ASCII lines that do not fit a 19 by 75 window (1425 columns).
-
-Use multibyte characters, if at all, sparingly (see #16559).  When possible,
-move multibyte characters closer to the end of a line and keep the line short:
-no more than a 75-byte total of displayed characters.  A poorly rendered line
-may otherwise become wrapped when enough of spurious U+FFFD (0xEF 0xBF 0xBD)
-characters claim more columns than are available (75) and then invalidate line
-correspondence under test.  Refrain from mixing non-spurious U+FFFD characters
-with other multibyte characters in the same line.
 
 
 Adjusting a syntax plugin test

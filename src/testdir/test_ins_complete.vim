@@ -1022,13 +1022,13 @@ func Test_completefunc_error()
   %d
   set complete=F
   call assert_fails('exe "normal a\<C-N>"', 'E565:')
-  close!
+  bw!
 
   set completefunc& complete&
   delfunc CompleteFunc
   delfunc CompleteFunc2
   delfunc CompleteFunc3
-  close!
+  bw!
 endfunc
 
 " Test for returning non-string values from 'completefunc'
@@ -1226,7 +1226,7 @@ func Test_complete_wrapscan()
   setlocal complete=w
   call feedkeys("itw\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>", 'xt')
   call assert_equal('two three four', getline(1))
-  close!
+  bw!
   " complete words from the current buffer
   setlocal complete=.
   %d
@@ -1234,7 +1234,7 @@ func Test_complete_wrapscan()
   call cursor(2, 1)
   call feedkeys("ion\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>", 'xt')
   call assert_equal('one two one two', getline(2))
-  close!
+  bw!
 endfunc
 
 " Test for completing special characters
@@ -1243,7 +1243,7 @@ func Test_complete_special_chars()
   call setline(1, 'int .*[-\^$ func float')
   call feedkeys("oin\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>", 'xt')
   call assert_equal('int .*[-\^$ func float', getline(2))
-  close!
+  bw!
 endfunc
 
 " Test for completion when text is wrapped across lines.
@@ -1253,7 +1253,7 @@ func Test_complete_across_line()
   setlocal textwidth=20
   exe "normal 2G$a re\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>"
   call assert_equal(['one two three red', 'green blue one'], getline(2, '$'))
-  close!
+  bw!
 endfunc
 
 " Test for completing words with a '.' at the end of a word.
@@ -1284,7 +1284,7 @@ func Test_complete_add_onechar()
   exe "normal aWOR\<C-P>\<bs>\<bs>\<bs>\<bs>\<bs>\<bs>\<C-L>\<C-L>\<C-L>"
   call assert_equal('workh', getline(3))
   set ignorecase& backspace&
-  close!
+  bw!
 endfunc
 
 " Test for using CTRL-X CTRL-L to complete whole lines lines
@@ -1350,7 +1350,7 @@ func Test_complete_with_cindent()
   setlocal cinkeys+==while
   exe "normal Giwh\<C-P> "
   call assert_equal("\twhile ", getline('$'))
-  close!
+  bw!
 endfunc
 
 " Test for <CTRL-X> <CTRL-V> completion. Complete commands and functions
@@ -1373,7 +1373,7 @@ func Test_complete_cmdline()
   call delete('TestCommand2Test')
   delcom TestCommand1
   delcom TestCommand2
-  close!
+  bw!
 endfunc
 
 " Test for <CTRL-X> <CTRL-Z> stopping completion without changing the match
@@ -1422,7 +1422,7 @@ func Test_complete_stop()
   iunmap <F2>
   delfunc Save_mode1
   delfunc Save_mode2
-  close!
+  bw!
 endfunc
 
 " Test for typing CTRL-R in insert completion mode to insert a register
@@ -6153,6 +6153,47 @@ func Test_longest_preinsert_accept()
   set completeopt& autocomplete&
   bw!
   call test_override("char_avail", 0)
+endfunc
+
+" Issue 19114
+func Test_fuzzy_filenames_compl_autocompl()
+  CheckScreendump
+  let dir = 'Xtempdir'
+  call mkdir(dir, 'pR')
+  call writefile([], dir .. '/.name')
+  call writefile([], dir .. '/name')
+  call writefile([], dir .. '/test.vim')
+
+  let buf = RunVimInTerminal('', {'rows': 10})
+  call term_sendkeys(buf, ':call test_override("char_avail", 1)')
+  call term_sendkeys(buf, "\<CR>")
+  call term_sendkeys(buf, "iset ac cot=fuzzy,longest\<ESC>")
+  call term_sendkeys(buf, ":source\<CR>")
+  call term_sendkeys(buf, "o.na\<C-X>\<C-F>")  " this used to cause segfault
+  call TermWait(buf, 200)
+  call VerifyScreenDump(buf, 'Test_fuzzy_filenames_compl_autocompl', {})
+  call StopVimInTerminal(buf)
+endfunc
+
+" Issue 19130
+func Test_helptags_autocomplete_timeout()
+  func! TestComplete(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    else
+      sleep 310m  " Exceed timeout
+      return ["foo"]
+    endif
+  endfunc
+
+  call test_override("char_avail", 1)
+  new
+  set autocomplete completeopt=fuzzy complete=.,FTestComplete
+  call feedkeys("Goa\<Esc>0", 'tx!')
+  call feedkeys(":h\<CR>", 'tx')  " used to throw E149 exception
+  call test_override("char_avail", 0)
+  set autocomplete& completeopt& complete&
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

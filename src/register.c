@@ -264,13 +264,13 @@ get_yank_register(int regname, int writing)
     // When clipboard is not available, use register 0 instead of '+'
     else if (clip_plus.available && regname == '+')
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
 	// We want to use the actual + register, since PLUS_REGISTER may be
 	// pointing to STAR_REGISTER.
 	if (clipmethod == CLIPMETHOD_PROVIDER)
 	    i = REAL_PLUS_REGISTER;
 	else
-#endif
+# endif
 	    i = PLUS_REGISTER;
 	ret = TRUE;
     }
@@ -565,10 +565,9 @@ set_execreg_lastc(int lastc)
 execreg_line_continuation(string_T *lines, long *idx)
 {
     garray_T	ga;
-    long	i = *idx;
-    char_u	*p;
-    int		cmd_start;
-    int		cmd_end = i;
+    long	cmd_start = *idx;
+    long	cmd_end = *idx;
+    string_T	*tmp;
     int		j;
     char_u	*str;
 
@@ -577,19 +576,24 @@ execreg_line_continuation(string_T *lines, long *idx)
     // search backwards to find the first line of this command.
     // Any line not starting with \ or "\ is the start of the
     // command.
-    while (--i > 0)
+    while (--cmd_start > 0)
     {
-	p = skipwhite(lines[i].string);
+	char_u	*p;
+
+	p = skipwhite(lines[cmd_start].string);
 	if (*p != '\\' && (p[0] != '"' || p[1] != '\\' || p[2] != ' '))
 	    break;
     }
-    cmd_start = i;
 
     // join all the lines
-    ga_concat(&ga, lines[cmd_start].string);
+    tmp = &lines[cmd_start];
+    ga_concat_len(&ga, tmp->string, tmp->length);
     for (j = cmd_start + 1; j <= cmd_end; j++)
     {
-	p = skipwhite(lines[j].string);
+	char_u	*p;
+
+	tmp = &lines[j];
+	p = skipwhite(tmp->string);
 	if (*p == '\\')
 	{
 	    // Adjust the growsize to the current length to
@@ -601,14 +605,15 @@ execreg_line_continuation(string_T *lines, long *idx)
 		else
 		    ga.ga_growsize = ga.ga_len;
 	    }
-	    ga_concat(&ga, p + 1);
+	    p++;
+	    ga_concat_len(&ga, p, (tmp->string + tmp->length) - p);
 	}
     }
     ga_append(&ga, NUL);
     str = vim_strnsave(ga.ga_data, ga.ga_len);
     ga_clear(&ga);
 
-    *idx = i;
+    *idx = cmd_start;
     return str;
 }
 
@@ -2441,6 +2446,7 @@ ex_display(exarg_T *eap)
     int		type;
     string_T	insert;
 
+    silence_w23_w24_msg++;
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
@@ -2604,6 +2610,7 @@ ex_display(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
+    silence_w23_w24_msg--;
 }
 
 /*
@@ -2679,10 +2686,10 @@ get_reg_type(int regname, long *reglen)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
-# endif
+#endif
 
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return MAUTO;
@@ -2759,9 +2766,9 @@ get_reg_contents(int regname, int flags)
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return NULL;
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
-#endif
+# endif
 # ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
@@ -2930,9 +2937,9 @@ write_reg_contents_lst(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
-#endif
+# endif
 }
 
     void
@@ -3008,9 +3015,9 @@ write_reg_contents_ex(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
-#endif
+# endif
 }
 #endif	// FEAT_EVAL
 

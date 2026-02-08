@@ -2079,10 +2079,10 @@ spell_check_msm(void)
  * compressing the tree.
  * Based on code from Olaf Seibert.
  */
-#define PRINTLINESIZE	1000
-#define PRINTWIDTH	6
+# define PRINTLINESIZE	1000
+# define PRINTWIDTH	6
 
-#define PRINTSOME(l, depth, fmt, a1, a2) vim_snprintf(l + depth * PRINTWIDTH, \
+# define PRINTSOME(l, depth, fmt, a1, a2) vim_snprintf(l + depth * PRINTWIDTH, \
 	    PRINTLINESIZE - PRINTWIDTH * depth, fmt, a1, a2)
 
 static char line1[PRINTLINESIZE];

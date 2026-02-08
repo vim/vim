@@ -959,7 +959,7 @@ channel_open(
 	    sai->sin_port = htons(port);
 # ifdef HAVE_INET_NTOP
 	    src = &sai->sin_addr;
-#endif
+# endif
 	}
 # ifdef HAVE_INET_NTOP
 	if (src != NULL)
@@ -1388,36 +1388,36 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
     {
 	ch_close_part(channel, PART_IN);
 	channel->CH_IN_FD = in;
-# if defined(UNIX)
+#if defined(UNIX)
 	// Do not end the job when all output channels are closed, wait until
 	// the job ended.
 	if (mch_isatty(in))
 	    channel->ch_to_be_closed |= (1U << PART_IN);
-# endif
+#endif
     }
     if (out != INVALID_FD)
     {
-# if defined(FEAT_GUI)
+#if defined(FEAT_GUI)
 	channel_gui_unregister_one(channel, PART_OUT);
-# endif
+#endif
 	ch_close_part(channel, PART_OUT);
 	channel->CH_OUT_FD = out;
 	channel->ch_to_be_closed |= (1U << PART_OUT);
-# if defined(FEAT_GUI)
+#if defined(FEAT_GUI)
 	channel_gui_register_one(channel, PART_OUT);
-# endif
+#endif
     }
     if (err != INVALID_FD)
     {
-# if defined(FEAT_GUI)
+#if defined(FEAT_GUI)
 	channel_gui_unregister_one(channel, PART_ERR);
-# endif
+#endif
 	ch_close_part(channel, PART_ERR);
 	channel->CH_ERR_FD = err;
 	channel->ch_to_be_closed |= (1U << PART_ERR);
-# if defined(FEAT_GUI)
+#if defined(FEAT_GUI)
 	channel_gui_register_one(channel, PART_ERR);
-# endif
+#endif
     }
 }
 
@@ -3587,7 +3587,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     if (timeout > 0)
 	ch_log(channel, "Waiting for up to %d msec", timeout);
 
-# ifdef MSWIN
+#ifdef MSWIN
     if (fd != channel->CH_SOCK_FD)
     {
 	DWORD	nread;
@@ -4175,7 +4175,17 @@ channel_handle_events(int only_keep_open)
 	    if (fd == INVALID_FD)
 		continue;
 
-	    int r = channel_wait(channel, fd, 0);
+	    // In normal cases, a timeout of 0 is sufficient.
+	    //
+	    // But, in Windows conpty terminals, the final output of a
+	    // terminated process may be missed.  In this case, in order for
+	    // Vim to read the final output, it is necessary to set the timeout
+	    // to 1 msec or more.  It seems that the final output can be
+	    // received by calling Sleep() once within channel_wait().  Note
+	    // that ch_killing can only be TRUE in conpty terminals, so it has
+	    // no side effects in environments other than conpty.
+	    int r = channel_wait(channel, fd, (channel->ch_killing &&
+			(part == PART_OUT || part == PART_ERR)) ? 1 : 0);
 
 	    if (r == CW_READY)
 		channel_read(channel, part, "channel_handle_events");
@@ -4201,7 +4211,7 @@ channel_handle_events(int only_keep_open)
 }
 #endif
 
-# if defined(FEAT_GUI)
+#if defined(FEAT_GUI)
 /*
  * Return TRUE when there is any channel with a keep_open flag.
  */
@@ -4215,7 +4225,7 @@ channel_any_keep_open(void)
 	    return TRUE;
     return FALSE;
 }
-# endif
+#endif
 
 /*
  * Set "channel"/"part" to non-blocking.

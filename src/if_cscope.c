@@ -13,24 +13,24 @@
 
 #if defined(FEAT_CSCOPE)
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined(UNIX)
-# include <sys/wait.h>
-#endif
-
-#if defined (MSWIN)
-# ifndef WIN32_LEAN_AND_MEAN
-#  define WIN32_LEAN_AND_MEAN
+# include <sys/types.h>
+# include <sys/stat.h>
+# if defined(UNIX)
+#  include <sys/wait.h>
 # endif
-# include <windows.h>
-#endif
 
-#define CSCOPE_SUCCESS		0
-#define CSCOPE_FAILURE		-1
+# if defined (MSWIN)
+#  ifndef WIN32_LEAN_AND_MEAN
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+# endif
 
-#define	CSCOPE_DBFILE		"cscope.out"
-#define	CSCOPE_PROMPT		">> "
+# define CSCOPE_SUCCESS		0
+# define CSCOPE_FAILURE		-1
+
+# define	CSCOPE_DBFILE		"cscope.out"
+# define	CSCOPE_PROMPT		">> "
 
 /*
  * See ":help cscope-find" for the possible queries.
@@ -48,19 +48,19 @@ typedef struct csi {
     char *	    fname;	// cscope db name
     char *	    ppath;	// path to prepend (the -P option)
     char *	    flags;	// additional cscope flags/options (e.g, -p2)
-#if defined(UNIX)
+# if defined(UNIX)
     pid_t	    pid;	// PID of the connected cscope process.
     dev_t	    st_dev;	// ID of dev containing cscope db
     ino_t	    st_ino;	// inode number of cscope db
-#else
-# if defined(MSWIN)
+# else
+#  if defined(MSWIN)
     DWORD	    pid;	// PID of the connected cscope process.
     HANDLE	    hProc;	// cscope process handle
     DWORD	    nVolume;	// Volume serial number, instead of st_dev
     DWORD	    nIndexHigh;	// st_ino has no meaning in the Windows
     DWORD	    nIndexLow;
+#  endif
 # endif
-#endif
 
     FILE *	    fr_fp;	// from cscope: FILE.
     FILE *	    to_fp;	// to cscope: FILE.
@@ -81,9 +81,9 @@ static int	    cs_check_for_connections(void);
 static int	    cs_check_for_tags(void);
 static int	    cs_cnt_connections(void);
 static int	    cs_create_connection(int i);
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
 static void	    cs_file_results(FILE *, int *);
-#endif
+# endif
 static void	    cs_fill_results(char *, int , int *, char ***,
 			char ***, int *);
 static int	    cs_find(exarg_T *eap);
@@ -365,9 +365,9 @@ ex_cstag(exarg_T *eap)
     if (!ret)
     {
 	(void)emsg(_(e_cstag_tag_not_founc));
-#if defined(FEAT_QUICKFIX)
+# if defined(FEAT_QUICKFIX)
 	g_do_tagpreview = 0;
-#endif
+# endif
     }
 
 }
@@ -439,7 +439,7 @@ cs_print_tags(void)
  *
  *		Note: All string comparisons are case sensitive!
  */
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     static int
 cs_connection(int num, char_u *dbpath, char_u *ppath)
 {
@@ -488,7 +488,7 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
     return FALSE;
 }
 
-#endif
+# endif
 
 
 /*
@@ -588,9 +588,9 @@ staterr:
 	    goto add_err;
 
 	while (fname[strlen(fname)-1] == '/'
-#ifdef MSWIN
+# ifdef MSWIN
 		|| fname[strlen(fname)-1] == '\\'
-#endif
+# endif
 		)
 	{
 	    fname[strlen(fname)-1] = '\0';
@@ -691,7 +691,7 @@ cs_reading_emsg(
     semsg(_(e_error_reading_cscope_connection_nr), idx);
 }
 
-#define	CSREAD_BUFSIZE	2048
+# define	CSREAD_BUFSIZE	2048
 /*
  * Count the number of matches for a given cscope connection.
  */
@@ -822,14 +822,14 @@ cs_create_cmd(char *csoption, char *pattern)
     static int
 cs_create_connection(int i)
 {
-#ifdef UNIX
+# ifdef UNIX
     int		to_cs[2], from_cs[2];
-#endif
+# endif
     int		cmdlen;
     int		len;
     char	*prog, *cmd, *ppath = NULL;
     size_t	proglen;
-#ifdef MSWIN
+# ifdef MSWIN
     int		fd;
     SECURITY_ATTRIBUTES sa;
     PROCESS_INFORMATION pi;
@@ -838,9 +838,9 @@ cs_create_connection(int i)
     HANDLE	stdin_rd, stdout_rd;
     HANDLE	stdout_wr, stdin_wr;
     BOOL	created;
-#endif
+# endif
 
-#if defined(UNIX)
+# if defined(UNIX)
     /*
      * Cscope reads from to_cs[0] and writes to from_cs[1]; vi reads from
      * from_cs[0] and writes to to_cs[1].
@@ -881,7 +881,7 @@ err_closing:
 	// close unused
 	(void)close(to_cs[1]);
 	(void)close(from_cs[0]);
-#else
+# else
 	// MSWIN
 	// Create pipes to communicate with cscope
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -905,16 +905,16 @@ err_closing:
 	    }
 	    return CSCOPE_FAILURE;
 	}
-#endif
+# endif
 	// expand the cscope exec for env var's
 	if ((prog = alloc(MAXPATHL + 1)) == NULL)
 	{
-#ifdef UNIX
+# ifdef UNIX
 	    exit(EXIT_FAILURE);
-#else
+# else
 	    // MSWIN
 	    goto err_closing;
-#endif
+# endif
 	}
 	proglen = expand_env(p_csprg, (char_u *)prog, MAXPATHL);
 
@@ -926,12 +926,12 @@ err_closing:
 	    if ((ppath = alloc(MAXPATHL + 1)) == NULL)
 	    {
 		vim_free(prog);
-#ifdef UNIX
+# ifdef UNIX
 		exit(EXIT_FAILURE);
-#else
+# else
 		// MSWIN
 		goto err_closing;
-#endif
+# endif
 	    }
 	    cmdlen += (int)expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
 	}
@@ -943,21 +943,21 @@ err_closing:
 	{
 	    vim_free(prog);
 	    vim_free(ppath);
-#ifdef UNIX
+# ifdef UNIX
 	    exit(EXIT_FAILURE);
-#else
+# else
 	    // MSWIN
 	    goto err_closing;
-#endif
+# endif
 	}
 
 	// run the cscope command
-#ifdef UNIX
+# ifdef UNIX
 	vim_snprintf(cmd, cmdlen, "/bin/sh -c \"exec %s -dl -f %s",
 							prog, csinfo[i].fname);
-#else
+# else
 	vim_snprintf(cmd, cmdlen, "%s -dl -f %s", prog, csinfo[i].fname);
-#endif
+# endif
 	if (csinfo[i].ppath != NULL)
 	{
 	    len = (int)STRLEN(cmd);
@@ -977,16 +977,16 @@ err_closing:
 # endif
 	vim_free(ppath);
 
-#if defined(UNIX)
-# if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
+# if defined(UNIX)
+#  if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
 	// Change our process group to avoid cscope receiving SIGWINCH.
-#  if defined(HAVE_SETSID)
+#   if defined(HAVE_SETSID)
 	(void)setsid();
-#  else
+#   else
 	if (setpgid(0, 0) == -1)
 	    PERROR(_("cs_create_connection setpgid failed"));
+#   endif
 #  endif
-# endif
 	if (build_argv_from_string((char_u *)cmd, &argv, &argc) == FAIL)
 	    exit(EXIT_FAILURE);
 
@@ -1011,7 +1011,7 @@ err_closing:
 	(void)close(to_cs[0]);
 	(void)close(from_cs[1]);
     }
-#else
+# else
     // MSWIN
     // Create a new process to run cscope and use pipes to talk with it
     GetStartupInfo(&si);
@@ -1050,7 +1050,7 @@ err_closing:
     CloseHandle(stdin_rd);
     CloseHandle(stdout_wr);
 
-#endif // !UNIX
+# endif // !UNIX
 
     return CSCOPE_SUCCESS;
 }
@@ -1116,7 +1116,7 @@ cs_find_common(
     char *cmd;
     int *nummatches;
     int totmatches;
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     char cmdletter;
     char *qfpos;
 
@@ -1170,13 +1170,13 @@ cs_find_common(
 		&& apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
 					       curbuf->b_fname, TRUE, curbuf))
 	{
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
 	    if (aborting())
 		return FALSE;
-# endif
+#  endif
 	}
     }
-#endif
+# endif
 
     // create the actual command to send to cscope
     cmd = cs_create_cmd(opt, pat);
@@ -1223,7 +1223,7 @@ cs_find_common(
 	return FALSE;
     }
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     if (qfpos != NULL && *qfpos != '0' && totmatches > 0)
     {
 	// fill error list
@@ -1277,7 +1277,7 @@ cs_find_common(
 	return TRUE;
     }
     else
-#endif // FEAT_QUICKFIX
+# endif // FEAT_QUICKFIX
     {
 	char **matches = NULL, **contexts = NULL;
 	int matched = 0;
@@ -1343,20 +1343,20 @@ clear_csinfo(int i)
     csinfo[i].fname  = NULL;
     csinfo[i].ppath  = NULL;
     csinfo[i].flags  = NULL;
-#if defined(UNIX)
+# if defined(UNIX)
     csinfo[i].st_dev = (dev_t)0;
     csinfo[i].st_ino = (ino_t)0;
-#else
+# else
     csinfo[i].nVolume = 0;
     csinfo[i].nIndexHigh = 0;
     csinfo[i].nIndexLow = 0;
-#endif
+# endif
     csinfo[i].pid    = 0;
     csinfo[i].fr_fp  = NULL;
     csinfo[i].to_fp  = NULL;
-#if defined(MSWIN)
+# if defined(MSWIN)
     csinfo[i].hProc = NULL;
-#endif
+# endif
 }
 
 /*
@@ -1371,7 +1371,7 @@ cs_insert_filelist(
 {
     int	    i;
     int	    j;
-#ifndef UNIX
+# ifndef UNIX
     BY_HANDLE_FILE_INFORMATION bhfi;
 
     switch (win32_fileinfo((char_u *)fname, &bhfi))
@@ -1396,15 +1396,15 @@ cs_insert_filelist(
 		(void)emsg(_(e_cannot_get_cscope_database_information));
 	    return -1;
     }
-#endif
+# endif
 
     i = -1; // can be set to the index of an empty item in csinfo
     for (j = 0; j < csinfo_size; j++)
     {
 	if (csinfo[j].fname != NULL
-#if defined(UNIX)
+# if defined(UNIX)
 	    && csinfo[j].st_dev == sb->st_dev && csinfo[j].st_ino == sb->st_ino
-#else
+# else
 	    // compare pathnames first
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
 			(char_u *)fname, FALSE, TRUE) & FPC_SAME)
@@ -1412,7 +1412,7 @@ cs_insert_filelist(
 		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
 		    && csinfo[j].nIndexLow == bhfi.nFileIndexLow))
-#endif
+# endif
 	    )
 	{
 	    if (p_csverbose)
@@ -1484,15 +1484,15 @@ cs_insert_filelist(
     else
 	csinfo[i].flags = NULL;
 
-#if defined(UNIX)
+# if defined(UNIX)
     csinfo[i].st_dev = sb->st_dev;
     csinfo[i].st_ino = sb->st_ino;
 
-#else
+# else
     csinfo[i].nVolume = bhfi.dwVolumeSerialNumber;
     csinfo[i].nIndexLow = bhfi.nFileIndexLow;
     csinfo[i].nIndexHigh = bhfi.nFileIndexHigh;
-#endif
+# endif
     return i;
 }
 
@@ -1794,7 +1794,7 @@ cs_parse_results(
     return name;
 }
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
 /*
  * Write cscope find results to file.
  */
@@ -1849,7 +1849,7 @@ cs_file_results(FILE *f, int *nummatches_a)
     } // for all cscope connections
     vim_free(buf);
 }
-#endif
+# endif
 
 /*
  * Get parsed cscope output and calls cs_make_vim_style_matches to convert
@@ -1951,17 +1951,17 @@ cs_pathcomponents(char *path)
 	{
 	   s--;
 	   if (*s == '/'
-#ifdef MSWIN
+# ifdef MSWIN
 		|| *s == '\\'
-#endif
+# endif
 		)
 	      break;
 	}
     }
     if ((s > path && *s == '/')
-#ifdef MSWIN
+# ifdef MSWIN
 	|| (s > path && *s == '\\')
-#endif
+# endif
 	    )
 	++s;
     return s;
@@ -2197,7 +2197,7 @@ cs_read_prompt(int i)
     return CSCOPE_SUCCESS;
 }
 
-#if defined(UNIX) && defined(SIGALRM)
+# if defined(UNIX) && defined(SIGALRM)
 /*
  * Used to catch and ignore SIGALRM below.
  */
@@ -2206,7 +2206,7 @@ sig_handler SIGDEFARG(sigarg)
 {
     // do nothing
 }
-#endif
+# endif
 
 /*
  * Does the actual free'ing for the cs ptr with an optional flag of whether
@@ -2223,23 +2223,23 @@ cs_release_csp(int i, int freefnpp)
 	(void)fputs("q\n", csinfo[i].to_fp);
 	(void)fflush(csinfo[i].to_fp);
     }
-#if defined(UNIX)
+# if defined(UNIX)
     {
 	int waitpid_errno;
 	int pstat;
 	pid_t pid;
 
-# if defined(HAVE_SIGACTION)
+#  if defined(HAVE_SIGACTION)
 	struct sigaction sa, old;
 
 	// Use sigaction() to limit the waiting time to two seconds.
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = sig_handler;
-#  ifdef SA_NODEFER
+#   ifdef SA_NODEFER
 	sa.sa_flags = SA_NODEFER;
-#  else
+#   else
 	sa.sa_flags = 0;
-#  endif
+#   endif
 	sigaction(SIGALRM, &sa, &old);
 	alarm(2); // 2 sec timeout
 
@@ -2250,7 +2250,7 @@ cs_release_csp(int i, int freefnpp)
 	// cancel pending alarm if still there and restore signal
 	alarm(0);
 	sigaction(SIGALRM, &old, NULL);
-# else
+#  else
 	int waited;
 
 	// Can't use sigaction(), loop for two seconds.  First yield the CPU
@@ -2264,7 +2264,7 @@ cs_release_csp(int i, int freefnpp)
 		break;  // break unless the process is still running
 	    mch_delay(50L, 0); // sleep 50 ms
 	}
-# endif
+#  endif
 	/*
 	 * If the cscope process is still running: kill it.
 	 * Safety check: If the PID would be zero here, the entire X session
@@ -2272,7 +2272,7 @@ cs_release_csp(int i, int freefnpp)
 	 */
 	if (pid < 0 && csinfo[i].pid > 1)
 	{
-# ifdef ECHILD
+#  ifdef ECHILD
 	    int alive = TRUE;
 
 	    if (waitpid_errno == ECHILD)
@@ -2301,14 +2301,14 @@ cs_release_csp(int i, int freefnpp)
 		}
 	    }
 	    if (alive)
-# endif
+#  endif
 	    {
 		kill(csinfo[i].pid, SIGKILL);
 		(void)waitpid(csinfo[i].pid, &pstat, 0);
 	    }
 	}
     }
-#else  // !UNIX
+# else  // !UNIX
     if (csinfo[i].hProc != NULL)
     {
 	// Give cscope a chance to exit normally
@@ -2316,7 +2316,7 @@ cs_release_csp(int i, int freefnpp)
 	    TerminateProcess(csinfo[i].hProc, 0);
 	CloseHandle(csinfo[i].hProc);
     }
-#endif
+# endif
 
     if (csinfo[i].fr_fp != NULL)
 	(void)fclose(csinfo[i].fr_fp);
@@ -2441,9 +2441,9 @@ cs_resolve_file(int i, char *name)
     if (csinfo[i].ppath != NULL
 	    && (strncmp(name, csinfo[i].ppath, strlen(csinfo[i].ppath)) != 0)
 	    && (name[0] != '/')
-#ifdef MSWIN
+# ifdef MSWIN
 	    && name[0] != '\\' && name[1] != ':'
-#endif
+# endif
        )
     {
 	if ((fullname = alloc(len)) != NULL)

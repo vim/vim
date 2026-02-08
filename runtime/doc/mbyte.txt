@@ -1,4 +1,4 @@
-*mbyte.txt*	For Vim version 9.1.  Last change: 2025 Dec 17
+*mbyte.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -455,8 +455,8 @@ Useful utilities for converting the charset:
 	ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz
 
     Korean:	    hmconv
-	Hmconv is Korean code conversion utility especially for E-mail.  It can
-	convert between EUC-KR and ISO-2022-KR.  Hmconv can be found at:
+	Hmconv is Korean code conversion utility especially for E-mail.  It
+	can convert between EUC-KR and ISO-2022-KR.  Hmconv can be found at:
 	https://www.freshports.org/korean/hmconv/
 
     Multilingual:   lv
@@ -761,9 +761,9 @@ Then add a command to your |gvimrc| file to set 'guifont': >
 
 X INPUT METHOD (XIM) BACKGROUND			*XIM* *xim* *x-input-method*
 
-XIM is an international input module for X.  There are two kinds of structures,
-Xlib unit type and |IM-server| (Input-Method server) type.  |IM-server| type
-is suitable for complex input, such as CJK.
+XIM is an international input module for X.  There are two kinds of
+structures, Xlib unit type and |IM-server| (Input-Method server) type.
+|IM-server| type is suitable for complex input, such as CJK.
 
 - IM-server
 							*IM-server*

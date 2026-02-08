@@ -36,11 +36,11 @@ typedef struct
 				// folds too
 } fold_T;
 
-#define FD_OPEN		0	// fold is open (nested ones can be closed)
-#define FD_CLOSED	1	// fold is closed
-#define FD_LEVEL	2	// depends on 'foldlevel' (nested folds too)
+# define FD_OPEN		0	// fold is open (nested ones can be closed)
+# define FD_CLOSED	1	// fold is closed
+# define FD_LEVEL	2	// depends on 'foldlevel' (nested folds too)
 
-#define MAX_LEVEL	20	// maximum fold depth
+# define MAX_LEVEL	20	// maximum fold depth
 
 // static functions {{{2
 static void newFoldLevelWin(win_T *wp);
@@ -83,9 +83,9 @@ static linenr_T prev_lnum = 0;
 static int prev_lnum_lvl = -1;
 
 // Flags used for "done" argument of setManualFold.
-#define DONE_NOTHING	0
-#define DONE_ACTION	1	// did close or open a fold
-#define DONE_FOLD	2	// did find a fold
+# define DONE_NOTHING	0
+# define DONE_ACTION	1	// did close or open a fold
+# define DONE_FOLD	2	// did find a fold
 
 static int foldstartmarkerlen;
 static char_u *foldendmarker;
@@ -242,7 +242,7 @@ hasFoldingWin(
 }
 
 // foldLevel() {{{2
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 /*
  * Return fold level at line number "lnum" in the current window.
  */
@@ -264,7 +264,7 @@ foldLevel(linenr_T lnum)
 
     return foldLevelWin(curwin, lnum);
 }
-#endif
+# endif
 
 // lineFolded()	{{{2
 /*
@@ -466,7 +466,7 @@ newFoldLevel(void)
 {
     newFoldLevelWin(curwin);
 
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     if (foldmethodIsDiff(curwin) && curwin->w_p_scb)
     {
 	win_T	    *wp;
@@ -483,7 +483,7 @@ newFoldLevel(void)
 	    }
 	}
     }
-#endif
+# endif
 }
 
     static void
@@ -822,11 +822,11 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 
     if (disable_fold_update > 0)
 	return;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     if (need_diff_redraw)
 	// will update later
 	return;
-#endif
+# endif
 
     if (wp->w_folds.ga_len > 0)
     {
@@ -851,9 +851,9 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
     if (foldmethodIsIndent(wp)
 	    || foldmethodIsExpr(wp)
 	    || foldmethodIsMarker(wp)
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    || foldmethodIsDiff(wp)
-#endif
+# endif
 	    || foldmethodIsSyntax(wp))
     {
 	int save_got_int = got_int;
@@ -1259,7 +1259,7 @@ setManualFold(
     int		recurse,    // TRUE when closing/opening recursive
     int		*donep)
 {
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     if (foldmethodIsDiff(curwin) && curwin->w_p_scb)
     {
 	win_T	    *wp;
@@ -1279,7 +1279,7 @@ setManualFold(
 	    }
 	}
     }
-#endif
+# endif
 
     return setManualFoldWin(curwin, lnum, opening, recurse, donep);
 }
@@ -1917,7 +1917,7 @@ get_foldtext(
     char_u	*buf)
 {
     char_u	*text = NULL;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
      // an error occurred when evaluating 'fdt' setting
     static int	    got_fdt_error = FALSE;
     int		    save_did_emsg = did_emsg;
@@ -2012,7 +2012,7 @@ get_foldtext(
 	}
     }
     if (text == NULL)
-#endif
+# endif
     {
 	long count = (long)(lnume - lnum + 1);
 
@@ -2026,7 +2026,7 @@ get_foldtext(
 }
 
 // foldtext_cleanup() {{{2
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 /*
  * Remove 'foldmarker' and 'commentstring' from "str" (in-place).
  */
@@ -2116,7 +2116,7 @@ foldtext_cleanup(char_u *str)
 	}
     }
 }
-#endif
+# endif
 
 // Folding by indent, expr, marker and syntax. {{{1
 // Define "fline_T", passed to get fold level for a line. {{{2
@@ -2146,9 +2146,9 @@ static void foldSplit(garray_T *gap, int i, linenr_T top, linenr_T bot);
 static void foldRemove(garray_T *gap, linenr_T top, linenr_T bot);
 static void foldMerge(fold_T *fp1, garray_T *gap, fold_T *fp2);
 static void foldlevelIndent(fline_T *flp);
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 static void foldlevelDiff(fline_T *flp);
-#endif
+# endif
 static void foldlevelExpr(fline_T *flp);
 static void foldlevelMarker(fline_T *flp);
 static void foldlevelSyntax(fline_T *flp);
@@ -2183,7 +2183,7 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 	setSmallMaybe(&wp->w_folds);
     }
 
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     // add the context for "diff" folding
     if (foldmethodIsDiff(wp))
     {
@@ -2193,7 +2193,7 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 	    top = 1;
 	bot += diff_context;
     }
-#endif
+# endif
 
     // When deleting lines at the end of the buffer "top" can be past the end
     // of the buffer.
@@ -2255,10 +2255,10 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 	}
 	else if (foldmethodIsSyntax(wp))
 	    getlevel = foldlevelSyntax;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	else if (foldmethodIsDiff(wp))
 	    getlevel = foldlevelDiff;
-#endif
+# endif
 	else
 	{
 	    getlevel = foldlevelIndent;
@@ -3082,9 +3082,9 @@ truncate_fold(fold_T *fp, linenr_T end)
     fp->fd_len = end - fp->fd_top;
 }
 
-#define fold_end(fp) ((fp)->fd_top + (fp)->fd_len - 1)
-#define valid_fold(fp, gap) ((gap)->ga_len > 0 && (fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
-#define fold_index(fp, gap) ((size_t)((fp) - ((fold_T *)(gap)->ga_data)))
+# define fold_end(fp) ((fp)->fd_top + (fp)->fd_len - 1)
+# define valid_fold(fp, gap) ((gap)->ga_len > 0 && (fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
+# define fold_index(fp, gap) ((size_t)((fp) - ((fold_T *)(gap)->ga_data)))
 
     void
 foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest)
@@ -3199,9 +3199,9 @@ foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest)
     foldReverseOrder(gap, (linenr_T)(move_start + dest_index - move_end),
 						   (linenr_T)(dest_index - 1));
 }
-#undef fold_end
-#undef valid_fold
-#undef fold_index
+# undef fold_end
+# undef valid_fold
+# undef fold_index
 
 // foldMerge() {{{2
 /*
@@ -3280,7 +3280,7 @@ foldlevelIndent(fline_T *flp)
 }
 
 // foldlevelDiff() {{{2
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 /*
  * Low level function to get the foldlevel for the "diff" method.
  * Doesn't use any caching.
@@ -3293,7 +3293,7 @@ foldlevelDiff(fline_T *flp)
     else
 	flp->lvl = 0;
 }
-#endif
+# endif
 
 // foldlevelExpr() {{{2
 /*
@@ -3304,10 +3304,10 @@ foldlevelDiff(fline_T *flp)
     static void
 foldlevelExpr(fline_T *flp)
 {
-#ifndef FEAT_EVAL
+# ifndef FEAT_EVAL
     flp->start = FALSE;
     flp->lvl = 0;
-#else
+# else
     win_T	*win;
     int		n;
     int		c;
@@ -3396,7 +3396,7 @@ foldlevelExpr(fline_T *flp)
 
     curwin = win;
     curbuf = curwin->w_buffer;
-#endif
+# endif
 }
 
 // parseMarker() {{{2
@@ -3508,10 +3508,10 @@ foldlevelMarker(fline_T *flp)
     static void
 foldlevelSyntax(fline_T *flp)
 {
-#ifndef FEAT_SYN_HL
+# ifndef FEAT_SYN_HL
     flp->start = 0;
     flp->lvl = 0;
-#else
+# else
     linenr_T	lnum = flp->lnum + flp->off;
     int		n;
 
@@ -3527,12 +3527,12 @@ foldlevelSyntax(fline_T *flp)
 	    flp->lvl = n;
 	}
     }
-#endif
+# endif
 }
 
 // functions for storing the fold state in a View {{{1
 // put_folds() {{{2
-#if defined(FEAT_SESSION)
+# if defined(FEAT_SESSION)
 static int put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off);
 static int put_foldopen_recurse(FILE *fd, win_T *wp, garray_T *gap, linenr_T off);
 static int put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off);
@@ -3660,7 +3660,7 @@ put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 
     return OK;
 }
-#endif // FEAT_SESSION
+# endif // FEAT_SESSION
 
 // }}}1
 #endif // defined(FEAT_FOLDING)
@@ -3695,7 +3695,7 @@ foldclosed_both(
 	    return;
 	}
     }
-#endif
+# endif
     rettv->vval.v_number = -1;
 }
 

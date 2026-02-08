@@ -1,4 +1,4 @@
-*autocmd.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*autocmd.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -874,7 +874,8 @@ FileChangedShell		When Vim notices that the modification time of
 				to tell Vim what to do next.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
-				buffer that was changed, which is in "<afile>".
+				buffer that was changed, which is in
+				"<afile>".
 				NOTE: The commands must not change the current
 				buffer, jump to another buffer or delete a
 				buffer.  *E246* *E811*
@@ -1324,9 +1325,9 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				    "osc",
 				    "version" (|t_RV|)
 				Note that this event may be triggered halfway
-				executing another event, especially if file I/O,
-				a shell command or anything else that takes time
-				is involved.
+				executing another event, especially if file
+				I/O, a shell command or anything else that
+				takes time is involved.
 							*TextChanged*
 TextChanged			After a change was made to the text in the
 				current buffer in Normal mode.  That is after
@@ -1455,8 +1456,9 @@ VimResume			When the Vim instance is resumed after being
 	:autocmd VimResume * checktime
 <							*VimSuspend*
 VimSuspend			When the Vim instance is suspended.  Only when
-				CTRL-Z was typed inside Vim, or when the SIGTSTP
-				signal was sent to Vim, but not for SIGSTOP.
+				CTRL-Z was typed inside Vim, or when the
+				SIGTSTP signal was sent to Vim, but not for
+				SIGSTOP.
 							*WinClosed*
 WinClosed			When closing a window, just before it is
 				removed from the window layout.  The pattern

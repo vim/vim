@@ -84,7 +84,7 @@ jobs:
             architecture: arm64
           - features: normal
             compiler: gcc
-            extra: [vimtags, proto]
+            extra: [vimtags, proto, preproc_indent, encoding]
           - features: huge
             compiler: gcc
             extra: [no_x11_wl]
@@ -363,6 +363,27 @@ jobs:
             true
           )
 
+      - name: Check preprocessor indent
+        if: contains(matrix.extra, 'preproc_indent')
+        run: |
+          # This will exit with an error code if the files differ from source
+          (
+            "${SRCDIR}"/vim -u NONE --not-a-term -esNX +"cd runtime/tools" -S preproc_indent.vim
+            git diff --exit-code -- src/*.[ch] src/xxd/xxd.c
+            true
+          )
+
+      - name: Check encoding of utf-8 runtime files
+        if: contains(matrix.extra, 'encoding')
+        run: |
+          # This will exit with an error code if utf-8 runtime files are not in utf-8 encoding
+          (
+            find . -type f -name "*utf-8*.vim" -exec sh -c \
+              'iconv -f utf-8 -t utf-8 "$1" >/dev/null 2>&1 || echo "non utf-8 encoding detected in $1"' \
+              find-sh {} \; |grep  "non utf-8 encoding" && exit 3
+            true
+          )
+
       - name: Generate gcov files
         if: matrix.coverage
         run: |
@@ -522,6 +543,7 @@ jobs:
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, ttytype: conpty }
           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
           - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
           - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
@@ -534,8 +556,6 @@ jobs:
         run: |
           # Show Windows version
           cmd /c ver
-
-          git config --global core.autocrlf input
 
           if ${{ matrix.arch == 'x64' }}; then
             cygreg=registry
@@ -616,11 +636,13 @@ jobs:
           call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
           7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
-          echo %COL_GREEN%Download winpty%COL_RESET%
-          call :downloadfile %WINPTY_URL% downloads\winpty.zip
-          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
-          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
-          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+          if not "${{ matrix.ttytype }}" == "conpty" (
+            echo %COL_GREEN%Download winpty%COL_RESET%
+            call :downloadfile %WINPTY_URL% downloads\winpty.zip
+            7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+            copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
+            copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+          )
 
           echo %COL_GREEN%Download libsodium%COL_RESET%
           if "${{ matrix.toolchain }}"=="msvc" (
@@ -719,7 +741,7 @@ jobs:
       - name: Check version
         shell: cmd
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%
           if "${{ matrix.GUI }}"=="yes" (
             start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
             type version.txt
@@ -769,7 +791,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -786,7 +808,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%

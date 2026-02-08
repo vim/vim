@@ -210,10 +210,10 @@ coladvance2(
 	if (col > wcol || (!virtual_active() && one_more == 0))
 	{
 	    idx -= 1;
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	    // Don't count the chars from 'showbreak'.
 	    csize -= head;
-# endif
+#endif
 	    col -= csize;
 	}
 
@@ -2148,7 +2148,7 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-#define STRING_INIT(s) \
+#  define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
 static string_T mshape_names[] =
 {
@@ -2170,7 +2170,7 @@ static string_T mshape_names[] =
     STRING_INIT("up-arrow"),
     {NULL, 0}
 };
-#undef STRING_INIT
+#  undef STRING_INIT
 
 #  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
 # endif
@@ -2204,11 +2204,11 @@ parse_shape_opt(int what)
 	/*
 	 * Repeat for all comma separated parts.
 	 */
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	    modep = p_mouseshape;
 	else
-#endif
+# endif
 	    modep = p_guicursor;
 	while (*modep != NUL)
 	{
@@ -2255,14 +2255,14 @@ parse_shape_opt(int what)
 		    idx = all_idx--;
 		else if (round == 2)
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			// Set the default, for the missing parts
 			shape_table[idx].mshape = 0;
 		    }
 		    else
-#endif
+# endif
 		    {
 			// Set the defaults, for the missing parts
 			shape_table[idx].shape = SHAPE_BLOCK;
@@ -2275,7 +2275,7 @@ parse_shape_opt(int what)
 		// Parse the part after the colon
 		for (p = colonp + 1; *p && *p != ','; )
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			for (i = 0; ; ++i)
@@ -2301,7 +2301,7 @@ parse_shape_opt(int what)
 			}
 		    }
 		    else // if (what == SHAPE_MOUSE)
-#endif
+# endif
 		    {
 			/*
 			 * First handle the ones with a number argument.
@@ -2395,13 +2395,13 @@ parse_shape_opt(int what)
     // If the 's' flag is not given, use the 'v' cursor for 's'
     if (!found_ve)
     {
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	{
 	    shape_table[SHAPE_IDX_VE].mshape = shape_table[SHAPE_IDX_V].mshape;
 	}
 	else
-#endif
+# endif
 	{
 	    shape_table[SHAPE_IDX_VE].shape = shape_table[SHAPE_IDX_V].shape;
 	    shape_table[SHAPE_IDX_VE].percentage =
@@ -2429,22 +2429,22 @@ parse_shape_opt(int what)
     int
 get_shape_idx(int mouse)
 {
-#ifdef FEAT_MOUSESHAPE
+#  ifdef FEAT_MOUSESHAPE
     if (mouse && (State == MODE_HITRETURN || State == MODE_ASKMORE))
     {
-# ifdef FEAT_GUI
+#   ifdef FEAT_GUI
 	int x, y;
 	gui_mch_getmouse(&x, &y);
 	if (Y_2_ROW(y) == Rows - 1)
 	    return SHAPE_IDX_MOREL;
-# endif
+#   endif
 	return SHAPE_IDX_MORE;
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
-#endif
+#  endif
     if (!mouse && State == MODE_SHOWMATCH)
 	return SHAPE_IDX_SM;
     if (State & VREPLACE_FLAG)
@@ -2472,7 +2472,7 @@ get_shape_idx(int mouse)
     }
     return SHAPE_IDX_N;
 }
-#endif
+# endif
 
 # if defined(FEAT_MOUSESHAPE)
 static int current_mouse_shape = 0;
@@ -2673,7 +2673,7 @@ qsort(
 
 #if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(PROTO)
 
-#define EXTRASIZE 5		// increment to add to env. size
+# define EXTRASIZE 5		// increment to add to env. size
 
 static int  envsize = -1;	// current size of environment
 extern char **environ;		// the global which is your env.
@@ -2820,18 +2820,18 @@ vimpty_getenv(const char_u *string)
 filewritable(char_u *fname)
 {
     int		retval = 0;
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     int		perm = 0;
-#endif
+# endif
 
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     perm = mch_getperm(fname);
-#endif
+# endif
     if (
 # ifdef MSWIN
 	    mch_writable(fname) &&
 # else
-# if defined(UNIX) || defined(VMS)
+#  if defined(UNIX) || defined(VMS)
 	    (perm & 0222) &&
 #  endif
 # endif

@@ -2356,4 +2356,103 @@ func Test_tuple2list()
   call v9.CheckSourceDefAndScriptSuccess(lines)
 endfunc
 
+" Test for assigning multiple variables (list assign) using an imported
+" function returning a tuple.
+func Test_tuple_multi_assign_from_import()
+  let lines =<< trim END
+    vim9script
+
+    export def Fn(): tuple<string, string>
+      return ('aaa', 'bbb')
+    enddef
+  END
+  call writefile(lines, 'Ximporttuplefunc.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+
+    import "./Ximporttuplefunc.vim" as Xtuple
+
+    def XtestTupleListAssign()
+      const [x, y] = Xtuple.Fn()
+      assert_equal(['aaa', 'bbb'], [x, y])
+    enddef
+    XtestTupleListAssign()
+
+    # Check the generated code
+    def XtestTupleListAssign2()
+      const [x, y] = Xtuple.Fn()
+    enddef
+    var res = execute('disass XtestTupleListAssign2')
+    assert_match('<SNR>\d*_XtestTupleListAssign2\_s*' ..
+          'const \[x, y\] = Xtuple.Fn()\_s*' ..
+          '0 PUSHFUNC "<80><fd>R\d\+_Fn"\_s*' ..
+          '1 PCALL top (argc 0)\_s*' ..
+          '2 PCALL end\_s*' ..
+          '3 CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
+          '4 CHECKLEN 2\_s*' ..
+          '5 ITEM 0\_s*' ..
+          '6 LOCKCONST\_s*' ..
+          '7 STORE $0\_s*' ..
+          '8 ITEM 1\_s*' ..
+          '9 LOCKCONST\_s*' ..
+          '10 STORE $1\_s*' ..
+          '11 DROP\_s*' ..
+          '12 RETURN void',
+          res)
+  END
+  call v9.CheckSourceScriptSuccess(lines)
+endfunc
+
+" Test for assigning multiple variables in a for loop using an imported
+" function returning a tuple.
+func Test_tuple_multi_assign_in_for_loop_from_import()
+  let lines =<< trim END
+    vim9script
+
+    export def Fn(): tuple<...list<tuple<string, string>>>
+      return (('a', 'b'), ('c', 'd'))
+    enddef
+  END
+  call writefile(lines, 'Ximporttupleinfor.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+
+    import "./Ximporttupleinfor.vim" as Xtuple
+
+    def XtestTupleInFor()
+      var s = ''
+      for [x, y] in Xtuple.Fn()
+        s ..= x .. y
+      endfor
+      assert_equal('abcd', s)
+    enddef
+    XtestTupleInFor()
+
+    # Check the generated code
+    def XtestTupleInFor2()
+      for [x, y] in Xtuple.Fn()
+      endfor
+    enddef
+    var res = execute('disass XtestTupleInFor2')
+    assert_match('<SNR>\d*_XtestTupleInFor2\_s*' ..
+          'for \[x, y\] in Xtuple.Fn()\_s*' ..
+          '0 STORE -1 in $0\_s*' ..
+          '1 PUSHFUNC "<80><fd>R\d\+_Fn"\_s*' ..
+          '2 PCALL top (argc 0)\_s*' ..
+          '3 PCALL end\_s*' ..
+          '4 FOR $0 -> 9\_s*' ..
+          '5 UNPACK 2\_s*' ..
+          '6 STORE $2\_s*' ..
+          '7 STORE $3\_s*' ..
+          'endfor\_s*' ..
+          '8 JUMP -> 4\_s*' ..
+          '9 DROP\_s*' ..
+          '10 RETURN void',
+          res)
+  END
+  call v9.CheckSourceScriptSuccess(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

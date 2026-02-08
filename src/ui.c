@@ -277,11 +277,11 @@ inchar_loop(
     int		did_start_blocking = FALSE;
     long	wait_time;
     long	elapsed_time = 0;
-#ifdef ELAPSED_FUNC
+# ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
 
     ELAPSED_INIT(start_tv);
-#endif
+# endif
 
     // repeat until we got a character or waited long enough
     for (;;)
@@ -291,7 +291,7 @@ inchar_loop(
 	if (resize_func != NULL)
 	    resize_func(FALSE);
 
-#ifdef MESSAGE_QUEUE
+# ifdef MESSAGE_QUEUE
 	// Only process messages when waiting.
 	if (wtime != 0)
 	{
@@ -300,7 +300,7 @@ inchar_loop(
 	    if (typebuf_changed(tb_change_cnt))
 		return 0;
 	}
-#endif
+# endif
 	if (wtime < 0 && did_start_blocking)
 	    // blocking and already waited for p_ut
 	    wait_time = -1;
@@ -311,9 +311,9 @@ inchar_loop(
 	    else
 		// going to block after p_ut
 		wait_time = p_ut;
-#ifdef ELAPSED_FUNC
+# ifdef ELAPSED_FUNC
 	    elapsed_time = ELAPSED_FUNC(start_tv);
-#endif
+# endif
 	    wait_time -= elapsed_time;
 
 	    // If the waiting time is now zero or less, we timed out.  However,
@@ -357,7 +357,7 @@ inchar_loop(
 	    }
 	}
 
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	if (wait_time < 0 || wait_time > 100L)
 	{
 	    // Checking if a job ended requires polling.  Do this at least
@@ -370,13 +370,13 @@ inchar_loop(
 	    if (channel_any_readahead())
 		wait_time = 10L;
 	}
-#endif
-#ifdef FEAT_BEVAL_GUI
+# endif
+# ifdef FEAT_BEVAL_GUI
 	if (p_beval && wait_time > 100L)
 	    // The 'balloonexpr' may indirectly invoke a callback while waiting
 	    // for a character, need to check often.
 	    wait_time = 100L;
-#endif
+# endif
 
 	// Wait for a character to be typed or another event, such as the winch
 	// signal or an event on the monitored file descriptors.
@@ -400,30 +400,30 @@ inchar_loop(
 	}
 	// Timed out or interrupted with no character available.
 
-#ifndef ELAPSED_FUNC
+# ifndef ELAPSED_FUNC
 	// estimate the elapsed time
 	elapsed_time += wait_time;
-#endif
+# endif
 
 	if ((resize_func != NULL && resize_func(TRUE))
-#if defined(FEAT_CLIENTSERVER) && defined(UNIX)
+# if defined(FEAT_CLIENTSERVER) && defined(UNIX)
 		|| (
-# ifdef FEAT_X11
+#  ifdef FEAT_X11
 		    (clientserver_method == CLIENTSERVER_METHOD_X11 &&
 		    server_waiting())
-# endif
-# if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+#  endif
+#  if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
 		    ||
-# endif
-# ifdef FEAT_SOCKETSERVER
+#  endif
+#  ifdef FEAT_SOCKETSERVER
 		    (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
 		     socket_server_waiting_accept())
-# endif
+#  endif
 		)
-#endif
-#ifdef MESSAGE_QUEUE
+# endif
+# ifdef MESSAGE_QUEUE
 		|| interrupted
-#endif
+# endif
 		|| wait_time > 0
 		|| (wtime < 0 && !did_start_blocking))
 	    // no character available, but something to be done, keep going
@@ -745,16 +745,16 @@ ui_breakcheck_force(int force)
  * descriptions which would otherwise overflow.  The buffer is considered full
  * when only this extra space (or part of it) remains.
  */
-#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
    /*
     * NetBeans stuffs debugger commands into the input buffer.
     * This requires a larger buffer...
     * (Madsen) Go with this for remote input as well ...
     */
-# define INBUFLEN 4096
-#else
-# define INBUFLEN 250
-#endif
+#  define INBUFLEN 4096
+# else
+#  define INBUFLEN 250
+# endif
 
 static char_u	inbuf[INBUFLEN + MAX_KEY_CODE_LEN];
 static int	inbufcount = 0;	    // number of chars in inbuf[]
@@ -777,21 +777,21 @@ vim_is_input_buf_empty(void)
     return (inbufcount == 0);
 }
 
-#if defined(FEAT_OLE)
+# if defined(FEAT_OLE)
     int
 vim_free_in_input_buf(void)
 {
     return (INBUFLEN - inbufcount);
 }
-#endif
+# endif
 
-#if defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_GTK)
     int
 vim_used_in_input_buf(void)
 {
     return inbufcount;
 }
-#endif
+# endif
 
 /*
  * Return the current contents of the input buffer and make it empty.
@@ -915,29 +915,29 @@ read_from_input_buf(char_u *buf, long maxlen)
     void
 fill_input_buf(int exit_on_error UNUSED)
 {
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
+# if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     int		len;
     int		try;
     static int	did_read_something = FALSE;
     static char_u *rest = NULL;	    // unconverted rest of previous read
     static int	restlen = 0;
     int		unconverted;
-#endif
+# endif
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (gui.in_use
-# ifdef NO_CONSOLE_INPUT
+#  ifdef NO_CONSOLE_INPUT
     // Don't use the GUI input when the window hasn't been opened yet.
     // We get here from ui_inchar() when we should try reading from stdin.
 	    && !no_console_input()
-# endif
+#  endif
        )
     {
 	gui_mch_update();
 	return;
     }
-#endif
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
+# endif
+# if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     if (vim_is_input_buf_full())
 	return;
     /*
@@ -999,13 +999,13 @@ fill_input_buf(int exit_on_error UNUSED)
 	    // back to cooked mode, use another descriptor and set the mode to
 	    // what it was.
 	    settmode(TMODE_COOK);
-#ifdef HAVE_DUP
+#  ifdef HAVE_DUP
 	    // Use stderr for stdin, also works for shell commands.
 	    close(0);
 	    vim_ignored = dup(2);
-#else
+#  else
 	    read_cmd_fd = 2;	// read from stderr instead of stdin
-#endif
+#  endif
 	    settmode(m);
 	}
 	if (!exit_on_error)
@@ -1066,7 +1066,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	    ++inbufcount;
 	}
     }
-#endif // UNIX || VMS || MACOS_X
+# endif // UNIX || VMS || MACOS_X
 }
 #endif // USE_INPUT_BUF
 
@@ -1173,9 +1173,9 @@ ui_find_longest_lnum(void)
     // line numbers, topline and botline can be invalid when displaying is
     // postponed.
     if (
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
-# endif
+#endif
 	    curwin->w_topline <= curwin->w_cursor.lnum
 	    && curwin->w_botline > curwin->w_cursor.lnum
 	    && curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)
@@ -1224,11 +1224,11 @@ ui_focus_change(
     if (in_focus && last_time + 2 < time(NULL))
     {
 	need_redraw = check_timestamps(
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		gui.in_use
-# else
+#else
 		FALSE
-# endif
+#endif
 		);
 	last_time = time(NULL);
     }

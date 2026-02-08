@@ -105,7 +105,6 @@ enddef
 "	    some dictionary with some state entries;
 "	    the file contents of the newly generated screen dump;
 "	    the zero-based number of the line whose copies are not equal.
-" (See an example in runtime/syntax/testdir/runtest.vim.)
 "
 " The file name used is "dumps/{filename}.dump".
 "

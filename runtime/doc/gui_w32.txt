@@ -1,4 +1,4 @@
-*gui_w32.txt*	For Vim version 9.1.  Last change: 2025 Dec 21
+*gui_w32.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -425,8 +425,8 @@ simulating the keystrokes Alt, F. >
 This maps Alt-Space to pop down the system menu for the Vim window.  Note that
 ~ is used by simalt to represent the <Space> character. >
 	:map <C-n> :simalt ~n<CR>
-Maps Control-N to produce the keys Alt-Space followed by N.  This minimizes the
-Vim window via the system menu.
+Maps Control-N to produce the keys Alt-Space followed by N.  This minimizes
+the Vim window via the system menu.
 
 Note that the key changes depending on the language you are using.
 
@@ -510,14 +510,15 @@ Full Screen						*gui-w32-fullscreen*
 To enable fullscreen mode in the Windows GUI version of Vim, add the 's' flag
 to the 'guioptions' setting.
 
-For convenience, you can define a command or mapping to toggle fullscreen mode:
+For convenience, you can define a command or mapping to toggle fullscreen
+mode:
 >
-	command! ToggleFullscreen {
-		if &guioptions =~# 's'
-			set guioptions-=s
-		else
-			set guioptions+=s
-		endif
+	command ToggleFullscreen {
+	  if &guioptions =~# 's'
+	    set guioptions-=s
+	  else
+	    set guioptions+=s
+	  endif
 	}
 
 	map <expr> <F11> &go =~# 's' ? ":se go-=s<CR>" : ":se go+=s<CR>"

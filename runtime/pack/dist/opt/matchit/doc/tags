@@ -6,6 +6,7 @@ MatchError	matchit.txt	/*MatchError*
 ]%	matchit.txt	/*]%*
 b:match_col	matchit.txt	/*b:match_col*
 b:match_debug	matchit.txt	/*b:match_debug*
+b:match_function	matchit.txt	/*b:match_function*
 b:match_ignorecase	matchit.txt	/*b:match_ignorecase*
 b:match_ini	matchit.txt	/*b:match_ini*
 b:match_iniBR	matchit.txt	/*b:match_iniBR*
@@ -20,7 +21,6 @@ b:match_words	matchit.txt	/*b:match_words*
 g%	matchit.txt	/*g%*
 matchit	matchit.txt	/*matchit*
 matchit-%	matchit.txt	/*matchit-%*
-matchit-\1	matchit.txt	/*matchit-\\1*
 matchit-activate	matchit.txt	/*matchit-activate*
 matchit-backref	matchit.txt	/*matchit-backref*
 matchit-bugs	matchit.txt	/*matchit-bugs*

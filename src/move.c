@@ -1505,31 +1505,31 @@ textpos2screenpos(
 	colnr_T	    col;
 	int	    width;
 	linenr_T    lnum = pos->lnum;
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
 	int	    is_folded;
 
 	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
-#endif
+# endif
 	row = plines_m_win(wp, wp->w_topline, lnum - 1, INT_MAX);
 	// "row" should be the screen line where line "lnum" begins, which can
 	// be negative if "lnum" is "w_topline" and "w_skipcol" is non-zero.
 	row -= adjust_plines_for_skipcol(wp);
 
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
 	row += lnum == wp->w_topline ? wp->w_topfill
 				     : diff_check_fill(wp, lnum);
-#endif
+# endif
 
 	colnr_T	off = win_col_off(wp);
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
 	if (is_folded)
 	{
 	    row += W_WINROW(wp) + 1;
 	    coloff = wp->w_wincol + 1 + off;
 	}
 	else
-#endif
+# endif
 	{
 	    getvcol(wp, pos, &scol, &ccol, &ecol);
 
@@ -1965,12 +1965,12 @@ scrollup(
     int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
 
     if (do_sms
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
 	    || (byfold && hasAnyFolding(curwin))
-# endif
-# ifdef FEAT_DIFF
+#endif
+#ifdef FEAT_DIFF
 	    || (curwin->w_p_diff && !curwin->w_p_wrap)
-# endif
+#endif
        )
     {
 	int	    width1 = curwin->w_width - curwin_col_off();
@@ -1987,19 +1987,19 @@ scrollup(
 	// folding: count each sequence of folded lines as one logical line.
 	for (int todo = line_count; todo > 0; --todo)
 	{
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
 	    if (curwin->w_topfill > 0)
 		--curwin->w_topfill;
 	    else
-# endif
+#endif
 	    {
 		linenr_T lnum = curwin->w_topline;
 
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
 		if (byfold)
 		    // for a closed fold: go to the last line in the fold
 		    (void)hasFolding(lnum, NULL, &lnum);
-# endif
+#endif
 		if (lnum == curwin->w_topline && do_sms)
 		{
 		    // 'smoothscroll': increase "w_skipcol" until it goes over
@@ -2029,9 +2029,9 @@ scrollup(
 		    // approximate w_botline
 		    curwin->w_botline += lnum - curwin->w_topline;
 		    curwin->w_topline = lnum;
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
 		    curwin->w_topfill = diff_check_fill(curwin, lnum);
-# endif
+#endif
 		    curwin->w_skipcol = 0;
 		    if (todo > 1 && do_sms)
 			size = linetabsize_eol(curwin, curwin->w_topline);
@@ -3282,11 +3282,11 @@ static int scroll_with_sms(int dir, long count, long *curscount)
     }
     curwin->w_p_sms = prev_sms;
 
-    return curwin->w_topline == prev_topline
+    return curwin->w_topline != prev_topline
 #ifdef FEAT_DIFF
-	&& curwin->w_topfill == prev_topfill
+	|| curwin->w_topfill != prev_topfill
 #endif
-	&& curwin->w_skipcol == prev_skipcol;
+	|| curwin->w_skipcol != prev_skipcol;
 }
 
 /*
@@ -3299,7 +3299,7 @@ static int scroll_with_sms(int dir, long count, long *curscount)
     int
 pagescroll(int dir, long count, int half)
 {
-    int		nochange = TRUE;
+    int		did_move = FALSE;
     int		buflen = curbuf->b_ml.ml_line_count;
     colnr_T	prev_col = curwin->w_cursor.col;
     colnr_T	prev_curswant = curwin->w_curswant;
@@ -3335,7 +3335,7 @@ pagescroll(int dir, long count, int half)
 	// (Try to) scroll the window unless already at the end of the buffer.
 	if (count > 0)
 	{
-	    nochange = scroll_with_sms(dir, count, &curscount);
+	    did_move = scroll_with_sms(dir, count, &curscount);
 	    curwin->w_cursor.lnum = prev_lnum;
 	    curwin->w_cursor.col = prev_col;
 	    curwin->w_curswant = prev_curswant;
@@ -3354,9 +3354,9 @@ pagescroll(int dir, long count, int half)
 	// Scroll [count] times 'window' or current window height lines.
 	count *= ((ONE_WINDOW && p_window > 0 && p_window < Rows - 1) ?
 				MAX(1, p_window - 2) : get_scroll_overlap(dir));
-	nochange = scroll_with_sms(dir, count, &count);
+	did_move = scroll_with_sms(dir, count, &count);
 
-	if (!nochange)
+	if (did_move)
 	{
 	    // Place cursor at top or bottom of window.
 	    validate_botline();
@@ -3374,19 +3374,19 @@ pagescroll(int dir, long count, int half)
     // Move cursor to first line of closed fold.
     foldAdjustCursor();
 #endif
-    nochange = nochange
-	&& prev_col == curwin->w_cursor.col
-	&& prev_lnum == curwin->w_cursor.lnum;
+    did_move = did_move
+	|| prev_col != curwin->w_cursor.col
+	|| prev_lnum != curwin->w_cursor.lnum;
 
     // Error if both the viewport and cursor did not change.
-    if (nochange)
+    if (!did_move)
 	beep_flush();
     else if (!curwin->w_p_sms)
 	beginline(BL_SOL | BL_FIX);
     else if (p_sol)
 	nv_g_home_m_cmd(&ca);
 
-    return nochange;
+    return did_move ? OK : FAIL;
 }
 
     void
@@ -3420,12 +3420,12 @@ do_check_cursorbind(void)
 	// skip original window and windows with 'nocursorbind'
 	if (curwin != old_curwin && curwin->w_p_crb)
 	{
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
 	    if (curwin->w_p_diff)
 		curwin->w_cursor.lnum =
 				 diff_get_corresponding_line(old_curbuf, line);
 	    else
-# endif
+#endif
 		curwin->w_cursor.lnum = line;
 	    curwin->w_cursor.col = col;
 	    curwin->w_cursor.coladd = coladd;

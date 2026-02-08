@@ -1060,11 +1060,11 @@ doESCkey:
 	    break;
 
 	case Ctrl_U:	// delete all inserted text in current line
-# ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_COMPL_FUNC
 	    // CTRL-X CTRL-U completes with 'completefunc'.
 	    if (ctrl_x_mode_function())
 		goto docomplete;
-# endif
+#endif
 	    did_backspace = ins_bs(c, BACKSPACE_LINE, &inserted_space);
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
@@ -1532,24 +1532,24 @@ ins_redraw(int ready)	    // not busy with something
     // Trigger CursorMoved if the cursor moved.  Not when the popup menu is
     // visible, the command might delete it.
     if (ready && (has_cursormovedI()
-# ifdef FEAT_PROP_POPUP
+#ifdef FEAT_PROP_POPUP
 		|| popup_visible
-# endif
-# if defined(FEAT_CONCEAL)
+#endif
+#if defined(FEAT_CONCEAL)
 		|| curwin->w_p_cole > 0
-# endif
+#endif
 		)
 	    && !EQUAL_POS(last_cursormoved, curwin->w_cursor)
 	    && !pum_visible())
     {
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
 	// Need to update the screen first, to make sure syntax
 	// highlighting is correct after making a change (e.g., inserting
 	// a "(".  The autocommand may also require a redraw, so it's done
 	// again below, unfortunately.
 	if (syntax_present(curwin) && must_redraw)
 	    update_screen(0);
-# endif
+#endif
 	if (has_cursormovedI())
 	{
 	    // Make sure curswant is correct, an autocommand may call
@@ -1561,14 +1561,14 @@ ins_redraw(int ready)	    // not busy with something
 	if (popup_visible)
 	    popup_check_cursor_pos();
 #endif
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
 	    conceal_old_cursor_line = last_cursormoved.lnum;
 	    conceal_new_cursor_line = curwin->w_cursor.lnum;
 	    conceal_update_lines = TRUE;
 	}
-# endif
+#endif
 	last_cursormoved = curwin->w_cursor;
     }
 
@@ -3923,14 +3923,14 @@ ins_start_select(int c)
 	case K_KPAGEUP:
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
-# ifdef MACOS_X
+#ifdef MACOS_X
 	case K_LEFT:
 	case K_RIGHT:
 	case K_UP:
 	case K_DOWN:
 	case K_END:
 	case K_HOME:
-# endif
+#endif
 	    if (!(mod_mask & MOD_MASK_SHIFT))
 		break;
 	    // FALLTHROUGH
@@ -5357,9 +5357,9 @@ ins_digraph(void)
 	add_to_showcmd_c(Ctrl_K);
     }
 
-#ifdef USE_ON_FLY_SCROLL
+# ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;		// disallow scrolling here
-#endif
+# endif
 
     // don't map the digraph chars. This also prevents the
     // mode message to be deleted when ESC is hit

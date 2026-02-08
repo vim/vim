@@ -1995,6 +1995,25 @@ def Test_if_elseif_else_fails()
   END
   v9.CheckDefFailure(lines, 'E488:')
 
+
+  lines =<< trim END
+      if true
+      else
+      else
+      endif
+  END
+  v9.CheckSourceDefFailure(lines, 'E583:')
+
+  lines =<< trim END
+      var a = 3
+      if a == 2
+      else
+      elseif true
+      else
+      endif
+  END
+  v9.CheckSourceDefFailure(lines, 'E584:')
+
   lines =<< trim END
       var cond = true
       if cond

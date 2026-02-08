@@ -1,10 +1,10 @@
-*ft_mp.txt*	For Vim version 9.1.  Last change: 2022 Aug 12
+*ft_mp.txt*	For Vim version 9.2.  Last change: 2026 Jan 10
 
 This is the documentation for the METAFONT and MetaPost filetype plugins.
 Unless otherwise specified, the commands, settings and mappings defined below
 apply equally to both filetypes.
 
-NOTE: the plugin requires +vim9script.
+NOTE: the plugin requires |+vim9script|.
 
 ==============================================================================
 CONTENTS						*mp.vim* *ft-metapost*
@@ -38,25 +38,25 @@ next line should not change from whatever it has been manually set.
 
 For example, this is the default indentation of a simple macro:
 >
-   def foo =
-       makepen(
-           subpath(T-n,t) of r
-           shifted .5down
-           --subpath(t,T) of r shifted .5up -- cycle
-       )
-       withcolor black
-   enddef
+	def foo =
+	    makepen(
+	        subpath(T-n,t) of r
+	        shifted .5down
+	        --subpath(t,T) of r shifted .5up -- cycle
+	    )
+	    withcolor black
+	enddef
 <
 By adding the special comments, the indentation can be adjusted arbitrarily:
 >
-   def foo =
-       makepen(
-           subpath(T-n,t) of r  %>
-               shifted .5down   %>
-                   --subpath(t,T) of r shifted .5up -- cycle   %<<<
-       )
-       withcolor black
-   enddef
+	def foo =
+	    makepen(
+	        subpath(T-n,t) of r  %>
+	            shifted .5down   %>
+	                --subpath(t,T) of r shifted .5up -- cycle   %<<<
+	    )
+	    withcolor black
+	enddef
 <
 							*ft-metapost-commands*
 Commands ~
