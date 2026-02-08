@@ -7549,6 +7549,7 @@ ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
 ft-freebasic-plugin	filetype.txt	/*ft-freebasic-plugin*
 ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
+ft-gdb-syntax	syntax.txt	/*ft-gdb-syntax*
 ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gitrebase-plugin	filetype.txt	/*ft-gitrebase-plugin*
@@ -8076,6 +8077,7 @@ garbagecollect()	builtin.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
 gdb-version	terminal.txt	/*gdb-version*
+gdb.vim	syntax.txt	/*gdb.vim*
 ge	motion.txt	/*ge*
 gender-neutral	helphelp.txt	/*gender-neutral*
 generic-function-call	vim9.txt	/*generic-function-call*

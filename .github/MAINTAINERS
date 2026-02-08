@@ -519,6 +519,7 @@ runtime/syntax/forth.vim				@jkotlinski
 runtime/syntax/fpcmake.vim				@dkearns
 runtime/syntax/freebasic.vim				@dkearns
 runtime/syntax/fstab.vim				@rid9
+runtime/syntax/gdb.vim					@dkearns
 runtime/syntax/gdresource.vim				@habamax
 runtime/syntax/gdscript.vim				@habamax
 runtime/syntax/gdshader.vim				@habamax
