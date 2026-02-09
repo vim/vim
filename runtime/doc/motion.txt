@@ -1,4 +1,4 @@
-*motion.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*motion.txt*	For Vim version 9.1.  Last change: 2026 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -429,8 +429,10 @@ These commands move over words or WORDS.
 							*word*
 A word consists of a sequence of letters, digits and underscores, or a
 sequence of other non-blank characters, separated with white space (spaces,
-tabs, <EOL>).  This can be changed with the 'iskeyword' option.  An empty line
-is also considered to be a word.
+tabs, <EOL>).  This can be changed with the 'iskeyword' option.  For
+characters above 255, a word ends when the Unicode character class changes
+(e.g., between letters, subscripts, emojis, etc).  An empty line is also
+considered to be a word.
 							*WORD*
 A WORD consists of a sequence of non-blank characters, separated with white
 space.  An empty line is also considered to be a WORD.
