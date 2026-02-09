@@ -865,8 +865,14 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
     {
 	*ppTextFormat = pTextFormat;
 	if (pFontAscent != NULL && fontMetrics.designUnitsPerEm != 0)
-	    *pFontAscent = fontSize * float(fontMetrics.ascent)
-		/ float(fontMetrics.designUnitsPerEm);
+	{
+	    // Calculate ascent ratio (0.0 to 1.0) relative to total font height
+	    FLOAT totalHeight = float(fontMetrics.ascent + fontMetrics.descent);
+	    if (totalHeight != 0.0f)
+		*pFontAscent = float(fontMetrics.ascent) / totalHeight;
+	    else
+		*pFontAscent = 0.83f; // fallback
+	}
     }
     else
 	SafeRelease(&pTextFormat);
@@ -1086,7 +1092,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	// font fallback, the metrics change).
 	// Use the pre-calculated font ascent for all text to prevent
 	// vertical shifts during redraw.
-	FLOAT baselineY = FLOAT(y) + mFontAscent;
+	FLOAT baselineY = roundf(FLOAT(y) + FLOAT(h) * mFontAscent + 0.5);
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
