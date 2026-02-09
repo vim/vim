@@ -124,7 +124,7 @@ garbage_collect(int testing)
     {
 	abort = abort || set_ref_in_item(&buf->b_bufvar.di_tv, copyID,
 							NULL, NULL, NULL);
-        abort = abort || set_ref_in_list(buf->b_recorded_changes, copyID);
+	abort = abort || set_ref_in_list(buf->b_recorded_changes, copyID);
     }
 
     // window-local variables
