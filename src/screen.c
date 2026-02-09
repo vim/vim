@@ -605,6 +605,9 @@ screen_line(
 		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
 	    }
+	    if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
+		ScreenLines2[off_to] = ScreenLines2[off_from];
+
 	    if (enc_dbcs != 0 && char_cells == 2)
 		screen_char_2(off_to, row, col + coloff);
 	    else
@@ -1359,12 +1362,14 @@ screen_puts_len(
 #endif
 	    && mb_fix_col(col, row) != col)
     {
+	// Keep the original attribute to preserve background color
+	// when drawing over popup windows.
 	if (!skip_for_popup(row, col - 1))
 	{
 	    ScreenLines[off - 1] = ' ';
-	    // Keep the original attribute to preserve background color
-	    // when drawing over popup windows.
-	    if (enc_utf8)
+	    if (enc_dbcs == DBCS_JPNU && c == 0x8e)
+		ScreenAttrs[off - 1] = 0;
+	    else if (enc_utf8)
 	    {
 		ScreenLinesUC[off - 1] = 0;
 		ScreenLinesC[0][off - 1] = 0;
