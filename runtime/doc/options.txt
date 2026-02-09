@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 30
+*options.txt*	For Vim version 9.1.  Last change: 2026 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7398,6 +7398,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'scrollfocus' 'scf'	boolean  (default off)
 			global
 			{only for MS-Windows GUI}
+	NOTE: This option is currently not functional.  It may be fixed or
+	removed in a future version.
 	When using the scroll wheel and this option is set, the window under
 	the mouse pointer is scrolled.  With this option off the current
 	window is scrolled.
