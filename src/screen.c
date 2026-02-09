@@ -1367,7 +1367,7 @@ screen_puts_len(
 	if (!skip_for_popup(row, col - 1))
 	{
 	    ScreenLines[off - 1] = ' ';
-	    if (enc_dbcs == DBCS_JPNU && c == 0x8e)
+	    if (enc_dbcs == DBCS_JPNU)
 		ScreenAttrs[off - 1] = 0;
 	    else if (enc_utf8)
 	    {
