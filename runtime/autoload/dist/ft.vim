@@ -1832,6 +1832,8 @@ const ft_from_ext = {
   "tlh": "cpp",
   # Cascading Style Sheets
   "css": "css",
+  # Common Expression Language (CEL) - https://cel.dev
+  "cel": "cel",
   # Century Term Command Scripts (*.cmd too)
   "con": "cterm",
   # ChordPro
