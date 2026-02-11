@@ -5188,11 +5188,11 @@ regdump(char_u *pattern, bt_regprog_T *r)
     char_u  *end = NULL;
     FILE    *f;
 
-#ifdef BT_REGEXP_LOG
+# ifdef BT_REGEXP_LOG
     f = fopen("bt_regexp_log.log", "a");
-#else
+# else
     f = stdout;
-#endif
+# endif
     if (f == NULL)
 	return;
     fprintf(f, "-------------------------------------\n\r\nregcomp(%s):\r\n", pattern);
@@ -5255,9 +5255,9 @@ regdump(char_u *pattern, bt_regprog_T *r)
 	fprintf(f, "must have \"%s\"", r->regmust);
     fprintf(f, "\r\n");
 
-#ifdef BT_REGEXP_LOG
+# ifdef BT_REGEXP_LOG
     fclose(f);
-#endif
+# endif
 }
 #endif	    // BT_REGEXP_DUMP
 
@@ -5550,7 +5550,7 @@ regprop(char_u *op)
       case NCLOSE:
 	p = "NCLOSE";
 	break;
-#ifdef FEAT_SYN_HL
+# ifdef FEAT_SYN_HL
       case ZOPEN + 1:
       case ZOPEN + 2:
       case ZOPEN + 3:
@@ -5587,7 +5587,7 @@ regprop(char_u *op)
 	buflen += sprintf(buf + buflen, "ZREF%d", OP(op) - ZREF);
 	p = NULL;
 	break;
-#endif
+# endif
       case STAR:
 	p = "STAR";
 	break;

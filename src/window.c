@@ -90,6 +90,10 @@ static int split_disallowed = 0;
 // autocommands mess up the window structure.
 static int close_disallowed = 0;
 
+// When non-zero changing the window frame structure is forbidden.  Used
+// to avoid that winframe_remove() is called recursively
+static int frame_locked = 0;
+
 /*
  * Disallow changing the window layout (split window, close window, move
  * window).  Resizing is still allowed.
@@ -111,10 +115,17 @@ window_layout_unlock(void)
     --close_disallowed;
 }
 
+    int
+frames_locked(void)
+{
+    return frame_locked;
+}
+
 /*
  * When the window layout cannot be changed give an error and return TRUE.
  * "cmd" indicates the action being performed and is used to pick the relevant
- * error message.
+ * error message.  When closing window(s) and the command isn't easy to know,
+ * passing CMD_SIZE will also work.
  */
     int
 window_layout_locked(enum CMD_index cmd)
@@ -1476,11 +1487,11 @@ win_split_ins(
 	if (size != 0)
 	    p_wiw = size;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	// When 'guioptions' includes 'L' or 'R' may have to add scrollbars.
 	if (gui.in_use)
 	    gui_init_which_components(NULL);
-# endif
+#endif
     }
     else
     {
@@ -2520,6 +2531,8 @@ close_windows(
 	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin)
 		&& !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 	{
+	    if (window_layout_locked(CMD_SIZE))
+		goto theend;  // Only give one error message.
 	    if (win_close(wp, FALSE) == FAIL)
 		// If closing the window fails give up, to avoid looping
 		// forever.
@@ -2541,6 +2554,8 @@ close_windows(
 		if (wp->w_buffer == buf
 		    && !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 		{
+		    if (window_layout_locked(CMD_SIZE))
+			goto theend;  // Only give one error message.
 		    win_close_othertab(wp, FALSE, tp);
 
 		    // Start all over, the tab page may be closed and
@@ -2550,6 +2565,7 @@ close_windows(
 		}
     }
 
+theend:
     if (RedrawingDisabled > 0)
 	--RedrawingDisabled;
 
@@ -3005,15 +3021,10 @@ trigger_winclosed(win_T *win)
     recursive = FALSE;
 }
 
-/*
- * directly is TRUE if the window is closed by ':tabclose' or ':tabonly'.
- * This allows saving the session before closing multi-window tab.
- */
     void
-trigger_tabclosedpre(tabpage_T *tp, int directly)
+trigger_tabclosedpre(tabpage_T *tp)
 {
     static int	recursive = FALSE;
-    static int	skip = FALSE;
     tabpage_T	*ptp = curtab;
 
     // Quickly return when no TabClosedPre autocommands to be executed or
@@ -3021,19 +3032,8 @@ trigger_tabclosedpre(tabpage_T *tp, int directly)
     if (!has_tabclosedpre() || recursive)
 	return;
 
-    // Skip if the event have been triggered by ':tabclose' recently
-    if (skip)
-    {
-	skip = FALSE;
-	return;
-    }
-
     if (valid_tabpage(tp))
-    {
 	goto_tabpage_tp(tp, FALSE, FALSE);
-	if (directly)
-	    skip = TRUE;
-    }
     recursive = TRUE;
     window_layout_lock();
     apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, NULL);
@@ -3041,10 +3041,10 @@ trigger_tabclosedpre(tabpage_T *tp, int directly)
     recursive = FALSE;
     // tabpage may have been modified or deleted by autocmds
     if (valid_tabpage(ptp))
-	// try to recover the tappage first
+	// try to recover the tabpage first
 	goto_tabpage_tp(ptp, FALSE, FALSE);
     else
-	// fall back to the first tappage
+	// fall back to the first tabpage
 	goto_tabpage_tp(first_tabpage, FALSE, FALSE);
 }
 
@@ -3120,11 +3120,11 @@ make_win_info_dict(
 	tv.vval.v_number = topline;
 	if (dict_add_tv(d, "topline", &tv) == FAIL)
 	    break;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	tv.vval.v_number = topfill;
-#else
+# else
 	tv.vval.v_number = 0;
-#endif
+# endif
 	if (dict_add_tv(d, "topfill", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = leftcol;
@@ -3228,15 +3228,15 @@ check_window_scroll_resize(
 	    int width = wp->w_width - wp->w_last_width;
 	    int height = wp->w_height - wp->w_last_height;
 	    int topline = wp->w_topline - wp->w_last_topline;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    int topfill = wp->w_topfill - wp->w_last_topfill;
-#endif
+# endif
 	    int leftcol = wp->w_leftcol - wp->w_last_leftcol;
 	    int skipcol = wp->w_skipcol - wp->w_last_skipcol;
 	    dict_T *d = make_win_info_dict(width, height, topline,
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 							    topfill,
-#endif
+# endif
 							    leftcol, skipcol);
 	    if (d == NULL)
 		break;
@@ -3252,9 +3252,9 @@ check_window_scroll_resize(
 	    tot_width += abs(width);
 	    tot_height += abs(height);
 	    tot_topline += abs(topline);
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    tot_topfill += abs(topfill);
-#endif
+# endif
 	    tot_leftcol += abs(leftcol);
 	    tot_skipcol += abs(skipcol);
 	}
@@ -3410,6 +3410,10 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     tabpage_T   *ptp = NULL;
     int		free_tp = FALSE;
 
+    // Commands that may call win_close_othertab() already check this, but
+    // check here again just in case.
+    if (window_layout_locked(CMD_SIZE))
+	return;
     // Get here with win->w_buffer == NULL when win_close() detects the tab
     // page changed.
     if (win_locked(win) || (win->w_buffer != NULL
@@ -3427,9 +3431,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	    return;
     }
 
-    if (tp->tp_firstwin == tp->tp_lastwin)
+    if (tp->tp_firstwin == tp->tp_lastwin && !tp->tp_did_tabclosedpre)
     {
-	trigger_tabclosedpre(tp, FALSE);
+	trigger_tabclosedpre(tp);
 	// autocmd may have freed the window already.
 	if (!win_valid_any_tab(win))
 	    return;
@@ -3452,6 +3456,8 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	{
 	    win->w_buffer = firstbuf;
 	    ++firstbuf->b_nwindows;
+	    if (win == curwin)
+		curbuf = curwin->w_buffer;
 	    win_init_empty(win);
 	}
 	return;
@@ -3577,6 +3583,8 @@ winframe_remove(
     if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	return NULL;
 
+    frame_locked++;
+
     // Save the position of the containing frame (which will also contain the
     // altframe) before we remove anything, to recompute window positions later.
     wp = frame2win(frp_close->fr_parent);
@@ -3681,6 +3689,8 @@ winframe_remove(
 	frame_flatten(frp2);
     else
 	*unflat_altfr = frp2;
+
+    frame_locked--;
 
     return wp;
 }
@@ -4646,16 +4656,16 @@ win_init_size(void)
 alloc_tabpage(void)
 {
     tabpage_T	*tp;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     int		i;
-# endif
+#endif
 
 
     tp = ALLOC_CLEAR_ONE(tabpage_T);
     if (tp == NULL)
 	return NULL;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     // init t: variables
     tp->tp_vars = dict_alloc_id(aid_newtabpage_tvars);
     if (tp->tp_vars == NULL)
@@ -4664,15 +4674,15 @@ alloc_tabpage(void)
 	return NULL;
     }
     init_var_dict(tp->tp_vars, &tp->tp_winvar, VAR_SCOPE);
-# endif
+#endif
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     for (i = 0; i < 3; i++)
 	tp->tp_prev_which_scrollbars[i] = -1;
-# endif
-# ifdef FEAT_DIFF
+#endif
+#ifdef FEAT_DIFF
     tp->tp_diff_invalid = TRUE;
-# endif
+#endif
     tp->tp_ch_used = p_ch;
 
     return tp;
@@ -4683,10 +4693,10 @@ free_tabpage(tabpage_T *tp)
 {
     int idx;
 
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
     diff_clear(tp);
-# endif
-# ifdef FEAT_PROP_POPUP
+#endif
+#ifdef FEAT_PROP_POPUP
     while (tp->tp_first_popupwin != NULL)
 	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id, TRUE);
 #endif
@@ -5243,10 +5253,10 @@ goto_tabpage_win(tabpage_T *tp, win_T *wp)
     if (curtab == tp && win_valid(wp))
     {
 	win_enter(wp, TRUE);
-# ifdef FEAT_GUI_TABLINE
+#ifdef FEAT_GUI_TABLINE
 	if (gui_use_tabline())
 	    gui_mch_set_curtab(tabpage_index(curtab));
-# endif
+#endif
     }
 }
 
@@ -7669,9 +7679,9 @@ only_one_window(void)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != NULL
 		&& (!((bt_help(wp->w_buffer) && !bt_help(curbuf))
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
-# endif
+#endif
 	     ) || wp == curwin) && !is_aucmd_win(wp))
 	    ++count;
     return (count <= 1);

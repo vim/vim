@@ -1,4 +1,4 @@
-*russian.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*russian.txt*	For Vim version 9.1.  Last change: 2026 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Vassily Ragosin
@@ -11,13 +11,13 @@ Russian language localization and support in Vim	   *russian* *Russian*
 3. Localization				  |russian-l18n|
 4. Known issues				  |russian-issues|
 
-===============================================================================
+==============================================================================
 1. Introduction							*russian-intro*
 
 Russian language is supported perfectly well in Vim.  You can type and view
 Russian text just as any other, without the need to tweak the settings.
 
-===============================================================================
+==============================================================================
 2. Russian keymaps					       *russian-keymap*
 
 To switch between languages you can use your system native keyboard switcher,
@@ -41,7 +41,7 @@ This is in utf-8, you cannot read this if your 'encoding' is not utf-8.
 You have to type this command in one line, it is wrapped for the sake of
 readability.
 
-===============================================================================
+==============================================================================
 3. Localization							 *russian-l18n*
 
 If you wish to use messages, help files, menus and other items translated to
@@ -60,7 +60,7 @@ $VIMRUNTIME directory.  We recommend using UTF-8 archive.
 In order to use the Russian documentation, make sure you have set the
 'helplang' option to "ru".
 
-===============================================================================
+==============================================================================
 4. Known issues						       *russian-issues*
 
 -- If you are using Russian message translations in Win32 console, then
@@ -69,5 +69,5 @@ In order to use the Russian documentation, make sure you have set the
    is related to a bug in GNU gettext library and may be fixed in the future
    releases of gettext.
 
-===============================================================================
+==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

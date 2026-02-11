@@ -1944,9 +1944,9 @@ struct exarg
     char_u	*nextcmd;	// next command (NULL if none)
     char_u	*cmd;		// the name of the command (except for :make)
     char_u	**cmdlinep;	// pointer to pointer of allocated cmdline
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     char_u	*cmdline_tofree; // free later
-#endif
+# endif
     cmdidx_T	cmdidx;		// the index for the command
     long	argt;		// flags for the command
     int		skip;		// don't execute the command, only parse it
@@ -1971,19 +1971,19 @@ struct exarg
     char	*errmsg;	// returned error message
     char_u	*(*ea_getline)(int, void *, int, getline_opt_T);
     void	*cookie;	// argument for getline()
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
     class_T	*ea_class;		// Name of class being defined. Used by :class
 				// and :enum commands.
-#endif
+# endif
 };
 
-#define FORCE_BIN 1		// ":edit ++bin file"
-#define FORCE_NOBIN 2		// ":edit ++nobin file"
+# define FORCE_BIN 1		// ":edit ++bin file"
+# define FORCE_NOBIN 2		// ":edit ++nobin file"
 
 // Values for "flags"
-#define EXFLAG_LIST	0x01	// 'l': list
-#define EXFLAG_NR	0x02	// '#': number
-#define EXFLAG_PRINT	0x04	// 'p': print
+# define EXFLAG_LIST	0x01	// 'l': list
+# define EXFLAG_NR	0x02	// '#': number
+# define EXFLAG_PRINT	0x04	// 'p': print
 
 #endif

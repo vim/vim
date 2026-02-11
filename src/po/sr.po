@@ -9,9 +9,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-15 10:28+0400\n"
-"PO-Revision-Date: 2025-12-15 10:47+0400\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2026-01-14 13:59+0400\n"
+"PO-Revision-Date: 2026-01-14 14:44+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -1283,15 +1283,6 @@ msgstr "linenr је ван опсега"
 
 msgid "not allowed in the Vim sandbox"
 msgstr "није дозвољено унутар Vim sandbox"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Библиотека %s није могла да се учита"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
-"учита."
 
 msgid "invalid buffer number"
 msgstr "неисправан број бафера"
@@ -3796,17 +3787,11 @@ msgstr "                              за Vim подразумевано   "
 msgid "Sponsor Vim development!"
 msgstr "Спонзоришите Vim развој!"
 
-msgid "Become a registered Vim user!"
-msgstr "Постаните регистровани Vim корисник!"
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "откуцајте  :help sponsor<Ентер>    за информације   "
 
-msgid "type  :help register<Enter>   for information "
-msgstr "откуцајте  :help register<Ентер>   за информације   "
-
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "мени  Помоћ->Спонзор/Региструјте се  за информације    "
+msgid "menu  Help->Sponsor  for information    "
+msgstr "мени  Помоћ->Спонзор  за информације    "
 
 msgid "global"
 msgstr "глобална"
@@ -3967,6 +3952,15 @@ msgstr "враћање није успело, изгубљена веза са W
 
 msgid "Already only one window"
 msgstr "Већ постоји само један прозор"
+
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Библиотека %s није могла да се учита"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
+"учита."
 
 msgid "Edit with Vim using &tabpages"
 msgstr "Уређуј програмом Vim у новој &картици"
@@ -8930,6 +8924,9 @@ msgstr "E1435: Набрајање може да се употреби само �
 
 msgid "E1436: Interface can only be used in a script"
 msgstr "E1436: Интерфејс може да се користи само у скрипти"
+
+msgid "E1437: Can only compare Object with Object"
+msgstr "E1437: Објекат може да се пореди само са Објекат"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"

@@ -6175,16 +6175,16 @@ getregionpos(
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
-	#ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	int	lbr_saved = reset_lbr();
-	#endif
+#endif
 
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
 
-	#ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	restore_lbr(lbr_saved);
-	#endif
+#endif
 
 	oap->motion_type = MBLOCK;
 	oap->inclusive = TRUE;
@@ -10127,11 +10127,11 @@ init_srand(UINT32_T *x)
 #if defined(FEAT_RELTIME)
 	proftime_T res;
 	profile_start(&res);
-#  if defined(MSWIN)
+# if defined(MSWIN)
 	*x = (UINT32_T)res.LowPart;
-#  else
+# else
 	*x = (UINT32_T)res.tv_fsec;
-#  endif
+# endif
 #else
 	*x = vim_time();
 #endif
@@ -12316,11 +12316,11 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
     {
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	if (USE_24BIT)
 	    modec = 'g';
 	else
-#endif
+# endif
 	    if (t_colors > 1)
 		modec = 'c';
 	    else

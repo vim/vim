@@ -116,7 +116,7 @@ static digr_T digraphdefault[] = {
 	{'P', 'M', 0x9e},
 	{'A', 'C', 0x9f},
 	{'N', 'S', 0xa0},
-#   define DG_START_LATIN 0xa1
+# define DG_START_LATIN 0xa1
 	{'!', 'I', 0xa1},
 	{'~', '!', 0xa1},	// ¡ Vim 5.x compatible
 	{'C', 't', 0xa2},
@@ -265,7 +265,7 @@ static digr_T digraphdefault[] = {
 	{'y', ':', 0xff},
 	{'y', '"', 0xff},	// x XX  Vim 5.x compatible
 
-#   define USE_UNICODE_DIGRAPHS
+# define USE_UNICODE_DIGRAPHS
 
 	{'A', '-', 0x0100},
 	{'a', '-', 0x0101},
@@ -440,7 +440,7 @@ static digr_T digraphdefault[] = {
 	{'\'', '0', 0x02da},
 	{'\'', ';', 0x02db},
 	{'\'', '"', 0x02dd},
-#   define DG_START_GREEK 0x0386
+# define DG_START_GREEK 0x0386
 	{'A', '%', 0x0386},
 	{'E', '%', 0x0388},
 	{'Y', '%', 0x0389},
@@ -522,7 +522,7 @@ static digr_T digraphdefault[] = {
 	{'p', '3', 0x03e1},
 	{'\'', '%', 0x03f4},
 	{'j', '3', 0x03f5},
-#   define DG_START_CYRILLIC 0x0401
+# define DG_START_CYRILLIC 0x0401
 	{'I', 'O', 0x0401},
 	{'D', '%', 0x0402},
 	{'G', '%', 0x0403},
@@ -627,7 +627,7 @@ static digr_T digraphdefault[] = {
 	{'c', '3', 0x0481},
 	{'G', '3', 0x0490},
 	{'g', '3', 0x0491},
-#   define DG_START_HEBREW 0x05d0
+# define DG_START_HEBREW 0x05d0
 	{'A', '+', 0x05d0},
 	{'B', '+', 0x05d1},
 	{'G', '+', 0x05d2},
@@ -655,7 +655,7 @@ static digr_T digraphdefault[] = {
 	{'R', '+', 0x05e8},
 	{'S', 'h', 0x05e9},
 	{'T', '+', 0x05ea},
-#   define DG_START_ARABIC 0x060c
+# define DG_START_ARABIC 0x060c
 	{',', '+', 0x060c},
 	{';', '+', 0x061b},
 	{'?', '+', 0x061f},
@@ -718,7 +718,7 @@ static digr_T digraphdefault[] = {
 	{'7', 'a', 0x06f7},
 	{'8', 'a', 0x06f8},
 	{'9', 'a', 0x06f9},
-#   define DG_START_LATIN_EXTENDED 0x1e02
+# define DG_START_LATIN_EXTENDED 0x1e02
 	{'B', '.', 0x1e02},
 	{'b', '.', 0x1e03},
 	{'B', '_', 0x1e06},
@@ -813,7 +813,7 @@ static digr_T digraphdefault[] = {
 	{'y', '2', 0x1ef7},
 	{'Y', '?', 0x1ef8},
 	{'y', '?', 0x1ef9},
-#   define DG_START_GREEK_EXTENDED 0x1f00
+# define DG_START_GREEK_EXTENDED 0x1f00
 	{';', '\'', 0x1f00},
 	{',', '\'', 0x1f01},
 	{';', '!', 0x1f02},
@@ -822,7 +822,7 @@ static digr_T digraphdefault[] = {
 	{'?', ',', 0x1f05},
 	{'!', ':', 0x1f06},
 	{'?', ':', 0x1f07},
-#   define DG_START_PUNCTUATION 0x2002
+# define DG_START_PUNCTUATION 0x2002
 	{'1', 'N', 0x2002},
 	{'1', 'M', 0x2003},
 	{'3', 'M', 0x2004},
@@ -863,7 +863,7 @@ static digr_T digraphdefault[] = {
 	{':', 'X', 0x203b},
 	{'\'', '-', 0x203e},
 	{'/', 'f', 0x2044},
-#   define DG_START_SUB_SUPER 0x2070
+# define DG_START_SUB_SUPER 0x2070
 	{'0', 'S', 0x2070},
 	{'4', 'S', 0x2074},
 	{'5', 'S', 0x2075},
@@ -892,7 +892,7 @@ static digr_T digraphdefault[] = {
 	{'=', 's', 0x208c},
 	{'(', 's', 0x208d},
 	{')', 's', 0x208e},
-#   define DG_START_CURRENCY 0x20a4
+# define DG_START_CURRENCY 0x20a4
 	{'L', 'i', 0x20a4},
 	{'P', 't', 0x20a7},
 	{'W', '=', 0x20a9},
@@ -900,7 +900,7 @@ static digr_T digraphdefault[] = {
 	{'E', 'u', 0x20ac}, // euro
 	{'=', 'R', 0x20bd}, // rouble
 	{'=', 'P', 0x20bd}, // rouble
-#   define DG_START_OTHER1 0x2103
+# define DG_START_OTHER1 0x2103
 	{'o', 'C', 0x2103},
 	{'c', 'o', 0x2105},
 	{'o', 'F', 0x2109},
@@ -923,7 +923,7 @@ static digr_T digraphdefault[] = {
 	{'3', '8', 0x215c},
 	{'5', '8', 0x215d},
 	{'7', '8', 0x215e},
-#   define DG_START_ROMAN 0x2160
+# define DG_START_ROMAN 0x2160
 	{'1', 'R', 0x2160},
 	{'2', 'R', 0x2161},
 	{'3', 'R', 0x2162},
@@ -948,7 +948,7 @@ static digr_T digraphdefault[] = {
 	{'a', 'r', 0x2179},
 	{'b', 'r', 0x217a},
 	{'c', 'r', 0x217b},
-#   define DG_START_ARROWS 0x2190
+# define DG_START_ARROWS 0x2190
 	{'<', '-', 0x2190},
 	{'-', '!', 0x2191},
 	{'-', '>', 0x2192},
@@ -958,7 +958,7 @@ static digr_T digraphdefault[] = {
 	{'<', '=', 0x21d0},
 	{'=', '>', 0x21d2},
 	{'=', '=', 0x21d4},
-#   define DG_START_MATH 0x2200
+# define DG_START_MATH 0x2200
 	{'F', 'A', 0x2200},
 	{'d', 'P', 0x2202},
 	{'T', 'E', 0x2203},
@@ -1017,7 +1017,7 @@ static digr_T digraphdefault[] = {
 	{'.', 'P', 0x22c5},
 	{':', '3', 0x22ee},
 	{'.', '3', 0x22ef},
-#   define DG_START_TECHNICAL 0x2302
+# define DG_START_TECHNICAL 0x2302
 	{'E', 'h', 0x2302},
 	{'<', '7', 0x2308},
 	{'>', '7', 0x2309},
@@ -1030,7 +1030,7 @@ static digr_T digraphdefault[] = {
 	{'I', 'l', 0x2321},
 	{'<', '[', 0x27e8},
 	{']', '>', 0x27e9},
-#   define DG_START_OTHER2 0x2423
+# define DG_START_OTHER2 0x2423
 	{'V', 's', 0x2423},
 	{'1', 'h', 0x2440},
 	{'3', 'h', 0x2441},
@@ -1049,7 +1049,7 @@ static digr_T digraphdefault[] = {
 	{'7', '.', 0x248e},
 	{'8', '.', 0x248f},
 	{'9', '.', 0x2490},
-#   define DG_START_DRAWING 0x2500
+# define DG_START_DRAWING 0x2500
 	{'h', 'h', 0x2500},
 	{'H', 'H', 0x2501},
 	{'v', 'v', 0x2502},
@@ -1100,7 +1100,7 @@ static digr_T digraphdefault[] = {
 	{'V', 'H', 0x254b},
 	{'F', 'D', 0x2571},
 	{'B', 'D', 0x2572},
-#   define DG_START_BLOCK 0x2580
+# define DG_START_BLOCK 0x2580
 	{'T', 'B', 0x2580},
 	{'L', 'B', 0x2584},
 	{'F', 'B', 0x2588},
@@ -1109,7 +1109,7 @@ static digr_T digraphdefault[] = {
 	{'.', 'S', 0x2591},
 	{':', 'S', 0x2592},
 	{'?', 'S', 0x2593},
-#   define DG_START_SHAPES 0x25a0
+# define DG_START_SHAPES 0x25a0
 	{'f', 'S', 0x25a0},
 	{'O', 'S', 0x25a1},
 	{'R', 'O', 0x25a2},
@@ -1143,7 +1143,7 @@ static digr_T digraphdefault[] = {
 	{'I', 'c', 0x25d9},
 	{'F', 'd', 0x25e2},
 	{'B', 'd', 0x25e3},
-#   define DG_START_SYMBOLS 0x2605
+# define DG_START_SYMBOLS 0x2605
 	{'*', '2', 0x2605},
 	{'*', '1', 0x2606},
 	{'<', 'H', 0x261c},
@@ -1163,11 +1163,11 @@ static digr_T digraphdefault[] = {
 	{'M', 'b', 0x266d},
 	{'M', 'x', 0x266e},
 	{'M', 'X', 0x266f},
-#   define DG_START_DINGBATS 0x2713
+# define DG_START_DINGBATS 0x2713
 	{'O', 'K', 0x2713},
 	{'X', 'X', 0x2717},
 	{'-', 'X', 0x2720},
-#   define DG_START_CJK_SYMBOLS 0x3000
+# define DG_START_CJK_SYMBOLS 0x3000
 	{'I', 'S', 0x3000},
 	{',', '_', 0x3001},
 	{'.', '_', 0x3002},
@@ -1193,7 +1193,7 @@ static digr_T digraphdefault[] = {
 	{'(', 'I', 0x3016},
 	{')', 'I', 0x3017},
 	{'-', '?', 0x301c},
-#   define DG_START_HIRAGANA 0x3041
+# define DG_START_HIRAGANA 0x3041
 	{'A', '5', 0x3041},
 	{'a', '5', 0x3042},
 	{'I', '5', 0x3043},
@@ -1282,7 +1282,7 @@ static digr_T digraphdefault[] = {
 	{'0', '5', 0x309c},
 	{'*', '5', 0x309d},
 	{'+', '5', 0x309e},
-#   define DG_START_KATAKANA 0x30a1
+# define DG_START_KATAKANA 0x30a1
 	{'a', '6', 0x30a1},
 	{'A', '6', 0x30a2},
 	{'i', '6', 0x30a3},
@@ -1377,7 +1377,7 @@ static digr_T digraphdefault[] = {
 	{'-', '6', 0x30fc},
 	{'*', '6', 0x30fd},
 	{'+', '6', 0x30fe},
-#   define DG_START_BOPOMOFO 0x3105
+# define DG_START_BOPOMOFO 0x3105
 	{'b', '4', 0x3105},
 	{'p', '4', 0x3106},
 	{'m', '4', 0x3107},
@@ -1417,7 +1417,7 @@ static digr_T digraphdefault[] = {
 	{'v', '4', 0x312a},
 	{'n', 'G', 0x312b},
 	{'g', 'n', 0x312c},
-#   define DG_START_OTHER3 0x3220
+# define DG_START_OTHER3 0x3220
 	{'1', 'c', 0x3220},
 	{'2', 'c', 0x3221},
 	{'3', 'c', 0x3222},
@@ -1476,7 +1476,7 @@ get_digraph_for_char(int val_arg)
     digr_T	*dp;
     static      char_u      r[3];
 
-#if defined(USE_UNICODE_DIGRAPHS)
+# if defined(USE_UNICODE_DIGRAPHS)
     if (!enc_utf8)
     {
 	char_u	    buf[6], *to;
@@ -1497,7 +1497,7 @@ get_digraph_for_char(int val_arg)
 	    (void)convert_setup(&vc, NULL, NULL);
 	}
     }
-#endif
+# endif
 
     for (use_defaults = 0; use_defaults <= 1; use_defaults++)
     {
@@ -1546,9 +1546,9 @@ get_digraph(
     if (cmdline)
     {
 	if (char2cells(c) == 1
-#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+# if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 		&& cmdline_star == 0
-#endif
+# endif
 	   )
 	    putcmdline(c, TRUE);
     }
@@ -1609,7 +1609,7 @@ getexactdigraph(int char1, int char2, int meta_char)
 	    ++dp;
 	}
     }
-#ifdef USE_UNICODE_DIGRAPHS
+# ifdef USE_UNICODE_DIGRAPHS
     if (retval != 0 && !enc_utf8)
     {
 	char_u	    buf[6], *to;
@@ -1633,7 +1633,7 @@ getexactdigraph(int char1, int char2, int meta_char)
 	    (void)convert_setup(&vc, NULL, NULL);
 	}
     }
-#endif
+# endif
 
     // Ignore multi-byte characters when not in multi-byte mode.
     if (!has_mbyte && retval > 0xff)
@@ -1755,7 +1755,7 @@ putdigraph(char_u *str)
     }
 }
 
-#if defined(USE_UNICODE_DIGRAPHS)
+# if defined(USE_UNICODE_DIGRAPHS)
     static void
 digraph_header(char *msg)
 {
@@ -1764,7 +1764,7 @@ digraph_header(char *msg)
     msg_outtrans_attr((char_u *)msg, HL_ATTR(HLF_CM));
     msg_putchar('\n');
 }
-#endif
+# endif
 
     void
 listdigraphs(int use_headers)
@@ -1778,7 +1778,7 @@ listdigraphs(int use_headers)
     dp = digraphdefault;
     while (dp->char1 != NUL && !got_int)
     {
-#if defined(USE_UNICODE_DIGRAPHS)
+# if defined(USE_UNICODE_DIGRAPHS)
 	digr_T tmp;
 
 	// May need to convert the result to 'encoding'.
@@ -1788,12 +1788,12 @@ listdigraphs(int use_headers)
 	if (tmp.result != 0 && tmp.result != tmp.char2
 					  && (has_mbyte || tmp.result <= 255))
 	    printdigraph(&tmp, use_headers ? &previous : NULL);
-#else
+# else
 
 	if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
 		&& (has_mbyte || dp->result <= 255))
 	    printdigraph(dp, use_headers ? &previous : NULL);
-#endif
+# endif
 	++dp;
 	ui_breakcheck();
     }
@@ -1801,11 +1801,11 @@ listdigraphs(int use_headers)
     dp = (digr_T *)user_digraphs.ga_data;
     for (i = 0; i < user_digraphs.ga_len && !got_int; ++i)
     {
-#if defined(USE_UNICODE_DIGRAPHS)
+# if defined(USE_UNICODE_DIGRAPHS)
 	if (previous >= 0 && use_headers)
 	    digraph_header(_("Custom"));
 	previous = -1;
-#endif
+# endif
 	printdigraph(dp, NULL);
 	ui_breakcheck();
 	++dp;
@@ -1881,7 +1881,7 @@ digraph_getlist_common(int list_all, typval_T *rettv)
 	dp = digraphdefault;
 	while (dp->char1 != NUL && !got_int)
 	{
-#ifdef USE_UNICODE_DIGRAPHS
+# ifdef USE_UNICODE_DIGRAPHS
 	    digr_T tmp;
 
 	    tmp.char1 = dp->char1;
@@ -1890,11 +1890,11 @@ digraph_getlist_common(int list_all, typval_T *rettv)
 	    if (tmp.result != 0 && tmp.result != tmp.char2
 					  && (has_mbyte || tmp.result <= 255))
 		digraph_getlist_appendpair(&tmp, rettv->vval.v_list);
-#else
+# else
 	    if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
 		    && (has_mbyte || dp->result <= 255))
 		digraph_getlist_appendpair(dp, rettv->vval.v_list);
-#endif
+# endif
 	    ++dp;
 	}
     }
@@ -1956,7 +1956,7 @@ printdigraph(digr_T *dp, result_T *previous)
     if (dp->result == 0)
 	return;
 
-#if defined(USE_UNICODE_DIGRAPHS)
+# if defined(USE_UNICODE_DIGRAPHS)
     if (previous != NULL)
     {
 	int i;
@@ -1971,7 +1971,7 @@ printdigraph(digr_T *dp, result_T *previous)
 	    }
 	*previous = dp->result;
     }
-#endif
+# endif
     if (msg_col > cmdline_width - list_width)
 	msg_putchar('\n');
     if (msg_col)
@@ -2224,7 +2224,7 @@ typedef struct
     char_u	*to;
 } kmap_T;
 
-#define KMAP_MAXLEN 20	    // maximum length of "from" or "to"
+# define KMAP_MAXLEN 20	    // maximum length of "from" or "to"
 
 static void keymap_unload(void);
 
@@ -2288,7 +2288,7 @@ ex_loadkeymap(exarg_T *eap)
     char_u	*p;
     char_u	*s;
     kmap_T	*kp;
-#define KMAP_LLEN   200	    // max length of "to" and "from" together
+# define KMAP_LLEN   200	    // max length of "to" and "from" together
     char_u	buf[KMAP_LLEN + 11];
     int		i;
     char_u	*save_cpo = p_cpo;

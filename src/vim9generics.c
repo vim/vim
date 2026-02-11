@@ -572,7 +572,7 @@ parse_generic_func_type_params(
 	return NULL;
     }
 
-    // set the generic parms to VAR_ANY type
+    // set the generic params to VAR_ANY type
     if (ga_grow(&gfatab->gfat_param_types, gfat_sz) == FAIL)
 	return NULL;
 

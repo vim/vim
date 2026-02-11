@@ -264,13 +264,13 @@ get_yank_register(int regname, int writing)
     // When clipboard is not available, use register 0 instead of '+'
     else if (clip_plus.available && regname == '+')
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
 	// We want to use the actual + register, since PLUS_REGISTER may be
 	// pointing to STAR_REGISTER.
 	if (clipmethod == CLIPMETHOD_PROVIDER)
 	    i = REAL_PLUS_REGISTER;
 	else
-#endif
+# endif
 	    i = PLUS_REGISTER;
 	ret = TRUE;
     }
@@ -2446,6 +2446,7 @@ ex_display(exarg_T *eap)
     int		type;
     string_T	insert;
 
+    silence_w23_w24_msg++;
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
@@ -2609,6 +2610,7 @@ ex_display(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     dec_clip_provider();
 #endif
+    silence_w23_w24_msg--;
 }
 
 /*
@@ -2684,10 +2686,10 @@ get_reg_type(int regname, long *reglen)
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
-# endif
+#endif
 
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return MAUTO;
@@ -2764,9 +2766,9 @@ get_reg_contents(int regname, int flags)
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return NULL;
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
-#endif
+# endif
 # ifdef FEAT_CLIPBOARD
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
@@ -2935,9 +2937,9 @@ write_reg_contents_lst(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
-#endif
+# endif
 }
 
     void
@@ -3013,9 +3015,9 @@ write_reg_contents_ex(
 
     finish_write_reg(name, old_y_previous, old_y_current);
 
-#ifdef FEAT_CLIPBOARD_PROVIDER
+# ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_set(name);
-#endif
+# endif
 }
 #endif	// FEAT_EVAL
 

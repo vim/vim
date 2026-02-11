@@ -391,15 +391,15 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_using_special_value_as_float));
 	    break;
 	case VAR_JOB:
-# ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    emsg(_(e_using_job_as_float));
 	    break;
-# endif
+#endif
 	case VAR_CHANNEL:
-# ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    emsg(_(e_using_channel_as_float));
 	    break;
-# endif
+#endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_float));
 	    break;

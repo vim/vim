@@ -2498,6 +2498,7 @@ do_wqall(exarg_T *eap)
     buf_T	*buf;
     int		error = 0;
     int		save_forceit = eap->forceit;
+    int		save_exiting = exiting;
 
     if (eap->cmdidx == CMD_xall || eap->cmdidx == CMD_wqall)
     {
@@ -2509,9 +2510,9 @@ do_wqall(exarg_T *eap)
     FOR_ALL_BUFFERS(buf)
     {
 #ifdef FEAT_TERMINAL
-	if (exiting && term_job_running(buf->b_term))
+	if (exiting && !eap->forceit && term_job_running(buf->b_term))
 	{
-	    no_write_message_nobang(buf);
+	    no_write_message_buf(buf);
 	    ++error;
 	}
 	else
@@ -2564,7 +2565,7 @@ do_wqall(exarg_T *eap)
     {
 	if (!error)
 	    getout(0);		// exit Vim
-	not_exiting();
+	not_exiting(save_exiting);
     }
 }
 

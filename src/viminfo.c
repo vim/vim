@@ -3356,11 +3356,11 @@ write_viminfo(char_u *file, int forceit)
 		++viminfo_errcnt;
 		semsg(_(e_cant_rename_viminfo_file_to_str), fname);
 	    }
-# ifdef MSWIN
+#ifdef MSWIN
 	    // If the viminfo file was hidden then also hide the new file.
 	    else if (hidden)
 		mch_hide(fname);
-# endif
+#endif
 	}
 	if (viminfo_errcnt > 0)
 	    mch_remove(tempname);

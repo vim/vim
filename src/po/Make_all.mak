@@ -37,6 +37,7 @@ LANGUAGES = \
 		sk.cp1250 \
 		sr \
 		sv \
+		ta \
 		tr \
 		uk \
 		uk.cp1251 \
@@ -83,6 +84,7 @@ POFILES = \
 		sk.cp1250.po \
 		sr.po \
 		sv.po \
+		ta.po \
 		tr.po \
 		uk.po \
 		uk.cp1251.po \
@@ -121,6 +123,7 @@ MOFILES = \
 		sk.mo \
 		sr.mo \
 		sv.mo \
+		ta.mo \
 		tr.mo \
 		uk.mo \
 		vi.mo \
@@ -178,6 +181,7 @@ CHECKFILES = \
 		sk.cp1250.ck \
 		sr.ck \
 		sv.ck \
+		ta.ck \
 		tr.ck \
 		uk.ck \
 		uk.cp1251.ck \

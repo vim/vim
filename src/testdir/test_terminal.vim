@@ -1368,7 +1368,7 @@ func Test_terminal_qall_kill_func()
 endfunc
 
 " Run Vim, start a terminal in that Vim without the kill argument,
-" check that :qall does not exit, :qall! does.
+" check that :qall does not exit.
 func Test_terminal_qall_exit()
   let after =<< trim [CODE]
     term
@@ -1388,6 +1388,28 @@ func Test_terminal_qall_exit()
   endif
   call assert_equal("done", readfile("Xdone")[0])
   call delete("Xdone")
+endfunc
+
+" :qall! and :wqall! should exit when there is a terminal buffer.
+func Test_terminal_qall_wqall_bang_exit()
+  for cmd in ['qall!', 'wqall!']
+    let after =<< trim eval [CODE]
+      term
+      let buf = bufnr("%")
+      while term_getline(buf, 1) =~ "^\\s*$"
+        sleep 10m
+      endwhile
+      set nomore
+      au VimLeavePre * call writefile(["done"], "Xdone")
+      {cmd}
+    [CODE]
+
+    if !RunVim([], after, '')
+      continue
+    endif
+    call assert_equal("done", readfile("Xdone")[0])
+    call delete("Xdone")
+  endfor
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim without a kill

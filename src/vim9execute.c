@@ -3708,19 +3708,8 @@ exec_instructions(ectx_T *ectx)
 		// "this" is always the local variable at index zero
 		tv = STACK_TV_VAR(0);
 		tv->v_type = VAR_OBJECT;
-		tv->vval.v_object = alloc_clear(
-				       iptr->isn_arg.construct.construct_size);
-		tv->vval.v_object->obj_class =
-				       iptr->isn_arg.construct.construct_class;
-		++tv->vval.v_object->obj_class->class_refcount;
-		tv->vval.v_object->obj_refcount = 1;
-		object_created(tv->vval.v_object);
-
-		// When creating an enum value object, initialize the name and
-		// ordinal object variables.
-		class_T *en = tv->vval.v_object->obj_class;
-		if (IS_ENUM(en))
-		    enum_set_internal_obj_vars(en, tv->vval.v_object);
+		tv->vval.v_object =
+		    alloc_object(iptr->isn_arg.construct.construct_class);
 		break;
 
 	    // execute Ex command line
@@ -8138,13 +8127,19 @@ tv2bool(typval_T *tv)
 #endif
 	case VAR_BLOB:
 	    return tv->vval.v_blob != NULL && tv->vval.v_blob->bv_ga.ga_len > 0;
+
+	case VAR_OBJECT:
+	    return tv->vval.v_object != NULL;
+
+	case VAR_CLASS:
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(tv);
+	    break;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_INSTR:
-	case VAR_CLASS:
-	case VAR_OBJECT:
-	case VAR_TYPEALIAS:
 	    break;
     }
     return FALSE;

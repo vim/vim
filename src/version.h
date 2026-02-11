@@ -37,13 +37,13 @@
 // For details see https://github.com/vim/vim-win32-installer/pull/277
 // and https://github.com/vim/vim-win32-installer/pull/285
 #if VIM_VERSION_PATCHLEVEL < 10
-#define LEADZERO(x) 000 ## x
+# define LEADZERO(x) 000 ## x
 #elif VIM_VERSION_PATCHLEVEL < 100
-#define LEADZERO(x) 00 ## x
+# define LEADZERO(x) 00 ## x
 #elif VIM_VERSION_PATCHLEVEL < 1000
-#define LEADZERO(x) 0 ## x
+# define LEADZERO(x) 0 ## x
 #else
-#define LEADZERO(x) x
+# define LEADZERO(x) x
 #endif
 
 #define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(LEADZERO(VIM_VERSION_PATCHLEVEL))

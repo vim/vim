@@ -282,8 +282,8 @@ static int Vim_PyRun_SimpleString(const char *str)
     Py_DECREF(output);
     return 0;
 }
-#define PyRun_String Vim_PyRun_String
-#define PyRun_SimpleString Vim_PyRun_SimpleString
+# define PyRun_String Vim_PyRun_String
+# define PyRun_SimpleString Vim_PyRun_SimpleString
 
 #else // !defined(USE_LIMITED_API)
 

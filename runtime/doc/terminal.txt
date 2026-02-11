@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Nov 28
+*terminal.txt*	For Vim version 9.1.  Last change: 2026 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -525,10 +525,12 @@ term_dumpdiff({filename}, {filename} [, {options}])
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
 				     instead of using 'termwinsize', but
-				     respecting the minimal size
+				     respecting the minimal size; valid range
+				     is from 0 to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
 				     instead of using 'termwinsize', but
-				     respecting the minimal size
+				     respecting the minimal size; valid range
+				     is from 0 to 1000
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -951,9 +953,10 @@ term_start({cmd} [, {options}])			*term_start()*
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
 				     instead of using 'termwinsize'; valid
-				     range is from zero to 1000
+				     range is from 0 to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize'; valid
+				     range is from 0 to 1000
 		   "vertical"	     split the window vertically; note that
 				     other window position can be defined with
 				     command modifiers, such as |:belowright|.
@@ -1263,7 +1266,8 @@ Alternatively, press "s" to swap the first and second dump.  Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-6. Debugging	*terminal-debug* *terminal-debugger* *package-termdebug*
+6. Debugging				*terminal-debug* *terminal-debugger*
+					*package-termdebug* *termdebug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside
