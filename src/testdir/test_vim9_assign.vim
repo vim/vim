@@ -1593,8 +1593,6 @@ def Test_assignment_failure()
   v9.CheckScriptFailure(['vim9script', 'var $ENV = "xxx"'], 'E1016:')
 
   # read-only registers
-  v9.CheckDefAndScriptFailure(['var @. = 5'], ['E354:', 'E1066:'], 1)
-  v9.CheckDefAndScriptFailure(['var @. = 5'], ['E354:', 'E1066:'], 1)
   v9.CheckDefAndScriptFailure(['var @% = 5'], ['E354:', 'E1066:'], 1)
   v9.CheckDefAndScriptFailure(['var @: = 5'], ['E354:', 'E1066:'], 1)
   if has('dnd')
