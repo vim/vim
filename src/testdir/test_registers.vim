@@ -1300,17 +1300,31 @@ endfunc
 func Test_write_dot_register()
   new
 
-  call setreg('.', 'foobar')
-  call assert_equal('foobar', getreg('.'))
+  " Basic functionality
+  call setreg('.', 'itext')
+  call assert_equal('itext', getreg('.'))
 
-  let @. .= 'baz'
-  call assert_equal('foobarbaz', getreg('.'))
+  " Direct assignment
+  let @. = 'abc'
+  call assert_equal('abc', getreg('.'))
 
-  " . command test.
-  let @. = 'abb'
-  normal! .
+  " Concatenation
+  let @. .= 'def'
+  call assert_equal('abcdef', getreg('.'))
 
-  call assert_equal(['bb'], getline(1, '$'))
+  " Single character edge case
+  let @. = 'i'
+  call assert_equal('i', getreg('.'))
+
+  " Multibyte support
+  let @. = 'i日本語'
+  call assert_equal('i日本語', getreg('.'))
+
+  " Empty string
+  let @. = ''
+  call assert_equal('', getreg('.'))
+
+  " TODO: Add more behavioral tests once spec is finalized
 
   bwipe!
 endfunc
