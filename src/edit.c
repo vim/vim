@@ -2672,6 +2672,14 @@ set_last_insert(int c)
 
 /*
  * Set the last inserted text to str.
+ * EXPERIMENTAL: This is used for writable dot register feature.
+ * The behavior may change in future versions.
+ *
+ * If the first character is an insert command (i, a, o, etc.) and there
+ * are more characters following it, the first char is treated as the
+ * command and the rest as text to insert.
+ *
+ * TODO: Consider alternative approaches for command specification.
  */
     void
 set_last_insert_str(char_u *str)
