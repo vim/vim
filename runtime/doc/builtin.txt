@@ -10310,9 +10310,13 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 
 setreg({regname}, {value} [, {options}])		*setreg()*
 		Set the register {regname} to {value}.
-		If {regname} is "" or "@", the unnamed register '"' is used.
+		If {regname} is "" or "@" or ".", the unnamed register '"' is
+		used.
 		The {regname} argument is a string.  In |Vim9-script|
 		{regname} must be one character.
+		The dot register '.' can now be set to customize the repeat
+		command.  The value should be a string representing the
+		insert command and text.
 
 		{value} may be any value returned by |getreg()| or
 		|getreginfo()|, including a |List| or |Dict|.
@@ -10344,8 +10348,21 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 			:call setreg('*', @%, 'ac')
 			:call setreg('a', "1\n2\n3", 'b5')
 			:call setreg('"', { 'points_to': 'a'})
+<
+		Examples for dot register (experimental): >
+			" Set simple text (uses 'a' mode)
+			:call setreg('.', 'iHello')
 
-<		This example shows using the functions to save and restore a
+			" Works with direct assignment too
+			:let @. = 'oNew line'
+
+			" Concatenate
+			:let @. .= ' more text'
+<
+		Note: The exact behavior of the dot register is subject
+		to change.  See |dot-register-writable|.
+
+		This example shows using the functions to save and restore a
 		register: >
 			:let var_a = getreginfo()
 			:call setreg('a', var_a)
