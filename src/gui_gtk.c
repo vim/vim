@@ -2611,3 +2611,12 @@ recent_func_log_func(const gchar *log_domain UNUSED,
     // http://bugzilla.gnome.org/show_bug.cgi?id=664587
 }
 #endif
+
+    void
+gui_mch_set_fullscreen(int flag)
+{
+    if (flag)
+	gtk_window_fullscreen(GTK_WINDOW(gui.mainwin));
+    else
+	gtk_window_unfullscreen(GTK_WINDOW(gui.mainwin));
+}

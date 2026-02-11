@@ -4613,10 +4613,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		Photon GUIs.
 								*'go-s'*
 	  's'	Enable fullscreen mode.  Currently only supported in the
-		MS-Windows GUI version.  When set, the window will occupy the
-		entire screen and remove window decorations.  Define custom
-		mappings to toggle this mode conveniently.  For detailed usage
-		instructions, see |gui-w32-fullscreen|.
+		MS-Windows and GTK GUI version.  When set, the window will
+		occupy the entire screen and remove window decorations.
+		Define custom mappings to toggle this mode conveniently.
+		For detailed usage instructions, see |gui-fullscreen|.
 								*'go-r'*
 	  'r'	Right-hand scrollbar is always present.
 								*'go-R'*

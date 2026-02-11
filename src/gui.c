@@ -158,7 +158,7 @@ gui_start(char_u *arg UNUSED)
 	choose_clipmethod();
 #endif
 
-#ifdef FEAT_GUI_MSWIN
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
     // Enable fullscreen mode
     if (vim_strchr(p_go, GO_FULLSCREEN) != NULL)
        gui_mch_set_fullscreen(TRUE);
@@ -3512,7 +3512,9 @@ gui_init_which_components(char_u *oldval UNUSED)
 #ifdef FEAT_GUI_MSWIN
     static int	prev_titlebar = FALSE;
     int		using_titlebar = FALSE;
+#endif
 
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
     static int	prev_fullscreen = FALSE;
     int		using_fullscreen = FALSE;
 #endif
@@ -3589,6 +3591,8 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_TITLEBAR:
 		using_titlebar = TRUE;
 		break;
+#endif
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
 	    case GO_FULLSCREEN:
 		using_fullscreen = TRUE;
 		break;
@@ -3620,7 +3624,9 @@ gui_init_which_components(char_u *oldval UNUSED)
 	gui_mch_set_titlebar_colors();
 	prev_titlebar = using_titlebar;
     }
+#endif
 
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
     if (using_fullscreen != prev_fullscreen)
     {
 	gui_mch_set_fullscreen(using_fullscreen);
