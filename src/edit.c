@@ -2706,19 +2706,22 @@ set_last_insert_str(char_u *str)
     text_start = str;
 
     // Check if the first character is an insert mode command
-    if (str != NULL && *str != NUL)
+    // For single character strings, treat as literal text (not a command)
+    if (str != NULL && str[0] != NUL && str[1] != NUL)
     {
 	int first_char = *p;
-	if (first_char == 'i' || first_char == 'a' || first_char == 'o' ||
-	    first_char == 'O' || first_char == 'I' || first_char == 'A' ||
-	    first_char == 'c' || first_char == 's' || first_char == 'C' ||
-	    first_char == 'S')
+	// Check if it's a valid insert command character
+	if (vim_strchr((char_u *)"iaoOIAcsSC", first_char) != NULL)
 	{
 	    has_command = TRUE;
 	    MB_PTR_ADV(p);  // Skip the command character
 	    text_start = p;
 	}
+    }
 
+    // Copy the text part to last_insert.string
+    if (text_start != NULL && *text_start != NUL)
+    {
 	// Copy the text part to last_insert.string
 	for (; *p != NUL; MB_PTR_ADV(p))
 	{

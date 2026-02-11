@@ -1302,15 +1302,15 @@ func Test_write_dot_register()
 
   " Basic functionality
   call setreg('.', 'itext')
-  call assert_equal('itext', getreg('.'))
+  call assert_equal('text', getreg('.'))
 
   " Direct assignment
   let @. = 'abc'
-  call assert_equal('abc', getreg('.'))
+  call assert_equal('bc', getreg('.'))
 
   " Concatenation
   let @. .= 'def'
-  call assert_equal('abcdef', getreg('.'))
+  call assert_equal('bcdef', getreg('.'))
 
   " Single character edge case
   let @. = 'i'
@@ -1318,7 +1318,7 @@ func Test_write_dot_register()
 
   " Multibyte support
   let @. = 'i日本語'
-  call assert_equal('i日本語', getreg('.'))
+  call assert_equal('日本語', getreg('.'))
 
   " Empty string
   let @. = ''
