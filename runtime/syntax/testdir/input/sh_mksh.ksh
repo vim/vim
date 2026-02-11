@@ -77,7 +77,7 @@ uniq
 vmstate		# Obsolescent; only available in 93v- and older
 wc
 xargs		# 93v-
-xgrep		# 93v-
+xgrep		# Obsolescent; only 93v- allows invoking 'grep -X' as 'xgrep'
 
 # SHA command not provided as a builtin but included here for completeness
 sha224sum
@@ -88,14 +88,14 @@ poll --man
 # mkservice and eloop (rarely provided; requires SHOPT_MKSERVICE)
 mkservice --man; eloop --help
 
-# some mksh builtins
+# some mksh builtins, rename should be highlighted as an external command
 bind; rename
 
 # ;& and ;;& in case statements
 case x in
 	bar) false ${baz:1} ;&
 	foo) true ${foo:0:0} ;;&
-	*) print ${$bar} ;;	# 93v-
+	*) print ${$bar} ;; # 93v-
 esac
 
 # Below is subshare syntax supported by both ksh93 and mksh.
@@ -144,3 +144,39 @@ print ${ RANDOM= SRANDOM= SHLVL= JOBMAX= KSH_VERSION= FIGNORE= LC_TIME= LC_NUMER
 print $(LINENO= SECONDS= TMOUT= PPID= LINES= COLUMNS= VISUAL= OLDPWD= PS3= MAILPATH= CDPATH= FCEDIT= HISTCMD= HISTEDIT= HISTSIZE= HISTFILE= ENV= MAILCHECK= EDITOR= SHELL= false)
 print $(REPLY= MAIL= HOME= PWD= IFS= PS2= PS1= PATH= SH_OPTIONS= ERRNO= COMP_CWORD= COMP_LINE= COMP_POINT= COMP_WORDS= COMP_KEY= COMPREPLY= COMP_WORDBREAKS= COMP_TYPE= compgen)
 print $(BASHPID= EPOCHREALTIME= EXECSHELL= KSHEGID= KSHGID= KSHUID= KSH_MATCH= PATHSEP= PGRP= PIPESTATUS= TMPDIR= USER_ID= VPATH= CSWIDTH= complete)
+
+function foo() {
+	:  # Bash-style function (mksh-only)
+}
+
+function foo2 {
+	:  # KornShell-style function
+}
+
+foo3() {
+	:  # POSIX function
+}
+
+foo4.get() {
+	:  # POSIX-style ksh93 discipline function
+}
+
+function foo5.set {
+	:  # KornShell-style ksh93 discipline function
+}
+
+_foo6.unset() (
+	:  # POSIX-style subshell discipline function
+)
+
+namespace _foo {
+	:
+}
+
+namespace 1bad.invalid {
+	:
+}
+
+namespace foo1() {
+	:  # Bad syntax
+}
