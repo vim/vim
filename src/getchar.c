@@ -601,7 +601,7 @@ restoreRedobuff(save_redo_T *save_redo)
  * Skip restoreRedobuff() until saveRedobuff().
  */
     void
-skipRestoreRedobuff()
+skipRestoreRedobuff(void)
 {
     skip_restore_redo = TRUE;
 }
