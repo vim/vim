@@ -2704,7 +2704,7 @@ set_last_insert_str(char_u *str)
 	if (first_char == 'i' || first_char == 'a' || first_char == 'o' ||
 	    first_char == 'O' || first_char == 'I' || first_char == 'A' ||
 	    first_char == 'c' || first_char == 's' || first_char == 'C' ||
-            first_char == 'S')
+	    first_char == 'S')
 	{
 	    has_command = TRUE;
 	    MB_PTR_ADV(p);  // Skip the command character
