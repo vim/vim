@@ -32,6 +32,7 @@ syn keyword djangoStatement contained get_current_language trans noop blocktrans
 syn keyword djangoStatement contained endblocktrans get_available_languages
 syn keyword djangoStatement contained get_current_language_bidi plural
 syn keyword djangoStatement contained translate blocktranslate endblocktranslate
+syn keyword djangoStatement contained partialdef endpartialdef partial
 
 " Django templete built-in filters
 syn keyword djangoFilter contained add addslashes capfirst center cut date
