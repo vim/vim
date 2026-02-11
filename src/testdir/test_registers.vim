@@ -1298,11 +1298,21 @@ func Test_writing_readonly_regs()
 endfunc
 
 func Test_write_dot_register()
+  new
+
   call setreg('.', 'foobar')
   call assert_equal('foobar', getreg('.'))
 
   let @. .= 'baz'
   call assert_equal('foobarbaz', getreg('.'))
+
+  " . command test.
+  let @. = 'abb'
+  normal! .
+
+  call assert_equal(['bb'], getline(1, '$'))
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
