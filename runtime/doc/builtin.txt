@@ -10310,8 +10310,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 
 setreg({regname}, {value} [, {options}])		*setreg()*
 		Set the register {regname} to {value}.
-		If {regname} is "" or "@" or ".", the unnamed register '"' is
-		used.
+		If {regname} is "" or "@", the unnamed register '"' is used.
 		The {regname} argument is a string.  In |Vim9-script|
 		{regname} must be one character.
 		The dot register '.' can now be set to customize the repeat

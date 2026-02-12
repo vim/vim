@@ -47,28 +47,28 @@ Writable dot register					*@.*
 
 The dot register stores a COMMAND sequence, not just text.  This is
 consistent with how |:normal| works.  The first character is interpreted
-as an insert mode command if it is one of [iaoOIAcsSC].
+as an insert mode command if it is one of [iaoOIAcsSC].  For other
+characters, the string is executed as a normal mode command sequence.
 
 Examples: >
 	:let @. = 'itext'    " Execute 'i' command, then insert 'text'
 	:let @. = 'oLine'    " Execute 'o' command, then insert 'Line'
-	:let @. = 'cw'       " Execute 'cw' command (change word)
+	:let @. = 'cwnew'    " Execute 'cw' command, then insert 'new'
 	:let @. = 'i'        " Execute 'i' command (enter insert mode)
+	:let @. = 'dd'       " Execute 'dd' command (delete line)
+	:let @. = '3x'       " Execute '3x' command (delete 3 chars)
 
 	" To insert the literal character 'i', use:
 	:let @. = 'ai'       " Execute 'a' command, then insert 'i'
-
-	" Characters that are NOT insert commands are treated as text:
-	:let @. = 'x'        " Insert 'x' (not a valid insert command)
-	:let @. = 'text'     " Insert 'text' with implicit 'a'
 <
+Note: The string is executed as-is.  If it does not represent a valid
+command sequence, the behavior is undefined.  Users are responsible for
+providing valid commands.
+
 This is consistent with |:normal| which also requires an insert command
 to enter insert mode: >
     :normal itext        " Not: ':normal text'
 <
-The dot register represents the LAST CHANGE, which is a command sequence,
-not just text.  See |.| for more information.
-
 ==============================================================================
 2. Multiple repeats					*multi-repeat*
 

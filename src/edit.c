@@ -2760,6 +2760,8 @@ set_last_insert_str(char_u *str)
 	}
 	else
 	{
+	    // Not an insert command - pass through as-is
+	    // This allows commands like 'dd', 'yy', 'x', etc.
 	    for (p = str; *p != NUL; )
 		AppendCharToRedobuff(mb_cptr2char_adv(&p));
 	}

@@ -1399,11 +1399,12 @@ func Test_write_dot_register()
   normal! .
   call assert_equal(['---'], getline(1, '$'))
 
-  " Test 9: Implicit 'a' command (no insert command character)
+  " Test 9: Non-insert mode command (dd)
   %delete _
-  let @. = 'test'
+  call setline(1, ['line1', 'line2', 'line3'])
+  let @. = 'dd'
   normal! .
-  call assert_equal([''], getline(1, '$'))
+  call assert_equal(['line2', 'line3'], getline(1, '$'))
 
   " Test 10: Single command character with no text
   %delete _
@@ -1460,6 +1461,21 @@ func Test_write_dot_register()
   let @. = 'Sreplaced'
   normal! j.
   call assert_equal(['line1', 'replaced'], getline(1, '$'))
+
+  " Test 18: Character deletion command
+  %delete _
+  call setline(1, 'abcdef')
+  normal! 0
+  let @. = '3x'
+  normal! .
+  call assert_equal(['def'], getline(1, '$'))
+
+  " Test 19: Yank and paste (non-destructive command)
+  %delete _
+  call setline(1, 'test')
+  let @. = 'yypP'
+  normal! .
+  call assert_equal(['test', 'test', 'test'], getline(1, '$'))
 
   bwipe!
 endfunc
