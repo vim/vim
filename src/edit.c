@@ -2672,14 +2672,18 @@ set_last_insert(int c)
 
 /*
  * Set the last inserted text to str.
- * EXPERIMENTAL: This is used for writable dot register feature.
- * The behavior may change in future versions.
  *
- * If the first character is an insert command (i, a, o, etc.) and there
- * are more characters following it, the first char is treated as the
- * command and the rest as text to insert.
+ * This is used for writable dot register feature.
  *
- * TODO: Consider alternative approaches for command specification.
+ * The string represents a COMMAND sequence, similar to :normal.
+ * If the first character is a valid insert mode command [iaoOIAcsSC],
+ * it is treated as the command and the rest as text to insert.
+ * Otherwise, the entire string is treated as text with implicit 'a' command.
+ *
+ * Examples:
+ *   "itext"  -> i command + "text"
+ *   "i"      -> i command (no text)
+ *   "text"   -> a command + "text" (implicit, 't' is not an insert command)
  */
     void
 set_last_insert_str(char_u *str)
@@ -2699,15 +2703,15 @@ set_last_insert_str(char_u *str)
 	return;
     }
 
-    // Parse the input string to separate the command (i, a, o, etc.) from the
-    // text
+    // Parse the input string to separate the command (i, a, o, etc.) from
+    // the text.  The first character is checked to see if it's a valid
+    // insert mode command.
     s = last_insert.string;
     p = str;
     text_start = str;
 
     // Check if the first character is an insert mode command
-    // For single character strings, treat as literal text (not a command)
-    if (str != NULL && str[0] != NUL && str[1] != NUL)
+    if (str != NULL && *str != NUL)
     {
 	int first_char = *p;
 	// Check if it's a valid insert command character

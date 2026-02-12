@@ -1300,7 +1300,7 @@ endfunc
 func Test_write_dot_register()
   new
 
-  " Basic functionality
+  " Basic get/set functionality
   call setreg('.', 'itext')
   call assert_equal('text', getreg('.'))
 
@@ -1312,9 +1312,24 @@ func Test_write_dot_register()
   let @. .= 'def'
   call assert_equal('bcdef', getreg('.'))
 
-  " Single character edge case
+  " Single character command (no text)
   let @. = 'i'
+  call assert_equal('', getreg('.'))
+
+  " Non-command character (implicit 'a')
+  let @. = 'text'
+  call assert_equal('text', getreg('.'))
+
+  " To insert literal 'i' character, use 'a' command
+  let @. = 'ai'
   call assert_equal('i', getreg('.'))
+
+  " Various insert commands
+  let @. = 'oNewLine'
+  call assert_equal('NewLine', getreg('.'))
+
+  let @. = 'Istart'
+  call assert_equal('start', getreg('.'))
 
   " Multibyte support
   let @. = 'i日本語'
@@ -1324,7 +1339,127 @@ func Test_write_dot_register()
   let @. = ''
   call assert_equal('', getreg('.'))
 
-  " TODO: Add more behavioral tests once spec is finalized
+  " Test actual . (dot) repeat functionality
+
+  " Test 1: 'i' command repeat
+  %delete _
+  let @. = 'iHello'
+  normal! .
+  call assert_equal(['Hello'], getline(1, '$'))
+
+  " Test 2: 'a' command repeat
+  %delete _
+  call setline(1, 'World')
+  normal! 0
+  let @. = 'a!'
+  normal! .
+  call assert_equal(['W!orld'], getline(1, '$'))
+
+  " Test 3: 'o' command repeat (new line below)
+  %delete _
+  call setline(1, 'First')
+  let @. = 'oSecond'
+  normal! .
+  call assert_equal(['First', 'Second'], getline(1, '$'))
+
+  " Test 4: 'O' command repeat (new line above)
+  %delete _
+  call setline(1, 'Bottom')
+  let @. = 'OTop'
+  normal! .
+  call assert_equal(['Top', 'Bottom'], getline(1, '$'))
+
+  " Test 5: 'I' command repeat (insert at line start)
+  %delete _
+  call setline(1, 'End')
+  normal! $
+  let @. = 'IStart '
+  normal! .
+  call assert_equal(['Start End'], getline(1, '$'))
+
+  " Test 6: 'A' command repeat (append at line end)
+  %delete _
+  call setline(1, 'Start')
+  normal! 0
+  let @. = 'A End'
+  normal! .
+  call assert_equal(['Start End'], getline(1, '$'))
+
+  " Test 7: Repeat with count
+  %delete _
+  let @. = 'ix'
+  normal! 3.
+  call assert_equal(['xxx'], getline(1, '$'))
+
+  " Test 8: Multiple repeats
+  %delete _
+  let @. = 'i-'
+  normal! .
+  normal! .
+  normal! .
+  call assert_equal(['---'], getline(1, '$'))
+
+  " Test 9: Implicit 'a' command (no insert command character)
+  %delete _
+  let @. = 'test'
+  normal! .
+  call assert_equal([''], getline(1, '$'))
+
+  " Test 10: Single command character with no text
+  %delete _
+  let @. = 'i'
+  normal! .
+  call assert_equal([''], getline(1, '$'))
+
+  " Test 11: Literal 'i' character insertion using 'a' prefix
+  %delete _
+  let @. = 'ai'
+  normal! .
+  call assert_equal(['i'], getline(1, '$'))
+
+  " Test 12: Multibyte character repeat
+  %delete _
+  let @. = 'i日本語'
+  normal! .
+  call assert_equal(['日本語'], getline(1, '$'))
+
+  " Test 13: Special characters
+  %delete _
+  let @. = "i\<Tab>text"
+  normal! .
+  call assert_equal(["\ttext"], getline(1, '$'))
+
+  " Test 14: Change existing text and repeat
+  %delete _
+  call setline(1, 'foo bar baz')
+  normal! 0
+  let @. = 'cwnew'
+  normal! w.
+  call assert_equal(['foo new baz'], getline(1, '$'))
+
+  " Test 15: 's' command (substitute character)
+  %delete _
+  call setline(1, 'abc')
+  normal! 0
+  let @. = 'sX'
+  normal! l.
+  call assert_equal(['aXc'], getline(1, '$'))
+
+  " Test 16: 'C' command (change to end of line)
+  %delete _
+  call setline(1, 'old text here')
+  normal! 0
+  let @. = 'Cnew text'
+  normal! .
+  call assert_equal(['new text'], getline(1, '$'))
+
+  " Test 17: 'S' command (substitute line)
+  %delete _
+  call setline(1, ['line1', 'line2'])
+  normal! 1G
+  let @. = 'Sreplaced'
+  normal! j.
+  call assert_equal(['line1', 'replaced'], getline(1, '$'))
 
   bwipe!
 endfunc

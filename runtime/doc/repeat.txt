@@ -45,19 +45,29 @@ of area is used, see |visual-repeat|.
 						*dot-register-writable*
 Writable dot register					*@.*
 
-The dot register can now be written to customize repeat behavior.  This is
-an EXPERIMENTAL feature and the behavior may change in future versions.
+The dot register stores a COMMAND sequence, not just text.  This is
+consistent with how |:normal| works.  The first character is interpreted
+as an insert mode command if it is one of [iaoOIAcsSC].
 
-Currently, if the first character is one of [iaoOIAcsSC] followed by more
-characters, it is treated as an insert command.  Otherwise, the text is
-treated as if entered with the 'a' command.
+Examples: >
+	:let @. = 'itext'    " Execute 'i' command, then insert 'text'
+	:let @. = 'oLine'    " Execute 'o' command, then insert 'Line'
+	:let @. = 'cw'       " Execute 'cw' command (change word)
+	:let @. = 'i'        " Execute 'i' command (enter insert mode)
 
-Examples: >vim
-	:let @. = 'itext'    " insert mode with 'i' command
-	:let @. = 'text'     " append mode (treated as 'atext')
-	:let @. = 'i'        " single char 'i' (not treated as command)
+	" To insert the literal character 'i', use:
+	:let @. = 'ai'       " Execute 'a' command, then insert 'i'
+
+	" Characters that are NOT insert commands are treated as text:
+	:let @. = 'x'        " Insert 'x' (not a valid insert command)
+	:let @. = 'text'     " Insert 'text' with implicit 'a'
 <
-This feature is designed to replace the need for plugins like vim-repeat.
+This is consistent with |:normal| which also requires an insert command
+to enter insert mode: >
+    :normal itext        " Not: ':normal text'
+<
+The dot register represents the LAST CHANGE, which is a command sequence,
+not just text.  See |.| for more information.
 
 ==============================================================================
 2. Multiple repeats					*multi-repeat*
