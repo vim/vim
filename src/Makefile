@@ -2487,7 +2487,7 @@ installgtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
-installtutor: $(DEST_RT) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr $(DEST_TUTOR)/ru
+installtutor: $(DEST_RT) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr $(DEST_TUTOR)/sv $(DEST_TUTOR)/ru
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/en/* $(DEST_TUTOR)/en/
 	-$(INSTALL_DATA) $(TUTORSOURCE)/it/* $(DEST_TUTOR)/it/
