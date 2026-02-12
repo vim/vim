@@ -90,3 +90,10 @@ var d = {
 b: 0,
 }
 
+
+# PR: #19390
+# https://github.com/vim/vim/pull/19390#issue-3933755846
+
+# E1234: should not have vim9CommentTitle on 'E1234:'
+# ERR34: should have vim9CommentTitle on 'ERR34:'
+
