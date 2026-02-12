@@ -20,6 +20,7 @@
 "		2025 Aug 23 bash: add support for ${ cmd;} and ${|cmd;} #18084
 "		2025 Sep 23 simplify ksh logic, update sh statements #18355
 "		2026 Jan 15 highlight command switches that contain a digit
+"		2026 Feb 11 improve support for KornShell function names and variables
 " }}}
 " Version:		208
 " Former URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_SH
