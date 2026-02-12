@@ -662,7 +662,7 @@ elseif exists("b:is_ksh88")
     ShFoldFunctions syn region shFunctionFour	matchgroup=shFunction start="\%(do\)\@!\&\<[A-Za-z_][A-Za-z_0-9]*\>\_s*("		end=")"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
 elseif exists("b:is_mksh")
     " MirBSD ksh is the wild west of absurd and abstruse function names...
-    ShFoldFunctions syn region shFunctionOne	matchgroup=shFunction start="^\s*[-A-Za-z_@!+.%,0-9:]*[-A-Za-z_\.%,0-9:]\s*()\_s*{"		end="}"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
+    ShFoldFunctions syn region shFunctionOne	matchgroup=shFunction start="^\s*[-A-Za-z_@!+.%,0-9:]*[-A-Za-z_.%,0-9:]\s*()\_s*{"		end="}"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
     ShFoldFunctions syn region shFunctionTwo	matchgroup=shFunction start="\%(do\)\@!\&\<[-A-Za-z_@!+.%,0-9:]*[-A-Za-z_.%,0-9:]\>\s*\%(()\)\=\_s*{"	end="}"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
     ShFoldFunctions syn region shFunctionThree	matchgroup=shFunction start="^\s*[-A-Za-z_@!+.%,0-9:]*[-A-Za-z_.%,0-9:]\s*()\_s*("		end=")"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
     ShFoldFunctions syn region shFunctionFour	matchgroup=shFunction start="\%(do\)\@!\&\<[-A-Za-z_@!+.%,0-9:]*[-A-Za-z_.%,0-9:]\>\s*\%(()\)\=\_s*("	end=")"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
