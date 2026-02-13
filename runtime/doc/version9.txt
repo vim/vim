@@ -52561,4 +52561,9 @@ Patch 9.1.2147
 Problem:  Compile warning in strings.c
 Solution: Use const qualifier (John Marriott).
 
+Patch 9.1.2148
+Problem:  [security]: Buffer overflow in netbeans special_keys() handling
+Solution: Limit writing to max KEYBUFLEN bytes to prevent writing out of
+          bounds.
+
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
