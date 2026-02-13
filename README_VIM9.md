@@ -28,7 +28,7 @@ way:
 * Local variables are not available in an l: dictionary.
 * A few more things that slow us down, such as exception handling details.
 
-I Implemented a "proof of concept" and measured the time to run a simple
+I implemented a "proof of concept" and measured the time to run a simple
 for loop with an addition (Justin used this example in his presentation,
 full code is below):
 
@@ -224,7 +224,7 @@ Eventually this will lead to Vim 9!
 
 ## Code for sum time measurements
 
-Vim was build with -O2.
+Vim was built with -O2.
 
 ``` vim
 func VimOld()
