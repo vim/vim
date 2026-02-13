@@ -31354,7 +31354,7 @@ Files:      src/testdir/test_gui.vim
 Patch 8.2.5113
 Problem:    Timer becomes invalid after fork/exec, :gui gives errors. (Gabriel
             Dupras)
-Solution:   Delete the timer befor forking. (closes #10584)
+Solution:   Delete the timer before forking. (closes #10584)
 Files:      src/os_unix.c, src/proto/os_unix.pro, src/gui.c
 
 Patch 8.2.5114
@@ -45322,7 +45322,7 @@ Solution: When adjusting folds, make sure that line1 is the lower limit
 
 Patch 9.1.0673
 Problem:  Vim9: too recursive func calls when calling super-class method
-          with non-overriden super-call methods. (Aliaksei Budavei)
+          with non-overridden super-call methods. (Aliaksei Budavei)
 Solution: Use interface method, when super is to be used (Ernie Rael)
 
 Patch 9.1.0674
@@ -45634,7 +45634,7 @@ Problem:  Unicode tables are outdated
 Solution: Update Unicode tables to v16
 
 Patch 9.1.0737
-Problem:  Asynchronous terminal jobs occassionally require more time
+Problem:  Asynchronous terminal jobs occasionally require more time
           to complete and redraw the window
 Solution: Increase the sleep value from 10 to 50 milliseconds
           (Aliaksei Budavei).
@@ -47627,7 +47627,7 @@ Problem:  build error on Haiku
 Solution: Define XDG_RUNTIME_PATH variables (Begasus).
 
 Patch 9.1.1154
-Problem:  Vim9: not able to use autoload class accross scripts
+Problem:  Vim9: not able to use autoload class across scripts
 Solution: Make it work, re-enable the test (Yegappan Lakshmanan).
 
 Patch 9.1.1155
