@@ -32,7 +32,7 @@ if exists("loaded_matchit")
     \ '\<checker\>:\<endchecker\>,' .
     \ '\<class\>:\<endclass\>,' .
     \ '\<clocking\>:\<endclocking\>,' .
-    \ '\<group\>:\<endgroup\>,' .
+    \ '\<covergroup\>:\<endgroup\>,' .
     \ '\<interface\>:\<endinterface\>,' .
     \ '\<package\>:\<endpackage\>,' .
     \ '\<program\>:\<endprogram\>,' .
