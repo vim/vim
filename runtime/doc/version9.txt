@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 12
+*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52556,5 +52556,9 @@ Solution: Add the missing mkdir() calls to the Makefile (Ross Burton)
 Patch 9.1.2146
 Problem:  filetype: cel files are not recognized
 Solution: Detect *.cel files as cel filetype (Stefan VanBuren).
+
+Patch 9.1.2147
+Problem:  Compile warning in strings.c
+Solution: Use const qualifier (John Marriott).
 
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable

@@ -3156,7 +3156,7 @@ parse_fmt_types(
     {
 	if (*p != '%')
 	{
-	    char    *q = strchr(p + 1, '%');
+	    const char    *q = strchr(p + 1, '%');
 	    size_t  n = (q == NULL) ? STRLEN(p) : (size_t)(q - p);
 
 	    p += n;
@@ -3557,7 +3557,7 @@ vim_vsnprintf_typval(
     {
 	if (*p != '%')
 	{
-	    char    *q = strchr(p + 1, '%');
+	    const char    *q = strchr(p + 1, '%');
 	    size_t  n = (q == NULL) ? STRLEN(p) : (size_t)(q - p);
 
 	    // Copy up to the next '%' or NUL without any changes.
@@ -3885,7 +3885,7 @@ vim_vsnprintf_typval(
 		    else
 		    {
 			// memchr on HP does not like n > 2^31  !!!
-			char *q = memchr(str_arg, '\0',
+			const char *q = memchr(str_arg, '\0',
 				  precision <= (size_t)0x7fffffffL ? precision
 						       : (size_t)0x7fffffffL);
 
