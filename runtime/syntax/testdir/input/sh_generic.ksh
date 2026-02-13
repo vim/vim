@@ -77,7 +77,7 @@ uniq
 vmstate		# Obsolescent; only available in 93v- and older
 wc
 xargs		# 93v-
-xgrep		# 93v-
+xgrep		# Obsolescent; only 93v- allows invoking 'grep -X' as 'xgrep'
 
 # SHA command not provided as a builtin but included here for completeness
 sha224sum
@@ -88,14 +88,14 @@ poll --man
 # mkservice and eloop (rarely provided; requires SHOPT_MKSERVICE)
 mkservice --man; eloop --help
 
-# some mksh builtins
+# some mksh builtins, rename should be highlighted as an external command
 bind; rename
 
 # ;& and ;;& in case statements
 case x in
 	bar) false ${baz:1} ;&
 	foo) true ${foo:0:0} ;;&
-	*) print ${bar} ;;
+	*) print ${$bar} ;; # 93v-
 esac
 
 # Below is subshare syntax supported by both ksh93 and mksh.
@@ -138,9 +138,69 @@ echo ${
 } > /tmp/strfile
 echo ${</tmp/strfile;}
 
-exit 0
 # ksh88 and ksh93 non-dot special variables
 print ${ RANDOM= SRANDOM= SHLVL= JOBMAX= KSH_VERSION= FIGNORE= LC_TIME= LC_NUMERIC= LC_MESSAGES= LC_CTYPE= LC_COLLATE= LC_ALL= LANG= FPATH= PS4= OPTIND= OPTARG= true ;}
 print $(LINENO= SECONDS= TMOUT= PPID= LINES= COLUMNS= VISUAL= OLDPWD= PS3= MAILPATH= CDPATH= FCEDIT= HISTCMD= HISTEDIT= HISTSIZE= HISTFILE= ENV= MAILCHECK= EDITOR= SHELL= false)
 print $(REPLY= MAIL= HOME= PWD= IFS= PS2= PS1= PATH= SH_OPTIONS= ERRNO= COMP_CWORD= COMP_LINE= COMP_POINT= COMP_WORDS= COMP_KEY= COMPREPLY= COMP_WORDBREAKS= COMP_TYPE= compgen)
 print $(BASHPID= EPOCHREALTIME= EXECSHELL= KSHEGID= KSHGID= KSHUID= KSH_MATCH= PATHSEP= PGRP= PIPESTATUS= TMPDIR= USER_ID= VPATH= CSWIDTH= complete)
+
+# ksh93 namespace (dot) special variables
+print $(.sh= .sh.edchar= .sh.edcol= .sh.edtext= .sh.edmode= .sh.name= .sh.subscript= .sh.value= .sh.version= .sh.match= .sh.command= .sh.file= .sh.fun= .sh.subshell= .sh.level= .sh.lineno= .sh.stats= .sh.math= .sh.pid= .sh.ppid= .sh.tilde= .sh.dollar= .sh.pool= .sh.pgrp= .sh.pwdfd= .sh.op_astbin= .sh.sig= .sh.sig.addr= .sh.sig.band= .sh.sig.code= .sh.sig.errno= .sh.sig.name= .sh.sig.pid= .sh.sig.signo= .sh.sig.status= .sh.sig.uid= .sh.sig.value= .sh.sig.value.q= .sh.sig.value.Q= .sh.stats= .sh.stats.arg_cachehits= .sh.stats.arg_expands= .sh.stats.comsubs= .sh.stats.forks= .sh.stats.funcalls= .sh.stats.globs= .sh.stats.linesread= .sh.stats.nv_cachehit= .sh.stats.nv_opens= .sh.stats.pathsearch= .sh.stats.posixfuncall= .sh.stats.simplecmds= .sh.stats.spawns= .sh.stats.subshell= .sh.install_prefix= complete)
+
+.sh.tilde.get() {
+	true
+}
+
+function .sh.tilde.set {
+	false
+}
+
+function foo() {
+	:  # Bash-style function (mksh-only)
+}
+
+function foo2 {
+	:  # KornShell-style function
+}
+
+foo3() {
+	:  # POSIX function
+}
+
+foo4.get() {
+	:  # POSIX-style ksh93 discipline function
+}
+
+function foo5.set {
+	:  # KornShell-style ksh93 discipline function
+}
+
+_foo6.unset() (
+	:  # POSIX-style subshell discipline function
+)
+
+namespace _foo {
+	:
+}
+
+namespace 1bad.invalid {
+	:
+}
+
+namespace foo1() {
+	:  # Bad syntax
+}
+
+# Bad syntax (no name)
+function {
+	false
+}
+
+# Bad syntax also
+ () {
+	 false
+}
+()
+{
+	false
+}

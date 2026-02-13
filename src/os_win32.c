@@ -1507,7 +1507,6 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 	update_screen(0);
 	setcursor();
 	out_flush();
-	return;
     }
 # endif
     mouse_col = g_xMouse;

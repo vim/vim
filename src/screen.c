@@ -586,6 +586,9 @@ screen_line(
 	// Do not redraw if under the popup menu.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	    redraw_this = FALSE;
+	// Also skip the second cell for double-width characters.
+	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
+	    redraw_this = FALSE;
 
 	if (redraw_this)
 	{

@@ -2302,7 +2302,7 @@ special_keys(char_u *args)
 	if ((sep = strchr(tok, '-')) != NULL)
 	{
 	    *sep = NUL;
-	    while (*tok)
+	    while (*tok && i + 2 < KEYBUFLEN)
 	    {
 		switch (*tok)
 		{
