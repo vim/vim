@@ -41,7 +41,5 @@ void set_can_cindent(int val);
 int ins_apply_autocmds(event_T event);
 void set_repeat_dict(dict_T *dict);
 dict_T *get_repeat_dict(void);
-#if defined(EXITFREE)
 void free_repeat_dict(void);
-#endif
 /* vim: set ft=c : */

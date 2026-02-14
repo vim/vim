@@ -53,6 +53,9 @@ static int typedchars_pos = 0;
  */
 static int	block_redo = FALSE;
 
+static int	skip_restore_redo = FALSE;
+static int	skip_restore_redo_cnt = 0;
+
 static int	KeyNoremap = 0;	    // remapping flags
 
 /*
@@ -558,6 +561,7 @@ saveRedobuff(save_redo_T *save_redo)
     char_u	*s;
     size_t	slen;
 
+    skip_restore_redo_cnt++;
     save_redo->sr_redobuff = redobuff;
     redobuff.bh_first.b_next = NULL;
     save_redo->sr_old_redobuff = old_redobuff;
@@ -579,10 +583,27 @@ saveRedobuff(save_redo_T *save_redo)
     void
 restoreRedobuff(save_redo_T *save_redo)
 {
+    skip_restore_redo_cnt--;
+    if (skip_restore_redo)
+    {
+	if (skip_restore_redo_cnt <= 0)
+	    skip_restore_redo = FALSE;
+	return;
+    }
+
     free_buff(&redobuff);
     redobuff = save_redo->sr_redobuff;
     free_buff(&old_redobuff);
     old_redobuff = save_redo->sr_old_redobuff;
+}
+
+/*
+ * Skip restoreRedobuff() until saveRedobuff().
+ */
+    void
+skipRestoreRedobuff(void)
+{
+    skip_restore_redo = TRUE;
 }
 
 /*

@@ -2673,6 +2673,102 @@ set_last_insert(int c)
     last_insert_skip = 0;
 }
 
+/*
+ * Set the last inserted text to str.
+ *
+ * This is used for setrepeat() function.
+ *
+ * The string represents a COMMAND sequence, similar to :normal.
+ * If the first character is a valid insert mode command [iaoOIAcsSC],
+ * it is treated as the command and the rest as text to insert.
+ * Otherwise, the entire string is treated as text with implicit 'a' command.
+ *
+ * Examples:
+ *   "itext"  -> i command + "text"
+ *   "i"      -> i command (no text)
+ *   "text"   -> a command + "text" (implicit, 't' is not an insert command)
+ */
+    static void
+set_last_insert_str(char_u *str)
+{
+    char_u  *s;
+    char_u  *p;
+    char_u  *text_start;
+    int     c;
+    size_t  len = str ? STRLEN(str) : 0;
+    int     has_command = FALSE;
+
+    vim_free(last_insert.string);
+    last_insert.string = alloc(len * 3 + 5);
+    if (last_insert.string == NULL)
+    {
+	last_insert.length = 0;
+	return;
+    }
+
+    // Parse the input string to separate the command (i, a, o, etc.) from
+    // the text.  The first character is checked to see if it's a valid
+    // insert mode command.
+    s = last_insert.string;
+    p = str;
+    text_start = str;
+
+    // Check if the first character is an insert mode command
+    if (str != NULL && *str != NUL)
+    {
+	int first_char = *p;
+	// Check if it's a valid insert command character
+	if (vim_strchr((char_u *)"iaoOIAcsSC", first_char) != NULL)
+	{
+	    has_command = TRUE;
+	    MB_PTR_ADV(p);  // Skip the command character
+	    text_start = p;
+	}
+    }
+
+    // Copy the text part to last_insert.string
+    if (text_start != NULL && *text_start != NUL)
+    {
+	// Copy the text part to last_insert.string
+	for (; *p != NUL; MB_PTR_ADV(p))
+	{
+	    c = mb_ptr2char(p);
+	    // Use the CTRL-V only when entering a special char
+	    if (c < ' ' || c == DEL)
+		*s++ = Ctrl_V;
+	    s = add_char2buf(c, s);
+	}
+    }
+
+    *s++ = ESC;
+    *s = NUL;
+    last_insert.length = (size_t)(s - last_insert.string);
+    last_insert_skip = 0;
+
+    // Update redo buffer for . command
+    ResetRedobuff();
+
+    // Skip the next restore
+    skipRestoreRedobuff();
+
+    if (str != NULL && *str != NUL)
+    {
+	if (has_command)
+	{
+	    AppendCharToRedobuff(*str);
+	    for (p = text_start; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+	}
+	else
+	{
+	    // Not an insert command - pass through as-is
+	    // This allows commands like 'dd', 'yy', 'x', etc.
+	    for (p = str; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+	}
+    }
+}
+
 #if defined(EXITFREE)
     void
 free_last_insert(void)
@@ -5610,6 +5706,19 @@ ins_apply_autocmds(event_T event)
 }
 
 /*
+ * Free the repeat dictionary on exit.
+ */
+    void
+free_repeat_dict(void)
+{
+    if (g_last_repeat_dict != NULL)
+    {
+	dict_unref(g_last_repeat_dict);
+	g_last_repeat_dict = NULL;
+    }
+}
+
+/*
  * Set the repeat command from a dictionary.
  * Called by the setrepeat() Vimscript function.
  *
@@ -5620,9 +5729,12 @@ ins_apply_autocmds(event_T event)
     void
 set_repeat_dict(dict_T *dict)
 {
+    dictitem_T	*di;
     char_u	*cmd;
     char_u	*text = NULL;
-    dictitem_T	*di;
+    char_u	*combined = NULL;
+    size_t	cmd_len;
+    size_t	text_len;
 
     if (dict == NULL)
 	return;
@@ -5642,19 +5754,35 @@ set_repeat_dict(dict_T *dict)
 	text = tv_get_string(&di->di_tv);
 
     // Free the previous dictionary if it exists
-    if (g_last_repeat_dict != NULL)
-    {
-	dict_unref(g_last_repeat_dict);
-	g_last_repeat_dict = NULL;
-    }
+    free_repeat_dict();
 
     // Save a copy of the dictionary for getrepeat()
     g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
     if (g_last_repeat_dict != NULL)
 	++g_last_repeat_dict->dv_refcount;
 
-    // TODO: Update the redo buffer to make '.' actually work
-    // This requires deeper integration with the redo mechanism
+    // Build the command string: cmd + text
+    cmd_len = STRLEN(cmd);
+    text_len = (text != NULL && *text != NUL) ? STRLEN(text) : 0;
+
+    if (text_len > 0)
+    {
+	// Combine cmd and text
+	combined = alloc(cmd_len + text_len + 1);
+	if (combined == NULL)
+	    return;
+	
+	STRCPY(combined, cmd);
+	STRCPY(combined + cmd_len, text);
+	
+	set_last_insert_str(combined);
+	vim_free(combined);
+    }
+    else
+    {
+	// Just cmd
+	set_last_insert_str(cmd);
+    }
 }
 
 /*
@@ -5690,18 +5818,3 @@ get_repeat_dict(void)
 
     return dict;
 }
-
-#if defined(EXITFREE)
-/*
- * Free the repeat dictionary on exit.
- */
-    void
-free_repeat_dict(void)
-{
-    if (g_last_repeat_dict != NULL)
-    {
-	dict_unref(g_last_repeat_dict);
-	g_last_repeat_dict = NULL;
-    }
-}
-#endif
