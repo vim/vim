@@ -34,6 +34,9 @@ If the last change included a specification of a numbered register, the
 register number will be incremented.  See |redo-register| for an example how
 to use this.
 
+The |setrepeat()| and |getrepeat()| functions allow scripts to control the
+dot repeat command programmatically.
+
 Note that when repeating a command that used a Visual selection, the same SIZE
 of area is used, see |visual-repeat|.
 
@@ -41,7 +44,6 @@ of area is used, see |visual-repeat|.
 @:			Repeat last command-line [count] times.
 			{not available when compiled without the
 			|+cmdline_hist| feature}
-
 
 ==============================================================================
 2. Multiple repeats					*multi-repeat*
