@@ -1,4 +1,4 @@
-README_dos.txt for version 9.1 of Vim: Vi IMproved.
+README_dos.txt for version 9.2 of Vim: Vi IMproved.
 
 This file explains the installation of Vim on MS-Windows systems.
 See "README.txt" for general information about Vim.
@@ -41,7 +41,7 @@ These are the normal steps to install Vim from the .zip archives:
    located.  Check the $VIM setting to see where it points to:
 	set VIM
    For example, if you have
-	C:\vim\vim91
+	C:\vim\vim92
    do
 	cd C:\
    Binary and runtime Vim archives are normally unpacked in the same location,
@@ -52,8 +52,8 @@ These are the normal steps to install Vim from the .zip archives:
    name includes the version number, it is unlikely that you overwrite
    existing files.
    Examples:
-	pkunzip -d gvim91.zip
-	unzip vim91w32.zip
+	pkunzip -d gvim92.zip
+	unzip vim92w32.zip
 
    You need to unpack the runtime archive and at least one of the binary
    archives.  When using more than one binary version, be careful not to
@@ -65,7 +65,7 @@ These are the normal steps to install Vim from the .zip archives:
    won't move or copy the runtime files.
 
 3. Change to the new directory:
-	cd vim\vim91
+	cd vim\vim92
    Run the "install.exe" program.  It will ask you a number of questions about
    how you would like to have your Vim setup.  Among these are:
    - You can tell it to write a "_vimrc" file with your preferences in the
@@ -76,8 +76,8 @@ These are the normal steps to install Vim from the .zip archives:
      console or in a shell.  You can select one of the directories in your
      $PATH.  If you skip this, you can add Vim to the search path manually:
      The simplest is to add a line to your autoexec.bat.  Examples:
-	set path=%path%;C:\vim\vim91
-	set path=%path%;D:\editors\vim\vim91
+	set path=%path%;C:\vim\vim92
+	set path=%path%;D:\editors\vim\vim92
    - Create entries for Vim on the desktop and in the Start menu.
 
 That's it!
@@ -89,8 +89,8 @@ Remarks:
   won't show a menubar.  Then you need to set the $VIM environment variable to
   point to the top directory of your Vim files.  Example:
     set VIM=C:\editors\vim
-  Vim version 9.1 will look for your vimrc file in $VIM, and for the runtime
-  files in $VIM/vim91.  See ":help $VIM" for more information.
+  Vim version 9.2 will look for your vimrc file in $VIM, and for the runtime
+  files in $VIM/vim92.  See ":help $VIM" for more information.
 
 - To avoid confusion between distributed files of different versions and your
   own modified vim scripts, it is recommended to use this directory layout:
@@ -101,13 +101,13 @@ Remarks:
 	C:\vim\vimfiles\ftplugin\*.vim	Filetype plugins
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim91\vim.exe		The Vim version 9.1 executable.
-	C:\vim\vim91\doc\*.txt		The version 9.1 documentation files.
-	C:\vim\vim91\bugreport.vim	A Vim version 9.1 script.
-	C:\vim\vim91\...		Other version 9.1 distributed files.
+	C:\vim\vim91\vim.exe		The Vim version 9.2 executable.
+	C:\vim\vim91\doc\*.txt		The version 9.2 documentation files.
+	C:\vim\vim91\bugreport.vim	A Vim version 9.2 script.
+	C:\vim\vim91\...		Other version 9.2 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
-  Then $VIMRUNTIME will automatically be set to "$VIM\vim91".  Don't add
+  Then $VIMRUNTIME will automatically be set to "$VIM\vim92".  Don't add
   "vim91" to $VIM, that won't work.
 
 - You can put your Vim executable anywhere else.  If the executable is not
