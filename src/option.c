@@ -803,8 +803,9 @@ set_option_default(
 		long def_val = (long)(long_i)options[opt_idx].def_val[dvi];
 
 		if ((long *)varp == &curwin->w_p_so
-			|| (long *)varp == &curwin->w_p_siso)
-		    // 'scrolloff' and 'sidescrolloff' local values have a
+			|| (long *)varp == &curwin->w_p_siso
+			|| (long *)varp == &curwin->w_p_sop)
+		    // 'scrolloff', 'sidescrolloff', and 'scrolloffpad' local values have a
 		    // different default value than the global default.
 		    *(long *)varp = -1;
 		else
@@ -2287,8 +2288,9 @@ do_set_option_numeric(
 	    value = NO_LOCAL_UNDOLEVEL;
 	else if (opt_flags == OPT_LOCAL
 		    && ((long *)varp == &curwin->w_p_siso
-		     || (long *)varp == &curwin->w_p_so))
-	    // for 'scrolloff'/'sidescrolloff' -1 means using the global value
+		     || (long *)varp == &curwin->w_p_so
+		     || (long *)varp == &curwin->w_p_sop))
+	    // for 'scrolloff'/'sidescrolloff'/'scrolloffpad' -1 means using the global value
 	    value = -1;
 	else
 	    value = *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
@@ -5091,6 +5093,11 @@ check_num_option_bounds(
 	errmsg = e_argument_must_be_positive;
 	p_so = 0;
     }
+    if (p_sop < 0 && full_screen)
+    {
+	errmsg = e_invalid_argument;
+	p_sop = 0;
+    }
     if (p_siso < 0 && full_screen)
     {
 	errmsg = e_argument_must_be_positive;
@@ -6508,6 +6515,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_SO:
 	    curwin->w_p_so = -1;
 	    break;
+	case PV_SOP:
+	    curwin->w_p_sop = -1;
+	    break;
 # ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -6646,6 +6656,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
 	    case PV_SISO: return (char_u *)&(curwin->w_p_siso);
 	    case PV_SO:   return (char_u *)&(curwin->w_p_so);
+	    case PV_SOP:  return (char_u *)&(curwin->w_p_sop);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -6730,6 +6741,8 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curwin->w_p_siso) : p->var;
 	case PV_SO:	return curwin->w_p_so >= 0
 				    ? (char_u *)&(curwin->w_p_so) : p->var;
+	case PV_SOP:	return curwin->w_p_sop >= 0
+				    ? (char_u *)&(curwin->w_p_sop) : p->var;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:	return *curbuf->b_p_def != NUL
 				    ? (char_u *)&(curbuf->b_p_def) : p->var;
@@ -7114,6 +7127,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_crb_save = from->wo_crb_save;
     to->wo_siso = from->wo_siso;
     to->wo_so = from->wo_so;
+    to->wo_sop = from->wo_sop;
 #ifdef FEAT_SPELL
     to->wo_spell = from->wo_spell;
 #endif
@@ -8734,6 +8748,16 @@ can_bs(
 get_scrolloff_value(void)
 {
     return curwin->w_p_so < 0 ? p_so : curwin->w_p_so;
+}
+
+/*
+ * Return the effective 'scrolloffpad' value for the current window, using the
+ * global value when appropriate.
+ */
+    long
+get_scrolloffpad_value(void)
+{
+    return curwin->w_p_sop < 0 ? p_sop : curwin->w_p_sop;
 }
 
 /*

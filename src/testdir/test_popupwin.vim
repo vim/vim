@@ -1407,6 +1407,18 @@ endfunc
 
 func Test_popup_option_values()
   new
+  " Save old values
+  let save_g_so = &g:so
+  let save_l_so = &l:so
+  let save_g_sop = &g:sop
+  let save_l_sop = &l:sop
+
+  let save_nu = &l:nu
+  let save_wrap = &l:wrap
+  let save_ofu = &l:ofu
+  let save_path = &l:path
+  let save_stl = &l:stl
+
   " window-local
   setlocal number
   setlocal nowrap
@@ -1416,6 +1428,8 @@ func Test_popup_option_values()
   setlocal path=/there
   " global/window-local
   setlocal statusline=2
+  set scrolloff=5
+  set scrolloffpad=1
 
   let winid = popup_create('hello', {})
   call assert_equal(0, getwinvar(winid, '&number'))
@@ -1424,12 +1438,27 @@ func Test_popup_option_values()
   call assert_equal(&g:path, getwinvar(winid, '&path'))
   call assert_equal(&g:statusline, getwinvar(winid, '&statusline'))
 
-  " 'scrolloff' is reset to zero
+  " 'scrolloff' and 'scrolloffpad' are reset to zero
   call assert_equal(5, &scrolloff)
   call assert_equal(0, getwinvar(winid, '&scrolloff'))
+  call assert_equal(1, &scrolloffpad)
+  call assert_equal(0, getwinvar(winid, '&scrolloffpad'))
 
   call popup_close(winid)
-  bwipe
+
+  " Restore old values
+  let &g:so = save_g_so
+  let &l:so = save_l_so
+  let &g:sop = save_g_sop
+  let &l:sop = save_l_sop
+
+  let &l:nu = save_nu
+  let &l:wrap = save_wrap
+  let &l:ofu = save_ofu
+  let &l:path = save_path
+  let &l:stl = save_stl
+
+  bwipe!
 endfunc
 
 func Test_popup_atcursor()

@@ -2306,6 +2306,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     }
     wp->w_p_wrap = TRUE;	// 'wrap' is default on
     wp->w_p_so = 0;		// 'scrolloff' zero
+    wp->w_p_sop = 0;		// 'scrolloffpad' zero
 
     if (tp != NULL)
     {
