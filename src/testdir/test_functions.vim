@@ -4626,4 +4626,67 @@ func Test_uriencoding()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+func Test_setrepeat_getrepeat_basic()
+  " Test basic dictionary set and get
+  call setrepeat({'cmd': 'dd'})
+  let result = getrepeat()
+  call assert_equal('dd', result.cmd)
+  call assert_equal(v:t_dict, type(result))
+endfunc
+
+func Test_setrepeat_with_text()
+  " Test insert mode command with text
+  call setrepeat({'cmd': 'i', 'text': 'Hello'})
+  let result = getrepeat()
+  call assert_equal('i', result.cmd)
+  call assert_equal('Hello', result.text)
+endfunc
+
+func Test_setrepeat_normal_command()
+  " Test various normal mode commands
+  call setrepeat({'cmd': '3x'})
+  call assert_equal('3x', getrepeat().cmd)
+
+  call setrepeat({'cmd': 'yy'})
+  call assert_equal('yy', getrepeat().cmd)
+endfunc
+
+func Test_setrepeat_empty_text()
+  " Test with empty text field
+  call setrepeat({'cmd': 'i', 'text': ''})
+  let result = getrepeat()
+  call assert_equal('i', result.cmd)
+  call assert_equal('', result.text)
+endfunc
+
+func Test_setrepeat_overwrite()
+  " Test that new setrepeat overwrites previous
+  call setrepeat({'cmd': 'dd'})
+  call setrepeat({'cmd': 'yy'})
+  call assert_equal('yy', getrepeat().cmd)
+endfunc
+
+func Test_setrepeat_roundtrip()
+  " Test save and restore
+  call setrepeat({'cmd': 'o', 'text': 'line'})
+  let saved = getrepeat()
+
+  call setrepeat({'cmd': 'dd'})
+  call assert_equal('dd', getrepeat().cmd)
+
+  " Restore
+  call setrepeat(saved)
+  let result = getrepeat()
+  call assert_equal('o', result.cmd)
+  call assert_equal('line', result.text)
+endfunc
+
+func Test_getrepeat_without_setrepeat()
+  " Test getrepeat when no setrepeat was called
+  " Should return a dictionary with empty or limited info
+  let result = getrepeat()
+  call assert_equal(v:t_dict, type(result))
+  call assert_true(has_key(result, 'cmd'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

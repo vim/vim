@@ -100,6 +100,9 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+// Dictionary to store the last repeat command set via setrepeat()
+static dict_T	*g_last_repeat_dict = NULL;
+
 #define TRIGGER_AUTOCOMPLETE()			\
     do {					\
 	update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
@@ -5605,3 +5608,100 @@ ins_apply_autocmds(event_T event)
 
     return r;
 }
+
+/*
+ * Set the repeat command from a dictionary.
+ * Called by the setrepeat() Vimscript function.
+ *
+ * The dictionary should contain:
+ *   'cmd': string (required) - the command to repeat
+ *   'text': string (optional) - text to insert (for insert mode commands)
+ */
+    void
+set_repeat_dict(dict_T *dict)
+{
+    char_u	*cmd;
+    char_u	*text = NULL;
+    dictitem_T	*di;
+
+    if (dict == NULL)
+	return;
+
+    // Get 'cmd' field (required)
+    di = dict_find(dict, (char_u *)"cmd", -1);
+    if (di == NULL)
+    {
+	semsg(_(e_key_not_present_in_dictionary_str), "cmd");
+	return;
+    }
+    cmd = tv_get_string(&di->di_tv);
+
+    // Get 'text' field (optional)
+    di = dict_find(dict, (char_u *)"text", -1);
+    if (di != NULL)
+	text = tv_get_string(&di->di_tv);
+
+    // Free the previous dictionary if it exists
+    if (g_last_repeat_dict != NULL)
+    {
+	dict_unref(g_last_repeat_dict);
+	g_last_repeat_dict = NULL;
+    }
+
+    // Save a copy of the dictionary for getrepeat()
+    g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
+    if (g_last_repeat_dict != NULL)
+	++g_last_repeat_dict->dv_refcount;
+
+    // TODO: Update the redo buffer to make '.' actually work
+    // This requires deeper integration with the redo mechanism
+}
+
+/*
+ * Get the last repeat command as a dictionary.
+ * Called by the getrepeat() Vimscript function.
+ *
+ * Returns:
+ *   - If the repeat was set via setrepeat(), returns the exact dictionary
+ *   - Otherwise, returns a dictionary with limited information
+ */
+    dict_T *
+get_repeat_dict(void)
+{
+    dict_T	*dict;
+
+    if (g_last_repeat_dict != NULL)
+    {
+	// Return a copy of the dictionary that was set via setrepeat()
+	dict = dict_copy(g_last_repeat_dict, TRUE, FALSE, get_copyID());
+	if (dict != NULL)
+	    ++dict->dv_refcount;
+	return dict;
+    }
+
+    // Return empty dictionary if nothing was set
+    dict = dict_alloc();
+    if (dict != NULL)
+    {
+	++dict->dv_refcount;
+	dict_add_string(dict, "cmd", (char_u *)"");
+	dict_add_string(dict, "text", (char_u *)"");
+    }
+
+    return dict;
+}
+
+#if defined(EXITFREE)
+/*
+ * Free the repeat dictionary on exit.
+ */
+    void
+free_repeat_dict(void)
+{
+    if (g_last_repeat_dict != NULL)
+    {
+	dict_unref(g_last_repeat_dict);
+	g_last_repeat_dict = NULL;
+    }
+}
+#endif
