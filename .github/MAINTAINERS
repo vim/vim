@@ -248,6 +248,7 @@ runtime/ftplugin/mbsync.vim				@fymyte
 runtime/ftplugin/mediawiki.vim				@avidseeker
 runtime/ftplugin/meson.vim				@Liambeguin
 runtime/ftplugin/mf.vim					@lifepillar
+runtime/ftplugin/miranda.vim				@dkearns
 runtime/ftplugin/modula2.vim				@dkearns
 runtime/ftplugin/modula3.vim				@dkearns
 runtime/ftplugin/mojo.vim				@ribru17
@@ -594,6 +595,7 @@ runtime/syntax/mason.vim				@petdance
 runtime/syntax/mediawiki.vim				@avidseeker
 runtime/syntax/meson.vim				@Liambeguin
 runtime/syntax/mf.vim					@lifepillar
+runtime/syntax/miranda.vim				@dkearns
 runtime/syntax/modula2.vim				@dkearns
 runtime/syntax/modula2/opt/iso.vim			@trijezdci
 runtime/syntax/modula2/opt/pim.vim			@trijezdci

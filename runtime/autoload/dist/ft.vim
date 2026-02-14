@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Feb 06
+# Last Change:		2026 Feb 12
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -579,13 +579,16 @@ export def FTm()
 
   # excluding end(for|function|if|switch|while) common to Murphi
   var octave_block_terminators = '\<end\%(_try_catch\|classdef\|enumeration\|events\|methods\|parfor\|properties\)\>'
-
   var objc_preprocessor = '^\s*#\s*\%(import\|include\|define\|if\|ifn\=def\|undef\|line\|error\|pragma\)\>'
 
-  var n = 1
   var saw_comment = 0  # Whether we've seen a multiline comment leader.
-  while n < 100
-    var line = getline(n)
+
+  # skip shebang lines as these have lower priority than content detection and
+  # complicate Miranda and Octave tests
+  var line1 = getline(1) =~ '^#!' ? 2 : 1
+
+  for lnum in range(line1, min([100, line("$")]))
+    var line = getline(lnum)
     if line =~ '^\s*/\*'
       # /* ... */ is a comment in Objective C and Murphi, so we can't conclude
       # it's either of them yet, but track this as a hint in case we don't see
@@ -597,13 +600,23 @@ export def FTm()
       return
     endif
     if line =~ '^\s*\%(#\|%!\)' || line =~ '^\s*unwind_protect\>' ||
-	  \ line =~ '\%(^\|;\)\s*' .. octave_block_terminators
+	line =~ '\%(^\|;\)\s*' .. octave_block_terminators
       setf octave
       return
     endif
-    # TODO: could be Matlab or Octave
+    # TODO: could be Matlab, Miranda or Octave
     if line =~ '^\s*%'
       setf matlab
+      return
+    endif
+    if line =~ '^||'
+      miranda#SetFileTypeInfo({ literate: false } )
+      setf miranda
+      return
+    endif
+    if line =~ '^>' && lnum == line1
+      miranda#SetFileTypeInfo({ literate: true } )
+      setf miranda
       return
     endif
     if line =~ '^\s*(\*'
@@ -614,8 +627,7 @@ export def FTm()
       setf murphi
       return
     endif
-    n += 1
-  endwhile
+  endfor
 
   if saw_comment
     # We didn't see anything definitive, but this looks like either Objective C

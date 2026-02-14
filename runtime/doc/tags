@@ -7613,6 +7613,7 @@ ft-metapost-commands	ft_mp.txt	/*ft-metapost-commands*
 ft-metapost-intro	ft_mp.txt	/*ft-metapost-intro*
 ft-metapost-mappings	ft_mp.txt	/*ft-metapost-mappings*
 ft-metapost-settings	ft_mp.txt	/*ft-metapost-settings*
+ft-miranda-syntax	syntax.txt	/*ft-miranda-syntax*
 ft-mma-syntax	syntax.txt	/*ft-mma-syntax*
 ft-modula2-syntax	syntax.txt	/*ft-modula2-syntax*
 ft-moo-syntax	syntax.txt	/*ft-moo-syntax*
@@ -9085,6 +9086,7 @@ meta	intro.txt	/*meta*
 method	eval.txt	/*method*
 mf.vim	ft_mp.txt	/*mf.vim*
 min()	builtin.txt	/*min()*
+miranda.vim	syntax.txt	/*miranda.vim*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	builtin.txt	/*mkdir()*
 mlang.txt	mlang.txt	/*mlang.txt*
