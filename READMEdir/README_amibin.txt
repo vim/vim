@@ -2,7 +2,7 @@ README_amibin.txt for version 9.2 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_ami.txt" for installation instructions for the Amiga.
-These files are in the runtime archive (vim91rt.tgz).
+These files are in the runtime archive (vim92rt.tgz).
 
 
 The Amiga "bin" archive contains the Vim executable for the Amiga.  It was

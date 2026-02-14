@@ -47,7 +47,7 @@ These are the normal steps to install Vim from the .zip archives:
    Binary and runtime Vim archives are normally unpacked in the same location,
    on top of each other.
 
-2. Unpack the zip archives.  This will create a new directory "vim\vim91",
+2. Unpack the zip archives.  This will create a new directory "vim\vim92",
    in which all the distributed Vim files are placed.  Since the directory
    name includes the version number, it is unlikely that you overwrite
    existing files.
@@ -101,14 +101,14 @@ Remarks:
 	C:\vim\vimfiles\ftplugin\*.vim	Filetype plugins
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim91\vim.exe		The Vim version 9.2 executable.
-	C:\vim\vim91\doc\*.txt		The version 9.2 documentation files.
-	C:\vim\vim91\bugreport.vim	A Vim version 9.2 script.
-	C:\vim\vim91\...		Other version 9.2 distributed files.
+	C:\vim\vim92\vim.exe		The Vim version 9.2 executable.
+	C:\vim\vim92\doc\*.txt		The version 9.2 documentation files.
+	C:\vim\vim92\bugreport.vim	A Vim version 9.2 script.
+	C:\vim\vim92\...		Other version 9.2 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
   Then $VIMRUNTIME will automatically be set to "$VIM\vim92".  Don't add
-  "vim91" to $VIM, that won't work.
+  "vim92" to $VIM, that won't work.
 
 - You can put your Vim executable anywhere else.  If the executable is not
   with the other Vim files, you should set $VIM. The simplest is to add a line

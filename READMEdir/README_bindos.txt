@@ -2,15 +2,15 @@ README_bindos.txt for version 9.2 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.
-These files are in the runtime archive (vim91rt.zip).
+These files are in the runtime archive (vim92rt.zip).
 
 
 There are several binary distributions of Vim for the PC.  You would normally
 pick only one of them, but it's also possible to install several.
 These ones are available (the version number may differ):
-	vim91w32.zip	Windows console version
-	gvim91.zip	Windows GUI version
-	gvim91ole.zip	Windows GUI version with OLE
+	vim92w32.zip	Windows console version
+	gvim92.zip	Windows GUI version
+	gvim92ole.zip	Windows GUI version with OLE
 
 You MUST also get the runtime archive (vim92rt.zip).
 The sources are also available (vim92src.zip).
