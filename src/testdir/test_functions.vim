@@ -4689,4 +4689,119 @@ func Test_getrepeat_without_setrepeat()
   call assert_true(has_key(result, 'cmd'))
 endfunc
 
+func Test_setrepeat_dot_command_delete()
+  " Test that . command actually works after setrepeat
+  new
+  call setline(1, ['line1', 'line2', 'line3'])
+
+  " Set repeat to delete a line
+  call setrepeat({'cmd': 'dd'})
+
+  " Execute . command
+  normal! 1G
+  normal .
+
+  " line1 should be deleted
+  call assert_equal(['line2', 'line3'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_setrepeat_dot_command_insert()
+  " Test . command with insert mode
+  new
+  call setline(1, [''])
+
+  " Set repeat to insert text
+  call setrepeat({'cmd': 'i', 'text': 'Hello'})
+
+  " Execute . command
+  normal! 1G
+  normal .
+
+  " Should have inserted 'Hello'
+  call assert_equal('Hello', getline(1))
+
+  bwipe!
+endfunc
+
+func Test_setrepeat_dot_command_append()
+  " Test . command with append
+  new
+  call setline(1, ['First'])
+
+  " Set repeat to append text
+  call setrepeat({'cmd': 'a', 'text': 'Second'})
+
+  " Execute . command
+  normal! 1G$
+  normal .
+
+  " Should have appended 'Second'
+  call assert_equal('FirstSecond', getline(1))
+
+  bwipe!
+endfunc
+
+func Test_setrepeat_dot_command_change()
+  " Test . command with change word
+  new
+  call setline(1, ['old word'])
+
+  " Set repeat to change word
+  call setrepeat({'cmd': 'cw', 'text': 'new'})
+
+  " Execute . command on 'word'
+  normal! 1G
+  normal w
+  normal .
+
+  " Should have changed 'word' to 'new'
+  call assert_equal('old new', getline(1))
+
+  bwipe!
+endfunc
+
+func Test_setrepeat_dot_multiple_times()
+  " Test that . can be used multiple times
+  new
+  call setline(1, ['1', '2', '3'])
+
+  call setrepeat({'cmd': 'dd'})
+
+  " Use . three times
+  normal! 1G
+  normal .
+  normal .
+  normal .
+
+  " All lines should be deleted
+  call assert_equal([''], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_setrepeat_save_restore_dot()
+  " Test save/restore preserves . functionality
+  new
+  call setline(1, ['aaa', 'bbb', 'ccc'])
+
+  " Set and save first repeat
+  call setrepeat({'cmd': 'dd'})
+  let saved = getrepeat()
+
+  " Change to different repeat
+  call setrepeat({'cmd': 'yy'})
+
+  " Restore original
+  call setrepeat(saved)
+
+  " . should delete line
+  normal! 1G
+  normal .
+  call assert_equal(['bbb', 'ccc'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
