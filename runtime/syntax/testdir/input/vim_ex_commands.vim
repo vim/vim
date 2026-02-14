@@ -10,8 +10,10 @@
 :help
  :help
 : help
- : help # FIXME
+ : help
 
+:&
+:~
 :@
 
 :append
@@ -448,7 +450,6 @@
 :sign
 :silent
 :sleep
-:sleep!
 :slast
 :smagic
 :smap
@@ -537,7 +538,6 @@
 :undojoin
 :undolist
 :unabbreviate
-:unabbreviate
 :unhide
 :uniq
 :unlet
@@ -597,7 +597,7 @@ call Foo() | help
 call Foo() |help
 call Foo()| help
 
-" FIXME
+call Foo() | match
 call Foo() | append
     text
 .
@@ -645,7 +645,6 @@ call Foo() | bufdo
 call Foo() | buffers
 call Foo() | bunload
 call Foo() | bwipeout
-" FIXME
 call Foo() | change
     text
 .
@@ -799,7 +798,6 @@ call Foo() | highlight
 call Foo() | hide
 call Foo() | history
 call Foo() | horizontal
-" FIXME
 call Foo() | insert
     text
 .
@@ -1033,7 +1031,6 @@ call Foo() | simalt
 call Foo() | sign
 call Foo() | silent
 call Foo() | sleep
-call Foo() | sleep!
 call Foo() | slast
 call Foo() | smagic
 call Foo() | smap
@@ -1122,7 +1119,6 @@ call Foo() | undo
 call Foo() | undojoin
 call Foo() | undolist
 call Foo() | unabbreviate
-call Foo() | unabbreviate
 call Foo() | unhide
 call Foo() | uniq
 call Foo() | unlet
@@ -1180,31 +1176,31 @@ call Foo() | z
 
 " Vim9-script only
 
-:abstract
-:class
-:endclass
-:endinterface
-:endenum
-:enum
-:export
-:final
-:interface
-:public
-:static
-:type
-:var
+" :abstract
+" :class
+" :endclass
+" :endinterface
+" :endenum
+" :enum
+" :export
+" :final
+" :interface
+" :public
+" :static
+" :type
+" :var
 
-Foo() | abstract
-Foo() | class
-Foo() | endclass
-Foo() | endenum
-Foo() | endinterface
-Foo() | enum
-Foo() | export
-Foo() | final
-Foo() | interface
-Foo() | public
-Foo() | static
-Foo() | type
-Foo() | var
+" Foo() | abstract
+" Foo() | class
+" Foo() | endclass
+" Foo() | endenum
+" Foo() | endinterface
+" Foo() | enum
+" Foo() | export
+" Foo() | final
+" Foo() | interface
+" Foo() | public
+" Foo() | static
+" Foo() | type
+" Foo() | var
 

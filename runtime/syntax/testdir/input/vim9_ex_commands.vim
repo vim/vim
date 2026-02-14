@@ -10,8 +10,10 @@ vim9script
 :help
  :help
 : help
- : help # FIXME
+ : help
 
+:&
+:~
 :@
 
 :abbreviate
@@ -91,6 +93,7 @@ vim9script
 :checktime
 :chistory
 :class
+endclass
 :clast
 :clearjumps
 :clist
@@ -168,17 +171,18 @@ vim9script
 :else
 :elseif
 :emenu
-:endclass
+# :endclass
 :enddef
-:endenum
+# :endenum
 :endfor
 :endfunction
 :endif
-:endinterface
+# :endinterface
 :endtry
 :endwhile
 :enew
 :enum
+endenum
 :eval
 :ex
 :execute
@@ -232,6 +236,7 @@ vim9script
 :inoremap
 :inoremenu
 :interface
+endinterface
 :intro
 :isearch
 :isplit
@@ -592,9 +597,14 @@ vim9script
 :z
 
 Foo()|help
-Foo() | help
 Foo() |help
 Foo()| help
+Foo() | help
+
+Foo() |:help
+Foo() | :help
+Foo() |: help
+Foo() | : help
 
 Foo() | abbreviate
 Foo() | abclear
@@ -672,6 +682,7 @@ Foo() | checkpath
 Foo() | checktime
 Foo() | chistory
 Foo() | class
+endclass
 Foo() | clast
 Foo() | clearjumps
 Foo() | clist
@@ -749,17 +760,18 @@ Foo() | edit
 Foo() | else
 Foo() | elseif
 Foo() | emenu
-Foo() | endclass
+# Foo() | endclass
 Foo() | enddef
-Foo() | endenum
+# Foo() | endenum
 Foo() | endfor
 Foo() | endfunction
 Foo() | endif
-Foo() | endinterface
+# Foo() | endinterface
 Foo() | endtry
 Foo() | endwhile
 Foo() | enew
 Foo() | enum
+endenum
 Foo() | eval
 Foo() | ex
 Foo() | execute
@@ -813,6 +825,7 @@ Foo() | inoreabbrev
 Foo() | inoremap
 Foo() | inoremenu
 Foo() | interface
+endinterface
 Foo() | intro
 Foo() | isearch
 Foo() | isplit
