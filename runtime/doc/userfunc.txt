@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Dec 20
+*userfunc.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

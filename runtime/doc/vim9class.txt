@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Nov 11
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

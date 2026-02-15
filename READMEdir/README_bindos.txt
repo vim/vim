@@ -1,4 +1,4 @@
-README_bindos.txt for version 9.1 of Vim: Vi IMproved.
+README_bindos.txt for version 9.2 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.
@@ -12,5 +12,5 @@ These ones are available (the version number may differ):
 	gvim91.zip	Windows GUI version
 	gvim91ole.zip	Windows GUI version with OLE
 
-You MUST also get the runtime archive (vim91rt.zip).
-The sources are also available (vim91src.zip).
+You MUST also get the runtime archive (vim92rt.zip).
+The sources are also available (vim92src.zip).

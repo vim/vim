@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.1.  Last change: 2026 Feb 13
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,14 @@ COMPILE TIME CHANGES				|compile-changes-9|
 PATCHES						|patches-9|
 
 VERSION 9.1					|version-9.1|
-Changed						|changed-9.1|
-Added						|added-9.1|
-Patches						|patches-9.1|
+   Changed					|changed-9.1|
+   Added					|added-9.1|
+   Patches					|patches-9.1|
+
+VERSION 9.2					|version-9.2|
+   Changed					|changed-9.2|
+   Added					|added-9.2|
+   Patches					|patches-9.2|
 
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 9.0.
