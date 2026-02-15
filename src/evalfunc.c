@@ -6592,7 +6592,7 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
 /*
  * "getrepeat()" function
  */
-    void
+    static void
 f_getrepeat(typval_T *argvars UNUSED, typval_T *rettv)
 {
     dict_T *dict = get_repeat_dict();
@@ -11771,7 +11771,7 @@ free_lstval:
 /*
  * "setrepeat({dict})" function
  */
-    void
+    static void
 f_setrepeat(typval_T *argvars, typval_T *rettv UNUSED)
 {
     dict_T *dict;
