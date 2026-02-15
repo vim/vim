@@ -2436,7 +2436,9 @@ win_equal_rec(
 leaving_window(win_T *win)
 {
     // Only matters for a prompt window.
-    if (!bt_prompt(win->w_buffer))
+    // Don't do mode changes for a prompt buffer in an autocommand window, as
+    // it's only used temporarily during an autocommand.
+    if (!bt_prompt(win->w_buffer) || is_aucmd_win(win))
 	return;
 
     // When leaving a prompt window stop Insert mode and perhaps restart
@@ -2461,7 +2463,9 @@ leaving_window(win_T *win)
 entering_window(win_T *win)
 {
     // Only matters for a prompt window.
-    if (!bt_prompt(win->w_buffer))
+    // Don't do mode changes for a prompt buffer in an autocommand window, as
+    // it's only used temporarily during an autocommand.
+    if (!bt_prompt(win->w_buffer) || is_aucmd_win(win))
 	return;
 
     // When switching to a prompt buffer that was in Insert mode, don't stop
