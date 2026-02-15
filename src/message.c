@@ -2019,15 +2019,15 @@ str2specialbuf(char_u *sp, char_u *buf, int len)
     *buf = NUL;
     while (*sp)
     {
-        s = str2special(&sp, FALSE, FALSE);
-        s_len = STRLEN(s);
-        if (buf_len + s_len < (size_t)len)
-        {
-            STRCPY(buf + buf_len, s);
-            buf_len += s_len;
-        }
-        else
-            break;
+	s = str2special(&sp, FALSE, FALSE);
+	s_len = STRLEN(s);
+	if (buf_len + s_len < (size_t)len)
+	{
+	    STRCPY(buf + buf_len, s);
+	    buf_len += s_len;
+	}
+	else
+	    break;
     }
 }
 
