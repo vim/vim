@@ -1407,7 +1407,9 @@ Registers:					*register-functions*
 	getreg()		get contents of a register
 	getreginfo()		get information about a register
 	getregtype()		get type of a register
+	getrepeat()		get the last repeat information
 	setreg()		set contents and type of a register
+	setrepeat()		set the next repeat information
 	reg_executing()		return the name of the register being executed
 	reg_recording()		return the name of the register being recorded
 
