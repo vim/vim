@@ -3,7 +3,7 @@ vim9script
 # Vim syntax file.
 # Language:    Hare
 # Maintainer:  Amelia Clarke <selene@perilune.dev>
-# Last Change: 2026 Feb 01
+# Last Change: 2026 Feb 15
 # Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
 
 if exists('b:current_syntax')
@@ -101,10 +101,10 @@ syn match hareTypedefEquals '=' contained nextgroup=@hareType skipempty skipwhit
 
 # Attributes {{{3
 syn keyword hareAttribute @init @fini @test
-syn keyword hareAttribute @offset nextgroup=hareAttributeParens skipempty skipwhite
 syn keyword hareAttribute @packed
 syn keyword hareAttribute @symbol nextgroup=hareAttributeParens skipempty skipwhite
 syn keyword hareAttribute @threadlocal
+syn keyword hareAttribute @undefined
 
 # Match the parens following attributes.
 syn region hareAttributeParens matchgroup=hareParen start='(' end=')' contained contains=TOP transparent
