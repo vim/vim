@@ -5705,6 +5705,7 @@ ins_apply_autocmds(event_T event)
     return r;
 }
 
+#if defined(FEAT_EVAL)
 /*
  * Free the repeat dictionary on exit.
  */
@@ -5818,3 +5819,4 @@ get_repeat_dict(void)
 
     return dict;
 }
+#endif
