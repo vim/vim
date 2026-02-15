@@ -1469,7 +1469,8 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	vimconv_T vimconv;
 	vimconv.vc_type = CONV_NONE;
 	// Use raw encoding name for iconv to preserve endianness (utf-16be vs utf-16)
-	if (convert_setup_ext(&vimconv, from_encoding_raw ? from_encoding_raw : from_encoding, FALSE, p_enc, FALSE) == FAIL)
+	// from_encoding_raw is guaranteed non-NULL whenever from_encoding != NULL
+	if (convert_setup_ext(&vimconv, from_encoding_raw, FALSE, p_enc, FALSE) == FAIL)
 	{
 	    ga_clear(&blob_ga);
 	    semsg(_(e_str_encoding_from_failed), from_encoding);
@@ -1497,8 +1498,8 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 
 	    if (from_encoding != NULL)
 	    {
-		char_u *converted = convert_string(str,
-			from_encoding_raw ? from_encoding_raw : from_encoding, p_enc);
+		// from_encoding_raw is guaranteed non-NULL whenever from_encoding != NULL
+		char_u *converted = convert_string(str, from_encoding_raw, p_enc);
 		vim_free(str);
 		str = converted;
 	    }
