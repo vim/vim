@@ -5771,10 +5771,10 @@ set_repeat_dict(dict_T *dict)
 	combined = alloc(cmd_len + text_len + 1);
 	if (combined == NULL)
 	    return;
-	
+
 	STRCPY(combined, cmd);
 	STRCPY(combined + cmd_len, text);
-	
+
 	set_last_insert_str(combined);
 	vim_free(combined);
     }

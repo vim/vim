@@ -5199,31 +5199,31 @@ getregtype([{regname}])					*getregtype()*
 
 getrepeat()						*getrepeat()*
 		Get the last repeat command as a |Dictionary|.
-		
+
 		Returns a dictionary with the following keys:
 		    'cmd'	The command that will be repeated (string)
 		    'text'	Text to insert (string)
-		
+
 		If the repeat was set via |setrepeat()|, returns the exact
 		dictionary that was passed. Otherwise, returns limited
 		information from Vim's internal repeat buffer.
-		
+
 		This is useful for:
 		- Saving and restoring the repeat command (e.g., in plugins
 		  like telescope that perform temporary operations)
 		- Building repeat history
 		- Implementing custom repeat behavior in plugins
-		
+
 		Example: >
 		    " Save current repeat
 		    let saved = getrepeat()
-		
+
 		    " Do some operations
 		    call MyPlugin()
-		
+
 		    " Restore original repeat
 		    call setrepeat(saved)
-		
+
 		    " Now dot command uses the saved repeat
 		    normal! .
 <
@@ -10405,31 +10405,31 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 setrepeat({dict})					*setrepeat()*
 		Set the repeat command that will be executed by the |.|
 		command.
-		
+
 		The {dict} argument must be a |Dictionary| with:
 		    'cmd'	(required) The command to repeat (string)
 		    'text'	(optional) Text to insert (string)
-		
+
 		The 'cmd' field specifies the command. For insert mode
 		commands (i, a, o, O, I, A, c, s, C, S), the 'text' field
 		contains the text to insert. For normal mode commands (dd,
 		yy, x, etc.), 'text' can be omitted or empty.
-		
+
 		Examples: >
 		    " Normal mode command
 		    call setrepeat({'cmd': 'dd'})
 		    normal! .		" deletes a line
-		
+
 		    " Insert mode operation
 		    call setrepeat({'cmd': 'i', 'text': 'Hello'})
 		    normal! .		" inserts 'Hello'
-		
+
 		    " Change operation
 		    call setrepeat({'cmd': 'cw', 'text': 'newword'})
 		    normal! .		" changes word to 'newword'
 <
 		Use cases:
-		
+
 		1. Plugin integration (vim-repeat style): >
 		    function! MyCommand()
 		      " ... complex operation ...
@@ -10448,34 +10448,34 @@ setrepeat({dict})					*setrepeat()*
 		    call setrepeat(g:history[0])
 <
 		Limitations:
-		
+
 		Phase 1 has the following limitations:
-		
+
 		1. Insert mode overwrites setrepeat()
 		   When you enter and leave insert mode, Vim automatically
 		   records the insertion and overwrites any repeat set by
 		   setrepeat().
-		
+
 		   Workaround: Call setrepeat() after leaving insert mode,
 		   or avoid insert mode when using custom repeats.
-		
+
 		2. Functions like |setline()| are not recorded
 		   Functions that modify text (setline(), setbufline(),
 		   etc.) do not update the repeat command.
-		
+
 		   Workaround: Use |feedkeys()| to simulate typing, or
 		   document that such operations are not repeatable.
-		
+
 		3. Visual mode not supported
 		   Visual mode operations cannot be set via setrepeat() in
 		   Phase 1. This will be addressed in a future update.
-		
+
 		4. Limited getrepeat() for user operations
 		   If the repeat came from a normal user operation (typing
 		   'iHello<Esc>'), |getrepeat()| returns limited
 		   information. Full fidelity is only available for repeats
 		   set via setrepeat().
-		
+
 		See also: |getrepeat()|, |.|
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
