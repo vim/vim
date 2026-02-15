@@ -1132,6 +1132,12 @@ def Test_cindent_1()
   a();
   }
 
+  void func() {
+  /* aaaaaa
+  bbbbb:
+  ccccccc */
+  }
+
   /* end of AUTO */
   [CODE]
 
@@ -2133,6 +2139,12 @@ def Test_cindent_1()
   		while (0);
   	else
   		a();
+  }
+
+  void func() {
+  	/* aaaaaa
+  	   bbbbb:
+  	   ccccccc */
   }
 
   /* end of AUTO */
