@@ -8,7 +8,8 @@
 # should not be for a particular message.
 #
 msgid ""
-msgstr "Project-Id-Version: Vim 9.0 (Tamil)\n"
+msgstr ""
+"Project-Id-Version: Vim 9.0 (Tamil)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-01-06 14:41+0000\n"
 "PO-Revision-Date: 2026-02-13 22:14\n"
