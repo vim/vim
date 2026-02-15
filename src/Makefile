@@ -1607,7 +1607,10 @@ EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c \
 	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
 
-$(WAYLAND_SRC):
+$(WAYLAND_SRC): genwaylandproto
+
+.PHONY: genwaylandproto
+genwaylandproto:
 	cd auto/wayland; $(MAKE)
 
 # Needed for parallel jobs to work
