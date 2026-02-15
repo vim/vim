@@ -1004,7 +1004,7 @@ msgid "&Filter"
 msgstr "&வடிகட்டி"
 
 msgid "&Cancel"
-msgstr "ரத்துசெய் (&c)"
+msgstr "ரத்துசெய்"
 
 msgid "Directories"
 msgstr "கோப்பகங்கள்"
@@ -1013,13 +1013,13 @@ msgid "Filter"
 msgstr "வடிப்பி"
 
 msgid "&Help"
-msgstr "உதவி (&h)"
+msgstr "உதவி"
 
 msgid "Files"
 msgstr "கோப்புகள்"
 
 msgid "&OK"
-msgstr "சரி (&o)"
+msgstr "சரி"
 
 msgid "Selection"
 msgstr "தேர்வு"
@@ -1028,16 +1028,16 @@ msgid "Vim dialog"
 msgstr "விம் உரையாடல்"
 
 msgid "Find &Next"
-msgstr "அடுத்ததை தேடு (&n)"
+msgstr "அடுத்ததை தேடு"
 
 msgid "&Replace"
-msgstr "மாற்று (&r)"
+msgstr "மாற்று"
 
 msgid "Replace &All"
-msgstr "அனைத்தையும் மாற்று (&a)"
+msgstr "அனைத்தையும் மாற்று"
 
 msgid "&Undo"
-msgstr "செயல்தவிர் (&u)"
+msgstr "செயல்தவிர்"
 
 msgid "Open tab..."
 msgstr "தாவலைத் திற..."
@@ -1046,7 +1046,7 @@ msgid "Find string"
 msgstr "சரத்தைக் கண்டுபிடி"
 
 msgid "Find & Replace"
-msgstr "கண்டுபிடித்து மாற்றவும்"
+msgstr "கண்டுபிடித்து மாற்று"
 
 #. We fake this: Use a filter that doesn't select anything and a default
 #. file name that won't be used.
@@ -1142,7 +1142,6 @@ msgstr "மன்னிக்கவும், உதவி கோப்பு \"
 msgid "W18: Invalid character in group name"
 msgstr "W18: குழு பெயரில் தவறான எழுத்து"
 
-#| msgid "Added cscope database %s"
 msgid "Add a new database"
 msgstr "புதிய தரவுத்தளத்தைச் சேர்க்கவும்"
 
@@ -1152,15 +1151,12 @@ msgstr "ஒரு வடிவத்திற்கான வினவல்"
 msgid "Show this message"
 msgstr "இந்த செய்தியைக் காட்டு"
 
-#| msgid "no cscope connections\n"
 msgid "Kill a connection"
 msgstr "ஒரு இணைப்பைக் கொல்லுங்கள்"
 
-#| msgid "no cscope connections\n"
 msgid "Reinit all connections"
 msgstr "அனைத்து இணைப்புகளையும் மீட்டமைக்கவும்"
 
-#| msgid "no cscope connections\n"
 msgid "Show connections"
 msgstr "இணைப்புகளைக் காட்டு"
 
@@ -1183,7 +1179,6 @@ msgstr "cs_create_connection: to_fpக்கான fdopen தோல்விய�
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fr_fpக்கான fdopen தோல்வியடைந்தது"
 
-#| msgid "no cscope connections\n"
 msgid "cscope commands:\n"
 msgstr "cscope கட்டளைகள்:\n"
 
@@ -1214,7 +1209,6 @@ msgstr "\n"
 "t: இந்த உரை சரத்தைக் கண்டறியவும்\n"
 
 #, c-format
-#| msgid "no cscope connections\n"
 msgid "cscope connection %s closed"
 msgstr "cscope இணைப்பு %s மூடப்பட்டது"
 
@@ -1360,7 +1354,6 @@ msgid_plural "%ld lines indented "
 msgstr[0] "%ld வரி உள்தள்ளப்பட்டது"
 msgstr[1] "%ld கோடுகள் உள்தள்ளப்பட்டன"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Keyword completion (^N^P)"
 msgstr "முக்கிய சொல் நிறைவு (^N^P)"
 
@@ -1369,32 +1362,25 @@ msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 msgstr "^X பயன்முறை (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
 #. CTRL_X_SCROLL: depends on state
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Whole line completion (^L^N^P)"
 msgstr "முழு வரி நிறைவு (^L^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " File name completion (^F^N^P)"
 msgstr "கோப்பு பெயர் நிறைவு (^F^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Tag completion (^]^N^P)"
 msgstr "குறிச்சொல் நிறைவு (^]^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Path pattern completion (^N^P)"
 msgstr "பாதை முறை நிறைவு (^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Definition completion (^D^N^P)"
 msgstr "வரையறை நிறைவு (^D^N^P)"
 
 #. CTRL_X_FINISHED
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Dictionary completion (^K^N^P)"
 msgstr "அகராதி நிறைவு (^K^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Thesaurus completion (^T^N^P)"
 msgstr "சொற்களஞ்சியம் நிறைவு (^T^N^P)"
 
@@ -1402,22 +1388,18 @@ msgstr "சொற்களஞ்சியம் நிறைவு (^T^N^P)"
 msgid " Command-line completion (^V^N^P)"
 msgstr "கட்டளை வரி நிறைவு (^V^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " User defined completion (^U^N^P)"
 msgstr "பயனர் வரையறுக்கப்பட்ட நிறைவு (^U^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr "ஆம்னி நிறைவு (^O^N^P)"
 
 msgid " Spelling suggestion (^S^N^P)"
 msgstr "எழுத்துப்பிழை பரிந்துரை (^S^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Keyword Local completion (^N^P)"
 msgstr "முக்கிய சொல் உள்ளக நிறைவு (^N^P)"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid " Register completion (^N^P)"
 msgstr "பதிவு நிறைவு (^N^P)"
 
@@ -1467,9 +1449,8 @@ msgstr "அசல் நிலைக்குத் திரும்பு"
 msgid "Word from other line"
 msgstr "மற்றொரு வரியிலிருந்து சொல்"
 
-#| msgid "Keys don't match!"
 msgid "The only match"
-msgstr "ஒரே போட்டி"
+msgstr "ஒரே பொருத்தம்"
 
 #, c-format
 msgid "match %d of %d"
@@ -1833,10 +1814,10 @@ msgstr "--சுத்தமான 'இணக்கமற்றது', வி�
 "விமின்ஃபோ இல்லை"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
-msgstr "-h அல்லது --help உதவியை அச்சிட்டு (இந்தச் செய்தி) வெளியேறவும்"
+msgstr "-h அல்லது --help\tஉதவியை அச்சிட்டு (இந்தச் செய்தி) வெளியேறவும்"
 
 msgid "--version\t\tPrint version information and exit"
-msgstr "--version பதிப்புத் தகவலை அச்சிட்டு வெளியேறவும்"
+msgstr "--version\t\tபதிப்புத் தகவலை அச்சிட்டு வெளியேறவும்"
 
 msgid ""
 "\n"
@@ -1845,18 +1826,17 @@ msgstr "\n"
 "gvim ஆல் அங்கீகரிக்கப்பட்ட வாதங்கள் (Motif பதிப்பு):\n"
 
 msgid "-display <display>\tRun Vim on <display>"
-msgstr "-display <display> <display> இல் Vim ஐ இயக்கவும்"
+msgstr "-display <display>\t<display> இல் விம்மை இயக்கு"
 
 msgid "-iconic\t\tStart Vim iconified"
-msgstr "-ஐகானிக் ச்டார்ட் விம் ஐகானிஃபைட்"
+msgstr "-ஐகானிக்\t\tவிம் ஐகானிஃபைட் துவங்கு"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
-msgstr "-பின்னணி <color> பின்னணிக்கு <color> பயன்படுத்தவும் (மேலும்: -bg)"
+msgstr "-பின்னணி <color>\tபின்னணிக்கு <color> பயன்படுத்தவும் (மேலும்: -bg)"
 
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-முன்புறம் <color> சாதாரண உரைக்கு <color> பயன்படுத்தவும் (மேலும்: -fg)"
 
-#| msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr "-font <font> சாதாரண உரைக்கு <font> பயன்படுத்தவும் (மேலும்: -fn)"
 
@@ -1866,7 +1846,6 @@ msgstr "-boldfont <font> தடித்த உரைக்கு <font> பய�
 msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <font> சாய்வு உரைக்கு <font> பயன்படுத்தவும்"
 
-#| msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr "-geometry <geom> ஆரம்ப வடிவவியலுக்கு <geom> பயன்படுத்தவும் (மேலும்: -geom)"
 
@@ -1877,7 +1856,6 @@ msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr "-scrollbarwidth <width> <width> சுருள்பார் அகலத்தைப் பயன்படுத்தவும் (மேலும்:"
 " -sw)"
 
-#| msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "தலைகீழ் வீடியோவைப் பயன்படுத்தவும் (மேலும்: -rv)"
 
@@ -2241,7 +2219,7 @@ msgid ""
 "\"\n"
 "    to recover the changes (see \":help recovery\").\n"
 msgstr "\" \n"
-"மாற்றங்களை மீட்டெடுக்க (பார்க்க \": மீட்பு உதவி\").\n"
+"மாற்றங்களை மீட்டெடுக்க (பார்க்க \":help recovery\").\n"
 
 msgid "    If you did this already, delete the swap file \""
 msgstr "நீங்கள் ஏற்கனவே இதைச் செய்திருந்தால், ச்வாப் கோப்பை நீக்கவும் \""
@@ -2642,7 +2620,6 @@ msgstr "ஃச் காட்சியைத் திறக்க முடி
 msgid "XSMP handling save-yourself request"
 msgstr "XSMP கையாளுதல் உங்களைச் சேமிக்கும் கோரிக்கை"
 
-#| msgid "no cscope connections\n"
 msgid "XSMP opening connection"
 msgstr "XSMP திறப்பு இணைப்பு"
 
@@ -2951,12 +2928,10 @@ msgid "Warning: region %s not supported"
 msgstr "எச்சரிக்கை: %s பகுதி ஆதரிக்கப்படவில்லை"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Trailing text in %s line %d: %s"
 msgstr "%s வரி %d இல் உள்ள உரை: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Affix name too long in %s line %d: %s"
 msgstr "%s வரி %d: %s இல் பெயர் மிக நீளமாக உள்ளது"
 
@@ -2972,7 +2947,6 @@ msgid "Reading affix file %s..."
 msgstr "இணைப்புக் கோப்பைப் படிக்கிறது %s..."
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Conversion failure for word in %s line %d: %s"
 msgstr "%s வரி %d: %s இல் உள்ள வார்த்தைக்கான மாற்றம் தோல்வி"
 
@@ -2985,7 +2959,6 @@ msgid "Invalid value for FLAG in %s line %d: %s"
 msgstr "%s வரி %d இல் உள்ள FLAGக்கான தவறான மதிப்பு: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "FLAG after using flags in %s line %d: %s"
 msgstr "%s வரி %d: %s இல் கொடிகளைப் பயன்படுத்திய பிறகு கொடியிடவும்"
 
@@ -3028,7 +3001,6 @@ msgid "Different combining flag in continued affix block in %s line %d: %s"
 msgstr "%s வரி %d: %s இல் தொடரும் இணைப்புத் தொகுதியில் வெவ்வேறு இணைத்தல் கொடி"
 
 #, c-format
-#| msgid "Unrecognized or duplicate item in %s line %d: %s"
 msgid "Duplicate affix in %s line %d: %s"
 msgstr "%s வரி %d இல் நகல் இணைப்பு: %s"
 
@@ -3088,12 +3060,10 @@ msgid "Both SAL and SOFO lines in %s"
 msgstr "%s இல் சால் மற்றும் SOFO கோடுகள் இரண்டும்"
 
 #, c-format
-#| msgid "Unrecognized or duplicate item in %s line %d: %s"
 msgid "Flag is not a number in %s line %d: %s"
 msgstr "கொடி என்பது %s வரி %d இல் உள்ள எண் அல்ல: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Illegal flag in %s line %d: %s"
 msgstr "%s வரி %d: %s இல் சட்டவிரோதக் கொடி"
 
@@ -3110,12 +3080,10 @@ msgid "line %6d, word %6ld - %s"
 msgstr "வரி %6d, சொல் %6ld - %s"
 
 #, c-format
-#| msgid "Unrecognized or duplicate item in %s line %d: %s"
 msgid "Duplicate word in %s line %d: %s"
 msgstr "%s வரி %d இல் நகல் சொல்: %s"
 
 #, c-format
-#| msgid "Unrecognized or duplicate item in %s line %d: %s"
 msgid "First duplicate word in %s line %d: %s"
 msgstr "முதல் நகல் சொல் %s வரியில் %d: %s"
 
@@ -3132,37 +3100,30 @@ msgid "Reading word file %s..."
 msgstr "%s என்ற சொல் கோப்பைப் படிக்கிறது..."
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Conversion failure for word in %s line %ld: %s"
 msgstr "%s வரி %ld: %s இல் உள்ள வார்த்தைக்கான மாற்றம் தோல்வி"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Duplicate /encoding= line ignored in %s line %ld: %s"
 msgstr "%s வரி %ld: %s இல் டூப்ளிகேட் /என்கோடிங்= வரி புறக்கணிக்கப்பட்டது"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "/encoding= line after word ignored in %s line %ld: %s"
 msgstr "/encoding= %s வரி %ld: %s இல் புறக்கணிக்கப்பட்டது"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Duplicate /regions= line ignored in %s line %ld: %s"
 msgstr "%s வரி %ld: %s இல் நகல் /regions= வரி புறக்கணிக்கப்பட்டது"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Too many regions in %s line %ld: %s"
 msgstr "%s வரியில் பல பகுதிகள் %ld: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "/ line ignored in %s line %ld: %s"
 msgstr "/ வரி %s வரியில் புறக்கணிக்கப்பட்டது %ld: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Invalid region nr in %s line %ld: %s"
 msgstr "%s வரி %ld இல் தவறான பகுதி nr: %s"
 
@@ -9242,7 +9203,6 @@ msgstr "imp.find_module() விளைவாக 3-tuple என எதிர்�
 msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "அகப் பிழை: imp.find_module ஆனது NULL உடன் tuple திரும்பியது"
 
-#| msgid "can't delete OutputObject attributes"
 msgid "cannot delete vim.Dictionary attributes"
 msgstr "vim. அகராதி பண்புகளை நீக்க முடியாது"
 
@@ -9250,7 +9210,6 @@ msgid "cannot modify fixed dictionary"
 msgstr "நிலையான அகராதியை மாற்ற முடியாது"
 
 #, c-format
-#| msgid "can't delete OutputObject attributes"
 msgid "cannot set attribute %s"
 msgstr "%s பண்புக்கூறை அமைக்க முடியாது"
 
@@ -9298,7 +9257,6 @@ msgstr "%d அளவின் நீட்டிக்கப்பட்ட ச�
 msgid "failed to add item to list"
 msgstr "பட்டியலில் உருப்படியைச் சேர்க்க முடியவில்லை"
 
-#| msgid "can't delete OutputObject attributes"
 msgid "cannot delete vim.List attributes"
 msgstr "vim. பட்டியல் பண்புகளை நீக்க முடியாது"
 
@@ -9311,7 +9269,6 @@ msgstr "tuple கன்ச்ட்ரக்டர் முக்கிய வ�
 msgid "tuple index out of range"
 msgstr "tuple இன்டெக்ச் வரம்பிற்கு வெளியே உள்ளது"
 
-#| msgid "can't delete OutputObject attributes"
 msgid "cannot delete vim.Tuple attributes"
 msgstr "vim.Tuple பண்புகளை நீக்க முடியாது"
 
@@ -9368,7 +9325,6 @@ msgstr "அத்தகைய சாளரம் இல்லை"
 msgid "attempt to refer to deleted buffer"
 msgstr "நீக்கப்பட்ட இடையகத்தைக் குறிப்பிட முயற்சிக்கவும்"
 
-#| msgid "couldn't open buffer"
 msgid "failed to rename buffer"
 msgstr "failed பெறுநர் rename buffer"
 
@@ -9650,7 +9606,6 @@ msgid ""
 msgstr "how பெறுநர் கைப்பிடி case when searching in குறிச்சொற்கள் files:\n"
 "\"followic\" பெறுநர் follow 'ignorecase', \"ignore\" or \"match\""
 
-#| msgid "file names in a cscope file are relative to that file"
 msgid "file names in a tags file are relative to the tags file"
 msgstr "குறிச்சொற்கள் கோப்பில் உள்ள கோப்பு பெயர்கள் குறிச்சொற்கள் கோப்புடன் "
 "தொடர்புடையவை"
@@ -9688,7 +9643,6 @@ msgstr "ஒரு சிநோக்கம் கோப்பில் உள்
 msgid "displaying text"
 msgstr "உரையைக் காட்டுகிறது"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
 msgstr "CTRL-U மற்றும் CTRL-D க்கு உருட்ட வேண்டிய வரிகளின் எண்ணிக்கை"
 
@@ -9740,11 +9694,9 @@ msgstr "கட்டளை வரிக்கு பயன்படுத்த�
 msgid "width of the display"
 msgstr "காட்சி அகலம்"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of lines in the display"
 msgstr "காட்சியில் உள்ள வரிகளின் எண்ணிக்கை"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of lines to scroll for CTRL-F and CTRL-B"
 msgstr "CTRL-F மற்றும் CTRL-B க்கு உருட்ட வேண்டிய வரிகளின் எண்ணிக்கை"
 
@@ -9772,7 +9724,6 @@ msgstr "ஒவ்வொரு வரிக்கும் வரி எண்ண
 msgid "show the relative line number for each line"
 msgstr "ஒவ்வொரு வரிக்கும் தொடர்புடைய வரி எண்ணைக் காட்டு"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of columns to use for the line number"
 msgstr "வரி எண்ணுக்கு பயன்படுத்த வேண்டிய நெடுவரிசைகளின் எண்ணிக்கை"
 
@@ -9840,7 +9791,6 @@ msgstr "\"zg\" நல்ல வார்த்தைகளை சேர்க்
 msgid "pattern to locate the end of a sentence"
 msgstr "ஒரு வாக்கியத்தின் முடிவைக் கண்டறிவதற்கான முறை"
 
-#| msgid "words that change how lisp indenting works"
 msgid "flags to change how spell checking works"
 msgstr "எழுத்துப்பிழை சரிபார்ப்பு எவ்வாறு செயல்படுகிறது என்பதை மாற்ற கொடிகள்"
 
@@ -9866,11 +9816,9 @@ msgstr "சாளரங்களைச் சேர்க்கும்போ�
 msgid "in which direction 'equalalways' works: \"ver\", \"hor\" or \"both\""
 msgstr "எந்த திசையில் 'சமமாக' வேலை செய்கிறது: \"ver\", \"hor\" அல்லது \"இரண்டும்\""
 
-#| msgid "number of lines used for the command-line"
 msgid "minimal number of lines used for the current window"
 msgstr "தற்போதைய சாளரத்தில் பயன்படுத்தப்படும் குறைந்தபட்ச வரிகள்"
 
-#| msgid "number of lines used for the command-line"
 msgid "minimal number of lines used for any window"
 msgstr "எந்த சாளரத்திற்கும் பயன்படுத்தப்படும் குறைந்தபட்ச வரிகள்"
 
@@ -9883,11 +9831,9 @@ msgstr "சாளரத்தின் உயரத்தை வைத்தி�
 msgid "keep the width of the window"
 msgstr "சாளரத்தின் அகலத்தை வைத்திருங்கள்"
 
-#| msgid "number of lines used for the command-line"
 msgid "minimal number of columns used for the current window"
 msgstr "தற்போதைய சாளரத்தில் பயன்படுத்தப்படும் குறைந்தபட்ச நெடுவரிசைகள்"
 
-#| msgid "number of lines used for the command-line"
 msgid "minimal number of columns used for any window"
 msgstr "எந்த சாளரத்திற்கும் பயன்படுத்தப்படும் குறைந்தபட்ச நெடுவரிசைகள்"
 
@@ -9971,7 +9917,6 @@ msgstr "GUIக்கான தனிப்பயன் தாவல் பக்
 msgid "terminal"
 msgstr "முனையத்தில்"
 
-#| msgid "use GUI colors for the terminal"
 msgid "name of the used terminal"
 msgstr "பயன்படுத்தப்பட்ட முனையத்தின் பெயர்"
 
@@ -10008,7 +9953,6 @@ msgstr "வெவ்வேறு முறைகளில் கர்சர் 
 msgid "show info in the window title"
 msgstr "சாளரத்தின் தலைப்பில் தகவலைக் காட்டு"
 
-#| msgid "number of lines used for the command-line"
 msgid "percentage of 'columns' used for the window title"
 msgstr "சாளர தலைப்புக்கு பயன்படுத்தப்படும் 'நெடுவரிசைகளின்' விழுக்காடு"
 
@@ -10110,7 +10054,6 @@ msgid ""
 msgstr "\"last\", \"buffer\" அல்லது \"current\": எந்த அடைவு பயன்படுத்தப்பட்டது \n"
 "கோப்பு உலாவி"
 
-#| msgid "number of lines used for the command-line"
 msgid "language to be used for the menus"
 msgstr "மெனுக்களில் பயன்படுத்த வேண்டிய மொழி"
 
@@ -10405,7 +10348,6 @@ msgstr "தாவல்கள் மற்றும் உள்தள்ளல�
 msgid "number of spaces a <Tab> in the text stands for"
 msgstr "உரையில் உள்ள <Tab> என்பது இடைவெளிகளின் எண்ணிக்கை"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of spaces used for each step of (auto)indent"
 msgstr "(தானியங்கு) உள்தள்ளலின் ஒவ்வொரு படிக்கும் பயன்படுத்தப்படும் இடைவெளிகளின் "
 "எண்ணிக்கை"
@@ -10440,7 +10382,6 @@ msgstr "C குறியீட்டிற்கான குறிப்பி
 msgid "options for C-indenting"
 msgstr "சி-இன்டென்டிங்கிற்கான விருப்பங்கள்"
 
-#| msgid "recognize keys that start with <Esc> in Insert mode"
 msgid "keys that trigger C-indenting in Insert mode"
 msgstr "இன்செர்ட் பயன்முறையில் சி-இன்டென்டிங்கைத் தூண்டும் விசைகள்"
 
@@ -10453,7 +10394,6 @@ msgstr "சினோ-சி பயன்படுத்திய நோக்க
 msgid "expression used to obtain the indent of a line"
 msgstr "ஒரு வரியின் உள்தள்ளலைப் பெற பயன்படுத்தப்படும் வெளிப்பாடு"
 
-#| msgid "recognize keys that start with <Esc> in Insert mode"
 msgid "keys that trigger indenting with 'indentexpr' in Insert mode"
 msgstr "செருகும் பயன்முறையில் 'indentexpr' உடன் உள்தள்ளலைத் தூண்டும் விசைகள்"
 
@@ -10569,7 +10509,6 @@ msgstr "ஒரு கோப்பைப் படிக்கும்போத�
 msgid "allow setting expression options from a modeline"
 msgstr "மாதிரியிலிருந்து வெளிப்பாடு விருப்பங்களை அமைக்க அனுமதிக்கவும்"
 
-#| msgid "number of lines used for the command-line"
 msgid "number of lines to check for modelines"
 msgstr "மாதிரிகளை சரிபார்க்க கோடுகளின் எண்ணிக்கை"
 
@@ -10685,7 +10624,6 @@ msgstr "கட்டளை வரி விரிவாக்கத்தைத�
 msgid "like 'wildchar' but can also be used in a mapping"
 msgstr "'வைல்ட்சார்' போன்றது ஆனால் மேப்பிங்கிலும் பயன்படுத்தலாம்"
 
-#| msgid " Command-line completion (^V^N^P)"
 msgid "specifies how command line completion works"
 msgstr "கட்டளை வரி நிறைவு எவ்வாறு செயல்படுகிறது என்பதைக் குறிப்பிடுகிறது"
 
@@ -10712,18 +10650,15 @@ msgstr "கோப்பு பெயர்களை முடிக்கும�
 msgid "command-line completion shows a list of matches"
 msgstr "கட்டளை வரியின் நிறைவு போட்டிகளின் பட்டியலைக் காட்டுகிறது"
 
-#| msgid "when to edit the command-line right-to-left"
 msgid "key used to open the command-line window"
 msgstr "கட்டளை வரி சாளரத்தை திறக்க விசை பயன்படுத்தப்படுகிறது"
 
-#| msgid "when to edit the command-line right-to-left"
 msgid "height of the command-line window"
 msgstr "கட்டளை வரி சாளரத்தின் உயரம்"
 
 msgid "executing external commands"
 msgstr "வெளிப்புற கட்டளைகளை செயல்படுத்துதல்"
 
-#| msgid "number of lines used for the command-line"
 msgid "name of the shell program used for external commands"
 msgstr "வெளிப்புற கட்டளைகளுக்கு பயன்படுத்தப்படும் செல் நிரலின் பெயர்"
 
@@ -10755,7 +10690,6 @@ msgstr "நிரல் \"=\" கட்டளைக்கு பயன்பட�
 msgid "program used to format lines with \"gq\" command"
 msgstr "நிரல் \"gq\" கட்டளையுடன் வரிகளை வடிவமைக்கப் பயன்படுகிறது"
 
-#| msgid "number of lines used for the command-line"
 msgid "program used for the \"K\" command"
 msgstr "நிரல் \"K\" கட்டளைக்கு பயன்படுத்தப்படுகிறது"
 
