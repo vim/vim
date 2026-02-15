@@ -1457,7 +1457,7 @@ cs_insert_filelist(
     if ((csinfo[i].fname = alloc(strlen(fname)+1)) == NULL)
 	return -1;
 
-    (void)strcpy(csinfo[i].fname, (const char *)fname);
+    vim_strncpy((char_u *)csinfo[i].fname, (char_u *)fname, strlen((const char *)fname));
 
     if (ppath != NULL)
     {
@@ -1466,7 +1466,7 @@ cs_insert_filelist(
 	    VIM_CLEAR(csinfo[i].fname);
 	    return -1;
 	}
-	(void)strcpy(csinfo[i].ppath, (const char *)ppath);
+	vim_strncpy((char_u *)csinfo[i].ppath, (char_u *)ppath, strlen((const char *)ppath));
     }
     else
 	csinfo[i].ppath = NULL;
@@ -1479,7 +1479,7 @@ cs_insert_filelist(
 	    VIM_CLEAR(csinfo[i].ppath);
 	    return -1;
 	}
-	(void)strcpy(csinfo[i].flags, (const char *)flags);
+	vim_strncpy((char_u *)csinfo[i].flags, (char_u *)flags, strlen((const char *)flags));
     }
     else
 	csinfo[i].flags = NULL;

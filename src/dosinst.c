@@ -2174,8 +2174,8 @@ init_homedir(void)
 	if (homedrive != NULL
 		   && strlen(homedrive) + strlen(homepath) < sizeof(buf))
 	{
-	    snprintf(buf, sizeof(buf), "%s%s", homedrive, homepath);
-	    if (buf[0] != NUL)
+	    if (snprintf(buf, sizeof(buf), "%s%s", homedrive, homepath) > 0
+		&& buf[0] != NUL)
 		var = buf;
 	}
     }
