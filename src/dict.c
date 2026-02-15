@@ -1606,7 +1606,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 }
 
 /*
- * "items()" function
+ * "items(dict)" function
  */
     void
 dict2items(typval_T *argvars, typval_T *rettv)

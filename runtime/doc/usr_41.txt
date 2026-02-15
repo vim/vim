@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Feb 16
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -38,7 +38,7 @@ language like for example .vim files or configuration files like .vimrc and
 uses to customize and extend its behavior.
 
 						*vim-script-notation*
-The correct notation is "Vim script" (or "Vim9 script" when refering to the
+The correct notation is "Vim script" (or "Vim9 script" when referring to the
 new Vim9 language |Vim9-script|), so we will use "Vim script" to refer to the
 Vim scripting language throughout this documentation. This shorthand helps to
 streamline explanations and discussions about scripting with Vim.

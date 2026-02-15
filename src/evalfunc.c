@@ -8789,7 +8789,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "items(dict)" function
+ * "items()" function
  */
     static void
 f_items(typval_T *argvars, typval_T *rettv)
