@@ -59,6 +59,9 @@ extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockI
 #if defined(FEAT_GUI_GTK)
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
+#  ifdef GDK_WINDOWING_WAYLAND
+#   include <gdk/gdkwayland.h>
+#  endif
 #  include <gtk/gtkx.h>
 # else
 #  include <gdk/gdkkeysyms.h>
@@ -2039,11 +2042,6 @@ scroll_event(GtkWidget *widget,
 # if !GTK_CHECK_VERSION(3,22,0)
     static guint32 last_smooth_event_time;
 # endif
-# define DT_X11     1
-# define DT_WAYLAND 2
-    static int display_type;
-    if (!display_type)
-	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
 #endif
 
     if (gtk_socket_id != 0 && !gtk_widget_has_focus(widget))
@@ -2101,7 +2099,7 @@ scroll_event(GtkWidget *widget,
 #if GTK_CHECK_VERSION(3,4,0)
     // on x11, despite not requested, when we copy into primary clipboard,
     // we'll get smooth events. Unsmooth ones will also come along.
-    if (event->direction == GDK_SCROLL_SMOOTH && display_type == DT_WAYLAND)
+    if (event->direction == GDK_SCROLL_SMOOTH && gui.is_wayland)
     {
 	while (acc_x >= 1.0)
 	{ // right
@@ -2128,12 +2126,10 @@ scroll_event(GtkWidget *widget,
 		    FALSE, vim_modifiers);
 	}
     }
-    else if (event->direction == GDK_SCROLL_SMOOTH && display_type == DT_X11)
+    else if (event->direction == GDK_SCROLL_SMOOTH && X_DISPLAY)
 	// for X11 we deal with unsmooth events, and so ignore the smooth ones
 	;
     else
-# undef DT_X11
-# undef DT_WAYLAND
 #endif
 	gui_send_mouse_event(button, (int)event->x, (int)event->y,
 		FALSE, vim_modifiers);
@@ -4002,6 +3998,12 @@ gui_mch_init(void)
     gui.drawarea = gtk_drawing_area_new();
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = NULL;
+#endif
+
+#ifdef GDK_WINDOWING_WAYLAND
+    GdkDisplay *d = gdk_display_get_default();
+    if (GDK_IS_WAYLAND_DISPLAY(d))
+	gui.is_wayland = TRUE;
 #endif
 
     // Determine which events we will filter.
@@ -6619,6 +6621,11 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     void
 gui_mch_update(void)
 {
+#ifdef GDK_WINDOWING_WAYLAND
+    // avoid early redraws; compositor does redraw
+    if (gui.is_wayland)
+       return;
+#endif
     int cnt = 0;	// prevent endless loop
     while (g_main_context_pending(NULL) && !vim_is_input_buf_full()
 								&& ++cnt < 100)
@@ -6718,7 +6725,14 @@ gui_mch_wait_for_chars(long wtime)
 	 * situations, sort of race condition).
 	 */
 	if (!input_available())
-	    g_main_context_iteration(NULL, TRUE);
+	{
+#ifdef GDK_WINDOWING_WAYLAND
+	    if (gui.is_wayland)
+		g_main_context_iteration(NULL, FALSE);
+	    else
+#endif
+		g_main_context_iteration(NULL, TRUE);
+	}
 
 	// Got char, return immediately
 	if (input_available())
@@ -6909,13 +6923,69 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
 {
     cairo_t * const cr = cairo_create(gui.surface);
 
-    cairo_rectangle(cr, dest_x, dest_y, width, height);
-    cairo_clip(cr);
-    cairo_push_group(cr);
-    cairo_set_source_surface(cr, gui.surface, dest_x - src_x, dest_y - src_y);
-    cairo_paint(cr);
-    cairo_pop_group_to_source(cr);
-    cairo_paint(cr);
+# ifdef GDK_WINDOWING_WAYLAND
+    /*
+       Following optimizations are temporary until all callers are refactored
+       to wayland deferred redraw; .. then it could be removed.
+    */
+    static cairo_surface_t *scroll_scratch = NULL;
+    static int scratch_w = 0;
+    static int scratch_h = 0;
+    int last_row = Rows - 1;
+    int last_row_y = last_row * gui.char_height;
+    _Bool last_row_overlap = (dest_y + height) > last_row_y;
+    if (gui.is_wayland && ( !(State & MODE_CMDLINE) || !last_row_overlap) )
+    {
+	/*
+	   scrolling up
+	   */
+	if (dest_y < src_y)
+	{
+	    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	    cairo_set_source_surface(cr, gui.surface,
+		    src_x - dest_x,
+		    dest_y - src_y);
+	    cairo_rectangle(cr, dest_x, dest_y, width, height);
+	    cairo_clip(cr);
+	    cairo_paint(cr);;
+	}
+	else
+	{
+	    //  reusing surface when scrolling, only realloc if larger
+	    if (scroll_scratch == NULL || width > scratch_w || height > scratch_h)
+	    {
+		cairo_surface_destroy(scroll_scratch); // safe even if NULL
+		scroll_scratch = cairo_surface_create_similar(gui.surface,
+			cairo_surface_get_content(gui.surface), width, height);
+		scratch_w = width;
+		scratch_h = height;
+	    }
+
+	    // capture scroll source region
+	    cairo_t *tcr = cairo_create(scroll_scratch);
+	    cairo_set_source_surface(tcr, gui.surface, -src_x, -src_y);
+	    cairo_paint(tcr);
+	    cairo_destroy(tcr);
+
+	    // reuse scroll source region
+	    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	    cairo_rectangle(cr, dest_x, dest_y, width, height);
+	    cairo_clip(cr);
+	    cairo_set_source_surface(cr, scroll_scratch, dest_x, dest_y);
+	    cairo_paint(cr);
+	}
+    }
+    else
+# endif
+    {
+	cairo_rectangle(cr, dest_x, dest_y, width, height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+	cairo_set_source_surface(cr, gui.surface, dest_x - src_x, dest_y - src_y);
+	cairo_paint(cr);
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
+    }
 
     cairo_destroy(cr);
 }
