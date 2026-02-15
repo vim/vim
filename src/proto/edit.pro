@@ -39,7 +39,7 @@ colnr_T get_nolist_virtcol(void);
 int get_can_cindent(void);
 void set_can_cindent(int val);
 int ins_apply_autocmds(event_T event);
+void free_repeat_dict(void);
 void set_repeat_dict(dict_T *dict);
 dict_T *get_repeat_dict(void);
-void free_repeat_dict(void);
 /* vim: set ft=c : */
