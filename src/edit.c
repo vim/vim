@@ -100,8 +100,10 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+#if defined(FEAT_EVAL)
 // Dictionary to store the last repeat command set via setrepeat()
 static dict_T	*g_last_repeat_dict = NULL;
+#endif
 
 #define TRIGGER_AUTOCOMPLETE()			\
     do {					\
@@ -2673,6 +2675,7 @@ set_last_insert(int c)
     last_insert_skip = 0;
 }
 
+#if defined(FEAT_EVAL)
 /*
  * Set the last inserted text to str.
  *
@@ -2768,6 +2771,7 @@ set_last_insert_str(char_u *str)
 	}
     }
 }
+#endif
 
 #if defined(EXITFREE)
     void
