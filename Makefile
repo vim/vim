@@ -460,6 +460,7 @@ dosrt_files: dist prepare
 		$(LANG_GEN_BIN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	-rm $(IN_README_DIR)
+	mv dist/vim/$(VIMRTDIR)/lang/ dist/vim/$(VIMRTDIR)/readme/
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 # Add the message translations.  Trick: skip ja.mo/ja.euc-jp.mo and use
