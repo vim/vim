@@ -6200,6 +6200,7 @@ added-8.1	version8.txt	/*added-8.1*
 added-8.2	version8.txt	/*added-8.2*
 added-9.1	version9.txt	/*added-9.1*
 added-9.2	version9.txt	/*added-9.2*
+added-9.3	version9.txt	/*added-9.3*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -6416,6 +6417,7 @@ bug-fixes-8	version8.txt	/*bug-fixes-8*
 bug-fixes-9	version9.txt	/*bug-fixes-9*
 bug-fixes-9.1	version9.txt	/*bug-fixes-9.1*
 bug-fixes-9.2	version9.txt	/*bug-fixes-9.2*
+bug-fixes-9.3	version9.txt	/*bug-fixes-9.3*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -6604,6 +6606,7 @@ changed-8.1	version8.txt	/*changed-8.1*
 changed-8.2	version8.txt	/*changed-8.2*
 changed-9.1	version9.txt	/*changed-9.1*
 changed-9.2	version9.txt	/*changed-9.2*
+changed-9.3	version9.txt	/*changed-9.3*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	builtin.txt	/*changenr()*
@@ -9674,9 +9677,11 @@ patches-8.2	version8.txt	/*patches-8.2*
 patches-9	version9.txt	/*patches-9*
 patches-9.1	version9.txt	/*patches-9.1*
 patches-9.2	version9.txt	/*patches-9.2*
+patches-9.3	version9.txt	/*patches-9.3*
 patches-after-8.2	version9.txt	/*patches-after-8.2*
 patches-after-9.0	version9.txt	/*patches-after-9.0*
 patches-after-9.1	version9.txt	/*patches-after-9.1*
+patches-after-9.2	version9.txt	/*patches-after-9.2*
 pathshorten()	builtin.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -11549,6 +11554,7 @@ version-8.2	version8.txt	/*version-8.2*
 version-9.0	version9.txt	/*version-9.0*
 version-9.1	version9.txt	/*version-9.1*
 version-9.2	version9.txt	/*version-9.2*
+version-9.3	version9.txt	/*version-9.3*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -11566,6 +11572,7 @@ version8.txt	version8.txt	/*version8.txt*
 version9.0	version9.txt	/*version9.0*
 version9.1	version9.txt	/*version9.1*
 version9.2	version9.txt	/*version9.2*
+version9.3	version9.txt	/*version9.3*
 version9.txt	version9.txt	/*version9.txt*
 versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
@@ -11595,6 +11602,7 @@ vim-9	version9.txt	/*vim-9*
 vim-9.0	version9.txt	/*vim-9.0*
 vim-9.1	version9.txt	/*vim-9.1*
 vim-9.2	version9.txt	/*vim-9.2*
+vim-9.3	version9.txt	/*vim-9.3*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*

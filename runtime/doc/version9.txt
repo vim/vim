@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,11 @@ VERSION 9.2					|version-9.2|
    Changed					|changed-9.2|
    Added					|added-9.2|
    Patches					|patches-9.2|
+
+VERSION 9.3					|version-9.3|
+   Changed					|changed-9.3|
+   Added					|added-9.3|
+   Patches					|patches-9.3|
 
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 9.0.
@@ -41546,8 +41551,7 @@ Solution:   re-generate them
 ==============================================================================
 VERSION 9.2				*version-9.2* *version9.2* *vim-9.2*
 
-This section is about improvements made between version 9.1 and 9.2
-and is a work in progress.
+This section is about improvements made between version 9.1 and 9.2.
 
 Vim9 script ~
 -----------
@@ -41750,7 +41754,8 @@ Functions: ~
 - |setqflist()| and |setloclist()| can optionally try to preserve the current
   selection in the quickfix list with the "u" action.
 - allow to pass local Vim script variables to python interpreter |py3eval()|
-- |getwininfo()| now also returns the "leftcol" property for a window
+- |getwininfo()| now also returns the "leftcol" and "status_height" properties
+  for a window
 - |v:stacktrace| The stack trace of the exception most recently caught and
   not finished
 - Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
@@ -52570,5 +52575,23 @@ Patch 9.1.2148
 Problem:  [security]: Buffer overflow in netbeans special_keys() handling
 Solution: Limit writing to max KEYBUFLEN bytes to prevent writing out of
           bounds.
+
+==============================================================================
+VERSION 9.3				*version-9.3* *version9.3* *vim-9.3*
+
+This section is about improvements made between version 9.2 and 9.3 and is
+work in progress.
+
+							*changed-9.3*
+Changed~
+-------
+
+							*added-9.3*
+Added ~
+-----
+
+==============================================================================
+PATCHES						*patches-9.3* *bug-fixes-9.3*
+						*patches-after-9.2*
 
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
