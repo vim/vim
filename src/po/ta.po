@@ -4091,7 +4091,7 @@ msgstr "ஏற்கனவே ஒரே ஒரு சாளரம்"
 
 #, c-format
 msgid "E370: Could not load library %s"
-msgstr "பி370: %s நூலகத்தை ஏற்ற முடியவில்லை"
+msgid "E370: %s நூலகத்தை ஏற்ற முடியவில்லை"
 
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr ""
@@ -4131,10 +4131,10 @@ msgid "Interrupted"
 msgstr "குறுக்கிடப்பட்டது"
 
 msgid "E10: \\ should be followed by /, ? or &"
-msgstr "பி10: \\ ஐத் தொடர்ந்து /, ? அல்லது &"
+msgid "E10: \\ ஐத் தொடர்ந்து /, ? அல்லது &"
 
 msgid "E11: Invalid in command-line window; :q<CR> closes the window"
-msgstr "பி11: கட்டளை வரி சாளரத்தில் தவறானது; :q<CR> சாளரத்தை மூடுகிறது"
+msgid "E11: கட்டளை வரி சாளரத்தில் தவறானது; :q<CR> சாளரத்தை மூடுகிறது"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -4143,85 +4143,85 @@ msgstr ""
 
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E13: File exists (add ! to override)"
-msgstr "பி13: கோப்பு உள்ளது (சேர்! மேலெழுத)"
+msgid "E13: கோப்பு உள்ளது (சேர்! மேலெழுத)"
 
 #, c-format
 msgid "E15: Invalid expression: \"%s\""
-msgstr "பி15: தவறான வெளிப்பாடு: \"%s\""
+msgid "E15: தவறான வெளிப்பாடு: \"%s\""
 
 msgid "E16: Invalid range"
-msgstr "பி16: தவறான வரம்பு"
+msgid "E16: தவறான வரம்பு"
 
 #, c-format
 msgid "E17: \"%s\" is a directory"
-msgstr "பி17: \"%s\" என்பது ஒரு அடைவு"
+msgid "E17: \"%s\" என்பது ஒரு அடைவு"
 
 msgid "E18: Unexpected characters in :let"
-msgstr "பி18: :let இல் எதிர்பாராத எழுத்துக்கள்"
+msgid "E18: :let இல் எதிர்பாராத எழுத்துக்கள்"
 
 msgid "E18: Unexpected characters in assignment"
-msgstr "பி18: ஒதுக்கீட்டில் எதிர்பாராத எழுத்துக்கள்"
+msgid "E18: ஒதுக்கீட்டில் எதிர்பாராத எழுத்துக்கள்"
 
 msgid "E19: Mark has invalid line number"
-msgstr "பி19: மார்க் தவறான வரி எண்ணைக் கொண்டுள்ளது"
+msgid "E19: மார்க் தவறான வரி எண்ணைக் கொண்டுள்ளது"
 
 msgid "E20: Mark not set"
-msgstr "பி20: குறி அமைக்கப்படவில்லை"
+msgid "E20: குறி அமைக்கப்படவில்லை"
 
 msgid "E21: Cannot make changes, 'modifiable' is off"
 msgstr ""
 "E21: மாற்றங்களைச் செய்ய முடியாது, 'மாற்றக்கூடியது' முடக்கத்தில் உள்ளது"
 
 msgid "E22: Scripts nested too deep"
-msgstr "பி22: ச்கிரிப்ட்கள் மிகவும் ஆழமாக உள்ளமைக்கப்பட்டுள்ளன"
+msgid "E22: ச்கிரிப்ட்கள் மிகவும் ஆழமாக உள்ளமைக்கப்பட்டுள்ளன"
 
 #| msgid "E482: Can't create file %s"
 msgid "E23: No alternate file"
-msgstr "பி23: மாற்று கோப்பு இல்லை"
+msgid "E23: மாற்று கோப்பு இல்லை"
 
 msgid "E24: No such abbreviation"
-msgstr "பி24: அத்தகைய சுருக்கம் இல்லை"
+msgid "E24: அத்தகைய சுருக்கம் இல்லை"
 
 msgid "E25: GUI cannot be used: Not enabled at compile time"
 msgstr ""
 "E25: GUI ஐப் பயன்படுத்த முடியாது: தொகுக்கும் நேரத்தில் இயக்கப்படவில்லை"
 
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
-msgstr "பி26: ஈப்ரு பயன்படுத்த முடியாது: தொகுக்கும் நேரத்தில் இயக்கப்படவில்லை\n"
+msgid "E26: ஈப்ரு பயன்படுத்த முடியாது: தொகுக்கும் நேரத்தில் இயக்கப்படவில்லை\n"
 
 msgid "E27: Farsi support has been removed\n"
-msgstr "பி27: ஃபார்சி உதவி அகற்றப்பட்டது\n"
+msgid "E27: ஃபார்சி உதவி அகற்றப்பட்டது\n"
 
 #, c-format
 msgid "E28: No such highlight group name: %s"
-msgstr "பி28: இது போன்ற ஐலைட் குழு பெயர் இல்லை: %s"
+msgid "E28: இது போன்ற ஐலைட் குழு பெயர் இல்லை: %s"
 
 msgid "E29: No inserted text yet"
-msgstr "பி29: இன்னும் உரை செருகப்படவில்லை"
+msgid "E29: இன்னும் உரை செருகப்படவில்லை"
 
 msgid "E30: No previous command line"
-msgstr "பி30: முந்தைய கட்டளை வரி இல்லை"
+msgid "E30: முந்தைய கட்டளை வரி இல்லை"
 
 msgid "E31: No such mapping"
-msgstr "பி31: அத்தகைய மேப்பிங் இல்லை"
+msgid "E31: அத்தகைய மேப்பிங் இல்லை"
 
 msgid "E32: No file name"
-msgstr "பி32: கோப்பு பெயர் இல்லை"
+msgid "E32: கோப்பு பெயர் இல்லை"
 
 msgid "E33: No previous substitute regular expression"
-msgstr "பி33: முந்தைய மாற்று வழக்கமான வெளிப்பாடு இல்லை"
+msgid "E33: முந்தைய மாற்று வழக்கமான வெளிப்பாடு இல்லை"
 
 msgid "E34: No previous command"
-msgstr "பி34: முந்தைய கட்டளை இல்லை"
+msgid "E34: முந்தைய கட்டளை இல்லை"
 
 msgid "E35: No previous regular expression"
-msgstr "பி35: முந்தைய வழக்கமான வெளிப்பாடு இல்லை"
+msgid "E35: முந்தைய வழக்கமான வெளிப்பாடு இல்லை"
 
 msgid "E36: Not enough room"
-msgstr "பி36: போதுமான அறை இல்லை"
+msgid "E36: போதுமான அறை இல்லை"
 
 msgid "E37: No write since last change"
-msgstr "பி37: கடைசி மாற்றத்திற்குப் பிறகு எழுதவில்லை"
+msgid "E37: கடைசி மாற்றத்திற்குப் பிறகு எழுதவில்லை"
 
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E37: No write since last change (add ! to override)"
@@ -4229,17 +4229,17 @@ msgstr ""
 "E37: கடைசியாக மாற்றியதில் இருந்து எழுதவில்லை (மேற்செலுத்துவதற்கு சேர்!)"
 
 msgid "E39: Number expected"
-msgstr "பி39: எதிர்பார்க்கப்படும் எண்"
+msgid "E39: எதிர்பார்க்கப்படும் எண்"
 
 #, c-format
 msgid "E40: Can't open errorfile %s"
-msgstr "பி40: %s என்ற பிழைக் கோப்பைத் திறக்க முடியவில்லை"
+msgid "E40: %s என்ற பிழைக் கோப்பைத் திறக்க முடியவில்லை"
 
 msgid "E41: Out of memory!"
-msgstr "பி41: நினைவகம் இல்லை!"
+msgid "E41: நினைவகம் இல்லை!"
 
 msgid "E42: No Errors"
-msgstr "பி42: பிழைகள் இல்லை"
+msgid "E42: பிழைகள் இல்லை"
 
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E45: 'readonly' option is set (add ! to override)"
@@ -4247,144 +4247,144 @@ msgstr ""
 "E45: 'படிக்க மட்டும்' விருப்பத்தேர்வு அமைக்கப்பட்டுள்ளது (சேர்! மேலெழுத)"
 
 msgid "E46: Cannot change read-only variable"
-msgstr "பி46: படிக்க மட்டும் மாறியை மாற்ற முடியாது"
+msgid "E46: படிக்க மட்டும் மாறியை மாற்ற முடியாது"
 
 #, c-format
 #| msgid "E456: Can't open file \"%s\""
 msgid "E46: Cannot change read-only variable \"%s\""
-msgstr "பி46: படிக்க-மட்டும் மாறி \"%s\" ஐ மாற்ற முடியாது"
+msgid "E46: படிக்க-மட்டும் மாறி \"%s\" ஐ மாற்ற முடியாது"
 
 msgid "E47: Error while reading errorfile"
-msgstr "பி47: பிழை கோப்பைப் படிக்கும்போது பிழை"
+msgid "E47: பிழை கோப்பைப் படிக்கும்போது பிழை"
 
 msgid "E48: Not allowed in sandbox"
-msgstr "பி48: சாண்ட்பாக்சில் அனுமதிக்கப்படவில்லை"
+msgid "E48: சாண்ட்பாக்சில் அனுமதிக்கப்படவில்லை"
 
 msgid "E49: Invalid scroll size"
-msgstr "பி49: தவறான உருள் அளவு"
+msgid "E49: தவறான உருள் அளவு"
 
 msgid "E50: Too many \\z("
-msgstr "பி50: அதிகமாக \\z("
+msgid "E50: அதிகமாக \\z("
 
 #, c-format
 msgid "E51: Too many %s("
-msgstr "பி51: மிக அதிகமான %s("
+msgid "E51: மிக அதிகமான %s("
 
 msgid "E52: Unmatched \\z("
-msgstr "பி52: பொருத்தமற்ற \\z("
+msgid "E52: பொருத்தமற்ற \\z("
 
 #, c-format
 msgid "E53: Unmatched %s%%("
-msgstr "பி53: பொருந்தாத %s%%("
+msgid "E53: பொருந்தாத %s%%("
 
 #, c-format
 msgid "E54: Unmatched %s("
-msgstr "பி54: பொருந்தாத %s("
+msgid "E54: பொருந்தாத %s("
 
 #, c-format
 msgid "E55: Unmatched %s)"
-msgstr "பி55: பொருந்தாத %s)"
+msgid "E55: பொருந்தாத %s)"
 
 #, c-format
 msgid "E59: Invalid character after %s@"
-msgstr "பி59: %s@க்குப் பிறகு தவறான எழுத்து"
+msgid "E59: %s@க்குப் பிறகு தவறான எழுத்து"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
-msgstr "பி60: மிகவும் சிக்கலான %s{...}s"
+msgid "E60: மிகவும் சிக்கலான %s{...}s"
 
 #, c-format
 msgid "E61: Nested %s*"
-msgstr "பி61: உள்ளமை %s*"
+msgid "E61: உள்ளமை %s*"
 
 #, c-format
 msgid "E62: Nested %s%c"
-msgstr "பி62: உள்ளமைக்கப்பட்ட %s%c"
+msgid "E62: உள்ளமைக்கப்பட்ட %s%c"
 
 msgid "E63: Invalid use of \\_"
-msgstr "பி63: தவறான பயன்பாடு \\_"
+msgid "E63: தவறான பயன்பாடு \\_"
 
 #, c-format
 msgid "E64: %s%c follows nothing"
-msgstr "பி64: %s%c எதையும் பின்பற்றவில்லை"
+msgid "E64: %s%c எதையும் பின்பற்றவில்லை"
 
 msgid "E65: Illegal back reference"
-msgstr "பி65: சட்டவிரோத பின் குறிப்பு"
+msgid "E65: சட்டவிரோத பின் குறிப்பு"
 
 msgid "E66: \\z( not allowed here"
-msgstr "பி66: \\z( இங்கு அனுமதிக்கப்படவில்லை"
+msgid "E66: \\z( இங்கு அனுமதிக்கப்படவில்லை"
 
 msgid "E67: \\z1 - \\z9 not allowed here"
-msgstr "பி67: \\z1 - \\z9 இங்கே அனுமதிக்கப்படவில்லை"
+msgid "E67: \\z1 - \\z9 இங்கே அனுமதிக்கப்படவில்லை"
 
 msgid "E68: Invalid character after \\z"
-msgstr "பி68: \\z க்குப் பிறகு தவறான எழுத்து"
+msgid "E68: \\z க்குப் பிறகு தவறான எழுத்து"
 
 #, c-format
 msgid "E69: Missing ] after %s%%["
-msgstr "பி69: %s%%க்குப் பிறகு ] காணவில்லை["
+msgid "E69: %s%%க்குப் பிறகு ] காணவில்லை["
 
 #, c-format
 msgid "E70: Empty %s%%[]"
-msgstr "பி70: வெறுமை %s%%[]"
+msgid "E70: வெறுமை %s%%[]"
 
 #, c-format
 msgid "E71: Invalid character after %s%%"
-msgstr "பி71: %s%%க்குப் பிறகு தவறான எழுத்து"
+msgid "E71: %s%%க்குப் பிறகு தவறான எழுத்து"
 
 msgid "E72: Close error on swap file"
-msgstr "பி72: ச்வாப் கோப்பில் பிழையை மூடு"
+msgid "E72: ச்வாப் கோப்பில் பிழையை மூடு"
 
 msgid "E73: Tag stack empty"
-msgstr "பி73: டேக் ச்டாக் காலியாக உள்ளது"
+msgid "E73: டேக் ச்டாக் காலியாக உள்ளது"
 
 msgid "E74: Command too complex"
-msgstr "பி74: கட்டளை மிகவும் சிக்கலானது"
+msgid "E74: கட்டளை மிகவும் சிக்கலானது"
 
 msgid "E75: Name too long"
-msgstr "பி75: பெயர் மிக நீளமானது"
+msgid "E75: பெயர் மிக நீளமானது"
 
 msgid "E76: Too many ["
-msgstr "பி76: அதிகமாக ["
+msgid "E76: அதிகமாக ["
 
 msgid "E77: Too many file names"
-msgstr "பி77: பல கோப்பு பெயர்கள்"
+msgid "E77: பல கோப்பு பெயர்கள்"
 
 msgid "E78: Unknown mark"
-msgstr "பி78: தெரியாத குறி"
+msgid "E78: தெரியாத குறி"
 
 #| msgid "--literal\t\tDon't expand wildcards"
 msgid "E79: Cannot expand wildcards"
-msgstr "பி79: வைல்டு கார்டுகளை விரிவாக்க முடியாது"
+msgid "E79: வைல்டு கார்டுகளை விரிவாக்க முடியாது"
 
 msgid "E80: Error while writing"
-msgstr "பி80: எழுதும் போது பிழை"
+msgid "E80: எழுதும் போது பிழை"
 
 msgid "E81: Using <SID> not in a script context"
-msgstr "பி81: <SID> ஐ ச்கிரிப்ட் சூழலில் பயன்படுத்தவில்லை"
+msgid "E81: <SID> ஐ ச்கிரிப்ட் சூழலில் பயன்படுத்தவில்லை"
 
 #| msgid "E254: Cannot allocate color %s"
 msgid "E82: Cannot allocate any buffer, exiting..."
-msgstr "பி82: எந்த இடையகத்தையும் ஒதுக்க முடியாது, வெளியேறுகிறது..."
+msgid "E82: எந்த இடையகத்தையும் ஒதுக்க முடியாது, வெளியேறுகிறது..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
-msgstr "பி83: மற்றொன்றைப் பயன்படுத்தி, இடையகத்தை ஒதுக்க முடியாது..."
+msgid "E83: மற்றொன்றைப் பயன்படுத்தி, இடையகத்தை ஒதுக்க முடியாது..."
 
 msgid "E84: No modified buffer found"
-msgstr "பி84: மாற்றியமைக்கப்பட்ட இடையக எதுவும் இல்லை"
+msgid "E84: மாற்றியமைக்கப்பட்ட இடையக எதுவும் இல்லை"
 
 msgid "E85: There is no listed buffer"
-msgstr "பி85: பட்டியலிடப்பட்ட இடையக எதுவும் இல்லை"
+msgid "E85: பட்டியலிடப்பட்ட இடையக எதுவும் இல்லை"
 
 #, c-format
 msgid "E86: Buffer %ld does not exist"
-msgstr "பி86: தாங்கல் %ld இல்லை"
+msgid "E86: தாங்கல் %ld இல்லை"
 
 msgid "E87: Cannot go beyond last buffer"
-msgstr "பி87: கடைசி இடையகத்திற்கு அப்பால் செல்ல முடியாது"
+msgid "E87: கடைசி இடையகத்திற்கு அப்பால் செல்ல முடியாது"
 
 msgid "E88: Cannot go before first buffer"
-msgstr "பி88: முதல் இடையகத்திற்கு முன் செல்ல முடியாது"
+msgid "E88: முதல் இடையகத்திற்கு முன் செல்ல முடியாது"
 
 #, c-format
 #| msgid "E506: Can't write to backup file (add ! to override)"
@@ -4395,40 +4395,40 @@ msgstr ""
 
 #| msgid "E102: Can't find buffer \"%s\""
 msgid "E90: Cannot unload last buffer"
-msgstr "பி90: கடைசி இடையகத்தை இறக்க முடியாது"
+msgid "E90: கடைசி இடையகத்தை இறக்க முடியாது"
 
 msgid "E91: 'shell' option is empty"
-msgstr "பி91: 'shell' விருப்பம் காலியாக உள்ளது"
+msgid "E91: 'shell' விருப்பம் காலியாக உள்ளது"
 
 #, c-format
 msgid "E92: Buffer %d not found"
-msgstr "பி92: இடையக %d கிடைக்கவில்லை"
+msgid "E92: இடையக %d கிடைக்கவில்லை"
 
 #, c-format
 msgid "E93: More than one match for %s"
-msgstr "பி93: %sக்கு ஒன்றுக்கு மேற்பட்ட பொருத்தம்"
+msgid "E93: %sக்கு ஒன்றுக்கு மேற்பட்ட பொருத்தம்"
 
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr "பி94: %sக்கு பொருந்தக்கூடிய இடையகம் இல்லை"
+msgid "E94: %sக்கு பொருந்தக்கூடிய இடையகம் இல்லை"
 
 msgid "E95: Buffer with this name already exists"
-msgstr "பி95: இந்தப் பெயருடன் இடையகம் ஏற்கனவே உள்ளது"
+msgid "E95: இந்தப் பெயருடன் இடையகம் ஏற்கனவே உள்ளது"
 
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "பி96: %d இடையகங்களுக்கு மேல் வேறுபடுத்த முடியாது"
+msgid "E96: %d இடையகங்களுக்கு மேல் வேறுபடுத்த முடியாது"
 
 #| msgid "E482: Can't create file %s"
 msgid "E97: Cannot create diffs"
-msgstr "பி97: வேறுபாடுகளை உருவாக்க முடியாது"
+msgid "E97: வேறுபாடுகளை உருவாக்க முடியாது"
 
 #| msgid "E485: Can't read file %s"
 msgid "E98: Cannot read diff output"
-msgstr "பி98: வேறுபாடு வெளியீட்டைப் படிக்க முடியாது"
+msgid "E98: வேறுபாடு வெளியீட்டைப் படிக்க முடியாது"
 
 msgid "E99: Current buffer is not in diff mode"
-msgstr "பி99: தற்போதைய தாங்கல் வேறுபாடு பயன்முறையில் இல்லை"
+msgid "E99: தற்போதைய தாங்கல் வேறுபாடு பயன்முறையில் இல்லை"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "பி100: டிஃப் பயன்முறையில் வேறு எந்த இடையகமும் இல்லை"
@@ -4809,13 +4809,13 @@ msgstr ""
 "E199: செயலில் உள்ள சாளரம் அல்லது இடையகம் மாற்றப்பட்டது அல்லது நீக்கப்பட்டது"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
-msgstr "பி200: *ReadPre தன்னியக்க கட்டளைகள் கோப்பை படிக்க முடியாததாக ஆக்கியது"
+msgid "E200: *ReadPre தன்னியக்க கட்டளைகள் கோப்பை படிக்க முடியாததாக ஆக்கியது"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
-msgstr "பி201: *ReadPre தானியங்கு கட்டளைகள் தற்போதைய இடையகத்தை மாற்றக்கூடாது"
+msgid "E201: *ReadPre தானியங்கு கட்டளைகள் தற்போதைய இடையகத்தை மாற்றக்கூடாது"
 
 msgid "E202: Conversion made file unreadable!"
-msgstr "பி202: மாற்றியமைக்கப்பட்ட கோப்பை படிக்க முடியவில்லை!"
+msgid "E202: மாற்றியமைக்கப்பட்ட கோப்பை படிக்க முடியவில்லை!"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr ""
@@ -4827,157 +4827,157 @@ msgstr ""
 "E204: ஆட்டோகமாண்ட் எதிர்பாராத விதத்தில் வரிகளின் எண்ணிக்கையை மாற்றியது"
 
 msgid "E205: Patchmode: can't save original file"
-msgstr "பி205: Patchmode: அசல் கோப்பைச் சேமிக்க முடியாது"
+msgid "E205: Patchmode: அசல் கோப்பைச் சேமிக்க முடியாது"
 
 msgid "E206: Patchmode: can't touch empty original file"
-msgstr "பி206: பேட்ச்மோடு: வெற்று அசல் கோப்பைத் தொட முடியாது"
+msgid "E206: பேட்ச்மோடு: வெற்று அசல் கோப்பைத் தொட முடியாது"
 
 msgid "E207: Can't delete backup file"
-msgstr "பி207: காப்புப் பிரதி கோப்பை நீக்க முடியாது"
+msgid "E207: காப்புப் பிரதி கோப்பை நீக்க முடியாது"
 
 #, c-format
 msgid "E208: Error writing to \"%s\""
-msgstr "பி208: \"%s\"க்கு எழுதுவதில் பிழை"
+msgid "E208: \"%s\"க்கு எழுதுவதில் பிழை"
 
 #, c-format
 msgid "E209: Error closing \"%s\""
-msgstr "பி209: \"%s\" ஐ மூடுவதில் பிழை"
+msgid "E209: \"%s\" ஐ மூடுவதில் பிழை"
 
 #, c-format
 msgid "E210: Error reading \"%s\""
-msgstr "பி210: \"%s\" வாசிப்பதில் பிழை"
+msgid "E210: \"%s\" வாசிப்பதில் பிழை"
 
 #, c-format
 msgid "E211: File \"%s\" no longer available"
-msgstr "பி211: கோப்பு \"%s\" இனி கிடைக்காது"
+msgid "E211: கோப்பு \"%s\" இனி கிடைக்காது"
 
 msgid "E212: Can't open file for writing"
-msgstr "பி212: எழுதுவதற்கு கோப்பை திறக்க முடியாது"
+msgid "E212: எழுதுவதற்கு கோப்பை திறக்க முடியாது"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
-msgstr "பி213: மாற்ற முடியாது (மாற்றம் இல்லாமல் எழுத ! சேர்)"
+msgid "E213: மாற்ற முடியாது (மாற்றம் இல்லாமல் எழுத ! சேர்)"
 
 msgid "E214: Can't find temp file for writing"
-msgstr "பி214: எழுதுவதற்கான தற்காலிக கோப்பை கண்டுபிடிக்க முடியவில்லை"
+msgid "E214: எழுதுவதற்கான தற்காலிக கோப்பை கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 msgid "E215: Illegal character after *: %s"
-msgstr "பி215: *க்குப் பின் சட்டவிரோத எழுத்து: %s"
+msgid "E215: *க்குப் பின் சட்டவிரோத எழுத்து: %s"
 
 #, c-format
 msgid "E216: No such event: %s"
-msgstr "பி216: அத்தகைய நிகழ்வு இல்லை: %s"
+msgid "E216: அத்தகைய நிகழ்வு இல்லை: %s"
 
 #, c-format
 msgid "E216: No such group or event: %s"
-msgstr "பி216: அத்தகைய குழு அல்லது நிகழ்வு இல்லை: %s"
+msgid "E216: அத்தகைய குழு அல்லது நிகழ்வு இல்லை: %s"
 
 msgid "E217: Can't execute autocommands for ALL events"
-msgstr "பி217: அனைத்து நிகழ்வுகளுக்கும் தன்னியக்க கட்டளைகளை இயக்க முடியாது"
+msgid "E217: அனைத்து நிகழ்வுகளுக்கும் தன்னியக்க கட்டளைகளை இயக்க முடியாது"
 
 msgid "E218: Autocommand nesting too deep"
-msgstr "பி218: ஆட்டோகமாண்ட் கூடு மிகவும் ஆழமானது"
+msgid "E218: ஆட்டோகமாண்ட் கூடு மிகவும் ஆழமானது"
 
 msgid "E219: Missing {."
-msgstr "பி219: காணவில்லை {."
+msgid "E219: காணவில்லை {."
 
 msgid "E220: Missing }."
-msgstr "பி220: காணவில்லை }."
+msgid "E220: காணவில்லை }."
 
 msgid "E221: Marker cannot start with lower case letter"
-msgstr "பி221: மார்க்கர் சிறிய எழுத்துடன் தொடங்க முடியாது"
+msgid "E221: மார்க்கர் சிறிய எழுத்துடன் தொடங்க முடியாது"
 
 msgid "E223: Recursive mapping"
-msgstr "பி223: சுழல்நிலை மேப்பிங்"
+msgid "E223: சுழல்நிலை மேப்பிங்"
 
 #, c-format
 msgid "E224: Global abbreviation already exists for %s"
-msgstr "பி224: %sக்கு ஏற்கனவே உலகளாவிய சுருக்கம் உள்ளது"
+msgid "E224: %sக்கு ஏற்கனவே உலகளாவிய சுருக்கம் உள்ளது"
 
 #, c-format
 msgid "E225: Global mapping already exists for %s"
-msgstr "பி225: உலகளாவிய மேப்பிங் ஏற்கனவே %sக்கு உள்ளது"
+msgid "E225: உலகளாவிய மேப்பிங் ஏற்கனவே %sக்கு உள்ளது"
 
 #, c-format
 msgid "E226: Abbreviation already exists for %s"
-msgstr "பி226: %sக்கு ஏற்கனவே சுருக்கம் உள்ளது"
+msgid "E226: %sக்கு ஏற்கனவே சுருக்கம் உள்ளது"
 
 #, c-format
 msgid "E227: Mapping already exists for %s"
-msgstr "பி227: %sக்கு ஏற்கனவே மேப்பிங் உள்ளது"
+msgid "E227: %sக்கு ஏற்கனவே மேப்பிங் உள்ளது"
 
 msgid "E229: Cannot start the GUI"
-msgstr "பி229: GUI ஐ தொடங்க முடியாது"
+msgid "E229: GUI ஐ தொடங்க முடியாது"
 
 #, c-format
 #| msgid "E485: Can't read file %s"
 msgid "E230: Cannot read from \"%s\""
-msgstr "பி230: \"%s\" இலிருந்து படிக்க முடியாது"
+msgid "E230: \"%s\" இலிருந்து படிக்க முடியாது"
 
 msgid "E231: 'guifontwide' invalid"
-msgstr "பி231: 'guifontwide' தவறானது"
+msgid "E231: 'guifontwide' தவறானது"
 
 #| msgid "E624: Can't open file \"%s\""
 msgid "E233: Cannot open display"
-msgstr "பி233: காட்சியைத் திறக்க முடியாது"
+msgid "E233: காட்சியைத் திறக்க முடியாது"
 
 #, c-format
 msgid "E234: Unknown fontset: %s"
-msgstr "பி234: தெரியவில்லை: %s"
+msgid "E234: தெரியவில்லை: %s"
 
 #, c-format
 msgid "E235: Unknown font: %s"
-msgstr "பி235: தெரியாத எழுத்துரு: %s"
+msgid "E235: தெரியாத எழுத்துரு: %s"
 
 #, c-format
 msgid "E236: Font \"%s\" is not fixed-width"
-msgstr "பி236: எழுத்துரு \"%s\" நிலையான அகலம் இல்லை"
+msgid "E236: எழுத்துரு \"%s\" நிலையான அகலம் இல்லை"
 
 msgid "E237: Printer selection failed"
-msgstr "பி237: பிரிண்டர் தேர்வு தோல்வியடைந்தது"
+msgid "E237: பிரிண்டர் தேர்வு தோல்வியடைந்தது"
 
 #, c-format
 msgid "E238: Print error: %s"
-msgstr "பி238: அச்சுப் பிழை: %s"
+msgid "E238: அச்சுப் பிழை: %s"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
-msgstr "பி239: தவறான அடையாள உரை: %s"
+msgid "E239: தவறான அடையாள உரை: %s"
 
 msgid "E240: No connection to the X server"
-msgstr "பி240: ஃச் சேவையகத்துடன் இணைப்பு இல்லை"
+msgid "E240: ஃச் சேவையகத்துடன் இணைப்பு இல்லை"
 
 #, c-format
 msgid "E241: Unable to send to %s"
-msgstr "பி241: %s க்கு அனுப்ப முடியவில்லை"
+msgid "E241: %s க்கு அனுப்ப முடியவில்லை"
 
 msgid "E242: Can't split a window while closing another"
-msgstr "பி242: மற்றொரு சாளரத்தை மூடும் போது ஒரு சாளரத்தை பிரிக்க முடியாது"
+msgid "E242: மற்றொரு சாளரத்தை மூடும் போது ஒரு சாளரத்தை பிரிக்க முடியாது"
 
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
-msgstr "பி243: உரையாடல் ஆதரிக்கப்படவில்லை: \"-%s\"; OLE பதிப்பைப் பயன்படுத்தவும்."
+msgid "E243: உரையாடல் ஆதரிக்கப்படவில்லை: \"-%s\"; OLE பதிப்பைப் பயன்படுத்தவும்."
 
 #, c-format
 msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-msgstr "பி244: \"%s\" எழுத்துருப் பெயரில் உள்ள சட்டவிரோத %s பெயர் \"%s\""
+msgid "E244: \"%s\" எழுத்துருப் பெயரில் உள்ள சட்டவிரோத %s பெயர் \"%s\""
 
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
-msgstr "பி245: விதிமீறிய எழுத்து '%c' எழுத்துரு பெயரில் \"%s\""
+msgid "E245: விதிமீறிய எழுத்து '%c' எழுத்துரு பெயரில் \"%s\""
 
 msgid "E246: FileChangedShell autocommand deleted buffer"
-msgstr "பி246: FileChangedShell ஆட்டோகமாண்ட் நீக்கப்பட்ட இடையக"
+msgid "E246: FileChangedShell ஆட்டோகமாண்ட் நீக்கப்பட்ட இடையக"
 
 #, c-format
 msgid "E247: No registered server named \"%s\""
-msgstr "பி247: \"%s\" என்ற பெயரில் பதிவுசெய்யப்பட்ட சேவையகம் இல்லை"
+msgid "E247: \"%s\" என்ற பெயரில் பதிவுசெய்யப்பட்ட சேவையகம் இல்லை"
 
 msgid "E248: Failed to send command to the destination program"
-msgstr "பி248: இலக்கு நிரலுக்கு கட்டளையை அனுப்புவதில் தோல்வி"
+msgid "E248: இலக்கு நிரலுக்கு கட்டளையை அனுப்புவதில் தோல்வி"
 
 msgid "E249: Window layout changed unexpectedly"
-msgstr "பி249: எதிர்பாராத விதமாக சாளர தளவமைப்பு மாற்றப்பட்டது"
+msgid "E249: எதிர்பாராத விதமாக சாளர தளவமைப்பு மாற்றப்பட்டது"
 
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
@@ -4992,40 +4992,40 @@ msgstr ""
 
 #, c-format
 msgid "E252: Fontset name: %s - Font '%s' is not fixed-width"
-msgstr "பி252: எழுத்துருவின் பெயர்: %s - எழுத்துரு '%s' நிலையான அகலம் இல்லை"
+msgid "E252: எழுத்துருவின் பெயர்: %s - எழுத்துரு '%s' நிலையான அகலம் இல்லை"
 
 #, c-format
 msgid "E253: Fontset name: %s"
-msgstr "பி253: எழுத்துருவின் பெயர்: %s"
+msgid "E253: எழுத்துருவின் பெயர்: %s"
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
-msgstr "பி254: %s வண்ணத்தை ஒதுக்க முடியாது"
+msgid "E254: %s வண்ணத்தை ஒதுக்க முடியாது"
 
 msgid "E255: Couldn't read in sign data"
-msgstr "பி255: உள்நுழைவுத் தரவைப் படிக்க முடியவில்லை"
+msgid "E255: உள்நுழைவுத் தரவைப் படிக்க முடியவில்லை"
 
 msgid "E257: cstag: Tag not found"
-msgstr "பி257: cstag: டேக் கிடைக்கவில்லை"
+msgid "E257: cstag: டேக் கிடைக்கவில்லை"
 
 msgid "E258: Unable to send to client"
-msgstr "பி258: கிளையண்டிற்கு அனுப்ப முடியவில்லை"
+msgid "E258: கிளையண்டிற்கு அனுப்ப முடியவில்லை"
 
 #, c-format
 msgid "E259: No matches found for cscope query %s of %s"
-msgstr "பி259: %s இன் %s சிநோக்கம் வினவலுக்கு எந்தப் பொருத்தமும் இல்லை"
+msgid "E259: %s இன் %s சிநோக்கம் வினவலுக்கு எந்தப் பொருத்தமும் இல்லை"
 
 msgid "E260: Missing name after ->"
-msgstr "பி260: -> பிறகு பெயர் விடுபட்டுள்ளது"
+msgid "E260: -> பிறகு பெயர் விடுபட்டுள்ளது"
 
 #, c-format
 #| msgid "E262: Error reading cscope connection %d"
 msgid "E261: Cscope connection %s not found"
-msgstr "பி261: Cscope இணைப்பு %s கிடைக்கவில்லை"
+msgid "E261: Cscope இணைப்பு %s கிடைக்கவில்லை"
 
 #, c-format
 msgid "E262: Error reading cscope connection %d"
-msgstr "பி262: சிநோக்கம் இணைப்பைப் படிப்பதில் பிழை %d"
+msgid "E262: சிநோக்கம் இணைப்பைப் படிப்பதில் பிழை %d"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -5035,10 +5035,10 @@ msgstr ""
 "முடியவில்லை."
 
 msgid "E264: Python: Error initialising I/O objects"
-msgstr "பி264: பைதான்: I/O பொருட்களை துவக்குவதில் பிழை"
+msgid "E264: பைதான்: I/O பொருட்களை துவக்குவதில் பிழை"
 
 msgid "E265: $_ must be an instance of String"
-msgstr "பி265: $_ என்பது சரத்தின் நிகழ்வாக இருக்க வேண்டும்"
+msgid "E265: $_ என்பது சரத்தின் நிகழ்வாக இருக்க வேண்டும்"
 
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
@@ -5047,86 +5047,86 @@ msgstr ""
 "முடியவில்லை."
 
 msgid "E267: Unexpected return"
-msgstr "பி267: எதிர்பாராத வருவாய்"
+msgid "E267: எதிர்பாராத வருவாய்"
 
 msgid "E268: Unexpected next"
-msgstr "பி268: அடுத்தது எதிர்பாராதது"
+msgid "E268: அடுத்தது எதிர்பாராதது"
 
 msgid "E269: Unexpected break"
-msgstr "பி269: எதிர்பாராத இடைவெளி"
+msgid "E269: எதிர்பாராத இடைவெளி"
 
 msgid "E270: Unexpected redo"
-msgstr "பி270: எதிர்பாராத மீண்டும் வெற்றி"
+msgid "E270: எதிர்பாராத மீண்டும் வெற்றி"
 
 msgid "E271: Retry outside of rescue clause"
-msgstr "பி271: மீட்பு விதிக்கு வெளியே மீண்டும் முயற்சிக்கவும்"
+msgid "E271: மீட்பு விதிக்கு வெளியே மீண்டும் முயற்சிக்கவும்"
 
 msgid "E272: Unhandled exception"
-msgstr "பி272: கையாளப்படாத விதிவிலக்கு"
+msgid "E272: கையாளப்படாத விதிவிலக்கு"
 
 #, c-format
 msgid "E273: Unknown longjmp status %d"
-msgstr "பி273: தெரியாத longjmp நிலை %d"
+msgid "E273: தெரியாத longjmp நிலை %d"
 
 msgid "E274: No white space allowed before parenthesis"
-msgstr "பி274: அடைப்புக்குறிக்குள் வெள்ளை இடைவெளி அனுமதிக்கப்படவில்லை"
+msgid "E274: அடைப்புக்குறிக்குள் வெள்ளை இடைவெளி அனுமதிக்கப்படவில்லை"
 
 msgid "E275: Cannot add text property to unloaded buffer"
-msgstr "பி275: இறக்கப்பட்ட இடையகத்தில் உரைப் பண்புகளைச் சேர்க்க முடியாது"
+msgid "E275: இறக்கப்பட்ட இடையகத்தில் உரைப் பண்புகளைச் சேர்க்க முடியாது"
 
 #, c-format
 msgid "E276: Cannot use function as a method: %s"
-msgstr "பி276: செயல்பாட்டை ஒரு முறையாகப் பயன்படுத்த முடியாது: %s"
+msgid "E276: செயல்பாட்டை ஒரு முறையாகப் பயன்படுத்த முடியாது: %s"
 
 msgid "E277: Unable to read a server reply"
-msgstr "பி277: சர்வர் பதிலைப் படிக்க முடியவில்லை"
+msgid "E277: சர்வர் பதிலைப் படிக்க முடியவில்லை"
 
 #| msgid "E954: 24-bit colors are not supported on this environment"
 msgid "E279: Sorry, ++shell is not supported on this system"
-msgstr "பி279: மன்னிக்கவும், இந்த கணினியில் ++ செல் ஆதரிக்கப்படவில்லை"
+msgid "E279: மன்னிக்கவும், இந்த கணினியில் ++ செல் ஆதரிக்கப்படவில்லை"
 
 #, c-format
 #| msgid "E485: Can't read file %s"
 msgid "E282: Cannot read from \"%s\""
-msgstr "பி282: \"%s\" இலிருந்து படிக்க முடியாது"
+msgid "E282: \"%s\" இலிருந்து படிக்க முடியாது"
 
 #, c-format
 msgid "E283: No marks matching \"%s\""
-msgstr "பி283: \"%s\" உடன் எந்த மதிப்பெண்களும் பொருந்தவில்லை"
+msgid "E283: \"%s\" உடன் எந்த மதிப்பெண்களும் பொருந்தவில்லை"
 
 #| msgid "E484: Can't open file %s"
 msgid "E284: Cannot set IC values"
-msgstr "பி284: IC மதிப்புகளை அமைக்க முடியாது"
+msgid "E284: IC மதிப்புகளை அமைக்க முடியாது"
 
 msgid "E285: Failed to create input context"
-msgstr "பி285: உள்ளீட்டு சூழலை உருவாக்குவதில் தோல்வி"
+msgid "E285: உள்ளீட்டு சூழலை உருவாக்குவதில் தோல்வி"
 
 msgid "E286: Failed to open input method"
-msgstr "பி286: உள்ளீட்டு முறையைத் திறக்க முடியவில்லை"
+msgid "E286: உள்ளீட்டு முறையைத் திறக்க முடியவில்லை"
 
 msgid "E287: Warning: Could not set destroy callback to IM"
-msgstr "பி287: எச்சரிக்கை: அழிக்கப்பட்ட அழைப்பை IM க்கு அமைக்க முடியவில்லை"
+msgid "E287: எச்சரிக்கை: அழிக்கப்பட்ட அழைப்பை IM க்கு அமைக்க முடியவில்லை"
 
 msgid "E288: Input method doesn't support any style"
-msgstr "பி288: உள்ளீட்டு முறை எந்த பாணியையும் ஆதரிக்காது"
+msgid "E288: உள்ளீட்டு முறை எந்த பாணியையும் ஆதரிக்காது"
 
 msgid "E289: Input method doesn't support my preedit type"
-msgstr "பி289: உள்ளீட்டு முறை எனது ப்ரீடிட் வகையை ஆதரிக்காது"
+msgid "E289: உள்ளீட்டு முறை எனது ப்ரீடிட் வகையை ஆதரிக்காது"
 
 msgid "E290: List or number required"
-msgstr "பி290: பட்டியல் அல்லது எண் தேவை"
+msgid "E290: பட்டியல் அல்லது எண் தேவை"
 
 msgid "E294: Seek error in swap file read"
-msgstr "பி294: ச்வாப் கோப்பு வாசிப்பில் சீக் பிழை"
+msgid "E294: ச்வாப் கோப்பு வாசிப்பில் சீக் பிழை"
 
 msgid "E295: Read error in swap file"
-msgstr "பி295: ச்வாப் கோப்பில் வாசிப்பு பிழை"
+msgid "E295: ச்வாப் கோப்பில் வாசிப்பு பிழை"
 
 msgid "E296: Seek error in swap file write"
-msgstr "பி296: ச்வாப் கோப்பு எழுதுவதில் சீக் பிழை"
+msgid "E296: ச்வாப் கோப்பு எழுதுவதில் சீக் பிழை"
 
 msgid "E297: Write error in swap file"
-msgstr "பி297: ச்வாப் கோப்பில் எழுதுவதில் பிழை"
+msgid "E297: ச்வாப் கோப்பில் எழுதுவதில் பிழை"
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
@@ -5134,13 +5134,13 @@ msgstr ""
 "தடைசெய்யப்பட்டுள்ளது"
 
 msgid "E300: Swap file already exists (symlink attack?)"
-msgstr "பி300: ச்வாப் கோப்பு ஏற்கனவே உள்ளது (சிம்லிங்க் தாக்குதல்?)"
+msgid "E300: ச்வாப் கோப்பு ஏற்கனவே உள்ளது (சிம்லிங்க் தாக்குதல்?)"
 
 msgid "E301: Oops, lost the swap file!!!"
-msgstr "பி301: அச்சச்சோ, ச்வாப் கோப்பு தொலைந்து விட்டது!!!"
+msgid "E301: அச்சச்சோ, ச்வாப் கோப்பு தொலைந்து விட்டது!!!"
 
 msgid "E302: Could not rename swap file"
-msgstr "பி302: swap கோப்பை மறுபெயரிட முடியவில்லை"
+msgid "E302: swap கோப்பை மறுபெயரிட முடியவில்லை"
 
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
@@ -5150,30 +5150,30 @@ msgstr ""
 
 #, c-format
 msgid "E305: No swap file found for %s"
-msgstr "பி305: %sக்கான swap கோப்பு எதுவும் இல்லை"
+msgid "E305: %sக்கான swap கோப்பு எதுவும் இல்லை"
 
 #, c-format
 #| msgid "E456: Can't open file \"%s\""
 msgid "E306: Cannot open %s"
-msgstr "பி306: %s ஐ திறக்க முடியாது"
+msgid "E306: %s ஐ திறக்க முடியாது"
 
 #, c-format
 msgid "E307: %s does not look like a Vim swap file"
-msgstr "பி307: %s ஆனது Vim swap கோப்பு போல் இல்லை"
+msgid "E307: %s ஆனது Vim swap கோப்பு போல் இல்லை"
 
 msgid "E308: Warning: Original file may have been changed"
-msgstr "பி308: எச்சரிக்கை: அசல் கோப்பு மாற்றப்பட்டிருக்கலாம்"
+msgid "E308: எச்சரிக்கை: அசல் கோப்பு மாற்றப்பட்டிருக்கலாம்"
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
-msgstr "பி309: %s இலிருந்து தொகுதி 1 ஐப் படிக்க முடியவில்லை"
+msgid "E309: %s இலிருந்து தொகுதி 1 ஐப் படிக்க முடியவில்லை"
 
 #, c-format
 msgid "E310: Block 1 ID wrong (%s not a .swp file?)"
-msgstr "பி310: தடு 1 அடையாளம் தவறு (%s .swp கோப்பு அல்லவா?)"
+msgid "E310: தடு 1 அடையாளம் தவறு (%s .swp கோப்பு அல்லவா?)"
 
 msgid "E311: Recovery Interrupted"
-msgstr "பி311: மீட்பு தடைபட்டது"
+msgid "E311: மீட்பு தடைபட்டது"
 
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
@@ -5182,70 +5182,70 @@ msgstr ""
 "தேடுங்கள் ???"
 
 msgid "E313: Cannot preserve, there is no swap file"
-msgstr "பி313: பாதுகாக்க முடியாது, ச்வாப் கோப்பு இல்லை"
+msgid "E313: பாதுகாக்க முடியாது, ச்வாப் கோப்பு இல்லை"
 
 msgid "E314: Preserve failed"
-msgstr "பி314: பாதுகாக்க முடியவில்லை"
+msgid "E314: பாதுகாக்க முடியவில்லை"
 
 msgid "E319: Sorry, the command is not available in this version"
-msgstr "பி319: மன்னிக்கவும், இந்தப் பதிப்பில் கட்டளை கிடைக்கவில்லை"
+msgid "E319: மன்னிக்கவும், இந்தப் பதிப்பில் கட்டளை கிடைக்கவில்லை"
 
 #, c-format
 #| msgid "E1146: Command not recognized: %s"
 msgid "E321: Could not reload \"%s\""
-msgstr "பி321: \"%s\" ஐ மீண்டும் ஏற்ற முடியவில்லை"
+msgid "E321: \"%s\" ஐ மீண்டும் ஏற்ற முடியவில்லை"
 
 msgid "E324: Can't open PostScript output file"
-msgstr "பி324: போச்ட்ச்கிரிப்ட் வெளியீட்டு கோப்பை திறக்க முடியவில்லை"
+msgid "E324: போச்ட்ச்கிரிப்ட் வெளியீட்டு கோப்பை திறக்க முடியவில்லை"
 
 msgid "E325: ATTENTION"
-msgstr "பி325: கவனம்"
+msgid "E325: கவனம்"
 
 msgid "E326: Too many swap files found"
-msgstr "பி326: பல இடமாற்று கோப்புகள் காணப்பட்டன"
+msgid "E326: பல இடமாற்று கோப்புகள் காணப்பட்டன"
 
 msgid "E327: Part of menu-item path is not sub-menu"
-msgstr "பி327: பட்டியல் உருப்படி பாதையின் ஒரு பகுதி துணை பட்டியல் அல்ல"
+msgid "E327: பட்டியல் உருப்படி பாதையின் ஒரு பகுதி துணை பட்டியல் அல்ல"
 
 msgid "E328: Menu only exists in another mode"
-msgstr "பி328: பட்டியல் மற்றொரு பயன்முறையில் மட்டுமே உள்ளது"
+msgid "E328: பட்டியல் மற்றொரு பயன்முறையில் மட்டுமே உள்ளது"
 
 #, c-format
 msgid "E329: No menu \"%s\""
-msgstr "பி329: \"%s\" பட்டியல் இல்லை"
+msgid "E329: \"%s\" பட்டியல் இல்லை"
 
 msgid "E330: Menu path must not lead to a sub-menu"
-msgstr "பி330: பட்டியல் பாதை துணை மெனுவிற்கு இட்டுச் செல்லக்கூடாது"
+msgid "E330: பட்டியல் பாதை துணை மெனுவிற்கு இட்டுச் செல்லக்கூடாது"
 
 msgid "E331: Must not add menu items directly to menu bar"
 msgstr ""
 "E331: பட்டியல் உருப்படிகளை நேரடியாக பட்டியல் பட்டியில் சேர்க்கக்கூடாது"
 
 msgid "E332: Separator cannot be part of a menu path"
-msgstr "பி332: பிரிப்பான் பட்டியல் பாதையின் ஒரு பகுதியாக இருக்க முடியாது"
+msgid "E332: பிரிப்பான் பட்டியல் பாதையின் ஒரு பகுதியாக இருக்க முடியாது"
 
 msgid "E333: Menu path must lead to a menu item"
-msgstr "பி333: பட்டியல் பாதை ஒரு பட்டியல் உருப்படிக்கு வழிவகுக்கும்"
+msgid "E333: பட்டியல் பாதை ஒரு பட்டியல் உருப்படிக்கு வழிவகுக்கும்"
 
 #, c-format
 msgid "E334: Menu not found: %s"
-msgstr "பி334: பட்டியல் கிடைக்கவில்லை: %s"
+msgid "E334: பட்டியல் கிடைக்கவில்லை: %s"
 
 #, c-format
 msgid "E335: Menu not defined for %s mode"
-msgstr "பி335: %s பயன்முறைக்கு பட்டியல் வரையறுக்கப்படவில்லை"
+msgid "E335: %s பயன்முறைக்கு பட்டியல் வரையறுக்கப்படவில்லை"
 
 msgid "E336: Menu path must lead to a sub-menu"
-msgstr "பி336: பட்டியல் பாதை ஒரு துணை மெனுவிற்கு வழிவகுக்கும்"
+msgid "E336: பட்டியல் பாதை ஒரு துணை மெனுவிற்கு வழிவகுக்கும்"
 
 msgid "E337: Menu not found - check menu names"
-msgstr "பி337: பட்டியல் கிடைக்கவில்லை - பட்டியல் பெயர்களைச் சரிபார்க்கவும்"
+msgid "E337: பட்டியல் கிடைக்கவில்லை - பட்டியல் பெயர்களைச் சரிபார்க்கவும்"
 
 msgid "E338: Sorry, no file browser in console mode"
-msgstr "பி338: மன்னிக்கவும், கன்சோல் பயன்முறையில் கோப்பு உலாவி இல்லை"
+msgid "E338: மன்னிக்கவும், கன்சோல் பயன்முறையில் கோப்பு உலாவி இல்லை"
 
 msgid "E339: Pattern too long"
-msgstr "பி339: வடிவம் மிக நீளமானது"
+msgid "E339: வடிவம் மிக நீளமானது"
 
 msgid "E340: Internal error; if you can reproduce please report a bug"
 msgstr ""
@@ -5254,7 +5254,7 @@ msgstr ""
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
-msgstr "பி342: நினைவகம் இல்லை! (%lu பைட்டுகளை ஒதுக்குகிறது)"
+msgid "E342: நினைவகம் இல்லை! (%lu பைட்டுகளை ஒதுக்குகிறது)"
 
 #, c-format
 msgid ""
@@ -5266,66 +5266,66 @@ msgstr ""
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "பி344: cdpathல் \"%s\" கோப்பகத்தைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E344: cdpathல் \"%s\" கோப்பகத்தைக் கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "பி345: பாதையில் \"%s\" கோப்பைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E345: பாதையில் \"%s\" கோப்பைக் கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 #| msgid "E344: Can't find directory \"%s\" in cdpath"
 msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "பி346: cdpath இல் \"%s\" கோப்பகம் இல்லை"
+msgid "E346: cdpath இல் \"%s\" கோப்பகம் இல்லை"
 
 #, c-format
 #| msgid "E447: Can't find file \"%s\" in path"
 msgid "E347: No more file \"%s\" found in path"
-msgstr "பி347: பாதையில் \"%s\" கோப்பு இல்லை"
+msgid "E347: பாதையில் \"%s\" கோப்பு இல்லை"
 
 msgid "E348: No string under cursor"
-msgstr "பி348: கர்சரின் கீழ் சரம் இல்லை"
+msgid "E348: கர்சரின் கீழ் சரம் இல்லை"
 
 msgid "E349: No identifier under cursor"
-msgstr "பி349: கர்சரின் கீழ் அடையாளங்காட்டி இல்லை"
+msgid "E349: கர்சரின் கீழ் அடையாளங்காட்டி இல்லை"
 
 msgid "E350: Cannot create fold with current 'foldmethod'"
-msgstr "பி350: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்பை உருவாக்க முடியாது"
+msgid "E350: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்பை உருவாக்க முடியாது"
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
-msgstr "பி351: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்பை நீக்க முடியாது"
+msgid "E351: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்பை நீக்க முடியாது"
 
 msgid "E352: Cannot erase folds with current 'foldmethod'"
-msgstr "பி352: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்புகளை அழிக்க முடியாது"
+msgid "E352: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்புகளை அழிக்க முடியாது"
 
 #, c-format
 #| msgid "E394: Didn't find region item for %s"
 msgid "E353: Nothing in register %s"
-msgstr "பி353: பதிவு %s இல் எதுவும் இல்லை"
+msgid "E353: பதிவு %s இல் எதுவும் இல்லை"
 
 #, c-format
 msgid "E354: Invalid register name: '%s'"
-msgstr "பி354: தவறான பதிவு பெயர்: '%s'"
+msgid "E354: தவறான பதிவு பெயர்: '%s'"
 
 #, c-format
 msgid "E355: Unknown option: %s"
-msgstr "பி355: தெரியாத விருப்பம்: %s"
+msgid "E355: தெரியாத விருப்பம்: %s"
 
 #, c-format
 msgid "E357: 'langmap': Matching character missing for %s"
-msgstr "பி357: 'langmap': %sக்கு பொருந்தக்கூடிய எழுத்து இல்லை"
+msgid "E357: 'langmap': %sக்கு பொருந்தக்கூடிய எழுத்து இல்லை"
 
 #, c-format
 msgid "E358: 'langmap': Extra characters after semicolon: %s"
-msgstr "பி358: 'langmap': அரைப்புள்ளிக்குப் பிறகு கூடுதல் எழுத்துகள்: %s"
+msgid "E358: 'langmap': அரைப்புள்ளிக்குப் பிறகு கூடுதல் எழுத்துகள்: %s"
 
 msgid "E359: Screen mode setting not supported"
-msgstr "பி359: திரை பயன்முறை அமைப்பு ஆதரிக்கப்படவில்லை"
+msgid "E359: திரை பயன்முறை அமைப்பு ஆதரிக்கப்படவில்லை"
 
 msgid "E360: Cannot execute shell with -f option"
-msgstr "பி360: -f விருப்பத்துடன் செல்லை இயக்க முடியாது"
+msgid "E360: -f விருப்பத்துடன் செல்லை இயக்க முடியாது"
 
 msgid "E362: Using a boolean value as a Float"
-msgstr "பி362: பூலியன் மதிப்பை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E362: பூலியன் மதிப்பை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr ""
@@ -5333,141 +5333,141 @@ msgstr ""
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
-msgstr "பி364: \"%s()\"க்கான நூலக அழைப்பு தோல்வியடைந்தது"
+msgid "E364: \"%s()\"க்கான நூலக அழைப்பு தோல்வியடைந்தது"
 
 #| msgid "E324: Can't open PostScript output file"
 msgid "E365: Failed to print PostScript file"
-msgstr "பி365: போச்ட்ச்கிரிப்ட் கோப்பை அச்சிடுவதில் தோல்வி"
+msgid "E365: போச்ட்ச்கிரிப்ட் கோப்பை அச்சிடுவதில் தோல்வி"
 
 msgid "E366: Not allowed to enter a popup window"
-msgstr "பி366: மேல்தோன்றல் சாளரத்தில் நுழைய அனுமதிக்கப்படவில்லை"
+msgid "E366: மேல்தோன்றல் சாளரத்தில் நுழைய அனுமதிக்கப்படவில்லை"
 
 #, c-format
 msgid "E367: No such group: \"%s\""
-msgstr "பி367: அத்தகைய குழு இல்லை: \"%s\""
+msgid "E367: அத்தகைய குழு இல்லை: \"%s\""
 
 #, c-format
 msgid "E368: Got SIG%s in libcall()"
-msgstr "பி368: லிப்காலில்() SIG%s கிடைத்தது"
+msgid "E368: லிப்காலில்() SIG%s கிடைத்தது"
 
 #, c-format
 msgid "E369: Invalid item in %s%%[]"
-msgstr "பி369: %s%% இல் தவறான உருப்படி[]"
+msgid "E369: %s%% இல் தவறான உருப்படி[]"
 
 #, c-format
 msgid "E370: Could not load library %s: %s"
-msgstr "பி370: நூலகத்தை ஏற்ற முடியவில்லை %s: %s"
+msgid "E370: நூலகத்தை ஏற்ற முடியவில்லை %s: %s"
 
 #| msgid "E1146: Command not recognized: %s"
 msgid "E371: Command not found"
-msgstr "பி371: கட்டளை கிடைக்கவில்லை"
+msgid "E371: கட்டளை கிடைக்கவில்லை"
 
 #, c-format
 msgid "E372: Too many %%%c in format string"
-msgstr "பி372: வடிவமைப்பு சரத்தில் அதிகமான %%%c"
+msgid "E372: வடிவமைப்பு சரத்தில் அதிகமான %%%c"
 
 #, c-format
 msgid "E373: Unexpected %%%c in format string"
-msgstr "பி373: வடிவமைப்பு சரத்தில் எதிர்பாராத %%%c"
+msgid "E373: வடிவமைப்பு சரத்தில் எதிர்பாராத %%%c"
 
 msgid "E374: Missing ] in format string"
-msgstr "பி374: காணவில்லை ] வடிவமைப்பு சரத்தில்"
+msgid "E374: காணவில்லை ] வடிவமைப்பு சரத்தில்"
 
 #, c-format
 msgid "E375: Unsupported %%%c in format string"
-msgstr "பி375: %%%c வடிவமைப்பு சரத்தில் ஆதரிக்கப்படவில்லை"
+msgid "E375: %%%c வடிவமைப்பு சரத்தில் ஆதரிக்கப்படவில்லை"
 
 #, c-format
 msgid "E376: Invalid %%%c in format string prefix"
-msgstr "பி376: %%%c வடிவமைப்பு சரம் முன்னொட்டில் தவறானது"
+msgid "E376: %%%c வடிவமைப்பு சரம் முன்னொட்டில் தவறானது"
 
 #, c-format
 msgid "E377: Invalid %%%c in format string"
-msgstr "பி377: தவறான %%%c வடிவமைப்பு சரத்தில்"
+msgid "E377: தவறான %%%c வடிவமைப்பு சரத்தில்"
 
 msgid "E378: 'errorformat' contains no pattern"
-msgstr "பி378: 'errorformat' எந்த வடிவத்தையும் கொண்டிருக்கவில்லை"
+msgid "E378: 'errorformat' எந்த வடிவத்தையும் கொண்டிருக்கவில்லை"
 
 msgid "E379: Missing or empty directory name"
-msgstr "பி379: விடுபட்ட அல்லது வெற்று அடைவு பெயர்"
+msgid "E379: விடுபட்ட அல்லது வெற்று அடைவு பெயர்"
 
 msgid "E380: At bottom of quickfix stack"
-msgstr "பி380: Quickfix அடுக்கின் கீழே"
+msgid "E380: Quickfix அடுக்கின் கீழே"
 
 msgid "E381: At top of quickfix stack"
-msgstr "பி381: Quickfix அடுக்கின் மேல்"
+msgid "E381: Quickfix அடுக்கின் மேல்"
 
 msgid "E382: Cannot write, 'buftype' option is set"
-msgstr "பி382: எழுத முடியாது, 'பஃப்டைப்' விருப்பம் அமைக்கப்பட்டுள்ளது"
+msgid "E382: எழுத முடியாது, 'பஃப்டைப்' விருப்பம் அமைக்கப்பட்டுள்ளது"
 
 #, c-format
 #| msgid "E1244: Bad color string: %s"
 msgid "E383: Invalid search string: %s"
-msgstr "பி383: தவறான தேடல் சரம்: %s"
+msgid "E383: தவறான தேடல் சரம்: %s"
 
 #, c-format
 msgid "E384: Search hit TOP without match for: %s"
-msgstr "பி384: %sக்கு பொருந்தாமல் தேடல் மேலே ஐத் தாக்கியது"
+msgid "E384: %sக்கு பொருந்தாமல் தேடல் மேலே ஐத் தாக்கியது"
 
 #, c-format
 msgid "E385: Search hit BOTTOM without match for: %s"
-msgstr "பி385: %s என்பதற்கான பொருத்தம் இல்லாமல் தேடுதல் பாட்டம் இட்"
+msgid "E385: %s என்பதற்கான பொருத்தம் இல்லாமல் தேடுதல் பாட்டம் இட்"
 
 msgid "E386: Expected '?' or '/'  after ';'"
-msgstr "பி386: எதிர்பார்க்கப்பட்டது '?' அல்லது '/' பிறகு ';'"
+msgid "E386: எதிர்பார்க்கப்பட்டது '?' அல்லது '/' பிறகு ';'"
 
 msgid "E387: Match is on current line"
-msgstr "பி387: போட்டி நடப்பு வரியில் உள்ளது"
+msgid "E387: போட்டி நடப்பு வரியில் உள்ளது"
 
 msgid "E388: Couldn't find definition"
-msgstr "பி388: வரையறையைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E388: வரையறையைக் கண்டுபிடிக்க முடியவில்லை"
 
 msgid "E389: Couldn't find pattern"
-msgstr "பி389: வடிவத்தைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E389: வடிவத்தைக் கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
-msgstr "பி390: சட்டவிரோத வாதம்: %s"
+msgid "E390: சட்டவிரோத வாதம்: %s"
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
-msgstr "பி391: அத்தகைய தொடரியல் கிளச்டர் இல்லை: %s"
+msgid "E391: அத்தகைய தொடரியல் கிளச்டர் இல்லை: %s"
 
 #, c-format
 msgid "E392: No such syntax cluster: %s"
-msgstr "பி392: அத்தகைய தொடரியல் கிளச்டர் இல்லை: %s"
+msgid "E392: அத்தகைய தொடரியல் கிளச்டர் இல்லை: %s"
 
 msgid "E393: group[t]here not accepted here"
-msgstr "பி393: குழு[t]இங்கே ஏற்கப்படவில்லை"
+msgid "E393: குழு[t]இங்கே ஏற்கப்படவில்லை"
 
 #, c-format
 msgid "E394: Didn't find region item for %s"
-msgstr "பி394: %sக்கான பிராந்திய உருப்படி கிடைக்கவில்லை"
+msgid "E394: %sக்கான பிராந்திய உருப்படி கிடைக்கவில்லை"
 
 msgid "E395: Contains argument not accepted here"
-msgstr "பி395: இங்கே ஏற்றுக்கொள்ளப்படாத வாதத்தைக் கொண்டுள்ளது"
+msgid "E395: இங்கே ஏற்றுக்கொள்ளப்படாத வாதத்தைக் கொண்டுள்ளது"
 
 msgid "E397: Filename required"
-msgstr "பி397: கோப்பு பெயர் தேவை"
+msgid "E397: கோப்பு பெயர் தேவை"
 
 #, c-format
 msgid "E398: Missing '=': %s"
-msgstr "பி398: விடுபட்ட '=': %s"
+msgid "E398: விடுபட்ட '=': %s"
 
 #, c-format
 msgid "E399: Not enough arguments: syntax region %s"
-msgstr "பி399: போதுமான வாதங்கள் இல்லை: தொடரியல் பகுதி %s"
+msgid "E399: போதுமான வாதங்கள் இல்லை: தொடரியல் பகுதி %s"
 
 msgid "E400: No cluster specified"
-msgstr "பி400: கிளச்டர் எதுவும் குறிப்பிடப்படவில்லை"
+msgid "E400: கிளச்டர் எதுவும் குறிப்பிடப்படவில்லை"
 
 #, c-format
 msgid "E401: Pattern delimiter not found: %s"
-msgstr "பி401: பேட்டர்ன் டிலிமிட்டர் இல்லை: %s"
+msgid "E401: பேட்டர்ன் டிலிமிட்டர் இல்லை: %s"
 
 #, c-format
 msgid "E402: Garbage after pattern: %s"
-msgstr "பி402: முறைக்குப் பின் குப்பை: %s"
+msgid "E402: முறைக்குப் பின் குப்பை: %s"
 
 msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr ""
@@ -5475,233 +5475,233 @@ msgstr ""
 
 #, c-format
 msgid "E404: Illegal arguments: %s"
-msgstr "பி404: சட்டவிரோத வாதங்கள்: %s"
+msgid "E404: சட்டவிரோத வாதங்கள்: %s"
 
 #, c-format
 msgid "E405: Missing equal sign: %s"
-msgstr "பி405: சம அடையாளம் இல்லை: %s"
+msgid "E405: சம அடையாளம் இல்லை: %s"
 
 #, c-format
 msgid "E406: Empty argument: %s"
-msgstr "பி406: வெற்று வாதம்: %s"
+msgid "E406: வெற்று வாதம்: %s"
 
 #, c-format
 msgid "E407: %s not allowed here"
-msgstr "பி407: %s இங்கு அனுமதிக்கப்படவில்லை"
+msgid "E407: %s இங்கு அனுமதிக்கப்படவில்லை"
 
 #, c-format
 msgid "E408: %s must be first in contains list"
-msgstr "பி408: அடங்கிய பட்டியலில் %s முதலில் இருக்க வேண்டும்"
+msgid "E408: அடங்கிய பட்டியலில் %s முதலில் இருக்க வேண்டும்"
 
 #, c-format
 msgid "E409: Unknown group name: %s"
-msgstr "பி409: தெரியாத குழுவின் பெயர்: %s"
+msgid "E409: தெரியாத குழுவின் பெயர்: %s"
 
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
-msgstr "பி410: தவறானது :தொடரியல் துணைக் கட்டளை: %s"
+msgid "E410: தவறானது :தொடரியல் துணைக் கட்டளை: %s"
 
 #, c-format
 msgid "E411: Highlight group not found: %s"
-msgstr "பி411: ஐலைட் குழு காணப்படவில்லை: %s"
+msgid "E411: ஐலைட் குழு காணப்படவில்லை: %s"
 
 #, c-format
 msgid "E412: Not enough arguments: \":highlight link %s\""
-msgstr "பி412: போதுமான வாதங்கள் இல்லை: \":ஐலைட் இணைப்பு %s\""
+msgid "E412: போதுமான வாதங்கள் இல்லை: \":ஐலைட் இணைப்பு %s\""
 
 #, c-format
 msgid "E413: Too many arguments: \":highlight link %s\""
-msgstr "பி413: பல வாதங்கள்: \":ஐலைட் இணைப்பு %s\""
+msgid "E413: பல வாதங்கள்: \":ஐலைட் இணைப்பு %s\""
 
 msgid "E414: Group has settings, highlight link ignored"
-msgstr "பி414: குழுவில் அமைப்புகள் உள்ளன, ஐலைட் இணைப்பு புறக்கணிக்கப்பட்டது"
+msgid "E414: குழுவில் அமைப்புகள் உள்ளன, ஐலைட் இணைப்பு புறக்கணிக்கப்பட்டது"
 
 #, c-format
 msgid "E415: Unexpected equal sign: %s"
-msgstr "பி415: எதிர்பாராத சம அடையாளம்: %s"
+msgid "E415: எதிர்பாராத சம அடையாளம்: %s"
 
 #, c-format
 msgid "E416: Missing equal sign: %s"
-msgstr "பி416: சம அடையாளம் இல்லை: %s"
+msgid "E416: சம அடையாளம் இல்லை: %s"
 
 #, c-format
 msgid "E417: Missing argument: %s"
-msgstr "பி417: விடுபட்ட வாதம்: %s"
+msgid "E417: விடுபட்ட வாதம்: %s"
 
 #, c-format
 msgid "E418: Illegal value: %s"
-msgstr "பி418: சட்டவிரோத மதிப்பு: %s"
+msgid "E418: சட்டவிரோத மதிப்பு: %s"
 
 msgid "E418: I'm a teapot"
-msgstr "பி418: நான் ஒரு தேநீர் தொட்டி"
+msgid "E418: நான் ஒரு தேநீர் தொட்டி"
 
 msgid "E419: FG color unknown"
-msgstr "பி419: FG நிறம் தெரியவில்லை"
+msgid "E419: FG நிறம் தெரியவில்லை"
 
 msgid "E420: BG color unknown"
-msgstr "பி420: BG நிறம் தெரியவில்லை"
+msgid "E420: BG நிறம் தெரியவில்லை"
 
 #, c-format
 msgid "E421: Color name or number not recognized: %s"
-msgstr "பி421: வண்ணப் பெயர் அல்லது எண் அங்கீகரிக்கப்படவில்லை: %s"
+msgid "E421: வண்ணப் பெயர் அல்லது எண் அங்கீகரிக்கப்படவில்லை: %s"
 
 #, c-format
 msgid "E422: Terminal code too long: %s"
-msgstr "பி422: டெர்மினல் குறியீடு மிக நீளமானது: %s"
+msgid "E422: டெர்மினல் குறியீடு மிக நீளமானது: %s"
 
 #, c-format
 msgid "E423: Illegal argument: %s"
-msgstr "பி423: சட்டவிரோத வாதம்: %s"
+msgid "E423: சட்டவிரோத வாதம்: %s"
 
 msgid "E424: Too many different highlighting attributes in use"
-msgstr "பி424: பல வேறுபட்ட சிறப்பம்சமான பண்புக்கூறுகள் பயன்பாட்டில் உள்ளன"
+msgid "E424: பல வேறுபட்ட சிறப்பம்சமான பண்புக்கூறுகள் பயன்பாட்டில் உள்ளன"
 
 msgid "E425: Cannot go before first matching tag"
-msgstr "பி425: முதலில் பொருந்தும் குறிச்சொல்லுக்கு முன் செல்ல முடியாது"
+msgid "E425: முதலில் பொருந்தும் குறிச்சொல்லுக்கு முன் செல்ல முடியாது"
 
 #, c-format
 #| msgid "E1146: Command not recognized: %s"
 msgid "E426: Tag not found: %s"
-msgstr "பி426: குறிச்சொல் கிடைக்கவில்லை: %s"
+msgid "E426: குறிச்சொல் கிடைக்கவில்லை: %s"
 
 msgid "E427: There is only one matching tag"
-msgstr "பி427: ஒரே ஒரு பொருந்தும் குறிச்சொல் உள்ளது"
+msgid "E427: ஒரே ஒரு பொருந்தும் குறிச்சொல் உள்ளது"
 
 msgid "E428: Cannot go beyond last matching tag"
-msgstr "பி428: கடைசியாக பொருந்திய குறிச்சொல்லைத் தாண்டி செல்ல முடியாது"
+msgid "E428: கடைசியாக பொருந்திய குறிச்சொல்லைத் தாண்டி செல்ல முடியாது"
 
 #, c-format
 msgid "E429: File \"%s\" does not exist"
-msgstr "பி429: கோப்பு \"%s\" இல்லை"
+msgid "E429: கோப்பு \"%s\" இல்லை"
 
 #, c-format
 msgid "E430: Tag file path truncated for %s\n"
-msgstr "பி430: டேக் கோப்பு பாதை %s க்கு துண்டிக்கப்பட்டது\n"
+msgid "E430: டேக் கோப்பு பாதை %s க்கு துண்டிக்கப்பட்டது\n"
 
 #, c-format
 #| msgid "E456: Can't open file \"%s\""
 msgid "E431: Format error in tags file \"%s\""
-msgstr "பி431: \"%s\" குறிச்சொற்கள் கோப்பில் வடிவமைப்பு பிழை"
+msgid "E431: \"%s\" குறிச்சொற்கள் கோப்பில் வடிவமைப்பு பிழை"
 
 #, c-format
 msgid "E432: Tags file not sorted: %s"
-msgstr "பி432: குறிச்சொற்கள் கோப்பு வரிசைப்படுத்தப்படவில்லை: %s"
+msgid "E432: குறிச்சொற்கள் கோப்பு வரிசைப்படுத்தப்படவில்லை: %s"
 
 msgid "E433: No tags file"
-msgstr "பி433: குறிச்சொற்கள் கோப்பு இல்லை"
+msgid "E433: குறிச்சொற்கள் கோப்பு இல்லை"
 
 msgid "E434: Can't find tag pattern"
-msgstr "பி434: டேக் பேட்டர்னைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E434: டேக் பேட்டர்னைக் கண்டுபிடிக்க முடியவில்லை"
 
 msgid "E435: Couldn't find tag, just guessing!"
-msgstr "பி435: குறிச்சொல்லைக் கண்டுபிடிக்க முடியவில்லை, யூகிக்கிறேன்!"
+msgid "E435: குறிச்சொல்லைக் கண்டுபிடிக்க முடியவில்லை, யூகிக்கிறேன்!"
 
 #, c-format
 msgid "E436: No \"%s\" entry in termcap"
-msgstr "பி436: டெர்ம்கேப்பில் \"%s\" உள்ளீடு இல்லை"
+msgid "E436: டெர்ம்கேப்பில் \"%s\" உள்ளீடு இல்லை"
 
 msgid "E437: Terminal capability \"cm\" required"
-msgstr "பி437: டெர்மினல் திறன் \"cm\" தேவை"
+msgid "E437: டெர்மினல் திறன் \"cm\" தேவை"
 
 msgid "E441: There is no preview window"
-msgstr "பி441: முன்னோட்ட சாளரம் இல்லை"
+msgid "E441: முன்னோட்ட சாளரம் இல்லை"
 
 msgid "E442: Can't split topleft and botright at the same time"
 msgstr ""
 "E442: டாப்லெஃப்ட் மற்றும் போட்ரைட் ஆகியவற்றை ஒரே நேரத்தில் பிரிக்க முடியாது"
 
 msgid "E443: Cannot rotate when another window is split"
-msgstr "பி443: மற்றொரு சாளரம் பிரிக்கப்படும் போது சுழற்ற முடியாது"
+msgid "E443: மற்றொரு சாளரம் பிரிக்கப்படும் போது சுழற்ற முடியாது"
 
 msgid "E444: Cannot close last window"
-msgstr "பி444: கடைசி சாளரத்தை மூட முடியாது"
+msgid "E444: கடைசி சாளரத்தை மூட முடியாது"
 
 msgid "E445: Other window contains changes"
-msgstr "பி445: மற்ற சாளரத்தில் மாற்றங்கள் உள்ளன"
+msgid "E445: மற்ற சாளரத்தில் மாற்றங்கள் உள்ளன"
 
 msgid "E446: No file name under cursor"
-msgstr "பி446: கர்சரின் கீழ் கோப்பு பெயர் இல்லை"
+msgid "E446: கர்சரின் கீழ் கோப்பு பெயர் இல்லை"
 
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
-msgstr "பி447: பாதையில் \"%s\" கோப்பைக் கண்டுபிடிக்க முடியவில்லை"
+msgid "E447: பாதையில் \"%s\" கோப்பைக் கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 msgid "E448: Could not load library function %s"
-msgstr "பி448: நூலக செயல்பாடு %s ஐ ஏற்ற முடியவில்லை"
+msgid "E448: நூலக செயல்பாடு %s ஐ ஏற்ற முடியவில்லை"
 
 msgid "E449: Invalid expression received"
-msgstr "பி449: தவறான வெளிப்பாடு பெறப்பட்டது"
+msgid "E449: தவறான வெளிப்பாடு பெறப்பட்டது"
 
 msgid "E450: Buffer number, text or a list required"
-msgstr "பி450: இடையக எண், உரை அல்லது பட்டியல் தேவை"
+msgid "E450: இடையக எண், உரை அல்லது பட்டியல் தேவை"
 
 #, c-format
 msgid "E451: Expected }: %s"
-msgstr "பி451: எதிர்பார்க்கப்படுகிறது }: %s"
+msgid "E451: எதிர்பார்க்கப்படுகிறது }: %s"
 
 msgid "E452: Double ; in list of variables"
-msgstr "பி452: இரட்டை ; மாறிகள் பட்டியலில்"
+msgid "E452: இரட்டை ; மாறிகள் பட்டியலில்"
 
 #| msgid "E419: FG color unknown"
 msgid "E453: UL color unknown"
-msgstr "பி453: UL நிறம் தெரியவில்லை"
+msgid "E453: UL நிறம் தெரியவில்லை"
 
 msgid "E454: Function list was modified"
-msgstr "பி454: செயல்பாடு பட்டியல் மாற்றப்பட்டது"
+msgid "E454: செயல்பாடு பட்டியல் மாற்றப்பட்டது"
 
 #| msgid "E324: Can't open PostScript output file"
 msgid "E455: Error writing to PostScript output file"
-msgstr "பி455: போச்ட்ச்கிரிப்ட் அவுட்புட் கோப்பில் எழுதுவதில் பிழை"
+msgid "E455: போச்ட்ச்கிரிப்ட் அவுட்புட் கோப்பில் எழுதுவதில் பிழை"
 
 #, c-format
 msgid "E456: Can't open file \"%s\""
-msgstr "பி456: \"%s\" கோப்பை திறக்க முடியவில்லை"
+msgid "E456: \"%s\" கோப்பை திறக்க முடியவில்லை"
 
 #, c-format
 msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "பி456: போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பை \"%s.ps\" கண்டுபிடிக்க முடியவில்லை"
+msgid "E456: போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பை \"%s.ps\" கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "பி457: போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பை \"%s\" படிக்க முடியவில்லை"
+msgid "E457: போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பை \"%s\" படிக்க முடியவில்லை"
 
 msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
 "E458: வண்ண வரைபட உள்ளீட்டை ஒதுக்க முடியாது, சில வண்ணங்கள் தவறாக இருக்கலாம்"
 
 msgid "E459: Cannot go back to previous directory"
-msgstr "பி459: முந்தைய கோப்பகத்திற்குச் செல்ல முடியாது"
+msgid "E459: முந்தைய கோப்பகத்திற்குச் செல்ல முடியாது"
 
 msgid "E460: Entries missing in mapset() dict argument"
-msgstr "பி460: mapset() dict argument இல் உள்ளீடுகள் இல்லை"
+msgid "E460: mapset() dict argument இல் உள்ளீடுகள் இல்லை"
 
 #, c-format
 msgid "E461: Illegal variable name: %s"
-msgstr "பி461: சட்டவிரோத மாறி பெயர்: %s"
+msgid "E461: சட்டவிரோத மாறி பெயர்: %s"
 
 #, c-format
 msgid "E462: Could not prepare for reloading \"%s\""
-msgstr "பி462: \"%s\" ஐ மீண்டும் ஏற்றுவதற்குத் தயாராக முடியவில்லை"
+msgid "E462: \"%s\" ஐ மீண்டும் ஏற்றுவதற்குத் தயாராக முடியவில்லை"
 
 msgid "E463: Region is guarded, cannot modify"
-msgstr "பி463: பிராந்தியம் பாதுகாக்கப்பட்டுள்ளது, மாற்ற முடியாது"
+msgid "E463: பிராந்தியம் பாதுகாக்கப்பட்டுள்ளது, மாற்ற முடியாது"
 
 msgid "E464: Ambiguous use of user-defined command"
-msgstr "பி464: பயனர் வரையறுக்கப்பட்ட கட்டளையின் தெளிவற்ற பயன்பாடு"
+msgid "E464: பயனர் வரையறுக்கப்பட்ட கட்டளையின் தெளிவற்ற பயன்பாடு"
 
 #, c-format
 msgid "E464: Ambiguous use of user-defined command: %s"
-msgstr "பி464: பயனர் வரையறுக்கப்பட்ட கட்டளையின் தெளிவற்ற பயன்பாடு: %s"
+msgid "E464: பயனர் வரையறுக்கப்பட்ட கட்டளையின் தெளிவற்ற பயன்பாடு: %s"
 
 msgid "E465: :winsize requires two number arguments"
-msgstr "பி465: :winsize க்கு இரண்டு எண் மதிப்புருக்கள் தேவை"
+msgid "E465: :winsize க்கு இரண்டு எண் மதிப்புருக்கள் தேவை"
 
 msgid "E466: :winpos requires two number arguments"
-msgstr "பி466: :winpos க்கு இரண்டு எண் மதிப்புருக்கள் தேவை"
+msgid "E466: :winpos க்கு இரண்டு எண் மதிப்புருக்கள் தேவை"
 
 msgid "E467: Custom completion requires a function argument"
-msgstr "பி467: தனிப்பயன் நிறைவுக்கு ஒரு செயல்பாட்டு உரையாடல் தேவை"
+msgid "E467: தனிப்பயன் நிறைவுக்கு ஒரு செயல்பாட்டு உரையாடல் தேவை"
 
 msgid "E468: Completion argument only allowed for custom completion"
 msgstr ""
@@ -5709,126 +5709,126 @@ msgstr ""
 
 #, c-format
 msgid "E469: Invalid cscopequickfix flag %c for %c"
-msgstr "பி469: %cக்கு தவறான cscopequickfix கொடி %c"
+msgid "E469: %cக்கு தவறான cscopequickfix கொடி %c"
 
 msgid "E470: Command aborted"
-msgstr "பி470: கட்டளை நிறுத்தப்பட்டது"
+msgid "E470: கட்டளை நிறுத்தப்பட்டது"
 
 msgid "E471: Argument required"
-msgstr "பி471: உரையாடல் தேவை"
+msgid "E471: உரையாடல் தேவை"
 
 msgid "E472: Command failed"
-msgstr "பி472: கட்டளை தோல்வியடைந்தது"
+msgid "E472: கட்டளை தோல்வியடைந்தது"
 
 msgid "E474: Invalid argument"
-msgstr "பி474: தவறான மதிப்புரு"
+msgid "E474: தவறான மதிப்புரு"
 
 #, c-format
 msgid "E475: Invalid argument: %s"
-msgstr "பி475: தவறான மதிப்புரு: %s"
+msgid "E475: தவறான மதிப்புரு: %s"
 
 #, c-format
 msgid "E475: Invalid value for argument %s"
-msgstr "பி475: மதிப்பு %sக்கான தவறான மதிப்பு"
+msgid "E475: மதிப்பு %sக்கான தவறான மதிப்பு"
 
 #, c-format
 msgid "E475: Invalid value for argument %s: %s"
-msgstr "பி475: மதிப்பு %sக்கான தவறான மதிப்பு: %s"
+msgid "E475: மதிப்பு %sக்கான தவறான மதிப்பு: %s"
 
 msgid "E476: Invalid command"
-msgstr "பி476: தவறான கட்டளை"
+msgid "E476: தவறான கட்டளை"
 
 #, c-format
 msgid "E476: Invalid command: %s"
-msgstr "பி476: தவறான கட்டளை: %s"
+msgid "E476: தவறான கட்டளை: %s"
 
 #, c-format
 msgid "E476: Invalid command: %s, expected %s"
-msgstr "பி476: தவறான கட்டளை: %s, எதிர்பார்க்கப்படுகிறது %s"
+msgid "E476: தவறான கட்டளை: %s, எதிர்பார்க்கப்படுகிறது %s"
 
 msgid "E477: No ! allowed"
-msgstr "பி477: இல்லை ! அனுமதிக்கப்பட்டது"
+msgid "E477: இல்லை ! அனுமதிக்கப்பட்டது"
 
 msgid "E478: Don't panic!"
-msgstr "பி478: அச்சம் அடைய வேண்டாம்!"
+msgid "E478: அச்சம் அடைய வேண்டாம்!"
 
 msgid "E479: No match"
-msgstr "பி479: பொருத்தம் இல்லை"
+msgid "E479: பொருத்தம் இல்லை"
 
 #, c-format
 msgid "E480: No match: %s"
-msgstr "பி480: பொருத்தம் இல்லை: %s"
+msgid "E480: பொருத்தம் இல்லை: %s"
 
 msgid "E481: No range allowed"
-msgstr "பி481: வரம்பு அனுமதிக்கப்படவில்லை"
+msgid "E481: வரம்பு அனுமதிக்கப்படவில்லை"
 
 #, c-format
 msgid "E482: Can't create file %s"
-msgstr "பி482: %s கோப்பை உருவாக்க முடியாது"
+msgid "E482: %s கோப்பை உருவாக்க முடியாது"
 
 msgid "E483: Can't get temp file name"
-msgstr "பி483: டெம்ப் கோப்பின் பெயரைப் பெற முடியவில்லை"
+msgid "E483: டெம்ப் கோப்பின் பெயரைப் பெற முடியவில்லை"
 
 #, c-format
 msgid "E484: Can't open file %s"
-msgstr "பி484: %s கோப்பைத் திறக்க முடியவில்லை"
+msgid "E484: %s கோப்பைத் திறக்க முடியவில்லை"
 
 #, c-format
 msgid "E485: Can't read file %s"
-msgstr "பி485: %s கோப்பைப் படிக்க முடியவில்லை"
+msgid "E485: %s கோப்பைப் படிக்க முடியவில்லை"
 
 msgid "E486: Pattern not found"
-msgstr "பி486: பேட்டர்ன் கிடைக்கவில்லை"
+msgid "E486: பேட்டர்ன் கிடைக்கவில்லை"
 
 #, c-format
 #| msgid "E1146: Command not recognized: %s"
 msgid "E486: Pattern not found: %s"
-msgstr "பி486: வடிவம் காணப்படவில்லை: %s"
+msgid "E486: வடிவம் காணப்படவில்லை: %s"
 
 msgid "E487: Argument must be positive"
-msgstr "பி487: உரையாடல் நேர்மறையாக இருக்க வேண்டும்"
+msgid "E487: உரையாடல் நேர்மறையாக இருக்க வேண்டும்"
 
 #, c-format
 msgid "E487: Argument must be positive: %s"
-msgstr "பி487: உரையாடல் நேர்மறையாக இருக்க வேண்டும்: %s"
+msgid "E487: உரையாடல் நேர்மறையாக இருக்க வேண்டும்: %s"
 
 msgid "E488: Trailing characters"
-msgstr "பி488: ட்ரைலிங் கேரக்டர்கள்"
+msgid "E488: ட்ரைலிங் கேரக்டர்கள்"
 
 #, c-format
 msgid "E488: Trailing characters: %s"
-msgstr "பி488: ட்ரைலிங் எழுத்துகள்: %s"
+msgid "E488: ட்ரைலிங் எழுத்துகள்: %s"
 
 msgid "E489: No call stack to substitute for \"<stack>\""
-msgstr "பி489: \"<stack>\"க்கு மாற்றாக அழைப்பு அடுக்கு இல்லை"
+msgid "E489: \"<stack>\"க்கு மாற்றாக அழைப்பு அடுக்கு இல்லை"
 
 msgid "E490: No fold found"
-msgstr "பி490: மடிப்பு எதுவும் இல்லை"
+msgid "E490: மடிப்பு எதுவும் இல்லை"
 
 #, c-format
 msgid "E491: JSON decode error at '%s'"
-msgstr "பி491: '%s' இல் சாதொபொகு டிகோட் பிழை"
+msgid "E491: '%s' இல் சாதொபொகு டிகோட் பிழை"
 
 msgid "E492: Not an editor command"
-msgstr "பி492: எடிட்டர் கட்டளை அல்ல"
+msgid "E492: எடிட்டர் கட்டளை அல்ல"
 
 msgid "E493: Backwards range given"
-msgstr "பி493: பின்னோக்கி வரம்பு கொடுக்கப்பட்டது"
+msgid "E493: பின்னோக்கி வரம்பு கொடுக்கப்பட்டது"
 
 msgid "E494: Use w or w>>"
-msgstr "பி494: w அல்லது w>> ஐப் பயன்படுத்தவும்"
+msgid "E494: w அல்லது w>> ஐப் பயன்படுத்தவும்"
 
 msgid "E495: No autocommand file name to substitute for \"<afile>\""
-msgstr "பி495: \"<afile>\"க்கு மாற்றாக ஆட்டோகமாண்ட் கோப்பு பெயர் இல்லை"
+msgid "E495: \"<afile>\"க்கு மாற்றாக ஆட்டோகமாண்ட் கோப்பு பெயர் இல்லை"
 
 msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
-msgstr "பி496: \"<abuf>\"க்கு மாற்றாக ஆட்டோகமாண்ட் பஃபர் எண் இல்லை"
+msgid "E496: \"<abuf>\"க்கு மாற்றாக ஆட்டோகமாண்ட் பஃபர் எண் இல்லை"
 
 msgid "E497: No autocommand match name to substitute for \"<amatch>\""
-msgstr "பி497: \"<amatch>\"க்கு மாற்றாக ஆட்டோகமாண்ட் மேட்ச் பெயர் இல்லை"
+msgid "E497: \"<amatch>\"க்கு மாற்றாக ஆட்டோகமாண்ட் மேட்ச் பெயர் இல்லை"
 
 msgid "E498: No :source file name to substitute for \"<sfile>\""
-msgstr "பி498: இல்லை: \"<sfile>\"க்கு மாற்றாக மூல கோப்பு பெயர்"
+msgid "E498: இல்லை: \"<sfile>\"க்கு மாற்றாக மூல கோப்பு பெயர்"
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -5837,20 +5837,20 @@ msgstr ""
 "செய்யும்"
 
 msgid "E500: Evaluates to an empty string"
-msgstr "பி500: வெற்று சரத்திற்கு மதிப்பிடுகிறது"
+msgid "E500: வெற்று சரத்திற்கு மதிப்பிடுகிறது"
 
 msgid "E501: At end-of-file"
-msgstr "பி501: கோப்பின் முடிவில்"
+msgid "E501: கோப்பின் முடிவில்"
 
 msgid "is not a file or writable device"
 msgstr "கோப்பு அல்லது எழுதக்கூடிய சாதனம் அல்ல"
 
 #, c-format
 msgid "E503: \"%s\" is not a file or writable device"
-msgstr "பி503: \"%s\" என்பது கோப்பு அல்லது எழுதக்கூடிய சாதனம் அல்ல"
+msgid "E503: \"%s\" என்பது கோப்பு அல்லது எழுதக்கூடிய சாதனம் அல்ல"
 
 msgid "E503: Coffee is currently not available"
-msgstr "பி503: காபி தற்போது கிடைக்கவில்லை"
+msgid "E503: காபி தற்போது கிடைக்கவில்லை"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "படிக்க மட்டுமே உள்ளது (ஓவர்ரைட் செய்ய முடியாது: 'cpoptions' இல் \"W\")"
@@ -5861,7 +5861,7 @@ msgstr "படிக்க மட்டுமே (சேர்! மேலெழ�
 #, c-format
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E505: \"%s\" is read-only (add ! to override)"
-msgstr "பி505: \"%s\" என்பது படிக்க மட்டுமே (சேர் ! மேலெழுத)"
+msgid "E505: \"%s\" என்பது படிக்க மட்டுமே (சேர் ! மேலெழுத)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
@@ -5879,18 +5879,18 @@ msgstr ""
 
 #| msgid "E506: Can't write to backup file (add ! to override)"
 msgid "E509: Cannot create backup file (add ! to override)"
-msgstr "பி509: காப்புப் பிரதி கோப்பை உருவாக்க முடியாது (மேற்கொள்ள ! சேர்)"
+msgid "E509: காப்புப் பிரதி கோப்பை உருவாக்க முடியாது (மேற்கொள்ள ! சேர்)"
 
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr ""
 "E510: காப்புப் பிரதி கோப்பை உருவாக்க முடியாது (எப்படியும் எழுத ! சேர்)"
 
 msgid "E511: NetBeans already connected"
-msgstr "பி511: NetBeans ஏற்கனவே இணைக்கப்பட்டுள்ளது"
+msgid "E511: NetBeans ஏற்கனவே இணைக்கப்பட்டுள்ளது"
 
 #| msgid "E818: sha256 test failed"
 msgid "E512: Close failed"
-msgstr "பி512: மூட முடியவில்லை"
+msgid "E512: மூட முடியவில்லை"
 
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
@@ -5906,81 +5906,81 @@ msgstr ""
 "'ஃபென்க்கை' காலியாக்குங்கள்)"
 
 msgid "E514: Write error (file system full?)"
-msgstr "பி514: எழுதுவதில் பிழை (கோப்பு முறைமை நிரம்பியதா?)"
+msgid "E514: எழுதுவதில் பிழை (கோப்பு முறைமை நிரம்பியதா?)"
 
 msgid "E515: No buffers were unloaded"
-msgstr "பி515: எந்த பஃபர்களும் இறக்கப்படவில்லை"
+msgid "E515: எந்த பஃபர்களும் இறக்கப்படவில்லை"
 
 msgid "E516: No buffers were deleted"
-msgstr "பி516: இடையகங்கள் எதுவும் நீக்கப்படவில்லை"
+msgid "E516: இடையகங்கள் எதுவும் நீக்கப்படவில்லை"
 
 msgid "E517: No buffers were wiped out"
-msgstr "பி517: எந்த இடையகங்களும் அழிக்கப்படவில்லை"
+msgid "E517: எந்த இடையகங்களும் அழிக்கப்படவில்லை"
 
 msgid "E518: Unknown option"
-msgstr "பி518: தெரியாத விருப்பம்"
+msgid "E518: தெரியாத விருப்பம்"
 
 msgid "E519: Option not supported"
-msgstr "பி519: விருப்பம் ஆதரிக்கப்படவில்லை"
+msgid "E519: விருப்பம் ஆதரிக்கப்படவில்லை"
 
 msgid "E520: Not allowed in a modeline"
-msgstr "பி520: மாடலைனில் அனுமதிக்கப்படவில்லை"
+msgid "E520: மாடலைனில் அனுமதிக்கப்படவில்லை"
 
 msgid "E521: Number required after ="
-msgstr "பி521: = பின் தேவைப்படும் எண்"
+msgid "E521: = பின் தேவைப்படும் எண்"
 
 #, c-format
 msgid "E521: Number required: &%s = '%s'"
-msgstr "பி521: தேவையான எண்: &%s = '%s'"
+msgid "E521: தேவையான எண்: &%s = '%s'"
 
 msgid "E522: Not found in termcap"
-msgstr "பி522: டெர்ம்கேப்பில் காணப்படவில்லை"
+msgid "E522: டெர்ம்கேப்பில் காணப்படவில்லை"
 
 msgid "E523: Not allowed here"
-msgstr "பி523: இங்கு அனுமதிக்கப்படவில்லை"
+msgid "E523: இங்கு அனுமதிக்கப்படவில்லை"
 
 msgid "E524: Missing colon"
-msgstr "பி524: பெருங்குடல் காணவில்லை"
+msgid "E524: பெருங்குடல் காணவில்லை"
 
 msgid "E525: Zero length string"
-msgstr "பி525: சுழிய நீள சரம்"
+msgid "E525: சுழிய நீள சரம்"
 
 #, c-format
 msgid "E526: Missing number after <%s>"
-msgstr "பி526: <%s>க்குப் பிறகு எண் இல்லை"
+msgid "E526: <%s>க்குப் பிறகு எண் இல்லை"
 
 msgid "E527: Missing comma"
-msgstr "பி527: காற்புள்ளி இல்லை"
+msgid "E527: காற்புள்ளி இல்லை"
 
 msgid "E528: Must specify a ' value"
-msgstr "பி528: ஒரு ' மதிப்பைக் குறிப்பிட வேண்டும்"
+msgid "E528: ஒரு ' மதிப்பைக் குறிப்பிட வேண்டும்"
 
 msgid "E529: Cannot set 'term' to empty string"
-msgstr "பி529: 'term' ஐ வெற்று சரமாக அமைக்க முடியாது"
+msgid "E529: 'term' ஐ வெற்று சரமாக அமைக்க முடியாது"
 
 msgid "E530: Cannot change 'term' in the GUI"
-msgstr "பி530: GUI இல் 'டெர்ம்' ஐ மாற்ற முடியாது"
+msgid "E530: GUI இல் 'டெர்ம்' ஐ மாற்ற முடியாது"
 
 msgid "E531: Use \":gui\" to start the GUI"
-msgstr "பி531: GUI ஐத் தொடங்க \":gui\" ஐப் பயன்படுத்தவும்"
+msgid "E531: GUI ஐத் தொடங்க \":gui\" ஐப் பயன்படுத்தவும்"
 
 msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr ""
 "E532: defineAnnoType இல் மிக நீளமான வண்ணப் பெயரை முன்னிலைப்படுத்துகிறது"
 
 msgid "E533: Can't select wide font"
-msgstr "பி533: பரந்த எழுத்துருவை தேர்ந்தெடுக்க முடியாது"
+msgid "E533: பரந்த எழுத்துருவை தேர்ந்தெடுக்க முடியாது"
 
 #| msgid "E533: Can't select wide font"
 msgid "E534: Invalid wide font"
-msgstr "பி534: தவறான பரந்த எழுத்துரு"
+msgid "E534: தவறான பரந்த எழுத்துரு"
 
 #, c-format
 msgid "E535: Illegal character after <%c>"
-msgstr "பி535: <%c>க்குப் பிறகு சட்டவிரோத எழுத்து"
+msgid "E535: <%c>க்குப் பிறகு சட்டவிரோத எழுத்து"
 
 msgid "E536: Comma required"
-msgstr "பி536: கமா தேவை"
+msgid "E536: கமா தேவை"
 
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
@@ -5990,84 +5990,84 @@ msgstr ""
 
 #, c-format
 msgid "E538: Pattern found in every line: %s"
-msgstr "பி538: ஒவ்வொரு வரியிலும் காணப்படும் வடிவம்: %s"
+msgid "E538: ஒவ்வொரு வரியிலும் காணப்படும் வடிவம்: %s"
 
 #, c-format
 msgid "E539: Illegal character <%s>"
-msgstr "பி539: சட்டவிரோத எழுத்து <%s>"
+msgid "E539: சட்டவிரோத எழுத்து <%s>"
 
 msgid "E540: Unclosed expression sequence"
-msgstr "பி540: மூடப்படாத வெளிப்பாடு வரிசை"
+msgid "E540: மூடப்படாத வெளிப்பாடு வரிசை"
 
 msgid "E542: Unbalanced groups"
-msgstr "பி542: சமநிலையற்ற குழுக்கள்"
+msgid "E542: சமநிலையற்ற குழுக்கள்"
 
 msgid "E543: Not a valid codepage"
-msgstr "பி543: சரியான குறியீட்டுப்பக்கம் இல்லை"
+msgid "E543: சரியான குறியீட்டுப்பக்கம் இல்லை"
 
 msgid "E544: Keymap file not found"
-msgstr "பி544: கீமேப் கோப்பு கிடைக்கவில்லை"
+msgid "E544: கீமேப் கோப்பு கிடைக்கவில்லை"
 
 msgid "E545: Missing colon"
-msgstr "பி545: பெருங்குடல் காணவில்லை"
+msgid "E545: பெருங்குடல் காணவில்லை"
 
 msgid "E546: Illegal mode"
-msgstr "பி546: சட்டவிரோத பயன்முறை"
+msgid "E546: சட்டவிரோத பயன்முறை"
 
 msgid "E547: Illegal mouseshape"
-msgstr "பி547: சட்டவிரோத சுட்டி வடிவம்"
+msgid "E547: சட்டவிரோத சுட்டி வடிவம்"
 
 msgid "E548: Digit expected"
-msgstr "பி548: இலக்கம் எதிர்பார்க்கப்படுகிறது"
+msgid "E548: இலக்கம் எதிர்பார்க்கப்படுகிறது"
 
 msgid "E549: Illegal percentage"
-msgstr "பி549: சட்டவிரோத விழுக்காடு"
+msgid "E549: சட்டவிரோத விழுக்காடு"
 
 msgid "E550: Missing colon"
-msgstr "பி550: பெருங்குடல் காணவில்லை"
+msgid "E550: பெருங்குடல் காணவில்லை"
 
 msgid "E551: Illegal component"
-msgstr "பி551: சட்டவிரோத கூறு"
+msgid "E551: சட்டவிரோத கூறு"
 
 msgid "E552: Digit expected"
-msgstr "பி552: இலக்கம் எதிர்பார்க்கப்படுகிறது"
+msgid "E552: இலக்கம் எதிர்பார்க்கப்படுகிறது"
 
 msgid "E553: No more items"
-msgstr "பி553: மேலும் உருப்படிகள் இல்லை"
+msgid "E553: மேலும் உருப்படிகள் இல்லை"
 
 #, c-format
 msgid "E554: Syntax error in %s{...}"
-msgstr "பி554: %s இல் தொடரியல் பிழை{...}"
+msgid "E554: %s இல் தொடரியல் பிழை{...}"
 
 msgid "E555: At bottom of tag stack"
-msgstr "பி555: டேக் ச்டேக்கின் கீழே"
+msgid "E555: டேக் ச்டேக்கின் கீழே"
 
 msgid "E556: At top of tag stack"
-msgstr "பி556: டேக் ச்டேக்கின் மேல்"
+msgid "E556: டேக் ச்டேக்கின் மேல்"
 
 #| msgid "E40: Can't open errorfile %s"
 msgid "E557: Cannot open termcap file"
-msgstr "பி557: termcap கோப்பை திறக்க முடியாது"
+msgid "E557: termcap கோப்பை திறக்க முடியாது"
 
 msgid "E558: Terminal entry not found in terminfo"
-msgstr "பி558: டெர்மின்ஃபோவில் டெர்மினல் நுழைவு இல்லை"
+msgid "E558: டெர்மின்ஃபோவில் டெர்மினல் நுழைவு இல்லை"
 
 msgid "E559: Terminal entry not found in termcap"
-msgstr "பி559: டெர்மினல் நுழைவு டெர்ம்கேப்பில் காணப்படவில்லை"
+msgid "E559: டெர்மினல் நுழைவு டெர்ம்கேப்பில் காணப்படவில்லை"
 
 #, c-format
 msgid "E560: Usage: cs[cope] %s"
-msgstr "பி560: பயன்பாடு: cs[cope] %s"
+msgid "E560: பயன்பாடு: cs[cope] %s"
 
 msgid "E561: Unknown cscope search type"
-msgstr "பி561: தெரியாத cscope தேடல் வகை"
+msgid "E561: தெரியாத cscope தேடல் வகை"
 
 msgid "E562: Usage: cstag <ident>"
-msgstr "பி562: பயன்பாடு: cstag <ident>"
+msgid "E562: பயன்பாடு: cstag <ident>"
 
 #, c-format
 msgid "E563: stat(%s) error: %d"
-msgstr "பி563: stat(%s) பிழை: %d"
+msgid "E563: stat(%s) பிழை: %d"
 
 #, c-format
 msgid "E564: %s is not a directory or a valid cscope database"
@@ -6075,17 +6075,17 @@ msgstr ""
 "E564: %s என்பது அடைவு அல்லது செல்லுபடியாகும் சிநோக்கம் தரவுத்தளம் அல்ல"
 
 msgid "E565: Not allowed to change text or change window"
-msgstr "பி565: உரையை மாற்றவோ அல்லது சாளரத்தை மாற்றவோ அனுமதிக்கப்படவில்லை"
+msgid "E565: உரையை மாற்றவோ அல்லது சாளரத்தை மாற்றவோ அனுமதிக்கப்படவில்லை"
 
 msgid "E566: Could not create cscope pipes"
-msgstr "பி566: cscope குழாய்களை உருவாக்க முடியவில்லை"
+msgid "E566: cscope குழாய்களை உருவாக்க முடியவில்லை"
 
 #| msgid "no cscope connections\n"
 msgid "E567: No cscope connections"
-msgstr "பி567: cscope இணைப்புகள் இல்லை"
+msgid "E567: cscope இணைப்புகள் இல்லை"
 
 msgid "E568: Duplicate cscope database not added"
-msgstr "பி568: நகல் சிநோக்கம் தரவுத்தளம் சேர்க்கப்படவில்லை"
+msgid "E568: நகல் சிநோக்கம் தரவுத்தளம் சேர்க்கப்படவில்லை"
 
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
@@ -6095,15 +6095,15 @@ msgstr ""
 
 #, c-format
 msgid "E572: Exit code %d"
-msgstr "பி572: வெளியேறு குறியீடு %d"
+msgid "E572: வெளியேறு குறியீடு %d"
 
 #, c-format
 msgid "E573: Invalid server id used: %s"
-msgstr "பி573: தவறான சர்வர் அடையாளம் பயன்படுத்தப்பட்டது: %s"
+msgid "E573: தவறான சர்வர் அடையாளம் பயன்படுத்தப்பட்டது: %s"
 
 #, c-format
 msgid "E574: Unknown register type %d"
-msgstr "பி574: அறியப்படாத பதிவு வகை %d"
+msgid "E574: அறியப்படாத பதிவு வகை %d"
 
 msgid "Illegal starting char"
 msgstr "சட்டத்திற்குப் புறம்பாகத் தொடங்குதல்"
@@ -6115,251 +6115,251 @@ msgid "Illegal register name"
 msgstr "சட்டவிரோத பதிவு பெயர்"
 
 msgid "E579: :if nesting too deep"
-msgstr "பி579: : மிக ஆழமாக கூடு கட்டினால்"
+msgid "E579: : மிக ஆழமாக கூடு கட்டினால்"
 
 msgid "E579: Block nesting too deep"
-msgstr "பி579: கூடு கட்டுவதை மிக ஆழமாகத் தடுக்கவும்"
+msgid "E579: கூடு கட்டுவதை மிக ஆழமாகத் தடுக்கவும்"
 
 msgid "E580: :endif without :if"
-msgstr "பி580: :endif இல்லாமல் :if"
+msgid "E580: :endif இல்லாமல் :if"
 
 msgid "E581: :else without :if"
-msgstr "பி581: :else இல்லாமல் :if"
+msgid "E581: :else இல்லாமல் :if"
 
 msgid "E582: :elseif without :if"
-msgstr "பி582: :elseif இல்லாமல் :if"
+msgid "E582: :elseif இல்லாமல் :if"
 
 msgid "E583: Multiple :else"
-msgstr "பி583: Multiple:else"
+msgid "E583: Multiple:else"
 
 msgid "E584: :elseif after :else"
-msgstr "பி584: :elseif பிறகு :else"
+msgid "E584: :elseif பிறகு :else"
 
 msgid "E585: :while/:for nesting too deep"
-msgstr "பி585: :while/:Nested too deep"
+msgid "E585: :while/:Nested too deep"
 
 msgid "E586: :continue without :while or :for"
-msgstr "பி586: :while அல்லது :for இல்லாமல் தொடரவும்"
+msgid "E586: :while அல்லது :for இல்லாமல் தொடரவும்"
 
 msgid "E587: :break without :while or :for"
-msgstr "பி587:: பிரேக் இல்லாமல்:while அல்லது:for"
+msgid "E587:: பிரேக் இல்லாமல்:while அல்லது:for"
 
 msgid "E588: :endwhile without :while"
-msgstr "பி588: :endwhile இல்லாமல் :while"
+msgid "E588: :endwhile இல்லாமல் :while"
 
 msgid "E588: :endfor without :for"
-msgstr "பி588::endfor இல்லாமல் :for"
+msgid "E588::endfor இல்லாமல் :for"
 
 msgid "E589: 'backupext' and 'patchmode' are equal"
-msgstr "பி589: 'backupext' மற்றும் 'patchmode' சமம்"
+msgid "E589: 'backupext' மற்றும் 'patchmode' சமம்"
 
 msgid "E590: A preview window already exists"
-msgstr "பி590: முன்னோட்ட சாளரம் ஏற்கனவே உள்ளது"
+msgid "E590: முன்னோட்ட சாளரம் ஏற்கனவே உள்ளது"
 
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
 msgstr ""
 "E591: 'winheight' என்பது 'winminheight' ஐ விட சிறியதாக இருக்க முடியாது"
 
 msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
-msgstr "பி592: 'winminwidth' ஐ விட 'winwidth' சிறியதாக இருக்க முடியாது"
+msgid "E592: 'winminwidth' ஐ விட 'winwidth' சிறியதாக இருக்க முடியாது"
 
 #, c-format
 msgid "E593: Need at least %d lines"
-msgstr "பி593: குறைந்தபட்சம் %d வரிகள் தேவை"
+msgid "E593: குறைந்தபட்சம் %d வரிகள் தேவை"
 
 #, c-format
 msgid "E594: Need at least %d columns"
-msgstr "பி594: குறைந்தது %d நெடுவரிசைகள் தேவை"
+msgid "E594: குறைந்தது %d நெடுவரிசைகள் தேவை"
 
 msgid "E595: 'showbreak' contains unprintable or wide character"
-msgstr "பி595: 'சோபிரேக்' அச்சிட முடியாத அல்லது பரந்த தன்மையைக் கொண்டுள்ளது"
+msgid "E595: 'சோபிரேக்' அச்சிட முடியாத அல்லது பரந்த தன்மையைக் கொண்டுள்ளது"
 
 msgid "E596: Invalid font(s)"
-msgstr "பி596: தவறான எழுத்துரு(கள்)"
+msgid "E596: தவறான எழுத்துரு(கள்)"
 
 msgid "E597: Can't select fontset"
-msgstr "பி597: எழுத்துருவை தேர்ந்தெடுக்க முடியவில்லை"
+msgid "E597: எழுத்துருவை தேர்ந்தெடுக்க முடியவில்லை"
 
 #| msgid "E597: Can't select fontset"
 msgid "E598: Invalid fontset"
-msgstr "பி598:"
+msgid "E598:"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "பி599: 'imactivatekey' இன் மதிப்பு தவறானது"
+msgid "E599: 'imactivatekey' இன் மதிப்பு தவறானது"
 
 msgid "E600: Missing :endtry"
-msgstr "பி600: விடுபட்டது :endtry"
+msgid "E600: விடுபட்டது :endtry"
 
 msgid "E601: :try nesting too deep"
-msgstr "பி601: : மிக ஆழமாக கூடு கட்ட முயற்சிக்கவும்"
+msgid "E601: : மிக ஆழமாக கூடு கட்ட முயற்சிக்கவும்"
 
 msgid "E602: :endtry without :try"
-msgstr "பி602::endtry இல்லாமல்: முயற்சி"
+msgid "E602::endtry இல்லாமல்: முயற்சி"
 
 msgid "E603: :catch without :try"
-msgstr "பி603:: கேட்ச் இல்லாமல்: முயற்சி"
+msgid "E603:: கேட்ச் இல்லாமல்: முயற்சி"
 
 msgid "E604: :catch after :finally"
-msgstr "பி604:: கேட்ச் பிறகு: இறுதியாக"
+msgid "E604:: கேட்ச் பிறகு: இறுதியாக"
 
 #, c-format
 msgid "E605: Exception not caught: %s"
-msgstr "பி605: விதிவிலக்கு பிடிக்கப்படவில்லை: %s"
+msgid "E605: விதிவிலக்கு பிடிக்கப்படவில்லை: %s"
 
 msgid "E606: :finally without :try"
-msgstr "பி606:: இறுதியாக இல்லாமல்: முயற்சி"
+msgid "E606:: இறுதியாக இல்லாமல்: முயற்சி"
 
 msgid "E607: Multiple :finally"
-msgstr "பி607: பல: இறுதியாக"
+msgid "E607: பல: இறுதியாக"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
-msgstr "பி608: 'Vim' முன்னொட்டுடன் விதிவிலக்குகளை வீச முடியாது"
+msgid "E608: 'Vim' முன்னொட்டுடன் விதிவிலக்குகளை வீச முடியாது"
 
 #, c-format
 #| msgid "E40: Can't open errorfile %s"
 msgid "E609: Cscope error: %s"
-msgstr "பி609: Cscope பிழை: %s"
+msgid "E609: Cscope பிழை: %s"
 
 msgid "E610: No argument to delete"
-msgstr "பி610: நீக்குவதற்கு எந்த வாதமும் இல்லை"
+msgid "E610: நீக்குவதற்கு எந்த வாதமும் இல்லை"
 
 msgid "E611: Using a Special as a Number"
-msgstr "பி611: ஒரு சிறப்பு எண்ணாகப் பயன்படுத்துதல்"
+msgid "E611: ஒரு சிறப்பு எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E612: Too many signs defined"
-msgstr "பி612: பல அறிகுறிகள் வரையறுக்கப்பட்டுள்ளன"
+msgid "E612: பல அறிகுறிகள் வரையறுக்கப்பட்டுள்ளன"
 
 #, c-format
 msgid "E613: Unknown printer font: %s"
-msgstr "பி613: தெரியாத பிரிண்டர் எழுத்துரு: %s"
+msgid "E613: தெரியாத பிரிண்டர் எழுத்துரு: %s"
 
 #, c-format
 msgid "E616: Object required for argument %d"
-msgstr "பி616: உரையாடல் %dக்கு பொருள் தேவை"
+msgid "E616: உரையாடல் %dக்கு பொருள் தேவை"
 
 msgid "E617: Cannot be changed in the GTK GUI"
-msgstr "பி617: GTK GUI இல் மாற்ற முடியாது"
+msgid "E617: GTK GUI இல் மாற்ற முடியாது"
 
 #, c-format
 #| msgid "E457: Can't read PostScript resource file \"%s\""
 msgid "E618: File \"%s\" is not a PostScript resource file"
-msgstr "பி618: கோப்பு \"%s\" என்பது போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
+msgid "E618: கோப்பு \"%s\" என்பது போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
 
 #, c-format
 #| msgid "E457: Can't read PostScript resource file \"%s\""
 msgid "E619: File \"%s\" is not a supported PostScript resource file"
-msgstr "பி619: கோப்பு \"%s\" ஆதரிக்கப்படும் போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
+msgid "E619: கோப்பு \"%s\" ஆதரிக்கப்படும் போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
 
 #, c-format
 msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "பி620: \"%s\" அச்சு குறியாக்கத்திற்கு மாற்ற முடியவில்லை"
+msgid "E620: \"%s\" அச்சு குறியாக்கத்திற்கு மாற்ற முடியவில்லை"
 
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
-msgstr "பி621: \"%s\" ஆதாரக் கோப்பு தவறான பதிப்பைக் கொண்டுள்ளது"
+msgid "E621: \"%s\" ஆதாரக் கோப்பு தவறான பதிப்பைக் கொண்டுள்ளது"
 
 msgid "E622: Could not fork for cscope"
-msgstr "பி622: cscope க்கு ஃபோர்க் செய்ய முடியவில்லை"
+msgid "E622: cscope க்கு ஃபோர்க் செய்ய முடியவில்லை"
 
 #| msgid "E625: Cannot open cscope database: %s"
 msgid "E623: Could not spawn cscope process"
-msgstr "பி623: cscope செயல்முறையை உருவாக்க முடியவில்லை"
+msgid "E623: cscope செயல்முறையை உருவாக்க முடியவில்லை"
 
 #, c-format
 msgid "E624: Can't open file \"%s\""
-msgstr "பி624: \"%s\" கோப்பை திறக்க முடியவில்லை"
+msgid "E624: \"%s\" கோப்பை திறக்க முடியவில்லை"
 
 #, c-format
 msgid "E625: Cannot open cscope database: %s"
-msgstr "பி625: சிநோக்கம் தரவுத்தளத்தைத் திறக்க முடியாது: %s"
+msgid "E625: சிநோக்கம் தரவுத்தளத்தைத் திறக்க முடியாது: %s"
 
 msgid "E626: Cannot get cscope database information"
-msgstr "பி626: சிநோக்கம் தரவுத்தள தகவலைப் பெற முடியாது"
+msgid "E626: சிநோக்கம் தரவுத்தள தகவலைப் பெற முடியாது"
 
 #, c-format
 msgid "E627: Missing colon: %s"
-msgstr "பி627: விடுபட்ட பெருங்குடல்: %s"
+msgid "E627: விடுபட்ட பெருங்குடல்: %s"
 
 #, c-format
 msgid "E628: Missing ! or / in: %s"
-msgstr "பி628: காணவில்லை ! அல்லது / இல்: %s"
+msgid "E628: காணவில்லை ! அல்லது / இல்: %s"
 
 #, c-format
 msgid "E630: %s(): Write while not connected"
-msgstr "பி630: %s(): இணைக்கப்படாத நிலையில் எழுதவும்"
+msgid "E630: %s(): இணைக்கப்படாத நிலையில் எழுதவும்"
 
 #, c-format
 #| msgid "E818: sha256 test failed"
 msgid "E631: %s(): Write failed"
-msgstr "பி631: %s(): எழுதுவது தோல்வியடைந்தது"
+msgid "E631: %s(): எழுதுவது தோல்வியடைந்தது"
 
 msgid "E632: Invalid buffer identifier in getLength"
-msgstr "பி632: getLength இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E632: getLength இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E633: Invalid buffer identifier in getText"
-msgstr "பி633: உரைபெறு இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E633: உரைபெறு இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E634: Invalid buffer identifier in remove"
-msgstr "பி634: நீக்கத்தில் தவறான இடையக அடையாளங்காட்டி உள்ளது"
+msgid "E634: நீக்கத்தில் தவறான இடையக அடையாளங்காட்டி உள்ளது"
 
 msgid "E635: Invalid buffer identifier in insert"
-msgstr "பி635: செருகலில் தவறான இடையக அடையாளங்காட்டி"
+msgid "E635: செருகலில் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E636: Invalid buffer identifier in create"
-msgstr "பி636: உருவாக்கத்தில் தவறான இடையக அடையாளங்காட்டி"
+msgid "E636: உருவாக்கத்தில் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E637: Invalid buffer identifier in startDocumentListen"
-msgstr "பி637: startDocumentListen இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E637: startDocumentListen இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E638: Invalid buffer identifier in stopDocumentListen"
-msgstr "பி638: stopDocumentListen இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E638: stopDocumentListen இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E639: Invalid buffer identifier in setTitle"
-msgstr "பி639: setTitle இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E639: setTitle இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E640: Invalid buffer identifier in initDone"
-msgstr "பி640: initDone இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E640: initDone இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E641: Invalid buffer identifier in setBufferNumber"
-msgstr "பி641: setBufferNumber இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E641: setBufferNumber இல் தவறான இடையக அடையாளங்காட்டி"
 
 #, c-format
 msgid "E642: File %s not found in setBufferNumber"
-msgstr "பி642: %s கோப்பு setBufferNumber இல் காணப்படவில்லை"
+msgid "E642: %s கோப்பு setBufferNumber இல் காணப்படவில்லை"
 
 msgid "E643: Invalid buffer identifier in setFullName"
-msgstr "பி643: setFullName இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E643: setFullName இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E644: Invalid buffer identifier in editFile"
-msgstr "பி644: editFile இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E644: editFile இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E645: Invalid buffer identifier in setVisible"
-msgstr "பி645: setVisible இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E645: setVisible இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E646: Invalid buffer identifier in setModified"
-msgstr "பி646: setModified இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E646: setModified இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E647: Invalid buffer identifier in setDot"
-msgstr "பி647: setDot இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E647: setDot இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E648: Invalid buffer identifier in close"
-msgstr "பி648: தவறான இடையக அடையாளங்காட்டி நெருக்கமாக உள்ளது"
+msgid "E648: தவறான இடையக அடையாளங்காட்டி நெருக்கமாக உள்ளது"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
-msgstr "பி650: defineAnnoType இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E650: defineAnnoType இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E651: Invalid buffer identifier in addAnno"
-msgstr "பி651: addAnno இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E651: addAnno இல் தவறான இடையக அடையாளங்காட்டி"
 
 msgid "E652: Invalid buffer identifier in getAnno"
-msgstr "பி652: getAnno இல் தவறான இடையக அடையாளங்காட்டி"
+msgid "E652: getAnno இல் தவறான இடையக அடையாளங்காட்டி"
 
 #, c-format
 msgid "E654: Missing delimiter after search pattern: %s"
-msgstr "பி654: தேடல் முறைக்குப் பிறகு பிரிப்பான் இல்லை: %s"
+msgid "E654: தேடல் முறைக்குப் பிறகு பிரிப்பான் இல்லை: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
-msgstr "பி655: பல குறியீட்டு இணைப்புகள் (சுழற்சி?)"
+msgid "E655: பல குறியீட்டு இணைப்புகள் (சுழற்சி?)"
 
 msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans மாற்றப்படாத பஃபர்களை எழுத அனுமதிக்காது"
@@ -6369,55 +6369,55 @@ msgstr "NetBeans இடையகங்களுக்கு பகுதிய�
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %d"
-msgstr "பி658: %d இடையகத்திற்கான NetBeans இணைப்பு துண்டிக்கப்பட்டது"
+msgid "E658: %d இடையகத்திற்கான NetBeans இணைப்பு துண்டிக்கப்பட்டது"
 
 msgid "E659: Cannot invoke Python recursively"
-msgstr "பி659: பைத்தானை திரும்ப திரும்ப அழைக்க முடியாது"
+msgid "E659: பைத்தானை திரும்ப திரும்ப அழைக்க முடியாது"
 
 #, c-format
 msgid "E661: Sorry, no '%s' help for %s"
-msgstr "பி661: மன்னிக்கவும், %sக்கு '%s' உதவி இல்லை"
+msgid "E661: மன்னிக்கவும், %sக்கு '%s' உதவி இல்லை"
 
 msgid "E662: At start of changelist"
-msgstr "பி662: மாற்றப்பட்டியலின் தொடக்கத்தில்"
+msgid "E662: மாற்றப்பட்டியலின் தொடக்கத்தில்"
 
 msgid "E663: At end of changelist"
-msgstr "பி663: மாற்றப்பட்டியலின் முடிவில்"
+msgid "E663: மாற்றப்பட்டியலின் முடிவில்"
 
 msgid "E664: Changelist is empty"
-msgstr "பி664: மாற்றுப் பட்டியல் காலியாக உள்ளது"
+msgid "E664: மாற்றுப் பட்டியல் காலியாக உள்ளது"
 
 msgid "E665: Cannot start GUI, no valid font found"
-msgstr "பி665: GUI ஐத் தொடங்க முடியாது, சரியான எழுத்துரு இல்லை"
+msgid "E665: GUI ஐத் தொடங்க முடியாது, சரியான எழுத்துரு இல்லை"
 
 #, c-format
 msgid "E666: Compiler not supported: %s"
-msgstr "பி666: கம்பைலர் ஆதரிக்கப்படவில்லை: %s"
+msgid "E666: கம்பைலர் ஆதரிக்கப்படவில்லை: %s"
 
 msgid "E667: Fsync failed"
-msgstr "பி667: Fsync தோல்வியடைந்தது"
+msgid "E667: Fsync தோல்வியடைந்தது"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "பி668: NetBeans இணைப்புத் செய்தி கோப்புக்கான தவறான அணுகல் முறை: \"%s\""
+msgid "E668: NetBeans இணைப்புத் செய்தி கோப்புக்கான தவறான அணுகல் முறை: \"%s\""
 
 msgid "E669: Unprintable character in group name"
-msgstr "பி669: குழு பெயரில் அச்சிட முடியாத எழுத்து"
+msgid "E669: குழு பெயரில் அச்சிட முடியாத எழுத்து"
 
 #, c-format
 msgid "E670: Mix of help file encodings within a language: %s"
-msgstr "பி670: ஒரு மொழியில் உள்ள உதவி கோப்பு குறியாக்கங்களின் கலவை: %s"
+msgid "E670: ஒரு மொழியில் உள்ள உதவி கோப்பு குறியாக்கங்களின் கலவை: %s"
 
 #, c-format
 #| msgid "E447: Can't find file \"%s\" in path"
 msgid "E671: Cannot find window title \"%s\""
-msgstr "பி671: சாளர தலைப்பை \"%s\" கண்டுபிடிக்க முடியவில்லை"
+msgid "E671: சாளர தலைப்பை \"%s\" கண்டுபிடிக்க முடியவில்லை"
 
 msgid "E672: Unable to open window inside MDI application"
-msgstr "பி672: MDI பயன்பாட்டிற்குள் சாளரத்தைத் திறக்க முடியவில்லை"
+msgid "E672: MDI பயன்பாட்டிற்குள் சாளரத்தைத் திறக்க முடியவில்லை"
 
 msgid "E673: Incompatible multi-byte encoding and character set"
-msgstr "பி673: இணக்கமற்ற பல-பைட் குறியாக்கம் மற்றும் எழுத்துத் தொகுப்பு"
+msgid "E673: இணக்கமற்ற பல-பைட் குறியாக்கம் மற்றும் எழுத்துத் தொகுப்பு"
 
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
 msgstr ""
@@ -6434,104 +6434,104 @@ msgstr ""
 "E676: buftype=%s இடையகத்திற்கு பொருந்தக்கூடிய தன்னியக்க கட்டளைகள் இல்லை"
 
 msgid "E677: Error writing temp file"
-msgstr "பி677: தற்காலிக கோப்பை எழுதுவதில் பிழை"
+msgid "E677: தற்காலிக கோப்பை எழுதுவதில் பிழை"
 
 #, c-format
 msgid "E678: Invalid character after %s%%[dxouU]"
-msgstr "பி678: %s%%[dxouU]க்குப் பிறகு தவறான எழுத்து"
+msgid "E678: %s%%[dxouU]க்குப் பிறகு தவறான எழுத்து"
 
 msgid "E679: Recursive loop loading syncolor.vim"
-msgstr "பி679: ரிகர்சிவ் லூப் ஏற்றுதல் syncolor.vim"
+msgid "E679: ரிகர்சிவ் லூப் ஏற்றுதல் syncolor.vim"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number"
-msgstr "பி680: <buffer=%d>: தவறான இடையக எண்"
+msgid "E680: <buffer=%d>: தவறான இடையக எண்"
 
 msgid "E681: Buffer is not loaded"
-msgstr "பி681: தாங்கல் ஏற்றப்படவில்லை"
+msgid "E681: தாங்கல் ஏற்றப்படவில்லை"
 
 msgid "E682: Invalid search pattern or delimiter"
-msgstr "பி682: தவறான தேடல் முறை அல்லது பிரிப்பான்"
+msgid "E682: தவறான தேடல் முறை அல்லது பிரிப்பான்"
 
 msgid "E683: File name missing or invalid pattern"
-msgstr "பி683: கோப்பு பெயர் இல்லை அல்லது தவறான முறை"
+msgid "E683: கோப்பு பெயர் இல்லை அல்லது தவறான முறை"
 
 #, c-format
 msgid "E684: List index out of range: %ld"
-msgstr "பி684: பட்டியல் அட்டவணை வரம்பிற்கு வெளியே: %ld"
+msgid "E684: பட்டியல் அட்டவணை வரம்பிற்கு வெளியே: %ld"
 
 #, c-format
 #| msgid "E40: Can't open errorfile %s"
 msgid "E685: Internal error: %s"
-msgstr "பி685: உள் பிழை: %s"
+msgid "E685: உள் பிழை: %s"
 
 #, c-format
 msgid "E686: Argument of %s must be a List"
-msgstr "பி686: %s இன் மதிப்புரு ஒரு பட்டியலாக இருக்க வேண்டும்"
+msgid "E686: %s இன் மதிப்புரு ஒரு பட்டியலாக இருக்க வேண்டும்"
 
 msgid "E687: Less targets than List items"
-msgstr "பி687: பட்டியல் உருப்படிகளை விட குறைவான இலக்குகள்"
+msgid "E687: பட்டியல் உருப்படிகளை விட குறைவான இலக்குகள்"
 
 msgid "E688: More targets than List items"
-msgstr "பி688: பட்டியல் உருப்படிகளை விட அதிகமான இலக்குகள்"
+msgid "E688: பட்டியல் உருப்படிகளை விட அதிகமான இலக்குகள்"
 
 #, c-format
 msgid "E689: Index not allowed after a %s: %s"
-msgstr "பி689: %s: %sக்குப் பிறகு அட்டவணை அனுமதிக்கப்படவில்லை"
+msgid "E689: %s: %sக்குப் பிறகு அட்டவணை அனுமதிக்கப்படவில்லை"
 
 msgid "E690: Missing \"in\" after :for"
-msgstr "பி690: பின் \"in\" இல்லை: க்கு"
+msgid "E690: பின் \"in\" இல்லை: க்கு"
 
 msgid "E691: Can only compare List with List"
-msgstr "பி691: பட்டியலை பட்டியலுடன் மட்டுமே ஒப்பிட முடியும்"
+msgid "E691: பட்டியலை பட்டியலுடன் மட்டுமே ஒப்பிட முடியும்"
 
 msgid "E692: Invalid operation for List"
-msgstr "பி692: பட்டியலுக்கான தவறான செயல்பாடு"
+msgid "E692: பட்டியலுக்கான தவறான செயல்பாடு"
 
 #, c-format
 msgid "E693: Class or class typealias required for argument %d"
-msgstr "பி693: உரையாடல் %dக்கு வகுப்பு அல்லது வகுப்பு வகைப்பாடுகள் தேவை"
+msgid "E693: உரையாடல் %dக்கு வகுப்பு அல்லது வகுப்பு வகைப்பாடுகள் தேவை"
 
 msgid "E694: Invalid operation for Funcrefs"
-msgstr "பி694: Funcrefs க்கான தவறான செயல்பாடு"
+msgid "E694: Funcrefs க்கான தவறான செயல்பாடு"
 
 msgid "E695: Cannot index a Funcref"
-msgstr "பி695: Funcref ஐ அட்டவணைப்படுத்த முடியாது"
+msgid "E695: Funcref ஐ அட்டவணைப்படுத்த முடியாது"
 
 #, c-format
 msgid "E696: Missing comma in List: %s"
-msgstr "பி696: பட்டியலில் காற்புள்ளி இல்லை: %s"
+msgid "E696: பட்டியலில் காற்புள்ளி இல்லை: %s"
 
 #, c-format
 msgid "E697: Missing end of List ']': %s"
-msgstr "பி697: பட்டியலின் முடிவு விடுபட்டது ']': %s"
+msgid "E697: பட்டியலின் முடிவு விடுபட்டது ']': %s"
 
 msgid "E698: Variable nested too deep for making a copy"
-msgstr "பி698: நகலை உருவாக்குவதற்கு மாறி மிகவும் ஆழமாக உள்ளமைக்கப்பட்டுள்ளது"
+msgid "E698: நகலை உருவாக்குவதற்கு மாறி மிகவும் ஆழமாக உள்ளமைக்கப்பட்டுள்ளது"
 
 msgid "E699: Too many arguments"
-msgstr "பி699: பல வாதங்கள்"
+msgid "E699: பல வாதங்கள்"
 
 #, c-format
 msgid "E700: Unknown function: %s"
-msgstr "பி700: அறியப்படாத செயல்பாடு: %s"
+msgid "E700: அறியப்படாத செயல்பாடு: %s"
 
 msgid "E701: Invalid type for len()"
-msgstr "பி701: len()க்கான தவறான வகை"
+msgid "E701: len()க்கான தவறான வகை"
 
 msgid "E702: Sort compare function failed"
-msgstr "பி702: வரிசைப்படுத்தல் ஒப்பீட்டு செயல்பாடு தோல்வியடைந்தது"
+msgid "E702: வரிசைப்படுத்தல் ஒப்பீட்டு செயல்பாடு தோல்வியடைந்தது"
 
 msgid "E703: Using a Funcref as a Number"
-msgstr "பி703: Funcref ஐ எண்ணாகப் பயன்படுத்துதல்"
+msgid "E703: Funcref ஐ எண்ணாகப் பயன்படுத்துதல்"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "பி704: Funcref மாறியின் பெயர் ஒரு மூலதனத்துடன் தொடங்க வேண்டும்: %s"
+msgid "E704: Funcref மாறியின் பெயர் ஒரு மூலதனத்துடன் தொடங்க வேண்டும்: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "பி705: மாறி பெயர் தற்போதுள்ள செயல்பாட்டுடன் முரண்படுகிறது: %s"
+msgid "E705: மாறி பெயர் தற்போதுள்ள செயல்பாட்டுடன் முரண்படுகிறது: %s"
 
 #, c-format
 msgid "E706: Argument of %s must be a List, String or Dictionary"
@@ -6540,146 +6540,146 @@ msgstr ""
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
-msgstr "பி707: செயல்பாட்டு பெயர் மாறியுடன் முரண்படுகிறது: %s"
+msgid "E707: செயல்பாட்டு பெயர் மாறியுடன் முரண்படுகிறது: %s"
 
 msgid "E708: [:] must come last"
-msgstr "பி708: [:] கடைசியாக வர வேண்டும்"
+msgid "E708: [:] கடைசியாக வர வேண்டும்"
 
 msgid "E709: [:] requires a List or Blob value"
-msgstr "பி709: [:] க்கு பட்டியல் அல்லது ப்ளாப் மதிப்பு தேவை"
+msgid "E709: [:] க்கு பட்டியல் அல்லது ப்ளாப் மதிப்பு தேவை"
 
 msgid "E710: List value has more items than targets"
-msgstr "பி710: பட்டியல் மதிப்பில் இலக்குகளை விட அதிகமான உருப்படிகள் உள்ளன"
+msgid "E710: பட்டியல் மதிப்பில் இலக்குகளை விட அதிகமான உருப்படிகள் உள்ளன"
 
 msgid "E711: List value does not have enough items"
-msgstr "பி711: பட்டியல் மதிப்பில் போதுமான உருப்படிகள் இல்லை"
+msgid "E711: பட்டியல் மதிப்பில் போதுமான உருப்படிகள் இல்லை"
 
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "பி712: %s இன் மதிப்புரு ஒரு பட்டியல் அல்லது அகராதியாக இருக்க வேண்டும்"
+msgid "E712: %s இன் மதிப்புரு ஒரு பட்டியல் அல்லது அகராதியாக இருக்க வேண்டும்"
 
 #| msgid "E214: Can't find temp file for writing"
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "பி713: அகராதிக்கு வெற்று விசையைப் பயன்படுத்த முடியாது"
+msgid "E713: அகராதிக்கு வெற்று விசையைப் பயன்படுத்த முடியாது"
 
 msgid "E714: List required"
-msgstr "பி714: பட்டியல் தேவை"
+msgid "E714: பட்டியல் தேவை"
 
 msgid "E715: Dictionary required"
-msgstr "பி715: அகராதி தேவை"
+msgid "E715: அகராதி தேவை"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
-msgstr "பி716: அகராதியில் இல்லை: \"%s\""
+msgid "E716: அகராதியில் இல்லை: \"%s\""
 
 msgid "E717: Dictionary entry already exists"
-msgstr "பி717: அகராதி உள்ளீடு ஏற்கனவே உள்ளது"
+msgid "E717: அகராதி உள்ளீடு ஏற்கனவே உள்ளது"
 
 msgid "E718: Funcref required"
-msgstr "பி718: Funcref தேவை"
+msgid "E718: Funcref தேவை"
 
 msgid "E719: Cannot slice a Dictionary"
-msgstr "பி719: அகராதியை வெட்ட முடியாது"
+msgid "E719: அகராதியை வெட்ட முடியாது"
 
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
-msgstr "பி720: அகராதியில் இல்லை பெருங்குடல்: %s"
+msgid "E720: அகராதியில் இல்லை பெருங்குடல்: %s"
 
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "பி721: அகராதியில் நகல் விசை: \"%s\""
+msgid "E721: அகராதியில் நகல் விசை: \"%s\""
 
 #, c-format
 msgid "E722: Missing comma in Dictionary: %s"
-msgstr "பி722: அகராதியில் காற்புள்ளி இல்லை: %s"
+msgid "E722: அகராதியில் காற்புள்ளி இல்லை: %s"
 
 #, c-format
 msgid "E723: Missing end of Dictionary '}': %s"
-msgstr "பி723: '}' அகராதியின் முடிவு காணவில்லை: %s"
+msgid "E723: '}' அகராதியின் முடிவு காணவில்லை: %s"
 
 msgid "E724: Variable nested too deep for displaying"
-msgstr "பி724: மாறி காட்டுவதற்கு மிகவும் ஆழமாக உள்ளமை"
+msgid "E724: மாறி காட்டுவதற்கு மிகவும் ஆழமாக உள்ளமை"
 
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
-msgstr "பி725: அகராதி இல்லாமல் டிக்ட் செயல்பாட்டை அழைக்கிறது: %s"
+msgid "E725: அகராதி இல்லாமல் டிக்ட் செயல்பாட்டை அழைக்கிறது: %s"
 
 msgid "E726: Stride is zero"
-msgstr "பி726: ச்ட்ரைட் சுழியம்"
+msgid "E726: ச்ட்ரைட் சுழியம்"
 
 msgid "E727: Start past end"
-msgstr "பி727: ச்டார்ட் பாச்ட் எண்ட்"
+msgid "E727: ச்டார்ட் பாச்ட் எண்ட்"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "பி728: அகராதியை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E728: அகராதியை எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E729: Using a Funcref as a String"
-msgstr "பி729: Funcref ஐ ஒரு சரமாகப் பயன்படுத்துதல்"
+msgid "E729: Funcref ஐ ஒரு சரமாகப் பயன்படுத்துதல்"
 
 msgid "E730: Using a List as a String"
-msgstr "பி730: பட்டியலை ஒரு சரமாகப் பயன்படுத்துதல்"
+msgid "E730: பட்டியலை ஒரு சரமாகப் பயன்படுத்துதல்"
 
 msgid "E731: Using a Dictionary as a String"
-msgstr "பி731: அகராதியை சரமாகப் பயன்படுத்துதல்"
+msgid "E731: அகராதியை சரமாகப் பயன்படுத்துதல்"
 
 msgid "E732: Using :endfor with :while"
-msgstr "பி732: :endfor உடன் :while ஐப் பயன்படுத்துதல்"
+msgid "E732: :endfor உடன் :while ஐப் பயன்படுத்துதல்"
 
 msgid "E733: Using :endwhile with :for"
-msgstr "பி733: பயன்படுத்தி :endwhile உடன் :for"
+msgid "E733: பயன்படுத்தி :endwhile உடன் :for"
 
 #, c-format
 #| msgid "E738: Can't list variables for %s"
 msgid "E734: Wrong variable type for %s="
-msgstr "பி734: %s= க்கான தவறான மாறி வகை"
+msgid "E734: %s= க்கான தவறான மாறி வகை"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "பி735: அகராதியுடன் மட்டுமே அகராதியை ஒப்பிட முடியும்"
+msgid "E735: அகராதியுடன் மட்டுமே அகராதியை ஒப்பிட முடியும்"
 
 msgid "E736: Invalid operation for Dictionary"
-msgstr "பி736: அகராதிக்கான தவறான செயல்பாடு"
+msgid "E736: அகராதிக்கான தவறான செயல்பாடு"
 
 #, c-format
 msgid "E737: Key already exists: %s"
-msgstr "பி737: விசை ஏற்கனவே உள்ளது: %s"
+msgid "E737: விசை ஏற்கனவே உள்ளது: %s"
 
 #, c-format
 msgid "E738: Can't list variables for %s"
-msgstr "பி738: %sக்கான மாறிகளை பட்டியலிட முடியாது"
+msgid "E738: %sக்கான மாறிகளை பட்டியலிட முடியாது"
 
 #, c-format
 #| msgid "E482: Can't create file %s"
 msgid "E739: Cannot create directory: %s"
-msgstr "பி739: கோப்பகத்தை உருவாக்க முடியாது: %s"
+msgid "E739: கோப்பகத்தை உருவாக்க முடியாது: %s"
 
 #, c-format
 msgid "E740: Too many arguments for function %s"
-msgstr "பி740: செயல்பாடு %s க்கு அதிகமான வாதங்கள்"
+msgid "E740: செயல்பாடு %s க்கு அதிகமான வாதங்கள்"
 
 msgid "E741: Value is locked"
-msgstr "பி741: மதிப்பு பூட்டப்பட்டுள்ளது"
+msgid "E741: மதிப்பு பூட்டப்பட்டுள்ளது"
 
 #, c-format
 msgid "E741: Value is locked: %s"
-msgstr "பி741: மதிப்பு பூட்டப்பட்டுள்ளது: %s"
+msgid "E741: மதிப்பு பூட்டப்பட்டுள்ளது: %s"
 
 #| msgid "E482: Can't create file %s"
 msgid "E742: Cannot change value"
-msgstr "பி742: மதிப்பை மாற்ற முடியாது"
+msgid "E742: மதிப்பை மாற்ற முடியாது"
 
 #, c-format
 #| msgid "E482: Can't create file %s"
 msgid "E742: Cannot change value of %s"
-msgstr "பி742: %s இன் மதிப்பை மாற்ற முடியாது"
+msgid "E742: %s இன் மதிப்பை மாற்ற முடியாது"
 
 msgid "E743: Variable nested too deep for (un)lock"
-msgstr "பி743: மாறி பூட்டுவதற்கு மிகவும் ஆழமாக உள்ளமை"
+msgid "E743: மாறி பூட்டுவதற்கு மிகவும் ஆழமாக உள்ளமை"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
-msgstr "பி744: NetBeans படிக்க-மட்டும் கோப்புகளில் மாற்றங்களை அனுமதிக்காது"
+msgid "E744: NetBeans படிக்க-மட்டும் கோப்புகளில் மாற்றங்களை அனுமதிக்காது"
 
 msgid "E745: Using a List as a Number"
-msgstr "பி745: பட்டியலை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E745: பட்டியலை எண்ணாகப் பயன்படுத்துதல்"
 
 #, c-format
 #| msgid "E781: .sug file doesn't match .spl file: %s"
@@ -6694,53 +6694,53 @@ msgstr ""
 "மேலெழுத)"
 
 msgid "E748: No previously used register"
-msgstr "பி748: முன்பு பயன்படுத்தப்பட்ட பதிவு இல்லை"
+msgid "E748: முன்பு பயன்படுத்தப்பட்ட பதிவு இல்லை"
 
 msgid "E749: Empty buffer"
-msgstr "பி749: வெற்று தாங்கல்"
+msgid "E749: வெற்று தாங்கல்"
 
 msgid "E750: First use \":profile start {fname}\""
-msgstr "பி750: முதலில் பயன்படுத்தவும் \":profile தொடங்கு {fname}\""
+msgid "E750: முதலில் பயன்படுத்தவும் \":profile தொடங்கு {fname}\""
 
 msgid "E751: Output file name must not have region name"
-msgstr "பி751: அவுட்புட் கோப்பின் பெயரில் பிராந்தியப் பெயர் இருக்கக்கூடாது"
+msgid "E751: அவுட்புட் கோப்பின் பெயரில் பிராந்தியப் பெயர் இருக்கக்கூடாது"
 
 msgid "E752: No previous spell replacement"
-msgstr "பி752: முந்தைய எழுத்துப்பிழை மாற்றீடு இல்லை"
+msgid "E752: முந்தைய எழுத்துப்பிழை மாற்றீடு இல்லை"
 
 #, c-format
 msgid "E753: Not found: %s"
-msgstr "பி753: காணப்படவில்லை: %s"
+msgid "E753: காணப்படவில்லை: %s"
 
 #, c-format
 msgid "E754: Only up to %d regions supported"
-msgstr "பி754: %d பகுதிகள் வரை மட்டுமே ஆதரிக்கப்படுகிறது"
+msgid "E754: %d பகுதிகள் வரை மட்டுமே ஆதரிக்கப்படுகிறது"
 
 #, c-format
 msgid "E755: Invalid region in %s"
-msgstr "பி755: %s இல் தவறான பகுதி"
+msgid "E755: %s இல் தவறான பகுதி"
 
 msgid "E756: Spell checking is not possible"
-msgstr "பி756: எழுத்துப்பிழை சரிபார்ப்பு சாத்தியமில்லை"
+msgid "E756: எழுத்துப்பிழை சரிபார்ப்பு சாத்தியமில்லை"
 
 msgid "E757: This does not look like a spell file"
-msgstr "பி757: இது எழுத்துப்பிழை கோப்பு போல் இல்லை"
+msgid "E757: இது எழுத்துப்பிழை கோப்பு போல் இல்லை"
 
 msgid "E758: Truncated spell file"
-msgstr "பி758: துண்டிக்கப்பட்ட எழுத்துப்பிழை கோப்பு"
+msgid "E758: துண்டிக்கப்பட்ட எழுத்துப்பிழை கோப்பு"
 
 msgid "E759: Format error in spell file"
-msgstr "பி759: எழுத்துப்பிழை கோப்பில் வடிவமைப்பு பிழை"
+msgid "E759: எழுத்துப்பிழை கோப்பில் வடிவமைப்பு பிழை"
 
 #, c-format
 msgid "E760: No word count in %s"
-msgstr "பி760: %s இல் சொல் எண்ணிக்கை இல்லை"
+msgid "E760: %s இல் சொல் எண்ணிக்கை இல்லை"
 
 msgid "E761: Format error in affix file FOL, LOW or UPP"
-msgstr "பி761: FOL, LOW அல்லது UPP இணைப்புக் கோப்பில் வடிவமைப்பு பிழை"
+msgid "E761: FOL, LOW அல்லது UPP இணைப்புக் கோப்பில் வடிவமைப்பு பிழை"
 
 msgid "E762: Character in FOL, LOW or UPP is out of range"
-msgstr "பி762: FOL, LOW அல்லது UPP இல் உள்ள எழுத்து வரம்பிற்கு வெளியே உள்ளது"
+msgid "E762: FOL, LOW அல்லது UPP இல் உள்ள எழுத்து வரம்பிற்கு வெளியே உள்ளது"
 
 msgid "E763: Word characters differ between spell files"
 msgstr ""
@@ -6748,137 +6748,137 @@ msgstr ""
 
 #, c-format
 msgid "E764: Option '%s' is not set"
-msgstr "பி764: விருப்பம் '%s' அமைக்கப்படவில்லை"
+msgid "E764: விருப்பம் '%s' அமைக்கப்படவில்லை"
 
 #, c-format
 msgid "E765: 'spellfile' does not have %d entries"
-msgstr "பி765: 'ச்பெல்ஃபைல்' %d உள்ளீடுகளைக் கொண்டிருக்கவில்லை"
+msgid "E765: 'ச்பெல்ஃபைல்' %d உள்ளீடுகளைக் கொண்டிருக்கவில்லை"
 
 msgid "E766: Insufficient arguments for printf()"
-msgstr "பி766: printf()க்கு போதுமான வாதங்கள் இல்லை"
+msgid "E766: printf()க்கு போதுமான வாதங்கள் இல்லை"
 
 msgid "E767: Too many arguments for printf()"
-msgstr "பி767: printf()க்கு அதிகமான வாதங்கள்"
+msgid "E767: printf()க்கு அதிகமான வாதங்கள்"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "பி768: ச்வாப் கோப்பு உள்ளது: %s (:silent! overrides)"
+msgid "E768: ச்வாப் கோப்பு உள்ளது: %s (:silent! overrides)"
 
 #, c-format
 msgid "E769: Missing ] after %s["
-msgstr "பி769: %sக்குப் பிறகு ] காணவில்லை["
+msgid "E769: %sக்குப் பிறகு ] காணவில்லை["
 
 msgid "E770: Unsupported section in spell file"
-msgstr "பி770: எழுத்துப்பிழை கோப்பில் ஆதரிக்கப்படாத பிரிவு"
+msgid "E770: எழுத்துப்பிழை கோப்பில் ஆதரிக்கப்படாத பிரிவு"
 
 msgid "E771: Old spell file, needs to be updated"
-msgstr "பி771: பழைய எழுத்துப்பிழை கோப்பு, புதுப்பிக்கப்பட வேண்டும்"
+msgid "E771: பழைய எழுத்துப்பிழை கோப்பு, புதுப்பிக்கப்பட வேண்டும்"
 
 msgid "E772: Spell file is for newer version of Vim"
-msgstr "பி772: எழுத்துப்பிழை கோப்பு Vim இன் புதிய பதிப்பிற்கானது"
+msgid "E772: எழுத்துப்பிழை கோப்பு Vim இன் புதிய பதிப்பிற்கானது"
 
 #, c-format
 msgid "E773: Symlink loop for \"%s\""
-msgstr "பி773: \"%s\"க்கான சிம்லிங்க் லூப்"
+msgid "E773: \"%s\"க்கான சிம்லிங்க் லூப்"
 
 msgid "E774: 'operatorfunc' is empty"
-msgstr "பி774: 'operatorfunc' காலியாக உள்ளது"
+msgid "E774: 'operatorfunc' காலியாக உள்ளது"
 
 msgid "E775: Eval feature not available"
-msgstr "பி775: Eval நற்பொருத்தம் கிடைக்கவில்லை"
+msgid "E775: Eval நற்பொருத்தம் கிடைக்கவில்லை"
 
 msgid "E776: No location list"
-msgstr "பி776: இருப்பிடப் பட்டியல் இல்லை"
+msgid "E776: இருப்பிடப் பட்டியல் இல்லை"
 
 msgid "E777: String or List expected"
-msgstr "பி777: சரம் அல்லது பட்டியல் எதிர்பார்க்கப்படுகிறது"
+msgid "E777: சரம் அல்லது பட்டியல் எதிர்பார்க்கப்படுகிறது"
 
 #, c-format
 #| msgid "E781: .sug file doesn't match .spl file: %s"
 msgid "E778: This does not look like a .sug file: %s"
-msgstr "பி778: இது .sug கோப்பு போல் இல்லை: %s"
+msgid "E778: இது .sug கோப்பு போல் இல்லை: %s"
 
 #, c-format
 msgid "E779: Old .sug file, needs to be updated: %s"
-msgstr "பி779: பழைய .sug கோப்பு, புதுப்பிக்கப்பட வேண்டும்: %s"
+msgid "E779: பழைய .sug கோப்பு, புதுப்பிக்கப்பட வேண்டும்: %s"
 
 #, c-format
 msgid "E780: .sug file is for newer version of Vim: %s"
-msgstr "பி780: .sug கோப்பு Vim இன் புதிய பதிப்பு: %s"
+msgid "E780: .sug கோப்பு Vim இன் புதிய பதிப்பு: %s"
 
 #, c-format
 msgid "E781: .sug file doesn't match .spl file: %s"
-msgstr "பி781: .sug கோப்பு .spl கோப்புடன் பொருந்தவில்லை: %s"
+msgid "E781: .sug கோப்பு .spl கோப்புடன் பொருந்தவில்லை: %s"
 
 #, c-format
 msgid "E782: Error while reading .sug file: %s"
-msgstr "பி782: .sug கோப்பைப் படிக்கும்போது பிழை: %s"
+msgid "E782: .sug கோப்பைப் படிக்கும்போது பிழை: %s"
 
 msgid "E783: Duplicate char in MAP entry"
-msgstr "பி783: MAP உள்ளீட்டில் நகல் எழுத்து"
+msgid "E783: MAP உள்ளீட்டில் நகல் எழுத்து"
 
 msgid "E784: Cannot close last tab page"
-msgstr "பி784: கடைசி தாவல் பக்கத்தை மூட முடியாது"
+msgid "E784: கடைசி தாவல் பக்கத்தை மூட முடியாது"
 
 msgid "E785: complete() can only be used in Insert mode"
-msgstr "பி785: முழுமையான()ஐ செருகும் பயன்முறையில் மட்டுமே பயன்படுத்த முடியும்"
+msgid "E785: முழுமையான()ஐ செருகும் பயன்முறையில் மட்டுமே பயன்படுத்த முடியும்"
 
 msgid "E786: Range not allowed"
-msgstr "பி786: வரம்பு அனுமதிக்கப்படவில்லை"
+msgid "E786: வரம்பு அனுமதிக்கப்படவில்லை"
 
 msgid "E787: Buffer changed unexpectedly"
-msgstr "பி787: தாங்கல் எதிர்பாராத விதமாக மாறியது"
+msgid "E787: தாங்கல் எதிர்பாராத விதமாக மாறியது"
 
 msgid "E788: Not allowed to edit another buffer now"
-msgstr "பி788: இப்போது மற்றொரு இடையகத்தைத் திருத்த அனுமதிக்கப்படவில்லை"
+msgid "E788: இப்போது மற்றொரு இடையகத்தைத் திருத்த அனுமதிக்கப்படவில்லை"
 
 #, c-format
 msgid "E789: Missing ']': %s"
-msgstr "பி789: விடுபட்ட ']': %s"
+msgid "E789: விடுபட்ட ']': %s"
 
 msgid "E790: undojoin is not allowed after undo"
-msgstr "பி790: செயல்தவிர்த்த பிறகு undojoin அனுமதிக்கப்படாது"
+msgid "E790: செயல்தவிர்த்த பிறகு undojoin அனுமதிக்கப்படாது"
 
 msgid "E791: Empty keymap entry"
-msgstr "பி791: வெற்று விசை வரைபட நுழைவு"
+msgid "E791: வெற்று விசை வரைபட நுழைவு"
 
 msgid "E792: Empty menu name"
-msgstr "பி792: வெற்று பட்டியல் பெயர்"
+msgid "E792: வெற்று பட்டியல் பெயர்"
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "பி793: டிஃப் பயன்முறையில் வேறு எந்த இடையகமும் மாற்ற முடியாது"
+msgid "E793: டிஃப் பயன்முறையில் வேறு எந்த இடையகமும் மாற்ற முடியாது"
 
 #| msgid "E738: Can't list variables for %s"
 msgid "E794: Cannot set variable in the sandbox"
-msgstr "பி794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது"
+msgid "E794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது"
 
 #, c-format
 #| msgid "E738: Can't list variables for %s"
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "பி794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது: \"%s\""
+msgid "E794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது: \"%s\""
 
 #| msgid "E207: Can't delete backup file"
 msgid "E795: Cannot delete variable"
-msgstr "பி795: மாறியை நீக்க முடியாது"
+msgid "E795: மாறியை நீக்க முடியாது"
 
 #, c-format
 #| msgid "E738: Can't list variables for %s"
 msgid "E795: Cannot delete variable %s"
-msgstr "பி795: மாறி %s ஐ நீக்க முடியாது"
+msgid "E795: மாறி %s ஐ நீக்க முடியாது"
 
 msgid "writing to device disabled with 'opendevice' option"
 msgstr "'opendevice' விருப்பத்துடன் சாதனத்திற்கு எழுதுதல் முடக்கப்பட்டது"
 
 msgid "E797: SpellFileMissing autocommand deleted buffer"
-msgstr "பி797: SpellFileMissing autocommand நீக்கப்பட்ட தாங்கல்"
+msgid "E797: SpellFileMissing autocommand நீக்கப்பட்ட தாங்கல்"
 
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
-msgstr "பி798: அடையாளம் \":match\"க்கு ஒதுக்கப்பட்டுள்ளது: %d"
+msgid "E798: அடையாளம் \":match\"க்கு ஒதுக்கப்பட்டுள்ளது: %d"
 
 #, c-format
 msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr "பி799: தவறான ஐடி: %d (1ஐ விட அதிகமாகவோ அல்லது சமமாகவோ இருக்க வேண்டும்)"
+msgid "E799: தவறான ஐடி: %d (1ஐ விட அதிகமாகவோ அல்லது சமமாகவோ இருக்க வேண்டும்)"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr ""
@@ -6886,51 +6886,51 @@ msgstr ""
 
 #, c-format
 msgid "E801: ID already taken: %d"
-msgstr "பி801: அடையாளம் ஏற்கனவே எடுக்கப்பட்டது: %d"
+msgid "E801: அடையாளம் ஏற்கனவே எடுக்கப்பட்டது: %d"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr "பி802: தவறான ஐடி: %d (1ஐ விட அதிகமாகவோ அல்லது சமமாகவோ இருக்க வேண்டும்)"
+msgid "E802: தவறான ஐடி: %d (1ஐ விட அதிகமாகவோ அல்லது சமமாகவோ இருக்க வேண்டும்)"
 
 #, c-format
 msgid "E803: ID not found: %d"
-msgstr "பி803: அடையாளம் கிடைக்கவில்லை: %d"
+msgid "E803: அடையாளம் கிடைக்கவில்லை: %d"
 
 #, no-c-format
 msgid "E804: Cannot use '%' with Float"
-msgstr "பி804: Float உடன் '%' ஐப் பயன்படுத்த முடியாது"
+msgid "E804: Float உடன் '%' ஐப் பயன்படுத்த முடியாது"
 
 msgid "E805: Using a Float as a Number"
-msgstr "பி805: ஒரு மிதவையை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E805: ஒரு மிதவையை எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E806: Using a Float as a String"
-msgstr "பி806: ஃப்ளோட்டை சரமாகப் பயன்படுத்துதல்"
+msgid "E806: ஃப்ளோட்டை சரமாகப் பயன்படுத்துதல்"
 
 msgid "E807: Expected Float argument for printf()"
-msgstr "பி807: printf()க்கு எதிர்பார்க்கப்படும் மிதவை உரையாடல்"
+msgid "E807: printf()க்கு எதிர்பார்க்கப்படும் மிதவை உரையாடல்"
 
 #| msgid "E1022: Type or initialization required"
 msgid "E808: Number or Float required"
-msgstr "பி808: எண் அல்லது மிதவை தேவை"
+msgid "E808: எண் அல்லது மிதவை தேவை"
 
 msgid "E809: #< is not available without the +eval feature"
-msgstr "பி809: +eval நற்பொருத்தம் இல்லாமல் #< கிடைக்காது"
+msgid "E809: +eval நற்பொருத்தம் இல்லாமல் #< கிடைக்காது"
 
 #| msgid "E482: Can't create file %s"
 msgid "E810: Cannot read or write temp files"
-msgstr "பி810: தற்காலிக கோப்புகளைப் படிக்கவோ எழுதவோ முடியாது"
+msgid "E810: தற்காலிக கோப்புகளைப் படிக்கவோ எழுதவோ முடியாது"
 
 msgid "E811: Not allowed to change buffer information now"
-msgstr "பி811: இப்போது இடையக தகவலை மாற்ற அனுமதிக்கப்படவில்லை"
+msgid "E811: இப்போது இடையக தகவலை மாற்ற அனுமதிக்கப்படவில்லை"
 
 msgid "E812: Autocommands changed buffer or buffer name"
-msgstr "பி812: தன்னியக்க கட்டளைகள் இடையக அல்லது இடையகப் பெயரை மாற்றின"
+msgid "E812: தன்னியக்க கட்டளைகள் இடையக அல்லது இடையகப் பெயரை மாற்றின"
 
 msgid "E813: Cannot close autocmd or popup window"
-msgstr "பி813: autocmd அல்லது மேல்தோன்றல் சாளரத்தை மூட முடியாது"
+msgid "E813: autocmd அல்லது மேல்தோன்றல் சாளரத்தை மூட முடியாது"
 
 msgid "E814: Cannot close window, only autocmd window would remain"
-msgstr "பி814: சாளரத்தை மூட முடியாது, autocmd சாளரம் மட்டுமே இருக்கும்"
+msgid "E814: சாளரத்தை மூட முடியாது, autocmd சாளரம் மட்டுமே இருக்கும்"
 
 msgid ""
 "E815: Sorry, this command is disabled, the MzScheme libraries could not be "
@@ -6940,63 +6940,63 @@ msgstr ""
 "முடியவில்லை."
 
 msgid "E816: Cannot read patch output"
-msgstr "பி816: ஒட்டு வெளியீட்டைப் படிக்க முடியாது"
+msgid "E816: ஒட்டு வெளியீட்டைப் படிக்க முடியாது"
 
 msgid "E817: Blowfish big/little endian use wrong"
-msgstr "பி817: ப்ளோஃபிச் பெரிய/சிறிய எண்டியன் பயன்பாடு தவறானது"
+msgid "E817: ப்ளோஃபிச் பெரிய/சிறிய எண்டியன் பயன்பாடு தவறானது"
 
 msgid "E818: sha256 test failed"
-msgstr "பி818: sha256 சோதனை தோல்வியடைந்தது"
+msgid "E818: sha256 சோதனை தோல்வியடைந்தது"
 
 #| msgid "E818: sha256 test failed"
 msgid "E819: Blowfish test failed"
-msgstr "பி819: ப்ளோஃபிச் சோதனை தோல்வியடைந்தது"
+msgid "E819: ப்ளோஃபிச் சோதனை தோல்வியடைந்தது"
 
 msgid "E820: sizeof(uint32_t) != 4"
-msgstr "பி820: sizeof(uint32_t) != 4"
+msgid "E820: sizeof(uint32_t) != 4"
 
 msgid "E821: File is encrypted with unknown method"
-msgstr "பி821: கோப்பு அறியப்படாத முறையில் குறியாக்கம் செய்யப்பட்டுள்ளது"
+msgid "E821: கோப்பு அறியப்படாத முறையில் குறியாக்கம் செய்யப்பட்டுள்ளது"
 
 #, c-format
 #| msgid "E212: Can't open file for writing"
 msgid "E822: Cannot open undo file for reading: %s"
-msgstr "பி822: படிப்பதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
+msgid "E822: படிப்பதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
 
 #, c-format
 #| msgid "E484: Can't open file %s"
 msgid "E823: Not an undo file: %s"
-msgstr "பி823: செயல்தவிர்க்கும் கோப்பு அல்ல: %s"
+msgid "E823: செயல்தவிர்க்கும் கோப்பு அல்ல: %s"
 
 #, c-format
 #| msgid "E484: Can't open file %s"
 msgid "E824: Incompatible undo file: %s"
-msgstr "பி824: இணக்கமற்ற செயல்தவிர் கோப்பு: %s"
+msgid "E824: இணக்கமற்ற செயல்தவிர் கோப்பு: %s"
 
 #, c-format
 msgid "E825: Corrupted undo file (%s): %s"
-msgstr "பி825: சிதைந்த செயல்தவிர் கோப்பு (%s): %s"
+msgid "E825: சிதைந்த செயல்தவிர் கோப்பு (%s): %s"
 
 #, c-format
 msgid "E826: Undo file decryption failed: %s"
-msgstr "பி826: கோப்பு மறைகுறியாக்கத்தை செயல்தவிர்க்க முடியவில்லை: %s"
+msgid "E826: கோப்பு மறைகுறியாக்கத்தை செயல்தவிர்க்க முடியவில்லை: %s"
 
 #, c-format
 msgid "E827: Undo file is encrypted: %s"
-msgstr "பி827: செயல்தவிர் கோப்பு என்க்ரிப்ட் செய்யப்பட்டது: %s"
+msgid "E827: செயல்தவிர் கோப்பு என்க்ரிப்ட் செய்யப்பட்டது: %s"
 
 #, c-format
 #| msgid "E212: Can't open file for writing"
 msgid "E828: Cannot open undo file for writing: %s"
-msgstr "பி828: எழுதுவதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
+msgid "E828: எழுதுவதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
 
 #, c-format
 msgid "E829: Write error in undo file: %s"
-msgstr "பி829: செயல்தவிர் கோப்பில் எழுதும் பிழை: %s"
+msgid "E829: செயல்தவிர் கோப்பில் எழுதும் பிழை: %s"
 
 #, c-format
 msgid "E830: Undo number %ld not found"
-msgstr "பி830: செயல்தவிர் எண் %ld கிடைக்கவில்லை"
+msgid "E830: செயல்தவிர் எண் %ld கிடைக்கவில்லை"
 
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
@@ -7012,23 +7012,23 @@ msgstr ""
 "குறியாக்கத்தை ஆதரிக்காது"
 
 msgid "E834: Conflicts with value of 'listchars'"
-msgstr "பி834: 'listchars' மதிப்புடன் மோதல்கள்"
+msgid "E834: 'listchars' மதிப்புடன் மோதல்கள்"
 
 msgid "E835: Conflicts with value of 'fillchars'"
-msgstr "பி835: 'ஃபில்சார்ச்' மதிப்புடன் மோதல்கள்"
+msgid "E835: 'ஃபில்சார்ச்' மதிப்புடன் மோதல்கள்"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
-msgstr "பி836: இந்த Vim :py3 ஐப் பயன்படுத்திய பிறகு :python ஐ இயக்க முடியாது"
+msgid "E836: இந்த Vim :py3 ஐப் பயன்படுத்திய பிறகு :python ஐ இயக்க முடியாது"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr "பி837: இந்த Vim :python ஐப் பயன்படுத்திய பிறகு :py3 ஐ இயக்க முடியாது"
+msgid "E837: இந்த Vim :python ஐப் பயன்படுத்திய பிறகு :py3 ஐ இயக்க முடியாது"
 
 #| msgid "netbeans is not supported with this GUI\n"
 msgid "E838: NetBeans is not supported with this GUI"
-msgstr "பி838: இந்த GUI உடன் NetBeans ஆதரிக்கப்படவில்லை"
+msgid "E838: இந்த GUI உடன் NetBeans ஆதரிக்கப்படவில்லை"
 
 msgid "E840: Completion function deleted text"
-msgstr "பி840: நிறைவுச் செயல்பாடு நீக்கப்பட்ட உரை"
+msgid "E840: நிறைவுச் செயல்பாடு நீக்கப்பட்ட உரை"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr ""
@@ -7036,48 +7036,48 @@ msgstr ""
 "பயன்படுத்த முடியாது"
 
 msgid "E842: No line number to use for \"<slnum>\""
-msgstr "பி842: \"<slnum>\"க்கு பயன்படுத்த வரி எண் இல்லை"
+msgid "E842: \"<slnum>\"க்கு பயன்படுத்த வரி எண் இல்லை"
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "பி843: ச்வாப் கோப்பு கிரிப்டைப் புதுப்பிக்கும்போது பிழை"
+msgid "E843: ச்வாப் கோப்பு கிரிப்டைப் புதுப்பிக்கும்போது பிழை"
 
 msgid "E844: Invalid cchar value"
-msgstr "பி844: தவறான cchar மதிப்பு"
+msgid "E844: தவறான cchar மதிப்பு"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
-msgstr "பி845: போதுமான நினைவகம் இல்லை, சொல் பட்டியல் முழுமையடையாது"
+msgid "E845: போதுமான நினைவகம் இல்லை, சொல் பட்டியல் முழுமையடையாது"
 
 msgid "E846: Key code not set"
-msgstr "பி846: முக்கிய குறியீடு அமைக்கப்படவில்லை"
+msgid "E846: முக்கிய குறியீடு அமைக்கப்படவில்லை"
 
 msgid "E847: Too many syntax includes"
-msgstr "பி847: பல தொடரியல் அடங்கும்"
+msgid "E847: பல தொடரியல் அடங்கும்"
 
 msgid "E848: Too many syntax clusters"
-msgstr "பி848: பல தொடரியல் கிளச்டர்கள்"
+msgid "E848: பல தொடரியல் கிளச்டர்கள்"
 
 msgid "E849: Too many highlight and syntax groups"
-msgstr "பி849: பல சிறப்பம்சங்கள் மற்றும் தொடரியல் குழுக்கள்"
+msgid "E849: பல சிறப்பம்சங்கள் மற்றும் தொடரியல் குழுக்கள்"
 
 msgid "E850: Invalid register name"
-msgstr "பி850: தவறான பதிவு பெயர்"
+msgid "E850: தவறான பதிவு பெயர்"
 
 msgid "E851: Failed to create a new process for the GUI"
-msgstr "பி851: GUIக்கான புதிய செயல்முறையை உருவாக்குவதில் தோல்வி"
+msgid "E851: GUIக்கான புதிய செயல்முறையை உருவாக்குவதில் தோல்வி"
 
 msgid "E852: The child process failed to start the GUI"
-msgstr "பி852: குழந்தை செயல்முறை GUI ஐ தொடங்குவதில் தோல்வியடைந்தது"
+msgid "E852: குழந்தை செயல்முறை GUI ஐ தொடங்குவதில் தோல்வியடைந்தது"
 
 #, c-format
 msgid "E853: Duplicate argument name: %s"
-msgstr "பி853: நகல் வாதத்தின் பெயர்: %s"
+msgid "E853: நகல் வாதத்தின் பெயர்: %s"
 
 msgid "E854: Path too long for completion"
-msgstr "பி854: நிறைவு செய்வதற்கு பாதை மிக நீளமானது"
+msgid "E854: நிறைவு செய்வதற்கு பாதை மிக நீளமானது"
 
 #| msgid "E952: Autocommand caused recursive behavior"
 msgid "E855: Autocommands caused command to abort"
-msgstr "பி855: தன்னியக்க கட்டளைகள் கட்டளையை நிறுத்தச் செய்தன"
+msgid "E855: தன்னியக்க கட்டளைகள் கட்டளையை நிறுத்தச் செய்தன"
 
 msgid ""
 "E856: \"assert_fails()\" second argument must be a string or a list with one"
@@ -7088,25 +7088,25 @@ msgstr ""
 
 #, c-format
 msgid "E857: Dictionary key \"%s\" required"
-msgstr "பி857: அகராதி விசை \"%s\" தேவை"
+msgid "E857: அகராதி விசை \"%s\" தேவை"
 
 msgid "E858: Eval did not return a valid python object"
-msgstr "பி858: Eval சரியான பைதான் பொருளைத் திருப்பித் தரவில்லை"
+msgid "E858: Eval சரியான பைதான் பொருளைத் திருப்பித் தரவில்லை"
 
 msgid "E859: Failed to convert returned python object to a Vim value"
-msgstr "பி859: திரும்பிய பைதான் பொருளை Vim மதிப்பாக மாற்றுவதில் தோல்வி"
+msgid "E859: திரும்பிய பைதான் பொருளை Vim மதிப்பாக மாற்றுவதில் தோல்வி"
 
 msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
-msgstr "பி860: 'அடையாளம்' மற்றும் 'வகை' அல்லது 'இரண்டும்' கொண்ட 'வகைகள்' தேவை"
+msgid "E860: 'அடையாளம்' மற்றும் 'வகை' அல்லது 'இரண்டும்' கொண்ட 'வகைகள்' தேவை"
 
 msgid "E861: Cannot open a second popup with a terminal"
-msgstr "பி861: டெர்மினலுடன் இரண்டாவது பாப்அப்பை திறக்க முடியாது"
+msgid "E861: டெர்மினலுடன் இரண்டாவது பாப்அப்பை திறக்க முடியாது"
 
 msgid "E862: Cannot use g: here"
-msgstr "பி862: இங்கே g:ஐப் பயன்படுத்த முடியாது"
+msgid "E862: இங்கே g:ஐப் பயன்படுத்த முடியாது"
 
 msgid "E863: Not allowed for a terminal in a popup window"
-msgstr "பி863: மேல்தோன்றல் விண்டோவில் டெர்மினலுக்கு இசைவு இல்லை"
+msgid "E863: மேல்தோன்றல் விண்டோவில் டெர்மினலுக்கு இசைவு இல்லை"
 
 #, no-c-format
 msgid ""
@@ -7117,41 +7117,41 @@ msgstr ""
 "பயன்படுத்தப்படும்"
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr "பி865: (NFA) Regexp முடிவு முன்கூட்டியே எதிர்கொண்டது"
+msgid "E865: (NFA) Regexp முடிவு முன்கூட்டியே எதிர்கொண்டது"
 
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
-msgstr "பி866: (NFA regexp) தவறாக %c"
+msgid "E866: (NFA regexp) தவறாக %c"
 
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\z%c'"
-msgstr "பி867: (NFA regexp) தெரியாத ஆபரேட்டர் '\\z%c'"
+msgid "E867: (NFA regexp) தெரியாத ஆபரேட்டர் '\\z%c'"
 
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\%%%c'"
-msgstr "பி867: (NFA regexp) தெரியாத ஆபரேட்டர் '\\%%%c'"
+msgid "E867: (NFA regexp) தெரியாத ஆபரேட்டர் '\\%%%c'"
 
 msgid "E868: Error building NFA with equivalence class!"
-msgstr "பி868: சமமான வகுப்பில் NFA ஐ உருவாக்குவதில் பிழை!"
+msgid "E868: சமமான வகுப்பில் NFA ஐ உருவாக்குவதில் பிழை!"
 
 #, c-format
 msgid "E869: (NFA regexp) Unknown operator '\\@%c'"
-msgstr "பி869: (NFA regexp) தெரியாத ஆபரேட்டர் '\\@%c'"
+msgid "E869: (NFA regexp) தெரியாத ஆபரேட்டர் '\\@%c'"
 
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr "பி870: (NFA regexp) மறுநிகழ்வு வரம்புகளைப் படிப்பதில் பிழை"
+msgid "E870: (NFA regexp) மறுநிகழ்வு வரம்புகளைப் படிப்பதில் பிழை"
 
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
-msgstr "பி871: (NFA regexp) மல்டி ஃபாலோ எ மல்டி இருக்க முடியாது"
+msgid "E871: (NFA regexp) மல்டி ஃபாலோ எ மல்டி இருக்க முடியாது"
 
 msgid "E872: (NFA regexp) Too many '('"
-msgstr "பி872: (NFA regexp) அதிகமான '('"
+msgid "E872: (NFA regexp) அதிகமான '('"
 
 msgid "E873: (NFA regexp) proper termination error"
-msgstr "பி873: (NFA regexp) சரியான முடிவுப் பிழை"
+msgid "E873: (NFA regexp) சரியான முடிவுப் பிழை"
 
 msgid "E874: (NFA regexp) Could not pop the stack!"
-msgstr "பி874: (NFA regexp) அடுக்கை பாப் செய்ய முடியவில்லை!"
+msgid "E874: (NFA regexp) அடுக்கை பாப் செய்ய முடியவில்லை!"
 
 msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
@@ -7161,26 +7161,26 @@ msgstr ""
 "மாநிலங்கள் அடுக்கி வைக்கப்பட்டுள்ளன"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
-msgstr "பி876: (NFA regexp) NFA முழுவதையும் சேமிக்க போதுமான இடம் இல்லை"
+msgid "E876: (NFA regexp) NFA முழுவதையும் சேமிக்க போதுமான இடம் இல்லை"
 
 #, c-format
 msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "பி877: (NFA regexp) தவறான எழுத்து வகுப்பு: %d"
+msgid "E877: (NFA regexp) தவறான எழுத்து வகுப்பு: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
-msgstr "பி878: (NFA regexp) கிளை டிராவர்சலுக்கு நினைவகத்தை ஒதுக்க முடியவில்லை!"
+msgid "E878: (NFA regexp) கிளை டிராவர்சலுக்கு நினைவகத்தை ஒதுக்க முடியவில்லை!"
 
 msgid "E879: (NFA regexp) Too many \\z("
-msgstr "பி879: (NFA regexp) அதிகமாக \\z("
+msgid "E879: (NFA regexp) அதிகமாக \\z("
 
 msgid "E880: Can't handle SystemExit of python exception in vim"
-msgstr "பி880: பைதான் விதிவிலக்கின் SystemExit ஐ விம்மில் கையாள முடியாது"
+msgid "E880: பைதான் விதிவிலக்கின் SystemExit ஐ விம்மில் கையாள முடியாது"
 
 msgid "E881: Line count changed unexpectedly"
-msgstr "பி881: வரி எண்ணிக்கை எதிர்பாராத விதமாக மாறியது"
+msgid "E881: வரி எண்ணிக்கை எதிர்பாராத விதமாக மாறியது"
 
 msgid "E882: Uniq compare function failed"
-msgstr "பி882: Uniq compare செயல்பாடு தோல்வியடைந்தது"
+msgid "E882: Uniq compare செயல்பாடு தோல்வியடைந்தது"
 
 msgid ""
 "E883: Search pattern and expression register may not contain two or more "
@@ -7191,15 +7191,15 @@ msgstr ""
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
-msgstr "பி884: செயல்பாட்டுப் பெயரில் பெருங்குடல் இருக்கக்கூடாது: %s"
+msgid "E884: செயல்பாட்டுப் பெயரில் பெருங்குடல் இருக்கக்கூடாது: %s"
 
 #, c-format
 msgid "E885: Not possible to change sign %s"
-msgstr "பி885: %s அடையாளத்தை மாற்ற முடியாது"
+msgid "E885: %s அடையாளத்தை மாற்ற முடியாது"
 
 #, c-format
 msgid "E886: Can't rename viminfo file to %s!"
-msgstr "பி886: viminfo கோப்பை %s என மறுபெயரிட முடியாது!"
+msgid "E886: viminfo கோப்பை %s என மறுபெயரிட முடியாது!"
 
 msgid ""
 "E887: Sorry, this command is disabled, the Python's site module could not be"
@@ -7210,26 +7210,26 @@ msgstr ""
 
 #, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr "பி888: (NFA regexp) %s ஐ மீண்டும் செய்ய முடியாது"
+msgid "E888: (NFA regexp) %s ஐ மீண்டும் செய்ய முடியாது"
 
 msgid "E889: Number required"
-msgstr "பி889: எண் தேவை"
+msgid "E889: எண் தேவை"
 
 #, c-format
 msgid "E890: Trailing char after ']': %s]%s"
-msgstr "பி890: ']'க்குப் பின் எழுத்து: %s]%s"
+msgid "E890: ']'க்குப் பின் எழுத்து: %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
-msgstr "பி891: Funcref ஐ மிதவையாகப் பயன்படுத்துதல்"
+msgid "E891: Funcref ஐ மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E892: Using a String as a Float"
-msgstr "பி892: சரத்தை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E892: சரத்தை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E893: Using a List as a Float"
-msgstr "பி893: ஒரு பட்டியலை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E893: ஒரு பட்டியலை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E894: Using a Dictionary as a Float"
-msgstr "பி894: அகராதியை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E894: அகராதியை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid ""
 "E895: Sorry, this command is disabled, the MzScheme's racket/base module "
@@ -7244,60 +7244,60 @@ msgstr ""
 "E896: %s இன் மதிப்புரு ஒரு பட்டியல், அகராதி அல்லது குமிழ் இருக்க வேண்டும்"
 
 msgid "E897: List or Blob required"
-msgstr "பி897: பட்டியல் அல்லது குமிழ் தேவை"
+msgid "E897: பட்டியல் அல்லது குமிழ் தேவை"
 
 msgid "E898: socket() in channel_connect()"
-msgstr "பி898: channel_connect() இல் சாக்கெட்()"
+msgid "E898: channel_connect() இல் சாக்கெட்()"
 
 #, c-format
 msgid "E899: Argument of %s must be a List or Blob"
-msgstr "பி899: %s இன் உரையாடல் ஒரு பட்டியல் அல்லது ப்ளாப் ஆக இருக்க வேண்டும்"
+msgid "E899: %s இன் உரையாடல் ஒரு பட்டியல் அல்லது ப்ளாப் ஆக இருக்க வேண்டும்"
 
 msgid "E900: maxdepth must be non-negative number"
-msgstr "பி900: அதிகபட்ச ஆழம் எதிர்மறை எண்ணாக இருக்க வேண்டும்"
+msgid "E900: அதிகபட்ச ஆழம் எதிர்மறை எண்ணாக இருக்க வேண்டும்"
 
 #, c-format
 msgid "E901: getaddrinfo() in channel_open(): %s"
-msgstr "பி901: getaddrinfo() channel_open(): %s"
+msgid "E901: getaddrinfo() channel_open(): %s"
 
 msgid "E901: gethostbyname() in channel_open()"
-msgstr "பி901: channel_open() இல் gethostbyname()"
+msgid "E901: channel_open() இல் gethostbyname()"
 
 #| msgid "E254: Cannot allocate color %s"
 msgid "E902: Cannot connect to port"
-msgstr "பி902: போர்ட்டுடன் இணைக்க முடியாது"
+msgid "E902: போர்ட்டுடன் இணைக்க முடியாது"
 
 msgid "E903: Received command with non-string argument"
-msgstr "பி903: சரம் அல்லாத வாதத்துடன் கட்டளை பெறப்பட்டது"
+msgid "E903: சரம் அல்லாத வாதத்துடன் கட்டளை பெறப்பட்டது"
 
 msgid "E904: Last argument for expr/call must be a number"
-msgstr "பி904: expr/call க்கான கடைசி உரையாடல் ஒரு எண்ணாக இருக்க வேண்டும்"
+msgid "E904: expr/call க்கான கடைசி உரையாடல் ஒரு எண்ணாக இருக்க வேண்டும்"
 
 msgid "E904: Third argument for call must be a list"
-msgstr "பி904: அழைப்பிற்கான மூன்றாவது உரையாடல் ஒரு பட்டியலாக இருக்க வேண்டும்"
+msgid "E904: அழைப்பிற்கான மூன்றாவது உரையாடல் ஒரு பட்டியலாக இருக்க வேண்டும்"
 
 #, c-format
 msgid "E905: Received unknown command: %s"
-msgstr "பி905: அறியப்படாத கட்டளையைப் பெற்றது: %s"
+msgid "E905: அறியப்படாத கட்டளையைப் பெற்றது: %s"
 
 msgid "E906: Not an open channel"
-msgstr "பி906: திறந்த சேனல் அல்ல"
+msgid "E906: திறந்த சேனல் அல்ல"
 
 msgid "E907: Using a special value as a Float"
-msgstr "பி907: ஒரு சிறப்பு மதிப்பை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E907: ஒரு சிறப்பு மதிப்பை மிதவையாகப் பயன்படுத்துதல்"
 
 #, c-format
 msgid "E908: Using an invalid value as a String: %s"
-msgstr "பி908: தவறான மதிப்பை சரமாகப் பயன்படுத்துதல்: %s"
+msgid "E908: தவறான மதிப்பை சரமாகப் பயன்படுத்துதல்: %s"
 
 msgid "E909: Cannot index a special variable"
-msgstr "பி909: ஒரு சிறப்பு மாறியை அட்டவணைப்படுத்த முடியாது"
+msgid "E909: ஒரு சிறப்பு மாறியை அட்டவணைப்படுத்த முடியாது"
 
 msgid "E910: Using a Job as a Number"
-msgstr "பி910: ஒரு வேலையை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E910: ஒரு வேலையை எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E911: Using a Job as a Float"
-msgstr "பி911: ஒரு வேலையை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E911: ஒரு வேலையை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
@@ -7305,34 +7305,34 @@ msgstr ""
 "முடியாது"
 
 msgid "E913: Using a Channel as a Number"
-msgstr "பி913: சேனலை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E913: சேனலை எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E914: Using a Channel as a Float"
-msgstr "பி914: சேனலை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E914: சேனலை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
-msgstr "பி915: in_io இடையகத்திற்கு in_buf அல்லது in_name அமைக்க வேண்டும்"
+msgid "E915: in_io இடையகத்திற்கு in_buf அல்லது in_name அமைக்க வேண்டும்"
 
 msgid "E916: Not a valid job"
-msgstr "பி916: சரியான வேலை இல்லை"
+msgid "E916: சரியான வேலை இல்லை"
 
 #, c-format
 msgid "E917: Cannot use a callback with %s()"
-msgstr "பி917: %s() உடன் அழைப்பைப் பயன்படுத்த முடியாது"
+msgid "E917: %s() உடன் அழைப்பைப் பயன்படுத்த முடியாது"
 
 #, c-format
 msgid "E918: Buffer must be loaded: %s"
-msgstr "பி918: தாங்கல் ஏற்றப்பட வேண்டும்: %s"
+msgid "E918: தாங்கல் ஏற்றப்பட வேண்டும்: %s"
 
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
-msgstr "பி919: கோப்பகம் '%s' இல் காணப்படவில்லை: \"%s\""
+msgid "E919: கோப்பகம் '%s' இல் காணப்படவில்லை: \"%s\""
 
 msgid "E920: _io file requires _name to be set"
-msgstr "பி920: _io கோப்புக்கு _name அமைக்க வேண்டும்"
+msgid "E920: _io கோப்புக்கு _name அமைக்க வேண்டும்"
 
 msgid "E921: Invalid callback argument"
-msgstr "பி921: தவறான கால்பேக் உரையாடல்"
+msgid "E921: தவறான கால்பேக் உரையாடல்"
 
 msgid "E923: Second argument of function() must be a list or a dict"
 msgstr ""
@@ -7340,231 +7340,231 @@ msgstr ""
 "வேண்டும்"
 
 msgid "E924: Current window was closed"
-msgstr "பி924: தற்போதைய சாளரம் மூடப்பட்டது"
+msgid "E924: தற்போதைய சாளரம் மூடப்பட்டது"
 
 msgid "E925: Current quickfix list was changed"
-msgstr "பி925: தற்போதைய விரைவான சரிசெய்தல் பட்டியல் மாற்றப்பட்டது"
+msgid "E925: தற்போதைய விரைவான சரிசெய்தல் பட்டியல் மாற்றப்பட்டது"
 
 msgid "E926: Current location list was changed"
-msgstr "பி926: தற்போதைய இருப்பிடப் பட்டியல் மாற்றப்பட்டது"
+msgid "E926: தற்போதைய இருப்பிடப் பட்டியல் மாற்றப்பட்டது"
 
 #, c-format
 msgid "E927: Invalid action: '%s'"
-msgstr "பி927: தவறான செயல்: '%s'"
+msgid "E927: தவறான செயல்: '%s'"
 
 msgid "E928: String required"
-msgstr "பி928: சரம் தேவை"
+msgid "E928: சரம் தேவை"
 
 #, c-format
 msgid "E929: Too many viminfo temp files, like %s!"
-msgstr "பி929: %s போன்ற பல விமின்ஃபோ தற்காலிக கோப்புகள்!"
+msgid "E929: %s போன்ற பல விமின்ஃபோ தற்காலிக கோப்புகள்!"
 
 msgid "E930: Cannot use :redir inside execute()"
-msgstr "பி930: பயன்படுத்த முடியாது :redir உள்ளே execute()"
+msgid "E930: பயன்படுத்த முடியாது :redir உள்ளே execute()"
 
 msgid "E931: Buffer cannot be registered"
-msgstr "பி931: இடையகத்தை பதிவு செய்ய முடியாது"
+msgid "E931: இடையகத்தை பதிவு செய்ய முடியாது"
 
 #, c-format
 msgid "E932: Closure function should not be at top level: %s"
-msgstr "பி932: மூடல் செயல்பாடு மேல் மட்டத்தில் இருக்கக்கூடாது: %s"
+msgid "E932: மூடல் செயல்பாடு மேல் மட்டத்தில் இருக்கக்கூடாது: %s"
 
 #, c-format
 msgid "E933: Function was deleted: %s"
-msgstr "பி933: செயல்பாடு நீக்கப்பட்டது: %s"
+msgid "E933: செயல்பாடு நீக்கப்பட்டது: %s"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "பி934: பெயர் இல்லாத இடையகத்திற்கு செல்ல முடியாது"
+msgid "E934: பெயர் இல்லாத இடையகத்திற்கு செல்ல முடியாது"
 
 #, c-format
 msgid "E935: Invalid submatch number: %d"
-msgstr "பி935: தவறான துணைப் பொருத்த எண்: %d"
+msgid "E935: தவறான துணைப் பொருத்த எண்: %d"
 
 msgid "E936: Cannot delete the current group"
-msgstr "பி936: தற்போதைய குழுவை நீக்க முடியாது"
+msgid "E936: தற்போதைய குழுவை நீக்க முடியாது"
 
 #, c-format
 msgid "E937: Attempt to delete a buffer that is in use: %s"
-msgstr "பி937: பயன்பாட்டில் உள்ள ஒரு இடையகத்தை நீக்கும் முயற்சி: %s"
+msgid "E937: பயன்பாட்டில் உள்ள ஒரு இடையகத்தை நீக்கும் முயற்சி: %s"
 
 #, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
-msgstr "பி938: சாதொபொகு இல் நகல் விசை: \"%s\""
+msgid "E938: சாதொபொகு இல் நகல் விசை: \"%s\""
 
 msgid "E939: Positive count required"
-msgstr "பி939: நேர்மறை எண்ணிக்கை தேவை"
+msgid "E939: நேர்மறை எண்ணிக்கை தேவை"
 
 #, c-format
 #| msgid "E254: Cannot allocate color %s"
 msgid "E940: Cannot lock or unlock variable %s"
-msgstr "பி940: மாறி %sஐ பூட்டவோ திறக்கவோ முடியாது"
+msgid "E940: மாறி %sஐ பூட்டவோ திறக்கவோ முடியாது"
 
 msgid "E941: Already started a server"
-msgstr "பி941: ஏற்கனவே ஒரு சர்வர் தொடங்கப்பட்டுள்ளது"
+msgid "E941: ஏற்கனவே ஒரு சர்வர் தொடங்கப்பட்டுள்ளது"
 
 msgid "E942: +clientserver feature not available"
-msgstr "பி942: +கிளையண்ட்சர்வர் நற்பொருத்தம் கிடைக்கவில்லை"
+msgid "E942: +கிளையண்ட்சர்வர் நற்பொருத்தம் கிடைக்கவில்லை"
 
 msgid "E944: Reverse range in character class"
-msgstr "பி944: எழுத்து வகுப்பில் தலைகீழ் வரம்பு"
+msgid "E944: எழுத்து வகுப்பில் தலைகீழ் வரம்பு"
 
 msgid "E945: Range too large in character class"
-msgstr "பி945: எழுத்து வகுப்பில் வரம்பு மிகவும் பெரியது"
+msgid "E945: எழுத்து வகுப்பில் வரம்பு மிகவும் பெரியது"
 
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "பி946: இயங்கும் வேலையை மாற்றியமைக்கக்கூடிய முனையத்தை உருவாக்க முடியாது"
+msgid "E946: இயங்கும் வேலையை மாற்றியமைக்கக்கூடிய முனையத்தை உருவாக்க முடியாது"
 
 #, c-format
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "பி947: வேலை இன்னும் இடையக \"%s\" இல் இயங்குகிறது"
+msgid "E947: வேலை இன்னும் இடையக \"%s\" இல் இயங்குகிறது"
 
 msgid "E948: Job still running"
-msgstr "பி948: வேலை இன்னும் இயங்குகிறது"
+msgid "E948: வேலை இன்னும் இயங்குகிறது"
 
 msgid "E948: Job still running (add ! to end the job)"
-msgstr "பி948: வேலை இன்னும் இயங்குகிறது (வேலையை முடிக்க ! சேர்)"
+msgid "E948: வேலை இன்னும் இயங்குகிறது (வேலையை முடிக்க ! சேர்)"
 
 msgid "E949: File changed while writing"
-msgstr "பி949: எழுதும் போது கோப்பு மாற்றப்பட்டது"
+msgid "E949: எழுதும் போது கோப்பு மாற்றப்பட்டது"
 
 #, c-format
 msgid "E950: Cannot convert between %s and %s"
-msgstr "பி950: %s மற்றும் %s இடையே மாற்ற முடியாது"
+msgid "E950: %s மற்றும் %s இடையே மாற்ற முடியாது"
 
 #, no-c-format
 msgid "E951: \\% value too large"
-msgstr "பி951: \\% மதிப்பு மிகவும் பெரியது"
+msgid "E951: \\% மதிப்பு மிகவும் பெரியது"
 
 msgid "E952: Autocommand caused recursive behavior"
-msgstr "பி952: ஆட்டோகமாண்ட் சுழல்நிலை நடத்தையை ஏற்படுத்தியது"
+msgid "E952: ஆட்டோகமாண்ட் சுழல்நிலை நடத்தையை ஏற்படுத்தியது"
 
 #, c-format
 msgid "E953: File exists: %s"
-msgstr "பி953: கோப்பு உள்ளது: %s"
+msgid "E953: கோப்பு உள்ளது: %s"
 
 msgid "E954: 24-bit colors are not supported on this environment"
-msgstr "பி954: இந்த சூழலில் 24-பிட் வண்ணங்கள் ஆதரிக்கப்படவில்லை"
+msgid "E954: இந்த சூழலில் 24-பிட் வண்ணங்கள் ஆதரிக்கப்படவில்லை"
 
 msgid "E955: Not a terminal buffer"
-msgstr "பி955: டெர்மினல் பஃபர் அல்ல"
+msgid "E955: டெர்மினல் பஃபர் அல்ல"
 
 msgid "E956: Cannot use pattern recursively"
-msgstr "பி956: மாதிரியை மறுநிகழ்வு பயன்படுத்த முடியாது"
+msgid "E956: மாதிரியை மறுநிகழ்வு பயன்படுத்த முடியாது"
 
 msgid "E957: Invalid window number"
-msgstr "பி957: தவறான சாளர எண்"
+msgid "E957: தவறான சாளர எண்"
 
 msgid "E958: Job already finished"
-msgstr "பி958: வேலை ஏற்கனவே முடிந்தது"
+msgid "E958: வேலை ஏற்கனவே முடிந்தது"
 
 msgid "E959: Invalid diff format."
-msgstr "பி959: தவறான வேறுபாடு வடிவம்."
+msgid "E959: தவறான வேறுபாடு வடிவம்."
 
 msgid "E960: Problem creating the internal diff"
-msgstr "பி960: அக வேறுபாட்டை உருவாக்குவதில் சிக்கல்"
+msgid "E960: அக வேறுபாட்டை உருவாக்குவதில் சிக்கல்"
 
 msgid "E961: No line number to use for \"<sflnum>\""
-msgstr "பி961: \"<sflnum>\" க்கு பயன்படுத்த வரி எண் இல்லை"
+msgid "E961: \"<sflnum>\" க்கு பயன்படுத்த வரி எண் இல்லை"
 
 #, c-format
 msgid "E962: Invalid action: '%s'"
-msgstr "பி962: தவறான செயல்: '%s'"
+msgid "E962: தவறான செயல்: '%s'"
 
 #, c-format
 msgid "E963: Setting v:%s to value with wrong type"
-msgstr "பி963: தவறான வகையுடன் மதிப்புக்கு v:%s அமைத்தல்"
+msgid "E963: தவறான வகையுடன் மதிப்புக்கு v:%s அமைத்தல்"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
-msgstr "பி964: தவறான நெடுவரிசை எண்: %ld"
+msgid "E964: தவறான நெடுவரிசை எண்: %ld"
 
 msgid "E965: Missing property type name"
-msgstr "பி965: சொத்து வகை பெயர் விடுபட்டுள்ளது"
+msgid "E965: சொத்து வகை பெயர் விடுபட்டுள்ளது"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
-msgstr "பி966: தவறான வரி எண்: %ld"
+msgid "E966: தவறான வரி எண்: %ld"
 
 msgid "E968: Need at least one of 'id' or 'type'"
-msgstr "பி968: குறைந்தது 'அடையாளம்' அல்லது 'வகை' ஒன்று தேவை"
+msgid "E968: குறைந்தது 'அடையாளம்' அல்லது 'வகை' ஒன்று தேவை"
 
 #, c-format
 msgid "E969: Property type %s already defined"
-msgstr "பி969: சொத்து வகை %s ஏற்கனவே வரையறுக்கப்பட்டுள்ளது"
+msgid "E969: சொத்து வகை %s ஏற்கனவே வரையறுக்கப்பட்டுள்ளது"
 
 #, c-format
 msgid "E970: Unknown highlight group name: '%s'"
-msgstr "பி970: தெரியாத ஐலைட் குழு பெயர்: '%s'"
+msgid "E970: தெரியாத ஐலைட் குழு பெயர்: '%s'"
 
 #, c-format
 msgid "E971: Property type %s does not exist"
-msgstr "பி971: சொத்து வகை %s இல்லை"
+msgid "E971: சொத்து வகை %s இல்லை"
 
 msgid "E972: Blob value does not have the right number of bytes"
-msgstr "பி972: Blob மதிப்பில் சரியான எண்ணிக்கையிலான பைட்டுகள் இல்லை"
+msgid "E972: Blob மதிப்பில் சரியான எண்ணிக்கையிலான பைட்டுகள் இல்லை"
 
 msgid "E973: Blob literal should have an even number of hex characters"
 msgstr ""
 "E973: ப்ளாப் லிட்டரலில் ஃச் எழுத்துகளின் இரட்டை எண்ணிக்கை இருக்க வேண்டும்"
 
 msgid "E974: Using a Blob as a Number"
-msgstr "பி974: ஒரு ப்ளாப்பை எண்ணாகப் பயன்படுத்துதல்"
+msgid "E974: ஒரு ப்ளாப்பை எண்ணாகப் பயன்படுத்துதல்"
 
 msgid "E975: Using a Blob as a Float"
-msgstr "பி975: ஒரு குமிழியை மிதவையாகப் பயன்படுத்துதல்"
+msgid "E975: ஒரு குமிழியை மிதவையாகப் பயன்படுத்துதல்"
 
 msgid "E976: Using a Blob as a String"
-msgstr "பி976: ஒரு ப்ளாப்பை ஒரு சரமாகப் பயன்படுத்துதல்"
+msgid "E976: ஒரு ப்ளாப்பை ஒரு சரமாகப் பயன்படுத்துதல்"
 
 msgid "E977: Can only compare Blob with Blob"
-msgstr "பி977: Blob ஐ Blob உடன் மட்டுமே ஒப்பிட முடியும்"
+msgid "E977: Blob ஐ Blob உடன் மட்டுமே ஒப்பிட முடியும்"
 
 msgid "E978: Invalid operation for Blob"
-msgstr "பி978: Blob க்கான தவறான செயல்பாடு"
+msgid "E978: Blob க்கான தவறான செயல்பாடு"
 
 #, c-format
 msgid "E979: Blob index out of range: %ld"
-msgstr "பி979: ப்ளாப் இன்டெக்ச் வரம்பிற்கு வெளியே: %ld"
+msgid "E979: ப்ளாப் இன்டெக்ச் வரம்பிற்கு வெளியே: %ld"
 
 msgid "E980: Lowlevel input not supported"
-msgstr "பி980: கீழ்நிலை உள்ளீடு ஆதரிக்கப்படவில்லை"
+msgid "E980: கீழ்நிலை உள்ளீடு ஆதரிக்கப்படவில்லை"
 
 #| msgid "E1146: Command not recognized: %s"
 msgid "E981: Command not allowed in rvim"
-msgstr "பி981: ஆர்விமில் கட்டளை அனுமதிக்கப்படவில்லை"
+msgid "E981: ஆர்விமில் கட்டளை அனுமதிக்கப்படவில்லை"
 
 msgid "E982: ConPTY is not available"
-msgstr "பி982: ConPTY கிடைக்கவில்லை"
+msgid "E982: ConPTY கிடைக்கவில்லை"
 
 #, c-format
 msgid "E983: Duplicate argument: %s"
-msgstr "பி983: நகல் மதிப்புரு: %s"
+msgid "E983: நகல் மதிப்புரு: %s"
 
 msgid "E984: :scriptversion used outside of a sourced file"
 msgstr ""
 "E984: :ச்கிரிப்ட் பதிப்பு ஒரு மூலக் கோப்பின் வெளியே பயன்படுத்தப்படுகிறது"
 
 msgid "E985: .= is not supported with script version >= 2"
-msgstr "பி985: .= ச்கிரிப்ட் பதிப்பு >= 2 உடன் ஆதரிக்கப்படவில்லை"
+msgid "E985: .= ச்கிரிப்ட் பதிப்பு >= 2 உடன் ஆதரிக்கப்படவில்லை"
 
 msgid "E986: Cannot modify the tag stack within tagfunc"
-msgstr "பி986: tagfuncக்குள் டேக் ச்டேக்கை மாற்ற முடியாது"
+msgid "E986: tagfuncக்குள் டேக் ச்டேக்கை மாற்ற முடியாது"
 
 msgid "E987: Invalid return value from tagfunc"
-msgstr "பி987: tagfunc இலிருந்து தவறான வருவாய் மதிப்பு"
+msgid "E987: tagfunc இலிருந்து தவறான வருவாய் மதிப்பு"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
-msgstr "பி988: GUI ஐப் பயன்படுத்த முடியாது. gvim.exe ஐ இயக்க முடியாது."
+msgid "E988: GUI ஐப் பயன்படுத்த முடியாது. gvim.exe ஐ இயக்க முடியாது."
 
 msgid "E989: Non-default argument follows default argument"
-msgstr "பி989: இயல்புநிலை அல்லாத வாதமானது இயல்புநிலை வாதத்தை பின்பற்றுகிறது"
+msgid "E989: இயல்புநிலை அல்லாத வாதமானது இயல்புநிலை வாதத்தை பின்பற்றுகிறது"
 
 #, c-format
 msgid "E990: Missing end marker '%s'"
-msgstr "பி990: '%s' எண்ட் மார்க்கர் இல்லை"
+msgid "E990: '%s' எண்ட் மார்க்கர் இல்லை"
 
 msgid "E991: Cannot use =<< here"
-msgstr "பி991: இங்கே =<< பயன்படுத்த முடியாது"
+msgid "E991: இங்கே =<< பயன்படுத்த முடியாது"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr ""
@@ -7572,41 +7572,41 @@ msgstr ""
 
 #, c-format
 msgid "E993: Window %d is not a popup window"
-msgstr "பி993: %d சாளரம் மேல்தோன்றல் சாளரம் அல்ல"
+msgid "E993: %d சாளரம் மேல்தோன்றல் சாளரம் அல்ல"
 
 msgid "E994: Not allowed in a popup window"
-msgstr "பி994: மேல்தோன்றல் விண்டோவில் அனுமதிக்கப்படவில்லை"
+msgid "E994: மேல்தோன்றல் விண்டோவில் அனுமதிக்கப்படவில்லை"
 
 msgid "E995: Cannot modify existing variable"
-msgstr "பி995: ஏற்கனவே உள்ள மாறியை மாற்ற முடியாது"
+msgid "E995: ஏற்கனவே உள்ள மாறியை மாற்ற முடியாது"
 
 msgid "E996: Cannot lock a range"
-msgstr "பி996: வரம்பைப் பூட்ட முடியாது"
+msgid "E996: வரம்பைப் பூட்ட முடியாது"
 
 msgid "E996: Cannot lock an option"
-msgstr "பி996: ஒரு விருப்பத்தை பூட்ட முடியாது"
+msgid "E996: ஒரு விருப்பத்தை பூட்ட முடியாது"
 
 #| msgid "E254: Cannot allocate color %s"
 msgid "E996: Cannot lock a list or dict"
-msgstr "பி996: பட்டியலை அல்லது ஆணையை பூட்ட முடியாது"
+msgid "E996: பட்டியலை அல்லது ஆணையை பூட்ட முடியாது"
 
 msgid "E996: Cannot lock an environment variable"
-msgstr "பி996: சூழல் மாறியை பூட்ட முடியாது"
+msgid "E996: சூழல் மாறியை பூட்ட முடியாது"
 
 msgid "E996: Cannot lock a register"
-msgstr "பி996: பதிவேட்டைப் பூட்ட முடியாது"
+msgid "E996: பதிவேட்டைப் பூட்ட முடியாது"
 
 #, c-format
 msgid "E997: Tabpage not found: %d"
-msgstr "பி997: டேப்பக்கம் கிடைக்கவில்லை: %d"
+msgid "E997: டேப்பக்கம் கிடைக்கவில்லை: %d"
 
 #, c-format
 msgid "E998: Reduce of an empty %s with no initial value"
-msgstr "பி998: ஆரம்ப மதிப்பு இல்லாத வெற்று %s ஐக் குறைத்தல்"
+msgid "E998: ஆரம்ப மதிப்பு இல்லாத வெற்று %s ஐக் குறைத்தல்"
 
 #, c-format
 msgid "E999: scriptversion not supported: %d"
-msgstr "பி999: ச்கிரிப்ட் பதிப்பு ஆதரிக்கப்படவில்லை: %d"
+msgid "E999: ச்கிரிப்ட் பதிப்பு ஆதரிக்கப்படவில்லை: %d"
 
 #, c-format
 #| msgid "E1010: Type not recognized: %s"
