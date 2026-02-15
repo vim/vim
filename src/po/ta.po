@@ -1271,7 +1271,6 @@ msgstr "# pid தரவுத்தளத்தின் பெயர் மு�
 msgid "Lua library cannot be loaded."
 msgstr "லுவா நூலகத்தை ஏற்ற முடியாது."
 
-#| msgid "E626: Cannot get cscope database information"
 msgid "cannot save undo information"
 msgstr "செயல்தவிர் தகவலை சேமிக்க முடியாது"
 
@@ -1578,11 +1577,9 @@ msgstr "இந்த விம் டிஃப் அம்சத்துடன
 msgid "Attempt to open script file again: \""
 msgstr "ச்கிரிப்ட் கோப்பை மீண்டும் திறக்க முயற்சிக்கவும்: \""
 
-#| msgid "E212: Can't open file for writing"
 msgid "Cannot open for reading: \""
 msgstr "படிக்க திறக்க முடியாது: \""
 
-#| msgid "E324: Can't open PostScript output file"
 msgid "Cannot open for script output: \""
 msgstr "ச்கிரிப்ட் வெளியீட்டிற்கு திறக்க முடியாது: \""
 
@@ -1713,7 +1710,6 @@ msgstr "-எம் உரையில் மாற்றங்கள் அன�
 msgid "-b\t\t\tBinary mode"
 msgstr "-b பைனரி முறை"
 
-#| msgid "enable lisp mode"
 msgid "-l\t\t\tLisp mode"
 msgstr "-எல் லிச்ப் பயன்முறை"
 
@@ -2602,7 +2598,6 @@ msgstr "%s பதிப்பு %ld தேவை\n"
 msgid "Cannot open NIL:\n"
 msgstr "NIL திறக்க முடியாது:\n"
 
-#| msgid "E482: Can't create file %s"
 msgid "Cannot create "
 msgstr "உருவாக்க முடியாது"
 
@@ -2705,7 +2700,6 @@ msgstr ""
 "\n"
 "செல் திரும்பியது"
 
-#| msgid "E482: Can't create file %s"
 msgid ""
 "\n"
 "Cannot create pipes\n"
@@ -2816,7 +2810,6 @@ msgid "Error file"
 msgstr "பிழை கோப்பு"
 
 #, c-format
-#| msgid "E456: Can't open file \"%s\""
 msgid "Cannot open file \"%s\""
 msgstr "\"%s\" கோப்பை திறக்க முடியவில்லை"
 
@@ -3080,7 +3073,6 @@ msgid "Compressing word tree..."
 msgstr "சொல் மரத்தை அழுத்துகிறது..."
 
 #, c-format
-#| msgid "E456: Can't open file \"%s\""
 msgid "Reading spell file \"%s\""
 msgstr "\"%s\" எழுத்துப்பிழை கோப்பைப் படிக்கிறது"
 
@@ -3160,12 +3152,10 @@ msgstr ""
 " ஆகியவற்றிற்கும் இணைப்பு பயன்படுத்தப்படுகிறது"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
-msgstr "Expected Y or N in %s line %d: %s"
-msgstr "%s வரி %d: %s இல் எதிர்பார்க்கப்படும் ஒய் அல்லது N"
+msgid "Expected Y or N in %s line %d: %s"
+msgstr "%s இல் எதிர்பார்க்கப்படும் Y அல்லது N %d வரியில்: %s"
 
 #, c-format
-#| msgid "Unrecognized flags in %s line %ld: %s"
 msgid "Broken condition in %s line %d: %s"
 msgstr "%s வரி %d இல் உடைந்த நிலை: %s"
 
@@ -4072,7 +4062,6 @@ msgid " FAILED"
 msgstr "தோல்வியடைந்தது"
 
 #, c-format
-#| msgid "E138: Can't write viminfo file %s!"
 msgid "Writing viminfo file \"%s\""
 msgstr "viminfo கோப்பை எழுதுதல் \"%s\""
 
@@ -4141,8 +4130,7 @@ msgstr ""
 "E12: தற்போதைய அடைவு அல்லது டேக் தேடலில் exrc/vimrc இலிருந்து கட்டளை "
 "அனுமதிக்கப்படவில்லை"
 
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E13: File exists (add ! to override)"
+msgid "E13: File exists (add ! to override)"
 msgstr "E13: கோப்பு உள்ளது (சேர்! மேலெழுத)"
 
 #, c-format
@@ -4175,8 +4163,7 @@ msgstr ""
 msgid "E22: Scripts nested too deep"
 msgstr "E22: ச்கிரிப்ட்கள் மிகவும் ஆழமாக உள்ளமைக்கப்பட்டுள்ளன"
 
-#| msgid "E482: Can't create file %s"
-msgstr "E23: No alternate file"
+msgid "E23: No alternate file"
 msgstr "E23: மாற்று கோப்பு இல்லை"
 
 msgid "E24: No such abbreviation"
@@ -4223,8 +4210,7 @@ msgstr "E36: போதுமான அறை இல்லை"
 msgid "E37: No write since last change"
 msgstr "E37: கடைசி மாற்றத்திற்குப் பிறகு எழுதவில்லை"
 
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E37: No write since last change (add ! to override)"
+msgid "E37: No write since last change (add ! to override)"
 msgstr ""
 "E37: கடைசியாக மாற்றியதில் இருந்து எழுதவில்லை (மேற்செலுத்துவதற்கு சேர்!)"
 
@@ -4241,8 +4227,7 @@ msgstr "E41: நினைவகம் இல்லை!"
 msgid "E42: No Errors"
 msgstr "E42: பிழைகள் இல்லை"
 
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E45: 'readonly' option is set (add ! to override)"
+msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr ""
 "E45: 'படிக்க மட்டும்' விருப்பத்தேர்வு அமைக்கப்பட்டுள்ளது (சேர்! மேலெழுத)"
 
@@ -4250,8 +4235,7 @@ msgid "E46: Cannot change read-only variable"
 msgstr "E46: படிக்க மட்டும் மாறியை மாற்ற முடியாது"
 
 #, c-format
-#| msgid "E456: Can't open file \"%s\""
-msgstr "E46: Cannot change read-only variable \"%s\""
+msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: படிக்க-மட்டும் மாறி \"%s\" ஐ மாற்ற முடியாது"
 
 msgid "E47: Error while reading errorfile"
@@ -4353,8 +4337,7 @@ msgstr "E77: பல கோப்பு பெயர்கள்"
 msgid "E78: Unknown mark"
 msgstr "E78: தெரியாத குறி"
 
-#| msgid "--literal\t\tDon't expand wildcards"
-msgstr "E79: Cannot expand wildcards"
+msgid "E79: Cannot expand wildcards"
 msgstr "E79: வைல்டு கார்டுகளை விரிவாக்க முடியாது"
 
 msgid "E80: Error while writing"
@@ -4363,8 +4346,7 @@ msgstr "E80: எழுதும் போது பிழை"
 msgid "E81: Using <SID> not in a script context"
 msgstr "E81: <SID> ஐ ச்கிரிப்ட் சூழலில் பயன்படுத்தவில்லை"
 
-#| msgid "E254: Cannot allocate color %s"
-msgstr "E82: Cannot allocate any buffer, exiting..."
+msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: எந்த இடையகத்தையும் ஒதுக்க முடியாது, வெளியேறுகிறது..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
@@ -4387,14 +4369,12 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88: முதல் இடையகத்திற்கு முன் செல்ல முடியாது"
 
 #, c-format
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E89: No write since last change for buffer %d (add ! to override)"
+msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
 "E89: %d இடையகத்திற்கான கடைசி மாற்றத்திற்குப் பிறகு எழுதவில்லை (மேலெடுக்க! "
 "சேர்)"
 
-#| msgid "E102: Can't find buffer \"%s\""
-msgstr "E90: Cannot unload last buffer"
+msgid "E90: Cannot unload last buffer"
 msgstr "E90: கடைசி இடையகத்தை இறக்க முடியாது"
 
 msgid "E91: 'shell' option is empty"
@@ -4419,12 +4399,10 @@ msgstr "E95: இந்தப் பெயருடன் இடையகம் �
 msgid "E96: Cannot diff more than %d buffers"
 msgstr "E96: %d இடையகங்களுக்கு மேல் வேறுபடுத்த முடியாது"
 
-#| msgid "E482: Can't create file %s"
-msgstr "E97: Cannot create diffs"
+msgid "E97: Cannot create diffs"
 msgstr "E97: வேறுபாடுகளை உருவாக்க முடியாது"
 
-#| msgid "E485: Can't read file %s"
-msgstr "E98: Cannot read diff output"
+msgid "E98: Cannot read diff output"
 msgstr "E98: வேறுபாடு வெளியீட்டைப் படிக்க முடியாது"
 
 msgid "E99: Current buffer is not in diff mode"
@@ -4607,8 +4585,7 @@ msgstr "பி146: வழக்கமான வெளிப்பாடுகள
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "பி147: செய்ய முடியாது: வரம்புடன் கூடிய உலகளாவிய சுழல்நிலை"
 
-#| msgid "E146: Regular expressions can't be delimited by letters"
-msgstr "E148: Regular expression missing from :global"
+msgid "E148: Regular expression missing from :global"
 msgstr "பி148: குளோபலில் வழக்கமான வெளிப்பாடு இல்லை"
 
 #, c-format
@@ -4624,13 +4601,11 @@ msgid "E151: No match: %s"
 msgstr "பி151: பொருத்தம் இல்லை: %s"
 
 #, c-format
-#| msgid "E212: Can't open file for writing"
-msgstr "E152: Cannot open %s for writing"
+msgid "E152: Cannot open %s for writing"
 msgstr "பி152: எழுதுவதற்கு %s ஐ திறக்க முடியாது"
 
 #, c-format
-#| msgid "E212: Can't open file for writing"
-msgstr "E153: Unable to open %s for reading"
+msgid "E153: Unable to open %s for reading"
 msgstr "பி153: படிக்க %s ஐ திறக்க முடியவில்லை"
 
 #, c-format
@@ -4660,8 +4635,7 @@ msgid "E160: Unknown sign command: %s"
 msgstr "பி160: அறியப்படாத குறி கட்டளை: %s"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E161: Breakpoint not found: %s"
+msgid "E161: Breakpoint not found: %s"
 msgstr "பி161: பிரேக் பாயிண்ட் கிடைக்கவில்லை: %s"
 
 #, c-format
@@ -4671,12 +4645,10 @@ msgstr "பி162: \"%s\" இடையகத்திற்கான கடை�
 msgid "E163: There is only one file to edit"
 msgstr "பி163: திருத்த ஒரே ஒரு கோப்பு உள்ளது"
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E164: Cannot go before first file"
+msgid "E164: Cannot go before first file"
 msgstr "பி164: முதல் கோப்புக்கு முன் செல்ல முடியாது"
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E165: Cannot go beyond last file"
+msgid "E165: Cannot go beyond last file"
 msgstr "பி165: கடைசி கோப்புக்கு அப்பால் செல்ல முடியாது"
 
 msgid "E166: Can't open linked file for writing"
@@ -4689,8 +4661,7 @@ msgstr ""
 msgid "E168: :finish used outside of a sourced file"
 msgstr "பி168: :பினிச் ஒரு ஆதார் கோப்பின் வெளியே பயன்படுத்தப்படுகிறது"
 
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E169: Command too recursive"
+msgid "E169: Command too recursive"
 msgstr "பி169: கட்டளை மிகவும் சுழல்நிலை"
 
 msgid "E170: Missing :endwhile"
@@ -4761,8 +4732,7 @@ msgstr "பி185: வண்ணத் திட்டத்தை '%s' கண்
 msgid "E186: No previous directory"
 msgstr "பி186: முந்தைய கோப்பகம் இல்லை"
 
-#| msgid "E419: FG color unknown"
-msgstr "E187: Directory unknown"
+msgid "E187: Directory unknown"
 msgstr "பி187: கோப்பகம் தெரியவில்லை"
 
 msgid "E188: Obtaining window position not implemented for this platform"
@@ -4773,8 +4743,7 @@ msgid "E189: \"%s\" exists (add ! to override)"
 msgstr "பி189: \"%s\" உள்ளது (சேர் ! மேலெழுத)"
 
 #, c-format
-#| msgid "E212: Can't open file for writing"
-msgstr "E190: Cannot open \"%s\" for writing"
+msgid "E190: Cannot open \"%s\" for writing"
 msgstr "பி190: எழுதுவதற்கு \"%s\" ஐ திறக்க முடியாது"
 
 msgid "E191: Argument must be a letter or forward/backward quote"
@@ -4792,16 +4761,14 @@ msgstr "பி193: %s ஒரு செயல்பாட்டிற்குள
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "பி194: '#' க்கு மாற்றாக மாற்று கோப்பு பெயர் இல்லை"
 
-#| msgid "E166: Can't open linked file for writing"
-msgstr "E195: Cannot open viminfo file for reading"
+msgid "E195: Cannot open viminfo file for reading"
 msgstr "பி195: வாசிப்பதற்காக viminfo கோப்பை திறக்க முடியாது"
 
 msgid "E196: No digraphs in this version"
 msgstr "பி196: இந்தப் பதிப்பில் டிக்ராஃப்கள் இல்லை"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E197: Cannot set language to \"%s\""
+msgid "E197: Cannot set language to \"%s\""
 msgstr "பி197: மொழியை \"%s\"க்கு அமைக்க முடியாது"
 
 msgid "E199: Active window or buffer changed or deleted"
@@ -4910,15 +4877,13 @@ msgid "E229: Cannot start the GUI"
 msgstr "E229: GUI ஐ தொடங்க முடியாது"
 
 #, c-format
-#| msgid "E485: Can't read file %s"
-msgstr "E230: Cannot read from \"%s\""
+msgid "E230: Cannot read from \"%s\""
 msgstr "E230: \"%s\" இலிருந்து படிக்க முடியாது"
 
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' தவறானது"
 
-#| msgid "E624: Can't open file \"%s\""
-msgstr "E233: Cannot open display"
+msgid "E233: Cannot open display"
 msgstr "E233: காட்சியைத் திறக்க முடியாது"
 
 #, c-format
@@ -5019,8 +4984,7 @@ msgid "E260: Missing name after ->"
 msgstr "E260: -> பிறகு பெயர் விடுபட்டுள்ளது"
 
 #, c-format
-#| msgid "E262: Error reading cscope connection %d"
-msgstr "E261: Cscope connection %s not found"
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: Cscope இணைப்பு %s கிடைக்கவில்லை"
 
 #, c-format
@@ -5081,21 +5045,18 @@ msgstr "E276: செயல்பாட்டை ஒரு முறையாக�
 msgid "E277: Unable to read a server reply"
 msgstr "E277: சர்வர் பதிலைப் படிக்க முடியவில்லை"
 
-#| msgid "E954: 24-bit colors are not supported on this environment"
-msgstr "E279: Sorry, ++shell is not supported on this system"
+msgid "E279: Sorry, ++shell is not supported on this system"
 msgstr "E279: மன்னிக்கவும், இந்த கணினியில் ++ செல் ஆதரிக்கப்படவில்லை"
 
 #, c-format
-#| msgid "E485: Can't read file %s"
-msgstr "E282: Cannot read from \"%s\""
+msgid "E282: Cannot read from \"%s\""
 msgstr "E282: \"%s\" இலிருந்து படிக்க முடியாது"
 
 #, c-format
 msgid "E283: No marks matching \"%s\""
 msgstr "E283: \"%s\" உடன் எந்த மதிப்பெண்களும் பொருந்தவில்லை"
 
-#| msgid "E484: Can't open file %s"
-msgstr "E284: Cannot set IC values"
+msgid "E284: Cannot set IC values"
 msgstr "E284: IC மதிப்புகளை அமைக்க முடியாது"
 
 msgid "E285: Failed to create input context"
@@ -5153,8 +5114,7 @@ msgid "E305: No swap file found for %s"
 msgstr "E305: %sக்கான swap கோப்பு எதுவும் இல்லை"
 
 #, c-format
-#| msgid "E456: Can't open file \"%s\""
-msgstr "E306: Cannot open %s"
+msgid "E306: Cannot open %s"
 msgstr "E306: %s ஐ திறக்க முடியாது"
 
 #, c-format
@@ -5191,8 +5151,7 @@ msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: மன்னிக்கவும், இந்தப் பதிப்பில் கட்டளை கிடைக்கவில்லை"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E321: Could not reload \"%s\""
+msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" ஐ மீண்டும் ஏற்ற முடியவில்லை"
 
 msgid "E324: Can't open PostScript output file"
@@ -5273,13 +5232,11 @@ msgid "E345: Can't find file \"%s\" in path"
 msgstr "E345: பாதையில் \"%s\" கோப்பைக் கண்டுபிடிக்க முடியவில்லை"
 
 #, c-format
-#| msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E346: No more directory \"%s\" found in cdpath"
+msgid "E346: No more directory \"%s\" found in cdpath"
 msgstr "E346: cdpath இல் \"%s\" கோப்பகம் இல்லை"
 
 #, c-format
-#| msgid "E447: Can't find file \"%s\" in path"
-msgstr "E347: No more file \"%s\" found in path"
+msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: பாதையில் \"%s\" கோப்பு இல்லை"
 
 msgid "E348: No string under cursor"
@@ -5298,8 +5255,7 @@ msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: தற்போதைய 'மடிப்பு முறை' மூலம் மடிப்புகளை அழிக்க முடியாது"
 
 #, c-format
-#| msgid "E394: Didn't find region item for %s"
-msgstr "E353: Nothing in register %s"
+msgid "E353: Nothing in register %s"
 msgstr "E353: பதிவு %s இல் எதுவும் இல்லை"
 
 #, c-format
@@ -5335,8 +5291,7 @@ msgstr ""
 msgid "E364: Library call failed for \"%s()\""
 msgstr "E364: \"%s()\"க்கான நூலக அழைப்பு தோல்வியடைந்தது"
 
-#| msgid "E324: Can't open PostScript output file"
-msgstr "E365: Failed to print PostScript file"
+msgid "E365: Failed to print PostScript file"
 msgstr "E365: போச்ட்ச்கிரிப்ட் கோப்பை அச்சிடுவதில் தோல்வி"
 
 msgid "E366: Not allowed to enter a popup window"
@@ -5358,8 +5313,7 @@ msgstr "E369: %s%% இல் தவறான உருப்படி[]"
 msgid "E370: Could not load library %s: %s"
 msgstr "E370: நூலகத்தை ஏற்ற முடியவில்லை %s: %s"
 
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E371: Command not found"
+msgid "E371: Command not found"
 msgstr "E371: கட்டளை கிடைக்கவில்லை"
 
 #, c-format
@@ -5401,8 +5355,7 @@ msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: எழுத முடியாது, 'பஃப்டைப்' விருப்பம் அமைக்கப்பட்டுள்ளது"
 
 #, c-format
-#| msgid "E1244: Bad color string: %s"
-msgstr "E383: Invalid search string: %s"
+msgid "E383: Invalid search string: %s"
 msgstr "E383: தவறான தேடல் சரம்: %s"
 
 #, c-format
@@ -5560,8 +5513,7 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: முதலில் பொருந்தும் குறிச்சொல்லுக்கு முன் செல்ல முடியாது"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E426: Tag not found: %s"
+msgid "E426: Tag not found: %s"
 msgstr "E426: குறிச்சொல் கிடைக்கவில்லை: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5579,8 +5531,7 @@ msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: டேக் கோப்பு பாதை %s க்கு துண்டிக்கப்பட்டது\n"
 
 #, c-format
-#| msgid "E456: Can't open file \"%s\""
-msgstr "E431: Format error in tags file \"%s\""
+msgid "E431: Format error in tags file \"%s\""
 msgstr "E431: \"%s\" குறிச்சொற்கள் கோப்பில் வடிவமைப்பு பிழை"
 
 #, c-format
@@ -5643,15 +5594,13 @@ msgstr "E451: எதிர்பார்க்கப்படுகிறது
 msgid "E452: Double ; in list of variables"
 msgstr "E452: இரட்டை ; மாறிகள் பட்டியலில்"
 
-#| msgid "E419: FG color unknown"
-msgstr "E453: UL color unknown"
+msgid "E453: UL color unknown"
 msgstr "E453: UL நிறம் தெரியவில்லை"
 
 msgid "E454: Function list was modified"
 msgstr "E454: செயல்பாடு பட்டியல் மாற்றப்பட்டது"
 
-#| msgid "E324: Can't open PostScript output file"
-msgstr "E455: Error writing to PostScript output file"
+msgid "E455: Error writing to PostScript output file"
 msgstr "E455: போச்ட்ச்கிரிப்ட் அவுட்புட் கோப்பில் எழுதுவதில் பிழை"
 
 #, c-format
@@ -5781,8 +5730,7 @@ msgid "E486: Pattern not found"
 msgstr "E486: பேட்டர்ன் கிடைக்கவில்லை"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E486: Pattern not found: %s"
+msgid "E486: Pattern not found: %s"
 msgstr "E486: வடிவம் காணப்படவில்லை: %s"
 
 msgid "E487: Argument must be positive"
@@ -5859,16 +5807,14 @@ msgid "is read-only (add ! to override)"
 msgstr "படிக்க மட்டுமே (சேர்! மேலெழுத)"
 
 #, c-format
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E505: \"%s\" is read-only (add ! to override)"
+msgid "E505: \"%s\" is read-only (add ! to override)"
 msgstr "E505: \"%s\" என்பது படிக்க மட்டுமே (சேர் ! மேலெழுத)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
 "E506: காப்புப் பிரதிக் கோப்பில் எழுத முடியாது (மேற்செலுத்துவதற்கு சேர்!)"
 
-#| msgid "E510: Can't make backup file (add ! to write anyway)"
-msgstr "E507: Close error for backup file (add ! to write anyway)"
+msgid "E507: Close error for backup file (add ! to write anyway)"
 msgstr ""
 "E507: காப்புப் பிரதி கோப்பிற்கான மூடு பிழை (எப்படியும் எழுதுவதற்கு ! சேர்)"
 
@@ -5877,8 +5823,7 @@ msgstr ""
 "E508: காப்புப்பிரதிக்கான கோப்பைப் படிக்க முடியாது (எப்படியும் எழுதுவதற்கு "
 "சேர்!)"
 
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E509: Cannot create backup file (add ! to override)"
+msgid "E509: Cannot create backup file (add ! to override)"
 msgstr "E509: காப்புப் பிரதி கோப்பை உருவாக்க முடியாது (மேற்கொள்ள ! சேர்)"
 
 msgid "E510: Can't make backup file (add ! to write anyway)"
@@ -5888,8 +5833,7 @@ msgstr ""
 msgid "E511: NetBeans already connected"
 msgstr "E511: NetBeans ஏற்கனவே இணைக்கப்பட்டுள்ளது"
 
-#| msgid "E818: sha256 test failed"
-msgstr "E512: Close failed"
+msgid "E512: Close failed"
 msgstr "E512: மூட முடியவில்லை"
 
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
@@ -5971,8 +5915,7 @@ msgstr ""
 msgid "E533: Can't select wide font"
 msgstr "E533: பரந்த எழுத்துருவை தேர்ந்தெடுக்க முடியாது"
 
-#| msgid "E533: Can't select wide font"
-msgstr "E534: Invalid wide font"
+msgid "E534: Invalid wide font"
 msgstr "E534: தவறான பரந்த எழுத்துரு"
 
 #, c-format
@@ -6045,8 +5988,7 @@ msgstr "E555: டேக் ச்டேக்கின் கீழே"
 msgid "E556: At top of tag stack"
 msgstr "E556: டேக் ச்டேக்கின் மேல்"
 
-#| msgid "E40: Can't open errorfile %s"
-msgstr "E557: Cannot open termcap file"
+msgid "E557: Cannot open termcap file"
 msgstr "E557: termcap கோப்பை திறக்க முடியாது"
 
 msgid "E558: Terminal entry not found in terminfo"
@@ -6080,8 +6022,7 @@ msgstr "E565: உரையை மாற்றவோ அல்லது சாள
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: cscope குழாய்களை உருவாக்க முடியவில்லை"
 
-#| msgid "no cscope connections\n"
-msgstr "E567: No cscope connections"
+msgid "E567: No cscope connections"
 msgstr "E567: cscope இணைப்புகள் இல்லை"
 
 msgid "E568: Duplicate cscope database not added"
@@ -6180,8 +6121,7 @@ msgstr "E596: தவறான எழுத்துரு(கள்)"
 msgid "E597: Can't select fontset"
 msgstr "E597: எழுத்துருவை தேர்ந்தெடுக்க முடியவில்லை"
 
-#| msgid "E597: Can't select fontset"
-msgstr "E598: Invalid fontset"
+msgid "E598: Invalid fontset"
 msgstr "E598:"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
@@ -6216,8 +6156,7 @@ msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: 'Vim' முன்னொட்டுடன் விதிவிலக்குகளை வீச முடியாது"
 
 #, c-format
-#| msgid "E40: Can't open errorfile %s"
-msgstr "E609: Cscope error: %s"
+msgid "E609: Cscope error: %s"
 msgstr "E609: Cscope பிழை: %s"
 
 msgid "E610: No argument to delete"
@@ -6241,13 +6180,11 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: GTK GUI இல் மாற்ற முடியாது"
 
 #, c-format
-#| msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E618: File \"%s\" is not a PostScript resource file"
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: கோப்பு \"%s\" என்பது போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
 
 #, c-format
-#| msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E619: File \"%s\" is not a supported PostScript resource file"
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: கோப்பு \"%s\" ஆதரிக்கப்படும் போச்ட்ச்கிரிப்ட் ஆதாரக் கோப்பு அல்ல"
 
 #, c-format
@@ -6261,8 +6198,7 @@ msgstr "E621: \"%s\" ஆதாரக் கோப்பு தவறான ப�
 msgid "E622: Could not fork for cscope"
 msgstr "E622: cscope க்கு ஃபோர்க் செய்ய முடியவில்லை"
 
-#| msgid "E625: Cannot open cscope database: %s"
-msgstr "E623: Could not spawn cscope process"
+msgid "E623: Could not spawn cscope process"
 msgstr "E623: cscope செயல்முறையை உருவாக்க முடியவில்லை"
 
 #, c-format
@@ -6289,8 +6225,7 @@ msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): இணைக்கப்படாத நிலையில் எழுதவும்"
 
 #, c-format
-#| msgid "E818: sha256 test failed"
-msgstr "E631: %s(): Write failed"
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): எழுதுவது தோல்வியடைந்தது"
 
 msgid "E632: Invalid buffer identifier in getLength"
@@ -6409,8 +6344,7 @@ msgid "E670: Mix of help file encodings within a language: %s"
 msgstr "E670: ஒரு மொழியில் உள்ள உதவி கோப்பு குறியாக்கங்களின் கலவை: %s"
 
 #, c-format
-#| msgid "E447: Can't find file \"%s\" in path"
-msgstr "E671: Cannot find window title \"%s\""
+msgid "E671: Cannot find window title \"%s\""
 msgstr "E671: சாளர தலைப்பை \"%s\" கண்டுபிடிக்க முடியவில்லை"
 
 msgid "E672: Unable to open window inside MDI application"
@@ -6461,8 +6395,7 @@ msgid "E684: List index out of range: %ld"
 msgstr "E684: பட்டியல் அட்டவணை வரம்பிற்கு வெளியே: %ld"
 
 #, c-format
-#| msgid "E40: Can't open errorfile %s"
-msgstr "E685: Internal error: %s"
+msgid "E685: Internal error: %s"
 msgstr "E685: உள் பிழை: %s"
 
 #, c-format
@@ -6558,8 +6491,7 @@ msgstr "E711: பட்டியல் மதிப்பில் போது�
 msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: %s இன் மதிப்புரு ஒரு பட்டியல் அல்லது அகராதியாக இருக்க வேண்டும்"
 
-#| msgid "E214: Can't find temp file for writing"
-msgstr "E713: Cannot use empty key for Dictionary"
+msgid "E713: Cannot use empty key for Dictionary"
 msgstr "E713: அகராதிக்கு வெற்று விசையைப் பயன்படுத்த முடியாது"
 
 msgid "E714: List required"
@@ -6629,8 +6561,7 @@ msgid "E733: Using :endwhile with :for"
 msgstr "E733: பயன்படுத்தி :endwhile உடன் :for"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E734: Wrong variable type for %s="
+msgid "E734: Wrong variable type for %s="
 msgstr "E734: %s= க்கான தவறான மாறி வகை"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
@@ -6648,8 +6579,7 @@ msgid "E738: Can't list variables for %s"
 msgstr "E738: %sக்கான மாறிகளை பட்டியலிட முடியாது"
 
 #, c-format
-#| msgid "E482: Can't create file %s"
-msgstr "E739: Cannot create directory: %s"
+msgid "E739: Cannot create directory: %s"
 msgstr "E739: கோப்பகத்தை உருவாக்க முடியாது: %s"
 
 #, c-format
@@ -6663,13 +6593,11 @@ msgstr "E741: மதிப்பு பூட்டப்பட்டுள்�
 msgid "E741: Value is locked: %s"
 msgstr "E741: மதிப்பு பூட்டப்பட்டுள்ளது: %s"
 
-#| msgid "E482: Can't create file %s"
-msgstr "E742: Cannot change value"
+msgid "E742: Cannot change value"
 msgstr "E742: மதிப்பை மாற்ற முடியாது"
 
 #, c-format
-#| msgid "E482: Can't create file %s"
-msgstr "E742: Cannot change value of %s"
+msgid "E742: Cannot change value of %s"
 msgstr "E742: %s இன் மதிப்பை மாற்ற முடியாது"
 
 msgid "E743: Variable nested too deep for (un)lock"
@@ -6682,13 +6610,11 @@ msgid "E745: Using a List as a Number"
 msgstr "E745: பட்டியலை எண்ணாகப் பயன்படுத்துதல்"
 
 #, c-format
-#| msgid "E781: .sug file doesn't match .spl file: %s"
-msgstr "E746: Function name does not match script file name: %s"
+msgid "E746: Function name does not match script file name: %s"
 msgstr ""
 "E746: செயல்பாட்டுப் பெயர் ச்கிரிப்ட் கோப்பு பெயருடன் பொருந்தவில்லை: %s"
 
-#| msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E747: Cannot change directory, buffer is modified (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
 "E747: கோப்பகத்தை மாற்ற முடியாது, இடையகம் மாற்றியமைக்கப்பட்டது (சேர்! "
 "மேலெழுத)"
@@ -6794,8 +6720,7 @@ msgid "E777: String or List expected"
 msgstr "E777: சரம் அல்லது பட்டியல் எதிர்பார்க்கப்படுகிறது"
 
 #, c-format
-#| msgid "E781: .sug file doesn't match .spl file: %s"
-msgstr "E778: This does not look like a .sug file: %s"
+msgid "E778: This does not look like a .sug file: %s"
 msgstr "E778: இது .sug கோப்பு போல் இல்லை: %s"
 
 #, c-format
@@ -6848,22 +6773,18 @@ msgstr "E792: வெற்று பட்டியல் பெயர்"
 msgid "E793: No other buffer in diff mode is modifiable"
 msgstr "E793: டிஃப் பயன்முறையில் வேறு எந்த இடையகமும் மாற்ற முடியாது"
 
-#| msgid "E738: Can't list variables for %s"
-msgstr "E794: Cannot set variable in the sandbox"
+msgid "E794: Cannot set variable in the sandbox"
 msgstr "E794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E794: Cannot set variable in the sandbox: \"%s\""
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr "E794: சாண்ட்பாக்சில் மாறியை அமைக்க முடியாது: \"%s\""
 
-#| msgid "E207: Can't delete backup file"
-msgstr "E795: Cannot delete variable"
+msgid "E795: Cannot delete variable"
 msgstr "E795: மாறியை நீக்க முடியாது"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E795: Cannot delete variable %s"
+msgid "E795: Cannot delete variable %s"
 msgstr "E795: மாறி %s ஐ நீக்க முடியாது"
 
 msgid "writing to device disabled with 'opendevice' option"
@@ -6909,15 +6830,13 @@ msgstr "E806: ஃப்ளோட்டை சரமாகப் பயன்ப�
 msgid "E807: Expected Float argument for printf()"
 msgstr "E807: printf()க்கு எதிர்பார்க்கப்படும் மிதவை உரையாடல்"
 
-#| msgid "E1022: Type or initialization required"
-msgstr "E808: Number or Float required"
+msgid "E808: Number or Float required"
 msgstr "E808: எண் அல்லது மிதவை தேவை"
 
 msgid "E809: #< is not available without the +eval feature"
 msgstr "E809: +eval நற்பொருத்தம் இல்லாமல் #< கிடைக்காது"
 
-#| msgid "E482: Can't create file %s"
-msgstr "E810: Cannot read or write temp files"
+msgid "E810: Cannot read or write temp files"
 msgstr "E810: தற்காலிக கோப்புகளைப் படிக்கவோ எழுதவோ முடியாது"
 
 msgid "E811: Not allowed to change buffer information now"
@@ -6948,8 +6867,7 @@ msgstr "E817: ப்ளோஃபிச் பெரிய/சிறிய எண
 msgid "E818: sha256 test failed"
 msgstr "E818: sha256 சோதனை தோல்வியடைந்தது"
 
-#| msgid "E818: sha256 test failed"
-msgstr "E819: Blowfish test failed"
+msgid "E819: Blowfish test failed"
 msgstr "E819: ப்ளோஃபிச் சோதனை தோல்வியடைந்தது"
 
 msgid "E820: sizeof(uint32_t) != 4"
@@ -6959,18 +6877,15 @@ msgid "E821: File is encrypted with unknown method"
 msgstr "E821: கோப்பு அறியப்படாத முறையில் குறியாக்கம் செய்யப்பட்டுள்ளது"
 
 #, c-format
-#| msgid "E212: Can't open file for writing"
-msgstr "E822: Cannot open undo file for reading: %s"
+msgid "E822: Cannot open undo file for reading: %s"
 msgstr "E822: படிப்பதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
 
 #, c-format
-#| msgid "E484: Can't open file %s"
-msgstr "E823: Not an undo file: %s"
+msgid "E823: Not an undo file: %s"
 msgstr "E823: செயல்தவிர்க்கும் கோப்பு அல்ல: %s"
 
 #, c-format
-#| msgid "E484: Can't open file %s"
-msgstr "E824: Incompatible undo file: %s"
+msgid "E824: Incompatible undo file: %s"
 msgstr "E824: இணக்கமற்ற செயல்தவிர் கோப்பு: %s"
 
 #, c-format
@@ -6986,8 +6901,7 @@ msgid "E827: Undo file is encrypted: %s"
 msgstr "E827: செயல்தவிர் கோப்பு என்க்ரிப்ட் செய்யப்பட்டது: %s"
 
 #, c-format
-#| msgid "E212: Can't open file for writing"
-msgstr "E828: Cannot open undo file for writing: %s"
+msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: எழுதுவதற்கான செயல்தவிர் கோப்பை திறக்க முடியாது: %s"
 
 #, c-format
@@ -7023,8 +6937,7 @@ msgstr "E836: இந்த Vim :py3 ஐப் பயன்படுத்தி�
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: இந்த Vim :python ஐப் பயன்படுத்திய பிறகு :py3 ஐ இயக்க முடியாது"
 
-#| msgid "netbeans is not supported with this GUI\n"
-msgstr "E838: NetBeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: இந்த GUI உடன் NetBeans ஆதரிக்கப்படவில்லை"
 
 msgid "E840: Completion function deleted text"
@@ -7075,8 +6988,7 @@ msgstr "E853: நகல் வாதத்தின் பெயர்: %s"
 msgid "E854: Path too long for completion"
 msgstr "E854: நிறைவு செய்வதற்கு பாதை மிக நீளமானது"
 
-#| msgid "E952: Autocommand caused recursive behavior"
-msgstr "E855: Autocommands caused command to abort"
+msgid "E855: Autocommands caused command to abort"
 msgstr "E855: தன்னியக்க கட்டளைகள் கட்டளையை நிறுத்தச் செய்தன"
 
 msgid ""
@@ -7263,8 +7175,7 @@ msgstr "E901: getaddrinfo() channel_open(): %s"
 msgid "E901: gethostbyname() in channel_open()"
 msgstr "E901: channel_open() இல் gethostbyname()"
 
-#| msgid "E254: Cannot allocate color %s"
-msgstr "E902: Cannot connect to port"
+msgid "E902: Cannot connect to port"
 msgstr "E902: போர்ட்டுடன் இணைக்க முடியாது"
 
 msgid "E903: Received command with non-string argument"
@@ -7395,8 +7306,7 @@ msgid "E939: Positive count required"
 msgstr "E939: நேர்மறை எண்ணிக்கை தேவை"
 
 #, c-format
-#| msgid "E254: Cannot allocate color %s"
-msgstr "E940: Cannot lock or unlock variable %s"
+msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: மாறி %sஐ பூட்டவோ திறக்கவோ முடியாது"
 
 msgid "E941: Already started a server"
@@ -7529,8 +7439,7 @@ msgstr "E979: ப்ளாப் இன்டெக்ச் வரம்பி�
 msgid "E980: Lowlevel input not supported"
 msgstr "E980: கீழ்நிலை உள்ளீடு ஆதரிக்கப்படவில்லை"
 
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E981: Command not allowed in rvim"
+msgid "E981: Command not allowed in rvim"
 msgstr "E981: ஆர்விமில் கட்டளை அனுமதிக்கப்படவில்லை"
 
 msgid "E982: ConPTY is not available"
@@ -7586,8 +7495,7 @@ msgstr "E996: வரம்பைப் பூட்ட முடியாது"
 msgid "E996: Cannot lock an option"
 msgstr "E996: ஒரு விருப்பத்தை பூட்ட முடியாது"
 
-#| msgid "E254: Cannot allocate color %s"
-msgstr "E996: Cannot lock a list or dict"
+msgid "E996: Cannot lock a list or dict"
 msgstr "E996: பட்டியலை அல்லது ஆணையை பூட்ட முடியாது"
 
 msgid "E996: Cannot lock an environment variable"
@@ -7609,8 +7517,7 @@ msgid "E999: scriptversion not supported: %d"
 msgstr "E999: ச்கிரிப்ட் பதிப்பு ஆதரிக்கப்படவில்லை: %d"
 
 #, c-format
-#| msgid "E1010: Type not recognized: %s"
-msgstr "E1001: Variable not found: %s"
+msgid "E1001: Variable not found: %s"
 msgstr "பி1001: மாறி காணப்படவில்லை: %s"
 
 #, c-format
@@ -7679,13 +7586,11 @@ msgid "E1015: Name expected: %s"
 msgstr "பி1015: எதிர்பார்க்கப்படும் பெயர்: %s"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E1016: Cannot declare a %s variable: %s"
+msgid "E1016: Cannot declare a %s variable: %s"
 msgstr "பி1016: %s மாறியை அறிவிக்க முடியாது: %s"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1016: Cannot declare an environment variable: %s"
+msgid "E1016: Cannot declare an environment variable: %s"
 msgstr "பி1016: சூழல் மாறியை அறிவிக்க முடியாது: %s"
 
 #, c-format
@@ -7693,8 +7598,7 @@ msgid "E1017: Variable already declared: %s"
 msgstr "பி1017: மாறி ஏற்கனவே அறிவிக்கப்பட்டது: %s"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1018: Cannot assign to a constant: %s"
+msgid "E1018: Cannot assign to a constant: %s"
 msgstr "பி1018: மாறிலிக்கு ஒதுக்க முடியாது: %s"
 
 msgid "E1019: Can only concatenate to string"
@@ -7737,8 +7641,7 @@ msgstr "பி1029: %s எதிர்பார்க்கப்பட்டத
 msgid "E1030: Using a String as a Number: \"%s\""
 msgstr "பி1030: ஒரு சரத்தை எண்ணாகப் பயன்படுத்துதல்: \"%s\""
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1031: Cannot use void value"
+msgid "E1031: Cannot use void value"
 msgstr "பி1031: வெற்றிட மதிப்பைப் பயன்படுத்த முடியாது"
 
 msgid "E1032: Missing :catch or :finally"
@@ -7748,8 +7651,7 @@ msgid "E1033: Catch unreachable after catch-all"
 msgstr "பி1033: கேட்ச்-ஆல்-ஐப் பிடித்த பிறகு அடைய முடியாது"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1034: Cannot use reserved name %s"
+msgid "E1034: Cannot use reserved name %s"
 msgstr "பி1034: ஒதுக்கப்பட்ட பெயர் %s ஐப் பயன்படுத்த முடியாது"
 
 #, no-c-format
@@ -7807,8 +7709,7 @@ msgid "E1051: Wrong argument type for +"
 msgstr "பி1051: + க்கான தவறான வாத வகை"
 
 #, c-format
-#| msgid "E254: Cannot allocate color %s"
-msgstr "E1052: Cannot declare an option: %s"
+msgid "E1052: Cannot declare an option: %s"
 msgstr "பி1052: ஒரு விருப்பத்தை அறிவிக்க முடியாது: %s"
 
 #, c-format
@@ -7841,12 +7742,10 @@ msgid "E1060: Expected dot after name: %s"
 msgstr "பி1060: பெயருக்குப் பின் எதிர்பார்க்கப்படும் புள்ளி: %s"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1061: Cannot find function %s"
+msgid "E1061: Cannot find function %s"
 msgstr "பி1061: %s செயல்பாட்டைக் கண்டறிய முடியவில்லை"
 
-#| msgid "E102: Can't find buffer \"%s\""
-msgstr "E1062: Cannot index a Number"
+msgid "E1062: Cannot index a Number"
 msgstr "பி1062: எண்ணை அட்டவணைப்படுத்த முடியாது"
 
 msgid "E1063: Type mismatch for v: variable"
@@ -7856,13 +7755,11 @@ msgid "E1064: Yank register changed while using it"
 msgstr "பி1064: யாங்க் பதிவேட்டைப் பயன்படுத்தும் போது மாற்றப்பட்டது"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1065: Command cannot be shortened: %s"
+msgid "E1065: Command cannot be shortened: %s"
 msgstr "பி1065: கட்டளையை சுருக்க முடியாது: %s"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1066: Cannot declare a register: %s"
+msgid "E1066: Cannot declare a register: %s"
 msgstr "பி1066: பதிவேட்டை அறிவிக்க முடியாது: %s"
 
 #, c-format
@@ -7882,8 +7779,7 @@ msgid "E1071: Invalid string for :import: %s"
 msgstr "பி1071: :இறக்குமதி: %s க்கான தவறான சரம்"
 
 #, c-format
-#| msgid "E625: Cannot open cscope database: %s"
-msgstr "E1072: Cannot compare %s with %s"
+msgid "E1072: Cannot compare %s with %s"
 msgstr "பி1072: %s ஐ %s உடன் ஒப்பிட முடியாது"
 
 #, c-format
@@ -7904,16 +7800,14 @@ msgstr "பி1077: %sக்கான வாத வகை இல்லை"
 msgid "E1078: Invalid command \"nested\", did you mean \"++nested\"?"
 msgstr "பி1078: தவறான கட்டளை \"nested\", \"++nested\" என்று கூறுகிறீர்களா?"
 
-#| msgid "E1188: Cannot open a terminal from the command line window"
-msgstr "E1079: Cannot declare a variable on the command line"
+msgid "E1079: Cannot declare a variable on the command line"
 msgstr "பி1079: கட்டளை வரியில் ஒரு மாறியை அறிவிக்க முடியாது"
 
 msgid "E1080: Invalid assignment"
 msgstr "பி1080: தவறான ஒதுக்கீடு"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1081: Cannot unlet %s"
+msgid "E1081: Cannot unlet %s"
 msgstr "பி1081: %s ஐ அனுமதிக்க முடியாது"
 
 msgid "E1082: Command modifier without command"
@@ -7941,13 +7835,11 @@ msgid "E1089: Unknown variable: %s"
 msgstr "பி1089: தெரியாத மாறி: %s"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1090: Cannot assign to argument %s"
+msgid "E1090: Cannot assign to argument %s"
 msgstr "பி1090: உரையாடல் %sக்கு ஒதுக்க முடியாது"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1091: Function is not compiled: %s"
+msgid "E1091: Function is not compiled: %s"
 msgstr "பி1091: செயல்பாடு தொகுக்கப்படவில்லை: %s"
 
 msgid "E1092: Cannot nest :redir"
@@ -7975,8 +7867,7 @@ msgid "E1098: String, List or Blob required"
 msgstr "பி1098: சரம், பட்டியல் அல்லது குமிழ் தேவை"
 
 #, c-format
-#| msgid "don't redraw while executing macros"
-msgstr "E1099: Unknown error while executing %s"
+msgid "E1099: Unknown error while executing %s"
 msgstr "பி1099: %s ஐ இயக்கும் போது தெரியாத பிழை"
 
 #, c-format
@@ -8042,12 +7933,10 @@ msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "பி1116: \"assert_fails()\" ஐந்தாவது உரையாடல் ஒரு சரமாக இருக்க வேண்டும்"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1117: Cannot use ! with nested %s"
+msgid "E1117: Cannot use ! with nested %s"
 msgstr "பி1117: பயன்படுத்த முடியாது! உள்ளமை %s உடன்"
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1118: Cannot change locked list"
+msgid "E1118: Cannot change locked list"
 msgstr "பி1118: பூட்டிய பட்டியலை மாற்ற முடியாது"
 
 msgid "E1119: Cannot change locked list item"
@@ -8098,8 +7987,7 @@ msgstr "பி1132: செயல்பாடு உரையாடல் இல�
 msgid "E1133: Cannot extend a null dict"
 msgstr "பி1133: சுழிய ஆணையை நீட்டிக்க முடியாது"
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1134: Cannot extend a null list"
+msgid "E1134: Cannot extend a null list"
 msgstr "பி1134: சுழிய பட்டியலை நீட்டிக்க முடியாது"
 
 #, c-format
@@ -8147,8 +8035,7 @@ msgid "E1147: List not set"
 msgstr "பி1147: பட்டியல் அமைக்கப்படவில்லை"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1148: Cannot index a %s"
+msgid "E1148: Cannot index a %s"
 msgstr "பி1148: %sஐ அட்டவணைப்படுத்த முடியாது"
 
 #, c-format
@@ -8171,8 +8058,7 @@ msgstr "பி1153: %sக்கான தவறான செயல்பாட�
 msgid "E1154: Divide by zero"
 msgstr "பி1154: பூச்சியத்தால் வகுக்கவும்"
 
-#| msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E1155: Cannot define autocommands for ALL events"
+msgid "E1155: Cannot define autocommands for ALL events"
 msgstr ""
 "E1155: அனைத்து நிகழ்வுகளுக்கும் தன்னியக்க கட்டளைகளை வரையறுக்க முடியாது"
 
@@ -8187,8 +8073,7 @@ msgstr ""
 "E1158: Vim9 ச்கிரிப்ட்டில் flatten() ஐப் பயன்படுத்த முடியாது, flattennew() "
 "ஐப் பயன்படுத்தவும்"
 
-#| msgid "E242: Can't split a window while closing another"
-msgstr "E1159: Cannot split a window when closing the buffer"
+msgid "E1159: Cannot split a window when closing the buffer"
 msgstr "பி1159: இடையகத்தை மூடும்போது சாளரத்தைப் பிரிக்க முடியாது"
 
 msgid "E1160: Cannot use a default for variable arguments"
@@ -8279,8 +8164,7 @@ msgstr ""
 msgid "E1180: Variable arguments type must be a list: %s"
 msgstr "பி1180: மாறி மதிப்புருக்கள் வகை ஒரு பட்டியலாக இருக்க வேண்டும்: %s"
 
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1181: Cannot use an underscore here"
+msgid "E1181: Cannot use an underscore here"
 msgstr "பி1181: இங்கே அடிக்கோடினைப் பயன்படுத்த முடியாது"
 
 #, c-format
@@ -8529,8 +8413,7 @@ msgid "E1245: Cannot expand <sfile> in a Vim9 function"
 msgstr "பி1245: Vim9 செயல்பாட்டில் <sfile> விரிவாக்க முடியாது"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E1246: Cannot find variable to (un)lock: %s"
+msgid "E1246: Cannot find variable to (un)lock: %s"
 msgstr "பி1246: (அன்)லாக்: %sக்கான மாறியைக் கண்டுபிடிக்க முடியவில்லை"
 
 msgid "E1247: Line number out of range"
@@ -8539,8 +8422,7 @@ msgstr "பி1247: வரி எண் வரம்பிற்கு வெள
 msgid "E1248: Closure called from invalid context"
 msgstr "பி1248: தவறான சூழலில் இருந்து மூடப்பட்டது"
 
-#| msgid "E532: Highlighting color name too long in defineAnnoType"
-msgstr "E1249: Highlight group name too long"
+msgid "E1249: Highlight group name too long"
 msgstr "பி1249: குழுவின் பெயரை மிக நீளமாக உயர்த்தவும்"
 
 #, c-format
@@ -8563,8 +8445,7 @@ msgstr "பி1252: உரையாடல் %dக்கு சரம், பட
 msgid "E1253: String, List, Tuple or Blob required for argument %d"
 msgstr "பி1253: உரையாடல் %dக்கு சரம், பட்டியல், டூப்பிள் அல்லது ப்ளாப் தேவை"
 
-#| msgid "E626: Cannot get cscope database information"
-msgstr "E1254: Cannot use script variable in for loop"
+msgid "E1254: Cannot use script variable in for loop"
 msgstr "பி1254: லூப்பிற்கு ச்கிரிப்ட் மாறியைப் பயன்படுத்த முடியாது"
 
 msgid "E1255: <Cmd> mapping must end with <CR>"
@@ -8590,16 +8471,14 @@ msgstr ""
 "E1259: இறக்குமதி செய்யப்பட்ட பெயருக்குப் பிறகு பெயர் விடுபட்டுள்ளது: %s"
 
 #, c-format
-#| msgid "E1161: Cannot json encode a %s"
-msgstr "E1260: Cannot unlet an imported item: %s"
+msgid "E1260: Cannot unlet an imported item: %s"
 msgstr "பி1260: இறக்குமதி செய்யப்பட்ட பொருளை நீக்க முடியாது; %s"
 
 msgid "E1261: Cannot import .vim without using \"as\""
 msgstr "பி1261: \"as\" ஐப் பயன்படுத்தாமல் .vim ஐ இறக்குமதி செய்ய முடியாது"
 
 #, c-format
-#| msgid "E625: Cannot open cscope database: %s"
-msgstr "E1262: Cannot import the same script twice: %s"
+msgid "E1262: Cannot import the same script twice: %s"
 msgstr "பி1262: ஒரே ச்கிரிப்டை இருமுறை இறக்குமதி செய்ய முடியாது: %s"
 
 msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
@@ -8657,8 +8536,7 @@ msgid "E1275: String or function required for ->(expr)"
 msgstr "பி1275: சரம் அல்லது செயல்பாடு தேவை ->(expr)"
 
 #, c-format
-#| msgid "E1244: Bad color string: %s"
-msgstr "E1276: Illegal map mode string: '%s'"
+msgid "E1276: Illegal map mode string: '%s'"
 msgstr "பி1276: சட்டவிரோத வரைபட முறை சரம்: '%s'"
 
 msgid "E1277: Channel and job feature is not available"
@@ -8694,8 +8572,7 @@ msgid "E1285: Could not clear timeout: %s"
 msgstr "பி1285: காலக்கெடுவை அழிக்க முடியவில்லை: %s"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1286: Could not set timeout: %s"
+msgid "E1286: Could not set timeout: %s"
 msgstr "பி1286: காலக்கெடுவை அமைக்க முடியவில்லை: %s"
 
 #, c-format
@@ -8781,8 +8658,7 @@ msgstr "பி1306: லூப் கூடு மிகவும் ஆழமா
 msgid "E1307: Argument %d: Trying to modify a const %s"
 msgstr "பி1307: உரையாடல் %d: const %s ஐ மாற்ற முயற்சிக்கிறது"
 
-#| msgid "E242: Can't split a window while closing another"
-msgstr "E1308: Cannot resize a window in another tab page"
+msgid "E1308: Cannot resize a window in another tab page"
 msgstr "பி1308: மற்றொரு தாவல் பக்கத்தில் சாளரத்தின் அளவை மாற்ற முடியாது"
 
 msgid "E1309: Cannot change mappings while listing"
@@ -8896,13 +8772,11 @@ msgstr "பி1342: இடைமுகத்தை Vim9 ச்கிரிப்
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "பி1343: இடைமுகப் பெயர் ஒரு பெரிய எழுத்துடன் தொடங்க வேண்டும்: %s"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1344: Cannot initialize a variable in an interface"
+msgid "E1344: Cannot initialize a variable in an interface"
 msgstr "பி1344: ஒரு இடைமுகத்தில் ஒரு மாறியை துவக்க முடியாது"
 
 #, c-format
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1345: Not a valid command in an interface: %s"
+msgid "E1345: Not a valid command in an interface: %s"
 msgstr "பி1345: இடைமுகத்தில் சரியான கட்டளை இல்லை: %s"
 
 #, c-format
@@ -8932,13 +8806,11 @@ msgid "E1352: Duplicate \"extends\""
 msgstr "பி1352: நகல் \"நீட்டிக்கிறது\""
 
 #, c-format
-#| msgid "E421: Color name or number not recognized: %s"
-msgstr "E1353: Class name not found: %s"
+msgid "E1353: Class name not found: %s"
 msgstr "பி1353: வகுப்பின் பெயர் கிடைக்கவில்லை: %s"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1354: Cannot extend %s"
+msgid "E1354: Cannot extend %s"
 msgstr "பி1354: %sஐ நீட்டிக்க முடியாது"
 
 #, c-format
@@ -8954,8 +8826,7 @@ msgstr "பி1357: \"super\" ஐப் பயன்படுத்துவத�
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "பி1358: குழந்தை வகுப்பில் \"சூப்பர்\" ஐப் பயன்படுத்துவதில்லை"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1359: Cannot define a \"new\" method in an abstract class"
+msgid "E1359: Cannot define a \"new\" method in an abstract class"
 msgstr "பி1359: ஒரு சுருக்க வகுப்பில் \"புதிய\" முறையை வரையறுக்க முடியாது"
 
 msgid "E1360: Using a null object"
@@ -8992,8 +8863,7 @@ msgstr ""
 "ஐத் தொடர்ந்து இருக்க வேண்டும்"
 
 #, c-format
-#| msgid "E738: Can't list variables for %s"
-msgstr "E1369: Duplicate variable: %s"
+msgid "E1369: Duplicate variable: %s"
 msgstr "பி1369: டூப்ளிகேட் மாறி: %s"
 
 msgid "E1370: Cannot define a \"new\" method as static"
@@ -9028,8 +8898,7 @@ msgstr ""
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
 msgstr "பி1377: \"%s\" முறையின் அணுகல் நிலை \"%s\" வகுப்பில் வேறுபட்டது"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1378: Static member not supported in an interface"
+msgid "E1378: Static member not supported in an interface"
 msgstr "பி1378: நிலையான உறுப்பினர் இடைமுகத்தில் ஆதரிக்கப்படவில்லை"
 
 msgid "E1379: Protected variable not supported in an interface"
@@ -9119,8 +8988,7 @@ msgstr "பி1399: வகையை ச்கிரிப்ட்டில் �
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "பி1403: வகை மாற்று \"%s\" ஐ மதிப்பாகப் பயன்படுத்த முடியாது"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1404: Abstract cannot be used in an interface"
+msgid "E1404: Abstract cannot be used in an interface"
 msgstr "பி1404: சுருக்கத்தை ஒரு இடைமுகத்தில் பயன்படுத்த முடியாது"
 
 #, c-format
@@ -9130,16 +8998,14 @@ msgstr "பி1405: \"%s\" வகுப்பை மதிப்பாகப் 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "பி1407: Typealias ஐ மாறி அல்லது மதிப்பாகப் பயன்படுத்த முடியாது"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1408: Final variable not supported in an interface"
+msgid "E1408: Final variable not supported in an interface"
 msgstr "பி1408: இறுதி மாறி ஒரு இடைமுகத்தில் ஆதரிக்கப்படவில்லை"
 
 #, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
 msgstr "பி1409: \"%s\" வகுப்பில் படிக்க-மட்டும் மாறி \"%s\" ஐ மாற்ற முடியாது"
 
-#| msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1410: Const variable not supported in an interface"
+msgid "E1410: Const variable not supported in an interface"
 msgstr "பி1410: கான்ச்ட் மாறி ஒரு இடைமுகத்தில் ஆதரிக்கப்படவில்லை"
 
 #, c-format
@@ -9293,8 +9159,7 @@ msgstr ""
 "ஏற்பட்டது"
 
 #, c-format
-#| msgid "E1010: Type not recognized: %s"
-msgstr "E1510: Value too large: %s"
+msgid "E1510: Value too large: %s"
 msgstr "பி1510: மதிப்பு மிகப் பெரியது: %s"
 
 #, c-format
@@ -9381,8 +9246,7 @@ msgstr ""
 msgid "E1532: Cannot modify a tuple"
 msgstr "பி1532: ஒரு டூபிளை மாற்ற முடியாது"
 
-#| msgid "E533: Can't select wide font"
-msgstr "E1533: Cannot slice a tuple"
+msgid "E1533: Cannot slice a tuple"
 msgstr "பி1533: ஒரு டூபிளை வெட்ட முடியாது"
 
 #, c-format
@@ -9488,8 +9352,7 @@ msgid "E1560: Not a generic function: %s"
 msgstr "பி1560: பொதுவான செயல்பாடு அல்ல: %s"
 
 #, c-format
-#| msgid "E568: Duplicate cscope database not added"
-msgstr "E1561: Duplicate type variable name: %s"
+msgid "E1561: Duplicate type variable name: %s"
 msgstr "பி1561: நகல் வகை மாறி பெயர்: %s"
 
 msgid "E1562: Diff anchors cannot be used with hidden diff windows"
@@ -9518,8 +9381,7 @@ msgstr ""
 "E1567: சாக்கெட் சேவையகத்தைத் தொடங்க முடியாது, சாக்கெட் பாதை கிடைக்கவில்லை"
 
 #, c-format
-#| msgid "E1146: Command not recognized: %s"
-msgstr "E1568: OSC command response timed out: %.*s"
+msgid "E1568: OSC command response timed out: %.*s"
 msgstr "பி1568: OSC கட்டளை பதில் நேரம் முடிந்தது: %.*s"
 
 msgid "E1569: Cannot use listener_add in a listener callback"
