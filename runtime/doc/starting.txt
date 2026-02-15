@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1140,7 +1140,8 @@ and `~/.vim/vimrc` file.
 When the |xdg-vimrc| is used the 'runtimepath' and 'packpath' options will be
 modified accordingly to respect the |xdg-base-dir|: >
 
-    "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
+  "$XDG_CONFIG_HOME/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,
+   $XDG_CONFIG_HOME/vim/after"
 <
 
 Avoiding trojan horses ~
