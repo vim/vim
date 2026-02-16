@@ -2097,8 +2097,7 @@ scroll_event(GtkWidget *widget,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
 #if GTK_CHECK_VERSION(3,4,0)
-    // on x11, despite not requested, when we copy into primary clipboard,
-    // we'll get smooth events. Unsmooth ones will also come along.
+# ifdef GDK_WINDOWING_WAYLAND
     if (event->direction == GDK_SCROLL_SMOOTH && gui.is_wayland)
     {
 	while (acc_x >= 1.0)
@@ -2126,7 +2125,11 @@ scroll_event(GtkWidget *widget,
 		    FALSE, vim_modifiers);
 	}
     }
-    else if (event->direction == GDK_SCROLL_SMOOTH && X_DISPLAY)
+    else
+# endif
+    // on x11, despite not requested, when we copy into primary clipboard,
+    // we'll get smooth events. Unsmooth ones will also come along.
+    if (event->direction == GDK_SCROLL_SMOOTH && X_DISPLAY)
 	// for X11 we deal with unsmooth events, and so ignore the smooth ones
 	;
     else
