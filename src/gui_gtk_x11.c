@@ -6948,7 +6948,7 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
 		    dest_y - src_y);
 	    cairo_rectangle(cr, dest_x, dest_y, width, height);
 	    cairo_clip(cr);
-	    cairo_paint(cr);;
+	    cairo_paint(cr);
 	}
 	else
 	{
