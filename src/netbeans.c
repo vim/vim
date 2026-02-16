@@ -2321,7 +2321,7 @@ special_keys(char_u *args)
 
 	if (strlen(tok) + i < KEYBUFLEN)
 	{
-	    strcpy(&keybuf[i], tok);
+	    vim_strncpy((char_u *)&keybuf[i], (char_u *)tok, KEYBUFLEN - i - 1);
 	    vim_snprintf(cmdbuf, sizeof(cmdbuf),
 				 "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
 	    do_map(MAPTYPE_MAP, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
