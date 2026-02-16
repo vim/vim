@@ -1,26 +1,22 @@
 # Tamil Translation for Vim
+# Copyright (C) YEAR 2026, The Vim Project
+# This file is distributed under the same license as the Vim package.
+# FIRST AUTHOR தமிழ்நேரம் <TamilNeram247@gmail.com>, 2026.
 #
-#
-# FIRST AUTHOR தமிழ்நேரம் <tamilneram247@gmail.com>, 2003.
-#
-#
-# As with all guides, they should be followed unless there is a reason why they
-# should not be for a particular message.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 9.2 (Tamil)\n"
+"Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-01-06 14:41+0000\n"
 "PO-Revision-Date: 2026-02-16 22:09+0530\n"
 "Last-Translator: தமிழ்நேரம் <TamilNeram247@gmail.com>\n"
-"Language-Team: தமிழ்நேரம் <tamilneram247@gmail.com>\n"
+"Language-Team: தமிழ்நேரம் <TamilNeram247@gmail.com>\n"
 "Language: ta\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n!=1;\n"
-"X-Generator: Poedit 3.8\n"
 
 msgid "ERROR: "
 msgstr "பிழை:"
