@@ -3081,7 +3081,7 @@ hl_combine_attr(int char_attr, int prim_attr)
     return get_attr_entry(&term_attr_table, &new_en);
 }
 
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 /*
  * Blend two RGB colors based on blend value (0-100).
  * blend: 0=use popup color, 100=use background color
