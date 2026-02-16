@@ -1,4 +1,4 @@
-*ft_context.txt*	For Vim version 9.2.  Last change: 2026 Jan 18
+*ft_context.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 This is the documentation for the ConTeXt filetype plugin.
 

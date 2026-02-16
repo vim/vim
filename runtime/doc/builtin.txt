@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2026 Jan 17
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1389,6 +1389,9 @@ blob2str({blob} [, {options}])				*blob2str()*
 		Can also be used as a |method|: >
 			GetBlob()->blob2str()
 <
+		If `iconv` is not available and the encoding cannot be converted
+		using built-in conversion rules, an error will be reported.
+
 		Return type: list<string>
 
 
@@ -7979,8 +7982,8 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		value {expr}.  Examples: >
 			nr2char(64)		returns "@"
 			nr2char(32)		returns " "
-<		When {utf8} is omitted or zero, the current 'encoding' is used.
-		Example for "utf-8": >
+<		When {utf8} is omitted or zero, the current 'encoding' is
+		used.  Example for "utf-8": >
 			nr2char(300)		returns I with bow character
 <		When {utf8} is TRUE, always return UTF-8 characters.
 		Note that a NUL character in the file is specified with
@@ -8863,7 +8866,7 @@ redraw_listener_add({opts})				*redraw_listener_add()*
 		Return type: |Number|
 
 
-redraw_listener_remove({id})				*redraw_listener_remove()*
+redraw_listener_remove({id})			*redraw_listener_remove()*
 		Remove a redraw listener previously added with
 		|redraw_listener_add()|.  Returns FALSE when {id} could not be
 		found, TRUE when {id} was removed.
@@ -12609,8 +12612,7 @@ win_findbuf({bufnr})					*win_findbuf()*
 		Can also be used as a |method|: >
 			GetBufnr()->win_findbuf()
 <
-		Return type: list<number> or list<any>
-
+		Return type: list<number>
 
 win_getid([{win} [, {tab}]])				*win_getid()*
 		Get the |window-ID| for the specified window.
@@ -12656,7 +12658,8 @@ win_gettype([{nr}])					*win_gettype()*
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.
-		Return TRUE if successful, FALSE if the window cannot be found.
+		Return TRUE if successful, FALSE if the window cannot be
+		found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_gotoid()

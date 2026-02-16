@@ -1860,7 +1860,6 @@ get_lval_subscript(
     int		flags,	    // GLV_ values
     class_T	*cl_exec)
 {
-    int		vim9script = in_vim9script();
     int		quiet = flags & GLV_QUIET;
     char_u	*key = NULL;
     int		len;
@@ -1908,7 +1907,7 @@ get_lval_subscript(
 		vartype_name(v_type));
 #endif
 
-	if (vim9script && lp->ll_valtype == NULL
+	if (current_script_is_vim9() && lp->ll_valtype == NULL
 		&& v != NULL
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
@@ -2468,7 +2467,10 @@ set_var_lval(
 	if (lp->ll_valtype != NULL
 		    && check_typval_arg_type(lp->ll_valtype, rettv,
 							      NULL, 0) == FAIL)
+	{
+	    lp->ll_name_end = NULL;
 	    return;
+	}
 
 	// If the lval is a List and the type of the list is not yet set,
 	// then set the item type from the declared type of the variable.
@@ -3646,7 +3648,15 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    int		error = FALSE;
 
 	    if (op_falsy)
+	    {
+		// Is this typeval supported with the falsy operator?
+		if (check_typval_is_value(rettv) == FAIL)
+		{
+		    clear_tv(rettv);
+		    return FAIL;
+		}
 		result = tv2bool(rettv);
+	    }
 	    else if (vim9script)
 		result = tv_get_bool_chk(rettv, &error);
 	    else if (tv_get_number_chk(rettv, &error) != 0)
@@ -5376,7 +5386,15 @@ eval9_leader(
 	while (VIM_ISWHITE(end_leader[-1]))
 	    --end_leader;
 	if (vim9script && end_leader[-1] == '!')
+	{
+	    // Is this typeval supported with the ! operator?
+	    if (check_typval_is_value(rettv) == FAIL)
+	    {
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    val = tv2bool(rettv);
+	}
 	else
 	    val = tv_get_number_chk(rettv, &error);
     }
@@ -5399,13 +5417,9 @@ eval9_leader(
 		}
 		if (rettv->v_type == VAR_FLOAT)
 		{
-		    if (vim9script)
-		    {
-			rettv->v_type = VAR_BOOL;
-			val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
-		    }
-		    else
-			f = !f;
+		    rettv->v_type = VAR_BOOL;
+		    val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
+		    type = VAR_BOOL;
 		}
 		else
 		{

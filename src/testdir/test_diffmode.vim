@@ -992,6 +992,9 @@ func VerifyInternal(buf, dumpfile, extra)
 endfunc
 
 func Test_diff_screen()
+  if has('bsd')
+    CheckExecutable gdiff
+  endif
   if has('osxdarwin') && system('diff --version') =~ '^Apple diff'
     throw 'Skipped: unified diff does not work properly on this macOS version'
   endif
@@ -1004,7 +1007,8 @@ func Test_diff_screen()
       func UnifiedDiffExpr()
         " Prepend some text to check diff type detection
         call writefile(['warning', '  message'], v:fname_out)
-        silent exe '!diff -U0 ' .. v:fname_in .. ' ' .. v:fname_new .. '>>' .. v:fname_out
+        let diff = has('bsd') ? 'gdiff' : 'diff'
+        silent exe $'!{diff} -U0 {v:fname_in} {v:fname_new}>>{v:fname_out}'
       endfunc
       func SetupUnified()
         set diffexpr=UnifiedDiffExpr()
@@ -3594,6 +3598,32 @@ func Test_diffexpr_wipe_buffers()
   let buf = RunVimInTerminal('Xtest_diffexpr_wipe', {})
   call term_sendkeys(buf, ":so\<CR>")
   call WaitForAssert({-> assert_match('4 buffers wiped out', term_getline(buf, 20))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_diffput_to_empty_buf()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['foo', 'bar', 'baz'])
+    rightbelow vnew
+    windo diffthis
+    windo set cursorline nofoldenable
+    wincmd t
+  END
+  call writefile(lines, 'Xtest_diffput_to_empty_buf', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_diffput_to_empty_buf', {})
+  call VerifyScreenDump(buf, 'Test_diffput_to_empty_buf_01', {})
+  call term_sendkeys(buf, '0')  " Trigger an initial 'cursorbind' check.
+  call VerifyScreenDump(buf, 'Test_diffput_to_empty_buf_01', {})
+  call term_sendkeys(buf, ":diffput | echo\<CR>")
+  call VerifyScreenDump(buf, 'Test_diffput_to_empty_buf_02', {})
+  call term_sendkeys(buf, ":redraw!\<CR>")
+  call VerifyScreenDump(buf, 'Test_diffput_to_empty_buf_02', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_diffput_to_empty_buf_03', {})
 
   call StopVimInTerminal(buf)
 endfunc

@@ -84,7 +84,7 @@ jobs:
             architecture: arm64
           - features: normal
             compiler: gcc
-            extra: [vimtags, proto, preproc_indent]
+            extra: [vimtags, proto, preproc_indent, encoding]
           - features: huge
             compiler: gcc
             extra: [no_x11_wl]
@@ -370,6 +370,17 @@ jobs:
           (
             "${SRCDIR}"/vim -u NONE --not-a-term -esNX +"cd runtime/tools" -S preproc_indent.vim
             git diff --exit-code -- src/*.[ch] src/xxd/xxd.c
+            true
+          )
+
+      - name: Check encoding of utf-8 runtime files
+        if: contains(matrix.extra, 'encoding')
+        run: |
+          # This will exit with an error code if utf-8 runtime files are not in utf-8 encoding
+          (
+            find . -type f -name "*utf-8*.vim" -exec sh -c \
+              'iconv -f utf-8 -t utf-8 "$1" >/dev/null 2>&1 || echo "non utf-8 encoding detected in $1"' \
+              find-sh {} \; |grep  "non utf-8 encoding" && exit 3
             true
           )
 

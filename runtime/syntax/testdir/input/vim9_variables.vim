@@ -208,6 +208,35 @@ foo =<< eval trim END
 ...
 END
 
+# :unlet
+
+unlet foo
+unlet foo bar
+unlet foo
+      #\ comment
+      \ bar
+
+unlet! foo
+unlet! foo bar
+unlet! foo
+      #\ comment
+      \ bar
+
+unlet $FOO
+unlet! $FOO
+
+unlet list[3]
+unlet list[3:]
+unlet dict['two']
+unlet dict.two
+
+unlet foo # comment
+unlet foo #\ comment
+unlet foo | echo "Foo"
+unlet foo bar # comment
+unlet foo bar #\ comment
+unlet foo bar | echo "Foo"
+
 # :for
 
 for foo in expr

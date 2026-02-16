@@ -240,6 +240,7 @@ Page custom SetCustom ValidateCustom
   !include "lang\russian.nsi"
   !include "lang\serbian.nsi"
   !include "lang\simpchinese.nsi"
+  !include "lang\swedish.nsi"
   !include "lang\tradchinese.nsi"
   !include "lang\turkish.nsi"
 !endif

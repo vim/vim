@@ -30,7 +30,7 @@ Changes made to `autoload/netrw.vim`:
 - 2024 May 13 by Vim Project: prefer scp over pscp
 - 2024 Jun 04 by Vim Project: set bufhidden if buffer changed, nohidden is set and buffer shall be switched (#14915)
 - 2024 Jun 13 by Vim Project: glob() on Windows fails when a directory name contains [] (#14952)
-- 2024 Jun 23 by Vim Project: save ad restore registers when liststyle = WIDELIST (#15077, #15114)
+- 2024 Jun 23 by Vim Project: save and restore registers when liststyle = WIDELIST (#15077, #15114)
 - 2024 Jul 22 by Vim Project: avoid endless recursion (#15318)
 - 2024 Jul 23 by Vim Project: escape filename before trying to delete it (#15330)
 - 2024 Jul 30 by Vim Project: handle mark-copy to same target directory (#12112)
@@ -505,7 +505,7 @@ General changes made to netrw:
 		Dec 24, 2013	* (esquifit) asked that netrw allow the
 				  /cygdrive prefix be a user-alterable
 				  parameter.
-		Jan 02, 2014	* Fixed a problem with netrw-based ballon
+		Jan 02, 2014	* Fixed a problem with netrw-based balloon
 				  evaluation (ie. netrw#NetrwBaloonHelp()
 				  not having been loaded error messages)
 		Jan 03, 2014	* Fixed a problem with tree listings

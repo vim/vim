@@ -234,7 +234,7 @@ vwl_log_handler(const char *fmt, va_list args)
 	return;
 
     vim_strncpy((char_u*)buf, (char_u*)prefix, len);
-    vim_vsnprintf(buf + len, 4096 - len, fmt, args);
+    vim_vsnprintf(buf + len, 512 - len, fmt, args);
 
     // Remove newline that libwayland puts
     buf[STRLEN(buf) - 1] = NUL;

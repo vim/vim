@@ -1460,7 +1460,7 @@ find_tagfunc_tags(
     // create 'info' dict argument
     if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
 	return FAIL;
-    if (tag->user_data != NULL)
+    if (!(flags & TAG_INS_COMP) && tag->user_data != NULL)
 	dict_add_string(d, "user_data", tag->user_data);
     if (buf_ffname != NULL)
 	dict_add_string(d, "buf_ffname", buf_ffname);
@@ -3347,7 +3347,7 @@ get_tagfname(
 	    if (tnp->tn_hf_idx > tag_fnames.ga_len || *p_hf == NUL)
 		return FAIL;
 	    ++tnp->tn_hf_idx;
-	    STRCPY(buf, p_hf);
+	    vim_strncpy(buf, p_hf, MAXPATHL - STRLEN_LITERAL("tags") - 1);
 	    STRCPY(gettail(buf), "tags");
 #ifdef BACKSLASH_IN_FILENAME
 	    slash_adjust(buf);

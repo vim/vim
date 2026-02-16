@@ -958,6 +958,58 @@ func Nb_bwipe_buffer(port)
   sleep 10m
 endfunc
 
+func Nb_specialKeys_overflow(port)
+  call delete("Xnetbeans")
+  call writefile([], "Xnetbeans")
+
+  " Last line number in the Xnetbeans file. Used to verify the result of the
+  " communication with the netbeans server
+  let g:last = 0
+
+  " Establish the connection with the netbeans server
+  exe 'nbstart :localhost:' .. a:port .. ':bunny'
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_equal(['AUTH bunny',
+        \ '0:version=0 "2.5"',
+        \ '0:startupDone=0'], l[-3:])
+  let g:last += 3
+
+  " Open the command buffer to communicate with the server
+  split Xcmdbuf
+  let cmdbufnr = bufnr()
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
+        \ substitute(l[-3], '".*/', '"', ''))
+  call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
+        \ substitute(l[-2], '".*/', '"', ''))
+  call assert_equal('1:startDocumentListen!16', l[-1])
+  let g:last += 3
+
+  " Keep the command buffer loaded for communication
+  hide
+
+  sleep 1m
+
+  " Open the command buffer to communicate with the server
+  split Xcmdbuf
+  let cmdbufnr = bufnr()
+  call appendbufline(cmdbufnr, '$', 'specialKeys_overflow_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 6)')
+  call WaitForAssert({-> assert_match('send: 0:specialKeys!200 "A\{80}-X"',
+        \ ReadXnetbeans()[-1])})
+
+  " Verify that specialKeys test, still works after the previous junk
+  call appendbufline(cmdbufnr, '$', 'specialKeys_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 1)')
+  call WaitForAssert({-> assert_match('^send: 0:specialKeys!91 "F12 F13 C-F13"$',
+        \ ReadXnetbeans()[-1])})
+  let g:last += 1
+
+  sleep 10m
+endfunc
+
 " This test used to reference a buffer after it was freed leading to an ASAN
 " error.
 func Test_nb_bwipe_buffer()
@@ -965,6 +1017,11 @@ func Test_nb_bwipe_buffer()
   silent! %bwipe!
   sleep 100m
   nbclose
+endfunc
+
+" Verify that the specialKeys argument does not overflow
+func Test_nb_specialKeys_overflow()
+  call s:run_server('Nb_specialKeys_overflow')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

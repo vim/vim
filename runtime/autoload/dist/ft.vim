@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jan 20
+# Last Change:		2026 Feb 06
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -473,12 +473,19 @@ def IsHareModule(dir: string, depth: number): bool
   endif
 
   # Check all files in the directory before recursing into subdirectories.
-  return glob(dir .. '/*', true, true)
+  const items = glob(dir .. '/*', true, true)
     ->sort((a, b) => isdirectory(a) - isdirectory(b))
-    ->reduce((acc, n) => acc
-      || n =~ '\.ha$'
-      || isdirectory(n) && IsHareModule(n, depth - 1),
-    false)
+  for n in items
+    if isdirectory(n)
+      if IsHareModule(n, depth - 1)
+        return true
+      endif
+    elseif n =~ '\.ha$'
+      return true
+    endif
+  endfor
+
+  return false
 enddef
 
 # Determines whether a README file is inside a Hare module and should receive
@@ -1825,6 +1832,8 @@ const ft_from_ext = {
   "tlh": "cpp",
   # Cascading Style Sheets
   "css": "css",
+  # Common Expression Language (CEL) - https://cel.dev
+  "cel": "cel",
   # Century Term Command Scripts (*.cmd too)
   "con": "cterm",
   # ChordPro
@@ -2373,6 +2382,9 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # NetLinx
+  "axs": "netlinx",
+  "axi": "netlinx",
   # Nickel
   "ncl": "nickel",
   # Nim file
@@ -3302,6 +3314,9 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
+  # skhd (simple hotkey daemon for macOS)
+  ".skhdrc": "skhd",
+  "skhdrc": "skhd",
   # SLRN
   ".slrnrc": "slrnrc",
   # Squid

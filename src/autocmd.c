@@ -1627,7 +1627,6 @@ aucmd_prepbuf(
 
     aco->save_curwin_id = curwin->w_id;
     aco->save_prevwin_id = prevwin == NULL ? 0 : prevwin->w_id;
-    aco->save_State = State;
 #ifdef FEAT_JOB_CHANNEL
     if (bt_prompt(curbuf))
 	aco->save_prompt_insert = curbuf->b_prompt_insert;
@@ -1727,14 +1726,6 @@ aucmd_restbuf(
 	}
 win_found:
 	--curbuf->b_nwindows;
-#ifdef FEAT_JOB_CHANNEL
-	int save_stop_insert_mode = stop_insert_mode;
-	// May need to stop Insert mode if we were in a prompt buffer.
-	leaving_window(curwin);
-	// Do not stop Insert mode when already in Insert mode before.
-	if (aco->save_State & MODE_INSERT)
-	    stop_insert_mode = save_stop_insert_mode;
-#endif
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL, NULL);
 	win_remove(curwin, NULL);

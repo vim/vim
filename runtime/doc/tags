@@ -6315,6 +6315,8 @@ b:changelog_name	filetype.txt	/*b:changelog_name*
 b:clojure_syntax_keywords	syntax.txt	/*b:clojure_syntax_keywords*
 b:clojure_syntax_without_core_keywords	syntax.txt	/*b:clojure_syntax_without_core_keywords*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
+b:hare_indent_case	ft_hare.txt	/*b:hare_indent_case*
+b:hare_indent_match_switch	ft_hare.txt	/*b:hare_indent_match_switch*
 b:lf_shell_syntax	syntax.txt	/*b:lf_shell_syntax*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:rust_cargo_avoid_whole_workspace	ft_rust.txt	/*b:rust_cargo_avoid_whole_workspace*
@@ -7547,6 +7549,7 @@ ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
 ft-freebasic-plugin	filetype.txt	/*ft-freebasic-plugin*
 ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
+ft-gdb-syntax	syntax.txt	/*ft-gdb-syntax*
 ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gitrebase-plugin	filetype.txt	/*ft-gitrebase-plugin*
@@ -7819,7 +7822,6 @@ g:hare_indent_match_switch	ft_hare.txt	/*g:hare_indent_match_switch*
 g:hare_makeprg_params	ft_hare.txt	/*g:hare_makeprg_params*
 g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
 g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
-g:hare_symbol_operators	ft_hare.txt	/*g:hare_symbol_operators*
 g:help_example_languages	helphelp.txt	/*g:help_example_languages*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
@@ -7975,6 +7977,7 @@ g:rustfmt_command	ft_rust.txt	/*g:rustfmt_command*
 g:rustfmt_detect_version	ft_rust.txt	/*g:rustfmt_detect_version*
 g:rustfmt_emit_files	ft_rust.txt	/*g:rustfmt_emit_files*
 g:rustfmt_fail_silently	ft_rust.txt	/*g:rustfmt_fail_silently*
+g:rustfmt_find_toml	ft_rust.txt	/*g:rustfmt_find_toml*
 g:rustfmt_options	ft_rust.txt	/*g:rustfmt_options*
 g:statusline_winid	options.txt	/*g:statusline_winid*
 g:syntax_on	syntax.txt	/*g:syntax_on*
@@ -8074,6 +8077,7 @@ garbagecollect()	builtin.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
 gdb-version	terminal.txt	/*gdb-version*
+gdb.vim	syntax.txt	/*gdb.vim*
 ge	motion.txt	/*ge*
 gender-neutral	helphelp.txt	/*gender-neutral*
 generic-function-call	vim9.txt	/*generic-function-call*
@@ -8312,6 +8316,8 @@ haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 hare	ft_hare.txt	/*hare*
+hare-folding	ft_hare.txt	/*hare-folding*
+hare-symbol-operators	ft_hare.txt	/*hare-symbol-operators*
 hare.vim	ft_hare.txt	/*hare.vim*
 has()	builtin.txt	/*has()*
 has-patch	builtin.txt	/*has-patch*
@@ -11742,7 +11748,6 @@ vms-notes	os_vms.txt	/*vms-notes*
 vms-problems	os_vms.txt	/*vms-problems*
 vms-started	os_vms.txt	/*vms-started*
 vms-usage	os_vms.txt	/*vms-usage*
-votes-for-changes	todo.txt	/*votes-for-changes*
 vreplace-mode	insert.txt	/*vreplace-mode*
 vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
 vt100-function-keys	term.txt	/*vt100-function-keys*

@@ -424,6 +424,42 @@ menu_sr_rs.iso_8859-5.vim : menu_sr_rs.utf-8.vim
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28595))
 
+# Convert menu_sv_se.utf-8.vim to menu_sv_se.iso_8859-1.vim.
+menu_sv_se.iso_8859-1.vim : menu_sv_se.utf-8.vim
+	- $(RM) $@
+!IF DEFINED (ICONV)
+	$(ICONV) -f UTF-8 -t ISO-8859-1 $? >$@
+!ELSE
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
+		[System.IO.File]::ReadAllText(\"$?\", \
+		[System.Text.Encoding]::GetEncoding(65001)), \
+		[System.Text.Encoding]::GetEncoding(28591))
+!ENDIF
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+		[System.Text.Encoding]::GetEncoding(28591)) -replace \
+		'scriptencoding utf-8', 'scriptencoding iso-8859-1' -replace \
+		'Original translations', 'Generated from $?, DO NOT EDIT'; \
+		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.Text.Encoding]::GetEncoding(28591))
+
+# Convert menu_sv_se.utf-8.vim to menu_swedish_sweden.1252.vim.
+menu_swedish_sweden.1252.vim : menu_sv_se.utf-8.vim
+	- $(RM) $@
+!IF DEFINED (ICONV)
+	$(ICONV) -f UTF-8 -t CP1252 $? >$@
+!ELSE
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
+		[System.IO.File]::ReadAllText(\"$?\", \
+		[System.Text.Encoding]::GetEncoding(65001)), \
+		[System.Text.Encoding]::GetEncoding(1252))
+!ENDIF
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+		[System.Text.Encoding]::GetEncoding(1252)) -replace \
+		'scriptencoding utf-8', 'scriptencoding cp1252' -replace \
+		'Original translations', 'Generated from $?, DO NOT EDIT'; \
+		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.Text.Encoding]::GetEncoding(1252))
+
 # Convert menu_tr_tr.utf-8.vim to menu_tr_tr.cp1254.vim.
 menu_tr_tr.cp1254.vim : menu_tr_tr.utf-8.vim
 	- $(RM) $@

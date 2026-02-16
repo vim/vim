@@ -1356,7 +1356,7 @@ crypt_long_long_to_char(long long n, char_u *s)
     for (i = 0; i < 8; i++)
     {
 	s[i] = (char_u)(n & 0xff);
-	n = (unsigned)n >> 8;
+	n = (unsigned long long)n >> 8;
     }
 }
 
@@ -1367,7 +1367,7 @@ crypt_int_to_char(int n, char_u *s)
     for (i = 0; i < 4; i++)
     {
 	s[i] = (char_u)(n & 0xff);
-	n = (unsigned)n >> 8;
+	n = (unsigned long long)n >> 8;
     }
 }
 

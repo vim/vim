@@ -1886,6 +1886,7 @@ set_curbuf(buf_T *buf, int action)
     prevbuf = curbuf;
     set_bufref(&prevbufref, prevbuf);
     set_bufref(&newbufref, buf);
+    int prev_nwindows = prevbuf->b_nwindows;
 
     // Autocommands may delete the current buffer and/or the buffer we want to
     // go to.  In those cases don't close the buffer.
@@ -1904,8 +1905,8 @@ set_curbuf(buf_T *buf, int action)
 	// autocommands may have opened a new window
 	// with prevbuf, grr
 	if (unload ||
-	    (last_winid != get_last_winid() &&
-	     strchr((char *)"wdu", prevbuf->b_p_bh[0]) != NULL))
+		(prev_nwindows <= 1 && last_winid != get_last_winid()
+		 && action == DOBUF_GOTO && !buf_hide(prevbuf)))
 	    close_windows(prevbuf, FALSE);
 #if defined(FEAT_EVAL)
 	if (bufref_valid(&prevbufref) && !aborting())
@@ -5264,17 +5265,12 @@ build_stl_str_hl(
 	{
 	    char_u  *end = out + outputlen;
 
-	    if (has_mbyte)
+	    n = 0;
+	    while (width >= maxwidth)
 	    {
-		n = 0;
-		while (width >= maxwidth)
-		{
-		    width -= ptr2cells(s + n);
-		    n += (*mb_ptr2len)(s + n);
-		}
+		width -= ptr2cells(s + n);
+		n += (*mb_ptr2len)(s + n);
 	    }
-	    else
-		n = width - maxwidth + 1;
 	    p = s + n;
 	    mch_memmove(s + 1, p, (size_t)(end - p) + 1);	// +1 for NUL
 	    end -= (size_t)(p - (s + 1));

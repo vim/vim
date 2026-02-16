@@ -1,5 +1,78 @@
 vim9script
 
+# Query the paired position for the cursor line and use it, if available, for
+# mark "`".
+def TryChangingLastJumpMark(marks: dict<list<number>>)
+  const pos: list<number> = get(marks, line('.'), [])
+  if !empty(pos)
+    setpos("'`", [0, pos[0], pos[1], 0])
+  endif
+enddef
+
+# Fold the difference part and the bottom part when the top and the bottom
+# parts are identical; otherwise, create a fold for the difference part and
+# manage marks for disparate lines: dynamically set mark "`" to pair such
+# lines and initially set "`a", "`b", etc. marks for difference part lines.
+def FoldAndMarkDumpDiffParts()
+  defer call('setpos', ['.', getpos('.')])
+  # Shape the pattern after get_separator() from "terminal.c".
+  const separator: string = '^\(=\+\)\=\s\S.*\.dump\s\1$'
+  const start_lnum: number = search(separator, 'eW', (line('$') / 2))
+  if start_lnum > 0
+    const end_lnum: number = search(separator, 'eW')
+    if end_lnum > 0
+      # Collect [line_nr, col_nr] pairs (matching the first non-blank column)
+      # from the difference part "bs" and assemble corresponding pairs for the
+      # top part "as" and the bottom part "cs".
+      const parts: list<list<list<number>>> =
+				getline((start_lnum + 1), (end_lnum - 1))
+	  ->map((idx: number, s: string) =>
+	      [matchlist(s, '\(^\s*\S\)')->get(1, '')->strwidth(), idx])
+	  ->reduce(((as: list<number>, bs: list<number>, cs: list<number>) =>
+	      (xs: list<list<list<number>>>, pair: list<number>) => {
+		  const col_nr: number = pair[0]
+		  if col_nr != 0
+		    const idx: number = pair[1]
+		    xs[0]->add([get(as, idx, as[-1]), col_nr])
+		    xs[1]->add([bs[idx], col_nr])
+		    xs[2]->add([get(cs, idx, cs[-1]), col_nr])
+		  endif
+		  return xs
+		})(range(1, (start_lnum - 1)),
+		    range((start_lnum + 1), (end_lnum - 1)),
+		    range((end_lnum + 1), line('$'))),
+	      [[], [], []])
+      if empty(parts[1])
+	setlocal foldenable foldmethod=manual
+	exec 'normal ' .. start_lnum .. 'GzfG'
+      else
+	setlocal nofoldenable foldmethod=manual
+	exec ':' .. start_lnum .. ',' .. end_lnum .. 'fold'
+	var marks: dict<list<number>> = {}
+	var names: list<string> = range(97, (97 + 25))
+	    ->map((_: number, n: number) => nr2char(n, true))
+	for idx in range(parts[1]->len())
+	  if !empty(names)
+	    setpos(("'" .. remove(names, 0)),
+		[0, parts[1][idx][0], parts[1][idx][1], 0])
+	  endif
+	  # Point "bs" to "cs", "cs" to "as", "as" to "cs".
+	  marks[parts[1][idx][0]] = parts[2][idx]
+	  marks[parts[2][idx][0]] = parts[0][idx]
+	  marks[parts[0][idx][0]] = parts[2][idx]
+	endfor
+	autocmd_add([{
+	  replace:	true,
+	  group:	'viewdumps',
+	  event:	'CursorMoved',
+	  bufnr:	bufnr(),
+	  cmd:		printf('TryChangingLastJumpMark(%s)', string(marks)),
+	}])
+      endif
+    endif
+  endif
+enddef
+
 # See below on how to configure the git difftool extension
 
 # Extend "git difftool" with the capability for loading screendump files.
@@ -16,6 +89,7 @@ if v:progname =~? '\<g\=vimdiff$'
 	term_dumpload(argv(0))
       else
 	term_dumpdiff(argv(0), argv(1))
+	FoldAndMarkDumpDiffParts()
       endif
     finally
       silent bwipeout 1 2
@@ -83,30 +157,6 @@ endif
 #	:all
 
 
-# Script-local functions
-#
-# Fold the difference part and the bottom part when the top and the bottom
-# parts are identical.
-def FoldDumpDiffCopy()
-  try
-    normal mc
-    # Shape the pattern after get_separator() from "terminal.c".
-    const separator: string = '^\(=\+\)\=\s\S.*\.dump\s\1$'
-    const start_lnum: number = search(separator, 'eW', (line('$') / 2))
-    if start_lnum > 0
-      const end_lnum: number = search(separator, 'eW')
-      if end_lnum > 0 && getline((start_lnum + 1), (end_lnum - 1))
-	  ->filter((_: number, line: string) => line !~ '^\s\+$')
-	  ->empty()
-	setlocal foldenable foldmethod=manual
-	exec 'normal ' .. start_lnum .. 'GzfG'
-      endif
-    endif
-  finally
-    normal `c
-  endtry
-enddef
-
 # Render a loaded screendump file or the difference of a loaded screendump
 # file and its namesake file from the "dumps" directory.
 def Render()
@@ -118,7 +168,7 @@ def Render()
 			fnamemodify(failed_fname, ':p:h:h') .. '/dumps')
     if filereadable(dumps_fname)
       term_dumpdiff(failed_fname, dumps_fname)
-      FoldDumpDiffCopy()
+      FoldAndMarkDumpDiffParts()
     else
       term_dumpload(failed_fname)
     endif

@@ -110,3 +110,30 @@ enum E4
 
     @Override public String toString() { return name().toUpperCase(); }
 }
+
+class C4Alias<T>
+{
+    final T name; C4Alias(T name) { this.name = name; }
+
+    class Builder
+    {
+        final java.util.stream.Stream.Builder<T> builder =
+            java.util.stream.Stream.<T>builder();
+
+        C4Alias<T>.Builder add(T x)
+        {
+            builder.accept(x);
+            return this;
+        }
+
+        java.util.stream.Stream<T> build()
+        {
+            return builder.<T>build();
+        }
+    }
+
+    static <A> C4Alias<A>.Builder builder(A name)
+    {
+        return new C4Alias<>(name).new Builder();
+    }
+}
