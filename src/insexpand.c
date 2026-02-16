@@ -4589,7 +4589,7 @@ get_next_filename_completion(void)
     int		i;
     int		score;
     char_u	*leader = ins_compl_leader();
-    size_t	leader_len = ins_compl_leader_len();;
+    size_t	leader_len = ins_compl_leader_len();
     int		in_fuzzy_collect = (cot_fuzzy() && leader_len > 0);
     int		*fuzzy_indices_data;
     char_u	*last_sep = NULL;

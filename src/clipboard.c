@@ -2965,7 +2965,7 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 
     if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
     {
-	motion_type = *final++;;
+	motion_type = *final++;
 	buf.ga_len--;
     }
     else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)

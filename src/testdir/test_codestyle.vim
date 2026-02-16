@@ -43,6 +43,8 @@ def Test_source_files()
 
     PerformCheck(fname, '\s$', 'trailing white space', '')
 
+    PerformCheck(fname, ';;\+$', 'double semicolon', '')
+
     # some files don't stick to the Vim style rules
     if fname =~ 'iscygpty.c'
       continue
