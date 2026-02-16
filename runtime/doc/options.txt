@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*options.txt*	For Vim version 9.2.  Last change: 2026 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7338,7 +7338,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For $XDG_CONFIG_HOME see |xdg-base-dir|.
 
 	The defaults for most systems are setup to search five locations:
-	1. In your home directory, for your personal preferences.
+	1. In your $MYVIMDIR directory, for your personal preferences.
 	2. In a system-wide Vim directory, for preferences from the system
 	   administrator.
 	3. In $VIMRUNTIME, for files distributed with Vim.
@@ -7346,7 +7346,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	4. In the "after" directory in the system-wide Vim directory.  This is
 	   for the system administrator to overrule or add to the distributed
 	   defaults (rarely needed)
-	5. In the "after" directory in your home directory.  This is for
+	5. In the "after" directory in your $MYVIMDIR directory.  This is for
 	   personal preferences to overrule or add to the distributed defaults
 	   or system-wide settings (rarely needed).
 
