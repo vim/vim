@@ -583,11 +583,18 @@ saveRedobuff(save_redo_T *save_redo)
     void
 restoreRedobuff(save_redo_T *save_redo)
 {
-    skip_restore_redo_cnt--;
+   if (skip_restore_redo_cnt > 0)
+	skip_restore_redo_cnt--;
+
     if (skip_restore_redo)
     {
 	if (skip_restore_redo_cnt <= 0)
+	{
 	    skip_restore_redo = FALSE;
+	    // Free the saved buffers since we're not restoring
+	    free_buff(&save_redo->sr_redobuff);
+	    free_buff(&save_redo->sr_old_redobuff);
+	}
 	return;
     }
 
