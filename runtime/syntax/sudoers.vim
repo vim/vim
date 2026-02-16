@@ -257,9 +257,13 @@ syn keyword sudoersIntegerParameter contained
                                   \ log_server_timeout
                                   \ loglinelen
                                   \ maxseq
-                                  \ passwd_timeout
                                   \ passwd_tries
                                   \ syslog_maxlen
+
+syn keyword sudoersFloatParameter contained
+                                  \ nextgroup=sudoersFloatParameterEquals
+                                  \ skipwhite skipnl
+                                  \ passwd_timeout
                                   \ timestamp_timeout
 
 syn keyword sudoersModeParameter contained
@@ -345,15 +349,17 @@ syn keyword sudoersListParameter    contained
 
 syn match   sudoersParameterListComma contained ',' nextgroup=@sudoersParameter skipwhite skipnl
 
-syn cluster sudoersParameter        contains=sudoersBooleanParameter,sudoersIntegerParameter,sudoersModeParameter,sudoersStringParameter,sudoersListParameter
+syn cluster sudoersParameter        contains=sudoersBooleanParameter,sudoersIntegerParameter,sudoersModeParameter,sudoersFloatParameter,sudoersStringParameter,sudoersListParameter
 
 syn match   sudoersIntegerParameterEquals contained       '=' nextgroup=sudoersIntegerValue skipwhite skipnl
 syn match   sudoersModeParameterEquals    contained       '=' nextgroup=sudoersModeValue    skipwhite skipnl
+syn match   sudoersFloatParameterEquals   contained       '=' nextgroup=sudoersFloatValue   skipwhite skipnl
 syn match   sudoersStringParameterEquals  contained       '=' nextgroup=sudoersStringValue  skipwhite skipnl
 syn match   sudoersListParameterEquals    contained '[+-]\==' nextgroup=sudoersListValue    skipwhite skipnl
 
 syn match   sudoersIntegerValue contained '\<\d\+\>' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn match   sudoersModeValue    contained '\<\o\+\>' nextgroup=sudoersParameterListComma skipwhite skipnl
+syn match   sudoersFloatValue   contained '-\?\%(\<\d\+\>\|\<\d\+\%(\.\%(\d\+\>\)\?\)\?\|\.\d\+\>\)' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn match   sudoersStringValue  contained '\s*\zs[^[:space:],:=\\]*\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn region  sudoersStringValue  contained start=+\s*\zs"+ skip=+\\"+ end=+"+ nextgroup=sudoersParameterListComma skipwhite skipnl
 syn match   sudoersListValue    contained '\s*\zs[^[:space:],:=\\]*\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=sudoersParameterListComma skipwhite skipnl
@@ -447,15 +453,18 @@ hi def link sudoersDefaultTypeGreaterThan   Special
 hi def link sudoersBooleanParameter         Identifier
 hi def link sudoersIntegerParameter         Identifier
 hi def link sudoersModeParameter            Identifier
+hi def link sudoersFloatParameter           Identifier
 hi def link sudoersStringParameter          Identifier
 hi def link sudoersListParameter            Identifier
 hi def link sudoersParameterListComma       Delimiter
 hi def link sudoersIntegerParameterEquals   Operator
 hi def link sudoersModeParameterEquals      Operator
+hi def link sudoersFloatParameterEquals     Operator
 hi def link sudoersStringParameterEquals    Operator
 hi def link sudoersListParameterEquals      Operator
 hi def link sudoersIntegerValue             Number
 hi def link sudoersModeValue                Number
+hi def link sudoersFloatValue               Float
 hi def link sudoersStringValue              String
 hi def link sudoersListValue                String
 hi def link sudoersTagSpec                  Special
