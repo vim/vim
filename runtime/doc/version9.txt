@@ -41750,7 +41750,8 @@ Functions: ~
 - |setqflist()| and |setloclist()| can optionally try to preserve the current
   selection in the quickfix list with the "u" action.
 - allow to pass local Vim script variables to python interpreter |py3eval()|
-- |getwininfo()| now also returns the "leftcol" property for a window
+- |getwininfo()| now also returns the "leftcol" and "status_height" properties
+  for a window
 - |v:stacktrace| The stack trace of the exception most recently caught and
   not finished
 - Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
