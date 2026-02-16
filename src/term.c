@@ -5900,9 +5900,17 @@ check_for_color_response(char_u *resp, int len)
 static oscstate_T osc_state;
 
 /*
- * Handles any OSC sequence and places the result in "v:termosc". Note that the
- * OSC identifier and terminator character(s) will not be placed in the final
- * result. Returns OK on success and FAIL on failure.
+ * Return true if currently receiving an OSC response.
+ */
+    bool
+in_osc_sequence(void)
+{
+    return osc_state.processing;
+}
+
+/*
+ * Handles any OSC sequence and places the result in "v:termosc". Returns OK on
+ * success and FAIL on failure.
  */
     static int
 handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
