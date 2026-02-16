@@ -1466,7 +1466,7 @@ list2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 typedef struct join_S {
-    char_u	*s;
+    string_T	s;
     char_u	*tofree;
 } join_T;
 
@@ -1482,37 +1482,39 @@ list_join_inner(
 {
     int		i;
     join_T	*p;
-    int		len;
     int		sumlen = 0;
     int		first = TRUE;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
     listitem_T	*item;
-    char_u	*s;
+    string_T	s;
+    size_t	seplen;
 
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
-	s = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
+	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
 				      echo_style, restore_copyID, !echo_style);
-	if (s == NULL)
+	if (s.string == NULL)
 	    return FAIL;
 
-	len = (int)STRLEN(s);
-	sumlen += len;
+	s.length = STRLEN(s.string);
+	sumlen += (int)s.length;
 
 	(void)ga_grow(join_gap, 1);
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
-	if (tofree != NULL || s != numbuf)
+	if (tofree != NULL || s.string != numbuf)
 	{
-	    p->s = s;
+	    p->s.string = s.string;
+	    p->s.length = s.length;
 	    p->tofree = tofree;
 	}
 	else
 	{
-	    p->s = vim_strnsave(s, len);
-	    p->tofree = p->s;
+	    p->s.string = vim_strnsave(s.string, s.length);
+	    p->s.length = s.length;
+	    p->tofree = p->s.string;
 	}
 
 	line_breakcheck();
@@ -1522,8 +1524,9 @@ list_join_inner(
 
     // Allocate result buffer with its total size, avoid re-allocation and
     // multiple copy operations.  Add 2 for a tailing ']' and NUL.
+    seplen = STRLEN(sep);
     if (join_gap->ga_len >= 2)
-	sumlen += (int)STRLEN(sep) * (join_gap->ga_len - 1);
+	sumlen += (int)seplen * (join_gap->ga_len - 1);
     if (ga_grow(gap, sumlen + 2) == FAIL)
 	return FAIL;
 
@@ -1532,11 +1535,11 @@ list_join_inner(
 	if (first)
 	    first = FALSE;
 	else
-	    ga_concat(gap, sep);
+	    ga_concat_len(gap, sep, seplen);
 	p = ((join_T *)join_gap->ga_data) + i;
 
-	if (p->s != NULL)
-	    ga_concat(gap, p->s);
+	if (p->s.string != NULL)
+	    ga_concat_len(gap, p->s.string, p->s.length);
 	line_breakcheck();
     }
 
@@ -1836,8 +1839,11 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 
 	FOR_ALL_LIST_ITEMS(l, li)
 	{
-	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
-	    ga_concat(&ga, buf);
+	    size_t  buflen;
+
+	    buflen = (size_t)(*char2bytes)(tv_get_number(&li->li_tv), buf);
+	    buf[buflen] = NUL;
+	    ga_concat_len(&ga, buf, buflen);
 	}
 	ga_append(&ga, NUL);
     }
