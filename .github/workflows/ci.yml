@@ -47,7 +47,7 @@ jobs:
             extra: [nogui]
           - features: tiny
             compiler: gcc
-            extra: [nogui]
+            extra: [nogui, syn_test_execs]
           - features: tiny
             compiler: gcc
             extra: [nogui]
@@ -105,6 +105,13 @@ jobs:
           # highlight.c, nor listed as 'intentionally left out' in hlgroups.ignore,
           # exit with an error code and list the missing entries.
           make -C ci -f hlgroups.make
+
+      - name: Report executable syntax tests
+        if: contains(matrix.extra, 'syn_test_execs')
+        run: |
+          # Search and list all found executable syntax tests, and exit with
+          # an error code.
+          make -C runtime/syntax executables
 
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'

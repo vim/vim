@@ -146,6 +146,9 @@ is covered by the test.  You can follow these steps:
 	- Vim setup file:   syntax/testdir/input/setup/{name}.vim (if any)
 	- test input file:  syntax/testdir/input/{name}.{ext}
 	- test dump files:  syntax/testdir/dumps/{name}_*.dump
+   Since no input file is ever executed when you run the tests, review and
+   revoke each previously granted permission to execute such a file before
+   publishing it; e.g. "chmod -x input/java.java; git add input/java.java".
 
 As an extra check you can temporarily put back the old syntax plugin and
 verify that the tests fail.  Then you know your changes are covered by the
