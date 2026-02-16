@@ -508,7 +508,7 @@ endfunc
 func Test_textobj_cursor_on_leading_space_comment()
   let lines =<< trim END
     int main() {
-        // multilple comments
+        // multiple comments
         // cursor is between them
     }
   END
