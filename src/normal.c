@@ -1656,11 +1656,11 @@ clear_showcmd(void)
 	    p_sbr = saved_sbr;
 	    curwin->w_p_sbr = saved_w_sbr;
 #endif
-	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
+	    vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
 	}
 	else if (VIsual_mode == 'V' || VIsual.lnum != curwin->w_cursor.lnum)
-	    sprintf((char *)showcmd_buf, "%ld", lines);
+	    vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%ld", lines);
 	else
 	{
 	    char_u  *s, *e;
@@ -1692,9 +1692,9 @@ clear_showcmd(void)
 		s += l;
 	    }
 	    if (bytes == chars)
-		sprintf((char *)showcmd_buf, "%d", chars);
+		vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%d", chars);
 	    else
-		sprintf((char *)showcmd_buf, "%d-%d", chars, bytes);
+		vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%d-%d", chars, bytes);
 	}
 	showcmd_buf[SHOWCMD_COLS] = NUL;	// truncate
 	showcmd_visual = TRUE;

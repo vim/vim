@@ -6560,7 +6560,7 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
 	case MCHAR: buf[0] = 'v'; break;
 	case MBLOCK:
 		buf[0] = Ctrl_V;
-		sprintf((char *)buf + 1, "%ld", reglen + 1);
+		vim_snprintf((char *)buf + 1, NUMBUFLEN + 1, "%ld", reglen + 1);
 		break;
     }
     rettv->vval.v_string = vim_strsave(buf);

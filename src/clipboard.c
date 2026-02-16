@@ -3136,8 +3136,8 @@ vwl_data_source_listener_event_send(
     if (is_vimenc)
     {
 	string[0] = (char_u)motion_type;
-	// strcpy copies the NUL terminator too
-	strcpy((char *)string + 1, (char *)p_enc);
+	// Use vim_strncpy for safer copying
+	vim_strncpy(string + 1, p_enc, STRLEN(p_enc));
     }
     else if (is_vim)
 	string[0] = (char_u)motion_type;
