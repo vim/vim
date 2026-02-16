@@ -10476,6 +10476,25 @@ setrepeat({dict})					*setrepeat()*
 		   information. Full fidelity is only available for repeats
 		   set via setrepeat().
 
+		5. "vim-repeat" replacement limitations
+
+		   Phase 1 does not fully replace "vim-repeat" functionality.
+		   Features like <Plug> mappings and counts require Phase 2.
+
+		   For plugins currently using "vim-repeat" with <Plug>
+		   mappings, continue using "vim-repeat" or use direct
+		   command strings as a workaround.
+
+		   Example workaround: >
+		       " Instead of:
+		       " call repeat#set("\<Plug>MyCommand", v:count)
+
+		       " Use:
+		       call setrepeat({'cmd': ':call MyCommand()'})
+<
+		   Full "vim-repeat" replacement will be available in
+		   Phase 2 with count and <Plug> support.
+
 		See also: |getrepeat()|, |.|
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
