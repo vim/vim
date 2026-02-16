@@ -26,6 +26,7 @@ The Netbeans interface also uses a channel. |netbeans|
 13. Controlling a job			|job-control|
 14. Using a prompt buffer		|prompt-buffer|
 15. Language Server Protocol		|language-server-protocol|
+16. Debug Adapter Protocol		|debug-adapter-protocol|
 
 							*E1277*
 {only when compiled with the |+channel| feature for channel stuff}
@@ -56,6 +57,7 @@ NL	every message ends in a NL (newline) character
 JSON	JSON encoding |json_encode()|
 JS	JavaScript style JSON-like encoding |js_encode()|
 LSP	Language Server Protocol encoding |language-server-protocol|
+DAP	Debug Adapter Protocol encoding |debug-adapter-protocol|
 
 Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
@@ -138,6 +140,7 @@ a Unix-domain socket path prefixed by "unix:".  E.g. >
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
 	"lsp"  - Use language server protocol encoding
+	"dap"  - Use debug adapter protocol encoding
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise (e.g. a JSON message with ID zero).  It
@@ -148,8 +151,9 @@ a Unix-domain socket path prefixed by "unix:".  E.g. >
 	endfunc
 	let channel = ch_open("localhost:8765", {"callback": "Handle"})
 <
-		When "mode" is "json" or "js" or "lsp" the "msg" argument is
-		the body of the received message, converted to Vim types.
+		When "mode" is "json" or "js" or "lsp" or "dap" the "msg"
+		argument is the body of the received message, converted to Vim
+		types.
 		When "mode" is "nl" the "msg" argument is one message,
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
@@ -532,7 +536,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.
 		{handle} can be a Channel or a Job that has a Channel.
-		When using the "lsp" channel mode, {expr} must be a |Dict|.
+		When using the "lsp" or "dap" channel mode, {expr} must be a
+		|Dict|.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.  It can have a "timeout" entry to specify the timeout
@@ -540,8 +545,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 
 		ch_evalexpr() waits for a response and returns the decoded
 		expression.  When there is an error or timeout it returns an
-		empty |String| or, when using the "lsp" channel mode, returns an
-		empty |Dict|.
+		empty |String| or, when using the "lsp" or "dap" channel mode,
+		returns an empty |Dict|.
 
 		Note that while waiting for the response, Vim handles other
 		messages.  You need to make sure this doesn't cause trouble.
@@ -622,7 +627,7 @@ ch_info({handle})						*ch_info()*
 		   "err_io"	  "out", "null", "pipe", "file" or "buffer"
 		   "err_timeout"  timeout in msec
 		   "in_status"	  "open" or "closed"
-		   "in_mode"	  "NL", "RAW", "JSON", "JS" or "LSP"
+		   "in_mode"	  "NL", "RAW", "JSON", "JS" or "LSP" or "DAP"
 		   "in_io"	  "null", "pipe", "file" or "buffer"
 		   "in_timeout"	  timeout in msec
 
@@ -728,14 +733,15 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		with a raw channel.
 		See |channel-use|.				*E912*
 		{handle} can be a Channel or a Job that has a Channel.
-		When using the "lsp" channel mode, {expr} must be a |Dict|.
+		When using the "lsp" or "dap" channel mode, {expr} must be a
+		|Dict|.
 
-		If the channel mode is "lsp", then returns a Dict.  Otherwise
-		returns an empty String.  If the "callback" item is present in
-		{options}, then the returned Dict contains the ID of the
-		request message.  The ID can be used to send a cancellation
-		request to the LSP server (if needed).  Returns an empty Dict
-		on error.
+		If the channel mode is "lsp" or "dap", then returns a Dict.
+		Otherwise returns an empty String.  If the "callback" item is
+		present in {options}, then the returned Dict contains the ID
+		of the request message.  The ID can be used to send a
+		cancellation request to the LSP server or debug adapter (if
+		needed).  Returns an empty Dict on error.
 
 		If a response message is not expected for {expr}, then don't
 		specify the "callback" item in {options}.
@@ -1602,5 +1608,32 @@ The "params" field is optional: >
 	"params": <list|dict>
     }
 
-<
+==============================================================================
+16. Debug Adapter Protocol			*debug-adapter-protocol*
+
+The debug adapter protocol is very similar to the language server protocol,
+with the main difference being that it does not use the JSON-RPC format. The
+specification can be found here:
+
+    https://microsoft.github.io/debug-adapter-protocol/specification
+
+The protocol uses the same header format as the LSP protocol.
+
+To encode and send a DAP request/notification message in a Vim |Dict| into a
+JSON message and to receive and decode a DAP JSON response/notification
+message into a Vim |Dict|, connect to the debug adapter with the
+|channel-mode| set to "dap".
+
+For messages received on a channel with |channel-mode| set to "dap", Vim will
+process the HTTP header and decode the JSON payload into a Vim |Dict| type.
+When sending messages on a channel using the |ch_evalexpr()| or
+|ch_sendexpr()| functions, Vim will add the HTTP header and encode the Vim
+expression into JSON.
+
+Vim will automatically add the "seq" field to the JSON DAP message, and manage
+the "request_seq" field as well for responses. However it will not add the
+"type" field, it should be manually specified in the |Dict|.
+
+Otherwise the behaviour is the same as how Vim handles the "lsp" channel mode.
+
  vim:tw=78:ts=8:noet:ft=help:norl:
