@@ -1126,7 +1126,7 @@ This is not an exhaustive list of those directories:
   `$XDG_STATE_HOME`	$HOME/.local/state	State data files
 
 Vim itself will only use the `$XDG_CONFIG_HOME` directory, some of the others
-are supported in |defaults.vim|, see the script for details.
+are supported in $VIMRUNTIME/xdg.vim, see the script for details.
 
 							*xdg-vimrc*
 Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for its
