@@ -10406,13 +10406,13 @@ setrepeat({dict})					*setrepeat()*
 		command.
 
 		The {dict} argument must be a |Dictionary| with:
-		    'cmd'	(required) The command to repeat (string)
-		    'text'	(optional) Text to insert (string)
+		    "cmd"	(required) The command to repeat (string)
+		    "text"	(optional) Text to insert (string)
 
-		The 'cmd' field specifies the command. For insert mode
-		commands (i, a, o, O, I, A, c, s, C, S), the 'text' field
-		contains the text to insert. For normal mode commands (dd,
-		yy, x, etc.), 'text' can be omitted or empty.
+		The "cmd" field specifies the command. For Insert mode
+		commands (i, a, o, O, I, A, c, s, C, S), the "text" field
+		contains the text to insert. For Normal mode commands (dd,
+		yy, x, etc.), "text" can be omitted or empty.
 
 		Examples: >
 		    " Normal mode command
