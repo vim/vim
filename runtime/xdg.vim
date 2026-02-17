@@ -9,7 +9,7 @@ set packpath+=$XDG_DATA_HOME/vim/after
 
 if isdirectory(expand($XDG_CONFIG_HOME."/vim"))
   set viminfofile=$XDG_STATE_HOME/vim/viminfo | call mkdir($XDG_STATE_HOME."/vim", 'p', 0700)
-  " set backupdir=$XDG_STATE_HOME/vim/backup | call mkdir(&backupdir, 'p', 0700)
+  " set backupdir=$XDG_STATE_HOME/vim/backup// | call mkdir(&backupdir, 'p', 0700)
   " set directory=$XDG_STATE_HOME/vim/swap   | call mkdir(&directory, 'p', 0700)
   " set viewdir=$XDG_STATE_HOME/vim/view     | call mkdir(&viewdir,   'p', 0700)
   " set undodir=$XDG_STATE_HOME/vim/undo     | call mkdir(&undodir,   'p', 0700)
