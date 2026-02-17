@@ -146,7 +146,7 @@ write_string(garray_T *gap, char_u *str)
 
     if (res == NULL)
     {
-	ga_concat_len(gap, (char_u *)"\"\"", 2);
+	GA_CONCAT_LITERAL(gap, "\"\"");
 	return;
     }
 
@@ -283,8 +283,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_BOOL:
 	    switch ((long)val->vval.v_number)
 	    {
-		case VVAL_FALSE: ga_concat_len(gap, (char_u *)"false", 5); break;
-		case VVAL_TRUE: ga_concat_len(gap, (char_u *)"true", 4); break;
+		case VVAL_FALSE: GA_CONCAT_LITERAL(gap, "false"); break;
+		case VVAL_TRUE: GA_CONCAT_LITERAL(gap, "true"); break;
 	    }
 	    break;
 
@@ -296,7 +296,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 				    // empty item
 				    break;
 				// FALLTHROUGH
-		case VVAL_NULL: ga_concat_len(gap, (char_u *)"null", 4); break;
+		case VVAL_NULL: GA_CONCAT_LITERAL(gap, "null"); break;
 	    }
 	    break;
 
@@ -329,7 +329,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_BLOB:
 	    b = val->vval.v_blob;
 	    if (b == NULL || b->bv_ga.ga_len == 0)
-		ga_concat_len(gap, (char_u *)"[]", 2);
+		GA_CONCAT_LITERAL(gap, "[]");
 	    else
 	    {
 		ga_append(gap, '[');
@@ -338,7 +338,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    size_t  numbuflen;
 
 		    if (i > 0)
-			ga_concat_len(gap, (char_u *)",", 1);
+			GA_CONCAT_LITERAL(gap, ",");
 		    numbuflen = vim_snprintf_safelen((char *)numbuf, sizeof(numbuf),
 			"%d", blob_get(b, i));
 		    ga_concat_len(gap, numbuf, numbuflen);
@@ -350,11 +350,11 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_LIST:
 	    l = val->vval.v_list;
 	    if (l == NULL)
-		ga_concat_len(gap, (char_u *)"[]", 2);
+		GA_CONCAT_LITERAL(gap, "[]");
 	    else
 	    {
 		if (l->lv_copyID == copyID)
-		    ga_concat_len(gap, (char_u *)"[]", 2);
+		    GA_CONCAT_LITERAL(gap, "[]");
 		else
 		{
 		    listitem_T	*li;
@@ -386,11 +386,11 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_TUPLE:
 	    tuple = val->vval.v_tuple;
 	    if (tuple == NULL)
-		ga_concat_len(gap, (char_u *)"[]", 2);
+		GA_CONCAT_LITERAL(gap, "[]");
 	    else
 	    {
 		if (tuple->tv_copyID == copyID)
-		    ga_concat_len(gap, (char_u *)"[]", 2);
+		    GA_CONCAT_LITERAL(gap, "[]");
 		else
 		{
 		    int		len = TUPLE_LEN(tuple);
@@ -422,11 +422,11 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_DICT:
 	    d = val->vval.v_dict;
 	    if (d == NULL)
-		ga_concat_len(gap, (char_u *)"{}", 2);
+		GA_CONCAT_LITERAL(gap, "{}");
 	    else
 	    {
 		if (d->dv_copyID == copyID)
-		    ga_concat_len(gap, (char_u *)"{}", 2);
+		    GA_CONCAT_LITERAL(gap, "{}");
 		else
 		{
 		    int		first = TRUE;
@@ -464,13 +464,13 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_FLOAT:
 #if defined(HAVE_MATH_H)
 	    if (isnan(val->vval.v_float))
-		ga_concat_len(gap, (char_u *)"NaN", 3);
+		GA_CONCAT_LITERAL(gap, "NaN");
 	    else if (isinf(val->vval.v_float))
 	    {
 		if (val->vval.v_float < 0.0)
-		    ga_concat_len(gap, (char_u *)"-Infinity", 9);
+		    GA_CONCAT_LITERAL(gap, "-Infinity");
 		else
-		    ga_concat_len(gap, (char_u *)"Infinity", 8);
+		    GA_CONCAT_LITERAL(gap, "Infinity");
 	    }
 	    else
 #endif
