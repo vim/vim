@@ -12,7 +12,8 @@
 If you find a bug or want to discuss the best way to add a new feature, please
 [open an issue](https://github.com/vim/vim/issues/new/choose).
 If you have a question or want to discuss the best way to do something with
-Vim, you can use [StackExchange](https://vi.stackexchange.com/)
+Vim, you can join [`#vim`](https://web.libera.chat/#vim),
+use [StackExchange](https://vi.stackexchange.com/),
 or one of the [Maillists](https://www.vim.org/community.php).
 
 ## What is Vim?
