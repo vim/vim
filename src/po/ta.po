@@ -1,4 +1,4 @@
-# Tamil Translation for Vim
+﻿# Tamil Translation for Vim
 # Copyright (C) YEAR 2026, The Vim Project
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR தமிழ்நேரம் <TamilNeram247@gmail.com>, 2026.
@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim\n"
+"Project-Id-Version: Vim 9.2\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-01-06 14:41+0000\n"
 "PO-Revision-Date: 2026-02-16 22:09+0530\n"
