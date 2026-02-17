@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		C
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Jan 13
+" Last Change:		2026 Feb 17
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -271,6 +271,7 @@ syn match	cCommentError	display "\*/"
 syn match	cCommentStartError display "/\*"me=e-1 contained
 syn match	cWrongComTail	display "\*/"
 
+syn match	cOperator	'[.,;?:+\-*/%&|^~<>!=]'
 syn keyword	cOperator	sizeof
 if exists("c_gnu")
   syn keyword	cType		__label__ __complex__
