@@ -677,13 +677,13 @@ build_drop_cmd(
     string_T	cdp;
     char_u	*cwd;
     // reset wildignore temporarily
-#define STRING_INIT(s) \
+# define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
     const string_T wig[] = {
 	STRING_INIT("<CR><C-\\><C-N>:let g:_wig=&wig|set wig="),
 	STRING_INIT("<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>")
     };
-#undef STRING_INIT
+# undef STRING_INIT
 
     if (filec > 0 && filev[0][0] == '+')
     {
