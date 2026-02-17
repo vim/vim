@@ -5201,8 +5201,8 @@ getrepeat()						*getrepeat()*
 		Get the last repeat command as a |Dictionary|.
 
 		Returns a dictionary with the following keys:
-		    'cmd'	The command that will be repeated (string)
-		    'text'	Text to insert (string)
+		    "cmd"	The command that will be repeated (string)
+		    "text"	Text to insert (string)
 
 		If the repeat was set via |setrepeat()|, returns the exact
 		dictionary that was passed. Otherwise, returns limited
