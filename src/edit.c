@@ -3870,6 +3870,9 @@ ins_esc(
 	if (cmdchar != 'r' && cmdchar != 'v')
 	    AppendToRedobuff(p_im ? (char_u *)"\014" : ESC_STR);
 
+	// Clear setrepeat() value when completing a user insert operation
+	clear_repeat_dict();
+
 	/*
 	 * Repeating insert may take a long time.  Check for
 	 * interrupt now and then.
@@ -5724,7 +5727,7 @@ ins_apply_autocmds(event_T event)
  * Free the repeat dictionary on exit.
  */
     void
-free_repeat_dict(void)
+clear_repeat_dict(void)
 {
     if (g_last_repeat_dict != NULL)
     {
@@ -5769,7 +5772,7 @@ set_repeat_dict(dict_T *dict)
 	text = tv_get_string(&di->di_tv);
 
     // Free the previous dictionary if it exists
-    free_repeat_dict();
+    clear_repeat_dict();
 
     // Save a copy of the dictionary for getrepeat()
     g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
