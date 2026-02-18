@@ -5814,9 +5814,7 @@ get_repeat_dict(void)
 
     // If setrepeat() was used, return that
     if (g_last_repeat_dict != NULL)
-    {
 	return dict_copy(g_last_repeat_dict, TRUE, TRUE, get_copyID());
-    }
 
     // Create new dictionary for user operation
     dict = dict_alloc();
@@ -5835,16 +5833,14 @@ get_repeat_dict(void)
 	    cmd_str[0] = last_insert_cmdchar;
     }
     else if (last_insert_cmdchar == 'i')
-    {
 	cmd_str[0] = 'i';
-    }
 
     // Get text from . register
     text_str = get_reg_contents('.', GREG_NO_EXPR);
 
     // Add to dictionary
     if (dict_add_string(dict, "cmd", cmd_str) == FAIL
-	    || dict_add_string(dict, "text", 
+	    || dict_add_string(dict, "text",
 		text_str != NULL ? text_str : (char_u *)"") == FAIL)
     {
 	vim_free(text_str);
