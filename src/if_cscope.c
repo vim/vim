@@ -583,7 +583,7 @@ staterr:
     // if filename is a directory, append the cscope database name to it
     if (S_ISDIR(statbuf.st_mode))
     {
-	fname2 = alloc(strlen(CSCOPE_DBFILE) + strlen(fname) + 2);
+	fname2 = alloc(STRLEN_LITERAL(CSCOPE_DBFILE) + strlen(fname) + 2);
 	if (fname2 == NULL)
 	    goto add_err;
 
@@ -2166,7 +2166,7 @@ cs_read_prompt(int i)
 		}
 	    }
 
-	for (n = 0; n < (int)strlen(CSCOPE_PROMPT); ++n)
+	for (n = 0; n < (int)STRLEN_LITERAL(CSCOPE_PROMPT); ++n)
 	{
 	    if (n > 0)
 		ch = getc(csinfo[i].fr_fp);
