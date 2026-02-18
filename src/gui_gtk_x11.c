@@ -6728,14 +6728,7 @@ gui_mch_wait_for_chars(long wtime)
 	 * situations, sort of race condition).
 	 */
 	if (!input_available())
-	{
-#ifdef GDK_WINDOWING_WAYLAND
-	    if (gui.is_wayland)
-		g_main_context_iteration(NULL, FALSE);
-	    else
-#endif
-		g_main_context_iteration(NULL, TRUE);
-	}
+	    g_main_context_iteration(NULL, TRUE);
 
 	// Got char, return immediately
 	if (input_available())
