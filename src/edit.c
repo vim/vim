@@ -3870,8 +3870,10 @@ ins_esc(
 	if (cmdchar != 'r' && cmdchar != 'v')
 	    AppendToRedobuff(p_im ? (char_u *)"\014" : ESC_STR);
 
+#ifdef FEAT_EVAL
 	// Clear setrepeat() value when completing a user insert operation
 	clear_repeat_dict();
+#endif
 
 	/*
 	 * Repeating insert may take a long time.  Check for
