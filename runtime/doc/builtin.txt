@@ -5211,7 +5211,7 @@ getrepeat()						*getrepeat()*
 		For user operations (like typing 'iHello<Esc>'):
 		- "cmd" contains the command character (i, a, o, etc.)
 		- "text" contains the inserted text
-		
+
 		For operations set via |setrepeat()|:
 		- Returns the exact dictionary that was passed
 		- Preserves all custom information
