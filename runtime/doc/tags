@@ -9771,6 +9771,7 @@ popup-mapping	popup.txt	/*popup-mapping*
 popup-mask	popup.txt	/*popup-mask*
 popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
+popup-opacity	popup.txt	/*popup-opacity*
 popup-position	popup.txt	/*popup-position*
 popup-props	popup.txt	/*popup-props*
 popup-scrollbar	popup.txt	/*popup-scrollbar*

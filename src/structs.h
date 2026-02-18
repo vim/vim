@@ -4059,6 +4059,7 @@ struct window_S
 
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
+    int		w_popup_blend;	    // 0-100: transparency level for popup with opacitys
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
     char_u	*w_popup_title;
     poppos_T	w_popup_pos;

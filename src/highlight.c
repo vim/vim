@@ -3081,6 +3081,201 @@ hl_combine_attr(int char_attr, int prim_attr)
     return get_attr_entry(&term_attr_table, &new_en);
 }
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+/*
+ * Blend two RGB colors based on blend value (0-100).
+ * blend: 0=use popup color, 100=use background color
+ * If bg_color is INVALCOLOR, high blend means more visible (return INVALCOLOR).
+ */
+    static guicolor_T
+blend_colors(guicolor_T popup_color, guicolor_T bg_color, int blend_val)
+{
+    int r1, g1, b1, r2, g2, b2, r, g, b;
+
+    if (popup_color == INVALCOLOR)
+	return INVALCOLOR;
+
+    r1 = (popup_color >> 16) & 0xFF;
+    g1 = (popup_color >> 8) & 0xFF;
+    b1 = popup_color & 0xFF;
+
+    if (bg_color == INVALCOLOR)
+    {
+	// Background color unknown: fade popup color to black as blend increases
+	// This makes background text more visible at high blend values
+	r = r1 * (100 - blend_val) / 100;
+	g = g1 * (100 - blend_val) / 100;
+	b = b1 * (100 - blend_val) / 100;
+	return (r << 16) | (g << 8) | b;
+    }
+
+    r2 = (bg_color >> 16) & 0xFF;
+    g2 = (bg_color >> 8) & 0xFF;
+    b2 = bg_color & 0xFF;
+
+    r = r1 + (r2 - r1) * blend_val / 100;
+    g = g1 + (g2 - g1) * blend_val / 100;
+    b = b1 + (b2 - b1) * blend_val / 100;
+
+    return (r << 16) | (g << 8) | b;
+}
+#endif
+
+/*
+ * Blend attributes for popup windows with opacity.
+ * Blends foreground and/or background colors based on blend value (0-100).
+ * blend: 0 = opaque (use popup colors), 100 = transparent (use background colors)
+ * blend_fg: TRUE to blend foreground color, FALSE to keep popup foreground
+ */
+    int
+hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
+{
+    attrentry_T *char_aep = NULL;
+    attrentry_T *popup_aep;
+    attrentry_T new_en;
+
+    // If both attrs are 0, return 0
+    if (char_attr == 0 && popup_attr == 0)
+	return 0;
+    if (blend >= 100)
+	return char_attr;  // Fully transparent, show background only
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_gui_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+	    new_en.ae_u.gui.fg_color = INVALCOLOR;
+	    new_en.ae_u.gui.bg_color = INVALCOLOR;
+	    new_en.ae_u.gui.sp_color = INVALCOLOR;
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_gui_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		if (blend_fg)
+		{
+		    // blend_fg=TRUE: blend bg text fg from popup bg color to white
+		    // At blend=0: fg becomes popup bg (blue, invisible - opaque popup)
+		    // At blend=100: fg is white (visible - transparent popup)
+		    // Always use white (0xFFFFFF) as the target color for consistency
+		    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		    {
+			new_en.ae_u.gui.fg_color = blend_colors(
+				popup_aep->ae_u.gui.bg_color, 0xFFFFFF, blend);
+		    }
+		}
+		else if (popup_aep->ae_u.gui.fg_color != INVALCOLOR)
+		{
+		    // blend_fg=FALSE: use popup foreground
+		    new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
+		}
+		// Blend background color
+		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		{
+		    // Always use popup background, fade to black based on blend
+		    int r = ((popup_aep->ae_u.gui.bg_color >> 16) & 0xFF) * (100 - blend) / 100;
+		    int g = ((popup_aep->ae_u.gui.bg_color >> 8) & 0xFF) * (100 - blend) / 100;
+		    int b = (popup_aep->ae_u.gui.bg_color & 0xFF) * (100 - blend) / 100;
+		    new_en.ae_u.gui.bg_color = (r << 16) | (g << 8) | b;
+		}
+	    }
+	}
+	return get_attr_entry(&gui_attr_table, &new_en);
+    }
+#endif
+
+    if (IS_CTERM)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_cterm_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+#ifdef FEAT_TERMGUICOLORS
+	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.ul_rgb = INVALCOLOR;
+#endif
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_cterm_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		// Blend foreground color
+		if (popup_aep->ae_u.cterm.fg_color > 0)
+		{
+		    if (new_en.ae_u.cterm.fg_color > 0)
+			new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
+		    else
+			new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
+		}
+		// Use popup background color (cterm colors don't support blending)
+		if (popup_aep->ae_u.cterm.bg_color > 0)
+		{
+		    new_en.ae_u.cterm.bg_color = popup_aep->ae_u.cterm.bg_color;
+		}
+#ifdef FEAT_TERMGUICOLORS
+		// Blend RGB colors for termguicolors mode
+		if (blend_fg)
+		{
+		    // blend_fg=TRUE: blend bg text fg from popup bg color to white
+		    // Always use white (0xFFFFFF) as the target color for consistency
+		    if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		    {
+			new_en.ae_u.cterm.fg_rgb = blend_colors(
+				popup_aep->ae_u.cterm.bg_rgb, 0xFFFFFF, blend);
+		    }
+		}
+		else if (popup_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+		{
+		    // blend_fg=FALSE: use popup foreground
+		    new_en.ae_u.cterm.fg_rgb = popup_aep->ae_u.cterm.fg_rgb;
+		}
+		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		{
+		    // Always use popup background, fade to black based on blend
+		    int r = ((popup_aep->ae_u.cterm.bg_rgb >> 16) & 0xFF) * (100 - blend) / 100;
+		    int g = ((popup_aep->ae_u.cterm.bg_rgb >> 8) & 0xFF) * (100 - blend) / 100;
+		    int b = (popup_aep->ae_u.cterm.bg_rgb & 0xFF) * (100 - blend) / 100;
+		    new_en.ae_u.cterm.bg_rgb = (r << 16) | (g << 8) | b;
+		}
+#endif
+	    }
+	}
+	return get_attr_entry(&cterm_attr_table, &new_en);
+    }
+
+    if (char_attr > HL_ALL)
+	char_aep = syn_term_attr2entry(char_attr);
+    if (char_aep != NULL)
+	new_en = *char_aep;
+    else
+    {
+	CLEAR_FIELD(new_en);
+	if (char_attr <= HL_ALL)
+	    new_en.ae_attr = char_attr;
+    }
+
+    // For term mode, no separate background color handling.
+    return get_attr_entry(&term_attr_table, &new_en);
+}
+
 #ifdef FEAT_GUI
     attrentry_T *
 syn_gui_attr2entry(int attr)

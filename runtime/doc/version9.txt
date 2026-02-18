@@ -52582,6 +52582,10 @@ VERSION 9.3				*version-9.3* *version9.3* *vim-9.3*
 This section is about improvements made between version 9.2 and 9.3 and is
 work in progress.
 
+Popups ~
+------
+- Support for transparency, see |popup-opacity|.
+
 							*changed-9.3*
 Changed~
 -------

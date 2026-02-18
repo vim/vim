@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -21,6 +21,7 @@ Displaying text in a popup window.	*popup* *popup-window* *popupwin*
    Popup filter			|popup-filter|
    Popup callback		|popup-callback|
    Popup scrollbar		|popup-scrollbar|
+   Popup opacity		|popup-opacity|
    Popup mask			|popup-mask|
 4. Examples			|popup-examples|
 
@@ -772,6 +773,13 @@ The second argument of |popup_create()| is a dictionary with options:
 			the popup window.
 	highlight	Highlight group name to use for the text, stored in
 			the 'wincolor' option.
+	opacity		Opacity of the popup, a value between 0 and 100:
+			0 is fully transparent (background text fully visible)
+			100 is fully opaque (default, no transparency)
+			Values in between blend the popup background with the
+			underlying text, making it partially transparent.
+			Requires 'termguicolors' to be set.
+			Also see |popup-opacity|.
 	padding		List with numbers, defining the padding
 			above/right/below/left of the popup (similar to CSS).
 			An empty list uses a padding of 1 all around.  The
@@ -1045,6 +1053,42 @@ A click in the upper half of the scrollbar will scroll the text down one line.
 A click in the lower half will scroll the text up one line.  However, this is
 limited so that the popup does not get smaller.
 
+
+
+POPUP OPACITY						*popup-opacity*
+
+A popup window can be made semi-transparent by setting the "opacity" option.
+The opacity value ranges from 0 to 100:
+    0		Fully transparent - the popup background is invisible and the
+		text behind the popup is fully visible.
+    100		Fully opaque (default) - the popup is not transparent at all.
+    1-99	Partially transparent - the popup background is blended with
+		the underlying text, making both partially visible.
+
+The transparency effect requires using the GUI or having 'termguicolors'
+enabled in the terminal. Without it, the opacity setting has no effect.
+
+When a popup is transparent:
+- The popup's background color is blended with the background text
+- The popup's text (foreground) remains fully visible and unblended
+- Text behind the popup is visible through transparent areas
+- The more transparent the popup (lower opacity), the more clearly the
+  background text can be seen
+
+This can be useful for:
+- Creating overlay windows that don't completely obscure underlying text
+- Showing contextual information without blocking the view
+- Creating visual effects and modern UI designs
+
+Example with 50% opacity: >
+	let winid = popup_create('Semi-transparent text', #{
+	\ line: 5,
+	\ col: 10,
+	\ opacity: 50,
+	\ })
+
+The opacity can be changed dynamically using |popup_setoptions()|: >
+	call popup_setoptions(winid, #{opacity: 80})
 
 POPUP MASK						*popup-mask*
 
