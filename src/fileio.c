@@ -3022,7 +3022,7 @@ check_for_cryptkey(
 	    int header_len;
 
 	    header_len = crypt_get_header_len(method);
-	    if (*sizep <= header_len)
+	    if (*sizep < header_len)
 		// invalid header, buffer can't be encrypted
 		return NULL;
 
