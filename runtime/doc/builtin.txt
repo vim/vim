@@ -5205,7 +5205,7 @@ getrepeat()						*getrepeat()*
 		    "text"	Text to insert (string)
 
 		If the repeat was set via |setrepeat()|, returns the exact
-		dictionary that was passed. Otherwise, returns information
+		dictionary that was passed.  Otherwise, returns information
 		from Vim's internal repeat buffer.
 
 		For user operations (like typing 'iHello<Esc>'):
@@ -5250,10 +5250,12 @@ getrepeat()						*getrepeat()*
 		    endfunction
 <
 		Note: The internal structure of the dictionary may be
-		extended in future versions. Plugins should only rely on
+		extended in future versions.  Plugins should only rely on
 		the documented "cmd" and "text" keys.
 
+		Return type: |Dictionary|
 		See also: |setrepeat()|, |.|
+
 
 getscriptinfo([{opts}])					*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
@@ -10428,6 +10430,7 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 <
 		Return type: |Number|
 
+
 setrepeat({dict})					*setrepeat()*
 		Set the repeat command that will be executed by the |.|
 		command.
@@ -10438,7 +10441,7 @@ setrepeat({dict})					*setrepeat()*
 
 		The "cmd" field specifies the command character or sequence.
 		For insert mode commands (i, a, o, O, I, A, c, s, C, S), the
-		"text" field contains the text to insert. For other commands
+		"text" field contains the text to insert.  For other commands
 		(dd, yy, x, etc.), "text" can be omitted or empty.
 
 		This is useful for:
@@ -10497,13 +10500,14 @@ setrepeat({dict})					*setrepeat()*
 
 		5. Advanced features not yet supported
 		   Features like |<Plug>| mappings, counts, and registers
-		   are not currently supported. These may be added in future
-		   versions via additional dictionary fields.
+		   are not currently supported.  These may be added in
+		   future versions via additional dictionary fields.
 
 		Note: The internal structure of the dictionary may be
-		extended in future versions. Plugins should only rely on
+		extended in future versions.  Plugins should only rely on
 		the documented "cmd" and "text" keys.
 
+		Return type: void
 		See also: |getrepeat()|, |.|
 
 
