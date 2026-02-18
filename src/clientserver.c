@@ -724,7 +724,7 @@ build_drop_cmd(
     // Call inputsave() so that a prompt for an encryption key works.
     GA_CONCAT_LITERAL(&ga, "<CR><C-\\><C-N>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
-	ga_concat_len(&ga, (char_u *)"tab ", 4);
+	GA_CONCAT_LITERAL(&ga, "tab ");
     GA_CONCAT_LITERAL(&ga, "drop");
     for (i = 0; i < filec; i++)
     {
