@@ -2,7 +2,7 @@
 # Read stdin if no arguments were given and stdin was redirected.
 
 if [ $# -eq 0 ] && [ -t 0 ]; then
-  echo "Missing filename" 1>&2
+  echo "$(basename "$0"): No input." 1>&2
   exit
 fi
 
