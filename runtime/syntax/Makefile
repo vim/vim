@@ -27,7 +27,7 @@ RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $
 # DEBUGLOG = --log testlog
 
 # All initial phony targets; these names may clash with file types.
-phonies = clean test testclean
+phonies = clean executables test testclean
 .PHONY: $(phonies)
 
 # Run the tests that didn't run yet or failed previously.
@@ -52,6 +52,9 @@ testdir/testdeps.mk:
 	./testdir/tools/maketestdeps $(phonies) > $@
 
 -include testdir/testdeps.mk
+
+executables:
+	@! find testdir/input -type f -perm /a+x -exec echo Executable syntax test found: \{\} \; | grep :
 
 clean testclean:
 	rm -f testdir/failed/* testdir/done/* testdir/vimcmd testdir/messages testdir/Xtestscript testdir/Xfilter testdir/testdeps.mk
