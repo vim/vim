@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*channel.txt*	For Vim version 9.2.  Last change: 2026 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -129,6 +129,11 @@ a Unix-domain socket path prefixed by "unix:".  E.g. >
     127.0.0.1:1234       " IPv4 + port
     [2001:db8::1]:8765   " IPv6 + port
     unix:/tmp/my-socket  " Unix-domain socket path
+
+When a domain name resolves to multiple addresses (e.g., both IPv6 and IPv4),
+Vim tries each address in order.  If a connection is slow or unreachable, it
+quickly falls back to the next address.  This helps when IPv6 or IPv4 is
+unreachable on the network.
 
 {options} is a dictionary with optional entries:	*channel-open-options*
 
