@@ -881,7 +881,7 @@ SendInit(Display *dpy)
     // Make window recognizable as a vim window
     XChangeProperty(dpy, commWindow, vimProperty, XA_STRING,
 		    8, PropModeReplace, (char_u *)VIM_VERSION_SHORT,
-			(int)STRLEN(VIM_VERSION_SHORT) + 1);
+			(int)STRLEN_LITERAL(VIM_VERSION_SHORT) + 1);
 
     XSync(dpy, False);
     (void)XSetErrorHandler(old_handler);
