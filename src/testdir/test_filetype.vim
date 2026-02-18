@@ -379,7 +379,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     hostconf: ['/etc/host.conf', 'any/etc/host.conf'],
     hostsaccess: ['/etc/hosts.allow', '/etc/hosts.deny', 'any/etc/hosts.allow', 'any/etc/hosts.deny'],
     # file.component.html should be HTML, not Angular, see #13594
-    html: ['file.html', 'file.htm', 'file.cshtml', 'file.component.html'],
+    html: ['file.html', 'file.htm', 'file.component.html'],
     htmlm4: ['file.html.m4'],
     httest: ['file.htt', 'file.htb'],
     http: ['file.http'],
@@ -680,6 +680,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     rapid: ['file.sysx', 'file.Sysx', 'file.SysX', 'file.SYSx', 'file.SYSX', 'file.modx', 'file.Modx', 'file.ModX', 'file.MODx', 'file.MODX'],
     rasi: ['file.rasi', 'file.rasinc'],
     ratpoison: ['.ratpoisonrc', 'ratpoisonrc'],
+    razor: ['file.cshtml', 'file.razor'],
     rbs: ['file.rbs'],
     rc: ['file.rc', 'file.rch'],
     rcs: ['file,v'],

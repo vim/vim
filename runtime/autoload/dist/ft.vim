@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Feb 06
+# Last Change:		2026 Feb 18
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2571,6 +2571,9 @@ const ft_from_ext = {
   "rakumod": "raku",
   "rakudoc": "raku",
   "rakutest": "raku",
+  # Razor
+  "cshtml": "razor",
+  "razor": "razor",
   # Renderman Interface Bytestream
   "rib": "rib",
   # Rego Policy Language
