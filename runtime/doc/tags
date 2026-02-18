@@ -11899,6 +11899,7 @@ xattr	editing.txt	/*xattr*
 xdg-base-dir	starting.txt	/*xdg-base-dir*
 xdg-runtime	starting.txt	/*xdg-runtime*
 xdg-vimrc	starting.txt	/*xdg-vimrc*
+xdg.vim	starting.txt	/*xdg.vim*
 xf86conf.vim	syntax.txt	/*xf86conf.vim*
 xfontset	mbyte.txt	/*xfontset*
 xfree-xterm	syntax.txt	/*xfree-xterm*

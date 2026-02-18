@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Feb 16
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1125,8 +1125,13 @@ This is not an exhaustive list of those directories:
   `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
   `$XDG_STATE_HOME`	$HOME/.local/state	State data files
 
-Vim will only use the `$XDG_CONFIG_HOME` directory, the others are not
-(yet) used for its various configuration and state files.
+							*xdg.vim*
+Vim itself will only use the $XDG_CONFIG_HOME directory.  Support for the
+other XDG directories is provided by the "$VIMRUNTIME/xdg.vim" script.
+Note: xdg.vim is only effective if the $XDG_CONFIG_HOME/vim directory (or
+its default fallback) exists.  By default, it only sets the 'viminfofile'
+option.  Other option settings are commented out, see the script for
+details on how to enable them.
 
 							*xdg-vimrc*
 Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for its
