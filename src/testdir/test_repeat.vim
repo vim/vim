@@ -312,4 +312,23 @@ func Test_setrepeat_special_chars()
   bwipe!
 endfunc
 
+func Test_getrepeat_user_overrides_setrepeat()
+  " Test that user operations override setrepeat() value
+  new
+
+  " Set repeat programmatically
+  call setrepeat({'cmd': 'dd'})
+  call assert_equal('dd', getrepeat().cmd)
+
+  " User performs insert operation
+  execute "normal! iHello\<Esc>"
+
+  " getrepeat() should now return user operation, not setrepeat() value
+  let result = getrepeat()
+  call assert_equal('i', result.cmd)
+  call assert_equal('Hello', result.text)
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
