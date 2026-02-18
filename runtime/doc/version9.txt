@@ -52586,6 +52586,10 @@ Popups ~
 ------
 - Support for transparency, see |popup-opacity|.
 
+Other ~
+-----
+The new |xdg.vim| script for full XDG compatibility is included
+
 							*changed-9.3*
 Changed~
 -------
