@@ -100,6 +100,9 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+static int	last_insert_cmdchar = NUL; // Track the last insert mode
+					   // command character for getrepeat()
+
 #if defined(FEAT_EVAL)
 // Dictionary to store the last repeat command set via setrepeat()
 static dict_T	*g_last_repeat_dict = NULL;
@@ -171,6 +174,10 @@ edit(
     int		cursor_line_was_concealed;
 #endif
     int		ins_just_started = TRUE;
+
+    // Track the insert command for getrepeat()
+    if (cmdchar != 0)
+	last_insert_cmdchar = cmdchar;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -5801,25 +5808,51 @@ set_repeat_dict(dict_T *dict)
     dict_T *
 get_repeat_dict(void)
 {
-    dict_T	*dict;
+    dict_T *dict;
+    char_u *text_str = NULL;
+    char_u cmd_str[2];
 
+    // If setrepeat() was used, return that
     if (g_last_repeat_dict != NULL)
     {
-	// Return a copy of the dictionary that was set via setrepeat()
-	dict = dict_copy(g_last_repeat_dict, TRUE, FALSE, get_copyID());
-	if (dict != NULL)
-	    ++dict->dv_refcount;
-	return dict;
+	return dict_copy(g_last_repeat_dict, TRUE, TRUE, get_copyID());
     }
 
-    // Return empty dictionary if nothing was set
+    // Create new dictionary for user operation
     dict = dict_alloc();
-    if (dict != NULL)
+    if (dict == NULL)
+	return NULL;
+
+    dict->dv_refcount = 1;
+
+    // Get command from tracked insert command
+    cmd_str[0] = NUL;
+    cmd_str[1] = NUL;
+    if (last_insert_cmdchar != NUL && last_insert_cmdchar != 'i')
     {
-	++dict->dv_refcount;
-	dict_add_string(dict, "cmd", (char_u *)"");
-	dict_add_string(dict, "text", (char_u *)"");
+	// Only include insert mode commands: i, a, o, I, A, O, etc.
+	if (vim_strchr((char_u *)"iIaAoOcCsS", last_insert_cmdchar) != NULL)
+	    cmd_str[0] = last_insert_cmdchar;
     }
+    else if (last_insert_cmdchar == 'i')
+    {
+	cmd_str[0] = 'i';
+    }
+
+    // Get text from . register
+    text_str = get_reg_contents('.', GREG_NO_EXPR);
+
+    // Add to dictionary
+    if (dict_add_string(dict, "cmd", cmd_str) == FAIL
+	    || dict_add_string(dict, "text", 
+		text_str != NULL ? text_str : (char_u *)"") == FAIL)
+    {
+	vim_free(text_str);
+	dict_unref(dict);
+	return NULL;
+    }
+
+    vim_free(text_str);
 
     return dict;
 }

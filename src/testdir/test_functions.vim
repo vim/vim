@@ -4804,4 +4804,44 @@ func Test_setrepeat_save_restore_dot()
   bwipe!
 endfunc
 
+func Test_getrepeat_user_insert()
+  " Test getrepeat after user insert operation
+  new
+
+  execute "normal! iHello\<Esc>"
+
+  let result = getrepeat()
+  call assert_equal('i', result.cmd)
+  call assert_equal('Hello', result.text)
+
+  bwipe!
+endfunc
+
+func Test_getrepeat_user_append()
+  " Test getrepeat after user append operation
+  new
+  call setline(1, 'First')
+
+  execute "normal! ASecond\<Esc>"
+
+  let result = getrepeat()
+  call assert_equal('A', result.cmd)
+  call assert_equal('Second', result.text)
+
+  bwipe!
+endfunc
+
+func Test_getrepeat_user_open()
+  " Test getrepeat after open line
+  new
+
+  execute "normal! oNew line\<Esc>"
+
+  let result = getrepeat()
+  call assert_equal('o', result.cmd)
+  call assert_equal('New line', result.text)
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
