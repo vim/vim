@@ -3457,7 +3457,9 @@ shorten_fname(char_u *full_path, char_u *dir_name)
 #endif
 	{
 	    if (vim_ispathsep(*p))
-		++p;
+		do
+		    ++p;
+		while (vim_ispathsep_nocolon(*p));
 #ifndef VMS   // the path separator is always part of the path
 	    else
 		p = NULL;
