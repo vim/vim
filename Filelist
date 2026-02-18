@@ -223,6 +223,8 @@ SRC_ALL =	\
 		src/testdir/samples/test000 \
 		src/testdir/samples/test_undo.txt.undo \
 		src/testdir/samples/testa.zip \
+		src/testdir/samples/crypt_utf8_test.txt \
+		src/testdir/samples/uncrypt_utf8_test.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/silent.wav \
 		src/testdir/test77a.com \
