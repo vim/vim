@@ -196,7 +196,7 @@ menu_sr_rs.ascii.vim: menu_sr_rs.utf-8.vim
 		-e 's/scriptencoding utf-8/scriptencoding latin1/' \
 		-e 's/" Original translations/" Generated from $?, DO NOT EDIT/' \
 		$? > $@
-	
+
 # Convert menu_uk_ua.utf-8.vim to create menu_uk_ua.cp1251.vim.
 menu_uk_ua.cp1251.vim: menu_uk_ua.utf-8.vim
 	rm -f $@
