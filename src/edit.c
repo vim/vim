@@ -2768,6 +2768,9 @@ set_last_insert_str(char_u *str)
 	    AppendCharToRedobuff(*str);
 	    for (p = text_start; *p != NUL; )
 		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+
+	    // Add ESC char
+	    AppendCharToRedobuff(ESC);
 	}
 	else
 	{
