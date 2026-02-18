@@ -280,6 +280,7 @@ NEW_TESTS = \
 	test_reltime \
 	test_remote \
 	test_rename \
+	test_repeat \
 	test_restricted \
 	test_retab \
 	test_ruby \
@@ -552,6 +553,7 @@ NEW_TESTS_RES = \
 	test_registers.res \
 	test_remote.res \
 	test_rename.res \
+	test_repeat.res \
 	test_restricted.res \
 	test_retab.res \
 	test_ruby.res \
