@@ -583,13 +583,36 @@ screen_line(
 		redraw_this = TRUE;
 	}
 #endif
-	// Do not redraw if under the popup menu.
-	if (redraw_this && skip_for_popup(row, col + coloff))
-	    redraw_this = FALSE;
-	// Also skip the second cell for double-width characters.
 	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
 	    redraw_this = FALSE;
+	// For transparent popup cells, update the background character
+	// so it shows through the popup.
+	if (redraw_this && skip_for_popup(row, col + coloff))
+	{
+	    ScreenLines[off_to] = ScreenLines[off_from];
+	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
+	    if (enc_utf8)
+	    {
+		ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
+		if (ScreenLinesUC[off_from] != 0)
+		{
+		    for (int i = 0; i < Screen_mco; ++i)
+			ScreenLinesC[i][off_to] = ScreenLinesC[i][off_from];
+		}
+	    }
+	    if (char_cells == 2)
+	    {
+		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
+		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+	    }
+	    if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
+		ScreenLines2[off_to] = ScreenLines2[off_from];
 
+	    if (enc_dbcs != 0 && char_cells == 2)
+		screen_char_2(off_to, row, col + coloff);
+	    else
+		screen_char(off_to, row, col + coloff);
+	}
 	if (redraw_this)
 	{
 	    /*
@@ -1339,11 +1362,14 @@ screen_puts_len(
 #endif
 	    && mb_fix_col(col, row) != col)
     {
+	// Keep the original attribute to preserve background color
+	// when drawing over popup windows.
 	if (!skip_for_popup(row, col - 1))
 	{
 	    ScreenLines[off - 1] = ' ';
-	    ScreenAttrs[off - 1] = 0;
-	    if (enc_utf8)
+	    if (enc_dbcs == DBCS_JPNU)
+		ScreenAttrs[off - 1] = 0;
+	    else if (enc_utf8)
 	    {
 		ScreenLinesUC[off - 1] = 0;
 		ScreenLinesC[0][off - 1] = 0;
@@ -2206,9 +2232,17 @@ screen_fill(
 	    // double wide-char clear out the right half.  Only needed in a
 	    // terminal.
 	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
-		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
+	    {
+		// start_col is the right half, clear the left half
+		int left_attr = ScreenAttrs[LineOffset[row] + start_col - 1];
+		screen_puts_len((char_u *)" ", 1, row, start_col - 1, left_attr);
+	    }
 	    if (end_col < screen_Columns && mb_fix_col(end_col, row) != end_col)
-		screen_puts_len((char_u *)" ", 1, row, end_col, 0);
+	    {
+		// end_col is the right half of a wide char, preserve its attribute
+		int right_attr = ScreenAttrs[LineOffset[row] + end_col];
+		screen_puts_len((char_u *)" ", 1, row, end_col, right_attr);
+	    }
 	}
 	/*
 	 * Try to use delete-line termcap code, when no attributes or in a
