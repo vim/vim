@@ -3,7 +3,7 @@ vim9script noclear
 # Vim completion script
 # Language:	C
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Jul 24
+# Last Change:	2026 Feb 18
 #		Rewritten in Vim9 script by github user lacygoill
 # Former Maintainer:   Bram Moolenaar <Bram@vim.org>
 
@@ -489,7 +489,7 @@ def Nextitem( # {{{1
       continue
     endif
 
-    # Use the tags file to find out if this is a typedef.
+    # Use the tags file to find out if this is a typedef or struct
     var diclist: list<dict<any>> = taglist('^' .. tokens[tidx] .. '$')
     for tagidx: number in len(diclist)->range()
 
@@ -508,6 +508,13 @@ def Nextitem( # {{{1
         res = res->extend(item['typename']->StructMembers(items, all))
         continue
       endif
+
+      # handle struct
+      if item['kind'] == 's'
+        res = StructMembers('struct:' .. tokens[tidx], items, all)
+        break
+      endif
+
 
       # Only handle typedefs here.
       if item['kind'] != 't'
@@ -733,4 +740,4 @@ def SearchMembers( # {{{1
 enddef
 #}}}1
 
-# vim: noet sw=2 sts=2
+# vim: et sw=2 sts=2
