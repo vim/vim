@@ -2941,7 +2941,7 @@ ml_append_int(
     int		line_count;	// number of indexes in current block
     int		offset;
     int		from, to;
-    int		space_needed;	// space needed for new line
+    long	space_needed;	// space needed for new line
     int		page_size;
     int		page_count;
     int		db_idx;		// index for lnum in data block
@@ -3018,7 +3018,7 @@ ml_append_int(
  * - not appending to the last line in the file
  * insert in front of the next block.
  */
-    if ((int)dp->db_free < space_needed && db_idx == line_count - 1
+    if ((long)dp->db_free < space_needed && db_idx == line_count - 1
 					    && lnum < buf->b_ml.ml_line_count)
     {
 	/*
@@ -3041,7 +3041,7 @@ ml_append_int(
 
     ++buf->b_ml.ml_line_count;
 
-    if ((int)dp->db_free >= space_needed)	// enough room in data block
+    if ((long)dp->db_free >= space_needed)	// enough room in data block
     {
 	/*
 	 * Insert the new line in an existing data block, or in the data block
@@ -3142,7 +3142,7 @@ ml_append_int(
 		data_moved = ((dp->db_index[db_idx]) & DB_INDEX_MASK) -
 							    dp->db_txt_start;
 		total_moved = data_moved + lines_moved * INDEX_SIZE;
-		if ((int)dp->db_free + total_moved >= space_needed)
+		if ((long)dp->db_free + total_moved >= space_needed)
 		{
 		    in_left = TRUE;	// put new line in left block
 		    space_needed = total_moved;
