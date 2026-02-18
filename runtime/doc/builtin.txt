@@ -5205,27 +5205,54 @@ getrepeat()						*getrepeat()*
 		    "text"	Text to insert (string)
 
 		If the repeat was set via |setrepeat()|, returns the exact
-		dictionary that was passed. Otherwise, returns limited
-		information from Vim's internal repeat buffer.
+		dictionary that was passed. Otherwise, returns information
+		from Vim's internal repeat buffer.
+
+		For user operations (like typing 'iHello<Esc>'):
+		- "cmd" contains the command character (i, a, o, etc.)
+		- "text" contains the inserted text
+		
+		For operations set via |setrepeat()|:
+		- Returns the exact dictionary that was passed
+		- Preserves all custom information
 
 		This is useful for:
 		- Saving and restoring the repeat command
 		- Building repeat history
 		- Implementing custom repeat behavior
+		- Preserving repeat state across plugin operations
 
-		Example: >
-		    " Save current repeat
+		Examples: >
+		    " Check current repeat command
+		    let repeat_info = getrepeat()
+		    echo repeat_info.cmd    " 'i', 'dd', etc.
+		    echo repeat_info.text   " inserted text if any
+
+		    " Save and restore repeat state
 		    let saved = getrepeat()
-
-		    " Do some operations
-		    call MyPlugin()
-
-		    " Restore original repeat
+		    call MyPlugin()  " might change repeat
 		    call setrepeat(saved)
+		    normal! .        " uses saved repeat
 
-		    " Now dot command uses the saved repeat
-		    normal! .
+		    " Build repeat history
+		    let g:repeat_history = []
+		    function! SaveRepeat()
+		        call add(g:repeat_history, getrepeat())
+		    endfunction
+
+		    " Conditional repeat
+		    function! ConditionalRepeat()
+		        let info = getrepeat()
+		        if info.cmd ==# 'i'
+		            " Only repeat insert commands
+		            normal! .
+		        endif
+		    endfunction
 <
+		Note: The internal structure of the dictionary may be
+		extended in future versions. Plugins should only rely on
+		the documented "cmd" and "text" keys.
+
 		See also: |setrepeat()|, |.|
 
 getscriptinfo([{opts}])					*getscriptinfo()*
@@ -10405,14 +10432,19 @@ setrepeat({dict})					*setrepeat()*
 		Set the repeat command that will be executed by the |.|
 		command.
 
-		The {dict} argument must be a |Dictionary| with:
-		    "cmd"	(required) The command to repeat (string)
-		    "text"	(optional) Text to insert (string)
+		{dict} is a |Dictionary| with the following keys:
+		    "cmd"	The command to repeat (string, required)
+		    "text"	Text to insert (string, optional)
 
-		The "cmd" field specifies the command. For Insert mode
-		commands (i, a, o, O, I, A, c, s, C, S), the "text" field
-		contains the text to insert. For Normal mode commands (dd,
-		yy, x, etc.), "text" can be omitted or empty.
+		The "cmd" field specifies the command character or sequence.
+		For insert mode commands (i, a, o, O, I, A, c, s, C, S), the
+		"text" field contains the text to insert. For other commands
+		(dd, yy, x, etc.), "text" can be omitted or empty.
+
+		This is useful for:
+		- Making custom commands repeatable with |.|
+		- Preserving repeat behavior across plugin operations
+		- Building complex repeatable operations
 
 		Examples: >
 		    " Normal mode command
@@ -10426,58 +10458,54 @@ setrepeat({dict})					*setrepeat()*
 		    " Change operation
 		    call setrepeat({'cmd': 'cw', 'text': 'newword'})
 		    normal! .		" changes word to 'newword'
-<
-		Use cases:
 
-		1. Making custom commands repeatable: >
-		    function! MyCommand()
-		      " ... complex operation ...
-		      call setrepeat({'cmd': ':call MyCommand()'})
+		    " Making a custom command repeatable
+		    function! MyInsertCommand()
+		        execute "normal! iCustom text\<Esc>"
+		        call setrepeat({'cmd': 'i', 'text': 'Custom text'})
 		    endfunction
-<
-		2. Save/restore for temporary operations: >
+
+		    " Save and restore repeat state
 		    let saved = getrepeat()
-		    " ... temporary operations ...
+		    call MyPlugin()  " might change repeat
 		    call setrepeat(saved)
 <
-		3. Repeat history: >
-		    let g:history = []
-		    call add(g:history, getrepeat())
-		    " ... later ...
-		    call setrepeat(g:history[0])
-<
-		Limitations:
+		Limitations and notes:
 
-		1. Insert mode overwrites |setrepeat()|
-		   When you enter and leave insert mode, Vim automatically
+		1. Entering insert mode overwrites setrepeat()
+		   When you enter and exit insert mode, Vim automatically
 		   records the insertion and overwrites any repeat set by
-		   |setrepeat()|.
+		   setrepeat().
 
-		   Workaround: Call |setrepeat()| after leaving insert mode,
-		   or avoid insert mode when using custom repeats.
+		   Workaround: Call setrepeat() after leaving insert mode.
 
-		2. Functions like |setline()| are not recorded
-		   Functions that modify text (|setline()|, |setbufline()|,
-		   etc.) do not update the repeat command.
+		2. Text-modifying functions are not recorded
+		   Functions like |setline()|, |setbufline()|, etc. do not
+		   update the repeat command automatically.
 
-		   Workaround: Use |feedkeys()| to simulate typing.
+		   Workaround: Use |feedkeys()| with 'x' flag to simulate
+		   typing, or call setrepeat() explicitly.
 
-		3. Visual mode not supported
-		   Visual mode operations cannot be set via |setrepeat()|.
-		   This may be addressed in a future update.
+		3. Visual mode operations are not supported
+		   Visual mode operations cannot be set via setrepeat().
 
-		4. Limited getrepeat() for user operations
-		   If the repeat came from a normal user operation (typing
-		   'iHello<Esc>'), |getrepeat()| returns limited
-		   information. Full fidelity is only available for repeats
-		   set via setrepeat().
+		4. Limited information from user operations
+		   If the repeat came from normal user operations (typing
+		   'iHello<Esc>'), |getrepeat()| returns basic information.
+		   Full fidelity is only available for repeats set via
+		   setrepeat().
 
-		5. <Plug> mappings and counts not supported
-		   Features like <Plug> mappings and counts are not
-		   currently supported. These may be added in a future
-		   update via additional dictionary fields.
+		5. Advanced features not yet supported
+		   Features like |<Plug>| mappings, counts, and registers
+		   are not currently supported. These may be added in future
+		   versions via additional dictionary fields.
+
+		Note: The internal structure of the dictionary may be
+		extended in future versions. Plugins should only rely on
+		the documented "cmd" and "text" keys.
 
 		See also: |getrepeat()|, |.|
+
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Set tab-local variable {varname} to {val} in tab page {tabnr}.
