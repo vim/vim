@@ -878,6 +878,7 @@ RT_SCRIPTS =	\
 		runtime/delmenu.vim \
 		runtime/synmenu.vim \
 		runtime/makemenu.vim \
+		runtime/xdg.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
 		runtime/autoload/cargo/*.vim \

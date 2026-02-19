@@ -3626,11 +3626,11 @@ win_line(
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
+		int syntax_conceal = (syntax_flags & HL_CONCEAL) != 0;
 		wlv.char_attr = conceal_attr;
-		if (((prev_syntax_id != syntax_seqnr
-					   && (syntax_flags & HL_CONCEAL) != 0)
+		if (((prev_syntax_id != syntax_seqnr && syntax_conceal)
 			    || has_match_conc > 1)
-			&& (syn_get_sub_char() != NUL
+			&& ((syntax_conceal && syn_get_sub_char() != NUL)
 				|| (has_match_conc && match_conc)
 				|| wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
@@ -3639,7 +3639,7 @@ win_line(
 		    // character.
 		    if (has_match_conc && match_conc)
 			c = match_conc;
-		    else if (syn_get_sub_char() != NUL)
+		    else if (syntax_conceal && syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
 		    else if (wp->w_lcs_chars.conceal != NUL)
 			c = wp->w_lcs_chars.conceal;
