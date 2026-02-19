@@ -3756,7 +3756,7 @@ ch_close_part_on_error(
     // Only send "DETACH" for a netbeans channel.
     if (channel->ch_nb_close_cb != NULL)
 	channel_save(channel, PART_SOCK, (char_u *)DETACH_MSG_RAW,
-			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
+			      (int)STRLEN_LITERAL(DETACH_MSG_RAW), FALSE, "PUT ");
 
     // When reading is not possible close this part of the channel.  Don't
     // close the channel yet, there may be something to read on another part.

@@ -67,8 +67,8 @@ init_longVersion(void)
 #  endif
     char *msg = _("%s (%s, compiled %s)");
     size_t len = strlen(msg)
-	+ strlen(VIM_VERSION_LONG_ONLY)
-	+ strlen(VIM_VERSION_DATE_ONLY)
+	+ STRLEN_LITERAL(VIM_VERSION_LONG_ONLY)
+	+ STRLEN_LITERAL(VIM_VERSION_DATE_ONLY)
 	+ strlen(date_time);
 
     longVersion = alloc(len);
@@ -734,6 +734,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    29,
 /**/
     28,
 /**/
