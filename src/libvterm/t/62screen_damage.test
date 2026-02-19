@@ -146,9 +146,9 @@ PUSH "\e[25H\r\nABCDE\b\b\b\e[2P\r\n"
   sb_pushline 80 =
   moverect 1..25,0..80 -> 0..24,0..80
   damage 24..25,0..80 = 24<41 42 43 44 45>
+  sb_pushline 80 =
   moverect 24..25,4..80 -> 24..25,2..78
   damage 24..25,78..80
-  sb_pushline 80 =
 DAMAGEFLUSH
   moverect 1..25,0..80 -> 0..24,0..80
   damage 24..25,0..80
