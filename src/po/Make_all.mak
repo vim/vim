@@ -194,10 +194,12 @@ CHECKFILES = \
 
 PO_VIM_INPUTLIST = \
 	../../runtime/optwin.vim \
+	../../runtime/autoload/typeset.vim \
 	../../runtime/defaults.vim
 
 PO_VIM_JSLIST = \
 	optwin.js \
+	typeset.js \
 	defaults.js
 
 # Arguments for xgettext to pick up messages to translate from the source code.
