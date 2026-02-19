@@ -3279,7 +3279,8 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     popup_adjust_position(wp);
 
     // Redraw the old position to clear ghost images
-    if (old_winrow != wp->w_winrow || old_wincol != wp->w_wincol)
+    if (old_winrow != wp->w_winrow || old_wincol != wp->w_wincol
+	    || old_height != wp->w_height || old_width != wp->w_width)
 	redraw_all_later(UPD_NOT_VALID);
 }
 
