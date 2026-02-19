@@ -4763,7 +4763,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     if (!is_single_line)
     {
 	if (exacttext)
-	    ga_concat_len(&ga, (char_u *)"\\n", 2);
+	    GA_CONCAT_LITERAL(&ga, "\\n");
 	else
 	    ga_append(&ga, '\n');
     }
@@ -4781,7 +4781,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 		return FAIL;
 	    ga_concat_len(&ga, line, linelen);
 	    if (exacttext)
-		ga_concat_len(&ga, (char_u *)"\\n", 2);
+		GA_CONCAT_LITERAL(&ga, "\\n");
 	    else
 		ga_append(&ga, '\n');
 	}

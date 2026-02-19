@@ -1458,7 +1458,7 @@ add_default_constructor(
     int		is_enum = IS_ENUM(cl);
 
     ga_init2(&fga, 1, 1000);
-    ga_concat_len(&fga, (char_u *)"new(", 4);
+    GA_CONCAT_LITERAL(&fga, "new(");
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
 	if (i < 2 && is_enum)
@@ -1469,13 +1469,13 @@ add_default_constructor(
 	    continue;
 
 	if (i > (is_enum ? 2 : 0))
-	    ga_concat_len(&fga, (char_u *)", ", 2);
-	ga_concat_len(&fga, (char_u *)"this.", 5);
+	    GA_CONCAT_LITERAL(&fga, ", ");
+	GA_CONCAT_LITERAL(&fga, "this.");
 	ocmember_T *m = cl->class_obj_members + i;
 	ga_concat_len(&fga, (char_u *)m->ocm_name.string, m->ocm_name.length);
-	ga_concat_len(&fga, (char_u *)" = v:none", 9);
+	GA_CONCAT_LITERAL(&fga, " = v:none");
     }
-    ga_concat_len(&fga, (char_u *)")\nenddef\n", 9);	// Note: not 11!
+    GA_CONCAT_LITERAL(&fga, ")\nenddef\n");
     ga_append(&fga, NUL);
 
     exarg_T fea;
@@ -1826,18 +1826,18 @@ enum_add_values_member(
     int		rc = FAIL;
 
     ga_init2(&fga, 1, 1000);
-    ga_concat_len(&fga, (char_u *)"[", 1);
+    GA_CONCAT_LITERAL(&fga, "[");
     for (int i = 0; i < num_enum_values; ++i)
     {
 	ocmember_T *m = ((ocmember_T *)gap->ga_data) + i;
 
 	if (i > 0)
-	    ga_concat_len(&fga, (char_u *)", ", 2);
+	    GA_CONCAT_LITERAL(&fga, ", ");
 	ga_concat_len(&fga, en->class_name.string, en->class_name.length);
-	ga_concat_len(&fga, (char_u *)".", 1);
+	GA_CONCAT_LITERAL(&fga, ".");
 	ga_concat_len(&fga, (char_u *)m->ocm_name.string, m->ocm_name.length);
     }
-    ga_concat_len(&fga, (char_u *)"]", 1);
+    GA_CONCAT_LITERAL(&fga, "]");
     ga_append(&fga, NUL);
 
     char_u *varname = (char_u *)"values";
@@ -4291,30 +4291,30 @@ object2string(
 
     if (cl != NULL && IS_ENUM(cl))
     {
-	ga_concat_len(&ga, (char_u *)"enum ", 5);
+	GA_CONCAT_LITERAL(&ga, "enum ");
 	ga_concat_len(&ga, cl->class_name.string, cl->class_name.length);
 	char_u *enum_name = ((typval_T *)(obj + 1))->vval.v_string;
-	ga_concat_len(&ga, (char_u *)".", 1);
+	GA_CONCAT_LITERAL(&ga, ".");
 	ga_concat(&ga, enum_name);
     }
     else
     {
-	ga_concat_len(&ga, (char_u *)"object of ", 10);
+	GA_CONCAT_LITERAL(&ga, "object of ");
 	if (cl == NULL)
-	    ga_concat_len(&ga, (char_u *)"[unknown]", 9);
+	    GA_CONCAT_LITERAL(&ga, "[unknown]");
 	else
 	    ga_concat_len(&ga, cl->class_name.string, cl->class_name.length);
     }
     if (cl != NULL)
     {
-	ga_concat_len(&ga, (char_u *)" {", 2);
+	GA_CONCAT_LITERAL(&ga, " {");
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
 	    if (i > 0)
-		ga_concat_len(&ga, (char_u *)", ", 2);
+		GA_CONCAT_LITERAL(&ga, ", ");
 	    ocmember_T *m = &cl->class_obj_members[i];
 	    ga_concat_len(&ga, m->ocm_name.string, m->ocm_name.length);
-	    ga_concat_len(&ga, (char_u *)": ", 2);
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    char_u *tf = NULL;
 	    char_u *s = echo_string_core((typval_T *)(obj + 1) + i,
 					 &tf, numbuf, copyID, echo_style,
@@ -4329,7 +4329,7 @@ object2string(
 	    }
 	    line_breakcheck();
 	}
-	ga_concat_len(&ga, (char_u *)"}", 1);
+	GA_CONCAT_LITERAL(&ga, "}");
     }
     if (ok == FAIL)
     {
