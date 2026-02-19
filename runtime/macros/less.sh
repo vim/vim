@@ -9,7 +9,8 @@ fi
 
 if [ -t 1 ]; then
   [ $# -eq 0 ] && set -- "-"
-  exec vim --cmd 'let no_plugin_maps=1' -c 'runtime! macros/less.vim' --not-a-term -- "$@"
+  [ "$*" != "-" ] && set -- -- "$@"
+  exec vim --cmd 'let no_plugin_maps=1' -c 'runtime! macros/less.vim' --not-a-term "$@"
 else  # Output is not a terminal.
   exec cat -- "$@"
 fi
