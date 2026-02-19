@@ -1,7 +1,7 @@
 " XDG Base Directory support
 " This script sets up paths for XDG compliance.
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Feb 18
+" Last Change:	2026 Feb 19
 
 let s:config = empty($XDG_CONFIG_HOME) ? expand("~/.config") : expand("$XDG_CONFIG_HOME")
 let s:data   = empty($XDG_DATA_HOME)   ? expand("~/.local/share") : expand("$XDG_DATA_HOME")
@@ -31,8 +31,8 @@ if isdirectory(s:config .. '/vim')
   " while Swap/Backups use STATE_HOME as transient session state.
 
   " Persistent Data:
-  " let &undodir = s:mkvimdir(s:data .. '/vim/undo') .. '//'
-  " let &viewdir = s:mkvimdir(s:data .. '/vim/view') .. '//'
+  " let &undodir = s:mkvimdir(s:data .. '/vim/undo')
+  " let &viewdir = s:mkvimdir(s:data .. '/vim/view')
   " let g:netrw_home = s:mkvimdir(s:data .. '/vim')
   " call s:mkvimdir(s:data .. '/vim/spell')
 
