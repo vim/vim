@@ -132,8 +132,6 @@ jobs:
         run: |
           # This is added by default, and it is often broken, but we don't need anything from it
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          # ddebs (debug symbols) is often broken during mirror sync
-          sudo rm -f /etc/apt/sources.list.d/ddebs.list* || true
           # Remove proposed repositories (unstable)
           sudo sed -i '/proposed/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
           PKGS=( \
