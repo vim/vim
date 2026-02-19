@@ -21,9 +21,6 @@ if isdirectory(s:config .. '/vim')
     exe $"set packpath+={s:data}/vim/after"
   endif
 
-  " Use Data for the viminfo file
-  let &viminfofile = s:mkvimdir(s:data .. '/vim') .. '/viminfo'
-
   " These options are not set by default because they change the behavior of
   " where files are saved. Uncomment them if you want to fully move all
   " transient/persistent files to XDG directories.
@@ -37,6 +34,7 @@ if isdirectory(s:config .. '/vim')
   " call s:mkvimdir(s:data .. '/vim/spell')
 
   " Transient State:
+  let &viminfofile = s:mkvimdir(s:state .. '/vim') .. '/viminfo'
   " let &directory = s:mkvimdir(s:state .. '/vim/swap')   .. '//'
   " let &backupdir = s:mkvimdir(s:state .. '/vim/backup') .. '//'
 
