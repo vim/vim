@@ -1108,6 +1108,7 @@ LANG_GEN = \
 		runtime/doc/*-sv.UTF-8.1 \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
+		runtime/doc/*-zh_CN.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
 		runtime/lang/Make_all.mak \
