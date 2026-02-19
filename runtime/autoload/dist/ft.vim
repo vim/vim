@@ -3017,6 +3017,9 @@ const ft_from_ext = {
   "raml": "raml",
   # YANG
   "yang": "yang",
+  # YARA, YARA-X
+  "yara": "yara",
+  "yar": "yara",
   # Yuck
   "yuck": "yuck",
   # Zimbu
