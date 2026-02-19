@@ -222,7 +222,7 @@ typedef struct ss_pending_cmd_S {
     struct ss_pending_cmd_S *next;  // Next in list
 } ss_pending_cmd_T;
 
-ss_pending_cmd_T *ss_pending_cmds;
+static ss_pending_cmd_T *ss_pending_cmds;
 
 // Serial is always greater than zero
 static uint32_t ss_serial = 0;
