@@ -424,6 +424,7 @@
 #define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
 // Inlined version of ga_grow() with optimized condition that it succeeds.
 #define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == OK)
+#define GA_CONCAT_LITERAL(gap, s) ga_concat_len((gap), (char_u *)(s), STRLEN_LITERAL(s))
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))

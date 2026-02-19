@@ -674,12 +674,16 @@ build_drop_cmd(
     int		i;
     char_u	*inicmd = NULL;
     char_u	*p;
-    char_u	*cdp;
+    string_T	cdp;
     char_u	*cwd;
     // reset wildignore temporarily
-    const char *wig[] =
-    { "<CR><C-\\><C-N>:let g:_wig=&wig|set wig=",
-      "<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>"};
+# define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+    const string_T wig[] = {
+	STRING_INIT("<CR><C-\\><C-N>:let g:_wig=&wig|set wig="),
+	STRING_INIT("<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>")
+    };
+# undef STRING_INIT
 
     if (filec > 0 && filev[0][0] == '+')
     {
@@ -700,7 +704,7 @@ build_drop_cmd(
 	vim_free(cwd);
 	return NULL;
     }
-    cdp = vim_strsave_escaped_ext(cwd,
+    cdp.string = vim_strsave_escaped_ext(cwd,
 # ifdef BACKSLASH_IN_FILENAME
 	    (char_u *)"",  // rem_backslash() will tell what chars to escape
 # else
@@ -708,20 +712,20 @@ build_drop_cmd(
 # endif
 	    '\\', TRUE);
     vim_free(cwd);
-    if (cdp == NULL)
+    if (cdp.string == NULL)
 	return NULL;
+    cdp.length = STRLEN(cdp.string);
     ga_init2(&ga, 1, 100);
-    ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
-    ga_concat(&ga, cdp);
+    GA_CONCAT_LITERAL(&ga, "<C-\\><C-N>:cd ");
+    ga_concat_len(&ga, cdp.string, cdp.length);
     // reset wildignorecase temporarily
-    ga_concat(&ga, (char_u *)wig[0]);
+    ga_concat_len(&ga, wig[0].string, wig[0].length);
 
     // Call inputsave() so that a prompt for an encryption key works.
-    ga_concat(&ga, (char_u *)
-	    "<CR><C-\\><C-N>:if exists('*inputsave')|call inputsave()|endif|");
+    GA_CONCAT_LITERAL(&ga, "<CR><C-\\><C-N>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
-	ga_concat(&ga, (char_u *)"tab ");
-    ga_concat(&ga, (char_u *)"drop");
+	GA_CONCAT_LITERAL(&ga, "tab ");
+    GA_CONCAT_LITERAL(&ga, "drop");
     for (i = 0; i < filec; i++)
     {
 	// On Unix the shell has already expanded the wildcards, don't want to
@@ -739,16 +743,15 @@ build_drop_cmd(
 	    vim_free(ga.ga_data);
 	    return NULL;
 	}
-	ga_concat(&ga, (char_u *)" ");
+	GA_CONCAT_LITERAL(&ga, " ");
 	ga_concat(&ga, p);
 	vim_free(p);
     }
-    ga_concat(&ga, (char_u *)
-		  "|if exists('*inputrestore')|call inputrestore()|endif<CR>");
+    GA_CONCAT_LITERAL(&ga, "|if exists('*inputrestore')|call inputrestore()|endif<CR>");
 
     // The :drop commands goes to Insert mode when 'insertmode' is set, use
     // CTRL-\ CTRL-N again.
-    ga_concat(&ga, (char_u *)"<C-\\><C-N>");
+    GA_CONCAT_LITERAL(&ga, "<C-\\><C-N>");
 
     // Switch back to the correct current directory (prior to temporary path
     // switch) unless 'autochdir' is set, in which case it will already be
@@ -761,34 +764,34 @@ build_drop_cmd(
     //      cd -
     //    endif
     //  endif
-    ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
+    GA_CONCAT_LITERAL(&ga, ":if !exists('+acd')||!&acd|if haslocaldir()|");
 # ifdef MSWIN
     // in case :set shellslash is set, need to normalize the directory separators
     // '/' is not valid in a filename so replacing '/' by '\\' should be safe
-    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd()->tr('/','\\') ==# '");
+    GA_CONCAT_LITERAL(&ga, "cd -|lcd -|elseif getcwd()->tr('/','\\') ==# '");
 # else
-    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# '");
+    GA_CONCAT_LITERAL(&ga, "cd -|lcd -|elseif getcwd() ==# '");
 # endif
-    ga_concat(&ga, cdp);
-    ga_concat(&ga, (char_u *)"'|cd -|endif|endif<CR>");
-    vim_free(cdp);
+    ga_concat_len(&ga, cdp.string, cdp.length);
+    GA_CONCAT_LITERAL(&ga, "'|cd -|endif|endif<CR>");
+    vim_free(cdp.string);
     // reset wildignorecase
-    ga_concat(&ga, (char_u *)wig[1]);
+    ga_concat_len(&ga, wig[1].string, wig[1].length);
 
     if (sendReply)
-	ga_concat(&ga, (char_u *)":call SetupRemoteReplies()<CR>");
-    ga_concat(&ga, (char_u *)":");
+	GA_CONCAT_LITERAL(&ga, ":call SetupRemoteReplies()<CR>");
+    GA_CONCAT_LITERAL(&ga, ":");
     if (inicmd != NULL)
     {
 	// Can't use <CR> after "inicmd", because a "startinsert" would cause
 	// the following commands to be inserted as text.  Use a "|",
 	// hopefully "inicmd" does allow this...
 	ga_concat(&ga, inicmd);
-	ga_concat(&ga, (char_u *)"|");
+	GA_CONCAT_LITERAL(&ga, "|");
     }
     // Bring the window to the foreground, goto Insert mode when 'im' set and
     // clear command line.
-    ga_concat(&ga, (char_u *)"cal foreground()|if &im|star|en|redr|f<CR>");
+    GA_CONCAT_LITERAL(&ga, "cal foreground()|if &im|star|en|redr|f<CR>");
     ga_append(&ga, NUL);
     return ga.ga_data;
 }

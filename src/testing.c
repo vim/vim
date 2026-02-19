@@ -21,7 +21,6 @@
     static void
 prepare_assert_error(garray_T *gap)
 {
-    char    buf[NUMBUFLEN];
     char_u  *sname = estack_sfile(ESTACK_NONE);
 
     ga_init2(gap, 1, 100);
@@ -29,15 +28,18 @@ prepare_assert_error(garray_T *gap)
     {
 	ga_concat(gap, sname);
 	if (SOURCING_LNUM > 0)
-	    ga_concat(gap, (char_u *)" ");
+	    GA_CONCAT_LITERAL(gap, " ");
     }
     if (SOURCING_LNUM > 0)
     {
-	sprintf(buf, "line %ld", (long)SOURCING_LNUM);
-	ga_concat(gap, (char_u *)buf);
+	char    buf[NUMBUFLEN];
+	size_t	buflen;
+
+	buflen = vim_snprintf_safelen(buf, sizeof(buf), "line %ld", (long)SOURCING_LNUM);
+	ga_concat_len(gap, (char_u *)buf, buflen);
     }
     if (sname != NULL || SOURCING_LNUM > 0)
-	ga_concat(gap, (char_u *)": ");
+	GA_CONCAT_LITERAL(gap, ": ");
     vim_free(sname);
 }
 
@@ -54,28 +56,31 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
     {
 	mch_memmove(buf, p, clen);
 	buf[clen] = NUL;
-	ga_concat(gap, buf);
+	ga_concat_len(gap, buf, clen);
 	return;
     }
 
     switch (*p)
     {
-	case BS: ga_concat(gap, (char_u *)"\\b"); break;
-	case ESC: ga_concat(gap, (char_u *)"\\e"); break;
-	case FF: ga_concat(gap, (char_u *)"\\f"); break;
-	case NL: ga_concat(gap, (char_u *)"\\n"); break;
-	case TAB: ga_concat(gap, (char_u *)"\\t"); break;
-	case CAR: ga_concat(gap, (char_u *)"\\r"); break;
-	case '\\': ga_concat(gap, (char_u *)"\\\\"); break;
+	case BS: GA_CONCAT_LITERAL(gap, "\\b"); break;
+	case ESC: GA_CONCAT_LITERAL(gap, "\\e"); break;
+	case FF: GA_CONCAT_LITERAL(gap, "\\f"); break;
+	case NL: GA_CONCAT_LITERAL(gap, "\\n"); break;
+	case TAB: GA_CONCAT_LITERAL(gap, "\\t"); break;
+	case CAR: GA_CONCAT_LITERAL(gap, "\\r"); break;
+	case '\\': GA_CONCAT_LITERAL(gap, "\\\\"); break;
 	default:
-		   if (*p < ' ' || *p == 0x7f)
-		   {
-		       vim_snprintf((char *)buf, NUMBUFLEN, "\\x%02x", *p);
-		       ga_concat(gap, buf);
-		   }
-		   else
-		       ga_append(gap, *p);
-		   break;
+	   if (*p < ' ' || *p == 0x7f)
+	   {
+		size_t	buflen;
+
+		buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		    "\\x%02x", *p);
+		ga_concat_len(gap, buf, buflen);
+	   }
+	   else
+	       ga_append(gap, *p);
+	   break;
     }
 }
 
@@ -91,11 +96,12 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
     int	    c;
     int	    clen;
     char_u  buf[NUMBUFLEN];
+    size_t  buflen;
     int	    same_len;
 
     if (str == NULL)
     {
-	ga_concat(gap, (char_u *)"NULL");
+	GA_CONCAT_LITERAL(gap, "NULL");
 	return;
     }
 
@@ -112,12 +118,13 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	}
 	if (same_len > 20)
 	{
-	    ga_concat(gap, (char_u *)"\\[");
+	    GA_CONCAT_LITERAL(gap, "\\[");
 	    ga_concat_esc(gap, p, clen);
-	    ga_concat(gap, (char_u *)" occurs ");
-	    vim_snprintf((char *)buf, NUMBUFLEN, "%d", same_len);
-	    ga_concat(gap, buf);
-	    ga_concat(gap, (char_u *)" times]");
+	    GA_CONCAT_LITERAL(gap, " occurs ");
+	    buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		"%d", same_len);
+	    ga_concat_len(gap, buf, buflen);
+	    GA_CONCAT_LITERAL(gap, " times]");
 	    p = s;
 	}
 	else
@@ -154,15 +161,15 @@ fill_assert_error(
     {
 	ga_concat(gap, echo_string(opt_msg_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
-	ga_concat(gap, (char_u *)": ");
+	GA_CONCAT_LITERAL(gap, ": ");
     }
 
     if (atype == ASSERT_MATCH || atype == ASSERT_NOTMATCH)
-	ga_concat(gap, (char_u *)"Pattern ");
+	GA_CONCAT_LITERAL(gap, "Pattern ");
     else if (atype == ASSERT_NOTEQUAL)
-	ga_concat(gap, (char_u *)"Expected not equal to ");
+	GA_CONCAT_LITERAL(gap, "Expected not equal to ");
     else
-	ga_concat(gap, (char_u *)"Expected ");
+	GA_CONCAT_LITERAL(gap, "Expected ");
     if (exp_str == NULL)
     {
 	// When comparing dictionaries, drop the items that are equal, so that
@@ -227,29 +234,30 @@ fill_assert_error(
     else
     {
 	if (atype == ASSERT_FAILS)
-	    ga_concat(gap, (char_u *)"'");
+	    GA_CONCAT_LITERAL(gap, "'");
 	ga_concat_shorten_esc(gap, exp_str);
 	if (atype == ASSERT_FAILS)
-	    ga_concat(gap, (char_u *)"'");
+	    GA_CONCAT_LITERAL(gap, "'");
     }
     if (atype != ASSERT_NOTEQUAL)
     {
 	if (atype == ASSERT_MATCH)
-	    ga_concat(gap, (char_u *)" does not match ");
+	    GA_CONCAT_LITERAL(gap, " does not match ");
 	else if (atype == ASSERT_NOTMATCH)
-	    ga_concat(gap, (char_u *)" does match ");
+	    GA_CONCAT_LITERAL(gap, " does match ");
 	else
-	    ga_concat(gap, (char_u *)" but got ");
+	    GA_CONCAT_LITERAL(gap, " but got ");
 	ga_concat_shorten_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
 
 	if (omitted != 0)
 	{
-	    char buf[100];
+	    char    buf[100];
+	    size_t  buflen;
 
-	    vim_snprintf(buf, 100, " - %d equal item%s omitted",
-					     omitted, omitted == 1 ? "" : "s");
-	    ga_concat(gap, (char_u *)buf);
+	    buflen = vim_snprintf_safelen(buf, sizeof(buf),
+		" - %d equal item%s omitted", omitted, omitted == 1 ? "" : "s");
+	    ga_concat_len(gap, (char_u *)buf, buflen);
 	}
     }
 
@@ -368,9 +376,9 @@ assert_beeps(typval_T *argvars, int no_beep)
     {
 	prepare_assert_error(&ga);
 	if (no_beep)
-	    ga_concat(&ga, (char_u *)"command did beep: ");
+	    GA_CONCAT_LITERAL(&ga, "command did beep: ");
 	else
-	    ga_concat(&ga, (char_u *)"command did not beep: ");
+	    GA_CONCAT_LITERAL(&ga, "command did not beep: ");
 	ga_concat(&ga, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -427,16 +435,18 @@ assert_equalfile(typval_T *argvars)
     char	line1[200];
     char	line2[200];
     int		lineidx = 0;
+    size_t	IObufflen;
 
     if (fname1 == NULL || fname2 == NULL)
 	return 0;
 
     IObuff[0] = NUL;
+    IObufflen = 0;
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
-								       fname1);
+	IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+	    (char *)e_cant_read_file_str, fname1);
     }
     else
     {
@@ -444,8 +454,8 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
-								       fname2);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+		(char *)e_cant_read_file_str, fname2);
 	}
 	else
 	{
@@ -460,12 +470,16 @@ assert_equalfile(typval_T *argvars)
 		if (c1 == EOF)
 		{
 		    if (c2 != EOF)
+		    {
 			STRCPY(IObuff, "first file is shorter");
+			IObufflen = 21;
+		    }
 		    break;
 		}
 		else if (c2 == EOF)
 		{
 		    STRCPY(IObuff, "second file is shorter");
+		    IObufflen = 22;
 		    break;
 		}
 		else
@@ -475,9 +489,8 @@ assert_equalfile(typval_T *argvars)
 		    ++lineidx;
 		    if (c1 != c2)
 		    {
-			vim_snprintf((char *)IObuff, IOSIZE,
-					    "difference at byte %ld, line %ld",
-							     count, linecount);
+			IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+			    "difference at byte %ld, line %ld", count, linecount);
 			break;
 		    }
 		}
@@ -499,7 +512,7 @@ assert_equalfile(typval_T *argvars)
 	}
     }
 
-    if (IObuff[0] != NUL)
+    if (IObufflen > 0)
     {
 	garray_T	ga;
 	prepare_assert_error(&ga);
@@ -510,21 +523,21 @@ assert_equalfile(typval_T *argvars)
 
 	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
 	    vim_free(tofree);
-	    ga_concat(&ga, (char_u *)": ");
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	}
-	ga_concat(&ga, IObuff);
+	ga_concat_len(&ga, IObuff, IObufflen);
 	if (lineidx > 0)
 	{
 	    line1[lineidx] = NUL;
 	    line2[lineidx] = NUL;
-	    ga_concat(&ga, (char_u *)" after \"");
-	    ga_concat(&ga, (char_u *)line1);
+	    GA_CONCAT_LITERAL(&ga, " after \"");
+	    ga_concat_len(&ga, (char_u *)line1, lineidx);
 	    if (STRCMP(line1, line2) != 0)
 	    {
-		ga_concat(&ga, (char_u *)"\" vs \"");
-		ga_concat(&ga, (char_u *)line2);
+		GA_CONCAT_LITERAL(&ga, "\" vs \"");
+		ga_concat_len(&ga, (char_u *)line2, lineidx);
 	    }
-	    ga_concat(&ga, (char_u *)"\"");
+	    GA_CONCAT_LITERAL(&ga, "\"");
 	}
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -576,7 +589,7 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
     if (*get_vim_var_str(VV_EXCEPTION) == NUL)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"v:exception is not set");
+	GA_CONCAT_LITERAL(&ga, "v:exception is not set");
 	assert_error(&ga);
 	ga_clear(&ga);
 	rettv->vval.v_number = 1;
@@ -630,7 +643,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     if (called_emsg == called_emsg_before)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"command did not fail: ");
+	GA_CONCAT_LITERAL(&ga, "command did not fail: ");
 	assert_append_cmd_or_arg(&ga, argvars, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -749,7 +762,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    }
 	    fill_assert_error(&ga, &argvars[2], expected_str,
 			&argvars[error_found_index], &actual_tv, ASSERT_FAILS);
-	    ga_concat(&ga, (char_u *)": ");
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
 	    ga_clear(&ga);
