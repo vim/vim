@@ -1,11 +1,16 @@
 vim9script
 
+# Generate the small ASCII letters (for marking).
+def SmallAlphaLetters(): list<string>
+  return range(97, (97 + 25))->map((_: number, n: number) => nr2char(n, true))
+enddef
+
 # Query the paired position for the cursor line and use it, if available, for
 # mark "`".
 def TryChangingLastJumpMark(marks: dict<list<number>>)
   const pos: list<number> = get(marks, line('.'), [])
   if !empty(pos)
-    setpos("'`", [0, pos[0], pos[1], 0])
+    setpos("'`", pos)
   endif
 enddef
 
@@ -13,7 +18,7 @@ enddef
 # parts are identical; otherwise, create a fold for the difference part and
 # manage marks for disparate lines: dynamically set mark "`" to pair such
 # lines and initially set "`a", "`b", etc. marks for difference part lines.
-def FoldAndMarkDumpDiffParts()
+def FoldAndMarkDumpDiffParts(letters: list<string>)
   defer call('setpos', ['.', getpos('.')])
   # Shape the pattern after get_separator() from "terminal.c".
   const separator: string = '^\(=\+\)\=\s\S.*\.dump\s\1$'
@@ -21,9 +26,9 @@ def FoldAndMarkDumpDiffParts()
   if start_lnum > 0
     const end_lnum: number = search(separator, 'eW')
     if end_lnum > 0
-      # Collect [line_nr, col_nr] pairs (matching the first non-blank column)
-      # from the difference part "bs" and assemble corresponding pairs for the
-      # top part "as" and the bottom part "cs".
+      # Collect [0, line_nr, col_nr, 0] lists (matching the first non-blank
+      # column) from the difference part "bs" and assemble corresponding lists
+      # for the top part "as" and the bottom part "cs".
       const parts: list<list<list<number>>> =
 				getline((start_lnum + 1), (end_lnum - 1))
 	  ->map((idx: number, s: string) =>
@@ -33,9 +38,9 @@ def FoldAndMarkDumpDiffParts()
 		  const col_nr: number = pair[0]
 		  if col_nr != 0
 		    const idx: number = pair[1]
-		    xs[0]->add([get(as, idx, as[-1]), col_nr])
-		    xs[1]->add([bs[idx], col_nr])
-		    xs[2]->add([get(cs, idx, cs[-1]), col_nr])
+		    xs[0]->add([0, get(as, idx, as[-1]), col_nr, 0])
+		    xs[1]->add([0, bs[idx], col_nr, 0])
+		    xs[2]->add([0, get(cs, idx, cs[-1]), col_nr, 0])
 		  endif
 		  return xs
 		})(range(1, (start_lnum - 1)),
@@ -49,17 +54,14 @@ def FoldAndMarkDumpDiffParts()
 	setlocal nofoldenable foldmethod=manual
 	exec ':' .. start_lnum .. ',' .. end_lnum .. 'fold'
 	var marks: dict<list<number>> = {}
-	var names: list<string> = range(97, (97 + 25))
-	    ->map((_: number, n: number) => nr2char(n, true))
 	for idx in range(parts[1]->len())
-	  if !empty(names)
-	    setpos(("'" .. remove(names, 0)),
-		[0, parts[1][idx][0], parts[1][idx][1], 0])
+	  if !empty(letters)
+	    setpos(("'" .. remove(letters, 0)), parts[1][idx])
 	  endif
 	  # Point "bs" to "cs", "cs" to "as", "as" to "cs".
-	  marks[parts[1][idx][0]] = parts[2][idx]
-	  marks[parts[2][idx][0]] = parts[0][idx]
-	  marks[parts[0][idx][0]] = parts[2][idx]
+	  marks[parts[1][idx][1]] = parts[2][idx]
+	  marks[parts[2][idx][1]] = parts[0][idx]
+	  marks[parts[0][idx][1]] = parts[2][idx]
 	endfor
 	autocmd_add([{
 	  replace:	true,
@@ -89,13 +91,12 @@ if v:progname =~? '\<g\=vimdiff$'
 	term_dumpload(argv(0))
       else
 	term_dumpdiff(argv(0), argv(1))
-	FoldAndMarkDumpDiffParts()
+	FoldAndMarkDumpDiffParts(SmallAlphaLetters())
       endif
     finally
       silent bwipeout 1 2
     endtry
   endif
-
   # Always stop from further sourcing this script for "(g)vimdiff".
   finish
 endif
@@ -156,10 +157,9 @@ endif
 # The raw files can also be examined:
 #	:all
 
-
 # Render a loaded screendump file or the difference of a loaded screendump
 # file and its namesake file from the "dumps" directory.
-def Render()
+def Render(letters: list<string>)
   const failed_fname: string = bufname()
   try
     setlocal suffixesadd=.dump
@@ -168,7 +168,7 @@ def Render()
 			fnamemodify(failed_fname, ':p:h:h') .. '/dumps')
     if filereadable(dumps_fname)
       term_dumpdiff(failed_fname, dumps_fname)
-      FoldAndMarkDumpDiffParts()
+      FoldAndMarkDumpDiffParts(letters)
     else
       term_dumpload(failed_fname)
     endif
@@ -195,14 +195,12 @@ def g:Init(subtreedirname: string, count: number)
 			subtreedirname))
     ->get(count, '') .. '/'
   var error: string = null_string
-
   if failed_path == '/'
     error = 'No such directory: "failed"'
   else
     const failed_fnames: string = failed_path .. readdir(failed_path,
 			(fname: string) => fname =~ '^.\+\.dump$')
       ->join(' ' .. failed_path)
-
     if failed_fnames =~ 'failed/$'
       error = 'No such file: "*.dump"'
     else
@@ -210,19 +208,16 @@ def g:Init(subtreedirname: string, count: number)
       buffers
     endif
   endif
-
   autocmd_add([{
     replace:	true,
     group:	'viewdumps',
     event:	'BufRead',
     pattern:	'*.dump',
-    cmd:	'Render()',
+    cmd:	printf('Render(%s)', string(SmallAlphaLetters())),
   }])
-
   # Unconditionally help, in case a list of filenames is passed to the
   # command, the first terminal window with its BufRead event.
   silent doautocmd viewdumps BufRead
-
   if error != null_string
     # Instead of sleeping, fill half a window with blanks and prompt
     # hit-enter.
