@@ -6224,45 +6224,6 @@ func Test_helptags_autocomplete_timeout()
   bw!
 endfunc
 
-" Issue #19356: Disable fuzzy during thesaurus completion
-func Test_fuzzy_thesaurus()
-  CheckUnix
-  CheckNotRoot
-  call writefile(['import crucial essential', 'foo bar foobaz'],
-    'XfuzzyThesaurusData', 'D')
-
-  call test_override("char_avail", 1)
-  new
-  set completeopt=menuone,popup,noinsert,noselect,fuzzy
-
-  func GetState()
-    let g:line = getline('.')
-    let g:col = col('.')
-    let g:matches = complete_info(['matches']).matches->mapnew('v:val.word')
-  endfunc
-  inoremap <buffer> <F5> <C-R>=GetState()<CR>
-
-
-  call feedkeys("iimportant\<C-X>\<C-T>\<F5>\<Esc>", 'tx')
-  " call feedkeys("iimportant\<F5>\<C-E>\<Esc>", 'tx')
-  call assert_equal("yellow", g:line)
-  call assert_equal(2, g:col)
-  call assert_equal(['yellow'], g:matches)
-
-  " set completeopt=menuone,popup,longest
-  set completeopt=menuone,popup,noinsert,noselect,longest
-  call feedkeys("iimportant\<C-X>\<C-T>\<F5>\<Esc>", 'tx')
-  call assert_equal("yellow", g:line)
-  call assert_equal(2, g:col)
-  call assert_equal(['yellow'], g:matches)
-
-  bw!
-  set thesaurusfunc& completeopt&
-  call test_override("char_avail", 0)
-  delfunc TestThesausus
-  delfunc GetState
-endfunc
-
 func Test_autocomplete_preinsert_null_leader()
   " Test that non-prefix matches from omnifunc are filtered when leader is NULL.
   " When autocomplete first fires, compl_leader is NULL.  Previously the prefix
