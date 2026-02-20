@@ -3239,7 +3239,7 @@ function s:NetrwFile(fname)
         endif
 
         if !g:netrw_cygwin && has("win32")
-            if fname =~ '^\' || fname =~ '^\a:\'
+            if isabsolutepath(fname)
                 " windows, but full path given
                 let ret= fname
             else
