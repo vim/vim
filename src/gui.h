@@ -390,7 +390,7 @@ typedef struct Gui
 
     guint32	event_time;
 # ifdef GDK_WINDOWING_WAYLAND
-    _Bool	is_wayland;           // active gdk backend in gtk is wayland
+    bool	is_wayland;	    // active gdk backend in gtk is wayland
 # endif
 #endif	// FEAT_GUI_GTK
 
