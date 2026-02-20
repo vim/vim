@@ -22,6 +22,7 @@ runtime/autoload/typeset.vim				@lifepillar
 runtime/autoload/xmlformat.vim				@chrisbra
 runtime/autoload/dist/json.vim				@habamax
 runtime/colors/blue.vim					@habamax @romainl @neutaaaaan
+runtime/colors/catppuccin.vim				@mao-yining
 runtime/colors/darkblue.vim				@habamax @romainl @neutaaaaan
 runtime/colors/default.vim				@habamax @romainl @neutaaaaan
 runtime/colors/delek.vim				@habamax @romainl @neutaaaaan
@@ -47,11 +48,13 @@ runtime/colors/torte.vim				@habamax @romainl @neutaaaaan
 runtime/colors/wildcharm.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zaibatsu.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zellner.vim				@habamax @romainl @neutaaaaan
+runtime/compiler/bash.vim				@Konfekt
 runtime/compiler/biome.vim				@Konfekt
 runtime/compiler/cabal.vim				@mateoxh
 runtime/compiler/checkstyle.vim				@dkearns
 runtime/compiler/cm3.vim				@dkearns
 runtime/compiler/context.vim				@lifepillar
+runtime/compiler/cppcheck.vim				@Konfekt
 runtime/compiler/cucumber.vim				@tpope
 runtime/compiler/dart.vim				@dkearns
 runtime/compiler/dart2js.vim				@dkearns
@@ -74,9 +77,11 @@ runtime/compiler/icon.vim				@dkearns
 runtime/compiler/javac.vim				@dkearns
 runtime/compiler/jest.vim				@dkearns
 runtime/compiler/jjs.vim				@dkearns
+runtime/compiler/jq.vim					@vito-c
 runtime/compiler/jshint.vim				@dkearns
 runtime/compiler/jsonlint.vim				@dkearns
-runtime/compiler/jq.vim					@vito-c
+runtime/compiler/make.vim				@Konfekt
+runtime/compiler/mypy.vim				@Konfekt
 runtime/compiler/pandoc.vim				@Konfekt
 runtime/compiler/perl.vim				@petdance @heptite
 runtime/compiler/perlcritic.vim				@petdance @dkearns
@@ -84,6 +89,8 @@ runtime/compiler/php.vim				@dkearns
 runtime/compiler/phpstan.vim				@dietrichm
 runtime/compiler/podchecker.vim				@petdance @dkearns
 runtime/compiler/powershell.vim				@heaths
+runtime/compiler/pyright.vim				@Konfekt
+runtime/compiler/pytest.vim				@Konfekt
 runtime/compiler/raco.vim				@benknoble
 runtime/compiler/racomake.vim				@benknoble
 runtime/compiler/racosetup.vim				@benknoble
@@ -99,12 +106,14 @@ runtime/compiler/se.vim					@dkearns
 runtime/compiler/shellcheck.vim				@dkearns
 runtime/compiler/sml.vim				@dkearns
 runtime/compiler/spectral.vim				@romainl
-runtime/compiler/svelte-check.vim			@Konfekt
 runtime/compiler/stylelint.vim				@dkearns
+runtime/compiler/svelte-check.vim			@Konfekt
 runtime/compiler/tcl.vim				@dkearns
 runtime/compiler/tidy.vim				@dkearns
+runtime/compiler/tombi.vim				@Konfekt
 runtime/compiler/ts-node.vim				@dkearns
 runtime/compiler/tsc.vim				@dkearns
+runtime/compiler/ty.vim					@Konfekt
 runtime/compiler/typedoc.vim				@dkearns
 runtime/compiler/xmllint.vim				@dkearns
 runtime/compiler/xo.vim					@dkearns
