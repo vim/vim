@@ -957,8 +957,17 @@ settings.  The option is a comma-separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
+	border		border style (see 'pumborder')
+	borderhighlight	highlight group for the popup border characters
+	close		show close button: "on" (default) or "off", and if
+			the value is "on", it must be set after border.
+	resize		show resize handle: "on" (default) or "off"
+	shadow		"off" (default) or "on" using |hl-PmenuShadow|
+
 Example: >
 	:set previewpopup=height:10,width:60
+	:set previewpopup=border:single,borderhilight:PmenuBorder
+	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
 
 A few peculiarities:
 - If the file is in a buffer already, it will be re-used.  This will allow for
