@@ -1616,6 +1616,9 @@ do_put(
 	(void)may_get_selection(regname);
 #endif
 
+    // Remove any preinserted text (issue #19329)
+    if (ins_compl_preinsert_effect())
+	ins_compl_delete();
 
     curbuf->b_op_start = curwin->w_cursor;	// default for '[ mark
     curbuf->b_op_end = curwin->w_cursor;	// default for '] mark
