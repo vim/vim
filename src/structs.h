@@ -4085,6 +4085,7 @@ struct window_S
     int		w_popup_padding[4]; // popup padding top/right/bot/left
     int		w_popup_border[4];  // popup border top/right/bot/left
     char_u	*w_border_highlight[4];  // popup border highlight
+    int		w_border_highlight_isset; // borderhighlight was explicitly set
     int		w_border_char[8];   // popup border characters
     int		w_popup_shadow;     // popup shadow (right and bottom edges)
 
