@@ -473,4 +473,22 @@ func Test_uncrypt_empty()
   call Uncrypt_stable_xxd('xchacha20v2', hex, "vim", [""], 0)
 endfunc
 
+" Regression test for issue #19425
+func Test_crypt_off_by_one()
+  CheckFeature sodium
+
+  set cryptmethod=xchacha20v2
+
+  call feedkeys(":split samples/crypt_utf8_test.txt\<CR>12345678\<CR>", 'xt')
+
+  let actual = getline(1, '$')
+
+  let expected = readfile("samples/uncrypt_utf8_test.txt")
+
+  call assert_equal(expected, actual)
+
+  set key= cryptmethod&
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
