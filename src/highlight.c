@@ -3219,17 +3219,10 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    {
 		// Blend foreground color
 		if (popup_aep->ae_u.cterm.fg_color > 0)
-		{
-		    if (new_en.ae_u.cterm.fg_color > 0)
-			new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
-		    else
-			new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
-		}
+		    new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
 		// Use popup background color (cterm colors don't support blending)
 		if (popup_aep->ae_u.cterm.bg_color > 0)
-		{
 		    new_en.ae_u.cterm.bg_color = popup_aep->ae_u.cterm.bg_color;
-		}
 #ifdef FEAT_TERMGUICOLORS
 		// Blend RGB colors for termguicolors mode
 		if (blend_fg)
@@ -3243,10 +3236,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    }
 		}
 		else if (popup_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
-		{
 		    // blend_fg=FALSE: use popup foreground
 		    new_en.ae_u.cterm.fg_rgb = popup_aep->ae_u.cterm.fg_rgb;
-		}
 		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		{
 		    // Always use popup background, fade to black based on blend
