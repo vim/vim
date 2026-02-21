@@ -4881,6 +4881,10 @@ mch_system_classic(char *cmd, int options)
 
     // Try to get input focus back.  Doesn't always work though.
     PostMessage(hwnd, WM_SETFOCUS, 0, 0);
+    // To increase the chances that WM_SETFOCUS will work, run the message loop
+    // here.  In addition, it prevents problems caused by delayed WM_SETFOCUS
+    // processing.
+    gui_mch_update();
 
     return ret;
 }

@@ -4411,4 +4411,33 @@ func Test_pos_percentage_in_turkish_locale()
   endtry
 endfunc
 
+" This test simulates the problem with gvim on Windows, observed when
+" Test_normal11_showcmd in test_normal.vim is executed consecutively after
+" Test_mouse_shape_after_failed_change.
+"
+" The problem occurred because WM_SETFOCUS was processed slowly, and typebuf
+" was not empty when it should have been.
+func Test_win32_gui_setfocus_prevent_showcmd()
+  if !has('win32') || !has('gui_running')
+    throw 'Skipped: Windows GUI regression test'
+  endif
+
+  " WM_SETFOCUS event occurs when finish to execute filter command in gvim
+  exe 'silent !echo foo'
+
+  set showcmd
+  10new
+  call setline(1, ['aaaaa', 'bbbbb', 'ccccc'])
+  call feedkeys("ggl\<C-V>lljj", 'xt')
+
+  " showcmd could not be updated because events originating from WM_SETFOCUS
+  " were stored in typebuf at here.  clear_showcmd() executed from redraw,
+  " will not draw the selection information unless you are in visual mode and
+  " typebuf is empty.
+  redraw!
+
+  call assert_match('3x3$', Screenline(&lines))
+  call feedkeys("\<C-V>", 'xt')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
