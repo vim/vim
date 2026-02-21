@@ -1394,7 +1394,307 @@ theend:
     return channel;
 }
 
-    void
+/*
+ * Implements ch_listen().
+ */
+    channel_T *
+channel_listen_func(typval_T *argvars)
+{
+    char_u	*address;
+    char_u	*p;
+    char	*rest;
+    int		port;
+    int		is_unix = FALSE;
+    jobopt_T    opt;
+    channel_T	*channel = NULL;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return NULL;
+
+    address = tv_get_string(&argvars[0]);
+    if (argvars[1].v_type != VAR_UNKNOWN
+	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
+	return NULL;
+
+    if (*address == NUL)
+    {
+	semsg(_(e_invalid_argument_str), address);
+	return NULL;
+    }
+
+    if (!STRNCMP(address, "unix:", 5))
+    {
+	is_unix = TRUE;
+	address += 5;
+	port = 0;
+    }
+    else if (*address == '[')
+    {
+	// ipv6 address
+	p = vim_strchr(address + 1, ']');
+	if (p == NULL || *++p != ':')
+	{
+	    semsg(_(e_invalid_argument_str), address);
+	    return NULL;
+	}
+	port = strtol((char *)(p + 1), &rest, 10);
+	if (port <= 0 || port >= 65536 || *rest != NUL)
+	{
+	    semsg(_(e_invalid_argument_str), address);
+	    return NULL;
+	}
+	// strip '[' and ']'
+	++address;
+	*(p - 1) = NUL;
+    }
+    else
+    {
+	// ipv4 address
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	{
+	    semsg(_(e_invalid_argument_str), address);
+	    return NULL;
+	}
+	port = strtol((char *)(p + 1), &rest, 10);
+	if (port <= 0 || port >= 65536 || *rest != NUL)
+	{
+	    semsg(_(e_invalid_argument_str), address);
+	    return NULL;
+	}
+	*p = NUL;
+    }
+
+    // parse options
+    clear_job_options(&opt);
+    opt.jo_mode = CH_MODE_JSON;
+    opt.jo_timeout = 2000;
+    if (get_job_options(&argvars[1], &opt,
+	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL, 0) == FAIL)
+	goto theend;
+    if (opt.jo_timeout < 0)
+    {
+	emsg(_(e_invalid_argument));
+	goto theend;
+    }
+
+    if (is_unix)
+	channel = channel_listen_unix((char *)address, NULL);
+    else
+	channel = channel_listen((char *)address, port, NULL);
+    if (channel != NULL)
+    {
+	opt.jo_set = JO_ALL;
+	channel_set_options(channel, &opt);
+    }
+theend:
+    free_job_options(&opt);
+    return channel;
+}
+
+/*
+ * Listen to a socket for connections.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    channel_T *
+channel_listen(
+	char *hostname,
+	int port_in,
+	void (*nb_close_cb)(void))
+{
+    int			sd = -1;
+    struct sockaddr_in	server;
+    struct hostent	*host;
+    int			val = 1;
+    channel_T		*channel;
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	return NULL;
+    }
+
+    // Get the server internet address and put into addr structure
+    // fill in the socket address structure and bind to port
+    vim_memset((char *)&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port_in);
+    if (hostname != NULL && *hostname != NUL)
+    {
+	if ((host = gethostbyname(hostname)) == NULL)
+	{
+	    ch_error(channel, "in gethostbyname() in channel_listen()");
+	    PERROR(_(e_gethostbyname_in_channel_listen));
+	    channel_free(channel);
+	    return NULL;
+	}
+	{
+	    char		*p;
+
+	    // When using host->h_addr_list[0] directly ubsan warns for it to
+	    // not be aligned.  First copy the pointer to avoid that.
+	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
+	    memcpy((char *)&server.sin_addr, p, host->h_length);
+	}
+    }
+    else
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    sd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sd == -1)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in socket() in channel_listen().");
+	PERROR(_(e_cannot_listen_to_port));
+	channel_free(channel);
+	return NULL;
+    }
+
+#ifdef MSWIN
+    if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
+				    (const char *)&val, sizeof(val)) < 0)
+#else
+    if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
+				    &val, sizeof(val)) < 0)
+#endif
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in setsockopt() in channel_listen().");
+	PERROR(_(e_cannot_listen_to_port));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    // Bind the socket to the port
+    if (bind(sd, (struct sockaddr *)&server, sizeof(server)) < 0)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in bind() in channel_listen().");
+	PERROR(_(e_cannot_listen_to_port));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    if (listen(sd, 5) < 0)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in listen() in channel_listen().");
+	PERROR(_(e_cannot_listen_to_port));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    channel->ch_listen = TRUE;
+    channel->CH_SOCK_FD = (sock_T)sd;
+    channel->ch_nb_close_cb = nb_close_cb;
+    channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
+    channel->ch_port = port_in;
+    channel->ch_to_be_closed |= (1U << PART_SOCK);
+
+#ifdef FEAT_GUI
+    channel_gui_register_one(channel, PART_SOCK);
+#endif
+
+    return channel;
+}
+
+/*
+ * Listen to a Unix domain socket channel.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    channel_T *
+channel_listen_unix(
+	char *path,
+	void (*nb_close_cb)(void))
+{
+    int			sd = -1;
+    struct sockaddr_un	server;
+    channel_T		*channel;
+    size_t		path_len;
+    size_t		server_len;
+
+    if (path == NULL || *path == NUL)
+    {
+	semsg(_(e_invalid_argument_str), path == NULL ? (char *)"" : path);
+	return NULL;
+    }
+
+    path_len = STRLEN(path);
+    if (path_len >= sizeof(server.sun_path))
+    {
+	semsg(_(e_invalid_argument_str), path);
+	return NULL;
+    }
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	return NULL;
+    }
+
+    CLEAR_FIELD(server);
+    server.sun_family = AF_UNIX;
+    STRNCPY(server.sun_path, path, sizeof(server.sun_path) - 1);
+
+    sd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (sd == -1)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in socket() in channel_listen_unix().");
+	PERROR(_(e_cannot_listen_to_port));
+	channel_free(channel);
+	return NULL;
+    }
+
+    // Unlink the socket in case it already exists
+    unlink(server.sun_path);
+
+    // Bind the socket to the path
+    server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
+    if (bind(sd, (struct sockaddr *)&server, (int)server_len) < 0)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in bind() in channel_listen_unix().");
+	PERROR(_(e_cannot_listen_to_port));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    if (listen(sd, 5) < 0)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in listen() in channel_listen_unix().");
+	PERROR(_(e_cannot_listen_to_port));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    channel->ch_listen = TRUE;
+    channel->CH_SOCK_FD = (sock_T)sd;
+    channel->ch_nb_close_cb = nb_close_cb;
+    channel->ch_hostname = (char *)vim_strsave((char_u *)path);
+    channel->ch_port = 0;
+    channel->ch_to_be_closed |= (1U << PART_SOCK);
+
+#ifdef FEAT_GUI
+    channel_gui_register_one(channel, PART_SOCK);
+#endif
+
+    return channel;
+}
+
+     void
 ch_close_part(channel_T *channel, ch_part_T part)
 {
     sock_T *fd = &channel->ch_part[part].ch_fd;
@@ -3824,6 +4124,50 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
     {
 	if (channel_wait(channel, fd, 0) != CW_READY)
 	    break;
+	if (channel->ch_listen)
+	{
+	    sock_T		newfd;
+	    socklen_t		socklen;
+	    channel_T		*newchannel;
+	    typval_T		argv[2];
+	    char_u		namebuf[256];
+	    struct sockaddr_storage	client;
+
+	    newchannel = add_channel();
+	    if (newchannel == NULL)
+	    {
+		ch_error(NULL, "Cannot allocate channel.");
+		return;
+	    }
+	    socklen = sizeof(client);
+	    newfd = accept(fd, (struct sockaddr*)&client, &socklen);
+	    if (newfd < 0)
+	    {
+		ch_error(NULL, "Cannot accept channel.");
+		channel_free(newchannel);
+		return;
+	    }
+	    newchannel->CH_SOCK_FD = (sock_T)newfd;
+	    newchannel->ch_to_be_closed |= (1U << PART_SOCK);
+
+	    if (client.ss_family == AF_INET)
+		sprintf((char *)namebuf, "%s:%d",
+		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
+		    ntohs(((struct sockaddr_in*)&client)->sin_port));
+	    else
+		sprintf((char *)namebuf, "unix:%s",
+		    ((struct sockaddr_un*)&client)->sun_path);
+	    ++safe_to_invoke_callback;
+	    ++newchannel->ch_refcount;
+	    argv[0].v_type = VAR_CHANNEL;
+	    argv[0].vval.v_channel = newchannel;
+	    argv[1].v_type = VAR_STRING;
+	    argv[1].vval.v_string = vim_strsave(namebuf);
+	    invoke_callback(newchannel, &channel->ch_callback, argv);
+	    --safe_to_invoke_callback;
+	    clear_tv(&argv[1]);
+	    return;
+	}
 	if (use_socket)
 	    len = sock_read(fd, (char *)buf, MAXMSGSIZE);
 	else
@@ -5240,6 +5584,18 @@ f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
     channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
     if (channel != NULL && rettv_dict_alloc(rettv) == OK)
 	channel_info(channel, rettv->vval.v_dict);
+}
+
+/*
+ * "ch_listen()" function
+ */
+    void
+f_ch_listen(typval_T *argvars, typval_T *rettv)
+{
+    rettv->v_type = VAR_CHANNEL;
+    if (check_restricted() || check_secure())
+	return;
+    rettv->vval.v_channel = channel_listen_func(argvars);
 }
 
 /*

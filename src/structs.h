@@ -2698,10 +2698,11 @@ struct channel_S {
     int		ch_to_be_freed; // When TRUE channel must be freed when it's
 				// safe to invoke callbacks.
     int		ch_error;	// When TRUE an error was reported.  Avoids
-				// giving pages full of error messages when
-				// the other side has exited, only mention the
-				// first error until the connection works
-				// again.
+    // giving pages full of error messages when
+    // the other side has exited, only mention the
+    // first error until the connection works
+    // again.
+    int		ch_listen;	// When TRUE channel is listen socket.
 
     void	(*ch_nb_close_cb)(void);
 				// callback for Netbeans when channel is
