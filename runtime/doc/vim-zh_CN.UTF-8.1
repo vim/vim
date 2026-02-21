@@ -1,0 +1,570 @@
+.TH VIM 1 "2025 Jun 27"
+.SH 名称
+vim \- Vi 改进版 (Vi IMproved)，一个面向程序员的文本编辑器
+.SH 概述
+.br
+.B vim
+[options] [file ..]
+.br
+.B vim
+[options] \-
+.br
+.B vim
+[options] \-t tag
+.br
+.B vim
+[options] \-q [errorfile]
+.PP
+.br
+.B ex
+.br
+.B view
+.br
+.B gvim
+.B gview
+.B evim
+.B eview
+.br
+.B rvim
+.B rview
+.B rgvim
+.B rgview
+.SH 描述
+.B Vim
+是一个向上兼容 Vi 的文本编辑器。
+它可用于编辑各种纯文本文件。
+它在编辑程序方面尤为有用。
+.PP
+相较于 Vi，它有许多增强功能: 多级撤销、多窗口与多缓冲区、语法高亮、命令行编辑、文件名补全、在线帮助、可视化选择等。
+关于
+.B Vim
+与 Vi 之间差异的概要，请参见 ":help vi_diff.txt"。
+.PP
+在运行
+.B Vim
+时，可以通过 ":help" 命令从在线帮助系统中获取大量帮助信息。
+请参见下文的 "在线帮助" 章节。
+.PP
+通常，
+.B Vim
+用于编辑单个文件，可通过以下命令启动:
+.PP
+	vim file
+.PP
+更一般地，
+.B Vim
+可通过以下方式启动:
+.PP
+	vim [options] [filelist]
+.PP
+如果未提供 filelist，编辑器将以一个空缓冲区启动。
+否则，可使用下列四种方式之一来选择一个或多个要编辑的文件。
+.TP 12
+file ..
+文件名列表。
+第一个文件将作为当前文件，并被读入缓冲区。
+光标将定位在缓冲区的第一行。
+可使用 ":next" 命令切换到其他文件。
+如果要编辑以连字符开头的文件，请在文件列表前加 "\-\-"。
+.TP
+\-
+要编辑的文件从标准输入 (stdin) 读取。命令从标准错误 (stderr) 读取，该设备应为终端 (tty)。
+.TP
+\-t {tag}
+根据指定 "tag" 来选择要编辑的文件以及初始光标位置，相当于标签跳转。
+会在 tags 文件中查找 {tag}，关联的文件会成为当前文件，并执行关联的命令。
+这通常用于 C 程序，此时 {tag} 可以是函数名。
+效果是包含该函数的文件成为当前文件，光标会定位到该函数的起始处。
+参见 ":help tag\-commands"。
+.TP
+\-q [errorfile]
+以快速修复模式启动。
+读取 [errorfile] 文件并显示第一个错误。
+省略 [errorfile] 时，从 "errorfile" 选项获取文件名 (在 Amiga 上缺省为"AztecC.Err"，在其他系统上默认为 "errors.err")。
+可使用 ":cn" 命令跳转到后续错误。
+参见 "help quickfix"。
+.PP
+.B Vim
+的行为会因命令名称而异 (实际可执行文件可能仍是同一个)。
+.TP 10
+vim
+"正常" 方式，全部使用缺省设置。
+.TP
+ex
+以 Ex 模式启动。
+使用 ":vi" 命令进入普通模式。
+也可使用 "\-e" 参数实现。
+.TP
+view
+以只读模式启动，防止对文件进行写入。
+也可使用 "\-R" 参数实现。
+.TP
+gvim gview
+图形界面版本。
+启动一个新窗口。
+也可使用 "\-g" 参数实现。
+.TP
+evim eview
+图形界面版本的简易模式。
+启动一个新窗口。
+也可使用 "\-y" 参数实现。
+.TP
+rvim rview rgvim rgview
+与以上类似，但带有限制。不能启动外壳命令，也不能挂起
+.B Vim
+。也可使用 "\-Z" 参数实现。
+.SH 选项
+选项可以以任意顺序给出，位于文件名之前或之后。
+无参数的选项可在一个短横后合并 (例如 "\-abc")。
+.TP 12
++[num]
+对于第一个文件，光标将定位到第 "num" 行。
+"num" 省略时，光标将定位到最后一行。
+.TP
++/{pat}
+对于第一个文件，光标将定位到首次出现 {pat} 的那一行。
+可用的搜索模式参见 ":help search\-pattern"。
+.TP
++{command}
+.TP
+\-c {command}
+在读取第一个文件后执行 {command}。
+{command} 被解释为 Ex 命令。
+{command} 含有空格时，必须用双引号括起来 (具体取决于所用的外壳)。
+示例: vim "+set si" main.c
+.br
+注意: 最多可使用 10 个 "+" 或 "\-c" 命令。
+.TP
+\-A
+如果
+.B Vim
+编译时加入 ARABIC 支持 (用于编辑从右到左的文件并提供阿拉伯键盘映射)，
+此选项将以阿拉伯模式启动
+.B
+Vim
+，即置位 'arabic'。否则会给出错误信息并且
+.B Vim
+退出。
+.TP
+\-b
+二进制模式。
+将设置一些选项，以便编辑二进制或可执行文件。
+.TP
+\-C
+兼容模式。置位 'compatible' 选项。
+这将使
+.B Vim
+大体表现得像 Vi，即使存在 .vimrc 文件也是如此。
+.TP
+\-d
+以比较模式启动。
+应提供两到八个文件名参数。
+.B Vim
+会打开所有文件并显示它们之间的差异。
+作用与 vimdiff(1) 类似。
+.TP
+\-d {device}, \-dev {device}
+打开 {device} 作为终端使用。
+仅在 Amiga 上可用。
+示例:
+"\-d con:20/30/600/150"。
+.TP
+\-D
+调试。在执行脚本的第一条命令时进入调试模式。
+.TP
+\-e
+以
+.B Vim
+的 Ex 模式启动，就像可执行文件名为 "ex" 一样。
+.TP
+\-E
+以
+.B Vim
+的增强 Ex 模式启动，就像可执行文件名为 "exim" 一样。
+.TP
+\-f
+前台。对于 GUI 版本，
+.B Vim
+不会分叉 (fork) 并从启动时的外壳分离。
+在 Amiga 上，
+.B Vim
+不会重启以打开新窗口。
+当
+.B Vim
+由会等待编辑会话结束的程序 (例如邮件程序) 执行时，应使用此选项。
+在 Amiga 上，无法使用 ":sh" 和 ":!" 命令。
+.TP
+\-F
+如果
+.B Vim
+编译时加入 FKMAP 支持 (用于编辑从右到左的文件并提供波斯语键盘映射)，
+此选项将以波斯语模式启动
+.B Vim
+，即置位 'fkmap' 和 'rightleft'。
+否则会给出错误信息并且
+.B Vim
+退出。
+.br
+注意: 波斯语支持已在补丁 8.1.0932 中移除。
+.TP
+\-g
+如果
+.B Vim
+编译时加入 GUI 支持，此选项会启用 GUI。
+如果未编译 GUI 支持，会给出错误信息并且
+.B Vim
+退出。
+.TP
+\-H
+如果
+.B Vim
+编译时加入 RIGHTLEFT 支持 (用于编辑从右到左的文件并提供希伯来语键盘映射)，
+此选项将以希伯来模式启动
+.B Vim
+，即置位 'hkmap' 和 'rightleft'。
+否则会给出错误信息并且
+.B Vim
+退出。
+.TP
+\-i {viminfo}
+指定读取或写入 viminfo 文件时使用的文件名，替代默认的 "~/.viminfo"。
+也可通过指定名称 "NONE" 来跳过使用 .viminfo 文件。
+.TP
+\-l
+Lisp 模式。
+开启 'lisp' 和 'showmatch' 选项。
+.TP
+\-L
+等同于 \-r。
+.TP
+\-m
+禁用文件修改。
+复位 'write' 选项。
+仍可修改缓冲区，但无法写入文件。
+.TP
+\-M
+不允许修改。将复位 'modifiable' 和 'write' 选项，以禁止更改并防止写入文件。
+注意这些选项之后可以被重新置位，以再次允许进行修改。
+.TP
+\-n
+不使用交换文件。
+发生崩溃后无法恢复。
+适用于在非常慢的介质 (例如软盘) 上编辑文件。
+也可通过 ":set uc=0" 实现。
+可通过 ":set uc=200" 撤销。
+.TP
+\-N
+非兼容模式。复位 'compatible' 选项。
+这会使
+.B Vim
+表现得更好，但与 Vi 的兼容性稍差，即使不存在 .vimrc 文件也会如此。
+.TP
+\-nb
+成为 NetBeans 的编辑器服务器。详见文档。
+.TP
+\-o[N]
+打开 N 个垂直堆叠的窗口。
+N 省略时，为每个文件打开一个窗口。
+.TP
+\-O[N]
+打开 N 个并排窗口。
+N 省略时，为每个文件打开一个窗口。
+.TP
+\-p[N]
+] 打开 N 个标签页。
+N 省略时，为每个文件打开一个标签页。
+.TP
+\-P {parent-title}
+仅限 Win32 GUI: 指定父应用程序的标题。若可能，Vim 将在该应用程序内的 MDI 窗口
+中运行。{parent-title} 必须出现在父应用窗口标题中，且需足够具体。
+注意实现仍较为原始；并非所有应用都可用，菜单也不可用。
+.TP
+\-r
+列出交换文件，并提供关于恢复时使用它们的信息。
+.TP
+\-r {file}
+恢复模式。
+使用交换文件恢复崩溃的编辑会话。
+交换文件与文本文件同名，但附加后缀为 ".swp"。
+参见 ":help recovery"。
+.TP
+\-R
+只读模式。
+将置位 'readonly' 选项。
+仍可编辑缓冲区，但会防止意外覆盖文件。
+如果确需覆盖文件，请在 Ex 命令后添加感叹号，例如 ":w!"。
+\-R 选项也隐含 \-n 选项 (见上文)。
+可用 ":set noro" 来复位 'readonly' 选项。
+参见 ":help 'readonly'"。
+.TP
+\-s
+静默模式。仅当以 "Ex" 启动或在 "\-e" 选项之后给出 "\-s" 选项时有效。
+.TP
+\-s {scriptin}
+读取脚本文件 {scriptin}。
+文件中的字符将会以键盘输入的方式进行解释。
+同样效果也可通过命令 ":source! {scriptin}" 实现。
+如果在编辑器退出前到达文件末尾，将继续从键盘读取字符。
+.TP
+\-S {file}
+在读取第一个文件后执行 {file}。
+等同于 \-c "source {file}"。
+{file} 不能以 '\-' 开头。
+{file} 省略时，将使用 "Session.vim" (仅当 \-S 为最后一个参数时生效)。
+.TP
+\-T {terminal}
+告知
+.B Vim
+正在使用的终端名称。
+仅当自动检测失败时需要。
+应为
+.B Vim
+已知 (内置) 或在 termcap/terminfo 文件中定义的终端。
+.TP
+\-u {vimrc}
+使用 {vimrc} 文件中的命令进行初始化。
+其他所有初始化将被跳过。
+用于编辑特定类型的文件。
+也可通过指定名称 "NONE" 跳过所有初始化。
+详见 Vim 内的 ":help initialization"。
+.TP
+\-U {gvimrc}
+使用 {gvimrc} 文件中的命令进行 GUI 初始化。
+其他所有 GUI 初始化将被跳过。
+也可通过指定名称 "NONE" 跳过所有 GUI 初始化。
+详见 Vim 内的 ":help gui\-init"。
+.TP
+\-v
+以
+.B Vim
+的 Vi 模式启动，就像可执行文件名为 "vi" 一样。仅当可执行文件名为 "ex" 时有效。
+.TP
+\-V[N]
+详细模式。输出关于哪些文件被执行以及读取/写入 viminfo 文件的消息。可选数值 N
+为 'verbose' 的值，缺省值为 10。
+.TP
+\-V[N]{filename}
+和 \-V 类似，但同时设置 'verbosefile' 为 {filename}。此时消息不显示，而写入
+{filename} 文件。{filename} 不能以数位开头。
+.TP
+\-w{number}
+将 'window' 选项设置为 {number}。
+.TP
+\-w {scriptout}
+用户输入的所有字符将被记录到文件 {scriptout}，直到退出
+.B Vim
+为止。如果要创建用于 "vim \-s" 或 ":source!" 的脚本文件，这很有用。
+如果 {scriptout} 文件已存在，新内容将追加到该文件末尾。
+.TP
+\-W {scriptout}
+和 \-w 类似，但会覆盖已存在的文件。
+.TP
+\-x
+如果
+.B Vim
+编译时加入加密支持，写入文件时使用加密。
+会提示输入加密密钥。
+.TP
+\-X
+不连接到 X 服务器。在终端中可缩短启动时间，但无法使用窗口标题和剪贴板。
+.TP
+\-Y
+不连接到 wayland 合成器。
+.TP
+\-y
+以
+.B Vim
+的简易模式启动，就像可执行文件名为 "evim" 或 "eview" 一样。
+使
+.B Vim
+表现为点击输入式的编辑器。
+.TP
+\-Z
+受限模式。就像可执行文件以 "r" 开头一样。
+.TP
+\-\-
+标记选项结束。
+其后的参数将作为文件名处理。
+这可用于编辑以 '\-' 开头的文件名。
+.TP
+\-\-clean
+不使用任何个人配置 (vimrc、插件等)。用于在干净 Vim 环境下检查问题是否可复现。
+.TP
+\-\-cmd {command}
+和 "\-c" 类似，但在处理任何 vimrc 文件之前先执行命令。
+最多可使用 10 个此类命令，与 "\-c" 命令互不影响。
+.TP
+\-\-echo\-wid
+仅限 GTK GUI: 在标准输出上回显窗口 ID。
+.TP
+\-\-gui\-dialog\-file {name}
+使用 GUI 时，不显示对话框，而是将对话框的标题和消息写入文件 {name}。
+该文件会被创建或追加写入。仅用于测试，以避免测试卡在不可见的对话框上。
+未使用 GUI 时忽略此参数。
+.TP
+\-\-help, \-h, \-?
+提供关于命令行参数和选项的简要帮助。
+之后
+.B Vim
+退出。
+.TP
+\-\-literal
+按本义处理文件名参数，不展开通配符。在 Unix 上无效，因为外壳总会展开通配符。
+.TP
+\-\-log {filename}
+如果
+.B Vim
+编译时加入 eval 和 channel 特性，启动日志记录并将条目写入 {filename}。
+其效果类似在启动早期调用
+.I ch_logfile({filename}, 'ao')。
+.TP
+\-\-nofork
+前台。对于 GUI 版本，
+.B Vim
+不会分叉 (fork) 并从启动时的外壳分离。
+.TP
+\-\-noplugin
+跳过插件的加载。\-u NONE 会隐含本选项。
+.TP
+\-\-not\-a\-term
+告知
+.B Vim
+用户知道输入和/或输出未连接到终端。这将避免出现警告及随后的两秒延迟。
+.TP
+\-\-remote
+连接到一个 Vim 服务器，并让其编辑后续参数中给出的文件。若未找到服务器，将给出警告并在当前 Vim 中编辑这些文件。
+.TP
+\-\-remote\-expr {expr}
+连接到 Vim 服务器，在其中计算 {expr} 并将结果打印到标准输出。
+.TP
+\-\-remote\-send {keys}
+连接到 Vim 服务器并发送 {keys}。
+.TP
+\-\-remote\-silent
+同 \-\-remote，但在未找到服务器时不显示警告。
+.TP
+\-\-remote\-wait
+同 \-\-remote，但 Vim 在文件编辑完成之前不会退出。
+.TP
+\-\-remote\-wait\-silent
+同 \-\-remote\-wait，但在未找到服务器时不显示警告。
+.TP
+\-\-serverlist
+列出可发现的所有 Vim 服务器的名称。
+.TP
+\-\-servername {name}
+将 {name} 用作服务器名称。用于当前 Vim，除非与
+\-\-remote 参数一起使用，此时它是要连接的服务器名称。
+若使用 socketserver 后端，且名称以 "/"、"./" 或 "../"开头，则视为指向该套接字的绝对、相对或相对路径。
+.TP
+\-\-clientserver {backend}
+将 {backend} 用作 clientserver 功能的后端，分别为 "socket" 或 "x11"。
+仅在编译时同时加入 socketserver 和 X11 特性时可用。
+.TP
+\-\-socketid {id}
+仅限 GTK GUI: 使用 GtkPlug 机制在另一个窗口中运行 gVim。
+.TP
+\-\-startuptime {file}
+在启动期间将计时消息写入文件 {fname}。
+.TP
+\-\-ttyfail
+当 stdin 或 stdout 不是终端 (tty)时，立即退出。
+.TP
+\-\-version
+打印版本信息并退出。
+.TP
+\-\-windowid {id}
+仅限 Win32 GUI: 使 gVim 尝试使用窗口 {id} 作为父窗口，从而在该窗口内运行。
+.SH 在线帮助
+在
+.B Vim
+中输入 ":help" 即可开始使用帮助系统。
+输入 ":help 主题" 可以查看某个特定主题的帮助。
+例如: 输入 ":help ZZ" 可查看 "ZZ" 命令的帮助。
+使用 <Tab> 和 CTRL-D 可以补全主题名称 (参见 ":help cmdline-completion")。
+文档中包含标签，可在不同位置之间跳转 (类似于超文本链接，参见 ":help")。
+所有文档文件都可以通过这种方式查看，例如:
+":help syntax.txt"。
+.SH 文件
+.TP 15
+/usr/local/share/vim/vim??/doc/*.txt
+.B Vim
+文档文件。
+可用 ":help doc\-file\-list" 获取完整文档列表。
+.br
+其中，
+.I vim??
+为短版本名，例如 vim91 代表
+.B Vim 9.1
+。
+.TP
+/usr/local/share/vim/vim??/doc/tags
+用于在文档文件中查找信息的标签文件。
+.TP
+/usr/local/share/vim/vim??/syntax/syntax.vim
+系统范围的语法初始化代码。
+.TP
+/usr/local/share/vim/vim??/syntax/*.vim
+不同语言的语法文件。
+.TP
+/usr/local/share/vim/vimrc
+系统范围的
+.B Vim
+初始化代码。
+.TP
+~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
+用户个人的
+.B Vim
+初始化代码 (使用首个找到的文件)。
+.TP
+/usr/local/share/vim/gvimrc
+系统范围的 gvim 初始化代码。
+.TP
+~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+用户个人的
+.B gVim
+初始化代码 (使用首个找到的文件)。
+.TP
+/usr/local/share/vim/vim??/optwin.vim
+用于 ":options" 命令的脚本，这是一个用于查看和设置选项的便捷方式。
+.TP
+/usr/local/share/vim/vim??/menu.vim
+系统范围用于
+.B gVim
+的菜单初始化代码。
+.TP
+/usr/local/share/vim/vim??/bugreport.vim
+用于生成漏洞报告的脚本。参见 ":help bugs"。
+.TP
+/usr/local/share/vim/vim??/filetype.vim
+用于根据文件名检测文件类型的脚本。参见 ":help 'filetype'"。
+.TP
+/usr/local/share/vim/vim??/scripts.vim
+用于根据文件内容检测文件类型的脚本。参见 ":help 'filetype'"。
+.TP
+/usr/local/share/vim/vim??/print/*.ps
+用于 PostScript 打印的文件。
+.PP
+如需获取最新信息，请阅读 VIM 官方主页:
+.br
+<URL:http://www.vim.org/>
+.SH 另见
+vimtutor(1)
+.SH 作者
+绝大多数
+.B Vim
+代码由 Bram Moolenaar 完成，同时得到许多其他人士的帮助。
+参见
+.B Vim
+中的 ":help credits"。
+.br
+.B Vim
+基于由 Tim Thompson、Tony Andrews 和 G.R. (Fred) Walter 编写的 Stevie。
+不过，绝大多数原始代码已被重写。
+.SH 漏洞
+有可能。
+已知问题的列表可参见 ":help todo"。
+.PP
+请注意，某些被认为是漏洞的现象，实际上源于对 Vi 行为的高度忠实复制。
+如果仅因为 Vi 的表现不同而认为某些行为是漏洞，请参阅 vi_diff.txt 文件 (或在Vim 中执行 :help vi_diff.txt)。
+同时请查阅 'compatible' 与 'cpoptions' 选项。
