@@ -4653,6 +4653,40 @@ func Test_popupwin_bottom_position_without_decoration()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_highlight()
+  CheckScreendump
+
+  " Verify that match highlighting is preserved when opacity < 100,
+  " both for non-blank characters and trailing blank cells.
+  let lines =<< trim END
+	call setline(1, range(1, 100))
+	hi PopupColor ctermbg=lightblue
+	hi MyHl ctermfg=red
+
+	" 'foo  ' includes trailing spaces to test the opacity blank path.
+	let winid = popup_create(['foo  bar', 'baz'],
+	    \ #{line: 3, col: 10, highlight: 'PopupColor', opacity: 100})
+	call win_execute(winid, "call matchadd('MyHl', 'foo  ')")
+  END
+  call writefile(lines, 'XtestPopupOpacity', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacity', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_hl_100', {})
+
+  " opacity=80: highlighted text should still be visible
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":let winid = popup_create(['foo  bar', 'baz'],"
+	\ .. " #{line: 3, col: 10, highlight: 'PopupColor', opacity: 80})\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call win_execute(winid,"
+	\ .. " \"call matchadd('MyHl', 'foo  ')\")\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_hl_80', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_getwininfo_tabnr()
   tab split
   let winid1 = popup_create('sup', #{tabpage: 1})
