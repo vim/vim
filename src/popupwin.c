@@ -2193,6 +2193,23 @@ popup_redraw_all(void)
 }
 
 /*
+ * Return TRUE if any visible popup window needs a redraw.
+ */
+    int
+popup_need_redraw(void)
+{
+    win_T	*wp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if ((wp->w_popup_flags & POPF_HIDDEN) == 0 && wp->w_redr_type != 0)
+	    return TRUE;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	if ((wp->w_popup_flags & POPF_HIDDEN) == 0 && wp->w_redr_type != 0)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Set the color for a notification window.
  */
     static void
@@ -4300,6 +4317,35 @@ static int *base_screenattrs = NULL;
 static u8char_T *base_screenlinesuc = NULL;
 static int base_screen_rows = 0;
 static int base_screen_cols = 0;
+
+/*
+ * Get the base screen cell saved before drawing opacity popups.
+ * Returns TRUE if the cell is available.
+ */
+    int
+popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp,
+							  u8char_T *ucp)
+{
+    if (base_screenlines == NULL || base_screenattrs == NULL)
+	return FALSE;
+    if (row < 0 || col < 0 || row >= base_screen_rows
+						     || col >= base_screen_cols)
+	return FALSE;
+
+    int off = row * base_screen_cols + col;
+    if (linep != NULL)
+	*linep = base_screenlines[off];
+    if (attrp != NULL)
+	*attrp = base_screenattrs[off];
+    if (ucp != NULL)
+    {
+	if (enc_utf8 && base_screenlinesuc != NULL)
+	    *ucp = base_screenlinesuc[off];
+	else
+	    *ucp = 0;
+    }
+    return TRUE;
+}
 #endif
 
 /*

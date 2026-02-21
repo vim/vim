@@ -640,6 +640,23 @@ screen_line(
 		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
 		&& ScreenLines[off_to] != 0)
 	{
+	    schar_T base_line = 0;
+	    int base_attr = 0;
+	    u8char_T base_uc = 0;
+	    int have_base = FALSE;
+# ifdef FEAT_PROP_POPUP
+	    have_base = popup_get_base_screen_cell(row, col + coloff,
+						    &base_line, &base_attr,
+						    &base_uc);
+# endif
+	    if (have_base)
+	    {
+		ScreenLines[off_to] = base_line;
+		ScreenAttrs[off_to] = base_attr;
+		if (enc_utf8)
+		    ScreenLinesUC[off_to] = base_uc;
+	    }
+
 	    int bg_char_cells = 1;
 	    if (enc_utf8 && ScreenLinesUC[off_to] != 0)
 		bg_char_cells = utf_char2cells(ScreenLinesUC[off_to]);

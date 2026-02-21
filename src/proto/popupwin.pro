@@ -75,4 +75,7 @@ void end_echowindow(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);
+int popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp,
+							 u8char_T *ucp);
+int popup_need_redraw(void);
 /* vim: set ft=c : */
