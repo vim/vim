@@ -459,4 +459,18 @@ func Test_crypt_set_key_disallow_append_subtract()
   bwipe!
 endfunc
 
+" Test unencrypted an empty file
+func Test_uncrypt_empty()
+  CheckFeature sodium
+
+  let hex =<< trim END
+  00000000: 5669 6d43 7279 7074 7e30 3521 f02f 52ed  VimCrypt~05!./R.
+  00000010: adc3 e5f3 e06c 2fc8 3ce3 ffde d48b 95fe  .....l/.<.......
+  00000020: 341e 74f7 0200 0000 0000 0000 0000 0004  4.t.............
+  00000030: 0000 0000 0200 0000                      ........
+  END
+
+  call Uncrypt_stable_xxd('xchacha20v2', hex, "vim", [""], 0)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
