@@ -484,7 +484,7 @@ gui_init_check(void)
 #else
 # ifdef FEAT_GUI_GTK
 #  ifdef GDK_WINDOWING_WAYLAND
-    gui.is_wayland = FALSE;
+    gui.is_wayland = false;
 #  endif
     /*
      * Note: Don't call gtk_init_check() before fork, it will be called after

@@ -4006,7 +4006,7 @@ gui_mch_init(void)
 #ifdef GDK_WINDOWING_WAYLAND
     GdkDisplay *d = gdk_display_get_default();
     if (GDK_IS_WAYLAND_DISPLAY(d))
-	gui.is_wayland = TRUE;
+	gui.is_wayland = true;
 #endif
 
     // Determine which events we will filter.
