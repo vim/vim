@@ -100,6 +100,14 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+static int	last_insert_cmdchar = NUL; // Track the last insert mode
+					   // command character for getrepeat()
+
+#if defined(FEAT_EVAL)
+// Dictionary to store the last repeat command set via setrepeat()
+static dict_T	*g_last_repeat_dict = NULL;
+#endif
+
 #define TRIGGER_AUTOCOMPLETE()			\
     do {					\
 	update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
@@ -166,6 +174,10 @@ edit(
     int		cursor_line_was_concealed;
 #endif
     int		ins_just_started = TRUE;
+
+    // Track the insert command for getrepeat()
+    if (cmdchar != 0)
+	last_insert_cmdchar = cmdchar;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -2670,6 +2682,107 @@ set_last_insert(int c)
     last_insert_skip = 0;
 }
 
+#if defined(FEAT_EVAL)
+/*
+ * Set the last inserted text to str.
+ *
+ * This is used for setrepeat() function.
+ *
+ * The string represents a COMMAND sequence, similar to :normal.
+ * If the first character is a valid insert mode command [iaoOIAcsSC],
+ * it is treated as the command and the rest as text to insert.
+ * Otherwise, the entire string is treated as text with implicit 'a' command.
+ *
+ * Examples:
+ *   "itext"  -> i command + "text"
+ *   "i"      -> i command (no text)
+ *   "text"   -> a command + "text" (implicit, 't' is not an insert command)
+ */
+    static void
+set_last_insert_str(char_u *str)
+{
+    char_u  *s;
+    char_u  *p;
+    char_u  *text_start;
+    int     c;
+    size_t  len = str ? STRLEN(str) : 0;
+    int     has_command = FALSE;
+
+    vim_free(last_insert.string);
+    last_insert.string = alloc(len * 3 + 5);
+    if (last_insert.string == NULL)
+    {
+	last_insert.length = 0;
+	return;
+    }
+
+    // Parse the input string to separate the command (i, a, o, etc.) from
+    // the text.  The first character is checked to see if it's a valid
+    // insert mode command.
+    s = last_insert.string;
+    p = str;
+    text_start = str;
+
+    // Check if the first character is an insert mode command
+    if (str != NULL && *str != NUL)
+    {
+	int first_char = *p;
+	// Check if it's a valid insert command character
+	if (vim_strchr((char_u *)"iaoOIAcsSC", first_char) != NULL)
+	{
+	    has_command = TRUE;
+	    MB_PTR_ADV(p);  // Skip the command character
+	    text_start = p;
+	}
+    }
+
+    // Copy the text part to last_insert.string
+    if (text_start != NULL && *text_start != NUL)
+    {
+	// Copy the text part to last_insert.string
+	for (; *p != NUL; MB_PTR_ADV(p))
+	{
+	    c = mb_ptr2char(p);
+	    // Use the CTRL-V only when entering a special char
+	    if (c < ' ' || c == DEL)
+		*s++ = Ctrl_V;
+	    s = add_char2buf(c, s);
+	}
+    }
+
+    *s++ = ESC;
+    *s = NUL;
+    last_insert.length = (size_t)(s - last_insert.string);
+    last_insert_skip = 0;
+
+    // Update redo buffer for . command
+    ResetRedobuff();
+
+    // Skip the next restore
+    skipRestoreRedobuff();
+
+    if (str != NULL && *str != NUL)
+    {
+	if (has_command)
+	{
+	    AppendCharToRedobuff(*str);
+	    for (p = text_start; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+
+	    // Add ESC char
+	    AppendCharToRedobuff(ESC);
+	}
+	else
+	{
+	    // Not an insert command - pass through as-is
+	    // This allows commands like 'dd', 'yy', 'x', etc.
+	    for (p = str; *p != NUL; )
+		AppendCharToRedobuff(mb_cptr2char_adv(&p));
+	}
+    }
+}
+#endif
+
 #if defined(EXITFREE)
     void
 free_last_insert(void)
@@ -3756,6 +3869,11 @@ ins_esc(
 	 */
 	if (cmdchar != 'r' && cmdchar != 'v')
 	    AppendToRedobuff(p_im ? (char_u *)"\014" : ESC_STR);
+
+#ifdef FEAT_EVAL
+	// Clear setrepeat() value when completing a user insert operation
+	clear_repeat_dict();
+#endif
 
 	/*
 	 * Repeating insert may take a long time.  Check for
@@ -5605,3 +5723,141 @@ ins_apply_autocmds(event_T event)
 
     return r;
 }
+
+#if defined(FEAT_EVAL)
+/*
+ * Free the repeat dictionary on exit.
+ */
+    void
+clear_repeat_dict(void)
+{
+    if (g_last_repeat_dict != NULL)
+    {
+	dict_unref(g_last_repeat_dict);
+	g_last_repeat_dict = NULL;
+    }
+}
+
+/*
+ * Set the repeat command from a dictionary.
+ * Called by the setrepeat() Vimscript function.
+ *
+ * The dictionary should contain:
+ *   'cmd': string (required) - the command to repeat
+ *   'text': string (optional) - text to insert (for insert mode commands)
+ */
+    void
+set_repeat_dict(dict_T *dict)
+{
+    dictitem_T	*di;
+    char_u	*cmd;
+    char_u	*text = NULL;
+    char_u	*combined = NULL;
+    size_t	cmd_len;
+    size_t	text_len;
+
+    if (dict == NULL)
+	return;
+
+    // Get 'cmd' field (required)
+    di = dict_find(dict, (char_u *)"cmd", -1);
+    if (di == NULL)
+    {
+	semsg(_(e_key_not_present_in_dictionary_str), "cmd");
+	return;
+    }
+    cmd = tv_get_string(&di->di_tv);
+
+    // Get 'text' field (optional)
+    di = dict_find(dict, (char_u *)"text", -1);
+    if (di != NULL)
+	text = tv_get_string(&di->di_tv);
+
+    // Free the previous dictionary if it exists
+    clear_repeat_dict();
+
+    // Save a copy of the dictionary for getrepeat()
+    g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
+    if (g_last_repeat_dict != NULL)
+	++g_last_repeat_dict->dv_refcount;
+
+    // Build the command string: cmd + text
+    cmd_len = STRLEN(cmd);
+    text_len = (text != NULL && *text != NUL) ? STRLEN(text) : 0;
+
+    if (text_len > 0)
+    {
+	// Combine cmd and text
+	combined = alloc(cmd_len + text_len + 1);
+	if (combined == NULL)
+	    return;
+
+	STRCPY(combined, cmd);
+	STRCPY(combined + cmd_len, text);
+
+	set_last_insert_str(combined);
+	vim_free(combined);
+    }
+    else
+    {
+	// Just cmd
+	set_last_insert_str(cmd);
+    }
+}
+
+/*
+ * Get the last repeat command as a dictionary.
+ * Called by the getrepeat() Vimscript function.
+ *
+ * Returns:
+ *   - If the repeat was set via setrepeat(), returns the exact dictionary
+ *   - Otherwise, returns a dictionary with limited information
+ */
+    dict_T *
+get_repeat_dict(void)
+{
+    dict_T *dict;
+    char_u *text_str = NULL;
+    char_u cmd_str[2];
+
+    // If setrepeat() was used, return that
+    if (g_last_repeat_dict != NULL)
+	return dict_copy(g_last_repeat_dict, TRUE, TRUE, get_copyID());
+
+    // Create new dictionary for user operation
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    dict->dv_refcount = 1;
+
+    // Get command from tracked insert command
+    cmd_str[0] = NUL;
+    cmd_str[1] = NUL;
+    if (last_insert_cmdchar != NUL && last_insert_cmdchar != 'i')
+    {
+	// Only include insert mode commands: i, a, o, I, A, O, etc.
+	if (vim_strchr((char_u *)"iIaAoOcCsS", last_insert_cmdchar) != NULL)
+	    cmd_str[0] = last_insert_cmdchar;
+    }
+    else if (last_insert_cmdchar == 'i')
+	cmd_str[0] = 'i';
+
+    // Get text from . register
+    text_str = get_reg_contents('.', GREG_NO_EXPR);
+
+    // Add to dictionary
+    if (dict_add_string(dict, "cmd", cmd_str) == FAIL
+	    || dict_add_string(dict, "text",
+		text_str != NULL ? text_str : (char_u *)"") == FAIL)
+    {
+	vim_free(text_str);
+	dict_unref(dict);
+	return NULL;
+    }
+
+    vim_free(text_str);
+
+    return dict;
+}
+#endif

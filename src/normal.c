@@ -6483,6 +6483,11 @@ nv_operator(cmdarg_T *cap)
 	set_op_var(op_type);
 #endif
     }
+
+#ifdef FEAT_EVAL
+    // Clear programmatically setrepeat() after user operations
+    clear_repeat_dict();
+#endif
 }
 
 #ifdef FEAT_EVAL
