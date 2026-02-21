@@ -45,6 +45,12 @@ static int	buf_same_ino(buf_T *buf, stat_T *stp);
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 static int	value_changed(char_u *str, char_u **last);
+#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE)
+static int build_stl_str_hl_local(stl_mode_T mode, win_T *wp,
+		char_u *out, size_t outlen, char_u **fmt_arg,
+		char_u *opt_name, int opt_scope, int fillchar, int maxwidth,
+		stl_hlrec_T **hltab, stl_hlrec_T **tabtab, int *lbreaks);
+#endif
 static int	append_arg_number(win_T *wp, char_u *buf, size_t buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
@@ -4367,6 +4373,94 @@ build_stl_str_hl(
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
     stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
 {
+    return build_stl_str_hl_local(STL_MODE_SINGLE, wp, out, outlen, &fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+
+    int
+build_stl_str_hl_mline(
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt,		// (in/out)
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+{
+    return build_stl_str_hl_local(STL_MODE_MULTI, wp, out, outlen, fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+
+# ifdef ENABLE_STL_MODE_MULTI_NL
+    int
+build_stl_str_hl_mline_nl(
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt,		// (in/out)
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+{
+    return build_stl_str_hl_local(STL_MODE_MULTI_NL, wp, out, outlen, fmt,
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+}
+# endif
+
+    int
+get_stl_rendered_height(
+    win_T	*wp,
+    char_u	*fmt,
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope)	// scope for "opt_name"
+{
+    int rendered_height = 0;
+    char_u	buf[MAXPATHL] = {0};
+
+    (void)build_stl_str_hl_local(STL_MODE_GET_RENDERED_HEIGHT,
+	    wp, buf, sizeof(buf), &fmt,
+	    opt_name, opt_scope, 0, 0, NULL, NULL, &rendered_height);
+    return rendered_height;
+}
+
+/*
+ * mode:
+ *  STL_MODE_SINGLE:
+ *  - Does not accept line breaks ("%@")
+ *  STL_MODE_MULTI:
+ *  - Accept line breaks
+ *  - Update fmt_arg to the start of the next line or last NUL position
+ *  STL_MODE_GET_RENDERED_HEIGHT:
+ *  - Just get stl rendered height
+ *  - Update rendered_height (if not NULL)
+ *
+ * NOTE:
+ * Line break counting is performed here because `%{% ... %}` items
+ * are re-evaluated on redraw and may change the final rendered text.
+ * Therefore, layout decisions must be based on the fully evaluated statusline
+ * string, not on pre-evaluation parsing.
+ */
+static int
+build_stl_str_hl_local(
+    stl_mode_T	mode,
+    win_T	*wp,
+    char_u	*out,		// buffer to write into != NameBuff
+    size_t	outlen,		// length of out[]
+    char_u	**fmt_arg,
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
+    int		fillchar,
+    int		maxwidth,
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    int		*rendered_height)   // return: stl rendered height (can be NULL)
+{
     linenr_T	lnum;
     colnr_T	len;
     size_t	outputlen;	// length of out[] used (excluding the NUL)
@@ -4400,6 +4494,7 @@ build_stl_str_hl(
     char_u	opt;
 # define TMPLEN 70
     char_u	buf_tmp[TMPLEN];
+    char_u	*fmt = *fmt_arg;
     char_u	*usefmt = fmt;
     stl_hlrec_T *sp;
     int		save_redraw_not_allowed = redraw_not_allowed;
@@ -4408,6 +4503,7 @@ build_stl_str_hl(
     // matter?
     // int	called_emsg_before = called_emsg;
     int		did_emsg_before = did_emsg;
+    int		rheight = 1;	// stl rendered height
 
     // When inside update_screen() we do not want redrawing a statusline,
     // ruler, title, etc. to trigger another redraw, it may cause an endless
@@ -4534,7 +4630,23 @@ build_stl_str_hl(
 	 * Handle up to the next '%' or the end.
 	 */
 	while (*s != NUL && *s != '%' && p + 1 < out + outlen)
+# ifdef ENABLE_STL_MODE_MULTI_NL
+	{
+	    if (*s == '\n' || *s == '\r')
+	    {
+		if (mode == STL_MODE_MULTI_NL)
+		{
+		    s++;
+		    goto find_linebreak;
+		}
+		else if (mode == STL_MODE_GET_RENDERED_HEIGHT)
+		    rheight++;
+	    }
+# endif
 	    *p++ = *s++;
+# ifdef ENABLE_STL_MODE_MULTI_NL
+	}
+# endif
 	if (*s == NUL || p + 1 >= out + outlen)
 	    break;
 
@@ -4544,6 +4656,21 @@ build_stl_str_hl(
 	s++;
 	if (*s == NUL)  // ignore trailing %
 	    break;
+
+	if (*s == STL_LINEBREAK)
+	{
+	    if (mode == STL_MODE_MULTI
+# ifdef ENABLE_STL_MODE_MULTI_NL
+		    || mode == STL_MODE_MULTI_NL
+# endif
+	       )
+	    {
+		s++;
+		break;
+	    }
+	    else if (mode == STL_MODE_GET_RENDERED_HEIGHT)
+		rheight++;
+	}
 	if (*s == '%')
 	{
 	    if (p + 1 >= out + outlen)
@@ -5201,14 +5328,52 @@ build_stl_str_hl(
 	    vim_free(str);
 	curitem++;
     }
+# ifdef ENABLE_STL_MODE_MULTI_NL
+find_linebreak:
+# endif
     *p = NUL;
     outputlen = (size_t)(p - out);
     itemcnt = curitem;
 
-# ifdef FEAT_EVAL
-    if (usefmt != fmt)
-	vim_free(usefmt);
+    if (mode == STL_MODE_MULTI
+# ifdef ENABLE_STL_MODE_MULTI_NL
+		    || mode == STL_MODE_MULTI_NL
 # endif
+       )
+    {
+	// In multi-line mode, ownership of the format buffer is transferred
+	// back to the caller via *fmt_arg.
+	// When "%!" evaluation occurred (usefmt != fmt), "usefmt" is the newly
+	// allocated eval result and "fmt" is the caller's original buffer
+	// which is no longer needed.  "s" points into "usefmt", so we free
+	// "fmt" and shift the remaining format string within "usefmt" for the
+	// caller's next iteration.
+# ifdef FEAT_EVAL
+	if (usefmt != fmt)
+	    vim_free(fmt);
+# endif
+	size_t fmt_remain_len = strlen((char *)s);
+
+	mch_memmove(usefmt, s, fmt_remain_len);
+	usefmt[fmt_remain_len] = NUL;
+	*fmt_arg = usefmt;
+    }
+    else
+    {
+	// In single-line mode, the caller retains ownership of its buffer.
+	// Free the eval result if "%!" was used.
+# ifdef FEAT_EVAL
+	if (usefmt != fmt)
+	    vim_free(usefmt);
+# endif
+    }
+
+    if (mode == STL_MODE_GET_RENDERED_HEIGHT)
+    {
+	if (rendered_height != NULL)
+	    *rendered_height = rheight;
+	return 0;
+    }
 
     width = vim_strsize(out);
     if (maxwidth > 0 && width > maxwidth)

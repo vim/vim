@@ -93,6 +93,9 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", "skiprtp",
     NULL};
 #endif
+#if defined(FEAT_STL_OPT)
+static char *(p_stlo_values[]) = {"maxheight:", NULL};
+#endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
 static char *(p_spk_values[]) = {"cursor", "screen", "topline", NULL};
@@ -661,6 +664,11 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
+	if (*s == STL_LINEBREAK)
+	{
+	    s++;
+	    continue;
+	}
 	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_SEPARATE)
 	{
 	    s++;
@@ -4181,7 +4189,50 @@ expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_statusline(optset_T *args)
 {
-    return parse_statustabline_rulerformat(args, FALSE);
+    char *ret = parse_statustabline_rulerformat(args, FALSE);
+
+    if (ret != NULL)
+	return ret;
+    frame_change_statusline_height();
+
+    return NULL;
+}
+
+/*
+ * The 'statuslineopt' option is changed.
+ */
+    char *
+did_set_statuslineopt(optset_T *args)
+{
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (statuslineopt_changed(*varp) == FAIL)
+	return e_invalid_argument;
+
+    frame_change_statusline_height();
+
+    if (*varp != empty_option)
+    {
+	// Update the maxheight value to the actual value set.
+	// Note: Must be changed if p_stlo_values are changed.
+	free_string_option(*varp);
+	vim_snprintf((char *)IObuff, IOSIZE, "maxheight:%d",
+		curwin->w_status_height);
+	*varp = vim_strsave(IObuff);
+    }
+
+    return NULL;
+}
+
+    int
+expand_set_statuslineopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_stlo_values,
+	    ARRAY_LENGTH(p_stlo_values) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 

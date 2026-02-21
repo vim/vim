@@ -8518,6 +8518,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      applied to StatusLineNC for the statusline of non-current
 	      windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
+								*'stl-@'*
+	@ -   Insert a line break.
 
 	When displaying a flag, Vim removes the leading comma, if any, when
 	that flag comes right after plaintext.  This will make a nice display
@@ -8575,6 +8577,34 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  :function VarExists(var, val)
 	  :    if exists(a:var) | return a:val | else | return '' | endif
 	  :endfunction
+<
+						*'statuslineopt'* *'stlo'*
+'statuslineopt' 'stlo'	string	(default "")
+			global
+			{not available when compiled without the |+statusline|
+			feature}
+	Option settings for |status-line|.  It can consist of the following
+	items.  All are optional.  Items must be separated by a comma.
+
+		maxheight:{n}	Set the maximum status line height to {n}.
+				{n} must be 1 or greater.
+				If not present, 1 is used.
+				Check whether {n} is applicable to all windows
+				on all tab pages, and if not, set it to the
+				closest possible value.
+				The option value is updated to the actual
+				applied value.  For example, setting
+				maxheight:999 may result in a smaller value
+				depending on the available space.
+				When {n} is set to 2 or more, you can use "@"
+				in 'statusline' to display information on
+				multiple lines in the status line.
+				See |'stl-@'|.
+
+	Examples: >
+		:set stlo=
+		:set stlo=maxheight:2
+		:set stlo+=maxheight:3
 <
 						*'suffixes'* *'su'*
 'suffixes' 'su'		string	(default ".bak,~,.o,.h,.info,.swp,.obj")
@@ -8761,11 +8791,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel.  |g:actual_curtabpage| represents current tab's label number.
-	The option value can contain "\n" to force line breaks: >
+	You can use "%@" or "\n" to insert a new line: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
-		  return printf("(%2d)\n  %%f", g:actual_curtabpage)
+		  return "(" .. g:actual_curtabpage .. ")%@  %f"
 		endfunction
 <
 	The result is:

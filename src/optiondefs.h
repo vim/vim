@@ -2518,6 +2518,14 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"statuslineopt"  ,"stlo",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT|P_MLE
+			    |P_ONECOMMA|P_COLON|P_NODUP,
+#ifdef FEAT_STL_OPT
+			    (char_u *)&p_stlo, PV_NONE, did_set_statuslineopt, expand_set_statuslineopt,
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"suffixes",    "su",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_su, PV_NONE, NULL, NULL,
 			    {(char_u *)".bak,~,.o,.h,.info,.swp,.obj",

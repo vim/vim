@@ -1143,6 +1143,7 @@ win_redr_custom(
     int		width;
     int		n;
     int		len;
+    int		stlh_cnt;
     int		fillchar;
     char_u	buf[MAXPATHL];
     char_u	*stl;
@@ -1233,64 +1234,80 @@ win_redr_custom(
     ewp = wp == NULL ? curwin : wp;
     p_crb_save = ewp->w_p_crb;
     ewp->w_p_crb = FALSE;
+    stlh_cnt = draw_ruler || stl == p_tal ? 1 : wp->w_status_height;
 
     // Make a copy, because the statusline may include a function call that
     // might change the option value and free the memory.
     stl = vim_strsave(stl);
-    width = build_stl_str_hl(ewp, buf, sizeof(buf),
-				(stl == NULL) ? (char_u *)"" : stl, opt_name, opt_scope,
-				fillchar, maxwidth, &hltab, &tabtab);
-    vim_free(stl);
+    char_u *stl_tmp = (stl == NULL) ? (char_u *)"" : stl;
+    int col_save = col;
+
+    for (int i = 0; i < stlh_cnt; i++)
+    {
+	col = col_save;
+	buf[0] = NUL;
+	width = build_stl_str_hl_mline(ewp, buf, sizeof(buf),
+			&stl_tmp,
+			opt_name, opt_scope,
+			fillchar, maxwidth, &hltab, &tabtab);
+
+	// Make all characters printable.
+	p = transstr(buf);
+	if (p != NULL)
+	{
+	    len = vim_snprintf((char *)buf, sizeof(buf), "%s", p);
+	    vim_free(p);
+	}
+	else
+	    len = (int)STRLEN(buf);
+
+	// fill up with "fillchar"
+	while (width < maxwidth && len < (int)sizeof(buf) - 1)
+	{
+	    len += (*mb_char2bytes)(fillchar, buf + len);
+	    ++width;
+	}
+	buf[len] = NUL;
+
+	/*
+	 * Draw each snippet with the specified highlighting.
+	 */
+	curattr = attr;
+	p = buf;
+	for (n = 0; hltab[n].start != NULL; n++)
+	{
+	    len = (int)(hltab[n].start - p);
+	    screen_puts_len(p, len, row + i, col, curattr);
+	    col += vim_strnsize(p, len);
+	    p = hltab[n].start;
+
+	    if (hltab[n].userhl == 0)
+		curattr = attr;
+	    else if (hltab[n].userhl < 0)
+		curattr = syn_id2attr(-hltab[n].userhl);
+# ifdef FEAT_TERMINAL
+	    else if (wp != NULL && wp != curwin && bt_terminal(wp->w_buffer)
+						    && wp->w_status_height != 0)
+		curattr = highlight_stltermnc[hltab[n].userhl - 1];
+	    else if (wp != NULL && bt_terminal(wp->w_buffer)
+						    && wp->w_status_height != 0)
+		curattr = highlight_stlterm[hltab[n].userhl - 1];
+# endif
+	    else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
+		curattr = highlight_stlnc[hltab[n].userhl - 1];
+	    else
+		curattr = highlight_user[hltab[n].userhl - 1];
+	}
+	screen_puts(p, row + i, col, curattr);
+    }
     ewp->w_p_crb = p_crb_save;
 
-    // Make all characters printable.
-    p = transstr(buf);
-    if (p != NULL)
-    {
-	len = vim_snprintf((char *)buf, sizeof(buf), "%s", p);
-	vim_free(p);
-    }
-    else
-	len = (int)STRLEN(buf);
-
-    // fill up with "fillchar"
-    while (width < maxwidth && len < (int)sizeof(buf) - 1)
-    {
-	len += (*mb_char2bytes)(fillchar, buf + len);
-	++width;
-    }
-    buf[len] = NUL;
-
-    /*
-     * Draw each snippet with the specified highlighting.
-     */
-    curattr = attr;
-    p = buf;
-    for (n = 0; hltab[n].start != NULL; n++)
-    {
-	len = (int)(hltab[n].start - p);
-	screen_puts_len(p, len, row, col, curattr);
-	col += vim_strnsize(p, len);
-	p = hltab[n].start;
-
-	if (hltab[n].userhl == 0)
-	    curattr = attr;
-	else if (hltab[n].userhl < 0)
-	    curattr = syn_id2attr(-hltab[n].userhl);
-# ifdef FEAT_TERMINAL
-	else if (wp != NULL && wp != curwin && bt_terminal(wp->w_buffer)
-						   && wp->w_status_height != 0)
-	    curattr = highlight_stltermnc[hltab[n].userhl - 1];
-	else if (wp != NULL && bt_terminal(wp->w_buffer)
-						   && wp->w_status_height != 0)
-	    curattr = highlight_stlterm[hltab[n].userhl - 1];
-# endif
-	else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
-	    curattr = highlight_stlnc[hltab[n].userhl - 1];
-	else
-	    curattr = highlight_user[hltab[n].userhl - 1];
-    }
-    screen_puts(p, row, col, curattr);
+    // Note: In the loop, build_stl_str_hl_mline() may replace stl_tmp with
+    // a newly allocated buffer (when "%!" evaluation occurs), freeing the
+    // original "stl" internally.  After the loop, stl_tmp must be freed
+    // instead of stl, as it holds the current buffer ownership.
+    if (stl != NULL)
+	vim_free(stl_tmp);
 
     if (wp == NULL)
     {
