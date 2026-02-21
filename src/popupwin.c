@@ -4375,24 +4375,26 @@ draw_opacity_padding_cell(
 	int save_off = r * save_cols + c;
 	// If this is the second cell of a wide background character, blend
 	// the wide character instead of overwriting it.
-	if (enc_utf8 && saved_screenlinesuc != NULL
-		&& saved_screenlines[save_off] == 0)
+	if (enc_utf8 && saved_screenlinesuc != NULL)
 	{
 	    int base_col = col - 1;
 	    int base_off = off - 1;
 	    int base_save_off = save_off - 1;
 	    int wide_prev = FALSE;
 
-	    if (save_off > 0)
+	    // Prefer current screen state for detecting a wide char, since the
+	    // saved data may not contain a reliable right-half marker.
+	    if (base_off >= 0 && ScreenLinesUC != NULL)
+	    {
+		if (ScreenLinesUC[base_off] != 0
+			&& utf_char2cells(ScreenLinesUC[base_off]) == 2
+			&& ScreenLinesUC[off] == 0)
+		    wide_prev = TRUE;
+	    }
+	    if (!wide_prev && save_off > 0)
 	    {
 		if (saved_screenlinesuc[save_off - 1] != 0
 			&& utf_char2cells(saved_screenlinesuc[save_off - 1]) == 2)
-		    wide_prev = TRUE;
-	    }
-	    else if (base_off >= 0 && enc_utf8 && ScreenLinesUC != NULL)
-	    {
-		if (ScreenLinesUC[base_off] != 0
-			&& utf_char2cells(ScreenLinesUC[base_off]) == 2)
 		    wide_prev = TRUE;
 	    }
 
@@ -4402,7 +4404,9 @@ draw_opacity_padding_cell(
 		// overwrite it. Use the base screen cell if available.
 		if (base_col < pad_start_col)
 		{
-		    if (base_screenlines != NULL)
+		    // If this is the last padding column, the next cell is not
+		    // padding (text/border). Don't preserve a half wide char.
+		    if (col + 1 < pad_end_col && base_screenlines != NULL)
 		    {
 			// Keep the underlying glyph, but use attrs from the
 			// saved screen (which include lower popup blending).
@@ -4421,6 +4425,31 @@ draw_opacity_padding_cell(
 			screen_char(off, row, col);
 			return;
 		    }
+
+		    // Clear the left half so the wide char is not visible.
+		    {
+			int base_attr = 0;
+			ScreenLines[base_off] = ' ';
+			if (enc_utf8 && ScreenLinesUC != NULL)
+			    ScreenLinesUC[base_off] = 0;
+			if (base_save_off >= 0)
+			    base_attr = saved_screenattrs[base_save_off];
+			else if (base_screenattrs != NULL)
+			    base_attr = base_screenattrs[base_off];
+			ScreenAttrs[base_off] = base_attr;
+			screen_char(base_off, row, base_col);
+		    }
+
+		    // Draw padding in the right half.
+		    ScreenLines[off] = ' ';
+		    ScreenAttrs[off] = saved_screenattrs[save_off];
+		    if (enc_utf8 && ScreenLinesUC != NULL)
+			ScreenLinesUC[off] = 0;
+		    int popup_attr_val = get_wcr_attr(screen_opacity_popup);
+		    int blend = screen_opacity_popup->w_popup_blend;
+		    ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],
+				    popup_attr_val, blend, TRUE);
+		    screen_char(off, row, col);
 		    return;
 		}
 
@@ -4601,6 +4630,14 @@ update_popups(void (*win_update)(win_T *wp))
 	    save_start_col = wp->w_wincol + wp->w_popup_border[3];
 	    save_rows = wp->w_popup_padding[0] + wp->w_height + wp->w_popup_padding[2];
 	    save_cols = wp->w_popup_padding[3] + wp->w_width + wp->w_popup_padding[1];
+
+	    // Include one column to the left to handle wide chars that overlap
+	    // the padding boundary.
+	    if (save_start_col > 0)
+	    {
+		--save_start_col;
+		++save_cols;
+	    }
 
 	    // Allocate buffers
 	    saved_screenlines = ALLOC_MULT(schar_T, save_rows * save_cols);
