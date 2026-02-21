@@ -2222,7 +2222,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       NULL, NULL, !quiet);
+			       NULL, NULL, NULL, !quiet);
 		if (!quiet && (lp->ll_type == NULL
 			    || !valid_declaration_type(lp->ll_type)))
 		    return NULL;
@@ -4784,7 +4784,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, NULL, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -5082,7 +5082,7 @@ eval9_nested_expr(
 }
 
 /*
-* Handle be a variable or function name.
+* Handle a variable or function name.
 * Can also be a curly-braces kind of name: {expr}.
 */
     static int
@@ -5143,7 +5143,8 @@ eval9_var_func_name(
 		// skip the generic function arguments (if present)
 		// they are already processed by eval_variable
 		if (ret == OK && vim9script && **arg == '<'
-						&& rettv->v_type == VAR_FUNC)
+					&& (rettv->v_type == VAR_FUNC
+					    || rettv->v_type == VAR_CLASS))
 		    ret = skip_generic_func_type_args(arg);
 	    }
 	}
@@ -5151,6 +5152,11 @@ eval9_var_func_name(
 	{
 	    // skip the name
 	    check_vars(s, len);
+
+	    // Skip the generic arguments (e.g. generic class) that are
+	    // specified after the variable name.
+	    if (vim9script && **arg == '<')
+		skip_generic_func_type_args(arg);
 	    ret = OK;
 	}
     }
@@ -7541,6 +7547,28 @@ handle_subscript(
 	else if (**arg == '.' && (rettv->v_type == VAR_CLASS
 					       || rettv->v_type == VAR_OBJECT))
 	{
+	    if (rettv->v_type == VAR_CLASS
+		    && rettv->vval.v_class != NULL
+		    && IS_GENERIC_CLASS(rettv->vval.v_class))
+	    {
+		semsg(_(e_generic_class_missing_type_args_str),
+			rettv->vval.v_class->class_name);
+		clear_tv(rettv);
+		ret = FAIL;
+		break;
+	    }
+	    else if (rettv->v_type == VAR_OBJECT
+		    && rettv->vval.v_object != NULL
+		    && rettv->vval.v_object->obj_class != NULL
+		    && IS_GENERIC_CLASS(rettv->vval.v_object->obj_class))
+	    {
+		semsg(_(e_generic_class_missing_type_args_str),
+			rettv->vval.v_object->obj_class);
+		clear_tv(rettv);
+		ret = FAIL;
+		break;
+	    }
+
 	    // class member: SomeClass.varname
 	    // class method: SomeClass.SomeMethod()
 	    // class constructor: SomeClass.new()
@@ -7550,6 +7578,46 @@ handle_subscript(
 	    {
 		clear_tv(rettv);
 		ret = FAIL;
+	    }
+	}
+	else if (**arg == '<' && (rettv->v_type == VAR_CLASS
+					|| rettv->v_type == VAR_OBJECT))
+	{
+	    class_T	*cl = NULL;
+
+	    if (rettv->v_type == VAR_CLASS)
+		cl = rettv->vval.v_class;
+	    else if (rettv->vval.v_object != NULL)
+		cl = rettv->vval.v_object->obj_class;
+
+	    if (cl != NULL && IS_GENERIC_CLASS(cl))
+	    {
+		if (*p != '<')
+		{
+		    semsg(_(e_generic_class_missing_type_args_str),
+			    cl->class_name);
+		    ret = FAIL;
+		    break;
+		}
+
+		// The generic class "cl" in rettv is no longer referenced and
+		// a more specific class is used below.  So reduce the
+		// refcount.
+		class_unref(cl);
+
+		// Find the generic class
+		cl = find_generic_class(cl, &p);
+		if (cl == NULL)
+		{
+		    ret = FAIL;
+		    break;
+		}
+		if (rettv->v_type == VAR_CLASS)
+		    rettv->vval.v_class = cl;
+		else if (rettv->vval.v_object != NULL)
+		    rettv->vval.v_object->obj_class = cl;
+		cl->class_refcount++;
+		*arg = p;
 	    }
 	}
 	else

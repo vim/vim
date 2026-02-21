@@ -11736,7 +11736,13 @@ def Test_object_of_class_type()
     vim9script
     var x: object<any,any>
   END
-  v9.CheckSourceFailure(lines, 'E488: Trailing characters: ,any>')
+  v9.CheckSourceFailure(lines, 'E1009: Missing > after type: <any,any>')
+
+  lines =<< trim END
+    vim9script
+    var x: object<any, any>
+  END
+  v9.CheckSourceFailure(lines, 'E1009: Missing > after type: <any, any>')
 
   lines =<< trim END
     var x: object<number>
