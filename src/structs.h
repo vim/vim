@@ -2599,7 +2599,9 @@ typedef enum
     CH_MODE_RAW,
     CH_MODE_JSON,
     CH_MODE_JS,
-    CH_MODE_LSP		// Language Server Protocol (http + json)
+    CH_MODE_LSP,	// Language Server Protocol (http + json)
+    CH_MODE_DAP		// Debug Adapter Protocol (like LSP, but does not
+			// strictly follow JSON-RPC standard)
 } ch_mode_T;
 
 typedef enum {
