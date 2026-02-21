@@ -4174,20 +4174,34 @@ win_line(
 		// trailing junk to be written out of the screen line
 		// we are building, 'boguscols' keeps track of the number
 		// of bad columns we have advanced.
+		//
+		// For popup windows with fixed width, don't advance col
+		// to allow full text to be displayed.
+# ifdef FEAT_PROP_POPUP
+		int adjust_col = !WIN_IS_POPUP(wp);
+# else
+		int adjust_col = TRUE;
+# endif
 		if (wlv.n_extra > 0)
 		{
 		    wlv.vcol += wlv.n_extra;
 # ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 		    {
-			wlv.col -= wlv.n_extra;
-			wlv.boguscols -= wlv.n_extra;
+			if (adjust_col)
+			{
+			    wlv.col -= wlv.n_extra;
+			    wlv.boguscols -= wlv.n_extra;
+			}
 		    }
 		    else
 # endif
 		    {
-			wlv.col += wlv.n_extra;
-			wlv.boguscols += wlv.n_extra;
+			if (adjust_col)
+			{
+			    wlv.col += wlv.n_extra;
+			    wlv.boguscols += wlv.n_extra;
+			}
 		    }
 		    wlv.n_extra = 0;
 		    n_attr = 0;
@@ -4199,28 +4213,40 @@ win_line(
 # ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 		    {
-			--wlv.boguscols;
-			--wlv.col;
+			if (adjust_col)
+			{
+			    --wlv.boguscols;
+			    --wlv.col;
+			}
 		    }
 		    else
 # endif
 		    {
-			++wlv.boguscols;
-			++wlv.col;
+			if (adjust_col)
+			{
+			    ++wlv.boguscols;
+			    ++wlv.col;
+			}
 		    }
 		}
 
 # ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
 		{
-		    --wlv.boguscols;
-		    --wlv.col;
+		    if (adjust_col)
+		    {
+			--wlv.boguscols;
+			--wlv.col;
+		    }
 		}
 		else
 # endif
 		{
-		    ++wlv.boguscols;
-		    ++wlv.col;
+		    if (adjust_col)
+		    {
+			++wlv.boguscols;
+			++wlv.col;
+		    }
 		}
 	    }
 	    else
