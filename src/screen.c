@@ -818,11 +818,14 @@ skip_opacity:
 		    && (flags & SLF_POPUP)
 		    && screen_opacity_popup->w_popup_blend > 0)
 	    {
+		int char_attr = ScreenAttrs[off_from];
 		int popup_attr = get_wcr_attr(screen_opacity_popup);
 		int blend = screen_opacity_popup->w_popup_blend;
-		// Blend popup attr with default background (0)
-		// FALSE = keep popup foreground color, blend background only
-		ScreenAttrs[off_to] = hl_blend_attr(0, popup_attr, blend, FALSE);
+		// Combine popup window color with the character's own
+		// attribute (e.g. syntax highlighting) so that the
+		// character's foreground color is preserved.
+		int combined = hl_combine_attr(popup_attr, char_attr);
+		ScreenAttrs[off_to] = hl_blend_attr(0, combined, blend, FALSE);
 	    }
 #endif
 
