@@ -8847,6 +8847,7 @@ lcs-eol	options.txt	/*lcs-eol*
 lcs-extends	options.txt	/*lcs-extends*
 lcs-lead	options.txt	/*lcs-lead*
 lcs-leadmultispace	options.txt	/*lcs-leadmultispace*
+lcs-leadtab	options.txt	/*lcs-leadtab*
 lcs-multispace	options.txt	/*lcs-multispace*
 lcs-nbsp	options.txt	/*lcs-nbsp*
 lcs-precedes	options.txt	/*lcs-precedes*

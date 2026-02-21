@@ -4943,6 +4943,7 @@ static struct charstab lcstab[] =
     CHARSTAB_ENTRY(&lcs_chars.prec,	    "precedes"),
     CHARSTAB_ENTRY(&lcs_chars.space,	    "space"),
     CHARSTAB_ENTRY(&lcs_chars.tab2,	    "tab"),
+    CHARSTAB_ENTRY(&lcs_chars.leadtab2,	    "leadtab"),
     CHARSTAB_ENTRY(&lcs_chars.trail,	    "trail"),
     CHARSTAB_ENTRY(&lcs_chars.lead,	    "lead"),
 #ifdef FEAT_CONCEAL
@@ -5014,6 +5015,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			*(tab[i].cp) = NUL;
 		lcs_chars.tab1 = NUL;
 		lcs_chars.tab3 = NUL;
+		lcs_chars.leadtab1 = NUL;
+		lcs_chars.leadtab3 = NUL;
 
 		if (multispace_len > 0)
 		{
@@ -5149,7 +5152,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
 					 tab[i].name.string);
-		if (tab[i].cp == &lcs_chars.tab2)
+		if (tab[i].cp == &lcs_chars.tab2 ||
+		    tab[i].cp == &lcs_chars.leadtab2)
 		{
 		    if (*s == NUL)
 			return field_value_err(errbuf, errbuflen,
@@ -5180,9 +5184,14 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    lcs_chars.tab2 = c2;
 			    lcs_chars.tab3 = c3;
 			}
+			else if (tab[i].cp == &lcs_chars.leadtab2)
+			{
+			    lcs_chars.leadtab1 = c1;
+			    lcs_chars.leadtab2 = c2;
+			    lcs_chars.leadtab3 = c3;
+			}
 			else if (tab[i].cp != NULL)
 			    *(tab[i].cp) = c1;
-
 		    }
 		    p = s;
 		    break;
@@ -5200,6 +5209,9 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		++p;
 	}
     }
+
+    if (is_listchars && lcs_chars.leadtab2 != NUL && lcs_chars.tab2 == NUL)
+	return e_leadtab_requires_tab;
 
     if (apply)
     {

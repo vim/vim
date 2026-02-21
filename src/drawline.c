@@ -1661,7 +1661,8 @@ win_line(
 	    trailcol += (colnr_T)(ptr - line);
 	}
 	// find end of leading whitespace
-	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL)
+	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL ||
+	    wp->w_lcs_chars.leadtab1 != NUL)
 	{
 	    leadcol = 0;
 	    while (VIM_ISWHITE(ptr[leadcol]))
@@ -3260,6 +3261,18 @@ win_line(
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
+		    int	    lcs_tab1 = wp->w_lcs_chars.tab1;
+		    int	    lcs_tab2 = wp->w_lcs_chars.tab2;
+		    int	    lcs_tab3 = wp->w_lcs_chars.tab3;
+
+		    // check if leadtab is set in 'listchars'
+		    if (wp->w_p_list && wp->w_lcs_chars.leadtab1 != NUL &&
+			(leadcol == 0 || ptr < line + leadcol))
+		    {
+			lcs_tab1 = wp->w_lcs_chars.leadtab1;
+			lcs_tab2 = wp->w_lcs_chars.leadtab2;
+			lcs_tab3 = wp->w_lcs_chars.leadtab3;
+		    }
 #ifdef FEAT_LINEBREAK
 		    char_u  *sbr = get_showbreak_value(wp);
 
@@ -3299,9 +3312,9 @@ win_line(
 			    tab_len += wlv.vcol_off_co;
 
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
-			if (wp->w_p_list && wp->w_lcs_chars.tab1
-						      && old_boguscols > 0
-						      && wlv.n_extra > tab_len)
+			if (wp->w_p_list && lcs_tab1 &&
+			    old_boguscols > 0 &&
+			    wlv.n_extra > tab_len)
 			    tab_len += wlv.n_extra - tab_len;
 # endif
 			if (tab_len > 0)
@@ -3309,14 +3322,13 @@ win_line(
 			    // If wlv.n_extra > 0, it gives the number of chars
 			    // to use for a tab, else we need to calculate the
 			    // width for a tab.
-			    int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
+			    int tab2_len = mb_char2len(lcs_tab2);
 			    len = tab_len * tab2_len;
-			    if (wp->w_lcs_chars.tab3)
-				len += mb_char2len(wp->w_lcs_chars.tab3)
-								    - tab2_len;
+			    if (lcs_tab3)
+				len += mb_char2len(lcs_tab3) - tab2_len;
 			    if (wlv.n_extra > 0)
 				len += wlv.n_extra - tab_len;
-			    c = wp->w_lcs_chars.tab1;
+			    c = lcs_tab1;
 			    p = alloc(len + 1);
 			    if (p == NULL)
 				wlv.n_extra = 0;
@@ -3328,7 +3340,7 @@ win_line(
 				wlv.p_extra_free = p;
 				for (i = 0; i < tab_len; i++)
 				{
-				    int lcs = wp->w_lcs_chars.tab2;
+				    int lcs = lcs_tab2;
 
 				    if (*p == NUL)
 				    {
@@ -3338,9 +3350,8 @@ win_line(
 
 				    // if tab3 is given, use it for the last
 				    // char
-				    if (wp->w_lcs_chars.tab3
-							   && i == tab_len - 1)
-					lcs = wp->w_lcs_chars.tab3;
+				    if (lcs_tab3 && i == tab_len - 1)
+					lcs = lcs_tab3;
 				    p += mb_char2bytes(lcs, p);
 				    wlv.n_extra += mb_char2len(lcs)
 						  - (saved_nextra > 0 ? 1 : 0);
@@ -3380,17 +3391,16 @@ win_line(
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
 		    if (wp->w_p_list)
 		    {
-			c = (wlv.n_extra == 0 && wp->w_lcs_chars.tab3)
-							? wp->w_lcs_chars.tab3
-							: wp->w_lcs_chars.tab1;
+			c = (wlv.n_extra == 0 && lcs_tab3)  ? lcs_tab3
+							    : lcs_tab1;
 #ifdef FEAT_LINEBREAK
 			if (wp->w_p_lbr && wlv.p_extra != NULL
 							&& *wlv.p_extra != NUL)
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
-			    wlv.c_extra = wp->w_lcs_chars.tab2;
-			wlv.c_final = wp->w_lcs_chars.tab3;
+			    wlv.c_extra = lcs_tab2;
+			wlv.c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
