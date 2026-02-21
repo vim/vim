@@ -3595,6 +3595,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|SafeState|,
 		|SafeStateAgain|,
 		|SessionLoadPost|,
+		|SessionLoadPre|,
 		|SessionWritePost|,
 		|ShellCmdPost|,
 		|SigUSR1|,
