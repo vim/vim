@@ -1338,8 +1338,8 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 
 
 blob2list({blob})					*blob2list()*
-		Return a List containing the number value of each byte in Blob
-		{blob}.  Examples: >
+		Return a |List| containing the number value of each byte in
+		|Blob| {blob}.  Examples: >
 			blob2list(0z0102.0304)	returns [1, 2, 3, 4]
 			blob2list(0z)		returns []
 <		Returns an empty List on error.  |list2blob()| does the
@@ -1352,7 +1352,7 @@ blob2list({blob})					*blob2list()*
 
 
 blob2str({blob} [, {options}])				*blob2str()*
-		Return a List of Strings in the current 'encoding' by
+		Return a |List| of |String|s in the current 'encoding' by
 		converting the bytes in {blob} into characters.
 
 		Each <NL> byte in the blob is interpreted as the end of a
@@ -2443,7 +2443,7 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 							*E106*
 		The optional "output" item in {options} specifies the returned
 		diff format.  The following values are supported:
-		    indices	Return a List of the starting and ending
+		    indices	Return a |List| of the starting and ending
 				indices and a count of the strings in each
 				diff hunk.
 		    unified	Return the unified diff output as a String.
@@ -2568,9 +2568,10 @@ digraph_get({chars})					*digraph_get()* *E1214*
 
 
 digraph_getlist([{listall}])				*digraph_getlist()*
-		Return a list of digraphs.  If the {listall} argument is given
-		and it is TRUE, return all digraphs, including the default
-		digraphs.  Otherwise, return only user-defined digraphs.
+		Return a |List| of digraphs.  If the {listall} argument is
+		given and it is TRUE, return all digraphs, including the
+		default digraphs.  Otherwise, return only user-defined
+		digraphs.
 
 		The characters will be converted from Unicode to 'encoding'
 		when needed.  This does require the conservation to be
@@ -4350,9 +4351,9 @@ getcmdwintype()						*getcmdwintype()*
 
 
 getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
-		Return a list of command-line completion matches.  The String
-		{type} argument specifies what for.  The following completion
-		types are supported:
+		Return a |List| of command-line completion matches.  The
+		String {type} argument specifies what for.  The following
+		completion types are supported:
 
 		arglist		file names in argument list
 		augroup		autocmd groups
@@ -4892,7 +4893,7 @@ getpos({expr})						*getpos()*
 		'> is a large number equal to |v:maxcol|.
 		A very large column number equal to |v:maxcol| can be returned,
 		in which case it means "after the end of the line".
-		If {expr} is invalid, returns a list with all zeros.
+		If {expr} is invalid, returns a |List| with all zeros.
 
 		This can be used to save and restore the position of a mark: >
 			let save_a_mark = getpos("'a")
@@ -5078,7 +5079,7 @@ getreginfo([{regname}])					*getreginfo()*
 
 
 getregion({pos1}, {pos2} [, {opts}])			*getregion()*
-		Returns the list of strings from {pos1} to {pos2} from a
+		Returns the |List| of strings from {pos1} to {pos2} from a
 		buffer.
 
 		{pos1} and {pos2} must both be |List|s with four numbers.
@@ -5138,7 +5139,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 
 
 getregionpos({pos1}, {pos2} [, {opts}])			*getregionpos()*
-		Same as |getregion()|, but returns a list of positions
+		Same as |getregion()|, but returns a |List| of positions
 		describing the buffer text segments bound by {pos1} and
 		{pos2}.
 		The segments are a pair of positions for every line: >
@@ -5825,8 +5826,8 @@ hlexists({name})					*hlexists()*
 
 
 hlget([{name} [, {resolve}]])				*hlget()*
-		Returns a List of all the highlight group attributes.  If the
-		optional {name} is specified, then returns a List with only
+		Returns a |List| of all the highlight group attributes.  If the
+		optional {name} is specified, then returns a |List| with only
 		the attributes of the specified highlight group.  Returns an
 		empty List if the highlight group {name} is not present.
 
@@ -8675,7 +8676,7 @@ readblob({fname} [, {offset} [, {size}]])		*readblob()*
 
 
 readdir({directory} [, {expr} [, {dict}]])		*readdir()*
-		Return a list with file and directory names in {directory}.
+		Return a |List| with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
 		things, such as limiting the number of matches.
 		The list will be sorted (case sensitive), see the {dict}
@@ -8735,7 +8736,7 @@ readdir({directory} [, {expr} [, {dict}]])		*readdir()*
 
 readdirex({directory} [, {expr} [, {dict}]])		*readdirex()*
 		Extended version of |readdir()|.
-		Return a list of Dictionaries with file and directory
+		Return a |List| of |Dictionaries| with file and directory
 		information in {directory}.
 		This is useful if you want to get the attributes of file and
 		directory at the same time as getting a list of a directory.
@@ -9816,7 +9817,7 @@ server2client({clientid}, {string})			*server2client()*
 
 
 serverlist()						*serverlist()*
-		Return a list of available server names, one per line.
+		Return a |List| of available server names, one per line.
 		When there are no servers or the information is not available
 		an empty string is returned.  See also |clientserver|.
 		{only available when compiled with the |+clientserver| feature}
@@ -11017,8 +11018,8 @@ str2float({string} [, {quoted}])			*str2float()*
 
 
 str2list({string} [, {utf8}])				*str2list()*
-		Return a list containing the number values which represent
-		each character in String {string}.  Examples: >
+		Return a |List| containing the number values which represent
+		each character in |String| {string}.  Examples: >
 			str2list(" ")		returns [32]
 			str2list("ABC")		returns [65, 66, 67]
 <		|list2str()| does the opposite.
@@ -11496,7 +11497,7 @@ substitute({string}, {pat}, {sub}, {flags})		*substitute()*
 
 
 swapfilelist()						*swapfilelist()*
-		Returns a list of swap file names, like what "vim -r" shows.
+		Returns a |List| of swap file names, like what "vim -r" shows.
 		See the |-r| command argument.  The 'directory' option is used
 		for the directories to inspect.  If you only want to get a
 		list of swap files in the current directory then temporarily
@@ -11980,7 +11981,7 @@ test_ functions are documented here: |test-functions-details|
 
 
 timer_info([{id}])					*timer_info()*
-		Return a list with information about timers.
+		Return a |List| with information about timers.
 		When {id} is given only information about this timer is
 		returned.  When timer {id} does not exist an empty list is
 		returned.
@@ -12668,8 +12669,8 @@ win_gotoid({expr})					*win_gotoid()*
 
 
 win_id2tabwin({expr})					*win_id2tabwin()*
-		Return a list with the tab number and window number of window
-		with ID {expr}: [tabnr, winnr].
+		Return a |List| with the tab number and window number of
+		window with ID {expr}: [tabnr, winnr].
 		Return [0, 0] if the window cannot be found.
 
 		Can also be used as a |method|: >

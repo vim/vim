@@ -3951,7 +3951,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|String| and is the |:find| command argument.  The second argument is
 	a |Boolean| and is set to |v:true| when the function is called to get
 	a List of command-line completion matches for the |:find| command.
-	The function should return a List of strings.
+	The function should return a |List| of strings.
 
 	The function is called only once per |:find| command invocation.
 	The function can process all the directories specified in 'path'.
@@ -8896,7 +8896,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	This option specifies a function to be used to perform tag searches
 	(including |taglist()|).
-	The function gets the tag pattern and should return a List of matching
+	The function gets the tag pattern and should return a |List| of matching
 	tags.  See |tag-function| for an explanation of how to write the
 	function and an example.  The value can be the name of a function, a
 	|lambda| or a |Funcref|.  See |option-value-function| for more
