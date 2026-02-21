@@ -817,7 +817,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 	    if (first)
 		first = FALSE;
 	    else
-		ga_concat_len(&ga, (char_u *)", ", 2);
+		GA_CONCAT_LITERAL(&ga, ", ");
 
 	    tofree = string_quote(hi->hi_key, FALSE);
 	    if (tofree != NULL)
@@ -825,7 +825,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 		ga_concat(&ga, tofree);
 		vim_free(tofree);
 	    }
-	    ga_concat_len(&ga, (char_u *)": ", 2);
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    s = echo_string_core(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID,
 						 FALSE, restore_copyID, TRUE);
 	    if (s != NULL)

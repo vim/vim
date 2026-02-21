@@ -2585,11 +2585,11 @@ type_name_tuple(type_T *type, char **tofree)
 
     if (type->tt_argcount <= 0)
 	// empty tuple
-	ga_concat_len(&ga, (char_u *)"any", 3);
+	GA_CONCAT_LITERAL(&ga, "any");
     else
     {
 	if (type->tt_args == NULL)
-	    ga_concat_len(&ga, (char_u *)"[unknown]", 9);
+	    GA_CONCAT_LITERAL(&ga, "[unknown]");
 	else
 	{
 	    for (i = 0; i < type->tt_argcount; ++i)
@@ -2606,7 +2606,7 @@ type_name_tuple(type_T *type, char **tofree)
 		if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 		    goto failed;
 		if (varargs && i == type->tt_argcount - 1)
-		    ga_concat_len(&ga, (char_u *)"...", 3);
+		    GA_CONCAT_LITERAL(&ga, "...");
 		ga_concat_len(&ga, arg_type.string, arg_type.length);
 		VIM_CLEAR(arg_free);
 	    }
@@ -2694,7 +2694,7 @@ type_name_func(type_T *type, char **tofree)
 	if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 	    goto failed;
 	if (varargs && i == type->tt_argcount - 1)
-	    ga_concat_len(&ga, (char_u *)"...", 3);
+	    GA_CONCAT_LITERAL(&ga, "...");
 	else if (i >= type->tt_min_argcount)
 	    *((char *)ga.ga_data + ga.ga_len++) = '?';
 	ga_concat_len(&ga, arg_type.string, arg_type.length);
@@ -2702,7 +2702,7 @@ type_name_func(type_T *type, char **tofree)
     }
     if (type->tt_argcount < 0)
 	// any number of arguments
-	ga_concat_len(&ga, (char_u *)"...", 3);
+	GA_CONCAT_LITERAL(&ga, "...");
 
     if (type->tt_member == &t_void)
 	STRCPY((char *)ga.ga_data + ga.ga_len, ")");

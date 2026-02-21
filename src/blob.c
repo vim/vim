@@ -276,13 +276,13 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
 
     // Store bytes in the growarray.
     ga_init2(&ga, 1, 4000);
-    ga_concat_len(&ga, (char_u *)"0z", 2);
+    GA_CONCAT_LITERAL(&ga, "0z");
     for (i = 0; i < blob_len(blob); i++)
     {
 	size_t	numbuflen;
 
 	if (i > 0 && (i & 3) == 0)
-	    ga_concat_len(&ga, (char_u *)".", 1);
+	    GA_CONCAT_LITERAL(&ga, ".");
 	numbuflen = vim_snprintf_safelen((char *)numbuf, NUMBUFLEN,
 	    "%02X", blob_get(blob, i));
 	ga_concat_len(&ga, numbuf, numbuflen);

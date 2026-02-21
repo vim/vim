@@ -666,7 +666,7 @@ serverGetVimNames(Display *dpy)
 	    if (WindowValid(dpy, (Window)w))
 	    {
 		ga_concat(&ga, p + 1);
-		ga_concat_len(&ga, (char_u *)"\n", 1);
+		GA_CONCAT_LITERAL(&ga, "\n");
 	    }
 	    while (*p != 0)
 		p++;
@@ -1343,7 +1343,7 @@ server_parse_message(
 			    ga_concat(&reply,
 				   (char_u *)_(e_invalid_expression_received));
 			    ga_append(&reply, 0);
-			    ga_concat_len(&reply, (char_u *)"-c 1", 4);
+			    GA_CONCAT_LITERAL(&reply, "-c 1");
 			}
 			ga_append(&reply, NUL);
 			(void)AppendPropCarefully(dpy, resWindow, commProperty,

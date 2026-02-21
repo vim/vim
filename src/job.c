@@ -1452,7 +1452,7 @@ job_start(
 	for (i = 0; i < argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat_len(&ga, (char_u *)"  ", 2);
+		GA_CONCAT_LITERAL(&ga, "  ");
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
 	ga_append(&ga, NUL);

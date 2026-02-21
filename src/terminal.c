@@ -5401,7 +5401,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 dump_is_corrupt(garray_T *gap)
 {
-    ga_concat_len(gap, (char_u *)"CORRUPT", 7);
+    GA_CONCAT_LITERAL(gap, "CORRUPT");
 }
 
     static void

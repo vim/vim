@@ -2246,7 +2246,7 @@ enumWindowsGetNames(HWND hwnd, LPARAM lparam)
 
     // Add the name to the list
     ga_concat(ga, (char_u *)server);
-    ga_concat_len(ga, (char_u *)"\n", 1);
+    GA_CONCAT_LITERAL(ga, "\n");
     return TRUE;
 }
 

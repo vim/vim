@@ -4294,7 +4294,7 @@ getcmdkeycmd(
 	}
 	else if (c1 == K_SNR)
 	{
-	    ga_concat_len(&line_ga, (char_u *)"<SNR>", 5);
+	    GA_CONCAT_LITERAL(&line_ga, "<SNR>");
 	}
 	else
 	{
