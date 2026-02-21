@@ -560,7 +560,6 @@ screen_line(
 	redraw_this = redraw_next;
 	redraw_next = force || char_needs_redraw(off_from + char_cells,
 			      off_to + char_cells, endcol - col - char_cells);
-
 #ifdef FEAT_GUI
 # ifdef FEAT_GUI_MSWIN
 	changed_this = changed_next;
@@ -641,6 +640,23 @@ screen_line(
 		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
 		&& ScreenLines[off_to] != 0)
 	{
+	    schar_T base_line = 0;
+	    int base_attr = 0;
+	    u8char_T base_uc = 0;
+	    int have_base = FALSE;
+# ifdef FEAT_PROP_POPUP
+	    have_base = popup_get_base_screen_cell(row, col + coloff,
+						    &base_line, &base_attr,
+						    &base_uc);
+# endif
+	    if (have_base)
+	    {
+		ScreenLines[off_to] = base_line;
+		ScreenAttrs[off_to] = base_attr;
+		if (enc_utf8)
+		    ScreenLinesUC[off_to] = base_uc;
+	    }
+
 	    int bg_char_cells = 1;
 	    if (enc_utf8 && ScreenLinesUC[off_to] != 0)
 		bg_char_cells = utf_char2cells(ScreenLinesUC[off_to]);
@@ -784,7 +800,23 @@ skip_opacity:
 		}
 	    }
 	    if (char_cells == 2)
+	    {
 		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
+#ifdef FEAT_PROP_POPUP
+		// For popup with opacity: ensure the second cell of a wide
+		// character is empty, not a background glyph.
+		if (screen_opacity_popup != NULL
+			&& (flags & SLF_POPUP)
+			&& enc_utf8)
+		{
+		    ScreenLines[off_to + 1] = 0;
+		    if (ScreenLinesUC != NULL)
+			ScreenLinesUC[off_to + 1] = 0;
+		    // Keep the attribute so upper popups can blend correctly.
+		    ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+		}
+#endif
+	    }
 
 #if defined(FEAT_GUI) || defined(UNIX)
 	    // The bold trick makes a single column of pixels appear in the
@@ -2421,25 +2453,6 @@ screen_fill(
 		if (screen_opacity_popup != NULL && c == ' '
 						       && ScreenLines[off] != 0)
 		{
-		    int bg_char_cells = 1;
-		    if (enc_utf8 && ScreenLinesUC[off] != 0)
-			bg_char_cells = utf_char2cells(ScreenLinesUC[off]);
-
-		    // For wide background character, check if the next cell
-		    // is also being filled with space.  If not, the wide char
-		    // would be partially covered, so don't show it.
-		    if (bg_char_cells == 2)
-		    {
-			if (col + 1 >= end_col)
-			    // At the edge, skip wide char.
-			    goto skip_opacity_fill;
-			// In screen_fill, we're filling with 'c' which is ' '.
-			// The next cell will also be filled with c2 (usually ' ').
-			// If c2 is not space, skip the wide char.
-			if (c2 != ' ')
-			    goto skip_opacity_fill;
-		    }
-
 		    int popup_attr = get_wcr_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
 		    // Blend both foreground and background for padding area
@@ -2448,7 +2461,6 @@ screen_fill(
 		    screen_char(off, row, col);
 		    goto next_col;
 		}
-skip_opacity_fill:
 #endif
 #if defined(FEAT_GUI) || defined(UNIX)
 		// The bold trick may make a single row of pixels appear in
