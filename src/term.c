@@ -7401,6 +7401,14 @@ got_code_from_term(char_u *code, int len)
 							     name[0], name[1]);
 # endif
 		}
+		else if (i >= 0 && name[0] == 'K' && VIM_ISDIGIT(name[1]))
+		{
+		    // Would replace existing entry with keypad key - skip.
+# ifdef FEAT_EVAL
+		    ch_log(NULL, "got_code_from_term(): Skipping entry %c%c in favor of %c%c with matching keys %s",
+			    name[0], name[1], termcodes[i].name[0], termcodes[i].name[1], str);
+# endif
+		}
 		else
 		{
 		    if (i >= 0)
