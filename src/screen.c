@@ -666,10 +666,15 @@ screen_line(
 	    opacity_blank = TRUE;
 	    // Keep the underlying character and blend its foreground color
 	    // from popup background color to original color.
+	    // Combine the popup window color with the character's own
+	    // attribute (e.g. match highlight) so that its background
+	    // color is preserved on blank cells.
+	    int char_attr = ScreenAttrs[off_from];
 	    int popup_attr = get_wcr_attr(screen_opacity_popup);
+	    int combined = hl_combine_attr(popup_attr, char_attr);
 	    int blend = screen_opacity_popup->w_popup_blend;
 	    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
-						popup_attr, blend, TRUE);
+						combined, blend, TRUE);
 	    screen_char(off_to, row, col + coloff);
 	    // For wide background character, also update the second cell.
 	    if (bg_char_cells == 2)
