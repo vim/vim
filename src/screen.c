@@ -848,7 +848,7 @@ skip_opacity:
 #ifdef FEAT_GUI
 		&& !gui.in_use
 #endif
-		&& col + coloff > 0)
+		&& col + coloff > 0 && off_to > 0)
 	{
 	    if (ScreenAttrs[off_to] == ScreenAttrs[off_to - 1])
 	    {
