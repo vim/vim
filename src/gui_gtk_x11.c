@@ -6624,11 +6624,6 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     void
 gui_mch_update(void)
 {
-#ifdef GDK_WINDOWING_WAYLAND
-    // avoid early redraws; compositor does redraw
-    if (gui.is_wayland)
-       return;
-#endif
     int cnt = 0;	// prevent endless loop
     while (g_main_context_pending(NULL) && !vim_is_input_buf_full()
 								&& ++cnt < 100)
