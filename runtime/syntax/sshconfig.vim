@@ -221,6 +221,7 @@ syn keyword sshconfigKeyword ProxyUseFdpass
 syn keyword sshconfigKeyword PubkeyAcceptedAlgorithms
 syn keyword sshconfigKeyword PubkeyAcceptedKeyTypes
 syn keyword sshconfigKeyword PubkeyAuthentication
+syn keyword sshconfigKeyword RefuseConnection
 syn keyword sshconfigKeyword RekeyLimit
 syn keyword sshconfigKeyword RemoteCommand
 syn keyword sshconfigKeyword RemoteForward
@@ -248,7 +249,9 @@ syn keyword sshconfigKeyword UseBlacklistedKeys
 syn keyword sshconfigKeyword User
 syn keyword sshconfigKeyword UserKnownHostsFile
 syn keyword sshconfigKeyword VerifyHostKeyDNS
+syn keyword sshconfigKeyword VersionAddendum
 syn keyword sshconfigKeyword VisualHostKey
+syn keyword sshconfigKeyword WarnWeakCrypto
 syn keyword sshconfigKeyword XAuthLocation
 
 " Deprecated/ignored/remove/unsupported keywords
