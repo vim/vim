@@ -1922,6 +1922,18 @@ def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   return res
 enddef
 
+def Test_call_def_comments()
+  var lines =<< trim END
+      def Func(n: number)
+        echo n
+      enddef
+      Func( # comment
+        1
+        )
+  END
+  v9.CheckSourceDefSuccess(lines)
+enddef
+
 def Test_call_def_varargs()
   assert_fails('g:MyDefVarargs()', 'E119:', '', 1, 'Test_call_def_varargs')
   g:MyDefVarargs('one')->assert_equal('one,foo')
