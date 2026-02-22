@@ -1817,9 +1817,6 @@ screen_start_highlight(int attr)
 	{
 	    if (aep->ae_u.cterm.fg_rgb != INVALCOLOR)
 		term_fg_rgb_color(aep->ae_u.cterm.fg_rgb);
-	    else
-		// Reset to default foreground color (SGR 39)
-		out_str((char_u *)"\033[39m");
 	}
 	else
 #endif
