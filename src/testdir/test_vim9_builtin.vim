@@ -4983,6 +4983,22 @@ def Test_typename()
   endif
   var l: list<func(list<number>): any> = [function('min')]
   assert_equal('list<func(list<number>): any>', typename(l))
+
+  # Check that circular list/dict references don't cause infinite recursion.
+  # Use legacy script where lv_type is not set so the copyID mechanism is used.
+  v9.CheckSourceLegacySuccess([
+        'let circ_l = []',
+        'call add(circ_l, circ_l)',
+        "call assert_equal('list<list<any>>', typename(circ_l))",
+        'let circ_d = {}',
+        "let circ_d['self'] = circ_d",
+        "call assert_equal('dict<dict<any>>', typename(circ_d))",
+  ])
+
+  # Shared (non-circular) references must not be treated as circular.
+  # repeat() makes all elements point to the same inner list/dict object.
+  assert_equal('list<list<string>>', [[" "]]->repeat(3)->typename())
+  assert_equal('list<dict<number>>', [{'a': 1}]->repeat(3)->typename())
 enddef
 
 def Test_undofile()
