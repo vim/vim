@@ -1197,22 +1197,31 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 /*
  * Convert the string "str", from encoding "from" to encoding "to".
  */
-    static char_u *
-convert_string(char_u *str, char_u *from, char_u *to)
+    static int
+convert_string(string_T *str, char_u *from, char_u *to, string_T *ret)
 {
     vimconv_T	vimconv;
 
     vimconv.vc_type = CONV_NONE;
     if (convert_setup(&vimconv, from, to) == FAIL)
-	return NULL;
+	return FAIL;
     vimconv.vc_fail = TRUE;
     if (vimconv.vc_type == CONV_NONE)
-	str = vim_strsave(str);
+    {
+	ret->string = vim_strnsave(str->string, str->length);
+	if (ret->string == NULL)
+	    ret->length = 0;
+	else
+	    ret->length = str->length;
+    }
     else
-	str = string_convert(&vimconv, str, NULL);
+    {
+	ret->length = str->length;
+	ret->string = string_convert(&vimconv, str->string, (int *)&ret->length);
+    }
     convert_setup(&vimconv, NULL, NULL);
 
-    return str;
+    return (ret->string == NULL) ? FAIL : OK;
 }
 
 /*
@@ -1238,13 +1247,12 @@ blob_from_string(char_u *str, blob_T *blob)
  * allocated string is returned and "start_idx" is moved forward by one byte.
  * On return, "start_idx" points to next byte to process in blob.
  */
-    static char_u *
-string_from_blob(blob_T *blob, long *start_idx)
+    static int
+string_from_blob(blob_T *blob, long *start_idx, string_T *ret)
 {
     garray_T	str_ga;
     long	blen;
     int		idx;
-    char_u	*ret_str = NULL;
 
     ga_init2(&str_ga, sizeof(char), 80);
 
@@ -1266,13 +1274,19 @@ string_from_blob(blob_T *blob, long *start_idx)
     }
 
     if (str_ga.ga_data != NULL)
-	ret_str = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+    {
+	ret->string = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
+	ret->length = str_ga.ga_len;
+    }
     else
-	ret_str = vim_strsave((char_u *)"");
+    {
+	ret->string = vim_strnsave((char_u *)"", 0);
+	ret->length = 0;
+    }
     *start_idx = idx;
 
     ga_clear(&str_ga);
-    return ret_str;
+    return (ret->string == NULL) ? FAIL : OK;
 }
 
 /*
@@ -1320,56 +1334,57 @@ normalize_encoding_name(char_u *enc_skipped)
  */
     static void
 append_converted_string_to_list(
-	char_u *converted,
+	string_T *converted,
 	int validate_utf8,
 	list_T *list,
 	char_u *from_encoding)
 {
-    if (converted != NULL)
+    if (converted->string != NULL)
     {
 	// After conversion, the output is a valid UTF-8 string (NUL-terminated)
-	int converted_len = (int)STRLEN(converted);
-
 	// Split by newlines and add to list
-	char_u *p = converted;
-	char_u *end = converted + converted_len;
+	char_u *p = converted->string;
+	char_u *end = converted->string + converted->length;
 	while (p < end)
 	{
-	    char_u *line_start = p;
+	    string_T	line;
+	    char_u	*line_start = p;
+
 	    while (p < end && *p != NL)
 		p++;
 
 	    // Add this line to the result list
-	    char_u *line = vim_strnsave(line_start, p - line_start);
-	    if (line != NULL)
+	    line.length = (size_t)(p - line_start);
+	    line.string = vim_strnsave(line_start, line.length);
+	    if (line.string != NULL)
 	    {
-		if (validate_utf8 && !utf_valid_string(line, NULL))
+		if (validate_utf8 && !utf_valid_string(line.string, NULL))
 		{
-		    vim_free(line);
+		    vim_free(line.string);
 		    semsg(_(e_str_encoding_from_failed), p_enc);
-		    vim_free(converted);
+		    vim_free(converted->string);
 		    return; // Stop processing
 		}
-		if (list_append_string(list, line, -1) == FAIL)
+		if (list_append_string(list, line.string, (int)line.length) == FAIL)
 		{
-		    vim_free(line);
-		    vim_free(converted);
+		    vim_free(line.string);
+		    vim_free(converted->string);
 		    return; // Stop processing on append failure
 		}
-		vim_free(line);
+		vim_free(line.string);
 	    }
 	    else
 	    {
 		// Allocation failure: report error and stop processing
 		emsg(_(e_out_of_memory));
-		vim_free(converted);
+		vim_free(converted->string);
 		return;
 	    }
 
 	    if (*p == NL)
 		p++;
 	}
-	vim_free(converted);
+	vim_free(converted->string);
     }
     else
     {
@@ -1378,17 +1393,17 @@ append_converted_string_to_list(
 }
 
     static int
-append_validated_line_to_list(char_u *line, int validate_utf8, list_T *list)
+append_validated_line_to_list(string_T *line, int validate_utf8, list_T *list)
 {
-    if (validate_utf8 && !utf_valid_string(line, NULL))
+    if (validate_utf8 && !utf_valid_string(line->string, NULL))
     {
 	semsg(_(e_str_encoding_from_failed), p_enc);
-	vim_free(line);
+	vim_free(line->string);
 	return FAIL;
     }
 
-    int ret = list_append_string(list, line, -1);
-    vim_free(line);
+    int ret = list_append_string(list, line->string, (int)line->length);
+    vim_free(line->string);
     return ret;
 }
 
@@ -1477,12 +1492,16 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	    goto done;
 	}
 	vimconv.vc_fail = TRUE;
+
 	// Use string_convert_ext with explicit input length
-	int inlen = blen;
-	char_u *converted = string_convert_ext(&vimconv, (char_u *)blob_ga.ga_data, &inlen, NULL);
+	string_T    converted;
+
+	converted.length = blen;
+	converted.string =
+	    string_convert_ext(&vimconv, (char_u *)blob_ga.ga_data, (int *)&converted.length, NULL);
 	convert_setup(&vimconv, NULL, NULL);
 	ga_clear(&blob_ga);
-	append_converted_string_to_list(converted, validate_utf8, rettv->vval.v_list, from_encoding);
+	append_converted_string_to_list(&converted, validate_utf8, rettv->vval.v_list, from_encoding);
     }
     else
     {
@@ -1490,27 +1509,29 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	idx = 0;
 	while (idx < blen)
 	{
-	    char_u	*str;
+	    string_T	str;
 
-	    str = string_from_blob(blob, &idx);
-	    if (str == NULL)
+	    if (string_from_blob(blob, &idx, &str) != OK)
 		break;
 
 	    if (from_encoding != NULL)
 	    {
 		// from_encoding_raw is guaranteed non-NULL whenever from_encoding != NULL
-		char_u *converted = convert_string(str, from_encoding_raw, p_enc);
-		vim_free(str);
-		str = converted;
+		int	    res;
+		string_T    converted;
+
+		res = convert_string(&str, from_encoding_raw, p_enc, &converted);
+		vim_free(str.string);
+		if (res != OK)
+		{
+		    semsg(_(e_str_encoding_from_failed), from_encoding);
+		    goto done;
+		}
+		str.string = converted.string;
+		str.length = converted.length;
 	    }
 
-	    if (str == NULL)
-	    {
-		semsg(_(e_str_encoding_from_failed), from_encoding);
-		goto done;
-	    }
-
-	    if (append_validated_line_to_list(str, validate_utf8, rettv->vval.v_list) == FAIL)
+	    if (append_validated_line_to_list(&str, validate_utf8, rettv->vval.v_list) == FAIL)
 		goto done;
 	}
     }
@@ -1564,29 +1585,39 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	if (li->li_tv.v_type != VAR_STRING)
 	    continue;
 
-	char_u	*str = li->li_tv.vval.v_string;
+	string_T    str = {li->li_tv.vval.v_string, 0};
 
-	if (str == NULL)
-	    str = (char_u *)"";
+	if (str.string == NULL)
+	{
+	    str.string = (char_u *)"";
+	    str.length = 0;
+	}
+	else
+	    str.length = STRLEN(str.string);
 
 	if (to_encoding != NULL)
 	{
-	    str = convert_string(str, p_enc, to_encoding);
-	    if (str == NULL)
+	    int		res;
+	    string_T	converted;
+
+	    res = convert_string(&str, p_enc, to_encoding, &converted);
+	    if (res != OK)
 	    {
 		semsg(_(e_str_encoding_to_failed), to_encoding);
 		goto done;
 	    }
+	    str.string = converted.string;
+	    str.length = converted.length;
 	}
 
 	if (li != list->lv_first)
 	    // Each list string item is separated by a newline in the blob
 	    ga_append(&blob->bv_ga, NL);
 
-	blob_from_string(str, blob);
+	blob_from_string(str.string, blob);
 
 	if (to_encoding != NULL)
-	    vim_free(str);
+	    vim_free(str.string);
     }
 
 done:

@@ -3838,7 +3838,8 @@ clip_provider_copy(char_u *reg, char_u *provider)
     }
 
     for (int i = 0; i < y_ptr->y_size; i++)
-	if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL)
+	if (list_append_string(list, y_ptr->y_array[i].string,
+	    (int)y_ptr->y_array[i].length) == FAIL)
 	{
 	    free_callback(&callback);
 	    list_unref(list);

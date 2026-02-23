@@ -1097,7 +1097,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 
     // yanked text contents
     for (n = 0; n < reg->y_size; n++)
-	list_append_string(list, reg->y_array[n].string, -1);
+	list_append_string(list, reg->y_array[n].string, (int)reg->y_array[n].length);
     list->lv_lock = VAR_FIXED;
     (void)dict_add_list(v_event, "regcontents", list);
 
@@ -2793,17 +2793,17 @@ get_reg_contents(int regname, int flags)
     if (flags & GREG_LIST)
     {
 	list_T	*list = list_alloc();
-	int	error = FALSE;
 
 	if (list == NULL)
 	    return NULL;
 	for (i = 0; i < y_current->y_size; ++i)
-	    if (list_append_string(list, y_current->y_array[i].string, -1) == FAIL)
-		error = TRUE;
-	if (error)
 	{
-	    list_free(list);
-	    return NULL;
+	    if (list_append_string(list, y_current->y_array[i].string,
+		(int)y_current->y_array[i].length) == FAIL)
+	    {
+		list_free(list);
+		return NULL;
+	    }
 	}
 	return (char_u *)list;
     }

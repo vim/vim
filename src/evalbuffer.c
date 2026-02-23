@@ -819,9 +819,16 @@ get_buffer_lines(
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
-	    if (list_append_string(rettv->vval.v_list,
-				 ml_get_buf(buf, start++, FALSE), -1) == FAIL)
+	{
+	    string_T	s;
+
+	    s.string = ml_get_buf(buf, start, FALSE);
+	    s.length = ml_get_buf_len(buf, start);
+	    ++start;
+	    if (list_append_string(rettv->vval.v_list, s.string,
+		(int)s.length) == FAIL)
 		break;
+	}
     }
 }
 

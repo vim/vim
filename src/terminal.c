@@ -6704,10 +6704,12 @@ f_term_getansicolors(typval_T *argvars, typval_T *rettv)
     state = vterm_obtain_state(term->tl_vterm);
     for (index = 0; index < 16; index++)
     {
+	size_t	hexbuflen;
+
 	vterm_state_get_palette_color(state, index, &color);
-	sprintf((char *)hexbuf, "#%02x%02x%02x",
-		color.red, color.green, color.blue);
-	if (list_append_string(list, hexbuf, 7) == FAIL)
+	hexbuflen = vim_snprintf_safelen((char *)hexbuf, sizeof(hexbuf),
+	    "#%02x%02x%02x", color.red, color.green, color.blue);
+	if (list_append_string(list, hexbuf, (int)hexbuflen) == FAIL)
 	    return;
     }
 }

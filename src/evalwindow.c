@@ -293,14 +293,16 @@ get_framelayout(frame_T *fr, list_T *l, int outer)
     {
 	if (fr->fr_win != NULL)
 	{
-	    list_append_string(fr_list, (char_u *)"leaf", -1);
+	    list_append_string(fr_list, (char_u *)"leaf", STRLEN_LITERAL("leaf"));
 	    list_append_number(fr_list, fr->fr_win->w_id);
 	}
     }
     else
     {
-	list_append_string(fr_list,
-	     fr->fr_layout == FR_ROW ?  (char_u *)"row" : (char_u *)"col", -1);
+	if (fr->fr_layout == FR_ROW)
+	    list_append_string(fr_list, (char_u *)"row", STRLEN_LITERAL("row"));
+	else
+	    list_append_string(fr_list, (char_u *)"col", STRLEN_LITERAL("col"));
 
 	win_list = list_alloc();
 	if (win_list == NULL)
