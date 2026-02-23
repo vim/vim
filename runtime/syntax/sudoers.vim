@@ -65,19 +65,20 @@ syn match   sudoersUserNetgroupInRunas contained '+\l[-a-z0-9_]*\>' nextgroup=@s
 syn match   sudoersUserAliasInRunas   contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersUserRunas       skipwhite skipnl
 
 syn match   sudoersHostAlias          contained '\<\u[A-Z0-9_]*\>'  nextgroup=sudoersHostAliasEquals  skipwhite skipnl
-syn match   sudoersHostNameInList     contained '\<\l\+\>'          nextgroup=@sudoersHostList        skipwhite skipnl
+syn match   sudoersHostNameInList     contained '\<\l[a-z0-9_-]*\>' nextgroup=@sudoersHostList        skipwhite skipnl
 syn match   sudoersIPAddrInList       contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersHostList skipwhite skipnl
 syn match   sudoersNetworkInList      contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersHostList skipwhite skipnl
 syn match   sudoersHostNetgroupInList contained '+\l\+\>'           nextgroup=@sudoersHostList        skipwhite skipnl
 syn match   sudoersHostAliasInList    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersHostList        skipwhite skipnl
 
-syn match   sudoersHostName           contained '\<\l\+\>'          nextgroup=@sudoersParameter       skipwhite skipnl
+syn match   sudoersHostName           contained '\<\l[a-z0-9_-]*\>'           nextgroup=@sudoersParameter skipwhite skipnl
 syn match   sudoersIPAddr             contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersParameter skipwhite skipnl
 syn match   sudoersNetwork            contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersParameter skipwhite skipnl
 syn match   sudoersHostNetgroup       contained '+\l\+\>'           nextgroup=@sudoersParameter       skipwhite skipnl
 syn match   sudoersHostAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
+syn keyword sudoersHostAll            contained ALL                 nextgroup=@sudoersParameter       skipwhite skipnl
 
-syn match   sudoersHostNameInSpec     contained '\<\l\+\>'          nextgroup=@sudoersHostSpec        skipwhite skipnl
+syn match   sudoersHostNameInSpec     contained '\<\l[a-z0-9_-]*\>' nextgroup=@sudoersHostSpec        skipwhite skipnl
 syn match   sudoersIPAddrInSpec       contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersHostSpec skipwhite skipnl
 syn match   sudoersNetworkInSpec      contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersHostSpec skipwhite skipnl
 syn match   sudoersHostNetgroupInSpec contained '+\l\+\>'           nextgroup=@sudoersHostSpec        skipwhite skipnl
@@ -128,7 +129,7 @@ syn cluster sudoersHostInList       contains=sudoersHostNegationInList,sudoersHo
 syn cluster sudoersCmndInList       contains=sudoersCmndNegationInList,sudoersCmndNameInList,sudoersCmndAliasInList
 
 syn cluster sudoersUser             contains=sudoersUserNegation,sudoersUserName,sudoersUID,sudoersGroup,sudoersGID,sudoersUserNetgroup,sudoersUserAliasRef
-syn cluster sudoersHost             contains=sudoersHostNegation,sudoersHostName,sudoersIPAddr,sudoersNetwork,sudoersHostNetgroup,sudoersHostAliasRef
+syn cluster sudoersHost             contains=sudoersHostNegation,sudoersHostName,sudoersIPAddr,sudoersNetwork,sudoersHostNetgroup,sudoersHostAll,sudoersHostAliasRef
 
 syn cluster sudoersUserInSpec       contains=sudoersUserNegationInSpec,sudoersUserNameInSpec,sudoersUIDInSpec,sudoersGroupInSpec,sudoersGIDInSpec,sudoersUserNetgroupInSpec,sudoersUserAliasInSpec
 syn cluster sudoersHostInSpec       contains=sudoersHostNegationInSpec,sudoersHostNameInSpec,sudoersIPAddrInSpec,sudoersNetworkInSpec,sudoersHostNetgroupInSpec,sudoersHostAliasInSpec
@@ -339,6 +340,7 @@ hi def link sudoersHostName                 String
 hi def link sudoersIPAddr                   Number
 hi def link sudoersNetwork                  Number
 hi def link sudoersHostNetgroup             PreProc
+hi def link sudoersHostAll                  Special
 hi def link sudoersHostAliasRef             PreProc
 hi def link sudoersHostNameInSpec           String
 hi def link sudoersIPAddrInSpec             Number
