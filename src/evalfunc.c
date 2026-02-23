@@ -11780,8 +11780,7 @@ f_setrepeat(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     dict = argvars[0].vval.v_dict;
-    if (dict != NULL)
-	set_repeat_dict(dict);
+    set_repeat_dict(dict);
 }
 
 /*
