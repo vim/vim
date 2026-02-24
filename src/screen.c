@@ -1730,7 +1730,6 @@ start_search_hl(void)
 
     end_search_hl();  // just in case it wasn't called before
     last_pat_prog(&screen_search_hl.rm);
-    screen_search_hl.attr = HL_ATTR(HLF_L);
 }
 
 /*
@@ -4542,9 +4541,9 @@ draw_tabline(void)
     int		modified;
     int		c;
     int		len;
-    int		attr_sel = HL_ATTR(HLF_TPS);
-    int		attr_nosel = HL_ATTR(HLF_TP);
-    int		attr_fill = HL_ATTR(HLF_TPF);
+    int		attr_sel;
+    int		attr_nosel;
+    int		attr_fill;
     char_u	*p;
     int		room;
     int		use_sep_chars = (t_colors < 8
@@ -4555,6 +4554,7 @@ draw_tabline(void)
 					    && !p_tgc
 #endif
 					    );
+    bool	override_success;
 
 #if defined(FEAT_TABPANEL)
     col = firstwin->w_wincol;
@@ -4592,12 +4592,20 @@ draw_tabline(void)
 	if (tabwidth < 6)
 	    tabwidth = 6;
 
-	attr = attr_nosel;
 	tabcount = 0;
 	for (tp = first_tabpage; tp != NULL && col < Columns - 4;
 							     tp = tp->tp_next)
 	{
 	    scol = col;
+
+	    override_success = push_highlight_overrides(
+		    tp->tp_curwin->w_hl, tp->tp_curwin->w_hl_len);
+
+	    // Update them each time since highlight override might change them.
+	    attr_sel = HL_ATTR(HLF_TPS);
+	    attr_nosel = HL_ATTR(HLF_TP);
+	    attr_fill = HL_ATTR(HLF_TPF);
+	    attr = attr_nosel;
 
 	    if (tp->tp_topframe == topframe)
 		attr = attr_sel;
@@ -4680,6 +4688,9 @@ draw_tabline(void)
 	    ++tabcount;
 	    while (scol < col)
 		TabPageIdxs[scol++] = tabcount;
+
+	    if (override_success)
+		pop_highlight_overrides();
 	}
 
 	if (use_sep_chars)

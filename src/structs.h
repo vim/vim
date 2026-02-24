@@ -368,6 +368,8 @@ typedef struct
     sctx_T	wo_script_ctx[WV_COUNT];	// SCTXs for window-local options
 # define w_p_script_ctx w_onebuf_opt.wo_script_ctx
 #endif
+    char_u	*wo_whl;
+#define w_p_whl w_onebuf_opt.wo_whl	// 'winhighlight'
 } winopt_T;
 
 /*
@@ -3947,6 +3949,17 @@ typedef struct
 } fill_chars_T;
 
 /*
+ * Represents current highlight overrides (used by 'winhighlight' option). the
+ * highlight group with ID "from" will be overridden by the highlight group with
+ * ID "to"
+ */
+typedef struct
+{
+    int from;
+    int to;
+} hl_override_T;
+
+/*
  * Structure which contains all information that belongs to a window
  *
  * All row numbers are relative to the start of the window, except w_winrow.
@@ -4356,6 +4369,9 @@ struct window_S
 #ifdef FEAT_RUBY
     void	*w_ruby_ref;
 #endif
+
+    hl_override_T *w_hl;
+    int		w_hl_len;
 };
 
 /*

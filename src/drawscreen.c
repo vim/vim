@@ -1503,6 +1503,7 @@ win_update(win_T *wp)
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     int		save_got_int;
 #endif
+    bool	override_success;
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     // This needs to be done only for the first window when update_screen() is
@@ -1511,7 +1512,11 @@ win_update(win_T *wp)
     {
 	did_update_one_window = TRUE;
 # ifdef FEAT_SEARCH_EXTRA
+	// Must push overrides so that hlsearch highlighting is affected.
+	override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 	start_search_hl();
+	if (override_success)
+	    pop_highlight_overrides();
 # endif
 # ifdef FEAT_CLIPBOARD
 	// When Visual area changed, may have to update selection.
@@ -1566,6 +1571,8 @@ win_update(win_T *wp)
 	return;
     }
 #endif
+
+    override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
 #ifdef FEAT_SEARCH_EXTRA
     init_search_hl(wp, &screen_search_hl);
@@ -2829,6 +2836,9 @@ win_update(win_T *wp)
 	    recursive = FALSE;
 	}
     }
+
+    if (override_success)
+	pop_highlight_overrides();
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     // restore got_int, unless CTRL-C was hit while redrawing

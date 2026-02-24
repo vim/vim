@@ -181,6 +181,22 @@ typedef struct
 #endif
 } hl_group_T;
 
+typedef struct hl_overrides_S hl_overrides_T;
+struct hl_overrides_S
+{
+    hl_override_T   *arr;
+    int		    len;
+    hl_overrides_T  *next; // Used to handle recursive calls
+
+    int attr[HLF_COUNT]; // highlight_attr[] before being updated.
+};
+
+static hl_overrides_T *overrides = NULL;
+
+// Synced with highlight_attr, each is the highlight group id for each attr. If
+// an element is -1, then there is no attr for it.
+static int highlight_ids[HLF_COUNT];
+
 // highlight groups for 'highlight' option
 static garray_T highlight_ga;
 #define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
@@ -3767,6 +3783,20 @@ set_hl_attr(
 }
 
 /*
+ * Check if highlight id is overridden, and return the overriding highlight id.
+ * Otherwise return the original id if no override.
+ */
+    static int
+syn_override(int id)
+{
+    if (overrides != NULL)
+	for (int k = 0; k < overrides->len; k++)
+	    if (overrides->arr[k].from == id)
+		return overrides->arr[k].to;
+    return id;
+}
+
+/*
  * Lookup a highlight group name and return its ID.
  * If it is not found, 0 is returned.
  */
@@ -3784,8 +3814,10 @@ syn_name2id(char_u *name)
     for (i = highlight_ga.ga_len; --i >= 0; )
 	if (HL_TABLE()[i].sg_name_u != NULL
 		&& STRCMP(name_u, HL_TABLE()[i].sg_name_u) == 0)
+	{
 	    break;
-    return i + 1;
+	}
+    return syn_override(i + 1);
 }
 
 /*
@@ -4047,7 +4079,7 @@ syn_get_final_id(int hl_id)
 	hl_id = sgp->sg_link;
     }
 
-    return hl_id;
+    return syn_override(hl_id);
 }
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -4222,7 +4254,10 @@ highlight_changed(void)
 
     // Clear all attributes.
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+    {
 	highlight_attr[hlf] = 0;
+	highlight_ids[hlf] = -1;
+    }
 
     // First set all attributes to their default value.
     // Then use the attributes from the 'highlight' option.
@@ -4309,6 +4344,7 @@ highlight_changed(void)
 		}
 	    }
 	    highlight_attr[hlf] = attr;
+	    highlight_ids[hlf] = id;
 
 	    p = skip_to_option_part(p);	    // skip comma and spaces
 	}
@@ -5399,3 +5435,62 @@ f_hlset(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
 }
 #endif
+
+/*
+ * Set the current highlight override to "arr". Returns true if successful
+ */
+    bool
+push_highlight_overrides(hl_override_T *arr, int len)
+{
+    hl_overrides_T *set;
+
+    if (arr == NULL)
+	return false;
+
+    set = ALLOC_ONE(hl_overrides_T);
+    if (set == NULL)
+	return false;
+
+    set->arr = arr;
+    set->len = len;
+
+    // Push to front of list
+    set->next = overrides;
+    overrides = set;
+
+    memcpy(set->attr, highlight_attr, sizeof(highlight_attr));
+
+    // Update highlight_attr[] array
+    for (int i = 0; i < len; i++)
+    {
+	hl_override_T *override = arr + i;
+
+	for (int k = 0; k < HLF_COUNT; k++)
+	    if (highlight_ids[k] != -1 && override->from == highlight_ids[k])
+	    {
+		highlight_attr[k] = syn_id2attr(override->to);
+		break;
+	    }
+    }
+
+    return true;
+}
+
+/*
+ * Pop the current highlight override (if any) from the stack. This should
+ * always be paired with a *successful* push.
+ */
+    void
+pop_highlight_overrides(void)
+{
+    hl_overrides_T *set = overrides;
+
+    if (overrides == NULL)
+	return;
+
+    overrides = set->next;
+
+    // Set highlight_attr[] to original version before push.
+    memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
+    vim_free(set);
+}

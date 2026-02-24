@@ -1387,6 +1387,7 @@ enum
     , WV_WFB
     , WV_WFH
     , WV_WFW
+    , WV_WHL
     , WV_WRAP
 #ifdef FEAT_SIGNS
     , WV_SCL

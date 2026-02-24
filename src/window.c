@@ -1550,6 +1550,16 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     newp->w_wrow = oldp->w_wrow;
     newp->w_fraction = oldp->w_fraction;
     newp->w_prev_fraction_row = oldp->w_prev_fraction_row;
+
+    if (oldp->w_hl != NULL)
+    {
+	newp->w_hl = (hl_override_T *)vim_memsave((char_u *)oldp->w_hl,
+		sizeof(hl_override_T) * oldp->w_hl_len);
+	newp->w_hl_len = oldp->w_hl_len;
+    }
+    else
+	newp->w_hl = NULL;
+
     copy_jumplist(oldp, newp);
 #ifdef FEAT_QUICKFIX
     if (flags & WSP_NEWLOC)
@@ -2493,6 +2503,7 @@ win_init_empty(win_T *wp)
     wp->w_prev_pcmark.lnum = 0;
     wp->w_prev_pcmark.col = 0;
     wp->w_topline = 1;
+    wp->w_hl = NULL;
 #ifdef FEAT_DIFF
     wp->w_topfill = 0;
 #endif
@@ -5957,6 +5968,8 @@ win_free(
 #ifdef FEAT_RUBY
     ruby_window_free(wp);
 #endif
+
+    vim_free(wp->w_hl);
 
     clear_winopt(&wp->w_onebuf_opt);
     clear_winopt(&wp->w_allbuf_opt);
