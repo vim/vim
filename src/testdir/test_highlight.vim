@@ -1355,4 +1355,58 @@ func Test_hlset()
   call assert_true(hlget('hlg11')[0].cleared)
 endfunc
 
+" Test for the 'winhighlight' option
+func Test_winhighlight()
+  CheckScreendump
+
+  let lines =<< trim END
+  set cursorline
+  call setline(1, ['One', 'Two', 'Three'])
+  vsplit
+  call setline(1, ['Four', 'Five', 'Six'])
+  tabnew
+  tabnew
+  tabfirst
+  END
+  call writefile(lines, 'Xtest_winhighlight', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight', {'rows': 8})
+  call TermWait(buf)
+
+
+  " Test that window highlight groups are actually local per window
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=CursorLine:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_2', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd h\<CR>\<Esc>:setlocal whl=\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_3', {})
+
+  " Test that "setglobal whl=..." sets the winhighlight for all windows except
+  " the current one
+  call term_sendkeys(buf, ":setglobal whl=CursorLine:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_4', {})
+
+  call term_sendkeys(buf, ":setglobal whl=\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_5', {})
+
+  " Test that VirtSplit in winhighlight only affects border if window is on the
+  " left side of the separator
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
