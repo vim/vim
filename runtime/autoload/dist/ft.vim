@@ -2382,6 +2382,8 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # Neon
+  "neon": "neon",
   # NetLinx
   "axs": "netlinx",
   "axi": "netlinx",
