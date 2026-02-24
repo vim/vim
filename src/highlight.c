@@ -3789,7 +3789,7 @@ set_hl_attr(
     static int
 syn_override(int id)
 {
-    if (overrides != NULL)
+    if (overrides != NULL && overrides->arr != NULL)
 	for (int k = 0; k < overrides->len; k++)
 	    if (overrides->arr[k].from == id)
 		return overrides->arr[k].to;
@@ -5444,9 +5444,6 @@ push_highlight_overrides(hl_override_T *arr, int len)
 {
     hl_overrides_T *set;
 
-    if (arr == NULL)
-	return false;
-
     set = ALLOC_ONE(hl_overrides_T);
     if (set == NULL)
 	return false;
@@ -5459,6 +5456,31 @@ push_highlight_overrides(hl_override_T *arr, int len)
     overrides = set;
 
     memcpy(set->attr, highlight_attr, sizeof(highlight_attr));
+
+    if (set->next != NULL)
+	// We don't want to transfer over any attrs from the previous override.
+	// This prevents another window 'winhighlight' affecting the current
+	// window highlight groups.
+	memcpy(highlight_attr, set->next->attr, sizeof(highlight_attr));
+
+    // If "arr" is NULL, then this will essentially act like if
+    // "overrides" was NULL.
+    if (arr == NULL)
+    {
+	set = set->next;
+	// Restore previous highlight_attr
+	while (set != NULL)
+	{
+	    if (set->arr == NULL)
+	    {
+		set = set->next;
+		continue;
+	    }
+	    memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
+	    break;
+	}
+	return true;
+    }
 
     // Update highlight_attr[] array
     for (int i = 0; i < len; i++)
