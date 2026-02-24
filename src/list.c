@@ -1232,22 +1232,59 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 list_concat(list_T *l1, list_T *l2, typval_T *tv)
 {
     list_T	*l;
+    int		len1 = l1 == NULL ? 0 : l1->lv_len;
+    int		len2 = l2 == NULL ? 0 : l2->lv_len;
+    int		i;
+    listitem_T	*item;
 
-    // make a copy of the first list.
-    if (l1 == NULL)
+    if (len1 + len2 == 0)
+    {
 	l = list_alloc();
-    else
-	l = list_copy(l1, FALSE, TRUE, 0);
+	if (l == NULL)
+	    return FAIL;
+	++l->lv_refcount;
+	tv->v_type = VAR_LIST;
+	tv->v_lock = 0;
+	tv->vval.v_list = l;
+	return OK;
+    }
+
+    // allocate all items at once for efficiency
+    l = list_alloc_with_items(len1 + len2);
     if (l == NULL)
 	return FAIL;
+
+    i = 0;
+    if (len1 > 0)
+    {
+	CHECK_LIST_MATERIALIZE(l1);
+	for (item = l1->lv_first; item != NULL && !got_int;
+		item = item->li_next)
+	{
+	    typval_T new_tv;
+
+	    copy_tv(&item->li_tv, &new_tv);
+	    list_set_item(l, i++, &new_tv);
+	}
+    }
+    if (len2 > 0)
+    {
+	CHECK_LIST_MATERIALIZE(l2);
+	for (item = l2->lv_first; item != NULL && !got_int;
+		item = item->li_next)
+	{
+	    typval_T new_tv;
+
+	    copy_tv(&item->li_tv, &new_tv);
+	    list_set_item(l, i++, &new_tv);
+	}
+    }
+
+    ++l->lv_refcount;
     tv->v_type = VAR_LIST;
     tv->v_lock = 0;
     tv->vval.v_list = l;
-    if (l1 == NULL)
-	++l->lv_refcount;
-
-    // append all items from the second list
-    return list_extend(l, l2, NULL);
+    return OK;
 }
 
     list_T *
