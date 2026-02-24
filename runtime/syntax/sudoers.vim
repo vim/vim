@@ -72,8 +72,8 @@ syn match   sudoersHostNetgroupInList contained '+\l\+\>'           nextgroup=@s
 syn match   sudoersHostAliasInList    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersHostList        skipwhite skipnl
 
 syn match   sudoersHostName           contained '\<\l[a-z0-9_-]*\>'           nextgroup=@sudoersParameter skipwhite skipnl
-syn match   sudoersIPAddr             contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersParameter skipwhite skipnl
-syn match   sudoersNetwork            contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersParameter skipwhite skipnl
+syn match   sudoersIPAddr             contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\>' nextgroup=@sudoersParameter skipwhite skipnl
+syn match   sudoersNetwork            contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\>' nextgroup=@sudoersParameter skipwhite skipnl
 syn match   sudoersHostNetgroup       contained '+\l\+\>'           nextgroup=@sudoersParameter       skipwhite skipnl
 syn match   sudoersHostAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
 syn keyword sudoersHostAll            contained ALL                 nextgroup=@sudoersParameter       skipwhite skipnl
