@@ -1402,8 +1402,37 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_5', {})
 
-  " Test that VirtSplit in winhighlight only affects border if window is on the
-  " left side of the separator
+  " Test that VertSplit in winhighlight only affects border if window that
+  " winhighlight is local to is on the left side of the separator/column
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  " Shouldn't affect separator
+  call term_sendkeys(buf, ":setlocal whl=VertSplit:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_6', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd h\<CR>")
+  call TermWait(buf)
+
+  " Should affect separator
+  call term_sendkeys(buf, ":setlocal whl=VertSplit:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_7', {})
+
+  " Test that popup menu highlight is affected by current window only
+  call term_sendkeys(buf, ":setlocal whl=Pmenu:ErrorMsg\<CR>iw\<C-x>\<C-v>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_8', {})
+
+  " Switch to other window (shouldn't be affeccted)
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>iw\<C-x>\<C-v>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_9', {})
 
   " clean up
   call StopVimInTerminal(buf)
