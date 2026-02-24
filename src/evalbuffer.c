@@ -804,7 +804,7 @@ get_buffer_lines(
 	if (start >= 1 && start <= buf->b_ml.ml_line_count)
 	    rettv->vval.v_string =
 		vim_strnsave(ml_get_buf(buf, start, FALSE),
-		ml_get_buf_len(buf, start));
+		    ml_get_buf_len(buf, start));
 	else
 	    rettv->vval.v_string = vim_strnsave((char_u *)"", 0);
     }
