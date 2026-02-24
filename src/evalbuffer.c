@@ -801,19 +801,12 @@ get_buffer_lines(
 
     if (!retlist)
     {
-	string_T    s;
-
 	if (start >= 1 && start <= buf->b_ml.ml_line_count)
-	{
-	    s.string = ml_get_buf(buf, start, FALSE);
-	    s.length = ml_get_buf_len(buf, start);
-	}
+	    rettv->vval.v_string =
+		vim_strnsave(ml_get_buf(buf, start, FALSE),
+		ml_get_buf_len(buf, start));
 	else
-	{
-	    s.string = (char_u *)"";
-	    s.length = 0;
-	}
-	rettv->vval.v_string = vim_strnsave(s.string, s.length);
+	    rettv->vval.v_string = vim_strnsave((char_u *)"", 0);
     }
     else
     {
