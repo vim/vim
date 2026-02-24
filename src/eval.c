@@ -4132,15 +4132,24 @@ eval_addblob(typval_T *tv1, typval_T *tv2)
     blob_T  *b1 = tv1->vval.v_blob;
     blob_T  *b2 = tv2->vval.v_blob;
     blob_T  *b = blob_alloc();
-    int	    i;
+    int	    len1, len2;
 
     if (b == NULL)
 	return;
 
-    for (i = 0; i < blob_len(b1); i++)
-	ga_append(&b->bv_ga, blob_get(b1, i));
-    for (i = 0; i < blob_len(b2); i++)
-	ga_append(&b->bv_ga, blob_get(b2, i));
+    len1 = (int)blob_len(b1);
+    len2 = (int)blob_len(b2);
+
+    if (len1 + len2 > 0 && ga_grow(&b->bv_ga, len1 + len2) == OK)
+    {
+	if (len1 > 0)
+	    mch_memmove((char_u *)b->bv_ga.ga_data,
+		    (char_u *)b1->bv_ga.ga_data, (size_t)len1);
+	if (len2 > 0)
+	    mch_memmove((char_u *)b->bv_ga.ga_data + len1,
+		    (char_u *)b2->bv_ga.ga_data, (size_t)len2);
+	b->bv_ga.ga_len = len1 + len2;
+    }
 
     clear_tv(tv1);
     rettv_blob_set(tv1, b);
