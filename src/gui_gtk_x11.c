@@ -1720,6 +1720,13 @@ gui_mch_init_check(void)
     }
 #endif
 
+#if GTK_CHECK_VERSION(3,10,0) && !defined(HAVE_WAYLAND)
+    // Without Wayland display protocol support compiled in, force the X11 GDK
+    // backend to avoid display issues when running under a Wayland compositor
+    // (e.g., cmdline bottom half hidden in tiny builds, see patch 9.1.1585).
+    gdk_set_allowed_backends("x11");
+#endif
+
 #ifdef FEAT_GUI_GNOME
     if (gtk_socket_id == 0)
 	using_gnome = 1;
