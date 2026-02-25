@@ -3402,7 +3402,7 @@ highlight_list_one(int id)
     oid = syn_override_arr(curwin->w_hl, curwin->w_hl_len, id);
     if (oid != id)
     {
-	(void)syn_list_header(didh, 9999, id);
+	(void)syn_list_header(didh, 9999, oid);
 	didh = TRUE;
 	msg_puts_attr("overridden by", HL_ATTR(HLF_D));
 	msg_putchar(' ');

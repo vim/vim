@@ -720,7 +720,7 @@ func Test_colorcolumn()
   call StopVimInTerminal(buf)
 endfunc
 
-func XTest_colorcolumn_bri()
+func Test_colorcolumn_bri()
   CheckScreendump
 
   " check 'colorcolumn' when 'breakindent' is set
@@ -736,7 +736,7 @@ func XTest_colorcolumn_bri()
   call StopVimInTerminal(buf)
 endfunc
 
-func XTest_colorcolumn_sbr()
+func Test_colorcolumn_sbr()
   CheckScreendump
 
   " check 'colorcolumn' when 'showbreak' is set
@@ -1133,6 +1133,15 @@ func Test_hlget()
                       \ 'term': {'bold': v:true}}], hlget('hlgB', 1))
     call assert_equal([{'id': hlgCid, 'name': 'hlgC',
                       \ 'term': {'bold': v:true}}], hlget('hlgC', v:true))
+
+    highlight hlgD term=italic
+
+    setlocal whl=hlgA:hlgD
+    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
+                      \ 'term': {'italic': v:true}}], hlget('hlgA', v:true))
+    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
+                      \ 'term': {'bold': v:true}}], hlget('hlgA'))
+    setlocal whl&
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -1567,8 +1576,8 @@ func Test_winhighlight_syntax()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_syntax_3', {})
 
-"   call delete("tmp.dump")
-"   call term_dumpwrite(buf, "tmp.dump")
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=A:ErrorMsg,C:ErrorMsg\<CR>")
+  call TermWait(buf)
 
   call StopVimInTerminal(buf)
 endfunc
