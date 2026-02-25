@@ -224,6 +224,8 @@ static void gui_do_one_color(int idx, int do_menu, int do_tooltip);
 static int  set_group_colors(char_u *name, guicolor_T *fgp, guicolor_T *bgp, int do_menu, int use_norm, int do_tooltip);
 static void hl_do_font(int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip, int free_font);
 #endif
+static int syn_override_arr(hl_override_T *arr, int len, int id);
+static int syn_get_final_id_int(hl_override_T *arr, int len, int hl_id);
 
 /*
  * The default highlight groups.  These are compiled-in for fast startup and
@@ -3356,6 +3358,7 @@ highlight_list_one(int id)
 {
     hl_group_T	    *sgp;
     int		    didh = FALSE;
+    int		    oid;
 
     sgp = &HL_TABLE()[id - 1];	    // index is ID minus one
 
@@ -3396,7 +3399,18 @@ highlight_list_one(int id)
 				    0, sgp->sg_font_name, "font");
 #endif
 
-    if (sgp->sg_link && !got_int)
+    oid = syn_override_arr(curwin->w_hl, curwin->w_hl_len, id);
+    if (oid != id)
+    {
+	(void)syn_list_header(didh, 9999, id);
+	didh = TRUE;
+	msg_puts_attr("overridden by", HL_ATTR(HLF_D));
+	msg_putchar(' ');
+	msg_outtrans(syn_id2name(oid));
+	msg_putchar(' ');
+	msg_puts_attr("due to 'winhighlight'", HL_ATTR(HLF_D));
+    }
+    else if (sgp->sg_link && !got_int)
     {
 	(void)syn_list_header(didh, 9999, id);
 	didh = TRUE;
@@ -3785,6 +3799,16 @@ set_hl_attr(
     }
 }
 
+    static int
+syn_override_arr(hl_override_T *arr, int len, int id)
+{
+    if (arr != NULL)
+	for (int k = 0; k < len; k++)
+	    if (arr[k].from == id)
+		return arr[k].to;
+    return id;
+}
+
 /*
  * Check if highlight id is overridden, and return the overriding highlight id.
  * Otherwise return the original id if no override.
@@ -3792,10 +3816,8 @@ set_hl_attr(
     static int
 syn_override(int id)
 {
-    if (overrides != NULL && overrides->arr != NULL)
-	for (int k = 0; k < overrides->len; k++)
-	    if (overrides->arr[k].from == id)
-		return overrides->arr[k].to;
+    if (overrides != NULL)
+	return syn_override_arr(overrides->arr, overrides->len, id);
     return id;
 }
 
@@ -4060,11 +4082,8 @@ syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 }
 #endif
 
-/*
- * Translate a group ID to the final group ID (following links).
- */
-    int
-syn_get_final_id(int hl_id)
+    static int
+syn_get_final_id_int(hl_override_T *arr, int len, int hl_id)
 {
     int		count;
     hl_group_T	*sgp;
@@ -4082,14 +4101,24 @@ syn_get_final_id(int hl_id)
 	if (sgp->sg_link == 0 || sgp->sg_link > highlight_ga.ga_len)
 	    break;
 
-	// This is to handle highlight groups that are overriden but are in the
+	// This is to handle highlight groups that are overridden but are in the
 	// middle of a link chain.
-	hl_id = syn_override(hl_id);
+	hl_id = syn_override_arr(arr, len, hl_id);
 	if (tmp != hl_id)
 	    continue;
 	hl_id = sgp->sg_link;
     }
-    return syn_override(hl_id);
+    return syn_override_arr(arr, len, hl_id);
+}
+
+/*
+ * Translate a group ID to the final group ID (following links).
+ */
+    int
+syn_get_final_id(int hl_id)
+{
+    return syn_get_final_id_int(overrides == NULL ? NULL : overrides->arr,
+	    overrides == NULL ? 0 : overrides->len, hl_id);
 }
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -4973,7 +5002,7 @@ highlight_get_attr_dict(int hlattr)
 /*
  * Return the attributes of the highlight group at index 'hl_idx' as a
  * Dictionary. If 'resolve_link' is TRUE, then resolves the highlight group
- * links recursively.
+ * links recursively and also resolves highlight group overrides.
  */
     static dict_T *
 highlight_get_info(int hl_idx, int resolve_link)
@@ -4998,12 +5027,11 @@ highlight_get_info(int hl_idx, int resolve_link)
 
     if (sgp->sg_link && resolve_link)
     {
-	// resolve the highlight group link recursively
-	while (sgp->sg_link)
-	{
-	    hlgid = sgp->sg_link;
-	    sgp = &HL_TABLE()[sgp->sg_link - 1];
-	}
+	// resolve the highlight group link recursively and check if it is
+	// overridden.
+	int actual = syn_get_final_id_int(
+		curwin->w_hl, curwin->w_hl_len, hlgid);
+	sgp = &HL_TABLE()[actual - 1];
     }
 
     if (sgp->sg_term != 0)
