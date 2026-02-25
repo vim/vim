@@ -1280,7 +1280,7 @@ string_from_blob(blob_T *blob, long *start_idx, string_T *ret)
     }
     else
     {
-	ret->string = vim_strnsave((char_u *)"", 0);
+	ret->string = vim_strsave((char_u *)"");
 	ret->length = 0;
     }
     *start_idx = idx;
