@@ -3167,14 +3167,15 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    {
 		if (blend_fg)
 		{
-		    // blend_fg=TRUE: blend bg text fg from popup bg color to white
-		    // At blend=0: fg becomes popup bg (blue, invisible - opaque popup)
-		    // At blend=100: fg is white (visible - transparent popup)
-		    // Always use white (0xFFFFFF) as the target color for consistency
+		    // blend_fg=TRUE: fade underlying text toward popup bg.
 		    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 		    {
+			int base_fg = 0xFFFFFF;
+			if (char_aep != NULL
+				&& char_aep->ae_u.gui.fg_color != INVALCOLOR)
+			    base_fg = char_aep->ae_u.gui.fg_color;
 			new_en.ae_u.gui.fg_color = blend_colors(
-				popup_aep->ae_u.gui.bg_color, 0xFFFFFF, blend);
+				base_fg, popup_aep->ae_u.gui.bg_color, blend);
 		    }
 		}
 		else if (popup_aep->ae_u.gui.fg_color != INVALCOLOR)
@@ -3230,12 +3231,15 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		// Blend RGB colors for termguicolors mode
 		if (blend_fg)
 		{
-		    // blend_fg=TRUE: blend bg text fg from popup bg color to white
-		    // Always use white (0xFFFFFF) as the target color for consistency
+		    // blend_fg=TRUE: fade underlying text toward popup bg.
 		    if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		    {
+			int base_fg = 0xFFFFFF;
+			if (char_aep != NULL
+				&& char_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+			    base_fg = char_aep->ae_u.cterm.fg_rgb;
 			new_en.ae_u.cterm.fg_rgb = blend_colors(
-				popup_aep->ae_u.cterm.bg_rgb, 0xFFFFFF, blend);
+				base_fg, popup_aep->ae_u.cterm.bg_rgb, blend);
 		    }
 		}
 		else if (popup_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
