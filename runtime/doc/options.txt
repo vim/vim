@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Feb 21
+*options.txt*	For Vim version 9.2.  Last change: 2026 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9120,8 +9120,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	|ConPTY| support depends on the platform.  Windows 10 October 2018
 	Update is the first version that supports ConPTY, however it is still
-	considered unstable.  ConPTY might become stable in the next release
-	of Windows 10.  winpty support needs to be installed.  If neither is
+	considered unstable.  ConPTY has become stable with the initial release
+	of Windows 11.  winpty support needs to be installed.  If neither is
 	supported then you cannot open a terminal window.
 
 						*'terse'* *'noterse'*

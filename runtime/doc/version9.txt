@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Feb 16
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52585,10 +52585,13 @@ work in progress.
 Popups ~
 ------
 - Support for transparency, see |popup-opacity|.
+- 'previewpopup' supports the same values as 'completepopup' (except for
+  "align").
 
 Other ~
 -----
-The new |xdg.vim| script for full XDG compatibility is included
+- The new |xdg.vim| script for full XDG compatibility is included.
+- |ConPTY| support is considered stable as of Windows 11.
 
 							*changed-9.3*
 Changed~

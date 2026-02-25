@@ -1,4 +1,4 @@
-*windows.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*windows.txt*	For Vim version 9.2.  Last change: 2026 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -954,11 +954,20 @@ windows.
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
 settings.  The option is a comma-separated list of values:
+	border		border style (see 'pumborder')
+	borderhighlight	highlight group for the popup border characters
+	close		show close button: "on" (default) or "off", and if
+			the value is "on", it must be set after border.
 	height		maximum height of the popup
-	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
+	resize		show resize handle: "on" (default) or "off"
+	shadow		"off" (default) or "on" using |hl-PmenuShadow|
+	width		maximum width of the popup
+
 Example: >
 	:set previewpopup=height:10,width:60
+	:set previewpopup=border:single,borderhilight:PmenuBorder
+	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
 
 A few peculiarities:
 - If the file is in a buffer already, it will be re-used.  This will allow for

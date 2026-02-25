@@ -612,6 +612,10 @@ list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	common_type(typval2type(&li->li_tv, copyID, type_gap, TVTT_DO_MEMBER),
 					member_type, &member_type, type_gap);
 
+    // Reset copyID so that a shared reference to this list (not a circular
+    // reference) can be processed again to get the correct type.
+    l->lv_copyID = 0;
+
     return get_list_type(member_type, type_gap);
 }
 
@@ -661,6 +665,9 @@ tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (ga_grow(&tuple_types_ga, 1) == FAIL)
 	{
 	    ga_clear(&tuple_types_ga);
+	    // Reset copyID so that a shared reference to this tuple can be
+	    // processed again.
+	    tuple->tv_copyID = 0;
 	    return NULL;
 	}
 	((type_T **)tuple_types_ga.ga_data)[tuple_types_ga.ga_len] = type;
@@ -669,6 +676,10 @@ tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
     type_T *tuple_type = get_tuple_type(&tuple_types_ga, type_gap);
     ga_clear(&tuple_types_ga);
+
+    // Reset copyID so that a shared reference to this tuple (not a circular
+    // reference) can be processed again to get the correct type.
+    tuple->tv_copyID = 0;
 
     return tuple_type;
 }
@@ -715,6 +726,10 @@ dict_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     while (dict_iterate_next(&iter, &value) != NULL)
 	common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
 					member_type, &member_type, type_gap);
+
+    // Reset copyID so that a shared reference to this dict (not a circular
+    // reference) can be processed again to get the correct type.
+    d->dv_copyID = 0;
 
     return get_dict_type(member_type, type_gap);
 }

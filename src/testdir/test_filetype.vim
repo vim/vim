@@ -580,6 +580,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ncf: ['file.ncf'],
     neomuttlog: ['/home/user/.neomuttdebug1'],
     neomuttrc: ['Neomuttrc', '.neomuttrc', '.neomuttrc-file', '/.neomutt/neomuttrc', '/.neomutt/neomuttrc-file', 'Neomuttrc', 'Neomuttrc-file', 'any/.neomutt/neomuttrc', 'any/.neomutt/neomuttrc-file', 'neomuttrc', 'neomuttrc-file' ],
+    neon: ['file.neon'],
     netlinx: ['file.axs', 'file.axi'],
     netrc: ['.netrc'],
     nginx: ['file.nginx', 'nginxfile.conf', 'filenginx.conf', 'any/etc/nginx/file', 'any/usr/local/nginx/conf/file', 'any/nginx/file.conf'],

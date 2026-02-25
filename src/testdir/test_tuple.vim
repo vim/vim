@@ -2238,6 +2238,14 @@ func Test_tuple_typename()
   END
   call v9.CheckSourceDefAndScriptSuccess(lines)
 
+  " Shared (non-circular) references must not be treated as circular.
+  " repeat() makes all elements point to the same inner tuple object.
+  let lines =<< trim END
+    call assert_equal('tuple<tuple<number, number>, tuple<number, number>, tuple<number, number>>', ((1, 2),)->repeat(3)->typename())
+    call assert_equal('list<tuple<number, number>>', [(1, 2)]->repeat(3)->typename())
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+
   " When a tuple item is used in a "for" loop, the type is tuple<any>
   let lines =<< trim END
     vim9script

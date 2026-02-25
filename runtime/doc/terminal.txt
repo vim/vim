@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -490,8 +490,8 @@ On more recent versions of MS-Windows 10 (beginning with the "October 2018
 Update"), winpty is no longer required.  On those versions, |:terminal| will use
 Windows' built-in support for hosting terminal applications, "ConPTY".  When
 ConPTY is in use, there may be rendering artifacts regarding ambiguous-width
-characters.  If you encounter any such issues, install "winpty".  Until the
-ConPTY problems have been fixed "winpty" will be preferred.
+characters.  If you encounter any such issues, install "winpty".  ConPTY
+support is considered stable with the first release of Windows 11.
 
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername
