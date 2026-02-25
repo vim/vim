@@ -5514,3 +5514,108 @@ pop_highlight_overrides(void)
     memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
     vim_free(set);
 }
+
+/*
+ * Parse the 'winhighlight' option and return array. Returns NULL on failure or
+ * if empty option. If failure, then errmsg is set.
+ */
+    hl_override_T *
+parse_winhighlight(char_u *opt, int *len, char **errmsg)
+{
+
+    char_u	    *p = opt;
+    hl_override_T   *arr;
+    int		    i = 0;
+    int		    num = 1;
+
+    if (*p == NUL)
+	return NULL;
+
+    // Get number of overrides first so we can allocate array
+    while ((p = vim_strchr(p, ',')) != NULL)
+    {
+	p++;
+	num++;
+    }
+
+    arr = ALLOC_MULT(hl_override_T, num);
+    if (arr == NULL)
+    {
+	*errmsg = e_out_of_memory;
+	return NULL;
+    }
+
+    p = opt;
+
+    while (true)
+    {
+	hl_override_T *override = arr + i++;
+	char_u	*fromname = p, *toname;
+	char_u	*tmp;
+	int	fromlen, tolen;
+	int	fromid, toid;
+	bool	last = false;
+
+	p = vim_strchr(p, ':');
+
+	if (p == NULL)
+	{
+	    *errmsg = e_invalid_argument;
+	    goto fail;
+	}
+
+	fromlen = p - fromname; // Get hl for "from"
+	p++; // Skip colon ':'
+
+	if (*p == NUL)
+	{
+	    *errmsg = e_invalid_argument;
+	    goto fail;
+	}
+
+	toname = p;
+	tmp = vim_strchr(p, ',');
+
+	// Get hl for "to", must check for no trailing comma in case last
+	// element.
+	if (tmp == NULL)
+	{
+	    last = true;
+	    tolen = (int)STRLEN(p);
+	}
+	else
+	{
+	    tolen = tmp - toname;
+	    tmp++;
+	}
+	p = tmp;
+
+	if (syn_check_group(fromname, fromlen) == 0
+		|| syn_check_group(toname, tolen) == 0)
+	{
+	    *errmsg = e_invalid_argument;
+	    goto fail;
+	}
+
+	fromid = syn_namen2id(fromname, fromlen);
+	toid = syn_namen2id(toname, tolen);
+
+	if (fromid == 0 || toid == 0)
+	{
+	    *errmsg = e_invalid_argument;
+	    goto fail;
+	}
+
+	override->from = fromid;
+	override->to = toid;
+
+	if (last)
+	    break;
+    }
+
+    *len = num;
+    return arr;
+fail:
+    vim_free(arr);
+    return NULL;
+}

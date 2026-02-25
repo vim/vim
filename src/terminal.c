@@ -3192,7 +3192,7 @@ cell2attr(
 	    else
 		def = FALSE;
 	}
-	
+
 	if (def)
 	{
 	    if (is_default_fg)

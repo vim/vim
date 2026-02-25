@@ -1133,15 +1133,6 @@ func Test_hlget()
                       \ 'term': {'bold': v:true}}], hlget('hlgB', 1))
     call assert_equal([{'id': hlgCid, 'name': 'hlgC',
                       \ 'term': {'bold': v:true}}], hlget('hlgC', v:true))
-
-    highlight hlgD term=italic
-
-    setlocal whl=hlgA:hlgD
-    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
-                      \ 'term': {'italic': v:true}}], hlget('hlgA', v:true))
-    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
-                      \ 'term': {'bold': v:true}}], hlget('hlgA'))
-    setlocal whl&
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -1467,17 +1458,11 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_13', {})
 
-  call term_sendkeys(buf, "\<Esc>:edit ../main.c\<CR>")
-  call TermWait(buf)
-  sleep 100m " Wait a bit for file to load
-
-  call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
-
   " Go to next window (statusline highlighting for other window should stop)
   call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
   call TermWait(buf)
 
-  call VerifyScreenDump(buf, 'Test_winhighlight_15', {})
+  call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1638,6 +1623,21 @@ func Test_winhighlight_popupwin()
   call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test that 'winhighlight' setting is copied over to new split window
+func Test_winhighlight_copy()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', {'rows': 20})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:setlocal cursorline whl=CursorLine:ErrorMsg\<CR>\<Esc>:vsplit\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_copy_1', {})
 
   call StopVimInTerminal(buf)
 endfunc

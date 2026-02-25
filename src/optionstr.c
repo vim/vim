@@ -4890,94 +4890,14 @@ did_set_wincolor(optset_T *args UNUSED)
 did_set_winhighlight(optset_T *args)
 {
     char	    *err = NULL;
-    char_u	    *p = args->os_newval.string;
     hl_override_T   *arr;
-    int		    i = 0;
     int		    num = 1;
 
-    if (*p == NUL)
-    {
-	arr = NULL;
-	goto set;
-    }
+    arr = parse_winhighlight(args->os_newval.string, &num, &err);
 
-    // Get number of overrides first so we can allocate array
-    while ((p = vim_strchr(p, ',')) != NULL)
-    {
-	p++;
-	num++;
-    }
+    if (arr == NULL && err != NULL)
+	return err;
 
-    arr = ALLOC_MULT(hl_override_T, num);
-    if (arr == NULL)
-	return e_out_of_memory;
-
-    p = args->os_newval.string;
-
-    while (true)
-    {
-	hl_override_T *override = arr + i++;
-	char_u	*fromname = p, *toname;
-	char_u	*tmp;
-	int	fromlen, tolen;
-	int	fromid, toid;
-	bool	last = false;
-
-	p = vim_strchr(p, ':');
-
-	if (p == NULL)
-	{
-	    err = e_invalid_argument;
-	    goto fail;
-	}
-
-	fromlen = p - fromname; // Get hl for "from"
-	p++; // Skip colon ':'
-
-	if (*p == NUL)
-	{
-	    err = e_invalid_argument;
-	    goto fail;
-	}
-
-	toname = p;
-	tmp = vim_strchr(p, ',');
-
-	// Get hl for "to", must check for no trailing comma in case last
-	// element.
-	if (tmp == NULL)
-	{
-	    last = true;
-	    tolen = (int)STRLEN(p);
-	}
-	else
-	{
-	    tolen = tmp - toname;
-	    tmp++;
-	}
-	p = tmp;
-
-	if (syn_check_group(fromname, fromlen) == 0
-		|| syn_check_group(toname, tolen) == 0)
-	    goto fail;
-
-	fromid = syn_namen2id(fromname, fromlen);
-	toid = syn_namen2id(toname, tolen);
-
-	if (fromid == 0 || toid == 0)
-	{
-	    err = e_invalid_argument;
-	    goto fail;
-	}
-
-	override->from = fromid;
-	override->to = toid;
-
-	if (last)
-	    break;
-    }
-
-set:
     if (args->os_flags & OPT_GLOBAL)
     {
 	// If it is global, then set all windows to the same value except the
@@ -5003,9 +4923,6 @@ set:
     }
 
     return NULL;
-fail:
-    vim_free(arr);
-    return err;
 }
 
 /*
