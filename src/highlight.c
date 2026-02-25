@@ -197,6 +197,9 @@ static hl_overrides_T *overrides = NULL;
 // an element is -1, then there is no attr for it.
 static int highlight_ids[HLF_COUNT];
 
+// Same as highlight_attr[] but is not modified by highlight group overrides
+static int highlight_attr_raw[HLF_COUNT];
+
 // highlight groups for 'highlight' option
 static garray_T highlight_ga;
 #define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
@@ -4256,6 +4259,7 @@ highlight_changed(void)
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
     {
 	highlight_attr[hlf] = 0;
+	highlight_attr_raw[hlf] = 0;
 	highlight_ids[hlf] = -1;
     }
 
@@ -4344,6 +4348,7 @@ highlight_changed(void)
 		}
 	    }
 	    highlight_attr[hlf] = attr;
+	    highlight_attr_raw[hlf] = attr;
 	    highlight_ids[hlf] = id;
 
 	    p = skip_to_option_part(p);	    // skip comma and spaces
@@ -5442,6 +5447,11 @@ f_hlset(typval_T *argvars, typval_T *rettv)
     bool
 push_highlight_overrides(hl_override_T *arr, int len)
 {
+    // Don't want to do anything if "arr" is NULL or if "arr" is already the
+    // current override.
+    if (arr == NULL || (overrides != NULL && overrides->arr == arr))
+	return false;
+
     hl_overrides_T *set;
 
     set = ALLOC_ONE(hl_overrides_T);
@@ -5455,32 +5465,13 @@ push_highlight_overrides(hl_override_T *arr, int len)
     set->next = overrides;
     overrides = set;
 
+    // Save current highlight_attr[], so it can be restored later after this
+    // override is popped.
     memcpy(set->attr, highlight_attr, sizeof(highlight_attr));
 
-    if (set->next != NULL)
-	// We don't want to transfer over any attrs from the previous override.
-	// This prevents another window 'winhighlight' affecting the current
-	// window highlight groups.
-	memcpy(highlight_attr, set->next->attr, sizeof(highlight_attr));
-
-    // If "arr" is NULL, then this will essentially act like if
-    // "overrides" was NULL.
-    if (arr == NULL)
-    {
-	set = set->next;
-	// Restore previous highlight_attr
-	while (set != NULL)
-	{
-	    if (set->arr == NULL)
-	    {
-		set = set->next;
-		continue;
-	    }
-	    memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
-	    break;
-	}
-	return true;
-    }
+    // Reset highlight_attr[] to default values, as we don't want changes from
+    // other overrides.
+    memcpy(highlight_attr, highlight_attr_raw, sizeof(highlight_attr));
 
     // Update highlight_attr[] array
     for (int i = 0; i < len; i++)
@@ -5512,7 +5503,7 @@ pop_highlight_overrides(void)
 
     overrides = set->next;
 
-    // Set highlight_attr[] to original version before push.
+    // Set highlight_attr[] to state before override was pushed.
     memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
     vim_free(set);
 }
