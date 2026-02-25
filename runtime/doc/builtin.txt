@@ -5832,8 +5832,9 @@ hlget([{name} [, {resolve}]])				*hlget()*
 
 		If the optional {resolve} argument is set to v:true and the
 		highlight group {name} is linked to another group, then the
-		link is resolved recursively and the attributes of the
-		resolved highlight group are returned.
+		link is resolved recursively (including overrides from
+		'winhighlight') and the attributes of the resolved highlight
+		group are returned.
 
 		Each entry in the returned List is a Dictionary with the
 		following items:

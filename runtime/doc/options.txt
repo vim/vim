@@ -10207,7 +10207,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'wincolor' 'wcr' string (default empty)
 			local to window
 	Highlight group name to use for this window instead of the Normal
-	color |hl-Normal|.
+	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
@@ -10265,6 +10265,36 @@ A jump table for the options with a short description can be found at |Q_op|.
 	height of the current window.
 	'winheight' applies to the current window.  Use 'winminheight' to set
 	the minimal height for other windows.
+
+'winhighlight' 'whl'	string (default empty)
+			local to window
+	Window-local highlights.  Comma-delimited list of highlight
+	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is
+	a |highlight-groups| item to be overridden by {hl-to} group in
+	the window.
+
+	Highlights of vertical separators are determined by the window to the
+	left of the separator.  The 'tabline' highlight of a tabpage is
+	decided by the last-focused window of the tabpage.  Highlights of
+	the popupmenu are determined by the current window.  Highlights in the
+	message area cannot be overridden.
+
+	When handling highlight group links, if a highlight group (which may
+	be a link as well) is overriden by 'winhighlight', then all highlight
+	groups that link to it will be affected.  For example, if highlight
+	group C links to B which links to A, then >vim
+	    set winhighlight=B:SomeHighlightGroup
+<	will make SomeHighlightGroup override groups B and C, and but not A.
+
+	If this option is set globally via |:setglobal|, then the
+	'winhighlight' of all windows will be set to the value except the
+	current window. Otherwise it set for the current window only.
+
+	When both 'winhighlight' and 'wincolor' is set, then highlight groups
+	in 'wincolor' may be overridden by 'winhighlight'.  For example, if
+	'wincolor' is set to a highlight group A, and that highlight group A
+	is overridden by highlight group B (i.e. "set whl=A:B"), then
+	'wincolor' will appear to use the attributes of highlight group B.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)
