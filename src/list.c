@@ -1234,10 +1234,11 @@ list_concat(list_T *l1, list_T *l2, typval_T *tv)
     list_T	*l;
     int		len1 = l1 == NULL ? 0 : l1->lv_len;
     int		len2 = l2 == NULL ? 0 : l2->lv_len;
+    long	totallen = (long)len1 + (long)len2;
     int		i;
     listitem_T	*item;
 
-    if (len1 + len2 == 0)
+    if (totallen == 0)
     {
 	l = list_alloc();
 	if (l == NULL)
@@ -1248,9 +1249,11 @@ list_concat(list_T *l1, list_T *l2, typval_T *tv)
 	tv->vval.v_list = l;
 	return OK;
     }
+    if (totallen > INT_MAX)
+	return FAIL;
 
     // allocate all items at once for efficiency
-    l = list_alloc_with_items(len1 + len2);
+    l = list_alloc_with_items((int)totallen);
     if (l == NULL)
 	return FAIL;
 
@@ -1519,7 +1522,7 @@ list_join_inner(
 {
     int		i;
     join_T	*p;
-    int		sumlen = 0;
+    long	sumlen = 0;
     int		first = TRUE;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
@@ -1537,7 +1540,7 @@ list_join_inner(
 	    return FAIL;
 
 	s.length = STRLEN(s.string);
-	sumlen += (int)s.length;
+	sumlen += (long)s.length;
 
 	(void)ga_grow(join_gap, 1);
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
@@ -1563,8 +1566,8 @@ list_join_inner(
     // multiple copy operations.  Add 2 for a tailing ']' and NUL.
     seplen = STRLEN(sep);
     if (join_gap->ga_len >= 2)
-	sumlen += (int)seplen * (join_gap->ga_len - 1);
-    if (ga_grow(gap, sumlen + 2) == FAIL)
+	sumlen += (long)seplen * (join_gap->ga_len - 1);
+    if (sumlen > INT_MAX - 2 || ga_grow(gap, (int)sumlen + 2) == FAIL)
 	return FAIL;
 
     for (i = 0; i < join_gap->ga_len && !got_int; ++i)
@@ -1884,11 +1887,16 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 	}
 	ga_append(&ga, NUL);
     }
-    else if (ga_grow(&ga, list_len(l) + 1) == OK)
+    else
     {
-	FOR_ALL_LIST_ITEMS(l, li)
-	    ga_append(&ga, tv_get_number(&li->li_tv));
-	ga_append(&ga, NUL);
+	long len = (long)list_len(l) + 1;
+
+	if (len <= INT_MAX && ga_grow(&ga, (int)len) == OK)
+	{
+	    FOR_ALL_LIST_ITEMS(l, li)
+		ga_append(&ga, tv_get_number(&li->li_tv));
+	    ga_append(&ga, NUL);
+	}
     }
 
     rettv->v_type = VAR_STRING;
