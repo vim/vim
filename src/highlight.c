@@ -3810,18 +3810,6 @@ syn_override_arr(hl_override_T *arr, int len, int id)
 }
 
 /*
- * Check if highlight id is overridden, and return the overriding highlight id.
- * Otherwise return the original id if no override.
- */
-    static int
-syn_override(int id)
-{
-    if (overrides != NULL)
-	return syn_override_arr(overrides->arr, overrides->len, id);
-    return id;
-}
-
-/*
  * Lookup a highlight group name and return its ID.
  * If it is not found, 0 is returned.
  */
@@ -3842,7 +3830,7 @@ syn_name2id(char_u *name)
 	{
 	    break;
 	}
-    return syn_override(i + 1);
+    return i + 1;
 }
 
 /*
