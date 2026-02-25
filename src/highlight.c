@@ -5013,7 +5013,7 @@ highlight_get_info(int hl_idx, int resolve_link)
     if (dict_add_number(dict, "id", hlgid) == FAIL)
 	goto error;
 
-    if (sgp->sg_link && resolve_link)
+    if (resolve_link)
     {
 	// resolve the highlight group link recursively and check if it is
 	// overridden.

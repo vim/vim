@@ -1582,4 +1582,33 @@ func Test_winhighlight_syntax()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test if terminal is correctly highlighed using 'winhighlight'
+func Test_winhighlight_term()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+  terminal sh
+  END
+  call writefile(lines, 'Xtest_winhighlight_term', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_term', {'rows': 20, 'env': {'PS1': '>'}})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<C-\>\<C-n>\<Esc>:setlocal whl=Terminal:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_1', {})
+
+  call term_sendkeys(buf, "i")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_2', {})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>\<Esc>:bw!\<CR>")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
