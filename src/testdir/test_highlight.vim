@@ -1611,4 +1611,35 @@ func Test_winhighlight_term()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test if 'winhighlight' works correctly in popup windows
+func Test_winhighlight_popupwin()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+  vim9script
+
+  g:id = popup_dialog("int hello = 10;", {})
+
+  hi A ctermbg=red ctermfg=white
+  hi B ctermbg=blue ctermfg=white
+
+  redraw! # Remove intro message
+  win_execute(g:id, "set filetype=c whl=Pmenu:A,cType:B")
+  END
+  call writefile(lines, 'Xtest_winhighlight_term', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_term', {'rows': 20})
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:call win_execute(g:id, \"set whl=\")\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

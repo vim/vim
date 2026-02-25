@@ -4617,6 +4617,7 @@ update_popups(void (*win_update)(win_T *wp))
     int	    sb_thumb_height = 0;
     int	    attr_scroll = 0;
     int	    attr_thumb = 0;
+    bool    override_success;
 
     // hide the cursor until redrawing is done.
     cursor_off();
@@ -4648,6 +4649,8 @@ update_popups(void (*win_update)(win_T *wp))
     {
 	int	    title_len = 0;
 	int	    title_wincol;
+
+	override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
 	// This drawing uses the zindex of the popup window, so that it's on
 	// top of the text but doesn't draw when another popup with higher
@@ -5184,6 +5187,9 @@ update_popups(void (*win_update)(win_T *wp))
 	// if this was the message window popup may start the timer now
 	may_start_message_win_timer(wp);
 #endif
+
+	if (override_success)
+	    pop_highlight_overrides();
     }
 
 #ifdef FEAT_PROP_POPUP
