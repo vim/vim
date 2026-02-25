@@ -4076,12 +4076,19 @@ syn_get_final_id(int hl_id)
     // Look out for loops!  Break after 100 links.
     for (count = 100; --count >= 0; )
     {
+	int tmp = hl_id;
+
 	sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
 	if (sgp->sg_link == 0 || sgp->sg_link > highlight_ga.ga_len)
 	    break;
+
+	// This is to handle highlight groups that are overriden but are in the
+	// middle of a link chain.
+	hl_id = syn_override(hl_id);
+	if (tmp != hl_id)
+	    continue;
 	hl_id = sgp->sg_link;
     }
-
     return syn_override(hl_id);
 }
 
