@@ -350,8 +350,9 @@ update_screen(int type_arg)
 	    win_update(wp);
 	}
 
-	// redraw status line after the window to minimize cursor movement
-	if (wp->w_redr_status)
+	// redraw status line after the window to minimize cursor movement. Must
+	// also redraw stauts line if there are highlight group overrides.
+	if (wp->w_redr_status || override_success)
 	{
 	    cursor_off();
 	    win_redr_status(wp, TRUE); // any popup menu will be redrawn below
