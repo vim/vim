@@ -1551,15 +1551,6 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     newp->w_fraction = oldp->w_fraction;
     newp->w_prev_fraction_row = oldp->w_prev_fraction_row;
 
-    if (oldp->w_hl != NULL)
-    {
-	newp->w_hl = (hl_override_T *)vim_memsave((char_u *)oldp->w_hl,
-		sizeof(hl_override_T) * oldp->w_hl_len);
-	newp->w_hl_len = oldp->w_hl_len;
-    }
-    else
-	newp->w_hl = NULL;
-
     copy_jumplist(oldp, newp);
 #ifdef FEAT_QUICKFIX
     if (flags & WSP_NEWLOC)
