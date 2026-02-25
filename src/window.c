@@ -1550,7 +1550,6 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     newp->w_wrow = oldp->w_wrow;
     newp->w_fraction = oldp->w_fraction;
     newp->w_prev_fraction_row = oldp->w_prev_fraction_row;
-
     copy_jumplist(oldp, newp);
 #ifdef FEAT_QUICKFIX
     if (flags & WSP_NEWLOC)
@@ -1597,8 +1596,14 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 #endif
 
     win_init_some(newp, oldp);
+
 #ifdef FEAT_TERMINAL
+    // Make sure to also handle highlight overrides copied over from oldp.
+    push_highlight_overrides(newp->w_hl, newp->w_hl_len);
+    if (newp->w_buffer->b_term != NULL)
+	term_init_default_colors(newp->w_buffer->b_term);
     term_update_wincolor(newp);
+    pop_highlight_overrides();
 #endif
 }
 

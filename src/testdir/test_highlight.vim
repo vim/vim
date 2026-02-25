@@ -1590,6 +1590,13 @@ func Test_winhighlight_term()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_term_2', {})
 
+  " New terminal should have copied over winhighlight settings and updated
+  " accordingly.
+  call term_sendkeys(buf, "\<C-\>\<C-N>\<Esc>:vsplit\<CR>i")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_3', {})
+
   call term_sendkeys(buf, "\<C-\>\<C-N>\<Esc>:bw!\<CR>")
   call TermWait(buf)
 

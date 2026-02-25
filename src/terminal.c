@@ -203,8 +203,6 @@ static void update_system_term(term_T *term);
 
 static void handle_postponed_scrollback(term_T *term);
 
-static int get_vterm_color_from_synid(int id, VTermColor *fg, VTermColor *bg);
-
 // The character that we know (or assume) that the terminal expects for the
 // backspace key.
 static int term_backspace_char = BS;
@@ -2186,10 +2184,6 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
 					       <= term->tl_scrollback_scrolled)
 	update_snapshot(term);
 
-    // Obtain the current background color.
-    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
-		       &term->tl_default_color.fg, &term->tl_default_color.bg);
-
     if (redraw)
     {
 	win_T	    *wp = NULL;
@@ -3181,19 +3175,14 @@ cell2attr(
 
     if (is_default_fg || is_default_bg)
     {
-	int def = TRUE;
-
-	if (wp != NULL)
+	if (wp != NULL && *wp->w_p_wcr != NUL)
 	{
-	    int id = term_get_highlight_id(term, wp);
-
-	    if (id != 0)
-		def = !get_vterm_color_from_synid(id, fg, bg);
-	    else
-		def = FALSE;
+	    if (is_default_fg)
+		fg = &wp->w_term_wincolor.fg;
+	    if (is_default_bg)
+		bg = &wp->w_term_wincolor.bg;
 	}
-
-	if (def)
+	else
 	{
 	    if (is_default_fg)
 		fg = &term->tl_default_color.fg;
@@ -4397,8 +4386,8 @@ term_update_wincolor_all(void)
 /*
  * Initialize term->tl_default_color from the environment.
  */
-    static void
-init_default_colors(term_T *term)
+    void
+term_init_default_colors(term_T *term)
 {
     VTermColor	    *fg, *bg;
     int		    fgval, bgval;
@@ -4967,7 +4956,7 @@ create_vterm(term_T *term, int rows, int cols)
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
-    init_default_colors(term);
+    term_init_default_colors(term);
 
     vterm_state_set_default_colors(
 	    state,
@@ -5073,7 +5062,7 @@ term_update_colors_all(void)
     {
 	if (term->tl_vterm == NULL)
 	    continue;
-	init_default_colors(term);
+	term_init_default_colors(term);
 	vterm_state_set_default_colors(
 		vterm_obtain_state(term->tl_vterm),
 		&term->tl_default_color.fg,
@@ -5828,7 +5817,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	VTermPos	cursor_pos1;
 	VTermPos	cursor_pos2;
 
-	init_default_colors(term);
+	term_init_default_colors(term);
 
 	rettv->vval.v_number = buf->b_fnum;
 

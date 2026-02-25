@@ -4922,6 +4922,15 @@ did_set_winhighlight(optset_T *args)
 	curwin->w_hl_len = num;
     }
 
+#ifdef FEAT_TERMINAL
+    // Make sure terminal highlighting is updated
+    push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
+    if (curwin->w_buffer->b_term != NULL)
+	term_init_default_colors(curwin->w_buffer->b_term);
+    term_update_wincolor(curwin);
+    pop_highlight_overrides();
+#endif
+
     return NULL;
 }
 
