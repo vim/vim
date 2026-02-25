@@ -5008,6 +5008,30 @@ fail:
     return err;
 }
 
+/*
+ * Expand 'winhighlight' option.
+ */
+    int
+expand_set_winhighlight(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T	    *xp = args->oe_xp;
+
+    if ((xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+	    || xp->xp_pattern == args->oe_set_arg || *(xp->xp_pattern-1) == ',')
+    {
+	// After a ':' or after a ',', or at the start, so expand highlight
+	// group name.
+	return expand_set_opt_generic(
+		args,
+		get_highlight_name,
+		numMatches,
+		matches);
+    }
+
+    VIM_CLEAR(*matches);
+    return FAIL;
+}
+
     int
 expand_set_wincolor(optexpand_T *args, int *numMatches, char_u ***matches)
 {
