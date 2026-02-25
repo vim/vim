@@ -246,7 +246,6 @@ syn keyword sudoersStringParameter  contained
                                   \ group_plugin
                                   \ iolog_dir
                                   \ iolog_file
-                                  \ iolog_flush
                                   \ iolog_group
                                   \ iolog_mode
                                   \ iolog_user
