@@ -1473,6 +1473,31 @@ def Test_disassemble_lambda()
         instr)
 enddef
 
+def s:ScriptLocalDefForLambda()
+enddef
+
+def GlobalDefForLambda()
+enddef
+
+def s:OuterWithLambdaCalls()
+  timer_start(0, (_) => {
+    ScriptLocalDefForLambda()
+    g:GlobalDefForLambda()
+  })
+enddef
+
+def Test_disassemble_lambda_call_types()
+  # Verify that inside a lambda:
+  # - script-local def function call → ISN_UCALL (safe after re-sourcing)
+  # - global def function call → ISN_DCALL (optimal, not deleted on re-source)
+  OuterWithLambdaCalls()
+  var instr = execute('disassemble OuterWithLambdaCalls')
+  var name = substitute(instr, '.*\(<lambda>\d\+\).*', '\1', '')
+  instr = execute('disassemble ' .. name)
+  assert_match('\d UCALL <80><fd>R\d\+_ScriptLocalDefForLambda(argc 0)', instr)
+  assert_match('\d DCALL GlobalDefForLambda(argc 0)', instr)
+enddef
+
 def s:LambdaWithType(): number
   var Ref = (a: number) => a + 10
   return Ref(g:value)

@@ -1997,7 +1997,9 @@ generate_CALL(
     }
 
     if ((isn = generate_instr(cctx, cl != NULL ? ISN_METHODCALL
-			  : ufunc->uf_def_status != UF_NOT_COMPILED
+			  : (ufunc->uf_def_status != UF_NOT_COMPILED
+			     && ((cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0
+				 || ufunc->uf_name[0] != K_SPECIAL))
 					     ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
     if (cl != NULL /* isn->isn_type == ISN_METHODCALL */)

@@ -1847,6 +1847,41 @@ def Test_vim9script_reload_delfunc()
   g:DoCheck(false)
 enddef
 
+def Test_vim9script_reload_lambda_def_func()
+  CheckFeature timers
+
+  var lines =<< trim END
+    vim9script
+
+    def F()
+      g:call_result += 1
+    enddef
+
+    augroup Xtest933
+      au!
+      au CmdlineLeave : timer_start(0, (_) => F())
+    augroup END
+  END
+
+  g:call_result = 0
+  writefile(lines, 'Xtest933.vim', 'D')
+  source Xtest933.vim
+
+  # Simulate the CmdlineLeave event that fires before the second :so
+  doautocmd CmdlineLeave :
+
+  # Re-source: F is redefined; without the fix this causes E933 when timer fires
+  source Xtest933.vim
+
+  # Allow the 0ms timer to fire
+  sleep 10m
+
+  assert_equal(1, g:call_result)
+
+  augroup Xtest933 | au! | augroup END
+  unlet! g:call_result
+enddef
+
 def Test_vim9script_reload_delvar()
   # write the script with a script-local variable
   var lines =<< trim END
