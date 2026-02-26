@@ -4128,9 +4128,10 @@ may_update_popup_mask(int type)
 	height = popup_height(wp);
 	popup_update_mask(wp, width, height);
 
-	// Popup with opacitys do not block lower layers from drawing,
-	// so they don't participate in the popup_mask.
-	if (wp->w_popup_flags & POPF_OPACITY)
+	// Popup with partial transparency do not block lower layers from
+	// drawing, so they don't participate in the popup_mask.
+	// Fully opaque popups (blend == 0) still block lower layers.
+	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
 	    continue;
 
 	for (line = wp->w_winrow;
@@ -4343,7 +4344,8 @@ update_popups(void (*win_update)(win_T *wp))
 	screen_zindex = wp->w_zindex;
 
 	// Set popup with opacity context for screen drawing.
-	if (wp->w_popup_flags & POPF_OPACITY)
+	// Only enable transparency rendering when blend > 0 (not fully opaque).
+	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
 	    screen_opacity_popup = wp;
 	else
 	    screen_opacity_popup = NULL;
