@@ -1388,18 +1388,6 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_3', {})
 
-  " Test that "setglobal whl=..." sets the winhighlight for all windows except
-  " the current one
-  call term_sendkeys(buf, "\<Esc>:setglobal whl=CursorLine:ErrorMsg\<CR>")
-  call TermWait(buf)
-
-  call VerifyScreenDump(buf, 'Test_winhighlight_4', {})
-
-  call term_sendkeys(buf, "\<Esc>:setglobal whl=\<CR>")
-  call TermWait(buf)
-
-  call VerifyScreenDump(buf, 'Test_winhighlight_5', {})
-
   " Test that VertSplit in winhighlight only affects border if window that
   " winhighlight is local to is on the left side of the separator/column
   call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")

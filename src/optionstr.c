@@ -4898,29 +4898,9 @@ did_set_winhighlight(optset_T *args)
     if (arr == NULL && err != NULL)
 	return err;
 
-    if (args->os_flags & OPT_GLOBAL)
-    {
-	// If it is global, then set all windows to the same value except the
-	// current window.
-	win_T *wp;
-
-	FOR_ALL_WINDOWS(wp)
-	{
-	    if (wp != curwin)
-	    {
-		vim_free(wp->w_hl);
-		wp->w_hl = arr;
-		wp->w_hl_len = num;
-	    }
-	}
-    }
-    else
-    {
-	// Otherwise set only for current window
-	vim_free(curwin->w_hl);
-	curwin->w_hl = arr;
-	curwin->w_hl_len = num;
-    }
+    vim_free(curwin->w_hl);
+    curwin->w_hl = arr;
+    curwin->w_hl_len = num;
 
 #ifdef FEAT_TERMINAL
     // Make sure terminal highlighting is updated

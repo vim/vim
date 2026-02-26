@@ -10286,10 +10286,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    set winhighlight=B:SomeHighlightGroup
 <	will make SomeHighlightGroup override groups B and C, and but not A.
 
-	If this option is set globally via |:setglobal|, then the
-	'winhighlight' of all windows will be set to the value except the
-	current window. Otherwise it set for the current window only.
-
 	When both 'winhighlight' and 'wincolor' is set, then highlight groups
 	in 'wincolor' may be overridden by 'winhighlight'.  For example, if
 	'wincolor' is set to a highlight group A, and that highlight group A
