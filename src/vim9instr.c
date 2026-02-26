@@ -1910,6 +1910,23 @@ generate_BLOBAPPEND(cctx_T *cctx)
 }
 
 /*
+ * get the instruction type for a function call: ISN_METHODCALL, ISN_DCALL, or
+ * ISN_UCALL.
+ */
+    static isntype_T
+isn_get_calltype(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	class_T	    *cl)
+{
+    return cl != NULL ? ISN_METHODCALL
+	: (ufunc->uf_def_status != UF_NOT_COMPILED
+		&& ((cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0
+		    || ufunc->uf_name[0] != K_SPECIAL))
+	? ISN_DCALL : ISN_UCALL;
+}
+
+/*
  * Generate an ISN_DCALL, ISN_UCALL or ISN_METHODCALL instruction.
  * When calling a method on an object, of which we know the interface only,
  * then "cl" is the interface and "mi" the method index on the interface.
@@ -1996,11 +2013,7 @@ generate_CALL(
 	return FAIL;
     }
 
-    if ((isn = generate_instr(cctx, cl != NULL ? ISN_METHODCALL
-			  : (ufunc->uf_def_status != UF_NOT_COMPILED
-			     && ((cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0
-				 || ufunc->uf_name[0] != K_SPECIAL))
-					     ? ISN_DCALL : ISN_UCALL)) == NULL)
+    if ((isn = generate_instr(cctx, isn_get_calltype(cctx, ufunc, cl))) == NULL)
 	return FAIL;
     if (cl != NULL /* isn->isn_type == ISN_METHODCALL */)
     {
