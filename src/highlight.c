@@ -3817,9 +3817,7 @@ syn_name2id(char_u *name)
     for (i = highlight_ga.ga_len; --i >= 0; )
 	if (HL_TABLE()[i].sg_name_u != NULL
 		&& STRCMP(name_u, HL_TABLE()[i].sg_name_u) == 0)
-	{
 	    break;
-	}
     return i + 1;
 }
 
