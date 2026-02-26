@@ -3015,7 +3015,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		if (ch_mode == CH_MODE_LSP)
 		    di = dict_find(d, (char_u *)"id", -1);
 		else
-		    di = dict_find(d, (char_u *)"seq", -1);
+		    di = dict_find(d, (char_u *)"request_seq", -1);
 		if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
 		    seq_nr = di->di_tv.vval.v_number;
 	    }
