@@ -4813,6 +4813,23 @@ func Test_popup_opacity_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_100_blocks_background()
+  CheckScreendump
+
+  " opacity:100 (fully opaque, blend==0) popup should block background content.
+  " Before the fix, POPF_OPACITY caused the popup to be excluded from
+  " popup_mask even with blend==0, making background show through.
+  let lines =<< trim END
+    call setline(1, repeat(['background text here'], 10))
+    call popup_create(['POPUP LINE 1', 'POPUP LINE 2'],
+        \ #{line: 2, col: 1, minwidth: 20, opacity: 100})
+  END
+  call writefile(lines, 'XtestPopupOpaque100', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpaque100', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_100_blocks_bg', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_getwininfo_tabnr()
   tab split
   let winid1 = popup_create('sup', #{tabpage: 1})
