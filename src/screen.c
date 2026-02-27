@@ -130,6 +130,8 @@ get_wcr_attr(win_T *wp)
 	    wcr_attr = HL_ATTR(HLF_PNI);    // Pmenu
     }
 #endif
+    else
+	wcr_attr = syn_name2attr((char_u *)"Normal");
     return wcr_attr;
 }
 

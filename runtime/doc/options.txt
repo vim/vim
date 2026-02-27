@@ -10206,8 +10206,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wincolor'* *'wcr'*
 'wincolor' 'wcr' string (default empty)
 			local to window
+	DEPRECATED: This option is no longer used; while it is still
+	functional, it is equivalent to when 'winhighlight' contains:
+		"Normal:A,Terminal:A"
+	and for popup windows:
+		"Pmenu:A"
+
 	Highlight group name to use for this window instead of the Normal
 	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
+	Note that it is not recommended to set this and 'winhighlight' at the
+	same time.
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
@@ -10285,12 +10293,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	group C links to B which links to A, then >vim
 	    set winhighlight=B:SomeHighlightGroup
 <	will make SomeHighlightGroup override groups B and C, and but not A.
-
-	When both 'winhighlight' and 'wincolor' is set, then highlight groups
-	in 'wincolor' may be overridden by 'winhighlight'.  For example, if
-	'wincolor' is set to a highlight group A, and that highlight group A
-	is overridden by highlight group B (i.e. "set whl=A:B"), then
-	'wincolor' will appear to use the attributes of highlight group B.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)

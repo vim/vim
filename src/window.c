@@ -1602,7 +1602,6 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     push_highlight_overrides(newp->w_hl, newp->w_hl_len);
     if (newp->w_buffer->b_term != NULL)
 	term_init_default_colors(newp->w_buffer->b_term);
-    term_update_wincolor(newp);
     pop_highlight_overrides();
 #endif
 }
