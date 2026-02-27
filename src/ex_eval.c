@@ -1602,7 +1602,7 @@ inside_block(exarg_T *eap)
     int		i;
 
     for (i = 0; i <= cstack->cs_idx; ++i)
-	if (cstack->cs_flags[cstack->cs_idx] & CSF_BLOCK)
+	if (cstack->cs_flags[i] & CSF_BLOCK)
 	    return TRUE;
     return FALSE;
 }
