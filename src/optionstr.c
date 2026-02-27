@@ -4898,6 +4898,8 @@ did_set_winhighlight(optset_T *args)
     if (arr == NULL && err != NULL)
 	return err;
 
+    update_highlight_overrides(curwin->w_hl, arr, num);
+
     vim_free(curwin->w_hl);
     curwin->w_hl = arr;
     curwin->w_hl_len = num;

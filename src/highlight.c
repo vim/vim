@@ -5448,6 +5448,27 @@ f_hlset(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
+ * If "old" is in the override stack, then update it to "new". Does not free
+ * "old".
+ */
+    void
+update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen)
+{
+    if (old == NULL)
+	return;
+
+    for (hl_overrides_T *set = overrides; set != NULL; set = set->next)
+    {
+	if (set->arr == old)
+	{
+	    set->arr = new;
+	    set->len = newlen;
+	    break;
+	}
+    }
+}
+
+/*
  * Set the current highlight override to "arr". Returns true if successful
  */
     bool
