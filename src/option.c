@@ -7053,6 +7053,7 @@ after_copy_winopt(win_T *wp)
 	emsg(errmsg);
     else
     {
+	free(wp->w_hl);
 	wp->w_hl = arr;
 	wp->w_hl_len = len;
     }
