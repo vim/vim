@@ -295,6 +295,7 @@ static char *(highlight_init_both[]) = {
     "default link PopupNotification WarningMsg",
     "default link PreInsert Added",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
+    CENT("WinColor cterm=NONE", "Normal gui=NONE"),
     NULL
 };
 
@@ -5484,11 +5485,18 @@ push_highlight_overrides(hl_override_T *arr, int len)
 	hl_override_T *override = arr + i;
 
 	for (int k = 0; k < HLF_COUNT; k++)
+	{
 	    if (highlight_ids[k] != -1 && override->from == highlight_ids[k])
 	    {
 		highlight_attr[k] = syn_id2attr(override->to);
 		break;
 	    }
+	    // If Normal group (-1), then use HLF_WIN.
+	    else if (override->from == -1)
+	    {
+		highlight_attr[HLF_WIN] = syn_id2attr(override->to);
+	    }
+	}
     }
 
     return true;
@@ -5603,6 +5611,10 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    *errmsg = e_invalid_argument;
 	    goto fail;
 	}
+
+	// We will map "Normal" group to HLF_WIN always
+	if (STRCMP(HL_TABLE()[fromid - 1].sg_name_u, "NORMAL") == 0)
+	    fromid = -1;
 
 	override->from = fromid;
 	override->to = toid;

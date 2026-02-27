@@ -3955,7 +3955,7 @@ typedef struct
  */
 typedef struct
 {
-    int from;
+    int from; // -1 is reserved for Normal highlight group
     int to;
 } hl_override_T;
 

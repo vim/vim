@@ -1593,6 +1593,7 @@ typedef enum
     , HLF_TPLS	    // tabpanel selected
     , HLF_TPLF	    // tabpanel filler
     , HLF_PRI	    // "preinsert" in 'completeopt'
+    , HLF_WIN	    // window colour
     , HLF_COUNT	    // MUST be the last one
 } hlf_T;
 
@@ -1605,7 +1606,7 @@ typedef enum
 		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', 'j', 'H', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z', 'g', \
-		  '%', '^', '&', 'I'}
+		  '%', '^', '&', 'I', '('}
 
 /*
  * Values for behaviour in spell_move_to
