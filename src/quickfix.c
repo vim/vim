@@ -2757,6 +2757,8 @@ qf_get_fnum(qf_list_T *qfl, char_u *directory, char_u *fname)
 		ptr = concat_fnames(directory, fname, TRUE);
 	    else
 		ptr = vim_strsave(fname);
+	    if (ptr == NULL)
+		return 0;
 	}
 	// Use concatenated directory name and file name
 	bufname = ptr;
@@ -2823,6 +2825,8 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 	    vim_free((*stackptr)->dirname);
 	    (*stackptr)->dirname = concat_fnames(ds_new->dirname, dirbuf,
 		    TRUE);
+	    if ((*stackptr)->dirname == NULL)
+		return NULL;
 	    if (mch_isdir((*stackptr)->dirname) == TRUE)
 		break;
 
