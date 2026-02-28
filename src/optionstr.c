@@ -4889,30 +4889,7 @@ did_set_wincolor(optset_T *args UNUSED)
     char *
 did_set_winhighlight(optset_T *args)
 {
-    char	    *err = NULL;
-    hl_override_T   *arr;
-    int		    num = 1;
-
-    arr = parse_winhighlight(args->os_newval.string, &num, &err);
-
-    if (arr == NULL && err != NULL)
-	return err;
-
-    update_highlight_overrides(curwin->w_hl, arr, num);
-
-    vim_free(curwin->w_hl);
-    curwin->w_hl = arr;
-    curwin->w_hl_len = num;
-
-#ifdef FEAT_TERMINAL
-    // Make sure terminal highlighting is updated
-    push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
-    if (curwin->w_buffer->b_term != NULL)
-	term_init_default_colors(curwin->w_buffer->b_term);
-    pop_highlight_overrides();
-#endif
-
-    return NULL;
+    return update_winhighlight(curwin, args->os_newval.string);
 }
 
 /*

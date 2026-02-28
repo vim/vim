@@ -832,6 +832,17 @@ apply_general_options(win_T *wp, dict_T *dict)
 	term_update_wincolor(wp);
 #endif
     }
+    str = dict_get_string(dict, "highlights", FALSE);
+    if (str != NULL)
+    {
+	char *errmsg = update_winhighlight(wp, str);
+
+	if (errmsg != NULL)
+	    emsg(_(errmsg));
+	else
+	    set_string_option_direct_in_win(wp, (char_u *)"winhighlight", -1,
+		    str, OPT_FREE|OPT_LOCAL, 0);
+    }
 
     if (set_padding_border(dict, wp->w_popup_padding, "padding", 999) == FAIL ||
 	set_padding_border(dict, wp->w_popup_border, "border", 1) == FAIL)
@@ -3641,6 +3652,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     dict_add_number(dict, "cursorline",
 	    (wp->w_popup_flags & POPF_CURSORLINE) != 0);
     dict_add_string(dict, "highlight", wp->w_p_wcr);
+    dict_add_string(dict, "highlights", wp->w_p_whl);
     if (wp->w_scrollbar_highlight != NULL)
 	dict_add_string(dict, "scrollbarhighlight",
 		wp->w_scrollbar_highlight);

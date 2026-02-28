@@ -5508,15 +5508,13 @@ push_highlight_overrides(hl_override_T *arr, int len)
 	for (int k = 0; k < HLF_COUNT; k++)
 	{
 	    if (highlight_ids[k] != -1 && override->from == highlight_ids[k])
-	    {
 		highlight_attr[k] = syn_id2attr(override->to);
-		break;
-	    }
-	    // If Normal group (-1), then use HLF_WIN.
-	    else if (override->from == -1)
-	    {
-		highlight_attr[HLF_WIN] = syn_id2attr(override->to);
-	    }
+	    else if (override->from <= 0)
+		// If negative or zero, then directly map to highlight_attr
+		highlight_attr[-override->from] = syn_id2attr(override->to);
+	    else
+		continue;
+	    break;
 	}
     }
 
@@ -5546,8 +5544,8 @@ pop_highlight_overrides(void)
  * Parse the 'winhighlight' option and return array. Returns NULL on failure or
  * if empty option. If failure, then errmsg is set.
  */
-    hl_override_T *
-parse_winhighlight(char_u *opt, int *len, char **errmsg)
+    static hl_override_T *
+parse_winhighlight(char_u *opt, int *len, char **errmsg, bool ispopup)
 {
 
     char_u	    *p = opt;
@@ -5633,9 +5631,9 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    goto fail;
 	}
 
-	// We will map "Normal" group to HLF_WIN always
+	// We will map "Normal" group to HLF_WIN always.
 	if (STRCMP(HL_TABLE()[fromid - 1].sg_name_u, "NORMAL") == 0)
-	    fromid = -1;
+	    fromid = -HLF_WIN;
 
 	override->from = fromid;
 	override->to = toid;
@@ -5648,5 +5646,42 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
     return arr;
 fail:
     vim_free(arr);
+    return NULL;
+}
+
+/*
+ * Update 'winhighlight' for "wp" using given option value. Returns error
+ * message on failure, otherwise NULL.
+ */
+    char *
+update_winhighlight(win_T *wp, char_u *opt)
+{
+    char	    *err = NULL;
+    hl_override_T   *arr;
+    int		    num = 1;
+
+    arr = parse_winhighlight(opt, &num, &err, WIN_IS_POPUP(wp));
+
+    if (arr == NULL && err != NULL)
+	return err;
+
+    update_highlight_overrides(wp->w_hl, arr, num);
+
+    vim_free(wp->w_hl);
+    wp->w_hl = arr;
+    wp->w_hl_len = num;
+
+#ifdef FEAT_TERMINAL
+    // May be NULL (such as in after_copy_winopt())
+    if (wp->w_buffer != NULL)
+    {
+	// Make sure terminal highlighting is updated
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+	if (wp->w_buffer->b_term != NULL)
+	    term_init_default_colors(wp->w_buffer->b_term);
+	pop_highlight_overrides();
+    }
+#endif
+
     return NULL;
 }

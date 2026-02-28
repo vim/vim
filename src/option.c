@@ -7043,20 +7043,10 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
     void
 after_copy_winopt(win_T *wp)
 {
-    char *errmsg = NULL;
-    int len;
-    hl_override_T *arr;
+    char *errmsg = update_winhighlight(wp, wp->w_p_whl);
 
-    arr = parse_winhighlight(wp->w_p_whl, &len, &errmsg);
-
-    if (arr == NULL && errmsg != NULL)
-	emsg(errmsg);
-    else
-    {
-	free(wp->w_hl);
-	wp->w_hl = arr;
-	wp->w_hl_len = len;
-    }
+    if (errmsg != NULL)
+	emsg(_(errmsg));
 
     // Set w_leftcol or w_skipcol to zero.
     if (wp->w_p_wrap)

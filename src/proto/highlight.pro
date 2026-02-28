@@ -51,5 +51,5 @@ void f_hlset(typval_T *argvars, typval_T *rettv);
 void update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen);
 bool push_highlight_overrides(hl_override_T *arr, int len);
 void pop_highlight_overrides(void);
-hl_override_T *parse_winhighlight(char_u *opt, int *len, char **errmsg);
+char *update_winhighlight(win_T *wp, char_u *opt);
 /* vim: set ft=c : */

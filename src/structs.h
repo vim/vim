@@ -3955,7 +3955,7 @@ typedef struct
  */
 typedef struct
 {
-    int from; // -1 is reserved for Normal highlight group
+    int from; // If zero or negative then it is hlf_T enum
     int to;
 } hl_override_T;
 
