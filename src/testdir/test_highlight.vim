@@ -1452,6 +1452,12 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
 
+  " Check that overridding Normal group maps to HLF_WIN in 'highlight'.
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=Normal:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_15', {})
+
   " clean up
   call StopVimInTerminal(buf)
 endfunc
