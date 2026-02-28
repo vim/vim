@@ -4810,6 +4810,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuBorder|   j  popup menu border characters
 	|hl-PmenuShadow|   H  popup menu shadow
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
+	|hl-WinColor|	 (  Window colour (supersedes 'wincolor')
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -10279,7 +10280,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Window-local highlights.  Comma-delimited list of highlight
 	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is
 	a |highlight-groups| item to be overridden by {hl-to} group in
-	the window.
+	the window.  If {hl-from} is "Normal", then it will always map to the
+	"(" occassion to 'highlight'.
 
 	Highlights of vertical separators are determined by the window to the
 	left of the separator.  The 'tabline' highlight of a tabpage is
