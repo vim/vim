@@ -1507,7 +1507,6 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 	update_screen(0);
 	setcursor();
 	out_flush();
-	return;
     }
 # endif
     mouse_col = g_xMouse;
@@ -4848,7 +4847,6 @@ mch_system_classic(char *cmd, int options)
 
     // Wait for the command to terminate before continuing
     {
-# ifdef FEAT_GUI
 	int	    delay = 1;
 
 	// Keep updating the window while waiting for the shell to finish.
@@ -4872,9 +4870,6 @@ mch_system_classic(char *cmd, int options)
 	    if (delay < 50)
 		delay += 10;
 	}
-# else
-	WaitForSingleObject(pi.hProcess, INFINITE);
-# endif
 
 	// Get the command exit code
 	GetExitCodeProcess(pi.hProcess, &ret);
@@ -4886,6 +4881,10 @@ mch_system_classic(char *cmd, int options)
 
     // Try to get input focus back.  Doesn't always work though.
     PostMessage(hwnd, WM_SETFOCUS, 0, 0);
+    // To increase the chances that WM_SETFOCUS will work, run the message loop
+    // here.  In addition, it prevents problems caused by delayed WM_SETFOCUS
+    // processing.
+    gui_mch_update();
 
     return ret;
 }
@@ -5538,7 +5537,7 @@ mch_call_shell(
 	}
     }
     // do not execute anything from the current directory by setting the
-    // environemnt variable $NoDefaultCurrentDirectoryInExePath
+    // environment variable $NoDefaultCurrentDirectoryInExePath
     oldval = vim_getenv((char_u *)"NoDefaultCurrentDirectoryInExePath",
 	    &must_free);
     vim_setenv((char_u *)"NoDefaultCurrentDirectoryInExePath", (char_u *)"1");
@@ -8570,11 +8569,11 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18995)
 
 /*
- * Not stable now.
+ * Make conpty default on Windows 11
  */
-#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 22000)
 // Notes:
-// Win 10 22H2 Final is build 19045, it's conpty is widely used.
+// Win 10 22H2 Final is build 19045, its conpty is widely used.
 // Strangely, 19045 is newer but is a lower build number than the 2020 insider
 // preview which had a build 19587.  And, not sure how stable that was?
 // Win Server 2022 (May 10, 2022) is build 20348, its conpty is widely used.
@@ -9077,7 +9076,7 @@ GetWin32Error(void)
     static char	*oldmsg = NULL;
     char	*acp_msg = NULL;
     DWORD	acp_len;
-    char_u	*enc_msg = NULL;
+    char	*enc_msg = NULL;
     int		enc_len = 0;
 
     // get formatted message from OS
@@ -9094,7 +9093,7 @@ GetWin32Error(void)
 	oldmsg = NULL;
     }
 
-    acp_to_enc(acp_msg, (int)acp_len, &enc_msg, &enc_len);
+    acp_to_enc((char_u *)acp_msg, (int)acp_len, (char_u **)&enc_msg, &enc_len);
     LocalFree(acp_msg);
     if (enc_msg == NULL)
 	return NULL;

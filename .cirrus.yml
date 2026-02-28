@@ -5,12 +5,12 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 14.3
+    - name: FreeBSD 15.0
       freebsd_instance:
-        image_family: freebsd-14-3
+        image_family: freebsd-15-0-amd64-ufs
   timeout_in: 20m
   install_script:
-    - pkg install -y gettext
+    - pkg install -y gettext diffutils
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES}

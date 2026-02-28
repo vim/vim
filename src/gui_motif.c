@@ -725,10 +725,10 @@ gui_motif_fontset2fontlist(XFontSet *fontset)
  */
 
 static void gui_motif_add_actext(vimmenu_T *menu);
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 static void toggle_tearoff(Widget wid);
 static void gui_mch_recurse_tearoffs(vimmenu_T *menu);
-#endif
+# endif
 static void submenu_change(vimmenu_T *mp, int colors);
 
 static void do_set_mnemonics(int enable);
@@ -740,7 +740,7 @@ gui_mch_enable_menu(int flag)
     if (flag)
     {
 	XtManageChild(menuBar);
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 	if (XtIsManaged(XtParent(toolBar)))
 	{
 	    // toolBar is attached to top form
@@ -748,7 +748,7 @@ gui_mch_enable_menu(int flag)
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, menuBar,
 		NULL);
-#ifdef FEAT_GUI_TABLINE
+#  ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -761,16 +761,16 @@ gui_mch_enable_menu(int flag)
 			      NULL);
 	    }
 	    else
-#endif
+#  endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, XtParent(toolBar),
 			      NULL);
 	}
 	else
-#endif
+# endif
 	{
-#ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -783,7 +783,7 @@ gui_mch_enable_menu(int flag)
 			      NULL);
 	    }
 	    else
-#endif
+# endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, menuBar,
@@ -793,13 +793,13 @@ gui_mch_enable_menu(int flag)
     else
     {
 	XtUnmanageChild(menuBar);
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 	if (XtIsManaged(XtParent(toolBar)))
 	{
 	    XtVaSetValues(XtParent(toolBar),
 		XmNtopAttachment, XmATTACH_FORM,
 		NULL);
-#ifdef FEAT_GUI_TABLINE
+#  ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -812,16 +812,16 @@ gui_mch_enable_menu(int flag)
 			      NULL);
 	    }
 	    else
-#endif
+#  endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, XtParent(toolBar),
 			      NULL);
 	}
 	else
-#endif
+# endif
 	{
-#ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -833,7 +833,7 @@ gui_mch_enable_menu(int flag)
 			      NULL);
 	    }
 	    else
-#endif
+# endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_FORM,
 			      NULL);
@@ -876,7 +876,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     Widget	shell;
     vimmenu_T	*parent = menu->parent;
 
-#ifdef MOTIF_POPUP
+# ifdef MOTIF_POPUP
     if (menu_is_popup(menu->name))
     {
 	Arg arg[2];
@@ -884,9 +884,9 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 
 	// Only create the popup menu when it's actually used, otherwise there
 	// is a delay when using the right mouse button.
-# if (XmVersion <= 1002)
+#  if (XmVersion <= 1002)
 	if (mouse_model_popup())
-# endif
+#  endif
 	{
 	    if (gui.menu_bg_pixel != INVALCOLOR)
 	    {
@@ -902,7 +902,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	}
 	return;
     }
-#endif
+# endif
 
     if (!menu_is_menubar(menu->name)
 	    || (parent != NULL && parent->submenu_id == (Widget)0))
@@ -916,11 +916,11 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	    (parent == NULL) ? menuBar : parent->submenu_id,
 	    XmNlabelString, label,
 	    XmNmnemonic, p_wak[0] == 'n' ? NUL : menu->mnemonic,
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 	    // submenu: count the tearoff item (needed for LessTif)
 	    XmNpositionIndex, idx + (parent != NULL
 			   && tearoff_val == (int)XmTEAR_OFF_ENABLED ? 1 : 0),
-#endif
+# endif
 	    NULL);
     XmStringFree(label);
 
@@ -955,10 +955,10 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     if (menu->submenu_id == (Widget)0)		// failed
 	return;
 
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
     // Set the colors for the tear off widget
     toggle_tearoff(menu->submenu_id);
-#endif
+# endif
 
     XtVaSetValues(menu->id,
 	XmNsubMenuId, menu->submenu_id,
@@ -993,17 +993,17 @@ gui_motif_add_actext(vimmenu_T *menu)
     void
 gui_mch_toggle_tearoffs(int enable)
 {
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
     if (enable)
 	tearoff_val = (int)XmTEAR_OFF_ENABLED;
     else
 	tearoff_val = (int)XmTEAR_OFF_DISABLED;
     toggle_tearoff(menuBar);
     gui_mch_recurse_tearoffs(root_menu);
-#endif
+# endif
 }
 
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 /*
  * Set the tearoff for one menu widget on or off, and set the color of the
  * tearoff widget.
@@ -1033,7 +1033,7 @@ gui_mch_recurse_tearoffs(vimmenu_T *menu)
 	menu = menu->next;
     }
 }
-#endif
+# endif
 
     int
 gui_mch_text_area_extra_height(void)
@@ -1120,12 +1120,12 @@ gui_mch_compute_menu_height(
 	XtVaSetValues(menuBar, XmNheight, gui.menu_height, NULL);
 }
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 
 /*
  * Icons used by the toolbar code.
  */
-#include "gui_x11_pm.h"
+#  include "gui_x11_pm.h"
 
 static char **get_toolbar_pixmap(vimmenu_T *menu, char **fname);
 
@@ -1221,7 +1221,7 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     }
     return n;
 }
-#endif // FEAT_TOOLBAR
+# endif // FEAT_TOOLBAR
 
     void
 gui_mch_add_menu_item(vimmenu_T *menu, int idx)
@@ -1301,9 +1301,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	if (xms != NULL)
 	    XmStringFree(xms);
 
-# ifdef FEAT_BEVAL_GUI
+#  ifdef FEAT_BEVAL_GUI
 	gui_mch_menu_set_tip(menu);
-# endif
+#  endif
 
 	menu->parent = parent;
 	menu->submenu_id = NULL;
@@ -1327,11 +1327,11 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     {
 	menu->id = XtVaCreateWidget("subMenu",
 		xmSeparatorGadgetClass, parent->submenu_id,
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 		// count the tearoff item (needed for LessTif)
 		XmNpositionIndex, idx + (tearoff_val == (int)XmTEAR_OFF_ENABLED
 								     ? 1 : 0),
-#endif
+# endif
 		NULL);
 	gui_motif_menu_colors(menu->id);
 	return;
@@ -1344,11 +1344,11 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	xmPushButtonWidgetClass, parent->submenu_id,
 	XmNlabelString, label,
 	XmNmnemonic, menu->mnemonic,
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 	// count the tearoff item (needed for LessTif)
 	XmNpositionIndex, idx + (tearoff_val == (int)XmTEAR_OFF_ENABLED
 								     ? 1 : 0),
-#endif
+# endif
 	NULL);
     gui_motif_menu_colors(menu->id);
     gui_motif_menu_fontlist(menu->id);
@@ -1363,7 +1363,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     }
 }
 
-#if (XmVersion <= 1002)
+# if (XmVersion <= 1002)
 /*
  * This function will destroy/create the popup menus dynamically,
  * according to the value of 'mousemodel'.
@@ -1410,7 +1410,7 @@ gui_motif_update_mousemodel(vimmenu_T *menu)
       ++idx;
     }
 }
-#endif
+# endif
 
     void
 gui_mch_new_menu_colors(void)
@@ -1418,10 +1418,10 @@ gui_mch_new_menu_colors(void)
     if (menuBar == (Widget)0)
 	return;
     gui_motif_menu_colors(menuBar);
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     gui_motif_menu_colors(toolBarFrame);
     gui_motif_menu_colors(toolBar);
-#endif
+# endif
 
     submenu_change(root_menu, TRUE);
 }
@@ -1441,20 +1441,20 @@ gui_mch_new_menu_font(void)
 
 	XtVaGetValues(vimShell, XtNwidth, &w, XtNheight, &h, NULL);
 	gui_resize_shell(w, h
-#ifdef FEAT_XIM
+# ifdef FEAT_XIM
 		- xim_get_status_area_height()
-#endif
+# endif
 		     );
     }
     gui_set_shellsize(FALSE, TRUE, RESIZE_VERT);
     ui_new_shellsize();
 }
 
-#if defined(FEAT_BEVAL_GUI)
+# if defined(FEAT_BEVAL_GUI)
     void
 gui_mch_new_tooltip_font(void)
 {
-# ifdef FEAT_TOOLBAR
+#  ifdef FEAT_TOOLBAR
     vimmenu_T   *menu;
 
     if (toolBar == (Widget)0)
@@ -1463,13 +1463,13 @@ gui_mch_new_tooltip_font(void)
     menu = gui_find_menu((char_u *)"ToolBar");
     if (menu != NULL)
 	submenu_change(menu, FALSE);
-# endif
+#  endif
 }
 
     void
 gui_mch_new_tooltip_colors(void)
 {
-# ifdef FEAT_TOOLBAR
+#  ifdef FEAT_TOOLBAR
     vimmenu_T   *toolbar;
 
     if (toolBar == (Widget)0)
@@ -1478,9 +1478,9 @@ gui_mch_new_tooltip_colors(void)
     toolbar = gui_find_menu((char_u *)"ToolBar");
     if (toolbar != NULL)
 	submenu_change(toolbar, TRUE);
-# endif
+#  endif
 }
-#endif
+# endif
 
     static void
 submenu_change(
@@ -1496,7 +1496,7 @@ submenu_change(
 	    if (colors)
 	    {
 		gui_motif_menu_colors(mp->id);
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 		// For a toolbar item: Free the pixmap and allocate a new one,
 		// so that the background color is right.
 		if (mp->xpm != NULL)
@@ -1507,7 +1507,7 @@ submenu_change(
 		    n = add_pixmap_args(mp, args, n);
 		    XtSetValues(mp->id, args, n);
 		}
-# ifdef FEAT_BEVAL_GUI
+#  ifdef FEAT_BEVAL_GUI
 		// If we have a tooltip, then we need to change its font
 		if (mp->tip != NULL)
 		{
@@ -1519,13 +1519,13 @@ submenu_change(
 		    args[1].value = gui.tooltip_fg_pixel;
 		    XtSetValues(mp->tip->balloonLabel, &args[0], XtNumber(args));
 		}
+#  endif
 # endif
-#endif
 	    }
 	    else
 	    {
 		gui_motif_menu_fontlist(mp->id);
-#ifdef FEAT_BEVAL_GUI
+# ifdef FEAT_BEVAL_GUI
 		// If we have a tooltip, then we need to change its font
 		if (mp->tip != NULL)
 		{
@@ -1536,13 +1536,13 @@ submenu_change(
 						    &gui.tooltip_fontset);
 		    XtSetValues(mp->tip->balloonLabel, &args[0], XtNumber(args));
 		}
-#endif
+# endif
 	    }
 	}
 
 	if (mp->children != NULL)
 	{
-#if (XmVersion >= 1002)
+# if (XmVersion >= 1002)
 	    // Set the colors/font for the tear off widget
 	    if (mp->submenu_id != (Widget)0)
 	    {
@@ -1552,7 +1552,7 @@ submenu_change(
 		    gui_motif_menu_fontlist(mp->submenu_id);
 		toggle_tearoff(mp->submenu_id);
 	    }
-#endif
+# endif
 	    // Set the colors for the children
 	    submenu_change(mp->children, colors);
 	}
@@ -1580,7 +1580,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     Widget	    parent;
 
     parent = XtParent(menu->id);
-#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
+# if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
     if (parent == toolBar && menu->tip != NULL)
     {
 	// We try to destroy this before the actual menu, because there are
@@ -1594,12 +1594,12 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	gui_mch_destroy_beval_area(menu->tip);
 	menu->tip = NULL;
     }
-#endif
+# endif
     XtDestroyWidget(menu->id);
     menu->id = (Widget)0;
     if (parent == menuBar)
 	gui_mch_compute_menu_height((Widget)0);
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     else if (parent == toolBar)
     {
 	Cardinal    num_children;
@@ -1611,16 +1611,16 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	else
 	    gui.toolbar_height = gui_mch_compute_toolbar_height();
     }
-#endif
+# endif
 }
 
     void
 gui_mch_show_popupmenu(vimmenu_T *menu UNUSED)
 {
-#ifdef MOTIF_POPUP
+# ifdef MOTIF_POPUP
     XmMenuPosition(menu->submenu_id, gui_x11_get_last_mouse_event());
     XtManageChild(menu->submenu_id);
-#endif
+# endif
 }
 
 #endif // FEAT_MENU
@@ -2055,7 +2055,7 @@ set_fontlist(Widget id)
 {
     XmFontList fl;
 
-#ifdef FONTSET_ALWAYS
+# ifdef FONTSET_ALWAYS
     if (gui.fontset != NOFONTSET)
     {
 	fl = gui_motif_fontset2fontlist((XFontSet *)&gui.fontset);
@@ -2074,7 +2074,7 @@ set_fontlist(Widget id)
 	    XmFontListFree(fl);
 	}
     }
-#else
+# else
     if (gui.norm_font != NOFONT)
     {
 	fl = gui_motif_create_fontlist((XFontStruct *)gui.norm_font);
@@ -2093,7 +2093,7 @@ set_fontlist(Widget id)
 	    XmFontListFree(fl);
 	}
     }
-#endif
+# endif
 }
 #endif
 
@@ -2103,8 +2103,8 @@ set_fontlist(Widget id)
  * file selector related stuff
  */
 
-#include <Xm/FileSB.h>
-#include <Xm/XmStrDefs.h>
+# include <Xm/FileSB.h>
+# include <Xm/XmStrDefs.h>
 
 typedef struct dialog_callback_arg
 {
@@ -2392,7 +2392,7 @@ butproc(
     dialogStatus = (int)(long)client_data + 1;
 }
 
-#ifdef HAVE_XPM
+# ifdef HAVE_XPM
 
     static Widget
 create_pixmap_label(
@@ -2455,7 +2455,7 @@ create_pixmap_label(
 
     return label;
 }
-#endif
+# endif
 
     int
 gui_mch_dialog(
@@ -2482,10 +2482,10 @@ gui_mch_dialog(
     Widget		separator = NULL;
     int			n;
     Arg			args[6];
-#ifdef HAVE_XPM
+# ifdef HAVE_XPM
     char		**icon_data = NULL;
     Widget		dialogpixmap = NULL;
-#endif
+# endif
 
     if (title == NULL)
 	title = (char_u *)_("Vim dialog");
@@ -2689,7 +2689,7 @@ gui_mch_dialog(
 	    NULL);
     XtManageChild(form);
 
-#ifdef HAVE_XPM
+# ifdef HAVE_XPM
     // Add a pixmap, left of the message.
     switch (type)
     {
@@ -2723,7 +2723,7 @@ gui_mch_dialog(
     dialogpixmap = create_pixmap_label(form, "dialogPixmap",
 	    icon_data, args, n);
     XtManageChild(dialogpixmap);
-#endif
+# endif
 
     // Create the dialog message.
     // Since LessTif is apparently having problems with the creation of
@@ -2742,12 +2742,12 @@ gui_mch_dialog(
 				XmNalignment, XmALIGNMENT_BEGINNING,
 				XmNtopAttachment, XmATTACH_FORM,
 				XmNtopOffset, 8,
-#ifdef HAVE_XPM
+# ifdef HAVE_XPM
 				XmNleftAttachment, XmATTACH_WIDGET,
 				XmNleftWidget, dialogpixmap,
-#else
+# else
 				XmNleftAttachment, XmATTACH_FORM,
-#endif
+# endif
 				XmNleftOffset, 8,
 				XmNrightAttachment, XmATTACH_FORM,
 				XmNrightOffset, 8,
@@ -2904,7 +2904,7 @@ gui_mch_show_toolbar(int showit)
 	}
 	gui.toolbar_height = gui_mch_compute_toolbar_height();
 	XtManageChild(XtParent(toolBar));
-#ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
 	if (showing_tabline)
 	{
 	    XtVaSetValues(tabLine,
@@ -2917,7 +2917,7 @@ gui_mch_show_toolbar(int showit)
 			  NULL);
 	}
 	else
-#endif
+# endif
 	    XtVaSetValues(textAreaForm,
 			  XmNtopAttachment, XmATTACH_WIDGET,
 			  XmNtopWidget, XtParent(toolBar),
@@ -2937,7 +2937,7 @@ gui_mch_show_toolbar(int showit)
 	gui.toolbar_height = 0;
 	if (XtIsManaged(menuBar))
 	{
-#ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -2950,7 +2950,7 @@ gui_mch_show_toolbar(int showit)
 			      NULL);
 	    }
 	    else
-#endif
+# endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, menuBar,
@@ -2958,7 +2958,7 @@ gui_mch_show_toolbar(int showit)
 	}
 	else
 	{
-#ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
 	    if (showing_tabline)
 	    {
 		XtVaSetValues(tabLine,
@@ -2970,7 +2970,7 @@ gui_mch_show_toolbar(int showit)
 			      NULL);
 	    }
 	    else
-#endif
+# endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_FORM,
 			      NULL);
@@ -3031,11 +3031,11 @@ gui_mch_compute_toolbar_height(void)
 		height = whgt;
 	}
     }
-#ifdef LESSTIF_VERSION
+# ifdef LESSTIF_VERSION
     // Hack: When starting up we get wrong dimensions.
     if (height < 10)
 	height = 24;
-#endif
+# endif
 
     return (int)(height + (borders << 1));
 }
@@ -3077,20 +3077,20 @@ gui_mch_show_tabline(int showit)
 	    XtUnmanageChild(XtNameToWidget(tabLine, "MinorTabScrollerNext"));
 	    XtUnmanageChild(XtNameToWidget(tabLine,
 					   "MinorTabScrollerPrevious"));
-#ifdef FEAT_MENU
-# ifdef FEAT_TOOLBAR
+# ifdef FEAT_MENU
+#  ifdef FEAT_TOOLBAR
 	    if (XtIsManaged(XtParent(toolBar)))
 		XtVaSetValues(tabLine,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, XtParent(toolBar), NULL);
 	    else
-# endif
+#  endif
 		if (XtIsManaged(menuBar))
 		XtVaSetValues(tabLine,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, menuBar, NULL);
 	    else
-#endif
+# endif
 		XtVaSetValues(tabLine,
 			      XmNtopAttachment, XmATTACH_FORM, NULL);
 	    XtVaSetValues(textAreaForm,
@@ -3101,20 +3101,20 @@ gui_mch_show_tabline(int showit)
 	else
 	{
 	    XtUnmanageChild(tabLine);
-#ifdef FEAT_MENU
-# ifdef FEAT_TOOLBAR
+# ifdef FEAT_MENU
+#  ifdef FEAT_TOOLBAR
 	    if (XtIsManaged(XtParent(toolBar)))
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, XtParent(toolBar), NULL);
 	    else
-# endif
+#  endif
 		if (XtIsManaged(menuBar))
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_WIDGET,
 			      XmNtopWidget, menuBar, NULL);
 	    else
-#endif
+# endif
 		XtVaSetValues(textAreaForm,
 			      XmNtopAttachment, XmATTACH_FORM, NULL);
 	}
@@ -3284,7 +3284,7 @@ gui_motif_scroll_colors(Widget id)
 gui_motif_menu_fontlist(Widget id UNUSED)
 {
 #ifdef FEAT_MENU
-#ifdef FONTSET_ALWAYS
+# ifdef FONTSET_ALWAYS
     if (gui.menu_fontset != NOFONTSET)
     {
 	XmFontList fl;
@@ -3305,7 +3305,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    XmFontListFree(fl);
 	}
     }
-#else
+# else
     if (gui.menu_font != NOFONT)
     {
 	XmFontList fl;
@@ -3326,7 +3326,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    XmFontListFree(fl);
 	}
     }
-#endif
+# endif
 #endif
 }
 

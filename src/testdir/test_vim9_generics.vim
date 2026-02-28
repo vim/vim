@@ -2064,7 +2064,7 @@ def Test_generic_function_disassemble()
     '5 STORE $1\_s*' ..
     '\[x, y\] = g:values\_s*' ..
     '6 LOADG g:values\_s*\_s*' ..
-    '7 CHECKTYPE list<any> stack\[-1\]\_s*' ..
+    '7 CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
     '8 CHECKLEN 2\_s*' ..
     '9 ITEM 0\_s*' ..
     '10 CHECKTYPE list<string> stack\[-1\] var 1\_s*' ..
@@ -2201,7 +2201,7 @@ def Test_generic_disassemble_generic_obj_method()
     '5 STORE $2\_s*' ..
     '\[x, y\] = g:values\_s*' ..
     '6 LOADG g:values\_s*' ..
-    '7 CHECKTYPE list<any> stack\[-1\]\_s*' ..
+    '7 CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
     '8 CHECKLEN 2\_s*' ..
     '9 ITEM 0\_s*' ..
     '10 CHECKTYPE list<string> stack\[-1\] var 1\_s*' ..
@@ -2329,7 +2329,7 @@ def Test_generic_disassemble_generic_class_method()
     '5 STORE $1\_s*' ..
     '\[x, y\] = g:values\_s*' ..
     '6 LOADG g:values\_s*' ..
-    '7 CHECKTYPE list<any> stack\[-1\]\_s*' ..
+    '7 CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
     '8 CHECKLEN 2\_s*' ..
     '9 ITEM 0\_s*' ..
     '10 CHECKTYPE list<string> stack\[-1\] var 1\_s*' ..

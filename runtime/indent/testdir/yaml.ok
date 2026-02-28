@@ -18,3 +18,22 @@ map: |
   line1
   line2
 # END_INDENT
+
+# START_INDENT
+list:
+  - element1:
+      foo: bar
+  - element2:
+      foo: bar
+# END_INDENT
+
+# START_INDENT
+- name: test playbook
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: hello world
+      ansible.builtin.debug:
+        msg: "hello world"
+# END_INDENT

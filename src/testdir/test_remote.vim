@@ -131,4 +131,19 @@ func Test_remote_servername_shellslash()
   close
 endfunc
 
+" Test if serverlist() lists itself.
+func Test_remote_servername_itself()
+  let lines =<< trim END
+    call writefile([serverlist()], "XTest")
+  END
+  defer delete("XTest")
+  call writefile(lines, 'XRemote.vim', 'D')
+  let buf = RunVimInTerminal('--servername XVIMTEST -S XRemote.vim', {'rows': 8})
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_match("XVIMTEST", readfile("XTest")[0])})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

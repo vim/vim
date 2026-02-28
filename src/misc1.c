@@ -694,14 +694,14 @@ get_mode(char_u *buf)
 	buf[i++] = 'x';
 	buf[i++] = '!';
     }
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     else if (term_use_loop())
     {
 	if (State & MODE_CMDLINE)
 	    buf[i++] = 'c';
 	buf[i++] = 't';
     }
-#endif
+# endif
     else if (State == MODE_HITRETURN || State == MODE_ASKMORE
 						      || State == MODE_SETWSIZE
 		|| State == MODE_CONFIRM)
@@ -771,10 +771,10 @@ get_mode(char_u *buf)
 	    buf[i++] = 'i';
 	    buf[i++] = restart_edit;
 	}
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 	else if (term_in_normal_mode())
 	    buf[i++] = 't';
-#endif
+# endif
     }
 
     buf[i] = NUL;
@@ -1532,7 +1532,7 @@ expand_env_esc(
 		    if (src[1] == '{')
 # else
 		    if (*src == '%')
-#endif
+# endif
 			++tail;
 #endif
 		    *var = NUL;
@@ -2170,7 +2170,7 @@ init_users(void)
     lazy_init_done = TRUE;
     ga_init2(&ga_users, sizeof(char_u *), 20);
 
-# if defined(HAVE_GETPWENT) && defined(HAVE_PWD_H)
+#if defined(HAVE_GETPWENT) && defined(HAVE_PWD_H)
     {
 	struct passwd*	pw;
 
@@ -2179,7 +2179,7 @@ init_users(void)
 	    add_user((char_u *)pw->pw_name, TRUE);
 	endpwent();
     }
-# elif defined(MSWIN)
+#elif defined(MSWIN)
     {
 	DWORD		nusers = 0, ntotal = 0, i;
 	PUSER_INFO_0	uinfo;
@@ -2193,8 +2193,8 @@ init_users(void)
 	    NetApiBufferFree(uinfo);
 	}
     }
-# endif
-# if defined(HAVE_GETPWNAM)
+#endif
+#if defined(HAVE_GETPWNAM)
     {
 	char_u	*user_env = mch_getenv((char_u *)"USER");
 
@@ -2225,7 +2225,7 @@ init_users(void)
 	    }
 	}
     }
-# endif
+#endif
 }
 
 /*
@@ -2373,7 +2373,7 @@ fast_breakcheck(void)
     }
 }
 
-# if defined(FEAT_SPELL)
+#if defined(FEAT_SPELL)
 /*
  * Like line_breakcheck() but check 100 times less often.
  */
@@ -2391,12 +2391,12 @@ veryfast_breakcheck(void)
 #if defined(VIM_BACKTICK) || defined(FEAT_EVAL) \
 	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 
-#ifndef SEEK_SET
-# define SEEK_SET 0
-#endif
-#ifndef SEEK_END
-# define SEEK_END 2
-#endif
+# ifndef SEEK_SET
+#  define SEEK_SET 0
+# endif
+# ifndef SEEK_END
+#  define SEEK_END 2
+# endif
 
 /*
  * Get the stdout of an external command.
@@ -2472,9 +2472,9 @@ get_cmd_output(
     mch_remove(tempname);
     if (buffer == NULL)
 	goto done;
-#ifdef VMS
+# ifdef VMS
     len = i;	// VMS doesn't give us what we asked for...
-#endif
+# endif
     if (i != len)
     {
 	semsg(_(e_cant_read_file_str), tempname);
@@ -2654,7 +2654,7 @@ get_cmd_output_as_rettv(
     else
     {
 	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
-#ifdef USE_CRNL
+#  ifdef USE_CRNL
 	// translate <CR><NL> into <NL>
 	if (res != NULL)
 	{
@@ -2669,7 +2669,7 @@ get_cmd_output_as_rettv(
 	    }
 	    *d = NUL;
 	}
-#endif
+#  endif
 	rettv->vval.v_string = res;
 	res = NULL;
     }

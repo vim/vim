@@ -777,7 +777,7 @@ endfunc
 func s:OnRedraw()
 endfunc
 
-" Test if partial is correctly ref'ed and doesn't cause use afte free error
+" Test if partial is correctly ref'ed and doesn't cause use after free error
 func Test_redraw_listener_partial()
   call redraw_listener_add(#{on_start: function("s:OnRedraw", [1])})
 endfunc

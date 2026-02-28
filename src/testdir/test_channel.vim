@@ -2764,6 +2764,64 @@ func Test_channel_lsp_mode()
   call RunServer('test_channel_lsp.py', 'LspTests', [])
 endfunc
 
+" Test for the 'dap' channel mode. Don't need to test much since most of the
+" logic is same as 'lsp' mode.
+func DapTests(port)
+  let ch = ch_open(s:localhost .. a:port, #{
+        \ mode: 'dap',
+        \ })
+
+  if ch_status(ch) == "fail"
+    call assert_report("Can't open the dap channel")
+    return
+  endif
+
+  " check for channel information
+  let info = ch_info(ch)
+  call assert_equal('DAP', info.sock_mode)
+
+  let resp = ch_evalexpr(ch, #{
+        \ type: 'request',
+        \ command: 'initialize'
+        \ })
+  call assert_equal({
+        \ 'seq': 1,
+        \ 'request_seq': 1,
+        \ 'type': 'response',
+        \ 'success': v:true,
+        \ 'body': {'supportsConfigurationDoneRequest': v:true},
+        \ 'command': 'initialize'
+        \ }, resp)
+
+  let resp = ch_read(ch)
+
+  call assert_equal({
+        \ 'seq': 2,
+        \ 'type': 'event',
+        \ 'event': 'initialized',
+        \ 'body': {}
+        \ }, resp)
+
+  let resp = ch_evalexpr(ch, #{
+        \ type: 'request',
+        \ command: 'test'
+        \ })
+
+  call assert_equal({
+        \ 'seq': 3,
+        \ 'request_seq': 2,
+        \ 'type': 'response',
+        \ 'success': v:true,
+        \ 'body': {},
+        \ 'command': 'test'
+        \ }, resp)
+endfunc
+
+func Test_channel_dap_mode()
+  let g:giveup_same_error = 0
+  call RunServer('test_channel_dap.py', 'DapTests', [])
+endfunc
+
 func Test_error_callback_terminal()
   CheckUnix
   CheckFeature terminal

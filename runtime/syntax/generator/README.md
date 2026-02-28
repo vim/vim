@@ -3,7 +3,7 @@
 This directory contains a Vim script generator, that will parse the Vim source file and
 generate a vim.vim syntax file.
 
-Files in this directory where copied from https://github.com/vim-jp/syntax-vim-ex/
+Files in this directory were copied from https://github.com/vim-jp/syntax-vim-ex/
 and included here on Feb, 13th, 2024 for the Vim Project.
 
 - Maintainer: Hirohito Higashi

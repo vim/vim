@@ -85,9 +85,9 @@ static int	KeyNoremap = 0;	    // remapping flags
 #ifdef FEAT_NORMAL
 // Add extra space to handle large OSC responses in bigger chunks (improve
 // performance)
-#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
+# define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
 #else // Tiny version
-#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
+# define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
 #endif
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
@@ -1575,9 +1575,9 @@ save_typeahead(tasave_T *tp)
     readbuf1.bh_first.b_next = NULL;
     tp->save_readbuf2 = readbuf2;
     readbuf2.bh_first.b_next = NULL;
-# ifdef USE_INPUT_BUF
+#ifdef USE_INPUT_BUF
     tp->save_inputbuf = get_input_buf();
-# endif
+#endif
 }
 
 /*
@@ -1601,9 +1601,9 @@ restore_typeahead(tasave_T *tp, int overwrite UNUSED)
     readbuf1 = tp->save_readbuf1;
     free_buff(&readbuf2);
     readbuf2 = tp->save_readbuf2;
-# ifdef USE_INPUT_BUF
+#ifdef USE_INPUT_BUF
     set_input_buf(tp->save_inputbuf, overwrite);
-# endif
+#endif
 }
 
 /*
@@ -2441,12 +2441,12 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     if (called_emsg != called_emsg_start)
 	return;
 
-#ifdef MESSAGE_QUEUE
+# ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
     // a callback where it was not expected.  Some plugins use getchar(1) in a
     // loop to await a message, therefore make sure we check for messages here.
     parse_queued_messages();
-#endif
+# endif
 
     if (cursor_flag == 'h')
 	cursor_sleep();
@@ -2538,11 +2538,11 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
-#endif
+# endif
 		    for (wp = firstwin; wp != win && wp != NULL;
 							       wp = wp->w_next)
 			++winnr;
@@ -2668,13 +2668,13 @@ parse_queued_messages(void)
 	if (has_sound_callback_in_queue())
 	    invoke_sound_callback();
 # endif
-#ifdef SIGUSR1
+# ifdef SIGUSR1
 	if (got_sigusr1)
 	{
 	    apply_autocmds(EVENT_SIGUSR1, NULL, NULL, FALSE, curbuf);
 	    got_sigusr1 = FALSE;
 	}
-#endif
+# endif
 	break;
     }
 
@@ -2833,9 +2833,13 @@ handle_mapping(
     int		i;
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
+    bool	in_osc = in_osc_sequence(); // If we are in an OSC sequence,
+					    // then go straight to
+					    // check_termcode() in order to
+					    // consume chars.
 
     // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
-    if (typebuf.tb_len >= 3
+    if (!in_osc && typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 	    && typebuf.tb_buf[typebuf.tb_off + 2] == KE_PLUG)
@@ -2853,9 +2857,10 @@ handle_mapping(
      * - waiting for "hit return to continue" and CR or SPACE typed
      * - waiting for a char with --more--
      * - in Ctrl-X mode, and we get a valid char for that mode
+     * - currently receiving OSC sequence
      */
     tb_c1 = typebuf.tb_buf[typebuf.tb_off];
-    if (no_mapping == 0 && is_maphash_valid()
+    if (!in_osc && no_mapping == 0 && is_maphash_valid()
 	    && (no_zero_mapping == 0 || tb_c1 != '0')
 	    && (typebuf.tb_maplen == 0 || is_plug_map
 		|| (p_remap
@@ -3043,7 +3048,8 @@ handle_mapping(
     /*
      * Check for match with 'pastetoggle'
      */
-    if (*p_pt != NUL && mp == NULL && (State & (MODE_INSERT | MODE_NORMAL)))
+    if (!in_osc && *p_pt != NUL && mp == NULL &&
+	    (State & (MODE_INSERT | MODE_NORMAL)))
     {
 	for (mlen = 0; mlen < typebuf.tb_len && p_pt[mlen]; ++mlen)
 	    if (p_pt[mlen] != typebuf.tb_buf[typebuf.tb_off + mlen])
@@ -3082,9 +3088,9 @@ handle_mapping(
     // May check for a terminal code when there is no mapping or only a partial
     // mapping.  Also check if there is a full mapping with <Esc>, unless timed
     // out, since that is nearly always a partial match with a terminal code.
-    if ((mp == NULL || max_mlen + want_termcode > mp_match_len
+    if (in_osc || ((mp == NULL || max_mlen + want_termcode > mp_match_len
 		    || (mp_match_len == 1 && *mp->m_keys == ESC && !*timedout))
-	    && keylen != KEYLEN_PART_MAP)
+	    && keylen != KEYLEN_PART_MAP))
     {
 	int	save_keylen = keylen;
 
@@ -3097,12 +3103,12 @@ handle_mapping(
 	 * - and not an ESC sequence, not in insert mode or p_ek is on,
 	 * - and when not timed out,
 	 */
-	if (no_mapping == 0 || allow_keys != 0)
+	if (in_osc || no_mapping == 0 || allow_keys != 0)
 	{
-	    if ((typebuf.tb_maplen == 0
+	    if (in_osc || ((typebuf.tb_maplen == 0
 			    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
-		    && !*timedout)
+		    && !*timedout))
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
 		keylen = 0;
@@ -4288,7 +4294,7 @@ getcmdkeycmd(
 	}
 	else if (c1 == K_SNR)
 	{
-	    ga_concat_len(&line_ga, (char_u *)"<SNR>", 5);
+	    GA_CONCAT_LITERAL(&line_ga, "<SNR>");
 	}
 	else
 	{

@@ -33,8 +33,8 @@ void qnx_init(void)
 
 #if defined(FEAT_GUI_PHOTON) && defined(FEAT_CLIPBOARD)
 
-#define CLIP_TYPE_VIM "VIMTYPE"
-#define CLIP_TYPE_TEXT "TEXT"
+# define CLIP_TYPE_VIM "VIMTYPE"
+# define CLIP_TYPE_TEXT "TEXT"
 
 // Turn on the clipboard for a console vim when photon is running
 void qnx_clip_init(void)

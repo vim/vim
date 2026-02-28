@@ -817,7 +817,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 	    if (first)
 		first = FALSE;
 	    else
-		ga_concat_len(&ga, (char_u *)", ", 2);
+		GA_CONCAT_LITERAL(&ga, ", ");
 
 	    tofree = string_quote(hi->hi_key, FALSE);
 	    if (tofree != NULL)
@@ -825,7 +825,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 		ga_concat(&ga, tofree);
 		vim_free(tofree);
 	    }
-	    ga_concat_len(&ga, (char_u *)": ", 2);
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    s = echo_string_core(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID,
 						 FALSE, restore_copyID, TRUE);
 	    if (s != NULL)
@@ -994,7 +994,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		{
 		    emsg(_(e_missing_matching_bracket_after_dict_key));
 		    clear_tv(&tvkey);
-		    return FAIL;
+		    goto failret;
 		}
 		++*arg;
 	    }
@@ -1038,17 +1038,13 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
-	    if (evaluate)
-		clear_tv(&tvkey);
+	    clear_tv(&tvkey);
 	    goto failret;
 	}
 	if (check_typval_is_value(&tv) == FAIL)
 	{
-	    if (evaluate)
-	    {
-		clear_tv(&tvkey);
-		clear_tv(&tv);
-	    }
+	    clear_tv(&tvkey);
+	    clear_tv(&tv);
 	    goto failret;
 	}
 	if (evaluate)
@@ -1374,7 +1370,11 @@ dict_extend_func(
 
     if (type != NULL && check_typval_arg_type(type, &argvars[1],
 							 func_name, 2) == FAIL)
+    {
+	if (is_new)
+	    dict_unref(d1);
 	return;
+    }
     dict_extend(d1, d2, action, func_name);
 
     if (is_new)
@@ -1610,7 +1610,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 }
 
 /*
- * "items()" function
+ * "items(dict)" function
  */
     void
 dict2items(typval_T *argvars, typval_T *rettv)

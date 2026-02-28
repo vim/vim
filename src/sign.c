@@ -1159,6 +1159,7 @@ sign_list_by_name(char_u *name)
 static void
 may_force_numberwidth_recompute(buf_T *buf, int unplace)
 {
+# if defined(FEAT_LINEBREAK)
     tabpage_T *tp = NULL;
     win_T *wp = NULL;
 
@@ -1169,6 +1170,7 @@ may_force_numberwidth_recompute(buf_T *buf, int unplace)
             (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
             wp->w_nrwidth_line_count = 0;
     }
+# endif
 }
 
 /*

@@ -557,7 +557,10 @@ invoke_sync_listeners(
 
     dict = dict_alloc();
     if (dict == NULL)
+    {
+	list_unref(recorded_changes);
 	return;
+    }
 
     dict_add_number(dict, "lnum", (varnumber_T)start);
     dict_add_number(dict, "end", (varnumber_T)end);

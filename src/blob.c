@@ -165,8 +165,8 @@ blob_equal(
     blob_T	*b2)
 {
     int	    i;
-    int	    len1 = blob_len(b1);
-    int	    len2 = blob_len(b2);
+    long    len1 = blob_len(b1);
+    long    len2 = blob_len(b2);
 
     // empty and NULL are considered the same
     if (len1 == 0 && len2 == 0)
@@ -276,13 +276,16 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
 
     // Store bytes in the growarray.
     ga_init2(&ga, 1, 4000);
-    ga_concat(&ga, (char_u *)"0z");
+    GA_CONCAT_LITERAL(&ga, "0z");
     for (i = 0; i < blob_len(blob); i++)
     {
+	size_t	numbuflen;
+
 	if (i > 0 && (i & 3) == 0)
-	    ga_concat(&ga, (char_u *)".");
-	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", blob_get(blob, i));
-	ga_concat(&ga, numbuf);
+	    GA_CONCAT_LITERAL(&ga, ".");
+	numbuflen = vim_snprintf_safelen((char *)numbuf, NUMBUFLEN,
+	    "%02X", blob_get(blob, i));
+	ga_concat_len(&ga, numbuf, numbuflen);
     }
     ga_append(&ga, NUL);		// append a NUL at the end
     *tofree = ga.ga_data;
@@ -818,14 +821,14 @@ blob_reduce(
     void
 blob_reverse(blob_T *b, typval_T *rettv)
 {
-    int	i, len = blob_len(b);
+    long    i, len = blob_len(b);
 
     for (i = 0; i < len / 2; i++)
     {
-	int tmp = blob_get(b, i);
+	int tmp = blob_get(b, (int)i);
 
-	blob_set(b, i, blob_get(b, len - i - 1));
-	blob_set(b, len - i - 1, tmp);
+	blob_set(b, (int)i, blob_get(b, (int)(len - i - 1)));
+	blob_set(b, (int)(len - i - 1), tmp);
     }
     rettv_blob_set(rettv, b);
 }
@@ -838,7 +841,7 @@ f_blob2list(typval_T *argvars, typval_T *rettv)
 {
     blob_T	*blob;
     list_T	*l;
-    int		i;
+    long	i;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
@@ -848,8 +851,8 @@ f_blob2list(typval_T *argvars, typval_T *rettv)
 
     blob = argvars->vval.v_blob;
     l = rettv->vval.v_list;
-    for (i = 0; i < blob_len(blob); i++)
-	list_append_number(l, blob_get(blob, i));
+    for (i = 0; i < (long)blob_len(blob); i++)
+	list_append_number(l, blob_get(blob, (int)i));
 }
 
 /*

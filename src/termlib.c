@@ -104,7 +104,7 @@ tgetent(
 		nexttmp  = _find(tmp, ":|");	// Rhialto
 		if (tmp+tlen == nexttmp && _match(tmp, term) == tlen)
 		{
-		    strcpy(tbuf, tmp);
+		    vim_strncpy(tbuf, tmp, TBUFSZ - 1);
 		    tent = tbuf;
 		    return 1;
 		}
@@ -115,7 +115,7 @@ tgetent(
     }
     if (!(termcap = mch_fopen(tcap, "r")))
     {
-	strcpy(tbuf, tcap);
+	vim_strncpy(tbuf, tcap, TBUFSZ - 1);
 	return -1;
     }
 

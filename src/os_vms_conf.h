@@ -4,9 +4,9 @@
  */
 
 #if defined(__VMS) || defined(__vms)
-#if !defined(VMS)
-#define VMS
-#endif
+# if !defined(VMS)
+#  define VMS
+# endif
 #endif
 
 #include <decc$types.h>             // Required early for large-file support
@@ -158,78 +158,78 @@
 
 // Hardware specific
 #if defined(__VAX) || defined(VAX)
-#undef  HAVE_GETTIMEOFDAY
-#undef  HAVE_USLEEP
-#undef  HAVE_STRCASECMP
-#undef  HAVE_STRINGS_H
-#undef  HAVE_SIGSETJMP
-#undef  HAVE_ISNAN
-#undef  HAVE_XOS_R_H
-#define HAVE_NO_LONG_LONG
-#define LONG_LONG_MIN  (-2147483647-1)
-#define LONG_LONG_MAX  (2147483647)
-#define ULONG_LONG_MAX (4294967295U)
+# undef  HAVE_GETTIMEOFDAY
+# undef  HAVE_USLEEP
+# undef  HAVE_STRCASECMP
+# undef  HAVE_STRINGS_H
+# undef  HAVE_SIGSETJMP
+# undef  HAVE_ISNAN
+# undef  HAVE_XOS_R_H
+# define HAVE_NO_LONG_LONG
+# define LONG_LONG_MIN  (-2147483647-1)
+# define LONG_LONG_MAX  (2147483647)
+# define ULONG_LONG_MAX (4294967295U)
 
 #else // ALPHA, IA64, X86_64
-#define HAVE_FSEEKO             /* Use off_t. */
-#define HAVE_GETTIMEOFDAY
-#define HAVE_USLEEP
-#define HAVE_STRCASECMP
-#define HAVE_STRINGS_H
-#define HAVE_SIGSETJMP
-#undef  HAVE_XOS_R_H
-#undef  HAVE_NO_LONG_LONG
-#define LONG_LONG_MIN  (-9223372036854775807-1)
-#define LONG_LONG_MAX  (9223372036854775807)
-#define ULONG_LONG_MAX (18446744073709551615U)
+# define HAVE_FSEEKO             /* Use off_t. */
+# define HAVE_GETTIMEOFDAY
+# define HAVE_USLEEP
+# define HAVE_STRCASECMP
+# define HAVE_STRINGS_H
+# define HAVE_SIGSETJMP
+# undef  HAVE_XOS_R_H
+# undef  HAVE_NO_LONG_LONG
+# define LONG_LONG_MIN  (-9223372036854775807-1)
+# define LONG_LONG_MAX  (9223372036854775807)
+# define ULONG_LONG_MAX (18446744073709551615U)
 
-#if defined(__DECC) && (__CRTL_VER >= 80500000) && (__STDC_VERSION__ >= 199901L) /* C99 */
-#define HAVE_ISINF
-#define HAVE_ISNAN
-#endif
+# if defined(__DECC) && (__CRTL_VER >= 80500000) && (__STDC_VERSION__ >= 199901L) /* C99 */
+#  define HAVE_ISINF
+#  define HAVE_ISNAN
+# endif
 
-#define HAVE_XOS_R_H
+# define HAVE_XOS_R_H
 
 #endif /* VAX [else] */
 
 // Compiler specific
 #if defined(VAXC) || defined(__VAXC)
-#undef  HAVE_SELECT
-#undef  HAVE_FCNTL_H
-#undef  HAVE_UNISTD_H
-#undef  HAVE_SYS_TIME_H
-#undef  HAVE_LOCALE_H
-#define BROKEN_LOCALE
-#undef  DYNAMIC_ICONV
-#undef	HAVE_STRFTIME
+# undef  HAVE_SELECT
+# undef  HAVE_FCNTL_H
+# undef  HAVE_UNISTD_H
+# undef  HAVE_SYS_TIME_H
+# undef  HAVE_LOCALE_H
+# define BROKEN_LOCALE
+# undef  DYNAMIC_ICONV
+# undef	HAVE_STRFTIME
 #else   // DECC
-#define HAVE_SELECT
-#define HAVE_FCNTL_H
-#define HAVE_UNISTD_H 1
-#define HAVE_SYS_TIME_H
-#define HAVE_LOCALE_H
-#define BROKEN_LOCALE
-#undef  DYNAMIC_ICONV
-#define	HAVE_STRFTIME
+# define HAVE_SELECT
+# define HAVE_FCNTL_H
+# define HAVE_UNISTD_H 1
+# define HAVE_SYS_TIME_H
+# define HAVE_LOCALE_H
+# define BROKEN_LOCALE
+# undef  DYNAMIC_ICONV
+# define	HAVE_STRFTIME
 #endif
 
 #if defined(USE_ICONV)
-#define HAVE_ICONV_H
-#define HAVE_ICONV
+# define HAVE_ICONV_H
+# define HAVE_ICONV
 #else
-#undef HAVE_ICONV_H
-#undef HAVE_ICONV
+# undef HAVE_ICONV_H
+# undef HAVE_ICONV
 #endif
 
 // GUI support defines
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK)
-#define X_INCLUDE_GRP_H  // To use getgrgid
-#define XUSE_MTSAFE_API
-#define HAVE_X11
-#define WANT_X11
-#ifdef  HAVE_XPM
-#define HAVE_X11_XPM_H
-#endif
-#define USE_FONTSET
-#undef  X_LOCALE
+# define X_INCLUDE_GRP_H  // To use getgrgid
+# define XUSE_MTSAFE_API
+# define HAVE_X11
+# define WANT_X11
+# ifdef  HAVE_XPM
+#  define HAVE_X11_XPM_H
+# endif
+# define USE_FONTSET
+# undef  X_LOCALE
 #endif

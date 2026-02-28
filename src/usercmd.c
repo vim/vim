@@ -24,9 +24,9 @@ typedef struct ucmd
     cmd_addr_T	uc_addr_type;	// The command's address type
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
     int		uc_flags;	// some UC_ flags
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     char_u	*uc_compl_arg;	// completion argument if any
-# endif
+#endif
 } ucmd_T;
 
 // List of all user commands.
@@ -207,14 +207,14 @@ find_ucmd(
 
 		    if (complp != NULL)
 			*complp = uc->uc_compl;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		    if (xp != NULL)
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
 			xp->xp_script_ctx = uc->uc_script_ctx;
 			xp->xp_script_ctx.sc_lnum += SOURCING_LNUM;
 		    }
-# endif
+#endif
 		    // Do not search for further abbreviations
 		    // if this is an exact match.
 		    matchlen = k;
@@ -830,9 +830,9 @@ parse_compl_arg(
     char_u	**compl_arg UNUSED)
 {
     char_u	*arg = NULL;
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     size_t	arglen = 0;
-# endif
+#endif
     int		i;
     int		valend = vallen;
     keyvalue_T	target;
@@ -845,9 +845,9 @@ parse_compl_arg(
 	if (value[i] == ',')
 	{
 	    arg = &value[i + 1];
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	    arglen = vallen - i - 1;
-# endif
+#endif
 	    valend = i;
 	    break;
 	}
@@ -882,17 +882,17 @@ parse_compl_arg(
 	*argt |= EX_XFILE;
 
     if (
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	*complp != EXPAND_USER_DEFINED && *complp != EXPAND_USER_LIST
 								&&
-# endif
+#endif
 								arg != NULL)
     {
 	emsg(_(e_completion_argument_only_allowed_for_custom_completion));
 	return FAIL;
     }
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
 							       && arg == NULL)
     {
@@ -902,7 +902,7 @@ parse_compl_arg(
 
     if (arg != NULL)
 	*compl_arg = vim_strnsave(arg, arglen);
-# endif
+#endif
 
     return OK;
 }
@@ -1380,9 +1380,9 @@ uc_clear(garray_T *gap)
 	vim_free(cmd->uc_name);
 	cmd->uc_namelen = 0;
 	vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	vim_free(cmd->uc_compl_arg);
-# endif
+#endif
     }
     ga_clear(gap);
 }
@@ -1434,9 +1434,9 @@ ex_delcommand(exarg_T *eap)
 
     vim_free(cmd->uc_name);
     vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     vim_free(cmd->uc_compl_arg);
-# endif
+#endif
 
     --gap->ga_len;
 
@@ -1995,9 +1995,9 @@ do_ucmd(exarg_T *eap)
 		if (*ksp == K_SPECIAL
 			&& (start == NULL || ksp < start || end == NULL)
 			&& ((ksp[1] == KS_SPECIAL && ksp[2] == KE_FILLER)
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			    || (ksp[1] == KS_EXTRA && ksp[2] == (int)KE_CSI)
-# endif
+#endif
 			    ))
 		{
 		    // K_SPECIAL has been put in the buffer as K_SPECIAL

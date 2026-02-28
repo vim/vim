@@ -831,7 +831,7 @@ ex_terminal(exarg_T *eap)
 
 	// Note: Keep this in sync with get_terminalopt_name.
 
-# define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
+#define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
 				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
 	if (OPTARG_HAS("close"))
 	    opt.jo_term_finish = 'c';
@@ -918,7 +918,7 @@ ex_terminal(exarg_T *eap)
 	    semsg(_(e_invalid_attribute_str), cmd);
 	    goto theend;
 	}
-# undef OPTARG_HAS
+#undef OPTARG_HAS
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
@@ -1110,10 +1110,10 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
-#ifdef MSWIN
+# ifdef MSWIN
     if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
 	return FAIL;
-#endif
+# endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
     if (put_eol(fd) != OK)
@@ -1482,9 +1482,15 @@ term_mouse_click(VTerm *vterm, int key)
     // For modeless selection mouse drag and release events are ignored, unless
     // they are preceded with a mouse down event
     static int	    ignore_drag_release = TRUE;
+    VTermState	    *state;
     VTermMouseState mouse_state;
 
-    vterm_state_get_mousestate(vterm_obtain_state(vterm), &mouse_state);
+
+    state = vterm_obtain_state(vterm);
+    if (state == NULL)
+	return FALSE;
+
+    vterm_state_get_mousestate(state, &mouse_state);
     if (mouse_state.flags == 0)
     {
 	// Terminal is not using the mouse, use modeless selection.
@@ -1584,9 +1590,26 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
     {
 	// don't use VTERM_KEY_ENTER, it may do an unwanted conversion
 
-				// don't use VTERM_KEY_BACKSPACE, it always
-				// becomes 0x7f DEL
-	case K_BS:		c = term_backspace_char; break;
+	case K_BS:
+#ifdef MSWIN
+	    // In ConPTY, we must use VTERM_KEY_BACKSPACE, otherwise it will
+	    // delete one word, equivalent to Alt+Backspace.
+	    if (term->tl_conpty)
+		key = VTERM_KEY_BACKSPACE;
+	    else
+#endif
+		// don't use VTERM_KEY_BACKSPACE, it always becomes 0x7f DEL
+		c = term_backspace_char;
+	    break;
+
+#ifdef MSWIN
+	case BS:
+	    // In ConPTY, we must use VTERM_KEY_BACKSPACE, otherwise it will
+	    // delete one word, equivalent to Alt+Backspace.
+	    if (term->tl_conpty)
+		key = VTERM_KEY_BACKSPACE;
+	    break;
+#endif
 
 	case ESC:		key = VTERM_KEY_ESCAPE; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
@@ -2963,7 +2986,7 @@ terminal_loop(int blocking)
 		goto theend;
 	    }
 	}
-# ifdef MSWIN
+#ifdef MSWIN
 	if (!enc_utf8 && has_mbyte && raw_c >= 0x80)
 	{
 	    WCHAR   wc;
@@ -2974,7 +2997,7 @@ terminal_loop(int blocking)
 	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
 		raw_c = wc;
 	}
-# endif
+#endif
 	if (send_keys_to_term(curbuf->b_term, raw_c, mod_mask, TRUE) != OK)
 	{
 	    if (raw_c == K_MOUSEMOVE)
@@ -3547,12 +3570,13 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     {
 	for (col = 0; col < len; col += cells[col].width)
 	{
-	    if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
+	    if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 4) == FAIL)
 	    {
 		ga.ga_len = 0;
 		break;
 	    }
-	    for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
+	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL &&
+		    ((c = cells[col].chars[i]) > 0 || i == 0); ++i)
 		ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 			(char_u *)ga.ga_data + ga.ga_len);
 	    cell2cellattr(&cells[col], &p[col]);
@@ -4408,40 +4432,40 @@ init_default_colors(term_T *term)
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
-#  ifdef VIMDLL
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
 	    if (!gui.in_use)
-#  endif
+# endif
 	    {
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
 	    }
-# endif
+#endif
 	}
-# ifdef FEAT_TERMRESPONSE
+#ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_fg_color(&fg->red, &fg->green, &fg->blue);
-# endif
+#endif
 
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
-#  ifdef VIMDLL
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
 	    if (!gui.in_use)
-#  endif
+# endif
 	    {
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
 	    }
-# endif
+#endif
 	}
-# ifdef FEAT_TERMRESPONSE
+#ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_bg_color(&bg->red, &bg->green, &bg->blue);
-# endif
+#endif
     }
 }
 
@@ -4454,12 +4478,12 @@ init_default_colors(term_T *term)
 term_use_palette(void)
 {
     if (0
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    || gui.in_use
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	    || p_tgc
-#endif
+# endif
        )
 	return TRUE;
     return FALSE;
@@ -5378,7 +5402,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 dump_is_corrupt(garray_T *gap)
 {
-    ga_concat(gap, (char_u *)"CORRUPT");
+    GA_CONCAT_LITERAL(gap, "CORRUPT");
 }
 
     static void
@@ -5409,7 +5433,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     int		    c;
     garray_T	    ga_text;
     garray_T	    ga_cell;
-    char_u	    *prev_char = NULL;
+    string_T	    prev_char = {NULL, 0};
     int		    attr = 0;
     cellattr_T	    cell;
     cellattr_T	    empty_cell;
@@ -5488,10 +5512,16 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 	    }
 
 	    // save the character for repeating it
-	    vim_free(prev_char);
+	    VIM_CLEAR_STRING(prev_char);
 	    if (ga_text.ga_data != NULL)
-		prev_char = vim_strnsave(((char_u *)ga_text.ga_data) + prev_len,
-						    ga_text.ga_len - prev_len);
+	    {
+		prev_char.length = (size_t)(ga_text.ga_len - prev_len);
+		prev_char.string = vim_strnsave(
+		    ((char_u *)ga_text.ga_data) + prev_len,
+		    prev_char.length);
+		if (prev_char.string == NULL)
+		    prev_char.length = 0;
+	    }
 
 	    if (c == '@' || c == '|' || c == '>' || c == '\n')
 	    {
@@ -5601,7 +5631,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 	}
 	else if (c == '@')
 	{
-	    if (prev_char == NULL)
+	    if (prev_char.string == NULL)
 		dump_is_corrupt(&ga_text);
 	    else
 	    {
@@ -5618,7 +5648,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 
 		while (count-- > 0)
 		{
-		    ga_concat(&ga_text, prev_char);
+		    ga_concat_len(&ga_text, prev_char.string, prev_char.length);
 		    append_cell(&ga_cell, &cell);
 		}
 	    }
@@ -5641,7 +5671,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 
     ga_clear(&ga_text);
     ga_clear(&ga_cell);
-    vim_free(prev_char);
+    vim_free(prev_char.string);
 
     return max_cells;
 }
@@ -6675,10 +6705,12 @@ f_term_getansicolors(typval_T *argvars, typval_T *rettv)
     state = vterm_obtain_state(term->tl_vterm);
     for (index = 0; index < 16; index++)
     {
+	size_t	hexbuflen;
+
 	vterm_state_get_palette_color(state, index, &color);
-	sprintf((char *)hexbuf, "#%02x%02x%02x",
-		color.red, color.green, color.blue);
-	if (list_append_string(list, hexbuf, 7) == FAIL)
+	hexbuflen = vim_snprintf_safelen((char *)hexbuf, sizeof(hexbuf),
+	    "#%02x%02x%02x", color.red, color.green, color.blue);
+	if (list_append_string(list, hexbuf, (int)hexbuflen) == FAIL)
 	    return;
     }
 }
@@ -6944,11 +6976,11 @@ term_send_eof(channel_T *ch)
 					(int)STRLEN(term->tl_eof_chars), NULL);
 		channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
 	    }
-# ifdef MSWIN
+#ifdef MSWIN
 	    else
 		// Default: CTRL-D
 		channel_send(ch, PART_IN, (char_u *)"\004\r", 2, NULL);
-# endif
+#endif
 	}
 }
 
@@ -6960,7 +6992,7 @@ term_getjob(term_T *term)
 }
 #endif
 
-# if defined(MSWIN)
+#if defined(MSWIN)
 
 ///////////////////////////////////////
 // 2. MS-Windows implementation.
@@ -7193,7 +7225,7 @@ conpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7201,7 +7233,7 @@ conpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7299,9 +7331,9 @@ use_conpty(void)
     return has_conpty;
 }
 
-#define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
-#define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
-#define WINPTY_MOUSE_MODE_FORCE		2
+# define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
+# define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
+# define WINPTY_MOUSE_MODE_FORCE		2
 
 void* (*winpty_config_new)(UINT64, void*);
 void* (*winpty_open)(void*, void*);
@@ -7320,7 +7352,7 @@ LPCWSTR (*winpty_error_msg)(void*);
 BOOL (*winpty_set_size)(void*, int, int, void*);
 HANDLE (*winpty_agent_process)(void*);
 
-#define WINPTY_DLL "winpty.dll"
+# define WINPTY_DLL "winpty.dll"
 
 static HINSTANCE hWinPtyDLL = NULL;
 
@@ -7531,7 +7563,7 @@ winpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7539,7 +7571,7 @@ winpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7772,7 +7804,7 @@ terminal_enabled(void)
     return dyn_winpty_init(FALSE) == OK || dyn_conpty_init(FALSE) == OK;
 }
 
-# else
+#else
 
 ///////////////////////////////////////
 // 3. Unix-like implementation.
@@ -7797,7 +7829,7 @@ term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	return FAIL;
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7805,7 +7837,7 @@ term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
-#endif
+# endif
 
     // This may change a string in "argvar".
     term->tl_job = job_start(argvar, argv, opt, &term->tl_job);
@@ -7868,6 +7900,6 @@ term_report_winsize(term_T *term, int rows, int cols)
 	mch_signal_job(term->tl_job, (char_u *)"winch");
 }
 
-# endif
+#endif
 
 #endif // FEAT_TERMINAL

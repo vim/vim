@@ -338,7 +338,7 @@ f_fmod(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 
-# if defined(HAVE_MATH_H)
+#if defined(HAVE_MATH_H)
 /*
  * "isinf()" function
  */
@@ -364,7 +364,7 @@ f_isnan(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = argvars[0].v_type == VAR_FLOAT
 					    && isnan(argvars[0].vval.v_float);
 }
-# endif
+#endif
 
 /*
  * "log()" function

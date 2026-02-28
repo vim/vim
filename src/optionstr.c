@@ -51,9 +51,9 @@ static char *(p_cb_values[]) = {"unnamed", "unnamedplus",
 #endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
- # ifdef FEAT_SODIUM
+# ifdef FEAT_SODIUM
     "xchacha20", "xchacha20v2",
- # endif
+# endif
     NULL};
 #endif
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
@@ -75,10 +75,13 @@ static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
     "borderhighlight:", "close:", "height:", "highlight:", "resize:",
     "shadow:", "width:", NULL};
-static char *(p_popup_pvp_option_values[]) = {"height:", "highlight:",
-    "width:", NULL};
+static char *(p_popup_pvp_option_values[]) = {"border:",
+    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
+    "shadow:", "width:", NULL};
 static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};
 static char *(p_popup_cpp_border_values[]) = {"single", "double", "round",
+    "ascii", "on", "off", "custom:", NULL};
+static char *(p_popup_pvp_border_values[]) = {"single", "double", "round",
     "ascii", "on", "off", "custom:", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
@@ -478,7 +481,7 @@ set_string_option_direct(
 	free_string_option(*varp);
 	*varp = empty_option;
     }
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     if (set_sid != SID_NONE)
     {
 	sctx_T script_ctx;
@@ -494,7 +497,7 @@ set_string_option_direct(
 	}
 	set_option_sctx_idx(idx, opt_flags, script_ctx);
     }
-# endif
+#endif
 }
 
 #if defined(FEAT_PROP_POPUP) || (defined(FEAT_DIFF) && defined(FEAT_FOLDING))
@@ -889,7 +892,7 @@ expand_set_opt_generic(
     return ret;
 }
 
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
 static garray_T *expand_cb_ga;
 static optexpand_T *expand_cb_args;
 
@@ -1421,33 +1424,33 @@ expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches)
     int		result;
     char	**values;
     int		count, pos = 0, start = 0;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
-#else
+# else
     dict_T	*providers = NULL;
-#endif
+# endif
     hashtab_T	*ht = providers == NULL ? NULL : &providers->dv_hashtab;
 
     count = (ht == NULL ? 0 : ht->ht_used);
-#ifdef FEAT_WAYLAND_CLIPBOARD
+# ifdef FEAT_WAYLAND_CLIPBOARD
     count++;
     start++;
-#endif
-#ifdef FEAT_XCLIPBOARD
+# endif
+# ifdef FEAT_XCLIPBOARD
     count++;
     start++;
-#endif
+# endif
     values = ALLOC_MULT(char *, count + 1); // Add NULL terminator too
 
     if (values == NULL)
 	return FAIL;
 
-#ifdef FEAT_WAYLAND_CLIPBOARD
+# ifdef FEAT_WAYLAND_CLIPBOARD
     values[pos++] = "wayland";
-#endif
-#ifdef FEAT_XCLIPBOARD
+# endif
+# ifdef FEAT_XCLIPBOARD
     values[pos++] = "x11";
-#endif
+# endif
 
     if (ht != NULL)
 	for (long_u i = 0; i < ht->ht_mask + 1; i++)
@@ -3415,6 +3418,9 @@ did_set_previewpopup(optset_T *args UNUSED)
     if (parse_previewpopup(NULL) == FAIL)
 	return e_invalid_argument;
 
+# if defined(FEAT_QUICKFIX)
+    popup_close_info();
+# endif
     return NULL;
 }
 
@@ -3452,9 +3458,9 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches,
 	{
 	    return expand_set_opt_string(
 		    args,
-		    previewpopup ? p_popup_option_on_off_values
+		    previewpopup ? p_popup_pvp_border_values
 			: p_popup_cpp_border_values,
-		    (previewpopup ? ARRAY_LENGTH(p_popup_option_on_off_values)
+		    (previewpopup ? ARRAY_LENGTH(p_popup_pvp_border_values) - 1
 			: ARRAY_LENGTH(p_popup_cpp_border_values)) - 1,
 		    numMatches,
 		    matches);
@@ -4035,6 +4041,7 @@ did_set_signcolumn(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
+# if defined(FEAT_LINEBREAK)
     if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	return e_invalid_argument;
     // When changing the 'signcolumn' to or from 'number', recompute the
@@ -4043,6 +4050,7 @@ did_set_signcolumn(optset_T *args)
 		|| (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) =='u'))
 	    && (curwin->w_p_nu || curwin->w_p_rnu))
 	curwin->w_nrwidth_line_count = 0;
+# endif
 
     return NULL;
 }

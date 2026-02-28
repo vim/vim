@@ -3,7 +3,7 @@ vim9script
 # Vim indent file.
 # Language:    Hare
 # Maintainer:  Amelia Clarke <selene@perilune.dev>
-# Last Change: 2025 Sep 06
+# Last Change: 2026 Jan 24
 # Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
 
 if exists('b:did_indent')
@@ -17,7 +17,7 @@ b:did_indent = 1
 # +0 -> Don't indent continuation lines.
 # (s -> Indent one level inside parens.
 # u0 -> Don't indent additional levels inside nested parens.
-# U1 -> Don't treat `(` any differently if it is at the start of a line.
+# U1 -> Don't treat `(` any differently if it started a line.
 # m1 -> Indent lines starting with `)` the same as the matching `(`.
 # j1 -> Indent blocks one level inside parens.
 # J1 -> Indent structs and unions correctly.
@@ -56,7 +56,11 @@ def GetHareIndent(): number
 
     # If the previous line started the block, use the same indent.
     if pline =~ '{$'
-      return pindent
+      if pline =~ '\v<%(match|switch)>[^(]*\('
+        return pindent
+      endif
+      return pindent - GetValue('hare_indent_match_switch', 1, 1, 2)
+        * shiftwidth()
     endif
 
     # If the current line contains a `:` that is not part of `::`, use the

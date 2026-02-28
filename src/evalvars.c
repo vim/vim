@@ -418,7 +418,7 @@ eval_charconvert(
     return OK;
 }
 
-# if defined(FEAT_POSTSCRIPT)
+#if defined(FEAT_POSTSCRIPT)
     int
 eval_printexpr(char_u *fname, char_u *args)
 {
@@ -446,9 +446,9 @@ eval_printexpr(char_u *fname, char_u *args)
     }
     return OK;
 }
-# endif
+#endif
 
-# if defined(FEAT_DIFF)
+#if defined(FEAT_DIFF)
     void
 eval_diff(
     char_u	*origfile,
@@ -504,7 +504,7 @@ eval_patch(
     set_vim_var_string(VV_FNAME_OUT, NULL, -1);
     current_sctx = saved_sctx;
 }
-# endif
+#endif
 
 #if defined(FEAT_SPELL)
 /*

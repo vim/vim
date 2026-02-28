@@ -705,7 +705,7 @@ func Test_termdebug_remote_basic()
   defer delete(src_shadow_dir, 'rf')
 
   let modes = [v:true]
-  " termdebug only wokrs fine if socat is available on the remote machine
+  " termdebug only works fine if socat is available on the remote machine
   " otherwise the communication pty will be unstable
   if executable('socat')
     let modes += [v:false]

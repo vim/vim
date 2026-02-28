@@ -231,6 +231,283 @@ def Test_expr1_falsy()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # falsy operator with objects and enum values
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    var c = C.new()
+    assert_equal(c, c ?? 'falsy')
+    assert_equal('truthy', !c ?? 'truthy')
+    assert_equal('falsy', null_object ?? 'falsy')
+    assert_equal(true, !null_object ?? 'truthy')
+
+    enum Color
+      Red,
+      Blue
+    endenum
+    assert_equal(Color.Red, Color.Red ?? 'falsy')
+    assert_equal('truthy', !Color.Red ?? 'truthy')
+
+    def Fn()
+      var c2 = C.new()
+      assert_equal(c2, c2 ?? 'falsy')
+      assert_equal('truthy', !c2 ?? 'truthy')
+      assert_equal('falsy', null_object ?? 'falsy')
+      assert_equal(true, !null_object ?? 'truthy')
+      assert_equal(Color.Red, Color.Red ?? 'falsy')
+      assert_equal('truthy', !Color.Red ?? 'truthy')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # class cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    echo A ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "A" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    class B
+    endclass
+    echo !B
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "B" cannot be used as a value')
+
+  # Expression evaluation should stop after using a class with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var output: string = 'pass'
+    try
+      echo C ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1405:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a class with the falsy operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    g:falsy_output = 'pass'
+    def Fn()
+      echo C ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # When using a class with the "!" operator, expression evaluation should be
+  # aborted
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var output: string = 'pass'
+    try
+      echo !C !! execute("output = 'fail'")
+    catch /E1405:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a class with the "!" operator, expression evaluation should be
+  # aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def Fn()
+      echo !C !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  lines =<< trim END
+    vim9script
+    echo null_class ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    echo !null_class
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "" cannot be used as a value')
+
+  # enum cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    enum E1
+    endenum
+    echo E1 ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E1" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    enum E2
+    endenum
+    echo !E2
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E2" cannot be used as a value')
+
+  # Expression evaluation should stop after using an enum with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    enum E
+    endenum
+    var output: string = 'pass'
+    try
+      echo E ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1421:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a enum with the falsy operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    enum E3
+    endenum
+    g:falsy_output = 'pass'
+    def Fn()
+      echo E3 ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E3" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # Expression evaluation should stop after using an enum with the ! operator
+  lines =<< trim END
+    vim9script
+    enum E
+    endenum
+    var output: string = 'pass'
+    try
+      echo !E !! execute("output = 'fail'")
+    catch /E1421:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a enum with the "!" operator, expression evaluation should be
+  # aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    enum E4
+    endenum
+    def Fn()
+      echo !E4 !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E4" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # typealias cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    type T1 = list<bool>
+    echo T1 ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1403: Type alias "T1" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    type T2 = list<bool>
+    echo !T2
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1403: Type alias "T2" cannot be used as a value')
+
+  # Expression evaluation should stop after using a typealias with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    type T3 = dict<string>
+    var output: string = 'pass'
+    try
+      echo T3 ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1403:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a typealias with the falsy operator, expression evaluation
+  # should be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    type T3 = dict<job>
+    g:falsy_output = 'pass'
+    def Fn()
+      echo T3 ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # Expression evaluation should stop after using a typealias with the !
+  # operator
+  lines =<< trim END
+    vim9script
+    type T3 = dict<string>
+    var output: string = 'pass'
+    try
+      echo !T3 !! execute("output = 'fail'")
+    catch /E1403:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a typealias with the "!" operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    type T4 = list<number>
+    def Fn()
+      echo !T4 !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
   var msg = "White space required before and after '??'"
   call v9.CheckDefAndScriptFailure(["var x = 1?? 'one' : 'two'"], msg, 1)
   call v9.CheckDefAndScriptFailure(["var x = 1 ??'one' : 'two'"], msg, 1)
@@ -3840,6 +4117,11 @@ def Test_expr9_not()
 
       assert_equal(false, ![1, 2, 3]->reverse())
       assert_equal(true, ![]->reverse())
+
+      # float
+      assert_equal(true, !0.0)
+      assert_equal(false, !1.0)
+      assert_equal(false, !25.678)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

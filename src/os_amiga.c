@@ -1094,21 +1094,21 @@ mch_get_shellsize(void)
 mch_get_shellsize(void)
 {
     struct ConUnit  *conUnit;
-#ifndef __amigaos4__
+# ifndef __amigaos4__
     char	    id_a[sizeof(struct InfoData) + 3];
-#endif
+# endif
     struct InfoData *id=0;
 
     if (!term_console)	// not an amiga window
 	goto out;
 
     // insure longword alignment
-#ifdef __amigaos4__
+# ifdef __amigaos4__
     if (!(id = AllocDosObject(DOS_INFODATA, 0)))
 	goto out;
-#else
+# else
     id = (struct InfoData *)(((long)id_a + 3L) & ~3L);
-#endif
+# endif
 
     /*
      * Should make console aware of real window size, not the one we set.
@@ -1149,9 +1149,9 @@ mch_get_shellsize(void)
 
     return OK;
 out:
-#ifdef __amigaos4__
+# ifdef __amigaos4__
     FreeDosObject(DOS_INFODATA, id); // Safe to pass NULL
-#endif
+# endif
 
     return FAIL;
 }
@@ -1208,7 +1208,7 @@ out_num(long n)
 
 //#include <proto/exec.h>
 //#include <proto/dos.h>
-#include <exec/memory.h>
+# include <exec/memory.h>
 
 /*
  * Function - dos_packet written by Phil Lindsay, Carolyn Scheppner, and Andy
@@ -1492,7 +1492,7 @@ mch_breakcheck(int force UNUSED)
 // is zero).  Since we want to check for our own ^C's
 
 #ifdef _DCC
-#define Chk_Abort chkabort
+# define Chk_Abort chkabort
 #endif
 
 #ifdef LATTICE
@@ -1684,11 +1684,11 @@ mch_has_wildcard(char_u *p)
 	    ++p;
 	else
 	    if (vim_strchr((char_u *)
-#  ifdef VIM_BACKTICK
+#ifdef VIM_BACKTICK
 				    "*?[(#$`"
-#  else
+#else
 				    "*?[(#$"
-#  endif
+#endif
 						, *p) != NULL
 		    || (*p == '~' && p[1] != NUL))
 		return TRUE;

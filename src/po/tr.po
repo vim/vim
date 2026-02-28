@@ -1,15 +1,15 @@
 # Turkish translations for Vim
 # Vim Türkçe çevirileri
-# Copyright (C) 2019-2025 Emir SARI <emir_sari@icloud.com>
+# Copyright (C) 2019-2026 Emir SARI <emir_sari@icloud.com>
 # This file is distributed under the same license as the Vim package.
-# Emir SARI <emir_sari@icloud.com>, 2019-2025
+# Emir SARI <emir_sari@icloud.com>, 2019-2026
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 18:09+0300\n"
-"PO-Revision-Date: 2025-07-06 05:10+0300\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"PO-Revision-Date: 2026-02-04 20:00+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -158,8 +158,8 @@ msgid "%d%%"
 msgstr "%%%d"
 
 #, c-format
-msgid "%2s"
-msgstr "%2s"
+msgid "%3s"
+msgstr "%3s"
 
 #, c-format
 msgid " (%d of %d)"
@@ -254,6 +254,9 @@ msgstr ": Gönderme başarısız oldu. Yerel ortamda yürütme deneniyor\n"
 #, c-format
 msgid "%d of %d edited"
 msgstr "%d/%d düzenlendi"
+
+msgid "Socket server not online:Send expression failed"
+msgstr "Yuva sunucusu çevrimiçi değil: Gönderme ifadesi başarısız oldu"
 
 msgid "No display: Send expression failed.\n"
 msgstr "Görüntü yok: Gönderme başarısız oldu.\n"
@@ -887,20 +890,8 @@ msgstr[1] "+-%s%3ld satır: "
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "Referansları ayarlamak için yetersiz bellek, atık toplama durduruldu"
 
-msgid "Vim: Received \"die\" request from session manager\n"
-msgstr "Vim: Oturum yöneticisinden işi sonlandırma isteği geldi\n"
-
-msgid "Close tab"
-msgstr "Sekmeyi kapat"
-
-msgid "New tab"
-msgstr "Yeni sekme"
-
-msgid "Open Tab..."
-msgstr "Sekme Aç..."
-
-msgid "Vim: Main window unexpectedly destroyed\n"
-msgstr "Vim: Ana pencere beklenmedik bir biçimde gitti\n"
+msgid "No match at cursor, finding next"
+msgstr "İmleç konumunda eşleşme bulunamadı, sonraki bulunuyor"
 
 msgid "_Save"
 msgstr "_Kaydet"
@@ -976,6 +967,21 @@ msgstr "Tümünü Değiştir"
 
 msgid "_Close"
 msgstr "K_apat"
+
+msgid "Vim: Received \"die\" request from session manager\n"
+msgstr "Vim: Oturum yöneticisinden işi sonlandırma isteği geldi\n"
+
+msgid "Close tab"
+msgstr "Sekmeyi kapat"
+
+msgid "New tab"
+msgstr "Yeni sekme"
+
+msgid "Open Tab..."
+msgstr "Sekme Aç..."
+
+msgid "Vim: Main window unexpectedly destroyed\n"
+msgstr "Vim: Ana pencere beklenmedik bir biçimde gitti\n"
 
 msgid "&Filter"
 msgstr "&Süz"
@@ -1081,9 +1087,6 @@ msgstr "Biçem:"
 msgid "Size:"
 msgstr "Büyüklük:"
 
-msgid "No match at cursor, finding next"
-msgstr "İmleç konumunda eşleşme bulunamadı, sonraki bulunuyor"
-
 #, c-format
 msgid "Page %d"
 msgstr "Sayfa %d"
@@ -1093,7 +1096,7 @@ msgstr "Yazdırılacak metin yok"
 
 #, c-format
 msgid "Printing page %d (%d%%)"
-msgstr "Sayfa yazdırılıyor: %d (%d%%)"
+msgstr "Sayfa yazdırılıyor: %d (%%%d)"
 
 #, c-format
 msgid " Copy %d of %d"
@@ -1560,11 +1563,20 @@ msgstr ""
 
 msgid ""
 "\n"
-"Where case is ignored prepend / to make flag upper case"
+"Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
+"case."
 msgstr ""
 "\n"
-"BÜYÜK/küçük harfin yok sayıldığı yerde bayrağı BÜYÜK harfli yapmak için "
-"başına / koyun"
+"Bayrak küçük harfken BÜYÜK harf olarak varsaymak için başına / koyun "
+"(-/R gibi)."
+
+msgid ""
+"\n"
+"Or, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."
+msgstr ""
+"\n"
+"Veya desteklenen yerlerde SET PROC/PARSE=EXT; veya bunun dışında BÜYÜK harfli "
+"materyali tırnak içine alın"
 
 msgid ""
 "\n"
@@ -1730,6 +1742,9 @@ msgstr "-X\t\t\tX sunucusuna bağlama"
 
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-X\t\t\tWayland bileşikleştiricisine bağlama"
+
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr "--clientserver <yuva|x11> İstemci-sunucu iletişimi için arka uç"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <dosya>\tOlanaklıysa <dosya>'yı bir Vim sunucusunda düzenle"
@@ -2622,6 +2637,10 @@ msgstr "XSMP ICE bağlantı izlemesi başarısız oldu"
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection başarısız oldu: %s"
 
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Yuva dizini oluşturulamadı: %s"
+
 msgid "At line"
 msgstr "Satırda"
 
@@ -2678,15 +2697,15 @@ msgstr "\"%s\" dosyası açılamıyor"
 msgid "cannot have both a list and a \"what\" argument"
 msgstr "ya birinci ya da son argüman belirtilmelidir"
 
+msgid "Switching to backtracking RE engine for pattern: "
+msgstr "Şu dizgi için düzenli ifade iz sürme motoruna geçiliyor: "
+
 msgid "External submatches:\n"
 msgstr "Dış alteşleşmeler:\n"
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Geçici günlük dosyası yazma için açılamıyor, stderr'de görüntüleniyor... "
-
-msgid "Switching to backtracking RE engine for pattern: "
-msgstr "Şu dizgi için düzenli ifade iz sürme motoruna geçiliyor: "
 
 #, c-format
 msgid " into \"%c"
@@ -3540,10 +3559,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"OpenVMS version"
+"OpenVMS (build) arch, version"
 msgstr ""
 "\n"
-"OpenVMS sürümü"
+"OpenVMS (yapı) mimarili sürüm"
 
 msgid ""
 "\n"
@@ -3692,8 +3711,8 @@ msgstr "Vim açık kaynaklıdır ve özgürce dağıtılabilir"
 msgid "Help poor children in Uganda!"
 msgstr "Uganda'daki yoksul çocuklara yardım edin!"
 
-msgid "type  :help iccf<Enter>       for information "
-msgstr "ek bilgi için          :help iccf<Enter>      "
+msgid "type  :help Kuwasha<Enter>    for information "
+msgstr "bilgi için             :help Kuwasha<Enter>   "
 
 msgid "type  :q<Enter>               to exit         "
 msgstr "çıkmak için            :q<Enter>              "
@@ -3734,17 +3753,11 @@ msgstr "                        Vim öntanımlıları için   "
 msgid "Sponsor Vim development!"
 msgstr "Vim'in geliştirilmesine sponsor olun!"
 
-msgid "Become a registered Vim user!"
-msgstr "Kayıtlı bir Vim kullanıcısı olun!"
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "bilgi için             :help sponsor<Enter>   "
 
-msgid "type  :help register<Enter>   for information "
-msgstr "bilgi için             :help register<Enter>  "
-
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "bilgi için             Yardım -> Sponsorluk/Kayıt"
+msgid "menu  Help->Sponsor  for information    "
+msgstr "bilgi için             Yardım -> Sponsorluk"
 
 msgid "global"
 msgstr "global"
@@ -7687,8 +7700,9 @@ msgstr "E1115: \"assert_fails()\" dördüncü argüman bir sayı olmalıdır"
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "E1116: \"assert_fails()\" beşinci argüman bir dizi olmalıdır"
 
-msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: !, iç içe geçmiş :def ile kullanılamaz"
+#, c-format
+msgid "E1117: Cannot use ! with nested %s"
+msgstr "E1117: !, iç içe geçmiş %s ile kullanılamaz"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Kilitli liste değiştirilemez"
@@ -8128,8 +8142,8 @@ msgid "E1238: Blob required for argument %d"
 msgstr "E1238: %d argümanı için ikili nesne gerekiyor"
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: İkili nesne için geçersiz değer: %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
+msgstr "E1239: İkili nesne için geçersiz değer: 0x%lX"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: Ortaya çıkan metin pek uzun"
@@ -8453,8 +8467,8 @@ msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: Geçersiz nesne değişkeni beyanı: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object variable: %s"
-msgstr "E1330: Nesne değişkeni için geçersiz tür: %s"
+msgid "E1330: Invalid type used in variable declaration: %s"
+msgstr "E1330: Değişken beyanında geçersiz tür kullanıldı: %s"
 
 msgid ""
 "E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
@@ -8825,6 +8839,39 @@ msgstr ""
 "E1431: \"%2$s\" sınıfındaki \"%1$s\" soyut yöntemine doğrudan erişilemiyor"
 
 #, c-format
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+"E1432: \"%2$s\" sınıfındaki \"%1$s\" genel yöntemi, somut bir yöntemle "
+"geçersiz kılınıyor"
+
+#, c-format
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+"E1433: \"%2$s\" sınıfındaki \"%1$s\" somut yöntemi, genel bir yöntemle "
+"geçersiz kılınıyor"
+
+#, c-format
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+"E1434: \"%2$s\" sınıfındaki \"%1$s\" genel yöntemi için eşleşmeyen yanlış "
+"sayıda tür değişkeni"
+
+msgid "E1435: Enum can only be used in a script"
+msgstr "E1435: Enümerasyon yalnızca bir betikte kullanılabilir"
+
+msgid "E1436: Interface can only be used in a script"
+msgstr "E1436: Arayüz yalnızca bir betikte kullanılabilir"
+
+msgid "E1437: Can only compare Object with Object"
+msgstr "E1437: Bir nesne yalnızca başka bir nesne ile karşılaştırılabilir"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Konumsal ve konumsal olmayan argümanlar karıştırılamıyor: %s"
 
@@ -8999,6 +9046,90 @@ msgstr "E1547: Vim'in bu sürümü :redrawtabpanel'i desteklemiyor"
 
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Wayland bağlantısı kullanılabilir değil"
+
+#, c-format
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: %d diff sabitinden fazlası kullanılamaz"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: Tüm diff sabitleri bulunamadı"
+
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr "E1551: Kapatılan bir arabellekte bir açılır pencere açılamaz"
+
+#, c-format
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr "E1552: Tür değişken adı bir BÜYÜK harfle başlamalıdır: %s"
+
+#, c-format
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr "E1553: Genel işlevde tür sonrası virgül eksik: %s"
+
+#, c-format
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr "E1554: Genel işlevde \">\" eksik: %s"
+
+#, c-format
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr "E1555: \"%s\" genel işlevi için boş tür listesi belirtildi"
+
+#, c-format
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr "E1556: \"%s\" genel işlevi için pek fazla tür belirtilmiş"
+
+#, c-format
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr "E1557: \"%s\" genel işlevi için yeterli sayıda tür belirtilmemiş"
+
+#, c-format
+msgid "E1558: Unknown generic function: %s"
+msgstr "E1558: Bilinmeyen genel işlev: %s"
+
+#, c-format
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr "E1559: \"%s\" genel işlevi için tür argümanları eksik"
+
+#, c-format
+msgid "E1560: Not a generic function: %s"
+msgstr "E1560: Bir genel işlev değil: %s"
+
+#, c-format
+msgid "E1561: Duplicate type variable name: %s"
+msgstr "E1561: Yinelenen tür değişkeni adı: %s"
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr "E1562: Diff sabitleri gizlenmiş diff pencereleriyle kullanılamaz"
+
+msgid "E1563: Socket path is too big"
+msgstr "E1563: Yuva yolu pek büyük"
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr "E1564: Yuva adı bir yol olmadığı halde adında eğik çizgi barındıramaz"
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr ""
+"E1565: Yuva sunucusu çevrimiçi değil, önce remote_startserver()'ı çağırın"
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr "E1566: %s yuvasına bağlanılamadı: %s"
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgstr "E1567: Yuva sunucusu başlatılamıyor, yuva yolu kullanılabilir değil"
+
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr "E1568: OSC komutu yanıtı zaman aşımına uğradı: %.*s"
+
+msgid "E1569: Cannot use listener_add in a listener callback"
+msgstr "E1569: Bir dinleyici geri çağrısında listener_add kullanılamaz"
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr ""
+"E1570: Yen. çizim dinleyicisi geri çağrısında redraw_listener_add kullanılamaz"
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
+msgstr "E1571: redraw_listener_add için en az bir geri çağrı belirtilmelidir"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -9314,10 +9445,10 @@ msgid ""
 "All Files (*.*)\t*.*\n"
 msgstr ""
 "Vim makro dosyaları (*.vim)\t*.vim\n"
-"Tüm Dosyalar (*.*)\t*.*\n"
+"Tüm dosyalar (*.*)\t*.*\n"
 
 msgid "All Files (*.*)\t*.*\n"
-msgstr "Tüm Dosyalar (*.*)\t*.*\n"
+msgstr "Tüm dosyalar (*.*)\t*.*\n"
 
 msgid ""
 "All Files (*.*)\t*.*\n"
@@ -9326,7 +9457,7 @@ msgid ""
 "VB code (*.bas, *.frm)\t*.bas;*.frm\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
-"Tüm Dosyalar (*.*)\t*.*\n"
+"Tüm dosyalar (*.*)\t*.*\n"
 "C kaynak dosyaları (*.c, *.h)\t*.c;*.h\n"
 "C++ kaynak dosyaları (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "VB kodu (*.bas, *.frm)\t*.bas;*.frm\n"
@@ -9337,10 +9468,10 @@ msgid ""
 "All Files (*)\t*\n"
 msgstr ""
 "Vim makro dosyaları (*.vim)\t*.vim\n"
-"Tüm Dosyalar (*)\t*\n"
+"Tüm dosyalar (*)\t*\n"
 
 msgid "All Files (*)\t*\n"
-msgstr "Tüm Dosyalar (*)\t*\n"
+msgstr "Tüm dosyalar (*)\t*\n"
 
 msgid ""
 "All Files (*)\t*\n"
@@ -9348,7 +9479,7 @@ msgid ""
 "C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
-"Tüm Dosyalar (*)\t*\n"
+"Tüm dosyalar (*)\t*\n"
 "C kaynak dosyaları (*.c, *.h)\t*.c;*.h\n"
 "C++ kaynak dosyaları (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim dosyaları (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
@@ -9357,10 +9488,10 @@ msgid "GVim"
 msgstr "GVim"
 
 msgid "Text Editor"
-msgstr "Metin Düzenleyici"
+msgstr "Metin Düzenleyicisi"
 
 msgid "Edit text files"
-msgstr "Metin dosyaları düzenleyin"
+msgstr "Metin dosyalarını düzenleyin"
 
 msgid "Text;editor;"
 msgstr "Metin;düzenleyici;"
@@ -9487,6 +9618,9 @@ msgstr "bir arama dizgisinde BÜYÜK/küçük harf ayrımını yok say"
 msgid "override 'ignorecase' when pattern has upper case characters"
 msgstr "dizgide BÜYÜK harf varsa 'ignorecase'i geçersiz kıl"
 
+msgid "maximum number for the search count feature"
+msgstr "arama sayısı özelliği için en büyük sayı"
+
 msgid "what method to use for changing case of letters"
 msgstr "BÜYÜK/küçük harf değiştirirken hangi yöntemin kullanılacağı"
 
@@ -9599,11 +9733,12 @@ msgstr ""
 "\"uhex\" içer"
 
 msgid ""
-"characters to use for the status line, folds, diffs, buffer text, filler "
-"lines and truncation in the completion menu"
+"characters to use for the status line, folds, diffs,\n"
+"buffer text, filler lines and truncation in the completion menu"
 msgstr ""
-"tamamlama menüsünde durum satırı, kıvırmalar, diff'ler, arabellek metni, "
-"doldurucular ve sondan kısaltma için kullanılan karakterler"
+"tamamlama menüsünde durum satırı, kıvırmalar,\n"
+"diff'ler, arabellek metni, doldurucular ve sondan\n"
+"kısaltma için kullanılan karakterler"
 
 msgid "number of lines used for the command-line"
 msgstr "komut satırı için kullanılan satırların sayısı"
@@ -9891,6 +10026,9 @@ msgstr "boş değilken, bu pencerenin simgesi için metin"
 msgid "restore the screen contents when exiting Vim"
 msgstr "Vim'den çıkarken ekran içeriğini eski haline getir"
 
+msgid "timeout used for terminal OSC responses"
+msgstr "uçbirim OSC yanıtları için zaman aşımı"
+
 msgid "using the mouse"
 msgstr "fare kullanımı"
 
@@ -9952,8 +10090,12 @@ msgstr "araç çubuğu simgelerinin boyutu"
 msgid "room (in pixels) left above/below the window"
 msgstr "pencerenin altında/üstünde bırakılan alan (piksel)"
 
-msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr "karmaşık şekillere dönüştürülebilen ASCII karakterlerinin listesi"
+msgid ""
+"list of ASCII characters that can be combined into complex\n"
+"shapes"
+msgstr ""
+"karmaşık şekillere dönüştürülebilen ASCII karakterlerinin\n"
+"listesi"
 
 msgid "options for text rendering"
 msgstr "metin dokuması için seçenekler"
@@ -9962,11 +10104,11 @@ msgid "use a pseudo-tty for I/O to external commands"
 msgstr "dış komutlara girdi-çıktı için yalancı-tty kullan"
 
 msgid ""
-"\"last\", \"buffer\" or \"current\": which directory used for the file "
-"browser"
+"\"last\", \"buffer\" or \"current\": which directory used for\n"
+"the file browser"
 msgstr ""
-"\"last\", \"buffer\" veya \"current\"; dosya tarayıcısı için hangi dizinin "
-"kullanıldığı"
+"\"last\", \"buffer\" veya \"current\"; dosya\n"
+"tarayıcısı için hangi dizinin kullanıldığı"
 
 msgid "language to be used for the menus"
 msgstr "menüler için kullanılan dil"
@@ -9986,8 +10128,12 @@ msgstr "bir balonun patlamadan önceki gecikme (milisaniye)"
 msgid "use balloon evaluation in the GUI"
 msgstr "grafik arabirimde balon değerlendirme kullan"
 
-msgid "use balloon evaluation in the terminal"
-msgstr "uçbirimde balon değerlendirme kullan"
+msgid ""
+" \n"
+"use balloon evaluation in the terminal"
+msgstr ""
+" \n"
+"uçbirimde balon değerlendirme kullan"
 
 msgid "expression to show in balloon eval"
 msgstr "balon değerlendirmesinde gösterilecek ifade"
@@ -10148,6 +10294,9 @@ msgstr "<BS>, CTRL-W, vb. Ekleme kipinde ne yapabileceğini belirtir"
 msgid "definition of what comment lines look like"
 msgstr "yorum satırlarının nice görüneceğinin tanımı"
 
+msgid "template for comments; used to put the marker in"
+msgstr "yorumlar için şablon; imleyiciyi içine koymak için kullanılır"
+
 msgid "list of flags that tell how automatic formatting works"
 msgstr ""
 "kendiliğinden biçimlendirmenin nice çalıştığını anlatan\n"
@@ -10164,14 +10313,39 @@ msgstr ""
 "Ekleme kipi tamamlamasının CTRL-N ve CTRL-P için nice çalıştığını\n"
 "belirler"
 
-msgid "use fuzzy collection for specific completion modes"
-msgstr "belirli tamamlama kipleri için bulanık koleksiyon kullan"
+msgid "automatic completion in insert mode"
+msgstr "ekleme kipinde kendiliğinden tamamlama"
+
+msgid ""
+" \n"
+"initial decay timeout for 'autocomplete' algorithm"
+msgstr ""
+" \n"
+"\"autocomplete\" algoritması için ilk bozunma zaman aşımı"
+
+msgid ""
+" \n"
+"initial decay timeout for CTRL-N and CTRL-P completion"
+msgstr ""
+" \n"
+"CTRL-N ve CTRL-P tamamlaması için ilk bozunma zaman aşımı"
+
+msgid ""
+" \n"
+"delay in msec before menu appears after typing"
+msgstr ""
+" \n"
+"yazım sonrası menü görünmesinin msan gecikmesi"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "Ekleme kipi tamamlaması için açılır menü kullanımı"
 
-msgid "popup menu item align order"
-msgstr "açılır menü öge hizalama sırası"
+msgid ""
+" \n"
+"popup menu item align order"
+msgstr ""
+" \n"
+"açılır menü öge hizalama sırası"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "Ekleme kipi tamamlama açılır penceresi için seçenekler"
@@ -10184,6 +10358,9 @@ msgstr "açılır menünün en çok genişliği"
 
 msgid "maximum width of the popup menu"
 msgstr "açılır menünün en çok genişliği"
+
+msgid "popup border style"
+msgstr "açılır pencere kenarlık biçemi"
 
 msgid "user defined function for Insert mode completion"
 msgstr "Ekleme kipi tamamlaması için kullanıcı tanımlı işlev"
@@ -10329,9 +10506,6 @@ msgstr "hangi komutlarda bir kıvırmanın açılacağını belirler"
 msgid "minimum number of screen lines for a fold to be closed"
 msgstr "bir kıvırmanın kapatılması için en az ekran satırı sayısı"
 
-msgid "template for comments; used to put the marker in"
-msgstr "yorumlar için şablon; imleyiciyi içine koymak için kullanılır"
-
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
 "\"syntax\" or \"diff\""
@@ -10364,6 +10538,9 @@ msgstr "diff kipi kullanımı için seçenekler"
 
 msgid "expression used to obtain a diff file"
 msgstr "bir diff dosyası elde etmek için kullanılan ifade"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "bir diff'i sabitleme için adresler listesi"
 
 msgid "expression used to patch a file"
 msgstr "bir dosyayı yamalamak için kullanılan ifade"
@@ -10612,8 +10789,12 @@ msgstr "'grepprg' çıktısı için kullanılan biçimlerin listesi"
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "\":make\" ve \":grep\" çıktılarının kodlaması"
 
-msgid "function to display text in the quickfix window"
-msgstr "tez düzelt içinde metin düzenlemek için işlev"
+msgid ""
+" \n"
+"function to display text in the quickfix window"
+msgstr ""
+" \n"
+"tez düzelt içinde metin görüntülemek için işlev"
 
 msgid "system specific"
 msgstr "sisteme özel"
@@ -10632,9 +10813,6 @@ msgstr "bir dosya adındaki karakterleri belirtir"
 
 msgid "specifies the characters in an identifier"
 msgstr "bir tanımlayıcıdaki karakterleri belirler"
-
-msgid "defines trigger strings for complete_match()"
-msgstr "complete_match() için tetik dizilerini tanımlar"
 
 msgid "specifies the characters in a keyword"
 msgstr "bir anahtar sözcükteki karakterleri belirler"
@@ -10835,8 +11013,12 @@ msgstr "Python 2 ev dizininin adı"
 msgid "name of the Python 3 dynamic library"
 msgstr "Python 3 devingen kitaplığının adı"
 
-msgid "name of the Python 3 home directory"
-msgstr "Python 3 ev dizininin adı"
+msgid ""
+" \n"
+"name of the Python 3 home directory"
+msgstr ""
+" \n"
+"Python 3 ev dizininin adı"
 
 msgid "name of the Ruby dynamic library"
 msgstr "Ruby devingen kitaplığının adı"

@@ -3,7 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2023 Dec 26
+# Latest Revision:    2026 Jan 10
 
 if exists("b:did_indent")
   finish
@@ -39,10 +39,10 @@ def ConTeXtIndent(): number
     return g:MetaPostIndent()
   endif
 
-  const prevlnum = PrevNotComment(v:lnum - 1)
-  const prevind  = indent(prevlnum)
-  const prevline = getline(prevlnum)
-  const currline = getline(v:lnum)
+  var prevlnum = PrevNotComment(v:lnum - 1)
+  var prevind  = indent(prevlnum)
+  var prevline = getline(prevlnum)
+  var currline = getline(v:lnum)
 
   # If the current line starts with ], match indentation.
   if currline =~# '^\s*\]'

@@ -38,7 +38,7 @@ char_u *find_nextcmd(char_u *p);
 char_u *check_nextcmd(char_u *p);
 void set_nextcmd(exarg_T *eap, char_u *arg);
 char_u *get_command_name(expand_T *xp, int idx);
-void not_exiting(void);
+void not_exiting(int save_exiting);
 int before_quit_autocmds(win_T *wp, int quit_all, int forceit);
 void ex_quit(exarg_T *eap);
 int before_quit_all(exarg_T *eap);

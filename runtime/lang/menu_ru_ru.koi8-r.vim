@@ -2,15 +2,14 @@
 " Maintainer:		Restorer, <restorer@mail2k.ru>
 " Previous Maintainer:	Sergey Alyoshin, <alyoshin.s@gmail.com>
 "			vassily ragosin, <vrr[at]users.sourceforge.net>
-" Last Change:		23 Aug 2023
-" Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT
+" Last Change:		28 Dec 2025
 " URL:			https://github.com/RestorerZ/RuVim
-"
 "
 " Adopted for RuVim project by Vassily Ragosin.
 " First translation: Tim Alexeevsky, <realtim [at] mail.ru>,
 " based on ukrainian translation by Bohdan Vlasyuk, <bohdan@vstu.edu.ua>
 "
+" Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT
 "
 " Quit when menu translations have already been done.
 "
@@ -44,7 +43,7 @@ menutrans &Find\.\.\.			&Найти\.\.\.
 "--------------------
 menutrans &Credits			Со&авторы
 menutrans Co&pying			&Лицензия
-menutrans &Sponsor/Register		Сод&ействие\ и\ регистрация
+menutrans &Sponsor			Сод&ействие\ проекту
 menutrans O&rphans			&Благотворительность
 "--------------------
 menutrans &Version			&Текущая\ версия
@@ -264,7 +263,7 @@ menutrans Cu&t					&Вырезать
 menutrans &Copy					&Копировать
 menutrans &Paste				Вст&авить
 menutrans &Delete				&Удалить
-menutrans Select\ Blockwise			Блоковое\ выделение
+menutrans Select\ Blockwise			Блочное\ выделение
 menutrans Select\ &Word				Выделить\ с&лово
 menutrans Select\ &Line				Выделить\ с&троку
 menutrans Select\ &Block			Выделить\ &блок
@@ -347,7 +346,7 @@ let menutrans_no_file = "[Безымянный]"
 
 " Menus to handle Russian encodings
 " Thanks to Pavlo Bohmat for the idea
-" vassily ragosin <vrr[at]users.sourceforge.net>
+" vassily ragosin, <vrr[at]users.sourceforge.net>
 "
 an 10.355 &File.-SEP-					<Nop>
 an 10.360.20 &File.Открыть\ в\ кодировке\.\.\..CP1251	:browse e ++enc=cp1251<CR>

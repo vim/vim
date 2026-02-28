@@ -230,7 +230,7 @@ typedef struct dsc$descriptor   DESC;
 
 #ifndef USR_VIMRC_FILE
 # ifdef VMS
-# define USR_VIMRC_FILE  "sys$login:.vimrc"
+#  define USR_VIMRC_FILE  "sys$login:.vimrc"
 # else
 #  define USR_VIMRC_FILE "$HOME/.vimrc"
 # endif
@@ -241,7 +241,7 @@ typedef struct dsc$descriptor   DESC;
 # ifdef VMS
 #  define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
 # else
-#   define USR_VIMRC_FILE2	"~/.vim/vimrc"
+#  define USR_VIMRC_FILE2	"~/.vim/vimrc"
 # endif
 #endif
 
@@ -433,7 +433,7 @@ typedef struct dsc$descriptor   DESC;
 #  define mch_memmove(to, from, len) bcopy((char *)(from), (char *)(to), len)
 # else
     // ifdef USEMEMCPY
-#   define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
+#  define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
 # endif
 #endif
 

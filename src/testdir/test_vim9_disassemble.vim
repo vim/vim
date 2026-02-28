@@ -647,7 +647,7 @@ def Test_disassemble_list_assign()
         '\d STORE $2\_s*' ..
         '\[x, y; l\] = g:stringlist\_s*' ..
         '\d LOADG g:stringlist\_s*' ..
-        '\d CHECKTYPE list<any> stack\[-1\]\_s*' ..
+        '\d CHECKTYPE list<any>|tuple<any> stack\[-1\]\_s*' ..
         '\d CHECKLEN >= 2\_s*' ..
         '\d\+ ITEM 0\_s*' ..
         '\d\+ CHECKTYPE string stack\[-1\] var 1\_s*' ..
@@ -1471,6 +1471,31 @@ def Test_disassemble_lambda()
         '\d CONCAT size 2\_s*' ..
         '\d RETURN',
         instr)
+enddef
+
+def s:ScriptLocalDefForLambda()
+enddef
+
+def GlobalDefForLambda()
+enddef
+
+def s:OuterWithLambdaCalls()
+  timer_start(0, (_) => {
+    ScriptLocalDefForLambda()
+    g:GlobalDefForLambda()
+  })
+enddef
+
+def Test_disassemble_lambda_call_types()
+  # Verify that inside a lambda:
+  # - script-local def function call → ISN_UCALL (safe after re-sourcing)
+  # - global def function call → ISN_DCALL (optimal, not deleted on re-source)
+  OuterWithLambdaCalls()
+  var instr = execute('disassemble OuterWithLambdaCalls')
+  var name = substitute(instr, '.*\(<lambda>\d\+\).*', '\1', '')
+  instr = execute('disassemble ' .. name)
+  assert_match('\d UCALL <80><fd>R\d\+_ScriptLocalDefForLambda(argc 0)', instr)
+  assert_match('\d DCALL GlobalDefForLambda(argc 0)', instr)
 enddef
 
 def s:LambdaWithType(): number
@@ -3808,7 +3833,7 @@ def Test_disassemble_tuple_concatenate()
   unlet g:instr
 enddef
 
-" Disassemble the code generated for a constant tupe
+" Disassemble the code generated for a constant tuple
 def Test_disassemble_tuple_const()
   var lines =<< trim END
     vim9script

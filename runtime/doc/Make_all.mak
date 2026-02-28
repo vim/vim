@@ -339,6 +339,11 @@ CONVERTED = \
 	vimdiff-ru.UTF-8.1 \
 	vimtutor-ru.UTF-8.1 \
 	xxd-ru.UTF-8.1 \
+	vim-sv.UTF-8.1 \
+	evim-sv.UTF-8.1 \
+	vimdiff-sv.UTF-8.1 \
+	vimtutor-sv.UTF-8.1 \
+	xxd-sv.UTF-8.1 \
 	vim-tr.UTF-8.1 \
 	evim-tr.UTF-8.1 \
 	vimdiff-tr.UTF-8.1 \

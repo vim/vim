@@ -1783,10 +1783,10 @@ buf_write(
     if (converted && wb_flags == 0
 #ifdef USE_ICONV
 	    && write_info.bw_iconv_fd == (iconv_t)-1
-# endif
-# ifdef FEAT_EVAL
+#endif
+#ifdef FEAT_EVAL
 	    && wfname == fname
-# endif
+#endif
 	    )
     {
 	if (!forceit)
@@ -2068,7 +2068,7 @@ restore_backup:
 			&& *buf->b_p_key != NUL && !filtering
 			&& *ptr == NUL)
 		    write_info.bw_finish = TRUE;
- #endif
+#endif
 		if (buf_write_bytes(&write_info) == FAIL)
 		{
 		    end = 0;		// write error: break loop
@@ -2177,7 +2177,7 @@ restore_backup:
 		    && (write_info.bw_flags & FIO_ENCRYPTED)
 		    && *buf->b_p_key != NUL && !filtering)
 		write_info.bw_finish = TRUE;
- #endif
+#endif
 	    if (buf_write_bytes(&write_info) == FAIL)
 		end = 0;		    // write error
 	    nchars += len;
@@ -2223,12 +2223,12 @@ restore_backup:
 	// Probably need to set the security context.
 	if (!backup_copy)
 	{
-#if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
+# if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
 	    mch_copy_sec(backup, wfname);
-#endif
-#ifdef FEAT_XATTR
+# endif
+# ifdef FEAT_XATTR
 	    mch_copy_xattr(backup, wfname);
-#endif
+# endif
 	}
 #endif
 

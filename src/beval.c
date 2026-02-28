@@ -207,16 +207,16 @@ post_balloon(BalloonEval *beval UNUSED, char_u *mesg, list_T *list UNUSED)
 can_use_beval(void)
 {
     return (0
-#ifdef FEAT_BEVAL_GUI
+# ifdef FEAT_BEVAL_GUI
 		|| (gui.in_use && p_beval)
-#endif
-#ifdef FEAT_BEVAL_TERM
-		|| (
-# ifdef FEAT_GUI
-		    !gui.in_use &&
 # endif
+# ifdef FEAT_BEVAL_TERM
+		|| (
+#  ifdef FEAT_GUI
+		    !gui.in_use &&
+#  endif
 		    p_bevalterm)
-#endif
+# endif
 	     ) && msg_scrolled == 0;
 }
 
@@ -304,13 +304,13 @@ bexpr_eval(
     void
 general_beval_cb(BalloonEval *beval, int state UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     win_T	*wp;
     int		col;
     linenr_T	lnum;
     char_u	*text;
     char_u	*bexpr;
-#endif
+# endif
     static int	recursive = FALSE;
 
     // Don't do anything when 'ballooneval' is off, messages scrolled the
@@ -324,7 +324,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	return;
     recursive = TRUE;
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
 	bexpr = (*wp->w_buffer->b_p_bexpr == NUL) ? p_bexpr
@@ -336,11 +336,11 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    return;
 	}
     }
-#endif
-#ifdef FEAT_NETBEANS_INTG
+# endif
+# ifdef FEAT_NETBEANS_INTG
     if (bevalServers & BEVAL_NETBEANS)
 	netbeans_beval_cb(beval, state);
-#endif
+# endif
 
     recursive = FALSE;
 }

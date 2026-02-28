@@ -136,7 +136,7 @@
  * FILE is defined on OS 4.x, not on 5.x (Solaris).
  * if __SVR4 is defined (some Solaris versions), don't include this.
  */
-#if defined(sun) && defined(FILE) && !defined(__SVR4) && defined(__STDC__)
+# if defined(sun) && defined(FILE) && !defined(__SVR4) && defined(__STDC__)
 #  define __P(a) a
 /* excerpt from my sun_stdlib.h */
 extern int fprintf __P((FILE *, char *, ...));
@@ -686,13 +686,13 @@ get_color_char (int e, int ebcdic)
     }
   else  /* ASCII */
     {
-      #if defined(__MVS__) && __CHARSET_LIB == 0
+#if defined(__MVS__) && __CHARSET_LIB == 0
       if (e >= 64)
 	return COLOR_GREEN;
-      #else
+#else
       if (e > 31 && e < 127)
 	return COLOR_GREEN;
-      #endif
+#endif
 
       else if (e == 9 || e == 10 || e == 13)
 	return COLOR_YELLOW;

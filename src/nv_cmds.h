@@ -28,33 +28,33 @@
 # define NVCMD(a, b, c, d) \
 	{a, b, c, d}
 
-#ifdef FEAT_GUI
-#define NV_VER_SCROLLBAR	nv_ver_scrollbar
-#define NV_HOR_SCROLLBAR	nv_hor_scrollbar
-#else
-#define NV_VER_SCROLLBAR nv_error
-#define NV_HOR_SCROLLBAR nv_error
-#endif
+# ifdef FEAT_GUI
+#  define NV_VER_SCROLLBAR	nv_ver_scrollbar
+#  define NV_HOR_SCROLLBAR	nv_hor_scrollbar
+# else
+#  define NV_VER_SCROLLBAR nv_error
+#  define NV_HOR_SCROLLBAR nv_error
+# endif
 
-#ifdef FEAT_GUI_TABLINE
-#define NV_TABLINE	nv_tabline
-#define NV_TABMENU	nv_tabmenu
-#else
-#define NV_TABLINE	nv_error
-#define NV_TABMENU	nv_error
-#endif
+# ifdef FEAT_GUI_TABLINE
+#  define NV_TABLINE	nv_tabline
+#  define NV_TABMENU	nv_tabmenu
+# else
+#  define NV_TABLINE	nv_error
+#  define NV_TABMENU	nv_error
+# endif
 
-#ifdef FEAT_NETBEANS_INTG
-#define NV_NBCMD	nv_nbcmd
-#else
-#define NV_NBCMD	nv_error
-#endif
+# ifdef FEAT_NETBEANS_INTG
+#  define NV_NBCMD	nv_nbcmd
+# else
+#  define NV_NBCMD	nv_error
+# endif
 
-#ifdef FEAT_DND
-#define NV_DROP		nv_drop
-#else
-#define NV_DROP		nv_error
-#endif
+# ifdef FEAT_DND
+#  define NV_DROP		nv_drop
+# else
+#  define NV_DROP		nv_error
+# endif
 
 /*
  * Function to be called for a Normal or Visual mode command.
@@ -63,17 +63,17 @@
 typedef void (*nv_func_T)(cmdarg_T *cap);
 
 // Values for cmd_flags.
-#define NV_NCH	    0x01	  // may need to get a second char
-#define NV_NCH_NOP  (0x02|NV_NCH) // get second char when no operator pending
-#define NV_NCH_ALW  (0x04|NV_NCH) // always get a second char
-#define NV_LANG	    0x08	// second char needs language adjustment
+# define NV_NCH	    0x01	  // may need to get a second char
+# define NV_NCH_NOP  (0x02|NV_NCH) // get second char when no operator pending
+# define NV_NCH_ALW  (0x04|NV_NCH) // always get a second char
+# define NV_LANG	    0x08	// second char needs language adjustment
 
-#define NV_SS	    0x10	// may start selection
-#define NV_SSS	    0x20	// may start selection with shift modifier
-#define NV_STS	    0x40	// may stop selection without shift modif.
-#define NV_RL	    0x80	// 'rightleft' modifies command
-#define NV_KEEPREG  0x100	// don't clear regname
-#define NV_NCW	    0x200	// not allowed in command-line window
+# define NV_SS	    0x10	// may start selection
+# define NV_SSS	    0x20	// may start selection with shift modifier
+# define NV_STS	    0x40	// may stop selection without shift modif.
+# define NV_RL	    0x80	// 'rightleft' modifies command
+# define NV_KEEPREG  0x100	// don't clear regname
+# define NV_NCW	    0x200	// not allowed in command-line window
 
 /*
  * Generally speaking, every Normal mode command should either clear any

@@ -159,6 +159,12 @@ func Test_menu_errors()
   unmenu Test
 endfunc
 
+func Test_unmenu_range_errors()
+  for prefix in ['', 'a', 'c', 'i', 'n', 's', 't', 'tl', 'v', 'x']
+    call assert_fails('42' .. prefix .. 'unmenu', 'E481:')
+  endfor
+endfunc
+
 " Test for menu item completion in command line
 func Test_menu_expand()
   " Create the menu items for test
@@ -424,7 +430,7 @@ func Test_menu_special()
   call feedkeys(":emenu n Test.Sign\<CR>", 'x')
   call assert_equal("m\tn", getline(1))
   set cpo-=<
-  close!
+  bw!
   nunmenu Test.Sign
 endfunc
 
@@ -462,7 +468,7 @@ func Test_emenu_cmd()
   2emenu Test.foo
   call assert_equal(['aaaa', 'xxxx'], getline(1, 2))
   xunmenu Test.foo
-  close!
+  bw!
 endfunc
 
 " Test for PopUp menus

@@ -159,9 +159,9 @@ typedef struct
 #endif
 #ifdef FEAT_GUI
     GuiFont	sg_font;	// GUI font handle
-#ifdef FEAT_XFONTSET
+# ifdef FEAT_XFONTSET
     GuiFontset	sg_fontset;	// GUI fontset handle
-#endif
+# endif
     char_u	*sg_font_name;  // GUI font or fontset name
     int		sg_gui_attr;    // Screen attr for GUI mode
 #endif
@@ -995,8 +995,6 @@ highlight_set_font(
 	    // New fontset was accepted. Free the old one, if there
 	    // was one.
 	    gui_mch_free_fontset(temp_sg_fontset);
-	    vim_free(HL_TABLE()[idx].sg_font_name);
-	    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
 	    did_change = TRUE;
 	}
 	else
@@ -1007,12 +1005,17 @@ highlight_set_font(
 	    // New font was accepted. Free the old one, if there was
 	    // one.
 	    gui_mch_free_font(temp_sg_font);
-	    vim_free(HL_TABLE()[idx].sg_font_name);
-	    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
 	    did_change = TRUE;
 	}
 	else
 	    HL_TABLE()[idx].sg_font = temp_sg_font;
+	// Update sg_font_name once here, after both font and fontset results
+	// are known.
+	if (did_change)
+	{
+	    vim_free(HL_TABLE()[idx].sg_font_name);
+	    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+	}
     }
 
     return did_change;
@@ -2396,18 +2399,18 @@ hl_do_font(
 	// fontset.  Same for the Menu group.
 	if (do_normal)
 	    gui_init_font(arg, TRUE);
-#   if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
+#  if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	if (do_menu)
 	{
-#    ifdef FONTSET_ALWAYS
+#   ifdef FONTSET_ALWAYS
 	    gui.menu_fontset = HL_TABLE()[idx].sg_fontset;
-#    else
+#   else
 	    // YIKES!  This is a bug waiting to crash the program
 	    gui.menu_font = HL_TABLE()[idx].sg_fontset;
-#    endif
+#   endif
 	    gui_mch_new_menu_font();
 	}
-#    ifdef FEAT_BEVAL_GUI
+#   ifdef FEAT_BEVAL_GUI
 	if (do_tooltip)
 	{
 	    // The Athena widget set could not handle switching between
@@ -2418,8 +2421,8 @@ hl_do_font(
 	    gui.tooltip_fontset = (XFontSet)HL_TABLE()[idx].sg_fontset;
 	    gui_mch_new_tooltip_font();
 	}
-#    endif
 #   endif
+#  endif
     }
     else
 # endif
@@ -2433,15 +2436,15 @@ hl_do_font(
 	{
 	    if (do_normal)
 		gui_init_font(arg, FALSE);
-#ifndef FONTSET_ALWAYS
-# if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
+# ifndef FONTSET_ALWAYS
+#  if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	    if (do_menu)
 	    {
 		gui.menu_font = HL_TABLE()[idx].sg_font;
 		gui_mch_new_menu_font();
 	    }
+#  endif
 # endif
-#endif
 	}
     }
 }
@@ -2461,33 +2464,33 @@ color_name2handle(char_u *name)
 
     if (STRICMP(name, "fg") == 0 || STRICMP(name, "foreground") == 0)
     {
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
+# if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
 	if (gui.in_use)
-#endif
-#ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
 	    return gui.norm_pixel;
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_fg_gui_color != INVALCOLOR)
 	    return cterm_normal_fg_gui_color;
 	// Guess that the foreground is black or white.
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
-#endif
+# endif
     }
     if (STRICMP(name, "bg") == 0 || STRICMP(name, "background") == 0)
     {
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
+# if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
 	if (gui.in_use)
-#endif
-#ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
 	    return gui.back_pixel;
-#endif
-#ifdef FEAT_TERMGUICOLORS
+# endif
+# ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_bg_gui_color != INVALCOLOR)
 	    return cterm_normal_bg_gui_color;
 	// Guess that the background is white or black.
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
-#endif
+# endif
     }
 
     return GUI_GET_COLOR(name);
@@ -2544,7 +2547,7 @@ decode_hex_color(char_u *hex)
     return gui_adjust_rgb(color);
 }
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 // Returns the color currently mapped to the given name or INVALCOLOR if no
 // such name exists in the color table. The convention is to use lowercase for
 // all keys in the v:colornames dictionary. The value can be either a string in
@@ -2590,7 +2593,7 @@ colorname2rgb(char_u *name)
     return INVALCOLOR;
 }
 
-#endif
+# endif
 
     guicolor_T
 gui_get_color_cmn(char_u *name)
@@ -2647,7 +2650,7 @@ gui_get_color_cmn(char_u *name)
     if (entry != NULL)
 	return gui_adjust_rgb((guicolor_T)entry->key);
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     /*
      * Not a traditional color. Load additional color aliases and then consult the alias table.
      */
@@ -2660,9 +2663,9 @@ gui_get_color_cmn(char_u *name)
     }
 
     return color;
-#else
+# else
     return INVALCOLOR;
-#endif
+# endif
 }
 
     guicolor_T
@@ -2692,7 +2695,7 @@ static garray_T	cterm_attr_table = {0, 0, 0, 0, NULL};
 #ifdef FEAT_GUI
 static garray_T	gui_attr_table = {0, 0, 0, 0, NULL};
 
-#define GUI_ATTR_ENTRY(idx) ((attrentry_T *)gui_attr_table.ga_data)[idx]
+# define GUI_ATTR_ENTRY(idx) ((attrentry_T *)gui_attr_table.ga_data)[idx]
 #endif
 
 /*
@@ -2726,9 +2729,9 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 			    && aep->ae_u.gui.sp_color
 						    == taep->ae_u.gui.sp_color
 			    && aep->ae_u.gui.font == taep->ae_u.gui.font
-#  ifdef FEAT_XFONTSET
+# ifdef FEAT_XFONTSET
 			    && aep->ae_u.gui.fontset == taep->ae_u.gui.fontset
-#  endif
+# endif
 			    ))
 		    ||
 #endif
@@ -2844,11 +2847,11 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     attrentry_T		at_en;
 
     CLEAR_FIELD(at_en);
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.ul_rgb = INVALCOLOR;
-#endif
+# endif
     at_en.ae_attr = attr;
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
@@ -3081,6 +3084,196 @@ hl_combine_attr(int char_attr, int prim_attr)
     return get_attr_entry(&term_attr_table, &new_en);
 }
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+/*
+ * Blend two RGB colors based on blend value (0-100).
+ * blend: 0=use popup color, 100=use background color
+ * If bg_color is INVALCOLOR, high blend means more visible (return INVALCOLOR).
+ */
+    static guicolor_T
+blend_colors(guicolor_T popup_color, guicolor_T bg_color, int blend_val)
+{
+    int r1, g1, b1, r2, g2, b2, r, g, b;
+
+    if (popup_color == INVALCOLOR)
+	return INVALCOLOR;
+
+    r1 = (popup_color >> 16) & 0xFF;
+    g1 = (popup_color >> 8) & 0xFF;
+    b1 = popup_color & 0xFF;
+
+    if (bg_color == INVALCOLOR)
+    {
+	// Background color unknown: fade popup color to black as blend increases
+	// This makes background text more visible at high blend values
+	r = r1 * (100 - blend_val) / 100;
+	g = g1 * (100 - blend_val) / 100;
+	b = b1 * (100 - blend_val) / 100;
+	return (r << 16) | (g << 8) | b;
+    }
+
+    r2 = (bg_color >> 16) & 0xFF;
+    g2 = (bg_color >> 8) & 0xFF;
+    b2 = bg_color & 0xFF;
+
+    r = r1 + (r2 - r1) * blend_val / 100;
+    g = g1 + (g2 - g1) * blend_val / 100;
+    b = b1 + (b2 - b1) * blend_val / 100;
+
+    return (r << 16) | (g << 8) | b;
+}
+#endif
+
+/*
+ * Blend attributes for popup windows with opacity.
+ * Blends foreground and/or background colors based on blend value (0-100).
+ * blend: 0 = opaque (use popup colors), 100 = transparent (use background colors)
+ * blend_fg: TRUE to blend foreground color, FALSE to keep popup foreground
+ */
+    int
+hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
+{
+    attrentry_T *char_aep = NULL;
+    attrentry_T *popup_aep;
+    attrentry_T new_en;
+
+    // If both attrs are 0, return 0
+    if (char_attr == 0 && popup_attr == 0)
+	return 0;
+    if (blend >= 100)
+	return char_attr;  // Fully transparent, show background only
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_gui_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+	    new_en.ae_u.gui.fg_color = INVALCOLOR;
+	    new_en.ae_u.gui.bg_color = INVALCOLOR;
+	    new_en.ae_u.gui.sp_color = INVALCOLOR;
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_gui_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		if (blend_fg)
+		{
+		    // blend_fg=TRUE: fade underlying text toward popup bg.
+		    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		    {
+			int base_fg = 0xFFFFFF;
+			if (char_aep != NULL
+				&& char_aep->ae_u.gui.fg_color != INVALCOLOR)
+			    base_fg = char_aep->ae_u.gui.fg_color;
+			new_en.ae_u.gui.fg_color = blend_colors(
+				base_fg, popup_aep->ae_u.gui.bg_color, blend);
+		    }
+		}
+		else if (popup_aep->ae_u.gui.fg_color != INVALCOLOR)
+		{
+		    // blend_fg=FALSE: use popup foreground
+		    new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
+		}
+		// Blend background color
+		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		{
+		    // Always use popup background, fade to black based on blend
+		    int r = ((popup_aep->ae_u.gui.bg_color >> 16) & 0xFF) * (100 - blend) / 100;
+		    int g = ((popup_aep->ae_u.gui.bg_color >> 8) & 0xFF) * (100 - blend) / 100;
+		    int b = (popup_aep->ae_u.gui.bg_color & 0xFF) * (100 - blend) / 100;
+		    new_en.ae_u.gui.bg_color = (r << 16) | (g << 8) | b;
+		}
+	    }
+	}
+	return get_attr_entry(&gui_attr_table, &new_en);
+    }
+#endif
+
+    if (IS_CTERM)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_cterm_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+#ifdef FEAT_TERMGUICOLORS
+	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.ul_rgb = INVALCOLOR;
+#endif
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_cterm_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		// Blend foreground color
+		if (popup_aep->ae_u.cterm.fg_color > 0)
+		    new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
+		// Use popup background color (cterm colors don't support blending)
+		if (popup_aep->ae_u.cterm.bg_color > 0)
+		    new_en.ae_u.cterm.bg_color = popup_aep->ae_u.cterm.bg_color;
+#ifdef FEAT_TERMGUICOLORS
+		// Blend RGB colors for termguicolors mode
+		if (blend_fg)
+		{
+		    // blend_fg=TRUE: fade underlying text toward popup bg.
+		    if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		    {
+			int base_fg = 0xFFFFFF;
+			if (char_aep != NULL
+				&& char_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+			    base_fg = char_aep->ae_u.cterm.fg_rgb;
+			new_en.ae_u.cterm.fg_rgb = blend_colors(
+				base_fg, popup_aep->ae_u.cterm.bg_rgb, blend);
+		    }
+		}
+		else if (popup_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+		    // blend_fg=FALSE: use popup foreground
+		    new_en.ae_u.cterm.fg_rgb = popup_aep->ae_u.cterm.fg_rgb;
+		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		{
+		    // Always use popup background, fade to black based on blend
+		    int r = ((popup_aep->ae_u.cterm.bg_rgb >> 16) & 0xFF) * (100 - blend) / 100;
+		    int g = ((popup_aep->ae_u.cterm.bg_rgb >> 8) & 0xFF) * (100 - blend) / 100;
+		    int b = (popup_aep->ae_u.cterm.bg_rgb & 0xFF) * (100 - blend) / 100;
+		    new_en.ae_u.cterm.bg_rgb = (r << 16) | (g << 8) | b;
+		}
+#endif
+	    }
+	}
+	return get_attr_entry(&cterm_attr_table, &new_en);
+    }
+
+    if (char_attr > HL_ALL)
+	char_aep = syn_term_attr2entry(char_attr);
+    if (char_aep != NULL)
+	new_en = *char_aep;
+    else
+    {
+	CLEAR_FIELD(new_en);
+	if (char_attr <= HL_ALL)
+	    new_en.ae_attr = char_attr;
+    }
+
+    // For term mode, no separate background color handling.
+    return get_attr_entry(&term_attr_table, &new_en);
+}
+
 #ifdef FEAT_GUI
     attrentry_T *
 syn_gui_attr2entry(int attr)
@@ -3287,11 +3480,11 @@ highlight_has_attr(
     if (id <= 0 || id > highlight_ga.ga_len)
 	return NULL;
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
     if (modec == 'g')
 	attr = HL_TABLE()[id - 1].sg_gui;
     else
-#endif
+# endif
     {
 	if (modec == 'c')
 	    attr = HL_TABLE()[id - 1].sg_cterm;
@@ -3536,11 +3729,11 @@ set_hl_attr(
     // highlighting attributes, need to allocate an attr number.
     if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 &&
 	sgp->sg_cterm_ul == 0 && sgp->sg_cterm_font == 0
-# ifdef FEAT_TERMGUICOLORS
+#ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
 	    && sgp->sg_gui_sp == INVALCOLOR
-# endif
+#endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
     else
@@ -3550,7 +3743,7 @@ set_hl_attr(
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 	at_en.ae_u.cterm.ul_color = sgp->sg_cterm_ul;
 	at_en.ae_u.cterm.font = sgp->sg_cterm_font;
-# ifdef FEAT_TERMGUICOLORS
+#ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
 	// Only use the underline/undercurl color when used, it may clear the
@@ -3568,7 +3761,7 @@ set_hl_attr(
 	    at_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
 	    at_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
 	}
-# endif
+#endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }
 }
@@ -3941,9 +4134,9 @@ combine_stl_hlt(
 	CLEAR_POINTER(&hlt[hlcnt + i]);
 	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
 	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	hlt[hlcnt + i].sg_gui = highlight_attr[hlf];
-#  endif
+# endif
     }
     else
 	mch_memmove(&hlt[hlcnt + i],
@@ -3965,11 +4158,11 @@ combine_stl_hlt(
 	hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
     if (hlt[id - 1].sg_cterm_font != hlt[id_S - 1].sg_cterm_font)
 	hlt[hlcnt + i].sg_cterm_font = hlt[id - 1].sg_cterm_font;
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
     hlt[hlcnt + i].sg_gui ^=
 	hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
-#  endif
-#  ifdef FEAT_GUI
+# endif
+# ifdef FEAT_GUI
     if (hlt[id - 1].sg_gui_fg != hlt[id_S - 1].sg_gui_fg)
 	hlt[hlcnt + i].sg_gui_fg = hlt[id - 1].sg_gui_fg;
     if (hlt[id - 1].sg_gui_bg != hlt[id_S - 1].sg_gui_bg)
@@ -3978,11 +4171,11 @@ combine_stl_hlt(
 	hlt[hlcnt + i].sg_gui_sp = hlt[id - 1].sg_gui_sp;
     if (hlt[id - 1].sg_font != hlt[id_S - 1].sg_font)
 	hlt[hlcnt + i].sg_font = hlt[id - 1].sg_font;
-#   ifdef FEAT_XFONTSET
+#  ifdef FEAT_XFONTSET
     if (hlt[id - 1].sg_fontset != hlt[id_S - 1].sg_fontset)
 	hlt[hlcnt + i].sg_fontset = hlt[id - 1].sg_fontset;
-#   endif
 #  endif
+# endif
     highlight_ga.ga_len = hlcnt + i + 1;
     set_hl_attr(hlcnt + i);	// At long last we can apply
     table[i] = syn_id2attr(hlcnt + i + 1);
@@ -4982,7 +5175,7 @@ hldict_attr_to_str(
 // Temporary buffer used to store the command string produced by hlset().
 // IObuff cannot be used for this as the error messages produced by hlset()
 // internally use IObuff.
-#define	HLSETBUFSZ  512
+# define	HLSETBUFSZ  512
 static char_u hlsetBuf[HLSETBUFSZ + 1];
 
 /*
@@ -5161,7 +5354,7 @@ hlg_add_or_update(dict_T *dict)
     p = add_attr_and_value(p, (char_u *)" ctermfg=", 9, ctermfg);
     p = add_attr_and_value(p, (char_u *)" ctermbg=", 9, ctermbg);
     p = add_attr_and_value(p, (char_u *)" ctermul=", 9, ctermul);
-    p = add_attr_and_value(p, (char_u *)" ctermfont=", 9, ctermfont);
+    p = add_attr_and_value(p, (char_u *)" ctermfont=", 11, ctermfont);
     p = add_attr_and_value(p, (char_u *)" gui=", 5, gui_attr);
 # ifdef FEAT_GUI
     p = add_attr_and_value(p, (char_u *)" font=", 6, font);

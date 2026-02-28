@@ -2,7 +2,7 @@ vim9script
 
 # Language:           Generic TeX typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2026 Feb 19
 
 # Constants and helpers {{{
 const SLASH = !exists("+shellslash") || &shellslash ? '/' : '\'
@@ -11,25 +11,25 @@ def Echo(msg: string, mode: string, label: string)
   redraw
   echo "\r"
   execute 'echohl' mode
-  echomsg printf('[%s] %s', label, msg)
+  echomsg $'[{label}] {msg}'
   echohl None
 enddef
 
-def EchoMsg(msg: string, label = 'Notice')
+def EchoMsg(msg: string, label = gettext('Notice'))
   Echo(msg, 'ModeMsg', label)
 enddef
 
-def EchoWarn(msg: string, label = 'Warning')
+def EchoWarn(msg: string, label = gettext('Warning'))
   Echo(msg, 'WarningMsg', label)
 enddef
 
-def EchoErr(msg: string, label = 'Error')
+def EchoErr(msg: string, label = gettext('Error'))
   Echo(msg, 'ErrorMsg', label)
 enddef
 # }}}
 
 # Track jobs {{{
-var running_jobs = {} # Dictionary of job IDs of jobs currently executing
+var running_jobs: dict<list<job>> = {}
 
 def AddJob(label: string, j: job)
   if !has_key(running_jobs, label)
@@ -54,8 +54,8 @@ enddef
 def ProcessOutput(qfid: number, wd: string, efm: string, ch: channel, msg: string)
   # Make sure the quickfix list still exists
   if getqflist({'id': qfid}).id != qfid
-    EchoErr("Quickfix list not found, stopping the job")
-    call job_stop(ch_getjob(ch))
+    EchoErr(gettext("Quickfix list not found, stopping the job"))
+    job_stop(ch_getjob(ch))
     return
   endif
 
@@ -74,13 +74,13 @@ def ExitCb(label: string, jobid: job, exitStatus: number)
 
   if exitStatus == 0
     botright cwindow
-    EchoMsg('Success!', label)
+    EchoMsg(gettext('Success!'), label)
   elseif exitStatus < 0
-    EchoWarn('Job terminated', label)
+    EchoWarn(gettext('Job terminated'), label)
   else
     botright copen
     wincmd p
-    EchoWarn('There are errors.', label)
+    EchoWarn(gettext('There are errors.'), label)
   endif
 enddef
 # }}}
@@ -106,31 +106,81 @@ enddef
 #
 # This function searches for the magic line in the first ten lines of the
 # given buffer, and returns the full path of the root document.
-#
-# NOTE: the value of "% !TEX root" *must* be a relative path.
 export def FindRootDocument(bufname: string = bufname("%")): string
-  const bufnr = bufnr(bufname)
+  var docpath = fnamemodify(bufname, ":p")
+  var bufnr = bufnr(bufname)
+  var header: list<string>
+  var rootpath = docpath
 
-  if !bufexists(bufnr)
-    return bufname
+  if bufexists(bufnr)
+    header = getbufline(bufnr, 1, 10)
+  elseif filereadable(bufname)
+    header = readfile(bufname, "", 10)
+  else
+    return simplify(rootpath)
   endif
-
-  var rootpath = fnamemodify(bufname(bufnr), ':p')
 
   # Search for magic line `% !TEX root = ...` in the first ten lines
-  const header = getbufline(bufnr, 1, 10)
-  const idx = match(header, '^\s*%\s\+!TEX\s\+root\s*=\s*\S')
+  var idx = match(header, '^\s*%\s\+!TEX\s\+root\s*=\s*\S')
+
   if idx > -1
-    const main = matchstr(header[idx], '!TEX\s\+root\s*=\s*\zs.*$')
-    rootpath = simplify(fnamemodify(rootpath, ":h") .. SLASH .. main)
+    rootpath = matchstr(header[idx], '!TEX\s\+root\s*=\s*\zs.*$')
+
+    if !isabsolutepath(rootpath) # Path is relative to the buffer's path
+      rootpath = fnamemodify(docpath, ":h") .. SLASH .. rootpath
+    endif
   endif
 
-  return rootpath
+  return simplify(rootpath)
+enddef
+
+# ConTeXt documents may specify an output directory in a comment using the
+# following syntax:
+#
+# runpath=texruns:<output directory>
+#
+# This function looks for such a comment in the first ten lines of the given
+# buffer, and returns the full path of the output directory. If the comment is
+# not found then the output directory coincides with the directory of the
+# buffer.
+export def GetOutputDirectory(bufname: string = bufname("%")): string
+  var basedir = fnamemodify(bufname, ':p:h')
+  var bufnr = bufnr(bufname)
+  var header: list<string>
+  var outdir = basedir
+
+  if bufexists(bufnr)
+    header = getbufline(bufnr, 1, 10)
+  elseif filereadable(bufname)
+    header = readfile(bufname, "", 10)
+  else
+    return simplify(outdir)
+  endif
+
+  # Search for output path in the first ten lines
+  var idx = match(header, '^\s*%.*\<runpath\s*=\s*texruns\s*:\s*\S')
+
+  if idx > -1
+    outdir = matchstr(header[idx], '\<runpath\s*=\s*texruns\s*:\s*\zs.*$')
+
+    if !isabsolutepath(outdir) # Path is relative to the buffer's directory
+      outdir = basedir .. SLASH .. outdir
+    endif
+  endif
+
+  return simplify(outdir)
 enddef
 
 export def LogPath(bufname: string): string
-  const logfile = FindRootDocument(bufname)
-  return fnamemodify(logfile, ":r") .. ".log"
+  var rootdoc = FindRootDocument(bufname)
+  var docname = fnamemodify(rootdoc, ":t:r")
+  var outdir = GetOutputDirectory(rootdoc)
+
+  if empty(docname) # Set an arbitrary name to avoid returning a dotfile (.log)
+    docname = '[NotFound]'
+  endif
+
+  return $'{outdir}{SLASH}{docname}.log'
 enddef
 
 # Typeset the specified path
@@ -146,49 +196,56 @@ enddef
 #   true if the job is started successfully;
 #   false otherwise.
 export def Typeset(
-  label: string,
-  Cmd:   func(string): list<string>,
-  path:  string,
-  efm:   string,
-  env:   dict<string> = {}
-): bool
-  var fp   = fnamemodify(path, ":p")
-  var wd   = fnamemodify(fp, ":h")
+    label: string,
+    Cmd:   func(string): list<string>,
+    path:  string,
+    efm:   string,
+    env:   dict<string> = {}
+    ): bool
+  var fp   = fnamemodify(path, ':p')
+  var name = fnamemodify(fp, ':t')
+  var wd   = fnamemodify(fp, ':h')
   var qfid = NewQuickfixList(fp)
 
   if qfid == -1
-    EchoErr('Could not create quickfix list', label)
+    EchoErr(gettext('Could not create quickfix list'), label)
     return false
   endif
 
   if !filereadable(fp)
-    EchoErr(printf('File not readable: %s', fp), label)
+    var msg = gettext('File not readable:')
+    EchoErr($'{msg} {fp}', label)
     return false
   endif
 
-  var jobid = job_start(Cmd(path), {
+  # Make sure to pass only the base name of the path to Cmd as this usually
+  # works better with TeX commands (note that the command is executed inside
+  # the file's directory). For instance, ConTeXt writes the path in .synctex
+  # files, and full paths break syncing from the editor to the viewer.
+  var jobid = job_start(Cmd(name), {
     env: env,
     cwd: wd,
     in_io: "null",
     callback: (c, m) => ProcessOutput(qfid, wd, efm, c, m),
     close_cb: CloseCb,
     exit_cb: (j, e) => ExitCb(label, j, e),
-    })
+  })
 
   if job_status(jobid) ==# "fail"
-    EchoErr("Failed to start job", label)
+    EchoErr(gettext("Failed to start job"), label)
     return false
   endif
 
   AddJob(label, jobid)
 
-  EchoMsg('Typesetting...', label)
+  EchoMsg(gettext('Typesetting...'), label)
 
   return true
 enddef
 
 export def JobStatus(label: string)
-  EchoMsg('Jobs still running: ' .. string(len(GetRunningJobs(label))), label)
+  var msg = gettext('Jobs still running:')
+  EchoMsg($'{msg} {len(GetRunningJobs(label))}', label)
 enddef
 
 export def StopJobs(label: string)
@@ -196,7 +253,7 @@ export def StopJobs(label: string)
     job_stop(job)
   endfor
 
-  EchoMsg('Done.', label)
+  EchoMsg(gettext('Done.'), label)
 enddef
 
 # Typeset the specified buffer
@@ -211,20 +268,20 @@ enddef
 #   true if the job is started successfully;
 #   false otherwise.
 export def TypesetBuffer(
-  name: string,
-  Cmd: func(string): list<string>,
-  env = {},
-  label = 'Typeset'
-): bool
-  const bufname = bufname(name)
+    name: string,
+    Cmd: func(string): list<string>,
+    env = {},
+    label = gettext('Typeset')
+    ): bool
+  var bufname = bufname(name)
 
   if empty(bufname)
-    EchoErr('Please save the buffer first.', label)
+    EchoErr(gettext('Please save the buffer first.'), label)
     return false
   endif
 
-  const efm = getbufvar(bufnr(bufname), "&efm")
-  const rootpath = FindRootDocument(bufname)
+  var efm = getbufvar(bufnr(bufname), "&efm")
+  var rootpath = FindRootDocument(bufname)
 
   return Typeset('ConTeXt', Cmd, rootpath, efm, env)
 enddef

@@ -1,0 +1,1000 @@
+# Välkommen till VIM-handledningen
+
+# KAPITEL ETT
+
+Vim är en mycket kraftfull redigerare som har många kommandon, för många för att förklara i
+en handledare som denna. Denna handledare är utformad för att beskriva tillräckligt många
+kommandon för att du enkelt ska kunna använda Vim som en allsidig redigerare.
+Det är VIKTIGT att komma ihåg att denna handledare är utformad för att lära ut genom användning. Det
+betyder att du måste göra övningarna för att lära dig dem ordentligt. Om du bara
+läser texten kommer du snart att glömma det viktigaste!
+
+Se till att Shift-Lock-tangenten INTE är nedtryckt och tryck på
+`j`{normal} tillräckligt många gånger för att flytta markören så att lektion 0 fyller hela
+skärmen.
+
+# Lektion 0
+
+OBS: Kommandona i lektionerna kommer att ändra texten, men dessa ändringar
+sparas inte. Oroa dig inte för att förstöra något; kom bara ihåg att
+om du trycker på [<Esc>](<Esc>) och sedan [u](u) kommer den senaste ändringen att ångras.
+
+Denna handledning är interaktiv, och det finns några saker du bör veta.
+- Skriv [<Enter>](<Enter>) på länkar [som denna](holy-grail ) för att öppna den länkade hjälpsidan.
+- Eller skriv helt enkelt [K](K) på valfritt ord för att hitta dokumentationen för det!
+- Ibland kommer du att behöva ändra text som
+den här
+När du har gjort ändringarna korrekt kommer tecknet ✗ till vänster att ändras
+till ✓. Jag antar att du redan kan se hur smidigt Vim kan vara. ;)
+Andra gånger kommer du att uppmanas att köra ett kommando (jag förklarar detta senare):
+~~~ cmd
+:help <Enter>
+~~~
+eller trycka på en sekvens av tangenter
+~~~ normal
+<Esc>0f<Space>d3wP$P
+~~~
+
+Text inom < och > (som `<Enter>`{normal}) beskriver en tangent som ska tryckas
+istället för text som ska skrivas.
+
+Gå nu vidare till nästa lektion (använd tangenten `j`{normal} för att bläddra nedåt).
+
+# Lektion 1.1: FLYTTA MARKÖREN
+
+** För att flytta markören, tryck på tangenterna `h`, `j`, `k`, `l` enligt anvisningarna. **
+
+↑
+k Tips: Tangenten `h`{normal} finns till vänster och flyttar markören åt vänster.
+← h l → Tangenten `l`{normal} finns till höger och flyttar markören åt höger.
+j Tangenten `j` {normal} ser ut som en nedåtpil.
+↓
+
+1. Flytta markören runt på skärmen tills du känner dig bekväm.
+
+2. Håll ned nedåtknappen (`j`{normal}) tills den upprepas.
+Nu vet du hur du går vidare till nästa lektion.
+
+3. Använd nedåtknappen för att gå till Lektion 1.2.
+
+OBS: Om du är osäker på något du har skrivit, tryck på <Esc> för att gå
+till normalt läge. Skriv sedan om kommandot du ville ha.
+
+OBS: Piltangenterna bör också fungera. Men med hjkl kan du
+röra dig mycket snabbare, när du väl vant dig vid det. Verkligen!
+
+# Lektion 1.2: AVSLUTA VIM
+
+!! OBS: Innan du utför något av stegen nedan,
+läs hela lektionen !!
+
+1. Tryck på <Esc>-tangenten (för att säkerställa att du är i normalt läge).
+
+2. Skriv:
+
+`:q!`{vim} `<Enter>`{normal}.
+
+Detta avslutar redigeraren och FÖRKASTAR alla ändringarna du har gjort.
+
+3. Öppna vim och återgå hit genom att utföra kommandot som tog dig till
+denna handledning. Det kan vara:
+
+:Tutor <Enter>
+
+4. Om du har memorerat dessa steg och känner dig säker, utför steg
+1 till 3 för att stänga och öppna redigeraren igen.
+
+OBS: [:q!](:q) <Enter> raderar alla ändringar du har gjort. I några lektioner
+kommer du att lära dig hur du sparar ändringarna i en fil.
+
+5. Flytta markören nedåt till lektion 1.3.
+
+# Lektion 1.3: TEXTREDAKTING – RADERING
+
+** Tryck på `x`{normal} för att radera tecknet under markören. **
+
+1. Flytta markören till raden under märket ✗.
+
+2. För att korrigera felen flyttar du markören till det
+tecken som ska raderas.
+
+3. Tryck på [x-tangenten](x) för att radera det oönskade tecknet.
+
+4. Upprepa steg 2 till 4 tills meningen är korrekt.
+
+Kossan hoppade över månen.
+
+5. Nu när raden är korrekt kan du gå vidare till Lektion 1.4.
+
+OBS: När du går igenom denna handledning ska du inte försöka memorera, utan lära dig genom
+användning.
+
+# Lektion 1.4: TEXTREDIGERING: INFOGNING
+
+** Tryck på `i`{normal} för att infoga text. **
+
+1. Flytta markören till den första raden under märket ✗.
+
+2. För att göra den första raden samma som den andra, flytta markören ovanför
+det första tecknet EFTER den plats där texten ska infogas.
+
+3. Tryck på `i`{normal} och skriv in nödvändiga tillägg.
+
+4. När varje fel har rättats trycker du på `<Esc>`{normal} för att återgå till normalt läge.
+Upprepa steg 2 till 4 för att korrigera meningen.
+
+Det saknas text här .
+Det saknas text i denna rad.
+
+5. När du känner dig bekväm med att infoga text går du vidare till Lektion 1.5.
+
+# Lektion 1.5: TEXTREDIGERING: TILLÄGG
+
+** Tryck på `A`{normal} för att lägga till text. **
+
+1. Flytta markören till den första raden under märket ✗.
+Det spelar ingen roll på vilket tecken markören står på i den raden.
+
+2. Tryck på [A](A) och skriv in nödvändiga tillägg.
+
+3. När texten har lagts till trycker du på `<Esc>`{normal} för att återgå till normal
+läge.
+
+4. Flytta markören till den andra raden markerad med ✗ och upprepa
+steg 2 och 3 för att korrigera denna mening.
+
+Det saknas lite text i
+Det saknas lite text i denna rad.
+Det saknas också lite text
+Det saknas också lite text här.
+
+5. När du känner dig bekväm med att lägga till text går du vidare till lektion 1.6.
+
+# Lektion 1.6: REDIGERA EN FIL
+
+** Använd `:wq`{vim} för att spara en fil och avsluta. **
+
+!! OBS: Läs hela lektionen innan du utför något av stegen nedan !!
+
+1. Avsluta denna handledning som du gjorde i Lektion 1.2: `:q!`{vim}
+Eller, om du har tillgång till en annan terminal, gör följande där.
+
+2. Skriv följande kommando i shell-prompten:
+~~~ sh
+$ vim tutor
+~~~
+’vim’ är kommandot för att starta Vim-redigeraren, ’tutor’ är namnet på
+filen du vill redigera. Använd en fil som kan ändras.
+
+3. Infoga och ta bort text som du lärde dig i de tidigare lektionerna.
+
+4. Spara filen med ändringarna och avsluta Vim med:
+~~~ cmd
+:wq
+~~~
+
+Observera att du måste trycka på `<Enter>` för att utföra kommandot.
+
+5. Om du har avslutat vimtutor i steg 1, starta om vimtutor och gå vidare
+till följande sammanfattning.
+
+6. När du har läst och förstått ovanstående steg: gör det.
+
+# Lektion 1 SAMMANFATTNING
+
+1. Markören flyttas med hjälp av piltangenterna eller hjkl-tangenterna.
+h (vänster) j (nedåt) k (uppåt) l (höger)
+
+2. För att starta Vim från shell-prompten, skriv:
+
+~~~ sh
+$ vim FILNAMN
+~~~
+
+3. För att avsluta Vim, skriv: `<Esc>`{normal} `:q!` {vim} `<Enter>`{normal} för att kasta
+alla ändringar.
+ELLER skriv: `<Esc>`{normal} `:wq`{vim} `<Enter>`{normal} för att spara
+ändringarna.
+
+4. För att radera tecknet vid markören, skriv: `x`{normal}
+
+5. För att infoga eller lägga till text, skriv:
+`i`{normal} infoga text `<Esc>`{normal} infoga före markören.
+`A`{normal} lägg till text `<Esc>`{normal} lägg till efter raden.
+
+OBS: Om du trycker på `<Esc>`{normal} kommer du till normalt läge eller avbryter
+ett oönskat och delvis slutfört kommando.
+
+Fortsätt nu med lektion 2.
+
+# Lektion 2.1: RADERINGSKOMMANDON
+
+** Skriv `dw`{normal} för att radera ett ord. **
+
+1. Tryck på `<Esc>`{normal} för att se till att du är i normalt läge.
+
+2. Flytta markören till raden under märket ✗.
+
+3. Flytta markören till början av ett ord som behöver raderas.
+
+4. Skriv [d](d) [w](w) för att få ordet att försvinna.
+
+Det finns några ord som inte hör hemma i den här meningen.
+
+5. Upprepa steg 3 och 4 tills meningen är korrekt och gå vidare till Lektion 2.2.
+
+# Lektion 2.2: FLER RADERINGSKOMMANDON
+
+** Skriv `d$`{normal} för att radera till slutet av raden. **
+
+1. Tryck på `<Esc>`{normal} för att se till att du är i normalt läge.
+
+2. Flytta markören till raden under märket ✗.
+
+3. Flytta markören till slutet av rätt rad (EFTER den första . ).
+
+4. Skriv `d$`{normal} för att radera till slutet av raden.
+
+Någon har skrivit slutet på denna rad två gånger. slutet på denna rad två gånger.
+
+5. Gå vidare till lektion 2.3 för att förstå vad som händer.
+
+# Lektion 2.3: OM OPERATORER OCH RÖRELSER
+
+Många kommandon som ändrar text består av en [operator] (operator) och
+en [rörelse](navigering).
+Formatet för ett raderingskommando med [d](d) raderingsoperatorn är som följer:
+
+d motion
+
+Där:
+d - är raderingsoperatorn.
+motion - är vad operatorn kommer att verka på (listat nedan).
+
+En kort lista över rörelser:
+[w](w) - till början av nästa ord, UTAN dess första tecken.
+[e](e) - till slutet av det aktuella ordet, INKLUSIVE det sista tecknet.
+[$]($) - till slutet av raden, INKLUSIVE det sista tecknet.
+
+Om du skriver `de`{normal} raderas alltså från markören till slutet av ordet.
+
+OBS: Om du bara trycker på rörelsen i normalt läge utan en operator
+kommer markören att flyttas enligt specifikationen.
+
+# Lektion 2.4: ANVÄNDA ETT ANTAL FÖR EN RÖRELSE
+
+** Om du skriver ett tal före en rörelse upprepas den så många gånger. **
+
+1. Flytta markören till början av raden markerad med ✓ nedan.
+
+2. Skriv `2w`{normal} för att flytta markören två ord framåt.
+
+3. Skriv `3e`{normal} för att flytta markören till slutet av det tredje ordet framåt.
+
+4. Skriv `0`{normal} ([noll](0)) för att flytta till början av raden.
+
+5. Upprepa steg 2 och 3 med olika siffror.
+
+Detta är bara en rad med ord som du kan flytta runt i.
+
+6. Gå vidare till lektion 2.5.
+
+# Lektion 2.5: ANVÄNDA ETT ANTAL FÖR ATT RADERA MER
+
+** Om du skriver ett tal med en operator upprepas det så många gånger. **
+
+I kombinationen av raderingsoperatorn och en rörelse som nämns ovan
+infogar du ett antal före rörelsen för att radera mer:
+d nummer rörelse
+
+1. Flytta markören till det första ordet med STORA BOKSTÄVER i raden markerad med ✗.
+
+2. Skriv `d2w`{normal} för att radera de två orden med STORA BOKSTÄVER
+
+3. Upprepa steg 1 och 2 med ett annat antal för att radera de på varandra följande
+orden med STORA BOKSTÄVER med ett kommando
+
+Denna rad med orden ABC DE FGHI JK LMN OP Q RS TUV rensas.
+
+# Lektion 2.6: ARBETA MED RADER
+
+** Skriv `dd`{normal} för att radera en hel rad. **
+
+På grund av hur ofta hela rader raderas bestämde utvecklarna av Vi
+att det skulle vara enklare att bara skriva två d för att radera en rad.
+
+1. Flytta markören till den andra raden i frasen nedan.
+2. Skriv [dd](dd) för att radera raden.
+3. Flytta nu till den fjärde raden.
+4. Skriv `2dd`{normal} för att radera två rader.
+
+1) Rosor är röda,
+2) Lera är roligt,
+3) Violeter är blåa,
+4) Jag har en bil,
+5) Klockor visar tiden,
+6) Socker är sött
+7) Och det är du också.
+
+# Lektion 2.7: KOMMANDOT ÅNGRA
+
+** Tryck på `u`{normal} för att ångra de senaste kommandona, `U` {normal} för att korrigera en hel rad. **
+
+1. Flytta markören till raden under märket ✗ och placera den på det
+första felet.
+2. Skriv `x`{normal} för att radera det första oönskade tecknet.
+3. Skriv nu `u`{normal} för att ångra det senaste kommandot som utfördes.
+4. Korrigera nu alla fel på raden med kommandot `x`{normal}.
+5. Skriv nu ett stort `U`{normal} för att återställa raden till sitt ursprungliga tillstånd.
+6. Skriv nu `u`{normal} några gånger för att ångra `U`{normal} och föregående
+kommandon.
+7. Skriv nu `<C-r>`{normal} (Control + R) några gånger för att göra om kommandona
+(ångra ångrandena).
+
+Korrigera felen på denna rad och ersätt dem med ångra.
+
+8. Dessa är mycket användbara kommandon. Gå nu vidare till sammanfattningen av lektion 2.
+
+# Lektion 2 SAMMANFATTNING
+
+1. För att radera från markören till nästa ord, skriv: `dw`{normal}
+2. För att radera från markören till slutet av en rad, skriv: `d$` {normal}
+3. För att radera en hel rad, skriv: `dd`{normal}
+4. För att upprepa en rörelse, lägg till ett nummer framför: `2w`{normal}
+
+5. Formatet för ett ändringskommando är:
+operator [nummer] rörelse
+där:
+operator - är vad som ska göras, till exempel [d](d) för att radera
+[nummer] - är ett valfritt tal för att upprepa rörelsen
+rörelse - flyttar över texten som ska bearbetas, till exempel:
+[w](w) (ord),
+[$]($) (till slutet av raden) osv.
+
+6. För att flytta till början av raden använder du noll: [0](0)
+
+7. För att ångra tidigare åtgärder skriver du: `u`{normal} (liten u)
+För att ångra alla ändringar på en rad skriver du: `U`{normal} (stor U)
+För att ångra ångrandet skriver du: `<C-r>` {normal}
+
+# Lektion 3.1: KOMMANDOT LÄGG IN
+
+** Skriv `p`{normal} för att placera tidigare raderad text efter markören. **
+
+1. Flytta markören till den första ✓ raden nedan.
+
+2. Skriv `dd`{normal} för att radera raden och lagra den i ett Vim-register.
+
+3. Flytta markören till raden c), OVANFÖR där den raderade raden ska placeras.
+
+4. Skriv `p`{normal} för att placera raden under markören.
+
+5. Upprepa steg 2 till 4 för att placera alla rader i rätt ordning.
+
+d) Kan du också lära dig?
+b) Violetter är blåa,
+c) Intelligens är något man lär sig,
+a) Rosor är röda,
+
+# Lektion 3.2: KOMMANDOT ERSÄTT
+
+** Skriv `rx`{normal} för att ersätta tecknet vid markören med x. **
+
+1. Flytta markören till den första raden nedan markerad med ✗.
+
+2. Flytta markören så att den hamnar ovanför det första felet.
+
+3. Skriv `r`{normal} och sedan det tecken som ska stå där.
+
+4. Upprepa steg 2 och 3 tills den första raden är identisk med den andra.
+
+När denna rad skrevs in tryckte någon på fel tangenter!
+När denna rad skrevs in tryckte någon på fel tangenter!
+
+5. Gå nu vidare till lektion 3.3.
+
+OBS: Kom ihåg att du ska lära dig genom att göra, inte genom att memorera.
+
+# Lektion 3.3: ÄNDRINGSOPERATORN
+
+** För att ändra till slutet av ett ord, skriv `ce`{normal}. **
+
+1. Flytta markören till den första raden nedan markerad med ✗.
+
+2. Placera markören på ”u” i ’lubw’.
+
+3. Skriv `ce`{normal} och det korrekta ordet (i detta fall skriver du ”ine” ).
+
+4. Tryck på `<Esc>`{normal} och flytta till nästa tecken som behöver
+ändras.
+
+5. Upprepa steg 3 och 4 tills den första meningen är densamma som den andra.
+
+Denna lubw har några wptfd som mrrf ändrar usf ändringsoperatorn.
+Denna rad har några ord som behöver ändras med hjälp av ändringsoperatorn.
+
+Observera att [c](c)e raderar ordet och placerar dig i infogningsläge.
+
+# Lektion 3.4: FLER ÄNDRINGAR MED `c`{normal}
+
+** Ändringsoperatorn används med samma rörelser som delete. **
+
+1. Ändringsoperatorn fungerar på samma sätt som delete. Formatet är:
+
+c [nummer] motion
+
+2. Rörelserna är desamma, till exempel `w`{normal} (ord) och `$`{normal} (slutet av raden).
+
+3. Flytta till den första raden nedan markerad med ✗.
+
+4. Flytta markören till det första felet.
+
+5. Skriv `c$`{normal} och skriv resten av raden som den andra och tryck på `<Esc>`{normal}.
+
+Slutet av denna rad behöver lite hjälp för att bli som den andra.
+Slutet av denna rad måste korrigeras med kommandot c$.
+
+OBS: Du kan använda Backspace-tangenten för att korrigera misstag medan du skriver.
+
+# Lektion 3 SAMMANFATTNING
+
+1. För att återställa text som just har raderats, skriv [p](p). Detta placerar den
+raderade texten EFTER markören (om en rad har raderats kommer den att placeras på
+raden under markören).
+
+2. För att ersätta tecknet under markören, skriv [r](r) och sedan det
+tecken du vill ha där.
+
+3. Med [ändringsoperatorn](c) kan du ändra från markören till den plats
+dit rörelsen tar dig. Skriv `ce`{normal} för att ändra från markören till
+slutet av ordet, `c$`{normal} för att ändra till slutet av en rad.
+
+4. Formatet för ändring är:
+
+c [nummer] rörelse
+
+Gå nu vidare till nästa lektion.
+
+# Lektion 4.1: MARKÖRENS PLATS OCH FILSTATUS
+
+** Skriv `<C-g>`{normal} för att visa din plats i en fil och filstatus.
+Skriv `{count}G`{normal} för att flytta till rad {count} i filen. **
+
+OBS: Läs hela lektionen innan du utför något av stegen!
+
+1. Håll ned `<Ctrl>`{normal} och tryck på `g`{normal}. Vi kallar detta
+`<C-g>`{normal}. Ett meddelande visas längst ned på sidan med
+filnamnet och positionen i filen. Kom ihåg radnumret för
+steg 3.
+
+OBS: Du kan se markörens position i det nedre högra hörnet av
+skärmen. Detta händer när alternativet [’ruler’](’ruler’) är aktiverat.
+2. Tryck på [G](G) för att flytta till slutet av filen.
+Skriv [gg](gg) för att flytta till början av filen.
+
+3. Skriv numret på den rad du befann dig på och sedan `G`{normal}. Detta
+tar dig tillbaka till den rad du befann dig på när du först tryckte på `<C-g>`{normal}.
+
+4. Om du känner dig säker på att göra detta, utför steg 1 till 3.
+
+# Lektion 4.2: SÖKKOMMANDOT
+
+** Skriv `/`
+{normal} följt av en fras för att söka efter frasen. **
+
+1. I normalt läge skriver du tecknet `/`{normal}. Observera att det och
+markören visas längst ner på skärmen, precis som med kommandot `:`{normal}.
+
+2. Skriv nu ’errroor’ `<Enter>`{normal}. Detta är ordet du vill söka
+efter.
+
+3. För att söka efter samma fras igen, skriv helt enkelt [n](n).
+För att söka efter samma fras i motsatt riktning, skriv [N](N).
+
+4. För att söka efter en fras bakåt, använd [?](?) istället
+för `/`{normal}.
+
+5. För att gå tillbaka till där du kom ifrån trycker du på `<C-o>`{normal} (håll `<Ctrl>`{normal} intryckt medan du trycker på bokstaven `o`{normal}). Upprepa för att gå längre tillbaka.
+ `<C-i>`{normal} går framåt.
+
+”errroor” är inte rätt stavning av error; errroor är ett fel.
+
+OBS: När sökningen når slutet av filen fortsätter den från
+början, såvida inte alternativet [’wrapscan’](’wrapscan’) har återställts.
+
+# Lektion 4.3: SÖKNING EFTER MATCHANDE PARENTESER
+
+** Skriv `%`{normal} för att hitta en matchande ),], eller }. **
+
+1. Placera markören på valfri (, [, eller { i raden nedan markerad med ✓.
+
+2. Skriv nu tecknet [%](%).
+
+3. Markören flyttas till den matchande parentesen eller hakparentesen.
+
+4. Skriv `%`{normal} för att flytta markören till den andra matchande hakparentesen.
+
+5. Flytta markören till en annan (,),[,],{ eller } och se vad `%`{normal} gör.
+
+Detta ( är en testrad med ('s, ['s ] och {'s } i sig. ))
+
+OBS: Detta är mycket användbart vid felsökning av ett program med omatchade parenteser!
+
+# Lektion 4.4: KOMMANDOT ERSÄTT
+
+** Skriv `:s/old/new/g` för att ersätta ”old” med ”new”. **
+
+1. Flytta markören till raden under märket ✗.
+
+2. Skriv
+~~~ cmd
+:s/thee/the/
+~~~
+
+OBSERVERA att kommandot [:s](:s) endast ändrade den första förekomsten av ”thee” i raden.
+
+3. Skriv nu
+~~~ cmd
+:s/thee/the/g
+~~~
+
+Att lägga till g [flagga](:s_flags) innebär att ersätta globalt i raden,
+ändra alla förekomster av ”thee” i raden.
+
+Vanligtvis är den bästa tiden att se blommorna på våren.
+
+4. För att ändra alla förekomster av en teckensträng mellan två rader, skriv
+~~~ cmd
+:#,#s/old/new/g
+~~~
+där #,# är radnumren för det intervall där
+ersättningen ska göras.
+
+Skriv
+~~~ cmd
+:%s/old/new/g
+~~~
+för att ändra alla förekomster i hela filen.
+
+Skriv
+~~~ cmd
+:%s/old/new/gc
+~~~
+för att hitta alla förekomster i hela filen, med en fråga om du vill
+ersätta eller inte.
+
+# Lektion 4 SAMMANFATTNING
+
+1. `<C-g>`{normal} visar din position och filstatus.
+`G`{normal} flyttar till slutet av filen.
+nummer `G`{normal} flyttar till det radnumret.
+`gg`{normal} flyttar till första raden.
+
+2. Om du skriver `/`{normal} följt av en fras söker du FRAMÅT efter frasen.
+Om du skriver `?`{normal} följt av en fras söker du BAKÅT efter frasen.
+Efter en sökning skriver du `n`{normal} för att hitta nästa förekomst i samma
+riktning eller `N`{normal} för att söka i motsatt riktning.
+`<C-o>`{normal} tar dig tillbaka till äldre positioner, `<C-i>`{normal} till
+nyare positioner.
+
+3. Om du skriver `%`{normal} medan markören står på (,),[,],{ eller } går du till dess
+matchning.
+
+4. För att ersätta det första gamla med det nya i en rad skriver du
+~~~ cmd
+:s/old/new
+~~~
+För att ersätta alla ”gamla” med det nya i en rad skriver du
+~~~ cmd
+:s/old/new/g
+~~~
+För att ersätta fraser mellan två radnummer, skriv
+~~~ cmd
+:#,#s/old/new/g
+~~~
+För att ersätta alla förekomster i filen, skriv
+~~~ cmd
+:%s/old/new/g
+~~~
+För att be om bekräftelse varje gång, lägg till ’c’
+~~~ cmd
+:%s/old/new/gc
+~~~
+
+# Lektion 5.1: HUR MAN UTFÖR ETT EXTERNT KOMMANDO
+
+** Skriv `:!`{vim} följt av ett externt kommando för att utföra det kommandot. **
+
+1. Skriv det välbekanta kommandot `:`{normal} för att placera markören längst ner på
+skärmen. Detta gör att du kan skriva in ett kommandoradskommando.
+
+2. Skriv nu tecknet [!](!cmd) (utropstecken). Detta gör att du kan
+utföra vilket externt shell-kommando som helst.
+
+3. Skriv till exempel ”ls” efter ”!” och tryck sedan på `<Enter>` {normal}.
+Detta visar en lista över din katalog, precis som om du befann dig
+vid shell-prompten.
+
+OBS: Det är möjligt att utföra vilket externt kommando som helst på detta sätt, även med
+argument.
+
+OBS: Alla `:`{vim} kommandon måste avslutas genom att trycka på `<Enter>`{normal}.
+Hädanefter kommer vi inte alltid att nämna detta.
+
+# Lektion 5.2: MER OM ATT SKRIVA FILER
+
+** För att spara ändringarna i texten skriver du `:w`{vim} FILNAMN. **
+
+1. Skriv `:!ls`{vim} för att få en lista över din katalog.
+Du vet redan att du måste trycka på `<Enter>`{normal} efter detta.
+
+2. Välj ett filnamn som inte finns ännu, till exempel TEST.
+
+3. Skriv nu:
+~~~ cmd
+:w TEST
+~~~
+(där TEST är det filnamn du valde).
+
+4. Detta sparar hela filen (Vim Tutor) under namnet TEST.
+För att verifiera detta, skriv `:!ls`{vim} igen för att se din katalog.
+
+OBS: Om du skulle avsluta Vim och starta om det med `vim TEST`, skulle filen
+vara en exakt kopia av handledaren när du sparade den.
+
+5. Ta nu bort filen genom att skriva:
+~~~ cmd
+:!rm TEST
+~~~
+
+# Lektion 5.3: VÄLJA TEXT ATT SKRIVA
+
+** För att spara en del av filen, skriv `v`{normal} motion `:w FILNAMN`{vim}. **
+
+1. Flytta markören till denna rad.
+
+2. Tryck på [v](v) och flytta markören till det femte objektet nedan. Lägg märke till att
+texten är markerad.
+
+3. Tryck på tecknet `:`{normal}. Längst ner på skärmen
+
+:’<,’>
+
+kommer att visas.
+
+4. Skriv
+
+`:w TEST`{vim}
+
+där TEST är ett filnamn som ännu inte finns. Kontrollera att du ser
+
+`:’<,’>w TEST`{vim}
+
+innan du trycker på `<Enter>`{normal}.
+
+5. Vim skriver de markerade raderna till filen TEST. Använd `:!ls`{vim} för att se den. Ta inte bort den ännu! Vi kommer att använda den i nästa lektion.
+
+OBS: Om du trycker på [v](v) startar [Visuell markering](visual-mode). Du kan flytta
+markören för att göra markeringen större eller mindre. Sedan kan du
+använda en operator för att göra något med texten. Till exempel raderar `d`{normal}
+texten.
+
+# Lektion 5.4: HÄMTA OCH SLÅ IHOP FILER
+
+** För att infoga innehållet i en fil, skriv `:r FILENAME`{vim}. **
+
+1. Placera markören precis ovanför denna rad.
+
+OBS: Efter att du har utfört steg 2 kommer du att se texten från Lektion 5.3. Flytta sedan
+NEDÅT för att se denna lektion igen.
+
+2. Hämta nu din TEST-fil med kommandot
+
+`:r TEST`{vim}
+
+där TEST är namnet på den fil du använde.
+Den fil du hämtar placeras under markörraden.
+
+3. För att verifiera att filen hämtades, flytta tillbaka markören och notera att det
+nu finns två kopior av lektion 5.3, originalet och filversionen.
+
+OBS: Du kan också läsa utdata från ett externt kommando. Till exempel läser
+
+`:r !ls`{vim}
+
+utdata från kommandot `ls` och placerar det under markören.
+
+# Lektion 5 SAMMANFATTNING
+
+1. [:!kommando](:!cmd) utför ett externt kommando.
+
+Några användbara exempel är:
+`:!ls`{vim} - visar en kataloglista
+`:!rm FILENAME`{vim} - tar bort filen FILENAME
+
+2. [:w](:w) FILENAME skriver den aktuella Vim-filen till disken med
+namnet FILENAME.
+
+3. [v](v) motion :w FILENAME sparar de visuellt markerade raderna i filen
+FILENAME.
+
+4. [:r](:r) FILENAME hämtar diskfilen FILENAME och placerar den
+under markörpositionen.
+
+5. [:r !dir](:r!) läser utdata från kommandot dir och
+placerar den under markörpositionen.
+
+# Lektion 6.1: KOMMANDOT OPEN
+
+** Skriv `o`{normal} för att öppna en rad under markören och placera dig i infogningsläge. **
+
+1. Flytta markören till raden under markerad med ✓.
+
+2. Skriv gemena bokstaven `o`{normal} för att [öppna](o) en rad UNDER
+markören och placera dig i infogningsläge.
+
+3. Skriv nu lite text och tryck på `<Esc>`{normal} för att lämna infogningsläget.
+
+Efter att ha skrivit `o`{normal} placeras markören på den öppna raden i infogningsläge.
+
+4. För att öppna en rad OVANFÖR markören skriver du helt enkelt ett [stort O](O) istället för
+ett gemener `o`{normal}. Prova detta på raden nedan.
+
+Öppna en rad ovanför denna genom att skriva O medan markören är på denna rad.
+
+# Lektion 6.2: KOMMANDOT LÄGG TILL EFTER
+
+** Skriv `a`{normal} för att infoga text EFTER markören. **
+
+1. Flytta markören till början av raden nedan markerad med ✗.
+
+2. Tryck på `e`{normal} tills markören är i slutet av ”li”.
+
+3. Skriv småbokstaven `a`{normal} för att [lägga till](a) text EFTER
+markören.
+
+4. Fyll i ordet som i raden nedanför. Tryck på `<Esc>`{normal} för att lämna
+införingsläget.
+
+5. Använd `e` {normal} för att flytta till nästa ofullständiga ord och upprepa steg 3
+och 4.
+
+Denna li låter dig öva på att lägga till text till en rad.
+Denna rad låter dig öva på att lägga till text till en rad.
+
+OBS: [a](a), [i](i) och [A](A) går alla till samma infogningsläge, den enda
+skillnaden är var tecknen infogas.
+
+# Lektion 6.3: ETT ANNAT SÄTT ATT ERSÄTTA
+
+** Skriv ett stort `R`{normal} för att ersätta mer än ett tecken. **
+
+1. Flytta markören till den första raden under markeringen ✗. Flytta markören till
+början av det första ”xxx”.
+
+2. Tryck nu på `R`{normal} ([stort R](R)) och skriv siffran under den i
+andra raden, så att den ersätter ”xxx”.
+
+3. Tryck på `<Esc>`{normal} för att lämna [Ersättningsläget](mode-replace). Observera att
+resten av raden förblir oförändrad.
+
+4. Upprepa stegen för att ersätta resterande ”xxx”.
+
+Om du lägger till 123 till xxx får du xxx.
+Om du lägger till 123 till 456 får du 579.
+
+OBS: Ersättningsläget liknar infogningsläget, men varje tecken som skrivs raderar ett
+befintligt tecken.
+
+# Lektion 6.4: KOPIERA OCH KLISTRA IN TEXT
+
+** Använd `y`{normal} för att kopiera text och `p`{normal} för att klistra in den. **
+
+1. Gå till raden markerad med ✓ nedan och placera markören efter ”a)”.
+
+2. Starta visuellt läge med `v`{normal} och flytta markören till strax före
+”first”.
+
+3. Skriv `y`{normal} för att [yank](yank) (kopiera) den markerade texten.
+
+4. Flytta markören till slutet av nästa rad: `j$`{normal}
+
+5. Skriv `p`{normal} för att [put](put) (klistra in) texten.
+
+6. Tryck på `a`{normal} och skriv sedan ”second”. Tryck på `<Esc>`{normal} för att lämna
+Insert-läget.
+
+7. Använd Visual-läget för att markera ”item.”, kopiera det med `y`{normal}, flytta till
+slutet av nästa rad med `j$`{normal} och klistra in texten där med `p`{normal}
+
+a) Detta är det första objektet.
+b)
+
+OBS: du kan använda `y`{normal} som en operator: `yw`{normal} kopierar ett ord.
+
+# Lektion 6.5: STÄLL IN ALTERNATIV
+
+** Ställ in ett alternativ så att en sökning eller ersättning ignorerar versaler och gemener. **
+
+1. Sök efter ’ignore’ genom att skriva: `/ignore`
+Upprepa flera gånger genom att trycka på `n`{normal}.
+
+2. Ställ in alternativet ’ic’ (Ignorera versaler och gemener) genom att skriva:
+~~~ cmd
+:set ic
+~~~
+3. Sök nu efter ’ignore’ igen genom att trycka på `n`{normal}.
+Lägg märke till att Ignore och IGNORE nu också hittas.
+
+4. Ställ in alternativen ’hlsearch’ och ’incsearch’:
+~~~ cmd
+:set hls is
+~~~
+5. Skriv nu sökkommandot igen och se vad som händer: /ignore <Enter>
+
+6. För att inaktivera ignorering av versaler och gemener, skriv:
+~~~ cmd
+:set noic
+~~~
+7. För att växla mellan värdena för en inställning, lägg till ”inv” framför:
+~~~ cmd
+:set invic
+~~~
+OBS: För att ta bort markeringen av träffar, skriv:
+~~~ cmd
+:nohlsearch
+~~~
+OBS: Om du vill ignorera versaler och gemener för endast ett sökkommando, använd [\c](/\c)
+i frasen: /ignore\c <Enter>
+
+# Lektion 6 SAMMANFATTNING
+
+1. Skriv `o` {normal} för att öppna en rad UNDER markören och starta infogningsläget.
+Skriv `O`{normal} för att öppna en rad ÖVER markören.
+
+2. Skriv `a`{normal} för att infoga text EFTER markören.
+Skriv `A`{normal} för att infoga text efter slutet av raden.
+
+3. Kommandot `e`{normal} flyttar till slutet av ett ord.
+
+4. Operatören `y`{normal} kopierar text, `p`{normal} klistrar in den.
+
+5. Om du skriver ett stort `R`{normal} går du in i ersättningsläget tills du trycker på `<Esc>`{normal}
+.
+
+6. Om du skriver ”[:set](:set) xxx” ställer du in alternativet ”xxx”. Några alternativ är:
+
+’ic’ 'ignorecase' ignorera versaler/gemener vid sökning
+’is’ 'incsearch' visa partiella träffar för en sökfras
+’hls’ 'hlsearch' markera alla matchande fraser
+
+Du kan använda antingen det långa eller det korta alternativnamnet.
+
+7. Lägg till ”no” för att inaktivera ett alternativ:
+~~~ cmd
+:set noic
+~~~
+8. Lägg till ”inv” för att växla ett alternativ:
+~~~ cmd
+:set invic
+~~~
+
+# Lektion 7.1: FÅ HJÄLP
+
+** Använd online-hjälpsystemet. **
+
+Vim har ett omfattande online-hjälpsystem. För att komma igång, prova något av
+dessa tre alternativ:
+- tryck på `<HELP>`{normal} -tangenten (om du har en sådan)
+- tryck på `<F1>`{normal} -tangenten (om du har en sådan)
+- skriv
+`:help`{vim}
+
+Läs texten i hjälp-fönstret för att ta reda på hur hjälpen fungerar.
+Skriv `<C-w><C-w>`{normal} för att hoppa från ett fönster till ett annat.
+Skriv `:q`{vim} för att stänga hjälpfönstret.
+
+Du kan hitta hjälp om nästan vilket ämne som helst genom att ange ett argument till kommandot
+”:help”. Prova dessa (glöm inte att trycka på <Enter>):
+~~~ cmd
+:help w
+:help c_CTRL-D
+:help insert-index
+:help user-manual
+~~~
+# Lektion 7.2: SKAPA ETT STARTSKRIPT
+
+** Aktivera Vim-funktioner. **
+
+Vim har många fler funktioner än Vi, men de flesta av dem är inaktiverade som
+standard. För att börja använda fler funktioner måste du skapa en ”vimrc”-fil.
+
+1. Börja redigera ”vimrc”-filen. Detta beror på ditt system:
+för UNIX-liknande för Windows
+`:e ~/.vimrc`{vim} `:e ~/_vimrc`{vim}
+
+2. Läs nu innehållet i exempel-filen ”vimrc”:
+`:r $VIMRUNTIME/vimrc_example.vim`{vim}
+
+3. Spara filen med:
+`:w`{vim}
+
+Nästa gång du startar Vim kommer syntaxmarkering att användas.
+Du kan lägga till alla dina önskade inställningar i denna ”vimrc”-filen.
+För mer information, skriv `:help vimrc-intro`{vim}.
+
+# Lektion 7.3: KOMPLETTERING
+
+** Kommandoradskomplettering med `<C-d>`{normal} och `<Tab>`{normal}. **
+
+1. Se vilka filer som finns i katalogen: `:!ls` {vim}
+
+2. Skriv början på ett kommando: `:e`{vim}
+
+3. Tryck på `<C-d>`{normal} så visar Vim en lista över kommandon som börjar
+med ”e”.
+
+4. Tryck på `<Tab>`{normal} så visar Vim en meny med möjliga kompletteringar
+(eller kompletterar matchningen, om det inmatade kommandot är unikt, t.ex.
+": ed`<Tab>`{normal}” kompletteras till ”:edit").
+
+5. Använd `<Tab>`{normal} eller `<C-n>`{normal} för att gå till nästa matchning. Eller använd
+`<S-Tab>`{normal} eller `<C-p>`{normal} för att gå till föregående matchning.
+
+6. Välj posten `edit`{vim}. Nu kan du se att ordet `edit`{vim}
+har infogats automatiskt i kommandoraden.
+
+7. Lägg nu till ett mellanslag och början på ett befintligt filnamn: `:edit FIL`{vim}
+
+8. Tryck på `<Tab>`{normal}. Vim visar en kompletteringsmeny med en lista över filnamn
+som börjar med `FIL`
+
+OBS: Komplettering fungerar för många kommandon. Det är särskilt användbart för
+`:help`{vim}.
+
+# Lektion 7 SAMMANFATTNING
+
+1. Skriv `:help`{vim}
+eller tryck på `<F1>`{normal} eller `<Help>` {normal} för att öppna ett hjälp-fönster.
+
+2. Skriv `:help ÄMNE`{vim} för att hitta hjälp om ÄMNE.
+
+3. Skriv `<C-w><C-w>`{normal} för att hoppa till ett annat fönster
+
+4. Skriv `:q`{vim} för att stänga hjälp-fönstret
+
+5. Skapa ett vimrc-startskript för att behålla dina önskade inställningar.
+
+6. I kommandoläge trycker du på `<C-d>`{normal} för att se möjliga kompletteringar.
+Tryck på `<Tab>`{normal} för att använda kompletteringsmenyn och välja en matchning.
+
+# SLUTSATS
+
+Detta avslutar kapitel 1 i Vim Tutor. Fortsätt gärna med
+[kapitel 2](@tutor:vim-02-beginner).
+
+Detta var avsett att ge en kort översikt över Vim-redigeraren, precis tillräckligt för att
+du ska kunna använda redigeraren ganska enkelt. Det är långt ifrån komplett eftersom Vim har
+många fler kommandon. Konsultera hjälpen ofta.
+
+Det finns många resurser online för att lära sig mer om vim. Här är några av
+dem:
+
+- *Learn Vim Progressively*: http://yannesposito.com/Scratch/en/blog/Learn-Vim-Progressively/
+- *Learning Vim in 2014*: http://benmccormick.org/learning-vim-in-2014/
+- *Vimcasts*: http://vimcasts.org/
+- *Vim Video-Tutorials by Derek Wyatt*: http://derekwyatt.org/vim/tutorials/
+- *Learn Vimscript the Hard Way*: http:// learnvimscriptthehardway.stevelosh.com/
+- *7 vanor för effektiv textredigering*: http://www.moolenaar.net/habits.html
+- *vim-galore*: https://github.com/mhinz/vim-galore
+
+Om du föredrar en bok rekommenderas ofta *Practical Vim* och uppföljaren *Modern Vim* av Drew Neil
+.
+
+Denna handledning har skrivits av Michael C. Pierce och Robert K. Ware, Colorado
+School of Mines, med idéer från Charles Smith, Colorado State
+University. E-post: bware@mines.colorado.edu.
+
+Modifierad för Vim av Bram Moolenaar.
+Modifierad för vim-tutor-mode av Felipe Morales.
+Översatt av Daniel Nylander <vim@danielnylander.se>.

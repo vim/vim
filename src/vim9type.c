@@ -612,6 +612,10 @@ list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	common_type(typval2type(&li->li_tv, copyID, type_gap, TVTT_DO_MEMBER),
 					member_type, &member_type, type_gap);
 
+    // Reset copyID so that a shared reference to this list (not a circular
+    // reference) can be processed again to get the correct type.
+    l->lv_copyID = 0;
+
     return get_list_type(member_type, type_gap);
 }
 
@@ -661,6 +665,9 @@ tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (ga_grow(&tuple_types_ga, 1) == FAIL)
 	{
 	    ga_clear(&tuple_types_ga);
+	    // Reset copyID so that a shared reference to this tuple can be
+	    // processed again.
+	    tuple->tv_copyID = 0;
 	    return NULL;
 	}
 	((type_T **)tuple_types_ga.ga_data)[tuple_types_ga.ga_len] = type;
@@ -669,6 +676,10 @@ tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
     type_T *tuple_type = get_tuple_type(&tuple_types_ga, type_gap);
     ga_clear(&tuple_types_ga);
+
+    // Reset copyID so that a shared reference to this tuple (not a circular
+    // reference) can be processed again to get the correct type.
+    tuple->tv_copyID = 0;
 
     return tuple_type;
 }
@@ -715,6 +726,10 @@ dict_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     while (dict_iterate_next(&iter, &value) != NULL)
 	common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
 					member_type, &member_type, type_gap);
+
+    // Reset copyID so that a shared reference to this dict (not a circular
+    // reference) can be processed again to get the correct type.
+    d->dv_copyID = 0;
 
     return get_dict_type(member_type, type_gap);
 }
@@ -1371,6 +1386,11 @@ check_type_maybe(
 		    && ((expected->tt_flags & TTFLAG_NUMBER_OK)
 			     || (actual->tt_flags & TTFLAG_FLOAT_OK)))
 		// Using a number where a float is expected is OK here.
+		return OK;
+	    if (expected->tt_type == VAR_LIST
+		    && actual->tt_type == VAR_TUPLE
+		    && (expected->tt_flags & TTFLAG_TUPLE_OK))
+		// Using a tuple where a list is expected is OK here.
 		return OK;
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
@@ -2553,7 +2573,10 @@ type_name_list_or_dict(char *name, type_T *type, char **tofree)
     size_t len = STRLEN(name) + STRLEN(member_name) + 3;
     *tofree = alloc(len);
     if (*tofree == NULL)
+    {
+	vim_free(member_free);
 	return name;
+    }
 
     vim_snprintf(*tofree, len, "%s<%s>", name, member_name);
     vim_free(member_free);
@@ -2580,30 +2603,29 @@ type_name_tuple(type_T *type, char **tofree)
 
     if (type->tt_argcount <= 0)
 	// empty tuple
-	ga_concat(&ga, (char_u *)"any");
+	GA_CONCAT_LITERAL(&ga, "any");
     else
     {
 	if (type->tt_args == NULL)
-	    ga_concat(&ga, (char_u *)"[unknown]");
+	    GA_CONCAT_LITERAL(&ga, "[unknown]");
 	else
 	{
 	    for (i = 0; i < type->tt_argcount; ++i)
 	    {
-		char	*arg_type;
-		int	len;
+		string_T    arg_type;
 
-		arg_type = type_name(type->tt_args[i], &arg_free);
+		arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
 		if (i > 0)
 		{
 		    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 		    ga.ga_len += 2;
 		}
-		len = (int)STRLEN(arg_type);
-		if (ga_grow(&ga, len + 8) == FAIL)
+		arg_type.length = STRLEN(arg_type.string);
+		if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 		    goto failed;
 		if (varargs && i == type->tt_argcount - 1)
-		    ga_concat(&ga, (char_u *)"...");
-		ga_concat(&ga, (char_u *)arg_type);
+		    GA_CONCAT_LITERAL(&ga, "...");
+		ga_concat_len(&ga, arg_type.string, arg_type.length);
 		VIM_CLEAR(arg_free);
 	    }
 	}
@@ -2670,31 +2692,35 @@ type_name_func(type_T *type, char **tofree)
 
     for (i = 0; i < type->tt_argcount; ++i)
     {
-	char *arg_type;
-	int  len;
+	string_T    arg_type;
 
 	if (type->tt_args == NULL)
-	    arg_type = "[unknown]";
+	{
+	    arg_type.string = (char_u *)"[unknown]";
+	    arg_type.length = 9;
+	}
 	else
-	    arg_type = type_name(type->tt_args[i], &arg_free);
+	{
+	    arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
+	    arg_type.length = STRLEN(arg_type.string);
+	}
 	if (i > 0)
 	{
 	    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 	    ga.ga_len += 2;
 	}
-	len = (int)STRLEN(arg_type);
-	if (ga_grow(&ga, len + 8) == FAIL)
+	if (ga_grow(&ga, (int)arg_type.length + 8) == FAIL)
 	    goto failed;
 	if (varargs && i == type->tt_argcount - 1)
-	    ga_concat(&ga, (char_u *)"...");
+	    GA_CONCAT_LITERAL(&ga, "...");
 	else if (i >= type->tt_min_argcount)
 	    *((char *)ga.ga_data + ga.ga_len++) = '?';
-	ga_concat(&ga, (char_u *)arg_type);
+	ga_concat_len(&ga, arg_type.string, arg_type.length);
 	VIM_CLEAR(arg_free);
     }
     if (type->tt_argcount < 0)
 	// any number of arguments
-	ga_concat(&ga, (char_u *)"...");
+	GA_CONCAT_LITERAL(&ga, "...");
 
     if (type->tt_member == &t_void)
 	STRCPY((char *)ga.ga_data + ga.ga_len, ")");

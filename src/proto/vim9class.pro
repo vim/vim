@@ -22,6 +22,7 @@ ufunc_T *method_lookup(class_T *cl, vartype_T v_type, char_u *name, size_t namel
 int inside_class(cctx_T *cctx_arg, class_T *cl);
 int oc_var_check_ro(class_T *cl, ocmember_T *m);
 void obj_lock_const_vars(object_T *obj);
+object_T *alloc_object(class_T *cl);
 void copy_object(typval_T *from, typval_T *to);
 void copy_class(typval_T *from, typval_T *to);
 void class_unref(class_T *cl);

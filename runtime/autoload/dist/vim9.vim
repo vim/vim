@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Dec 21
+# Last Change:  2026 Jan 31
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -60,8 +60,7 @@ if has('unix')
     enddef
   else
     export def Launch(args: string)
-      const fork = has('gui_running') ? '&' : ''
-      execute $':silent ! nohup {args} {Redir()} {fork}' | redraw!
+      execute $':silent ! nohup {args} {Redir()} &' | redraw!
     enddef
   endif
 elseif has('win32')

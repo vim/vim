@@ -1216,9 +1216,9 @@ may_do_si(void)
 {
     return curbuf->b_p_si
 	&& !curbuf->b_p_cin
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	&& *curbuf->b_p_inde == NUL
-# endif
+#endif
 	&& !p_paste;
 }
 

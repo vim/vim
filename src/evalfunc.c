@@ -229,7 +229,7 @@ check_arg_type(
 	type_T		*actual,
 	argcontext_T	*context)
 {
-    return need_type(actual, expected, FALSE,
+    return need_type(actual, expected, 0,
 	    context->arg_idx - context->arg_count, context->arg_idx + 1,
 	    context->arg_cctx, FALSE, FALSE);
 }
@@ -243,7 +243,7 @@ check_arg_type_mod(
 	type_T		*actual,
 	argcontext_T	*context)
 {
-    if (need_type(actual, expected, FALSE,
+    if (need_type(actual, expected, 0,
 	    context->arg_idx - context->arg_count, context->arg_idx + 1,
 	    context->arg_cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
@@ -6023,24 +6023,25 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 /*
  * Convert from block_def to string
  */
-    static char_u *
-block_def2str(struct block_def *bd)
+    static int
+block_def2str(struct block_def *bd, string_T *ret)
 {
-    char_u *p, *ret;
-    size_t size = bd->startspaces + bd->endspaces + bd->textlen;
-
-    ret = alloc(size + 1);
-    if (ret != NULL)
+    ret->string = alloc(bd->startspaces + bd->endspaces + bd->textlen + 1);
+    if (ret->string == NULL)
     {
-	p = ret;
-	vim_memset(p, ' ', bd->startspaces);
-	p += bd->startspaces;
-	mch_memmove(p, bd->textstart, bd->textlen);
-	p += bd->textlen;
-	vim_memset(p, ' ', bd->endspaces);
-	*(p + bd->endspaces) = NUL;
+	ret->length = 0;
+	return FAIL;
     }
-    return ret;
+
+    vim_memset(ret->string, ' ', bd->startspaces);
+    ret->length = bd->startspaces;
+    mch_memmove(ret->string + ret->length, bd->textstart, bd->textlen);
+    ret->length += bd->textlen;
+    vim_memset(ret->string + ret->length, ' ', bd->endspaces);
+    ret->length += bd->endspaces;
+    ret->string[ret->length] = NUL;
+
+    return OK;
 }
 
     static int
@@ -6175,16 +6176,16 @@ getregionpos(
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
-	#ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	int	lbr_saved = reset_lbr();
-	#endif
+#endif
 
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
 
-	#ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	restore_lbr(lbr_saved);
-	#endif
+#endif
 
 	oap->motion_type = MBLOCK;
 	oap->inclusive = TRUE;
@@ -6221,7 +6222,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     buf_T		*save_curbuf;
     int			save_virtual;
-    char_u		*akt = NULL;
+    string_T		akt = {NULL, 0};
     linenr_T		lnum;
 
     save_curbuf = curbuf;
@@ -6233,31 +6234,47 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	int ret = 0;
-	struct block_def	bd;
+	int ret = OK;
 
-	if (region_type == MLINE)
-	    akt = vim_strsave(ml_get(lnum));
-	else if (region_type == MBLOCK)
+	if (region_type == MBLOCK)
 	{
+	    struct block_def	bd;
+
 	    block_prep(&oa, &bd, lnum, FALSE);
-	    akt = block_def2str(&bd);
+	    block_def2str(&bd, &akt);
 	}
-	else if (p1.lnum < lnum && lnum < p2.lnum)
-	    akt = vim_strsave(ml_get(lnum));
+	else if (region_type == MLINE
+	    || (p1.lnum < lnum && lnum < p2.lnum))
+	{
+	    string_T	s;
+
+	    s.string = ml_get(lnum);
+	    s.length = ml_get_len(lnum);
+	    akt.string = vim_strnsave(s.string, s.length);
+	    if (akt.string == NULL)
+		akt.length = 0;
+	    else
+		akt.length = s.length;
+	}
 	else
 	{
+	    struct block_def	bd;
+
 	    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
-	    akt = block_def2str(&bd);
+	    block_def2str(&bd, &akt);
 	}
 
-	if (akt)
+	if (akt.string == NULL)
 	{
-	    ret = list_append_string(rettv->vval.v_list, akt, -1);
-	    vim_free(akt);
+	    clear_tv(rettv);
+	    (void)rettv_list_alloc(rettv);
+	    break;
 	}
 
-	if (akt == NULL || ret == FAIL)
+	ret = list_append_string(rettv->vval.v_list, akt.string, (int)akt.length);
+	vim_free(akt.string);
+
+	if (ret == FAIL)
 	{
 	    clear_tv(rettv);
 	    (void)rettv_list_alloc(rettv);
@@ -6560,7 +6577,7 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
 	case MCHAR: buf[0] = 'v'; break;
 	case MBLOCK:
 		buf[0] = Ctrl_V;
-		sprintf((char *)buf + 1, "%ld", reglen + 1);
+		vim_snprintf((char *)buf + 1, NUMBUFLEN + 1, "%ld", reglen + 1);
 		break;
     }
     rettv->vval.v_string = vim_strsave(buf);
@@ -8789,7 +8806,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "items(dict)" function
+ * "items()" function
  */
     static void
 f_items(typval_T *argvars, typval_T *rettv)
@@ -10127,11 +10144,11 @@ init_srand(UINT32_T *x)
 #if defined(FEAT_RELTIME)
 	proftime_T res;
 	profile_start(&res);
-#  if defined(MSWIN)
+# if defined(MSWIN)
 	*x = (UINT32_T)res.LowPart;
-#  else
+# else
 	*x = (UINT32_T)res.tv_fsec;
-#  endif
+# endif
 #else
 	*x = vim_time();
 #endif
@@ -11954,12 +11971,28 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 
     list_append_string(rettv->vval.v_list, word, len);
-    list_append_string(rettv->vval.v_list, (char_u *)(
-			attr == HLF_SPB ? "bad" :
-			attr == HLF_SPR ? "rare" :
-			attr == HLF_SPL ? "local" :
-			attr == HLF_SPC ? "caps" :
-			""), -1);
+    switch (attr)
+    {
+    case HLF_SPB:
+	list_append_string(rettv->vval.v_list, (char_u *)"bad", STRLEN_LITERAL("bad"));
+	break;
+
+    case HLF_SPR:
+	list_append_string(rettv->vval.v_list, (char_u *)"rare", STRLEN_LITERAL("rare"));
+	break;
+
+    case HLF_SPL:
+	list_append_string(rettv->vval.v_list, (char_u *)"local", STRLEN_LITERAL("local"));
+	break;
+
+    case HLF_SPC:
+	list_append_string(rettv->vval.v_list, (char_u *)"caps", STRLEN_LITERAL("caps"));
+	break;
+
+    default:
+	list_append_string(rettv->vval.v_list, (char_u *)"", 0);
+	break;
+    }
 }
 
 /*
@@ -12316,11 +12349,11 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
     {
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	if (USE_24BIT)
 	    modec = 'g';
 	else
-#endif
+# endif
 	    if (t_colors > 1)
 		modec = 'c';
 	    else

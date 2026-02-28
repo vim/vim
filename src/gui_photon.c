@@ -1563,7 +1563,7 @@ gui_mch_dialog(
 		}
 	    }
 	}
-#ifndef FEAT_GUI_TEXTDIALOG
+# ifndef FEAT_GUI_TEXTDIALOG
 	dialog_result = PtAlert(
 		gui.vimWindow, NULL,
 		title,
@@ -1571,7 +1571,7 @@ gui_mch_dialog(
 		message, NULL,
 		button_count, (const char **) button_array, NULL,
 		default_button, 0, Pt_MODAL);
-#else
+# else
 	// Writing the dialog ourselves lets us add extra features, like
 	// trapping the escape key and returning 0 to vim
 	{
@@ -1636,7 +1636,7 @@ gui_mch_dialog(
 	    PtDestroyWidget(dialog);
 	    gui_ph_dialog_text = NULL;
 	}
-#endif
+# endif
     }
 
     vim_free(button_array);
@@ -1981,11 +1981,11 @@ gui_mch_new_colors(void)
 	g = PgGreenValue(gui_ph_mouse_color) ^ 255;
 	b = PgBlueValue(gui_ph_mouse_color) ^ 255;
 
-#ifndef FEAT_MOUSESHAPE
+# ifndef FEAT_MOUSESHAPE
 	gui_ph_mouse_color = PgRGB(r, g, b);
 	PtSetResource(gui.vimTextArea, Pt_ARG_CURSOR_COLOR,
 		gui_ph_mouse_color, 0);
-#endif
+# endif
     }
 #endif
 
@@ -2353,7 +2353,7 @@ gui_mch_haskey(char_u *name)
 // Menu
 
 #ifdef FEAT_TOOLBAR
-#include "toolbar.phi"
+# include "toolbar.phi"
 
 static PhImage_t *gui_ph_toolbar_images[] = {
     &tb_new_phi,
@@ -2579,7 +2579,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int index)
     n = 0;
     PtSetArg(&args[ n++ ], Pt_ARG_POINTER, menu, 0);
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     if (menu_is_toolbar(parent->name))
     {
 	if (menu_is_separator(menu->name))
@@ -2630,7 +2630,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int index)
 	    PtRealizeWidget(menu->id);
     }
     else
-#endif
+# endif
 	if (menu_is_separator(menu->name))
     {
 	menu->id = PtCreateWidget(PtSeparator, parent->submenu_id, n, args);
@@ -2655,14 +2655,14 @@ gui_mch_add_menu_item(vimmenu_T *menu, int index)
 
 	PtAddCallback(menu->id, Pt_CB_ACTIVATE, gui_ph_handle_menu, menu);
 
-#ifdef USE_PANEL_GROUP
+# ifdef USE_PANEL_GROUP
 	if (gui_ph_is_buffer_item(menu, parent) == TRUE)
 	{
 	    PtAddCallback(menu->id, Pt_CB_DESTROYED,
 		    gui_ph_handle_buffer_remove, menu);
 	    gui_ph_pg_add_buffer(menu->dname);
 	}
-#endif
+# endif
     }
 
     gui_ph_position_menu(menu->id, menu->priority);

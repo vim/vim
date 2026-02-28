@@ -33,6 +33,8 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 	*modep = CH_MODE_JSON;
     else if (STRCMP(val, "lsp") == 0)
 	*modep = CH_MODE_LSP;
+    else if (STRCMP(val, "dap") == 0)
+	*modep = CH_MODE_DAP;
     else
     {
 	semsg(_(e_invalid_argument_str), val);
@@ -1452,7 +1454,7 @@ job_start(
 	for (i = 0; i < argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat_len(&ga, (char_u *)"  ", 2);
+		GA_CONCAT_LITERAL(&ga, "  ");
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
 	ga_append(&ga, NUL);
@@ -2019,18 +2021,18 @@ job_to_string_buf(typval_T *varp, char_u *buf)
     status = job->jv_status == JOB_FAILED ? "fail"
 		    : job->jv_status >= JOB_ENDED ? "dead"
 		    : "run";
-# ifdef UNIX
+#ifdef UNIX
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s", (long)job->jv_pid, status);
-# elif defined(MSWIN)
+#elif defined(MSWIN)
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s",
 		(long)job->jv_proc_info.dwProcessId,
 		status);
-# else
+#else
     // fall-back
     vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
-# endif
+#endif
     return buf;
 }
 

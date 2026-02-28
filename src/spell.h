@@ -299,9 +299,9 @@ SPELL_EXTERN spelltab_T   spelltab;
 SPELL_EXTERN int	  did_set_spelltab;
 
 // Values for "what" argument of spell_add_word()
-#define SPELL_ADD_GOOD	0
-#define SPELL_ADD_BAD	1
-#define SPELL_ADD_RARE	2
+# define SPELL_ADD_GOOD	0
+# define SPELL_ADD_BAD	1
+# define SPELL_ADD_RARE	2
 
 typedef struct wordcount_S
 {
@@ -309,9 +309,9 @@ typedef struct wordcount_S
     char_u	wc_word[1];	    // word, actually longer
 } wordcount_T;
 
-#define WC_KEY_OFF  offsetof(wordcount_T, wc_word)
-#define HI2WC(hi)     ((wordcount_T *)((hi)->hi_key - WC_KEY_OFF))
-#define MAXWORDCOUNT 0xffff
+# define WC_KEY_OFF  offsetof(wordcount_T, wc_word)
+# define HI2WC(hi)     ((wordcount_T *)((hi)->hi_key - WC_KEY_OFF))
+# define MAXWORDCOUNT 0xffff
 
 // Remember what "z?" replaced.
 SPELL_EXTERN char_u	*repl_from SPELL_INIT(= NULL);

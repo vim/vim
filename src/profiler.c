@@ -21,11 +21,11 @@
     void
 profile_start(proftime_T *tm)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     QueryPerformanceCounter(tm);
-# else
+#  else
     PROF_GET_TIME(tm);
-# endif
+#  endif
 }
 
 /*
@@ -36,10 +36,10 @@ profile_end(proftime_T *tm)
 {
     proftime_T now;
 
-# ifdef MSWIN
+#  ifdef MSWIN
     QueryPerformanceCounter(&now);
     tm->QuadPart = now.QuadPart - tm->QuadPart;
-# else
+#  else
     PROF_GET_TIME(&now);
     tm->tv_fsec = now.tv_fsec - tm->tv_fsec;
     tm->tv_sec = now.tv_sec - tm->tv_sec;
@@ -48,7 +48,7 @@ profile_end(proftime_T *tm)
 	tm->tv_fsec += TV_FSEC_SEC;
 	--tm->tv_sec;
     }
-# endif
+#  endif
 }
 
 /*
@@ -57,9 +57,9 @@ profile_end(proftime_T *tm)
     void
 profile_sub(proftime_T *tm, proftime_T *tm2)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     tm->QuadPart -= tm2->QuadPart;
-# else
+#  else
     tm->tv_fsec -= tm2->tv_fsec;
     tm->tv_sec -= tm2->tv_sec;
     if (tm->tv_fsec < 0)
@@ -67,7 +67,7 @@ profile_sub(proftime_T *tm, proftime_T *tm2)
 	tm->tv_fsec += TV_FSEC_SEC;
 	--tm->tv_sec;
     }
-# endif
+#  endif
 }
 
 /*
@@ -79,14 +79,14 @@ profile_msg(proftime_T *tm)
 {
     static char buf[50];
 
-# ifdef MSWIN
+#  ifdef MSWIN
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
     sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
-# else
+#  else
     sprintf(buf, PROF_TIME_FORMAT, (long)tm->tv_sec, (long)tm->tv_fsec);
-# endif
+#  endif
     return buf;
 }
 
@@ -96,14 +96,14 @@ profile_msg(proftime_T *tm)
     float_T
 profile_float(proftime_T *tm)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
     return (float_T)tm->QuadPart / (float_T)fr.QuadPart;
-# else
+#  else
     return (float_T)tm->tv_sec + (float_T)tm->tv_fsec / (float_T)TV_FSEC_SEC;
-# endif
+#  endif
 }
 
 /*
@@ -116,13 +116,13 @@ profile_setlimit(long msec, proftime_T *tm)
 	profile_zero(tm);
     else
     {
-# ifdef MSWIN
+#  ifdef MSWIN
 	LARGE_INTEGER   fr;
 
 	QueryPerformanceCounter(tm);
 	QueryPerformanceFrequency(&fr);
 	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
-# else
+#  else
 	varnumber_T	    fsec;	// this should be 64 bit if possible
 
 	PROF_GET_TIME(tm);
@@ -130,7 +130,7 @@ profile_setlimit(long msec, proftime_T *tm)
 		       + (varnumber_T)msec * (varnumber_T)(TV_FSEC_SEC / 1000);
 	tm->tv_fsec = fsec % (long)TV_FSEC_SEC;
 	tm->tv_sec += fsec / (long)TV_FSEC_SEC;
-# endif
+#  endif
     }
 }
 
@@ -142,18 +142,18 @@ profile_passed_limit(proftime_T *tm)
 {
     proftime_T	now;
 
-# ifdef MSWIN
+#  ifdef MSWIN
     if (tm->QuadPart == 0)  // timer was not set
 	return FALSE;
     QueryPerformanceCounter(&now);
     return (now.QuadPart > tm->QuadPart);
-# else
+#  else
     if (tm->tv_sec == 0)    // timer was not set
 	return FALSE;
     PROF_GET_TIME(&now);
     return (now.tv_sec > tm->tv_sec
 	    || (now.tv_sec == tm->tv_sec && now.tv_fsec > tm->tv_fsec));
-# endif
+#  endif
 }
 
 /*
@@ -162,20 +162,20 @@ profile_passed_limit(proftime_T *tm)
     void
 profile_zero(proftime_T *tm)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     tm->QuadPart = 0;
-# else
+#  else
     tm->tv_fsec = 0;
     tm->tv_sec = 0;
-# endif
+#  endif
 }
 
 # endif  // FEAT_PROFILE || FEAT_RELTIME
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_PROFILE)
-# if defined(HAVE_MATH_H)
-#  include <math.h>
-# endif
+# if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_PROFILE)
+#  if defined(HAVE_MATH_H)
+#   include <math.h>
+#  endif
 
 /*
  * Divide the time "tm" by "count" and store in "tm2".
@@ -187,18 +187,18 @@ profile_divide(proftime_T *tm, int count, proftime_T *tm2)
 	profile_zero(tm2);
     else
     {
-# ifdef MSWIN
+#  ifdef MSWIN
 	tm2->QuadPart = tm->QuadPart / count;
-# else
+#  else
 	double fsec = (tm->tv_sec * (float_T)TV_FSEC_SEC + tm->tv_fsec)
 								       / count;
 
 	tm2->tv_sec = floor(fsec / (float_T)TV_FSEC_SEC);
 	tm2->tv_fsec = vim_round(fsec - (tm2->tv_sec * (float_T)TV_FSEC_SEC));
-# endif
+#  endif
     }
 }
-#endif
+# endif
 
 # if defined(FEAT_PROFILE)
 /*
@@ -212,9 +212,9 @@ static proftime_T prof_wait_time;
     void
 profile_add(proftime_T *tm, proftime_T *tm2)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     tm->QuadPart += tm2->QuadPart;
-# else
+#  else
     tm->tv_fsec += tm2->tv_fsec;
     tm->tv_sec += tm2->tv_sec;
     if (tm->tv_fsec >= TV_FSEC_SEC)
@@ -222,7 +222,7 @@ profile_add(proftime_T *tm, proftime_T *tm2)
 	tm->tv_fsec -= TV_FSEC_SEC;
 	++tm->tv_sec;
     }
-# endif
+#  endif
 }
 
 /*
@@ -233,15 +233,15 @@ profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
 {
     // Check that the result won't be negative.  Can happen with recursive
     // calls.
-#ifdef MSWIN
+#  ifdef MSWIN
     if (total->QuadPart <= children->QuadPart)
 	return;
-#else
+#  else
     if (total->tv_sec < children->tv_sec
 	    || (total->tv_sec == children->tv_sec
 		&& total->tv_fsec <= children->tv_fsec))
 	return;
-#endif
+#  endif
     profile_add(self, total);
     profile_sub(self, children);
 }
@@ -273,11 +273,11 @@ profile_sub_wait(proftime_T *tm, proftime_T *tma)
     static int
 profile_equal(proftime_T *tm1, proftime_T *tm2)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     return (tm1->QuadPart == tm2->QuadPart);
-# else
+#  else
     return (tm1->tv_fsec == tm2->tv_fsec && tm1->tv_sec == tm2->tv_sec);
-# endif
+#  endif
 }
 
 /*
@@ -286,15 +286,15 @@ profile_equal(proftime_T *tm1, proftime_T *tm2)
     int
 profile_cmp(const proftime_T *tm1, const proftime_T *tm2)
 {
-# ifdef MSWIN
+#  ifdef MSWIN
     return tm2->QuadPart == tm1->QuadPart ? 0 :
 	tm2->QuadPart > tm1->QuadPart ? 1 : -1;
-# else
+#  else
     if (tm1->tv_sec == tm2->tv_sec)
 	return tm2->tv_fsec == tm1->tv_fsec ? 0 :
 	    tm2->tv_fsec > tm1->tv_fsec ? 1 : -1;
     return tm2->tv_sec > tm1->tv_sec ? 1 : -1;
-# endif
+#  endif
 }
 
 static char_u	*profile_fname = NULL;

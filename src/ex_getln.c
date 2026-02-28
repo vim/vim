@@ -433,9 +433,9 @@ may_do_incsearch_highlighting(
     int		skiplen, patlen;
     int		found;  // do_search() result
     pos_T	end_pos;
-#ifdef FEAT_RELTIME
+# ifdef FEAT_RELTIME
     searchit_arg_T sia;
-#endif
+# endif
     int		next_char;
     int		use_last_pat;
     int		did_do_incsearch = is_state->did_incsearch;
@@ -505,18 +505,18 @@ may_do_incsearch_highlighting(
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
-#ifdef FEAT_RELTIME
+# ifdef FEAT_RELTIME
 	CLEAR_FIELD(sia);
 	// Set the time limit to half a second.
 	sia.sa_tm = 500;
-#endif
+# endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, patlen, count, search_flags,
-#ifdef FEAT_RELTIME
+# ifdef FEAT_RELTIME
 		&sia
-#else
+# else
 		NULL
-#endif
+# endif
 		);
 	ccline.cmdbuff[skiplen + patlen] = next_char;
 	--emsg_off;
@@ -1340,14 +1340,14 @@ cmdline_left_right_mouse(int c, int *ignore_drag_release)
 	*ignore_drag_release = TRUE;
     else
 	*ignore_drag_release = FALSE;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     // When GUI is active, also move when 'mouse' is empty
     if (!gui.in_use)
-# endif
+#endif
 	if (!mouse_has(MOUSE_COMMAND))
 	    return;
-# ifdef FEAT_CLIPBOARD
-    if (mouse_row < cmdline_row && clip_star.available)
+#ifdef FEAT_CLIPBOARD
+    if (mouse_row < cmdline_row && (clip_star.available || clip_plus.available))
     {
 	int	    button, is_click, is_drag;
 
@@ -1366,7 +1366,7 @@ cmdline_left_right_mouse(int c, int *ignore_drag_release)
 	clip_modeless(button, is_click, is_drag);
 	return;
     }
-# endif
+#endif
 
     set_cmdspos();
     for (ccline.cmdpos = 0; ccline.cmdpos < ccline.cmdlen;
@@ -1871,7 +1871,7 @@ getcmdline_int(
 				// that occurs while typing a command should
 				// cause the command not to be executed.
 
-	if (stuff_empty() && typebuf.tb_len == 0)
+	if (ex_normal_busy == 0 && stuff_empty() && typebuf.tb_len == 0)
 	    // There is no pending input from sources other than user input, so
 	    // Vim is going to wait for the user to type a key.  Consider the
 	    // command line typed even if next key will trigger a mapping.
@@ -1994,7 +1994,7 @@ getcmdline_int(
 
 	int key_is_wc = (c == p_wc && KeyTyped) || c == p_wcm;
 	if ((cmdline_pum_active() || wild_menu_showing || did_wild_list)
-		&& !key_is_wc)
+		&& !key_is_wc && xpc.xp_numfiles > 0)
 	{
 	    // Ctrl-Y: Accept the current selection and close the popup menu.
 	    // Ctrl-E: cancel the cmdline popup menu and return the original
@@ -2343,27 +2343,27 @@ getcmdline_int(
 		goto cmdline_not_changed;	// Ignore mouse
 
 	case K_MIDDLEMOUSE:
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		// When GUI is active, also paste when 'mouse' is empty
 		if (!gui.in_use)
-# endif
+#endif
 		    if (!mouse_has(MOUSE_COMMAND))
 			goto cmdline_not_changed;   // Ignore mouse
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
 		if (clip_star.available)
 		    cmdline_paste('*', TRUE, TRUE);
 		else
-# endif
+#endif
 		    cmdline_paste(0, TRUE, TRUE);
 		redrawcmd();
 		goto cmdline_changed;
 
-# ifdef FEAT_DND
+#ifdef FEAT_DND
 	case K_DROP:
 		cmdline_paste('~', TRUE, FALSE);
 		redrawcmd();
 		goto cmdline_changed;
-# endif
+#endif
 
 	case K_LEFTDRAG:
 	case K_LEFTRELEASE:
@@ -3356,7 +3356,7 @@ cmdline_overstrike(void)
     return ccline.overstrike;
 }
 
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) || defined(FEAT_MOUSESHAPE)
+#if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) || defined(FEAT_MOUSESHAPE)
 /*
  * Return TRUE if the cursor is at the end of the cmdline.
  */
@@ -4331,9 +4331,9 @@ get_cmdline_type(void)
 	return NUL;
     if (p->cmdfirstc == NUL)
 	return
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	    (p->input_fn) ? '@' :
-# endif
+#endif
 	    '-';
     return p->cmdfirstc;
 }
@@ -4707,9 +4707,9 @@ open_cmdwin(void)
     // Can't do this recursively.  Can't do it when typing a password.
     if (text_or_buf_locked()
 	    || cmdwin_type != 0
-# if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	    || cmdline_star > 0
-# endif
+#endif
 	    )
     {
 	beep_flush();
@@ -4785,10 +4785,10 @@ open_cmdwin(void)
 #ifdef FEAT_FOLDING
     curwin->w_p_fen = FALSE;
 #endif
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
     curwin->w_p_rl = cmdmsg_rl;
     cmdmsg_rl = FALSE;
-# endif
+#endif
     RESET_BINDING(curwin);
 
     // Don't allow switching to another buffer.
@@ -4872,17 +4872,17 @@ open_cmdwin(void)
 
     RedrawingDisabled = save_RedrawingDisabled;
 
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     save_KeyTyped = KeyTyped;
-# endif
+#endif
 
     // Trigger CmdwinLeave autocommands.
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINLEAVE);
 
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     // Restore KeyTyped in case it is modified by autocommands
     KeyTyped = save_KeyTyped;
-# endif
+#endif
 
     cmdwin_type = 0;
     cmdwin_buf = NULL;
@@ -4899,11 +4899,11 @@ open_cmdwin(void)
     }
     else
     {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	// autocmds may abort script processing
 	if (aborting() && cmdwin_result != K_IGNORE)
 	    cmdwin_result = Ctrl_C;
-# endif
+#endif
 	// Set the new command line from the cmdline buffer.
 	dealloc_cmdbuff();
 
@@ -4965,10 +4965,10 @@ open_cmdwin(void)
 		ccline.cmdpos = ccline.cmdlen;
 	}
 
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_CONCEAL
 	// Avoid command-line window first character being concealed.
 	curwin->w_p_cole = 0;
-# endif
+#endif
 	// First go back to the original window.
 	wp = curwin;
 	set_bufref(&bufref, curbuf);
@@ -5002,9 +5002,9 @@ open_cmdwin(void)
 
     ga_clear(&winsizes);
     restart_edit = save_restart_edit;
-# ifdef FEAT_RIGHTLEFT
+#ifdef FEAT_RIGHTLEFT
     cmdmsg_rl = save_cmdmsg_rl;
-# endif
+#endif
 
     State = save_State;
     may_trigger_modechanged();
@@ -5100,12 +5100,12 @@ get_user_input(
 
     prompt = tv_get_string_chk(&argvars[0]);
 
-#ifdef NO_CONSOLE_INPUT
+# ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests
     // with --not-a-term we assume feedkeys() will be used.
     if (no_console_input() && !is_not_a_term())
 	return;
-#endif
+# endif
 
     cmd_silent = FALSE;		// Want to see the prompt.
     if (prompt != NULL)

@@ -17,10 +17,10 @@
 
 // Values that change for a new release.
 #define VIM_VERSION_MAJOR		9
-#define VIM_VERSION_MINOR		1
-#define VIM_VERSION_BUILD		285
-#define VIM_VERSION_BUILD_BCD		0x11d
-#define VIM_VERSION_DATE_ONLY		"2024 Jan 02"
+#define VIM_VERSION_MINOR		2
+#define VIM_VERSION_BUILD		286
+#define VIM_VERSION_BUILD_BCD		0x11e
+#define VIM_VERSION_DATE_ONLY		"2026 Feb 14"
 
 // Values based on the above
 #define VIM_VERSION_MAJOR_STR		VIM_TOSTR(VIM_VERSION_MAJOR)
@@ -37,13 +37,13 @@
 // For details see https://github.com/vim/vim-win32-installer/pull/277
 // and https://github.com/vim/vim-win32-installer/pull/285
 #if VIM_VERSION_PATCHLEVEL < 10
-#define LEADZERO(x) 000 ## x
+# define LEADZERO(x) 000 ## x
 #elif VIM_VERSION_PATCHLEVEL < 100
-#define LEADZERO(x) 00 ## x
+# define LEADZERO(x) 00 ## x
 #elif VIM_VERSION_PATCHLEVEL < 1000
-#define LEADZERO(x) 0 ## x
+# define LEADZERO(x) 0 ## x
 #else
-#define LEADZERO(x) x
+# define LEADZERO(x) x
 #endif
 
 #define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(LEADZERO(VIM_VERSION_PATCHLEVEL))

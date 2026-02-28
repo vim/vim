@@ -633,7 +633,7 @@ tuple_lock(tuple_T *tuple, int deep, int lock, int check_refcount)
 }
 
 typedef struct join_S {
-    char_u	*s;
+    string_T	s;
     char_u	*tofree;
 } join_T;
 
@@ -649,37 +649,39 @@ tuple_join_inner(
 {
     int		i;
     join_T	*p;
-    int		len;
     int		sumlen = 0;
     int		first = TRUE;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
-    char_u	*s;
+    string_T	s;
     typval_T	*tv;
+    size_t	seplen = 0;
 
     // Stringify each item in the tuple.
     for (i = 0; i < TUPLE_LEN(tuple) && !got_int; i++)
     {
 	tv = TUPLE_ITEM(tuple, i);
-	s = echo_string_core(tv, &tofree, numbuf, copyID,
+	s.string = echo_string_core(tv, &tofree, numbuf, copyID,
 				      echo_style, restore_copyID, !echo_style);
-	if (s == NULL)
+	if (s.string == NULL)
 	    return FAIL;
 
-	len = (int)STRLEN(s);
-	sumlen += len;
+	s.length = STRLEN(s.string);
+	sumlen += (int)s.length;
 
 	(void)ga_grow(join_gap, 1);
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
-	if (tofree != NULL || s != numbuf)
+	if (tofree != NULL || s.string != numbuf)
 	{
-	    p->s = s;
+	    p->s.string = s.string;
+	    p->s.length = s.length;
 	    p->tofree = tofree;
 	}
 	else
 	{
-	    p->s = vim_strnsave(s, len);
-	    p->tofree = p->s;
+	    p->s.string = vim_strnsave(s.string, s.length);
+	    p->s.length = s.length;
+	    p->tofree = p->s.string;
 	}
 
 	line_breakcheck();
@@ -689,8 +691,12 @@ tuple_join_inner(
 
     // Allocate result buffer with its total size, avoid re-allocation and
     // multiple copy operations.  Add 2 for a tailing ')' and NUL.
-    if (join_gap->ga_len >= 2)
-	sumlen += (int)STRLEN(sep) * (join_gap->ga_len - 1);
+    if (join_gap->ga_len > 0)
+    {
+	seplen = STRLEN(sep);
+	if (join_gap->ga_len >= 2)
+	    sumlen += (int)seplen * (join_gap->ga_len - 1);
+    }
     if (ga_grow(gap, sumlen + 2) == FAIL)
 	return FAIL;
 
@@ -699,18 +705,18 @@ tuple_join_inner(
 	if (first)
 	    first = FALSE;
 	else
-	    ga_concat(gap, sep);
+	    ga_concat_len(gap, sep, seplen);
 	p = ((join_T *)join_gap->ga_data) + i;
 
-	if (p->s != NULL)
-	    ga_concat(gap, p->s);
+	if (p->s.string != NULL)
+	    ga_concat_len(gap, p->s.string, p->s.length);
 	line_breakcheck();
     }
 
     // If there is only one item in the tuple, then add the separator after
     // that.
     if (join_gap->ga_len == 1)
-	ga_concat(gap, sep);
+	ga_concat_len(gap, sep, seplen);
 
     return OK;
 }

@@ -12,10 +12,10 @@ A pull request has the advantage that it will trigger the Continuous
 Integration tests, you will be warned of problems (you can ignore the coverage
 warning, it's noisy).
 
-Please consider adding a test. All new functionality should be tested and bug
-fixes should be tested for regressions: the test should fail before the fix and
-pass after the fix. Look through recent patches for examples and find help
-with ":help testing". The tests are located under "src/testdir".
+Please always add a test, if possible. All new functionality should be tested
+and bug fixes should be tested for regressions: the test should fail before the
+fix and pass after the fix. Look through recent patches for examples and find
+help with ":help testing". The tests are located under "src/testdir".
 
 Contributions will be distributed with Vim under the Vim license. Providing a
 change to be included implies that you agree with this and your contribution
@@ -45,6 +45,15 @@ When merging PRs into Vim, the current maintainer @chrisbra usually adds missing
 `Signed-off-by` trailers for the author user name and email address as well for
 anybody that explicitly *ACK*s a pull request as a statement that those
 approvers are happy with that particular change.
+
+## Using AI
+
+When using AI for contributions, please disclose this. Any AI-generated code
+must follow the Vim code style. In particular, [test_codestyle.vim][18]
+must not report any failures. Check the CI output for any test failures.
+
+Ensure that changes are properly tested. Do not submit a single PR that
+addresses multiple unrelated issues.
 
 # Reporting issues
 
@@ -160,3 +169,4 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
 [17]: https://github.com/vim/vim/issues
+[18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim

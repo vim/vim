@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9011833.071025\n"
+"Project-Id-Version: RuVim_0.9012028.281225\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-10-07 12:36+0300\n"
-"PO-Revision-Date: 2025-10-07 12:43+0300\n"
+"POT-Creation-Date: 2025-12-28 15:22+0300\n"
+"PO-Revision-Date: 2025-12-28 16:10+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -218,8 +218,8 @@ msgid "%d%%"
 msgstr "%d %%"
 
 #, c-format
-msgid "%2s"
-msgstr "%2s"
+msgid "%3s"
+msgstr "%3s"
 
 # Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # Restorer: редактировании нескольких файлов
@@ -2536,8 +2536,8 @@ msgstr ""
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
-"Строки, которые были вставлены или удалены, помещены между метками ??? и "
-"???END"
+"Строки, которые были вставлены или удалены, помещены между метками ??? и ???"
+"END"
 
 msgid "??? lines may be missing"
 msgstr "??? эти строки, возможно, утрачены"
@@ -2876,21 +2876,11 @@ msgstr "-- Далее --"
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " SPACE/d/j - вниз, b/u/k - вверх на экран/страницу/строку; q - отбой "
 
-msgid "W24: Clipboard register not available. See :h W24"
-msgstr "W24: Регистр буфера обмена недоступен. Подробнее см. :h W24"
-
 msgid "W23: Clipboard register not available, using register 0"
 msgstr "W23: Регистр буфера обмена недоступен. Будет использован регистр 0"
 
-msgid "W23: Clipboard register + not available, using register 0"
-msgstr ""
-"W23: Регистр + в качестве буфера обмена недоступен. Будет использован "
-"регистр 0"
-
-msgid "W23: Clipboard register * not available, using register 0"
-msgstr ""
-"W23: Регистр * в качестве буфера обмена недоступен. Будет использован "
-"регистр 0"
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Регистр буфера обмена недоступен. Подробнее см. :h W24"
 
 # Restorer: заголовок окна
 msgid "Question"
@@ -4642,21 +4632,21 @@ msgstr "Несчастным детям Уганды требуется ваша помощь!"
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
-msgid "type  :help iccf<Enter>       for information "
+msgid "type  :help Kuwasha<Enter>    for information "
 msgstr ""
-"наберите :help iccf<ENTER>              чтобы узнать об этом подробнее       "
+"наберите :help Kuwasha<ENTER>           чтобы узнать об этом подробнее      "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
-"наберите :q<ENTER>                      чтобы завершить работу с программой  "
+"наберите :q<ENTER>                      чтобы завершить работу с программой "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
-"наберите :help<ENTER> или нажмите <F1>  чтобы ознакомиться с документацией   "
+"наберите :help<ENTER> или нажмите <F1>  чтобы ознакомиться с документацией  "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
@@ -4671,19 +4661,19 @@ msgstr "Программа работает в режиме совместимости с редактором Vi"
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
-"наберите :set nocp<ENTER>               чтобы активировать возможности Vim   "
+"наберите :set nocp<ENTER>               чтобы активировать возможности Vim  "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
-"наберите :help cp-default<ENTER>        чтобы узнать об этом подробнее       "
+"наберите :help cp-default<ENTER>        чтобы узнать об этом подробнее      "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
-"меню Справка->Благотворительность       чтобы узнать об этом подробнее       "
+"меню Справка->Благотворительность       чтобы узнать об этом подробнее      "
 
 # Restorer: выводится только в ГИП при запуске gVim Easy
 msgid "Running modeless, typed text is inserted"
@@ -4694,47 +4684,38 @@ msgstr ""
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
-"меню Правка->Общие параметры->Режим вставки    чтобы переключать между       "
+"меню Правка->Общие параметры->Режим вставки    чтобы переключать между      "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 msgid "                              for two modes      "
 msgstr ""
-"                                             режимом вставки в режимом команд"
+"                                             режимом вставки и режимом команд"
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
-"меню Правка->Общие параметры->Совместимость с Vi   чтобы активировать        "
+"меню Правка->Общие параметры->Совместимость с Vi   чтобы активировать       "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 msgid "                              for Vim defaults   "
 msgstr ""
-"                                                   возможности редактора Vim "
+"                                                   возможности редактора Vim"
 
 msgid "Sponsor Vim development!"
 msgstr "Поддержите разработку программы «Редактор Vim»!"
-
-msgid "Become a registered Vim user!"
-msgstr "Станьте зарегистрированным пользователем программы «Редактор Vim»!"
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
-"наберите :help sponsor<ENTER>           чтобы узнать об этом подробнее       "
+"наберите :help sponsor<ENTER>           чтобы узнать об этом подробнее      "
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
-msgid "type  :help register<Enter>   for information "
+msgid "menu  Help->Sponsor  for information    "
 msgstr ""
-"наберите :help register<ENTER>          чтобы узнать об этом подробнее       "
-
-# Restorer: пробелы не убирать, сделано для выравнивания сообщений
-# Restorer: выравнивается по самому длинному подобному сообщению
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr ""
-"меню Справка->Содействие и регистрация  чтобы узнать об этом подробнее       "
+"меню Справка->Содействие проекту        чтобы узнать об этом подробнее      "
 
 # Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
 # Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
@@ -9534,8 +9515,8 @@ msgid "E1238: Blob required for argument %d"
 msgstr "E1238: Тип данных аргумента номер %d должен быть BLOB"
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: Недопустимое значение для типа данных BLOB %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
+msgstr "E1239: Недопустимое значение для типа данных BLOB 0x%lX"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: Превышена длина строки"
@@ -10298,6 +10279,10 @@ msgstr "E1435: Тип Enum может быть использован только в командном файле"
 msgid "E1436: Interface can only be used in a script"
 msgstr "E1436: Тип Interface может быть использован только в командном файле"
 
+msgid "E1437: Can only compare Object with Object"
+msgstr ""
+"E1437: Операции сравнения для типа Object допустимы только с типом Object"
+
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Указаны как позиционные, так и не позиционные спецификаторы %s"
@@ -10568,6 +10553,16 @@ msgstr "E1568: Время ожидания ответа на команду OSC истекло: %.*s"
 msgid "E1569: Cannot use listener_add in a listener callback"
 msgstr ""
 "E1569: Функция listener_add() запрещена в самом обработчике обратного вызова"
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr ""
+"E1570: Функция redraw_listener_add() запрещена в обработчике обратного "
+"вызова"
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
+msgstr ""
+"E1571: Необходимо указать хотя бы один обратный вызов для "
+"redraw_listener_add()"
 
 # Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
@@ -11845,6 +11840,9 @@ msgstr "действия клавиш <BS>, CTRL+W и т. п. в режиме вставки"
 msgid "definition of what comment lines look like"
 msgstr "определение, какие строки считать комментариями"
 
+msgid "template for comments; used to put the marker in"
+msgstr "шаблон комментариев; будет использован при расстановке маркеров"
+
 msgid "list of flags that tell how automatic formatting works"
 msgstr "перечень правил для автоматического форматирования текста"
 
@@ -11894,13 +11892,6 @@ msgstr ""
 " \n"
 "порядок показа элементов во всплывающем меню при подстановке"
 
-msgid ""
-" \n"
-"use fuzzy collection for specific completion modes"
-msgstr ""
-" \n"
-"применять неполные коллекции для указанных режимов подстановки"
-
 msgid "options for the Insert mode completion info popup"
 msgstr "информация во всплывающем меню при подстановке в режиме вставки"
 
@@ -11912,6 +11903,9 @@ msgstr "минимальная ширина всплывающего меню при подстановке"
 
 msgid "maximum width of the popup menu"
 msgstr "максимальная ширина всплывающего меню при подстановке"
+
+msgid "popup border style"
+msgstr "тип рамки всплывающего окна"
 
 msgid "user defined function for Insert mode completion"
 msgstr "пользовательская функция при подстановке в режиме вставки"
@@ -12076,9 +12070,6 @@ msgid "minimum number of screen lines for a fold to be closed"
 msgstr ""
 "минимальное количество строк на экране, для которых структура\n"
 "может быть свёрнута"
-
-msgid "template for comments; used to put the marker in"
-msgstr "шаблон комментариев; будет использован при расстановке маркеров"
 
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
@@ -12417,11 +12408,6 @@ msgstr "задаёт символы, допустимые в наименованиях файлов"
 
 msgid "specifies the characters in an identifier"
 msgstr "задаёт символы, допустимые в идентификаторах"
-
-msgid "defines trigger strings for complete_match()"
-msgstr ""
-"задаёт символы, определяющие начальную позицию подстановки;\n"
-"применяется в функции complete_match()"
 
 msgid "specifies the characters in a keyword"
 msgstr "задаёт символы, допустимые в управляющих словах"

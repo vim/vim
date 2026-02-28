@@ -866,7 +866,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		unsigned char tb = trail;
 
 		// convert process code to JIS
-# if defined(MSWIN) || defined(WIN32UNIX) || defined(MACOS_X)
+#if defined(MSWIN) || defined(WIN32UNIX) || defined(MACOS_X)
 		// process code is SJIS
 		if (lb <= 0x9f)
 		    lb = (lb - 0x81) * 2 + 0x21;
@@ -881,7 +881,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		    tb -= 0x7e;
 		    lb += 1;
 		}
-# else
+#else
 		/*
 		 * XXX: Code page identification can not use with all
 		 *	    system! So, some other encoding information
@@ -894,7 +894,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		// assume process code is JAPANESE-EUC
 		lb &= 0x7f;
 		tb &= 0x7f;
-# endif
+#endif
 		// exceptions
 		switch (lb << 8 | tb)
 		{
@@ -4481,9 +4481,9 @@ mb_unescape(char_u **pp)
 	    n += 2;
 	}
 	else if ((str[n] == K_SPECIAL
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		    || str[n] == CSI
-# endif
+#endif
 		 )
 		&& str[n + 1] == KS_EXTRA
 		&& str[n + 2] == (int)KE_CSI)
@@ -4492,9 +4492,9 @@ mb_unescape(char_u **pp)
 	    n += 2;
 	}
 	else if (str[n] == K_SPECIAL
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		|| str[n] == CSI
-# endif
+#endif
 		)
 	    break;		// a special key can't be a multibyte char
 	else
@@ -4764,7 +4764,7 @@ enc_locale(void)
 #endif
 }
 
-# if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /*
  * Convert an encoding name to an MS-Windows codepage.
  * Returns zero if no codepage can be figured out.
@@ -4791,9 +4791,9 @@ encname2codepage(char_u *name)
 	return cp;
     return 0;
 }
-# endif
+#endif
 
-# if defined(USE_ICONV)
+#if defined(USE_ICONV)
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -4805,7 +4805,7 @@ encname2codepage(char_u *name)
 my_iconv_open(char_u *to, char_u *from)
 {
     iconv_t	fd;
-#define ICONV_TESTLEN 400
+# define ICONV_TESTLEN 400
     char_u	tobuf[ICONV_TESTLEN];
     char	*p;
     size_t	tolen;
@@ -4814,11 +4814,11 @@ my_iconv_open(char_u *to, char_u *from)
     if (iconv_ok == FALSE)
 	return (void *)-1;	// detected a broken iconv() previously
 
-#ifdef DYNAMIC_ICONV
+# ifdef DYNAMIC_ICONV
     // Check if the iconv.dll can be found.
     if (!iconv_enabled(TRUE))
 	return (void *)-1;
-#endif
+# endif
 
     fd = iconv_open((char *)enc_skip(to), (char *)enc_skip(from));
 
@@ -4951,26 +4951,26 @@ iconv_string(
     return result;
 }
 
-#  if defined(DYNAMIC_ICONV)
+# if defined(DYNAMIC_ICONV)
 /*
  * Dynamically load the "iconv.dll" on Win32.
  */
 
-#   ifndef DYNAMIC_ICONV	    // must be generating prototypes
-#    define HINSTANCE int
-#   endif
+#  ifndef DYNAMIC_ICONV	    // must be generating prototypes
+#   define HINSTANCE int
+#  endif
 static HINSTANCE hIconvDLL = 0;
 static HINSTANCE hMsvcrtDLL = 0;
 
-#   ifndef DYNAMIC_ICONV_DLL
-#    define DYNAMIC_ICONV_DLL "iconv.dll"
-#    define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
-#    define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
-#    define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
-#   endif
-#   ifndef DYNAMIC_MSVCRT_DLL
-#    define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
-#   endif
+#  ifndef DYNAMIC_ICONV_DLL
+#   define DYNAMIC_ICONV_DLL "iconv.dll"
+#   define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
+#   define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
+#   define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
+#  endif
+#  ifndef DYNAMIC_MSVCRT_DLL
+#   define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
+#  endif
 
 /*
  * Try opening the iconv.dll and return TRUE if iconv() can be used.
@@ -4983,20 +4983,20 @@ iconv_enabled(int verbose)
 
     // The iconv DLL file goes under different names, try them all.
     // Do the "2" version first, it's newer.
-#ifdef DYNAMIC_ICONV_DLL_ALT2
+#  ifdef DYNAMIC_ICONV_DLL_ALT2
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT2);
-#endif
-#ifdef DYNAMIC_ICONV_DLL_ALT3
+#  endif
+#  ifdef DYNAMIC_ICONV_DLL_ALT3
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT3);
-#endif
+#  endif
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
-#ifdef DYNAMIC_ICONV_DLL_ALT1
+#  ifdef DYNAMIC_ICONV_DLL_ALT1
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
-#endif
+#  endif
 
     if (hIconvDLL != 0)
 	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);
@@ -5059,8 +5059,8 @@ iconv_end(void)
     hIconvDLL = 0;
     hMsvcrtDLL = 0;
 }
-#  endif // DYNAMIC_ICONV
-# endif // USE_ICONV
+# endif // DYNAMIC_ICONV
+#endif // USE_ICONV
 
 #if defined(FEAT_EVAL)
 /*
@@ -5463,7 +5463,7 @@ string_convert_ext(
 		*lenp = (int)(d - retval);
 	    break;
 
-# ifdef MACOS_CONVERT
+#ifdef MACOS_CONVERT
 	case CONV_MAC_LATIN1:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
 					'm', 'l', unconvlenp);
@@ -5483,14 +5483,14 @@ string_convert_ext(
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
 					'u', 'm', unconvlenp);
 	    break;
-# endif
+#endif
 
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 	case CONV_ICONV:	// conversion with output_conv.vc_fd
 	    retval = iconv_string(vcp, ptr, len, unconvlenp, lenp);
 	    break;
-# endif
-# ifdef MSWIN
+#endif
+#ifdef MSWIN
 	case CONV_CODEPAGE:		// codepage -> codepage
 	{
 	    int		retlen;
@@ -5549,7 +5549,7 @@ string_convert_ext(
 	    vim_free(tmp);
 	    break;
 	}
-# endif
+#endif
     }
 
     return retval;

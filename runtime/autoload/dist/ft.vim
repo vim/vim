@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Dec 27
+# Last Change:		2026 Feb 24
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -98,7 +98,7 @@ export def FTasmsyntax()
       b:asmsyntax = "masm"
       return
     elseif line =~ 'Texas Instruments Incorporated' || (line =~ '^\*' && !is_slash_star_encountered)
-      # tiasm uses `* commment`, but detection is unreliable if '/*' is seen
+      # tiasm uses `* comment`, but detection is unreliable if '/*' is seen
       b:asmsyntax = "tiasm"
       return
     elseif ((line =~? '\.title\>\|\.ident\>\|\.macro\>\|\.subtitle\>\|\.library\>'))
@@ -473,12 +473,19 @@ def IsHareModule(dir: string, depth: number): bool
   endif
 
   # Check all files in the directory before recursing into subdirectories.
-  return glob(dir .. '/*', true, true)
+  const items = glob(dir .. '/*', true, true)
     ->sort((a, b) => isdirectory(a) - isdirectory(b))
-    ->reduce((acc, n) => acc
-      || n =~ '\.ha$'
-      || isdirectory(n) && IsHareModule(n, depth - 1),
-    false)
+  for n in items
+    if isdirectory(n)
+      if IsHareModule(n, depth - 1)
+        return true
+      endif
+    elseif n =~ '\.ha$'
+      return true
+    endif
+  endfor
+
+  return false
 enddef
 
 # Determines whether a README file is inside a Hare module and should receive
@@ -1506,7 +1513,7 @@ export def FTdsp()
 
   # Test the file contents
   for line in getline(1, 200)
-    # Chech for comment style
+    # Check for comment style
     if line =~ '^#.*'
       setf make
       return
@@ -1825,6 +1832,8 @@ const ft_from_ext = {
   "tlh": "cpp",
   # Cascading Style Sheets
   "css": "css",
+  # Common Expression Language (CEL) - https://cel.dev
+  "cel": "cel",
   # Century Term Command Scripts (*.cmd too)
   "con": "cterm",
   # ChordPro
@@ -1876,6 +1885,9 @@ const ft_from_ext = {
   "elv": "elvish",
   # Faust
   "lib": "faust",
+  # Fennel
+  "fnl": "fennel",
+  "fnlm": "fennel",
   # Libreoffice config files
   "xcu": "xml",
   "xlb": "xml",
@@ -1914,6 +1926,9 @@ const ft_from_ext = {
   # Diff files
   "diff": "diff",
   "rej": "diff",
+  # Djot
+  "dj": "djot",
+  "djot": "djot",
   # DOT
   "dot": "dot",
   "gv": "dot",
@@ -2231,6 +2246,10 @@ const ft_from_ext = {
   "k": "kwt",
   # Kivy
   "kv": "kivy",
+  # Koka
+  "kk": "koka",
+  # Kos
+  "kos": "kos",
   # Kotlin
   "kt": "kotlin",
   "ktm": "kotlin",
@@ -2363,6 +2382,13 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # Neon
+  "neon": "neon",
+  # NetLinx
+  "axs": "netlinx",
+  "axi": "netlinx",
+  # Nickel
+  "ncl": "nickel",
   # Nim file
   "nim": "nim",
   "nims": "nim",
@@ -2547,6 +2573,9 @@ const ft_from_ext = {
   "rakumod": "raku",
   "rakudoc": "raku",
   "rakutest": "raku",
+  # Razor
+  "cshtml": "razor",
+  "razor": "razor",
   # Renderman Interface Bytestream
   "rib": "rib",
   # Rego Policy Language
@@ -2815,6 +2844,8 @@ const ft_from_ext = {
   "txi": "texinfo",
   # Thrift (Apache)
   "thrift": "thrift",
+  # Tiger
+  "tig": "tiger",
   # TLA+
   "tla": "tla",
   # TPP - Text Presentation Program
@@ -2988,6 +3019,9 @@ const ft_from_ext = {
   "raml": "raml",
   # YANG
   "yang": "yang",
+  # YARA, YARA-X
+  "yara": "yara",
+  "yar": "yara",
   # Yuck
   "yuck": "yuck",
   # Zimbu
@@ -3004,6 +3038,7 @@ const ft_from_ext = {
   "usd": "usd",
   # Rofi stylesheet
   "rasi": "rasi",
+  "rasinc": "rasi",
   # Zsh module
   # mdd: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L285-L288
   # mdh, pro: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L268-L271
@@ -3018,6 +3053,9 @@ const ft_from_ext = {
   "blp": "blueprint",
   # Blueprint build system file
   "bp": "bp",
+  # Tiltfile
+  "Tiltfile": "tiltfile",
+  "tiltfile": "tiltfile"
 }
 # Key: file name (the final path component, excluding the drive and root)
 # Value: filetype
@@ -3284,6 +3322,9 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
+  # skhd (simple hotkey daemon for macOS)
+  ".skhdrc": "skhd",
+  "skhdrc": "skhd",
   # SLRN
   ".slrnrc": "slrnrc",
   # Squid
@@ -3304,6 +3345,9 @@ const ft_from_name = {
   # TF (TinyFugue) mud client
   ".tfrc": "tf",
   "tfrc": "tf",
+  # Tilefile
+  "Tiltfile": "tiltfile",
+  "tiltfile": "tiltfile",
   # Trustees
   "trustees.conf": "trustees",
   # Vagrant (uses Ruby syntax)

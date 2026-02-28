@@ -22,10 +22,22 @@ MINGWOLD = no
 STATIC_STDCPLUS=no
 #STATIC_STDCPLUS=yes
 
+# If you use TDM-GCC(-64), change HAS_GCC_EH to "no".
+# This is used when STATIC_STDCPLUS=yes.
+HAS_GCC_EH=yes
+
+STATIC_LIBS=
+
 # Note: -static-libstdc++ is not available until gcc 4.5.x.
 LDFLAGS += -shared
 ifeq (yes, $(STATIC_STDCPLUS))
 LDFLAGS += -static-libgcc -static-libstdc++
+# Order important: gcc_eh must be placed before winpthread
+STATIC_LIBS += -lstdc++ -lgcc
+ ifeq (yes, $(HAS_GCC_EH))
+STATIC_LIBS += -lgcc_eh
+ endif
+STATIC_LIBS += -lwinpthread
 endif
 
 ifeq ($(CROSS),yes)
@@ -71,7 +83,8 @@ $(DLL): $(OBJ) $(RES) $(DEFFILE)
 		-Wl,--whole-archive \
 			$^ \
 		-Wl,--no-whole-archive \
-			$(LIBS)
+			$(LIBS) \
+		-Wl,-Bstatic $(STATIC_LIBS) -Wl,-Bdynamic
 
 gvimext.o: gvimext.cpp
 	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) -c $? -o $@

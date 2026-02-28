@@ -694,7 +694,7 @@ generate_COND2BOOL(cctx_T *cctx)
 generate_TYPECHECK(
 	cctx_T	    *cctx,
 	type_T	    *expected,
-	int	    number_ok,	    // add TTFLAG_NUMBER_OK flag
+	int	    typechk_flags,	// type check flags
 	int	    offset,
 	int	    is_var,
 	int	    argidx)
@@ -705,7 +705,10 @@ generate_TYPECHECK(
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
     type_T *tt;
-    if (expected->tt_type == VAR_FLOAT && number_ok)
+    if ((expected->tt_type == VAR_FLOAT
+		&& (typechk_flags & TYPECHK_NUMBER_OK))
+	    || (expected->tt_type == VAR_LIST
+		&& (typechk_flags & TYPECHK_TUPLE_OK)))
     {
 	// always allocate, also for static types
 	tt = ALLOC_ONE(type_T);
@@ -713,7 +716,10 @@ generate_TYPECHECK(
 	{
 	    *tt = *expected;
 	    tt->tt_flags &= ~TTFLAG_STATIC;
-	    tt->tt_flags |= TTFLAG_NUMBER_OK;
+	    if (typechk_flags & TYPECHK_NUMBER_OK)
+		tt->tt_flags |= TTFLAG_NUMBER_OK;
+	    else
+		tt->tt_flags |= TTFLAG_TUPLE_OK;
 	}
     }
     else
@@ -1846,7 +1852,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     if (maptype != NULL && maptype[0].type_decl->tt_member != NULL
 				  && maptype[0].type_decl->tt_member != &t_any)
 	// Check that map() didn't change the item types.
-	generate_TYPECHECK(cctx, maptype[0].type_decl, FALSE, -1, FALSE, 1);
+	generate_TYPECHECK(cctx, maptype[0].type_decl, 0, -1, FALSE, 1);
 
     return OK;
 }
@@ -1870,7 +1876,7 @@ generate_LISTAPPEND(cctx_T *cctx)
 	return FAIL;
     item_type = get_type_on_stack(cctx, 0);
     expected = list_type->tt_member;
-    if (need_type(item_type, expected, FALSE, -1, 0, cctx, FALSE, FALSE) == FAIL)
+    if (need_type(item_type, expected, 0, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
 
     if (generate_instr(cctx, ISN_LISTAPPEND) == NULL)
@@ -1893,8 +1899,7 @@ generate_BLOBAPPEND(cctx_T *cctx)
     if (arg_type_modifiable(get_decl_type_on_stack(cctx, 1), 1) == FAIL)
 	return FAIL;
     item_type = get_type_on_stack(cctx, 0);
-    if (need_type(item_type, &t_number, FALSE,
-					    -1, 0, cctx, FALSE, FALSE) == FAIL)
+    if (need_type(item_type, &t_number, 0, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
 
     if (generate_instr(cctx, ISN_BLOBAPPEND) == NULL)
@@ -1902,6 +1907,23 @@ generate_BLOBAPPEND(cctx_T *cctx)
 
     --cctx->ctx_type_stack.ga_len;	    // drop the argument
     return OK;
+}
+
+/*
+ * get the instruction type for a function call: ISN_METHODCALL, ISN_DCALL, or
+ * ISN_UCALL.
+ */
+    static isntype_T
+isn_get_calltype(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	class_T	    *cl)
+{
+    return cl != NULL ? ISN_METHODCALL
+	: (ufunc->uf_def_status != UF_NOT_COMPILED
+		&& ((cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0
+		    || ufunc->uf_name[0] != K_SPECIAL))
+	? ISN_DCALL : ISN_UCALL;
 }
 
 /*
@@ -1971,7 +1993,7 @@ generate_CALL(
 		expected = &t_any;
 	    else
 		expected = ufunc->uf_va_type->tt_member;
-	    if (need_type(actual, expected, FALSE,
+	    if (need_type(actual, expected, 0,
 			      -argcount + i, i + 1, cctx, TRUE, FALSE) == FAIL)
 	    {
 		arg_type_mismatch(expected, actual, i + 1);
@@ -1991,9 +2013,7 @@ generate_CALL(
 	return FAIL;
     }
 
-    if ((isn = generate_instr(cctx, cl != NULL ? ISN_METHODCALL
-			  : ufunc->uf_def_status != UF_NOT_COMPILED
-					     ? ISN_DCALL : ISN_UCALL)) == NULL)
+    if ((isn = generate_instr(cctx, isn_get_calltype(cctx, ufunc, cl))) == NULL)
 	return FAIL;
     if (cl != NULL /* isn->isn_type == ISN_METHODCALL */)
     {
@@ -2108,7 +2128,7 @@ check_func_args_from_type(
 		    expected = &t_any;
 		else
 		    expected = type->tt_args[i];
-		if (need_type(actual, expected, FALSE,
+		if (need_type(actual, expected, 0,
 				     offset, i + 1, cctx, TRUE, FALSE) == FAIL)
 		{
 		    arg_type_mismatch(expected, actual, i + 1);

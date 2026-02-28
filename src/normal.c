@@ -1154,7 +1154,8 @@ end_visual_mode_keep_button(void)
     // we need to paste it somewhere while we still own the selection.
     // Only do this when the clipboard is already owned.  Don't want to grab
     // the selection when hitting ESC.
-    if (clip_star.available && clip_star.owned)
+    if ((clip_star.available && clip_star.owned)
+	    || (clip_plus.available && clip_plus.owned))
 	clip_auto_select();
 
 # if defined(FEAT_EVAL)
@@ -1633,33 +1634,33 @@ clear_showcmd(void)
 	    top = curwin->w_cursor.lnum;
 	    bot = VIsual.lnum;
 	}
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
 	// Include closed folds as a whole.
 	(void)hasFolding(top, &top, NULL);
 	(void)hasFolding(bot, NULL, &bot);
-# endif
+#endif
 	lines = bot - top + 1;
 
 	if (VIsual_mode == Ctrl_V)
 	{
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	    char_u *saved_sbr = p_sbr;
 	    char_u *saved_w_sbr = curwin->w_p_sbr;
 
 	    // Make 'sbr' empty for a moment to get the correct size.
 	    p_sbr = empty_option;
 	    curwin->w_p_sbr = empty_option;
-# endif
+#endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
 	    curwin->w_p_sbr = saved_w_sbr;
-# endif
-	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
+#endif
+	    vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
 	}
 	else if (VIsual_mode == 'V' || VIsual.lnum != curwin->w_cursor.lnum)
-	    sprintf((char *)showcmd_buf, "%ld", lines);
+	    vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%ld", lines);
 	else
 	{
 	    char_u  *s, *e;
@@ -1691,9 +1692,9 @@ clear_showcmd(void)
 		s += l;
 	    }
 	    if (bytes == chars)
-		sprintf((char *)showcmd_buf, "%d", chars);
+		vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%d", chars);
 	    else
-		sprintf((char *)showcmd_buf, "%d-%d", chars, bytes);
+		vim_snprintf((char *)showcmd_buf, SHOWCMD_BUFLEN, "%d-%d", chars, bytes);
 	}
 	showcmd_buf[SHOWCMD_COLS] = NUL;	// truncate
 	showcmd_visual = TRUE;
@@ -5424,13 +5425,13 @@ nv_pcmark(cmdarg_T *cap)
     }
     else
 	clearopbeep(cap->oap);
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     if (cap->oap->op_type == OP_NOP
 	    && (pos == (pos_T *)-1 || lnum != curwin->w_cursor.lnum)
 	    && (fdo_flags & FDO_MARK)
 	    && old_KeyTyped)
 	foldOpenCursor();
-# endif
+#endif
 }
 
 /*
@@ -5702,9 +5703,9 @@ nv_gv_cmd(cmdarg_T *cap)
 	i = VIsual_mode;
 	VIsual_mode = curbuf->b_visual.vi_mode;
 	curbuf->b_visual.vi_mode = i;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	curbuf->b_visual_mode_eval = i;
-# endif
+#endif
 	i = curwin->w_curswant;
 	curwin->w_curswant = curbuf->b_visual.vi_curswant;
 	curbuf->b_visual.vi_curswant = i;

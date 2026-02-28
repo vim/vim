@@ -82,8 +82,8 @@
  * toupper() and tolower() implementations only work for ASCII.
  */
 #ifdef MSWIN
-#  define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
-#  define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
+# define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
+# define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
 #else
 # ifdef BROKEN_TOUPPER
 #  define TOUPPER_LOC(c)	(SAFE_islower(c) ? SAFE_toupper(c) : (c))
@@ -169,7 +169,7 @@
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 #else
 # if !defined(MSWIN) && !defined(PROTO)
-#   define mch_access(n, p)	access((n), (p))
+#  define mch_access(n, p)	access((n), (p))
 # endif
 
 // Use 64-bit fstat function on MS-Windows.
@@ -424,6 +424,7 @@
 #define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
 // Inlined version of ga_grow() with optimized condition that it succeeds.
 #define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == OK)
+#define GA_CONCAT_LITERAL(gap, s) ga_concat_len((gap), (char_u *)(s), STRLEN_LITERAL(s))
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -436,9 +437,9 @@
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
 
 #ifdef FEAT_MENU
-#define FOR_ALL_MENUS(m) \
+# define FOR_ALL_MENUS(m) \
     for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
-#define FOR_ALL_CHILD_MENUS(p, c) \
+# define FOR_ALL_CHILD_MENUS(p, c) \
     for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
 #endif
 
@@ -476,7 +477,7 @@
     for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
 
 #ifdef FEAT_SPELL
-#define FOR_ALL_SPELL_LANGS(slang) \
+# define FOR_ALL_SPELL_LANGS(slang) \
     for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
 #endif
 

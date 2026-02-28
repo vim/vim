@@ -19,23 +19,33 @@ functionality for the Hare programming language.
 FILETYPE PLUGIN						*ft-hare-plugin*
 
 This plugin has a few different variables that can be defined inside your
-|vimrc| to tweak its behavior.
+|vimrc| to adjust its behavior.
 
-Additionally, support is provided for folding `{ }` blocks.  To enable folding,
-add the following to a file inside your |after-directory| (e.g.
+							*hare-folding*
+This plugin supports folding `{ }` blocks.  To enable folding, add the
+following to a file inside your |after-directory| (e.g.
 ~/.vim/after/ftplugin/hare.vim): >
 
 	setlocal foldmethod=syntax
 
-Because block-based folding tends to create many small folds, consider setting
-a few related options, such as 'foldminlines' and 'foldnestmax'.
+Because syntax-based folding tends to create many small folds, consider
+setting a few related options, such as 'foldminlines' or 'foldnestmax'.
 
+						*hare-symbol-operators*
+Most symbolic operators do not receive any highlighting by default (with the
+exception of "?", "!", and "::").  If you prefer highlighting all operators,
+you can link them to your preferred highlight group inside your |vimrc|.  For
+example: >
+
+	hi def link hareCast hareSymbolOperator
+	hi def link hareSymbolOperator hareOperator
+<
 						*g:hare_recommended_style*
 The following options are set by default, in accordance with Hare's official
 style guide: >
 
 	setlocal noexpandtab
-	setlocal shiftwidth=0
+	setlocal shiftwidth=8
 	setlocal softtabstop=0
 	setlocal tabstop=8
 	setlocal textwidth=80
@@ -44,17 +54,10 @@ To disable this behavior, add the following to your |vimrc|: >
 
 	let g:hare_recommended_style = 0
 <
-						*g:hare_symbol_operators*
-By default, symbolic operators do not receive any special highlighting (with
-`!`, `?`, and `::` being the only exceptions).  To enable syntax highlighting
-for most other operators, add the following to your |vimrc|: >
-
-	let g:hare_symbol_operators = 1
-<
 							*g:hare_space_error*
-By default, trailing whitespace and spaces followed by <Tab> characters will
-be highlighted as errors.  This is automatically disabled in Insert mode.  To
-turn off this highlighting completely, add the following to your |vimrc|: >
+By default, trailing whitespace and spaces followed by <Tab> characters are
+highlighted as errors.  This is automatically disabled while in insert mode.
+To turn off this highlighting completely, add the following to your |vimrc|: >
 
 	let g:hare_space_error = 0
 
@@ -67,28 +70,27 @@ this is such a common filename, this plugin only searches for Hare source
 files within the same directory by default.
 
 							*g:filetype_haredoc*
-The |g:filetype_haredoc| variable can be used to tweak the depth of this
+The `g:filetype_haredoc` variable can be used to tweak the depth of this
 search, or bypass the detection of Hare documentation files altogether:
 
 	Value		Effect~
-	0		No automatic detection
+	0		Search disabled
 	1		Search current directory only (this is the default)
 	2		Search one level of subdirectories
-	3		Search two levels of subdirectories
 
-The search depth may be any positive integer, but values higher than `2` are
-unlikely to provide a tangible benefit in most situations.
+The search depth may be any positive integer, but values greater than 2 are
+very unlikely to provide any tangible benefit and can impact performance.
 
 
 INDENTATION SETTINGS					*ft-hare-indent*
 
-Unlike most other settings for this plugin, the indentation settings may also
-be set per-buffer, overriding any global configuration that exists.  To do
-this, simply prefix the variable with |b:| instead of |g:|.
+Unlike other settings, indentation settings may be configured on a per-buffer
+basis, overriding any existing global configuration.  To do so, simply prefix
+the variable with |b:| instead of |g:|.
 
-						*g:hare_indent_match_switch*
-By default, continuation lines for "match" and "switch" conditions are
-indented only one level: >hare
+		*g:hare_indent_match_switch* *b:hare_indent_match_switch*
+By default, the continuation lines for "match" and "switch" conditions are
+only indented one level: >hare
 
 	const file = match (os::create(path, 0o644,
 		flag::WRONLY | flag::TRUNC)) {
@@ -96,39 +98,33 @@ indented only one level: >hare
 		yield file;
 	// ...
 
-If you instead prefer indenting them two levels, to more closely resemble "if"
-and "for" conditions, add the following line to your |vimrc|: >
+If you prefer indenting them two levels, more closely resembling "if" and
+"for" conditions, add the following line to your |vimrc|: >
 
 	let g:hare_indent_match_switch = 2
 <
-							*g:hare_indent_case*
-By default, continuation lines for cases in "match" and "switch" expressions
-are indented two levels, to visually distinguish them from the body of the
-case: >hare
+				*g:hare_indent_case* *b:hare_indent_case*
+By default, the continuation lines for "match" and "switch" cases are indented
+two levels, to visually distinguish them from the case body: >hare
 
 	case ltok::I8, ltok::I16, ltok::I32,
 			ltok::I64, ltok::INT =>
 		// ...
 
-If you prefer a different amount of indentation, you can adjust it using
-|g:hare_indent_case|.  Valid values include `0`, `1`, and `2`.
+If you prefer a different level of indentation, you can adjust it using
+`g:hare_indent_case`.  The possible values are 0, 1, and 2.
 
 
 COMPILER SUPPORT					*compiler-hare*
 
-If this plugin detects a Makefile in the current directory, it will assume you
-wish to use `make` for your build system, and will leave 'makeprg' untouched.
-Otherwise, `hare build` will be used.
+If a Makefile is detected in the current directory, this plugin will assume
+you are using "make" for your build system, and will leave 'makeprg' as-is.
+Otherwise, "hare build" will be used.
 
-							*g:hare_makeprg_params*
-When `hare build` is used, additional compiler options may be appended to
-'makeprg' with the |g:hare_makeprg_params| variable.  It may also be set on a
-per-buffer basis (using |b:| instead of |g:|), overriding any global
-configuration that exists.  For example: >
-
-	let b:hare_makeprg_params = '-lc -t o'
-
-The global default is "-q", to suppress writing to stdout while building.
+						*g:hare_makeprg_params*
+When using "hare build", additional compiler options may be appended to
+'makeprg' using `g:hare_makeprg_params`.  The default is "-q", to suppress
+printing to stdout when building.
 
 ==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

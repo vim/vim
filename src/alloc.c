@@ -297,10 +297,10 @@ theend:
     void *
 lalloc_id(size_t size, int message, alloc_id_T id UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
-#endif
+# endif
     return (lalloc(size, message));
 }
 #endif

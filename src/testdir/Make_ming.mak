@@ -160,10 +160,7 @@ test_gui_init.res: test_gui_init.vim
 
 opt_test.vim: util/gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $^
-	@if test -f gen_opt_test.log; then \
-		cat gen_opt_test.log; \
-		exit 1; \
-	fi
+	@if exist gen_opt_test.log ( type gen_opt_test.log & exit /b 1 )
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-$(DEL) benchmark.out

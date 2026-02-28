@@ -1145,9 +1145,9 @@ format_lines(
 			if (cindent_on())
 			{
 			    indent =
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 				 *curbuf->b_p_inde != NUL ? get_expr_indent() :
-# endif
+#endif
 				 get_c_indent();
 			}
 			else

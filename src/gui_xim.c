@@ -289,18 +289,18 @@ im_preedit_window_set_position(void)
 im_preedit_window_open(void)
 {
     char *preedit_string;
-#if !GTK_CHECK_VERSION(3,16,0)
+#  if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
-#endif
+#  endif
     PangoAttrList *attr_list;
     PangoLayout *layout;
-#if GTK_CHECK_VERSION(3,0,0)
-# if !GTK_CHECK_VERSION(3,16,0)
+#  if GTK_CHECK_VERSION(3,0,0)
+#   if !GTK_CHECK_VERSION(3,16,0)
     GdkRGBA color;
-# endif
-#else
+#   endif
+#  else
     GdkColor color;
-#endif
+#  endif
     gint w, h;
 
     if (preedit_window == NULL)
@@ -313,7 +313,7 @@ im_preedit_window_open(void)
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
     }
 
-#if GTK_CHECK_VERSION(3,16,0)
+#  if GTK_CHECK_VERSION(3,16,0)
     {
 	GtkStyleContext * const context
 				  = gtk_widget_get_style_context(preedit_label);
@@ -363,7 +363,7 @@ im_preedit_window_open(void)
 	g_free(fontsize_propval);
 	g_object_unref(provider);
     }
-#elif GTK_CHECK_VERSION(3,0,0)
+#  elif GTK_CHECK_VERSION(3,0,0)
     gtk_widget_override_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
@@ -374,7 +374,7 @@ im_preedit_window_open(void)
     gdk_rgba_parse(&color, buf);
     gtk_widget_override_background_color(preedit_label, GTK_STATE_FLAG_NORMAL,
 								      &color);
-#else
+#  else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.norm_pixel);
@@ -384,7 +384,7 @@ im_preedit_window_open(void)
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
-#endif
+#  endif
 
     gtk_im_context_get_preedit_string(xic, &preedit_string, &attr_list, NULL);
 
@@ -436,9 +436,9 @@ im_delete_preedit(void)
     }
 
     if (State & MODE_NORMAL
-#ifdef FEAT_TERMINAL
+#  ifdef FEAT_TERMINAL
 	    && !term_use_loop()
-#endif
+#  endif
        )
     {
 	im_preedit_cursor = 0;
@@ -507,9 +507,9 @@ im_commit_cb(GtkIMContext *context UNUSED,
     int		commit_with_preedit = TRUE;
     char_u	*im_str;
 
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_commit_cb(): %s\n", str);
-#endif
+#  endif
 
     if (p_imst == IM_ON_THE_SPOT)
     {
@@ -593,9 +593,9 @@ im_commit_cb(GtkIMContext *context UNUSED,
     static void
 im_preedit_start_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_start_cb()\n");
-#endif
+#  endif
 
     im_is_active = TRUE;
     preedit_is_active = TRUE;
@@ -609,9 +609,9 @@ im_preedit_start_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
     static void
 im_preedit_end_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_end_cb()\n");
-#endif
+#  endif
     im_delete_preedit();
 
     // Indicate that preediting has finished
@@ -619,12 +619,12 @@ im_preedit_end_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 	preedit_start_col = MAXCOL;
     xim_has_preediting = FALSE;
 
-#if 0
+#  if 0
     // Removal of this line suggested by Takuhiro Nishioka.  Fixes that IM was
     // switched off unintentionally.  We now use preedit_is_active (added by
     // SungHyun Nam).
     im_is_active = FALSE;
-#endif
+#  endif
     preedit_is_active = FALSE;
     gui_update_cursor(TRUE, FALSE);
     im_show_info();
@@ -686,9 +686,9 @@ im_preedit_changed_cb(GtkIMContext *context, gpointer data UNUSED)
 					  &preedit_string, NULL,
 					  NULL);
 
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_changed_cb(): %s\n", preedit_string);
-#endif
+#  endif
 
     g_return_if_fail(preedit_string != NULL); // just in case
 
@@ -869,9 +869,9 @@ im_get_feedback_attr(int col)
     void
 xim_init(void)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("xim_init()\n");
-#endif
+#  endif
 
     g_return_if_fail(gui.drawarea != NULL);
     g_return_if_fail(gtk_widget_get_window(gui.drawarea) != NULL);
@@ -894,9 +894,9 @@ xim_init(void)
     void
 im_shutdown(void)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_shutdown()\n");
-#endif
+#  endif
 
     if (xic != NULL)
     {
@@ -1012,11 +1012,11 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
     void
 xim_reset(void)
 {
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
     if (USE_IMACTIVATEFUNC)
 	call_imactivatefunc(im_is_active);
     else
-# endif
+#  endif
     if (xic != NULL)
     {
 	gtk_im_context_reset(xic);
@@ -1054,9 +1054,9 @@ xim_reset(void)
     int
 xim_queue_key_press_event(GdkEventKey *event, int down)
 {
-#ifdef FEAT_GUI_GTK
+#  ifdef FEAT_GUI_GTK
     if (event->state & GDK_SUPER_MASK) return FALSE;
-#endif
+#  endif
     if (down)
     {
 	// Workaround GTK2 XIM 'feature' that always converts keypad keys to
@@ -1357,7 +1357,7 @@ xim_set_preedit(void)
 static int xim_real_init(Window x11_window, Display *x11_display);
 
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     static void
 xim_instantiate_cb(
     Display	*display,
@@ -1367,9 +1367,9 @@ xim_instantiate_cb(
     Window	x11_window;
     Display	*x11_display;
 
-#   ifdef XIM_DEBUG
+#    ifdef XIM_DEBUG
     xim_log("xim_instantiate_cb()\n");
-#   endif
+#    endif
 
     gui_get_x11_windis(&x11_window, &x11_display);
     if (display != x11_display)
@@ -1391,9 +1391,9 @@ xim_destroy_cb(
     Window	x11_window;
     Display	*x11_display;
 
-#   ifdef XIM_DEBUG
+#    ifdef XIM_DEBUG
     xim_log("xim_destroy_cb()\n");
-   #endif
+#    endif
     gui_get_x11_windis(&x11_window, &x11_display);
 
     xic = NULL;
@@ -1404,7 +1404,7 @@ xim_destroy_cb(
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 				   xim_instantiate_cb, NULL);
 }
-#  endif
+#   endif
 
     void
 xim_init(void)
@@ -1412,9 +1412,9 @@ xim_init(void)
     Window	x11_window;
     Display	*x11_display;
 
-#  ifdef XIM_DEBUG
+#   ifdef XIM_DEBUG
     xim_log("xim_init()\n");
-#  endif
+#   endif
 
     gui_get_x11_windis(&x11_window, &x11_display);
 
@@ -1425,10 +1425,10 @@ xim_init(void)
 
     gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 				   xim_instantiate_cb, NULL);
-#  endif
+#   endif
 }
 
     static int
@@ -1440,7 +1440,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 		*ns,
 		*end,
 		tmp[1024];
-#  define IMLEN_MAX 40
+#   define IMLEN_MAX 40
     char	buf[IMLEN_MAX + 7];
     XIM		xim = NULL;
     XIMStyles	*xim_styles;
@@ -1505,7 +1505,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	return FALSE;
     }
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     {
 	XIMCallback destroy_cb;
 
@@ -1514,7 +1514,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (XSetIMValues(xim, XNDestroyCallback, &destroy_cb, NULL))
 	    emsg(_(e_warning_could_not_set_destroy_callback_to_im));
     }
-#  endif
+#   endif
 
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL) || !xim_styles)
     {
@@ -1590,7 +1590,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 
     // A crash was reported when trying to pass gui.norm_font as XNFontSet,
     // thus that has been removed.  Hopefully the default works...
-#  ifdef FEAT_XFONTSET
+#   ifdef FEAT_XFONTSET
     if (gui.fontset != NOFONTSET)
     {
 	preedit_list = XVaCreateNestedList(0,
@@ -1606,7 +1606,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 				NULL);
     }
     else
-#  endif
+#   endif
     {
 	preedit_list = XVaCreateNestedList(0,
 				XNSpotLocation, &over_spot,
@@ -1708,10 +1708,10 @@ xim_set_status_area(void)
 	status_area.y = gui.char_height * Rows + gui.border_offset;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    status_area.y += gui.menu_height;
-#endif
+#  endif
 	status_area.height = gui.char_height;
 	status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
     }
@@ -1721,10 +1721,10 @@ xim_set_status_area(void)
 	status_area.y = gui.char_height * Rows + gui.border_offset;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    status_area.y += gui.menu_height;
-#endif
+#  endif
 	status_area.width = 0;
 	status_area.height = gui.char_height;
     }
@@ -1736,10 +1736,10 @@ xim_set_status_area(void)
 	pre_area.width = gui.char_width * Columns - pre_area.x;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    pre_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    pre_area.y += gui.menu_height;
-#endif
+#  endif
 	pre_area.height = gui.char_height;
 	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
     }

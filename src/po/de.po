@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-18 20:09+0200\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2026-01-06 12:15+0000\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -162,8 +162,8 @@ msgid "%d%%"
 msgstr "%d%%"
 
 #, c-format
-msgid "%2s"
-msgstr "%2s"
+msgid "%3s"
+msgstr "%3s"
 
 #, c-format
 msgid " (%d of %d)"
@@ -259,6 +259,9 @@ msgstr ": Versendung fehlgeschlagen. Versuche lokale Ausführung\n"
 #, c-format
 msgid "%d of %d edited"
 msgstr "%d von %d bearbeitet"
+
+msgid "Socket server not online:Send expression failed"
+msgstr "Socket-Server nicht online: Versenden des Ausdrucks fehlgeschlagen."
 
 msgid "No display: Send expression failed.\n"
 msgstr "Keine Anzeige: Versenden des Ausdrucks fehlgeschlagen.\n"
@@ -1592,11 +1595,20 @@ msgstr ""
 
 msgid ""
 "\n"
-"Where case is ignored prepend / to make flag upper case"
+"Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
+"case."
 msgstr ""
 "\n"
-"Wo Groß/Kleinschreibung ignoriert wird, füge / am Anfang hinzu um das Flag "
-"groß zuschreiben"
+"Wenn der Befehl kleingeschrieben ist, setzen Sie ein / davor (wie: -/R)"
+"um das Flag als Großbuchstaben zu behandeln."
+
+msgid ""
+"\n"
+"Or, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."
+msgstr ""
+"\n"
+"Oder, falls unterstützt, SET PROC/PARSE=EXT, oder Großbuchstaben in"
+"Anführungszeichen setzen."
 
 msgid ""
 "\n"
@@ -1769,6 +1781,9 @@ msgstr "-X\t\t\tStelle keine Verbindung zum X-server her"
 
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\tStelle keine Verbindung zum Wayland Compositor her"
+
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr "--clientserver <socket|x11> Backend für den Client-server"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
@@ -2590,6 +2605,7 @@ msgstr ""
 "\n"
 "Vim: ein X11 Fehler trat auf\n"
 
+#, c-format
 msgid "restoring X11 display %s"
 msgstr "Wiederherstellen des X11-Displays %s"
 
@@ -2689,6 +2705,10 @@ msgstr "XSMP ICE Verbindungsüberwachung fehlgeschlagen"
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection fehlgeschlagen: %s"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Erstellen des Socket-Verzeichnisses fehlgeschlagen: %s"
 
 msgid "At line"
 msgstr "In Zeile"
@@ -3617,10 +3637,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"OpenVMS version"
+"OpenVMS (build) arch, version"
 msgstr ""
 "\n"
-"OpenVMS Version"
+"OpenVMS (build) Arch, Version"
 
 msgid ""
 "\n"
@@ -3769,8 +3789,8 @@ msgstr "Vim ist Open Source und kann frei weitergegeben werden"
 msgid "Help poor children in Uganda!"
 msgstr "Hilf armen Kindern in Uganda!"
 
-msgid "type  :help iccf<Enter>       for information "
-msgstr "Tippe  :help iccf<Enter>        für Informationen darüber "
+msgid "type  :help Kuwasha<Enter>    for information "
+msgstr "Tippe  :help Kuwasha<Enter>     für mehr Informationen    "
 
 msgid "type  :q<Enter>               to exit         "
 msgstr "Tippe  :q<Enter>                zum Beenden               "
@@ -3813,17 +3833,11 @@ msgstr "                              für Vim Voreinstellungen   "
 msgid "Sponsor Vim development!"
 msgstr "Unterstützen Sie die Entwicklung von Vim"
 
-msgid "Become a registered Vim user!"
-msgstr "Werd ein registrierter Vim-Nutzer!"
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "Tippe  :help sponsor<Enter>     für mehr Informationen    "
 
-msgid "type  :help register<Enter>   for information "
-msgstr "Tippe  :help register<Enter>    für mehr Informationen    "
-
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "Menü   Hilfe->Sponsor/Register  für mehr Informationen    "
+msgid "menu  Help->Sponsor  for information    "
+msgstr "Menü   Hilfe->Sponsor  für mehr Informationen    "
 
 msgid "global"
 msgstr "global"
@@ -3975,11 +3989,13 @@ msgstr "Schreiben der viminfo-Datei \"%s\""
 msgid "wayland protocol error -> "
 msgstr "Wayland Protokoll Fehler -> "
 
+#, c-format
 msgid "restoring Wayland display %s"
 msgstr "Wiederherstellen des Wayland Displays %s"
 
 msgid "failed restoring, lost connection to Wayland display"
-msgstr "Wiederherstellung fehlgeschlagen, Verbindung zur Wayland-Anzeige verloren"
+msgstr ""
+"Wiederherstellung fehlgeschlagen, Verbindung zur Wayland-Anzeige verloren"
 
 msgid "Already only one window"
 msgstr "Bereits nur ein Fenster"
@@ -7948,6 +7964,7 @@ msgstr "E1115: \"assert_fails()\" viertes Argument muss eine Zahl sein"
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "E1116: \"assert_fails()\" fünftes Argument muss eine Zahl sein"
 
+#, c-format
 msgid "E1117: Cannot use ! with nested %s"
 msgstr "E1117: Kann nicht ! innerhalb verschachtelter %s verwenden"
 
@@ -8398,8 +8415,8 @@ msgid "E1238: Blob required for argument %d"
 msgstr "E1238: Blob erforderlich für Argument %d"
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: Ungültiger Wert für Blob: %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
+msgstr "E1239: Ungültiger Wert für Blob: 0x%lX"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: resultierender Text zu lang"
@@ -8732,8 +8749,8 @@ msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: Ungültige Klassen-Variablen-Deklaration: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object variable: %s"
-msgstr "E1330: Ungültiger Typ für Objekt-Variable: %s"
+msgid "E1330: Invalid type used in variable declaration: %s"
+msgstr "E1330: Ungültiger Typ in der Variablen-Deklaration verwendet: %s"
 
 msgid ""
 "E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
@@ -9103,6 +9120,39 @@ msgstr ""
 "aufgerufen werden"
 
 #, c-format
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+"1432: Generische Methode \"%s\" in Klasse \"%s\" wird durch konkrete Methode "
+"überschrieben"
+
+#, c-format
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+"1433: Konkrete Methode \"%s\" in Klasse \"%s\" wird durch generische Methode "
+"überschrieben"
+
+#, c-format
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+"E1434: Anzahl der Typvariablen stimmt nicht für generische Methode \"%s\" "
+"in Klasse \"%s\""
+
+msgid "E1435: Enum can only be used in a script"
+msgstr "E1435: Enum kann nur innerhalb eines Scripts verwendet werden"
+
+msgid "E1436: Interface can only be used in a script"
+msgstr "E1436: Interface kann nur innerhalbe eines Scripts verwendet werden"
+
+msgid "E1437: Can only compare Object with Object"
+msgstr "E1437: Kann ein Objekt nur mit einem Objekt vergleichen"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: positionsbezogene und nicht-positionsbezogene Argumente können nicht "
@@ -9290,6 +9340,7 @@ msgstr "E1547: Diese Version von Vim unterstützt nicht :redrawtabpanel"
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Wayland Verbindung nicht verfügbar"
 
+#, c-format
 msgid "E1549: Cannot have more than %d diff anchors"
 msgstr "E1549: Mehr als %d Diff-Anker sind nicht zulässig"
 
@@ -9298,6 +9349,80 @@ msgstr "E1550: Nicht alle Diff-Anker konnten gefunden werden"
 
 msgid "E1551: Cannot open a popup window to a closing buffer"
 msgstr "E1551: Kann kein Popup Fenster für einen zu schließenden Buffer öffnen"
+
+#, c-format
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr "E1552: Typenvariable muss mit einen Großbuchstaben anfangen: %s"
+
+#, c-format
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr "E1553: Fehlendes Komma nach Typ in generischer Funktion: %s"
+
+#, c-format
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr "E1554: Fehlendes '>' in generischer Funktion: %s"
+
+#, c-format
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr "E1555: Leere Typenliste für die generische Funktion '%s' angegeben"
+
+#, c-format
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr "E1556: Zu viele Typen für die generische Funktion: '%s' angegeben"
+
+#, c-format
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr "E1557: Nicht genügend Typen für die generische Funktion: '%s' angegeben"
+
+#, c-format
+msgid "E1558: Unknown generic function: %s"
+msgstr "E1558: Unbekannte generische Funktion: %s"
+
+#, c-format
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr "E1559: Typargumente für die generische Funktion '%s' fehlen"
+
+#, c-format
+msgid "E1560: Not a generic function: %s"
+msgstr "E1560: Keine generische Funktion: %s"
+
+#, c-format
+msgid "E1561: Duplicate type variable name: %s"
+msgstr "E1561: Doppelte Typvariablenbezeichnung: %s"
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr "E1562: Diff-Anker können nicht mit versteckten Diff-Fenstern genutzt werden"
+
+msgid "E1563: Socket path is too big"
+msgstr "E1563: Socket-Pfad ist zu lang"
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr "E1564: Socket-Name darf keine Schrägstriche enthalten ohne Pfadangabe zu sein"
+
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr "E1565: Socket-Server ist nicht online, rufe zuerst remote_startserver() auf"
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr "E1566: Verbindung zum Socket fehlgeschlagen: %s: %s"
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgstr "E1567: Socket-Server kann nicht gestartet werden, Socket-Pfad ist nicht verfügbar"
+
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr "E1568: Timeout bei OSC-Befehlsantwort: %.*s"
+
+
+msgid "E1569: Cannot use listener_add in a listener callback"
+msgstr "E1569: listener_add kann in einem Listener Callback nicht verwendet werden"
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr "E1570: redraw_listener_add kann in einem Redraw-Listener Callback nicht verwendet werden"
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
+msgstr "E1571: Es muss mindestens ein Callback für redraw_listener_add angegeben werden"
 
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
@@ -9907,10 +10032,10 @@ msgstr ""
 "füge \"uhex\" hinzu um nicht druckbare Zeichen als Hex-Wert anzuzeigen"
 
 msgid ""
-"characters to use for the status line, folds, diffs, buffer text, filler "
-"lines and truncation in the completion menu"
+"characters to use for the status line, folds, diffs,\n"
+"buffer text, filler lines and truncation in the completion menu"
 msgstr ""
-"zu verwendende Zeichen für die Statuszeile, Folds, Diffs Buffertext, "
+"zu verwendende Zeichen für die Statuszeile, Folds, Diffs, Buffertext, "
 "Füllzeilen und Truncation-Zeichen im Completion Menü"
 
 msgid "number of lines used for the command-line"
@@ -10205,6 +10330,9 @@ msgstr "wenn nicht leer, Symboltext des Fensters setzen"
 msgid "restore the screen contents when exiting Vim"
 msgstr "den Bildschirminhalt beim Beenden wiederherstellen"
 
+msgid "timeout used for terminal OSC responses"
+msgstr "Timeout, der für Terminal-OSC-Antworten verwendet wird"
+
 msgid "using the mouse"
 msgstr "Mausnutzung"
 
@@ -10267,7 +10395,9 @@ msgstr "Größe der Toolbar Icons"
 msgid "room (in pixels) left above/below the window"
 msgstr "reservierter Platz (in Pixel) oberhalb/unterhalb des Fensters"
 
-msgid "list of ASCII characters that can be combined into complex shapes"
+msgid ""
+"list of ASCII characters that can be combined into complex\n"
+"shapes"
 msgstr ""
 "Liste von ASCII-Zeichen, die zu komplexen Formen kombiniert werden können"
 
@@ -10278,8 +10408,8 @@ msgid "use a pseudo-tty for I/O to external commands"
 msgstr "ein Pseudo-TTY für I/O zu externen Befehlen verwenden"
 
 msgid ""
-"\"last\", \"buffer\" or \"current\": which directory used for the file "
-"browser"
+"\"last\", \"buffer\" or \"current\": which directory used for\n"
+"the file browser"
 msgstr ""
 "\"last\", \"buffer\" oder \"current\": zu nutzendes Verzeichnis für den "
 "Dateibrowser"
@@ -10302,8 +10432,12 @@ msgstr "Verzögerung in msec bevor ein Ballon erscheint"
 msgid "use balloon evaluation in the GUI"
 msgstr "verwende die Ballon-eval Funktion in der GUI"
 
-msgid "use balloon evaluation in the terminal"
-msgstr "verwende die Ballon-eval Funktion im Terminal"
+msgid ""
+" \n"
+"use balloon evaluation in the terminal"
+msgstr ""
+" \n"
+"verwende die Ballon-eval Funktion im Terminal"
 
 msgid "expression to show in balloon eval"
 msgstr "Textausdruck, der bei der Verwendung des Ballons angezeigt werden soll"
@@ -10427,7 +10561,8 @@ msgstr "zu verwendender Wayland-Seat (Sitz)"
 msgid ""
 "Enable wayland focus stealing functionality in order to access the clipboard"
 msgstr ""
-"Aktiviere die Wayland-Fokus-Steal-Funktionalität, um auf die Zwischenablage zuzugreifen"
+"Aktiviere die Wayland-Fokus-Steal-Funktionalität, um auf die Zwischenablage "
+"zuzugreifen"
 
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" und/oder \"stopsel\"; was bestimmte Tasten machen"
@@ -10468,6 +10603,9 @@ msgstr "definiert, wie sich <BS>, CTRL-W etc. im Einfüge-Modus verhält"
 msgid "definition of what comment lines look like"
 msgstr "Definition einer Kommentarzeile"
 
+msgid "template for comments; used to put the marker in"
+msgstr "Template für Kommentare; wird verwendet um Faltungs-Marker einzufügen"
+
 msgid "list of flags that tell how automatic formatting works"
 msgstr "Liste von Flags, die automatisches Formatieren beeinflußen"
 
@@ -10482,15 +10620,41 @@ msgstr ""
 "legt fest, wie Vervollständigen im Einfüge-Modus mit CTRL-N und CTRL-P "
 "funktioniert"
 
-msgid "use fuzzy collection for specific completion modes"
-msgstr "Fuzzy-Sammlung für spezifische Vervollständigungsmodi verwenden"
+msgid "automatic completion in insert mode"
+msgstr "automatisches Vervollständigen im Einfüge Modus"
+
+msgid ""
+" \n"
+"initial decay timeout for 'autocomplete' algorithm"
+msgstr ""
+" \n"
+"Anfangszeit, nach der die Gewichtung früherer 'autocomplete'-Vorschläge abnimmt"
+
+msgid ""
+" \n"
+"initial decay timeout for CTRL-N and CTRL-P completion"
+msgstr ""
+" \n"
+"Anfangszeit, nach der die Gewichtung früherer Vorschläge bei CTRL-N und CTRL-P abnimmt"
+
+msgid ""
+" \n"
+"delay in msec before menu appears after typing"
+msgstr ""
+" \n"
+"Verzögerung in ms, bevor das Menü nach der Eingabe erscheint"
+
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr ""
 "ob ein Popup-Menü bei der Verfollständigen im Einfüge-Modus genutzt wird"
 
-msgid "popup menu item align order"
-msgstr "Ausrichtungsreihenfolge im Popup-Menü"
+msgid ""
+" \n"
+"popup menu item align order"
+msgstr ""
+" \n"
+"Ausrichtungsreihenfolge im Popup-Menü"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "Optionen für das Popup bei der Einfüge-Modus Vervollständigung"
@@ -10503,6 +10667,9 @@ msgstr "minimale Breite des Popup-Menüs"
 
 msgid "maximum width of the popup menu"
 msgstr "maximale Breite des Popup-Menüs"
+
+msgid "popup border style"
+msgstr "Popup Rahmenstil"
 
 msgid "user defined function for Insert mode completion"
 msgstr "benutzerdefinierte Funktion für Vervollständigung im Einfüge-Modus"
@@ -10649,9 +10816,6 @@ msgstr "definiert für welche Befehle eine Faltung geöffnet wird"
 
 msgid "minimum number of screen lines for a fold to be closed"
 msgstr "minimale Anzahl an Bildschirmzeilen damit Faltung geschlossen wird"
-
-msgid "template for comments; used to put the marker in"
-msgstr "Template für Kommentare; wird verwendet um Faltungs-Marker einzufügen"
 
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
@@ -10934,8 +11098,12 @@ msgstr "Liste an Formaten für die Ausgabe von 'grepprg'"
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "Kodierung von \":make\" und \":grep\" Ausgabe"
 
-msgid "function to display text in the quickfix window"
-msgstr "Funktion um Text im Quickfix Fenster anzuzeigen"
+msgid ""
+" \n"
+"function to display text in the quickfix window"
+msgstr ""
+" \n"
+"Funktion um Text im Quickfix Fenster anzuzeigen"
 
 msgid "system specific"
 msgstr "System spezifisch"
@@ -10954,9 +11122,6 @@ msgstr "spezifiziert Zeichen in einem Dateinamen"
 
 msgid "specifies the characters in an identifier"
 msgstr "spezifiziert Zeichen in einer Kennung (identifier)"
-
-msgid "defines trigger strings for complete_match()"
-msgstr "definiert Trigger Zeichenketten für complete_match()"
 
 msgid "specifies the characters in a keyword"
 msgstr "spezifiziert Zeichen in einem Keyword"
@@ -11158,8 +11323,12 @@ msgstr "Name des Python 2 Home-Verzeichnis"
 msgid "name of the Python 3 dynamic library"
 msgstr "Name der dynamischen Python 3 Bibliothek"
 
-msgid "name of the Python 3 home directory"
-msgstr "Name des Python 3 Home-Verzeichnis"
+msgid ""
+" \n"
+"name of the Python 3 home directory"
+msgstr ""
+" \n"
+"Name des Python 3 Home-Verzeichnis"
 
 msgid "name of the Ruby dynamic library"
 msgstr "Name der dynamischen Ruby Bibliothek"

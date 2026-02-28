@@ -156,6 +156,26 @@ func Test_help_arg()
   call delete('Xtestout')
 endfunc
 
+func Test_version_arg()
+  " This does not work with a GUI-only binary, such as on MS-Windows.
+  CheckAnyOf Unix NotGui
+
+  if RunVim([], [], '--version >Xtestout')
+    let lines = readfile('Xtestout')
+    call assert_true(len(lines) > 10)
+    call assert_match('Vi IMproved', lines[0])
+
+    let idx = indexof(lines, 'v:val =~# "Features included.*:"')
+    call assert_true(idx >= 0)
+    call assert_true(idx + 1 < len(lines))
+    " Make sure the feature name is doubled on a line.
+    " For example, "+acl       +jumplist"
+    let feat_name = '[+-]+\?\w\+\%(()\)\?'
+    call assert_match($'^{feat_name}\s\+{feat_name}', lines[idx+1])
+  endif
+  call delete('Xtestout')
+endfunc
+
 func Test_compatible_args()
   let after =<< trim [CODE]
     call writefile([string(&compatible)], "Xtestout")
@@ -812,6 +832,9 @@ func Test_stdin_no_newline()
   CheckScreendump
   CheckUnix
   CheckExecutable bash
+  " For some reason bash doesn't exit at the end of the test on FreeBSD &
+  " OpenBSD.
+  CheckNotBSD
 
   let $PS1 = 'TEST_PROMPT> '
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})

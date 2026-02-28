@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2024 Oct 04
+# Latest Revision:    2026 Jan 10
 
 if exists("b:did_ftplugin")
   finish
@@ -110,7 +110,7 @@ endif
 b:undo_ftplugin ..= "| sil! delc -buffer ConTeXt | sil! delc -buffer ConTeXtLog | sil! delc -buffer ConTeXtJobStatus | sil! delc -buffer ConTeXtStopJobs"
 # Commands for asynchronous typesetting
 command! -buffer -nargs=? -complete=buffer ConTeXt          context.Typeset(<q-args>)
-command! -buffer -nargs=0                  ConTeXtLog       context.Log('%')
+command! -buffer -nargs=0                  ConTeXtLog       context.Log(bufname('%'))
 command!         -nargs=0                  ConTeXtJobStatus context.JobStatus()
 command!         -nargs=0                  ConTeXtStopJobs  context.StopJobs()
 

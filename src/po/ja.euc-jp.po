@@ -12,10 +12,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 9.1\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-23 10:59+0900\n"
-"PO-Revision-Date: 2024-08-15 12:54+0900\n"
+"Project-Id-Version: Vim 9.2\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"PO-Revision-Date: 2026-01-19 23:15+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -160,6 +160,10 @@ msgid "%d%%"
 msgstr "%d%%"
 
 #, c-format
+msgid "%3s"
+msgstr "%3s"
+
+#, c-format
 msgid " (%d of %d)"
 msgstr " (%d of %d)"
 
@@ -253,6 +257,9 @@ msgstr ": 送信に失敗しました。ローカルでの実行を試みています\n"
 msgid "%d of %d edited"
 msgstr "%d 個 (%d 個中) のファイルを編集しました"
 
+msgid "Socket server not online:Send expression failed"
+msgstr "ソケットサーバーがありません: 式の送信に失敗しました"
+
 msgid "No display: Send expression failed.\n"
 msgstr "ディスプレイがありません: 式の送信に失敗しました.\n"
 
@@ -262,11 +269,18 @@ msgstr ": 式の送信に失敗しました.\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "空の選択領域のかわりにCUT_BUFFER0が使用されました"
 
+msgid "Could not find a way to access the clipboard."
+msgstr "クリップボードにアクセスする方式が見つけられません。"
+
+#, c-format
+msgid "Switched to clipboard method '%s'."
+msgstr "クリップボードの方式を '%s' へ切り替えました。"
+
 msgid "tagname"
 msgstr "タグ名"
 
 msgid " kind file\n"
-msgstr " ファイル種類\n"
+msgstr " 種別 ファイル\n"
 
 msgid "'history' option is zero"
 msgstr "オプション 'history' がゼロです"
@@ -441,6 +455,10 @@ msgstr "片仮名"
 
 msgid "Bopomofo"
 msgstr "注音字母"
+
+#, c-format
+msgid "%ld,"
+msgstr "%ld,"
 
 msgid ""
 "\n"
@@ -768,9 +786,13 @@ msgid "[unix format]"
 msgstr "[unixフォーマット]"
 
 #, c-format
-msgid "%ld line, "
-msgid_plural "%ld lines, "
-msgstr[0] "%ld 行, "
+msgid "%s%ldL, %lldB"
+msgstr "%s%ldL, %lldB"
+
+#, c-format
+msgid "%s%ld line, "
+msgid_plural "%s%ld lines, "
+msgstr[0] "%s%ld 行, "
 
 #, c-format
 msgid "%lld byte"
@@ -1304,8 +1326,8 @@ msgstr[0] "%ld 行をインデントしました "
 msgid " Keyword completion (^N^P)"
 msgstr " キーワード補完 (^N^P)"
 
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
+msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " 行(全体)補完 (^L^N^P)"
@@ -1342,6 +1364,9 @@ msgstr " 綴り修正候補 (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " 局所キーワード補完 (^N^P)"
+
+msgid " Register completion (^N^P)"
+msgstr " レジスタ補完 (^N^P)"
 
 msgid "'dictionary' option is empty"
 msgstr "'dictionary' オプションが空です"
@@ -1528,10 +1553,20 @@ msgstr ""
 
 msgid ""
 "\n"
-"Where case is ignored prepend / to make flag upper case"
+"Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
+"case."
 msgstr ""
 "\n"
-"大小文字が無視される場合は大文字にするために / を前置してください"
+"コマンドが小文字の場合、フラグを大文字として取り扱うために / を前置してくださ"
+"い(例: -/R)。"
+
+msgid ""
+"\n"
+"Or, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."
+msgstr ""
+"\n"
+"または、サポートされている場合は SET PROC/PARSE=EXT を設定するか、そうでない"
+"場合は大文字の内容を引用符で囲んでください。"
 
 msgid ""
 "\n"
@@ -1694,6 +1729,12 @@ msgstr "-display <display>\tVimを指定した X サーバーに接続する"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tXサーバーに接続しない"
+
+msgid "-Y\t\t\tDo not connect to Wayland compositor"
+msgstr "-Y\t\t\tWayland コンポジタに接続しない"
+
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr "--clientserver <socket|x11> clientserver 通信のバックエンド"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\t可能ならばVimサーバーで <files> を編集する"
@@ -2255,6 +2296,12 @@ msgstr "-- 継続 --"
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " SPACE/d/j: 画面/ページ/行 下, b/u/k: 上, q: 終了 "
 
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: クリップボードレジスタが使えません、レジスタ 0 を使用します"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: クリップボードレジスタが使えません、:h W24 を参照してください"
+
 msgid "Question"
 msgstr "質問"
 
@@ -2457,8 +2504,8 @@ msgstr "%s へ (%s 上の)"
 msgid "Printing '%s'"
 msgstr "印刷しています: '%s'"
 
-#~ msgid "DefaultFontNameForWindows"
-#~ msgstr ""
+msgid "DefaultFontNameForWindows"
+msgstr "MS_Gothic"
 
 #, c-format
 msgid "Opening the X display took %ld msec"
@@ -2472,8 +2519,8 @@ msgstr ""
 "Vim: X のエラーを検出しましたr\n"
 
 #, c-format
-msgid "restoring display %s"
-msgstr "ディスプレイ %s を復元しています"
+msgid "restoring X11 display %s"
+msgstr "X11 ディスプレイ %s を復元しています"
 
 msgid "Testing the X display failed"
 msgstr "X display のチェックに失敗しました"
@@ -2571,6 +2618,10 @@ msgstr "XSMP ICE接続が失敗したようです"
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnectionが失敗しました: %s"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "ソケット用ディレクトリの作成に失敗しました: %s"
 
 msgid "At line"
 msgstr "行"
@@ -3409,6 +3460,13 @@ msgstr "%s (%s, compiled %s)"
 
 msgid ""
 "\n"
+"MS-Windows ARM64 GUI/console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 GUI/コンソール 版"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
@@ -3420,6 +3478,13 @@ msgid ""
 msgstr ""
 "\n"
 "MS-Windows 32 ビット GUI/コンソール 版"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 GUI version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 GUI 版"
 
 msgid ""
 "\n"
@@ -3437,6 +3502,13 @@ msgstr ""
 
 msgid " with OLE support"
 msgstr " with OLE サポート"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 コンソール 版"
 
 msgid ""
 "\n"
@@ -3468,10 +3540,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"OpenVMS version"
+"OpenVMS (build) arch, version"
 msgstr ""
 "\n"
-"OpenVMS 版"
+"OpenVMS (ビルド) アーキテクチャ、バージョン"
 
 msgid ""
 "\n"
@@ -3620,8 +3692,8 @@ msgstr "Vim はオープンソースであり自由に配布可能です"
 msgid "Help poor children in Uganda!"
 msgstr "ウガンダの恵まれない子供たちに援助を!"
 
-msgid "type  :help iccf<Enter>       for information "
-msgstr "詳細な情報は           :help iccf<Enter>      "
+msgid "type  :help Kuwasha<Enter>    for information "
+msgstr "詳細な情報は           :help Kuwasha<Enter>   "
 
 msgid "type  :q<Enter>               to exit         "
 msgstr "終了するには           :q<Enter>              "
@@ -3662,17 +3734,11 @@ msgstr "                              でVimとして動作    "
 msgid "Sponsor Vim development!"
 msgstr "Vimの開発を応援してください!"
 
-msgid "Become a registered Vim user!"
-msgstr "Vimの登録ユーザーになってください!"
-
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "詳細な情報は           :help sponsor<Enter>   "
 
-msgid "type  :help register<Enter>   for information "
-msgstr "詳細な情報は           :help register<Enter>  "
-
-msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "詳細はメニューの ヘルプ->スポンサー/登録 を参照して下さい"
+msgid "menu  Help->Sponsor  for information    "
+msgstr "詳細はメニューの ヘルプ->スポンサー を参照して下さい"
 
 msgid "global"
 msgstr "グローバル"
@@ -3820,6 +3886,16 @@ msgstr " 失敗"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "viminfoファイル \"%s\" を書込み中"
+
+msgid "wayland protocol error -> "
+msgstr "wayland プロトコルエラー -> "
+
+#, c-format
+msgid "restoring Wayland display %s"
+msgstr "Waylandのディスプレイ %s を復元しています"
+
+msgid "failed restoring, lost connection to Wayland display"
+msgstr "復元に失敗し、Waylandのディスプレイへの接続が失われました"
 
 msgid "Already only one window"
 msgstr "既にウィンドウは1つしかありません"
@@ -5197,8 +5273,8 @@ msgstr "E417: 引数がありません: %s"
 msgid "E418: Illegal value: %s"
 msgstr "E418: 不正な値です: %s"
 
-#~ msgid "E418: I'm a teapot"
-#~ msgstr ""
+msgid "E418: I'm a teapot"
+msgstr "E418: 私はティーポットです"
 
 msgid "E419: FG color unknown"
 msgstr "E419: 未知の前景色です"
@@ -5505,8 +5581,8 @@ msgstr "はファイルでも書込み可能デバイスでもありません"
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: \"%s\" はファイルでも書込み可能デバイスでもありません"
 
-#~ msgid "E503: Coffee is currently not available"
-#~ msgstr ""
+msgid "E503: Coffee is currently not available"
+msgstr "E503: コーヒーは現在のところ提供されません"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "は読込専用です (\"W\" が 'cpoptions' にあるため、強制書込できません)"
@@ -5872,7 +5948,7 @@ msgstr "E613: 未知のプリンタオプションです: %s"
 
 #, c-format
 msgid "E616: Object required for argument %d"
-msgstr "E616: 引数 %d にはオブジェクトが必要です"
+msgstr "E616: 引数 %d には Object が必要です"
 
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: GTK GUIでは変更できません"
@@ -7605,8 +7681,9 @@ msgstr "E1115: \"assert_fails()\" の第4引数は数字でなければなりません"
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "E1116: \"assert_fails()\" の第5引数は文字列でなければなりません"
 
-msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: ! を入れ子になった :def と組み合わせては使えません"
+#, c-format
+msgid "E1117: Cannot use ! with nested %s"
+msgstr "E1117: ! を入れ子になった %s と組み合わせては使えません"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: ロックされたリストを変更できません"
@@ -7676,8 +7753,8 @@ msgstr "E1138: Boolを数値として扱っています"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: 辞書のキーの後に一致する角括弧がありません"
 
-msgid "E1140: :for argument must be a sequence of lists"
-msgstr "E1140: :for の引数はリストのシーケンスでなければなりません"
+msgid "E1140: :for argument must be a sequence of lists or tuples"
+msgstr "E1140: :for の引数はリストかタプルのシーケンスでなければなりません"
 
 msgid "E1141: Indexable type required"
 msgstr "E1141: インデックス可能な型が必要です"
@@ -7993,8 +8070,8 @@ msgid "E1224: String, Number or List required for argument %d"
 msgstr "E1224: 引数 %d には文字列、数値またはリストが必要です"
 
 #, c-format
-msgid "E1225: String, List or Dictionary required for argument %d"
-msgstr "E1225: 引数 %d には文字列、リストまたは辞書が必要です"
+msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
+msgstr "E1225: 引数 %d には文字列、リスト、タプルまたは辞書が必要です"
 
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
@@ -8029,6 +8106,10 @@ msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy は後ろにコマンドが必要です"
 
 #, c-format
+msgid "E1235: Bool or Number required for argument %d"
+msgstr "E1235: 引数 %d にはBoolまたは数値が必要です"
+
+#, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
 msgstr "E1236: %s 自身を使うことはできません、インポートされています"
 
@@ -8041,8 +8122,8 @@ msgid "E1238: Blob required for argument %d"
 msgstr "E1238: 引数 %d にはBlobが必要です"
 
 #, c-format
-msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: blobとして無効な値です: %d"
+msgid "E1239: Invalid value for blob: 0x%lX"
+msgstr "E1239: blobとして無効な値です: 0x%lX"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: テキストが長くなりすぎました"
@@ -8083,12 +8164,16 @@ msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
 msgstr "E1250: %s の引数はリスト、文字列、辞書またはBlobでなければなりません"
 
 #, c-format
-msgid "E1251: List, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: 引数 %d にはリスト、辞書、Blobまたは文字列が必要です"
+msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
+msgstr "E1251: 引数 %d にはリスト、タプル、辞書、Blobまたは文字列が必要です"
 
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: 引数 %d には文字列、リストまたはBlobが必要です"
+
+#, c-format
+msgid "E1253: String, List, Tuple or Blob required for argument %d"
+msgstr "E1253: 引数 %d には文字列、リスト、タプル、またはBlobが必要です"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: forループ内でスクリプト変数は使用できません"
@@ -8269,8 +8354,8 @@ msgid "E1300: Cannot use a partial with dictionary for :defer"
 msgstr "E1300: :defer で辞書付き部分適用は使用できません"
 
 #, c-format
-msgid "E1301: String, Number, List or Blob required for argument %d"
-msgstr "E1301: 引数 %d には文字列、数値、リストまたはBlobが必要です"
+msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
+msgstr "E1301: 引数 %d には文字列、数値、リスト、タプルまたはBlobが必要です"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: スクリプト変数が削除されました"
@@ -8334,13 +8419,13 @@ msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: クラス内では使えないコマンドです: %s"
 
 msgid "E1320: Using an Object as a Number"
-msgstr "E1320: オブジェクトを数値として扱っています"
+msgstr "E1320: Object を数値として扱っています"
 
 msgid "E1322: Using an Object as a Float"
-msgstr "E1322: オブジェクトを浮動小数点数として扱っています"
+msgstr "E1322: Object を浮動小数点数として扱っています"
 
 msgid "E1324: Using an Object as a String"
-msgstr "E1324: オブジェクトを文字列として扱っています"
+msgstr "E1324: Object を文字列として扱っています"
 
 #, c-format
 msgid "E1325: Method \"%s\" not found in class \"%s\""
@@ -8352,7 +8437,7 @@ msgstr "E1326: 変数 \"%s\" がオブジェクト \"%s\" 内で見つかりません"
 
 #, c-format
 msgid "E1327: Object required, found %s"
-msgstr "E1327: オブジェクトが必要ですが、%s が見つかりました"
+msgstr "E1327: Object が必要ですが、%s が見つかりました"
 
 #, c-format
 msgid "E1328: Constructor default value must be v:none: %s"
@@ -8363,8 +8448,8 @@ msgid "E1329: Invalid class variable declaration: %s"
 msgstr "E1329: 不正なクラス変数の宣言です: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object variable: %s"
-msgstr "E1330: オブジェクト変数として無効な型です: %s"
+msgid "E1330: Invalid type used in variable declaration: %s"
+msgstr "E1330: 変数宣言に無効な型が使用されました: %s"
 
 msgid ""
 "E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
@@ -8612,6 +8697,9 @@ msgstr "E1393: 型は Vim9 script の中でのみ定義できます"
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: 型の名前は英大文字で始まらなければなりません: %s"
 
+msgid "E1395: Using a null class"
+msgstr "E1395: nullをクラスとして扱っています"
+
 #, c-format
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: 型エイリアス \"%s\" は既に存在します"
@@ -8721,6 +8809,48 @@ msgid "E1429: Class can only be used in a script"
 msgstr "E1429: クラスはスクリプトの中でのみ使用できます"
 
 #, c-format
+msgid "E1430: Uninitialized object variable '%s' referenced"
+msgstr "E1430: 初期化されていないオブジェクト変数 '%s' が参照されました"
+
+#, c-format
+msgid ""
+"E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
+msgstr "E1431: 抽象メソッド \"%s\" (\"%s\" クラス内) は直接アクセスできません"
+
+#, c-format
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+"E1432: ジェネリックメソッド \"%s\" (\"%s\" クラス内) を具象メソッドでオーバー"
+"ライドしようとしました"
+
+#, c-format
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+"E1433: 具象メソッド \"%s\" (\"%s\" クラス内) をジェネリックメソッドでオーバー"
+"ライドしようとしました"
+
+#, c-format
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+"E1434: ジェネリックメソッド \"%s\" (\"%s\" クラス内) の型変数の数が一致しませ"
+"ん"
+
+msgid "E1435: Enum can only be used in a script"
+msgstr "E1435: 列挙型はスクリプトの中でのみ使用できます"
+
+msgid "E1436: Interface can only be used in a script"
+msgstr "E1436: インターフェイスはスクリプトの中でのみ使用できます"
+
+msgid "E1437: Can only compare Object with Object"
+msgstr "E1437: Object は Object としか比較できません"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: 位置引数と非位置引数を混ぜることはできません: %s"
 
@@ -8774,6 +8904,213 @@ msgstr "E1512: フィールド \"%s\" の文字幅が間違っています"
 
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
 msgstr "E1513: バッファを切り替えられません。'winfixbuf' が有効化されています"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr "E1514: 'findfunc' が List 型を返しませんでした"
+
+#, c-format
+msgid "E1515: Unable to convert from '%s' encoding"
+msgstr "E1515: エンコード '%s' から変換できません"
+
+#, c-format
+msgid "E1516: Unable to convert to '%s' encoding"
+msgstr "E1516: エンコード '%s' へ変換できません"
+
+msgid "E1517: Can only compare Tuple with Tuple"
+msgstr "E1517: タプル型はタプル型としか比較できません"
+
+msgid "E1518: Invalid operation for Tuple"
+msgstr "E1518: タプル型には無効な操作です"
+
+#, c-format
+msgid "E1519: Tuple index out of range: %ld"
+msgstr "E1519: タプルのインデックスが範囲外です: %ld"
+
+msgid "E1520: Using a Tuple as a Number"
+msgstr "E1520: タプルを数値として扱っています"
+
+msgid "E1521: Using a Tuple as a Float"
+msgstr "E1521: タプルを浮動小数点数として扱っています"
+
+msgid "E1522: Using a Tuple as a String"
+msgstr "E1522: タプルを文字列として扱っています"
+
+msgid "E1523: String, List, Tuple or Blob required"
+msgstr "E1523: 文字列型、リスト型、タプル型またはBlob型が必要です"
+
+#, c-format
+msgid "E1524: Cannot use a tuple with function %s"
+msgstr "E1524: タプルには関数 %s を適用できません"
+
+#, c-format
+msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
+msgstr ""
+"E1525: %s の引数はリスト、タプル、文字列、辞書またはBlobでなければなりません"
+
+#, c-format
+msgid "E1526: Missing end of Tuple ')': %s"
+msgstr "E1526: タプルの最後に ')' がありません: %s"
+
+#, c-format
+msgid "E1527: Missing comma in Tuple: %s"
+msgstr "E1527: タプルにコンマがありません: %s"
+
+#, c-format
+msgid "E1528: List or Tuple or Blob required for argument %d"
+msgstr "E1528: 引数 %d にはリスト、タプルまたはBlobが必要です"
+
+#, c-format
+msgid "E1529: List or Tuple required for argument %d"
+msgstr "E1529: 引数 %d にはリストまたはタプルが必要です"
+
+#, c-format
+msgid "E1530: List or Tuple or Dictionary required for argument %d"
+msgstr "E1530: 引数 %d にはリスト、タプルまたは辞書が必要です"
+
+#, c-format
+msgid "E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"
+msgstr "E1531: %s の引数はリスト、タプル、辞書またはBlobでなければなりません"
+
+msgid "E1532: Cannot modify a tuple"
+msgstr "E1532: 既存のタプルを変更できません"
+
+msgid "E1533: Cannot slice a tuple"
+msgstr "E1533: タプルはスライスできません"
+
+#, c-format
+msgid "E1534: Tuple required for argument %d"
+msgstr "E1534: 引数 %d にはタプルが必要です"
+
+msgid "E1535: List or Tuple required"
+msgstr "E1535: リストかタプルが必要です"
+
+msgid "E1536: Tuple required"
+msgstr "E1536: タプルが必要です"
+
+msgid "E1537: Less targets than Tuple items"
+msgstr "E1537: ターゲットがタプル内の要素よりも少ないです"
+
+msgid "E1538: More targets than Tuple items"
+msgstr "E1538: ターゲットがタプル内の要素よりも多いです"
+
+#, c-format
+msgid "E1539: Variadic tuple must end with a list type: %s"
+msgstr "E1539: 可変タプルの最後の要素はリスト型でなければなりません: %s"
+
+msgid "E1540: Cannot use a variadic tuple in concatenation"
+msgstr "E1540: 可変タプルには連結できません"
+
+msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
+msgstr ""
+"E1541: 値が大きすぎます。Unicodeのコードポイントの最大は U+10FFFF です。"
+
+msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
+msgstr "E1542: quickfixとロケーションのリストの長さは1以上である必要があります"
+
+msgid "E1543: Cannot have more than a hundred quickfix/location lists"
+msgstr "E1543: quickfixとロケーションのリストの長さは100を超えられません"
+
+msgid "E1544: Failed resizing the quickfix/location list stack"
+msgstr ""
+"E1544: quickfixとロケーションのリスト(スタック)のサイズ変更に失敗しました"
+
+msgid "E1545: Quickfix list stack unavailable"
+msgstr "E1545: quickfixのリスト(スタック)が利用できません"
+
+msgid "E1546: Cannot switch to a closing buffer"
+msgstr "E1546: 閉じようとしているバッファへは切り替えられません"
+
+msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgstr "E1547: このバージョンのVimは :redrawtabpanel をサポートしていません"
+
+msgid "E1548: Wayland connection is unavailable"
+msgstr "E1548: Wayland 接続が利用できません"
+
+#, c-format
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: %d 以上の diff アンカーは持てません"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: 全ての diff アンカーを見つけるのに失敗しました"
+
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr "E1551: 閉じてるバッファへのポップアップウィンドウは開けません"
+
+#, c-format
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr "E1552: 型変数の名前は英大文字で始まらなければなりません: %s"
+
+#, c-format
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr "E1553: 総称関数の型の後にカンマがありません: %s"
+
+#, c-format
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr "E1554: 総称関数で '>' がありません: %s"
+
+#, c-format
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr "E1555: 総称関数 '%s' に空の型リストが指定されました"
+
+#, c-format
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr "E1556: 総称関数 '%s' に指定された型が多すぎます"
+
+#, c-format
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr "E1557: 総称関数 '%s' に指定された型が少なすぎます"
+
+#, c-format
+msgid "E1558: Unknown generic function: %s"
+msgstr "E1558: 未知の総称関数です: %s"
+
+#, c-format
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr "E1559: 総称関数 '%s' に型引数がありません"
+
+#, c-format
+msgid "E1560: Not a generic function: %s"
+msgstr "E1560: 総称関数ではありません: %s"
+
+#, c-format
+msgid "E1561: Duplicate type variable name: %s"
+msgstr "E1561: 型変数の名前が重複しています: %s"
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr "E1562: diff アンカーは隠された diff ウィンドウでは使えません"
+
+msgid "E1563: Socket path is too big"
+msgstr "E1563: ソケットのパスが大きすぎます"
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr "E1564: ソケット名にはパス以外ではスラッシュを含められません"
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr ""
+"E1565: ソケットサーバがオフラインです。先に remote_startserver() を呼んでくだ"
+"さい"
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr "E1566: ソケット %s への接続に失敗しました: %s"
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgstr "E1567: ソケットパスが利用できないため、ソケットサーバを開始できません"
+
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr "E1568: OSCコマンドの応答がタイムアウトしました: %.*s"
+
+msgid "E1569: Cannot use listener_add in a listener callback"
+msgstr "E1569: リスナーのコールバックでは listener_add を利用できません"
+
+msgid "E1570: Cannot use redraw_listener_add in a redraw listener callback"
+msgstr ""
+"E1570: redraw リスナーコールバックでは redraw_listener_add を利用できません"
+
+msgid "E1571: Must specify at least one callback for redraw_listener_add"
+msgstr ""
+"E1571: redraw_listener_add には少なくとも1つのコールバックを指定してください"
 
 msgid "--No lines in buffer--"
 msgstr "--バッファに行がありません--"
@@ -8948,6 +9285,18 @@ msgstr "vim.List 属性は消せません"
 msgid "cannot modify fixed list"
 msgstr "固定されたリストは変更できません"
 
+msgid "tuple constructor does not accept keyword arguments"
+msgstr "タプルのコンストラクタはキーワード引数を受け付けません"
+
+msgid "tuple index out of range"
+msgstr "タプルの範囲外のインデックスです"
+
+msgid "cannot delete vim.Tuple attributes"
+msgstr "vim.Tuple 属性は消せません"
+
+msgid "cannot modify fixed tuple"
+msgstr "固定されたタプルは変更できません"
+
 #, c-format
 msgid "unnamed function %s does not exist"
 msgstr "無名関数 %s は存在しません"
@@ -9112,9 +9461,8 @@ msgstr ""
 "C++ソース (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vimファイル (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
-# No need to translate this.
-#~ msgid "GVim"
-#~ msgstr ""
+msgid "GVim"
+msgstr "GVim"
 
 msgid "Text Editor"
 msgstr "テキストエディタ"
@@ -9125,9 +9473,8 @@ msgstr "テキストファイルを編集します"
 msgid "Text;editor;"
 msgstr "テキスト;エディタ;"
 
-# No need to translate this.
-#~ msgid "Vim"
-#~ msgstr ""
+msgid "Vim"
+msgstr "Vim"
 
 msgid "(local to window)"
 msgstr "(ウィンドウについてローカル)"
@@ -9242,6 +9589,9 @@ msgstr "検索パターンにおいて大文字と小文字を区別しない"
 msgid "override 'ignorecase' when pattern has upper case characters"
 msgstr "検索パターンが大文字を含んでいたら 'ignorecase' を上書きする"
 
+msgid "maximum number for the search count feature"
+msgstr "検索カウント機能の最大数"
+
 msgid "what method to use for changing case of letters"
 msgstr "大文字・小文字を変更する際にどの方法を使うか"
 
@@ -9352,8 +9702,12 @@ msgstr ""
 "最後の行が収まらない場合でも表示するには \"lastline\" を含めること\n"
 "表示できない文字を 16 進数で表示するには \"uhex\" を含めること"
 
-msgid "characters to use for the status line, folds and filler lines"
-msgstr "ステータス行、折畳み、フィラー行に使われる文字"
+msgid ""
+"characters to use for the status line, folds, diffs,\n"
+"buffer text, filler lines and truncation in the completion menu"
+msgstr ""
+"ステータス行、折り畳み、diff、バッファーテキスト、フィラー行、\n"
+"および補完メニューの切り詰めに使われる文字"
 
 msgid "number of lines used for the command-line"
 msgstr "コマンドラインに使われる行数"
@@ -9394,6 +9748,12 @@ msgstr "それぞれの行に相対行番号を表示する"
 
 msgid "number of columns to use for the line number"
 msgstr "行番号に使われる桁数"
+
+msgid "maximum number of quickfix lists that can be stored in history"
+msgstr "履歴に保持可能な quickfix リストの最大数"
+
+msgid "maximum number of location lists that can be stored in history"
+msgstr "履歴に保持可能なロケーションリストの最大数"
 
 msgid "controls whether concealable text is hidden"
 msgstr "conceal 可能なテキストを隠すかどうかを制御する"
@@ -9632,6 +9992,9 @@ msgstr "空でないとき、このウィンドウのアイコンに使われるテキスト"
 msgid "restore the screen contents when exiting Vim"
 msgstr "Vim の終了時に画面の内容を復元する"
 
+msgid "timeout used for terminal OSC responses"
+msgstr "端末のOSC応答のタイムアウト"
+
 msgid "using the mouse"
 msgstr "マウスの使用"
 
@@ -9695,8 +10058,10 @@ msgstr "ツールバーアイコンのサイズ"
 msgid "room (in pixels) left above/below the window"
 msgstr "ウィンドウの上下の余白 (ピクセル単位)"
 
-msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr "複合形状に結合されるASCII文字のリスト"
+msgid ""
+"list of ASCII characters that can be combined into complex\n"
+"shapes"
+msgstr "複雑な形状に組み合わせ可能な ASCII 文字のリスト"
 
 msgid "options for text rendering"
 msgstr "テキストレンダリングのためのオプション"
@@ -9705,11 +10070,11 @@ msgid "use a pseudo-tty for I/O to external commands"
 msgstr "外部コマンドの I/O に疑似 tty を使う"
 
 msgid ""
-"\"last\", \"buffer\" or \"current\": which directory used for the file "
-"browser"
+"\"last\", \"buffer\" or \"current\": which directory used for\n"
+"the file browser"
 msgstr ""
-"\"last\", \"buffer\" あるいは \"current\": ファイルブラウザでどの\n"
-"ディレクトリを使うか"
+"\"last\", \"buffer\" あるいは \"current\": ファイルブラウザで\n"
+"どのディレクトリを使うか"
 
 msgid "language to be used for the menus"
 msgstr "メニューで使われる言語"
@@ -9729,8 +10094,12 @@ msgstr "バルーン表示が出るまでの時間 (ミリ秒)"
 msgid "use balloon evaluation in the GUI"
 msgstr "GUI でバルーン評価を使う"
 
-msgid "use balloon evaluation in the terminal"
-msgstr "端末でバルーン評価を使う"
+msgid ""
+" \n"
+"use balloon evaluation in the terminal"
+msgstr ""
+" \n"
+"端末でバルーン評価を使う"
 
 msgid "expression to show in balloon eval"
 msgstr "バルーン評価に表示する式"
@@ -9770,6 +10139,9 @@ msgstr "'s' フラグを 'shortmess' に追加 (検索メッセージを表示しない)"
 
 msgid "list of flags to make messages shorter"
 msgstr "メッセージを短くするためのフラグのリスト"
+
+msgid "options for outputting messages"
+msgstr "メッセージを出力するためのオプション"
 
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr "コマンド (の一部) を 'showcmdloc' で指定された場所に表示"
@@ -9835,6 +10207,20 @@ msgstr ""
 "\"unnamed\"; * レジスタを無名レジスタと同じように使う\n"
 "\"autoselect\"; 常に選択されたテキストをクリップボードにコピー"
 
+msgid "Ordered list of possible methods for accessing the clipboard"
+msgstr "クリップボードにアクセスする可能な方式の順序付きリスト"
+
+msgid "Timeout to use when polling for data to read or write in wayland"
+msgstr "waylandで読み書きするデータをポーリングする際のタイムアウト"
+
+msgid "Wayland seat to use"
+msgstr "使用する wayland シート"
+
+msgid ""
+"Enable wayland focus stealing functionality in order to access the clipboard"
+msgstr ""
+"クリップボードにアクセスするために wayland のフォーカス奪取機能を有効化する"
+
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" かつ/または \"stopsel\"; 特別なキーが何をするか"
 
@@ -9874,6 +10260,9 @@ msgstr "挿入モードで <BS>, CTRL-W 等が何をできるかを指定"
 msgid "definition of what comment lines look like"
 msgstr "コメント行がどうなっているかの定義"
 
+msgid "template for comments; used to put the marker in"
+msgstr "コメント用のテンプレート; マーカーを中に置くために使われる"
+
 msgid "list of flags that tell how automatic formatting works"
 msgstr "自動整形がどのように動作するかを決めるフラグのリスト"
 
@@ -9886,8 +10275,39 @@ msgstr "\"gq\" で行を整形するときに使われる式"
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr "挿入モード補完が CTRL-N と CTRL-P でどう動作するかを指定"
 
+msgid "automatic completion in insert mode"
+msgstr "挿入モードでの自動補完"
+
+msgid ""
+" \n"
+"initial decay timeout for 'autocomplete' algorithm"
+msgstr ""
+" \n"
+"'autocomplete' アルゴリズムの初期減衰タイムアウト"
+
+msgid ""
+" \n"
+"initial decay timeout for CTRL-N and CTRL-P completion"
+msgstr ""
+" \n"
+"CTRL-N 及び CTRL-P 補完の初期減衰タイムアウト"
+
+msgid ""
+" \n"
+"delay in msec before menu appears after typing"
+msgstr ""
+" \n"
+"タイプ後にメニューが現れるまでの猶予(ミリ秒)"
+
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "挿入モード補完でポップアップメニューを使うかどうか"
+
+msgid ""
+" \n"
+"popup menu item align order"
+msgstr ""
+" \n"
+"ポップアップメニューの項目の配置順序"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "挿入モード補完の情報ポップアップ用のオプション"
@@ -9897,6 +10317,12 @@ msgstr "ポップアップメニューの最大高"
 
 msgid "minimum width of the popup menu"
 msgstr "ポップアップメニューの最大幅"
+
+msgid "maximum width of the popup menu"
+msgstr "ポップアップメニューの最大幅"
+
+msgid "popup border style"
+msgstr "ポップアップの境界のスタイル"
 
 msgid "user defined function for Insert mode completion"
 msgstr "挿入モード補完用のユーザー定義関数"
@@ -10040,9 +10466,6 @@ msgstr "どのコマンドが折畳みを開くかを指定"
 msgid "minimum number of screen lines for a fold to be closed"
 msgstr "折畳みが閉じられる画面上の最小行数"
 
-msgid "template for comments; used to put the marker in"
-msgstr "コメント用のテンプレート; マーカーを中に置くために使われる"
-
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
 "\"syntax\" or \"diff\""
@@ -10075,6 +10498,9 @@ msgstr "差分モードを使うためのオプション"
 
 msgid "expression used to obtain a diff file"
 msgstr "差分ファイルを取得するために使われる式"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "diffアンカーの位置一覧"
 
 msgid "expression used to patch a file"
 msgstr "ファイルにパッチを当てるために使われる式"
@@ -10318,8 +10744,12 @@ msgstr "'grepprg' の出力用の書式のリスト"
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "\":make\" と \":grep\" の出力のエンコーディング"
 
-msgid "function to display text in the quickfix window"
-msgstr "quickfix ウィンドウにテキストを表示するための関数"
+msgid ""
+" \n"
+"function to display text in the quickfix window"
+msgstr ""
+" \n"
+"quickfix ウィンドウにテキストを表示するための関数"
 
 msgid "system specific"
 msgstr "システム固有"
@@ -10460,6 +10890,9 @@ msgstr ""
 msgid "list of autocommand events which are to be ignored"
 msgstr "自動コマンドイベントで無視するもののリスト"
 
+msgid "list of autocommand events which are to be ignored in a window"
+msgstr "ウィンドウの自動コマンドイベントで無視するもののリスト"
+
 msgid "load plugin scripts when starting up"
 msgstr "起動時にプラグインスクリプトを読込む"
 
@@ -10534,8 +10967,12 @@ msgstr "Python 2 ホームディレクトリの名前"
 msgid "name of the Python 3 dynamic library"
 msgstr "Python 3 動的ライブラリの名前"
 
-msgid "name of the Python 3 home directory"
-msgstr "Python 3 ホームディレクトリの名前"
+msgid ""
+" \n"
+"name of the Python 3 home directory"
+msgstr ""
+" \n"
+"Python 3 ホームディレクトリの名前"
 
 msgid "name of the Ruby dynamic library"
 msgstr "Ruby 動的ライブラリの名前"
@@ -10548,6 +10985,15 @@ msgstr "MzScheme 動的ライブラリの名前"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "MzScheme GC 動的ライブラリの名前"
+
+msgid "0, 1 or 2; when to use the tabpanel"
+msgstr "0, 1 または 2; タブパネルをいつ使うか"
+
+msgid "custom tab pages in tabpanel"
+msgstr "タブパネル内のカスタムのタブページ行"
+
+msgid "options for using tabpanel"
+msgstr "タブパネルを使うためのオプション"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "コマンドラインウィンドウを見つけましたね! \":q\" でクローズできます。"

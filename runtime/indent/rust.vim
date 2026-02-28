@@ -3,7 +3,9 @@
 " Author:           Chris Morgan <me@chrismorgan.info>
 " Last Change:      2023-09-11
 " 2024 Jul 04 by Vim Project: use shiftwidth() instead of hard-coding shifted values #15138
-" 2025 Dec 28 by Vim Project: clean up, handle opening empty line correctly #18974
+" 2025 Dec 29 by Vim Project: clean up
+" 2025 Dec 31 by Vim Project: correcly indent after nested array literal #19042
+" 2026 Jan 28 by Vim Project: fix indentation when a string literal contains 'if' #19265
 
 " For bugs, patches and license go to https://github.com/rust-lang/rust.vim
 " Note: upstream seems umaintained: https://github.com/rust-lang/rust.vim/issues/502
@@ -138,9 +140,24 @@ function GetRustIndent(lnum)
     let l:standalone_close = line =~# '\V\^\s\*}\s\*\$'
     let l:standalone_where = line =~# '\V\^\s\*where\s\*\$'
     if l:standalone_open || l:standalone_close || l:standalone_where
-        " ToDo: we can search for more items than 'fn' and 'if'.
-        let [l:found_line, l:col, l:submatch] =
-                    \ searchpos('\<\(fn\)\|\(if\)\>', 'bnWp')
+        let l:orig_line = line('.')
+        let l:orig_col = col('.')
+        let l:i = 0
+        while 1
+            " ToDo: we can search for more items than 'fn' and 'if'.
+            let [l:found_line, l:col, l:submatch] =
+                        \ searchpos('\<\(fn\|if\)\>', 'bWp')
+            if l:found_line ==# 0 || !s:is_string_comment(l:found_line, l:col)
+                break
+            endif
+            let l:i += 1
+            " Limit to 10 iterations as a failsafe against endless looping.
+            if l:i >= 10
+                let l:found_line = 0
+                break
+            endif
+        endwhile
+        call cursor(l:orig_line, l:orig_col)
         if l:found_line !=# 0
             " Now we count the number of '{' and '}' in between the match
             " locations and the current line (there is probably a better
@@ -195,6 +212,22 @@ function GetRustIndent(lnum)
         endif
     endif
 
+    " Prevent cindent from becoming confused when pairing square brackets, as
+    " in
+    "
+    " let arr = [[u8; 4]; 2] = [
+    "     [0; 4],
+    "     [1, 3, 5, 9],
+    " ];
+    "     | ← indentation placed here
+    "
+    " for which it calculates too much indentation in the line following the
+    " close of the array.
+    if prevline =~# '^\s*\]' && l:last_prevline_character ==# ';'
+                \ && line !~# '^\s*}'
+        return indent(prevlinenum)
+    endif
+
     if l:last_prevline_character ==# ","
                 \ && s:get_line_trimmed(a:lnum) !~# '^\s*[\[\]{})]'
                 \ && prevline !~# '^\s*fn\s'
@@ -232,9 +265,6 @@ function GetRustIndent(lnum)
     endif
 
     " Fall back on cindent, which does it mostly right
-    if empty(trim(line))
-        return cindent(prevlinenum)
-    endif
     return cindent(a:lnum)
 endfunction
 

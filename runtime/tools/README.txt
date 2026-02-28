@@ -16,6 +16,9 @@ pltags.pl:	Perl script to create a tags file from Perl scripts.
 
 ref:		Shell script for the K command.
 
+preproc_indent.vim:
+		Fix preprocessor indentation in Vim's C source code.
+
 shtags.*:	Perl script to create a tags file from a shell script.
 
 vim132:		Shell script to edit in 132 column mode on vt100 compatible

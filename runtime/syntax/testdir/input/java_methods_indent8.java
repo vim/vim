@@ -110,3 +110,30 @@ enum E8
 
         @Override public String toString() { return name().toUpperCase(); }
 }
+
+class C8Alias<T>
+{
+        final T name; C8Alias(T name) { this.name = name; }
+
+        class Builder
+        {
+                final java.util.stream.Stream.Builder<T> builder =
+                        java.util.stream.Stream.<T>builder();
+
+                C8Alias<T>.Builder add(T x)
+                {
+                        builder.accept(x);
+                        return this;
+                }
+
+                java.util.stream.Stream<T> build()
+                {
+                        return builder.<T>build();
+                }
+        }
+
+        static <A> C8Alias<A>.Builder builder(A name)
+        {
+                return new C8Alias<>(name).new Builder();
+        }
+}

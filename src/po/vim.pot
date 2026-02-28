@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR 2025, The Vim Project
+# Copyright (C) YEAR 2026, The Vim Project
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-17 21:42+0100\n"
+"POT-Creation-Date: 2026-02-27 21:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1958,6 +1958,9 @@ msgid "???EMPTY BLOCK"
 msgstr ""
 
 msgid "???LINES MISSING"
+msgstr ""
+
+msgid "???ILLEGAL BLOCK NUMBER"
 msgstr ""
 
 msgid "???BLOCK MISSING"
@@ -10659,6 +10662,45 @@ msgid "custom tab pages in tabpanel"
 msgstr ""
 
 msgid "options for using tabpanel"
+msgstr ""
+
+msgid "Notice"
+msgstr ""
+
+msgid "Quickfix list not found, stopping the job"
+msgstr ""
+
+msgid "Success!"
+msgstr ""
+
+msgid "Job terminated"
+msgstr ""
+
+msgid "There are errors."
+msgstr ""
+
+msgid "Could not create quickfix list"
+msgstr ""
+
+msgid "File not readable:"
+msgstr ""
+
+msgid "Failed to start job"
+msgstr ""
+
+msgid "Typesetting..."
+msgstr ""
+
+msgid "Jobs still running:"
+msgstr ""
+
+msgid "Done."
+msgstr ""
+
+msgid "Typeset"
+msgstr ""
+
+msgid "Please save the buffer first."
 msgstr ""
 
 msgid "You discovered the command-line window! You can close it with \":q\"."

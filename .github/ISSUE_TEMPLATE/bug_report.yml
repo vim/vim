@@ -13,7 +13,13 @@ body:
         please disclose it privately via mail to vim-security@googlegroups.com.
         (It's a private list read only by the maintainers,
         but anybody can post, after moderation.)
-        
+
+        If you find a problem with syntax, indent and other runtime files, **please
+        first try to contact the maintainer directly**.
+        Look in the header of the file for the name, email address, github handle and/or
+        upstream repository. You may also check the MAINTAINERS file.
+        If the maintainer **does not respond**, open an issue here.
+
         To make it easier for us to help you please enter detailed information below.
   - type: textarea
     attributes:

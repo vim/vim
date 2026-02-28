@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2023 Dec 26
+# Latest Revision:    2026 Jan 10
 
 if exists("b:current_syntax")
   finish

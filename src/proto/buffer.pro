@@ -15,6 +15,7 @@ int do_buffer(int action, int start, int dir, int count, int forceit);
 char *do_bufdel(int command, char_u *arg, int addr_count, int start_bnr, int end_bnr, int forceit);
 void set_curbuf(buf_T *buf, int action);
 void do_autochdir(void);
+void no_write_message_buf(buf_T *buf);
 void no_write_message(void);
 void no_write_message_nobang(buf_T *buf);
 int curbuf_reusable(void);
