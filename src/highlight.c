@@ -200,6 +200,8 @@ static int highlight_ids[HLF_COUNT];
 // Same as highlight_attr[] but is not modified by highlight group overrides
 static int highlight_attr_raw[HLF_COUNT];
 
+static int hl_flags[HLF_COUNT] = HL_FLAGS;
+
 // highlight groups for 'highlight' option
 static garray_T highlight_ga;
 #define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
@@ -4252,7 +4254,6 @@ highlight_changed(void)
     int		hlcnt;
 # endif
 #endif
-    static int	hl_flags[HLF_COUNT] = HL_FLAGS;
 
     need_highlight_changed = FALSE;
 
@@ -5503,19 +5504,32 @@ push_highlight_overrides(hl_override_T *arr, int len)
     // Update highlight_attr[] array
     for (int i = 0; i < len; i++)
     {
-	hl_override_T *override = arr + i;
+	hl_override_T	*override = arr + i;
+	int		hlf = -1, attr;
 
-	for (int k = 0; k < HLF_COUNT; k++)
+	if (override->to <= 0)
+	    // Directly use highlight_attr[]
+	    attr = highlight_attr[-override->to];
+	else
+	    attr = syn_id2attr(override->to);
+
+	if (override->from <= 0)
+	    // Directly map to highlight_attr
+	    hlf = -override->from;
+	else
 	{
-	    if (highlight_ids[k] != -1 && override->from == highlight_ids[k])
-		highlight_attr[k] = syn_id2attr(override->to);
-	    else if (override->from <= 0)
-		// If negative or zero, then directly map to highlight_attr
-		highlight_attr[-override->from] = syn_id2attr(override->to);
-	    else
+	    for (int k = 0; k < HLF_COUNT; k++)
+		if (override->from == highlight_ids[k])
+		{
+		    hlf = k;
+		    break;
+		}
+
+	    if (hlf == -1)
 		continue;
-	    break;
 	}
+
+	highlight_attr[hlf] = attr;
     }
 
     return true;
@@ -5545,9 +5559,8 @@ pop_highlight_overrides(void)
  * if empty option. If failure, then errmsg is set.
  */
     static hl_override_T *
-parse_winhighlight(char_u *opt, int *len, char **errmsg, bool ispopup)
+parse_winhighlight(char_u *opt, int *len, char **errmsg)
 {
-
     char_u	    *p = opt;
     hl_override_T   *arr;
     int		    i = 0;
@@ -5577,9 +5590,11 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg, bool ispopup)
 	hl_override_T *override = arr + i++;
 	char_u	*fromname = p, *toname;
 	char_u	*tmp;
+	char_u	**names[2] = {&fromname, &toname};
 	int	fromlen, tolen;
+	int	*lens[2] = {&fromlen, &tolen};
 	int	fromid, toid;
-	bool	last = false;
+	int	*ids[2] = {&fromid, &toid};
 
 	p = vim_strchr(p, ':');
 
@@ -5604,41 +5619,62 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg, bool ispopup)
 	// Get hl for "to", must check for no trailing comma in case last
 	// element.
 	if (tmp == NULL)
-	{
-	    last = true;
 	    tolen = (int)STRLEN(p);
-	}
 	else
 	{
 	    tolen = tmp - toname;
-	    tmp++;
+	    p = ++tmp;
 	}
-	p = tmp;
 
-	if (syn_check_group(fromname, fromlen) == 0
-		|| syn_check_group(toname, tolen) == 0)
+	for (int k = 0; k < 2; k++)
 	{
-	    *errmsg = e_invalid_argument;
-	    goto fail;
+	    char_u  *name = *names[k];
+	    int	    nlen = *lens[k];
+
+	    if (*name == '!')
+	    {
+		// If starts with "!", then it maps directly to a 'highlight'
+		// occassion.
+		int hlf;
+
+		if (nlen != 2)
+		{
+		    *errmsg = e_invalid_argument;
+		    goto fail;
+		}
+
+		for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+		    if (hl_flags[hlf] == name[1])
+			break;
+
+		*ids[k] = -hlf;
+	    }
+	    else
+	    {
+		// Otherwise get the highlight group id.
+		if (syn_check_group(name, nlen) == 0)
+		{
+		    *errmsg = e_invalid_argument;
+		    goto fail;
+		}
+
+		*ids[k] = syn_namen2id(name, nlen);
+		if (*ids[k] == 0)
+		{
+		    *errmsg = e_invalid_argument;
+		    goto fail;
+		}
+
+		// Always map "Normal" group to HLF_WIN.
+		if (STRCMP(HL_TABLE()[*ids[k] - 1].sg_name_u, "NORMAL") == 0)
+		    *ids[k] = -HLF_WIN;
+	    }
 	}
-
-	fromid = syn_namen2id(fromname, fromlen);
-	toid = syn_namen2id(toname, tolen);
-
-	if (fromid == 0 || toid == 0)
-	{
-	    *errmsg = e_invalid_argument;
-	    goto fail;
-	}
-
-	// We will map "Normal" group to HLF_WIN always.
-	if (STRCMP(HL_TABLE()[fromid - 1].sg_name_u, "NORMAL") == 0)
-	    fromid = -HLF_WIN;
 
 	override->from = fromid;
 	override->to = toid;
 
-	if (last)
+	if (tmp == NULL)
 	    break;
     }
 
@@ -5660,7 +5696,7 @@ update_winhighlight(win_T *wp, char_u *opt)
     hl_override_T   *arr;
     int		    num = 1;
 
-    arr = parse_winhighlight(opt, &num, &err, WIN_IS_POPUP(wp));
+    arr = parse_winhighlight(opt, &num, &err);
 
     if (arr == NULL && err != NULL)
 	return err;

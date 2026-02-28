@@ -8473,6 +8473,7 @@ hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
 hl-WarningMsg	syntax.txt	/*hl-WarningMsg*
 hl-WildMenu	syntax.txt	/*hl-WildMenu*
+hl-WinColor	syntax.txt	/*hl-WinColor*
 hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
 hl-debugPC	terminal.txt	/*hl-debugPC*
 hl-lCursor	syntax.txt	/*hl-lCursor*

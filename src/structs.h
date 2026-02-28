@@ -3956,7 +3956,7 @@ typedef struct
 typedef struct
 {
     int from; // If zero or negative then it is hlf_T enum
-    int to;
+    int to; // Same thing as "from"
 } hl_override_T;
 
 /*

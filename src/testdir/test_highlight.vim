@@ -1643,4 +1643,31 @@ func Test_winhighlight_copy()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test if using a 'highlight' occasion instead of highlight group name works
+" correctly.
+func Test_winhighlight_occasion()
+  CheckScreendump
+
+  let lines =<< trim END
+  highlight A ctermbg=red ctermfg=white
+  highlight B ctermbg=blue ctermfg=white
+  highlight EndOfBuffer ctermbg=green
+
+  set cursorline
+
+  call setline(1, ["One", "Two", "Three"])
+  END
+  call writefile(lines, 'Xtest_winhighlight_occasion', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_occasion', {'rows': 20})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=!(:A,!.:B,StatusLine:!~\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_occasion_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

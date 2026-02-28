@@ -10278,11 +10278,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 'winhighlight' 'whl'	string (default empty)
 			local to window
 	Window-local highlights.  Comma-delimited list of highlight
-	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is
-	a |highlight-groups| item to be overridden by {hl-to} group in
-	the window.  If {hl-from} is "Normal", then it will always map to the
-	"(" occassion to 'highlight'.
+	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is a
+	|highlight-groups| item to be overridden by {hl-to} group in the
+	window.  If {hl-from} is "Normal", then it will always map to the "("
+	(window color) occassion to 'highlight'.
 
+	If a highlight group name starts with "!", then it assumed to map to
+	an occassion in 'highlight'. For example, this will override the
+	visual mode occassion: >vim
+	    set winhighlight=!v:SomeHighlightGroup
+<	This will map the occasion "v" to occasion "l" >vim
+	    set winhighlight=!v:!l
+<
 	Highlights of vertical separators are determined by the window to the
 	left of the separator.  The 'tabline' highlight of a tabpage is
 	decided by the last-focused window of the tabpage.  Highlights of

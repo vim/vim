@@ -626,6 +626,7 @@ func Test_set_completion_string_values()
   call assert_equal('SpecialKey', getcompletion('set winhighlight=', 'cmdline')[0])
   call assert_equal('SpecialKey', getcompletion('set winhighlight=SpecialKey:', 'cmdline')[0])
   call assert_equal('SpecialKey', getcompletion('set winhighlight=SpecialKey:SpecialKey,', 'cmdline')[0])
+  call assert_equal('!8', getcompletion('set winhighlight=SpecialKey:SpecialKey,!', 'cmdline')[0])
 
   call assert_equal('eol', getcompletion('set listchars+=', 'cmdline')[0])
   call assert_equal(['multispace', 'leadmultispace'], getcompletion('set listchars+=', 'cmdline')[-2:])
