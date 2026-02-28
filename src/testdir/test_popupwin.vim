@@ -4850,4 +4850,53 @@ func Test_popup_getwininfo_tabnr()
   tabonly
 endfunc
 
+func Test_popup_opacity_wide_char_overlap()
+  CheckScreendump
+
+  " Two overlapping popups with opacity over wide-character background.
+  " Verifies that wide characters at the content/padding boundary of the
+  " higher-zindex popup are properly blended (no holes or missing chars).
+  let lines =<< trim END
+    set encoding=utf-8
+    for i in range(1, 20)
+      call setline(i, 'いえーーーーーーーーーーーーーーーーい! ' .. i)
+    endfor
+    hi MyPopup1 ctermbg=darkblue ctermfg=white
+    hi MyPopup2 ctermbg=darkred ctermfg=white
+    let g:p1 = popup_create(['あめんぼ赤いな','あいうえお'], #{
+        \ opacity: 50,
+        \ line: 6,
+        \ col: 4,
+        \ border: [],
+        \ borderchars: ['─','│','─','│','╭','╮','╯','╰'],
+        \ minwidth: 14,
+        \ minheight: 3,
+        \ highlight: 'MyPopup1',
+        \ zindex: 1,
+        \})
+    let g:p2 = popup_create(['カラフルな','ポップアップで','最上川'], #{
+        \ opacity: 50,
+        \ line: 4,
+        \ col: 3,
+        \ minwidth: 15,
+        \ minheight: 3,
+        \ padding: [1,1,1,1],
+        \ highlight: 'MyPopup2',
+        \ zindex: 2,
+        \})
+  END
+  call writefile(lines, 'XtestPopupOpacityWide', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityWide', #{rows: 15, cols: 45})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_wide_1', {})
+
+  " Move popups far apart so they don't overlap.
+  " Tests right edge of popup where wide chars span content/padding boundary.
+  call term_sendkeys(buf, ":call popup_move(g:p2, #{line: 14, col: 16})\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_wide_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
