@@ -1910,8 +1910,10 @@ generate_BLOBAPPEND(cctx_T *cctx)
 }
 
 /*
- * get the instruction type for a function call: ISN_METHODCALL, ISN_DCALL, or
- * ISN_UCALL.
+ * Get the instruction type for a function call:
+ *   ISN_METHODCALL - Object method call
+ *   ISN_DCALL	    - Compiled def method call
+ *   ISN_UCALL	    - Other type of calls
  */
     static isntype_T
 isn_get_calltype(
@@ -1919,11 +1921,28 @@ isn_get_calltype(
 	ufunc_T	    *ufunc,
 	class_T	    *cl)
 {
-    return cl != NULL ? ISN_METHODCALL
-	: (ufunc->uf_def_status != UF_NOT_COMPILED
-		&& ((cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0
-		    || ufunc->uf_name[0] != K_SPECIAL))
-	? ISN_DCALL : ISN_UCALL;
+    if (cl != NULL)
+	return ISN_METHODCALL;
+
+    if (ufunc->uf_def_status == UF_NOT_COMPILED)
+	return ISN_UCALL;
+
+    // function invoked from a lambda
+    if (cctx->ctx_ufunc->uf_flags & FC_LAMBDA)
+    {
+	// When a script is sourced twice, all the script-local functions are
+	// redefined.  If a timer uses a lambda function which invokes a script
+	// local function, then if the timer expires after the script is
+	// sourced the second time, it will end up invoking the deleted
+	// function.  To avoid this condition, resolve the function using the
+	// function name.  Once the function is compiled again, the instruction
+	// will be changed to ISN_DCALL for the next invocation avoiding the
+	// lookup overhead.
+	if (ufunc->uf_name[0] == K_SPECIAL)
+	    return ISN_UCALL;
+    }
+
+    return ISN_DCALL;
 }
 
 /*
