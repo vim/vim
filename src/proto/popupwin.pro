@@ -54,6 +54,8 @@ int popup_no_mapping(void);
 void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
 void may_update_popup_position(void);
+int popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp,
+							 u8char_T *ucp);
 void popup_set_base_screen_cell(int row, int col, schar_T line, int attr, u8char_T uc);
 void update_popups(void (*win_update)(win_T *wp));
 int set_ref_in_popups(int copyID);
@@ -77,6 +79,4 @@ void end_echowindow(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);
-int popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp,
-							 u8char_T *ucp);
 /* vim: set ft=c : */
