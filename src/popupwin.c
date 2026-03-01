@@ -3299,10 +3299,51 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	clear_cmdline = TRUE;
     popup_adjust_position(wp);
 
-    // Redraw the old position to clear ghost images
+    // Redraw the popup at the new position; for opaque popups, the
+    // diff-based popup mask update in may_update_popup_mask() will handle
+    // redrawing the affected lines in regular windows to clear the old
+    // position.  Transparent popups don't participate in popup_mask, so
+    // we need to manually mark the old area's lines for redraw.
     if (old_winrow != wp->w_winrow || old_wincol != wp->w_wincol
 	    || old_height != wp->w_height || old_width != wp->w_width)
+    {
 	redraw_win_later(wp, UPD_NOT_VALID);
+
+	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
+	{
+	    int	    total_h = old_height + popup_top_extra(wp)
+			+ wp->w_popup_border[2] + wp->w_popup_padding[2];
+	    int	    row;
+
+	    for (row = old_winrow;
+		       row < old_winrow + total_h && row < screen_Rows; ++row)
+	    {
+		if (row >= cmdline_row)
+		    clear_cmdline = TRUE;
+		else
+		{
+		    int		line_cp = row;
+		    int		col_cp = old_wincol;
+		    win_T	*twp;
+
+		    twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
+		    if (twp != NULL)
+		    {
+			if (line_cp >= twp->w_height)
+			    twp->w_redr_status = TRUE;
+			else
+			{
+			    linenr_T	lnum;
+
+			    (void)mouse_comp_pos(twp, &line_cp, &col_cp,
+							       &lnum, NULL);
+			    redrawWinline(twp, lnum);
+			}
+		    }
+		}
+	    }
+	}
+    }
 }
 
 /*
