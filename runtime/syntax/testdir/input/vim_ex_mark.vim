@@ -183,8 +183,7 @@ endfunction
 mark "
 mark ^
 mark .
-" TODO: matches as vimFunc
-" mark (
+mark (
 mark )
 mark {
 mark }
@@ -194,8 +193,7 @@ mark 9
 k"
 k^
 k.
-" TODO: matches as vimFunc
-" k(
+k(
 k)
 k{
 k}
@@ -205,8 +203,7 @@ k9
 k "
 k ^
 k .
-" TODO: matches as vimFunc
-" k (
+k (
 k )
 k {
 k }
