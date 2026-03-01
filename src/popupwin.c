@@ -4414,7 +4414,7 @@ draw_opacity_padding_cell(
 
 	    // Prefer current screen state for detecting a wide char, since the
 	    // saved data may not contain a reliable right-half marker.
-	    if (base_off >= 0 && ScreenLines != NULL)
+	    if (base_off >= 0)
 	    {
 		if (ScreenLinesUC != NULL
 			&& ScreenLinesUC[base_off] != 0
