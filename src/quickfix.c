@@ -2800,11 +2800,12 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
     struct dir_stack_T  *ds_new;
     struct dir_stack_T  *ds_ptr;
 
-    // allocate new stack element and hook it in
+    // allocate new stack element
     ds_new = ALLOC_ONE_ID(struct dir_stack_T, aid_qf_dirstack);
     if (ds_new == NULL)
 	return NULL;
 
+    // push the new element onto the stack
     ds_new->next = *stackptr;
     *stackptr = ds_new;
 
@@ -2822,13 +2823,24 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 	(*stackptr)->dirname = NULL;
 	while (ds_new)
 	{
-	    vim_free((*stackptr)->dirname);
-	    (*stackptr)->dirname = concat_fnames(ds_new->dirname, dirbuf,
-		    TRUE);
-	    if ((*stackptr)->dirname == NULL)
+	    char_u  *dirname;
+
+	    dirname = concat_fnames(ds_new->dirname, dirbuf, TRUE);
+	    if (dirname == NULL)
+	    {
+		// pop the new element from the stack and free it
+		ds_ptr = *stackptr;
+		*stackptr = (*stackptr)->next;
+		vim_free(ds_ptr);
+
 		return NULL;
-	    if (mch_isdir((*stackptr)->dirname) == TRUE)
+	    }
+	    if (mch_isdir(dirname) == TRUE)
+	    {
+		vim_free((*stackptr)->dirname);
+		(*stackptr)->dirname = dirname;
 		break;
+	    }
 
 	    ds_new = ds_new->next;
 	}
@@ -2852,13 +2864,13 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 
     if ((*stackptr)->dirname != NULL)
 	return (*stackptr)->dirname;
-    else
-    {
-	ds_ptr = *stackptr;
-	*stackptr = (*stackptr)->next;
-	vim_free(ds_ptr);
-	return NULL;
-    }
+
+    // pop the new element from the stack and free it
+    ds_ptr = *stackptr;
+    *stackptr = (*stackptr)->next;
+    vim_free(ds_ptr);
+
+    return NULL;
 }
 
 /*
