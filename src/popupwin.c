@@ -826,22 +826,25 @@ apply_general_options(win_T *wp, dict_T *dict)
     str = dict_get_string(dict, "highlight", FALSE);
     if (str != NULL)
     {
-	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-						   str, OPT_FREE|OPT_LOCAL, 0);
-#ifdef FEAT_TERMINAL
-	term_update_wincolor(wp);
-#endif
+	char *errmsg = update_wincolor(wp, str);
+
+	if (errmsg == NULL)
+	    set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+		    str, OPT_FREE|OPT_LOCAL, 0);
+	else
+	    emsg(_(errmsg));
     }
+
     str = dict_get_string(dict, "highlights", FALSE);
     if (str != NULL)
     {
 	char *errmsg = update_winhighlight(wp, str);
 
-	if (errmsg != NULL)
-	    emsg(_(errmsg));
-	else
+	if (errmsg == NULL)
 	    set_string_option_direct_in_win(wp, (char_u *)"winhighlight", -1,
 		    str, OPT_FREE|OPT_LOCAL, 0);
+	else
+	    emsg(_(errmsg));
     }
 
     if (set_padding_border(dict, wp->w_popup_padding, "padding", 999) == FAIL ||
@@ -1905,11 +1908,18 @@ parse_popup_option(win_T *wp, int is_preview)
 	{
 	    if (wp != NULL)
 	    {
+		char *errmsg;
 		int c = *p;
 
 		*p = NUL;
-		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-			s + 10, OPT_FREE|OPT_LOCAL, 0);
+
+		errmsg = update_wincolor(wp, s + 10);
+		if (errmsg == NULL)
+		    set_string_option_direct_in_win(wp, (char_u *)"wincolor",
+			    -1, s + 10, OPT_FREE|OPT_LOCAL, 0);
+		else
+		    emsg(_(errmsg));
+
 		*p = c;
 	    }
 	}
@@ -2229,9 +2239,14 @@ popup_update_color(win_T *wp, create_type_T type)
 {
     char    *hiname = type == TYPE_MESSAGE_WIN
 				       ? "MessageWindow" : "PopupNotification";
-    set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-		(char_u *)hiname,
-		OPT_FREE|OPT_LOCAL, 0);
+    char    *errmsg;
+
+    errmsg = update_wincolor(wp, (char_u *)hiname);
+    if (errmsg == NULL)
+	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+		(char_u *)hiname, OPT_FREE|OPT_LOCAL, 0);
+    else
+	emsg(_(errmsg));
 }
 
 /*
@@ -3651,7 +3666,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	    (wp->w_popup_flags & POPF_OPACITY) ? 100 - wp->w_popup_blend : 100);
     dict_add_number(dict, "cursorline",
 	    (wp->w_popup_flags & POPF_CURSORLINE) != 0);
-    dict_add_string(dict, "highlight", wp->w_p_wcr);
+    dict_add_string(dict, "highlight", syn_id2name(hlf_get_id(wp, HLF_WIN)));
     dict_add_string(dict, "highlights", wp->w_p_whl);
     if (wp->w_scrollbar_highlight != NULL)
 	dict_add_string(dict, "scrollbarhighlight",
@@ -4465,7 +4480,7 @@ draw_opacity_padding_cell(
 			if (enc_utf8)
 			    ScreenLinesUC[off] = 0;
 			int popup_attr_val =
-					get_wcr_attr(screen_opacity_popup);
+					get_win_attr(screen_opacity_popup);
 			int blend = screen_opacity_popup->w_popup_blend;
 			ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],
 					popup_attr_val, blend, TRUE);
@@ -4496,7 +4511,7 @@ draw_opacity_padding_cell(
 			ScreenAttrs[off] = saved_screenattrs[save_off];
 
 			int popup_attr_val =
-					get_wcr_attr(screen_opacity_popup);
+					get_win_attr(screen_opacity_popup);
 			int blend = screen_opacity_popup->w_popup_blend;
 			ScreenAttrs[base_off] = hl_blend_attr(
 				ScreenAttrs[base_off],
@@ -4518,7 +4533,7 @@ draw_opacity_padding_cell(
 		    ScreenAttrs[off] = saved_screenattrs[save_off];
 		    if (enc_utf8 && ScreenLinesUC != NULL)
 			ScreenLinesUC[off] = 0;
-		    int popup_attr_val = get_wcr_attr(screen_opacity_popup);
+		    int popup_attr_val = get_win_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
 		    ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],
 				    popup_attr_val, blend, TRUE);
@@ -4538,7 +4553,7 @@ draw_opacity_padding_cell(
 		    ScreenLinesUC[base_off] = saved_screenlinesuc[base_save_off];
 		    ScreenLinesUC[off] = saved_screenlinesuc[save_off];
 
-		    int popup_attr_val = get_wcr_attr(screen_opacity_popup);
+		    int popup_attr_val = get_win_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
 		    ScreenAttrs[base_off] = hl_blend_attr(ScreenAttrs[base_off],
 				    popup_attr_val, blend, TRUE);
@@ -4568,7 +4583,7 @@ draw_opacity_padding_cell(
 	    ScreenLinesUC[off] = 0;
 	}
 
-	int popup_attr_val = get_wcr_attr(screen_opacity_popup);
+	int popup_attr_val = get_win_attr(screen_opacity_popup);
 	int blend = screen_opacity_popup->w_popup_blend;
 	ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],
 				popup_attr_val, blend, TRUE);
@@ -4832,7 +4847,7 @@ update_popups(void (*win_update)(win_T *wp))
 
 	total_width = popup_width(wp) - wp->w_popup_rightoff;
 	total_height = popup_height(wp);
-	popup_attr = get_wcr_attr(wp);
+	popup_attr = get_win_attr(wp);
 
 	if (wp->w_winrow + total_height > cmdline_row)
 	    wp->w_popup_flags |= POPF_ON_CMDLINE;

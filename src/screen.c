@@ -111,28 +111,31 @@ conceal_check_cursor_line(int was_concealed)
 #endif
 
 /*
- * Get 'wincolor' attribute for window "wp".  If not set and "wp" is a popup
- * window then get the "Pmenu" highlight attribute.
+ * Get HLF_WIN attribute for window "wp".  If not set and "wp" is a popup window
+ * then get the "Pmenu" highlight attribute.
  */
     int
-get_wcr_attr(win_T *wp)
+get_win_attr(win_T *wp)
 {
-    int wcr_attr = 0;
+    int win_attr = wp->w_hlfwin_id;
 
-    if (*wp->w_p_wcr != NUL)
-	wcr_attr = syn_name2attr(wp->w_p_wcr);
+    if (win_attr != 0)
+    {
+	if (win_attr != -1)
+	    win_attr = syn_id2attr(win_attr);
+	else
+	    win_attr = 0;
+    }
 #ifdef FEAT_PROP_POPUP
     else if (WIN_IS_POPUP(wp))
     {
 	if (wp->w_popup_flags & POPF_INFO)
-	    wcr_attr = HL_ATTR(HLF_PSI);    // PmenuSel
+	    win_attr = HL_ATTR(HLF_PSI);    // PmenuSel
 	else
-	    wcr_attr = HL_ATTR(HLF_PNI);    // Pmenu
+	    win_attr = HL_ATTR(HLF_PNI);    // Pmenu
     }
 #endif
-    else
-	wcr_attr = HL_ATTR(HLF_WIN);
-    return wcr_attr;
+    return win_attr;
 }
 
 /*
@@ -186,9 +189,9 @@ win_draw_end(
 {
     int		n = 0;
     int		attr = HL_ATTR(hl);
-    int		wcr_attr = get_wcr_attr(wp);
+    int		win_attr = get_win_attr(wp);
 
-    attr = hl_combine_attr(wcr_attr, attr);
+    attr = hl_combine_attr(win_attr, attr);
 
     if (draw_margin)
     {
@@ -198,19 +201,19 @@ win_draw_end(
 	if (fdc > 0)
 	    // draw the fold column
 	    n = screen_fill_end(wp, ' ', ' ', n, fdc,
-		      row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_FC)));
+		      row, endrow, hl_combine_attr(win_attr, HL_ATTR(HLF_FC)));
 #endif
 #ifdef FEAT_SIGNS
 	if (signcolumn_on(wp))
 	    // draw the sign column
 	    n = screen_fill_end(wp, ' ', ' ', n, 2,
-		      row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC)));
+		      row, endrow, hl_combine_attr(win_attr, HL_ATTR(HLF_SC)));
 #endif
 	if ((wp->w_p_nu || wp->w_p_rnu)
 				  && vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
 	    // draw the number column
 	    n = screen_fill_end(wp, ' ', ' ', n, number_width(wp) + 1,
-		       row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_N)));
+		       row, endrow, hl_combine_attr(win_attr, HL_ATTR(HLF_N)));
     }
 
 #ifdef FEAT_RIGHTLEFT
@@ -660,7 +663,7 @@ screen_line(
 		    // Wide char doesn't fit at the edge.  Replace with a
 		    // blended space so opacity is still applied.
 		    int char_attr = ScreenAttrs[off_from];
-		    int popup_attr = get_wcr_attr(screen_opacity_popup);
+		    int popup_attr = get_win_attr(screen_opacity_popup);
 		    int combined = hl_combine_attr(popup_attr, char_attr);
 		    int blend = screen_opacity_popup->w_popup_blend;
 		    ScreenLines[off_to] = ' ';
@@ -689,7 +692,7 @@ screen_line(
 	    // attribute (e.g. match highlight) so that its background
 	    // color is preserved on blank cells.
 	    int char_attr = ScreenAttrs[off_from];
-	    int popup_attr = get_wcr_attr(screen_opacity_popup);
+	    int popup_attr = get_win_attr(screen_opacity_popup);
 	    int combined = hl_combine_attr(popup_attr, char_attr);
 	    int blend = screen_opacity_popup->w_popup_blend;
 	    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
@@ -714,7 +717,7 @@ screen_line(
 		&& (!enc_utf8 || ScreenLinesUC[off_to] == 0))
 	{
 	    int char_attr = ScreenAttrs[off_from];
-	    int popup_attr = get_wcr_attr(screen_opacity_popup);
+	    int popup_attr = get_win_attr(screen_opacity_popup);
 	    int combined = hl_combine_attr(popup_attr, char_attr);
 	    int blend = screen_opacity_popup->w_popup_blend;
 	    ScreenLines[off_to] = ' ';
@@ -871,7 +874,7 @@ skip_opacity:
 		    && screen_opacity_popup->w_popup_blend > 0)
 	    {
 		int char_attr = ScreenAttrs[off_from];
-		int popup_attr = get_wcr_attr(screen_opacity_popup);
+		int popup_attr = get_win_attr(screen_opacity_popup);
 		int blend = screen_opacity_popup->w_popup_blend;
 		// Combine popup window color with the character's own
 		// attribute (e.g. syntax highlighting) so that the
@@ -2483,7 +2486,7 @@ screen_fill(
 			    goto skip_opacity_fill;
 		    }
 
-		    int popup_attr = get_wcr_attr(screen_opacity_popup);
+		    int popup_attr = get_win_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
 		    // Blend both foreground and background for padding area
 		    ScreenAttrs[off] = hl_blend_attr(ScreenAttrs[off],

@@ -4810,7 +4810,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuBorder|   j  popup menu border characters
 	|hl-PmenuShadow|   H  popup menu shadow
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
-	|hl-WinColor|	 (  Window colour (supersedes 'wincolor')
+			 (  Window color (supersedes 'wincolor' option)
+
+	Note that the "(" occasion is not set by default.
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -10207,11 +10209,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wincolor'* *'wcr'*
 'wincolor' 'wcr' string (default empty)
 			local to window
-	DEPRECATED: This option is no longer used; while it is still
-	functional, it is equivalent to when 'winhighlight' contains:
-		"Normal:A,Terminal:A"
-	and for popup windows:
-		"Pmenu:A"
+	DEPRECATED: Use 'winhighlight' if possible, this option uses
+	'winhighlight' internally by setting it to: >vim
+	    set winhighlight=!(:HighlightGroup
+<	If this option is set and 'winhighlight' is changed, then it will not
+	update the option value.  For example, if 'wincolor' is set to "A" and
+	then 'winhighlight' is to an empty value, then 'wincolor' will still
+	remain as "A".  Additionally, the existing value in 'winhighlight' will
+	be discarded when this option is set.
 
 	Highlight group name to use for this window instead of the Normal
 	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
@@ -10282,11 +10287,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is a
 	|highlight-groups| item to be overridden by {hl-to} group in the
 	window.  If {hl-from} is "Normal", then it will always map to the "("
-	(window color) occasion to 'highlight'.
+	(window color) occasion in 'highlight'.
 
 	If a highlight group name starts with "!", then it is assumed to map
-	to an occasion in 'highlight'. For example, this will override the
-	visual mode occassion: >vim
+	to an occasion in 'highlight'.  For example, this will override the
+	visual mode occasion: >vim
 	    set winhighlight=!v:SomeHighlightGroup
 <	This will map the occasion "v" to occasion "l" >vim
 	    set winhighlight=!v:!l

@@ -52,4 +52,6 @@ void update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newl
 bool push_highlight_overrides(hl_override_T *arr, int len);
 void pop_highlight_overrides(void);
 char *update_winhighlight(win_T *wp, char_u *opt);
+int hlf_get_id(win_T *wp, int hlf);
+char *update_wincolor(win_T *wp, char_u *opt);
 /* vim: set ft=c : */

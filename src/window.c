@@ -2507,7 +2507,7 @@ win_init_empty(win_T *wp)
     wp->w_s = &wp->w_buffer->b_s;
 #endif
 #ifdef FEAT_TERMINAL
-    term_reset_wincolor(wp);
+    term_reset_hlfwin(wp);
 #endif
 }
 

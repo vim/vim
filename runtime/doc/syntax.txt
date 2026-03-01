@@ -6056,8 +6056,6 @@ PmenuShadow	Popup menu: Used for shadow.
 ComplMatchIns	Matched text of the currently inserted completion.
 							*hl-PreInsert*
 PreInsert	Text inserted when "preinsert" is in 'completeopt'.
-							*hl-WinColor*
-WinColor	Used for window color.
 							*hl-PopupSelected*
 PopupSelected	Popup window created with |popup_menu()|.  Linked to
 		|hl-PmenuSel| by default.

@@ -1333,6 +1333,7 @@ $quote	eval.txt	/*$quote*
 'wfw'	options.txt	/*'wfw'*
 'wh'	options.txt	/*'wh'*
 'whichwrap'	options.txt	/*'whichwrap'*
+'whl'	options.txt	/*'whl'*
 'wi'	options.txt	/*'wi'*
 'wic'	options.txt	/*'wic'*
 'wig'	options.txt	/*'wig'*
@@ -1351,6 +1352,7 @@ $quote	eval.txt	/*$quote*
 'winfixheight'	options.txt	/*'winfixheight'*
 'winfixwidth'	options.txt	/*'winfixwidth'*
 'winheight'	options.txt	/*'winheight'*
+'winhighlight'	options.txt	/*'winhighlight'*
 'winminheight'	options.txt	/*'winminheight'*
 'winminwidth'	options.txt	/*'winminwidth'*
 'winptydll'	options.txt	/*'winptydll'*
@@ -8473,7 +8475,6 @@ hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
 hl-WarningMsg	syntax.txt	/*hl-WarningMsg*
 hl-WildMenu	syntax.txt	/*hl-WildMenu*
-hl-WinColor	syntax.txt	/*hl-WinColor*
 hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
 hl-debugPC	terminal.txt	/*hl-debugPC*
 hl-lCursor	syntax.txt	/*hl-lCursor*

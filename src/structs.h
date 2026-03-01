@@ -4214,7 +4214,7 @@ struct window_S
 				    // column being used
 #endif
 #ifdef FEAT_TERMINAL
-    termcellcolor_T w_term_wincolor;	 // cache for term color of 'wincolor'
+    termcellcolor_T w_term_hlfwin;  // cache for term color of HLF_WIN
 #endif
 
     /*
@@ -4372,6 +4372,8 @@ struct window_S
 
     hl_override_T *w_hl;
     int		w_hl_len;
+    int		w_hlfwin_id; // Cached HLF_WIN highlight group id, zero if none,
+			     // or -1 if it was set to itself.
 };
 
 /*

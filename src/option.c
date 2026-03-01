@@ -4401,7 +4401,7 @@ did_set_termguicolors(optset_T *args UNUSED)
 # ifdef FEAT_TERMINAL
     term_update_colors_all();
     term_update_palette_all();
-    term_update_wincolor_all();
+    term_update_hlfwin_all();
 # endif
     p_tgc_set = TRUE;
 
