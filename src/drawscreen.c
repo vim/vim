@@ -350,9 +350,8 @@ update_screen(int type_arg)
 	    win_update(wp);
 	}
 
-	// redraw status line after the window to minimize cursor movement. Must
-	// also redraw status line if there are highlight group overrides.
-	if (wp->w_redr_status || override_success)
+	// redraw status line after the window to minimize cursor movement
+	if (wp->w_redr_status)
 	{
 	    cursor_off();
 	    win_redr_status(wp, TRUE); // any popup menu will be redrawn below
@@ -631,6 +630,7 @@ redraw_custom_statusline(win_T *wp)
     void
 showruler(int always)
 {
+    bool override_success;
     if (!always && !redrawing())
 	return;
     if (pum_visible())
@@ -639,12 +639,15 @@ showruler(int always)
 	curwin->w_redr_status = TRUE;
 	return;
     }
+    override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
 #if defined(FEAT_STL_OPT)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
 	redraw_custom_statusline(curwin);
     else
 #endif
 	win_redr_ruler(curwin, always, FALSE);
+    if (override_success)
+	pop_highlight_overrides();
 
     if (need_maketitle
 #ifdef FEAT_STL_OPT
@@ -3386,7 +3389,12 @@ redraw_statuslines(void)
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_redr_status)
+	{
+	    bool ret = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 	    win_redr_status(wp, FALSE);
+	    if (ret)
+		pop_highlight_overrides();
+	}
     if (redraw_tabline)
 	draw_tabline();
 

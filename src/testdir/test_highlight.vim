@@ -1449,8 +1449,14 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_13', {})
 
+  " Go into command line mode (status line should still have same highlight)
+  call term_sendkeys(buf, "\<Esc>:")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_13a', {})
+
   " Go to next window (statusline highlighting for other window should stop)
-  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call term_sendkeys(buf, "\<CR>\<Esc>:wincmd l\<CR>")
   call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
