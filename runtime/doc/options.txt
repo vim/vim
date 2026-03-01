@@ -9096,6 +9096,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'termsync'* *'tsy'*
+'termsync' 'tsy'	boolean (default off)
+			global
+	If the host terminal supports it, buffer all screen updates made
+	during a redraw cycle so that each screen is displayed in the terminal
+	all at once.  This can prevent tearing or flickering when the terminal
+	updates faster than Vim can redraw.  If the host terminal does not
+	support it or if Vim is running graphically, then this option does
+	nothing.
+
+	Vim may set this option automatically at startup time when Vim is
+	compiled with the |+termresponse| feature.
+
 						*'termwinkey'* *'twk'*
 'termwinkey' 'twk'	string	(default "")
 			local to window

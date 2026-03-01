@@ -160,6 +160,8 @@ update_screen(int type_arg)
     }
     updating_screen = TRUE;
 
+    term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
+
 #ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.  This may set w_redraw_top and w_redraw_bot
     // in some windows.
@@ -433,6 +435,8 @@ update_screen(int type_arg)
     invoke_redraw_listener_start_or_end(false);
     redraw_listener_cleanup();
 #endif
+
+    term_set_sync_output(TERM_SYNC_OUTPUT_DISABLE);
 
     return OK;
 }

@@ -5329,3 +5329,12 @@ typedef enum {
 
 # endif
 #endif
+
+// Used in term_set_sync_output()
+typedef enum
+{
+    TERM_SYNC_OUTPUT_ENABLE = 1 << 0,
+    TERM_SYNC_OUTPUT_DISABLE = 1 << 1,
+    TERM_SYNC_OUTPUT_OFF = 1 << 2,
+    TERM_SYNC_OUTPUT_FLUSH = 1 << 3,
+} term_sync_output_T;

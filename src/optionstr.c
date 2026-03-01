@@ -4456,6 +4456,9 @@ did_set_term_option(optset_T *args)
 	    out_str(T_BE);
     }
 
+    if (varp == &T_BSU || varp == &T_ESU)
+	term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
+
     return NULL;
 }
 

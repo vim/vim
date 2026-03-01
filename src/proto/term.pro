@@ -96,4 +96,6 @@ void swap_tcap(void);
 void ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 int term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg);
+void may_req_sync_output(void);
+void term_set_sync_output(int flags);
 /* vim: set ft=c : */

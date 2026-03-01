@@ -1725,6 +1725,9 @@ using_script(void)
     void
 before_blocking(void)
 {
+    // Tell terminal to flush screen contents before blocking
+    term_set_sync_output(TERM_SYNC_OUTPUT_FLUSH);
+
     updatescript(0);
 #ifdef FEAT_EVAL
     if (may_garbage_collect)

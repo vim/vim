@@ -148,8 +148,11 @@ gui_start(char_u *arg UNUSED)
     }
 #ifdef HAVE_CLIPMETHOD
     else
+    {
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
+	term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
+    }
 #endif
 
 #if defined(FEAT_SOCKETSERVER) && defined(FEAT_GUI_GTK)
