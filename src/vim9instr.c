@@ -1911,9 +1911,10 @@ generate_BLOBAPPEND(cctx_T *cctx)
 
 /*
  * Get the instruction type for a function call:
- *   ISN_METHODCALL - Object method call
- *   ISN_DCALL	    - Compiled def method call
- *   ISN_UCALL	    - Other type of calls
+ *   ISN_METHODCALL - object method call via interface
+ *   ISN_DCALL      - compiled def function call
+ *   ISN_UCALL      - uncompiled function, or
+ *                    compiled script-local function called from a lambda
  */
     static isntype_T
 isn_get_calltype(
@@ -1930,14 +1931,9 @@ isn_get_calltype(
     // function invoked from a lambda
     if (cctx->ctx_ufunc->uf_flags & FC_LAMBDA)
     {
-	// When a script is sourced twice, all the script-local functions are
-	// redefined.  If a timer uses a lambda function which invokes a script
-	// local function, then if the timer expires after the script is
-	// sourced the second time, it will end up invoking the deleted
-	// function.  To avoid this condition, resolve the function using the
-	// function name.  Once the function is compiled again, the instruction
-	// will be changed to ISN_DCALL for the next invocation avoiding the
-	// lookup overhead.
+	// Script-local funcs in a lambda may be redefined by re-sourcing;
+	// resolve by name at runtime.  Patched to ISN_DCALL on next call once
+	// recompiled.
 	if (ufunc->uf_name[0] == K_SPECIAL)
 	    return ISN_UCALL;
     }
