@@ -228,12 +228,13 @@ func Test_client_server_stopinsert()
   " When using valgrind it takes much longer.
   call WaitForAssert({-> assert_match(name, serverlist())})
 
-  call remote_expr(name, 'execute("stopinsert")')
+  call remote_send(name, "\<C-\>\<C-N>")
 
+  " Wait for the mode to change to Normal ('n')
   call WaitForAssert({-> assert_equal('n', name->remote_expr("mode(1)"))})
-  cal WaitForAssert({-> assert_equal('13', name->remote_expr("col('.')"))})
+  call WaitForAssert({-> assert_equal('13', name->remote_expr("col('.')"))})
 
-  eval name->remote_send(":qa!\<CR>")
+  call remote_send(name, "\<C-\>\<C-N>:qa!\<CR>")
   try
     call WaitForAssert({-> assert_equal("dead", job_status(job))})
   finally
