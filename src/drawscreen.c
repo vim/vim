@@ -351,7 +351,7 @@ update_screen(int type_arg)
 	}
 
 	// redraw status line after the window to minimize cursor movement. Must
-	// also redraw stauts line if there are highlight group overrides.
+	// also redraw status line if there are highlight group overrides.
 	if (wp->w_redr_status || override_success)
 	{
 	    cursor_off();

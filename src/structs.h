@@ -3949,7 +3949,7 @@ typedef struct
 } fill_chars_T;
 
 /*
- * Represents current highlight overrides (used by 'winhighlight' option). the
+ * Represents current highlight overrides (used by 'winhighlight' option). The
  * highlight group with ID "from" will be overridden by the highlight group with
  * ID "to"
  */

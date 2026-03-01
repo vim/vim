@@ -10275,16 +10275,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'winheight' applies to the current window.  Use 'winminheight' to set
 	the minimal height for other windows.
 
+						*'winhighlight'* *'whl'*
 'winhighlight' 'whl'	string (default empty)
 			local to window
 	Window-local highlights.  Comma-delimited list of highlight
 	|group-name| pairs "{hl-from}:{hl-to},..." where each {hl-from} is a
 	|highlight-groups| item to be overridden by {hl-to} group in the
 	window.  If {hl-from} is "Normal", then it will always map to the "("
-	(window color) occassion to 'highlight'.
+	(window color) occasion to 'highlight'.
 
-	If a highlight group name starts with "!", then it assumed to map to
-	an occassion in 'highlight'. For example, this will override the
+	If a highlight group name starts with "!", then it is assumed to map
+	to an occasion in 'highlight'. For example, this will override the
 	visual mode occassion: >vim
 	    set winhighlight=!v:SomeHighlightGroup
 <	This will map the occasion "v" to occasion "l" >vim
@@ -10297,11 +10298,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	message area cannot be overridden.
 
 	When handling highlight group links, if a highlight group (which may
-	be a link as well) is overriden by 'winhighlight', then all highlight
+	be a link as well) is overridden by 'winhighlight', then all highlight
 	groups that link to it will be affected.  For example, if highlight
 	group C links to B which links to A, then >vim
 	    set winhighlight=B:SomeHighlightGroup
-<	will make SomeHighlightGroup override groups B and C, and but not A.
+<	will make SomeHighlightGroup override groups B and C, but not A.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)

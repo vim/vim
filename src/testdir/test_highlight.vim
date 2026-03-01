@@ -1388,6 +1388,9 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_3', {})
 
+  " Dump files 4 and 5 used to exist, but were removed later, too lazy to
+  " renumber the dump files...
+
   " Test that VertSplit in winhighlight only affects border if window that
   " winhighlight is local to is on the left side of the separator/column
   call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
@@ -1414,7 +1417,7 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_8', {})
 
-  " Switch to other window (shouldn't be affeccted)
+  " Switch to other window (shouldn't be affected)
   call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>iw\<C-x>\<C-v>")
   call TermWait(buf)
 
@@ -1561,7 +1564,7 @@ func Test_winhighlight_syntax()
   call StopVimInTerminal(buf)
 endfunc
 
-" Test if terminal is correctly highlighed using 'winhighlight'
+" Test if terminal is correctly highlighted using 'winhighlight'
 func Test_winhighlight_term()
   CheckScreendump
   CheckUnix
@@ -1613,9 +1616,9 @@ func Test_winhighlight_popupwin()
   redraw! # Remove intro message
   win_execute(g:id, "set filetype=c whl=Pmenu:A,cType:B")
   END
-  call writefile(lines, 'Xtest_winhighlight_term', 'D')
+  call writefile(lines, 'Xtest_winhighlight_popupwin', 'D')
 
-  let buf = RunVimInTerminal('-S Xtest_winhighlight_term', {'rows': 20})
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_popupwin', {'rows': 20})
   call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_1', {})

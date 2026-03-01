@@ -194,7 +194,7 @@ struct hl_overrides_S
 static hl_overrides_T *overrides = NULL;
 
 // Synced with highlight_attr, each is the highlight group id for each attr. If
-// an element is -1, then there is no attr for it.
+// an element is 0, then there is no attr for it.
 static int highlight_ids[HLF_COUNT];
 
 // Same as highlight_attr[] but is not modified by highlight group overrides
@@ -297,7 +297,7 @@ static char *(highlight_init_both[]) = {
     "default link PopupNotification WarningMsg",
     "default link PreInsert Added",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
-    CENT("WinColor cterm=NONE", "Normal gui=NONE"),
+    CENT("WinColor cterm=NONE", "WinColor gui=NONE"),
     NULL
 };
 
@@ -4083,7 +4083,7 @@ syn_get_final_id(int hl_id)
 	if (sgp->sg_link == 0 || sgp->sg_link > highlight_ga.ga_len)
 	    break;
 
-	// This is to handle highlight groups that are overriden but are in the
+	// This is to handle highlight groups that are overridden but are in the
 	// middle of a link chain.
 	hl_id = syn_override(hl_id);
 	if (tmp != hl_id)
@@ -4267,7 +4267,7 @@ highlight_changed(void)
     {
 	highlight_attr[hlf] = 0;
 	highlight_attr_raw[hlf] = 0;
-	highlight_ids[hlf] = -1;
+	highlight_ids[hlf] = 0;
     }
 
     // First set all attributes to their default value.
@@ -5599,19 +5599,13 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	p = vim_strchr(p, ':');
 
 	if (p == NULL)
-	{
-	    *errmsg = e_invalid_argument;
 	    goto fail;
-	}
 
 	fromlen = p - fromname; // Get hl for "from"
 	p++; // Skip colon ':'
-
 	if (*p == NUL)
-	{
-	    *errmsg = e_invalid_argument;
 	    goto fail;
-	}
+
 
 	toname = p;
 	tmp = vim_strchr(p, ',');
@@ -5634,18 +5628,18 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    if (*name == '!')
 	    {
 		// If starts with "!", then it maps directly to a 'highlight'
-		// occassion.
+		// occasion.
 		int hlf;
 
 		if (nlen != 2)
-		{
-		    *errmsg = e_invalid_argument;
 		    goto fail;
-		}
 
 		for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
 		    if (hl_flags[hlf] == name[1])
 			break;
+
+		if (hlf >= HLF_COUNT)
+		    goto fail;
 
 		*ids[k] = -hlf;
 	    }
@@ -5653,17 +5647,11 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    {
 		// Otherwise get the highlight group id.
 		if (syn_check_group(name, nlen) == 0)
-		{
-		    *errmsg = e_invalid_argument;
 		    goto fail;
-		}
 
 		*ids[k] = syn_namen2id(name, nlen);
 		if (*ids[k] == 0)
-		{
-		    *errmsg = e_invalid_argument;
 		    goto fail;
-		}
 
 		// Always map "Normal" group to HLF_WIN.
 		if (STRCMP(HL_TABLE()[*ids[k] - 1].sg_name_u, "NORMAL") == 0)
@@ -5682,6 +5670,7 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
     return arr;
 fail:
     vim_free(arr);
+    *errmsg = e_invalid_argument;
     return NULL;
 }
 
@@ -5712,10 +5701,12 @@ update_winhighlight(win_T *wp, char_u *opt)
     if (wp->w_buffer != NULL)
     {
 	// Make sure terminal highlighting is updated
-	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+	bool ret = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+
 	if (wp->w_buffer->b_term != NULL)
 	    term_init_default_colors(wp->w_buffer->b_term);
-	pop_highlight_overrides();
+	if (ret)
+	    pop_highlight_overrides();
     }
 #endif
 
