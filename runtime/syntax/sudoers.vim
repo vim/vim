@@ -160,7 +160,7 @@ syn match   sudoersDefaultTypeColon       contained ':' nextgroup=@sudoersUser s
 syn match   sudoersDefaultTypeGreaterThan contained '>' nextgroup=@sudoersUser skipwhite skipnl
 
 " TODO: could also deal with special characters here
-syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter,sudoersIntegerOrBooleanParameter,sudoersModeOrBooleanParameter,sudoersFloatOrBooleanParameter,sudoersTimeoutOrBooleanParameter,sudoersStringOrBooleanParameter skipwhite skipnl
+syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter,sudoersIntegerOrBooleanParameter,sudoersModeOrBooleanParameter,sudoersFloatOrBooleanParameter,sudoersTimeoutOrBooleanParameter,sudoersStringOrBooleanParameter,sudoersListParameter skipwhite skipnl
 syn keyword sudoersBooleanParameter contained skipwhite skipnl
                                   \ always_query_group_plugin
                                   \ always_set_home
