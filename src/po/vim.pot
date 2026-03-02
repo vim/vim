@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-01 19:26+0000\n"
+"POT-Creation-Date: 2026-03-02 19:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9502,6 +9502,9 @@ msgid "highlight all matches for the last used search pattern"
 msgstr ""
 
 msgid "highlight group to use for the window"
+msgstr ""
+
+msgid "highlight group mappings for the window"
 msgstr ""
 
 msgid "use GUI colors for the terminal"
