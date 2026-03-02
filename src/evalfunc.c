@@ -7760,214 +7760,217 @@ f_has(typval_T *argvars, typval_T *rettv)
 	return;
 
     name = tv_get_string(&argvars[0]);
-    for (i = 0; has_list[i].name != NULL; ++i)
-	if (STRICMP(name, has_list[i].name) == 0)
-	{
-	    x = TRUE;
-	    n = has_list[i].present;
-	    break;
-	}
 
-    // features also in has_list[] but sometimes enabled at runtime
-    if (x == TRUE && n == FALSE)
+    // Fast-path: check features not in has_list[] first to avoid the full
+    // linear scan for very common queries like has('patch-...').
+    if (STRNICMP(name, "patch", 5) == 0)
     {
-	if (0)
+	x = TRUE;
+	if (name[5] == '-'
+		&& STRLEN(name) >= 11
+		&& (name[6] >= '1' && name[6] <= '9'))
 	{
-	    // intentionally empty
+	    char	*end;
+	    int	major, minor;
+
+	    // This works for patch-8.1.2, patch-9.0.3, patch-10.0.4, etc.
+	    // Not for patch-9.10.5.
+	    major = (int)strtoul((char *)name + 6, &end, 10);
+	    if (*end == '.' && vim_isdigit(end[1])
+		    && end[2] == '.' && vim_isdigit(end[3]))
+	    {
+		minor = atoi(end + 1);
+
+		// Expect "patch-9.9.01234".
+		n = (major < VIM_VERSION_MAJOR
+		     || (major == VIM_VERSION_MAJOR
+			 && (minor < VIM_VERSION_MINOR
+			     || (minor == VIM_VERSION_MINOR
+				 && has_patch(atoi(end + 3))))));
+	    }
 	}
-#ifdef VIMDLL
-	else if (STRICMP(name, "filterpipe") == 0)
-	    n = gui.in_use || gui.starting;
+	else if (SAFE_isdigit(name[5]))
+	    n = has_patch(atoi((char *)name + 5));
+    }
+    else if (STRICMP(name, "vim_starting") == 0)
+    {
+	x = TRUE;
+	n = (starting != 0);
+    }
+    else if (STRICMP(name, "ttyin") == 0)
+    {
+	x = TRUE;
+	n = mch_input_isatty();
+    }
+    else if (STRICMP(name, "ttyout") == 0)
+    {
+	x = TRUE;
+	n = stdout_isatty;
+    }
+    else if (STRICMP(name, "multi_byte_encoding") == 0)
+    {
+	x = TRUE;
+	n = has_mbyte;
+    }
+    else if (STRICMP(name, "gui_running") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_GUI
+	n = (gui.in_use || gui.starting);
 #endif
-#if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
-	else if (STRICMP(name, "iconv") == 0)
-	    n = iconv_enabled(FALSE);
+    }
+    else if (STRICMP(name, "browse") == 0)
+    {
+	x = TRUE;
+#if defined(FEAT_GUI) && defined(FEAT_BROWSE)
+	n = gui.in_use;	// gui_mch_browse() works when GUI is running
 #endif
-#ifdef DYNAMIC_LUA
-	else if (STRICMP(name, "lua") == 0)
-	    n = lua_enabled(FALSE);
+    }
+    else if (STRICMP(name, "syntax_items") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_SYN_HL
+	n = syntax_present(curwin);
 #endif
-#ifdef DYNAMIC_MZSCHEME
-	else if (STRICMP(name, "mzscheme") == 0)
-	    n = mzscheme_enabled(FALSE);
+    }
+    else if (STRICMP(name, "vcon") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_VTP
+	n = is_term_win32() && has_vtp_working();
 #endif
-#ifdef DYNAMIC_PERL
-	else if (STRICMP(name, "perl") == 0)
-	    n = perl_enabled(FALSE);
+    }
+    else if (STRICMP(name, "netbeans_enabled") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_NETBEANS_INTG
+	n = netbeans_active();
 #endif
-#ifdef DYNAMIC_PYTHON
-	else if (STRICMP(name, "python") == 0)
-	    n = python_enabled(FALSE);
+    }
+    else if (STRICMP(name, "mouse_gpm_enabled") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_MOUSE_GPM
+	n = gpm_enabled();
 #endif
-#ifdef DYNAMIC_PYTHON3
-	else if (STRICMP(name, "python3") == 0)
-	    n = python3_enabled(FALSE);
-#endif
-#if defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3)
-	else if (STRICMP(name, "pythonx") == 0)
-	{
-# if defined(DYNAMIC_PYTHON) && defined(DYNAMIC_PYTHON3)
-	    if (p_pyx == 0)
-		n = python3_enabled(FALSE) || python_enabled(FALSE);
-	    else if (p_pyx == 3)
-		n = python3_enabled(FALSE);
-	    else if (p_pyx == 2)
-		n = python_enabled(FALSE);
-# elif defined(DYNAMIC_PYTHON)
-	    n = python_enabled(FALSE);
-# elif defined(DYNAMIC_PYTHON3)
-	    n = python3_enabled(FALSE);
-# endif
-	}
-#endif
-#ifdef DYNAMIC_RUBY
-	else if (STRICMP(name, "ruby") == 0)
-	    n = ruby_enabled(FALSE);
-#endif
-#ifdef DYNAMIC_TCL
-	else if (STRICMP(name, "tcl") == 0)
-	    n = tcl_enabled(FALSE);
-#endif
-#ifdef DYNAMIC_SODIUM
-	else if (STRICMP(name, "sodium") == 0)
-	    n = sodium_enabled(FALSE);
-#endif
+    }
+    else if (STRICMP(name, "conpty") == 0)
+    {
+	x = TRUE;
 #if defined(FEAT_TERMINAL) && defined(MSWIN)
-	else if (STRICMP(name, "terminal") == 0)
-	    n = terminal_enabled();
+	n = use_conpty();
 #endif
-#ifdef DYNAMIC_GPM
-	else if (STRICMP(name, "mouse_gpm") == 0)
-	    n = gpm_available();
+    }
+    else if (STRICMP(name, "clipboard_working") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_CLIPBOARD
+	n = clipmethod == CLIPMETHOD_PROVIDER ? TRUE : clip_star.available;
+#endif
+    }
+    else if (STRICMP(name, "unnamedplus") == 0)
+    {
+	x = TRUE;
+#ifdef FEAT_CLIPBOARD
+	// The + register is available when clipmethod is set to a provider,
+	// but becomes unavailable if on a platform that doesn't support it
+	// and clipmethod is "none".
+	// (Windows, MacOS).
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+	n = TRUE;
+# elif defined(FEAT_EVAL)
+	if (clipmethod == CLIPMETHOD_PROVIDER)
+	    n = TRUE;
+	else
+	    n = FALSE;
+# else
+	n = FALSE;
+# endif
 #endif
     }
 
-    // features not in has_list[]
+    // Look up in has_list[] only if not already handled above.
     if (x == FALSE)
     {
-	if (STRNICMP(name, "patch", 5) == 0)
-	{
-	    x = TRUE;
-	    if (name[5] == '-'
-		    && STRLEN(name) >= 11
-		    && (name[6] >= '1' && name[6] <= '9'))
+	for (i = 0; has_list[i].name != NULL; ++i)
+	    if (STRICMP(name, has_list[i].name) == 0)
 	    {
-		char	*end;
-		int	major, minor;
-
-		// This works for patch-8.1.2, patch-9.0.3, patch-10.0.4, etc.
-		// Not for patch-9.10.5.
-		major = (int)strtoul((char *)name + 6, &end, 10);
-		if (*end == '.' && vim_isdigit(end[1])
-			&& end[2] == '.' && vim_isdigit(end[3]))
-		{
-		    minor = atoi(end + 1);
-
-		    // Expect "patch-9.9.01234".
-		    n = (major < VIM_VERSION_MAJOR
-			 || (major == VIM_VERSION_MAJOR
-			     && (minor < VIM_VERSION_MINOR
-				 || (minor == VIM_VERSION_MINOR
-				     && has_patch(atoi(end + 3))))));
-		}
+		x = TRUE;
+		n = has_list[i].present;
+		break;
 	    }
-	    else if (SAFE_isdigit(name[5]))
-		n = has_patch(atoi((char *)name + 5));
-	}
-	else if (STRICMP(name, "vim_starting") == 0)
+
+	// features also in has_list[] but sometimes enabled at runtime
+	if (x == TRUE && n == FALSE)
 	{
-	    x = TRUE;
-	    n = (starting != 0);
-	}
-	else if (STRICMP(name, "ttyin") == 0)
-	{
-	    x = TRUE;
-	    n = mch_input_isatty();
-	}
-	else if (STRICMP(name, "ttyout") == 0)
-	{
-	    x = TRUE;
-	    n = stdout_isatty;
-	}
-	else if (STRICMP(name, "multi_byte_encoding") == 0)
-	{
-	    x = TRUE;
-	    n = has_mbyte;
-	}
-	else if (STRICMP(name, "gui_running") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_GUI
-	    n = (gui.in_use || gui.starting);
+	    if (0)
+	    {
+		// intentionally empty
+	    }
+#ifdef VIMDLL
+	    else if (STRICMP(name, "filterpipe") == 0)
+		n = gui.in_use || gui.starting;
 #endif
-	}
-	else if (STRICMP(name, "browse") == 0)
-	{
-	    x = TRUE;
-#if defined(FEAT_GUI) && defined(FEAT_BROWSE)
-	    n = gui.in_use;	// gui_mch_browse() works when GUI is running
+#if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
+	    else if (STRICMP(name, "iconv") == 0)
+		n = iconv_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "syntax_items") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_SYN_HL
-	    n = syntax_present(curwin);
+#ifdef DYNAMIC_LUA
+	    else if (STRICMP(name, "lua") == 0)
+		n = lua_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "vcon") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_VTP
-	    n = is_term_win32() && has_vtp_working();
+#ifdef DYNAMIC_MZSCHEME
+	    else if (STRICMP(name, "mzscheme") == 0)
+		n = mzscheme_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "netbeans_enabled") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_NETBEANS_INTG
-	    n = netbeans_active();
+#ifdef DYNAMIC_PERL
+	    else if (STRICMP(name, "perl") == 0)
+		n = perl_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "mouse_gpm_enabled") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_MOUSE_GPM
-	    n = gpm_enabled();
+#ifdef DYNAMIC_PYTHON
+	    else if (STRICMP(name, "python") == 0)
+		n = python_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "conpty") == 0)
-	{
-	    x = TRUE;
-#if defined(FEAT_TERMINAL) && defined(MSWIN)
-	    n = use_conpty();
+#ifdef DYNAMIC_PYTHON3
+	    else if (STRICMP(name, "python3") == 0)
+		n = python3_enabled(FALSE);
 #endif
-	}
-	else if (STRICMP(name, "clipboard_working") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_CLIPBOARD
-	    n = clipmethod == CLIPMETHOD_PROVIDER ? TRUE : clip_star.available;
-#endif
-	}
-	else if (STRICMP(name, "unnamedplus") == 0)
-	{
-	    x = TRUE;
-#ifdef FEAT_CLIPBOARD
-	    // The + register is available when clipmethod is set to a provider,
-	    // but becomes unavailable if on a platform that doesn't support it
-	    // and clipmethod is "none".
-	    // (Windows, MacOS).
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-	    n = TRUE;
-# elif defined(FEAT_EVAL)
-	    if (clipmethod == CLIPMETHOD_PROVIDER)
-		n = TRUE;
-	    else
-		n = FALSE;
-# else
-	    n = FALSE;
+#if defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3)
+	    else if (STRICMP(name, "pythonx") == 0)
+	    {
+# if defined(DYNAMIC_PYTHON) && defined(DYNAMIC_PYTHON3)
+		if (p_pyx == 0)
+		    n = python3_enabled(FALSE) || python_enabled(FALSE);
+		else if (p_pyx == 3)
+		    n = python3_enabled(FALSE);
+		else if (p_pyx == 2)
+		    n = python_enabled(FALSE);
+# elif defined(DYNAMIC_PYTHON)
+		n = python_enabled(FALSE);
+# elif defined(DYNAMIC_PYTHON3)
+		n = python3_enabled(FALSE);
 # endif
+	    }
+#endif
+#ifdef DYNAMIC_RUBY
+	    else if (STRICMP(name, "ruby") == 0)
+		n = ruby_enabled(FALSE);
+#endif
+#ifdef DYNAMIC_TCL
+	    else if (STRICMP(name, "tcl") == 0)
+		n = tcl_enabled(FALSE);
+#endif
+#ifdef DYNAMIC_SODIUM
+	    else if (STRICMP(name, "sodium") == 0)
+		n = sodium_enabled(FALSE);
+#endif
+#if defined(FEAT_TERMINAL) && defined(MSWIN)
+	    else if (STRICMP(name, "terminal") == 0)
+		n = terminal_enabled();
+#endif
+#ifdef DYNAMIC_GPM
+	    else if (STRICMP(name, "mouse_gpm") == 0)
+		n = gpm_available();
 #endif
 	}
     }
