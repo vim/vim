@@ -263,6 +263,7 @@ runtime/ftplugin/mojo.vim				@ribru17
 runtime/ftplugin/mp.vim					@lifepillar
 runtime/ftplugin/mss.vim				@Freed-Wu
 runtime/ftplugin/nginx.vim				@chr4
+runtime/ftplugin/nickel.vim				@ribru17
 runtime/ftplugin/nim.vim				@ribru17
 runtime/ftplugin/nroff.vim				@averms
 runtime/ftplugin/nsis.vim				@k-takata
