@@ -130,6 +130,7 @@ NEW_TESTS = \
 	test_delete \
 	test_diffmode \
 	test_digraph \
+	test_dirmark \
 	test_display \
 	test_edit \
 	test_environ \
@@ -423,6 +424,7 @@ NEW_TESTS_RES = \
 	test_delete.res \
 	test_diffmode.res \
 	test_digraph.res \
+	test_dirmark.res \
 	test_display.res \
 	test_edit.res \
 	test_environ.res \

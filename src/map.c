@@ -16,7 +16,8 @@
 /*
  * List used for abbreviations.
  */
-static mapblock_T	*first_abbr = NULL; // first entry in abbrlist
+static mapblock_T	*first_abbr    = NULL; // first entry in abbrlist
+static mapblock_T	*first_dirmark = NULL; // first entry in dirmark list
 
 /*
  * Each mapping is put in one of the 256 hash lists, to speed up finding it.
@@ -219,6 +220,7 @@ theend:
 map_add(
 	mapblock_T  **map_table,
 	mapblock_T  **abbr_table,
+	mapblock_T  **dirmark_table,
 	char_u	    *keys,
 	char_u	    *rhs,
 	char_u	    *orig_rhs,
@@ -227,6 +229,7 @@ map_add(
 	int	    silent,
 	int	    mode,
 	int	    is_abbr,
+	int	    is_dirmark,
 #ifdef FEAT_EVAL
 	int	    expr,
 	scid_T	    sid,	    // 0 to use current_sctx
@@ -287,6 +290,14 @@ map_add(
 	mp->m_next = *abbr_table;
 	*abbr_table = mp;
     }
+    else if (is_dirmark)
+    {
+	mp->m_next = *dirmark_table;
+	*dirmark_table = mp;
+	char_u *exp = expand_env_save(mp->m_str);
+	if (exp != NULL)
+	    mp->m_str = exp;
+    }
     else
     {
 	int n = MAP_HASH(mp->m_mode, mp->m_keys[0]);
@@ -305,6 +316,7 @@ map_add(
 list_mappings(
 	int	keyround,
 	int	abbrev,
+	int	dirmark,
 	int	haskey,
 	char_u	*keys,
 	int	keys_len,
@@ -366,6 +378,12 @@ list_mappings(
 	    if (hash != 0)	// there is only one abbreviation list
 		break;
 	    mp = curbuf->b_first_abbr;
+	}
+	else if (dirmark)
+	{
+	    if (hash != 0)	// there is only one dirmark list
+		break;
+	    mp = curbuf->b_first_dirmark;
 	}
 	else
 	    mp = curbuf->b_maphash[hash];
@@ -444,7 +462,8 @@ do_map(
     int		maptype,
     char_u	*arg,
     int		mode,
-    int		abbrev)		// not a mapping but an abbreviation
+    int		abbrev,		// not a mapping but an abbreviation
+    int		dirmark)	// not a mapping but a dirmark
 {
     char_u	*keys;
     mapblock_T	*mp, **mpp;
@@ -463,6 +482,7 @@ do_map(
     int		retval = 0;
     int		do_backslash;
     mapblock_T	**abbr_table;
+    mapblock_T	**dirmark_table;
     mapblock_T	**map_table;
     int		unique = FALSE;
     int		nowait = FALSE;
@@ -479,6 +499,7 @@ do_map(
     keys = arg;
     map_table = maphash;
     abbr_table = &first_abbr;
+    dirmark_table = &first_dirmark;
 
     if (maptype == MAPTYPE_UNMAP_LHS)
     {
@@ -502,6 +523,7 @@ do_map(
 	    keys = skipwhite(keys + 8);
 	    map_table = curbuf->b_maphash;
 	    abbr_table = &curbuf->b_first_abbr;
+	    dirmark_table = &curbuf->b_first_dirmark;
 	    continue;
 	}
 
@@ -743,7 +765,7 @@ do_map(
 	// When listing global mappings, also list buffer-local ones here.
 	if (map_table != curbuf->b_maphash && !hasarg
 						   && maptype != MAPTYPE_UNMAP)
-	    list_mappings(keyround, abbrev, haskey, keys, len,
+	    list_mappings(keyround, abbrev, dirmark, haskey, keys, len,
 							     mode, &did_local);
 
 	// Find an entry in the maphash[] list that matches.
@@ -763,6 +785,12 @@ do_map(
 		    if (hash > 0)	// there is only one abbreviation list
 			break;
 		    mpp = abbr_table;
+		}
+		else if (dirmark)
+		{
+		    if (hash > 0)	// there is only one dirmark list
+			break;
+		    mpp = dirmark_table;
 		}
 		else
 		    mpp = &(map_table[hash]);
@@ -927,6 +955,8 @@ do_map(
 	    {
 		if (abbrev)
 		    msg(_("No abbreviation found"));
+		else if (dirmark)
+		    msg(_("No dirmark found"));
 		else
 		    msg(_("No mapping found"));
 	    }
@@ -937,8 +967,8 @@ do_map(
 	    continue;	// have added the new entry already
 
 	// Get here when adding a new entry to the maphash[] list or abbrlist.
-	mp_result[keyround - 1] = map_add(map_table, abbr_table, keys,
-		    rhs, orig_rhs, noremap, nowait, silent, mode, abbrev,
+	mp_result[keyround - 1] = map_add(map_table, abbr_table, dirmark_table, keys,
+		    rhs, orig_rhs, noremap, nowait, silent, mode, abbrev, dirmark,
 #ifdef FEAT_EVAL
 		    expr, /* sid */ 0, /* scriptversion */ 0, /* lnum */ 0,
 #endif
@@ -1785,6 +1815,25 @@ check_abbr(
 	}
     }
     return FALSE;
+}
+
+/*
+ * Find directory hash for the given name, returning NULL if it doesn't exist.
+ */
+    char_u*
+find_dirmark(char_u *name)
+{
+    for (mapblock_T *mp = curbuf->b_first_dirmark; mp != NULL; mp = mp->m_next)
+    {
+	if (STRCMP(name, mp->m_keys) == 0)
+	    return mp->m_str;
+    }
+    for (mapblock_T *mp = first_dirmark; mp != NULL; mp = mp->m_next)
+    {
+	if (STRCMP(name, mp->m_keys) == 0)
+	    return mp->m_str;
+    }
+    return NULL;
 }
 
 #ifdef FEAT_EVAL
@@ -2838,15 +2887,15 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	if (arg == NULL)
 	    return;
     }
-    do_map(MAPTYPE_UNMAP_LHS, arg, mode, is_abbr);
+    do_map(MAPTYPE_UNMAP_LHS, arg, mode, is_abbr, FALSE);
     vim_free(arg);
 
-    mp_result[0] = map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs,
-			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+    mp_result[0] = map_add(map_table, abbr_table, NULL, lhsraw, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, FALSE, expr, sid,
 			    scriptversion, lnum, 0);
     if (lhsrawalt != NULL)
-	mp_result[1] = map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs,
-			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+	mp_result[1] = map_add(map_table, abbr_table, NULL, lhsrawalt, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, FALSE, expr, sid,
 			    scriptversion, lnum, 1);
 
     if (mp_result[0] != NULL && mp_result[1] != NULL)
@@ -2975,7 +3024,7 @@ add_map(char_u *map, int mode, int nore)
     s = vim_strsave(map);
     if (s != NULL)
     {
-	(void)do_map(nore ? MAPTYPE_NOREMAP : MAPTYPE_MAP, s, mode, FALSE);
+	(void)do_map(nore ? MAPTYPE_NOREMAP : MAPTYPE_MAP, s, mode, FALSE, FALSE);
 	vim_free(s);
     }
     p_cpo = cpo_save;
@@ -3178,7 +3227,7 @@ did_set_langmap(optset_T *args UNUSED)
 #endif
 
     static void
-do_exmap(exarg_T *eap, int isabbrev)
+do_exmap(exarg_T *eap, int isabbrev, int isdirmark)
 {
     int	    mode;
     char_u  *cmdp;
@@ -3188,12 +3237,16 @@ do_exmap(exarg_T *eap, int isabbrev)
 
     switch (do_map(*cmdp == 'n' ? MAPTYPE_NOREMAP
 				: *cmdp == 'u' ? MAPTYPE_UNMAP : MAPTYPE_MAP,
-						    eap->arg, mode, isabbrev))
+						    eap->arg, mode, isabbrev, isdirmark))
     {
 	case 1: emsg(_(e_invalid_argument));
 		break;
-	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
-						      : _(e_no_such_mapping)));
+	case 2: if (isabbrev)
+		    emsg(_(e_no_such_abbreviation));
+		else if (isdirmark)
+		    emsg(_(e_no_such_dirmark));
+		else
+		    emsg(_(e_no_such_mapping));
 		break;
     }
 }
@@ -3204,7 +3257,16 @@ do_exmap(exarg_T *eap, int isabbrev)
     void
 ex_abbreviate(exarg_T *eap)
 {
-    do_exmap(eap, TRUE);	// almost the same as mapping
+    do_exmap(eap, TRUE, FALSE);	// almost the same as mapping
+}
+
+/*
+ * ":dirmark"
+ */
+    void
+ex_dirmark(exarg_T *eap)
+{
+    do_exmap(eap, FALSE, TRUE);	// almost the same as mapping
 }
 
 /*
@@ -3221,7 +3283,7 @@ ex_map(exarg_T *eap)
 	msg_outtrans(eap->cmd);
 	msg_putchar('\n');
     }
-    do_exmap(eap, FALSE);
+    do_exmap(eap, FALSE, FALSE);
 }
 
 /*
@@ -3230,7 +3292,7 @@ ex_map(exarg_T *eap)
     void
 ex_unmap(exarg_T *eap)
 {
-    do_exmap(eap, FALSE);
+    do_exmap(eap, FALSE, FALSE);
 }
 
 /*

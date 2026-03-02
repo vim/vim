@@ -3807,3 +3807,5 @@ EXTERN char e_no_redraw_listener_callbacks_defined[]
 #endif
 EXTERN char e_leadtab_requires_tab[]
 	INIT(= N_("E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"));
+EXTERN char e_no_such_dirmark[]
+	INIT(= N_("E1573: No such dirmark"));

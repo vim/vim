@@ -1541,7 +1541,7 @@ expand_env_esc(
 		}
 #endif
 	    }
-							// home directory
+						// home directory
 	    else if (  src[1] == NUL
 		    || vim_ispathsep(src[1])
 		    || vim_strchr((char_u *)" ,\t\n", src[1]) != NULL)
@@ -1549,12 +1549,9 @@ expand_env_esc(
 		var = homedir;
 		tail = src + 1;
 	    }
-	    else					// user directory
+	    else				// user directory or dirmark
 	    {
-#if defined(UNIX) || (defined(VMS) && defined(USER_HOME))
-		/*
-		 * Copy ~user to dst[], so we can put a NUL after it.
-		 */
+		// Copy ~user to dst[], so we can put a NUL after it.
 		tail = src;
 		var = dst;
 		c = dstlen - 1;
@@ -1564,77 +1561,86 @@ expand_env_esc(
 			&& !vim_ispathsep(*tail))
 		    *var++ = *tail++;
 		*var = NUL;
-# ifdef UNIX
-		/*
-		 * If the system supports getpwnam(), use it.
-		 * Otherwise, or if getpwnam() fails, the shell is used to
-		 * expand ~user.  This is slower and may fail if the shell
-		 * does not support ~user (old versions of /bin/sh).
-		 */
-#  if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
-		{
-		    // Note: memory allocated by getpwnam() is never freed.
-		    // Calling endpwent() apparently doesn't help.
-		    struct passwd *pw = (*dst == NUL)
-					? NULL : getpwnam((char *)dst + 1);
 
-		    var = (pw == NULL) ? NULL : (char_u *)pw->pw_dir;
-		}
+		// Prefer dirmark over username.
+		if (*dst != NUL)
+		    var = find_dirmark(dst + 1);
+
 		if (var == NULL)
-#  endif
 		{
-		    expand_T	xpc;
+#if defined(UNIX) || (defined(VMS) && defined(USER_HOME))
+# ifdef UNIX
+		    /*
+		    * If the system supports getpwnam(), use it.
+		    * Otherwise, or if getpwnam() fails, the shell is used to
+		    * expand ~user.  This is slower and may fail if the shell
+		    * does not support ~user (old versions of /bin/sh).
+		    */
+#  if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
+		    {
+			// Note: memory allocated by getpwnam() is never freed.
+			// Calling endpwent() apparently doesn't help.
+			struct passwd *pw = (*dst == NUL)
+					    ? NULL : getpwnam((char *)dst + 1);
 
-		    ExpandInit(&xpc);
-		    xpc.xp_context = EXPAND_FILES;
-		    var = ExpandOne(&xpc, dst, NULL,
-				WILD_ADD_SLASH|WILD_SILENT, WILD_EXPAND_FREE);
-		    mustfree = TRUE;
-		}
+			var = (pw == NULL) ? NULL : (char_u *)pw->pw_dir;
+		    }
+		    if (var == NULL)
+#  endif
+		    {
+			expand_T	xpc;
+
+			ExpandInit(&xpc);
+			xpc.xp_context = EXPAND_FILES;
+			var = ExpandOne(&xpc, dst, NULL,
+				    WILD_ADD_SLASH|WILD_SILENT, WILD_EXPAND_FREE);
+			mustfree = TRUE;
+		    }
 
 # else	// !UNIX, thus VMS
-		/*
-		 * USER_HOME is a comma-separated list of
-		 * directories to search for the user account in.
-		 */
-		{
-		    char_u	test[MAXPATHL], paths[MAXPATHL];
-		    size_t	testlen;
-		    char_u	*path, *next_path, *ptr;
-		    stat_T	st;
-
-		    STRCPY(paths, USER_HOME);
-		    next_path = paths;
-		    while (*next_path)
+		    /*
+		    * USER_HOME is a comma-separated list of
+		    * directories to search for the user account in.
+		    */
 		    {
-			for (path = next_path; *next_path && *next_path != ',';
-				next_path++);
-			if (*next_path)
-			    *next_path++ = NUL;
-			testlen = vim_snprintf_safelen(
-			    (char *)test,
-			    sizeof(test),
-			    "%s/%s",
-			    path,
-			    dst + 1);
-			if (mch_stat(test, &st) == 0)
+			char_u	test[MAXPATHL], paths[MAXPATHL];
+			size_t	testlen;
+			char_u	*path, *next_path, *ptr;
+			stat_T	st;
+
+			STRCPY(paths, USER_HOME);
+			next_path = paths;
+			while (*next_path)
 			{
-			    var = alloc(testlen + 1);
-			    if (var != NULL)
+			    for (path = next_path; *next_path && *next_path != ',';
+				    next_path++);
+			    if (*next_path)
+				*next_path++ = NUL;
+			    testlen = vim_snprintf_safelen(
+				(char *)test,
+				sizeof(test),
+				"%s/%s",
+				path,
+				dst + 1);
+			    if (mch_stat(test, &st) == 0)
 			    {
-				STRCPY(var, test);
-				mustfree = TRUE;
+				var = alloc(testlen + 1);
+				if (var != NULL)
+				{
+				    STRCPY(var, test);
+				    mustfree = TRUE;
+				}
+				break;
 			    }
-			    break;
 			}
 		    }
-		}
 # endif // UNIX
 #else
-		// cannot expand user's home directory, so don't try
-		var = NULL;
-		tail = (char_u *)"";	// for gcc
+		    // cannot expand user's home directory, so don't try
+		    var = NULL;
+		    tail = (char_u *)"";	// for gcc
 #endif // UNIX || VMS
+		}
 	    }
 
 #ifdef BACKSLASH_IN_FILENAME
