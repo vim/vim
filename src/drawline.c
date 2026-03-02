@@ -3267,7 +3267,7 @@ win_line(
 
 		    // check if leadtab is set in 'listchars'
 		    if (wp->w_p_list && wp->w_lcs_chars.leadtab1 != NUL &&
-			(leadcol == 0 || ptr < line + leadcol))
+							  ptr < line + leadcol)
 		    {
 			lcs_tab1 = wp->w_lcs_chars.leadtab1;
 			lcs_tab2 = wp->w_lcs_chars.leadtab2;
