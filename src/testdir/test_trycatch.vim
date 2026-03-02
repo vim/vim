@@ -2375,5 +2375,31 @@ func Test_leave_block_in_endtry_not_called()
   endtry
 endfunc
 
+" Ensure | inside_block is correctly executed "{{{1
+func Test_try_endtry_inside_block()
+  let lines =<< trim END
+    vim9script
+
+    augroup testing
+      au User myusertest {
+        try
+          echoerr 'try'
+        catch
+        endtry
+        g:reached_after_endtry = 1
+      }
+    augroup end
+    doautocmd User myusertest
+  END
+  call writefile(lines, 'XtestInsideBlock', 'D')
+  source XtestInsideBlock
+  call assert_equal(1, g:reached_after_endtry)
+  unlet! g:reached_after_endtry
+  augroup testing
+    au!
+  augroup END
+  augroup! testing
+endfunc
+
 " Modeline								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
