@@ -323,6 +323,9 @@ init_search_hl(win_T *wp, match_T *search_hl)
 	cur->mit_hl.first_lnum = 0;
 	cur = cur->mit_next;
     }
+    // Must update this every time since highlight group override can change it.
+    search_hl->attr = HL_ATTR(HLF_L);
+
     search_hl->buf = wp->w_buffer;
     search_hl->lnum = 0;
     search_hl->first_lnum = 0;

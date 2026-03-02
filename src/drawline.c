@@ -127,7 +127,6 @@ typedef struct {
 
     int		win_attr;	// background for the whole window, except
 				// margins and "~" lines.
-    int		wcr_attr;	// attributes from 'wincolor'
 #ifdef FEAT_SYN_HL
     int		cul_attr;	// set when 'cursorline' active
 #endif
@@ -261,9 +260,9 @@ handle_foldcolumn(win_T *wp, winlinevars_T *wlv)
     wlv->c_extra = NUL;
     wlv->c_final = NUL;
     if (use_cursor_line_highlight(wp, wlv->lnum))
-	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLF));
+	wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLF));
     else
-	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_FC));
+	wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_FC));
 }
 #endif
 
@@ -293,9 +292,9 @@ get_sign_display_info(
     else
     {
 	if (use_cursor_line_highlight(wp, wlv->lnum))
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLS));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLS));
 	else
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_SC));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_SC));
 	wlv->n_extra = 2;
     }
 
@@ -467,7 +466,7 @@ handle_lnum_col(
 	      wlv->c_final = NUL;
 	  }
 	  wlv->n_extra = number_width(wp) + 1;
-	  wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_N));
+	  wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_N));
 #ifdef FEAT_SYN_HL
 	  // When 'cursorline' is set highlight the line number of
 	  // the current line differently.
@@ -481,16 +480,16 @@ handle_lnum_col(
 		  && (wlv->row == lnum_row
 		      || (wlv->row > lnum_row
 			 && (wp->w_p_culopt_flags & CULOPT_LINE))))
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLN));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLN));
 #endif
 	  if (wp->w_p_rnu && wlv->lnum < wp->w_cursor.lnum
 						      && HL_ATTR(HLF_LNA) != 0)
 	      // Use LineNrAbove
-	      wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_LNA));
+	      wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_LNA));
 	  if (wp->w_p_rnu && wlv->lnum > wp->w_cursor.lnum
 						      && HL_ATTR(HLF_LNB) != 0)
 	      // Use LineNrBelow
-	      wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_LNB));
+	      wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_LNB));
 	}
 #ifdef FEAT_SIGNS
 	if (num_attr)
@@ -608,7 +607,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	// required when 'linebreak' is also set.
 	if (wlv->tocol == wlv->vcol)
 	    wlv->tocol = wlv->vcol_sbr;
-	// combine 'showbreak' with 'wincolor'
+	// combine 'showbreak' with HLF_WIN
 	wlv->char_attr = hl_combine_attr(wlv->win_attr, HL_ATTR(HLF_AT));
 #  ifdef FEAT_SYN_HL
 	// combine 'showbreak' with 'cursorline'
@@ -1676,10 +1675,9 @@ win_line(
 	}
     }
 
-    wlv.wcr_attr = get_wcr_attr(wp);
-    if (wlv.wcr_attr != 0)
+    if (get_win_attr(wp) != 0)
     {
-	wlv.win_attr = wlv.wcr_attr;
+	wlv.win_attr = get_win_attr(wp);
 	area_highlighting = TRUE;
     }
 
@@ -1993,7 +1991,7 @@ win_line(
 		    wlv.c_extra = cmdwin_type;
 		    wlv.c_final = NUL;
 		    wlv.char_attr =
-				hl_combine_attr(wlv.wcr_attr, HL_ATTR(HLF_AT));
+				hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_AT));
 		}
 	    }
 #ifdef FEAT_FOLDING
@@ -2655,7 +2653,7 @@ win_line(
 #endif
 	}
 
-	// combine attribute with 'wincolor'
+	// combine attribute with HLF_WIN
 	if (wlv.win_attr != 0)
 	{
 	    if (wlv.char_attr == 0)
@@ -4303,7 +4301,7 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    wlv.col -= wlv.boguscols;
-	    // Apply 'cursorline' and 'wincolor' highlight.
+	    // Apply 'cursorline' and HLF_WIN highlight.
 	    if (wlv.boguscols != 0 && (
 # ifdef LINE_ATTR
 			wlv.line_attr != 0 ||

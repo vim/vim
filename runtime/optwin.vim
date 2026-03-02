@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Mar 01
+" Last Change:	2026 Mar 02
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -445,6 +445,9 @@ call <SID>BinOptionG("hls", &hls)
 call <SID>AddOption("wincolor", gettext("highlight group to use for the window"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>OptionL("wcr")
+call <SID>AddOption("winhighlight", gettext("highlight group mappings for the window"))
+call append("$", "\t" .. s:local_to_window)
+call <SID>OptionL("whl")
 if has("termguicolors")
   call <SID>AddOption("termguicolors", gettext("use GUI colors for the terminal"))
   call <SID>BinOptionG("tgc", &tgc)

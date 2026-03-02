@@ -358,6 +358,9 @@ let test_values = {
       \		['xxx', 'a4', 'full,full,full,full,full']],
       \ 'wildoptions': [['', 'tagfile', 'pum', 'fuzzy'], ['xxx']],
       \ 'winaltkeys': [['no', 'yes', 'menu'], ['', 'xxx']],
+      \ 'winhighlight': [['Search:Errormsg,Comment:String', 'Search:Comment', ''],
+      \		['xxx', ',', 'Search:Comment,', 'Search:Errormsg,Comment:String,',
+      \		':', 'Search:,', 'Search:']],
       \
       "\ skipped options
       \ 'luadll': [[], []],

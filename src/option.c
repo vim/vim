@@ -4401,7 +4401,7 @@ did_set_termguicolors(optset_T *args UNUSED)
 # ifdef FEAT_TERMINAL
     term_update_colors_all();
     term_update_palette_all();
-    term_update_wincolor_all();
+    term_update_hlfwin_all();
 # endif
     p_tgc_set = TRUE;
 
@@ -6860,6 +6860,8 @@ get_varp(struct vimoption *p)
 	case PV_COCU:   return (char_u *)&(curwin->w_p_cocu);
 	case PV_COLE:   return (char_u *)&(curwin->w_p_cole);
 #endif
+	case PV_WHL:	return (char_u *)&(curwin->w_p_whl);
+
 #ifdef FEAT_TERMINAL
 	case PV_TWK:    return (char_u *)&(curwin->w_p_twk);
 	case PV_TWS:    return (char_u *)&(curwin->w_p_tws);
@@ -7041,6 +7043,11 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
     void
 after_copy_winopt(win_T *wp)
 {
+    char *errmsg = update_winhighlight(wp, wp->w_p_whl);
+
+    if (errmsg != NULL)
+	emsg(_(errmsg));
+
     // Set w_leftcol or w_skipcol to zero.
     if (wp->w_p_wrap)
 	wp->w_leftcol = 0;
@@ -7170,6 +7177,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_fde_flags = from->wo_fde_flags;
     to->wo_fdt_flags = from->wo_fdt_flags;
 #endif
+    to->wo_whl = copy_option_val(from->wo_whl);
 
 #ifdef FEAT_EVAL
     // Copy the script context so that we know where the value was last set.
@@ -7236,6 +7244,7 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_lcs);
     check_string_option(&wop->wo_fcs);
     check_string_option(&wop->wo_ve);
+    check_string_option(&wop->wo_whl);
 }
 
 /*
@@ -7285,6 +7294,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_lcs);
     clear_string_option(&wop->wo_fcs);
     clear_string_option(&wop->wo_ve);
+    clear_string_option(&wop->wo_whl);
 }
 
 #ifdef FEAT_EVAL

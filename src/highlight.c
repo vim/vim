@@ -181,6 +181,28 @@ typedef struct
 #endif
 } hl_group_T;
 
+typedef struct hl_overrides_S hl_overrides_T;
+struct hl_overrides_S
+{
+    hl_override_T   *arr;
+    int		    len;
+    hl_overrides_T  *next; // Used to handle recursive calls
+
+    int attr[HLF_COUNT]; // highlight_attr[] before being updated.
+};
+
+static hl_overrides_T *overrides = NULL;
+
+// Synced with highlight_attr, each is the highlight group id for each attr. If
+// an element is 0, then there is no attr for it. If an element is -1, then it
+// means it was set to itself.
+static int highlight_ids[HLF_COUNT];
+
+// Same as highlight_attr[] but is not modified by highlight group overrides
+static int highlight_attr_raw[HLF_COUNT];
+
+static int hl_flags[HLF_COUNT] = HL_FLAGS;
+
 // highlight groups for 'highlight' option
 static garray_T highlight_ga;
 #define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
@@ -3767,6 +3789,20 @@ set_hl_attr(
 }
 
 /*
+ * Check if highlight id is overridden, and return the overriding highlight id.
+ * Otherwise return the original id if no override.
+ */
+    static int
+syn_override(int id)
+{
+    if (overrides != NULL && overrides->arr != NULL)
+	for (int k = 0; k < overrides->len; k++)
+	    if (overrides->arr[k].from == id)
+		return overrides->arr[k].to;
+    return id;
+}
+
+/*
  * Lookup a highlight group name and return its ID.
  * If it is not found, 0 is returned.
  */
@@ -4041,13 +4077,20 @@ syn_get_final_id(int hl_id)
     // Look out for loops!  Break after 100 links.
     for (count = 100; --count >= 0; )
     {
+	int tmp = hl_id;
+
 	sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
 	if (sgp->sg_link == 0 || sgp->sg_link > highlight_ga.ga_len)
 	    break;
+
+	// This is to handle highlight groups that are overridden but are in the
+	// middle of a link chain.
+	hl_id = syn_override(hl_id);
+	if (tmp != hl_id)
+	    continue;
 	hl_id = sgp->sg_link;
     }
-
-    return hl_id;
+    return syn_override(hl_id);
 }
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -4211,18 +4254,22 @@ highlight_changed(void)
     int		hlcnt;
 # endif
 #endif
-    static int	hl_flags[HLF_COUNT] = HL_FLAGS;
+    win_T	*wp;
 
     need_highlight_changed = FALSE;
 
 #ifdef FEAT_TERMINAL
     term_update_colors_all();
-    term_update_wincolor_all();
+    term_update_hlfwin_all();
 #endif
 
     // Clear all attributes.
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+    {
 	highlight_attr[hlf] = 0;
+	highlight_attr_raw[hlf] = 0;
+	highlight_ids[hlf] = 0;
+    }
 
     // First set all attributes to their default value.
     // Then use the attributes from the 'highlight' option.
@@ -4309,10 +4356,19 @@ highlight_changed(void)
 		}
 	    }
 	    highlight_attr[hlf] = attr;
+	    highlight_attr_raw[hlf] = attr;
+	    highlight_ids[hlf] = id;
 
 	    p = skip_to_option_part(p);	    // skip comma and spaces
 	}
     }
+
+    FOR_ALL_WINDOWS(wp)
+	wp->w_hlfwin_id = hlf_get_id(wp, HLF_WIN);
+
+#ifdef FEAT_TERMINAL
+    term_update_hlfwin_all();
+#endif
 
 #ifdef USER_HIGHLIGHT
     // Setup the user highlights
@@ -4948,7 +5004,7 @@ highlight_get_info(int hl_idx, int resolve_link)
     if (dict_add_number(dict, "id", hlgid) == FAIL)
 	goto error;
 
-    if (sgp->sg_link && resolve_link)
+    if (resolve_link)
     {
 	// resolve the highlight group link recursively
 	while (sgp->sg_link)
@@ -5399,3 +5455,351 @@ f_hlset(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
 }
 #endif
+
+/*
+ * If "old" is in the override stack, then update it to "new". Does not free
+ * "old".
+ */
+    void
+update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen)
+{
+    if (old == NULL)
+	return;
+
+    for (hl_overrides_T *set = overrides; set != NULL; set = set->next)
+    {
+	if (set->arr == old)
+	{
+	    set->arr = new;
+	    set->len = newlen;
+	    break;
+	}
+    }
+}
+
+/*
+ * Update highlight_attr[] array. If "update_ids" is true, then update
+ * highlight_ids[] array instead.
+ */
+    static void
+set_highlight_attr(hl_override_T *arr, int len, bool update_ids)
+{
+    for (int i = 0; i < len; i++)
+    {
+	hl_override_T	*override = arr + i;
+	int		hlf = -1, attr;
+
+	if (override->from <= 0)
+	    // Directly map to highlight_attr
+	    hlf = -override->from;
+	else
+	{
+	    for (int k = 0; k < HLF_COUNT; k++)
+		if (override->from == highlight_ids[k])
+		{
+		    hlf = k;
+		    break;
+		}
+
+	    if (hlf == -1)
+		continue;
+	}
+
+	if (update_ids)
+	{
+	    if (override->to <= 0)
+	    {
+		if (hlf == -override->to)
+		    highlight_ids[hlf] = -1;
+		else
+		    highlight_ids[hlf] = highlight_ids[-override->to];
+	    }
+	    else
+		highlight_ids[hlf] = override->to;
+	}
+	else
+	{
+	    if (override->to <= 0)
+		// Directly use highlight_attr[]
+		attr = highlight_attr[-override->to];
+	    else
+		attr = syn_id2attr(override->to);
+
+	    highlight_attr[hlf] = attr;
+	}
+    }
+}
+
+/*
+ * Set the current highlight override to "arr". Returns true if successful
+ */
+    bool
+push_highlight_overrides(hl_override_T *arr, int len)
+{
+    // Don't want to do anything if "arr" is NULL or if "arr" is already the
+    // current override.
+    if (arr == NULL || (overrides != NULL && overrides->arr == arr))
+	return false;
+
+    hl_overrides_T *set;
+
+    set = ALLOC_ONE(hl_overrides_T);
+    if (set == NULL)
+	return false;
+
+    set->arr = arr;
+    set->len = len;
+
+    // Push to front of list
+    set->next = overrides;
+    overrides = set;
+
+    // Save current highlight_attr[], so it can be restored later after this
+    // override is popped.
+    memcpy(set->attr, highlight_attr, sizeof(highlight_attr));
+
+    // Reset highlight_attr[] to default values, as we don't want changes from
+    // other overrides.
+    memcpy(highlight_attr, highlight_attr_raw, sizeof(highlight_attr));
+
+    // Update highlight_attr[] array
+    set_highlight_attr(arr, len, false);
+
+    return true;
+}
+
+/*
+ * Pop the current highlight override (if any) from the stack. This should
+ * always be paired with a *successful* push.
+ */
+    void
+pop_highlight_overrides(void)
+{
+    hl_overrides_T *set = overrides;
+
+    if (overrides == NULL)
+	return;
+
+    overrides = set->next;
+
+    // Set highlight_attr[] to state before override was pushed.
+    memcpy(highlight_attr, set->attr, sizeof(highlight_attr));
+    vim_free(set);
+}
+
+/*
+ * Parse the 'winhighlight' option and return array. Returns NULL on failure or
+ * if empty option. If failure, then errmsg is set.
+ */
+    static hl_override_T *
+parse_winhighlight(char_u *opt, int *len, char **errmsg)
+{
+    char_u	    *p = opt;
+    hl_override_T   *arr;
+    int		    i = 0;
+    int		    num = 1;
+
+    if (*p == NUL)
+	return NULL;
+
+    // Get number of overrides first so we can allocate array
+    while ((p = vim_strchr(p, ',')) != NULL)
+    {
+	p++;
+	num++;
+    }
+
+    arr = ALLOC_MULT(hl_override_T, num);
+    if (arr == NULL)
+    {
+	*errmsg = e_out_of_memory;
+	return NULL;
+    }
+
+    p = opt;
+
+    while (true)
+    {
+	hl_override_T *override = arr + i++;
+	char_u	*fromname = p, *toname;
+	char_u	*tmp;
+	char_u	**names[2] = {&fromname, &toname};
+	int	fromlen, tolen;
+	int	*lens[2] = {&fromlen, &tolen};
+	int	fromid, toid;
+	int	*ids[2] = {&fromid, &toid};
+
+	p = vim_strchr(p, ':');
+
+	if (p == NULL)
+	    goto fail;
+
+	fromlen = p - fromname; // Get hl for "from"
+	p++; // Skip colon ':'
+	if (*p == NUL)
+	    goto fail;
+
+	toname = p;
+	tmp = vim_strchr(p, ',');
+
+	// Get hl for "to", must check for no trailing comma in case last
+	// element.
+	if (tmp == NULL)
+	    tolen = (int)STRLEN(p);
+	else
+	{
+	    tolen = tmp - toname;
+	    p = ++tmp;
+	}
+
+	for (int k = 0; k < 2; k++)
+	{
+	    char_u  *name = *names[k];
+	    int	    nlen = *lens[k];
+
+	    if (*name == '!')
+	    {
+		// If starts with "!", then it maps directly to a 'highlight'
+		// occasion.
+		int hlf;
+
+		if (nlen != 2)
+		    goto fail;
+
+		for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+		    if (hl_flags[hlf] == name[1])
+			break;
+
+		if (hlf >= HLF_COUNT)
+		    goto fail;
+
+		*ids[k] = -hlf;
+	    }
+	    else
+	    {
+		// Otherwise get the highlight group id.
+		if (syn_check_group(name, nlen) == 0)
+		    goto fail;
+
+		*ids[k] = syn_namen2id(name, nlen);
+		if (*ids[k] == 0)
+		    goto fail;
+
+		// Always map "Normal" group to HLF_WIN
+		if (ids[k] == &fromid &&
+			STRCMP(HL_TABLE()[*ids[k] - 1].sg_name_u, "NORMAL") == 0)
+		    *ids[k] = -HLF_WIN;
+	    }
+	}
+
+	// If fromid == toid, leave it be, this is so that we know HLF_WIN has
+	// been set (even to itself e.g. "Normal"), and therefore know to use
+	// its attr instead.
+	override->from = fromid;
+	override->to = toid;
+
+	if (tmp == NULL)
+	    break;
+    }
+
+    *len = num;
+    return arr;
+fail:
+    vim_free(arr);
+    *errmsg = e_invalid_argument;
+    return NULL;
+}
+
+/*
+ * Update w_hl for "wp" using given option value. Returns error
+ * message on failure, otherwise NULL.
+ */
+    char *
+update_winhighlight(win_T *wp, char_u *opt)
+{
+    char	    *err = NULL;
+    hl_override_T   *arr;
+    int		    num = 1;
+
+    arr = parse_winhighlight(opt, &num, &err);
+
+    if (arr == NULL && err != NULL)
+	return err;
+
+    update_highlight_overrides(wp->w_hl, arr, num);
+
+    vim_free(wp->w_hl);
+    wp->w_hl = arr;
+    wp->w_hl_len = num;
+
+    wp->w_hlfwin_id = hlf_get_id(wp, HLF_WIN);
+
+#ifdef FEAT_TERMINAL
+    term_update_hlfwin(wp);
+#endif
+
+#ifdef FEAT_TERMINAL
+    // May be NULL (such as in after_copy_winopt())
+    if (wp->w_buffer != NULL)
+    {
+	// Make sure terminal highlighting is updated
+	bool ret = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+
+	if (wp->w_buffer->b_term != NULL)
+	    term_init_default_colors(wp->w_buffer->b_term);
+	if (ret)
+	    pop_highlight_overrides();
+    }
+#endif
+
+    return NULL;
+}
+
+/*
+ * Get id that the hlf attr is using in window "wp", otherwise zero. Note that
+ * -1 may be returned if the hlf was set to itself.
+ */
+    int
+hlf_get_id(win_T *wp, int hlf)
+{
+    int id;
+    static int prev[HLF_COUNT];
+
+    if (wp->w_hl == NULL)
+	return highlight_ids[hlf];
+
+    memcpy(prev, highlight_ids, sizeof(highlight_ids));
+    set_highlight_attr(wp->w_hl, wp->w_hl_len, true);
+    id = highlight_ids[hlf];
+    memcpy(highlight_ids, prev, sizeof(highlight_ids));
+
+    return id;
+}
+
+/*
+ * Update 'winhighlight' using a 'wincolor' style option value. Returns error
+ * message on failure otherwise NULL. Does not update the actual 'wincolor'
+ * value, but does update the 'winhighlight' value.
+ */
+    char *
+update_wincolor(win_T *wp, char_u *opt)
+{
+    char_u  *str = *opt == NUL ? "" : alloc(sizeof("!(:") + STRLEN(opt));
+    char    *errmsg;
+
+    if (str == NULL)
+	return e_out_of_memory;
+
+    if (*opt != NUL)
+	sprintf((char *)str, "!(:%s", opt);
+
+    errmsg = update_winhighlight(wp, str);
+
+    if (errmsg == NULL)
+	set_string_option_direct_in_win(wp, (char_u *)"winhighlight", -1,
+		str, OPT_FREE|OPT_LOCAL, 0);
+
+    if (*opt != NUL)
+	free(str);
+    return errmsg;
+}

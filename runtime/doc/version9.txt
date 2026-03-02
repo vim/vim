@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 01
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52613,6 +52613,7 @@ Options: ~
 
 'statuslineopt'		Extra options for the 'statusline', e.g. use the
 			"maxheight" suboption to use several lines.
+'winhighlight'		Window-local highlight group mappings.
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*

@@ -1611,8 +1611,13 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 #endif
 
     win_init_some(newp, oldp);
+
 #ifdef FEAT_TERMINAL
-    term_update_wincolor(newp);
+    // Make sure to also handle highlight overrides copied over from oldp.
+    push_highlight_overrides(newp->w_hl, newp->w_hl_len);
+    if (newp->w_buffer->b_term != NULL)
+	term_init_default_colors(newp->w_buffer->b_term);
+    pop_highlight_overrides();
 #endif
 }
 
@@ -2522,7 +2527,7 @@ win_init_empty(win_T *wp)
     wp->w_s = &wp->w_buffer->b_s;
 #endif
 #ifdef FEAT_TERMINAL
-    term_reset_wincolor(wp);
+    term_reset_hlfwin(wp);
 #endif
 }
 
@@ -5977,6 +5982,8 @@ win_free(
 #ifdef FEAT_RUBY
     ruby_window_free(wp);
 #endif
+
+    vim_free(wp->w_hl);
 
     clear_winopt(&wp->w_onebuf_opt);
     clear_winopt(&wp->w_allbuf_opt);

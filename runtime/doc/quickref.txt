@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 01
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1017,6 +1017,7 @@ Short explanation of each option:		*option-list*
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
+'winhighlight'	  'whl'	    window-local highlighting mappings
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
 'winfixbuf'	  'wfb'     keep window focused on a single buffer
 'winfixheight'	  'wfh'     keep window height when opening/closing windows

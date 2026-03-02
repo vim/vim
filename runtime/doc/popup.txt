@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 Feb 18
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -773,6 +773,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			the popup window.
 	highlight	Highlight group name to use for the text, stored in
 			the 'wincolor' option.
+	highlights	Highlight group overrides, stored in the
+			'winhighlight' option (same format).
 	opacity		Opacity of the popup, a value between 0 and 100:
 			0 is fully transparent (background text fully visible)
 			100 is fully opaque (default, no transparency)

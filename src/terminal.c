@@ -2184,10 +2184,6 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
 					       <= term->tl_scrollback_scrolled)
 	update_snapshot(term);
 
-    // Obtain the current background color.
-    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
-		       &term->tl_default_color.fg, &term->tl_default_color.bg);
-
     if (redraw)
     {
 	win_T	    *wp = NULL;
@@ -2607,8 +2603,8 @@ term_get_highlight_id(term_T *term, win_T *wp)
 {
     char_u *name;
 
-    if (wp != NULL && *wp->w_p_wcr != NUL)
-	name = wp->w_p_wcr;
+    if (wp != NULL && wp->w_hlfwin_id != 0)
+	name = syn_id2name(wp->w_hlfwin_id);
     else if (term->tl_highlight_name != NULL)
 	name = term->tl_highlight_name;
     else
@@ -3179,12 +3175,12 @@ cell2attr(
 
     if (is_default_fg || is_default_bg)
     {
-	if (wp != NULL && *wp->w_p_wcr != NUL)
+	if (wp != NULL && wp->w_hlfwin_id != 0)
 	{
 	    if (is_default_fg)
-		fg = &wp->w_term_wincolor.fg;
+		fg = &wp->w_term_hlfwin.fg;
 	    if (is_default_bg)
-		bg = &wp->w_term_wincolor.bg;
+		bg = &wp->w_term_hlfwin.bg;
 	}
 	else
 	{
@@ -4352,25 +4348,23 @@ get_vterm_color_from_synid(int id, VTermColor *fg, VTermColor *bg)
 }
 
     void
-term_reset_wincolor(win_T *wp)
+term_reset_hlfwin(win_T *wp)
 {
-    wp->w_term_wincolor.fg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_FG;
-    wp->w_term_wincolor.bg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_BG;
+    wp->w_term_hlfwin.fg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_FG;
+    wp->w_term_hlfwin.bg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_BG;
 }
 
 /*
- * Cache the color of 'wincolor'.
+ * Cache the color of HLF_WIN.
  */
     void
-term_update_wincolor(win_T *wp)
+term_update_hlfwin(win_T *wp)
 {
-    int id = 0;
+    int id = wp->w_hlfwin_id;
 
-    if (*wp->w_p_wcr != NUL)
-	id = syn_name2id(wp->w_p_wcr);
-    if (id == 0 || !get_vterm_color_from_synid(id, &wp->w_term_wincolor.fg,
-						      &wp->w_term_wincolor.bg))
-	term_reset_wincolor(wp);
+    if (id == 0 || !get_vterm_color_from_synid(id == -1 ? 0 : id,
+		&wp->w_term_hlfwin.fg, &wp->w_term_hlfwin.bg))
+	term_reset_hlfwin(wp);
 }
 
 /*
@@ -4378,20 +4372,20 @@ term_update_wincolor(win_T *wp)
  * or when any highlight is changed.
  */
     void
-term_update_wincolor_all(void)
+term_update_hlfwin_all(void)
 {
     win_T	 *wp = NULL;
     int		 did_curwin = FALSE;
 
     while (for_all_windows_and_curwin(&wp, &did_curwin))
-	term_update_wincolor(wp);
+	term_update_hlfwin(wp);
 }
 
 /*
  * Initialize term->tl_default_color from the environment.
  */
-    static void
-init_default_colors(term_T *term)
+    void
+term_init_default_colors(term_T *term)
 {
     VTermColor	    *fg, *bg;
     int		    fgval, bgval;
@@ -4960,7 +4954,7 @@ create_vterm(term_T *term, int rows, int cols)
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
-    init_default_colors(term);
+    term_init_default_colors(term);
 
     vterm_state_set_default_colors(
 	    state,
@@ -5066,7 +5060,7 @@ term_update_colors_all(void)
     {
 	if (term->tl_vterm == NULL)
 	    continue;
-	init_default_colors(term);
+	term_init_default_colors(term);
 	vterm_state_set_default_colors(
 		vterm_obtain_state(term->tl_vterm),
 		&term->tl_default_color.fg,
@@ -5821,7 +5815,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	VTermPos	cursor_pos1;
 	VTermPos	cursor_pos2;
 
-	init_default_colors(term);
+	term_init_default_colors(term);
 
 	rettv->vval.v_number = buf->b_fnum;
 

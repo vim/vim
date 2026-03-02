@@ -503,7 +503,6 @@ set_string_option_direct(
 #endif
 }
 
-#if defined(FEAT_PROP_POPUP) || (defined(FEAT_DIFF) && defined(FEAT_FOLDING))
 /*
  * Like set_string_option_direct(), but for a window-local option in "wp".
  * Blocks autocommands to avoid the old curwin becoming invalid.
@@ -527,7 +526,6 @@ set_string_option_direct_in_win(
     curbuf = curwin->w_buffer;
     unblock_autocmds();
 }
-#endif
 
 #if defined(FEAT_PROP_POPUP)
 /*
@@ -2815,6 +2813,63 @@ did_set_highlight(optset_T *args UNUSED)
     return NULL;
 }
 
+    static int
+expand_hl_occasions(
+	optexpand_T *args,
+	int *numMatches,
+	char_u ***matches,
+	char_u prefix)
+{
+    char_u	    *p;
+    static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
+    size_t	    i;
+    int		    count = 0;
+
+    *matches = ALLOC_MULT(char_u *, HLF_COUNT + 1);
+    if (*matches == NULL)
+	return FAIL;
+
+    // We still want to return the full option if it's requested.
+    if (args->oe_include_orig_val)
+    {
+	p = vim_strsave(args->oe_opt_value);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
+    }
+
+    for (i = 0; i < HLF_COUNT; i++)
+    {
+	p = alloc((prefix == NUL ? 1 : 2) + 1);
+	if (p == NULL)
+	{
+	    if (count == 0)
+	    {
+		VIM_CLEAR(*matches);
+		return FAIL;
+	    }
+	    else
+		break;
+	}
+	if (prefix == NUL)
+	    sprintf((char *)p, "%c", hl_flags[i]);
+	else
+	    sprintf((char *)p, "%c%c", prefix, hl_flags[i]);
+	(*matches)[count++] = p;
+    }
+
+    if (count == 0)
+    {
+	VIM_CLEAR(*matches);
+	return FAIL;
+    }
+    *numMatches = count;
+    return OK;
+}
+
 /*
  * Expand 'highlight' option.
  */
@@ -2823,7 +2878,6 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
 {
     char_u	    *p;
     expand_T	    *xp = args->oe_xp;
-    static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
     size_t	    i;
     int		    count = 0;
 
@@ -2838,49 +2892,9 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
     }
 
     if (*xp->xp_pattern == NUL)
-    {
 	// At beginning of a comma-separated list. Return the specific list of
 	// supported occasions.
-	*matches = ALLOC_MULT(char_u *, HLF_COUNT + 1);
-	if (*matches == NULL)
-	    return FAIL;
-
-	// We still want to return the full option if it's requested.
-	if (args->oe_include_orig_val)
-	{
-	    p = vim_strsave(args->oe_opt_value);
-	    if (p == NULL)
-	    {
-		VIM_CLEAR(*matches);
-		return FAIL;
-	    }
-	    (*matches)[count++] = p;
-	}
-
-	for (i = 0; i < HLF_COUNT; i++)
-	{
-	    p = vim_strnsave(&hl_flags[i], 1);
-	    if (p == NULL)
-	    {
-		if (count == 0)
-		{
-		    VIM_CLEAR(*matches);
-		    return FAIL;
-		}
-		else
-		    break;
-	    }
-	    (*matches)[count++] = p;
-	}
-
-	if (count == 0)
-	{
-	    VIM_CLEAR(*matches);
-	    return FAIL;
-	}
-	*numMatches = count;
-	return OK;
-    }
+	return expand_hl_occasions(args, numMatches, matches, NUL);
 
     // We are after the initial character (which indicates the occasion). We
     // already made sure we are not matching after a ':' above, so now we want
@@ -4928,10 +4942,46 @@ expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_wincolor(optset_T *args UNUSED)
 {
-#ifdef FEAT_TERMINAL
-    term_update_wincolor(curwin);
-#endif
+    update_wincolor(curwin, args->os_newval.string);
     return NULL;
+}
+
+/*
+ * The 'winhighlight' option is changed
+ */
+    char *
+did_set_winhighlight(optset_T *args)
+{
+    return update_winhighlight(curwin, args->os_newval.string);
+}
+
+/*
+ * Expand 'winhighlight' option.
+ */
+    int
+expand_set_winhighlight(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T	    *xp = args->oe_xp;
+
+    if ((xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+	    || xp->xp_pattern == args->oe_set_arg || *(xp->xp_pattern-1) == ',')
+    {
+	// After a ':' or after a ',', or at the start, so expand highlight
+	// group name.
+
+	// If starts with !, then expand 'highlight' occasions.
+	if (*xp->xp_pattern == '!')
+	    return expand_hl_occasions(args, numMatches, matches, '!');
+	else
+	    return expand_set_opt_generic(
+		    args,
+		    get_highlight_name,
+		    numMatches,
+		    matches);
+    }
+
+    VIM_CLEAR(*matches);
+    return FAIL;
 }
 
     int

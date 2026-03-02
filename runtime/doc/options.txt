@@ -4810,6 +4810,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuBorder|   j  popup menu border characters
 	|hl-PmenuShadow|   H  popup menu shadow
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
+	|hl-Normal|	 (  Window color (supersedes 'wincolor' option)
+
+	Note that the "(" occasion is not set by default.
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -10246,8 +10249,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wincolor'* *'wcr'*
 'wincolor' 'wcr' string (default empty)
 			local to window
+	DEPRECATED: Use 'winhighlight' if possible, this option uses
+	'winhighlight' internally by setting it to: >vim
+	    set winhighlight=!(:HighlightGroup
+<	If this option is set and 'winhighlight' is changed, then it will not
+	update the option value.  For example, if 'wincolor' is set to "A" and
+	then 'winhighlight' is to an empty value, then 'wincolor' will still
+	remain as "A".  Additionally, the existing value in 'winhighlight' will
+	be discarded when this option is set.
+
 	Highlight group name to use for this window instead of the Normal
-	color |hl-Normal|.
+	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
+	Note that it is not recommended to set this and 'winhighlight' at the
+	same time.
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
@@ -10305,6 +10319,35 @@ A jump table for the options with a short description can be found at |Q_op|.
 	height of the current window.
 	'winheight' applies to the current window.  Use 'winminheight' to set
 	the minimal height for other windows.
+
+						*'winhighlight'* *'whl'*
+'winhighlight' 'whl'	string (default empty)
+			local to window
+	Window-local highlight group mappings.  Comma-delimited list of
+	highlight |group-name| pairs "{hl-from}:{hl-to},..." where each
+	{hl-from} is a |highlight-groups| item to be overridden by {hl-to}
+	group in the window.  If {hl-from} is "Normal", then it will always
+	map to the "(" (window color) value in 'highlight'.
+
+	If a highlight group name starts with "!", then it is assumed to map
+	to a value in 'highlight'.  For example, this will override the
+	visual mode setting: >vim
+	    set winhighlight=!v:SomeHighlightGroup
+<	This will map the occasion "v" to occasion "l" >vim
+	    set winhighlight=!v:!l
+<
+	Highlights of vertical separators are determined by the window to the
+	left of the separator.  The 'tabline' highlight of a tabpage is
+	decided by the last-focused window of the tabpage.  Highlights of
+	the popupmenu are determined by the current window.  Highlights in the
+	message area cannot be overridden.
+
+	When handling highlight group links, if a highlight group (which may
+	be a link as well) is overridden by 'winhighlight', then all highlight
+	groups that link to it will be affected.  For example, if highlight
+	group C links to B which links to A, then >vim
+	    set winhighlight=B:SomeHighlightGroup
+<	will make SomeHighlightGroup override groups B and C, but not A.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)

@@ -207,6 +207,8 @@ int expand_set_wildoptions(optexpand_T *args, int *numMatches, char_u ***matches
 char *did_set_winaltkeys(optset_T *args);
 int expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_wincolor(optset_T *args);
+char *did_set_winhighlight(optset_T *args);
+int expand_set_winhighlight(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_wincolor(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_string_option(int opt_idx, char_u **varp, char_u *oldval, char_u *value, char *errbuf, size_t errbuflen, int opt_flags, set_op_T op, int *value_checked);
 int check_ff_value(char_u *p);

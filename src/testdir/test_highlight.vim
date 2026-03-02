@@ -1355,4 +1355,328 @@ func Test_hlset()
   call assert_true(hlget('hlg11')[0].cleared)
 endfunc
 
+" Test for the 'winhighlight' option
+func Test_winhighlight()
+  CheckScreendump
+
+  let lines =<< trim END
+  set cursorline
+  call setline(1, ['Four', 'Five', 'Six'])
+  vsplit
+  tabnew
+  tabnew
+  tabfirst
+  END
+  call writefile(lines, 'Xtest_winhighlight', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight', {'rows': 8})
+  call TermWait(buf)
+
+  " Test that window highlight groups are actually local per window
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=CursorLine:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_2', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd h\<CR>\<Esc>:setlocal whl=\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_3', {})
+
+  " Dump files 4 and 5 used to exist, but were removed later, too lazy to
+  " renumber the dump files...
+
+  " Test that VertSplit in winhighlight only affects border if window that
+  " winhighlight is local to is on the left side of the separator/column
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  " Shouldn't affect separator
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=VertSplit:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_6', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd h\<CR>")
+  call TermWait(buf)
+
+  " Should affect separator
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=VertSplit:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_7', {})
+
+  " Test that popup menu highlight is affected by current window only
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=Pmenu:ErrorMsg\<CR>iw\<C-x>\<C-v>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_8', {})
+
+  " Switch to other window (shouldn't be affected)
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>iw\<C-x>\<C-v>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_9', {})
+
+  " Test that tabline highlight uses 'winhighlight' of last focused window in
+  " tabpage
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=TabLine:ErrorMsg\<CR>\<Esc>:tabn 3\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_10', {})
+
+  " Make last focused window the other window, which should have no hightlight
+  " in tabline.
+  call term_sendkeys(buf, "\<Esc>:tabn 1\<CR>\<Esc>:wincmd h\<CR>\<Esc>:tabn 3\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_11', {})
+
+  " Test if statusline is highlighted correctly local to window.
+  call term_sendkeys(buf, "\<Esc>:tabn 1\<CR>\<Esc>:set ruler\<CR>\<Esc>:setlocal whl=StatusLine:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_12', {})
+
+  " Make status line change
+  call term_sendkeys(buf, "\<Esc>jj")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_13', {})
+
+  " Go into command line mode (status line should still have same highlight)
+  call term_sendkeys(buf, "\<Esc>:")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_13a', {})
+
+  " Go to next window (statusline highlighting for other window should stop)
+  call term_sendkeys(buf, "\<CR>\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
+
+  " Check that overridding Normal group maps to HLF_WIN in 'highlight'.
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=Normal:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_15', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if 'hlsearch' highlighting works correctly with 'winhighlight'
+func Test_winhighlight_hlsearch()
+  CheckScreendump
+
+  let lines =<< trim END
+  vim9script
+
+  hi A ctermbg=red ctermfg=white
+  hi B ctermbg=red ctermfg=white
+  hi link Search B
+  hi link IncSearch B
+
+  autocmd CmdlineEnter [\/\?] {
+    setlocal whl=Search:A,IncSearch:B
+    hi clear Search
+    hi clear IncSearch
+  }
+  autocmd CmdlineLeave [\/\?] {
+    setlocal whl=
+    hi link Search B
+    hi link IncSearch B
+  }
+
+  setline(1, ['One', 'Two', 'Three'])
+  vsplit
+  setline(1, ['Four', 'Five', 'Six'])
+
+  set incsearch
+  set hlsearch
+  END
+  call writefile(lines, 'Xtest_winhighlight_hlsearch', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_hlsearch', {'rows': 20})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>/i")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_hlsearch_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:wincmd l\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>/F")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_hlsearch_2', {})
+
+  call term_sendkeys(buf, "\<Esc>") " Must exit search mode
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if syntax highlighting works correctly with 'winhighlight'. Also tests
+" handling of highlight links.
+func Test_winhighlight_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+  vim9script
+
+  hi A ctermbg=blue ctermfg=white
+  hi link B A
+  hi link C B
+  syntax match A display "One"
+  syntax match B display "Two"
+  syntax match C display "Three"
+
+  setline(1, ["One Two", "One", "Two", "Three"])
+  END
+  call writefile(lines, 'Xtest_winhighlight_syntax', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_syntax', {'rows': 8})
+  call TermWait(buf)
+
+  " Since A is the root of the link chain, it should affect all
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=A:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_syntax_1', {})
+
+  " Since B is in the middle, B and C should be overridden, but not A
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=B:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_syntax_2', {})
+
+  " Since C is is last, it should only be overridden
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=C:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_syntax_3', {})
+
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=A:ErrorMsg,C:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if terminal is correctly highlighted using 'winhighlight'
+func Test_winhighlight_term()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+  terminal sh
+  END
+  call writefile(lines, 'Xtest_winhighlight_term', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_term', {'rows': 20, 'env': {'PS1': '>'}})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<C-\>\<C-n>\<Esc>:setlocal whl=Terminal:ErrorMsg\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_1', {})
+
+  call term_sendkeys(buf, "i")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_2', {})
+
+  " New terminal should have copied over winhighlight settings and updated
+  " accordingly.
+  call term_sendkeys(buf, "\<C-\>\<C-N>\<Esc>:vsplit\<CR>i")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_term_3', {})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>\<Esc>:bw!\<CR>")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if 'winhighlight' works correctly in popup windows
+func Test_winhighlight_popupwin()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+  vim9script
+
+  g:id = popup_dialog("int hello = 10;", {})
+
+  hi A ctermbg=red ctermfg=white
+  hi B ctermbg=blue ctermfg=white
+
+  redraw! # Remove intro message
+  win_execute(g:id, "set filetype=c whl=Pmenu:A,cType:B")
+  END
+  call writefile(lines, 'Xtest_winhighlight_popupwin', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_popupwin', {'rows': 20})
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_1', {})
+
+  call term_sendkeys(buf, "\<Esc>:call win_execute(g:id, \"set whl=\")\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_popupwin_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test that 'winhighlight' setting is copied over to new split window
+func Test_winhighlight_copy()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', {'rows': 20})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:setlocal cursorline whl=CursorLine:ErrorMsg\<CR>\<Esc>:vsplit\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_copy_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if using a 'highlight' occasion instead of highlight group name works
+" correctly.
+func Test_winhighlight_occasion()
+  CheckScreendump
+
+  let lines =<< trim END
+  highlight A ctermbg=red ctermfg=white
+  highlight B ctermbg=blue ctermfg=white
+  highlight EndOfBuffer ctermbg=green
+
+  set cursorline
+
+  call setline(1, ["One", "Two", "Three"])
+  END
+  call writefile(lines, 'Xtest_winhighlight_occasion', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_winhighlight_occasion', {'rows': 20})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:setlocal whl=!(:A,!.:B,StatusLine:!~\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_winhighlight_occasion_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
