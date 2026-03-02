@@ -2841,7 +2841,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 		(*stackptr)->dirname = dirname;
 		break;
 	    }
-
+	    vim_free(dirname);
 	    ds_new = ds_new->next;
 	}
 
