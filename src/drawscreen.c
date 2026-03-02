@@ -566,9 +566,12 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	}
 
 	screen_puts(p, row, wp->w_wincol, attr);
-	for (i = 0; i < wp->w_status_height; i++)
-	    screen_fill(row + i, row + i + 1, plen + wp->w_wincol,
-			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
+	screen_fill(row, row + 1, plen + wp->w_wincol,
+		    this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
+	// Fill extra status line rows entirely with fillchar.
+	for (i = 1; i < wp->w_status_height; i++)
+	    screen_fill(row + i, row + i + 1, wp->w_wincol,
+			W_ENDCOL(wp), fillchar, fillchar, attr);
 	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
 		&& (this_ru_col - plen) > (NameBufflen + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - NameBufflen
