@@ -6256,9 +6256,12 @@ check_termcode(
 #endif
 	{
 	    int  mouse_index_found = -1;
+	    int keypad_index_found = -1;
+	    int keypad_slen_found;
 
 	    for (idx = 0; idx < tc_len; ++idx)
 	    {
+		int     is_keypad = FALSE;
 		/*
 		 * Ignore the entry if we are not at the start of
 		 * typebuf.tb_buf[]
@@ -6284,16 +6287,16 @@ check_termcode(
 		     * key code.
 		     */
 		    if (termcodes[idx].name[0] == 'K'
-				       && VIM_ISDIGIT(termcodes[idx].name[1]))
+				       && (VIM_ISDIGIT(termcodes[idx].name[1])
+						|| ASCII_ISUPPER(termcodes[idx].name[1])))
 		    {
-			for (j = idx + 1; j < tc_len; ++j)
-			    if (termcodes[j].len == slen &&
-				    STRNCMP(termcodes[idx].code,
-					    termcodes[j].code, slen) == 0)
-			    {
-				idx = j;
-				break;
-			    }
+			is_keypad = TRUE;
+			// Only use it when there is no other match.
+			if (keypad_index_found < 0)
+			{
+			    keypad_index_found = idx;
+			    keypad_slen_found = slen;
+			}
 		    }
 
 		    if (slen == 2 && len > 2
@@ -6341,7 +6344,7 @@ check_termcode(
 			if (mouse_index_found < 0)
 			    mouse_index_found = idx;
 		    }
-		    else
+		    else if (!is_keypad)
 		    {
 			key_name[0] = termcodes[idx].name[0];
 			key_name[1] = termcodes[idx].name[1];
@@ -6403,13 +6406,33 @@ check_termcode(
 
 			    slen = j;
 			}
-			key_name[0] = termcodes[idx].name[0];
-			key_name[1] = termcodes[idx].name[1];
-			break;
+			if (termcodes[idx].name[0] == 'K'
+					   && (VIM_ISDIGIT(termcodes[idx].name[1])
+						    || ASCII_ISUPPER(termcodes[idx].name[1])))
+			{
+			    is_keypad = TRUE;
+			    if (keypad_index_found < 0)
+			    {
+				keypad_index_found = idx;
+				keypad_slen_found = slen;
+			    }
+			}
+			if (!is_keypad)
+			{
+			    key_name[0] = termcodes[idx].name[0];
+			    key_name[1] = termcodes[idx].name[1];
+			    break;
+			}
 		    }
 		}
 	    }
-	    if (idx == tc_len && mouse_index_found >= 0)
+	    if (idx == tc_len && keypad_index_found >= 0)
+	    {
+		key_name[0] = termcodes[keypad_index_found].name[0];
+		key_name[1] = termcodes[keypad_index_found].name[1];
+		slen = keypad_slen_found;
+	    }
+	    else if (idx == tc_len && mouse_index_found >= 0)
 	    {
 		key_name[0] = termcodes[mouse_index_found].name[0];
 		key_name[1] = termcodes[mouse_index_found].name[1];

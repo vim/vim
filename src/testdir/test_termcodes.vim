@@ -2776,6 +2776,25 @@ func Test_home_key_works()
   let &t_@7 = save_end
 endfunc
 
+func Test_home_is_not_khome()
+  " kHome and Home (or xHome) might be defined to the same termcode (for
+  " example, when xterm-codes reports the same for both termcaps).
+  " It is better to choose Home than kHome.
+  let save_K1 = exists('&t_K1') ? &t_K1 : ''
+  let save_kh = exists('&t_kh') ? &t_kh : ''
+
+  let &t_K1 = "\<Esc>OH"       " <kHome>
+  let &t_kh = "\<Esc>O*H"      " <Home>
+
+  new
+  call feedkeys("i\<C-K>\<Esc>OH\<Esc>", 'tx')
+  call assert_equal("<Home>", getline(1))
+
+  bwipe!
+  let &t_K1 = save_K1
+  let &t_kh = save_kh
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
