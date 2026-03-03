@@ -7080,11 +7080,17 @@ expand_findfunc(char_u *pat, char_u ***files, int *numMatches)
 
     len = list_len(l);
     if (len == 0)	    // empty List
+    {
+	list_free(l);
 	return FAIL;
+    }
 
     *files = ALLOC_MULT(char_u *, len);
     if (*files == NULL)
+    {
+	list_free(l);
 	return FAIL;
+    }
 
     // Copy all the List items
     listitem_T *li;
