@@ -949,6 +949,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	    {
 		vim_free(theline);
 		vim_free(text_indent);
+		list_free(l);
 		return FAIL;
 	    }
 	    count++;
