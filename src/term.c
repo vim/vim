@@ -6257,7 +6257,7 @@ check_termcode(
 	{
 	    int  mouse_index_found = -1;
 	    int keypad_index_found = -1;
-	    int keypad_slen_found;
+	    int keypad_slen_found = 0;
 
 	    for (idx = 0; idx < tc_len; ++idx)
 	    {
