@@ -3113,7 +3113,15 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     popup_set_buffer_text(wp->w_buffer, argvars[1]);
-    redraw_win_later(wp, UPD_NOT_VALID);
+
+    // Redraw the popup window without triggering a full screen redraw.
+    // Using redraw_win_later() with UPD_NOT_VALID would set the global
+    // must_redraw, causing may_update_popup_mask() to refresh the mask and
+    // redraw windows behind the popup, resulting in flickering.
+    wp->w_redr_type = UPD_NOT_VALID;
+    wp->w_lines_valid = 0;
+    if (must_redraw < UPD_VALID)
+	must_redraw = UPD_VALID;
     popup_adjust_position(wp);
 }
 
