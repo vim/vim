@@ -117,7 +117,9 @@ conceal_check_cursor_line(int was_concealed)
     int
 get_win_attr(win_T *wp)
 {
-    int win_attr = wp->w_hlfwin_id;
+    int	    win_attr = wp->w_hlfwin_id;
+    bool    override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
     if (win_attr != 0)
     {
@@ -135,6 +137,9 @@ get_win_attr(win_T *wp)
 	    win_attr = HL_ATTR(HLF_PNI);    // Pmenu
     }
 #endif
+
+    if (override_success)
+	pop_highlight_overrides();
     return win_attr;
 }
 
@@ -190,6 +195,8 @@ win_draw_end(
     int		n = 0;
     int		attr = HL_ATTR(hl);
     int		win_attr = get_win_attr(wp);
+    bool	override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
     attr = hl_combine_attr(win_attr, attr);
 
@@ -232,6 +239,9 @@ win_draw_end(
     }
 
     set_empty_rows(wp, row);
+
+    if (override_success)
+	pop_highlight_overrides();
 }
 
 #if defined(FEAT_FOLDING)
@@ -489,6 +499,8 @@ screen_line(
     int		    clear_next = FALSE;
     int		    char_cells;		// 1: normal char
 					// 2: occupies two display cells
+    bool	    override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
     // Check for illegal row and col, just in case.
     if (row >= Rows)
@@ -1061,6 +1073,9 @@ skip_opacity:
 	else
 	    LineWraps[row] = FALSE;
     }
+
+    if (override_success)
+	pop_highlight_overrides();
 }
 
 #if defined(FEAT_RIGHTLEFT)
@@ -1212,6 +1227,7 @@ win_redr_custom(
     stl_hlrec_T *tabtab;
     win_T	*ewp;
     int		p_crb_save;
+    bool	override_success = false;
 
     // There is a tiny chance that this gets called recursively: When
     // redrawing a status line triggers redrawing the ruler or tabline.
@@ -1234,6 +1250,8 @@ win_redr_custom(
     }
     else
     {
+	override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+
 	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	int in_status_line = wp->w_status_height != 0;
@@ -1387,6 +1405,8 @@ win_redr_custom(
     }
 
 theend:
+    if (override_success)
+	pop_highlight_overrides();
     entered = FALSE;
 }
 
@@ -4773,7 +4793,9 @@ get_trans_bufname(buf_T *buf)
     int
 fillchar_status(int *attr, win_T *wp)
 {
-    int fill;
+    int	    fill;
+    bool    override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
 #ifdef FEAT_TERMINAL
     if (bt_terminal(wp->w_buffer))
@@ -4801,6 +4823,9 @@ fillchar_status(int *attr, win_T *wp)
 	*attr = HL_ATTR(HLF_SNC);
 	fill = wp->w_fill_chars.stlnc;
     }
+
+    if (override_success)
+	pop_highlight_overrides();
     return fill;
 }
 
@@ -4811,7 +4836,12 @@ fillchar_status(int *attr, win_T *wp)
     int
 fillchar_vsep(int *attr, win_T *wp)
 {
+    bool override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
     *attr = HL_ATTR(HLF_C);
+    if (override_success)
+	pop_highlight_overrides();
+
     if (*attr == 0 && wp->w_fill_chars.vert == ' ')
 	return '|';
     else
