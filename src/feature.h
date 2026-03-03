@@ -170,10 +170,6 @@
 # define FEAT_KEYMAP
 #endif
 
-#ifdef FEAT_NORMAL
-# define VIM_BACKTICK		// internal backtick expansion
-#endif
-
 /*
  * +linebreak		'showbreak', 'breakat' and 'linebreak' options.
  *			Also 'numberwidth'.

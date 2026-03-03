@@ -2388,8 +2388,7 @@ veryfast_breakcheck(void)
 }
 #endif
 
-#if defined(VIM_BACKTICK) || defined(FEAT_EVAL) \
-	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
+#if defined(FEAT_EVAL) || (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 
 # ifndef SEEK_SET
 #  define SEEK_SET 0
