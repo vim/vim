@@ -1098,7 +1098,8 @@ apply_options(win_T *wp, dict_T *dict, int create)
 	wp->w_valid &= ~VALID_BOTLINE;
     }
 
-    popup_mask_refresh = TRUE;
+    if (create)
+	popup_mask_refresh = TRUE;
     popup_highlight_curline(wp);
 
     return OK;
@@ -3391,6 +3392,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	*old_thumb_highlight;
     char_u	*old_border_highlight[4];
     int		need_redraw = FALSE;
+    int		need_reposition = FALSE;
     int		i;
 
     if (in_vim9script()
@@ -3423,9 +3425,15 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (old_firstline != wp->w_firstline)
 	need_redraw = TRUE;
     if (old_zindex != wp->w_zindex)
+    {
 	need_redraw = TRUE;
+	need_reposition = TRUE;
+    }
     if (old_popup_flags != wp->w_popup_flags)
+    {
 	need_redraw = TRUE;
+	need_reposition = TRUE;
+    }
     if (old_scrollbar_highlight != wp->w_scrollbar_highlight)
 	need_redraw = TRUE;
     if (old_thumb_highlight != wp->w_thumb_highlight)
@@ -3438,7 +3446,29 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	}
 
     if (need_redraw)
-	redraw_win_later(wp, UPD_NOT_VALID);
+    {
+	if (need_reposition)
+	{
+	    redraw_win_later(wp, UPD_NOT_VALID);
+	    popup_mask_refresh = TRUE;
+	    popup_adjust_position(wp);
+	}
+	else
+	{
+	    // Only content changed (e.g. firstline, highlight): redraw the
+	    // popup window without updating the popup mask or triggering a
+	    // full screen redraw.  This avoids flickering of windows behind
+	    // the popup.
+	    if (old_firstline != wp->w_firstline
+		    && wp->w_firstline > 0
+		    && wp->w_firstline <= wp->w_buffer->b_ml.ml_line_count)
+		wp->w_topline = wp->w_firstline;
+	    wp->w_redr_type = UPD_NOT_VALID;
+	    wp->w_lines_valid = 0;
+	    if (must_redraw < UPD_VALID)
+		must_redraw = UPD_VALID;
+	}
+    }
 #ifdef FEAT_PROP_POPUP
     // Force redraw if opacity value changed
     if (old_blend != wp->w_popup_blend)
@@ -3446,9 +3476,10 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	redraw_win_later(wp, UPD_NOT_VALID);
 	// Also redraw windows below the popup
 	redraw_all_later(UPD_NOT_VALID);
+	popup_mask_refresh = TRUE;
+	popup_adjust_position(wp);
     }
 #endif
-    popup_adjust_position(wp);
 }
 
 /*
