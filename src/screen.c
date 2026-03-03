@@ -4564,8 +4564,8 @@ draw_tabline(void)
     int		c;
     int		len;
     int		attr_sel;
-    int		attr_nosel;
-    int		attr_fill;
+    int		attr_nosel = 0;
+    int		attr_fill = 0;
     char_u	*p;
     int		room;
     int		use_sep_chars = (t_colors < 8
