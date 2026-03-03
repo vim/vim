@@ -148,4 +148,22 @@ func Test_multistatusline_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_statuslineopt_default_stl()
+  CheckScreendump
+
+  let lines =<< trim END
+    set laststatus=2
+    set statuslineopt=maxheight:4
+  END
+  call writefile(lines, 'XTest_statuslineopt_default_stl', 'D')
+
+  " With no custom statusline, the extra status rows must be filled with
+  " fillchar and must not bleed through buffer content.
+  let buf = g:RunVimInTerminal('-S XTest_statuslineopt_default_stl', {'rows': 8})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_statuslineopt_default_stl_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
