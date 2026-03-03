@@ -5790,7 +5790,10 @@ set_repeat_dict(dict_T *dict)
 	// Combine cmd and text
 	combined = alloc(cmd_len + text_len + 1);
 	if (combined == NULL)
+	{
+	    clear_repeat_dict();
 	    return;
+	}
 
 	STRCPY(combined, cmd);
 	STRCPY(combined + cmd_len, text);
@@ -5799,10 +5802,7 @@ set_repeat_dict(dict_T *dict)
 	vim_free(combined);
     }
     else
-    {
-	// Just cmd
 	set_last_insert_str(cmd);
-    }
 }
 
 /*
@@ -5834,14 +5834,9 @@ get_repeat_dict(void)
     // Get command from tracked insert command
     cmd_str[0] = NUL;
     cmd_str[1] = NUL;
-    if (last_insert_cmdchar != NUL && last_insert_cmdchar != 'i')
-    {
-	// Only include insert mode commands: i, a, o, I, A, O, etc.
-	if (vim_strchr((char_u *)"iIaAoOcCsS", last_insert_cmdchar) != NULL)
-	    cmd_str[0] = last_insert_cmdchar;
-    }
-    else if (last_insert_cmdchar == 'i')
-	cmd_str[0] = 'i';
+    if (last_insert_cmdchar != NUL
+	    && vim_strchr((char_u *)"iIaAoOcCsS", last_insert_cmdchar) != NULL)
+	cmd_str[0] = last_insert_cmdchar;
 
     // Get text from . register
     text_str = get_reg_contents('.', GREG_NO_EXPR);
