@@ -3435,6 +3435,12 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 
     (void)apply_options(wp, dict, FALSE);
 
+    // Keep "firstline" sticky across popup_setoptions(): when it is set, any
+    // property update should reapply it and restore the displayed top line.
+    if (wp->w_firstline > 0
+	    && wp->w_firstline <= wp->w_buffer->b_ml.ml_line_count)
+	wp->w_topline = wp->w_firstline;
+
     // Check if visual options changed and redraw if needed
     if (old_firstline != wp->w_firstline)
 	need_redraw = TRUE;
