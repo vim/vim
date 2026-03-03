@@ -5457,11 +5457,11 @@ f_hlset(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
- * If "old" is in the override stack, then update it to "new". Does not free
+ * If "old" is in the override stack, then update it to "hl_new". Does not free
  * "old".
  */
     void
-update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen)
+update_highlight_overrides(hl_override_T *old, hl_override_T *hl_new, int newlen)
 {
     if (old == NULL)
 	return;
@@ -5470,7 +5470,7 @@ update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen)
     {
 	if (set->arr == old)
 	{
-	    set->arr = new;
+	    set->arr = hl_new;
 	    set->len = newlen;
 	    break;
 	}
