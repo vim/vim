@@ -1613,11 +1613,14 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     win_init_some(newp, oldp);
 
 #ifdef FEAT_TERMINAL
-    // Make sure to also handle highlight overrides copied over from oldp.
-    push_highlight_overrides(newp->w_hl, newp->w_hl_len);
-    if (newp->w_buffer->b_term != NULL)
-	term_init_default_colors(newp->w_buffer->b_term);
-    pop_highlight_overrides();
+    {
+	// Make sure to also handle highlight overrides copied over from oldp.
+	bool pushed = push_highlight_overrides(newp->w_hl, newp->w_hl_len);
+	if (newp->w_buffer->b_term != NULL)
+	    term_init_default_colors(newp->w_buffer->b_term);
+	if (pushed)
+	    pop_highlight_overrides();
+    }
 #endif
 }
 
