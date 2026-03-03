@@ -388,6 +388,7 @@ runtime/indent/go.vim					@dbarnett
 runtime/indent/graphql.vim				@jparise
 runtime/indent/gyp.vim					@ObserverOfTime
 runtime/indent/haml.vim					@tpope
+runtime/indent/handlebars.vim				@sukima
 runtime/indent/hare.vim					@selenebun
 runtime/indent/hcl.vim					@gpanders
 runtime/indent/hog.vim					@wtfbbqhax
@@ -551,6 +552,7 @@ runtime/syntax/graphql.vim				@jparise
 runtime/syntax/groff.vim				@jmarshall
 runtime/syntax/gyp.vim					@ObserverOfTime
 runtime/syntax/haml.vim					@tpope
+runtime/syntax/handlebars.vim				@sukima
 runtime/syntax/hare.vim					@selenebun
 runtime/syntax/haredoc.vim				@selenebun
 runtime/syntax/haskell.vim				@coot
