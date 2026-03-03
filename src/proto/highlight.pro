@@ -48,7 +48,7 @@ int expand_highlight_group(char_u *pat, expand_T *xp, regmatch_T *rmp, char_u **
 void free_highlight_fonts(void);
 void f_hlget(typval_T *argvars, typval_T *rettv);
 void f_hlset(typval_T *argvars, typval_T *rettv);
-void update_highlight_overrides(hl_override_T *old, hl_override_T *new, int newlen);
+void update_highlight_overrides(hl_override_T *old, hl_override_T *hl_new, int newlen);
 bool push_highlight_overrides(hl_override_T *arr, int len);
 void pop_highlight_overrides(void);
 char *update_winhighlight(win_T *wp, char_u *opt);
