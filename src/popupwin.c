@@ -785,12 +785,18 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	nr = dict_get_number(dict, "opacity");
-	if (nr > 0 && nr <= 100)
+	if (nr > 0 && nr < 100)
 	{
-	    // opacity: 0-100, where 0=transparent, 100=opaque
+	    // opacity: 1-99, partially transparent
 	    // Convert to blend (0=opaque, 100=transparent)
 	    wp->w_popup_flags |= POPF_OPACITY;
 	    wp->w_popup_blend = 100 - nr;
+	}
+	else if (nr == 100)
+	{
+	    // Fully opaque, same as no opacity set.
+	    wp->w_popup_flags &= ~POPF_OPACITY;
+	    wp->w_popup_blend = 0;
 	}
 	else
 	{
