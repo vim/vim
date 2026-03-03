@@ -5080,6 +5080,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     // first round: check for valid value, second round: assign values
     for (round = 0; round <= (apply ? 1 : 0); ++round)
     {
+	int has_tab = FALSE, has_leadtab = FALSE;
+
 	if (round > 0)
 	{
 	    // After checking that the value is valid: set defaults.
@@ -5247,6 +5249,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 					 e_wrong_character_width_for_field_str,
 					 tab[i].name.string);
 		    }
+		    if (tab[i].cp == &lcs_chars.tab2)
+			has_tab = TRUE;
+		    else  // tab[i].cp == &lcs_chars.leadtab2
+			has_leadtab = TRUE;
 		}
 
 		if (*s == ',' || *s == NUL)
@@ -5283,10 +5289,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	    if (*p == ',')
 		++p;
 	}
-    }
 
-    if (is_listchars && lcs_chars.leadtab2 != NUL && lcs_chars.tab2 == NUL)
-	return e_leadtab_requires_tab;
+	if (is_listchars && has_leadtab && !has_tab)
+	    return e_leadtab_requires_tab;
+    }
 
     if (apply)
     {

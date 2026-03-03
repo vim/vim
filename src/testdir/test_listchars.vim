@@ -390,6 +390,8 @@ func Test_listchars()
         \ 'text>---tab         '
         \ ]
   call Check_listchars(expected, 3, 20)
+  call assert_equal(expected->mapnew({_, s -> trim(s, ' ', 2)}) + [' '],
+                  \ split(execute("%list"), "\n"))
 
   " Test leadtab with unicode characters
   normal ggdG
@@ -397,6 +399,7 @@ func Test_listchars()
   call append(0, ["\ttext"])
   let expected = ['├──────┤text']
   call Check_listchars(expected, 1, 12)
+  call assert_equal(expected + [' '], split(execute("%list"), "\n"))
 
   " Test leadtab with mixed indentation (spaces + tabs)
   normal ggdG
@@ -404,6 +407,7 @@ func Test_listchars()
   call append(0, [" \t text"])
   let expected = ['.+******.text']
   call Check_listchars(expected, 1, 13)
+  call assert_equal(expected + [' '], split(execute("%list"), "\n"))
 
   " Test leadtab with pipe character
   normal ggdG
@@ -411,6 +415,7 @@ func Test_listchars()
   call append(0, ["\ttext"])
   let expected = ['|       text']
   call Check_listchars(expected, 1, 12)
+  call assert_equal(expected + [' '], split(execute("%list"), "\n"))
 
   " Test leadtab with unicode bar
   normal ggdG
@@ -418,6 +423,7 @@ func Test_listchars()
   call append(0, ["\ttext"])
   let expected = ['│       text']
   call Check_listchars(expected, 1, 12)
+  call assert_equal(expected + [' '], split(execute("%list"), "\n"))
 
   " Test leadtab vs tab distinction (leading vs non-leading)
   " In a line with only tabs, they aren't considered leading.
@@ -436,6 +442,8 @@ func Test_listchars()
         \ '>------->-------                '
         \ ]
   call Check_listchars(expected, 4, 32)
+  call assert_equal(expected->mapnew({_, s -> trim(s, ' ', 2)}) + [' '],
+                  \ split(execute("%list"), "\n"))
 
   " Test leadtab with trail and space
   normal ggdG
@@ -451,6 +459,8 @@ func Test_listchars()
         \ '+*******..text<<'
         \ ]
   call Check_listchars(expected, 3, 16)
+  call assert_equal(expected->mapnew({_, s -> trim(s, ' ', 2)}) + [' '],
+                  \ split(execute("%list"), "\n"))
 
   " Test leadtab with eol
   normal ggdG
@@ -461,7 +471,8 @@ func Test_listchars()
         \ 'text>---tab$ '
         \ ]
   call Check_listchars(expected, 2, 13)
-
+  call assert_equal(expected->mapnew({_, s -> trim(s, ' ', 2)}) + ['$'],
+                  \ split(execute("%list"), "\n"))
 
   " test nbsp
   normal ggdG
