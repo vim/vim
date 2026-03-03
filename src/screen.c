@@ -591,33 +591,41 @@ screen_line(
 	// skip the second cell for double-width characters.
 	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
 	    redraw_this = FALSE;
-	// For transparent popup cells, update the background character
-	// so it shows through the popup.
+	// Check if the character is occluded by a popup.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	{
-	    ScreenLines[off_to] = ScreenLines[off_from];
-	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
-	    if (enc_utf8)
+#ifdef FEAT_PROP_POPUP
+	    // For transparent popup cells, update the background character
+	    // so it shows through the popup.
+	    if (screen_opacity_popup && screen_opacity_popup->w_popup_blend > 0)
 	    {
-		ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
-		if (ScreenLinesUC[off_from] != 0)
+		ScreenLines[off_to] = ScreenLines[off_from];
+		ScreenAttrs[off_to] = ScreenAttrs[off_from];
+		if (enc_utf8)
 		{
-		    for (int i = 0; i < Screen_mco; ++i)
+		    ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
+		    if (ScreenLinesUC[off_from] != 0)
+		    {
+			for (int i = 0; i < Screen_mco; ++i)
 			ScreenLinesC[i][off_to] = ScreenLinesC[i][off_from];
+		    }
 		}
-	    }
-	    if (char_cells == 2)
-	    {
-		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
-		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
-	    }
-	    if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
-		ScreenLines2[off_to] = ScreenLines2[off_from];
+		if (char_cells == 2)
+		{
+		    ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
+		    ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+		}
+		if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
+		    ScreenLines2[off_to] = ScreenLines2[off_from];
 
-	    if (enc_dbcs != 0 && char_cells == 2)
-		screen_char_2(off_to, row, col + coloff);
+		if (enc_dbcs != 0 && char_cells == 2)
+		    screen_char_2(off_to, row, col + coloff);
+		else
+		    screen_char(off_to, row, col + coloff);
+	    }
 	    else
-		screen_char(off_to, row, col + coloff);
+#endif
+		redraw_this = FALSE;
 	}
 
 #ifdef FEAT_PROP_POPUP
