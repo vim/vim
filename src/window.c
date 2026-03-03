@@ -7657,22 +7657,21 @@ frame_change_statusline_height_rec(frame_T *frp, bool actual_change)
 
 	if (wp->w_height > 0 && wp->w_status_height > 0)
 	{
+	    int win_free_height = frp->fr_height - WINBAR_HEIGHT(wp);
+
 	    if (actual_change)
 	    {
 		wp->w_status_height = stlo_mh;
-		if (wp->w_status_height > frp->fr_height - wp->w_winbar_height
-			- p_wmh)
+		if (wp->w_status_height > win_free_height - p_wmh)
 		{
-		    wp->w_status_height = frp->fr_height - wp->w_winbar_height
-			- p_wmh;
+		    wp->w_status_height = win_free_height - p_wmh;
 		}
-		win_new_height(wp, frp->fr_height - wp->w_status_height
-			- wp->w_winbar_height);
+		win_new_height(wp, win_free_height - wp->w_status_height);
 	    }
 	    else
 	    {
-		if (frp->fr_height - wp->w_winbar_height - p_wmh < stlh_effort)
-		    stlh_effort = frp->fr_height - wp->w_winbar_height - p_wmh;
+		if (win_free_height - p_wmh < stlh_effort)
+		    stlh_effort = win_free_height - p_wmh;
 	    }
 	}
     }
