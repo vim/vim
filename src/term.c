@@ -130,6 +130,9 @@ static termrequest_T u7_status = TERMREQUEST_INIT;
 // Request xterm compatibility check:
 static termrequest_T xcc_status = TERMREQUEST_INIT;
 
+// Request synchronized output report
+static termrequest_T sync_output_status = TERMREQUEST_INIT;
+
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_TERMINAL
 // Request foreground color report:
@@ -165,6 +168,7 @@ static termrequest_T *all_termrequests[] = {
     &rbm_status,
     &rcs_status,
     &winpos_status,
+    &sync_output_status,
     NULL
 };
 
@@ -223,6 +227,24 @@ static int initial_cursor_shape_blink = FALSE;
 // The blink flag from the blinking-cursor mode response
 static int initial_cursor_blink = FALSE;
 #endif
+
+// 0	Mode is not recognized	not supported
+//
+// 1	Set			supported and screen updates are not shown to
+//				the user until mode is disabled
+//
+// 2	Reset			supported and screen updates are shown as usual
+//				(e.g. as soon as they arrive)
+//
+// 3	Permanently set		undefined
+//
+// 4	Permanently reset	not supported
+//
+static int sync_output_setting = 0;
+
+// > 0: Currently batching output
+// == 0: No synchronized output
+static int sync_output_state = 0;
 
 /*
  * The builtin termcap entries.
@@ -2184,6 +2206,14 @@ set_termname(char_u *term)
     if (strstr((char *)term, "kitty") != NULL
 					   && (T_CRV == NULL || *T_CRV == NUL))
 	T_CRV = (char_u *)"\033[>c";
+
+    // These are the DECSET/DECRESET codes for synchronized output. iTerm
+    // supports another way, but this is the de facto standard terminal codes
+    // that are used (from what I can tell - 64bitman).
+    if (T_BSU == NULL || T_BSU == empty_option)
+	T_BSU = (char_u *)"\033[?2026h";
+    if (T_ESU == NULL || T_ESU == empty_option)
+	T_ESU = (char_u *)"\033[?2026l";
 
 #ifdef UNIX
 /*
@@ -5564,6 +5594,8 @@ handle_csi_function_key(
  *
  * - DA1 query response: {lead}?...;c
  *
+ * - DEC mode 2026 response (synchronized output): {lead}?2026;{mode}$y
+ *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
     static int
@@ -5690,6 +5722,28 @@ handle_csi(
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+    }
+
+    // DEC 2026 mode response (for 'termsync' option)
+    else if (first == '?' && trail == 'y' && argc == 2 && arg[0] == 2026)
+    {
+	int setting = arg[1];
+
+	*slen = csi_len;
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+
+	if (setting >= 0 && setting <= 4)
+	{
+	    sync_output_setting = setting;
+	    LOG_TRN("Received DEC 2026 mode: %s", tp);
+	    sync_output_status.tr_progress = STATUS_GOT;
+
+	    set_option_value_give_err((char_u *)"termsync",
+		    setting == 1 || setting == 2, NULL, 0);
+	}
+	else
+	    LOG_TRN("Unknown synchronized output setting %d", setting);
     }
 
     // Version string: Eat it when there is at least one digit and
@@ -7797,4 +7851,96 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
     return len;
+}
+
+#ifdef FEAT_TERMRESPONSE
+/*
+ * Query the setting for DEC mode 2026 (synchronized output) from the terminal.
+ */
+    void
+may_req_sync_output(void)
+{
+    if (can_get_termresponse() && starting == 0
+	    && sync_output_status.tr_progress == STATUS_GET)
+    {
+	MAY_WANT_TO_LOG_THIS;
+	LOG_TR1("Sending synchronized output request");
+
+	out_str((char_u *)"\033[?2026$p");
+	termrequest_sent(&sync_output_status);
+
+	// check for the characters now, otherwise they might be eaten by
+	// get_keystroke()
+	out_flush();
+	(void)vpeekc_nomap();
+    }
+
+}
+#endif
+
+/*
+ * Enable or disable synchronized output if possible. Specification can be found
+ * here:
+ * https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+ */
+    void
+term_set_sync_output(int flags)
+{
+    bool    allowed;
+    char_u  *str;
+#ifdef FEAT_GUI
+    bool    in_gui = gui.in_use;
+#else
+    bool    in_gui = false;
+#endif
+
+    allowed = p_tsy && (sync_output_setting == 1 || sync_output_setting == 2);
+
+    if (flags & TERM_SYNC_OUTPUT_FLUSH)
+    {
+	// Tell terminal to display screen contents
+	if (allowed && !in_gui && sync_output_state > 0 && *T_ESU != NUL &&
+		*T_BSU != NUL)
+	{
+	    out_str((char_u *)T_ESU);
+	    out_str((char_u *)T_BSU);
+	}
+	return;
+    }
+
+    // Forcibly turn off synchronized output (e.g. 'notermsync')
+    if (flags & TERM_SYNC_OUTPUT_OFF)
+    {
+	if (sync_output_state > 0 && *T_ESU != NUL)
+	{
+	    out_str((char_u *)T_ESU);
+	    sync_output_state = 0;
+	}
+	return;
+    }
+
+    if (!allowed || in_gui || *T_BSU == NUL || *T_ESU == NUL)
+	return;
+
+    // Only enable if we aren't already, and only disable if we have reached
+    // zero.
+    if (flags & TERM_SYNC_OUTPUT_ENABLE)
+    {
+	if (sync_output_state++ > 0)
+	    return;
+	str = T_BSU;
+    }
+    else if (flags & TERM_SYNC_OUTPUT_DISABLE)
+    {
+	if (sync_output_state == 0 || --sync_output_state > 0)
+	    return;
+	str = T_ESU;
+    }
+    else
+    {
+	siemsg("Unknown sync output value %d", flags);
+	return;
+    }
+
+    out_str((char_u *)str);
 }

@@ -52613,6 +52613,9 @@ Options: ~
 
 'statuslineopt'		Extra options for the 'statusline', e.g. use the
 			"maxheight" suboption to use several lines.
+'t_BS'			Begin synchronized update.
+'t_ES'			End synchronized update.
+'termsync'		Enable support for terminal DEC 2026 sync mode.
 'winhighlight'		Window-local highlight group mappings.
 
 ==============================================================================

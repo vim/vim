@@ -2661,6 +2661,9 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCTX_INIT},
+    {"termsync", "tsy",	    P_BOOL|P_VI_DEF,
+			    (char_u *)&p_tsy, PV_NONE, did_set_termsync, NULL,
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"termwinkey", "twk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
 			    (char_u *)VAR_WIN, PV_TWK, did_set_termwinkey, NULL,
@@ -3161,6 +3164,8 @@ static struct vimoption options[] =
     p_term("t_8b", T_8B)
     p_term("t_8u", T_8U)
     p_term("t_xo", T_XON)
+    p_term("t_BS", T_BSU)
+    p_term("t_ES", T_ESU)
 
 // terminal key codes are not in here
 

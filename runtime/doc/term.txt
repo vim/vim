@@ -1,4 +1,4 @@
-*term.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*term.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -510,6 +510,10 @@ Added by Vim (there are no standard codes for these):
 		|xterm-focus-event|
 	t_fd	disable focus-event tracking			*t_fd* *'t_fd'*
 		|xterm-focus-event|
+	t_BS	begin synchronized update			*t_BS* *'t_BS'*
+		see 'termsync'
+	t_ES	end synchronized update				*t_ES* *'t_ES'*
+		see 'termsync'
 
 Some codes have a start, middle and end part.  The start and end are defined
 by the termcap option, the middle part is text.
@@ -527,6 +531,11 @@ t_SH must take one argument:
 
 t_RS is sent only if the response to t_RV has been received.  It is not used
 on Mac OS when Terminal.app could be recognized from the termresponse.
+
+The t_BS and t_ES are not stored in the termcap, but are instead set to the
+following default values on startup:
+	t_BS		"\033[?2026h"
+	t_ES		"\033[?2026l"
 
 							*mouse-reporting*
 Many terminals can report mouse clicks and some can report mouse movement and

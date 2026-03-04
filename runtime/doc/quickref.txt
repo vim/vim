@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -963,6 +963,7 @@ Short explanation of each option:		*option-list*
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termsync'	  'tsy'     enable terminal sync mode for redraw
 'termwinkey'	  'twk'	    key that precedes a Vim command in a terminal
 'termwinscroll'   'twsl'    max number of scrollback lines in a terminal window
 'termwinsize'	  'tws'	    size of a terminal window

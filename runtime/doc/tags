@@ -1071,6 +1071,7 @@ $quote	eval.txt	/*$quote*
 't_AU'	term.txt	/*'t_AU'*
 't_BD'	term.txt	/*'t_BD'*
 't_BE'	term.txt	/*'t_BE'*
+'t_BS'	term.txt	/*'t_BS'*
 't_CF'	term.txt	/*'t_CF'*
 't_CS'	term.txt	/*'t_CS'*
 't_CV'	term.txt	/*'t_CV'*
@@ -1081,6 +1082,7 @@ $quote	eval.txt	/*$quote*
 't_Ds'	term.txt	/*'t_Ds'*
 't_EC'	term.txt	/*'t_EC'*
 't_EI'	term.txt	/*'t_EI'*
+'t_ES'	term.txt	/*'t_ES'*
 't_F1'	term.txt	/*'t_F1'*
 't_F2'	term.txt	/*'t_F2'*
 't_F3'	term.txt	/*'t_F3'*
@@ -1235,6 +1237,7 @@ $quote	eval.txt	/*$quote*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
+'termsync'	options.txt	/*'termsync'*
 'termwinkey'	options.txt	/*'termwinkey'*
 'termwinscroll'	options.txt	/*'termwinscroll'*
 'termwinsize'	options.txt	/*'termwinsize'*
@@ -1270,6 +1273,7 @@ $quote	eval.txt	/*$quote*
 'tsl'	options.txt	/*'tsl'*
 'tsr'	options.txt	/*'tsr'*
 'tsrfu'	options.txt	/*'tsrfu'*
+'tsy'	options.txt	/*'tsy'*
 'ttimeout'	options.txt	/*'ttimeout'*
 'ttimeoutlen'	options.txt	/*'ttimeoutlen'*
 'ttm'	options.txt	/*'ttm'*
@@ -10654,6 +10658,7 @@ t_AL	term.txt	/*t_AL*
 t_AU	term.txt	/*t_AU*
 t_BD	term.txt	/*t_BD*
 t_BE	term.txt	/*t_BE*
+t_BS	term.txt	/*t_BS*
 t_CF	term.txt	/*t_CF*
 t_CS	term.txt	/*t_CS*
 t_CTRL-W_.	terminal.txt	/*t_CTRL-W_.*
@@ -10673,6 +10678,7 @@ t_DL	term.txt	/*t_DL*
 t_Ds	term.txt	/*t_Ds*
 t_EC	term.txt	/*t_EC*
 t_EI	term.txt	/*t_EI*
+t_ES	term.txt	/*t_ES*
 t_F1	term.txt	/*t_F1*
 t_F2	term.txt	/*t_F2*
 t_F3	term.txt	/*t_F3*

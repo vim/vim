@@ -4409,6 +4409,14 @@ did_set_termguicolors(optset_T *args UNUSED)
 }
 #endif
 
+    char *
+did_set_termsync(optset_T *args UNUSED)
+{
+    if (!p_tsy)
+	term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
+    return NULL;
+}
+
 #if defined(FEAT_TERMINAL)
 /*
  * Process the updated 'termwinscroll' option value.

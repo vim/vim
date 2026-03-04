@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9095,6 +9095,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:hi Normal guibg=NONE
 <
 	NOTE: This option is reset when 'compatible' is set.
+
+						*'termsync'* *'tsy'*
+'termsync' 'tsy'	boolean (default off)
+			global
+	If the host terminal supports it, buffer all screen updates made
+	during a redraw cycle so that each screen is displayed in the terminal
+	all at once.  This can prevent tearing or flickering when the terminal
+	updates faster than Vim can redraw.  If the host terminal does not
+	support it or if Vim is running graphically, then this option does
+	nothing.
+
+	The specification can be found at:
+	https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+
+	Vim may set this option automatically at startup time when Vim is
+	compiled with the |+termresponse| feature, by querying the terminal
+	for DEC mode 2026 support.  The terminal codes used are |t_BS| and
+	|t_ES|.
 
 						*'termwinkey'* *'twk'*
 'termwinkey' 'twk'	string	(default "")
