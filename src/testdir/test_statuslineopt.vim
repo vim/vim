@@ -17,15 +17,18 @@ def TearDown()
 enddef
 
 def s:Assert_match_statusline(winid: number, stlh: number, expect: list<string>): void
+  redraw!
   if has('gui_running')
-    redraw!
     sleep 1m
   endif
   var wi = getwininfo(winid)[0]
   var winh = wi.winrow + wi.height
-  var lines = [winh, winh + wi.status_height - 1]
-  var actual = mapnew(g:ScreenLines(lines, &columns), (_, v) =>
-              v[wi.wincol - 1 : wi.wincol - 1 + wi.width - 1])
+  # Read screen content directly after redraw! to avoid a second redraw!
+  # inside g:ScreenLines() that may process GUI events and change the window
+  # layout between the getwininfo() call and the screenstring() calls.
+  var actual = mapnew(range(winh, winh + wi.status_height - 1),
+      (_, l) => join(mapnew(range(1, &columns),
+          (_, c) => screenstring(l, c)), '')[wi.wincol - 1 : wi.wincol - 1 + wi.width - 1])
   assert_equal(stlh, wi.status_height)
   for i in range(len(expect))
     assert_match(expect[i], actual[i], $'[{i}]')
