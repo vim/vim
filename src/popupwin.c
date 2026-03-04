@@ -3465,30 +3465,23 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	    break;
 	}
 
-    if (need_redraw)
+    if (need_reposition)
     {
-	if (need_reposition)
-	{
-	    redraw_win_later(wp, UPD_NOT_VALID);
-	    popup_mask_refresh = TRUE;
-	    popup_adjust_position(wp);
-	}
-	else
-	{
-	    // Only content changed (e.g. firstline, highlight): redraw the
-	    // popup window without updating the popup mask or triggering a
-	    // full screen redraw.  This avoids flickering of windows behind
-	    // the popup.
-	    if (old_firstline != wp->w_firstline
-		    && wp->w_firstline > 0
-		    && wp->w_firstline <= wp->w_buffer->b_ml.ml_line_count)
-		wp->w_topline = wp->w_firstline;
-	    wp->w_redr_type = UPD_NOT_VALID;
-	    wp->w_lines_valid = 0;
-	    if (must_redraw < UPD_VALID)
-		must_redraw = UPD_VALID;
-	}
+	redraw_win_later(wp, UPD_NOT_VALID);
+	popup_mask_refresh = TRUE;
     }
+    else if (need_redraw)
+    {
+	// Only content changed (e.g. firstline, highlight): redraw the
+	// popup window without updating the popup mask or triggering a
+	// full screen redraw.  This avoids flickering of windows behind
+	// the popup.
+	wp->w_redr_type = UPD_NOT_VALID;
+	wp->w_lines_valid = 0;
+	if (must_redraw < UPD_VALID)
+	    must_redraw = UPD_VALID;
+    }
+
 #ifdef FEAT_PROP_POPUP
     // Force redraw if opacity value changed
     if (old_blend != wp->w_popup_blend)
@@ -3497,9 +3490,14 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	// Also redraw windows below the popup
 	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
-	popup_adjust_position(wp);
     }
 #endif
+
+    // Always recalculate popup position/size: other options like border,
+    // close, padding may have changed without affecting w_popup_flags.
+    // popup_adjust_position() only sets popup_mask_refresh when the
+    // position or size actually changed.
+    popup_adjust_position(wp);
 }
 
 /*
@@ -4304,11 +4302,6 @@ may_update_popup_mask(int type)
 	mask = popup_mask_next;
     vim_memset(mask, 0, (size_t)screen_Rows * screen_Columns * sizeof(short));
 
-    // Clear the opacity mask.
-    if (popup_opacity_mask != NULL)
-	vim_memset(popup_opacity_mask, 0,
-		   (size_t)screen_Rows * screen_Columns * sizeof(char));
-
     // Find the window with the lowest zindex that hasn't been handled yet,
     // so that the window with a higher zindex overwrites the value in
     // popup_mask.
@@ -4336,21 +4329,8 @@ may_update_popup_mask(int type)
 	// Popup with partial transparency do not block lower layers from
 	// drawing, so they don't participate in the popup_mask.
 	// Fully opaque popups (blend == 0) still block lower layers.
-	// Instead, mark cells in popup_opacity_mask so that background
-	// window drawing can suppress terminal output for those cells
-	// (the popup will draw on top with blending later).
 	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
-	{
-	    if (popup_opacity_mask != NULL)
-		for (line = wp->w_winrow;
-			line < wp->w_winrow + height
-						&& line < screen_Rows; ++line)
-		    for (col = wp->w_wincol;
-			    col < wp->w_wincol + width - wp->w_popup_leftoff
-					    && col < screen_Columns; ++col)
-			popup_opacity_mask[line * screen_Columns + col] = TRUE;
 	    continue;
-	}
 
 	for (line = wp->w_winrow;
 		line < wp->w_winrow + height && line < screen_Rows; ++line)
