@@ -1107,8 +1107,10 @@ byteidx_common(typval_T *argvars, typval_T *rettv, int comp)
 	    int c = (clen > 1) ? utf_ptr2char(t) : *t;
 	    if (c > 0xFFFF)
 		idx--;
+	    if (idx > 0)
+		t += clen;
 	}
-	if (idx > 0)
+	else if (idx > 0)
 	    t += ptr2len(t);
     }
     rettv->vval.v_number = (varnumber_T)(t - str);
@@ -2243,7 +2245,7 @@ f_utf16idx(typval_T *argvars, typval_T *rettv)
 	int c = (clen > 1) ? utf_ptr2char(p) : *p;
 	if (c > 0xFFFF)
 	    len++;
-	p += ptr2len(p);
+	p += clen;
 	if (charidx)
 	    idx--;
     }
