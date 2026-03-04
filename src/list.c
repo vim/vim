@@ -3025,8 +3025,7 @@ list_extend_func(
 	{
 	    before = (long)tv_get_number_chk(&argvars[2], &error);
 	    if (error)
-		return;		// type error; errmsg already given
-
+		goto cleanup;		// type error; errmsg already given
 	    if (before == l1->lv_len)
 		item = NULL;
 	    else
@@ -3035,7 +3034,7 @@ list_extend_func(
 		if (item == NULL)
 		{
 		    semsg(_(e_list_index_out_of_range_nr), before);
-		    return;
+		    goto cleanup;
 		}
 	    }
 	}
@@ -3043,7 +3042,7 @@ list_extend_func(
 	    item = NULL;
 	if (type != NULL && check_typval_arg_type(
 		    type, &argvars[1], func_name, 2) == FAIL)
-	    return;
+	    goto cleanup;
 	list_extend(l1, l2, item);
 
 	if (is_new)
@@ -3054,6 +3053,11 @@ list_extend_func(
 	}
 	else
 	    copy_tv(&argvars[0], rettv);
+	return;
+
+cleanup:
+	if (is_new)
+	    list_unref(l1);
     }
 }
 
