@@ -385,7 +385,8 @@ syn region  sudoersStringValue  contained start=+\s*\zs"+ skip=+\\"+ end=+"+ nex
 syn match   sudoersListValue    contained '\s*\zs[^[:space:],:=\\]*\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn region  sudoersListValue    contained start=+\s*\zs"+ skip=+\\"+ end=+"+ nextgroup=sudoersParameterListComma skipwhite skipnl
 
-syn match   sudoersTagSpec      contained '\%(NO\)\=\%(EXEC\|FOLLOW\|LOG_\%(INPUT\|OUTPUT\)\|MAIL\|INTERCEPT\|PASSWD\|SETENV\):' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite
+syn keyword sudoersTagSpec contained EXEC NOEXEC FOLLOW NOFOLLOW LOG_INPUT NOLOG_INPUT LOG_OUTPUT NOLOG_OUTPUT MAIL NOMAIL INTERCEPT NOINTERCEPT PASSWD NOPASSWD SETENV NOSETENV nextgroup=sudoersTagSpecColon skipwhite
+syn match sudoersTagSpecColon contained /:/ nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite
 
 hi def link sudoersSpecEquals               Operator
 hi def link sudoersTodo                     Todo
@@ -495,6 +496,7 @@ hi def link sudoersTimeoutValue             Number
 hi def link sudoersStringValue              String
 hi def link sudoersListValue                String
 hi def link sudoersTagSpec                  Special
+hi def link sudoersTagSpecColon             Delimiter
 hi def link sudoersInclude                  Statement
 
 let b:current_syntax = "sudoers"
