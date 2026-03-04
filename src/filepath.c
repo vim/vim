@@ -3429,8 +3429,6 @@ match_suffix(char_u *fname)
     return (setsuflen != 0);
 }
 
-#ifdef VIM_BACKTICK
-
 /*
  * Return TRUE if we can expand this backtick thing here.
  */
@@ -3462,11 +3460,11 @@ expand_backtick(
     if (cmd == NULL)
 	return -1;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     if (*cmd == '=')	    // `={expr}`: Expand expression
 	buffer = eval_to_string(cmd + 1, TRUE, FALSE);
     else
-# endif
+#endif
 	buffer = get_cmd_output(cmd, NULL,
 				(flags & EW_SILENT) ? SHELL_SILENT : 0, NULL);
     vim_free(cmd);
@@ -3497,7 +3495,6 @@ expand_backtick(
     vim_free(buffer);
     return cnt;
 }
-#endif // VIM_BACKTICK
 
 #if defined(MSWIN)
 /*
@@ -4105,9 +4102,7 @@ gen_expand_wildcards(
     for (i = 0; i < num_pat; i++)
     {
 	if (has_special_wildchar(pat[i])
-# ifdef VIM_BACKTICK
 		&& !(vim_backtick(pat[i]) && pat[i][1] == '=')
-# endif
 	   )
 	    return mch_expand_wildcards(num_pat, pat, num_file, file, flags);
     }
@@ -4125,7 +4120,6 @@ gen_expand_wildcards(
 	add_pat = -1;
 	p = pat[i];
 
-#ifdef VIM_BACKTICK
 	if (vim_backtick(p))
 	{
 	    add_pat = expand_backtick(&ga, p, flags);
@@ -4133,7 +4127,6 @@ gen_expand_wildcards(
 		retval = FAIL;
 	}
 	else
-#endif
 	{
 	    /*
 	     * First expand environment variables, "~/" and "~user/".
