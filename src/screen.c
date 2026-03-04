@@ -591,8 +591,12 @@ screen_line(
 	// skip the second cell for double-width characters.
 	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
 	    redraw_this = FALSE;
-	// For transparent popup cells, update the background character
-	// so it shows through the popup.
+	// For popup cells, update the background character in the screen
+	// buffer so it is available for transparent cells and opacity
+	// blending.  Only output to the terminal during popup drawing
+	// (screen_zindex > 0); during background drawing (screen_zindex
+	// == 0) suppress terminal output to prevent the background from
+	// briefly flashing before the popup is redrawn on top.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	{
 	    ScreenLines[off_to] = ScreenLines[off_from];
@@ -611,13 +615,17 @@ screen_line(
 		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
 	    }
-	    if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
+	    if (enc_dbcs == DBCS_JPNU)
 		ScreenLines2[off_to] = ScreenLines2[off_from];
 
-	    if (enc_dbcs != 0 && char_cells == 2)
-		screen_char_2(off_to, row, col + coloff);
-	    else
-		screen_char(off_to, row, col + coloff);
+	    if (screen_zindex > 0)
+	    {
+		if (enc_dbcs != 0 && char_cells == 2)
+		    screen_char_2(off_to, row, col + coloff);
+		else
+		    screen_char(off_to, row, col + coloff);
+	    }
+	    redraw_this = FALSE;
 	}
 
 #ifdef FEAT_PROP_POPUP
@@ -2140,6 +2148,16 @@ screen_char(unsigned off, int row, int col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
+#ifdef FEAT_PROP_POPUP
+    // Suppress terminal output for cells under opacity popups during
+    // background window drawing.  The screen buffer is already updated by
+    // the caller; the popup will draw on top with blending later.
+    if (screen_zindex == 0
+	    && popup_opacity_mask != NULL
+	    && popup_opacity_mask[row * screen_Columns + col])
+	return;
+#endif
+
     // Outputting a character in the last cell on the screen may scroll the
     // screen up.  Only do it when the "xn" termcap property is set, otherwise
     // mark the character invalid (update it when scrolled up).
@@ -2237,6 +2255,15 @@ screen_char_2(unsigned off, int row, int col)
     // Check for illegal values (could be wrong when screen was resized).
     if (off + 1 >= (unsigned)(screen_Rows * screen_Columns))
 	return;
+
+#ifdef FEAT_PROP_POPUP
+    // Suppress terminal output for cells under opacity popups during
+    // background window drawing.
+    if (screen_zindex == 0
+	    && popup_opacity_mask != NULL
+	    && popup_opacity_mask[row * screen_Columns + col])
+	return;
+#endif
 
     // Outputting the last character on the screen may scroll the screen up.
     // Don't to it!  Mark the character invalid (update it when scrolled up)
@@ -2663,6 +2690,7 @@ screenalloc(int doclear)
     short	    *new_popup_mask;
     short	    *new_popup_mask_next;
     char	    *new_popup_transparent;
+    char	    *new_popup_opacity_mask;
 #endif
     tabpage_T	    *tp;
     static int	    entered = FALSE;		// avoid recursiveness
@@ -2758,6 +2786,7 @@ retry:
     new_popup_mask = LALLOC_MULT(short, Rows * Columns);
     new_popup_mask_next = LALLOC_MULT(short, Rows * Columns);
     new_popup_transparent = LALLOC_MULT(char, Rows * Columns);
+    new_popup_opacity_mask = LALLOC_MULT(char, Rows * Columns);
 #endif
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
@@ -2814,6 +2843,7 @@ give_up:
 	    || new_popup_mask == NULL
 	    || new_popup_mask_next == NULL
 	    || new_popup_transparent == NULL
+	    || new_popup_opacity_mask == NULL
 #endif
 	    || outofmem)
     {
@@ -2840,6 +2870,7 @@ give_up:
 	VIM_CLEAR(new_popup_mask);
 	VIM_CLEAR(new_popup_mask_next);
 	VIM_CLEAR(new_popup_transparent);
+	VIM_CLEAR(new_popup_opacity_mask);
 #endif
     }
     else
@@ -2923,6 +2954,7 @@ give_up:
 #ifdef FEAT_PROP_POPUP
 	vim_memset(new_popup_mask, 0, Rows * Columns * sizeof(short));
 	vim_memset(new_popup_transparent, 0, Rows * Columns * sizeof(char));
+	vim_memset(new_popup_opacity_mask, 0, Rows * Columns * sizeof(char));
 #endif
     }
 
@@ -2944,6 +2976,7 @@ give_up:
     popup_mask = new_popup_mask;
     popup_mask_next = new_popup_mask_next;
     popup_transparent = new_popup_transparent;
+    popup_opacity_mask = new_popup_opacity_mask;
     popup_mask_refresh = TRUE;
 #endif
 

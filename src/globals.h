@@ -110,6 +110,9 @@ EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
 // Array with flags for transparent cells of current popup.
 EXTERN char	*popup_transparent INIT(= NULL);
+// Array with flags for cells under opacity popups (for suppressing
+// background terminal output during screen redraw).
+EXTERN char	*popup_opacity_mask INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
 EXTERN int	popup_mask_refresh INIT(= TRUE);
