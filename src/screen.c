@@ -591,41 +591,41 @@ screen_line(
 	// skip the second cell for double-width characters.
 	if (redraw_this && char_cells == 2 && skip_for_popup(row, col + coloff + 1))
 	    redraw_this = FALSE;
-	// For popup cells, update the background character in the screen
-	// buffer so it is available for transparent cells and opacity
-	// blending.  Only output to the terminal during popup drawing
-	// (screen_zindex > 0); during background drawing (screen_zindex
-	// == 0) suppress terminal output to prevent the background from
-	// briefly flashing before the popup is redrawn on top.
+	// Check if the character is occluded by a popup.
 	if (redraw_this && skip_for_popup(row, col + coloff))
 	{
-	    ScreenLines[off_to] = ScreenLines[off_from];
-	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
-	    if (enc_utf8)
+#ifdef FEAT_PROP_POPUP
+	    // For transparent popup cells, update the background character
+	    // so it shows through the popup.
+	    if (screen_opacity_popup && screen_opacity_popup->w_popup_blend > 0)
 	    {
-		ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
-		if (ScreenLinesUC[off_from] != 0)
+		ScreenLines[off_to] = ScreenLines[off_from];
+		ScreenAttrs[off_to] = ScreenAttrs[off_from];
+		if (enc_utf8)
 		{
-		    for (int i = 0; i < Screen_mco; ++i)
+		    ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
+		    if (ScreenLinesUC[off_from] != 0)
+		    {
+			for (int i = 0; i < Screen_mco; ++i)
 			ScreenLinesC[i][off_to] = ScreenLinesC[i][off_from];
+		    }
 		}
-	    }
-	    if (char_cells == 2)
-	    {
-		ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
-		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
-	    }
-	    if (enc_dbcs == DBCS_JPNU)
-		ScreenLines2[off_to] = ScreenLines2[off_from];
+		if (char_cells == 2)
+		{
+		    ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
+		    ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+		}
+		if (enc_dbcs == DBCS_JPNU)
+		    ScreenLines2[off_to] = ScreenLines2[off_from];
 
-	    if (screen_zindex > 0)
-	    {
 		if (enc_dbcs != 0 && char_cells == 2)
 		    screen_char_2(off_to, row, col + coloff);
 		else
 		    screen_char(off_to, row, col + coloff);
 	    }
-	    redraw_this = FALSE;
+	    else
+#endif
+		redraw_this = FALSE;
 	}
 
 #ifdef FEAT_PROP_POPUP
@@ -4597,8 +4597,8 @@ draw_tabline(void)
     int		c;
     int		len;
     int		attr_sel;
-    int		attr_nosel;
-    int		attr_fill;
+    int		attr_nosel = 0;
+    int		attr_fill = 0;
     char_u	*p;
     int		room;
     int		use_sep_chars = (t_colors < 8
@@ -5113,6 +5113,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     // first round: check for valid value, second round: assign values
     for (round = 0; round <= (apply ? 1 : 0); ++round)
     {
+	int has_tab = FALSE, has_leadtab = FALSE;
+
 	if (round > 0)
 	{
 	    // After checking that the value is valid: set defaults.
@@ -5280,6 +5282,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 					 e_wrong_character_width_for_field_str,
 					 tab[i].name.string);
 		    }
+		    if (tab[i].cp == &lcs_chars.tab2)
+			has_tab = TRUE;
+		    else  // tab[i].cp == &lcs_chars.leadtab2
+			has_leadtab = TRUE;
 		}
 
 		if (*s == ',' || *s == NUL)
@@ -5316,10 +5322,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	    if (*p == ',')
 		++p;
 	}
-    }
 
-    if (is_listchars && lcs_chars.leadtab2 != NUL && lcs_chars.tab2 == NUL)
-	return e_leadtab_requires_tab;
+	if (is_listchars && has_leadtab && !has_tab)
+	    return e_leadtab_requires_tab;
+    }
 
     if (apply)
     {
