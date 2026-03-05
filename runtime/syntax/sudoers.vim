@@ -99,9 +99,9 @@ syn cluster sudoersUserList         contains=sudoersUserListComma,sudoersUserLis
 syn match   sudoersUserSpecComma    contained ',' nextgroup=@sudoersUserInSpec  skipwhite skipnl
 syn cluster sudoersUserSpec         contains=sudoersUserSpecComma,@sudoersHostInSpec
 
-syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas,sudoersUserRunasColon skipwhite skipnl
+syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas,sudoersUserRunasColon,sudoersUserRunasEnd skipwhite skipnl
 syn match   sudoersUserRunasComma   contained ',' nextgroup=@sudoersUserInRunas skipwhite skipnl
-syn match   sudoersUserRunasColon   contained ':' nextgroup=@sudoersUserInRunas skipwhite skipnl
+syn match   sudoersUserRunasColon   contained ':' nextgroup=@sudoersUserInRunas,sudoersUserRunasEnd skipwhite skipnl
 syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
 syn cluster sudoersUserRunas        contains=sudoersUserRunasComma,sudoersUserRunasColon,@sudoersUserInRunas,sudoersUserRunasEnd
 
