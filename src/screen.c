@@ -627,7 +627,7 @@ screen_line(
 		    ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
 		    ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
 		}
-		if (enc_dbcs == DBCS_JPNU) // Copilot's suggestion for DBCS_JPNU
+		if (enc_dbcs == DBCS_JPNU)
 		    ScreenLines2[off_to] = ScreenLines2[off_from];
 
 		if (enc_dbcs != 0 && char_cells == 2)
