@@ -638,7 +638,6 @@ redraw_custom_statusline(win_T *wp)
     void
 showruler(int always)
 {
-    bool override_success;
     if (!always && !redrawing())
 	return;
     if (pum_visible())
@@ -647,15 +646,12 @@ showruler(int always)
 	curwin->w_redr_status = TRUE;
 	return;
     }
-    override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
 #if defined(FEAT_STL_OPT)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
 	redraw_custom_statusline(curwin);
     else
 #endif
 	win_redr_ruler(curwin, always, FALSE);
-    if (override_success)
-	pop_highlight_overrides();
 
     if (need_maketitle
 #ifdef FEAT_STL_OPT
@@ -748,6 +744,8 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	int	this_ru_col;
 	int	n1;			    // scratch value
 	int	n2;			    // scratch value
+	bool	override_success =
+	    push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
 	cursor_off();
 	if (wp->w_status_height)
@@ -853,6 +851,9 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #ifdef FEAT_DIFF
 	wp->w_ru_topfill = wp->w_topfill;
 #endif
+
+	if (override_success)
+	    pop_highlight_overrides();
     }
 }
 
@@ -1033,6 +1034,8 @@ redraw_win_toolbar(win_T *wp)
     int		col = 0;
     int		next_col;
     int		off = (int)(current_ScreenLine - ScreenLines);
+    bool	override_success =
+	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
     int		fill_attr = syn_name2attr((char_u *)"ToolbarLine");
     int		button_attr = syn_name2attr((char_u *)"ToolbarButton");
 
@@ -1084,6 +1087,9 @@ redraw_win_toolbar(win_T *wp)
 
     screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width,
 							  wp->w_width, -1, 0);
+
+    if (override_success)
+	pop_highlight_overrides();
 }
 #endif
 
@@ -1522,6 +1528,7 @@ win_update(win_T *wp)
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     int		save_got_int;
 #endif
+    bool	override_success;
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     // This needs to be done only for the first window when update_screen() is
@@ -1571,6 +1578,9 @@ win_update(win_T *wp)
 	return;
     }
 
+    override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+
+
 #ifdef FEAT_TERMINAL
     // If this window contains a terminal, redraw works completely differently.
     if (term_do_update_window(wp))
@@ -1582,6 +1592,8 @@ win_update(win_T *wp)
 	    redraw_win_toolbar(wp);
 # endif
 	wp->w_redr_type = 0;
+	if (override_success)
+	    pop_highlight_overrides();
 	return;
     }
 #endif
@@ -2854,6 +2866,9 @@ win_update(win_T *wp)
     if (!got_int)
 	got_int = save_got_int;
 #endif
+
+    if (override_success)
+	pop_highlight_overrides();
 }
 
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_GUI)

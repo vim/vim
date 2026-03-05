@@ -5986,6 +5986,7 @@ win_free(
     ruby_window_free(wp);
 #endif
 
+    remove_highlight_overrides(wp->w_hl);
     vim_free(wp->w_hl);
 
     clear_winopt(&wp->w_onebuf_opt);

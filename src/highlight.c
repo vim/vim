@@ -184,11 +184,11 @@ typedef struct
 typedef struct hl_overrides_S hl_overrides_T;
 struct hl_overrides_S
 {
-    hl_override_T   *arr;
+    hl_override_T   *arr;   // May be NULL if "arr" was freed
     int		    len;
-    hl_overrides_T  *next; // Used to handle recursive calls
+    hl_overrides_T  *next;  // Used to handle recursive calls
 
-    int attr[HLF_COUNT]; // highlight_attr[] before being updated.
+    int attr[HLF_COUNT];    // highlight_attr[] before being updated.
 };
 
 static hl_overrides_T *overrides = NULL;
@@ -5473,6 +5473,25 @@ update_highlight_overrides(hl_override_T *old, hl_override_T *hl_new, int newlen
 	{
 	    set->arr = hl_new;
 	    set->len = newlen;
+	    break;
+	}
+    }
+}
+
+/*
+ * If "arr" is in the highlight overrides list, then mark it as invalid.
+ */
+    void
+remove_highlight_overrides(hl_override_T *arr)
+{
+    if (arr == NULL || overrides == NULL)
+	return;
+
+    for (hl_overrides_T *set = overrides; set != NULL; set = set->next)
+    {
+	if (set->arr == arr)
+	{
+	    set->arr = NULL;
 	    break;
 	}
     }
