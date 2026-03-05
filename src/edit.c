@@ -5778,8 +5778,9 @@ set_repeat_dict(dict_T *dict)
 
     // Save a copy of the dictionary for getrepeat()
     g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
-    if (g_last_repeat_dict != NULL)
-	++g_last_repeat_dict->dv_refcount;
+    // dict_copy() returns a newly allocated dict with dv_refcount == 1.
+    // Do not increment again here — the dict will be unref'd by
+    // clear_repeat_dict() when appropriate.
 
     // Build the command string: cmd + text
     cmd_len = STRLEN(cmd);

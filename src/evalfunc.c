@@ -6601,7 +6601,8 @@ f_getrepeat(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	rettv->v_type = VAR_DICT;
 	rettv->vval.v_dict = dict;
-	++dict->dv_refcount;
+	// get_repeat_dict() returns a dict with dv_refcount == 1,
+	// so do not increment here. rettv takes ownership of that ref.
     }
 }
 
