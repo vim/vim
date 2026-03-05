@@ -941,12 +941,15 @@ RT_UNIX_DOS_BIN =	\
 		runtime/vim16x16.gif \
 		runtime/vim16x16.png \
 		runtime/vim16x16.xpm \
+		runtime/vim16x16_png.h \
 		runtime/vim32x32.gif \
 		runtime/vim32x32.png \
 		runtime/vim32x32.xpm \
+		runtime/vim32x32_png.h \
 		runtime/vim48x48.gif \
 		runtime/vim48x48.png \
 		runtime/vim48x48.xpm \
+		runtime/vim48x48_png.h \
 
 # Runtime not for Unix-like or extra.
 RT_NO_UNIX =	\

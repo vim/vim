@@ -4469,8 +4469,8 @@ objects/gui_gtk_x11.o: auto/osdef.h gui_gtk_x11.c vim.h protodef.h auto/config.h
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h auto/gui_gtk_gresources.h \
- gui_gtk_f.h ../runtime/vim16x16.xpm ../runtime/vim32x32.xpm \
- ../runtime/vim48x48.xpm
+ gui_gtk_f.h ../runtime/vim16x16_png.h ../runtime/vim32x32_png.h \
+ ../runtime/vim48x48_png.h
 objects/gui_x11.o: auto/osdef.h gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
