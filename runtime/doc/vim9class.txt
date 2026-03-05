@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1354,7 +1354,6 @@ the restrictions?
 
 Thoughts:
 - Generics for a class: `class <Tkey, Tentry>`
-- Generics for a function: `def <Tkey> GetLast(key: Tkey)`
 - Mixins: not sure if that is useful, leave out for simplicity.
 
 Some things that look like good additions:
