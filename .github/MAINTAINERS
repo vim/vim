@@ -542,6 +542,7 @@ runtime/syntax/gitignore.vim				@ObserverOfTime
 runtime/syntax/gitolite.vim				@sitaramc
 runtime/syntax/gitrebase.vim				@tpope
 runtime/syntax/gleam.vim				@kirillmorozov
+runtime/syntax/glimmer.vim				@sukima
 runtime/syntax/glsl.vim					@gpanders
 runtime/syntax/go.vim					@bhcleek
 runtime/syntax/goaccess.vim				@meonkeys
