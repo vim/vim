@@ -24,7 +24,7 @@ syn match   sudoersUserSpec '^' nextgroup=@sudoersUserInSpec skipwhite
 
 syn match   sudoersSpecEquals         contained '=' nextgroup=@sudoersCmndSpecList skipwhite
 
-syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersTagSpec,@sudoersCmndInSpec
+syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec
 
 syn keyword sudoersTodo               contained TODO FIXME XXX NOTE
 
@@ -110,7 +110,7 @@ syn cluster sudoersUserSpec         contains=sudoersUserSpecComma,@sudoersHostIn
 syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas,sudoersUserRunasColon,sudoersUserRunasEnd skipwhite skipnl
 syn match   sudoersUserRunasComma   contained ',' nextgroup=@sudoersUserInRunas skipwhite skipnl
 syn match   sudoersUserRunasColon   contained ':' nextgroup=@sudoersUserInRunas,sudoersUserRunasEnd skipwhite skipnl
-syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
 syn cluster sudoersUserRunas        contains=sudoersUserRunasComma,sudoersUserRunasColon,@sudoersUserInRunas,sudoersUserRunasEnd
 
 
@@ -393,6 +393,28 @@ syn region  sudoersStringValue  contained start=+\s*\zs"+ skip=+\\"+ end=+"+ nex
 syn match   sudoersListValue    contained '\s*\zs[^[:space:],:=\\]*\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn region  sudoersListValue    contained start=+\s*\zs"+ skip=+\\"+ end=+"+ nextgroup=sudoersParameterListComma skipwhite skipnl
 
+syn keyword sudoersOptionSpec contained ROLE TYPE nextgroup=sudoersSELinuxSpecEquals skipwhite
+syn keyword sudoersOptionSpec contained APPARMOR_PROFILE nextgroup=sudoersAppArmorSpecEquals skipwhite
+syn keyword sudoersOptionSpec contained PRIVS LIMITPRIVS nextgroup=sudoersSolarisPrivSpecEquals skipwhite
+syn keyword sudoersOptionSpec contained NOTBEFORE NOTAFTER nextgroup=sudoersDateSpecEquals skipwhite
+syn keyword sudoersOptionSpec contained TIMEOUT nextgroup=sudoersTimeoutSpecEquals skipwhite
+syn keyword sudoersOptionSpec contained CWD CHROOT nextgroup=sudoersDirectorySpecEquals skipwhite
+
+syn match sudoersSELinuxSpecEquals     contained '=' nextgroup=sudoersSELinuxSpecParam skipwhite skipnl
+syn match sudoersAppArmorSpecEquals    contained '=' nextgroup=sudoersAppArmorSpecParam skipwhite skipnl
+syn match sudoersSolarisPrivSpecEquals contained '=' nextgroup=sudoersSolarisPrivSpecParam skipwhite skipnl
+syn match sudoersDateSpecEquals        contained '=' nextgroup=sudoersDateSpecParam skipwhite skipnl
+syn match sudoersTimeoutSpecEquals     contained '=' nextgroup=sudoersTimeoutSpecParam skipwhite skipnl
+syn match sudoersDirectorySpecEquals   contained '=' nextgroup=sudoersDirectorySpecParam,sudoersDirectorySpecParamError skipwhite skipnl
+
+syn match sudoersSELinuxSpecParam contained /\<[A-Za-z0-9_]\+\>/ nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersAppArmorSpecParam contained /\S\+/ nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersSolarisPrivSpecParam contained /\S\+/ nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersDateSpecParam    contained /\<\d\{10\}\%(\d\d\)\{0,2\}\%(Z\|[+-]\d\{4\}\)\?\>/ nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersTimeoutSpecParam contained /\<\d\+\>\|\<\%(\d\+[dDhHmMsS]\)\+\>/ nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersDirectorySpecParam contained '[/~]\f*\|\*' nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+syn match sudoersDirectorySpecParam contained '"\%([/~]\f\{-}\|\*\)"' nextgroup=sudoersOptionSpec,sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
+
 syn keyword sudoersTagSpec contained EXEC NOEXEC FOLLOW NOFOLLOW LOG_INPUT NOLOG_INPUT LOG_OUTPUT NOLOG_OUTPUT MAIL NOMAIL INTERCEPT NOINTERCEPT PASSWD NOPASSWD SETENV NOSETENV nextgroup=sudoersTagSpecColon skipwhite
 syn match sudoersTagSpecColon contained /:/ nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite
 
@@ -511,6 +533,19 @@ hi def link sudoersFloatValue               Float
 hi def link sudoersTimeoutValue             Number
 hi def link sudoersStringValue              String
 hi def link sudoersListValue                String
+hi def link sudoersOptionSpec               Special
+hi def link sudoersSELinuxSpecEquals        Operator
+hi def link sudoersAppArmorSpecEquals       Operator
+hi def link sudoersSolarisPrivSpecEquals    Operator
+hi def link sudoersDateSpecEquals           Operator
+hi def link sudoersTimeoutSpecEquals        Operator
+hi def link sudoersDirectorySpecEquals      Operator
+hi def link sudoersSELinuxSpecParam         String
+hi def link sudoersAppArmorSpecParam        String
+hi def link sudoersSolarisPrivSpecParam     String
+hi def link sudoersDateSpecParam            Number
+hi def link sudoersTimeoutSpecParam         Number
+hi def link sudoersDirectorySpecParam       String
 hi def link sudoersTagSpec                  Special
 hi def link sudoersTagSpecColon             Delimiter
 hi def link sudoersInclude                  Statement
