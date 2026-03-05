@@ -42,13 +42,16 @@ syn match   sudoersGroupInList        contained '%\l[-a-z0-9_]*\>'  nextgroup=@s
 syn match   sudoersGIDInList          contained '%#\d\+\>'          nextgroup=@sudoersUserList        skipwhite skipnl
 syn match   sudoersUserNetgroupInList contained '+\l[-a-z0-9_]*\>'  nextgroup=@sudoersUserList        skipwhite skipnl
 syn match   sudoersUserAliasInList    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersUserList        skipwhite skipnl
+syn keyword sudoersUserAllInList      contained ALL                 nextgroup=@sudoersUserList        skipwhite skipnl
 
-syn match   sudoersUserName           contained '\<\l[-a-z0-9_]*\>' nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersUID                contained '#\d\+\>'           nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersGroup              contained '%\l[-a-z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersGID                contained '%#\d\+\>'          nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersUserNetgroup       contained '+\l[-a-z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersUserAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
+syn match   sudoersUserName           contained '\<\l[-a-z0-9_]*\>' nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersUID                contained '#\d\+\>'           nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersGroup              contained '%\l[-a-z0-9_]*\>'  nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersGID                contained '%#\d\+\>'          nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersUserNetgroup       contained '+\l[-a-z0-9_]*\>'  nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersUserAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn keyword sudoersUserAll            contained ALL                 nextgroup=sudoersUserComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersUserComma          contained ','                 nextgroup=sudoersUserNegation,sudoersUserName,sudoersUID,sudoersGroup,sudoersGID,sudoersUserNetgroup,sudoersUserAliasRef,sudoersUserAll skipwhite skipnl
 
 syn match   sudoersUserNameInSpec     contained '\<\l[-a-z0-9_]*\>' nextgroup=@sudoersUserSpec        skipwhite skipnl
 syn region  sudoersUIDInSpec          display oneline start='#\d\+\>' end='' nextgroup=@sudoersUserSpec skipwhite skipnl
@@ -56,6 +59,7 @@ syn match   sudoersGroupInSpec        contained '%\l[-a-z0-9_]*\>'  nextgroup=@s
 syn match   sudoersGIDInSpec          contained '%#\d\+\>'          nextgroup=@sudoersUserSpec        skipwhite skipnl
 syn match   sudoersUserNetgroupInSpec contained '+\l[-a-z0-9_]*\>'  nextgroup=@sudoersUserSpec        skipwhite skipnl
 syn match   sudoersUserAliasInSpec    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersUserSpec        skipwhite skipnl
+syn keyword sudoersUserAllInSpec      contained ALL                 nextgroup=@sudoersUserSpec        skipwhite skipnl
 
 syn match   sudoersUserNameInRunas    contained '\<\l[-a-z0-9_]*\>' nextgroup=@sudoersUserRunas       skipwhite skipnl
 syn match   sudoersUIDInRunas         contained '#\d\+\>'           nextgroup=@sudoersUserRunas       skipwhite skipnl
@@ -63,26 +67,29 @@ syn match   sudoersGroupInRunas       contained '%\l[-a-z0-9_]*\>'  nextgroup=@s
 syn match   sudoersGIDInRunas         contained '%#\d\+\>'          nextgroup=@sudoersUserRunas       skipwhite skipnl
 syn match   sudoersUserNetgroupInRunas contained '+\l[-a-z0-9_]*\>' nextgroup=@sudoersUserRunas       skipwhite skipnl
 syn match   sudoersUserAliasInRunas   contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersUserRunas       skipwhite skipnl
+syn keyword sudoersUserAllInRunas     contained ALL                 nextgroup=@sudoersUserRunas       skipwhite skipnl
 
 syn match   sudoersHostAlias          contained '\<\u[A-Z0-9_]*\>'  nextgroup=sudoersHostAliasEquals  skipwhite skipnl
 syn match   sudoersHostNameInList     contained '\<\l[a-z0-9_-]*\>' nextgroup=@sudoersHostList        skipwhite skipnl
-syn match   sudoersIPAddrInList       contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersHostList skipwhite skipnl
-syn match   sudoersNetworkInList      contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersHostList skipwhite skipnl
+syn match   sudoersIPAddrInList       contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\>' nextgroup=@sudoersHostList skipwhite skipnl
+syn match   sudoersNetworkInList      contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=\>' nextgroup=@sudoersHostList skipwhite skipnl
 syn match   sudoersHostNetgroupInList contained '+\l\+\>'           nextgroup=@sudoersHostList        skipwhite skipnl
 syn match   sudoersHostAliasInList    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersHostList        skipwhite skipnl
 
-syn match   sudoersHostName           contained '\<\l[a-z0-9_-]*\>'           nextgroup=@sudoersParameter skipwhite skipnl
-syn match   sudoersIPAddr             contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\>' nextgroup=@sudoersParameter skipwhite skipnl
-syn match   sudoersNetwork            contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\>' nextgroup=@sudoersParameter skipwhite skipnl
-syn match   sudoersHostNetgroup       contained '+\l\+\>'           nextgroup=@sudoersParameter       skipwhite skipnl
-syn match   sudoersHostAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersParameter       skipwhite skipnl
-syn keyword sudoersHostAll            contained ALL                 nextgroup=@sudoersParameter       skipwhite skipnl
+syn match   sudoersHostName           contained '\<\l[a-z0-9_-]*\>'           nextgroup=sudoersHostComma,@sudoersParameter skipwhite skipnl
+syn match   sudoersIPAddr             contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\>' nextgroup=sudoersHostComma,@sudoersParameter skipwhite skipnl
+syn match   sudoersNetwork            contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\>' nextgroup=sudoersHostComma,@sudoersParameter skipwhite skipnl
+syn match   sudoersHostNetgroup       contained '+\l\+\>'           nextgroup=sudoersHostComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersHostAliasRef       contained '\<\u[A-Z0-9_]*\>'  nextgroup=sudoersHostComma,@sudoersParameter       skipwhite skipnl
+syn keyword sudoersHostAll            contained ALL                 nextgroup=sudoersHostComma,@sudoersParameter       skipwhite skipnl
+syn match   sudoersHostComma          contained ','                 nextgroup=sudoersHostNegation,sudoersHostName,sudoersIPAddr,sudoersNetwork,sudoersHostNetgroup,sudoersHostAliasRef,sudoersHostAll skipwhite skipnl
 
 syn match   sudoersHostNameInSpec     contained '\<\l[a-z0-9_-]*\>' nextgroup=@sudoersHostSpec        skipwhite skipnl
-syn match   sudoersIPAddrInSpec       contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}' nextgroup=@sudoersHostSpec skipwhite skipnl
-syn match   sudoersNetworkInSpec      contained '\%(\d\{1,3}\.\)\{3}\d\{1,3}\%(/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\)\=' nextgroup=@sudoersHostSpec skipwhite skipnl
+syn match   sudoersIPAddrInSpec       contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}\>' nextgroup=@sudoersHostSpec skipwhite skipnl
+syn match   sudoersNetworkInSpec      contained '\<\%(\d\{1,3}\.\)\{3}\d\{1,3}/\%(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|\d\+\)\>' nextgroup=@sudoersHostSpec skipwhite skipnl
 syn match   sudoersHostNetgroupInSpec contained '+\l\+\>'           nextgroup=@sudoersHostSpec        skipwhite skipnl
 syn match   sudoersHostAliasInSpec    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersHostSpec        skipwhite skipnl
+syn keyword sudoersHostAllInSpec      contained ALL                 nextgroup=@sudoersHostSpec        skipwhite skipnl
 
 syn match   sudoersCmndAlias          contained '\<\u[A-Z0-9_]*\>'  nextgroup=sudoersCmndAliasEquals  skipwhite skipnl
 syn match   sudoersCmndNameInList     contained '[^[:space:],:=\\]\+\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=@sudoersCmndList,sudoersCommandEmpty,sudoersCommandArgs skipwhite
@@ -90,6 +97,7 @@ syn match   sudoersCmndAliasInList    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@s
 
 syn match   sudoersCmndNameInSpec     contained '[^[:space:],:=\\]\+\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=@sudoersCmndSpec,sudoersCommandEmptyInSpec,sudoersCommandArgsInSpec skipwhite
 syn match   sudoersCmndAliasInSpec    contained '\<\u[A-Z0-9_]*\>'  nextgroup=@sudoersCmndSpec        skipwhite skipnl
+syn keyword sudoersCmndSpecialInSpec  contained list sudoedit ALL   nextgroup=@sudoersCmndSpec        skipwhite skipnl
 
 syn match   sudoersUserAliasEquals  contained '=' nextgroup=@sudoersUserInList  skipwhite skipnl
 syn match   sudoersUserListComma    contained ',' nextgroup=@sudoersUserInList  skipwhite skipnl
@@ -124,17 +132,17 @@ syn match   sudoersCmndSpecComma    contained ',' nextgroup=@sudoersCmndSpecList
 syn match   sudoersCmndSpecColon    contained ':' nextgroup=@sudoersUserInSpec  skipwhite skipnl
 syn cluster sudoersCmndSpec         contains=sudoersCmndSpecComma,sudoersCmndSpecColon
 
-syn cluster sudoersUserInList       contains=sudoersUserNegationInList,sudoersUserNameInList,sudoersUIDInList,sudoersGroupInList,sudoersGIDInList,sudoersUserNetgroupInList,sudoersUserAliasInList
+syn cluster sudoersUserInList       contains=sudoersUserNegationInList,sudoersUserNameInList,sudoersUIDInList,sudoersGroupInList,sudoersGIDInList,sudoersUserNetgroupInList,sudoersUserAliasInList,sudoersUserAllInList
 syn cluster sudoersHostInList       contains=sudoersHostNegationInList,sudoersHostNameInList,sudoersIPAddrInList,sudoersNetworkInList,sudoersHostNetgroupInList,sudoersHostAliasInList
 syn cluster sudoersCmndInList       contains=sudoersCmndNegationInList,sudoersCmndNameInList,sudoersCmndAliasInList
 
-syn cluster sudoersUser             contains=sudoersUserNegation,sudoersUserName,sudoersUID,sudoersGroup,sudoersGID,sudoersUserNetgroup,sudoersUserAliasRef
+syn cluster sudoersUser             contains=sudoersUserNegation,sudoersUserName,sudoersUID,sudoersGroup,sudoersGID,sudoersUserNetgroup,sudoersUserAliasRef,sudoersUserAll
 syn cluster sudoersHost             contains=sudoersHostNegation,sudoersHostName,sudoersIPAddr,sudoersNetwork,sudoersHostNetgroup,sudoersHostAll,sudoersHostAliasRef
 
-syn cluster sudoersUserInSpec       contains=sudoersUserNegationInSpec,sudoersUserNameInSpec,sudoersUIDInSpec,sudoersGroupInSpec,sudoersGIDInSpec,sudoersUserNetgroupInSpec,sudoersUserAliasInSpec
-syn cluster sudoersHostInSpec       contains=sudoersHostNegationInSpec,sudoersHostNameInSpec,sudoersIPAddrInSpec,sudoersNetworkInSpec,sudoersHostNetgroupInSpec,sudoersHostAliasInSpec
-syn cluster sudoersUserInRunas      contains=sudoersUserNegationInRunas,sudoersUserNameInRunas,sudoersUIDInRunas,sudoersGroupInRunas,sudoersGIDInRunas,sudoersUserNetgroupInRunas,sudoersUserAliasInRunas
-syn cluster sudoersCmndInSpec       contains=sudoersCmndNegationInSpec,sudoersCmndNameInSpec,sudoersCmndAliasInSpec
+syn cluster sudoersUserInSpec       contains=sudoersUserNegationInSpec,sudoersUserNameInSpec,sudoersUIDInSpec,sudoersGroupInSpec,sudoersGIDInSpec,sudoersUserNetgroupInSpec,sudoersUserAliasInSpec,sudoersUserAllInSpec
+syn cluster sudoersHostInSpec       contains=sudoersHostNegationInSpec,sudoersHostNameInSpec,sudoersIPAddrInSpec,sudoersNetworkInSpec,sudoersHostNetgroupInSpec,sudoersHostAliasInSpec,sudoersHostAllInSpec
+syn cluster sudoersUserInRunas      contains=sudoersUserNegationInRunas,sudoersUserNameInRunas,sudoersUIDInRunas,sudoersGroupInRunas,sudoersGIDInRunas,sudoersUserNetgroupInRunas,sudoersUserAliasInRunas,sudoersUserAllInRunas
+syn cluster sudoersCmndInSpec       contains=sudoersCmndNegationInSpec,sudoersCmndNameInSpec,sudoersCmndAliasInSpec,sudoersCmndSpecialInSpec
 
 syn match   sudoersUserNegationInList contained '!\+' nextgroup=@sudoersUserInList  skipwhite skipnl
 syn match   sudoersHostNegationInList contained '!\+' nextgroup=@sudoersHostInList  skipwhite skipnl
@@ -399,24 +407,29 @@ hi def link sudoersGroupInList              PreProc
 hi def link sudoersGIDInList                Number
 hi def link sudoersUserNetgroupInList       PreProc
 hi def link sudoersUserAliasInList          PreProc
+hi def link sudoersUserAllInList            Special
 hi def link sudoersUserName                 String
 hi def link sudoersUID                      Number
 hi def link sudoersGroup                    PreProc
 hi def link sudoersGID                      Number
 hi def link sudoersUserNetgroup             PreProc
 hi def link sudoersUserAliasRef             PreProc
+hi def link sudoersUserAll                  Special
+hi def link sudoersUserComma                Delimiter
 hi def link sudoersUserNameInSpec           String
 hi def link sudoersUIDInSpec                Number
 hi def link sudoersGroupInSpec              PreProc
 hi def link sudoersGIDInSpec                Number
 hi def link sudoersUserNetgroupInSpec       PreProc
 hi def link sudoersUserAliasInSpec          PreProc
+hi def link sudoersUserAllInSpec            Special
 hi def link sudoersUserNameInRunas          String
 hi def link sudoersUIDInRunas               Number
 hi def link sudoersGroupInRunas             PreProc
 hi def link sudoersGIDInRunas               Number
 hi def link sudoersUserNetgroupInRunas      PreProc
 hi def link sudoersUserAliasInRunas         PreProc
+hi def link sudoersUserAllInRunas           Special
 hi def link sudoersHostAlias                Identifier
 hi def link sudoersHostNameInList           String
 hi def link sudoersIPAddrInList             Number
@@ -428,17 +441,20 @@ hi def link sudoersIPAddr                   Number
 hi def link sudoersNetwork                  Number
 hi def link sudoersHostNetgroup             PreProc
 hi def link sudoersHostAll                  Special
+hi def link sudoersHostComma                Delimiter
 hi def link sudoersHostAliasRef             PreProc
 hi def link sudoersHostNameInSpec           String
 hi def link sudoersIPAddrInSpec             Number
 hi def link sudoersNetworkInSpec            Number
 hi def link sudoersHostNetgroupInSpec       PreProc
 hi def link sudoersHostAliasInSpec          PreProc
+hi def link sudoersHostAllInSpec            Special
 hi def link sudoersCmndAlias                Identifier
 hi def link sudoersCmndNameInList           String
 hi def link sudoersCmndAliasInList          PreProc
 hi def link sudoersCmndNameInSpec           String
 hi def link sudoersCmndAliasInSpec          PreProc
+hi def link sudoersCmndSpecialInSpec        Special
 hi def link sudoersUserAliasEquals          Operator
 hi def link sudoersUserListComma            Delimiter
 hi def link sudoersUserListColon            Delimiter
