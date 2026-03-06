@@ -703,6 +703,24 @@ auto_format(
 	curwin->w_cursor = pos;
     }
 
+    // Also skip formatting when the user just typed whitespace in the
+    // middle of the line.  Reformatting would join all paragraph lines and
+    // re-wrap, consuming the space at the line break point via
+    // OPENLINE_DELSPACES.  By deferring, the next non-whitespace character
+    // will be inserted adjacent to the space, keeping it protected from
+    // being consumed at a line break.  auto_format() will then reformat
+    // properly on the next keystroke.
+    if (*old != NUL && !trailblank && !wasatend && pos.col > 0
+	    && (State & MODE_INSERT))
+    {
+	char_u *line = ml_get_curline();
+	if (WHITECHAR(line[pos.col - 1]))
+	{
+	    curwin->w_cursor = pos;
+	    return;
+	}
+    }
+
     // With the 'c' flag in 'formatoptions' and 't' missing: only format
     // comments.
     if (has_format_option(FO_WRAP_COMS) && !has_format_option(FO_WRAP)
