@@ -54,6 +54,7 @@ static int typedchars_pos = 0;
 static int	block_redo = FALSE;
 
 static int	skip_restore_redo_cnt = 0;
+static save_redo_T *active_save_redo_head = NULL;
 
 static int	KeyNoremap = 0;	    // remapping flags
 
@@ -550,6 +551,44 @@ CancelRedo(void)
 	;
 }
 
+// Public helper: update all active saved redo entries so that an outer
+// restore (restoreRedobuff) will restore the new redo state instead of
+// reverting a programmatic change made by setrepeat().
+    void
+updateSavedRedobuffs(void)
+{
+    save_redo_T *sr;
+    char_u *s_red = NULL, *s_old = NULL;
+    size_t len_red = 0, len_old = 0;
+
+    if (active_save_redo_head == NULL)
+	return;
+
+    // obtain current redo buffer contents as NUL-terminated strings
+    s_red = get_buffcont(&redobuff, FALSE, &len_red);
+    s_old = get_buffcont(&old_redobuff, FALSE, &len_old);
+    if (s_red == NULL || s_old == NULL)
+    {
+	if (s_red != NULL)
+	    vim_free(s_red);
+	if (s_old != NULL)
+	    vim_free(s_old);
+	return;
+    }
+
+    /* replace each saved entry's buffers (safe to do in-place) */
+    for (sr = active_save_redo_head; sr != NULL; sr = sr->sr_next)
+    {
+	free_buff(&sr->sr_redobuff);
+	add_buff(&sr->sr_redobuff, s_red, (long)len_red);
+	free_buff(&sr->sr_old_redobuff);
+	add_buff(&sr->sr_old_redobuff, s_old, (long)len_old);
+    }
+
+    vim_free(s_red);
+    vim_free(s_old);
+}
+
 /*
  * Save redobuff and old_redobuff to save_redobuff and save_old_redobuff.
  * Used before executing autocommands and user functions.
@@ -572,6 +611,10 @@ saveRedobuff(save_redo_T *save_redo)
 
     add_buff(&redobuff, s, (long)slen);
     vim_free(s);
+
+    // push into active list so updateSavedRedobuffs() can find it
+    save_redo->sr_next = active_save_redo_head;
+    active_save_redo_head = save_redo;
 }
 
 /*
@@ -581,23 +624,26 @@ saveRedobuff(save_redo_T *save_redo)
     void
 restoreRedobuff(save_redo_T *save_redo)
 {
-    // If skip count is set, skip restoring this saved redo: free the
-    // saved buffers and consume one skip. This handles nesting naturally.
-    if (skip_restore_redo_cnt > 0)
-    {
-	skip_restore_redo_cnt--;
-	// Free the saved buffers since we're intentionally skipping restoring
-	// them.
-	free_buff(&save_redo->sr_redobuff);
-	free_buff(&save_redo->sr_old_redobuff);
-	return;
-    }
-
     // Normal restore: free current buffers and use saved ones.
     free_buff(&redobuff);
     redobuff = save_redo->sr_redobuff;
     free_buff(&old_redobuff);
     old_redobuff = save_redo->sr_old_redobuff;
+
+    // Unregister from active saved list.
+    {
+	save_redo_T **pp = &active_save_redo_head;
+	while (*pp != NULL)
+	{
+	    if (*pp == save_redo)
+	    {
+		*pp = save_redo->sr_next;
+		save_redo->sr_next = NULL;
+		break;
+	    }
+	    pp = &(*pp)->sr_next;
+	}
+    }
 }
 
 /*

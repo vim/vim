@@ -5773,37 +5773,71 @@ set_repeat_dict(dict_T *dict)
     if (di != NULL)
 	text = tv_get_string(&di->di_tv);
 
-    // Free the previous dictionary if it exists
-    clear_repeat_dict();
+    // To avoid being stomped by an outer restore (e.g. when called inside a
+    // user function or autocommand), we:
+    //  - prepare combined string and dict_copy first (may fail)
+    //  - only after successful allocation/copy replace g_last_repeat_dict
+    //  - update current redo/last_insert
+    //  - update any active saved redo entries so outer restore restores the
+    //    new state, not the old state
 
-    // Save a copy of the dictionary for getrepeat()
-    g_last_repeat_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
-    // dict_copy() returns a newly allocated dict with dv_refcount == 1.
-    // Do not increment again here — the dict will be unref'd by
-    // clear_repeat_dict() when appropriate.
-
-    // Build the command string: cmd + text
     cmd_len = STRLEN(cmd);
     text_len = (text != NULL && *text != NUL) ? STRLEN(text) : 0;
 
+    // prepare combined string only if needed
     if (text_len > 0)
     {
-	// Combine cmd and text
 	combined = alloc(cmd_len + text_len + 1);
 	if (combined == NULL)
-	{
-	    clear_repeat_dict();
 	    return;
-	}
-
 	STRCPY(combined, cmd);
 	STRCPY(combined + cmd_len, text);
+    }
 
-	set_last_insert_str(combined);
+    // copy dict first (may fail)
+    dict_T *new_dict = dict_copy(dict, TRUE, FALSE, get_copyID());
+    if (new_dict == NULL)
+    {
 	vim_free(combined);
+	return;
+    }
+
+    // Now replace previous saved dict atomically
+    clear_repeat_dict();
+    g_last_repeat_dict = new_dict;
+
+    // update redo/insert state
+    if (text_len > 0)
+    {
+	// Append the command part first (e.g. "cw" or "i").
+	AppendToRedobuff((char_u *)cmd);
+
+	// Then append the inserted text using the literal helper.
+	AppendToRedobuffLit(text, (int)text_len);
+
+	// Ensure insert/change ends.
+	AppendCharToRedobuff(ESC);
     }
     else
-	set_last_insert_str(cmd);
+	AppendToRedobuff((char_u *)cmd);
+
+    if (vim_strchr((char_u *)"iIaAoO", cmd[0]) != NULL)
+    {
+	if (combined != NULL)
+	    set_last_insert_str(combined);
+	else
+	    set_last_insert_str((char_u *)cmd);
+    }
+    else if (vim_strchr((char_u *)"cCsS", cmd[0]) != NULL)
+    {
+	// change-like: only set the inserted text, not motion
+	if (text != NULL && *text != NUL)
+	    set_last_insert_str(text);
+    }
+
+    updateSavedRedobuffs();
+
+    vim_free(combined);
 }
 
 /*
