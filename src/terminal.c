@@ -7134,6 +7134,15 @@ conpty_term_and_job_init(
 
     term->tl_siex.StartupInfo.cb = sizeof(term->tl_siex);
 
+    // Explicitly invalidate std handles to prevent inheritance of
+    // the debugger's stdout (e.g., in Visual Studio debugging sessions),
+    // which could cause job output to go to the debugger instead of
+    // the intended ConPTY, even with bInheritHandles set to FALSE in CreateProcess.
+    term->tl_siex.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+    term->tl_siex.StartupInfo.hStdInput = INVALID_HANDLE_VALUE;
+    term->tl_siex.StartupInfo.hStdOutput = INVALID_HANDLE_VALUE;
+    term->tl_siex.StartupInfo.hStdError = INVALID_HANDLE_VALUE;
+
     // Set up pipe inheritance safely: Vista or later.
     pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
     term->tl_siex.lpAttributeList = alloc(breq);
