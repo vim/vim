@@ -7902,8 +7902,8 @@ term_set_sync_output(int flags)
 	if (allowed && !in_gui && sync_output_state > 0 && *T_ESU != NUL &&
 		*T_BSU != NUL)
 	{
-	    out_str((char_u *)T_ESU);
-	    out_str((char_u *)T_BSU);
+	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
+	    ui_write((char_u *)T_BSU, (int)STRLEN(T_BSU), true);
 	}
 	return;
     }
@@ -7913,7 +7913,7 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state > 0 && *T_ESU != NUL)
 	{
-	    out_str((char_u *)T_ESU);
+	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
 	    sync_output_state = 0;
 	}
 	return;
@@ -7942,5 +7942,6 @@ term_set_sync_output(int flags)
 	return;
     }
 
-    out_str((char_u *)str);
+    // Directly write to terminal instead of using output buffer
+    ui_write((char_u *)str, (int)STRLEN(str), true);
 }
