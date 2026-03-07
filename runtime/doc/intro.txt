@@ -313,10 +313,10 @@ Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
 	as flexible as Vim.  Development has stalled, Elvis has left the
 	building!  Source code is freely available.
 							*Neovim*
-Neovim	A fork of Vim source from 2014 that went a different way. Very much
+Neovim	A fork of Vim source from 2014 that went a different way.  Very much
 	bound to GitHub and has many more dependencies, making development
-	more complex and limiting portability. Code has been refactored,
-	resulting in patches not being exchangeable with Vim. Supports remote
+	more complex and limiting portability.  Code has been refactored,
+	resulting in patches not being exchangeable with Vim.  Supports remote
 	UIs and first-class Lua scripting.
 
 ==============================================================================
