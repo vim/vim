@@ -6,6 +6,7 @@ CheckUnix
 CheckFeature job
 CheckWaylandCompositor
 CheckNotGui
+CheckEnv XDG_RUNTIME_DIR
 
 if !executable('wl-paste') || !executable('wl-copy')
   throw "Skipped: wl-clipboard is not available"
@@ -57,6 +58,10 @@ endfunc
 
 func s:CheckClientserver()
   CheckFeature clientserver
+
+  if has('x11')
+      CheckEnv DISPLAY
+  endif
 
   if has('socketserver') && !has('x11')
     if v:servername == ""
