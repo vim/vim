@@ -557,35 +557,29 @@ CancelRedo(void)
 updateSavedRedobuffs(void)
 {
     save_redo_T *sr;
-    char_u *s_red = NULL, *s_old = NULL;
-    size_t len_red = 0, len_old = 0;
+    char_u *s;
+    size_t len;
 
-    if (active_save_redo_head == NULL)
-	return;
-
-    // obtain current redo buffer contents as NUL-terminated strings
-    s_red = get_buffcont(&redobuff, FALSE, &len_red);
-    s_old = get_buffcont(&old_redobuff, FALSE, &len_old);
-    if (s_red == NULL || s_old == NULL)
-    {
-	if (s_red != NULL)
-	    vim_free(s_red);
-	if (s_old != NULL)
-	    vim_free(s_old);
-	return;
-    }
-
-    /* replace each saved entry's buffers (safe to do in-place) */
     for (sr = active_save_redo_head; sr != NULL; sr = sr->sr_next)
     {
+	// Replace sr->sr_redobuff with a copy of current redobuff.
 	free_buff(&sr->sr_redobuff);
-	add_buff(&sr->sr_redobuff, s_red, (long)len_red);
-	free_buff(&sr->sr_old_redobuff);
-	add_buff(&sr->sr_old_redobuff, s_old, (long)len_old);
-    }
+	s = get_buffcont(&redobuff, FALSE, &len);
+	if (s != NULL)
+	{
+	    add_buff(&sr->sr_redobuff, s, (long)len);
+	    vim_free(s);
+	}
 
-    vim_free(s_red);
-    vim_free(s_old);
+	// Replace sr->sr_old_redobuff with a copy of current old_redobuff.
+	free_buff(&sr->sr_old_redobuff);
+	s = get_buffcont(&old_redobuff, FALSE, &len);
+	if (s != NULL)
+	{
+	    add_buff(&sr->sr_old_redobuff, s, (long)len);
+	    vim_free(s);
+	}
+    }
 }
 
 /*
@@ -603,15 +597,17 @@ saveRedobuff(save_redo_T *save_redo)
     save_redo->sr_old_redobuff = old_redobuff;
     old_redobuff.bh_first.b_next = NULL;
 
-    // Make a copy, so that ":normal ." in a function works.
+    // Make a copy, so that ":normal ." in a function works, if any content.
     s = get_buffcont(&save_redo->sr_redobuff, FALSE, &slen);
-    if (s == NULL)
-	return;
+    if (s != NULL)
+    {
+	add_buff(&redobuff, s, (long)slen);
+	vim_free(s);
+    }
 
-    add_buff(&redobuff, s, (long)slen);
-    vim_free(s);
-
-    // push into active list so updateSavedRedobuffs() can find it
+    // Always register this save_redo in the active list (even if empty),
+    // so setrepeat() can update saved entries performed inside functions
+    // or autocommands.
     save_redo->sr_next = active_save_redo_head;
     active_save_redo_head = save_redo;
 }
@@ -623,13 +619,8 @@ saveRedobuff(save_redo_T *save_redo)
     void
 restoreRedobuff(save_redo_T *save_redo)
 {
-    // Normal restore: free current buffers and use saved ones.
-    free_buff(&redobuff);
-    redobuff = save_redo->sr_redobuff;
-    free_buff(&old_redobuff);
-    old_redobuff = save_redo->sr_old_redobuff;
-
-    // Unregister from active saved list.
+    // Unregister from active saved list (remove this node from the sr_next
+    // list).
     {
 	save_redo_T **pp = &active_save_redo_head;
 	while (*pp != NULL)
@@ -637,12 +628,17 @@ restoreRedobuff(save_redo_T *save_redo)
 	    if (*pp == save_redo)
 	    {
 		*pp = save_redo->sr_next;
-		save_redo->sr_next = NULL;
 		break;
 	    }
 	    pp = &(*pp)->sr_next;
 	}
     }
+
+    // Normal restore: free current buffers and use saved ones.
+    free_buff(&redobuff);
+    redobuff = save_redo->sr_redobuff;
+    free_buff(&old_redobuff);
+    old_redobuff = save_redo->sr_old_redobuff;
 }
 
 /*
