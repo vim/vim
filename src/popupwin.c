@@ -785,7 +785,13 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	nr = dict_get_number(dict, "opacity");
-	if (nr > 0 && nr < 100)
+	if (nr == 0)
+	{
+	    // opacity: 0, fully transparent
+	    wp->w_popup_flags |= POPF_OPACITY;
+	    wp->w_popup_blend = 100;
+	}
+	else if (nr > 0 && nr < 100)
 	{
 	    // opacity: 1-99, partially transparent
 	    // Convert to blend (0=opaque, 100=transparent)
@@ -4245,6 +4251,38 @@ popup_need_position_adjust(win_T *wp)
 }
 
 /*
+ * Force background windows to redraw rows under an opacity popup.
+ */
+    static void
+redraw_win_under_opacity_popup(win_T *wp)
+{
+    int	    height;
+    int	    r;
+
+    if (!(wp->w_popup_flags & POPF_OPACITY) || wp->w_popup_blend <= 0
+	    || (wp->w_popup_flags & POPF_HIDDEN))
+	return;
+
+    height = popup_height(wp);
+    for (r = wp->w_winrow;
+		       r < wp->w_winrow + height && r < screen_Rows; ++r)
+    {
+	int	    line_cp = r;
+	int	    col_cp = wp->w_wincol;
+	win_T	    *twp;
+
+	twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
+	if (twp != NULL && line_cp < twp->w_height)
+	{
+	    linenr_T lnum;
+
+	    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
+	    redrawWinline(twp, lnum);
+	}
+    }
+}
+
+/*
  * Update "popup_mask" if needed.
  * Also recomputes the popup size and positions.
  * Also updates "popup_visible" and "popup_uses_mouse_move".
@@ -4280,6 +4318,16 @@ may_update_popup_mask(int type)
 	    popup_mask_refresh |= check_popup_unhidden(wp);
 	else if (popup_need_position_adjust(wp))
 	    popup_mask_refresh = TRUE;
+
+    // Force background windows to redraw rows under opacity popups.
+    // Opacity popups don't participate in popup_mask, so their area
+    // wouldn't normally be redrawn.  Without this, ScreenAttrs retains
+    // blended values from the previous cycle, causing blend accumulation.
+    // This must run every cycle, not just when popup_mask_refresh is set.
+    FOR_ALL_POPUPWINS(wp)
+	redraw_win_under_opacity_popup(wp);
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	redraw_win_under_opacity_popup(wp);
 
     if (!popup_mask_refresh)
 	return;
@@ -5310,21 +5358,9 @@ update_popups(void (*win_update)(win_T *wp))
     }
 
 #ifdef FEAT_PROP_POPUP
-    if (base_screenlines != NULL)
-    {
-	vim_free(base_screenlines);
-	base_screenlines = NULL;
-    }
-    if (base_screenattrs != NULL)
-    {
-	vim_free(base_screenattrs);
-	base_screenattrs = NULL;
-    }
-    if (base_screenlinesuc != NULL)
-    {
-	vim_free(base_screenlinesuc);
-	base_screenlinesuc = NULL;
-    }
+    VIM_CLEAR(base_screenlines);
+    VIM_CLEAR(base_screenattrs);
+    VIM_CLEAR(base_screenlinesuc);
     base_screen_rows = 0;
     base_screen_cols = 0;
 #endif
