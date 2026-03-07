@@ -2966,4 +2966,36 @@ func Test_term_rgb_response()
   set t_RF= t_RB=
 endfunc
 
+" Test if kitty key protocol is detected automatically
+" https://sw.kovidgoyal.net/kitty/keyboard-protocol/#detection-of-support-for-this-protocol
+func Test_term_kkp_detect()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set keyprotocol=
+  END
+  let cmd =<< trim END
+  :call writefile([execute('verbose map')->split('\n')[0]], "XTestResult")
+  END
+
+  call writefile(lines, 'XTest', 'D')
+  defer delete('XTestResult')
+
+  let buf = RunVimInTerminal(
+        \ "-S XTest",
+        \ {'rows': 10, 'env': {'TERM': 'unknown'}})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[?0u\<Esc>?1;2;c")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, $"\<Esc>{cmd[0]}\<CR>")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["Kitty keyboard protocol: On"],
+        \ readfile('XTestResult'))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
