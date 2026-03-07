@@ -5785,6 +5785,7 @@ set_repeat_dict(dict_T *dict)
     text_len = (text != NULL && *text != NUL) ? STRLEN(text) : 0;
 
     // prepare combined string only if needed
+    // (still useful for set_last_insert_str)
     if (text_len > 0)
     {
 	combined = alloc(cmd_len + text_len + 1);
@@ -5806,21 +5807,10 @@ set_repeat_dict(dict_T *dict)
     clear_repeat_dict();
     g_last_repeat_dict = new_dict;
 
-    // update redo/insert state
-    if (text_len > 0)
-    {
-	// Append the command part first (e.g. "cw" or "i").
-	AppendToRedobuff((char_u *)cmd);
-
-	// Then append the inserted text using the literal helper.
-	AppendToRedobuffLit(text, (int)text_len);
-
-	// Ensure insert/change ends.
-	AppendCharToRedobuff(ESC);
-    }
-    else
-	AppendToRedobuff((char_u *)cmd);
-
+    // First set the last-insert string (may have side-effects on the redo
+    // buffer).  Do this before composing the redo buffer so any such
+    // side-effects happen first and our explicit append below is the final
+    // contents.
     if (vim_strchr((char_u *)"iIaAoO", cmd[0]) != NULL)
     {
 	if (combined != NULL)
@@ -5833,6 +5823,25 @@ set_repeat_dict(dict_T *dict)
 	// change-like: only set the inserted text, not motion
 	if (text != NULL && *text != NUL)
 	    set_last_insert_str(text);
+    }
+
+    // Now prepare redo buffer context and add the redo sequence.
+    // Append the command (cmd) first, then the inserted text, and finally
+    // an ESC to end insert/change.  If only cmd (no text), just append cmd.
+    ResetRedobuff();
+#ifdef FEAT_EVAL
+    may_add_last_used_map_to_redobuff();
+#endif
+
+    if (text_len > 0)
+    {
+	AppendToRedobuffLit((char_u *)cmd, -1);
+	AppendToRedobuffLit(text, (int)text_len);
+	AppendCharToRedobuff(ESC);
+    }
+    else
+    {
+	AppendToRedobuffLit((char_u *)cmd, -1);
     }
 
     updateSavedRedobuffs();
