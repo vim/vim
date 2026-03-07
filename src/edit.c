@@ -5826,9 +5826,7 @@ set_repeat_dict(dict_T *dict)
     // Append the command (cmd) first, then the inserted text, and finally
     // an ESC to end insert/change.  If only cmd (no text), just append cmd.
     ResetRedobuff();
-#ifdef FEAT_EVAL
     may_add_last_used_map_to_redobuff();
-#endif
 
     if (text_len > 0)
     {
