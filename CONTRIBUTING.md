@@ -147,8 +147,9 @@ For the recommended documentation style, please check [helphelp.txt][16].
 # I have a question
 
 If you have some question on the style guide, please contact the [vim-dev][0]
-mailing list. For other questions please use the [Vi Stack Exchange][8] website, the
-[vim-use][9] mailing list or make use of the [discussion][10] feature here at github.
+mailing list. For other questions you can join [`#vim`][19], use the 
+[Vi Stack Exchange][8] website, the [vim-use][9] mailing list or make use of the 
+[discussion][10] feature here at github.
 
 [todo list]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
 [0]: http://www.vim.org/maillist.php#vim-dev
@@ -170,3 +171,4 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
 [17]: https://github.com/vim/vim/issues
 [18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim
+[19]: https://web.libera.chat/#vim
