@@ -1690,6 +1690,24 @@ apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 }
 
 /*
+ * Query the terminal if it supports the kitty key protocol (not relying on the
+ * 'keyprotocol' option).
+ *
+ * We send out a progressive enhancement status check, then a DA1 query. If DA1
+ * response is recevied, without getting an answer for the progressive
+ * enhancement status, then the terminal does not support KKP.
+ *
+ * https://sw.kovidgoyal.net/kitty/keyboard-protocol/#detection-of-support-for-this-protocol
+ */
+    static void
+query_kitty_key_protocol(void)
+{
+    if (cur_tmode == TMODE_RAW && termcap_active)
+	// Don't use T_CRK, since that depends on 'keyprotocol' option.
+	out_str((char_u *)"\033[?u\033[c");
+}
+
+/*
  * Apply builtin termcap entries for a given keyprotocol.
  */
     void
@@ -1697,6 +1715,10 @@ apply_keyprotocol(char_u *term, keyprot_T prot)
 {
     if (prot == KEYPROTOCOL_KITTY)
 	apply_builtin_tcap(term, builtin_kitty, TRUE);
+    else
+	// Try querying support status for it from the terminal
+	query_kitty_key_protocol();
+
     if (prot == KEYPROTOCOL_MOK2)
 	apply_builtin_tcap(term, builtin_mok2, TRUE);
 
@@ -5740,6 +5762,10 @@ handle_csi(
     else if (first == '?' && trail == 'c')
     {
 	LOG_TRN("Received DA1 response: %s", tp);
+
+	// This DA1 response may have been caused by query_kitty_key_protocol().
+	if (kitty_protocol_state != KKPS_INITIAL)
+	    apply_keyprotocol(T_NAME, KEYPROTOCOL_KITTY);
 
 	*slen = csi_len;
 #ifdef FEAT_EVAL

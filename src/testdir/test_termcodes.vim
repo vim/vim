@@ -3061,6 +3061,35 @@ func Test_term_win_resize()
   call TermWait(buf)
 
   call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+endfunction
+
+" Test if kitty key protocol is detected automatically
+" https://sw.kovidgoyal.net/kitty/keyboard-protocol/#detection-of-support-for-this-protocol
+func Test_term_kkp_detect()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set keyprotocol=
+    let &term = &term
+  END
+  let cmd =<< trim END
+  :call writefile([execute('verbose map')->split('\n')[0]], "XTestResult")
+  END
+
+  call writefile(lines, 'XTest', 'D')
+  defer delete('XTestResult')
+
+  let buf = RunVimInTerminal("-S XTest", {'rows': 10})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[?0u\<Esc>?1;2;c")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, $"\<Esc>{cmd[0]}\<CR>")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_true(match(readfile('XTestResult'),
+        \ "Kitty keyboard protocol: On") != -1)})
 
   call StopVimInTerminal(buf)
 endfunc
