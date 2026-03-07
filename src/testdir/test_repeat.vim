@@ -347,4 +347,62 @@ func Test_getrepeat_user_overrides_setrepeat()
   bwipe!
 endfunc
 
+" Test: missing 'cmd' in dict should error and not change getrepeat()
+func Test_setrepeat_missing_cmd()
+  " ensure a known repeat state
+  call setrepeat({'cmd': 'cw', 'text': 'x'})
+  let before = getrepeat()
+
+  " call with empty dict -> should produce an error and not change repeat
+  call assert_fails('call setrepeat({})')
+  call assert_equal(before, getrepeat())
+endfunc
+
+" Test: multibyte inserted text is handled properly
+func Test_setrepeat_multibyte_insert()
+  new
+  call setline(1, ['old word'])
+  " use multi-byte characters as inserted text
+  call setrepeat({'cmd':'cw', 'text':'日本'})
+  normal! 1G
+  normal w
+  normal .
+  call assert_equal('old 日本', getline(1))
+  bwipe!
+endfunc
+
+" Test: long inserted text does not crash and repeats correctly
+func Test_setrepeat_long_text()
+  new
+  let long = repeat('abcd', 1024) " ~4KiB text
+  call setline(1, ['first'])
+  call setrepeat({'cmd':'cw', 'text': long})
+  normal! 1G
+  normal w
+  normal .
+  " ensure new text has been inserted (length check rather than full equality)
+  let got = getline(1)
+  call assert_true(stridx(got, 'abcd') >= 0)
+  bwipe!
+endfunc
+
+" Test: save/restore with dd/yy variations (regression guard)
+func Test_setrepeat_save_restore_dd()
+  new
+  call setline(1, ['one','two','three'])
+  " set repeat for deleting a line
+  call setrepeat({'cmd':'dd'})
+  " Simulate a nested save/restore by calling a function that triggers it
+  function! s:inner2()
+    " call setrepeat inside function to ensure saved copies get updated
+    call setrepeat({'cmd':'dd'})
+  endfunction
+  call s:inner2()
+  normal! 1G
+  normal .
+  " first line should be deleted
+  call assert_equal(['two','three'], getline(1, '$'))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

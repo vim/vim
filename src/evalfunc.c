@@ -11781,6 +11781,14 @@ f_setrepeat(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     dict = argvars[0].vval.v_dict;
+
+    // 'cmd' is required
+    if (!dict_has_key(dict, (char_u *)"cmd"))
+    {
+	emsg(_(e_invalid_argument));
+        return;
+    }
+
     set_repeat_dict(dict);
 }
 
