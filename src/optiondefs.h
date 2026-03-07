@@ -2661,6 +2661,15 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCTX_INIT},
+    {"termresize", "trz", P_STRING|P_VI_DEF,
+#ifdef UNIX
+			    (char_u *)&p_trz, PV_NONE, did_set_termresize, expand_set_termresize,
+			    {(char_u *)"", (char_u *)0}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"termsync", "tsy",	    P_BOOL|P_VI_DEF,
 			    (char_u *)&p_tsy, PV_NONE, did_set_termsync, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},

@@ -180,6 +180,8 @@ char *did_set_tagcase(optset_T *args);
 int expand_set_tagcase(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_term(optset_T *args);
 char *did_set_term_option(optset_T *args);
+char *did_set_termresize(optset_T *args);
+int expand_set_termresize(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_termwinkey(optset_T *args);
 char *did_set_termwinsize(optset_T *args);
 char *did_set_termwintype(optset_T *args);

@@ -1570,6 +1570,14 @@ mch_init(void)
 #endif
 }
 
+    void
+set_sigwinch_handler(void)
+{
+#if defined(SIGWINCH)
+    mch_signal(SIGWINCH, sig_winch);
+#endif
+}
+
     static void
 set_signals(void)
 {
