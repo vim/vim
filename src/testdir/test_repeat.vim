@@ -120,8 +120,8 @@ func Test_setrepeat_dot_command_append()
   bwipe!
 endfunc
 
+" Test_setrepeat_dot_command_change
 func Test_setrepeat_dot_command_change()
-  " Test . command with change word
   new
   call setline(1, ['old word'])
 
@@ -136,6 +136,22 @@ func Test_setrepeat_dot_command_change()
   " Should have changed 'word' to 'new'
   call assert_equal('old new', getline(1))
 
+  bwipe!
+endfunc
+
+" Test nested setrepeat inside a user function/autocmd
+func Test_setrepeat_nested_userfunc()
+  new
+  call setline(1, ['alpha beta'])
+  function! s:inner()
+    " inside user function: setrepeat and rely on outer restore not to stomp it
+    call setrepeat({'cmd':'cw','text':'gamma'})
+  endfunction
+  call s:inner()
+  normal! 1G
+  normal w
+  normal .
+  call assert_equal('alpha gamma', getline(1))
   bwipe!
 endfunc
 
