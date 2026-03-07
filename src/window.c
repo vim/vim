@@ -2522,6 +2522,8 @@ win_init_empty(win_T *wp)
     wp->w_prev_pcmark.lnum = 0;
     wp->w_prev_pcmark.col = 0;
     wp->w_topline = 1;
+    // in case it was already set
+    vim_free(wp->w_hl);
     wp->w_hl = NULL;
 #ifdef FEAT_DIFF
     wp->w_topfill = 0;
