@@ -4835,6 +4835,33 @@ func Test_popup_opacity_100_blocks_background()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_zero()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, repeat(['background text here'], 10))
+    hi PopupTest guibg=blue guifg=white
+    hi Normal guibg=black guifg=white
+
+    " opacity=0: fully transparent, only text visible
+    let g:pop_id = popup_create('opacity   0', {
+        \ 'line': 6, 'col': 1,
+        \ 'highlight': 'PopupTest',
+        \ 'opacity': 0,
+        \ })
+  END
+
+  call writefile(lines, 'XtestPopupOpacityZero', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityZero', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_zero_01', {})
+
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":echo popup_getoptions(g:pop_id)['opacity']\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_zero_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_getwininfo_tabnr()
   tab split
   let winid1 = popup_create('sup', #{tabpage: 1})
