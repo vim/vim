@@ -26,16 +26,20 @@ syn region  edAddress_Pattern  contained
       \ start=+/+
       \ end=+/\|$+
       \ skipwhite nextgroup=@edAddressModifier,edAddressSeparator,@edCommand
-      \ contains=edSlashEscape
+      \ contains=edRegex_SlashEscape,edRegex_BracketExpression
 syn region  edAddress_Pattern  contained
       \ matchgroup=Delimiter
       \ start=/?/
       \ end=/?\|$/
       \ skipwhite nextgroup=@edAddressModifier,edAddressSeparator,@edCommand
-      \ contains=edQuestionMarkEscape
+      \ contains=edRegex_QuestionEscape,edRegex_BracketExpression
 
-syn match   edSlashEscape         contained +\\/+
-syn match   edQuestionMarkEscape  contained +\\?+
+syn match   edRegex_BracketExpression  contained
+      \ "\[\^\=\]\=\%(\[:.\{-}:\]\|\[\..\{-}\.\]\|\[=.\{-}=\]\|[^]]\)*\]"
+      \ transparent
+syn match   edRegex_SlashEscape     contained +\\/+ transparent
+syn match   edRegex_QuestionEscape  contained +\\?+ transparent
+
 syn cluster edAddress
       \ contains=edAddress,edAddress_Pattern,edAddressModifier_Offset
 
