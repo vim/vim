@@ -53,7 +53,6 @@ static int typedchars_pos = 0;
  */
 static int	block_redo = FALSE;
 
-static int	skip_restore_redo_cnt = 0;
 static save_redo_T *active_save_redo_head = NULL;
 
 static int	KeyNoremap = 0;	    // remapping flags
@@ -644,17 +643,6 @@ restoreRedobuff(save_redo_T *save_redo)
 	    pp = &(*pp)->sr_next;
 	}
     }
-}
-
-/*
- * Request to skip the next restoreRedobuff().  This increments the
- * skip counter; subsequent restoreRedobuff() calls will consume the
- * counter and free the saved buffers instead of restoring them.
- */
-    void
-skipRestoreRedobuff(void)
-{
-    skip_restore_redo_cnt++;
 }
 
 /*

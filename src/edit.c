@@ -2758,9 +2758,6 @@ set_last_insert_str(char_u *str)
     // Update redo buffer for . command
     ResetRedobuff();
 
-    // Skip the next restore
-    skipRestoreRedobuff();
-
     if (str != NULL && *str != NUL)
     {
 	if (has_command)

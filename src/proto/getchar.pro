@@ -10,7 +10,6 @@ void CancelRedo(void);
 void updateSavedRedobuffs(void);
 void saveRedobuff(save_redo_T *save_redo);
 void restoreRedobuff(save_redo_T *save_redo);
-void skipRestoreRedobuff(void);
 void AppendToRedobuff(char_u *s);
 void AppendToRedobuffLit(char_u *str, int len);
 void AppendToRedobuffSpec(char_u *s);
