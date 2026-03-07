@@ -3167,6 +3167,8 @@ redraw_after_callback(int call_update_screen, int do_message)
 {
     ++redrawing_for_callback;
 
+    term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
+
     if (State == MODE_HITRETURN || State == MODE_ASKMORE
 	    || State == MODE_SETWSIZE || State == MODE_EXTERNCMD
 	    || State == MODE_CONFIRM || exmode_active)
@@ -3211,6 +3213,7 @@ redraw_after_callback(int call_update_screen, int do_message)
 	}
     }
     cursor_on();
+    term_set_sync_output(TERM_SYNC_OUTPUT_DISABLE);
 #ifdef FEAT_GUI
     if (gui.in_use && !gui_mch_is_blink_off())
 	// Don't update the cursor when it is blinking and off to avoid
