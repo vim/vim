@@ -11786,7 +11786,7 @@ f_setrepeat(typval_T *argvars, typval_T *rettv UNUSED)
     if (!dict_has_key(dict, "cmd"))
     {
 	emsg(_(e_invalid_argument));
-        return;
+	return;
     }
 
     set_repeat_dict(dict);
