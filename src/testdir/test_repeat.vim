@@ -347,17 +347,6 @@ func Test_getrepeat_user_overrides_setrepeat()
   bwipe!
 endfunc
 
-" Test: missing 'cmd' in dict should error and not change getrepeat()
-func Test_setrepeat_missing_cmd()
-  " ensure a known repeat state
-  call setrepeat({'cmd': 'cw', 'text': 'x'})
-  let before = getrepeat()
-
-  " call with empty dict -> should produce an error and not change repeat
-  call assert_fails('call setrepeat({})')
-  call assert_equal(before, getrepeat())
-endfunc
-
 " Test: multibyte inserted text is handled properly
 func Test_setrepeat_multibyte_insert()
   new
@@ -427,6 +416,58 @@ func Test_setrepeat_change_sets_dot_to_inserted_text()
   " now set repeat to a change with inserted text
   call setrepeat({'cmd': 'cw', 'text': 'gamma'})
   " getreg('.') must equal the inserted text (not include the motion)
+  call assert_equal('gamma', getreg('.'))
+  bwipe!
+endfunc
+
+" Error cases: missing/invalid args should fail with E475
+func Test_setrepeat_errors_missing_and_types()
+  " ensure a known repeat state for the "no-change" check
+  call setrepeat({'cmd': 'cw', 'text': 'x'})
+  let before = getrepeat()
+
+  " missing cmd key: should fail and not change getrepeat()
+  call assert_fails('call setrepeat({})', 'E474:')
+  call assert_equal(before, getrepeat())
+
+  " cmd is convertable string
+  call setrepeat({"cmd": 123})
+  " text is convertable string
+  call setrepeat({"cmd": "i", "text": 123})
+
+  " non-dict argument
+  call assert_fails('call setrepeat(123)', 'E1206:')
+
+  " cmd not a string
+  call assert_fails('call setrepeat({"cmd": {}})', 'E731:')
+  " text not a string (should be invalid)
+  call assert_fails('call setrepeat({"cmd": "i", "text": []})', 'E730:')
+endfunc
+
+" Count behavior: '3dd' should delete 3 lines when repeated
+func Test_setrepeat_count_behavior()
+  new
+  call setline(1, ['one','two','three','four','five'])
+  " set repeat to delete 3 lines
+  call setrepeat({'cmd': '3dd'})
+  normal! 1G
+  normal .
+  " expect that first three lines were deleted, leaving 'four','five'
+  call assert_equal(['four','five'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" setrepeat should not clobber other named registers
+func Test_setrepeat_does_not_clobber_named_register()
+  new
+  call setline(1, ['alpha beta'])
+  " put something in register 'a'
+  call setreg('a', 'keepme')
+  " set repeat to a change; this should set getreg('.') but not change 'a'
+  call setrepeat({'cmd': 'cw', 'text': 'gamma'})
+  call assert_equal('keepme', getreg('a'))
+  " dot register should be set to the inserted text (existing test covers this
+  " but we assert again)
   call assert_equal('gamma', getreg('.'))
   bwipe!
 endfunc
