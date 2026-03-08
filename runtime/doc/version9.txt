@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52599,6 +52599,7 @@ Other ~
 							*changed-9.3*
 Changed~
 -------
+- Support for NeXTStep was dropped with patch v9.2.0122
 
 							*added-9.3*
 Added ~
