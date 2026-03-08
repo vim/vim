@@ -405,4 +405,30 @@ func Test_setrepeat_save_restore_dd()
   bwipe!
 endfunc
 
+" setrepeat() must not change the last-insert register ('.')
+func Test_setrepeat_does_not_change_dot_register()
+  new
+  " prepare a known last-insert text by doing an actual insert
+  call setline(1, ['line'])
+  execute "normal! 1G0iorig\<Esc>"
+  let before = getreg('.')
+  " set repeat to a non-insert command; should not clobber register '.'
+  call setrepeat({'cmd': 'dd'})
+  call assert_equal(before, getreg('.'))
+  bwipe!
+endfunc
+
+" setrepeat() should set getreg('.') to the inserted text only
+func Test_setrepeat_change_sets_dot_to_inserted_text()
+  new
+  call setline(1, ['alpha beta'])
+  " ensure previous last-insert is something else
+  execute "normal! 1G0iold\<Esc>"
+  " now set repeat to a change with inserted text
+  call setrepeat({'cmd': 'cw', 'text': 'gamma'})
+  " getreg('.') must equal the inserted text (not include the motion)
+  call assert_equal('gamma', getreg('.'))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
