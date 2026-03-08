@@ -6945,6 +6945,10 @@ var2fpos(
 	pos.col = 0;
 	if (name[1] == '0')		// "w0": first visible line
 	{
+#ifdef FEAT_TERMINAL
+	    if (bt_terminal(curwin->w_buffer))
+		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
+#endif
 	    update_topline();
 	    // In silent Ex mode topline is zero, but that's not a valid line
 	    // number; use one instead.
@@ -6953,6 +6957,10 @@ var2fpos(
 	}
 	else if (name[1] == '$')	// "w$": last visible line
 	{
+#ifdef FEAT_TERMINAL
+	    if (bt_terminal(curwin->w_buffer))
+		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
+#endif
 	    validate_botline();
 	    // In silent Ex mode botline is zero, return zero then.
 	    pos.lnum = curwin->w_botline > 0 ? curwin->w_botline - 1 : 0;

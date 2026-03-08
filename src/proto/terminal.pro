@@ -13,6 +13,7 @@ int term_job_running_not_none(term_T *term);
 int term_none_open(term_T *term);
 int term_confirm_stop(buf_T *buf);
 int term_try_stop_job(buf_T *buf);
+void may_move_terminal_to_buffer(term_T *term, int redraw);
 int term_check_timers(int next_due_arg, proftime_T *now);
 int term_in_normal_mode(void);
 void term_enter_job_mode(void);
