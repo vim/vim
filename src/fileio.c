@@ -27,11 +27,9 @@
 // Is there any system that doesn't have access()?
 #define USE_MCH_ACCESS
 
-#if VIM_SIZEOF_LONG == 8
-# define NONASCII_MASK 0x8080808080808080UL
-#else
-# define NONASCII_MASK 0x80808080UL
-#endif
+// Generate the correct mask for sizeof(long_u), which may differ from
+// VIM_SIZEOF_LONG on Win64 (where long is 4 bytes but long_u is 8 bytes).
+#define NONASCII_MASK (((long_u)-1 / 0xFF) * 0x80)
 
 #if defined(__hpux) && !defined(HAVE_DIRFD)
 # define dirfd(x) ((x)->__dd_fd)
