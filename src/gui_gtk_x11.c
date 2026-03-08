@@ -2720,15 +2720,27 @@ gui_gtk_uninit_socket_server(void)
 
 #endif
 
+    static GdkPixbuf *
+pixbuf_new_from_png_data(const unsigned char *data, unsigned int len)
+{
+    GInputStream *stream;
+    GdkPixbuf    *pixbuf;
+
+    stream = g_memory_input_stream_new_from_data(data, len, NULL);
+    pixbuf = gdk_pixbuf_new_from_stream(stream, NULL, NULL);
+    g_object_unref(stream);
+    return pixbuf;
+}
+
 /*
  * Setup the window icon & xcmdsrv comm after the main window has been realized.
  */
     static void
 mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-#include "../runtime/vim16x16.xpm"
-#include "../runtime/vim32x32.xpm"
-#include "../runtime/vim48x48.xpm"
+#include "../runtime/vim16x16_png.h"
+#include "../runtime/vim32x32_png.h"
+#include "../runtime/vim48x48_png.h"
 
     GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
 
@@ -2757,9 +2769,9 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	     */
 	    GList *icons = NULL;
 
-	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim16x16));
-	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim32x32));
-	    icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim48x48));
+	    icons = g_list_prepend(icons, pixbuf_new_from_png_data(vim16x16_png, vim16x16_png_len));
+	    icons = g_list_prepend(icons, pixbuf_new_from_png_data(vim32x32_png, vim32x32_png_len));
+	    icons = g_list_prepend(icons, pixbuf_new_from_png_data(vim48x48_png, vim48x48_png_len));
 
 	    gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
 
