@@ -2131,14 +2131,17 @@ retry:
 			    if (bad_char_behavior == BAD_DROP)
 			    {
 				mch_memmove(p, p + 1, todo - 1);
-				--p;
 				--size;
 			    }
-			    else if (bad_char_behavior != BAD_KEEP)
-				*p = bad_char_behavior;
+			    else
+			    {
+				if (bad_char_behavior != BAD_KEEP)
+				    *p = bad_char_behavior;
+				++p;
+			    }
 			}
 			else
-			    p += l - 1;
+			    p += l;
 		    }
 		}
 		if (p < ptr + size && !incomplete_tail)
