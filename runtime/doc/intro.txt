@@ -1,4 +1,4 @@
-*intro.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*intro.txt*	For Vim version 9.2.  Last change: 2026 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -313,11 +313,11 @@ Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
 	as flexible as Vim.  Development has stalled, Elvis has left the
 	building!  Source code is freely available.
 							*Neovim*
-Neovim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
-	Very much bound to github and has many more dependencies, making
-	development more complex and limiting portability.  Code has been
-	refactored, resulting in patches not being exchangeable with Vim.
-	Supports a remote GUI and integration with scripting languages.
+Neovim	A fork of Vim from 2014 that went a different way.  Very much bound
+	to GitHub and has many more dependencies, making development more
+	complex and limiting portability.  Code has been refactored, resulting
+	in patches not being exchangeable with Vim.  Supports remote UIs and
+	first-class Lua scripting.
 
 ==============================================================================
 4. Notation						*notation*
