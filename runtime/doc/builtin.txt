@@ -5197,61 +5197,41 @@ getregtype([{regname}])					*getregtype()*
 <
 		Return type: |String|
 
+
 getrepeat()						*getrepeat()*
 		Get the last repeat command as a |Dictionary|.
 
-		Returns a dictionary with the following keys:
+		Returns a dictionary with two documented keys:
 		    "cmd"	The command that will be repeated (string)
 		    "text"	Text to insert (string)
 
-		If the repeat was set via |setrepeat()|, returns the exact
-		dictionary that was passed.  Otherwise, returns information
-		from Vim's internal repeat buffer.
+		If the repeat was set via |setrepeat()|, the exact
+		dictionary passed to |setrepeat()| is returned. Otherwise,
+		Vim attempts to reconstruct information from its internal
+		redo buffer.
 
-		For user operations (like typing 'iHello<Esc>'):
-		- "cmd" contains the command character (i, a, o, etc.)
-		- "text" contains the inserted text
+		Important limitation:
+		- Reconstruction is reliable for commands set with
+		  |setrepeat()| and for recent insert/change operations that
+		  use the '.' register or last-insert metadata.
+		- For many normal-mode edits (for example simple operator
+		  commands such as "dd" or "yy"), Vim does not attempt to
+		  fully parse the redo buffer; in those cases "cmd" may be an
+		  empty string.
 
-		For operations set via |setrepeat()|:
-		- Returns the exact dictionary that was passed
-		- Preserves all custom information
+		If you need a guaranteed non-empty command string, call
+		|setrepeat()| to explicitly set "cmd" and "text".
 
-		This is useful for:
-		- Saving and restoring the repeat command
-		- Building repeat history
-		- Implementing custom repeat behavior
-		- Preserving repeat state across plugin operations
-
-		Examples: >
-		    " Check current repeat command
-		    let repeat_info = getrepeat()
-		    echo repeat_info.cmd    " 'i', 'dd', etc.
-		    echo repeat_info.text   " inserted text if any
-
-		    " Save and restore repeat state
-		    let saved = getrepeat()
-		    call MyPlugin()  " might change repeat
-		    call setrepeat(saved)
-		    normal! .        " uses saved repeat
-
-		    " Build repeat history
-		    let g:repeat_history = []
-		    function! SaveRepeat()
-		        call add(g:repeat_history, getrepeat())
-		    endfunction
-
-		    " Conditional repeat
-		    function! ConditionalRepeat()
-		        let info = getrepeat()
-		        if info.cmd ==# 'i'
-		            " Only repeat insert commands
-		            normal! .
-		        endif
-		    endfunction
+		Example: >
+		    " get current repeat (may be empty for some normal-mode
+		    " edits)
+		    let info = getrepeat()
+		    echo info.cmd
+		    echo info.text
 <
-		Note: The internal structure of the dictionary may be
-		extended in future versions.  Plugins should only rely on
-		the documented "cmd" and "text" keys.
+		Note: The dictionary may be extended in future versions;
+		plugins should only rely on the documented "cmd" and "text"
+		keys and the limitation above.
 
 		Return type: |Dictionary|
 		See also: |setrepeat()|, |.|
@@ -10435,77 +10415,52 @@ setrepeat({dict})					*setrepeat()*
 		Set the repeat command that will be executed by the |.|
 		command.
 
-		{dict} is a |Dictionary| with the following keys:
+		{dict} is a |Dictionary| with the following documented keys:
 		    "cmd"	The command to repeat (string, required)
 		    "text"	Text to insert (string, optional)
 
-		The "cmd" field specifies the command character or sequence.
-		For insert mode commands (i, a, o, O, I, A, c, s, C, S), the
-		"text" field contains the text to insert.  For other commands
-		(dd, yy, x, etc.), "text" can be omitted or empty.
-
-		This is useful for:
-		- Making custom commands repeatable with |.|
-		- Preserving repeat behavior across plugin operations
-		- Building complex repeatable operations
+		The "cmd" field is the command character or sequence to be
+		executed by |.|. For insert/change commands (for example
+		'i', 'a', 'c', 's'), provide "text" with the text to insert.
+		For many normal-mode commands (for example 'dd', 'yy'),
+		"text" may be omitted.
 
 		Examples: >
-		    " Normal mode command
+		    " Simple normal-mode repeat (delete a line)
 		    call setrepeat({'cmd': 'dd'})
-		    normal! .		" deletes a line
+		    normal! .
 
-		    " Insert mode operation
+		    " Insert-mode repeat (insert text)
 		    call setrepeat({'cmd': 'i', 'text': 'Hello'})
-		    normal! .		" inserts 'Hello'
-
-		    " Change operation
-		    call setrepeat({'cmd': 'cw', 'text': 'newword'})
-		    normal! .		" changes word to 'newword'
-
-		    " Making a custom command repeatable
-		    function! MyInsertCommand()
-		        execute "normal! iCustom text\<Esc>"
-		        call setrepeat({'cmd': 'i', 'text': 'Custom text'})
-		    endfunction
-
-		    " Save and restore repeat state
-		    let saved = getrepeat()
-		    call MyPlugin()  " might change repeat
-		    call setrepeat(saved)
+		    normal! .
 <
-		Limitations and notes:
+		Important notes and limitations:
 
-		1. Entering insert mode overwrites setrepeat()
-		   When you enter and exit insert mode, Vim automatically
-		   records the insertion and overwrites any repeat set by
-		   setrepeat().
+		- "cmd" is required. If the dictionary does not contain "cmd",
+		  the call is invalid.
 
-		   Workaround: Call setrepeat() after leaving insert mode.
+		- Entering insert mode records the insertion and may overwrite
+		  a previously set repeat. If you depend on |setrepeat()|,
+		  call it after leaving insert mode.
 
-		2. Text-modifying functions are not recorded
-		   Functions like |setline()|, |setbufline()|, etc. do not
-		   update the repeat command automatically.
+		- Functions that directly modify buffer text (for example
+		  |setline()|, |setbufline()|) do not automatically update the
+		  repeat command. Use |feedkeys()| with the 'x' flag to
+		  simulate typing or call setrepeat() explicitly when
+		  appropriate.
 
-		   Workaround: Use |feedkeys()| with 'x' flag to simulate
-		   typing, or call setrepeat() explicitly.
+		- Visual mode operations and certain advanced features
+		  (for example |<Plug>| mappings, complex counts, or register
+		  semantics) are not fully supported by |setrepeat()| in the
+		  current implementation.
 
-		3. Visual mode operations are not supported
-		   Visual mode operations cannot be set via setrepeat().
+		- For guaranteed, non-empty command information in later use
+		  of |getrepeat()|, prefer setting the repeat explicitly with
+		  setrepeat().
 
-		4. Limited information from user operations
-		   If the repeat came from normal user operations (typing
-		   'iHello<Esc>'), |getrepeat()| returns basic information.
-		   Full fidelity is only available for repeats set via
-		   setrepeat().
-
-		5. Advanced features not yet supported
-		   Features like |<Plug>| mappings, counts, and registers
-		   are not currently supported.  These may be added in
-		   future versions via additional dictionary fields.
-
-		Note: The internal structure of the dictionary may be
-		extended in future versions.  Plugins should only rely on
-		the documented "cmd" and "text" keys.
+		Note: The dictionary may be extended in future versions;
+		plugins should only rely on the documented "cmd" and "text"
+		keys and the notes above.
 
 		Return type: void
 		See also: |getrepeat()|, |.|
