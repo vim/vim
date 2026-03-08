@@ -3472,7 +3472,7 @@ ml_append_int(
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
-    if (netbeans_active())
+    if (!(flags & ML_APPEND_NEW) && netbeans_active())
     {
 	int line_len = (int)STRLEN(line);
 	if (line_len > 0)
@@ -3481,7 +3481,7 @@ ml_append_int(
     }
 #endif
 #ifdef FEAT_JOB_CHANNEL
-    if (buf->b_write_to_channel)
+    if (!(flags & ML_APPEND_NEW) && buf->b_write_to_channel)
 	channel_write_new_lines(buf);
 #endif
     ret = OK;
@@ -3512,11 +3512,15 @@ ml_append_flush(
 	ml_flush_line(buf);
 
 #ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.  Then flush the cached line, it may become invalid.
-    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
-    if (buf->b_ml.ml_line_lnum != 0)
-	ml_flush_line(buf);
+    if (!(flags & ML_APPEND_NEW))
+    {
+	// When inserting above recorded changes: flush the changes before
+	// changing the text.  Then flush the cached line, it may become
+	// invalid.  Skip during initial file read for performance.
+	may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+	if (buf->b_ml.ml_line_lnum != 0)
+	    ml_flush_line(buf);
+    }
 #endif
 
     return ml_append_int(buf, lnum, line, len, flags);
