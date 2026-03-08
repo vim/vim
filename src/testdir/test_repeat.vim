@@ -472,4 +472,59 @@ func Test_setrepeat_does_not_clobber_named_register()
   bwipe!
 endfunc
 
+func Test_setrepeat_operator_motion_ciquote()
+  new
+  call setline(1, ['"inner" rest'])
+  " set repeat: change inner-quote content to 'X'
+  call setrepeat({'cmd': 'ci"', 'text': 'X'})
+
+  " Ensure cursor is at line start, then find the quote and apply .
+  call cursor(1, 1)
+  normal f"
+  normal .
+
+  " Correct behavior: quotes remain, inner text replaced -> '"X" rest'
+  call assert_equal(['"X" rest'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" Change whole line with 'cc'
+func Test_setrepeat_change_line_cc()
+  new
+  call setline(1, ['old'])
+  " set repeat to change whole line to 'new'
+  call setrepeat({'cmd': 'cc', 'text': 'new'})
+  " go to first line and run dot
+  normal! 1G
+  normal .
+  call assert_equal('new', getline(1))
+  bwipe!
+endfunc
+
+" Change to end of line with 'C'
+func Test_setrepeat_change_to_end_C()
+  new
+  call setline(1, ['old tail'])
+  " set repeat: change to end-of-line and insert 'tail2'
+  call setrepeat({'cmd': 'C', 'text': 'tail2'})
+  " move cursor to the start of the old tail (column 5) then run dot
+  call cursor(1, 5)
+  normal .
+  call assert_equal('old tail2', getline(1))
+  bwipe!
+endfunc
+
+" Substitute single character with 's'
+func Test_setrepeat_substitute_s()
+  new
+  call setline(1, ['abcd'])
+  " set repeat: substitute single char with 'X'
+  call setrepeat({'cmd': 's', 'text': 'X'})
+  " go to beginning and run dot to replace first character
+  normal! 1G
+  normal .
+  call assert_equal('Xbcd', getline(1))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

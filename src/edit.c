@@ -5781,6 +5781,40 @@ set_repeat_dict(dict_T *dict)
     cmd_len = STRLEN(cmd);
     text_len = (text != NULL && *text != NUL) ? STRLEN(text) : 0;
 
+    // Parse a simple form of the cmd string:
+    //  - optional leading count (digits)
+    //  - optional operator (one of d,c,y,s,>,<, etc.)
+    //  - remaining part is treated as motion (may be empty)
+    //
+    // We only use this to detect a "change-like with motion" case,
+    // e.g. "cw", "ci\"", "2cw". This allows conservative handling:
+    // set last-insert text appropriately and append the cmd (with count
+    // and motion) to the redo buffer, avoiding appending the literal
+    // inserted characters in some cases where that caused incorrect
+    // positioning.
+    //
+    // Note: This is intentionally conservative and does not attempt to
+    // fully parse all motions or mappings.
+    int has_count = FALSE;
+    int has_motion = FALSE;
+    char_u opchar = NUL;
+    {
+	size_t idx = 0;
+	/* leading count */
+	while (idx < cmd_len && VIM_ISDIGIT(cmd[idx]))
+	    idx++;
+	if (idx > 0)
+	    has_count = TRUE;
+	/* operator (single char) */
+	if (idx < cmd_len)
+	{
+	    opchar = cmd[idx];
+	    /* motion exists if there are chars after the operator */
+	    if (idx + 1 < cmd_len)
+		has_motion = TRUE;
+	}
+    }
+
     // prepare combined string only if needed
     // (still useful for set_last_insert_str)
     if (text_len > 0)
