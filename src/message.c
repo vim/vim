@@ -2851,26 +2851,30 @@ inc_msg_scrolled(void)
 #ifdef FEAT_EVAL
     if (*get_vim_var_str(VV_SCROLLSTART) == NUL)
     {
-	char_u	    *p = SOURCING_NAME;
+	string_T    p = {SOURCING_NAME, 0};
 	char_u	    *tofree = NULL;
-	int	    len;
 
 	// v:scrollstart is empty, set it to the script/function name and line
 	// number
-	if (p == NULL)
-	    p = (char_u *)_("Unknown");
+	if (p.string == NULL)
+	{
+	    p.string = (char_u *)_("Unknown");
+	    p.length = STRLEN(p.string);
+	}
 	else
 	{
-	    len = (int)STRLEN(p) + 40;
-	    tofree = alloc(len);
+	    size_t  tofreesize;
+
+	    tofreesize = (int)STRLEN(p.string) + 40;
+	    tofree = alloc(tofreesize);
 	    if (tofree != NULL)
 	    {
-		vim_snprintf((char *)tofree, len, _("%s line %ld"),
-						      p, (long)SOURCING_LNUM);
-		p = tofree;
+		p.length = vim_snprintf_safelen((char *)tofree, tofreesize,
+		    _("%s line %ld"), p.string, (long)SOURCING_LNUM);
+		p.string = tofree;
 	    }
 	}
-	set_vim_var_string(VV_SCROLLSTART, p, -1);
+	set_vim_var_string(VV_SCROLLSTART, p.string, (int)p.length);
 	vim_free(tofree);
     }
 #endif

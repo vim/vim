@@ -311,10 +311,13 @@ DoRegisterName(Display *dpy, char_u *name)
 
     if (!got_x_error)
     {
+	size_t	namelen;
+
+	namelen = STRLEN(name);
 # ifdef FEAT_EVAL
-	set_vim_var_string(VV_SEND_SERVER, name, -1);
+	set_vim_var_string(VV_SEND_SERVER, name, (int)namelen);
 # endif
-	serverName = vim_strsave(name);
+	serverName = vim_strnsave(name, namelen);
 	need_maketitle = TRUE;
 	return 0;
     }

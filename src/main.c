@@ -2849,11 +2849,14 @@ scripterror:
     // one.
     if (parmp->n_commands > 0)
     {
-	p = alloc(STRLEN(parmp->commands[0]) + 3);
+	size_t  plen;
+
+	plen = STRLEN(parmp->commands[0]) + 2;
+	p = alloc(plen + 1);
 	if (p != NULL)
 	{
 	    sprintf((char *)p, ":%s\r", parmp->commands[0]);
-	    set_vim_var_string(VV_SWAPCOMMAND, p, -1);
+	    set_vim_var_string(VV_SWAPCOMMAND, p, (int)plen);
 	    vim_free(p);
 	}
     }
