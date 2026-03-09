@@ -452,6 +452,48 @@ skip_for_popup(int row, int col)
     return FALSE;
 }
 
+#ifdef FEAT_PROP_POPUP
+/*
+ * For a double-wide character at a popup boundary with opacity:0
+ * (blend==100), the two cells may have different underlying attrs.
+ * Pick the one without a background color to prevent color leaking.
+ */
+    static void
+resolve_wide_char_opacity_attrs(
+	int row, int col1, int col2,
+	sattr_T *attr1, sattr_T *attr2)
+{
+    int		bg1, bg2;
+    int		base1 = 0;
+    int		base2 = 0;
+    attrentry_T	*ae;
+
+    if (*attr1 == *attr2)
+	return;
+
+    popup_get_base_screen_cell(row, col1, NULL, &base1, NULL);
+    ae = syn_cterm_attr2entry(base1);
+# ifdef FEAT_TERMGUICOLORS
+    bg1 = (ae != NULL && !COLOR_INVALID(ae->ae_u.cterm.bg_rgb));
+# else
+    bg1 = (ae != NULL && ae->ae_u.cterm.bg_color != 0);
+# endif
+
+    popup_get_base_screen_cell(row, col2, NULL, &base2, NULL);
+    ae = syn_cterm_attr2entry(base2);
+# ifdef FEAT_TERMGUICOLORS
+    bg2 = (ae != NULL && !COLOR_INVALID(ae->ae_u.cterm.bg_rgb));
+# else
+    bg2 = (ae != NULL && ae->ae_u.cterm.bg_color != 0);
+# endif
+
+    if (bg1 && !bg2)
+	*attr1 = *attr2;
+    else if (!bg1 && bg2)
+	*attr2 = *attr1;
+}
+#endif
+
 /*
  * Move one "cooked" screen line to the screen, but only the characters that
  * have actually changed.  Handle insert/delete character.
@@ -605,40 +647,7 @@ screen_line(
 	    redraw_this = FALSE;
 	// Check if the character is occluded by a popup.
 	if (redraw_this && skip_for_popup(row, col + coloff))
-	{
-#ifdef FEAT_PROP_POPUP
-	    // For transparent popup cells, update the background character
-	    // so it shows through the popup.
-	    if (screen_opacity_popup && screen_opacity_popup->w_popup_blend > 0)
-	    {
-		ScreenLines[off_to] = ScreenLines[off_from];
-		ScreenAttrs[off_to] = ScreenAttrs[off_from];
-		if (enc_utf8)
-		{
-		    ScreenLinesUC[off_to] = ScreenLinesUC[off_from];
-		    if (ScreenLinesUC[off_from] != 0)
-		    {
-			for (int i = 0; i < Screen_mco; ++i)
-			ScreenLinesC[i][off_to] = ScreenLinesC[i][off_from];
-		    }
-		}
-		if (char_cells == 2)
-		{
-		    ScreenLines[off_to + 1] = ScreenLines[off_from + 1];
-		    ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
-		}
-		if (enc_dbcs == DBCS_JPNU)
-		    ScreenLines2[off_to] = ScreenLines2[off_from];
-
-		if (enc_dbcs != 0 && char_cells == 2)
-		    screen_char_2(off_to, row, col + coloff);
-		else
-		    screen_char(off_to, row, col + coloff);
-	    }
-	    else
-#endif
-		redraw_this = FALSE;
-	}
+	    redraw_this = FALSE;
 
 #ifdef FEAT_PROP_POPUP
 	// For popup with opacity windows: if drawing a space, show the
@@ -689,7 +698,10 @@ screen_line(
 		    ScreenLines[off_to] = ' ';
 		    if (enc_utf8)
 			ScreenLinesUC[off_to] = 0;
-		    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
+		    int base_attr = ScreenAttrs[off_to];
+		    popup_get_base_screen_cell(row, col + coloff,
+						NULL, &base_attr, NULL);
+		    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
 						    combined, blend, TRUE);
 		    screen_char(off_to, row, col + coloff);
 		    opacity_blank = TRUE;
@@ -715,12 +727,26 @@ screen_line(
 	    int popup_attr = get_win_attr(screen_opacity_popup);
 	    int combined = hl_combine_attr(popup_attr, char_attr);
 	    int blend = screen_opacity_popup->w_popup_blend;
-	    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
-						combined, blend, TRUE);
+	    int base_attr = ScreenAttrs[off_to];
+	    popup_get_base_screen_cell(row, col + coloff,
+					    NULL, &base_attr, NULL);
+	    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
+					    combined, blend, TRUE);
 	    screen_char(off_to, row, col + coloff);
-	    // For wide background character, also update the second cell.
+	    // For wide background character, also update the second cell
+	    // with its own base attr (it may be outside the popup area).
 	    if (bg_char_cells == 2)
-		ScreenAttrs[off_to + 1] = ScreenAttrs[off_to];
+	    {
+		int base_attr2 = ScreenAttrs[off_to + 1];
+		popup_get_base_screen_cell(row, col + coloff + 1,
+						NULL, &base_attr2, NULL);
+		ScreenAttrs[off_to + 1] = hl_blend_attr(base_attr2,
+						combined, blend, TRUE);
+		if (blend == 100)
+		    resolve_wide_char_opacity_attrs(row,
+			    col + coloff, col + coloff + 1,
+			    &ScreenAttrs[off_to], &ScreenAttrs[off_to + 1]);
+	    }
 	    redraw_this = FALSE;
 	}
 	// When a popup space overlaps the second half of a destroyed wide
@@ -741,8 +767,11 @@ screen_line(
 	    int combined = hl_combine_attr(popup_attr, char_attr);
 	    int blend = screen_opacity_popup->w_popup_blend;
 	    ScreenLines[off_to] = ' ';
-	    ScreenAttrs[off_to] = hl_blend_attr(ScreenAttrs[off_to],
-						combined, blend, TRUE);
+	    int base_attr = ScreenAttrs[off_to];
+	    popup_get_base_screen_cell(row, col + coloff,
+					    NULL, &base_attr, NULL);
+	    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
+					    combined, blend, TRUE);
 	    screen_char(off_to, row, col + coloff);
 	    opacity_blank = TRUE;
 	    redraw_this = FALSE;
@@ -886,9 +915,10 @@ skip_opacity:
 	    if (gui.in_use && changed_this)
 		redraw_next = TRUE;
 #endif
+
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
 #ifdef FEAT_PROP_POPUP
-	    // For popup with opacity text: blend background with default (0)
+	    // For popup with opacity text: blend background with underlying.
 	    if (screen_opacity_popup != NULL
 		    && (flags & SLF_POPUP)
 		    && screen_opacity_popup->w_popup_blend > 0)
@@ -896,14 +926,35 @@ skip_opacity:
 		int char_attr = ScreenAttrs[off_from];
 		int popup_attr = get_win_attr(screen_opacity_popup);
 		int blend = screen_opacity_popup->w_popup_blend;
-		// Combine popup window color with the character's own
-		// attribute (e.g. syntax highlighting) so that the
-		// character's foreground color is preserved.
 		int combined = hl_combine_attr(popup_attr, char_attr);
-		ScreenAttrs[off_to] = hl_blend_attr(0, combined, blend, FALSE);
-	    }
-#endif
+		int underlying_attr = 0;
 
+		popup_get_base_screen_cell(row, col + coloff,
+						NULL, &underlying_attr, NULL);
+		ScreenAttrs[off_to] = hl_blend_attr(underlying_attr,
+						combined, blend, FALSE);
+
+		// For double-wide characters, the second cell may have a
+		// different underlying attr (e.g. at popup boundary),
+		// so blend it independently.
+		if (char_cells == 2)
+		{
+		    int underlying_attr2 = 0;
+
+		    popup_get_base_screen_cell(row, col + coloff + 1,
+						NULL, &underlying_attr2, NULL);
+		    ScreenAttrs[off_to + 1] = hl_blend_attr(
+					underlying_attr2, combined, blend,
+					FALSE);
+		    if (blend == 100)
+			resolve_wide_char_opacity_attrs(row,
+				col + coloff, col + coloff + 1,
+				&ScreenAttrs[off_to],
+				&ScreenAttrs[off_to + 1]);
+		}
+	    }
+	    else
+#endif
 	    // For simplicity set the attributes of second half of a
 	    // double-wide character equal to the first half.
 	    if (char_cells == 2)
