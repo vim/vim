@@ -2214,6 +2214,7 @@ do_key_input_pre(int c)
 {
     int		res = c;
     char_u	buf[MB_MAXBYTES + 1];
+    size_t	buflen;
     char_u	curr_mode[MODE_MAX_LENGTH];
     int		save_State = State;
     save_v_event_T save_v_event;
@@ -2228,10 +2229,11 @@ do_key_input_pre(int c)
 	buf[0] = K_SPECIAL;
 	buf[1] = KEY2TERMCAP0(c);
 	buf[2] = KEY2TERMCAP1(c);
-	buf[3] = NUL;
+	buflen = 3;
     }
     else
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
+	buflen = (*mb_char2bytes)(c, buf);
+    buf[buflen] = NUL;
 
     typedchars[typedchars_pos] = NUL;
     vim_unescape_csi(typedchars);
@@ -2240,29 +2242,29 @@ do_key_input_pre(int c)
 
     // Lock the text to avoid weird things from happening.
     ++textlock;
-    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+    set_vim_var_string(VV_CHAR, buf, (int)buflen);  // set v:char
 
     v_event = get_v_event(&save_v_event);
     (void)dict_add_bool(v_event, "typed", KeyTyped);
-    (void)dict_add_string(v_event, "typedchar", typedchars);
+    (void)dict_add_string_len(v_event, "typedchar", typedchars, typedchars_pos);
 
-    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
-	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf))
     {
+	string_T    v_char;
+
 	// Get the value of v:char.  It may be empty or more than one
 	// character.  Only use it when changed, otherwise continue with the
 	// original character.
-	char_u *v_char;
-	size_t	v_charlen;
-
-	v_char = get_vim_var_str(VV_CHAR);
-	v_charlen = STRLEN(v_char);
-
-	// Convert special bytes when it is special string.
-	if (v_charlen >= 3 && v_char[0] == K_SPECIAL)
-	    res = TERMCAP2KEY(v_char[1], v_char[2]);
-	else if (v_charlen > 0)
-	    res = PTR2CHAR(v_char);
+	v_char.string = get_vim_var_str(VV_CHAR);
+	if (STRCMP(buf, v_char.string) != 0)
+	{
+	    v_char.length = STRLEN(v_char.string);
+	    // Convert special bytes when it is special string.
+	    if (v_char.length >= 3 && v_char.string[0] == K_SPECIAL)
+		res = TERMCAP2KEY(v_char.string[1], v_char.string[2]);
+	    else if (v_char.length > 0)
+		res = PTR2CHAR(v_char.string);
+	}
     }
 
     restore_v_event(v_event, &save_v_event);

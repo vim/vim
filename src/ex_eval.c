@@ -679,12 +679,14 @@ catch_exception(except_T *excp)
     set_vim_var_list(VV_STACKTRACE, excp->stacktrace);
     if (*excp->throw_name != NUL)
     {
+	size_t	IObufflen;
+
 	if (excp->throw_lnum != 0)
-	    vim_snprintf((char *)IObuff, IOSIZE, _("%s, line %ld"),
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, _("%s, line %ld"),
 				    excp->throw_name, (long)excp->throw_lnum);
 	else
-	    vim_snprintf((char *)IObuff, IOSIZE, "%s", excp->throw_name);
-	set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s", excp->throw_name);
+	set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
     }
     else
 	// throw_name not set on an exception from a command that was typed.
@@ -730,14 +732,16 @@ finish_exception(except_T *excp)
 	set_vim_var_list(VV_STACKTRACE, caught_stack->stacktrace);
 	if (*caught_stack->throw_name != NUL)
 	{
+	    size_t  IObufflen;
+
 	    if (caught_stack->throw_lnum != 0)
-		vim_snprintf((char *)IObuff, IOSIZE,
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
 			_("%s, line %ld"), caught_stack->throw_name,
 			(long)caught_stack->throw_lnum);
 	    else
-		vim_snprintf((char *)IObuff, IOSIZE, "%s",
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s",
 						    caught_stack->throw_name);
-	    set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
 	}
 	else
 	    // throw_name not set on an exception from a command that was
