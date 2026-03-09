@@ -6936,7 +6936,7 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
     static int scratch_h = 0;
     int last_row = Rows - 1;
     int last_row_y = last_row * gui.char_height;
-    _Bool last_row_overlap = (dest_y + height) > last_row_y;
+    bool last_row_overlap = (dest_y + height) > last_row_y;
     if (gui.is_wayland && ( !(State & MODE_CMDLINE) || !last_row_overlap) )
     {
 	/*
