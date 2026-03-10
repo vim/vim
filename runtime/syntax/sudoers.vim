@@ -160,7 +160,7 @@ syn match   sudoersDefaultTypeColon       contained ':' nextgroup=@sudoersUser s
 syn match   sudoersDefaultTypeGreaterThan contained '>' nextgroup=@sudoersUser skipwhite skipnl
 
 " TODO: could also deal with special characters here
-syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter,sudoersIntegerOrBooleanParameter,sudoersModeOrBooleanParameter skipwhite skipnl
+syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter,sudoersIntegerOrBooleanParameter,sudoersModeOrBooleanParameter,sudoersFloatOrBooleanParameter skipwhite skipnl
 syn keyword sudoersBooleanParameter contained skipwhite skipnl
                                   \ always_query_group_plugin
                                   \ always_set_home
@@ -262,7 +262,7 @@ syn keyword sudoersIntegerOrBooleanParameter contained
                                   \ skipwhite skipnl
                                   \ loglinelen
 
-syn keyword sudoersFloatParameter contained
+syn keyword sudoersFloatOrBooleanParameter contained
                                   \ nextgroup=sudoersFloatParameterEquals
                                   \ skipwhite skipnl
                                   \ passwd_timeout
@@ -361,7 +361,7 @@ syn keyword sudoersListParameter    contained
 
 syn match   sudoersParameterListComma contained ',' nextgroup=@sudoersParameter skipwhite skipnl
 
-syn cluster sudoersParameter        contains=sudoersBooleanParameter,sudoersIntegerParameter,sudoersIntegerOrBooleanParameter,sudoersModeParameter,sudoersModeOrBooleanParameter,sudoersFloatParameter,sudoersTimeoutParameter,sudoersStringParameter,sudoersListParameter
+syn cluster sudoersParameter        contains=sudoersBooleanParameter,sudoersIntegerParameter,sudoersIntegerOrBooleanParameter,sudoersModeParameter,sudoersModeOrBooleanParameter,sudoersFloatOrBooleanParameter,sudoersTimeoutParameter,sudoersStringParameter,sudoersListParameter
 
 syn match   sudoersIntegerParameterEquals contained       '=' nextgroup=sudoersIntegerValue skipwhite skipnl
 syn match   sudoersModeParameterEquals    contained       '=' nextgroup=sudoersModeValue    skipwhite skipnl
@@ -470,7 +470,7 @@ hi def link sudoersIntegerParameter         Identifier
 hi def link sudoersIntegerOrBooleanParameter Identifier
 hi def link sudoersModeParameter            Identifier
 hi def link sudoersModeOrBooleanParameter   Identifier
-hi def link sudoersFloatParameter           Identifier
+hi def link sudoersFloatOrBooleanParameter  Identifier
 hi def link sudoersTimeoutParameter         Identifier
 hi def link sudoersStringParameter          Identifier
 hi def link sudoersListParameter            Identifier
