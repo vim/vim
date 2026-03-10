@@ -7666,17 +7666,16 @@ last_status_rec(frame_T *fr, int statusline)
     }
 }
 
+#if defined(FEAT_STL_OPT)
 /*
  * Update stl_rendered_height from the rendered height of the global 'statusline'.
  */
     void
 update_stl_rendered_height(void)
 {
-#if defined(FEAT_STL_OPT)
     char_u *opt_name = (char_u *)"statusline";
 
     stl_rendered_height = get_stl_rendered_height(curwin, p_stl, opt_name, 0);
-#endif
 }
 
 /*
@@ -7686,15 +7685,12 @@ update_stl_rendered_height(void)
     void
 update_win_stl_rendered_height(win_T *wp)
 {
-#if defined(FEAT_STL_OPT)
     char_u *opt_name = (char_u *)"statusline";
 
     wp->w_stl_rendered_height =
 	get_stl_rendered_height(wp, wp->w_p_stl, opt_name, OPT_LOCAL);
-#endif
 }
 
-#if defined(FEAT_STL_OPT)
 /*
  * First pass: clamp the global statusline height against available space.
  * Returns the space-constrained height.
@@ -7856,7 +7852,7 @@ statuslineopt_changed(
  * When "wp" is NULL, return the global maximum height.
  */
     int
-statusline_height(win_T *wp)
+statusline_height(win_T *wp UNUSED)
 {
     int stl_height = 1;
 #if defined(FEAT_STL_OPT)
