@@ -170,7 +170,8 @@ au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
 " Bazel (https://bazel.build) and Buck2 (https://buck2.build/)
-au BufNewFile,BufRead *.bzl,*.bxl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
+" Tiltfiles (https://tilt.dev) are also written in starlark
+au BufNewFile,BufRead *.bzl,*.bxl,*.bazel,Tiltfile,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
   " There is another check for BUILD and BUCK further below.
   au BufNewFile,BufRead *.BUILD,BUILD,BUCK		setf bzl
