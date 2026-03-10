@@ -162,6 +162,7 @@ syn match   sudoersDefaultTypeGreaterThan contained '>' nextgroup=@sudoersUser s
 " TODO: could also deal with special characters here
 syn match   sudoersBooleanParameter contained '!' nextgroup=sudoersBooleanParameter,sudoersIntegerOrBooleanParameter,sudoersModeOrBooleanParameter,sudoersFloatOrBooleanParameter,sudoersTimeoutOrBooleanParameter,sudoersStringOrBooleanParameter,sudoersListParameter skipwhite skipnl
 syn keyword sudoersBooleanParameter contained skipwhite skipnl
+                                  \ nextgroup=sudoersParameterListComma
                                   \ always_query_group_plugin
                                   \ always_set_home
                                   \ authenticate
@@ -258,12 +259,12 @@ syn keyword sudoersIntegerParameter contained
                                   \ syslog_maxlen
 
 syn keyword sudoersIntegerOrBooleanParameter contained
-                                  \ nextgroup=sudoersIntegerParameterEquals
+                                  \ nextgroup=sudoersIntegerParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ loglinelen
 
 syn keyword sudoersFloatOrBooleanParameter contained
-                                  \ nextgroup=sudoersFloatParameterEquals
+                                  \ nextgroup=sudoersFloatParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ passwd_timeout
                                   \ timestamp_timeout
@@ -274,12 +275,12 @@ syn keyword sudoersModeParameter contained
                                   \ iolog_mode
 
 syn keyword sudoersModeOrBooleanParameter contained
-                                  \ nextgroup=sudoersModeParameterEquals
+                                  \ nextgroup=sudoersModeParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ umask
 
 syn keyword sudoersTimeoutOrBooleanParameter contained
-                                  \ nextgroup=sudoersTimeoutParameterEquals
+                                  \ nextgroup=sudoersTimeoutParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ command_timeout
                                   \ log_server_timeout
@@ -312,7 +313,7 @@ syn keyword sudoersStringParameter  contained
                                   \ type
 
 syn keyword sudoersStringOrBooleanParameter contained
-                                  \ nextgroup=sudoersStringParameterEquals
+                                  \ nextgroup=sudoersStringParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ admin_flag
                                   \ editor
@@ -355,7 +356,7 @@ syn keyword sudoersStringOrBooleanParameter contained
                                   \ verifypw
 
 syn keyword sudoersListParameter    contained
-                                  \ nextgroup=sudoersListParameterEquals
+                                  \ nextgroup=sudoersListParameterEquals,sudoersParameterListComma
                                   \ skipwhite skipnl
                                   \ env_check
                                   \ env_delete
