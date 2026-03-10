@@ -918,7 +918,7 @@ add_interface_from_super_class(
 	return FALSE;
 
     if (ga_grow(impl_gap, 1) == FAIL)
-	return FALSE;
+	goto fail;
 
     char_u **intf_names = (char_u **)impl_gap->ga_data;
     intf_names[impl_gap->ga_len] = intf_name;
@@ -926,7 +926,10 @@ add_interface_from_super_class(
 
     // Add the interface class to "intf_classes_gap"
     if (ga_grow(intf_classes_gap, 1) == FAIL)
-	return FALSE;
+    {
+	--impl_gap->ga_len;
+	goto fail;
+    }
 
     class_T **intf_classes = (class_T **)intf_classes_gap->ga_data;
     intf_classes[intf_classes_gap->ga_len] = ifcl;
@@ -934,6 +937,9 @@ add_interface_from_super_class(
     ++ifcl->class_refcount;
 
     return TRUE;
+fail:
+    vim_free(intf_name);
+    return FALSE;
 }
 
 /*
