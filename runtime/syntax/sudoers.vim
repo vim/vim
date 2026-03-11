@@ -129,7 +129,7 @@ syn match   sudoersCmndListColon    contained ':' nextgroup=sudoersCmndAlias    
 syn cluster sudoersCmndList         contains=sudoersCmndListComma,sudoersCmndListColon
 
 syn match   sudoersCmndSpecComma    contained ',' nextgroup=@sudoersCmndSpecList skipwhite skipnl
-syn match   sudoersCmndSpecColon    contained ':' nextgroup=@sudoersUserInSpec  skipwhite skipnl
+syn match   sudoersCmndSpecColon    contained ':' nextgroup=@sudoersHostInSpec   skipwhite skipnl
 syn cluster sudoersCmndSpec         contains=sudoersCmndSpecComma,sudoersCmndSpecColon
 
 syn cluster sudoersUserInList       contains=sudoersUserNegationInList,sudoersUserNameInList,sudoersUIDInList,sudoersGroupInList,sudoersGIDInList,sudoersUserNetgroupInList,sudoersUserAliasInList,sudoersUserAllInList
