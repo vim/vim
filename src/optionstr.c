@@ -4332,8 +4332,11 @@ did_set_statuslineopt(optset_T *args)
 	if (actual_stlh > 0)
 	{
 	    update_stlo_maxheight(varp, actual_stlh);
-	    // Re-sync parsed members with the updated string.
-	    statuslineopt_changed(*varp, wp);
+	    // Update the parsed maxheight member directly.
+	    if (wp != NULL)
+		wp->w_p_stlo_mh = actual_stlh;
+	    else
+		set_stlo_mh(actual_stlh);
 	}
     }
     else

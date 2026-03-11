@@ -100,10 +100,10 @@ static int close_disallowed = 0;
 static int frame_locked = 0;
 
 #if defined(FEAT_STL_OPT)
-static int stl_rendered_height = 1;	// rendered height of global 'stl' (number of
-				// "%@" + 1)
-static int stlo_fh = FALSE;
-static int stlo_mh = STATUS_HEIGHT;
+// rendered height of global 'stl' (number of "%@" + 1)
+static int stl_rendered_height = 1;
+static int stlo_fh = FALSE;	    // "fixedheight" flag cache of global 'stlo'
+static int stlo_mh = STATUS_HEIGHT; // "maxheight" value cache of global 'stlo'
 #endif
 
 /*
@@ -7784,6 +7784,15 @@ frame_change_statusline_height(void)
     comp_col();
     redraw_all_later(UPD_SOME_VALID);
     return global_stlh;
+}
+
+/*
+ * Update the global maxheight cache for 'statuslineopt'.
+ */
+    void
+set_stlo_mh(int mh)
+{
+    stlo_mh = mh;
 }
 
 /*

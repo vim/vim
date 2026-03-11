@@ -92,6 +92,7 @@ void command_height(void);
 void last_status(int morewin);
 void update_stl_rendered_height(win_T *wp);
 int frame_change_statusline_height(void);
+void set_stlo_mh(int mh);
 int statuslineopt_changed(char_u *stlopt, win_T *wp);
 int statusline_height(win_T *wp);
 int tabline_height(void);
