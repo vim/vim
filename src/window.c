@@ -7675,12 +7675,7 @@ update_stl_rendered_height(void)
 {
     char_u *opt_name = (char_u *)"statusline";
 
-    // Suppress errors: %{expr} or %!expr may not be safe to evaluate here
-    // (e.g. during option-set callback).  Errors will be raised at redraw
-    // time instead.
-    ++emsg_off;
     stl_rendered_height = get_stl_rendered_height(curwin, p_stl, opt_name, 0);
-    --emsg_off;
 }
 
 /*
@@ -7692,11 +7687,8 @@ update_win_stl_rendered_height(win_T *wp)
 {
     char_u *opt_name = (char_u *)"statusline";
 
-    // Suppress errors: %{expr} or %!expr may not be safe to evaluate here.
-    ++emsg_off;
     wp->w_stl_rendered_height =
 	get_stl_rendered_height(wp, wp->w_p_stl, opt_name, OPT_LOCAL);
-    --emsg_off;
 }
 
 /*

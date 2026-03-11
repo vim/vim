@@ -4445,9 +4445,15 @@ get_stl_rendered_height(
     int rendered_height = 0;
     char_u	buf[MAXPATHL] = {0};
 
+    // Suppress errors while computing height: expressions (%!expr, %{expr})
+    // are evaluated here only to count rendered lines, not for their side
+    // effects.  Any errors (e.g. E48 in sandbox) will surface properly when
+    // the statusline is actually drawn.
+    ++emsg_off;
     (void)build_stl_str_hl_local(STL_MODE_GET_RENDERED_HEIGHT,
 	    wp, buf, sizeof(buf), &fmt,
 	    opt_name, opt_scope, 0, 0, NULL, NULL, &rendered_height);
+    --emsg_off;
     return rendered_height;
 }
 
