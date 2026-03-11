@@ -1237,7 +1237,7 @@ $quote	eval.txt	/*$quote*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
-'termresize	options.txt	/*'termresize*
+'termresize'	options.txt	/*'termresize'*
 'termsync'	options.txt	/*'termsync'*
 'termwinkey'	options.txt	/*'termwinkey'*
 'termwinscroll'	options.txt	/*'termwinscroll'*
