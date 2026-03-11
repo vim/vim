@@ -3380,7 +3380,7 @@ get_winopts(buf_T *buf)
 #ifdef FEAT_STL_OPT
     // Update rendered height for window-local 'statusline'.
     if (*curwin->w_p_stl != NUL)
-	update_win_stl_rendered_height(curwin);
+	update_stl_rendered_height(curwin);
     // If the effective statuslineopt changed, re-adjust all window heights.
     if (curwin->w_status_height > 0
 	    && curwin->w_status_height != statusline_height(curwin))

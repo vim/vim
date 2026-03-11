@@ -7668,27 +7668,21 @@ last_status_rec(frame_T *fr, int statusline)
 
 #if defined(FEAT_STL_OPT)
 /*
- * Update stl_rendered_height from the rendered height of the global 'statusline'.
+ * Update the cached rendered height of 'statusline'.
+ * If "wp" is NULL, update the global stl_rendered_height using p_stl.
+ * If "wp" is non-NULL, update wp->w_stl_rendered_height using wp->w_p_stl.
  */
     void
-update_stl_rendered_height(void)
+update_stl_rendered_height(win_T *wp)
 {
-    char_u *opt_name = (char_u *)"statusline";
+    char_u	*opt_name = (char_u *)"statusline";
+    char_u	*stl_val = (wp == NULL) ? p_stl : wp->w_p_stl;
+    int		opt_flags = (wp == NULL) ? 0 : OPT_LOCAL;
+    int		*height = (wp == NULL) ? &stl_rendered_height
+						: &wp->w_stl_rendered_height;
 
-    stl_rendered_height = get_stl_rendered_height(curwin, p_stl, opt_name, 0);
-}
-
-/*
- * Update wp->w_stl_rendered_height from the rendered height of the window-local
- * 'statusline'.
- */
-    void
-update_win_stl_rendered_height(win_T *wp)
-{
-    char_u *opt_name = (char_u *)"statusline";
-
-    wp->w_stl_rendered_height =
-	get_stl_rendered_height(wp, wp->w_p_stl, opt_name, OPT_LOCAL);
+    *height = get_stl_rendered_height(wp == NULL ? curwin : wp, stl_val,
+					opt_name, opt_flags);
 }
 
 /*

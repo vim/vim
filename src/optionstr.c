@@ -4220,10 +4220,7 @@ did_set_statusline(optset_T *args)
 
     if (ret != NULL)
 	return ret;
-    if (varp == &curwin->w_p_stl)
-	update_win_stl_rendered_height(curwin);
-    else
-	update_stl_rendered_height();
+    update_stl_rendered_height(varp == &curwin->w_p_stl ? curwin : NULL);
     frame_change_statusline_height();
 
     return NULL;
@@ -4314,10 +4311,7 @@ did_set_statuslineopt(optset_T *args)
 	return e_invalid_argument;
 
     // Sync stl_rendered_height with the current statusline.
-    if (wp != NULL)
-	update_win_stl_rendered_height(wp);
-    else
-	update_stl_rendered_height();
+    update_stl_rendered_height(wp);
 
     // Update the maxheight value to the actual value set.
     // Note: Must be changed if p_stlo_values are changed.
