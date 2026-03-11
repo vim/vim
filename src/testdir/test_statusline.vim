@@ -277,7 +277,7 @@ func Test_statusline()
   let s:expected_curbuf = string(bufnr(''))
   let s:expected_curwin = string(win_getid())
   set statusline=%{SyntaxItem()}
-  call assert_match('^vimNumber\s*$', s:get_statusline())
+  call assert_match('^vimRangeLine\s*$', s:get_statusline())
   s/^/"/
   call assert_match('^vimLineComment\s*$', s:get_statusline())
   syntax off
