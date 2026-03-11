@@ -4255,6 +4255,11 @@ update_stlo_maxheight(char_u **varp, int actual_stlh)
     if (last_mh == NULL)
 	return;
 
+    size_t	bufsize = STRLEN(src) + NUMBUFLEN + 1;
+    char_u	*buf = alloc(bufsize);
+    if (buf == NULL)
+	return;
+
     int		len = 0;
     bool	need_comma = false;
 
@@ -4276,24 +4281,24 @@ update_stlo_maxheight(char_u **varp, int actual_stlh)
 	    {
 		// Replace the last occurrence with the actual value.
 		if (need_comma)
-		    IObuff[len++] = ',';
-		len += vim_snprintf((char *)IObuff + len,
-			IOSIZE - len, "maxheight:%d", actual_stlh);
+		    buf[len++] = ',';
+		len += vim_snprintf((char *)buf + len,
+			bufsize - len, "maxheight:%d", actual_stlh);
 		need_comma = true;
 	    }
 	}
 	else
 	{
 	    if (need_comma)
-		IObuff[len++] = ',';
-	    mch_memmove(IObuff + len, tok, tok_len);
+		buf[len++] = ',';
+	    mch_memmove(buf + len, tok, tok_len);
 	    len += tok_len;
 	    need_comma = true;
 	}
     }
-    IObuff[len] = NUL;
+    buf[len] = NUL;
     free_string_option(*varp);
-    *varp = vim_strsave(IObuff);
+    *varp = buf;
 }
 
 /*
