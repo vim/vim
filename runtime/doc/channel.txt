@@ -112,6 +112,24 @@ Vim to write lines in log file: >
 	call ch_logfile('channellog', 'w')
 See |ch_logfile()|.
 
+You can also make Vim act as a server using |ch_listen()|.  This does not
+require an external server program.
+
+							*channel-listen-demo*
+Start Vim and create a listening channel: >
+	func OnAccept(channel, clientaddr)
+	  " Invoked when a new connection is accepted.
+	  " a:channel is the new channel for the connection.
+	  " a:clientaddr is the client address, e.g. "127.0.0.1:12345".
+	endfunc
+	let server = ch_listen('localhost:8765', {"callback": "OnAccept"})
+
+From another Vim instance (or any program) you can connect to it: >
+	let channel = ch_open('localhost:8765')
+
+When done, close the server channel: >
+	call ch_close(server)
+
 ==============================================================================
 3. Opening a channel					*channel-open*
 
@@ -632,7 +650,9 @@ ch_info({handle})						*ch_info()*
 		Return type: dict<any>
 
 ch_listen({address} [, {options}])				*ch_listen()*
-		Listen to a channel with {address}.  See |channel|.
+		Listen on {address} for incoming channel connections.
+		This creates a server-side channel, unlike |ch_open()|
+		which connects to an existing server.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} has the form "hostname:port", e.g.,
@@ -640,6 +660,13 @@ ch_listen({address} [, {options}])				*ch_listen()*
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
+		The "callback" in {options} is invoked when a new
+		connection is accepted.  It receives two arguments: the
+		new Channel and the client address as a String (e.g.
+		"127.0.0.1:12345").
+
+		See |channel-listen-demo| for an example.
+		Use |ch_open()| to connect to an existing server instead.
 
 		{only available when compiled with the |+channel| feature}
 
@@ -701,6 +728,9 @@ ch_open({address} [, {options}])				*ch_open()*
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
+
+		Use |ch_listen()| to listen for incoming connections
+		instead.
 
 		Can also be used as a |method|: >
 			GetAddress()->ch_open()
