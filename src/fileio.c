@@ -2068,7 +2068,7 @@ retry:
 		    // Skip ASCII bytes quickly using word-at-a-time check.
 		    {
 			char_u *ascii_end = ptr + size;
-			while (ascii_end - p >= sizeof(long_u))
+			while (ascii_end - p >= (long)sizeof(long_u))
 			{
 			    long_u word;
 			    memcpy(&word, p, sizeof(long_u));
