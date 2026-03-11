@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-01 09:46+0100\n"
-"PO-Revision-Date: 2026-01-01 23:30+0100\n"
+"POT-Creation-Date: 2026-02-22 09:23+0100\n"
+"PO-Revision-Date: 2026-02-22 09:40+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -11392,6 +11392,45 @@ msgstr "personalizzazione pagine scheda nel pannello-schede"
 
 msgid "options for using tabpanel"
 msgstr "opzioni per usare il pannello-schede"
+
+msgid "Notice"
+msgstr "Avviso"
+
+msgid "Quickfix list not found, stopping the job"
+msgstr "Lista quickfix non trovata, arresto il Job"
+
+msgid "Success!"
+msgstr "Successo!"
+
+msgid "Job terminated"
+msgstr "Job terminato"
+
+msgid "There are errors."
+msgstr "Ci sono errori."
+
+msgid "Could not create quickfix list"
+msgstr "Non riesco a creare lista quickfix"
+
+msgid "File not readable:"
+msgstr "File non leggibile:"
+
+msgid "Failed to start job"
+msgstr "Fallita partenza Job"
+
+msgid "Typesetting..."
+msgstr "Componendo..."
+
+msgid "Jobs still running:"
+msgstr "Job ancora attivi:"
+
+msgid "Done."
+msgstr "Fatto."
+
+msgid "Typeset"
+msgstr "Composizione"
+
+msgid "Please save the buffer first."
+msgstr "Siete pregati di salvare prima il buffer."
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""

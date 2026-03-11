@@ -1232,22 +1232,62 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 list_concat(list_T *l1, list_T *l2, typval_T *tv)
 {
     list_T	*l;
+    int		len1 = l1 == NULL ? 0 : l1->lv_len;
+    int		len2 = l2 == NULL ? 0 : l2->lv_len;
+    long	totallen = (long)len1 + (long)len2;
+    int		i;
+    listitem_T	*item;
 
-    // make a copy of the first list.
-    if (l1 == NULL)
+    if (totallen == 0)
+    {
 	l = list_alloc();
-    else
-	l = list_copy(l1, FALSE, TRUE, 0);
+	if (l == NULL)
+	    return FAIL;
+	++l->lv_refcount;
+	tv->v_type = VAR_LIST;
+	tv->v_lock = 0;
+	tv->vval.v_list = l;
+	return OK;
+    }
+    if (totallen > INT_MAX)
+	return FAIL;
+
+    // allocate all items at once for efficiency
+    l = list_alloc_with_items((int)totallen);
     if (l == NULL)
 	return FAIL;
+
+    i = 0;
+    if (len1 > 0)
+    {
+	CHECK_LIST_MATERIALIZE(l1);
+	for (item = l1->lv_first; item != NULL && !got_int;
+		item = item->li_next)
+	{
+	    typval_T new_tv;
+
+	    copy_tv(&item->li_tv, &new_tv);
+	    list_set_item(l, i++, &new_tv);
+	}
+    }
+    if (len2 > 0)
+    {
+	CHECK_LIST_MATERIALIZE(l2);
+	for (item = l2->lv_first; item != NULL && !got_int;
+		item = item->li_next)
+	{
+	    typval_T new_tv;
+
+	    copy_tv(&item->li_tv, &new_tv);
+	    list_set_item(l, i++, &new_tv);
+	}
+    }
+
+    ++l->lv_refcount;
     tv->v_type = VAR_LIST;
     tv->v_lock = 0;
     tv->vval.v_list = l;
-    if (l1 == NULL)
-	++l->lv_refcount;
-
-    // append all items from the second list
-    return list_extend(l, l2, NULL);
+    return OK;
 }
 
     list_T *
@@ -1466,7 +1506,7 @@ list2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 typedef struct join_S {
-    char_u	*s;
+    string_T	s;
     char_u	*tofree;
 } join_T;
 
@@ -1482,37 +1522,39 @@ list_join_inner(
 {
     int		i;
     join_T	*p;
-    int		len;
-    int		sumlen = 0;
+    long	sumlen = 0;
     int		first = TRUE;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
     listitem_T	*item;
-    char_u	*s;
+    string_T	s;
+    size_t	seplen;
 
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
-	s = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
+	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
 				      echo_style, restore_copyID, !echo_style);
-	if (s == NULL)
+	if (s.string == NULL)
 	    return FAIL;
 
-	len = (int)STRLEN(s);
-	sumlen += len;
+	s.length = STRLEN(s.string);
+	sumlen += (long)s.length;
 
 	(void)ga_grow(join_gap, 1);
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
-	if (tofree != NULL || s != numbuf)
+	if (tofree != NULL || s.string != numbuf)
 	{
-	    p->s = s;
+	    p->s.string = s.string;
+	    p->s.length = s.length;
 	    p->tofree = tofree;
 	}
 	else
 	{
-	    p->s = vim_strnsave(s, len);
-	    p->tofree = p->s;
+	    p->s.string = vim_strnsave(s.string, s.length);
+	    p->s.length = s.length;
+	    p->tofree = p->s.string;
 	}
 
 	line_breakcheck();
@@ -1522,9 +1564,10 @@ list_join_inner(
 
     // Allocate result buffer with its total size, avoid re-allocation and
     // multiple copy operations.  Add 2 for a tailing ']' and NUL.
+    seplen = STRLEN(sep);
     if (join_gap->ga_len >= 2)
-	sumlen += (int)STRLEN(sep) * (join_gap->ga_len - 1);
-    if (ga_grow(gap, sumlen + 2) == FAIL)
+	sumlen += (long)seplen * (join_gap->ga_len - 1);
+    if (sumlen > INT_MAX - 2 || ga_grow(gap, (int)sumlen + 2) == FAIL)
 	return FAIL;
 
     for (i = 0; i < join_gap->ga_len && !got_int; ++i)
@@ -1532,11 +1575,11 @@ list_join_inner(
 	if (first)
 	    first = FALSE;
 	else
-	    ga_concat(gap, sep);
+	    ga_concat_len(gap, sep, seplen);
 	p = ((join_T *)join_gap->ga_data) + i;
 
-	if (p->s != NULL)
-	    ga_concat(gap, p->s);
+	if (p->s.string != NULL)
+	    ga_concat_len(gap, p->s.string, p->s.length);
 	line_breakcheck();
     }
 
@@ -1836,16 +1879,24 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 
 	FOR_ALL_LIST_ITEMS(l, li)
 	{
-	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
-	    ga_concat(&ga, buf);
+	    size_t  buflen;
+
+	    buflen = (size_t)(*char2bytes)(tv_get_number(&li->li_tv), buf);
+	    buf[buflen] = NUL;
+	    ga_concat_len(&ga, buf, buflen);
 	}
 	ga_append(&ga, NUL);
     }
-    else if (ga_grow(&ga, list_len(l) + 1) == OK)
+    else
     {
-	FOR_ALL_LIST_ITEMS(l, li)
-	    ga_append(&ga, tv_get_number(&li->li_tv));
-	ga_append(&ga, NUL);
+	long len = (long)list_len(l) + 1;
+
+	if (len <= INT_MAX && ga_grow(&ga, (int)len) == OK)
+	{
+	    FOR_ALL_LIST_ITEMS(l, li)
+		ga_append(&ga, tv_get_number(&li->li_tv));
+	    ga_append(&ga, NUL);
+	}
     }
 
     rettv->v_type = VAR_STRING;
@@ -2974,8 +3025,7 @@ list_extend_func(
 	{
 	    before = (long)tv_get_number_chk(&argvars[2], &error);
 	    if (error)
-		return;		// type error; errmsg already given
-
+		goto cleanup;		// type error; errmsg already given
 	    if (before == l1->lv_len)
 		item = NULL;
 	    else
@@ -2984,7 +3034,7 @@ list_extend_func(
 		if (item == NULL)
 		{
 		    semsg(_(e_list_index_out_of_range_nr), before);
-		    return;
+		    goto cleanup;
 		}
 	    }
 	}
@@ -2992,7 +3042,7 @@ list_extend_func(
 	    item = NULL;
 	if (type != NULL && check_typval_arg_type(
 		    type, &argvars[1], func_name, 2) == FAIL)
-	    return;
+	    goto cleanup;
 	list_extend(l1, l2, item);
 
 	if (is_new)
@@ -3003,6 +3053,11 @@ list_extend_func(
 	}
 	else
 	    copy_tv(&argvars[0], rettv);
+	return;
+
+cleanup:
+	if (is_new)
+	    list_unref(l1);
     }
 }
 

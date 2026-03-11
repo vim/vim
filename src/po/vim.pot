@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"POT-Creation-Date: 2026-03-04 21:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1958,6 +1958,9 @@ msgid "???EMPTY BLOCK"
 msgstr ""
 
 msgid "???LINES MISSING"
+msgstr ""
+
+msgid "???ILLEGAL BLOCK NUMBER"
 msgstr ""
 
 msgid "???BLOCK MISSING"
@@ -8842,6 +8845,9 @@ msgstr ""
 msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr ""
 
+msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
+msgstr ""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 #. buffer of cmdline window or NULL
@@ -9439,6 +9445,9 @@ msgstr ""
 msgid "don't redraw while executing macros"
 msgstr ""
 
+msgid "enable terminal sync mode"
+msgstr ""
+
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
 msgstr ""
 
@@ -9498,6 +9507,9 @@ msgstr ""
 msgid "highlight group to use for the window"
 msgstr ""
 
+msgid "highlight group mappings for the window"
+msgstr ""
+
 msgid "use GUI colors for the terminal"
 msgstr ""
 
@@ -9541,6 +9553,9 @@ msgid "0, 1 or 2; when to use a status line for the last window"
 msgstr ""
 
 msgid "alternate format to be used for a status line"
+msgstr ""
+
+msgid "optional settings for the status line"
 msgstr ""
 
 msgid "make all windows the same size when adding/removing windows"
@@ -10659,6 +10674,45 @@ msgid "custom tab pages in tabpanel"
 msgstr ""
 
 msgid "options for using tabpanel"
+msgstr ""
+
+msgid "Notice"
+msgstr ""
+
+msgid "Quickfix list not found, stopping the job"
+msgstr ""
+
+msgid "Success!"
+msgstr ""
+
+msgid "Job terminated"
+msgstr ""
+
+msgid "There are errors."
+msgstr ""
+
+msgid "Could not create quickfix list"
+msgstr ""
+
+msgid "File not readable:"
+msgstr ""
+
+msgid "Failed to start job"
+msgstr ""
+
+msgid "Typesetting..."
+msgstr ""
+
+msgid "Jobs still running:"
+msgstr ""
+
+msgid "Done."
+msgstr ""
+
+msgid "Typeset"
+msgstr ""
+
+msgid "Please save the buffer first."
 msgstr ""
 
 msgid "You discovered the command-line window! You can close it with \":q\"."

@@ -935,13 +935,31 @@ channel_open(
 	return NULL;
     }
 
+    // Count the number of addresses for timeout distribution
+    int addr_count = 0;
     for (addr = res; addr != NULL; addr = addr->ai_next)
+	addr_count++;
+
+    // On Mac and Solaris a zero timeout almost never works.  Waiting for
+    // one millisecond already helps a lot.  Later Mac systems (using IPv6)
+    // need more time, 15 milliseconds appears to work well.
+    // Let's do it for all systems, because we don't know why this is
+    // needed.
+    if (waittime == 0)
+	waittime = 15;
+
+    int addr_index = 0;
+    for (addr = res; addr != NULL; addr = addr->ai_next, addr_index++)
     {
 	const char  *dst = hostname;
 # ifdef HAVE_INET_NTOP
 	const void  *src = NULL;
 	char	    buf[NUMBUFLEN];
 # endif
+	int	    try_waittime;
+	int	    before_waittime;
+	int	    consumed;
+	int	    remaining_addrs;
 
 	if (addr->ai_family == AF_INET6)
 	{
@@ -974,18 +992,44 @@ channel_open(
 
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
-	// On Mac and Solaris a zero timeout almost never works.  Waiting for
-	// one millisecond already helps a lot.  Later Mac systems (using IPv6)
-	// need more time, 15 milliseconds appears to work well.
-	// Let's do it for all systems, because we don't know why this is
-	// needed.
-	if (waittime == 0)
-	    waittime = 15;
+	// Distribute the timeout across addresses for better fallback behavior.
+	// This implements a simplified version of Happy Eyeballs (RFC 8305).
+	if (addr->ai_next == NULL)
+	    try_waittime = waittime;
+	else if (addr_index == 0)
+	{
+	    if (waittime > 500)
+		try_waittime = 250;
+	    else if (waittime > 30)
+		try_waittime = waittime / 2;
+	    else
+		try_waittime = waittime;
+	}
+	else
+	{
+	    remaining_addrs = addr_count - addr_index;
+	    try_waittime = waittime / remaining_addrs;
+	}
 
+	before_waittime = try_waittime;
 	sd = channel_connect(channel, addr->ai_addr, (int)addr->ai_addrlen,
-								   &waittime);
+							   &try_waittime);
+
+	// Update the overall waittime based on consumed time
+	consumed = before_waittime - try_waittime;
+	waittime -= consumed;
+	if (waittime < 0)
+	    waittime = 0;
+
 	if (sd >= 0)
 	    break;
+
+	// If we have no time left, stop trying
+	if (waittime <= 0 && addr->ai_next != NULL)
+	{
+	    ch_log(channel, "Out of time, stopping connection attempts");
+	    break;
+	}
     }
 
     freeaddrinfo(res);
@@ -2237,9 +2281,9 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 
     last_node = node->rq_next;
     len = node->rq_buflen + last_node->rq_buflen;
-    if (want_nl || mode == CH_MODE_LSP)
+    if (want_nl || mode == CH_MODE_LSP || mode == CH_MODE_DAP)
 	while (last_node->rq_next != NULL
-		&& (mode == CH_MODE_LSP
+		&& (mode == CH_MODE_LSP || mode == CH_MODE_DAP
 		    || channel_first_nl(last_node) == NULL))
 	{
 	    last_node = last_node->rq_next;
@@ -2390,15 +2434,21 @@ channel_fill(js_read_T *reader)
 }
 
 /*
- * Process the HTTP header in a Language Server Protocol (LSP) message.
+ * Process the HTTP header in a Language Server Protocol (LSP) message or
+ * Debug Adapter Protocol (DAP) message.
  *
  * The message format is described in the LSP specification:
  * https://microsoft.github.io/language-server-protocol/specification
+ *
+ * For DAP:
+ * https://microsoft.github.io/debug-adapter-protocol/specification
  *
  * It has the following two fields:
  *
  *	Content-Length: ...
  *	Content-Type: application/vscode-jsonrpc; charset=utf-8
+ *
+ * For DAP, there is no "Content-Type" field (as of now).
  *
  * Each field ends with "\r\n". The header ends with an additional "\r\n".
  *
@@ -2407,7 +2457,7 @@ channel_fill(js_read_T *reader)
  * need to wait for more data to arrive.
  */
     static int
-channel_process_lsp_http_hdr(js_read_T *reader)
+channel_process_lspdap_http_hdr(js_read_T *reader)
 {
     char_u	*line_start;
     char_u	*p;
@@ -2491,8 +2541,9 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     reader.js_cookie = channel;
     reader.js_cookie_arg = part;
 
-    if (chanpart->ch_mode == CH_MODE_LSP)
-	status = channel_process_lsp_http_hdr(&reader);
+    if (chanpart->ch_mode == CH_MODE_LSP
+	    || chanpart->ch_mode == CH_MODE_DAP)
+	status = channel_process_lspdap_http_hdr(&reader);
 
     // When a message is incomplete we wait for a short while for more to
     // arrive.  After the delay drop the input, otherwise a truncated string
@@ -2509,12 +2560,13 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     {
 	// Only accept the response when it is a list with at least two
 	// items.
-	if (chanpart->ch_mode == CH_MODE_LSP && listtv.v_type != VAR_DICT)
+	if ((chanpart->ch_mode == CH_MODE_LSP || chanpart->ch_mode == CH_MODE_DAP)
+		&& listtv.v_type != VAR_DICT)
 	{
 	    ch_error(channel, "Did not receive a LSP dict, discarding");
 	    clear_tv(&listtv);
 	}
-	else if (chanpart->ch_mode != CH_MODE_LSP
+	else if (chanpart->ch_mode != CH_MODE_LSP && chanpart->ch_mode != CH_MODE_DAP
 	      && (listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2))
 	{
 	    if (listtv.v_type != VAR_LIST)
@@ -2723,7 +2775,7 @@ channel_has_block_id(chanpart_T *chanpart, int id)
 /*
  * Get a message from the JSON queue for channel "channel".
  * When "id" is positive it must match the first number in the list.
- * When "id" is zero or negative jut get the first message.  But not one
+ * When "id" is zero or negative just get the first message.  But not one
  * in the ch_block_ids list.
  * When "without_callback" is TRUE also get messages that were pushed back.
  * Return OK when found and return the value in "rettv".
@@ -2745,7 +2797,8 @@ channel_get_json(
 	list_T	    *l;
 	typval_T    *tv;
 
-	if (channel->ch_part[part].ch_mode != CH_MODE_LSP)
+	if (channel->ch_part[part].ch_mode != CH_MODE_LSP
+		&& channel->ch_part[part].ch_mode != CH_MODE_DAP)
 	{
 	    l = item->jq_value->vval.v_list;
 	    CHECK_LIST_MATERIALIZE(l);
@@ -2756,29 +2809,50 @@ channel_get_json(
 	    dict_T	*d;
 	    dictitem_T	*di;
 
-	    // LSP message payload is a JSON-RPC dict.
-	    // For RPC requests and responses, the 'id' item will be present.
-	    // For notifications, it will not be present.
-	    if (id > 0)
+	    if (channel->ch_part[part].ch_mode == CH_MODE_LSP)
 	    {
-		if (item->jq_value->v_type != VAR_DICT)
-		    goto nextitem;
-		d = item->jq_value->vval.v_dict;
-		if (d == NULL)
-		    goto nextitem;
-		// When looking for a response message from the LSP server,
-		// ignore new LSP request and notification messages.  LSP
-		// request and notification messages have the "method" field in
-		// the header and the response messages do not have this field.
-		if (dict_has_key(d, "method"))
-		    goto nextitem;
-		di = dict_find(d, (char_u *)"id", -1);
-		if (di == NULL)
-		    goto nextitem;
-		tv = &di->di_tv;
+		// LSP message payload is a JSON-RPC dict. For RPC requests and
+		// responses, the 'id' item will be present. For notifications,
+		// it will not be present.
+		if (id > 0)
+		{
+		    if (item->jq_value->v_type != VAR_DICT)
+			goto nextitem;
+		    d = item->jq_value->vval.v_dict;
+		    if (d == NULL)
+			goto nextitem;
+		    // When looking for a response message from the LSP server,
+		    // ignore new LSP request and notification messages.  LSP
+		    // request and notification messages have the "method" field
+		    // in the header and the response messages do not have this
+		    // field.
+		    if (dict_has_key(d, "method"))
+			goto nextitem;
+		    di = dict_find(d, (char_u *)"id", -1);
+		    if (di == NULL)
+			goto nextitem;
+		    tv = &di->di_tv;
+		}
+		else
+		    tv = item->jq_value;
 	    }
 	    else
-		tv = item->jq_value;
+	    {
+		if (id > 0)
+		{
+		    if (item->jq_value->v_type != VAR_DICT)
+			goto nextitem;
+		    d = item->jq_value->vval.v_dict;
+		    if (d == NULL)
+			goto nextitem;
+		    di = dict_find(d, (char_u *)"request_seq", -1);
+		    if (di == NULL)
+			goto nextitem;
+		    tv = &di->di_tv;
+		}
+		else
+		    tv = item->jq_value;
+	    }
 	}
 
 	if ((without_callback || !item->jq_no_callback)
@@ -3160,7 +3234,8 @@ channel_use_json_head(channel_T *channel, ch_part_T part)
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
 
     return ch_mode == CH_MODE_JSON || ch_mode == CH_MODE_JS
-						     || ch_mode == CH_MODE_LSP;
+						     || ch_mode == CH_MODE_LSP
+						     || ch_mode == CH_MODE_DAP;
 }
 
 /*
@@ -3217,10 +3292,10 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	// Get any json message in the queue.
 	if (channel_get_json(channel, part, -1, FALSE, &listtv) == FAIL)
 	{
-	    if (ch_mode == CH_MODE_LSP)
-		// In the "lsp" mode, the http header and the json payload may
-		// be received in multiple messages. So concatenate all the
-		// received messages.
+	    if (ch_mode == CH_MODE_LSP || ch_mode == CH_MODE_DAP)
+		// In the "lsp" or "dap" mode, the http header and the json
+		// payload may be received in multiple messages. So concatenate
+		// all the received messages.
 		(void)channel_collapse(channel, part, FALSE);
 
 	    // Parse readahead, return when there is still no message.
@@ -3229,7 +3304,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		return FALSE;
 	}
 
-	if (ch_mode == CH_MODE_LSP)
+	if (ch_mode == CH_MODE_LSP || ch_mode == CH_MODE_DAP)
 	{
 	    dict_T	*d = listtv->vval.v_dict;
 	    dictitem_T	*di;
@@ -3237,7 +3312,10 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    seq_nr = 0;
 	    if (d != NULL)
 	    {
-		di = dict_find(d, (char_u *)"id", -1);
+		if (ch_mode == CH_MODE_LSP)
+		    di = dict_find(d, (char_u *)"id", -1);
+		else
+		    di = dict_find(d, (char_u *)"request_seq", -1);
 		if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
 		    seq_nr = di->di_tv.vval.v_number;
 	    }
@@ -3354,13 +3432,14 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     called_otc = FALSE;
     if (seq_nr > 0)
     {
-	// JSON or JS or LSP mode: invoke the one-time callback with the
+	// JSON or JS or LSP or DAP mode: invoke the one-time callback with the
 	// matching nr
 	int lsp_req_msg = FALSE;
 
-	// Don't use a LSP server request message with the same sequence number
-	// as the client request message as the response message.
-	if (ch_mode == CH_MODE_LSP && argv[1].v_type == VAR_DICT
+	// Don't use a LSP/DAP server request message with the same sequence
+	// number as the client request message as the response message.
+	if ((ch_mode == CH_MODE_LSP || ch_mode == CH_MODE_DAP)
+		&& argv[1].v_type == VAR_DICT
 		&& dict_has_key(argv[1].vval.v_dict, "method"))
 	    lsp_req_msg = TRUE;
 
@@ -3379,7 +3458,8 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	}
     }
 
-    if (seq_nr > 0 && (ch_mode != CH_MODE_LSP || called_otc))
+    if (seq_nr > 0 && ((ch_mode != CH_MODE_LSP && ch_mode != CH_MODE_DAP)
+		|| called_otc))
     {
 	if (!called_otc)
 	{
@@ -3571,6 +3651,7 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 	case CH_MODE_JSON: s = "JSON"; break;
 	case CH_MODE_JS: s = "JS"; break;
 	case CH_MODE_LSP: s = "LSP"; break;
+	case CH_MODE_DAP: s = "DAP"; break;
     }
     dict_add_string(dict, namebuf, (char_u *)s);
 
@@ -4012,7 +4093,7 @@ ch_close_part_on_error(
     // Only send "DETACH" for a netbeans channel.
     if (channel->ch_nb_close_cb != NULL)
 	channel_save(channel, PART_SOCK, (char_u *)DETACH_MSG_RAW,
-			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
+			      (int)STRLEN_LITERAL(DETACH_MSG_RAW), FALSE, "PUT ");
 
     // When reading is not possible close this part of the channel.  Don't
     // close the channel yet, there may be something to read on another part.
@@ -4282,10 +4363,10 @@ channel_read_json_block(
 
     for (;;)
     {
-	if (mode == CH_MODE_LSP)
-	    // In the "lsp" mode, the http header and the json payload may be
-	    // received in multiple messages. So concatenate all the received
-	    // messages.
+	if (mode == CH_MODE_LSP || mode == CH_MODE_DAP)
+	    // In the "lsp" or "dap" mode, the http header and the json payload
+	    // may be received in multiple messages. So concatenate all the
+	    // received messages.
 	    (void)channel_collapse(channel, part, FALSE);
 
 	more = channel_parse_json(channel, part);
@@ -4858,7 +4939,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	return;
     }
 
-    if (ch_mode == CH_MODE_LSP)
+    if (ch_mode == CH_MODE_LSP || ch_mode == CH_MODE_DAP)
     {
 	dict_T		*d;
 	dictitem_T	*di;
@@ -4871,11 +4952,15 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    return;
 
 	d = argvars[1].vval.v_dict;
-	di = dict_find(d, (char_u *)"id", -1);
+	if (ch_mode == CH_MODE_LSP)
+	    di = dict_find(d, (char_u *)"id", -1);
+	else
+	    di = dict_find(d, (char_u *)"seq", -1);
 	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)
 	{
-	    // only number type is supported for the 'id' item
-	    semsg(_(e_invalid_value_for_argument_str), "id");
+	    // only number type is supported for the 'id' or 'seq' item
+	    semsg(_(e_invalid_value_for_argument_str),
+		    ch_mode == CH_MODE_LSP ? "id" : "seq");
 	    return;
 	}
 
@@ -4883,7 +4968,16 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    if (dict_has_key(argvars[2].vval.v_dict, "callback"))
 		callback_present = TRUE;
 
-	if (eval || callback_present)
+	if (ch_mode == CH_MODE_DAP)
+	{
+	    // DAP message always has a sequence number (id)
+	    id = ++channel->ch_last_msg_id;
+	    if (di == NULL)
+		dict_add_number(d, "seq", id);
+	    else
+		di->di_tv.vval.v_number = id;
+	}
+	else if (eval || callback_present)
 	{
 	    // When evaluating an expression or sending an expression with a
 	    // callback, always assign a generated ID
@@ -4901,7 +4995,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    if (di != NULL)
 		id = di->di_tv.vval.v_number;
 	}
-	if (!dict_has_key(d, "jsonrpc"))
+	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
 	    dict_add_string(d, "jsonrpc", (char_u *)"2.0");
 	text = json_encode_lsp_msg(&argvars[1]);
     }
@@ -4926,7 +5020,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	if (channel_read_json_block(channel, part_read, timeout, id, &listtv)
 									== OK)
 	{
-	    if (ch_mode == CH_MODE_LSP)
+	    if (ch_mode == CH_MODE_LSP || ch_mode == CH_MODE_DAP)
 	    {
 		*rettv = *listtv;
 		// Change the type to avoid the value being freed.
@@ -4946,7 +5040,13 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	}
     }
     free_job_options(&opt);
-    if (ch_mode == CH_MODE_LSP && !eval && callback_present)
+    if (ch_mode == CH_MODE_DAP && !eval)
+    {
+	// A DAP message always has a sequence number.
+	if (rettv->vval.v_dict != NULL)
+	    dict_add_number(rettv->vval.v_dict, "seq", id);
+    }
+    else if (ch_mode == CH_MODE_LSP && !eval && callback_present)
     {
 	// if ch_sendexpr() is used to send a LSP message and a callback
 	// function is specified, then return the generated identifier for the

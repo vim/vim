@@ -206,7 +206,8 @@ public:
 	IDWriteTextFormat* pTextFormat;
 	DWRITE_FONT_WEIGHT fontWeight;
 	DWRITE_FONT_STYLE  fontStyle;
-	Item() : hFont(NULL), pTextFormat(NULL) {}
+	FLOAT              fontAscent;
+	Item() : hFont(NULL), pTextFormat(NULL), fontAscent(0.0f) {}
     };
 
 private:
@@ -307,6 +308,8 @@ struct DWriteContext {
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
+    FLOAT mFontSize;       // Font size in pixels (em height)
+    FLOAT mFontAscent;     // Font ascent in pixels
 
     D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
 
@@ -321,7 +324,7 @@ struct DWriteContext {
     void DiscardDeviceResources();
 
     HRESULT CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
-	    IDWriteTextFormat **ppTextFormat);
+	    IDWriteTextFormat **ppTextFormat, FLOAT *pFontAscent);
 
     HRESULT SetFontByLOGFONT(const LOGFONTW &logFont);
 
@@ -367,7 +370,10 @@ public:
     AdjustedGlyphRun(
 	    const DWRITE_GLYPH_RUN *glyphRun,
 	    FLOAT cellWidth,
-	    FLOAT &accum) :
+	    FLOAT &accum,
+	    const INT *lpDx,
+	    int *glyphIndex,
+	    int cchText) :
 	DWRITE_GLYPH_RUN(*glyphRun),
 	mAccum(accum),
 	mDelta(0.0f),
@@ -377,7 +383,18 @@ public:
 	for (UINT32 i = 0; i < glyphRun->glyphCount; ++i)
 	{
 	    FLOAT orig = glyphRun->glyphAdvances[i];
-	    FLOAT adjusted = adjustToCell(orig, cellWidth);
+	    FLOAT adjusted;
+
+	    if (*glyphIndex < cchText)
+	    {
+		adjusted = FLOAT(lpDx[*glyphIndex]);
+		(*glyphIndex)++;
+	    }
+	    else
+	    {
+		adjusted = adjustToCell(orig, cellWidth);
+	    }
+
 	    mAdjustedAdvances[i] = adjusted;
 	    mDelta += adjusted - orig;
 	}
@@ -403,9 +420,13 @@ struct TextRendererContext {
     // const fields.
     COLORREF color;
     FLOAT cellWidth;
+    const INT *lpDx;
+    int cchText;
+    FLOAT baselineY;  // Fixed baseline Y coordinate
 
     // working fields.
     FLOAT offsetX;
+    int glyphIndex;
 };
 
 class TextRenderer FINAL : public IDWriteTextRenderer
@@ -496,8 +517,14 @@ public:
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
+	// Use fixed baseline Y from context instead of DirectWrite's
+	// baselineOriginY to prevent vertical shifts when font fallback
+	// occurs (e.g., for CJK characters).
+	FLOAT fixedBaselineY = context->baselineY;
+
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
-		context->offsetX);
+		context->offsetX, context->lpDx, &context->glyphIndex,
+		context->cchText);
 
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
 	if (pDWC_->mDWriteFactory2 != NULL)
@@ -526,7 +553,7 @@ public:
 		    pDWC_->mRT->DrawGlyphRun(
 			    D2D1::Point2F(
 				colorGlyphRun->baselineOriginX,
-				colorGlyphRun->baselineOriginY),
+				fixedBaselineY),
 			    &colorGlyphRun->glyphRun,
 			    pDWC_->mBrush,
 			    DWRITE_MEASURING_MODE_NATURAL);
@@ -542,7 +569,7 @@ public:
 	pDWC_->mRT->DrawGlyphRun(
 		D2D1::Point2F(
 		    baselineOriginX + context->offsetX,
-		    baselineOriginY),
+		    fixedBaselineY),
 		&adjustedGlyphRun,
 		pDWC_->SolidBrush(context->color),
 		DWRITE_MEASURING_MODE_NATURAL);
@@ -619,6 +646,8 @@ DWriteContext::DWriteContext() :
     mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
+    mFontSize(0.0f),
+    mFontAscent(0.0f),
     mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
 {
     HRESULT hr;
@@ -731,7 +760,7 @@ DWriteContext::DiscardDeviceResources()
 
     HRESULT
 DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
-	IDWriteTextFormat **ppTextFormat)
+	IDWriteTextFormat **ppTextFormat, FLOAT *pFontAscent)
 {
     // Most of this function is copied from: https://github.com/Microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/multimedia/DirectWrite/RenderTest/TextHelpers.cpp
     HRESULT hr = S_OK;
@@ -741,6 +770,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
     IDWriteFontFamily *fontFamily = NULL;
     IDWriteLocalizedStrings *localizedFamilyNames = NULL;
     float fontSize = 0;
+    DWRITE_FONT_METRICS fontMetrics = {};
 
     if (SUCCEEDED(hr))
     {
@@ -776,27 +806,20 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	// Use lfHeight of the LOGFONT as font size.
 	fontSize = float(logFont.lfHeight);
 
+	font->GetMetrics(&fontMetrics);
+
+	// Convert lfHeight to DirectWrite font size
 	if (fontSize < 0)
 	{
-	    // Negative lfHeight represents the size of the em unit.
+	    // Negative lfHeight represents the font's em height in pixels
 	    fontSize = -fontSize;
 	}
-	else
+	else if (fontSize > 0)
 	{
-	    // Positive lfHeight represents the cell height (ascent +
-	    // descent).
-	    DWRITE_FONT_METRICS fontMetrics;
-	    font->GetMetrics(&fontMetrics);
-
-	    // Convert the cell height (ascent + descent) from design units
-	    // to ems.
-	    float cellHeight = static_cast<float>(
-		    fontMetrics.ascent + fontMetrics.descent)
-		/ fontMetrics.designUnitsPerEm;
-
-	    // Divide the font size by the cell height to get the font em
-	    // size.
-	    fontSize /= cellHeight;
+	    // Positive lfHeight represents the font's cell height (ascent + descent)
+	    // Convert to em height
+	    fontSize = fontSize * float(fontMetrics.designUnitsPerEm)
+		/ float(fontMetrics.ascent + fontMetrics.descent + fontMetrics.lineGap);
 	}
     }
 
@@ -839,7 +862,18 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
     SafeRelease(&font);
 
     if (SUCCEEDED(hr))
+    {
 	*ppTextFormat = pTextFormat;
+	if (pFontAscent != NULL && fontMetrics.designUnitsPerEm != 0)
+	{
+	    // Calculate ascent ratio (0.0 to 1.0) relative to total font height
+	    FLOAT totalHeight = float(fontMetrics.ascent + fontMetrics.descent);
+	    if (totalHeight != 0.0f)
+		*pFontAscent = float(fontMetrics.ascent) / totalHeight;
+	    else
+		*pFontAscent = 0.83f; // fallback
+	}
+    }
     else
 	SafeRelease(&pTextFormat);
 
@@ -851,8 +885,9 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 {
     HRESULT hr = S_OK;
     IDWriteTextFormat *pTextFormat = NULL;
+    FLOAT fontAscent = 0.0f;
 
-    hr = CreateTextFormatFromLOGFONT(logFont, &pTextFormat);
+    hr = CreateTextFormatFromLOGFONT(logFont, &pTextFormat, &fontAscent);
 
     if (SUCCEEDED(hr))
     {
@@ -861,6 +896,7 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 	mFontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont.lfWeight);
 	mFontStyle = logFont.lfItalic ? DWRITE_FONT_STYLE_ITALIC
 	    : DWRITE_FONT_STYLE_NORMAL;
+	mFontAscent = fontAscent;
     }
 
     return hr;
@@ -879,6 +915,7 @@ DWriteContext::SetFont(HFONT hFont)
 	    mTextFormat = item.pTextFormat;
 	    mFontWeight = item.fontWeight;
 	    mFontStyle = item.fontStyle;
+	    mFontAscent = item.fontAscent;
 	    mFallbackDC = false;
 	}
 	else
@@ -897,6 +934,7 @@ DWriteContext::SetFont(HFONT hFont)
 	item.pTextFormat = mTextFormat;
 	item.fontWeight = mFontWeight;
 	item.fontStyle = mFontStyle;
+	item.fontAscent = mFontAscent;
 	mFallbackDC = false;
     }
     else
@@ -1030,6 +1068,15 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
     SetDrawingMode(DM_DIRECTX);
 
+    // Apply clipping if ETO_CLIPPED is specified
+    if ((fuOptions & ETO_CLIPPED) && lprc != NULL)
+    {
+	mRT->PushAxisAlignedClip(
+	    D2D1::RectF(FLOAT(lprc->left), FLOAT(lprc->top),
+			FLOAT(lprc->right), FLOAT(lprc->bottom)),
+	    D2D1_ANTIALIAS_MODE_ALIASED);
+    }
+
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
 
@@ -1039,12 +1086,25 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
+	// Calculate baseline using font ascent from font metrics.
+	// Do NOT use GetLineMetrics() because it returns different values
+	// depending on text content (e.g., when CJK characters trigger
+	// font fallback, the metrics change).
+	// Use the pre-calculated font ascent for all text to prevent
+	// vertical shifts during redraw.
+	FLOAT baselineY = roundf(FLOAT(y) + FLOAT(h) * mFontAscent + 0.5);
+
 	TextRenderer renderer(this);
-	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
+	TextRendererContext context = { color, FLOAT(cellWidth), lpDx, len,
+		baselineY, 0.0f, 0 };
+
 	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
     SafeRelease(&textLayout);
+
+    if ((fuOptions & ETO_CLIPPED) && lprc != NULL)
+	mRT->PopAxisAlignedClip();
 }
 
     void

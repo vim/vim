@@ -112,7 +112,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'startAtomic_Test' : '0:startAtomic!94\n',
                   'endAtomic_Test' : '0:endAtomic!95\n',
                   'AnnoScale_Test' : "".join(['2:defineAnnoType!60 ' + str(i) + ' "s' + str(i) + '" "x" "=>" blue none\n' for i in range(2, 26)]),
-                  'detach_Test' : '2:close!96\n1:close!97\nDETACH\n'
+                  'detach_Test' : '2:close!96\n1:close!97\nDETACH\n',
+                  'specialKeys_overflow_Test' : '0:specialKeys!200 "' + 'A'*80 + '-X"\n'
+
                 }
                 # execute the specified test
                 if cmd not in testmap:

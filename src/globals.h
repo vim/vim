@@ -120,6 +120,9 @@ EXTERN tabpage_T *popup_mask_tab INIT(= NULL);
 // Zindex in for screen_char(): if lower than the value in "popup_mask"
 // drawing the character is skipped.
 EXTERN int	screen_zindex INIT(= 0);
+
+// Currently drawing popup with opacity window, or NULL.
+EXTERN win_T	*screen_opacity_popup INIT(= NULL);
 #endif
 
 EXTERN int	screen_Rows INIT(= 0);	    // actual size of ScreenLines[]

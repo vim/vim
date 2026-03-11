@@ -3,7 +3,7 @@ vim9script
 # Vim syntax file.
 # Language:    Haredoc (Hare documentation format)
 # Maintainer:  Amelia Clarke <selene@perilune.dev>
-# Last Change: 2025 Aug 14
+# Last Change: 2026 Jan 24
 # Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
 
 if exists('b:current_syntax')
@@ -15,23 +15,22 @@ syn case match
 syn iskeyword @,48-57,_
 
 # Embedded code samples.
-syn region haredocCode start='\t\zs' end='$' contains=@NoSpell display
+syn region haredocCode excludenl start='\v%(^\s*\t)@<=' end='$' contains=@NoSpell display
 
 # References to other declarations and modules.
-syn match haredocRef '\v\[\[\h\w*%(::\h\w*)*%(::)?]]' contains=@NoSpell display
+syn match haredocSpecial '\v\[\[\h\w*%(::\h\w*)*%(::)?]]' contains=@NoSpell display
 
 # Miscellaneous.
 syn keyword haredocTodo FIXME TODO XXX
 
 # Default highlighting {{{1
 hi def link haredocCode Comment
-hi def link haredocRef Special
+hi def link haredocSpecial Special
 hi def link haredocTodo Todo
 
 # Highlight incorrect whitespace by default.
-syn match haredocSpaceError '\s\+$' containedin=ALL display
-syn match haredocSpaceError '^ \zs \+\ze\t' containedin=ALL display
-syn match haredocSpaceError '[^ ]\zs \+\ze\t' containedin=ALL display
+syn match haredocSpaceError excludenl '\s\+$' containedin=ALL display
+syn match haredocSpaceError '.\zs \+\ze\t' containedin=ALL display
 if get(g:, 'hare_space_error', 1)
   hi! def link haredocSpaceError Error
 else

@@ -1392,7 +1392,6 @@ compile_call(
     else
 	*arg += varlen + 1;
 
-    *arg = skipwhite(*arg);
     if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
@@ -2430,6 +2429,8 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 		    invert = !invert;
 		--p;
 	    }
+	    if (check_type_is_value(get_type_on_stack(cctx, 0)) == FAIL)
+		return FAIL;
 	    if (generate_2BOOL(cctx, invert, -1) == FAIL)
 		return FAIL;
 	}
@@ -3948,7 +3949,11 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    generate_JUMP(cctx, op_falsy
 				   ? JUMP_AND_KEEP_IF_TRUE : JUMP_IF_FALSE, 0);
 	    if (op_falsy)
+	    {
 		type1 = get_type_on_stack(cctx, -1);
+		if (check_type_is_value(type1) == FAIL)
+		    return FAIL;
+	    }
 	}
 
 	// evaluate the second expression; any type is accepted

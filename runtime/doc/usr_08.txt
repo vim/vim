@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 9.1.  Last change: 2025 Nov 26
+*usr_08.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		     VIM USER MANUAL	by Bram Moolenaar

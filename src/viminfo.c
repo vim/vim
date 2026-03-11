@@ -1891,7 +1891,7 @@ write_viminfo_registers(FILE *fp)
     int		max_kbyte;
     long	len;
     yankreg_T	*y_ptr;
-    yankreg_T	*y_regs_p = get_y_regs();;
+    yankreg_T	*y_regs_p = get_y_regs();
 
     fputs(_("\n# Registers:\n"), fp);
 

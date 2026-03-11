@@ -1482,9 +1482,15 @@ term_mouse_click(VTerm *vterm, int key)
     // For modeless selection mouse drag and release events are ignored, unless
     // they are preceded with a mouse down event
     static int	    ignore_drag_release = TRUE;
+    VTermState	    *state;
     VTermMouseState mouse_state;
 
-    vterm_state_get_mousestate(vterm_obtain_state(vterm), &mouse_state);
+
+    state = vterm_obtain_state(vterm);
+    if (state == NULL)
+	return FALSE;
+
+    vterm_state_get_mousestate(state, &mouse_state);
     if (mouse_state.flags == 0)
     {
 	// Terminal is not using the mouse, use modeless selection.
@@ -2166,7 +2172,7 @@ for_all_windows_and_curwin(win_T **wp, int *did_curwin)
  * Terminal-Normal mode.
  * When "redraw" is TRUE redraw the windows that show the terminal.
  */
-    static void
+    void
 may_move_terminal_to_buffer(term_T *term, int redraw)
 {
     if (term->tl_vterm == NULL)
@@ -2177,10 +2183,6 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
     if (term->tl_dirty_snapshot || term->tl_buffer->b_ml.ml_line_count
 					       <= term->tl_scrollback_scrolled)
 	update_snapshot(term);
-
-    // Obtain the current background color.
-    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
-		       &term->tl_default_color.fg, &term->tl_default_color.bg);
 
     if (redraw)
     {
@@ -2601,8 +2603,8 @@ term_get_highlight_id(term_T *term, win_T *wp)
 {
     char_u *name;
 
-    if (wp != NULL && *wp->w_p_wcr != NUL)
-	name = wp->w_p_wcr;
+    if (wp != NULL && wp->w_hlfwin_id != 0)
+	name = syn_id2name(wp->w_hlfwin_id);
     else if (term->tl_highlight_name != NULL)
 	name = term->tl_highlight_name;
     else
@@ -3173,12 +3175,12 @@ cell2attr(
 
     if (is_default_fg || is_default_bg)
     {
-	if (wp != NULL && *wp->w_p_wcr != NUL)
+	if (wp != NULL && wp->w_hlfwin_id != 0)
 	{
 	    if (is_default_fg)
-		fg = &wp->w_term_wincolor.fg;
+		fg = &wp->w_term_hlfwin.fg;
 	    if (is_default_bg)
-		bg = &wp->w_term_wincolor.bg;
+		bg = &wp->w_term_hlfwin.bg;
 	}
 	else
 	{
@@ -3564,12 +3566,13 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     {
 	for (col = 0; col < len; col += cells[col].width)
 	{
-	    if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
+	    if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 4) == FAIL)
 	    {
 		ga.ga_len = 0;
 		break;
 	    }
-	    for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
+	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL &&
+		    ((c = cells[col].chars[i]) > 0 || i == 0); ++i)
 		ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 			(char_u *)ga.ga_data + ga.ga_len);
 	    cell2cellattr(&cells[col], &p[col]);
@@ -4345,25 +4348,23 @@ get_vterm_color_from_synid(int id, VTermColor *fg, VTermColor *bg)
 }
 
     void
-term_reset_wincolor(win_T *wp)
+term_reset_hlfwin(win_T *wp)
 {
-    wp->w_term_wincolor.fg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_FG;
-    wp->w_term_wincolor.bg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_BG;
+    wp->w_term_hlfwin.fg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_FG;
+    wp->w_term_hlfwin.bg.type = VTERM_COLOR_INVALID | VTERM_COLOR_DEFAULT_BG;
 }
 
 /*
- * Cache the color of 'wincolor'.
+ * Cache the color of HLF_WIN.
  */
     void
-term_update_wincolor(win_T *wp)
+term_update_hlfwin(win_T *wp)
 {
-    int id = 0;
+    int id = wp->w_hlfwin_id;
 
-    if (*wp->w_p_wcr != NUL)
-	id = syn_name2id(wp->w_p_wcr);
-    if (id == 0 || !get_vterm_color_from_synid(id, &wp->w_term_wincolor.fg,
-						      &wp->w_term_wincolor.bg))
-	term_reset_wincolor(wp);
+    if (id == 0 || !get_vterm_color_from_synid(id == -1 ? 0 : id,
+		&wp->w_term_hlfwin.fg, &wp->w_term_hlfwin.bg))
+	term_reset_hlfwin(wp);
 }
 
 /*
@@ -4371,20 +4372,20 @@ term_update_wincolor(win_T *wp)
  * or when any highlight is changed.
  */
     void
-term_update_wincolor_all(void)
+term_update_hlfwin_all(void)
 {
     win_T	 *wp = NULL;
     int		 did_curwin = FALSE;
 
     while (for_all_windows_and_curwin(&wp, &did_curwin))
-	term_update_wincolor(wp);
+	term_update_hlfwin(wp);
 }
 
 /*
  * Initialize term->tl_default_color from the environment.
  */
-    static void
-init_default_colors(term_T *term)
+    void
+term_init_default_colors(term_T *term)
 {
     VTermColor	    *fg, *bg;
     int		    fgval, bgval;
@@ -4953,7 +4954,7 @@ create_vterm(term_T *term, int rows, int cols)
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
-    init_default_colors(term);
+    term_init_default_colors(term);
 
     vterm_state_set_default_colors(
 	    state,
@@ -5059,7 +5060,7 @@ term_update_colors_all(void)
     {
 	if (term->tl_vterm == NULL)
 	    continue;
-	init_default_colors(term);
+	term_init_default_colors(term);
 	vterm_state_set_default_colors(
 		vterm_obtain_state(term->tl_vterm),
 		&term->tl_default_color.fg,
@@ -5395,7 +5396,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 dump_is_corrupt(garray_T *gap)
 {
-    ga_concat_len(gap, (char_u *)"CORRUPT", 7);
+    GA_CONCAT_LITERAL(gap, "CORRUPT");
 }
 
     static void
@@ -5814,7 +5815,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	VTermPos	cursor_pos1;
 	VTermPos	cursor_pos2;
 
-	init_default_colors(term);
+	term_init_default_colors(term);
 
 	rettv->vval.v_number = buf->b_fnum;
 
@@ -6698,10 +6699,12 @@ f_term_getansicolors(typval_T *argvars, typval_T *rettv)
     state = vterm_obtain_state(term->tl_vterm);
     for (index = 0; index < 16; index++)
     {
+	size_t	hexbuflen;
+
 	vterm_state_get_palette_color(state, index, &color);
-	sprintf((char *)hexbuf, "#%02x%02x%02x",
-		color.red, color.green, color.blue);
-	if (list_append_string(list, hexbuf, 7) == FAIL)
+	hexbuflen = vim_snprintf_safelen((char *)hexbuf, sizeof(hexbuf),
+	    "#%02x%02x%02x", color.red, color.green, color.blue);
+	if (list_append_string(list, hexbuf, (int)hexbuflen) == FAIL)
 	    return;
     }
 }
@@ -7130,6 +7133,15 @@ conpty_term_and_job_init(
 	goto failed;
 
     term->tl_siex.StartupInfo.cb = sizeof(term->tl_siex);
+
+    // Explicitly invalidate std handles to prevent inheritance of
+    // the debugger's stdout (e.g., in Visual Studio debugging sessions),
+    // which could cause job output to go to the debugger instead of
+    // the intended ConPTY, even with bInheritHandles set to FALSE in CreateProcess.
+    term->tl_siex.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+    term->tl_siex.StartupInfo.hStdInput = INVALID_HANDLE_VALUE;
+    term->tl_siex.StartupInfo.hStdOutput = INVALID_HANDLE_VALUE;
+    term->tl_siex.StartupInfo.hStdError = INVALID_HANDLE_VALUE;
 
     // Set up pipe inheritance safely: Vista or later.
     pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);

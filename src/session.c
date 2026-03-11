@@ -640,6 +640,10 @@ makeopens(
 # ifdef FEAT_EVAL
     if (put_line(fd, "let v:this_session=expand(\"<sfile>:p\")") == FAIL)
 	goto fail;
+
+    if (put_line(fd, "doautoall SessionLoadPre") == FAIL)
+	goto fail;
+
     if (ssop_flags & SSOP_GLOBALS)
 	if (store_session_globals(fd) == FAIL)
 	    goto fail;

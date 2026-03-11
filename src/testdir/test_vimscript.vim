@@ -7086,7 +7086,11 @@ func Test_compound_assignment_operators()
     call assert_fails('let x %= 0.5', 'E734:')
     call assert_fails('let x .= "f"', 'E734:')
     let x = !3.14
-    call assert_equal(0.0, x)
+    call assert_equal(0, x)
+    call assert_equal(1, !!1.0)
+    let x = !0.0
+    call assert_equal(1, x)
+    call assert_equal(0, !!0.0)
 
     " integer and float operations
     let x = 1

@@ -84,6 +84,7 @@ void set_mouse_topline(win_T *wp);
 int is_mouse_topline(win_T *wp);
 int put_string_in_typebuf(int offset, int slen, char_u *string, int new_slen, char_u *buf, int bufsize, int *buflen);
 int decode_modifiers(int n);
+bool in_osc_sequence(void);
 int check_termcode(int max_offset, char_u *buf, int bufsize, int *buflen);
 void term_get_fg_color(char_u *r, char_u *g, char_u *b);
 void term_get_bg_color(char_u *r, char_u *g, char_u *b);
@@ -95,4 +96,6 @@ void swap_tcap(void);
 void ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 int term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg);
+void may_req_sync_output(void);
+void term_set_sync_output(int flags);
 /* vim: set ft=c : */

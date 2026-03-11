@@ -679,12 +679,14 @@ catch_exception(except_T *excp)
     set_vim_var_list(VV_STACKTRACE, excp->stacktrace);
     if (*excp->throw_name != NUL)
     {
+	size_t	IObufflen;
+
 	if (excp->throw_lnum != 0)
-	    vim_snprintf((char *)IObuff, IOSIZE, _("%s, line %ld"),
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, _("%s, line %ld"),
 				    excp->throw_name, (long)excp->throw_lnum);
 	else
-	    vim_snprintf((char *)IObuff, IOSIZE, "%s", excp->throw_name);
-	set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s", excp->throw_name);
+	set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
     }
     else
 	// throw_name not set on an exception from a command that was typed.
@@ -730,14 +732,16 @@ finish_exception(except_T *excp)
 	set_vim_var_list(VV_STACKTRACE, caught_stack->stacktrace);
 	if (*caught_stack->throw_name != NUL)
 	{
+	    size_t  IObufflen;
+
 	    if (caught_stack->throw_lnum != 0)
-		vim_snprintf((char *)IObuff, IOSIZE,
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
 			_("%s, line %ld"), caught_stack->throw_name,
 			(long)caught_stack->throw_lnum);
 	    else
-		vim_snprintf((char *)IObuff, IOSIZE, "%s",
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s",
 						    caught_stack->throw_name);
-	    set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
 	}
 	else
 	    // throw_name not set on an exception from a command that was
@@ -1601,8 +1605,30 @@ inside_block(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
     int		i;
 
+    // Control flow commands handle '|' themselves and must not be treated
+    // as if inside a block even when they are - otherwise '|' separators
+    // in "try | catch | endtry" etc. would not be recognized.
+    switch (eap->cmdidx)
+    {
+	case CMD_if:
+	case CMD_elseif:
+	case CMD_else:
+	case CMD_endif:
+	case CMD_while:
+	case CMD_endwhile:
+	case CMD_for:
+	case CMD_endfor:
+	case CMD_try:
+	case CMD_catch:
+	case CMD_finally:
+	case CMD_endtry:
+	    return FALSE;
+	default:
+	    break;
+    }
+
     for (i = 0; i <= cstack->cs_idx; ++i)
-	if (cstack->cs_flags[cstack->cs_idx] & CSF_BLOCK)
+	if (cstack->cs_flags[i] & CSF_BLOCK)
 	    return TRUE;
     return FALSE;
 }

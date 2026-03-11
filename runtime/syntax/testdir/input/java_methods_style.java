@@ -88,3 +88,30 @@ abstract class StyleMethodsTests
 	@Override @SuppressWarnings("cast")
 	public String toString() { return (String) "StyleMethodsTests"; }
 }
+
+class StyleAlias<T>
+{
+	final T name; StyleAlias(T name)	{ this.name = name; }
+
+	class Builder
+	{
+		final java.util.stream.Stream.Builder<T> builder =
+			java.util.stream.Stream.<T>builder();
+
+		StyleAlias<T>.Builder add(T x)
+		{
+			builder.accept(x);
+			return this;
+		}
+
+		java.util.stream.Stream<T> build()
+		{
+			return builder.<T>build();
+		}
+	}
+
+	static <A> StyleAlias<A>.Builder builder(A name)
+	{
+		return new StyleAlias<>(name).new Builder();
+	}
+}

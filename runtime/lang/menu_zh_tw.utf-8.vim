@@ -1,6 +1,6 @@
 " Menu Translations:	Traditional Chinese
 " Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
-" Last Change:		2012 May 01
+" Last Change:		2026 Feb 19
 " Original translations
 
 " {{{ Quit when menu translations have already been done.
@@ -24,7 +24,7 @@ menutrans &How-to\ links	如何作\.\.\.(&H)
 menutrans &GUI			圖型界面(&G)
 menutrans &Credits		感謝(&C)
 menutrans Co&pying		版權(&P)
-menutrans &Sponsor/Register		贊助/註冊(&S)
+menutrans &Sponsor		贊助(&S)
 menutrans O&rphans		拯救孤兒(&R)
 " ------------------------------------------------------------------------
 menutrans &Version		程式版本資訊(&V)

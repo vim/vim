@@ -275,4 +275,18 @@ func Test_help_command_termination()
   helpclose
 endfunc
 
+" This caused a buffer overflow
+func Test_helpfile_overflow()
+  let _helpfile = &helpfile
+  let &helpfile = repeat('A', 5000)
+  help
+  helpclose
+  for i in range(4089, 4096)
+    let &helpfile = repeat('A', i) .. '/A'
+    help
+    helpclose
+  endfor
+  let &helpfile = _helpfile
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

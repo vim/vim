@@ -2302,7 +2302,7 @@ special_keys(char_u *args)
 	if ((sep = strchr(tok, '-')) != NULL)
 	{
 	    *sep = NUL;
-	    while (*tok)
+	    while (*tok && i + 2 < KEYBUFLEN)
 	    {
 		switch (*tok)
 		{
@@ -2321,7 +2321,7 @@ special_keys(char_u *args)
 
 	if (strlen(tok) + i < KEYBUFLEN)
 	{
-	    strcpy(&keybuf[i], tok);
+	    vim_strncpy((char_u *)&keybuf[i], (char_u *)tok, KEYBUFLEN - i - 1);
 	    vim_snprintf(cmdbuf, sizeof(cmdbuf),
 				 "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
 	    do_map(MAPTYPE_MAP, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
@@ -2603,8 +2603,13 @@ netbeans_file_activated(buf_T *bufp)
 	return;
 
     q = nb_quote(bufp->b_ffname);
-    if (q == NULL || bp == NULL)
+    if (q == NULL)
 	return;
+    if (bp == NULL)
+    {
+	vim_free(q);
+	return;
+    }
 
     vim_snprintf(buffer, sizeof(buffer),  "%d:fileOpened=%d \"%s\" %s %s\n",
 	    bufno,

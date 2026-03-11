@@ -375,8 +375,8 @@ mch_openpty(char **ttyn)
     static char PtyName[32];
     static char TtyName[32];
 
-    strcpy(PtyName, PtyProto);
-    strcpy(TtyName, TtyProto);
+    vim_strncpy((char_u *)PtyName, (char_u *)PtyProto, sizeof(PtyName) - 1);
+    vim_strncpy((char_u *)TtyName, (char_u *)TtyProto, sizeof(TtyName) - 1);
     for (p = PtyName; *p != 'X'; p++)
 	;
     for (q = TtyName; *q != 'X'; q++)

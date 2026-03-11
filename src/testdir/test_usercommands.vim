@@ -809,6 +809,28 @@ func Test_usercmd_with_block()
 
 endfunc
 
+" Regression test: inside_block() must check all cstack levels, not just the
+" top.  A :normal! inside an :if inside a {} block needs newline-based nextcmd
+" separation to work; the bug was that only cs_flags[cs_idx] was checked.
+func Test_usercmd_block_normal_in_nested_if()
+  let lines =<< trim END
+      vim9script
+      command TestCmd {
+          if true
+              normal! Ahello
+              g:result = 'works'
+          endif
+      }
+      new
+      TestCmd
+      bwipe!
+  END
+  call v9.CheckScriptSuccess(lines)
+  call assert_equal('works', g:result)
+  delcommand TestCmd
+  unlet! g:result
+endfunc
+
 func Test_delcommand_buffer()
   command Global echo 'global'
   command -buffer OneBuffer echo 'one'

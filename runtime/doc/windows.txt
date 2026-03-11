@@ -1,4 +1,4 @@
-*windows.txt*	For Vim version 9.1.  Last change: 2025 Dec 03
+*windows.txt*	For Vim version 9.2.  Last change: 2026 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -125,6 +125,7 @@ when the last window also has a status line:
 You can change the contents of the status line with the 'statusline' option.
 This option can be local to the window, so that you can have a different
 status line in each window.
+You can change the height of the status line with the 'statuslineopt' option.
 
 Normally, inversion is used to display the status line.  This can be changed
 with the 's' character in the 'highlight' option.  For example, "sb" sets it
@@ -954,11 +955,20 @@ windows.
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
 settings.  The option is a comma-separated list of values:
+	border		border style (see 'pumborder')
+	borderhighlight	highlight group for the popup border characters
+	close		show close button: "on" (default) or "off", and if
+			the value is "on", it must be set after border.
 	height		maximum height of the popup
-	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
+	resize		show resize handle: "on" (default) or "off"
+	shadow		"off" (default) or "on" using |hl-PmenuShadow|
+	width		maximum width of the popup
+
 Example: >
 	:set previewpopup=height:10,width:60
+	:set previewpopup=border:single,borderhilight:PmenuBorder
+	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
 
 A few peculiarities:
 - If the file is in a buffer already, it will be re-used.  This will allow for
@@ -1210,15 +1220,22 @@ list of buffers. |unlisted-buffer|
 :bd[elete][!] [N]
 		Unload buffer [N] (default: current buffer) and delete it from
 		the buffer list.  If the buffer was changed, this fails,
-		unless when [!] is specified, in which case changes are lost.
+		unless [!] is specified, in which case changes are lost.
 		The file remains unaffected.  Any windows for this buffer are
 		closed.  If buffer [N] is the current buffer, another buffer
 		will be displayed instead.  This is the most recent entry in
 		the jump list that points into a loaded buffer.
+
 		Actually, the buffer isn't completely deleted, it is removed
 		from the buffer list |unlisted-buffer| and option values,
 		variables and mappings/abbreviations for the buffer are
-		cleared.  Examples: >
+		cleared.  If [N] is the last listed buffer in a window (i.e.,
+		there is no other listed buffer to switch to), the buffer is
+		emptied instead of being unloaded.  The window is not closed,
+		and the buffer may be reused as a new buffer |buffer-reuse|.
+		This ensures every window always has a valid buffer.
+
+		Examples: >
 		    :.,$-bdelete    " delete buffers from the current one to
 				    " last but one
 		    :%bdelete	    " delete all buffers

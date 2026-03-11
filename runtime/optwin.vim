@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Nov 27
+" Last Change:	2026 Mar 04
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -385,6 +385,8 @@ call <SID>AddOption("window", gettext("number of lines to scroll for CTRL-F and 
 call append("$", " \tset window=" . &window)
 call <SID>AddOption("lazyredraw", gettext("don't redraw while executing macros"))
 call <SID>BinOptionG("lz", &lz)
+call <SID>AddOption("termsync", gettext("enable terminal sync mode"))
+call <SID>BinOptionG("tsy", &tsy)
 if has("reltime")
   call <SID>AddOption("redrawtime", gettext("timeout for 'hlsearch' and :match highlighting in msec"))
   call append("$", " \tset rdt=" . &rdt)
@@ -445,6 +447,9 @@ call <SID>BinOptionG("hls", &hls)
 call <SID>AddOption("wincolor", gettext("highlight group to use for the window"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>OptionL("wcr")
+call <SID>AddOption("winhighlight", gettext("highlight group mappings for the window"))
+call append("$", "\t" .. s:local_to_window)
+call <SID>OptionL("whl")
 if has("termguicolors")
   call <SID>AddOption("termguicolors", gettext("use GUI colors for the terminal"))
   call <SID>BinOptionG("tgc", &tgc)
@@ -490,8 +495,10 @@ call append("$", " \tset ls=" . &ls)
 if has("statusline")
   call <SID>AddOption("statusline", gettext("alternate format to be used for a status line"))
   call <SID>OptionG("stl", &stl)
+  call append("$", "\t" .. s:local_to_window)
+  call <SID>AddOption("statuslineopt", gettext("optional settings for the status line"))
+  call <SID>OptionG("stlo", &stlo)
 endif
-call append("$", "\t" .. s:local_to_window)
 call <SID>AddOption("equalalways", gettext("make all windows the same size when adding/removing windows"))
 call <SID>BinOptionG("ea", &ea)
 call <SID>AddOption("eadirection", gettext("in which direction 'equalalways' works: \"ver\", \"hor\" or \"both\""))

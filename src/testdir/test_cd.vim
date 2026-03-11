@@ -189,6 +189,27 @@ func Test_lcd_split()
   quit!
 endfunc
 
+" Test that a temporary override of 'autochdir' via :lcd isn't clobbered by win_execute() in a split window.
+func Test_lcd_win_execute()
+  CheckOption autochdir
+
+  let startdir = getcwd()
+  call mkdir('Xsubdir', 'R')
+  call test_autochdir()
+  set autochdir
+  edit Xsubdir/file
+  call assert_match('testdir.Xsubdir.file$', expand('%:p'))
+  split
+  lcd ..
+  call assert_match('testdir.Xsubdir.file$', expand('%:p'))
+  call win_execute(win_getid(2), "")
+  call assert_match('testdir.Xsubdir.file$', expand('%:p'))
+
+  set noautochdir
+  bwipe!
+  call chdir(startdir)
+endfunc
+
 func Test_cd_from_non_existing_dir()
   CheckNotMSWindows
 
@@ -386,6 +407,17 @@ func Test_cd_symlinks()
   call delete('Xdest', 'rf')
   call delete('Xsource', 'rf')
   call chdir(savedir)
+endfunc
+
+func Test_cd_shorten_bufname_with_duplicate_slashes()
+  let savedir = getcwd()
+  call mkdir('Xexistingdir', 'R')
+  new Xexistingdir//foo/bar
+  cd Xexistingdir
+  call assert_equal('foo/bar', bufname('%'))
+
+  call chdir(savedir)
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

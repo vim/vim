@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Dec 21
+# Last Change:  2026 Mar 10
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -60,8 +60,9 @@ if has('unix')
     enddef
   else
     export def Launch(args: string)
-      const fork = has('gui_running') ? '&' : ''
-      execute $':silent ! nohup {args} {Redir()} {fork}' | redraw!
+      # Use job_start, because using !xdg-open is known not to work with zsh
+      # ignore signals on exit
+      job_start(split(args), {'stoponexit': ''})
     enddef
   endif
 elseif has('win32')
@@ -138,7 +139,13 @@ export def Open(file: string)
     setlocal shell&
     defer setbufvar('%', '&shell', shell)
   endif
-  Launch($"{Viewer()} {shellescape(file, 1)}")
+  if has('unix') && !has('win32unix') && !exists('$WSL_DISTRO_NAME')
+    # Linux: using job_start, so do not use shellescape.
+    Launch($"{Viewer()} {file}")
+  else
+    # Windows/WSL/Cygwin: NEEDS shellescape because Launch uses '!'
+    Launch($"{Viewer()} {shellescape(file, 1)}")
+  endif
 enddef
 
 # Uncomment this line to check for compilation errors early

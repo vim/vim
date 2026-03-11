@@ -103,3 +103,12 @@ PUSH "AB\xc4\x88D"
   putglyph 0x0042 1 0,1
   putglyph 0x0108 1 0,2
   putglyph 0x0044 1 0,3
+
+!Split UTF-8 after US-ASCII
+RESET
+PUSH "AB\xc4"
+  putglyph 0x0041 1 0,0
+  putglyph 0x0042 1 0,1
+PUSH "\x88D"
+  putglyph 0x0108 1 0,2
+  putglyph 0x0044 1 0,3

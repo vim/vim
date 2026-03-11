@@ -2,7 +2,7 @@
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
-# Copyright (C) 2025
+# Copyright (C) 2026
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-14 13:59+0400\n"
-"PO-Revision-Date: 2026-01-14 14:44+0400\n"
+"POT-Creation-Date: 2026-02-19 17:55+0000\n"
+"PO-Revision-Date: 2026-02-20 09:34+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -11143,6 +11143,45 @@ msgstr "произвољне картице у панелу картица"
 
 msgid "options for using tabpanel"
 msgstr "опције за коришћење панела картица"
+
+msgid "Notice"
+msgstr "Обавештење"
+
+msgid "Quickfix list not found, stopping the job"
+msgstr "Није пронађена quickfix листа, посао се зауставља"
+
+msgid "Success!"
+msgstr "Успешно!"
+
+msgid "Job terminated"
+msgstr "Посао је прекинут"
+
+msgid "There are errors."
+msgstr "Постоје грешке."
+
+msgid "Could not create quickfix list"
+msgstr "Није могла да се креира quickfix листа"
+
+msgid "File not readable:"
+msgstr "Фајл не може да се чита:"
+
+msgid "Failed to start job"
+msgstr "Посао није могао да се покрене"
+
+msgid "Typesetting..."
+msgstr "Словослагање..."
+
+msgid "Jobs still running:"
+msgstr "Послова који се још увек извршавају:"
+
+msgid "Done."
+msgstr "Завршено."
+
+msgid "Typeset"
+msgstr "Словослагање"
+
+msgid "Please save the buffer first."
+msgstr "Молимо вас да најпре сачувате бафер."
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "Открили сте прозор командне линије! Можете да га затворите са „:q”."

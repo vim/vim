@@ -1,10 +1,10 @@
 vim9script
 
 # Vim filetype plugin.
-# Language:     Hare
-# Maintainer:   Amelia Clarke <selene@perilune.dev>
-# Last Updated: 2025 Sep 06
-# Upstream:     https://git.sr.ht/~sircmpwn/hare.vim
+# Language:    Hare
+# Maintainer:  Amelia Clarke <selene@perilune.dev>
+# Last Change: 2026 Jan 24
+# Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
 
 if exists('b:did_ftplugin')
   finish
@@ -18,22 +18,21 @@ b:undo_ftplugin = 'compiler make'
 # Formatting settings.
 setlocal comments=://
 setlocal commentstring=//\ %s
-setlocal formatlistpat=^\\s*-\ 
+setlocal formatlistpat=^\\s*-\\s\\+
 setlocal formatoptions+=croqnlj/ formatoptions-=t
 b:undo_ftplugin ..= ' | setl cms< com< flp< fo<'
 
 # Locate Hare modules.
 &l:include = '\v^\s*use\s+%(\h\w*\s*\=)?'
-setlocal includeexpr=hare#IncludeExpr()
+&l:includeexpr = 'trim(v:fname, ":", 2)->substitute("::", "/", "g")'
 setlocal isfname+=:
 &l:path = ',,' .. hare#GetPath()
-setlocal suffixesadd=.ha
-b:undo_ftplugin ..= ' | setl inc< inex< isf< pa< sua<'
+b:undo_ftplugin ..= ' | setl inc< inex< isf< pa<'
 
 # Follow the official style guide by default.
 if get(g:, 'hare_recommended_style', 1)
   setlocal noexpandtab
-  setlocal shiftwidth=0
+  setlocal shiftwidth=8
   setlocal softtabstop=0
   setlocal tabstop=8
   setlocal textwidth=80

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Jan 20
+" Last Change:		2026 Feb 18
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -535,7 +535,6 @@ au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 
 " HTML (.stm for server side, .shtml is server-side or superhtml)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
-au BufNewFile,BufRead *.cshtml			setf html
 
 " Host config
 au BufNewFile,BufRead */etc/host.conf		setf hostconf
@@ -1028,7 +1027,7 @@ au BufNewFile,BufRead *.decl,*.dcl,*.dec
 " NOTE: Patterns ending in a star are further down, these have lower priority.
 au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,.bash[_-]history,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,*.bats,*.cygport call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
-au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env{rc,} call dist#ft#SetFileTypeSH(getline(1))
+au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.envrc,.envrc.* call dist#ft#SetFileTypeSH(getline(1))
 " Shell script (Arch Linux) or PHP file (Drupal)
 au BufNewFile,BufRead *.install
 	\ if getline(1) =~ '<?php' |
@@ -1410,6 +1409,9 @@ au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
 
 " Execline (s6) scripts
 au BufNewFile,BufRead s6-*			call s:StarSetf('execline')
+
+" Env
+au BufNewFile,BufRead *.env,.env{.*,} setf env
 
 " Fvwm
 au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')

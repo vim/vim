@@ -290,6 +290,7 @@ exe_newdict(int count, ectx_T *ectx)
 	    if (dict_add(dict, item) == FAIL)
 	    {
 		// can this ever happen?
+		dictitem_free(item);
 		dict_unref(dict);
 		return FAIL;
 	    }
@@ -1764,7 +1765,7 @@ do_2string(typval_T *tv, int is_2string_any, int tostring_flags)
 					if (p != NULL)
 					{
 					    ga_concat(&ga, p);
-					    ga_concat_len(&ga, (char_u *)" ", 1);
+					    GA_CONCAT_LITERAL(&ga, " ");
 					    vim_free(p);
 					}
 					s = e + 1;

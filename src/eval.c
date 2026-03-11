@@ -1860,7 +1860,6 @@ get_lval_subscript(
     int		flags,	    // GLV_ values
     class_T	*cl_exec)
 {
-    int		vim9script = in_vim9script();
     int		quiet = flags & GLV_QUIET;
     char_u	*key = NULL;
     int		len;
@@ -1908,7 +1907,7 @@ get_lval_subscript(
 		vartype_name(v_type));
 #endif
 
-	if (vim9script && lp->ll_valtype == NULL
+	if (current_script_is_vim9() && lp->ll_valtype == NULL
 		&& v != NULL
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
@@ -2468,7 +2467,10 @@ set_var_lval(
 	if (lp->ll_valtype != NULL
 		    && check_typval_arg_type(lp->ll_valtype, rettv,
 							      NULL, 0) == FAIL)
+	{
+	    lp->ll_name_end = NULL;
 	    return;
+	}
 
 	// If the lval is a List and the type of the list is not yet set,
 	// then set the item type from the declared type of the variable.
@@ -3646,7 +3648,15 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    int		error = FALSE;
 
 	    if (op_falsy)
+	    {
+		// Is this typeval supported with the falsy operator?
+		if (check_typval_is_value(rettv) == FAIL)
+		{
+		    clear_tv(rettv);
+		    return FAIL;
+		}
 		result = tv2bool(rettv);
+	    }
 	    else if (vim9script)
 		result = tv_get_bool_chk(rettv, &error);
 	    else if (tv_get_number_chk(rettv, &error) != 0)
@@ -4122,15 +4132,27 @@ eval_addblob(typval_T *tv1, typval_T *tv2)
     blob_T  *b1 = tv1->vval.v_blob;
     blob_T  *b2 = tv2->vval.v_blob;
     blob_T  *b = blob_alloc();
-    int	    i;
+    long    len1, len2;
+    long    totallen;
 
     if (b == NULL)
 	return;
 
-    for (i = 0; i < blob_len(b1); i++)
-	ga_append(&b->bv_ga, blob_get(b1, i));
-    for (i = 0; i < blob_len(b2); i++)
-	ga_append(&b->bv_ga, blob_get(b2, i));
+    len1 = blob_len(b1);
+    len2 = blob_len(b2);
+    totallen = len1 + len2;
+
+    if (totallen > 0 && totallen <= INT_MAX
+				    && ga_grow(&b->bv_ga, (int)totallen) == OK)
+    {
+	if (len1 > 0)
+	    mch_memmove((char_u *)b->bv_ga.ga_data,
+		    (char_u *)b1->bv_ga.ga_data, (size_t)len1);
+	if (len2 > 0)
+	    mch_memmove((char_u *)b->bv_ga.ga_data + len1,
+		    (char_u *)b2->bv_ga.ga_data, (size_t)len2);
+	b->bv_ga.ga_len = (int)totallen;
+    }
 
     clear_tv(tv1);
     rettv_blob_set(tv1, b);
@@ -5376,7 +5398,15 @@ eval9_leader(
 	while (VIM_ISWHITE(end_leader[-1]))
 	    --end_leader;
 	if (vim9script && end_leader[-1] == '!')
+	{
+	    // Is this typeval supported with the ! operator?
+	    if (check_typval_is_value(rettv) == FAIL)
+	    {
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    val = tv2bool(rettv);
+	}
 	else
 	    val = tv_get_number_chk(rettv, &error);
     }
@@ -5399,13 +5429,9 @@ eval9_leader(
 		}
 		if (rettv->v_type == VAR_FLOAT)
 		{
-		    if (vim9script)
-		    {
-			rettv->v_type = VAR_BOOL;
-			val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
-		    }
-		    else
-			f = !f;
+		    rettv->v_type = VAR_BOOL;
+		    val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
+		    type = VAR_BOOL;
 		}
 		else
 		{
@@ -6282,14 +6308,14 @@ partial_tv2string(
     fname = string_quote(pt == NULL ? NULL : partial_name(pt), FALSE);
 
     ga_init2(&ga, 1, 100);
-    ga_concat_len(&ga, (char_u *)"function(", 9);
+    GA_CONCAT_LITERAL(&ga, "function(");
     if (fname != NULL)
     {
 	// When using uf_name prepend "g:" for a global function.
 	if (pt != NULL && pt->pt_name == NULL && fname[0] == '\''
 						&& vim_isupper(fname[1]))
 	{
-	    ga_concat_len(&ga, (char_u *)"'g:", 3);
+	    GA_CONCAT_LITERAL(&ga, "'g:");
 	    ga_concat(&ga, fname + 1);
 	}
 	else
@@ -6298,28 +6324,29 @@ partial_tv2string(
     }
     if (pt != NULL && pt->pt_argc > 0)
     {
-	ga_concat_len(&ga, (char_u *)", [", 3);
+	GA_CONCAT_LITERAL(&ga, ", [");
 	for (i = 0; i < pt->pt_argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat_len(&ga, (char_u *)", ", 2);
+		GA_CONCAT_LITERAL(&ga, ", ");
 	    ga_concat(&ga, tv2string(&pt->pt_argv[i], &tf, numbuf, copyID));
 	    vim_free(tf);
 	}
-	ga_concat_len(&ga, (char_u *)"]", 1);
+	GA_CONCAT_LITERAL(&ga, "]");
     }
     if (pt != NULL && pt->pt_dict != NULL)
     {
 	typval_T dtv;
 
-	ga_concat_len(&ga, (char_u *)", ", 2);
+	GA_CONCAT_LITERAL(&ga, ", ");
 	dtv.v_type = VAR_DICT;
 	dtv.vval.v_dict = pt->pt_dict;
 	ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));
 	vim_free(tf);
     }
     // terminate with ')' and a NUL
-    ga_concat_len(&ga, (char_u *)")", 2);
+    GA_CONCAT_LITERAL(&ga, ")");
+    ga_append(&ga, NUL);
 
     *tofree = ga.ga_data;
     r = *tofree;
@@ -6918,6 +6945,10 @@ var2fpos(
 	pos.col = 0;
 	if (name[1] == '0')		// "w0": first visible line
 	{
+#ifdef FEAT_TERMINAL
+	    if (bt_terminal(curwin->w_buffer))
+		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
+#endif
 	    update_topline();
 	    // In silent Ex mode topline is zero, but that's not a valid line
 	    // number; use one instead.
@@ -6926,6 +6957,10 @@ var2fpos(
 	}
 	else if (name[1] == '$')	// "w$": last visible line
 	{
+#ifdef FEAT_TERMINAL
+	    if (bt_terminal(curwin->w_buffer))
+		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
+#endif
 	    validate_botline();
 	    // In silent Ex mode botline is zero, return zero then.
 	    pos.lnum = curwin->w_botline > 0 ? curwin->w_botline - 1 : 0;

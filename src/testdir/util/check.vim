@@ -115,6 +115,17 @@ func CheckNotBSD()
   endif
 endfunc
 
+" Command to check for not running on OpenBSD
+command CheckNotOpenBSD call CheckNotOpenBSD()
+func CheckNotOpenBSD()
+  if has('bsd')
+    let uname = trim(system('uname'))
+    if uname == 'OpenBSD'
+      throw 'Skipped: does not work on OpenBSD'
+    endif
+  endif
+endfunc
+
 " Command to check for not running on a MacOS
 command CheckNotMac call CheckNotMac()
 func CheckNotMac()
@@ -128,6 +139,14 @@ command CheckNotMacM1 call CheckNotMacM1()
 func CheckNotMacM1()
   if has('mac') && system('uname -a') =~ '\<arm64\>'
     throw 'Skipped: does not work on MacOS M1'
+  endif
+endfunc
+
+" Command to check whether PowerShell is available
+command CheckPowerShell call CheckPowerShell()
+func CheckPowerShell()
+  if !executable('powershell') && !executable('pwsh')
+    throw 'Skipped: requires Powershell to be installed'
   endif
 endfunc
 

@@ -13,7 +13,7 @@ VIMRUNTIME = ../..
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
-# Trace liveness on demand.
+# Trace ruler liveness on demand.
 # VIM_SYNTAX_TEST_LOG = `pwd`/testdir/failed/00-TRACE_LOG
 
 # ENVVARS = LC_ALL=C VIM_SYNTAX_TEST_LOG="$(VIM_SYNTAX_TEST_LOG)"
@@ -27,7 +27,7 @@ RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $
 # DEBUGLOG = --log testlog
 
 # All initial phony targets; these names may clash with file types.
-phonies = clean test testclean
+phonies = clean executables test testclean
 .PHONY: $(phonies)
 
 # Run the tests that didn't run yet or failed previously.
@@ -39,7 +39,7 @@ test:
 	@# the "vimcmd" file is used by the screendump utils
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
-	@# Trace liveness on demand.
+	@# Trace ruler liveness on demand.
 	@#mkdir -p testdir/failed
 	@#touch "$(VIM_SYNTAX_TEST_LOG)"
 	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null
@@ -52,6 +52,9 @@ testdir/testdeps.mk:
 	./testdir/tools/maketestdeps $(phonies) > $@
 
 -include testdir/testdeps.mk
+
+executables:
+	@! find testdir/input -type f -perm /a+x -exec echo Executable syntax test found: \{\} \; | grep :
 
 clean testclean:
 	rm -f testdir/failed/* testdir/done/* testdir/vimcmd testdir/messages testdir/Xtestscript testdir/Xfilter testdir/testdeps.mk

@@ -75,10 +75,13 @@ static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
     "borderhighlight:", "close:", "height:", "highlight:", "resize:",
     "shadow:", "width:", NULL};
-static char *(p_popup_pvp_option_values[]) = {"height:", "highlight:",
-    "width:", NULL};
+static char *(p_popup_pvp_option_values[]) = {"border:",
+    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
+    "shadow:", "width:", NULL};
 static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};
 static char *(p_popup_cpp_border_values[]) = {"single", "double", "round",
+    "ascii", "on", "off", "custom:", NULL};
+static char *(p_popup_pvp_border_values[]) = {"single", "double", "round",
     "ascii", "on", "off", "custom:", NULL};
 static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
 #endif
@@ -92,6 +95,9 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
     "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", "skiprtp",
     NULL};
+#endif
+#if defined(FEAT_STL_OPT)
+static char *(p_stlo_values[]) = {"maxheight:", NULL};
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
@@ -215,32 +221,35 @@ trigger_optionset_string(
 	return;
 
     char_u buf_type[7];
+    size_t buf_typelen;
+    size_t oldvallen;
 
-    sprintf((char *)buf_type, "%s",
-	    (opt_flags & OPT_LOCAL) ? "local" : "global");
-    set_vim_var_string(VV_OPTION_OLD, oldval, -1);
+    oldvallen = STRLEN(oldval);
+    set_vim_var_string(VV_OPTION_OLD, oldval, (int)oldvallen);
     set_vim_var_string(VV_OPTION_NEW, newval, -1);
-    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
+    buf_typelen = vim_snprintf_safelen((char *)buf_type, sizeof(buf_type),
+	"%s", (opt_flags & OPT_LOCAL) ? "local" : "global");
+    set_vim_var_string(VV_OPTION_TYPE, buf_type, (int)buf_typelen);
     if (opt_flags & OPT_LOCAL)
     {
-	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
-	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", STRLEN_LITERAL("setlocal"));
+	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, (int)oldvallen);
     }
     if (opt_flags & OPT_GLOBAL)
     {
-	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
-	set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval, -1);
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", STRLEN_LITERAL("setglobal"));
+	set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval, (int)oldvallen);
     }
     if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
     {
-	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", STRLEN_LITERAL("set"));
 	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval_l, -1);
 	set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval_g, -1);
     }
     if (opt_flags & OPT_MODELINE)
     {
-	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
-	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", STRLEN_LITERAL("modeline"));
+	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, (int)oldvallen);
     }
     apply_autocmds(EVENT_OPTIONSET,
 	    get_option_fullname(opt_idx), NULL, FALSE,
@@ -497,7 +506,6 @@ set_string_option_direct(
 #endif
 }
 
-#if defined(FEAT_PROP_POPUP) || (defined(FEAT_DIFF) && defined(FEAT_FOLDING))
 /*
  * Like set_string_option_direct(), but for a window-local option in "wp".
  * Blocks autocommands to avoid the old curwin becoming invalid.
@@ -521,7 +529,6 @@ set_string_option_direct_in_win(
     curbuf = curwin->w_buffer;
     unblock_autocmds();
 }
-#endif
 
 #if defined(FEAT_PROP_POPUP)
 /*
@@ -661,6 +668,11 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
+	if (*s == STL_LINEBREAK)
+	{
+	    s++;
+	    continue;
+	}
 	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_SEPARATE)
 	{
 	    s++;
@@ -2804,6 +2816,63 @@ did_set_highlight(optset_T *args UNUSED)
     return NULL;
 }
 
+    static int
+expand_hl_occasions(
+	optexpand_T *args,
+	int *numMatches,
+	char_u ***matches,
+	char_u prefix)
+{
+    char_u	    *p;
+    static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
+    size_t	    i;
+    int		    count = 0;
+
+    *matches = ALLOC_MULT(char_u *, HLF_COUNT + 1);
+    if (*matches == NULL)
+	return FAIL;
+
+    // We still want to return the full option if it's requested.
+    if (args->oe_include_orig_val)
+    {
+	p = vim_strsave(args->oe_opt_value);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
+    }
+
+    for (i = 0; i < HLF_COUNT; i++)
+    {
+	p = alloc((prefix == NUL ? 1 : 2) + 1);
+	if (p == NULL)
+	{
+	    if (count == 0)
+	    {
+		VIM_CLEAR(*matches);
+		return FAIL;
+	    }
+	    else
+		break;
+	}
+	if (prefix == NUL)
+	    sprintf((char *)p, "%c", hl_flags[i]);
+	else
+	    sprintf((char *)p, "%c%c", prefix, hl_flags[i]);
+	(*matches)[count++] = p;
+    }
+
+    if (count == 0)
+    {
+	VIM_CLEAR(*matches);
+	return FAIL;
+    }
+    *numMatches = count;
+    return OK;
+}
+
 /*
  * Expand 'highlight' option.
  */
@@ -2812,7 +2881,6 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
 {
     char_u	    *p;
     expand_T	    *xp = args->oe_xp;
-    static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
     size_t	    i;
     int		    count = 0;
 
@@ -2827,49 +2895,9 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
     }
 
     if (*xp->xp_pattern == NUL)
-    {
 	// At beginning of a comma-separated list. Return the specific list of
 	// supported occasions.
-	*matches = ALLOC_MULT(char_u *, HLF_COUNT + 1);
-	if (*matches == NULL)
-	    return FAIL;
-
-	// We still want to return the full option if it's requested.
-	if (args->oe_include_orig_val)
-	{
-	    p = vim_strsave(args->oe_opt_value);
-	    if (p == NULL)
-	    {
-		VIM_CLEAR(*matches);
-		return FAIL;
-	    }
-	    (*matches)[count++] = p;
-	}
-
-	for (i = 0; i < HLF_COUNT; i++)
-	{
-	    p = vim_strnsave(&hl_flags[i], 1);
-	    if (p == NULL)
-	    {
-		if (count == 0)
-		{
-		    VIM_CLEAR(*matches);
-		    return FAIL;
-		}
-		else
-		    break;
-	    }
-	    (*matches)[count++] = p;
-	}
-
-	if (count == 0)
-	{
-	    VIM_CLEAR(*matches);
-	    return FAIL;
-	}
-	*numMatches = count;
-	return OK;
-    }
+	return expand_hl_occasions(args, numMatches, matches, NUL);
 
     // We are after the initial character (which indicates the occasion). We
     // already made sure we are not matching after a ':' above, so now we want
@@ -3415,6 +3443,9 @@ did_set_previewpopup(optset_T *args UNUSED)
     if (parse_previewpopup(NULL) == FAIL)
 	return e_invalid_argument;
 
+# if defined(FEAT_QUICKFIX)
+    popup_close_info();
+# endif
     return NULL;
 }
 
@@ -3452,9 +3483,9 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches,
 	{
 	    return expand_set_opt_string(
 		    args,
-		    previewpopup ? p_popup_option_on_off_values
+		    previewpopup ? p_popup_pvp_border_values
 			: p_popup_cpp_border_values,
-		    (previewpopup ? ARRAY_LENGTH(p_popup_option_on_off_values)
+		    (previewpopup ? ARRAY_LENGTH(p_popup_pvp_border_values) - 1
 			: ARRAY_LENGTH(p_popup_cpp_border_values)) - 1,
 		    numMatches,
 		    matches);
@@ -4181,7 +4212,50 @@ expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_statusline(optset_T *args)
 {
-    return parse_statustabline_rulerformat(args, FALSE);
+    char *ret = parse_statustabline_rulerformat(args, FALSE);
+
+    if (ret != NULL)
+	return ret;
+    frame_change_statusline_height();
+
+    return NULL;
+}
+
+/*
+ * The 'statuslineopt' option is changed.
+ */
+    char *
+did_set_statuslineopt(optset_T *args)
+{
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (statuslineopt_changed(*varp) == FAIL)
+	return e_invalid_argument;
+
+    frame_change_statusline_height();
+
+    if (*varp != empty_option)
+    {
+	// Update the maxheight value to the actual value set.
+	// Note: Must be changed if p_stlo_values are changed.
+	free_string_option(*varp);
+	vim_snprintf((char *)IObuff, IOSIZE, "maxheight:%d",
+		statusline_height(NULL));
+	*varp = vim_strsave(IObuff);
+    }
+
+    return NULL;
+}
+
+    int
+expand_set_statuslineopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_stlo_values,
+	    ARRAY_LENGTH(p_stlo_values) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -4384,6 +4458,9 @@ did_set_term_option(optset_T *args)
 	else
 	    out_str(T_BE);
     }
+
+    if (varp == &T_BSU || varp == &T_ESU)
+	term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
 
     return NULL;
 }
@@ -4871,10 +4948,46 @@ expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_wincolor(optset_T *args UNUSED)
 {
-#ifdef FEAT_TERMINAL
-    term_update_wincolor(curwin);
-#endif
+    update_wincolor(curwin, args->os_newval.string);
     return NULL;
+}
+
+/*
+ * The 'winhighlight' option is changed
+ */
+    char *
+did_set_winhighlight(optset_T *args)
+{
+    return update_winhighlight(curwin, args->os_newval.string);
+}
+
+/*
+ * Expand 'winhighlight' option.
+ */
+    int
+expand_set_winhighlight(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T	    *xp = args->oe_xp;
+
+    if ((xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+	    || xp->xp_pattern == args->oe_set_arg || *(xp->xp_pattern-1) == ',')
+    {
+	// After a ':' or after a ',', or at the start, so expand highlight
+	// group name.
+
+	// If starts with !, then expand 'highlight' occasions.
+	if (*xp->xp_pattern == '!')
+	    return expand_hl_occasions(args, numMatches, matches, '!');
+	else
+	    return expand_set_opt_generic(
+		    args,
+		    get_highlight_name,
+		    numMatches,
+		    matches);
+    }
+
+    VIM_CLEAR(*matches);
+    return FAIL;
 }
 
     int

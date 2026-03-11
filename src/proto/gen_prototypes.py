@@ -441,6 +441,9 @@ def generate_prototypes(tu, src_path: Path) -> List[str]:
                 print(f"[def] {fn.spelling}", file=sys.stderr)
         toks = tokens_for_function_header(fn)
         header = join_tokens(toks) if toks else header_from_cursor(fn)
+        # libclang expands the bool macro (from <stdbool.h>) to _Bool.
+        # Restore it to bool for readability.
+        header = re.sub(r'\b_Bool\b', 'bool', header)
         if header:
             protos.append(f"{header};")
 

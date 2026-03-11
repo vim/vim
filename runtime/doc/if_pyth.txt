@@ -1,4 +1,4 @@
-*if_pyth.txt*	For Vim version 9.1.  Last change: 2026 Jan 11
+*if_pyth.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Paul Moore

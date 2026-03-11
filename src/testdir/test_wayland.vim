@@ -6,6 +6,7 @@ CheckUnix
 CheckFeature job
 CheckWaylandCompositor
 CheckNotGui
+CheckEnv XDG_RUNTIME_DIR
 
 if !executable('wl-paste') || !executable('wl-copy')
   throw "Skipped: wl-clipboard is not available"
@@ -57,6 +58,10 @@ endfunc
 
 func s:CheckClientserver()
   CheckFeature clientserver
+
+  if has('x11')
+      CheckEnv DISPLAY
+  endif
 
   if has('socketserver') && !has('x11')
     if v:servername == ""
@@ -612,6 +617,14 @@ func Test_wayland_handle_large_data()
   call setreg('+', l:contents, 'c')
 
   call assert_equal(l:contents, system('wl-paste -n -t TEXT'))
+endfunc
+
+" Test for heap buffer overflow in wayland log handler
+func Test_wayland_protocol_error_overflow()
+  try
+    exe "wlrestore " .. repeat('X', 4096)
+  catch /^Vim(wlrestore):/
+  endtry
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

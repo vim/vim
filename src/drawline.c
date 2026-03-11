@@ -127,7 +127,6 @@ typedef struct {
 
     int		win_attr;	// background for the whole window, except
 				// margins and "~" lines.
-    int		wcr_attr;	// attributes from 'wincolor'
 #ifdef FEAT_SYN_HL
     int		cul_attr;	// set when 'cursorline' active
 #endif
@@ -261,9 +260,9 @@ handle_foldcolumn(win_T *wp, winlinevars_T *wlv)
     wlv->c_extra = NUL;
     wlv->c_final = NUL;
     if (use_cursor_line_highlight(wp, wlv->lnum))
-	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLF));
+	wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLF));
     else
-	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_FC));
+	wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_FC));
 }
 #endif
 
@@ -293,9 +292,9 @@ get_sign_display_info(
     else
     {
 	if (use_cursor_line_highlight(wp, wlv->lnum))
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLS));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLS));
 	else
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_SC));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_SC));
 	wlv->n_extra = 2;
     }
 
@@ -467,7 +466,7 @@ handle_lnum_col(
 	      wlv->c_final = NUL;
 	  }
 	  wlv->n_extra = number_width(wp) + 1;
-	  wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_N));
+	  wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_N));
 #ifdef FEAT_SYN_HL
 	  // When 'cursorline' is set highlight the line number of
 	  // the current line differently.
@@ -481,16 +480,16 @@ handle_lnum_col(
 		  && (wlv->row == lnum_row
 		      || (wlv->row > lnum_row
 			 && (wp->w_p_culopt_flags & CULOPT_LINE))))
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLN));
+	    wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_CLN));
 #endif
 	  if (wp->w_p_rnu && wlv->lnum < wp->w_cursor.lnum
 						      && HL_ATTR(HLF_LNA) != 0)
 	      // Use LineNrAbove
-	      wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_LNA));
+	      wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_LNA));
 	  if (wp->w_p_rnu && wlv->lnum > wp->w_cursor.lnum
 						      && HL_ATTR(HLF_LNB) != 0)
 	      // Use LineNrBelow
-	      wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_LNB));
+	      wlv->char_attr = hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_LNB));
 	}
 #ifdef FEAT_SIGNS
 	if (num_attr)
@@ -608,7 +607,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	// required when 'linebreak' is also set.
 	if (wlv->tocol == wlv->vcol)
 	    wlv->tocol = wlv->vcol_sbr;
-	// combine 'showbreak' with 'wincolor'
+	// combine 'showbreak' with HLF_WIN
 	wlv->char_attr = hl_combine_attr(wlv->win_attr, HL_ATTR(HLF_AT));
 #  ifdef FEAT_SYN_HL
 	// combine 'showbreak' with 'cursorline'
@@ -1661,7 +1660,8 @@ win_line(
 	    trailcol += (colnr_T)(ptr - line);
 	}
 	// find end of leading whitespace
-	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL)
+	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL ||
+	    wp->w_lcs_chars.leadtab1 != NUL)
 	{
 	    leadcol = 0;
 	    while (VIM_ISWHITE(ptr[leadcol]))
@@ -1675,10 +1675,9 @@ win_line(
 	}
     }
 
-    wlv.wcr_attr = get_wcr_attr(wp);
-    if (wlv.wcr_attr != 0)
+    if (get_win_attr(wp) != 0)
     {
-	wlv.win_attr = wlv.wcr_attr;
+	wlv.win_attr = get_win_attr(wp);
 	area_highlighting = TRUE;
     }
 
@@ -1992,7 +1991,7 @@ win_line(
 		    wlv.c_extra = cmdwin_type;
 		    wlv.c_final = NUL;
 		    wlv.char_attr =
-				hl_combine_attr(wlv.wcr_attr, HL_ATTR(HLF_AT));
+				hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_AT));
 		}
 	    }
 #ifdef FEAT_FOLDING
@@ -2654,7 +2653,7 @@ win_line(
 #endif
 	}
 
-	// combine attribute with 'wincolor'
+	// combine attribute with HLF_WIN
 	if (wlv.win_attr != 0)
 	{
 	    if (wlv.char_attr == 0)
@@ -3260,6 +3259,18 @@ win_line(
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
+		    int	    lcs_tab1 = wp->w_lcs_chars.tab1;
+		    int	    lcs_tab2 = wp->w_lcs_chars.tab2;
+		    int	    lcs_tab3 = wp->w_lcs_chars.tab3;
+
+		    // check if leadtab is set in 'listchars'
+		    if (wp->w_p_list && wp->w_lcs_chars.leadtab1 != NUL &&
+							  ptr < line + leadcol)
+		    {
+			lcs_tab1 = wp->w_lcs_chars.leadtab1;
+			lcs_tab2 = wp->w_lcs_chars.leadtab2;
+			lcs_tab3 = wp->w_lcs_chars.leadtab3;
+		    }
 #ifdef FEAT_LINEBREAK
 		    char_u  *sbr = get_showbreak_value(wp);
 
@@ -3299,9 +3310,9 @@ win_line(
 			    tab_len += wlv.vcol_off_co;
 
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
-			if (wp->w_p_list && wp->w_lcs_chars.tab1
-						      && old_boguscols > 0
-						      && wlv.n_extra > tab_len)
+			if (wp->w_p_list && lcs_tab1 &&
+			    old_boguscols > 0 &&
+			    wlv.n_extra > tab_len)
 			    tab_len += wlv.n_extra - tab_len;
 # endif
 			if (tab_len > 0)
@@ -3309,14 +3320,13 @@ win_line(
 			    // If wlv.n_extra > 0, it gives the number of chars
 			    // to use for a tab, else we need to calculate the
 			    // width for a tab.
-			    int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
+			    int tab2_len = mb_char2len(lcs_tab2);
 			    len = tab_len * tab2_len;
-			    if (wp->w_lcs_chars.tab3)
-				len += mb_char2len(wp->w_lcs_chars.tab3)
-								    - tab2_len;
+			    if (lcs_tab3)
+				len += mb_char2len(lcs_tab3) - tab2_len;
 			    if (wlv.n_extra > 0)
 				len += wlv.n_extra - tab_len;
-			    c = wp->w_lcs_chars.tab1;
+			    c = lcs_tab1;
 			    p = alloc(len + 1);
 			    if (p == NULL)
 				wlv.n_extra = 0;
@@ -3328,7 +3338,7 @@ win_line(
 				wlv.p_extra_free = p;
 				for (i = 0; i < tab_len; i++)
 				{
-				    int lcs = wp->w_lcs_chars.tab2;
+				    int lcs = lcs_tab2;
 
 				    if (*p == NUL)
 				    {
@@ -3338,9 +3348,8 @@ win_line(
 
 				    // if tab3 is given, use it for the last
 				    // char
-				    if (wp->w_lcs_chars.tab3
-							   && i == tab_len - 1)
-					lcs = wp->w_lcs_chars.tab3;
+				    if (lcs_tab3 && i == tab_len - 1)
+					lcs = lcs_tab3;
 				    p += mb_char2bytes(lcs, p);
 				    wlv.n_extra += mb_char2len(lcs)
 						  - (saved_nextra > 0 ? 1 : 0);
@@ -3380,17 +3389,16 @@ win_line(
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
 		    if (wp->w_p_list)
 		    {
-			c = (wlv.n_extra == 0 && wp->w_lcs_chars.tab3)
-							? wp->w_lcs_chars.tab3
-							: wp->w_lcs_chars.tab1;
+			c = (wlv.n_extra == 0 && lcs_tab3)  ? lcs_tab3
+							    : lcs_tab1;
 #ifdef FEAT_LINEBREAK
 			if (wp->w_p_lbr && wlv.p_extra != NULL
 							&& *wlv.p_extra != NUL)
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
-			    wlv.c_extra = wp->w_lcs_chars.tab2;
-			wlv.c_final = wp->w_lcs_chars.tab3;
+			    wlv.c_extra = lcs_tab2;
+			wlv.c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
@@ -3626,11 +3634,11 @@ win_line(
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
+		int syntax_conceal = (syntax_flags & HL_CONCEAL) != 0;
 		wlv.char_attr = conceal_attr;
-		if (((prev_syntax_id != syntax_seqnr
-					   && (syntax_flags & HL_CONCEAL) != 0)
+		if (((prev_syntax_id != syntax_seqnr && syntax_conceal)
 			    || has_match_conc > 1)
-			&& (syn_get_sub_char() != NUL
+			&& ((syntax_conceal && syn_get_sub_char() != NUL)
 				|| (has_match_conc && match_conc)
 				|| wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
@@ -3639,7 +3647,7 @@ win_line(
 		    // character.
 		    if (has_match_conc && match_conc)
 			c = match_conc;
-		    else if (syn_get_sub_char() != NUL)
+		    else if (syntax_conceal && syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
 		    else if (wp->w_lcs_chars.conceal != NUL)
 			c = wp->w_lcs_chars.conceal;
@@ -4174,20 +4182,34 @@ win_line(
 		// trailing junk to be written out of the screen line
 		// we are building, 'boguscols' keeps track of the number
 		// of bad columns we have advanced.
+		//
+		// For popup windows with fixed width, don't advance col
+		// to allow full text to be displayed.
+# ifdef FEAT_PROP_POPUP
+		int adjust_col = !WIN_IS_POPUP(wp);
+# else
+		int adjust_col = TRUE;
+# endif
 		if (wlv.n_extra > 0)
 		{
 		    wlv.vcol += wlv.n_extra;
 # ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 		    {
-			wlv.col -= wlv.n_extra;
-			wlv.boguscols -= wlv.n_extra;
+			if (adjust_col)
+			{
+			    wlv.col -= wlv.n_extra;
+			    wlv.boguscols -= wlv.n_extra;
+			}
 		    }
 		    else
 # endif
 		    {
-			wlv.col += wlv.n_extra;
-			wlv.boguscols += wlv.n_extra;
+			if (adjust_col)
+			{
+			    wlv.col += wlv.n_extra;
+			    wlv.boguscols += wlv.n_extra;
+			}
 		    }
 		    wlv.n_extra = 0;
 		    n_attr = 0;
@@ -4199,28 +4221,40 @@ win_line(
 # ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 		    {
-			--wlv.boguscols;
-			--wlv.col;
+			if (adjust_col)
+			{
+			    --wlv.boguscols;
+			    --wlv.col;
+			}
 		    }
 		    else
 # endif
 		    {
-			++wlv.boguscols;
-			++wlv.col;
+			if (adjust_col)
+			{
+			    ++wlv.boguscols;
+			    ++wlv.col;
+			}
 		    }
 		}
 
 # ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
 		{
-		    --wlv.boguscols;
-		    --wlv.col;
+		    if (adjust_col)
+		    {
+			--wlv.boguscols;
+			--wlv.col;
+		    }
 		}
 		else
 # endif
 		{
-		    ++wlv.boguscols;
-		    ++wlv.col;
+		    if (adjust_col)
+		    {
+			++wlv.boguscols;
+			++wlv.col;
+		    }
 		}
 	    }
 	    else
@@ -4293,7 +4327,7 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    wlv.col -= wlv.boguscols;
-	    // Apply 'cursorline' and 'wincolor' highlight.
+	    // Apply 'cursorline' and HLF_WIN highlight.
 	    if (wlv.boguscols != 0 && (
 # ifdef LINE_ATTR
 			wlv.line_attr != 0 ||

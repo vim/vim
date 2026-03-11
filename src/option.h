@@ -363,9 +363,10 @@ typedef enum {
 #define STL_TRUNCMARK	'<'		// truncation mark if line is too long
 #define STL_USER_HL	'*'		// highlight from (User)1..9 or 0
 #define STL_HIGHLIGHT	'#'		// highlight name
+#define STL_LINEBREAK	'@'		// insert a line break
 #define STL_TABPAGENR	'T'		// tab page label nr
 #define STL_TABCLOSENR	'X'		// tab page close nr
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaNS{#")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaNS{#@")
 
 // flags used for parsed 'wildmode'
 #define WIM_FULL	0x01
@@ -942,6 +943,7 @@ EXTERN int	p_ssl;		// 'shellslash'
 #endif
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_stl;		// 'statusline'
+EXTERN char_u	*p_stlo;	// 'statuslineopt'
 #endif
 EXTERN int	p_sr;		// 'shiftround'
 EXTERN long	p_sw;		// 'shiftwidth'
@@ -1033,6 +1035,7 @@ EXTERN char_u	*p_tenc;	// 'termencoding'
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		// 'termguicolors'
 #endif
+EXTERN int	p_tsy;		// 'termsync'
 #ifdef FEAT_TERMINAL
 EXTERN long	p_twsl;		// 'termwinscroll'
 #endif
@@ -1387,6 +1390,7 @@ enum
     , WV_WFB
     , WV_WFH
     , WV_WFW
+    , WV_WHL
     , WV_WRAP
 #ifdef FEAT_SIGNS
     , WV_SCL

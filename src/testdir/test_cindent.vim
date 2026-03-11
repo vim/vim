@@ -132,7 +132,7 @@ def Test_cindent_func()
   bwipe!
 enddef
 
-def Test_cindent_1()
+def Test_cindent_01()
   new
   setl cindent ts=4 sw=4
   setl cino& sts&
@@ -1130,6 +1130,12 @@ def Test_cindent_1()
   while (0);
   else
   a();
+  }
+
+  void func() {
+  /* aaaaaa
+  bbbbb:
+  ccccccc */
   }
 
   /* end of AUTO */
@@ -2135,6 +2141,12 @@ def Test_cindent_1()
   		a();
   }
 
+  void func() {
+  	/* aaaaaa
+  	   bbbbb:
+  	   ccccccc */
+  }
+
   /* end of AUTO */
 
   [CODE]
@@ -2144,7 +2156,7 @@ def Test_cindent_1()
   bwipe!
 enddef
 
-def Test_cindent_2()
+def Test_cindent_02()
   new
   setl cindent ts=4 sw=4
   setl tw=0 noai fo=croq
@@ -2187,7 +2199,7 @@ def Test_cindent_2()
   bwipe!
 enddef
 
-def Test_cindent_3()
+def Test_cindent_03()
   new
   setl nocindent ts=4 sw=4
 
@@ -2248,7 +2260,7 @@ def Test_cindent_3()
   bwipe!
 enddef
 
-def Test_cindent_4()
+def Test_cindent_04()
   new
   setl cindent ts=4 sw=4
 
@@ -2279,7 +2291,7 @@ def Test_cindent_4()
   bwipe!
 enddef
 
-def Test_cindent_5()
+def Test_cindent_05()
   new
   setl cindent ts=4 sw=4
   setl cino=}4
@@ -2330,7 +2342,7 @@ def Test_cindent_5()
   bwipe!
 enddef
 
-def Test_cindent_6()
+def Test_cindent_06()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,)20
@@ -2394,7 +2406,7 @@ def Test_cindent_6()
   bwipe!
 enddef
 
-def Test_cindent_7()
+def Test_cindent_07()
   new
   setl cindent ts=4 sw=4
   setl cino=es,n0s
@@ -2435,7 +2447,7 @@ def Test_cindent_7()
   bwipe!
 enddef
 
-def Test_cindent_8()
+def Test_cindent_08()
   new
   setl cindent ts=4 sw=4
   setl cino=
@@ -2484,7 +2496,7 @@ def Test_cindent_8()
   bwipe!
 enddef
 
-def Test_cindent_9()
+def Test_cindent_09()
   new
   setl cindent ts=4 sw=4
 

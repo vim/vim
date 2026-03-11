@@ -1827,4 +1827,38 @@ func Test_Buffers_Menu()
   %bw!
 endfunc
 
+" Test if 'guioptions=a' only copies to the primary selection and
+" 'guioptions=aP' only copies to the regular selection.
+func Test_guioptions_clipboard()
+  CheckX11BasedGui
+
+  set mouse=
+  let save_guioptions = &guioptions
+  set guioptions=a
+
+  let @+ = ""
+  let @* = ""
+
+  call setline(1, ['one two three', 'four five six'])
+  call cursor(1, 1)
+  call feedkeys("\<Esc>vee\<Esc>", "Lx!")
+
+  call assert_equal("one two", @*)
+  call assert_equal("", @+)
+
+  set guioptions=aP
+
+  let @+ = ""
+  let @* = ""
+
+  call cursor(1, 1)
+  call feedkeys("\<Esc>veee\<Esc>", "Lx!")
+
+  call assert_equal("one two three", @+)
+  call assert_equal("", @*)
+
+  set mouse&
+  let &guioptions = save_guioptions
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

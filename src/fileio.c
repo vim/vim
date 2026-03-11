@@ -1170,7 +1170,12 @@ retry:
 	}
 
 	// Protect against the argument of lalloc() going negative.
-	if (size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL)
+	// Also split lines that are too long for colnr_T.  After this check
+	// passes, we read up to 'size' more bytes.  We must ensure that even
+	// after that read, the line length won't exceed MAXCOL - 1 (because
+	// we add 1 for the NUL when casting to colnr_T).  If this check fires,
+	// we insert a synthetic newline immediately, so linerest doesn't grow.
+	if (size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL - size)
 	{
 	    ++split;
 	    *ptr = NL;		    // split line by inserting a NL
@@ -1427,10 +1432,10 @@ retry:
 				break;
 			    }
 
-			    mch_memmove(new_buffer, buffer, linerest);
+			    mch_memmove(new_buffer, buffer, linerest + conv_restlen);
 			    if (newptr != NULL)
-				mch_memmove(new_buffer + linerest, newptr,
-							      decrypted_size);
+				mch_memmove(new_buffer + linerest + conv_restlen,
+					newptr, decrypted_size);
 			    vim_free(newptr);
 			}
 
@@ -1440,7 +1445,7 @@ retry:
 			    buffer = new_buffer;
 			    new_buffer = NULL;
 			    line_start = buffer;
-			    ptr = buffer + linerest;
+			    ptr = buffer + linerest + conv_restlen;
 			    real_size = size;
 			}
 			size = decrypted_size;
@@ -3017,7 +3022,7 @@ check_for_cryptkey(
 	    int header_len;
 
 	    header_len = crypt_get_header_len(method);
-	    if (*sizep <= header_len)
+	    if (*sizep < header_len)
 		// invalid header, buffer can't be encrypted
 		return NULL;
 
@@ -3457,7 +3462,9 @@ shorten_fname(char_u *full_path, char_u *dir_name)
 #endif
 	{
 	    if (vim_ispathsep(*p))
-		++p;
+		do
+		    ++p;
+		while (vim_ispathsep_nocolon(*p));
 #ifndef VMS   // the path separator is always part of the path
 	    else
 		p = NULL;
@@ -4480,7 +4487,7 @@ buf_check_timestamp(
 	// Reload the buffer.
 	buf_reload(buf, orig_mode, reload == RELOAD_DETECT);
 #ifdef FEAT_PERSISTENT_UNDO
-	if (buf->b_p_udf && buf->b_ffname != NULL)
+	if (bufref_valid(&bufref) && buf->b_p_udf && buf->b_ffname != NULL)
 	{
 	    char_u	    hash[UNDO_HASH_SIZE];
 	    buf_T	    *save_curbuf = curbuf;
@@ -4822,7 +4829,7 @@ create_readdirex_item(char_u *path, char_u *name)
 {
     dict_T	*item;
     char	*p;
-    size_t	len;
+    size_t	pathlen, len;
     stat_T	st;
     int		ret, link = FALSE;
     varnumber_T	size;
@@ -4836,11 +4843,15 @@ create_readdirex_item(char_u *path, char_u *name)
 	return NULL;
     item->dv_refcount++;
 
-    len = STRLEN(path) + 1 + STRLEN(name) + 1;
+    pathlen = STRLEN(path);
+    len = pathlen + 1 + STRLEN(name) + 1;
     p = alloc(len);
     if (p == NULL)
 	goto theend;
-    vim_snprintf(p, len, "%s/%s", path, name);
+    if (pathlen > 0 && path[pathlen - 1] == '/')
+	vim_snprintf(p, len, "%s%s", path, name);
+    else
+	vim_snprintf(p, len, "%s/%s", path, name);
     ret = mch_lstat(p, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {

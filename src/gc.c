@@ -121,8 +121,11 @@ garbage_collect(int testing)
 
     // buffer-local variables
     FOR_ALL_BUFFERS(buf)
+    {
 	abort = abort || set_ref_in_item(&buf->b_bufvar.di_tv, copyID,
 							NULL, NULL, NULL);
+	abort = abort || set_ref_in_list(buf->b_recorded_changes, copyID);
+    }
 
     // window-local variables
     FOR_ALL_TAB_WINDOWS(tp, wp)

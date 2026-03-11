@@ -3515,8 +3515,10 @@ ExpandFromContext(
     {
 	regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
 	if (regmatch.regprog == NULL)
+	{
+	    vim_free(tofree);
 	    return FAIL;
-
+	}
 	// set ignore-case according to p_ic, p_scs and pat
 	regmatch.rm_ic = ignorecase(pat);
     }
@@ -4763,7 +4765,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     if (!is_single_line)
     {
 	if (exacttext)
-	    ga_concat_len(&ga, (char_u *)"\\n", 2);
+	    GA_CONCAT_LITERAL(&ga, "\\n");
 	else
 	    ga_append(&ga, '\n');
     }
@@ -4781,7 +4783,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 		return FAIL;
 	    ga_concat_len(&ga, line, linelen);
 	    if (exacttext)
-		ga_concat_len(&ga, (char_u *)"\\n", 2);
+		GA_CONCAT_LITERAL(&ga, "\\n");
 	    else
 		ga_append(&ga, '\n');
 	}

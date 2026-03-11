@@ -785,8 +785,6 @@ get_buffer_lines(
     int		retlist,
     typval_T	*rettv)
 {
-    char_u	*p;
-
     if (retlist)
     {
 	if (rettv_list_alloc(rettv) == FAIL)
@@ -804,10 +802,11 @@ get_buffer_lines(
     if (!retlist)
     {
 	if (start >= 1 && start <= buf->b_ml.ml_line_count)
-	    p = ml_get_buf(buf, start, FALSE);
+	    rettv->vval.v_string =
+		vim_strnsave(ml_get_buf(buf, start, FALSE),
+		    ml_get_buf_len(buf, start));
 	else
-	    p = (char_u *)"";
-	rettv->vval.v_string = vim_strsave(p);
+	    rettv->vval.v_string = vim_strnsave((char_u *)"", 0);
     }
     else
     {
@@ -819,9 +818,13 @@ get_buffer_lines(
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
+	{
 	    if (list_append_string(rettv->vval.v_list,
-				 ml_get_buf(buf, start++, FALSE), -1) == FAIL)
+		ml_get_buf(buf, start, FALSE),
+		(int)ml_get_buf_len(buf, start)) == FAIL)
 		break;
+	    ++start;
+	}
     }
 }
 

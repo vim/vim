@@ -123,7 +123,7 @@ func Test_expandcmd()
   endif
 
   unlet $FOO
-  close!
+  bw!
 endfunc
 
 " Test for expanding <sfile>, <slnum> and <sflnum> outside of sourcing a script

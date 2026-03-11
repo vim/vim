@@ -452,11 +452,12 @@ clip_auto_select(void)
     int
 clip_isautosel_star(void)
 {
-    return (
 # ifdef FEAT_GUI
-	    gui.in_use ? (vim_strchr(p_go, GO_ASEL) != NULL) :
+    if (gui.in_use)
+	return vim_strchr(p_go, GO_ASEL) != NULL
+	    && vim_strchr(p_go, GO_ASELPLUS) == NULL;
 # endif
-	    clip_autoselect_star);
+    return clip_autoselect_star;
 }
 
 /*
@@ -466,11 +467,11 @@ clip_isautosel_star(void)
     int
 clip_isautosel_plus(void)
 {
-    return (
 # ifdef FEAT_GUI
-	    gui.in_use ? (vim_strchr(p_go, GO_ASELPLUS) != NULL) :
+    if (gui.in_use)
+	return vim_strchr(p_go, GO_ASELPLUS) != NULL;
 # endif
-	    clip_autoselect_plus);
+    return clip_autoselect_plus;
 }
 
 
@@ -2964,7 +2965,7 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 
     if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
     {
-	motion_type = *final++;;
+	motion_type = *final++;
 	buf.ga_len--;
     }
     else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)
@@ -3135,8 +3136,8 @@ vwl_data_source_listener_event_send(
     if (is_vimenc)
     {
 	string[0] = (char_u)motion_type;
-	// strcpy copies the NUL terminator too
-	strcpy((char *)string + 1, (char *)p_enc);
+	// Use vim_strncpy for safer copying
+	vim_strncpy(string + 1, p_enc, STRLEN(p_enc));
     }
     else if (is_vim)
 	string[0] = (char_u)motion_type;
@@ -3837,7 +3838,8 @@ clip_provider_copy(char_u *reg, char_u *provider)
     }
 
     for (int i = 0; i < y_ptr->y_size; i++)
-	if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL)
+	if (list_append_string(list, y_ptr->y_array[i].string,
+	    (int)y_ptr->y_array[i].length) == FAIL)
 	{
 	    free_callback(&callback);
 	    list_unref(list);

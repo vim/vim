@@ -949,6 +949,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	    {
 		vim_free(theline);
 		vim_free(text_indent);
+		list_free(l);
 		return FAIL;
 	    }
 	    count++;
@@ -2844,16 +2845,19 @@ get_vim_var_dict(int idx)
     void
 set_vim_var_char(int c)
 {
-    char_u	buf[MB_MAXBYTES + 1];
+    char_u  buf[MB_MAXBYTES + 1];
+    size_t  buflen;
 
     if (has_mbyte)
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
+	buflen = (*mb_char2bytes)(c, buf);
     else
     {
 	buf[0] = c;
-	buf[1] = NUL;
+	buflen = 1;
     }
-    set_vim_var_string(VV_CHAR, buf, -1);
+    buf[buflen] = NUL;
+
+    set_vim_var_string(VV_CHAR, buf, (int)buflen);
 }
 
 /*
@@ -2998,15 +3002,16 @@ reset_reg_var(void)
     void
 set_reg_var(int c)
 {
-    char_u	regname;
+    char_u  regname[2];
 
     if (c == 0 || c == ' ')
-	regname = '"';
+	regname[0] = '"';
     else
-	regname = c;
+	regname[0] = c;
+    regname[1] = NUL;
     // Avoid free/alloc when the value is already right.
     if (vimvars[VV_REG].vv_str == NULL || vimvars[VV_REG].vv_str[0] != c)
-	set_vim_var_string(VV_REG, &regname, 1);
+	set_vim_var_string(VV_REG, regname, 1);
 }
 
 /*
@@ -4753,8 +4758,8 @@ setwinvar(typval_T *argvars, int off)
     void
 reset_v_option_vars(void)
 {
-    set_vim_var_string(VV_OPTION_NEW,  NULL, -1);
-    set_vim_var_string(VV_OPTION_OLD,  NULL, -1);
+    set_vim_var_string(VV_OPTION_NEW, NULL, -1);
+    set_vim_var_string(VV_OPTION_OLD, NULL, -1);
     set_vim_var_string(VV_OPTION_OLDLOCAL, NULL, -1);
     set_vim_var_string(VV_OPTION_OLDGLOBAL, NULL, -1);
     set_vim_var_string(VV_OPTION_TYPE, NULL, -1);

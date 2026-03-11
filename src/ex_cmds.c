@@ -1810,14 +1810,17 @@ make_filter_cmd(
 				|| fnamecmp(shell_name, "powershell.exe") == 0
 				|| fnamecmp(shell_name, "pwsh") == 0
 				|| fnamecmp(shell_name, "pwsh.exe") == 0);
-	len = (long_u)STRLEN(cmd) + 3;		// "()" + NUL
+	if (is_powershell)
+	    len = (long_u)STRLEN(cmd) + 7; // "& { " + " }" + NUL
+	else
+	    len = (long_u)STRLEN(cmd) + 3; // "()" + NUL
     }
 
     if (itmp != NULL)
     {
 	if (is_powershell)
-	    // "& { Get-Content " + " | & " + " }"
-	    len += (long_u)STRLEN(itmp) + 24;
+	    // "Get-Content " + " | & "
+	    len += (long_u)STRLEN(itmp) + 17;
 	else
 	    len += (long_u)STRLEN(itmp) + 9;	// " { < " + " } "
     }
@@ -1836,7 +1839,7 @@ make_filter_cmd(
 	    vim_snprintf((char *)buf, len, "& { Get-Content %s | & %s }",
 								itmp, cmd);
 	else
-	    vim_snprintf((char *)buf, len, "(%s)", cmd);
+	    vim_snprintf((char *)buf, len, "& { %s }", cmd);
     }
     else
     {
@@ -2897,24 +2900,26 @@ do_ecmd(
     if ((command != NULL || newlnum > (linenr_T)0)
 	    && *get_vim_var_str(VV_SWAPCOMMAND) == NUL)
     {
-	int	len;
-	char_u	*p;
+	string_T    val;
+	size_t	    valsize;
 
 	// Set v:swapcommand for the SwapExists autocommands.
 	if (command != NULL)
-	    len = (int)STRLEN(command) + 3;
+	    valsize = (int)STRLEN(command) + 3;
 	else
-	    len = 30;
-	p = alloc(len);
-	if (p != NULL)
+	    valsize = 30;
+	val.string = alloc(valsize);
+	if (val.string != NULL)
 	{
 	    if (command != NULL)
-		vim_snprintf((char *)p, len, ":%s\r", command);
+		val.length = vim_snprintf_safelen((char *)val.string,
+		    valsize, ":%s\r", command);
 	    else
-		vim_snprintf((char *)p, len, "%ldG", (long)newlnum);
-	    set_vim_var_string(VV_SWAPCOMMAND, p, -1);
+		val.length = vim_snprintf_safelen((char *)val.string,
+		    valsize, "%ldG", (long)newlnum);
+	    set_vim_var_string(VV_SWAPCOMMAND, val.string, (int)val.length);
 	    did_set_swapcommand = TRUE;
-	    vim_free(p);
+	    vim_free(val.string);
 	}
     }
 #endif
@@ -4127,8 +4132,11 @@ ex_substitute(exarg_T *eap)
 		vim_free(old_sub);
 		old_sub = vim_strsave(sub);
 		if (old_sub == NULL)
+		{
 		    // out of memory
+		    vim_free(sub);
 		    return;
+		}
 	    }
 	}
     }

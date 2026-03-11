@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.1.  Last change: 2025 Dec 26
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -23,9 +23,7 @@ Priority classification:
 1   probably not
 -   unclassified
 
-						    *votes-for-changes*
-See |develop.txt| for development plans.  You can vote for which items should
-be worked on, but only if you sponsor Vim development.  See |sponsor|.
+See |develop.txt| for development plans.
 
 Issues can also be entered online: https://github.com/vim/vim/issues
 Only use this for bug reports, not for questions!  Those belong on the
@@ -291,18 +289,6 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patch adds showcmd() function  #11708
-
-Cursor is after the end of the line:  #12137.
-
-Crash when a variable is removed while listing variables (Issue #11435)
-
-Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
-#11272
-
-'cindent': compound literal indented wrong.  Check for " = " before "{"?
-#12491
-
 GUI Scroll test fails on FreeBSD when using Motif.  See FIXME in
 Test_scrollbars in src/test_gui.vim
 
@@ -324,8 +310,6 @@ combining characters. (Ron Aaron, 2023 Apr 10)
 
 Add BufDeletePost.  #11041
 
-Add winid arg to col() and charcol()  #11466 (request #11461)
-
 'switchbuf' set to "newtab" does not work for ":cfirst" when in the quickfix
 window.  #12436
 
@@ -344,14 +328,6 @@ since it's an unusual situation.
 	noeol:¡
 	eof:CTRL-Z
 
-Test property disappears when using CR twice in a row.  OK when some text was
-entered. (#11151)
-
-Add 'keywordprg' to various ftplugin files:
-https://github.com/vim/vim/pull/5566
-
-PR #11579 to add visualtext(), return Visually selected text.
-
 PR #11860: Add more info to 'colorcolumn': display a character and highlight
 for each separate entry.  Disadvantage: option value gets very complicated
 with multiple entries, e.g. every 8 columns.
@@ -361,9 +337,6 @@ Stray characters in the shell #11719, caused by requesting a response for:
 - Whether modifyOtherKeys is active
 - Whether kitty keyboard protocol is active
 Can we not request XT key sequences, or reduce them drastically?
-
-Issue #10512: Dynamic loading broken with Perl 5.36
-Damien has a patch (2022 Dec 4)
 
 Add some kind of ":whathappend" command and functions to make visible what the
 last few typed keys and executed commands are.  To be used when the user
@@ -400,9 +373,6 @@ Better terminal emulator support:
     add an optional additional one.  So that "xterm-kitty" can first load
     "xterm" and then add "kitty" entries.
 
-Using "A" and "o" in manually created fold (in empty buffer) does not behave
-consistently (James McCoy, #10698)
-
 In a timer callback, when using ":echo" and then input() the message is
 overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
 #11299
@@ -432,18 +402,6 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
-Add a diff() function to use the built-in diff support in a script.
-#12321   Is the returned value in the right form now?
-
-Support translations for plugins: #11637  PR: #12447
-- Need a tool like xgettext for Vim script, generates a .pot file.
-  Need the equivalent of _() and N_(), perhaps TR() and TRN().
-- Instructions for how to create .po files and translate.
-- Script or Makefile to generate .mo files.
-- Instructions and perhaps a script to install the .mo files in the right
-  place.
-- Add variant of gettext() that takes a package name.
-
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
 need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
@@ -458,9 +416,6 @@ Can we add highlighting to ":echowindow"?
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
 more information.
-
-Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
-(#8179)
 
 ":filter set termcap" only filters terminal codes, not keys. (#9297)
 
@@ -479,8 +434,6 @@ New English spell files also have very slow suggestions.
 
 When 'spelloptions' is "camel" then zG doesn't work on some words.
 (Gary Johnson, 17 Oct 2022)
-
-SpellCap doesn't show below a closed fold. #12420
 
 'cdpath' problems:
 - Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
@@ -536,9 +489,6 @@ Try setting a color then request the current color, like using t_u7.
 
 Add a v:register_used variable, which has the name of the register used for
 the last command, e.g. put.  #12003
-
-Make the jumplist behave like a tag stack. (#7738)  Should there be a more
-time bound navigation, like with undo?
 
 For testing, make a copy of ml_line_ptr instead of pointing it into the data
 block, so that valgrind can do out of bounds check.  Set ML_LINE_DIRTY flag or
@@ -596,7 +546,6 @@ Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
 	let res = left < right ? lower : left == right ? equal : upper
     by:
 	let res = GetLeftFunc() <=> GetRightFunc() ?< lower ?= equal ?> upper
-Patch to make :q work with local arglist. (Christian Brabandt, #6286)
 
 Why does Test_invalid_sid() not work in the GUI?
 
@@ -786,28 +735,6 @@ Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 
-Color schemes:
-NOTE: modernizing the default colorschemes _AND_ introducing new ones is now
-a project in its own right: https://github.com/vim/colorschemes. Feel free to
-reach out if you want to lend a hand.
-- Lifepillar: Updated/cleaned up color schemes:
-  https://github.com/lifepillar/vim8-colorschemes.
-- Include a few color schemes, based on popularity:
-  - http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
-http://vimawesome.com/?q=tag:color-scheme
-- Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
-  - monokai - Xia Crusoe (2017 Aug 4)
-  - seoul256 - Christian Brabandt (2017 Aug 3)
-  - gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
-        Lifepillar, 2018 Jan 22, #2573)
-  - janah - Marco Hinz (2017 Aug 4)
-  - apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
-- Suggested by Hiroki Kokubun:
-  - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
-  - [hybrid](https://github.com/w0ng/vim-hybrid)
-- Include solarized color scheme?, it does not support termguicolors.
-  - Sanitized version of pablo (Lifepillar, 2017 Nov 21)
-
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
 
@@ -852,14 +779,12 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 
 More warnings from static analysis:
-https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
+https://lgtm.com/projects/g/vim/vim/alerts/?mode=list (URL no longer resolves)
 
 Not existing directory in CDPATH leads to two shell calls. (#4525)
 
 Use dict_iterate_start() / dict_iterate_next() instead of relying on the
 internals of the dict structure.
-
-nvo-mode mapping works on Windows, not on Linux. (#3678)
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -1053,8 +978,6 @@ When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
 Add some way to get the nested state.  Although CmdwinEnter is obviously
 always nested.
-
-matchit hasn't been maintained for a long time.  #955.
 
 Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 

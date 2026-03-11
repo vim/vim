@@ -251,7 +251,7 @@ estack_sfile(estack_arg_T which UNUSED)
 		ga.ga_len += (int)added;
 	    }
 	    if (idx != exestack.ga_len - 1)
-		ga_concat_len(&ga, (char_u *)"..", 2);
+		GA_CONCAT_LITERAL(&ga, "..");
 	}
     }
 
@@ -2558,7 +2558,7 @@ getsourceline(
 		ga_concat(&ga, p + 1);
 	    else if (*p == '|')
 	    {
-		ga_concat_len(&ga, (char_u *)" ", 1);
+		GA_CONCAT_LITERAL(&ga, " ");
 		ga_concat(&ga, p);
 	    }
 	    for (;;)
@@ -2583,7 +2583,7 @@ getsourceline(
 			ga_concat(&ga, p + 1);
 		    else
 		    {
-			ga_concat_len(&ga, (char_u *)" ", 1);
+			GA_CONCAT_LITERAL(&ga, " ");
 			ga_concat(&ga, p);
 		    }
 		}

@@ -1,0 +1,51 @@
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-03-02 13:23+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: ManuallyGenerated\n"
+
+#: path/to/file.c:123
+#, fuzzy, c-format
+#| msgid "Hi, %s.\n"
+msgid "Hello, %s.\n"
+msgstr ""
+"Hi, %s.\n"
+
+#: path/to/file.py:123
+#, python-format
+msgid "%(num) word"
+msgid_plural "%(num) words"
+msgstr[0] ""
+msgstr[1] ""
+
+#. comment for translator
+#: path/to/file.cpp:234
+#: path/to/file.cpp:256
+#, qt-format
+msgctxt "%1 is a variable"
+msgid "value of %1:\t%L2"
+msgstr ""
+
+#: path/to/file.rs:123
+#, rust-format
+msgid "Hello, \"{:?}\"."
+msgstr "Hallo, »{:?}«."
+
+#= no-wrap
+msgid "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+msgstr "いろはにほへと"
+
+# outdated entries
+#~ msgid "foo"
+#~ msgstr "foo"

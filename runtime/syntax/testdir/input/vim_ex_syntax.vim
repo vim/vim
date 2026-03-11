@@ -1,4 +1,5 @@
 " Vim :syntax command
+" VIM_TEST_SETUP hi link vimGroupList Todo
 
 
 " :syn-case
@@ -6,6 +7,13 @@
 syntax case
 syntax case match
 syntax case ignore
+
+" :syn clear
+
+syntax clear @testCluster
+syntax clear testGroup
+syntax clear @testCluster testGroup
+syntax clear testGroup @testCluster 
 
 " :syn-conceal
 
@@ -18,6 +26,11 @@ syntax conceal off
 syntax foldlevel
 syntax foldlevel start
 syntax foldlevel minimum
+
+" :syn-include
+
+syntax include @Foo <sfile>:p:h/foo.vim
+syntax include <sfile>:p:h/foo.vim
 
 " :syn-iskeyword
 
@@ -247,6 +260,50 @@ syn keyword testKeyword
       \ keyword5
       \ keyword6
 
+syn keyword testKeyword
+      "\ nextgroup option
+      \ nextgroup= testNext0,
+      "\ comment
+      \ , testNext1
+      "\ comment
+      \, testNext2
+      "\ comment
+      \ ,textNext3
+      "\ comment
+      \,textNext4
+      "\ comment
+      \ , textNext5 ,
+      "\ comment
+      \ textNext6,
+      "\ comment
+      \ textNext7 ,
+      "\ comment
+      \textNext8,
+      "\ comment
+      \textNext9 ,
+      "\ comment
+      \ textNext10
+      "\ comment
+      \ ,textNext11,
+      "\ comment
+      \ textNext12,textNext13,
+      "\ comment
+      \ textNext13,textNext14
+      "\ comment
+      \ ,textNext15,textNext16
+      "\ comment
+      \ , textNext17 , textNext18 ,
+      "\ comment
+      \ textNext19, @testCluster
+      \ skipnl
+      "\ KEYWORDS LIST
+      "\ keyword 1
+      \ keyword1
+      "\ keyword 2
+      \ keyword2
+      "\ keyword 3
+      \ keyword3
+   
 
 " leaking contained groups
 
@@ -261,6 +318,7 @@ function! s:ContainedGroup()
   " ...
 endfunction
 
+
 " early termination of vimSynRegion
 
 syn region testRegion
@@ -268,4 +326,52 @@ syn region testRegion
       "\ start="foo\|bar"
       \ start="start"
       \ end="end"
+
+
+" Issue #18491 (Two ")"s are incorrectly colored 'vimOperError' in syntax/mail.vim)
+
+syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(from|reply-to):.*$" fold
+
+
+" Issue #19366 (highlight error for contains elements in a new line)
+" syntax/typst.vim
+
+" Code {{{1
+syntax cluster typstCode
+    \ contains=@typstCommon
+            \ ,@typstCodeKeywords
+            \ ,@typstCodeConstants
+            \ ,@typstCodeIdentifiers
+            \ ,@typstCodeFunctions
+            \ ,@typstCodeParens
+
+" Code > Keywords {{{2
+syntax cluster typstCodeKeywords
+    \ contains=typstCodeConditional
+            \ ,typstCodeRepeat
+            \ ,typstCodeKeyword
+            \ ,typstCodeStatement
+
+syntax cluster typstCodeKeywords
+    \ contains=
+	    "\ comment
+	    \  typstCodeConditional
+            \ ,typstCodeRepeat
+            \ ,typstCodeKeyword
+            \ ,typstCodeStatement
+
+
+syntax cluster typstCodeKeywords
+    \ contains= 
+	    "\ comment
+	    \  typstCodeConditional
+            \ ,typstCodeRepeat
+            \ ,typstCodeKeyword
+            \ ,typstCodeStatement
+
+
+" Examples from distributed syntax files
+
+syn match   slrnrcColorInit	contained "^\s*color\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Obj\|ObjStr\)\=
+syn region  slrnrcCmdLine       matchgroup=slrnrcCmd start="\<\(autobaud\|...\|visible_headers\)\>" end="$" oneline contains=slrnrc\(String\|Comment\)
 

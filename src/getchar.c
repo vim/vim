@@ -1725,6 +1725,9 @@ using_script(void)
     void
 before_blocking(void)
 {
+    // Tell terminal to flush screen contents before blocking
+    term_set_sync_output(TERM_SYNC_OUTPUT_FLUSH);
+
     updatescript(0);
 #ifdef FEAT_EVAL
     if (may_garbage_collect)
@@ -2211,6 +2214,7 @@ do_key_input_pre(int c)
 {
     int		res = c;
     char_u	buf[MB_MAXBYTES + 1];
+    size_t	buflen;
     char_u	curr_mode[MODE_MAX_LENGTH];
     int		save_State = State;
     save_v_event_T save_v_event;
@@ -2225,10 +2229,11 @@ do_key_input_pre(int c)
 	buf[0] = K_SPECIAL;
 	buf[1] = KEY2TERMCAP0(c);
 	buf[2] = KEY2TERMCAP1(c);
-	buf[3] = NUL;
+	buflen = 3;
     }
     else
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
+	buflen = (*mb_char2bytes)(c, buf);
+    buf[buflen] = NUL;
 
     typedchars[typedchars_pos] = NUL;
     vim_unescape_csi(typedchars);
@@ -2237,29 +2242,29 @@ do_key_input_pre(int c)
 
     // Lock the text to avoid weird things from happening.
     ++textlock;
-    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+    set_vim_var_string(VV_CHAR, buf, (int)buflen);  // set v:char
 
     v_event = get_v_event(&save_v_event);
     (void)dict_add_bool(v_event, "typed", KeyTyped);
-    (void)dict_add_string(v_event, "typedchar", typedchars);
+    (void)dict_add_string_len(v_event, "typedchar", typedchars, typedchars_pos);
 
-    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
-	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf))
     {
+	string_T    v_char;
+
 	// Get the value of v:char.  It may be empty or more than one
 	// character.  Only use it when changed, otherwise continue with the
 	// original character.
-	char_u *v_char;
-	size_t	v_charlen;
-
-	v_char = get_vim_var_str(VV_CHAR);
-	v_charlen = STRLEN(v_char);
-
-	// Convert special bytes when it is special string.
-	if (v_charlen >= 3 && v_char[0] == K_SPECIAL)
-	    res = TERMCAP2KEY(v_char[1], v_char[2]);
-	else if (v_charlen > 0)
-	    res = PTR2CHAR(v_char);
+	v_char.string = get_vim_var_str(VV_CHAR);
+	if (STRCMP(buf, v_char.string) != 0)
+	{
+	    v_char.length = STRLEN(v_char.string);
+	    // Convert special bytes when it is special string.
+	    if (v_char.length >= 3 && v_char.string[0] == K_SPECIAL)
+		res = TERMCAP2KEY(v_char.string[1], v_char.string[2]);
+	    else if (v_char.length > 0)
+		res = PTR2CHAR(v_char.string);
+	}
     }
 
     restore_v_event(v_event, &save_v_event);
@@ -2833,9 +2838,13 @@ handle_mapping(
     int		i;
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
+    bool	in_osc = in_osc_sequence(); // If we are in an OSC sequence,
+					    // then go straight to
+					    // check_termcode() in order to
+					    // consume chars.
 
     // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
-    if (typebuf.tb_len >= 3
+    if (!in_osc && typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 	    && typebuf.tb_buf[typebuf.tb_off + 2] == KE_PLUG)
@@ -2853,9 +2862,10 @@ handle_mapping(
      * - waiting for "hit return to continue" and CR or SPACE typed
      * - waiting for a char with --more--
      * - in Ctrl-X mode, and we get a valid char for that mode
+     * - currently receiving OSC sequence
      */
     tb_c1 = typebuf.tb_buf[typebuf.tb_off];
-    if (no_mapping == 0 && is_maphash_valid()
+    if (!in_osc && no_mapping == 0 && is_maphash_valid()
 	    && (no_zero_mapping == 0 || tb_c1 != '0')
 	    && (typebuf.tb_maplen == 0 || is_plug_map
 		|| (p_remap
@@ -3043,7 +3053,8 @@ handle_mapping(
     /*
      * Check for match with 'pastetoggle'
      */
-    if (*p_pt != NUL && mp == NULL && (State & (MODE_INSERT | MODE_NORMAL)))
+    if (!in_osc && *p_pt != NUL && mp == NULL &&
+	    (State & (MODE_INSERT | MODE_NORMAL)))
     {
 	for (mlen = 0; mlen < typebuf.tb_len && p_pt[mlen]; ++mlen)
 	    if (p_pt[mlen] != typebuf.tb_buf[typebuf.tb_off + mlen])
@@ -3082,9 +3093,9 @@ handle_mapping(
     // May check for a terminal code when there is no mapping or only a partial
     // mapping.  Also check if there is a full mapping with <Esc>, unless timed
     // out, since that is nearly always a partial match with a terminal code.
-    if ((mp == NULL || max_mlen + want_termcode > mp_match_len
+    if (in_osc || ((mp == NULL || max_mlen + want_termcode > mp_match_len
 		    || (mp_match_len == 1 && *mp->m_keys == ESC && !*timedout))
-	    && keylen != KEYLEN_PART_MAP)
+	    && keylen != KEYLEN_PART_MAP))
     {
 	int	save_keylen = keylen;
 
@@ -3097,12 +3108,12 @@ handle_mapping(
 	 * - and not an ESC sequence, not in insert mode or p_ek is on,
 	 * - and when not timed out,
 	 */
-	if (no_mapping == 0 || allow_keys != 0)
+	if (in_osc || no_mapping == 0 || allow_keys != 0)
 	{
-	    if ((typebuf.tb_maplen == 0
+	    if (in_osc || ((typebuf.tb_maplen == 0
 			    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
-		    && !*timedout)
+		    && !*timedout))
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
 		keylen = 0;
@@ -4288,7 +4299,7 @@ getcmdkeycmd(
 	}
 	else if (c1 == K_SNR)
 	{
-	    ga_concat_len(&line_ga, (char_u *)"<SNR>", 5);
+	    GA_CONCAT_LITERAL(&line_ga, "<SNR>");
 	}
 	else
 	{

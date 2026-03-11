@@ -905,6 +905,10 @@ pum_redraw(void)
     int		last_isabbr = FALSE;
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
+    bool	override_success;
+
+    // Use current window for highlight overrides when using 'winhighlight'
+    override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -1042,6 +1046,9 @@ pum_redraw(void)
 #ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
 #endif
+
+    if (override_success)
+	pop_highlight_overrides();
 }
 
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)

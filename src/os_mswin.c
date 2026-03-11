@@ -635,13 +635,7 @@ mch_has_wildcard(char_u *p)
 {
     for ( ; *p; MB_PTR_ADV(p))
     {
-	if (vim_strchr((char_u *)
-#ifdef VIM_BACKTICK
-				    "?*$[`"
-#else
-				    "?*$["
-#endif
-						, *p) != NULL
+	if (vim_strchr((char_u *)"?*$[`", *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
     }
@@ -2246,7 +2240,7 @@ enumWindowsGetNames(HWND hwnd, LPARAM lparam)
 
     // Add the name to the list
     ga_concat(ga, (char_u *)server);
-    ga_concat_len(ga, (char_u *)"\n", 1);
+    GA_CONCAT_LITERAL(ga, "\n");
     return TRUE;
 }
 

@@ -463,7 +463,7 @@ spell_check_sps(void)
     void
 spell_suggest(int count)
 {
-    char_u	*line;
+    char_u	*line = NULL;
     pos_T	prev_cursor = curwin->w_cursor;
     char_u	wcopy[MAXWLEN + 2];
     char_u	*p;
@@ -488,7 +488,7 @@ spell_suggest(int count)
     if (*curwin->w_s->b_p_spl == NUL)
     {
 	emsg(_(e_spell_checking_is_not_possible));
-	return;
+	goto skip;
     }
 
     if (VIsual_active)
@@ -498,7 +498,7 @@ spell_suggest(int count)
 	if (curwin->w_cursor.lnum != VIsual.lnum)
 	{
 	    vim_beep(BO_SPELL);
-	    return;
+	    goto skip;
 	}
 	badlen = (int)curwin->w_cursor.col - (int)VIsual.col;
 	if (badlen < 0)
@@ -518,11 +518,11 @@ spell_suggest(int count)
 	// No bad word or it starts after the cursor: use the word under the
 	// cursor.
 	curwin->w_cursor = prev_cursor;
-	line = ml_get_curline();
-	p = line + curwin->w_cursor.col;
+	char_u *curline = ml_get_curline();
+	p = curline + curwin->w_cursor.col;
 	// Backup to before start of word.
-	while (p > line && spell_iswordp_nmw(p, curwin))
-	    MB_PTR_BACK(line, p);
+	while (p > curline && spell_iswordp_nmw(p, curwin))
+	    MB_PTR_BACK(curline, p);
 	// Forward to start of word.
 	while (*p != NUL && !spell_iswordp_nmw(p, curwin))
 	    MB_PTR_ADV(p);
@@ -530,9 +530,9 @@ spell_suggest(int count)
 	if (!spell_iswordp_nmw(p, curwin))		// No word found.
 	{
 	    beep_flush();
-	    return;
+	    goto skip;
 	}
-	curwin->w_cursor.col = (colnr_T)(p - line);
+	curwin->w_cursor.col = (colnr_T)(p - curline);
     }
 
     // Get the word and its length.

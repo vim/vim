@@ -1857,7 +1857,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     offset = 0;
 
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_HEADER,
-				       (int)STRLEN(PRT_RESOURCE_HEADER)) != 0)
+			       (int)STRLEN_LITERAL(PRT_RESOURCE_HEADER)) != 0)
     {
 	semsg(_(e_file_str_is_not_postscript_resource_file),
 							   resource->filename);
@@ -1865,7 +1865,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     }
 
     // Skip over any version numbers and following ws
-    offset += (int)STRLEN(PRT_RESOURCE_HEADER);
+    offset += (int)STRLEN_LITERAL(PRT_RESOURCE_HEADER);
     offset = prt_resfile_skip_nonws(offset);
     if (offset == -1)
 	return FALSE;
@@ -1874,23 +1874,23 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	return FALSE;
 
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_RESOURCE,
-				     (int)STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
+			     (int)STRLEN_LITERAL(PRT_RESOURCE_RESOURCE)) != 0)
     {
 	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
 							   resource->filename);
 	return FALSE;
     }
-    offset += (int)STRLEN(PRT_RESOURCE_RESOURCE);
+    offset += (int)STRLEN_LITERAL(PRT_RESOURCE_RESOURCE);
 
     // Decide type of resource in the file
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_PROCSET,
-				      (int)STRLEN(PRT_RESOURCE_PROCSET)) == 0)
+			      (int)STRLEN_LITERAL(PRT_RESOURCE_PROCSET)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_PROCSET;
     else if (prt_resfile_strncmp(offset, PRT_RESOURCE_ENCODING,
-				     (int)STRLEN(PRT_RESOURCE_ENCODING)) == 0)
+			     (int)STRLEN_LITERAL(PRT_RESOURCE_ENCODING)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_ENCODING;
     else if (prt_resfile_strncmp(offset, PRT_RESOURCE_CMAP,
-					 (int)STRLEN(PRT_RESOURCE_CMAP)) == 0)
+				 (int)STRLEN_LITERAL(PRT_RESOURCE_CMAP)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_CMAP;
     else
     {

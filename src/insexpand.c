@@ -829,7 +829,7 @@ ins_compl_add_infercase(
     static int
 cot_fuzzy(void)
 {
-    return (get_cot_flags() & COT_FUZZY) != 0;
+    return (get_cot_flags() & COT_FUZZY) != 0 && !ctrl_x_mode_thesaurus();
 }
 
 /*
@@ -1035,7 +1035,7 @@ ins_compl_add(
 
     // Find the longest common string if still doing that.
     if (compl_get_longest && (flags & CP_ORIGINAL_TEXT) == 0 && !cot_fuzzy()
-	    && !ins_compl_preinsert_longest())
+	    && !ins_compl_preinsert_longest() && !ctrl_x_mode_thesaurus())
 	ins_compl_longest_match(match);
 
     return OK;
@@ -1520,13 +1520,29 @@ get_leader_for_startcol(compl_T *match, int cached)
 	return NULL;
     }
 
-    if (cpt_sources_array == NULL || compl_leader.string == NULL)
+    if (cpt_sources_array == NULL)
 	goto theend;
 
     int	cpt_idx = match->cp_cpt_source_idx;
-    if (cpt_idx < 0 || compl_col <= 0)
+    if (cpt_idx < 0)
 	goto theend;
     int	startcol = cpt_sources_array[cpt_idx].cs_startcol;
+
+    if (compl_leader.string == NULL)
+    {
+	// When leader is not set (e.g. 'autocomplete' first fires before
+	// compl_leader is initialised), fall back to compl_orig_text for
+	// matches starting at or after compl_col.  Matches starting before
+	// compl_col carry pre-compl_col text and must not be compared with
+	// compl_orig_text, so return &compl_leader (NULL string) to signal
+	// "pass through" (no prefix filter).
+	if (startcol < 0 || startcol >= compl_col)
+	    return &compl_orig_text;
+	return &compl_leader;  // pass through (startcol < compl_col)
+    }
+
+    if (compl_col <= 0)
+	goto theend;
 
     if (startcol >= 0 && startcol < compl_col)
     {
@@ -4589,7 +4605,7 @@ get_next_filename_completion(void)
     int		i;
     int		score;
     char_u	*leader = ins_compl_leader();
-    size_t	leader_len = ins_compl_leader_len();;
+    size_t	leader_len = ins_compl_leader_len();
     int		in_fuzzy_collect = (cot_fuzzy() && leader_len > 0);
     int		*fuzzy_indices_data;
     char_u	*last_sep = NULL;

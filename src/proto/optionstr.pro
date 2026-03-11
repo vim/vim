@@ -167,6 +167,8 @@ int expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matche
 char *did_set_splitkeep(optset_T *args);
 int expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_statusline(optset_T *args);
+char *did_set_statuslineopt(optset_T *args);
+int expand_set_statuslineopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_swapsync(optset_T *args);
 int expand_set_swapsync(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_switchbuf(optset_T *args);
@@ -205,6 +207,8 @@ int expand_set_wildoptions(optexpand_T *args, int *numMatches, char_u ***matches
 char *did_set_winaltkeys(optset_T *args);
 int expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_wincolor(optset_T *args);
+char *did_set_winhighlight(optset_T *args);
+int expand_set_winhighlight(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_wincolor(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_string_option(int opt_idx, char_u **varp, char_u *oldval, char_u *value, char *errbuf, size_t errbuflen, int opt_flags, set_op_T op, int *value_checked);
 int check_ff_value(char_u *p);

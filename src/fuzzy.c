@@ -816,7 +816,8 @@ search_for_fuzzy_match(
     {
 
 	// Check if looped around and back to start position
-	if (looped_around && EQUAL_POS(current_pos, circly_end))
+	if (looped_around && (whole_line ? current_pos.lnum == circly_end.lnum
+					: EQUAL_POS(current_pos, circly_end)))
 	    break;
 
 	// Ensure current_pos is valid

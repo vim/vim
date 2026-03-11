@@ -27,7 +27,6 @@ SRC_ALL =	\
 		ci/if_feat_check.vim \
 		ci/lychee.toml \
 		ci/setup-xvfb.sh \
-		ci/setup-sway.sh \
 		ci/remove_snap.sh \
 		ci/ddebs.list \
 		ci/pinned-pkgs \
@@ -214,6 +213,7 @@ SRC_ALL =	\
 		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
 		src/testdir/runtest.vim \
 		src/testdir/samples/*.html \
+		src/testdir/samples/*.swp \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
 		src/testdir/samples/evil.zip \
@@ -224,6 +224,8 @@ SRC_ALL =	\
 		src/testdir/samples/test000 \
 		src/testdir/samples/test_undo.txt.undo \
 		src/testdir/samples/testa.zip \
+		src/testdir/samples/crypt_utf8_test.txt \
+		src/testdir/samples/uncrypt_utf8_test.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/silent.wav \
 		src/testdir/test77a.com \
@@ -541,7 +543,6 @@ SRC_UNIX =	\
 		src/wayland.c \
 		src/wayland.h \
 		src/which.sh \
-		src/gen-wayland-protocols.sh \
 		src/xxd/Makefile \
 
 # Source files for both MS Windows and Unix-like.
@@ -805,6 +806,10 @@ RT_ALL =	\
 		runtime/tutor/en/vim-01-beginner.tutor.json \
 		runtime/tutor/en/vim-02-beginner.tutor \
 		runtime/tutor/en/vim-02-beginner.tutor.json \
+		runtime/tutor/sv/vim-01-beginner.tutor \
+		runtime/tutor/sv/vim-01-beginner.tutor.json \
+		runtime/tutor/sv/vim-02-beginner.tutor \
+		runtime/tutor/sv/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
@@ -822,7 +827,6 @@ RT_ALL =	\
 		runtime/pack/dist/opt/editorconfig/.editorconfig \
 		runtime/pack/dist/opt/editorconfig/CONTRIBUTORS \
 		runtime/pack/dist/opt/editorconfig/LICENSE* \
-		runtime/pack/dist/opt/editorconfig/mkzip.sh \
 		runtime/pack/dist/opt/editorconfig/README.md \
 		runtime/pack/dist/opt/editorconfig/autoload/*.vim \
 		runtime/pack/dist/opt/editorconfig/autoload/editorconfig_core/*.vim \
@@ -861,7 +865,8 @@ RT_ALL =	\
 		runtime/pack/dist/opt/osc52/plugin/osc52.vim \
 		runtime/pack/dist/opt/osc52/autoload/osc52.vim \
 		runtime/pack/dist/opt/osc52/doc/osc52.txt \
-		runtime/pack/dist/opt/osc52/doc/tags
+		runtime/pack/dist/opt/osc52/doc/tags \
+		runtime/xdg.vim
 
 # Runtime files for all distributions without CR/LF translation.
 RT_ALL_BIN =	\
@@ -916,7 +921,6 @@ RT_SCRIPTS =	\
 		runtime/syntax/testdir/input/selftestdir/* \
 		runtime/syntax/testdir/input/setup/*.* \
 		runtime/syntax/testdir/dumps/*.dump \
-		runtime/syntax/testdir/dumps/*.vim \
 		runtime/syntax/testdir/tools/* \
 		runtime/syntax/generator/Makefile \
 		runtime/syntax/generator/README.md \
@@ -937,12 +941,15 @@ RT_UNIX_DOS_BIN =	\
 		runtime/vim16x16.gif \
 		runtime/vim16x16.png \
 		runtime/vim16x16.xpm \
+		runtime/vim16x16_png.h \
 		runtime/vim32x32.gif \
 		runtime/vim32x32.png \
 		runtime/vim32x32.xpm \
+		runtime/vim32x32_png.h \
 		runtime/vim48x48.gif \
 		runtime/vim48x48.png \
 		runtime/vim48x48.xpm \
+		runtime/vim48x48_png.h \
 
 # Runtime not for Unix-like or extra.
 RT_NO_UNIX =	\
@@ -988,8 +995,7 @@ RT_AMI =	\
 		runtime/macros/maze/*.info \
 		runtime/macros/urm/*.info \
 		runtime/tools.info \
-		runtime/tutor.info \
-		runtime/tutor/*.info \
+		runtime/tutor.info
 
 # Runtime files in extra archive.
 RT_EXTRA =	\
@@ -1104,6 +1110,8 @@ LANG_GEN = \
 		runtime/doc/*-pl.UTF-8.1 \
 		runtime/doc/*-ru.1 \
 		runtime/doc/*-ru.UTF-8.1 \
+		runtime/doc/*-sv.1 \
+		runtime/doc/*-sv.UTF-8.1 \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \

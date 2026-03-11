@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.1.  Last change: 2025 Nov 09
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -939,6 +939,7 @@ Short explanation of each option:		*option-list*
 'splitright'	  'spr'     new window is put right of the current one
 'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line
+'statuslineopt'	  'stlo'    additional options for the |status-line|
 'suffixes'	  'su'	    suffixes that are ignored with multiple match
 'suffixesadd'	  'sua'     suffixes added when searching for a file
 'swapfile'	  'swf'     whether to use a swapfile for a buffer
@@ -962,6 +963,7 @@ Short explanation of each option:		*option-list*
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termsync'	  'tsy'     enable terminal sync mode for redraw
 'termwinkey'	  'twk'	    key that precedes a Vim command in a terminal
 'termwinscroll'   'twsl'    max number of scrollback lines in a terminal window
 'termwinsize'	  'tws'	    size of a terminal window
@@ -1016,6 +1018,7 @@ Short explanation of each option:		*option-list*
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
+'winhighlight'	  'whl'	    window-local highlighting mappings
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
 'winfixbuf'	  'wfb'     keep window focused on a single buffer
 'winfixheight'	  'wfh'     keep window height when opening/closing windows

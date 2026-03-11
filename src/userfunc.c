@@ -1405,7 +1405,7 @@ get_function_body(
 	    // For a :def function "python << EOF" concatenates all the lines,
 	    // to be used for the instruction later.
 	    ga_concat(&heredoc_ga, theline);
-	    ga_concat_len(&heredoc_ga, (char_u *)"\n", 1);
+	    GA_CONCAT_LITERAL(&heredoc_ga, "\n");
 	    p = vim_strnsave((char_u *)"", 0);
 	}
 	else

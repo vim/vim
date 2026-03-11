@@ -245,7 +245,7 @@ screen_puts_len_for_tabpanel(
 	int	    attr,
 	tabpanel_T  *pargs)
 {
-    int		j, k;
+    int		j;
     int		chlen;
     int		chcells;
     char_u	buf[IOSIZE];
@@ -257,7 +257,30 @@ screen_puts_len_for_tabpanel(
 		&& pargs->maxrow <= *pargs->prow - pargs->offsetrow)
 	    break;
 
-	if (p[j] == '\n' || p[j] == '\r')
+	if (has_mbyte)
+	    chlen = (*mb_ptr2len)(p + j);
+	else
+	    chlen = 1;
+
+	for (int k = 0; k < chlen; k++)
+	    buf[k] = p[j + k];
+	buf[chlen] = NUL;
+	j += chlen;
+
+	// Make all characters printable.
+	temp = transstr(buf);
+	if (temp != NULL)
+	{
+	    vim_strncpy(buf, temp, sizeof(buf) - 1);
+	    vim_free(temp);
+	}
+
+	if (has_mbyte)
+	    chcells = (*mb_ptr2cells)(buf);
+	else
+	    chcells = 1;
+
+	if (pargs->col_end < (*pargs->pcol) + chcells)
 	{
 	    // fill the tailing area of current row.
 	    if (*pargs->prow - pargs->offsetrow >= 0
@@ -266,62 +289,23 @@ screen_puts_len_for_tabpanel(
 			*pargs->prow - pargs->offsetrow,
 			*pargs->prow - pargs->offsetrow + 1,
 			*pargs->pcol, pargs->col_end, attr);
-	    (*pargs->prow)++;
-	    *pargs->pcol = pargs->col_start;
-	    j++;
+	    *pargs->pcol = pargs->col_end;
+
+	    if (pargs->col_end < chcells)
+		break;
 	}
-	else
+
+	if (*pargs->pcol + chcells <= pargs->col_end)
 	{
-	    if (has_mbyte)
-		chlen = (*mb_ptr2len)(p + j);
-	    else
-		chlen = (int)STRLEN(p + j);
-
-	    for (k = 0; k < chlen; k++)
-		buf[k] = p[j + k];
-	    buf[chlen] = NUL;
-	    j += chlen;
-
-	    // Make all characters printable.
-	    temp = transstr(buf);
-	    if (temp != NULL)
-	    {
-		vim_strncpy(buf, temp, sizeof(buf) - 1);
-		vim_free(temp);
-	    }
-
-	    if (has_mbyte)
-		chcells = (*mb_ptr2cells)(buf);
-	    else
-		chcells = 1;
-
-	    if (pargs->col_end < (*pargs->pcol) + chcells)
-	    {
-		// fill the tailing area of current row.
-		if (*pargs->prow - pargs->offsetrow >= 0
-			&& *pargs->prow - pargs->offsetrow < pargs->maxrow)
-		    screen_fill_tailing_area(tplmode,
-			    *pargs->prow - pargs->offsetrow,
-			    *pargs->prow - pargs->offsetrow + 1,
-			    *pargs->pcol, pargs->col_end, attr);
-		*pargs->pcol = pargs->col_end;
-
-		if (pargs->col_end < chcells)
-		    break;
-	    }
-
-	    if (*pargs->pcol + chcells <= pargs->col_end)
-	    {
-		int off = (tpl_align == ALIGN_RIGHT)
-			? topframe->fr_width
-			: 0;
-		if (TPLMODE_REDRAW == tplmode
-			&& (*pargs->prow - pargs->offsetrow >= 0
-			&& *pargs->prow - pargs->offsetrow < pargs->maxrow))
-		    screen_puts(buf, *pargs->prow - pargs->offsetrow,
-			    *pargs->pcol + off, attr);
-		*pargs->pcol += chcells;
-	    }
+	    int off = (tpl_align == ALIGN_RIGHT)
+		    ? topframe->fr_width
+		    : 0;
+	    if (tplmode == TPLMODE_REDRAW
+		    && (*pargs->prow - pargs->offsetrow >= 0
+		    && *pargs->prow - pargs->offsetrow < pargs->maxrow))
+		screen_puts(buf, *pargs->prow - pargs->offsetrow,
+			*pargs->pcol + off, attr);
+	    *pargs->pcol += chcells;
 	}
     }
 }
@@ -382,34 +366,19 @@ draw_tabpanel_default(int tplmode, tabpanel_T *pargs)
 }
 
 /*
- * default tabpanel drawing behavior if 'tabpanel' option is NOT empty.
+ * Draw tabpanel content with highlight handling.
+ * Processes hltab entries and fills tailing area.
  */
     static void
-draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
+draw_tabpanel_with_highlight(
+	int	    tplmode,
+	char_u	    *buf,
+	stl_hlrec_T *hltab,
+	tabpanel_T  *pargs)
 {
     char_u	*p;
-    int		p_crb_save;
-    char_u	buf[IOSIZE];
-    stl_hlrec_T *hltab;
-    stl_hlrec_T *tabtab;
     int		curattr;
     int		n;
-
-    // Temporarily reset 'cursorbind', we don't want a side effect from moving
-    // the cursor away and back.
-    p_crb_save = pargs->cwp->w_p_crb;
-    pargs->cwp->w_p_crb = FALSE;
-
-    // Make a copy, because the statusline may include a function call that
-    // might change the option value and free the memory.
-    p = vim_strsave(pargs->user_defined);
-
-    build_stl_str_hl(pargs->cwp, buf, sizeof(buf),
-	    p, opt_name, opt_scope,
-	    TPL_FILLCHAR, pargs->col_end - pargs->col_start, &hltab, &tabtab);
-
-    vim_free(p);
-    pargs->cwp->w_p_crb = p_crb_save;
 
     curattr = pargs->attr;
     p = buf;
@@ -446,54 +415,6 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
 		*pargs->prow - pargs->offsetrow + 1, *pargs->pcol,
 		pargs->col_end, curattr);
     *pargs->pcol = pargs->col_end;
-}
-
-    static char_u *
-starts_with_percent_and_bang(tabpanel_T *pargs)
-{
-    int		len = 0;
-    char_u	*usefmt = p_tpl;
-    int		did_emsg_before = did_emsg;
-
-    if (usefmt == NULL)
-	return NULL;
-
-    len = (int)STRLEN(usefmt);
-
-    if (len == 0)
-	return NULL;
-
-#ifdef FEAT_EVAL
-    // if "fmt" was set insecurely it needs to be evaluated in the sandbox
-    int	use_sandbox = was_set_insecurely(curwin, opt_name, opt_scope);
-
-    // When the format starts with "%!" then evaluate it as an expression and
-    // use the result as the actual format string.
-    if (len > 1 && usefmt[0] == '%' && usefmt[1] == '!')
-    {
-	typval_T	tv;
-	char_u		*p = NULL;
-
-	tv.v_type = VAR_NUMBER;
-	tv.vval.v_number = pargs->cwp->w_id;
-	set_var((char_u *)"g:tabpanel_winid", &tv, FALSE);
-
-	p = eval_to_string_safe(usefmt + 2, use_sandbox, FALSE, FALSE);
-	if (p != NULL)
-	    usefmt = p;
-
-	do_unlet((char_u *)"g:tabpanel_winid", TRUE);
-
-	if (did_emsg > did_emsg_before)
-	{
-	    usefmt = NULL;
-	    set_string_option_direct(opt_name, -1, (char_u *)"",
-		    OPT_FREE | opt_scope, SID_ERROR);
-	}
-    }
-#endif
-
-    return usefmt;
 }
 
 /*
@@ -545,6 +466,7 @@ do_by_tplmode(
 	    if (tplmode == TPLMODE_GET_CURTAB_ROW)
 	    {
 		*pcurtab_row = row;
+		do_unlet((char_u *)"g:actual_curtabpage", TRUE);
 		break;
 	    }
 	}
@@ -562,54 +484,41 @@ do_by_tplmode(
 	    args.wp = tp->tp_firstwin;
 	}
 
-	char_u *usefmt = starts_with_percent_and_bang(&args);
-	if (usefmt != NULL)
+	char_u	*usefmt = vim_strsave(p_tpl);
+
+	if (usefmt != NULL && *usefmt != NUL)
 	{
-	    char_u	buf[IOSIZE];
-	    char_u	*p = usefmt;
-	    size_t	i = 0;
-
-	    while (p[i] != NUL)
+	    while (*usefmt != NUL)
 	    {
-		while (p[i] == '\n' || p[i] == '\r')
-		{
-		    // fill the tailing area of current row.
-		    if (row - args.offsetrow >= 0
-			    && row - args.offsetrow < args.maxrow)
-			screen_fill_tailing_area(tplmode,
-				row - args.offsetrow,
-				row - args.offsetrow + 1,
-				col, args.col_end, args.attr);
-		    row++;
-		    col = col_start;
-		    p++;
-		}
+		char_u	buf[IOSIZE];
+		stl_hlrec_T	*hltab;
+		stl_hlrec_T	*tabtab;
 
-		while (p[i] != '\n' && p[i] != '\r' && p[i] != NUL)
-		{
-		    if (i + 1 >= sizeof(buf))
-			break;
-		    buf[i] = p[i];
-		    i++;
-		}
-		buf[i] = NUL;
+		if (args.maxrow <= row - args.offsetrow)
+		    break;
 
-		args.user_defined = buf;
+		buf[0] = NUL;
+#ifdef ENABLE_STL_MODE_MULTI_NL
+		(void)build_stl_str_hl_mline_nl
+#else
+		(void)build_stl_str_hl_mline
+#endif
+			(args.cwp, buf, sizeof(buf),
+			&usefmt, opt_name, opt_scope, TPL_FILLCHAR,
+			args.col_end - args.col_start, &hltab, &tabtab);
+
 		args.prow = &row;
 		args.pcol = &col;
-		draw_tabpanel_userdefined(tplmode, &args);
-		// p_tpl could have been freed in build_stl_str_hl()
-		if (p_tpl == NULL || *p_tpl == NUL)
-		{
-		    usefmt = NULL;
-		    break;
-		}
 
-		p += i;
-		i = 0;
+		draw_tabpanel_with_highlight(tplmode, buf, hltab, &args);
+
+		// Move to next line for %@
+		if (*usefmt != NUL)
+		{
+		    row++;
+		    col = col_start;
+		}
 	    }
-	    if (usefmt != p_tpl)
-		VIM_CLEAR(usefmt);
 	}
 	else
 	{
@@ -619,6 +528,7 @@ do_by_tplmode(
 	    draw_tabpanel_default(tplmode, &args);
 	}
 
+	vim_free(usefmt);
 	do_unlet((char_u *)"g:actual_curtabpage", TRUE);
 
 	tp = tp->tp_next;

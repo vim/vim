@@ -4,7 +4,7 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2025-12-06
+# Last Change: 2026-02-02
 
 if exists("b:current_syntax")
   finish
@@ -64,6 +64,7 @@ syntax match odinAddressOf "&" display
 syntax match odinDeref "\^" display
 
 syntax match odinMacro "#\<\w\+\>" display
+syntax region odinFeature matchgroup=odinMacro start="#+\<\w\+\>" end="$" oneline display
 
 syntax match odinTemplate "$\<\w\+\>"
 

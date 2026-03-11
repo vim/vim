@@ -62,9 +62,10 @@ setting |g:osc52_force_avail| to true.
 
                                                         *g:osc52_disable_paste*
 If your terminal does not support pasting via OSC 52, or has it disabled, then
-it is a good idea to set g:osc52_disable_paste to TRUE.  This will cause an
-empty string to be returned when Vim attempts to query the osc52.vim provider,
-instead of doing a blocking wait, as said in |osc52-support|.
+it is a good idea to set g:osc52_disable_paste to TRUE.  This will register
+only the "copy" method for the osc52.vim clipboard provider, so Vim will not
+attempt an OSC 52 paste query and avoids the blocking wait described in
+|osc52-support|.
 
 ==============================================================================
 vim:tw=78:ts=8:fo=tcq2:ft=help:

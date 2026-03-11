@@ -318,7 +318,7 @@ func Test_set_completion()
 
   " Expand abbreviation of options.
   call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set tabstop thesaurus thesaurusfunc ttyscroll', @:)
+  call assert_equal('"set tabstop termsync thesaurus thesaurusfunc ttyscroll', @:)
 
   " Expand current value
   call feedkeys(":set suffixes=\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -623,9 +623,16 @@ func Test_set_completion_string_values()
   call assert_equal('top', getcompletion('set printoptions=', 'cmdline')[0])
   call assert_equal('SpecialKey', getcompletion('set wincolor=', 'cmdline')[0])
 
+  call assert_equal('SpecialKey', getcompletion('set winhighlight=', 'cmdline')[0])
+  call assert_equal('SpecialKey', getcompletion('set winhighlight=SpecialKey:', 'cmdline')[0])
+  call assert_equal('SpecialKey', getcompletion('set winhighlight=SpecialKey:SpecialKey,', 'cmdline')[0])
+  call assert_equal('!8', getcompletion('set winhighlight=SpecialKey:SpecialKey,!', 'cmdline')[0])
+
   call assert_equal('eol', getcompletion('set listchars+=', 'cmdline')[0])
   call assert_equal(['multispace', 'leadmultispace'], getcompletion('set listchars+=', 'cmdline')[-2:])
+  call assert_equal(['tab', 'leadtab'], getcompletion('set listchars+=', 'cmdline')[5:6])
   call assert_equal('eol', getcompletion('setl listchars+=', 'cmdline')[0])
+  call assert_equal(['tab', 'leadtab'], getcompletion('setl listchars+=', 'cmdline')[5:6])
   call assert_equal(['multispace', 'leadmultispace'], getcompletion('setl listchars+=', 'cmdline')[-2:])
   call assert_equal('stl', getcompletion('set fillchars+=', 'cmdline')[0])
   call assert_equal('stl', getcompletion('setl fillchars+=', 'cmdline')[0])
@@ -643,10 +650,10 @@ func Test_set_completion_string_values()
   set keyprotocol&
 
   " previewpopup / completepopup
-  call assert_equal('height:', getcompletion('set previewpopup=', 'cmdline')[0])
+  call assert_equal('border:', getcompletion('set previewpopup=', 'cmdline')[0])
   call assert_equal('EndOfBuffer', getcompletion('set previewpopup=highlight:End*Buffer', 'cmdline')[0])
   call feedkeys(":set previewpopup+=border:\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"set previewpopup+=border:on', @:)
+  call assert_equal('"set previewpopup+=border:single', @:)
   call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set completepopup=height:10,align:item', @:)
   call assert_equal([], getcompletion('set completepopup=bogusname:', 'cmdline'))

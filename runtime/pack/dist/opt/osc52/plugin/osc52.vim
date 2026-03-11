@@ -3,7 +3,7 @@ vim9script
 # Vim plugin for OSC52 clipboard support
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Dec 18
+# Last Change:	2026 Mar 01
 
 if !has("timers")
   finish
@@ -11,17 +11,24 @@ endif
 
 import autoload "../autoload/osc52.vim" as osc
 
-v:clipproviders["osc52"] = {
+var provider: dict<any> = {
   "available": osc.Available,
-  "paste": {
-    "*": osc.Paste,
-    "+": osc.Paste
-  },
   "copy": {
     "*": osc.Copy,
     "+": osc.Copy
   },
 }
+
+if !get(g:, 'osc52_disable_paste', 0)
+  provider->extend({
+    "paste": {
+      "*": osc.Paste,
+      "+": osc.Paste
+    }
+  })
+endif
+
+v:clipproviders["osc52"] = provider
 
 def SendDA1(): void
   if !has("gui_running") && !get(g:, 'osc52_force_avail', 0)

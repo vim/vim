@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2026 Jan 11
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1025,8 +1025,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			 *'autowriteall'* *'awa'* *'noautowriteall'* *'noawa'*
 'autowriteall' 'awa'	boolean	(default off)
 			global
-	Like 'autowrite', but also used for commands ":edit", ":enew", ":quit",
-	":qall", ":exit", ":xit", ":recover" and closing the Vim window.
+	Like 'autowrite', but also used for commands ":edit", ":enew",
+	":quit", ":qall", ":exit", ":xit", ":recover" and closing the Vim
+	window.
 	Setting this option also implies that Vim behaves like 'autowrite' has
 	been set.
 
@@ -2256,11 +2257,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   fuzzy    Enable |fuzzy-matching| for completion candidates.  This
 		    allows for more flexible and intuitive matching, where
 		    characters can be skipped and matches can be found even
-		    if the exact sequence is not typed.
+		    if the exact sequence is not typed (disabled for thesaurus
+		    completion |compl-thesaurus|).
 
 	   longest
 		    When 'autocomplete' is not active, only the longest common
-		    prefix of the matches is inserted.  If the popup menu is
+		    prefix of the matches is inserted (disabled for thesaurus
+		    completion |compl-thesaurus|).  If the popup menu is
 		    displayed, you can use CTRL-L to add more characters.
 		    Whether case is ignored depends on the type of completion.
 		    For buffer text the 'ignorecase' option applies.
@@ -2571,8 +2574,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			This makes "y0" fail in the first column.
 								*cpo-f*
 		f	When included, a ":read" command with a file name
-			argument will set the file name for the current buffer,
-			if the current buffer doesn't have a file name yet.
+			argument will set the file name for the current
+			buffer, if the current buffer doesn't have a file name
+			yet.
 								*cpo-F*
 		F	When included, a ":write" command with a file name
 			argument will set the file name for the current
@@ -3173,8 +3177,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		hiddenoff	Do not use diff mode for a buffer when it
 				becomes hidden.
 
-		iblank		Ignore changes where lines are all blank.  Adds
-				the "-B" flag to the "diff" command if
+		iblank		Ignore changes where lines are all blank.
+				Adds the "-B" flag to the "diff" command if
 				'diffexpr' is empty.  Check the documentation
 				of the "diff" command for what this does
 				exactly.
@@ -3591,6 +3595,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|SafeState|,
 		|SafeStateAgain|,
 		|SessionLoadPost|,
+		|SessionLoadPre|,
 		|SessionWritePost|,
 		|ShellCmdPost|,
 		|SigUSR1|,
@@ -3804,9 +3809,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  edit a file, a check is done for the <EOL>:
 	  1. If all lines end in <CR><NL>, and 'fileformats' includes "dos",
 	     'fileformat' is set to "dos".
-	  2. If a <NL> is found and 'fileformats' includes "unix", 'fileformat'
-	     is set to "unix".  Note that when a <NL> is found without a
-	     preceding <CR>, "unix" is preferred over "dos".
+	  2. If a <NL> is found and 'fileformats' includes "unix",
+	     'fileformat' is set to "unix".  Note that when a <NL> is found
+	     without a preceding <CR>, "unix" is preferred over "dos".
 	  3. If 'fileformat' has not yet been set, and if a <CR> is found, and
 	     if 'fileformats' includes "mac", 'fileformat' is set to "mac".
 	     This means that "mac" is only chosen when:
@@ -4515,8 +4520,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		by a yank or delete operation for the "* register.
 		The same applies to the modeless selection.
 								*'go-P'*
-	  'P'	Like autoselect but using the "+ register instead of the "*
-		register.
+	  'P'	Like autoselect but only copy to the "+ register instead of
+		the "* register.
 								*'go-A'*
 	  'A'	Autoselect for the modeless selection.  Like 'a', but only
 		applies to the modeless selection.
@@ -4543,8 +4548,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
-		The GUI tabs are only supported on some systems, currently GTK,
-		Motif, Mac OS/X, Haiku, and MS-Windows.
+		The GUI tabs are only supported on some systems, currently
+		GTK, Motif, Mac OS/X, Haiku, and MS-Windows.
 								*'go-f'*
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -4805,6 +4810,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuBorder|   j  popup menu border characters
 	|hl-PmenuShadow|   H  popup menu shadow
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
+	|hl-Normal|	 (  Window color (supersedes 'wincolor' option)
+
+	Note that the "(" occasion is not set by default.
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -5352,7 +5360,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"w", "*", "[i", etc.  It is also used for "\k" in a |pattern|.  See
 	'isfname' for a description of the format of this option.  For '@'
 	characters above 255 check the "word" character class (any character
-	that is not white space or punctuation).
+	that is categorized as a letter, number or emoji according to the
+	Unicode general category).
+
+	Note that there is a difference between the "\k" character class and
+	the |word| motion.  The former matches any word character, while the
+	latter stops at a change of the character class.
+
 	For C programs you could use "a-z,A-Z,48-57,_,.,-,>".
 	For a help file it is set to all non-blank printable characters except
 	'*', '"' and '|' (so that CTRL-] on a command finds the help for that
@@ -5797,6 +5811,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				---+---+--XXX ~
 			Where "XXX" denotes the first non-blank characters in
 			the line.
+							*lcs-leadtab*
+	  leadtab:xy[z]
+			Like |lcs-tab|, but only for leading tabs.  When
+			omitted, the "tab" setting is used for leading tabs.
+			|lcs-tab| must also be set for this to work. *E1572*
+			You can combine it with "tab:", for example: >
+				:set listchars=tab:>-,leadtab:.\ 
+<			This shows leading tabs as periods(.) and other tabs
+			as ">--".
 							*lcs-trail*
 	  trail:c	Character to show for trailing spaces.  When omitted,
 			trailing spaces are blank.  Overrides the "space" and
@@ -5896,8 +5919,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'makeencoding'* *'menc'*
 'makeencoding' 'menc'	string	(default "")
 			global or local to buffer |global-local|
-	Encoding used for reading the output of external commands.  When empty,
-	encoding is not converted.
+	Encoding used for reading the output of external commands.  When
+	empty, encoding is not converted.
 	This is used for `:make`, `:lmake`, `:grep`, `:lgrep`, `:grepadd`,
 	`:lgrepadd`, `:cfile`, `:cgetfile`, `:caddfile`, `:lfile`, `:lgetfile`,
 	and `:laddfile`.
@@ -6205,8 +6228,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	If your terminal can't overrule the mouse events going to the
 	application, use: >
 		:set mouse=nvi
-<	Then you can press ":", select text for the system, and press Esc to go
-	back to Vim using the mouse events.
+<	Then you can press ":", select text for the system, and press Esc to
+	go back to Vim using the mouse events.
 	In |defaults.vim| "nvi" is used if the 'term' option is not matching
 	"xterm".
 
@@ -7330,7 +7353,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For $XDG_CONFIG_HOME see |xdg-base-dir|.
 
 	The defaults for most systems are setup to search five locations:
-	1. In your home directory, for your personal preferences.
+	1. In your $MYVIMDIR directory, for your personal preferences.
 	2. In a system-wide Vim directory, for preferences from the system
 	   administrator.
 	3. In $VIMRUNTIME, for files distributed with Vim.
@@ -7338,7 +7361,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	4. In the "after" directory in the system-wide Vim directory.  This is
 	   for the system administrator to overrule or add to the distributed
 	   defaults (rarely needed)
-	5. In the "after" directory in your home directory.  This is for
+	5. In the "after" directory in your $MYVIMDIR directory.  This is for
 	   personal preferences to overrule or add to the distributed defaults
 	   or system-wide settings (rarely needed).
 
@@ -7396,6 +7419,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'scrollfocus' 'scf'	boolean  (default off)
 			global
 			{only for MS-Windows GUI}
+	NOTE: This option is currently not functional.  It may be fixed or
+	removed in a future version.
 	When using the scroll wheel and this option is set, the window under
 	the mouse pointer is scrolled.  With this option off the current
 	window is scrolled.
@@ -8501,10 +8526,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      highlighting is used, also for the statusline of non-current
 	      windows.
 	* -   Set highlight group to User{N}, where {N} is taken from the
-	      minwid field, e.g. %1*.  Restore normal highlight with %* or %0*.
-	      The difference between User{N} and StatusLine will be applied to
-	      StatusLineNC for the statusline of non-current windows.
+	      minwid field, e.g. %1*.  Restore normal highlight with %* or
+	      %0*.  The difference between User{N} and StatusLine will be
+	      applied to StatusLineNC for the statusline of non-current
+	      windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
+								*stl-%@*
+	@ -   Insert a line break (for the |tabpanel| or when the status line
+	      'statuslineopt' has a "maxheight" value greater than 1).
 
 	When displaying a flag, Vim removes the leading comma, if any, when
 	that flag comes right after plaintext.  This will make a nice display
@@ -8562,6 +8591,34 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  :function VarExists(var, val)
 	  :    if exists(a:var) | return a:val | else | return '' | endif
 	  :endfunction
+<
+						*'statuslineopt'* *'stlo'*
+'statuslineopt' 'stlo'	string	(default "")
+			global
+			{not available when compiled without the |+statusline|
+			feature}
+	Optional settings for |status-line|.  It can consist of the following
+	items.  All are optional.  Items must be separated by a comma.
+
+		maxheight:{n}	Set the maximum status line height to {n}.
+				{n} must be 1 or greater.
+				If not present, 1 is used.
+				Check whether {n} is applicable to all windows
+				on all tab pages, and if not, set it to the
+				closest possible value.
+				The option value is updated to the actual
+				applied value.  For example, setting
+				maxheight:999 may result in a smaller value
+				depending on the available space.
+				When {n} is set to 2 or more, you can use "@"
+				in 'statusline' to display information on
+				multiple lines in the status line.
+				See |stl-%@|.
+
+	Examples: >
+		:set stlo=
+		:set stlo=maxheight:2
+		:set stlo+=maxheight:3
 <
 						*'suffixes'* *'su'*
 'suffixes' 'su'		string	(default ".bak,~,.o,.h,.info,.swp,.obj")
@@ -8748,11 +8805,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel.  |g:actual_curtabpage| represents current tab's label number.
-	The option value can contain line breaks: >
+	You can use "%@" or "\n" to insert a new line: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
-		  return printf("(%2d)\n  %%f", g:actual_curtabpage)
+		  return "(" .. g:actual_curtabpage .. ")%@  %f"
 		endfunction
 <
 	The result is:
@@ -8766,6 +8823,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 	|           |
 <
+	Note: using "\n" is considered experimental and deprecated, prefer
+	the |stl-%@| atom instead.
+
 					*'tabpanelopt'* *'tplo'*
 'tabpanelopt' 'tplo'	string	(default "")
 			global
@@ -9036,6 +9096,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'termsync'* *'tsy'*
+'termsync' 'tsy'	boolean (default off)
+			global
+	If the host terminal supports it, buffer all screen updates made
+	during a redraw cycle so that each screen is displayed in the terminal
+	all at once.  This can prevent tearing or flickering when the terminal
+	updates faster than Vim can redraw.  If the host terminal does not
+	support it or if Vim is running graphically, then this option does
+	nothing.
+
+	The specification can be found at:
+	https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+
+	Vim may set this option automatically at startup time when Vim is
+	compiled with the |+termresponse| feature, by querying the terminal
+	for DEC mode 2026 support.  The terminal codes used are |t_BS| and
+	|t_ES|.
+
 						*'termwinkey'* *'twk'*
 'termwinkey' 'twk'	string	(default "")
 			local to window
@@ -9104,8 +9182,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	|ConPTY| support depends on the platform.  Windows 10 October 2018
 	Update is the first version that supports ConPTY, however it is still
-	considered unstable.  ConPTY might become stable in the next release
-	of Windows 10.  winpty support needs to be installed.  If neither is
+	considered unstable.  ConPTY has become stable with the initial release
+	of Windows 11.  winpty support needs to be installed.  If neither is
 	supported then you cannot open a terminal window.
 
 						*'terse'* *'noterse'*
@@ -9534,9 +9612,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 	Maximum number of changes that can be undone.  Since undo information
 	is kept in memory, higher numbers will cause more memory to be used.
-	Nevertheless, a single change can already use a large amount of memory.
-	Set to 0 for Vi compatibility: One level of undo and "u" undoes
-	itself: >
+	Nevertheless, a single change can already use a large amount of
+	memory.  Set to 0 for Vi compatibility: One level of undo and "u"
+	undoes itself: >
 		set ul=0
 <	But you can also get Vi compatibility by including the 'u' flag in
 	'cpoptions', and still be able to use CTRL-R to repeat undo.
@@ -9872,9 +9950,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'visualbell'* *'vb'* *'novisualbell'* *'novb'* *beep*
 'visualbell' 'vb'	boolean	(default off)
 			global
-	Use a visual bell instead of beeping.  The terminal code to display the
-	visual bell is given with 't_vb'.  When no beep or flash is wanted,
-	use: >
+	Use a visual bell instead of beeping.  The terminal code to display
+	the visual bell is given with 't_vb'.  When no beep or flash is
+	wanted, use: >
 		:set vb t_vb=
 <	If you want a short flash, you can use this on many terminals: >
 		:set vb t_vb=[?5h$<100>[?5l
@@ -9882,8 +9960,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to get a shorter or longer flash.
 
 	Note: Vim will limit the bell to once per half a second.  This avoids
-	having to wait for the flashing to finish when there are lots of bells,
-	e.g. on key repeat.  This also happens without 'visualbell' set.
+	having to wait for the flashing to finish when there are lots of
+	bells, e.g. on key repeat.  This also happens without 'visualbell'
+	set.
 
 	In the GUI, 't_vb' defaults to "<Esc>|f", which inverts the display
 	for 20 msec.  If you want to use a different time, use "<Esc>|40f",
@@ -9970,10 +10049,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 'wildcharm' 'wcm'	number	(default: none (0))
 			global
 	'wildcharm' works exactly like 'wildchar', except that it is
-	recognized when used inside a macro.  You can find "spare" command-line
-	keys suitable for this option by looking at |ex-edit-index|.  Normally
-	you'll never actually type 'wildcharm', just use it in mappings that
-	automatically invoke completion mode, e.g.: >
+	recognized when used inside a macro.  You can find "spare"
+	command-line keys suitable for this option by looking at
+	|ex-edit-index|.  Normally you'll never actually type 'wildcharm',
+	just use it in mappings that automatically invoke completion mode,
+	e.g.: >
 		:set wcm=<C-Z>
 		:cnoremap ss so $vim/sessions/*.vim<C-Z>
 <	Then after typing :ss you can use CTRL-P & CTRL-N.
@@ -10187,8 +10267,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wincolor'* *'wcr'*
 'wincolor' 'wcr' string (default empty)
 			local to window
+	DEPRECATED: Use 'winhighlight' if possible, this option uses
+	'winhighlight' internally by setting it to: >vim
+	    set winhighlight=!(:HighlightGroup
+<	If this option is set and 'winhighlight' is changed, then it will not
+	update the option value.  For example, if 'wincolor' is set to "A" and
+	then 'winhighlight' is to an empty value, then 'wincolor' will still
+	remain as "A".  Additionally, the existing value in 'winhighlight' will
+	be discarded when this option is set.
+
 	Highlight group name to use for this window instead of the Normal
-	color |hl-Normal|.
+	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
+	Note that it is not recommended to set this and 'winhighlight' at the
+	same time.
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
@@ -10246,6 +10337,35 @@ A jump table for the options with a short description can be found at |Q_op|.
 	height of the current window.
 	'winheight' applies to the current window.  Use 'winminheight' to set
 	the minimal height for other windows.
+
+						*'winhighlight'* *'whl'*
+'winhighlight' 'whl'	string (default empty)
+			local to window
+	Window-local highlight group mappings.  Comma-delimited list of
+	highlight |group-name| pairs "{hl-from}:{hl-to},..." where each
+	{hl-from} is a |highlight-groups| item to be overridden by {hl-to}
+	group in the window.  If {hl-from} is "Normal", then it will always
+	map to the "(" (window color) value in 'highlight'.
+
+	If a highlight group name starts with "!", then it is assumed to map
+	to a value in 'highlight'.  For example, this will override the
+	visual mode setting: >vim
+	    set winhighlight=!v:SomeHighlightGroup
+<	This will map the occasion "v" to occasion "l" >vim
+	    set winhighlight=!v:!l
+<
+	Highlights of vertical separators are determined by the window to the
+	left of the separator.  The 'tabline' highlight of a tabpage is
+	decided by the last-focused window of the tabpage.  Highlights of
+	the popupmenu are determined by the current window.  Highlights in the
+	message area cannot be overridden.
+
+	When handling highlight group links, if a highlight group (which may
+	be a link as well) is overridden by 'winhighlight', then all highlight
+	groups that link to it will be affected.  For example, if highlight
+	group C links to B which links to A, then >vim
+	    set winhighlight=B:SomeHighlightGroup
+<	will make SomeHighlightGroup override groups B and C, but not A.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)

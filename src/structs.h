@@ -368,6 +368,8 @@ typedef struct
     sctx_T	wo_script_ctx[WV_COUNT];	// SCTXs for window-local options
 # define w_p_script_ctx w_onebuf_opt.wo_script_ctx
 #endif
+    char_u	*wo_whl;
+#define w_p_whl w_onebuf_opt.wo_whl	// 'winhighlight'
 } winopt_T;
 
 /*
@@ -2599,7 +2601,9 @@ typedef enum
     CH_MODE_RAW,
     CH_MODE_JSON,
     CH_MODE_JS,
-    CH_MODE_LSP		// Language Server Protocol (http + json)
+    CH_MODE_LSP,	// Language Server Protocol (http + json)
+    CH_MODE_DAP		// Debug Adapter Protocol (like LSP, but does not
+			// strictly follow JSON-RPC standard)
 } ch_mode_T;
 
 typedef enum {
@@ -3915,6 +3919,9 @@ typedef struct
     int		tab3;
     int		trail;
     int		lead;
+    int		leadtab1;
+    int		leadtab2;
+    int		leadtab3;
     int		*multispace;
     int		*leadmultispace;
 #ifdef FEAT_CONCEAL
@@ -3944,6 +3951,17 @@ typedef struct
     int trunc;
     int truncrl;
 } fill_chars_T;
+
+/*
+ * Represents current highlight overrides (used by 'winhighlight' option). The
+ * highlight group with ID "from" will be overridden by the highlight group with
+ * ID "to"
+ */
+typedef struct
+{
+    int from; // If zero or negative then it is hlf_T enum
+    int to; // Same thing as "from"
+} hl_override_T;
 
 /*
  * Structure which contains all information that belongs to a window
@@ -4049,8 +4067,11 @@ struct window_S
 				    // status/command/winbar line(s)
     int		w_prev_winrow;	    // previous winrow used for 'splitkeep'
     int		w_prev_height;	    // previous height used for 'splitkeep'
-
-    int		w_status_height;    // number of status lines (0 or 1)
+    int		w_status_height;    // number of status lines.
+				    // If 'statuslineopt' was changed, this
+				    // member will be the previous value until
+				    // call function
+				    // frame_change_statusline_height().
     int		w_wincol;	    // Leftmost column of window in screen.
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
@@ -4060,6 +4081,7 @@ struct window_S
 
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
+    int		w_popup_blend;	    // 0-100: transparency level for popup with opacitys
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
     char_u	*w_popup_title;
     poppos_T	w_popup_pos;
@@ -4083,6 +4105,7 @@ struct window_S
     int		w_popup_padding[4]; // popup padding top/right/bot/left
     int		w_popup_border[4];  // popup border top/right/bot/left
     char_u	*w_border_highlight[4];  // popup border highlight
+    int		w_border_highlight_isset; // borderhighlight was explicitly set
     int		w_border_char[8];   // popup border characters
     int		w_popup_shadow;     // popup shadow (right and bottom edges)
 
@@ -4198,7 +4221,7 @@ struct window_S
 				    // column being used
 #endif
 #ifdef FEAT_TERMINAL
-    termcellcolor_T w_term_wincolor;	 // cache for term color of 'wincolor'
+    termcellcolor_T w_term_hlfwin;  // cache for term color of HLF_WIN
 #endif
 
     /*
@@ -4353,6 +4376,11 @@ struct window_S
 #ifdef FEAT_RUBY
     void	*w_ruby_ref;
 #endif
+
+    hl_override_T *w_hl;
+    int		w_hl_len;
+    int		w_hlfwin_id; // Cached HLF_WIN highlight group id, zero if none,
+			     // or -1 if it was set to itself.
 };
 
 /*
@@ -4576,7 +4604,6 @@ typedef struct
     char_u	*tp_localdir;	    // saved value of tp_localdir
     char_u	*globaldir;	    // saved value of globaldir
     int		save_VIsual_active; // saved VIsual_active
-    int		save_State;	    // saved State
 #ifdef FEAT_JOB_CHANNEL
     int		save_prompt_insert; // saved b_prompt_insert
 #endif
@@ -5303,3 +5330,12 @@ typedef enum {
 
 # endif
 #endif
+
+// Used in term_set_sync_output()
+typedef enum
+{
+    TERM_SYNC_OUTPUT_ENABLE = 1 << 0,
+    TERM_SYNC_OUTPUT_DISABLE = 1 << 1,
+    TERM_SYNC_OUTPUT_OFF = 1 << 2,
+    TERM_SYNC_OUTPUT_FLUSH = 1 << 3,
+} term_sync_output_T;
