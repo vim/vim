@@ -27,6 +27,10 @@
 // Is there any system that doesn't have access()?
 #define USE_MCH_ACCESS
 
+// Bitmask with 0x80 set in each byte of a long_u word, used to detect
+// non-ASCII bytes (high bit set) in multiple bytes at once.
+#define NONASCII_MASK (((long_u)-1 / 0xFF) * 0x80)
+
 #if defined(__hpux) && !defined(HAVE_DIRFD)
 # define dirfd(x) ((x)->__dd_fd)
 # define HAVE_DIRFD
@@ -2056,11 +2060,27 @@ retry:
 		int  incomplete_tail = FALSE;
 
 		// Reading UTF-8: Check if the bytes are valid UTF-8.
-		for (p = ptr; ; ++p)
+		for (p = ptr; ; )
 		{
-		    int	 todo = (int)((ptr + size) - p);
+		    int	 todo;
 		    int	 l;
 
+		    // Skip ASCII bytes quickly using word-at-a-time check.
+		    {
+			char_u *ascii_end = ptr + size;
+			while (ascii_end - p >= (long)sizeof(long_u))
+			{
+			    long_u word;
+			    memcpy(&word, p, sizeof(long_u));
+			    if (word & NONASCII_MASK)
+				break;
+			    p += sizeof(long_u);
+			}
+			while (p < ascii_end && *p < 0x80)
+			    ++p;
+		    }
+
+		    todo = (int)((ptr + size) - p);
 		    if (todo <= 0)
 			break;
 		    if (*p >= 0x80)
@@ -2109,14 +2129,17 @@ retry:
 			    if (bad_char_behavior == BAD_DROP)
 			    {
 				mch_memmove(p, p + 1, todo - 1);
-				--p;
 				--size;
 			    }
-			    else if (bad_char_behavior != BAD_KEEP)
-				*p = bad_char_behavior;
+			    else
+			    {
+				if (bad_char_behavior != BAD_KEEP)
+				    *p = bad_char_behavior;
+				++p;
+			    }
 			}
 			else
-			    p += l - 1;
+			    p += l;
 		    }
 		}
 		if (p < ptr + size && !incomplete_tail)
@@ -2255,73 +2278,101 @@ rewind_retry:
 	}
 	else
 	{
-	    --ptr;
-	    while (++ptr, --size >= 0)
+	    // Use memchr() for SIMD-optimized newline scanning instead
+	    // of scanning each byte individually.
+	    char_u *end = ptr + size;
+
+	    while (ptr < end)
 	    {
-		if ((c = *ptr) != NUL && c != NL)  // catch most common case
-		    continue;
-		if (c == NUL)
-		    *ptr = NL;	// NULs are replaced by newlines!
-		else
+		char_u *nl = (char_u *)memchr(ptr, NL, end - ptr);
+		char_u *nul_scan;
+
+		if (nl == NULL)
 		{
-		    if (skip_count == 0)
+		    // No more newlines in buffer.
+		    // Replace any NUL bytes with NL in remaining data.
+		    while ((nul_scan = (char_u *)memchr(ptr, NUL,
+						      end - ptr)) != NULL)
 		    {
-			*ptr = NUL;		// end of line
-			len = (colnr_T)(ptr - line_start + 1);
-			if (fileformat == EOL_DOS)
+			*nul_scan = NL;
+			ptr = nul_scan + 1;
+		    }
+		    ptr = end;
+		    break;
+		}
+
+		// Replace NUL bytes with NL before the newline.
+		{
+		    char_u *scan = ptr;
+		    while ((nul_scan = (char_u *)memchr(scan, NUL,
+						       nl - scan)) != NULL)
+		    {
+			*nul_scan = NL;
+			scan = nul_scan + 1;
+		    }
+		}
+
+		// Process the newline.
+		ptr = nl;
+		if (skip_count == 0)
+		{
+		    *ptr = NUL;		// end of line
+		    len = (colnr_T)(ptr - line_start + 1);
+		    if (fileformat == EOL_DOS)
+		    {
+			if (ptr > line_start && ptr[-1] == CAR)
 			{
-			    if (ptr > line_start && ptr[-1] == CAR)
-			    {
-				// remove CR before NL
-				ptr[-1] = NUL;
-				--len;
-			    }
-			    /*
-			     * Reading in Dos format, but no CR-LF found!
-			     * When 'fileformats' includes "unix", delete all
-			     * the lines read so far and start all over again.
-			     * Otherwise give an error message later.
-			     */
-			    else if (ff_error != EOL_DOS)
-			    {
-				if (   try_unix
-				    && !read_stdin
-				    && (read_buffer
-					|| vim_lseek(fd, (off_T)0L, SEEK_SET)
-									  == 0))
-				{
-				    fileformat = EOL_UNIX;
-				    if (set_options)
-					set_fileformat(EOL_UNIX, OPT_LOCAL);
-				    file_rewind = TRUE;
-				    keep_fileformat = TRUE;
-				    goto retry;
-				}
-				ff_error = EOL_DOS;
-			    }
+			    // remove CR before NL
+			    ptr[-1] = NUL;
+			    --len;
 			}
-			if (ml_append(lnum, line_start, len, newfile) == FAIL)
+			/*
+			 * Reading in Dos format, but no CR-LF found!
+			 * When 'fileformats' includes "unix", delete all
+			 * the lines read so far and start all over again.
+			 * Otherwise give an error message later.
+			 */
+			else if (ff_error != EOL_DOS)
 			{
-			    error = TRUE;
-			    break;
-			}
-#ifdef FEAT_PERSISTENT_UNDO
-			if (read_undo_file)
-			    sha256_update(&sha_ctx, line_start, len);
-#endif
-			++lnum;
-			if (--read_count == 0)
-			{
-			    error = TRUE;	    // break loop
-			    line_start = ptr;	// nothing left to write
-			    break;
+			    if (   try_unix
+				&& !read_stdin
+				&& (read_buffer
+				    || vim_lseek(fd, (off_T)0L, SEEK_SET)
+								      == 0))
+			    {
+				fileformat = EOL_UNIX;
+				if (set_options)
+				    set_fileformat(EOL_UNIX, OPT_LOCAL);
+				file_rewind = TRUE;
+				keep_fileformat = TRUE;
+				goto retry;
+			    }
+			    ff_error = EOL_DOS;
 			}
 		    }
-		    else
-			--skip_count;
-		    line_start = ptr + 1;
+		    if (ml_append(lnum, line_start, len, newfile) == FAIL)
+		    {
+			error = TRUE;
+			break;
+		    }
+#ifdef FEAT_PERSISTENT_UNDO
+		    if (read_undo_file)
+			sha256_update(&sha_ctx, line_start, len);
+#endif
+		    ++lnum;
+		    if (--read_count == 0)
+		    {
+			error = TRUE;	    // break loop
+			line_start = ptr;   // nothing left to write
+			break;
+		    }
 		}
+		else
+		    --skip_count;
+		line_start = ptr + 1;
+		++ptr;
 	    }
+	    size = -1;
 	}
 	linerest = (long)(ptr - line_start);
 	ui_breakcheck();
