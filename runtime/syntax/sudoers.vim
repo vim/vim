@@ -2,11 +2,7 @@
 " Language:             sudoers(5) configuration files
 " Maintainer:           Eisuke Kawashima ( e.kawaschima+vim AT gmail.com )
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2024 Sep 02
-" Recent Changes:	Support for #include and #includedir.
-" 2018 Aug 28 by Vim project Added many new options (Samuel D. Leslie)
-" 2024 Sep 09 by Vim project Update allowed Tag_Spec Runas_Spec syntax items
-" 2026 Feb 13 by Vim project update regex for matching usernames #19396
+" Latest Change:        2026 Mar 11
 
 if exists("b:current_syntax")
   finish
