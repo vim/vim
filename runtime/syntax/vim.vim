@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Mar 01
+" Last Change:	   2026 Mar 12
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -74,6 +74,7 @@ syn match vimCommand contained "\<sw\%[apname]\>" nextgroup=vimBang
 " GEN_SYN_VIM: vimCommand modifier, START_STR='syn keyword vimCommandModifier contained', END_STR='skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList'
 syn keyword vimCommandModifier contained abo[veleft] bel[owright] bo[tright] hid[e] hor[izontal] kee[pmarks] keepj[umps] keepp[atterns] keepa[lt] lefta[bove] leg[acy] loc[kmarks] noa[utocmd] nos[wapfile] rightb[elow] san[dbox] sil[ent] tab to[pleft] uns[ilent] verb[ose] vert[ical] vim9[cmd] skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
 syn match vimCommandModifier_ contained "hid\%[e]\>" skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
+syn match vimCommandModifier_ contained "tab\>" skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
 syn match vimCommandModifier_ contained "verb\%[ose]\>" skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
 " modifiers supporting bang, :filter is handled specially elsewhere
 syn keyword vimCommandModifier contained sil[ent] skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
@@ -83,11 +84,6 @@ syn match	vimCommandModifierBang	contained	"\a\@1<=!"	skipwhite skipnl nextgroup
 " lower priority :syn-match to allow for :command/function() distinction
 syn match vimCommandModifier contained "\<bro\%[wse]\>"  skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
 syn match vimCommandModifier contained "\<conf\%[irm]\>" skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
-
-" accept a range
-syn match vimCommandModifier_ contained "verb\%[ose]\>" skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
-syn match vimCommandModifier_ contained "hide\=\>"      skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
-syn match vimCommandModifier_ contained "tab\>"         skipwhite skipnl nextgroup=vimCommandModifierBang,@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList
 
 syn match	vimCommandModifierContinue	contained	"^\s*\\"        skipwhite skipnl nextgroup=@vimCommandModifierContinue,vimCmdStart,@vimRange,@vimCmdList	contains=vimLeadingWhitespace
 syn match         vimCommandModifierContinueComment	contained	'^\s*["#]\\ .*' skipwhite skipnl nextgroup=@vimCommandModifierContinue			contains=vimLeadingWhitespace
