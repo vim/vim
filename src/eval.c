@@ -2553,8 +2553,15 @@ tv_op_blob(typval_T *tv1, typval_T *tv2, char_u *op)
     blob_T	*b2 = tv2->vval.v_blob;
     int		len = blob_len(b2);
 
-    for (int i = 0; i < len; i++)
-	ga_append(&b1->bv_ga, blob_get(b2, i));
+    if (len > 0 && ga_grow(&b1->bv_ga, len) == OK)
+    {
+	mch_memmove((char_u *)b1->bv_ga.ga_data + b1->bv_ga.ga_len,
+		    (char_u *)b2->bv_ga.ga_data, (size_t)len);
+	b1->bv_ga.ga_len += len;
+    }
+    else
+	for (int i = 0; i < len; i++)
+	    (void)ga_append(&b1->bv_ga, blob_get(b2, i));
 
     return OK;
 }
