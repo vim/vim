@@ -2815,6 +2815,60 @@ func Test_raw_codes_in_mappings()
   unmap X
 endfunc
 
+func Test_avoid_keypad_if_ambiguous()
+  let save_kh = exists('&t_kh') ? &t_kh : ''
+  let save_K1 = exists('&t_K1') ? &t_K1 : ''
+  let save_at7 = exists('&t_@7') ? &t_@7 : ''
+  let save_K4 = exists('&t_K4') ? &t_K4 : ''
+  let save_kP = exists('&t_kP') ? &t_kP : ''
+  let save_K3 = exists('&t_K3') ? &t_K3 : ''
+  let save_kN = exists('&t_kN') ? &t_kN : ''
+  let save_K5 = exists('&t_K5') ? &t_K5 : ''
+
+  let &t_kh = "\<Esc>[@;*H"
+  let &t_K1 = "\<Esc>[1;*~"
+  let &t_@7 = "\<Esc>[@;*F"
+  let &t_K4 = "\<Esc>[4;*~"
+  let &t_kP = "\<Esc>[5;*~"
+  let &t_K3 = "\<Esc>Oy"
+  let &t_kN = "\<Esc>[6;*~"
+  let &t_K5 = "\<Esc>Os"
+
+  call feedkeys("\<Esc>P1+r6b68=1B4F48\<Esc>\\", 't') " kh <Home> <Esc>OH
+  call feedkeys("\<Esc>P1+r4b31=1B4F48\<Esc>\\", 't') " K1 <kHome> <Esc>OH
+  call feedkeys("\<Esc>P1+r4037=1B4F46\<Esc>\\", 't') " @7 <End> <Esc>OF
+  call feedkeys("\<Esc>P1+r4b34=1B4F46\<Esc>\\", 't') " K4 <kEnd> <Esc>OF
+  call feedkeys("\<Esc>P1+r6b50=1B5B357E\<Esc>\\", 't') " kP <PageUp> <Esc>[5~
+  call feedkeys("\<Esc>P1+r4b33=1B5B357E\<Esc>\\", 't') " K3 <kPageUp> <Esc>[5~
+  call feedkeys("\<Esc>P1+r6b4e=1B5B367E\<Esc>\\", 't') " kN <PageDown> <Esc>[6~
+  call feedkeys("\<Esc>P1+r4b35=1B5B367E\<Esc>\\", 'tx') " K5 <kPageDown> <Esc>[6~
+
+  let test_kh = exists('&t_kh') ? &t_kh : ''
+  let test_K1 = exists('&t_K1') ? &t_K1 : ''
+  let test_at7 = exists('&t_@7') ? &t_@7 : ''
+  let test_K4 = exists('&t_K4') ? &t_K4 : ''
+  let test_kP = exists('&t_kP') ? &t_kP : ''
+  let test_K3 = exists('&t_K3') ? &t_K3 : ''
+  let test_kN = exists('&t_kN') ? &t_kN : ''
+  let test_K5 = exists('&t_K5') ? &t_K5 : ''
+
+  call assert_equal(
+        \ ["\<Esc>OH", "\<Esc>[1;*~", "\<Esc>OF", "\<Esc>[4;*~",
+        \ "\<Esc>[5;*~", "\<Esc>Oy", "\<Esc>[6;*~", "\<Esc>Os"],
+        \ [test_kh, test_K1, test_at7, test_K4,
+        \ test_kP, test_K3, test_kN, test_K5])
+
+  bwipe!
+  let &t_kh = save_kh
+  let &t_K1 = save_K1
+  let &t_@7 = save_at7
+  let &t_K4 = save_K4
+  let &t_kP = save_kP
+  let &t_K3 = save_K3
+  let &t_kN = save_kN
+  let &t_K5 = save_K5
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
