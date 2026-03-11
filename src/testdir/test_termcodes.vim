@@ -2795,6 +2795,26 @@ func Test_home_is_not_khome()
   let &t_kh = save_kh
 endfunc
 
+func Test_raw_codes_in_mappings()
+  let save_cpo = &cpo
+  let save_ku = exists('&t_ku') ? &t_ku : ''
+
+  set cpo-=k
+  let &t_ku = "\<Esc>O*A"
+  exe "map X ^\<Esc>OAjk"
+  let &t_ku = ""
+
+  new
+  exe "normal iabc\<CR>abc\<CR>abc\<CR>abc\<Esc>XX"
+  call assert_equal(['abc', 'abc', 'abc', 'abc'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+
+  bwipe!
+  let &cpo = save_cpo
+  let &t_ku = save_ku
+  unmap X
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
