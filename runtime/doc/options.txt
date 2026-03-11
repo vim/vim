@@ -8532,8 +8532,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
 								*stl-%@*
-	@ -   Insert a line break (for the |tabpanel| or when the status line
-	      'statuslineopt' has a "maxheight" value greater than 1).
+	@ -   Inserts a newline.  This only takes effect when the "maxheight"
+	      value of 'statuslineopt' is greater than 1, or for |tabpanel|.
 
 	When displaying a flag, Vim removes the leading comma, if any, when
 	that flag comes right after plaintext.  This will make a nice display
@@ -8602,13 +8602,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	    fixedheight     Fix the status line height to "maxheight".
 			    Without this, the height varies from 1 to
-			    "maxheight" based on the number of line breaks
+			    "maxheight" based on the number of newline
 			    |stl-%@| in 'statusline'.
 
 	    maxheight:{n}   Set the maximum status line height to {n}.
 			    {n} must be 1 or greater.  If not specified, the
 			    height is 1.
-			    When {n} is 2 or more, you can use line breaks
+			    When {n} is 2 or more, you can use newline
 			    |stl-%@| in 'statusline' to display information on
 			    multiple lines.
 
@@ -8625,11 +8625,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    Note: When the applied value differs from {n}, the
 			    option is updated to reflect it.
 			    Example of updated options: >vim
-				set statuslineopt=maxheight:999,fixedheight
+				:set statuslineopt=maxheight:999,fixedheight
 				" Only 20 lines could be applied, so
 				" maxheight is updated to 20.
-				set statuslineopt?
-				    statuslineopt=maxheight:20,fixedheight
+				:set statuslineopt?
+				  statuslineopt=maxheight:20,fixedheight
 <
 	Examples: >
 		:set statuslineopt=fixedheight
@@ -8822,7 +8822,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel.  |g:actual_curtabpage| represents current tab's label number.
-	You can use "%@" or "\n" to insert a new line: >
+	You can use "%@" or "\n" to insert a newline: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
