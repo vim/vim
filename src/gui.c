@@ -78,6 +78,9 @@ gui_start(char_u *arg UNUSED)
 	cursor_on();			// needed for ":gui" in .vimrc
     full_screen = FALSE;
 
+    // If GUI fails to start, then we will recover afterwards
+    term_disable_dec();
+
 #ifdef GUI_MAY_FORK
     ++recursive;
     /*
@@ -141,6 +144,9 @@ gui_start(char_u *arg UNUSED)
 	termcapinit(old_term);
 	settmode(TMODE_RAW);		// restart RAW mode
 	set_title_defaults();		// set 'title' and 'icon' again
+#ifdef UNIX
+	term_set_win_resize(true);
+#endif
 #if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
 	if (msg != NULL)
 	    emsg(msg);
@@ -148,11 +154,8 @@ gui_start(char_u *arg UNUSED)
     }
 #ifdef HAVE_CLIPMETHOD
     else
-    {
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
-	term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
-    }
 #endif
 
 #if defined(FEAT_SOCKETSERVER) && defined(FEAT_GUI_GTK)

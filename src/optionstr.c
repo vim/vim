@@ -150,6 +150,9 @@ static char *(p_csl_values[]) = {"slash", "backslash", NULL};
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #endif
+#ifdef UNIX
+static char *(p_trz_values[]) = {"inband", "sigwinch", "", NULL};
+#endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
@@ -4464,6 +4467,37 @@ did_set_term_option(optset_T *args)
 
     return NULL;
 }
+
+
+#ifdef UNIX
+/*
+ * The 'termresize' option is changed.
+ */
+    char *
+did_set_termresize(optset_T *args UNUSED)
+{
+    // If empty or "inband", then attempt to enable in-band resize events.
+    if (*p_trz == NUL || STRCMP(p_trz, "inband") == 0)
+	term_set_win_resize(true);
+    else if (STRCMP(p_trz, "sigwinch") == 0)
+	term_set_win_resize(false);
+    else
+	return e_invalid_argument;
+
+    return NULL;
+}
+
+    int
+expand_set_termresize(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_trz_values,
+	    ARRAY_LENGTH(p_trz_values) - 1,
+	    numMatches,
+	    matches);
+}
+#endif
 
 #if defined(FEAT_TERMINAL)
 /*

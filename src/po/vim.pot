@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-04 21:06+0000\n"
+"POT-Creation-Date: 2026-03-11 20:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9443,6 +9443,9 @@ msgid "number of lines to scroll for CTRL-F and CTRL-B"
 msgstr ""
 
 msgid "don't redraw while executing macros"
+msgstr ""
+
+msgid "configure method of receiving terminal size changes"
 msgstr ""
 
 msgid "enable terminal sync mode"

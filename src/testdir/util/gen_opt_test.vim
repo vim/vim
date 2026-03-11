@@ -389,6 +389,13 @@ if !has('clipboard')
 	\ ]
 endif
 
+if has('unix')
+  let test_values['termresize'] = [
+	\ ['', 'sigwinch', 'inband'],
+	\ ['xxx', 'sig']
+	\ ]
+endif
+
 " Two lists with values: values that pre- and post-processing in test.
 " Clear out t_WS: we don't want to resize the actual terminal.
 let test_prepost = {

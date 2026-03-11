@@ -133,6 +133,11 @@ static termrequest_T xcc_status = TERMREQUEST_INIT;
 // Request synchronized output report
 static termrequest_T sync_output_status = TERMREQUEST_INIT;
 
+#ifdef UNIX
+// Request in-band window resize events report
+static termrequest_T win_resize_status = TERMREQUEST_INIT;
+#endif
+
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_TERMINAL
 // Request foreground color report:
@@ -169,6 +174,9 @@ static termrequest_T *all_termrequests[] = {
     &rcs_status,
     &winpos_status,
     &sync_output_status,
+# ifdef UNIX
+    &win_resize_status,
+# endif
     NULL
 };
 
@@ -245,6 +253,13 @@ static int sync_output_setting = 0;
 // > 0: Currently batching output
 // == 0: No synchronized output
 static int sync_output_state = 0;
+
+#ifdef UNIX
+// DEC mode 2048 (in-band window resize events)
+// https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83
+static int win_resize_setting = 0;
+static bool win_resize_enabled = false;
+#endif
 
 /*
  * The builtin termcap entries.
@@ -5594,7 +5609,7 @@ handle_csi_function_key(
  *
  * - DA1 query response: {lead}?...;c
  *
- * - DEC mode 2026 response (synchronized output): {lead}?2026;{mode}$y
+ * - DECRPM response: {lead}?2026;{mode}$y
  *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
@@ -5724,8 +5739,9 @@ handle_csi(
 	key_name[1] = (int)KE_IGNORE;
     }
 
-    // DEC 2026 mode response (for 'termsync' option)
-    else if (first == '?' && trail == 'y' && argc == 2 && arg[0] == 2026)
+    // DECRPM mode 2026 or 2048.
+    else if (first == '?' && trail == 'y' && argc == 2
+	    && (arg[0] == 2026 || arg[0] == 2048))
     {
 	int setting = arg[1];
 
@@ -5735,16 +5751,43 @@ handle_csi(
 
 	if (setting >= 0 && setting <= 4)
 	{
-	    sync_output_setting = setting;
-	    LOG_TRN("Received DEC 2026 mode: %s", tp);
-	    sync_output_status.tr_progress = STATUS_GOT;
+	    LOG_TRN("Received DECRPM mode %d: %s", arg[0], tp);
 
-	    set_option_value_give_err((char_u *)"termsync",
-		    setting == 1 || setting == 2, NULL, 0);
+	    switch (arg[0])
+	    {
+		case 2026:
+		    sync_output_setting = setting;
+		    sync_output_status.tr_progress = STATUS_GOT;
+		    set_option_value_give_err((char_u *)"termsync",
+			    setting == 1 || setting == 2, NULL, 0);
+		    break;
+#ifdef UNIX
+		case 2048:
+		    win_resize_status.tr_progress = STATUS_GOT;
+		    win_resize_setting = setting;
+
+		    term_set_win_resize(true);
+		    break;
+#endif
+	    }
 	}
 	else
-	    LOG_TRN("Unknown synchronized output setting %d", setting);
+	    LOG_TRN("Unknown DECRPM mode %d setting %d", arg[0], setting);
     }
+
+#ifdef UNIX
+    // In-band window resize event
+    else if (win_resize_enabled && argc >= 3 && arg[0] == 48)
+    {
+	int height = arg[1], width = arg[2];
+
+	*slen = csi_len;
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+
+	set_shellsize(width, height, true);
+    }
+#endif
 
     // Version string: Eat it when there is at least one digit and
     // it ends in 'c'
@@ -7855,26 +7898,107 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 
 #ifdef FEAT_TERMRESPONSE
 /*
- * Query the setting for DEC mode 2026 (synchronized output) from the terminal.
+ * Query the setting for the following DEC modes from the terminal:
+ * - DEC mode 2026 (synchronized output)
+ * - DEC mode 2048 (window resize events)
  */
     void
-may_req_sync_output(void)
+may_req_dec_setting(void)
 {
-    if (can_get_termresponse() && starting == 0
-	    && sync_output_status.tr_progress == STATUS_GET)
+    if (can_get_termresponse() && starting == 0)
     {
-	MAY_WANT_TO_LOG_THIS;
-	LOG_TR1("Sending synchronized output request");
+	bool didit = false;
 
-	out_str((char_u *)"\033[?2026$p");
-	termrequest_sent(&sync_output_status);
+	if (sync_output_status.tr_progress == STATUS_GET)
+	{
+	    MAY_WANT_TO_LOG_THIS;
+	    LOG_TR1("Sending synchronized output request");
 
-	// check for the characters now, otherwise they might be eaten by
-	// get_keystroke()
-	out_flush();
-	(void)vpeekc_nomap();
+	    out_str((char_u *)"\033[?2026$p");
+	    termrequest_sent(&sync_output_status);
+	    didit = true;
+	}
+
+# ifdef UNIX
+	if (win_resize_status.tr_progress == STATUS_GET)
+	{
+	    MAY_WANT_TO_LOG_THIS;
+	    LOG_TR1("Sending in-band window resize events request");
+
+	    out_str((char_u *)"\033[?2048$p");
+	    termrequest_sent(&win_resize_status);
+	    didit = true;
+	}
+# endif
+
+	if (didit)
+	{
+	    // check for the characters now, otherwise they might be eaten by
+	    // get_keystroke()
+	    out_flush();
+	    (void)vpeekc_nomap();
+	}
     }
+}
+#endif
 
+/*
+ * Should be called when cleaning up terminal state.
+ */
+    void
+term_disable_dec(void)
+{
+    term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
+#ifdef UNIX
+    term_set_win_resize(false);
+#endif
+    // Make sure to always flush the output buffer, because this may be called
+    // before starting the GUI
+    out_flush();
+}
+
+#ifdef UNIX
+/*
+ * Enable or disable receiving in-band window resize events from the terminal.
+ * If "state" is true, then if the terminal supports DEC mode 2048 and
+ * 'termresize' is "" or "inband", then enable it and disable the SIGWINCH
+ * signal handling. Otherwise disable the mode if it is enabled and reinstall
+ * the SIGWINCH handler.
+ */
+    void
+term_set_win_resize(bool state)
+{
+# ifdef FEAT_GUI
+    bool    in_gui = gui.in_use;
+# else
+    bool    in_gui = false;
+# endif
+
+    if (state && in_gui)
+	return;
+
+    if (!state || win_resize_setting == 0 || win_resize_setting == 4)
+    {
+	// Make sure it update internal window size if DEC mode 2048 is
+	// unavailable now.
+	if (win_resize_enabled)
+	{
+	    set_shellsize(0, 0, false);
+	    set_sigwinch_handler();
+	    out_str((char_u *)"\033[?2048l");
+	}
+	win_resize_enabled = false;
+    }
+    else if ((*p_trz == NUL || STRCMP(p_trz, "inband") == 0)
+	    && !win_resize_enabled)
+    {
+	if (win_resize_setting == 2)
+	    out_str((char_u *)"\033[?2048h");
+# ifdef SIGWINCH
+	mch_signal(SIGWINCH, SIG_DFL);
+# endif
+	win_resize_enabled = true;
+    }
 }
 #endif
 

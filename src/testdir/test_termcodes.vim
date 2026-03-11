@@ -2966,4 +2966,73 @@ func Test_term_rgb_response()
   set t_RF= t_RB=
 endfunc
 
+" Test in-band window resize events (DEC mode 2048).
+" https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83
+func Test_term_win_resize()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+  vim9script
+
+  autocmd VimResized * writefile([$"{&lines} {&columns}"], "XTestWinResizeResult")
+  END
+  call writefile(lines, 'XTestWinResize', 'D')
+  defer delete("XTestWinResizeResult")
+
+  let buf = RunVimInTerminal('-S XTestWinResize', #{rows: 15, cols: 20})
+
+  " Send status report
+  call term_sendkeys(buf, "\<Esc>[?2048;1$y")
+  call TermWait(buf)
+
+  " Resize to 50 rows 100 cols
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 100"], readfile("XTestWinResizeResult"))})
+
+  " SIGWINCH handler should be uninstalled
+  call job_stop(term_getjob(buf), 28)
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 100"], readfile("XTestWinResizeResult"))})
+
+  " SIGWINCH handler should be reinstalled again
+  call term_sendkeys(buf, "\<Esc>:set termresize=sigwinch\<CR>")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["15 20"], readfile("XTestWinResizeResult"))})
+
+  call term_sendkeys(buf, "\<Esc>:set termresize=\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;30;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 30"], readfile("XTestWinResizeResult"))})
+
+  " Simulate no support for in-band window resize
+  call term_sendkeys(buf, "\<Esc>[?2048;0$y")
+  call TermWait(buf)
+
+  " Should reinstall SIGWINCH handler
+  call WaitForAssert({-> assert_equal(["15 20"], readfile("XTestWinResizeResult"))})
+
+  call term_setsize(buf, 5, 20)
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+
+  " Setting 'termresize' to "inband" should do nothing if support is not
+  " detected from terminal.
+  call term_sendkeys(buf, "\<Esc>:set termresize=inband\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

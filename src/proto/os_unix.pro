@@ -10,6 +10,7 @@ void mch_delay(long msec, int flags);
 int mch_stackcheck(char *p);
 void mch_suspend(void);
 void mch_init(void);
+void set_sigwinch_handler(void);
 void reset_signals(void);
 int vim_handle_signal(int sig);
 int mch_check_win(int argc, char **argv);

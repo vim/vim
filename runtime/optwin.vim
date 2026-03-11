@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Mar 04
+" Last Change:	2026 Mar 11
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -385,6 +385,10 @@ call <SID>AddOption("window", gettext("number of lines to scroll for CTRL-F and 
 call append("$", " \tset window=" . &window)
 call <SID>AddOption("lazyredraw", gettext("don't redraw while executing macros"))
 call <SID>BinOptionG("lz", &lz)
+if has("unix")
+  call <SID>AddOption("termresize", gettext("configure method of receiving terminal size changes"))
+  call <SID>BinOptionG("trz", &trz)
+endif
 call <SID>AddOption("termsync", gettext("enable terminal sync mode"))
 call <SID>BinOptionG("tsy", &tsy)
 if has("reltime")

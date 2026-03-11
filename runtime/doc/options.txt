@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9095,6 +9095,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:hi Normal guibg=NONE
 <
 	NOTE: This option is reset when 'compatible' is set.
+
+						*'termresize* *'trz'*
+'termresize' 'trz'	number	(default "")
+			global
+			{only available in Unix, does not work in the GUI}
+	Determines the method to use for detecting window resize events,
+	possible values are:
+	    "sigwinch":	    Use the SIGWINCH signal.
+	    "inband":	    Receive resize events from the terminal via escape
+			    sequences (recommended if supported by terminal).
+	    "":		    Automatically choose depending on terminal.
+
+	The SIGWINCH handler is always available.  If set to "inband" and the
+	terminal does not support in-band window resize events, then the
+	SIGWINCH handler will be used instead as a fallback.  If set to ""
+	(empty option), then "inband" will be used if Vim detects that the
+	terminal supports it, otherwise "sigwinch".
+
 
 						*'termsync'* *'tsy'*
 'termsync' 'tsy'	boolean (default off)
