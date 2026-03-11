@@ -7970,12 +7970,10 @@ term_set_win_resize(bool state)
 {
 # ifdef FEAT_GUI
     bool    in_gui = gui.in_use;
-# else
-    bool    in_gui = false;
-# endif
 
     if (state && in_gui)
 	return;
+# endif
 
     if (!state || win_resize_setting == 0 || win_resize_setting == 4)
     {
