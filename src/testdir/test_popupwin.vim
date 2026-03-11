@@ -4835,6 +4835,42 @@ func Test_popup_opacity_100_blocks_background()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_zero()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, repeat(['background text here'], 10))
+    hi BluePopup guibg=darkblue guifg=white
+    hi RedPopup guibg=darkred guifg=white
+
+    " Blue popup with opacity=50 (partially transparent)
+    call popup_create('blue popup', {
+        \ 'line': 3, 'col': 5,
+        \ 'highlight': 'BluePopup',
+        \ 'opacity': 50,
+        \ 'zindex': 1,
+        \ })
+
+    " Red popup with opacity=0 (fully transparent), overlapping the blue one
+    let g:pop_id = popup_create('red popup', {
+        \ 'line': 4, 'col': 8,
+        \ 'highlight': 'RedPopup',
+        \ 'opacity': 0,
+        \ 'zindex': 2,
+        \ })
+  END
+
+  call writefile(lines, 'XtestPopupOpacityZero', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityZero', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_zero_01', {})
+
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":echo popup_getoptions(g:pop_id)['opacity']\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_zero_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_getwininfo_tabnr()
   tab split
   let winid1 = popup_create('sup', #{tabpage: 1})

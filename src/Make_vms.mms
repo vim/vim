@@ -1468,8 +1468,8 @@ lua_env :
 [.$(DEST)]gui_gtk_x11.obj : gui_gtk_x11.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h option.h ex_cmds.h proto.h \
- errors.h globals.h gui_gtk_f.h [-.runtime]vim32x32.xpm \
- [-.runtime]vim16x16.xpm [-.runtime]vim48x48.xpm version.h
+ errors.h globals.h gui_gtk_f.h [-.runtime]vim32x32_png.h \
+ [-.runtime]vim16x16_png.h [-.runtime]vim48x48_png.h version.h
 [.$(DEST)]gui_x11.obj : gui_x11.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h option.h ex_cmds.h proto.h \

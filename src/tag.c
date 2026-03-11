@@ -745,6 +745,9 @@ do_tag(
 	else
 	{
 	    int ask_for_selection = FALSE;
+#if defined(FEAT_EVAL)
+	    size_t  IObufflen;
+#endif
 
 #ifdef FEAT_CSCOPE
 	    if (type == DT_CSCOPE && num_matches > 1)
@@ -880,8 +883,8 @@ do_tag(
 
 #if defined(FEAT_EVAL)
 	    // Let the SwapExists event know what tag we are jumping to.
-	    vim_snprintf((char *)IObuff, IOSIZE, ":ta %s\r", name);
-	    set_vim_var_string(VV_SWAPCOMMAND, IObuff, -1);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, ":ta %s\r", name);
+	    set_vim_var_string(VV_SWAPCOMMAND, IObuff, (int)IObufflen);
 #endif
 
 	    /*

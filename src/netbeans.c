@@ -2603,8 +2603,13 @@ netbeans_file_activated(buf_T *bufp)
 	return;
 
     q = nb_quote(bufp->b_ffname);
-    if (q == NULL || bp == NULL)
+    if (q == NULL)
 	return;
+    if (bp == NULL)
+    {
+	vim_free(q);
+	return;
+    }
 
     vim_snprintf(buffer, sizeof(buffer),  "%d:fileOpened=%d \"%s\" %s %s\n",
 	    bufno,

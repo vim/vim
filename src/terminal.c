@@ -2172,7 +2172,7 @@ for_all_windows_and_curwin(win_T **wp, int *did_curwin)
  * Terminal-Normal mode.
  * When "redraw" is TRUE redraw the windows that show the terminal.
  */
-    static void
+    void
 may_move_terminal_to_buffer(term_T *term, int redraw)
 {
     if (term->tl_vterm == NULL)
