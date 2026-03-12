@@ -5785,7 +5785,10 @@ handle_csi(
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 
-	set_shellsize(width, height, true);
+	// Only update if needed. Avoids intro message from disappearing on
+	// startup (due to initial event).
+	if (height != Rows || width != Columns)
+	    set_shellsize(width, height, true);
     }
 #endif
 
