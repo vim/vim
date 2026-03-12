@@ -9097,7 +9097,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termresize* *'trz'*
-'termresize' 'trz'	number	(default "")
+'termresize' 'trz'	string	(default "")
 			global
 			{only available in Unix, does not work in the GUI}
 	Determines the method to use for detecting window resize events,
