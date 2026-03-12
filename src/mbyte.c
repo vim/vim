@@ -1986,6 +1986,7 @@ utf_iscomposinglike_char(int c1, int c2)
 	return FALSE;
     return arabic_combine(c1, c2);
 #else
+    (void)c1;
     return FALSE;
 #endif
 }
