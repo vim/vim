@@ -144,6 +144,7 @@ exe_concat(int count, ectx_T *ectx)
     string_segment_T	fixed_string_segment_tab[NR_ROWS_SIZE_TAB];
     string_segment_T	*string_segment_tab = &fixed_string_segment_tab[0];	// an array of cached typevals and lengths
     string_segment_T    *segment;
+#undef NR_ROWS_SIZE_TAB
 
     if (count > (int)ARRAY_LENGTH(fixed_string_segment_tab))
     {
