@@ -42,6 +42,7 @@ static int leave_tabpage(buf_T *new_curbuf, int trigger_leave_autocmds);
 static void enter_tabpage(tabpage_T *tp, buf_T *old_curbuf, int trigger_enter_autocmds, int trigger_leave_autocmds);
 static void frame_fix_height(win_T *wp);
 static int frame_minheight(frame_T *topfrp, win_T *next_curwin);
+static int frame_wincount_in_height(frame_T *topfrp);
 static int may_open_tabpage(void);
 static int win_enter_ext(win_T *wp, int flags);
 static void win_free(win_T *wp, tabpage_T *tp);
@@ -54,8 +55,8 @@ static void win_goto_hor(int left, long count);
 static void frame_add_height(frame_T *frp, int n);
 static void last_status_rec(frame_T *fr, int statusline);
 #if defined(FEAT_STL_OPT)
-static void frame_change_statusline_height_rec(frame_T *frp,
-	bool actual_change);
+static int frame_find_global_stlh_rec(frame_T *frp, int h);
+static void frame_change_statusline_height_rec(frame_T *frp, int global_stlh);
 #endif
 static void frame_flatten(frame_T *frp);
 static void winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr);
@@ -99,8 +100,10 @@ static int close_disallowed = 0;
 static int frame_locked = 0;
 
 #if defined(FEAT_STL_OPT)
-static int stlo_mh = STATUS_HEIGHT;
-static int stlh_effort;
+// rendered height of global 'stl' (number of "%@" + 1)
+static int stl_rendered_height = 1;
+static int stlo_fh = FALSE;	    // "fixedheight" flag cache of global 'stlo'
+static int stlo_mh = STATUS_HEIGHT; // "maxheight" value cache of global 'stlo'
 #endif
 
 /*
@@ -1191,20 +1194,18 @@ win_split_ins(
 	    oldwin->w_status_height = statusline_height(oldwin);
 	    oldwin_height -= oldwin->w_status_height;
 	}
+	// Estimated stl height for the new window.
+	int new_win_stlh = need_status != 0 ? need_status
+			: statusline_height(new_wp != NULL ? new_wp : curwin);
 	if (new_size == 0)
-	{
-	    if (lastwin == firstwin && p_ls == 0)
-		new_size = (oldwin_height - statusline_height(oldwin) + 1) / 2;
-	    else
-		new_size = (oldwin_height - oldwin->w_status_height + 1) / 2;
-	}
-	if (new_size > available - minheight - statusline_height(oldwin))
-	    new_size = available - minheight - statusline_height(oldwin);
+	    new_size = (oldwin_height - new_win_stlh + 1) / 2;
+	if (new_size > available - minheight - new_win_stlh)
+	    new_size = available - minheight - new_win_stlh;
 	if (new_size < wmh1)
 	    new_size = wmh1;
 
 	// if it doesn't fit in the current window, need win_equal()
-	if (oldwin_height - new_size - statusline_height(oldwin) < p_wmh)
+	if (oldwin_height - new_size - new_win_stlh < p_wmh)
 	    do_equal = TRUE;
 
 	// We don't like to take lines for the new window from a
@@ -1486,6 +1487,11 @@ win_split_ins(
 
     /*
      * equalize the window sizes.
+     * Note: this win_equal() runs before get_winopts() changes the new
+     * window's statusline height (stlh).  If the new window's stlh differs
+     * from the estimate used for new_size (e.g. because it won't inherit a
+     * local 'statuslineopt' from the current window), get_winopts() will call
+     * win_equal() again after adjusting the stlh.
      */
     if (do_equal || dir != 0)
 	win_equal(wp, TRUE,
@@ -2232,7 +2238,7 @@ win_equal_rec(
 		    else
 			// These windows don't use up room.
 			totwincount -= (n + (fr->fr_next == NULL
-					       ? extra_sep : 0)) / (p_wmw + 1);
+					? extra_sep : 0)) / (p_wmw + 1);
 		    room -= new_size - n;
 		    if (room < 0)
 		    {
@@ -2328,15 +2334,7 @@ win_equal_rec(
 
 	if (dir != 'h')			// equalize frame heights
 	{
-	    // Compute maximum number of windows vertically in this frame.
-	    n = frame_minheight(topfr, NOWIN);
-	    // add one for the bottom window if it doesn't have a statusline
-	    if (row + height == cmdline_row && p_ls == 0)
-		extra_sep = statusline_height(NULL);
-	    else
-		extra_sep = 0;
-	    totwincount = (n + extra_sep) / (p_wmh
-		    + statusline_height(NULL));
+	    totwincount = frame_wincount_in_height(topfr);
 	    has_next_curwin = frame_has_win(topfr, next_curwin);
 
 	    /*
@@ -2369,14 +2367,14 @@ win_equal_rec(
 		    {
 			room += p_wh - p_wmh;
 			next_curwin_size = 0;
-			if (new_size < p_wh)
-			    new_size = p_wh;
+			// n + (p_wh - p_wmh) = frame_minheight(fr,
+			// next_curwin): min height for curwin.
+			if (new_size < n + (p_wh - p_wmh))
+			    new_size = n + (p_wh - p_wmh);
 		    }
 		    else
 			// These windows don't use up room.
-			totwincount -= (n + (fr->fr_next == NULL
-					? extra_sep : 0))
-				    / (p_wmh + statusline_height(NULL));
+			totwincount -= frame_wincount_in_height(fr);
 		    room -= new_size - n;
 		    if (room < 0)
 		    {
@@ -2426,8 +2424,7 @@ win_equal_rec(
 	    {
 		// Compute the maximum number of windows vert. in "fr".
 		n = frame_minheight(fr, NOWIN);
-		wincount = (n + (fr->fr_next == NULL ? extra_sep : 0))
-				/ (p_wmh + statusline_height(NULL));
+		wincount = frame_wincount_in_height(fr);
 		m = frame_minheight(fr, next_curwin);
 		if (has_next_curwin)
 		    hnc = frame_has_win(fr, next_curwin);
@@ -4396,6 +4393,40 @@ frame_minheight(frame_T *topfrp, win_T *next_curwin)
     }
 
     return m;
+}
+
+/*
+ * Compute the window count in height for frame "topfrp".
+ */
+static int
+frame_wincount_in_height(frame_T *topfrp)
+{
+    frame_T	*frp;
+    int		c = 0;
+    int		n;
+
+    if (topfrp->fr_win != NULL)
+	c = 1;
+    else if (topfrp->fr_layout == FR_ROW)
+    {
+	// get the max window count across all frames in this row
+	c = 0;
+	FOR_ALL_FRAMES(frp, topfrp->fr_child)
+	{
+	    n = frame_wincount_in_height(frp);
+	    if (n > c)
+		c = n;
+	}
+    }
+    else
+    {
+	// Sum the window counts for all frames in this column.
+	c = 0;
+	FOR_ALL_FRAMES(frp, topfrp->fr_child)
+	    c += frame_wincount_in_height(frp);
+    }
+
+    return c;
 }
 
 /*
@@ -7637,28 +7668,61 @@ last_status_rec(frame_T *fr, int statusline)
 
 #if defined(FEAT_STL_OPT)
 /*
- * Set a status line height to windows at the bottom of "frp".
- * Note: Does not check if there is room!
+ * Update the cached rendered height of 'statusline'.
+ * If "wp" is NULL, update the global stl_rendered_height using p_stl.
+ * If "wp" is non-NULL, update wp->w_stl_rendered_height using wp->w_p_stl.
  */
     void
-frame_change_statusline_height(void)
+update_stl_rendered_height(win_T *wp)
 {
-    tabpage_T	*tp;
+    char_u	*opt_name = (char_u *)"statusline";
+    char_u	*stl_val = (wp == NULL) ? p_stl : wp->w_p_stl;
+    int		opt_flags = (wp == NULL) ? 0 : OPT_LOCAL;
+    int		*height = (wp == NULL) ? &stl_rendered_height
+						: &wp->w_stl_rendered_height;
 
-    stlh_effort = stlo_mh;
-    FOR_ALL_TABPAGES(tp)
-	frame_change_statusline_height_rec(tp->tp_topframe, false);
-
-    stlo_mh = stlh_effort;
-    FOR_ALL_TABPAGES(tp)
-	frame_change_statusline_height_rec(tp->tp_topframe, true);
-
-    comp_col();
-    redraw_all_later(UPD_SOME_VALID);
+    *height = get_stl_rendered_height(wp == NULL ? curwin : wp, stl_val,
+					opt_name, opt_flags);
 }
 
+/*
+ * First pass: clamp the global statusline height against available space.
+ * Returns the space-constrained height.
+ */
+    static int
+frame_find_global_stlh_rec(frame_T *frp, int h)
+{
+    if (frp->fr_layout == FR_LEAF)
+    {
+	win_T  *wp = frp->fr_win;
+
+	// Only consider windows with a status line that use global stlo.
+	// Exclude windows at minimum height (w_height <= p_wmh): they can
+	// only afford 1 status line row anyway, and should not constrain
+	// the global stlh for larger windows (e.g. after CTRL-W__).
+	if (wp->w_height > p_wmh && wp->w_status_height > 0
+		&& *wp->w_p_stlo == NUL)
+	{
+	    int win_free_height = frp->fr_height - WINBAR_HEIGHT(wp);
+
+	    if (win_free_height - p_wmh < h)
+		h = win_free_height - p_wmh;
+	}
+    }
+    else
+    {
+	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
+	    h = frame_find_global_stlh_rec(frp, h);
+    }
+    return h;
+}
+
+/*
+ * Second pass: apply statusline heights.
+ * "global_stlh" is the space-constrained height for windows using global stlo.
+ */
     static void
-frame_change_statusline_height_rec(frame_T *frp, bool actual_change)
+frame_change_statusline_height_rec(frame_T *frp, int global_stlh)
 {
     if (frp->fr_layout == FR_LEAF)
     {
@@ -7668,34 +7732,68 @@ frame_change_statusline_height_rec(frame_T *frp, bool actual_change)
 	{
 	    int win_free_height = frp->fr_height - WINBAR_HEIGHT(wp);
 
-	    if (actual_change)
+	    wp->w_status_height = statusline_height(wp);
+	    if (wp->w_p_stlo == NULL || *wp->w_p_stlo == NUL)
 	    {
-		wp->w_status_height = stlo_mh;
-		if (wp->w_status_height > win_free_height - p_wmh)
-		{
-		    wp->w_status_height = win_free_height - p_wmh;
-		}
-		win_new_height(wp, win_free_height - wp->w_status_height);
+		// Global stlo: cap at the uniform space-constrained height so
+		// that all windows share the same status line height.
+		if (wp->w_status_height > global_stlh)
+		    wp->w_status_height = global_stlh;
 	    }
-	    else
-	    {
-		if (win_free_height - p_wmh < stlh_effort)
-		    stlh_effort = win_free_height - p_wmh;
-	    }
+	    if (wp->w_status_height > win_free_height - p_wmh)
+		wp->w_status_height = win_free_height - p_wmh;
+	    // Preserve the buffer view: statusline height changes should
+	    // not scroll the window.  win_new_height() calls
+	    // scroll_to_fraction() which adjusts w_topline; restore it
+	    // and let update_topline() handle cursor visibility for
+	    // curwin during redraw.
+	    linenr_T saved_topline = wp->w_topline;
+	    int	     saved_topfill = wp->w_topfill;
+	    win_new_height(wp, win_free_height - wp->w_status_height);
+	    wp->w_topline = saved_topline;
+	    wp->w_topfill = saved_topfill;
+	    wp->w_valid &= ~(VALID_WROW | VALID_CROW
+			     | VALID_BOTLINE | VALID_BOTLINE_AP);
 	}
     }
-    else if (frp->fr_layout == FR_ROW)
+    else
     {
-	// Handle all the frames in the row.
 	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
-	    frame_change_statusline_height_rec(frp, actual_change);
+	    frame_change_statusline_height_rec(frp, global_stlh);
     }
-    else // frp->fr_layout == FR_COL
-    {
-	// Handle all the frames in the column.
-	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
-	    frame_change_statusline_height_rec(frp, actual_change);
-    }
+}
+
+/*
+ * Adjust status line heights for all windows across all tab pages.
+ * Uses two passes: first finds the space-constrained global height,
+ * then applies appropriate heights to each window.
+ */
+    int
+frame_change_statusline_height(void)
+{
+    tabpage_T	*tp;
+    int		global_stlh;
+
+    // First pass: find space-constrained global height.
+    global_stlh = stlo_mh;
+    FOR_ALL_TABPAGES(tp)
+	global_stlh = frame_find_global_stlh_rec(tp->tp_topframe, global_stlh);
+
+    // Second pass: apply heights.
+    FOR_ALL_TABPAGES(tp)
+	frame_change_statusline_height_rec(tp->tp_topframe, global_stlh);
+    comp_col();
+    redraw_all_later(UPD_SOME_VALID);
+    return global_stlh;
+}
+
+/*
+ * Update the global maxheight cache for 'statuslineopt'.
+ */
+    void
+set_stlo_mh(int mh)
+{
+    stlo_mh = mh;
 }
 
 /*
@@ -7705,13 +7803,17 @@ frame_change_statusline_height_rec(frame_T *frp, bool actual_change)
  */
     int
 statuslineopt_changed(
-    char_u	*stlopt
-    )
+    char_u	*stlopt,	// when NULL: use "wp->w_p_stlo"
+    win_T	*wp)		// when NULL: update global stlo_fh/stlo_mh
 {
     char_u	*p;
+    int		l_stlo_fh = FALSE;
     int		l_stlo_mh = 1;
 
-    p = stlopt;
+    if (stlopt != NULL)
+	p = stlopt;
+    else
+	p = wp->w_p_stlo;
 
     while (*p != NUL)
     {
@@ -7723,34 +7825,75 @@ statuslineopt_changed(
 	    if (l_stlo_mh < 1)
 		return FAIL;
 	}
+	else if (STRNCMP(p, "fixedheight", 11) == 0)
+	{
+	    p += 11;
+	    l_stlo_fh = TRUE;
+	}
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
 	    ++p;
     }
 
-    stlo_mh = l_stlo_mh;
+    if (wp == NULL)
+    {
+	stlo_fh = l_stlo_fh;
+	stlo_mh = l_stlo_mh;
+    }
+    else
+    {
+	wp->w_p_stlo_fh = l_stlo_fh;
+	wp->w_p_stlo_mh = l_stlo_mh;
+    }
 
     return OK;
 }
 #endif
 
 /*
- * Return the number of lines used by the status line.
- * "wp" is not used currently because 'statuslineopt' is a global option.
- * NULL is passed when called from layout calculations (e.g. 'laststatus')
- * where no specific window context is available.
+ * Return the effective statusline height for window "wp".
+ * Uses the window-local 'statuslineopt' if set, otherwise the global one.
+ * When "wp" is NULL, always uses the global 'statuslineopt' settings.
  */
     int
 statusline_height(win_T *wp UNUSED)
 {
-    return
+    int stl_height = 1;
 #if defined(FEAT_STL_OPT)
-	stlo_mh
-#else
-	STATUS_HEIGHT
+    bool fixed;
+    int l_stl_rendered_height;
+
+    if (wp != NULL && *wp->w_p_stlo != NUL)
+    {
+	stl_height = wp->w_p_stlo_mh;
+	fixed = !!wp->w_p_stlo_fh;
+	l_stl_rendered_height = (*wp->w_p_stl != NUL)
+				    ? wp->w_stl_rendered_height
+				    : stl_rendered_height;
+    }
+    else
+    {
+	stl_height = stlo_mh;
+	fixed = !!stlo_fh;
+	l_stl_rendered_height = (wp != NULL && *wp->w_p_stl != NUL)
+				    ? wp->w_stl_rendered_height
+				    : stl_rendered_height;
+    }
+
+    // When not fixed, clamp to rendered height (1 for default statusline).
+    if (!fixed)
+    {
+	int has_custom_stl = (*p_stl != NUL)
+	    || (wp != NULL && *wp->w_p_stl != NUL);
+	if (has_custom_stl)
+	    stl_height = MAX(1, MIN(l_stl_rendered_height, stl_height));
+	else
+	    stl_height = 1;
+    }
 #endif
-	;
+
+    return stl_height;
 }
 
 /*

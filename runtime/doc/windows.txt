@@ -122,10 +122,9 @@ when the last window also has a status line:
 	'laststatus' = 1	status line if there is more than one window
 	'laststatus' = 2	always a status line
 
-You can change the contents of the status line with the 'statusline' option.
-This option can be local to the window, so that you can have a different
-status line in each window.
-You can change the height of the status line with the 'statuslineopt' option.
+You can change the contents and height of the status line with the
+'statusline' and 'statuslineopt' options.  Both can be local to the window,
+allowing each window to have a unique status line appearance and height.
 
 Normally, inversion is used to display the status line.  This can be changed
 with the 's' character in the 'highlight' option.  For example, "sb" sets it

@@ -97,7 +97,7 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     NULL};
 #endif
 #if defined(FEAT_STL_OPT)
-static char *(p_stlo_values[]) = {"maxheight:", NULL};
+static char *(p_stlo_values[]) = {"fixedheight", "maxheight:", NULL};
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
@@ -4215,13 +4215,87 @@ expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_statusline(optset_T *args)
 {
-    char *ret = parse_statustabline_rulerformat(args, FALSE);
+    char_u  **varp = (char_u **)args->os_varp;
+    char    *ret = parse_statustabline_rulerformat(args, FALSE);
 
     if (ret != NULL)
 	return ret;
+    update_stl_rendered_height(varp == &curwin->w_p_stl ? curwin : NULL);
     frame_change_statusline_height();
 
     return NULL;
+}
+
+/*
+ * Rewrite the 'statuslineopt' string: replace the last "maxheight:N" with
+ * actual_stlh and remove earlier duplicates.  Keyword order is preserved.
+ */
+    static void
+update_stlo_maxheight(char_u **varp, int actual_stlh)
+{
+    const char_u    *src = *varp;
+    const char_u    *last_mh = NULL;
+    const char_u    *p;
+
+    // Find the last "maxheight:" token.
+    p = src;
+    while (*p != NUL)
+    {
+	if (STRNCMP(p, "maxheight:", 10) == 0)
+	    last_mh = p;
+	while (*p != ',' && *p != NUL)
+	    ++p;
+	if (*p == ',')
+	    ++p;
+    }
+
+    if (last_mh == NULL)
+	return;
+
+    size_t	bufsize = STRLEN(src) + NUMBUFLEN + 1;
+    char_u	*buf = alloc(bufsize);
+    if (buf == NULL)
+	return;
+
+    int		len = 0;
+    bool	need_comma = false;
+
+    p = src;
+    while (*p != NUL)
+    {
+	const	char_u	*tok = p;
+	int	tok_len;
+
+	while (*p != ',' && *p != NUL)
+	    ++p;
+	tok_len = (int)(p - tok);
+	if (*p == ',')
+	    ++p;
+
+	if (STRNCMP(tok, "maxheight:", 10) == 0)
+	{
+	    if (tok == last_mh)
+	    {
+		// Replace the last occurrence with the actual value.
+		if (need_comma)
+		    buf[len++] = ',';
+		len += vim_snprintf((char *)buf + len,
+			bufsize - len, "maxheight:%d", actual_stlh);
+		need_comma = true;
+	    }
+	}
+	else
+	{
+	    if (need_comma)
+		buf[len++] = ',';
+	    mch_memmove(buf + len, tok, tok_len);
+	    len += tok_len;
+	    need_comma = true;
+	}
+    }
+    buf[len] = NUL;
+    free_string_option(*varp);
+    *varp = buf;
 }
 
 /*
@@ -4231,20 +4305,49 @@ did_set_statusline(optset_T *args)
 did_set_statuslineopt(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+    win_T       *wp = varp == &curwin->w_p_stlo ? curwin : NULL;
 
-    if (statuslineopt_changed(*varp) == FAIL)
+    if (statuslineopt_changed(*varp, wp) == FAIL)
 	return e_invalid_argument;
 
-    frame_change_statusline_height();
+    // Sync stl_rendered_height with the current statusline.
+    update_stl_rendered_height(wp);
 
+    // Update the maxheight value to the actual value set.
+    // Note: Must be changed if p_stlo_values are changed.
     if (*varp != empty_option)
     {
-	// Update the maxheight value to the actual value set.
-	// Note: Must be changed if p_stlo_values are changed.
-	free_string_option(*varp);
-	vim_snprintf((char *)IObuff, IOSIZE, "maxheight:%d",
-		statusline_height(NULL));
-	*varp = vim_strsave(IObuff);
+	int actual_stlh;
+
+	if (wp != NULL)
+	{
+	    frame_change_statusline_height();
+	    actual_stlh = MIN(wp->w_p_stlo_mh,
+		    wp->w_height + wp->w_status_height - p_wmh);
+	}
+	else
+	    actual_stlh = frame_change_statusline_height();
+
+	// Only re-serialize when the window actually has a status line shown.
+	if (actual_stlh > 0)
+	{
+	    update_stlo_maxheight(varp, actual_stlh);
+	    // Update the parsed maxheight member directly.
+	    if (wp != NULL)
+		wp->w_p_stlo_mh = actual_stlh;
+	    else
+		set_stlo_mh(actual_stlh);
+	}
+    }
+    else
+	frame_change_statusline_height();
+
+    if ((args->os_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+    {
+	// :set clears the local values.
+	clear_string_option(&curwin->w_p_stlo);
+	curwin->w_p_stlo_fh = -1;
+	curwin->w_p_stlo_mh = -1;
     }
 
     return NULL;
