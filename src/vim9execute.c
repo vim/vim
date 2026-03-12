@@ -172,7 +172,7 @@ exe_concat(int count, ectx_T *ectx)
 	    segment->length = 0;    // Ensure clean state for the second pass
     }
 
-    if (ga_grow(&ga, len + 1) == FAIL)
+    if (ga_grow(&ga, (int)len + 1) == FAIL)
     {
 	if (string_segment_tab != fixed_string_segment_tab)
 	    vim_free(string_segment_tab);
