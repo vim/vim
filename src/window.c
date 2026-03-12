@@ -7856,7 +7856,7 @@ statuslineopt_changed(
  * When "wp" is NULL, always uses the global 'statuslineopt' settings.
  */
     int
-statusline_height(win_T *wp)
+statusline_height(win_T *wp UNUSED)
 {
     int stl_height = 1;
 #if defined(FEAT_STL_OPT)
