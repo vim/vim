@@ -4409,7 +4409,7 @@ frame_wincount_in_height(frame_T *topfrp)
 	c = 1;
     else if (topfrp->fr_layout == FR_ROW)
     {
-	// get the minimal height from each frame in this row
+	// get the max window count across all frames in this row
 	c = 0;
 	FOR_ALL_FRAMES(frp, topfrp->fr_child)
 	{
@@ -4420,7 +4420,7 @@ frame_wincount_in_height(frame_T *topfrp)
     }
     else
     {
-	// Add up the minimal heights for all frames in this column.
+	// Sum the window counts for all frames in this column.
 	c = 0;
 	FOR_ALL_FRAMES(frp, topfrp->fr_child)
 	    c += frame_wincount_in_height(frp);
@@ -7851,11 +7851,12 @@ statuslineopt_changed(
 #endif
 
 /*
- * Return the number of status lines for window "wp".
- * When "wp" is NULL, return the global maximum height.
+ * Return the effective statusline height for window "wp".
+ * Uses the window-local 'statuslineopt' if set, otherwise the global one.
+ * When "wp" is NULL, always uses the global 'statuslineopt' settings.
  */
     int
-statusline_height(win_T *wp UNUSED)
+statusline_height(win_T *wp)
 {
     int stl_height = 1;
 #if defined(FEAT_STL_OPT)
