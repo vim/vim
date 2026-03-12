@@ -133,18 +133,20 @@ ufunc_argcount(ufunc_T *ufunc)
 exe_concat(int count, ectx_T *ectx)
 {
     int		idx;
-    int		len = 0;
+    size_t	len = 0;
     garray_T	ga;
-#define NR_ROWS_SIZE_TAB 10
     typedef struct
     {
 	typval_T    *tv;
 	size_t	    length;
     } string_segment_T;
-    string_segment_T	fixed_string_segment_tab[NR_ROWS_SIZE_TAB];
+    enum
+    {
+	STRING_SEGMENT_CACHE_SIZE = 10
+    };
+    string_segment_T	fixed_string_segment_tab[STRING_SEGMENT_CACHE_SIZE];
     string_segment_T	*string_segment_tab = &fixed_string_segment_tab[0];	// an array of cached typevals and lengths
     string_segment_T    *segment;
-#undef NR_ROWS_SIZE_TAB
 
     if (count > (int)ARRAY_LENGTH(fixed_string_segment_tab))
     {
@@ -164,8 +166,10 @@ exe_concat(int count, ectx_T *ectx)
 	if (segment->tv->vval.v_string != NULL)
 	{
 	    segment->length = STRLEN(segment->tv->vval.v_string);
-	    len += (int)segment->length;
+	    len += segment->length;
 	}
+	else
+	    segment->length = 0;    // Ensure clean state for the second pass
     }
 
     if (ga_grow(&ga, len + 1) == FAIL)
@@ -178,8 +182,7 @@ exe_concat(int count, ectx_T *ectx)
     for (idx = 0; idx < count; ++idx)
     {
 	segment = &string_segment_tab[idx];
-	if (segment->tv->vval.v_string != NULL)
-	    ga_concat_len(&ga, segment->tv->vval.v_string, (int)segment->length);
+	ga_concat_len(&ga, segment->tv->vval.v_string, segment->length);
 	clear_tv(segment->tv);
     }
 
