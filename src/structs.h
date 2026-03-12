@@ -4076,9 +4076,8 @@ struct window_S
 				    // (number of "%@" + 1)
     int		w_status_height;    // number of status lines.
 				    // If 'statuslineopt' was changed, this
-				    // member will be the previous value until
-				    // call function
-				    // frame_change_statusline_height().
+				    // member holds the previous value until
+				    // frame_change_statusline_height() calls.
     int		w_wincol;	    // Leftmost column of window in screen.
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).

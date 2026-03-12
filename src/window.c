@@ -2367,8 +2367,8 @@ win_equal_rec(
 		    {
 			room += p_wh - p_wmh;
 			next_curwin_size = 0;
-			// n + (p_wh - p_wmh) = frame_minheight(fr, next_curwin):
-			// total minimum height for curwin (p_wh content + stl).
+			// n + (p_wh - p_wmh) = frame_minheight(fr,
+			// next_curwin): min height for curwin.
 			if (new_size < n + (p_wh - p_wmh))
 			    new_size = n + (p_wh - p_wmh);
 		    }
@@ -7764,8 +7764,9 @@ frame_change_statusline_height_rec(frame_T *frp, int global_stlh)
 }
 
 /*
- * Set a status line height to windows at the bottom of "frp".
- * Note: Does not check if there is room!
+ * Adjust status line heights for all windows across all tab pages.
+ * Uses two passes: first finds the space-constrained global height,
+ * then applies appropriate heights to each window.
  */
     int
 frame_change_statusline_height(void)
@@ -7803,7 +7804,7 @@ set_stlo_mh(int mh)
     int
 statuslineopt_changed(
     char_u	*stlopt,	// when NULL: use "wp->w_p_stlo"
-    win_T	*wp)		// when NULL: only check "stlopt"
+    win_T	*wp)		// when NULL: update global stlo_fh/stlo_mh
 {
     char_u	*p;
     int		l_stlo_fh = FALSE;
@@ -7867,8 +7868,9 @@ statusline_height(win_T *wp UNUSED)
     {
 	stl_height = wp->w_p_stlo_mh;
 	fixed = !!wp->w_p_stlo_fh;
-	l_stl_rendered_height = (*wp->w_p_stl != NUL) ? wp->w_stl_rendered_height
-					       : stl_rendered_height;
+	l_stl_rendered_height = (*wp->w_p_stl != NUL)
+				    ? wp->w_stl_rendered_height
+				    : stl_rendered_height;
     }
     else
     {
