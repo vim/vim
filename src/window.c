@@ -7748,10 +7748,14 @@ frame_change_statusline_height_rec(frame_T *frp, int global_stlh)
 	    // and let update_topline() handle cursor visibility for
 	    // curwin during redraw.
 	    linenr_T saved_topline = wp->w_topline;
+# ifdef FEAT_DIFF
 	    int	     saved_topfill = wp->w_topfill;
+# endif
 	    win_new_height(wp, win_free_height - wp->w_status_height);
 	    wp->w_topline = saved_topline;
+# ifdef FEAT_DIFF
 	    wp->w_topfill = saved_topfill;
+# endif
 	    wp->w_valid &= ~(VALID_WROW | VALID_CROW
 			     | VALID_BOTLINE | VALID_BOTLINE_AP);
 	}
