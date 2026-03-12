@@ -668,7 +668,8 @@ dict_find(dict_T *d, char_u *key, int len)
     else
     {
 	// Avoid a malloc/free by using buf[].
-	vim_strncpy(buf, key, len);
+	mch_memmove(buf, key, (size_t)len);
+	buf[len] = NUL;
 	akey = buf;
     }
 
