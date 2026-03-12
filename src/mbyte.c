@@ -129,6 +129,9 @@ static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
 static int dbcs_head_off(char_u *base, char_u *p);
+static inline int utf_ptr2char_and_len(char_u *p, int *lenp);
+static inline int utf_ptr2char_and_len_len(char_u *p, int size, int *lenp);
+static inline int utf_iscomposinglike_char(int c1, int c2);
 #ifdef FEAT_EVAL
 static int cw_value(int c);
 #endif
@@ -1629,13 +1632,14 @@ utf_ptr2cells(
     char_u	*p)
 {
     int		c;
+    int		len;
 
     // Need to convert to a character number.
     if (*p >= 0x80)
     {
-	c = utf_ptr2char(p);
+	c = utf_ptr2char_and_len(p, &len);
 	// An illegal byte is displayed as <xx>.
-	if (utf_ptr2len(p) == 1 || c == NUL)
+	if (len == 1 || c == NUL)
 	    return 4;
 	// If the char is ASCII it must be an overlong sequence.
 	if (c < 0x80)
@@ -1670,15 +1674,16 @@ latin_ptr2cells_len(char_u *p UNUSED, int size UNUSED)
 utf_ptr2cells_len(char_u *p, int size)
 {
     int		c;
+    int		len;
 
     // Need to convert to a wide character.
     if (size > 0 && *p >= 0x80)
     {
-	if (utf_ptr2len_len(p, size) < utf8len_tab[*p])
+	c = utf_ptr2char_and_len_len(p, size, &len);
+	if (len > size)
 	    return 1;  // truncated
-	c = utf_ptr2char(p);
 	// An illegal byte is displayed as <xx>.
-	if (utf_ptr2len(p) == 1 || c == NUL)
+	if (len == 1 || c == NUL)
 	    return 4;
 	// If the char is ASCII it must be an overlong sequence.
 	if (c < 0x80)
@@ -1786,6 +1791,208 @@ dbcs_ptr2char(char_u *p)
 
 /*
  * Convert a UTF-8 byte sequence to a character number.
+ * Returns the character and sets "*lenp" to its byte length.
+ * Illegal bytes are returned as-is with a length of one.
+ */
+    static inline int
+utf_ptr2char_and_len(char_u *p, int *lenp)
+{
+    int		len;
+    int		c;
+
+    if (p[0] < 0x80)
+    {
+	*lenp = p[0] == NUL ? 0 : 1;
+	return p[0];
+    }
+
+    len = utf8len_tab_zero[p[0]];
+    if (len <= 1 || (p[1] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x1f) << 6) + (p[1] & 0x3f);
+    if (len == 2)
+    {
+	*lenp = 2;
+	return c;
+    }
+    if ((p[2] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x0f) << 12) + ((p[1] & 0x3f) << 6) + (p[2] & 0x3f);
+    if (len == 3)
+    {
+	*lenp = 3;
+	return c;
+    }
+    if ((p[3] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x07) << 18) + ((p[1] & 0x3f) << 12)
+				 + ((p[2] & 0x3f) << 6) + (p[3] & 0x3f);
+    if (len == 4)
+    {
+	*lenp = 4;
+	return c;
+    }
+    if ((p[4] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x03) << 24) + ((p[1] & 0x3f) << 18)
+				+ ((p[2] & 0x3f) << 12)
+				+ ((p[3] & 0x3f) << 6) + (p[4] & 0x3f);
+    if (len == 5)
+    {
+	*lenp = 5;
+	return c;
+    }
+    if ((p[5] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    *lenp = 6;
+    return ((p[0] & 0x01) << 30) + ((p[1] & 0x3f) << 24)
+				+ ((p[2] & 0x3f) << 18)
+				+ ((p[3] & 0x3f) << 12)
+				+ ((p[4] & 0x3f) << 6) + (p[5] & 0x3f);
+}
+
+/*
+ * Like utf_ptr2char_and_len(), but never reads beyond "size" bytes.
+ * For an incomplete sequence "*lenp" is set to the expected length.
+ */
+    static inline int
+utf_ptr2char_and_len_len(char_u *p, int size, int *lenp)
+{
+    int		len;
+    int		c;
+
+    if (size < 1)
+    {
+	*lenp = 1;
+	return NUL;
+    }
+    if (p[0] < 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    len = utf8len_tab_zero[p[0]];
+    if (len <= 1)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+    if (len > size)
+    {
+	int		i;
+
+	// Incomplete sequence: validate continuation bytes within range.
+	for (i = 1; i < size; ++i)
+	    if ((p[i] & 0xc0) != 0x80)
+	    {
+		*lenp = 1;
+		return p[0];
+	    }
+	*lenp = len;
+	return p[0];
+    }
+    if ((p[1] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x1f) << 6) + (p[1] & 0x3f);
+    if (len == 2)
+    {
+	*lenp = 2;
+	return c;
+    }
+    if ((p[2] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x0f) << 12) + ((p[1] & 0x3f) << 6) + (p[2] & 0x3f);
+    if (len == 3)
+    {
+	*lenp = 3;
+	return c;
+    }
+    if ((p[3] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x07) << 18) + ((p[1] & 0x3f) << 12)
+				 + ((p[2] & 0x3f) << 6) + (p[3] & 0x3f);
+    if (len == 4)
+    {
+	*lenp = 4;
+	return c;
+    }
+    if ((p[4] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    c = ((p[0] & 0x03) << 24) + ((p[1] & 0x3f) << 18)
+				+ ((p[2] & 0x3f) << 12)
+				+ ((p[3] & 0x3f) << 6) + (p[4] & 0x3f);
+    if (len == 5)
+    {
+	*lenp = 5;
+	return c;
+    }
+    if ((p[5] & 0xc0) != 0x80)
+    {
+	*lenp = 1;
+	return p[0];
+    }
+
+    *lenp = 6;
+    return ((p[0] & 0x01) << 30) + ((p[1] & 0x3f) << 24)
+				+ ((p[2] & 0x3f) << 18)
+				+ ((p[3] & 0x3f) << 12)
+				+ ((p[4] & 0x3f) << 6) + (p[5] & 0x3f);
+}
+
+    static inline int
+utf_iscomposinglike_char(int c1, int c2)
+{
+    if (utf_iscomposing(c2))
+	return TRUE;
+#ifdef FEAT_ARABIC
+    if (!arabic_maycombine(c2))
+	return FALSE;
+    return arabic_combine(c1, c2);
+#else
+    (void)c1;
+    return FALSE;
+#endif
+}
+
+/*
+ * Convert a UTF-8 byte sequence to a character number.
  * If the sequence is illegal or truncated by a NUL the first byte is
  * returned.
  * For an overlong sequence this may return zero.
@@ -1796,40 +2003,7 @@ utf_ptr2char(char_u *p)
 {
     int		len;
 
-    if (p[0] < 0x80)	// be quick for ASCII
-	return p[0];
-
-    len = utf8len_tab_zero[p[0]];
-    if (len > 1 && (p[1] & 0xc0) == 0x80)
-    {
-	if (len == 2)
-	    return ((p[0] & 0x1f) << 6) + (p[1] & 0x3f);
-	if ((p[2] & 0xc0) == 0x80)
-	{
-	    if (len == 3)
-		return ((p[0] & 0x0f) << 12) + ((p[1] & 0x3f) << 6)
-		    + (p[2] & 0x3f);
-	    if ((p[3] & 0xc0) == 0x80)
-	    {
-		if (len == 4)
-		    return ((p[0] & 0x07) << 18) + ((p[1] & 0x3f) << 12)
-			+ ((p[2] & 0x3f) << 6) + (p[3] & 0x3f);
-		if ((p[4] & 0xc0) == 0x80)
-		{
-		    if (len == 5)
-			return ((p[0] & 0x03) << 24) + ((p[1] & 0x3f) << 18)
-			    + ((p[2] & 0x3f) << 12) + ((p[3] & 0x3f) << 6)
-			    + (p[4] & 0x3f);
-		    if ((p[5] & 0xc0) == 0x80 && len == 6)
-			return ((p[0] & 0x01) << 30) + ((p[1] & 0x3f) << 24)
-			    + ((p[2] & 0x3f) << 18) + ((p[3] & 0x3f) << 12)
-			    + ((p[4] & 0x3f) << 6) + (p[5] & 0x3f);
-		}
-	    }
-	}
-    }
-    // Illegal value, just return the first byte
-    return p[0];
+    return utf_ptr2char_and_len(p, &len);
 }
 
 /*
@@ -1953,25 +2127,29 @@ utfc_ptr2char(
     int		len;
     int		c;
     int		cc;
+    int		cc_len;
     int		i = 0;
 
-    c = utf_ptr2char(p);
-    len = utf_ptr2len(p);
+    c = utf_ptr2char_and_len(p, &len);
 
     // Only accept a composing char when the first char isn't illegal.
-    if ((len > 1 || *p < 0x80)
-	    && p[len] >= 0x80
-	    && UTF_COMPOSINGLIKE(p, p + len))
+    if ((len > 1 || *p < 0x80) && p[len] >= 0x80)
     {
-	cc = utf_ptr2char(p + len);
-	for (;;)
+	cc = utf_ptr2char_and_len(p + len, &cc_len);
+	if (utf_iscomposinglike_char(c, cc))
 	{
-	    pcc[i++] = cc;
-	    if (i == MAX_MCO)
-		break;
-	    len += utf_ptr2len(p + len);
-	    if (p[len] < 0x80 || !utf_iscomposing(cc = utf_ptr2char(p + len)))
-		break;
+	    for (;;)
+	    {
+		pcc[i++] = cc;
+		if (i == MAX_MCO)
+		    break;
+		len += cc_len;
+		if (p[len] < 0x80)
+		    break;
+		cc = utf_ptr2char_and_len(p + len, &cc_len);
+		if (!utf_iscomposing(cc))
+		    break;
+	    }
 	}
     }
 
@@ -1994,27 +2172,28 @@ utfc_ptr2char_len(
     int		len;
     int		c;
     int		cc;
+    int		cc_len;
     int		i = 0;
 
-    c = utf_ptr2char(p);
-    len = utf_ptr2len_len(p, maxlen);
+    c = utf_ptr2char_and_len_len(p, maxlen, &len);
     // Only accept a composing char when the first char isn't illegal.
-    if ((len > 1 || *p < 0x80)
-	    && len < maxlen
-	    && p[len] >= 0x80
-	    && UTF_COMPOSINGLIKE(p, p + len))
+    if ((len > 1 || *p < 0x80) && len < maxlen && p[len] >= 0x80)
     {
-	cc = utf_ptr2char(p + len);
-	for (;;)
+	cc = utf_ptr2char_and_len_len(p + len, maxlen - len, &cc_len);
+	if (cc_len <= maxlen - len && utf_iscomposinglike_char(c, cc))
 	{
-	    pcc[i++] = cc;
-	    if (i == MAX_MCO)
-		break;
-	    len += utf_ptr2len_len(p + len, maxlen - len);
-	    if (len >= maxlen
-		    || p[len] < 0x80
-		    || !utf_iscomposing(cc = utf_ptr2char(p + len)))
-		break;
+	    for (;;)
+	    {
+		pcc[i++] = cc;
+		if (i == MAX_MCO)
+		    break;
+		len += cc_len;
+		if (len >= maxlen || p[len] < 0x80)
+		    break;
+		cc = utf_ptr2char_and_len_len(p + len, maxlen - len, &cc_len);
+		if (cc_len > maxlen - len || !utf_iscomposing(cc))
+		    break;
+	    }
 	}
     }
 
@@ -2057,14 +2236,8 @@ utfc_char2bytes(int off, char_u *buf)
 utf_ptr2len(char_u *p)
 {
     int		len;
-    int		i;
 
-    if (*p == NUL)
-	return 0;
-    len = utf8len_tab[*p];
-    for (i = 1; i < len; ++i)
-	if ((p[i] & 0xc0) != 0x80)
-	    return 1;
+    utf_ptr2char_and_len(p, &len);
     return len;
 }
 
@@ -2102,19 +2275,8 @@ utf_byte2len_zero(int b)
 utf_ptr2len_len(char_u *p, int size)
 {
     int		len;
-    int		i;
-    int		m;
 
-    len = utf8len_tab[*p];
-    if (len == 1)
-	return 1;	// NUL, ascii or illegal lead byte
-    if (len > size)
-	m = size;	// incomplete byte sequence.
-    else
-	m = len;
-    for (i = 1; i < m; ++i)
-	if ((p[i] & 0xc0) != 0x80)
-	    return 1;
+    utf_ptr2char_and_len_len(p, size, &len);
     return len;
 }
 
@@ -2127,10 +2289,10 @@ utf_ptr2len_len(char_u *p, int size)
 utfc_ptr2len(char_u *p)
 {
     int		len;
+    int		c;
+    int		cc;
+    int		cc_len;
     int		b0 = *p;
-#ifdef FEAT_ARABIC
-    int		prevlen;
-#endif
 
     if (b0 == NUL)
 	return 0;
@@ -2138,7 +2300,7 @@ utfc_ptr2len(char_u *p)
 	return 1;
 
     // Skip over first UTF-8 char, stopping at a NUL byte.
-    len = utf_ptr2len(p);
+    c = utf_ptr2char_and_len(p, &len);
 
     // Check for illegal byte.
     if (len == 1 && b0 >= 0x80)
@@ -2148,19 +2310,22 @@ utfc_ptr2len(char_u *p)
      * Check for composing characters.  We can handle only the first six, but
      * skip all of them (otherwise the cursor would get stuck).
      */
-#ifdef FEAT_ARABIC
-    prevlen = 0;
-#endif
+    if (p[len] < 0x80)
+	return len;
+
+    cc = utf_ptr2char_and_len(p + len, &cc_len);
+    if (!utf_iscomposinglike_char(c, cc))
+	return len;
+
     for (;;)
     {
-	if (p[len] < 0x80 || !UTF_COMPOSINGLIKE(p + prevlen, p + len))
-	    return len;
-
 	// Skip over composing char
-#ifdef FEAT_ARABIC
-	prevlen = len;
-#endif
-	len += utf_ptr2len(p + len);
+	len += cc_len;
+	if (p[len] < 0x80)
+	    return len;
+	cc = utf_ptr2char_and_len(p + len, &cc_len);
+	if (!utf_iscomposing(cc))
+	    return len;
     }
 }
 
@@ -2174,9 +2339,9 @@ utfc_ptr2len(char_u *p)
 utfc_ptr2len_len(char_u *p, int size)
 {
     int		len;
-#ifdef FEAT_ARABIC
-    int		prevlen;
-#endif
+    int		c;
+    int		cc;
+    int		cc_len;
 
     if (size < 1 || *p == NUL)
 	return 0;
@@ -2184,7 +2349,7 @@ utfc_ptr2len_len(char_u *p, int size)
 	return 1;
 
     // Skip over first UTF-8 char, stopping at a NUL byte.
-    len = utf_ptr2len_len(p, size);
+    c = utf_ptr2char_and_len_len(p, size, &len);
 
     // Check for illegal byte and incomplete byte sequence.
     if ((len == 1 && p[0] >= 0x80) || len > size)
@@ -2194,32 +2359,24 @@ utfc_ptr2len_len(char_u *p, int size)
      * Check for composing characters.  We can handle only the first six, but
      * skip all of them (otherwise the cursor would get stuck).
      */
-#ifdef FEAT_ARABIC
-    prevlen = 0;
-#endif
+    if (len >= size || p[len] < 0x80)
+	return len;
+
+    cc = utf_ptr2char_and_len_len(p + len, size - len, &cc_len);
+    if (cc_len > size - len || !utf_iscomposinglike_char(c, cc))
+	return len;
+
     while (len < size)
     {
-	int	len_next_char;
-
-	if (p[len] < 0x80)
-	    break;
-
-	/*
-	 * Next character length should not go beyond size to ensure that
-	 * UTF_COMPOSINGLIKE(...) does not read beyond size.
-	 */
-	len_next_char = utf_ptr2len_len(p + len, size - len);
-	if (len_next_char > size - len)
-	    break;
-
-	if (!UTF_COMPOSINGLIKE(p + prevlen, p + len))
-	    break;
-
 	// Skip over composing char
-#ifdef FEAT_ARABIC
-	prevlen = len;
-#endif
-	len += len_next_char;
+	len += cc_len;
+	if (len >= size || p[len] < 0x80)
+	    break;
+	cc = utf_ptr2char_and_len_len(p + len, size - len, &cc_len);
+	if (cc_len > size - len)
+	    break;
+	if (!utf_iscomposing(cc))
+	    break;
     }
     return len;
 }
