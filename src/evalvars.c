@@ -2150,9 +2150,14 @@ do_unlet_var(
     else if (lp->ll_list != NULL)
 	// unlet a List item.
 	listitem_remove(lp->ll_list, lp->ll_li);
-    else
+    else if (lp->ll_dict != NULL)
 	// unlet a Dictionary item.
 	dictitem_remove(lp->ll_dict, lp->ll_di, "unlet");
+    else
+    {
+	semsg(_(e_cannot_unlet_imported_item_str), lp->ll_name);
+	return FAIL;
+    }
 
     return ret;
 }

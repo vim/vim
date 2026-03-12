@@ -2869,6 +2869,26 @@ def Test_unlet()
   END
   v9.CheckScriptFailure(lines, 'E1260:', 1)
 
+  # unlet imported item at script level
+  lines =<< trim END
+    vim9script
+    import './XunletExport.vim' as exp
+    unlet exp.svar
+  END
+  v9.CheckScriptFailure(lines, 'E1260:', 3)
+
+  # unlet imported item in legacy function
+  lines =<< trim END
+    vim9script
+    import './XunletExport.vim' as exp
+    function F()
+      unlet exp.svar
+    endfunction
+    call F()
+  END
+  # error in line 1 of the F()
+  v9.CheckScriptFailure(lines, 'E1260:', 1)
+
   $ENVVAR = 'foobar'
   assert_equal('foobar', $ENVVAR)
   unlet $ENVVAR
