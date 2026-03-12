@@ -1900,6 +1900,15 @@ utf_ptr2char_and_len_len(char_u *p, int size, int *lenp)
     }
     if (len > size)
     {
+	int		i;
+
+	// Incomplete sequence: validate continuation bytes within range.
+	for (i = 1; i < size; ++i)
+	    if ((p[i] & 0xc0) != 0x80)
+	    {
+		*lenp = 1;
+		return p[0];
+	    }
 	*lenp = len;
 	return p[0];
     }
