@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2025 Dec 26
+# Last Change: 2026 Mar 11
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -1592,6 +1592,87 @@ def QuoteArg(x: string): string
   return printf('"%s"', x ->substitute('[\\"]', '\\&', 'g'))
 enddef
 
+def DefaultBreakpointLocation(): string
+  # Use the fname:lnum format, older gdb can't handle --source.
+  var fname = Remote2LocalPath(expand('%:p'))
+  return QuoteArg($"{fname}:{line('.')}")
+enddef
+
+def TokenizeBreakpointArguments(args: string): list<dict<any>>
+  var tokens: list<dict<any>> = []
+  var start = -1
+  var escaped = false
+  var in_quotes = false
+
+  var i = 0
+  for ch in args
+    if start < 0 && ch !~ '\s'
+      start = i
+    endif
+    if start >= 0
+      if escaped
+        escaped = false
+      elseif ch == '\'
+        escaped = true
+      elseif ch == '"'
+        in_quotes = !in_quotes
+      elseif !in_quotes && ch =~ '\s'
+        tokens->add({text: args[start : i - 1], start: start, end: i - 1})
+        start = -1
+      endif
+    endif
+    i += 1
+  endfor
+
+  if start >= 0
+    tokens->add({text: args[start :], start: start, end: i - 1})
+  endif
+  return tokens
+enddef
+
+def BuildBreakpointCommand(at: string, tbreak=false): string
+  var args = trim(at)
+  var cmd = '-break-insert'
+  if tbreak
+    cmd ..= ' -t'
+  endif
+
+  if empty(args)
+    return $'{cmd} {DefaultBreakpointLocation()}'
+  endif
+
+  var condition = ''
+  var prefix = args
+  for token in TokenizeBreakpointArguments(args)
+    if token.text == 'if' && token.end < strchars(args) - 1
+      condition = trim(args[token.end + 1 :])
+      prefix = token.start > 0 ? trim(args[: token.start - 1]) : ''
+      break
+    endif
+  endfor
+
+  var prefix_tokens = TokenizeBreakpointArguments(prefix)
+  var location = prefix
+  var thread = ''
+  if len(prefix_tokens) >= 2
+      && prefix_tokens[-2].text == 'thread'
+      && prefix_tokens[-1].text =~ '^\d\+$'
+    thread = prefix_tokens[-1].text
+    location = join(prefix_tokens[: -3]->mapnew('v:val.text'), ' ')
+  endif
+
+  if empty(trim(location))
+    location = DefaultBreakpointLocation()
+  endif
+  if !empty(thread)
+    cmd ..= $' -p {thread}'
+  endif
+  if !empty(condition)
+    cmd ..= $' -c {QuoteArg(condition)}'
+  endif
+  return $'{cmd} {trim(location)}'
+enddef
+
 # :Until - Execute until past a specified position or current line
 def Until(at: string)
 
@@ -1620,15 +1701,7 @@ def SetBreakpoint(at: string, tbreak=false)
     sleep 10m
   endif
 
-  # Use the fname:lnum format, older gdb can't handle --source.
-  var fname = Remote2LocalPath(expand('%:p'))
-  var AT = empty(at) ? QuoteArg($"{fname}:{line('.')}") : at
-  var cmd = ''
-  if tbreak
-    cmd = $'-break-insert -t {AT}'
-  else
-    cmd = $'-break-insert {AT}'
-  endif
+  var cmd = BuildBreakpointCommand(at, tbreak)
   SendCommand(cmd)
   if do_continue
     ContinueCommand()
