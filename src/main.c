@@ -892,8 +892,6 @@ vim_main2(void)
     may_req_termresponse();
 
     may_req_bg_color();
-
-    may_req_dec_setting();
 # endif
 
     // start in insert mode

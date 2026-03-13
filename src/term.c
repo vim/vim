@@ -130,14 +130,6 @@ static termrequest_T u7_status = TERMREQUEST_INIT;
 // Request xterm compatibility check:
 static termrequest_T xcc_status = TERMREQUEST_INIT;
 
-// Request synchronized output report
-static termrequest_T sync_output_status = TERMREQUEST_INIT;
-
-#ifdef UNIX
-// Request in-band window resize events report
-static termrequest_T win_resize_status = TERMREQUEST_INIT;
-#endif
-
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_TERMINAL
 // Request foreground color report:
@@ -173,10 +165,6 @@ static termrequest_T *all_termrequests[] = {
     &rbm_status,
     &rcs_status,
     &winpos_status,
-    &sync_output_status,
-# ifdef UNIX
-    &win_resize_status,
-# endif
     NULL
 };
 
@@ -685,6 +673,25 @@ static tcap_entry_T builtin_kitty[] = {
     {(int)KS_RBG,	"\033]11;?\033\\"},
 
     {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * Additions for enabling/disabling synchronized output mode for terminal.
+ */
+static tcap_entry_T builtin_sync_output[] = {
+    {(int)KS_BSU,	"\033[?2026h"},
+    {(int)KS_ESU,	"\033[?2026l"},
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * List of DECRQM modes that Vim supports
+ */
+static int dec_modes[] = {
+    2026,   // Synchronized output
+#ifdef UNIX
+    2048    // In-band terminal resize events
+#endif
 };
 
 #ifdef FEAT_TERMGUICOLORS
@@ -2202,6 +2209,8 @@ set_termname(char_u *term)
 #ifdef HAVE_TGETENT
 	if (term_strings_not_set(KS_CF))
 	    apply_builtin_tcap(term, special_term, TRUE);
+	if (term_strings_not_set(KS_BSU) && term_strings_not_set(KS_ESU))
+	    apply_builtin_tcap(term, builtin_sync_output, TRUE);
 #endif
     }
 
@@ -2221,14 +2230,6 @@ set_termname(char_u *term)
     if (strstr((char *)term, "kitty") != NULL
 					   && (T_CRV == NULL || *T_CRV == NUL))
 	T_CRV = (char_u *)"\033[>c";
-
-    // These are the DECSET/DECRESET codes for synchronized output. iTerm
-    // supports another way, but this is the de facto standard terminal codes
-    // that are used (from what I can tell - 64bitman).
-    if (T_BSU == NULL || T_BSU == empty_option)
-	T_BSU = (char_u *)"\033[?2026h";
-    if (T_ESU == NULL || T_ESU == empty_option)
-	T_ESU = (char_u *)"\033[?2026l";
 
 #ifdef UNIX
 /*
@@ -4048,6 +4049,13 @@ starttermcap(void)
 	out_str(T_FE);
 #endif
 
+    // Request setting of relevant DEC modes via DECRQM
+    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+	out_str(IObuff);
+    }
+
     out_flush();
     termcap_active = TRUE;
     screen_start();			// don't know where cursor is now
@@ -5757,13 +5765,11 @@ handle_csi(
 	    {
 		case 2026:
 		    sync_output_setting = setting;
-		    sync_output_status.tr_progress = STATUS_GOT;
 		    set_option_value_give_err((char_u *)"termsync",
 			    setting == 1 || setting == 2, NULL, 0);
 		    break;
 #ifdef UNIX
 		case 2048:
-		    win_resize_status.tr_progress = STATUS_GOT;
 		    win_resize_setting = setting;
 
 		    term_set_win_resize(true);
@@ -7895,52 +7901,6 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
     }
     return len;
 }
-
-#ifdef FEAT_TERMRESPONSE
-/*
- * Query the setting for the following DEC modes from the terminal:
- * - DEC mode 2026 (synchronized output)
- * - DEC mode 2048 (window resize events)
- */
-    void
-may_req_dec_setting(void)
-{
-    if (can_get_termresponse() && starting == 0)
-    {
-	bool didit = false;
-
-	if (sync_output_status.tr_progress == STATUS_GET)
-	{
-	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR1("Sending synchronized output request");
-
-	    out_str((char_u *)"\033[?2026$p");
-	    termrequest_sent(&sync_output_status);
-	    didit = true;
-	}
-
-# ifdef UNIX
-	if (win_resize_status.tr_progress == STATUS_GET)
-	{
-	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR1("Sending in-band window resize events request");
-
-	    out_str((char_u *)"\033[?2048$p");
-	    termrequest_sent(&win_resize_status);
-	    didit = true;
-	}
-# endif
-
-	if (didit)
-	{
-	    // check for the characters now, otherwise they might be eaten by
-	    // get_keystroke()
-	    out_flush();
-	    (void)vpeekc_nomap();
-	}
-    }
-}
-#endif
 
 /*
  * Should be called when cleaning up terminal state.

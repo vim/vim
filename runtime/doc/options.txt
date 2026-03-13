@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 12
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9144,10 +9144,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The specification can be found at:
 	https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
 
-	Vim may set this option automatically at startup time when Vim is
-	compiled with the |+termresponse| feature, by querying the terminal
-	for DEC mode 2026 support.  The terminal codes used are |t_BS| and
-	|t_ES|.
+	The terminal codes used are |t_BS| and |t_ES|.
 
 						*'termwinkey'* *'twk'*
 'termwinkey' 'twk'	string	(default "")
