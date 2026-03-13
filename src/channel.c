@@ -4191,9 +4191,10 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 		sprintf((char *)namebuf, "%s:%d",
 		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
 		    ntohs(((struct sockaddr_in*)&client)->sin_port));
+	    else if (client.ss_family == AF_UNIX)
+		sprintf((char *)namebuf, "unix:anonymous");
 	    else
-		sprintf((char *)namebuf, "unix:%s",
-		    ((struct sockaddr_un*)&client)->sun_path);
+		sprintf((char *)namebuf, "unknown");
 	    ++safe_to_invoke_callback;
 	    ++newchannel->ch_refcount;
 	    argv[0].v_type = VAR_CHANNEL;
