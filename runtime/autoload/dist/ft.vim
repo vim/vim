@@ -195,6 +195,7 @@ export def FTcl()
   endif
 enddef
 
+# Determines whether a *.cls file is ObjectScript, TeX, Rexx, Visual Basic, or Smalltalk.
 export def FTcls()
   if exists("g:filetype_cls")
     exe "setf " .. g:filetype_cls
@@ -211,9 +212,6 @@ export def FTcls()
   endif
 
   var nonblank1 = getline(nextnonblank(1))
-
-  # ObjectScript class files can start with Import/Include/IncludeGenerator.
-  # Skip those declarations and inspect the next relevant line.
   var lnum = nextnonblank(1)
   while lnum > 0 && lnum <= line("$")
     var line = getline(lnum)
