@@ -2991,6 +2991,16 @@ func Test_term_win_resize()
 
   call WaitForAssert({-> assert_equal(["50 100"], readfile("XTestWinResizeResult"))})
 
+  " Test that screen is only resized if it actually changed in width or height.
+  call term_sendkeys(buf, "\<Esc>:intro\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  " call delete("tmp.dump")
+  " call term_dumpwrite(buf, "tmp.dump")
+
   " SIGWINCH handler should be uninstalled
   call job_stop(term_getjob(buf), 28)
   call TermWait(buf)
