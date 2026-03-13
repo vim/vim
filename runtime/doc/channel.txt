@@ -666,7 +666,9 @@ ch_listen({address} [, {options}])				*ch_listen()*
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} has the form "hostname:port", e.g.,
-		"localhost:8765" or ":8765".
+{address} is a String, see |channel-address| for the possible accepted forms.
+
+
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
