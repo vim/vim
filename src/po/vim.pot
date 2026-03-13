@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-11 20:02+0000\n"
+"POT-Creation-Date: 2026-03-13 18:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8846,6 +8846,12 @@ msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr ""
 
 msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
+msgstr ""
+
+msgid "E1573: Cannot listen on port"
+msgstr ""
+
+msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
 msgstr ""
 
 #. type of cmdline window or 0

@@ -2083,6 +2083,8 @@ static const funcentry_T global_functions[] =
 			ret_job,	    JOB_FUNC(f_ch_getjob)},
     {"ch_info",		1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_dict_any,	    JOB_FUNC(f_ch_info)},
+    {"ch_listen",	1, 2, FEARG_1,	    arg2_string_dict,
+			ret_channel,	    JOB_FUNC(f_ch_listen)},
     {"ch_log",		1, 2, FEARG_1,	    arg2_string_chan_or_job,
 			ret_void,	    f_ch_log},
     {"ch_logfile",	1, 2, FEARG_1,	    arg2_string,

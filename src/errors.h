@@ -3807,3 +3807,9 @@ EXTERN char e_no_redraw_listener_callbacks_defined[]
 #endif
 EXTERN char e_leadtab_requires_tab[]
 	INIT(= N_("E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"));
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char e_cannot_listen_on_port[]
+	INIT(= N_("E1573: Cannot listen on port"));
+EXTERN char e_gethostbyname_in_channel_listen[]
+	INIT(= N_("E1574: gethostbyname(): cannot resolve hostname in channel_listen()"));
+#endif

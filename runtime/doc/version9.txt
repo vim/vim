@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 12
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52605,6 +52605,10 @@ Changed~
 Added ~
 -----
 Various syntax, indent and other plugins were added.
+
+Functions: ~
+
+|ch_listen()|		listen on {address}
 
 Autocommands: ~
 

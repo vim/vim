@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.2.  Last change: 2026 Feb 25
+*channel.txt*	For Vim version 9.2.  Last change: 2026 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,6 +113,32 @@ When trying out channels it's useful to see what is going on.  You can tell
 Vim to write lines in log file: >
 	call ch_logfile('channellog', 'w')
 See |ch_logfile()|.
+
+You can also make Vim act as a server using |ch_listen()|.  This does not
+require an external server program.
+
+							*channel-listen-demo*
+Start Vim and create a listening channel: >
+	func OnAccept(channel, clientaddr)
+	  " Log the connection
+	  echomsg "Accepted connection from " .. a:clientaddr
+
+	  " Get current time and send it to the client
+	  let current_time = strftime("%Y-%m-%d %H:%M:%S")
+	  call ch_sendraw(a:channel, "Vim Server Time: " .. current_time .. "\n")
+
+	  " Optional: close immediately if you only want to provide the time
+	  call ch_close(a:channel)
+	endfunc
+
+	" Start listening on port 8765
+	let server = ch_listen('localhost:8765', {"callback": "OnAccept"})
+
+From another Vim instance (or any program) you can connect to it: >
+	let channel = ch_open('localhost:8765')
+
+When done, close the server channel: >
+	call ch_close(server)
 
 ==============================================================================
 3. Opening a channel					*channel-open*
@@ -641,6 +667,33 @@ ch_info({handle})						*ch_info()*
 <
 		Return type: dict<any>
 
+ch_listen({address} [, {options}])		*E1573* *E1574* *ch_listen()*
+		Listen on {address} for incoming channel connections.
+		This creates a server-side channel, unlike |ch_open()|
+		which connects to an existing server.
+		Returns a Channel.  Use |ch_status()| to check for failure.
+
+		{address} is a String, see |channel-address| for the possible
+		accepted forms.  Note: IPv6 is not yet supported.
+
+		If {options} is given it must be a |Dictionary|.
+		See |channel-open-options|.
+		The "callback" in {options} is invoked when a new
+		connection is accepted.  It receives two arguments: the
+		new Channel and the client address as a String (e.g.
+		"127.0.0.1:12345").
+
+		Use |ch_open()| to connect to an existing server instead.
+
+		See |channel-listen-demo| for an example.
+
+		Can also be used as a |method|: >
+			GetAddress()->ch_listen()
+<
+		{only available when compiled with the |+channel| feature}
+
+		Return type: channel
+
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write String {msg} in the channel log file, if it was opened
 		with |ch_logfile()|.
@@ -694,6 +747,9 @@ ch_open({address} [, {options}])				*ch_open()*
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
+
+		Use |ch_listen()| to listen for incoming connections
+		instead.
 
 		Can also be used as a |method|: >
 			GetAddress()->ch_open()
