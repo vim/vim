@@ -1232,13 +1232,20 @@ convert_string(string_T *str, char_u *from, char_u *to, string_T *ret)
     static void
 blob_from_string(char_u *str, blob_T *blob)
 {
-    char_u  *p;
+    int	    len = (int)STRLEN(str);
+    char_u  *dest;
 
-    for (p = str; *p != NUL; ++p)
-    {
-	// Translate newlines in the string to NUL character
-	ga_append(&blob->bv_ga, (*p == NL) ? NUL : (int)*p);
-    }
+    if (len == 0)
+	return;
+    if (ga_grow(&blob->bv_ga, len) == FAIL)
+	return;
+    dest = (char_u *)blob->bv_ga.ga_data + blob->bv_ga.ga_len;
+    mch_memmove(dest, str, (size_t)len);
+    // Translate newlines in the string to NUL characters
+    for (int i = 0; i < len; ++i)
+	if (dest[i] == NL)
+	    dest[i] = NUL;
+    blob->bv_ga.ga_len += len;
 }
 
 /*
