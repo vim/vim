@@ -3962,6 +3962,11 @@ may_send_t_RK(void)
     void
 settmode(tmode_T tmode)
 {
+#ifdef FEAT_TERMRESPONSE
+    // Set when pending responses still exist after draining, so that any
+    // response bytes echoed in cooked mode are cleared on return to raw mode.
+    static int need_redraw_after_tmode_raw = FALSE;
+#endif
 #ifdef FEAT_GUI
     // don't set the term where gvim was started to any mode
     if (gui.in_use)
@@ -3990,7 +3995,20 @@ settmode(tmode_T tmode)
 	    // doesn't work in Cooked mode, an external program may get
 	    // them.
 	    if (tmode != TMODE_RAW && termrequest_any_pending())
+	    {
+		// Drain pending terminal responses before switching to cooked
+		// mode; tty echo would echo them to the screen.  Two rounds:
+		// round 1 for startup requests, round 2 for T_CRS/T_CRC
+		// triggered by the CRV response.
 		(void)vpeekc_nomap();
+		for (int i = 0; i < 2 && termrequest_any_pending(); ++i)
+		{
+		    mch_delay(10L, 0);
+		    (void)vpeekc_nomap();
+		}
+		if (termrequest_any_pending())
+		    need_redraw_after_tmode_raw = TRUE;
+	    }
 	    check_for_codes_from_term();
 	}
 #endif
@@ -4021,7 +4039,16 @@ settmode(tmode_T tmode)
 	mch_settmode(tmode);	// machine specific function
 	cur_tmode = tmode;
 	if (tmode == TMODE_RAW)
+	{
 	    setmouse();		// may switch mouse on
+#ifdef FEAT_TERMRESPONSE
+	    if (need_redraw_after_tmode_raw)
+	    {
+		need_redraw_after_tmode_raw = FALSE;
+		redraw_later_clear();  // clear echoed terminal responses
+	    }
+#endif
+	}
 	out_flush();
     }
 #ifdef FEAT_TERMRESPONSE
