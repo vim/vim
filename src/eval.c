@@ -2633,6 +2633,28 @@ tv_op_number(typval_T *tv1, typval_T *tv2, char_u *op)
 }
 
 /*
+ * Append string "s2" to the string in "tv1".
+ * Returns OK if "tv1" was grown in place, FAIL otherwise.
+ */
+    static int
+grow_string_tv(typval_T *tv1, char_u *s2)
+{
+    if (tv1->v_type != VAR_STRING || tv1->vval.v_string == NULL)
+	return FAIL;
+
+    size_t len1 = STRLEN(tv1->vval.v_string);
+    size_t len2 = STRLEN(s2);
+    char_u *p = vim_realloc(tv1->vval.v_string, len1 + len2 + 1);
+
+    if (p == NULL)
+	return FAIL;
+
+    mch_memmove(p + len1, s2, len2 + 1);
+    tv1->vval.v_string = p;
+    return OK;
+}
+
+/*
  * Handle "str1 .= str2"
  * Returns OK or FAIL.
  */
@@ -2648,20 +2670,8 @@ tv_op_string(typval_T *tv1, typval_T *tv2, char_u *op UNUSED)
 
     // str .= str
     s2 = tv_get_string_buf(tv2, numbuf);
-    if (tv1->v_type == VAR_STRING && tv1->vval.v_string != NULL)
-    {
-	size_t len1 = STRLEN(tv1->vval.v_string);
-	size_t len2 = STRLEN(s2);
-
-	s = vim_realloc(tv1->vval.v_string, len1 + len2 + 1);
-	if (s != NULL)
-	{
-	    mch_memmove(s + len1, s2, len2 + 1);
-	    tv1->vval.v_string = s;
-	    return OK;
-	}
-	// realloc() failed: fall back to allocating a new string.
-    }
+    if (grow_string_tv(tv1, s2) == OK)
+	return OK;
 
     s = tv_get_string(tv1);
     s = concat_str(s, s2);
@@ -4382,21 +4392,8 @@ eval_concat_str(typval_T *tv1, typval_T *tv2)
     }
 
     // When possible, grow the existing string in place to avoid alloc/free.
-    if (tv1->v_type == VAR_STRING && tv1->vval.v_string != NULL)
-    {
-	size_t len1 = STRLEN(tv1->vval.v_string);
-	size_t len2 = STRLEN(s2);
-
-	p = vim_realloc(tv1->vval.v_string, len1 + len2 + 1);
-	if (p != NULL)
-	{
-	    mch_memmove(p + len1, s2, len2 + 1);
-	    tv1->vval.v_string = p;
-	    return OK;
-	}
-	// realloc() failed: fall back to allocating a new string.
-	s1 = tv1->vval.v_string;
-    }
+    if (grow_string_tv(tv1, s2) == OK)
+	return OK;
 
     p = concat_str(s1, s2);
     clear_tv(tv1);
