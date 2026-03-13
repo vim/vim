@@ -120,10 +120,18 @@ require an external server program.
 							*channel-listen-demo*
 Start Vim and create a listening channel: >
 	func OnAccept(channel, clientaddr)
-	  " Invoked when a new connection is accepted.
-	  " a:channel is the new channel for the connection.
-	  " a:clientaddr is the client address, e.g. "127.0.0.1:12345".
+	  " Log the connection
+	  echomsg "Accepted connection from " .. a:clientaddr
+
+	  " Get current time and send it to the client
+	  let current_time = strftime("%Y-%m-%d %H:%M:%S")
+	  call ch_sendraw(a:channel, "Vim Server Time: " .. current_time .. "\n")
+
+	  " Optional: close immediately if you only want to provide the time
+	  call ch_close(a:channel)
 	endfunc
+
+	" Start listening on port 8765
 	let server = ch_listen('localhost:8765', {"callback": "OnAccept"})
 
 From another Vim instance (or any program) you can connect to it: >
