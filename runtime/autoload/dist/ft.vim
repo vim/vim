@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Feb 24
+# Last Change:		2026 Mar 13
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -195,6 +195,7 @@ export def FTcl()
   endif
 enddef
 
+# Determines whether a *.cls file is ObjectScript, TeX, Rexx, Visual Basic, or Smalltalk.
 export def FTcls()
   if exists("g:filetype_cls")
     exe "setf " .. g:filetype_cls
@@ -211,7 +212,20 @@ export def FTcls()
   endif
 
   var nonblank1 = getline(nextnonblank(1))
-  if nonblank1 =~ '^\v%(\%|\\)'
+  var lnum = nextnonblank(1)
+  while lnum > 0 && lnum <= line("$")
+    var line = getline(lnum)
+    if line =~? '^\s*\%(import\|include\|includegenerator\)\>'
+      lnum = nextnonblank(lnum + 1)
+    else
+      nonblank1 = line
+      break
+    endif
+  endwhile
+
+  if nonblank1 =~? '^\s*class\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s\+extends\>\|\s*\[\|\s*{\|$\)'
+    setf objectscript
+  elseif nonblank1 =~ '^\v%(\%|\\)'
     setf tex
   elseif nonblank1 =~ '^\s*\%(/\*\|::\w\)'
     setf rexx
