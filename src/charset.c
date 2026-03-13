@@ -1304,8 +1304,7 @@ win_lbr_chartabsize(
 	    textprop_T	*tp = cts->cts_text_props + i;
 	    int		col_off = win_col_off(wp);
 
-	    // If virtual text is set to overlay, then don't skip over the
-	    // virtual text.
+	    // Skip overlay virtual text
 	    if (tp->tp_flags & TP_FLAG_OVERLAY)
 		continue;
 

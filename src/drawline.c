@@ -1079,6 +1079,7 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->saved_overlay = wlv->overlay;
 	wlv->saved_overlay_indicator = wlv->overlay_indicator;
 	wlv->saved_overlay_n_chars = wlv->overlay_n_chars;
+
 #endif
 #ifdef FEAT_LINEBREAK
 	wlv->need_lbr = TRUE;
@@ -2125,7 +2126,7 @@ win_line(
 # ifdef FEAT_LINEBREAK
 			&& !in_linebreak
 # endif
-			)
+			&& !wlv.overlay)
 		    --bcol;  // still working on the previous char, e.g. Tab
 
 		// Check if any active property ends.
@@ -2134,9 +2135,9 @@ win_line(
 		    int		tpi = text_prop_idxs[pi];
 		    textprop_T  *tp = &text_props[tpi];
 
-		    // An inline property ends when after the start column plus
-		    // length. An "above" property ends when used and n_extra
-		    // is zero.
+		    // An inline/overlay property ends when after the start
+		    // column plus length. An "above" property ends when used
+		    // and n_extra is zero.
 		    if ((tp->tp_col != MAXCOL
 				       && bcol >= tp->tp_col - 1 + tp->tp_len))
 		    {
@@ -2147,6 +2148,9 @@ win_line(
 					     * (text_props_active - (pi + 1)));
 			--text_props_active;
 			--pi;
+
+			if (tp->tp_flags & TP_FLAG_OVERLAY)
+			    wlv.overlay = false;
 # ifdef FEAT_LINEBREAK
 			// not exactly right but should work in most cases
 			if (in_linebreak && syntax_attr == text_prop_attr_comb)
@@ -2165,7 +2169,11 @@ win_line(
 		{
 		    int active;
 		    textprop_T *tp = &text_props[text_prop_next];
-		    if (tp->tp_col == MAXCOL)
+
+		    if (tp->tp_flags & TP_FLAG_OVERLAY
+			    && tp->tp_col - 1 == bcol)
+			active = true;
+		    else if (tp->tp_col == MAXCOL)
 		    {
 			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
 			    active = TRUE;
@@ -2173,8 +2181,8 @@ win_line(
 			    break;
 			else
 			{
-			    // With 'nowrap' and not in the first screen line only "below"
-			    // text prop can show.
+			    // With 'nowrap' and not in the first screen line
+			    // only "below" text prop can show.
 			    active = wp->w_p_wrap
 				  || wlv.row == startrow
 				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
@@ -2205,11 +2213,12 @@ win_line(
 		    text_prop_id = 0;
 		    reset_extra_attr = FALSE;
 		}
-		if (text_props_active > 0 && wlv.n_extra == 0)
+		if (text_props_active > 0
+			&& (wlv.n_extra == 0 || wlv.overlay))
 		{
-		    int used_tpi = -1;
-		    int used_attr = 0;
-		    int other_tpi = -1;
+		    int	used_tpi = -1;
+		    int	used_attr = 0;
+		    int	other_tpi = -1;
 
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
@@ -2310,6 +2319,7 @@ win_line(
 			    {
 				wlv.extra_for_textprop = TRUE;
 				wlv.start_extra_for_textprop = TRUE;
+				wlv.overlay = false;
 			    }
 			    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 								    used_attr);
