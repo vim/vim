@@ -689,7 +689,9 @@ static tcap_entry_T builtin_sync_output[] = {
  */
 static int dec_modes[] = {
     2026,   // Synchronized output
+#ifdef UNIX
     2048    // In-band terminal resize events
+#endif
 };
 
 #ifdef FEAT_TERMGUICOLORS
