@@ -2789,25 +2789,25 @@ func LspTests(port)
       call ch_log('Test_listen_invalid_address()')
 
       " empty address
-      call assert_fails("call ch_listen('')", 'E474:')
+      call assert_fails("call ch_listen('')", 'E475:')
 
       " missing port
-      call assert_fails("call ch_listen('localhost')", 'E474:')
+      call assert_fails("call ch_listen('localhost')", 'E475:')
 
       " port number too large
-      call assert_fails("call ch_listen('localhost:99999')", 'E474:')
+      call assert_fails("call ch_listen('localhost:99999')", 'E475:')
 
       " port number zero
-      call assert_fails("call ch_listen('localhost:0')", 'E474:')
+      call assert_fails("call ch_listen('localhost:0')", 'E475:')
 
       " port number negative
-      call assert_fails("call ch_listen('localhost:-1')", 'E474:')
+      call assert_fails("call ch_listen('localhost:-1')", 'E475:')
 
       " invalid ipv6 format (missing closing bracket)
-      call assert_fails("call ch_listen('[::1:8765')", 'E474:')
+      call assert_fails("call ch_listen('[::1:8765')", 'E475:')
 
       " invalid ipv6 format (missing port)
-      call assert_fails("call ch_listen('[::1]')", 'E474:')
+      call assert_fails("call ch_listen('[::1]')", 'E475:')
   endfunc
 
   func Test_channel_lsp_mode()
