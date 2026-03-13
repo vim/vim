@@ -133,28 +133,57 @@ ufunc_argcount(ufunc_T *ufunc)
 exe_concat(int count, ectx_T *ectx)
 {
     int		idx;
-    int		len = 0;
-    typval_T	*tv;
+    size_t	len = 0;
     garray_T	ga;
+    typedef struct
+    {
+	typval_T    *tv;
+	size_t	    length;
+    } string_segment_T;
+    enum
+    {
+	STRING_SEGMENT_CACHE_SIZE = 10
+    };
+    string_segment_T	fixed_string_segment_tab[STRING_SEGMENT_CACHE_SIZE];
+    string_segment_T	*string_segment_tab = &fixed_string_segment_tab[0];	// an array of cached typevals and lengths
+    string_segment_T    *segment;
+
+    if (count > (int)ARRAY_LENGTH(fixed_string_segment_tab))
+    {
+	// make an array big enough to store the length of each string segment
+	string_segment_tab = ALLOC_MULT(string_segment_T, count);
+	if (string_segment_tab == NULL)
+	    return FAIL;
+    }
 
     ga_init2(&ga, sizeof(char), 1);
     // Preallocate enough space for the whole string to avoid having to grow
     // and copy.
     for (idx = 0; idx < count; ++idx)
     {
-	tv = STACK_TV_BOT(idx - count);
-	if (tv->vval.v_string != NULL)
-	    len += (int)STRLEN(tv->vval.v_string);
+	segment = &string_segment_tab[idx];
+	segment->tv = STACK_TV_BOT(idx - count);
+	if (segment->tv->vval.v_string != NULL)
+	{
+	    segment->length = STRLEN(segment->tv->vval.v_string);
+	    len += segment->length;
+	}
+	else
+	    segment->length = 0;    // Ensure clean state for the second pass
     }
 
-    if (ga_grow(&ga, len + 1) == FAIL)
+    if (ga_grow(&ga, (int)len + 1) == FAIL)
+    {
+	if (string_segment_tab != fixed_string_segment_tab)
+	    vim_free(string_segment_tab);
 	return FAIL;
+    }
 
     for (idx = 0; idx < count; ++idx)
     {
-	tv = STACK_TV_BOT(idx - count);
-	ga_concat(&ga, tv->vval.v_string);
-	clear_tv(tv);
+	segment = &string_segment_tab[idx];
+	ga_concat_len(&ga, segment->tv->vval.v_string, segment->length);
+	clear_tv(segment->tv);
     }
 
     // add a terminating NUL
@@ -162,6 +191,9 @@ exe_concat(int count, ectx_T *ectx)
 
     ectx->ec_stack.ga_len -= count - 1;
     STACK_TV_BOT(-1)->vval.v_string = ga.ga_data;
+
+    if (string_segment_tab != fixed_string_segment_tab)
+	vim_free(string_segment_tab);
 
     return OK;
 }
