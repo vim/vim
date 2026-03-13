@@ -1618,6 +1618,40 @@ func Test_visual_hl_with_showbreak()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_visual_highlight_when_using_a_clipboard_provider()
+  " The test assumes different screen attributes will be used for Visual and for VisualNOS.
+  CheckFeature clipboard_provider
+  if exists('$DISPLAY')
+     throw 'Skipped: requires non-X11 setup ($DISPLAY must be empty)'
+  endif
+
+  func s:get_attr_for_first_char_in_buf()
+    let pos = screenpos(win_getid(), 1, 1)
+    call assert_true(pos.row > 0 && pos.col > 0)
+    redraw
+    return screenattr(pos.row, pos.col)
+  endfunc
+
+  new +0put='X'
+  call matchadd('Visual', '.')
+  const Visual_attr = s:get_attr_for_first_char_in_buf()
+  call clearmatches()
+
+  normal! V$
+
+  let v:clipproviders['custom'] = {}
+  set clipmethod=custom
+  " The following assert originally failed; VisualNOS, not Visual, was used.
+  call assert_equal(Visual_attr, s:get_attr_for_first_char_in_buf())
+
+  set clipmethod=
+  call assert_equal(Visual_attr, s:get_attr_for_first_char_in_buf())
+
+  unlet v:clipproviders['custom']
+  set clipmethod&
+  bwipe!
+endfunc
+
 func Test_Visual_r_CTRL_C()
   new
   " visual r_cmd
