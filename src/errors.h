@@ -2358,7 +2358,7 @@ EXTERN char e_cannot_connect_to_port[]
 EXTERN char e_cannot_listen_to_port[]
 	INIT(= N_("E963: Cannot listen on port"));
 EXTERN char e_gethostbyname_in_channel_listen[]
-	INIT(= N_("E964: gethostbyname() in channel_listen()"));
+	INIT(= N_("E964: gethostbyname(): cannot resolve hostname in channel_listen()"));
 EXTERN char e_received_command_with_non_string_argument[]
 	INIT(= N_("E903: Received command with non-string argument"));
 EXTERN char e_last_argument_for_expr_call_must_be_number[]
