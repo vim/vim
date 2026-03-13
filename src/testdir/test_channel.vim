@@ -2784,6 +2784,31 @@ func LspTests(port)
       call assert_equal('hello', g:server_received_msg)
   endfunc
 
+  func Test_listen_invalid_address()
+      call ch_log('Test_listen_invalid_address()')
+
+      " empty address
+      call assert_fails("call ch_listen('')", 'E474:')
+
+      " missing port
+      call assert_fails("call ch_listen('localhost')", 'E474:')
+
+      " port number too large
+      call assert_fails("call ch_listen('localhost:99999')", 'E474:')
+
+      " port number zero
+      call assert_fails("call ch_listen('localhost:0')", 'E474:')
+
+      " port number negative
+      call assert_fails("call ch_listen('localhost:-1')", 'E474:')
+
+      " invalid ipv6 format (missing closing bracket)
+      call assert_fails("call ch_listen('[::1:8765')", 'E474:')
+
+      " invalid ipv6 format (missing port)
+      call assert_fails("call ch_listen('[::1]')", 'E474:')
+  endfunc
+
   func Test_channel_lsp_mode()
   " The channel lsp mode test is flaky and gives the same error.
   let g:giveup_same_error = 0
