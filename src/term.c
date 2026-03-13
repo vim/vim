@@ -8056,6 +8056,11 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state == 0 || --sync_output_state > 0)
 	    return;
+	// Flush the output buffer before ending the sync batch so that
+	// all drawing output is sent to the terminal within the
+	// BSU..ESU window.  Without this, the drawing data remaining in
+	// out_buf would be sent after ESU, outside the sync batch.
+	out_flush();
 	str = T_ESU;
     }
     else
