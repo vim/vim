@@ -4191,6 +4191,19 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 		vim_snprintf((char *)namebuf, sizeof(namebuf), "%s:%d",
 		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
 		    ntohs(((struct sockaddr_in*)&client)->sin_port));
+#ifdef HAVE_INET_NTOP
+	    else if (client.ss_family == AF_INET6)
+	    {
+		char addr[INET6_ADDRSTRLEN];
+
+		inet_ntop(AF_INET6,
+			&((struct sockaddr_in6*)&client)->sin6_addr,
+			addr, sizeof(addr));
+		vim_snprintf((char *)namebuf, sizeof(namebuf), "[%s]:%d",
+			addr,
+			ntohs(((struct sockaddr_in6*)&client)->sin6_port));
+	    }
+#endif
 	    else if (client.ss_family == AF_UNIX)
 		vim_snprintf((char *)namebuf, sizeof(namebuf),
 							    "unix:anonymous");
