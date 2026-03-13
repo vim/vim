@@ -211,7 +211,23 @@ export def FTcls()
   endif
 
   var nonblank1 = getline(nextnonblank(1))
-  if nonblank1 =~ '^\v%(\%|\\)'
+
+  # ObjectScript class files can start with Import/Include/IncludeGenerator.
+  # Skip those declarations and inspect the next relevant line.
+  var lnum = nextnonblank(1)
+  while lnum > 0 && lnum <= line("$")
+    var line = getline(lnum)
+    if line =~? '^\s*\%(import\|include\|includegenerator\)\>'
+      lnum = nextnonblank(lnum + 1)
+    else
+      nonblank1 = line
+      break
+    endif
+  endwhile
+
+  if nonblank1 =~? '^\s*class\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s\+extends\>\|\s*\[\|\s*{\|$\)'
+    setf objectscript
+  elseif nonblank1 =~ '^\v%(\%|\\)'
     setf tex
   elseif nonblank1 =~ '^\s*\%(/\*\|::\w\)'
     setf rexx
