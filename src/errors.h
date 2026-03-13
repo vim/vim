@@ -2356,7 +2356,7 @@ EXTERN char e_gethostbyname_in_channel_open[]
 EXTERN char e_cannot_connect_to_port[]
 	INIT(= N_("E902: Cannot connect to port"));
 EXTERN char e_cannot_listen_to_port[]
-	INIT(= N_("E963: Cannot listen to port"));
+	INIT(= N_("E963: Cannot listen on port"));
 EXTERN char e_gethostbyname_in_channel_listen[]
 	INIT(= N_("E964: gethostbyname() in channel_listen()"));
 EXTERN char e_received_command_with_non_string_argument[]
