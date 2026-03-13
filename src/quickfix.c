@@ -838,6 +838,7 @@ qf_get_next_file_line(qfstate_T *state)
 	// Copy the read part of the line, excluding null-terminator
 	memcpy(state->growbuf, IObuff, IOSIZE - 1);
 	growbuflen = state->linelen;
+	state->growbuf[growbuflen] = NUL;
 
 	for (;;)
 	{
