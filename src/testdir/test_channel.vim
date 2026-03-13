@@ -2782,6 +2782,7 @@ func LspTests(port)
       call ch_close(handle)
       call ch_close(server)
       call assert_equal('hello', g:server_received_msg)
+      call assert_match('127.0.0.1:', g:server_received_addr)
   endfunc
 
   func Test_listen_invalid_address()
