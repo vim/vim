@@ -26,8 +26,9 @@ manual.
    1.14 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
    1.15 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
-3. Local mappings and functions	|script-local|
-4. User-defined commands	|user-commands|
+3. Directory marks		|dirmark|
+4. Local mappings and functions	|script-local|
+5. User-defined commands	|user-commands|
 
 ==============================================================================
 1. Key mapping				*key-mapping* *mapping* *macro*
@@ -180,7 +181,7 @@ This unmap command does NOT work: >
 
 Because it tries to unmap "@@ ", including the white space before the command
 separator "|".  Other examples with trailing white space: >
-	unmap @@ 
+	unmap @@
 	unmap @@     # Vim9 script comment
 	unmap @@     " legacy script comment
 
@@ -1423,7 +1424,31 @@ Expands to: ^[
 [example given by Steve Kirkendall]
 
 ==============================================================================
-3. Local mappings and functions				*script-local*
+3. Directory hashes					*dirmark*
+
+A directory hash allows using any value as ~name at the start of the path. For
+example:
+>
+	:dirmark ~vim /usr/share/vim/vim92
+	:edit ~vim/syntax/vim.vim
+<
+These work everywhere |expandcmd()| is called.
+
+						*:dirmark*
+:dirm[ark]		list all directory marks.
+
+:dirm[ark] [<buffer>] {lhs} {rhs}
+			add directory mark for {lhs} to {rhs}. If {lhs} already
+			existed it is replaced with the new {rhs}. {rhs} may
+			contain spaces or already defined dirmarks.
+			See :map-<buffer> for the optional <buffer> argument.
+
+						*:undirmark*
+:undir[mark] [<buffer>] {lhs}
+			Remove directory mark for {lhs} from the list.
+
+==============================================================================
+4. Local mappings and functions				*script-local*
 
 When using several Vim script files, there is the danger that mappings and
 functions used in one script use the same name as in other scripts.  To avoid
@@ -1478,7 +1503,7 @@ and what their <SNR> number is.
 This is all {not available when compiled without the |+eval| feature}.
 
 ==============================================================================
-4. User-defined commands				*user-commands*
+5. User-defined commands				*user-commands*
 
 It is possible to define your own Ex commands.  A user-defined command can act
 just like a built-in command (it can have a range or arguments, arguments can

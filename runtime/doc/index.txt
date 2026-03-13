@@ -1315,6 +1315,7 @@ tag		command		action ~
 |:diffsplit|	:diffs[plit]	show differences with another file
 |:diffthis|	:difft[his]	make current window a diff window
 |:digraphs|	:dig[raphs]	show or enter digraphs
+|:dirmark|	:dirm[ark]	create directory marks
 |:display|	:di[splay]	display registers
 |:disassemble|	:disa[ssemble]	disassemble Vim9 user function
 |:djump|	:dj[ump]	jump to #define
@@ -1741,6 +1742,7 @@ tag		command		action ~
 |:undojoin|	:undoj[oin]	join next change with previous undo block
 |:undolist|	:undol[ist]	list leafs of the undo tree
 |:unabbreviate|	:una[bbreviate]	remove abbreviation
+|:undirmark|	:undir[mark]	remove directory mark
 |:unhide|	:unh[ide]	open a window for each loaded file in the
 				buffer list
 |:uniq|		:uni[q]		uniq lines

@@ -3251,6 +3251,8 @@ struct file_buffer
 
     // First abbreviation local to a buffer.
     mapblock_T	*b_first_abbr;
+    // First dirmark local to a buffer.
+    mapblock_T	*b_first_dirmark;
 
     // User commands local to the buffer.
     garray_T	b_ucmds;
