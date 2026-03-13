@@ -4188,13 +4188,14 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    newchannel->ch_to_be_closed |= (1U << PART_SOCK);
 
 	    if (client.ss_family == AF_INET)
-		sprintf((char *)namebuf, "%s:%d",
+		vim_snprintf((char *)namebuf, sizeof(namebuf), "%s:%d",
 		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
 		    ntohs(((struct sockaddr_in*)&client)->sin_port));
 	    else if (client.ss_family == AF_UNIX)
-		sprintf((char *)namebuf, "unix:anonymous");
+		vim_snprintf((char *)namebuf, sizeof(namebuf),
+							    "unix:anonymous");
 	    else
-		sprintf((char *)namebuf, "unknown");
+		vim_snprintf((char *)namebuf, sizeof(namebuf), "unknown");
 	    ++safe_to_invoke_callback;
 	    ++newchannel->ch_refcount;
 	    argv[0].v_type = VAR_CHANNEL;
