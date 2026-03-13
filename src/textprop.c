@@ -255,12 +255,12 @@ prop_add_one(
 	    length = end_col - col;
 	else
 	    length = (int)textlen - col + 1;
-	if (length > (long)textlen || text_flags & TP_FLAG_OVERLAY)
+	if (length > (long)textlen)
 	    length = (int)textlen;	// can include the end-of-line
 	if (length < 0)
 	    length = 0;		// zero-width property
 
-	if (text_arg != NULL && !(text_flags & TP_FLAG_OVERLAY))
+	if (text_arg != NULL)
 	{
 	    length = 1;		// text is placed on one character
 	    if (col == 0)
