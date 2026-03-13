@@ -539,7 +539,7 @@ prop_add_common(
 
 	    if (p == NULL)
 		goto theend;
-	    if (start_col != 0)
+	    if (start_col != 0 && STRCMP(p, "overlay") != 0)
 	    {
 		emsg(_(e_can_only_use_text_align_when_column_is_zero));
 		goto theend;
@@ -550,6 +550,8 @@ prop_add_common(
 		flags |= TP_FLAG_ALIGN_ABOVE;
 	    else if (STRCMP(p, "below") == 0)
 		flags |= TP_FLAG_ALIGN_BELOW;
+	    else if (STRCMP(p, "overlay") == 0)
+		flags |= TP_FLAG_OVERLAY;
 	    else if (STRCMP(p, "after") != 0)
 	    {
 		semsg(_(e_invalid_value_for_argument_str_str), "text_align", p);

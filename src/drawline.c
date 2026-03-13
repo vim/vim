@@ -175,6 +175,9 @@ typedef struct {
     int		saved_c_extra;
     int		saved_c_final;
     int		saved_char_attr;
+    bool	saved_overlay;
+    bool	saved_overlay_indicator;
+    int		saved_overlay_n_chars;
 
     char_u	extra[NUMBUFLEN + MB_MAXBYTES];
 				// "%ld " and 'fdc' must fit in here, as well
@@ -192,6 +195,11 @@ typedef struct {
      // do consider wrapping in linebreak mode only after encountering
      // a non whitespace char
     int		need_lbr;
+#endif
+#ifdef FEAT_PROP_POPUP
+    bool	overlay;
+    bool	overlay_indicator;
+    int		overlay_n_chars;
 #endif
 } winlinevars_T;
 
@@ -1067,6 +1075,11 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
 	wlv->saved_c_extra = wlv->c_extra;
 	wlv->saved_c_final = wlv->c_final;
+#ifdef FEAT_PROP_POPUP
+	wlv->saved_overlay = wlv->overlay;
+	wlv->saved_overlay_indicator = wlv->overlay_indicator;
+	wlv->saved_overlay_n_chars = wlv->overlay_n_chars;
+#endif
 #ifdef FEAT_LINEBREAK
 	wlv->need_lbr = TRUE;
 #endif
@@ -1108,6 +1121,11 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->n_attr_skip = wlv->saved_n_attr_skip;
 	wlv->extra_for_textprop = wlv->saved_extra_for_textprop;
 	wlv->char_attr = wlv->saved_char_attr;
+#ifdef FEAT_PROP_POPUP
+	wlv->overlay = wlv->saved_overlay;
+	wlv->overlay_indicator = wlv->saved_overlay_indicator;
+	wlv->overlay_n_chars = wlv->saved_overlay_n_chars;
+#endif
     }
     else
 	wlv->char_attr = wlv->win_attr;
@@ -1329,6 +1347,11 @@ win_line(
     wlv.tocol = MAXCOL;
 #ifdef FEAT_LINEBREAK
     wlv.vcol_sbr = -1;
+#endif
+#ifdef FEAT_PROP_POPUP
+    wlv.overlay = false;
+    wlv.overlay_indicator = false;
+    wlv.overlay_indicator = 0;
 #endif
 
     if (number_only == 0)
@@ -2278,8 +2301,16 @@ win_line(
 			    wlv.c_extra = NUL;
 			    wlv.c_final = NUL;
 			    wlv.n_extra = (int)STRLEN(p);
-			    wlv.extra_for_textprop = TRUE;
-			    wlv.start_extra_for_textprop = TRUE;
+			    if (tp->tp_flags & TP_FLAG_OVERLAY)
+				// No need to set extra_for_textprop, as we
+				// basically just replacing the underlying
+				// character.
+				wlv.overlay = true;
+			    else
+			    {
+				wlv.extra_for_textprop = TRUE;
+				wlv.start_extra_for_textprop = TRUE;
+			    }
 			    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 								    used_attr);
 			    n_attr = mb_charlen(p);
@@ -2664,6 +2695,36 @@ win_line(
 
 	// Get the next character to put on the screen.
 
+#ifdef FEAT_PROP_POPUP
+	// "overlay_indicator" is set when there is a double width character
+	// that cannot be fully covered by the overlay text. In this case, just
+	// use '>' to indicate the absent cell.
+	if (wlv.overlay_indicator)
+	{
+	    wlv.overlay_indicator = false;
+
+	    c = '>';
+	    mb_c = c;
+	    mb_l = 1;
+	    mb_utf8 = FALSE;
+	    multi_attr = HL_ATTR(HLF_AT);
+# ifdef FEAT_SYN_HL
+	    if (wlv.cul_attr)
+		multi_attr = hl_combine_attr(multi_attr, wlv.cul_attr);
+# endif
+	    multi_attr = hl_combine_attr(wlv.win_attr, multi_attr);
+
+	    if (wlv.overlay_n_chars != 0)
+	    {
+		// Must advance across the final character, where one
+		// overlay char + '>' char is overlayed upon.
+		MB_PTR_ADV(ptr);
+		wlv.overlay_n_chars = 0;
+	    }
+	}
+	else
+#endif
+
 	// The "p_extra" points to the extra stuff that is inserted to
 	// represent special characters (non-printable stuff) and other
 	// things.  When all characters are the same, c_extra is used.
@@ -2754,6 +2815,32 @@ win_line(
 		}
 		++wlv.p_extra;
 	    }
+#ifdef FEAT_PROP_POPUP
+	    if (wlv.overlay && *ptr != NUL)
+	    {
+		if (wlv.overlay_n_chars > 0)
+		    // Need to overlay the entire double width character
+		    wlv.overlay_n_chars--;
+		else
+		{
+		    wlv.overlay_n_chars = (*mb_ptr2cells)(ptr);
+
+		    if (wlv.n_extra < wlv.overlay_n_chars)
+			// Overlay text cannot cover the double width char, must
+			// add a '>'.
+			wlv.overlay_indicator = true;
+		    else
+		    {
+			// Advance across character and consume one char from
+			// it, since the current character is the overlay
+			// character.
+			MB_PTR_ADV(ptr);
+			wlv.overlay_n_chars--;
+		    }
+		}
+	    }
+#endif
+
 	    --wlv.n_extra;
 #if defined(FEAT_PROP_POPUP)
 	    if (wlv.n_extra <= 0)
@@ -4271,6 +4358,11 @@ win_line(
 #endif // FEAT_CONCEAL
 	else
 	    --skip_cells;
+
+#ifdef FEAT_PROP_POPUP
+	if (wlv.overlay && wlv.n_extra == 0)
+	    wlv.overlay = false;
+#endif
 
 	if (wlv.draw_state > WL_NR && skipped_cells > 0)
 	{

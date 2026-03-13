@@ -1304,6 +1304,11 @@ win_lbr_chartabsize(
 	    textprop_T	*tp = cts->cts_text_props + i;
 	    int		col_off = win_col_off(wp);
 
+	    // If virtual text is set to overlay, then don't skip over the
+	    // virtual text.
+	    if (tp->tp_flags & TP_FLAG_OVERLAY)
+		continue;
+
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
