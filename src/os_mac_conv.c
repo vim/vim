@@ -354,7 +354,9 @@ mac_utf16_to_enc(
 	}
 	else
 	{
-	    result = string_convert(&conv, utf8_str, (int *)&utf8_len);
+	    int len = utf8_len
+	    result = string_convert(&conv, utf8_str, &len);
+	    utf8_len = len;
 	    vim_free(utf8_str);
 	}
 
