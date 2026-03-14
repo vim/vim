@@ -88,7 +88,7 @@ Nevertheless, when text is inserted or deleted the text may need to be parsed
 and the text properties updated.  But this can be done asynchronously.
 
 The "start_incl" setting also affects how text is inserted either side of
-an inline virtual text property (see |virtual-text|). If you have a line
+an inline virtual text property (see |virtual-text|).  If you have a line
 with a virtual text property "<inline>" looking like this >
 
     Some text<inline>followed by more text.

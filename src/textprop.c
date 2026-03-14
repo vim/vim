@@ -88,8 +88,8 @@ typedef enum
 #define INSERT_IN_ORDER TRUE
 #define UNSORTED FALSE
 
-#define E_FAIL(report) (report, FAIL)
-#define E_RET(report, retval) (report, retval)
+#define ERR_FAIL(report) (report, FAIL)
+#define ERR_RET(report, retval) (report, retval)
 
 static int text_prop_compare_p(const void *s1, const void *s2);
 static bool um_detach(unpacked_memline_T *umemline);
@@ -169,13 +169,25 @@ clear_cont_prev(textprop_T *prop)
 }
 
 /*
+ * Free any virtual text from a detached unpacked property.
+ *
+ * The caller is responsible for ensuring that property is detached; meaning
+ * that tp_text is either NULL or points to allocated memory.
+ */
+    void
+um_free_detached_prop_vtext(textprop_T *prop)
+{
+    VIM_CLEAR(prop->tp_text);
+}
+
+/*
  * Free the virtual text in a detached unpacked memline properties array.
  */
     void
 um_free_detached_props_vtext(textprop_T *props, int count)
 {
     for (int i = 0; i < count; i++)
-	free(props[i].tp_text);
+	um_free_detached_prop_vtext(&props[i]);
 }
 
 /*
@@ -253,7 +265,7 @@ um_pack(unpacked_memline_T *umemline, int *packed_length)
 {
     // Work out the space required.
     *packed_length = 0;
-    size_t memline_size = umemline->text_size;
+    colnr_T memline_size = umemline->text_size;
     uint16_t live_props = 0;
     for (int i = 0; i < umemline->prop_count; i++)
     {
@@ -406,7 +418,7 @@ um_add_space_for_props(unpacked_memline_T *umemline, int extra_props)
 	new_array, umemline->props, umemline->prop_count * sizeof(textprop_T));
     free(umemline->props);
     umemline->props = new_array;
-    umemline->prop_size = prop_size;
+    umemline->prop_size = (uint16_t)prop_size;
     return TRUE;
 }
 
@@ -436,6 +448,13 @@ um_goto_line_common(
 	goto fail;
 
     size_t text_size = ml_get_buf_len(buf, lnum) + 1;
+    if (buf->b_ml.ml_line_ptr == NULL)
+    {
+	// Even though ml->ml_line_count is at least 1, the buffer actually
+	// contains no lines!
+	goto fail;
+    }
+
     size_t memline_size = ml->ml_line_len;
     uint16_t prop_count = 0;
     char_u *count_ptr = buf->b_ml.ml_line_ptr + text_size;
@@ -458,10 +477,10 @@ um_goto_line_common(
 	    goto fail;
     }
 
-    umemline->prop_size = prop_size;
+    umemline->prop_size = (uint16_t)prop_size;
     umemline->lnum = lnum;
     umemline->detached = FALSE;
-    umemline->text_size = text_size;
+    umemline->text_size = (colnr_T)text_size;
     umemline->text = buf->b_ml.ml_line_ptr;
     umemline->prop_count = 0;
 
@@ -470,10 +489,10 @@ um_goto_line_common(
 	// Calculation of max_valid_vtext_offset allows space for NUL.
 	umemline->prop_count = prop_count;
 	char_u *memline_end = umemline->text + memline_size;
-	ssize_t max_valid_vtext_offset = memline_end - count_ptr - 2;
+	size_t max_valid_vtext_offset = memline_end - count_ptr - 2;
 	char_u *props_start = count_ptr + PROP_COUNT_SIZE;
-	ssize_t props_size = sizeof(textprop_T) * prop_count;
-	if (memline_end - props_start < props_size)
+	size_t props_size = sizeof(textprop_T) * prop_count;
+	if (memline_end - props_start < (long)props_size)
 	    goto corrupted;
 
 	mch_memmove( umemline->props, props_start, props_size);
@@ -482,7 +501,7 @@ um_goto_line_common(
 	    textprop_T *prop = &umemline->props[i];
 	    if (prop->tp_flags & TP_FLAG_VTEXT_BITS)
 	    {
-		if (prop->tp_text_offset > max_valid_vtext_offset)
+		if (prop->tp_text_offset > (colnr_T)max_valid_vtext_offset)
 		    goto corrupted;  // NUL char beyond end of memline!
 		prop->tp_text = count_ptr + prop->tp_text_offset;
 	    }
@@ -621,7 +640,7 @@ um_set_text(unpacked_memline_T *umemline, char_u *text)
 
     free(umemline->text);
     umemline->text = text;
-    umemline->text_size = STRLEN(text) + 1;
+    umemline->text_size = (colnr_T)(STRLEN(text) + 1);
     umemline->text_changed = TRUE;
     return TRUE;
 }
@@ -848,7 +867,7 @@ um_detach(unpacked_memline_T *umemline)
 
 fail:
     free(umemline->text);
-    for (int j; j < i; j++)
+    for (int j = 0; j < i; j++)
     {
 	free(umemline->props[j].tp_text);
     }
@@ -1017,7 +1036,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     dictitem_T	*di;
 
     if (arg->v_type != VAR_DICT)
-	return E_FAIL(emsg(_(e_dictionary_required)));
+	return ERR_FAIL(emsg(_(e_dictionary_required)));
     if (arg->vval.v_dict == NULL)
 	return OK;  // NULL dict is like an empty dict
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
@@ -1041,12 +1060,12 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
  */
     int
 remove_props_from_line(
-    buf_T *buf,
-    const linenr_T lnum,
+    buf_T                   *buf,
+    linenr_T                lnum,
     const struct criteria_S *criteria,
-    const bool do_all,
-    const bool deleting,
-    const int flags)
+    bool                     do_all,
+    bool                     deleting,
+    int                      flags)
 {
     int  removed_count = 0;
 
@@ -1161,11 +1180,11 @@ prop_add_one(
     if (type == NULL)
 	return FAIL;
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
-	return E_FAIL(semsg(_(e_invalid_line_number_nr), (long)start_lnum));
+	return ERR_FAIL(semsg(_(e_invalid_line_number_nr), (long)start_lnum));
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
-	return E_FAIL(semsg(_(e_invalid_line_number_nr), (long)end_lnum));
+	return ERR_FAIL(semsg(_(e_invalid_line_number_nr), (long)end_lnum));
     if (buf->b_ml.ml_mfp == NULL)
-	return E_FAIL(emsg(_(e_cannot_add_text_property_to_unloaded_buffer)));
+	return ERR_FAIL(emsg(_(e_cannot_add_text_property_to_unloaded_buffer)));
 
     char_u *virt_text = NULL;
     if (text_arg != NULL)
@@ -1195,7 +1214,7 @@ prop_add_one(
 
 	if (virt_text != NULL)
 	{
-	    length = STRLEN(virt_text) + 1;
+	    length = (long)(STRLEN(virt_text) + 1);
 	    if (col == 0)
 	    {
 		col = MAXCOL;  // This ensures correct property sorting.
@@ -1344,7 +1363,7 @@ prop_add_common(
     int		flags = 0;
 
     if (dict == NULL || !dict_has_key(dict, "type"))
-	return E_RET(emsg(
+	return ERR_RET(emsg(
 	    _(e_missing_property_type_name)), id);
     type_name = dict_get_string(dict, "type", FALSE);
 
@@ -1352,7 +1371,7 @@ prop_add_common(
     {
 	end_lnum = dict_get_number(dict, "end_lnum");
 	if (end_lnum < start_lnum)
-	    return E_RET(semsg(
+	    return ERR_RET(semsg(
 		_(e_invalid_value_for_argument_str), "end_lnum"), id);
     }
     else
@@ -1363,7 +1382,7 @@ prop_add_common(
 	long length = dict_get_number(dict, "length");
 
 	if (length < 0 || end_lnum > start_lnum)
-	    return E_RET(semsg(
+	    return ERR_RET(semsg(
 		_(e_invalid_value_for_argument_str), "length"), id);
 	end_col = start_col + length;
     }
@@ -1371,7 +1390,7 @@ prop_add_common(
     {
 	end_col = dict_get_number(dict, "end_col");
 	if (end_col <= 0)
-	    return E_RET(semsg(
+	    return ERR_RET(semsg(
 		_(e_invalid_value_for_argument_str), "end_col"), id);
     }
     else if (start_lnum == end_lnum)
@@ -1384,7 +1403,7 @@ prop_add_common(
 	vimlong_T x;
 	x = dict_get_number(dict, "id");
 	if (x > INT_MAX || x  <= INT_MIN)
-	    return E_RET(semsg(
+	    return ERR_RET(semsg(
 		_(e_val_too_large), dict_get_string(dict, "id", FALSE)), id);
 	id = (int)x;
     }
@@ -1395,7 +1414,7 @@ prop_add_common(
 		|| dict_has_key(dict, "id")
 		|| dict_has_key(dict, "end_col")
 		|| dict_has_key(dict, "end_lnum"))
-	    return E_RET(emsg(
+	    return ERR_RET(emsg(
 		_(e_cannot_use_id_length_endcol_and_endlnum_with_text)), id);
 
 	text = dict_get_string(dict, "text", BORROW_VALUE);
@@ -1410,7 +1429,7 @@ prop_add_common(
 	    if (p == NULL)
 		return id;
 	    if (start_col != 0)
-		return E_RET(emsg(
+		return ERR_RET(emsg(
 		    _(e_can_only_use_text_align_when_column_is_zero)), id);
 	    if (STRCMP(p, "right") == 0)
 		flags |= TP_FLAG_ALIGN_RIGHT;
@@ -1421,7 +1440,7 @@ prop_add_common(
 	    else if (STRCMP(p, "after") == 0)
 		flags |= TP_FLAG_ALIGN_AFTER;
 	    else
-		return E_RET(
+		return ERR_RET(
 		    semsg(
 			_(e_invalid_value_for_argument_str_str),
 			"text_align", p), id);
@@ -1438,7 +1457,7 @@ prop_add_common(
 	{
 	    text_padding_left = dict_get_number(dict, "text_padding_left");
 	    if (text_padding_left < 0)
-		return E_RET(semsg(
+		return ERR_RET(semsg(
 		    _(e_argument_must_be_positive_str), "text_padding_left"),
 		    id);
 	}
@@ -1452,7 +1471,7 @@ prop_add_common(
 	    if (STRCMP(p, "wrap") == 0)
 		flags |= TP_FLAG_WRAP;
 	    else if (STRCMP(p, "truncate") != 0)
-		return E_RET(semsg(
+		return ERR_RET(semsg(
 		    _(e_invalid_value_for_argument_str_str), "text_wrap", p),
 		    id);
 	}
@@ -1461,10 +1480,10 @@ prop_add_common(
     // Column must be 1 or more for a normal text property; when "text" is
     // present zero means it goes after, above or below the line.
     if (start_col < (text == NULL ? 1 : 0))
-	return E_RET(semsg(
+	return ERR_RET(semsg(
 	    _(e_invalid_column_number_nr), (long)start_col), id);
     if (start_col > 0 && text_padding_left > 0)
-	return E_RET(emsg(
+	return ERR_RET(emsg(
 	    _(e_can_only_use_left_padding_when_column_is_zero)), id);
 
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
@@ -3132,11 +3151,11 @@ perform_properties_adjustment(
  */
     void
 prop_trim_trailing_bytes(
-	buf_T	       *buf,
-	const linenr_T lnum,
-	const colnr_T  col,
-	int	       *flags,
-	bool	       keep_empty)
+	buf_T	 *buf,
+	linenr_T lnum,
+	colnr_T  col,
+	int	 *flags,
+	bool	 keep_empty)
 {
     perform_properties_adjustment(
 	buf, lnum, col, 0, keep_empty, flags, trim_trailing_bytes_1);
@@ -3163,11 +3182,11 @@ prop_trim_leading_bytes(
  */
     void
 prop_remove_bytes(
-	buf_T	       *buf,
-	const linenr_T lnum,
-	const colnr_T  col,
-	const colnr_T  count,
-	int	       *flags)
+	buf_T	 *buf,
+	linenr_T lnum,
+	colnr_T  col,
+	colnr_T  count,
+	int	 *flags)
 {
     perform_properties_adjustment(
 	buf, lnum, col, count, FALSE, flags, remove_bytes_1);
@@ -3181,11 +3200,11 @@ prop_remove_bytes(
  */
     void
 prop_add_bytes(
-	buf_T	       *buf,
-	const linenr_T lnum,
-	const colnr_T  col,
-	const colnr_T  count,
-	int	       *flags)
+	buf_T	 *buf,
+	linenr_T lnum,
+	colnr_T  col,
+	colnr_T  count,
+	int	 *flags)
 {
     perform_properties_adjustment(
 	buf, lnum, col, count, FALSE, flags, add_bytes_1);

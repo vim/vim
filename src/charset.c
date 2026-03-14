@@ -880,7 +880,11 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 	    if (!PROP_IS_FLOATING(tp))
 	    {
 		if (read_idx != write_idx)
+		{
+		    um_free_detached_prop_vtext(
+			&cts.cts_text_props[write_idx]);
 		    cts.cts_text_props[write_idx] = *tp;
+		}
 		write_idx++;
 	    }
 	}
@@ -1084,6 +1088,15 @@ init_chartabsize_arg(
     cts->cts_bri_size = -1;
 #endif
 #ifdef FEAT_PROP_POPUP
+    // For testing, Vim might be in the process of freeing all memory. This
+    // means that it may have already freed cosed and freed all memline
+    // structures, so this function should not be getting called: yet id does!
+    // So used the global flag as a, hopefully temporary, work around.
+# if defined(EXITFREE)
+    if (entered_free_all_mem)
+	return;
+# endif
+
     if (lnum > 0 && !ignore_text_props && wp->w_buffer->b_has_textprop)
     {
 	unpacked_memline_T umemline = um_open_at_detached(

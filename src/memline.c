@@ -3777,10 +3777,12 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	line_size = dp->db_txt_end - line_start;
     else
 	line_size = ((dp->db_index[idx - 1]) & DB_INDEX_MASK) - line_start;
+#ifdef FEAT_BYTEOFF
+# ifdef FEAT_PROP_POPUP
     long textlen = line_size;
-#ifdef FEAT_PROP_POPUP
     if (buf->b_has_textprop)
 	textlen = (long)STRLEN((char_u *)dp + line_start) + 1;
+# endif
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
