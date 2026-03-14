@@ -1594,7 +1594,7 @@ channel_listen(
     channel->ch_listen = TRUE;
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
-    channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
+    channel->ch_hostname = (char *)vim_strsave((char_u *)(hostname != NULL ? hostname : ""));
     channel->ch_port = port_in;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
