@@ -6,7 +6,7 @@ CheckFeature python3
 
 source util/screendump.vim
 import './util/vim9.vim' as v9
-import './textprop_support.vim' as ts
+import './util/textprop_support.vim' as ts
 
 " Clean up for a BufferState model based test.
 func CleanupModelTest(model)

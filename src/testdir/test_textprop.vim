@@ -5,7 +5,6 @@ CheckFeature textprop
 
 source util/screendump.vim
 import './util/vim9.vim' as v9
-import './textprop_support.vim' as ts
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
