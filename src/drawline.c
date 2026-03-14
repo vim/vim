@@ -146,6 +146,7 @@ typedef struct {
 #endif
 #ifdef FEAT_PROP_POPUP
     int		text_prop_above_count;
+    int		overlay_fill;
 #endif
 
     // TRUE when 'cursorlineopt' has "screenline" and cursor is in this line
@@ -1143,6 +1144,34 @@ apply_cursorline_highlight(
 }
 #endif
 
+#ifdef FEAT_PROP_POPUP
+/*
+ *
+ */
+    static int
+calculate_overlay(win_T *wp, winlinevars_T *wlv, char_u **ptr, char_u *line)
+{
+    chartabsize_T   cts;
+    int		    cells; // Amount of cells that the entire overlay covers
+
+    cells = mb_string2cells(wlv->p_extra, wlv->n_extra);
+
+    while (cells > 0)
+    {
+	int ptr_cells; // Number of cells that the current "ptr" char covers
+
+	init_chartabsize_arg(&cts, wp, 0, wlv->vcol, line, *ptr);
+	ptr_cells = win_lbr_chartabsize(&cts, NULL);
+	clear_chartabsize_arg(&cts);
+
+	cells -= ptr_cells;
+	MB_PTR_ADV(*ptr);
+    }
+
+    return abs(cells);
+}
+#endif
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1169,6 +1198,8 @@ win_line(
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
+    char_u	*ptr_raw;		// Actual position excluding overlay
+					// text.
     int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
 
 #ifdef FEAT_PROP_POPUP
@@ -1329,6 +1360,9 @@ win_line(
     wlv.tocol = MAXCOL;
 #ifdef FEAT_LINEBREAK
     wlv.vcol_sbr = -1;
+#endif
+#ifdef FEAT_PROP_POPUP
+    wlv.overlay_fill = 0;
 #endif
 
     if (number_only == 0)
@@ -1603,6 +1637,7 @@ win_line(
 
 	// If current line is empty, check first word in next line for capital.
 	ptr = skipwhite(line);
+	ptr_raw = ptr;
 	if (*ptr == NUL)
 	{
 	    spv->spv_cap_col = 0;
@@ -2100,7 +2135,7 @@ win_line(
 	    if (text_props != NULL)
 	    {
 		int pi;
-		int bcol = (int)(ptr - line);
+		int bcol = (int)(ptr_raw - line);
 
 		if (wlv.n_extra > 0
 # ifdef FEAT_LINEBREAK
@@ -2115,9 +2150,9 @@ win_line(
 		    int		tpi = text_prop_idxs[pi];
 		    textprop_T  *tp = &text_props[tpi];
 
-		    // An inline property ends when after the start column plus
-		    // length. An "above" property ends when used and n_extra
-		    // is zero.
+		    // An inline/overlay property ends when after the start
+		    // column plus length. An "above" property ends when used
+		    // and n_extra is zero.
 		    if ((tp->tp_col != MAXCOL
 				       && bcol >= tp->tp_col - 1 + tp->tp_len))
 		    {
@@ -2126,6 +2161,7 @@ win_line(
 					text_prop_idxs + pi + 1,
 					sizeof(int)
 					     * (text_props_active - (pi + 1)));
+
 			--text_props_active;
 			--pi;
 # ifdef FEAT_LINEBREAK
@@ -2133,6 +2169,13 @@ win_line(
 			if (in_linebreak && syntax_attr == text_prop_attr_comb)
 			    syntax_attr = 0;
 # endif
+#ifdef FEAT_PROP_POPUP
+			if (tp->tp_flags & TP_FLAG_OVERLAY)
+			{
+			    wlv.c_extra = '>';
+			    wlv.n_extra = wlv.overlay_fill;
+			}
+#endif
 		    }
 		}
 
@@ -2141,11 +2184,13 @@ win_line(
 		    // not on the next char yet, don't start another prop
 		    --bcol;
 # endif
-		// Add any text property that starts in this column.
+
+		// Add any text property that that this column is within.
 		while (text_prop_next < text_prop_count)
 		{
 		    int active;
 		    textprop_T *tp = &text_props[text_prop_next];
+
 		    if (tp->tp_col == MAXCOL)
 		    {
 			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
@@ -2154,8 +2199,8 @@ win_line(
 			    break;
 			else
 			{
-			    // With 'nowrap' and not in the first screen line only "below"
-			    // text prop can show.
+			    // With 'nowrap' and not in the first screen line
+			    // only "below" text prop can show.
 			    active = wp->w_p_wrap
 				  || wlv.row == startrow
 				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
@@ -2188,9 +2233,9 @@ win_line(
 		}
 		if (text_props_active > 0 && wlv.n_extra == 0)
 		{
-		    int used_tpi = -1;
-		    int used_attr = 0;
-		    int other_tpi = -1;
+		    int	used_tpi = -1;
+		    int	used_attr = 0;
+		    int	other_tpi = -1;
 
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
@@ -2292,6 +2337,14 @@ win_line(
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
+#if defined(FEAT_PROP_POPUP)
+			    if (tp->tp_flags & TP_FLAG_OVERLAY)
+			    {
+				ptr_raw = ptr;
+                                wlv.overlay_fill =
+				    calculate_overlay(wp, &wlv, &ptr, line);
+			    }
+#endif
 # ifdef FEAT_LINEBREAK
 			    if (text_prop_no_showbreak(tp))
 			    {
@@ -2758,6 +2811,7 @@ win_line(
 		}
 		++wlv.p_extra;
 	    }
+
 	    --wlv.n_extra;
 #if defined(FEAT_PROP_POPUP)
 	    if (wlv.n_extra <= 0)
