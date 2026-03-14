@@ -1516,8 +1516,9 @@ do_filter(
 	     */
 	    curwin->w_cursor.lnum = line1;
 	    del_lines(linecount, TRUE);
-	    curbuf->b_op_start.lnum -= linecount;	// adjust '[
-	    curbuf->b_op_end.lnum -= linecount;		// adjust ']
+	    // adjust '[ and ']
+	    curbuf->b_op_start.lnum = MAX(curbuf->b_op_start.lnum - linecount, 1);
+	    curbuf->b_op_end.lnum = MAX(curbuf->b_op_end.lnum - linecount, 1);
 	    write_lnum_adjust(-linecount);		// adjust last line
 							// for next write
 #ifdef FEAT_FOLDING
