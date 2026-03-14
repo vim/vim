@@ -675,6 +675,7 @@ static tcap_entry_T builtin_kitty[] = {
     {(int)KS_NAME,	NULL}  // end marker
 };
 
+#ifdef HAVE_TGETENT
 /*
  * Additions for enabling/disabling synchronized output mode for terminal.
  */
@@ -683,6 +684,7 @@ static tcap_entry_T builtin_sync_output[] = {
     {(int)KS_ESU,	"\033[?2026l"},
     {(int)KS_NAME,	NULL}  // end marker
 };
+#endif
 
 /*
  * List of DECRQM modes that Vim supports
