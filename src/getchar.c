@@ -53,6 +53,8 @@ static int typedchars_pos = 0;
  */
 static int	block_redo = FALSE;
 
+static save_redo_T *active_save_redo_head = NULL;
+
 static int	KeyNoremap = 0;	    // remapping flags
 
 /*
@@ -548,6 +550,38 @@ CancelRedo(void)
 	;
 }
 
+// Public helper: update all active saved redo entries so that an outer
+// restore (restoreRedobuff) will restore the new redo state instead of
+// reverting a programmatic change made by setrepeat().
+    void
+updateSavedRedobuffs(void)
+{
+    save_redo_T *sr;
+    char_u *s;
+    size_t len;
+
+    for (sr = active_save_redo_head; sr != NULL; sr = sr->sr_next)
+    {
+	// Replace sr->sr_redobuff with a copy of current redobuff.
+	free_buff(&sr->sr_redobuff);
+	s = get_buffcont(&redobuff, FALSE, &len);
+	if (s != NULL)
+	{
+	    add_buff(&sr->sr_redobuff, s, (long)len);
+	    vim_free(s);
+	}
+
+	// Replace sr->sr_old_redobuff with a copy of current old_redobuff.
+	free_buff(&sr->sr_old_redobuff);
+	s = get_buffcont(&old_redobuff, FALSE, &len);
+	if (s != NULL)
+	{
+	    add_buff(&sr->sr_old_redobuff, s, (long)len);
+	    vim_free(s);
+	}
+    }
+}
+
 /*
  * Save redobuff and old_redobuff to save_redobuff and save_old_redobuff.
  * Used before executing autocommands and user functions.
@@ -563,13 +597,19 @@ saveRedobuff(save_redo_T *save_redo)
     save_redo->sr_old_redobuff = old_redobuff;
     old_redobuff.bh_first.b_next = NULL;
 
-    // Make a copy, so that ":normal ." in a function works.
+    // Make a copy, so that ":normal ." in a function works, if any content.
     s = get_buffcont(&save_redo->sr_redobuff, FALSE, &slen);
-    if (s == NULL)
-	return;
+    if (s != NULL)
+    {
+	add_buff(&redobuff, s, (long)slen);
+	vim_free(s);
+    }
 
-    add_buff(&redobuff, s, (long)slen);
-    vim_free(s);
+    // Always register this save_redo in the active list (even if empty),
+    // so setrepeat() can update saved entries performed inside functions
+    // or autocommands.
+    save_redo->sr_next = active_save_redo_head;
+    active_save_redo_head = save_redo;
 }
 
 /*
@@ -579,6 +619,22 @@ saveRedobuff(save_redo_T *save_redo)
     void
 restoreRedobuff(save_redo_T *save_redo)
 {
+    // Unregister from active saved list (remove this node from the sr_next
+    // list).
+    {
+	save_redo_T **pp = &active_save_redo_head;
+	while (*pp != NULL)
+	{
+	    if (*pp == save_redo)
+	    {
+		*pp = save_redo->sr_next;
+		break;
+	    }
+	    pp = &(*pp)->sr_next;
+	}
+    }
+
+    // Normal restore: free current buffers and use saved ones.
     free_buff(&redobuff);
     redobuff = save_redo->sr_redobuff;
     free_buff(&old_redobuff);

@@ -295,6 +295,7 @@ getregion({pos1}, {pos2} [, {opts}])
 getregionpos({pos1}, {pos2} [, {opts}])
 				List	get a list of positions for a region
 getregtype([{regname}])		String	type of a register
+getrepeat()			Dict	get the last repeat information
 getscriptinfo([{opts}])		List	list of sourced scripts
 getstacktrace()			List	get current stack trace of Vim scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -598,6 +599,7 @@ setqflist({list} [, {action}])	Number	modify quickfix list using {list}
 setqflist({list}, {action}, {what})
 				Number	modify specific quickfix list props
 setreg({n}, {v} [, {opt}])	Number	set register to value and type
+setrepeat({dict})		none	set the next repeat information
 settabvar({nr}, {varname}, {val})
 				none	set {varname} in tab page {nr} to
 					{val}
@@ -5196,6 +5198,45 @@ getregtype([{regname}])					*getregtype()*
 			GetRegname()->getregtype()
 <
 		Return type: |String|
+
+
+getrepeat()						*getrepeat()*
+		Get the last repeat command as a |Dictionary|.
+
+		Returns a dictionary with two documented keys:
+		    "cmd"	The command that will be repeated (string)
+		    "text"	Text to insert (string)
+
+		If the repeat was set via |setrepeat()|, the exact
+		dictionary passed to |setrepeat()| is returned. Otherwise,
+		Vim attempts to reconstruct information from its internal
+		redo buffer.
+
+		Important limitation:
+		- Reconstruction is reliable for commands set with
+		  |setrepeat()| and for recent insert/change operations that
+		  use the '.' register or last-insert metadata.
+		- For many normal-mode edits (for example simple operator
+		  commands such as "dd" or "yy"), Vim does not attempt to
+		  fully parse the redo buffer; in those cases "cmd" may be an
+		  empty string.
+
+		If you need a guaranteed non-empty command string, call
+		|setrepeat()| to explicitly set "cmd" and "text".
+
+		Example: >
+		    " get current repeat (may be empty for some normal-mode
+		    " edits)
+		    let info = getrepeat()
+		    echo info.cmd
+		    echo info.text
+<
+		Note: The dictionary may be extended in future versions;
+		plugins should only rely on the documented "cmd" and "text"
+		keys and the limitation above.
+
+		Return type: |Dictionary|
+		See also: |setrepeat()|, |.|
 
 
 getscriptinfo([{opts}])					*getscriptinfo()*
@@ -10370,6 +10411,73 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 			GetText()->setreg('a')
 <
 		Return type: |Number|
+
+
+setrepeat({dict})					*setrepeat()*
+		Set the repeat command that will be executed by the |.|
+		command.
+
+		{dict} is a |Dictionary| with the following documented keys:
+		    "cmd"	The command to repeat (string, required)
+		    "text"	Text to insert (string, optional)
+
+		The "cmd" field is the command character or sequence to be
+		executed by |.|. For insert/change commands (for example
+		'i', 'a', 'c', 's'), provide "text" with the text to insert.
+		For many normal-mode commands (for example 'dd', 'yy'),
+		"text" may be omitted.
+
+		Examples: >
+		    " Simple normal-mode repeat (delete a line)
+		    call setrepeat({'cmd': 'dd'})
+		    normal! .
+
+		    " Insert-mode repeat (insert text)
+		    call setrepeat({'cmd': 'i', 'text': 'Hello'})
+		    normal! .
+<
+		Important notes and limitations:
+
+		- "cmd" is required. If the dictionary does not contain "cmd",
+		  the call is invalid.
+
+		- Entering insert mode records the insertion and may overwrite
+		  a previously set repeat. If you depend on |setrepeat()|,
+		  call it after leaving insert mode.
+
+		- Functions that directly modify buffer text (for example
+		  |setline()|, |setbufline()|) do not automatically update the
+		  repeat command. Use |feedkeys()| with the 'x' flag to
+		  simulate typing or call setrepeat() explicitly when
+		  appropriate.
+
+		- Visual mode operations and certain advanced features
+		  (for example |<Plug>| mappings, complex counts, or register
+		  semantics) are not fully supported by |setrepeat()| in the
+		  current implementation.
+
+		- For guaranteed, non-empty command information in later use
+		  of |getrepeat()|, prefer setting the repeat explicitly with
+		  setrepeat().
+
+		- Operator+motion combinations are not fully supported.
+		  In particular, providing a combined operator and motion such
+		  as "cw", "ci\"", or other operator+motion sequences together
+		  with a "text" value may not reproduce the intended change in
+		  all cases. While simple normal-mode commands (e.g. "dd",
+		  "3dd") and pure insert/change commands are handled, complex
+		  motions or composed commands with mappings may not be
+		  round-trippable via the "cmd"/"text" dictionary format. For
+		  reliable round-trip of arbitrary redo sequences, consider
+		  the planned future option to store/restore a raw redo-buffer
+		  representation (not currently available).
+
+		Note: The dictionary may be extended in future versions;
+		plugins should only rely on the documented "cmd" and "text"
+		keys and the notes above.
+
+		Return type: void
+		See also: |getrepeat()|, |.|
 
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*

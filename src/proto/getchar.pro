@@ -7,6 +7,7 @@ void typeahead_noflush(int c);
 void flush_buffers(flush_buffers_T flush_typeahead);
 void ResetRedobuff(void);
 void CancelRedo(void);
+void updateSavedRedobuffs(void);
 void saveRedobuff(save_redo_T *save_redo);
 void restoreRedobuff(save_redo_T *save_redo);
 void AppendToRedobuff(char_u *s);

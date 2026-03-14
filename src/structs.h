@@ -629,10 +629,11 @@ struct buffheader
     int		bh_create_newblock;	// create a new block?
 };
 
-typedef struct
+typedef struct save_redo_T
 {
     buffheader_T sr_redobuff;
     buffheader_T sr_old_redobuff;
+    struct save_redo_T *sr_next;    // link to active saved redo entries
 } save_redo_T;
 
 typedef enum {

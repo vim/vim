@@ -79,6 +79,7 @@ static void f_getreginfo(typval_T *argvars, typval_T *rettv);
 static void f_getregion(typval_T *argvars, typval_T *rettv);
 static void f_getregionpos(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
+static void f_getrepeat(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
 static void f_gettext(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
@@ -167,6 +168,7 @@ static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
 static void f_setreg(typval_T *argvars, typval_T *rettv);
+static void f_setrepeat(typval_T *argvars, typval_T *rettv);
 static void f_settagstack(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_CRYPT
 static void f_sha256(typval_T *argvars, typval_T *rettv);
@@ -2359,6 +2361,8 @@ static const funcentry_T global_functions[] =
 			ret_list_regionpos, f_getregionpos},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
+    {"getrepeat",	0, 0, 0,	    NULL,
+			ret_dict_any,	    f_getrepeat},
     {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,
 			ret_list_dict_any,  f_getscriptinfo},
     {"getstacktrace",	0, 0, 0,	    NULL,
@@ -2841,6 +2845,8 @@ static const funcentry_T global_functions[] =
 			ret_number_bool,    f_setqflist},
     {"setreg",		2, 3, FEARG_2,	    arg3_string_any_string,
 			ret_number_bool,    f_setreg},
+    {"setrepeat",	1, 1, FEARG_1,	    arg1_dict_any,
+			ret_void,	    f_setrepeat},
     {"settabvar",	3, 3, FEARG_3,	    arg3_number_string_any,
 			ret_void,	    f_settabvar},
     {"settabwinvar",	4, 4, FEARG_4,	    arg4_number_number_string_any,
@@ -6583,6 +6589,23 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
 		break;
     }
     rettv->vval.v_string = vim_strsave(buf);
+}
+
+/*
+ * "getrepeat()" function
+ */
+    static void
+f_getrepeat(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    dict_T *dict = get_repeat_dict();
+
+    if (dict != NULL)
+    {
+	rettv->v_type = VAR_DICT;
+	rettv->vval.v_dict = dict;
+	// get_repeat_dict() returns a dict with dv_refcount == 1,
+	// so do not increment here. rettv takes ownership of that ref.
+    }
 }
 
 /*
@@ -11752,6 +11775,29 @@ free_lstval:
 	get_yank_register(pointreg, TRUE);
 
     rettv->vval.v_number = 0;
+}
+
+/*
+ * "setrepeat({dict})" function
+ */
+    static void
+f_setrepeat(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    dict_T *dict;
+
+    if (check_for_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    dict = argvars[0].vval.v_dict;
+
+    // 'cmd' is required
+    if (!dict_has_key(dict, "cmd"))
+    {
+	emsg(_(e_invalid_argument));
+	return;
+    }
+
+    set_repeat_dict(dict);
 }
 
 /*
