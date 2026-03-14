@@ -6993,7 +6993,6 @@ func Test_quickfixtextfunc_wipes_buffer()
 endfunc
 
 func Test_quickfix_longline_noeol()
-  CheckRunVimInTerminal
   let qf = 'Xquickfix'
   let args = $"-q {qf}"
   let after =<< trim [CODE]
