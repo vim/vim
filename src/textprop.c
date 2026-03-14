@@ -262,13 +262,20 @@ prop_add_one(
 
 	if (text_arg != NULL)
 	{
-	    length = 1;		// text is placed on one character
-	    if (col == 0)
+	    if (text_flags & TP_FLAG_OVERLAY)
+		// We set tp_len to the length of the overlay text. This is
+		// required so we know where the text proprty ends when drawing.
+		length = STRLEN(text_arg);
+	    else
 	    {
-		col = MAXCOL;	// before or after the line
-		if ((text_flags & TP_FLAG_ALIGN_ABOVE) == 0)
-		    sort_col = MAXCOL;
-		length += text_padding_left;
+		length = 1;		// text is placed on one character
+		if (col == 0)
+		{
+		    col = MAXCOL;	// before or after the line
+		    if ((text_flags & TP_FLAG_ALIGN_ABOVE) == 0)
+			sort_col = MAXCOL;
+		    length += text_padding_left;
+		}
 	    }
 	}
 

@@ -146,7 +146,7 @@ typedef struct {
 #endif
 #ifdef FEAT_PROP_POPUP
     int		text_prop_above_count;
-    bool	overlay;
+    int		overlay_fill;
 #endif
 
     // TRUE when 'cursorlineopt' has "screenline" and cursor is in this line
@@ -1144,6 +1144,34 @@ apply_cursorline_highlight(
 }
 #endif
 
+#ifdef FEAT_PROP_POPUP
+/*
+ *
+ */
+    static int
+calculate_overlay(win_T *wp, winlinevars_T *wlv, char_u **ptr, char_u *line)
+{
+    chartabsize_T   cts;
+    int		    cells; // Amount of cells that the entire overlay covers
+
+    cells = mb_string2cells(wlv->p_extra, wlv->n_extra);
+
+    while (cells > 0)
+    {
+	int ptr_cells; // Number of cells that the current "ptr" char covers
+
+	init_chartabsize_arg(&cts, wp, 0, wlv->vcol, line, *ptr);
+	ptr_cells = win_lbr_chartabsize(&cts, NULL);
+	clear_chartabsize_arg(&cts);
+
+	cells -= ptr_cells;
+	MB_PTR_ADV(*ptr);
+    }
+
+    return abs(cells);
+}
+#endif
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1170,6 +1198,8 @@ win_line(
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
+    char_u	*ptr_raw;		// Actual position excluding overlay
+					// text.
     int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
 
 #ifdef FEAT_PROP_POPUP
@@ -1316,10 +1346,6 @@ win_line(
 #else
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
 #endif
-#ifdef FEAT_PROP_POPUP
-    int		overlay_gap = 0;
-    bool	overlay_gap_is_tab = false;
-#endif
 
     if (startrow > endrow)		// past the end already!
 	return startrow;
@@ -1334,6 +1360,9 @@ win_line(
     wlv.tocol = MAXCOL;
 #ifdef FEAT_LINEBREAK
     wlv.vcol_sbr = -1;
+#endif
+#ifdef FEAT_PROP_POPUP
+    wlv.overlay_fill = 0;
 #endif
 
     if (number_only == 0)
@@ -1604,6 +1633,7 @@ win_line(
 
 	// If current line is empty, check first word in next line for capital.
 	ptr = skipwhite(line);
+	ptr_raw = ptr;
 	if (*ptr == NUL)
 	{
 	    spv->spv_cap_col = 0;
@@ -2101,7 +2131,7 @@ win_line(
 	    if (text_props != NULL)
 	    {
 		int pi;
-		int bcol = (int)(ptr - line);
+		int bcol = (int)(ptr_raw - line);
 
 		if (wlv.n_extra > 0
 # ifdef FEAT_LINEBREAK
@@ -2127,6 +2157,7 @@ win_line(
 					text_prop_idxs + pi + 1,
 					sizeof(int)
 					     * (text_props_active - (pi + 1)));
+
 			--text_props_active;
 			--pi;
 # ifdef FEAT_LINEBREAK
@@ -2134,6 +2165,13 @@ win_line(
 			if (in_linebreak && syntax_attr == text_prop_attr_comb)
 			    syntax_attr = 0;
 # endif
+#ifdef FEAT_PROP_POPUP
+			if (tp->tp_flags & TP_FLAG_OVERLAY)
+			{
+			    wlv.c_extra = '>';
+			    wlv.n_extra = wlv.overlay_fill;
+			}
+#endif
 		    }
 		}
 
@@ -2284,12 +2322,6 @@ win_line(
 			    wlv.p_extra = p;
 			    wlv.c_extra = NUL;
 			    wlv.c_final = NUL;
-
-#if defined(FEAT_PROP_POPUP)
-			    if (tp->tp_flags & TP_FLAG_OVERLAY)
-				wlv.overlay = true;
-#endif
-
 			    wlv.n_extra = (int)STRLEN(p);
 			    wlv.extra_for_textprop = TRUE;
 			    wlv.start_extra_for_textprop = TRUE;
@@ -2301,6 +2333,14 @@ win_line(
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
+#if defined(FEAT_PROP_POPUP)
+			    if (tp->tp_flags & TP_FLAG_OVERLAY)
+			    {
+				ptr_raw = ptr;
+                                wlv.overlay_fill =
+				    calculate_overlay(wp, &wlv, &ptr, line);
+			    }
+#endif
 # ifdef FEAT_LINEBREAK
 			    if (text_prop_no_showbreak(tp))
 			    {
@@ -2702,10 +2742,6 @@ win_line(
 	    }
 	    else
 	    {
-#ifdef FEAT_PROP_POPUP
-		bool nofit = false;
-#endif
-
 		c = *wlv.p_extra;
 		if (has_mbyte)
 		{
@@ -2762,7 +2798,6 @@ win_line(
 			// character at the start of the next line.
 			++wlv.n_extra;
 			--wlv.p_extra;
-			nofit = true;
 		    }
 		    else
 		    {
@@ -2771,79 +2806,6 @@ win_line(
 		    }
 		}
 		++wlv.p_extra;
-
-#if defined(FEAT_PROP_POPUP)
-		if (wlv.overlay && wlv.draw_state == WL_LINE && !nofit)
-		{
-		    chartabsize_T   cts;
-		    int		    ptr_len;
-		    int		    extra_len;
-
-		    init_chartabsize_arg(&cts, wp, 0, wlv.vcol, line, ptr);
-		    ptr_len = win_lbr_chartabsize(&cts, NULL);
-		    clear_chartabsize_arg(&cts);
-		    extra_len = mb_char2cells(mb_c);
-
-		    if (overlay_gap > 0)
-		    {
-			// Overlay character is not able to cover the buffer
-			// character:
-			//
-			// extra -> OVERLAY TEXT
-			// ptr   -> hel<>lo wol<>
-			//             __	_
-			//
-			// To handle this, don't advance "ptr", only advance
-			// until we cover the buffer character fully.
-			overlay_gap--;
-		    }
-		    else if (overlay_gap == 0)
-		    {
-			overlay_gap = ptr_len - extra_len;
-
-			if (*ptr == TAB)
-			    overlay_gap_is_tab = true;
-
-			// Advance ptr to next character
-			MB_PTR_ADV(ptr);
-
-			if (overlay_gap < 0)
-			{
-			    // Overlay character covers the buffer character,
-			    // and the next characters as well:
-			    //
-			    // <>: char that takes up multiple cells
-			    //
-			    // extra -> OVERLAY TEXT<><-->
-			    // ptr	 -> abc efg hijk lmno
-			    //                      __  __
-			    //
-			    // To handle this, advance ptr until the next ptr
-			    // char is after or at the end of the wide overlay
-			    // char.
-			    int accumulated = 0;
-
-			    do
-			    {
-				int len;
-
-				init_chartabsize_arg(&cts, wp, 0,
-					wlv.vcol + accumulated + 1, line, ptr);
-				len = win_lbr_chartabsize(&cts, NULL);
-				clear_chartabsize_arg(&cts);
-
-				accumulated += len;
-				MB_PTR_ADV(ptr);
-			    }
-			    while (accumulated <= extra_len);
-
-			    // Possible to have over go past the wide char
-			    // because of alignment.
-			    overlay_gap = accumulated - extra_len;
-			}
-		    }
-		}
-#endif
 	    }
 
 	    --wlv.n_extra;
@@ -4370,24 +4332,6 @@ win_line(
 	    skipped_cells = 0;
 	}
 
-#if defined(FEAT_PROP_POPUP)
-	if (wlv.overlay && wlv.n_extra == 0 && wlv.draw_state == WL_LINE)
-	{
-	    wlv.overlay = false;
-
-	    if (overlay_gap > 0)
-	    {
-		// Last overlay character cannot cover the buffer character it
-		// is on top of fully. Therefore add '>' if not tab, otherwise
-		// spaces.
-		wlv.c_extra = overlay_gap_is_tab ? ' ' : '>';
-		wlv.n_extra = overlay_gap;
-		overlay_gap = 0;
-		overlay_gap_is_tab = false;
-	    }
-	}
-#endif
-
 	// Only advance the "wlv.vcol" when after the 'number' or
 	// 'relativenumber' column.
 	if (wlv.draw_state > WL_NR
@@ -4407,11 +4351,7 @@ win_line(
 	    wlv.char_attr = saved_attr3;
 
 	// restore attributes after last 'listchars' or 'number' char
-	if (
-#ifdef FEAT_PROP_POPUP
-		!wlv.overlay &&
-#endif
-		n_attr > 0 && wlv.draw_state == WL_LINE
+	if (n_attr > 0 && wlv.draw_state == WL_LINE
 				      && wlv.n_attr_skip == 0 && --n_attr == 0)
 	    wlv.char_attr = saved_attr2;
 	if (wlv.n_attr_skip > 0)
