@@ -1203,6 +1203,11 @@ func Test_term_getpos()
   call assert_true(str2nr(result[0]) > 1)
 
   call StopVimInTerminal(buf)
+  " this crashed
+  new
+  setl buftype=terminal
+  call assert_equal(2, line('w0') + line('w$'))
+  bw
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
