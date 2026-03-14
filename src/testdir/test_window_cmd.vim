@@ -2438,4 +2438,74 @@ func Test_winfixheight_resize_wmh_zero()
   set winminheight& laststatus&
 endfunc
 
+" Test that setting 'laststatus' from 0 to 2 gives all windows in a vertical
+" split (FR_ROW) the same height and correct status line position.
+func Test_laststatus_vsplit_row_height()
+  enew
+  vsplit
+  topleft new
+  set ls=0
+  wincmd _
+
+  set ls=2
+
+  " All windows in the FR_ROW should have the same height.
+  let info = map(range(1, winnr('$')), 'getwininfo(win_getid(v:val))[0]')
+  " Find the two bottom windows (same winrow).
+  let bottom = filter(copy(info), 'v:val.winrow == info[-1].winrow')
+  call assert_equal(2, len(bottom))
+  call assert_equal(bottom[0].height, bottom[1].height)
+  " Their status lines must not overlap: winrow + height must be the same.
+  call assert_equal(bottom[0].winrow + bottom[0].height,
+        \           bottom[1].winrow + bottom[1].height)
+
+  set ls&
+  only!
+endfunc
+
+" Test that when FR_ROW windows have different status line heights (due to
+" window-local 'statuslineopt'), content heights compensate so that total
+" rows are equal across the row.
+func Test_laststatus_vsplit_row_height_mixed_stlo()
+  setlocal stlo=fixedheight,maxheight:2
+  let wid_stlo = win_getid()
+  rightbelow vnew
+  let wid_plain = win_getid()
+  topleft new
+  set ls=0
+  wincmd _
+
+  set ls=2
+
+  " stlo window: status_height=2, plain window: status_height=1.
+  " Content heights must compensate so total rows are equal.
+  let h_stlo = winheight(win_id2win(wid_stlo))
+  let h_plain = winheight(win_id2win(wid_plain))
+  call assert_equal(h_stlo + 1, h_plain)
+
+  set ls&
+  only!
+endfunc
+
+" Same as above but with the stlo window on the right (second leaf in FR_ROW).
+func Test_laststatus_vsplit_row_height_mixed_stlo_reversed()
+  leftabove vnew
+  let wid_plain = win_getid()
+  wincmd p
+  setlocal stlo=fixedheight,maxheight:2
+  let wid_stlo = win_getid()
+  topleft new
+  set ls=0
+  wincmd _
+
+  set ls=2
+
+  let h_stlo = winheight(win_id2win(wid_stlo))
+  let h_plain = winheight(win_id2win(wid_plain))
+  call assert_equal(h_stlo + 1, h_plain)
+
+  set ls&
+  only!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
