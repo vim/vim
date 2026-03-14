@@ -413,7 +413,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     javascriptreact: ['file.jsx'],
     jess: ['file.clp'],
     jgraph: ['file.jgr'],
-    jinja: ['file.jinja'],
+    jinja: ['file.jinja', 'file.j2'],
     jjdescription: ['file.jjdescription'],
     jovial: ['file.jov', 'file.j73', 'file.jovial'],
     jproperties: ['file.properties', 'file.properties_xx', 'file.properties_xx_xx', 'some.properties_xx_xx_file', 'org.eclipse.xyz.prefs'],
