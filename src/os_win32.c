@@ -160,42 +160,11 @@ static int suppress_winsize = 1;	// don't fiddle with console
 
 static WCHAR *exe_pathw = NULL;
 
-static BOOL win8_or_later = FALSE;
-BOOL win10_22H2_or_later = FALSE;
-BOOL win11_or_later = FALSE; // used in gui_mch_set_titlebar_colors(void)
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static BOOL use_alternate_screen_buffer = FALSE;
 #endif
 
-/*
- * Get version number including build number
- */
-typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
-#define MAKE_VER(major, minor, build) \
-    (((major) << 24) | ((minor) << 16) | (build))
-
-    static DWORD
-get_build_number(void)
-{
-    OSVERSIONINFOW	osver;
-    HMODULE		hNtdll;
-    PfnRtlGetVersion	pRtlGetVersion;
-    DWORD		ver = MAKE_VER(0, 0, 0);
-
-    osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
-    hNtdll = GetModuleHandle("ntdll.dll");
-    if (hNtdll == NULL)
-	return ver;
-
-    pRtlGetVersion =
-	(PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
-    pRtlGetVersion(&osver);
-    ver = MAKE_VER(min(osver.dwMajorVersion, 255),
-	    min(osver.dwMinorVersion, 255),
-	    min(osver.dwBuildNumber, 32767));
-    return ver;
-}
+extern DWORD win_version; // this is in os_mswin.c
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     static BOOL
@@ -257,7 +226,7 @@ read_console_input(
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
 
-    if (!win8_or_later)
+    if (win_version < MAKE_VER(6, 2, 0)) // Before Windows 8
     {
 	if (nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
@@ -918,39 +887,17 @@ win32_enable_privilege(LPTSTR lpszPrivilege)
 }
 #endif
 
-#ifdef _MSC_VER
-// Suppress the deprecation warning for using GetVersionEx().
-// It is needed for implementing "windowsversion()".
-# pragma warning(push)
-# pragma warning(disable: 4996)
-#endif
 /*
- * Set "win8_or_later" and fill in "windowsVersion" if possible.
+ * Fill in "windowsVersion" if possible and enable security privilege for ACL.
  */
     void
 PlatformId(void)
 {
-    OSVERSIONINFO ovi;
-
-    ovi.dwOSVersionInfoSize = sizeof(ovi);
-    if (!GetVersionEx(&ovi))
-	return;
-
 #ifdef FEAT_EVAL
-    vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
-	    (int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
+    DWORD major = (win_version >> 24) & 0xFF;
+    DWORD minor = (win_version >> 16) & 0xFF;
+    vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d", major, minor);
 #endif
-    if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
-	    || ovi.dwMajorVersion > 6)
-	win8_or_later = TRUE;
-
-    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
-	    || ovi.dwMajorVersion > 10)
-	win10_22H2_or_later = TRUE;
-
-    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
-	    || ovi.dwMajorVersion > 10)
-	win11_or_later = TRUE;
 
 #ifdef HAVE_ACL
     // Enable privilege for getting or setting SACLs.
@@ -958,9 +905,6 @@ PlatformId(void)
 	return;
 #endif
 }
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
@@ -8537,7 +8481,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
  * Support for 256 colors and 24-bit colors was added in Windows 10
  * version 1703 (Creators update).
  */
-#define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+#define VTP_FIRST_SUPPORT_BUILD	    MAKE_VER(10, 0, 15063)
 
 /*
  * Support for pseudo-console (ConPTY) was added in windows 10
@@ -8582,7 +8526,6 @@ mch_setenv(char *var, char *value, int x UNUSED)
     static void
 vtp_flag_init(void)
 {
-    DWORD   ver = get_build_number();
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     DWORD   mode;
     HANDLE  out;
@@ -8593,7 +8536,7 @@ vtp_flag_init(void)
     {
 	out = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
+	vtp_working = (win_version >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
 	GetConsoleMode(out, &mode);
 	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(out, mode) == 0)
@@ -8601,26 +8544,26 @@ vtp_flag_init(void)
 
 	// VTP uses alternate screen buffer.
 	// But, not if running in a nested terminal
-	use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
-						&& !mch_getenv("VIM_TERMINAL");
+	use_alternate_screen_buffer = win_version >= MAKE_VER(10, 0, 19045)
+	    && p_rs && vtp_working && !mch_getenv("VIM_TERMINAL");
     }
 #endif
 
-    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
+    if (win_version >= CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_working = 1;
-    if (ver >= CONPTY_STABLE_BUILD)
+    if (win_version >= CONPTY_STABLE_BUILD)
 	conpty_stable = 1;
 
-    if (ver <= CONPTY_INSIDER_BUILD)
+    if (win_version <= CONPTY_INSIDER_BUILD)
 	conpty_type = 3;
-    if (ver <= CONPTY_1909_BUILD)
+    if (win_version <= CONPTY_1909_BUILD)
 	conpty_type = 2;
-    if (ver <= CONPTY_1903_BUILD)
+    if (win_version <= CONPTY_1903_BUILD)
 	conpty_type = 2;
-    if (ver < CONPTY_FIRST_SUPPORT_BUILD)
+    if (win_version < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
 
-    if (ver >= CONPTY_NEXT_UPDATE_BUILD)
+    if (win_version >= CONPTY_NEXT_UPDATE_BUILD)
 	conpty_fix_type = 1;
 }
 

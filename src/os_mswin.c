@@ -16,7 +16,6 @@
 #include "vim.h"
 
 #include <sys/types.h>
-#include <signal.h>
 #include <limits.h>
 
 #include <process.h>
@@ -106,12 +105,42 @@ mch_exit_g(int r)
 
 
 /*
+ * Get version number including build number
+ */
+typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
+DWORD win_version;
+    static void
+win_version_init(void)
+{
+    OSVERSIONINFOW	osver;
+    HMODULE		hNtdll;
+    PfnRtlGetVersion	pRtlGetVersion;
+
+    hNtdll = GetModuleHandle("ntdll.dll");
+    if (hNtdll == NULL)
+	return;
+
+    pRtlGetVersion =
+	(PfnRtlGetVersion) GetProcAddress(hNtdll, "RtlGetVersion");
+    if (pRtlGetVersion == NULL)
+	return;
+
+    osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+    pRtlGetVersion(&osver);
+    win_version =
+	MAKE_VER(osver.dwMajorVersion, osver.dwMinorVersion,
+		 osver.dwBuildNumber);
+}
+
+/*
  * Init the tables for toupper() and tolower().
  */
     void
 mch_early_init(void)
 {
     int		i;
+
+    win_version_init();
 
     PlatformId();
 
