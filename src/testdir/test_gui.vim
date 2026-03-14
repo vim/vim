@@ -918,7 +918,7 @@ endfunc
 
 " Test "vim -g" and also the GUIEnter autocommand.
 func Test_gui_dash_g()
-  let cmd = GetVimCommand('Xscriptgui')
+  let cmd = GetVimCommand('Xscriptgui --noplugin')
   call writefile([""], "Xtestgui", 'D')
   let lines =<< trim END
 	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
@@ -931,7 +931,7 @@ endfunc
 
 " Test "vim -7" and also the GUIEnter autocommand.
 func Test_gui_dash_y()
-  let cmd = GetVimCommand('Xscriptgui')
+  let cmd = GetVimCommand('Xscriptgui --noplugin')
   call writefile([""], "Xtestgui", 'D')
   let lines =<< trim END
 	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")

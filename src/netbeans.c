@@ -1275,7 +1275,7 @@ nb_do_cmd(
 						 del_from_lnum, del_to_lnum));
 		    curwin->w_cursor.lnum = del_from_lnum;
 		    curwin->w_cursor.col = 0;
-		    del_lines(del_to_lnum - del_from_lnum + 1, FALSE);
+		    del_lines(del_to_lnum - del_from_lnum + 1, FALSE, 0);
 		}
 
 		// Leave cursor at first deleted byte.

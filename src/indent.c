@@ -2193,6 +2193,7 @@ get_lisp_indent(void)
 
 			init_chartabsize_arg(&cts, curwin,
 				   (colnr_T)(that - line), amount, line, that);
+			that = ml_get_curline();
 			if (vi_lisp
 				|| (*that != '"'
 				    && *that != '\''

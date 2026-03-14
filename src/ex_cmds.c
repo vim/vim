@@ -1515,7 +1515,7 @@ do_filter(
 	     * Adjust '[ and '] (set by buf_write()).
 	     */
 	    curwin->w_cursor.lnum = line1;
-	    del_lines(linecount, TRUE);
+	    del_lines(linecount, TRUE, 0);
 	    curbuf->b_op_start.lnum -= linecount;	// adjust '[
 	    curbuf->b_op_end.lnum -= linecount;		// adjust ']
 	    write_lnum_adjust(-linecount);		// adjust last line
@@ -4404,7 +4404,6 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 	    colnr_T	total_added =  0;
-	    int		text_prop_count = 0;
 #endif
 
 	    /*
@@ -4520,7 +4519,7 @@ ex_substitute(exarg_T *eap)
 			skip_match = TRUE;
 		    else
 		    {
-			 // search for a match at next column
+			// search for a match at next column
 			if (has_mbyte)
 			    matchcol += mb_ptr2len(sub_firstline + matchcol);
 			else
@@ -4849,76 +4848,51 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 		    if (curbuf->b_has_textprop)
 		    {
-			int bytes_added = sublen - 1 - (regmatch.endpos[0].col
-						   - regmatch.startpos[0].col);
-
-			// When text properties are changed, need to save for
-			// undo first, unless done already.
-			if (adjust_prop_columns(lnum,
-					total_added + regmatch.startpos[0].col,
-						       bytes_added, apc_flags))
-			    apc_flags &= ~APC_SAVE_FOR_UNDO;
-			// Offset for column byte number of the text property
-			// in the resulting buffer afterwards.
-			total_added += bytes_added;
+			const colnr_T bytes_removed = regmatch.endpos[0].col
+						    - regmatch.startpos[0].col;
+			const colnr_T adj_col       = total_added
+						    + regmatch.startpos[0].col;
+			if (regmatch.endpos[0].lnum > regmatch.startpos[0].lnum)
+			{
+			    // A special case when nmatch == 1, but end lnum !=
+			    // start lnum.
+			    prop_trim_trailing_bytes(
+				curbuf, lnum, adj_col + 1, &apc_flags, FALSE);
+			}
+			else
+			{
+			    if (bytes_removed > 0)
+				prop_remove_bytes(
+					curbuf, lnum, adj_col + 1, bytes_removed,
+					&apc_flags);
+			}
+			if (sublen > 1)
+			    prop_add_bytes(
+				    curbuf, lnum, adj_col, sublen - 1, &apc_flags);
 		    }
 #endif
 		}
 		else
 		{
-		    linenr_T	lastlnum = sub_firstlnum + nmatch - 1;
+		    linenr_T lastlnum = sub_firstlnum + nmatch - 1;
+		    nmatch_tl += nmatch - 1;
+
 #ifdef FEAT_PROP_POPUP
+		    // Now the first line's properties can be adjusted to
+		    // reflect the pending truncation and addition of the
+		    // substitution text.
 		    if (curbuf->b_has_textprop)
 		    {
-			char_u	*prop_start;
-
-			// Props in the first line may be shortened or deleted
-			if (adjust_prop_columns(lnum,
-					total_added + regmatch.startpos[0].col,
-						       -MAXCOL, apc_flags))
-			    apc_flags &= ~APC_SAVE_FOR_UNDO;
-			total_added -= (colnr_T)STRLEN(
-				     sub_firstline + regmatch.startpos[0].col);
-
-			// Props in the last line may be moved or deleted
-			if (adjust_prop_columns(lastlnum,
-					0, -regmatch.endpos[0].col, apc_flags))
-			    // When text properties are changed, need to save
-			    // for undo first, unless done already.
-			    apc_flags &= ~APC_SAVE_FOR_UNDO;
-
-			// Copy the text props of the last line, they will be
-			// later appended to the changed line.
-			text_prop_count = get_text_props(curbuf, lastlnum,
-							   &prop_start, FALSE);
-			if (text_prop_count > 0)
-			{
-			    // TODO: what when we already did this?
-			    vim_free(text_props);
-			    text_props = ALLOC_MULT(textprop_T,
-							      text_prop_count);
-			    if (text_props != NULL)
-			    {
-				int pi;
-
-				mch_memmove(text_props, prop_start,
-					 text_prop_count * sizeof(textprop_T));
-				// After joining the text prop columns will
-				// increase.
-				for (pi = 0; pi < text_prop_count; ++pi)
-				    text_props[pi].tp_col +=
-					 regmatch.startpos[0].col + sublen - 1;
-			    }
-			}
+			const colnr_T adj_col = total_added
+					      + regmatch.startpos[0].col;
+			prop_trim_trailing_bytes(
+			    curbuf, lnum, adj_col + 1, &apc_flags, FALSE);
+			if (sublen > 1)
+			    prop_add_bytes(
+				curbuf, lnum, adj_col, sublen - 1, &apc_flags);
 		    }
 #endif
 		    p1 = ml_get(lastlnum);
-		    nmatch_tl += nmatch - 1;
-#ifdef FEAT_PROP_POPUP
-		    if (curbuf->b_has_textprop)
-			total_added += (colnr_T)STRLEN(
-						  p1 + regmatch.endpos[0].col);
-#endif
 		}
 		copy_len = regmatch.startpos[0].col - copycol;
 		needed_len = copy_len + ((unsigned)STRLEN(p1)
@@ -5029,14 +5003,9 @@ ex_substitute(exarg_T *eap)
 			STRMOVE(p1, p1 + 1);
 #ifdef FEAT_PROP_POPUP
 			if (curbuf->b_has_textprop)
-			{
-			    // When text properties are changed, need to save
-			    // for undo first, unless done already.
-			    if (adjust_prop_columns(lnum,
-					(colnr_T)(p1 - new_start), -1,
-					apc_flags))
-				apc_flags &= ~APC_SAVE_FOR_UNDO;
-			}
+			    prop_remove_bytes(
+				curbuf, lnum, (colnr_T)(p1 - new_start + 1),
+				1, &apc_flags);
 #endif
 		    }
 		    else if (*p1 == CAR)
@@ -5121,38 +5090,98 @@ skip:
 			 * have changed the number of characters.  Same for
 			 * "prev_matchcol".
 			 */
-			STRCAT(new_start, sub_firstline + copycol);
 			matchcol = (colnr_T)STRLEN(sub_firstline) - matchcol;
 			prev_matchcol = (colnr_T)STRLEN(sub_firstline)
 							      - prev_matchcol;
+			linenr_T join_start_line = lnum;
+			linenr_T del_start_lnum = lnum + 1;
+			long del_count = nmatch_tl - 1;
+			bool start_line_is_dead = FALSE;
+			if (nmatch_tl == 0)
+			{
+			    STRCAT(new_start, sub_firstline + copycol);
+			    if (u_savesub(lnum) != OK)
+				break;
+			    ml_replace(lnum, new_start, TRUE);
+			}
+			else
+			{
+			    if (STRLEN(new_start) == 0)
+			    {
+				start_line_is_dead = TRUE;
+				join_start_line -= 1;
+				del_start_lnum -= 1;
+				del_count += 1;
+			    }
+			    else
+			    {
+				if (u_savesub(lnum) != OK)
+				    break;
+				ml_replace(lnum, new_start, TRUE);
+			    }
+			}
 
-			if (u_savesub(lnum) != OK)
-			    break;
-			ml_replace(lnum, new_start, TRUE);
-#ifdef FEAT_PROP_POPUP
-			if (text_props != NULL)
-			    add_text_props(lnum, text_props, text_prop_count);
-#endif
 			if (nmatch_tl > 0)
 			{
-			    /*
-			     * Matched lines have now been substituted and are
-			     * useless, delete them.  The part after the match
-			     * has been appended to new_start, we don't need
-			     * it in the buffer.
-			     */
-			    ++lnum;
-			    if (u_savedel(lnum, nmatch_tl) != OK)
-				break;
-			    for (i = 0; i < nmatch_tl; ++i)
-				ml_delete(lnum);
-			    mark_adjust(lnum, lnum + nmatch_tl - 1,
-						   (long)MAXLNUM, -nmatch_tl);
+			    // Save undo info for all deleted lines, but do not
+			    // delete the last line in the match. The last line
+			    // gets joined to the first line a bit later.
+			    linenr_T saved_lnum = lnum;
+			    lnum = del_start_lnum;
+			    if (del_count > 0)
+			    {
+				if (u_savedel(lnum, del_count) != OK)
+				    break;
+				for (i = 0; i < del_count; ++i)
+				    ml_delete(lnum);
+			    }
+			    if (copycol > 0)
+				mark_adjust(
+				    lnum, lnum + del_count, MAXLNUM,
+				    -del_count - 1);
+			    else
+				mark_adjust(
+				    lnum, lnum + del_count - 1, MAXLNUM,
+				    -del_count);
+
+			    // Replace the last line of the multiline match with the
+			    // part that is being kept.
+			    const size_t repl_len = STRLEN(sub_firstline + copycol);
+#ifdef FEAT_PROP_POPUP
+			    if (curbuf->b_has_textprop)
+			    {
+				if (repl_len == 0)
+				{
+				    // The last line in the match, which will
+				    // be joined to the first line, is empty.
+				    prop_trim_trailing_bytes(
+					    curbuf, lnum, 1, &apc_flags, TRUE);
+				    mark_adjust(lnum, lnum, MAXLNUM, 0);
+				}
+				else if (copycol > 0)
+				{
+				    prop_trim_leading_bytes(
+					    curbuf, lnum, copycol, &apc_flags);
+				}
+			    }
+			    ml_replace(lnum, sub_firstline + copycol, TRUE);
+#else
+			    if (repl_len == 0)
+				mark_adjust(lnum, lnum, MAXLNUM, 0);
+#endif
 			    if (subflags.do_ask)
 				deleted_lines(lnum, nmatch_tl);
-			    --lnum;
-			    line2 -= nmatch_tl; // nr of lines decreases
+
+			    // Join the last line to the first.
+			    curwin->w_cursor.lnum = join_start_line;
+			    curwin->w_cursor.col = 1;
+			    curwin->w_cursor.coladd = 0;
+			    if (!start_line_is_dead)
+				do_join(2, FALSE, TRUE, FALSE, FALSE);
+			    lnum = saved_lnum;
+			    line2 -= 1;
 			    nmatch_tl = 0;
+			    STRCAT(new_start, sub_firstline + copycol);
 			}
 
 			// When asking, undo is saved each time, must also set
@@ -5610,9 +5639,9 @@ free_old_sub(void)
  */
     int
 prepare_tagpreview(
-    int		undo_sync,	    // sync undo when leaving the window
-    int		use_previewpopup,   // use popup if 'previewpopup' set
-    use_popup_T	use_popup)	    // use other popup window
+    int		undo_sync,	          // sync undo when leaving the window
+    int		use_previewpopup UNUSED,  // use popup if 'previewpopup' set
+    use_popup_T	use_popup UNUSED)	  // use other popup window
 {
     win_T	*wp;
 

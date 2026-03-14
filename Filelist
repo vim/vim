@@ -246,6 +246,8 @@ SRC_ALL =	\
 		src/testdir/util/setup_gui.vim \
 		src/testdir/util/shared.vim \
 		src/testdir/util/summarize.vim \
+		src/testdir/util/textprop.py \
+		src/testdir/util/textprop_support.vim \
 		src/testdir/util/term_util.vim \
 		src/testdir/util/view_util.vim \
 		src/testdir/util/vim9.vim \

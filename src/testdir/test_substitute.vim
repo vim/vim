@@ -1076,7 +1076,7 @@ func Test_sub_change_window()
   delfunc Repl
 endfunc
 
-" This was undoign a change in between computing the length and using it.
+" This was undoing a change in between computing the length and using it.
 func Do_Test_sub_undo_change()
   new
   norm o0000000000000000000000000000000000000000000000000000

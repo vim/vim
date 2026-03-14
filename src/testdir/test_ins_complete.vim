@@ -3311,7 +3311,7 @@ endfunc
 func Test_ins_complete_end_of_line()
   " this was reading past the end of the line
   new
-  norm 8oý 
+  norm 8oý
   sil! norm o
 
   bwipe!
@@ -6074,7 +6074,7 @@ func Test_fuzzy_select_item_when_acl()
   CheckScreendump
   let lines =<< trim [SCRIPT]
     call setline(1, ["v", "vi", "vim"])
-    set autocomplete completeopt=menuone,noinsert,fuzzy autocompletedelay=300
+    set autocomplete completeopt=menuone,noinsert,fuzzy autocompletedelay=50
   [SCRIPT]
   call writefile(lines, 'XTest_autocomplete_delay', 'D')
   let buf = RunVimInTerminal('-S XTest_autocomplete_delay', {'rows': 10})

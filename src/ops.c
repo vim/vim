@@ -619,7 +619,7 @@ shift_block(oparg_T *oap, int amount)
 	STRCPY(newp + newlen + fill, non_white);
     }
     // replace the line
-    ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+    ml_replace(curwin->w_cursor.lnum, newp, ML_TAKE_OWNERSHIP_OF_LINE);
 
     // compute the number of bytes added or subtracted.
     // note new_line_len and oldlen are unsigned so we have
@@ -742,7 +742,7 @@ block_insert(
 	    offset += count;
 	STRCPY(newp + offset, oldp);
 
-	ml_replace(lnum, newp, FALSE);
+	ml_replace(lnum, newp, ML_TAKE_OWNERSHIP_OF_LINE);
 
 	if (b_insert)
 	    // correct any text properties
@@ -979,7 +979,7 @@ op_delete(oparg_T *oap)
 	    STRCPY(newp + bd.textcol + bd.startspaces + bd.endspaces,
 				    oldp + bd.textcol + bd.textlen);
 	    // replace the line
-	    ml_replace(lnum, newp, FALSE);
+	    ml_replace(lnum, newp, ML_TAKE_OWNERSHIP_OF_LINE);
 
 #ifdef FEAT_PROP_POPUP
 	    if (curbuf->b_has_textprop && n != 0)
@@ -1003,7 +1003,7 @@ op_delete(oparg_T *oap)
 	    {
 		lnum = curwin->w_cursor.lnum;
 		++curwin->w_cursor.lnum;
-		del_lines((long)(oap->line_count - 1), TRUE);
+		del_lines((long)(oap->line_count - 1), TRUE, 0);
 		curwin->w_cursor.lnum = lnum;
 	    }
 	    if (u_save_cursor() == FAIL)
@@ -1023,7 +1023,7 @@ op_delete(oparg_T *oap)
 	}
 	else
 	{
-	    del_lines(oap->line_count, TRUE);
+	    del_lines(oap->line_count, TRUE, 0);
 	    beginline(BL_WHITE | BL_FIX);
 	    u_clearline();	// "U" command not possible after "dd"
 	}
@@ -1117,7 +1117,7 @@ op_delete(oparg_T *oap)
 
 	    curpos = curwin->w_cursor;	// remember curwin->w_cursor
 	    ++curwin->w_cursor.lnum;
-	    del_lines((long)(oap->line_count - 2), FALSE);
+	    del_lines((long)(oap->line_count - 2), FALSE, 0);
 
 	    // delete from start of line until op_end
 	    n = (oap->end.col + 1 - !oap->inclusive);
@@ -1326,7 +1326,7 @@ op_replace(oparg_T *oap, int c)
 	    }
 
 	    // replace the line
-	    ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+	    ml_replace(curwin->w_cursor.lnum, newp, ML_TAKE_OWNERSHIP_OF_LINE);
 	    if (after_p != NULL)
 	    {
 		ml_append(curwin->w_cursor.lnum++, after_p, 0, FALSE);
@@ -2018,7 +2018,7 @@ op_change(oparg_T *oap)
 			newlen += vpos.coladd;
 			mch_memmove(newp + newlen, ins_text, ins_len);
 			STRCPY(newp + newlen + ins_len, oldp + bd.textcol);
-			ml_replace(linenr, newp, FALSE);
+			ml_replace(linenr, newp, ML_TAKE_OWNERSHIP_OF_LINE);
 #ifdef FEAT_PROP_POPUP
 			// Shift the properties for linenr as edit() would do.
 			if (curbuf->b_has_textprop)
@@ -2172,10 +2172,6 @@ do_join(
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
-#ifdef FEAT_PROP_POPUP
-    int		propcount = 0;	// number of props over all joined lines
-    int		props_remaining;
-#endif
 
     if (save_undo && u_save((linenr_T)(curwin->w_cursor.lnum - 1),
 			    (linenr_T)(curwin->w_cursor.lnum + count)) == FAIL)
@@ -2205,10 +2201,6 @@ do_join(
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
-#ifdef FEAT_PROP_POPUP
-	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t),
-							t > 0, t + 1 == count);
-#endif
 	if (t == 0 && setmark && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
 	    // Set the '[ mark.
@@ -2295,9 +2287,6 @@ do_join(
 
     // allocate the space for the new line
     newp_len = sumsize + 1;
-#ifdef FEAT_PROP_POPUP
-    newp_len += propcount * sizeof(textprop_T);
-#endif
     newp = alloc(newp_len);
     if (newp == NULL)
     {
@@ -2316,7 +2305,13 @@ do_join(
      * should not really be a problem.
      */
 #ifdef FEAT_PROP_POPUP
-    props_remaining = propcount;
+    unpacked_memline_T umemline = um_open_at_no_props(
+	    curwin->w_buffer, curwin->w_cursor.lnum, 0);
+
+    // Creating the unpacked_memline_T may have invalidated the "curr" pointer.
+    int curr_off = curr - curr_start;
+    curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + count - 1));
+    curr += curr_off;
 #endif
     for (t = count - 1; ; --t)
     {
@@ -2338,8 +2333,8 @@ do_join(
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, -t,
 			 (long)(cend - newp - spaces_removed), spaces_removed);
 #ifdef FEAT_PROP_POPUP
-	prepend_joined_props(newp + sumsize + 1, propcount, &props_remaining,
-		curwin->w_cursor.lnum + t, t == count - 1,
+	prepend_joined_props(
+		&umemline, curwin->w_cursor.lnum + t, t == count - 1,
 		(long)(cend - newp), spaces_removed);
 #endif
 	if (t == 0)
@@ -2352,7 +2347,22 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
+#ifdef FEAT_PROP_POPUP
+    if (umemline.buf == 0)
+    {
+	// Not enough memory to update the properties, just store the text.
+	ml_replace_len(
+	    curwin->w_cursor.lnum, newp, (colnr_T)newp_len, TRUE, FALSE);
+    }
+    else
+    {
+	um_set_text(&umemline, newp);
+	um_reverse_props(&umemline);
+	um_close(&umemline);
+    }
+#else
     ml_replace_len(curwin->w_cursor.lnum, newp, (colnr_T)newp_len, TRUE, FALSE);
+#endif
 
     if (setmark && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
@@ -2372,7 +2382,10 @@ do_join(
      */
     t = curwin->w_cursor.lnum;
     ++curwin->w_cursor.lnum;
-    del_lines(count - 1, FALSE);
+    if (count > 2)
+	del_lines(count - 2, FALSE, ML_DEL_NO_ADJ_PREV | ML_DEL_NO_ADJ_NEXT);
+    del_lines(1, FALSE, ML_DEL_NO_ADJ_PREV);
+
     curwin->w_cursor.lnum = t;
 
     /*
@@ -2388,6 +2401,9 @@ do_join(
     curwin->w_set_curswant = TRUE;
 
 theend:
+#ifdef FEAT_PROP_POPUP
+    um_close(&umemline);
+#endif
     vim_free(spaces);
     if (remove_comments)
 	vim_free(comments);
