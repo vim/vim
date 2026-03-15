@@ -1371,6 +1371,9 @@ diff_file(diffio_T *dio)
     if (dio->dio_internal)
 	return diff_file_internal(dio);
 
+    if (check_restricted())
+	return FAIL;
+
     len = STRLEN(tmp_orig) + STRLEN(tmp_new)
 				+ STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
     cmd = alloc(len);
