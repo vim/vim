@@ -2729,7 +2729,7 @@ msgid " Arabic"
 msgstr " Arabic"
 
 msgid " (paste)"
-msgstr " (Õ³Ìû)"
+msgstr " (Õ³Ìù)"
 
 msgid " VISUAL"
 msgstr " ¿ÉÊÓ"
