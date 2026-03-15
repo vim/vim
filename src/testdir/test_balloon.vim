@@ -53,12 +53,15 @@ func Test_balloon_eval_term_visual()
   " the balloon.
   call writefile(s:common_script + [
 	\ 'call test_setmouse(3, 6)',
-	\ 'call feedkeys("3Gevfr\<MouseMove>\<Ignore>", "xt")',
+	\ 'call feedkeys("3Gevfr", "xt")',
+	\ 'redraw!',
+	\ 'call feedkeys("\<MouseMove>\<Ignore>", "xt")',
 	\ ], 'XTest_beval_visual', 'D')
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_beval_visual', {'rows': 10, 'cols': 50})
   call TermWait(buf, 50)
+  call WaitForAssert({-> assert_match('-- VISUAL --', term_getline(buf, 10))})
   call VerifyScreenDump(buf, 'Test_balloon_eval_term_02', {})
 
   " clean up
