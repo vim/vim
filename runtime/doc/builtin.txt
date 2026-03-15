@@ -11714,7 +11714,7 @@ system({expr} [, {input}])				*system()* *E677*
 		cooked mode.  This is meant to be used for commands that do
 		not need the user to type.  It avoids stray characters showing
 		up on the screen which require |CTRL-L| to remove.
-		When calling system() from a |statusline| expression, an
+		When calling system() from a 'statusline' expression, an
 		|autocommand| or a |timer| callback, you should use |:silent|
 		to avoid terminal responses (e.g. from cursor style queries)
 		being echoed on the screen. >
@@ -11776,7 +11776,7 @@ systemlist({expr} [, {input}])				*systemlist()*
 		Returns an empty string on error.
 
 		Like |system()|, prepend |:silent| when the command does not
-		need user interaction and is called from a |statusline|
+		need user interaction and is called from a 'statusline'
 		expression, an |autocommand| or a |timer| callback.  See
 		|system()| for details.
 
