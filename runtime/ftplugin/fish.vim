@@ -9,6 +9,10 @@
 if exists("b:did_ftplugin")
     finish
 endif
+
+let s:saved_cpo = &cpo
+set cpo-=C
+
 let b:did_ftplugin = 1
 
 setlocal iskeyword=@,48-57,_,192-255,-,.
@@ -21,8 +25,14 @@ let b:undo_ftplugin = "setl cms< com< fo< isk<"
 " Define patterns for the matchit plugin
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_words =
-      \ '\<\%(else\s\+\)\@<!if\>:\<else\s\+if\>:\<else\>:\<end\>,' .
-      \ '\<switch\>:\<case\>:\<end\>,' .
+      \ '\<\%(else\s\+\)\@<!if\>:\<else\%(\s\+if\)\?\>:\<end\>,' ..
+      \ '\<switch\>:\<case\>:\<end\>,' ..
       \ '\<\(begin\|function\|while\|for\)\>:\<end\>'
-  let b:undo_ftplugin .= "|unlet! b:match_words"
+  let b:match_ignorecase = 0
+
+  let b:undo_ftplugin .= "|unlet! b:match_words b:match_ignorecase"
 endif
+
+" Restore 'cpo' to its original value
+let &cpo = s:saved_cpo
+unlet s:saved_cpo
