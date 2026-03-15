@@ -1082,6 +1082,10 @@ static int included_patches[] =
 static char *(extra_patches[]) =
 {   /* Add your patch description below this line */
 /**/
+    "fix xtermcodes keypad",
+/**/
+    "fix cpo no k",
+/**/
     NULL
 };
 
