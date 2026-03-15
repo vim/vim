@@ -5758,6 +5758,9 @@ update_winhighlight(win_T *wp, char_u *opt)
     if (arr == NULL && err != NULL)
 	return err;
 
+    if (arr == NULL && wp->w_hl == NULL)
+	return NULL;
+
     update_highlight_overrides(wp->w_hl, arr, num);
 
     vim_free(wp->w_hl);

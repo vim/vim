@@ -3283,6 +3283,12 @@ popup_close_tabpage(tabpage_T *tp, int id, int force)
 		}
 		back_to_prevwin(wp);
 	    }
+
+	    // Set curwin for tabpage to a valid window, in case we try
+	    // accessing it later.
+	    if (tp->tp_curwin == wp)
+		tp->tp_curwin = tp->tp_firstwin;
+
 	    if (prev == NULL)
 		*root = wp->w_next;
 	    else
