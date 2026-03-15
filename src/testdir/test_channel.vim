@@ -2798,8 +2798,11 @@ func Test_listen_invalid_address()
     " port number too large
     call assert_fails("call ch_listen('localhost:99999')", 'E475:')
 
-    " port number zero
-    call assert_fails("call ch_listen('localhost:0')", 'E475:')
+    " port number zero should let the OS assign an available port
+    let ch = ch_listen('localhost:0')
+    call assert_equal('open', ch_status(ch))
+    call assert_notequal(0, ch_info(ch).port)
+    call ch_close(ch)
 
     " port number negative
     call assert_fails("call ch_listen('localhost:-1')", 'E475:')
