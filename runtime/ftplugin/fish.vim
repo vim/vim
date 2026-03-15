@@ -17,3 +17,12 @@ setlocal commentstring=#\ %s
 setlocal formatoptions+=crjq
 
 let b:undo_ftplugin = "setl cms< com< fo< isk<"
+
+" Define patterns for the matchit plugin
+if exists("loaded_matchit") && !exists("b:match_words")
+  let b:match_words =
+      \ '\<\%(else\s\+\)\@<!if\>:\<else\s\+if\>:\<else\>:\<end\>,' .
+      \ '\<switch\>:\<case\>:\<end\>,' .
+      \ '\<\(begin\|function\|while\|for\)\>:\<end\>'
+  let b:undo_ftplugin .= "|unlet! b:match_words"
+endif
