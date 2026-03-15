@@ -11713,7 +11713,11 @@ system({expr} [, {input}])				*system()* *E677*
 		When prepended by |:silent| the terminal will not be set to
 		cooked mode.  This is meant to be used for commands that do
 		not need the user to type.  It avoids stray characters showing
-		up on the screen which require |CTRL-L| to remove. >
+		up on the screen which require |CTRL-L| to remove.
+		When calling system() from a |statusline| expression, an
+		|autocommand| or a |timer| callback, you should use |:silent|
+		to avoid terminal responses (e.g. from cursor style queries)
+		being echoed on the screen. >
 			:silent let f = system('ls *.vim')
 <
 		Note: Use |shellescape()| or |::S| with |expand()| or
@@ -11770,6 +11774,11 @@ systemlist({expr} [, {input}])				*systemlist()*
 			echo system('echo hello')->split('\n', 1)
 <
 		Returns an empty string on error.
+
+		Like |system()|, prepend |:silent| when the command does not
+		need user interaction and is called from a |statusline|
+		expression, an |autocommand| or a |timer| callback.  See
+		|system()| for details.
 
 		Can also be used as a |method|: >
 			:echo GetCmd()->systemlist()
