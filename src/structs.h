@@ -3129,6 +3129,21 @@ typedef struct {
     char_u	*b_syn_isk;	    // iskeyword option
 } synblock_T;
 
+#ifdef FEAT_JOB_CHANNEL
+/*
+ * Holds history of prompts for a prompt buffer.
+ */
+typedef struct
+{
+    garray_T	bh_hist;    // Array of strings, from oldest to newest
+    int		bh_cur;	    // Index in history that we are currently on, -1 if
+			    // none.
+    int		bh_max;	    // Maximum number of prompts, older ones will be
+			    // removed if required
+    char_u	*bh_saved;  // Current non-entered prompt, used so user can go
+			    // back to it.
+} bufprompt_history_T;
+#endif
 
 /*
  * buffer: structure that holds information about one file
@@ -3586,6 +3601,7 @@ struct file_buffer
     callback_T	b_prompt_interrupt;	// set by prompt_setinterrupt()
     int		b_prompt_insert;	// value for restart_edit when entering
 					// a prompt buffer window.
+    bufprompt_history_T b_prompt_hist;	// history of prompts
 #endif
 #ifdef FEAT_MZSCHEME
     void	*b_mzscheme_ref; // The MzScheme reference to this buffer

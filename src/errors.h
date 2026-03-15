@@ -3812,4 +3812,6 @@ EXTERN char e_cannot_listen_on_port[]
 	INIT(= N_("E1573: Cannot listen on port"));
 EXTERN char e_gethostbyname_in_channel_listen[]
 	INIT(= N_("E1574: gethostbyname(): cannot resolve hostname in channel_listen()"));
+EXTERN char e_prompt_history_limit_nr[]
+	INIT(= N_("E1575: Prompt history is limited to a maximum of %d entries"));
 #endif

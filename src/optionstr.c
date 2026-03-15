@@ -1372,6 +1372,12 @@ did_set_buftype(optset_T *args UNUSED)
 	redraw_later(UPD_VALID);
     }
     curbuf->b_help = (curbuf->b_p_bt[0] == 'h');
+
+#ifdef FEAT_JOB_CHANNEL
+    if (!bt_prompt(curbuf))
+	init_prompt_history(curbuf, true);
+#endif
+
     redraw_titles();
 
     return NULL;

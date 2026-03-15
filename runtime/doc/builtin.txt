@@ -479,9 +479,20 @@ pow({x}, {y})			Float	{x} to the power of {y}
 preinserted()			Number	whether text is inserted after cursor
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
+prompt_gethistory({buf} [, {max}])
+				List	get prompt history
 prompt_getprompt({buf})		String	get prompt text
+prompt_histgoto({{buf}, {offset} [, {relative}])
+				Bool	set prompt to entry in history
+prompt_histsearch({{buf}, {offset} [, {text}])
+				Bool	search for prompt in history
 prompt_setcallback({buf}, {expr})
 				none	set prompt callback function
+prompt_sethistory({buf}, {entries} [, {set-current}])
+				none	set prompt history
+prompt_sethistsize({buf}, {max})
+				Number	set maximum number of items in prompt
+					history
 prompt_setinterrupt({buf}, {text})
 				none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
@@ -8434,6 +8445,27 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		Return type: |String|
 
+prompt_gethistory({buf} [, {max}])			*prompt_gethistory()*
+		Returns a list of up to "max" entries for the prompt history
+		of {buf}.  {buf} can be a buffer name or number.  See
+		|prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, an empty
+		list is returned.
+
+		If "max" is not provided, then the entire history is returned.
+		The first item in the list is always the current text (text
+		that has not been entered yet by the user).  Use a "max" value
+		of 1 to only get the current text.
+
+		A zero or negative "max" value will result in an error.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_gethistory()
+<
+		Return type: |List|
+
+		{only available when compiled with the |+channel| feature}
 
 prompt_getprompt({buf})					*prompt_getprompt()*
 		Returns the effective prompt text for buffer {buf}.  {buf} can
@@ -8449,6 +8481,69 @@ prompt_getprompt({buf})					*prompt_getprompt()*
 
 		{only available when compiled with the |+channel| feature}
 
+prompt_histgoto({buf}, {offset} [, {relative}])		*prompt_histgoto()*
+		Set the text in the prompt buffer to a specific entry in the
+		prompt history.  {buf} can be a buffer name or number.  See
+		|prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, false is
+		returned.
+
+		If "relative" is true, then "offset" is a offset from the
+		current position in history, and can be positive (go up in
+		history) or negative (go down in hisotry).
+
+		If "relative" is false, then "offset" is an absolute index
+		starting at zero in the prompt history.  A value of -1 will
+		move the current position to the non-entered text saved before
+		moving through the prompt history.
+
+		In both cases, the values will be clamped between the maximum
+		and minimum possible offsets or indexes.
+
+		By default if not provided, "relative" is true.  Returns true
+		if position in history moved.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_histgoto()
+<
+		Return type: |vim9-boolean|
+
+		{only available when compiled with the |+channel| feature}
+
+prompt_histsearch({buf}, {offset} [, {text}])		*prompt_histsearch()*
+		Search for a specific entry in the prompt history and set the
+		current text.  {buf} can be a buffer name or number.  See
+		|prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, false is
+		returned.
+
+		"offset" is a relative index to the nth entry in history that
+		has the "text" as its prefix.  For example: >
+			hello
+			hey
+			world!
+			inprogress|  <current position>
+<		To go to "hello" is history, do >vim
+			call prompt_histsearch(bufnr(), 2, "he")
+<
+		Note that the current text (in this case "inprogress"), will
+		always be used as if it was prefixed with "text".  For
+		example: >vim
+			call prompt_histsearch(bufnr(), -100, "unknown")
+<		In a prompt buffer history that does not have "unknown", will
+		result in the current text being used.
+
+		By default if "text" is not provided, the current text in the
+		prompt is used.  Returns true if position in history moved.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_histsearch()
+<
+		Return type: |vim9-boolean|
+
+		{only available when compiled with the |+channel| feature}
 
 prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		Set prompt callback for buffer {buf} to {expr}.  When {expr}
@@ -8487,6 +8582,57 @@ prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 
 <		{only available when compiled with the |+channel| feature}
 
+prompt_sethistory({buf}, {entries} [, {set-current}])	*prompt_sethistory()*
+		Overwrite the prompt history of {buf} to the given entries.
+		{buf} can be a buffer name or number.  See |prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, nothing
+		is done.
+
+		"entries" is a list of strings, ordered from most recent to
+		oldest.  If "set-current" is true, the first string in the
+		list should be the text that has not been entered yet in the
+		prompt.
+
+		If the new history list is smaller than the old one then older
+		entries are removed from history.  If one of the removed
+		entries is currently selected, then the current position
+		(non-entered text) is set to the now updated oldest entry.
+
+		By default if not provided, "set-current" is true.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_sethistory()
+<
+		{only available when compiled with the |+channel| feature}
+
+prompt_sethistsize({buf}, {max})			*prompt_sethistsize()*
+		Set the maximum prompt history size of {buf} to "max".  {buf}
+		can be a buffer name or number.  See |prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, nothing
+		is done and zero is returned.
+
+		If "max" is zero, then prompt history is disabled.  Otherwise
+		if "max" is negative, then nothing is done.
+
+		If the new history max size is smaller than the current amount
+		of entries in history, then older entries are removed from
+		history.  If one of the removed entries is currently selected,
+		then the current position (non-entered text) is set to the now
+		updated oldest entry.
+
+		Returns the new or current maximum history limit.  If you want
+		to get the current limit only, run: >vim
+			let size = prompt_sethistsize(bufnr(), -1)
+<
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_sethistsize()
+<
+		Return type: |Number|
+
+		{only available when compiled with the |+channel| feature}
+
 prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Set a callback for buffer {buf} to {expr}.  When {expr} is an
 		empty string the callback is removed.  This has only effect if
@@ -8499,8 +8645,6 @@ prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setinterrupt(callback)
 <
-		Return type: |Number|
-
 		{only available when compiled with the |+channel| feature}
 
 prompt_setprompt({buf}, {text})				*prompt_setprompt()*
@@ -8513,8 +8657,6 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
 <
-		Return type: |Number|
-
 		{only available when compiled with the |+channel| feature}
 
 prop_ functions are documented here: |text-prop-functions|

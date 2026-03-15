@@ -1399,8 +1399,13 @@ Tags:						*tag-functions*
 	settagstack()		modify the tag stack of a window
 
 Prompt Buffer:					*promptbuffer-functions*
+	prompt_gethistory()	get a list of previous prompt entries
 	prompt_getprompt()	get the effective prompt text for a buffer
+	prompt_histgoto()	move current prompt to an entry in history
+	prompt_histsearch()	search for matching prompt in history
 	prompt_setcallback()	set prompt callback for a buffer
+	prompt_sethistory()	set the prompt history
+	prompt_sethistsize()	set maximum limit for prompt history
 	prompt_setinterrupt()	set interrupt callback for a buffer
 	prompt_setprompt()	set the prompt text for a buffer
 

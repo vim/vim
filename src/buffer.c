@@ -1026,6 +1026,7 @@ free_buffer(buf_T *buf)
     vim_free(buf->b_prompt_text);
     free_callback(&buf->b_prompt_callback);
     free_callback(&buf->b_prompt_interrupt);
+    init_prompt_history(buf, true);
 #endif
 
     buf_hashtab_remove(buf);
@@ -2393,6 +2394,9 @@ buflist_new(
 #endif
     buf->b_u_synced = TRUE;
     buf->b_flags = BF_CHECK_RO | BF_NEVERLOADED;
+#ifdef FEAT_JOB_CHANNEL
+    init_prompt_history(buf, false);
+#endif
     if (flags & BLN_DUMMY)
 	buf->b_flags |= BF_DUMMY;
     buf_clear_file(buf);
