@@ -5527,4 +5527,194 @@ def Test_find_brace_backwards()
 enddef
 
 
+def Test_brace_in_comment()
+  # braces in comments should not affect cindent
+  new
+  setl cindent ts=4 sw=4 et
+
+  var code =<< trim [CODE]
+  int foo()
+  {
+  // this comment has a closing brace}
+  int error_indent;
+  }
+  [CODE]
+
+  var expected =<< trim [CODE]
+  int foo()
+  {
+      // this comment has a closing brace}
+      int error_indent;
+  }
+  [CODE]
+
+  setline(1, code)
+  normal gg=G
+  assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+enddef
+
+def Test_percent_match_brace_in_line_comment()
+  # % should not match a brace inside a // comment
+  new
+  setl filetype=c
+
+  var code =<< trim [CODE]
+  int foo()
+  {
+      // closing brace } in comment
+      int x;
+  }
+  [CODE]
+
+  setline(1, code)
+
+  # Position on opening { of foo, % should jump to { inside comment
+  cursor(2, 1)
+  norm! %
+  assert_equal(3, line('.'))
+  assert_equal(22, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_match_brace_in_line_comment_backwards()
+  # % on closing } should not match a { inside a // comment
+  new
+  setl filetype=c
+
+  var code =<< trim [CODE]
+  int foo()
+  {
+      // opening brace { in comment
+      int x;
+  }
+  [CODE]
+
+  setline(1, code)
+
+  # Position on closing }, % should jump back to opening {
+  cursor(5, 1)
+  norm! %
+  assert_equal(3, line('.'))
+  assert_equal(22, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_match_hash_comment()
+  # % should not match a bracket inside a # comment
+  new
+
+  var code =<< trim [CODE]
+  x = [
+      # closing bracket ] in comment
+      1,
+  ]
+  [CODE]
+
+  setline(1, code)
+  setl comments=:#
+
+  cursor(1, 5)
+  norm! %
+  assert_equal(2, line('.'))
+  assert_equal(23, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_forward_brace_in_comment()
+  # Forward % search should also skip braces in // comments
+  new
+  setl filetype=c
+
+  var code =<< trim [CODE]
+  int foo()
+  {
+      int x;
+      // {} this opening brace is in a comment
+      int y;
+  }
+  [CODE]
+
+  setline(1, code)
+
+  # Start on opening {, should match closing } not the one in the comment
+  cursor(2, 1)
+  norm! %
+  assert_equal(6, line('.'))
+  assert_equal(1, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_match_block_comment()
+  # % on /* should still match */ (comment_dir case, should be unaffected)
+  new
+  setl filetype=c
+
+  var code =<< trim [CODE]
+  /* this is a block comment
+     with multiple lines
+  */
+  [CODE]
+
+  setline(1, code)
+
+  cursor(1, 1)
+  norm! %
+  assert_equal(3, line('.'))
+  assert_equal(2, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_lisp_mode_unaffected()
+  # Lisp mode % matching should be unaffected by the patch
+  new
+  setl lisp
+
+  var code =<< trim [CODE]
+  (defun foo ()
+    ; this comment has a paren (
+    (bar))
+  [CODE]
+
+  setline(1, code)
+
+  # % on outer ( should match outer )
+  cursor(1, 1)
+  norm! %
+  assert_equal(3, line('.'))
+  assert_equal(8, col('.'))
+
+  bwipe!
+enddef
+
+def Test_percent_no_match_all_commented()
+  # % should fail gracefully when matching bracket is in a comment
+  new
+  setl filetype=c
+
+  var code =<< trim [CODE]
+  // int foo() {
+  int x;
+  }
+  [CODE]
+
+  setline(1, code)
+
+  # % on } should not find a match (opening { is commented out)
+  cursor(3, 1)
+  var pos_before = getpos('.')
+  norm! %
+  assert_equal(1, line('.'))
+  assert_equal(14, col('.'))
+
+  bwipe!
+enddef
+
+
 " vim: shiftwidth=2 sts=2 expandtab
