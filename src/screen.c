@@ -596,7 +596,8 @@ screen_line(
     if (coloff > 0 && enc_utf8
 		   && ScreenLines[off_to] == 0
 		   && ScreenLinesUC[off_to - 1] != 0
-		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
+		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1
+		   && !skip_for_popup(row, col + coloff - 1))
     {
 	ScreenLines[off_to - 1] = ' ';
 	ScreenLinesUC[off_to - 1] = 0;
@@ -2219,6 +2220,14 @@ screen_char(unsigned off, int row, int col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
+#ifdef FEAT_PROP_POPUP
+    // If this cell is under a higher-zindex opacity popup, suppress
+    // output to prevent flicker.  The higher popup's redraw will
+    // output the final blended result.
+    if (popup_is_under_opacity(row, col))
+	return;
+#endif
+
     // Outputting a character in the last cell on the screen may scroll the
     // screen up.  Only do it when the "xn" termcap property is set, otherwise
     // mark the character invalid (update it when scrolled up).
@@ -2325,6 +2334,12 @@ screen_char_2(unsigned off, int row, int col)
 	ScreenCols[off] = -1;
 	return;
     }
+
+#ifdef FEAT_PROP_POPUP
+    // If under a higher-zindex opacity popup, suppress output.
+    if (popup_is_under_opacity(row, col))
+	return;
+#endif
 
     // Output the first byte normally (positions the cursor), then write the
     // second byte directly.
@@ -2493,7 +2508,15 @@ screen_fill(
 		&& (attr == 0
 		    || (norm_term
 			&& attr <= HL_ALL
-			&& ((attr & ~(HL_BOLD | HL_ITALIC)) == 0))))
+			&& ((attr & ~(HL_BOLD | HL_ITALIC)) == 0)))
+#ifdef FEAT_PROP_POPUP
+		// Do not use T_CE optimization if any cell in the
+		// range is under an opacity popup.  The clear-to-eol
+		// command would erase the popup area on screen.
+		&& !popup_is_under_opacity_range(row,
+						start_col, end_col)
+#endif
+		)
 	{
 	    /*
 	     * check if we really need to clear something
