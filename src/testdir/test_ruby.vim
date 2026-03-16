@@ -428,6 +428,10 @@ func Test_rubyeval_error()
   call assert_fails('call rubyeval("(")')
 endfunc
 
+func Test_rubyeval_sandbox()
+  call assert_fails('sandbox call rubyeval("1+1")', 'E48:')
+endfunc
+
 " Test for various heredoc syntax
 func Test_ruby_heredoc()
   ruby << END

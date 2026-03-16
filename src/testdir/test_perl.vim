@@ -371,6 +371,11 @@ func Test_perl_in_sandbox()
   sandbox perl print 'test'
   let messages = split(execute('message'), "\n")
   call assert_match("'print' trapped by operation mask", messages[-1])
+  try
+    sandbox perldo print "hello sandbox"
+    call assert_report('perldo in the sandbox')
+  catch /^Vim\%((\S\+)\)\=:E48:/
+  endtry
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
