@@ -178,6 +178,20 @@ static void f_spellbadword(typval_T *argvars, typval_T *rettv);
 static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_srand(typval_T *argvars, typval_T *rettv);
+
+    static int
+split_literal_pat_char(char_u *pat)
+{
+    if (pat == NULL || pat[0] == NUL || pat[1] != NUL)
+	return -1;
+
+    // Only handle a plain single-byte separator with no regexp meaning.
+    if (vim_strchr((char_u *)".^$~[]\\*?+|(){}", pat[0]) != NULL)
+	return -1;
+
+    return pat[0];
+}
+
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
 static void f_swapfilelist(typval_T *argvars, typval_T *rettv);
@@ -9400,7 +9414,6 @@ f_matchbufline(typval_T *argvars, typval_T *rettv)
     char_u	*save_cpo;
     char_u	patbuf[NUMBUFLEN];
     regmatch_T	regmatch;
-
     rettv->vval.v_number = -1;
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -9543,7 +9556,6 @@ f_matchstrlist(typval_T *argvars, typval_T *rettv)
     listitem_T	*li = NULL;
     char_u	patbuf[NUMBUFLEN];
     regmatch_T	regmatch;
-
     rettv->vval.v_number = -1;
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -12096,6 +12108,7 @@ f_split(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	*end;
     char_u	*pat = NULL;
+    char_u	*p;
     regmatch_T	regmatch;
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
@@ -12103,6 +12116,7 @@ f_split(typval_T *argvars, typval_T *rettv)
     colnr_T	col = 0;
     int		keepempty = FALSE;
     int		typeerr = FALSE;
+    int		splitc = -1;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -12126,11 +12140,32 @@ f_split(typval_T *argvars, typval_T *rettv)
     }
     if (pat == NULL || *pat == NUL)
 	pat = (char_u *)"[\\x01- ]\\+";
+    else
+	splitc = split_literal_pat_char(pat);
 
     if (rettv_list_alloc(rettv) == FAIL)
 	goto theend;
     if (typeerr)
 	goto theend;
+
+    if (splitc >= 0)
+    {
+	while (*str != NUL || keepempty)
+	{
+	    p = vim_strchr(str, splitc);
+	    end = p == NULL ? str + STRLEN(str) : p;
+	    if (keepempty || end > str)
+	    {
+		if (list_append_string(rettv->vval.v_list, str,
+						    (int)(end - str)) == FAIL)
+		    break;
+	    }
+	    if (p == NULL)
+		break;
+	    str = p + 1;
+	}
+	goto theend;
+    }
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
