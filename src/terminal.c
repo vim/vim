@@ -3730,14 +3730,16 @@ term_after_channel_closed(term_T *term)
 	    aucmd_prepbuf(&aco, term->tl_buffer);
 	    if (curbuf == term->tl_buffer)
 	    {
+		win_T	*wp = curwin;
+
 		// Avoid closing the window if we temporarily use it.
-		if (is_aucmd_win(curwin))
+		if (is_aucmd_win(wp))
 		    do_set_w_locked = TRUE;
 		if (do_set_w_locked)
-		    curwin->w_locked = TRUE;
+		    wp->w_locked = TRUE;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
 		if (do_set_w_locked)
-		    curwin->w_locked = FALSE;
+		    wp->w_locked = FALSE;
 		aucmd_restbuf(&aco);
 	    }
 #ifdef FEAT_PROP_POPUP
