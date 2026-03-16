@@ -138,4 +138,26 @@ func Test_restricted_diff()
   call delete('Xresult')
 endfunc
 
+func Test_restricted_vim9_env()
+  let lines =<< trim END
+      vim9script
+      def SetEnv()
+          $ENV = '123'
+      enddef
+      var result = 'okay'
+      try
+        SetEnv()
+      catch /^Vim\%((\S\+)\)\=:E145:/
+        result = 'not-allowed'
+      endtry
+      writefile([result], 'XResult_env')
+      qa!
+  END
+  call writefile(lines, 'Xrestrictedvim9', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestrictedvim9')
+    call assert_equal(['not-allowed'], readfile('XResult_env'))
+  endif
+  call delete('XResult_env')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
