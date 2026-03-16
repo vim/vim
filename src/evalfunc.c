@@ -192,7 +192,7 @@ is_literal_pat(char_u *pat)
     // trail bytes are never mistaken for ASCII metacharacters.
     for (p = pat; *p != NUL; p += mb_ptr2len(p))
 	if (*p < 0x80
-		&& vim_strchr((char_u *)".^$~[]\\*?+|(){}", *p) != NULL)
+		&& vim_strchr((char_u *)".^$~[]\\*?+|{}()", *p) != NULL)
 	    return FALSE;
 
     return TRUE;
