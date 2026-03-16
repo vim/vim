@@ -1507,7 +1507,9 @@ channel_listen(
 {
     int			sd = -1;
     struct sockaddr_in	server;
+#ifndef FEAT_IPV6
     struct hostent	*host;
+#endif
     int			val = 1;
     channel_T		*channel;
 
@@ -1529,6 +1531,26 @@ channel_listen(
     server.sin_port = htons(port_in);
     if (hostname != NULL && *hostname != NUL)
     {
+#ifdef FEAT_IPV6
+	struct addrinfo	hints;
+	struct addrinfo	*res = NULL;
+	int		err;
+
+	CLEAR_FIELD(hints);
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
+	{
+	    ch_error(channel, "in getaddrinfo() in channel_listen()");
+	    PERROR(_(e_gethostbyname_in_channel_listen));
+	    channel_free(channel);
+	    return NULL;
+	}
+	memcpy(&server.sin_addr,
+		&((struct sockaddr_in *)res->ai_addr)->sin_addr,
+		sizeof(server.sin_addr));
+	freeaddrinfo(res);
+#else
 	if ((host = gethostbyname(hostname)) == NULL)
 	{
 	    ch_error(channel, "in gethostbyname() in channel_listen()");
@@ -1544,6 +1566,7 @@ channel_listen(
 	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
 	    memcpy((char *)&server.sin_addr, p, host->h_length);
 	}
+#endif
     }
     else
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -4202,9 +4225,22 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    newchannel->ch_to_be_closed |= (1U << PART_SOCK);
 
 	    if (client.ss_family == AF_INET)
+	    {
+#ifdef HAVE_INET_NTOP
+		char addr[INET_ADDRSTRLEN];
+
+		inet_ntop(AF_INET,
+			&((struct sockaddr_in*)&client)->sin_addr,
+			addr, sizeof(addr));
+		vim_snprintf((char *)namebuf, sizeof(namebuf), "%s:%d",
+			addr,
+			ntohs(((struct sockaddr_in*)&client)->sin_port));
+#else
 		vim_snprintf((char *)namebuf, sizeof(namebuf), "%s:%d",
 		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
 		    ntohs(((struct sockaddr_in*)&client)->sin_port));
+#endif
+	    }
 #ifdef HAVE_INET_NTOP
 	    else if (client.ss_family == AF_INET6)
 	    {
