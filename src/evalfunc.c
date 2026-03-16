@@ -12162,7 +12162,9 @@ f_split(typval_T *argvars, typval_T *rettv)
 	{
 	    p = (char_u *)strstr((char *)str, (char *)pat);
 	    end = p == NULL ? str + STRLEN(str) : p;
-	    if (keepempty || end > str)
+	    if (keepempty || end > str || (rettv->vval.v_list->lv_len > 0
+					&& *str != NUL && p != NULL
+					&& end < p + patlen))
 	    {
 		if (list_append_string(rettv->vval.v_list, str,
 						    (int)(end - str)) == FAIL)
