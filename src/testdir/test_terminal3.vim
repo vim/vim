@@ -1202,6 +1202,14 @@ func Test_term_getpos()
   call assert_equal(13, str2nr(result[1]) - str2nr(result[0]))
   call assert_true(str2nr(result[0]) > 1)
 
+  " Regression: line('w0') and line('w$') must not move cursor position
+  call term_sendkeys(buf, "gg")
+  call term_sendkeys(buf, ":call line('w0')\<cr>")
+  call term_sendkeys(buf, ":call line('w$')\<cr>")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_match("for i in", term_getline(buf, 1))})
+  call WaitForAssert({-> assert_match("line12", term_getline(buf, 13))})
+
   call StopVimInTerminal(buf)
   " this crashed
   new
