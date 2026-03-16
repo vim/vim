@@ -5,6 +5,7 @@
 " Last Change:  February 1, 2023
 "               2023 Aug 28 by Vim Project (undo_ftplugin)
 "               2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
+"               2026 Mar 16 by Phạm Bình An (add matchit support)
 
 if exists("b:did_ftplugin")
     finish
