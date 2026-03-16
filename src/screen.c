@@ -596,12 +596,17 @@ screen_line(
     if (coloff > 0 && enc_utf8
 		   && ScreenLines[off_to] == 0
 		   && ScreenLinesUC[off_to - 1] != 0
-		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1
-		   && !skip_for_popup(row, col + coloff - 1))
+		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
     {
 	ScreenLines[off_to - 1] = ' ';
 	ScreenLinesUC[off_to - 1] = 0;
-	screen_char(off_to - 1, row, col + coloff - 1);
+	// Skip screen output when drawing an opacity popup: the
+	// background draw already output this cell, and outputting
+	// a space here would briefly erase it causing flicker.
+#ifdef FEAT_PROP_POPUP
+	if (screen_opacity_popup == NULL)
+#endif
+	    screen_char(off_to - 1, row, col + coloff - 1);
     }
 #endif
 
@@ -1005,7 +1010,13 @@ skip_opacity:
 	ScreenLines[off_to] = ' ';
 	if (enc_utf8)
 	    ScreenLinesUC[off_to] = 0;
-	screen_char(off_to, row, col + coloff);
+	// Skip screen output when drawing an opacity popup: the
+	// background already has this cell, outputting a space here
+	// would briefly erase it causing flicker.
+#ifdef FEAT_PROP_POPUP
+	if (screen_opacity_popup == NULL)
+#endif
+	    screen_char(off_to, row, col + coloff);
     }
 
     if (clear_width > 0
@@ -2224,8 +2235,17 @@ screen_char(unsigned off, int row, int col)
     // If this cell is under a higher-zindex opacity popup, suppress
     // output to prevent flicker.  The higher popup's redraw will
     // output the final blended result.
-    if (popup_is_under_opacity(row, col))
+    // Also suppress if this is a wide character whose second cell
+    // is under an opacity popup.
+    if (popup_is_under_opacity(row, col)
+	    || (enc_utf8 && ScreenLinesUC[off] != 0
+		&& utf_char2cells(ScreenLinesUC[off]) == 2
+		&& col + 1 < screen_Columns
+		&& popup_is_under_opacity(row, col + 1)))
+    {
+	screen_cur_col = 9999;
 	return;
+    }
 #endif
 
     // Outputting a character in the last cell on the screen may scroll the
@@ -2338,7 +2358,10 @@ screen_char_2(unsigned off, int row, int col)
 #ifdef FEAT_PROP_POPUP
     // If under a higher-zindex opacity popup, suppress output.
     if (popup_is_under_opacity(row, col))
+    {
+	screen_cur_col = 9999;
 	return;
+    }
 #endif
 
     // Output the first byte normally (positions the cursor), then write the
@@ -3479,6 +3502,17 @@ windgoto(int row, int col)
 			break;
 		    }
 	    }
+#ifdef FEAT_PROP_POPUP
+	    // Don't output characters over opacity popup cells, it
+	    // would show unblended background values.
+	    if (cost < 999)
+		for (i = wouldbe_col; i < col; ++i)
+		    if (popup_is_under_opacity(row, i))
+		    {
+			cost = 999;
+			break;
+		    }
+#endif
 	}
 
 	/*

@@ -4051,11 +4051,14 @@ starttermcap(void)
 	out_str(T_FE);
 #endif
 
-    // Request setting of relevant DEC modes via DECRQM
-    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+    if (cur_tmode == TMODE_RAW)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
-	out_str(IObuff);
+	// Request setting of relevant DEC modes via DECRQM
+	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+	    out_str(IObuff);
+	}
     }
 
     out_flush();

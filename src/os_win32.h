@@ -224,3 +224,7 @@ Trace(char *pszFormat, ...);
 #endif
 #define mch_getenv(x) (char_u *)getenv((char *)(x))
 #define vim_mkdir(x, y) mch_mkdir(x)
+
+// Windows Version
+#define MAKE_VER(major, minor, build) \
+    ((((major) & 0xFF) << 24) | (((minor) & 0xFF) << 16) | ((build) & 0x7FFF))

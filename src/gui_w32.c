@@ -1572,7 +1572,7 @@ dyn_dwm_load(void)
     }
 }
 
-extern BOOL win11_or_later; // this is in os_win32.c
+extern DWORD win_version; // this is in os_mswin.c
 
 /*
  * Set TitleBar's color. Handle hl-TitleBar and hl-TitleBarNC.
@@ -1584,11 +1584,12 @@ extern BOOL win11_or_later; // this is in os_win32.c
     void
 gui_mch_set_titlebar_colors(void)
 {
-    if (pDwmSetWindowAttribute == NULL || !win11_or_later)
+#define DWMWA_COLOR_DEFAULT 0xFFFFFFFF
+    if (pDwmSetWindowAttribute == NULL || win_version < MAKE_VER(10, 0, 22000))
 	return;
 
-    guicolor_T captionColor = 0xFFFFFFFF;
-    guicolor_T textColor = 0xFFFFFFFF;
+    guicolor_T captionColor = DWMWA_COLOR_DEFAULT;
+    guicolor_T textColor = DWMWA_COLOR_DEFAULT;
 
     if (vim_strchr(p_go, GO_TITLEBAR) != NULL)
     {
@@ -1604,9 +1605,9 @@ gui_mch_set_titlebar_colors(void)
 	}
 
 	if (captionColor == INVALCOLOR)
-	    captionColor = 0xFFFFFFFF;
+	    captionColor = DWMWA_COLOR_DEFAULT;
 	if (textColor == INVALCOLOR)
-	    textColor = 0xFFFFFFFF;
+	    textColor = DWMWA_COLOR_DEFAULT;
     }
 
     pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
@@ -3131,22 +3132,17 @@ gui_mch_set_curtab(int nr)
 #endif
 
 #ifdef FEAT_GUI_DARKTHEME
-extern BOOL win10_22H2_or_later; // this is in os_win32.c
-
     void
 gui_mch_set_dark_theme(int dark)
 {
-    if (!win10_22H2_or_later)
-	return;
-
-    if (pDwmSetWindowAttribute != NULL)
+    if (pDwmSetWindowAttribute != NULL && win_version >= MAKE_VER(10, 0, 18985))
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark,
 		sizeof(dark));
 
-    if (pSetPreferredAppMode != NULL)
+    if (pSetPreferredAppMode != NULL && win_version >= MAKE_VER(10, 0, 18362))
 	pSetPreferredAppMode(dark);
 
-    if (pFlushMenuThemes != NULL)
+    if (pFlushMenuThemes != NULL && win_version >= MAKE_VER(10, 0, 18362))
 	pFlushMenuThemes();
 }
 

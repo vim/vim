@@ -2302,9 +2302,9 @@ term_enter_normal_mode(void)
  * Terminal-Normal mode.
  */
     int
-term_in_normal_mode(void)
+term_in_normal_mode(buf_T *buf)
 {
-    term_T *term = curbuf->b_term;
+    term_T *term = buf->b_term;
 
     return term != NULL && term->tl_normal_mode;
 }
@@ -3730,14 +3730,16 @@ term_after_channel_closed(term_T *term)
 	    aucmd_prepbuf(&aco, term->tl_buffer);
 	    if (curbuf == term->tl_buffer)
 	    {
+		win_T	*wp = curwin;
+
 		// Avoid closing the window if we temporarily use it.
-		if (is_aucmd_win(curwin))
+		if (is_aucmd_win(wp))
 		    do_set_w_locked = TRUE;
 		if (do_set_w_locked)
-		    curwin->w_locked = TRUE;
+		    wp->w_locked = TRUE;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
 		if (do_set_w_locked)
-		    curwin->w_locked = FALSE;
+		    wp->w_locked = FALSE;
 		aucmd_restbuf(&aco);
 	    }
 #ifdef FEAT_PROP_POPUP

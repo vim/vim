@@ -115,4 +115,49 @@ func Test_restricted_mode()
   call delete('Xresult')
 endfunc
 
+" Test that external diff is blocked in restricted mode.
+" Using :diffupdate with 'diffopt' excluding "internal" would call an external
+" diff program via call_shell(), which must be blocked.
+func Test_restricted_diff()
+  let lines =<< trim END
+    set diffopt=filler
+    call writefile(['line1', 'line2'], 'Xrfile1', 'D')
+    call writefile(['line1', 'line3'], 'Xrfile2', 'D')
+    edit Xrfile1
+    diffthis
+    split Xrfile2
+    diffthis
+    call assert_fails('diffupdate', 'E145:')
+    call writefile(v:errors, 'Xresult')
+    qa!
+  END
+  call writefile(lines, 'Xrestricteddiff', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestricteddiff')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xresult')
+endfunc
+
+func Test_restricted_vim9_env()
+  let lines =<< trim END
+      vim9script
+      def SetEnv()
+          $ENV = '123'
+      enddef
+      var result = 'okay'
+      try
+        SetEnv()
+      catch /^Vim\%((\S\+)\)\=:E145:/
+        result = 'not-allowed'
+      endtry
+      writefile([result], 'XResult_env')
+      qa!
+  END
+  call writefile(lines, 'Xrestrictedvim9', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestrictedvim9')
+    call assert_equal(['not-allowed'], readfile('XResult_env'))
+  endif
+  call delete('XResult_env')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -4458,6 +4458,8 @@ exec_instructions(ectx_T *ectx)
 
 	    // store $ENV
 	    case ISN_STOREENV:
+		if (check_restricted())
+		    goto theend;
 		--ectx->ec_stack.ga_len;
 		tv = STACK_TV_BOT(0);
 		vim_setenv_ext(iptr->isn_arg.string, tv_get_string(tv));

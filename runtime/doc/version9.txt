@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 13
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52587,6 +52587,16 @@ Popups ~
 - Support for transparency, see |popup-opacity|.
 - 'previewpopup' supports the same values as 'completepopup' (except for
   "align").
+
+Diff mode ~
+---------
+When using inline word diffs, adjacent changes are now merged if the gap
+between them is small (5 bytes or less) and contains only non-word characters.
+This prevents fragmented highlighting when only whitespace or punctuation
+separates changes.
+
+Using external diff mode is no longer allowed when Vim is running in
+|restricted-mode|.
 
 Other ~
 -----

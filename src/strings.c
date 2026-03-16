@@ -1218,7 +1218,7 @@ convert_string(string_T *str, char_u *from, char_u *to, string_T *ret)
     }
     else
     {
-	int len = str->length;
+	int len = (int)str->length;
 	ret->string = string_convert(&vimconv, str->string, &len);
 	ret->length = len;
     }

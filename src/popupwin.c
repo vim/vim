@@ -4313,12 +4313,19 @@ redraw_win_under_opacity_popup(win_T *wp)
 	win_T	    *twp;
 
 	twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
-	if (twp != NULL && line_cp < twp->w_height)
+	if (twp != NULL)
 	{
-	    linenr_T lnum;
+	    if (line_cp < twp->w_height)
+	    {
+		linenr_T lnum;
 
-	    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
-	    redrawWinline(twp, lnum);
+		(void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
+		redrawWinline(twp, lnum);
+	    }
+	    else if (line_cp == twp->w_height)
+		// Status bar line: mark for redraw to prevent
+		// opacity blend accumulation.
+		twp->w_redr_status = TRUE;
 	}
     }
 }

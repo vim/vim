@@ -772,7 +772,7 @@ get_mode(char_u *buf)
 	    buf[i++] = restart_edit;
 	}
 # ifdef FEAT_TERMINAL
-	else if (term_in_normal_mode())
+	else if (term_in_normal_mode(curbuf))
 	    buf[i++] = 't';
 # endif
     }
