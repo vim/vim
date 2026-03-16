@@ -8080,6 +8080,31 @@ last_set_msg(sctx_T script_ctx)
 #endif // FEAT_EVAL
 
 /*
+ * Return TRUE when "sub" can be copied verbatim for each match in
+ * do_string_sub(), without using vim_regsub().
+ */
+    static int
+substitute_literal_copy(char_u *sub)
+{
+    char_u	*p;
+    int		l;
+
+    if (sub == NULL)
+	return FALSE;
+
+    for (p = sub; *p != NUL; p += l)
+    {
+	l = 1;
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
+	    continue;
+	if (*p == '&' || *p == '\\')
+	    return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
  * Perform a substitution on "str" with pattern "pat" and substitute "sub".
  * When "sub" is NULL "expr" is used, must be a VAR_FUNC or VAR_PARTIAL.
  * "flags" can be "g" to do a global substitute.
@@ -8099,6 +8124,8 @@ do_string_sub(
     garray_T	ga;
     char_u	*ret;
     char_u	*save_cpo;
+    int		literal_sub = substitute_literal_copy(sub);
+    int		literal_len = literal_sub ? (int)STRLEN(sub) : 0;
 
     // Make 'cpoptions' empty, so that the 'l' flag doesn't work here
     save_cpo = p_cpo;
@@ -8142,7 +8169,9 @@ do_string_sub(
 	     * - The substituted text.
 	     * - The text after the match.
 	     */
-	    sublen = vim_regsub(&regmatch, sub, expr, tail, 0, REGSUB_MAGIC);
+	    sublen = literal_sub ? literal_len + 1
+				 : vim_regsub(&regmatch, sub, expr, tail, 0,
+							       REGSUB_MAGIC);
 	    if (sublen <= 0)
 	    {
 		ga_clear(&ga);
@@ -8159,9 +8188,13 @@ do_string_sub(
 	    i = (int)(regmatch.startp[0] - tail);
 	    mch_memmove((char_u *)ga.ga_data + ga.ga_len, tail, (size_t)i);
 	    // add the substituted text
-	    (void)vim_regsub(&regmatch, sub, expr,
-				  (char_u *)ga.ga_data + ga.ga_len + i, sublen,
-				  REGSUB_COPY | REGSUB_MAGIC);
+	    if (literal_sub)
+		mch_memmove((char_u *)ga.ga_data + ga.ga_len + i, sub,
+							 (size_t)literal_len);
+	    else
+		(void)vim_regsub(&regmatch, sub, expr,
+				      (char_u *)ga.ga_data + ga.ga_len + i,
+				      sublen, REGSUB_COPY | REGSUB_MAGIC);
 	    ga.ga_len += i + sublen - 1;
 	    tail = regmatch.endp[0];
 	    if (*tail == NUL)
