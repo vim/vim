@@ -6984,7 +6984,9 @@ var2fpos(
 	if (name[1] == '0')		// "w0": first visible line
 	{
 #ifdef FEAT_TERMINAL
-	    if (bt_terminal(curwin->w_buffer) && curwin->w_buffer->b_term != NULL)
+	    if (bt_terminal(curwin->w_buffer)
+				    && curwin->w_buffer->b_term != NULL
+				    && !term_in_normal_mode(curwin->w_buffer))
 		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
 #endif
 	    update_topline();
@@ -6996,7 +6998,9 @@ var2fpos(
 	else if (name[1] == '$')	// "w$": last visible line
 	{
 #ifdef FEAT_TERMINAL
-	    if (bt_terminal(curwin->w_buffer) && curwin->w_buffer->b_term != NULL)
+	    if (bt_terminal(curwin->w_buffer)
+				    && curwin->w_buffer->b_term != NULL
+				    && !term_in_normal_mode(curwin->w_buffer))
 		may_move_terminal_to_buffer(curwin->w_buffer->b_term, TRUE);
 #endif
 	    validate_botline();

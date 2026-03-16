@@ -2302,9 +2302,9 @@ term_enter_normal_mode(void)
  * Terminal-Normal mode.
  */
     int
-term_in_normal_mode(void)
+term_in_normal_mode(buf_T *buf)
 {
-    term_T *term = curbuf->b_term;
+    term_T *term = buf->b_term;
 
     return term != NULL && term->tl_normal_mode;
 }
