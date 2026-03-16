@@ -1,4 +1,4 @@
-*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1101,7 +1101,7 @@ Note: these are typed literally, they are not special keys!
 		   It differs from <slnum> in that <sflnum> is replaced with
 		   the script line number in any situation.  *E961*
 							*:<client>* *<client>*
-	<client>   is replaced with the {clinetid} of the last received
+	<client>   is replaced with the {clientid} of the last received
 		   message in |server2client()|
 
 							 *filename-modifiers*
