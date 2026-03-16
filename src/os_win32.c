@@ -7440,17 +7440,22 @@ notsgr:
 	}
 	else if (s[0] == ESC && len >= 3-1 && s[1] == '[')
 	{
-	    int l = 2;
-
-	    if (SAFE_isdigit(s[l]))
-		l++;
-	    if (s[l] == ' ' && s[l + 1] == 'q')
+	    // When USE_VTP is active, CSI sequences written through
+	    // write_chars() are interpreted by the console's VTP parser,
+	    // generating responses (e.g. DECRQM) that end up in the
+	    // input buffer as unwanted keystrokes.  Discard them.
+	    if (USE_VTP)
 	    {
-		// DECSCUSR (cursor style) sequences
-		if (vtp_working)
-		    vtp_printf("%.*s", l + 2, s);   // Pass through
-		s += l + 2;
-		len -= l + 1;
+		int l = 2;
+
+		// skip parameter and intermediate bytes (0x20-0x3F)
+		while (s + l < end && s[l] >= 0x20 && s[l] <= 0x3F)
+		    l++;
+		// skip the final byte (0x40-0x7E)
+		if (s + l < end && s[l] >= 0x40 && s[l] <= 0x7E)
+		    l++;
+		len -= l - 1;
+		s += l;
 	    }
 	}
 	else
