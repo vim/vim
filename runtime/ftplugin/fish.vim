@@ -31,7 +31,7 @@ if exists("loaded_matchit") && !exists("b:match_words")
       \ '\<\(begin\|function\|while\|for\)\>:\<end\>'
   let b:match_ignorecase = 0
 
-  let b:undo_ftplugin .= "|unlet! b:match_words b:match_ignorecase"
+  let b:undo_ftplugin ..= " | unlet! b:match_words b:match_ignorecase"
 endif
 
 " Restore 'cpo' to its original value
