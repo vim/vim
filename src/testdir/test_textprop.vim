@@ -3655,7 +3655,7 @@ func Test_props_with_text_below_nowrap()
       vim9script
       edit foobar
       set nowrap
-      set showbreak=+++\
+      set showbreak=+++
       setline(1, ['onasdf asdf asdf sdf df asdf asdf e asdf asdf asdf asdf asd fas df', 'two'])
       prop_type_add('test', {highlight: 'Special'})
       prop_add(1, 0, {

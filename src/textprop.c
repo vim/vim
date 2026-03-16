@@ -414,8 +414,10 @@ um_add_space_for_props(unpacked_memline_T *umemline, int extra_props)
 	um_abort(umemline);
 	return FALSE;
     }
-    mch_memmove(
-	new_array, umemline->props, umemline->prop_count * sizeof(textprop_T));
+    if (umemline->props != NULL)
+	mch_memmove(
+	    new_array, umemline->props,
+	    umemline->prop_count * sizeof(textprop_T));
     free(umemline->props);
     umemline->props = new_array;
     umemline->prop_size = (uint16_t)prop_size;
@@ -2132,6 +2134,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		prop_fill_dict(rettv->vval.v_dict, prop, buf);
 		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
 
+		um_abort(&umemline);
 		return;
 	    }
 	}
