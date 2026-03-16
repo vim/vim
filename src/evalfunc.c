@@ -180,16 +180,22 @@ static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_srand(typval_T *argvars, typval_T *rettv);
 
     static int
-split_literal_pat_char(char_u *pat)
+is_literal_pat(char_u *pat)
 {
-    if (pat == NULL || pat[0] == NUL || pat[1] != NUL)
-	return -1;
+    char_u  *p;
 
-    // Only handle a plain single-byte separator with no regexp meaning.
-    if (vim_strchr((char_u *)".^$~[]\\*?+|(){}", pat[0]) != NULL)
-	return -1;
+    if (pat == NULL || *pat == NUL)
+	return FALSE;
 
-    return pat[0];
+    // Check that no character in the pattern has regexp meaning.
+    // Use mb_ptr2len() to skip over multi-byte characters safely so that
+    // trail bytes are never mistaken for ASCII metacharacters.
+    for (p = pat; *p != NUL; p += mb_ptr2len(p))
+	if (*p < 0x80
+		&& vim_strchr((char_u *)".^$~[]\\*?+|(){}", *p) != NULL)
+	    return FALSE;
+
+    return TRUE;
 }
 
 static void f_submatch(typval_T *argvars, typval_T *rettv);
@@ -12116,7 +12122,8 @@ f_split(typval_T *argvars, typval_T *rettv)
     colnr_T	col = 0;
     int		keepempty = FALSE;
     int		typeerr = FALSE;
-    int		splitc = -1;
+    int		literal = FALSE;
+    int		patlen = 0;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -12141,18 +12148,19 @@ f_split(typval_T *argvars, typval_T *rettv)
     if (pat == NULL || *pat == NUL)
 	pat = (char_u *)"[\\x01- ]\\+";
     else
-	splitc = split_literal_pat_char(pat);
+	literal = is_literal_pat(pat);
 
     if (rettv_list_alloc(rettv) == FAIL)
 	goto theend;
     if (typeerr)
 	goto theend;
 
-    if (splitc >= 0)
+    if (literal)
     {
+	patlen = (int)STRLEN(pat);
 	while (*str != NUL || keepempty)
 	{
-	    p = vim_strchr(str, splitc);
+	    p = (char_u *)strstr((char *)str, (char *)pat);
 	    end = p == NULL ? str + STRLEN(str) : p;
 	    if (keepempty || end > str)
 	    {
@@ -12162,7 +12170,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 	    }
 	    if (p == NULL)
 		break;
-	    str = p + 1;
+	    str = p + patlen;
 	}
 	goto theend;
     }
