@@ -4080,6 +4080,13 @@ did_set_signcolumn(optset_T *args)
 	curwin->w_nrwidth_line_count = 0;
 # endif
 
+# if defined(FEAT_GUI)
+    // In the GUI, when sign icons are used, a full screen clear is needed
+    // to properly redraw the sign icons.
+    if (gui.in_use && curbuf->b_signlist != NULL)
+	redraw_all_later(UPD_CLEAR);
+# endif
+
     return NULL;
 }
 
