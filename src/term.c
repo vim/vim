@@ -62,7 +62,7 @@ static void got_code_from_term(char_u *code, int len);
 static void check_for_codes_from_term(void);
 #endif
 static void del_termcode_idx(int idx);
-static int find_term_bykeys(char_u *src);
+static int find_term_bykeys(char_u *src, int *len);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 static void accept_modifiers_for_function_keys(void);
@@ -7094,13 +7094,14 @@ replace_termcodes(
 	 */
 	if (do_key_code)
 	{
-	    i = find_term_bykeys(src);
+	    int len;
+	    i = find_term_bykeys(src, &len);
 	    if (i >= 0)
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = termcodes[i].name[0];
 		result[dlen++] = termcodes[i].name[1];
-		src += termcodes[i].len;
+		src += len;
 		// If terminal code matched, continue after it.
 		continue;
 	    }
@@ -7208,18 +7209,88 @@ replace_termcodes(
  * Return the index in termcodes[], or -1 if not found.
  */
     static int
-find_term_bykeys(char_u *src)
+find_term_bykeys(char_u *src, int *matchlen)
 {
-    int		i;
-    int		slen = (int)STRLEN(src);
+    int		i, j;
+    int		len = (int)STRLEN(src);
+    int         found = -1;
+    // Don't return a match for a single character
+    int         foundlen = 1;
+    int         slen, modslen;
+    int         thislen;
 
+    // find longest match
+    // borrows part of check_termcode
     for (i = 0; i < tc_len; ++i)
     {
-	if (slen == termcodes[i].len
+	slen = termcodes[i].len;
+	modslen = termcodes[i].modlen;
+
+	/*
+	 * Check for code with modifier, like xterm uses:
+	 * <Esc>[123;*X  (modslen == slen - 3)
+	 * <Esc>[@;*X    (matches <Esc>[X and <Esc>[1;9X )
+	 * Also <Esc>O*X and <M-O>*X (modslen == slen - 2).
+	 * When there is a modifier the * matches a number.
+	 * When there is no modifier the ;* or * is omitted.
+	 */
+	if (modslen > 0)
+	{
+	    if (len > modslen
+			&& STRNCMP(termcodes[i].code, src, (size_t)modslen) == 0)
+	    {
+		thislen = 0;
+
+		if (src[modslen] == termcodes[i].code[slen - 1])
+		    // no modifiers
+		    thislen = modslen + 1;
+		else if (src[modslen] != ';' && modslen == slen - 3)
+		    // no match for "code;*X" with "code;"
+		    continue;
+		else if (termcodes[i].code[modslen] == '@'
+				&& (src[modslen] != '1'
+					    || src[modslen + 1] != ';'))
+		    // no match for "<Esc>[@" with "<Esc>[1;"
+		    continue;
+		else
+		{
+		    // Skip over the digits, the final char must
+		    // follow. URXVT can use a negative value, thus
+		    // also accept '-'.
+		    for (j = slen - 2; j < len && (SAFE_isdigit(src[j])
+			       || src[j] == '-' || src[j] == ';'); ++j)
+			;
+		    ++j;
+		    if (len < j)	// got a partial sequence
+			continue;
+		    if (src[j - 1] != termcodes[i].code[slen - 1])
+			continue;	// no match
+
+		    thislen = j;
+		}
+
+		if (thislen > foundlen)
+		{
+		    found = i;
+		    foundlen = thislen;
+		}
+	    }
+	}
+	else
+	{
+	    if (slen > foundlen && len >= slen
 			&& STRNCMP(termcodes[i].code, src, (size_t)slen) == 0)
-	    return i;
+	    {
+		found = i;
+		foundlen = slen;
+	    }
+	}
     }
-    return -1;
+
+    if (matchlen != NULL && found >= 0)
+	*matchlen = foundlen;
+
+    return found;
 }
 
 /*
@@ -7525,7 +7596,7 @@ got_code_from_term(char_u *code, int len)
 # endif
 	    else
 	    {
-		i = find_term_bykeys(str);
+		i = find_term_bykeys(str, NULL);
 		if (i >= 0 && name[0] == termcodes[i].name[0]
 					    && name[1] == termcodes[i].name[1])
 		{
