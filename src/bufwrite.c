@@ -1314,14 +1314,11 @@ buf_write(
 		&& (fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0)) >= 0)
 	{
 	    int		bfd;
-	    char_u	*copybuf, *wp;
+	    char_u	*copybuf;
 	    int		some_error = FALSE;
 	    stat_T	st_new;
 	    char_u	*dirp;
 	    char_u	*rootname;
-#if defined(UNIX) || defined(MSWIN)
-	    char_u      *p;
-#endif
 #if defined(UNIX)
 	    int		did_set_shortname;
 	    mode_t	umask_save;
@@ -1347,6 +1344,11 @@ buf_write(
 	    dirp = p_bdir;
 	    while (*dirp)
 	    {
+#if defined(UNIX) || defined(MSWIN)
+		char_u	*p;
+		size_t	copybuf_len;
+#endif
+
 #ifdef UNIX
 		st_new.st_ino = 0;
 		st_new.st_dev = 0;
@@ -1354,10 +1356,15 @@ buf_write(
 #endif
 
 		// Isolate one directory name, using an entry in 'bdir'.
-		(void)copy_option_part(&dirp, copybuf, WRITEBUFSIZE, ",");
+#if defined(UNIX) || defined(MSWIN)
+		copybuf_len = (size_t)
+#else
+		(void)
+#endif
+		    copy_option_part(&dirp, copybuf, WRITEBUFSIZE, ",");
 
 #if defined(UNIX) || defined(MSWIN)
-		p = copybuf + STRLEN(copybuf);
+		p = copybuf + copybuf_len;
 		if (after_pathsep(copybuf, p) && p[-1] == p[-2])
 		    // Ends with '//', use full path
 		    if ((p = make_percent_swname(copybuf, p, fname)) != NULL)
@@ -1423,6 +1430,8 @@ buf_write(
 			// Change one character, just before the extension.
 			if (!p_bk)
 			{
+			    char_u	*wp;
+
 			    wp = backup + STRLEN(backup) - 1
 							 - STRLEN(backup_ext);
 			    if (wp < backup)	// empty file name ???
@@ -1568,10 +1577,17 @@ buf_write(
 	    while (*dirp)
 	    {
 		// Isolate one directory name and make the backup file name.
-		(void)copy_option_part(&dirp, IObuff, IOSIZE, ",");
+#if defined(UNIX) || defined(MSWIN)
+		size_t	IObufflen;
+
+		IObufflen = (size_t)
+#else
+		(void)
+#endif
+		    copy_option_part(&dirp, IObuff, IOSIZE, ",");
 
 #if defined(UNIX) || defined(MSWIN)
-		p = IObuff + STRLEN(IObuff);
+		p = IObuff + IObufflen;
 		if (after_pathsep(IObuff, p) && p[-1] == p[-2])
 		    // path ends with '//', use full path
 		    if ((p = make_percent_swname(IObuff, p, fname)) != NULL)

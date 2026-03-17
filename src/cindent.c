@@ -2280,6 +2280,7 @@ get_c_indent(void)
 	char_u	lead_start[COM_MAX_LEN];	// start-comment string
 	char_u	lead_middle[COM_MAX_LEN];	// middle-comment string
 	char_u	lead_end[COM_MAX_LEN];		// end-comment string
+	int	lead_end_len;
 	char_u	*p;
 	int	start_align = 0;
 	int	start_off = 0;
@@ -2312,25 +2313,25 @@ get_c_indent(void)
 
 	    if (*p == ':')
 		++p;
-	    (void)copy_option_part(&p, lead_end, COM_MAX_LEN, ",");
+	    lead_end_len = copy_option_part(&p, lead_end, COM_MAX_LEN, ",");
 	    if (what == COM_START)
 	    {
 		STRCPY(lead_start, lead_end);
-		lead_start_len = (int)STRLEN(lead_start);
+		lead_start_len = lead_end_len;
 		start_off = off;
 		start_align = align;
 	    }
 	    else if (what == COM_MIDDLE)
 	    {
 		STRCPY(lead_middle, lead_end);
-		lead_middle_len = (int)STRLEN(lead_middle);
+		lead_middle_len = lead_end_len;
 	    }
 	    else if (what == COM_END)
 	    {
 		// If our line starts with the middle comment string, line it
 		// up with the comment opener per the 'comments' option.
 		if (STRNCMP(theline, lead_middle, lead_middle_len) == 0
-			&& STRNCMP(theline, lead_end, STRLEN(lead_end)) != 0)
+			&& STRNCMP(theline, lead_end, lead_end_len) != 0)
 		{
 		    done = TRUE;
 		    if (curwin->w_cursor.lnum > 1)
@@ -2366,7 +2367,7 @@ get_c_indent(void)
 		// If our line starts with the end comment string, line it up
 		// with the middle comment
 		if (STRNCMP(theline, lead_middle, lead_middle_len) != 0
-			&& STRNCMP(theline, lead_end, STRLEN(lead_end)) == 0)
+			&& STRNCMP(theline, lead_end, lead_end_len) == 0)
 		{
 		    amount = get_indent_lnum(curwin->w_cursor.lnum - 1);
 								     // XXX

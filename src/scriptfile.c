@@ -590,10 +590,8 @@ do_in_path(
     void	*cookie)
 {
     char_u	*rtp;
-    char_u	*np;
-    char_u	*buf;
+    string_T	buf;
     char_u	*rtp_copy;
-    char_u	*tail;
     int		num_files;
     char_u	**files;
     int		i;
@@ -609,36 +607,42 @@ do_in_path(
     // Make a copy of 'runtimepath'.  Invoking the callback may change the
     // value.
     rtp_copy = vim_strsave(path);
-    buf = alloc(MAXPATHL);
-    if (buf != NULL && rtp_copy != NULL)
+    buf.string = alloc(MAXPATHL);
+    if (buf.string != NULL && rtp_copy != NULL)
     {
-	if (p_verbose > 10 && name != NULL)
+	size_t	prefixlen = 0;
+	size_t	namelen = 0;
+
+	if (name != NULL)
 	{
-	    verbose_enter();
-	    if (*prefix != NUL)
-		smsg(_("Searching for \"%s\" under \"%s\" in \"%s\""),
-					   (char *)name, prefix, (char *)path);
-	    else
-		smsg(_("Searching for \"%s\" in \"%s\""),
-						   (char *)name, (char *)path);
-	    verbose_leave();
+	    prefixlen = STRLEN(prefix);
+	    namelen = STRLEN(name);
+
+	    if (p_verbose > 10)
+	    {
+		verbose_enter();
+		if (*prefix != NUL)
+		    smsg(_("Searching for \"%s\" under \"%s\" in \"%s\""),
+					       (char *)name, prefix, (char *)path);
+		else
+		    smsg(_("Searching for \"%s\" in \"%s\""),
+						       (char *)name, (char *)path);
+		verbose_leave();
+	    }
 	}
 
 	// Loop over all entries in 'runtimepath'.
 	rtp = rtp_copy;
 	while (*rtp != NUL && ((flags & DIP_ALL) || !did_one))
 	{
-	    size_t buflen;
-
 	    // Copy the path from 'runtimepath' to buf[].
-	    copy_option_part(&rtp, buf, MAXPATHL, ",");
-	    buflen = STRLEN(buf);
+	    buf.length = (size_t)copy_option_part(&rtp, buf.string, MAXPATHL, ",");
 
 	    // Skip after or non-after directories.
 	    if (flags & (DIP_NOAFTER | DIP_AFTER))
 	    {
-		int is_after = buflen >= 5
-				     && STRCMP(buf + buflen - 5, "after") == 0;
+		int is_after = buf.length >= 5
+		    && STRCMP(buf.string + buf.length - 5, "after") == 0;
 
 		if ((is_after && (flags & DIP_NOAFTER))
 			|| (!is_after && (flags & DIP_AFTER)))
@@ -647,33 +651,42 @@ do_in_path(
 
 	    if (name == NULL)
 	    {
-		(*callback)(buf, (void *) &cookie);
+		(*callback)(buf.string, (void *)&cookie);
 		if (!did_one)
 		    did_one = (cookie == NULL);
 	    }
-	    else if (buflen + 2 + STRLEN(prefix) + STRLEN(name) < MAXPATHL)
+	    else if (buf.length + 2 + prefixlen + namelen < MAXPATHL)
 	    {
-		add_pathsep(buf);
-		STRCAT(buf, prefix);
-		tail = buf + STRLEN(buf);
+		char_u	*np;
+		char_u	*tail;
+
+		if (*buf.string != NUL
+		    && !after_pathsep(buf.string, buf.string + buf.length))
+		{
+		    STRCPY(buf.string + buf.length, PATHSEPSTR);
+		    buf.length += STRLEN_LITERAL(PATHSEPSTR);
+		}
+		STRCPY(buf.string + buf.length, prefix);
+		buf.length += prefixlen;
+		tail = buf.string + buf.length;
 
 		// Loop over all patterns in "name"
 		np = name;
 		while (*np != NUL && ((flags & DIP_ALL) || !did_one))
 		{
 		    // Append the pattern from "name" to buf[].
-		    copy_option_part(&np, tail, (int)(MAXPATHL - (tail - buf)),
+		    copy_option_part(&np, tail, (int)(MAXPATHL - (tail - buf.string)),
 								       "\t ");
 
 		    if (p_verbose > 10)
 		    {
 			verbose_enter();
-			smsg(_("Searching for \"%s\""), buf);
+			smsg(_("Searching for \"%s\""), buf.string);
 			verbose_leave();
 		    }
 
 		    // Expand wildcards, invoke the callback for each match.
-		    if (gen_expand_wildcards(1, &buf, &num_files, &files,
+		    if (gen_expand_wildcards(1, &buf.string, &num_files, &files,
 				  (flags & DIP_DIR) ? EW_DIR : EW_FILE) == OK)
 		    {
 			for (i = 0; i < num_files; ++i)
@@ -689,7 +702,7 @@ do_in_path(
 	    }
 	}
     }
-    vim_free(buf);
+    vim_free(buf.string);
     vim_free(rtp_copy);
     if (!did_one && name != NULL)
     {
@@ -838,7 +851,7 @@ add_pack_dir_to_rtp(char_u *fname)
     char_u  *after_insp = NULL;
     char_u  *ffname = NULL;
     size_t  fname_len;
-    char_u  *buf = NULL;
+    string_T	buf = {NULL, 0};
     char_u  *rtp_ffname;
     int	    match;
     int	    retval = FAIL;
@@ -865,17 +878,17 @@ add_pack_dir_to_rtp(char_u *fname)
     // Find "ffname" in "p_rtp", ignoring '/' vs '\' differences.
     // Also stop at the first "after" directory.
     fname_len = STRLEN(ffname);
-    buf = alloc(MAXPATHL);
-    if (buf == NULL)
+    buf.string = alloc(MAXPATHL);
+    if (buf.string == NULL)
 	goto theend;
     for (entry = p_rtp; *entry != NUL; )
     {
 	char_u *cur_entry = entry;
 
-	copy_option_part(&entry, buf, MAXPATHL, ",");
+	buf.length = (size_t)copy_option_part(&entry, buf.string, MAXPATHL, ",");
 
-	if ((p = (char_u *)strstr((char *)buf, "after")) != NULL
-		&& p > buf
+	if ((p = (char_u *)strstr((char *)buf.string, "after")) != NULL
+		&& p > buf.string
 		&& vim_ispathsep(p[-1])
 		&& (vim_ispathsep(p[5]) || p[5] == NUL || p[5] == ','))
 	{
@@ -889,8 +902,9 @@ add_pack_dir_to_rtp(char_u *fname)
 
 	if (insp == NULL)
 	{
-	    add_pathsep(buf);
-	    rtp_ffname = fix_fname(buf);
+	    if (*buf.string != NUL && !after_pathsep(buf.string, buf.string + buf.length))
+		STRCPY(buf.string + buf.length, PATHSEPSTR);
+	    rtp_ffname = fix_fname(buf.string);
 	    if (rtp_ffname == NULL)
 		goto theend;
 	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
@@ -961,7 +975,7 @@ add_pack_dir_to_rtp(char_u *fname)
     retval = OK;
 
 theend:
-    vim_free(buf);
+    vim_free(buf.string);
     vim_free(ffname);
     vim_free(afterdir);
     return retval;
