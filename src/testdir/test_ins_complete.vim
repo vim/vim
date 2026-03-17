@@ -3311,8 +3311,8 @@ endfunc
 func Test_ins_complete_end_of_line()
   " this was reading past the end of the line
   new
-  norm 8oý
-  sil! norm o
+  execute "normal 8oý "
+  sil! execute "normal o"
 
   bwipe!
 endfunc
