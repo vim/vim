@@ -1950,7 +1950,7 @@ recover_names(
 #if defined(UNIX) || defined(MSWIN)
 		// For Unix names starting with a dot are special.  MS-Windows
 		// supports this too, on some file systems.
-		names[1] = vim_strnsave((char_u *)".*.sw?", STRLEN_LITERAL(".*.sw?$"));
+		names[1] = vim_strnsave((char_u *)".*.sw?", STRLEN_LITERAL(".*.sw?"));
 		names[2] = vim_strnsave((char_u *)".sw?", STRLEN_LITERAL(".sw?"));
 		num_names = 3;
 #else

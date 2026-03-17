@@ -1344,10 +1344,8 @@ buf_write(
 	    dirp = p_bdir;
 	    while (*dirp)
 	    {
-#if defined(UNIX) || defined(MSWIN)
-		char_u	*p;
-		int	copybuf_len;
-#endif
+		char_u	*p UNUSED;
+		int	copybuf_len UNUSED;
 
 #ifdef UNIX
 		st_new.st_ino = 0;
@@ -1356,12 +1354,7 @@ buf_write(
 #endif
 
 		// Isolate one directory name, using an entry in 'bdir'.
-#if defined(UNIX) || defined(MSWIN)
-		copybuf_len =
-#else
-		(void)
-#endif
-		    copy_option_part(&dirp, copybuf, WRITEBUFSIZE, ",");
+		copybuf_len = copy_option_part(&dirp, copybuf, WRITEBUFSIZE, ",");
 
 #if defined(UNIX) || defined(MSWIN)
 		p = copybuf + copybuf_len;
@@ -1576,15 +1569,10 @@ buf_write(
 	    dirp = p_bdir;
 	    while (*dirp)
 	    {
-		// Isolate one directory name and make the backup file name.
-#if defined(UNIX) || defined(MSWIN)
-		int	IObufflen;
+		int IObufflen UNUSED;
 
-		IObufflen =
-#else
-		(void)
-#endif
-		    copy_option_part(&dirp, IObuff, IOSIZE, ",");
+		// Isolate one directory name and make the backup file name.
+		IObufflen = copy_option_part(&dirp, IObuff, IOSIZE, ",");
 
 #if defined(UNIX) || defined(MSWIN)
 		p = IObuff + IObufflen;
