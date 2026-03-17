@@ -775,9 +775,9 @@ fix_help_buffer(void)
 	    p = p_rtp;
 	    while (*p != NUL)
 	    {
-		size_t	NameBufflen;
+		int NameBufflen;
 
-		NameBufflen = (size_t)copy_option_part(&p, NameBuff, MAXPATHL, ",");
+		NameBufflen = copy_option_part(&p, NameBuff, MAXPATHL, ",");
 		mustfree = FALSE;
 		rt = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
 		if (rt != NULL &&

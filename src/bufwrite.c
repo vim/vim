@@ -1346,7 +1346,7 @@ buf_write(
 	    {
 #if defined(UNIX) || defined(MSWIN)
 		char_u	*p;
-		size_t	copybuf_len;
+		int	copybuf_len;
 #endif
 
 #ifdef UNIX
@@ -1357,7 +1357,7 @@ buf_write(
 
 		// Isolate one directory name, using an entry in 'bdir'.
 #if defined(UNIX) || defined(MSWIN)
-		copybuf_len = (size_t)
+		copybuf_len =
 #else
 		(void)
 #endif
@@ -1578,9 +1578,9 @@ buf_write(
 	    {
 		// Isolate one directory name and make the backup file name.
 #if defined(UNIX) || defined(MSWIN)
-		size_t	IObufflen;
+		int	IObufflen;
 
-		IObufflen = (size_t)
+		IObufflen =
 #else
 		(void)
 #endif
