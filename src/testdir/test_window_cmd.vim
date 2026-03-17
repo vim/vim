@@ -2377,8 +2377,9 @@ endfunc
 " When shrinking a window and the only other window has 'winfixheight'
 " with 'winminheight'=0, freed rows must go to the wfh window.
 func Test_winfixheight_resize_wmh_zero()
-  set winminheight=0 laststatus=0
+  CheckFeature quickfix
 
+  set winminheight=0 laststatus=0
   let id1 = win_getid()
   copen
   let id2 = win_getid()
@@ -2436,6 +2437,63 @@ func Test_winfixheight_resize_wmh_zero()
 
   cclose
   set winminheight& laststatus&
+endfunc
+
+" Test that setting 'laststatus' from 0 to 2 gives all windows in a vertical
+" split (FR_ROW) the same height and correct status line position.
+func Test_laststatus_vsplit_row_height()
+  CheckScreendump
+
+  let lines =<< trim END
+    set ls=0
+    vsplit
+    topleft new
+    wincmd _
+    set ls=2
+  END
+  call writefile(lines, 'XTestLaststatusVsplitRowHeight', 'D')
+  let buf = RunVimInTerminal('-S XTestLaststatusVsplitRowHeight', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_laststatus_vsplit_row_height_1', {})
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test that when FR_ROW windows have different status line heights (due to
+" window-local 'statuslineopt'), content heights compensate so that total
+" rows are equal across the row.
+func Test_laststatus_vsplit_row_height_mixed_stlo()
+  CheckScreendump
+
+  let lines =<< trim END
+    set ls=0
+    setlocal stlo=fixedheight,maxheight:2
+    rightbelow vnew
+    topleft new
+    wincmd _
+    set ls=2
+  END
+  call writefile(lines, 'XTestLaststatusVsplitRowHeight2', 'D')
+  let buf = RunVimInTerminal('-S XTestLaststatusVsplitRowHeight2', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_laststatus_vsplit_row_height2_1', {})
+  call StopVimInTerminal(buf)
+endfunc
+
+" Same as above but with the stlo window on the right (second leaf in FR_ROW).
+func Test_laststatus_vsplit_row_height_mixed_stlo_reversed()
+  CheckScreendump
+
+  let lines =<< trim END
+    set ls=0
+    leftabove vnew
+    wincmd p
+    setlocal stlo=fixedheight,maxheight:2
+    topleft new
+    wincmd _
+    set ls=2
+  END
+  call writefile(lines, 'XTestLaststatusVsplitRowHeight3', 'D')
+  let buf = RunVimInTerminal('-S XTestLaststatusVsplitRowHeight3', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_laststatus_vsplit_row_height3_1', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
