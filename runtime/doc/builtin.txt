@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 15
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13115,6 +13115,7 @@ acl			Compiled with |ACL| support.
 all_builtin_terms	Compiled with all builtin terminals enabled. (always
 			true)
 amiga			Amiga version of Vim.
+android			Android version of Vim. *android*
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
 autocmd			Compiled with autocommand support. (always true)
@@ -13285,6 +13286,7 @@ termguicolors		Compiled with true color in terminal support.
 terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
+termux			Termux version of Vim. *termux*
 textobjects		Compiled with support for |text-objects|.
 textprop		Compiled with support for |text-properties|.
 tgetent			Compiled with tgetent support, able to use a termcap

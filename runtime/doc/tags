@@ -6231,6 +6231,7 @@ alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
 amiga-window	starting.txt	/*amiga-window*
 and()	builtin.txt	/*and()*
+android	builtin.txt	/*android*
 anonymous-function	eval.txt	/*anonymous-function*
 ant.vim	syntax.txt	/*ant.vim*
 ap	motion.txt	/*ap*
@@ -11083,6 +11084,7 @@ termresponse-variable	eval.txt	/*termresponse-variable*
 termrfgresp-variable	eval.txt	/*termrfgresp-variable*
 termstyleresp-variable	eval.txt	/*termstyleresp-variable*
 termu7resp-variable	eval.txt	/*termu7resp-variable*
+termux	builtin.txt	/*termux*
 ternary	eval.txt	/*ternary*
 test-functions	usr_41.txt	/*test-functions*
 test-functions-details	testing.txt	/*test-functions-details*
