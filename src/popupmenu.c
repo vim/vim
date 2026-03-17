@@ -49,10 +49,6 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
-// Opacity: pum_opacity_active is set during pum_redraw.
-// The pum_bg_* globals are defined in globals.h.
-static int	pum_opacity_active = FALSE;
-static void pum_opacity_fill(int row, int col_start, int col_end, int pum_attr);
 
 // Border characters
 static struct {
@@ -754,9 +750,8 @@ pum_display_ltr_text(
     if (truncated)
     {
 	if (over_cell > 0)
-	    if (over_cell > 0)
-		screen_fill(row, row + 1, col + cells,
-			col + cells + over_cell, ' ', ' ', attr);
+	    screen_fill(row, row + 1, col + cells,
+		    col + cells + over_cell, ' ', ' ', attr);
 
 	screen_putchar(trunc, row, col + cells + over_cell, trunc_attr);
     }
@@ -926,49 +921,6 @@ pum_free_bg(void)
 }
 
 /*
- * For pumopacity: restore saved background characters in a range,
- * but apply a blended attribute so the pum background is still visible.
- * "pum_attr" is the popup menu highlight attribute for this area.
- */
-    static void
-pum_opacity_fill(int row, int col_start, int col_end, int pum_attr)
-{
-    int	    c;
-    int	    blend = 100 - (int)p_po;
-
-    if (pum_bg_lines == NULL || row < pum_bg_top || row >= pum_bg_bot)
-	return;
-    if (col_start < 0)
-	col_start = 0;
-    if (col_end > pum_bg_cols)
-	col_end = pum_bg_cols;
-
-    for (c = col_start; c < col_end; ++c)
-    {
-	int off = LineOffset[row] + c;
-	int soff = (row - pum_bg_top) * pum_bg_cols + c;
-	int underlying_attr = pum_bg_attrs[soff];
-
-	// Restore the underlying character.
-	ScreenLines[off] = pum_bg_lines[soff];
-	if (enc_utf8 && pum_bg_linesUC != NULL && ScreenLinesUC != NULL)
-	{
-	    int k;
-	    ScreenLinesUC[off] = pum_bg_linesUC[soff];
-	    for (k = 0; k < MAX_MCO; ++k)
-		if (pum_bg_linesC[k] != NULL && ScreenLinesC[k] != NULL)
-		    ScreenLinesC[k][off] = pum_bg_linesC[k][soff];
-	}
-
-	// Blend underlying attr with pum attr: shows underlying text
-	// through the pum background.
-	ScreenAttrs[off] = hl_blend_attr(underlying_attr, pum_attr,
-								blend, TRUE);
-	screen_char(off, row, c);
-    }
-}
-
-/*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
     void
@@ -997,8 +949,6 @@ pum_redraw(void)
     int		scroll_range = pum_size - pum_height;
     bool	override_success;
     int		opacity_active = (p_po > 0 && p_po < 100);
-
-    pum_opacity_active = opacity_active;
 
     // Use current window for highlight overrides when using 'winhighlight'
     override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
