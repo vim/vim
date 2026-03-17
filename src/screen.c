@@ -603,9 +603,9 @@ screen_line(
 	// Skip screen output when drawing an opacity popup: the
 	// background draw already output this cell, and outputting
 	// a space here would briefly erase it causing flicker.
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	if (screen_opacity_popup == NULL)
-#endif
+# endif
 	    screen_char(off_to - 1, row, col + coloff - 1);
     }
 #endif
