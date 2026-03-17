@@ -5253,33 +5253,40 @@ define_function(
 	    char_u  *name_base = arg;
 	    int	    i;
 
-	    if (*arg == K_SPECIAL)
+	    // When defining a dictionary function with bracket notation
+	    // (e.g. obj['foo-bar']()), the key is a dictionary key and is not
+	    // required to follow function naming rules.  Skip the identifier
+	    // check in that case.
+	    if (arg != fudi.fd_newkey)
 	    {
-		name_base = vim_strchr(arg, '_');
-		if (name_base == NULL)
-		    name_base = arg + 3;
-		else
-		    ++name_base;
-	    }
-	    for (i = 0; name_base[i] != NUL && (i == 0
-					? eval_isnamec1(name_base[i])
-					: eval_isnamec(name_base[i])); ++i)
-		;
-	    if (name_base[i] != NUL)
-	    {
-		emsg_funcname(e_invalid_argument_str, arg);
-		goto ret_free;
-	    }
+		if (*arg == K_SPECIAL)
+		{
+		    name_base = vim_strchr(arg, '_');
+		    if (name_base == NULL)
+			name_base = arg + 3;
+		    else
+			++name_base;
+		}
+		for (i = 0; name_base[i] != NUL && (i == 0
+					    ? eval_isnamec1(name_base[i])
+					    : eval_isnamec(name_base[i])); ++i)
+		    ;
+		if (name_base[i] != NUL)
+		{
+		    emsg_funcname(e_invalid_argument_str, arg);
+		    goto ret_free;
+		}
 
-	    // In Vim9 script a function cannot have the same name as a
-	    // variable.
-	    if (vim9script && *arg == K_SPECIAL
-		&& eval_variable(name_base, i, 0, NULL,
-		    NULL, EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
+		// In Vim9 script a function cannot have the same name as a
+		// variable.
+		if (vim9script && *arg == K_SPECIAL
+		    && eval_variable(name_base, i, 0, NULL,
+			NULL, EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
 						     + EVAL_VAR_NO_FUNC) == OK)
-	    {
-		semsg(_(e_redefining_script_item_str), name_base);
-		goto ret_free;
+		{
+		    semsg(_(e_redefining_script_item_str), name_base);
+		    goto ret_free;
+		}
 	    }
 	}
 	// Disallow using the g: dict.
