@@ -553,6 +553,7 @@ EXTERN long	p_acl;		// 'autocompletedelay'
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif
 EXTERN long	p_ph;		// 'pumheight'
+EXTERN long	p_po;		// 'pumopacity'
 EXTERN long	p_pw;		// 'pumwidth'
 EXTERN long	p_pmw;		// 'pummaxwidth'
 EXTERN char_u	*p_pb;		// 'pumborder'

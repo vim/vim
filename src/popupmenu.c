@@ -49,6 +49,15 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
+// Opacity: saved background screen content (persists across pum_redraw calls)
+static sattr_T	*pum_bg_attrs = NULL;
+static schar_T	*pum_bg_lines = NULL;
+static u8char_T	*pum_bg_linesUC = NULL;
+static u8char_T	*pum_bg_linesC[MAX_MCO] = {NULL};
+static int	pum_bg_top = 0;
+static int	pum_bg_bot = 0;
+static int	pum_bg_cols = 0;
+
 // Border characters
 static struct {
     int top;
@@ -878,6 +887,87 @@ pum_align_order(int *order)
     order[2] = is_default ? CPT_MENU : cia_flags % 10;
 }
 
+static void pum_free_bg(void);
+
+/*
+ * Called when 'pumopacity' is changed.
+ */
+    char *
+did_set_pumopacity(optset_T *args UNUSED)
+{
+    if (p_po < 0)
+	p_po = 0;
+    if (p_po > 100)
+	p_po = 100;
+
+    // Invalidate cached background so it gets re-saved.
+    pum_free_bg();
+
+    if (pum_visible())
+    {
+	call_update_screen = TRUE;
+	pum_redraw();
+    }
+    return NULL;
+}
+
+    static void
+pum_free_bg(void)
+{
+    int k;
+    VIM_CLEAR(pum_bg_attrs);
+    VIM_CLEAR(pum_bg_lines);
+    VIM_CLEAR(pum_bg_linesUC);
+    for (k = 0; k < MAX_MCO; ++k)
+	VIM_CLEAR(pum_bg_linesC[k]);
+    pum_bg_top = 0;
+    pum_bg_bot = 0;
+    pum_bg_cols = 0;
+}
+
+/*
+ * For pumopacity: restore saved background characters in a range,
+ * but apply a blended attribute so the pum background is still visible.
+ * "pum_attr" is the popup menu highlight attribute for this area.
+ */
+    static void
+pum_opacity_fill(int row, int col_start, int col_end, int pum_attr)
+{
+    int	    c;
+    int	    blend = MIN((int)p_po, 99);
+
+    if (pum_bg_lines == NULL || row < pum_bg_top || row >= pum_bg_bot)
+	return;
+    if (col_start < 0)
+	col_start = 0;
+    if (col_end > pum_bg_cols)
+	col_end = pum_bg_cols;
+
+    for (c = col_start; c < col_end; ++c)
+    {
+	int off = LineOffset[row] + c;
+	int soff = (row - pum_bg_top) * pum_bg_cols + c;
+	int underlying_attr = pum_bg_attrs[soff];
+
+	// Restore the underlying character.
+	ScreenLines[off] = pum_bg_lines[soff];
+	if (enc_utf8 && pum_bg_linesUC != NULL && ScreenLinesUC != NULL)
+	{
+	    int k;
+	    ScreenLinesUC[off] = pum_bg_linesUC[soff];
+	    for (k = 0; k < MAX_MCO; ++k)
+		if (pum_bg_linesC[k] != NULL && ScreenLinesC[k] != NULL)
+		    ScreenLinesC[k][off] = pum_bg_linesC[k][soff];
+	}
+
+	// Blend underlying attr with pum attr: shows underlying text
+	// through the pum background.
+	ScreenAttrs[off] = hl_blend_attr(underlying_attr, pum_attr,
+								blend, TRUE);
+	screen_char(off, row, c);
+    }
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -906,6 +996,7 @@ pum_redraw(void)
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
     bool	override_success;
+    int		opacity_active = (p_po > 0 && p_po < 100);
 
     // Use current window for highlight overrides when using 'winhighlight'
     override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
@@ -925,11 +1016,90 @@ pum_redraw(void)
     if (call_update_screen)
     {
 	call_update_screen = FALSE;
-	// Do not redraw in pum_may_redraw() and don't draw in the area where
-	// the popup menu will be.
-	pum_will_redraw = TRUE;
-	update_screen(0);
-	pum_will_redraw = FALSE;
+	if (opacity_active && pum_bg_lines != NULL)
+	{
+	    // Already have saved background; skip update_screen to avoid
+	    // flickering.  Just do a normal pum_will_redraw update.
+	    pum_will_redraw = TRUE;
+	    update_screen(0);
+	    pum_will_redraw = FALSE;
+	}
+	else if (opacity_active)
+	{
+	    // For opacity: draw background including the area under the
+	    // pum, then save it.
+	    pum_pretend_not_visible = TRUE;
+	    update_screen(0);
+	    pum_pretend_not_visible = FALSE;
+
+	    // Save background to static buffers.
+	    if (ScreenLines != NULL && ScreenAttrs != NULL)
+	    {
+		int	save_top, save_bot, save_ncells, k;
+
+		pum_free_bg();
+		save_top = pum_row - pum_border;
+		save_bot = pum_row + pum_height + pum_border
+					    + (pum_shadow ? 1 : 0) + 1;
+		if (save_top < 0)
+		    save_top = 0;
+		if (save_bot > screen_Rows)
+		    save_bot = screen_Rows;
+		pum_bg_top = save_top;
+		pum_bg_bot = save_bot;
+		pum_bg_cols = screen_Columns;
+		if (save_top < save_bot)
+		{
+		    save_ncells = (save_bot - save_top) * screen_Columns;
+		    pum_bg_attrs = LALLOC_MULT(sattr_T, save_ncells);
+		    pum_bg_lines = LALLOC_MULT(schar_T, save_ncells);
+		    if (enc_utf8)
+		    {
+			pum_bg_linesUC = LALLOC_MULT(u8char_T, save_ncells);
+			for (k = 0; k < MAX_MCO; ++k)
+			    pum_bg_linesC[k] = LALLOC_MULT(u8char_T,
+							    save_ncells);
+		    }
+		    if (pum_bg_attrs != NULL && pum_bg_lines != NULL)
+		    {
+			for (int r = save_top; r < save_bot; ++r)
+			{
+			    int soff = (r - save_top) * screen_Columns;
+			    int loff = LineOffset[r];
+
+			    mch_memmove(pum_bg_attrs + soff,
+				    ScreenAttrs + loff,
+				    screen_Columns * sizeof(sattr_T));
+			    mch_memmove(pum_bg_lines + soff,
+				    ScreenLines + loff,
+				    screen_Columns * sizeof(schar_T));
+			    if (enc_utf8 && pum_bg_linesUC != NULL
+						&& ScreenLinesUC != NULL)
+			    {
+				mch_memmove(pum_bg_linesUC + soff,
+					ScreenLinesUC + loff,
+					screen_Columns * sizeof(u8char_T));
+				for (k = 0; k < MAX_MCO; ++k)
+				    if (pum_bg_linesC[k] != NULL
+						    && ScreenLinesC[k] != NULL)
+					mch_memmove(pum_bg_linesC[k] + soff,
+						ScreenLinesC[k] + loff,
+						screen_Columns
+						    * sizeof(u8char_T));
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    // Do not redraw in pum_may_redraw() and don't draw in the area
+	    // where the popup menu will be.
+	    pum_will_redraw = TRUE;
+	    update_screen(0);
+	    pum_will_redraw = FALSE;
+	}
     }
 
     // never display more than we have
@@ -964,16 +1134,30 @@ pum_redraw(void)
 	attr = highlight_attr[hlf];
 
 	// prepend a space if there is room
-#ifdef FEAT_RIGHTLEFT
-	if (pum_rl)
+	if (opacity_active)
 	{
-	    if (pum_col < curwin->w_wincol + curwin->w_width - 1 - pum_border)
-		screen_putchar(' ', row, pum_col + 1, attr);
+#ifdef FEAT_RIGHTLEFT
+	    if (pum_rl)
+		pum_opacity_fill(row, pum_col + 1, pum_col + 2, attr);
+	    else
+#endif
+		if (pum_col > pum_border)
+		    pum_opacity_fill(row, pum_col - 1, pum_col, attr);
 	}
 	else
+	{
+#ifdef FEAT_RIGHTLEFT
+	    if (pum_rl)
+	    {
+		if (pum_col < curwin->w_wincol + curwin->w_width - 1
+								- pum_border)
+		    screen_putchar(' ', row, pum_col + 1, attr);
+	    }
+	    else
 #endif
-	    if (pum_col > pum_border)
-		screen_putchar(' ', row, pum_col - 1, attr);
+		if (pum_col > pum_border)
+		    screen_putchar(' ', row, pum_col - 1, attr);
+	}
 
 	// Display each entry, use two spaces for a Tab.
 	// Do this 3 times and order from p_cia
@@ -1016,15 +1200,24 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 	    {
-		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
-						col + 1, ' ', ' ', orig_attr);
+		if (opacity_active)
+		    pum_opacity_fill(row, pum_col - basic_width - n + 1,
+						    col + 1, orig_attr);
+		else
+		    screen_fill(row, row + 1,
+			    pum_col - basic_width - n + 1,
+			    col + 1, ' ', ' ', orig_attr);
 		col = pum_col - basic_width - n;
 	    }
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + basic_width + n,
-							' ', ' ', orig_attr);
+		if (opacity_active)
+		    pum_opacity_fill(row, col,
+				    pum_col + basic_width + n, orig_attr);
+		else
+		    screen_fill(row, row + 1, col,
+			    pum_col + basic_width + n, ' ', ' ', orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;
@@ -1032,12 +1225,23 @@ pum_redraw(void)
 
 #ifdef FEAT_RIGHTLEFT
 	if (pum_rl)
-	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
-							    ' ', orig_attr);
+	{
+	    if (opacity_active)
+		pum_opacity_fill(row, pum_col - pum_width + 1, col + 1,
+								orig_attr);
+	    else
+		screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1,
+							' ', ' ', orig_attr);
+	}
 	else
 #endif
-	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
-								orig_attr);
+	{
+	    if (opacity_active)
+		pum_opacity_fill(row, col, pum_col + pum_width, orig_attr);
+	    else
+		screen_fill(row, row + 1, col, pum_col + pum_width,
+							' ', ' ', orig_attr);
+	}
 	pum_draw_scrollbar(row, i, thumb_pos, thumb_height);
 
 	++row;
@@ -1427,6 +1631,7 @@ pum_set_selected(int n, int repeat UNUSED)
     void
 pum_undisplay(void)
 {
+    pum_free_bg();
     pum_array = NULL;
     redraw_all_later(UPD_NOT_VALID);
     redraw_tabline = TRUE;
