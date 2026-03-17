@@ -138,7 +138,7 @@ func Test_restricted_diff()
   call delete('Xresult')
 endfunc
 
-func Test_restricted_vim9_env()
+func Test_restricted_env()
   let lines =<< trim END
       vim9script
       def SetEnv()
@@ -155,6 +155,22 @@ func Test_restricted_vim9_env()
   END
   call writefile(lines, 'Xrestrictedvim9', 'D')
   if RunVim([], [], '-Z --clean -S Xrestrictedvim9')
+    call assert_equal(['not-allowed'], readfile('XResult_env'))
+  endif
+  call delete('XResult_env')
+
+  let lines =<< trim END
+      try
+        let $ENV_TEST = 'val'
+        let result = 'okay'
+      catch /^Vim\%((\S\+)\)\=:E145:/
+        let result = 'not-allowed'
+      endtry
+      call writefile([result], 'XResult_env')
+      qa!
+  END
+  call writefile(lines, 'Xrestricted_legacy', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestricted_legacy')
     call assert_equal(['not-allowed'], readfile('XResult_env'))
   endif
   call delete('XResult_env')

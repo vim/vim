@@ -1712,7 +1712,7 @@ ex_let_env(
 	else if (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(arg)) == NULL)
 	    emsg(_(e_unexpected_characters_in_let));
-	else if (!check_secure())
+	else if (!check_secure() && !check_restricted())
 	{
 	    char_u	*tofree = NULL;
 	    int		c1 = name[len];

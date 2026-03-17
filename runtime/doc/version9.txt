@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 16
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52595,8 +52595,10 @@ between them is small (5 bytes or less) and contains only non-word characters.
 This prevents fragmented highlighting when only whitespace or punctuation
 separates changes.
 
-Using external diff mode is no longer allowed when Vim is running in
-|restricted-mode|.
+Restricted mode~
+---------------
+Using external diff mode or setting environment variables is no longer allowed
+when Vim is running in |restricted-mode|.
 
 Other ~
 -----

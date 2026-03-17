@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Feb 25
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -252,7 +252,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":sh", filtering, the |system()| function, backtick expansion
 		and libcall().
 		Also disallowed are |delete()|, |rename()|, |mkdir()|,
-		|job_start()|, |setenv()| etc.
+		|job_start()|, |setenv()| and setting environment variables,
+		etc.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
