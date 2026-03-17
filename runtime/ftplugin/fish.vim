@@ -26,12 +26,14 @@ let b:undo_ftplugin = "setl cms< com< fo< isk<"
 " Define patterns for the matchit plugin
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_words =
-      \ '\<\%(else\s\+\)\@<!if\>:\<else\%(\s\+if\)\?\>:\<end\>,' ..
-      \ '\<switch\>:\<case\>:\<end\>,' ..
-      \ '\<\(begin\|function\|while\|for\)\>:\<end\>'
-  let b:match_ignorecase = 0
+      \ '\<\%(else\s\+\)\@<!if\>\|\<\%(switch\|begin\|function\|while\|for\)\>:' ..
+      \ '\<else\%(\s\+if\)\?\>\|\<case\>:' ..
+      \ '\<end\>'
 
-  let b:undo_ftplugin ..= " | unlet! b:match_words b:match_ignorecase"
+  let b:match_ignorecase = 0
+  let b:match_skip = "S:keyword"
+
+  let b:undo_ftplugin ..= " | unlet! b:match_words b:match_ignorecase b:match_skip"
 endif
 
 " Restore 'cpo' to its original value
