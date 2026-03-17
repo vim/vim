@@ -49,14 +49,10 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
-// Opacity: saved background screen content (persists across pum_redraw calls)
-static sattr_T	*pum_bg_attrs = NULL;
-static schar_T	*pum_bg_lines = NULL;
-static u8char_T	*pum_bg_linesUC = NULL;
-static u8char_T	*pum_bg_linesC[MAX_MCO] = {NULL};
-static int	pum_bg_top = 0;
-static int	pum_bg_bot = 0;
-static int	pum_bg_cols = 0;
+// Opacity: pum_opacity_active is set during pum_redraw.
+// The pum_bg_* globals are defined in globals.h.
+static int	pum_opacity_active = FALSE;
+static void pum_opacity_fill(int row, int col_start, int col_end, int pum_attr);
 
 // Border characters
 static struct {
@@ -758,8 +754,9 @@ pum_display_ltr_text(
     if (truncated)
     {
 	if (over_cell > 0)
-	    screen_fill(row, row + 1, col + cells,
-		    col + cells + over_cell, ' ', ' ', attr);
+	    if (over_cell > 0)
+		screen_fill(row, row + 1, col + cells,
+			col + cells + over_cell, ' ', ' ', attr);
 
 	screen_putchar(trunc, row, col + cells + over_cell, trunc_attr);
     }
@@ -934,7 +931,7 @@ pum_free_bg(void)
 pum_opacity_fill(int row, int col_start, int col_end, int pum_attr)
 {
     int	    c;
-    int	    blend = MIN((int)p_po, 99);
+    int	    blend = 100 - (int)p_po;
 
     if (pum_bg_lines == NULL || row < pum_bg_top || row >= pum_bg_bot)
 	return;
@@ -997,6 +994,8 @@ pum_redraw(void)
     int		scroll_range = pum_size - pum_height;
     bool	override_success;
     int		opacity_active = (p_po > 0 && p_po < 100);
+
+    pum_opacity_active = opacity_active;
 
     // Use current window for highlight overrides when using 'winhighlight'
     override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
@@ -1120,6 +1119,10 @@ pum_redraw(void)
     screen_zindex = POPUPMENU_ZINDEX;
 #endif
 
+    // Set blend for screen_puts_len / screen_fill to use.
+    if (opacity_active)
+	screen_pum_blend = 100 - (int)p_po;
+
     // Draw border and shadow first if enabled
     if (pum_border)
 	pum_draw_border();
@@ -1134,30 +1137,17 @@ pum_redraw(void)
 	attr = highlight_attr[hlf];
 
 	// prepend a space if there is room
-	if (opacity_active)
-	{
 #ifdef FEAT_RIGHTLEFT
-	    if (pum_rl)
-		pum_opacity_fill(row, pum_col + 1, pum_col + 2, attr);
-	    else
-#endif
-		if (pum_col > pum_border)
-		    pum_opacity_fill(row, pum_col - 1, pum_col, attr);
+	if (pum_rl)
+	{
+	    if (pum_col < curwin->w_wincol + curwin->w_width - 1
+							    - pum_border)
+		screen_putchar(' ', row, pum_col + 1, attr);
 	}
 	else
-	{
-#ifdef FEAT_RIGHTLEFT
-	    if (pum_rl)
-	    {
-		if (pum_col < curwin->w_wincol + curwin->w_width - 1
-								- pum_border)
-		    screen_putchar(' ', row, pum_col + 1, attr);
-	    }
-	    else
 #endif
-		if (pum_col > pum_border)
-		    screen_putchar(' ', row, pum_col - 1, attr);
-	}
+	    if (pum_col > pum_border)
+		screen_putchar(' ', row, pum_col - 1, attr);
 
 	// Display each entry, use two spaces for a Tab.
 	// Do this 3 times and order from p_cia
@@ -1200,24 +1190,15 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 	    {
-		if (opacity_active)
-		    pum_opacity_fill(row, pum_col - basic_width - n + 1,
-						    col + 1, orig_attr);
-		else
-		    screen_fill(row, row + 1,
-			    pum_col - basic_width - n + 1,
-			    col + 1, ' ', ' ', orig_attr);
+		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
+						col + 1, ' ', ' ', orig_attr);
 		col = pum_col - basic_width - n;
 	    }
 	    else
 #endif
 	    {
-		if (opacity_active)
-		    pum_opacity_fill(row, col,
-				    pum_col + basic_width + n, orig_attr);
-		else
-		    screen_fill(row, row + 1, col,
-			    pum_col + basic_width + n, ' ', ' ', orig_attr);
+		screen_fill(row, row + 1, col, pum_col + basic_width + n,
+							' ', ' ', orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;
@@ -1225,27 +1206,18 @@ pum_redraw(void)
 
 #ifdef FEAT_RIGHTLEFT
 	if (pum_rl)
-	{
-	    if (opacity_active)
-		pum_opacity_fill(row, pum_col - pum_width + 1, col + 1,
-								orig_attr);
-	    else
-		screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1,
-							' ', ' ', orig_attr);
-	}
+	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1,
+							    ' ', ' ', orig_attr);
 	else
 #endif
-	{
-	    if (opacity_active)
-		pum_opacity_fill(row, col, pum_col + pum_width, orig_attr);
-	    else
-		screen_fill(row, row + 1, col, pum_col + pum_width,
-							' ', ' ', orig_attr);
-	}
+	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
+								orig_attr);
 	pum_draw_scrollbar(row, i, thumb_pos, thumb_height);
 
 	++row;
     }
+
+    screen_pum_blend = 0;
 
 #ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
