@@ -7689,6 +7689,19 @@ func Test_catch_pattern_trailing_chars()
   bw!
 endfunc
 
+" Test for long gerneric type name {{{1
+func Test_function_long_generic_name()
+  func TestFunc()
+    return
+  endfunc
+
+  let name = 'TestFunc<' .. repeat('T', 1100) .. '>'
+
+  call function(name)
+  call funcref(name)
+  delfunc TestFunc
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
