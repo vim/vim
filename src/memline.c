@@ -1945,7 +1945,7 @@ recover_names(
 #ifdef VMS
 		names[0] = vim_strnsave((char_u *)"*_sw%", STRLEN_LITERAL("*_sw%"));
 #else
-		names[0] = vim_strnsave((char_u *)"*.sw?", STRLEN_LITERAL("*_sw?"));
+		names[0] = vim_strnsave((char_u *)"*.sw?", STRLEN_LITERAL("*.sw?"));
 #endif
 #if defined(UNIX) || defined(MSWIN)
 		// For Unix names starting with a dot are special.  MS-Windows
