@@ -5436,9 +5436,13 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	    else
 	    {
 		// generic function
-		STRCPY(IObuff, name);
-		STRCAT(IObuff, start_bracket);
-		rettv->vval.v_string = vim_strsave(IObuff);
+		size_t len = STRLEN(name) + STRLEN(start_bracket);
+		rettv->vval.v_string = alloc(len + 1);
+		if (rettv->vval.v_string != NULL)
+		{
+		    STRCPY(rettv->vval.v_string, name);
+		    STRCAT(rettv->vval.v_string, start_bracket);
+		}
 		vim_free(name);
 	    }
 	}
