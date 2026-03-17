@@ -6666,6 +6666,16 @@ gui_mch_draw_string(
 	    pcliprect = &rc;
 	    foptions = ETO_CLIPPED;
 	}
+#ifdef FEAT_DIRECTX
+	// DirectWrite anti-aliasing can extend glyph pixels beyond cell
+	// boundaries, leaving artifacts when adjacent cells are not
+	// redrawn.  Clip to the cell rect to prevent this.
+	else if (IS_ENABLE_DIRECTX())
+	{
+	    pcliprect = &rc;
+	    foptions = ETO_CLIPPED;
+	}
+#endif
     }
     SetTextColor(s_hdc, gui.currFgColor);
     SelectFont(s_hdc, gui.currFont);
