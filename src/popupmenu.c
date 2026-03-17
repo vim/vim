@@ -902,6 +902,9 @@ did_set_pumopacity(optset_T *args UNUSED)
 
     if (pum_visible())
     {
+	// Force full screen clear so ScreenAttrs doesn't retain
+	// stale blended values from the previous pumopacity.
+	redraw_all_later(UPD_CLEAR);
 	call_update_screen = TRUE;
 	pum_redraw();
     }

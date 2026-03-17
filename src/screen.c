@@ -2685,10 +2685,9 @@ skip_opacity_fill:
 						    && ScreenLinesC[k] != NULL)
 				ScreenLinesC[k][off] = pum_bg_linesC[k][soff];
 		    }
-		    // Blend both fg and bg so underlying text visibility
-		    // changes with pumopacity.
-		    ScreenAttrs[off] = hl_blend_attr(underlying_attr,
-					    attr, screen_pum_blend, TRUE);
+		    // Keep underlying fg, blend bg only.
+		    ScreenAttrs[off] = hl_pum_blend_attr(underlying_attr,
+					    attr, screen_pum_blend);
 		    screen_char(off, row, col);
 		    goto next_col;
 		}
