@@ -877,12 +877,14 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 	for (int read_idx = 0; read_idx < cts.cts_text_prop_count; read_idx++)
 	{
 	    textprop_T *tp = &cts.cts_text_props[read_idx];
-	    if (tp->tp_col != MAXCOL)
+	    if (!PROP_IS_FLOATING(tp))
 	    {
 		if (read_idx != write_idx)
 		    cts.cts_text_props[write_idx] = *tp;
 		write_idx++;
 	    }
+	    else
+		um_free_detached_prop_vtext(tp);
 	}
 	cts.cts_text_prop_count = write_idx;
 	if (cts.cts_text_prop_count == 0)
@@ -1084,65 +1086,46 @@ init_chartabsize_arg(
     cts->cts_bri_size = -1;
 #endif
 #ifdef FEAT_PROP_POPUP
-    if (lnum > 0 && !ignore_text_props)
+    // For testing, Vim might be in the process of freeing all memory. This
+    // means that it may have already closed and freed all memline
+    // structures, so this function should not be getting called: yet id does!
+    // So use the global flag as a, hopefully temporary, work around.
+# if defined(EXITFREE)
+    if (entered_free_all_mem)
+	return;
+# endif
+
+    if (lnum > 0 && !ignore_text_props && wp->w_buffer->b_has_textprop)
     {
-	char_u	*prop_start;
-	int	count;
-
-	count = get_text_props(wp->w_buffer, lnum, &prop_start, FALSE);
-	cts->cts_text_prop_count = count;
-	if (count > 0)
+	unpacked_memline_T umemline = um_open_at_detached(
+	    wp->w_buffer, lnum, 0);
+	if (umemline.prop_count > 0)
 	{
-	    // Make a copy of the properties, so that they are properly
-	    // aligned.  Make it twice as long for the sorting below.
-	    cts->cts_text_props = ALLOC_MULT(textprop_T, count * 2);
-	    if (cts->cts_text_props == NULL)
-		cts->cts_text_prop_count = 0;
-	    else
+	    cts->cts_text_prop_count = umemline.prop_count;
+	    um_sort_props(&umemline);
+	    um_reverse_props(&umemline);
+	    cts->cts_text_props = um_extract_props(&umemline);
+
+	    for (int i = 0; i < cts->cts_text_prop_count; ++i)
 	    {
-		int	i;
-
-		mch_memmove(cts->cts_text_props + count, prop_start,
-						   count * sizeof(textprop_T));
-		for (i = 0; i < count; ++i)
+		textprop_T *tp = &cts->cts_text_props[i];
+		if (PROP_IS_VTEXT(tp)
+				 && text_prop_type_valid(wp->w_buffer, tp))
 		{
-		    textprop_T *tp = cts->cts_text_props + i + count;
-		    if (tp->tp_id < 0
-				     && text_prop_type_valid(wp->w_buffer, tp))
-		    {
-			cts->cts_has_prop_with_text = TRUE;
-			break;
-		    }
-		}
-		if (!cts->cts_has_prop_with_text)
-		{
-		    // won't use the text properties, free them
-		    VIM_CLEAR(cts->cts_text_props);
-		    cts->cts_text_prop_count = 0;
-		}
-		else
-		{
-		    int	    *text_prop_idxs;
-
-		    // Need to sort the array to get any truncation right.
-		    // Do the sorting in the second part of the array, then
-		    // move the sorted props to the first part of the array.
-		    text_prop_idxs = ALLOC_MULT(int, count);
-		    if (text_prop_idxs != NULL)
-		    {
-			for (i = 0; i < count; ++i)
-			    text_prop_idxs[i] = i + count;
-			sort_text_props(curbuf, cts->cts_text_props,
-							text_prop_idxs, count);
-			// Here we want the reverse order.
-			for (i = 0; i < count; ++i)
-			    cts->cts_text_props[count - i - 1] =
-					cts->cts_text_props[text_prop_idxs[i]];
-			vim_free(text_prop_idxs);
-		    }
+		    cts->cts_has_prop_with_text = TRUE;
+		    break;
 		}
 	    }
+	    if (!cts->cts_has_prop_with_text)
+	    {
+		// won't use the text properties, free them
+		um_free_detached_props_vtext(
+		    cts->cts_text_props, cts->cts_text_prop_count);
+		VIM_CLEAR(cts->cts_text_props);
+		cts->cts_text_prop_count = 0;
+	    }
 	}
+	um_abort(&umemline);
     }
 #endif
 }
@@ -1156,6 +1139,8 @@ clear_chartabsize_arg(chartabsize_T *cts UNUSED)
 #ifdef FEAT_PROP_POPUP
     if (cts->cts_text_prop_count > 0)
     {
+	um_free_detached_props_vtext(
+	    cts->cts_text_props, cts->cts_text_prop_count);
 	VIM_CLEAR(cts->cts_text_props);
 	cts->cts_text_prop_count = 0;
     }
@@ -1289,7 +1274,6 @@ win_lbr_chartabsize(
 	int	    charlen = *s == NUL ? 1 : mb_ptr2len(s);
 	int	    i;
 	int	    col = (int)(s - line);
-	garray_T    *gap = &wp->w_buffer->b_textprop_text;
 
 	// The "$" for 'list' mode will go between the EOL and
 	// the text prop, account for that.
@@ -1303,60 +1287,52 @@ win_lbr_chartabsize(
 	{
 	    textprop_T	*tp = cts->cts_text_props + i;
 	    int		col_off = win_col_off(wp);
+	    char_u	*p = tp->tp_text;
 
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
-	    if (tp->tp_id < 0
+	    if (p != NULL
 		    && ((tp->tp_col - 1 >= col
 					     && tp->tp_col - 1 < col + charlen)
-		       || (tp->tp_col == MAXCOL
-			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
+		       || (PROP_IS_FLOATING(tp)
+			   && (PROP_IS_ABOVE(tp)
 				? col == 0
-				: s[0] == NUL && cts->cts_with_trailing)))
-		    && -tp->tp_id - 1 < gap->ga_len)
+				: s[0] == NUL && cts->cts_with_trailing))))
 	    {
-		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
+		int	cells;
 
-		if (p != NULL)
+		if (PROP_IS_FLOATING(tp))
 		{
-		    int	cells;
+		    int n_extra = (int)STRLEN(p);
 
-		    if (tp->tp_col == MAXCOL)
-		    {
-			int n_extra = (int)STRLEN(p);
-
-			cells = text_prop_position(wp, tp, vcol,
-			     (vcol + size) % (wp->w_width - col_off) + col_off,
-					      &n_extra, &p, NULL, NULL, FALSE);
+		    cells = text_prop_position(wp, tp, vcol,
+			    (vcol + size) % (wp->w_width - col_off) + col_off,
+			    &n_extra, &p, NULL, NULL, FALSE);
 #  ifdef FEAT_LINEBREAK
-			if (text_prop_no_showbreak(tp))
-			    no_sbr = TRUE;  // don't use 'showbreak' now
+		    if (text_prop_no_showbreak(tp))
+			no_sbr = TRUE;  // don't use 'showbreak' now
 #  endif
-		    }
-		    else
-			cells = vim_strsize(p);
-		    cts->cts_cur_text_width += cells;
-		    if (tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
-			cts->cts_first_char += cells;
-		    else
-			size += cells;
-		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
-#  ifdef FEAT_LINEBREAK
-		    if (*s == TAB)
-		    {
-			// tab size changes because of the inserted text
-			size -= tab_size;
-			tab_size = win_chartabsize(wp, s, vcol + size);
-			size += tab_size;
-		    }
-#  endif
-		    if (tp->tp_col == MAXCOL && (tp->tp_flags
-				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
-			// count extra line for property above/below
-			++cts->cts_prop_lines;
 		}
+		else
+		    cells = vim_strsize(p);
+		cts->cts_cur_text_width += cells;
+		if (PROP_IS_ABOVE(tp))
+		    cts->cts_first_char += cells;
+		else
+		    size += cells;
+		cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
+		if (*s == TAB)
+		{
+		    // tab size changes because of the inserted text
+		    size -= tab_size;
+		    tab_size = win_chartabsize(wp, s, vcol + size);
+		    size += tab_size;
+		}
+		if (PROP_IS_ABOVE_OR_BELOW(tp))
+		    // count extra line for property above/below
+		    ++cts->cts_prop_lines;
 	    }
-	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
+	    if (!PROP_IS_FLOATING(tp) && tp->tp_col - 1 > col)
 		break;
 	}
 	if (has_lcs_eol)

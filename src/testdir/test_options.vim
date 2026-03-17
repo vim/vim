@@ -1183,7 +1183,7 @@ func Test_backupskip()
       qall
   [CODE]
   call writefile(after, 'Xafter', 'D')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  let cmd = GetVimProg() . ' --noplugin --not-a-term -S Xafter --cmd "set enc=utf8"'
 
   let saveenv = {}
   for var in ['TMPDIR', 'TMP', 'TEMP']

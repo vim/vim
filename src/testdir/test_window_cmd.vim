@@ -1042,6 +1042,7 @@ func Test_winnr()
 endfunc
 
 func Test_winrestview()
+  let g:ignoreSwapExists = 'o'
   split runtest.vim
   normal 50%
   let view = winsaveview()
@@ -1049,6 +1050,7 @@ func Test_winrestview()
   split runtest.vim
   eval view->winrestview()
   call assert_equal(view, winsaveview())
+  unlet g:ignoreSwapExists
 
   bwipe!
   call assert_fails('call winrestview(test_null_dict())', 'E1297:')

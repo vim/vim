@@ -164,7 +164,7 @@ func Test_crash1_2()
     sil!so
   END
   call writefile(lines, file, 'D')
-  let cmn_args = "%s -u NONE -i NONE -X -m -n -e -s -u %s -c ':qa!'"
+  let cmn_args = "%s -u NONE -U NONE --noplugin -i NONE -X -m -n -e -s -u %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
   call s:RunCommandAndWait(buf, args ..
     \ ' && echo "crash 6: [OK]" >> '.. result)

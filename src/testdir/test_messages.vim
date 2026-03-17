@@ -376,12 +376,12 @@ func Test_message_more_scrollback()
   call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
 
   call term_sendkeys(buf, 'f')
-  call TermWait(buf)
+  call TermWait(buf, 150)
   call term_sendkeys(buf, 'b')
   call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
 
   call term_sendkeys(buf, "\<C-F>")
-  call TermWait(buf)
+  call TermWait(buf, 150)
   call term_sendkeys(buf, "\<C-B>")
   call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
 

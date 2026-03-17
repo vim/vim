@@ -3328,8 +3328,6 @@ EXTERN char e_invalid_argument_nr[]
 EXTERN char e_cmdline_window_already_open[]
 	INIT(= N_("E1292: Command-line window is already open"));
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
-	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
 EXTERN char e_can_only_use_text_align_when_column_is_zero[]
 	INIT(= N_("E1294: Can only use text_align when column is zero"));
 #endif
@@ -3360,8 +3358,8 @@ EXTERN char e_cannot_use_type_with_this_variable_str[]
 	INIT(= N_("E1304: Cannot use type with this variable: %s"));
 #endif
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
-	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
+EXTERN char e_cannot_use_id_length_endcol_and_endlnum_with_text[]
+	INIT(= N_("E1305: Cannot use \"id\", \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_loop_nesting_too_deep[]
@@ -3431,10 +3429,6 @@ EXTERN char e_internal_error_shortmess_too_long[]
 EXTERN char e_class_variable_str_not_found_in_class_str[]
 	INIT(= N_("E1337: Class variable \"%s\" not found in class \"%s\""));
 // E1338 unused
-#endif
-#ifdef FEAT_PROP_POPUP
-EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
-	INIT(= N_("E1339: Cannot add a textprop with text after using a textprop with a negative id"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_argument_already_declared_in_class_str[]

@@ -1145,7 +1145,7 @@ func Test_VIMINIT()
     qall
   [CODE]
   call writefile(after, 'Xafter', 'D')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  let cmd = GetVimProg() . ' --noplugin --not-a-term -S Xafter --cmd "set enc=utf8"'
   call setenv('VIMINIT', 'let viminit_found="yes"')
   exe "silent !" . cmd
   call assert_equal([], readfile('Xtestout'))
@@ -1162,7 +1162,10 @@ func Test_EXINIT()
     qall
   [CODE]
   call writefile(after, 'Xafter', 'D')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  let cmd = GetVimProg() . ' --noplugin --not-a-term -S Xafter --cmd "set enc=utf8"'
+  let saved_home = getenv('HOME')
+  let saved_xdg_config_home = getenv('XDG_CONFIG_HOME')
+  let saved_exinit = getenv('EXINIT')
   call setenv('HOME', '/non-existing')
   call setenv('XDG_CONFIG_HOME', '/non-existing')
   call setenv('EXINIT', 'let exinit_found="yes"')
@@ -1170,6 +1173,9 @@ func Test_EXINIT()
   call assert_equal([], readfile('Xtestout'))
 
   call delete('Xtestout')
+  call setenv('HOME', saved_home )
+  call setenv('XDG_CONFIG_HOME', saved_xdg_config_home )
+  call setenv('EXINIT', saved_exinit )
 endfunc
 
 " Test for using the 'exrc' option
@@ -1184,7 +1190,7 @@ func Test_exrc()
   call mkdir('Xrcdir', 'R')
   call writefile(['let exrc_found=37'], 'Xrcdir/.exrc')
   call writefile(after, 'Xrcdir/Xafter')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xrcdir" --cmd "set enc=utf8 exrc secure"'
+  let cmd = GetVimProg() . ' --noplugin --not-a-term -S Xafter --cmd "cd Xrcdir" --cmd "set enc=utf8 exrc secure"'
   exe "silent !" . cmd
   call assert_equal([], readfile('Xrcdir/Xtestout'))
 endfunc
@@ -1235,7 +1241,7 @@ func Test_redirect_Ctrl_C()
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
 
-  call term_sendkeys(buf, GetVimProg() .. " | grep word\<CR>")
+  call term_sendkeys(buf, GetVimProg() .. " --noplugin | grep word\<CR>")
   call WaitForAssert({-> assert_match("Output is not to a terminal", getline(1, 4)->join())})
   " wait for the hard coded delay, otherwise the CTRL-C interrupts startup
   sleep 2
@@ -1448,7 +1454,7 @@ func Test_write_in_vimrc()
     call writefile(v:errors, 'Xtestout')
     qall
   [CODE]
-  if RunVim([], after, '-u Xvimrc')
+  if RunVim([], after, '--noplugin -u Xvimrc')
     call assert_equal([], readfile('Xtestout'))
     call delete('Xtestout')
   endif

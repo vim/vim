@@ -337,6 +337,7 @@ NEW_TESTS = \
 	test_textformat \
 	test_textobjects \
 	test_textprop \
+	test_textprop2 \
 	test_timers \
 	test_true_false \
 	test_trycatch \
@@ -601,6 +602,7 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_textprop2.res \
 	test_timers.res \
 	test_true_false.res \
 	test_trycatch.res \

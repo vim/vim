@@ -377,29 +377,6 @@ u_save_line(undoline_T *ul, linenr_T lnum)
     return ul->ul_line == NULL ? FAIL : OK;
 }
 
-#ifdef FEAT_PROP_POPUP
-/*
- * return TRUE if line "lnum" has text property "flags".
- */
-    static int
-has_prop_w_flags(linenr_T lnum, int flags)
-{
-    char_u  *props;
-    int	    i;
-    int	    proplen = get_text_props(curbuf, lnum, &props, FALSE);
-
-    for (i = 0; i < proplen; ++i)
-    {
-	textprop_T prop;
-
-	mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
-	if (prop.tp_flags & flags)
-	    return TRUE;
-    }
-    return FALSE;
-}
-#endif
-
 /*
  * Common code for various ways to save text before a change.
  * "top" is the line above the first changed line.
@@ -2811,8 +2788,10 @@ u_undoredo(int undo)
 		// If the file is empty, there is an empty line 1 that we
 		// should get rid of, by replacing it with the new line.
 		if (empty_buffer && lnum == 0)
-		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line,
-					  uep->ue_array[i].ul_len, TRUE, TRUE);
+		    ml_replace_len(
+			(linenr_T)1, uep->ue_array[i].ul_line,
+			uep->ue_array[i].ul_len, ML_PROPS_INCLUDED,
+			ML_COPY_LINE);
 		else
 		    ml_append_flags(lnum, uep->ue_array[i].ul_line,
 			     (colnr_T)uep->ue_array[i].ul_len, ML_APPEND_UNDO);
@@ -3575,8 +3554,10 @@ u_undoline(void)
 	do_outofmem_msg((long_u)0);
 	return;
     }
-    ml_replace_len(curbuf->b_u_line_lnum, curbuf->b_u_line_ptr.ul_line,
-				     curbuf->b_u_line_ptr.ul_len, TRUE, FALSE);
+    ml_replace_len(
+	curbuf->b_u_line_lnum, curbuf->b_u_line_ptr.ul_line,
+	curbuf->b_u_line_ptr.ul_len, ML_PROPS_INCLUDED,
+	ML_TAKE_OWNERSHIP_OF_LINE);
     changed_bytes(curbuf->b_u_line_lnum, 0);
     curbuf->b_u_line_ptr = oldp;
 

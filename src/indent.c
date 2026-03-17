@@ -2170,8 +2170,7 @@ get_lisp_indent(void)
 		    }
 		    firsttry = amount;
 
-		    init_chartabsize_arg(&cts, curwin, (colnr_T)(that - line),
-							   amount, line, that);
+		    init_chartabsize_arg(&cts, curwin, 0, amount, line, that);
 		    while (VIM_ISWHITE(*cts.cts_ptr))
 		    {
 			cts.cts_vcol += lbr_chartabsize(&cts);
@@ -2191,8 +2190,7 @@ get_lisp_indent(void)
 			parencount = 0;
 			quotecount = 0;
 
-			init_chartabsize_arg(&cts, curwin,
-				   (colnr_T)(that - line), amount, line, that);
+			init_chartabsize_arg(&cts, curwin, 0, amount, line, that);
 			if (vi_lisp
 				|| (*that != '"'
 				    && *that != '\''
