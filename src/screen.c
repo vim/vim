@@ -1439,6 +1439,9 @@ win_redr_custom(
     if (wp == NULL)
     {
 	// Fill the TabPageIdxs[] array for clicking in the tab pagesline.
+	int end_col = firstwin->w_wincol + topframe->fr_width;
+	if (end_col > Columns)
+	    end_col = Columns;
 	col = firstwin->w_wincol;
 	len = 0;
 	p = buf;
@@ -1446,12 +1449,14 @@ win_redr_custom(
 	for (n = 0; tabtab[n].start != NULL; n++)
 	{
 	    len += vim_strnsize(p, (int)(tabtab[n].start - p));
-	    while (col < len)
+	    while (col < len && col < end_col)
 		TabPageIdxs[col++] = fillchar;
+	    if (col >= end_col)
+		break;
 	    p = tabtab[n].start;
 	    fillchar = tabtab[n].userhl;
 	}
-	while (col < firstwin->w_wincol + topframe->fr_width)
+	while (col < end_col)
 	    TabPageIdxs[col++] = fillchar;
     }
 

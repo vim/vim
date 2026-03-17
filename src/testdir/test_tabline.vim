@@ -158,6 +158,20 @@ func Test_mouse_click_in_tab()
   call RunVim([], [], "-e -s -S Xclickscript -c qa")
 endfunc
 
+func Test_tabline_TabPageIdxs_overflow()
+  " Regression: TabPageIdxs[] overflow when closing a tab with custom
+  " 'tabline' and showtabpanel=1 (firstwin->w_wincol + topframe->fr_width
+  " could exceed Columns).
+  CheckFeature tabpanel
+  let before = [
+      \ 'set showtabpanel=1',
+      \ 'set tabline=foo',
+      \ 'call feedkeys(":qa!\<CR>")',
+      \ ]
+  call RunVim(before, [], '-p Xtabline_overflow_a Xtabline_overflow_b')
+  call assert_equal(0, v:shell_error, 'Vim subprocess must not crash (TabPageIdxs overflow)')
+endfunc
+
 func Test_tabline_showcmd()
   CheckScreendump
 
