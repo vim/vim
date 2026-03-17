@@ -52,6 +52,8 @@ win_T *find_next_popup(int lowest, int handled_flag);
 int popup_do_filter(int c);
 int popup_no_mapping(void);
 void popup_check_cursor_pos(void);
+int popup_is_under_opacity(int row, int col);
+int popup_is_under_opacity_range(int row, int start_col, int end_col);
 void may_update_popup_mask(int type);
 void may_update_popup_position(void);
 int popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp, u8char_T *ucp);

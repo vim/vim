@@ -4256,6 +4256,41 @@ popup_need_position_adjust(win_T *wp)
     return wp->w_cursor.lnum != wp->w_popup_last_curline;
 }
 
+// Cached array with max zindex of opacity popups covering each cell.
+// Allocated in may_update_popup_mask() when opacity popups exist.
+static short *opacity_zindex = NULL;
+static int    opacity_zindex_rows = 0;
+static int    opacity_zindex_cols = 0;
+
+/*
+ * Mark cells covered by opacity popup "wp" in opacity_zindex[].
+ * Stores the maximum zindex so that lower popups can be suppressed too.
+ */
+    static void
+popup_mark_opacity_zindex(win_T *wp)
+{
+    int	    width;
+    int	    height;
+    int	    r, c;
+
+    if (!(wp->w_popup_flags & POPF_OPACITY) || wp->w_popup_blend <= 0
+	    || (wp->w_popup_flags & POPF_HIDDEN))
+	return;
+
+    width = popup_width(wp);
+    height = popup_height(wp);
+    for (r = wp->w_winrow;
+		       r < wp->w_winrow + height && r < screen_Rows; ++r)
+	for (c = wp->w_wincol;
+		 c < wp->w_wincol + width - wp->w_popup_leftoff
+						&& c < screen_Columns; ++c)
+	{
+	    int off = r * screen_Columns + c;
+	    if (wp->w_zindex > opacity_zindex[off])
+		opacity_zindex[off] = wp->w_zindex;
+	}
+}
+
 /*
  * Force background windows to redraw rows under an opacity popup.
  */
@@ -4278,14 +4313,53 @@ redraw_win_under_opacity_popup(win_T *wp)
 	win_T	    *twp;
 
 	twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
-	if (twp != NULL && line_cp < twp->w_height)
+	if (twp != NULL)
 	{
-	    linenr_T lnum;
+	    if (line_cp < twp->w_height)
+	    {
+		linenr_T lnum;
 
-	    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
-	    redrawWinline(twp, lnum);
+		(void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
+		redrawWinline(twp, lnum);
+	    }
+	    else if (line_cp == twp->w_height)
+		// Status bar line: mark for redraw to prevent
+		// opacity blend accumulation.
+		twp->w_redr_status = TRUE;
 	}
     }
+}
+
+
+/*
+ * Return TRUE if cell (row, col) is covered by a higher-zindex opacity popup.
+ */
+    int
+popup_is_under_opacity(int row, int col)
+{
+    if (opacity_zindex == NULL
+	    || row < 0 || row >= opacity_zindex_rows
+	    || col < 0 || col >= opacity_zindex_cols)
+	return FALSE;
+    return opacity_zindex[row * opacity_zindex_cols + col] > screen_zindex;
+}
+
+/*
+ * Return TRUE if any cell in row "row" from "start_col" to "end_col"
+ * (exclusive) is covered by a higher-zindex opacity popup.
+ */
+    int
+popup_is_under_opacity_range(int row, int start_col, int end_col)
+{
+    int col;
+
+    if (opacity_zindex == NULL
+	    || row < 0 || row >= opacity_zindex_rows)
+	return FALSE;
+    for (col = start_col; col < end_col && col < opacity_zindex_cols; ++col)
+	if (opacity_zindex[row * opacity_zindex_cols + col] > screen_zindex)
+	    return TRUE;
+    return FALSE;
 }
 
 /*
@@ -4330,10 +4404,58 @@ may_update_popup_mask(int type)
     // wouldn't normally be redrawn.  Without this, ScreenAttrs retains
     // blended values from the previous cycle, causing blend accumulation.
     // This must run every cycle, not just when popup_mask_refresh is set.
-    FOR_ALL_POPUPWINS(wp)
-	redraw_win_under_opacity_popup(wp);
-    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
-	redraw_win_under_opacity_popup(wp);
+    //
+    // Also build the opacity_zindex array used by screen_char() to suppress
+    // output for cells under opacity popups during background draw.
+    {
+	int has_opacity = FALSE;
+
+	FOR_ALL_POPUPWINS(wp)
+	{
+	    redraw_win_under_opacity_popup(wp);
+	    if ((wp->w_popup_flags & POPF_OPACITY)
+		    && wp->w_popup_blend > 0
+		    && !(wp->w_popup_flags & POPF_HIDDEN))
+		has_opacity = TRUE;
+	}
+	FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	{
+	    redraw_win_under_opacity_popup(wp);
+	    if ((wp->w_popup_flags & POPF_OPACITY)
+		    && wp->w_popup_blend > 0
+		    && !(wp->w_popup_flags & POPF_HIDDEN))
+		has_opacity = TRUE;
+	}
+
+	if (!has_opacity)
+	{
+	    VIM_CLEAR(opacity_zindex);
+	    opacity_zindex_rows = 0;
+	    opacity_zindex_cols = 0;
+	}
+	else
+	{
+	    if (opacity_zindex_rows != screen_Rows
+		    || opacity_zindex_cols != screen_Columns)
+	    {
+		vim_free(opacity_zindex);
+		opacity_zindex = LALLOC_MULT(short,
+					screen_Rows * screen_Columns);
+		opacity_zindex_rows = screen_Rows;
+		opacity_zindex_cols = screen_Columns;
+	    }
+	    if (opacity_zindex != NULL)
+	    {
+		vim_memset(opacity_zindex, 0,
+		    (size_t)screen_Rows * screen_Columns * sizeof(short));
+
+		FOR_ALL_POPUPWINS(wp)
+		    popup_mark_opacity_zindex(wp);
+		FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+		    popup_mark_opacity_zindex(wp);
+	    }
+	}
+    }
 
     if (!popup_mask_refresh)
 	return;
