@@ -1,5 +1,5 @@
 /* textprop.c */
-void um_free_detached_prop_vtext(textprop_T *props);
+void um_free_detached_prop_vtext(textprop_T *prop);
 void um_free_detached_props_vtext(textprop_T *props, int count);
 textprop_T *um_extract_props(unpacked_memline_T *umemline);
 void um_sort_props(unpacked_memline_T *umemline);
