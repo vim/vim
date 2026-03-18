@@ -2420,4 +2420,73 @@ func Test_popup_shadow_hiddenchar()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test 'pumopacity' option value clamping and default
+func Test_pumopacity_option()
+  call assert_equal(100, &pumopacity)
+
+  set pumopacity=50
+  call assert_equal(50, &pumopacity)
+
+  " Clamp to 0
+  set pumopacity=-10
+  call assert_equal(0, &pumopacity)
+
+  " Clamp to 100
+  set pumopacity=200
+  call assert_equal(100, &pumopacity)
+
+  set pumopacity=0
+  call assert_equal(0, &pumopacity)
+
+  set pumopacity&
+  call assert_equal(100, &pumopacity)
+endfunc
+
+" Test pumopacity with screendump: background text should show through
+func Test_pumopacity_screendump()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopacity=50
+    set completeopt=menu
+    call setline(1, ['hello world', 'hello vim', 'hello opacity', 'help me'])
+    for i in range(5)
+      call append(line('$'), repeat('BACKGROUND', 8))
+    endfor
+    normal gg
+  END
+  call writefile(lines, 'Xpumopacity', 'D')
+  let buf = RunVimInTerminal('-S Xpumopacity', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "Gohel\<C-N>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopacity_50', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test pumopacity=100 (fully opaque, same as default)
+func Test_pumopacity_100()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopacity=100
+    set completeopt=menu
+    call setline(1, ['hello world', 'hello vim', 'hello opacity', 'help me'])
+    for i in range(5)
+      call append(line('$'), repeat('BACKGROUND', 8))
+    endfor
+    normal gg
+  END
+  call writefile(lines, 'Xpumopacity100', 'D')
+  let buf = RunVimInTerminal('-S Xpumopacity100', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "Gohel\<C-N>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopacity_100', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
