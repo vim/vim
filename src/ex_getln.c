@@ -1681,7 +1681,7 @@ getcmdline_int(
     int		cmdline_type;
     int		wild_type = 0;
     int		event_cmdlineleavepre_triggered = FALSE;
-    char_u	*prev_cmdbuff = NULL;
+    int		cmdbuff_was_replaced = FALSE;
     int		did_hist_navigate = FALSE;
 
     // one recursion level deeper
@@ -1857,8 +1857,6 @@ getcmdline_int(
 	int	prev_cmdpos = ccline.cmdpos;
 	int	skip_pum_redraw = FALSE;
 
-	VIM_CLEAR(prev_cmdbuff);
-
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
 				// completion may switch it on.
@@ -1880,13 +1878,6 @@ getcmdline_int(
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
-	if (ccline.cmdbuff != NULL)
-	{
-	    prev_cmdbuff = vim_strsave(ccline.cmdbuff);
-	    if (prev_cmdbuff == NULL)
-		goto returncmd;
-	}
-
 	// Defer screen update to avoid pum flicker during wildtrigger()
 	if (c == K_WILD && firstc != '@')
 	    skip_pum_redraw = TRUE;
@@ -1898,6 +1889,22 @@ getcmdline_int(
 	    cursorcmd();		// set the cursor on the right spot
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
+
+	// If the cmdline was replaced externally (e.g. by setcmdline()
+	// during an <expr> mapping), clean up the wildmenu completion
+	// state to avoid using stale completion data.
+	cmdbuff_was_replaced = ccline.cmdbuff_replaced;
+	ccline.cmdbuff_replaced = FALSE;
+	if (cmdbuff_was_replaced && xpc.xp_numfiles > 0)
+	{
+	    if (cmdline_pum_active())
+		cmdline_pum_remove(&ccline, FALSE);
+	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
+	    did_wild_list = FALSE;
+	    xpc.xp_context = EXPAND_NOTHING;
+	    wim_index = 0;
+	    wildmenu_cleanup(&ccline);
+	}
 
 	// Skip wildmenu during history navigation via Up/Down keys
 	if (c == K_WILD && did_hist_navigate)
@@ -2660,8 +2667,7 @@ cmdline_changed:
 	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged
 		&& (ccline.cmdpos != prev_cmdpos
-		    || (prev_cmdbuff != NULL &&
-			STRCMP(prev_cmdbuff, ccline.cmdbuff) != 0)))
+		    || cmdbuff_was_replaced))
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 	// Trigger CursorMovedC autocommands.
@@ -2784,7 +2790,6 @@ theend:
 	else
 	    ccline.cmdbuff = NULL;
 
-	vim_free(prev_cmdbuff);
 	return p;
     }
 }
@@ -4518,6 +4523,7 @@ set_cmdline_str(char_u *str, int pos)
 
     p->cmdpos = pos < 0 || pos > p->cmdlen ? p->cmdlen : pos;
     new_cmdpos = p->cmdpos;
+    p->cmdbuff_replaced = TRUE;
 
     redrawcmd();
 
