@@ -3327,7 +3327,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
  * in the wrong direction for pum use.
  */
     int
-hl_pum_blend_attr(int char_attr, int popup_attr, int blend)
+hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 {
     attrentry_T *char_aep = NULL;
     attrentry_T *popup_aep;
