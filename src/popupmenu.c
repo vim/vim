@@ -967,6 +967,13 @@ pum_redraw(void)
     if (call_update_screen)
     {
 	call_update_screen = FALSE;
+	// Invalidate cached background if screen size changed (e.g.
+	// after window resize).
+	if (opacity_active && pum_bg_lines != NULL
+		&& (pum_bg_cols != screen_Columns
+		    || pum_bg_bot > screen_Rows))
+	    pum_free_bg();
+
 	if (opacity_active && pum_bg_lines != NULL)
 	{
 	    // Already have saved background; skip update_screen to avoid
