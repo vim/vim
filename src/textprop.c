@@ -434,10 +434,6 @@ get_textprop_id(buf_T *buf)
     return -(buf->b_textprop_text.ga_len + 1);
 }
 
-// Flag that is set when a negative ID isused for a normal text property.
-// It is then impossible to use virtual text properties.
-static int did_use_negative_pop_id = FALSE;
-
 /*
  * Shared between prop_add() and popup_create().
  * "dict_arg" is the function argument of a dict containing "bufnr".
@@ -599,24 +595,13 @@ prop_add_common(
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	goto theend;
 
-    if (id < 0)
-    {
-	if (buf->b_textprop_text.ga_len > 0)
-	{
-	    emsg(_(e_cannot_use_negative_id_after_adding_textprop_with_text));
-	    goto theend;
-	}
-	did_use_negative_pop_id = TRUE;
-    }
-
     if (text != NULL)
-    {
-	if (did_use_negative_pop_id)
-	{
-	    emsg(_(e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id));
-	    goto theend;
-	}
+	// Always assign an internal negative id; ignore any user-provided id.
 	id = get_textprop_id(buf);
+    else if (id < 0)
+    {
+	emsg(_(e_cannot_use_negative_id));
+	goto theend;
     }
 
     // This must be done _before_ we add the property because property changes
@@ -981,7 +966,11 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
     int buflocal = TRUE;
-    int virtualtext_prop = prop->tp_id < 0;
+    // A negative tp_id normally means a virtual text property, but a user
+    // may set a negative id for a regular property when no virtual text
+    // properties exist.  Guard against that by checking the index is valid.
+    int virtualtext_prop = prop->tp_id < 0
+			   && -prop->tp_id - 1 < buf->b_textprop_text.ga_len;
 
     dict_add_number(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
     if (!virtualtext_prop)

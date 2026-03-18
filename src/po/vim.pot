@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-13 18:26+0000\n"
+"POT-Creation-Date: 2026-03-18 21:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8099,7 +8099,7 @@ msgstr ""
 msgid "E1292: Command-line window is already open"
 msgstr ""
 
-msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgid "E1293: Cannot use a negative id for a text property"
 msgstr ""
 
 msgid "E1294: Can only use text_align when column is zero"
@@ -8241,11 +8241,6 @@ msgstr ""
 
 #, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
-msgstr ""
-
-msgid ""
-"E1339: Cannot add a textprop with text after using a textprop with a "
-"negative id"
 msgstr ""
 
 #, c-format
