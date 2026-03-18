@@ -972,20 +972,22 @@ func Test_gui_system_term_scroll()
   call setline(1, repeat(['AAAA'], &lines + 5))
   redraw
 
-  " Timer fires during wait_return after the command finishes.
-  " Record screen row 1 then dismiss the prompt.
+  " Timer fires during terminal_loop to check the screen while the command
+  " is still running.  Row 1 should still show buffer content if scrolling
+  " is correct.
   let g:system_term_row1 = ''
   func s:CheckScroll(timer)
     let g:system_term_row1 = screenstring(1, 1)
-    call feedkeys("\<CR>", 't')
   endfunc
-  call timer_start(1000, function('s:CheckScroll'))
+  call timer_start(200, function('s:CheckScroll'))
 
-  " Run a short command.
+  " Use a command that runs long enough for the timer to fire during
+  " terminal_loop.  wait_return() returns immediately when sourcing a script,
+  " so the timer must fire before the command finishes.
   if has('win32')
-    !echo test_output
+    !ping -n 2 127.0.0.1 > nul
   else
-    !echo test_output
+    !sleep 1
   endif
 
   " With the ConPTY scroll bug, the screen scrolled up entirely and row 1
