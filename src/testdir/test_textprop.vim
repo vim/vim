@@ -4669,47 +4669,18 @@ endfunc
 
 func Test_error_when_using_negative_id()
   call prop_type_add('test1', #{highlight: 'ErrorMsg'})
-  call prop_add(1, 1, #{type: 'test1', text: 'virtual'})
+
+  " Negative id is always rejected.  Before the fix, prop_add() with a negative
+  " id succeeded when no virtual text existed, then prop_list() would dereference
+  " a NULL pointer (b_textprop_text.ga_data) and crash.
   call assert_fails("call prop_add(1, 1, #{type: 'test1', length: 1, id: -1})", 'E1293:')
+  call assert_equal([], prop_list(1))
+
+  " id is silently ignored when text is also specified.
+  let propid = prop_add(1, 1, #{type: 'test1', text: 'virtual', id: 42})
+  call assert_true(propid < 0)
 
   call prop_type_delete('test1')
-endfunc
-
-func Test_error_after_using_negative_id()
-  CheckScreendump
-  " This needs to run a separate Vim instance because the
-  " "did_use_negative_pop_id" will be set.
-  CheckRunVimInTerminal
-
-  let lines =<< trim END
-      vim9script
-
-      setline(1, ['one', 'two', 'three'])
-      prop_type_add('test_1', {highlight: 'Error'})
-      prop_type_add('test_2', {highlight: 'WildMenu'})
-
-      prop_add(3, 1, {
-          type: 'test_1',
-          length: 5,
-          id: -1
-      })
-
-      def g:AddTextprop()
-          prop_add(1, 0, {
-              type: 'test_2',
-              text: 'The quick fox',
-              text_padding_left: 2
-          })
-      enddef
-  END
-  call writefile(lines, 'XtextPropError', 'D')
-  let buf = RunVimInTerminal('-S XtextPropError', #{rows: 8, cols: 60})
-  call VerifyScreenDump(buf, 'Test_prop_negative_error_1', {})
-
-  call term_sendkeys(buf, ":call AddTextprop()\<CR>")
-  call VerifyScreenDump(buf, 'Test_prop_negative_error_2', {})
-
-  call StopVimInTerminal(buf)
 endfunc
 
 func Test_modify_text_before_prop()

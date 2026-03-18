@@ -141,9 +141,9 @@ prop_add({lnum}, {col}, {props})
 				the current buffer is used
 		   id		user defined ID for the property; must be a
 				number, should be positive |E1510|;
-				when using "text" then "id" must not be
-				present and will be set automatically to a
-				negative number; otherwise zero is used
+				when using "text" then any "id" value is
+				ignored and a negative number is assigned
+				automatically; otherwise zero is used
 							*E1305*
 		   text		text to be displayed before {col}, or
 				above/below the line if {col} is zero; prepend
@@ -224,14 +224,9 @@ prop_add({lnum}, {col}, {props})
 		is difficult to compute).
 		A negative "id" will be chosen and is returned.
 
-		Before text properties with text were supported it was
-		possible to use a negative "id", even though this was very
-		rare.  Now that negative "id"s are reserved for text
-		properties with text an error is given when using a negative
-		"id".  When a text property with text already exists using a
-		negative "id" results in *E1293* .  If a negative "id" was
-		used and later a text property with text is added results in
-		*E1339* .
+		Negative "id"s are reserved for text properties with "text"
+		and cannot be used otherwise.  Using a negative "id" results
+		in *E1293* .
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
