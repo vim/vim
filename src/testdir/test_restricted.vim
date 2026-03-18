@@ -176,4 +176,48 @@ func Test_restricted_env()
   call delete('XResult_env')
 endfunc
 
+func Test_restricted_grep()
+  CheckScreendump
+
+  let lines =<< trim END
+    let result = 'okay'
+    try
+      " Try to use grep to execute an external command
+      grep 'Vim' ./*.vim
+    catch /^Vim\%((\S\+)\)\=:E145:/
+      let result = 'grep-blocked'
+    endtry
+    call writefile([result], 'XResult_grep')
+    qa!
+  END
+
+  call writefile(lines, 'Xrestricted_grep', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestricted_grep')
+    call assert_equal(['grep-blocked'], readfile('XResult_grep'))
+  endif
+  call delete('XResult_grep')
+endfunc
+
+func Test_restricted_cscope()
+  CheckFeature cscope
+
+  " File does not exist, but shouldn't matter, it must be disallowed
+  let lines =<< trim END
+    let result = 'okay'
+    try
+      cscope add Xfoobar.out
+    catch /^Vim\%((\S\+)\)\=:E145:/
+      let result = 'blocked'
+    endtry
+    call writefile([result], 'XResult_cscope')
+    qa!
+  END
+
+  call writefile(lines, 'Xrestricted_cscope', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestricted_cscope')
+    call assert_equal(['blocked'], readfile('XResult_cscope'))
+  endif
+  call delete('XResult_cscope')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

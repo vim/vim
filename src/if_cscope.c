@@ -254,6 +254,9 @@ do_cscope_general(
 {
     cscmd_T *cmdp;
 
+    if (check_restricted())
+	return;
+
     if ((cmdp = cs_lookup_cmd(eap)) == NULL)
     {
 	cs_help(eap);
