@@ -4009,7 +4009,7 @@ update_system_term(term_T *term)
 
     // Scroll up to make more room for terminal lines if needed.
     while (term->tl_toprow > 0
-			  && (Rows - term->tl_toprow) < term->tl_dirty_row_end)
+		  && (Rows - term->tl_toprow) < term->tl_cursor_pos.row + 1)
     {
 	int save_p_more = p_more;
 
