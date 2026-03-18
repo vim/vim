@@ -965,6 +965,7 @@ endfunc
 " which previously caused the entire screen to scroll up.
 func Test_gui_system_term_scroll()
   CheckFeature terminal
+  CheckFeature conpty
   let save_guioptions = &guioptions
   set guioptions+=!
 
