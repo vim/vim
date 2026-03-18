@@ -74,6 +74,14 @@ $(NEW_TESTS):
 		exit 1; \
 	fi
 
+codestyle:
+	rm -f test_codestyle.res $(CLEANUP_FILES)
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile test_codestyle.res VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
+	@cat messages
+	@if test -f test.log; then \
+		exit 1; \
+	fi
+
 # Run only tests specific for Vim9 script
 test_vim9:
 	rm -f test_vim9_*.res $(CLEANUP_FILES)

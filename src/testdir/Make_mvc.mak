@@ -41,6 +41,15 @@ tiny:	nolog tinytests report
 
 benchmark: $(SCRIPTS_BENCH)
 
+codestyle:
+	-@ if exist test_codestyle.res $(RM) test_codestyle.res
+	-@ if exist test.log $(RM) test.log
+	-@ if exist messages $(RM) messages
+	-@ if exist starttime $(RM) starttime
+	@ $(MAKE) -lf Make_mvc.mak VIMPROG=$(VIMPROG) test_codestyle.res
+	@ type messages
+	@ if exist test.log exit 1
+
 report:
 	@ rem without the +eval feature test_result.log is a copy of test.log
 	@ if exist test.log ( $(CP) test.log test_result.log > nul ) \
