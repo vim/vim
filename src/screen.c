@@ -2737,9 +2737,7 @@ skip_opacity_fill:
 		if (!did_delete || c != ' ')
 		    screen_char(off, row, col);
 	    }
-#ifdef FEAT_PROP_POPUP
 next_col:
-#endif
 	    ScreenCols[off] = -1;
 	    ++off;
 	    if (col == start_col)
