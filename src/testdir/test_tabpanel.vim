@@ -849,4 +849,27 @@ function Test_tabpanel_with_cmdline_no_pum()
   call StopVimInTerminal(buf)
 endfunc
 
+" When showtabpanel=1 and a second tab is opened, all existing tab pages must
+" have their frame width updated, not just the newly created one.
+function Test_tabpanel_showtabpanel_via_cmd_arg()
+  let tpl_width = 20  " default tpl_columns
+  set showtabpanel=1 noruler
+
+  " With one tab the tabpanel is hidden; no width reduction yet.
+  tabfirst
+  call assert_equal(&columns, winwidth(0))
+
+  " Opening a second tab makes the tabpanel visible; the first tab page must
+  " also get its frame width reduced.
+  tabnew
+  tabfirst
+  call assert_equal(&columns - tpl_width, winwidth(0),
+        \ 'first tab width after tabnew')
+  call assert_equal(tpl_width + 1, win_screenpos(0)[1],
+        \ 'first tab wincol after tabnew')
+
+  tabonly
+  set showtabpanel& noruler&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
