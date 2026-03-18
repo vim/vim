@@ -781,7 +781,7 @@ jobs:
       #    copy src\vim*.dll artifacts
       #
       #- name: Upload Artifact
-      #  uses: actions/upload-artifact@v1
+      #  uses: actions/upload-artifact@v7
       #  with:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts

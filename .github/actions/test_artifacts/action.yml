@@ -27,7 +27,7 @@ runs:
         # set as the "result".
         result-encoding: string
     - name: Upload failed tests
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         # Name of the artifact to upload.
         name: ${{ format('GH-{0}-{1}-{2}-{3}-{4}-failed-tests',
