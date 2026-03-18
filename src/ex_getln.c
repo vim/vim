@@ -1681,7 +1681,7 @@ getcmdline_int(
     int		cmdline_type;
     int		wild_type = 0;
     int		event_cmdlineleavepre_triggered = FALSE;
-    int		cmdbuff_was_replaced = FALSE;
+    char_u	*prev_cmdbuff = NULL;
     int		did_hist_navigate = FALSE;
 
     // one recursion level deeper
@@ -1878,6 +1878,14 @@ getcmdline_int(
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
+	VIM_CLEAR(prev_cmdbuff);
+	if (ccline.cmdbuff != NULL)
+	{
+	    prev_cmdbuff = vim_strsave(ccline.cmdbuff);
+	    if (prev_cmdbuff == NULL)
+		goto returncmd;
+	}
+
 	// Defer screen update to avoid pum flicker during wildtrigger()
 	if (c == K_WILD && firstc != '@')
 	    skip_pum_redraw = TRUE;
@@ -1893,9 +1901,7 @@ getcmdline_int(
 	// If the cmdline was replaced externally (e.g. by setcmdline()
 	// during an <expr> mapping), clean up the wildmenu completion
 	// state to avoid using stale completion data.
-	cmdbuff_was_replaced = ccline.cmdbuff_replaced;
-	ccline.cmdbuff_replaced = FALSE;
-	if (cmdbuff_was_replaced && xpc.xp_numfiles > 0)
+	if (ccline.cmdbuff_replaced && xpc.xp_numfiles > 0)
 	{
 	    if (cmdline_pum_active())
 		cmdline_pum_remove(&ccline, FALSE);
@@ -1905,6 +1911,7 @@ getcmdline_int(
 	    wim_index = 0;
 	    wildmenu_cleanup(&ccline);
 	}
+	ccline.cmdbuff_replaced = FALSE;
 
 	// Skip wildmenu during history navigation via Up/Down keys
 	if (c == K_WILD && did_hist_navigate)
@@ -2667,7 +2674,8 @@ cmdline_changed:
 	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged
 		&& (ccline.cmdpos != prev_cmdpos
-		    || cmdbuff_was_replaced))
+		    || (prev_cmdbuff != NULL &&
+			STRCMP(prev_cmdbuff, ccline.cmdbuff) != 0)))
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 	// Trigger CursorMovedC autocommands.
@@ -2790,6 +2798,7 @@ theend:
 	else
 	    ccline.cmdbuff = NULL;
 
+	vim_free(prev_cmdbuff);
 	return p;
     }
 }
