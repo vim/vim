@@ -49,7 +49,6 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
-
 // Border characters
 static struct {
     int top;
