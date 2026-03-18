@@ -1857,6 +1857,8 @@ getcmdline_int(
 	int	prev_cmdpos = ccline.cmdpos;
 	int	skip_pum_redraw = FALSE;
 
+	VIM_CLEAR(prev_cmdbuff);
+
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
 				// completion may switch it on.
@@ -1878,7 +1880,6 @@ getcmdline_int(
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
-	VIM_CLEAR(prev_cmdbuff);
 	if (ccline.cmdbuff != NULL)
 	{
 	    prev_cmdbuff = vim_strsave(ccline.cmdbuff);
