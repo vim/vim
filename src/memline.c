@@ -1898,7 +1898,7 @@ recover_names(
     int		file_count = 0;
     char_u	**files;
     char_u	*dirp;
-    char_u	*dir_name;
+    string_T	dir_name;
     char_u	*fname_res = NULL;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
@@ -1927,35 +1927,35 @@ recover_names(
      * Do the loop for every directory in 'directory'.
      * First allocate some memory to put the directory name in.
      */
-    dir_name = alloc(STRLEN(p_dir) + 1);
+    dir_name.string = alloc(STRLEN(p_dir) + 1);
     dirp = p_dir;
-    while (dir_name != NULL && *dirp)
+    while (dir_name.string != NULL && *dirp)
     {
 	/*
 	 * Isolate a directory name from *dirp and put it in dir_name (we know
 	 * it is large enough, so use 31000 for length).
 	 * Advance dirp to next directory name.
 	 */
-	(void)copy_option_part(&dirp, dir_name, 31000, ",");
+	dir_name.length = (size_t)copy_option_part(&dirp, dir_name.string, 31000, ",");
 
-	if (dir_name[0] == '.' && dir_name[1] == NUL)	// check current dir
+	if (dir_name.string[0] == '.' && dir_name.string[1] == NUL)	// check current dir
 	{
 	    if (fname == NULL)
 	    {
 #ifdef VMS
-		names[0] = vim_strsave((char_u *)"*_sw%");
+		names[0] = vim_strnsave((char_u *)"*_sw%", STRLEN_LITERAL("*_sw%"));
 #else
-		names[0] = vim_strsave((char_u *)"*.sw?");
+		names[0] = vim_strnsave((char_u *)"*.sw?", STRLEN_LITERAL("*.sw?"));
 #endif
 #if defined(UNIX) || defined(MSWIN)
 		// For Unix names starting with a dot are special.  MS-Windows
 		// supports this too, on some file systems.
-		names[1] = vim_strsave((char_u *)".*.sw?");
-		names[2] = vim_strsave((char_u *)".sw?");
+		names[1] = vim_strnsave((char_u *)".*.sw?", STRLEN_LITERAL(".*.sw?"));
+		names[2] = vim_strnsave((char_u *)".sw?", STRLEN_LITERAL(".sw?"));
 		num_names = 3;
 #else
 # ifdef VMS
-		names[1] = vim_strsave((char_u *)".*_sw%");
+		names[1] = vim_strnsave((char_u *)".*_sw%", STRLEN_LITERAL(".*_sw%"));
 		num_names = 2;
 # else
 		num_names = 1;
@@ -1970,19 +1970,19 @@ recover_names(
 	    if (fname == NULL)
 	    {
 #ifdef VMS
-		names[0] = concat_fnames(dir_name, (char_u *)"*_sw%", TRUE);
+		names[0] = concat_fnames(dir_name.string, (char_u *)"*_sw%", TRUE);
 #else
-		names[0] = concat_fnames(dir_name, (char_u *)"*.sw?", TRUE);
+		names[0] = concat_fnames(dir_name.string, (char_u *)"*.sw?", TRUE);
 #endif
 #if defined(UNIX) || defined(MSWIN)
 		// For Unix names starting with a dot are special.  MS-Windows
 		// supports this too, on some file systems.
-		names[1] = concat_fnames(dir_name, (char_u *)".*.sw?", TRUE);
-		names[2] = concat_fnames(dir_name, (char_u *)".sw?", TRUE);
+		names[1] = concat_fnames(dir_name.string, (char_u *)".*.sw?", TRUE);
+		names[2] = concat_fnames(dir_name.string, (char_u *)".sw?", TRUE);
 		num_names = 3;
 #else
 # ifdef VMS
-		names[1] = concat_fnames(dir_name, (char_u *)".*_sw%", TRUE);
+		names[1] = concat_fnames(dir_name.string, (char_u *)".*_sw%", TRUE);
 		num_names = 2;
 # else
 		num_names = 1;
@@ -1992,19 +1992,17 @@ recover_names(
 	    else
 	    {
 #if defined(UNIX) || defined(MSWIN)
-		int	len = (int)STRLEN(dir_name);
-
-		p = dir_name + len;
-		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
+		p = dir_name.string + dir_name.length;
+		if (after_pathsep(dir_name.string, p) && dir_name.length > 1 && p[-1] == p[-2])
 		{
 		    // Ends with '//', Use Full path for swap name
-		    tail = make_percent_swname(dir_name, p, fname_res);
+		    tail = make_percent_swname(dir_name.string, p, fname_res);
 		}
 		else
 #endif
 		{
 		    tail = gettail(fname_res);
-		    tail = concat_fnames(dir_name, tail, TRUE);
+		    tail = concat_fnames(dir_name.string, tail, TRUE);
 		}
 		if (tail == NULL)
 		    num_names = 0;
@@ -2101,7 +2099,7 @@ recover_names(
 	}
 	else if (do_list)
 	{
-	    if (dir_name[0] == '.' && dir_name[1] == NUL)
+	    if (dir_name.string[0] == '.' && dir_name.string[1] == NUL)
 	    {
 		if (fname == NULL)
 		    msg_puts(_("   In current directory:\n"));
@@ -2111,7 +2109,7 @@ recover_names(
 	    else
 	    {
 		msg_puts(_("   In directory "));
-		msg_home_replace(dir_name);
+		msg_home_replace(dir_name.string);
 		msg_puts(":\n");
 	    }
 
@@ -2136,7 +2134,7 @@ recover_names(
 	{
 	    for (int i = 0; i < num_files; ++i)
 	    {
-		char_u *name = concat_fnames(dir_name, files[i], TRUE);
+		char_u *name = concat_fnames(dir_name.string, files[i], TRUE);
 		if (name != NULL)
 		{
 		    list_append_string(ret_list, name, -1);
@@ -2153,7 +2151,7 @@ recover_names(
 	if (num_files > 0)
 	    FreeWild(num_files, files);
     }
-    vim_free(dir_name);
+    vim_free(dir_name.string);
     return file_count;
 }
 

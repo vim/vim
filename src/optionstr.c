@@ -5514,27 +5514,29 @@ export_myvimdir(void)
     int		dofree = FALSE;
     char_u	*p;
     char_u	*q = p_rtp;
-    char_u	*buf = alloc(MAXPATHL);
+    string_T	buf;
 
-    if (buf == NULL)
+    buf.string = alloc(MAXPATHL);
+    if (buf.string == NULL)
 	return;
 
-    (void)copy_option_part(&q, buf, MAXPATHL, ",");
+    buf.length = (size_t)copy_option_part(&q, buf.string, MAXPATHL, ",");
 
     p = vim_getenv((char_u *)"MYVIMDIR", &dofree);
 
-    if (p == NULL || STRCMP(p, buf) != 0)
+    if (p == NULL || STRCMP(p, buf.string) != 0)
     {
-	add_pathsep(buf);
+	if (*buf.string != NUL && !after_pathsep(buf.string, buf.string + buf.length))
+	    STRCPY(buf.string + buf.length, PATHSEPSTR);
 #ifdef MSWIN
 	// normalize path separators
-	for (q = buf; *q != NUL; q++)
+	for (q = buf.string; *q != NUL; q++)
 	    if (*q == '/')
 		*q = '\\';
 #endif
-	vim_setenv((char_u *)"MYVIMDIR", buf);
+	vim_setenv((char_u *)"MYVIMDIR", buf.string);
     }
     if (dofree)
 	vim_free(p);
-    vim_free(buf);
+    vim_free(buf.string);
 }

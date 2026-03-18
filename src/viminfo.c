@@ -386,19 +386,18 @@ removable(char_u *name)
 {
     char_u  *p;
     char_u  part[51];
+    int	    part_len;
     int	    retval = FALSE;
-    size_t  n;
 
     name = home_replace_save(NULL, name);
     if (name == NULL)
 	return FALSE;
     for (p = p_viminfo; *p; )
     {
-	copy_option_part(&p, part, 51, ", ");
+	part_len = copy_option_part(&p, part, sizeof(part), ", ");
 	if (part[0] == 'r')
 	{
-	    n = STRLEN(part + 1);
-	    if (MB_STRNICMP(part + 1, name, n) == 0)
+	    if (MB_STRNICMP(part + 1, name, part_len - 1) == 0)
 	    {
 		retval = TRUE;
 		break;

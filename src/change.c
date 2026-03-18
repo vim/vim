@@ -1894,6 +1894,7 @@ open_line(
 	char_u	*lead_repl = NULL;	    // replaces comment leader
 	int	lead_repl_len = 0;	    // length of *lead_repl
 	char_u	lead_middle[COM_MAX_LEN];   // middle-comment string
+	int	lead_middle_len;	    // length of the lead_middle
 	char_u	lead_end[COM_MAX_LEN];	    // end-comment string
 	char_u	*comment_end = NULL;	    // where lead_end has been found
 	int	extra_space = FALSE;	    // append extra space
@@ -1934,7 +1935,7 @@ open_line(
 			require_blank = TRUE;
 		    ++p;
 		}
-		(void)copy_option_part(&p, lead_middle, COM_MAX_LEN, ",");
+		lead_middle_len = copy_option_part(&p, lead_middle, COM_MAX_LEN, ",");
 
 		while (*p && p[-1] != ':')	// find end of end flags
 		{
@@ -1967,7 +1968,7 @@ open_line(
 		    if (current_flag == COM_START)
 		    {
 			lead_repl = lead_middle;
-			lead_repl_len = (int)STRLEN(lead_middle);
+			lead_repl_len = lead_middle_len;
 		    }
 
 		    // If we have hit RETURN immediately after the start

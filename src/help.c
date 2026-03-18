@@ -775,7 +775,9 @@ fix_help_buffer(void)
 	    p = p_rtp;
 	    while (*p != NUL)
 	    {
-		copy_option_part(&p, NameBuff, MAXPATHL, ",");
+		int NameBufflen;
+
+		NameBufflen = copy_option_part(&p, NameBuff, MAXPATHL, ",");
 		mustfree = FALSE;
 		rt = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
 		if (rt != NULL &&
@@ -790,11 +792,15 @@ fix_help_buffer(void)
 		    char_u	*cp;
 
 		    // Find all "doc/ *.txt" files in this directory.
-		    add_pathsep(NameBuff);
+		    if (*NameBuff != NUL && !after_pathsep(NameBuff, NameBuff + NameBufflen))
+		    {
+			STRCPY(NameBuff + NameBufflen, PATHSEPSTR);
+			NameBufflen += STRLEN_LITERAL(PATHSEPSTR);
+		    }
 #ifdef FEAT_MULTI_LANG
-		    STRCAT(NameBuff, "doc/*.??[tx]");
+		    STRCPY(NameBuff + NameBufflen, "doc/*.??[tx]");
 #else
-		    STRCAT(NameBuff, "doc/*.txt");
+		    STRCPY(NameBuff + NameBufflen, "doc/*.txt");
 #endif
 		    if (gen_expand_wildcards(1, &NameBuff, &fcount,
 					 &fnames, EW_FILE|EW_SILENT) == OK
