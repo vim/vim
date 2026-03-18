@@ -960,6 +960,44 @@ func Test_gui_run_cmd_in_terminal()
   let &guioptions = save_guioptions
 endfunc
 
+" Test that :! with guioptions+=! doesn't scroll more than necessary.
+" With ConPTY on Windows 11, the terminal may damage all rows on init,
+" which previously caused the entire screen to scroll up.
+func Test_gui_system_term_scroll()
+  CheckFeature terminal
+  let save_guioptions = &guioptions
+  set guioptions+=!
+
+  enew
+  call setline(1, repeat(['AAAA'], &lines + 5))
+  redraw
+
+  " Timer fires during wait_return after the command finishes.
+  " Record screen row 1 then dismiss the prompt.
+  let g:system_term_row1 = ''
+  func s:CheckScroll(timer)
+    let g:system_term_row1 = screenstring(1, 1)
+    call feedkeys("\<CR>", 't')
+  endfunc
+  call timer_start(1000, function('s:CheckScroll'))
+
+  " Run a short command.
+  if has('win32')
+    !echo test_output
+  else
+    !echo test_output
+  endif
+
+  " With the ConPTY scroll bug, the screen scrolled up entirely and row 1
+  " became blank.  With the fix, only the output lines scroll and the buffer
+  " content remains visible near the top of the screen.
+  call assert_equal('A', g:system_term_row1)
+
+  %bwipe!
+  delfunc s:CheckScroll
+  let &guioptions = save_guioptions
+endfunc
+
 func Test_gui_recursive_mapping()
   nmap ' <C-W>
   nmap <C-W>a :let didit = 1<CR>
