@@ -4884,7 +4884,21 @@ win_new_tabpage(int after)
 #endif
 #if defined(FEAT_TABPANEL)
 	if (prev_columns != COLUMNS_WITHOUT_TPL())
+	{
+	    tabpage_T	*tp2;
+	    int		w = COLUMNS_WITHOUT_TPL();
+
 	    shell_new_columns();
+	    // shell_new_columns() only updates the current tab page; fix up
+	    // all others.
+	    FOR_ALL_TABPAGES(tp2)
+		if (tp2 != curtab)
+		{
+		    frame_new_width(tp2->tp_topframe, w, FALSE, TRUE);
+		    if (!frame_check_width(tp2->tp_topframe, w))
+			frame_new_width(tp2->tp_topframe, w, FALSE, FALSE);
+		}
+	}
 #endif
 	redraw_all_later(UPD_NOT_VALID);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
