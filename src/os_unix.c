@@ -7075,7 +7075,7 @@ mch_expandpath(
 #  define SEEK_END 2
 # endif
 
-# define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|"
+# define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|\n"
 
     int
 mch_expand_wildcards(
