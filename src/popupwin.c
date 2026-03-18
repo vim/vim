@@ -4298,6 +4298,7 @@ popup_mark_opacity_zindex(win_T *wp)
 redraw_win_under_opacity_popup(win_T *wp)
 {
     int	    height;
+    int	    width;
     int	    r;
 
     if (!(wp->w_popup_flags & POPF_OPACITY) || wp->w_popup_blend <= 0
@@ -4305,27 +4306,38 @@ redraw_win_under_opacity_popup(win_T *wp)
 	return;
 
     height = popup_height(wp);
+    width = popup_width(wp);
     for (r = wp->w_winrow;
 		       r < wp->w_winrow + height && r < screen_Rows; ++r)
     {
-	int	    line_cp = r;
-	int	    col_cp = wp->w_wincol;
-	win_T	    *twp;
+	int	    col;
+	win_T	    *prev_twp = NULL;
 
-	twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
-	if (twp != NULL)
+	// Check across the full width of the popup to find all underlying
+	// windows (e.g., when the popup spans a vertical split).
+	for (col = wp->w_wincol;
+		       col < wp->w_wincol + width && col < screen_Columns; ++col)
 	{
-	    if (line_cp < twp->w_height)
-	    {
-		linenr_T lnum;
+	    int	    line_cp = r;
+	    int	    col_cp = col;
+	    win_T   *twp;
 
-		(void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
-		redrawWinline(twp, lnum);
+	    twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
+	    if (twp != NULL && twp != prev_twp)
+	    {
+		prev_twp = twp;
+		if (line_cp < twp->w_height)
+		{
+		    linenr_T lnum;
+
+		    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
+		    redrawWinline(twp, lnum);
+		}
+		else if (line_cp == twp->w_height)
+		    // Status bar line: mark for redraw to prevent
+		    // opacity blend accumulation.
+		    twp->w_redr_status = TRUE;
 	    }
-	    else if (line_cp == twp->w_height)
-		// Status bar line: mark for redraw to prevent
-		// opacity blend accumulation.
-		twp->w_redr_status = TRUE;
 	}
     }
 }
