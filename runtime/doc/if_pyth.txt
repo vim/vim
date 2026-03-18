@@ -1,4 +1,4 @@
-*if_pyth.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*if_pyth.txt*	For Vim version 9.2.  Last change: 2026 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Paul Moore
@@ -186,7 +186,7 @@ vim.eval(str)						*python-eval*
 	- a list if the Vim expression evaluates to a Vim |list|
 	- a tuple if the Vim expression evaluates to a Vim |tuple|
 	- a dictionary if the Vim expression evaluates to a Vim |dict|
-	- a boolean if Vim exression evaluates to |v:true| or |v:false|
+	- a boolean if Vim expression evaluates to |v:true| or |v:false|
 	- `None` if Vim expression evaluates to |v:null| or |v:none|
 	Dictionaries, lists and tuples are recursively expanded.
 	Examples: >
