@@ -284,6 +284,37 @@ func Test_xxd()
 
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
+  " Test 20: Print C include with terminating null
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -i -t XXDfile'
+  $d
+  let expected =<< trim [CODE]
+    unsigned char XXDfile[] = {
+      0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a, 0x00
+    };
+    unsigned int XXDfile_len = 11;
+  [CODE]
+
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  " Test 21: Print C include in binary format
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -i -b -t XXDfile'
+  $d
+  let expected =<< trim [CODE]
+    unsigned char XXDfile[] = {
+      0b01010100, 0b01000101, 0b01010011, 0b01010100, 0b01100001, 0b01100010,
+      0b01100011, 0b01100100, 0b00110000, 0b00111001, 0b00001010, 0b00000000
+    };
+    unsigned int XXDfile_len = 11;
+  [CODE]
+
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
 
   %d
   bwipe!

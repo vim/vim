@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 18
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52595,7 +52595,7 @@ between them is small (5 bytes or less) and contains only non-word characters.
 This prevents fragmented highlighting when only whitespace or punctuation
 separates changes.
 
-Restricted mode~
+Restricted mode ~
 ---------------
 Using external diff mode or setting environment variables is no longer allowed
 when Vim is running in |restricted-mode|.
@@ -52609,6 +52609,10 @@ Other ~
 - Support for "dap" channel mode for the |debug-adapter-protocol|.
 - |status-line| can use several lines, see 'statuslineopt'.
 - New "leadtab" value for the 'listchars' setting.
+
+xxd ~
+---
+Add "-t" option to append a terminating NUL byte to C include output (-i).
 
 							*changed-9.3*
 Changed~
