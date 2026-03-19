@@ -2690,8 +2690,10 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #  else
 #   define X_DISPLAY	gui.dpy
 #  endif
-# else
+# elif defined(FEAT_XCLIPBOARD)
 #  define X_DISPLAY	xterm_dpy
+# else
+#  define X_DISPLAY	(Display *)NULL
 # endif
 #endif
 
