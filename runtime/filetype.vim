@@ -273,6 +273,9 @@ au BufNewFile,BufRead *.cpy
 	\   setf cobol |
 	\ endif
 
+" Concerto
+au BufNewFile,BufRead *.cto			setf concerto
+
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
 au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
