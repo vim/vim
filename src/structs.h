@@ -716,6 +716,8 @@ typedef struct
     char_u	*xp_arg;	// user-defined expansion arg
     int		input_fn;	// when TRUE Invoked for input() function
 #endif
+    int		cmdbuff_replaced; // when TRUE cmdline was replaced externally
+				  // (e.g. by setcmdline())
 } cmdline_info_T;
 
 /*

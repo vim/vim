@@ -1899,6 +1899,21 @@ getcmdline_int(
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
 
+	// If the cmdline was replaced externally (e.g. by setcmdline()
+	// during an <expr> mapping), clean up the wildmenu completion
+	// state to avoid using stale completion data.
+	if (ccline.cmdbuff_replaced && xpc.xp_numfiles > 0)
+	{
+	    if (cmdline_pum_active())
+		cmdline_pum_remove(&ccline, FALSE);
+	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
+	    did_wild_list = FALSE;
+	    xpc.xp_context = EXPAND_NOTHING;
+	    wim_index = 0;
+	    wildmenu_cleanup(&ccline);
+	}
+	ccline.cmdbuff_replaced = FALSE;
+
 	// Skip wildmenu during history navigation via Up/Down keys
 	if (c == K_WILD && did_hist_navigate)
 	{
@@ -4518,6 +4533,7 @@ set_cmdline_str(char_u *str, int pos)
 
     p->cmdpos = pos < 0 || pos > p->cmdlen ? p->cmdlen : pos;
     new_cmdpos = p->cmdpos;
+    p->cmdbuff_replaced = TRUE;
 
     redrawcmd();
 
