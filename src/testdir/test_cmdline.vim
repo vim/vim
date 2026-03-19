@@ -4494,6 +4494,7 @@ func Test_setcmdline()
   set wildmenu
   call mkdir('Xsetcmdlinedir', 'pR')
   call writefile([], 'Xsetcmdlinedir/Xfile1')
+  call writefile([], 'Xsetcmdlinedir/Xfile2')
   func g:SetCmdLineEmpty()
     call setcmdline('', 1)
     return "\<Left>"
