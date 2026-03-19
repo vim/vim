@@ -35,19 +35,19 @@ doctags: doctags.c
 	$(CC) doctags.c -o doctags
 
 vim.man: vim.1
-	nroff -man $? | sed -e s/.//g > $@
+	nroff -c -man $? | sed -e s/.//g > $@
 
 evim.man: evim.1
-	nroff -man $? | sed -e s/.//g > $@
+	nroff -c -man $? | sed -e s/.//g > $@
 
 vimdiff.man: vimdiff.1
-	nroff -man $? | sed -e s/.//g > $@
+	nroff -c -man $? | sed -e s/.//g > $@
 
 vimtutor.man: vimtutor.1
-	nroff -man $? | sed -e s/.//g > $@
+	nroff -c -man $? | sed -e s/.//g > $@
 
 xxd.man: xxd.1
-	nroff -man $? | sed -e s/.//g > $@
+	nroff -c -man $? | sed -e s/.//g > $@
 
 # Awk version of .txt to .html conversion.
 html: noerrors tags $(HTMLS)
