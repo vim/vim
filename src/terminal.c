@@ -4008,8 +4008,11 @@ update_system_term(term_T *term)
     screen = vterm_obtain_screen(term->tl_vterm);
 
     // Scroll up to make more room for terminal lines if needed.
+    // Use the cursor position to determine how much to scroll, because
+    // ConPTY may damage all rows on initialization even when most are
+    // empty, which would cause unnecessary scrolling.
     while (term->tl_toprow > 0
-			  && (Rows - term->tl_toprow) < term->tl_dirty_row_end)
+		  && (Rows - term->tl_toprow) < term->tl_cursor_pos.row + 1)
     {
 	int save_p_more = p_more;
 
