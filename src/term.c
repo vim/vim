@@ -4051,16 +4051,6 @@ starttermcap(void)
 	out_str(T_FE);
 #endif
 
-    if (cur_tmode == TMODE_RAW)
-    {
-	// Request setting of relevant DEC modes via DECRQM
-	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
-	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
-	    out_str(IObuff);
-	}
-    }
-
     out_flush();
     termcap_active = TRUE;
     screen_start();			// don't know where cursor is now
@@ -7979,6 +7969,23 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
     return len;
+}
+
+/*
+ * Query the settings for the DEC modes we support
+ */
+    void
+send_decrqm_modes(void)
+{
+    if (termcap_active && cur_tmode == TMODE_RAW)
+    {
+	// Request setting of relevant DEC modes via DECRQM
+	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+	    out_str(IObuff);
+	}
+    }
 }
 
 /*
