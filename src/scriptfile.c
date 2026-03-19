@@ -230,7 +230,7 @@ estack_sfile(estack_arg_T which UNUSED)
 	    {
 		added = vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
-		    len - (size_t)ga.ga_len,
+		    ga.ga_maxlen - ga.ga_len,
 		    "<SNR>%d_%s.",
 		    entry->es_info.ufunc->uf_script_ctx.sc_sid,
 		    class_name.string);
@@ -244,7 +244,7 @@ estack_sfile(estack_arg_T which UNUSED)
 	    {
 		added = vim_snprintf_safelen(
 		    (char *)ga.ga_data + ga.ga_len,
-		    len - (size_t)ga.ga_len,
+		    ga.ga_maxlen - ga.ga_len,
 		    "[%ld]",
 		    lnum);
 
