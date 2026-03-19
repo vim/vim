@@ -5139,6 +5139,30 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It is not allowed to change text or jump to another window while
 	evaluating 'includeexpr' |textlock|.
 
+			*'inccommand'* *'icm'* *'noinccommand'* *'noicm'*
+'inccommand' 'icm'	boolean	(default off)
+			global
+			{not available when compiled without the
+			|+extra_search| feature}
+	When this option is set together with 'incsearch', the
+	|:substitute| command shows a live preview of replacements as
+	you type.  The buffer is temporarily modified to show what the
+	result would look like; changes are reverted when you press
+	<Esc> or finalized when you press <Enter>.
+
+	All pattern matches within the command range are highlighted
+	with |hl-IncSearch| for |:substitute|, |:global|, |:vglobal|,
+	and |:sort|.
+
+	The replacement text in |:substitute| is highlighted with the
+	|hl-Substitute| highlight group.
+
+	Expression replacements using |sub-replace-expression| (\=)
+	are not previewed, though the command will still execute
+	normally when <Enter> is pressed.
+
+	Requires 'incsearch' to be set.
+
 				 *'incsearch'* *'is'* *'noincsearch'* *'nois'*
 'incsearch' 'is'	boolean	(default off, set in |defaults.vim| if the
 					    |+reltime| feature is supported)

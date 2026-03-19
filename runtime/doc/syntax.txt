@@ -6074,6 +6074,9 @@ Search		Last search pattern highlighting (see 'hlsearch').
 CurSearch	Current match for the last search pattern (see 'hlsearch').
 		Note: This is correct after a search, but may get outdated if
 		changes are made or the screen is redrawn.
+							*hl-Substitute*
+Substitute	Replacement text during |:substitute| preview when
+		'inccommand' is set.  By default linked to |hl-IncSearch|.
 							*hl-SpecialKey*
 SpecialKey	Meta and special keys listed with ":map", also for text used
 		to show unprintable characters in the text, 'listchars'.
