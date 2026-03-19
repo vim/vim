@@ -285,7 +285,7 @@ exit_with_usage(void)
 		  "    -g bytes    number of octets per group in normal output. Default 2 (-e: 4).\n"
 		  "    -h          print this summary.\n"
 		  "    -i          output in C include file style.\n"
-		  "    -t          fill terminating zero in C include output (-i).\n"
+		  "    -t          append terminating zero to C include output (-i).\n"
 		  "    -l len      stop after <len> octets.\n"
 		  "    -n name     set the variable name used in C include output (-i).\n"
 		  "    -o off      add <off> to the displayed file position.\n"
@@ -1072,7 +1072,7 @@ main(int argc, char *argv[])
 	}
 
       p = 0;
-      while ((length < 0 || p < length) && ((c = getc_or_die(fp)) != EOF) || termination)
+      while ((length < 0 || p < length) && (((c = getc_or_die(fp)) != EOF) || termination))
 	{
 	  if (c == EOF)
 	    {
