@@ -844,8 +844,7 @@ func Test_stdin_no_newline()
   call term_sendkeys(buf, "echo hello > temp.txt\<CR>")
   call TermWait(buf, 200)
 
-  call term_sendkeys(buf, "bash -c '../vim --cmd \"set trz=sigwinch notsy\"'
-        \ ' --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
+  call term_sendkeys(buf, "bash -c '../vim --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
   call TermWait(buf, 200)
 
   " Capture terminal output
