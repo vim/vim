@@ -1789,6 +1789,8 @@ const ft_from_ext = {
   "cairo": "cairo",
   # Cap'n Proto
   "capnp": "capnp",
+  # Common Package Specification
+  "cps": "json",
   # C#
   "cs": "cs",
   "csx": "cs",
