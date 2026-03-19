@@ -1,8 +1,16 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/**/*"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "CI"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
