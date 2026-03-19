@@ -1,4 +1,4 @@
-.TH XXD 1 "Maggio 2024" "Pagina di manuale per xxd"
+.TH XXD 1 "Marzo 2026" "Pagina di manuale per xxd"
 .\"
 .\" 21 Maggio 1996
 .\" Autore della pagina di manuale:
@@ -170,11 +170,14 @@ byte assoluti (o relativi) di distanza all'interno di input_file.
 (o se in combinazione con \fI+ \fR: prima della posizione corrente nel file `standard input').
 Se non si specifica l'opzione \-s, xxd inizia dalla posizione corrente all'interno del file.
 .TP
+.I \-t
+Quando l'output è nello stile delle `include' di C (opzione \-i ) aggiungere uno zero binario a fine stringa.
+.TP
 .I \-u
-Usa lettere esadecimali maiuscole. Per default si usano lettere minuscole.
+Usare lettere esadecimali maiuscole. Per default si usano lettere minuscole.
 .TP
 .IR \-v " | " \-version
-Visualizza la stringa contenente la versione del programma.
+Visualizzare la stringa contenente la versione del programma.
 .SH ATTENZIONE
 .PP
 .I xxd \-r
@@ -182,7 +185,8 @@ Visualizza la stringa contenente la versione del programma.
 Se è possibili posizionarsi tramite `seek' sul file di output, il numero di riga
 di ogni riga esadecimale può essere non ordinato, delle righe possono mancare, o
 sovrapporsi. In tal caso xxd userà lseek(2) per posizionarsi all'interno del file.
-Se per il file di output non si può usare `seek', sono permessi solo dei "buchi", che saranno riempiti con zeri binari.
+Se per il file di output non si può usare `seek', sono permessi solo dei "buchi",
+che saranno riempiti con zeri binari.
 .PP
 .I xxd \-r
 non genera mai errori per parametri errati. I parametri extra sono silenziosamente ignorati.
@@ -365,6 +369,20 @@ Leggere singoli caratteri da una linea seriale
 \fI% stty < /dev/term/b \-echo \-opost \-isig \-icanon min 1\fR
 .br
 \fI% echo \-n foo > /dev/term/b\fR
+.PP
+Output nello stile delle `include' di C (opzione \-i ) con uno zero binario a fine stringa
+.br
+\fI% echo -n 0123456789 > cifre\fR
+.br
+\fI% xxd -i -t cifre\fR
+.br
+unsigned char cifre[] = {
+.br
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00
+.br
+};
+.br
+unsigned int cifre_len = 10;
 .PP
 .SH CODICI DI RITORNO
 Il programma può restituire questi codici di errore:
