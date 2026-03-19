@@ -256,6 +256,7 @@ def s:GetFilenameChecks(): dict<list<string>>
              'psprint.conf', 'sofficerc', 'any/.config/lxqt/globalkeyshortcuts.conf', 'any/.config/screengrab/screengrab.conf',
              'any/.local/share/flatpak/repo/config',
              '.alsoftrc', 'alsoft.conf', 'alsoft.ini', 'alsoftrc.sample',
+             '/etc/wireguard/wg0.conf',
              '.notmuch-config', '.notmuch-config.myprofile',
              '~/.config/notmuch/myprofile/config'] + WhenConfigHome('$XDG_CONFIG_HOME/notmuch/myprofile/config'),
     dot: ['file.dot', 'file.gv'],

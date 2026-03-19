@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Feb 18
+" Last Change:		2026 Mar 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -1570,6 +1570,9 @@ au BufNewFile,BufRead *vimrc*			call s:StarSetf('vim')
 
 " Subversion commit file
 au BufNewFile,BufRead svn-commit*.tmp		setf svn
+
+" Wireguard config
+au BufNewFile,BufRead */etc/wireguard/*.conf    setf dosini
 
 " X resources file
 au BufNewFile,BufRead Xresources*,*/app-defaults/*,*/Xresources/* call s:StarSetf('xdefaults')
