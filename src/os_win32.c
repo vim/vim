@@ -7443,7 +7443,9 @@ notsgr:
 	    // When USE_VTP is active, CSI sequences written through
 	    // write_chars() are interpreted by the console's VTP parser,
 	    // generating responses (e.g. DECRQM) that end up in the
-	    // input buffer as unwanted keystrokes.  Discard them.
+	    // input buffer as unwanted keystrokes.  Parse the sequence
+	    // and only pass through known safe ones (e.g. DECSCUSR for
+	    // cursor shape), discard the rest.
 	    if (USE_VTP)
 	    {
 		int l = 2;
@@ -7453,7 +7455,12 @@ notsgr:
 		    l++;
 		// skip the final byte (0x40-0x7E)
 		if (s + l < end && s[l] >= 0x40 && s[l] <= 0x7E)
+		{
+		    // DECSCUSR (cursor style): pass through to terminal
+		    if (s[l] == 'q')
+			vtp_printf("%.*s", l + 1, s);
 		    l++;
+		}
 		len -= l - 1;
 		s += l;
 	    }
