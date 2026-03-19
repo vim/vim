@@ -1571,6 +1571,9 @@ au BufNewFile,BufRead *vimrc*			call s:StarSetf('vim')
 " Subversion commit file
 au BufNewFile,BufRead svn-commit*.tmp		setf svn
 
+" Wireguard config
+au BufNewFile,BufRead */etc/wireguard/*.conf    setf dosini
+
 " X resources file
 au BufNewFile,BufRead Xresources*,*/app-defaults/*,*/Xresources/* call s:StarSetf('xdefaults')
 
