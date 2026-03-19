@@ -5,12 +5,92 @@
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
  * See README.txt for an overview of the Vim source code.
- *
- * See the end of the file for implementation and maintenance notes.
  */
 
 /*
  * Text properties implementation.  See ":help text-properties".
+ */
+
+/*
+ * Implementation notes.
+ *
+ * There are 2 basic typs of text properties - text highlighting and virtual
+ * text; both stored in a textprop_T structure.
+ *
+ * Text highlighting properties (conceptually) have a start and end column
+ * ("tp_col" and "tp_len") within a line of buffer text.
+ *
+ * Virtual text properties have associated text strings that are displayed
+ * relative to the "lnum". Virtual text properties can be considered to have 2
+ * sub-types - inline and floating. Inline virtual text appears before a given
+ * column ("tp_col") and floating text appears above, after or below the line
+ * ("tp_col" is set to MAXCOL for sorting purposes only). The length of the
+ * virtual text, including the trailing NUL is stored in "tp_len".
+ *
+ * Properties are stored with the text of the line they belong to in memlines.
+ * The content of a memline looks like::
+ *
+ *     [line text] [0] [pc] [properties...] [virtual text...]
+ *
+ * Where:
+ *     [0]	 is the terminating NUL character of the line's text.
+ *     [pc]	 is a 16-bit counter for the number of properties.
+ *
+ * Lines without properties have no [pc], [properties...] or [virtual text...]
+ * parts. The [pc] is never zero. The virtual text part can, of course, be zero
+ * length. Each string in the [virtual text...] part is NUL terminated.
+ * Virtual text properties store an offset to the text part, relative to where the
+ * [pc] is stored.
+ *
+ * A memline is typically unpacked into an unpacked_memline_T structure in
+ * order to process properties. A set of 'um_...()' functions are provided to
+ * work with this structure.
+ *
+ * An unpacked_memline_T may be LOADED or DETACHED. A LOADED unpacked_memline_T
+ * looks like::
+ *
+ *                [line text] [0] [pc] [properties...] [virtual text...]
+ *		  ^				       ^       ^
+ *     text-------'				       |       |
+ *     ...					       |       |
+ *     props[0].tp_text -> NULL			       |       |
+ *     props[1].tp_text -------------------------------'       |
+ *     ...						       |
+ *     props[4].tp_text ---------------------------------------'
+ *
+ * Each virtual text propery has a pointer into the memline, as does the "text"
+ * member.
+ *
+ * For a DETACHED unpacked_memline_T, all pointers into the memline are
+ * replaced with allocated strings.
+ *
+ * In the event of any error, an unpacked_memline_T becomes CLOSED and the
+ * following are all true.::
+ *
+ *     buf == NULL
+ *     text == NULL
+ *     props == NULL
+ *     lnum == 0
+ *     prop_count == 0
+ *
+ * Use (umemline.buf == NULL) to test for the CLOSED state.
+ *
+ * The main (public) um_...() functions are:
+ *
+ * - unpacked_memline_T um_open(*buf);
+ * - unpacked_memline_T um_open_at(*buf, lnum, extra_props);
+ * - unpacked_memline_T um_open_at_no_props(*buf, lnum, prop_count);
+ * - unpacked_memline_T um_open_at_detached(*buf, lnum, extra_props);
+ * - bool um_goto_line(*umemline, lnum, extra_props);
+ * - void um_close(*umemline);
+ * - void um_abort(*umemline);
+ * - void um_delete_prop(*umemline, index);
+ * - void um_reverse_props(*umemline);
+ * - void um_sort_props(*umemline);
+ * - void um_free_detached_props_vtext(*props, count);
+ * - bool um_set_text(*umemline, *text);
+ * - textprop_T *um_extract_props(*umemline);
+ * - char_u *um_pack(*umemline, *packed_length);
  */
 
 #include "vim.h"
@@ -3590,85 +3670,3 @@ fail:
 }
 
 #endif // FEAT_PROP_POPUP
-
-/*
- * Implementation notes.
- *
- * There are 2 basic typs of text properties - text highlighting and virtual
- * text; both stored in a textprop_T structure.
- *
- * Text highlighting properties (conceptually) have a start and end column
- * ("tp_col" and "tp_len") within a line of buffer text.
- *
- * Virtual text properties have associated text strings that are displayed
- * relative to the "lnum". Virtual text properties can be considered to have 2
- * sub-types - inline and floating. Inline virtual text appears before a given
- * column ("tp_col") and floating text appears above, after or below the line
- * ("tp_col" is set to MAXCOL for sorting purposes only). The length of the
- * virtual text, including the trailing NUL is stored in "tp_len".
- *
- * Properties are stored with the text of the line they belong to in memlines.
- * The content of a memline looks like::
- *
- *     [line text] [0] [pc] [properties...] [virtual text...]
- *
- * Where:
- *     [0]	 is the terminating NUL character of the line's text.
- *     [pc]	 is a 16-bit counter for the number of properties.
- *
- * Lines without properties have no [pc], [properties...] or [virtual text...]
- * parts. The [pc] is never zero. The virtual text part can, of course, be zero
- * length. Each string in the [virtual text...] part is NUL terminated.
- * Virtual text properties store an offset to the text part, relative to where the
- * [pc] is stored.
- *
- * A memline is typically unpacked into an unpacked_memline_T structure in
- * order to process properties. A set of 'um_...()' functions are provided to
- * work with this structure.
- *
- * An unpacked_memline_T may be LOADED or DETACHED. A LOADED unpacked_memline_T
- * looks like::
- *
- *                [line text] [0] [pc] [properties...] [virtual text...]
- *		  ^				       ^       ^
- *     text-------'				       |       |
- *     ...					       |       |
- *     props[0].tp_text -> NULL			       |       |
- *     props[1].tp_text -------------------------------'       |
- *     ...						       |
- *     props[4].tp_text ---------------------------------------'
- *
- * Each virtual text propery has a pointer into the memline, as does the "text"
- * member.
- *
- * For a DETACHED unpacked_memline_T, all pointers into the memline are
- * replaced with allocated strings.
- *
- * In the event of any error, an unpacked_memline_T becomes CLOSED and the
- * following are all true.::
- *
- *     buf == NULL
- *     text == NULL
- *     props == NULL
- *     lnum == 0
- *     prop_count == 0
- *
- * Use (umemline.buf == NULL) to test for the CLOSED state.
- *
- * The main (public) um_...() functions are:
- *
- * - unpacked_memline_T um_open(*buf);
- * - unpacked_memline_T um_open_at(*buf, lnum, extra_props);
- * - unpacked_memline_T um_open_at_no_props(*buf, lnum, prop_count);
- * - unpacked_memline_T um_open_at_detached(*buf, lnum, extra_props);
- * - bool um_goto_line(*umemline, lnum, extra_props);
- * - void um_close(*umemline);
- * - void um_abort(*umemline);
- * - void um_delete_prop(*umemline, index);
- * - void um_reverse_props(*umemline);
- * - void um_sort_props(*umemline);
- * - void um_free_detached_props_vtext(*props, count);
- * - bool um_set_text(*umemline, *text);
- * - textprop_T *um_extract_props(*umemline);
- * - char_u *um_pack(*umemline, *packed_length);
- */
