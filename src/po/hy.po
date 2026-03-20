@@ -3861,7 +3861,7 @@ msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 "հավելյալ տեղեկատվություն ստանալու համար տալ :help sponsor<Enter>    հրամանը "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "մենյու Օգնություն->Հովանավոր/Գրանցվել տեղեկությունների համար    "
 
 msgid "global"

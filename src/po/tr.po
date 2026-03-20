@@ -3756,7 +3756,7 @@ msgstr "Vim'in geliştirilmesine sponsor olun!"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "bilgi için             :help sponsor<Enter>   "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "bilgi için             Yardım -> Sponsorluk"
 
 msgid "global"

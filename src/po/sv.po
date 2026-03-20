@@ -3831,7 +3831,7 @@ msgstr "Stöd utvecklingen av Vim!"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "skriv  :help sponsor<Enter>     för information "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "meny  Hjälp->Sponsra  för information    "
 
 msgid "global"

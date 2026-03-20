@@ -3737,7 +3737,7 @@ msgstr "Vimの開発を応援してください!"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "詳細な情報は           :help sponsor<Enter>   "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "詳細はメニューの ヘルプ->スポンサー を参照して下さい"
 
 msgid "global"

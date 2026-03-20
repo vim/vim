@@ -4713,7 +4713,7 @@ msgstr ""
 
 # Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # Restorer: выравнивается по самому длинному подобному сообщению
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr ""
 "меню Справка->Содействие проекту        чтобы узнать об этом подробнее      "
 

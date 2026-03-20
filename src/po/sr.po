@@ -3790,7 +3790,7 @@ msgstr "Спонзоришите Vim развој!"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "откуцајте  :help sponsor<Ентер>    за информације   "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "мени  Помоћ->Спонзор  за информације    "
 
 msgid "global"

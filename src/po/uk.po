@@ -3854,7 +3854,7 @@ msgstr "Підтримайте розробку редактора Vim!"
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ":help sponsor<Enter>      подальша інформація      "
 
-msgid "menu  Help->Sponsor  for information    "
+msgid "menu  Help->Sponsor           for information    "
 msgstr "меню  Допомога->Спонсор щоб дізнатися більше      "
 
 msgid "global"
