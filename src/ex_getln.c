@@ -629,11 +629,14 @@ inccommand_substitute_preview(
 	    ga_concat_len(&new_ga, line + matchcol,
 				    STRLEN(line) - (size_t)matchcol);
 
-	ga_append(&new_ga, NUL);
-
-	ml_replace(lnum, new_ga.ga_data, FALSE);
-
 	vim_free(line);
+
+	if (ga_append(&new_ga, NUL) == FAIL
+		|| ml_replace(lnum, new_ga.ga_data, FALSE) == FAIL)
+	{
+	    ga_clear(&new_ga);
+	    break;
+	}
     }
 
 theend:
