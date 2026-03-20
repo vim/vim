@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Mar 19
+# Last Change:		2026 Mar 20
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1888,6 +1888,8 @@ const ft_from_ext = {
   "cr": "crystal",
   # CSV Files
   "csv": "csv",
+  # Concertor
+  "cto": "concerto",
   # CUDA Compute Unified Device Architecture
   "cu": "cuda",
   "cuh": "cuda",
