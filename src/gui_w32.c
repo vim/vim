@@ -242,6 +242,7 @@ gui_mch_set_rendering_options(char_u *s)
 	}
     }
     s_directx_enabled = dx_enable;
+    gui.directx_enabled = IS_ENABLE_DIRECTX();
 
     return OK;
 # else

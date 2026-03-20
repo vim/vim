@@ -920,6 +920,14 @@ skip_opacity:
 	    // redraw that one if this one changed, no matter attributes.
 	    if (gui.in_use && changed_this)
 		redraw_next = TRUE;
+# ifdef FEAT_DIRECTX
+	    // DirectWrite subpixel rendering (especially with CFF/OTF
+	    // fonts) can extend pixels beyond cell boundaries to the
+	    // left.  Redraw the current character if the previous one
+	    // changed.
+	    if (gui.directx_enabled && changed_this)
+		redraw_this = TRUE;
+# endif
 #endif
 
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
@@ -1731,6 +1739,12 @@ screen_puts_len(
 		if (n & HL_BOLD)
 		    force_redraw_next = TRUE;
 	    }
+#endif
+#ifdef FEAT_DIRECTX
+	    // DirectWrite subpixel rendering can extend pixels beyond
+	    // cell boundaries.  Redraw the next character too.
+	    if (gui.directx_enabled && need_redraw)
+		force_redraw_next = TRUE;
 #endif
 	    // When at the end of the text and overwriting a two-cell
 	    // character with a one-cell character, need to clear the next
@@ -2663,6 +2677,12 @@ skip_opacity_fill:
 			force_next = FALSE;
 		}
 #endif // FEAT_GUI || defined(UNIX)
+#ifdef FEAT_DIRECTX
+		// DirectWrite subpixel rendering can extend pixels
+		// beyond cell boundaries.  Redraw the next character.
+		if (gui.directx_enabled)
+		    force_next = TRUE;
+#endif
 		ScreenLines[off] = c;
 		if (enc_utf8)
 		{
