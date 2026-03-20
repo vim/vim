@@ -128,7 +128,7 @@ Keywords[sr]=Текст;едитор;
 Keywords[sv]=Text;Redigerare;
 Keywords[tr]=Metin;düzenleyici;
 Keywords[uk]=текст;редактор;
-Keywords[zh_CN]=Text;editor;文本;编辑器;
+Keywords[zh_CN]=文本;编辑器;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
 Icon=gvim
