@@ -866,10 +866,14 @@ endfunc
 func Test_clipboard_provider_copy()
   CheckFeature clipboard_provider
 
+  function s:copy_cb_to_test_partial(_, reg, type, str)
+    call s:Copy(a:reg, a:type, a:str)
+  endfunction
+
   let v:clipproviders["test"] = {
         \ "copy": {
         \       '+': function("s:Copy"),
-        \       '*': function("s:Copy")
+        \       '*': function("s:copy_cb_to_test_partial", [""])
         \   }
         \ }
   set clipmethod=test
