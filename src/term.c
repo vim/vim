@@ -7985,6 +7985,7 @@ send_decrqm_modes(void)
 	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
 	    out_str(IObuff);
 	}
+	out_flush();
     }
 }
 
