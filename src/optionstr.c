@@ -1791,11 +1791,19 @@ expand_set_completeopt(optexpand_T *args, int *numMatches, char_u ***matches)
  * The 'completefuzzycollect' option is changed.
  */
     char *
-did_set_completefuzzycollect(optset_T *args UNUSED)
+did_set_completefuzzycollect(optset_T *args)
 {
-    if (opt_strings_flags(p_cfc, p_cfc_values, &cfc_flags, TRUE) != OK)
-	return e_invalid_argument;
-    return NULL;
+    char_u **varp = (char_u **)args->os_varp;
+
+    // Allow setting to empty (resetting).
+    if (*varp == NULL || **varp == NUL)
+	return NULL;
+
+    // This option is deprecated.  Return error; the caller will restore
+    // the old value.
+    vim_snprintf(args->os_errbuf, args->os_errbuflen,
+	    _(e_option_is_deprecated_use_str_instead), "completeopt");
+    return args->os_errbuf;
 }
 
     int
@@ -5083,10 +5091,22 @@ expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches)
  * The 'wincolor' option is changed.
  */
     char *
-did_set_wincolor(optset_T *args UNUSED)
+did_set_wincolor(optset_T *args)
 {
-    update_wincolor(curwin, args->os_newval.string);
-    return NULL;
+    char_u **varp = (char_u **)args->os_varp;
+
+    // Allow setting to empty (resetting).
+    if (*varp == NULL || **varp == NUL)
+    {
+	update_wincolor(curwin, *varp);
+	return NULL;
+    }
+
+    // This option is deprecated.  Return error; the caller will restore
+    // the old value.
+    vim_snprintf(args->os_errbuf, args->os_errbuflen,
+	    _(e_option_is_deprecated_use_str_instead), "winhighlight");
+    return args->os_errbuf;
 }
 
 /*

@@ -2221,7 +2221,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completefuzzycollect'* *'cfc'*
 'completefuzzycollect' 'cfc'	string	(default: empty)
 				global
-	DEPRECATED: This option is no longer used; changing it has no effect.
+	DEPRECATED: This option is no longer used.  Setting it will give an
+	error.  Use 'completeopt' instead.
 	When 'completeopt' contains "fuzzy", Vim will internally use the
 	equivalent of:
 		"keyword,files,whole_line"
@@ -10302,19 +10303,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wincolor'* *'wcr'*
 'wincolor' 'wcr' string (default empty)
 			local to window
-	DEPRECATED: Use 'winhighlight' if possible, this option uses
-	'winhighlight' internally by setting it to: >vim
-	    set winhighlight=!(:HighlightGroup
-<	If this option is set and 'winhighlight' is changed, then it will not
-	update the option value.  For example, if 'wincolor' is set to "A" and
-	then 'winhighlight' is to an empty value, then 'wincolor' will still
-	remain as "A".  Additionally, the existing value in 'winhighlight' will
-	be discarded when this option is set.
-
-	Highlight group name to use for this window instead of the Normal
-	color |hl-Normal|.  For other |highlight-groups|, see 'winhighlight'.
-	Note that it is not recommended to set this and 'winhighlight' at the
-	same time.
+	DEPRECATED: Setting this option will give an error.
+	Use 'winhighlight' instead.  For example: >vim
+	    set winhighlight=Normal:MyHighlightGroup
+<
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)

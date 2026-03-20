@@ -16,7 +16,7 @@ func Test_simple_popup()
 	call prop_type_add('comment', #{highlight: 'Comment'})
 	let winid = popup_create('hello there', #{line: 3, col: 11, minwidth: 20, highlight: 'PopupColor1'})
 	let winid2 = popup_create(['another one', 'another two', 'another three'], #{line: 3, col: 25, minwidth: 20})
-	call setwinvar(winid2, '&wincolor', 'PopupColor2')
+	call setwinvar(winid2, '&winhighlight', 'Normal:PopupColor2')
   END
   call writefile(lines, 'XtestPopup', 'D')
   let buf = RunVimInTerminal('-S XtestPopup', #{rows: 10})

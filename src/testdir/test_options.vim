@@ -540,7 +540,7 @@ func Test_set_completion_string_values()
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])
-  call assert_equal('keyword', getcompletion('set completefuzzycollect=', 'cmdline')[0])
+  call assert_fails("set completefuzzycollect=keyword", 'E1575:')
   if exists('+completeslash')
     call assert_equal('backslash', getcompletion('set completeslash=', 'cmdline')[1])
   endif
@@ -621,7 +621,7 @@ func Test_set_completion_string_values()
   call assert_equal(['WinLeave', 'WinResized', 'WinScrolled'], getcompletion('set eiw=', 'cmdline')[-3:-1])
   call assert_equal('latin1', getcompletion('set fileencodings=', 'cmdline')[1])
   call assert_equal('top', getcompletion('set printoptions=', 'cmdline')[0])
-  call assert_equal('SpecialKey', getcompletion('set wincolor=', 'cmdline')[0])
+  call assert_fails("set wincolor=SpecialKey", 'E1575:')
 
   call assert_equal('SpecialKey', getcompletion('set winhighlight=', 'cmdline')[0])
   call assert_equal('SpecialKey', getcompletion('set winhighlight=SpecialKey:', 'cmdline')[0])
@@ -1279,7 +1279,7 @@ def Test_split_copy_options()
     ['scrollbind', true, false],
     ['smoothscroll', true, false],
     ['virtualedit', '"block"', '"' .. &virtualedit .. '"'],
-    ['wincolor', '"Search"', '"' .. &wincolor .. '"'],
+    ['winhighlight', '"Normal:Search"', '"' .. &winhighlight .. '"'],
     ['wrap', false, true],
   ]
   if has('linebreak')

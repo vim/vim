@@ -3810,3 +3810,5 @@ EXTERN char e_cannot_listen_on_port[]
 EXTERN char e_gethostbyname_in_channel_listen[]
 	INIT(= N_("E1574: gethostbyname(): cannot resolve hostname in channel_listen()"));
 #endif
+EXTERN char e_option_is_deprecated_use_str_instead[]
+	INIT(= N_("E1575: Option is deprecated, use '%s' instead"));
