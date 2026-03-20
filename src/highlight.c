@@ -5630,6 +5630,7 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
     hl_override_T   *arr;
     int		    i = 0;
     int		    num = 1;
+    int		    n_colons = 0;
 
     if (*p == NUL)
 	return NULL;
@@ -5639,6 +5640,19 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
     {
 	p++;
 	num++;
+    }
+    p = opt;
+    // Check if number of ':' matches number of ','
+    while ((p = vim_strchr(p, ':')) != NULL)
+    {
+	p++;
+	n_colons++;
+    }
+
+    if (num != n_colons)
+    {
+	*errmsg = e_invalid_argument;
+	return NULL;
     }
 
     arr = ALLOC_MULT(hl_override_T, num);
@@ -5667,6 +5681,8 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    goto fail;
 
 	fromlen = p - fromname; // Get hl for "from"
+	if (fromlen == 0)
+	    goto fail;
 	p++; // Skip colon ':'
 	if (*p == NUL)
 	    goto fail;
@@ -5683,6 +5699,8 @@ parse_winhighlight(char_u *opt, int *len, char **errmsg)
 	    tolen = tmp - toname;
 	    p = ++tmp;
 	}
+	if (tolen == 0)
+	    goto fail;
 
 	for (int k = 0; k < 2; k++)
 	{

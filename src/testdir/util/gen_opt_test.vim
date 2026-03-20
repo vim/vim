@@ -362,7 +362,8 @@ let test_values = {
       \ 'winaltkeys': [['no', 'yes', 'menu'], ['', 'xxx']],
       \ 'winhighlight': [['Search:Errormsg,Comment:String', 'Search:Comment', ''],
       \		['xxx', ',', 'Search:Comment,', 'Search:Errormsg,Comment:String,',
-      \		':', 'Search:,', 'Search:']],
+      \		':', 'Search:,', 'Search:', ',Search', ',Search:Test', 'S:,A:B',
+      \		',', ',S:']],
       \
       "\ skipped options
       \ 'luadll': [[], []],
