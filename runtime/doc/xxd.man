@@ -250,13 +250,12 @@ EXAMPLES
        % echo -n foo > /dev/term/b
 
        Output in C style include output with terminating zero
-       % echo -e "0123456789" > digits
+       % echo -n "0123456789" > digits
        % xxd -i -t digits
        unsigned char digits[] = {
-         0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36,  0x37,  0x38,  0x39,  0x0a,
-       0x00
+         0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00
        };
-       unsigned int digits_len = 11;
+       unsigned int digits_len = 10;
 
 RETURN VALUES
        The following error values are returned:
@@ -295,4 +294,4 @@ AUTHOR
        <tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
        Small changes by Bram Moolenaar.  Edited by Juergen Weigert.
 
-Manual page for xxd               March 2026                            XXD(1)
+Manual page for xxd                Mar 2026                             XXD(1)

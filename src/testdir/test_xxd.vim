@@ -67,17 +67,19 @@ func Test_xxd()
   exe '0r ' man_page '| set ff=unix | $d | w' man_copy '| bwipe!' man_copy
 
   " Test 5: Print 120 bytes as continuous hexdump with 20 octets per line
+  "         skip the first 30 bytes, it contains the date of the manpage
+  "         which can change
   let s:test += 1
   %d
-  exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c20 ' . man_copy
+  exe '0r! ' . s:xxd_cmd . ' -s 30 -l 120 -ps -c20 ' . man_copy
   $d
   let expected = [
-      \ '2e544820585844203120224d6179203230323422',
-      \ '20224d616e75616c207061676520666f72207878',
-      \ '64220a2e5c220a2e5c222032317374204d617920',
-      \ '313939360a2e5c22204d616e2070616765206175',
-      \ '74686f723a0a2e5c2220202020546f6e79204e75',
-      \ '67656e74203c746f6e79407363746e7567656e2e']
+      \ '61676520666f7220787864220a2e5c220a2e5c22',
+      \ '2032317374204d617920313939360a2e5c22204d',
+      \ '616e207061676520617574686f723a0a2e5c2220',
+      \ '202020546f6e79204e7567656e74203c746f6e79',
+      \ '407363746e7567656e2e7070702e67752e656475',
+      \ '2e61753e203c542e4e7567656e74407363742e67']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
   " Test 6: Print the date from xxd.1

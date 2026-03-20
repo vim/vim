@@ -1,4 +1,4 @@
-.TH XXD 1 "March 2026" "Manual page for xxd"
+.TH XXD 1 "Mar 2026" "Manual page for xxd"
 .\"
 .\" 21st May 1996
 .\" Man page author:
@@ -368,17 +368,17 @@ Read single characters from a serial line
 .PP
 Output in C style include output with terminating zero
 .br
-\fI% echo -e \&"0123456789\&" > digits\fR
+\fI% echo -n \&"0123456789\&" > digits\fR
 .br
 \fI% xxd -i -t digits\fR
 .br
 unsigned char digits[] = {
 .br
-  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x0a, 0x00
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00
 .br
 };
 .br
-unsigned int digits_len = 11;
+unsigned int digits_len = 10;
 .PP
 .SH "RETURN VALUES"
 The following error values are returned:
