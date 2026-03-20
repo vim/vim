@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Simplified Chinese)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-17 21:42+0800\n"
+"POT-Creation-Date: 2026-03-20 20:44+0800\n"
 "PO-Revision-Date: 2025-12-28 14:27+0800\n"
 "Last-Translator: Mao-Yining\n"
 "Language-Team: Simplified Chinese\n"
@@ -57,6 +57,7 @@ msgstr "自动删除自动命令： %s <buffer=%d>"
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: 删除依旧在使用中的自动组"
 
+#. Highlight title
 msgid ""
 "\n"
 "--- Autocommands ---"
@@ -159,6 +160,7 @@ msgstr "底端"
 msgid "Top"
 msgstr "顶端"
 
+#. localized percentage value
 #, c-format
 msgid "%d%%"
 msgstr "%d%%"
@@ -196,6 +198,9 @@ msgstr "[弹窗]"
 msgid "[Scratch]"
 msgstr "[涂鸦]"
 
+#. don't overwrite messages here
+#. must give this prompt
+#. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "警告: 此文件自读入后已发生变动！！！"
 
@@ -252,9 +257,11 @@ msgstr "W10: 警告: 正在修改只读文件"
 msgid "No display"
 msgstr "没有 display"
 
+#. Failed to send, abort.
 msgid ": Send failed.\n"
 msgstr ": 发送失败。\n"
 
+#. Let vim start normally.
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": 发送失败。尝试本地执行\n"
 
@@ -459,6 +466,9 @@ msgstr "日文片假名"
 msgid "Bopomofo"
 msgstr "注音符号"
 
+#. row number, column number is appended
+#. l10n: leave as-is unless a space after the comma is preferred
+#. l10n: do not add any row/column label, due to the limited space
 #, c-format
 msgid "%ld,"
 msgstr "%ld,"
@@ -470,6 +480,11 @@ msgstr ""
 "\n"
 "\t最近修改于 "
 
+#.
+#. * Yes this is ugly, I don't particularly like it either.  But doing it
+#. * this way has the compelling advantage that translations need not to
+#. * be touched at all.  See below what 'ok' and 'ync' are used for.
+#.
 msgid "&Ok"
 msgstr "确定(&O)"
 
@@ -662,6 +677,7 @@ msgstr "保存重定向"
 msgid "Untitled"
 msgstr "未命名"
 
+#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception thrown: %s"
 msgstr "抛出异常: %s"
@@ -678,6 +694,7 @@ msgstr "丢弃异常: %s"
 msgid "%s, line %ld"
 msgstr "%s，第 %ld 行"
 
+#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception caught: %s"
 msgstr "已捕获异常: %s"
@@ -703,6 +720,7 @@ msgstr "错误和中断"
 msgid "Error"
 msgstr "错误"
 
+#. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "中断"
 
@@ -730,6 +748,7 @@ msgstr "[权限不足]"
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: 从标准输入读取...\n"
 
+#. make a copy, gui_write() may try to change it
 msgid "Reading from stdin..."
 msgstr "从标准输入读取..."
 
@@ -786,6 +805,7 @@ msgstr "[unix]"
 msgid "[unix format]"
 msgstr "[unix 格式]"
 
+#. l10n: L as in line, B as in byte
 #, c-format
 msgid "%s%ldL, %lldB"
 msgstr "%s%ld 行, %lld 字节"
@@ -927,15 +947,18 @@ msgstr "查找内容:"
 msgid "Replace with:"
 msgstr "替换为:"
 
+#. whole word only button
 msgid "Match whole word only"
 msgstr "匹配完整的词"
 
+#. match case button
 msgid "Match case"
 msgstr "匹配大小写"
 
 msgid "Direction"
 msgstr "方向"
 
+#. 'Up' and 'Down' buttons
 msgid "Up"
 msgstr "向上"
 
@@ -1017,6 +1040,8 @@ msgstr "查找字符串"
 msgid "Find & Replace"
 msgstr "查找和替换"
 
+#. We fake this: Use a filter that doesn't select anything and a default
+#. file name that won't be used.
 msgid "Not Used"
 msgstr "未使用"
 
@@ -1058,6 +1083,7 @@ msgstr "Vim - 字体选择器"
 msgid "Name:"
 msgstr "名称:"
 
+#. create toggle button
 msgid "Show size in Points"
 msgstr "以点为单位显示大小"
 
@@ -1265,6 +1291,7 @@ msgstr "无效的缓冲区号"
 msgid "not implemented yet"
 msgstr "尚未实现"
 
+#. ???
 msgid "cannot set line(s)"
 msgstr "无法设定行"
 
@@ -1321,9 +1348,11 @@ msgstr[0] "缩进了 %ld 行 "
 msgid " Keyword completion (^N^P)"
 msgstr " 关键字补全 (^N^P)"
 
+#. CTRL_X_NORMAL, ^P/^N compl.
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 msgstr " ^X 模式 (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
+#. CTRL_X_SCROLL: depends on state
 msgid " Whole line completion (^L^N^P)"
 msgstr " 整行补全 (^L^N^P)"
 
@@ -1339,12 +1368,14 @@ msgstr " 头文件模式补全 (^N^P)"
 msgid " Definition completion (^D^N^P)"
 msgstr " 定义补全 (^D^N^P)"
 
+#. CTRL_X_FINISHED
 msgid " Dictionary completion (^K^N^P)"
 msgstr " Dictionary 补全 (^K^N^P)"
 
 msgid " Thesaurus completion (^T^N^P)"
 msgstr " Thesaurus 补全 (^T^N^P)"
 
+#. CTRL_X_EVAL doesn't use msg.
 msgid " Command-line completion (^V^N^P)"
 msgstr " 命令行补全 (^V^N^P)"
 
@@ -1379,10 +1410,12 @@ msgstr " (插入) Scroll (^E/^Y)"
 msgid " (replace) Scroll (^E/^Y)"
 msgstr " (替换) Scroll (^E/^Y)"
 
+#. reset in msg_trunc_attr()
 #, c-format
 msgid "Scanning: %s"
 msgstr "正在扫描: %s"
 
+#. reset in msg_trunc_attr()
 msgid "Scanning tags."
 msgstr "扫描标签."
 
@@ -1504,6 +1537,7 @@ msgstr "Vim: 警告: 输出不是到终端(屏幕)\n"
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: 警告: 输入不是来自终端(键盘)\n"
 
+#. just in case..
 msgid "pre-vimrc command line"
 msgstr "pre-vimrc 命令行"
 
@@ -1883,6 +1917,7 @@ msgstr "找不到映射"
 msgid "No marks set"
 msgstr "没有设定标记"
 
+#. Highlight title
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -1890,6 +1925,7 @@ msgstr ""
 "\n"
 "标记   行   列 文件/文本"
 
+#. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -1897,6 +1933,7 @@ msgstr ""
 "\n"
 " 跳转   行   列 文件/文本"
 
+#. Highlight title
 msgid ""
 "\n"
 "change line  col text"
@@ -1995,6 +2032,9 @@ msgstr "???空的块"
 msgid "???LINES MISSING"
 msgstr "???缺少了一些行"
 
+msgid "???ILLEGAL BLOCK NUMBER"
+msgstr ""
+
 # do not translate to avoid writing Chinese in files
 msgid "???BLOCK MISSING"
 msgstr "???缺少块"
@@ -2040,6 +2080,8 @@ msgstr ""
 "\n"
 "你现在可以删除 .swp 文件了。"
 
+#. Warn there could be an active Vim on the same file, the user may
+#. want to kill it.
 msgid ""
 "\n"
 "Note: process STILL RUNNING: "
@@ -2050,6 +2092,7 @@ msgstr ""
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "为文本文件使用来自交换文件的密码。\n"
 
+#. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "找到交换文件:"
 
@@ -2174,6 +2217,8 @@ msgstr "      找！不！到！"
 msgid "      NEWER than swap file!\n"
 msgstr "      比交换文件新！\n"
 
+#. Some of these messages are long to allow translation to
+#. other languages.
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
@@ -2251,6 +2296,7 @@ msgstr ""
 "退出(&Q)\n"
 "中止(&A)"
 
+#. list the matching menu mappings
 msgid ""
 "\n"
 "--- Menus ---"
@@ -2273,6 +2319,8 @@ msgstr "处理 %s 时发生错误:"
 msgid "line %4ld:"
 msgstr "第 %4ld 行:"
 
+#. Translator: Please replace the name and email address
+#. with the appropriate text for your translation.
 msgid "Messages maintainer: The Vim Project"
 msgstr "简体中文消息维护者: Yuheng Xie <elephant@linux.net.cn>"
 
@@ -2366,6 +2414,7 @@ msgid "%ld lines %sed %d time"
 msgid_plural "%ld lines %sed %d times"
 msgstr[0] "%ld 行 %s 了 %d 次"
 
+#. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "无法复制；改为删除"
 
@@ -2495,6 +2544,9 @@ msgstr "从 %s 到 %s"
 msgid "Printing '%s'"
 msgstr "打印 '%s'"
 
+#. Default font name for current language on MS-Windows.
+#. If not translated, falls back to "Consolas".
+#. This must be a fixed-pitch font.
 msgid "DefaultFontNameForWindows"
 msgstr "DefaultFontNameForWindows"
 
@@ -2694,6 +2746,7 @@ msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
 msgstr[0] "%ld 行已复制%s"
 
+#. Highlight title
 msgid ""
 "\n"
 "Type Name Content"
@@ -2823,6 +2876,7 @@ msgstr "W15: 警告: 错误的行分隔符，可能是少了 ^M"
 msgid " (includes previously listed match)"
 msgstr " (包括上次列出符合项)"
 
+#. cursor at status line
 msgid "--- Included files "
 msgstr "--- 包含文件 "
 
@@ -2897,6 +2951,8 @@ msgstr "警告: 找不到单词列表 \"%s_%s.spl\" 或 \"%s_ascii.spl\""
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr "警告: 找不到单词列表 \"%s.%s.spl\" or \"%s.ascii.spl\""
 
+#. This is probably an error.  Give a warning and
+#. accept the words anyway.
 #, c-format
 msgid "Warning: region %s not supported"
 msgstr "警告: 区域 %s 不支持"
@@ -3115,6 +3171,10 @@ msgstr "已压缩 %s：%ld/%ld 个节点；剩余 %ld (%ld%%)"
 msgid "Reading back spell file..."
 msgstr "读取拼写文件……"
 
+#.
+#. * Go through the trie of good words, soundfold each word and add it to
+#. * the soundfold trie.
+#.
 msgid "Performing soundfolding..."
 msgstr "正在 soundfolding……"
 
@@ -3162,6 +3222,8 @@ msgstr "抱歉，没有建议"
 msgid "Sorry, only %ld suggestions"
 msgstr "抱歉，只有 %ld 条建议"
 
+#. for when 'cmdheight' > 1
+#. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
 msgstr "将 \"%.*s\" 改为："
@@ -3239,6 +3301,7 @@ msgstr ""
 msgid "File \"%s\" does not exist"
 msgstr "文件 \"%s\" 不存在"
 
+#. Give an indication of the number of matching tags
 #, c-format
 msgid "tag %d of %d%s"
 msgstr "找到 tag: %d / %d%s"
@@ -3255,6 +3318,7 @@ msgstr "  # pri kind tag"
 msgid "file\n"
 msgstr "文件\n"
 
+#. Highlight title
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -3283,6 +3347,7 @@ msgstr "' 未知。可用的内建终端有:"
 msgid "defaulting to '"
 msgstr "默认值为: '"
 
+#. Highlight title
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -3309,6 +3374,10 @@ msgstr "运行中"
 msgid "finished"
 msgstr "已结束"
 
+#. Quoting "man strftime":
+#. > If the length of the result string (including the terminating
+#. > null byte) would exceed max bytes, then strftime() returns 0,
+#. > and the contents of the array are undefined.
 msgid "(Invalid)"
 msgstr "(无效)"
 
@@ -3327,6 +3396,7 @@ msgstr "启动新 shell\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: 读错误，退出中...\n"
 
+#. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "无法撤销；仍然继续"
 
@@ -3676,7 +3746,7 @@ msgid "Help poor children in Uganda!"
 msgstr "帮助乌干达的可怜儿童！"
 
 msgid "type  :help Kuwasha<Enter>    for information "
-msgstr "输入  :help Kuwasha<Enter>    查看说明    "
+msgstr "输入  :help Kuwasha<Enter>    查看相关说明"
 
 msgid "type  :q<Enter>               to exit         "
 msgstr "输入  :q<Enter>               退出        "
@@ -3691,37 +3761,37 @@ msgid "Running in Vi compatible mode"
 msgstr "运行于 Vi 兼容模式"
 
 msgid "type  :set nocp<Enter>        for Vim defaults"
-msgstr "输入  :set nocp<Enter>        恢复默认的 Vim  "
+msgstr "输入  :set nocp<Enter>        恢复默认模式"
 
 msgid "type  :help cp-default<Enter> for info on this"
-msgstr "输入  :help cp-default<Enter> 查看相关说明    "
+msgstr "输入  :help cp-default<Enter> 查看相关说明"
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "菜单  帮助->孤儿              查看说明           "
+msgstr "菜单  帮助->拯救孤儿          查看相关说明"
 
 msgid "Running modeless, typed text is inserted"
 msgstr "无模式运行，输入文字即插入"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "菜单  编辑->全局设置->开/关插入模式 "
+msgstr "菜单  编辑->全局设置->开/关插入模式       "
 
 msgid "                              for two modes      "
-msgstr "                              两种模式状态       "
+msgstr "                              切换两种模式"
 
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "菜单  编辑->全局设置->切换 Vi 兼容性"
+msgstr "菜单  编辑->全局设置->切换 Vi 兼容性      "
 
 msgid "                              for Vim defaults   "
-msgstr "                                 Vim 默认状态    "
+msgstr "                              恢复默认模式"
 
 msgid "Sponsor Vim development!"
 msgstr "赞助 Vim 的开发！"
 
 msgid "type  :help sponsor<Enter>    for information "
-msgstr "输入  :help sponsor<Enter>    查看说明"
+msgstr "输入  :help sponsor<Enter>    查看如何赞助"
 
-msgid "menu  Help->Sponsor  for information    "
-msgstr "菜单  帮助->赞助者   获取信息"
+msgid "menu  Help->Sponsor           for information    "
+msgstr "菜单  帮助->拯救孤儿          查看相关说明"
 
 msgid "global"
 msgstr "全局"
@@ -3837,6 +3907,7 @@ msgstr ""
 "\n"
 "# 文件标记:\n"
 
+#. Write the jumplist with -'
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -3845,6 +3916,7 @@ msgstr ""
 "# 跳转列表 (从新到旧):\n"
 
 # do not translate to avoid writing Chinese in files
+#. Write the info:
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# 这个 viminfo 文件是由 Vim %s 生成的。\n"
@@ -8261,7 +8333,8 @@ msgstr "E1291: 无效的参数: %ld"
 msgid "E1292: Command-line window is already open"
 msgstr "E1292: 命令行窗口已打开"
 
-msgid "E1293: Cannot use a negative id after adding a textprop with text"
+#, fuzzy
+msgid "E1293: Cannot use a negative id for a text property"
 msgstr "E1293: 添加带文本的文本属性后不能使用负 ID"
 
 msgid "E1294: Can only use text_align when column is zero"
@@ -8406,11 +8479,6 @@ msgstr "E1335: 类 \"%2$s\" 中的变量 \"%1$s\" 不可写"
 #, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
 msgstr "E1337: 在类 \"%2$s\" 中未找到类变量 \"%1$s\""
-
-msgid ""
-"E1339: Cannot add a textprop with text after using a textprop with a "
-"negative id"
-msgstr "E1339: 使用负 ID 的文本属性后不能添加带文本的文本属性"
 
 #, c-format
 msgid "E1340: Argument already declared in the class: %s"
@@ -9009,6 +9077,21 @@ msgstr "E1570: 不能在重绘监听器回调中使用 redraw_listener_add"
 msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr "E1571: 必须为 redraw_listener_add 指定至少一个回调"
 
+msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
+msgstr ""
+
+#, fuzzy
+msgid "E1573: Cannot listen on port"
+msgstr "E1533: 不能对元组切片"
+
+#, fuzzy
+msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
+msgstr "E901: channel_open() 中 gethostbyname()"
+
+#. type of cmdline window or 0
+#. result of cmdline window or 0
+#. buffer of cmdline window or NULL
+#. window of cmdline window or NULL
 msgid "--No lines in buffer--"
 msgstr "--缓冲区无内容--"
 
@@ -9045,6 +9128,9 @@ msgstr "string"
 msgid "float"
 msgstr "float"
 
+#.
+#. * Some messages that can be shared are included here.
+#.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "已查找到文件开头，再从结尾继续查找"
 
@@ -9148,6 +9234,7 @@ msgstr "列表构造器不接受关键字参数"
 msgid "list index out of range"
 msgstr "列表索引超出范围"
 
+#. No more suitable format specifications in python-2.3
 #, c-format
 msgid "internal error: failed to get Vim list item %d"
 msgstr "内部错误：无法获取 Vim 列表项 %d"
@@ -9358,18 +9445,23 @@ msgstr ""
 "C++ 源码 (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim 文件 (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
+#. Translators: This is the Application Name used in the GVim desktop file
 msgid "GVim"
 msgstr "GVim"
 
+#. Translators: This is the Generic Application Name used in the Vim desktop file
 msgid "Text Editor"
 msgstr "文本编辑器"
 
+#. Translators: This is the comment used in the Vim desktop file
 msgid "Edit text files"
 msgstr "编辑文本文件"
 
+#. Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
 msgid "Text;editor;"
 msgstr "Text;editor;文本;编辑器;"
 
+#. Translators: This is the Application Name used in the Vim desktop file
 msgid "Vim"
 msgstr "Vim"
 
@@ -9618,6 +9710,13 @@ msgstr "按 CTRL-F 和 CTRL-B 滚动的行数"
 msgid "don't redraw while executing macros"
 msgstr "在执行宏时不要重新绘制"
 
+msgid "configure method of receiving terminal size changes"
+msgstr ""
+
+#, fuzzy
+msgid "enable terminal sync mode"
+msgstr "启用 lisp 模式"
+
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
 msgstr "'hlsearch' 和 :match 高亮的超时时间（以毫秒计）"
 
@@ -9677,6 +9776,10 @@ msgstr "高亮显示最后使用的搜索模式的所有匹配项"
 msgid "highlight group to use for the window"
 msgstr "窗口使用的高亮组"
 
+#, fuzzy
+msgid "highlight group mappings for the window"
+msgstr "窗口使用的高亮组"
+
 msgid "use GUI colors for the terminal"
 msgstr "为终端使用 GUI 颜色"
 
@@ -9721,6 +9824,10 @@ msgstr "0, 1 或 2；何时为最后一个窗口使用状态行"
 
 msgid "alternate format to be used for a status line"
 msgstr "用于状态行的替代格式"
+
+#, fuzzy
+msgid "optional settings for the status line"
+msgstr "用于同义词字典补全的函数"
 
 msgid "make all windows the same size when adding/removing windows"
 msgstr "当添加/删除窗口时，使所有窗口的大小相同"
@@ -10857,5 +10964,60 @@ msgstr "自定义标签页面板的内容"
 msgid "options for using tabpanel"
 msgstr "标签页面板的选项"
 
+msgid "Notice"
+msgstr ""
+
+msgid "Quickfix list not found, stopping the job"
+msgstr ""
+
+msgid "Success!"
+msgstr ""
+
+#, fuzzy
+msgid "Job terminated"
+msgstr ""
+"\n"
+"命令已结束\n"
+
+#, fuzzy
+msgid "There are errors."
+msgstr "[读错误]"
+
+#, fuzzy
+msgid "Could not create quickfix list"
+msgstr "E566: 无法创建 cscope 管道"
+
+msgid "File not readable:"
+msgstr ""
+
+#, fuzzy
+msgid "Failed to start job"
+msgstr "运行代码失败"
+
+msgid "Typesetting..."
+msgstr ""
+
+#, fuzzy
+msgid "Jobs still running:"
+msgstr "E948: 任务仍在运行"
+
+#, fuzzy
+msgid "Done."
+msgstr "完成！"
+
+msgid "Typeset"
+msgstr ""
+
+msgid "Please save the buffer first."
+msgstr ""
+
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "您发现了命令行窗口！可以使用 \":q\" 命令关闭它。"
+
+#~ msgid "menu  Help->Sponsor  for information    "
+#~ msgstr "菜单  帮助->赞助  查看如何赞助"
+
+#~ msgid ""
+#~ "E1339: Cannot add a textprop with text after using a textprop with a "
+#~ "negative id"
+#~ msgstr "E1339: 使用负 ID 的文本属性后不能添加带文本的文本属性"
