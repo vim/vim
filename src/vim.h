@@ -2683,16 +2683,16 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # else
 #  define X_DISPLAY	(gui.in_use ? gui.dpy : xterm_dpy)
 # endif
-#else
-# ifdef FEAT_GUI
-#  ifdef FEAT_GUI_GTK
-#   define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : (Display *)NULL)
-#  else
-#   define X_DISPLAY	gui.dpy
-#  endif
+#elif defined(FEAT_GUI)
+# ifdef FEAT_GUI_GTK
+#  define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : (Display *)NULL)
 # else
-#  define X_DISPLAY	xterm_dpy
+#  define X_DISPLAY	gui.dpy
 # endif
+#elif defined(FEAT_XCLIPBOARD)
+# define X_DISPLAY	xterm_dpy
+#else
+# define X_DISPLAY	(Display *)NULL
 #endif
 
 #ifdef FEAT_GUI_GTK
