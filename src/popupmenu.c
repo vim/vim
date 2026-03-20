@@ -891,6 +891,17 @@ did_set_pumopacity(optset_T *args UNUSED)
     if (p_po > 100)
 	p_po = 100;
 
+    pum_opacity_changed();
+    return NULL;
+}
+
+/*
+ * Called when the pum opacity value has changed.
+ * Invalidates cached background and triggers redraw if pum is visible.
+ */
+    void
+pum_opacity_changed(void)
+{
     // Invalidate cached background so it gets re-saved.
     pum_free_bg();
 
@@ -902,7 +913,6 @@ did_set_pumopacity(optset_T *args UNUSED)
 	call_update_screen = TRUE;
 	pum_redraw();
     }
-    return NULL;
 }
 
     static void
