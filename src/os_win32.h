@@ -227,4 +227,4 @@ Trace(char *pszFormat, ...);
 
 // Windows Version
 #define MAKE_VER(major, minor, build) \
-    ((((major) & 0xFF) << 24) | (((minor) & 0xFF) << 16) | ((build) & 0x7FFF))
+    (((major) << 24) | ((minor) << 16) | (build))

@@ -127,9 +127,9 @@ win_version_init(void)
 
     osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
     pRtlGetVersion(&osver);
-    win_version =
-	MAKE_VER(osver.dwMajorVersion, osver.dwMinorVersion,
-		 osver.dwBuildNumber);
+    win_version = MAKE_VER(min(osver.dwMajorVersion, 0xFF),
+	    min(osver.dwMinorVersion, 0xFF),
+	    min(osver.dwBuildNumber, 0xFFFF));
 }
 
 /*
