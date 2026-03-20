@@ -72,21 +72,21 @@ func Test_xxd()
   exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c20 ' . man_copy
   $d
   let expected = [
-      \ '2e544820585844203120224d6179203230323422',
-      \ '20224d616e75616c207061676520666f72207878',
-      \ '64220a2e5c220a2e5c222032317374204d617920',
-      \ '313939360a2e5c22204d616e2070616765206175',
-      \ '74686f723a0a2e5c2220202020546f6e79204e75',
-      \ '67656e74203c746f6e79407363746e7567656e2e']
+      \ '2e544820585844203120224d6172636820323032',
+      \ '362220224d616e75616c207061676520666f7220',
+      \ '787864220a2e5c220a2e5c222032317374204d61',
+      \ '7920313939360a2e5c22204d616e207061676520',
+      \ '617574686f723a0a2e5c2220202020546f6e7920',
+      \ '4e7567656e74203c746f6e79407363746e756765']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
   " Test 6: Print the date from xxd.1
   let s:test += 1
   for arg in ['-l 13', '-l13', '-len 13']
     %d
-    exe '0r! ' . s:xxd_cmd . ' -s 0x33 ' . arg . ' -cols 13 ' . man_copy
+    exe '0r! ' . s:xxd_cmd . ' -s 0x35 ' . arg . ' -cols 13 ' . man_copy
     $d
-    call assert_equal('00000033: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
+    call assert_equal('00000035: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
   endfor
 
   " Cleanup after tests 5 and 6
