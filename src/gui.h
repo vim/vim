@@ -260,6 +260,9 @@ typedef struct Gui
     int		left_sbar_x;	    // Calculated x coord for left scrollbar
     int		right_sbar_x;	    // Calculated x coord for right scrollbar
     int         force_redraw;       // Force a redraw even e.g. not resized
+#ifdef FEAT_DIRECTX
+    int		directx_enabled;    // DirectX (DirectWrite) rendering active
+#endif
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
