@@ -133,3 +133,187 @@ aboveleft
       \ vim9cmd
       \ echo "Foo"
 
+
+aboveleft         42print
+belowright        42print
+botright          42print
+browse            42print
+confirm           42print
+filter  /pattern/ 42print
+filter! /pattern/ 42print
+hide              42print
+horizontal        42print
+keepalt           42print
+keepjumps         42print
+keepmarks         42print
+keeppatterns      42print
+leftabove         42print
+legacy            42print
+lockmarks         42print
+noautocmd         42print
+noswapfile        42print
+rightbelow        42print
+sandbox           42print
+silent            42print
+silent!           42print
+tab               42print
+topleft           42print
+unsilent          42print
+verbose           42print
+vertical          42print
+vim9cmd           42print
+
+aboveleft         :42print
+belowright        :42print
+botright          :42print
+browse            :42print
+confirm           :42print
+filter  /pattern/ :42print
+filter! /pattern/ :42print
+hide              :42print
+horizontal        :42print
+keepalt           :42print
+keepjumps         :42print
+keepmarks         :42print
+keeppatterns      :42print
+leftabove         :42print
+legacy            :42print
+lockmarks         :42print
+noautocmd         :42print
+noswapfile        :42print
+rightbelow        :42print
+sandbox           :42print
+silent            :42print
+silent!           :42print
+tab               :42print
+topleft           :42print
+unsilent          :42print
+verbose           :42print
+vertical          :42print
+vim9cmd           :42print
+
+
+silent :delete _
+silent $delete _
+silent :$delete _
+
+lockmarks '[,']d _
+
+silent keeppatterns %s/\v^%(%(([=`:.'"~^_*+#-])\1+\n)?.{1,2}\n([=`:.'"~^_*+#-])\2+)|%(%(([=`:.''"~^_*+#-])\3{2,}\n)?.{3,}\n([=`:.''"~^_*+#-])\4{2,})$/\=closure.Process(submatch(0))/gn
+
+def Vim9Context()
+
+  silent copy
+  silent   copy
+  silent copy = 99
+  silent   copy = 99
+  silent g:copy = 99
+  silent   g:copy = 99
+  silent copy()
+  silent   copy()
+  silent call copy()
+  silent   call copy()
+  silent Copy()
+  silent   Copy()
+  silent call Copy()
+  silent   call Copy()
+  silent Copy 
+  silent   Copy 
+  silent Copy! 
+  silent   Copy! 
+  silent Copy = 99
+  silent   Copy = 99
+  silent g:Copy = 99
+  silent   g:Copy = 99
+
+  silent! copy
+  silent!   copy
+  silent! copy = 99
+  silent!   copy = 99
+  silent! g:copy = 99
+  silent!   g:copy = 99
+  silent! copy()
+  silent!   copy()
+  silent! call copy()
+  silent!   call copy()
+  silent! Copy()
+  silent!   Copy()
+  silent! call Copy()
+  silent!   call Copy()
+  silent! Copy 
+  silent!   Copy 
+  silent! Copy! 
+  silent!   Copy! 
+  silent! Copy = 99
+  silent!   Copy = 99
+  silent! g:Copy = 99
+  silent!   g:Copy = 99
+
+  filter pattern copy
+  filter pattern   copy
+  filter pattern copy = 99
+  filter pattern   copy = 99
+  filter pattern g:copy = 99
+  filter pattern   g:copy = 99
+  filter pattern copy()
+  filter pattern   copy()
+  filter pattern call copy()
+  filter pattern   call copy()
+  filter pattern Copy()
+  filter pattern   Copy()
+  filter pattern call Copy()
+  filter pattern   call Copy()
+  filter pattern Copy 
+  filter pattern   Copy 
+  filter pattern Copy! 
+  filter pattern   Copy! 
+  filter pattern Copy = 99
+  filter pattern   Copy = 99
+  filter pattern g:Copy = 99
+  filter pattern   g:Copy = 99
+
+  filter /pattern/ copy
+  filter /pattern/   copy
+  filter /pattern/ copy = 99
+  filter /pattern/   copy = 99
+  filter /pattern/ g:copy = 99
+  filter /pattern/   g:copy = 99
+  filter /pattern/ copy()
+  filter /pattern/   copy()
+  filter /pattern/ call copy()
+  filter /pattern/   call copy()
+  filter /pattern/ Copy()
+  filter /pattern/   Copy()
+  filter /pattern/ call Copy()
+  filter /pattern/   call Copy()
+  filter /pattern/ Copy 
+  filter /pattern/   Copy 
+  filter /pattern/ Copy! 
+  filter /pattern/   Copy! 
+  filter /pattern/ Copy = 99
+  filter /pattern/   Copy = 99
+  filter /pattern/ g:Copy = 99
+  filter /pattern/   g:Copy = 99
+
+  silent wincmd =
+  silent wincmd = # comment
+  silent wincmd = | echo "..."
+  silent wincmd = 42
+
+enddef
+
+
+" Random test failures - now fixed
+
+" exe is error highighted
+silent! exe (nr+1) . 'd _'
+function Foo()
+  silent! exe (nr+1) . 'd _'
+endfunction
+
+" execute is command not function
+silent! execute (nr+1) . 'd _'
+function Foo()
+  silent! execute (nr+1) . 'd _'
+endfunction
+
