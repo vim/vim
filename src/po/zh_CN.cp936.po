@@ -9376,7 +9376,7 @@ msgid "Edit text files"
 msgstr "编辑文本文件"
 
 msgid "Text;editor;"
-msgstr "文本;编辑器;"
+msgstr "Text;editor;文本;编辑器;"
 
 msgid "Vim"
 msgstr "Vim"

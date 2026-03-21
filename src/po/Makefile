@@ -274,7 +274,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	rm -f *.js ./vim_to_js allfiles
 
 vim.desktop: vim.desktop.in $(POFILES)
-	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/[.]/d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; \
@@ -284,7 +284,7 @@ vim.desktop: vim.desktop.in $(POFILES)
 # The dependency on vim.desktop is only to avoid the two targets are build at
 # the same time, which causes a race for the LINGUAS file.
 gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
-	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/[.]/d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; \
