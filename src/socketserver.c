@@ -346,22 +346,19 @@ socketserver_parse_messages(void)
     static int
 socketserver_wait(channel_T *channel, int timeout)
 {
-    // TODO: support poll() and mswin
     while (true)
     {
-#ifdef HAVE_SELECT
+	int		ret;
 	channel_T	*ch;
+#ifdef HAVE_SELECT
 	fd_set		rfds;
-	fd_set		wfds;
 	struct timeval  tv;
 	int		maxfd;
-	int		ret;
 
 	tv.tv_sec = timeout / 1000;
 	tv.tv_usec = (timeout % 1000) * 1000;
 
 	FD_ZERO(&rfds);
-	FD_ZERO(&wfds);
 
 	maxfd = channel->CH_SOCK_FD;
 	FD_SET(channel->CH_SOCK_FD, &rfds);
@@ -379,13 +376,10 @@ socketserver_wait(channel_T *channel, int timeout)
 		FD_SET(ch->CH_SOCK_FD, &rfds);
 		if (maxfd < (int)ch->CH_SOCK_FD)
 		    maxfd = (int)ch->CH_SOCK_FD;
-
-		if (channel_check_write_queue(channel, PART_SOCK))
-		    FD_SET(ch->CH_SOCK_FD, &wfds);
 	    }
 	}
 
-	ret = select(maxfd + 1, &rfds, &wfds, NULL, &tv);
+	ret = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
@@ -394,14 +388,13 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	if (ret > 0)
 	{
+	    if (server_channel != NULL
+		    && FD_ISSET(server_channel->CH_SOCK_FD, &rfds))
+		channel_check(server_channel, PART_SOCK);
+
 	    FOR_ALL_CLIENTS(ch)
-	    {
 		if (FD_ISSET(ch->CH_SOCK_FD, &rfds))
 		    channel_check(ch, PART_SOCK);
-
-		if (FD_ISSET(ch->CH_SOCK_FD, &wfds))
-		    channel_write_input(channel);
-	    }
 
 	    socketserver_parse_messages();
 
@@ -412,8 +405,54 @@ socketserver_wait(channel_T *channel, int timeout)
 	    }
 	    continue;
 	}
-	break;
+#else
+	struct pollfd   fds[MAX_OPEN_CHANNELS + 1];
+	int		nfd = 0;
+
+	fds[nfd].fd = channel->CH_SOCK_FD;
+	fds[nfd++].fd = POLLIN;
+	if (server_channel != NULL)
+	{
+	    fds[nfd].fd = server_channel->CH_SOCK_FD;
+	    fds[nfd++].fd = POLLIN;
+	}
+
+	FOR_ALL_CLIENTS(ch)
+	    if (ch->CH_SOCK_FD != INVALID_FD)
+	    {
+		fds[nfd].fd = channel->CH_SOCK_FD;
+		fds[nfd].fd = POLLIN;
+		ch->ch_part[PART_SOCK].ch_poll_idx = nfd;
+		nfd++;
+	    }
+
+	ret = poll(fds, nfd, timeout);
+
+# ifdef EINTR
+	if (ret == -1 && errno == EINTR)
+	    continue;
+# endif
+
+	if (ret > 0)
+	{
+	    if (server_channel != NULL && fds[1].revents & POLLIN)
+		channel_check(server_channel, PART_SOCK);
+
+	    FOR_ALL_CLIENTS(ch)
+		if (fds[ch->ch_part[PART_SOCK].ch_poll_idx].revents & POLLIN)
+		    channel_check(ch, PART_SOCK);
+
+	    socketserver_parse_messages();
+
+	    if (fds[0].revents & POLLIN)
+	    {
+		channel_check(channel, PART_SOCK);
+		return OK;
+	    }
+	    continue;
+	}
 #endif
+	break;
     }
     return FAIL;
 }

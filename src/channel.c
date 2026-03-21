@@ -4368,17 +4368,6 @@ channel_check(channel_T *channel, ch_part_T part)
     channel_read(channel, part, "channel_check");
 }
 
-/*
- * Return true if channel is waiting for part to be open for writing again.
- */
-    bool
-channel_check_write_queue(channel_T *channel, ch_part_T part)
-{
-    if (channel->ch_part[part].ch_fd != INVALID_FD)
-	return is_channel_write_remaining(&channel->ch_part[part]);
-    return false;
-}
-
 #endif
 
 /*
