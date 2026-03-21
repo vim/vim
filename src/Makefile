@@ -1554,6 +1554,7 @@ BASIC_SRC = \
 	session.c \
 	sha256.c \
 	sign.c \
+	socketserver.c \
 	sound.c \
 	spell.c \
 	spellfile.c \
@@ -1734,6 +1735,7 @@ OBJ_COMMON = \
 	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
+	objects/socketserver.o \
 	objects/sound.o \
 	objects/spell.o \
 	objects/spellfile.o \
@@ -3565,6 +3567,9 @@ objects/sha256.o: sha256.c
 
 objects/sign.o: sign.c
 	$(CCC) -o $@ sign.c
+
+objects/socketserver.o: socketserver.c
+	$(CCC) -o $@ socketserver.c
 
 objects/sound.o: sound.c
 	$(CCC) -o $@ sound.c
