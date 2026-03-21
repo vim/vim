@@ -2139,3 +2139,8 @@ EXTERN bool inside_redraw_on_start_cb INIT(= false);
 
 // If greater than zero, then silence the W23/W24 warning.
 EXTERN int silence_w23_w24_msg INIT( = 0);
+
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char_u address_buf[512];
+# define ADDRESS_BUFSIZE 512
+#endif

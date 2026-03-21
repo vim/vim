@@ -4772,6 +4772,7 @@ proto/search.pro: search.c
 proto/session.pro: session.c
 proto/sha256.pro: sha256.c
 proto/sign.pro: sign.c
+proto/socketserver.pro: socketserver.c
 proto/sound.pro: sound.c
 proto/spell.pro: spell.c
 proto/spellfile.pro: spellfile.c

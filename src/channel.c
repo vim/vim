@@ -1373,10 +1373,11 @@ channel_open_func(typval_T *argvars)
 	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return NULL;
 
-    if (channel_parse_address(tv_get_string(&argvars[0]), (char *)IObuff,
-		IOSIZE, &port, &is_unix, false, false) == FAIL)
+    if (channel_parse_address(tv_get_string(&argvars[0]),
+		(char *) address_buf, ADDRESS_BUFSIZE, &port,
+		&is_unix, false, false) == FAIL)
 	return NULL;
-    address = IObuff;
+    address = address_buf;
 
     // parse options
     clear_job_options(&opt);
@@ -1428,10 +1429,11 @@ channel_listen_func(typval_T *argvars)
 	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return NULL;
 
-    if (channel_parse_address(tv_get_string(&argvars[0]), (char *)IObuff,
-		IOSIZE, &port, &is_unix, true, false) == FAIL)
+    if (channel_parse_address(tv_get_string(&argvars[0]),
+		(char *)address_buf, ADDRESS_BUFSIZE, &port, &is_unix,
+		true, false) == FAIL)
 	return NULL;
-    address = IObuff;
+    address = address_buf;
 
     // parse options
     clear_job_options(&opt);
@@ -1447,7 +1449,7 @@ channel_listen_func(typval_T *argvars)
     }
 
     if (is_unix)
-	channel = channel_listen_unix((char *)address, NULL);
+	channel = channel_listen_unix((char *)address, NULL, true);
     else
 	channel = channel_listen((char *)address, port, NULL);
     if (channel != NULL)
@@ -1616,7 +1618,8 @@ channel_listen(
     channel_T *
 channel_listen_unix(
 	char *path,
-	void (*nb_close_cb)(void))
+	void (*nb_close_cb)(void),
+	bool replace)
 {
     int			sd = -1;
     struct sockaddr_un	server;
@@ -1658,8 +1661,16 @@ channel_listen_unix(
 	return NULL;
     }
 
-    // Unlink the socket in case it already exists
-    unlink(server.sun_path);
+    if (replace)
+	// Unlink the socket in case it already exists
+	unlink(server.sun_path);
+    else if (mch_access(server.sun_path, F_OK) == 0)
+    {
+	semsg(_(e_invalid_argument_str), path);
+	close(sd);
+	channel_free(channel);
+	return NULL;
+    }
 
     // Bind the socket to the path
     server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;

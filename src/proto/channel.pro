@@ -12,7 +12,7 @@ channel_T *channel_open(const char *hostname, int port, int waittime, void (*nb_
 int channel_parse_address(char_u *address, char *buf, int bufsize, int *port, bool *is_unix, bool listen, bool quiet);
 channel_T *channel_listen_func(typval_T *argvars);
 channel_T *channel_listen(char *hostname, int port_in, void (*nb_close_cb)(void));
-channel_T *channel_listen_unix(char *path, void (*nb_close_cb)(void));
+channel_T *channel_listen_unix(char *path, void (*nb_close_cb)(void), bool replace);
 void ch_close_part(channel_T *channel, ch_part_T part);
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);
 void channel_set_job(channel_T *channel, job_T *job, jobopt_T *options);

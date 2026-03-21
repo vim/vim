@@ -285,7 +285,7 @@ prepare_server(mparm_T *parmp)
 	{
 	    /* if (socket_server_init(parmp->servername) == OK) */
 		/* TIME_MSG("initialize socket server"); */
-	    socketserver_start(parmp->serverName_arg, true);
+	    socketserver_start(parmp->serverName_arg, false);
 	}
 #  endif
 #  ifdef FEAT_X11
@@ -510,9 +510,10 @@ cmdsrv_main(
 			break;
 # else
 #  ifdef FEAT_SOCKETSERVER
-		    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET */
-			    /* && socket_server_read_reply(receiver, &p, -1) == FAIL) */
-			    /* break; */
+		    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
+			    && socketserver_read_reply(*serverStr, &p, -1)
+			    == FAIL)
+			    break;
 #  endif
 #  ifdef FEAT_X11
 		    if (clientserver_method == CLIENTSERVER_METHOD_X11
@@ -1094,9 +1095,9 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 	    emsg(_(e_unable_to_read_server_reply));
 #  else
 #   ifdef FEAT_SOCKETSERVER
-	/* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET && */
-		/* socket_server_read_reply(serverid, &r, timeout * 1000) == FAIL) */
-	    /* emsg(_(e_unable_to_read_server_reply)); */
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+		socketserver_read_reply(serverid, &r, timeout * 1000) == FAIL)
+	    emsg(_(e_unable_to_read_server_reply));
 #   endif
 #   ifdef FEAT_X11
 	if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
@@ -1191,9 +1192,9 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
 #  ifdef FEAT_SOCKETSERVER
-    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET && */
-	    /* socket_server_send_reply(server, reply) == FAIL) */
-	/* goto fail; */
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+	    socketserver_send_reply(server, reply) == FAIL)
+	return;
 #  endif
 
 #  ifdef FEAT_X11
