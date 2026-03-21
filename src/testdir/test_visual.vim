@@ -1618,6 +1618,37 @@ func Test_visual_hl_with_showbreak()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test for https://github.com/vim/vim/issues/19590
+func Test_visual_block_hl_with_autoselect()
+  CheckScreendump
+
+  " "autoselect" is included in the default 'clipboard' if available.
+  " Redraw at the end is necessary due to https://github.com/vim/vim/issues/16620
+  let lines =<< trim END
+    set shortmess+=F
+    edit samples/visual_block_hl.txt
+    setlocal filetype=c syntax=c
+    exe "normal! 3gg0l\<C-V>4j"
+    redraw
+  END
+  call writefile(lines, 'XTest_visual_block_autoselect', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_visual_block_autoselect', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_1', {})
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_2', {})
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_3', {})
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_4', {})
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_5', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_visual_highlight_when_using_a_clipboard_provider()
   " The test assumes different screen attributes will be used for Visual and for VisualNOS.
   CheckFeature clipboard_provider
