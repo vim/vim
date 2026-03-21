@@ -15,11 +15,6 @@
 
 #if defined(FEAT_CLIENTSERVER)
 
-# ifdef FEAT_SOCKETSERVER
-#  include <sys/socket.h>
-#  include "sys/un.h"
-# endif
-
 static void cmdsrv_main(int *argc, char **argv, char_u *serverName_arg, char_u **serverStr);
 static char_u *serverMakeName(char_u *arg, char *cmd);
 
@@ -217,8 +212,9 @@ exec_on_server(mparm_T *parmp)
     {
 	parmp->servername = serverMakeName(parmp->serverName_arg,
 		parmp->argv[0]);
-	if (socket_server_init(parmp->servername) == OK)
-	    TIME_MSG("initialize socket server");
+	/* if (socket_server_init(parmp->servername) == OK) */
+	    /* TIME_MSG("initialize socket server"); */
+	/* socketserver_start(parmp->servername, true); */
 	made_name = TRUE;
     }
 # endif
@@ -287,8 +283,9 @@ prepare_server(mparm_T *parmp)
 #  ifdef FEAT_SOCKETSERVER
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	{
-	    if (socket_server_init(parmp->servername) == OK)
-		TIME_MSG("initialize socket server");
+	    /* if (socket_server_init(parmp->servername) == OK) */
+		/* TIME_MSG("initialize socket server"); */
+	    socketserver_start(parmp->serverName_arg, true);
 	}
 #  endif
 #  ifdef FEAT_X11
@@ -343,9 +340,6 @@ cmdsrv_main(
 # define ARGTYPE_SEND		3
     int		silent = FALSE;
     int		tabs = FALSE;
-# ifdef FEAT_SOCKETSERVER
-    char_u	*receiver;
-# endif
 # ifdef MSWIN
     HWND	srv;
 # elif defined(FEAT_X11)
@@ -434,9 +428,7 @@ cmdsrv_main(
 
 # ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-		ret = socket_server_send(
-			sname, *serverStr, NULL, &receiver,
-			0, -1, silent);
+		ret = socketserver_send(sname, *serverStr, NULL, 0, -1, silent);
 # endif
 # ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
@@ -518,9 +510,9 @@ cmdsrv_main(
 			break;
 # else
 #  ifdef FEAT_SOCKETSERVER
-		    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
-			    && socket_server_read_reply(receiver, &p, -1) == FAIL)
-			    break;
+		    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET */
+			    /* && socket_server_read_reply(receiver, &p, -1) == FAIL) */
+			    /* break; */
 #  endif
 #  ifdef FEAT_X11
 		    if (clientserver_method == CLIENTSERVER_METHOD_X11
@@ -560,14 +552,9 @@ cmdsrv_main(
 # else
 #  ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	    {
-		if (!socket_server_valid())
-		    mch_errmsg(_("Socket server not online:"
-				"Send expression failed"));
-		else if (socket_server_send(sname, (char_u *)argv[i + 1],
-			    &res, NULL, 1, 0, FALSE) < 0)
+		if (socketserver_send(sname, (char_u *)argv[i + 1],
+			    &res, 1, 0, false) < 0)
 		    goto expr_fail;
-	    }
 #  endif
 #  ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
@@ -603,17 +590,7 @@ expr_fail:
 # else
 #  ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	    {
-		int was_init = socket_server_valid();
-
-		// Don't want to add ourselves to the list. So shutdown the
-		// server before listing then startup back again.
-		socket_server_uninit();
-		res = socket_server_list_sockets();
-
-		if (was_init)
-		    socket_server_init(NULL);
-	    }
+		res = vim_strsave((char_u *)"");
 #  endif
 #  ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
@@ -648,9 +625,6 @@ expr_fail:
 
     if (didone)
     {
-# ifdef FEAT_SOCKETSERVER
-	socket_server_uninit();
-# endif
 	display_errors();	// display any collected messages
 	exit(exiterr);	// Mission accomplished - get out
     }
@@ -814,11 +788,11 @@ serverMakeName(char_u *arg, char *cmd)
 	// name if it is a path, else uppercase it if its just a generic name.
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	{
-	    if (arg[0] == '/' || STRNCMP(arg, "./", 2) == 0 ||
-		    STRNCMP(arg, "../", 3) == 0)
+	    /* if (arg[0] == '/' || STRNCMP(arg, "./", 2) == 0 || */
+		    /* STRNCMP(arg, "../", 3) == 0) */
 		p = vim_strsave(arg);
-	    else
-		p = vim_strsave_up(arg);
+	    /* else */
+		/* p = vim_strsave_up(arg); */
 	}
 	else
 	    p = vim_strsave_up(arg);
@@ -881,9 +855,6 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 #  ifdef FEAT_X11
     Window	w;
 #  endif
-#  ifdef FEAT_SOCKETSERVER
-    char_u	*client = NULL;
-#  endif
 # endif
 
     if (check_restricted() || check_secure())
@@ -906,7 +877,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # else
 #  ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	if (socket_server_send(server_name, keys, &r, &client, expr,
+	if (socketserver_send(server_name, keys, &r, expr,
 		    timeout * 1000, TRUE) < 0)
 	    goto fail;
 #  endif
@@ -928,9 +899,6 @@ fail:
 	{
 	    emsg((char *)r);	// sending worked but evaluation failed
 	    vim_free(r);
-# ifdef FEAT_SOCKETSERVER
-	    vim_free(client);
-# endif
 	}
 	else
 	    semsg(_(e_unable_to_send_to_str), server_name);
@@ -943,8 +911,7 @@ fail:
     {
 	dictitem_T	v;
 # if defined(FEAT_SOCKETSERVER)
-	struct sockaddr_un addr;
-	char_u		str[sizeof(addr.sun_path)];
+	char_u		str[100];
 # else
 	char_u		str[30];
 # endif
@@ -963,8 +930,7 @@ fail:
 #  endif
 #  ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-		vim_snprintf((char *)str, sizeof(addr.sun_path),
-			"%s", client);
+		vim_snprintf((char *)str, 100, "%s", server_name);
 #  endif
 # endif
 	    v.di_tv.v_type = VAR_STRING;
@@ -973,9 +939,6 @@ fail:
 	    vim_free(v.di_tv.vval.v_string);
 	}
     }
-# ifdef FEAT_SOCKETSERVER
-    vim_free(client);
-# endif
 }
 #endif
 
@@ -1067,8 +1030,8 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
     }
 #  else
 #   ifdef FEAT_SOCKETSERVER
-    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	rettv->vval.v_number = socket_server_peek_reply(serverid, &s);
+    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET) */
+	/* rettv->vval.v_number = socket_server_peek_reply(serverid, &s); */
 #   endif
 #   ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)
@@ -1131,9 +1094,9 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 	    emsg(_(e_unable_to_read_server_reply));
 #  else
 #   ifdef FEAT_SOCKETSERVER
-	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
-		socket_server_read_reply(serverid, &r, timeout * 1000) == FAIL)
-	    emsg(_(e_unable_to_read_server_reply));
+	/* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET && */
+		/* socket_server_read_reply(serverid, &r, timeout * 1000) == FAIL) */
+	    /* emsg(_(e_unable_to_read_server_reply)); */
 #   endif
 #   ifdef FEAT_X11
 	if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
@@ -1191,7 +1154,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #  else
 #   ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	socket_server_init(server);
+	socketserver_start(server, false);
 #   endif
 #   ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
@@ -1228,9 +1191,9 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
 #  ifdef FEAT_SOCKETSERVER
-    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
-	    socket_server_send_reply(server, reply) == FAIL)
-	goto fail;
+    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET && */
+	    /* socket_server_send_reply(server, reply) == FAIL) */
+	/* goto fail; */
 #  endif
 
 #  ifdef FEAT_X11
@@ -1240,17 +1203,10 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
 	    serverSendReply(server, reply) < 0)
-#  endif
-#  ifdef MSWIN
+#  elif defined(MSWIN)
     if (serverSendReply(server, reply) < 0)
 #  endif
-#  if defined(FEAT_SOCKETSERVER) && !defined(FEAT_X11) && !defined(MSWIN)
-    if (FALSE)
-#  endif
     {
-#  ifdef FEAT_SOCKETSERVER
-fail:
-#  endif
 	emsg(_(e_unable_to_send_to_client));
 	return;
     }
@@ -1269,10 +1225,10 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 #  ifdef MSWIN
     r = serverGetVimNames();
 #  else
-#   ifdef FEAT_SOCKETSERVER
-    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	r = socket_server_list_sockets();
-#   endif
+/* #   ifdef FEAT_SOCKETSERVER */
+    /* if (clientserver_method == CLIENTSERVER_METHOD_SOCKET) */
+	/* r = socket_server_list_sockets(); */
+/* #   endif */
 #   ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)
     {

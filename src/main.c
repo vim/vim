@@ -1847,6 +1847,9 @@ getout(int exitval)
 #ifdef FEAT_NETBEANS_INTG
     netbeans_end();
 #endif
+#ifdef FEAT_SOCKETSERVER
+    socketserver_stop();
+#endif
 #ifdef FEAT_CSCOPE
     cs_end();
 #endif
