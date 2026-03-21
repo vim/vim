@@ -11,7 +11,7 @@ let current_compiler = "just"
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=just\ $*
+CompilerSet makeprg=just
 
 CompilerSet errorformat=
       \%Eerror:\ %m,

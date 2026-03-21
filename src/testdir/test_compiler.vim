@@ -739,7 +739,7 @@ func Test_compiler_just()
 
   compiler just
   call assert_equal('just', b:current_compiler)
-  call assert_match('^just\s', &makeprg)
+  call assert_equal('just', &makeprg)
   let verbose_efm = execute('verbose set efm')
   call assert_match('Last set from .*[/\\]compiler[/\\]just.vim ', verbose_efm)
 
