@@ -1011,7 +1011,7 @@ static struct vimoption options[] =
 			    did_set_filetype_or_syntax, NULL,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
-    {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
+    {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP|P_COLON,
 			    (char_u *)&p_fcs, PV_FCS, did_set_chars_option, expand_set_chars_option,
 			    {(char_u *)"vert:|,fold:-,eob:~,lastline:@",
 								  (char_u *)0L}
@@ -1672,7 +1672,7 @@ static struct vimoption options[] =
     {"list",	    NULL,   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_LIST, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"listchars",   "lcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
+    {"listchars",   "lcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP|P_COLON,
 			    (char_u *)&p_lcs, PV_LCS, did_set_chars_option, expand_set_chars_option,
 			    {(char_u *)"eol:$", (char_u *)0L} SCTX_INIT},
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
