@@ -739,15 +739,6 @@ aucmd_abort:
     if (buf->b_ffname == NULL)
 	del_buf = TRUE;
 
-    // When closing the current buffer stop Visual mode before freeing
-    // anything.
-    if (buf == curbuf && VIsual_active
-#if defined(EXITFREE)
-	    && !entered_free_all_mem
-#endif
-	    )
-	end_visual_mode();
-
     // Free all things allocated for this buffer.
     // Also calls the "BufDelete" autocommands when del_buf is TRUE.
     //
@@ -944,6 +935,16 @@ buf_freeall(buf_T *buf, int flags)
     // Therefore only return if curbuf changed to the deleted buffer.
     if (buf == curbuf && !is_curbuf)
 	return;
+
+    // If curbuf, stop Visual mode just before freeing, but after autocmds that
+    // may restart it.  May trigger TextYankPost, but with textlock set.
+    if (buf == curbuf && VIsual_active
+#if defined(EXITFREE)
+	    && !entered_free_all_mem
+#endif
+	    )
+	end_visual_mode();
+
 #ifdef FEAT_DIFF
     diff_buf_delete(buf);	    // Can't use 'diff' for unloaded buffer.
 #endif
@@ -1976,7 +1977,9 @@ set_curbuf(buf_T *buf, int action)
     static void
 enter_buffer(buf_T *buf)
 {
-    // when closing the current buffer stop Visual mode
+    // Stop Visual mode before changing curbuf.  May trigger TextYankPost, but
+    // with textlock set.  Assumes curbuf and curwin->w_buffer is valid; if not,
+    // buf_freeall() should've done this already!
     if (VIsual_active
 #if defined(EXITFREE)
 	    && !entered_free_all_mem
