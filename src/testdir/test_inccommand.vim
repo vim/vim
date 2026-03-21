@@ -244,4 +244,36 @@ func Test_inccommand_substitute_special_replacement()
   call test_override("ALL", 0)
 endfunc
 
+func Test_inccommand_only_previews_visible_lines()
+  CheckOption inccommand
+  CheckOption incsearch
+  CheckScreendump
+
+  " Create a buffer with 100 lines, only some of which will be visible.
+  let lines = ['set incsearch inccommand scrolloff=0']
+  for i in range(1, 100)
+    call add(lines, 'call setline(' . i . ', "foo ' . i . '")')
+  endfor
+  call add(lines, '1')
+  call writefile(lines, 'Xicm_visible_script', 'D')
+  let buf = RunVimInTerminal('-S Xicm_visible_script', {'rows': 10, 'cols': 50})
+  sleep 100m
+
+  " Start :%s - preview should only affect visible lines.
+  call term_sendkeys(buf, ':%s/foo/bar')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_inccommand_visible_01', {})
+
+  " Press Enter to execute - ALL lines should be substituted.
+  call term_sendkeys(buf, "\<CR>")
+  sleep 100m
+
+  " Scroll to bottom and verify off-screen lines were substituted.
+  call term_sendkeys(buf, 'G')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_inccommand_visible_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

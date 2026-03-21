@@ -539,6 +539,28 @@ inccommand_substitute_preview(
     first_line = search_first_line == 0 ? 1 : search_first_line;
     last_line = MIN(search_last_line, curbuf->b_ml.ml_line_count);
 
+    // Only preview on visible lines in windows showing this buffer.
+    {
+	win_T	    *wp;
+	linenr_T    vis_first = last_line + 1;
+	linenr_T    vis_last = 0;
+
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer != curbuf)
+		continue;
+	    validate_botline_win(wp);
+	    if (wp->w_topline < vis_first)
+		vis_first = wp->w_topline;
+	    if (wp->w_botline > vis_last)
+		vis_last = wp->w_botline;
+	}
+	if (vis_first > first_line)
+	    first_line = vis_first;
+	if (vis_last < last_line)
+	    last_line = vis_last;
+    }
+
     // Save original lines so we can restore them.
     ga_init2(&state->saved_lines, sizeof(icm_saved_line_T),
 					    (int)(last_line - first_line + 1));
