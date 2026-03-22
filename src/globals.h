@@ -125,8 +125,12 @@ EXTERN int	screen_zindex INIT(= 0);
 EXTERN win_T	*screen_opacity_popup INIT(= NULL);
 #endif
 
+// Pum opacity level (0 = fully transparent, 100 = fully opaque).
+// Set via 'pumopt' opacity: key.
+EXTERN long	p_po INIT(= 100);
+
 // Blend value for popup menu opacity (0 = off, 1-99 = blend level).
-// Set during pum drawing when 'pumopacity' is active.
+// Set during pum drawing when pum opacity is active.
 EXTERN int	screen_pum_blend INIT(= 0);
 
 // Saved background screen content for pum opacity blending.
