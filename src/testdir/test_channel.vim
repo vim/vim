@@ -2919,4 +2919,25 @@ func Test_error_callback_terminal()
   unlet! g:out g:error
 endfunc
 
+" Verify that term_start() with out_cb/err_cb delivers one line per callback
+" call (no embedded newlines, no trailing CR), matching the user's expectation.
+func Test_term_start_cb_per_line()
+  CheckUnix
+  CheckFeature terminal
+  let g:Ch_msgs = []
+  let script_file = 'Xterm_cb_per_line.sh'
+  call writefile(["#!/bin/sh",
+        \         "printf 'err:1\\nerr:2\\n' >&2",
+        \         "printf 'out:3\\n'"], script_file, 'D')
+  call setfperm(script_file, 'rwxr-xr-x')
+  let ptybuf = term_start('./' .. script_file, {
+        \ 'out_cb': {ch, msg -> add(g:Ch_msgs, msg)},
+        \ 'err_cb': {ch, msg -> add(g:Ch_msgs, msg)}})
+  call WaitForAssert({-> assert_equal(3, len(g:Ch_msgs))}, 5000)
+  " Each line must arrive as a separate callback call with no embedded CR/NL.
+  call assert_equal(['err:1', 'err:2', 'out:3'], g:Ch_msgs)
+  call job_stop(term_getjob(ptybuf))
+  unlet g:Ch_msgs
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

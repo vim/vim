@@ -3529,7 +3529,43 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    {
 #ifdef FEAT_TERMINAL
 		if (buffer->b_term != NULL)
-		    write_to_term(buffer, msg, channel);
+		{
+		    // PART_ERR data arrives from a pipe without PTY ONLCR
+		    // conversion, so lone NL must be converted to CR+NL to
+		    // prevent unexpected indentation in the terminal display.
+		    if (part == PART_ERR)
+		    {
+			char_u *cp;
+			int    extra = 0;
+
+			for (cp = msg; *cp != NUL; ++cp)
+			    if (*cp == NL && (cp == msg || cp[-1] != CAR))
+				++extra;
+			if (extra > 0)
+			{
+			    char_u *crlf_msg = alloc(STRLEN(msg) + extra + 1);
+
+			    if (crlf_msg != NULL)
+			    {
+				char_u *q = crlf_msg;
+
+				for (cp = msg; *cp != NUL; ++cp)
+				{
+				    if (*cp == NL && (cp == msg || cp[-1] != CAR))
+					*q++ = CAR;
+				    *q++ = *cp;
+				}
+				*q = NUL;
+				write_to_term(buffer, crlf_msg, channel);
+				vim_free(crlf_msg);
+			    }
+			}
+			else
+			    write_to_term(buffer, msg, channel);
+		    }
+		    else
+			write_to_term(buffer, msg, channel);
+		}
 		else
 #endif
 		    append_to_buffer(buffer, msg, channel, part);
@@ -3545,7 +3581,46 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		// invoke the channel callback
 		ch_log(channel, "Invoking channel callback %s",
 						    (char *)callback->cb_name);
-		invoke_callback(channel, callback, argv);
+#ifdef FEAT_TERMINAL
+		// For a terminal job in RAW mode (term_start()), split msg on
+		// NL and invoke the callback once per line with trailing CR
+		// stripped.  This ensures out_cb/err_cb receive one line at a
+		// time regardless of how much data arrives in a single read.
+		if (ch_mode == CH_MODE_RAW && msg != NULL
+			&& channel->ch_job != NULL
+			&& channel->ch_job->jv_tty_out != NULL)
+		{
+		    char_u *cp = msg;
+		    char_u *nl;
+
+		    while ((nl = vim_strchr(cp, NL)) != NULL)
+		    {
+			long_u len = (long_u)(nl - cp);
+
+			if (len > 0 && cp[len - 1] == CAR)
+			    --len;
+			argv[1].vval.v_string = vim_strnsave(cp, len);
+			if (argv[1].vval.v_string != NULL)
+			    invoke_callback(channel, callback, argv);
+			vim_free(argv[1].vval.v_string);
+			cp = nl + 1;
+		    }
+		    if (*cp != NUL)
+		    {
+			long_u len = STRLEN(cp);
+
+			if (len > 0 && cp[len - 1] == CAR)
+			    --len;
+			argv[1].vval.v_string = vim_strnsave(cp, len);
+			if (argv[1].vval.v_string != NULL)
+			    invoke_callback(channel, callback, argv);
+			vim_free(argv[1].vval.v_string);
+		    }
+		    argv[1].vval.v_string = msg;
+		}
+		else
+#endif
+		    invoke_callback(channel, callback, argv);
 	    }
 	}
     }
@@ -5448,6 +5523,21 @@ channel_parse_messages(void)
 	    }
 	}
 
+#ifdef FEAT_TERMINAL
+	// For a terminal job with a separate stderr pipe, defer processing
+	// PART_OUT until PART_ERR is drained.  Both are filled by
+	// channel_select_check() in the same select() pass, so when both
+	// have readahead the child's write order (stderr before stdout) is
+	// preserved by handling PART_ERR first.
+	if (part == PART_OUT
+		&& channel->ch_job != NULL
+		&& channel->ch_job->jv_tty_out != NULL
+		&& channel_has_readahead(channel, PART_ERR))
+	{
+	    part = PART_ERR;
+	    continue;
+	}
+#endif
 	if (channel->ch_part[part].ch_fd != INVALID_FD
 				      || channel_has_readahead(channel, part))
 	{
