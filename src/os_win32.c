@@ -6070,6 +6070,8 @@ mch_get_cmd_output_direct(
 	verbose_leave();
     }
 
+    ch_log(NULL, "directly executing: %s", (char *)cmd_ga.ga_data);
+
     // Create the child process directly, without going through the shell.
     if (!vim_create_process((char *)cmd_ga.ga_data, TRUE,
 		CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP,
