@@ -2570,8 +2570,12 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     if (set_topbot)
     {
 	used = 0;
-	curwin->w_botline = cln + 1;
-	loff.lnum = cln + 1;
+	linenr_T cln_last = cln;
+#ifdef FEAT_FOLDING
+	(void)hasFolding(cln, NULL, &cln_last);
+#endif
+	curwin->w_botline = cln_last + 1;
+	loff.lnum = cln_last + 1;
 #ifdef FEAT_DIFF
 	loff.fill = 0;
 #endif
