@@ -6061,6 +6061,15 @@ mch_get_cmd_output_direct(
     si.hStdInput = (hChildStdinRd != INVALID_HANDLE_VALUE)
 		    ? hChildStdinRd : INVALID_HANDLE_VALUE;
 
+    if (p_verbose > 3)
+    {
+	verbose_enter();
+	smsg(_("Executing directly: \"%s\""), (char *)cmd_ga.ga_data);
+	msg_putchar_attr('\n', 0);
+	cursor_on();
+	verbose_leave();
+    }
+
     // Create the child process directly, without going through the shell.
     if (!vim_create_process((char *)cmd_ga.ga_data, TRUE,
 		CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP,
