@@ -891,6 +891,7 @@ $quote	eval.txt	/*$quote*
 'pumborder'	options.txt	/*'pumborder'*
 'pumheight'	options.txt	/*'pumheight'*
 'pummaxwidth'	options.txt	/*'pummaxwidth'*
+'pumopt'	options.txt	/*'pumopt'*
 'pumwidth'	options.txt	/*'pumwidth'*
 'pvh'	options.txt	/*'pvh'*
 'pvp'	options.txt	/*'pvp'*
