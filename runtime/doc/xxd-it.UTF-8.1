@@ -1,9 +1,9 @@
-.TH XXD 1 "Marzo 2026" "Pagina di manuale per xxd"
+.TH XXD 1 "Mar 2026" "Pagina di manuale per xxd"
 .\"
-.\" 21 Maggio 1996
-.\" Autore della pagina di manuale:
+.\" 21st May 1996
+.\" Man page author:
 .\"    Tony Nugent <tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
-.\"    Modificato da Bram Moolenaar <Bram@vim.org>
+.\"    Changes by Bram Moolenaar <Bram@vim.org>
 .SH NOME
 .I xxd
 \- Produce lista esadecimale da un file binario o viceversa.
@@ -250,25 +250,25 @@ Stampa 3 righe (0x30 byte in esadecimale) alla fine di
 \fI% xxd \-s \-0x30 file\fR
 .PP
 Nota: I risultati degli esempi seguenti sono riferiti alla versione di
-Maggio 2024 della pagina di manuale [quella che state leggendo].
+Marzo 2026 della pagina di manuale [quella che state leggendo].
 .PP
 .br
 Stampa 120 byte come immagine esadecimale continua con 20 byte per riga.
 .br
 \fI% xxd \-l 120 \-ps \-c 20 xxd-it.UTF-8.1\fR
 .br
-2e544820585844203120224d616767696f203230
+2e544820585844203120224d6172203230323622
 .br
-3234222022506167696e61206469206d616e7561
+2022506167696e61206469206d616e75616c6520
 .br
-6c652070657220787864220a2e5c220a2e5c2220
+70657220787864220a2e5c220a2e5c2220323173
 .br
-3231204d616767696f20313939360a2e5c222041
+74204d617920313939360a2e5c22204d616e2070
 .br
-75746f72652064656c6c6120706167696e612064
+61676520617574686f723a0a2e5c222020202054
 .br
-69206d616e75616c653a0a2e5c2220202020546f
-.PP
+6f6e79204e7567656e74203c746f6e7940736374
+.br
 
 .br
 Stampa i primi 120 byte di questa pagina di manuale a 12 byte per riga.
@@ -277,30 +277,30 @@ Stampa i primi 120 byte di questa pagina di manuale a 12 byte per riga.
 .br
 00000000: 2e54 4820 5858 4420 3120 224d  .TH XXD 1 "M
 .br
-0000000c: 6167 6769 6f20 3230 3234 2220  aggio 2024" 
+0000000c: 6172 2032 3032 3622 2022 5061  ar 2026" "Pa
 .br
-00000018: 2250 6167 696e 6120 6469 206d  "Pagina di m
+00000018: 6769 6e61 2064 6920 6d61 6e75  gina di manu
 .br
-00000024: 616e 7561 6c65 2070 6572 2078  anuale per x
+00000024: 616c 6520 7065 7220 7878 6422  ale per xxd"
 .br
-00000030: 7864 220a 2e5c 220a 2e5c 2220  xd"..\"..\" 
+00000030: 0a2e 5c22 0a2e 5c22 2032 3173  ..\"..\" 21s
 .br
-0000003c: 3231 204d 6167 6769 6f20 3139  21 Maggio 19
+0000003c: 7420 4d61 7920 3139 3936 0a2e  t May 1996..
 .br
-00000048: 3936 0a2e 5c22 2041 7574 6f72  96..\" Autor
+00000048: 5c22 204d 616e 2070 6167 6520  \" Man page 
 .br
-00000054: 6520 6465 6c6c 6120 7061 6769  e della pagi
+00000054: 6175 7468 6f72 3a0a 2e5c 2220  author:..\" 
 .br
-00000060: 6e61 2064 6920 6d61 6e75 616c  na di manual
+00000060: 2020 2054 6f6e 7920 4e75 6765     Tony Nuge
 .br
-0000006c: 653a 0a2e 5c22 2020 2020 546f  e:..\"    To
+0000006c: 6e74 203c 746f 6e79 4073 6374  nt <tony@sct
 .PP
 .br
-Visualizza la data dal file xxd-it.UTF-8.1
+Visualizza la data della prima versione di questa pagina dal file xxd-it.UTF-8.1
 .br
-\fI% xxd \-s 0x3c \-l 14 \-c 14 xxd-it.UTF-8.1\fR
+\fI% xxd \-s 0x39 \-l 13 \-c 13 xxd-it.UTF-8.1\fR
 .br
-0000003c: 3231 204d 6167 6769 6f20 3139 3936  21 Maggio 1996
+00000039: 3231 7374 204d 6179 2031 3939 36  21st May 1996
 .PP
 .br
 Copia
@@ -315,11 +315,11 @@ premettendogli 100 byte a 0x00.
 .br
 Modifica (patch) la data nel file xxd-it.UTF-8.1
 .br
-\fI% echo "000003c: 3331" | xxd \-r \- xxd-it.UTF-8.1\fR
+\fI% echo "0000039: 3331" | xxd \-r \- xxd-it.UTF-8.1\fR
 .br
-\fI% xxd \-s 0x3c \-l 14 \-c 14 xxd-it.UTF-8.1\fR
+\fI% xxd \-s 0x39 \-l 13 \-c 13 xxd-it.UTF-8.1\fR
 .br
-0000003c: 3331 204d 6167 6769 6f20 3139 3936  31 Maggio 1996
+00000039: 3331 7374 204d 6179 2031 3939 36  31st May 1996
 .PP
 .br
 Crea un file di 65537 byte tutto a 0x00,
@@ -372,7 +372,7 @@ Leggere singoli caratteri da una linea seriale
 .PP
 Output nello stile delle `include' di C (opzione \-i ) con uno zero binario a fine stringa
 .br
-\fI% echo -n 0123456789 > cifre\fR
+\fI% echo -n \&"0123456789\&" > cifre\fR
 .br
 \fI% xxd -i -t cifre\fR
 .br
