@@ -3819,7 +3819,7 @@ win_do_lines(
 	    && wp->w_width == topframe->fr_width)
     {
 	if (!no_win_do_lines_ins)
-	    screenclear();	    // will set wp->w_lines_valid to 0
+	    redraw_as_cleared();    // don't clear the screen to avoid flicker
 	return FAIL;
     }
 
