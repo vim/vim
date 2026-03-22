@@ -1323,6 +1323,9 @@ empty_curbuf(
 	close_buffer(NULL, buf, action, FALSE, FALSE);
     if (!close_others)
 	need_fileinfo = FALSE;
+    else if (retval == OK && !shortmess(SHM_FILEINFO))
+	// do_ecmd() does not display file info for a new empty buffer.
+	need_fileinfo = TRUE;
     return retval;
 }
 
