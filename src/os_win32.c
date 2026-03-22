@@ -5961,6 +5961,14 @@ create_pipe_pair(HANDLE handles[2])
 }
 
 #if defined(FEAT_EVAL)
+/*
+ * Execute "argv" directly without the shell and return the output.
+ * Used by system() and systemlist() when the command is a List.
+ * "infile" is an optional temp file for stdin input.
+ * When "ret_len" is not NULL, set it to the length of the output.
+ * Returns the output in allocated memory (or NULL on error).
+ * Sets v:shell_error to the exit status.
+ */
     char_u *
 mch_get_cmd_output_direct(
     char	**argv,
@@ -5980,6 +5988,7 @@ mch_get_cmd_output_direct(
     DWORD		exit_code = (DWORD)-1;
     int			i;
 
+    // Build a command string from argv.
     ga_init2(&cmd_ga, 1, 256);
     for (i = 0; argv[i] != NULL; i++)
     {
@@ -6020,6 +6029,7 @@ mch_get_cmd_output_direct(
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
+    // Create a pipe for the child's stdout.
     if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)
 	    || !SetHandleInformation(hChildStdoutRd, HANDLE_FLAG_INHERIT, 0))
     {
@@ -6027,6 +6037,7 @@ mch_get_cmd_output_direct(
 	goto done;
     }
 
+    // Set up stdin from infile if provided.
     if (infile != NULL)
     {
 	WCHAR *winfile = enc_to_utf16(infile, NULL);
@@ -6050,6 +6061,7 @@ mch_get_cmd_output_direct(
     si.hStdInput = (hChildStdinRd != INVALID_HANDLE_VALUE)
 		    ? hChildStdinRd : INVALID_HANDLE_VALUE;
 
+    // Create the child process directly, without going through the shell.
     if (!vim_create_process((char *)cmd_ga.ga_data, TRUE,
 		CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP,
 		&si, &pi, NULL, NULL))
@@ -6058,6 +6070,8 @@ mch_get_cmd_output_direct(
 	goto done;
     }
 
+    // Close the write end of stdout pipe and stdin in the parent so that
+    // ReadFile() will get EOF when the child process exits.
     CloseHandle(hChildStdoutWr);
     hChildStdoutWr = INVALID_HANDLE_VALUE;
     if (hChildStdinRd != INVALID_HANDLE_VALUE)
@@ -6066,6 +6080,7 @@ mch_get_cmd_output_direct(
 	hChildStdinRd = INVALID_HANDLE_VALUE;
     }
 
+    // Read output from child process.
     for (;;)
     {
 	char	buf[4096];
@@ -6080,6 +6095,7 @@ mch_get_cmd_output_direct(
 	}
     }
 
+    // Wait for child to finish and get exit code.
     WaitForSingleObject(pi.hProcess, INFINITE);
     GetExitCodeProcess(pi.hProcess, &exit_code);
     CloseHandle(pi.hProcess);
