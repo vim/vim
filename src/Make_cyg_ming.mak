@@ -25,7 +25,14 @@
 #     http://www.matcode.com/mpress.htm
 #
 # Maintained by Ron Aaron <ronaharon@yahoo.com> et al.
-# Last Update: 2025 May 14.
+# Last Update: 2026 Mar 22.
+
+# If you want to build some optional features without modifying the source, you
+# can set EXTRA_DEFINES on the command line. Here's an example of setting
+# MODIFIED_BY:
+#
+#	mingw-make -f Make_ming.mvc \
+#	  'EXTRA_DEFINES=-DMODIFIED_BY=\"yourmail@example.com\"'
 
 #>>>>> choose options:
 # FEATURES=[TINY | NORMAL | HUGE]
@@ -536,7 +543,8 @@ endif # RUBY
 # Any other defines can be included here.
 DEF_GUI=-DFEAT_GUI_MSWIN -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
-	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
+	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H \
+	$(EXTRA_DEFINES)
 
 #>>>>> end of choices
 ###########################################################################
