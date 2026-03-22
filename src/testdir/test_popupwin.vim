@@ -5008,10 +5008,17 @@ func Test_popup_opacity_vsplit()
   let buf = RunVimInTerminal('-S XtestPopupOpacityVsplit', #{rows: 12, cols: 80})
   call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_1', {})
 
-  " Force multiple redraws to confirm no blend accumulation
-  call term_sendkeys(buf, ":\<CR>")
+  " Move cursor multiple times to trigger redraws; without the fix the
+  " right-side window blend accumulates on each redraw cycle.
+  call term_sendkeys(buf, "j")
   call TermWait(buf, 50)
-  call term_sendkeys(buf, ":\<CR>")
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_2', {})
 
