@@ -80,6 +80,7 @@ runtime/compiler/jjs.vim				@dkearns
 runtime/compiler/jq.vim					@vito-c
 runtime/compiler/jshint.vim				@dkearns
 runtime/compiler/jsonlint.vim				@dkearns
+runtime/compiler/just.vim				@Alarcritty
 runtime/compiler/make.vim				@Konfekt
 runtime/compiler/mypy.vim				@Konfekt
 runtime/compiler/pandoc.vim				@Konfekt
