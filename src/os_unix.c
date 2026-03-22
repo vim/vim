@@ -6045,7 +6045,7 @@ mch_get_cmd_output_direct(
 	if (n <= 0)
 	    break;
 	ga_grow(&ga, n);
-	mch_memmove(ga.ga_data + ga.ga_len, buf, n);
+	mch_memmove((char *)ga.ga_data + ga.ga_len, buf, n);
 	ga.ga_len += n;
     }
     close(fd_out[0]);

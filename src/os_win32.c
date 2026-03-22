@@ -6101,7 +6101,7 @@ mch_get_cmd_output_direct(
 	    break;
 	if (ga_grow(&out_ga, (int)n) == OK)
 	{
-	    mch_memmove(out_ga.ga_data + out_ga.ga_len, buf, n);
+	    mch_memmove((char *)out_ga.ga_data + out_ga.ga_len, buf, n);
 	    out_ga.ga_len += (int)n;
 	}
     }
