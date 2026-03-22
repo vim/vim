@@ -2102,6 +2102,7 @@ clip_get_selection(Clipboard_T *cbd)
     pos_T	old_cursor;
     pos_T	old_visual;
     int		old_visual_mode;
+    colnr_T	old_virtcol;
     colnr_T	old_curswant;
     int		old_set_curswant;
     pos_T	old_op_start, old_op_end;
@@ -2123,6 +2124,7 @@ clip_get_selection(Clipboard_T *cbd)
 	old_y_previous = get_y_previous();
 	old_y_current = get_y_current();
 	old_cursor = curwin->w_cursor;
+	old_virtcol = curwin->w_virtcol;
 	old_curswant = curwin->w_curswant;
 	old_set_curswant = curwin->w_set_curswant;
 	old_op_start = curbuf->b_op_start;
@@ -2143,7 +2145,8 @@ clip_get_selection(Clipboard_T *cbd)
 	set_y_previous(old_y_previous);
 	set_y_current(old_y_current);
 	curwin->w_cursor = old_cursor;
-	changed_cline_bef_curs();   // need to update w_virtcol et al
+	curwin->w_virtcol = old_virtcol;
+	changed_cline_bef_curs();   // old w_virtcol et al. may be invalid
 	curwin->w_curswant = old_curswant;
 	curwin->w_set_curswant = old_set_curswant;
 	curbuf->b_op_start = old_op_start;
