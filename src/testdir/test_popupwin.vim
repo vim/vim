@@ -4985,4 +4985,44 @@ func Test_popup_conceal_wrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_vsplit()
+  CheckScreendump
+
+  " Opacity popup spanning a vertical split should redraw both windows
+  " underneath, not just the left one (blend accumulation bug).
+  let lines =<< trim END
+    call setline(1, repeat(['left window text here xxxx'], 10))
+    vnew
+    call setline(1, repeat(['right window text here xxxx'], 10))
+    wincmd h
+    hi PopupColor guibg=darkblue guifg=white
+    let g:pop_id = popup_create(['opacity over vsplit'], #{
+        \ line: 3, col: 30,
+        \ minwidth: 25,
+        \ highlight: 'PopupColor',
+        \ opacity: 50,
+        \ zindex: 50,
+        \})
+  END
+  call writefile(lines, 'XtestPopupOpacityVsplit', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityVsplit', #{rows: 12, cols: 80})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_1', {})
+
+  " Move cursor multiple times to trigger redraws; without the fix the
+  " right-side window blend accumulates on each redraw cycle.
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
