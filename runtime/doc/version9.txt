@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 19
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52609,6 +52609,8 @@ Other ~
 - Support for "dap" channel mode for the |debug-adapter-protocol|.
 - |status-line| can use several lines, see 'statuslineopt'.
 - New "leadtab" value for the 'listchars' setting.
+- Improved |:set+=|, |:set^=| and |:set-=| handling of comma-separated "key:value"
+  pairs individually (e.g. 'listchars', 'fillchars', 'diffopt').
 
 xxd ~
 ---
