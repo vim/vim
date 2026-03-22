@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-02-22 09:23+0100\n"
-"PO-Revision-Date: 2026-02-22 09:40+0100\n"
+"POT-Creation-Date: 2026-03-21 16:35+0100\n"
+"PO-Revision-Date: 2026-03-21 17:45+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -2063,6 +2063,9 @@ msgstr "???BLOCCO VUOTO"
 
 msgid "???LINES MISSING"
 msgstr "???RIGHE MANCANTI"
+
+msgid "???ILLEGAL BLOCK NUMBER"
+msgstr "???NUMERO DI BLOCCO NON VALIDO"
 
 msgid "???BLOCK MISSING"
 msgstr "???BLOCCO MANCANTE"
@@ -8492,10 +8495,9 @@ msgstr "E1291: Argomento non valido: %ld"
 msgid "E1292: Command-line window is already open"
 msgstr "E1292: Finestra della riga-di-comando già aperta"
 
-msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgid "E1293: Cannot use a negative id for a text property"
 msgstr ""
-"E1293: Impossibile usare un id negativo dopo aver aggiunto del testo a una "
-"'textprop'"
+"E1293: Impossibile usare un id negativo per una proprietà del testo"
 
 msgid "E1294: Can only use text_align when column is zero"
 msgstr "E1294: Si può usare 'text_align' solo quando la colonna è zero"
@@ -8649,13 +8651,6 @@ msgstr "E1335: La variabile \"%s\" nella Classe \"%s\" è in sola-lettura"
 #, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
 msgstr "E1337: Variabile di Classe \"%s\" non trovata nella Classe \"%s\""
-
-msgid ""
-"E1339: Cannot add a textprop with text after using a textprop with a "
-"negative id"
-msgstr ""
-"E1339: Non posso aggiungere textprop a un testo dopo aver usato una  "
-"textprop con un identificativo negativo"
 
 #, c-format
 msgid "E1340: Argument already declared in the class: %s"
@@ -9306,6 +9301,17 @@ msgstr "E1570: Non posso usare redraw_listener_add in una callback listener"
 
 msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr "E1571: Va specificata almeno una callback per redraw_listener_add"
+
+msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
+msgstr "E1572: elemento 'listchars' in \"leadtab\" richiede che sia stato "
+"specificato \"tab\""
+
+msgid "E1573: Cannot listen on port"
+msgstr "E1573: Non posso rimanere in ascolto alla porta"
+
+msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
+msgstr "E1574: gethostbyname(): non riesco a risolvere il nome dell'host in "
+"channel_listen()"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -9964,7 +9970,7 @@ msgid ""
 "characters to use for the status line, folds, diffs,\n"
 "buffer text, filler lines and truncation in the completion menu"
 msgstr ""
-"caratteri da usare per riga di status, piegature, differenze,\n"
+"caratteri da usare per riga-di-stato, piegature, differenze,\n"
 "testo di un buffer, righe di riempitivo e troncamento nel menu di "
 "completamento"
 
@@ -9982,6 +9988,12 @@ msgstr "numero di righe da scorrere con i comandi CTRL-F e CTRL-B"
 
 msgid "don't redraw while executing macros"
 msgstr "non aggiornare lo schermo mentre si stanno eseguendo delle macro"
+
+msgid "configure method of receiving terminal size changes"
+msgstr "configura il metodo per gestire modifiche di dimensione del terminale receiving terminal size changes"
+
+msgid "enable terminal sync mode"
+msgstr "abilita modo Sync per il terminale"
 
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
 msgstr "ritardo in millisecondi prima di evidenziare 'hlsearch' e :match"
@@ -10049,6 +10061,9 @@ msgstr "evidenziare tutte le occorrenze dell'ultima ricerca effettuata"
 msgid "highlight group to use for the window"
 msgstr "gruppo evidenziazione da usare per la finestra"
 
+msgid "highlight group mappings for the window"
+msgstr "mappature gruppi di evidenziazione da usare per questa finestra"
+
 msgid "use GUI colors for the terminal"
 msgstr "usare colori della GUI per il terminale"
 
@@ -10093,10 +10108,13 @@ msgid "multiple windows"
 msgstr "più di una finestra"
 
 msgid "0, 1 or 2; when to use a status line for the last window"
-msgstr "0, 1 o 2; quando usare una riga di status per l'ultima finestra"
+msgstr "0, 1 o 2; quando usare una riga-di-stato per l'ultima finestra"
 
 msgid "alternate format to be used for a status line"
-msgstr "formato alternativo da usare per una riga di status"
+msgstr "formato alternativo da usare per una riga-di-stato"
+
+msgid "optional settings for the status line"
+msgstr "impostazioni opzionali per la riga-di-stato"
 
 msgid "make all windows the same size when adding/removing windows"
 msgstr ""
@@ -10436,7 +10454,7 @@ msgid "options for outputting messages"
 msgstr "opzioni per emettere messaggi"
 
 msgid "show (partial) command keys in location given by 'showcmdloc'"
-msgstr "mostrare (una parte dei) tasti di comando nella riga di status"
+msgstr "mostrare (una parte dei) tasti di comando nella riga-di-stato"
 
 msgid "location where to show the (partial) command keys for 'showcmd'"
 msgstr ""
@@ -10444,7 +10462,7 @@ msgstr ""
 "per 'showcmd'"
 
 msgid "display the current mode in the status line"
-msgstr "visualizzare modo corrente nella riga di status"
+msgstr "visualizzare modo corrente nella riga-di-stato"
 
 msgid "show cursor position below each window"
 msgstr "mostrare la posizione del cursore sotto ogni finestra"
