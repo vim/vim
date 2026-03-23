@@ -92,10 +92,14 @@ export def FTasm()
 enddef
 
 export def FTmac()
-  if IsObjectScriptRoutine(20)
-    setf objectscript_routine
+  if exists("g:filetype_mac")
+    exe "setf " .. g:filetype_mac
   else
-    FTasm()
+    if IsObjectScriptRoutine(20)
+      setf objectscript_routine
+    else
+      FTasm()
+    endif
   endif
 enddef
 

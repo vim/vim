@@ -163,6 +163,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.inc		g:filetype_inc
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
+	*.mac		g:filetype_mac
 	*[mM]makefile,*.mk,*.mak,[mM]akefile*
 			g:make_flavor		|ft-make-syntax|
 	*.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md

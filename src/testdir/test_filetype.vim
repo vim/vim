@@ -2902,6 +2902,12 @@ func Test_mac_file()
   call assert_equal('objectscript_routine', &filetype)
   bwipe!
 
+  let g:filetype_mac = 'foo'
+  split Xfile.mac
+  call assert_equal('foo', &filetype)
+  bwipe!
+  unlet g:filetype_mac
+
   filetype off
 endfunc
 
