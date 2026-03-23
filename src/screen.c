@@ -4417,19 +4417,20 @@ screen_del_lines(
 
 /*
  * Return TRUE when postponing displaying the mode message: when not redrawing
- * or inside a mapping.
+ * or inside a mapping or a script.
  */
     int
 skip_showmode(void)
 {
-    // Check the stuff buffer and typeahead buffer for pending characters,
-    // instead of char_avail() which also reads raw terminal input and may pick
-    // up terminal response sequences (e.g. t_RV response), falsely preventing
-    // the mode from being shown.
+    // Check the stuff buffer, typeahead buffer and script input for pending
+    // characters, instead of char_avail() which also reads raw terminal input
+    // and may pick up terminal response sequences (e.g. t_RV response),
+    // falsely preventing the mode from being shown.
     if (global_busy
 	    || msg_silent != 0
 	    || !redrawing()
-	    || ((!stuff_empty() || typebuf.tb_len > 0 || using_script()) && !KeyTyped))
+	    || ((!stuff_empty() || typebuf.tb_len > 0 || using_script())
+		&& !KeyTyped))
     {
 	redraw_mode = TRUE;		// show mode later
 	return TRUE;
