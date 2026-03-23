@@ -4280,6 +4280,7 @@ highlight_changed(void)
     int		hlf;
     int		i;
     char_u	*p;
+    char_u	*default_hl;
     int		attr;
     char_u	*end;
     int		id;
@@ -4312,14 +4313,22 @@ highlight_changed(void)
 	highlight_ids[hlf] = 0;
     }
 
+    default_hl = get_highlight_default();
+
     // First set all attributes to their default value.
-    // Then use the attributes from the 'highlight' option.
+    // Then use the attributes from the 'highlight' option, unless it already
+    // matches the default and would repeat the same work.
     for (i = 0; i < 2; ++i)
     {
 	if (i)
+	{
+	    if (default_hl != NULL && p_hl != NULL
+				      && STRCMP(default_hl, p_hl) == 0)
+		continue;
 	    p = p_hl;
+	}
 	else
-	    p = get_highlight_default();
+	    p = default_hl;
 	if (p == NULL)	    // just in case
 	    continue;
 
