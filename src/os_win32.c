@@ -6009,12 +6009,46 @@ mch_get_cmd_output_direct(
 
 	if (has_spaces)
 	{
+	    int	num_bs;
+
 	    ga_append(&cmd_ga, '"');
 	    for (j = 0; arg[j] != NUL; j++)
 	    {
-		if (arg[j] == '"')
+		num_bs = 0;
+		while (arg[j] == '\\')
+		{
+		    num_bs++;
+		    j++;
+		}
+
+		if (arg[j] == NUL)
+		{
+		    // Backslashes before closing quote must be doubled.
+		    while (num_bs-- > 0)
+		    {
+			ga_append(&cmd_ga, '\\');
+			ga_append(&cmd_ga, '\\');
+		    }
+		    break;
+		}
+		else if (arg[j] == '"')
+		{
+		    // Backslashes before a double quote must be doubled,
+		    // and the double quote must be escaped.
+		    while (num_bs-- > 0)
+		    {
+			ga_append(&cmd_ga, '\\');
+			ga_append(&cmd_ga, '\\');
+		    }
 		    ga_append(&cmd_ga, '\\');
-		ga_append(&cmd_ga, arg[j]);
+		    ga_append(&cmd_ga, '"');
+		}
+		else
+		{
+		    while (num_bs-- > 0)
+			ga_append(&cmd_ga, '\\');
+		    ga_append(&cmd_ga, arg[j]);
+		}
 	    }
 	    ga_append(&cmd_ga, '"');
 	}
