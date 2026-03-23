@@ -11,6 +11,22 @@ vim9script
 
 var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
 
+def IsObjectScriptRoutine(maxlines: number): bool
+  var lnum = nextnonblank(1)
+  while lnum > 0 && lnum <= min([line("$"), maxlines])
+    var line = getline(lnum)
+    if lnum == 1
+      line = substitute(line, '^\ufeff', '', '')
+    endif
+    if line =~? '^\s*\%(import\|include\|includegenerator\)\>'
+      lnum = nextnonblank(lnum + 1)
+      continue
+    endif
+    return line =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+  endwhile
+  return false
+enddef
+
 export def Check_inp()
   if getline(1) =~ '%%'
     setf tex
@@ -73,6 +89,14 @@ export def FTasm()
   endif
 
   exe "setf " .. fnameescape(b:asmsyntax)
+enddef
+
+export def FTmac()
+  if IsObjectScriptRoutine(20)
+    setf objectscript_routine
+  else
+    FTasm()
+  endif
 enddef
 
 export def FTasmsyntax()
@@ -871,6 +895,10 @@ export def FTinc()
   if exists("g:filetype_inc")
     exe "setf " .. g:filetype_inc
   else
+    if IsObjectScriptRoutine(20)
+      setf objectscript_routine
+      return
+    endif
     for lnum in range(1, min([line("$"), 20]))
       var line = getline(lnum)
       if line =~? "perlscript"
@@ -938,6 +966,14 @@ export def FTi()
     lnum += 1
   endwhile
   setf progress
+enddef
+
+export def FTint()
+  if IsObjectScriptRoutine(20)
+    setf objectscript_routine
+  else
+    setf hex
+  endif
 enddef
 
 var ft_pascal_comments = '^\s*\%({\|(\*\|//\)'
