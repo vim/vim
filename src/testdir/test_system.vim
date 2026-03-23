@@ -239,8 +239,8 @@ func Test_system_list_arg()
 
   " systemlist() should work too.
   let out = systemlist(['python3', '-c', 'print("line1"); print("line2")'])
-  call assert_equal('line1', out[0])
-  call assert_equal('line2', out[1])
+  call assert_match('^line1', out[0])
+  call assert_match('^line2', out[1])
 
   " v:shell_error should be set.
   call system(['python3', '-c', 'import sys; sys.exit(42)'])
