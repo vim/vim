@@ -11,20 +11,10 @@ vim9script
 
 var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
 
-def IsObjectScriptRoutine(maxlines: number): bool
-  var lnum = nextnonblank(1)
-  while lnum > 0 && lnum <= min([line("$"), maxlines])
-    var line = getline(lnum)
-    if lnum == 1
-      line = substitute(line, '^\ufeff', '', '')
-    endif
-    if line =~? '^\s*\%(import\|include\|includegenerator\)\>'
-      lnum = nextnonblank(lnum + 1)
-      continue
-    endif
-    return line =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
-  endwhile
-  return false
+def IsObjectScriptRoutine(): bool
+  var line1 = getline(1)
+  line1 = substitute(line1, '^\ufeff', '', '')
+  return line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
 enddef
 
 export def Check_inp()
@@ -95,7 +85,7 @@ export def FTmac()
   if exists("g:filetype_mac")
     exe "setf " .. g:filetype_mac
   else
-    if IsObjectScriptRoutine(20)
+    if IsObjectScriptRoutine()
       setf objectscript_routine
     else
       FTasm()
@@ -899,7 +889,7 @@ export def FTinc()
   if exists("g:filetype_inc")
     exe "setf " .. g:filetype_inc
   else
-    if IsObjectScriptRoutine(20)
+    if IsObjectScriptRoutine()
       setf objectscript_routine
       return
     endif
@@ -975,7 +965,7 @@ enddef
 export def FTint()
   if exists("g:filetype_int")
     exe "setf " .. g:filetype_int
-  elseif IsObjectScriptRoutine(20)
+  elseif IsObjectScriptRoutine()
     setf objectscript_routine
   else
     setf hex
