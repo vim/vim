@@ -4422,12 +4422,14 @@ screen_del_lines(
     int
 skip_showmode(void)
 {
-    // Call char_avail() only when we are going to show something, because it
-    // takes a bit of time.  redrawing() may also call char_avail().
+    // Check the stuff buffer and typeahead buffer for pending characters,
+    // instead of char_avail() which also reads raw terminal input and may pick
+    // up terminal response sequences (e.g. t_RV response), falsely preventing
+    // the mode from being shown.
     if (global_busy
 	    || msg_silent != 0
 	    || !redrawing()
-	    || (char_avail() && !KeyTyped))
+	    || ((!stuff_empty() || typebuf.tb_len > 0) && !KeyTyped))
     {
 	redraw_mode = TRUE;		// show mode later
 	return TRUE;
