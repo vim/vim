@@ -5941,27 +5941,6 @@ mch_get_cmd_output_direct(
 
     ga_init2(&ga, 1, 4096);
 
-    if (p_verbose > 3)
-    {
-	garray_T    log_ga;
-	int	    i;
-
-	verbose_enter();
-	ga_init2(&log_ga, 1, 200);
-	for (i = 0; argv[i] != NULL; ++i)
-	{
-	    if (i > 0)
-		ga_append(&log_ga, ' ');
-	    ga_concat(&log_ga, (char_u *)argv[i]);
-	}
-	ga_append(&log_ga, NUL);
-	smsg(_("Executing directly: \"%s\""), (char *)log_ga.ga_data);
-	msg_putchar_attr('\n', 0);
-	cursor_on();
-	verbose_leave();
-	ga_clear(&log_ga);
-    }
-
     ch_log(NULL, "directly executing: %s", argv[0]);
 
     if (pipe(fd_out) < 0)
