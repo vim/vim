@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Mar 19
+" Last Change:		2026 Mar 23
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -885,6 +885,9 @@ au BufNewFile,BufRead requires/*.txt		setf requirements
 
 " Pkl
 au BufNewFile,BufRead *.pkl,*.pcf,pkl-lsp://*	setf pkl
+
+" WIC kickstarter files
+au BufNewFile,BufRead *.wks,*.wks.in,*.wks.inc	setf wks
 
 " Povray, Pascal, PHP or assembly
 au BufNewFile,BufRead *.inc			call dist#ft#FTinc()

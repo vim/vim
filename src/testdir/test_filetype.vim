@@ -964,6 +964,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     wgsl: ['file.wgsl'],
     winbatch: ['file.wbt'],
     wit: ['file.wit'],
+    wks: ['file.wks', 'file.wks.in', 'file.wks.inc'],
     wml: ['file.wml'],
     wsh: ['file.wsf', 'file.wsc'],
     wsml: ['file.wsml'],
