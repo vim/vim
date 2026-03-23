@@ -2910,7 +2910,7 @@ funcdepth_increment(void)
 {
     if (funcdepth >= p_mfd)
     {
-	emsg(_(e_function_call_depth_is_higher_than_macfuncdepth));
+	emsg(_(e_function_call_depth_is_higher_than_maxfuncdepth));
 	return FAIL;
     }
     ++funcdepth;

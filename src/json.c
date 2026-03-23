@@ -18,7 +18,7 @@
 
 #if defined(FEAT_EVAL)
 
-static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
+static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options, int depth);
 
 /*
  * Encode "val" into a JSON format string.
@@ -28,7 +28,7 @@ static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int option
     static int
 json_encode_gap(garray_T *gap, typval_T *val, int options)
 {
-    if (json_encode_item(gap, val, get_copyID(), options) == FAIL)
+    if (json_encode_item(gap, val, get_copyID(), options, 0) == FAIL)
     {
 	ga_clear(gap);
 	gap->ga_data = vim_strsave((char_u *)"");
@@ -268,7 +268,7 @@ is_simple_key(char_u *key)
  * Return FAIL or OK.
  */
     static int
-json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
+json_encode_item(garray_T *gap, typval_T *val, int copyID, int options, int depth)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*res;
@@ -277,6 +277,12 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
     tuple_T	*tuple;
     dict_T	*d;
     int		i;
+
+    if (depth > p_mfd)
+    {
+	emsg(_(e_function_call_depth_is_higher_than_maxfuncdepth));
+	return FAIL;
+    }
 
     switch (val->v_type)
     {
@@ -365,7 +371,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
 			if (json_encode_item(gap, &li->li_tv, copyID,
-						   options & JSON_JS) == FAIL)
+						   options & JSON_JS,
+						   depth + 1) == FAIL)
 			    return FAIL;
 			if ((options & JSON_JS)
 				&& li->li_next == NULL
@@ -401,7 +408,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    {
 			typval_T	*t_item = TUPLE_ITEM(tuple, i);
 			if (json_encode_item(gap, t_item, copyID,
-						   options & JSON_JS) == FAIL)
+						   options & JSON_JS,
+						   depth + 1) == FAIL)
 			    return FAIL;
 
 			if ((options & JSON_JS)
@@ -452,7 +460,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 				write_string(gap, hi->hi_key);
 			    ga_append(gap, ':');
 			    if (json_encode_item(gap, &dict_lookup(hi)->di_tv,
-				      copyID, options | JSON_NO_NONE) == FAIL)
+				      copyID, options | JSON_NO_NONE,
+				      depth + 1) == FAIL)
 				return FAIL;
 			}
 		    ga_append(gap, '}');
@@ -807,6 +816,12 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = FAIL;
 			break;
 		    }
+		    if (stack.ga_len >= p_mfd)
+		    {
+			emsg(_(e_function_call_depth_is_higher_than_maxfuncdepth));
+			retval = FAIL;
+			break;
+		    }
 		    if (ga_grow(&stack, 1) == FAIL)
 		    {
 			retval = FAIL;
@@ -835,6 +850,12 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		case '{': // start of object
 		    if (top_item && top_item->jd_type == JSON_OBJECT_KEY)
 		    {
+			retval = FAIL;
+			break;
+		    }
+		    if (stack.ga_len >= p_mfd)
+		    {
+			emsg(_(e_function_call_depth_is_higher_than_maxfuncdepth));
 			retval = FAIL;
 			break;
 		    }

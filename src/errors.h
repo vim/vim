@@ -312,7 +312,7 @@ EXTERN char e_function_name_required[]
 // E130 unused
 EXTERN char e_cannot_delete_function_str_it_is_in_use[]
 	INIT(= N_("E131: Cannot delete function %s: It is in use"));
-EXTERN char e_function_call_depth_is_higher_than_macfuncdepth[]
+EXTERN char e_function_call_depth_is_higher_than_maxfuncdepth[]
 	INIT(= N_("E132: Function call depth is higher than 'maxfuncdepth'"));
 EXTERN char e_return_not_inside_function[]
 	INIT(= N_("E133: :return not inside a function"));

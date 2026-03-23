@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 22
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6026,7 +6026,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Increasing this limit above 200 also changes the maximum for Ex
 	command recursion, see |E169|.
 	See also |:function|.
-	Also used for maximum depth of callback functions.
+	Also used for maximum depth of callback functions and encoding and
+	decoding of deeply nested json data.
 
 						*'maxmapdepth'* *'mmd'* *E223*
 'maxmapdepth' 'mmd'	number	(default 1000)
