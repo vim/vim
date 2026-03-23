@@ -973,7 +973,9 @@ export def FTi()
 enddef
 
 export def FTint()
-  if IsObjectScriptRoutine(20)
+  if exists("g:filetype_int")
+    exe "setf " .. g:filetype_int
+  elseif IsObjectScriptRoutine(20)
     setf objectscript_routine
   else
     setf hex

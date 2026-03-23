@@ -2884,6 +2884,12 @@ func Test_int_file()
   call assert_equal('objectscript_routine', &filetype)
   bwipe!
 
+  let g:filetype_int = 'foo'
+  split Xfile.int
+  call assert_equal('foo', &filetype)
+  bwipe!
+  unlet g:filetype_int
+
   filetype off
 endfunc
 

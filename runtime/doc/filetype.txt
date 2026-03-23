@@ -161,6 +161,7 @@ variables can be used to overrule the filetype used for certain extensions:
 						|ft-cpp-syntax|
 	*.i		g:filetype_i		|ft-progress-syntax|
 	*.inc		g:filetype_inc
+	*.int		g:filetype_int
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
 	*.mac		g:filetype_mac
