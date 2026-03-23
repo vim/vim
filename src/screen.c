@@ -4429,7 +4429,7 @@ skip_showmode(void)
     if (global_busy
 	    || msg_silent != 0
 	    || !redrawing()
-	    || ((!stuff_empty() || typebuf.tb_len > 0) && !KeyTyped))
+	    || ((!stuff_empty() || typebuf.tb_len > 0 || using_script()) && !KeyTyped))
     {
 	redraw_mode = TRUE;		// show mode later
 	return TRUE;
