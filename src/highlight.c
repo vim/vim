@@ -232,6 +232,7 @@ static void set_hl_attr(int idx);
 static void highlight_list_one(int id);
 static int highlight_list_arg(int id, int didh, int type, int iarg, char_u *sarg, char *name);
 static int syn_add_group(char_u *name);
+static int syn_name2id_len(char_u *name, int len);
 static int hl_has_settings(int idx, int check_link);
 static void highlight_clear(int idx);
 
@@ -3826,19 +3827,19 @@ syn_override(int id)
 }
 
 /*
- * Lookup a highlight group name and return its ID.
+ * Lookup a highlight group name by pointer and length.
  * If it is not found, 0 is returned.
  */
-    int
-syn_name2id(char_u *name)
+    static int
+syn_name2id_len(char_u *name, int len)
 {
     char_u	name_u[MAX_SYN_NAME + 1];
     hashitem_T	*hi;
 
-    // Avoid using stricmp() too much, it's slow on some systems
-    // Avoid alloc()/free(), these are slow too.  ID names over 200 chars
-    // don't deserve to be found!
-    vim_strncpy(name_u, name, MAX_SYN_NAME);
+    if (len > MAX_SYN_NAME)
+	len = MAX_SYN_NAME;
+    mch_memmove(name_u, name, len);
+    name_u[len] = NUL;
     vim_strup(name_u);
     if (!highlight_ht_inited)
 	return 0;
@@ -3846,6 +3847,17 @@ syn_name2id(char_u *name)
     if (HASHITEM_EMPTY(hi))
 	return 0;
     return HI2HLNAME(hi)->hn_id;
+}
+
+/*
+ * Lookup a highlight group name and return its ID.
+ * If it is not found, 0 is returned.
+ */
+    int
+syn_name2id(char_u *name)
+{
+    // Avoid using stricmp() too much, it's slow on some systems.
+    return syn_name2id_len(name, (int)STRLEN(name));
 }
 
 /*
@@ -3893,16 +3905,7 @@ syn_id2name(int id)
     int
 syn_namen2id(char_u *linep, int len)
 {
-    char_u  *name;
-    int	    id = 0;
-
-    name = vim_strnsave(linep, len);
-    if (name == NULL)
-	return 0;
-
-    id = syn_name2id(name);
-    vim_free(name);
-    return id;
+    return syn_name2id_len(linep, len);
 }
 
 /*
@@ -3922,15 +3925,14 @@ syn_check_group(char_u *pp, int len)
 	emsg(_(e_highlight_group_name_too_long));
 	return 0;
     }
-    name = vim_strnsave(pp, len);
-    if (name == NULL)
-	return 0;
-
-    id = syn_name2id(name);
+    id = syn_name2id_len(pp, len);
     if (id == 0)			// doesn't exist yet
+    {
+	name = vim_strnsave(pp, len);
+	if (name == NULL)
+	    return 0;
 	id = syn_add_group(name);
-    else
-	vim_free(name);
+    }
     return id;
 }
 
