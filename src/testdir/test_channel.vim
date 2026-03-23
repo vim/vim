@@ -1475,6 +1475,9 @@ func Ch_close_handle(port)
   let s:channelfd = ch_open(s:address(a:port), s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('Ch_CloseHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
+  " Wait for the channel to be fully closed, so that the callback does not
+  " fire during the next test.
+  call WaitForAssert({-> assert_equal('closed', ch_status(s:channelfd))})
 endfunc
 
 func Test_close_handle()
