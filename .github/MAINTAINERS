@@ -350,6 +350,7 @@ runtime/ftplugin/vdf.vim				@ObserverOfTime
 runtime/ftplugin/vim.vim				@dkearns
 runtime/ftplugin/wget.vim				@dkearns
 runtime/ftplugin/wget2.vim				@dkearns
+runtime/ftplugin/wks.vim				@anakin4747
 runtime/ftplugin/xcompose.vim				@ObserverOfTime
 runtime/ftplugin/xml.vim				@chrisbra
 runtime/ftplugin/xs.vim					@petdance
