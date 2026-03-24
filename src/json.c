@@ -163,6 +163,8 @@ write_string(garray_T *gap, char_u *str)
     }
 #endif
     ga_append(gap, '"');
+    // Pre-grow for the common case: input length + quotes + some escapes.
+    ga_grow(gap, (int)STRLEN(res) + 2);
     // `from` is the beginning of a sequence of bytes we can directly copy from
     // the input string, avoiding the overhead associated to decoding/encoding
     // them.
