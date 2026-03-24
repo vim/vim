@@ -185,20 +185,19 @@ write_string(garray_T *gap, char_u *str)
 	    switch (c)
 	    {
 		case 0x08:
-		    ga_append(gap, '\\'); ga_append(gap, 'b'); break;
+		    GA_CONCAT_LITERAL(gap, "\\b"); break;
 		case 0x09:
-		    ga_append(gap, '\\'); ga_append(gap, 't'); break;
+		    GA_CONCAT_LITERAL(gap, "\\t"); break;
 		case 0x0a:
-		    ga_append(gap, '\\'); ga_append(gap, 'n'); break;
+		    GA_CONCAT_LITERAL(gap, "\\n"); break;
 		case 0x0c:
-		    ga_append(gap, '\\'); ga_append(gap, 'f'); break;
+		    GA_CONCAT_LITERAL(gap, "\\f"); break;
 		case 0x0d:
-		    ga_append(gap, '\\'); ga_append(gap, 'r'); break;
+		    GA_CONCAT_LITERAL(gap, "\\r"); break;
 		case 0x22: // "
+		    GA_CONCAT_LITERAL(gap, "\\\""); break;
 		case 0x5c: // backslash
-		    ga_append(gap, '\\');
-		    ga_append(gap, c);
-		    break;
+		    GA_CONCAT_LITERAL(gap, "\\\\"); break;
 		default:
 		{
 		    size_t  numbuflen;
@@ -341,13 +340,24 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options, int dept
 		ga_append(gap, '[');
 		for (i = 0; i < b->bv_ga.ga_len; i++)
 		{
-		    size_t  numbuflen;
+		    int	    byte = blob_get(b, i);
 
 		    if (i > 0)
-			GA_CONCAT_LITERAL(gap, ",");
-		    numbuflen = vim_snprintf_safelen((char *)numbuf, sizeof(numbuf),
-			"%d", blob_get(b, i));
-		    ga_concat_len(gap, numbuf, numbuflen);
+			ga_append(gap, ',');
+		    // blob bytes are 0-255, use simple conversion
+		    if (byte >= 100)
+		    {
+			ga_append(gap, '0' + byte / 100);
+			ga_append(gap, '0' + (byte / 10) % 10);
+			ga_append(gap, '0' + byte % 10);
+		    }
+		    else if (byte >= 10)
+		    {
+			ga_append(gap, '0' + byte / 10);
+			ga_append(gap, '0' + byte % 10);
+		    }
+		    else
+			ga_append(gap, '0' + byte);
 		}
 		ga_append(gap, ']');
 	    }
