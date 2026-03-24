@@ -610,7 +610,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 			return FAIL;
 		    }
 		    p += len + 2;
-		    if (0xd800 <= nr && nr <= 0xdfff
+		    if (0xd800 <= nr && nr <= 0xdbff
 			    && (int)(reader->js_end - p) >= 6
 			    && *p == '\\' && *(p+1) == 'u')
 		    {
@@ -632,6 +632,13 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 			    nr = (((nr - 0xd800) << 10) |
 				((nr2 - 0xdc00) & 0x3ff)) + 0x10000;
 			}
+		    }
+		    // Lone surrogate is invalid.
+		    if (0xd800 <= nr && nr <= 0xdfff)
+		    {
+			if (res != NULL)
+			    ga_clear(&ga);
+			return FAIL;
 		    }
 		    if (res != NULL)
 		    {
@@ -975,7 +982,13 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "false", 5) == 0)
+		    // In strinct JSON mode, keywords must be lowercase.
+		    // In JS mode, keywords are case-insensitive.
+#define MATCH_KW(p, kw, len) \
+    ((options & JSON_JS) \
+     ? STRNICMP((char *)(p), (kw), (len)) == 0 \
+     : STRNCMP((char *)(p), (kw), (len)) == 0)
+		    if (MATCH_KW(p, "false", 5))
 		    {
 			reader->js_used += 5;
 			if (cur_item != NULL)
@@ -986,7 +999,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "true", 4) == 0)
+		    if (MATCH_KW(p, "true", 4))
 		    {
 			reader->js_used += 4;
 			if (cur_item != NULL)
@@ -997,7 +1010,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "null", 4) == 0)
+		    if (MATCH_KW(p, "null", 4))
 		    {
 			reader->js_used += 4;
 			if (cur_item != NULL)
@@ -1008,7 +1021,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "NaN", 3) == 0)
+		    if (MATCH_KW(p, "NaN", 3))
 		    {
 			reader->js_used += 3;
 			if (cur_item != NULL)
@@ -1019,7 +1032,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "-Infinity", 9) == 0)
+		    if (MATCH_KW(p, "-Infinity", 9))
 		    {
 			reader->js_used += 9;
 			if (cur_item != NULL)
@@ -1030,7 +1043,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "Infinity", 8) == 0)
+		    if (MATCH_KW(p, "Infinity", 8))
 		    {
 			reader->js_used += 8;
 			if (cur_item != NULL)
@@ -1041,6 +1054,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
+#undef MATCH_KW
 		    // check for truncated name
 		    len = (int)(reader->js_end
 					 - (reader->js_buf + reader->js_used));
