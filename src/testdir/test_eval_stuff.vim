@@ -1223,7 +1223,7 @@ func Test_clipboard_provider_redir_execute()
 endfunc
 
 " Test if clipboard provider feature respects the "unnamed" and "unnamedplus"
-" values in the 'clipboard' option
+" values in the 'clipboard' option, and ignores the "autoselect" value.
 func Test_clipboard_provider_clipboard_option()
   CheckFeature clipboard_provider
 
@@ -1273,6 +1273,19 @@ func Test_clipboard_provider_clipboard_option()
   call assert_equal(["testing"], g:vim_copy.lines)
   call assert_equal(["testing"], g:vim_copy.lines)
 
+  if has('clipboard')
+    " Test that autoselect option is ignored, this can happen when visual
+    " selection ends and there is TextYankPost autocmd
+    set clipboard=autoselect
+    let g:autoselect_test = 1
+    au TextYankPost * let g:autoselect_test = 0
+
+    call setline(1, "Hello world!")
+    call cursor(1, 0)
+    call feedkeys("vww\<Esc>", "x!")
+    call assert_equal(1, g:autoselect_test)
+  endif
+
   " Change and delete operations are tested in
   " Test_clipboard_provider_accessed_once()
   bw!
@@ -1289,6 +1302,5 @@ func Test_clipboard_provider_clipboard_option()
   set clipmethod&
   set clipboard&
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab
