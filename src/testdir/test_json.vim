@@ -326,4 +326,31 @@ func Test_json_encode_long()
   call assert_equal(4000, len(json))
 endfunc
 
+func Test_json_encode_depth()
+  let save_mfd = &maxfuncdepth
+  set maxfuncdepth=10
+
+  " Create a deeply nested list that exceeds maxfuncdepth.
+  let l = []
+  for i in range(20)
+    let l = [l]
+  endfor
+  call assert_fails('call json_encode(l)', 'E132:')
+
+  let &maxfuncdepth = save_mfd
+endfunc
+
+func Test_json_decode_depth()
+  let save_mfd = &maxfuncdepth
+  set maxfuncdepth=10
+
+  let deep_json = repeat('[', 20) .. '1' .. repeat(']', 20)
+  call assert_fails('call json_decode(deep_json)', 'E132:')
+
+  let deep_json = repeat('{"a":', 20) .. '1' .. repeat('}', 20)
+  call assert_fails('call json_decode(deep_json)', 'E132:')
+
+  let &maxfuncdepth = save_mfd
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

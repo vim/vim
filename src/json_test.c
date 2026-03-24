@@ -195,6 +195,7 @@ test_fill_called_on_string(void)
 main(void)
 {
 #if defined(FEAT_EVAL)
+    p_mfd = 100;
     test_decode_find_end();
     test_fill_called_on_find_end();
     test_fill_called_on_string();
