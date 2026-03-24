@@ -55,7 +55,10 @@ static channel_T    *client_channels = NULL;
     for (ch = client_channels; ch != NULL; ch = ch->ch_ss_next)
 
 static void	    socketserver_cleanup(void);
-static char_u	    *socketserver_get_path_from_name(char_u *name);
+#ifndef MSWIN
+static char_u	    *socketserver_create_path(char_u *name);
+static char_u	    *socketserver_get_path(char_u *name, bool new);
+#endif
 static void	    socketserver_accept(channel_T *channel);
 static void	    socketserver_close(channel_T *channel);
 static ss_reply_T   *socketserver_add_reply(char_u *sender);
@@ -68,17 +71,34 @@ static ss_reply_T   *socketserver_add_reply(char_u *sender);
 socketserver_start(char_u *name, bool quiet)
 {
     char_u	*address;
-    int	    	port;
+    char_u	*tofree = NULL;
+    int		port;
     bool	is_unix = false;
     channel_T	*channel;
 
     if (server_channel != NULL)
 	return OK;
 
-    if (channel_parse_address(name, (char *)address_buf, ADDRESS_BUFSIZE,
-		&port, &is_unix, true, quiet) == FAIL)
+    if (STRNCMP(name, "a/", 2) == 0)
+    {
+	if (channel_parse_address(name, (char *)address_buf, ADDRESS_BUFSIZE,
+		    &port, &is_unix, true, quiet) == FAIL)
+	    return FAIL;
+	address = address_buf;
+    }
+    else
+    {
+#ifdef MSWIN
+	semsg(_(e_invalid_argument_str), name);
 	return FAIL;
-    address = address_buf;
+#else
+	tofree = socketserver_create_path(name);
+	if (tofree == NULL)
+	    return FAIL;
+	address = tofree;
+	is_unix = true;
+#endif
+    }
 
     if (is_unix)
 	channel = channel_listen_unix((char *)address, NULL, false);
@@ -86,18 +106,21 @@ socketserver_start(char_u *name, bool quiet)
 	channel = channel_listen((char *)address, port, NULL);
 
     if (channel == NULL)
+    {
+	vim_free(tofree);
 	return FAIL;
+    }
 
     channel->ch_socketserver = true;
     channel->ch_ss_accept_cb = socketserver_accept;
     channel->ch_ss_close_cb = socketserver_close;
 
     server_channel = channel;
-    server_address = vim_strsave(name);
+    server_address = tofree != NULL ? address : vim_strsave(name);
     server_is_unix = is_unix;
 
     vim_free(serverName);
-    serverName = vim_strsave(name);
+    serverName = vim_strsave(server_address);
 # ifdef FEAT_EVAL
     set_vim_var_string(VV_SEND_SERVER, serverName, -1);
 # endif
@@ -122,15 +145,6 @@ socketserver_stop(void)
     channel_close(server_channel, false);
     channel_clear(server_channel);
 
-    if (server_is_unix)
-    {
-	char_u *path = server_address;
-
-	if (STRNCMP(path, "unix:", 5) == 0)
-	    path += 5;
-	mch_remove(path);
-    }
-    
     socketserver_cleanup();
 
     ch_log(NULL, "socketserver: shutting down server");
@@ -139,6 +153,15 @@ socketserver_stop(void)
     static void
 socketserver_cleanup(void)
 {
+    if (server_is_unix)
+    {
+	char_u *path = server_address;
+
+	if (STRNCMP(path, "unix:", 5) == 0)
+	    path += 5;
+	mch_remove(path);
+    }
+
     server_channel = NULL;
     vim_free(server_address);
     server_address = NULL;
@@ -154,16 +177,137 @@ socketserver_cleanup(void)
     ga_clear(&server_replies);
 }
 
+#ifndef MSWIN
+
+/*
+ * List available sockets that can be connected to, only in common directories
+ * that Vim knows about. Vim instances with custom socket paths will not be
+ * detected. Returns a newline separated string on success and NULL on failure.
+ */
+    char_u *
+socketserver_list(void)
+{
+    garray_T	    str;
+    string_T	    buf;
+    string_T	    path;
+    DIR		    *dirp;
+    struct dirent   *dp;
+    const char_u    *known_dirs[] = {
+	mch_getenv("XDG_RUNTIME_DIR"),
+	mch_getenv("TMPDIR"),
+	(char_u *)"/tmp"
+    };
+
+    if ((buf.string = alloc(MAXPATHL)) == NULL)
+	return NULL;
+    if ((path.string = alloc(MAXPATHL)) == NULL)
+    {
+	vim_free(buf.string);
+	return NULL;
+    }
+    buf.length = 0;
+    path.length = 0;
+
+    ga_init2(&str, 1, 100);
+
+    for (size_t i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	const char_u *dir = known_dirs[i];
+
+	if (dir == NULL)
+	    continue;
+
+	if (STRCMP(dir, "/tmp") == 0 ||
+		(known_dirs[1] != NULL && STRCMP(dir, known_dirs[1]) == 0))
+	    path.length = vim_snprintf_safelen((char *)path.string, MAXPATHL,
+		    "%s/vim-%lu", dir, (unsigned long int)getuid());
+	else
+	    path.length = vim_snprintf_safelen((char *)path.string, MAXPATHL,
+		    "%s/vim", dir);
+
+	dirp = opendir((char *)path.string);
+	if (dirp == NULL)
+	    continue;
+
+	// Loop through directory
+	while ((dp = readdir(dirp)) != NULL)
+	{
+	    if (STRCMP(dp->d_name, ".") == 0 || STRCMP(dp->d_name, "..") == 0)
+		continue;
+
+	    buf.length = vim_snprintf_safelen((char *)buf.string, MAXPATHL,
+		    "%s/%s", path.string, dp->d_name);
+
+	    ga_concat_len(&str, (char_u *)dp->d_name,
+		    buf.length - (path.length + 1));
+	    ga_append(&str, '\n');
+	}
+
+	closedir(dirp);
+
+	break;
+    }
+
+    vim_free(path.string);
+    vim_free(buf.string);
+
+    ga_append(&str, NUL);
+
+    return str.ga_data;
+}
+
+/*
+ * If "name" is a path (starts with a '/', './', or '../'), it is assumed to be
+ * the path to the desired socket. If the socket path is already taken, append
+ * an incrementing number to the path until we find a socket filename that can
+ * be used. Returns alloced string or NULL on failure.
+ */
+    static char_u *
+socketserver_create_path(char_u *name)
+{
+    char_u  *buf = NULL;
+    int	    buflen = STRLEN(name) + NUMBUFLEN;
+    char_u  *path = NULL;
+
+    for (int i = 0; i < 1000; i++)
+    {
+	if (buf != NULL)
+	{
+	    vim_snprintf((char *)buf, buflen, "%s%d", name, i);
+	    path = socketserver_get_path(buf, true);
+	}
+	else
+	    path = socketserver_get_path(name, true);
+
+	if (path == NULL)
+	{
+	    if (buf == NULL)
+		buf = alloc(buflen);
+	    continue;
+	}
+	break;
+    }
+    vim_free(buf);
+
+    return path;
+}
+
 /*
  * If "name" is a pathless name such as "VIM", search known directories for the
  * socket named "name", and return the alloc'ed path to it. If "name" starts
- * with a '/', './' or '../', then a copy of "name" is returned. Returns NULL
- * on failure or if no socket was found.
+ * with a '/', './' or '../', then a copy of "name" is returned.
+ *
+ * If "new" is true, then return a path if the name does not exist in the known
+ * location.
+ *
+ * Returns path on success and NULL on failure.
  */
     static char_u *
-socketserver_get_path_from_name(char_u *name)
+socketserver_get_path(char_u *name, bool new)
 {
     char_u	    *buf;
+    bool	    fail_dircreate = false;
+    channel_T	    *channel;
     const char_u    *known_dirs[] = {
 	mch_getenv("XDG_RUNTIME_DIR"),
 	mch_getenv("TMPDIR"),
@@ -178,6 +322,12 @@ socketserver_get_path_from_name(char_u *name)
 	    STRNCMP(name, "../", 3) == 0)
 	return vim_strsave(name);
 
+    if (vim_strchr(name, '/') != NULL)
+    {
+	semsg(_(e_invalid_server_id_used_str), name);
+	return NULL;
+    }
+
     buf = alloc(MAXPATHL);
 
     if (buf == NULL)
@@ -185,18 +335,64 @@ socketserver_get_path_from_name(char_u *name)
 
     for (size_t i = 0; i < ARRAY_LENGTH(known_dirs); i++)
     {
-	const char_u *dir = known_dirs[i];
+	const char_u	*dir = known_dirs[i];
+	bool		got = false;
 
 	if (dir == NULL)
 	    continue;
 	else if (STRCMP(dir, "/tmp") == 0 ||
 		(known_dirs[1] != NULL && STRCMP(dir, known_dirs[1]) == 0))
+	{
+	    // "/tmp" or $TMPDIR, must suffix dir with uid
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu", dir,
+		    (unsigned long int)getuid());
+	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
+	    {
+		fail_dircreate = true;
+		break;
+	    }
+
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu/%s", dir,
 		    (unsigned long int)getuid(), name);
+	}
 	else
-	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+	{
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim", dir);
+	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
+	    {
+		fail_dircreate = true;
+		break;
+	    }
 
-	if (mch_access((char *)buf, F_OK) != 0)
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+	}
+
+	// If looking for a new socket path, and "buf" currently exists, check
+	// if it is a dead socket, if it is then remove it.
+	if (new)
+	{
+	    if (mch_access((char *)buf, F_OK) != 0)
+		got = true;
+	    else
+	    {
+		emsg_silent++;
+		channel = channel_open_unix((char *)buf, NULL);
+		emsg_silent--;
+
+		if (channel != NULL)
+		{
+		    channel_close(channel, false);
+		    channel_clear(channel);
+		}
+		else
+		{
+		    mch_remove(buf);
+		    got = true;
+		}
+	    }
+	}
+
+	if (got || (!new && mch_access((char *)buf, F_OK) == 0))
 	{
 	    if (server_address != NULL && STRCMP(buf, server_address) == 0)
 		// Can't connect to itself
@@ -205,9 +401,14 @@ socketserver_get_path_from_name(char_u *name)
 	}
     }
 
+    if (fail_dircreate)
+	semsg(_("Failed creating socket directory: %s"),
+		strerror(errno));
+
     vim_free(buf);
     return NULL;
 }
+#endif
 
 /*
  * Callback for when client channel is closed
@@ -320,7 +521,7 @@ socketserver_exec(channel_T *channel, dict_T *message)
     ch_log(NULL, "socketserver_exec(): encoding: %s, result: %s",
 	    enc, str == NULL ? (char_u *)"(null)" : str);
 
-    if (STRCMP(type, "expr") == 0)
+    if (STRCMP(type, "expr") == 0 && str != NULL && enc != NULL)
     {
 	// Evaluate expression and send back reply
 	typval_T    tv;
@@ -368,7 +569,7 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	dict_unref(dict);
 	vim_free(to_free);
     }
-    else if (STRCMP(type, "keystrokes") == 0)
+    else if (STRCMP(type, "keystrokes") == 0 && str != NULL && enc != NULL)
     {
 	// Execute keystrokes
 	str = serverConvert(enc, str, &to_free);
@@ -433,7 +634,7 @@ socketserver_parse_messages(void)
 {
     channel_T	*channel;
     typval_T	*tv;
-    
+
     FOR_ALL_CLIENTS(channel)
     {
 	// Get the JSON message if there is any from the queue for this channel.
@@ -598,21 +799,42 @@ socketserver_wait(channel_T *channel, int timeout)
     static channel_T *
 socketserver_get_channel(char_u *name)
 {
+    char_u	*address;
+    char_u	*tofree = NULL;
     int		port;
     bool	is_unix;
     channel_T	*channel;
 
-    if (channel_parse_address(name, (char *)address_buf,
-		ADDRESS_BUFSIZE, &port, &is_unix, false, false) == FAIL)
+    if (STRNCMP(name, "a/", 2) == 0)
+    {
+	if (channel_parse_address(name, (char *)address_buf,
+		    ADDRESS_BUFSIZE, &port, &is_unix, false, false) == FAIL)
+	    return NULL;
+	address = address_buf;
+    }
+    else
+    {
+#ifdef MSWIN
+	semsg(_(e_invalid_argument_str), name);
 	return NULL;
+#else
+	tofree = socketserver_get_path(name, false);
+	if (tofree == NULL)
+	    return FAIL;
+	address = tofree;
+	is_unix = true;
+#endif
+    }
 
     if (is_unix)
-	channel = channel_open_unix((char *)address_buf, NULL);
+	channel = channel_open_unix((char *)address, NULL);
     else
-	channel =  channel_open((char *)address_buf, port, 1000, NULL);
+	channel =  channel_open((char *)address, port, 1000, NULL);
 
     if (channel == NULL)
 	semsg(_(e_socket_server_failed_connecting), name);
+
+    vim_free(tofree);
 
     return channel;
 }
@@ -623,7 +845,7 @@ socketserver_get_channel(char_u *name)
     int
 socketserver_send(
 	char_u *name,
-        char_u *str,
+	char_u *str,
 	char_u **result,
 	bool is_expr,
 	int timeout,
@@ -825,7 +1047,8 @@ socketserver_send_reply(char_u *client, char_u *str)
     dict_add_string(dict, "type", (char_u *)"notify");
     dict_add_string(dict, "enc", p_enc);
     dict_add_string(dict, "str", str);
-    dict_add_string(dict, "sender", str);
+    if (server_address != NULL)
+	dict_add_string(dict, "sender", server_address);
 
     tv.v_type = VAR_DICT;
     tv.vval.v_dict = dict;
@@ -853,7 +1076,8 @@ exit:
     int
 socketserver_read_reply(char_u *client, char_u **str, int timeout)
 {
-    ss_reply_T *reply = NULL;
+    ss_reply_T	*reply = NULL;
+    char_u	*actual = client;
 
     if (server_channel == NULL || server_address == NULL)
     {
@@ -861,13 +1085,27 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
 	return FAIL;
     }
 
+#ifndef MSWIN
+    actual = socketserver_get_path(client, false);
+#endif
+    if (actual == NULL)
+    {
+	semsg(_(e_invalid_server_id_used_str), client);
+	return FAIL;
+    }
+
     while (true)
     {
-	reply = socketserver_get_reply(client, NULL);
+	reply = socketserver_get_reply(actual, NULL);
 	if (reply != NULL)
 	    break;
-	socketserver_wait(NULL, timeout);
+	if (socketserver_wait(NULL, timeout) == FAIL)
+	    break;
     }
+    vim_free(actual);
+
+    if (reply == NULL)
+	return FAIL;
 
     // Consume the string
     *str = ((char_u **)reply->strings.ga_data)[0];
@@ -894,7 +1132,8 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
     int
 socketserver_peek_reply(char_u *sender, char_u **str)
 {
-    ss_reply_T *reply;
+    ss_reply_T	*reply;
+    char_u	*actual = sender;
 
     if (server_channel == NULL || server_address == NULL)
     {
@@ -902,12 +1141,23 @@ socketserver_peek_reply(char_u *sender, char_u **str)
 	return FAIL;
     }
 
-    reply = socketserver_get_reply(sender, NULL);
+#ifndef MSWIN
+    actual = socketserver_get_path(sender, false);
+#endif
+    if (actual == NULL)
+    {
+	semsg(_(e_invalid_server_id_used_str), sender);
+	return FAIL;
+    }
+
+    reply = socketserver_get_reply(actual, NULL);
+    vim_free(actual);
+
     if (reply != NULL && reply->strings.ga_len > 0)
     {
-        if (str != NULL)
-            *str = ((char_u **)reply->strings.ga_data)[0];
-        return 1;
+	if (str != NULL)
+	    *str = ((char_u **)reply->strings.ga_data)[0];
+	return 1;
     }
     return 0;
 }

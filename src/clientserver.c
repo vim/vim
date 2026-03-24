@@ -570,7 +570,11 @@ cmdsrv_main(
 # endif
 # ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+#  ifdef MSWIN
 		res = vim_strsave((char_u *)"");
+#  else
+		res = socketserver_list();
+#  endif
 # endif
 # ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
@@ -1204,7 +1208,11 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 #  endif
 #  ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	emsg(_(e_socketserver_no_list_servers));
+#   ifdef MSWIN
+	r = vim_strsave((char_u *)"");
+#   else
+	r = socketserver_list();
+#   endif
 #  endif
 #  ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)

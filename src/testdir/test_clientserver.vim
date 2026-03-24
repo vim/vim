@@ -10,12 +10,6 @@ CheckFeature clientserver
 
 source util/shared.vim
 
-let $TEST_NO_RETRY = 'yes'
-
-" Unlike X11, we need the socket server running if we want to send commands to
-" a server via sockets.
-RunSocketServer
-
 func Check_X11_Connection()
   if has('x11')
     CheckX11
@@ -195,7 +189,7 @@ func Test_client_server()
   " socket.
   if has('socketserver') && !has('X11')
     call assert_fails("let x = remote_read('vim/10')", ['E573:.*vim/10'])
-    call assert_fails("call server2client('a/b/c', 'xyz')", ['E573:.*a/b/c'])
+    call assert_fails("call server2client('x/b/c', 'xyz')", ['E573:.*x/b/c'])
   else
     call assert_fails("let x = remote_read('vim10')",
           \ has('unix') ? ['E573:.*vim10'] : 'E277:')
