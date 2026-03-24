@@ -3,13 +3,19 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Mar 20
+# Last Change:		2026 Mar 24
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
 
 var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
+
+def IsObjectScriptRoutine(): bool
+  var line1 = getline(1)
+  line1 = substitute(line1, '^\ufeff', '', '')
+  return line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+enddef
 
 export def Check_inp()
   if getline(1) =~ '%%'
@@ -73,6 +79,18 @@ export def FTasm()
   endif
 
   exe "setf " .. fnameescape(b:asmsyntax)
+enddef
+
+export def FTmac()
+  if exists("g:filetype_mac")
+    exe "setf " .. g:filetype_mac
+  else
+    if IsObjectScriptRoutine()
+      setf objectscript_routine
+    else
+      FTasm()
+    endif
+  endif
 enddef
 
 export def FTasmsyntax()
@@ -871,6 +889,10 @@ export def FTinc()
   if exists("g:filetype_inc")
     exe "setf " .. g:filetype_inc
   else
+    if IsObjectScriptRoutine()
+      setf objectscript_routine
+      return
+    endif
     for lnum in range(1, min([line("$"), 20]))
       var line = getline(lnum)
       if line =~? "perlscript"
@@ -938,6 +960,16 @@ export def FTi()
     lnum += 1
   endwhile
   setf progress
+enddef
+
+export def FTint()
+  if exists("g:filetype_int")
+    exe "setf " .. g:filetype_int
+  elseif IsObjectScriptRoutine()
+    setf objectscript_routine
+  else
+    setf hex
+  endif
 enddef
 
 var ft_pascal_comments = '^\s*\%({\|(\*\|//\)'

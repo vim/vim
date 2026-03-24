@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Mar 23
+" Last Change:		2026 Mar 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -119,10 +119,13 @@ au BufNewFile,BufRead */boot/grub/menu.lst,*/boot/grub/grub.conf,*/etc/grub.conf
 " *.mc omitted - used by dist#ft#McSetf()
 au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
+" ObjectScript routine or assembly
+au BufNewFile,BufRead *.mac			call dist#ft#FTmac()
+
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
 " *.[sS], *.[aA] usually Assembly - GNU
-au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
+au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.lst	call dist#ft#FTasm()
 
 " BASIC or Visual Basic
 au BufNewFile,BufRead *.bas			call dist#ft#FTbas()
@@ -571,6 +574,9 @@ au BufNewFile,BufRead *.pro			call dist#ft#ProtoCheck('idlang')
 
 " Initng
 au BufNewFile,BufRead */etc/initng/*/*.i,*.ii	setf initng
+
+" Intel HEX or ObjectScript routine
+au BufNewFile,BufRead *.int			call dist#ft#FTint()
 
 " Innovation Data Processing
 au BufNewFile,BufRead upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c	setf upstreamdat

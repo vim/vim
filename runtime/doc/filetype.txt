@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*filetype.txt*	For Vim version 9.2.  Last change: 2026 Mar 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -161,8 +161,10 @@ variables can be used to overrule the filetype used for certain extensions:
 						|ft-cpp-syntax|
 	*.i		g:filetype_i		|ft-progress-syntax|
 	*.inc		g:filetype_inc
+	*.int		g:filetype_int
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
+	*.mac		g:filetype_mac
 	*[mM]makefile,*.mk,*.mak,[mM]akefile*
 			g:make_flavor		|ft-make-syntax|
 	*.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
