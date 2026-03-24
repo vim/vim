@@ -2122,6 +2122,9 @@ func Test_sign_number_without_signtext()
 endfunc
 
 func Test_sign_signcolumn_change_no_clear()
+  " In the GUI, sign icons need UPD_CLEAR to redraw properly,
+  " so this optimization only applies to non-GUI mode.
+  CheckNotGui
   new
   call setline(1, ['a', 'b', 'c'])
   set number signcolumn=auto
