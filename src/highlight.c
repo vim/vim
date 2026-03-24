@@ -207,6 +207,21 @@ static int hl_flags[HLF_COUNT] = HL_FLAGS;
 static garray_T highlight_ga;
 #define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
 
+// Wrapper struct for hashtable entries: stores the highlight group ID alongside
+// the uppercase name used as a hash key.  Uses the same offsetof pattern as
+// signgroup_T / HI2SG.
+typedef struct {
+    int		hn_id;		// highlight group ID (1-based)
+    char_u	hn_key[1];	// uppercase name (stretchable array)
+} hlname_T;
+
+#define HLNAME_KEY_OFF	offsetof(hlname_T, hn_key)
+#define HI2HLNAME(hi)	((hlname_T *)((hi)->hi_key - HLNAME_KEY_OFF))
+
+// hashtable for quick highlight group name lookup
+static hashtab_T highlight_ht;
+static bool	 highlight_ht_inited = false;
+
 /*
  * An attribute number is the index in attr_table plus ATTR_OFF.
  */
@@ -217,6 +232,7 @@ static void set_hl_attr(int idx);
 static void highlight_list_one(int id);
 static int highlight_list_arg(int id, int didh, int type, int iarg, char_u *sarg, char *name);
 static int syn_add_group(char_u *name);
+static int syn_name2id_len(char_u *name, int len);
 static int hl_has_settings(int idx, int check_link);
 static void highlight_clear(int idx);
 
@@ -2034,9 +2050,11 @@ free_highlight(void)
     {
 	highlight_clear(i);
 	vim_free(HL_TABLE()[i].sg_name);
-	vim_free(HL_TABLE()[i].sg_name_u);
+	vim_free(HL_TABLE()[i].sg_name_u - HLNAME_KEY_OFF);
     }
     ga_clear(&highlight_ga);
+    hash_clear(&highlight_ht);
+    highlight_ht_inited = false;
 }
 #endif
 
@@ -3810,25 +3828,37 @@ syn_override(int id)
 }
 
 /*
+ * Lookup a highlight group name by pointer and length.
+ * If it is not found, 0 is returned.
+ */
+    static int
+syn_name2id_len(char_u *name, int len)
+{
+    char_u	name_u[MAX_SYN_NAME + 1];
+    hashitem_T	*hi;
+
+    if (len > MAX_SYN_NAME)
+	len = MAX_SYN_NAME;
+    mch_memmove(name_u, name, len);
+    name_u[len] = NUL;
+    vim_strup(name_u);
+    if (!highlight_ht_inited)
+	return 0;
+    hi = hash_find(&highlight_ht, name_u);
+    if (HASHITEM_EMPTY(hi))
+	return 0;
+    return HI2HLNAME(hi)->hn_id;
+}
+
+/*
  * Lookup a highlight group name and return its ID.
  * If it is not found, 0 is returned.
  */
     int
 syn_name2id(char_u *name)
 {
-    int		i;
-    char_u	name_u[MAX_SYN_NAME + 1];
-
-    // Avoid using stricmp() too much, it's slow on some systems
-    // Avoid alloc()/free(), these are slow too.  ID names over 200 chars
-    // don't deserve to be found!
-    vim_strncpy(name_u, name, MAX_SYN_NAME);
-    vim_strup(name_u);
-    for (i = highlight_ga.ga_len; --i >= 0; )
-	if (HL_TABLE()[i].sg_name_u != NULL
-		&& STRCMP(name_u, HL_TABLE()[i].sg_name_u) == 0)
-	    break;
-    return i + 1;
+    // Avoid using stricmp() too much, it's slow on some systems.
+    return syn_name2id_len(name, (int)STRLEN(name));
 }
 
 /*
@@ -3876,16 +3906,7 @@ syn_id2name(int id)
     int
 syn_namen2id(char_u *linep, int len)
 {
-    char_u  *name;
-    int	    id = 0;
-
-    name = vim_strnsave(linep, len);
-    if (name == NULL)
-	return 0;
-
-    id = syn_name2id(name);
-    vim_free(name);
-    return id;
+    return syn_name2id_len(linep, len);
 }
 
 /*
@@ -3905,15 +3926,14 @@ syn_check_group(char_u *pp, int len)
 	emsg(_(e_highlight_group_name_too_long));
 	return 0;
     }
-    name = vim_strnsave(pp, len);
-    if (name == NULL)
-	return 0;
-
-    id = syn_name2id(name);
+    id = syn_name2id_len(pp, len);
     if (id == 0)			// doesn't exist yet
+    {
+	name = vim_strnsave(pp, len);
+	if (name == NULL)
+	    return 0;
 	id = syn_add_group(name);
-    else
-	vim_free(name);
+    }
     return id;
 }
 
@@ -3952,6 +3972,8 @@ syn_add_group(char_u *name)
     {
 	highlight_ga.ga_itemsize = sizeof(hl_group_T);
 	highlight_ga.ga_growsize = 10;
+	hash_init(&highlight_ht);
+	highlight_ht_inited = true;
     }
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
@@ -3968,11 +3990,20 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
-    name_up = vim_strsave_up(name);
-    if (name_up == NULL)
     {
-	vim_free(name);
-	return 0;
+	hlname_T    *hn;
+	int	    len = (int)STRLEN(name);
+
+	hn = alloc(offsetof(hlname_T, hn_key) + len + 1);
+	if (hn == NULL)
+	{
+	    vim_free(name);
+	    return 0;
+	}
+	vim_strncpy(hn->hn_key, name, len);
+	vim_strup(hn->hn_key);
+	hn->hn_id = highlight_ga.ga_len + 1;	// ID is index plus one
+	name_up = hn->hn_key;
     }
 
     CLEAR_POINTER(&(HL_TABLE()[highlight_ga.ga_len]));
@@ -3983,6 +4014,7 @@ syn_add_group(char_u *name)
     HL_TABLE()[highlight_ga.ga_len].sg_gui_fg = INVALCOLOR;
     HL_TABLE()[highlight_ga.ga_len].sg_gui_sp = INVALCOLOR;
 #endif
+    hash_add(&highlight_ht, name_up, "highlight");
     ++highlight_ga.ga_len;
 
     return highlight_ga.ga_len;		    // ID is index plus one
@@ -3995,9 +4027,14 @@ syn_add_group(char_u *name)
     static void
 syn_unadd_group(void)
 {
+    hashitem_T *hi;
+
     --highlight_ga.ga_len;
+    hi = hash_find(&highlight_ht, HL_TABLE()[highlight_ga.ga_len].sg_name_u);
+    if (!HASHITEM_EMPTY(hi))
+	hash_remove(&highlight_ht, hi, "highlight");
     vim_free(HL_TABLE()[highlight_ga.ga_len].sg_name);
-    vim_free(HL_TABLE()[highlight_ga.ga_len].sg_name_u);
+    vim_free(HL_TABLE()[highlight_ga.ga_len].sg_name_u - HLNAME_KEY_OFF);
 }
 
 /*
@@ -4246,6 +4283,7 @@ highlight_changed(void)
     int		hlf;
     int		i;
     char_u	*p;
+    char_u	*default_hl;
     int		attr;
     char_u	*end;
     int		id;
@@ -4278,14 +4316,22 @@ highlight_changed(void)
 	highlight_ids[hlf] = 0;
     }
 
+    default_hl = get_highlight_default();
+
     // First set all attributes to their default value.
-    // Then use the attributes from the 'highlight' option.
+    // Then use the attributes from the 'highlight' option, unless it already
+    // matches the default and would repeat the same work.
     for (i = 0; i < 2; ++i)
     {
 	if (i)
+	{
+	    if (default_hl != NULL && p_hl != NULL
+				      && STRCMP(default_hl, p_hl) == 0)
+		continue;
 	    p = p_hl;
+	}
 	else
-	    p = get_highlight_default();
+	    p = default_hl;
 	if (p == NULL)	    // just in case
 	    continue;
 
