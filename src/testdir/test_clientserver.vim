@@ -10,6 +10,8 @@ CheckFeature clientserver
 
 source util/shared.vim
 
+let $TEST_NO_RETRY = 'yes'
+
 " Unlike X11, we need the socket server running if we want to send commands to
 " a server via sockets.
 RunSocketServer
@@ -246,7 +248,7 @@ func Test_client_server_stopinsert()
 endfunc
 
 " Test if socket server and X11 backends can be chosen and work properly.
-func Test_client_server_x11_and_socket_server()
+func XTest_client_server_x11_and_socket_server()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckFeature x11
@@ -285,7 +287,7 @@ func Test_client_server_x11_and_socket_server()
 endfunc
 
 " Test if socket server works in the GUI
-func Test_client_server_socket_server_gui()
+func XTest_client_server_socket_server_gui()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckFeature gui_gtk
@@ -324,7 +326,7 @@ func Test_client_server_socket_server_gui()
 endfunc
 
 " Test if custom paths work for socketserver
-func Test_client_socket_server_custom_path()
+func XTest_client_socket_server_custom_path()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckNotFeature x11

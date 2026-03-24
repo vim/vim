@@ -30,26 +30,35 @@
  * }
  */
 
+/*
+ * Represents a reply from a server2client call. Each client that calls a
+ * server2client call to us has its own ss_reply_T. Each time a client sends
+ * data using server2client, Vim creates a ss_reply_T if it doesn't exist and
+ * adds the string to the array. When remote_read is called, the server id is
+ * used to find the specific ss_reply_T, and a single string is popped from the
+ * array.
+ */
 typedef struct
 {
     char_u *sender;
     garray_T strings;
 } ss_reply_T;
 
-static channel_T   *server_channel = NULL;
+static channel_T    *server_channel = NULL;
 static char_u	    *server_address = NULL;
 static bool	    server_is_unix = false;
 static garray_T	    server_replies;
 
-static channel_T   *client_channels = NULL;
+static channel_T    *client_channels = NULL;
 
 #define FOR_ALL_CLIENTS(ch) \
     for (ch = client_channels; ch != NULL; ch = ch->ch_ss_next)
 
-static void socketserver_accept(channel_T *channel);
-static void socketserver_close(channel_T *channel);
-static ss_reply_T *socketserver_add_reply(char_u *sender);
-
+static void	    socketserver_cleanup(void);
+static char_u	    *socketserver_get_path_from_name(char_u *name);
+static void	    socketserver_accept(channel_T *channel);
+static void	    socketserver_close(channel_T *channel);
+static ss_reply_T   *socketserver_add_reply(char_u *sender);
 
 /*
  * Start the socketserver using the given name. Returns OK on success and FAIL
@@ -87,6 +96,7 @@ socketserver_start(char_u *name, bool quiet)
     server_address = vim_strsave(name);
     server_is_unix = is_unix;
 
+    vim_free(serverName);
     serverName = vim_strsave(name);
 # ifdef FEAT_EVAL
     set_vim_var_string(VV_SEND_SERVER, serverName, -1);
@@ -121,11 +131,82 @@ socketserver_stop(void)
 	mch_remove(path);
     }
     
+    socketserver_cleanup();
+
+    ch_log(NULL, "socketserver: shutting down server");
+}
+
+    static void
+socketserver_cleanup(void)
+{
     server_channel = NULL;
     vim_free(server_address);
     server_address = NULL;
 
-    ch_log(NULL, "socketserver: shutting down server");
+    // Free all replies
+    for (int i = 0; i < server_replies.ga_len; i++)
+    {
+	ss_reply_T *reply = (ss_reply_T *)server_replies.ga_data + i;
+
+	vim_free(reply->sender);
+	ga_clear_strings(&reply->strings);
+    }
+    ga_clear(&server_replies);
+}
+
+/*
+ * If "name" is a pathless name such as "VIM", search known directories for the
+ * socket named "name", and return the alloc'ed path to it. If "name" starts
+ * with a '/', './' or '../', then a copy of "name" is returned. Returns NULL
+ * on failure or if no socket was found.
+ */
+    static char_u *
+socketserver_get_path_from_name(char_u *name)
+{
+    char_u	    *buf;
+    const char_u    *known_dirs[] = {
+	mch_getenv("XDG_RUNTIME_DIR"),
+	mch_getenv("TMPDIR"),
+	(char_u *)"/tmp"
+    };
+
+    if (name == NULL)
+	return NULL;
+
+    // Ignore if name is a path
+    if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
+	    STRNCMP(name, "../", 3) == 0)
+	return vim_strsave(name);
+
+    buf = alloc(MAXPATHL);
+
+    if (buf == NULL)
+	return NULL;
+
+    for (size_t i = 0; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	const char_u *dir = known_dirs[i];
+
+	if (dir == NULL)
+	    continue;
+	else if (STRCMP(dir, "/tmp") == 0 ||
+		(known_dirs[1] != NULL && STRCMP(dir, known_dirs[1]) == 0))
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu/%s", dir,
+		    (unsigned long int)getuid(), name);
+	else
+	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+
+	if (mch_access((char *)buf, F_OK) != 0)
+	{
+	    if (server_address != NULL && STRCMP(buf, server_address) == 0)
+		// Can't connect to itself
+		break;
+	    return buf;
+	}
+    }
+
+    vim_free(buf);
+    return NULL;
 }
 
 /*
@@ -167,9 +248,7 @@ socketserver_accept(channel_T *channel)
     static void
 socketserver_close(channel_T *channel)
 {
-    server_channel = NULL;
-    vim_free(server_address);
-    server_address = NULL;
+    socketserver_cleanup();
 
     ch_log(NULL, "socketserver: server channel closed");
 }
@@ -393,10 +472,14 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	if (channel != NULL)
 	{
+	    if (channel->CH_SOCK_FD == INVALID_FD)
+		// Shouldn't happen
+		return FAIL;
+
 	    maxfd = channel->CH_SOCK_FD;
 	    FD_SET(channel->CH_SOCK_FD, &rfds);
 	}
-	if (server_channel != NULL)
+	if (server_channel != NULL && server_channel->CH_SOCK_FD != INVALID_FD)
 	{
 	    FD_SET(server_channel->CH_SOCK_FD, &rfds);
 	    if (server_channel->CH_SOCK_FD > maxfd)
@@ -423,11 +506,13 @@ socketserver_wait(channel_T *channel, int timeout)
 	if (ret > 0)
 	{
 	    if (server_channel != NULL
+		    && server_channel->CH_SOCK_FD != INVALID_FD
 		    && FD_ISSET(server_channel->CH_SOCK_FD, &rfds))
 		channel_check(server_channel, PART_SOCK);
 
 	    FOR_ALL_CLIENTS(ch)
-		if (FD_ISSET(ch->CH_SOCK_FD, &rfds))
+		if (ch->CH_SOCK_FD != INVALID_FD
+			&& FD_ISSET(ch->CH_SOCK_FD, &rfds))
 		    channel_check(ch, PART_SOCK);
 
 	    socketserver_parse_messages();
@@ -435,7 +520,8 @@ socketserver_wait(channel_T *channel, int timeout)
 	    if (channel == NULL)
 		return OK;
 
-	    if (FD_ISSET(channel->CH_SOCK_FD, &rfds))
+	    if (channel->CH_SOCK_FD != INVALID_FD
+		    && FD_ISSET(channel->CH_SOCK_FD, &rfds))
 	    {
 		channel_check(channel, PART_SOCK);
 		return OK;
@@ -448,10 +534,14 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	if (channel != NULL)
 	{
+	    if (channel->CH_SOCK_FD == INVALID_FD)
+		// Shouldn't happen
+		return FAIL;
+
 	    fds[nfd].fd = channel->CH_SOCK_FD;
 	    fds[nfd++].fd = POLLIN;
 	}
-	if (server_channel != NULL)
+	if (server_channel != NULL && server_channel->CH_SOCK_FD != INVALID_FD)
 	{
 	    fds[nfd].fd = server_channel->CH_SOCK_FD;
 	    fds[nfd++].fd = POLLIN;
@@ -475,11 +565,15 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	if (ret > 0)
 	{
-	    if (server_channel != NULL && fds[1].revents & POLLIN)
+	    if (server_channel != NULL
+		    && server_channel->CH_SOCK_FD != INVALID_FD
+		    && fds[1].revents & POLLIN)
 		channel_check(server_channel, PART_SOCK);
 
 	    FOR_ALL_CLIENTS(ch)
-		if (fds[ch->ch_part[PART_SOCK].ch_poll_idx].revents & POLLIN)
+		if (ch->CH_SOCK_FD != INVALID_FD
+			&& fds[ch->ch_part[PART_SOCK].ch_poll_idx]
+			.revents & POLLIN)
 		    channel_check(ch, PART_SOCK);
 
 	    socketserver_parse_messages();
@@ -487,7 +581,8 @@ socketserver_wait(channel_T *channel, int timeout)
 	    if (channel == NULL)
 		return OK;
 
-	    if (fds[0].revents & POLLIN)
+	    if (channel->CH_SOCK_FD != INVALID_FD
+		    && fds[0].revents & POLLIN)
 	    {
 		channel_check(channel, PART_SOCK);
 		return OK;
@@ -507,14 +602,17 @@ socketserver_get_channel(char_u *name)
     bool	is_unix;
     channel_T	*channel;
 
-    if (channel_parse_address(name, (char *)IObuff, IOSIZE, &port, &is_unix,
-		false, false) == FAIL)
+    if (channel_parse_address(name, (char *)address_buf,
+		ADDRESS_BUFSIZE, &port, &is_unix, false, false) == FAIL)
 	return NULL;
 
     if (is_unix)
-	channel = channel_open_unix((char *)IObuff, NULL);
+	channel = channel_open_unix((char *)address_buf, NULL);
     else
-	channel = channel_open((char *)IObuff, port, 1000, NULL);
+	channel =  channel_open((char *)address_buf, port, 1000, NULL);
+
+    if (channel == NULL)
+	semsg(_(e_socket_server_failed_connecting), name);
 
     return channel;
 }
@@ -527,9 +625,9 @@ socketserver_send(
 	char_u *name,
         char_u *str,
 	char_u **result,
-	int is_expr,
+	bool is_expr,
 	int timeout,
-	int silent)
+	bool silent)
 {
     int		rcode = -1;
     channel_T	*channel;
@@ -608,7 +706,7 @@ socketserver_send(
 	    *result = vim_strsave(di->di_tv.vval.v_string);
 	else
 	{
-	    dict_unref(dict);
+	    free_tv(resp_tv);
 	    goto exit;
 	}
     }
@@ -785,6 +883,33 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
 	socketserver_remove_reply(client);
 
     return OK;
+}
+
+/*
+ * Check for any replies for "sender". Returns 1 if there is and places the
+ * reply in "str" without consuming it (note that a copy is not created).
+ * Returns 0 if otherwise and -1 on
+ * error.
+ */
+    int
+socketserver_peek_reply(char_u *sender, char_u **str)
+{
+    ss_reply_T *reply;
+
+    if (server_channel == NULL || server_address == NULL)
+    {
+	emsg(_(e_socket_server_not_online));
+	return FAIL;
+    }
+
+    reply = socketserver_get_reply(sender, NULL);
+    if (reply != NULL && reply->strings.ga_len > 0)
+    {
+        if (str != NULL)
+            *str = ((char_u **)reply->strings.ga_data)[0];
+        return 1;
+    }
+    return 0;
 }
 
 #endif // FEAT_SOCKETSERVER
