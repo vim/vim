@@ -2115,6 +2115,44 @@ func Test_popup_position_adjust()
   %bwipe!
 endfunc
 
+func Test_popup_wrap_with_maxwidth()
+  " When wrap is on and maxwidth is explicitly set, a popup near the right
+  " edge of the screen should wrap text within maxwidth, not shift left and
+  " display on one line.  Regression test for issue #19767.
+  let maxw = 20
+  let col = &columns - maxw + 1
+
+  " Text longer than maxwidth should wrap, not cause shift-left.
+  let p = popup_create(repeat('x', 40), #{
+	\ line: 5, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap with maxwidth at right edge',
+	\ 4, col, maxw, 2)
+  call popup_close(p)
+
+  " Text much longer than maxwidth: should still wrap within maxwidth.
+  let p = popup_create(repeat('y', 80), #{
+	\ line: 10, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap long text with maxwidth',
+	\ 7, col, maxw, 4)
+  call popup_close(p)
+
+  " Text shorter than maxwidth: no shift and no wrap needed.
+  let p = popup_create(repeat('z', 15), #{
+	\ line: 5, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'short text with maxwidth', 5, col, 15, 1)
+  call popup_close(p)
+
+  " When maxwidth is not set, shift-left should still work (patch 9.1.0949).
+  let p = popup_create(repeat('w', 40), #{
+	\ line: 5, col: col, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap without maxwidth shifts left',
+	\ 5, col - maxw, 40, 1)
+  call popup_close(p)
+
+  call popup_clear()
+  %bwipe!
+endfunc
+
 func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
