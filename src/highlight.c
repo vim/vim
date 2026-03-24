@@ -220,7 +220,7 @@ typedef struct {
 
 // hashtable for quick highlight group name lookup
 static hashtab_T highlight_ht;
-static int	 highlight_ht_inited = FALSE;
+static bool	 highlight_ht_inited = false;
 
 /*
  * An attribute number is the index in attr_table plus ATTR_OFF.
@@ -2054,6 +2054,7 @@ free_highlight(void)
     }
     ga_clear(&highlight_ga);
     hash_clear(&highlight_ht);
+    highlight_ht_inited = false;
 }
 #endif
 
@@ -3972,7 +3973,7 @@ syn_add_group(char_u *name)
 	highlight_ga.ga_itemsize = sizeof(hl_group_T);
 	highlight_ga.ga_growsize = 10;
 	hash_init(&highlight_ht);
-	highlight_ht_inited = TRUE;
+	highlight_ht_inited = true;
     }
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
