@@ -1722,6 +1722,13 @@ resize_idle_cb(gpointer data UNUSED)
     cur_width = w;
     cur_height = h;
 
+    // Shrink drawarea's size request so the window can shrink.
+    // Without this, set_size_request prevents GTK from making
+    // the drawarea smaller than its previous size.
+    gtk_widget_set_size_request(gui.drawarea, 1, 1);
+    gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(gui.drawarea), 1);
+    gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(gui.drawarea), 1);
+
     gui_resize_shell(w, h);
     return FALSE;
 }
