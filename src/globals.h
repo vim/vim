@@ -2096,7 +2096,7 @@ EXTERN int wayland_no_connect INIT(= FALSE);
 
 #endif
 
-#if defined(FEAT_CLIENTSERVER) && !defined(MSWIN)
+#if defined(FEAT_CLIENTSERVER)
 
 // Backend for clientserver functionality
 typedef enum {

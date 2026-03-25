@@ -114,9 +114,7 @@ socketserver_start(char_u *name, bool quiet)
 
     vim_free(serverName);
     serverName = vim_strsave(server_address);
-# ifdef FEAT_EVAL
     set_vim_var_string(VV_SEND_SERVER, serverName, -1);
-# endif
 
     ga_init2(&server_replies, sizeof(ss_reply_T), 2);
 
@@ -178,6 +176,10 @@ socketserver_cleanup(void)
     char_u *
 socketserver_list(void)
 {
+#ifdef MSWIN
+    // Only support addresses on Windows
+    return vim_strsave("");
+#else
     garray_T	    str;
     string_T	    buf;
     string_T	    path;
@@ -245,6 +247,7 @@ socketserver_list(void)
     ga_append(&str, NUL);
 
     return str.ga_data;
+#endif
 }
 
 /*
@@ -256,17 +259,22 @@ socketserver_list(void)
     static char_u *
 socketserver_create_path(char_u *name)
 {
-    char_u  *buf = NULL;
-    int	    buflen = STRLEN(name) + NUMBUFLEN;
-    char_u  *path = NULL;
-
 #ifdef MSWIN
-    if (STRNCMP(name, "a/", 2) == 0)
+    // Only support channel addresses on Windows
+    if (STRNCMP(name, "a/", 2) == 0 && STRLEN(name) > 2)
+	return vim_strsave(name + 2);
+    else
     {
 	semsg(_(e_invalid_argument_str), name);
 	return NULL;
     }
-#endif
+#else
+    char_u  *buf = NULL;
+    int	    buflen = STRLEN(name) + NUMBUFLEN;
+    char_u  *path = NULL;
+
+    if (STRNCMP(name, "a/", 2) == 0 && STRLEN(name) > 2)
+	return vim_strsave(name + 2);
 
     for (int i = 0; i < 1000; i++)
     {
@@ -289,6 +297,7 @@ socketserver_create_path(char_u *name)
     vim_free(buf);
 
     return path;
+#endif
 }
 
 /*
@@ -304,10 +313,20 @@ socketserver_create_path(char_u *name)
  * Returns path on success and NULL on failure.
  */
     static char_u *
-socketserver_get_path(char_u *name, bool new)
+socketserver_get_path(char_u *name, bool new UNUSED)
 {
+#ifdef MSWIN
+    // Only support channel addresses on Windows
+    if (STRNCMP(name, "a/", 2) == 0 && STRLEN(name) > 2)
+	return vim_strsave(name + 2);
+    else
+    {
+	semsg(_(e_invalid_argument_str), name);
+	return NULL;
+    }
+#else
     char_u	    *buf;
-    bool	    fail_dircreate = false;
+    bool	    res = false;
     channel_T	    *channel;
     const char_u    *known_dirs[] = {
 	mch_getenv("XDG_RUNTIME_DIR"),
@@ -325,12 +344,6 @@ socketserver_get_path(char_u *name, bool new)
 
     if (STRNCMP(name, "a/", 2) == 0 && STRLEN(name) > 2)
 	return vim_strsave(name + 2);
-
-#ifdef MSWIN
-    // Only support addresses or explicit paths on Windows for now
-    semsg(_(e_invalid_argument_str), name);
-    return NULL;
-#endif
 
     if (vim_strchr(name, '/') != NULL)
     {
@@ -357,10 +370,7 @@ socketserver_get_path(char_u *name, bool new)
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu", dir,
 		    (unsigned long int)getuid());
 	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
-	    {
-		fail_dircreate = true;
-		break;
-	    }
+		continue;
 
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu/%s", dir,
 		    (unsigned long int)getuid(), name);
@@ -369,10 +379,7 @@ socketserver_get_path(char_u *name, bool new)
 	{
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim", dir);
 	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
-	    {
-		fail_dircreate = true;
-		break;
-	    }
+		continue;
 
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
 	}
@@ -381,24 +388,19 @@ socketserver_get_path(char_u *name, bool new)
 	// if it is a dead socket, if it is then remove it.
 	if (new)
 	{
-	    if (mch_access((char *)buf, F_OK) != 0)
-		got = true;
+	    emsg_silent++;
+	    channel = channel_open_unix((char *)buf, NULL);
+	    emsg_silent--;
+
+	    if (channel != NULL)
+	    {
+		channel_close(channel, false);
+		channel_clear(channel);
+	    }
 	    else
 	    {
-		emsg_silent++;
-		channel = channel_open_unix((char *)buf, NULL);
-		emsg_silent--;
-
-		if (channel != NULL)
-		{
-		    channel_close(channel, false);
-		    channel_clear(channel);
-		}
-		else
-		{
-		    mch_remove(buf);
-		    got = true;
-		}
+		mch_remove(buf);
+		got = true;
 	    }
 	}
 
@@ -409,14 +411,16 @@ socketserver_get_path(char_u *name, bool new)
 		break;
 	    return buf;
 	}
+	res = true;
+	break;
     }
 
-    if (fail_dircreate)
-	semsg(_("Failed creating socket directory: %s"),
-		strerror(errno));
+    if (!res)
+	semsg(_("Failed creating socket directory: %s"), strerror(errno));
 
     vim_free(buf);
     return NULL;
+#endif
 }
 
 /*

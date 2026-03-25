@@ -1664,13 +1664,6 @@ channel_listen_unix(
     if (replace)
 	// Unlink the socket in case it already exists
 	unlink(server.sun_path);
-    else if (mch_access(server.sun_path, F_OK) == 0)
-    {
-	semsg(_(e_invalid_argument_str), path);
-	close(sd);
-	channel_free(channel);
-	return NULL;
-    }
 
     // Bind the socket to the path
     server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
