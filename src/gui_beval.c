@@ -16,7 +16,9 @@
 #if !defined(FEAT_GUI_MSWIN)
 
 # ifdef FEAT_GUI_GTK
-#  if GTK_CHECK_VERSION(3,0,0)
+#  ifdef USE_GTK4
+#   include <gdk/gdkkeysyms.h>
+#  elif GTK_CHECK_VERSION(3,0,0)
 #   include <gdk/gdkkeysyms-compat.h>
 #  else
 #   include <gdk/gdkkeysyms.h>
