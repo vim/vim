@@ -347,7 +347,7 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 
     if (vim_strchr(name, '/') != NULL)
     {
-	semsg(_(e_invalid_server_id_used_str), name);
+	semsg(_(e_socket_name_no_slashes), name);
 	return NULL;
     }
 
