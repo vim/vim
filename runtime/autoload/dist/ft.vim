@@ -1720,6 +1720,8 @@ const ft_from_ext = {
   "tdf": "ahdl",
   # AIDL
   "aidl": "aidl",
+  # Algol 68
+  "a68": "algol68",
   # AMPL
   "run": "ampl",
   # ANTLR / PCCTS
