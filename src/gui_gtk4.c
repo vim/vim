@@ -286,6 +286,23 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
     gui_gtk_form_move_resize(GTK_FORM(gui.formwin), gui.drawarea, x, y, w, h);
+    // Force immediate size allocation for drawarea
+    gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(gui.drawarea), w);
+    gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(gui.drawarea), h);
+
+    // Update surface to match new text area size
+    if (w > 0 && h > 0)
+    {
+	if (gui.surface != NULL)
+	{
+	    int sw = cairo_image_surface_get_width(gui.surface);
+	    int sh = cairo_image_surface_get_height(gui.surface);
+	    if (sw == w && sh == h)
+		return;
+	    cairo_surface_destroy(gui.surface);
+	}
+	gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+    }
 }
 
 /*
