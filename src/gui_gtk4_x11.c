@@ -201,6 +201,9 @@ static void leave_notify_event(GtkEventControllerMotion *controller, gpointer da
 static gboolean scroll_event(GtkEventControllerScroll *controller, double dx, double dy, gpointer data);
 static void focus_in_event(GtkEventControllerFocus *controller, gpointer data);
 static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
+#ifdef FEAT_DND
+static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data);
+#endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
@@ -458,6 +461,18 @@ gui_mch_init(void)
 			 G_CALLBACK(focus_out_event), NULL);
 	gtk_widget_add_controller(gui.drawarea, focus);
     }
+
+#ifdef FEAT_DND
+    // Set up drag-and-drop target for files and text.
+    {
+	GtkDropTarget *drop = gtk_drop_target_new(G_TYPE_INVALID, GDK_ACTION_COPY);
+	GType types[] = { GDK_TYPE_FILE_LIST, G_TYPE_STRING };
+	gtk_drop_target_set_gtypes(drop, types, 2);
+	g_signal_connect(drop, "drop",
+			 G_CALLBACK(drop_cb), NULL);
+	gtk_widget_add_controller(gui.drawarea, GTK_EVENT_CONTROLLER(drop));
+    }
+#endif
 
     gui.border_offset = gui.border_width;
 
@@ -1688,6 +1703,65 @@ mainwin_notify_size_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
     gui_resize_shell(w, h);
     in_mainwin_resize = FALSE;
 }
+
+#ifdef FEAT_DND
+/*
+ * Drag-and-drop handler for files and text.
+ */
+    static gboolean
+drop_cb(GtkDropTarget *target UNUSED, const GValue *value,
+	double x, double y, gpointer data UNUSED)
+{
+    if (G_VALUE_HOLDS(value, GDK_TYPE_FILE_LIST))
+    {
+	GSList	*files = g_value_get_boxed(value);
+	int	nfiles = g_slist_length(files);
+	char_u	**fnames;
+	int	i;
+
+	if (nfiles <= 0)
+	    return FALSE;
+
+	fnames = ALLOC_MULT(char_u *, nfiles);
+	if (fnames == NULL)
+	    return FALSE;
+
+	i = 0;
+	for (GSList *l = files; l != NULL; l = l->next)
+	{
+	    GFile *file = l->data;
+	    char *path = g_file_get_path(file);
+	    if (path != NULL)
+		fnames[i++] = vim_strsave((char_u *)path);
+	    g_free(path);
+	}
+	nfiles = i;
+
+	if (nfiles > 0)
+	    gui_handle_drop((int)x, (int)y, 0, fnames, nfiles);
+	else
+	    vim_free(fnames);
+
+	return TRUE;
+    }
+    else if (G_VALUE_HOLDS(value, G_TYPE_STRING))
+    {
+	const char  *text = g_value_get_string(value);
+	char_u	    dropkey[6] = {CSI, KS_MODIFIER, 0,
+				  CSI, KS_EXTRA, (char_u)KE_DROP};
+
+	if (text == NULL || *text == NUL)
+	    return FALSE;
+
+	dnd_yank_drag_data((char_u *)text, (long)STRLEN(text));
+	add_to_input_buf(dropkey + 3, 3);
+
+	return TRUE;
+    }
+
+    return FALSE;
+}
+#endif
 
     static void
 mainwin_destroy_cb(GObject *object UNUSED, gpointer data UNUSED)
