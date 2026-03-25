@@ -452,6 +452,10 @@ clip_auto_select(void)
     int
 clip_isautosel_star(void)
 {
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	return false;
+# endif
 # ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASEL) != NULL
@@ -467,6 +471,10 @@ clip_isautosel_star(void)
     int
 clip_isautosel_plus(void)
 {
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	return false;
+# endif
 # ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASELPLUS) != NULL;
