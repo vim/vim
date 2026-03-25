@@ -3979,11 +3979,11 @@ func Test_removed_prop_with_text_cleans_up_array()
   let id2 = prop_add(1, 10, #{type: 'some', text: "HERE"})
   call assert_equal(-2, id2)
 
-  " removing the props resets the index
+  " IDs are not recycled; new IDs keep decreasing.
   call prop_remove(#{id: id1})
   call prop_remove(#{id: id2})
   let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
+  call assert_equal(-3, id1)
 
   call prop_type_delete('some')
   bwipe!
@@ -4905,6 +4905,71 @@ func Test_textprop_materialize_list()
 	call assert_equal([], prop_list(1, #{ids: ids}))
 
 	call assert_equal([], prop_list(1, #{ids: 3->range()}))
+endfunc
+
+func Test_textprop_virtual_text_id_and_undo()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  call prop_type_add('comment', {'highlight': 'Directory'})
+
+  " IDs are unique and monotonically decreasing.
+  let id_a = prop_add(1, 0, {'type': 'comment', 'text': '<text-a>'})
+  let id_b = prop_add(2, 0, {'type': 'comment', 'text': '<text-b>'})
+  call assert_equal(-1, id_a)
+  call assert_equal(-2, id_b)
+
+  " After remove + re-add, a new ID is assigned (no recycling).
+  call prop_remove({'type': 'comment'}, 1)
+  let id_a2 = prop_add(1, 0, {'type': 'comment', 'text': '<text-a2>'})
+  call assert_equal(-3, id_a2)
+
+  " Make three text edits with different virtual text at each stage.
+  " edit1: text="one!", vtext='<text-a2>'
+  set undolevels&
+  exe "normal! 1GA!\<Esc>"
+
+  " edit2: text="one!!", vtext='<EDIT2>'
+  set undolevels&
+  call prop_remove({'type': 'comment'}, 1)
+  call prop_add(1, 0, {'type': 'comment', 'text': '<EDIT2>'})
+  exe "normal! 1GA!\<Esc>"
+
+  " edit3: text="one!!?", vtext='<EDIT3>'
+  set undolevels&
+  call prop_remove({'type': 'comment'}, 1)
+  call prop_add(1, 0, {'type': 'comment', 'text': '<EDIT3>'})
+  exe "normal! 1GA?\<Esc>"
+
+  " undo x3, redo x2, undo x1
+  undo
+  call assert_equal('one!!', getline(1), 'undo1: text')
+  call assert_equal('<EDIT3>', prop_list(1)[0].text, 'undo1: vtext')
+
+  undo
+  call assert_equal('one!', getline(1), 'undo2: text')
+  call assert_equal('<EDIT2>', prop_list(1)[0].text, 'undo2: vtext')
+
+  undo
+  call assert_equal('one', getline(1), 'undo3: text')
+  call assert_equal('<text-a2>', prop_list(1)[0].text, 'undo3: vtext')
+
+  redo
+  call assert_equal('one!', getline(1), 'redo1: text')
+  call assert_equal('<EDIT2>', prop_list(1)[0].text, 'redo1: vtext')
+
+  redo
+  call assert_equal('one!!', getline(1), 'redo2: text')
+  call assert_equal('<EDIT3>', prop_list(1)[0].text, 'redo2: vtext')
+
+  undo
+  call assert_equal('one!', getline(1), 'undo4: text')
+  call assert_equal('<EDIT2>', prop_list(1)[0].text, 'undo4: vtext')
+
+  call prop_remove({'type': 'comment'}, 1)
+  call prop_remove({'type': 'comment'}, 2)
+  call prop_type_delete('comment')
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

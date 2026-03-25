@@ -110,6 +110,10 @@ static void u_freeheader(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentry(u_entry_T *, long);
+#ifdef FEAT_PROP_POPUP
+static void u_ref_vtext(undoline_T *ul);
+static void u_unref_vtext(undoline_T *ul);
+#endif
 #ifdef FEAT_PERSISTENT_UNDO
 # ifdef FEAT_CRYPT
 static int undo_flush(bufinfo_T *bi);
@@ -374,7 +378,12 @@ u_save_line(undoline_T *ul, linenr_T lnum)
 	ul->ul_len = curbuf->b_ml.ml_line_len;
 	ul->ul_line = vim_memsave(line, ul->ul_len);
     }
-    return ul->ul_line == NULL ? FAIL : OK;
+    if (ul->ul_line == NULL)
+	return FAIL;
+#ifdef FEAT_PROP_POPUP
+    u_ref_vtext(ul);
+#endif
+    return OK;
 }
 
 #ifdef FEAT_PROP_POPUP
@@ -397,6 +406,56 @@ has_prop_w_flags(linenr_T lnum, int flags)
 	    return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Increment refcount for all virtual text properties in undoline "ul".
+ */
+    static void
+u_ref_vtext(undoline_T *ul)
+{
+    char_u	*text_start;
+    int		proplen;
+    int		i;
+
+    if (ul->ul_line == NULL || ul->ul_len <= ul->ul_textlen + 1)
+	return;
+    text_start = ul->ul_line + ul->ul_textlen + 1;
+    proplen = (int)((ul->ul_len - ul->ul_textlen - 1) / sizeof(textprop_T));
+    for (i = 0; i < proplen; ++i)
+    {
+	textprop_T prop;
+
+	mch_memmove(&prop, text_start + i * sizeof(textprop_T),
+						      sizeof(textprop_T));
+	if (prop.tp_id < 0 && prop.tp_vtext != NULL)
+	    vtext_ref(prop.tp_vtext);
+    }
+}
+
+/*
+ * Decrement refcount for all virtual text properties in undoline "ul".
+ */
+    static void
+u_unref_vtext(undoline_T *ul)
+{
+    char_u	*text_start;
+    int		proplen;
+    int		i;
+
+    if (ul->ul_line == NULL || ul->ul_len <= ul->ul_textlen + 1)
+	return;
+    text_start = ul->ul_line + ul->ul_textlen + 1;
+    proplen = (int)((ul->ul_len - ul->ul_textlen - 1) / sizeof(textprop_T));
+    for (i = 0; i < proplen; ++i)
+    {
+	textprop_T prop;
+
+	mch_memmove(&prop, text_start + i * sizeof(textprop_T),
+						      sizeof(textprop_T));
+	if (prop.tp_id < 0 && prop.tp_vtext != NULL)
+	    vtext_unref(prop.tp_vtext);
+    }
 }
 #endif
 
@@ -2816,6 +2875,8 @@ u_undoredo(int undo)
 		else
 		    ml_append_flags(lnum, uep->ue_array[i].ul_line,
 			     (colnr_T)uep->ue_array[i].ul_len, ML_APPEND_UNDO);
+		// Don't unref vtexts here: ownership of the tp_vtext
+		// pointers transfers from the undo entry to the memline.
 		vim_free(uep->ue_array[i].ul_line);
 	    }
 	    vim_free((char_u *)uep->ue_array);
@@ -3461,7 +3522,13 @@ u_freeentries(
 u_freeentry(u_entry_T *uep, long n)
 {
     while (n > 0)
-	vim_free(uep->ue_array[--n].ul_line);
+    {
+	--n;
+#ifdef FEAT_PROP_POPUP
+	u_unref_vtext(&uep->ue_array[n]);
+#endif
+	vim_free(uep->ue_array[n].ul_line);
+    }
     vim_free((char_u *)uep->ue_array);
 #ifdef U_DEBUG
     uep->ue_magic = 0;
@@ -3492,6 +3559,9 @@ u_blockfree(buf_T *buf)
 {
     while (buf->b_u_oldhead != NULL)
 	u_freeheader(buf, buf->b_u_oldhead, NULL);
+#ifdef FEAT_PROP_POPUP
+    u_unref_vtext(&buf->b_u_line_ptr);
+#endif
     vim_free(buf->b_u_line_ptr.ul_line);
 }
 
@@ -3537,7 +3607,9 @@ u_clearline(void)
 {
     if (curbuf->b_u_line_ptr.ul_line == NULL)
 	return;
-
+#ifdef FEAT_PROP_POPUP
+    u_unref_vtext(&curbuf->b_u_line_ptr);
+#endif
     VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
     curbuf->b_u_line_ptr.ul_len = 0;
     curbuf->b_u_line_ptr.ul_textlen = 0;

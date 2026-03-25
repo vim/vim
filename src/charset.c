@@ -1289,7 +1289,6 @@ win_lbr_chartabsize(
 	int	    charlen = *s == NUL ? 1 : mb_ptr2len(s);
 	int	    i;
 	int	    col = (int)(s - line);
-	garray_T    *gap = &wp->w_buffer->b_textprop_text;
 
 	// The "$" for 'list' mode will go between the EOL and
 	// the text prop, account for that.
@@ -1307,15 +1306,15 @@ win_lbr_chartabsize(
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
+		    && tp->tp_vtext != NULL
 		    && ((tp->tp_col - 1 >= col
 					     && tp->tp_col - 1 < col + charlen)
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: s[0] == NUL && cts->cts_with_trailing)))
-		    && -tp->tp_id - 1 < gap->ga_len)
+				: s[0] == NUL && cts->cts_with_trailing))))
 	    {
-		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
+		char_u *p = tp->tp_vtext->vt_text;
 
 		if (p != NULL)
 		{

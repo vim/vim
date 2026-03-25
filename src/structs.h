@@ -890,6 +890,13 @@ typedef struct memline
  * When stored in memline they are after the text, ml_line_len is larger than
  * STRLEN(ml_line_ptr) + 1.
  */
+// Reference-counted virtual text string.
+typedef struct vtext_S
+{
+    int		vt_refcount;	// reference count; free when it reaches zero
+    char_u	vt_text[];	// NUL-terminated text (flexible array member)
+} vtext_T;
+
 typedef struct textprop_S
 {
     colnr_T	tp_col;		// start column (one based, in bytes)
@@ -900,6 +907,7 @@ typedef struct textprop_S
     int		tp_flags;	// TP_FLAG_ values
     int		tp_padleft;	// left padding between text line and virtual
 				// text
+    vtext_T	*tp_vtext;	// virtual text (ref-counted), or NULL
 } textprop_T;
 
 #define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
@@ -3550,7 +3558,8 @@ struct file_buffer
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
     proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
-    garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
+    int		b_textprop_next_vt_id;	// next virtual text property ID
+					// (decremented for each new one)
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)

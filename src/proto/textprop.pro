@@ -1,4 +1,7 @@
 /* textprop.c */
+vtext_T *vtext_alloc(char_u *text);
+void vtext_ref(vtext_T *vt);
+void vtext_unref(vtext_T *vt);
 int find_prop_type_id(char_u *name, buf_T *buf);
 void f_prop_add(typval_T *argvars, typval_T *rettv);
 void f_prop_add_list(typval_T *argvars, typval_T *rettv);

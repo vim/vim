@@ -1117,7 +1117,7 @@ free_buffer_stuff(
     netbeans_file_killed(buf);
 #endif
 #ifdef FEAT_PROP_POPUP
-    ga_clear_strings(&buf->b_textprop_text);
+    // Virtual text is managed via tp_vtext with reference counting.
 #endif
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs

@@ -16,6 +16,45 @@
 #if defined(FEAT_PROP_POPUP)
 
 /*
+ * Allocate a reference-counted virtual text string.
+ * The returned vtext_T has refcount 1.
+ */
+    vtext_T *
+vtext_alloc(char_u *text)
+{
+    size_t  len = STRLEN(text) + 1;
+    vtext_T *vt = alloc(offsetof(vtext_T, vt_text) + len);
+
+    if (vt != NULL)
+    {
+	vt->vt_refcount = 1;
+	mch_memmove(vt->vt_text, text, len);
+    }
+    return vt;
+}
+
+/*
+ * Increment the reference count of a vtext_T.
+ */
+    void
+vtext_ref(vtext_T *vt)
+{
+    if (vt != NULL)
+	++vt->vt_refcount;
+}
+
+/*
+ * Decrement the reference count of a vtext_T.
+ * Free it when the count reaches zero.
+ */
+    void
+vtext_unref(vtext_T *vt)
+{
+    if (vt != NULL && --vt->vt_refcount <= 0)
+	vim_free(vt);
+}
+
+/*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
  * This avoids adding a pointer to the hashtable item.
  * PT2HIKEY() converts a proptype pointer to a hashitem key pointer.
@@ -210,24 +249,13 @@ prop_add_one(
 
     if (text != NULL)
     {
-	garray_T    *gap = &buf->b_textprop_text;
 	char_u	    *p;
-
-	// double check we got the right ID
-	if (-id - 1 != gap->ga_len)
-	    iemsg("text prop ID mismatch");
-	if (gap->ga_growsize == 0)
-	    ga_init2(gap, sizeof(char *), 50);
-	if (ga_grow(gap, 1) == FAIL)
-	    goto theend;
-	((char_u **)gap->ga_data)[gap->ga_len++] = text;
 
 	// change any control character (Tab, Newline, etc.) to a Space to make
 	// it simpler to compute the size
 	for (p = text; *p != NUL; MB_PTR_ADV(p))
 	    if (*p < ' ')
 		*p = ' ';
-	text = NULL;
     }
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
@@ -309,6 +337,7 @@ prop_add_one(
 			    | ((type->pt_flags & PT_FLAG_INS_START_INCL)
 						     ? TP_FLAG_START_INCL : 0);
 	tmp_prop.tp_padleft = text_padding_left;
+	tmp_prop.tp_vtext = (text_arg != NULL) ? vtext_alloc(text_arg) : NULL;
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
 
@@ -430,8 +459,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     static int
 get_textprop_id(buf_T *buf)
 {
-    // TODO: recycle deleted entries
-    return -(buf->b_textprop_text.ga_len + 1);
+    return --buf->b_textprop_next_vt_id;
 }
 
 /*
@@ -966,11 +994,7 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
     int buflocal = TRUE;
-    // A negative tp_id normally means a virtual text property, but a user
-    // may set a negative id for a regular property when no virtual text
-    // properties exist.  Guard against that by checking the index is valid.
-    int virtualtext_prop = prop->tp_id < 0
-			   && -prop->tp_id - 1 < buf->b_textprop_text.ga_len;
+    int virtualtext_prop = prop->tp_id < 0 && prop->tp_vtext != NULL;
 
     dict_add_number(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
     if (!virtualtext_prop)
@@ -998,12 +1022,7 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
     if (virtualtext_prop)
     {
 	// virtual text property
-	garray_T    *gap = &buf->b_textprop_text;
-	char_u	    *text;
-
-	// negate the property id to get the string index
-	text = ((char_u **)gap->ga_data)[-prop->tp_id - 1];
-	dict_add_string(dict, "text", text);
+	dict_add_string(dict, "text", prop->tp_vtext->vt_text);
 
 	// text_align
 	char_u	    *text_align = NULL;
@@ -1739,19 +1758,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		    buf->b_ml.ml_line_len -= sizeof(textprop_T);
 		    --idx;
 
-		    if (textprop.tp_id < 0)
-		    {
-			garray_T    *gap = &buf->b_textprop_text;
-			int	    ii = -textprop.tp_id - 1;
-
-			// negative ID: property with text - free the text
-			if (ii < gap->ga_len)
-			{
-			    char_u **p = ((char_u **)gap->ga_data) + ii;
-			    VIM_CLEAR(*p);
-			    did_remove_text = TRUE;
-			}
-		    }
+		    if (textprop.tp_vtext != NULL)
+			vtext_unref(textprop.tp_vtext);
 
 		    if (first_changed == 0)
 			first_changed = lnum;
@@ -1769,16 +1777,6 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	changed_line_display_buf(buf);
 	changed_lines_buf(buf, first_changed, last_changed + 1, 0);
 	redraw_buf_later(buf, UPD_VALID);
-    }
-
-    if (did_remove_text)
-    {
-	garray_T    *gap = &buf->b_textprop_text;
-
-	// Reduce the growarray size for NULL pointers at the end.
-	while (gap->ga_len > 0
-			 && ((char_u **)gap->ga_data)[gap->ga_len - 1] == NULL)
-	    --gap->ga_len;
     }
 
 cleanup_prop_remove:

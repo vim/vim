@@ -2246,13 +2246,10 @@ win_line(
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
-			    && -text_prop_id
-				      <= wp->w_buffer->b_textprop_text.ga_len)
+				 && text_props[used_tpi].tp_vtext != NULL)
 		    {
 			textprop_T  *tp = &text_props[used_tpi];
-			char_u	    *p = ((char_u **)wp->w_buffer
-						   ->b_textprop_text.ga_data)[
-							   -text_prop_id - 1];
+			char_u	    *p = tp->tp_vtext->vt_text;
 			int	    above = (tp->tp_flags
 							& TP_FLAG_ALIGN_ABOVE);
 			int	    bail_out = FALSE;
