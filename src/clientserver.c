@@ -223,7 +223,9 @@ exec_on_server(mparm_T *parmp)
     if (parmp->servername != NULL)
     {
 	serverSetName(parmp->servername);
+#  ifndef FEAT_SOCKETSERVER
 	vim_free(parmp->servername);
+#  endif
     }
 # endif
 }
@@ -275,10 +277,15 @@ prepare_server(mparm_T *parmp)
 #  endif
 	vim_free(parmp->servername);
     }
-#  ifdef FEAT_X11
     else
-	serverDelayedStartName = parmp->servername;
+    {
+#  ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	    serverDelayedStartName = parmp->servername;
+	else
 #  endif
+	    vim_free(parmp->servername);
+    }
 # endif
 
     /*

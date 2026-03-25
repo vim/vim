@@ -55,8 +55,8 @@ static channel_T    *client_channels = NULL;
     for (ch = client_channels; ch != NULL; ch = ch->ch_ss_next)
 
 static void	    socketserver_cleanup(void);
-static char_u	    *socketserver_create_path(char_u *name);
-static char_u	    *socketserver_get_path(char_u *name, bool new);
+static char_u	    *socketserver_create_path(char_u *name, bool quiet);
+static char_u	    *socketserver_get_path(char_u *name, bool new, bool quiet);
 static void	    socketserver_accept(channel_T *channel);
 static void	    socketserver_close(channel_T *channel);
 static ss_reply_T   *socketserver_add_reply(char_u *sender);
@@ -86,7 +86,7 @@ socketserver_start(char_u *name, bool quiet)
     }
     else
     {
-	tofree = socketserver_create_path(name);
+	tofree = socketserver_create_path(name, quiet);
 	if (tofree == NULL)
 	    return FAIL;
 	address = tofree;
@@ -261,7 +261,7 @@ socketserver_list(void)
  * be used. Returns alloced string or NULL on failure.
  */
     static char_u *
-socketserver_create_path(char_u *name)
+socketserver_create_path(char_u *name, bool quiet)
 {
 #ifdef MSWIN
     // Only support channel addresses on Windows
@@ -269,7 +269,8 @@ socketserver_create_path(char_u *name)
 	return vim_strsave(name + 2);
     else
     {
-	semsg(_(e_invalid_argument_str), name);
+	if (!quiet)
+	    semsg(_(e_invalid_argument_str), name);
 	return NULL;
     }
 #else
@@ -285,10 +286,10 @@ socketserver_create_path(char_u *name)
 	if (buf != NULL)
 	{
 	    vim_snprintf((char *)buf, buflen, "%s%d", name, i);
-	    path = socketserver_get_path(buf, true);
+	    path = socketserver_get_path(buf, true, quiet);
 	}
 	else
-	    path = socketserver_get_path(name, true);
+	    path = socketserver_get_path(name, true, quiet);
 
 	if (path == NULL)
 	{
@@ -317,7 +318,7 @@ socketserver_create_path(char_u *name)
  * Returns path on success and NULL on failure.
  */
     static char_u *
-socketserver_get_path(char_u *name, bool new UNUSED)
+socketserver_get_path(char_u *name, bool new UNUSED, bool quiet)
 {
 #ifdef MSWIN
     // Only support channel addresses on Windows
@@ -325,7 +326,8 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 	return vim_strsave(name + 2);
     else
     {
-	semsg(_(e_invalid_argument_str), name);
+	if (!quiet)
+	    semsg(_(e_invalid_argument_str), name);
 	return NULL;
     }
 #else
@@ -351,7 +353,8 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 
     if (vim_strchr(name, '/') != NULL)
     {
-	semsg(_(e_socket_name_no_slashes), name);
+	if (!quiet)
+	    semsg(_(e_socket_name_no_slashes), name);
 	return NULL;
     }
 
@@ -419,9 +422,13 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 	break;
     }
 
-    if (!res)
-	semsg(_("Failed creating socket directory: %s"), strerror(errno));
-
+    if (!quiet)
+    {
+	if (!res)
+	    semsg(_("Failed creating socket directory: %s"), strerror(errno));
+	else
+	    semsg(_(e_invalid_server_id_used_str), name);
+    }
     vim_free(buf);
     return NULL;
 #endif
@@ -577,7 +584,7 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	if (buf != NULL)
 	{
 	    emsg_silent++;
-	    channel_send(channel, PART_SOCK, buf, STRLEN(buf),
+	    channel_send(channel, PART_SOCK, buf, (int)STRLEN(buf),
 		    "socketserver_exec");
 	    emsg_silent--;
 	}
@@ -846,13 +853,9 @@ socketserver_get_channel(char_u *name, bool quiet)
     }
     else
     {
-	tofree = socketserver_get_path(name, false);
+	tofree = socketserver_get_path(name, false, quiet);
 	if (tofree == NULL)
-	{
-	    if (!quiet)
-		semsg(_(e_invalid_server_id_used_str), name);
 	    return NULL;
-	}
 	address = tofree;
 	is_unix = true;
     }
@@ -922,7 +925,7 @@ socketserver_send(
 
     buf = json_encode(&tv, JSON_NL);
     if (buf == NULL
-	    || channel_send(channel, PART_SOCK, buf, STRLEN(buf),
+	    || channel_send(channel, PART_SOCK, buf, (int)STRLEN(buf),
 		"socketserver_send") == FAIL)
     {
 	dict_unref(dict);
@@ -1102,7 +1105,7 @@ socketserver_send_reply(char_u *client, char_u *str)
 
     buf = json_encode(&tv, JSON_NL);
     if (buf == NULL
-	    || channel_send(channel, PART_SOCK, buf, STRLEN(buf),
+	    || channel_send(channel, PART_SOCK, buf, (int)STRLEN(buf),
 		"socketserver_send_reply") == FAIL)
 	ret = FAIL;
 
@@ -1138,12 +1141,9 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
 	return FAIL;
     }
 
-    actual = socketserver_get_path(client, false);
+    actual = socketserver_get_path(client, false, false);
     if (actual == NULL)
-    {
-	semsg(_(e_invalid_server_id_used_str), client);
 	return FAIL;
-    }
 
     while (true)
     {
@@ -1202,12 +1202,9 @@ socketserver_peek_reply(char_u *sender, char_u **str)
 	return FAIL;
     }
 
-    actual = socketserver_get_path(sender, false);
+    actual = socketserver_get_path(sender, false, false);
     if (actual == NULL)
-    {
-	semsg(_(e_invalid_server_id_used_str), sender);
 	return FAIL;
-    }
 
     reply = socketserver_get_reply(actual, NULL);
     vim_free(actual);

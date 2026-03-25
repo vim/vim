@@ -187,7 +187,7 @@ func Test_client_server()
 
   " When using socket server, server id is not a number, but the path to the
   " socket.
-  if has('socketserver') && !has('X11')
+  if (has('socketserver') && !has('X11') && !has('win32')) || index(v:argv, "socket") != -1
     call assert_fails("let x = remote_read('vim/10')", ['E1564:'])
     call assert_fails("call server2client('x/b/c', 'xyz')", ['E1564:'])
   else

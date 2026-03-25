@@ -3524,6 +3524,7 @@ enddef
 
 def Test_remote_expr()
   CheckFeature clientserver
+  CheckNotMSWindows
 
   if has("x11")
     CheckEnv DISPLAY
@@ -3550,6 +3551,7 @@ enddef
 
 def Test_remote_peek()
   CheckFeature clientserver
+  CheckNotMSWindows
 
   if has("x11")
     CheckEnv DISPLAY
@@ -3562,6 +3564,7 @@ enddef
 
 def Test_remote_read()
   CheckFeature clientserver
+  CheckNotMSWindows
 
   if has("x11")
     CheckEnv DISPLAY
@@ -3574,6 +3577,7 @@ enddef
 
 def Test_remote_send()
   CheckFeature clientserver
+  CheckNotMSWindows
 
   if has("x11")
     CheckEnv DISPLAY
@@ -3587,6 +3591,7 @@ enddef
 
 def Test_remote_startserver()
   CheckFeature clientserver
+  CheckNotMSWindows
 
   if has("x11")
     CheckEnv DISPLAY
