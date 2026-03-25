@@ -2976,6 +2976,10 @@ if test -z "$SKIP_GTK4"; then
       GUITYPE=GTK4
       AC_SUBST(GTK_LIBNAME)
       AC_DEFINE(USE_GTK4)
+      dnl automatically enable XIM for GTK4
+      if test "$enable_xim" = "auto"; then
+        enable_xim="yes"
+      fi
     fi
   fi
 fi
