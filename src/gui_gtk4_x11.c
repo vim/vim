@@ -354,6 +354,9 @@ gui_mch_init(void)
     gui.norm_pixel = gui.def_norm_pixel;
     gui.back_pixel = gui.def_back_pixel;
 
+    gui.scrollbar_width = SB_DEFAULT_WIDTH;
+    gui.scrollbar_height = SB_DEFAULT_WIDTH;
+
     // Create the main window.
     gui.mainwin = gtk_window_new();
     gtk_widget_set_name(gui.mainwin, "vim-main-window");
@@ -586,7 +589,14 @@ gui_mch_open(void)
 
     g_signal_connect(G_OBJECT(gui.mainwin), "destroy",
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
-    // Resize is handled via drawarea_resize_cb, not mainwin notify.
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-width",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-height",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::maximized",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::fullscreened",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
 
     gtk_widget_show(gui.mainwin);
 
@@ -1687,43 +1697,43 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
     gui_resize_shell(width, height);
 }
 
-static int in_mainwin_resize = FALSE;
+static guint resize_idle_id = 0;
 
-    static void
-mainwin_notify_size_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
-	gpointer data UNUSED)
+    static gboolean
+resize_idle_cb(gpointer data UNUSED)
 {
     static int cur_width = 0;
     static int cur_height = 0;
     int w, h;
 
-    if (gui.formwin == NULL || in_mainwin_resize)
-	return;
-    in_mainwin_resize = TRUE;
+    resize_idle_id = 0;
+
+    if (gui.formwin == NULL)
+	return FALSE;
 
     w = gtk_widget_get_width(gui.formwin);
     h = gtk_widget_get_height(gui.formwin);
 
     if (w <= 1 || h <= 1)
-    {
-	in_mainwin_resize = FALSE;
-	return;
-    }
+	return FALSE;
 
     if (w == cur_width && h == cur_height)
-    {
-	in_mainwin_resize = FALSE;
-	return;
-    }
+	return FALSE;
     cur_width = w;
     cur_height = h;
 
-    if (gui.surface != NULL)
-	cairo_surface_destroy(gui.surface);
-    gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-
     gui_resize_shell(w, h);
-    in_mainwin_resize = FALSE;
+    return FALSE;
+}
+
+    static void
+mainwin_notify_size_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
+	gpointer data UNUSED)
+{
+    if (in_set_shellsize)
+	return;
+    if (resize_idle_id == 0)
+	resize_idle_id = g_idle_add(resize_idle_cb, NULL);
 }
 
 #ifdef FEAT_DND
