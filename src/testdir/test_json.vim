@@ -155,6 +155,13 @@ func Test_json_decode()
   call assert_fails('call json_decode("True")', 'E491:')
   call assert_fails('call json_decode("FALSE")', 'E491:')
   call assert_fails('call json_decode("Null")', 'E491:')
+  call assert_fails('call json_decode("NULL")', 'E491:')
+  call assert_fails('call json_decode("nan")', 'E491:')
+  call assert_fails('call json_decode("NAN")', 'E491:')
+  call assert_fails('call json_decode("infinity")', 'E491:')
+  call assert_fails('call json_decode("INFINITY")', 'E491:')
+  call assert_fails('call json_decode("-infinity")', 'E491:')
+  call assert_fails('call json_decode("-INFINITY")', 'E491:')
 
   " Character in string after \ is ignored if not special.
   call assert_equal("x", json_decode('"\x"'))
@@ -304,6 +311,20 @@ func Test_js_decode()
   call assert_equal("", js_decode("''"))
 
   call assert_equal('n', js_decode("'n'"))
+
+  " js_decode() accepts keywords case-insensitively
+  call assert_equal(v:true, js_decode('True'))
+  call assert_equal(v:true, js_decode('TRUE'))
+  call assert_equal(v:false, js_decode('False'))
+  call assert_equal(v:false, js_decode('FALSE'))
+  call assert_equal(v:null, js_decode('Null'))
+  call assert_equal(v:null, js_decode('NULL'))
+  call assert_true(isnan(js_decode('nan')))
+  call assert_equal(s:varposinf, js_decode('infinity'))
+  call assert_equal(s:varneginf, js_decode('-infinity'))
+  call assert_equal(s:varposinf, js_decode('INFINITY'))
+  call assert_equal(s:varneginf, js_decode('-INFINITY'))
+
   call assert_equal({'n': 1}, js_decode('{"n":1,}'))
   call assert_equal({'n': '1'}, js_decode("{'n':'1',}"))
 
