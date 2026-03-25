@@ -5945,7 +5945,7 @@ mch_get_cmd_output_direct(
 
     if (pipe(fd_out) < 0)
     {
-	emsg(_("E5677: Cannot create pipes"));
+	emsg(_(e_cannot_create_pipes));
 	return NULL;
     }
 

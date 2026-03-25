@@ -6067,7 +6067,7 @@ mch_get_cmd_output_direct(
     if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)
 	    || !SetHandleInformation(hChildStdoutRd, HANDLE_FLAG_INHERIT, 0))
     {
-	emsg(_("E5677: Cannot create pipes"));
+	emsg(_(e_cannot_create_pipes));
 	goto done;
     }
 
