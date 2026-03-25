@@ -158,15 +158,15 @@ typedef enum
 } prop_mod_T;
 
 #define PROP_COUNT_SIZE sizeof(uint16_t)
-#define COPY_PROPS TRUE
-#define NO_PROPS FALSE
-#define WILL_NOT_CHANGE FALSE
-#define DO_ALL TRUE
+#define COPY_PROPS true
+#define NO_PROPS false
+#define WILL_NOT_CHANGE false
+#define DO_ALL true
 #define MATCH_ALL_PROPS NULL
-#define NOT_DELETING FALSE
-#define BORROW_VALUE FALSE
-#define INSERT_IN_ORDER TRUE
-#define UNSORTED FALSE
+#define NOT_DELETING false
+#define BORROW_VALUE false
+#define INSERT_IN_ORDER true
+#define UNSORTED false
 
 #define ERR_FAIL(report) (report, FAIL)
 #define ERR_RET(report, retval) (report, retval)
@@ -213,7 +213,7 @@ properties_continue(
 	    return first_flags == second_flags;
 	}
     }
-    return FALSE;
+    return false;
 }
 
 /*
@@ -279,11 +279,11 @@ um_free(unpacked_memline_T *umemline)
 {
     if (umemline->detached)
     {
-	free(umemline->text);
+	vim_free(umemline->text);
 	umemline->text = NULL;
 	um_free_detached_props_vtext(umemline->props, umemline->prop_count);
     }
-    free(umemline->props);
+    vim_free(umemline->props);
     if (umemline->next != NULL)
     {
 	um_free(umemline->next);
@@ -298,7 +298,7 @@ um_free(unpacked_memline_T *umemline)
     umemline->prop_size = 0;
     umemline->prop_count = 0;
     umemline->lnum = 0;
-    umemline->detached = FALSE;
+    umemline->detached = false;
 }
 
 /*
@@ -373,7 +373,7 @@ um_pack(unpacked_memline_T *umemline, int *packed_length)
 
     // Pack the buffer text part.
     mch_memmove(new_memline, umemline->text, umemline->text_size);
-    free(umemline->text);
+    vim_free(umemline->text);
     umemline->text = new_memline;
 
     if (live_props > 0)
@@ -393,7 +393,7 @@ um_pack(unpacked_memline_T *umemline, int *packed_length)
 	    if ((prop->tp_flags & TP_FLAG_VTEXT_BITS) != 0)
 	    {
 		mch_memmove(vtext_dest, prop->tp_text, prop->tp_len);
-		free(prop->tp_text);
+		vim_free(prop->tp_text);
 
 		prop->tp_text_offset = vtext_dest - count_dest;
 		mch_memmove(prop_dest, prop, sizeof(textprop_T));
@@ -409,7 +409,7 @@ um_pack(unpacked_memline_T *umemline, int *packed_length)
 	    prop_dest += sizeof(textprop_T);
 	}
     }
-    umemline->detached = FALSE;
+    umemline->detached = false;
 
     return new_memline;
 }
@@ -481,27 +481,27 @@ um_store_changes(unpacked_memline_T *umemline)
 um_add_space_for_props(unpacked_memline_T *umemline, int extra_props)
 {
     if (!umemline->detached && !um_detach(umemline))
-	return FALSE;
+	return false;
 
     size_t prop_size = MAX(
 	umemline->prop_size, umemline->prop_count + extra_props);
     if (umemline->prop_size >= prop_size)
-	return TRUE;
+	return true;
 
     textprop_T *new_array = ALLOC_MULT(textprop_T, prop_size);
     if (new_array == NULL)
     {
 	um_abort(umemline);
-	return FALSE;
+	return false;
     }
     if (umemline->props != NULL)
 	mch_memmove(
 	    new_array, umemline->props,
 	    umemline->prop_count * sizeof(textprop_T));
-    free(umemline->props);
+    vim_free(umemline->props);
     umemline->props = new_array;
     umemline->prop_size = (uint16_t)prop_size;
-    return TRUE;
+    return true;
 }
 
 /*
@@ -515,7 +515,7 @@ um_goto_line_common(
 	bool		   copy_props)
 {
     if (umemline->buf == NULL)
-	return FALSE;
+	return false;
 
     if (lnum == umemline->lnum && lnum > 0)
 	return um_add_space_for_props(umemline, extra_props);
@@ -553,7 +553,7 @@ um_goto_line_common(
     size_t prop_size = MAX(umemline->prop_size, prop_count + extra_props);
     if (prop_size > umemline->prop_size)
     {
-	free(umemline->props);
+	vim_free(umemline->props);
 	umemline->props = ALLOC_MULT(textprop_T, prop_size);
 	if (umemline->props == NULL)
 	    goto fail;
@@ -561,7 +561,7 @@ um_goto_line_common(
 
     umemline->prop_size = (uint16_t)prop_size;
     umemline->lnum = lnum;
-    umemline->detached = FALSE;
+    umemline->detached = false;
     umemline->text_size = (colnr_T)text_size;
     umemline->text = buf->b_ml.ml_line_ptr;
     umemline->prop_count = 0;
@@ -593,14 +593,14 @@ um_goto_line_common(
 	    }
 	}
     }
-    return TRUE;
+    return true;
 
 corrupted:
     iemsg(e_text_property_info_corrupted);
 
 fail:
     um_abort(umemline);
-    return FALSE;
+    return false;
 }
 
 /*
@@ -609,7 +609,7 @@ fail:
  * If the given line is not the current line then any changes are first
  * 'written' back to the buffer's memline.
  *
- * Return TRUE if successful. Return FALSE if lnum == 0 or a falure occurred,
+ * Return true if successful. Return false if lnum == 0 or a falure occurred,
  * in which case unpacked memline is closed ("buf" == NULL).
  */
     bool
@@ -718,13 +718,13 @@ um_abort(unpacked_memline_T *umemline)
 um_set_text(unpacked_memline_T *umemline, char_u *text)
 {
     if (!umemline->detached && !um_detach(umemline))
-	return FALSE;
+	return false;
 
-    free(umemline->text);
+    vim_free(umemline->text);
     umemline->text = text;
     umemline->text_size = (colnr_T)(STRLEN(text) + 1);
-    umemline->text_changed = TRUE;
-    return TRUE;
+    umemline->text_changed = true;
+    return true;
 }
 
     static bool
@@ -732,20 +732,18 @@ um_add_prop_common(
     unpacked_memline_T *umemline, const textprop_T *prop, bool sorted)
 {
     if (!umemline->detached && !um_detach(umemline))
-	return FALSE;
+	return false;
 
     if (umemline->prop_size == umemline->prop_count)
     {
 	if (!um_add_space_for_props(umemline, 1))
-	{
-	    return FALSE;
-	}
+	    return false;
     }
 
     if (!sorted)
     {
 	umemline->props[umemline->prop_count++] = *prop;
-	return TRUE;
+	return true;
     }
 
     colnr_T sort_col = prop->tp_col;
@@ -771,7 +769,7 @@ um_add_prop_common(
     umemline->props[i] = *prop;
     umemline->prop_count += 1;
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -779,6 +777,11 @@ um_add_prop_common(
  *
  * The property is inserted based on its start column, with special rules
  * for virtual text properies. The unpacked memline becomes detached.
+ *
+ * If "prop->tp_text" is not NULL then it must point to allocated memory. The
+ * "umemline" will take ownership of the allocated memory upon success (true
+ * returned). If this fails then the caller retains ownership and the
+ * responsibilty for freeing "prop->tp_text".
  *
  * TODO:
  *     It would be good to document why this sorted order is important.
@@ -816,7 +819,7 @@ um_create_neighbour(unpacked_memline_T *umemline, linenr_T lnum)
     if (neighbour->buf == NULL)
     {
 	um_abort(neighbour);
-	free(neighbour);
+	vim_free(neighbour);
 	return NULL;
     }
     return neighbour;
@@ -900,7 +903,7 @@ um_delete_prop(unpacked_memline_T *umemline, int index)
     prop->tp_flags |= TP_FLAG_DELETED;
     if (PROP_IS_VTEXT(prop))
     {
-	free(prop->tp_text);
+	vim_free(prop->tp_text);
 	prop->tp_text = NULL;
 	prop->tp_len = 0;
     }
@@ -919,7 +922,7 @@ um_delete_prop(unpacked_memline_T *umemline, int index)
 um_detach(unpacked_memline_T *umemline)
 {
     if (umemline->detached)
-	return TRUE;
+	return true;
 
     int i = 0;
     if (umemline->text != NULL)
@@ -944,16 +947,14 @@ um_detach(unpacked_memline_T *umemline)
 		goto fail;
 	}
     }
-    umemline->detached = TRUE;
-    return TRUE;
+    umemline->detached = true;
+    return true;
 
 fail:
-    free(umemline->text);
+    VIM_CLEAR(umemline->text);
     for (int j = 0; j < i; j++)
-    {
-	free(umemline->props[j].tp_text);
-    }
-    return FALSE;
+	vim_free(umemline->props[j].tp_text);
+    return false;
 }
 
 /*
@@ -1001,8 +1002,8 @@ prop_matches(
     const textprop_T *prop,
     const criteria_T *criteria)
 {
-    bool matches_id = FALSE;
-    bool matches_type = FALSE;
+    bool matches_id = false;
+    bool matches_type = false;
 
     // Find a match for either ID, a type or both depending on whether 'both'
     // is set.
@@ -1010,30 +1011,30 @@ prop_matches(
     {
 	matches_id = prop->tp_id == criteria->id;
 	if (criteria->both && !matches_id)
-	    return FALSE;
+	    return false;
 
     }
     if (criteria->num_type_ids > 0)
     {
-	matches_type = FALSE;
+	matches_type = false;
 	for (int idx = 0; !matches_type && idx < criteria->num_type_ids; ++idx)
 	    matches_type = prop->tp_type == criteria->type_ids[idx];
     }
     if (criteria->both)
     {
 	if (!(matches_id && matches_type))
-	    return FALSE;
+	    return false;
     }
     else
     {
 	if (!(matches_id || matches_type))
-	    return FALSE;
+	    return false;
     }
 
     if (criteria->flags != -1)
 	return prop->tp_flags == criteria->flags;
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -1325,7 +1326,7 @@ prop_add_one(
     return OK;
 
 fail:
-    free(virt_text);
+    vim_free(virt_text);
     um_abort(&umemline);
     return FAIL;
 }
@@ -1350,7 +1351,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     colnr_T	start_col;
     linenr_T	end_lnum;
     colnr_T	end_col;
-    int		error = FALSE;
+    int		error = false;
     int		prev_did_emsg = did_emsg;
 
     if (check_for_dict_arg(argvars, 0) == FAIL
@@ -1366,7 +1367,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_missing_property_type_name));
 	return;
     }
-    type_name = dict_get_string(dict, "type", FALSE);
+    type_name = dict_get_string(dict, "type", false);
 
     if (dict_has_key(dict, "id"))
     {
@@ -1374,7 +1375,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	x = dict_get_number(dict, "id");
 	if (x > INT_MAX || x  <= INT_MIN)
 	{
-	    semsg(_(e_val_too_large), dict_get_string(dict, "id", FALSE));
+	    semsg(_(e_val_too_large), dict_get_string(dict, "id", false));
 	    return;
 	}
 	id = (int)x;
@@ -1386,7 +1387,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     // This must be done _before_ we start adding properties because property
     // changes trigger buffer (memline) reorganisation, which needs this flag
     // to be correctly set.
-    buf->b_has_textprop = TRUE;  // this is never reset
+    buf->b_has_textprop = true;  // this is never reset
     FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
     {
 	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
@@ -1447,7 +1448,7 @@ prop_add_common(
     if (dict == NULL || !dict_has_key(dict, "type"))
 	return ERR_RET(emsg(
 	    _(e_missing_property_type_name)), id);
-    type_name = dict_get_string(dict, "type", FALSE);
+    type_name = dict_get_string(dict, "type", false);
 
     if (dict_has_key(dict, "end_lnum"))
     {
@@ -1486,7 +1487,7 @@ prop_add_common(
 	x = dict_get_number(dict, "id");
 	if (x > INT_MAX || x  <= INT_MIN)
 	    return ERR_RET(semsg(
-		_(e_val_too_large), dict_get_string(dict, "id", FALSE)), id);
+		_(e_val_too_large), dict_get_string(dict, "id", false)), id);
 	id = (int)x;
     }
 
@@ -1506,7 +1507,7 @@ prop_add_common(
 	end_col = start_col + 1;
 	if (dict_has_key(dict, "text_align"))
 	{
-	    char_u *p = dict_get_string(dict, "text_align", FALSE);
+	    char_u *p = dict_get_string(dict, "text_align", false);
 
 	    if (p == NULL)
 		return id;
@@ -1546,7 +1547,7 @@ prop_add_common(
 
 	if (dict_has_key(dict, "text_wrap"))
 	{
-	    char_u *p = dict_get_string(dict, "text_wrap", FALSE);
+	    char_u *p = dict_get_string(dict, "text_wrap", false);
 
 	    if (p == NULL)
 		return id;
@@ -1574,7 +1575,7 @@ prop_add_common(
     // This must be done _before_ we add the property because property changes
     // trigger buffer (memline) reorganisation, which needs this flag to be
     // correctly set.
-    buf->b_has_textprop = TRUE;  // this is never reset
+    buf->b_has_textprop = true;  // this is never reset
 
     prop_add_one(
 	buf, type_name, &id, text, text_padding_left, flags,
@@ -1591,17 +1592,17 @@ prop_add_common(
     int
 has_prop_w_flags(linenr_T lnum, int flags)
 {
-    int result = FALSE;
+    bool result = false;
 
     unpacked_memline_T umemline = um_open(curbuf);
     if (!um_goto_line(&umemline, lnum, 0))
-	return FALSE;
+	return false;
 
     for (int i = 0; i < umemline.prop_count; i++)
     {
 	if (umemline.props[i].tp_flags & flags)
 	{
-	    result = TRUE;
+	    result = true;
 	    break;
 	}
     }
@@ -1649,7 +1650,7 @@ clean_and_return_null:
 prop_count_above_below(buf_T *buf, linenr_T lnum)
 {
     int		       result = 0;
-    int		       next_right_goes_below = FALSE;
+    int		       next_right_goes_below = false;
     unpacked_memline_T umemline = um_open(buf);
 
     if (!um_goto_line(&umemline, lnum, 0))
@@ -1667,7 +1668,7 @@ prop_count_above_below(buf_T *buf, linenr_T lnum)
 	    }
 	    else if (PROP_IS_RIGHT(prop))
 	    {
-		next_right_goes_below = TRUE;
+		next_right_goes_below = true;
 	    }
 	}
     }
@@ -1695,7 +1696,7 @@ get_line_prop_count(buf_T *buf, linenr_T lnum)
  * Count text properties on line "lnum" in the current buffer.
  *
  * When "only_starting" is true only text properties starting in this line will
- * be considered. When "last_line" is FALSE then text properties after the line
+ * be considered. When "last_line" is false then text properties after the line
  * are not counted.
  */
     int
@@ -1844,7 +1845,7 @@ find_visible_prop(
     validate_botline_win(wp);
 
     unpacked_memline_T umemline = um_open(wp->w_buffer);
-    bool	       found = FALSE;
+    bool	       found = false;
     for (linenr_T lnum = wp->w_topline; !found && lnum < wp->w_botline; ++lnum)
     {
 	if (!um_goto_line(&umemline, lnum, 0))
@@ -1855,7 +1856,7 @@ find_visible_prop(
 	    textprop_T *tmp_prop = &umemline.props[i];
 	    if (tmp_prop->tp_type == type_id && (id <= 0 || tmp_prop->tp_id == id))
 	    {
-		found = TRUE;
+		found = true;
 		*prop = *tmp_prop;
 		*found_lnum = lnum;
 		break;
@@ -1933,7 +1934,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
 prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
-    int buflocal = TRUE;
+    bool buflocal = true;
 
     dict_add_number(dict, "col", PROP_IS_FLOATING(prop) ? 0 : prop->tp_col);
     if (prop->tp_text == NULL)
@@ -1949,7 +1950,7 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
     {
 	pt = find_type_by_id(global_proptypes, &global_proparray,
 								prop->tp_type);
-	buflocal = FALSE;
+	buflocal = false;
     }
     if (pt != NULL)
 	dict_add_string(dict, "type", pt->pt_name);
@@ -1995,7 +1996,7 @@ text_prop_type_by_id(buf_T *buf, int id)
 }
 
 /*
- * Return TRUE if "prop" is a valid text property type.
+ * Return true if "prop" is a valid text property type.
  */
     int
 text_prop_type_valid(buf_T *buf, textprop_T *prop)
@@ -2052,11 +2053,11 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     dictitem_T  *di;
     int		lnum_start;
     int		start_pos_has_prop = 0;
-    int		seen_end = FALSE;
+    int		seen_end = false;
     int		id = 0;
-    int		id_found = FALSE;
+    int		id_found = false;
     int		type_id = -1;
-    int		skipstart = FALSE;
+    int		skipstart = false;
     int		lnum = -1;
     int		col = -1;
     int		dir = FORWARD;    // FORWARD == 1, BACKWARD == -1
@@ -2116,18 +2117,18 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     if (dict_has_key(dict, "id"))
     {
 	id = dict_get_number(dict, "id");
-	id_found = TRUE;
+	id_found = true;
     }
     if (dict_has_key(dict, "type"))
     {
-	char_u	    *name = dict_get_string(dict, "type", FALSE);
+	char_u	    *name = dict_get_string(dict, "type", false);
 	proptype_T  *type = lookup_prop_type(name, buf);
 
 	if (type == NULL)
 	    return;
 	type_id = type->pt_id;
     }
-    both = dict_get_bool(dict, "both", FALSE);
+    both = dict_get_bool(dict, "both", false);
     if (!id_found && type_id == -1)
     {
 	emsg(_(e_need_at_least_one_of_id_or_type));
@@ -2235,18 +2236,18 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Returns TRUE if 'type_or_id' is in the 'types_or_ids' list.
+ * Returns true if 'type_or_id' is in the 'types_or_ids' list.
  */
-    static int
+    static bool
 prop_type_or_id_in_list(int *types_or_ids, int len, int type_or_id)
 {
     int i;
 
     for (i = 0; i < len; i++)
 	if (types_or_ids[i] == type_or_id)
-	    return TRUE;
+	    return true;
 
-    return FALSE;
+    return false;
 }
 
 /*
@@ -2255,7 +2256,7 @@ prop_type_or_id_in_list(int *types_or_ids, int len, int type_or_id)
  * matching property type in the 'prop_types' array.
  * If 'prop_ids' is not NULL, then return only the text properties with
  * an identifier in the 'props_ids' array.
- * If 'add_lnum' is TRUE, then add the line number also to the text property
+ * If 'add_lnum' is true, then add the line number also to the text property
  * dictionary.
  */
     static void
@@ -2363,7 +2364,7 @@ get_prop_ids_from_list(list_T *l, int *num_ids)
     CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, li)
     {
-	error = FALSE;
+	error = false;
 	id = tv_get_number_chk(&li->li_tv, &error);
 	if (error)
 	    goto errret;
@@ -2389,7 +2390,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     linenr_T	start_lnum;
     linenr_T	end_lnum;
     buf_T	*buf = curbuf;
-    int		add_lnum = FALSE;
+    int		add_lnum = false;
     int		*prop_types = NULL;
     int		prop_types_len = 0;
     int		*prop_ids = NULL;
@@ -2433,7 +2434,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 		end_lnum = buf->b_ml.ml_line_count + end_lnum + 1;
 	    else if (end_lnum > buf->b_ml.ml_line_count)
 		end_lnum = buf->b_ml.ml_line_count;
-	    add_lnum = TRUE;
+	    add_lnum = true;
 	}
 	if (d != NULL && (di = dict_find(d, (char_u *)"types", -1)) != NULL)
 	{
@@ -2493,7 +2494,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     dict_T             *dict;
     buf_T              *buf = curbuf;
     int	               do_all;
-    criteria_T         criteria = {-MAXCOL, 0, NULL, -1, FALSE};
+    criteria_T         criteria = {-MAXCOL, 0, NULL, -1, false};
     prop_remove_info_T info;
 
     rettv->vval.v_number = 0;
@@ -2530,8 +2531,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	end = buf->b_ml.ml_line_count;
     else if (end > buf->b_ml.ml_line_count)
 	end = buf->b_ml.ml_line_count;
-    do_all = dict_get_bool(dict, "all", FALSE);
-    criteria.both = dict_get_bool(dict, "both", FALSE);
+    do_all = dict_get_bool(dict, "all", false);
+    criteria.both = dict_get_bool(dict, "both", false);
     if (dict_has_key(dict, "id"))
 	criteria.id = dict_get_number(dict, "id");
 
@@ -2545,7 +2546,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (dict_has_key(dict, "type"))
     {
-	char_u	    *name = dict_get_string(dict, "type", FALSE);
+	char_u	    *name = dict_get_string(dict, "type", false);
 	proptype_T  *type = lookup_prop_type(name, buf);
 
 	if (type == NULL)
@@ -2692,7 +2693,7 @@ prop_type_set(typval_T *argvars, int add)
 	    char_u	*highlight;
 	    int		hl_id = 0;
 
-	    highlight = dict_get_string(dict, "highlight", FALSE);
+	    highlight = dict_get_string(dict, "highlight", false);
 	    if (highlight != NULL && *highlight != NUL)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
@@ -2752,7 +2753,7 @@ prop_type_set(typval_T *argvars, int add)
     void
 f_prop_type_add(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    prop_type_set(argvars, TRUE);
+    prop_type_set(argvars, true);
 }
 
 /*
@@ -2761,7 +2762,7 @@ f_prop_type_add(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_type_change(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    prop_type_set(argvars, FALSE);
+    prop_type_set(argvars, false);
 }
 
 /*
@@ -3137,10 +3138,10 @@ add_bytes_1(
     const proptype_T *prop_type = text_prop_type_by_id(curbuf, prop->tp_type);
     bool start_incl = prop_type != NULL
 		    ? (prop_type->pt_flags & PT_FLAG_INS_START_INCL) != 0
-		    : FALSE;
+		    : false;
     bool end_incl = prop_type != NULL
 		    ? (prop_type->pt_flags & PT_FLAG_INS_END_INCL) != 0
-		    : FALSE;
+		    : false;
 
     if (col == prop->tp_col - 1 && start_incl)
 	// Adding at the start of this property with start_incl set.
@@ -3196,7 +3197,7 @@ perform_properties_adjustment(
 	int is_vtext = PROP_IS_VTEXT(prop);
 	prop_mod_T result = adjust(prop, col, count);
 	if (result != PC_UNMODIFIED && !um_detach(&umemline))
-	    break;
+	    goto fail;
 	if (result == PC_RQ_DELETE)
 	{
 	    if (keep_empty && (prop->tp_flags & TP_FLAG_CONT_BITS) != 0)
@@ -3223,6 +3224,10 @@ perform_properties_adjustment(
     }
 
     um_close(&umemline);
+    return;
+
+fail:
+    um_abort(&umemline);
 }
 
 /*
@@ -3255,7 +3260,7 @@ prop_trim_leading_bytes(
 	int	       *flags)
 {
     perform_properties_adjustment(
-	buf, lnum, 0, count, FALSE, flags, trim_leading_bytes_1);
+	buf, lnum, 0, count, false, flags, trim_leading_bytes_1);
 }
 
 /*
@@ -3272,7 +3277,7 @@ prop_remove_bytes(
 	int	 *flags)
 {
     perform_properties_adjustment(
-	buf, lnum, col, count, FALSE, flags, remove_bytes_1);
+	buf, lnum, col, count, false, flags, remove_bytes_1);
 }
 
 /*
@@ -3290,7 +3295,7 @@ prop_add_bytes(
 	int	 *flags)
 {
     perform_properties_adjustment(
-	buf, lnum, col, count, FALSE, flags, add_bytes_1);
+	buf, lnum, col, count, false, flags, add_bytes_1);
 }
 
 /*
@@ -3312,12 +3317,12 @@ adjust_prop(
     proptype_T	*pt;
     bool	start_incl;
     bool	end_incl;
-    adjustres_T res = {TRUE, FALSE};
+    adjustres_T res = {true, false};
 
     pt = text_prop_type_by_id(curbuf, prop->tp_type);
     if (PROP_IS_FLOATING(prop))
     {
-	res.dirty = FALSE;
+	res.dirty = false;
 	return res;
     }
 
@@ -3327,14 +3332,14 @@ adjust_prop(
 	{
 	    if (col - added >= prop->tp_col)
 	    {
-		res.can_drop = TRUE;
+		res.can_drop = true;
 		return res;
 	    }
 	}
 
 	start_incl = pt != NULL && (prop->tp_flags & TP_FLAG_START_INCL) != 0;
 	if (flags & APC_INDENT)
-	    start_incl = FALSE;
+	    start_incl = false;
 	int col_pos = (start_incl && added >= 0) ? col + 2 : col + 1;
 	if (added > 0)
 	{
@@ -3356,7 +3361,7 @@ adjust_prop(
 	}
 	else
 	{
-	    res.dirty = FALSE;
+	    res.dirty = false;
 	}
 
 	return res;
@@ -3390,7 +3395,7 @@ adjust_prop(
 	    if (prop->tp_len <= 0)
 	    {
 		prop->tp_len = 0;
-		res.can_drop = TRUE;
+		res.can_drop = true;
 	    }
 	}
 	else
@@ -3406,7 +3411,7 @@ adjust_prop(
 	res.can_drop = prop->tp_len <= 0;
     }
     else
-	res.dirty = FALSE;
+	res.dirty = false;
 
     return res;
 }
@@ -3421,7 +3426,7 @@ adjust_prop(
  * APC_SUBSTITUTE:	Text is replaced, not inserted.
  * APC_INDENT:		Text is inserted before virtual text prop
  * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
- * Returns TRUE when props were changed.
+ * Returns true when props were changed.
  */
     int
 adjust_prop_columns(
@@ -3431,13 +3436,13 @@ adjust_prop_columns(
 	int	    flags)
 {
     if (text_prop_frozen > 0)
-	return FALSE;
+	return false;
 
     unpacked_memline_T umemline = um_open_at(curbuf, lnum, 0);
     if (umemline.lnum == 0)
-	return FALSE;
+	return false;
 
-    int	dirty = FALSE;
+    int	dirty = false;
     for (int ri = 0; ri < umemline.prop_count; ri++)
     {
 	textprop_T  *prop = &umemline.props[ri];
@@ -3453,7 +3458,7 @@ adjust_prop_columns(
 
 		if (!um_detach(&umemline))
 		    goto fail;
-		dirty = TRUE;
+		dirty = true;
 	    }
 	}
 	if (res.can_drop)
@@ -3464,7 +3469,7 @@ adjust_prop_columns(
 
 fail:
     um_abort(&umemline);
-    return FALSE;
+    return false;
 }
 
 /*
@@ -3532,7 +3537,7 @@ adjust_props_for_split(
 	}
 	// When a prop has text only one line gets it.
 	if (PROP_IS_VTEXT(prop) && cont_next)
-	    cont_prev = FALSE;
+	    cont_prev = false;
 
 	if (cont_prev)
 	{
@@ -3627,7 +3632,7 @@ prepend_joined_props(
 	{
 	    // The copied property continues one we copied earlier. So find
 	    // that one and adjust it.
-	    bool found = FALSE;
+	    bool found = false;
 	    for (int j = umemline->prop_count - 1; j >= 0; j--)
 	    {
 		textprop_T *op = &props[j];
@@ -3637,7 +3642,7 @@ prepend_joined_props(
 		    continue;
 
 		// We have found the match.
-		found = TRUE;
+		found = true;
 		if (op->tp_len == 0)
 		{
 		    if (op->tp_flags & TP_FLAG_CONT_NEXT)

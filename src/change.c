@@ -2562,7 +2562,7 @@ truncate_line(int fixpos)
  * Saves the lines for undo first if "undo" is TRUE.
  */
     void
-del_lines(long nlines,int undo, int flags)
+del_lines(long nlines, int undo, int flags)
 {
     long	n;
     linenr_T	first = curwin->w_cursor.lnum;
