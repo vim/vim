@@ -867,7 +867,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 		    0, TRUE) < 0)
 	ret = FAIL;
 # endif
-    if (!ret)
+    if (ret == FAIL)
     {
 	if (r != NULL)
 	{

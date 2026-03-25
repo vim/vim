@@ -141,6 +141,10 @@ socketserver_stop(void)
     ch_log(NULL, "socketserver: shutting down server");
 }
 
+/*
+ * Cleanup server stuff. Do not close client channels, as those are not part of
+ * the actual server.
+ */
     static void
 socketserver_cleanup(void)
 {
@@ -178,7 +182,7 @@ socketserver_list(void)
 {
 #ifdef MSWIN
     // Only support addresses on Windows
-    return vim_strsave("");
+    return vim_strsave((char_u *)"");
 #else
     garray_T	    str;
     string_T	    buf;
@@ -404,6 +408,7 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 	    }
 	}
 
+	res = true;
 	if (got || (!new && mch_access((char *)buf, F_OK) == 0))
 	{
 	    if (server_address != NULL && STRCMP(buf, server_address) == 0)
@@ -411,7 +416,6 @@ socketserver_get_path(char_u *name, bool new UNUSED)
 		break;
 	    return buf;
 	}
-	res = true;
 	break;
     }
 
@@ -634,6 +638,7 @@ socketserver_get_message(channel_T *channel, typval_T **tv)
     if ((*tv)->v_type != VAR_DICT)
     {
 	ch_error(NULL, "socketserver: message is not a JSON object");
+	free_tv(*tv);
 	return FAIL;
     }
     return OK;
@@ -645,17 +650,24 @@ socketserver_get_message(channel_T *channel, typval_T **tv)
     void
 socketserver_parse_messages(void)
 {
-    channel_T	*channel;
     typval_T	*tv;
 
-    FOR_ALL_CLIENTS(channel)
+    for (channel_T *ch = client_channels; ch != NULL;)
     {
-	// Get the JSON message if there is any from the queue for this channel.
-	if (socketserver_get_message(channel, &tv) == FAIL)
-	    continue;
+	// Make sure to save next channel in case "ch" is freed. Not sure if
+	// this can actually happen but be safe.
+	channel_T *next = ch->ch_ss_next;
 
-	socketserver_exec(channel, tv->vval.v_dict);
+	// Get the JSON message if there is any from the queue for this channel.
+	if (socketserver_get_message(ch, &tv) == FAIL)
+	{
+	    ch = next;
+	    continue;
+	}
+
+	socketserver_exec(ch, tv->vval.v_dict);
 	free_tv(tv);
+	ch = next;
     }
 }
 
@@ -677,7 +689,7 @@ socketserver_wait(channel_T *channel, int timeout)
 #ifdef HAVE_SELECT
 	fd_set		rfds;
 	struct timeval  tv;
-	int		maxfd;
+	int		maxfd = -1;
 
 	tv.tv_sec = timeout / 1000;
 	tv.tv_usec = (timeout % 1000) * 1000;
@@ -709,6 +721,9 @@ socketserver_wait(channel_T *channel, int timeout)
 		    maxfd = (int)ch->CH_SOCK_FD;
 	    }
 	}
+
+	if (maxfd == -1)
+	    return FAIL;
 
 	ret = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 
@@ -745,6 +760,8 @@ socketserver_wait(channel_T *channel, int timeout)
 #else
 	struct pollfd   fds[MAX_OPEN_CHANNELS + 1];
 	int		nfd = 0;
+	int		channel_idx = -1;
+	int		server_idx = -1;
 
 	if (channel != NULL)
 	{
@@ -752,20 +769,22 @@ socketserver_wait(channel_T *channel, int timeout)
 		// Shouldn't happen
 		return FAIL;
 
+	    channel_idx = nfd;
 	    fds[nfd].fd = channel->CH_SOCK_FD;
-	    fds[nfd++].fd = POLLIN;
+	    fds[nfd++].events = POLLIN;
 	}
 	if (server_channel != NULL && server_channel->CH_SOCK_FD != INVALID_FD)
 	{
+	    server_idx = nfd;
 	    fds[nfd].fd = server_channel->CH_SOCK_FD;
-	    fds[nfd++].fd = POLLIN;
+	    fds[nfd++].events = POLLIN;
 	}
 
 	FOR_ALL_CLIENTS(ch)
 	    if (ch->CH_SOCK_FD != INVALID_FD)
 	    {
-		fds[nfd].fd = channel->CH_SOCK_FD;
-		fds[nfd].fd = POLLIN;
+		fds[nfd].fd = ch->CH_SOCK_FD;
+		fds[nfd].events = POLLIN;
 		ch->ch_part[PART_SOCK].ch_poll_idx = nfd;
 		nfd++;
 	    }
@@ -781,7 +800,7 @@ socketserver_wait(channel_T *channel, int timeout)
 	{
 	    if (server_channel != NULL
 		    && server_channel->CH_SOCK_FD != INVALID_FD
-		    && fds[1].revents & POLLIN)
+		    && fds[server_idx].revents & POLLIN)
 		channel_check(server_channel, PART_SOCK);
 
 	    FOR_ALL_CLIENTS(ch)
@@ -796,7 +815,7 @@ socketserver_wait(channel_T *channel, int timeout)
 		return OK;
 
 	    if (channel->CH_SOCK_FD != INVALID_FD
-		    && fds[0].revents & POLLIN)
+		    && fds[channel_idx].revents & POLLIN)
 	    {
 		channel_check(channel, PART_SOCK);
 		return OK;
@@ -832,7 +851,7 @@ socketserver_get_channel(char_u *name, bool quiet)
 	{
 	    if (!quiet)
 		semsg(_(e_invalid_server_id_used_str), name);
-	    return FAIL;
+	    return NULL;
 	}
 	address = tofree;
 	is_unix = true;
@@ -914,8 +933,11 @@ socketserver_send(
     dict_unref(dict);
 
     if (!is_expr)
+    {
 	// Exit, we aren't waiting for a response
-	return 0;
+	rcode = 0;
+	goto exit;
+    }
 
     if (timeout == 0)
 	timeout = 1000;
@@ -927,7 +949,7 @@ socketserver_send(
 	    break;
 
     if (resp_tv == NULL)
-	return -1;
+	goto exit;
 
     dict = resp_tv->vval.v_dict;
 
@@ -936,6 +958,7 @@ socketserver_send(
 	    STRCMP(di->di_tv.vval.v_string, "reply") != 0)
     {
 	ch_error(NULL, "socketserver: unknown reply type");
+	free_tv(resp_tv);
 	goto exit;
     }
 
@@ -1027,8 +1050,8 @@ socketserver_remove_reply(char_u *sender)
 	// Move all elements after the removed reply forward by one
 	if (len > 1)
 	    mch_memmove(arr + index, arr + index + 1,
-		    sizeof(ss_reply_T) * (len - index));
-	reply->strings.ga_len--;
+		    sizeof(ss_reply_T) * (len - index - 1));
+	server_replies.ga_len--;
     }
 }
 
@@ -1080,7 +1103,7 @@ socketserver_send_reply(char_u *client, char_u *str)
     buf = json_encode(&tv, JSON_NL);
     if (buf == NULL
 	    || channel_send(channel, PART_SOCK, buf, STRLEN(buf),
-		"socketserver_send") == FAIL)
+		"socketserver_send_reply") == FAIL)
 	ret = FAIL;
 
     vim_free(buf);
@@ -1130,10 +1153,12 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
 	if (socketserver_wait(NULL, timeout) == FAIL)
 	    break;
     }
-    vim_free(actual);
 
-    if (reply == NULL)
+    if (reply == NULL || reply->strings.ga_len == 0)
+    {
+	vim_free(actual);
 	return FAIL;
+    }
 
     // Consume the string
     *str = ((char_u **)reply->strings.ga_data)[0];
@@ -1141,12 +1166,14 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
     if (reply->strings.ga_len > 1)
 	mch_memmove((char_u **)reply->strings.ga_data,
 		((char_u **)reply->strings.ga_data) + 1,
-		sizeof(ss_reply_T) * (reply->strings.ga_len - 1));
+		sizeof(char_u *) * (reply->strings.ga_len - 1));
     reply->strings.ga_len--;
 
     if (reply->strings.ga_len < 1)
 	// Last string removed, remove the reply
-	socketserver_remove_reply(client);
+	socketserver_remove_reply(actual);
+
+    vim_free(actual);
 
     return OK;
 }
