@@ -10400,6 +10400,9 @@ fi
 
       printf "%s\n" "#define USE_GTK4 1" >>confdefs.h
 
+            if test "$enable_xim" = "auto"; then
+        enable_xim="yes"
+      fi
     fi
   fi
 fi

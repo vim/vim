@@ -1331,6 +1331,18 @@ key_press_event(GtkEventControllerKey *controller UNUSED,
     int		key;
     char_u	*s, *d;
 
+#ifdef FEAT_XIM
+    // Let the input method have a go at the key event.
+    // If it consumed the event, we're done.
+    if (xic != NULL)
+    {
+	GdkEvent *event = gtk_event_controller_get_current_event(
+		GTK_EVENT_CONTROLLER(controller));
+	if (event != NULL && gtk_im_context_filter_keypress(xic, event))
+	    return TRUE;
+    }
+#endif
+
     len = keyval_to_string(key_sym, string2);
 
     if (len > 1 && input_conv.vc_type != CONV_NONE)
@@ -1638,6 +1650,10 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
 
     gui_mch_new_colors();
+
+#ifdef FEAT_XIM
+    xim_init();
+#endif
 }
 
     static void
