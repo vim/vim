@@ -850,7 +850,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	return;		// type error; errmsg already given
     keys = tv_get_string_buf(&argvars[1], buf);
 # ifdef MSWIN
-    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN
 	    && serverSendToVim(server_name, keys, &r, &w, expr,
 		timeout, TRUE) < 0)
 	ret = FAIL;

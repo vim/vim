@@ -871,6 +871,12 @@ socketserver_send(
     typval_T	*resp_tv = NULL;
     char_u	*buf;
 
+    if (*name == NUL)
+    {
+	semsg(_(e_unable_to_send_to_str), name);
+	return FAIL;
+    }
+
     // Execute locally if target is ourselves
     if (serverName != NULL && STRICMP(name, serverName) == 0)
 	return sendToLocalVim(str, is_expr, result);
@@ -1039,6 +1045,12 @@ socketserver_send_reply(char_u *client, char_u *str)
     char_u	*buf;
     int		ret = OK;
 
+    if (*client == NUL)
+    {
+	semsg(_(e_invalid_server_id_used_str), client);
+	return FAIL;
+    }
+
     if (server_channel == NULL || server_address == NULL)
     {
 	emsg(_(e_socket_server_not_online));
@@ -1090,6 +1102,12 @@ socketserver_read_reply(char_u *client, char_u **str, int timeout)
 {
     ss_reply_T	*reply = NULL;
     char_u	*actual;
+
+    if (*client == NUL)
+    {
+	semsg(_(e_invalid_server_id_used_str), client);
+	return FAIL;
+    }
 
     if (server_channel == NULL || server_address == NULL)
     {
@@ -1144,6 +1162,12 @@ socketserver_peek_reply(char_u *sender, char_u **str)
 {
     ss_reply_T	*reply;
     char_u	*actual;
+
+    if (*sender == NUL)
+    {
+	semsg(_(e_invalid_server_id_used_str), sender);
+	return FAIL;
+    }
 
     if (server_channel == NULL || server_address == NULL)
     {
