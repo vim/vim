@@ -388,7 +388,8 @@ gui_mch_init(void)
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
-    // Don't add to vbox until actually shown
+    gtk_widget_set_visible(gui.tabline, FALSE);
+    gtk_box_append(GTK_BOX(vbox), gui.tabline);
 #endif
 
     // The form widget manages absolute positioning of drawarea + scrollbars.
@@ -578,10 +579,7 @@ gui_mch_open(void)
 
     g_signal_connect(G_OBJECT(gui.mainwin), "destroy",
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-width",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-height",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    // Resize is handled via drawarea_resize_cb, not mainwin notify.
 
     gtk_widget_show(gui.mainwin);
 
@@ -1105,7 +1103,7 @@ gui_mch_get_rgb(guicolor_T pixel)
 draw_event(GtkDrawingArea *area UNUSED, cairo_t *cr,
 	int width, int height, gpointer data UNUSED)
 {
-    // Fill background with Vim's background color first
+    // Fill background with Vim's background color
     guicolor_T bg = gui.back_pixel;
     cairo_set_source_rgb(cr,
 	    ((bg & 0xff0000) >> 16) / 255.0,
