@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Algol 68
 " Version:		0.4
-" Last Change:		2026 Mar 01
+" Last Change:		2026 Mar 25
 " Maintainer:		Janis Papanagnou
 " Previous Maintainer:	NevilleD.ALGOL_68@sgr-a.net
 
@@ -51,12 +51,12 @@ syn keyword algol68Todo contained	TODO FIXME XXX DEBUG NOTE
     " 20010723az: When wanted, highlight the trailing whitespace -- this is
     " based on c_space_errors; to enable, use "algol68_space_errors".
 if exists("algol68_space_errors")
-    if !exists("algol68_no_trail_space_error")
-        syn match algol68SpaceError "\s\+$"
-    endif
-    if !exists("algol68_no_tab_space_error")
-        syn match algol68SpaceError " \+\t"me=e-1
-    endif
+  if !exists("algol68_no_trail_space_error")
+    syn match algol68SpaceError "\s\+$"
+  endif
+  if !exists("algol68_no_tab_space_error")
+    syn match algol68SpaceError " \+\t"me=e-1
+  endif
 endif
 
 
@@ -189,124 +189,124 @@ if !exists("algol68_traditional")
 "  THE STANDARD ENVIRONMENT
 
 "      Enquiries
-  syn match algol68Predefined "\<\(blank\|formfeed\|newline\|null\|tab\)\s*char\(acter\)\?\>"
-  syn match algol68Predefined "\<\(max\s*abs\|exp\|error\)\s*char\>"
-  syn match algol68Predefined "\<\(\(long\s*\)\?long\s*\)\?max\s*\(bits\|int\)\>"
-  syn match algol68Predefined "\<\(\(long\s*\)\?long\s*\)\?\(max\|min\|small\)\s*real\>"
-  syn match algol68Predefined "\<\(\(long\s*\)\?long\s*\)\?\(bits\|bytes\|exp\|int\|real\)\s*width\>"
-  syn match algol68Predefined "\<\(bits\|bytes\|compl\|int\|real\)\s*\(lengths\|shorths\)\>"
-  syn match algol68Predefined "\<\(blank\|flip\|flop\)\>"
+  syn match algol68Predefined "\<\%(blank\|formfeed\|newline\|null\|tab\)\s*char\%(acter\)\?\>"
+  syn match algol68Predefined "\<\%(max\s*abs\|exp\|error\)\s*char\>"
+  syn match algol68Predefined "\<\%(\%(long\s*\)\?long\s*\)\?max\s*\%(bits\|int\)\>"
+  syn match algol68Predefined "\<\%(\%(long\s*\)\?long\s*\)\?\%(max\|min\|small\)\s*real\>"
+  syn match algol68Predefined "\<\%(\%(long\s*\)\?long\s*\)\?\%(bits\|bytes\|exp\|int\|real\)\s*width\>"
+  syn match algol68Predefined "\<\%(bits\|bytes\|compl\|int\|real\)\s*\%(lengths\|shorths\)\>"
+  syn match algol68Predefined "\<\%(blank\|flip\|flop\)\>"
 
 "      Transput Files and Channels
-  syn match algol68Predefined "\<stand\s*\(in\|out\|back\|error\)\(\s*channel\)\?\>"
+  syn match algol68Predefined "\<stand\s*\%(in\|out\|back\|error\)\%(\s*channel\)\?\>"
   syn match algol68Predefined "\<stand\s*draw\s*channel\>"
 
 "      Transput Event Routines
-  syn match algol68Function "\<on\s*\(\(line\|page\|\(logical\s*\|physical\s*\)\?file\|format\)\s*\)end\>"
-  syn match algol68Function "\<on\s*\(\(format\|value\|open\|transput\)\s*\)error\>"
+  syn match algol68Function "\<on\s*\%(\%(line\|page\|\%(logical\s*\|physical\s*\)\?file\|format\)\s*\)end\>"
+  syn match algol68Function "\<on\s*\%(\%(format\|value\|open\|transput\)\s*\)error\>"
 
 "      Connections to Files
-  syn match algol68Function "\<\(open\|establish\|append\|create\|associate\|close\|lock\|erase\|scratch\)\>"
+  syn match algol68Function "\<\%(open\|establish\|append\|create\|associate\|close\|lock\|erase\|scratch\)\>"
 
 "      Positioning on Files
   syn match algol68Function "\<new\s*line\>"
   syn match algol68Function "\<new\s*page\>"
   syn match algol68Function "\<back\s*space\>"
-  syn match algol68Function "\<\(reset\|rewind\|rewrite\|set\|seek\|space\)\>"
+  syn match algol68Function "\<\%(reset\|rewind\|rewrite\|set\|seek\|space\)\>"
 
 "      I/O on Files (Standard)
-  syn match algol68Function "\<\(get\|put\|print\|read\|write\)\(f\|\s*bin\)\?\>"
+  syn match algol68Function "\<\%(get\|put\|print\|read\|write\)\%(f\|\s*bin\)\?\>"
 
 "      I/O on Files (Algol68C)
-  syn match algol68Function "\<\(print\|read\)\s*\(\(long\s*\)\?long\s*\)\?\(int\|real\|complex\|bits\)\>"
-  syn match algol68Function "\<\(print\|read\)\s*\(bool\|char\|string\)\>"
+  syn match algol68Function "\<\%(print\|read\)\s*\%(\%(long\s*\)\?long\s*\)\?\%(int\|real\|complex\|bits\)\>"
+  syn match algol68Function "\<\%(print\|read\)\s*\%(bool\|char\|string\)\>"
   syn match algol68Function "\<read\s*line\>"
 
 "      Enquiries on Files
-  syn match algol68Function "\<\(get\|put\|bin\|set\|reset\|rewind\|reidf\|draw\)\s*possible\>"
-  syn match algol68Function "\<end\s*of\s*\(file\|line\)\>"
-  syn match algol68Function "\<\(make\s*\)\?term\>"
-  syn match algol68Function "\<\(compressible\|eof\|eoln\)\>"
+  syn match algol68Function "\<\%(get\|put\|bin\|set\|reset\|rewind\|reidf\|draw\)\s*possible\>"
+  syn match algol68Function "\<end\s*of\s*\%(file\|line\)\>"
+  syn match algol68Function "\<\%(make\s*\)\?term\>"
+  syn match algol68Function "\<\%(compressible\|eof\|eoln\)\>"
 
 "      Keyboard Control
-  syn match algol68Function "\<\(cooked\|raw\)\>"
+  syn match algol68Function "\<\%(cooked\|raw\)\>"
 
 "      Math Constants
-  syn match algol68Predefined "\<\(\(long\s*\)\?long\s*\)\?\(min\s*real\|\(minus\s*\)\?infinity\|\(min\s*\)\?inf\)\>"
-  syn match algol68Predefined "\<\(\(\(long\s*\)\?long\s*\)\|[qd]\)\?pi\>"
+  syn match algol68Predefined "\<\%(\%(long\s*\)\?long\s*\)\?\%(min\s*real\|\%(minus\s*\)\?infinity\|\%(min\s*\)\?inf\)\>"
+  syn match algol68Predefined "\<\%(\%(\%(long\s*\)\?long\s*\)\|[qd]\)\?pi\>"
   syn match algol68Predefined "\<mp\s*radix\>"
   syn match algol68Predefined "\<nan\>"
 
 "      Math Basic Functions
-  syn match algol68Function "\<\(\(\(long\s*\)\?long\s*\)\|[qd]\)\?\(sqrt\|cbrt\|curt\|exp\|ln\|log\)\>"
+  syn match algol68Function "\<\%(\%(\%(long\s*\)\?long\s*\)\|[qd]\)\?\%(sqrt\|cbrt\|curt\|exp\|ln\|log\)\>"
   syn match algol68Function "\<ln\s*abs\>"
 
 "      Math Trigonometric Functions
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?\(arc\s*\|a\)\?\(sin\|cos\|tan\|cot\|sec\|csc\)\(h\|\(\s*dg\)\)\?\>"
-  syn match algol68Function "\<\(\(\(long\s*\)\?long\s*\)\|[qd]\)\?\(arc\s*\|a\)\?tan2\(\s*dg\)\?\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?\%(arc\s*\|a\)\?\%(sin\|cos\|tan\|cot\|sec\|csc\)\%(h\|\%(\s*dg\)\)\?\>"
+  syn match algol68Function "\<\%(\%(\%(long\s*\)\?long\s*\)\|[qd]\)\?\%(arc\s*\|a\)\?tan2\%(\s*dg\)\?\>"
   " long-long-sinpi/cospi/tanpi/cotpi
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?\(sin\|cos\|tan\|cot\)\s*pi\>"
-  syn match algol68Function "\<ln\s*\(sinh\|cosh\)\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?\%(sin\|cos\|tan\|cot\)\s*pi\>"
+  syn match algol68Function "\<ln\s*\%(sinh\|cosh\)\>"
   " a special case in Genie?
   syn match algol68Function "\<atan\s*int\>"
 
 "      Random Number Generator
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?\(next\s*\)\?random\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?\%(next\s*\)\?random\>"
   syn match algol68Function "\<first\s*random\>"
   syn match algol68Function "\<rnd\>"
 
 "      Garbage Collection and Memory
   syn match algol68Function "\<collect\s*seconds\>"
-  syn match algol68Function "\<garbage\(\s*\(collections\|freed\|refused\|seconds\)\)\?\>"
+  syn match algol68Function "\<garbage\%(\s*\%(collections\|freed\|refused\|seconds\)\)\?\>"
   syn match algol68Function "\<gc\s*heap\>"
   syn match algol68Function "\<on\s*gc\s*event\>"
-  syn match algol68Function "\<preemptive\s*\(gc\|sweep\(\s*heap\)\?\)\>"
+  syn match algol68Function "\<preemptive\s*\%(gc\|sweep\%(\s*heap\)\?\)\>"
   syn match algol68Function "\<sweep\s*heap\>"
-  syn match algol68Function "\<sweeps\(\s*refused\)\?\>"
-  syn match algol68Function "\<\(system\s*\)\?\(heap\|stack\)\s*pointer\>"
-  syn match algol68Function "\<\(actual\|system\)\s*stack\s*size\>"
-  syn match algol68Function "\<\(blocks\|collections\)\>"
+  syn match algol68Function "\<sweeps\%(\s*refused\)\?\>"
+  syn match algol68Function "\<\%(system\s*\)\?\%(heap\|stack\)\s*pointer\>"
+  syn match algol68Function "\<\%(actual\|system\)\s*stack\s*size\>"
+  syn match algol68Function "\<\%(blocks\|collections\)\>"
 
 "      I/O on Strings
-  syn match algol68Function "\<\(puts\|gets\|string\)f\?\>"
+  syn match algol68Function "\<\%(puts\|gets\|string\)f\?\>"
 "      Character Type Tests
-  syn match algol68Function "\<is\s*\(alnum\|alpha\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\)\>"
+  syn match algol68Function "\<is\s*\%(alnum\|alpha\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\)\>"
 "      Operations on Characters
-  syn match algol68Function "\<to\s*\(upper\|lower\)\>"
+  syn match algol68Function "\<to\s*\%(upper\|lower\)\>"
 "      Search in Strings
-  syn match algol68Function "\<\(char\|last\s*char\|string\)\s*in\s*string\>"
+  syn match algol68Function "\<\%(char\|last\s*char\|string\)\s*in\s*string\>"
 
 "      Time and Date
-  syn match algol68Function "\<\(cpu\|wall\|utc\|local\)\s*time\>"
-  syn match algol68Function "\<\(wall\s*\)\?clock\>"
-  syn match algol68Function "\<\(wall\s*\)\?seconds\>"
+  syn match algol68Function "\<\%(cpu\|wall\|utc\|local\)\s*time\>"
+  syn match algol68Function "\<\%(wall\s*\)\?clock\>"
+  syn match algol68Function "\<\%(wall\s*\)\?seconds\>"
   syn match algol68Function "\<sleep\>"
 
 "      Type Operations
-  syn match algol68Function "\<\(long\s*\)\?\(bits\|bytes\)\s*pack\>"
-  syn match algol68Function "\<\(long\s*long\s*\)\?bits\s*pack\>"
-  syn match algol68Function "\<\(bits\|whole\|fixed\|float\|real\)\>"
+  syn match algol68Function "\<\%(long\s*\)\?\%(bits\|bytes\)\s*pack\>"
+  syn match algol68Function "\<\%(long\s*long\s*\)\?bits\s*pack\>"
+  syn match algol68Function "\<\%(bits\|whole\|fixed\|float\|real\)\>"
 
 "      Runtime
-  syn match algol68Function "\<\(program\s*\)\?idf\>"
-  syn match algol68Function "\<\(backtrace\|break\|debug\|monitor\|abend\|evaluate\|system\)\>"
-  syn match algol68Function "\<\(i32\|i64\|r64\|r128\)mach\>"
+  syn match algol68Function "\<\%(program\s*\)\?idf\>"
+  syn match algol68Function "\<\%(backtrace\|break\|debug\|monitor\|abend\|evaluate\|system\)\>"
+  syn match algol68Function "\<\%(i32\|i64\|r64\|r128\)mach\>"
 
 
 "  UNIX EXTENSIONS
 
 "      Environment Functions
-  syn match algol68Function "\<\(a68g\s*\)\?\(argc\|argv\)\>"
+  syn match algol68Function "\<\%(a68g\s*\)\?\%(argc\|argv\)\>"
   syn match algol68Function "\<get\s*env\>"
   syn match algol68Function "\<reset\s*errno\>"
   syn match algol68Function "\<str\s*error\>"
-  syn match algol68Function "\<\(get\|set\)\s*pwd\>"
-  syn match algol68Function "\<\(rows\|columns\|abend\)\>"
+  syn match algol68Function "\<\%(get\|set\)\s*pwd\>"
+  syn match algol68Function "\<\%(rows\|columns\|abend\)\>"
   syn match algol68Predefined "\<errno\>"
 
 "      Processes
-  syn match algol68Function "\<execve\(\s*child\(\s*pipe\)\?\|\s*output\)\?\>"
-  syn match algol68Function "\<exec\(\s*sub\(\s*pipeline\|\s*output\)\?\)\?\>"
+  syn match algol68Function "\<execve\%(\s*child\%(\s*pipe\)\?\|\s*output\)\?\>"
+  syn match algol68Function "\<exec\%(\s*sub\%(\s*pipeline\|\s*output\)\?\)\?\>"
   syn match algol68Function "\<fork\>"
   syn match algol68Function "\<wait\s*pid\>"
   syn match algol68Function "\<create\s*pipe\>"
@@ -314,104 +314,104 @@ if !exists("algol68_traditional")
   syn match algol68Function "\<sig\s*segv\>"
 
 "      File types and attributes
-  syn match algol68Function "\<file\s*is\s*\(block\s*device\|char\s*device\|directory\|regular\|fifo\|link\)\>"
+  syn match algol68Function "\<file\s*is\s*\%(block\s*device\|char\s*device\|directory\|regular\|fifo\|link\)\>"
   syn match algol68Function "\<file\s*mode\>"
   syn match algol68Function "\<get\s*directory\>"
   syn match algol68Function "\<real\s*path\>"
 
 "      Fetching web page contents and sending requests
-  syn match algol68Function "\<https\?\s*\(content\|timeout\)\>"
+  syn match algol68Function "\<https\?\s*\%(content\|timeout\)\>"
   syn match algol68Function "\<tcp\s*request\>"
 
 "      Regular expressions in string manipulation
-  syn match algol68Function "\<grep\s*in\s*\(sub\)\?string\>"
+  syn match algol68Function "\<grep\s*in\s*\%(sub\)\?string\>"
   syn match algol68Function "\<sub\s*in\s*string\>"
 
 "      Curses support
-  syn match algol68Function "\<curses\s*\(start\|end\|clear\|refresh\|get\s*char\|put\s*char\|move\|lines\|columns\)\>"
-  syn match algol68Function "\<curses\s*\(green\|cyan\|red\|yellow\|magenta\|blue\|white\)\(inverse\)\?\>"
+  syn match algol68Function "\<curses\s*\%(start\|end\|clear\|refresh\|get\s*char\|put\s*char\|move\|lines\|columns\)\>"
+  syn match algol68Function "\<curses\s*\%(green\|cyan\|red\|yellow\|magenta\|blue\|white\)\%(inverse\)\?\>"
   syn match algol68Function "\<curses\s*del\s*char\>"
 
 
 "  POSTGRESQL CLIENT ROUTINES
 
 "      Connecting to a server
-  syn match algol68Function "\<pq\s*\(connect\s*db\|finish\|reset\|parameter\s*status\)\>"
+  syn match algol68Function "\<pq\s*\%(connect\s*db\|finish\|reset\|parameter\s*status\)\>"
 
 "      Sending queries and retrieving results
-  syn match algol68Function "\<pq\s*\(exec\|ntuples\|nfields\|fname\|fnumber\|fformat\|get\s*is\s*null\|get\s*value\|cmd\s*status\|cmd\s*tuples\)\>"
+  syn match algol68Function "\<pq\s*\%(exec\|ntuples\|nfields\|fname\|fnumber\|fformat\|get\s*is\s*null\|get\s*value\|cmd\s*status\|cmd\s*tuples\)\>"
 
 "      Connection status information
-  syn match algol68Function "\<pq\s*\(\(result\s*\)\?error\s*message\|db\|user\|pass\|host\|port\|tty\|options\|\(protocol\|server\)\s*version\|socket\|backend\s*pid\)\>"
+  syn match algol68Function "\<pq\s*\%(\%(result\s*\)\?error\s*message\|db\|user\|pass\|host\|port\|tty\|options\|\%(protocol\|server\)\s*version\|socket\|backend\s*pid\)\>"
 
 
 "  SOUND
 
-  syn match algol68Function "\<\(new\|get\|set\)\s*sound\>"
+  syn match algol68Function "\<\%(new\|get\|set\)\s*sound\>"
   syn keyword algol68Operator RESOLUTION CHANNELS RATE SAMPLES
 
 
 "  DRAWING USING THE GNU PLOTTING UTILITIES
 
 "      Setting up a graphics device
-  syn match algol68Function "\<draw\s*\(device\|erase\|show\|move\|aspect\|fill\s*style\|line\s*style\|line\s*width\|clear\|flush\)\>"
+  syn match algol68Function "\<draw\s*\%(device\|erase\|show\|move\|aspect\|fill\s*style\|line\s*style\|line\s*width\|clear\|flush\)\>"
   syn match algol68Function "\<make\s*device\>"
 
 "      Specifying colours
-  syn match algol68Function "\<draw\s*\(\(background\s*\)\?colou\?r\(\s*name\)\?\)\>"
+  syn match algol68Function "\<draw\s*\%(\%(background\s*\)\?colou\?r\%(\s*name\)\?\)\>"
   syn match algol68Function "\<draw\s*get\s*colou\?r\s*name\>"
 
 "      Drawing objects
-  syn match algol68Function "\<draw\s*\(point\|line\|rect\|circle\|ball\|star\)\>"
+  syn match algol68Function "\<draw\s*\%(point\|line\|rect\|circle\|ball\|star\)\>"
 
 "      Drawing text
-  syn match algol68Function "\<draw\s*\(text\(\s*angle\)\?\|font\s*\(name\|size\)\)\>"
+  syn match algol68Function "\<draw\s*\%(text\%(\s*angle\)\?\|font\s*\%(name\|size\)\)\>"
 
 
 "  EXTRA NUMERICAL PROCEDURES
 
 "      COMPLEX Functions
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?complex\s*\(sqrt\|exp\|ln\)\>"
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?complex\s*\(arc\s*\)\?\(sin\|cos\|tan\)h\?\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?complex\s*\%(sqrt\|exp\|ln\)\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?complex\s*\%(arc\s*\)\?\%(sin\|cos\|tan\)h\?\>"
   " cas casin casinh dcas dcasin dcasinh qcas qcasin qcasinh longcas longlongcas
-  syn match algol68Function "\<\(\(\(long\s*\)\?long\s*\)\|[dq]\?\)cas\(inh\?\)\?\>"
+  syn match algol68Function "\<\%(\%(\%(long\s*\)\?long\s*\)\|[dq]\?\)cas\%(inh\?\)\?\>"
   " a special case in Genie?
   syn match algol68Function "\<long\s*complex\s*atanh\>"
 
 "      REAL Airy Functions
-  syn match algol68Function "\<airy\s*[ab]i\(\s*derivative\)\?\>"
-  syn match algol68Function "\<airy\s*[ab]i\(\s*deriv\)\?\(\s*scaled\)\?\>"
-  syn match algol68Function "\<airy\s*zero\s*[ab]i\(\s*deriv\)\?\>"
+  syn match algol68Function "\<airy\s*[ab]i\%(\s*derivative\)\?\>"
+  syn match algol68Function "\<airy\s*[ab]i\%(\s*deriv\)\?\%(\s*scaled\)\?\>"
+  syn match algol68Function "\<airy\s*zero\s*[ab]i\%(\s*deriv\)\?\>"
 
 "      REAL Bessel Functions
-  syn match algol68Function "\<bessel\s*\(jn\|yn\|in\|exp\s*in\|kn\|exp\s*kn\|jl\|yl\|exp\s*il\|exp\s*kl\|jnu\|ynu\|inu\|exp\s*inu\|knu\|exp\s*knu\)\>"
+  syn match algol68Function "\<bessel\s*\%(jn\|yn\|in\|exp\s*in\|kn\|exp\s*kn\|jl\|yl\|exp\s*il\|exp\s*kl\|jnu\|ynu\|inu\|exp\s*inu\|knu\|exp\s*knu\)\>"
 
   " only a few could be sensibly merged; we keep them apart
-  syn match algol68Function "\<bessel\s*\(il[012]\?\s*scaled\)\>"
-  syn match algol68Function "\<bessel\s*\(in[01]\(\s*scaled\)\?\)\>"
-  syn match algol68Function "\<bessel\s*\(in\s*u\?scaled\)\>"
-  syn match algol68Function "\<bessel\s*\(j\(\l[012]\|n[01]\)\)\>"
-  syn match algol68Function "\<bessel\s*\(kl[012]\?\s*scaled\)\>"
-  syn match algol68Function "\<bessel\s*\(kn[01]\(\s*scaled\)\?\)\>"
-  syn match algol68Function "\<bessel\s*\(kn\s*[u_]\?scaled\)\>"
+  syn match algol68Function "\<bessel\s*\%(il[012]\?\s*scaled\)\>"
+  syn match algol68Function "\<bessel\s*\%(in[01]\%(\s*scaled\)\?\)\>"
+  syn match algol68Function "\<bessel\s*\%(in\s*u\?scaled\)\>"
+  syn match algol68Function "\<bessel\s*\%(j\%(\l[012]\|n[01]\)\)\>"
+  syn match algol68Function "\<bessel\s*\%(kl[012]\?\s*scaled\)\>"
+  syn match algol68Function "\<bessel\s*\%(kn[01]\%(\s*scaled\)\?\)\>"
+  syn match algol68Function "\<bessel\s*\%(kn\s*[u_]\?scaled\)\>"
   syn match algol68Function "\<bessel\s*lnknu\>"
-  syn match algol68Function "\<bessel\s*\(y\(\l[012]\|n[01]\)\)\>"
-  syn match algol68Function "\<bessel\s*zero\s*j\([01]\|nu\)\>"
+  syn match algol68Function "\<bessel\s*\%(y\%(\l[012]\|n[01]\)\)\>"
+  syn match algol68Function "\<bessel\s*zero\s*j\%([01]\|nu\)\>"
 
 "      REAL Elliptic Integrals
-  syn match algol68Function "\<elliptic\s*integral\s*\(k\|e\|rf\<rd\|rj\|rc\)\>"
+  syn match algol68Function "\<elliptic\s*integral\s*\%(k\|e\|rf\<rd\|rj\|rc\)\>"
 
 "      REAL Error and Gamma Functions
-  syn match algol68Function "\<\(ln\s*\)\?\(fact\|choose\)\>"
+  syn match algol68Function "\<\%(ln\s*\)\?\%(fact\|choose\)\>"
   syn match algol68Function "\<prime\s*factors\>"
-  syn match algol68Function "\<\(\(long\s*\)\?long\s*\)\?\(inv\(erse\)\?\s*\)\?erfc\?\>"
-  syn match algol68Function "\<mpfr\s*\(\(long\s*\)\?long\s*\)\?\(inv\s*\)\?erfc\?\>"
-  syn match algol68Function "\<\(\(\(\(mpfr\s*\)\?long\s*\)\?long\s*\)\|\(d\|\(mpfr\s*\)\?q\)\)\?\(beta\|gamma\)\(inc\s*g\?f\?\)\?\>"
-  syn match algol68Function "\<\(\(\(\(mpfr\s*\)\?long\s*\)\?long\s*\)\|\(d\|\(mpfr\s*\)\?q\)\)\?ln\s*\(beta\|gamma\)\>"
+  syn match algol68Function "\<\%(\%(long\s*\)\?long\s*\)\?\%(inv\%(erse\)\?\s*\)\?erfc\?\>"
+  syn match algol68Function "\<mpfr\s*\%(\%(long\s*\)\?long\s*\)\?\%(inv\s*\)\?erfc\?\>"
+  syn match algol68Function "\<\%(\%(\%(\%(mpfr\s*\)\?long\s*\)\?long\s*\)\|\%(d\|\%(mpfr\s*\)\?q\)\)\?\%(beta\|gamma\)\%(inc\s*g\?f\?\)\?\>"
+  syn match algol68Function "\<\%(\%(\%(\%(mpfr\s*\)\?long\s*\)\?long\s*\)\|\%(d\|\%(mpfr\s*\)\?q\)\)\?ln\s*\%(beta\|gamma\)\>"
   syn match algol68Function "\<mpfr\s*mp\>"
   " is the following a special case in Genie?
-  syn match algol68Function "\<mpfr\s*\(long\s*\|d\)gamma\s*inc\>"
-  syn match algol68Function "gamma\s*\(\(inc\s*\(gsl\|[pq]\)\)\|inv\|star\)\>"
+  syn match algol68Function "\<mpfr\s*\%(long\s*\|d\)gamma\s*inc\>"
+  syn match algol68Function "gamma\s*\%(\%(inc\s*\%(gsl\|[pq]\)\)\|inv\|star\)\>"
   syn match algol68Function "\<lj[ef]\s*126\>"
   syn match algol68Function "\<ln1p\>"
 
@@ -421,98 +421,98 @@ if !exists("algol68_traditional")
 
   " strangely missing some common factors (hecto, deca, deci, centi),
   " also myria, and the more extreme factors (quetta, ronna, ronto, quecto)
-  syn match algol68Predefined "\<num\s*\(yotta\|zetta\|exa\|peta\|tera\|giga\|mega\|kilo\|milli\|micro\|nano\|pico\|femto\|atto\|zepto\|yocto\)\>"
+  syn match algol68Predefined "\<num\s*\%(yotta\|zetta\|exa\|peta\|tera\|giga\|mega\|kilo\|milli\|micro\|nano\|pico\|femto\|atto\|zepto\|yocto\)\>"
 
 
 "      Physical Constants
 
 "          Fundamental Constants
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(boltzmann\|faraday\|gauss\|hectare\|\(kilometers\|miles\)\s*per\s*hour\|micron\|molar\s*gas\|planck\s*constant\(\s*bar\)\?\|speed\s*of\s*light\|standard\s*gas\s*volume\)\>"
-  syn match algol68Predefined "\<mksa\s*vacuum\s*\(permeability\|permittivity\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(boltzmann\|faraday\|gauss\|hectare\|\%(kilometers\|miles\)\s*per\s*hour\|micron\|molar\s*gas\|planck\s*constant\%(\s*bar\)\?\|speed\s*of\s*light\|standard\s*gas\s*volume\)\>"
+  syn match algol68Predefined "\<mksa\s*vacuum\s*\%(permeability\|permittivity\)\>"
   syn match algol68Predefined "\<num\s*avogadro\>"
 
 "          Astronomy and Astrophysics
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(astronomical\s*unit\|grav\s*accel\|gravitational\s*constant\|light\s*year\|parsec\|solar\s*mass\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(astronomical\s*unit\|grav\s*accel\|gravitational\s*constant\|light\s*year\|parsec\|solar\s*mass\)\>"
 
 "          Atomic and Nuclear Physics
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(angstrom\|barn\|bohr\s*magneton\|bohr\s*radius\|electron\s*\(charge\|magnetic\s*moment\|volt\)\|mass\s*\(electron\|muon\|neutron\|proton\)\|nuclear\s*magneton\|proton\s*magnetic\s*moment\|rydberg\|unified\s*atomic\s*mass\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(angstrom\|barn\|bohr\s*magneton\|bohr\s*radius\|electron\s*\%(charge\|magnetic\s*moment\|volt\)\|mass\s*\%(electron\|muon\|neutron\|proton\)\|nuclear\s*magneton\|proton\s*magnetic\s*moment\|rydberg\|unified\s*atomic\s*mass\)\>"
   syn match algol68Predefined "\<num\s*fine\s*structure\>"
 
 "          Time
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(day\|hour\|minute\|week\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(day\|hour\|minute\|week\)\>"
 
 "          Imperial units
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(foot\|inch\|mil\|mile\|yard\|\(tex\)\?point\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(foot\|inch\|mil\|mile\|yard\|\%(tex\)\?point\)\>"
 
 "          Nautical units
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(fathom\|knot\|nautical\s*mile\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(fathom\|knot\|nautical\s*mile\)\>"
 
 "          Volume
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(acre\|\(canadian\|uk\|us\)\s*gallon\|liter\|pint\|quart\|cup\|fluid\s*ounce\|\(table\|tea\)\s*spoon\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(acre\|\%(canadian\|uk\|us\)\s*gallon\|liter\|pint\|quart\|cup\|fluid\s*ounce\|\%(table\|tea\)\s*spoon\)\>"
 
 "          Mass and weight
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(carat\|\(gram\|\(kilo\s*\)\?pound\)\s*force\|\(metric\s*\|uk\s*\)\?ton\|\(ounce\|pound\)\s*mass\|poundal\|troy\s*ounce\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(carat\|\%(gram\|\%(kilo\s*\)\?pound\)\s*force\|\%(metric\s*\|uk\s*\)\?ton\|\%(ounce\|pound\)\s*mass\|poundal\|troy\s*ounce\)\>"
 
 "          Thermal energy and power
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(btu\|calorie\|horsepower\|therm\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(btu\|calorie\|horsepower\|therm\)\>"
 
 "          Pressure
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(bar\|inch\s*of\s*\(mercury\|water\)\|meter\s*of\s*mercury\|psi\|std\s*atmosphere\|torr\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(bar\|inch\s*of\s*\%(mercury\|water\)\|meter\s*of\s*mercury\|psi\|std\s*atmosphere\|torr\)\>"
 
 "          Viscosity
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(poise\|stokes\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(poise\|stokes\)\>"
 
 "          Light and illumination
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(footcandle\|footlambert\|lambert\|lumen\|lux\|phot\|stilb\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(footcandle\|footlambert\|lambert\|lumen\|lux\|phot\|stilb\)\>"
 
 "          Radioactivity
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(curie\|rad\|roentgen\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(curie\|rad\|roentgen\)\>"
 
 "          Force and energy
-  syn match algol68Predefined "\<\(cgs\|mksa\)\s*\(dyne\|erg\|joule\|newton\)\>"
+  syn match algol68Predefined "\<\%(cgs\|mksa\)\s*\%(dyne\|erg\|joule\|newton\)\>"
 
 
 " Functions from GSL
 
-  syn match algol68Function "\<angle\s*restrict\s*\(pos\|symm\)\>"
-  syn match algol68Function "\<conicalp\s*\([01]\|cylreg\|m\?half\|sph\s*reg\)\>"
-  syn match algol68Function "\<cholesky\s*\(decomp\|solve\)\>"
+  syn match algol68Function "\<angle\s*restrict\s*\%(pos\|symm\)\>"
+  syn match algol68Function "\<conicalp\s*\%([01]\|cylreg\|m\?half\|sph\s*reg\)\>"
+  syn match algol68Function "\<cholesky\s*\%(decomp\|solve\)\>"
   syn match algol68Function "\<debye\s*[1-6]\>"
-  syn match algol68Function "\<ellint\s*\([defp]\|[ekp]\s*comp\|r[cdfj]\)\>"
-  syn match algol68Function "\<\(expint\s*\(3\|e[12in]\)\|expm1\|exprel[2n]\?\)\>"
-  syn match algol68Function "\<fermi\s*dirac\s*\([012]\|3\?half\|inc0\|int\|m1\|mhalf\)\>"
-  syn match algol68Function "\<fft\s*\(complex\s*\)\?\(forward\|backward\|inverse\)\>"
-  syn match algol68Function "\<\(gegenpoly\|laguerre\)\s*[123n]\s*real\>"
-  syn match algol68Function "\<lambert\s*\(w0\|wm1\)\>"
-  syn match algol68Function "\<legendre\s*\(h3d\([01]\)\?\|p[123l]\|q[01l]\)\>"
+  syn match algol68Function "\<ellint\s*\%([defp]\|[ekp]\s*comp\|r[cdfj]\)\>"
+  syn match algol68Function "\<\%(expint\s*\%(3\|e[12in]\)\|expm1\|exprel[2n]\?\)\>"
+  syn match algol68Function "\<fermi\s*dirac\s*\%([012]\|3\?half\|inc0\|int\|m1\|mhalf\)\>"
+  syn match algol68Function "\<fft\s*\%(complex\s*\)\?\%(forward\|backward\|inverse\)\>"
+  syn match algol68Function "\<\%(gegenpoly\|laguerre\)\s*[123n]\s*real\>"
+  syn match algol68Function "\<lambert\s*\%(w0\|wm1\)\>"
+  syn match algol68Function "\<legendre\s*\%(h3d\%([01]\)\?\|p[123l]\|q[01l]\)\>"
   syn match algol68Function "\<pseudo\s*inv\>"
-  syn match algol68Function "\<psi\s*\(1\(int\|ply\)\?\|int\|n\)\?\>"
+  syn match algol68Function "\<psi\s*\%(1\%(int\|ply\)\?\|int\|n\)\?\>"
   syn match algol68Function "\<synchrotron\s*[12]\>"
   syn match algol68Function "\<taylor\s*coeff\>"
   syn match algol68Function "\<transport\s*[2-5]\>"
-  syn match algol68Function "\<zeta\(\s*m1\)\?\(\s*int\)\?\>"
-  syn match algol68Function "\<\(chi\|ci\|clausen\|dawson\|digamma\|dilog\|doublefact\|eta\|eta\s*int\|hermite\s*func\|hypot\|hzeta\|laplace\|shi\|si\|sinc\)\>"
-  syn match algol68Function "\<ln1\s*\(plusx\(mx\)\?\)\?\>"
-  syn match algol68Function "\<\(compl\s*\)\?\(matrix\|vector\)\s*echo\>"
-  syn match algol68Function "\<print\s*\(matrix\|vector\)\>"
-  syn match algol68Function "\<\(complex\s*\)\?lu\s*\(decomp\|det\|inv\|solve\)\>"
+  syn match algol68Function "\<zeta\%(\s*m1\)\?\%(\s*int\)\?\>"
+  syn match algol68Function "\<\%(chi\|ci\|clausen\|dawson\|digamma\|dilog\|doublefact\|eta\|eta\s*int\|hermite\s*func\|hypot\|hzeta\|laplace\|shi\|si\|sinc\)\>"
+  syn match algol68Function "\<ln1\s*\%(plusx\%(mx\)\?\)\?\>"
+  syn match algol68Function "\<\%(compl\s*\)\?\%(matrix\|vector\)\s*echo\>"
+  syn match algol68Function "\<print\s*\%(matrix\|vector\)\>"
+  syn match algol68Function "\<\%(complex\s*\)\?lu\s*\%(decomp\|det\|inv\|solve\)\>"
   syn match algol68Function "\<left\s*columns\>"
-  syn match algol68Function "\<\(ols\|tls\|pcacv\|pcasvd\|pcr\|pls[12]\)\>"
-  syn match algol68Function "\<\(lnpoch\|poch\s*\(rel\)\?\)\>"
-  syn match algol68Function "\<qr\s*\(decomp\|\(ls\s*\)\?solve\)\>"
-  syn match algol68Function "\<svd\s*\(decomp\|solve\)\>"
+  syn match algol68Function "\<\%(ols\|tls\|pcacv\|pcasvd\|pcr\|pls[12]\)\>"
+  syn match algol68Function "\<\%(lnpoch\|poch\s*\%(rel\)\?\)\>"
+  syn match algol68Function "\<qr\s*\%(decomp\|\%(ls\s*\)\?solve\)\>"
+  syn match algol68Function "\<svd\s*\%(decomp\|solve\)\>"
 
 
 " Functions from R Mathlib
 
   syn match algol68Function "\<r\s*[dpqr]n\?\s*binom\>"
-  syn match algol68Function "\<r\s*\(di\|tri\|tetra\|penta\|psi\)\s*gamma\>"
+  syn match algol68Function "\<r\s*\%(di\|tri\|tetra\|penta\|psi\)\s*gamma\>"
   " note: Genie documents 'r rn chisq' but it's missing in the code?
   syn match algol68Function "\<r\s*[dpqr]n\?\s*chisq\>"
-  syn match algol68Function "\<r\s*[dpqr]\(\s*n\)\?\s*f\>"
-  syn match algol68Function "\<r\s*[dpq]\(\s*n\)\?\s*t\>"
-  syn match algol68Function "\<r\s*[dpqr]\s*\(l\s*\)\?norm\>"
-  syn match algol68Function "\<r\s*[dpqr]\s*\(beta\|cauchy\|exp\|geom\|hyper\|logis\|pois\|sign\s*rank\|t\|unif\|weibull\|wilcox\)\>"
+  syn match algol68Function "\<r\s*[dpqr]\%(\s*n\)\?\s*f\>"
+  syn match algol68Function "\<r\s*[dpq]\%(\s*n\)\?\s*t\>"
+  syn match algol68Function "\<r\s*[dpqr]\s*\%(l\s*\)\?norm\>"
+  syn match algol68Function "\<r\s*[dpqr]\s*\%(beta\|cauchy\|exp\|geom\|hyper\|logis\|pois\|sign\s*rank\|t\|unif\|weibull\|wilcox\)\>"
   syn match algol68Function "\<r\s*[pq]\s*tu\s*key\>"
 
 
