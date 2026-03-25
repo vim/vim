@@ -23,6 +23,9 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
 
+static int last_text_area_w = 0;
+static int last_text_area_h = 0;
+
 /*
  * ============================================================
  * Menu functions
@@ -353,13 +356,30 @@ gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
     int
 gui_mch_get_scrollbar_xpadding(void)
 {
-    return 0;
+    int formwin_w = gtk_widget_get_width(gui.formwin);
+    int sbar_w = 0;
+    int xpad;
+
+    if (gui.which_scrollbars[SBAR_LEFT])
+	sbar_w += gui.scrollbar_width;
+    if (gui.which_scrollbars[SBAR_RIGHT])
+	sbar_w += gui.scrollbar_width;
+
+    xpad = formwin_w - last_text_area_w - sbar_w;
+    return (xpad < 0) ? 0 : xpad;
 }
 
     int
 gui_mch_get_scrollbar_ypadding(void)
 {
-    return 0;
+    int formwin_h = gtk_widget_get_height(gui.formwin);
+    int ypad;
+
+    ypad = formwin_h - last_text_area_h;
+    if (gui.which_scrollbars[SBAR_BOTTOM])
+	ypad -= gui.scrollbar_height;
+
+    return (ypad < 0) ? 0 : ypad;
 }
 
     static void
@@ -411,6 +431,8 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
     void
 gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
+    last_text_area_w = w;
+    last_text_area_h = h;
     gui_gtk_form_move_resize(GTK_FORM(gui.formwin), gui.drawarea, x, y, w, h);
     // Force immediate size allocation for drawarea
     gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(gui.drawarea), w);
