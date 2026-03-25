@@ -758,4 +758,68 @@ func Test_xxd_null_dereference()
   bw!
 endfunc
 
+func Test_xxd_color_outfile_no_color()
+  CheckUnix
+
+  " When output goes to a file (two-argument form), auto color should be
+  " disabled and produce the same result as redirect to file.
+  let input = 'Xxd_color_input'
+  let outfile = 'Xxd_color_outfile'
+  let outredir = 'Xxd_color_outredir'
+
+  call writefile([repeat('A', 100)], input)
+
+  " Two-argument form: xxd infile outfile
+  silent exe '!' . s:xxd_cmd . ' ' . input . ' ' . outfile
+
+  " Redirect form: xxd infile > outfile
+  silent exe '!' . s:xxd_cmd . ' ' . input . ' > ' . outredir
+
+  call assert_equal(readfile(outredir), readfile(outfile))
+
+  call delete(input)
+  call delete(outfile)
+  call delete(outredir)
+endfunc
+
+func Test_xxd_color_term_dumb()
+  CheckUnix
+
+  " When TERM is 'dumb', auto color should be disabled.
+  let input = 'Xxd_term_input'
+  let outfile = 'Xxd_term_outfile'
+
+  call writefile([repeat('A', 100)], input)
+
+  silent exe '!' . 'TERM=dumb ' . s:xxd_cmd . ' ' . input . ' > ' . outfile
+  let result = readfile(outfile)
+  " Output should not contain escape sequences
+  for line in result
+    call assert_equal(-1, stridx(line, "\e"), 'Unexpected color escape in: ' . line)
+  endfor
+
+  call delete(input)
+  call delete(outfile)
+endfunc
+
+func Test_xxd_color_term_unset()
+  CheckUnix
+
+  " When TERM is not set, auto color should be disabled.
+  let input = 'Xxd_unset_input'
+  let outfile = 'Xxd_unset_outfile'
+
+  call writefile([repeat('A', 100)], input)
+
+  silent exe '!' . 'env -u TERM ' . s:xxd_cmd . ' ' . input . ' > ' . outfile
+  let result = readfile(outfile)
+  " Output should not contain escape sequences
+  for line in result
+    call assert_equal(-1, stridx(line, "\e"), 'Unexpected color escape in: ' . line)
+  endfor
+
+  call delete(input)
+  call delete(outfile)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
