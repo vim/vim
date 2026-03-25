@@ -190,6 +190,7 @@ static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
+static void mainwin_notify_size_cb(GObject *obj, GParamSpec *pspec, gpointer data);
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -221,34 +222,88 @@ gui_mch_free_all(void)
 {
 }
 
+    static guint
+timeout_add(int time, timeout_cb_type (*callback)(gpointer), int *flagp)
+{
+    return g_timeout_add((guint)time, (GSourceFunc)callback, flagp);
+}
+
+    static void
+timeout_remove(guint timer)
+{
+    g_source_remove(timer);
+}
+
+static long_u blink_waittime = 700;
+static long_u blink_ontime = 400;
+static long_u blink_offtime = 250;
+static guint blink_timer = 0;
+
+    static timeout_cb_type
+blink_cb(gpointer data UNUSED)
+{
+    if (blink_state == BLINK_ON)
+    {
+	gui_undraw_cursor();
+	blink_state = BLINK_OFF;
+	blink_timer = timeout_add(blink_offtime, blink_cb, NULL);
+    }
+    else
+    {
+	gui_update_cursor(TRUE, FALSE);
+	blink_state = BLINK_ON;
+	blink_timer = timeout_add(blink_ontime, blink_cb, NULL);
+    }
+    return FALSE;
+}
+
     int
 gui_mch_is_blinking(void)
 {
-    return FALSE;
+    return blink_state != BLINK_NONE;
 }
 
     int
 gui_mch_is_blink_off(void)
 {
-    return FALSE;
+    return blink_state == BLINK_OFF;
 }
 
     void
-gui_mch_set_blinking(long waittime UNUSED, long on UNUSED, long off UNUSED)
+gui_mch_set_blinking(long waittime, long on, long off)
 {
-    // TODO: implement cursor blinking
+    blink_waittime = waittime;
+    blink_ontime = on;
+    blink_offtime = off;
 }
 
     void
-gui_mch_stop_blink(int may_call_gui_update_cursor UNUSED)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    // TODO
+    if (blink_timer)
+    {
+	timeout_remove(blink_timer);
+	blink_timer = 0;
+    }
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
+	gui_update_cursor(TRUE, FALSE);
+    blink_state = BLINK_NONE;
 }
 
     void
 gui_mch_start_blink(void)
 {
-    // TODO
+    if (blink_timer)
+    {
+	timeout_remove(blink_timer);
+	blink_timer = 0;
+    }
+    if (blink_waittime && blink_ontime && blink_offtime && gui.in_focus)
+    {
+	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
+	blink_state = BLINK_ON;
+	gui_update_cursor(TRUE, FALSE);
+    }
 }
 
     int
@@ -470,6 +525,10 @@ gui_mch_open(void)
 
     g_signal_connect(G_OBJECT(gui.mainwin), "destroy",
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-width",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-height",
+		     G_CALLBACK(mainwin_notify_size_cb), NULL);
 
     gtk_widget_show(gui.mainwin);
 
@@ -517,7 +576,7 @@ gui_mch_unmaximize(void)
     void
 gui_mch_newfont(void)
 {
-    // TODO
+    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 }
 
     void
@@ -527,17 +586,24 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 	gtk_window_set_title(GTK_WINDOW(gui.mainwin), (const char *)title);
 }
 
+static int in_set_shellsize = FALSE;
+
     void
 gui_mch_set_shellsize(int width, int height,
 	int min_width UNUSED, int min_height UNUSED,
 	int base_width UNUSED, int base_height UNUSED,
 	int direction UNUSED)
 {
+    if (in_set_shellsize)
+	return;
+    in_set_shellsize = TRUE;
+
     // Add menu/toolbar size
     width += get_menu_tool_width();
     height += get_menu_tool_height();
 
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+    in_set_shellsize = FALSE;
 }
 
     void
@@ -1050,40 +1116,149 @@ gui_mch_clear_all(void)
 	gtk_widget_queue_draw(gui.drawarea);
 }
 
+    static void
+surface_copy_rect(int dest_x, int dest_y,
+	int src_x, int src_y,
+	int width, int height)
+{
+    cairo_t *cr;
+    cairo_surface_t *tmp;
+
+    if (gui.surface == NULL || width <= 0 || height <= 0)
+	return;
+
+    // Use a temporary surface to avoid overlap issues
+    tmp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cr = cairo_create(tmp);
+    cairo_set_source_surface(cr, gui.surface, -src_x, -src_y);
+    cairo_paint(cr);
+    cairo_destroy(cr);
+
+    cr = cairo_create(gui.surface);
+    cairo_set_source_surface(cr, tmp, dest_x, dest_y);
+    cairo_paint(cr);
+    cairo_destroy(cr);
+    cairo_surface_destroy(tmp);
+}
+
     void
 gui_mch_delete_lines(int row, int num_lines)
 {
-    // TODO: implement
+    int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
+    int nrows = gui.scroll_region_bot - row + 1;
+    int src_nrows = nrows - num_lines;
+
+    surface_copy_rect(
+	    FILL_X(gui.scroll_region_left), FILL_Y(row),
+	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
+	    gui.char_width * ncols + 1, gui.char_height * src_nrows);
+    gui_clear_block(
+	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
+	    gui.scroll_region_bot, gui.scroll_region_right);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
     void
 gui_mch_insert_lines(int row, int num_lines)
 {
-    // TODO: implement
+    int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
+    int nrows = gui.scroll_region_bot - row + 1;
+    int src_nrows = nrows - num_lines;
+
+    surface_copy_rect(
+	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
+	    FILL_X(gui.scroll_region_left), FILL_Y(row),
+	    gui.char_width * ncols + 1, gui.char_height * src_nrows);
+    gui_clear_block(
+	    row, gui.scroll_region_left,
+	    row + num_lines - 1, gui.scroll_region_right);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
     void
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
-    // TODO
+    cairo_t *cr;
+    int i = 1;
+
+    if (gui.surface == NULL)
+	return;
+
+    cr = cairo_create(gui.surface);
+    gui_mch_set_fg_color(color);
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green,
+	    gui.fgcolor->blue, gui.fgcolor->alpha);
+    if (mb_lefthalve(gui.row, gui.col))
+	i = 2;
+    cairo_set_line_width(cr, 1.0);
+    cairo_rectangle(cr,
+	    FILL_X(gui.col) + 0.5, FILL_Y(gui.row) + 0.5,
+	    i * gui.char_width - 1, gui.char_height - 1);
+    cairo_stroke(cr);
+    cairo_destroy(cr);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
     void
 gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 {
-    // TODO
+    cairo_t *cr;
+
+    if (gui.surface == NULL)
+	return;
+
+    gui_mch_set_fg_color(color);
+    cr = cairo_create(gui.surface);
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green,
+	    gui.fgcolor->blue, gui.fgcolor->alpha);
+    cairo_rectangle(cr,
+#ifdef FEAT_RIGHTLEFT
+	    CURSOR_BAR_RIGHT ? FILL_X(gui.col + 1) - w :
+#endif
+	    FILL_X(gui.col), FILL_Y(gui.row) + gui.char_height - h,
+	    w, h);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
     void
-gui_mch_flash(int msec UNUSED)
+gui_mch_flash(int msec)
 {
-    // TODO
+    // Invert the screen, wait, then invert back
+    if (gui.surface == NULL)
+	return;
+
+    gui_mch_invert_rectangle(0, 0, (int)Rows - 1, (int)Columns - 1);
+    gui_mch_flush();
+    ui_delay((long)msec, TRUE);
+    gui_mch_invert_rectangle(0, 0, (int)Rows - 1, (int)Columns - 1);
 }
 
     void
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
-    // TODO
+    cairo_t *cr;
+
+    if (gui.surface == NULL)
+	return;
+
+    cr = cairo_create(gui.surface);
+    cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_rectangle(cr,
+	    FILL_X(c), FILL_Y(r),
+	    (nc + 1) * gui.char_width, (nr + 1) * gui.char_height);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
 /*
@@ -1208,47 +1383,165 @@ key_release_event(GtkEventControllerKey *controller UNUSED,
 {
 }
 
-    static void
-button_press_event(GtkGestureClick *gesture UNUSED, int n_press UNUSED,
-	double x UNUSED, double y UNUSED, gpointer data UNUSED)
+static int mouse_timed_out = TRUE;
+static guint mouse_click_timer = 0;
+
+    static timeout_cb_type
+mouse_click_timer_cb(gpointer data)
 {
-    // TODO
+    *(int *)data = TRUE;
+    return FALSE;
+}
+
+    static int
+modifiers_gdk2mouse(guint state)
+{
+    int modifiers = 0;
+
+    if (state & GDK_SHIFT_MASK)
+	modifiers |= MOUSE_SHIFT;
+    if (state & GDK_CONTROL_MASK)
+	modifiers |= MOUSE_CTRL;
+    if (state & GDK_ALT_MASK)
+	modifiers |= MOUSE_ALT;
+
+    return modifiers;
 }
 
     static void
-button_release_event(GtkGestureClick *gesture UNUSED, int n_press UNUSED,
-	double x UNUSED, double y UNUSED, gpointer data UNUSED)
+button_press_event(GtkGestureClick *gesture, int n_press UNUSED,
+	double x, double y, gpointer data UNUSED)
 {
-    // TODO
+    int button;
+    int repeated_click = FALSE;
+    int_u vim_modifiers;
+    guint btn;
+    GdkModifierType state;
+    GdkEvent *event;
+
+    event = gtk_event_controller_get_current_event(
+	    GTK_EVENT_CONTROLLER(gesture));
+    state = gdk_event_get_modifier_state(event);
+    btn = gdk_button_event_get_button(event);
+
+    if (!mouse_timed_out && mouse_click_timer)
+    {
+	timeout_remove(mouse_click_timer);
+	mouse_click_timer = 0;
+	repeated_click = TRUE;
+    }
+
+    mouse_timed_out = FALSE;
+    mouse_click_timer = timeout_add(p_mouset, mouse_click_timer_cb,
+	    &mouse_timed_out);
+
+    switch (btn)
+    {
+	case 1: button = MOUSE_LEFT; break;
+	case 2: button = MOUSE_MIDDLE; break;
+	case 3: button = MOUSE_RIGHT; break;
+	case 8: button = MOUSE_X1; break;
+	case 9: button = MOUSE_X2; break;
+	default: return;
+    }
+
+    vim_modifiers = modifiers_gdk2mouse(state);
+    gui_send_mouse_event(button, (int)x, (int)y, repeated_click, vim_modifiers);
+}
+
+    static void
+button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
+	double x, double y, gpointer data UNUSED)
+{
+    int vim_modifiers;
+    GdkModifierType state;
+    GdkEvent *event;
+
+    event = gtk_event_controller_get_current_event(
+	    GTK_EVENT_CONTROLLER(gesture));
+    state = gdk_event_get_modifier_state(event);
+    vim_modifiers = modifiers_gdk2mouse(state);
+
+    gui_send_mouse_event(MOUSE_RELEASE, (int)x, (int)y, FALSE, vim_modifiers);
 }
 
     static void
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
-	double x UNUSED, double y UNUSED, gpointer data UNUSED)
+	double x, double y, gpointer data UNUSED)
 {
-    // TODO
+    GdkModifierType state;
+    GdkEvent *event;
+
+    event = gtk_event_controller_get_current_event(
+	    GTK_EVENT_CONTROLLER(controller));
+    if (event == NULL)
+	return;
+    state = gdk_event_get_modifier_state(event);
+
+    int button = (state & GDK_BUTTON1_MASK) ? MOUSE_LEFT
+	       : (state & GDK_BUTTON2_MASK) ? MOUSE_MIDDLE
+	       : (state & GDK_BUTTON3_MASK) ? MOUSE_RIGHT
+	       : 0;
+
+    if (button)
+	gui_send_mouse_event(MOUSE_DRAG, (int)x, (int)y, FALSE,
+		modifiers_gdk2mouse(state));
+
+    if (p_mh)
+	gui_mch_mousehide(FALSE);
 }
 
     static void
 enter_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x UNUSED, double y UNUSED, gpointer data UNUSED)
 {
-    // TODO
+    if (blink_state == BLINK_NONE)
+	gui_mch_start_blink();
 }
 
     static void
 leave_notify_event(GtkEventControllerMotion *controller UNUSED,
 	gpointer data UNUSED)
 {
-    // TODO
+    if (blink_state != BLINK_NONE)
+	gui_mch_stop_blink(TRUE);
 }
 
     static gboolean
 scroll_event(GtkEventControllerScroll *controller UNUSED,
-	double dx UNUSED, double dy UNUSED, gpointer data UNUSED)
+	double dx UNUSED, double dy, gpointer data UNUSED)
 {
-    // TODO
-    return FALSE;
+    int button;
+    int_u vim_modifiers;
+    GdkModifierType state;
+    GdkEvent *event;
+
+    event = gtk_event_controller_get_current_event(
+	    GTK_EVENT_CONTROLLER(controller));
+    if (event == NULL)
+	return FALSE;
+    state = gdk_event_get_modifier_state(event);
+
+    if (dy < 0)
+	button = MOUSE_4;	// scroll up
+    else if (dy > 0)
+	button = MOUSE_5;	// scroll down
+    else if (dx < 0)
+	button = MOUSE_7;	// scroll left
+    else if (dx > 0)
+	button = MOUSE_6;	// scroll right
+    else
+	return FALSE;
+
+    vim_modifiers = modifiers_gdk2mouse(state);
+
+    {
+	double mx, my;
+	gdk_event_get_position(event, &mx, &my);
+	gui_send_mouse_event(button, (int)mx, (int)my, FALSE, vim_modifiers);
+    }
+
+    return TRUE;
 }
 
     static void
@@ -1269,10 +1562,21 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
 }
 
     static void
-drawarea_realize_cb(GtkWidget *widget, gpointer data UNUSED)
+drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-    int w = gtk_widget_get_width(widget);
-    int h = gtk_widget_get_height(widget);
+    int w, h;
+
+    // Use formwin size since drawarea may not have its final size yet
+    if (gui.formwin != NULL)
+    {
+	w = gtk_widget_get_width(gui.formwin);
+	h = gtk_widget_get_height(gui.formwin);
+    }
+    else
+    {
+	w = gtk_widget_get_width(widget);
+	h = gtk_widget_get_height(widget);
+    }
 
     if (w <= 0) w = 800;
     if (h <= 0) h = 600;
@@ -1309,6 +1613,45 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
     gui_resize_shell(width, height);
 }
 
+static int in_mainwin_resize = FALSE;
+
+    static void
+mainwin_notify_size_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
+	gpointer data UNUSED)
+{
+    static int cur_width = 0;
+    static int cur_height = 0;
+    int w, h;
+
+    if (gui.formwin == NULL || in_mainwin_resize)
+	return;
+    in_mainwin_resize = TRUE;
+
+    w = gtk_widget_get_width(gui.formwin);
+    h = gtk_widget_get_height(gui.formwin);
+
+    if (w <= 1 || h <= 1)
+    {
+	in_mainwin_resize = FALSE;
+	return;
+    }
+
+    if (w == cur_width && h == cur_height)
+    {
+	in_mainwin_resize = FALSE;
+	return;
+    }
+    cur_width = w;
+    cur_height = h;
+
+    if (gui.surface != NULL)
+	cairo_surface_destroy(gui.surface);
+    gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+
+    gui_resize_shell(w, h);
+    in_mainwin_resize = FALSE;
+}
+
     static void
 mainwin_destroy_cb(GObject *object UNUSED, gpointer data UNUSED)
 {
@@ -1330,18 +1673,6 @@ delete_event_cb(GtkWindow *window UNUSED, gpointer data UNUSED)
  * Misc functions
  * ============================================================
  */
-
-    static guint
-timeout_add(int time, timeout_cb_type (*callback)(gpointer), int *flagp)
-{
-    return g_timeout_add((guint)time, (GSourceFunc)callback, flagp);
-}
-
-    static void
-timeout_remove(guint timer)
-{
-    g_source_remove(timer);
-}
 
     static timeout_cb_type
 input_timer_cb(gpointer data)
@@ -1470,9 +1801,9 @@ gui_mch_set_foreground(void)
     void
 gui_mch_getmouse(int *x, int *y)
 {
-    // TODO
     *x = 0;
     *y = 0;
+    // GTK4: No reliable way to query pointer position synchronously.
 }
 
     void
