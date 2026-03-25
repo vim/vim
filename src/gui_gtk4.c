@@ -418,19 +418,242 @@ gui_mch_dialog(
  */
 
 /*
- * Find/Replace dialogs are not yet implemented as native GTK4 dialogs.
- * Fall back to Vim's command-line based search.
+ * ============================================================
+ * Find/Replace dialog
+ * ============================================================
  */
+
+typedef struct
+{
+    GtkWidget *dialog;
+    GtkWidget *what;	    // Find what entry
+    GtkWidget *with;	    // Replace with entry
+    GtkWidget *wword;	    // Whole word check
+    GtkWidget *mcase;	    // Match case check
+    GtkWidget *up;	    // Direction up radio
+    GtkWidget *down;	    // Direction down radio
+} SharedFindReplace;
+
+static SharedFindReplace find_widgets = {0};
+static SharedFindReplace repl_widgets = {0};
+
+    static void
+find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    int			flags;
+    char_u		*find_text;
+    char_u		*repl_text;
+    gboolean		direction_down;
+    SharedFindReplace	*sfr;
+
+    flags = (int)(long)data;
+
+    if (flags == FRD_FINDNEXT)
+    {
+	repl_text = NULL;
+	sfr = &find_widgets;
+    }
+    else
+    {
+	repl_text = (char_u *)gtk_editable_get_text(
+		GTK_EDITABLE(repl_widgets.with));
+	sfr = &repl_widgets;
+    }
+
+    find_text = (char_u *)gtk_editable_get_text(GTK_EDITABLE(sfr->what));
+    direction_down = gtk_check_button_get_active(
+	    GTK_CHECK_BUTTON(sfr->down));
+
+    if (gtk_check_button_get_active(GTK_CHECK_BUTTON(sfr->wword)))
+	flags |= FRD_WHOLE_WORD;
+    if (gtk_check_button_get_active(GTK_CHECK_BUTTON(sfr->mcase)))
+	flags |= FRD_MATCH_CASE;
+
+    repl_text = CONVERT_FROM_UTF8(repl_text);
+    find_text = CONVERT_FROM_UTF8(find_text);
+    gui_do_findrepl(flags, find_text, repl_text, direction_down);
+    CONVERT_FROM_UTF8_FREE(repl_text);
+    CONVERT_FROM_UTF8_FREE(find_text);
+}
+
+    static void
+dialog_destroyed_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    *(GtkWidget **)data = NULL;
+}
+
+    static void
+find_replace_dialog_create(char_u *arg, int do_replace)
+{
+    SharedFindReplace	*frdp;
+    char_u		*entry_text;
+    int			wword = FALSE;
+    int			mcase = !p_ic;
+    GtkWidget		*vbox, *grid, *hbox, *tmp, *btn;
+    gboolean		sensitive;
+
+    frdp = do_replace ? &repl_widgets : &find_widgets;
+    entry_text = get_find_dialog_text(arg, &wword, &mcase);
+
+    if (entry_text != NULL && output_conv.vc_type != CONV_NONE)
+    {
+	char_u *old = entry_text;
+	entry_text = string_convert(&output_conv, entry_text, NULL);
+	vim_free(old);
+    }
+
+    // If the dialog already exists, just raise it.
+    if (frdp->dialog)
+    {
+	if (entry_text != NULL)
+	{
+	    gtk_editable_set_text(GTK_EDITABLE(frdp->what),
+		    (char *)entry_text);
+	    gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->wword),
+		    (gboolean)wword);
+	    gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->mcase),
+		    (gboolean)mcase);
+	}
+	gtk_window_present(GTK_WINDOW(frdp->dialog));
+	gtk_widget_grab_focus(frdp->what);
+	vim_free(entry_text);
+	return;
+    }
+
+    // Create a new dialog window.
+    frdp->dialog = gtk_window_new();
+    gtk_window_set_transient_for(GTK_WINDOW(frdp->dialog),
+	    GTK_WINDOW(gui.mainwin));
+    gtk_window_set_destroy_with_parent(GTK_WINDOW(frdp->dialog), TRUE);
+    gtk_window_set_title(GTK_WINDOW(frdp->dialog),
+	    do_replace ? _("VIM - Search and Replace...")
+		       : _("VIM - Search..."));
+    gtk_window_set_resizable(GTK_WINDOW(frdp->dialog), FALSE);
+
+    g_signal_connect(frdp->dialog, "destroy",
+	    G_CALLBACK(dialog_destroyed_cb), &frdp->dialog);
+
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
+    gtk_widget_set_margin_start(vbox, 12);
+    gtk_widget_set_margin_end(vbox, 12);
+    gtk_widget_set_margin_top(vbox, 12);
+    gtk_widget_set_margin_bottom(vbox, 12);
+    gtk_window_set_child(GTK_WINDOW(frdp->dialog), vbox);
+
+    // Grid for labels + entries
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 6);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 6);
+    gtk_box_append(GTK_BOX(vbox), grid);
+
+    // "Find what:" label + entry
+    tmp = gtk_label_new(_("Find what:"));
+    gtk_label_set_xalign(GTK_LABEL(tmp), 0.0);
+    gtk_grid_attach(GTK_GRID(grid), tmp, 0, 0, 1, 1);
+
+    frdp->what = gtk_entry_new();
+    gtk_widget_set_hexpand(frdp->what, TRUE);
+    sensitive = (entry_text != NULL && entry_text[0] != NUL);
+    if (entry_text != NULL)
+	gtk_editable_set_text(GTK_EDITABLE(frdp->what), (char *)entry_text);
+    gtk_grid_attach(GTK_GRID(grid), frdp->what, 1, 0, 1, 1);
+
+    if (do_replace)
+    {
+	// "Replace with:" label + entry
+	tmp = gtk_label_new(_("Replace with:"));
+	gtk_label_set_xalign(GTK_LABEL(tmp), 0.0);
+	gtk_grid_attach(GTK_GRID(grid), tmp, 0, 1, 1, 1);
+
+	frdp->with = gtk_entry_new();
+	gtk_widget_set_hexpand(frdp->with, TRUE);
+	gtk_grid_attach(GTK_GRID(grid), frdp->with, 1, 1, 1, 1);
+    }
+
+    // Checkboxes
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_box_append(GTK_BOX(vbox), hbox);
+
+    frdp->wword = gtk_check_button_new_with_label(_("Match whole word only"));
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->wword),
+	    (gboolean)wword);
+    gtk_box_append(GTK_BOX(hbox), frdp->wword);
+
+    frdp->mcase = gtk_check_button_new_with_label(_("Match case"));
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->mcase),
+	    (gboolean)mcase);
+    gtk_box_append(GTK_BOX(hbox), frdp->mcase);
+
+    // Direction radio buttons
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_box_append(GTK_BOX(vbox), hbox);
+
+    tmp = gtk_label_new(_("Direction:"));
+    gtk_box_append(GTK_BOX(hbox), tmp);
+
+    frdp->up = gtk_check_button_new_with_label(_("Up"));
+    gtk_box_append(GTK_BOX(hbox), frdp->up);
+
+    frdp->down = gtk_check_button_new_with_label(_("Down"));
+    gtk_check_button_set_group(GTK_CHECK_BUTTON(frdp->down),
+	    GTK_CHECK_BUTTON(frdp->up));
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->down), TRUE);
+    gtk_box_append(GTK_BOX(hbox), frdp->down);
+
+    // Action buttons
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_widget_set_halign(hbox, GTK_ALIGN_END);
+    gtk_box_append(GTK_BOX(vbox), hbox);
+
+    btn = gtk_button_new_with_label(_("Find Next"));
+    gtk_widget_set_sensitive(btn, sensitive);
+    g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
+	    GINT_TO_POINTER(do_replace ? FRD_R_FINDNEXT : FRD_FINDNEXT));
+    gtk_box_append(GTK_BOX(hbox), btn);
+
+    if (do_replace)
+    {
+	btn = gtk_button_new_with_label(_("Replace"));
+	g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
+		GINT_TO_POINTER(FRD_REPLACE));
+	gtk_box_append(GTK_BOX(hbox), btn);
+
+	btn = gtk_button_new_with_label(_("Replace All"));
+	g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
+		GINT_TO_POINTER(FRD_REPLACEALL));
+	gtk_box_append(GTK_BOX(hbox), btn);
+    }
+
+    btn = gtk_button_new_with_label(_("Close"));
+    g_signal_connect_swapped(btn, "clicked",
+	    G_CALLBACK(gtk_window_destroy), frdp->dialog);
+    gtk_box_append(GTK_BOX(hbox), btn);
+
+    // Connect Enter key in entry to Find Next
+    g_signal_connect_swapped(frdp->what, "activate",
+	    G_CALLBACK(find_replace_cb),
+	    GINT_TO_POINTER(do_replace ? FRD_R_FINDNEXT : FRD_FINDNEXT));
+
+    gtk_window_present(GTK_WINDOW(frdp->dialog));
+    gtk_widget_grab_focus(frdp->what);
+    if (do_replace && entry_text != NULL && entry_text[0] != NUL)
+	gtk_widget_grab_focus(frdp->with);
+
+    vim_free(entry_text);
+}
+
     void
 gui_mch_find_dialog(exarg_T *eap)
 {
-    do_cmdline_cmd(eap->arg);
+    if (gui.in_use)
+	find_replace_dialog_create(eap->arg, FALSE);
 }
 
     void
 gui_mch_replace_dialog(exarg_T *eap)
 {
-    do_cmdline_cmd(eap->arg);
+    if (gui.in_use)
+	find_replace_dialog_create(eap->arg, TRUE);
 }
 
 /*
