@@ -3074,8 +3074,12 @@ check_for_cryptkey(
 
 	    header_len = crypt_get_header_len(method);
 	    if (*sizep < header_len)
+	    {
 		// invalid header, buffer can't be encrypted
+		if (cryptkey != curbuf->b_p_key)
+		    vim_free(cryptkey);
 		return NULL;
+	    }
 
 	    curbuf->b_cryptstate = crypt_create_from_header(
 							method, cryptkey, ptr);
