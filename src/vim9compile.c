@@ -1117,8 +1117,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
 
-    ufunc = define_function(eap, lambda_name.string, lines_to_free, 0, NULL, 0,
-									cctx);
+    ufunc = define_function(eap, lambda_name.string, lines_to_free, NULL, 0,
+							NULL, 0, cctx);
 
     KeyTyped = save_KeyTyped;
 
@@ -1381,7 +1381,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	case dest_script:
 	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
-			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL);
+		    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here
@@ -2121,7 +2121,8 @@ compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
 	}
 
 	p = skipwhite(var_end + 1);
-	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
+	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc,
+							NULL, cctx, TRUE);
 	if (lhs->lhs_type == NULL
 		|| !valid_declaration_type(lhs->lhs_type))
 	    return FAIL;
