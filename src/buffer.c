@@ -49,7 +49,8 @@ static int	value_changed(char_u *str, char_u **last);
 static int build_stl_str_hl_local(stl_mode_T mode, win_T *wp,
 		char_u *out, size_t outlen, char_u **fmt_arg,
 		char_u *opt_name, int opt_scope, int fillchar, int maxwidth,
-		stl_hlrec_T **hltab, stl_hlrec_T **tabtab, int *lbreaks);
+		stl_hlrec_T **hltab, stl_hlrec_T **tabtab,
+		stl_clickrec_T **clicktab, int *lbreaks);
 #endif
 static int	append_arg_number(win_T *wp, char_u *buf, size_t buflen, int add_file);
 static void	free_buffer(buf_T *);
@@ -4093,7 +4094,7 @@ maketitle(void)
 	    if (stl_syntax & STL_IN_TITLE)
 		build_stl_str_hl(curwin, title_str, sizeof(buf), p_titlestring,
 				    (char_u *)"titlestring", 0,
-				    0, maxlen, NULL, NULL);
+				    0, maxlen, NULL, NULL, NULL);
 	    else
 #endif
 		title_str = p_titlestring;
@@ -4264,7 +4265,8 @@ maketitle(void)
 #ifdef FEAT_STL_OPT
 	    if (stl_syntax & STL_IN_ICON)
 		build_stl_str_hl(curwin, icon_str, sizeof(buf), p_iconstring,
-				 (char_u *)"iconstring", 0, 0, 0, NULL, NULL);
+				 (char_u *)"iconstring", 0, 0, 0, NULL, NULL,
+				 NULL);
 	    else
 #endif
 		icon_str = p_iconstring;
@@ -4360,8 +4362,10 @@ typedef struct
 	Separate,
 	Highlight,
 	TabPage,
+	ClickFunc,
 	Trunc
     }		stl_type;
+    char_u	*stl_clickfunc;	// function name for ClickFunc items
 } stl_item_T;
 
 static size_t		stl_items_len = 20; // Initial value, grows as needed.
@@ -4369,6 +4373,7 @@ static stl_item_T      *stl_items = NULL;
 static int	       *stl_groupitem = NULL;
 static stl_hlrec_T     *stl_hltab = NULL;
 static stl_hlrec_T     *stl_tabtab = NULL;
+static stl_clickrec_T  *stl_clicktab = NULL;
 static int		*stl_separator_locations = NULL;
 
 /*
@@ -4396,10 +4401,12 @@ build_stl_str_hl(
     int		fillchar,
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
-    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+    stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    stl_clickrec_T **clicktab)	// return: click func regions (can be NULL)
 {
     return build_stl_str_hl_local(STL_MODE_SINGLE, wp, out, outlen, &fmt,
-	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, clicktab,
+	    NULL);
 }
 
     int
@@ -4413,10 +4420,12 @@ build_stl_str_hl_mline(
     int		fillchar,
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
-    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+    stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    stl_clickrec_T **clicktab)	// return: click func regions (can be NULL)
 {
     return build_stl_str_hl_local(STL_MODE_MULTI, wp, out, outlen, fmt,
-	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, clicktab,
+	    NULL);
 }
 
 # ifdef ENABLE_STL_MODE_MULTI_NL
@@ -4431,10 +4440,12 @@ build_stl_str_hl_mline_nl(
     int		fillchar,
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
-    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
+    stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    stl_clickrec_T **clicktab)	// return: click func regions (can be NULL)
 {
     return build_stl_str_hl_local(STL_MODE_MULTI_NL, wp, out, outlen, fmt,
-	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, NULL);
+	    opt_name, opt_scope, fillchar, maxwidth, hltab, tabtab, clicktab,
+	    NULL);
 }
 # endif
 
@@ -4455,7 +4466,7 @@ get_stl_rendered_height(
     ++emsg_off;
     (void)build_stl_str_hl_local(STL_MODE_GET_RENDERED_HEIGHT,
 	    wp, buf, sizeof(buf), &fmt,
-	    opt_name, opt_scope, 0, 0, NULL, NULL, &rendered_height);
+	    opt_name, opt_scope, 0, 0, NULL, NULL, NULL, &rendered_height);
     --emsg_off;
     return rendered_height;
 }
@@ -4490,6 +4501,7 @@ build_stl_str_hl_local(
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
     stl_hlrec_T **tabtab,	// return: tab page nrs (can be NULL)
+    stl_clickrec_T **clicktab,	// return: click func regions (can be NULL)
     int		*rendered_height)   // return: stl rendered height (can be NULL)
 {
     linenr_T	lnum;
@@ -4551,6 +4563,7 @@ build_stl_str_hl_local(
 	// end of the list.
 	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
 	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
+	stl_clicktab = ALLOC_MULT(stl_clickrec_T, stl_items_len + 1);
 
 	stl_separator_locations = ALLOC_MULT(int, stl_items_len);
     }
@@ -4645,6 +4658,12 @@ build_stl_str_hl_local(
 		break;
 	    stl_tabtab = new_hlrec;
 
+	    stl_clickrec_T *new_clickrec = vim_realloc(stl_clicktab,
+				      sizeof(stl_clickrec_T) * (new_len + 1));
+	    if (new_clickrec == NULL)
+		break;
+	    stl_clicktab = new_clickrec;
+
 	    int *new_separator_locs = vim_realloc(stl_separator_locations,
 					    sizeof(int) * new_len);
 	    if (new_separator_locs == NULL)
@@ -4653,6 +4672,8 @@ build_stl_str_hl_local(
 
 	    stl_items_len = new_len;
 	}
+
+	stl_items[curitem].stl_clickfunc = NULL;
 
 	if (*s != '%')
 	    prevchar_isflag = prevchar_isitem = FALSE;
@@ -4690,6 +4711,36 @@ build_stl_str_hl_local(
 
 	if (*s == STL_LINEBREAK)
 	{
+	    // %@FuncName@ - start click region (no minwid)
+	    // %@@ - end click region
+	    if (s[1] == '@')
+	    {
+		// %@@ - end click region
+		stl_items[curitem].stl_type = ClickFunc;
+		stl_items[curitem].stl_start = p;
+		stl_items[curitem].stl_minwid = 0;
+		stl_items[curitem].stl_clickfunc = NULL;
+		s += 2;
+		curitem++;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
+	    {
+		// %@FuncName@ - start click region
+		char_u *at = vim_strchr(s + 1, '@');
+		if (at != NULL)
+		{
+		    stl_items[curitem].stl_type = ClickFunc;
+		    stl_items[curitem].stl_start = p;
+		    stl_items[curitem].stl_minwid = 0;
+		    stl_items[curitem].stl_clickfunc =
+					  vim_strnsave(s + 1, at - s - 1);
+		    s = at + 1;
+		    curitem++;
+		    continue;
+		}
+	    }
+	    // Plain %@ - line break
 	    if (mode == STL_MODE_MULTI
 # ifdef ENABLE_STL_MODE_MULTI_NL
 		    || mode == STL_MODE_MULTI_NL
@@ -5246,6 +5297,38 @@ build_stl_str_hl_local(
 		    ++s;
 		continue;
 	    }
+
+	case STL_LINEBREAK:
+	    // %N@FuncName@ or %N@@ with minwid
+	    if (*s == '@')
+	    {
+		// %N@@ - end click region (with minwid, minwid is ignored)
+		stl_items[curitem].stl_type = ClickFunc;
+		stl_items[curitem].stl_start = p;
+		stl_items[curitem].stl_minwid = 0;
+		stl_items[curitem].stl_clickfunc = NULL;
+		s++;
+		curitem++;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(*s) || *s == '_')
+	    {
+		char_u *at = vim_strchr(s, '@');
+		if (at != NULL)
+		{
+		    stl_items[curitem].stl_type = ClickFunc;
+		    stl_items[curitem].stl_start = p;
+		    stl_items[curitem].stl_minwid = minwid;
+		    stl_items[curitem].stl_clickfunc =
+					      vim_strnsave(s, at - s);
+		    s = at + 1;
+		    curitem++;
+		    continue;
+		}
+	    }
+	    // No click handler pattern, treat as regular linebreak
+	    // (already handled above, but fallback for %N@ case)
+	    continue;
 	}
 
 	stl_items[curitem].stl_start = p;
@@ -5572,6 +5655,27 @@ find_linebreak:
 	}
 	sp->start = NULL;
 	sp->userhl = 0;
+    }
+
+    // Store the info about click function regions.
+    if (clicktab != NULL)
+    {
+	stl_clickrec_T *cp;
+
+	*clicktab = stl_clicktab;
+	cp = stl_clicktab;
+	for (l = 0; l < itemcnt; l++)
+	{
+	    if (stl_items[l].stl_type == ClickFunc)
+	    {
+		cp->start = stl_items[l].stl_start;
+		cp->funcname = stl_items[l].stl_clickfunc;
+		cp->minwid = stl_items[l].stl_minwid;
+		cp++;
+	    }
+	}
+	cp->start = NULL;
+	cp->funcname = NULL;
     }
 
     redraw_not_allowed = save_redraw_not_allowed;

@@ -7507,6 +7507,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"statusline_click",
+#ifdef FEAT_STL_OPT
+		1
+#else
+		0
+#endif
+		},
 	{"netbeans_intg",
 #ifdef FEAT_NETBEANS_INTG
 		1

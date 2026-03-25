@@ -673,6 +673,24 @@ check_stl_option(char_u *s)
 	s++;
 	if (*s == STL_LINEBREAK)
 	{
+	    if (s[1] == '@')
+	    {
+		// %@@ - end click region
+		s += 2;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
+	    {
+		// %@FuncName@ - start click region
+		char_u *at = vim_strchr(s + 2, '@');
+		if (at != NULL)
+		{
+		    s = at + 1;
+		    continue;
+		}
+		// No closing @, treat as plain line break
+	    }
+	    // Plain %@ - line break
 	    s++;
 	    continue;
 	}
@@ -694,6 +712,28 @@ check_stl_option(char_u *s)
 	    s++;
 	if (*s == STL_USER_HL)
 	    continue;
+	if (*s == STL_LINEBREAK)
+	{
+	    // %N@FuncName@ or %N@@
+	    if (s[1] == '@')
+	    {
+		s += 2;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
+	    {
+		char_u *at = vim_strchr(s + 2, '@');
+		if (at != NULL)
+		{
+		    s = at + 1;
+		    continue;
+		}
+		// No closing @, treat as line break
+	    }
+	    // %N@ is just %@ with leading digits (line break)
+	    s++;
+	    continue;
+	}
 	if (*s == '.')
 	{
 	    s++;

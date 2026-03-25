@@ -8561,6 +8561,56 @@ A jump table for the options with a short description can be found at |Q_op|.
 	@ -   Inserts a newline.  This only takes effect when the "maxheight"
 	      value of 'statuslineopt' is greater than 1, or for |tabpanel|.
 
+							*stl-%@FuncName@*
+	When %@ is followed by a function name and a closing @, it defines
+	a clickable region in the statusline.  When the user clicks on that
+	region with the mouse, the specified function is called.
+
+	  %@FuncName@	Start of a clickable region.  "FuncName" is the name
+			of a Vim function to call when the region is clicked.
+	  %@@		End of the clickable region.  If omitted, the region
+			extends to the end of the statusline or to the start
+			of the next clickable region.
+
+	A {minwid} value can be used to pass an identifier to the callback:
+	  %3@FuncName@	Starts a clickable region with minwid 3.
+
+	The function receives a single |Dictionary| argument with these
+	entries:
+	  "minwid"	The minwid value from %N@Func@ (0 if not specified).
+	  "nclicks"	Number of clicks: 1, 2, or 3.
+	  "button"	Mouse button: "l" (left), "m" (middle), "r" (right).
+	  "mods"	Modifier keys: combination of "s" (shift), "c" (ctrl),
+			"a" (alt).  Empty string if no modifiers.
+	  "winid"	|window-ID| of the window whose statusline was clicked.
+
+	If the function returns non-zero, the statusline is redrawn.
+	Dragging the statusline to resize the window still works even when
+	click handlers are defined.
+
+	Note: %@ without a function name (and closing @) still acts as a
+	newline, as described above.  %@FuncName@ is only recognized when
+	the function name is followed by a closing @.
+
+	Example: >
+	    func! ClickFile(info)
+		if a:info.button ==# 'l' && a:info.nclicks == 2
+		    browse edit
+		endif
+		return 0
+	    endfunc
+	    set statusline=%@ClickFile@%f%@@\ %l:%c
+<	This makes the filename in the statusline clickable.  Double-clicking
+	it opens the file browser.
+
+	Use `has('statusline_click')` to check if this feature is available.
+	This is useful for backward compatibility: >
+	    if has('statusline_click')
+		set statusline=%@ClickFile@%f%@@\ %l:%c
+	    else
+		set statusline=%f\ %l:%c
+	    endif
+<
 	When displaying a flag, Vim removes the leading comma, if any, when
 	that flag comes right after plaintext.  This will make a nice display
 	when flags are used like in the examples below.
