@@ -4219,6 +4219,11 @@ globpath(
 			++ga->ga_len;
 		    }
 		}
+		else
+		{
+		    FreeWild(num_p, p);
+		    p = NULL;
+		}
 		vim_free(p);
 	    }
 	}
