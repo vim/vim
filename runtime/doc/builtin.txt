@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6432,6 +6432,8 @@ js_decode({string})					*js_decode()*
 		- Strings can be in single quotes.
 		- Empty items in an array (between two commas) are allowed and
 		  result in v:none items.
+		- Capitalization is ignored in keywords: true, false, null,
+		  NaN, Infinity and -Infinity.
 
 		Can also be used as a |method|: >
 			ReadObject()->js_decode()
@@ -6470,12 +6472,9 @@ json_decode({string})					*json_decode()* *E491*
 		  same as {"1":2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2".  Special floating point values
-		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
-		  are accepted.
+		  "Infinity", "-Infinity" and "NaN" are accepted.
 		- Leading zeroes in integer numbers are ignored, e.g. "012"
 		  for "12" or "-012" for "-12".
-		- Capitalization is ignored in literal names null, true or
-		  false, e.g. "NULL" for "null", "True" for "true".
 		- Control characters U+0000 through U+001F which are not
 		  escaped in strings are accepted, e.g. "	" (tab
 		  character in string) for "\t".
@@ -6483,10 +6482,10 @@ json_decode({string})					*json_decode()* *E491*
 		  and results in v:none.
 		- Backslash in an invalid 2-character sequence escape is
 		  ignored, e.g. "\a" is decoded as "a".
-		- A correct surrogate pair in JSON strings should normally be
-		  a 12 character sequence such as "\uD834\uDD1E", but
-		  json_decode() silently accepts truncated surrogate pairs
-		  such as "\uD834" or "\uD834\u"
+		- A surrogate pair in JSON strings is a 12 character sequence
+		  such as "\uD834\uDD1E".  A lone surrogate or an invalid
+		  surrogate pair (e.g. "\uD800" or "\uD800\uD800") results
+		  in an error.
 							*E938*
 		A duplicate key in an object, valid in rfc7159, is not
 		accepted by json_decode() as the result must be a valid Vim

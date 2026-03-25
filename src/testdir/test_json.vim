@@ -14,8 +14,8 @@ let s:var5 = "\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
 " surrogate pair
 let s:jsonsp1 = '"\ud83c\udf63"'
 let s:varsp1 = "\xf0\x9f\x8d\xa3"
+" high surrogate followed by non-surrogate is invalid (lone surrogate)
 let s:jsonsp2 = '"\ud83c\u00a0"'
-let s:varsp2 = "\ud83c\u00a0"
 
 let s:jsonmb = '"s¢cĴgё"'
 let s:varmb = "s¢cĴgё"
@@ -126,7 +126,7 @@ func Test_json_decode()
 
   call assert_equal(s:varmb, json_decode(s:jsonmb))
   call assert_equal(s:varsp1, json_decode(s:jsonsp1))
-  call assert_equal(s:varsp2, json_decode(s:jsonsp2))
+  call assert_fails('call json_decode(s:jsonsp2)', 'E491:')
 
   call assert_equal(s:varnr, json_decode(s:jsonnr))
   call assert_equal(s:varfl, json_decode(s:jsonfl))
@@ -151,6 +151,18 @@ func Test_json_decode()
   call assert_equal(type(v:none), type(json_decode('')))
   call assert_equal("", json_decode('""'))
 
+  " json_decode() requires lowercase keywords (RFC 7159)
+  call assert_fails('call json_decode("True")', 'E491:')
+  call assert_fails('call json_decode("FALSE")', 'E491:')
+  call assert_fails('call json_decode("Null")', 'E491:')
+  call assert_fails('call json_decode("NULL")', 'E491:')
+  call assert_fails('call json_decode("nan")', 'E491:')
+  call assert_fails('call json_decode("NAN")', 'E491:')
+  call assert_fails('call json_decode("infinity")', 'E491:')
+  call assert_fails('call json_decode("INFINITY")', 'E491:')
+  call assert_fails('call json_decode("-infinity")', 'E491:')
+  call assert_fails('call json_decode("-INFINITY")', 'E491:')
+
   " Character in string after \ is ignored if not special.
   call assert_equal("x", json_decode('"\x"'))
 
@@ -164,6 +176,12 @@ func Test_json_decode()
   call assert_equal({'': 'ok'}, json_decode('{"": "ok"}'))
   " but not twice
   call assert_fails("call json_decode('{\"\": \"ok\", \"\": \"bad\"}')", 'E938:')
+
+  " lone surrogate is invalid
+  call assert_fails('call json_decode("\"\\uD800\"")', 'E491:')
+  call assert_fails('call json_decode("\"\\uDC00\"")', 'E491:')
+  call assert_fails('call json_decode("\"\\uD800\\uD800\"")', 'E491:')
+  call assert_fails('call json_decode("\"\\uDC00\\uDC00\"")', 'E491:')
 
   call assert_equal({'n': 1}, json_decode('{"n":1,}'))
   call assert_fails("call json_decode(\"{'n':'1',}\")", 'E491:')
@@ -257,7 +275,7 @@ func Test_js_decode()
 
   call assert_equal(s:varmb, js_decode(s:jsonmb))
   call assert_equal(s:varsp1, js_decode(s:jsonsp1))
-  call assert_equal(s:varsp2, js_decode(s:jsonsp2))
+  call assert_fails('call js_decode(s:jsonsp2)', 'E491:')
 
   call assert_equal(s:varnr, js_decode(s:jsonnr))
   call assert_equal(s:varfl, js_decode(s:jsonfl))
@@ -293,6 +311,20 @@ func Test_js_decode()
   call assert_equal("", js_decode("''"))
 
   call assert_equal('n', js_decode("'n'"))
+
+  " js_decode() accepts keywords case-insensitively
+  call assert_equal(v:true, js_decode('True'))
+  call assert_equal(v:true, js_decode('TRUE'))
+  call assert_equal(v:false, js_decode('False'))
+  call assert_equal(v:false, js_decode('FALSE'))
+  call assert_equal(v:null, js_decode('Null'))
+  call assert_equal(v:null, js_decode('NULL'))
+  call assert_true(isnan(js_decode('nan')))
+  call assert_equal(s:varposinf, js_decode('infinity'))
+  call assert_equal(s:varneginf, js_decode('-infinity'))
+  call assert_equal(s:varposinf, js_decode('INFINITY'))
+  call assert_equal(s:varneginf, js_decode('-INFINITY'))
+
   call assert_equal({'n': 1}, js_decode('{"n":1,}'))
   call assert_equal({'n': '1'}, js_decode("{'n':'1',}"))
 
