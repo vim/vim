@@ -525,6 +525,11 @@ gui_mch_open(void)
 	VIM_CLEAR(gui.geom);
     }
 
+    // Use 80x24 as the default GUI size, unless geometry was specified.
+    if (Columns > 80 && gui.geom == NULL)
+	Columns = 80;
+    if (Rows > 24 && gui.geom == NULL)
+	Rows = 24;
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
