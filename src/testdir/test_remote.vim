@@ -16,18 +16,6 @@ func Verify_remote_feature_works()
   let buf = RunVimInTerminal('--servername XVIMTEST', {'rows': 8})
   call TermWait(buf)
 
-  " For some reason when the socket server is being used, the terminal Vim never
-  " receives the `:w! XVimRemoteTest.txt` command from term_sendkeys.
-  if has('socketserver') && !has('X11')
-    if match(serverlist(), "XVIMTEST") == -1
-      call StopVimInTerminal(buf)
-      throw s:skip
-    endif
-
-    let s:remote = 1
-    return
-  endif
-
   let cmd = GetVimCommandCleanTerm() .. '--serverlist'
   call term_sendkeys(buf, ":r! " .. cmd .. "\<CR>")
   call TermWait(buf)
@@ -71,6 +59,14 @@ func Test_remote_servername()
   " open XTEST.txt, if wildignore setting is not ignored, the server
   " will continue with the Xdummy.log file
   let buf2 = RunVimInTerminal('--servername XVIMTEST --remote-silent XTEST.txt', {'rows': 5, 'wait_for_ruler': 0})
+
+  " It may take a while for the command to be sent to XVIMTEST and be executed.
+  " Do a blocking --remote-expr so that is assured the command was executed.
+  botright new
+  let buf3 = RunVimInTerminal('--servername XVIMTEST --remote-expr "v:servername"', {'rows': 5, 'wait_for_ruler': 0})
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf3))})
+  exe buf3 .. 'bw!'
+
   " job should be no-longer running, so we can just close it
   exe buf2 .. 'bw!'
   call term_sendkeys(buf, ":sil :3,$d\<CR>")
