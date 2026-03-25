@@ -113,15 +113,73 @@ create_toolbar_icon(vimmenu_T *menu)
 }
 
 /*
- * Menu system is not yet implemented for GTK4.
- * GTK4 requires GMenu + GtkPopoverMenuBar, which is a fundamentally
- * different model from GTK2/3's GtkMenuBar/GtkMenu/GtkMenuItem.
- * These are intentional no-ops for now.
+ * GTK4 Menu system using GMenu + GSimpleActionGroup + GtkPopoverMenuBar.
+ *
+ * Each menu/submenu has a GMenu stored in menu->submenu_id (cast to
+ * GtkWidget* to fit the struct field type).
+ * Actions are added to a GSimpleActionGroup attached to gui.mainwin.
  */
 
-    void
-gui_mch_add_menu(vimmenu_T *menu UNUSED, int idx UNUSED)
+static GSimpleActionGroup *menu_action_group = NULL;
+static int menu_action_id = 0;
+
+    static void
+menu_action_cb(GSimpleAction *action UNUSED, GVariant *parameter UNUSED,
+	gpointer data)
 {
+    gui_menu_cb((vimmenu_T *)data);
+}
+
+    static char *
+make_action_name(vimmenu_T *menu)
+{
+    // Create a unique action name from the menu pointer
+    static char buf[64];
+    vim_snprintf(buf, sizeof(buf), "menu%d", menu_action_id++);
+    return buf;
+}
+
+    void
+gui_mch_add_menu(vimmenu_T *menu, int idx UNUSED)
+{
+    GMenu *submenu;
+
+    if (menu->name[0] == ']' || menu_is_popup(menu->name))
+    {
+	// Popup menus - just create a GMenu, don't add to menubar
+	submenu = g_menu_new();
+	menu->submenu_id = (GtkWidget *)(gpointer)submenu;
+	return;
+    }
+
+    if (menu->parent != NULL && menu->parent->submenu_id == NULL)
+	return;
+    if (!menu_is_menubar(menu->name))
+	return;
+
+    // Create a submenu for this menu
+    submenu = g_menu_new();
+    menu->submenu_id = (GtkWidget *)(gpointer)submenu;
+
+    // Add to parent menu or menubar's model
+    {
+	GMenu *parent_menu;
+	char_u *label;
+
+	label = CONVERT_TO_UTF8(menu->dname);
+
+	if (menu->parent != NULL)
+	    parent_menu = (GMenu *)(gpointer)menu->parent->submenu_id;
+	else
+	    parent_menu = (GMenu *)(gpointer)g_object_get_data(
+		    G_OBJECT(gui.menubar), "vim-gmenu");
+
+	if (parent_menu != NULL)
+	    g_menu_append_submenu(parent_menu, (const char *)label,
+		    G_MENU_MODEL(submenu));
+
+	CONVERT_TO_UTF8_FREE(label);
+    }
 }
 
     void
@@ -163,6 +221,53 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	return;
     }
 #endif
+
+    // Menu items (non-toolbar)
+    if (parent == NULL || parent->submenu_id == NULL)
+	return;
+
+    {
+	GMenu *parent_menu = (GMenu *)(gpointer)parent->submenu_id;
+
+	if (menu_is_separator(menu->name))
+	{
+	    // GMenu doesn't have real separators; use a section
+	    GMenu *section = g_menu_new();
+	    g_menu_append_section(parent_menu, NULL, G_MENU_MODEL(section));
+	    g_object_unref(section);
+	    menu->id = NULL;
+	}
+	else
+	{
+	    char	*action_name;
+	    char	detailed[80];
+	    char_u	*label;
+	    GSimpleAction *action;
+
+	    // Create a unique action
+	    action_name = make_action_name(menu);
+	    action = g_simple_action_new(action_name, NULL);
+	    g_signal_connect(action, "activate",
+		    G_CALLBACK(menu_action_cb), menu);
+
+	    if (menu_action_group == NULL)
+	    {
+		menu_action_group = g_simple_action_group_new();
+		gtk_widget_insert_action_group(gui.mainwin, "menu",
+			G_ACTION_GROUP(menu_action_group));
+	    }
+	    g_action_map_add_action(G_ACTION_MAP(menu_action_group),
+		    G_ACTION(action));
+	    g_object_unref(action);
+
+	    label = CONVERT_TO_UTF8(menu->dname);
+	    vim_snprintf(detailed, sizeof(detailed), "menu.%s", action_name);
+	    g_menu_append(parent_menu, (const char *)label, detailed);
+	    CONVERT_TO_UTF8_FREE(label);
+
+	    menu->id = (GtkWidget *)1;  // non-NULL marker
+	}
+    }
 }
 
     void
@@ -179,18 +284,39 @@ gui_mch_menu_set_tip(vimmenu_T *menu UNUSED)
     void
 gui_mch_destroy_menu(vimmenu_T *menu)
 {
-    if (menu->id != NULL)
+    // For toolbar buttons, remove from toolbar
+    if (menu->id != NULL && menu->id != (GtkWidget *)1)
     {
-	GtkWidget *parent = gtk_widget_get_parent(menu->id);
-	if (parent != NULL)
-	    gtk_box_remove(GTK_BOX(parent), menu->id);
+	GtkWidget *parent_widget = gtk_widget_get_parent(menu->id);
+	if (parent_widget != NULL)
+	    gtk_box_remove(GTK_BOX(parent_widget), menu->id);
 	menu->id = NULL;
+    }
+    else
+	menu->id = NULL;
+
+    // GMenu items cannot be individually removed easily.
+    // The submenu GMenu is unreffed if present.
+    if (menu->submenu_id != NULL)
+    {
+	// Don't unref - GMenu may be referenced by the model
+	menu->submenu_id = NULL;
     }
 }
 
     void
-gui_mch_show_popupmenu(vimmenu_T *menu UNUSED)
+gui_mch_show_popupmenu(vimmenu_T *menu)
 {
+    GMenu *gmenu;
+    GtkWidget *popover;
+
+    if (menu == NULL || menu->submenu_id == NULL)
+	return;
+
+    gmenu = (GMenu *)(gpointer)menu->submenu_id;
+    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
+    gtk_widget_set_parent(popover, gui.drawarea);
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 
 /*

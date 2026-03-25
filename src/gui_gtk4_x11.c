@@ -371,9 +371,16 @@ gui_mch_init(void)
     gtk_window_set_child(GTK_WINDOW(gui.mainwin), vbox);
 
 #ifdef FEAT_MENU
-    gui.menubar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_name(gui.menubar, "vim-menubar");
-    // Don't add to vbox until actually shown
+    {
+	GMenu *gmenu = g_menu_new();
+	gui.menubar = gtk_popover_menu_bar_new_from_model(
+		G_MENU_MODEL(gmenu));
+	g_object_set_data_full(G_OBJECT(gui.menubar), "vim-gmenu",
+		gmenu, g_object_unref);
+	gtk_widget_set_name(gui.menubar, "vim-menubar");
+	gtk_widget_set_visible(gui.menubar, FALSE);
+	gtk_box_append(GTK_BOX(vbox), gui.menubar);
+    }
 #endif
 
 #ifdef FEAT_TOOLBAR
