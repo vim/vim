@@ -30,6 +30,22 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
 
+#ifdef HAVE_X11
+# include <X11/Xutil.h>
+#endif
+
+#ifdef FEAT_SOCKETSERVER
+# include <glib-unix.h>
+
+// Used to track the source for the listening socket
+static guint socket_server_source_id = 0;
+#endif
+
+#if defined(FEAT_MOUSESHAPE)
+// Last set mouse pointer shape
+static int last_shape = 0;
+#endif
+
 #define DEFAULT_FONT	"Monospace 10"
 
 // Cursor blinking state
@@ -489,7 +505,23 @@ gui_mch_open(void)
 
     if (gui.geom != NULL)
     {
-	// TODO: parse geometry
+	int		mask;
+	unsigned int	w, h;
+	int		x = 0;
+	int		y = 0;
+
+	mask = XParseGeometry((char *)gui.geom, &x, &y, &w, &h);
+
+	if (mask & WidthValue)
+	    Columns = w;
+	if (mask & HeightValue)
+	{
+	    if (p_window > (long)h - 1 || !option_was_set((char_u *)"window"))
+		p_window = h - 1;
+	    Rows = h;
+	}
+	limit_screen_size();
+
 	VIM_CLEAR(gui.geom);
     }
 
@@ -1824,15 +1856,24 @@ gui_mch_mousehide(int hide)
 	if (hide)
 	    gtk_widget_set_cursor(gui.drawarea, gui.blank_pointer);
 	else
+#ifdef FEAT_MOUSESHAPE
+	    mch_set_mouse_shape(last_shape);
+#else
 	    gtk_widget_set_cursor(gui.drawarea, NULL);
+#endif
     }
 }
 
     int
 gui_mch_haskey(char_u *name)
 {
-    // TODO
-    return OK;
+    int i;
+
+    for (i = 0; special_keys[i].key_sym != 0; i++)
+	if (name[0] == special_keys[i].code0
+		&& name[1] == special_keys[i].code1)
+	    return OK;
+    return FAIL;
 }
 
     void
@@ -1862,19 +1903,19 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
     void
 gui_mch_menu_grey(vimmenu_T *menu UNUSED, int grey UNUSED)
 {
-    // TODO
+    // No-op: menu system not yet implemented for GTK4.
 }
 
     void
 gui_mch_menu_hidden(vimmenu_T *menu UNUSED, int hidden UNUSED)
 {
-    // TODO
+    // No-op: menu system not yet implemented for GTK4.
 }
 
     void
 gui_mch_draw_menubar(void)
 {
-    // TODO
+    // No-op: menu system not yet implemented for GTK4.
 }
 
 /*
@@ -1897,10 +1938,71 @@ gui_mch_showing_tabline(void)
     return gui.tabline != NULL && gtk_widget_get_visible(gui.tabline);
 }
 
+static int ignore_tabline_evt = FALSE;
+
     void
 gui_mch_update_tabline(void)
 {
-    // TODO
+    GtkWidget	*page;
+    GtkWidget	*event_box;
+    GtkWidget	*label;
+    tabpage_T	*tp;
+    int		nr = 0;
+    int		tab_num;
+    int		curtabidx = 0;
+    char_u	*labeltext;
+
+    if (gui.tabline == NULL)
+	return;
+
+    ignore_tabline_evt = TRUE;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	if (tp == curtab)
+	    curtabidx = nr;
+
+	tab_num = nr + 1;
+
+	page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr);
+	if (page == NULL)
+	{
+	    page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	    gtk_widget_show(page);
+	    event_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	    gtk_widget_show(event_box);
+	    label = gtk_label_new("-Empty-");
+	    gtk_box_append(GTK_BOX(event_box), label);
+	    gtk_widget_show(label);
+	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
+		    page, event_box, nr++);
+	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
+		    page, TRUE);
+	}
+
+	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
+	g_object_set_data(G_OBJECT(event_box), "tab_num",
+		GINT_TO_POINTER(tab_num));
+	label = gtk_widget_get_first_child(event_box);
+	get_tabline_label(tp, FALSE);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
+	if (label != NULL && GTK_IS_LABEL(label))
+	    gtk_label_set_text(GTK_LABEL(label), (const char *)labeltext);
+	CONVERT_TO_UTF8_FREE(labeltext);
+
+	get_tabline_label(tp, TRUE);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
+	gtk_widget_set_tooltip_text(event_box, (const gchar *)labeltext);
+	CONVERT_TO_UTF8_FREE(labeltext);
+    }
+
+    while (gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr) != NULL)
+	gtk_notebook_remove_page(GTK_NOTEBOOK(gui.tabline), nr);
+
+    if (gtk_notebook_get_current_page(GTK_NOTEBOOK(gui.tabline)) != curtabidx)
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
+
+    ignore_tabline_evt = FALSE;
 }
 
     void
@@ -1918,23 +2020,73 @@ gui_mch_set_curtab(int nr)
  */
 
 #if defined(FEAT_SIGN_ICONS)
+# define SIGN_WIDTH  (2 * gui.char_width)
+# define SIGN_HEIGHT (gui.char_height)
+
     void
-gui_mch_drawsign(int row UNUSED, int col UNUSED, int typenr UNUSED)
+gui_mch_drawsign(int row, int col, int typenr)
 {
-    // TODO
+    GdkPixbuf	*sign;
+    cairo_t	*cr;
+    int		width, height;
+
+    sign = (GdkPixbuf *)sign_get_image(typenr);
+    if (sign == NULL || gui.surface == NULL)
+	return;
+
+    cr = cairo_create(gui.surface);
+
+    width = gdk_pixbuf_get_width(sign);
+    height = gdk_pixbuf_get_height(sign);
+
+    // Scale to fit the sign area if needed
+    if (width != SIGN_WIDTH || height != SIGN_HEIGHT)
+    {
+	GdkPixbuf *scaled = gdk_pixbuf_scale_simple(sign,
+		SIGN_WIDTH, SIGN_HEIGHT, GDK_INTERP_BILINEAR);
+	if (scaled != NULL)
+	{
+	    gdk_cairo_set_source_pixbuf(cr, scaled,
+		    FILL_X(col), FILL_Y(row));
+	    g_object_unref(scaled);
+	}
+	else
+	    gdk_cairo_set_source_pixbuf(cr, sign,
+		    FILL_X(col), FILL_Y(row));
+    }
+    else
+	gdk_cairo_set_source_pixbuf(cr, sign,
+		FILL_X(col), FILL_Y(row));
+
+    cairo_paint(cr);
+    cairo_destroy(cr);
+
+    gtk_widget_queue_draw(gui.drawarea);
 }
 
     void *
-gui_mch_register_sign(char_u *signfile UNUSED)
+gui_mch_register_sign(char_u *signfile)
 {
-    // TODO
+    if (signfile[0] != NUL && signfile[0] != '-' && gui.in_use)
+    {
+	GdkPixbuf   *sign;
+	GError	    *error = NULL;
+
+	sign = gdk_pixbuf_new_from_file((const char *)signfile, &error);
+	if (error == NULL)
+	    return sign;
+
+	semsg("E255: %s", error->message);
+	g_error_free(error);
+    }
     return NULL;
 }
 
     void
-gui_mch_destroy_sign(void *sign UNUSED)
+gui_mch_destroy_sign(void *sign)
 {
-    // TODO
+    if (sign != NULL)
+	g_object_unref(sign);
 }
 #endif
 
@@ -2161,28 +2313,71 @@ gui_get_x11_windis(Window *win UNUSED, Display **dis UNUSED)
     // GTK4: not applicable
 }
 
+#if defined(FEAT_SOCKETSERVER)
+
+/*
+ * Callback for new events from the socket server listening socket.
+ */
+    static int
+socket_server_poll_in(int fd UNUSED, GIOCondition cond,
+		      void *user_data UNUSED)
+{
+    if (cond & G_IO_IN)
+	socket_server_accept_client();
+    else if (cond & (G_IO_ERR | G_IO_HUP))
+    {
+	socket_server_uninit();
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+#endif // FEAT_SOCKETSERVER
+
+/*
+ * Initialize socket server for use in the GUI (does not actually initialize
+ * the socket server, only attaches a source).
+ */
     void
 gui_gtk_init_socket_server(void)
 {
-    // TODO
+#if defined(FEAT_SOCKETSERVER)
+    if (socket_server_source_id > 0)
+	return;
+    // Register source for file descriptor to global default context
+    socket_server_source_id = g_unix_fd_add(socket_server_get_fd(),
+	    G_IO_IN | G_IO_ERR | G_IO_HUP, socket_server_poll_in, NULL);
+#endif
 }
 
+/*
+ * Remove the source for the socket server listening socket.
+ */
     void
 gui_gtk_uninit_socket_server(void)
 {
-    // TODO
+#if defined(FEAT_SOCKETSERVER)
+    if (socket_server_source_id > 0)
+    {
+	g_source_remove(socket_server_source_id);
+	socket_server_source_id = 0;
+    }
+#endif
 }
 
     void
 gui_gtk_set_mnemonics(int enable UNUSED)
 {
-    // TODO
+    // No-op: menu mnemonics depend on menu system, not yet implemented
+    // for GTK4.
 }
 
     void
 gui_make_popup(char_u *path_name UNUSED, int mouse_pos UNUSED)
 {
-    // TODO
+    // No-op: popup menus depend on menu system, not yet implemented
+    // for GTK4.
 }
 
     int
@@ -2215,37 +2410,196 @@ get_menu_tool_height(void)
     return height;
 }
 
-// Clipboard stubs - GTK4 clipboard uses GdkClipboard, not GdkAtom
-    void
-clip_mch_request_selection(Clipboard_T *cbd UNUSED)
+/*
+ * Get the GdkClipboard for the given Clipboard_T.
+ * clip_star (*) uses PRIMARY, clip_plus (+) uses CLIPBOARD.
+ */
+    static GdkClipboard *
+gtk4_get_clipboard(Clipboard_T *cbd)
 {
-    // TODO: implement with GdkClipboard
+    GdkDisplay *display;
+
+    if (gui.mainwin == NULL)
+	return NULL;
+
+    display = gtk_widget_get_display(gui.mainwin);
+    if (display == NULL)
+	return NULL;
+
+    if (cbd == &clip_plus)
+	return gdk_display_get_clipboard(display);
+    else
+	return gdk_display_get_primary_clipboard(display);
 }
 
-    void
-clip_mch_set_selection(Clipboard_T *cbd UNUSED)
+/*
+ * Callback for gdk_clipboard_read_text_async().
+ */
+    static void
+clip_read_text_cb(GObject *source, GAsyncResult *result, gpointer user_data)
 {
-    // TODO
+    GdkClipboard	*clipboard = GDK_CLIPBOARD(source);
+    Clipboard_T		*cbd = (Clipboard_T *)user_data;
+    char		*text;
+    GError		*error = NULL;
+
+    text = gdk_clipboard_read_text_finish(clipboard, result, &error);
+    if (text != NULL)
+    {
+	char_u	*tmpbuf = NULL;
+	char_u	*p;
+	int	len;
+	int	motion_type = MAUTO;
+
+	len = (int)STRLEN(text);
+
+	// Convert from UTF-8 to 'encoding' if needed.
+	if (input_conv.vc_type != CONV_NONE)
+	{
+	    tmpbuf = string_convert(&input_conv, (char_u *)text, &len);
+	    if (tmpbuf != NULL)
+		p = tmpbuf;
+	    else
+		p = (char_u *)text;
+	}
+	else
+	    p = (char_u *)text;
+
+	// Chop off any trailing NUL bytes.
+	while (len > 0 && p[len - 1] == NUL)
+	    --len;
+
+	clip_yank_selection(motion_type, p, (long)len, cbd);
+	vim_free(tmpbuf);
+	g_free(text);
+    }
+    else
+    {
+	if (error != NULL)
+	    g_error_free(error);
+    }
 }
 
+/*
+ * Request the selection from the clipboard.
+ */
+    void
+clip_mch_request_selection(Clipboard_T *cbd)
+{
+    GdkClipboard	*clipboard;
+    time_t		start;
+
+    clipboard = gtk4_get_clipboard(cbd);
+    if (clipboard == NULL)
+	return;
+
+    gdk_clipboard_read_text_async(clipboard, NULL, clip_read_text_cb, cbd);
+
+    // Wait up to three seconds for the clipboard response.
+    start = time(NULL);
+    while (time(NULL) < start + 3)
+    {
+	g_main_context_iteration(NULL, TRUE);
+	// Check if the clipboard content was already yanked by the callback.
+	// The callback calls clip_yank_selection() which sets cbd->owned.
+	// We break out once an iteration completes without pending events,
+	// giving the async callback time to fire.
+	if (!g_main_context_pending(NULL))
+	    break;
+    }
+}
+
+/*
+ * Send the current selection to the clipboard.
+ */
+    void
+clip_mch_set_selection(Clipboard_T *cbd)
+{
+    GdkClipboard	*clipboard;
+    char_u		*str = NULL;
+    long_u		len;
+    int			motion_type;
+
+    clipboard = gtk4_get_clipboard(cbd);
+    if (clipboard == NULL)
+	return;
+
+    // Get the selection text from the register.
+    clip_get_selection(cbd);
+    motion_type = clip_convert_selection(&str, &len, cbd);
+    if (motion_type < 0 || str == NULL)
+	return;
+
+    // Convert from 'encoding' to UTF-8 if needed.
+    if (output_conv.vc_type != CONV_NONE)
+    {
+	char_u	*conv_str;
+	int	conv_len = (int)len;
+
+	conv_str = string_convert(&output_conv, str, &conv_len);
+	if (conv_str != NULL)
+	{
+	    vim_free(str);
+	    str = conv_str;
+	    len = conv_len;
+	}
+    }
+
+    // Ensure NUL-terminated string for GTK.
+    {
+	char_u *nul_str = alloc(len + 1);
+
+	if (nul_str != NULL)
+	{
+	    mch_memmove(nul_str, str, len);
+	    nul_str[len] = NUL;
+	    gdk_clipboard_set_text(clipboard, (const char *)nul_str);
+	    vim_free(nul_str);
+	}
+    }
+
+    vim_free(str);
+}
+
+/*
+ * Own the selection.  In GTK4, ownership is implicit when content is set
+ * on the clipboard.  Return OK to indicate we can own it.
+ */
     int
 clip_mch_own_selection(Clipboard_T *cbd UNUSED)
 {
-    // TODO
-    return FAIL;
+    return OK;
 }
 
+/*
+ * Disown the selection.  In GTK4, we clear the clipboard content to
+ * release ownership.
+ */
     void
-clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
-    // TODO
+    GdkClipboard *clipboard;
+
+    clipboard = gtk4_get_clipboard(cbd);
+    if (clipboard == NULL)
+	return;
+
+    // Setting NULL content provider releases ownership.
+    gdk_clipboard_set_content(clipboard, NULL);
 }
 
-// Balloon eval stubs
+// Balloon eval - use GTK4 tooltip
     void
-gui_mch_post_balloon(BalloonEval *beval UNUSED, char_u *mesg UNUSED)
+gui_mch_post_balloon(BalloonEval *beval UNUSED, char_u *mesg)
 {
-    // TODO
+    if (mesg != NULL && gui.drawarea != NULL)
+    {
+	char_u *text = CONVERT_TO_UTF8(mesg);
+	gtk_widget_set_tooltip_text(gui.drawarea, (const char *)text);
+	CONVERT_TO_UTF8_FREE(text);
+    }
+    else if (gui.drawarea != NULL)
+	gtk_widget_set_tooltip_text(gui.drawarea, NULL);
 }
 
     BalloonEval *
@@ -2279,12 +2633,68 @@ gtk_main_quit(void)
     gtk4_main_loop_quit = TRUE;
 }
 
-// Mouse shape stub
+#if defined(FEAT_MOUSESHAPE)
+
+// Table of CSS cursor names corresponding to Vim's mouse shape IDs.
+// Keep in sync with the mshape_names[] table in misc2.c.
+static const char *mshape_css_names[] =
+{
+    "default",			// arrow
+    "none",			// blank
+    "text",			// beam
+    "ns-resize",		// updown
+    "nwse-resize",		// udsizing
+    "ew-resize",		// leftright
+    "ew-resize",		// lrsizing
+    "progress",			// busy
+    "not-allowed",		// no
+    "crosshair",		// crosshair
+    "pointer",			// hand1
+    "pointer",			// hand2
+    "default",			// pencil (no CSS analogue)
+    "help",			// question
+    "default",			// right-arrow (no CSS analogue)
+    "default",			// up-arrow (no CSS analogue)
+    "default"			// last entry
+};
+
+    void
+mch_set_mouse_shape(int shape)
+{
+    GdkCursor	*c;
+    const char	*css_name = "default";
+
+    if (gui.drawarea == NULL)
+	return;
+
+    if (shape == MSHAPE_HIDE || gui.pointer_hidden)
+	gtk_widget_set_cursor(gui.drawarea, gui.blank_pointer);
+    else
+    {
+	if (shape >= MSHAPE_NUMBERED)
+	    css_name = "default";
+	else if (shape < (int)ARRAY_LENGTH(mshape_css_names))
+	    css_name = mshape_css_names[shape];
+	else
+	    return;
+
+	// GTK4: gdk_cursor_new_from_name(name, fallback)
+	c = gdk_cursor_new_from_name(css_name, NULL);
+	gtk_widget_set_cursor(gui.drawarea, c);
+	g_object_unref(G_OBJECT(c));
+    }
+    if (shape != MSHAPE_HIDE)
+	last_shape = shape;
+}
+
+#else // !FEAT_MOUSESHAPE
+
     void
 mch_set_mouse_shape(int shape UNUSED)
 {
-    // TODO
 }
+
+#endif // FEAT_MOUSESHAPE
 
 // GTK4 does not have GtkMenuShell
     GType
