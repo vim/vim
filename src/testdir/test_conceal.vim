@@ -169,9 +169,9 @@ func Test_conceal_with_cursorcolumn()
   call StopVimInTerminal(buf)
 endfunc
 
-" Check that 'cursorline' and 'wincolor' apply to the whole line in presence
+" Check that 'cursorline' and 'winhighlight' apply to the whole line in presence
 " of wrapped lines containing concealed text.
-func Test_conceal_wrapped_cursorline_wincolor()
+func Test_conceal_wrapped_cursorline_winhighlight()
   CheckScreendump
 
   let code =<< trim [CODE]
@@ -185,7 +185,7 @@ func Test_conceal_wrapped_cursorline_wincolor()
   let buf = RunVimInTerminal('-S XTest_conceal_cul_wcr', {'rows': 4, 'cols': 40})
   call VerifyScreenDump(buf, 'Test_conceal_cul_wcr_01', {})
 
-  call term_sendkeys(buf, ":set wincolor=ErrorMsg\n")
+  call term_sendkeys(buf, ":set winhighlight=Normal:ErrorMsg\n")
   call VerifyScreenDump(buf, 'Test_conceal_cul_wcr_02', {})
 
   call term_sendkeys(buf, ":set nocursorline\n")
@@ -195,8 +195,8 @@ func Test_conceal_wrapped_cursorline_wincolor()
   call StopVimInTerminal(buf)
 endfunc
 
-" Same as Test_conceal_wrapped_cursorline_wincolor(), but with 'rightleft'.
-func Test_conceal_wrapped_cursorline_wincolor_rightleft()
+" Same as Test_conceal_wrapped_cursorline_winhighlight(), but with 'rightleft'.
+func Test_conceal_wrapped_cursorline_winhighlight_rightleft()
   CheckFeature rightleft
   CheckScreendump
 
@@ -211,7 +211,7 @@ func Test_conceal_wrapped_cursorline_wincolor_rightleft()
   let buf = RunVimInTerminal('-S XTest_conceal_cul_wcr_rl', {'rows': 4, 'cols': 40})
   call VerifyScreenDump(buf, 'Test_conceal_cul_wcr_rl_01', {})
 
-  call term_sendkeys(buf, ":set wincolor=ErrorMsg\n")
+  call term_sendkeys(buf, ":set winhighlight=Normal:ErrorMsg\n")
   call VerifyScreenDump(buf, 'Test_conceal_cul_wcr_rl_02', {})
 
   call term_sendkeys(buf, ":set nocursorline\n")

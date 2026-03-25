@@ -4823,7 +4823,7 @@ func Test_textprop_backspace_fo_aw()
   call prop_type_delete('test')
 endfunc
 
-func Test_textprop_with_wincolor()
+func Test_textprop_with_winhighlight()
   CheckScreendump
   CheckRunVimInTerminal
 
@@ -4837,7 +4837,7 @@ func Test_textprop_with_wincolor()
           \ text_align: 'after', text_padding_left: 3})
     call prop_add(1, 0, #{type: 'belowprop', text: 'BELOW',
           \ text_align: 'below', text_padding_left: 3})
-    set wincolor=DiffChange wrap
+    set winhighlight=Normal:DiffChange wrap
   END
   call writefile(lines, 'XtextPropWincolor', 'D')
   let buf = RunVimInTerminal('-S XtextPropWincolor', #{rows: 8, cols: 60})

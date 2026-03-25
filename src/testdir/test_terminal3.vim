@@ -114,11 +114,11 @@ func Test_terminal_color_group()
   \ ], "term_highlight: 'MyTermCol',", [])
 endfunc
 
-func Test_terminal_color_wincolor()
+func Test_terminal_color_winhighlight()
   call Terminal_color("MyWinCol", [
   \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
   \ ], "", [
-  \ 'set wincolor=MyWinCol',
+  \ 'set winhighlight=Normal:MyWinCol',
   \ ])
 endfunc
 
@@ -129,16 +129,16 @@ func Test_terminal_color_group_over_Terminal()
   \ ], "term_highlight: 'MyTermCol',", [])
 endfunc
 
-func Test_terminal_color_wincolor_over_group()
+func Test_terminal_color_winhighlight_over_group()
   call Terminal_color("MyWinCol_over_group", [
   \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
   \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
   \ ], "term_highlight: 'MyTermCol',", [
-  \ 'set wincolor=MyWinCol',
+  \ 'set winhighlight=Normal:MyWinCol',
   \ ])
 endfunc
 
-func Test_terminal_color_wincolor_split()
+func Test_terminal_color_winhighlight_split()
   CheckScreendump
   CheckRunVimInTerminal
   CheckUnix
@@ -162,11 +162,11 @@ func Test_terminal_color_wincolor_split()
   call TermWait(buf, 50)
 
   call term_sendkeys(buf, "\<C-W>:split\<CR>")
-  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set winhighlight=Normal:MyWinCol\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol', {})
 
   call term_sendkeys(buf, "\<C-W>b:2sb\<CR>")
-  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol2\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set winhighlight=Normal:MyWinCol2\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol2', {})
 
   call term_sendkeys(buf, "\<C-D>")
@@ -186,11 +186,11 @@ func Test_terminal_color_transp_group()
   \ ], "term_highlight: 'MyTermCol',", [])
 endfunc
 
-func Test_terminal_color_transp_wincolor()
+func Test_terminal_color_transp_winhighlight()
   call Terminal_color("transp_MyWinCol", [
   \ "highlight MyWinCol ctermfg=red",
   \ ], "", [
-  \ 'set wincolor=MyWinCol',
+  \ 'set winhighlight=Normal:MyWinCol',
   \ ])
 endfunc
 
@@ -210,13 +210,13 @@ func Test_terminal_color_gui_group()
   \ ], "term_highlight: 'MyTermCol',", [])
 endfunc
 
-func Test_terminal_color_gui_wincolor()
+func Test_terminal_color_gui_winhighlight()
   CheckFeature termguicolors
   call Terminal_color("gui_MyWinCol", [
   \ "set termguicolors",
   \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
   \ ], "", [
-  \ 'set wincolor=MyWinCol',
+  \ 'set winhighlight=Normal:MyWinCol',
   \ ])
 endfunc
 
@@ -236,13 +236,13 @@ func Test_terminal_color_gui_transp_group()
   \ ], "term_highlight: 'MyTermCol',", [])
 endfunc
 
-func Test_terminal_color_gui_transp_wincolor()
+func Test_terminal_color_gui_transp_winhighlight()
   CheckFeature termguicolors
   call Terminal_color("gui_transp_MyWinCol", [
   \ "set termguicolors",
   \ "highlight MyWinCol guifg=#fe1122",
   \ ], "", [
-  \ 'set wincolor=MyWinCol',
+  \ 'set winhighlight=Normal:MyWinCol',
   \ ])
 endfunc
 
@@ -265,7 +265,7 @@ func Test_terminal_in_popup()
 	\ "  let s:buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
 	\ '  let g:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
 	\ '  if a:setColor',
-	\ '    call win_execute(g:winid, "set wincolor=PopTerm")',
+	\ '    call win_execute(g:winid, "set winhighlight=Normal:PopTerm")',
 	\ '  endif',
 	\ 'endfunc',
 	\ 'func HidePopup()',
@@ -406,11 +406,11 @@ func Test_terminal_in_popup_color_group()
   \ ], "term_highlight: 'MyTermCol',", [], "")
 endfunc
 
-func Test_terminal_in_popup_color_wincolor()
+func Test_terminal_in_popup_color_winhighlight()
   call Terminal_in_popup_color("MyWinCol", [
   \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
   \ ], "", [
-  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ 'call setwinvar(g:winid, "&winhighlight", "Normal:MyWinCol")',
   \ ], "")
 endfunc
 
@@ -427,12 +427,12 @@ func Test_terminal_in_popup_color_group_over_Terminal()
   \ ], "term_highlight: 'MyTermCol',", [], "")
 endfunc
 
-func Test_terminal_in_popup_color_wincolor_over_group()
+func Test_terminal_in_popup_color_winhighlight_over_group()
   call Terminal_in_popup_color("MyWinCol_over_group", [
   \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
   \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
   \ ], "term_highlight: 'MyTermCol',", [
-  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ 'call setwinvar(g:winid, "&winhighlight", "Normal:MyWinCol")',
   \ ], "")
 endfunc
 
@@ -448,11 +448,11 @@ func Test_terminal_in_popup_color_transp_group()
   \ ], "term_highlight: 'MyTermCol',", [], "")
 endfunc
 
-func Test_terminal_in_popup_color_transp_wincolor()
+func Test_terminal_in_popup_color_transp_winhighlight()
   call Terminal_in_popup_color("transp_MyWinCol", [
   \ "highlight MyWinCol ctermfg=red",
   \ ], "", [
-  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ 'call setwinvar(g:winid, "&winhighlight", "Normal:MyWinCol")',
   \ ], "")
 endfunc
 
@@ -478,13 +478,13 @@ func Test_terminal_in_popup_color_gui_group()
   \ ], "term_highlight: 'MyTermCol',", [], "")
 endfunc
 
-func Test_terminal_in_popup_color_gui_wincolor()
+func Test_terminal_in_popup_color_gui_winhighlight()
   CheckFeature termguicolors
   call Terminal_in_popup_color("gui_MyWinCol", [
   \ "set termguicolors",
   \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
   \ ], "", [
-  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ 'call setwinvar(g:winid, "&winhighlight", "Normal:MyWinCol")',
   \ ], "")
 endfunc
 
@@ -512,13 +512,13 @@ func Test_terminal_in_popup_color_gui_transp_group()
   \ ], "term_highlight: 'MyTermCol',", [], "")
 endfunc
 
-func Test_terminal_in_popup_color_gui_transp_wincolor()
+func Test_terminal_in_popup_color_gui_transp_winhighlight()
   CheckFeature termguicolors
   call Terminal_in_popup_color("gui_transp_MyWinCol", [
   \ "set termguicolors",
   \ "highlight MyWinCol guifg=#fe1122",
   \ ], "", [
-  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ 'call setwinvar(g:winid, "&winhighlight", "Normal:MyWinCol")',
   \ ], "")
 endfunc
 
@@ -558,11 +558,11 @@ func Test_issue_5607()
   let job = term_getjob(bufnr())
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
 
-  let old_wincolor = &wincolor
+  let old_winhighlight = &winhighlight
   try
-    set wincolor=
+    set winhighlight=
   finally
-    let &wincolor = old_wincolor
+    let &winhighlight = old_winhighlight
     bw!
   endtry
 endfunc

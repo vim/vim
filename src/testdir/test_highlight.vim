@@ -646,7 +646,7 @@ func Test_cursorcolumn_callback()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_wincolor()
+func Test_winhighlight()
   CheckScreendump
   " make sure the width is enough for the test
   set columns=80
@@ -654,7 +654,7 @@ func Test_wincolor()
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
 	call setline(1, ["","1111111111","22222222222","3 here 3","","the cat is out of the bag"])
-	set wincolor=Pmenu
+	set winhighlight=Normal:Pmenu
 	hi CatLine guifg=green ctermfg=green
 	hi Reverse gui=reverse cterm=reverse
 	syn match CatLine /^the.*/
@@ -675,13 +675,13 @@ func Test_wincolor()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_wincolor_listchars()
+func Test_winhighlight_listchars()
   CheckScreendump
   CheckFeature conceal
 
   let lines =<< trim END
 	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
-	set wincolor=Todo
+	set winhighlight=Normal:Todo
 	set nowrap cole=1 cocu+=n
 	set list lcs=eol:$,tab:>-,space:.,trail:_,extends:>,precedes:<,conceal:*,nbsp:#
 	call matchadd('Conceal', 'text')
@@ -1355,8 +1355,8 @@ func Test_hlset()
   call assert_true(hlget('hlg11')[0].cleared)
 endfunc
 
-" Test for the 'winhighlight' option
-func Test_winhighlight()
+" Test for the 'winhighlight' option with Normal highlight
+func Test_winhighlight_normal()
   CheckScreendump
 
   let lines =<< trim END
