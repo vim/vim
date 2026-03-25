@@ -3298,7 +3298,7 @@ did_set_clipboard(optset_T *args UNUSED)
 	vim_regfree(clip_exclude_prog);
 	clip_exclude_prog = new_exclude_prog;
 # endif
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
 	if (gui.in_use)
 	{
 	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);

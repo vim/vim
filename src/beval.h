@@ -11,7 +11,7 @@
 #define BEVAL__H
 
 #ifdef FEAT_GUI_GTK
-# ifdef USE_GTK3
+# if defined(USE_GTK3) || defined(USE_GTK4)
 #  include <gtk/gtk.h>
 # else
 #  include <gtk/gtkwidget.h>
