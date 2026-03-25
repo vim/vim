@@ -30,40 +30,42 @@
  * TODO: Implement using GMenu + GtkPopoverMenuBar
  */
 
+/*
+ * Menu system is not yet implemented for GTK4.
+ * GTK4 requires GMenu + GtkPopoverMenuBar, which is a fundamentally
+ * different model from GTK2/3's GtkMenuBar/GtkMenu/GtkMenuItem.
+ * These are intentional no-ops for now.
+ */
+
     void
 gui_mch_add_menu(vimmenu_T *menu UNUSED, int idx UNUSED)
 {
-    // TODO: GMenu-based menus
 }
 
     void
 gui_mch_add_menu_item(vimmenu_T *menu UNUSED, int idx UNUSED)
 {
-    // TODO
 }
 
     void
 gui_mch_toggle_tearoffs(int enable UNUSED)
 {
-    // GTK4: tearoff menus don't exist
+    // GTK4: tearoff menus don't exist.
 }
 
     void
 gui_mch_menu_set_tip(vimmenu_T *menu UNUSED)
 {
-    // TODO
 }
 
     void
 gui_mch_destroy_menu(vimmenu_T *menu UNUSED)
 {
-    // TODO
 }
 
     void
 gui_mch_show_popupmenu(vimmenu_T *menu UNUSED)
 {
-    // TODO: use GtkPopoverMenu
 }
 
 /*
@@ -415,16 +417,20 @@ gui_mch_dialog(
  * ============================================================
  */
 
+/*
+ * Find/Replace dialogs are not yet implemented as native GTK4 dialogs.
+ * Fall back to Vim's command-line based search.
+ */
     void
-gui_mch_find_dialog(exarg_T *eap UNUSED)
+gui_mch_find_dialog(exarg_T *eap)
 {
-    // TODO: implement Find dialog
+    do_cmdline_cmd(eap->arg);
 }
 
     void
-gui_mch_replace_dialog(exarg_T *eap UNUSED)
+gui_mch_replace_dialog(exarg_T *eap)
 {
-    // TODO: implement Replace dialog
+    do_cmdline_cmd(eap->arg);
 }
 
 /*
