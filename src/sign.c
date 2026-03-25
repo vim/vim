@@ -1167,7 +1167,8 @@ may_force_numberwidth_recompute(buf_T *buf, int unplace)
     {
         if (wp->w_buffer == buf && (wp->w_p_nu || wp->w_p_rnu) &&
             (unplace || wp->w_nrwidth_width < 2) &&
-            (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
+            (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') &&
+            *(wp->w_p_scl + 6) != 'h')  // not 'numberhl'
             wp->w_nrwidth_line_count = 0;
     }
 # endif
@@ -2879,11 +2880,15 @@ get_first_valid_sign(win_T *wp)
 int
 signcolumn_on(win_T *wp)
 {
-    // If 'signcolumn' is set to 'number', signs are displayed in the 'number'
-    // column (if present). Otherwise signs are to be displayed in the sign
-    // column.
+    // If 'signcolumn' is set to 'number' or 'numberhl', signs are displayed in
+    // the 'number' column (if present). Otherwise signs are to be displayed in
+    // the sign column.
     if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
         return get_first_valid_sign(wp) != NULL && !wp->w_p_nu && !wp->w_p_rnu;
+
+    // "numberhl" - no separate sign column, color applied in number column
+    if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u' && *(wp->w_p_scl + 6) == 'h' && *(wp->w_p_scl + 7) == 'l')
+        return FALSE;
 
     if (*wp->w_p_scl == 'n')
         return FALSE;

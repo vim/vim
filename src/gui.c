@@ -2359,6 +2359,7 @@ gui_outstr_nowrap(
 # endif
 	// draw spaces instead
 	if (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u' &&
+		*(curwin->w_p_scl + 6) != 'h' &&  // not 'numberhl'
 		(curwin->w_p_nu || curwin->w_p_rnu))
 	{
 	    int	n = number_width(curwin);

@@ -4151,6 +4151,7 @@ did_set_number_relativenumber(optset_T *args UNUSED)
 #if defined(FEAT_SIGNS) && defined(FEAT_GUI)
     if (gui.in_use
 	    && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
+	    && *(curwin->w_p_scl + 6) != 'h'  // not 'numberhl'
 	    && curbuf->b_signlist != NULL)
     {
 	// If the 'number' or 'relativenumber' options are modified and

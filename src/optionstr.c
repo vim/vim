@@ -148,7 +148,7 @@ static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup
 static char *(p_csl_values[]) = {"slash", "backslash", NULL};
 #endif
 #ifdef FEAT_SIGNS
-static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
+static char *(p_scl_values[]) = {"yes", "no", "auto", "number", "numberhl", NULL};
 #endif
 #ifdef UNIX
 static char *(p_trz_values[]) = {"inband", "sigwinch", "", NULL};
@@ -4072,8 +4072,9 @@ did_set_signcolumn(optset_T *args)
 # if defined(FEAT_LINEBREAK)
     if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	return e_invalid_argument;
-    // When changing the 'signcolumn' to or from 'number', recompute the
-    // width of the number column if 'number' or 'relativenumber' is set.
+    // When changing the 'signcolumn' to or from 'number' or 'numberhl',
+    // recompute the width of the number column if 'number' or 'relativenumber'
+    // is set.
     if (((*args->os_oldval.string == 'n' && args->os_oldval.string[1] == 'u')
 		|| (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) =='u'))
 	    && (curwin->w_p_nu || curwin->w_p_rnu))

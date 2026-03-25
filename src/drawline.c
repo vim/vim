@@ -402,9 +402,10 @@ handle_lnum_col(
 #ifdef FEAT_SIGNS
 	// If 'signcolumn' is set to 'number' and a sign is present
 	// in 'lnum', then display the sign instead of the line
-	// number.
-	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') && sign_present
-		&& wlv->sattr.sat_text != NULL)
+	// number.  But for 'numberhl', skip the sign text replacement.
+	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
+		&& *(wp->w_p_scl + 6) != 'h'  // not 'numberhl'
+		&& sign_present && wlv->sattr.sat_text != NULL)
 	    get_sign_display_info(TRUE, wp, wlv);
 	else
 #endif
@@ -1550,7 +1551,9 @@ win_line(
 
 #ifdef FEAT_SIGNS
     sign_present = buf_get_signattrs(wp, lnum, &wlv.sattr);
-    if (sign_present)
+    // Only apply numhl to line numbers when 'signcolumn' is 'number' or
+    // 'numberhl' (signs displayed in number column)
+    if (sign_present && *wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
 	num_attr = wlv.sattr.sat_numhl;
 #endif
 

@@ -2161,4 +2161,36 @@ func Test_sign_signcolumn_change_no_clear()
   bwipe!
 endfunc
 
+" Test for 'signcolumn' set to 'numberhl'.
+func Test_sign_numhl_col()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set number signcolumn=numberhl
+      call setline(1, ['line one', 'line two', 'line three'])
+      sign define SignError text=EE texthl=Error numhl=Error
+      sign define SignWarn text=WW texthl=WarningMsg numhl=WarningMsg
+      " Place signs with numhl - line numbers should be colored, not replaced
+      sign place 1 line=1 name=SignError buffer=1
+      sign place 2 line=2 name=SignWarn buffer=1
+  END
+  call writefile(lines, 'XtestSigncolumnNumberhl', 'D')
+  let buf = RunVimInTerminal('-S XtestSigncolumnNumberhl', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_sign_numhl_col_1', {})
+
+  " Unplace signs - number column width should remain the same
+  call term_sendkeys(buf, ":sign unplace 1\<CR>")
+  call term_sendkeys(buf, ":sign unplace 2\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_numhl_col_2', {})
+
+  " Place sign again - number column width should still be stable
+  call term_sendkeys(buf, ":sign place 3 line=3 name=SignError buffer=1\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_numhl_col_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
