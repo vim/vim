@@ -31,6 +31,88 @@
  */
 
 /*
+ * Icon name table for toolbar buttons.
+ * Must match toolbar_names[] in menu.c.
+ */
+static const char * const toolbar_icon_names[] =
+{
+    /* 00 */ "document-new",
+    /* 01 */ "document-open",
+    /* 02 */ "document-save",
+    /* 03 */ "edit-undo",
+    /* 04 */ "edit-redo",
+    /* 05 */ "edit-cut",
+    /* 06 */ "edit-copy",
+    /* 07 */ "edit-paste",
+    /* 08 */ "document-print",
+    /* 09 */ "help-browser",
+    /* 10 */ "edit-find",
+    /* 11 */ "document-save",		// save all (no standard icon)
+    /* 12 */ "document-save",		// session save
+    /* 13 */ "document-new",		// session new
+    /* 14 */ "document-open",		// session load
+    /* 15 */ "system-run",
+    /* 16 */ "edit-find-replace",
+    /* 17 */ "window-close",
+    /* 18 */ "window-maximize-symbolic",	// maximize
+    /* 19 */ "window-minimize-symbolic",	// minimize
+    /* 20 */ "window-maximize-symbolic",	// split (no standard icon)
+    /* 21 */ "utilities-terminal",	// shell
+    /* 22 */ "go-previous",
+    /* 23 */ "go-next",
+    /* 24 */ "help-browser",		// find help
+    /* 25 */ "edit-find",		// convert (no standard icon)
+    /* 26 */ "go-jump",
+    /* 27 */ "go-previous",		// back (reuse)
+    /* 28 */ "go-next",			// forward (reuse)
+    /* 29 */ "image-missing",
+    /* 30 */ "image-missing",
+};
+
+    static void
+toolbar_button_clicked_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    gui_menu_cb((vimmenu_T *)data);
+}
+
+    static GtkWidget *
+create_toolbar_icon(vimmenu_T *menu)
+{
+    char_u	buf[MAXPATHL];
+    GtkWidget	*image = NULL;
+
+    // Try specified icon file first
+    if (menu->iconfile != NULL)
+    {
+	expand_env(menu->iconfile, buf, MAXPATHL);
+	if (vim_fexists(buf))
+	{
+	    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(
+		    (const char *)buf, 24, 24, TRUE, NULL);
+	    if (pixbuf != NULL)
+	    {
+		image = gtk_image_new_from_pixbuf(pixbuf);
+		g_object_unref(pixbuf);
+	    }
+	}
+    }
+
+    // Use themed icon
+    if (image == NULL)
+    {
+	const char *icon_name = "image-missing";
+	int n = (int)ARRAY_LENGTH(toolbar_icon_names);
+
+	if (menu->iconidx >= 0 && menu->iconidx < n)
+	    icon_name = toolbar_icon_names[menu->iconidx];
+
+	image = gtk_image_new_from_icon_name(icon_name);
+    }
+
+    return image;
+}
+
+/*
  * Menu system is not yet implemented for GTK4.
  * GTK4 requires GMenu + GtkPopoverMenuBar, which is a fundamentally
  * different model from GTK2/3's GtkMenuBar/GtkMenu/GtkMenuItem.
@@ -43,8 +125,44 @@ gui_mch_add_menu(vimmenu_T *menu UNUSED, int idx UNUSED)
 }
 
     void
-gui_mch_add_menu_item(vimmenu_T *menu UNUSED, int idx UNUSED)
+gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 {
+    vimmenu_T *parent = menu->parent;
+
+#ifdef FEAT_TOOLBAR
+    if (parent != NULL && menu_is_toolbar(parent->name))
+    {
+	if (menu_is_separator(menu->name))
+	{
+	    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+	    gtk_box_append(GTK_BOX(gui.toolbar), sep);
+	    menu->id = sep;
+	}
+	else
+	{
+	    GtkWidget	*btn;
+	    GtkWidget	*icon;
+	    char_u	*tooltip;
+
+	    icon = create_toolbar_icon(menu);
+	    btn = gtk_button_new();
+	    gtk_button_set_child(GTK_BUTTON(btn), icon);
+	    gtk_widget_set_focusable(btn, FALSE);
+
+	    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+	    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
+		gtk_widget_set_tooltip_text(btn, (const gchar *)tooltip);
+	    CONVERT_TO_UTF8_FREE(tooltip);
+
+	    g_signal_connect(btn, "clicked",
+		    G_CALLBACK(toolbar_button_clicked_cb), menu);
+
+	    gtk_box_append(GTK_BOX(gui.toolbar), btn);
+	    menu->id = btn;
+	}
+	return;
+    }
+#endif
 }
 
     void
@@ -59,8 +177,15 @@ gui_mch_menu_set_tip(vimmenu_T *menu UNUSED)
 }
 
     void
-gui_mch_destroy_menu(vimmenu_T *menu UNUSED)
+gui_mch_destroy_menu(vimmenu_T *menu)
 {
+    if (menu->id != NULL)
+    {
+	GtkWidget *parent = gtk_widget_get_parent(menu->id);
+	if (parent != NULL)
+	    gtk_box_remove(GTK_BOX(parent), menu->id);
+	menu->id = NULL;
+    }
 }
 
     void

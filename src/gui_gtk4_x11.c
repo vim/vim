@@ -379,7 +379,8 @@ gui_mch_init(void)
 #ifdef FEAT_TOOLBAR
     gui.toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(gui.toolbar, "vim-toolbar");
-    // Don't add to vbox until actually shown
+    gtk_widget_set_visible(gui.toolbar, FALSE);
+    gtk_box_append(GTK_BOX(vbox), gui.toolbar);
 #endif
 
 #ifdef FEAT_GUI_TABLINE
