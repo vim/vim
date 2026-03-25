@@ -4907,4 +4907,45 @@ func Test_textprop_materialize_list()
 	call assert_equal([], prop_list(1, #{ids: 3->range()}))
 endfunc
 
+func Test_textprop_virtual_text_id_recycle()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  let id_a = prop_add(1, 0, {'type': 'comment', 'text': '<text-a>'})
+  let id_b = prop_add(2, 0, {'type': 'comment', 'text': '<text-b>'})
+  let id_c = prop_add(3, 0, {'type': 'comment', 'text': '<text-c>'})
+
+  " Remove and re-add individually: IDs should be recycled
+  call prop_remove({'type': 'comment'}, 1)
+  let new_id_a = prop_add(1, 0, {'type': 'comment', 'text': '<text-a>'})
+  call assert_equal(id_a, new_id_a)
+
+  call prop_remove({'type': 'comment'}, 2)
+  let new_id_b = prop_add(2, 0, {'type': 'comment', 'text': '<text-b>'})
+  call assert_equal(id_b, new_id_b)
+
+  " Remove multiple then re-add in the same order: IDs should be recycled
+  call prop_remove({'type': 'comment'}, 1)
+  call prop_remove({'type': 'comment'}, 2)
+  let new_id_a = prop_add(1, 0, {'type': 'comment', 'text': '<text-a>'})
+  let new_id_b = prop_add(2, 0, {'type': 'comment', 'text': '<text-b>'})
+  call assert_equal(id_a, new_id_a)
+  call assert_equal(id_b, new_id_b)
+
+  " Verify text content is correct after recycling
+  let props1 = prop_list(1)
+  call assert_equal('<text-a>', props1[0].text)
+  let props2 = prop_list(2)
+  call assert_equal('<text-b>', props2[0].text)
+  let props3 = prop_list(3)
+  call assert_equal('<text-c>', props3[0].text)
+
+  call prop_remove({'type': 'comment'}, 1)
+  call prop_remove({'type': 'comment'}, 2)
+  call prop_remove({'type': 'comment'}, 3)
+  call prop_type_delete('comment')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -212,15 +212,22 @@ prop_add_one(
     {
 	garray_T    *gap = &buf->b_textprop_text;
 	char_u	    *p;
+	int	    ga_idx = -id - 1;
 
-	// double check we got the right ID
-	if (-id - 1 != gap->ga_len)
-	    iemsg("text prop ID mismatch");
-	if (gap->ga_growsize == 0)
-	    ga_init2(gap, sizeof(char *), 50);
-	if (ga_grow(gap, 1) == FAIL)
-	    goto theend;
-	((char_u **)gap->ga_data)[gap->ga_len++] = text;
+	// Recycle deleted entries
+	if (ga_idx < gap->ga_len && gap->ga_len > 0)
+	    ((char_u **)gap->ga_data)[ga_idx] = text;
+	else
+	{
+	    // double check we got the right ID
+	    if (ga_idx != gap->ga_len)
+		iemsg("text prop ID mismatch");
+	    if (gap->ga_growsize == 0)
+		ga_init2(gap, sizeof(char *), 50);
+	    if (ga_grow(gap, 1) == FAIL)
+		goto theend;
+	    ((char_u **)gap->ga_data)[gap->ga_len++] = text;
+	}
 
 	// change any control character (Tab, Newline, etc.) to a Space to make
 	// it simpler to compute the size
@@ -430,8 +437,17 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     static int
 get_textprop_id(buf_T *buf)
 {
-    // TODO: recycle deleted entries
-    return -(buf->b_textprop_text.ga_len + 1);
+    garray_T	*gap = &buf->b_textprop_text;
+    char_u	**entries = (char_u **)gap->ga_data;
+
+    // Recycle deleted entries
+    for (int i = 0; i < gap->ga_len; i++)
+    {
+	if (entries[i] == NULL)
+	    return -(i + 1);
+    }
+
+    return -(gap->ga_len + 1);
 }
 
 /*
