@@ -5096,7 +5096,7 @@ skip:
 			linenr_T join_start_line = lnum;
 			linenr_T del_start_lnum = lnum + 1;
 			long del_count = nmatch_tl - 1;
-			bool start_line_is_dead = FALSE;
+			bool start_line_is_dead = false;
 			if (nmatch_tl == 0)
 			{
 			    STRCAT(new_start, sub_firstline + copycol);
@@ -5108,7 +5108,7 @@ skip:
 			{
 			    if (STRLEN(new_start) == 0)
 			    {
-				start_line_is_dead = TRUE;
+				start_line_is_dead = true;
 				join_start_line -= 1;
 				del_start_lnum -= 1;
 				del_count += 1;
