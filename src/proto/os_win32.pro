@@ -50,6 +50,7 @@ void mch_new_shellsize(void);
 void mch_set_winsize_now(void);
 int mch_call_shell(char_u *cmd, int options);
 void win32_build_env(dict_T *env, garray_T *gap, int is_terminal);
+char_u *mch_get_cmd_output_direct(char **argv, char_u *infile, int flags, int *ret_len);
 void mch_job_start(char *cmd, job_T *job, jobopt_T *options);
 char *mch_job_status(job_T *job);
 job_T *mch_detect_ended_job(job_T *job_list);

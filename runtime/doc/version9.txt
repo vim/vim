@@ -52611,6 +52611,8 @@ Other ~
 - New "leadtab" value for the 'listchars' setting.
 - Improved |:set+=|, |:set^=| and |:set-=| handling of comma-separated "key:value"
   pairs individually (e.g. 'listchars', 'fillchars', 'diffopt').
+- |system()| and |systemlist()| functions accept a list as first argument,
+  bypassing the shell completely.
 
 xxd ~
 ---

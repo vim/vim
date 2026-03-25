@@ -5915,6 +5915,154 @@ mch_call_shell(
 #endif
 }
 
+#if defined(FEAT_EVAL)
+/*
+ * Execute "argv" directly without the shell and return the output.
+ * Used by system() and systemlist() when the command is a List.
+ * "infile" is an optional temp file for stdin input.
+ * "flags" is SHELL_SILENT etc.
+ * When "ret_len" is not NULL, set it to the length of the output.
+ * Returns the output in allocated memory (or NULL on error).
+ * Sets v:shell_error to the exit status.
+ */
+    char_u *
+mch_get_cmd_output_direct(
+    char	**argv,
+    char_u	*infile,
+    int		flags UNUSED,
+    int		*ret_len)
+{
+    pid_t	pid;
+    int		fd_out[2] = {-1, -1};
+    int		status = -1;
+    char_u	*buffer = NULL;
+    garray_T	ga;
+    SIGSET_DECL(curset)
+
+    ga_init2(&ga, 1, 4096);
+
+    ch_log(NULL, "directly executing: %s", argv[0]);
+
+    if (pipe(fd_out) < 0)
+    {
+	emsg(_(e_cannot_create_pipes));
+	return NULL;
+    }
+
+    BLOCK_SIGNALS(&curset);
+    pid = fork();
+    if (pid == -1)
+    {
+	UNBLOCK_SIGNALS(&curset);
+	close(fd_out[0]);
+	close(fd_out[1]);
+	emsg(_("\nCannot fork\n"));
+	return NULL;
+    }
+
+    if (pid == 0)
+    {
+	// child process
+	reset_signals();
+	UNBLOCK_SIGNALS(&curset);
+
+	if (ch_log_active())
+	{
+	    ch_log(NULL, "closing channel log in the child process");
+	    ch_logfile((char_u *)"", (char_u *)"");
+	}
+
+	// Set up stdin.
+	if (infile != NULL)
+	{
+	    int fd_in = open((char *)infile, O_RDONLY);
+	    if (fd_in >= 0)
+	    {
+		close(0);
+		vim_ignored = dup(fd_in);
+		close(fd_in);
+	    }
+	}
+	else
+	{
+	    int nullfd = open("/dev/null", O_RDONLY);
+	    if (nullfd >= 0)
+	    {
+		close(0);
+		vim_ignored = dup(nullfd);
+		close(nullfd);
+	    }
+	}
+
+	// Set up stdout: write end of pipe.
+	close(fd_out[0]);
+	close(1);
+	vim_ignored = dup(fd_out[1]);
+	// Also redirect stderr to the pipe.
+	close(2);
+	vim_ignored = dup(fd_out[1]);
+	close(fd_out[1]);
+
+	execvp(argv[0], argv);
+	_exit(127);
+	// NOTREACHED
+    }
+
+    // parent process
+    UNBLOCK_SIGNALS(&curset);
+    close(fd_out[1]);
+
+    // Read output from child.
+    for (;;)
+    {
+	char	buf[4096];
+	int	n;
+
+	n = (int)read(fd_out[0], buf, sizeof(buf));
+	if (n <= 0)
+	    break;
+	ga_grow(&ga, n);
+	mch_memmove((char *)ga.ga_data + ga.ga_len, buf, n);
+	ga.ga_len += n;
+    }
+    close(fd_out[0]);
+
+    // Wait for child to finish.
+    (void)waitpid(pid, &status, 0);
+    if (WIFEXITED(status))
+	status = WEXITSTATUS(status);
+    else
+	status = -1;
+    set_vim_var_nr(VV_SHELL_ERROR, (long)status);
+
+    if (ga.ga_len > 0)
+    {
+	buffer = alloc(ga.ga_len + 1);
+	if (buffer != NULL)
+	{
+	    mch_memmove(buffer, ga.ga_data, ga.ga_len);
+	    if (ret_len == NULL)
+	    {
+		int	i;
+
+		// Change NUL into SOH, otherwise the string is truncated.
+		for (i = 0; i < ga.ga_len; ++i)
+		    if (buffer[i] == NUL)
+			buffer[i] = 1;
+		buffer[ga.ga_len] = NUL;
+	    }
+	    else
+		*ret_len = ga.ga_len;
+	}
+    }
+    else if (ret_len != NULL)
+	*ret_len = 0;
+
+    ga_clear(&ga);
+    return buffer;
+}
+#endif
+
 #if defined(FEAT_JOB_CHANNEL)
     void
 mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
