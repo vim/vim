@@ -1513,7 +1513,10 @@ change_indent(
 	// Save new line
 	new_line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
 	if (new_line == NULL)
+	{
+	    vim_free(orig_line);
 	    return;
+	}
 
 	// We only put back the new line up to the cursor
 	new_line[curwin->w_cursor.col] = NUL;
