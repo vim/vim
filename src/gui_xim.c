@@ -189,11 +189,11 @@ static int im_preedit_cursor   = 0;	// cursor offset in characters
 static int im_preedit_trailing = 0;	// number of characters after cursor
 
 static unsigned long im_commit_handler_id  = 0;
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 static unsigned int  im_activatekey_keyval = GDK_KEY_VoidSymbol;
-#else
+#  else
 static unsigned int  im_activatekey_keyval = GDK_VoidSymbol;
-#endif
+#  endif
 static unsigned int  im_activatekey_state  = 0;
 
 static GtkWidget *preedit_window = NULL;
@@ -280,7 +280,7 @@ im_preedit_window_set_position(void)
     if (preedit_window == NULL)
 	return;
 
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
     // GTK4: positioning popup windows is limited.
     // Use a simpler approach - just place near the cursor.
     x = FILL_X(gui.col);
@@ -292,7 +292,7 @@ im_preedit_window_set_position(void)
     screen_width = 0;
     screen_height = 0;
     // GTK4 doesn't have gtk_window_move; preedit is shown in-place.
-#else
+#  else
     gui_gtk_get_screen_geom_of_win(gui.drawarea, 0, 0,
 			  &screen_x, &screen_y, &screen_width, &screen_height);
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
@@ -304,7 +304,7 @@ im_preedit_window_set_position(void)
     if (y + height > screen_y + screen_height)
 	y = screen_y + screen_height - height;
     gtk_window_move(GTK_WINDOW(preedit_window), x, y);
-#endif
+#  endif
 }
 
     static void
@@ -327,20 +327,20 @@ im_preedit_window_open(void)
 
     if (preedit_window == NULL)
     {
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 	preedit_window = gtk_window_new();
-#else
+#  else
 	preedit_window = gtk_window_new(GTK_WINDOW_POPUP);
-#endif
+#  endif
 	gtk_window_set_transient_for(GTK_WINDOW(preedit_window),
 						     GTK_WINDOW(gui.mainwin));
 	preedit_label = gtk_label_new("");
 	gtk_widget_set_name(preedit_label, "vim-gui-preedit-area");
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 	gtk_window_set_child(GTK_WINDOW(preedit_window), preedit_label);
-#else
+#  else
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
-#endif
+#  endif
     }
 
 #  if GTK_CHECK_VERSION(3,16,0)
@@ -359,15 +359,15 @@ im_preedit_window_open(void)
 	{
 	    // fontsize was given in points.  Convert it into that in pixels
 	    // to use with CSS.
-#ifdef USE_GTK4
+#   ifdef USE_GTK4
 	    // GTK4: assume 96 DPI as default
 	    fontsize = 96 * fontsize / 72;
-#else
+#   else
 	    GdkScreen * const screen
 		  = gdk_window_get_screen(gtk_widget_get_window(gui.mainwin));
 	    const gdouble dpi = gdk_screen_get_resolution(screen);
 	    fontsize = dpi * fontsize / 72;
-#endif
+#   endif
 	}
 	if (fontsize > 0)
 	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
@@ -390,15 +390,15 @@ im_preedit_window_open(void)
 		(gui.back_pixel >> 8) & 0xff,
 		gui.back_pixel & 0xff);
 
-#ifdef USE_GTK4
+#   ifdef USE_GTK4
 	gtk_css_provider_load_from_string(provider, css);
 	gtk_style_context_add_provider(context,
 				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
-#else
+#   else
 	gtk_css_provider_load_from_data(provider, css, -1, NULL);
 	gtk_style_context_add_provider(context,
 				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
-#endif
+#   endif
 
 	g_free(css);
 	g_free(fontsize_propval);
@@ -437,13 +437,13 @@ im_preedit_window_open(void)
 	layout = gtk_label_get_layout(GTK_LABEL(preedit_label));
 	pango_layout_get_pixel_size(layout, &w, &h);
 	h = MAX(h, gui.char_height);
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 	gtk_window_set_default_size(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show(preedit_window);
-#else
+#  else
 	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show_all(preedit_window);
-#endif
+#  endif
 
 	im_preedit_window_set_position();
     }
@@ -919,9 +919,9 @@ xim_init(void)
 #  endif
 
     g_return_if_fail(gui.drawarea != NULL);
-#ifndef USE_GTK4
+#  ifndef USE_GTK4
     g_return_if_fail(gtk_widget_get_window(gui.drawarea) != NULL);
-#endif
+#  endif
 
     xic = gtk_im_multicontext_new();
     g_object_ref(xic);
@@ -935,11 +935,11 @@ xim_init(void)
     g_signal_connect(G_OBJECT(xic), "preedit_end",
 		     G_CALLBACK(&im_preedit_end_cb), NULL);
 
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
     gtk_im_context_set_client_widget(xic, gui.drawarea);
-#else
+#  else
     gtk_im_context_set_client_window(xic, gtk_widget_get_window(gui.drawarea));
-#endif
+#  endif
 }
 
     void
@@ -962,7 +962,7 @@ im_shutdown(void)
     xim_has_preediting = FALSE;
 }
 
-#ifndef USE_GTK4
+#  ifndef USE_GTK4
 /*
  * Convert the string argument to keyval and state for GdkEventKey.
  * If str is valid return TRUE, otherwise FALSE.
@@ -1032,9 +1032,9 @@ im_xim_isvalid_imactivate(void)
 			       &im_activatekey_keyval,
 			       &im_activatekey_state);
 }
-#endif // !USE_GTK4
+#  endif // !USE_GTK4
 
-#ifndef USE_GTK4
+#  ifndef USE_GTK4
     static void
 im_synthesize_keypress(unsigned int keyval, unsigned int state)
 {
@@ -1062,7 +1062,7 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
 
     gdk_event_free((GdkEvent *)event);
 }
-#endif // !USE_GTK4
+#  endif // !USE_GTK4
 
     void
 xim_reset(void)
@@ -1082,11 +1082,11 @@ xim_reset(void)
 	{
 	    xim_set_focus(gui.in_focus);
 
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 	    im_shutdown();
 	    xim_init();
 	    xim_set_focus(gui.in_focus);
-#else
+#  else
 	    if (im_activatekey_keyval != GDK_VoidSymbol)
 	    {
 		if (im_is_active)
@@ -1103,7 +1103,7 @@ xim_reset(void)
 		xim_init();
 		xim_set_focus(gui.in_focus);
 	    }
-#endif
+#  endif
 	}
     }
 
@@ -1112,13 +1112,13 @@ xim_reset(void)
     xim_has_preediting = FALSE;
 }
 
-#ifndef USE_GTK4
+#  ifndef USE_GTK4
     int
 xim_queue_key_press_event(GdkEventKey *event, int down)
 {
-#  ifdef FEAT_GUI_GTK
+#   ifdef FEAT_GUI_GTK
     if (event->state & GDK_SUPER_MASK) return FALSE;
-#  endif
+#   endif
     if (down)
     {
 	// Workaround GTK2 XIM 'feature' that always converts keypad keys to
@@ -1247,7 +1247,7 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 
     return FALSE;
 }
-#else // USE_GTK4
+#  else // USE_GTK4
 // GTK4: xim_queue_key_press_event is not needed because we use
 // gtk_im_context_filter_keypress() directly in key_press_event.
     int
@@ -1261,7 +1261,7 @@ xim_queue_key_press_event(GdkEvent *event UNUSED, int down UNUSED)
 {
     return FALSE;
 }
-#endif // !USE_GTK4
+#  endif // !USE_GTK4
 
     int
 im_get_status(void)
