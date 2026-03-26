@@ -345,8 +345,10 @@ im_preedit_window_open(void)
 
 #  if GTK_CHECK_VERSION(3,16,0)
     {
+#   ifndef USE_GTK4
 	GtkStyleContext * const context
 				  = gtk_widget_get_style_context(preedit_label);
+#   endif
 	GtkCssProvider * const provider = gtk_css_provider_new();
 	gchar		   *css = NULL;
 	const char * const fontname
@@ -392,8 +394,9 @@ im_preedit_window_open(void)
 
 #   ifdef USE_GTK4
 	gtk_css_provider_load_from_string(provider, css);
-	gtk_style_context_add_provider(context,
-				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
+	gtk_style_context_add_provider_for_display(
+		gdk_display_get_default(),
+		GTK_STYLE_PROVIDER(provider), G_MAXUINT);
 #   else
 	gtk_css_provider_load_from_data(provider, css, -1, NULL);
 	gtk_style_context_add_provider(context,
@@ -439,7 +442,7 @@ im_preedit_window_open(void)
 	h = MAX(h, gui.char_height);
 #  ifdef USE_GTK4
 	gtk_window_set_default_size(GTK_WINDOW(preedit_window), w, h);
-	gtk_widget_show(preedit_window);
+	gtk_widget_set_visible(preedit_window, TRUE);
 #  else
 	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show_all(preedit_window);
@@ -456,7 +459,11 @@ im_preedit_window_open(void)
 im_preedit_window_close(void)
 {
     if (preedit_window != NULL)
+#ifdef USE_GTK4
+	gtk_widget_set_visible(preedit_window, FALSE);
+#else
 	gtk_widget_hide(preedit_window);
+#endif
 }
 
     static void
