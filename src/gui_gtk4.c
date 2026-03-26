@@ -2886,18 +2886,6 @@ mch_set_mouse_shape(int shape UNUSED)
 
 #endif // FEAT_MOUSESHAPE
 
-// GTK4 does not have GtkMenuShell
-    GType
-GTK_MENU_SHELL(void *widget UNUSED)
-{
-    return G_TYPE_NONE;
-}
-
-    void
-gtk_menu_shell_select_first(void *shell UNUSED, gboolean sr UNUSED)
-{
-    // GTK4: no menu shell
-}
 
 
 /*
