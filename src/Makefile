@@ -1307,7 +1307,7 @@ HAIKUGUI_BUNDLE =
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
 
@@ -4817,6 +4817,7 @@ proto/winclip.pro: winclip.c
 proto/window.pro: window.c
 proto/gui.pro: gui.c
 proto/gui_gtk.pro: gui_gtk.c
+proto/gui_gtk4.pro: gui_gtk4.c
 proto/gui_motif.pro: gui_motif.c
 proto/gui_xmdlg.pro: gui_xmdlg.c
 proto/gui_gtk_x11.pro: gui_gtk_x11.c
