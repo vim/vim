@@ -5309,6 +5309,7 @@ set_callback(callback_T *dest, callback_T *src)
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
     }
+    *src = (callback_T){0};
 }
 
 /*
