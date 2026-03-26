@@ -6993,10 +6993,10 @@ select_eintr:
 	if (finished || msec == 0)
 	    break;
 
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+#  if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
 	if (clientserver_method == CLIENTSERVER_METHOD_X11 && server_waiting())
 	    break;
-# endif
+#  endif
 
 	// We're going to loop around again, find out for how long
 	if (msec > 0)

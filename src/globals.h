@@ -2101,12 +2101,15 @@ EXTERN int wayland_no_connect INIT(= FALSE);
 // Backend for clientserver functionality
 typedef enum {
     CLIENTSERVER_METHOD_NONE,
+# ifdef FEAT_X11
     CLIENTSERVER_METHOD_X11,
+# endif
+# ifdef FEAT_MSWIN
     CLIENTSERVER_METHOD_MSWIN,
+# endif
     CLIENTSERVER_METHOD_SOCKET
 } clientserver_method_T;
 
-#if defined(FEAT_CLIENTSERVER)
 EXTERN clientserver_method_T clientserver_method
 
 # ifdef FEAT_X11
@@ -2118,8 +2121,6 @@ INIT(= CLIENTSERVER_METHOD_SOCKET);
 # else
 INIT(= CLIENTSERVER_METHOD_NONE);
 # endif
-
-#endif
 
 #endif
 
