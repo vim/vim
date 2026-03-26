@@ -223,6 +223,10 @@ gui_mch_prepare(int *argc, char **argv)
     if (g_getenv("GSK_RENDERER") == NULL)
 	g_setenv("GSK_RENDERER", "cairo", FALSE);
 
+    // Suppress noisy EGL warnings when GL is not available.
+    if (g_getenv("EGL_LOG_LEVEL") == NULL)
+	setenv("EGL_LOG_LEVEL", "fatal", 0);
+
     // If GDK_BACKEND is not set and both X11 and Wayland are available,
     // prefer X11 for now.  Wayland support in GTK4 has issues with
     // keyboard layout detection on some platforms (e.g., WSL2).
