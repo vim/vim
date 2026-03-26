@@ -2996,6 +2996,13 @@ if test -z "$SKIP_GTK4"; then
       GUITYPE=GTK4
       AC_SUBST(GTK_LIBNAME)
       AC_DEFINE(USE_GTK4)
+      dnl GTK4 does not use any X11 APIs directly.
+      dnl GTK4 itself links against X11 for its backend, so the
+      dnl dynamic linker resolves X11 symbols via GTK4's dependency.
+      X_LIBS=
+      X_PRE_LIBS=
+      X_EXTRA_LIBS=
+      X_LIB=
       dnl automatically enable XIM for GTK4
       if test "$enable_xim" = "auto"; then
         enable_xim="yes"

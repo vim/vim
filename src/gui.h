@@ -16,14 +16,13 @@
 #  include "gui_gtk_vms.h"
 # endif
 # ifdef USE_GTK4
-#  ifdef HAVE_X11
-#   include <X11/Xlib.h>
-#   include <X11/Xatom.h>
-// Types used in proto files but not available in GTK4
+// Types used in proto files but not available without X11 headers
 typedef void *Widget;
 typedef void *XtAppContext;
+typedef void  Display;
+typedef unsigned long Window;
+typedef unsigned long Atom;
 typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
-#  endif
 # else
 #  include <X11/Intrinsic.h>
 # endif

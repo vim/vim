@@ -30,9 +30,82 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
 
-#ifdef HAVE_X11
-# include <X11/Xutil.h>
-#endif
+/*
+ * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
+ * Format: [WIDTHxHEIGHT][{+-}XOFF{+-}YOFF]
+ */
+#define NoValue		0x0000
+#define XValue		0x0001
+#define YValue		0x0002
+#define WidthValue	0x0004
+#define HeightValue	0x0008
+#define XNegative	0x0010
+#define YNegative	0x0020
+
+    static int
+vim_parse_geometry(const char *str, int *x, int *y,
+	unsigned int *width, unsigned int *height)
+{
+    int mask = NoValue;
+    char *end;
+
+    if (str == NULL || *str == NUL)
+	return mask;
+
+    // Parse width
+    if (*str != '+' && *str != '-')
+    {
+	*width = (unsigned int)strtol(str, &end, 10);
+	if (end != str)
+	{
+	    mask |= WidthValue;
+	    str = end;
+	}
+    }
+
+    // Parse 'x' or 'X' separator and height
+    if (*str == 'x' || *str == 'X')
+    {
+	str++;
+	*height = (unsigned int)strtol(str, &end, 10);
+	if (end != str)
+	{
+	    mask |= HeightValue;
+	    str = end;
+	}
+    }
+
+    // Parse x offset
+    if (*str == '+' || *str == '-')
+    {
+	if (*str == '-')
+	    mask |= XNegative;
+	str++;
+	*x = (int)strtol(str, &end, 10);
+	if (mask & XNegative)
+	    *x = -*x;
+	if (end != str)
+	{
+	    mask |= XValue;
+	    str = end;
+	}
+    }
+
+    // Parse y offset
+    if (*str == '+' || *str == '-')
+    {
+	if (*str == '-')
+	    mask |= YNegative;
+	str++;
+	*y = (int)strtol(str, &end, 10);
+	if (mask & YNegative)
+	    *y = -*y;
+	if (end != str)
+	    mask |= YValue;
+    }
+
+    return mask;
+}
 
 #ifdef FEAT_SOCKETSERVER
 # include <glib-unix.h>
@@ -227,11 +300,7 @@ gui_mch_prepare(int *argc, char **argv)
     if (g_getenv("EGL_LOG_LEVEL") == NULL)
 	setenv("EGL_LOG_LEVEL", "fatal", 0);
 
-    // If GDK_BACKEND is not set and both X11 and Wayland are available,
-    // prefer X11 for now.  Wayland support in GTK4 has issues with
-    // keyboard layout detection on some platforms (e.g., WSL2).
-    if (g_getenv("GDK_BACKEND") == NULL && g_getenv("DISPLAY") != NULL)
-	g_setenv("GDK_BACKEND", "x11", FALSE);
+    // Let GTK4 choose the best backend (Wayland or X11).
 
     gtk_init();
 }
@@ -549,7 +618,7 @@ gui_mch_open(void)
 	int		x = 0;
 	int		y = 0;
 
-	mask = XParseGeometry((char *)gui.geom, &x, &y, &w, &h);
+	mask = vim_parse_geometry((char *)gui.geom, &x, &y, &w, &h);
 
 	if (mask & WidthValue)
 	    Columns = w;
