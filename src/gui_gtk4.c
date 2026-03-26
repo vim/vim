@@ -3123,10 +3123,14 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     void
 gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 {
-    if (sb->id == NULL || !GTK_IS_RANGE(sb->id))
+    GtkAdjustment *adj;
+
+    if (sb->id == NULL)
+	return;
+    if (!GTK_IS_WIDGET(sb->id) || !GTK_IS_RANGE(sb->id))
 	return;
 
-    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(sb->id));
+    adj = gtk_range_get_adjustment(GTK_RANGE(sb->id));
     gtk_adjustment_set_lower(adj, 0.0);
     gtk_adjustment_set_upper(adj, (gdouble)max + 1);
     gtk_adjustment_set_value(adj, (gdouble)val);
@@ -3192,15 +3196,18 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
     else
 	sb->id = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);
 
-    if (sb->id != NULL)
+    if (sb->id != NULL && GTK_IS_RANGE(sb->id))
     {
 	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
 	gtk_widget_set_visible(sb->id, FALSE);
 	gui_gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
-	g_object_set_data(G_OBJECT(adj), "vim-sb", (gpointer)sb);
-	g_signal_connect(G_OBJECT(adj), "value-changed",
-		G_CALLBACK(adjustment_value_changed), NULL);
+	if (adj != NULL && G_IS_OBJECT(adj))
+	{
+	    g_object_set_data(G_OBJECT(adj), "vim-sb", (gpointer)sb);
+	    g_signal_connect(G_OBJECT(adj), "value-changed",
+		    G_CALLBACK(adjustment_value_changed), NULL);
+	}
     }
 }
 
