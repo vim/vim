@@ -2496,10 +2496,11 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     return cells;
 }
 
-    void
+    int
 gui_get_x11_windis(Window *win UNUSED, Display **dis UNUSED)
 {
     // GTK4: not applicable
+    return FAIL;
 }
 
 #if defined(FEAT_SOCKETSERVER)
