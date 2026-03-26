@@ -86,8 +86,6 @@ void gui_mch_disable_beval_area(BalloonEval *beval);
 guint gtk_main_level(void);
 void gtk_main_quit(void);
 void mch_set_mouse_shape(int shape);
-GType GTK_MENU_SHELL(void *widget);
-void gtk_menu_shell_select_first(void *shell, gboolean sr);
 void gui_mch_add_menu(vimmenu_T *menu, int idx);
 void gui_mch_add_menu_item(vimmenu_T *menu, int idx);
 void gui_mch_toggle_tearoffs(int enable);
