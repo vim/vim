@@ -3040,6 +3040,7 @@ popup_hide(win_T *wp)
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
     redraw_all_later(UPD_NOT_VALID);
+    status_redraw_all();
     popup_mask_refresh = TRUE;
 }
 
@@ -3203,6 +3204,7 @@ popup_free(win_T *wp)
 #endif
 
     redraw_all_later(UPD_NOT_VALID);
+    status_redraw_all();
     popup_mask_refresh = TRUE;
 }
 
