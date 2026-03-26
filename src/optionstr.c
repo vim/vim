@@ -3787,7 +3787,6 @@ did_set_pumopt(optset_T *args)
 
     // Reset to defaults.
     PUM_BORDER_CLEAR();
-    pum_set_border_chars(0, 0, 0, 0, 0, 0, 0, 0);
     p_ph = 0;
     p_pw = 15;
     p_pmw = 0;
@@ -3868,7 +3867,6 @@ did_set_pumopt(optset_T *args)
 
 error:
     PUM_BORDER_CLEAR();
-    pum_set_border_chars(0, 0, 0, 0, 0, 0, 0, 0);
     p_ph = 0;
     p_pw = 15;
     p_pmw = 0;
