@@ -5296,19 +5296,12 @@ put_callback(callback_T *cb, typval_T *tv)
     void
 set_callback(callback_T *dest, callback_T *src)
 {
-    if (src->cb_partial == NULL)
+    *dest = *src;
+    if (src->cb_partial == NULL && !src->cb_free_name)
     {
-	// just a function name, make a copy
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
     }
-    else
-    {
-	// cb_name is a pointer into cb_partial
-	dest->cb_name = src->cb_name;
-	dest->cb_free_name = FALSE;
-    }
-    dest->cb_partial = src->cb_partial;
 }
 
 /*
