@@ -3099,7 +3099,11 @@ call_oc_method(
     char_u *argp = name_end;
     int ret = get_func_arguments(&argp, evalarg, 0, argvars, &argcount, FALSE);
     if (ret == FAIL)
+    {
+	while (--argcount >= 0)
+	    clear_tv(&argvars[argcount]);
 	return FAIL;
+    }
 
     funcexe_T funcexe;
     CLEAR_FIELD(funcexe);
