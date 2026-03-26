@@ -1165,7 +1165,7 @@ func Test_popup_with_showbreak()
   CheckScreendump
 
   let lines =<< trim END
-	 set showbreak=>>\ 
+	 let &showbreak ='>> '
 	 call setline(1, range(1, 20))
 	 let winid = popup_dialog(
 	   \ 'a long line here that wraps',
