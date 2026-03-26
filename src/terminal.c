@@ -3326,7 +3326,9 @@ handle_movecursor(
 	    position_cursor(wp, &pos);
     }
     if (term->tl_buffer == curbuf && !term->tl_normal_mode)
-	update_cursor(term, term->tl_cursor_visible);
+	// Don't redraw here, it will be done after
+	// vterm_input_write() is finished.
+	update_cursor(term, FALSE);
 
     return 1;
 }
@@ -4956,6 +4958,7 @@ create_vterm(term_T *term, int rows, int cols)
     }
 
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    vterm_screen_set_damage_merge(screen, VTERM_DAMAGE_SCROLL);
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
