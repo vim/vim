@@ -1634,7 +1634,6 @@ func Test_visual_block_hl_with_autoselect()
   call writefile(lines, 'XTest_visual_block_autoselect', 'D')
 
   let buf = RunVimInTerminal('-S XTest_visual_block_autoselect', {'rows': 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_1', {})
   call term_sendkeys(buf, 'l')
   call VerifyScreenDump(buf, 'Test_visual_block_hl_with_autoselect_2', {})
