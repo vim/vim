@@ -3845,6 +3845,13 @@ win_do_lines(
     if (!no_win_do_lines_ins)
 	clear_cmdline = TRUE;
 
+#if defined(FEAT_TABPANEL)
+    // Terminal scroll operations affect the full screen width, which would
+    // corrupt the vertical tabpanel area and cause flicker.
+    if (tabpanel_width() > 0)
+	return FAIL;
+#endif
+
     /*
      * If the terminal can set a scroll region, use that.
      * Always do this in a vertically split window.  This will redraw from
