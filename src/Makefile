@@ -1233,9 +1233,9 @@ GTK_TESTTARGET  = gui
 GTK_BUNDLE	=
 
 ### GTK4 GUI
-GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_x11.c gui_gtk4_f.c \
+GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
 			$(GRESOURCE_SRC)
-GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o objects/gui_gtk4_x11.o \
+GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
 			objects/gui_gtk4_f.o \
 			$(GRESOURCE_OBJ)
 GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
@@ -1306,7 +1306,7 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_x11.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
 ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
@@ -3383,8 +3383,6 @@ objects/gui_gtk4.o: gui_gtk4.c
 objects/gui_gtk4_f.o: gui_gtk4_f.c
 	$(CCC) -o $@ gui_gtk4_f.c
 
-objects/gui_gtk4_x11.o: gui_gtk4_x11.c
-	$(CCC) -o $@ gui_gtk4_x11.c
 
 objects/gui_haiku.o: gui_haiku.cc
 	$(CCC) -o $@ gui_haiku.cc
