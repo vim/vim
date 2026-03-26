@@ -672,7 +672,7 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
-    gtk_widget_show(gui.mainwin);
+    gtk_widget_set_visible(gui.mainwin, TRUE);
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
@@ -2136,12 +2136,12 @@ gui_mch_update_tabline(void)
 	if (page == NULL)
 	{
 	    page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	    gtk_widget_show(page);
+	    gtk_widget_set_visible(page, TRUE);
 	    event_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	    gtk_widget_show(event_box);
+	    gtk_widget_set_visible(event_box, TRUE);
 	    label = gtk_label_new("-Empty-");
 	    gtk_box_append(GTK_BOX(event_box), label);
-	    gtk_widget_show(label);
+	    gtk_widget_set_visible(label, TRUE);
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page, event_box, nr++);
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
