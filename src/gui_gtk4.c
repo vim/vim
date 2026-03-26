@@ -676,6 +676,7 @@ gui_mch_open(void)
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
+    gui_focus_change(TRUE);
 
     return OK;
 }
@@ -2345,6 +2346,19 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 		glyphs->log_clusters[i] = i;
 	    }
 	    column_offset = len;
+
+	    // Draw foreground text
+	    cairo_set_source_rgba(cr,
+		    gui.fgcolor->red, gui.fgcolor->green,
+		    gui.fgcolor->blue, gui.fgcolor->alpha);
+	    cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
+	    pango_cairo_show_glyph_string(cr, font, glyphs);
+
+	    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
+	    {
+		cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
+		pango_cairo_show_glyph_string(cr, font, glyphs);
+	    }
 	}
 	else
 	{
@@ -2364,56 +2378,64 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 	    item_list = pango_itemize(gui.text_context,
 			    (const char *)s, 0, len, attr_list, NULL);
 
-	    if (item_list != NULL)
+	    // Draw foreground text
+	    cairo_set_source_rgba(cr,
+		    gui.fgcolor->red, gui.fgcolor->green,
+		    gui.fgcolor->blue, gui.fgcolor->alpha);
+
 	    {
-		PangoItem *item = (PangoItem *)item_list->data;
+		GList *item_iter;
+		int col_offset = 0;
 
-		font = item->analysis.font;
-		pango_shape((const char *)s, len, &item->analysis, glyphs);
-
-		// Force each glyph to char_width
+		for (item_iter = item_list; item_iter != NULL;
+			item_iter = item_iter->next)
 		{
+		    PangoItem *item = (PangoItem *)item_iter->data;
+		    int item_cells = 0;
 		    int i;
-		    int width = gui.char_width * PANGO_SCALE;
+		    int base_width = gui.char_width * PANGO_SCALE;
 
+		    pango_shape((const char *)s + item->offset,
+			    item->length, &item->analysis, glyphs);
+
+		    // Adjust glyph widths for cell alignment
 		    for (i = 0; i < glyphs->num_glyphs; ++i)
 		    {
-			PangoGlyphGeometry *geom = &glyphs->glyphs[i].geometry;
-			geom->x_offset += MAX(0, width - geom->width) / 2;
-			geom->width = width;
+			PangoGlyphGeometry *geom;
+			int byte_offset;
+			int cell_w;
+
+			geom = &glyphs->glyphs[i].geometry;
+			byte_offset = item->offset + glyphs->log_clusters[i];
+			cell_w = utf_ptr2cells(s + byte_offset);
+			item_cells += cell_w;
+			cell_w *= base_width;
+			geom->x_offset += MAX(0, cell_w - geom->width) / 2;
+			geom->width = cell_w;
 		    }
+
+		    cairo_move_to(cr,
+			    TEXT_X(col + col_offset), TEXT_Y(row));
+		    pango_cairo_show_glyph_string(cr,
+			    item->analysis.font, glyphs);
+
+		    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
+		    {
+			cairo_move_to(cr,
+				TEXT_X(col + col_offset) + 1, TEXT_Y(row));
+			pango_cairo_show_glyph_string(cr,
+				item->analysis.font, glyphs);
+		    }
+
+		    col_offset += item_cells;
 		}
-		column_offset = cells;
-
-		g_list_foreach(item_list,
-			(GFunc)(void *)&pango_item_free, NULL);
-		g_list_free(item_list);
+		column_offset = col_offset;
 	    }
-	    else
-		font = gui.ascii_font;
 
+	    g_list_foreach(item_list,
+		    (GFunc)(void *)&pango_item_free, NULL);
+	    g_list_free(item_list);
 	    pango_attr_list_unref(attr_list);
-	}
-
-	// Draw background
-	if (!(flags & DRAW_TRANSP))
-	{
-	    // Already drawn above
-	}
-
-	// Draw foreground text
-	cairo_set_source_rgba(cr,
-		gui.fgcolor->red, gui.fgcolor->green,
-		gui.fgcolor->blue, gui.fgcolor->alpha);
-	cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
-	if (font != NULL)
-	    pango_cairo_show_glyph_string(cr, font, glyphs);
-
-	// Emulate bold by drawing with offset
-	if ((flags & DRAW_BOLD) && !gui.font_can_bold && font != NULL)
-	{
-	    cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
-	    pango_cairo_show_glyph_string(cr, font, glyphs);
 	}
 
 	pango_glyph_string_free(glyphs);
