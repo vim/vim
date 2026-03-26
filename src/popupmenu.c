@@ -406,11 +406,17 @@ pum_call_update_screen(void)
     int
 pum_under_menu(int row, int col, int only_redrawing)
 {
+    int	extra_left = pum_border + (pum_margin && pum_border ? 1 : 0);
+    int	extra_right = pum_border + (pum_margin && pum_border ? 1 : 0)
+						+ (pum_shadow ? 2 : 0);
+    int	extra_above = pum_border;
+    int	extra_below = pum_border + (pum_shadow ? 1 : 0);
+
     return (!only_redrawing || pum_will_redraw)
-	    && row >= pum_row
-	    && row < pum_row + pum_height
-	    && col >= pum_col - 1
-	    && col < pum_col + pum_width + pum_scrollbar;
+	    && row >= pum_row - extra_above
+	    && row < pum_row + pum_height + extra_below
+	    && col >= pum_col - 1 - extra_left
+	    && col < pum_col + pum_width + pum_scrollbar + extra_right;
 }
 
 /*
@@ -1073,15 +1079,17 @@ pum_redraw(void)
     screen_zindex = POPUPMENU_ZINDEX;
 #endif
 
-    // Set blend for screen_puts_len / screen_fill to use.
-    if (opacity_active)
-	screen_pum_blend = 100 - (int)p_po;
-
-    // Draw border and shadow first if enabled
+    // Draw border and shadow first if enabled, before setting blend
+    // so that border/shadow characters are drawn without opacity.
     if (pum_border)
 	pum_draw_border();
     if (pum_shadow)
 	pum_draw_shadow();
+
+    // Set blend for screen_puts_len / screen_fill to use.
+    // Only the pum content area should be blended, not border/shadow.
+    if (opacity_active)
+	screen_pum_blend = 100 - (int)p_po;
 
     for (i = 0; i < pum_height; ++i)
     {

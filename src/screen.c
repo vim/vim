@@ -1772,17 +1772,6 @@ screen_puts_len(
 		ScreenLines[off + mbyte_blen] = 0;
 	    ScreenLines[off] = c;
 	    ScreenAttrs[off] = attr;
-	    // For pum opacity: blend text background with underlying.
-	    if (screen_pum_blend > 0
-		    && pum_bg_attrs != NULL
-		    && row >= pum_bg_top && row < pum_bg_bot
-		    && col < pum_bg_cols)
-	    {
-		int soff = (row - pum_bg_top) * pum_bg_cols + col;
-
-		ScreenAttrs[off] = hl_blend_attr(pum_bg_attrs[soff],
-					    attr, screen_pum_blend, FALSE);
-	    }
 	    ScreenCols[off] = -1;
 	    if (enc_utf8)
 	    {
