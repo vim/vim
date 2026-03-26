@@ -496,7 +496,9 @@ free_all_mem(void)
 
 	set_bufref(&bufref, buf);
 	nextbuf = buf->b_next;
-	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE);
+	// All windows were freed.  Reset b_nwindows so buffers can be wiped.
+	buf->b_nwindows = 0;
+	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE, FALSE);
 	if (bufref_valid(&bufref))
 	    buf = nextbuf;	// didn't work, try next one
 	else

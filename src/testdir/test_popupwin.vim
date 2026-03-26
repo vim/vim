@@ -5063,4 +5063,20 @@ func Test_popup_opacity_vsplit()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_close_b_nwindows()
+  edit Xfoo
+  setlocal bufhidden=wipe
+  let &charconvert = 'win_execute(win_getid(1), ''call popup_clear()'') || 1'
+  let popup = popup_create(bufnr(), {})
+  edit Xbar
+  call assert_equal('Xfoo', winbufnr(popup)->bufname())
+  call assert_fails('call win_execute(popup, ''write ++enc=a b'')', ['E937:', 'E513:'])
+
+  set charconvert&
+  call popup_clear()
+  %bw!
+  " b_nwindows used to be 2 here, preventing Xfoo from being wiped.
+  call assert_equal(0, bufexists('Xfoo'))
+endfunc
+
 " vim: shiftwidth=2 sts=2
