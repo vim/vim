@@ -472,6 +472,7 @@ runtime/syntax/shared/hgcommitDiff.vim			@vegerot
 runtime/syntax/abaqus.vim				@costerwi
 runtime/syntax/abnf.vim					@A4-Tacks
 runtime/syntax/aidl.vim					@dpelle
+runtime/syntax/amiga.vim				@sodero
 runtime/syntax/ant.vim					@dkearns
 runtime/syntax/antlr4.vim				@jiangyinzuo
 runtime/syntax/arduino.vim				@johshoff
