@@ -1255,12 +1255,14 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
     return FALSE;
 }
 #  else // USE_GTK4
-// GTK4: xim_queue_key_press_event is not needed because we use
-// gtk_im_context_filter_keypress() directly in key_press_event.
+// GTK4: imactivatekey is not supported because GTK4's GtkIMContext
+// does not allow synthesizing key events for IM activation.
     int
 im_xim_isvalid_imactivate(void)
 {
-    return TRUE;
+    // Empty string is always valid (means no activation key).
+    // Any other value is not supported in GTK4.
+    return p_imak[0] == NUL;
 }
 
     int
