@@ -209,7 +209,6 @@ static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
-static void mainwin_notify_size_cb(GObject *obj, GParamSpec *pspec, gpointer data);
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -402,18 +401,27 @@ gui_mch_init(void)
     gtk_box_append(GTK_BOX(vbox), gui.tabline);
 #endif
 
-    // The form widget manages absolute positioning of drawarea + scrollbars.
+    // The form widget manages absolute positioning of scrollbars.
     gui.formwin = gui_gtk_form_new();
     gtk_widget_set_name(gui.formwin, "vim-gtk-form");
-    gtk_widget_set_vexpand(gui.formwin, TRUE);
-    gtk_widget_set_hexpand(gui.formwin, TRUE);
-    gtk_box_append(GTK_BOX(vbox), gui.formwin);
 
     // The drawing area for the editor content.
+    // Placed in an overlay so it fills the formwin, with scrollbars on top.
     gui.drawarea = gtk_drawing_area_new();
     gui.surface = NULL;
     gtk_widget_set_focusable(gui.drawarea, TRUE);
-    gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
+    gtk_widget_set_vexpand(gui.drawarea, TRUE);
+    gtk_widget_set_hexpand(gui.drawarea, TRUE);
+
+    {
+	// Use GtkOverlay: drawarea as the main child, formwin as overlay
+	GtkWidget *overlay = gtk_overlay_new();
+	gtk_overlay_set_child(GTK_OVERLAY(overlay), gui.drawarea);
+	gtk_overlay_add_overlay(GTK_OVERLAY(overlay), gui.formwin);
+	gtk_widget_set_vexpand(overlay, TRUE);
+	gtk_widget_set_hexpand(overlay, TRUE);
+	gtk_box_append(GTK_BOX(vbox), overlay);
+    }
 
     // Set up drawing.
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
@@ -589,14 +597,7 @@ gui_mch_open(void)
 
     g_signal_connect(G_OBJECT(gui.mainwin), "destroy",
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-width",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::default-height",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::maximized",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.mainwin), "notify::fullscreened",
-		     G_CALLBACK(mainwin_notify_size_cb), NULL);
+    // Resize is handled by GtkForm's size_allocate callback.
 
     gtk_widget_show(gui.mainwin);
 
@@ -662,16 +663,15 @@ gui_mch_set_shellsize(int width, int height,
 	int base_width UNUSED, int base_height UNUSED,
 	int direction UNUSED)
 {
-    if (in_set_shellsize)
-	return;
-    in_set_shellsize = TRUE;
-
-    // Add menu/toolbar size
-    width += get_menu_tool_width();
-    height += get_menu_tool_height();
-
-    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
-    in_set_shellsize = FALSE;
+    // Only set window size if it hasn't been shown yet (initial sizing).
+    // After that, the window size is controlled by the user/WM and
+    // Vim adapts to it via form_size_allocate -> gui_resize_shell.
+    if (!gtk_widget_get_realized(gui.mainwin))
+    {
+	width += get_menu_tool_width();
+	height += get_menu_tool_height();
+	gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+    }
 }
 
     void
@@ -1120,6 +1120,28 @@ gui_mch_get_rgb(guicolor_T pixel)
 draw_event(GtkDrawingArea *area UNUSED, cairo_t *cr,
 	int width, int height, gpointer data UNUSED)
 {
+    // Ensure surface matches drawing area
+    if (gui.surface != NULL)
+    {
+	int sw = cairo_image_surface_get_width(gui.surface);
+	int sh = cairo_image_surface_get_height(gui.surface);
+	if (sw != width || sh != height)
+	{
+	    cairo_surface_t *old = gui.surface;
+	    gui.surface = cairo_image_surface_create(
+		    CAIRO_FORMAT_ARGB32, width, height);
+	    // Copy old content
+	    cairo_t *tmp = cairo_create(gui.surface);
+	    cairo_set_source_surface(tmp, old, 0, 0);
+	    cairo_paint(tmp);
+	    cairo_destroy(tmp);
+	    cairo_surface_destroy(old);
+	}
+    }
+    else if (width > 0 && height > 0)
+	gui.surface = cairo_image_surface_create(
+		CAIRO_FORMAT_ARGB32, width, height);
+
     // Fill background with Vim's background color
     guicolor_T bg = gui.back_pixel;
     cairo_set_source_rgb(cr,
@@ -1695,52 +1717,6 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 
     // Notify Vim about the new size - this will cause a full redraw
     gui_resize_shell(width, height);
-}
-
-static guint resize_idle_id = 0;
-
-    static gboolean
-resize_idle_cb(gpointer data UNUSED)
-{
-    static int cur_width = 0;
-    static int cur_height = 0;
-    int w, h;
-
-    resize_idle_id = 0;
-
-    if (gui.formwin == NULL)
-	return FALSE;
-
-    w = gtk_widget_get_width(gui.formwin);
-    h = gtk_widget_get_height(gui.formwin);
-
-    if (w <= 1 || h <= 1)
-	return FALSE;
-
-    if (w == cur_width && h == cur_height)
-	return FALSE;
-    cur_width = w;
-    cur_height = h;
-
-    // Shrink drawarea's size request so the window can shrink.
-    // Without this, set_size_request prevents GTK from making
-    // the drawarea smaller than its previous size.
-    gtk_widget_set_size_request(gui.drawarea, 1, 1);
-    gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(gui.drawarea), 1);
-    gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(gui.drawarea), 1);
-
-    gui_resize_shell(w, h);
-    return FALSE;
-}
-
-    static void
-mainwin_notify_size_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
-	gpointer data UNUSED)
-{
-    if (in_set_shellsize)
-	return;
-    if (resize_idle_id == 0)
-	resize_idle_id = g_idle_add(resize_idle_cb, NULL);
 }
 
 #ifdef FEAT_DND
