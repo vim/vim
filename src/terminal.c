@@ -3736,10 +3736,10 @@ term_after_channel_closed(term_T *term)
 		if (is_aucmd_win(wp))
 		    do_set_w_locked = TRUE;
 		if (do_set_w_locked)
-		    wp->w_locked = TRUE;
+		    ++wp->w_locked;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
 		if (do_set_w_locked)
-		    wp->w_locked = FALSE;
+		    --wp->w_locked;
 		aucmd_restbuf(&aco);
 	    }
 #ifdef FEAT_PROP_POPUP

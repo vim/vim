@@ -2717,10 +2717,10 @@ win_close_buffer(win_T *win, int action, int abort_if_last)
 	bufref_T    bufref;
 
 	set_bufref(&bufref, curbuf);
-	win->w_locked = TRUE;
+	++win->w_locked;
 	close_buffer(win, win->w_buffer, action, abort_if_last, TRUE, TRUE);
 	if (win_valid_any_tab(win))
-	    win->w_locked = FALSE;
+	    --win->w_locked;
 	// Make sure curbuf is valid. It can become invalid if 'bufhidden' is
 	// "wipe".
 	if (!bufref_valid(&bufref))
@@ -2823,19 +2823,19 @@ win_close(win_T *win, int free_buf)
 	    other_buffer = TRUE;
 	    if (!win_valid(win))
 		return FAIL;
-	    win->w_locked = TRUE;
+	    ++win->w_locked;
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
 	    if (!win_valid(win))
 		return FAIL;
-	    win->w_locked = FALSE;
+	    --win->w_locked;
 	    if (last_window())
 		return FAIL;
 	}
-	win->w_locked = TRUE;
+	++win->w_locked;
 	apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
 	if (!win_valid(win))
 	    return FAIL;
-	win->w_locked = FALSE;
+	--win->w_locked;
 	if (last_window())
 	    return FAIL;
 #ifdef FEAT_EVAL
