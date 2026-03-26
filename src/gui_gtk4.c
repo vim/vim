@@ -433,10 +433,11 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
     last_text_area_w = w;
     last_text_area_h = h;
-    gui_gtk_form_move_resize(GTK_FORM(gui.formwin), gui.drawarea, x, y, w, h);
-    // Force immediate size allocation for drawarea
-    gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(gui.drawarea), w);
-    gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(gui.drawarea), h);
+    // Don't use gui_gtk_form_move_resize for drawarea because its
+    // set_size_request would prevent the window from shrinking.
+    // Just update position; the actual allocation is handled by
+    // form_size_allocate which gives drawarea the formwin's full size.
+    gui_gtk_form_move(GTK_FORM(gui.formwin), gui.drawarea, x, y);
 
     // Update surface to match new text area size
     if (w > 0 && h > 0)

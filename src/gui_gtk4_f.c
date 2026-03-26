@@ -198,8 +198,31 @@ form_measure(
     *natural_baseline = -1;
 }
 
+static guint form_resize_idle_id = 0;
+static int form_last_width = 0;
+static int form_last_height = 0;
+
+    static gboolean
+form_resize_idle_cb(gpointer data UNUSED)
+{
+    int w, h;
+
+    form_resize_idle_id = 0;
+
+    // Use drawarea's actual allocation, not formwin's
+    if (gui.drawarea == NULL)
+	return FALSE;
+    w = gtk_widget_get_width(gui.drawarea);
+    h = gtk_widget_get_height(gui.drawarea);
+
+    if (w > 1 && h > 1)
+	gui_resize_shell(w, h);
+
+    return FALSE;
+}
+
     static void
-form_size_allocate(GtkWidget *widget, int width UNUSED, int height UNUSED,
+form_size_allocate(GtkWidget *widget, int width, int height,
 	int baseline UNUSED)
 {
     GtkForm *form;
@@ -211,6 +234,15 @@ form_size_allocate(GtkWidget *widget, int width UNUSED, int height UNUSED,
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
 	form_position_child(form, tmp_list->data, TRUE);
+
+    // Notify Vim about size change via idle callback
+    if (width != form_last_width || height != form_last_height)
+    {
+	form_last_width = width;
+	form_last_height = height;
+	if (form_resize_idle_id == 0)
+	    form_resize_idle_id = g_idle_add(form_resize_idle_cb, NULL);
+    }
 }
 
     static void
@@ -271,13 +303,22 @@ form_position_child(
     {
 	GtkRequisition requisition;
 	GskTransform *transform;
+	int w, h;
 
 	gtk_widget_get_preferred_size(child->widget, &requisition, NULL);
+	w = requisition.width;
+	h = requisition.height;
+
+	// If widget has no size request (e.g. drawarea), use parent size
+	if (w <= 0)
+	    w = gtk_widget_get_width(GTK_WIDGET(form));
+	if (h <= 0)
+	    h = gtk_widget_get_height(GTK_WIDGET(form));
+	if (w <= 0) w = 1;
+	if (h <= 0) h = 1;
 
 	transform = gsk_transform_translate(NULL,
 		&GRAPHENE_POINT_INIT((float)child->x, (float)child->y));
-	gtk_widget_allocate(child->widget,
-		requisition.width, requisition.height,
-		-1, transform);
+	gtk_widget_allocate(child->widget, w, h, -1, transform);
     }
 }
