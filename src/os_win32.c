@@ -5960,7 +5960,9 @@ create_pipe_pair(HANDLE handles[2])
     return TRUE;
 }
 
-# if defined(FEAT_EVAL)
+#endif // FEAT_JOB_CHANNEL
+
+#if defined(FEAT_EVAL)
 /*
  * Execute "argv" directly without the shell and return the output.
  * Used by system() and systemlist() when the command is a List.
@@ -6171,8 +6173,9 @@ done:
 	CloseHandle(hChildStdinRd);
     return buffer;
 }
-# endif
+#endif // FEAT_EVAL
 
+#if defined(FEAT_JOB_CHANNEL)
     void
 mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {
