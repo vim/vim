@@ -10545,7 +10545,7 @@ status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
 stl-%!	options.txt	/*stl-%!*
 stl-%@	options.txt	/*stl-%@*
-stl-%@FuncName@	options.txt	/*stl-%@FuncName@*
+stl-%[FuncName]	options.txt	/*stl-%[FuncName]*
 stl-%{	options.txt	/*stl-%{*
 str2blob()	builtin.txt	/*str2blob()*
 str2float()	builtin.txt	/*str2float()*

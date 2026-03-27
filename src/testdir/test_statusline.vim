@@ -739,7 +739,7 @@ func Test_statusline_click_handler()
   set laststatus=2
 
   " Basic click handler
-  set statusline=%@StlClickTestFunc@[Click]%@@\ %f
+  set statusline=%[StlClickTestFunc][Click]%[]\ %f
   redraw!
 
   " Click on the [Click] region
@@ -761,7 +761,7 @@ func Test_statusline_click_handler()
   call assert_false(exists('g:stl_click_info'))
 
   " Test with minwid
-  set statusline=%42@StlClickTestFunc@[Click]%@@\ %f
+  set statusline=%42[StlClickTestFunc][Click]%[]\ %f
   redraw!
   call test_setmouse(stl_row, 2)
   call feedkeys("\<LeftMouse>", 'xt')
@@ -790,7 +790,7 @@ func Test_statusline_click_multiple_regions()
   set laststatus=2
 
   " Two adjacent click regions with different minwid
-  set statusline=%1@StlClickTestFunc@[AAA]%@@%2@StlClickTestFunc@[BBB]%@@
+  set statusline=%1[StlClickTestFunc][AAA]%[]%2[StlClickTestFunc][BBB]%[]
   redraw!
 
   let stl_row = win_screenpos(0)[0] + winheight(0)
@@ -823,8 +823,8 @@ func Test_statusline_click_region_extends_to_end()
   set mouse=a
   set laststatus=2
 
-  " Click region without %@@ extends to end of statusline
-  set statusline=xxx%@StlClickTestFunc@Clickable
+  " Click region without %[] extends to end of statusline
+  set statusline=xxx%[StlClickTestFunc]Clickable
   redraw!
 
   let stl_row = win_screenpos(0)[0] + winheight(0)
@@ -850,10 +850,10 @@ endfunc
 func Test_statusline_click_option_validation()
   " Valid formats should not produce errors
   let save_stl = &statusline
-  set statusline=%@Func@text%@@
-  set statusline=%3@Func@text%@@
-  set statusline=%@Func@text
-  set statusline=%@Func_Name@text%@@
+  set statusline=%[Func]text%[]
+  set statusline=%3[Func]text%[]
+  set statusline=%[Func]text
+  set statusline=%[Func_Name]text%[]
   " %@ alone is still valid (line break)
   set statusline=%@
   let &statusline = save_stl

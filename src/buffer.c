@@ -4709,13 +4709,11 @@ build_stl_str_hl_local(
 	if (*s == NUL)  // ignore trailing %
 	    break;
 
-	if (*s == STL_LINEBREAK)
+	if (*s == STL_CLICKFUNC)
 	{
-	    // %@FuncName@ - start click region (no minwid)
-	    // %@@ - end click region
-	    if (s[1] == '@')
+	    // %[] - end click region
+	    if (s[1] == ']')
 	    {
-		// %@@ - end click region
 		stl_items[curitem].stl_type = ClickFunc;
 		stl_items[curitem].stl_start = p;
 		stl_items[curitem].stl_minwid = 0;
@@ -4724,22 +4722,25 @@ build_stl_str_hl_local(
 		curitem++;
 		continue;
 	    }
+	    // %[FuncName] - start click region
 	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
 	    {
-		// %@FuncName@ - start click region
-		char_u *at = vim_strchr(s + 1, '@');
-		if (at != NULL)
+		char_u *rb = vim_strchr(s + 1, ']');
+		if (rb != NULL)
 		{
 		    stl_items[curitem].stl_type = ClickFunc;
 		    stl_items[curitem].stl_start = p;
 		    stl_items[curitem].stl_minwid = 0;
 		    stl_items[curitem].stl_clickfunc =
-					  vim_strnsave(s + 1, at - s - 1);
-		    s = at + 1;
+					  vim_strnsave(s + 1, rb - s - 1);
+		    s = rb + 1;
 		    curitem++;
 		    continue;
 		}
 	    }
+	}
+	if (*s == STL_LINEBREAK)
+	{
 	    // Plain %@ - line break
 	    if (mode == STL_MODE_MULTI
 # ifdef ENABLE_STL_MODE_MULTI_NL
@@ -5298,11 +5299,10 @@ build_stl_str_hl_local(
 		continue;
 	    }
 
-	case STL_LINEBREAK:
-	    // %N@FuncName@ or %N@@ with minwid
-	    if (*s == '@')
+	case STL_CLICKFUNC:
+	    // %N[] - end click region (with minwid, minwid is ignored)
+	    if (*s == ']')
 	    {
-		// %N@@ - end click region (with minwid, minwid is ignored)
 		stl_items[curitem].stl_type = ClickFunc;
 		stl_items[curitem].stl_start = p;
 		stl_items[curitem].stl_minwid = 0;
@@ -5311,23 +5311,26 @@ build_stl_str_hl_local(
 		curitem++;
 		continue;
 	    }
+	    // %N[FuncName] with minwid
 	    if (ASCII_ISALPHA(*s) || *s == '_')
 	    {
-		char_u *at = vim_strchr(s, '@');
-		if (at != NULL)
+		char_u *rb = vim_strchr(s, ']');
+		if (rb != NULL)
 		{
 		    stl_items[curitem].stl_type = ClickFunc;
 		    stl_items[curitem].stl_start = p;
 		    stl_items[curitem].stl_minwid = minwid;
 		    stl_items[curitem].stl_clickfunc =
-					      vim_strnsave(s, at - s);
-		    s = at + 1;
+					      vim_strnsave(s, rb - s);
+		    s = rb + 1;
 		    curitem++;
 		    continue;
 		}
 	    }
-	    // No click handler pattern, treat as regular linebreak
-	    // (already handled above, but fallback for %N@ case)
+	    continue;
+
+	case STL_LINEBREAK:
+	    // %N@ - line break (already handled above, fallback)
 	    continue;
 	}
 
