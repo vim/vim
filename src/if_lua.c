@@ -2583,7 +2583,11 @@ luaV_newstate(void)
 {
     lua_State *L = luaL_newstate();
 # if LUA_VERSION_NUM >= 505
+#  ifdef DYNAMIC_LUA
     dll_luaL_openselectedlibs(L, ~0, 0);
+#  else
+    luaL_openselectedlibs(L, ~0, 0);
+#  endif
 # else
     luaL_openlibs(L);
 # endif
