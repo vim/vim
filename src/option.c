@@ -5168,8 +5168,8 @@ set_bool_option(
 #endif
     char	*errmsg = NULL;
 
-    // Disallow changing some options from secure mode
-    if ((secure
+    // Disallow changing some options from secure and restricted mode
+    if ((secure || restricted
 #ifdef HAVE_SANDBOX
 		|| sandbox != 0
 #endif
@@ -5405,8 +5405,8 @@ set_num_option(
     long	old_Columns = Columns;	// remember old Columns
     long	*pp = (long *)varp;
 
-    // Disallow changing some options from secure mode.
-    if ((secure
+    // Disallow changing some options from secure and restricted mode.
+    if ((secure || restricted
 #ifdef HAVE_SANDBOX
 		|| sandbox != 0
 #endif
