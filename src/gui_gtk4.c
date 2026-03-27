@@ -3415,6 +3415,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    btn = gtk_button_new();
 	    gtk_button_set_child(GTK_BUTTON(btn), icon);
 	    gtk_widget_set_focusable(btn, FALSE);
+	    gtk_widget_add_css_class(btn, "flat");
 
 	    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
 	    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
