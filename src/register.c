@@ -2021,7 +2021,7 @@ do_put(
 		curwin->w_cursor.col += bd.startspaces;
 	}
 
-	changed_lines(lnum, 0, curwin->w_cursor.lnum, nr_lines);
+	changed_lines(lnum, 0, curwin->w_cursor.lnum - nr_lines, nr_lines);
 
 	// Set '[ mark.
 	curbuf->b_op_start = curwin->w_cursor;
