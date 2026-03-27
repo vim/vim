@@ -2293,182 +2293,178 @@ gui_mch_destroy_sign(void *sign)
  */
 
 /*
- * Draw a string of characters on the screen using the current font and colors.
- * Returns the number of display cells used.
+ * Ligature and text drawing support.
+ * Ported from gui_gtk_x11.c (GTK3) to support 'guiligatures' in GTK4.
  */
-    int
-gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
+
+#define INSERT_PANGO_ATTR(Attribute, AttrList, Start, End)  \
+    G_STMT_START{					    \
+	PangoAttribute *tmp_attr_;			    \
+	tmp_attr_ = (Attribute);			    \
+	tmp_attr_->start_index = (Start);		    \
+	tmp_attr_->end_index = (End);			    \
+	pango_attr_list_insert((AttrList), tmp_attr_);	    \
+    }G_STMT_END
+
+/*
+ * Apply the 'guifontwide' font to double-width characters in the string.
+ */
+    static void
+apply_wide_font_attr(char_u *s, int len, PangoAttrList *attr_list)
 {
-    cairo_t	*cr;
-    char_u	*conv_buf = NULL;
-    int		convlen;
-    int		cells;
+    char_u  *start = NULL;
+    char_u  *p;
+    int	    uc;
 
-    if (gui.text_context == NULL || gui.surface == NULL)
-	return len;
-
-    // Convert to UTF-8 if needed
-    if (output_conv.vc_type != CONV_NONE)
+    for (p = s; p < s + len; p += utf_byte2len(*p))
     {
-	convlen = len;
-	conv_buf = string_convert(&output_conv, s, &convlen);
-	if (conv_buf != NULL)
+	uc = utf_ptr2char(p);
+
+	if (start == NULL)
 	{
-	    s = conv_buf;
-	    len = convlen;
+	    if (uc >= 0x80 && utf_char2cells(uc) == 2)
+		start = p;
+	}
+	else if (uc < 0x80
+		 || (utf_char2cells(uc) != 2 && !utf_iscomposing(uc)))
+	{
+	    INSERT_PANGO_ATTR(pango_attr_font_desc_new(gui.wide_font),
+			      attr_list, start - s, p - s);
+	    start = NULL;
 	}
     }
 
-    cells = mb_string2cells(s, len);
+    if (start != NULL)
+	INSERT_PANGO_ATTR(pango_attr_font_desc_new(gui.wide_font),
+			  attr_list, start - s, len);
+}
 
-    cr = cairo_create(gui.surface);
+/*
+ * Count the number of display cells occupied by a glyph cluster.
+ */
+    static int
+count_cluster_cells(char_u *s, PangoItem *item,
+		    PangoGlyphString *glyphs, int i,
+		    int *cluster_width,
+		    int *last_glyph_rbearing)
+{
+    char_u  *p;
+    int	    next;
+    int	    start, end;
+    int	    width;
+    int	    uc;
+    int	    cellcount = 0;
 
-    // Clip to the current row
-    cairo_rectangle(cr,
-	    gui.border_offset, FILL_Y(row),
-	    gui.num_cols * gui.char_width, gui.char_height);
-    cairo_clip(cr);
+    width = glyphs->glyphs[i].geometry.width;
 
-    // Draw background
+    for (next = i + 1; next < glyphs->num_glyphs; ++next)
+    {
+	if (glyphs->glyphs[next].attr.is_cluster_start)
+	    break;
+	else if (glyphs->glyphs[next].geometry.width > width)
+	    width = glyphs->glyphs[next].geometry.width;
+    }
+
+    start = item->offset + glyphs->log_clusters[i];
+    end   = item->offset + ((next < glyphs->num_glyphs) ?
+			    glyphs->log_clusters[next] : item->length);
+
+    for (p = s + start; p < s + end; p += utf_byte2len(*p))
+    {
+	uc = utf_ptr2char(p);
+	if (uc < 0x80)
+	    ++cellcount;
+	else if (!utf_iscomposing(uc))
+	    cellcount += utf_char2cells(uc);
+    }
+
+    if (last_glyph_rbearing != NULL
+	    && cellcount > 0 && next == glyphs->num_glyphs)
+    {
+	PangoRectangle ink_rect;
+
+	pango_font_get_glyph_extents(item->analysis.font,
+				     glyphs->glyphs[i].glyph,
+				     &ink_rect, NULL);
+
+	if (PANGO_RBEARING(ink_rect) > 0)
+	    *last_glyph_rbearing = PANGO_RBEARING(ink_rect);
+    }
+
+    if (cellcount > 0)
+	*cluster_width = width;
+
+    return cellcount;
+}
+
+/*
+ * Handle combining characters that form a zero-width cluster.
+ */
+    static void
+setup_zero_width_cluster(PangoItem *item, PangoGlyphInfo *glyph,
+			 int last_cellcount, int last_cluster_width,
+			 int last_glyph_rbearing)
+{
+    PangoRectangle  ink_rect;
+    PangoRectangle  logical_rect;
+    int		    width;
+
+    width = last_cellcount * gui.char_width * PANGO_SCALE;
+    glyph->geometry.x_offset = -width + MAX(0, width - last_cluster_width) / 2;
+    glyph->geometry.width = 0;
+
+    pango_font_get_glyph_extents(item->analysis.font,
+				 glyph->glyph,
+				 &ink_rect, &logical_rect);
+    if (ink_rect.x < 0)
+    {
+	glyph->geometry.x_offset += last_glyph_rbearing;
+	glyph->geometry.y_offset  = logical_rect.height
+		- (gui.char_height - p_linespace) * PANGO_SCALE;
+    }
+    else
+	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
+}
+
+/*
+ * Draw a single glyph string segment: background, foreground, and fake bold.
+ */
+    static void
+draw_glyph_string(int row, int col, int num_cells, int flags,
+		  PangoFont *font, PangoGlyphString *glyphs,
+		  cairo_t *cr)
+{
     if (!(flags & DRAW_TRANSP))
     {
 	cairo_set_source_rgba(cr,
-		gui.bgcolor->red, gui.bgcolor->green,
-		gui.bgcolor->blue, gui.bgcolor->alpha);
+		gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
+		gui.bgcolor->alpha);
 	cairo_rectangle(cr,
-		FILL_X(col), FILL_Y(row),
-		cells * gui.char_width, gui.char_height);
+			FILL_X(col), FILL_Y(row),
+			num_cells * gui.char_width, gui.char_height);
 	cairo_fill(cr);
     }
 
-    // Draw the text using Pango glyph strings for correct fixed-width rendering
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+	    gui.fgcolor->alpha);
+    cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
+    pango_cairo_show_glyph_string(cr, font, glyphs);
+
+    // Redraw with offset of 1 to emulate bold
+    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
     {
-	PangoGlyphString *glyphs;
-	PangoFont *font;
-	int column_offset = 0;
-	int is_ascii = TRUE;
-	char_u *p;
-
-	// Check if the string is pure ASCII
-	for (p = s; p < s + len; ++p)
-	    if (*p & 0x80)
-	    {
-		is_ascii = FALSE;
-		break;
-	    }
-
-	glyphs = pango_glyph_string_new();
-
-	if (is_ascii && gui.ascii_glyphs != NULL
-		&& !(flags & DRAW_ITALIC)
-		&& !((flags & DRAW_BOLD) && gui.font_can_bold))
-	{
-	    // Fast path for ASCII: use cached glyph table
-	    int i;
-
-	    font = gui.ascii_font;
-	    pango_glyph_string_set_size(glyphs, len);
-	    for (i = 0; i < len; ++i)
-	    {
-		glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[2 * s[i]];
-		glyphs->log_clusters[i] = i;
-	    }
-	    column_offset = len;
-
-	    // Draw foreground text
-	    cairo_set_source_rgba(cr,
-		    gui.fgcolor->red, gui.fgcolor->green,
-		    gui.fgcolor->blue, gui.fgcolor->alpha);
-	    cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
-	    pango_cairo_show_glyph_string(cr, font, glyphs);
-
-	    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
-	    {
-		cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
-		pango_cairo_show_glyph_string(cr, font, glyphs);
-	    }
-	}
-	else
-	{
-	    // Slow path: itemize and shape
-	    PangoAttrList *attr_list;
-	    GList *item_list;
-
-	    attr_list = pango_attr_list_new();
-
-	    if ((flags & DRAW_BOLD) && gui.font_can_bold)
-		pango_attr_list_insert(attr_list,
-			pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-	    if (flags & DRAW_ITALIC)
-		pango_attr_list_insert(attr_list,
-			pango_attr_style_new(PANGO_STYLE_ITALIC));
-
-	    item_list = pango_itemize(gui.text_context,
-			    (const char *)s, 0, len, attr_list, NULL);
-
-	    // Draw foreground text
-	    cairo_set_source_rgba(cr,
-		    gui.fgcolor->red, gui.fgcolor->green,
-		    gui.fgcolor->blue, gui.fgcolor->alpha);
-
-	    {
-		GList *item_iter;
-		int col_offset = 0;
-
-		for (item_iter = item_list; item_iter != NULL;
-			item_iter = item_iter->next)
-		{
-		    PangoItem *item = (PangoItem *)item_iter->data;
-		    int item_cells = 0;
-		    int i;
-		    int base_width = gui.char_width * PANGO_SCALE;
-
-		    pango_shape((const char *)s + item->offset,
-			    item->length, &item->analysis, glyphs);
-
-		    // Adjust glyph widths for cell alignment
-		    for (i = 0; i < glyphs->num_glyphs; ++i)
-		    {
-			PangoGlyphGeometry *geom;
-			int byte_offset;
-			int cell_w;
-
-			geom = &glyphs->glyphs[i].geometry;
-			byte_offset = item->offset + glyphs->log_clusters[i];
-			cell_w = utf_ptr2cells(s + byte_offset);
-			item_cells += cell_w;
-			cell_w *= base_width;
-			geom->x_offset += MAX(0, cell_w - geom->width) / 2;
-			geom->width = cell_w;
-		    }
-
-		    cairo_move_to(cr,
-			    TEXT_X(col + col_offset), TEXT_Y(row));
-		    pango_cairo_show_glyph_string(cr,
-			    item->analysis.font, glyphs);
-
-		    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
-		    {
-			cairo_move_to(cr,
-				TEXT_X(col + col_offset) + 1, TEXT_Y(row));
-			pango_cairo_show_glyph_string(cr,
-				item->analysis.font, glyphs);
-		    }
-
-		    col_offset += item_cells;
-		}
-		column_offset = col_offset;
-	    }
-
-	    g_list_foreach(item_list,
-		    (GFunc)(void *)&pango_item_free, NULL);
-	    g_list_free(item_list);
-	    pango_attr_list_unref(attr_list);
-	}
-
-	pango_glyph_string_free(glyphs);
+	cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
+	pango_cairo_show_glyph_string(cr, font, glyphs);
     }
+}
 
+/*
+ * Draw underline, undercurl, and strikethrough decorations.
+ */
+    static void
+draw_under(int flags, int row, int col, int cells, cairo_t *cr)
+{
     // Draw underline
     if (flags & DRAW_UNDERL)
     {
@@ -2514,14 +2510,320 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 	cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
 	cairo_stroke(cr);
     }
+}
+
+/*
+ * Draw a string of characters on the screen.
+ * "force_pango" is set when ligature characters require Pango shaping
+ * instead of the fast ASCII glyph cache path.
+ * Returns the number of display cells used.
+ */
+    int
+gui_gtk_draw_string_ext(
+	int	row,
+	int	col,
+	char_u	*s,
+	int	len,
+	int	flags,
+	int	force_pango)
+{
+    GdkRectangle	area;
+    PangoGlyphString	*glyphs;
+    int			column_offset = 0;
+    int			i;
+    cairo_t		*cr;
+
+    if (gui.text_context == NULL || gui.surface == NULL)
+	return len;
+
+    // Restrict all drawing to the current screen line.
+    area.x = gui.border_offset;
+    area.y = FILL_Y(row);
+    area.width	= gui.num_cols * gui.char_width;
+    area.height = gui.char_height;
+
+    cr = cairo_create(gui.surface);
+    cairo_rectangle(cr, area.x, area.y, area.width, area.height);
+    cairo_clip(cr);
+
+    glyphs = pango_glyph_string_new();
+
+    // Fast path for pure ASCII: use cached glyph table.
+    // Skip this path when force_pango is set (ligatures need shaping).
+    if (!(flags & DRAW_ITALIC)
+	    && !((flags & DRAW_BOLD) && gui.font_can_bold)
+	    && gui.ascii_glyphs != NULL
+	    && !force_pango)
+    {
+	char_u *p;
+
+	for (p = s; p < s + len; ++p)
+	    if (*p & 0x80)
+		goto not_ascii;
+
+	pango_glyph_string_set_size(glyphs, len);
+
+	for (i = 0; i < len; ++i)
+	{
+	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[2 * s[i]];
+	    glyphs->log_clusters[i] = i;
+	}
+
+	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
+
+	column_offset = len;
+    }
+    else
+not_ascii:
+    {
+	PangoAttrList	*attr_list;
+	GList		*item_list;
+	int		cluster_width;
+	int		last_glyph_rbearing;
+	int		cells = 0;
+
+	// Safety check: pango crashes with invalid utf-8.
+	if (!utf_valid_string(s, s + len))
+	{
+	    column_offset = len;
+	    goto skipitall;
+	}
+
+	cluster_width = PANGO_SCALE * gui.char_width;
+	last_glyph_rbearing = PANGO_SCALE * gui.char_width;
+
+	attr_list = pango_attr_list_new();
+
+	// If 'guifontwide' is set then use that for double-width characters.
+	if (gui.wide_font != NULL)
+	    apply_wide_font_attr(s, len, attr_list);
+
+	if ((flags & DRAW_BOLD) && gui.font_can_bold)
+	    INSERT_PANGO_ATTR(pango_attr_weight_new(PANGO_WEIGHT_BOLD),
+			      attr_list, 0, len);
+	if (flags & DRAW_ITALIC)
+	    INSERT_PANGO_ATTR(pango_attr_style_new(PANGO_STYLE_ITALIC),
+			      attr_list, 0, len);
+
+	item_list = pango_itemize(gui.text_context,
+				  (const char *)s, 0, len, attr_list, NULL);
+
+	while (item_list != NULL)
+	{
+	    PangoItem	*item;
+	    int		item_cells = 0;
+
+	    item = (PangoItem *)item_list->data;
+	    item_list = g_list_delete_link(item_list, item_list);
+
+	    // Force LTR direction; Vim handles bidi on its own.
+	    item->analysis.level = (item->analysis.level + 1) & (~1U);
+
+	    pango_shape_full((const char *)s + item->offset, item->length,
+		    (const char *)s, len, &item->analysis, glyphs);
+
+	    // Fixed-width hack: assign a fixed width to each glyph based on
+	    // the number of cells it occupies, handling composing characters
+	    // and cluster boundaries properly.
+	    for (i = 0; i < glyphs->num_glyphs; ++i)
+	    {
+		PangoGlyphInfo *glyph;
+
+		glyph = &glyphs->glyphs[i];
+
+		if (glyph->attr.is_cluster_start)
+		{
+		    int cellcount;
+
+		    cellcount = count_cluster_cells(
+			    s, item, glyphs, i, &cluster_width,
+			    (item_list != NULL) ? &last_glyph_rbearing : NULL);
+
+		    if (cellcount > 0)
+		    {
+			int width;
+
+			width = cellcount * gui.char_width * PANGO_SCALE;
+			glyph->geometry.x_offset +=
+					    MAX(0, width - cluster_width) / 2;
+			glyph->geometry.width = width;
+		    }
+		    else
+		    {
+			setup_zero_width_cluster(item, glyph, cells,
+						 cluster_width,
+						 last_glyph_rbearing);
+		    }
+
+		    item_cells += cellcount;
+		    cells = cellcount;
+		}
+		else if (i > 0)
+		{
+		    int width;
+
+		    if (glyph->geometry.x_offset >= 0)
+		    {
+			glyphs->glyphs[i].geometry.width =
+					 glyphs->glyphs[i - 1].geometry.width;
+			glyphs->glyphs[i - 1].geometry.width = 0;
+		    }
+		    width = cells * gui.char_width * PANGO_SCALE;
+		    glyph->geometry.x_offset +=
+					    MAX(0, width - cluster_width) / 2;
+		}
+		else
+		{
+		    glyph->geometry.width = 0;
+		}
+	    }
+
+	    draw_glyph_string(row, col + column_offset, item_cells,
+			      flags, item->analysis.font, glyphs, cr);
+
+	    pango_item_free(item);
+
+	    column_offset += item_cells;
+	}
+
+	pango_attr_list_unref(attr_list);
+    }
+
+skipitall:
+    draw_under(flags, row, col, column_offset, cr);
+
+    pango_glyph_string_free(glyphs);
 
     cairo_destroy(cr);
-    vim_free(conv_buf);
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 
-    return cells;
+    return column_offset;
+}
+
+/*
+ * Draw a string of characters on the screen using the current font and colors.
+ * Splits the string into ASCII and ligature/UTF-8 segments so that ligature
+ * characters are sent through Pango for proper shaping, while plain ASCII
+ * uses the fast cached glyph path.
+ * Returns the number of display cells used.
+ */
+    int
+gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
+{
+    char_u	*conv_buf = NULL;
+    int		convlen;
+    int		len_sum;
+    int		byte_sum;
+    char_u	*cs;
+    int		needs_pango;
+    int		should_need_pango = FALSE;
+    int		slen;
+    int		is_ligature;
+    int		is_utf8;
+    char_u	backup_ch;
+
+    if (gui.text_context == NULL || gui.surface == NULL)
+	return len;
+
+    if (output_conv.vc_type != CONV_NONE)
+    {
+	convlen = len;
+	conv_buf = string_convert(&output_conv, s, &convlen);
+	if (conv_buf != NULL)
+	{
+	    s = conv_buf;
+	    len = convlen;
+	}
+    }
+
+    /*
+     * Ligature support:
+     * Split the string into segments that are either pure ASCII (fast path)
+     * or ligature/UTF-8 (Pango path).  A single ligature character between
+     * ASCII characters is treated as ASCII since it can't form a ligature
+     * on its own.
+     */
+    len_sum = 0;
+    byte_sum = 0;
+    cs = s;
+
+    // First char decides starting mode.
+    is_utf8 = (*cs & 0x80);
+    is_ligature = gui.ligatures_map[*cs] && (len > 1);
+    if (is_ligature)
+	is_ligature = gui.ligatures_map[*(cs + 1)];
+    if (!is_utf8 && len > 1)
+	is_utf8 = (*(cs + 1) & 0x80) != 0;
+    needs_pango = is_utf8 || is_ligature;
+
+    while (cs < s + len)
+    {
+	slen = 0;
+	while (slen < (len - byte_sum))
+	{
+	    is_ligature = gui.ligatures_map[*(cs + slen)];
+	    // Look ahead: single ligature char between ASCII is ASCII.
+	    if (is_ligature && !needs_pango)
+	    {
+		if ((slen + 1) < (len - byte_sum))
+		    is_ligature = gui.ligatures_map[*(cs + slen + 1)];
+		else
+		    is_ligature = 0;
+	    }
+	    is_utf8 = *(cs + slen) & 0x80;
+	    // ASCII followed by UTF-8 could be combining.
+	    if ((!is_utf8) && ((slen + 1) < (len - byte_sum)))
+		is_utf8 = (*(cs + slen + 1) & 0x80);
+	    should_need_pango = (is_ligature || is_utf8);
+	    if (needs_pango != should_need_pango)
+		break;
+	    if (needs_pango)
+	    {
+		if (is_ligature)
+		{
+		    slen++;
+		}
+		else
+		{
+		    if ((*(cs + slen) & 0xC0) == 0x80)
+		    {
+			while ((slen < (len - byte_sum))
+					    && ((*(cs + slen) & 0xC0) == 0x80))
+			    slen++;
+		    }
+		    else if ((*(cs + slen) & 0xE0) == 0xC0)
+			slen++;
+		    else if ((*(cs + slen) & 0xF0) == 0xE0)
+			slen += 2;
+		    else if ((*(cs + slen) & 0xF8) == 0xF0)
+			slen += 3;
+		    else
+			slen++;
+		}
+	    }
+	    else
+	    {
+		slen++;
+	    }
+	}
+
+	if (slen < len)
+	{
+	    backup_ch = *(cs + slen);
+	    *(cs + slen) = NUL;
+	}
+	len_sum += gui_gtk_draw_string_ext(row, col + len_sum, cs, slen,
+					    flags, needs_pango);
+	if (slen < len)
+	    *(cs + slen) = backup_ch;
+	cs += slen;
+	byte_sum += slen;
+	needs_pango = should_need_pango;
+    }
+    vim_free(conv_buf);
+    return len_sum;
 }
 
     int
