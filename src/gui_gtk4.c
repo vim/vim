@@ -407,6 +407,11 @@ gui_mch_early_init_check(int give_message UNUSED)
     int
 gui_mch_init_check(void)
 {
+    // This defaults to argv[0], but we want it to match the name of the
+    // shipped gvim.desktop so that Vim's windows can be associated with this
+    // file.  Also sets WM_CLASS on X11.
+    g_set_prgname("gvim");
+
     // Call gtk_init() here after fork().  Calling it before fork() breaks
     // the display connection in the child process.
     gtk_init();
