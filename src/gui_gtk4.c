@@ -1122,11 +1122,12 @@ gui_mch_free_font(GuiFont font)
 	pango_font_description_free(font);
 }
 
-    int
-gui_mch_expand_font(optexpand_T *args UNUSED, int *numMatches UNUSED,
-	char_u ***matches UNUSED)
+    void
+gui_mch_expand_font(
+    optexpand_T	*args UNUSED,
+    void	*param UNUSED,
+    int		(*add_match)(char_u *val) UNUSED)
 {
-    return FAIL;
 }
 
 /*
@@ -2970,7 +2971,11 @@ create_toolbar_icon(vimmenu_T *menu)
 		    (const char *)buf, 24, 24, TRUE, NULL);
 	    if (pixbuf != NULL)
 	    {
-		image = gtk_image_new_from_pixbuf(pixbuf);
+		GdkTexture *texture =
+			gdk_texture_new_for_pixbuf(pixbuf);
+		image = gtk_image_new_from_paintable(
+			GDK_PAINTABLE(texture));
+		g_object_unref(texture);
 		g_object_unref(pixbuf);
 	    }
 	}
