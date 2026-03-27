@@ -1709,6 +1709,10 @@ enter_notify_event(GtkEventControllerMotion *controller UNUSED,
 {
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
+
+    // Make sure keyboard input goes to the drawing area.
+    if (!gtk_widget_has_focus(gui.drawarea))
+	gtk_widget_grab_focus(gui.drawarea);
 }
 
     static void
