@@ -3871,8 +3871,11 @@ gui_mch_dialog(
     GtkAlertDialog	*dlg;
     AlertDialogData	add;
     char_u		*p;
+    char_u		*buf = NULL;
     int			butcount = 0;
+    int			i;
     const char		*btn_labels[64];
+    char_u		*btn_conv[64];
 
     title = CONVERT_TO_UTF8(title);
     message = CONVERT_TO_UTF8(message);
@@ -3880,7 +3883,7 @@ gui_mch_dialog(
     // Parse button labels from the "&Yes\n&No\n&Cancel" format
     if (buttons != NULL)
     {
-	char_u *buf = vim_strsave(buttons);
+	buf = vim_strsave(buttons);
 	if (buf != NULL)
 	{
 	    p = buf;
@@ -3894,10 +3897,10 @@ gui_mch_dialog(
 		// Skip '&' mnemonic marker
 		if (*start == '&')
 		    ++start;
-		btn_labels[butcount++] = (const char *)
-		    CONVERT_TO_UTF8(start);
+		btn_conv[butcount] = CONVERT_TO_UTF8(start);
+		btn_labels[butcount] = (const char *)btn_conv[butcount];
+		butcount++;
 	    }
-	    vim_free(buf);
 	}
     }
     btn_labels[butcount] = NULL;
@@ -3923,6 +3926,9 @@ gui_mch_dialog(
 
     g_object_unref(dlg);
 
+    for (i = 0; i < butcount; i++)
+	CONVERT_TO_UTF8_FREE(btn_conv[i]);
+    vim_free(buf);
     CONVERT_TO_UTF8_FREE(title);
     CONVERT_TO_UTF8_FREE(message);
 
