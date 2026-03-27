@@ -720,10 +720,28 @@ gui_mch_unmaximize(void)
 	gtk_window_unmaximize(GTK_WINDOW(gui.mainwin));
 }
 
+/*
+ * Called when the font changed while the window is maximized or GO_KEEPWINSIZE
+ * is set.  Recalculate Rows and Columns based on the current window size.
+ *
+ * NOTE: gui_set_shellsize() calls this when GO_KEEPWINSIZE ('k') is in
+ * 'guioptions', even when the font hasn't actually changed (e.g. just setting
+ * "guioptions=k" triggers it via gui_init_which_components()).  This is
+ * arguably a design problem in the common code, but we must not call
+ * gui_set_shellsize() back from here or it will cause infinite recursion and
+ * crash.  Use gui_resize_shell() to recalculate Rows/Columns from the current
+ * window size instead.
+ */
     void
 gui_mch_newfont(void)
 {
-    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    int w, h;
+
+    w = gtk_widget_get_width(gui.formwin);
+    h = gtk_widget_get_height(gui.formwin);
+    w -= get_menu_tool_width();
+    h -= get_menu_tool_height();
+    gui_resize_shell(w, h);
 }
 
     void
