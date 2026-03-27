@@ -1705,6 +1705,12 @@ gui_set_shellsize(
 #if defined(MSWIN) || defined(FEAT_GUI_GTK)
     // If not setting to a user specified size and maximized, calculate the
     // number of characters that fit in the maximized window.
+    // FIXME: gui_mch_newfont() is called here even when the font hasn't
+    // changed at all.  For example, ":set guioptions=k" triggers this path
+    // via gui_init_which_components() -> gui_set_shellsize(FALSE, ...).
+    // The intent is to keep the window size and recalculate Rows/Columns,
+    // which has nothing to do with fonts.  This should be a separate
+    // function with a more descriptive name.
     if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL
 						       || gui_mch_maximized()))
     {
