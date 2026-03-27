@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -699,7 +699,8 @@ synconcealed({lnum}, {col})	List	info about concealing
 synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and
 					{col}
 system({expr} [, {input}])	String	output of shell command/filter {expr}
-systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
+systemlist({expr} [, {input}])
+				List	output of shell command/filter {expr}
 tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg} [, {arg}])
@@ -6432,6 +6433,8 @@ js_decode({string})					*js_decode()*
 		- Strings can be in single quotes.
 		- Empty items in an array (between two commas) are allowed and
 		  result in v:none items.
+		- Capitalization is ignored in keywords: true, false, null,
+		  NaN, Infinity and -Infinity.
 
 		Can also be used as a |method|: >
 			ReadObject()->js_decode()
@@ -6470,12 +6473,9 @@ json_decode({string})					*json_decode()* *E491*
 		  same as {"1":2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2".  Special floating point values
-		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
-		  are accepted.
+		  "Infinity", "-Infinity" and "NaN" are accepted.
 		- Leading zeroes in integer numbers are ignored, e.g. "012"
 		  for "12" or "-012" for "-12".
-		- Capitalization is ignored in literal names null, true or
-		  false, e.g. "NULL" for "null", "True" for "true".
 		- Control characters U+0000 through U+001F which are not
 		  escaped in strings are accepted, e.g. "	" (tab
 		  character in string) for "\t".
@@ -6483,10 +6483,10 @@ json_decode({string})					*json_decode()* *E491*
 		  and results in v:none.
 		- Backslash in an invalid 2-character sequence escape is
 		  ignored, e.g. "\a" is decoded as "a".
-		- A correct surrogate pair in JSON strings should normally be
-		  a 12 character sequence such as "\uD834\uDD1E", but
-		  json_decode() silently accepts truncated surrogate pairs
-		  such as "\uD834" or "\uD834\u"
+		- A surrogate pair in JSON strings is a 12 character sequence
+		  such as "\uD834\uDD1E".  A lone surrogate or an invalid
+		  surrogate pair (e.g. "\uD800" or "\uD800\uD800") results
+		  in an error.
 							*E938*
 		A duplicate key in an object, valid in rfc7159, is not
 		accepted by json_decode() as the result must be a valid Vim
@@ -11695,6 +11695,30 @@ system({expr} [, {input}])				*system()* *E677*
 		Get the output of the shell command {expr} as a |String|.  See
 		|systemlist()| to get the output as a |List|.
 
+		{expr} can be a |String| or a |List|.
+		When {expr} is a |String|, the command is executed through the
+		shell (see below for how the command is constructed).
+
+								*E1575*
+		When {expr} is a |List|, the first item is the executable and
+		the remaining items are passed as arguments directly.  The
+		command is executed without using a shell, similar to
+		|job_start()|.  Since no shell is involved, shell features
+		such as redirection, piping, globbing, environment variable
+		expansion and backtick expansion will not work.  Characters
+		like ">" are passed as literal arguments to the command, not
+		interpreted as redirection.  Use this form when arguments may
+		contain special characters that should not be interpreted by
+		the shell.  Example: >
+		    :let out = system(['grep', '-r', 'pattern', '.'])
+<		With the String form ">" would be shell redirection, but
+		with a List it is passed as a literal argument: >
+		    :let out = system(['echo', 'hello', '>', 'world'])
+<		This outputs "hello > world", not redirect to a file.
+
+		To use the shell explicitly with a List: >
+		    :let out = system(['/bin/sh', '-c', 'echo $HOME'])
+<
 		When {input} is given and is a |String| this string is written
 		to a file and passed as stdin to the command.  The string is
 		written as-is, you need to take care of using the correct line
@@ -11720,11 +11744,11 @@ system({expr} [, {input}])				*system()* *E677*
 		being echoed on the screen. >
 			:silent let f = system('ls *.vim')
 <
-		Note: Use |shellescape()| or |::S| with |expand()| or
-		|fnamemodify()| to escape special characters in a command
-		argument.  Newlines in {expr} may cause the command to fail.
-		The characters in 'shellquote' and 'shellxquote' may also
-		cause trouble.
+		Note: When {expr} is a String, use |shellescape()| or |::S|
+		with |expand()| or |fnamemodify()| to escape special
+		characters in a command argument.  Newlines in {expr} may
+		cause the command to fail.  The characters in 'shellquote'
+		and 'shellxquote' may also cause trouble.
 		This is not to be used for interactive commands.
 
 		The result is a String.  Example: >
@@ -11737,7 +11761,8 @@ system({expr} [, {input}])				*system()* *E677*
 		To avoid the string being truncated at a NUL, all NUL
 		characters are replaced with SOH (0x01).
 
-		The command executed is constructed using several options:
+		When {expr} is a String, the command executed is constructed
+		using several options:
 	'shell' 'shellcmdflag' 'shellxquote' {expr} 'shellredir' {tmp} 'shellxquote'
 		({tmp} is an automatically generated file name).
 		For Unix, braces are put around {expr} to allow for
@@ -11764,6 +11789,9 @@ system({expr} [, {input}])				*system()* *E677*
 systemlist({expr} [, {input}])				*systemlist()*
 		Same as |system()|, but returns a |List| with lines (parts of
 		output separated by NL) with NULs transformed into NLs.
+		Like |system()|, {expr} can be a |String| (executed through
+		the shell) or a |List| (executed directly without a shell).
+		See |system()| for details.
 		Output is the same as |readfile()| will output with {binary}
 		argument set to "b", except that there is no extra empty item
 		when the result ends in a NL.

@@ -1484,7 +1484,11 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
     if (dict_add_string(d, "mark", mname) == FAIL
 	    || dict_add_list(d, "pos", lpos) == FAIL
 	    || (fname != NULL && dict_add_string(d, "file", fname) == FAIL))
+    {
+	if (lpos->lv_refcount == 0)
+	    list_free(lpos);
 	return FAIL;
+    }
 
     return OK;
 }

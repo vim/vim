@@ -2071,11 +2071,11 @@ wipe_qf_buffer(qf_info_T *qi)
     if (qfbuf != NULL && qfbuf->b_nwindows == 0)
     {
 	int buf_was_null = FALSE;
-	// can happen when curwin is going to be closed e.g. curwin->w_buffer
-	// was already closed in win_close(), and we are now closing the
-	// window related location list buffer from win_free_mem()
-	// but close_buffer() calls CHECK_CURBUF() macro and requires
-	// curwin->w_buffer == curbuf
+	// Can happen when curwin is closing (e.g: w_buffer was unloaded in
+	// win_close()) and we are now closing the window-related location list
+	// buffer from win_free().  close_buffer() calls CHECK_CURBUF() and
+	// requires curwin->w_buffer == curbuf.  Should be OK to not increment
+	// b_nwindows, especially as autocmds are blocked in win_free().
 	if (curwin->w_buffer == NULL)
 	{
 	    curwin->w_buffer = curbuf;
@@ -2084,7 +2084,7 @@ wipe_qf_buffer(qf_info_T *qi)
 
 	// If the quickfix buffer is not loaded in any window, then
 	// wipe the buffer.
-	close_buffer(NULL, qfbuf, DOBUF_WIPE, FALSE, FALSE);
+	close_buffer(NULL, qfbuf, DOBUF_WIPE, FALSE, FALSE, FALSE);
 	qi->qf_bufnr = INVALID_QFBUFNR;
 	if (buf_was_null)
 	    curwin->w_buffer = NULL;
@@ -7142,7 +7142,7 @@ unload_dummy_buffer(buf_T *buf, char_u *dirname_start)
     if (curbuf == buf)		// safety check
 	return;
 
-    close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE, TRUE);
+    close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE, TRUE, FALSE);
 
     // When autocommands/'autochdir' option changed directory: go back.
     restore_start_dir(dirname_start);
@@ -8158,11 +8158,7 @@ qf_setprop_qftf(qf_info_T *qi UNUSED, qf_list_T *qfl, dictitem_T *di)
     cb = get_callback(&di->di_tv);
     if (cb.cb_name == NULL || *cb.cb_name == NUL)
 	return OK;
-
     set_callback(&qfl->qf_qftf_cb, &cb);
-    if (cb.cb_free_name)
-	vim_free(cb.cb_name);
-
     return OK;
 }
 

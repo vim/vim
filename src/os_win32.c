@@ -5960,6 +5960,222 @@ create_pipe_pair(HANDLE handles[2])
     return TRUE;
 }
 
+#endif // FEAT_JOB_CHANNEL
+
+#if defined(FEAT_EVAL)
+/*
+ * Execute "argv" directly without the shell and return the output.
+ * Used by system() and systemlist() when the command is a List.
+ * "infile" is an optional temp file for stdin input.
+ * When "ret_len" is not NULL, set it to the length of the output.
+ * Returns the output in allocated memory (or NULL on error).
+ * Sets v:shell_error to the exit status.
+ */
+    char_u *
+mch_get_cmd_output_direct(
+    char	**argv,
+    char_u	*infile,
+    int		flags UNUSED,
+    int		*ret_len)
+{
+    STARTUPINFO		si;
+    PROCESS_INFORMATION pi;
+    SECURITY_ATTRIBUTES saAttr;
+    HANDLE		hChildStdoutRd = INVALID_HANDLE_VALUE;
+    HANDLE		hChildStdoutWr = INVALID_HANDLE_VALUE;
+    HANDLE		hChildStdinRd = INVALID_HANDLE_VALUE;
+    garray_T		cmd_ga;
+    garray_T		out_ga;
+    char_u		*buffer = NULL;
+    DWORD		exit_code = (DWORD)-1;
+    int			i;
+
+    // Build a command string from argv.
+    ga_init2(&cmd_ga, 1, 256);
+    for (i = 0; argv[i] != NULL; i++)
+    {
+	char_u	*arg = (char_u *)argv[i];
+	char_u	*s = arg;
+	int	has_spaces = FALSE;
+	int	j;
+
+	for (j = 0; s[j] != NUL; j++)
+	    if (s[j] == ' ' || s[j] == '\t' || s[j] == '"')
+	    {
+		has_spaces = TRUE;
+		break;
+	    }
+
+	if (i > 0)
+	    ga_append(&cmd_ga, ' ');
+
+	if (has_spaces)
+	{
+	    int	num_bs;
+
+	    ga_append(&cmd_ga, '"');
+	    for (j = 0; arg[j] != NUL; j++)
+	    {
+		num_bs = 0;
+		while (arg[j] == '\\')
+		{
+		    num_bs++;
+		    j++;
+		}
+
+		if (arg[j] == NUL)
+		{
+		    // Backslashes before closing quote must be doubled.
+		    while (num_bs-- > 0)
+		    {
+			ga_append(&cmd_ga, '\\');
+			ga_append(&cmd_ga, '\\');
+		    }
+		    break;
+		}
+		else if (arg[j] == '"')
+		{
+		    // Backslashes before a double quote must be doubled,
+		    // and the double quote must be escaped.
+		    while (num_bs-- > 0)
+		    {
+			ga_append(&cmd_ga, '\\');
+			ga_append(&cmd_ga, '\\');
+		    }
+		    ga_append(&cmd_ga, '\\');
+		    ga_append(&cmd_ga, '"');
+		}
+		else
+		{
+		    while (num_bs-- > 0)
+			ga_append(&cmd_ga, '\\');
+		    ga_append(&cmd_ga, arg[j]);
+		}
+	    }
+	    ga_append(&cmd_ga, '"');
+	}
+	else
+	    ga_concat(&cmd_ga, arg);
+    }
+    ga_append(&cmd_ga, NUL);
+
+    ga_init2(&out_ga, 1, 4096);
+
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    // Create a pipe for the child's stdout.
+    if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)
+	    || !SetHandleInformation(hChildStdoutRd, HANDLE_FLAG_INHERIT, 0))
+    {
+	emsg(_(e_cannot_create_pipes));
+	goto done;
+    }
+
+    // Set up stdin from infile if provided.
+    if (infile != NULL)
+    {
+	WCHAR *winfile = enc_to_utf16(infile, NULL);
+
+	if (winfile != NULL)
+	{
+	    hChildStdinRd = CreateFileW(winfile, GENERIC_READ,
+		    FILE_SHARE_READ, &saAttr, OPEN_EXISTING,
+		    FILE_ATTRIBUTE_NORMAL, NULL);
+	    vim_free(winfile);
+	}
+    }
+
+    ZeroMemory(&pi, sizeof(pi));
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+    si.hStdOutput = hChildStdoutWr;
+    si.hStdError = hChildStdoutWr;
+    si.hStdInput = (hChildStdinRd != INVALID_HANDLE_VALUE)
+		    ? hChildStdinRd : INVALID_HANDLE_VALUE;
+
+    ch_log(NULL, "directly executing: %s", (char *)cmd_ga.ga_data);
+
+    // Create the child process directly, without going through the shell.
+    if (!vim_create_process((char *)cmd_ga.ga_data, TRUE,
+		CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP,
+		&si, &pi, NULL, NULL))
+    {
+	semsg(_(e_invalid_argument_str), cmd_ga.ga_data);
+	goto done;
+    }
+
+    // Close the write end of stdout pipe and stdin in the parent so that
+    // ReadFile() will get EOF when the child process exits.
+    CloseHandle(hChildStdoutWr);
+    hChildStdoutWr = INVALID_HANDLE_VALUE;
+    if (hChildStdinRd != INVALID_HANDLE_VALUE)
+    {
+	CloseHandle(hChildStdinRd);
+	hChildStdinRd = INVALID_HANDLE_VALUE;
+    }
+
+    // Read output from child process.
+    for (;;)
+    {
+	char	buf[4096];
+	DWORD	n;
+
+	if (!ReadFile(hChildStdoutRd, buf, sizeof(buf), &n, NULL) || n == 0)
+	    break;
+	if (ga_grow(&out_ga, (int)n) == OK)
+	{
+	    mch_memmove((char *)out_ga.ga_data + out_ga.ga_len, buf, n);
+	    out_ga.ga_len += (int)n;
+	}
+    }
+
+    // Wait for child to finish and get exit code.
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    set_vim_var_nr(VV_SHELL_ERROR, (long)exit_code);
+
+    if (out_ga.ga_len > 0)
+    {
+	buffer = alloc(out_ga.ga_len + 1);
+	if (buffer != NULL)
+	{
+	    mch_memmove(buffer, out_ga.ga_data, out_ga.ga_len);
+	    if (ret_len == NULL)
+	    {
+		// Change NUL into SOH, otherwise the string is truncated.
+		for (i = 0; i < out_ga.ga_len; ++i)
+		    if (buffer[i] == NUL)
+			buffer[i] = 1;
+		buffer[out_ga.ga_len] = NUL;
+	    }
+	    else
+		*ret_len = out_ga.ga_len;
+	}
+    }
+    else if (ret_len != NULL)
+	*ret_len = 0;
+
+done:
+    ga_clear(&cmd_ga);
+    ga_clear(&out_ga);
+    if (hChildStdoutRd != INVALID_HANDLE_VALUE)
+	CloseHandle(hChildStdoutRd);
+    if (hChildStdoutWr != INVALID_HANDLE_VALUE)
+	CloseHandle(hChildStdoutWr);
+    if (hChildStdinRd != INVALID_HANDLE_VALUE)
+	CloseHandle(hChildStdinRd);
+    return buffer;
+}
+#endif // FEAT_EVAL
+
+#if defined(FEAT_JOB_CHANNEL)
     void
 mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {

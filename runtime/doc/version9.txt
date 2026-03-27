@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 22
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52611,6 +52611,8 @@ Other ~
 - New "leadtab" value for the 'listchars' setting.
 - Improved |:set+=|, |:set^=| and |:set-=| handling of comma-separated "key:value"
   pairs individually (e.g. 'listchars', 'fillchars', 'diffopt').
+- |system()| and |systemlist()| functions accept a list as first argument,
+  bypassing the shell completely.
 
 xxd ~
 ---
@@ -52620,6 +52622,9 @@ Add "-t" option to append a terminating NUL byte to C include output (-i).
 Changed~
 -------
 - Support for NeXTStep was dropped with patch v9.2.0122
+- |json_decode()| is stricter: keywords must be lowercase, lone surrogates are
+  now invalid
+- |js_decode()| rejects lone surrogates
 
 							*added-9.3*
 Added ~

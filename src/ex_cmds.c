@@ -2984,12 +2984,6 @@ do_ecmd(
 	// result in more windows displaying it; abort
 	if (buf->b_locked_split)
 	{
-	    // window was split, but not editing the new buffer,
-	    // reset b_nwindows again
-	    if (oldwin == NULL
-		    && curwin->w_buffer != NULL
-		    && curwin->w_buffer->b_nwindows > 1)
-		--curwin->w_buffer->b_nwindows;
 	    emsg(_(e_cannot_switch_to_a_closing_buffer));
 	    goto theend;
 	}
@@ -3085,26 +3079,25 @@ do_ecmd(
 	    else
 	    {
 		win_T	    *the_curwin = curwin;
-		int	    did_decrement;
-		buf_T	    *was_curbuf = curbuf;
 
 		// Set the w_locked flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
-		the_curwin->w_locked = TRUE;
+		++the_curwin->w_locked;
 		++buf->b_locked;
 
 		if (curbuf == old_curbuf.br_buf)
 		    buf_copy_options(buf, BCO_ENTER);
 
-		// Close the link to the current buffer. This will set
-		// oldwin->w_buffer to NULL.
+		// Close the link to the current buffer. This may set
+		// curwin->w_buffer to NULL.
 		u_sync(FALSE);
-		did_decrement = close_buffer(oldwin, curbuf,
-			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE);
+		close_buffer(curwin, curbuf,
+			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE,
+			 oldwin != NULL);
 
 		// Autocommands may have closed the window.
 		if (win_valid(the_curwin))
-		    the_curwin->w_locked = FALSE;
+		    --the_curwin->w_locked;
 		--buf->b_locked;
 
 #ifdef FEAT_EVAL
@@ -3119,21 +3112,19 @@ do_ecmd(
 		// Be careful again, like above.
 		if (!bufref_valid(&au_new_curbuf))
 		{
-		    // new buffer has been deleted
-		    delbuf_msg(new_name);	// frees new_name
-		    au_new_curbuf = save_au_new_curbuf;
-		    goto theend;
+		    // New buffer was deleted.  If curwin->w_buffer is NULL, we
+		    // must enter some buffer.  Hopefully the last one is OK.
+		    if (curwin->w_buffer == NULL)
+			buf = lastbuf;
+		    else
+		    {
+			delbuf_msg(new_name);	// frees new_name
+			au_new_curbuf = save_au_new_curbuf;
+			goto theend;
+		    }
 		}
 		if (buf == curbuf)		// already in new buffer
-		{
-		    // close_buffer() has decremented the window count,
-		    // increment it again here and restore w_buffer.
-		    if (did_decrement && buf_valid(was_curbuf))
-			++was_curbuf->b_nwindows;
-		    if (win_valid_any_tab(oldwin) && oldwin->w_buffer == NULL)
-			oldwin->w_buffer = was_curbuf;
 		    auto_buf = TRUE;
-		}
 		else
 		{
 #ifdef FEAT_SYN_HL
@@ -3145,6 +3136,9 @@ do_ecmd(
 			    || curwin->w_s == &(curwin->w_buffer->b_s))
 			curwin->w_s = &(buf->b_s);
 #endif
+		    if (curwin->w_buffer != NULL)
+			--curwin->w_buffer->b_nwindows;
+
 		    curwin->w_buffer = buf;
 		    curbuf = buf;
 		    ++curbuf->b_nwindows;

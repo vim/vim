@@ -1616,7 +1616,8 @@ clear_showcmd(void)
     if (!p_sc)
 	return;
 
-    if (VIsual_active && !char_avail())
+    if (VIsual_active
+	&& stuff_empty() && typebuf.tb_len == 0 && !using_script())
     {
 	int		cursor_bot = LT_POS(VIsual, curwin->w_cursor);
 	long		lines;

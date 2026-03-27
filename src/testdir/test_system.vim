@@ -210,4 +210,47 @@ func Test_system_with_powershell()
   endtry
 endfunc
 
+func Test_system_list_arg()
+  CheckExecutable python3
+
+  " When the command is a List, it is executed directly without the shell.
+  " Shell meta characters should not be interpreted but passed as-is.
+
+  " Redirect characters should be passed literally.
+  let out = system(['python3', '-c', 'import sys; print(sys.argv[1])', '<foo>'])
+  call assert_match('^<foo>', out)
+
+  " Environment variable syntax should not be expanded.
+  if has('win32')
+    let out = system(['python3', '-c', 'import sys; print(sys.argv[1])', '%USERPROFILE%'])
+    call assert_match('^%USERPROFILE%', out)
+  else
+    let out = system(['python3', '-c', 'import sys; print(sys.argv[1])', '$HOME'])
+    call assert_match('^\$HOME', out)
+  endif
+
+  " Spaces in arguments should be preserved without shell word splitting.
+  let out = system(['python3', '-c', 'import sys; print(sys.argv[1])', 'hello world'])
+  call assert_match('^hello world', out)
+
+  " Pipe and ampersand should be passed literally.
+  let out = system(['python3', '-c', 'import sys; print(sys.argv[1])', 'a&b|c'])
+  call assert_match('^a&b|c', out)
+
+  " systemlist() should work too.
+  let out = systemlist(['python3', '-c', 'print("line1"); print("line2")'])
+  call assert_match('^line1', out[0])
+  call assert_match('^line2', out[1])
+
+  " v:shell_error should be set.
+  call system(['python3', '-c', 'import sys; sys.exit(42)'])
+  call assert_equal(42, v:shell_error)
+  call system(['python3', '-c', 'import sys; sys.exit(0)'])
+  call assert_equal(0, v:shell_error)
+
+  " Invalid arguments.
+  call assert_fails('call system([])', 'E474:')
+  call assert_fails('call systemlist([])', 'E474:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -2511,6 +2511,9 @@ get_cmd_output_as_rettv(
     FILE	*fd;
     list_T	*list = NULL;
     int		flags = SHELL_SILENT;
+    int		use_argv = FALSE;
+    char	**argv = NULL;
+    int		argc = 0;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -2518,7 +2521,7 @@ get_cmd_output_as_rettv(
 	goto errret;
 
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
 		|| check_for_opt_string_or_number_or_list_arg(argvars, 1)
 								      == FAIL))
 	return;
@@ -2598,6 +2601,47 @@ get_cmd_output_as_rettv(
 	}
     }
 
+    // When the command is a List, execute directly without the shell.
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	list_T	*l = argvars[0].vval.v_list;
+
+	if (l == NULL || l->lv_len < 1)
+	{
+	    emsg(_(e_invalid_argument));
+	    goto errret;
+	}
+	if (build_argv_from_list(l, &argv, &argc) == FAIL)
+	    goto errret;
+	if (argc == 0 || *skipwhite((char_u *)argv[0]) == NUL)
+	{
+	    emsg(_(e_invalid_argument));
+	    goto errret;
+	}
+	use_argv = TRUE;
+
+	if (p_verbose > 3)
+	{
+	    int		i;
+	    garray_T	ga;
+
+	    verbose_enter();
+	    ga_init2(&ga, 1, 200);
+	    for (i = 0; i < argc; ++i)
+	    {
+		if (i > 0)
+		    ga_append(&ga, ' ');
+		ga_concat(&ga, (char_u *)argv[i]);
+	    }
+	    ga_append(&ga, NUL);
+	    smsg(_("Executing directly: \"%s\""), (char *)ga.ga_data);
+	    msg_putchar_attr('\n', 0);
+	    cursor_on();
+	    verbose_leave();
+	    ga_clear(&ga);
+	}
+    }
+
     // Omit SHELL_COOKED when invoked with ":silent".  Avoids that the shell
     // echoes typeahead, that messes up the display.
     if (!msg_silent)
@@ -2612,7 +2656,10 @@ get_cmd_output_as_rettv(
 	char_u		*end;
 	int		i;
 
-	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, &len);
+	if (use_argv)
+	    res = mch_get_cmd_output_direct(argv, infile, flags, &len);
+	else
+	    res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, &len);
 	if (res == NULL)
 	    goto errret;
 
@@ -2652,7 +2699,10 @@ get_cmd_output_as_rettv(
     }
     else
     {
-	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
+	if (use_argv)
+	    res = mch_get_cmd_output_direct(argv, infile, flags, NULL);
+	else
+	    res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
 #  ifdef USE_CRNL
 	// translate <CR><NL> into <NL>
 	if (res != NULL)
@@ -2674,6 +2724,13 @@ get_cmd_output_as_rettv(
     }
 
 errret:
+    if (argv != NULL)
+    {
+	int i;
+	for (i = 0; argv[i] != NULL; i++)
+	    vim_free(argv[i]);
+	vim_free(argv);
+    }
     if (infile != NULL)
     {
 	mch_remove(infile);

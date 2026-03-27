@@ -3095,7 +3095,9 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL)
+#endif
+
+#if defined(FEAT_EVAL)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;
@@ -3130,7 +3132,6 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     (*argv)[*argc] = NULL;
     return OK;
 }
-# endif
 #endif
 
 /*

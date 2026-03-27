@@ -2115,6 +2115,44 @@ func Test_popup_position_adjust()
   %bwipe!
 endfunc
 
+func Test_popup_wrap_with_maxwidth()
+  " When wrap is on and maxwidth is explicitly set, a popup near the right
+  " edge of the screen should wrap text within maxwidth, not shift left and
+  " display on one line.  Regression test for issue #19767.
+  let maxw = 20
+  let col = &columns - maxw + 1
+
+  " Text longer than maxwidth should wrap, not cause shift-left.
+  let p = popup_create(repeat('x', 40), #{
+	\ line: 5, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap with maxwidth at right edge',
+	\ 4, col, maxw, 2)
+  call popup_close(p)
+
+  " Text much longer than maxwidth: should still wrap within maxwidth.
+  let p = popup_create(repeat('y', 80), #{
+	\ line: 10, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap long text with maxwidth',
+	\ 7, col, maxw, 4)
+  call popup_close(p)
+
+  " Text shorter than maxwidth: no shift and no wrap needed.
+  let p = popup_create(repeat('z', 15), #{
+	\ line: 5, col: col, maxwidth: maxw, pos: 'botleft'})
+  call s:VerifyPosition(p, 'short text with maxwidth', 5, col, 15, 1)
+  call popup_close(p)
+
+  " When maxwidth is not set, shift-left should still work (patch 9.1.0949).
+  let p = popup_create(repeat('w', 40), #{
+	\ line: 5, col: col, pos: 'botleft'})
+  call s:VerifyPosition(p, 'wrap without maxwidth shifts left',
+	\ 5, col - maxw, 40, 1)
+  call popup_close(p)
+
+  call popup_clear()
+  %bwipe!
+endfunc
+
 func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
@@ -4991,13 +5029,14 @@ func Test_popup_opacity_vsplit()
   " Opacity popup spanning a vertical split should redraw both windows
   " underneath, not just the left one (blend accumulation bug).
   let lines =<< trim END
+    set termguicolors
     call setline(1, repeat(['left window text here xxxx'], 10))
     vnew
     call setline(1, repeat(['right window text here xxxx'], 10))
     wincmd h
     hi PopupColor guibg=darkblue guifg=white
     let g:pop_id = popup_create(['opacity over vsplit'], #{
-        \ line: 3, col: 30,
+        \ line: 3, col: 19,
         \ minwidth: 25,
         \ highlight: 'PopupColor',
         \ opacity: 50,
@@ -5005,7 +5044,7 @@ func Test_popup_opacity_vsplit()
         \})
   END
   call writefile(lines, 'XtestPopupOpacityVsplit', 'D')
-  let buf = RunVimInTerminal('-S XtestPopupOpacityVsplit', #{rows: 12, cols: 80})
+  let buf = RunVimInTerminal('-S XtestPopupOpacityVsplit', #{rows: 12, cols: 60})
   call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_1', {})
 
   " Move cursor multiple times to trigger redraws; without the fix the
@@ -5021,6 +5060,44 @@ func Test_popup_opacity_vsplit()
   call term_sendkeys(buf, "j")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_popupwin_opacity_vsplit_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_close_b_nwindows()
+  edit Xfoo
+  setlocal bufhidden=wipe
+  let &charconvert = 'win_execute(win_getid(1), ''call popup_clear()'') || 1'
+  let popup = popup_create(bufnr(), {})
+  edit Xbar
+  call assert_equal('Xfoo', winbufnr(popup)->bufname())
+  call assert_fails('call win_execute(popup, ''write ++enc=a b'')', ['E937:', 'E513:'])
+
+  set charconvert&
+  call popup_clear()
+  %bw!
+  " b_nwindows used to be 2 here, preventing Xfoo from being wiped.
+  call assert_equal(0, bufexists('Xfoo'))
+endfunc
+
+func Test_popupwin_close_status_redraw()
+  CheckScreendump
+
+  let lines =<< trim END
+    split
+    call setline(1, range(1, 20))
+    let winid = popup_create('popup over statusline', #{
+          \ line: &lines / 2,
+          \ col: 5,
+          \ })
+  END
+  call writefile(lines, 'XtestPopupCloseStatus', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupCloseStatus', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_popupwin_close_status_1', {})
+
+  " close the popup and check the status line is redrawn
+  call term_sendkeys(buf, ":call popup_close(winid)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_status_2', {})
 
   call StopVimInTerminal(buf)
 endfunc

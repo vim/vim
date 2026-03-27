@@ -1037,8 +1037,6 @@ apply_general_options(win_T *wp, dict_T *dict)
 	{
 	    free_callback(&wp->w_filter_cb);
 	    set_callback(&wp->w_filter_cb, &callback);
-	    if (callback.cb_free_name)
-		vim_free(callback.cb_name);
 	}
     }
     nr = dict_get_bool(dict, "mapping", -1);
@@ -1069,9 +1067,6 @@ apply_general_options(win_T *wp, dict_T *dict)
 
     free_callback(&wp->w_close_cb);
     set_callback(&wp->w_close_cb, &callback);
-    if (callback.cb_free_name)
-	vim_free(callback.cb_name);
-
     return OK;
 }
 
@@ -1516,8 +1511,17 @@ popup_adjust_position(win_T *wp)
 		shift_by -= truncate_shift;
 	    }
 
-	    wp->w_wincol -= shift_by;
-	    maxwidth += shift_by;
+	    // When wrapping is enabled and maxwidth is explicitly set,
+	    // don't shift beyond maxwidth - let the text wrap instead.
+	    if (wp->w_p_wrap && wp->w_maxwidth > 0
+				    && maxwidth + shift_by > wp->w_maxwidth)
+		shift_by = wp->w_maxwidth - maxwidth;
+
+	    if (shift_by > 0)
+	    {
+		wp->w_wincol -= shift_by;
+		maxwidth += shift_by;
+	    }
 	    wp->w_width = maxwidth;
 	}
 	if (wp->w_p_wrap)
@@ -2518,8 +2522,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	if (callback.cb_name != NULL)
 	{
 	    set_callback(&wp->w_filter_cb, &callback);
-	    if (callback.cb_free_name)
-		vim_free(callback.cb_name);
 	}
 
 	wp->w_p_wrap = 0;
@@ -3031,6 +3033,7 @@ popup_hide(win_T *wp)
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
     redraw_all_later(UPD_NOT_VALID);
+    status_redraw_all();
     popup_mask_refresh = TRUE;
 }
 
@@ -3194,6 +3197,7 @@ popup_free(win_T *wp)
 #endif
 
     redraw_all_later(UPD_NOT_VALID);
+    status_redraw_all();
     popup_mask_refresh = TRUE;
 }
 
