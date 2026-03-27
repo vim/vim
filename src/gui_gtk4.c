@@ -1974,7 +1974,7 @@ gui_mch_wait_for_chars(long wtime)
 #endif
 
 	// If the GUI was destroyed or main loop quit requested, bail out.
-	if (gui.mainwin == NULL || exiting || gtk4_main_loop_quit)
+	if (gui.mainwin == NULL || gtk4_main_loop_quit)
 	    goto theend;
 
 	// Loop processing until a timeout or input occurs.
