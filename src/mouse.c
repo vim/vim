@@ -20,7 +20,7 @@
 static long mouse_hor_step = 6;
 static long mouse_vert_step = 3;
 static win_T *dragwin = NULL;	// window being dragged
-static int stl_click_handler(win_T *wp, int mouse_col, int which_button, int mod_mask);
+static int stl_click_handler(win_T *wp, int mcol, int which_button, int mods);
 
     void
 mouse_set_vert_scroll_step(long step)
@@ -1643,7 +1643,7 @@ mouse_model_popup(void)
  * Returns TRUE if the function was called and handled the click.
  */
     static int
-stl_click_handler(win_T *wp, int mouse_col, int which_button, int mod_mask)
+stl_click_handler(win_T *wp, int mcol, int which_button, int mods)
 {
 #ifdef FEAT_EVAL
     int		n;
@@ -1655,7 +1655,7 @@ stl_click_handler(win_T *wp, int mouse_col, int which_button, int mod_mask)
     typval_T	argvars[2];
     typval_T	rettv;
     funcexe_T	funcexe;
-    int		col = mouse_col;
+    int		col = mcol;
 
     if (wp == NULL || wp->w_stl_click == NULL || wp->w_stl_click_count == 0)
 	return FALSE;
@@ -1679,7 +1679,7 @@ stl_click_handler(win_T *wp, int mouse_col, int which_button, int mod_mask)
 
     // Determine number of clicks.
     // MOD_MASK_2CLICK=0x20, MOD_MASK_3CLICK=0x40, MOD_MASK_4CLICK=0x60
-    nclicks = ((mod_mask & MOD_MASK_MULTI_CLICK) >> 5) + 1;
+    nclicks = ((mods & MOD_MASK_MULTI_CLICK) >> 5) + 1;
     if (nclicks > 3)
 	nclicks = 3;
     dict_add_number(info, "nclicks", nclicks);
@@ -1695,11 +1695,11 @@ stl_click_handler(win_T *wp, int mouse_col, int which_button, int mod_mask)
     dict_add_string(info, "button", button_str);
 
     // Modifiers.
-    if (mod_mask & MOD_MASK_SHIFT)
+    if (mods & MOD_MASK_SHIFT)
 	mods_str[mi++] = 's';
-    if (mod_mask & MOD_MASK_CTRL)
+    if (mods & MOD_MASK_CTRL)
 	mods_str[mi++] = 'c';
-    if (mod_mask & MOD_MASK_ALT)
+    if (mods & MOD_MASK_ALT)
 	mods_str[mi++] = 'a';
     mods_str[mi] = NUL;
     dict_add_string(info, "mods", mods_str);
