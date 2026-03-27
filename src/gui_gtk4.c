@@ -300,9 +300,10 @@ gui_mch_prepare(int *argc, char **argv)
     if (g_getenv("EGL_LOG_LEVEL") == NULL)
 	setenv("EGL_LOG_LEVEL", "fatal", 0);
 
-    // Let GTK4 choose the best backend (Wayland or X11).
-
-    gtk_init();
+    // Don't call gtk_init() here.  It will be called in
+    // gui_mch_init_check() after the fork.  Calling it before fork
+    // breaks the display connection in the child process, causing gvim
+    // to fail to start without --nofork.
 }
 
 /*
@@ -406,6 +407,9 @@ gui_mch_early_init_check(int give_message UNUSED)
     int
 gui_mch_init_check(void)
 {
+    // Call gtk_init() here after fork().  Calling it before fork() breaks
+    // the display connection in the child process.
+    gtk_init();
     return OK;
 }
 
