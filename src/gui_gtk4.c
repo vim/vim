@@ -486,6 +486,9 @@ gui_mch_init(void)
     // The form widget manages absolute positioning of scrollbars.
     gui.formwin = gui_gtk_form_new();
     gtk_widget_set_name(gui.formwin, "vim-gtk-form");
+    // formwin is overlaid on top of drawarea for scrollbar positioning.
+    // Disable input targeting so mouse events pass through to drawarea.
+    gtk_widget_set_can_target(gui.formwin, FALSE);
 
     // The drawing area for the editor content.
     // Placed in an overlay so it fills the formwin, with scrollbars on top.
@@ -1612,6 +1615,12 @@ modifiers_gdk2mouse(guint state)
     return modifiers;
 }
 
+// Track which mouse button is currently pressed for drag detection.
+// GtkEventControllerMotion's modifier state may not include button masks
+// on all backends (e.g. Wayland), so we track it ourselves.
+// -1 means no button is pressed (MOUSE_LEFT is 0x00, so can't use 0).
+static int mouse_pressed_button = -1;
+
     static void
 button_press_event(GtkGestureClick *gesture, int n_press UNUSED,
 	double x, double y, gpointer data UNUSED)
@@ -1649,6 +1658,7 @@ button_press_event(GtkGestureClick *gesture, int n_press UNUSED,
 	default: return;
     }
 
+    mouse_pressed_button = button;
     vim_modifiers = modifiers_gdk2mouse(state);
     gui_send_mouse_event(button, (int)x, (int)y, repeated_click, vim_modifiers);
 }
@@ -1666,6 +1676,7 @@ button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
     state = gdk_event_get_modifier_state(event);
     vim_modifiers = modifiers_gdk2mouse(state);
 
+    mouse_pressed_button = -1;
     gui_send_mouse_event(MOUSE_RELEASE, (int)x, (int)y, FALSE, vim_modifiers);
 }
 
@@ -1673,23 +1684,20 @@ button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x, double y, gpointer data UNUSED)
 {
-    GdkModifierType state;
-    GdkEvent *event;
+    if (mouse_pressed_button >= 0)
+    {
+	GdkModifierType state;
+	GdkEvent *event;
 
-    event = gtk_event_controller_get_current_event(
-	    GTK_EVENT_CONTROLLER(controller));
-    if (event == NULL)
-	return;
-    state = gdk_event_get_modifier_state(event);
-
-    int button = (state & GDK_BUTTON1_MASK) ? MOUSE_LEFT
-	       : (state & GDK_BUTTON2_MASK) ? MOUSE_MIDDLE
-	       : (state & GDK_BUTTON3_MASK) ? MOUSE_RIGHT
-	       : 0;
-
-    if (button)
-	gui_send_mouse_event(MOUSE_DRAG, (int)x, (int)y, FALSE,
-		modifiers_gdk2mouse(state));
+	event = gtk_event_controller_get_current_event(
+		GTK_EVENT_CONTROLLER(controller));
+	if (event != NULL)
+	{
+	    state = gdk_event_get_modifier_state(event);
+	    gui_send_mouse_event(MOUSE_DRAG, (int)x, (int)y,
+		    FALSE, modifiers_gdk2mouse(state));
+	}
+    }
 
     if (p_mh)
 	gui_mch_mousehide(FALSE);
