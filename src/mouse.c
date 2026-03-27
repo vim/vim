@@ -1729,6 +1729,10 @@ stl_click_handler(win_T *wp, int mcol, int which_button, int mods)
 
     return TRUE;
 #else
+    (void)wp;
+    (void)mcol;
+    (void)which_button;
+    (void)mods;
     return FALSE;
 #endif
 }

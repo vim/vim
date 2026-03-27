@@ -6048,8 +6048,6 @@ win_free(
     // Free statusline click regions.
     if (wp->w_stl_click != NULL)
     {
-	int i;
-
 	for (i = 0; i < wp->w_stl_click_count; i++)
 	    vim_free(wp->w_stl_click[i].funcname);
 	vim_free(wp->w_stl_click);
