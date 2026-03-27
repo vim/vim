@@ -1221,38 +1221,17 @@ gui_mch_get_rgb(guicolor_T pixel)
  * ============================================================
  */
 
+static void set_cairo_source_from_pixel(cairo_t *cr, guicolor_T pixel);
+
     static void
 draw_event(GtkDrawingArea *area UNUSED, cairo_t *cr,
 	int width, int height, gpointer data UNUSED)
 {
-    // Ensure surface matches drawing area
-    if (gui.surface != NULL)
-    {
-	int sw = cairo_image_surface_get_width(gui.surface);
-	int sh = cairo_image_surface_get_height(gui.surface);
-	if (sw != width || sh != height)
-	{
-	    cairo_surface_t *old = gui.surface;
-	    gui.surface = cairo_image_surface_create(
-		    CAIRO_FORMAT_ARGB32, width, height);
-	    // Copy old content
-	    cairo_t *tmp = cairo_create(gui.surface);
-	    cairo_set_source_surface(tmp, old, 0, 0);
-	    cairo_paint(tmp);
-	    cairo_destroy(tmp);
-	    cairo_surface_destroy(old);
-	}
-    }
-    else if (width > 0 && height > 0)
-	gui.surface = cairo_image_surface_create(
-		CAIRO_FORMAT_ARGB32, width, height);
+    // Surface creation/resizing is handled by drawarea_resize_cb.
+    // Here we only paint the surface to the widget.
 
     // Fill background with Vim's background color
-    guicolor_T bg = gui.back_pixel;
-    cairo_set_source_rgb(cr,
-	    ((bg & 0xff0000) >> 16) / 255.0,
-	    ((bg & 0xff00) >> 8) / 255.0,
-	    (bg & 0xff) / 255.0);
+    set_cairo_source_from_pixel(cr, gui.back_pixel);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_fill(cr);
 
@@ -1822,12 +1801,32 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 	gpointer data UNUSED)
 {
+    cairo_t *cr;
+
     if (width <= 0 || height <= 0)
 	return;
 
     if (gui.surface != NULL)
+    {
+	int sw = cairo_image_surface_get_width(gui.surface);
+	int sh = cairo_image_surface_get_height(gui.surface);
+
+	if (sw == width && sh == height)
+	    return;
+
 	cairo_surface_destroy(gui.surface);
-    gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    }
+
+    // Create a fresh surface filled with the background color.
+    // Do not copy old surface content: gui_resize_shell() will trigger
+    // a full redraw, and stale content (e.g. intro screen text) would
+    // otherwise remain as ghost artifacts.
+    gui.surface = cairo_image_surface_create(
+	    CAIRO_FORMAT_ARGB32, width, height);
+    cr = cairo_create(gui.surface);
+    set_cairo_source_from_pixel(cr, gui.back_pixel);
+    cairo_paint(cr);
+    cairo_destroy(cr);
 
     // Notify Vim about the new size - this will cause a full redraw
     gui_resize_shell(width, height);
