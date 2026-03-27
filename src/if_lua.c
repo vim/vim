@@ -2582,11 +2582,11 @@ luaopen_vim(lua_State *L)
 luaV_newstate(void)
 {
     lua_State *L = luaL_newstate();
-#  if LUA_VERSION_NUM >= 505
+# if LUA_VERSION_NUM >= 505
     dll_luaL_openselectedlibs(L, ~0, 0);
-#  else
+# else
     luaL_openlibs(L);
-#  endif
+# endif
     lua_pushcfunction(L, luaopen_vim); // vim
     lua_call(L, 0, 0);
     return L;
