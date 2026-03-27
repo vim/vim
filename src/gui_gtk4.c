@@ -1997,6 +1997,9 @@ theend:
     void
 gui_mch_flush(void)
 {
+    // Ensure the offscreen surface content gets painted to the widget.
+    if (gui.drawarea != NULL)
+	gtk_widget_queue_draw(gui.drawarea);
     if (gui.mainwin != NULL && gtk_widget_get_realized(gui.mainwin))
 	gdk_display_flush(gtk_widget_get_display(gui.mainwin));
 }
