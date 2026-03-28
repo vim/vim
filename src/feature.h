@@ -297,6 +297,14 @@
 #endif
 
 /*
+ * +gtk_print		Native GTK print dialog for :hardcopy (GTK4).
+ *			Uses GtkPrintOperation + Pango/Cairo instead of PostScript.
+ */
+#if defined(FEAT_PRINTER) && defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+# define FEAT_GUI_GTK_PRINT
+#endif
+
+/*
  * +diff		Displaying diffs in a nice way.
  *			Can be enabled in autoconf already.
  */

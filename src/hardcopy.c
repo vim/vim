@@ -560,6 +560,14 @@ ex_hardcopy(exarg_T *eap)
     CLEAR_FIELD(settings);
     settings.has_color = TRUE;
 
+#ifdef FEAT_GUI_GTK_PRINT
+    if (gui.in_use)
+    {
+	gui_gtk4_hardcopy(eap);
+	return;
+    }
+#endif
+
 #ifdef FEAT_POSTSCRIPT
     if (*eap->arg == '>')
     {
