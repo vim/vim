@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: RuVim_0.9020262.280326\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-03-28 14:52+0300\n"
-"PO-Revision-Date: 2026-03-28 17:09+0300\n"
+"PO-Revision-Date: 2026-03-28 19:59+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -4633,7 +4633,7 @@ msgstr "Брам Моленар и другие"
 
 msgid "Vim is open source and freely distributable"
 msgstr ""
-"Редактор Vim — свободно распространяемая программа с открытым исходным кодом"
+"Редактор Vim — свободно распространяемая программа с открытым исходным кодом "
 
 msgid "Help poor children in Uganda!"
 msgstr "Несчастным детям Уганды требуется ваша помощь!"
@@ -4642,19 +4642,19 @@ msgstr "Несчастным детям Уганды требуется ваша помощь!"
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help Kuwasha<Enter>    for information "
 msgstr ""
-"наберите :help Kuwasha<ENTER>           чтобы узнать об этом подробнее      "
+"наберите :help Kuwasha<ENTER>           чтобы узнать об этом подробнее       "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
-"наберите :q<ENTER>                      чтобы завершить работу с программой "
+"наберите :q<ENTER>                      чтобы завершить работу с программой  "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
-"наберите :help<ENTER> или нажмите <F1>  чтобы ознакомиться с документацией  "
+"наберите :help<ENTER> или нажмите <F1>  чтобы ознакомиться с документацией   "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
@@ -4669,19 +4669,19 @@ msgstr "Программа работает в режиме совместимости с редактором Vi"
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
-"наберите :set nocp<ENTER>               чтобы активировать возможности Vim  "
+"наберите :set nocp<ENTER>               чтобы активировать возможности Vim   "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
-"наберите :help cp-default<ENTER>        чтобы узнать об этом подробнее      "
+"наберите :help cp-default<ENTER>        чтобы узнать об этом подробнее       "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
-"меню Справка->Благотворительность       чтобы узнать об этом подробнее      "
+"меню Справка->Благотворительность       чтобы узнать об этом подробнее       "
 
 # Restorer: выводится только в ГИП при запуске gVim Easy
 msgid "Running modeless, typed text is inserted"
@@ -4692,7 +4692,7 @@ msgstr ""
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
-"меню Правка->Общие параметры->Режим вставки    чтобы переключать между      "
+"меню Правка->Общие параметры->Режим вставки    чтобы переключать между       "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 msgid "                              for two modes      "
@@ -4703,12 +4703,12 @@ msgstr ""
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
-"меню Правка->Общие параметры->Совместимость с Vi   чтобы активировать       "
+"меню Правка->Общие параметры->Совместимость с Vi   чтобы активировать        "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 msgid "                              for Vim defaults   "
 msgstr ""
-"                                                   возможности редактора Vim"
+"                                                   возможности редактора Vim "
 
 msgid "Sponsor Vim development!"
 msgstr "Поддержите разработку программы «Редактор Vim»!"
@@ -4717,13 +4717,13 @@ msgstr "Поддержите разработку программы «Редактор Vim»!"
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
-"наберите :help sponsor<ENTER>           чтобы узнать об этом подробнее      "
+"наберите :help sponsor<ENTER>           чтобы узнать об этом подробнее       "
 
 # Restorer: пробелы не убирать, сделано чтобы выровнить сообщения
 # Restorer: выравнивается по самому длинному подобному сообщению
 msgid "menu  Help->Sponsor           for information    "
 msgstr ""
-"меню Справка->Благотворительность       чтобы узнать об этом подробнее      "
+"меню Справка->Благотворительность       чтобы узнать об этом подробнее       "
 
 # Restorer: подставляется в «E1016: Cannot declare a %s variable: %s» как
 # Restorer: первая %s. Может лучше не переводить? Пока сделал. Выглядит так
