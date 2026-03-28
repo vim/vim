@@ -67,6 +67,7 @@ void gui_mch_set_curtab(int nr);
 void gui_mch_drawsign(int row, int col, int typenr);
 void *gui_mch_register_sign(char_u *signfile);
 void gui_mch_destroy_sign(void *sign);
+int gui_gtk_draw_string_ext(int row, int col, char_u *s, int len, int flags, int force_pango);
 int gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags);
 int gui_get_x11_windis(Window *win, Display **dis);
 void gui_gtk_init_socket_server(void);
