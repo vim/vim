@@ -106,4 +106,5 @@ int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, in
 void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
+void gui_gtk4_hardcopy(exarg_T *eap);
 /* vim: set ft=c : */
