@@ -121,6 +121,9 @@ static int last_shape = 0;
 
 #define DEFAULT_FONT	"Monospace 10"
 
+// Menu action group for GMenu-based menus
+static GSimpleActionGroup *menu_action_group = NULL;
+
 // Cursor blinking state
 static enum {
     BLINK_NONE,
@@ -2111,9 +2114,28 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
  */
 
     void
-gui_mch_menu_grey(vimmenu_T *menu UNUSED, int grey UNUSED)
+gui_mch_menu_grey(vimmenu_T *menu, int grey)
 {
-    // No-op: menu system not yet implemented for GTK4.
+    if (menu->id == NULL || menu_action_group == NULL)
+	return;
+
+    // For toolbar items, use gtk_widget_set_sensitive
+    if (menu->parent != NULL && menu_is_toolbar(menu->parent->name))
+    {
+	if (menu->id != (GtkWidget *)1)
+	    gtk_widget_set_sensitive(menu->id, !grey);
+	return;
+    }
+
+    // For menu items, enable/disable the GSimpleAction
+    if (menu->label != NULL)
+    {
+	GAction *action = g_action_map_lookup_action(
+		G_ACTION_MAP(menu_action_group),
+		(const char *)menu->label);
+	if (action != NULL)
+	    g_simple_action_set_enabled(G_SIMPLE_ACTION(action), !grey);
+    }
 }
 
     void
@@ -3343,14 +3365,39 @@ create_toolbar_icon(vimmenu_T *menu)
  * Actions are added to a GSimpleActionGroup attached to gui.mainwin.
  */
 
-static GSimpleActionGroup *menu_action_group = NULL;
 static int menu_action_id = 0;
 
     static void
 menu_action_cb(GSimpleAction *action UNUSED, GVariant *parameter UNUSED,
 	gpointer data)
 {
+    // Force-close any open popover menus in the menubar.
+    // GTK4 marks them as not-visible but Vim's custom main loop
+    // may not process the rendering update, so we flush explicitly.
+    if (gui.menubar != NULL)
+    {
+	GtkWidget *item;
+
+	for (item = gtk_widget_get_first_child(gui.menubar);
+		item != NULL;
+		item = gtk_widget_get_next_sibling(item))
+	{
+	    GtkWidget *child;
+
+	    for (child = gtk_widget_get_first_child(item);
+		    child != NULL;
+		    child = gtk_widget_get_next_sibling(child))
+	    {
+		if (GTK_IS_POPOVER(child))
+		{
+		    gtk_widget_unrealize(child);
+		}
+	    }
+	}
+    }
+
     gui_menu_cb((vimmenu_T *)data);
+    gui_mch_flush();
 }
 
     static char *
@@ -3490,6 +3537,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    CONVERT_TO_UTF8_FREE(label);
 
 	    menu->id = (GtkWidget *)1;  // non-NULL marker
+	    // Store action name for later use (grey/enable)
+	    menu->label = (GtkWidget *)vim_strsave(
+		    (char_u *)action_name);
 	}
     }
 }
@@ -3518,6 +3568,10 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     }
     else
 	menu->id = NULL;
+
+    // Free stored action name
+    vim_free(menu->label);
+    menu->label = NULL;
 
     // GMenu items cannot be individually removed easily.
     // The submenu GMenu is unreffed if present.
