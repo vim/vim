@@ -706,10 +706,10 @@ gui_mch_exit(int rc UNUSED)
     int
 gui_mch_get_winpos(int *x, int *y)
 {
-    // GTK4/Wayland: window positioning not available
+    // GTK4 does not provide a window position API.
     *x = 0;
     *y = 0;
-    return OK;
+    return FAIL;
 }
 
     void
