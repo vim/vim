@@ -459,11 +459,11 @@ im_preedit_window_open(void)
 im_preedit_window_close(void)
 {
     if (preedit_window != NULL)
-#ifdef USE_GTK4
+#  ifdef USE_GTK4
 	gtk_widget_set_visible(preedit_window, FALSE);
-#else
+#  else
 	gtk_widget_hide(preedit_window);
-#endif
+#  endif
 }
 
     static void
