@@ -2424,10 +2424,11 @@ mch_inchar(
 # endif
 
     // Keep looping until there is something in the typeahead buffer and more
-    // to get and still room in the buffer (up to two bytes for a char and
-    // three bytes for a modifier).
+    // to get and still room in the buffer.  A mouse event uses up to
+    // 10 bytes: 3 (modifier) + 3 (scroll event) + 4 (coordinates), and a
+    // keyboard input uses up to 7 bytes: 3 (modifier) + 4 (UTF-8 char).
     while ((typeaheadlen == 0 || WaitForChar(0L, FALSE))
-			  && typeaheadlen + 5 + TYPEAHEADSPACE <= TYPEAHEADLEN)
+			  && typeaheadlen + 10 + TYPEAHEADSPACE <= TYPEAHEADLEN)
     {
 	if (typebuf_changed(tb_change_cnt))
 	{
