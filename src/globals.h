@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4 noet:
+f/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -2104,7 +2104,7 @@ typedef enum {
 # ifdef FEAT_X11
     CLIENTSERVER_METHOD_X11,
 # endif
-# ifdef FEAT_MSWIN
+# ifdef MSWIN
     CLIENTSERVER_METHOD_MSWIN,
 # endif
     CLIENTSERVER_METHOD_SOCKET
