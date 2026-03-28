@@ -5670,6 +5670,13 @@ find_linebreak:
 	cp->start = NULL;
 	cp->funcname = NULL;
     }
+    else
+    {
+	// Free click function names when caller doesn't need them.
+	for (l = 0; l < itemcnt; l++)
+	    if (stl_items[l].stl_type == ClickFunc)
+		vim_free(stl_items[l].stl_clickfunc);
+    }
 
     redraw_not_allowed = save_redraw_not_allowed;
 

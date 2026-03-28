@@ -1548,6 +1548,10 @@ win_redr_custom(
 		wp->w_stl_click_count = rcount;
 	    }
 	}
+
+	// Free the funcname strings allocated by build_stl_str_hl_local().
+	for (n = 0; clicktab[n].start != NULL; n++)
+	    vim_free(clicktab[n].funcname);
     }
 
 theend:
