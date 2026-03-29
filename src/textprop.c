@@ -55,6 +55,60 @@ vtext_unref(vtext_T *vt)
 }
 
 /*
+ * Clear a continuation flag on a neighboring line's text property.
+ * Find a property on "lnum" in "buf" that matches "tp_id" and "tp_type",
+ * and clear "flag_to_clear" (TP_FLAG_CONT_NEXT or TP_FLAG_CONT_PREV).
+ */
+    static void
+clear_cont_flag_on_line(
+	buf_T	    *buf,
+	linenr_T    lnum,
+	int	    tp_id,
+	int	    tp_type,
+	int	    flag_to_clear)
+{
+    char_u	*props;
+    int		proplen;
+    int		i;
+
+    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
+	return;
+
+    proplen = get_text_props(buf, lnum, &props, TRUE);
+    for (i = 0; i < proplen; ++i)
+    {
+	textprop_T  prop;
+
+	mch_memmove(&prop, props + i * sizeof(textprop_T),
+						       sizeof(textprop_T));
+	if (prop.tp_id == tp_id
+		&& prop.tp_type == tp_type
+		&& (prop.tp_flags & flag_to_clear))
+	{
+	    prop.tp_flags &= ~flag_to_clear;
+	    mch_memmove(props + i * sizeof(textprop_T), &prop,
+						       sizeof(textprop_T));
+	    break;
+	}
+    }
+}
+
+/*
+ * After removing a text property, update continuation flags on
+ * neighboring lines if needed.
+ */
+    static void
+adjust_neighbor_cont_flags(buf_T *buf, linenr_T lnum, textprop_T *prop)
+{
+    if (prop->tp_flags & TP_FLAG_CONT_PREV)
+	clear_cont_flag_on_line(buf, lnum - 1,
+		prop->tp_id, prop->tp_type, TP_FLAG_CONT_NEXT);
+    if (prop->tp_flags & TP_FLAG_CONT_NEXT)
+	clear_cont_flag_on_line(buf, lnum + 1,
+		prop->tp_id, prop->tp_type, TP_FLAG_CONT_PREV);
+}
+
+/*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
  * This avoids adding a pointer to the hashtable item.
  * PT2HIKEY() converts a proptype pointer to a hashitem key pointer.
@@ -1105,30 +1159,72 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 
     for (lnum = start; lnum <= end; ++lnum)
     {
-	char_u *text;
-	size_t len;
+	char_u	    *text;
+	size_t	    len;
+	char_u	    *props;
+	int	    proplen;
+	int	    i;
 
 	if (lnum > buf->b_ml.ml_line_count)
 	    break;
 	text = ml_get_buf(buf, lnum, FALSE);
 	len = ml_get_buf_len(buf, lnum) + 1;
-	if ((size_t)buf->b_ml.ml_line_len > len)
-	{
-	    did_clear = TRUE;
-	    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
-	    {
-		char_u *newtext = vim_strsave(text);
+	if ((size_t)buf->b_ml.ml_line_len <= len)
+	    continue;
 
-		// need to allocate the line now
-		if (newtext == NULL)
-		    return;
-		if (buf->b_ml.ml_flags & ML_ALLOCATED)
-		    vim_free(buf->b_ml.ml_line_ptr);
-		buf->b_ml.ml_line_ptr = newtext;
-		buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	did_clear = TRUE;
+
+	// Check for continuation flags and virtual text before clearing.
+	// Copy properties first because modifying neighbor lines
+	// invalidates the props pointer.
+	proplen = get_text_props(buf, lnum, &props, FALSE);
+	if (proplen > 0)
+	{
+	    textprop_T	*saved_props;
+	    int		props_size = proplen * (int)sizeof(textprop_T);
+
+	    saved_props = alloc(props_size);
+	    if (saved_props != NULL)
+	    {
+		mch_memmove(saved_props, props, props_size);
+		for (i = 0; i < proplen; ++i)
+		{
+		    textprop_T	*prop = &saved_props[i];
+
+		    if (prop->tp_vtext != NULL)
+			vtext_unref(prop->tp_vtext);
+
+		    // Only adjust neighbor lines outside the clear range.
+		    if ((prop->tp_flags & TP_FLAG_CONT_PREV)
+							 && lnum - 1 < start)
+			clear_cont_flag_on_line(buf, lnum - 1,
+				prop->tp_id, prop->tp_type,
+				TP_FLAG_CONT_NEXT);
+		    if ((prop->tp_flags & TP_FLAG_CONT_NEXT)
+							   && lnum + 1 > end)
+			clear_cont_flag_on_line(buf, lnum + 1,
+				prop->tp_id, prop->tp_type,
+				TP_FLAG_CONT_PREV);
+		}
+		vim_free(saved_props);
 	    }
-	    buf->b_ml.ml_line_len = (int)len;
 	}
+
+	// Re-fetch the line after possible neighbor modifications.
+	text = ml_get_buf(buf, lnum, FALSE);
+	if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
+	{
+	    char_u *newtext = vim_strsave(text);
+
+	    // need to allocate the line now
+	    if (newtext == NULL)
+		return;
+	    if (buf->b_ml.ml_flags & ML_ALLOCATED)
+		vim_free(buf->b_ml.ml_line_ptr);
+	    buf->b_ml.ml_line_ptr = newtext;
+	    buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	}
+	buf->b_ml.ml_line_len = (int)len;
     }
     if (did_clear)
 	redraw_buf_later(buf, UPD_NOT_VALID);
@@ -1759,6 +1855,15 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
 		    if (textprop.tp_vtext != NULL)
 			vtext_unref(textprop.tp_vtext);
+
+		    if (textprop.tp_flags
+				  & (TP_FLAG_CONT_PREV | TP_FLAG_CONT_NEXT))
+		    {
+			adjust_neighbor_cont_flags(buf, lnum, &textprop);
+			// Re-fetch the current line; adjusting a neighbor
+			// line may have flushed the dirty line.
+			len = ml_get_buf_len(buf, lnum) + 1;
+		    }
 
 		    if (first_changed == 0)
 			first_changed = lnum;

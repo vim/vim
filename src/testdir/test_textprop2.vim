@@ -318,64 +318,64 @@ endfunc
 
 " Removing a multiline property from the last line should fix the property
 " on the penultimate line.
-" func Test_multiline_prop_partial_remove_last_using_remove()
-"   call s:Setup_multiline_props_1()
-"
-"   call prop_remove({'type': '3'}, 4)
-"   call assert_equal(1, s:PropForType(3, '3')['end'])
-"
-"   call s:CleanupPropTypes(['1', '2', '3'])
-" endfunc
+func Test_multiline_prop_partial_remove_last_using_remove()
+  call s:Setup_multiline_props_1()
+
+  call prop_remove({'type': '3'}, 4)
+  call assert_equal(1, s:PropForType(3, '3')['end'])
+
+  call s:CleanupPropTypes(['1', '2', '3'])
+endfunc
 
 " Removing a multiline property from the penultimate line should fix the
 " properties on the previous and last lines.
-" func Test_multiline_prop_partial_remove_penultimate_using_remove()
-"   call s:Setup_multiline_props_1()
-"
-"   call prop_remove({'type': '3'}, 3)
-"   call assert_equal(1, s:PropForType(2, '3')['end'])
-"   call assert_equal(1, s:PropForType(4, '3')['start'])
-"
-"   call s:CleanupPropTypes(['1', '2', '3'])
-" endfunc
+func Test_multiline_prop_partial_remove_penultimate_using_remove()
+  call s:Setup_multiline_props_1()
+
+  call prop_remove({'type': '3'}, 3)
+  call assert_equal(1, s:PropForType(2, '3')['end'])
+  call assert_equal(1, s:PropForType(4, '3')['start'])
+
+  call s:CleanupPropTypes(['1', '2', '3'])
+endfunc
 
 " Removing all properties from the first line should fix the properties
 " on the second line.
-" func Test_multiline_prop_partial_remove_first_using_clear()
-"   call s:Setup_multiline_props_1()
-"
-"   call prop_clear(2)
-"   call assert_equal(1, s:PropForType(3, '3')['start'])
-"   call assert_equal(1, s:PropForType(3, '1')['start'])
-"
-"   call s:CleanupPropTypes(['1', '2', '3'])
-" endfunc
+func Test_multiline_prop_partial_remove_first_using_clear()
+  call s:Setup_multiline_props_1()
+
+  call prop_clear(2)
+  call assert_equal(1, s:PropForType(3, '3')['start'])
+  call assert_equal(1, s:PropForType(3, '1')['start'])
+
+  call s:CleanupPropTypes(['1', '2', '3'])
+endfunc
 
 " Removing all multiline properties from the last line should fix the
 " properties on the penultimate line.
-" func Test_multiline_prop_partial_remove_last_using_clear()
-"   call s:Setup_multiline_props_1()
-"
-"   call prop_clear(4)
-"   call assert_equal(1, s:PropForType(3, '3')['end'])
-"   call assert_equal(1, s:PropForType(3, '1')['end'])
-"
-"   call s:CleanupPropTypes(['1', '2', '3'])
-" endfunc
+func Test_multiline_prop_partial_remove_last_using_clear()
+  call s:Setup_multiline_props_1()
+
+  call prop_clear(4)
+  call assert_equal(1, s:PropForType(3, '3')['end'])
+  call assert_equal(1, s:PropForType(3, '1')['end'])
+
+  call s:CleanupPropTypes(['1', '2', '3'])
+endfunc
 
 " Removing all multiline properties from the penultimate line should fix the
 " properties on the previous and last lines.
-" func Test_multiline_prop_partial_remove_penultimate_using_clear()
-"   call s:Setup_multiline_props_1()
-"
-"   call prop_clear(3)
-"   call assert_equal(1, s:PropForType(2, '3')['end'])
-"   call assert_equal(1, s:PropForType(4, '3')['start'])
-"   call assert_equal(1, s:PropForType(2, '1')['end'])
-"   call assert_equal(1, s:PropForType(4, '1')['start'])
-"
-"   call s:CleanupPropTypes(['1', '2', '3'])
-" endfunc
+func Test_multiline_prop_partial_remove_penultimate_using_clear()
+  call s:Setup_multiline_props_1()
+
+  call prop_clear(3)
+  call assert_equal(1, s:PropForType(2, '3')['end'])
+  call assert_equal(1, s:PropForType(4, '3')['start'])
+  call assert_equal(1, s:PropForType(2, '1')['end'])
+  call assert_equal(1, s:PropForType(4, '1')['start'])
+
+  call s:CleanupPropTypes(['1', '2', '3'])
+endfunc
 
 " Deleting the first line with multiline properties should fix the properties
 " on the second line.
