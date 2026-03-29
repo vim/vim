@@ -1218,4 +1218,15 @@ func Test_term_getpos()
   bw
 endfunc
 
+func Test_term_autowrite()
+  set autowrite
+  new termautowritetestfile
+  call setline(1, 'test content')
+  term echo "test"
+  call assert_equal(['test content'], readfile('termautowritetestfile'))
+  call delete('termautowritetestfile')
+  bwipe!
+  set noautowrite
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

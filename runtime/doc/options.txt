@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 23
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1031,7 +1031,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Write the contents of the file, if it has been modified, on each
 	`:next`, `:rewind`, `:last`, `:first`, `:previous`, `:stop`,
-	`:suspend`, `:tag`, `:!`, `:make`, CTRL-] and CTRL-^ command; and when
+	`:suspend`, `:tag`, `:!`, `:make`, `:terminal`, CTRL-] and CTRL-^ command; and when
 	a `:buffer`, CTRL-O, CTRL-I, '{A-Z0-9}, or `{A-Z0-9} command takes one
 	to another file.
 	A buffer is not written if it becomes hidden, e.g. when 'bufhidden' is
