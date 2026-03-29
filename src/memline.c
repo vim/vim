@@ -2151,7 +2151,10 @@ recover_names(
 		    files[i], STRLEN(files[i]), TRUE, &name);
 		if (name.string != NULL)
 		{
-		    list_append_string(ret_list, name.string, name.length);
+		    int namelen;
+
+		    namelen = (int)name.length;
+		    list_append_string(ret_list, name.string, namelen);
 		    vim_free(name.string);
 		}
 	    }
