@@ -313,7 +313,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
     ga_init2(&stack, sizeof(json_enc_frame_T), 100);
     cur_val = val;
 
-encode_value:
+    for (;;)
+    {
     switch (cur_val->v_type)
     {
 	case VAR_BOOL:
@@ -322,7 +323,7 @@ encode_value:
 		case VVAL_FALSE: GA_CONCAT_LITERAL(gap, "false"); break;
 		case VVAL_TRUE: GA_CONCAT_LITERAL(gap, "true"); break;
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_SPECIAL:
 	    switch ((long)cur_val->vval.v_number)
@@ -334,7 +335,7 @@ encode_value:
 				// FALLTHROUGH
 		case VVAL_NULL: GA_CONCAT_LITERAL(gap, "null"); break;
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_NUMBER:
 	    {
@@ -344,12 +345,12 @@ encode_value:
 		    "%lld", (varnumber_T)cur_val->vval.v_number);
 		ga_concat_len(gap, numbuf, numbuflen);
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_STRING:
 	    res = cur_val->vval.v_string;
 	    write_string(gap, res);
-	    goto item_done;
+	    break;
 
 	case VAR_FUNC:
 	case VAR_PARTIAL:
@@ -392,7 +393,7 @@ encode_value:
 		}
 		ga_append(gap, ']');
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_LIST:
 	    l = cur_val->vval.v_list;
@@ -425,13 +426,13 @@ encode_value:
 			++stack.ga_len;
 			options = options & JSON_JS;
 			cur_val = &l->lv_first->li_tv;
-			goto encode_value;
+			continue;
 		    }
 		    ga_append(gap, ']');
 		    l->lv_copyID = 0;
 		}
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_TUPLE:
 	    tuple = cur_val->vval.v_tuple;
@@ -466,13 +467,13 @@ encode_value:
 			++stack.ga_len;
 			options = options & JSON_JS;
 			cur_val = TUPLE_ITEM(tuple, 0);
-			goto encode_value;
+			continue;
 		    }
 		    else
 			GA_CONCAT_LITERAL(gap, "[]");
 		}
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_DICT:
 	    d = cur_val->vval.v_dict;
@@ -523,13 +524,13 @@ encode_value:
 			++stack.ga_len;
 			options = options | JSON_NO_NONE;
 			cur_val = &dict_lookup(hi)->di_tv;
-			goto encode_value;
+			continue;
 		    }
 		    else
 			GA_CONCAT_LITERAL(gap, "{}");
 		}
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_FLOAT:
 #if defined(HAVE_MATH_H)
@@ -551,7 +552,7 @@ encode_value:
 		    "%g", cur_val->vval.v_float);
 		ga_concat_len(gap, numbuf, numbuflen);
 	    }
-	    goto item_done;
+	    break;
 
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -560,102 +561,116 @@ encode_value:
 	    goto theend;
     }
 
-item_done:
-    if (stack.ga_len == 0)
-    {
-	ga_clear(&stack);
-	return OK;
-    }
-
-    frame = ((json_enc_frame_T *)stack.ga_data) + stack.ga_len - 1;
-    switch (frame->je_type)
-    {
-	case ENC_LIST:
+	// Process the completed item by advancing containers or
+	// returning when the stack is empty.
+	for (;;)
 	{
-	    listitem_T	*li = frame->je_u.l.li;
+	    int		advance = FALSE;
 
-	    // JSON_JS: add trailing comma if the last item is v:none
-	    if ((frame->je_options & JSON_JS)
-		    && li->li_next == NULL
-		    && li->li_tv.v_type == VAR_SPECIAL
-		    && li->li_tv.vval.v_number == VVAL_NONE)
-		ga_append(gap, ',');
-
-	    li = li->li_next;
-	    frame->je_u.l.li = li;
-	    if (li != NULL && !got_int)
+	    if (stack.ga_len == 0)
 	    {
-		ga_append(gap, ',');
-		options = frame->je_options & JSON_JS;
-		cur_val = &li->li_tv;
-		goto encode_value;
-	    }
-	    ga_append(gap, ']');
-	    frame->je_u.l.list->lv_copyID = 0;
-	    --stack.ga_len;
-	    goto item_done;
-	}
-
-	case ENC_TUPLE:
-	{
-	    int	    idx = frame->je_u.t.idx;
-	    int	    len = frame->je_u.t.len;
-
-	    // JSON_JS: add trailing comma if the last item is v:none
-	    if ((frame->je_options & JSON_JS) && idx == len - 1)
-	    {
-		typval_T *t_item = TUPLE_ITEM(frame->je_u.t.tuple, idx);
-
-		if (t_item->v_type == VAR_SPECIAL
-			&& t_item->vval.v_number == VVAL_NONE)
-		    ga_append(gap, ',');
+		ga_clear(&stack);
+		return OK;
 	    }
 
-	    ++idx;
-	    frame->je_u.t.idx = idx;
-	    if (idx < len && !got_int)
+	    frame = ((json_enc_frame_T *)stack.ga_data)
+							+ stack.ga_len - 1;
+	    switch (frame->je_type)
 	    {
-		ga_append(gap, ',');
-		options = frame->je_options & JSON_JS;
-		cur_val = TUPLE_ITEM(frame->je_u.t.tuple, idx);
-		goto encode_value;
+		case ENC_LIST:
+		{
+		    listitem_T	*li = frame->je_u.l.li;
+
+		    // JSON_JS: add trailing comma if last item is v:none
+		    if ((frame->je_options & JSON_JS)
+			    && li->li_next == NULL
+			    && li->li_tv.v_type == VAR_SPECIAL
+			    && li->li_tv.vval.v_number == VVAL_NONE)
+			ga_append(gap, ',');
+
+		    li = li->li_next;
+		    frame->je_u.l.li = li;
+		    if (li != NULL && !got_int)
+		    {
+			ga_append(gap, ',');
+			options = frame->je_options & JSON_JS;
+			cur_val = &li->li_tv;
+			advance = TRUE;
+			break;
+		    }
+		    ga_append(gap, ']');
+		    frame->je_u.l.list->lv_copyID = 0;
+		    --stack.ga_len;
+		    break;
+		}
+
+		case ENC_TUPLE:
+		{
+		    int	    idx = frame->je_u.t.idx;
+		    int	    len = frame->je_u.t.len;
+
+		    // JSON_JS: add trailing comma if last item is v:none
+		    if ((frame->je_options & JSON_JS) && idx == len - 1)
+		    {
+			typval_T *t_item =
+				    TUPLE_ITEM(frame->je_u.t.tuple, idx);
+
+			if (t_item->v_type == VAR_SPECIAL
+				&& t_item->vval.v_number == VVAL_NONE)
+			    ga_append(gap, ',');
+		    }
+
+		    ++idx;
+		    frame->je_u.t.idx = idx;
+		    if (idx < len && !got_int)
+		    {
+			ga_append(gap, ',');
+			options = frame->je_options & JSON_JS;
+			cur_val = TUPLE_ITEM(frame->je_u.t.tuple, idx);
+			advance = TRUE;
+			break;
+		    }
+		    ga_append(gap, ']');
+		    frame->je_u.t.tuple->tv_copyID = 0;
+		    --stack.ga_len;
+		    break;
+		}
+
+		case ENC_DICT:
+		{
+		    hashitem_T	*hi = frame->je_u.d.hi;
+		    int		todo = frame->je_u.d.todo;
+
+		    if (todo > 0 && !got_int)
+		    {
+			// Advance to next non-empty entry
+			for (++hi; HASHITEM_EMPTY(hi); ++hi)
+			    ;
+			--todo;
+			frame->je_u.d.hi = hi;
+			frame->je_u.d.todo = todo;
+
+			ga_append(gap, ',');
+			if ((frame->je_options & JSON_JS)
+				&& is_simple_key(hi->hi_key))
+			    ga_concat(gap, hi->hi_key);
+			else
+			    write_string(gap, hi->hi_key);
+			ga_append(gap, ':');
+
+			options = frame->je_options | JSON_NO_NONE;
+			cur_val = &dict_lookup(hi)->di_tv;
+			advance = TRUE;
+			break;
+		    }
+		    ga_append(gap, '}');
+		    frame->je_u.d.dict->dv_copyID = 0;
+		    --stack.ga_len;
+		    break;
+		}
 	    }
-	    ga_append(gap, ']');
-	    frame->je_u.t.tuple->tv_copyID = 0;
-	    --stack.ga_len;
-	    goto item_done;
-	}
-
-	case ENC_DICT:
-	{
-	    hashitem_T	*hi = frame->je_u.d.hi;
-	    int		todo = frame->je_u.d.todo;
-
-	    if (todo > 0 && !got_int)
-	    {
-		// Advance to next non-empty entry
-		for (++hi; HASHITEM_EMPTY(hi); ++hi)
-		    ;
-		--todo;
-		frame->je_u.d.hi = hi;
-		frame->je_u.d.todo = todo;
-
-		ga_append(gap, ',');
-		if ((frame->je_options & JSON_JS)
-			&& is_simple_key(hi->hi_key))
-		    ga_concat(gap, hi->hi_key);
-		else
-		    write_string(gap, hi->hi_key);
-		ga_append(gap, ':');
-
-		options = frame->je_options | JSON_NO_NONE;
-		cur_val = &dict_lookup(hi)->di_tv;
-		goto encode_value;
-	    }
-	    ga_append(gap, '}');
-	    frame->je_u.d.dict->dv_copyID = 0;
-	    --stack.ga_len;
-	    goto item_done;
+	    if (advance)
+		break;
 	}
     }
 
