@@ -1752,32 +1752,39 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     static char_u *
 vim_version_dir(char_u *vimdir)
 {
-    char_u	*p;
+    string_T	p;
+    size_t	vimdir_len;
 
     if (vimdir == NULL || *vimdir == NUL)
 	return NULL;
-    p = concat_fnames(vimdir, (char_u *)VIM_VERSION_NODOT, TRUE);
-    if (p != NULL && mch_isdir(p))
-	return p;
-    vim_free(p);
-    p = concat_fnames(vimdir, (char_u *)RUNTIME_DIRNAME, TRUE);
-    if (p != NULL && mch_isdir(p))
+    vimdir_len = STRLEN(vimdir);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)VIM_VERSION_NODOT, STRLEN_LITERAL(VIM_VERSION_NODOT), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
+	return p.string;
+    vim_free(p.string);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)RUNTIME_DIRNAME, STRLEN_LITERAL(RUNTIME_DIRNAME), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
     {
-	char_u *fname = concat_fnames(p, (char_u *)"defaults.vim", TRUE);
+	string_T    fname;
+
+	concat_fnames(p.string, p.length,
+	    (char_u *)"defaults.vim", STRLEN_LITERAL("defaults.vim"), TRUE, &fname);
 
 	// Check that "defaults.vim" exists in this directory, to avoid picking
 	// up a stray "runtime" directory, it would make many tests fail in
 	// mysterious ways.
-	if (fname != NULL)
+	if (fname.string != NULL)
 	{
-	    int exists = file_is_readable(fname);
+	    int exists = file_is_readable(fname.string);
 
-	    vim_free(fname);
+	    vim_free(fname.string);
 	    if (exists)
-		return p;
+		return p.string;
 	}
     }
-    vim_free(p);
+    vim_free(p.string);
     return NULL;
 }
 

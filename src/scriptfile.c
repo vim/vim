@@ -841,13 +841,11 @@ add_pack_dir_to_rtp(char_u *fname)
     char_u  *entry;
     char_u  *insp = NULL;
     int	    c;
-    char_u  *new_rtp;
-    int	    keep;
+    string_T  new_rtp;
+    size_t  keep;
     size_t  oldlen;
     size_t  addlen;
-    size_t  new_rtp_len;
-    char_u  *afterdir = NULL;
-    size_t  afterlen = 0;
+    string_T  afterdir = {NULL, 0};
     char_u  *after_insp = NULL;
     char_u  *ffname = NULL;
     size_t  fname_len;
@@ -915,69 +913,79 @@ add_pack_dir_to_rtp(char_u *fname)
 	}
     }
 
+    oldlen = STRLEN(p_rtp);
     if (insp == NULL)
 	// Both "fname" and "after" not found, append at the end.
-	insp = p_rtp + STRLEN(p_rtp);
+	insp = p_rtp + oldlen;
 
     // check if rtp/pack/name/start/name/after exists
-    afterdir = concat_fnames(fname, (char_u *)"after", TRUE);
-    if (afterdir != NULL && mch_isdir(afterdir))
-	afterlen = STRLEN(afterdir) + 1; // add one for comma
+    fname_len = STRLEN(fname);
+    concat_fnames(fname, fname_len, (char_u *)"after", STRLEN_LITERAL("after"), TRUE, &afterdir);
+    if (afterdir.string != NULL && mch_isdir(afterdir.string))
+	++afterdir.length; // add one for comma
+    else
+	afterdir.length = 0;
 
-    oldlen = STRLEN(p_rtp);
-    addlen = STRLEN(fname) + 1; // add one for comma
-    new_rtp = alloc(oldlen + addlen + afterlen + 1); // add one for NUL
-    if (new_rtp == NULL)
+    addlen = fname_len + 1; // add one for comma
+    new_rtp.string = alloc(oldlen + addlen + afterdir.length + 1); // add one for NUL
+    if (new_rtp.string == NULL)
 	goto theend;
 
     // We now have 'rtp' parts: {keep}{keep_after}{rest}.
     // Create new_rtp, first: {keep},{fname}
-    keep = (int)(insp - p_rtp);
-    mch_memmove(new_rtp, p_rtp, keep);
-    new_rtp_len = keep;
+    keep = (size_t)(insp - p_rtp);
+    mch_memmove(new_rtp.string, p_rtp, keep);
+    new_rtp.length = keep;
     if (*insp == NUL)
-	new_rtp[new_rtp_len++] = ',';  // add comma before
-    mch_memmove(new_rtp + new_rtp_len, fname, addlen - 1);
-    new_rtp_len += addlen - 1;
+	new_rtp.string[new_rtp.length++] = ',';  // add comma before
+    mch_memmove(new_rtp.string + new_rtp.length, fname, addlen - 1);
+    new_rtp.length += addlen - 1;
     if (*insp != NUL)
-	new_rtp[new_rtp_len++] = ',';  // add comma after
+	new_rtp.string[new_rtp.length++] = ',';  // add comma after
 
-    if (afterlen > 0 && after_insp != NULL)
+    if (afterdir.length > 0 && after_insp != NULL)
     {
-	int keep_after = (int)(after_insp - p_rtp);
+	size_t keep_after = (size_t)(after_insp - p_rtp);
 
 	// Add to new_rtp: {keep},{fname}{keep_after},{afterdir}
-	mch_memmove(new_rtp + new_rtp_len, p_rtp + keep,
+	mch_memmove(new_rtp.string + new_rtp.length, p_rtp + keep,
 							keep_after - keep);
-	new_rtp_len += keep_after - keep;
-	mch_memmove(new_rtp + new_rtp_len, afterdir, afterlen - 1);
-	new_rtp_len += afterlen - 1;
-	new_rtp[new_rtp_len++] = ',';
+	new_rtp.length += keep_after - keep;
+	mch_memmove(new_rtp.string + new_rtp.length, afterdir.string, afterdir.length - 1);
+	new_rtp.length += afterdir.length - 1;
+	new_rtp.string[new_rtp.length++] = ',';
 	keep = keep_after;
     }
 
     if (p_rtp[keep] != NUL)
-	// Append rest: {keep},{fname}{keep_after},{afterdir}{rest}
-	mch_memmove(new_rtp + new_rtp_len, p_rtp + keep, oldlen - keep + 1);
-    else
-	new_rtp[new_rtp_len] = NUL;
+    {
+	size_t	append_len;
 
-    if (afterlen > 0 && after_insp == NULL)
+	append_len = oldlen - keep + 1;
+	// Append rest: {keep},{fname}{keep_after},{afterdir}{rest}
+	mch_memmove(new_rtp.string + new_rtp.length, p_rtp + keep, append_len);
+	new_rtp.length += append_len;
+    }
+    else
+	new_rtp.string[new_rtp.length] = NUL;
+
+    if (afterdir.length > 0 && after_insp == NULL)
     {
 	// Append afterdir when "after" was not found:
 	// {keep},{fname}{rest},{afterdir}
-	STRCAT(new_rtp, ",");
-	STRCAT(new_rtp, afterdir);
+	STRCPY(new_rtp.string + new_rtp.length, ",");
+	new_rtp.length += STRLEN_LITERAL(",");
+	STRCPY(new_rtp.string + new_rtp.length, afterdir.string);
     }
 
-    set_option_value_give_err((char_u *)"rtp", 0L, new_rtp, 0);
-    vim_free(new_rtp);
+    set_option_value_give_err((char_u *)"rtp", 0L, new_rtp.string, 0);
+    vim_free(new_rtp.string);
     retval = OK;
 
 theend:
     vim_free(buf.string);
     vim_free(ffname);
-    vim_free(afterdir);
+    vim_free(afterdir.string);
     return retval;
 }
 
