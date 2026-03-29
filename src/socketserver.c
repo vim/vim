@@ -20,8 +20,6 @@
  * {
  *   "type": "expr"|"keystrokes"|"notify"|"reply" -- The type of message
  *
- *   ?"enc": string -- Encoding to be used, default to 'encoding'
- *
  *   "str": string -- What to execute for the command or contents of result
  *
  *   ?"code": number -- Return code for expression
@@ -512,21 +510,14 @@ socketserver_exec(channel_T *channel, dict_T *message)
 {
     dictitem_T	*di;
     char_u	*type;
-    char_u	*enc = p_enc;
     char_u	*str = NULL;
     char_u	*sender = NULL;
-    char_u	*to_free;
-    char_u	*to_free2;
 
     di = dict_find(message, (char_u *)"type", -1);
     if (di == NULL || di->di_tv.v_type != VAR_STRING)
 	return;
     else
 	type = di->di_tv.vval.v_string;
-
-    di = dict_find(message, (char_u *)"enc", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_STRING)
-	enc = di->di_tv.vval.v_string;
 
     di = dict_find(message, (char_u *)"str", -1);
     if (di != NULL && di->di_tv.v_type == VAR_STRING)
@@ -542,10 +533,10 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	client_socket = vim_strsave(sender);
     }
 
-    ch_log(NULL, "socketserver_exec(): encoding: %s, result: %s",
-	    enc, str == NULL ? (char_u *)"(null)" : str);
+    ch_log(NULL, "socketserver_exec(): result: %s",
+	    str == NULL ? (char_u *)"(null)" : str);
 
-    if (STRCMP(type, "expr") == 0 && str != NULL && enc != NULL)
+    if (STRCMP(type, "expr") == 0 && str != NULL)
     {
 	// Evaluate expression and send back reply
 	typval_T    tv;
@@ -558,7 +549,6 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	if (dict == NULL)
 	    return;
 
-	str = serverConvert(enc, str, &to_free);
 	result = eval_client_expr_to_string(str);
 	code = result == NULL ? -1 : 0;
 
@@ -574,7 +564,6 @@ socketserver_exec(channel_T *channel, dict_T *message)
 		    (char_u *)_(e_invalid_expression_received));
 
 	dict_add_number(dict, "code", code);
-	dict_add_string(dict, "enc", p_enc);
 
 	tv.v_type = VAR_DICT;
 	tv.vval.v_dict = dict;
@@ -589,26 +578,19 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	    emsg_silent--;
 	}
 	vim_free(buf);
-
 	dict_unref(dict);
-	vim_free(to_free);
     }
-    else if (STRCMP(type, "keystrokes") == 0 && str != NULL && enc != NULL)
+    else if (STRCMP(type, "keystrokes") == 0 && str != NULL)
     {
 	// Execute keystrokes
-	str = serverConvert(enc, str, &to_free);
 	server_to_input_buf(str);
-	vim_free(to_free);
     }
     else if (STRCMP(type, "notify") == 0)
     {
 	// Notification, execute autocommands and save the reply for later use
-	if (sender != NULL && str != NULL && enc != NULL)
+	if (sender != NULL && str != NULL)
 	{
 	    ss_reply_T *reply;
-
-	    str = serverConvert(enc, str, &to_free);
-	    sender = serverConvert(enc, sender, &to_free2);
 
 	    reply = socketserver_add_reply(sender);
 
@@ -616,9 +598,6 @@ socketserver_exec(channel_T *channel, dict_T *message)
 		ga_copy_string(&reply->strings, str);
 
 	    apply_autocmds(EVENT_REMOTEREPLY, sender, str, TRUE, curbuf);
-
-	    vim_free(to_free);
-	    vim_free(to_free2);
 	}
     }
     else
@@ -912,7 +891,6 @@ socketserver_send(
 	goto exit;
 
     dict_add_string(dict, "type", (char_u *)(is_expr ? "expr" : "keystrokes"));
-    dict_add_string(dict, "enc", p_enc);
     dict_add_string(dict, "str", str);
 
     // Tell server who we are so it can save our socket path internally for
@@ -1095,7 +1073,6 @@ socketserver_send_reply(char_u *client, char_u *str)
     }
 
     dict_add_string(dict, "type", (char_u *)"notify");
-    dict_add_string(dict, "enc", p_enc);
     dict_add_string(dict, "str", str);
     if (server_address != NULL)
 	dict_add_string(dict, "sender", server_address);

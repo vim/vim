@@ -3757,7 +3757,7 @@ usage(void)
 # ifdef FEAT_CLIENTSERVER
 #  if defined(FEAT_SOCKETSERVER) && (defined(FEAT_X11) || defined(MSWIN))
     main_msg(_("--clientserver <socket|x11|mswin> Backend for clientserver communication"));
-#   endif
+#  endif
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));
     main_msg(_("--remote-silent <files>  Same, don't complain if there is no server"));
     main_msg(_("--remote-wait <files>  As --remote but wait for files to have been edited"));
