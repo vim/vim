@@ -108,6 +108,36 @@ adjust_neighbor_cont_flags(buf_T *buf, linenr_T lnum, textprop_T *prop)
 		prop->tp_id, prop->tp_type, TP_FLAG_CONT_PREV);
 }
 
+// Deferred continuation flag fixes from adjust_prop_columns().
+typedef struct {
+    linenr_T	lnum;
+    int		tp_id;
+    int		tp_type;
+    int		flag_to_clear;
+} cont_fix_T;
+
+static garray_T apc_cont_fixes = GA_EMPTY;
+
+/*
+ * Process deferred continuation flag fixes after adjust_prop_columns().
+ * Must be called when the dirty line has been flushed or is no longer
+ * needed.
+ */
+    void
+process_deferred_cont_fixes(void)
+{
+    int i;
+
+    for (i = 0; i < apc_cont_fixes.ga_len; ++i)
+    {
+	cont_fix_T *fix = &((cont_fix_T *)apc_cont_fixes.ga_data)[i];
+
+	clear_cont_flag_on_line(curbuf, fix->lnum,
+		fix->tp_id, fix->tp_type, fix->flag_to_clear);
+    }
+    ga_clear(&apc_cont_fixes);
+}
+
 /*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
  * This avoids adding a pointer to the hashtable item.
@@ -2313,10 +2343,12 @@ adjust_prop(
 	    if (prop->tp_len <= 0)
 	    {
 		prop->tp_len = 0;
-		// Virtual text props should always be dropped when their
-		// surrounding text is deleted, regardless of start_incl
-		// or end_incl.
-		res.can_drop = droppable || prop->tp_id < 0;
+		// Virtual text and multiline properties with no
+		// text left should also be dropped.
+		res.can_drop = droppable
+		    || prop->tp_id < 0
+		    || (prop->tp_flags
+			    & (TP_FLAG_CONT_PREV | TP_FLAG_CONT_NEXT));
 	    }
 	}
 	else
@@ -2336,7 +2368,15 @@ adjust_prop(
 	int after = col - added - (prop->tp_col - 1 + prop->tp_len);
 
 	prop->tp_len += after > 0 ? added + after : added;
-	res.can_drop = prop->tp_len <= 0 && droppable;
+	// A multiline property with no text left on this line
+	// should also be dropped.  When TP_FLAG_CONT_NEXT is set,
+	// tp_len == 1 means only the newline remains (no real text).
+	if (prop->tp_len <= 0
+		|| ((prop->tp_flags & TP_FLAG_CONT_NEXT)
+						       && prop->tp_len <= 1))
+	    res.can_drop = droppable
+		|| (prop->tp_flags
+			& (TP_FLAG_CONT_PREV | TP_FLAG_CONT_NEXT));
     }
     else
 	res.dirty = FALSE;
@@ -2398,7 +2438,41 @@ adjust_prop_columns(
 		proplen = get_text_props(curbuf, lnum, &props, TRUE);
 	}
 	if (res.can_drop)
+	{
+	    // Defer continuation flag fixes for later, since we cannot
+	    // safely modify neighbor lines while the current line is dirty.
+	    if (prop.tp_flags & TP_FLAG_CONT_PREV)
+	    {
+		if (apc_cont_fixes.ga_itemsize == 0)
+		    ga_init2(&apc_cont_fixes, sizeof(cont_fix_T), 4);
+		if (ga_grow(&apc_cont_fixes, 1) == OK)
+		{
+		    cont_fix_T *fix = &((cont_fix_T *)
+					apc_cont_fixes.ga_data)
+					    [apc_cont_fixes.ga_len++];
+		    fix->lnum = lnum - 1;
+		    fix->tp_id = prop.tp_id;
+		    fix->tp_type = prop.tp_type;
+		    fix->flag_to_clear = TP_FLAG_CONT_NEXT;
+		}
+	    }
+	    if (prop.tp_flags & TP_FLAG_CONT_NEXT)
+	    {
+		if (apc_cont_fixes.ga_itemsize == 0)
+		    ga_init2(&apc_cont_fixes, sizeof(cont_fix_T), 4);
+		if (ga_grow(&apc_cont_fixes, 1) == OK)
+		{
+		    cont_fix_T *fix = &((cont_fix_T *)
+					apc_cont_fixes.ga_data)
+					    [apc_cont_fixes.ga_len++];
+		    fix->lnum = lnum + 1;
+		    fix->tp_id = prop.tp_id;
+		    fix->tp_type = prop.tp_type;
+		    fix->flag_to_clear = TP_FLAG_CONT_PREV;
+		}
+	    }
 	    continue; // Drop this text property
+	}
 	mch_memmove(props + wi * sizeof(textprop_T), &prop, sizeof(textprop_T));
 	++wi;
     }
@@ -2417,6 +2491,11 @@ adjust_prop_columns(
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	curbuf->b_ml.ml_line_len = newlen;
     }
+    // Process deferred continuation flag fixes now that the current
+    // line changes are finalized.
+    if (apc_cont_fixes.ga_len > 0)
+	process_deferred_cont_fixes();
+
     return dirty;
 }
 

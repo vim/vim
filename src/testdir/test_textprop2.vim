@@ -220,49 +220,49 @@ endfunc
 " endfunc
 
 " Deletion of text starting a multiline property should adjust next line.
-" func Test_text_deletion_of_start_to_eol_adjusts_multiline_property()
-"   " Partial delete: property is shortened but not removed.
-"   call s:Setup_start_end_prop()
-"   normal 1G03l2x
-"   call assert_equal('Lin1', getline(1))
-"   call assert_equal(1, len(prop_list(1)))
-"   call assert_equal(2, prop_list(1)[0]['length'])
-"   call prop_type_delete('1')
-"   bwipe!
-"
-"   " Full delete of start: property should be removed from line 1.
-"   for edit in ['normal 1G03ld$', 'normal 1G03l3x',
-"       \ 'normal 1G03lv  x', '1 substitute /e.1//']
-"     call s:Setup_start_end_prop()
-"     execute edit
-"     let msg = printf('op="%s"', edit)
-"     call assert_equal([], prop_list(1), msg)
-"     call prop_type_delete('1')
-"     bwipe!
-"   endfor
-" endfunc
+func Test_text_deletion_of_start_to_eol_adjusts_multiline_property()
+  " Partial delete: property is shortened but not removed.
+  call s:Setup_start_end_prop()
+  normal 1G03l2x
+  call assert_equal('Lin1', getline(1))
+  call assert_equal(1, len(prop_list(1)))
+  call assert_equal(2, prop_list(1)[0]['length'])
+  call prop_type_delete('1')
+  bwipe!
+
+  " Full delete of start: property should be removed from line 1.
+  for edit in ['normal 1G03ld$', 'normal 1G03l3x',
+      \ 'normal 1G03lv  x', '1 substitute /e.1//']
+    call s:Setup_start_end_prop()
+    execute edit
+    let msg = printf('op="%s"', edit)
+    call assert_equal([], prop_list(1), msg)
+    call prop_type_delete('1')
+    bwipe!
+  endfor
+endfunc
 
 " Deletion of text ending a multiline property should adjust previous line.
-" func Test_text_deletion_of_end_to_sol_adjusts_multiline_property()
-"   " Partial delete: property end is adjusted but not removed.
-"   call s:Setup_start_end_prop()
-"   normal 3G02x
-"   call assert_equal('ne...3', getline(3))
-"   call assert_equal(1, len(prop_list(3)))
-"   call assert_equal(0, prop_list(3)[0]['start'])
-"   call prop_type_delete('1')
-"   bwipe!
-"
-"   " Full delete of ending portion: property should be removed from line 3.
-"   for edit in ['normal 3G03x', 'normal 3G0v  x', '3 substitute /Lin//']
-"     call s:Setup_start_end_prop()
-"     execute edit
-"     let msg = printf('op="%s"', edit)
-"     call assert_equal([], prop_list(3), msg)
-"     call prop_type_delete('1')
-"     bwipe!
-"   endfor
-" endfunc
+func Test_text_deletion_of_end_to_sol_adjusts_multiline_property()
+  " Partial delete: property end is adjusted but not removed.
+  call s:Setup_start_end_prop()
+  normal 3G02x
+  call assert_equal('ne...3', getline(3))
+  call assert_equal(1, len(prop_list(3)))
+  call assert_equal(0, prop_list(3)[0]['start'])
+  call prop_type_delete('1')
+  bwipe!
+
+  " Full delete of ending portion: property should be removed from line 3.
+  for edit in ['normal 3G03x', 'normal 3G0v  x', '3 substitute /Lin//']
+    call s:Setup_start_end_prop()
+    execute edit
+    let msg = printf('op="%s"', edit)
+    call assert_equal([], prop_list(3), msg)
+    call prop_type_delete('1')
+    bwipe!
+  endfor
+endfunc
 
 " Inline text properties should be removed when surrounding text is removed.
 func Test_text_deletion_removes_inline_virtual_text()
