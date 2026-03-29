@@ -1117,7 +1117,28 @@ free_buffer_stuff(
     netbeans_file_killed(buf);
 #endif
 #ifdef FEAT_PROP_POPUP
-    // Virtual text is managed via tp_vtext with reference counting.
+    // Unref virtual text in all lines before freeing the buffer.
+    if (buf->b_has_textprop && buf->b_ml.ml_mfp != NULL)
+    {
+	linenr_T    lnum;
+
+	for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
+	{
+	    char_u  *props;
+	    int	    count = get_text_props(buf, lnum, &props, FALSE);
+	    int	    i;
+
+	    for (i = 0; i < count; ++i)
+	    {
+		textprop_T  prop;
+
+		mch_memmove(&prop, props + i * sizeof(textprop_T),
+						       sizeof(textprop_T));
+		if (prop.tp_vtext != NULL)
+		    vtext_unref(prop.tp_vtext);
+	    }
+	}
+    }
 #endif
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs

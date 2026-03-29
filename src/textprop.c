@@ -1114,7 +1114,24 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 	len = ml_get_buf_len(buf, lnum) + 1;
 	if ((size_t)buf->b_ml.ml_line_len > len)
 	{
+	    char_u  *props;
+	    int	    propcount;
+	    int	    i;
+
+	    // Unref virtual text before clearing properties.
+	    propcount = get_text_props(buf, lnum, &props, FALSE);
+	    for (i = 0; i < propcount; ++i)
+	    {
+		textprop_T  prop;
+
+		mch_memmove(&prop, props + i * sizeof(textprop_T),
+						       sizeof(textprop_T));
+		if (prop.tp_vtext != NULL)
+		    vtext_unref(prop.tp_vtext);
+	    }
+
 	    did_clear = TRUE;
+	    text = ml_get_buf(buf, lnum, FALSE);
 	    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 	    {
 		char_u *newtext = vim_strsave(text);
@@ -2282,7 +2299,11 @@ adjust_prop_columns(
 		proplen = get_text_props(curbuf, lnum, &props, TRUE);
 	}
 	if (res.can_drop)
+	{
+	    if (prop.tp_vtext != NULL)
+		vtext_unref(prop.tp_vtext);
 	    continue; // Drop this text property
+	}
 	mch_memmove(props + wi * sizeof(textprop_T), &prop, sizeof(textprop_T));
 	++wi;
     }

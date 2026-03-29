@@ -3993,6 +3993,20 @@ theend:
 	if (lnum <= buf->b_ml.ml_line_count)
 	    adjust_text_props_for_delete(buf, lnum, textprop_save,
 						     (int)textprop_len, FALSE);
+
+	// Unref virtual text in the deleted line's properties.
+	{
+	    int done;
+
+	    for (done = 0; done < (int)textprop_len; done += sizeof(textprop_T))
+	    {
+		textprop_T prop;
+
+		mch_memmove(&prop, textprop_save + done, sizeof(textprop_T));
+		if (prop.tp_vtext != NULL)
+		    vtext_unref(prop.tp_vtext);
+	    }
+	}
     }
     vim_free(textprop_save);
 #endif
