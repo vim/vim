@@ -242,7 +242,7 @@ func Test_client_server_stopinsert()
 endfunc
 
 " Test if socket server, X11, and mswin backends can be chosen and work properly.
-func Test_client_server_mutliple_backends()
+func Test_client_server_multiple_backends()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckFeature x11
@@ -259,7 +259,6 @@ func Test_client_server_mutliple_backends()
 
   for type in types
     if (type == 'x11' && !has('X11')) || (type == 'mswin' && !has('win32'))
-      continue
       continue
     endif
 
