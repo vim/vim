@@ -3553,7 +3553,7 @@ gui_mch_show_tabline(int showit)
 
     if (!showit != !gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline)))
     {
-#ifdef TRACK_RESIZE_HISTORY
+# ifdef TRACK_RESIZE_HISTORY
 	// When the tabline visibility changes, GTK defers the formwin
 	// relayout.  The resulting configure event fires while the mainwin is
 	// still at its current size.  Pre-record that size so it becomes a
@@ -3565,7 +3565,7 @@ gui_mch_show_tabline(int showit)
 	    gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
 	    alloc_resize_hist(w, h, FALSE);
 	}
-#endif
+# endif
 	// Note: this may cause a resize event
 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), showit);
 	update_window_manager_hints(0, 0);
@@ -4465,11 +4465,11 @@ form_configure_event(GtkWidget *widget UNUSED,
     {
 	int use_width = event->width;
 
-# ifdef TRACK_RESIZE_HISTORY
+#ifdef TRACK_RESIZE_HISTORY
 	if (mch_pending_form_w > event->width
 		&& mch_pending_form_w - event->width < gui.char_width)
 	    use_width = mch_pending_form_w;
-# endif
+#endif
 	gui_gtk_form_freeze(GTK_FORM(gui.formwin));
 	gui_resize_shell(use_width, usable_height);
 	gui_gtk_form_thaw(GTK_FORM(gui.formwin));
