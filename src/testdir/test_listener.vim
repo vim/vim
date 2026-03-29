@@ -782,4 +782,23 @@ func Test_redraw_listener_partial()
   call redraw_listener_add(#{on_start: function("s:OnRedraw", [1])})
 endfunc
 
+func Test_listener_blockwise_paste()
+  new
+  call setline(1, ['1', '2', '3'])
+  let s:list = []
+  let id = listener_add('s:StoreListArgs')
+
+  " yank a blockwise selection and paste at the end of the buffer, which
+  " appends new lines
+  call feedkeys("1G0\<C-v>2jyGp", 'xt')
+  call listener_flush()
+  " the listener should report correct lnume (before the change) and added
+  call assert_equal(3, s:start)
+  call assert_equal(4, s:end)
+  call assert_equal(2, s:added)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1142,17 +1142,9 @@ endfunc
 
 " Test for the hlset() function
 func Test_hlset()
-  " FIXME: With GVim, _current_ test cases that are run before this one may
-  "	influence the result of calling "hlset(hlget())", depending on what
-  "	"&guifont" is set to.  For example, introduce SetUp() as follows:
-  "
-  " if CanRunVimInTerminal() && has('gui_running') && has('gui_gtk')
-  "   def SetUp()
-  "     set guifont=Monospace\ 10
-  "   enddef
-  " endif
-  "
-  "	and see "E416: Missing equal sign: ... line 4" for this test case.
+  " Note: hlset() now correctly handles attribute values containing spaces
+  " by quoting them, so hlset(hlget()) works even with font names like
+  " "Monospace 10".
   let lines =<< trim END
     call assert_equal(0, hlset(test_null_list()))
     call assert_equal(0, hlset([]))
@@ -1353,6 +1345,15 @@ func Test_hlset()
   call hlset([{'name': 'hlg11', 'stop': ''}])
   call hlset([{'name': 'hlg11', 'term': {}}])
   call assert_true(hlget('hlg11')[0].cleared)
+
+  " Test that hlset() handles attribute values containing spaces
+  call hlset([{'name': 'hlg12', 'guifg': 'light blue'}])
+  call assert_equal('light blue', hlget('hlg12')[0].guifg)
+  call hlset([{'name': 'hlg12', 'guibg': 'dark red'}])
+  call assert_equal('dark red', hlget('hlg12')[0].guibg)
+  call hlset([{'name': 'hlg12', 'guisp': 'sea green'}])
+  call assert_equal('sea green', hlget('hlg12')[0].guisp)
+  highlight clear hlg12
 endfunc
 
 " Test for the 'winhighlight' option

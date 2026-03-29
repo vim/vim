@@ -5309,7 +5309,23 @@ add_attr_and_value(char_u *dptr, char_u *attr, int attrlen, char_u *value)
 	return dptr;
 
     vallen = STRLEN(value);
-    if (dptr + attrlen + vallen + 1 < hlsetBuf + HLSETBUFSZ)
+    // When the value contains a space and the attribute has an "=" (i.e. it
+    // is a key=value pair), surround the value with single quotes so that
+    // do_highlight() can parse it correctly.
+    if (vim_strchr(value, ' ') != NULL && vim_strchr(attr, '=') != NULL)
+    {
+	if (dptr + attrlen + vallen + 3 < hlsetBuf + HLSETBUFSZ)
+	{
+	    STRCPY(dptr, attr);
+	    dptr += attrlen;
+	    *dptr++ = '\'';
+	    STRCPY(dptr, value);
+	    dptr += vallen;
+	    *dptr++ = '\'';
+	    *dptr = NUL;
+	}
+    }
+    else if (dptr + attrlen + vallen + 1 < hlsetBuf + HLSETBUFSZ)
     {
 	STRCPY(dptr, attr);
 	dptr += attrlen;
