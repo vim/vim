@@ -265,7 +265,7 @@ viminfo_readstring(
     if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
     {
 	len = atol((char *)virp->vir_line + off + 1);
-	if (len > 0 && len < 1000000)
+	if (len > 1 && len < 1000000)
 	    retval = lalloc(len, TRUE);
 	if (retval == NULL)
 	{

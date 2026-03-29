@@ -3833,6 +3833,14 @@ vim_fgets(char_u *buf, int size, FILE *fp)
 #define FGETS_SIZE 200
     char	tbuf[FGETS_SIZE];
 
+    // safety check
+    if (size < 2)
+    {
+	if (size == 1)
+	    buf[0] = NUL;
+	return TRUE;
+    }
+
     buf[size - 2] = NUL;
     eof = fgets((char *)buf, size, fp);
     if (buf[size - 2] != NUL && buf[size - 2] != '\n')
