@@ -2313,11 +2313,22 @@ adjust_prop(
 	    if (prop->tp_len <= 0)
 	    {
 		prop->tp_len = 0;
-		res.can_drop = droppable;
+		// Virtual text props should always be dropped when their
+		// surrounding text is deleted, regardless of start_incl
+		// or end_incl.
+		res.can_drop = droppable || prop->tp_id < 0;
 	    }
 	}
 	else
 	    prop->tp_col += added;
+    }
+    else if (prop->tp_id < 0 && prop->tp_len == 0
+	    && prop->tp_col <= col + 1
+	    && prop->tp_col > col + 1 + added)
+    {
+	// Inline virtual text at or just after the deletion start, fully
+	// within the deleted range: drop it.
+	res.can_drop = TRUE;
     }
     else if (prop->tp_len > 0 && prop->tp_col + prop->tp_len > col
 	    && prop->tp_id >= 0)  // don't change length for virtual text

@@ -265,56 +265,56 @@ endfunc
 " endfunc
 
 " Inline text properties should be removed when surrounding text is removed.
-" func Test_text_deletion_removes_inline_virtual_text()
-"   func SetupVirtText(start_incl, end_incl)
-"     new
-"     call setline(1, ['The line with properties....'])
-"     let opts = {'highlight': 'DiffChange'}
-"     if a:start_incl
-"       let opts['start_incl'] = 1
-"     endif
-"     if a:end_incl
-"       let opts['end_incl'] = 1
-"     endif
-"     call prop_type_add('2', opts)
-"     call prop_add(1, 7, {'type': '2', 'text': 'xxx'})
-"   endfunc
-"
-"   " Test all combinations of start_incl/end_incl.
-"   for [si, ei] in [[0, 0], [1, 0], [0, 1], [1, 1]]
-"     " Deletion of one char before virtual text: property stays.
-"     for edit in ['normal 1G05lx', '1 substitute /i//', 'normal 1G05lvx']
-"       call SetupVirtText(si, ei)
-"       execute edit
-"       let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
-"       call assert_equal(1, len(prop_list(1)), msg)
-"       call assert_equal(6, prop_list(1)[0]['col'], msg)
-"       call prop_type_delete('2')
-"       bwipe!
-"     endfor
-"
-"     " Deletion of one char after virtual text: property stays.
-"     for edit in ['normal 1G06lx', '1 substitute /n//', 'normal 1G06lvx']
-"       call SetupVirtText(si, ei)
-"       execute edit
-"       let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
-"       call assert_equal(1, len(prop_list(1)), msg)
-"       call assert_equal(7, prop_list(1)[0]['col'], msg)
-"       call prop_type_delete('2')
-"       bwipe!
-"     endfor
-"
-"     " Deletion of both chars around virtual text: property is removed.
-"     for edit in ['normal 1G05l2x', '1 substitute /in//', 'normal 1G05lv x']
-"       call SetupVirtText(si, ei)
-"       execute edit
-"       let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
-"       call assert_equal([], prop_list(1), msg)
-"       call prop_type_delete('2')
-"       bwipe!
-"     endfor
-"   endfor
-" endfunc
+func Test_text_deletion_removes_inline_virtual_text()
+  func SetupVirtText(start_incl, end_incl)
+    new
+    call setline(1, ['The line with properties....'])
+    let opts = {'highlight': 'DiffChange'}
+    if a:start_incl
+      let opts['start_incl'] = 1
+    endif
+    if a:end_incl
+      let opts['end_incl'] = 1
+    endif
+    call prop_type_add('2', opts)
+    call prop_add(1, 7, {'type': '2', 'text': 'xxx'})
+  endfunc
+
+  " Test all combinations of start_incl/end_incl.
+  for [si, ei] in [[0, 0], [1, 0], [0, 1], [1, 1]]
+    " Deletion of one char before virtual text: property stays.
+    for edit in ['normal 1G05lx', '1 substitute /i//', 'normal 1G05lvx']
+      call SetupVirtText(si, ei)
+      execute edit
+      let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
+      call assert_equal(1, len(prop_list(1)), msg)
+      call assert_equal(6, prop_list(1)[0]['col'], msg)
+      call prop_type_delete('2')
+      bwipe!
+    endfor
+
+    " Deletion of one char after virtual text: property stays.
+    for edit in ['normal 1G06lx', '1 substitute /n//', 'normal 1G06lvx']
+      call SetupVirtText(si, ei)
+      execute edit
+      let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
+      call assert_equal(1, len(prop_list(1)), msg)
+      call assert_equal(7, prop_list(1)[0]['col'], msg)
+      call prop_type_delete('2')
+      bwipe!
+    endfor
+
+    " Deletion of both chars around virtual text: property is removed.
+    for edit in ['normal 1G05l2x', '1 substitute /in//', 'normal 1G05lv x']
+      call SetupVirtText(si, ei)
+      execute edit
+      let msg = printf('si=%d ei=%d op="%s"', si, ei, edit)
+      call assert_equal([], prop_list(1), msg)
+      call prop_type_delete('2')
+      bwipe!
+    endfor
+  endfor
+endfunc
 
 " Removing a multiline property from the last line should fix the property
 " on the penultimate line.
