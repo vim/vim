@@ -3210,6 +3210,12 @@ get_logfont(
 		    }
 		}
 		break;
+	    case L'f':
+		// Font features (e.g., "fss19=1").
+		// Parsed separately by gui_mch_init_font(); skip here.
+		while (*p && *p != L':')
+		    p++;
+		break;
 	    case L'q':
 		for (i = 0; i < (int)ARRAY_LENGTH(quality_pairs); ++i)
 		{
