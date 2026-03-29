@@ -3311,7 +3311,9 @@ endfunc
 func Test_ins_complete_end_of_line()
   " this was reading past the end of the line
   new
-  norm 8oý 
+  " Note that the 'space' at the end of the expression below is a non-breaking
+  " space, U+00a0.
+  execute "norm 8oý "
   sil! norm o
 
   bwipe!

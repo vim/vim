@@ -342,7 +342,7 @@ func Test_eob_fillchars()
   set fillchars=eob:+
   redraw
   call assert_equal('+', Screenline(2))
-  set fillchars=eob:\ 
+  let &fillchars = 'eob: '
   redraw
   call assert_equal(' ', nr2char(screenchar(2, 1)))
   set fillchars&
@@ -413,7 +413,7 @@ func Test_fold_fillchars()
   call assert_equal(expected, lines)
 
   " check setting foldinner
-  set fillchars+=foldinner:\ 
+  let &fillchars = &fillchars .. ',foldinner: '
   let lines = ScreenLines([1, 6], 22)
   let expected = [
         \ ' one                  ',
