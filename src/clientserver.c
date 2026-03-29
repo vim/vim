@@ -245,11 +245,12 @@ prepare_server(mparm_T *parmp)
      */
 
     if (
+	    (
 #  ifdef FEAT_X11
-	    X_DISPLAY != NULL &&
+	    X_DISPLAY != NULL ||
 #  endif
-
-	    parmp->servername != NULL && (
+	    clientserver_method == CLIENTSERVER_METHOD_SOCKET
+	    ) && parmp->servername != NULL && (
 #  if defined(FEAT_AUTOSERVERNAME) || defined(FEAT_GUI)
 		(
 #   if defined(FEAT_AUTOSERVERNAME)
