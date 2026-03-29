@@ -1598,7 +1598,6 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     int		*type_ids = NULL;   // array, for a list of "types", allocated
     int		num_type_ids = 0;   // number of elements in "type_ids"
     int		both;
-    int		did_remove_text = FALSE;
 
     rettv->vval.v_number = 0;
 
