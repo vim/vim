@@ -4964,6 +4964,7 @@ create_vterm(term_T *term, int rows, int cols)
 
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
     vterm_screen_set_damage_merge(screen, VTERM_DAMAGE_SCROLL);
+    vterm_screen_enable_reflow(screen, 1);
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 

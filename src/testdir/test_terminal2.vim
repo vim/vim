@@ -380,6 +380,87 @@ func Test_terminal_resize()
   set statusline&
 endfunc
 
+func Test_terminal_reflow()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output a long line that will wrap at column 40
+  let long_text = repeat('X', 60)
+  call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
+  call TermWait(buf)
+
+  " Before resize: the 60 X's should be wrapped across two terminal lines
+  let rows = term_getsize(buf)[0]
+  let found = 0
+  for lnum in range(1, rows)
+    if term_getline(buf, lnum) =~ '^X\{40}$'
+      call assert_match('^X\{20}', term_getline(buf, lnum + 1))
+      let found = 1
+      break
+    endif
+  endfor
+  call assert_equal(1, found, 'wrapped line not found')
+
+  " Resize the terminal wider so that 60 X's can fit on one line
+  vertical resize 80
+  redraw
+  call TermWait(buf)
+
+  " After reflow, the 60 X's should now fit on a single terminal line
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_match('X\{60}',
+        \ term_getline(buf, 2))})
+
+  exe buf .. 'bwipe!'
+endfunc
+
+func Test_terminal_reflow_multibyte()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  " Each CJK character takes 2 cells, so 20 chars = 40 cells width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output 30 wide (CJK) characters = 60 cells, which wraps at column 40
+  " First line: 20 chars (40 cells), second line: 10 chars (20 cells)
+  let wide_char = "\u3042"
+  let wide_text = repeat(wide_char, 30)
+  let wrapped_20 = repeat(wide_char, 20)
+  let wrapped_10 = repeat(wide_char, 10)
+  call term_sendkeys(buf, "printf '" .. wide_text .. "'\<CR>")
+  call TermWait(buf)
+
+  " Before resize: the 30 wide chars should be wrapped across two lines
+  let rows = term_getsize(buf)[0]
+  let found = 0
+  for lnum in range(1, rows)
+    let line = term_getline(buf, lnum)
+    if line ==# wrapped_20
+      call assert_match('^' .. wrapped_10, term_getline(buf, lnum + 1))
+      let found = 1
+      break
+    endif
+  endfor
+  call assert_equal(1, found, 'wrapped multibyte line not found')
+
+  " Resize the terminal wider so that 60 cells can fit on one line
+  vertical resize 80
+  redraw
+  call TermWait(buf)
+
+  " After reflow, the 30 wide chars should now fit on a single line
+  call WaitForAssert({-> assert_match('^' .. wide_text,
+        \ term_getline(buf, 2))})
+
+  exe buf .. 'bwipe!'
+endfunc
+
 " TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize2()
   CheckNotMSWindows
