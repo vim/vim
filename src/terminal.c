@@ -61,7 +61,7 @@ typedef struct {
 
 typedef struct sb_line_S {
     int		sb_cols;	// can differ per line
-    int         sb_bytes;	// length in bytes of text
+    int		sb_bytes;	// length in bytes of text
     cellattr_T	*sb_cells;	// allocated
     cellattr_T	sb_fill_attr;	// for short line
     char_u	*sb_text;	// for tl_scrollback_postponed
@@ -151,7 +151,7 @@ struct terminal_S {
     int		tl_scrollback_scrolled;
     garray_T	tl_scrollback_postponed;
     int		tl_scrollback_snapshot;
-    int         tl_buffer_scrolled;
+    int		tl_buffer_scrolled;
 
     char_u	*tl_highlight_name; // replaces "Terminal"; allocated
 
@@ -1496,7 +1496,6 @@ bufline_pos_in_scrollback(term_T *term, linenr_T lnum, int col, int *row, int *w
 	*wrapped_col = calc_col;
 }
 
-
 /*
  * Invoked when "msg" output from a job was received.  Write it to the terminal
  * of "buffer".
@@ -2049,6 +2048,8 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len, int append)
 	size_t prev_len = STRLEN(prev_text);
 
 	char_u *both = alloc(len + prev_len + 2);
+	if (both == NULL)
+	    return;
 	vim_strncpy(both, prev_text, prev_len + 1);
 	vim_strncpy(both + prev_len, text, len + 1);
 
@@ -2145,6 +2146,8 @@ cleanup_scrollback(term_T *term)
     while (term->tl_scrollback_snapshot && gap->ga_len > 0)
     {
 	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
+	if (line->sb_bytes < 0 || (size_t)line->sb_bytes > bufline_length)
+	    break;
 	bufline_length -= line->sb_bytes;
 	if (!bufline_length)
 	{
@@ -2272,7 +2275,7 @@ update_snapshot(term_T *term)
 		line->sb_bytes = ga.ga_len;
 		line->sb_cells = p;
 		line->sb_fill_attr = new_fill_attr;
-		line->continuation = lineinfo->continuation;
+		line->continuation = (char_u)lineinfo->continuation;
 		fill_attr = new_fill_attr;
 		++term->tl_scrollback.ga_len;
 		++term->tl_scrollback_snapshot;
@@ -3777,7 +3780,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, int continuation, void *
     line->sb_bytes = text_len;
     line->sb_cells = p;
     line->sb_fill_attr = fill_attr;
-    line->continuation = continuation;
+    line->continuation = (char_u)continuation;
     if (update_buffer)
     {
 	line->sb_text = NULL;
@@ -4422,7 +4425,7 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
     sb_line_T	*line;
     cellattr_T	*cellattr;
     int         sb_line = -1;
-    int         sb_col;
+    int         sb_col = col;
 
     if (term->tl_scrollback.ga_len)
 	bufline_pos_in_scrollback(term, lnum, col, &sb_line, &sb_col);
@@ -5665,6 +5668,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 		line->sb_bytes = ga_text.ga_len;
 		line->sb_cells = ga_cell.ga_data;
 		line->sb_fill_attr = term->tl_default_color;
+		line->continuation = 0;
 		++term->tl_scrollback.ga_len;
 		ga_init(&ga_cell);
 
@@ -6487,9 +6491,14 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     {
 	linenr_T  lnum = 0;
 	size_t	  offset = 0;
-	sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data + term->tl_scrollback_scrolled + row;
+	int	  sb_row = term->tl_scrollback_scrolled + row;
+	sb_line_T *line;
 
-	scrollbackline_pos_in_buf(term, row + term->tl_scrollback_scrolled, &lnum, NULL, &offset);
+	if (sb_row < 0 || sb_row >= term->tl_scrollback.ga_len)
+	    return;
+	line = (sb_line_T *)term->tl_scrollback.ga_data + sb_row;
+
+	scrollbackline_pos_in_buf(term, sb_row, &lnum, NULL, &offset);
 
 	// vterm is finished, get the text from the buffer
 	if (lnum > 0 && lnum <= buf->b_ml.ml_line_count)
