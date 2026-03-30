@@ -3792,12 +3792,11 @@ adjust_text_props_for_delete(
 		    internal_error("text property data too short");
 		    return;
 		}
-		{
-		    uint16_t pc;
 
-		    mch_memmove(&pc, text + textlen, PROP_COUNT_SIZE);
-		    this_props_len = pc * (int)sizeof(textprop_T);
-		}
+		uint16_t pc;
+
+		mch_memmove(&pc, text + textlen, PROP_COUNT_SIZE);
+		this_props_len = pc * (int)sizeof(textprop_T);
 	    }
 
 	    found = FALSE;

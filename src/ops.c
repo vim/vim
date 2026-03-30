@@ -2305,18 +2305,15 @@ do_join(
      * should not really be a problem.
      */
 #ifdef FEAT_PROP_POPUP
-    {
-	unpacked_memline_T um = um_open_at_no_props(
-				    curwin->w_buffer, curwin->w_cursor.lnum, 0);
-	// um_open_at_no_props may have invalidated "curr".
-	{
-	    int curr_off = (int)(curr - curr_start);
+    unpacked_memline_T um = um_open_at_no_props(
+				curwin->w_buffer, curwin->w_cursor.lnum, 0);
+    // um_open_at_no_props may have invalidated "curr".
+    int curr_off = (int)(curr - curr_start);
 
-	    curr = curr_start = ml_get(
-			    (linenr_T)(curwin->w_cursor.lnum + count - 1));
-	    curr += curr_off;
-	}
+    curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + count - 1));
+    curr += curr_off;
 #endif
+
     for (t = count - 1; ; --t)
     {
 	int spaces_removed;
@@ -2382,9 +2379,6 @@ do_join(
     ++curwin->w_cursor.lnum;
     del_lines(count - 1, FALSE);
     curwin->w_cursor.lnum = t;
-#ifdef FEAT_PROP_POPUP
-    }  // end of um scope
-#endif
 
     /*
      * Set the cursor column:

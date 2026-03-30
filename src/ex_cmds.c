@@ -4895,8 +4895,6 @@ ex_substitute(exarg_T *eap)
 							      text_prop_count);
 			    if (text_props != NULL)
 			    {
-				int pi;
-
 				mch_memmove(text_props, prop_start,
 					 text_prop_count * sizeof(textprop_T));
 				// Filter out virtual text and continuation
@@ -4904,7 +4902,7 @@ ex_substitute(exarg_T *eap)
 				// offsets to pointers, and adjust columns.
 				char_u *cnt_ptr = prop_start - PROP_COUNT_SIZE;
 				int wi = 0;
-				for (pi = 0; pi < text_prop_count; ++pi)
+				for (int pi = 0; pi < text_prop_count; ++pi)
 				{
 				    // Skip virtual text and continuation
 				    // properties from the deleted line.
