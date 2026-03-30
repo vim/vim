@@ -24,7 +24,7 @@ static void um_store_changes(unpacked_memline_T *um);
 um_free_vtext(textprop_T *props, int count)
 {
     for (int i = 0; i < count; ++i)
-	if (props[i].tp_id < 0 && props[i].u.tp_text != NULL)
+	if (props[i].tp_flags & TP_FLAG_VTEXT_PTR)
 	    VIM_CLEAR(props[i].u.tp_text);
 }
 
@@ -175,7 +175,7 @@ um_detach(unpacked_memline_T *um)
 
     for (int i = 0; i < um->prop_count; ++i)
     {
-	if (um->props[i].tp_id < 0 && um->props[i].u.tp_text != NULL)
+	if (um->props[i].tp_flags & TP_FLAG_VTEXT_PTR)
 	{
 	    char_u *copy = vim_strsave(um->props[i].u.tp_text);
 
@@ -378,7 +378,7 @@ um_delete_prop(unpacked_memline_T *um, int index)
 	clear_cont_flag_on_neighbor(um->buf, um->lnum + 1,
 			       prop->tp_id, prop->tp_type, TP_FLAG_CONT_PREV);
 
-    if (prop->tp_id < 0 && prop->u.tp_text != NULL)
+    if (prop->tp_flags & TP_FLAG_VTEXT_PTR)
 	VIM_CLEAR(prop->u.tp_text);
     prop->tp_flags |= TP_FLAG_DELETED;
 }
@@ -411,7 +411,7 @@ um_pack(unpacked_memline_T *um, int *packed_len)
 	if (prop->tp_flags & TP_FLAG_DELETED)
 	    continue;
 	++live_count;
-	if (prop->tp_id < 0 && prop->u.tp_text != NULL)
+	if (prop->tp_flags & TP_FLAG_VTEXT_PTR)
 	    vtext_size += prop->tp_len + 1;
     }
 
@@ -495,6 +495,10 @@ um_store_changes(unpacked_memline_T *um)
 	ml_get_buf(um->buf, um->lnum, TRUE);
     else if (!(um->buf->b_ml.ml_flags & ML_LINE_DIRTY))
 	(void)ml_get_buf(um->buf, um->lnum, TRUE);
+
+    // Free the detached text and vtext before switching to packed.
+    vim_free(um->text);
+    um_free_vtext(um->props, um->prop_count);
 
     if (um->buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
 	vim_free(um->buf->b_ml.ml_line_ptr);
@@ -857,21 +861,23 @@ prop_add_one(
 	vtext_dest = newprops + new_propcount * sizeof(textprop_T);
 	for (j = 0; j < new_propcount; ++j)
 	{
-	    textprop_T *pp;
+	    textprop_T ep;
 
 	    if (j == i)
 		continue;  // handle new prop separately below
-	    pp = (textprop_T *)(newprops + j * sizeof(textprop_T));
-	    if (pp->tp_id < 0 && pp->tp_len > 0)
+	    mch_memmove(&ep, newprops + j * sizeof(textprop_T),
+		    sizeof(textprop_T));
+	    if (ep.tp_id < 0 && ep.tp_len > 0)
 	    {
 		// Copy existing vtext from old memline data.
 		char_u *old_count = (char_u *)props - PROP_COUNT_SIZE;
-		char_u *old_vtext = old_count + pp->u.tp_text_offset;
+		char_u *old_vtext = old_count + ep.u.tp_text_offset;
 
-		mch_memmove(vtext_dest, old_vtext, pp->tp_len + 1);
-		pp->u.tp_text_offset =
-				    (colnr_T)(vtext_dest - count_dest);
-		vtext_dest += pp->tp_len + 1;
+		mch_memmove(vtext_dest, old_vtext, ep.tp_len + 1);
+		ep.u.tp_text_offset = (colnr_T)(vtext_dest - count_dest);
+		mch_memmove(newprops + j * sizeof(textprop_T), &ep,
+			sizeof(textprop_T));
+		vtext_dest += ep.tp_len + 1;
 	    }
 	}
 
@@ -1470,7 +1476,7 @@ set_text_props(linenr_T lnum, textprop_T *tps, int count)
 	int	    i;
 
 	for (i = 0; i < count; ++i)
-	    if (tps[i].tp_id < 0 && tps[i].u.tp_text != NULL)
+	    if (tps[i].tp_flags & TP_FLAG_VTEXT_PTR)
 		vtext_size += tps[i].tp_len + 1;
 
 	total_len = textlen + (int)PROP_COUNT_SIZE
@@ -1490,7 +1496,7 @@ set_text_props(linenr_T lnum, textprop_T *tps, int count)
 	{
 	    textprop_T prop = tps[i];
 
-	    if (prop.tp_id < 0 && prop.u.tp_text != NULL)
+	    if (prop.tp_flags & TP_FLAG_VTEXT_PTR)
 	    {
 		int copysize = prop.tp_len + 1;
 
@@ -1551,7 +1557,7 @@ props_add_count_header(char_u *line, int line_len, int textlen, int *new_len)
 
 	mch_memmove(&prop, line + textlen + i * sizeof(textprop_T),
 							sizeof(textprop_T));
-	if (prop.tp_id < 0 && prop.u.tp_text != NULL)
+	if (prop.tp_flags & TP_FLAG_VTEXT_PTR)
 	    vtext_size += prop.tp_len + 1;
     }
 
@@ -1573,7 +1579,7 @@ props_add_count_header(char_u *line, int line_len, int textlen, int *new_len)
 
 	mch_memmove(&prop, line + textlen + i * sizeof(textprop_T),
 							sizeof(textprop_T));
-	if (prop.tp_id < 0 && prop.u.tp_text != NULL)
+	if (prop.tp_flags & TP_FLAG_VTEXT_PTR)
 	{
 	    int copysize = prop.tp_len + 1;
 
@@ -2308,7 +2314,6 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     int		*type_ids = NULL;   // array, for a list of "types", allocated
     int		num_type_ids = 0;   // number of elements in "type_ids"
     int		both;
-    int		did_remove_text = FALSE;
 
     rettv->vval.v_number = 0;
 
@@ -2878,7 +2883,8 @@ adjust_prop(
 		- (start_incl || (prop->tp_len == 0 && end_incl)))
 	    // Change is entirely before the text property: Only shift
 	    prop->tp_col += added;
-	else if (col + 1 < prop->tp_col + prop->tp_len + end_incl)
+	else if (col + 1 < prop->tp_col + prop->tp_len + end_incl
+		&& prop->tp_id >= 0)  // don't change length for virtual text
 	    // Insertion was inside text property
 	    prop->tp_len += added;
     }
@@ -2912,17 +2918,21 @@ adjust_prop(
     else if (prop->tp_len > 0 && prop->tp_col + prop->tp_len > col
 	    && prop->tp_id >= 0)  // don't change length for virtual text
     {
-	int after = col - added - (prop->tp_col - 1 + prop->tp_len);
+	if (added <= -MAXCOL)
+	    // Delete everything from col to end of line.
+	    prop->tp_len = col - (prop->tp_col - 1);
+	else
+	{
+	    int after = col - added - (prop->tp_col - 1 + prop->tp_len);
 
-	prop->tp_len += after > 0 ? added + after : added;
+	    prop->tp_len += after > 0 ? added + after : added;
+	}
 	// A multiline property with no text left on this line
 	// should also be dropped.  When TP_FLAG_CONT_NEXT is set,
 	// tp_len == 1 means only the newline remains.
-	if (prop->tp_len <= 0
-		|| ((prop->tp_flags & TP_FLAG_CONT_NEXT)
-						       && prop->tp_len <= 1))
-	    res.can_drop = droppable
-		|| (prop->tp_flags
+	if (prop->tp_len <= 0 || ((prop->tp_flags & TP_FLAG_CONT_NEXT)
+		    && prop->tp_len <= 1))
+	    res.can_drop = droppable || (prop->tp_flags
 			& (TP_FLAG_CONT_PREV | TP_FLAG_CONT_NEXT));
     }
     else
@@ -2972,35 +2982,33 @@ adjust_prop_columns(
 	res = adjust_prop(prop, col, bytes_added, flags);
 	if (res.dirty)
 	{
-	    // Save for undo if requested and not done yet.
-	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty
-						    && u_savesub(lnum) == FAIL)
+	    if (!dirty)
 	    {
-		um_abort(&um);
-		return FALSE;
+		// Detach before u_savesub() so that all text and vtext
+		// pointers are allocated copies, immune to memline
+		// changes caused by u_savesub().
+		if (!um.detached && !um_detach(&um))
+		{
+		    um_abort(&um);
+		    return FALSE;
+		}
+		// Re-get prop pointer after detach (array may move).
+		prop = &um.props[ri];
+
+		if ((flags & APC_SAVE_FOR_UNDO)
+					       && u_savesub(lnum) == FAIL)
+		{
+		    um_abort(&um);
+		    return FALSE;
+		}
 	    }
 	    dirty = TRUE;
-
-	    // u_savesub() may have updated curbuf->b_ml, re-open if needed
-	    if (curbuf->b_ml.ml_line_lnum != lnum)
-	    {
-		// The line was flushed; we need to reload.  However, our
-		// props array is still valid (allocated copy).  Just mark
-		// that the memline needs to be re-read on close.
-		// Actually, um_goto_line would re-read but lose our
-		// changes.  Since props[] is our own copy, we can just
-		// mark as detached to force a write on close.
-		if (!um.detached)
-		    um_detach(&um);
-	    }
 	}
 	if (res.can_drop)
 	{
 	    um_delete_prop(&um, ri);
 	    continue;
 	}
-	if (dirty && !um.detached)
-	    um_detach(&um);
     }
     if (dirty)
 	um_close(&um);
