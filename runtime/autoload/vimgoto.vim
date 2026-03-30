@@ -5,7 +5,7 @@ vim9script
 #               Shane-XB-Qian
 #               Andrew Radev
 #               thinca
-# Last Change:  2026 Feb 10
+# Last Change:  2026 Mar 30
 #
 # Vim script to handle jumping to the targets of several types of Vim commands
 # (:import, :packadd, :runtime, :colorscheme), and to autoloaded functions of
@@ -168,7 +168,7 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
         "\<C-W>F": 'split',
         "\<C-W>gF": 'tab split',
     }[editcmd]
-    execute how_to_split .. ' ' .. filepath
+    execute how_to_split .. ' ' .. fnameescape(filepath)
 enddef
 
 def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
@@ -193,7 +193,7 @@ def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
         cmd = $'+silent\ call\ search(''{escaped_pattern}'')'
     endif
 
-    execute $'{split} {cmd} {fname}'
+    execute $'{split} {cmd} {fnameescape(fname)}'
 
     # If there are several files to open, put them into an arglist.
     if target->typename() == 'list<string>'
