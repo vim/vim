@@ -9027,38 +9027,14 @@ msgstr "E1575: 无法建立管道"
 msgid "--No lines in buffer--"
 msgstr "--缓冲区无内容--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "pointer"
 
 msgid "percent"
 msgstr "percent"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "string"
-
-msgid "float"
-msgstr "float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "已查找到文件开头，再从结尾继续查找"
