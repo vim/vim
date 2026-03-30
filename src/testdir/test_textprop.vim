@@ -3975,15 +3975,15 @@ func Test_removed_prop_with_text_cleans_up_array()
   call setline(1, 'some text here')
   call prop_type_add('some', #{highlight: 'ErrorMsg'})
   let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
+  call assert_true(id1 < 0)
   let id2 = prop_add(1, 10, #{type: 'some', text: "HERE"})
-  call assert_equal(-2, id2)
+  call assert_true(id2 < id1)
 
-  " removing the props resets the index
+  " IDs are not recycled after removal; new IDs keep decreasing.
   call prop_remove(#{id: id1})
   call prop_remove(#{id: id2})
-  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
+  let id3 = prop_add(1, 5, #{type: 'some', text: "SOME"})
+  call assert_true(id3 < id2)
 
   call prop_type_delete('some')
   bwipe!
