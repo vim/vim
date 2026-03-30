@@ -454,7 +454,14 @@ u_unref_vtext(undoline_T *ul)
 	mch_memmove(&prop, text_start + i * sizeof(textprop_T),
 						      sizeof(textprop_T));
 	if (prop.tp_id < 0 && prop.tp_vtext != NULL)
+	{
 	    vtext_unref(prop.tp_vtext);
+	    // Clear the pointer so that if another undo entry has a
+	    // byte-copy of the same textprop, it won't double-free.
+	    prop.tp_vtext = NULL;
+	    mch_memmove(text_start + i * sizeof(textprop_T),
+					    &prop, sizeof(textprop_T));
+	}
     }
 }
 #endif
