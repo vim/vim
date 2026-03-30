@@ -166,6 +166,9 @@ struct terminal_S {
 			     // be NULL
     int		tl_using_altscreen;
     garray_T	tl_osc_buf;	    // incomplete OSC string
+
+    int		tl_snap_continuation_count; // number of continuation lines
+					    // joined in last update_snapshot()
 };
 
 #define TMODE_ONCE 1	    // CTRL-\ CTRL-N used
@@ -2028,6 +2031,7 @@ cleanup_scrollback(term_T *term)
 update_snapshot(term_T *term)
 {
     VTermScreen	    *screen;
+    VTermState	    *state;
     int		    len;
     int		    lines_skipped = 0;
     VTermPos	    pos;
@@ -2043,9 +2047,22 @@ update_snapshot(term_T *term)
     cleanup_scrollback(term);
 
     screen = vterm_obtain_screen(term->tl_vterm);
+    state = vterm_obtain_state(term->tl_vterm);
     fill_attr = new_fill_attr = term->tl_default_color;
+    term->tl_snap_continuation_count = 0;
     for (pos.row = 0; pos.row < term->tl_rows; ++pos.row)
     {
+	const VTermLineInfo *lineinfo;
+	int		    is_continuation = FALSE;
+
+	if (state != NULL && pos.row > 0)
+	{
+	    lineinfo = vterm_state_get_lineinfo(state, pos.row);
+	    is_continuation = (lineinfo != NULL && lineinfo->continuation
+		    && lines_skipped == 0
+		    && term->tl_scrollback.ga_len > term->tl_scrollback_scrolled);
+	}
+
 	len = 0;
 	for (pos.col = 0; pos.col < term->tl_cols; ++pos.col)
 	    if (vterm_screen_get_cell(screen, pos, &cell) != 0
@@ -2058,7 +2075,107 @@ update_snapshot(term_T *term)
 		// Assume the last attr is the filler attr.
 		cell2cellattr(&cell, &new_fill_attr);
 
-	if (len == 0 && equal_celattr(&new_fill_attr, &fill_attr))
+	if (is_continuation)
+	{
+	    // This row is a continuation of the previous logical line.
+	    // Join with the previous scrollback entry and buffer line.
+	    ++term->tl_snap_continuation_count;
+
+	    if (len > 0)
+	    {
+		p = ALLOC_MULT(cellattr_T, len);
+		if (p != NULL)
+		{
+		    garray_T    ga;
+		    int		width;
+		    sb_line_T	*prev_line;
+		    int		new_cols;
+		    cellattr_T	*new_cells;
+
+		    ga_init2(&ga, 1, 100);
+		    for (pos.col = 0; pos.col < len; pos.col += width)
+		    {
+			if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+			{
+			    width = 1;
+			    CLEAR_POINTER(p + pos.col);
+			    if (ga_grow(&ga, 1) == OK)
+				ga.ga_len += utf_char2bytes(' ',
+					(char_u *)ga.ga_data + ga.ga_len);
+			}
+			else
+			{
+			    width = cell.width;
+			    cell2cellattr(&cell, &p[pos.col]);
+			    if (width == 2)
+				p[pos.col + 1] = p[pos.col];
+			    if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6)
+									== OK)
+			    {
+				int i;
+				int c;
+
+				for (i = 0; (c = cell.chars[i]) > 0
+							     || i == 0; ++i)
+				    ga.ga_len += utf_char2bytes(
+					    c == NUL ? ' ' : c,
+					    (char_u *)ga.ga_data + ga.ga_len);
+			    }
+			}
+		    }
+
+		    // Merge cells with previous scrollback entry.
+		    prev_line = (sb_line_T *)term->tl_scrollback.ga_data
+					    + term->tl_scrollback.ga_len - 1;
+		    new_cols = prev_line->sb_cols + len;
+		    new_cells = ALLOC_MULT(cellattr_T, new_cols);
+		    if (new_cells != NULL)
+		    {
+			if (prev_line->sb_cols > 0
+						&& prev_line->sb_cells != NULL)
+			    mch_memmove(new_cells, prev_line->sb_cells,
+				    sizeof(cellattr_T) * prev_line->sb_cols);
+			mch_memmove(new_cells + prev_line->sb_cols, p,
+					       sizeof(cellattr_T) * len);
+			vim_free(prev_line->sb_cells);
+			prev_line->sb_cells = new_cells;
+			prev_line->sb_cols = new_cols;
+		    }
+		    vim_free(p);
+		    prev_line->sb_fill_attr = new_fill_attr;
+		    fill_attr = new_fill_attr;
+
+		    // Replace last buffer line with joined text.
+		    if (ga_grow(&ga, 1) == OK)
+		    {
+			buf_T	    *buf = term->tl_buffer;
+			linenr_T    last_lnum = buf->b_ml.ml_line_count;
+			char_u	    *prev_text;
+			int	    prev_len;
+			char_u	    *joined;
+
+			prev_text = ml_get_buf(buf, last_lnum, FALSE);
+			prev_len = (int)STRLEN(prev_text);
+			joined = alloc(prev_len + ga.ga_len + 1);
+			if (joined != NULL)
+			{
+			    buf_T *save_curbuf = curbuf;
+
+			    mch_memmove(joined, prev_text, prev_len);
+			    mch_memmove(joined + prev_len,
+						  ga.ga_data, ga.ga_len);
+			    joined[prev_len + ga.ga_len] = NUL;
+			    curbuf = buf;
+			    ml_replace(last_lnum, joined, FALSE);
+			    curbuf = save_curbuf;
+			}
+		    }
+		    ga_clear(&ga);
+		}
+	    }
+	    // else: empty continuation row, nothing to join.
+	}
+	else if (len == 0 && equal_celattr(&new_fill_attr, &fill_attr))
 	    ++lines_skipped;
 	else
 	{
@@ -2137,7 +2254,8 @@ update_snapshot(term_T *term)
 
     // Add trailing empty lines.
     for (pos.row = term->tl_scrollback.ga_len;
-	    pos.row < term->tl_scrollback_scrolled + term->tl_cursor_pos.row;
+	    pos.row < term->tl_scrollback_scrolled + term->tl_cursor_pos.row
+					    - term->tl_snap_continuation_count;
 	    ++pos.row)
     {
 	if (add_empty_scrollback(term, &fill_attr, 0) == OK)
@@ -2290,12 +2408,54 @@ term_enter_normal_mode(void)
     may_move_terminal_to_buffer(term, TRUE);
 
     // Move the window cursor to the position of the cursor in the
-    // terminal.
-    curwin->w_cursor.lnum = term->tl_scrollback_scrolled
+    // terminal.  Adjust for continuation lines that were joined in the
+    // snapshot.
+    {
+	int		cont_before_cursor = 0;
+	VTermState	*state = vterm_obtain_state(term->tl_vterm);
+
+	if (state != NULL)
+	{
+	    int row;
+	    int col;
+
+	    for (row = 1; row <= term->tl_cursor_pos.row; ++row)
+	    {
+		const VTermLineInfo *info =
+				    vterm_state_get_lineinfo(state, row);
+		if (info != NULL && info->continuation)
+		    ++cont_before_cursor;
+	    }
+
+	    // Adjust cursor column: if cursor is on a continuation line,
+	    // add the widths of all preceding rows in the same logical
+	    // line.
+	    col = term->tl_cursor_pos.col;
+	    for (row = term->tl_cursor_pos.row; row > 0; --row)
+	    {
+		const VTermLineInfo *info =
+				    vterm_state_get_lineinfo(state, row);
+		if (info == NULL || !info->continuation)
+		    break;
+		col += term->tl_cols;
+	    }
+
+	    curwin->w_cursor.lnum = term->tl_scrollback_scrolled
+				+ term->tl_cursor_pos.row + 1
+				- cont_before_cursor;
+	    check_cursor();
+	    if (coladvance(col) == FAIL)
+		coladvance(MAXCOL);
+	}
+	else
+	{
+	    curwin->w_cursor.lnum = term->tl_scrollback_scrolled
 					     + term->tl_cursor_pos.row + 1;
-    check_cursor();
-    if (coladvance(term->tl_cursor_pos.col) == FAIL)
-	coladvance(MAXCOL);
+	    check_cursor();
+	    if (coladvance(term->tl_cursor_pos.col) == FAIL)
+		coladvance(MAXCOL);
+	}
+    }
     curwin->w_set_curswant = TRUE;
 
     // Display the same lines as in the terminal.

@@ -418,6 +418,65 @@ func Test_terminal_reflow()
   exe buf .. 'bwipe!'
 endfunc
 
+func Test_terminal_reflow_normal_mode()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output a long line that wraps at column 40
+  let long_text = repeat('X', 60)
+  call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
+  call TermWait(buf)
+
+  " Switch to Terminal-Normal mode: continuation lines should be joined
+  " in the buffer so that the 60 X's appear as a single buffer line.
+  call feedkeys("\<C-W>N", 'xt')
+  let found = 0
+  for lnum in range(1, line('$'))
+    if getline(lnum) =~ 'X\{60}'
+      let found = 1
+      break
+    endif
+  endfor
+  call assert_equal(1, found, 'joined line not found in normal mode')
+
+  " Go back and clean up
+  call feedkeys("i", 'xt')
+  exe buf .. 'bwipe!'
+endfunc
+
+func Test_terminal_reflow_normal_mode_multibyte()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output 30 wide (CJK) characters = 60 cells, wraps at column 40
+  let wide_char = "\u3042"
+  let wide_text = repeat(wide_char, 30)
+  call term_sendkeys(buf, "printf '" .. wide_text .. "'\<CR>")
+  call TermWait(buf)
+
+  " Switch to Terminal-Normal mode: continuation lines should be joined
+  call feedkeys("\<C-W>N", 'xt')
+  let found = 0
+  for lnum in range(1, line('$'))
+    if getline(lnum) =~ wide_text
+      let found = 1
+      break
+    endif
+  endfor
+  call assert_equal(1, found, 'joined multibyte line not found in normal mode')
+
+  call feedkeys("i", 'xt')
+  exe buf .. 'bwipe!'
+endfunc
+
 func Test_terminal_reflow_multibyte()
   CheckNotMSWindows
 
