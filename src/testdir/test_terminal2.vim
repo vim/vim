@@ -463,7 +463,7 @@ func Test_terminal_reflow_normal_mode_multibyte()
   " Output 30 wide (CJK) characters = 60 cells, wraps at column 40
   let wide_char = "\u3042"
   let wide_text = repeat(wide_char, 30)
-  call term_sendkeys(buf, "printf '%s' '" .. wide_text .. "'\<CR>")
+  call term_sendkeys(buf, "echo -n " .. wide_text .. "\<CR>")
   call TermWait(buf)
 
   " Switch to Terminal-Normal mode: continuation lines should be joined
@@ -496,7 +496,7 @@ func Test_terminal_reflow_multibyte()
   let wide_text = repeat(wide_char, 30)
   let wrapped_20 = repeat(wide_char, 20)
   let wrapped_10 = repeat(wide_char, 10)
-  call term_sendkeys(buf, "printf '%s' '" .. wide_text .. "'\<CR>")
+  call term_sendkeys(buf, "echo -n " .. wide_text .. "\<CR>")
   call TermWait(buf)
 
   " Before resize: the 30 wide chars should be wrapped across two lines
