@@ -235,7 +235,6 @@ static int moverect_internal(VTermRect dest, VTermRect src, void *user)
      dest.start_row == 0 && dest.start_col == 0 &&        // starts top-left corner
      dest.end_col == screen->cols &&                      // full width
      screen->buffer == screen->buffers[BUFIDX_PRIMARY]) { // not altscreen
-    int downward = src.start_row - dest.start_row;
     for(int row = 0; row < src.start_row; row++) {
       // Use the saved continuation flag for this push.
       // Note: by the time we get here, state lineinfo has already been
