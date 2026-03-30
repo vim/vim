@@ -3061,6 +3061,9 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = VVAL_FALSE;
 
+    if (check_restricted() || check_secure())
+	return;
+
     if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
 

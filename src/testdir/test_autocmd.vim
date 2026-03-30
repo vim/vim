@@ -5962,4 +5962,9 @@ func Test_SwapExists_b_nwindows()
   %bw!
 endfunc
 
+func Test_autocmd_add_secure()
+  call assert_fails('sandbox call autocmd_add([{"event": "BufRead", "cmd": "let x = 1"}])', 'E48:')
+  call assert_fails('sandbox call autocmd_delete([{"event": "BufRead"}])', 'E48:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

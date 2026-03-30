@@ -872,4 +872,19 @@ function Test_tabpanel_showtabpanel_via_cmd_arg()
   set showtabpanel& noruler&
 endfunc
 
+func Test_tabpanel_no_modeline()
+  let _tpl = &tabpanel
+  let _mls = &modelineexpr
+
+  set nomodelineexpr
+  setlocal modeline
+  new
+  call writefile(['/* vim: set tabpanel=test: */'], 'Xtabpanel.txt', 'D')
+  call assert_fails(':e Xtabpanel.txt', 'E992:')
+
+  let &tabpanel = _tpl
+  let &modelineexpr = _mls
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

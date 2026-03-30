@@ -2578,7 +2578,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tpm, PV_NONE, NULL, NULL,
 			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
 #if defined(FEAT_TABPANEL)
-    {"tabpanel",  "tpl",    P_STRING|P_VI_DEF|P_RALL,
+    {"tabpanel",  "tpl",    P_STRING|P_VI_DEF|P_RALL|P_MLE,
 			    (char_u *)&p_tpl, PV_NONE, NULL, NULL,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"tabpanelopt","tplo",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_COLON
