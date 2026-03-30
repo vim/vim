@@ -4900,7 +4900,6 @@ ex_substitute(exarg_T *eap)
 				// Filter out virtual text and continuation
 				// properties from deleted lines, convert
 				// offsets to pointers, and adjust columns.
-				char_u *cnt_ptr = prop_start - PROP_COUNT_SIZE;
 				int wi = 0;
 				for (int pi = 0; pi < text_prop_count; ++pi)
 				{
