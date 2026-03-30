@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: RuVim_0.9020262.280326\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
 "POT-Creation-Date: 2026-03-28 14:52+0300\n"
-"PO-Revision-Date: 2026-03-28 19:59+0300\n"
+"PO-Revision-Date: 2026-03-30 20:47+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -10581,38 +10581,14 @@ msgstr "E1575: Не удалось создать конвейер"
 msgid "--No lines in buffer--"
 msgstr "-- Буфер не содержит текст --"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "pointer"
 
 msgid "percent"
 msgstr "percent"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "string"
-
-msgid "float"
-msgstr "float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Поиск будет продолжен от НИЖНЕЙ ГРАНИЦЫ документа"
