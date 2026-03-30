@@ -1702,22 +1702,19 @@ win_line(
 	    // Convert tp_text_offset to tp_text pointer for virtual
 	    // text properties.  prop_start points into the memline
 	    // after the prop_count field.
-	    {
-		char_u *count_ptr = prop_start - PROP_COUNT_SIZE;
-		int i;
+	    char_u *count_ptr = prop_start - PROP_COUNT_SIZE;
 
-		for (i = 0; i < text_prop_count; ++i)
+	    for (int i = 0; i < text_prop_count; ++i)
+	    {
+		if (text_props[i].tp_id < 0
+				&& text_props[i].u.tp_text_offset > 0)
 		{
-		    if (text_props[i].tp_id < 0
-				    && text_props[i].u.tp_text_offset > 0)
-		    {
-			text_props[i].u.tp_text =
-				count_ptr + text_props[i].u.tp_text_offset;
-			text_props[i].tp_flags |= TP_FLAG_VTEXT_PTR;
-		    }
-		    else
-			text_props[i].u.tp_text = NULL;
+		    text_props[i].u.tp_text =
+			    count_ptr + text_props[i].u.tp_text_offset;
+		    text_props[i].tp_flags |= TP_FLAG_VTEXT_PTR;
 		}
+		else
+		    text_props[i].u.tp_text = NULL;
 	    }
 	}
 

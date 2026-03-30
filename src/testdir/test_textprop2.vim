@@ -34,6 +34,9 @@ endfunc
 func s:Setup_multiline_props_1()
   new
   call setline(1, ['Line1', 'Line.2', 'Line..3', 'Line...4'])
+  silent! call prop_type_delete('1')
+  silent! call prop_type_delete('2')
+  silent! call prop_type_delete('3')
   call prop_type_add('1', {'highlight': 'DiffAdd'})
   call prop_type_add('2', {'highlight': 'DiffChange'})
   call prop_type_add('3', {'highlight': 'DiffDelete'})
@@ -55,6 +58,7 @@ endfunc
 func s:Setup_start_end_prop()
   new
   call setline(1, ['Line.1', 'Line..2', 'Line...3', 'Line....4'])
+  silent! call prop_type_delete('1')
   call prop_type_add('1', {'highlight': 'DiffAdd'})
   call prop_add(1, 4, {'type': '1', 'id': 42, 'end_lnum': 3, 'end_col': 4})
 endfunc
@@ -67,6 +71,7 @@ func Test_subst_adjusts_marks()
   func DoEditAndCheck(edit, expected_marks, expected_nlines) closure
     new
     call setline(1, ['Line.1', 'Line..2', 'Line...3', 'Line....4'])
+    silent! call prop_type_delete('1')
     call prop_type_add('1', {'highlight': 'DiffAdd'})
     call prop_add(1, 1, {'type': '1', 'id': 42, 'end_lnum': 4, 'end_col': 10})
     call setpos("'a", [0, 1, 1])
@@ -166,6 +171,9 @@ func Test_multiline_substitute_del_lines_drops_virt_text_props()
   func SetupVirtProps(virt_k_col)
     new
     call setline(1, ['Line.1', 'Line..2', 'Line...3', 'Line....4'])
+    for s:t in ['1', '2', '3', '4', '7', '8']
+      silent! call prop_type_delete(s:t)
+    endfor
     call prop_type_add('1', {'highlight': 'DiffAdd'})
     call prop_type_add('2', {'highlight': 'DiffChange', 'end_incl': 1})
     call prop_type_add('3', {'highlight': 'DiffDelete'})
@@ -277,6 +285,7 @@ func Test_text_deletion_removes_inline_virtual_text()
     if a:end_incl
       let opts['end_incl'] = 1
     endif
+    silent! call prop_type_delete('2')
     call prop_type_add('2', opts)
     call prop_add(1, 7, {'type': '2', 'text': 'xxx'})
   endfunc
