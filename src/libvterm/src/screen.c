@@ -62,6 +62,9 @@ struct VTermScreen
   unsigned int global_reverse : 1;
   unsigned int reflow : 1;
 
+  /* Set by sb_pushline_from_row() before calling sb_pushline callback */
+  unsigned int sb_pushline_continuation : 1;
+
   /* Primary and Altscreen. buffers[1] is lazily allocated as needed */
   ScreenCell *buffers[2];
 
@@ -212,6 +215,10 @@ static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 static void sb_pushline_from_row(VTermScreen *screen, int row)
 {
   VTermPos pos;
+  const VTermLineInfo *info = vterm_state_get_lineinfo(screen->state, row);
+
+  screen->sb_pushline_continuation = (info != NULL && info->continuation);
+
   pos.row = row;
   for(pos.col = 0; pos.col < screen->cols; pos.col++)
     vterm_screen_get_cell(screen, pos, screen->sb_buffer + pos.col);
@@ -1097,6 +1104,11 @@ VTermScreen *vterm_obtain_screen(VTerm *vt)
 void vterm_screen_enable_reflow(VTermScreen *screen, int reflow)
 {
   screen->reflow = reflow;
+}
+
+int vterm_screen_sb_pushline_continuation(const VTermScreen *screen)
+{
+  return screen->sb_pushline_continuation;
 }
 
 // Removed, causes a compiler warning and isn't used

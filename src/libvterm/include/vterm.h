@@ -595,6 +595,10 @@ void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 
 void vterm_screen_enable_reflow(VTermScreen *screen, int reflow);
 
+// Returns non-zero if the line currently being pushed via sb_pushline callback
+// is a continuation of the previous line.
+int vterm_screen_sb_pushline_continuation(const VTermScreen *screen);
+
 // Back-compat alias for the brief time it was in 0.3-RC1
 #define vterm_screen_set_reflow  vterm_screen_enable_reflow
 

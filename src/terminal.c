@@ -3686,6 +3686,8 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     term_T	*term = (term_T *)user;
     garray_T	*gap;
     int		update_buffer;
+    VTermScreen	*screen;
+    int		is_continuation;
 
     if (term->tl_normal_mode)
     {
@@ -3703,10 +3705,14 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	update_buffer = TRUE;
     }
 
-    limit_scrollback(term, gap, update_buffer);
+    // Check if this line is a continuation of the previous line.
+    screen = vterm_obtain_screen(term->tl_vterm);
+    is_continuation = (screen != NULL
+	    && vterm_screen_sb_pushline_continuation(screen)
+	    && gap->ga_len > 0);
 
-    if (ga_grow(gap, 1) == FAIL)
-	return 0;
+    if (!is_continuation)
+	limit_scrollback(term, gap, update_buffer);
 
     cellattr_T	*p = NULL;
     int		len = 0;
@@ -3714,8 +3720,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     int		c;
     int		col;
     int		text_len;
-    char_u		*text;
-    sb_line_T	*line;
+    char_u	*text;
     garray_T	ga;
     cellattr_T	fill_attr = term->tl_default_color;
 
@@ -3759,25 +3764,101 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	text_len = ga.ga_len;
 	*(text + text_len) = NUL;
     }
-    if (update_buffer)
-	add_scrollback_line_to_buffer(term, text, text_len);
 
-    line = (sb_line_T *)gap->ga_data + gap->ga_len;
-    line->sb_cols = len;
-    line->sb_cells = p;
-    line->sb_fill_attr = fill_attr;
-    if (update_buffer)
+    if (is_continuation)
     {
-	line->sb_text = NULL;
-	++term->tl_scrollback_scrolled;
-	ga_clear(&ga);  // free the text
+	// Join with the previous scrollback entry.
+	sb_line_T   *prev_line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
+
+	if (len > 0)
+	{
+	    // Merge cells with previous entry.
+	    int		new_cols = prev_line->sb_cols + len;
+	    cellattr_T	*new_cells = ALLOC_MULT(cellattr_T, new_cols);
+
+	    if (new_cells != NULL)
+	    {
+		if (prev_line->sb_cols > 0 && prev_line->sb_cells != NULL)
+		    mch_memmove(new_cells, prev_line->sb_cells,
+				    sizeof(cellattr_T) * prev_line->sb_cols);
+		mch_memmove(new_cells + prev_line->sb_cols, p,
+						   sizeof(cellattr_T) * len);
+		vim_free(prev_line->sb_cells);
+		prev_line->sb_cells = new_cells;
+		prev_line->sb_cols = new_cols;
+	    }
+	    vim_free(p);
+	}
+	prev_line->sb_fill_attr = fill_attr;
+
+	if (update_buffer)
+	{
+	    // Replace last buffer line with joined text.
+	    buf_T	*buf = term->tl_buffer;
+	    linenr_T	last_lnum = buf->b_ml.ml_line_count;
+	    char_u	*prev_text = ml_get_buf(buf, last_lnum, FALSE);
+	    int		prev_len = (int)STRLEN(prev_text);
+	    char_u	*joined = alloc(prev_len + text_len + 1);
+
+	    if (joined != NULL)
+	    {
+		buf_T *save_curbuf = curbuf;
+
+		mch_memmove(joined, prev_text, prev_len);
+		mch_memmove(joined + prev_len, text, text_len);
+		joined[prev_len + text_len] = NUL;
+		curbuf = buf;
+		ml_replace(last_lnum, joined, FALSE);
+		curbuf = save_curbuf;
+	    }
+	    ga_clear(&ga);
+	}
+	else
+	{
+	    // Merge text for postponed scrollback.
+	    char_u  *prev_text = prev_line->sb_text;
+	    int	    prev_len = prev_text != NULL ? (int)STRLEN(prev_text) : 0;
+	    char_u  *joined = alloc(prev_len + text_len + 1);
+
+	    if (joined != NULL)
+	    {
+		if (prev_len > 0)
+		    mch_memmove(joined, prev_text, prev_len);
+		mch_memmove(joined + prev_len, text, text_len);
+		joined[prev_len + text_len] = NUL;
+	    }
+	    vim_free(prev_line->sb_text);
+	    prev_line->sb_text = joined;
+	    ga_clear(&ga);
+	}
     }
     else
     {
-	line->sb_text = text;
-	ga_init(&ga);  // text is kept in tl_scrollback_postponed
+	sb_line_T   *line;
+
+	if (ga_grow(gap, 1) == FAIL)
+	    return 0;
+
+	if (update_buffer)
+	    add_scrollback_line_to_buffer(term, text, text_len);
+
+	line = (sb_line_T *)gap->ga_data + gap->ga_len;
+	line->sb_cols = len;
+	line->sb_cells = p;
+	line->sb_fill_attr = fill_attr;
+	if (update_buffer)
+	{
+	    line->sb_text = NULL;
+	    ++term->tl_scrollback_scrolled;
+	    ga_clear(&ga);  // free the text
+	}
+	else
+	{
+	    line->sb_text = text;
+	    ga_init(&ga);  // text is kept in tl_scrollback_postponed
+	}
+	++gap->ga_len;
     }
-    ++gap->ga_len;
     return 0; // ignored
 }
 
