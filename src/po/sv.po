@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 9.1\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2026-01-11 14:27+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -9294,38 +9294,14 @@ msgstr "E1571: Måste ange minst ett återanrop för redraw_listener_add"
 msgid "--No lines in buffer--"
 msgstr "--Inga rader i buffert--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "osignerad int"
-
-msgid "unsigned long int"
-msgstr "osignerad long int"
-
-msgid "unsigned long long int"
-msgstr "osignerad long long int"
-
 msgid "pointer"
 msgstr "pekare"
 
 msgid "percent"
 msgstr "procent"
 
-msgid "char"
-msgstr "tecken"
-
 msgid "string"
 msgstr "sträng"
-
-msgid "float"
-msgstr "float"
 
 #.
 #. * Some messages that can be shared are included here.

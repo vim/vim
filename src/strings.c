@@ -3012,22 +3012,22 @@ format_typename(
     switch (format_typeof(type))
     {
 	case TYPE_INT:
-	    return _(typename_int);
+	    return typename_int;
 
 	case TYPE_LONGINT:
-	    return _(typename_longint);
+	    return typename_longint;
 
 	case TYPE_LONGLONGINT:
-	    return _(typename_longlongint);
+	    return typename_longlongint;
 
 	case TYPE_UNSIGNEDINT:
-	    return _(typename_unsignedint);
+	    return typename_unsignedint;
 
 	case TYPE_UNSIGNEDLONGINT:
-	    return _(typename_unsignedlongint);
+	    return typename_unsignedlongint;
 
 	case TYPE_UNSIGNEDLONGLONGINT:
-	    return _(typename_unsignedlonglongint);
+	    return typename_unsignedlonglongint;
 
 	case TYPE_POINTER:
 	    return _(typename_pointer);
@@ -3036,13 +3036,13 @@ format_typename(
 	    return _(typename_percent);
 
 	case TYPE_CHAR:
-	    return _(typename_char);
+	    return typename_char;
 
 	case TYPE_STRING:
 	    return _(typename_string);
 
 	case TYPE_FLOAT:
-	    return _(typename_float);
+	    return typename_float;
     }
 
     return _(typename_unknown);

@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Simplified Chinese)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-20 20:44+0800\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2025-12-28 14:27+0800\n"
 "Last-Translator: Mao-Yining\n"
 "Language-Team: Simplified Chinese\n"
@@ -9020,38 +9020,14 @@ msgstr "E1574: gethostbyname()：无法在 channel_listen() 中解析主机名"
 msgid "--No lines in buffer--"
 msgstr "--缓冲区无内容--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "pointer"
 
 msgid "percent"
 msgstr "percent"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "string"
-
-msgid "float"
-msgstr "float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "已查找到文件开头，再从结尾继续查找"
