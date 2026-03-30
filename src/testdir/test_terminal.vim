@@ -2452,6 +2452,8 @@ func Test_terminal_disable_kitty_keyboard()
 endfunc
 
 func Test_terminal_unwraps()
+  CheckNotMSWindows
+
   30vnew
 
   redraw
