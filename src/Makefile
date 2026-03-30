@@ -696,9 +696,9 @@ LINT_OPTIONS = -beprxzF
 # $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
 # $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
 # When running tests output can be found in testdir/asan.*
-SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
-		   -fsanitize=address -fsanitize=undefined \
-		   -fno-omit-frame-pointer
+#SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
+#		   -fsanitize=address -fsanitize=undefined \
+#		   -fno-omit-frame-pointer
 
 # Similarly when compiling with clang and using ubsan.
 # $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
@@ -713,7 +713,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
 # (in libraries) is also marked as leaked memory.
-LEAK_CFLAGS = -DEXITFREE
+#LEAK_CFLAGS = -DEXITFREE
 #LEAK_LIBS = -lccmalloc
 
 # Uncomment this line to have Vim call abort() when an internal error is

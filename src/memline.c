@@ -3891,13 +3891,6 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	if (!(flags & (ML_DEL_UNDO | ML_DEL_NOPROP)) && textprop_len > 0)
 	    textprop_save = vim_memsave((char_u *)dp + line_start + textlen,
 								 textprop_len);
-
-	// Do NOT unref vtext for ML_DEL_UNDO.  u_save_line()
-	// incremented the refcount to account for the undo copy;
-	// that increment also covers the memline reference being
-	// destroyed here.  The old undo data will be re-inserted
-	// into the memline via ml_append_flags(ML_APPEND_UNDO),
-	// which transfers ownership without changing the refcount.
     }
 #endif
 

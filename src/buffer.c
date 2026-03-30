@@ -967,44 +967,12 @@ buf_freeall(buf_T *buf, int flags)
 #ifdef FEAT_TCL
     tcl_buffer_free(buf);
 #endif
-#ifdef FEAT_PROP_POPUP
-    // Unref virtual text in memline and clear the pointers to NULL.
-    // This must be done before u_clearallandblockfree() because undo
-    // entries contain byte-copies of the same tp_vtext pointers.
-    // Clearing to NULL ensures u_unref_vtext() will skip them.
-    if (buf->b_has_textprop && buf->b_ml.ml_mfp != NULL)
-    {
-	linenr_T    lnum;
-
-	for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
-	{
-	    char_u  *props;
-	    int	    count = get_text_props(buf, lnum, &props, TRUE);
-	    int	    i;
-
-	    for (i = 0; i < count; ++i)
-	    {
-		textprop_T prop;
-
-		mch_memmove(&prop, props + i * sizeof(textprop_T),
-							sizeof(textprop_T));
-		if (prop.tp_vtext != NULL)
-		{
-		    vtext_unref(prop.tp_vtext);
-		    prop.tp_vtext = NULL;
-		    mch_memmove(props + i * sizeof(textprop_T),
-					    &prop, sizeof(textprop_T));
-		}
-	    }
-	}
-    }
-#endif
+    ml_close(buf, TRUE);	    // close and delete the memline/memfile
+    buf->b_ml.ml_line_count = 0;    // no lines in buffer
     if ((flags & BFA_KEEP_UNDO) == 0)
 	// free the memory allocated for undo
 	// and reset all undo information
 	u_clearallandblockfree(buf);
-    ml_close(buf, TRUE);	    // close and delete the memline/memfile
-    buf->b_ml.ml_line_count = 0;    // no lines in buffer
 #ifdef FEAT_SYN_HL
     syntax_clear(&buf->b_s);	    // reset syntax info
 #endif
@@ -1149,7 +1117,28 @@ free_buffer_stuff(
     netbeans_file_killed(buf);
 #endif
 #ifdef FEAT_PROP_POPUP
-    // Virtual text is unreferenced in buf_freeall() before undo cleanup.
+    // Unref virtual text in all lines before freeing the buffer.
+    if (buf->b_has_textprop && buf->b_ml.ml_mfp != NULL)
+    {
+	linenr_T    lnum;
+
+	for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
+	{
+	    char_u  *props;
+	    int	    count = get_text_props(buf, lnum, &props, FALSE);
+	    int	    i;
+
+	    for (i = 0; i < count; ++i)
+	    {
+		textprop_T  prop;
+
+		mch_memmove(&prop, props + i * sizeof(textprop_T),
+						       sizeof(textprop_T));
+		if (prop.tp_vtext != NULL)
+		    vtext_unref(prop.tp_vtext);
+	    }
+	}
+    }
 #endif
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
     map_clear_mode(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs
