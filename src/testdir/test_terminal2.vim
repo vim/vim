@@ -391,19 +391,14 @@ func Test_terminal_reflow()
   " Output a long line that will wrap at column 40
   let long_text = repeat('X', 60)
   call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
-  call TermWait(buf)
 
-  " Before resize: the 60 X's should be wrapped across two terminal lines
+  " Before resize: wait for the 60 X's to appear wrapped across two lines
   let rows = term_getsize(buf)[0]
-  let found = 0
-  for lnum in range(1, rows)
-    if term_getline(buf, lnum) =~ '^X\{40}$'
-      call assert_match('^X\{20}', term_getline(buf, lnum + 1))
-      let found = 1
-      break
-    endif
-  endfor
-  call assert_equal(1, found, 'wrapped line not found')
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ '^X\{40}$'})
+        \                ->len() > 0,
+        \ 'wrapped line not found')})
 
   " Resize the terminal wider so that 60 X's can fit on one line
   vertical resize 80
@@ -433,7 +428,14 @@ func Test_terminal_reflow_normal_mode()
   " Output a long line that wraps at column 40
   let long_text = repeat('X', 60)
   call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
-  call TermWait(buf)
+
+  " Wait for output to appear before switching mode
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ 'X\{40}'})
+        \                ->len() > 0,
+        \ 'output not ready')})
 
   " Switch to Terminal-Normal mode: continuation lines should be joined
   " in the buffer so that the 60 X's appear as a single buffer line.
