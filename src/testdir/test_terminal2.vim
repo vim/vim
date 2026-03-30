@@ -410,10 +410,14 @@ func Test_terminal_reflow()
   redraw
   call TermWait(buf)
 
-  " After reflow, the 60 X's should now fit on a single terminal line
+  " After reflow, the 60 X's should now fit on a single terminal line.
+  " Search all rows since the row number depends on the shell prompt.
   let rows = term_getsize(buf)[0]
-  call WaitForAssert({-> assert_match('X\{60}',
-        \ term_getline(buf, 2))})
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ 'X\{60}'})
+        \                ->len() > 0,
+        \ 'reflowed line not found')})
 
   exe buf .. 'bwipe!'
 endfunc
@@ -513,9 +517,13 @@ func Test_terminal_reflow_multibyte()
   redraw
   call TermWait(buf)
 
-  " After reflow, the 30 wide chars should now fit on a single line
-  call WaitForAssert({-> assert_match('^' .. wide_text,
-        \ term_getline(buf, 2))})
+  " After reflow, the 30 wide chars should now fit on a single line.
+  " Search all rows since the row number depends on the shell prompt.
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ wide_text})
+        \                ->len() > 0,
+        \ 'reflowed multibyte line not found')})
 
   exe buf .. 'bwipe!'
 endfunc
