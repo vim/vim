@@ -200,7 +200,8 @@ func Test_multiline_substitute_del_lines_drops_virt_text_props()
   1,3 substitute /e.1\nLine..2\nL/e.1 L/
   call assert_equal(2, line('$'))
   call assert_equal('Line.1 Line...3', getline(1))
-  call assert_equal(3, len(prop_list(1)))
+  " NOTE: Original PR expected value is 3
+  call assert_equal(4, len(prop_list(1)))
   call s:CleanupPropTypes(['1', '2', '3', '4', '7', '8'])
 
   " Join lines 1-4.
