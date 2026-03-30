@@ -121,6 +121,8 @@ syn keyword sshconfigKexAlgo ecdh-sha2-nistp384
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp521
 syn match sshconfigKexAlgo "\<curve25519-sha256\%(@libssh\.org\)\?\>"
 syn match sshconfigKexAlgo "\<sntrup761x25519-sha512@openssh\.com\>"
+syn keyword sshconfigKexAlgo sntrup761x25519-sha512
+syn keyword sshconfigKexAlgo mlkem768x25519-sha256
 
 syn keyword sshconfigTunnel	point-to-point ethernet
 
