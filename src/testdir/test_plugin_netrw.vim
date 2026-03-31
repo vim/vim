@@ -332,7 +332,7 @@ func Test_netrw_check_UNC_paths()
     call assert_equal(
     \   path,
     \   Test_NetrwFile(path),
-    \   $"UNC path: {path} missinterpreted")
+    \   $"UNC path: {path} misinterpreted")
   endfor
 
 endfunction
