@@ -2782,7 +2782,7 @@ func Test_inc_file()
   " ObjectScript routine
   call writefile(['ROUTINE Sample [Type=INC]'], 'Xfile.inc', 'D')
   split Xfile.inc
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   let g:filetype_inc = 'foo'
@@ -2875,7 +2875,7 @@ func Test_rtn_file()
   " ObjectScript routine
   call writefile(['^MAC^Save for Source Control^^~Format=IRIS.S~^UTF8'], 'Xfile.rtn', 'D')
   split Xfile.rtn
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   let g:filetype_rtn = 'foo'
@@ -2899,19 +2899,19 @@ func Test_int_file()
   " ObjectScript routine
   call writefile(['ROUTINE Sample [Type=INT]'], 'Xfile.int', 'D')
   split Xfile.int
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   " ObjectScript routine by IRIS marker in first line
   call writefile(['Exported from IRIS source control'], 'Xfile.int', 'D')
   split Xfile.int
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   " ObjectScript routine by %RO marker in first three lines
   call writefile(['; generated file', '%RO routine metadata'], 'Xfile.int', 'D')
   split Xfile.int
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   let g:filetype_int = 'foo'
@@ -2935,7 +2935,7 @@ func Test_mac_file()
   " ObjectScript routine
   call writefile(['ROUTINE Sample [Type=MAC]'], 'Xfile.mac', 'D')
   split Xfile.mac
-  call assert_equal('objectscript_routine', &filetype)
+  call assert_equal('iris_rtn', &filetype)
   bwipe!
 
   let g:filetype_mac = 'foo'

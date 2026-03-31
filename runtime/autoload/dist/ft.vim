@@ -96,7 +96,7 @@ export def FTmac()
     exe "setf " .. g:filetype_mac
   else
     if IsObjectScriptRoutine()
-      setf objectscript_routine
+      setf iris_rtn
     else
       FTasm()
     endif
@@ -900,7 +900,7 @@ export def FTinc()
     exe "setf " .. g:filetype_inc
   else
     if IsObjectScriptRoutine()
-      setf objectscript_routine
+      setf iris_rtn
       return
     endif
     for lnum in range(1, min([line("$"), 20]))
@@ -976,7 +976,7 @@ export def FTint()
   if exists("g:filetype_int")
     exe "setf " .. g:filetype_int
   elseif IsObjectScriptRoutine()
-    setf objectscript_routine
+    setf iris_rtn
   else
     setf hex
   endif
@@ -1071,7 +1071,7 @@ export def FTrtn()
   if exists("g:filetype_rtn")
     exe "setf " .. g:filetype_rtn
   else
-    setf objectscript_routine
+    setf iris_rtn
     return
   endif
 enddef
