@@ -1431,7 +1431,7 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_10', {})
 
-  " Make last focused window the other window, which should have no hightlight
+  " Make last focused window the other window, which should have no highlight
   " in tabline.
   call term_sendkeys(buf, "\<Esc>:tabn 1\<CR>\<Esc>:wincmd h\<CR>\<Esc>:tabn 3\<CR>")
   call TermWait(buf)
@@ -1462,7 +1462,7 @@ func Test_winhighlight()
 
   call VerifyScreenDump(buf, 'Test_winhighlight_14', {})
 
-  " Check that overridding Normal group maps to HLF_WIN in 'highlight'.
+  " Check that overriding Normal group maps to HLF_WIN in 'highlight'.
   call term_sendkeys(buf, "\<Esc>:setlocal whl=Normal:ErrorMsg\<CR>")
   call TermWait(buf)
 

@@ -964,7 +964,7 @@ func Test_clipboard_provider_no_unamedplus()
   set clipmethod&
 endfunc
 
-" Same as Test_clipboard_provider_registers() but do it when +clipboard isnt
+" Same as Test_clipboard_provider_registers() but do it when +clipboard isn't
 " enabled.
 func Test_clipboard_provider_no_clipboard()
   CheckFeature clipboard_provider
