@@ -887,4 +887,9 @@ func Test_tabpanel_no_modeline()
   bw!
 endfunc
 
+func Test_tabpanel_large_columns()
+  call assert_fails(':set tabpanelopt=columns:10001', 'E474:')
+  call assert_fails(':set tabpanelopt=columns:-1', 'E474:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
