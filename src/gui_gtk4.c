@@ -294,11 +294,6 @@ static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpoi
     void
 gui_mch_prepare(int *argc, char **argv)
 {
-    // If GSK_RENDERER is not set, try cairo first since GL/Vulkan may not
-    // be available (e.g., WSL2).
-    if (g_getenv("GSK_RENDERER") == NULL)
-	g_setenv("GSK_RENDERER", "cairo", FALSE);
-
     // Suppress noisy EGL warnings when GL is not available.
     if (g_getenv("EGL_LOG_LEVEL") == NULL)
 	setenv("EGL_LOG_LEVEL", "fatal", 0);
