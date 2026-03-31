@@ -8,9 +8,9 @@ if exists('b:current_syntax')
   finish
 endif
 
-syn match jjAdded "A .*" contained
-syn match jjRemoved "D .*" contained
-syn match jjChanged "M .*" contained
+syn match jjAdded "^JJ:\s\+\zsA\s.*" contained
+syn match jjRemoved "^JJ:\s\+\zsD\s.*" contained
+syn match jjChanged "^JJ:\s\+\zsM\s.*" contained
 
 syn region jjComment start="^JJ:" end="$" contains=jjAdded,jjRemoved,jjChanged
 
