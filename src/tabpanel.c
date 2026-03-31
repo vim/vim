@@ -83,7 +83,7 @@ tabpanelopt_changed(void)
 	{
 	    p += 8;
 	    new_columns = getdigits(&p);
-	    if (new_columns < 1 || new_columns > 1000)
+	    if (new_columns < 0 || new_columns > 1000)
 		return FAIL;
 	}
 	else if (STRNCMP(p, "vert", 4) == 0)
