@@ -460,20 +460,28 @@ has_modeline(buf_T *buf)
 }
 
 /*
- * Get the directory of the current buffer.
+ * Get the directory of the current buffer, with the path normalized.
+ * Resolves "/../", "/./" and simplifies the path.
  * Returns an allocated string or NULL.
  */
     char_u *
 trust_get_buf_dir(buf_T *buf)
 {
     char_u  *dir;
+    char_u  fullpath[MAXPATHL];
 
     if (buf->b_ffname == NULL)
 	return NULL;
 
-    dir = vim_strsave(buf->b_ffname);
+    // Get the full path and normalize it
+    if (vim_FullName(buf->b_ffname, fullpath, MAXPATHL, TRUE) == FAIL)
+	return NULL;
+
+    dir = vim_strsave(fullpath);
     if (dir == NULL)
 	return NULL;
+
+    simplify_filename(dir);
 
     // Remove the filename, keeping only the directory
     *gettail(dir) = NUL;
