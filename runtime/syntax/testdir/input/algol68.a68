@@ -1,0 +1,12 @@
+# BITS mode denotations #
+
+BITS x = 2r101010
+BITS x = 4r222
+BITS x = 8r52
+BITS x = 16r2a
+
+
+# bad pattern in legacy versions of syntax file #
+
+BITS x = 16r99
+

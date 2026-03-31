@@ -159,7 +159,7 @@ syn match  algol68Float		"-\=\<\d\+\.\d\+₁₀-\=\d\+\>"
 syn match  algol68HexNumber	"\<2r[01]\+\>"
 syn match  algol68HexNumber	"\<4r[0-3]\+\>"
 syn match  algol68HexNumber	"\<8r[0-7]\+\>"
-syn match  algol68HexNumber	"\<16r[0-7a-f]\+\>"
+syn match  algol68HexNumber	"\<16r[0-9a-f]\+\>"
 
 if exists("algol68_no_tabs")
   syn match algol68ShowTab "\t"
