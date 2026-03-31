@@ -43,7 +43,7 @@ um_free(unpacked_memline_T *um)
     um->prop_size = 0;
     um->prop_count = 0;
     um->lnum = 0;
-    um->detached = FALSE;
+    um->detached = false;
 }
 
 /*
@@ -64,9 +64,9 @@ um_open(buf_T *buf)
  * Load line "lnum" into an unpacked memline.  If a previous line was
  * loaded and modified, it is stored first.
  * "extra_props" is the number of extra prop slots to pre-allocate.
- * Returns TRUE on success, FALSE on error (um becomes closed).
+ * Returns true on success, false on error (um becomes closed).
  */
-    int
+    bool
 um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
 {
     char_u	*line;
@@ -75,7 +75,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     int		proplen;
 
     if (um->buf == NULL)
-	return FALSE;
+	return false;
 
     // Store changes to the current line if any.
     if (um->lnum > 0 && um->detached)
@@ -83,7 +83,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     um_free(um);
 
     if (lnum == 0)
-	return TRUE;	// just unload
+	return true;	// just unload
 
     line = ml_get_buf(um->buf, lnum, FALSE);
     textlen = ml_get_buf_len(um->buf, lnum) + 1;
@@ -94,14 +94,14 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     um->text = line;
 
     if (propdata_len == 0)
-	return TRUE;
+	return true;
 
     // New format: [prop_count (uint16)][textprop_T...][vtext...]
     if (propdata_len < PROP_COUNT_SIZE + sizeof(textprop_T))
     {
 	iemsg(e_text_property_info_corrupted);
 	um->buf = NULL;
-	return FALSE;
+	return false;
     }
 
     uint16_t    prop_count;
@@ -116,7 +116,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     if (um->props == NULL)
     {
 	um->buf = NULL;
-	return FALSE;
+	return false;
     }
     um->prop_size = proplen + extra_props;
     um->prop_count = proplen;
@@ -135,7 +135,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
 	    um->props[i].u.tp_text = NULL;
     }
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -155,9 +155,9 @@ um_open_at(buf_T *buf, linenr_T lnum, int extra_props)
 /*
  * Make the unpacked memline writable by copying text and virtual text
  * strings to allocated memory (LOADED -> DETACHED).
- * Returns TRUE on success.
+ * Returns true on success.
  */
-    static int
+    static bool
 um_detach(unpacked_memline_T *um)
 {
     char_u  *newtext;
@@ -169,7 +169,7 @@ um_detach(unpacked_memline_T *um)
     if (newtext == NULL)
     {
 	um->buf = NULL;
-	return FALSE;
+	return false;
     }
     um->text = newtext;
 
@@ -188,53 +188,53 @@ um_detach(unpacked_memline_T *um)
 			VIM_CLEAR(um->props[j].u.tp_text);
 		VIM_CLEAR(um->text);
 		um->buf = NULL;
-		return FALSE;
+		return false;
 	    }
 	    um->props[i].u.tp_text = copy;
 	}
     }
 
-    um->detached = TRUE;
-    return TRUE;
+    um->detached = true;
+    return true;
 }
 
 /*
  * Set the text of an unpacked memline.  "text" must be allocated memory;
  * ownership is transferred to the unpacked memline.
  */
-    int
+    bool
 um_set_text(unpacked_memline_T *um, char_u *text)
 {
     if (um->buf == NULL)
-	return FALSE;
+	return false;
     if (um->detached)
 	vim_free(um->text);
     um->text = text;
     um->text_size = (colnr_T)STRLEN(text) + 1;
-    um->text_changed = TRUE;
-    um->detached = TRUE;
-    return TRUE;
+    um->text_changed = true;
+    um->detached = true;
+    return true;
 }
 
 /*
  * Ensure there is space for at least "needed" more properties.
- * Returns TRUE on success.
+ * Returns true on success.
  */
-    static int
+    static bool
 um_grow_props(unpacked_memline_T *um, int needed)
 {
     if (um->prop_count + needed <= um->prop_size)
-	return TRUE;
+	return true;
 
     int	    new_size = um->prop_count + needed;
     textprop_T  *newprops = vim_realloc(um->props,
 					    new_size * sizeof(textprop_T));
     if (newprops == NULL)
-	return FALSE;
+	return false;
     um->props = newprops;
     um->prop_size = new_size;
 
-    return TRUE;
+    return true;
 }
 
 /*
@@ -300,7 +300,7 @@ um_open_at_no_props(buf_T *buf, linenr_T lnum, int prop_count)
     um.lnum = lnum;
     um.text = text_copy;
     um.text_size = (colnr_T)STRLEN(text_copy) + 1;
-    um.detached = TRUE;
+    um.detached = true;
 
     if (prop_count > 0)
     {
@@ -506,7 +506,7 @@ um_store_changes(unpacked_memline_T *um)
     um->buf->b_ml.ml_line_len = packed_len;
     um->buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 
-    um->detached = FALSE;
+    um->detached = false;
     um->text = packed;
     um->text_size = (colnr_T)STRLEN(packed) + 1;
 }
@@ -1400,9 +1400,9 @@ sort_text_props(
 /*
  * Find text property "type_id" in the visible lines of window "wp".
  * Match "id" when it is > 0.
- * Returns FAIL when not found.
+ * Returns false when not found.
  */
-    int
+    bool
 find_visible_prop(
 	win_T	    *wp,
 	int	    type_id,
@@ -1412,7 +1412,7 @@ find_visible_prop(
 {
     // return when "type_id" no longer exists
     if (text_prop_type_by_id(wp->w_buffer, type_id) == NULL)
-	return FAIL;
+	return false;
 
     // w_botline may not have been updated yet.
     validate_botline_win(wp);
@@ -1427,11 +1427,11 @@ find_visible_prop(
 	    if (prop->tp_type == type_id && (id <= 0 || prop->tp_id == id))
 	    {
 		*found_lnum = lnum;
-		return OK;
+		return true;
 	    }
 	}
     }
-    return FAIL;
+    return false;
 }
 
 /*
@@ -1767,9 +1767,9 @@ text_prop_type_by_id(buf_T *buf, int id)
 }
 
 /*
- * Return TRUE if "prop" is a valid text property type.
+ * Return true if "prop" is a valid text property type.
  */
-    int
+    bool
 text_prop_type_valid(buf_T *buf, textprop_T *prop)
 {
     return text_prop_type_by_id(buf, prop->tp_type) != NULL;

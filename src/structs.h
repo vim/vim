@@ -949,13 +949,13 @@ typedef struct unpacked_memline_S
 {
     buf_T	*buf;		// the line's buffer (NULL = closed)
     linenr_T	lnum;		// line number (0 = no line loaded)
-    int		detached;	// TRUE when text/vtext are allocated
+    bool	detached;	// true when text/vtext are allocated
     colnr_T	text_size;	// size of text including NUL
     char_u	*text;		// NUL-terminated text
     int		prop_size;	// number of allocated prop slots
     int		prop_count;	// number of properties
     textprop_T	*props;		// property array
-    int		text_changed;	// TRUE if text was modified
+    bool	text_changed;	// true if text was modified
 } unpacked_memline_T;
 
 /*
