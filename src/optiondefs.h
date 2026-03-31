@@ -2785,6 +2785,9 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"trustdir",    "td",   P_BOOL|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_td, PV_NONE, NULL, NULL,
+			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"ttimeout",    NULL,   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_ttimeout, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
