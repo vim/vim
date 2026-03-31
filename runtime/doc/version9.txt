@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52625,6 +52625,7 @@ Changed~
 - |json_decode()| is stricter: keywords must be lowercase, lone surrogates are
   now invalid
 - |js_decode()| rejects lone surrogates
+- 'modeline' is disabled by default now.
 
 							*added-9.3*
 Added ~

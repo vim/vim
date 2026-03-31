@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 29
+*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2117,7 +2117,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'iskeyword'	& "@,48-57,_"	keywords contain alphanumeric
 						characters and '_'
 	'joinspaces'	+ on		insert 2 spaces after period
-	'modeline'	& off		no modelines
 	'more'		& off		no pauses in listings
 	'mzquantum'	- {unchanged}	{set vim default only on resetting 'cp'}
 	'numberwidth'	& 8		min number of columns for line number
@@ -6167,8 +6166,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 				   *'modeline'* *'ml'* *'nomodeline'* *'noml'*
-'modeline' 'ml'		boolean	(Vim default: on (off for root),
-				 Vi default: off)
+'modeline' 'ml'		boolean	(default: off)
 			local to buffer
 	If 'modeline' is on 'modelines' gives the number of lines that is
 	checked for set commands.  If 'modeline' is off or 'modelines' is zero
