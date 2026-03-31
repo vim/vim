@@ -989,4 +989,16 @@ func Test_WinEnter_synstack_synID()
 endfunc
 
 
+func Test_help_backtick_with_spaces_and_punctuation()
+  new
+  call setline(1, 'This is `:call code`.')
+  set ft=help
+  syntax on
+  call cursor(1, 12)
+  let group = synIDattr(synID(line('.'), col('.'), 1), 'name')
+  call assert_equal('helpCommand', group)
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
