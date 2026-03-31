@@ -4774,7 +4774,7 @@ get_file_in_dir(
 	    vim_strnsave(fname, (size_t)(tail.string - fname) + tail.length);
     else
     {
-	size_t	dname_len;
+	size_t	dname_len = STRLEN(dname);
 
 	dname_len = STRLEN(dname);
 	if (dname[0] == '.' && vim_ispathsep(dname[1]))
