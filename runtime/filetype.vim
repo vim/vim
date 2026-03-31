@@ -973,6 +973,9 @@ endif
 " Rexx, Rebol or R
 au BufNewFile,BufRead *.r,*.R				call dist#ft#FTr()
 
+" ObjectScript routine
+au BufNewFile,BufRead *.rtn			call dist#ft#FTrtn()
+
 " Remind
 au BufNewFile,BufRead .reminders,*.remind,*.rem		setf remind
 

@@ -2870,6 +2870,23 @@ func Test_inc_file()
   filetype off
 endfunc
 
+func Test_rtn_file()
+  filetype on
+  " ObjectScript routine
+  call writefile(['^MAC^Save for Source Control^^~Format=IRIS.S~^UTF8'], 'Xfile.rtn', 'D')
+  split Xfile.rtn
+  call assert_equal('objectscript_routine', &filetype)
+  bwipe!
+
+  let g:filetype_rtn = 'foo'
+  split Xfile.rtn
+  call assert_equal('foo', &filetype)
+  bwipe!
+  unlet g:filetype_rtn
+
+  filetype off
+endfunc
+
 func Test_int_file()
   filetype on
 
@@ -2881,6 +2898,18 @@ func Test_int_file()
 
   " ObjectScript routine
   call writefile(['ROUTINE Sample [Type=INT]'], 'Xfile.int', 'D')
+  split Xfile.int
+  call assert_equal('objectscript_routine', &filetype)
+  bwipe!
+
+  " ObjectScript routine by IRIS marker in first line
+  call writefile(['Exported from IRIS source control'], 'Xfile.int', 'D')
+  split Xfile.int
+  call assert_equal('objectscript_routine', &filetype)
+  bwipe!
+
+  " ObjectScript routine by %RO marker in first three lines
+  call writefile(['; generated file', '%RO routine metadata'], 'Xfile.int', 'D')
   split Xfile.int
   call assert_equal('objectscript_routine', &filetype)
   bwipe!

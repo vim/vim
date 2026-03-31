@@ -14,7 +14,17 @@ var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
 def IsObjectScriptRoutine(): bool
   var line1 = getline(1)
   line1 = substitute(line1, '^\ufeff', '', '')
-  return line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+  if line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+    return true
+  endif
+  if line1 =~? 'iris'
+    return true
+  endif
+  var head = getline(1, min([3, line("$")]))
+  if !empty(head)
+    head[0] = line1
+  endif
+  return join(head, "\n") =~? '%ro'
 enddef
 
 export def Check_inp()
@@ -1054,6 +1064,15 @@ export def FTr()
   else
     # Rexx used to be the default, but R appears to be much more popular.
     setf r
+  endif
+enddef
+
+export def FTrtn()
+  if exists("g:filetype_rtn")
+    exe "setf " .. g:filetype_rtn
+  else
+    setf objectscript_routine
+    return
   endif
 enddef
 
