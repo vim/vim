@@ -14,17 +14,13 @@ var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
 def IsObjectScriptRoutine(): bool
   var line1 = getline(1)
   line1 = substitute(line1, '^\ufeff', '', '')
-  if line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+  if line1 =~? '^\s*routine\>'
     return true
   endif
   if line1 =~? 'iris'
     return true
   endif
-  var head = getline(1, min([3, line("$")]))
-  if !empty(head)
-    head[0] = line1
-  endif
-  return join(head, "\n") =~? '%ro'
+  return join(getline(1, 3), '') =~# '%RO'
 enddef
 
 export def Check_inp()
@@ -96,7 +92,7 @@ export def FTmac()
     exe "setf " .. g:filetype_mac
   else
     if IsObjectScriptRoutine()
-      setf iris_rtn
+      setf objectscript_routine
     else
       FTasm()
     endif
@@ -900,7 +896,7 @@ export def FTinc()
     exe "setf " .. g:filetype_inc
   else
     if IsObjectScriptRoutine()
-      setf iris_rtn
+      setf objectscript_routine
       return
     endif
     for lnum in range(1, min([line("$"), 20]))
@@ -976,7 +972,7 @@ export def FTint()
   if exists("g:filetype_int")
     exe "setf " .. g:filetype_int
   elseif IsObjectScriptRoutine()
-    setf iris_rtn
+    setf objectscript_routine
   else
     setf hex
   endif
@@ -1071,7 +1067,7 @@ export def FTrtn()
   if exists("g:filetype_rtn")
     exe "setf " .. g:filetype_rtn
   else
-    setf iris_rtn
+    setf objectscript_routine
     return
   endif
 enddef
