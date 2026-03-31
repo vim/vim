@@ -974,7 +974,7 @@ endif
 au BufNewFile,BufRead *.r,*.R				call dist#ft#FTr()
 
 " ObjectScript routine
-au BufNewFile,BufRead *.rtn			call dist#ft#FTrtn()
+au BufNewFile,BufRead *.rtn			setf objectscript_routine
 
 " Remind
 au BufNewFile,BufRead .reminders,*.remind,*.rem		setf remind

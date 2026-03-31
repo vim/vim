@@ -601,6 +601,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     obj: ['file.obj'],
     objdump: ['file.objdump', 'file.cppobjdump'],
     obse: ['file.obl', 'file.obse', 'file.oblivion', 'file.obscript'],
+    objectscript_routine: ['file.rtn'],
     ocaml: ['file.ml', 'file.mli', 'file.mll', 'file.mly', '.ocamlinit', 'file.mlt', 'file.mlp', 'file.mlip', 'file.mli.cppo', 'file.ml.cppo'],
     occam: ['file.occ'],
     octave: ['octaverc', '.octaverc', 'octave.conf', 'any/.local/share/octave/history'],
@@ -2866,23 +2867,6 @@ func Test_inc_file()
   split Xfile.inc
   call assert_equal('foo', &filetype)
   bwipe!
-
-  filetype off
-endfunc
-
-func Test_rtn_file()
-  filetype on
-  " ObjectScript routine
-  call writefile(['^MAC^Save for Source Control^^~Format=IRIS.S~^UTF8'], 'Xfile.rtn', 'D')
-  split Xfile.rtn
-  call assert_equal('objectscript_routine', &filetype)
-  bwipe!
-
-  let g:filetype_rtn = 'foo'
-  split Xfile.rtn
-  call assert_equal('foo', &filetype)
-  bwipe!
-  unlet g:filetype_rtn
 
   filetype off
 endfunc

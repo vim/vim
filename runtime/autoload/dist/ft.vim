@@ -1063,15 +1063,6 @@ export def FTr()
   endif
 enddef
 
-export def FTrtn()
-  if exists("g:filetype_rtn")
-    exe "setf " .. g:filetype_rtn
-  else
-    setf objectscript_routine
-    return
-  endif
-enddef
-
 export def McSetf()
   # Rely on the file to start with a comment.
   # MS message text files use ';', Sendmail files use '#' or 'dnl'
@@ -2684,6 +2675,8 @@ const ft_from_ext = {
   "rst": "rst",
   # RTF
   "rtf": "rtf",
+  # ObjectScript Routine
+  "rtn": "objectscript_routine",
   # Ruby
   "rb": "ruby",
   "rbw": "ruby",
