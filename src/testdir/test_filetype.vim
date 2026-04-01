@@ -2892,6 +2892,12 @@ func Test_int_file()
   call assert_equal('objectscript_routine', &filetype)
   bwipe!
 
+  " Not ObjectScript routine by partial IRIS match in first line
+  call writefile(['Exported from IRISation source control'], 'Xfile.int', 'D')
+  split Xfile.int
+  call assert_equal('hex', &filetype)
+  bwipe!
+
   " ObjectScript routine by %RO marker in first three lines
   call writefile(['; generated file', '%RO routine metadata'], 'Xfile.int', 'D')
   split Xfile.int

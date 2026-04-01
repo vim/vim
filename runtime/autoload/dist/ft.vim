@@ -17,7 +17,7 @@ def IsObjectScriptRoutine(): bool
   if line1 =~? '^\s*routine\>'
     return true
   endif
-  if line1 =~? 'iris'
+  if line1 =~? '\<iris\>'
     return true
   endif
   return join(getline(1, 3), '') =~# '%RO'
