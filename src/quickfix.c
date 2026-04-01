@@ -2759,7 +2759,10 @@ qf_get_fnum(qf_list_T *qfl, char_u *directory, char_u *fname)
 	    if (directory)
 		concat_fnames(directory, STRLEN(directory), fname, fname_len, TRUE, &ptr);
 	    else
+	    {
+		ptr.length = fname_len;
 		ptr.string = vim_strnsave(fname, fname_len);
+	    }
 	    if (ptr.string == NULL)
 		return 0;
 	}

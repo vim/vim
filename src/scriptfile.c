@@ -843,15 +843,12 @@ add_pack_dir_to_rtp(char_u *fname)
     int	    c;
     string_T  new_rtp;
     size_t  keep;
-    size_t  oldlen;
-    size_t  addlen;
+    size_t  p_rtp_len;
     string_T  afterdir = {NULL, 0};
     char_u  *after_insp = NULL;
     char_u  *ffname = NULL;
     size_t  fname_len;
     string_T	buf = {NULL, 0};
-    char_u  *rtp_ffname;
-    int	    match;
     int	    retval = FAIL;
 
     p4 = p3 = p2 = p1 = get_past_head(fname);
@@ -879,11 +876,16 @@ add_pack_dir_to_rtp(char_u *fname)
     buf.string = alloc(MAXPATHL);
     if (buf.string == NULL)
 	goto theend;
+
+    p_rtp_len = 0;
     for (entry = p_rtp; *entry != NUL; )
     {
 	char_u *cur_entry = entry;
 
 	buf.length = (size_t)copy_option_part(&entry, buf.string, MAXPATHL, ",");
+
+	// keep track of p_rtp length as we go to make the STRLEN() below have less work to do
+	p_rtp_len += (*(p_rtp + buf.length) == ',') ? buf.length + 1 : buf.length;
 
 	if ((p = (char_u *)strstr((char *)buf.string, "after")) != NULL
 		&& p > buf.string
@@ -900,6 +902,9 @@ add_pack_dir_to_rtp(char_u *fname)
 
 	if (insp == NULL)
 	{
+	    char_u  *rtp_ffname;
+	    int	    match;
+
 	    if (*buf.string != NUL && !after_pathsep(buf.string, buf.string + buf.length))
 		STRCPY(buf.string + buf.length, PATHSEPSTR);
 	    rtp_ffname = fix_fname(buf.string);
@@ -913,21 +918,19 @@ add_pack_dir_to_rtp(char_u *fname)
 	}
     }
 
-    oldlen = STRLEN(p_rtp);
+    // finish measuring the length of p_rtp
+    p_rtp_len += STRLEN(p_rtp + p_rtp_len);
     if (insp == NULL)
 	// Both "fname" and "after" not found, append at the end.
-	insp = p_rtp + oldlen;
+	insp = p_rtp + p_rtp_len;
 
     // check if rtp/pack/name/start/name/after exists
     fname_len = STRLEN(fname);
     concat_fnames(fname, fname_len, (char_u *)"after", STRLEN_LITERAL("after"), TRUE, &afterdir);
-    if (afterdir.string != NULL && mch_isdir(afterdir.string))
-	++afterdir.length; // add one for comma
-    else
+    if (afterdir.string == NULL || !mch_isdir(afterdir.string))
 	afterdir.length = 0;
 
-    addlen = fname_len + 1; // add one for comma
-    new_rtp.string = alloc(oldlen + addlen + afterdir.length + 1); // add one for NUL
+    new_rtp.string = alloc(p_rtp_len + fname_len + afterdir.length + 3); // add two for commas and one for NUL
     if (new_rtp.string == NULL)
 	goto theend;
 
@@ -938,32 +941,32 @@ add_pack_dir_to_rtp(char_u *fname)
     new_rtp.length = keep;
     if (*insp == NUL)
 	new_rtp.string[new_rtp.length++] = ',';  // add comma before
-    mch_memmove(new_rtp.string + new_rtp.length, fname, addlen - 1);
-    new_rtp.length += addlen - 1;
+    mch_memmove(new_rtp.string + new_rtp.length, fname, fname_len);
+    new_rtp.length += fname_len;
     if (*insp != NUL)
 	new_rtp.string[new_rtp.length++] = ',';  // add comma after
 
     if (afterdir.length > 0 && after_insp != NULL)
     {
 	size_t keep_after = (size_t)(after_insp - p_rtp);
+	size_t append_len = keep_after - keep;
 
 	// Add to new_rtp: {keep},{fname}{keep_after},{afterdir}
 	mch_memmove(new_rtp.string + new_rtp.length, p_rtp + keep,
-							keep_after - keep);
-	new_rtp.length += keep_after - keep;
-	mch_memmove(new_rtp.string + new_rtp.length, afterdir.string, afterdir.length - 1);
-	new_rtp.length += afterdir.length - 1;
+							append_len);
+	new_rtp.length += append_len;
+	mch_memmove(new_rtp.string + new_rtp.length, afterdir.string, afterdir.length);
+	new_rtp.length += afterdir.length;
 	new_rtp.string[new_rtp.length++] = ',';
 	keep = keep_after;
     }
 
     if (p_rtp[keep] != NUL)
     {
-	size_t	append_len;
+	size_t	append_len = p_rtp_len - keep;
 
-	append_len = oldlen - keep + 1;
 	// Append rest: {keep},{fname}{keep_after},{afterdir}{rest}
-	mch_memmove(new_rtp.string + new_rtp.length, p_rtp + keep, append_len);
+	mch_memmove(new_rtp.string + new_rtp.length, p_rtp + keep, append_len + 1);	// add one for NUL
 	new_rtp.length += append_len;
     }
     else
@@ -973,8 +976,7 @@ add_pack_dir_to_rtp(char_u *fname)
     {
 	// Append afterdir when "after" was not found:
 	// {keep},{fname}{rest},{afterdir}
-	STRCPY(new_rtp.string + new_rtp.length, ",");
-	new_rtp.length += STRLEN_LITERAL(",");
+	new_rtp.string[new_rtp.length++] = ',';
 	STRCPY(new_rtp.string + new_rtp.length, afterdir.string);
     }
 

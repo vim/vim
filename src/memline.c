@@ -2151,7 +2151,10 @@ recover_names(
 		    files[i], STRLEN(files[i]), TRUE, &name);
 		if (name.string != NULL)
 		{
-		    list_append_string(ret_list, name.string, (int)name.length);
+		    int namelen;
+
+		    namelen = (int)name.length;
+		    list_append_string(ret_list, name.string, namelen);
 		    vim_free(name.string);
 		}
 	    }
@@ -4776,7 +4779,6 @@ get_file_in_dir(
     {
 	size_t	dname_len = STRLEN(dname);
 
-	dname_len = STRLEN(dname);
 	if (dname[0] == '.' && vim_ispathsep(dname[1]))
 	{
 	    if (tail.string == fname)	    // no path before file name
