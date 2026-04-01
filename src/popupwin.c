@@ -46,6 +46,8 @@ static void may_start_message_win_timer(win_T *wp);
 static int popup_on_cmdline = FALSE;
 
 static void popup_adjust_position(win_T *wp);
+static void redraw_under_popup_area(int winrow, int wincol, int height,
+	int width, int leftoff);
 
 /*
  * Get option value for "key", which is "line" or "col".
@@ -3107,6 +3109,14 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int		id;
     win_T	*wp;
+#ifdef FEAT_PROP_POPUP
+    int		old_popup_active;
+#endif
+    int		old_winrow;
+    int		old_wincol;
+    int		old_popup_height;
+    int		old_popup_width;
+    int		old_popup_leftoff;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3117,6 +3127,16 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     wp = find_popup_win(id);
     if (wp == NULL)
 	return;
+
+#ifdef FEAT_PROP_POPUP
+    old_popup_active = (wp->w_popup_flags & POPF_OPACITY)
+						    && wp->w_popup_blend > 0;
+#endif
+    old_winrow = wp->w_winrow;
+    old_wincol = wp->w_wincol;
+    old_popup_height = popup_height(wp);
+    old_popup_width = popup_width(wp);
+    old_popup_leftoff = wp->w_popup_leftoff;
 
     if (check_for_string_or_list_arg(argvars, 1) == FAIL)
 	return;
@@ -3132,6 +3152,17 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     if (must_redraw < UPD_VALID)
 	must_redraw = UPD_VALID;
     popup_adjust_position(wp);
+
+#ifdef FEAT_PROP_POPUP
+    if (old_popup_active
+	    && (old_winrow != wp->w_winrow
+		|| old_wincol != wp->w_wincol
+		|| old_popup_height != popup_height(wp)
+		|| old_popup_width != popup_width(wp)
+		|| old_popup_leftoff != wp->w_popup_leftoff))
+	redraw_under_popup_area(old_winrow, old_wincol,
+		old_popup_height, old_popup_width, old_popup_leftoff);
+#endif
 }
 
 /*
@@ -3317,6 +3348,49 @@ close_all_popups(int force)
 }
 
 /*
+ * Force windows under a popup area to redraw.
+ */
+    static void
+redraw_under_popup_area(int winrow, int wincol, int height, int width, int leftoff)
+{
+    int	    r;
+
+    for (r = winrow; r < winrow + height && r < screen_Rows; ++r)
+    {
+	int	    c;
+	win_T	    *prev_twp = NULL;
+
+	if (r >= cmdline_row)
+	{
+	    clear_cmdline = TRUE;
+	    continue;
+	}
+
+	for (c = wincol; c < wincol + width - leftoff && c < screen_Columns; ++c)
+	{
+	    int	    line_cp = r;
+	    int	    col_cp = c;
+	    win_T   *twp;
+
+	    twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
+	    if (twp != NULL && twp != prev_twp)
+	    {
+		prev_twp = twp;
+		if (line_cp < twp->w_height)
+		{
+		    linenr_T lnum;
+
+		    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
+		    redrawWinline(twp, lnum);
+		}
+		else if (line_cp == twp->w_height)
+		    twp->w_redr_status = TRUE;
+	    }
+	}
+    }
+}
+
+/*
  * popup_move({id}, {options})
  */
     void
@@ -3329,6 +3403,9 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     int		old_wincol;
     int		old_height;
     int		old_width;
+    int		old_popup_height;
+    int		old_popup_width;
+    int		old_popup_leftoff;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3349,6 +3426,9 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     old_wincol = wp->w_wincol;
     old_height = wp->w_height;
     old_width = wp->w_width;
+    old_popup_height = popup_height(wp);
+    old_popup_width = popup_width(wp);
+    old_popup_leftoff = wp->w_popup_leftoff;
 
     apply_move_options(wp, dict);
 
@@ -3367,39 +3447,8 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	redraw_win_later(wp, UPD_NOT_VALID);
 
 	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
-	{
-	    int	    total_h = old_height + popup_top_extra(wp)
-			+ wp->w_popup_border[2] + wp->w_popup_padding[2];
-	    int	    row;
-
-	    for (row = old_winrow;
-		       row < old_winrow + total_h && row < screen_Rows; ++row)
-	    {
-		if (row >= cmdline_row)
-		    clear_cmdline = TRUE;
-		else
-		{
-		    int		line_cp = row;
-		    int		col_cp = old_wincol;
-		    win_T	*twp;
-
-		    twp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
-		    if (twp != NULL)
-		    {
-			if (line_cp >= twp->w_height)
-			    twp->w_redr_status = TRUE;
-			else
-			{
-			    linenr_T	lnum;
-
-			    (void)mouse_comp_pos(twp, &line_cp, &col_cp,
-							       &lnum, NULL);
-			    redrawWinline(twp, lnum);
-			}
-		    }
-		}
-	    }
-	}
+	    redraw_under_popup_area(old_winrow, old_wincol,
+		    old_popup_height, old_popup_width, old_popup_leftoff);
     }
 }
 
@@ -3415,7 +3464,13 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     linenr_T	old_firstline;
 #ifdef FEAT_PROP_POPUP
     int		old_blend;
+    int		old_popup_active;
 #endif
+    int		old_winrow;
+    int		old_wincol;
+    int		old_popup_height;
+    int		old_popup_width;
+    int		old_popup_leftoff;
     int		old_zindex;
     int		old_popup_flags;
     char_u	*old_scrollbar_highlight;
@@ -3441,7 +3496,14 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     old_firstline = wp->w_firstline;
 #ifdef FEAT_PROP_POPUP
     old_blend = wp->w_popup_blend;
+    old_popup_active = (wp->w_popup_flags & POPF_OPACITY)
+						    && wp->w_popup_blend > 0;
 #endif
+    old_winrow = wp->w_winrow;
+    old_wincol = wp->w_wincol;
+    old_popup_height = popup_height(wp);
+    old_popup_width = popup_width(wp);
+    old_popup_leftoff = wp->w_popup_leftoff;
     old_zindex = wp->w_zindex;
     old_popup_flags = wp->w_popup_flags;
     old_scrollbar_highlight = wp->w_scrollbar_highlight;
@@ -3514,6 +3576,17 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     // popup_adjust_position() only sets popup_mask_refresh when the
     // position or size actually changed.
     popup_adjust_position(wp);
+
+#ifdef FEAT_PROP_POPUP
+    if (old_popup_active
+	    && (old_winrow != wp->w_winrow
+		|| old_wincol != wp->w_wincol
+		|| old_popup_height != popup_height(wp)
+		|| old_popup_width != popup_width(wp)
+		|| old_popup_leftoff != wp->w_popup_leftoff))
+	redraw_under_popup_area(old_winrow, old_wincol,
+		old_popup_height, old_popup_width, old_popup_leftoff);
+#endif
 }
 
 /*
@@ -4750,10 +4823,15 @@ draw_opacity_padding_cell(
 			    && utf_char2cells(ScreenLinesUC[base_off]) == 2)
 		    {
 			// The left half still has the wide char on screen.
-			// Clear it to a space.
+			// Clear it to an unblended space: only the right half is
+			// covered by the popup background.
 			ScreenLines[base_off] = ' ';
 			ScreenLinesUC[base_off] = 0;
 			ScreenAttrs[base_off] = saved_screenattrs[base_save_off];
+			popup_set_base_screen_cell(row, base_col,
+				ScreenLines[base_off],
+				ScreenAttrs[base_off],
+				ScreenLinesUC[base_off]);
 			screen_char(base_off, row, base_col);
 
 			// Draw padding in the right half.
@@ -4770,43 +4848,6 @@ draw_opacity_padding_cell(
 				ScreenLines[off], ScreenAttrs[off],
 				ScreenLinesUC[off]);
 			screen_char(off, row, col);
-			return;
-		    }
-
-		    // screen_line() already cleared the base cell (popup
-		    // content was a space).  Restore the full wide char from
-		    // saved background so it shows through with opacity.
-		    if (base_save_off >= 0
-			    && saved_screenlinesuc != NULL
-			    && saved_screenlinesuc[base_save_off] != 0
-			    && utf_char2cells(
-				saved_screenlinesuc[base_save_off]) == 2)
-		    {
-			ScreenLines[base_off] =
-					saved_screenlines[base_save_off];
-			ScreenLinesUC[base_off] =
-					saved_screenlinesuc[base_save_off];
-			ScreenLines[off] = saved_screenlines[save_off];
-			ScreenLinesUC[off] = saved_screenlinesuc[save_off];
-			ScreenAttrs[base_off] =
-					saved_screenattrs[base_save_off];
-			ScreenAttrs[off] = saved_screenattrs[save_off];
-
-			int popup_attr_val =
-					get_win_attr(screen_opacity_popup);
-			int blend = screen_opacity_popup->w_popup_blend;
-			ScreenAttrs[base_off] = hl_blend_attr(
-				ScreenAttrs[base_off],
-				popup_attr_val, blend, TRUE);
-			ScreenAttrs[off] = ScreenAttrs[base_off];
-			popup_set_base_screen_cell(row, base_col,
-				ScreenLines[base_off],
-				ScreenAttrs[base_off],
-				ScreenLinesUC[base_off]);
-			popup_set_base_screen_cell(row, col,
-				ScreenLines[off], ScreenAttrs[off],
-				ScreenLinesUC[off]);
-			screen_char(base_off, row, base_col);
 			return;
 		    }
 
