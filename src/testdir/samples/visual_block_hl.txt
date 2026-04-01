@@ -1,8 +1,0 @@
-aaaaa aaaaaaaaaa(aaaaaaaaa aaaa)
-{
-	aaaaaaaaaaaaaaaaaaaaaaa;
-	aaaaaaaaaaaaaaaaaaaaaaa;
-	aaaaaaaaaaaaaaaaaaaaaaa;
-	aaaaaaaaaaaaaaaaaaaaaaa;
-	aaaaaaaaaaaaaaaaaaaaaaa;
-}

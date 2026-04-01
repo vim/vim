@@ -1,2 +1,0 @@
-highlight link vimVar Identifier
-
