@@ -595,4 +595,12 @@ func Test_netrw_hostname()
   endfor
 endfunc
 
+func Test_netrw_FileUrlEdit_pipe_injection()
+  CheckExecutable id
+  let fname = 'Xtestfile'
+  let url = 'file:///tmp/file.md%7C!id>'..fname
+  sil call netrw#FileUrlEdit(url)
+  call assert_false(filereadable(fname), 'Command injection via pipe in file URL')
+endfunc
+
 " vim:ts=8 sts=2 sw=2 et
