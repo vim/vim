@@ -1031,6 +1031,7 @@ EXTERN char_u	*p_tcldll;	// 'tcldll'
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	// 'termbidi'
 #endif
+EXTERN int	p_tdec;		// 'termdec'
 EXTERN char_u	*p_tenc;	// 'termencoding'
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		// 'termguicolors'

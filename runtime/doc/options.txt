@@ -9089,6 +9089,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option is reset when the GUI is started.
 	For further details see |arabic.txt|.
 
+						*'termdec* *'tdec*
+						*'notermdec* *'notdec*
+'termdec' 'tdec'	boolean (default on)
+			global
+	When enabled, Vim will send DECRQM terminal escape sequences on
+	startup.  These sequences are used to detect support from the terminal
+	for the 'termsync' and 'termresize' options.  If your terminal
+	improperly handles DECRQM sequences (e.g. random characters popping on
+	screen when starting Vim), try disabling this option.
+
 					*'termencoding'* *'tenc'*
 'termencoding' 'tenc'	string	(default ""; with GTK+ GUI: "utf-8")
 			global
@@ -9163,6 +9173,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'termsync'* *'tsy'*
+						*'notermsync* *'notsy'*
 'termsync' 'tsy'	boolean (default off)
 			global
 	If the host terminal supports it, buffer all screen updates made
