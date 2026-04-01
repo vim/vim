@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Mar 29
+*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2225,6 +2225,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and from tags to 5.  Other sources remain unlimited.
 	Note: The match limit takes effect only during forward completion
 	(CTRL-N) and is ignored during backward completion (CTRL-P).
+
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 						*'completefunc'* *'cfu'*
 'completefunc' 'cfu'	string	(default: empty)
@@ -4686,6 +4688,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	You can include a line break.  Simplest method is to use |:let|: >
 		:let &guitabtooltip = "line one\nline two"
 <
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 						*'helpfile'* *'hf'*
 'helpfile' 'hf'		string	(default (MS-Windows) "$VIMRUNTIME\doc\help.txt"
@@ -6846,6 +6849,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	The format of the header produced in |:hardcopy| output.
 	See |pheader-option|.
+
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 						*'printmbcharset'* *'pmbcs'*
 'printmbcharset' 'pmbcs'  string (default "")
