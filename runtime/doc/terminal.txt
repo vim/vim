@@ -961,6 +961,9 @@ term_start({cmd} [, {options}])			*term_start()*
 		to the pseudo console, regardless of callback settings.
 		Since stdout and stderr share the same pipe, they cannot be
 		separated by "err_cb".
+		This is because the CreatePseudoConsole() API only accepts one
+		input and one output handle, with no separate handle for
+		stderr.
 
 		There are extra options:
 		   "term_name"	     name to use for the buffer name, instead
