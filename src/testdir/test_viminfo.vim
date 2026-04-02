@@ -1385,8 +1385,13 @@ func Test_viminfo_len_overflow()
         \ '|<CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
         \ '|<DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD'], viminfo_file, 'b')
 
-  " Should not crash or cause memory errors
-  exe 'rviminfo! ' .. viminfo_file
+  " Should not crash or cause memory errors.
+  " E342 (out of memory) may be thrown depending on the platform's memory
+  " allocation behavior, which is an acceptable outcome.
+  try
+    exe 'rviminfo! ' .. viminfo_file
+  catch /E342/
+  endtry
 
   let &viminfofile = _viminfofile
 endfunc
