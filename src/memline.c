@@ -3674,7 +3674,7 @@ ml_replace_len(
 	    size_t textproplen = curbuf->b_ml.ml_line_len - oldtextlen;
 
 	    // Need to copy over text properties, stored after the text.
-	    newline = alloc(len + (int)textproplen);
+	    newline = alloc(len + textproplen);
 	    if (newline != NULL)
 	    {
 		mch_memmove(newline, line, len);

@@ -3355,7 +3355,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		char_u *s2 = tv2->vval.v_string;
 		size_t len1 = STRLEN(s1);
 
-		tv1->vval.v_string = alloc((int)(len1 + STRLEN(s2) + 1));
+		tv1->vval.v_string = alloc(len1 + STRLEN(s2) + 1);
 		if (tv1->vval.v_string == NULL)
 		{
 		    clear_ppconst(ppconst);
