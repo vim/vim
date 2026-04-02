@@ -892,4 +892,35 @@ func Test_tabpanel_large_columns()
   call assert_fails(':set tabpanelopt=columns:-1', 'E474:')
 endfunc
 
+func Test_tabpanel_variable_height()
+  CheckFeature tabpanel
+
+  let save_lines = &lines
+  let save_showtabpanel = &showtabpanel
+  let save_tabpanel = &tabpanel
+
+  set lines=10
+  tabnew | tabnew | tabnew | tabnew | tabnew
+
+  let g:tpl_n = 0
+  func! GetTpl() abort
+    let g:tpl_n += 1
+    return g:tpl_n <= 5 ? "x\nx" : "x"
+  endfunc
+
+  set showtabpanel=2
+  let &tabpanel = "%!GetTpl()"
+
+  " Should not crash
+  redraw!
+
+  " Cleanup
+  let &tabpanel = save_tabpanel
+  let &showtabpanel = save_showtabpanel
+  let &lines = save_lines
+  delfunc GetTpl
+  unlet g:tpl_n
+  %bwipeout!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
