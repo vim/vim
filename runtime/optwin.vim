@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Mar 11
+" Last Change:	2026 Apr 02
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -1105,6 +1105,8 @@ call <SID>AddOption("modeline", gettext("enable using settings from modelines wh
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("ml")
 call <SID>AddOption("modelineexpr", gettext("allow setting expression options from a modeline"))
+call <SID>BinOptionG("mle", &mle)
+call <SID>AddOption("modelinestrict", gettext("allow only setting whitelisted options from a modeline"))
 call <SID>BinOptionG("mle", &mle)
 call <SID>AddOption("modelines", gettext("number of lines to check for modelines"))
 call append("$", " \tset mls=" . &mls)
