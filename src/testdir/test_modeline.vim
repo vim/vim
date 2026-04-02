@@ -335,11 +335,11 @@ func Test_modeline_default()
   set compatible
   call assert_false(&modeline)
   set nocompatible
-  call assert_equal(0, &modeline)
+  call assert_equal(IsRoot() ? 0 : 1, &modeline)
   set compatible&vi
   call assert_false(&modeline)
   set compatible&vim
-  call assert_equal(0, &modeline)
+  call assert_equal(IsRoot() ? 0 : 1, &modeline)
   set compatible& modeline&
 endfunc
 
