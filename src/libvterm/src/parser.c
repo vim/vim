@@ -232,8 +232,10 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       if(c >= '0' && c <= '9') {
         if(vt->parser.v.csi.args[vt->parser.v.csi.argi] == CSI_ARG_MISSING)
           vt->parser.v.csi.args[vt->parser.v.csi.argi] = 0;
-        vt->parser.v.csi.args[vt->parser.v.csi.argi] *= 10;
-        vt->parser.v.csi.args[vt->parser.v.csi.argi] += c - '0';
+        if(vt->parser.v.csi.args[vt->parser.v.csi.argi] < (CSI_ARG_MISSING - 9) / 10) {
+          vt->parser.v.csi.args[vt->parser.v.csi.argi] *= 10;
+          vt->parser.v.csi.args[vt->parser.v.csi.argi] += c - '0';
+        }
         break;
       }
       if(c == ':') {
