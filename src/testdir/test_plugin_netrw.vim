@@ -596,6 +596,7 @@ func Test_netrw_hostname()
 endfunc
 
 func Test_netrw_FileUrlEdit_pipe_injection()
+  CheckUnix
   CheckExecutable id
   let fname = 'Xtestfile'
   let url = 'file:///tmp/file.md%7C!id>'..fname
