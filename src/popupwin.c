@@ -5896,7 +5896,7 @@ popup_set_title(win_T *wp)
 
     vim_free(wp->w_popup_title);
     len = STRLEN(wp->w_buffer->b_fname) + 3;
-    wp->w_popup_title = alloc((int)len);
+    wp->w_popup_title = alloc(len);
     if (wp->w_popup_title != NULL)
 	vim_snprintf((char *)wp->w_popup_title, len, " %s ",
 		wp->w_buffer->b_fname);

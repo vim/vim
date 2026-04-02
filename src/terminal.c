@@ -5697,7 +5697,7 @@ get_separator(int text_width, char_u *fname)
     int	    i;
     size_t  off;
 
-    textline = alloc(width + (int)STRLEN(fname) + 1);
+    textline = alloc(width + STRLEN(fname) + 1);
     if (textline == NULL)
 	return NULL;
 
