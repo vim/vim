@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-21 16:35+0100\n"
-"PO-Revision-Date: 2026-03-21 17:45+0100\n"
+"POT-Creation-Date: 2026-04-02 17:32+0200\n"
+"PO-Revision-Date: 2026-04-02 20:20+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -550,7 +550,7 @@ msgstr "Riscrittura del file esistente \"%s\"?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
-msgstr "Il file swap \"%s\" esiste già, sovrascrivo?"
+msgstr "Il file di swap \"%s\" esiste già, sovrascrivo?"
 
 #, c-format
 msgid ""
@@ -1699,7 +1699,7 @@ msgid "-n\t\t\tNo swap file, use memory only"
 msgstr "-n\t\t\tNiente file di swap, usa solo memoria"
 
 msgid "-r\t\t\tList swap files and exit"
-msgstr "-r\t\t\tLista swap file ed esci"
+msgstr "-r\t\t\tLista file di swap ed esci"
 
 msgid "-r (with file name)\tRecover crashed session"
 msgstr "-r (e nome file)\tRecupera da sessione finita male"
@@ -1977,7 +1977,7 @@ msgstr ""
 "modif  riga  col testo"
 
 msgid "Enter number of swap file to use (0 to quit): "
-msgstr "Dimmi numero di swap file da usare (0 per lasciar perdere): "
+msgstr "Dimmi numero del file di swap da usare (0 per lasciar perdere): "
 
 msgid "Unable to read block 0 from "
 msgstr "Non riesco a leggere il blocco 0 da "
@@ -1987,7 +1987,8 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Forse non ci sono state modifiche oppure Vim non ha aggiornato lo swap file."
+"Forse non ci sono state modifiche oppure Vim non ha aggiornato il file di "
+" swap."
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " impossibile da usare con questa versione di Vim.\n"
@@ -2014,7 +2015,7 @@ msgstr ""
 
 #, c-format
 msgid "Using swap file \"%s\""
-msgstr "Uso swap file \"%s\""
+msgstr "Uso il file di swap \"%s\""
 
 #, c-format
 msgid "Original file \"%s\""
@@ -2022,7 +2023,7 @@ msgstr "File originale \"%s\""
 
 #, c-format
 msgid "Swap file is encrypted: \"%s\""
-msgstr "Il file swap è cifrato: \"%s\""
+msgstr "Il file di swap è cifrato: \"%s\""
 
 msgid ""
 "\n"
@@ -2050,7 +2051,7 @@ msgid ""
 "to use the same key for text file and swap file"
 msgstr ""
 "\n"
-"per usare la stessa chiave sia per il testo che per il file swap"
+"per usare la stessa chiave sia per il testo che per il file di swap"
 
 msgid "???MANY LINES MISSING"
 msgstr "???MOLTE RIGHE MANCANTI"
@@ -2120,11 +2121,11 @@ msgstr ""
 "Nota: processo ANCORA IN ESECUZIONE:"
 
 msgid "Using crypt key from swap file for the text file.\n"
-msgstr "Uso la chiave di cifratura del file swap per il file di testo.\n"
+msgstr "Uso la chiave di cifratura del file di swap per il file di testo.\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
-msgstr "Swap file trovati:"
+msgstr "File di swap trovati:"
 
 msgid "   In current directory:\n"
 msgstr "   Nella directory in uso:\n"
@@ -2151,7 +2152,7 @@ msgid "         [from Vim version 3.0]"
 msgstr "         [da Vim versione 3.0]"
 
 msgid "         [does not look like a Vim swap file]"
-msgstr "        [non assomiglia ad uno swap file Vim]"
+msgstr "        [non assomiglia a un file di swap Vim]"
 
 msgid "         file name: "
 msgstr "         nome file: "
@@ -2236,7 +2237,7 @@ msgid ""
 "Found a swap file by the name \""
 msgstr ""
 "\n"
-"Trovato uno swap file di nome \""
+"Trovato uno file di swap di nome \""
 
 msgid "While opening file \""
 msgstr "Mentre aprivo file \""
@@ -2245,7 +2246,7 @@ msgid "      CANNOT BE FOUND"
 msgstr "      NON TROVATO"
 
 msgid "      NEWER than swap file!\n"
-msgstr "      PIÙ RECENTE dello swap file!\n"
+msgstr "      PIÙ RECENTE del file di swap!\n"
 
 #. Some of these messages are long to allow translation to
 #. other languages.
@@ -2287,7 +2288,7 @@ msgid "Found a swap file that is not useful, deleting it"
 msgstr "Trovato un file di swap inutile, lo cancello"
 
 msgid "Swap file \""
-msgstr "Swap file \""
+msgstr "File di swap \""
 
 msgid "\" already exists!"
 msgstr "\" già esistente!"
@@ -2296,7 +2297,7 @@ msgid "VIM - ATTENTION"
 msgstr "VIM - ATTENZIONE"
 
 msgid "Swap file already exists!"
-msgstr "Lo swap file esiste già!"
+msgstr "Il file di swap esiste già!"
 
 msgid ""
 "&Open Read-Only\n"
@@ -2424,6 +2425,9 @@ msgstr " (Interrotto)"
 
 msgid "Beep!"
 msgstr "Beep!"
+
+msgid "Executing directly: \"%s\""
+msgstr "Eseguo direttamente: \"%s\""
 
 #, c-format
 msgid "Calling shell to execute: \"%s\""
@@ -4240,7 +4244,7 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Carattere non valido dopo %s%%"
 
 msgid "E72: Close error on swap file"
-msgstr "E72: Errore durante chiusura swap file"
+msgstr "E72: Errore durante chiusura file di swap"
 
 msgid "E73: Tag stack empty"
 msgstr "E73: Tag stack ancora vuoto"
@@ -4988,16 +4992,16 @@ msgid "E290: List or number required"
 msgstr "E290: È richiesta una Lista o un Numero"
 
 msgid "E294: Seek error in swap file read"
-msgstr "E294: Errore di posizionamento durante lettura swap file"
+msgstr "E294: Errore di posizionamento durante lettura file di swap"
 
 msgid "E295: Read error in swap file"
-msgstr "E295: Errore leggendo swap file"
+msgstr "E295: Errore leggendo file di swap"
 
 msgid "E296: Seek error in swap file write"
-msgstr "E296: Errore di posizionamento scrivendo swap file"
+msgstr "E296: Errore di posizionamento scrivendo file di swap"
 
 msgid "E297: Write error in swap file"
-msgstr "E297: Errore scrivendo swap file"
+msgstr "E297: Errore scrivendo file di swap"
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
@@ -5005,22 +5009,22 @@ msgstr ""
 "modulo Safe"
 
 msgid "E300: Swap file already exists (symlink attack?)"
-msgstr "E300: Lo swap file esiste già (attacco tramite link simbolico?)"
+msgstr "E300: Il file di swap esiste già (attacco tramite link simbolico?)"
 
 msgid "E301: Oops, lost the swap file!!!"
-msgstr "E301: Ahimè, lo swap file è perduto!!!"
+msgstr "E301: Ahimè, il file di swap è perduto!!!"
 
 msgid "E302: Could not rename swap file"
-msgstr "E302: Non riesco a rinominare lo swap file"
+msgstr "E302: Non riesco a rinominare il file di swap"
 
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Non riesco ad aprire lo swap file per \"%s\", recupero impossibile"
+"E303: Non riesco ad aprire il file di swap per \"%s\", recupero impossibile"
 
 #, c-format
 msgid "E305: No swap file found for %s"
-msgstr "E305: Nessun swap file trovato per %s"
+msgstr "E305: Nessun file di swap trovato per %s"
 
 #, c-format
 msgid "E306: Cannot open %s"
@@ -5028,7 +5032,7 @@ msgstr "E306: Non riesco ad aprire %s"
 
 #, c-format
 msgid "E307: %s does not look like a Vim swap file"
-msgstr "E307: %s non sembra uno swap file Vim"
+msgstr "E307: %s non sembra uno file di swap Vim"
 
 msgid "E308: Warning: Original file may have been changed"
 msgstr ""
@@ -5051,7 +5055,7 @@ msgstr ""
 "E312: Trovati errori durante recupero; controlla righe che iniziano con ???"
 
 msgid "E313: Cannot preserve, there is no swap file"
-msgstr "E313: Non posso preservare, manca swap file"
+msgstr "E313: Non posso preservare, manca file di swap"
 
 msgid "E314: Preserve failed"
 msgstr "E314: Preservazione fallita"
@@ -5070,7 +5074,7 @@ msgid "E325: ATTENTION"
 msgstr "E325: ATTENZIONE"
 
 msgid "E326: Too many swap files found"
-msgstr "E326: Trovati troppi swap file"
+msgstr "E326: Trovati troppi file di swap"
 
 msgid "E327: Part of menu-item path is not sub-menu"
 msgstr ""
@@ -6592,7 +6596,7 @@ msgstr "E767: Troppi argomenti per printf()"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E768: File swap esistente: %s (:silent! per sovrascriverlo)"
+msgstr "E768: File di swap esistente: %s (:silent! per sovrascriverlo)"
 
 #, c-format
 msgid "E769: Missing ] after %s["
@@ -6853,7 +6857,7 @@ msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: Nessun numero di riga da usare per \"<slnum>\""
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "E843: Errore aggiornando cifratura dello swap file"
+msgstr "E843: Errore aggiornando cifratura del file di swap"
 
 msgid "E844: Invalid cchar value"
 msgstr "E844: Valore cchar non valido"
@@ -8496,8 +8500,7 @@ msgid "E1292: Command-line window is already open"
 msgstr "E1292: Finestra della riga-di-comando già aperta"
 
 msgid "E1293: Cannot use a negative id for a text property"
-msgstr ""
-"E1293: Impossibile usare un id negativo per una proprietà del testo"
+msgstr "E1293: Impossibile usare un id negativo per una proprietà del testo"
 
 msgid "E1294: Can only use text_align when column is zero"
 msgstr "E1294: Si può usare 'text_align' solo quando la colonna è zero"
@@ -9303,15 +9306,20 @@ msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr "E1571: Va specificata almeno una callback per redraw_listener_add"
 
 msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
-msgstr "E1572: elemento 'listchars' in \"leadtab\" richiede che sia stato "
+msgstr ""
+"E1572: elemento 'listchars' in \"leadtab\" richiede che sia stato "
 "specificato \"tab\""
 
 msgid "E1573: Cannot listen on port"
 msgstr "E1573: Non posso rimanere in ascolto alla porta"
 
 msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
-msgstr "E1574: gethostbyname(): non riesco a risolvere il nome dell'host in "
+msgstr ""
+"E1574: gethostbyname(): non riesco a risolvere il nome dell'host in "
 "channel_listen()"
+
+msgid "E1575: Cannot create pipes"
+msgstr "E1575: Non posso create delle pipe"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -9990,7 +9998,9 @@ msgid "don't redraw while executing macros"
 msgstr "non aggiornare lo schermo mentre si stanno eseguendo delle macro"
 
 msgid "configure method of receiving terminal size changes"
-msgstr "configura il metodo per gestire modifiche di dimensione del terminale receiving terminal size changes"
+msgstr ""
+"configura il metodo per gestire modifiche di dimensione del terminale "
+"receiving terminal size changes"
 
 msgid "enable terminal sync mode"
 msgstr "abilita modo Sync per il terminale"
