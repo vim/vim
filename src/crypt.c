@@ -342,7 +342,7 @@ sodium_enabled(int verbose)
 #endif
 
 #define CRYPT_MAGIC_LEN	12	// cannot change
-static char	crypt_magic_head[] = "VimCrypt~";
+static const char crypt_magic_head[] = "VimCrypt~";
 
 /*
  * Return int value for crypt method name.
