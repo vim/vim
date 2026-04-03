@@ -680,7 +680,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv)
  * Attach a text property 'type_name' to the text starting
  * at [start_lnum, start_col] and ending at [end_lnum, end_col] in
  * the buffer "buf" and assign identifier "id".
- * When "text" is not NULL add it to buf->b_textprop_text[-id - 1].
+ * When "text" is not NULL store it as virtual text in the memline.
  */
     static int
 prop_add_one(
