@@ -212,11 +212,11 @@ set_mousemoved_columns(win_T *wp, int flags)
     // convert text column to mouse column
     pos.col = col;
     pos.coladd = 0;
-    getvcol(textwp, &pos, &mcol, NULL, NULL);
+    getvcol(textwp, &pos, &mcol, NULL, NULL, 0);
     wp->w_popup_mouse_mincol = mcol;
 
     pos.col = col + (colnr_T)STRLEN(text) - 1;
-    getvcol(textwp, &pos, NULL, NULL, &mcol);
+    getvcol(textwp, &pos, NULL, NULL, &mcol, 0);
     wp->w_popup_mouse_maxcol = mcol;
     vim_free(text);
 }

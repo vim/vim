@@ -467,7 +467,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (*cts.cts_ptr != NUL && --column >= 0)
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
 	MB_PTR_ADV(cts.cts_ptr);
     }
 
@@ -481,7 +481,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     col = cts.cts_vcol;
     if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
-	col += win_lbr_chartabsize(&cts, NULL) - 1;
+	col += win_lbr_chartabsize(&cts, NULL, NULL) - 1;
     clear_chartabsize_arg(&cts);
 
     /*

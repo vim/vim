@@ -361,7 +361,7 @@ update_topline(void)
 
 		// Check that the cursor position is visible.  Add columns for
 		// the marker displayed in the top-left if needed.
-		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
+		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL, 0);
 		overlap = sms_marker_overlap(curwin, -1);
 		if (curwin->w_skipcol + overlap > vcol)
 		    check_topline = TRUE;
@@ -1021,7 +1021,7 @@ validate_virtcol_win(win_T *wp)
 #ifdef FEAT_PROP_POPUP
     wp->w_virtcol_first_char = 0;
 #endif
-    getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
+    getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL, 0);
 #ifdef FEAT_SYN_HL
     redraw_for_cursorcolumn(wp);
 #endif
@@ -1183,7 +1183,7 @@ curs_columns(
     else
 #endif
 	getvvcol(curwin, &curwin->w_cursor,
-				&startcol, &(curwin->w_virtcol), &endcol);
+				  &startcol, &(curwin->w_virtcol), &endcol, 0);
 
     // remove '$' from change command when cursor moves onto it
     if (startcol > dollar_vcol)
@@ -1491,7 +1491,7 @@ textpos2screenpos(
 	else
 # endif
 	{
-	    getvcol(wp, pos, &scol, &ccol, &ecol);
+	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);
 
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;

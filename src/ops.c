@@ -2064,7 +2064,7 @@ adjust_cursor_eol(void)
 	colnr_T	    scol, ecol;
 
 	// Coladd is set to the width of the last character.
-	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
+	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol, 0);
 	curwin->w_cursor.coladd = ecol - scol + 1;
     }
 }
@@ -2396,6 +2396,9 @@ theend:
 
 #ifdef FEAT_LINEBREAK
 /*
+ * TODO: consider using "tailp" of win_lbr_chartabsize() instead of temporarily
+ * resetting 'linebreak'.
+ *
  * Reset 'linebreak' and take care of side effects.
  * Returns the previous value, to be passed to restore_lbr().
  */
@@ -2617,7 +2620,7 @@ charwise_block_prep(
 	startcol = start.col;
 	if (virtual_op)
 	{
-	    getvcol(curwin, &start, &cs, NULL, &ce);
+	    getvcol(curwin, &start, &cs, NULL, &ce, false);
 	    if (ce != cs && start.coladd > 0)
 	    {
 		// Part of a tab selected -- but don't
@@ -2636,7 +2639,7 @@ charwise_block_prep(
 	endcol = end.col;
 	if (virtual_op)
 	{
-	    getvcol(curwin, &end, &cs, NULL, &ce);
+	    getvcol(curwin, &end, &cs, NULL, &ce, false);
 	    if (p[endcol] == NUL || (cs + end.coladd < ce
 			// Don't add space for double-wide
 			// char; endcol will be on last byte
@@ -3409,7 +3412,7 @@ cursor_pos_info(dict_T *dict)
 		oparg.block_mode = TRUE;
 		oparg.op_type = OP_NOP;
 		getvcols(curwin, &min_pos, &max_pos,
-					  &oparg.start_vcol, &oparg.end_vcol);
+					&oparg.start_vcol, &oparg.end_vcol, 0);
 #ifdef FEAT_LINEBREAK
 		p_sbr = saved_sbr;
 		curwin->w_p_sbr = saved_w_sbr;
@@ -3511,8 +3514,8 @@ cursor_pos_info(dict_T *dict)
 	    {
 		if (VIsual_mode == Ctrl_V && curwin->w_curswant < MAXCOL)
 		{
-		    getvcols(curwin, &min_pos, &max_pos, &min_pos.col,
-								    &max_pos.col);
+		    getvcols(curwin, &min_pos, &max_pos,
+						&min_pos.col, &max_pos.col, 0);
 		    vim_snprintf((char *)buf1, sizeof(buf1), _("%ld Cols; "),
 			    (long)(oparg.end_vcol - oparg.start_vcol + 1));
 		}
@@ -3798,11 +3801,11 @@ get_op_vcol(
     if (has_mbyte)
 	mb_adjustpos(curwin->w_buffer, &oap->end);
 
-    getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+    getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol, 0);
 
     if (!redo_VIsual_busy)
     {
-	getvvcol(curwin, &(oap->end), &start, NULL, &end);
+	getvvcol(curwin, &(oap->end), &start, NULL, &end, 0);
 
 	if (start < oap->start_vcol)
 	    oap->start_vcol = start;
@@ -3825,7 +3828,7 @@ get_op_vcol(
 		curwin->w_cursor.lnum <= oap->end.lnum;
 					++curwin->w_cursor.lnum)
 	{
-	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end, 0);
 	    if (end > oap->end_vcol)
 		oap->end_vcol = end;
 	}
@@ -4130,12 +4133,12 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		{
 		    if (VIsual_mode != Ctrl_V)
 			getvvcol(curwin, &(oap->end),
-						  NULL, NULL, &oap->end_vcol);
+						NULL, NULL, &oap->end_vcol, 0);
 		    if (VIsual_mode == Ctrl_V || oap->line_count <= 1)
 		    {
 			if (VIsual_mode != Ctrl_V)
 			    getvvcol(curwin, &(oap->start),
-						&oap->start_vcol, NULL, NULL);
+					      &oap->start_vcol, NULL, NULL, 0);
 			resel_VIsual_vcol = oap->end_vcol - oap->start_vcol + 1;
 		    }
 		    else
