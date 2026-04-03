@@ -2620,7 +2620,7 @@ charwise_block_prep(
 	startcol = start.col;
 	if (virtual_op)
 	{
-	    getvcol(curwin, &start, &cs, NULL, &ce, false);
+	    getvcol(curwin, &start, &cs, NULL, &ce, 0);
 	    if (ce != cs && start.coladd > 0)
 	    {
 		// Part of a tab selected -- but don't
@@ -2639,7 +2639,7 @@ charwise_block_prep(
 	endcol = end.col;
 	if (virtual_op)
 	{
-	    getvcol(curwin, &end, &cs, NULL, &ce, false);
+	    getvcol(curwin, &end, &cs, NULL, &ce, 0);
 	    if (p[endcol] == NUL || (cs + end.coladd < ce
 			// Don't add space for double-wide
 			// char; endcol will be on last byte
