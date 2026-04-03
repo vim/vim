@@ -20,10 +20,21 @@ syn region jjComment start="^JJ:" end="$" contains=jjAdded,jjRemoved,jjChanged,j
 syn include @jjCommitDiff syntax/diff.vim
 syn region jjCommitDiff start=/\%(^diff --\%(git\|cc\|combined\) \)\@=/ end=/^\%(diff --\|$\|@@\@!\|[^[:alnum:]\ +-]\S\@!\)\@=/ fold contains=@jjCommitDiff
 
-hi def link jjComment Comment
-hi def link jjAdded Added
-hi def link jjRemoved Removed
-hi def link jjChanged Changed
-hi def link jjRenamed Changed
+if get(g:, 'jjdescription_summary_length') < 0
+  syn match   jjdescriptionSummary	"^.*$" contained containedin=jjcommitFirstLine nextgroup=jjcommitOverflow contains=@Spell
+elseif get(g:, 'jjdescription_summary_length', 1) > 0
+  exe 'syn match   jjdescriptionSummary	"^.*\%<' . (get(g:, 'jjdescription_summary_length', 50) + 1) . 'v." contained containedin=jjcommitFirstLine nextgroup=jjcommitOverflow contains=@Spell'
+endif
+syn match   jjcommitOverflow	".*" contained contains=@Spell
+syn match   jjcommitBlank	"^.\+" contained contains=@Spell
+syn match   jjcommitFirstLine	"\%^.*" nextgroup=jjcommitBlank,jjComment skipnl
+
+hi def link jjcommitSummary	Keyword
+hi def link jjComment		Comment
+hi def link jjAdded		Added
+hi def link jjRemove		Removed
+hi def link jjChange		Changed
+hi def link jjRenamed		Changed
+hi def link jjcommitBlank	Error
 
 let b:current_syntax = 'jjdescription'
