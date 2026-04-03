@@ -1464,8 +1464,8 @@ reg_match_visual(void)
     }
     else if (mode == Ctrl_V)
     {
-	getvvcol(wp, &top, &start, NULL, &end);
-	getvvcol(wp, &bot, &start2, NULL, &end2);
+	getvvcol(wp, &top, &start, NULL, &end, 0);
+	getvvcol(wp, &bot, &start2, NULL, &end2, 0);
 	if (start2 < start)
 	    start = start2;
 	if (end2 > end)

@@ -3354,7 +3354,7 @@ replace_do_bs(int limit_col)
 	{
 	    // Get the number of screen cells used by the character we are
 	    // going to delete.
-	    getvcol(curwin, &curwin->w_cursor, NULL, &start_vcol, NULL);
+	    getvcol(curwin, &curwin->w_cursor, NULL, &start_vcol, NULL, 0);
 	    orig_vcols = chartabsize(ml_get_cursor(), start_vcol);
 	}
 	if (has_mbyte)
@@ -5152,8 +5152,8 @@ ins_tab(void)
 	}
 
 	// compute virtual column numbers of first white and cursor
-	getvcol(curwin, &fpos, &vcol, NULL, NULL);
-	getvcol(curwin, cursor, &want_vcol, NULL, NULL);
+	getvcol(curwin, &fpos, &vcol, NULL, NULL, 0);
+	getvcol(curwin, cursor, &want_vcol, NULL, NULL, 0);
 
 	init_chartabsize_arg(&cts, curwin, 0, vcol, tab, tab);
 

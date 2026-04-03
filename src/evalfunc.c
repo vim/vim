@@ -6186,8 +6186,8 @@ getregionpos(
 	int	lbr_saved = reset_lbr();
 #endif
 
-	getvvcol(curwin, p1, &sc1, NULL, &ec1);
-	getvvcol(curwin, p2, &sc2, NULL, &ec2);
+	getvvcol(curwin, p1, &sc1, NULL, &ec1, 0);
+	getvvcol(curwin, p2, &sc2, NULL, &ec2, 0);
 
 #ifdef FEAT_LINEBREAK
 	restore_lbr(lbr_saved);
@@ -12782,7 +12782,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	    if (fp->col > len)
 		fp->col = len;
 	}
-	getvvcol(curwin, fp, &vcol_start, NULL, &vcol_end);
+	getvvcol(curwin, fp, &vcol_start, NULL, &vcol_end, 0);
 	++vcol_start;
 	++vcol_end;
     }

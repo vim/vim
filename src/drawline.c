@@ -1418,7 +1418,8 @@ win_line(
 			wlv.fromcol = 0;
 		    else
 		    {
-			getvvcol(wp, top, (colnr_T *)&wlv.fromcol, NULL, NULL);
+			getvvcol(wp, top, (colnr_T *)&wlv.fromcol,
+								NULL, NULL, 0);
 			if (gchar_pos(top) == NUL)
 			    wlv.tocol = wlv.fromcol + 1;
 		    }
@@ -1437,11 +1438,11 @@ win_line(
 			pos = *bot;
 			if (*p_sel == 'e')
 			    getvvcol(wp, &pos, (colnr_T *)&wlv.tocol,
-								   NULL, NULL);
+								NULL, NULL, 0);
 			else
 			{
 			    getvvcol(wp, &pos, NULL, NULL,
-							(colnr_T *)&wlv.tocol);
+						     (colnr_T *)&wlv.tocol, 0);
 			    ++wlv.tocol;
 			}
 		    }
@@ -1480,14 +1481,14 @@ win_line(
 	{
 	    if (lnum == curwin->w_cursor.lnum)
 		getvcol(curwin, &(curwin->w_cursor),
-					  (colnr_T *)&wlv.fromcol, NULL, NULL);
+				       (colnr_T *)&wlv.fromcol, NULL, NULL, 0);
 	    else
 		wlv.fromcol = 0;
 	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
 	    {
 		pos.lnum = lnum;
 		pos.col = search_match_endcol;
-		getvcol(curwin, &pos, (colnr_T *)&wlv.tocol, NULL, NULL);
+		getvcol(curwin, &pos, (colnr_T *)&wlv.tocol, NULL, NULL, 0);
 	    }
 	    else
 		wlv.tocol = MAXCOL;
@@ -1761,7 +1762,7 @@ win_line(
     {
 	chartabsize_T cts;
 	init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
-	(void)win_lbr_chartabsize(&cts, NULL);
+	(void)win_lbr_chartabsize(&cts, NULL, NULL);
 	vcol_first_char = cts.cts_first_char;
 	clear_chartabsize_arg(&cts);
     }
@@ -1785,7 +1786,7 @@ win_line(
 	while (cts.cts_vcol < v)
 	{
 	    head = 0;
-	    charsize = win_lbr_chartabsize(&cts, &head);
+	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
 	    cts.cts_vcol += charsize;
 	    prev_ptr = cts.cts_ptr;
 	    if (*prev_ptr == NUL)
@@ -3120,7 +3121,8 @@ win_line(
 		    // do not want virtual text counted here
 		    cts.cts_has_prop_with_text = FALSE;
 # endif
-		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
+		    // TODO: consider using "tailp" here
+		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
 
 		    if (on_last_col && c != TAB)
@@ -3780,7 +3782,7 @@ win_line(
 	    colnr_T tcol;
 
 	    if (preedit_end_col == MAXCOL)
-		getvcol(curwin, &(wp->w_cursor), &tcol, NULL, NULL);
+		getvcol(curwin, &(wp->w_cursor), &tcol, NULL, NULL, 0);
 	    else
 		tcol = preedit_end_col;
 	    if ((long)preedit_start_col <= wlv.vcol && wlv.vcol < (long)tcol)

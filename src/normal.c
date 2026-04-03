@@ -1652,7 +1652,8 @@ clear_showcmd(void)
 	    p_sbr = empty_option;
 	    curwin->w_p_sbr = empty_option;
 #endif
-	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
+	    getvcols(curwin, &curwin->w_cursor, &VIsual,
+						    &leftcol, &rightcol, 0);
 #ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
 	    curwin->w_p_sbr = saved_w_sbr;
@@ -2765,7 +2766,7 @@ nv_zet(cmdarg_T *cap)
 			col = 0;	// like the cursor is in col 0
 		    else
 #endif
-		    getvcol(curwin, &curwin->w_cursor, &col, NULL, NULL);
+		    getvcol(curwin, &curwin->w_cursor, &col, NULL, NULL, 0);
 		    if ((long)col > siso)
 			col -= siso;
 		    else
@@ -2786,7 +2787,7 @@ nv_zet(cmdarg_T *cap)
 			col = 0;	// like the cursor is in col 0
 		    else
 #endif
-		    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
+		    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col, 0);
 		    n = curwin->w_width - curwin_col_off();
 		    if ((long)col + siso < n)
 			col = 0;
@@ -4295,7 +4296,7 @@ nv_csearch(cmdarg_T *cap)
     {
 	colnr_T	scol, ecol;
 
-	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
+	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol, 0);
 	curwin->w_cursor.coladd = ecol - scol;
     }
     else
@@ -5000,7 +5001,7 @@ v_swap_corners(int cmdchar)
     if (cmdchar == 'O' && VIsual_mode == Ctrl_V)
     {
 	old_cursor = curwin->w_cursor;
-	getvcols(curwin, &old_cursor, &VIsual, &left, &right);
+	getvcols(curwin, &old_cursor, &VIsual, &left, &right, 0);
 	curwin->w_cursor.lnum = VIsual.lnum;
 	coladvance(left);
 	VIsual = curwin->w_cursor;
@@ -5927,7 +5928,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	{
 	    colnr_T vcol;
 
-	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol);
+	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol, 0);
 	    if (vcol >= curwin->w_leftcol + curwin->w_width - col_off)
 		--curwin->w_cursor.col;
 	}
@@ -6765,7 +6766,7 @@ unadjust_for_sel_inner(pos_T *pp)
 	mb_adjustpos(curbuf, pp);
 	if (virtual_active())
 	{
-	    getvcol(curwin, pp, &cs, NULL, &ce);
+	    getvcol(curwin, pp, &cs, NULL, &ce, 0);
 	    pp->coladd = ce - cs;
 	}
     }
