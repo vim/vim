@@ -4672,7 +4672,7 @@ func Test_error_when_using_negative_id()
 
   " Negative id is always rejected.  Before the fix, prop_add() with a negative
   " id succeeded when no virtual text existed, then prop_list() would dereference
-  " a NULL pointer (b_textprop_text.ga_data) and crash.
+  " a NULL pointer and crash.
   call assert_fails("call prop_add(1, 1, #{type: 'test1', length: 1, id: -1})", 'E1293:')
   call assert_equal([], prop_list(1))
 
