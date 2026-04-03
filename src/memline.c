@@ -1892,7 +1892,6 @@ recover_names(
 {
     int		num_names;
     char_u	*(names[6]);
-    char_u	*tail;
     char_u	*p;
     int		num_files;
     int		file_count = 0;
@@ -1969,20 +1968,27 @@ recover_names(
 	{
 	    if (fname == NULL)
 	    {
+		string_T    ret;
+
 #ifdef VMS
-		names[0] = concat_fnames(dir_name.string, (char_u *)"*_sw%", TRUE);
+		names[0] = concat_fnames(dir_name.string, dir_name.length,
+		    (char_u *)"*_sw%", STRLEN_LITERAL("*_sw%"), TRUE, &ret);
 #else
-		names[0] = concat_fnames(dir_name.string, (char_u *)"*.sw?", TRUE);
+		names[0] = concat_fnames(dir_name.string, dir_name.length,
+		    (char_u *)"*.sw?", STRLEN_LITERAL("*.sw?"), TRUE, &ret);
 #endif
 #if defined(UNIX) || defined(MSWIN)
 		// For Unix names starting with a dot are special.  MS-Windows
 		// supports this too, on some file systems.
-		names[1] = concat_fnames(dir_name.string, (char_u *)".*.sw?", TRUE);
-		names[2] = concat_fnames(dir_name.string, (char_u *)".sw?", TRUE);
+		names[1] = concat_fnames(dir_name.string, dir_name.length,
+		    (char_u *)".*.sw?", STRLEN_LITERAL(".*.sw?"), TRUE, &ret);
+		names[2] = concat_fnames(dir_name.string, dir_name.length,
+		    (char_u *)".sw?", STRLEN_LITERAL(".sw?"), TRUE, &ret);
 		num_names = 3;
 #else
 # ifdef VMS
-		names[1] = concat_fnames(dir_name.string, (char_u *)".*_sw%", TRUE);
+		names[1] = concat_fnames(dir_name.string, dir_name.length,
+		    (char_u *)".*_sw%", STRLEN_LITERAL(".*_sw%"), TRUE, &ret);
 		num_names = 2;
 # else
 		num_names = 1;
@@ -1991,6 +1997,8 @@ recover_names(
 	    }
 	    else
 	    {
+		char_u	*tail;
+
 #if defined(UNIX) || defined(MSWIN)
 		p = dir_name.string + dir_name.length;
 		if (after_pathsep(dir_name.string, p) && dir_name.length > 1 && p[-1] == p[-2])
@@ -2001,8 +2009,11 @@ recover_names(
 		else
 #endif
 		{
+		    string_T	ret;
+
 		    tail = gettail(fname_res);
-		    tail = concat_fnames(dir_name.string, tail, TRUE);
+		    tail = concat_fnames(dir_name.string, dir_name.length,
+			tail, STRLEN(tail), TRUE, &ret);
 		}
 		if (tail == NULL)
 		    num_names = 0;
@@ -2132,13 +2143,16 @@ recover_names(
 #ifdef FEAT_EVAL
 	else if (ret_list != NULL)
 	{
+	    string_T	name;
+
 	    for (int i = 0; i < num_files; ++i)
 	    {
-		char_u *name = concat_fnames(dir_name.string, files[i], TRUE);
-		if (name != NULL)
+		concat_fnames(dir_name.string, dir_name.length,
+		    files[i], STRLEN(files[i]), TRUE, &name);
+		if (name.string != NULL)
 		{
-		    list_append_string(ret_list, name, -1);
-		    vim_free(name);
+		    list_append_string(ret_list, name.string, (int)name.length);
+		    vim_free(name.string);
 		}
 	    }
 	}
@@ -2166,26 +2180,26 @@ recover_names(
     char_u *
 make_percent_swname(char_u *dir, char_u *dir_end, char_u *name)
 {
-    char_u *d = NULL, *s, *f;
+    string_T	d = {NULL, 0};
+    string_T	fixed_fname;
+    char_u	*p;
 
-    f = fix_fname(name != NULL ? name : (char_u *)"");
-    if (f == NULL)
+    fixed_fname.string = fix_fname(name != NULL ? name : (char_u *)"");
+    if (fixed_fname.string == NULL)
 	return NULL;
 
-    s = alloc(STRLEN(f) + 1);
-    if (s != NULL)
-    {
-	STRCPY(s, f);
-	for (d = s; *d != NUL; MB_PTR_ADV(d))
-	    if (vim_ispathsep(*d))
-		*d = '%';
+    for (p = fixed_fname.string; *p != NUL; MB_PTR_ADV(p))
+	if (vim_ispathsep(*p))
+	    *p = '%';
+    fixed_fname.length = (size_t)(p - fixed_fname.string);
 
-	dir_end[-1] = NUL;  // remove one trailing slash
-	d = concat_fnames(dir, s, TRUE);
-	vim_free(s);
-    }
-    vim_free(f);
-    return d;
+    // remove one trailing slash
+    p = &dir_end[-1];
+    *p = NUL;
+    concat_fnames(dir, (size_t)(p - dir), fixed_fname.string, fixed_fname.length, TRUE, &d);
+    vim_free(fixed_fname.string);
+
+    return d.string;
 }
 #endif
 
@@ -2432,6 +2446,7 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
 
     curbuf->b_shortname = FALSE;
 #endif
+    string_T	ret;
 
     num_names = 0;
 
@@ -2451,9 +2466,11 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
      * Form the normal swap file name pattern by appending ".sw?".
      */
 #ifdef VMS
-    names[num_names] = concat_fnames(path, (char_u *)"_sw%", FALSE);
+    names[num_names] = concat_fnames(path, STRLEN(path),
+	(char_u *)"_sw%", STRLEN_LITERAL("_sw%"), FALSE, &ret);
 #else
-    names[num_names] = concat_fnames(path, (char_u *)".sw?", FALSE);
+    names[num_names] = concat_fnames(path, STRLEN(path),
+	(char_u *)".sw?", STRLEN_LITERAL(".sw?"), FALSE, &ret);
 #endif
     if (names[num_names] == NULL)
 	goto end;
@@ -4746,45 +4763,61 @@ get_file_in_dir(
     char_u  *fname,
     char_u  *dname)	// don't use "dirname", it is a global for Alpha
 {
-    char_u	*t;
-    char_u	*tail;
-    char_u	*retval;
-    int		save_char;
+    string_T	tail;
+    string_T	retval;
 
-    tail = gettail(fname);
+    tail.string = gettail(fname);
+    tail.length = STRLEN(tail.string);
 
     if (dname[0] == '.' && dname[1] == NUL)
-	retval = vim_strsave(fname);
-    else if (dname[0] == '.' && vim_ispathsep(dname[1]))
+	retval.string =
+	    vim_strnsave(fname, (size_t)(tail.string - fname) + tail.length);
+    else
     {
-	if (tail == fname)	    // no path before file name
-	    retval = concat_fnames(dname + 2, tail, TRUE);
-	else
+	size_t	dname_len = STRLEN(dname);
+
+	if (dname[0] == '.' && vim_ispathsep(dname[1]))
 	{
-	    save_char = *tail;
-	    *tail = NUL;
-	    t = concat_fnames(fname, dname + 2, TRUE);
-	    *tail = save_char;
-	    if (t == NULL)	    // out of memory
-		retval = NULL;
+	    if (tail.string == fname)	    // no path before file name
+		concat_fnames(dname + 2, dname_len - 2,
+		    tail.string, tail.length, TRUE, &retval);
 	    else
 	    {
-		retval = concat_fnames(t, tail, TRUE);
-		vim_free(t);
+		int	    save_char;
+		string_T    tmp;
+
+		save_char = *tail.string;
+		*tail.string = NUL;
+		concat_fnames(fname, (size_t)(tail.string - fname),
+		    dname + 2, dname_len - 2, TRUE, &tmp);
+		*tail.string = save_char;
+		if (tmp.string == NULL)	    // out of memory
+		    retval.string = NULL;
+		else
+		{
+		    concat_fnames(tmp.string, tmp.length,
+			tail.string, tail.length, TRUE, &retval);
+		    vim_free(tmp.string);
+		}
 	    }
 	}
+	else
+	    concat_fnames(dname, dname_len, tail.string, tail.length,
+		TRUE, &retval);
     }
-    else
-	retval = concat_fnames(dname, tail, TRUE);
 
 #ifdef MSWIN
-    if (retval != NULL)
-	for (t = gettail(retval); *t != NUL; MB_PTR_ADV(t))
+    if (retval.string != NULL)
+    {
+	char_u	*t;
+
+	for (t = gettail(retval.string); *t != NUL; MB_PTR_ADV(t))
 	    if (*t == ':')
 		*t = '%';
+    }
 #endif
 
-    return retval;
+    return retval.string;
 }
 
 /*

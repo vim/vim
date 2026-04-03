@@ -48,7 +48,7 @@ int vim_ispathsep_nocolon(int c);
 int dir_of_file_exists(char_u *fname);
 int vim_fnamecmp(char_u *x, char_u *y);
 int vim_fnamencmp(char_u *x, char_u *y, size_t len);
-char_u *concat_fnames(char_u *fname1, char_u *fname2, int sep);
+char_u *concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len, int sep, string_T *ret);
 void add_pathsep(char_u *p);
 char_u *FullName_save(char_u *fname, int force);
 int vim_fexists(char_u *fname);
