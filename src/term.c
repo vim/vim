@@ -7209,6 +7209,13 @@ find_term_bykeys(char_u *src, int *matchlen)
     int         slen, modslen;
     int         thislen;
 
+    // Most input bytes cannot start a terminal code.  Reuse the same leader
+    // table as check_termcode() to avoid scanning termcodes[] unnecessarily.
+    if (need_gather)
+	gather_termleader();
+    if (*src == NUL || vim_strchr(termleader, *src) == NULL)
+	return -1;
+
     // find longest match
     // borrows part of check_termcode
     for (i = 0; i < tc_len; ++i)

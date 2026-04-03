@@ -626,6 +626,8 @@ vim_strchr(char_u *string, int c)
     int		b;
 
     p = string;
+    if (enc_utf8 && c > 0 && c < 0x80)
+	return vim_strbyte(string, c);
     if (enc_utf8 && c >= 0x80)
     {
 	while (*p != NUL)
