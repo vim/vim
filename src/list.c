@@ -118,6 +118,9 @@ list_alloc_with_items(int count)
 {
     list_T	*l;
 
+    if (count > 0
+	    && (size_t)count > (SIZE_MAX - sizeof(list_T)) / sizeof(listitem_T))
+	return NULL;
     l = (list_T *)alloc_clear(sizeof(list_T) + count * sizeof(listitem_T));
     if (l == NULL)
 	return NULL;

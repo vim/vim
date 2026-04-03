@@ -1589,7 +1589,7 @@ spell_read_tree(
     len = get4c(fd);
     if (len < 0)
 	return SP_TRUNCERROR;
-    if (len >= LONG_MAX / (long)sizeof(int))
+    if ((size_t)len > SIZE_MAX / sizeof(int))
 	// Invalid length, multiply with sizeof(int) would overflow.
 	return SP_FORMERROR;
     if (len <= 0)

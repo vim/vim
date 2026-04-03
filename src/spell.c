@@ -2965,7 +2965,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     }
     size_t	repl_from_len = STRLEN(repl_from);
     size_t	repl_to_len = STRLEN(repl_to);
-    int		addlen = (int)(repl_to_len - repl_from_len);
+    long	addlen = (long)repl_to_len - (long)repl_from_len;
 
     frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
@@ -2999,7 +2999,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 #if defined(FEAT_PROP_POPUP)
 	    if (curbuf->b_has_textprop && addlen != 0)
 		adjust_prop_columns(curwin->w_cursor.lnum,
-				 curwin->w_cursor.col, addlen, APC_SUBSTITUTE);
+				 curwin->w_cursor.col, (int)addlen, APC_SUBSTITUTE);
 #endif
 
 	    if (curwin->w_cursor.lnum != prev_lnum)
