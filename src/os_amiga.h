@@ -90,6 +90,16 @@ typedef long off_t;
 # include <dirent.h>
 #endif
 
+// Classic AmigaOS 3.x with GCC/libnix does not provide fchown, fchmod, or
+// ftruncate.  Stub them as no-ops.  (OS4 has these via clib2; MorphOS and
+// AROS provide them in their respective C libraries.)
+#if defined(__GNUC__) && defined(AMIGA) && !defined(__amigaos4__) \
+	&& !defined(__AROS__) && !defined(__MORPHOS__)
+# define fchown(fd, uid, gid) (0)
+# define fchmod(fd, mode) (0)
+# define ftruncate(fd, len) (0)
+#endif
+
 #include <time.h>	// for strftime() and others
 
 /*

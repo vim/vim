@@ -678,6 +678,7 @@ SRC_AMI =	\
 		src/Make_ami.mak \
 		src/os_amiga.c \
 		src/os_amiga.h \
+		src/os_amiga_stubs.c \
 		src/proto/os_amiga.pro \
 		src/testdir/Make_amiga.mak \
 		src/testdir/util/amiga.vim \

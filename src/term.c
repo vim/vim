@@ -2807,7 +2807,7 @@ termcapinit(char_u *name)
 /*
  * The number of calls to ui_write is reduced by using "out_buf".
  */
-#define OUT_SIZE	2047
+#define OUT_SIZE	8191
 
 // add one to allow mch_write() in os_win32.c to append a NUL
 static char_u		out_buf[OUT_SIZE + 1];
@@ -8059,12 +8059,19 @@ term_set_win_resize(bool state)
  * Enable or disable synchronized output if possible. Specification can be found
  * here:
  * https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+ *
+ * BSU/ESU do not need to bypass out_buf and go straight to ui_write().
+ * What matters is the order in which they reach the terminal:
+ * - BSU must be emitted before the batched redraw bytes.
+ * - ESU must be emitted after those redraw bytes.
+ * - A FLUSH must emit ESU and BSU together, then flush immediately.
+ * As long as out_flush() is done at those boundaries, putting BSU/ESU in
+ * out_buf reduces small writes without changing the observable protocol.
  */
     void
 term_set_sync_output(int flags)
 {
     bool    allowed;
-    char_u  *str;
 #ifdef FEAT_GUI
     bool    in_gui = gui.in_use;
 #else
@@ -8075,12 +8082,13 @@ term_set_sync_output(int flags)
 
     if (flags & TERM_SYNC_OUTPUT_FLUSH)
     {
-	// Tell terminal to display screen contents
+	// Tell terminal to display screen contents, then resume batching.
 	if (allowed && !in_gui && sync_output_state > 0 && *T_ESU != NUL &&
 		*T_BSU != NUL)
 	{
-	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
-	    ui_write((char_u *)T_BSU, (int)STRLEN(T_BSU), true);
+	    out_str_nf(T_ESU);
+	    out_str_nf(T_BSU);
+	    out_flush();
 	}
 	return;
     }
@@ -8090,7 +8098,8 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state > 0 && *T_ESU != NUL)
 	{
-	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
+	    out_str_nf(T_ESU);
+	    out_flush();
 	    sync_output_state = 0;
 	}
 	return;
@@ -8105,7 +8114,7 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state++ > 0)
 	    return;
-	str = T_BSU;
+	out_str_nf(T_BSU);
     }
     else if (flags & TERM_SYNC_OUTPUT_DISABLE)
     {
@@ -8115,15 +8124,12 @@ term_set_sync_output(int flags)
 	// all drawing output is sent to the terminal within the
 	// BSU..ESU window.  Without this, the drawing data remaining in
 	// out_buf would be sent after ESU, outside the sync batch.
+	out_str_nf(T_ESU);
 	out_flush();
-	str = T_ESU;
     }
     else
     {
 	siemsg("Unknown sync output value %d", flags);
 	return;
     }
-
-    // Directly write to terminal instead of using output buffer
-    ui_write((char_u *)str, (int)STRLEN(str), true);
 }

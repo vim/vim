@@ -810,6 +810,11 @@ ex_terminal(exarg_T *eap)
     int		opt_shell = FALSE;
     char_u	*cmd;
     char_u	*tofree = NULL;
+    int		scroll_save = msg_scroll;
+
+    msg_scroll = FALSE;		// don't scroll here
+    autowrite_all();
+    msg_scroll = scroll_save;
 
     init_job_options(&opt);
 
@@ -5692,7 +5697,7 @@ get_separator(int text_width, char_u *fname)
     int	    i;
     size_t  off;
 
-    textline = alloc(width + (int)STRLEN(fname) + 1);
+    textline = alloc(width + STRLEN(fname) + 1);
     if (textline == NULL)
 	return NULL;
 

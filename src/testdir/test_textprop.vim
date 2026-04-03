@@ -3606,7 +3606,7 @@ func Test_props_with_text_below_nowrap()
       vim9script
       edit foobar
       set nowrap
-      set showbreak=+++\ 
+      set showbreak=+++
       setline(1, ['onasdf asdf asdf sdf df asdf asdf e asdf asdf asdf asdf asd fas df', 'two'])
       prop_type_add('test', {highlight: 'Special'})
       prop_add(1, 0, {
@@ -4273,7 +4273,7 @@ func Test_text_after_wrap_showbreak()
     set shiftwidth=4
 
     set breakindent
-    set showbreak=>\ 
+    let &showbreak = '> '
     set breakindentopt=shift:2,min:64
 
     call setline(1, ['        " 1234567890', 'foo', 'bar'])

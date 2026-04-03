@@ -2413,28 +2413,35 @@ cs_reset(exarg_T *eap UNUSED)
 cs_resolve_file(int i, char *name)
 {
     char	*fullname;
+    string_T	csdir = {NULL, 0};
+    size_t	namelen;
+    size_t	ppathlen = 0;
     int		len;
-    char_u	*csdir = NULL;
 
     /*
      * Ppath is freed when we destroy the cscope connection.
      * Fullname is freed after cs_make_vim_style_matches, after it's been
      * copied into the tag buffer used by Vim.
      */
-    len = (int)(strlen(name) + 2);
+    namelen = STRLEN(name);
+    len = (int)namelen + 2;
     if (csinfo[i].ppath != NULL)
-	len += (int)strlen(csinfo[i].ppath);
+    {
+	ppathlen = STRLEN(csinfo[i].ppath);
+	len += (int)ppathlen;
+    }
     else if (p_csre && csinfo[i].fname != NULL)
     {
 	// If 'cscoperelative' is set and ppath is not set, use cscope.out
 	// path in path resolution.
-	csdir = alloc(MAXPATHL);
-	if (csdir != NULL)
+	csdir.string = alloc(MAXPATHL);
+	if (csdir.string != NULL)
 	{
-	    vim_strncpy(csdir, (char_u *)csinfo[i].fname,
+	    vim_strncpy(csdir.string, (char_u *)csinfo[i].fname,
 					  gettail((char_u *)csinfo[i].fname)
 						 - (char_u *)csinfo[i].fname);
-	    len += (int)STRLEN(csdir);
+	    csdir.length = STRLEN(csdir.string);
+	    len += (int)csdir.length;
 	}
     }
 
@@ -2442,7 +2449,7 @@ cs_resolve_file(int i, char *name)
     // "../.." and the prefix path is also "../..".  if something like this
     // happens, you are screwed up and need to fix how you're using cscope.
     if (csinfo[i].ppath != NULL
-	    && (strncmp(name, csinfo[i].ppath, strlen(csinfo[i].ppath)) != 0)
+	    && (strncmp(name, csinfo[i].ppath, ppathlen) != 0)
 	    && (name[0] != '/')
 # ifdef MSWIN
 	    && name[0] != '\\' && name[1] != ':'
@@ -2452,18 +2459,20 @@ cs_resolve_file(int i, char *name)
 	if ((fullname = alloc(len)) != NULL)
 	    (void)sprintf(fullname, "%s/%s", csinfo[i].ppath, name);
     }
-    else if (csdir != NULL && csinfo[i].fname != NULL && *csdir != NUL)
+    else if (csdir.string != NULL && csinfo[i].fname != NULL && *csdir.string != NUL)
     {
+	string_T    ret;
+
 	// Check for csdir to be non empty to avoid empty path concatenated to
 	// cscope output.
-	fullname = (char *)concat_fnames(csdir, (char_u *)name, TRUE);
+	fullname = (char *)concat_fnames(csdir.string, csdir.length, (char_u *)name, namelen, TRUE, &ret);
     }
     else
     {
-	fullname = (char *)vim_strsave((char_u *)name);
+	fullname = (char *)vim_strnsave((char_u *)name, namelen);
     }
 
-    vim_free(csdir);
+    vim_free(csdir.string);
     return fullname;
 }
 

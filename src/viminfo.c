@@ -265,7 +265,7 @@ viminfo_readstring(
     if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
     {
 	len = atol((char *)virp->vir_line + off + 1);
-	if (len > 0 && len < 1000000)
+	if (len > 1 && len < 1000000)
 	    retval = lalloc(len, TRUE);
 	if (retval == NULL)
 	{
@@ -1054,7 +1054,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		// Length includes the quotes.
 		++p;
 		len = getdigits(&p);
-		buf = alloc((int)(len + 1));
+		buf = alloc(len + 1);
 		if (buf == NULL)
 		    return TRUE;
 		p = buf;

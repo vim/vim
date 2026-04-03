@@ -467,7 +467,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (*cts.cts_ptr != NUL && --column >= 0)
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
 	MB_PTR_ADV(cts.cts_ptr);
     }
 
@@ -481,7 +481,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     col = cts.cts_vcol;
     if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
-	col += win_lbr_chartabsize(&cts, NULL) - 1;
+	col += win_lbr_chartabsize(&cts, NULL, NULL) - 1;
     clear_chartabsize_arg(&cts);
 
     /*
@@ -1752,32 +1752,39 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     static char_u *
 vim_version_dir(char_u *vimdir)
 {
-    char_u	*p;
+    string_T	p;
+    size_t	vimdir_len;
 
     if (vimdir == NULL || *vimdir == NUL)
 	return NULL;
-    p = concat_fnames(vimdir, (char_u *)VIM_VERSION_NODOT, TRUE);
-    if (p != NULL && mch_isdir(p))
-	return p;
-    vim_free(p);
-    p = concat_fnames(vimdir, (char_u *)RUNTIME_DIRNAME, TRUE);
-    if (p != NULL && mch_isdir(p))
+    vimdir_len = STRLEN(vimdir);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)VIM_VERSION_NODOT, STRLEN_LITERAL(VIM_VERSION_NODOT), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
+	return p.string;
+    vim_free(p.string);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)RUNTIME_DIRNAME, STRLEN_LITERAL(RUNTIME_DIRNAME), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
     {
-	char_u *fname = concat_fnames(p, (char_u *)"defaults.vim", TRUE);
+	string_T    fname;
+
+	concat_fnames(p.string, p.length,
+	    (char_u *)"defaults.vim", STRLEN_LITERAL("defaults.vim"), TRUE, &fname);
 
 	// Check that "defaults.vim" exists in this directory, to avoid picking
 	// up a stray "runtime" directory, it would make many tests fail in
 	// mysterious ways.
-	if (fname != NULL)
+	if (fname.string != NULL)
 	{
-	    int exists = file_is_readable(fname);
+	    int exists = file_is_readable(fname.string);
 
-	    vim_free(fname);
+	    vim_free(fname.string);
 	    if (exists)
-		return p;
+		return p.string;
 	}
     }
-    vim_free(p);
+    vim_free(p.string);
     return NULL;
 }
 

@@ -3093,4 +3093,7 @@ long elapsed(DWORD start_tick);
 #define CF_INTERFACE	2	// inside an interface
 #define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
+// Flags used by getvcol()
+#define GETVCOL_END_EXCL_LBR	1
+
 #endif // VIM__H

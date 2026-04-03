@@ -460,7 +460,7 @@ handle_import(
 	{
 	    // Relative to current script: "./name.vim", "../../name.vim".
 	    len = STRLEN(si->sn_name) - STRLEN(tail) + STRLEN(tv.vval.v_string) + 2;
-	    from_name = alloc((int)len);
+	    from_name = alloc(len);
 	    if (from_name == NULL)
 		goto erret;
 	    vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
@@ -485,7 +485,7 @@ handle_import(
 	char_u	    *from_name;
 
 	// Find file in "autoload" subdirs in 'runtimepath'.
-	from_name = alloc((int)len);
+	from_name = alloc(len);
 	if (from_name == NULL)
 	    goto erret;
 	vim_snprintf((char *)from_name, len, "autoload/%s", tv.vval.v_string);
@@ -512,7 +512,7 @@ handle_import(
 	char_u	    *from_name;
 
 	// Find file in "import" subdirs in 'runtimepath'.
-	from_name = alloc((int)len);
+	from_name = alloc(len);
 	if (from_name == NULL)
 	    goto erret;
 	vim_snprintf((char *)from_name, len, "import/%s", tv.vval.v_string);

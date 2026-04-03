@@ -22,6 +22,7 @@
 " 2026 Feb 21 by Vim Project better absolute path detection on MS-Windows #19477
 " 2026 Feb 27 by Vim Project Make the hostname validation more strict
 " 2026 Mar 01 by Vim Project include portnumber in hostname checking #19533
+" 2026 Apr 01 by Vim Project use fnameescape() with netrw#FileUrlEdit()
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -8282,7 +8283,7 @@ function netrw#FileUrlEdit(fname)
     endif
 
     exe "sil doau BufReadPre ".fname2396e
-    exe 'NetrwKeepj keepalt edit '.plainfname
+    exe 'NetrwKeepj keepalt edit '. fnameescape(plainfname)
     exe 'sil! NetrwKeepj keepalt bdelete '.fnameescape(a:fname)
 
     exe "sil doau BufReadPost ".fname2396e

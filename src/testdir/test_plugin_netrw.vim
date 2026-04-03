@@ -332,7 +332,7 @@ func Test_netrw_check_UNC_paths()
     call assert_equal(
     \   path,
     \   Test_NetrwFile(path),
-    \   $"UNC path: {path} missinterpreted")
+    \   $"UNC path: {path} misinterpreted")
   endfor
 
 endfunction
@@ -593,6 +593,15 @@ func Test_netrw_hostname()
   for hostname in valid_hostnames
     call assert_true(Test_NetrwValidateHostname(hostname), $"Valid hostname {hostname} was rejected")
   endfor
+endfunc
+
+func Test_netrw_FileUrlEdit_pipe_injection()
+  CheckUnix
+  CheckExecutable id
+  let fname = 'Xtestfile'
+  let url = 'file:///tmp/file.md%7C!id>'..fname
+  sil call netrw#FileUrlEdit(url)
+  call assert_false(filereadable(fname), 'Command injection via pipe in file URL')
 endfunc
 
 " vim:ts=8 sts=2 sw=2 et

@@ -16,7 +16,7 @@ vim9script
 #   deleted.
 #
 # Author: Hirohito Higashi (@h-east)
-# Last Update: 2026 Jan 12
+# Last Update: 2026 Apr 02
 
 def Get_C_source_files(): list<string>
   var list_of_c_files: list<string> = []
@@ -30,7 +30,7 @@ def Get_C_source_files(): list<string>
 enddef
 
 def FixPreprocessorIndent(fname: string)
-  execute 'edit! ' .. fname
+  execute 'noswapfile edit! ' .. fname
 
   var nest: number = 0
   var indent_offset: number = 0  # -1 if whole-file guard detected

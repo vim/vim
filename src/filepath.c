@@ -3178,19 +3178,25 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
  * Only add a '/' or '\\' when 'sep' is TRUE and it is necessary.
  */
     char_u  *
-concat_fnames(char_u *fname1, char_u *fname2, int sep)
+concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len, int sep, string_T *ret)
 {
-    char_u  *dest;
+    ret->string = alloc(fname1len + (sep ? STRLEN_LITERAL(PATHSEPSTR) : 0) + fname2len + 1);
+    if (ret->string == NULL)
+	ret->length = 0;
+    else
+    {
+	STRCPY(ret->string, fname1);
+	ret->length = fname1len;
+	if (sep && *ret->string != NUL && !after_pathsep(ret->string, ret->string + ret->length))
+	{
+	    STRCPY(ret->string + ret->length, PATHSEPSTR);
+	    ret->length += STRLEN_LITERAL(PATHSEPSTR);
+	}
+	STRCPY(ret->string + ret->length, fname2);
+	ret->length += fname2len;
+    }
 
-    dest = alloc(STRLEN(fname1) + STRLEN(fname2) + 3);
-    if (dest == NULL)
-	return NULL;
-
-    STRCPY(dest, fname1);
-    if (sep)
-	add_pathsep(dest);
-    STRCAT(dest, fname2);
-    return dest;
+    return ret->string;
 }
 
 /*
@@ -3200,8 +3206,14 @@ concat_fnames(char_u *fname1, char_u *fname2, int sep)
     void
 add_pathsep(char_u *p)
 {
-    if (*p != NUL && !after_pathsep(p, p + STRLEN(p)))
-	STRCAT(p, PATHSEPSTR);
+    size_t  plen;
+
+    if (*p == NUL)
+	return;
+
+    plen = STRLEN(p);
+    if (!after_pathsep(p, p + plen))
+	STRCPY(p + plen, PATHSEPSTR);
 }
 
 /*

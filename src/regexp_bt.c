@@ -1689,7 +1689,7 @@ regatom(int *flagp)
 					  colnr_T vcol = 0;
 
 					  getvvcol(curwin, &curwin->w_cursor,
-							    NULL, NULL, &vcol);
+							 NULL, NULL, &vcol, 0);
 					  ++vcol;
 					  n = vcol;
 				      }
