@@ -178,6 +178,26 @@ static void f_spellbadword(typval_T *argvars, typval_T *rettv);
 static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_srand(typval_T *argvars, typval_T *rettv);
+
+    static int
+is_literal_pat(char_u *pat)
+{
+    char_u  *p;
+
+    if (pat == NULL || *pat == NUL)
+	return FALSE;
+
+    // Check that no character in the pattern has regexp meaning.
+    // Use mb_ptr2len() to skip over multi-byte characters safely so that
+    // trail bytes are never mistaken for ASCII metacharacters.
+    for (p = pat; *p != NUL; p += mb_ptr2len(p))
+	if (*p < 0x80
+		&& vim_strchr((char_u *)".^$~[]\\*?+|{}()", *p) != NULL)
+	    return FALSE;
+
+    return TRUE;
+}
+
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
 static void f_swapfilelist(typval_T *argvars, typval_T *rettv);
@@ -9418,7 +9438,6 @@ f_matchbufline(typval_T *argvars, typval_T *rettv)
     char_u	*save_cpo;
     char_u	patbuf[NUMBUFLEN];
     regmatch_T	regmatch;
-
     rettv->vval.v_number = -1;
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -9561,7 +9580,6 @@ f_matchstrlist(typval_T *argvars, typval_T *rettv)
     listitem_T	*li = NULL;
     char_u	patbuf[NUMBUFLEN];
     regmatch_T	regmatch;
-
     rettv->vval.v_number = -1;
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -12114,6 +12132,7 @@ f_split(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	*end;
     char_u	*pat = NULL;
+    char_u	*p;
     regmatch_T	regmatch;
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
@@ -12121,6 +12140,8 @@ f_split(typval_T *argvars, typval_T *rettv)
     colnr_T	col = 0;
     int		keepempty = FALSE;
     int		typeerr = FALSE;
+    int		literal = FALSE;
+    int		patlen = 0;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -12144,11 +12165,35 @@ f_split(typval_T *argvars, typval_T *rettv)
     }
     if (pat == NULL || *pat == NUL)
 	pat = (char_u *)"[\\x01- ]\\+";
+    else
+	literal = is_literal_pat(pat);
 
     if (rettv_list_alloc(rettv) == FAIL)
 	goto theend;
     if (typeerr)
 	goto theend;
+
+    if (literal)
+    {
+	patlen = (int)STRLEN(pat);
+	while (*str != NUL || keepempty)
+	{
+	    p = (char_u *)strstr((char *)str, (char *)pat);
+	    end = p == NULL ? str + STRLEN(str) : p;
+	    if (keepempty || end > str || (rettv->vval.v_list->lv_len > 0
+					&& *str != NUL && p != NULL
+					&& end < p + patlen))
+	    {
+		if (list_append_string(rettv->vval.v_list, str,
+						    (int)(end - str)) == FAIL)
+		    break;
+	    }
+	    if (p == NULL)
+		break;
+	    str = p + patlen;
+	}
+	goto theend;
+    }
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
