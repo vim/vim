@@ -5263,8 +5263,8 @@ did_set_string_option(
 
     CLEAR_FIELD(args);
 
-    // Disallow changing some options from secure mode
-    if ((secure
+    // Disallow changing some options from secure and restricted mode
+    if ((secure || restricted
 #ifdef HAVE_SANDBOX
 		|| sandbox != 0
 #endif
