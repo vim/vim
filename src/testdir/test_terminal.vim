@@ -942,7 +942,9 @@ func Test_terminal_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  let exitval = bufnr()->term_getjob()->job_info().exitval
+  let job = bufnr()->term_getjob()
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  let exitval = job_info(job).exitval
   if !has('win32')
     call assert_equal(123, exitval)
   else
@@ -984,7 +986,9 @@ func Test_terminal_duplicate_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  let exitval = bufnr()->term_getjob()->job_info().exitval
+  let job = bufnr()->term_getjob()
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  let exitval = job_info(job).exitval
   if !has('win32')
     call assert_equal(123, exitval)
   else

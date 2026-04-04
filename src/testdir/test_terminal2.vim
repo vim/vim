@@ -380,6 +380,92 @@ func Test_terminal_resize()
   set statusline&
 endfunc
 
+func Test_terminal_reflow()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output a long line that will wrap at column 40
+  let long_text = repeat('X', 60)
+  call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
+
+  " Before resize: wait for the 60 X's to appear wrapped across two lines
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ '^X\{40}$'})
+        \                ->len() > 0,
+        \ 'wrapped line not found')})
+
+  " Resize the terminal wider so that 60 X's can fit on one line
+  vertical resize 80
+  redraw
+  call TermWait(buf)
+
+  " After reflow, the 60 X's should now fit on a single terminal line.
+  " Search all rows since the row number depends on the shell prompt.
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ 'X\{60}'})
+        \                ->len() > 0,
+        \ 'reflowed line not found')})
+
+  exe buf .. 'bwipe!'
+endfunc
+
+func Test_terminal_reflow_normal_mode()
+  CheckNotMSWindows
+
+  " Start a terminal with a specific width
+  let buf = term_start('/bin/sh', #{term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Output a long line that wraps at column 40
+  let long_text = repeat('X', 60)
+  call term_sendkeys(buf, "printf '" .. long_text .. "'\<CR>")
+
+  " Wait for output to appear before switching mode
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_true(
+        \ range(1, rows)->map({_, r -> term_getline(buf, r)})
+        \                ->filter({_, l -> l =~ 'X\{40}'})
+        \                ->len() > 0,
+        \ 'output not ready')})
+
+  " Switch to Terminal-Normal mode: continuation lines should be joined
+  " in the buffer so that the 60 X's appear as a single buffer line.
+  call feedkeys("\<C-W>N", 'xt')
+  let found = 0
+  for lnum in range(1, line('$'))
+    if getline(lnum) =~ 'X\{60}'
+      let found = 1
+      break
+    endif
+  endfor
+  call assert_equal(1, found, 'joined line not found in normal mode')
+
+  " Go back and clean up
+  call feedkeys("i", 'xt')
+  exe buf .. 'bwipe!'
+endfunc
+
+" NOTE: Multibyte (CJK) reflow tests are not included here.
+" Outputting wide characters via shell commands (printf, echo) is
+" unreliable across platforms:
+" - macOS /bin/sh (zsh) breaks single-quoted strings at multi-byte
+"   character boundaries
+" - FreeBSD /bin/sh does not handle UTF-8 in printf format strings
+" - 'echo -n' behavior with multi-byte characters varies by shell
+" The ASCII reflow tests and the Terminal-Normal mode joining test
+" above provide sufficient coverage for the reflow and continuation
+" joining logic itself, which is character-encoding agnostic in
+" libvterm.
+
 " TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize2()
   CheckNotMSWindows

@@ -62,6 +62,14 @@ struct VTermScreen
   unsigned int global_reverse : 1;
   unsigned int reflow : 1;
 
+  /* Set before calling the sb_pushline callback to indicate whether the
+   * pushed line is a continuation of the previous pushed line. */
+  unsigned int sb_pushline_continuation : 1;
+  /* Saved after each scroll: whether the NEXT line to be pushed off the
+   * top will be a continuation.  After a scroll-by-1, lineinfo[0] holds
+   * the old row 1's info, telling us about the next push. */
+  unsigned int sb_next_continuation : 1;
+
   /* Primary and Altscreen. buffers[1] is lazily allocated as needed */
   ScreenCell *buffers[2];
 
@@ -227,8 +235,23 @@ static int moverect_internal(VTermRect dest, VTermRect src, void *user)
      dest.start_row == 0 && dest.start_col == 0 &&        // starts top-left corner
      dest.end_col == screen->cols &&                      // full width
      screen->buffer == screen->buffers[BUFIDX_PRIMARY]) { // not altscreen
-    for(int row = 0; row < src.start_row; row++)
+    for(int row = 0; row < src.start_row; row++) {
+      // Use the saved continuation flag for this push.
+      // Note: by the time we get here, state lineinfo has already been
+      // shifted by the scroll in state.c, so we cannot read the original
+      // lineinfo for the pushed rows directly.
+      screen->sb_pushline_continuation = screen->sb_next_continuation;
+      // After the memmove with 'downward', lineinfo[0] holds the original
+      // lineinfo[downward].  This tells us whether the row that will be
+      // pushed on the NEXT scroll is a continuation.
+      {
+        const VTermLineInfo *info =
+            vterm_state_get_lineinfo(screen->state, row);
+        screen->sb_next_continuation =
+            (info != NULL && info->continuation);
+      }
       sb_pushline_from_row(screen, row);
+    }
   }
 
   int cols = src.end_col - src.start_col;
@@ -686,8 +709,12 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
   if(old_row >= 0 && bufidx == BUFIDX_PRIMARY) {
     /* Push spare lines to scrollback buffer */
     if(screen->callbacks && screen->callbacks->sb_pushline)
-      for(int row = 0; row <= old_row; row++)
+      for(int row = 0; row <= old_row; row++) {
+        screen->sb_pushline_continuation =
+            (row > 0 && new_lineinfo != NULL
+             && new_lineinfo[row].continuation);
         sb_pushline_from_row(screen, row);
+      }
     if(active)
       statefields->pos.row -= (old_row + 1);
   }
@@ -911,6 +938,8 @@ static VTermScreen *screen_new(VTerm *vt)
 
   screen->global_reverse = FALSE;
   screen->reflow = FALSE;
+  screen->sb_pushline_continuation = 0;
+  screen->sb_next_continuation = 0;
 
   screen->callbacks = NULL;
   screen->cbdata    = NULL;
@@ -1097,6 +1126,11 @@ VTermScreen *vterm_obtain_screen(VTerm *vt)
 void vterm_screen_enable_reflow(VTermScreen *screen, int reflow)
 {
   screen->reflow = reflow;
+}
+
+int vterm_screen_sb_pushline_continuation(const VTermScreen *screen)
+{
+  return screen->sb_pushline_continuation;
 }
 
 // Removed, causes a compiler warning and isn't used
