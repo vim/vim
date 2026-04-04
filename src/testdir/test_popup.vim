@@ -2420,4 +2420,50 @@ func Test_popup_shadow_hiddenchar()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test pumopt opacity with screendump: background text should show through
+func Test_pumopt_opacity_screendump()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:50
+    set completeopt=menu
+    call setline(1, ['hello world', 'hello vim', 'hello opacity', 'help me'])
+    for i in range(5)
+      call append(line('$'), repeat('BACKGROUND', 8))
+    endfor
+    normal gg
+  END
+  call writefile(lines, 'Xpumoptopacity', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacity', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "Gohel\<C-N>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_50', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test pumopt opacity:100 (fully opaque, same as default)
+func Test_pumopt_opacity_100()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:100
+    set completeopt=menu
+    call setline(1, ['hello world', 'hello vim', 'hello opacity', 'help me'])
+    for i in range(5)
+      call append(line('$'), repeat('BACKGROUND', 8))
+    endfor
+    normal gg
+  END
+  call writefile(lines, 'Xpumoptopacity100', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacity100', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "Gohel\<C-N>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_100', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

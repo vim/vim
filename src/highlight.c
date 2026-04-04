@@ -3321,6 +3321,138 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
     return get_attr_entry(&term_attr_table, &new_en);
 }
 
+/*
+ * Blend for pum opacity space cells: keep underlying fg, blend bg.
+ * This is different from hl_blend_attr(blend_fg=TRUE) where fg blends
+ * in the wrong direction for pum use.
+ */
+    int
+hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
+{
+    attrentry_T *char_aep = NULL;
+    attrentry_T *popup_aep;
+    attrentry_T new_en;
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_gui_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+	    new_en.ae_u.gui.fg_color = INVALCOLOR;
+	    new_en.ae_u.gui.bg_color = INVALCOLOR;
+	    new_en.ae_u.gui.sp_color = INVALCOLOR;
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_gui_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		// Blend fg: pum_bg toward underlying_fg.
+		// blend=0 (opaque): fg = pum_bg (text hidden)
+		// blend=100 (transparent): fg = underlying_fg (text visible)
+		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		{
+		    int base_fg = 0xFFFFFF;
+		    if (char_aep != NULL
+			    && char_aep->ae_u.gui.fg_color != INVALCOLOR)
+			base_fg = char_aep->ae_u.gui.fg_color;
+		    new_en.ae_u.gui.fg_color = blend_colors(
+			    popup_aep->ae_u.gui.bg_color, base_fg, blend);
+		}
+		// Blend bg: popup bg toward underlying bg.
+		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
+		{
+		    guicolor_T underlying_bg = INVALCOLOR;
+		    if (char_aep != NULL)
+			underlying_bg = char_aep->ae_u.gui.bg_color;
+		    new_en.ae_u.gui.bg_color = blend_colors(
+			    popup_aep->ae_u.gui.bg_color,
+			    underlying_bg, blend);
+		}
+	    }
+	}
+	return get_attr_entry(&gui_attr_table, &new_en);
+    }
+#endif
+
+    if (IS_CTERM)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_cterm_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    CLEAR_FIELD(new_en);
+#ifdef FEAT_TERMGUICOLORS
+	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.ul_rgb = INVALCOLOR;
+#endif
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+	if (popup_attr > HL_ALL)
+	{
+	    popup_aep = syn_cterm_attr2entry(popup_attr);
+	    if (popup_aep != NULL)
+	    {
+		// Blend cterm fg: use popup bg (hides text when opaque)
+		if (popup_aep->ae_u.cterm.fg_color > 0)
+		    new_en.ae_u.cterm.fg_color =
+					popup_aep->ae_u.cterm.fg_color;
+		// Use popup cterm bg.
+		if (popup_aep->ae_u.cterm.bg_color > 0)
+		    new_en.ae_u.cterm.bg_color =
+					popup_aep->ae_u.cterm.bg_color;
+#ifdef FEAT_TERMGUICOLORS
+		// Blend fg_rgb: pum_bg toward underlying_fg.
+		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		{
+		    int base_fg = 0xFFFFFF;
+		    if (char_aep != NULL
+			    && char_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+			base_fg = char_aep->ae_u.cterm.fg_rgb;
+		    new_en.ae_u.cterm.fg_rgb = blend_colors(
+			    popup_aep->ae_u.cterm.bg_rgb, base_fg, blend);
+		}
+		// Blend bg_rgb.
+		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		{
+		    guicolor_T underlying_bg = INVALCOLOR;
+		    if (char_aep != NULL)
+			underlying_bg = char_aep->ae_u.cterm.bg_rgb;
+		    new_en.ae_u.cterm.bg_rgb = blend_colors(
+			    popup_aep->ae_u.cterm.bg_rgb,
+			    underlying_bg, blend);
+		}
+#endif
+	    }
+	}
+	return get_attr_entry(&cterm_attr_table, &new_en);
+    }
+
+    // term mode
+    if (char_attr > HL_ALL)
+	char_aep = syn_term_attr2entry(char_attr);
+    if (char_aep != NULL)
+	new_en = *char_aep;
+    else
+    {
+	CLEAR_FIELD(new_en);
+	if (char_attr <= HL_ALL)
+	    new_en.ae_attr = char_attr;
+    }
+    return get_attr_entry(&term_attr_table, &new_en);
+}
+
 #ifdef FEAT_GUI
     attrentry_T *
 syn_gui_attr2entry(int attr)
