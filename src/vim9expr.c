@@ -2568,6 +2568,13 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
+	    type = get_type_on_stack(cctx, 0);
+	    if (type->tt_type == VAR_VOID)
+	    {
+		emsg(_(e_cannot_use_void_value));
+		return FAIL;
+	    }
+
 	    // Apply the '!', '-' and '+' first:
 	    //   -1.0->func() works like (-1.0)->func()
 	    if (compile_leader(cctx, TRUE, start_leader, end_leader) == FAIL)
