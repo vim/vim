@@ -8923,38 +8923,14 @@ msgstr "E1510: Luach rómhór: %s"
 msgid "--No lines in buffer--"
 msgstr "--Tá an maolán folamh--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "pointeoir"
 
 msgid "percent"
 msgstr "céatadán"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "teaghrán"
-
-msgid "float"
-msgstr "snámhphointe"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Buaileadh an BARR le linn an chuardaigh, ag leanúint ag an mBUN"
