@@ -5964,6 +5964,30 @@ do_modelines(int flags)
     if (entered)
 	return;
 
+#if defined(FEAT_EVAL)
+    // When 'trustdir' is set, check if the directory is trusted before
+    // applying modelines.
+    if (p_td)
+    {
+	char_u *dir = trust_get_buf_dir(curbuf);
+	if (dir != NULL)
+	{
+	    if (!trust_check_dir(dir, (char_u *)"modeline"))
+	    {
+		if (has_modeline(curbuf))
+		{
+		    if (!trust_prompt(dir, (char_u *)"modeline"))
+		    {
+			vim_free(dir);
+			return;
+		    }
+		}
+	    }
+	    vim_free(dir);
+	}
+    }
+#endif
+
     ++entered;
     for (lnum = 1; curbuf->b_p_ml && lnum <= curbuf->b_ml.ml_line_count && lnum <= nmlines;
 								       ++lnum)

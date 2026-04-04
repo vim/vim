@@ -1569,6 +1569,7 @@ BASIC_SRC = \
 	textobject.c \
 	textprop.c \
 	time.c \
+	trust.c \
 	tuple.c \
 	typval.c \
 	ui.c \
@@ -1749,6 +1750,7 @@ OBJ_COMMON = \
 	objects/textobject.o \
 	objects/textprop.o \
 	objects/time.o \
+	objects/trust.o \
 	objects/tuple.o \
 	objects/typval.o \
 	objects/ui.o \
@@ -1955,6 +1957,7 @@ PROTO_FILES = \
 	proto/textobject.pro \
 	proto/textprop.pro \
 	proto/time.pro \
+	proto/trust.pro \
 	proto/tuple.pro \
 	proto/typval.pro \
 	proto/ui.pro \
@@ -3611,6 +3614,9 @@ objects/textprop.o: textprop.c
 objects/time.o: time.c
 	$(CCC) -o $@ time.c
 
+objects/trust.o: trust.c
+	$(CCC) -o $@ trust.c
+
 objects/tuple.o: tuple.c
 	$(CCC) -o $@ tuple.c
 
@@ -4783,6 +4789,7 @@ proto/textformat.pro: textformat.c
 proto/textobject.pro: textobject.c
 proto/textprop.pro: textprop.c
 proto/time.pro: time.c
+proto/trust.pro: trust.c
 proto/tuple.pro: tuple.c
 proto/typval.pro: typval.c
 proto/ui.pro: ui.c

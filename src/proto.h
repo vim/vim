@@ -105,6 +105,7 @@ extern int _stricoll(char *a, char *b);
 # include "insexpand.pro"
 # include "json.pro"
 # include "list.pro"
+# include "trust.pro"
 # include "locale.pro"
 # include "logfile.pro"
 # include "blob.pro"
