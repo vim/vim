@@ -940,6 +940,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     v: ['file.vsh', 'file.vv'],
     vala: ['file.vala'],
     vb: ['file.sba', 'file.vb', 'file.vbs', 'file.dsm', 'file.ctl', 'file.dob', 'file.dsr'],
+    vcl: ['default.vcl'],
     vdf: ['file.vdf'],
     vdmpp: ['file.vpp', 'file.vdmpp'],
     vdmrt: ['file.vdmrt'],
