@@ -3996,7 +3996,7 @@ def Test_expr9_method_call()
     enddef
     RetVoid()->byteidx(3)
   END
-  v9.CheckDefExecFailure(lines, 'E1013:')
+  v9.CheckDefExecFailure(lines, 'E1031: Cannot use void value')
 
   lines =<< trim END
       const SetList = [function('len')]
