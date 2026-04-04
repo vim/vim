@@ -181,9 +181,7 @@ um_detach(unpacked_memline_T *um)
 
 	    if (copy == NULL)
 	    {
-		int j;
-
-		for (j = 0; j < i; ++j)
+		for (int j = 0; j < i; ++j)
 		    if (um->props[j].tp_id < 0)
 			VIM_CLEAR(um->props[j].u.tp_text);
 		VIM_CLEAR(um->text);
@@ -339,8 +337,7 @@ clear_cont_flag_on_neighbor(buf_T *buf, linenr_T lnum,
     {
 	textprop_T *p = &neighbor.props[i];
 
-	if (p->tp_id == tp_id && p->tp_type == tp_type
-						     && (p->tp_flags & flag))
+	if (p->tp_id == tp_id && p->tp_type == tp_type && (p->tp_flags & flag))
 	{
 	    if (!neighbor.detached && !um_detach(&neighbor))
 		break;
@@ -402,9 +399,8 @@ um_pack(unpacked_memline_T *um, int *packed_len)
     char_u	*count_dest;
     char_u	*prop_dest;
     char_u	*vtext_dest;
-    int		i;
 
-    for (i = 0; i < um->prop_count; ++i)
+    for (int i = 0; i < um->prop_count; ++i)
     {
 	textprop_T *prop = &um->props[i];
 
@@ -443,7 +439,7 @@ um_pack(unpacked_memline_T *um, int *packed_len)
     prop_dest = count_dest + PROP_COUNT_SIZE;
     vtext_dest = prop_dest + live_count * sizeof(textprop_T);
 
-    for (i = 0; i < um->prop_count; ++i)
+    for (int i = 0; i < um->prop_count; ++i)
     {
 	textprop_T prop = um->props[i];
 
@@ -1004,15 +1000,17 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     redraw_buf_later(buf, UPD_VALID);
 }
 
-/*
- * Get the next ID to use for a textprop with text in buffer "buf".
- */
 // Counter for virtual text property IDs (decremented for each new one).
 static int vt_id_counter = 0;
 
+/*
+ * Get the next ID to use for a textprop.
+ */
     static int
-get_textprop_id(buf_T *buf UNUSED)
+get_textprop_id(void)
 {
+    if (vt_id_counter > 0)
+	vt_id_counter = 0;
     return --vt_id_counter;
 }
 
@@ -1179,7 +1177,7 @@ prop_add_common(
 
     if (text != NULL)
 	// Always assign an internal negative id; ignore any user-provided id.
-	id = get_textprop_id(buf);
+	id = get_textprop_id();
     else if (id < 0)
     {
 	emsg(_(e_cannot_use_negative_id));
@@ -3164,7 +3162,6 @@ prepend_joined_props(
 	int		    removed)
 {
     unpacked_memline_T	r_um;
-    int			i;
 
     if (um->buf == NULL)
 	return;
@@ -3178,7 +3175,7 @@ prepend_joined_props(
 	return;
     }
 
-    for (i = r_um.prop_count - 1; i >= 0; --i)
+    for (int i = r_um.prop_count - 1; i >= 0; --i)
     {
 	textprop_T  *prop = &r_um.props[i];
 	int	    end;
@@ -3198,10 +3195,9 @@ prepend_joined_props(
 	else
 	{
 	    // Search for continuing prop in um.
-	    int	    j;
-	    int	    found = FALSE;
+	    bool    found = false;
 
-	    for (j = 0; j < um->prop_count; ++j)
+	    for (int j = 0; j < um->prop_count; ++j)
 	    {
 		textprop_T *op = &um->props[j];
 
@@ -3209,7 +3205,7 @@ prepend_joined_props(
 			&& op->tp_id == prop->tp_id
 			&& op->tp_type == prop->tp_type)
 		{
-		    found = TRUE;
+		    found = true;
 		    op->tp_len += op->tp_col - prop->tp_col;
 		    op->tp_col = prop->tp_col;
 		    op->tp_flags = prop->tp_flags;
