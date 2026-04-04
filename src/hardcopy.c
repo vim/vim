@@ -489,7 +489,8 @@ prt_header(
 	printer_page_num = pagenum;
 
 	build_stl_str_hl(curwin, tbuf, (size_t)(width + IOSIZE), p_header,
-			   (char_u *)"printheader", 0, ' ', width, NULL, NULL);
+			 (char_u *)"printheader", 0, ' ', width, NULL, NULL,
+			 NULL);
 
 	// Reset line numbers
 	curwin->w_cursor.lnum = tmp_lnum;

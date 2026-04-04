@@ -721,4 +721,156 @@ func Test_statusline_singlebyte_negative()
   let [&columns, &ls, &stl, &enc] = [_columns, _ls, _stl, _enc]
 endfunc
 
+func g:StlClickTestFunc(info)
+  let g:stl_click_info = a:info
+  return 0
+endfunc
+
+func g:StlClickReturn1(info)
+  let g:stl_click_info = a:info
+  return 1
+endfunc
+
+func Test_statusline_click_handler()
+  let save_mouse = &mouse
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  set mouse=a
+  set laststatus=2
+
+  " Basic click handler
+  set statusline=%[StlClickTestFunc][Click]%[]\ %f
+  redraw!
+
+  " Click on the [Click] region
+  let stl_row = win_screenpos(0)[0] + winheight(0)
+  call test_setmouse(stl_row, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal('l', g:stl_click_info.button)
+  call assert_equal(1, g:stl_click_info.nclicks)
+  call assert_equal(0, g:stl_click_info.minwid)
+  call assert_equal(win_getid(), g:stl_click_info.winid)
+  unlet! g:stl_click_info
+
+  " Click outside click region (on the filename part)
+  call test_setmouse(stl_row, 20)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_false(exists('g:stl_click_info'))
+
+  " Test with minwid
+  set statusline=%42[StlClickTestFunc][Click]%[]\ %f
+  redraw!
+  call test_setmouse(stl_row, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(42, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  " Test middle click
+  call test_setmouse(stl_row, 2)
+  call feedkeys("\<MiddleMouse>", 'xt')
+  call feedkeys("\<MiddleRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal('m', g:stl_click_info.button)
+  unlet! g:stl_click_info
+  let &mouse = save_mouse
+  let &statusline = save_stl
+  let &laststatus = save_ls
+endfunc
+
+func Test_statusline_click_multiple_regions()
+  let save_mouse = &mouse
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  set mouse=a
+  set laststatus=2
+
+  " Two adjacent click regions with different minwid
+  set statusline=%1[StlClickTestFunc][AAA]%[]%2[StlClickTestFunc][BBB]%[]
+  redraw!
+
+  let stl_row = win_screenpos(0)[0] + winheight(0)
+
+  " Click on [AAA] region (col 2)
+  call test_setmouse(stl_row, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(1, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  " Click on [BBB] region (col 7)
+  call test_setmouse(stl_row, 7)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(2, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  let &mouse = save_mouse
+  let &statusline = save_stl
+  let &laststatus = save_ls
+endfunc
+
+func Test_statusline_click_region_extends_to_end()
+  let save_mouse = &mouse
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  set mouse=a
+  set laststatus=2
+
+  " Click region without %[] extends to end of statusline
+  set statusline=xxx%[StlClickTestFunc]Clickable
+  redraw!
+
+  let stl_row = win_screenpos(0)[0] + winheight(0)
+
+  " Click near the end of the statusline
+  call test_setmouse(stl_row, 15)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  unlet! g:stl_click_info
+
+  " Click on "xxx" (before the click region)
+  call test_setmouse(stl_row, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
+  call assert_false(exists('g:stl_click_info'))
+
+  let &mouse = save_mouse
+  let &statusline = save_stl
+  let &laststatus = save_ls
+endfunc
+
+func Test_statusline_click_option_validation()
+  " Valid formats should not produce errors
+  let save_stl = &statusline
+  set statusline=%[Func]text%[]
+  set statusline=%3[Func]text%[]
+  set statusline=%[Func]text
+  set statusline=%[Func_Name]text%[]
+  " %@ alone is still valid (line break)
+  set statusline=%@
+  let &statusline = save_stl
+endfunc
+
+func Test_statusline_click_linebreak_still_works()
+  " Ensure %@ without FuncName still works as line break
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  set laststatus=2
+
+  " This should not error - %@ is line break
+  set statusline=line1%@line2
+  redraw!
+
+  let &statusline = save_stl
+  let &laststatus = save_ls
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

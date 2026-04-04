@@ -1296,6 +1296,7 @@ win_redr_custom(
     int		opt_scope = 0;
     stl_hlrec_T *hltab;
     stl_hlrec_T *tabtab;
+    stl_clickrec_T *clicktab;
     win_T	*ewp;
     int		p_crb_save;
     bool	override_success = false;
@@ -1396,7 +1397,8 @@ win_redr_custom(
 	width = build_stl_str_hl_mline(ewp, buf, sizeof(buf),
 			&stl_tmp,
 			opt_name, opt_scope,
-			fillchar, maxwidth, &hltab, &tabtab);
+			fillchar, maxwidth, &hltab, &tabtab,
+			&clicktab);
 
 	// Make all characters printable.
 	p = transstr(buf);
@@ -1473,6 +1475,83 @@ win_redr_custom(
 	}
 	while (col < firstwin->w_wincol + topframe->fr_width)
 	    TabPageIdxs[col++] = fillchar;
+    }
+
+    // Resolve click function regions for statusline.
+    if (wp != NULL && !draw_ruler)
+    {
+	int	click_count = 0;
+
+	// Count the click regions.
+	for (n = 0; clicktab[n].start != NULL; n++)
+	    click_count++;
+
+	// Free old click regions.
+	if (wp->w_stl_click != NULL)
+	{
+	    for (n = 0; n < wp->w_stl_click_count; n++)
+		vim_free(wp->w_stl_click[n].funcname);
+	    VIM_CLEAR(wp->w_stl_click);
+	}
+	wp->w_stl_click_count = 0;
+
+	if (click_count > 0)
+	{
+	    stl_click_region_T *regions;
+	    int		    rcount = 0;
+
+	    regions = ALLOC_MULT(stl_click_region_T, click_count);
+	    if (regions != NULL)
+	    {
+		char_u	*cur_funcname = NULL;
+		int	cur_minwid = 0;
+		int	region_start = wp->w_wincol;
+
+		// Walk through click records converting buffer positions
+		// to screen columns.
+		len = 0;
+		p = buf;
+		for (n = 0; clicktab[n].start != NULL; n++)
+		{
+		    len += vim_strnsize(p,
+				       (int)(clicktab[n].start - p));
+		    p = clicktab[n].start;
+
+		    // Close previous region if there was one.
+		    if (cur_funcname != NULL)
+		    {
+			regions[rcount].col_start = region_start;
+			regions[rcount].col_end = wp->w_wincol + len;
+			regions[rcount].funcname =
+					    vim_strsave(cur_funcname);
+			regions[rcount].minwid = cur_minwid;
+			rcount++;
+		    }
+
+		    cur_funcname = clicktab[n].funcname;
+		    cur_minwid = clicktab[n].minwid;
+		    region_start = wp->w_wincol + len;
+		}
+
+		// Close final region if it extends to the end.
+		if (cur_funcname != NULL)
+		{
+		    regions[rcount].col_start = region_start;
+		    regions[rcount].col_end = wp->w_wincol + maxwidth;
+		    regions[rcount].funcname =
+					vim_strsave(cur_funcname);
+		    regions[rcount].minwid = cur_minwid;
+		    rcount++;
+		}
+
+		wp->w_stl_click = regions;
+		wp->w_stl_click_count = rcount;
+	    }
+	}
+
+	// Free the funcname strings allocated by build_stl_str_hl_local().
+	for (n = 0; clicktab[n].start != NULL; n++)
+	    vim_free(clicktab[n].funcname);
     }
 
 theend:

@@ -364,9 +364,10 @@ typedef enum {
 #define STL_USER_HL	'*'		// highlight from (User)1..9 or 0
 #define STL_HIGHLIGHT	'#'		// highlight name
 #define STL_LINEBREAK	'@'		// insert a line break
+#define STL_CLICKFUNC	'['		// click handler region
 #define STL_TABPAGENR	'T'		// tab page label nr
 #define STL_TABCLOSENR	'X'		// tab page close nr
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaNS{#@")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaNS{#@[")
 
 // flags used for parsed 'wildmode'
 #define WIM_FULL	0x01

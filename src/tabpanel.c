@@ -507,7 +507,8 @@ do_by_tplmode(
 #endif
 			(args.cwp, buf, sizeof(buf),
 			&usefmt, opt_name, opt_scope, TPL_FILLCHAR,
-			args.col_end - args.col_start, &hltab, &tabtab);
+			args.col_end - args.col_start, &hltab, &tabtab,
+			NULL);
 
 		args.prow = &row;
 		args.pcol = &col;
