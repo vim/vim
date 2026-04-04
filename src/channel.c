@@ -4299,6 +4299,10 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    newchannel->CH_SOCK_FD = (sock_T)newfd;
 	    newchannel->ch_to_be_closed |= (1U << PART_SOCK);
 
+#ifdef FEAT_GUI
+	    channel_gui_register_one(newchannel, PART_SOCK);
+#endif
+
 	    if (client.ss_family == AF_INET)
 	    {
 #ifdef HAVE_INET_NTOP
