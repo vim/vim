@@ -893,13 +893,22 @@ typedef struct memline
 typedef struct textprop_S
 {
     colnr_T	tp_col;		// start column (one based, in bytes)
-    colnr_T	tp_len;		// length in bytes, when tp_id is negative used
-				// for left padding plus one
+    colnr_T	tp_len;		// length in bytes; for virtual text props
+				// this is STRLEN(vtext) (not including NUL)
     int		tp_id;		// identifier
     int		tp_type;	// property type
     int		tp_flags;	// TP_FLAG_ values
     int		tp_padleft;	// left padding between text line and virtual
 				// text
+    union			// For virtual text props (tp_id < 0):
+    {				// check TP_FLAG_VTEXT_PTR in tp_flags to
+				// determine which member is active.
+	colnr_T	tp_text_offset; // offset to vtext string from the
+				// prop_count position in the memline
+				// (when TP_FLAG_VTEXT_PTR is NOT set)
+	char_u	*tp_text;	// pointer to virtual text string
+				// (when TP_FLAG_VTEXT_PTR IS set)
+    } u;
 } textprop_T;
 
 #define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
@@ -913,9 +922,41 @@ typedef struct textprop_S
 #define TP_FLAG_WRAP		0x080	// virtual text wraps - when missing
 					// text is truncated
 #define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
+#define TP_FLAG_DELETED		0x200	// marked for deletion in
+					// unpacked_memline_T
+#define TP_FLAG_VTEXT_PTR	0x400	// u.tp_text access is valid
+
+#define PROP_COUNT_SIZE	sizeof(uint16_t)    // size of prop_count in memline
 
 #define PROP_TEXT_MIN_CELLS	4	// minimum number of cells to use for
 					// the text, even when truncating
+
+/*
+ * An unpacked form of a single memline with text properties.
+ *
+ * When packed in a memline, the format is:
+ *   [line text] [NUL] [textprop_T...] [vtext strings...]
+ * Virtual text props use u.tp_text_offset (relative to the start of props
+ * area).  When unpacked, u.tp_text is a pointer: either into the memline
+ * data (LOADED) or to separately allocated memory (DETACHED).
+ *
+ * States:
+ * - LOADED: text and u.tp_text point into the memline. Read-only.
+ * - DETACHED: text and u.tp_text are separately allocated. Writable.
+ * - CLOSED: buf == NULL. Unusable (error recovery).
+ */
+typedef struct unpacked_memline_S
+{
+    buf_T	*buf;		// the line's buffer (NULL = closed)
+    linenr_T	lnum;		// line number (0 = no line loaded)
+    bool	detached;	// true when text/vtext are allocated
+    colnr_T	text_size;	// size of text including NUL
+    char_u	*text;		// NUL-terminated text
+    int		prop_size;	// number of allocated prop slots
+    int		prop_count;	// number of properties
+    textprop_T	*props;		// property array
+    bool	text_changed;	// true if text was modified
+} unpacked_memline_T;
 
 /*
  * Structure defining a property type.
@@ -3550,7 +3591,6 @@ struct file_buffer
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
     proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
-    garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)

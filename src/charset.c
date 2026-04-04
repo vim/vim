@@ -1140,6 +1140,22 @@ init_chartabsize_arg(
 					cts->cts_text_props[text_prop_idxs[i]];
 			vim_free(text_prop_idxs);
 		    }
+
+		    // Convert tp_text_offset to tp_text pointer.
+		    char_u *count_ptr = prop_start - PROP_COUNT_SIZE;
+
+		    for (i = 0; i < count; ++i)
+		    {
+			textprop_T *tp = &cts->cts_text_props[i];
+
+			if (tp->tp_id < 0 && tp->u.tp_text_offset > 0)
+			{
+			    tp->u.tp_text = count_ptr + tp->u.tp_text_offset;
+			    tp->tp_flags |= TP_FLAG_VTEXT_PTR;
+			}
+			else
+			    tp->u.tp_text = NULL;
+		    }
 		}
 	    }
 	}
@@ -1294,7 +1310,7 @@ win_lbr_chartabsize(
 	int	    charlen = *s == NUL ? 1 : mb_ptr2len(s);
 	int	    i;
 	int	    col = (int)(s - line);
-	garray_T    *gap = &wp->w_buffer->b_textprop_text;
+
 
 	// The "$" for 'list' mode will go between the EOL and
 	// the text prop, account for that.
@@ -1318,9 +1334,9 @@ win_lbr_chartabsize(
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
 				: s[0] == NUL && cts->cts_with_trailing)))
-		    && -tp->tp_id - 1 < gap->ga_len)
+		    && tp->u.tp_text != NULL)
 	    {
-		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
+		char_u *p = tp->u.tp_text;
 
 		if (p != NULL)
 		{

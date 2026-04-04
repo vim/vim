@@ -1316,9 +1316,9 @@ popup_adjust_position(win_T *wp)
 	int	    screen_ecol;
 
 	// Popup window is positioned relative to a text property.
-	if (find_visible_prop(prop_win,
+	if (!find_visible_prop(prop_win,
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
-				&prop, &prop_lnum) == FAIL)
+				&prop, &prop_lnum))
 	{
 	    // Text property is no longer visible, hide the popup.
 	    // Unhiding the popup is done in check_popup_unhidden().
@@ -4229,7 +4229,7 @@ check_popup_unhidden(win_T *wp)
 	if ((wp->w_popup_flags & POPF_HIDDEN_FORCE) == 0
 		&& find_visible_prop(wp->w_popup_prop_win,
 				    wp->w_popup_prop_type, wp->w_popup_prop_id,
-							   &prop, &lnum) == OK)
+							   &prop, &lnum))
 	{
 	    wp->w_popup_flags &= ~POPF_HIDDEN;
 	    wp->w_popup_prop_topline = 0; // force repositioning
