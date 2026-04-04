@@ -145,7 +145,6 @@ gui_mch_set_rendering_options(char_u *s)
     int	    dx_geom = 0;
     int	    dx_renmode = 0;
     int	    dx_taamode = 0;
-
     // parse string as rendering options.
     for (p = s; p != NULL && *p != NUL; )
     {
@@ -3955,6 +3954,60 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     }
     if (font == NOFONT)
 	return FAIL;
+
+#if defined(FEAT_DIRECTX)
+    // Parse font features from guifont (e.g., ":fss19=1:fcalt=0:fliga=1").
+    {
+	DWriteFontFeature features[DWRITE_MAX_FONT_FEATURES];
+	int		    feat_count = 0;
+	char_u		    *fp;
+
+	if (font_name != NULL)
+	{
+	    // Find each ":f" option in font_name.
+	    for (fp = font_name; *fp != NUL; fp++)
+	    {
+		if (*fp == ':' && *(fp + 1) == 'f')
+		{
+		    char_u tag[5];
+		    int    ti = 0;
+		    unsigned int param = 1;
+
+		    fp += 2;  // skip ":f"
+		    while (*fp != NUL && *fp != '=' && *fp != ':'
+			    && ti < 4)
+			tag[ti++] = *fp++;
+		    tag[ti] = NUL;
+
+		    if (ti != 4)
+			continue;  // invalid tag length
+
+		    if (*fp == '=')
+		    {
+			fp++;
+			param = (unsigned int)atoi((char *)fp);
+			while (*fp >= '0' && *fp <= '9')
+			    fp++;
+		    }
+
+		    if (feat_count < DWRITE_MAX_FONT_FEATURES)
+		    {
+			features[feat_count].tag =
+			    ((unsigned int)tag[0])
+			    | ((unsigned int)tag[1] << 8)
+			    | ((unsigned int)tag[2] << 16)
+			    | ((unsigned int)tag[3] << 24);
+			features[feat_count].parameter = param;
+			feat_count++;
+		    }
+
+		    fp--;  // adjust for loop increment
+		}
+	    }
+	}
+	DWriteContext_SetFontFeatures(s_dwc, features, feat_count);
+    }
+#endif
 
     if (font_name == NULL)
 	font_name = (char_u *)"";
