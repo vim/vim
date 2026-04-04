@@ -1,5 +1,5 @@
 /* ex_getln.c */
-int parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen);
+int parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen, int *cmd_type);
 void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent, getline_opt_T do_concat);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);

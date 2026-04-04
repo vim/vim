@@ -203,18 +203,29 @@ set_search_match(pos_T *t)
     }
 }
 
+// Command type set by parse_pattern_and_range().
+typedef enum {
+    PPR_UNKNOWN = 0,
+    PPR_SUBSTITUTE,	// :substitute, :smagic, :snomagic
+    PPR_GLOBAL,		// :global, :vglobal
+    PPR_SORT,		// :sort, :uniq
+    PPR_VIMGREP		// :vimgrep, :vimgrepadd, :lvimgrep, etc.
+} ppr_cmd_T;
+
 /*
  * Parses the :[range]s/foo like commands and returns details needed for
  * incsearch and wildmenu completion.
  * Returns TRUE if pattern is valid.
  * Sets skiplen, patlen, search_first_line, and search_last_line.
+ * When cmd_type is not NULL, sets it to a PPR_ value for the command type.
  */
     int
 parse_pattern_and_range(
 	pos_T	*incsearch_start,
 	int	*search_delim,
 	int	*skiplen,
-	int	*patlen)
+	int	*patlen,
+	int	*cmd_type)
 {
     char_u	*cmd, *p, *end;
     cmdmod_T	dummy_cmdmod;
@@ -228,6 +239,8 @@ parse_pattern_and_range(
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
+    if (cmd_type != NULL)
+	*cmd_type = PPR_UNKNOWN;
 
     // Default range
     search_first_line = 0;
@@ -259,14 +272,23 @@ parse_pattern_and_range(
 	    || STRNCMP(cmd, "snomagic", MAX(p - cmd, 3)) == 0
 	    || STRNCMP(cmd, "vglobal", p - cmd) == 0)
     {
-	if (*cmd == 's' && cmd[1] == 'm')
-	    magic_overruled = OPTION_MAGIC_ON;
-	else if (*cmd == 's' && cmd[1] == 'n')
-	    magic_overruled = OPTION_MAGIC_OFF;
+	if (*cmd == 's')
+	{
+	    if (cmd_type != NULL)
+		*cmd_type = PPR_SUBSTITUTE;
+	    if (cmd[1] == 'm')
+		magic_overruled = OPTION_MAGIC_ON;
+	    else if (cmd[1] == 'n')
+		magic_overruled = OPTION_MAGIC_OFF;
+	}
+	else if (cmd_type != NULL)
+	    *cmd_type = PPR_GLOBAL;  // :vglobal
     }
     else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0
 	    || STRNCMP(cmd, "uniq", MAX(p - cmd, 3)) == 0)
     {
+	if (cmd_type != NULL)
+	    *cmd_type = PPR_SORT;
 	// skip over ! and flags
 	if (*p == '!')
 	    p = skipwhite(p + 1);
@@ -281,6 +303,8 @@ parse_pattern_and_range(
 	    || STRNCMP(cmd, "lvimgrepadd", MAX(p - cmd, 9)) == 0
 	    || STRNCMP(cmd, "global", p - cmd) == 0)
     {
+	if (cmd_type != NULL)
+	    *cmd_type = (*cmd == 'g') ? PPR_GLOBAL : PPR_VIMGREP;
 	// skip optional "!"
 	if (*p == '!')
 	{
@@ -341,6 +365,349 @@ parse_pattern_and_range(
     return TRUE;
 }
 
+#ifdef FEAT_SEARCH_EXTRA
+
+// Saved line for inccommand substitute preview restore.
+typedef struct {
+    linenr_T	lnum;
+    char_u	*line;
+} icm_saved_line_T;
+
+// State for the substitute preview that must persist between setup and cleanup.
+typedef struct {
+    garray_T	saved_lines;
+    garray_T	sub_positions;
+    matchitem_T	*match;
+} icm_preview_state_T;
+
+/*
+ * Clean up after inccommand substitute preview.
+ */
+    static void
+inccommand_substitute_preview_cleanup(icm_preview_state_T *state)
+{
+    int i;
+
+    // Remove temporary match from the window's match list.
+    if (state->match != NULL)
+    {
+	matchitem_T **prev = &curwin->w_match_head;
+
+	while (*prev != NULL && *prev != state->match)
+	    prev = &(*prev)->mit_next;
+	if (*prev != NULL)
+	    *prev = state->match->mit_next;
+	state->match->mit_pos_array = NULL;  // owned by sub_positions
+	vim_free(state->match);
+	state->match = NULL;
+    }
+
+    // Restore all original lines.
+    for (i = 0; i < state->saved_lines.ga_len; ++i)
+    {
+	icm_saved_line_T *sl;
+
+	sl = &((icm_saved_line_T *)state->saved_lines.ga_data)[i];
+	ml_replace(sl->lnum, sl->line, FALSE);
+    }
+
+    ga_clear(&state->saved_lines);
+    ga_clear(&state->sub_positions);
+}
+
+/*
+ * Compute a regex replacement and append it to "new_ga".
+ * Record the position in "sub_positions" for highlighting.
+ */
+    static int
+append_sub_replacement(
+	regmmatch_T	*regmatch,
+	linenr_T	lnum,
+	char_u		*sub,
+	char_u		*line,
+	garray_T	*new_ga,
+	garray_T	*sub_positions)
+{
+    int	    regsub_flags = REGSUB_BACKSLASH
+				    | (magic_isset() ? REGSUB_MAGIC : 0);
+    int	    sublen;
+
+    // First call: get the length of the replacement.
+    ++textlock;
+    sublen = vim_regsub_multi(regmatch,
+		    lnum - regmatch->startpos[0].lnum,
+		    sub, line, 0, regsub_flags);
+    --textlock;
+    if (sublen <= 0)
+	return -1;
+
+    // Second call: copy the replacement into the garray.
+    if (ga_grow(new_ga, sublen) == OK)
+    {
+	int repl_col = new_ga->ga_len;
+
+	++textlock;
+	(void)vim_regsub_multi(regmatch,
+		    lnum - regmatch->startpos[0].lnum,
+		    sub, (char_u *)new_ga->ga_data + new_ga->ga_len,
+		    sublen, regsub_flags | REGSUB_COPY);
+	--textlock;
+	new_ga->ga_len += sublen - 1;  // sublen includes NUL
+
+	// Record position (1-based col).
+	if (sublen > 1 && ga_grow(sub_positions, 1) == OK)
+	{
+	    llpos_T *pos = &((llpos_T *)sub_positions->ga_data)
+						[sub_positions->ga_len];
+	    pos->lnum = lnum;
+	    pos->col = repl_col + 1;
+	    pos->len = sublen - 1;
+	    ++sub_positions->ga_len;
+	}
+    }
+    return sublen;
+}
+
+/*
+ * Set up a preview of the `:substitute` replacement by temporarily modifying
+ * buffer lines.  On success the caller must call update_screen() and then
+ * inccommand_substitute_preview_cleanup() to restore the buffer.
+ */
+    static int
+inccommand_substitute_preview(
+	int			skiplen,
+	int			patlen,
+	int			search_delim,
+	icm_preview_state_T	*state)
+{
+    char_u	*cmd;
+    char_u	*pat_end;
+    char_u	*sub;
+    char_u	save_char;
+    linenr_T	lnum;
+    linenr_T	first_line;
+    linenr_T	last_line;
+    regmmatch_T	regmatch;
+    int		do_all = FALSE;
+    int		i;
+
+    CLEAR_POINTER(state);
+
+    // Need a pattern and a second delimiter.
+    pat_end = ccline.cmdbuff + skiplen + patlen;
+    if (*pat_end != search_delim)
+	return FALSE;
+
+    // Copy from after the second delimiter to end of command line, then
+    // use skip_substitute() to find and NUL-terminate the replacement
+    // string.  "cmd" points past the third delimiter or end of string.
+    sub = vim_strsave(pat_end + 1);
+    if (sub == NULL)
+	return FALSE;
+    cmd = skip_substitute(sub, search_delim);
+
+    // Skip if replacement contains \= (expression substitution).
+    if (sub[0] == '\\' && sub[1] == '=')
+    {
+	vim_free(sub);
+	return FALSE;
+    }
+
+    // Check for 'g' flag after third delimiter.
+    for ( ; *cmd != NUL && *cmd != '|' && *cmd != '"'; ++cmd)
+	if (*cmd == 'g')
+	{
+	    do_all = TRUE;
+	    break;
+	}
+
+    // Compile the search pattern.  Temporarily NUL-terminate the pattern.
+    save_char = *pat_end;
+    *pat_end = NUL;
+    ++emsg_off;
+    i = search_regcomp(ccline.cmdbuff + skiplen, (size_t)patlen,
+				    NULL, RE_SUBST, RE_SUBST,
+				    SEARCH_KEEP, &regmatch);
+    --emsg_off;
+    *pat_end = save_char;
+    if (i == FAIL)
+    {
+	vim_free(sub);
+	return FALSE;
+    }
+
+    first_line = search_first_line == 0 ? 1 : search_first_line;
+    last_line = MIN(search_last_line, curbuf->b_ml.ml_line_count);
+
+    // Only preview on visible lines in windows showing this buffer.
+    {
+	win_T	    *wp;
+	linenr_T    vis_first = last_line + 1;
+	linenr_T    vis_last = 0;
+
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer != curbuf)
+		continue;
+	    validate_botline_win(wp);
+	    if (wp->w_topline < vis_first)
+		vis_first = wp->w_topline;
+	    if (wp->w_botline > vis_last)
+		vis_last = wp->w_botline;
+	}
+	if (vis_first > first_line)
+	    first_line = vis_first;
+	if (vis_last < last_line)
+	    last_line = vis_last;
+    }
+
+    // Save original lines so we can restore them.
+    ga_init2(&state->saved_lines, sizeof(icm_saved_line_T),
+					    (int)(last_line - first_line + 1));
+    // Track positions of replacement text for highlighting.
+    ga_init2(&state->sub_positions, sizeof(llpos_T),
+					    (int)(last_line - first_line + 1));
+
+    for (lnum = first_line; lnum <= last_line; ++lnum)
+    {
+	long	nmatch;
+	colnr_T	matchcol = 0;
+	char_u	*line;
+	garray_T new_ga;
+
+	nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
+							    matchcol, NULL);
+	if (nmatch <= 0)
+	    continue;
+
+	// Skip multi-line matches.
+	if (regmatch.endpos[0].lnum > 0)
+	    continue;
+
+	// Save original line before modifying.
+	if (ga_grow(&state->saved_lines, 1) == FAIL)
+	    goto theend;
+	{
+	    icm_saved_line_T *sl = &((icm_saved_line_T *)
+		    state->saved_lines.ga_data)[state->saved_lines.ga_len];
+
+	    sl->line = vim_strnsave(ml_get(lnum), ml_get_len(lnum));
+	    if (sl->line == NULL)
+		goto theend;
+	    sl->lnum = lnum;
+	    ++state->saved_lines.ga_len;
+	}
+
+	// Work on a copy of the saved line.
+	line = vim_strsave(((icm_saved_line_T *)state->saved_lines.ga_data)
+				    [state->saved_lines.ga_len - 1].line);
+	if (line == NULL)
+	    goto theend;
+
+	// Build the new line by applying all substitutions.
+	ga_init2(&new_ga, 1, (int)STRLEN(line));
+
+	for (;;)
+	{
+	    int	    sublen;
+	    int	    matchstart = regmatch.startpos[0].col;
+	    int	    matchend = regmatch.endpos[0].col;
+
+	    // Copy text before the match.
+	    if (matchstart > (int)matchcol)
+		ga_concat_len(&new_ga, line + matchcol,
+					(size_t)(matchstart - matchcol));
+
+	    // Append the replacement text.
+	    sublen = append_sub_replacement(&regmatch, lnum, sub, line,
+					    &new_ga, &state->sub_positions);
+	    if (sublen < 0)
+		break;
+
+	    matchcol = matchend;
+
+	    if (!do_all || matchcol >= (colnr_T)STRLEN(line))
+		break;
+
+	    // Handle empty match: advance one character to avoid infinite loop.
+	    if (matchstart == matchend)
+	    {
+		if (line[matchcol] == NUL)
+		    break;
+		i = (*mb_ptr2len)(line + matchcol);
+		ga_concat_len(&new_ga, line + matchcol, (size_t)i);
+		matchcol += i;
+	    }
+
+	    // Find next match.
+	    nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
+							    matchcol, NULL);
+	    if (nmatch <= 0 || regmatch.endpos[0].lnum > 0)
+		break;
+	}
+
+	// Copy text after the last match.
+	if (matchcol < (colnr_T)STRLEN(line))
+	    ga_concat_len(&new_ga, line + matchcol,
+				    STRLEN(line) - (size_t)matchcol);
+
+	vim_free(line);
+
+	if (ga_append(&new_ga, NUL) == FAIL
+		|| ml_replace(lnum, new_ga.ga_data, FALSE) == FAIL)
+	{
+	    ga_clear(&new_ga);
+	    break;
+	}
+    }
+
+theend:
+    vim_regfree(regmatch.regprog);
+    vim_free(sub);
+
+    if (state->saved_lines.ga_len == 0)
+    {
+	ga_clear(&state->saved_lines);
+	ga_clear(&state->sub_positions);
+	return FALSE;
+    }
+
+    // If we broke out early due to allocation failure, restore any lines
+    // we already modified.
+    if (lnum <= last_line)
+    {
+	inccommand_substitute_preview_cleanup(state);
+	return FALSE;
+    }
+
+    // Add temporary match highlight for replacement positions using the
+    // Substitute highlight group.  Directly construct a matchitem_T with
+    // position matches rather than a pattern.
+    if (state->sub_positions.ga_len > 0)
+    {
+	state->match = ALLOC_CLEAR_ONE(matchitem_T);
+	if (state->match != NULL)
+	{
+	    state->match->mit_hlg_id =
+				syn_namen2id((char_u *)"Substitute",
+					    STRLEN_LITERAL("Substitute"));
+	    state->match->mit_pos_array =
+				(llpos_T *)state->sub_positions.ga_data;
+	    state->match->mit_pos_count = state->sub_positions.ga_len;
+	    state->match->mit_next = curwin->w_match_head;
+	    curwin->w_match_head = state->match;
+	}
+    }
+
+    // Suppress hlsearch since match positions are stale after buffer
+    // modification.
+    set_no_hlsearch(TRUE);
+    highlight_match = FALSE;
+
+    return TRUE;
+}
+#endif
+
 /*
  * Return TRUE when 'incsearch' highlighting is to be done.
  * Sets search_first_line and search_last_line to the address range.
@@ -352,12 +719,15 @@ do_incsearch_highlighting(
 	int		    *search_delim,
 	incsearch_state_T   *is_state,
 	int		    *skiplen,
-	int		    *patlen)
+	int		    *patlen,
+	int		    *cmd_type)
 {
     int retval = FALSE;
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
+    if (cmd_type != NULL)
+	*cmd_type = PPR_UNKNOWN;
 
     if (!p_is || cmd_silent)
 	return FALSE;
@@ -377,7 +747,7 @@ do_incsearch_highlighting(
 
     ++emsg_off;
     retval = parse_pattern_and_range(&is_state->search_start, search_delim,
-	    skiplen, patlen);
+	    skiplen, patlen, cmd_type);
     --emsg_off;
 
     return retval;
@@ -407,6 +777,7 @@ finish_incsearch_highlighting(
     }
     restore_viewstate(&is_state->old_viewstate);
     highlight_match = FALSE;
+    inccommand_active = FALSE;
 
     // by default search all lines
     search_first_line = 0;
@@ -440,13 +811,14 @@ may_do_incsearch_highlighting(
     int		use_last_pat;
     int		did_do_incsearch = is_state->did_incsearch;
     int		search_delim;
+    int		cmd_type = PPR_UNKNOWN;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
-							    &skiplen, &patlen))
+					&skiplen, &patlen, &cmd_type))
     {
 	restore_last_search_pattern();
 	finish_incsearch_highlighting(FALSE, is_state, TRUE);
@@ -500,7 +872,7 @@ may_do_incsearch_highlighting(
 	cursor_off();	// so the user knows we're busy
 	out_flush();
 	++emsg_off;	// so it doesn't beep if bad expr
-	if (!p_hls)
+	if (!p_hls && !p_icm)
 	    search_flags += SEARCH_KEEP;
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
@@ -586,8 +958,25 @@ may_do_incsearch_highlighting(
     if (p_ru && curwin->w_status_height > 0)
 	curwin->w_redr_status = TRUE;
 
-    update_screen(UPD_SOME_VALID);
-    highlight_match = FALSE;
+    // Try substitute replacement preview if inccommand is set.
+    {
+	icm_preview_state_T icm_state;
+	int did_preview = FALSE;
+
+	if (p_icm && cmd_type == PPR_SUBSTITUTE)
+	    did_preview = inccommand_substitute_preview(
+					skiplen, patlen, search_delim,
+					&icm_state);
+
+	if (!did_preview && p_icm && firstc == ':')
+	    inccommand_active = TRUE;
+	update_screen(did_preview ? UPD_NOT_VALID : UPD_SOME_VALID);
+	inccommand_active = FALSE;
+	highlight_match = FALSE;
+
+	if (did_preview)
+	    inccommand_substitute_preview_cleanup(&icm_state);
+    }
     restore_last_search_pattern();
 
     // Leave it at the end to make CTRL-R CTRL-W work.  But not when beyond the
@@ -628,7 +1017,7 @@ may_adjust_incsearch_highlighting(
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
-							    &skiplen, &patlen))
+					    &skiplen, &patlen, NULL))
     {
 	restore_last_search_pattern();
 	return OK;
@@ -752,7 +1141,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
-							    &skiplen, &patlen))
+					    &skiplen, &patlen, NULL))
     {
 	restore_last_search_pattern();
 	return FAIL;

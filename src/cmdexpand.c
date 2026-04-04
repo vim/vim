@@ -2292,7 +2292,7 @@ set_context_with_pattern(expand_T *xp)
 
     ++emsg_off;
     retval = parse_pattern_and_range(&pre_incsearch_pos, &dummy, &skiplen,
-	    &patlen);
+	    &patlen, NULL);
     --emsg_off;
 
     // Check if cursor is within search pattern
