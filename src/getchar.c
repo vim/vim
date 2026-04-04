@@ -2645,6 +2645,9 @@ parse_queued_messages(void)
 	// Process the queued netbeans messages.
 	netbeans_parse_messages();
 # endif
+# ifdef FEAT_SOCKETSERVER
+	socketserver_parse_messages();
+# endif
 # ifdef FEAT_JOB_CHANNEL
 	// Write any buffer lines still to be written.
 	channel_write_any_lines();

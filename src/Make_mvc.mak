@@ -772,6 +772,7 @@ OBJ = \
 	$(OUTDIR)\session.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\sign.obj \
+	$(OUTDIR)\socketserver.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
 	$(OUTDIR)\spellsuggest.obj \
@@ -1766,6 +1767,8 @@ $(OUTDIR)/sha256.obj: $(OUTDIR) sha256.c $(INCL)
 
 $(OUTDIR)/sign.obj: $(OUTDIR) sign.c $(INCL)
 
+$(OUTDIR)/socketserver.obj: $(OUTDIR) socketserver.c $(INCL)
+
 $(OUTDIR)/spell.obj: $(OUTDIR) spell.c $(INCL)
 
 $(OUTDIR)/spellfile.obj: $(OUTDIR) spellfile.c $(INCL)
@@ -2014,6 +2017,7 @@ proto.h: \
 	proto/session.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
+	proto/socketserver.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/spellsuggest.pro \

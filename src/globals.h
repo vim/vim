@@ -2096,25 +2096,26 @@ EXTERN int wayland_no_connect INIT(= FALSE);
 
 #endif
 
-#if defined(FEAT_CLIENTSERVER) && !defined(MSWIN)
+#if defined(FEAT_CLIENTSERVER)
 
 // Backend for clientserver functionality
 typedef enum {
     CLIENTSERVER_METHOD_NONE,
+# ifdef FEAT_X11
     CLIENTSERVER_METHOD_X11,
+# endif
+# ifdef MSWIN
+    CLIENTSERVER_METHOD_MSWIN,
+# endif
     CLIENTSERVER_METHOD_SOCKET
 } clientserver_method_T;
 
-// Default to X11 if compiled with support for it, else use socket server.
-# if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
 EXTERN clientserver_method_T clientserver_method
-# else
-// Since we aren't going to be changing clientserver_method, make it constant to
-// allow compiler optimizations.
-EXTERN const clientserver_method_T clientserver_method
-# endif
+
 # ifdef FEAT_X11
 INIT(= CLIENTSERVER_METHOD_X11);
+# elif defined(MSWIN)
+INIT(= CLIENTSERVER_METHOD_MSWIN);
 # elif defined(FEAT_SOCKETSERVER)
 INIT(= CLIENTSERVER_METHOD_SOCKET);
 # else
@@ -2139,3 +2140,8 @@ EXTERN bool inside_redraw_on_start_cb INIT(= false);
 
 // If greater than zero, then silence the W23/W24 warning.
 EXTERN int silence_w23_w24_msg INIT( = 0);
+
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char_u address_buf[128];
+# define ADDRESS_BUFSIZE 128
+#endif

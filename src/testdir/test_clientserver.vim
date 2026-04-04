@@ -10,10 +10,6 @@ CheckFeature clientserver
 
 source util/shared.vim
 
-" Unlike X11, we need the socket server running if we want to send commands to
-" a server via sockets.
-RunSocketServer
-
 func Check_X11_Connection()
   if has('x11')
     CheckX11
@@ -191,9 +187,9 @@ func Test_client_server()
 
   " When using socket server, server id is not a number, but the path to the
   " socket.
-  if has('socketserver') && !has('X11')
-    call assert_fails("let x = remote_read('vim/10')", ['E573:.*vim/10'])
-    call assert_fails("call server2client('a/b/c', 'xyz')", ['E573:.*a/b/c'])
+  if (has('socketserver') && !has('X11') && !has('win32')) || index(v:argv, "socket") != -1
+    call assert_fails("let x = remote_read('vim/10')", ['E1564:'])
+    call assert_fails("call server2client('x/b/c', 'xyz')", ['E1564:'])
   else
     call assert_fails("let x = remote_read('vim10')",
           \ has('unix') ? ['E573:.*vim10'] : 'E277:')
@@ -245,8 +241,8 @@ func Test_client_server_stopinsert()
   endtry
 endfunc
 
-" Test if socket server and X11 backends can be chosen and work properly.
-func Test_client_server_x11_and_socket_server()
+" Test if socket server, X11, and mswin backends can be chosen and work properly.
+func Test_client_server_multiple_backends()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckFeature x11
@@ -259,9 +255,13 @@ func Test_client_server_x11_and_socket_server()
   endif
   call Check_X11_Connection()
 
-  let types = ['socket', 'x11']
+  let types = ['socket', 'x11', 'mswin']
 
   for type in types
+    if (type == 'x11' && !has('X11')) || (type == 'mswin' && !has('win32'))
+      continue
+    endif
+
     let name = 'VIMTEST_' .. toupper(type)
     let actual_cmd = cmd .. ' --clientserver ' .. type
     let actual_cmd .= ' --servername ' .. name
@@ -284,47 +284,8 @@ func Test_client_server_x11_and_socket_server()
   endfor
 endfunc
 
-" Test if socket server works in the GUI
-func Test_client_server_socket_server_gui()
-  CheckNotMSWindows
-  CheckFeature socketserver
-  CheckFeature gui_gtk
-
-  let g:test_is_flaky = 1
-  let cmd = GetVimCommand()
-
-  if cmd == ''
-    throw 'GetVimCommand() failed'
-  endif
-  call Check_X11_Connection()
-
-  let name = 'VIMTESTSOCKET'
-  let cmd .= ' --clientserver socket'
-  let cmd .= ' --servername ' .. name
-
-  let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
-
-  call WaitForAssert({-> assert_equal("run", job_status(job))})
-  call WaitForAssert({-> assert_match(name, system(cmd .. ' --serverlist'))})
-
-  call system(cmd .. " --remote-expr 'execute(\"gui\")'")
-
-  call assert_match('1', system(cmd .. " --remote-expr 'has(\"gui_running\")'"))
-  call assert_match(name, system(cmd .. ' --remote-expr "v:servername"'))
-
-  call system(cmd .. " --remote-expr 'execute(\"qa!\")'")
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(job))})
-  finally
-    if job_status(job) != 'dead'
-      call assert_report('Server did not exit')
-      call job_stop(job, 'kill')
-    endif
-  endtry
-endfunc
-
 " Test if custom paths work for socketserver
-func Test_client_socket_server_custom_path()
+func Test_client_socketserver_custom_path()
   CheckNotMSWindows
   CheckFeature socketserver
   CheckNotFeature x11
@@ -358,6 +319,37 @@ func Test_client_socket_server_custom_path()
       endif
     endtry
   endfor
+endfunc
+
+" Test if "a/" prefix works correctly to use channel address for socketserver.
+func Test_client_socketserver_address()
+  CheckFeature socketserver
+  CheckNotMSWindows
+  CheckNotFeature x11
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --servername "a/127.0.0.1:12345"'
+
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+
 endfunc
 
 " Uncomment this line to get a debugging log
