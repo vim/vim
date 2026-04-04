@@ -17,7 +17,7 @@ syn region jjComment start="^JJ:" end="$" contains=jjAdded,jjRemoved,jjChanged
 syn include @jjCommitDiff syntax/diff.vim
 syn region jjCommitDiff start=/\%(^diff --\%(git\|cc\|combined\) \)\@=/ end=/^\%(diff --\|$\|@@\@!\|[^[:alnum:]\ +-]\S\@!\)\@=/ fold contains=@jjCommitDiff
 
-if get(g:, 'jjdescription_summary_length') < 0
+if get(g:, 'jjdescription_summary_length', 0) < 0
   syn match   jjdescriptionSummary	"^.*$" contained containedin=jjcommitFirstLine nextgroup=jjcommitOverflow contains=@Spell
 elseif get(g:, 'jjdescription_summary_length', 1) > 0
   exe 'syn match   jjdescriptionSummary	"^.*\%<' . (get(g:, 'jjdescription_summary_length', 50) + 1) . 'v." contained containedin=jjcommitFirstLine nextgroup=jjcommitOverflow contains=@Spell'
