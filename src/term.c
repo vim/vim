@@ -689,7 +689,7 @@ static tcap_entry_T builtin_sync_output[] = {
 /*
  * List of DECRQM modes that Vim supports
  */
-static int dec_modes[] = {
+static const int dec_modes[] = {
     2026,   // Synchronized output
 #ifdef UNIX
     2048    // In-band terminal resize events
@@ -7827,11 +7827,11 @@ swap_tcap(void)
 
 
 #if (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))) || defined(FEAT_TERMINAL)
-static int cube_value[] = {
+static const int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
 };
 
-static int grey_ramp[] = {
+static const int grey_ramp[] = {
     0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
