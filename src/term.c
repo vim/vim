@@ -7985,7 +7985,7 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
     void
 send_decrqm_modes(void)
 {
-    if (termcap_active && cur_tmode == TMODE_RAW)
+    if (termcap_active && cur_tmode == TMODE_RAW && p_tdec)
     {
 	// Request setting of relevant DEC modes via DECRQM
 	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)

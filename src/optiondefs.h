@@ -2649,6 +2649,10 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"termdec", "tdec",	    P_BOOL|P_VI_DEF,
+			    (char_u *)&p_tdec, PV_NONE, NULL, NULL,
+			    {(char_u *)TRUE, (char_u *)0L}
+			    SCTX_INIT},
     {"termencoding", "tenc", P_STRING|P_VI_DEF|P_RCLR,
 			    (char_u *)&p_tenc, PV_NONE, did_set_encoding, expand_set_encoding,
 			    {(char_u *)"", (char_u *)0L}
