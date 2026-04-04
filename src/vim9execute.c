@@ -1412,6 +1412,17 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
+
+    // Check for void value being passed as an argument.
+    for (idx = 0; idx < argcount; ++idx)
+	if (argvars[idx].v_type == VAR_VOID)
+	{
+	    emsg(_(e_cannot_use_void_value));
+	    for (idx = 0; idx < argcount; ++idx)
+		clear_tv(&argvars[idx]);
+	    return FAIL;
+	}
+
     ectx->ec_where.wt_func_name = internal_func_name(func_idx);
 
     // Call the builtin function.  Set "current_ectx" so that when it
@@ -4307,8 +4318,11 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_STORE:
 		--ectx->ec_stack.ga_len;
 		tv = STACK_TV_VAR(iptr->isn_arg.number);
-		if (check_typval_is_value(STACK_TV_BOT(0)) == FAIL)
+		if (check_typval_is_value(STACK_TV_BOT(0)) == FAIL
+			|| STACK_TV_BOT(0)->v_type == VAR_VOID)
 		{
+		    if (STACK_TV_BOT(0)->v_type == VAR_VOID)
+			emsg(_(e_cannot_use_void_value));
 		    clear_tv(STACK_TV_BOT(0));
 		    goto on_error;
 		}
