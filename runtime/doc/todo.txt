@@ -222,7 +222,6 @@ Popup windows:
   Then :%s?foo should take the first match above the cursor line.
 
 Prompt buffer:
-- Add a command line history, using up/down keys.  issue #5010
 - delay next prompt until plugin gives OK?
 - add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 

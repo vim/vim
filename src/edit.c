@@ -1214,7 +1214,12 @@ doESCkey:
 	case K_UP:	// <Up>
 	    if (pum_visible())
 		goto docomplete;
-	    if (mod_mask & MOD_MASK_SHIFT)
+#ifdef FEAT_JOB_CHANNEL
+	    // Make sure popup menu overrides
+	    else if (bt_prompt(curbuf))
+		goto_prompt_history(curbuf, 1, true);
+#endif
+	    else if (mod_mask & MOD_MASK_SHIFT)
 		ins_pageup();
 	    else
 		ins_up(FALSE);
@@ -1231,7 +1236,11 @@ doESCkey:
 	case K_DOWN:	// <Down>
 	    if (pum_visible())
 		goto docomplete;
-	    if (mod_mask & MOD_MASK_SHIFT)
+#ifdef FEAT_JOB_CHANNEL
+	    else if (bt_prompt(curbuf))
+		goto_prompt_history(curbuf, -1, true);
+#endif
+	    else if (mod_mask & MOD_MASK_SHIFT)
 		ins_pagedown();
 	    else
 		ins_down(FALSE);

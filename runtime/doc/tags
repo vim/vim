@@ -9881,8 +9881,13 @@ progname-variable	eval.txt	/*progname-variable*
 progpath-variable	eval.txt	/*progpath-variable*
 progress.vim	syntax.txt	/*progress.vim*
 prompt-buffer	channel.txt	/*prompt-buffer*
+prompt_gethistory()	builtin.txt	/*prompt_gethistory()*
 prompt_getprompt()	builtin.txt	/*prompt_getprompt()*
+prompt_histgoto()	builtin.txt	/*prompt_histgoto()*
+prompt_histsearch()	builtin.txt	/*prompt_histsearch()*
 prompt_setcallback()	builtin.txt	/*prompt_setcallback()*
+prompt_sethistory()	builtin.txt	/*prompt_sethistory()*
+prompt_sethistsize()	builtin.txt	/*prompt_sethistsize()*
 prompt_setinterrupt()	builtin.txt	/*prompt_setinterrupt()*
 prompt_setprompt()	builtin.txt	/*prompt_setprompt()*
 promptbuffer-functions	usr_41.txt	/*promptbuffer-functions*

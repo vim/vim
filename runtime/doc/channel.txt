@@ -1434,6 +1434,18 @@ Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
 the cursor to the last line.  "A" will move to the end of the line, "I" to the
 start of the line.
 
+The prompt buffer has a default history size of 100 entries.  This means you
+can access previously typed prompts via <Up> and do the opposite with <Down>
+in Insert mode.
+
+Before moving through the prompt history, the current text that has not been
+entered yet is saved, so you can go back to it.  If an entry in history is
+currently selected as the text, and is modified, then it will become the
+"non-entered" text, and the position in history will be reset.
+
+There are multiple builtin functions to manipulate this history functionality,
+see |builtin.txt|.
+
 Here is an example for Unix.  It starts a shell in the background and prompts
 for the next shell command.  Output from the shell is displayed above the
 prompt. >

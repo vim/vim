@@ -1300,6 +1300,9 @@ static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_nu
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
 static argcheck_T arg2_list_or_tuple_string[] = {arg_list_or_tuple, arg_string};
+static argcheck_T arg3_buffer_number_string[] = {arg_buffer, arg_number, arg_string};
+static argcheck_T arg3_buffer_number_bool[] = {arg_buffer, arg_number, arg_bool};
+static argcheck_T arg3_buffer_liststring_bool[] = {arg_buffer, arg_list_number, arg_bool};
 static argcheck_T arg3_any_buffer_bool[] = {arg_any, arg_buffer, arg_bool};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
@@ -2661,10 +2664,20 @@ static const funcentry_T global_functions[] =
 			ret_number,	    f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	    arg119_printf,
 			ret_string,	    f_printf},
+    {"prompt_gethistory", 1, 2, FEARG_1,    arg2_buffer_number,
+			ret_list_string,    JOB_FUNC(f_prompt_gethistory)},
     {"prompt_getprompt", 1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    JOB_FUNC(f_prompt_getprompt)},
+    {"prompt_histgoto",	2, 3, FEARG_1,	    arg3_buffer_number_bool,
+			ret_bool,	    JOB_FUNC(f_prompt_histgoto)},
+    {"prompt_histsearch", 2, 3, FEARG_1,    arg3_buffer_number_string,
+			ret_bool,	    JOB_FUNC(f_prompt_histsearch)},
     {"prompt_setcallback", 2, 2, FEARG_1,   arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setcallback)},
+    {"prompt_sethistory", 2, 3, FEARG_1,    arg3_buffer_liststring_bool,
+			ret_void,	    JOB_FUNC(f_prompt_sethistory)},
+    {"prompt_sethistsize", 2, 2, FEARG_1,   arg2_buffer_number,
+			ret_number,	    JOB_FUNC(f_prompt_sethistsize)},
     {"prompt_setinterrupt", 2, 2, FEARG_1,  arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setinterrupt)},
     {"prompt_setprompt", 2, 2, FEARG_1,	    arg2_buffer_string,

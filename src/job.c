@@ -1554,13 +1554,253 @@ job_stop(job_T *job, typval_T *argvars, char *type)
     return 1;
 }
 
+/*
+ * Initialize the prompt history for the buffer.
+ */
+    void
+init_prompt_history(buf_T *buf, bool clear)
+{
+    if (clear)
+    {
+	ga_clear_strings(&buf->b_prompt_hist.bh_hist);
+	vim_free(buf->b_prompt_hist.bh_saved);
+    }
+    else
+	ga_init2(&buf->b_prompt_hist.bh_hist, sizeof(char_u *), 10);
+
+    // Set max size of 100 as a good default
+    buf->b_prompt_hist.bh_max = 100;
+    buf->b_prompt_hist.bh_cur = -1;
+    buf->b_prompt_hist.bh_saved = NULL;
+    buf->b_prompt_text = NULL;
+}
+
+/*
+ * Add a prompt to the prompt history of the current buffer. This will trim the
+ * oldest entries if the maximum size is reached. Empty text is ignored.
+ */
+    static void
+add_prompt_history(char_u *text)
+{
+    garray_T	*ga = &curbuf->b_prompt_hist.bh_hist;
+    char_u	*save;
+
+    if (text == NULL || *text == NUL || curbuf->b_prompt_hist.bh_max == 0)
+	// Ignore empty text or history disabled
+	return;
+
+    save = vim_strsave(text);
+    if (save == NULL || ga_grow(ga, 1) == FAIL)
+	return;
+
+    if (ga->ga_len >= curbuf->b_prompt_hist.bh_max)
+    {
+	// Must shift history entries down by 1.
+	vim_free(((char_u **)ga->ga_data)[0]);
+	mch_memmove(ga->ga_data, (char_u **)ga->ga_data + 1,
+		sizeof(char_u *) * (curbuf->b_prompt_hist.bh_max - 1));
+	ga->ga_len--;
+    }
+
+    ((char_u **)ga->ga_data)[ga->ga_len++] = save;
+}
+
+static char_u *buf_prompt_text(buf_T* buf);
+
+/*
+ * Return the text (not the prompt text) of the prompt buffer in an
+ * allocated string. "lnum" is the line where the prompt is.
+ */
+    static char_u *
+get_text_from_prompt(buf_T *buf, linenr_T lnum, bool copy)
+{
+    char_u	*text;
+    char_u	*prompt;
+
+    text = ml_get_buf(buf, lnum, false);
+    prompt = buf_prompt_text(buf);
+    if (STRLEN(text) >= STRLEN(prompt))
+	text += STRLEN(prompt);
+    return copy ? vim_strsave(text) : text;
+}
+
+/*
+ * Update the prompt text for the given buffer. If "wp" is not NULL, then update
+ * cursor position as well.
+ */
+    static void
+update_prompt(buf_T *buf, win_T *wp, char_u *text)
+{
+    char_u *full;
+    buf_T *prev = curbuf;
+
+    // Must allocate enough space for both prompt text + text
+    full = alloc(STRLEN(text) + STRLEN(prompt_text()) + 1);
+    if (full == NULL)
+	return;
+
+    sprintf((char *)full, "%s%s", prompt_text(), text);
+
+    curbuf = buf;
+    ml_replace(buf->b_ml.ml_line_count, full, true);
+    if (wp != NULL)
+    {
+	wp->w_cursor.lnum = buf->b_ml.ml_line_count;
+	coladvance((colnr_T)MAXCOL);
+    }
+    changed_bytes(buf->b_ml.ml_line_count, 0);
+    curbuf = prev;
+}
+
+/*
+ * If "relative" is true, then offset will be applied to the current position in
+ * history. If false, then it is the absolute index in history. In either case
+ * the values will be clamped within the allowed range.
+ *
+ * Return true if position in history moved.
+ */
+    bool
+goto_prompt_history(buf_T *buf, int offset, bool relative)
+{
+    bufprompt_history_T *hist = &buf->b_prompt_hist;
+    char_u		*text;
+
+    if (hist->bh_max == 0)
+	return false;
+
+    if (!relative)
+    {
+	// Convert absolute index to a relative index
+	if (offset == -1)
+	    offset = -hist->bh_cur - 1;
+	else if (offset >= 0)
+	    offset = offset - hist->bh_cur;
+	else
+	    return false;
+    }
+
+    // Clamp to between largest possible offset and smallest possible offset
+    offset = MAX(hist->bh_cur == -1 ? 0 : -hist->bh_cur - 1,
+	    MIN(offset, hist->bh_cur == -1 ?  hist->bh_hist.ga_len :
+		hist->bh_hist.ga_len - hist->bh_cur - 1));
+    if (offset == 0)
+	// Do nothing
+	return true;
+
+    if (hist->bh_cur >= hist->bh_hist.ga_len - 1 && offset > 0)
+	// At the very top
+	return false;
+
+    if (hist->bh_cur == -1)
+    {
+	if (offset > 0)
+	    hist->bh_cur += offset;
+	else
+	    // Can't go below any further
+	    return false;
+
+	// Save current text so we can go back to it.
+	vim_free(hist->bh_saved);
+	hist->bh_saved = get_text_from_prompt(buf,
+		buf->b_ml.ml_line_count, true);
+
+	if (hist->bh_saved == NULL)
+	    return false;
+    }
+    else
+	hist->bh_cur += offset;
+
+    if (hist->bh_cur == -1)
+	// Must used saved text
+	text = hist->bh_saved;
+    else
+	// Most recent prompts are at the top of the array
+	text = ((char_u **)hist->bh_hist.ga_data)
+	    [hist->bh_hist.ga_len - hist->bh_cur - 1];
+
+    if (text == NULL)
+	text = (char_u *)"";
+
+    update_prompt(buf, curwin, text);
+
+    return true;
+}
+
+/*
+ * Similar to goto_prompt_history(), but uses the current text in the prompt to
+ * find the next or previous prompt that has that text as its prefix. "offset"
+ * is always relative. If "text" is not NULL, then use that instead of the
+ * current text.
+ */
+    static bool
+search_prompt_history(buf_T *buf, int offset, char_u *text)
+{
+    bufprompt_history_T *hist = &buf->b_prompt_hist;
+    char_u  *cur_text = text;
+    int	    cur_len;
+    int	    cur = hist->bh_cur;
+    char_u  *found = NULL;
+
+    if (text == NULL)
+	cur_text = get_text_from_prompt(buf, buf->b_ml.ml_line_count, false);
+    cur_len = (int)STRLEN(cur_text);
+
+    while (offset != 0)
+    {
+	char_u	*str;
+	int	prev;
+
+	prev = cur;
+	cur += (offset < 0 ? -1 : 1);
+	if (cur < -1 || cur >= hist->bh_hist.ga_len)
+	    // Reached end
+	    break;
+
+	if (prev == -1)
+	{
+	    // Save current text so we can go back to it.
+	    vim_free(hist->bh_saved);
+
+	    if (text != NULL)
+		hist->bh_saved = get_text_from_prompt(buf,
+			buf->b_ml.ml_line_count, true);
+	    else
+		hist->bh_saved = vim_strsave(cur_text);
+
+	    if (hist->bh_saved == NULL)
+		return false;
+	}
+
+	if (cur == -1)
+	{
+	    // We always go back to the saved text even if it doesn't match.
+	    found = hist->bh_saved;
+	    break;
+	}
+
+	str = ((char_u **)hist->bh_hist.ga_data)[cur];
+	if (STRNCMP(cur_text, str, cur_len) == 0)
+	    found = str;
+
+	offset += (offset < 0 ? 1 : -1);
+    }
+
+    if (found == NULL)
+	// Did not find any matches
+	return false;
+
+    hist->bh_cur = cur;
+    update_prompt(buf, NULL, found);
+    return true;
+}
+
+
     void
 invoke_prompt_callback(void)
 {
     typval_T	rettv;
     typval_T	argv[2];
     char_u	*text;
-    char_u	*prompt;
     linenr_T	lnum = curbuf->b_ml.ml_line_count;
 
     // Add a new line for the prompt before invoking the callback, so that
@@ -1569,13 +1809,13 @@ invoke_prompt_callback(void)
     curwin->w_cursor.lnum = lnum + 1;
     curwin->w_cursor.col = 0;
 
+    text = get_text_from_prompt(curbuf, lnum, false);
+    add_prompt_history(text);
+
     if (curbuf->b_prompt_callback.cb_name == NULL
 	    || *curbuf->b_prompt_callback.cb_name == NUL)
 	return;
-    text = ml_get(lnum);
-    prompt = prompt_text();
-    if (STRLEN(text) >= STRLEN(prompt))
-	text += STRLEN(prompt);
+
     argv[0].v_type = VAR_STRING;
     argv[0].vval.v_string = vim_strsave(text);
     argv[1].v_type = VAR_UNKNOWN;
@@ -1634,11 +1874,17 @@ prompt_text(void)
     void
 init_prompt(int cmdchar_todo)
 {
-    char_u *prompt = prompt_text();
-    char_u *text;
+    bufprompt_history_T *hist = &curbuf->b_prompt_hist;
+    char_u		*prompt = prompt_text();
+    char_u		*text;
+    char_u		*cur_text;
+    char_u		*hist_text;
+
+    cur_text = get_text_from_prompt(curbuf, curbuf->b_ml.ml_line_count, false);
 
     curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
     text = ml_get_curline();
+
     if (STRNCMP(text, prompt, STRLEN(prompt)) != 0)
     {
 	// prompt is missing, insert it or append a line with it
@@ -1662,6 +1908,22 @@ init_prompt(int cmdchar_todo)
 	curwin->w_cursor.col = (int)STRLEN(prompt);
     // Make sure the cursor is in a valid position.
     check_cursor();
+
+    if (hist->bh_max > 0 && hist->bh_cur >= 0)
+    {
+	// If we are on a prompt from history, then free previous saved line and
+	// use new modified line as saved line, and set the bh_cur to -1. Only
+	// do this if something actually changed.
+	hist_text = ((char_u **)hist->bh_hist.ga_data)
+	    [hist->bh_hist.ga_len - hist->bh_cur - 1];
+
+	if (STRCMP(cur_text, hist_text) != 0)
+	{
+	    vim_free(hist->bh_saved);
+	    hist->bh_saved = vim_strsave(text);
+	    hist->bh_cur = -1;
+	}
+    }
 }
 
 /*
@@ -1777,6 +2039,283 @@ f_prompt_setprompt(typval_T *argvars, typval_T *rettv UNUSED)
     text = tv_get_string(&argvars[1]);
     vim_free(buf->b_prompt_text);
     buf->b_prompt_text = vim_strsave(text);
+}
+
+/*
+ * "prompt_sethistsize({buffer}, {max entries})" function
+ */
+    void
+f_prompt_sethistsize(typval_T *argvars, typval_T *rettv)
+{
+    bufprompt_history_T *hist;
+    buf_T		*buf;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = tv_get_buf(&argvars[0], FALSE);
+    if (buf == NULL)
+	return;
+    if (!bt_prompt(buf))
+	return;
+    hist = &buf->b_prompt_hist;
+
+    if (argvars[1].vval.v_number > (varnumber_T)INT_MAX)
+    {
+	// Don't want overflow
+	semsg(_(e_prompt_history_limit_nr), INT_MAX);
+	return;
+    }
+    else if (argvars[1].vval.v_number < 0)
+	// Return current maximum
+	goto exit;
+
+    if (argvars[1].vval.v_number == 0)
+	// Free up resources
+	init_prompt_history(buf, true);
+    hist->bh_max = argvars[1].vval.v_number;
+
+    // Must remove older entries if length is bigger than new size
+    if (hist->bh_max < hist->bh_hist.ga_len)
+    {
+	int n = hist->bh_hist.ga_len - hist->bh_max;
+
+
+	hist->bh_hist.ga_len -= n;
+	mch_memmove(hist->bh_hist.ga_data,
+		(char_u **)hist->bh_hist.ga_data + n,
+		sizeof(char_u *) * hist->bh_hist.ga_len);
+
+	// Adjust the current position in history if needed
+	if (hist->bh_max <= hist->bh_cur)
+	{
+	    hist->bh_cur = hist->bh_max - 1;
+	    update_prompt(buf, NULL,
+		((char_u **)hist->bh_hist.ga_data)[0]);
+	}
+    }
+
+exit:
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = buf->b_prompt_hist.bh_max;
+}
+
+/*
+ * "prompt_gethistory({buffer}, {max})" function
+ */
+    void
+f_prompt_gethistory(typval_T *argvars, typval_T *rettv)
+{
+    bufprompt_history_T *hist;
+    buf_T		*buf;
+    list_T		*list;
+    int			max = INT_MAX;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = tv_get_buf_from_arg(&argvars[0]);
+    if (buf == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	max = tv_get_number(&argvars[1]);
+	if (max <= 0)
+	{
+	    emsg(_(e_invalid_argument));
+	    return;
+	}
+    }
+
+    hist = &buf->b_prompt_hist;
+    list = list_alloc();
+
+    if (list == NULL)
+	return;
+    list->lv_refcount++;
+
+    // First entry in list is the current prompt that has not been entered yet.
+    if (bt_prompt(buf))
+	list_append_string(list,
+		get_text_from_prompt(buf, buf->b_ml.ml_line_count, false), -1);
+
+    if (hist->bh_hist.ga_len > 0)
+	// Iterate backwards so most recent entry is first in list.
+	for (int i = hist->bh_hist.ga_len - 1, k = 1; i >= 0 && k < max;
+								i--, k++)
+	    list_append_string(list, ((char_u **)hist->bh_hist.ga_data)[i], -1);
+
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = list;
+}
+
+/*
+ * "prompt_sethistory({buffer}, {entries}, {use first})" function
+ */
+    void
+f_prompt_sethistory(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    bufprompt_history_T *hist;
+    buf_T		*buf;
+    list_T		*list;
+    listitem_T		*li;
+    int			prev_len;
+    int			idx;
+    bool		accept_first = true;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
+	return;
+
+    buf = tv_get_buf_from_arg(&argvars[0]);
+    if (!bt_prompt(buf))
+	return;
+
+    if (argvars[1].v_type != VAR_LIST)
+    {
+	semsg(_(e_list_required_for_argument_nr), 1);
+	return;
+    }
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	accept_first = tv_get_bool(&argvars[2]);
+
+    hist = &buf->b_prompt_hist;
+    list = argvars[1].vval.v_list;
+
+    prev_len = hist->bh_hist.ga_len;
+    hist->bh_hist.ga_len = 0;
+    idx = MIN(hist->bh_max, list_len(list)); // Do not exceed max size
+
+    if (idx == 0)
+	return;
+
+    if (ga_grow(&hist->bh_hist, idx) == FAIL)
+    {
+	hist->bh_hist.ga_len = prev_len;
+	return;
+    }
+    idx--;
+
+    if (accept_first)
+    {
+	// First item is the not entered prompt text
+	li = list_find(list, 0);
+
+	if (li != NULL)
+	{
+	    char_u *str = tv_get_string(&li->li_tv);
+
+	    update_prompt(buf, NULL, str);
+	    hist->bh_cur = -1;
+	}
+	idx--;
+    }
+
+
+    // Iterate through the list, but append entries starting at the end in the
+    // array. Make sure to not exceed maximum history size.
+    CHECK_LIST_MATERIALIZE(list);
+    FOR_ALL_LIST_ITEMS(list, li)
+    {
+	char_u *str;
+	char_u *save;
+
+	if (accept_first)
+	{
+	    // First item is not part of the prompt history
+	    accept_first = false;
+	    continue;
+	}
+
+	str = tv_get_string(&li->li_tv);
+	save = vim_strsave(str);
+
+	// If alloc failed, still set it, it will be ignored.
+	((char_u **)hist->bh_hist.ga_data)[idx] = save;
+	hist->bh_hist.ga_len++;
+
+	if (idx == 0)
+	    break;
+	idx--;
+    }
+
+
+    // Adjust the current position in history if needed
+    if (hist->bh_hist.ga_len <= hist->bh_cur)
+    {
+	hist->bh_cur = hist->bh_hist.ga_len - 1;
+	update_prompt(buf, NULL,
+		((char_u **)hist->bh_hist.ga_data)[0]);
+    }
+}
+
+/*
+ * "prompt_histgoto({buffer}, {offset}, {relative})" function
+ */
+    void
+f_prompt_histgoto(typval_T *argvars, typval_T *rettv)
+{
+    buf_T		*buf;
+    int			offset;
+    bool		relative = true;
+    bool		ret;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
+	return;
+
+    buf = tv_get_buf_from_arg(&argvars[0]);
+    if (!bt_prompt(buf))
+	return;
+
+    offset = tv_get_number(&argvars[1]);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	relative = tv_get_bool(&argvars[2]);
+
+    ret = goto_prompt_history(buf, offset, relative);
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = ret;
+}
+
+/*
+ * "prompt_histsearch({buffer}, {offset}, {text})" function
+ */
+    void
+f_prompt_histsearch(typval_T *argvars, typval_T *rettv)
+{
+    buf_T		*buf;
+    int			offset;
+    bool		ret;
+    char_u		*text = NULL;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
+
+    buf = tv_get_buf_from_arg(&argvars[0]);
+    if (!bt_prompt(buf))
+	return;
+
+    offset = tv_get_number(&argvars[1]);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	text = tv_get_string(&argvars[2]);
+
+    ret = search_prompt_history(buf, offset, text);
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = ret;
 }
 
 /*
