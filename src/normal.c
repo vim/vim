@@ -1653,7 +1653,7 @@ clear_showcmd(void)
 	    curwin->w_p_sbr = empty_option;
 #endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual,
-						    &leftcol, &rightcol, 0);
+				    &leftcol, &rightcol, GETVCOL_END_EXCL_LBR);
 #ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
 	    curwin->w_p_sbr = saved_w_sbr;
