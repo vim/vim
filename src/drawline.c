@@ -1418,8 +1418,7 @@ win_line(
 			wlv.fromcol = 0;
 		    else
 		    {
-			getvvcol(wp, top, (colnr_T *)&wlv.fromcol,
-								NULL, NULL, 0);
+			getvvcol(wp, top, &wlv.fromcol, NULL, NULL, 0);
 			if (gchar_pos(top) == NUL)
 			    wlv.tocol = wlv.fromcol + 1;
 		    }
@@ -1437,12 +1436,10 @@ win_line(
 		    {
 			pos = *bot;
 			if (*p_sel == 'e')
-			    getvvcol(wp, &pos, (colnr_T *)&wlv.tocol,
-								NULL, NULL, 0);
+			    getvvcol(wp, &pos, &wlv.tocol, NULL, NULL, 0);
 			else
 			{
-			    getvvcol(wp, &pos, NULL, NULL,
-						     (colnr_T *)&wlv.tocol, 0);
+			    getvvcol(wp, &pos, NULL, NULL, &wlv.tocol, 0);
 			    ++wlv.tocol;
 			}
 		    }
@@ -1481,14 +1478,14 @@ win_line(
 	{
 	    if (lnum == curwin->w_cursor.lnum)
 		getvcol(curwin, &(curwin->w_cursor),
-				       (colnr_T *)&wlv.fromcol, NULL, NULL, 0);
+						&wlv.fromcol, NULL, NULL, 0);
 	    else
 		wlv.fromcol = 0;
 	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
 	    {
 		pos.lnum = lnum;
 		pos.col = search_match_endcol;
-		getvcol(curwin, &pos, (colnr_T *)&wlv.tocol, NULL, NULL, 0);
+		getvcol(curwin, &pos, &wlv.tocol, NULL, NULL, 0);
 	    }
 	    else
 		wlv.tocol = MAXCOL;
