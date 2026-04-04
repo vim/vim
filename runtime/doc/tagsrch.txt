@@ -924,7 +924,7 @@ Note that when 'tagfunc' is set, the priority of the tags described in
 |tag-priority| does not apply.  Instead, the priority is exactly as the
 ordering of the elements in the list returned by the function.
 								*E987*
-The function should return a List of Dict entries.  Each Dict must at least
+The function should return a |List| of |Dict| entries.  Each Dict must at least
 include the following entries and each value must be a string:
 	name		Name of the tag.
 	filename	Name of the file where the tag is defined.  It is
