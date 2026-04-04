@@ -1232,8 +1232,9 @@ endfunc
 " Test that CSI sequences with more than CSI_ARGS_MAX arguments do not crash
 func Test_terminal_csi_args_overflow()
   CheckExecutable printf
-  let buf = term_start([&shell, &shellcmdflag,
-        \ 'printf "\033[' . repeat('1;', 49) . '1m"'])
+  let seq = "\033[" .. repeat('1;', 49) .. '1m'
+  let seq ..= "\033[1111111111111111111m"
+  let buf = term_start([&shell, &shellcmdflag, 'printf "' .. seq .. '"'])
 
   " If we get here without a crash, the fix works
   call assert_equal('running', term_getstatus(buf))
