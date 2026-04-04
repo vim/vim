@@ -1232,6 +1232,23 @@ GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
 GTK_BUNDLE	=
 
+### GTK4 GUI
+GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
+			$(GRESOURCE_SRC)
+GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
+			objects/gui_gtk4_f.o \
+			$(GRESOURCE_OBJ)
+GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
+GTK4_IPATH	= $(GUI_INC_LOC)
+GTK4_LIBS_DIR	= $(GUI_LIB_LOC)
+GTK4_LIBS1	=
+GTK4_LIBS2	= $(GTK_LIBNAME)
+GTK4_INSTALL	= install_normal install_gui_extra
+GTK4_TARGETS	= installglinks
+GTK4_MAN_TARGETS = yes
+GTK4_TESTTARGET	= gui
+GTK4_BUNDLE	=
+
 ### Motif GUI
 MOTIF_SRC	= gui.c gui_motif.c gui_x11.c gui_beval.c \
 			gui_xmdlg.c gui_xmebw.c
@@ -1289,8 +1306,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
 
@@ -3362,6 +3379,13 @@ objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
 objects/gui_gtk_x11.o: gui_gtk_x11.c
 	$(CCC) -o $@ gui_gtk_x11.c
 
+objects/gui_gtk4.o: gui_gtk4.c
+	$(CCC) -o $@ gui_gtk4.c
+
+objects/gui_gtk4_f.o: gui_gtk4_f.c
+	$(CCC) -o $@ gui_gtk4_f.c
+
+
 objects/gui_haiku.o: gui_haiku.cc
 	$(CCC) -o $@ gui_haiku.cc
 
@@ -4805,6 +4829,7 @@ proto/winclip.pro: winclip.c
 proto/window.pro: window.c
 proto/gui.pro: gui.c
 proto/gui_gtk.pro: gui_gtk.c
+proto/gui_gtk4.pro: gui_gtk4.c
 proto/gui_motif.pro: gui_motif.c
 proto/gui_xmdlg.pro: gui_xmdlg.c
 proto/gui_gtk_x11.pro: gui_gtk_x11.c

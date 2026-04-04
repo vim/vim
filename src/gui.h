@@ -15,7 +15,17 @@
 # ifdef VMS
 #  include "gui_gtk_vms.h"
 # endif
-# include <X11/Intrinsic.h>
+# ifdef USE_GTK4
+// Types used in proto files but not available without X11 headers
+typedef void *Widget;
+typedef void *XtAppContext;
+typedef void  Display;
+typedef unsigned long Window;
+typedef unsigned long Atom;
+typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
+# else
+#  include <X11/Intrinsic.h>
+# endif
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-prototypes"
 # include <gtk/gtk.h>
@@ -345,7 +355,7 @@ typedef struct Gui
 #endif
 
 #ifdef FEAT_GUI_GTK
-# ifndef USE_GTK3
+# if !defined(USE_GTK3) && !defined(USE_GTK4)
     int		visibility;	    // Is shell partially/fully obscured?
 # endif
     GdkCursor	*blank_pointer;	    // Blank pointer
@@ -366,7 +376,7 @@ typedef struct Gui
     GtkWidget	*menubar_h;	    // menubar handle
     GtkWidget	*toolbar_h;	    // toolbar handle
 # endif
-# ifdef USE_GTK3
+# if defined(USE_GTK3) || defined(USE_GTK4)
     GdkRGBA	*fgcolor;	    // GDK-styled foreground color
     GdkRGBA	*bgcolor;	    // GDK-styled background color
     GdkRGBA	*spcolor;	    // GDK-styled special color
@@ -375,7 +385,7 @@ typedef struct Gui
     GdkColor	*bgcolor;	    // GDK-styled background color
     GdkColor	*spcolor;	    // GDK-styled special color
 # endif
-# ifdef USE_GTK3
+# if defined(USE_GTK3) || defined(USE_GTK4)
     cairo_surface_t *surface;       // drawarea surface
 # else
     GdkGC	*text_gc;	    // cached GC for normal text
@@ -387,7 +397,9 @@ typedef struct Gui
     GtkWidget	*tabline;	    // tab pages line handle
 # endif
 
+# ifndef USE_GTK4
     GtkAccelGroup *accel_group;
+# endif
     GtkWidget	*filedlg;	    // file selection dialog
     char_u	*browse_fname;	    // file name from filedlg
 
@@ -554,7 +566,7 @@ typedef enum
  * For Solaris Studio, that is not the case.  An explicit type cast is needed
  * to suppress warnings on that particular conversion.
  */
-# if defined(__SUNPRO_C) && defined(USE_GTK3)
+# if defined(__SUNPRO_C) && (defined(USE_GTK3) || defined(USE_GTK4))
 #  define FUNC2GENERIC(func) (void *)(func)
 # else
 #  define FUNC2GENERIC(func) G_CALLBACK(func)

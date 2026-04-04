@@ -499,6 +499,9 @@
 /* Define if GTK+ GUI is to be linked against GTK+ 3 */
 #undef USE_GTK3
 
+/* Define if GTK GUI is to be linked against GTK 4 */
+#undef USE_GTK4
+
 /* Define if we have isinf() */
 #undef HAVE_ISINF
 

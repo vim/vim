@@ -7119,6 +7119,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"gui_gtk4",
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+		1
+#else
+		0
+#endif
+		},
 	{"gui_gnome",
 #ifdef FEAT_GUI_GNOME
 		1
