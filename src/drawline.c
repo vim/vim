@@ -164,6 +164,12 @@ typedef struct {
     int		c_final;	// final char, mandatory if set
     int		extra_for_textprop; // n_extra set for textprop
     int		start_extra_for_textprop; // extra_for_textprop was just set
+#ifdef FEAT_PROP_POPUP
+    int		n_overlay;
+    char_u	*p_overlay;
+    int		overlay_attr;
+    int		overlay_remaining;
+#endif
 
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
@@ -1228,6 +1234,8 @@ win_line(
     int		text_prop_flags = 0;
     int		text_prop_above = FALSE;  // first doing virtual text above
     int		text_prop_follows = FALSE;  // another text prop to display
+    int		text_prop_col = 0;	// First column of overlay virtual text
+    int		text_prop_len = 0;	// Length of overlay virtual text
     int		saved_search_attr = 0;	// search_attr to be used when n_extra
 					// goes to zero
     int		saved_area_attr = 0;	// idem for area_attr
@@ -1314,6 +1322,11 @@ win_line(
     }
 #else
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
+#endif
+#ifdef FEAT_PROP_POPUP
+    bool	last_overlay	= false; // If current char was the last overlay
+					 // char.
+    int		lock_charattr	= 0; // Don't change char_attr if > 0;
 #endif
 
     if (startrow > endrow)		// past the end already!
@@ -2097,12 +2110,28 @@ win_line(
 		int pi;
 		int bcol = (int)(ptr - line);
 
-		if (wlv.n_extra > 0
+	 	if ((wlv.n_extra > 0
 # ifdef FEAT_LINEBREAK
 			&& !in_linebreak
 # endif
+		    )
+#ifdef FEAT_PROP_POPUP
+			|| wlv.overlay_remaining > 0
+#endif
 			)
 		    --bcol;  // still working on the previous char, e.g. Tab
+
+		// Last overlay character is not able to fully cover the actual
+		// character (e.g. double width or tab). If so then pad with '>'
+		// chars.
+		if (wlv.overlay_remaining > 0 && wlv.n_overlay == 0)
+		{
+		    wlv.n_extra = wlv.overlay_remaining;
+		    wlv.c_extra = '>';
+		    wlv.char_attr = HL_ATTR(HLF_AT);
+		    lock_charattr = wlv.n_extra;
+		    wlv.overlay_remaining = 0;
+		}
 
 		// Check if any active property ends.
 		for (pi = 0; pi < text_props_active; ++pi)
@@ -2110,9 +2139,9 @@ win_line(
 		    int		tpi = text_prop_idxs[pi];
 		    textprop_T  *tp = &text_props[tpi];
 
-		    // An inline property ends when after the start column plus
-		    // length. An "above" property ends when used and n_extra
-		    // is zero.
+		    // An inline/overlay property ends when after the start
+		    // column plus length. An "above" property ends when used
+		    // and n_extra is zero.
 		    if ((tp->tp_col != MAXCOL
 				       && bcol >= tp->tp_col - 1 + tp->tp_len))
 		    {
@@ -2121,8 +2150,12 @@ win_line(
 					text_prop_idxs + pi + 1,
 					sizeof(int)
 					     * (text_props_active - (pi + 1)));
+
 			--text_props_active;
 			--pi;
+
+			text_prop_col = 0;
+			text_prop_len = 0;
 # ifdef FEAT_LINEBREAK
 			// not exactly right but should work in most cases
 			if (in_linebreak && syntax_attr == text_prop_attr_comb)
@@ -2136,11 +2169,13 @@ win_line(
 		    // not on the next char yet, don't start another prop
 		    --bcol;
 # endif
-		// Add any text property that starts in this column.
+
+		// Add any text property that that this column is within.
 		while (text_prop_next < text_prop_count)
 		{
 		    int active;
 		    textprop_T *tp = &text_props[text_prop_next];
+
 		    if (tp->tp_col == MAXCOL)
 		    {
 			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
@@ -2149,8 +2184,8 @@ win_line(
 			    break;
 			else
 			{
-			    // With 'nowrap' and not in the first screen line only "below"
-			    // text prop can show.
+			    // With 'nowrap' and not in the first screen line
+			    // only "below" text prop can show.
 			    active = wp->w_p_wrap
 				  || wlv.row == startrow
 				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
@@ -2183,9 +2218,9 @@ win_line(
 		}
 		if (text_props_active > 0 && wlv.n_extra == 0)
 		{
-		    int used_tpi = -1;
-		    int used_attr = 0;
-		    int other_tpi = -1;
+		    int	used_tpi = -1;
+		    int	used_attr = 0;
+		    int	other_tpi = -1;
 
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
@@ -2208,6 +2243,9 @@ win_line(
 			if (pt != NULL
 				&& (pt->pt_hl_id > 0 || tp->tp_id < 0)
 				&& tp->tp_id != -MAXCOL
+				&& tp->tp_col != text_prop_col
+				&& (!(tp->tp_flags & TP_FLAG_OVERLAY)
+				    || bcol >= text_prop_col +text_prop_len)
 				&& !(tp->tp_id < 0
 				    && !wp->w_p_wrap
 				    && (tp->tp_flags & (TP_FLAG_ALIGN_RIGHT
@@ -2255,10 +2293,25 @@ win_line(
 							& TP_FLAG_ALIGN_ABOVE);
 			int	    bail_out = FALSE;
 
+			text_prop_col = tp->tp_col;
+			text_prop_len = tp->tp_len;
+
 			// reset the ID in the copy to avoid it being used
 			// again
 			tp->tp_id = -MAXCOL;
 
+#if defined(FEAT_PROP_POPUP)
+			if (p != NULL && tp->tp_flags & TP_FLAG_OVERLAY)
+			{
+			    wlv.p_overlay = p;
+			    wlv.n_overlay = STRLEN(p);
+			    wlv.overlay_attr = hl_combine_attr(wlv.win_attr,
+				    used_attr);
+			    wlv.c_extra = NUL;
+			    wlv.c_final = NUL;
+			}
+			else
+#endif
 			if (p != NULL)
 			{
 			    int	    right = (tp->tp_flags
@@ -2595,61 +2648,69 @@ win_line(
 # endif
 #endif
 
-	    // Decide which of the highlight attributes to use.
-	    attr_pri = TRUE;
+	    if (lock_charattr == 0)
+	    {
+		// Decide which of the highlight attributes to use.
+		attr_pri = TRUE;
 #ifdef LINE_ATTR
-	    if (area_attr != 0)
-	    {
-		wlv.char_attr = hl_combine_attr(wlv.line_attr, area_attr);
-		if (!highlight_match)
-		    // let search highlight show in Visual area if possible
-		    wlv.char_attr = hl_combine_attr(search_attr, wlv.char_attr);
+		if (area_attr != 0)
+		{
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, area_attr);
+		    if (!highlight_match)
+			// let search highlight show in Visual area if possible
+			wlv.char_attr =
+			    hl_combine_attr(search_attr, wlv.char_attr);
 # ifdef FEAT_SYN_HL
-		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.char_attr);
+		    wlv.char_attr = hl_combine_attr(syntax_attr, wlv.char_attr);
 # endif
-	    }
-	    else if (search_attr != 0)
-	    {
-		wlv.char_attr = hl_combine_attr(wlv.line_attr, search_attr);
+		}
+		else if (search_attr != 0)
+		{
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, search_attr);
 # ifdef FEAT_SYN_HL
-		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.char_attr);
+		    wlv.char_attr = hl_combine_attr(syntax_attr, wlv.char_attr);
 # endif
-	    }
-	    else if (wlv.line_attr != 0
-		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
-			      || wlv.vcol < wlv.fromcol
-			      || vcol_prev < fromcol_prev
-			      || wlv.vcol >= wlv.tocol))
-	    {
-		// Use wlv.line_attr when not in the Visual or 'incsearch' area
-		// (area_attr may be 0 when "noinvcur" is set).
+		}
+		else if (wlv.line_attr != 0
+			&& ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
+			    || wlv.vcol < wlv.fromcol
+			    || vcol_prev < fromcol_prev
+			    || wlv.vcol >= wlv.tocol))
+		{
+		    // Use wlv.line_attr when not in the Visual or 'incsearch'
+		    // area (area_attr may be 0 when "noinvcur" is set).
 # ifdef FEAT_SYN_HL
-		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.line_attr);
+		    wlv.char_attr = hl_combine_attr(syntax_attr, wlv.line_attr);
 # else
-		wlv.char_attr = wlv.line_attr;
+		    wlv.char_attr = wlv.line_attr;
 # endif
-		attr_pri = FALSE;
-	    }
+		    attr_pri = FALSE;
+		}
 #else
-	    if (area_attr != 0)
-		wlv.char_attr = area_attr;
-	    else if (search_attr != 0)
-		wlv.char_attr = search_attr;
+		if (area_attr != 0)
+		    wlv.char_attr = area_attr;
+		else if (search_attr != 0)
+		    wlv.char_attr = search_attr;
 #endif
-	    else
-	    {
-		attr_pri = FALSE;
+		else
+		{
+		    attr_pri = FALSE;
 #ifdef FEAT_SYN_HL
-		wlv.char_attr = syntax_attr;
+		    wlv.char_attr = syntax_attr;
 #else
-		wlv.char_attr = 0;
+		    wlv.char_attr = 0;
+#endif
+		}
+#ifdef FEAT_PROP_POPUP
+		// override with text property highlight when "override" is TRUE
+		if (text_prop_type != NULL
+			&& (text_prop_flags & PT_FLAG_OVERRIDE))
+		    wlv.char_attr =
+			hl_combine_attr(wlv.char_attr, text_prop_attr);
 #endif
 	    }
-#ifdef FEAT_PROP_POPUP
-	    // override with text property highlight when "override" is TRUE
-	    if (text_prop_type != NULL && (text_prop_flags & PT_FLAG_OVERRIDE))
-		wlv.char_attr = hl_combine_attr(wlv.char_attr, text_prop_attr);
-#endif
+	    else
+		lock_charattr--;
 	}
 
 	// combine attribute with HLF_WIN
@@ -2661,6 +2722,7 @@ win_line(
 		wlv.char_attr = hl_combine_attr(wlv.win_attr, wlv.char_attr);
 	}
 
+
 	// Get the next character to put on the screen.
 
 	// The "p_extra" points to the extra stuff that is inserted to
@@ -2670,8 +2732,17 @@ win_line(
 	// "p_extra" must end in a NUL to avoid mb_ptr2len() reads past
 	// "p_extra[n_extra]".
 	// For the '$' of the 'list' option, n_extra == 1, p_extra == "".
-	if (wlv.n_extra > 0)
+	if (wlv.n_extra > 0 || wlv.n_overlay > 0)
 	{
+#ifdef FEAT_PROP_POPUP
+	    // Extra text always overrides overlay
+	    char_u  **p = wlv.n_extra > 0 ? &wlv.p_extra : &wlv.p_overlay;
+	    int	    *n = wlv.n_extra > 0 ? &wlv.n_extra : &wlv.n_overlay;
+#else
+	    char_u  **p = &wlv.p_extra;
+	    int	    *n = &wlv.n_extra;
+#endif
+
 	    if (wlv.c_extra != NUL || (wlv.n_extra == 1 && wlv.c_final != NUL))
 	    {
 		c = (wlv.n_extra == 1 && wlv.c_final != NUL)
@@ -2688,7 +2759,8 @@ win_line(
 	    }
 	    else
 	    {
-		c = *wlv.p_extra;
+
+		c = **p;
 		if (has_mbyte)
 		{
 		    mb_c = c;
@@ -2696,13 +2768,13 @@ win_line(
 		    {
 			// If the UTF-8 character is more than one byte:
 			// Decode it into "mb_c".
-			mb_l = utfc_ptr2len(wlv.p_extra);
+			mb_l = utfc_ptr2len(*p);
 			mb_utf8 = FALSE;
-			if (mb_l > wlv.n_extra)
+			if (mb_l > *n)
 			    mb_l = 1;
 			else if (mb_l > 1)
 			{
-			    mb_c = utfc_ptr2char(wlv.p_extra, u8cc);
+			    mb_c = utfc_ptr2char(*p, u8cc);
 			    mb_utf8 = TRUE;
 			    c = 0xc0;
 			}
@@ -2711,10 +2783,10 @@ win_line(
 		    {
 			// if this is a DBCS character, put it in "mb_c"
 			mb_l = MB_BYTE2LEN(c);
-			if (mb_l >= wlv.n_extra)
+			if (mb_l >= *n)
 			    mb_l = 1;
 			else if (mb_l > 1)
-			    mb_c = (c << 8) + wlv.p_extra[1];
+			    mb_c = (c << 8) + (*p)[1];
 		    }
 		    if (mb_l == 0)  // at the NUL at end-of-line
 			mb_l = 1;
@@ -2742,20 +2814,21 @@ win_line(
 
 			// put the pointer back to output the double-width
 			// character at the start of the next line.
-			++wlv.n_extra;
-			--wlv.p_extra;
+			++(*n);
+			--(*p);
 		    }
 		    else
 		    {
-			wlv.n_extra -= mb_l - 1;
-			wlv.p_extra += mb_l - 1;
+			(*n) -= mb_l - 1;
+			(*p) += mb_l - 1;
 		    }
 		}
-		++wlv.p_extra;
+		++(*p);
 	    }
-	    --wlv.n_extra;
+
+	    --(*n);
 #if defined(FEAT_PROP_POPUP)
-	    if (wlv.n_extra <= 0)
+	    if (n == &wlv.n_extra && wlv.n_extra <= 0)
 	    {
 		// Only restore search_attr and area_attr after "n_extra" in
 		// the next screen line is also done.
@@ -2776,6 +2849,51 @@ win_line(
 # ifdef FEAT_LINEBREAK
 		in_linebreak = FALSE;
 # endif
+	    }
+
+	    if (n == &wlv.n_overlay)
+	    {
+		int covered = 0;
+
+		if (wlv.overlay_remaining == 0)
+		{
+		    chartabsize_T cts;
+
+		    init_chartabsize_arg(&cts, wp, 0, wlv.col, line, ptr);
+		    covered = win_lbr_chartabsize(&cts, NULL);
+		    wlv.overlay_remaining = covered;
+
+		    clear_chartabsize_arg(&cts);
+		    MB_PTR_ADV(ptr);
+		}
+		if (wlv.overlay_remaining > 0)
+		    wlv.overlay_remaining -= mb_char2cells(mb_c);
+
+		// If negative, then it means that the overlay char covers more
+		// than one character. To handle this, increment ptr until it
+		// advances to a char that is not covered by the overlay char.
+		while (wlv.overlay_remaining < 0)
+		{
+		    chartabsize_T   cts;
+		    int		    len;
+
+		    init_chartabsize_arg(&cts, wp, 0, wlv.col + covered,
+								line, ptr);
+		    len = win_lbr_chartabsize(&cts, NULL);
+		    clear_chartabsize_arg(&cts);
+
+		    if (len == 0)
+		    {
+			iemsg("virtual text: size in cells is zero?");
+			break;
+		    }
+
+		    wlv.overlay_remaining += len;
+		    covered += len;
+		    MB_PTR_ADV(ptr);
+		}
+
+		last_overlay = wlv.n_overlay == 0;
 	    }
 #endif
 	}
@@ -3763,6 +3881,21 @@ win_line(
 	    }
 #endif
 	}
+
+#ifdef FEAT_PROP_POPUP
+	// Highlighting from overlay virtual text is always applied
+	if (wlv.draw_state == WL_LINE && (wlv.n_overlay > 0 || last_overlay))
+	{
+	    last_overlay = false;
+#ifdef LINE_ATTR
+	    if (wlv.line_attr)
+		wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.overlay_attr);
+	    else
+#endif
+		wlv.char_attr = wlv.overlay_attr;
+	}
+#endif
+
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	// XIM don't send preedit_start and preedit_end, but they send

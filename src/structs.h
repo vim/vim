@@ -894,7 +894,7 @@ typedef struct textprop_S
 {
     colnr_T	tp_col;		// start column (one based, in bytes)
     colnr_T	tp_len;		// length in bytes, when tp_id is negative used
-				// for left padding plus one
+				// for left padding plus one.
     int		tp_id;		// identifier
     int		tp_type;	// property type
     int		tp_flags;	// TP_FLAG_ values
@@ -913,6 +913,7 @@ typedef struct textprop_S
 #define TP_FLAG_WRAP		0x080	// virtual text wraps - when missing
 					// text is truncated
 #define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
+#define TP_FLAG_OVERLAY		0x200	// virtual text overlays actual text
 
 #define PROP_TEXT_MIN_CELLS	4	// minimum number of cells to use for
 					// the text, even when truncating
