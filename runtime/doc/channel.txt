@@ -736,7 +736,7 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Can also be used as a |method|: >
 			'logfile'->ch_logfile('w')
 <
-		Return type: |Number|
+		Return type: void
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
