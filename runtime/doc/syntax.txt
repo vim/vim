@@ -402,9 +402,8 @@ the desired value, or restored to their default by removing the variable using
 Remarks:
 - Some truly ancient browsers may not show the background colors.
 - From most browsers you can also print the file (in color)!
-- The latest TOhtml may actually work with older versions of Vim, but some
-  features such as conceal support will not function, and the colors may be
-  incorrect for an old Vim without GUI support compiled in.
+- Colors may be incorrect for Vim without GUI support compiled in.
+- The latest TOhtml requires Vim 9.1 or later.
 
 Here is an example how to run the script over all .c and .h files from a
 Unix shell: >
