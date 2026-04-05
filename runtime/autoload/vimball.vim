@@ -46,8 +46,6 @@ if !exists("s:USAGE")
    let g:netrw_cygwin= 0
   endif
  endif
-
- " set up g:vimball_mkdir if the mkdir() call isn't defined
 endif
 
 " =====================================================================
@@ -259,12 +257,8 @@ fun! vimball#Vimball(really,...)
      let dirpath  = dirname
      let fnamebuf = substitute(fnamebuf,'^.\{-}/\(.*\)$','\1','')
      if !isdirectory(dirname)
-      if exists("g:vimball_mkdir")
-        call system(g:vimball_mkdir." ".shellescape(dirname))
-      else
-       call mkdir(dirname)
-      endif
-       call s:RecordInVar(home,"rmdir('".dirname."')")
+      call mkdir(dirname)
+      call s:RecordInVar(home,"rmdir('".dirname."')")
      endif
     endwhile
    endif
@@ -615,11 +609,7 @@ fun! vimball#VimballHome()
   endif
   " insure that the home directory exists
   if !isdirectory(home)
-   if exists("g:vimball_mkdir")
-    call system(g:vimball_mkdir." ".shellescape(home))
-   else
-    call mkdir(home)
-   endif
+   call mkdir(home)
   endif
   return home
 endfun
