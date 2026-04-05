@@ -8038,7 +8038,6 @@ g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vim_json_conceal	syntax.txt	/*g:vim_json_conceal*
 g:vim_json_warnings	syntax.txt	/*g:vim_json_warnings*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
-g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
 g:vimsyn_comment_strings	syntax.txt	/*g:vimsyn_comment_strings*
 g:vimsyn_embed	syntax.txt	/*g:vimsyn_embed*
 g:vimsyn_folding	syntax.txt	/*g:vimsyn_folding*
