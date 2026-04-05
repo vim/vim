@@ -257,6 +257,7 @@ def g:Test_zip_fname_evil_path()
   # needed for writing the zip file
   CheckExecutable zip
 
+  messages clear
   CopyZipFile("evil.zip")
   defer delete("X.zip")
   e X.zip
@@ -280,6 +281,7 @@ def g:Test_zip_fname_evil_path2()
   # needed for writing the zip file
   CheckExecutable zip
 
+  messages clear
   CopyZipFile("evil.zip")
   defer delete("X.zip")
   e X.zip
@@ -302,6 +304,7 @@ def g:Test_zip_fname_evil_path3()
   # needed for writing the zip file
   CheckExecutable zip
 
+  messages clear
   CopyZipFile("evil.zip")
   defer delete("X.zip")
   e X.zip
