@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Apr 02
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -596,7 +596,7 @@ term_dumpwrite({buf}, {filename} [, {options}])		*term_dumpwrite()*
 		name: >
 			GetFilename()->term_dumpwrite(bufnr)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_getaltscreen({buf})				*term_getaltscreen()*
@@ -817,7 +817,7 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_sendkeys(keys)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
@@ -852,7 +852,7 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setansicolors(colors)
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available with GUI enabled and/or the |+termguicolors|
 		feature}
@@ -870,7 +870,7 @@ term_setapi({buf}, {expr})				*term_setapi()*
 		When used as a method the base is used for {buf}: >
 			GetBufnr()->term_setapi({expr})
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setkill({buf}, {how})				*term_setkill()*
@@ -888,7 +888,7 @@ term_setkill({buf}, {how})				*term_setkill()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setkill(how)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setrestore({buf}, {command})			*term_setrestore()*
@@ -903,7 +903,7 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setrestore(command)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
@@ -919,7 +919,7 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setsize(rows, cols)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_start({cmd} [, {options}])			*term_start()*
@@ -1027,7 +1027,7 @@ term_wait({buf} [, {time}])					*term_wait()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_wait()
 <
-		Return type: |Number|
+		Return type: void
 
 ==============================================================================
 3. Terminal communication			 *terminal-communication*
