@@ -22,9 +22,10 @@ var ls_sav = &laststatus
 var ei_sav = &eventignore
 set eventignore+=FileType
 
-var line_end = line('$')
-
+var lnum: number
+var end = line('$')
 var trim_tmp: list<string>
+
 # Font
 var htmlfont: string
 if exists("g:html_font")
@@ -1313,8 +1314,8 @@ var allfolds: list<any> = []
 var foldcolumn: number
 if settings.dynamic_folds
   def ProcessFolds()
-    var lnum = 1
-    var end = line('$')
+    lnum = 1
+    end = line('$')
     # save the fold text and set it to the default so we can find fold levels
     var foldtext_save = &foldtext
     setlocal foldtext&
@@ -1461,7 +1462,6 @@ endif
 
 # Now loop over all lines in the original text to convert to html.
 # Use html_start_line and html_end_line if they are set.
-var lnum: number
 if exists("g:html_start_line")
   lnum = g:html_start_line
   if lnum < 1 || lnum > line("$")
@@ -1470,7 +1470,6 @@ if exists("g:html_start_line")
 else
   lnum = 1
 endif
-var end: number
 if exists("g:html_end_line")
   end = g:html_end_line
   if end < lnum || end > line("$")
