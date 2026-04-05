@@ -2184,7 +2184,7 @@ static const funcentry_T global_functions[] =
     {"environ",		0, 0, 0,	    NULL,
 			ret_dict_string,    f_environ},
     {"err_teapot",	0, 1, 0,	    NULL,
-			ret_number_bool,    f_err_teapot},
+			ret_void,	    f_err_teapot},
     {"escape",		2, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_escape},
     {"eval",		1, 1, FEARG_1,	    arg1_string,
