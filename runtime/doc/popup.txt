@@ -351,7 +351,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		To add shortcut keys, see the example here:
 		|popup_menu-shortcut-example|
 
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
@@ -363,7 +363,7 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		keys are ignored.
 		See the example here: |popup_dialog-example|
 
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 popup_findecho()					*popup_findecho()*
