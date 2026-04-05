@@ -182,6 +182,7 @@ NEW_TESTS = \
 	test_gn \
 	test_goto \
 	test_gui \
+	test_gui_geometry \
 	test_gui_init \
 	test_hardcopy \
 	test_help \
@@ -461,6 +462,7 @@ NEW_TESTS_RES = \
 	test_gn.res \
 	test_goto.res \
 	test_gui.res \
+	test_gui_geometry.res \
 	test_gui_init.res \
 	test_hardcopy.res \
 	test_help.res \
