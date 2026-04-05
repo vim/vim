@@ -40,6 +40,7 @@ runs:
         # A file, directory or wildcard pattern that describes what
         # to upload.
         path: |
+          ${{ github.workspace }}/logs/**/*.symbolized
           ${{ github.workspace }}/runtime/indent/testdir/*.fail
           ${{ github.workspace }}/runtime/syntax/testdir/failed/*
           ${{ github.workspace }}/src/testdir/failed/*
