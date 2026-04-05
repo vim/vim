@@ -2728,9 +2728,10 @@ copy_loclist_stack(win_T *from, win_T *to)
     static int
 qf_get_fnum(qf_list_T *qfl, char_u *directory, char_u *fname)
 {
-    char_u	*ptr = NULL;
+    string_T	ptr = {NULL, 0};
     buf_T	*buf;
-    char_u	*bufname;
+    string_T	bufname;
+    size_t	fname_len;
 
     if (fname == NULL || *fname == NUL)		// no file name
 	return 0;
@@ -2743,44 +2744,52 @@ qf_get_fnum(qf_list_T *qfl, char_u *directory, char_u *fname)
 	slash_adjust(directory);
     slash_adjust(fname);
 # endif
+    fname_len = STRLEN(fname);
     if (directory != NULL && !vim_isAbsName(fname)
-	    && (ptr = concat_fnames(directory, fname, TRUE)) != NULL)
+	    && concat_fnames(directory, STRLEN(directory), fname, fname_len, TRUE, &ptr) != NULL)
     {
 	// Here we check if the file really exists.
 	// This should normally be true, but if make works without
 	// "leaving directory"-messages we might have missed a
 	// directory change.
-	if (mch_getperm(ptr) < 0)
+	if (mch_getperm(ptr.string) < 0)
 	{
-	    vim_free(ptr);
+	    vim_free(ptr.string);
 	    directory = qf_guess_filepath(qfl, fname);
 	    if (directory)
-		ptr = concat_fnames(directory, fname, TRUE);
+		concat_fnames(directory, STRLEN(directory), fname, fname_len, TRUE, &ptr);
 	    else
-		ptr = vim_strsave(fname);
-	    if (ptr == NULL)
+	    {
+		ptr.length = fname_len;
+		ptr.string = vim_strnsave(fname, fname_len);
+	    }
+	    if (ptr.string == NULL)
 		return 0;
 	}
 	// Use concatenated directory name and file name
-	bufname = ptr;
+	bufname.string = ptr.string;
+	bufname.length = ptr.length;
     }
     else
-	bufname = fname;
+    {
+	bufname.string = fname;
+	bufname.length = fname_len;
+    }
 
-    if (qf_last_bufname != NULL && STRCMP(bufname, qf_last_bufname) == 0
+    if (qf_last_bufname != NULL && STRCMP(bufname.string, qf_last_bufname) == 0
 	    && bufref_valid(&qf_last_bufref))
     {
 	buf = qf_last_bufref.br_buf;
-	vim_free(ptr);
+	vim_free(ptr.string);
     }
     else
     {
 	vim_free(qf_last_bufname);
-	buf = buflist_new(bufname, NULL, (linenr_T)0, BLN_NOOPT);
-	if (bufname == ptr)
-	    qf_last_bufname = bufname;
+	buf = buflist_new(bufname.string, NULL, (linenr_T)0, BLN_NOOPT);
+	if (bufname.string == ptr.string)
+	    qf_last_bufname = bufname.string;
 	else
-	    qf_last_bufname = vim_strsave(bufname);
+	    qf_last_bufname = vim_strnsave(bufname.string, bufname.length);
 	set_bufref(&qf_last_bufref, buf);
     }
     if (buf == NULL)
@@ -2817,17 +2826,21 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 	(*stackptr)->dirname = vim_strsave(dirbuf);
     else
     {
+	size_t	dirbuf_len;
+
 	// Okay we don't have an absolute path.
 	// dirbuf must be a subdir of one of the directories on the stack.
 	// Let's search...
+	dirbuf_len = STRLEN(dirbuf);
 	ds_new = (*stackptr)->next;
 	(*stackptr)->dirname = NULL;
 	while (ds_new)
 	{
-	    char_u  *dirname;
+	    string_T	dirname;
 
-	    dirname = concat_fnames(ds_new->dirname, dirbuf, TRUE);
-	    if (dirname == NULL)
+	    concat_fnames(ds_new->dirname, STRLEN(ds_new->dirname),
+		dirbuf, dirbuf_len, TRUE, &dirname);
+	    if (dirname.string == NULL)
 	    {
 		// pop the new element from the stack and free it
 		ds_ptr = *stackptr;
@@ -2836,13 +2849,13 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 
 		return NULL;
 	    }
-	    if (mch_isdir(dirname) == TRUE)
+	    if (mch_isdir(dirname.string) == TRUE)
 	    {
 		vim_free((*stackptr)->dirname);
-		(*stackptr)->dirname = dirname;
+		(*stackptr)->dirname = dirname.string;
 		break;
 	    }
-	    vim_free(dirname);
+	    vim_free(dirname.string);
 	    ds_new = ds_new->next;
 	}
 
@@ -2859,7 +2872,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 	if (ds_new == NULL)
 	{
 	    vim_free((*stackptr)->dirname);
-	    (*stackptr)->dirname = vim_strsave(dirbuf);
+	    (*stackptr)->dirname = vim_strnsave(dirbuf, dirbuf_len);
 	}
     }
 
@@ -2940,28 +2953,32 @@ qf_guess_filepath(qf_list_T *qfl, char_u *filename)
 {
     struct dir_stack_T     *ds_ptr;
     struct dir_stack_T     *ds_tmp;
-    char_u		   *fullname;
+    string_T		   fullname;
+    size_t		   filename_len;
 
     // no dirs on the stack - there's nothing we can do
     if (qfl->qf_dir_stack == NULL)
 	return NULL;
 
     ds_ptr = qfl->qf_dir_stack->next;
-    fullname = NULL;
+    fullname.string = NULL;
+    fullname.length = 0;
+    filename_len = STRLEN(filename);
     while (ds_ptr)
     {
-	vim_free(fullname);
-	fullname = concat_fnames(ds_ptr->dirname, filename, TRUE);
+	vim_free(fullname.string);
+	concat_fnames(ds_ptr->dirname, STRLEN(ds_ptr->dirname),
+	    filename, filename_len, TRUE, &fullname);
 
 	// If concat_fnames failed, just go on. The worst thing that can happen
 	// is that we delete the entire stack.
-	if ((fullname != NULL) && (mch_getperm(fullname) >= 0))
+	if ((fullname.string != NULL) && (mch_getperm(fullname.string) >= 0))
 	    break;
 
 	ds_ptr = ds_ptr->next;
     }
 
-    vim_free(fullname);
+    vim_free(fullname.string);
 
     // clean up all dirs we already left
     while (qfl->qf_dir_stack->next != ds_ptr)

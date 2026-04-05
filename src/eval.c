@@ -7566,7 +7566,13 @@ handle_subscript(
 		*arg = skipwhite(p + 2);
 	    else
 		*arg = p + 2;
-	    if (VIM_ISWHITE(**arg))
+	    if (ret == OK && evaluate && rettv->v_type == VAR_VOID)
+	    {
+		if (verbose)
+		    emsg(_(e_cannot_use_void_value));
+		ret = FAIL;
+	    }
+	    else if (VIM_ISWHITE(**arg))
 	    {
 		emsg(_(e_no_white_space_allowed_before_parenthesis));
 		ret = FAIL;

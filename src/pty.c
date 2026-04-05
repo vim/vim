@@ -354,15 +354,15 @@ mch_openpty(char **ttyn)
 #ifndef PTY_DONE
 
 # ifdef hpux
-static char PtyProto[] = "/dev/ptym/ptyXY";
-static char TtyProto[] = "/dev/pty/ttyXY";
+static const char PtyProto[] = "/dev/ptym/ptyXY";
+static const char TtyProto[] = "/dev/pty/ttyXY";
 # else
 #  ifdef __HAIKU__
-static char PtyProto[] = "/dev/pt/XY";
-static char TtyProto[] = "/dev/tt/XY";
+static const char PtyProto[] = "/dev/pt/XY";
+static const char TtyProto[] = "/dev/tt/XY";
 #  else
-static char PtyProto[] = "/dev/ptyXY";
-static char TtyProto[] = "/dev/ttyXY";
+static const char PtyProto[] = "/dev/ptyXY";
+static const char TtyProto[] = "/dev/ttyXY";
 #  endif
 # endif
 

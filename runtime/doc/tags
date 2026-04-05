@@ -6342,6 +6342,7 @@ b:rust_cargo_check_benches	ft_rust.txt	/*b:rust_cargo_check_benches*
 b:rust_cargo_check_examples	ft_rust.txt	/*b:rust_cargo_check_examples*
 b:rust_cargo_check_tests	ft_rust.txt	/*b:rust_cargo_check_tests*
 b:rustfmt_autosave	ft_rust.txt	/*b:rustfmt_autosave*
+b:rustfmt_autosave_if_config_present	ft_rust.txt	/*b:rustfmt_autosave_if_config_present*
 b:tex_stylish	syntax.txt	/*b:tex_stylish*
 b:var	eval.txt	/*b:var*
 b:yaml_schema	syntax.txt	/*b:yaml_schema*

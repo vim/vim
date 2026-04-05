@@ -2498,6 +2498,7 @@ screen_fill(
     if (end_col > screen_Columns)	// safety check
 	end_col = screen_Columns;
     if (ScreenLines == NULL
+	    || start_row < 0		// should not happen
 	    || start_row >= end_row
 	    || start_col >= end_col)	// nothing to do
 	return;

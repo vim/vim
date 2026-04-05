@@ -148,7 +148,7 @@ func Test_conceal_with_cursorcolumn()
           \ "three |hidden| three three three three three three three three"]
     call setline(1, lines)
     set wrap linebreak
-    set showbreak=\ >>>\ 
+    let &showbreak = ' >>> '
     syntax match test /|hidden|/ conceal
     set conceallevel=2
     set concealcursor=

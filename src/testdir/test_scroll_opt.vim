@@ -517,7 +517,8 @@ func Test_smoothscroll_long_line_showbreak()
       vim9script
       # a line that spans four screen lines
       setline(1, 'with lots of text in one line '->repeat(6))
-      set smoothscroll scrolloff=0 showbreak=+++\ 
+      set smoothscroll scrolloff=0
+      &showbreak = '+++ '
   END
   call writefile(lines, 'XSmoothLongShowbreak', 'D')
   let buf = RunVimInTerminal('-S XSmoothLongShowbreak', #{rows: 6, cols: 40})

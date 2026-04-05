@@ -4434,6 +4434,7 @@ endfunc
 "
 " The problem occurred because WM_SETFOCUS was processed slowly, and typebuf
 " was not empty when it should have been.
+" TODO: Is this test flaky?
 func Test_win32_gui_setfocus_prevent_showcmd()
   if !has('win32') || !has('gui_running')
     throw 'Skipped: Windows GUI regression test'

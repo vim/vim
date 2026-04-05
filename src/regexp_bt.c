@@ -253,7 +253,7 @@ static int	one_exactly = FALSE;	// only do one char for EXACTLY
 
 // When making changes to classchars also change nfa_classcodes.
 static char_u	*classchars = (char_u *)".iIkKfFpPsSdDxXoOwWhHaAlLuU";
-static int	classcodes[] = {
+static const int classcodes[] = {
     ANY, IDENT, SIDENT, KWORD, SKWORD,
     FNAME, SFNAME, PRINT, SPRINT,
     WHITE, NWHITE, DIGIT, NDIGIT,
@@ -1689,7 +1689,7 @@ regatom(int *flagp)
 					  colnr_T vcol = 0;
 
 					  getvvcol(curwin, &curwin->w_cursor,
-							    NULL, NULL, &vcol);
+							 NULL, NULL, &vcol, 0);
 					  ++vcol;
 					  n = vcol;
 				      }

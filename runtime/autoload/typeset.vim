@@ -3,6 +3,8 @@ vim9script
 # Language:           Generic TeX typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Latest Revision:    2026 Feb 19
+# Last Change:
+# 2026 Mar 30 by Vim project: Use fnameescape for the ProcessOutput command
 
 # Constants and helpers {{{
 const SLASH = !exists("+shellslash") || &shellslash ? '/' : '\'
@@ -60,7 +62,7 @@ def ProcessOutput(qfid: number, wd: string, efm: string, ch: channel, msg: strin
   endif
 
   # Make sure the working directory is correct
-  silent execute "lcd" wd
+  silent execute "lcd" .. fnameescape(wd)
   setqflist([], 'a', {'id': qfid, 'lines': [msg], 'efm': efm})
   silent lcd -
 enddef

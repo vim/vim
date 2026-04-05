@@ -402,7 +402,7 @@ enddef
 
 def Test_bufload()
   assert_fails('bufload([])', 'E1220:')
-  bufload('')->assert_equal(0)
+  bufload('')
 enddef
 
 def Test_bufloaded()
@@ -647,7 +647,7 @@ def Test_ch_logfile()
   else
     assert_fails('ch_logfile(true)', 'E1174:')
     assert_fails('ch_logfile("foo", true)', 'E1174:')
-    ch_logfile('', '')->assert_equal(0)
+    ch_logfile('', '')
 
     v9.CheckSourceDefAndScriptFailure(['ch_logfile(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
     v9.CheckSourceDefAndScriptFailure(['ch_logfile("a", true)'], ['E1013: Argument 2: type mismatch, expected string but got bool', 'E1174: String required for argument 2'])
