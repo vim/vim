@@ -18,9 +18,9 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let g:loaded_vimball = "v37"
-if v:version < 702
+if v:version < 704
  echohl WarningMsg
- echo "***warning*** this version of vimball needs vim 7.2"
+ echo "***warning*** this version of vimball needs vim 7.4"
  echohl Normal
  finish
 endif
@@ -48,18 +48,6 @@ if !exists("s:USAGE")
  endif
 
  " set up g:vimball_mkdir if the mkdir() call isn't defined
- if !exists("*mkdir")
-  if exists("g:netrw_local_mkdir")
-   let g:vimball_mkdir= g:netrw_local_mkdir
-  elseif executable("mkdir")
-   let g:vimball_mkdir= "mkdir"
-  elseif executable("makedir")
-   let g:vimball_mkdir= "makedir"
-  endif
-  if !exists(g:vimball_mkdir)
-   call vimball#ShowMesg(s:WARNING,"(vimball) g:vimball_mkdir undefined")
-  endif
- endif
 endif
 
 " =====================================================================
@@ -182,9 +170,8 @@ endfun
 "                  vimballs' prologue)
 fun! vimball#Vimball(really,...)
 
-  if v:version < 701 || (v:version == 701 && !exists('*fnameescape'))
-   echoerr "your vim is missing the fnameescape() function (pls upgrade to vim 7.2 or later)"
-"   call Dret("vimball#Vimball : needs 7.1 with patch 299 or later")
+  if !exists('*fnameescape')
+   echoerr "your vim is missing the fnameescape() function (pls upgrade to vim 7.4 or later)"
    return
   endif
 
