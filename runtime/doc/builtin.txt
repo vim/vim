@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -82,7 +82,7 @@ browsedir({title}, {initdir})	String	put up a directory requester
 bufadd({name})			Number	add a buffer to the buffer list
 bufexists({buf})		Number	|TRUE| if buffer {buf} exists
 buflisted({buf})		Number	|TRUE| if buffer {buf} is listed
-bufload({buf})			Number	load buffer {buf} if not loaded yet
+bufload({buf})			none	load buffer {buf} if not loaded yet
 bufloaded({buf})		Number	|TRUE| if buffer {buf} is loaded
 bufname([{buf}])		String	name of the buffer {buf}
 bufnr([{buf} [, {create}]])	Number	number of the buffer {buf}
@@ -1500,7 +1500,7 @@ bufload({buf})						*bufload()*
 		Can also be used as a |method|: >
 			eval 'somename'->bufload()
 <
-		Return type: |Number|
+		Return type: void
 
 
 bufloaded({buf})					*bufloaded()*

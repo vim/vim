@@ -4089,8 +4089,8 @@ enddef
 
 def Test_setenv()
   v9.CheckSourceDefAndScriptFailure(['setenv(1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  assert_equal(0, setenv('', ''))
-  assert_equal(0, setenv('', v:null))
+  setenv('', '')
+  setenv('', v:null)
 enddef
 
 def Test_setfperm()
@@ -4939,7 +4939,7 @@ enddef
 
 def Test_timer_stop()
   v9.CheckSourceDefAndScriptFailure(['timer_stop("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
-  assert_equal(0, timer_stop(100))
+  timer_stop(100)
 enddef
 
 def Test_tolower()
