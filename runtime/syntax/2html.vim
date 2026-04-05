@@ -1512,283 +1512,289 @@ if !settings.expand_tabs
   setlocal isprint+=9
 endif
 
-while lnum <= end
+def ProcessLines()
+  var all_lines = getline(lnum, end)
+  var start_lnum = lnum
 
-  # If there are filler lines for diff mode, show these above the line.
-  Add_diff_fill(lnum)
+  while lnum <= end
 
-  # Start the line with the line number.
-  var numcol: string
-  if settings.number_lines
-    numcol = repeat(' ', margin - 1 - strlen(lnum)) .. lnum .. ' '
-  endif
+    # If there are filler lines for diff mode, show these above the line.
+    Add_diff_fill(lnum)
 
-  var new: string
-
-  if has('folding') && !settings.ignore_folding && foldclosed(lnum) > -1 && !settings.dynamic_folds
-    #
-    # This is the beginning of a folded block (with no dynamic folding)
-    new = foldtextresult(lnum)
-    if !settings.no_pre
-      # HTML line wrapping is off--go ahead and fill to the margin
-      new ..= repeat(foldfillchar, &columns - strlen(new))
+    # Start the line with the line number.
+    var numcol: string
+    if settings.number_lines
+      numcol = repeat(' ', margin - 1 - strlen(lnum)) .. lnum .. ' '
     endif
 
-    # put numcol in a separate group for sake of unselectable text
-    new = (settings.number_lines ? HtmlFormat_n(numcol, FOLDED_ID, 0, lnum): "") .. HtmlFormat_t(new, FOLDED_ID, 0)
+    var new: string
 
-    # Skip to the end of the fold
-    var new_lnum = foldclosedend(lnum)
+    if has('folding') && !settings.ignore_folding && foldclosed(lnum) > -1 && !settings.dynamic_folds
+      #
+      # This is the beginning of a folded block (with no dynamic folding)
+      new = foldtextresult(lnum)
+      if !settings.no_pre
+	# HTML line wrapping is off--go ahead and fill to the margin
+	new ..= repeat(foldfillchar, &columns - strlen(new))
+      endif
 
-    if !settings.no_progress
-      pgb.Incr(new_lnum - lnum)
-    endif
+      # put numcol in a separate group for sake of unselectable text
+      new = (settings.number_lines ? HtmlFormat_n(numcol, FOLDED_ID, 0, lnum) : "") .. HtmlFormat_t(new, FOLDED_ID, 0)
 
-    lnum = new_lnum
+      # Skip to the end of the fold
+      var new_lnum = foldclosedend(lnum)
 
-  else
-    #
-    # A line that is not folded, or doing dynamic folding.
-    #
-    var line = getline(lnum)
-    var len = strlen(line)
+      if !settings.no_progress
+	pgb.Incr(new_lnum - lnum)
+      endif
 
-    if settings.dynamic_folds
-      # First insert a closing for any open folds that end on this line
-      while !empty(foldstack) && get(foldstack, 0).lastline == lnum-1
-	new ..= "</span></span>"
-	remove(foldstack, 0)
-      endwhile
+      lnum = new_lnum
 
-      # Now insert an opening for any new folds that start on this line
-      var firstfold = 1
-      while !empty(allfolds) && get(allfolds, 0).firstline == lnum
-	foldId = foldId + 1
-	new ..= "<span id='"
-	new ..= (exists('g:html_diff_win_num') ? "win" .. g:html_diff_win_num : "")
-	new ..= "fold" .. foldId .. settings.id_suffix .. "' class='" .. allfolds[0].type .. "'>"
+    else
+      #
+      # A line that is not folded, or doing dynamic folding.
+      #
+      var line = all_lines[lnum - start_lnum]
+      var len = strlen(line)
+
+      if settings.dynamic_folds
+	# First insert a closing for any open folds that end on this line
+	while !empty(foldstack) && get(foldstack, 0).lastline == lnum - 1
+	  new ..= "</span></span>"
+	  remove(foldstack, 0)
+	endwhile
+
+	# Now insert an opening for any new folds that start on this line
+	var firstfold = 1
+	while !empty(allfolds) && get(allfolds, 0).firstline == lnum
+	  foldId = foldId + 1
+	  new ..= "<span id='"
+	  new ..= (exists('g:html_diff_win_num') ? "win" .. g:html_diff_win_num : "")
+	  new ..= "fold" .. foldId .. settings.id_suffix .. "' class='" .. allfolds[0].type .. "'>"
 
 
-	# Unless disabled, add a fold column for the opening line of a fold.
+	  # Unless disabled, add a fold column for the opening line of a fold.
+	  #
+	  # Note that dynamic folds require using css so we just use css to take
+	  # care of the leading spaces rather than using &nbsp; in the case of
+	  # html_no_pre to make it easier
+	  if !settings.no_foldcolumn
+	    # add fold column that can open the new fold
+	    if allfolds[0].level > 1 && firstfold
+	      new ..= FoldColumn_build('|', allfolds[0].level - 1, 0, "",
+		'toggle-open FoldColumn', 'javascript:toggleFold("fold' .. foldstack[0].id .. settings.id_suffix .. '");')
+	    endif
+	    # add the filler spaces separately from the '+' char so that it can be
+	    # shown/hidden separately during a hover unfold
+	    new ..= FoldColumn_build("+", 1, 0, "",
+	      'toggle-open FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
+	    # If this is not the last fold we're opening on this line, we need
+	    # to keep the filler spaces hidden if the fold is opened by mouse
+	    # hover. If it is the last fold to open in the line, we shouldn't hide
+	    # them, so don't apply the toggle-filler class.
+	    new ..= FoldColumn_build(" ", 1, foldcolumn - allfolds[0].level - 1, "",
+	      'toggle-open FoldColumn' .. (get(allfolds, 1, {firstline: 0}).firstline == lnum ? " toggle-filler" : ""),
+	      'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
+
+	    # add fold column that can close the new fold
+	    # only add extra blank space if we aren't opening another fold on the
+	    # same line
+	    var extra_space: number
+	    if get(allfolds, 1, {firstline: 0}).firstline != lnum
+	      extra_space = foldcolumn - allfolds[0].level
+	    else
+	      extra_space = 0
+	    endif
+	    if firstfold
+	      # the first fold in a line has '|' characters from folds opened in
+	      # previous lines, before the '-' for this fold
+	      new ..= FoldColumn_build('|', allfolds[0].level - 1, extra_space, '-',
+		'toggle-closed FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
+	    else
+	      # any subsequent folds in the line only add a single '-'
+	      new ..= FoldColumn_build("-", 1, extra_space, "",
+		'toggle-closed FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
+	    endif
+	    firstfold = 0
+	  endif
+
+	  # Add fold text, moving the span ending to the next line so collapsing
+	  # of folds works correctly.
+	  # Put numcol in a separate group for sake of unselectable text.
+	  new ..= (settings.number_lines ? HtmlFormat_n(numcol, FOLDED_ID, 0, 0) : "") .. substitute(HtmlFormat_t(foldtextresult(lnum), FOLDED_ID, 0), '</span>', HtmlEndline .. '\n\0', '')
+	  new ..= "<span class='fulltext'>"
+
+	  # open the fold now that we have the fold text to allow retrieval of
+	  # fold text for subsequent folds
+	  execute $":{lnum}foldopen"
+	  insert(foldstack, remove(allfolds, 0), 0)
+	  foldstack[0].id = foldId
+	endwhile
+
+	# Unless disabled, add a fold column for other lines.
 	#
 	# Note that dynamic folds require using css so we just use css to take
 	# care of the leading spaces rather than using &nbsp; in the case of
 	# html_no_pre to make it easier
 	if !settings.no_foldcolumn
-	  # add fold column that can open the new fold
-	  if allfolds[0].level > 1 && firstfold
-	    new ..= FoldColumn_build('|', allfolds[0].level - 1, 0, "",
-	      'toggle-open FoldColumn', 'javascript:toggleFold("fold' .. foldstack[0].id .. settings.id_suffix .. '");')
-	  endif
-	  # add the filler spaces separately from the '+' char so that it can be
-	  # shown/hidden separately during a hover unfold
-	  new ..= FoldColumn_build("+", 1, 0, "",
-	    'toggle-open FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
-	  # If this is not the last fold we're opening on this line, we need
-	  # to keep the filler spaces hidden if the fold is opened by mouse
-	  # hover. If it is the last fold to open in the line, we shouldn't hide
-	  # them, so don't apply the toggle-filler class.
-	  new ..= FoldColumn_build(" ", 1, foldcolumn - allfolds[0].level - 1, "",
-	    'toggle-open FoldColumn' .. (get(allfolds, 1, {firstline: 0}).firstline == lnum ? " toggle-filler" : ""),
-	    'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
-
-	  # add fold column that can close the new fold
-	  # only add extra blank space if we aren't opening another fold on the
-	  # same line
-	  var extra_space: number
-	  if get(allfolds, 1, {firstline: 0}).firstline != lnum
-	    extra_space = foldcolumn - allfolds[0].level
+	  if empty(foldstack)
+	    # add the empty foldcolumn for unfolded lines if there is a fold
+	    # column at all
+	    if foldcolumn > 0
+	      new = new .. FoldColumn_fill()
+	    endif
 	  else
-	    extra_space = 0
+	    # add the fold column for folds not on the opening line
+	    if get(foldstack, 0).firstline < lnum
+	      new = new .. FoldColumn_build('|', foldstack[0].level, foldcolumn - foldstack[0].level, "",
+		'FoldColumn', 'javascript:toggleFold("fold' .. foldstack[0].id .. settings.id_suffix .. '");')
+	    endif
 	  endif
-	  if firstfold
-	    # the first fold in a line has '|' characters from folds opened in
-	    # previous lines, before the '-' for this fold
-	    new ..= FoldColumn_build('|', allfolds[0].level - 1, extra_space, '-',
-	      'toggle-closed FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
-	  else
-	    # any subsequent folds in the line only add a single '-'
-	    new ..= FoldColumn_build("-", 1, extra_space, "",
-	      'toggle-closed FoldColumn', 'javascript:toggleFold("fold' .. foldId .. settings.id_suffix .. '");')
-	  endif
-	  firstfold = 0
 	endif
+      endif
 
-	# Add fold text, moving the span ending to the next line so collapsing
-	# of folds works correctly.
-	# Put numcol in a separate group for sake of unselectable text.
-	new ..= (settings.number_lines ? HtmlFormat_n(numcol, FOLDED_ID, 0, 0) : "") .. substitute(HtmlFormat_t(foldtextresult(lnum), FOLDED_ID, 0), '</span>', HtmlEndline .. '\n\0', '')
-	new ..= "<span class='fulltext'>"
+      # Now continue with the unfolded line text
+      if settings.number_lines
+	new ..= HtmlFormat_n(numcol, LINENR_ID, 0, lnum)
+      elseif settings.line_ids
+	new ..= HtmlFormat_n("", LINENR_ID, 0, lnum)
+      endif
 
-	# open the fold now that we have the fold text to allow retrieval of
-	# fold text for subsequent folds
-	execute $":{lnum}foldopen"
-	insert(foldstack, remove(allfolds, 0), 0)
-	foldstack[0].id = foldId
-      endwhile
+      # Get the diff attribute, if any.
+      var diffattr = diff_hlID(lnum, 1)
 
-      # Unless disabled, add a fold column for other lines.
-      #
-      # Note that dynamic folds require using css so we just use css to take
-      # care of the leading spaces rather than using &nbsp; in the case of
-      # html_no_pre to make it easier
-      if !settings.no_foldcolumn
-	if empty(foldstack)
-	  # add the empty foldcolumn for unfolded lines if there is a fold
-	  # column at all
-	  if foldcolumn > 0
-	    new = new .. FoldColumn_fill()
+      # initialize conceal info to act like not concealed, just in case
+      var concealinfo = [0, '']
+
+      # Loop over each character in the line
+      var col = 1
+
+      # most of the time we won't use the diff_id, initialize to zero
+      var diff_id = 0
+
+      while col <= len || (col == 1 && diffattr)
+	var id: number
+	var startcol = col # The start column for processing text
+	if !settings.ignore_conceal && has('conceal')
+	  concealinfo = synconcealed(lnum, col)
+	endif
+	if !settings.ignore_conceal && concealinfo[0]
+	  col = col + 1
+	  # Speed loop (it's small - that's the trick)
+	  # Go along till we find a change in the match sequence number (ending
+	  # the specific concealed region) or until there are no more concealed
+	  # characters.
+	  while col <= len && concealinfo == synconcealed(lnum, col) | col = col + 1 | endwhile
+	elseif diffattr
+	  diff_id = diff_hlID(lnum, col)
+	  id = synID(lnum, col, 1)
+	  col = col + 1
+	  # Speed loop (it's small - that's the trick)
+	  # Go along till we find a change in hlID
+	  while col <= len && id == synID(lnum, col, 1) && diff_id == diff_hlID(lnum, col)
+	    col = col + 1
+	  endwhile
+	  if len < &columns && !settings.no_pre
+	    # Add spaces at the end of the raw text line to extend the changed
+	    # line to the full width.
+	    line = line .. repeat(' ', &columns - virtcol([lnum, len]) - margin)
+	    len = &columns
 	  endif
 	else
-	  # add the fold column for folds not on the opening line
-	  if get(foldstack, 0).firstline < lnum
-	    new = new .. FoldColumn_build('|', foldstack[0].level, foldcolumn - foldstack[0].level, "",
-	      'FoldColumn', 'javascript:toggleFold("fold' .. foldstack[0].id .. settings.id_suffix .. '");')
-	  endif
-	endif
-      endif
-    endif
-
-    # Now continue with the unfolded line text
-    if settings.number_lines
-      new ..= HtmlFormat_n(numcol, LINENR_ID, 0, lnum)
-    elseif settings.line_ids
-      new ..= HtmlFormat_n("", LINENR_ID, 0, lnum)
-    endif
-
-    # Get the diff attribute, if any.
-    var diffattr = diff_hlID(lnum, 1)
-
-    # initialize conceal info to act like not concealed, just in case
-    var concealinfo = [0, '']
-
-    # Loop over each character in the line
-    var col = 1
-
-    # most of the time we won't use the diff_id, initialize to zero
-    var diff_id = 0
-
-    while col <= len || (col == 1 && diffattr)
-      var id: number
-      var startcol = col # The start column for processing text
-      if !settings.ignore_conceal && has('conceal')
-	concealinfo = synconcealed(lnum, col)
-      endif
-      if !settings.ignore_conceal && concealinfo[0]
-	col = col + 1
-	# Speed loop (it's small - that's the trick)
-	# Go along till we find a change in the match sequence number (ending
-	# the specific concealed region) or until there are no more concealed
-	# characters.
-	while col <= len && concealinfo == synconcealed(lnum, col) | col = col + 1 | endwhile
-      elseif diffattr
-	diff_id = diff_hlID(lnum, col)
-	id = synID(lnum, col, 1)
-	col = col + 1
-	# Speed loop (it's small - that's the trick)
-	# Go along till we find a change in hlID
-	while col <= len && id == synID(lnum, col, 1) && diff_id == diff_hlID(lnum, col)
+	  id = synID(lnum, col, 1)
 	  col = col + 1
-	endwhile
-	if len < &columns && !settings.no_pre
-	  # Add spaces at the end of the raw text line to extend the changed
-	  # line to the full width.
-	  line = line .. repeat(' ', &columns - virtcol([lnum, len]) - margin)
-	  len = &columns
+	  # Speed loop (it's small - that's the trick)
+	  # Go along till we find a change in synID
+	  while col <= len && id == synID(lnum, col, 1) | col = col + 1 | endwhile
 	endif
-      else
-	id = synID(lnum, col, 1)
-	col = col + 1
-	# Speed loop (it's small - that's the trick)
-	# Go along till we find a change in synID
-	while col <= len && id == synID(lnum, col, 1) | col = col + 1 | endwhile
-      endif
-      var expandedtab: string
-      if settings.ignore_conceal || !concealinfo[0]
-	# Expand tabs if needed
-	expandedtab = strpart(line, startcol - 1, col - startcol)
-	if settings.expand_tabs
-	  var offset = 0
-	  var idx = stridx(expandedtab, "\t")
-	  var tablist = split(&vts, ',')
-	  if empty(tablist)
-	    tablist = [ &ts ]
-	  endif
-	  var tabidx = 0
-	  var tabwidth = 0
-	  var i: number
-	  while idx >= 0
-	    if startcol + idx == 1
-	      i = tablist[0]
-	    else
-	      # Get the character, which could be multiple bytes, which falls
-	      # immediately before the found tab. Extract it by matching a
-	      # character just prior to the column where the tab matches.
-	      # We'll use this to get the byte index of the character
-	      # immediately preceding the tab, so we can then look up the
-	      # virtual column that character appears in, to determine how
-	      # much of the current tabstop has been used up.
-	      var prevc: string
-	      if idx == 0
-		# if the found tab is the first character in the text being
-		# processed, we need to get the character prior to the text,
-		# given by startcol.
-		prevc = matchstr(line, '.\%' .. (startcol + offset) .. 'c')
-	      else
-		# Otherwise, the byte index of the tab into expandedtab is
-		# given by idx.
-		prevc = matchstr(expandedtab, '.\%' .. (idx + 1) .. 'c')
-	      endif
-	      var vcol = virtcol([lnum, startcol + idx + offset - len(prevc)])
-
-	      # find the tabstop interval to use for the tab we just found. Keep
-	      # adding tabstops (which could be variable) until we would exceed
-	      # the virtual screen position of the start of the found tab.
-	      while vcol >= tabwidth + tablist[tabidx]
-		tabwidth += tablist[tabidx]
-		if tabidx < len(tablist) - 1
-		  tabidx = tabidx + 1
-		endif
-	      endwhile
-	      i = tablist[tabidx] - (vcol - tabwidth)
+	var expandedtab: string
+	if settings.ignore_conceal || !concealinfo[0]
+	  # Expand tabs if needed
+	  expandedtab = strpart(line, startcol - 1, col - startcol)
+	  if settings.expand_tabs
+	    var offset = 0
+	    var idx = stridx(expandedtab, "\t")
+	    var tablist = mapnew(split(&vts, ','), (_, v) => str2nr(v))
+	    if empty(tablist)
+	      tablist = [&ts]
 	    endif
-	    # update offset to keep the index within the line corresponding to
-	    # actual tab characters instead of replaced spaces; idx reflects
-	    # replaced spaces in expandedtab, offset cancels out all but
-	    # the tab character itself.
-	    offset -= i - 1
-	    expandedtab = substitute(expandedtab, '\t', repeat(' ', i), '')
-	    idx = stridx(expandedtab, "\t")
-	  endwhile
+	    var tabidx = 0
+	    var tabwidth = 0
+	    var i: number
+	    while idx >= 0
+	      if startcol + idx == 1
+		i = tablist[0]
+	      else
+		# Get the character, which could be multiple bytes, which falls
+		# immediately before the found tab. Extract it by matching a
+		# character just prior to the column where the tab matches.
+		# We'll use this to get the byte index of the character
+		# immediately preceding the tab, so we can then look up the
+		# virtual column that character appears in, to determine how
+		# much of the current tabstop has been used up.
+		var prevc: string
+		if idx == 0
+		  # if the found tab is the first character in the text being
+		  # processed, we need to get the character prior to the text,
+		  # given by startcol.
+		  prevc = matchstr(line, '.\%' .. (startcol + offset) .. 'c')
+		else
+		  # Otherwise, the byte index of the tab into expandedtab is
+		  # given by idx.
+		  prevc = matchstr(expandedtab, '.\%' .. (idx + 1) .. 'c')
+		endif
+		var vcol = virtcol([lnum, startcol + idx + offset - len(prevc)])
+
+		# find the tabstop interval to use for the tab we just found. Keep
+		# adding tabstops (which could be variable) until we would exceed
+		# the virtual screen position of the start of the found tab.
+		while vcol >= tabwidth + tablist[tabidx]
+		  tabwidth += tablist[tabidx]
+		  if tabidx < len(tablist) - 1
+		    tabidx = tabidx + 1
+		  endif
+		endwhile
+		i = tablist[tabidx] - (vcol - tabwidth)
+	      endif
+	      # update offset to keep the index within the line corresponding to
+	      # actual tab characters instead of replaced spaces; idx reflects
+	      # replaced spaces in expandedtab, offset cancels out all but
+	      # the tab character itself.
+	      offset -= i - 1
+	      expandedtab = substitute(expandedtab, '\t', repeat(' ', i), '')
+	      idx = stridx(expandedtab, "\t")
+	    endwhile
+	  endif
+
+	  # get the highlight group name to use
+	  id = synIDtrans(id)
+	else
+	  # use Conceal highlighting for concealed text
+	  id = CONCEAL_ID
+	  expandedtab = concealinfo[1]
 	endif
 
-	# get the highlight group name to use
-	id = synIDtrans(id)
-      else
-	# use Conceal highlighting for concealed text
-	id = CONCEAL_ID
-	expandedtab = concealinfo[1]
-      endif
+	# Output the text with the same synID, with class set to the highlight ID
+	# name, unless it has been concealed completely.
+	if strlen(expandedtab) > 0
+	  new = new .. HtmlFormat(expandedtab, id, diff_id, "", false)
+	endif
+      endwhile
+    endif
 
-      # Output the text with the same synID, with class set to the highlight ID
-      # name, unless it has been concealed completely.
-      if strlen(expandedtab) > 0
-	new = new .. HtmlFormat(expandedtab, id, diff_id, "", false)
-      endif
-    endwhile
-  endif
+    extend(lines, split(new .. HtmlEndline, '\n', 1))
+    if !settings.no_progress && pgb.needs_redraw
+      redrawstatus
+      pgb.needs_redraw = 0
+    endif
+    lnum = lnum + 1
 
-  extend(lines, split(new .. HtmlEndline, '\n', 1))
-  if !settings.no_progress && pgb.needs_redraw
-    redrawstatus
-    pgb.needs_redraw = 0
-  endif
-  lnum = lnum + 1
-
-  if !settings.no_progress
-    pgb.Incr()
-  endif
-endwhile
+    if !settings.no_progress
+      pgb.Incr()
+    endif
+  endwhile
+enddef
+ProcessLines()
 
 # Diff filler is returned based on what needs inserting *before* the given line.
 # So to get diff filler at the end of the buffer, we need to use last line + 1
