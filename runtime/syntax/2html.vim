@@ -18,7 +18,6 @@ vim9script
 
 # Transform a file into HTML, using the current syntax highlighting.
 
-# this file uses line continuations (but in vim9script we avoid them)
 var ls_sav = &laststatus
 var ei_sav = &eventignore
 set eventignore+=FileType
@@ -236,7 +235,7 @@ if !settings.use_css
   def HtmlOpening(id: number, extra_attrs: string): string
     var a = ""
     var translated_ID = synIDtrans(id)
-    if synIDattr(translated_ID, "inverse") !=# ''
+    if synIDattr(translated_ID, "inverse") == '1'
       # For inverse, we always must set both colors (and exchange them)
       var x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
       a = a .. '<span ' .. extra_attrs .. 'style="background-color: ' .. (x != "" ? x : fgc) .. '">'
@@ -252,9 +251,9 @@ if !settings.use_css
       x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
       if x != "" | a = a .. '<font color="' .. x .. '">' | endif
     endif
-    if synIDattr(translated_ID, "bold") !=# '' | a = a .. "<b>" | endif
-    if synIDattr(translated_ID, "italic") !=# '' | a = a .. "<i>" | endif
-    if synIDattr(translated_ID, "underline") !=# '' | a = a .. "<u>" | endif
+    if synIDattr(translated_ID, "bold") == '1' | a = a .. "<b>" | endif
+    if synIDattr(translated_ID, "italic") == '1' | a = a .. "<i>" | endif
+    if synIDattr(translated_ID, "underline") == '1' | a = a .. "<u>" | endif
     return a
   enddef
 
@@ -262,10 +261,10 @@ if !settings.use_css
   def HtmlClosing(id: number, has_extra_attrs: bool): string
     var a = ""
     var translated_ID = synIDtrans(id)
-    if synIDattr(translated_ID, "underline") !=# '' | a = a .. "</u>" | endif
-    if synIDattr(translated_ID, "italic") !=# '' | a = a .. "</i>" | endif
-    if synIDattr(translated_ID, "bold") !=# '' | a = a .. "</b>" | endif
-    if synIDattr(translated_ID, "inverse") !=# ''
+    if synIDattr(translated_ID, "underline") == '1' | a = a .. "</u>" | endif
+    if synIDattr(translated_ID, "italic") == '1' | a = a .. "</i>" | endif
+    if synIDattr(translated_ID, "bold") == '1' | a = a .. "</b>" | endif
+    if synIDattr(translated_ID, "inverse") == '1'
       a = a .. '</font></span>'
     else
       var x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
@@ -661,7 +660,7 @@ endif
 def CSS1(id: number): string
   var a = ""
   var translated_ID = synIDtrans(id)
-  if !synIDattr(translated_ID, "inverse")->empty()
+  if synIDattr(translated_ID, "inverse") == '1'
     # For inverse, we always must set both colors (and exchange them)
     var x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
     a = a .. "color: " .. (x != "" ? x : bgc) .. "; "
@@ -681,9 +680,9 @@ def CSS1(id: number): string
       a = a .. "background-color: " .. bgc .. "; "
     endif
   endif
-  if !synIDattr(translated_ID, "bold")->empty() | a = a .. "font-weight: bold; " | endif
-  if !synIDattr(translated_ID, "italic")->empty() | a = a .. "font-style: italic; " | endif
-  if !synIDattr(translated_ID, "underline")->empty() | a = a .. "text-decoration: underline; " | endif
+  if synIDattr(translated_ID, "bold") == '1' | a = a .. "font-weight: bold; " | endif
+  if synIDattr(translated_ID, "italic") == '1' | a = a .. "font-style: italic; " | endif
+  if synIDattr(translated_ID, "underline") == '1' | a = a .. "text-decoration: underline; " | endif
   return a
 enddef
 
@@ -1080,26 +1079,25 @@ var last_colors_name: string
 # set up progress bar in the status line
 # ProgressBar Indicator
 # Progressbar specific functions
-
 def SetProgbarColor()
   if hlID("TOhtmlProgress") != 0
     hi! link TOhtmlProgress_auto TOhtmlProgress
   elseif hlID("TOhtmlProgress_auto") == 0 ||
-      last_colors_name != null || !exists("g:colors_name") ||
+      last_colors_name == null_string || !exists("g:colors_name") ||
       g:colors_name != last_colors_name
     last_colors_name = exists("g:colors_name") ? g:colors_name : "none"
 
-    var diffatr = !synIDattr(synIDtrans(hlID("DiffDelete")), "reverse", whatterm)->empty() ? "fg#" : "bg#"
-    var stlatr = !synIDattr(synIDtrans(hlID("StatusLine")), "reverse", whatterm)->empty() ? "fg#" : "bg#"
+    var diffatr = synIDattr(synIDtrans(hlID("DiffDelete")), "reverse", whatterm) == '1' ? "fg#" : "bg#"
+    var stlatr = synIDattr(synIDtrans(hlID("StatusLine")), "reverse", whatterm) == '1' ? "fg#" : "bg#"
 
     var progbar_color = synIDattr(synIDtrans(hlID("DiffDelete")), diffatr, whatterm)
     var stl_color = synIDattr(synIDtrans(hlID("StatusLine")), stlatr, whatterm)
 
     if empty(progbar_color)
-      progbar_color = !synIDattr(synIDtrans(hlID("DiffDelete")), "reverse", whatterm)->empty() ? fgc : bgc
+      progbar_color = synIDattr(synIDtrans(hlID("DiffDelete")), "reverse", whatterm) == '1' ? fgc : bgc
     endif
     if empty(stl_color)
-      stl_color = !synIDattr(synIDtrans(hlID("StatusLine")), "reverse", whatterm)->empty() ? fgc : bgc
+      stl_color = synIDattr(synIDtrans(hlID("StatusLine")), "reverse", whatterm) == '1' ? fgc : bgc
     endif
 
     if progbar_color == stl_color
@@ -1170,19 +1168,21 @@ class ProgressBar
     set laststatus=2
   enddef
 
-  def CalculateTicks(pb_len: number)
-    if pb_len <= 0
-      this.progress_ticks = range(pb_len + 1)->map((_, v) => v * this.max_value / 100)
-    else
-      this.progress_ticks = range(pb_len + 1)->map((_, v) => v * this.max_value / pb_len)
-    endif
-  enddef
-
   def Paint()
     # Recalculate widths.
     var max_len = winwidth(this.winnr)
     var pb_len = 0
     var cur_value: number
+
+    def CalculateTicks(len: number)
+      if len <= 0
+	pb_len = 100
+      else
+	pb_len = len
+      endif
+      this.progress_ticks = range(pb_len + 1)->map((_, v) => v * this.max_value / pb_len)
+    enddef
+
     # always true on first call because of initial value of this.max_len
     if max_len != this.max_len
       this.max_len = max_len
@@ -1190,7 +1190,7 @@ class ProgressBar
       # Progressbar length
       pb_len = max_len - this.subtractedlen
 
-      this.CalculateTicks(pb_len)
+      CalculateTicks(pb_len)
 
       this.needs_redraw = 1
       cur_value = 0
