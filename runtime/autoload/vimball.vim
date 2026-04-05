@@ -229,8 +229,11 @@ fun! vimball#Vimball(really,...)
    let fsize   = substitute(getline(linenr+1),'^\(\d\+\).\{-}$','\1','')+0
    let fenc    = substitute(getline(linenr+1),'^\d\+\s*\(\S\{-}\)$','\1','')
    let filecnt = filecnt + 1
-   if fname =~ '..'
-     echoerr "(Vimball) Path Traversal Attack detected, aborting..."
+   if fname =~ '\.\.'
+     echomsg "(Vimball) Path Traversal Attack detected, aborting..."
+     exe "tabn ".curtabnr
+     bw! Vimball
+     call s:ChgDir(curdir)
      return
    endif
 
