@@ -604,4 +604,9 @@ func Test_netrw_FileUrlEdit_pipe_injection()
   call assert_false(filereadable(fname), 'Command injection via pipe in file URL')
 endfunc
 
+func Test_netrw_RFC2396()
+  let fname = 'a%20b'
+  call assert_equal('a b', netrw#RFC2396(fname))
+endfunc
+
 " vim:ts=8 sts=2 sw=2 et
