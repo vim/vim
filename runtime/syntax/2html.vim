@@ -1312,148 +1312,151 @@ var allfolds: list<any> = []
 
 var foldcolumn: number
 if settings.dynamic_folds
-  var lnum = 1
-  var end = line('$')
-  # save the fold text and set it to the default so we can find fold levels
-  var foldtext_save = &foldtext
-  setlocal foldtext&
+  def ProcessFolds()
+    var lnum = 1
+    var end = line('$')
+    # save the fold text and set it to the default so we can find fold levels
+    var foldtext_save = &foldtext
+    setlocal foldtext&
 
-  # we will set the foldcolumn in the html to the greater of the maximum fold
-  # level and the current foldcolumn setting
-  foldcolumn = &foldcolumn
+    # we will set the foldcolumn in the html to the greater of the maximum fold
+    # level and the current foldcolumn setting
+    foldcolumn = &foldcolumn
 
-  # get all info needed to describe currently closed folds
-  while lnum <= end
-    if foldclosed(lnum) == lnum
-      # default fold text has '+-' and then a number of dashes equal to fold
-      # level, so subtract 2 from index of first non-dash after the dashes
-      # in order to get the fold level of the current fold
-      var level = match(foldtextresult(lnum), '+-*\zs[^-]') - 2
-      # store fold info for later use
-      var newfold = {firstline: lnum, lastline: foldclosedend(lnum), level: level, type: "closed-fold"}
-      add(allfolds, newfold)
-      # open the fold so we can find any contained folds
-      execute $":{lnum}foldopen"
-    else
-      if !settings.no_progress
-	pgb.Incr()
-	if pgb.needs_redraw
-	  redrawstatus
-	  pgb.needs_redraw = 0
-	endif
-      endif
-      lnum = lnum + 1
-    endif
-  endwhile
-
-  # close all folds to get info for originally open folds
-  silent! %foldclose!
-  lnum = 1
-
-  # the originally open folds will be all folds we encounter that aren't
-  # already in the list of closed folds
-  while lnum <= end
-    if foldclosed(lnum) == lnum
-      # default fold text has '+-' and then a number of dashes equal to fold
-      # level, so subtract 2 from index of first non-dash after the dashes
-      # in order to get the fold level of the current fold
-      var level = match(foldtextresult(lnum), '+-*\zs[^-]') - 2
-      var newfold = {firstline: lnum, lastline: foldclosedend(lnum), level: level, type: "closed-fold"}
-      # only add the fold if we don't already have it
-      if empty(allfolds) || index(allfolds, newfold) == -1
-	newfold.type = "open-fold"
+    # get all info needed to describe currently closed folds
+    while lnum <= end
+      if foldclosed(lnum) == lnum
+	# default fold text has '+-' and then a number of dashes equal to fold
+	# level, so subtract 2 from index of first non-dash after the dashes
+	# in order to get the fold level of the current fold
+	var level = match(foldtextresult(lnum), '+-*\zs[^-]') - 2
+	# store fold info for later use
+	var newfold = {firstline: lnum, lastline: foldclosedend(lnum), level: level, type: "closed-fold"}
 	add(allfolds, newfold)
-      endif
-      # open the fold so we can find any contained folds
-      execute $":{lnum}foldopen"
-    else
-      if !settings.no_progress
-	pgb.Incr()
-	if pgb.needs_redraw
-	  redrawstatus
-	  pgb.needs_redraw = 0
-	endif
-      endif
-      lnum = lnum + 1
-    endif
-  endwhile
-
-  # sort the folds so that we only ever need to look at the first item in the
-  # list of folds
-  sort(allfolds, FoldCompare)
-
-  &l:foldtext = foldtext_save
-
-  # close all folds again so we can get the fold text as we go
-  silent! %foldclose!
-
-  # Go through and remove folds we don't need to (or cannot) process in the
-  # current conversion range
-  #
-  # If a fold is removed which contains other folds, which are included, we need
-  # to adjust the level of the included folds as used by the conversion logic
-  # (avoiding special cases is good)
-  #
-  # Note any time we remove a fold, either all of the included folds are in it,
-  # or none of them, because we only remove a fold if neither its start nor its
-  # end are within the conversion range.
-  var leveladjust = 0
-  for afold in allfolds
-    var removed = 0
-    if exists("g:html_start_line") && exists("g:html_end_line")
-      if afold.firstline < g:html_start_line
-	if afold.lastline <= g:html_end_line && afold.lastline >= g:html_start_line
-	  # if a fold starts before the range to convert but stops within the
-	  # range, we need to include it. Make it start on the first converted
-	  # line.
-	  afold.firstline = g:html_start_line
-	else
-	  # if the fold lies outside the range or the start and stop enclose
-	  # the entire range, don't bother parsing it
-	  remove(allfolds, index(allfolds, afold))
-	  removed = 1
-	  if afold.lastline > g:html_end_line
-	    leveladjust += 1
+	# open the fold so we can find any contained folds
+	execute $":{lnum}foldopen"
+      else
+	if !settings.no_progress
+	  pgb.Incr()
+	  if pgb.needs_redraw
+	    redrawstatus
+	    pgb.needs_redraw = 0
 	  endif
 	endif
-      elseif afold.firstline > g:html_end_line
-	# If the entire fold lies outside the range we need to remove it.
-	remove(allfolds, index(allfolds, afold))
-	removed = 1
+	lnum = lnum + 1
       endif
-    elseif exists("g:html_start_line")
-      if afold.firstline < g:html_start_line
-	# if there is no last line, but there is a first line, the end of the
-	# fold will always lie within the region of interest, so keep it
-	afold.firstline = g:html_start_line
-      endif
-    elseif exists("g:html_end_line")
-      # if there is no first line we default to the first line in the buffer so
-      # the fold start will always be included if the fold itself is included.
-      # If however the entire fold lies outside the range we need to remove it.
-      if afold.firstline > g:html_end_line
-	remove(allfolds, index(allfolds, afold))
-	removed = 1
-      endif
-    endif
-    if !removed
-      afold.level -= leveladjust
-      if afold.level + 1 > foldcolumn
-	foldcolumn = afold.level + 1
-      endif
-    endif
-  endfor
+    endwhile
 
-  # if we've removed folds containing the conversion range from processing,
-  # getting foldtext as we go won't know to open the removed folds, so the
-  # foldtext would be wrong; open them now.
-  #
-  # Note that only when a start and an end line is specified will a fold
-  # containing the current range ever be removed.
-  while leveladjust > 0
-    execute $":{g:html_start_line}foldopen"
-    leveladjust -= 1
-  endwhile
+    # close all folds to get info for originally open folds
+    silent! %foldclose!
+    lnum = 1
+
+    # the originally open folds will be all folds we encounter that aren't
+    # already in the list of closed folds
+    while lnum <= end
+      if foldclosed(lnum) == lnum
+	# default fold text has '+-' and then a number of dashes equal to fold
+	# level, so subtract 2 from index of first non-dash after the dashes
+	# in order to get the fold level of the current fold
+	var level = match(foldtextresult(lnum), '+-*\zs[^-]') - 2
+	var newfold = {firstline: lnum, lastline: foldclosedend(lnum), level: level, type: "closed-fold"}
+	# only add the fold if we don't already have it
+	if empty(allfolds) || index(allfolds, newfold) == -1
+	  newfold.type = "open-fold"
+	  add(allfolds, newfold)
+	endif
+	# open the fold so we can find any contained folds
+	execute $":{lnum}foldopen"
+      else
+	if !settings.no_progress
+	  pgb.Incr()
+	  if pgb.needs_redraw
+	    redrawstatus
+	    pgb.needs_redraw = 0
+	  endif
+	endif
+	lnum = lnum + 1
+      endif
+    endwhile
+
+    # sort the folds so that we only ever need to look at the first item in the
+    # list of folds
+    sort(allfolds, FoldCompare)
+
+    &l:foldtext = foldtext_save
+
+    # close all folds again so we can get the fold text as we go
+    silent! %foldclose!
+
+    # Go through and remove folds we don't need to (or cannot) process in the
+    # current conversion range
+    #
+    # If a fold is removed which contains other folds, which are included, we need
+    # to adjust the level of the included folds as used by the conversion logic
+    # (avoiding special cases is good)
+    #
+    # Note any time we remove a fold, either all of the included folds are in it,
+    # or none of them, because we only remove a fold if neither its start nor its
+    # end are within the conversion range.
+    var leveladjust = 0
+    for afold in allfolds
+      var removed = 0
+      if exists("g:html_start_line") && exists("g:html_end_line")
+	if afold.firstline < g:html_start_line
+	  if afold.lastline <= g:html_end_line && afold.lastline >= g:html_start_line
+	    # if a fold starts before the range to convert but stops within the
+	    # range, we need to include it. Make it start on the first converted
+	    # line.
+	    afold.firstline = g:html_start_line
+	  else
+	    # if the fold lies outside the range or the start and stop enclose
+	    # the entire range, don't bother parsing it
+	    remove(allfolds, index(allfolds, afold))
+	    removed = 1
+	    if afold.lastline > g:html_end_line
+	      leveladjust += 1
+	    endif
+	  endif
+	elseif afold.firstline > g:html_end_line
+	  # If the entire fold lies outside the range we need to remove it.
+	  remove(allfolds, index(allfolds, afold))
+	  removed = 1
+	endif
+      elseif exists("g:html_start_line")
+	if afold.firstline < g:html_start_line
+	  # if there is no last line, but there is a first line, the end of the
+	  # fold will always lie within the region of interest, so keep it
+	  afold.firstline = g:html_start_line
+	endif
+      elseif exists("g:html_end_line")
+	# if there is no first line we default to the first line in the buffer so
+	# the fold start will always be included if the fold itself is included.
+	# If however the entire fold lies outside the range we need to remove it.
+	if afold.firstline > g:html_end_line
+	  remove(allfolds, index(allfolds, afold))
+	  removed = 1
+	endif
+      endif
+      if !removed
+	afold.level -= leveladjust
+	if afold.level + 1 > foldcolumn
+	  foldcolumn = afold.level + 1
+	endif
+      endif
+    endfor
+
+    # if we've removed folds containing the conversion range from processing,
+    # getting foldtext as we go won't know to open the removed folds, so the
+    # foldtext would be wrong; open them now.
+    #
+    # Note that only when a start and an end line is specified will a fold
+    # containing the current range ever be removed.
+    while leveladjust > 0
+      execute $":{g:html_start_line}foldopen"
+      leveladjust -= 1
+    endwhile
+  enddef
+  ProcessFolds()
 endif
 
 # Now loop over all lines in the original text to convert to html.
