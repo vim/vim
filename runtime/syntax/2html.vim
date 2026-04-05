@@ -1193,7 +1193,7 @@ class ProgressBar
       this.CalculateTicks(pb_len)
 
       this.needs_redraw = 1
-      pb_len = 0
+      cur_value = 0
       this.pb_len = pb_len
     else
       # start searching at the last found index to make the search for the
@@ -1220,7 +1220,7 @@ class ProgressBar
       var c_color  = this.items.counter.color
 
       var stl =  $"%#{t_color}#%-( {this.title} %)%#{b_color}#" ..
-	(pb_len > 0 ? $'|%#{b_fcolor}#%-({repeat(" ", cur_value)}%)%#{b_color}#{repeat(" ", pb_len - cur_value)}|"' : (''))
+	(pb_len > 0 ? $'|%#{b_fcolor}#%-({repeat(" ", cur_value)}%)%#{b_color}#{repeat(" ", pb_len - cur_value)}|' : (''))
 	.. $"%=%#{c_color}#%( {printf("%3.d ", 100 * this.cur_value / this.max_value)}%% %)"
       setwinvar(this.winnr, '&stl', stl)
     endif
