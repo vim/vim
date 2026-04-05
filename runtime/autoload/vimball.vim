@@ -169,11 +169,6 @@ endfun
 "                  vimballs' prologue)
 fun! vimball#Vimball(really,...)
 
-  if !exists('*fnameescape')
-   echoerr "your vim is missing the fnameescape() function (pls upgrade to vim 7.4 or later)"
-   return
-  endif
-
   if getline(1) !~ '^" Vimball Archiver'
    echoerr "(Vimball) The current file does not appear to be a Vimball!"
    return
