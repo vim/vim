@@ -3499,6 +3499,8 @@ call_internal_func(
 	return FCERR_OTHER;
     argvars[argcount].v_type = VAR_UNKNOWN;
     global_functions[i].f_func(argvars, rettv);
+    if (in_vim9script() && global_functions[i].f_retfunc == ret_void)
+	rettv->v_type = VAR_VOID;
     return FCERR_NONE;
 }
 
@@ -3509,6 +3511,8 @@ call_internal_func_by_idx(
 	typval_T    *rettv)
 {
     global_functions[idx].f_func(argvars, rettv);
+    if (in_vim9script() && global_functions[idx].f_retfunc == ret_void)
+	rettv->v_type = VAR_VOID;
 }
 
 /*

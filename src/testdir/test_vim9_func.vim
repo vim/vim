@@ -5002,6 +5002,41 @@ def Test_void_method_chain()
     defcompile TestFunc
   END
   v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  #### Case 4: Script-level and :def should behave the same ####
+  # script-level: void built-in assigned to variable
+  lines =<< trim END
+    vim9script
+    var x = bufload('')
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def: same error
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var x = bufload('')
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # script-level: echo void built-in
+  lines =<< trim END
+    vim9script
+    echo bufload('')
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: bufload(')
+
+  # inside def: compile-time error
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      echo bufload('')
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: bufload(')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
