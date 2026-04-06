@@ -149,10 +149,6 @@ def g:Test_tar_path_traversal_with_nowrapscan()
 enddef
 
 def g:Test_tar_lz4_extract()
-  if has("mac") || has("bsd")
-    return
-  endif
-
   CheckExecutable lz4
 
   delete('X.txt')
@@ -180,10 +176,6 @@ def g:Test_tar_lz4_extract()
 enddef
 
 def g:Test_tlz4_extract()
-  if has("mac") || has("bsd")
-    return
-  endif
-
   CheckExecutable lz4
 
   delete('X.txt')
