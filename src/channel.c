@@ -1513,6 +1513,12 @@ channel_listen(
     int			val = 1;
     channel_T		*channel;
 
+    if (hostname == NULL || *hostname == NUL)
+    {
+	ch_error(NULL, "Hostname/address not defined.");
+	return NULL;
+    }
+
 #ifdef MSWIN
     channel_init_winsock();
 #endif
@@ -1529,47 +1535,42 @@ channel_listen(
     vim_memset((char *)&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(port_in);
-    if (hostname != NULL && *hostname != NUL)
-    {
+
 #ifdef FEAT_IPV6
-	struct addrinfo	hints;
-	struct addrinfo	*res = NULL;
-	int		err;
+    struct addrinfo	hints;
+    struct addrinfo	*res = NULL;
+    int		err;
 
-	CLEAR_FIELD(hints);
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
-	{
-	    ch_error(channel, "in getaddrinfo() in channel_listen()");
-	    PERROR(_(e_gethostbyname_in_channel_listen));
-	    channel_free(channel);
-	    return NULL;
-	}
-	memcpy(&server.sin_addr,
-		&((struct sockaddr_in *)res->ai_addr)->sin_addr,
-		sizeof(server.sin_addr));
-	freeaddrinfo(res);
-#else
-	if ((host = gethostbyname(hostname)) == NULL)
-	{
-	    ch_error(channel, "in gethostbyname() in channel_listen()");
-	    PERROR(_(e_gethostbyname_in_channel_listen));
-	    channel_free(channel);
-	    return NULL;
-	}
-	{
-	    char		*p;
-
-	    // When using host->h_addr_list[0] directly ubsan warns for it to
-	    // not be aligned.  First copy the pointer to avoid that.
-	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
-	    memcpy((char *)&server.sin_addr, p, host->h_length);
-	}
-#endif
+    CLEAR_FIELD(hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
+    {
+	ch_error(channel, "in getaddrinfo() in channel_listen()");
+	PERROR(_(e_gethostbyname_in_channel_listen));
+	channel_free(channel);
+	return NULL;
     }
-    else
-	server.sin_addr.s_addr = htonl(INADDR_ANY);
+    memcpy(&server.sin_addr,
+	&((struct sockaddr_in *)res->ai_addr)->sin_addr,
+	sizeof(server.sin_addr));
+    freeaddrinfo(res);
+#else
+    if ((host = gethostbyname(hostname)) == NULL)
+    {
+	ch_error(channel, "in gethostbyname() in channel_listen()");
+	PERROR(_(e_gethostbyname_in_channel_listen));
+	channel_free(channel);
+	return NULL;
+    }
+
+    char		*p;
+
+    // When using host->h_addr_list[0] directly ubsan warns for it to
+    // not be aligned.  First copy the pointer to avoid that.
+    memcpy(&p, &host->h_addr_list[0], sizeof(p));
+    memcpy((char *)&server.sin_addr, p, host->h_length);
+#endif
 
     sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1)
@@ -1631,7 +1632,7 @@ channel_listen(
     channel->ch_listen = TRUE;
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
-    channel->ch_hostname = (char *)vim_strsave((char_u *)(hostname != NULL ? hostname : ""));
+    channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
     channel->ch_port = port_in;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
