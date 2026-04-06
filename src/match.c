@@ -324,7 +324,8 @@ init_search_hl(win_T *wp, match_T *search_hl)
 	cur = cur->mit_next;
     }
     // Must update this every time since highlight group override can change it.
-    search_hl->attr = HL_ATTR(HLF_L);
+    // When inccommand is active, use IncSearch highlight for all matches.
+    search_hl->attr = inccommand_active ? HL_ATTR(HLF_I) : HL_ATTR(HLF_L);
 
     search_hl->buf = wp->w_buffer;
     search_hl->lnum = 0;

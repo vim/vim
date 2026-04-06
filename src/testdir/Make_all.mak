@@ -191,6 +191,7 @@ NEW_TESTS = \
 	test_history \
 	test_hlsearch \
 	test_iminsert \
+	test_inccommand \
 	test_increment \
 	test_increment_dbcs \
 	test_indent \
@@ -471,6 +472,7 @@ NEW_TESTS_RES = \
 	test_history.res \
 	test_hlsearch.res \
 	test_iminsert.res \
+	test_inccommand.res \
 	test_increment.res \
 	test_increment_dbcs.res \
 	test_indent.res \

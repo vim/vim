@@ -787,6 +787,7 @@ EXTERN colnr_T	search_match_endcol;		// col nr of match end
 #ifdef FEAT_SEARCH_EXTRA
 EXTERN linenr_T	search_first_line INIT(= 0);	  // for :{FIRST},{last}s/pat
 EXTERN linenr_T	search_last_line INIT(= MAXLNUM); // for :{first},{LAST}s/pat
+EXTERN int	inccommand_active INIT(= FALSE);  // inccommand preview active
 #endif
 
 EXTERN int	no_smartcase INIT(= FALSE);	// don't use 'smartcase' once

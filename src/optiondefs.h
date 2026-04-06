@@ -1452,6 +1452,15 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"inccommand",  "icm",  P_BOOL|P_VI_DEF|P_VIM,
+#ifdef FEAT_SEARCH_EXTRA
+			    (char_u *)&p_icm, PV_NONE, NULL, NULL,
+			    {(char_u *)FALSE, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"include",	    "inc",  P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_FIND_ID
 			    (char_u *)&p_inc, PV_INC, NULL, NULL,

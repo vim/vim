@@ -418,6 +418,7 @@ $quote	eval.txt	/*$quote*
 'hlsearch'	options.txt	/*'hlsearch'*
 'ht'	vi_diff.txt	/*'ht'*
 'ic'	options.txt	/*'ic'*
+'icm'	options.txt	/*'icm'*
 'icon'	options.txt	/*'icon'*
 'iconstring'	options.txt	/*'iconstring'*
 'ignorecase'	options.txt	/*'ignorecase'*
@@ -439,6 +440,7 @@ $quote	eval.txt	/*$quote*
 'imstatusfunc'	options.txt	/*'imstatusfunc'*
 'imstyle'	options.txt	/*'imstyle'*
 'inc'	options.txt	/*'inc'*
+'inccommand'	options.txt	/*'inccommand'*
 'include'	options.txt	/*'include'*
 'includeexpr'	options.txt	/*'includeexpr'*
 'incsearch'	options.txt	/*'incsearch'*
@@ -674,6 +676,7 @@ $quote	eval.txt	/*$quote*
 'nohls'	options.txt	/*'nohls'*
 'nohlsearch'	options.txt	/*'nohlsearch'*
 'noic'	options.txt	/*'noic'*
+'noicm'	options.txt	/*'noicm'*
 'noicon'	options.txt	/*'noicon'*
 'noignorecase'	options.txt	/*'noignorecase'*
 'noim'	options.txt	/*'noim'*
@@ -681,6 +684,7 @@ $quote	eval.txt	/*$quote*
 'noimcmdline'	options.txt	/*'noimcmdline'*
 'noimd'	options.txt	/*'noimd'*
 'noimdisable'	options.txt	/*'noimdisable'*
+'noinccommand'	options.txt	/*'noinccommand'*
 'noincsearch'	options.txt	/*'noincsearch'*
 'noinf'	options.txt	/*'noinf'*
 'noinfercase'	options.txt	/*'noinfercase'*
@@ -8467,6 +8471,7 @@ hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
 hl-StatusLineTerm	syntax.txt	/*hl-StatusLineTerm*
 hl-StatusLineTermNC	syntax.txt	/*hl-StatusLineTermNC*
+hl-Substitute	syntax.txt	/*hl-Substitute*
 hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*

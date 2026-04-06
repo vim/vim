@@ -736,6 +736,9 @@ EXTERN int	p_inf;		// 'infercase'
 EXTERN char_u	*p_inex;	// 'includeexpr'
 #endif
 EXTERN int	p_is;		// 'incsearch'
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN int	p_icm;		// 'inccommand'
+#endif
 #if defined(FEAT_EVAL)
 EXTERN char_u	*p_inde;	// 'indentexpr'
 EXTERN char_u	*p_indk;	// 'indentkeys'
