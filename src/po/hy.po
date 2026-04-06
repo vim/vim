@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim_9.1_am\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-12-20 20:54+0400\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2025-12-21 15:32+0400\n"
 "Last-Translator: Gagik Hakobyan <hakgagik@yahoo.com>\n"
 "Language-Team: Armenian\n"
@@ -9296,38 +9296,14 @@ msgstr "E1571: redraud_listener_add-ը պահանջում է առնվազն մե
 msgid "--No lines in buffer--"
 msgstr "-- Բուֆերում տողեր չկան --"
 
-msgid "int"
-msgstr "ամբողջ"
-
-msgid "long int"
-msgstr "երկար ինտ"
-
-msgid "long long int"
-msgstr "երկար երկար ինտ"
-
-msgid "unsigned int"
-msgstr "անստորագիր միջ"
-
-msgid "unsigned long int"
-msgstr "անստորագիր երկար միջ"
-
-msgid "unsigned long long int"
-msgstr "անստորագիր long long int"
-
 msgid "pointer"
 msgstr "ցուցիչ"
 
 msgid "percent"
 msgstr "տոկոս"
 
-msgid "char"
-msgstr "տառ"
-
 msgid "string"
 msgstr "տող"
-
-msgid "float"
-msgstr "սահող կետով թվանշան"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "փնտրումն ավարտվել է, որոնումն սկսվելու է վերջից"

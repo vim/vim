@@ -9328,38 +9328,14 @@ msgstr "E1575: Non posso create delle pipe"
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "puntatore"
 
 msgid "percent"
 msgstr "percento"
 
-msgid "char"
-msgstr "carattere"
-
 msgid "string"
 msgstr "stringa"
-
-msgid "float"
-msgstr "numero a virgola mobile"
 
 #.
 #. * Some messages that can be shared are included here.

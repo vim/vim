@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-02-19 17:55+0000\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2026-02-20 09:34+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
@@ -9196,38 +9196,14 @@ msgstr ""
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
 
-msgid "int"
-msgstr "целобројни"
-
-msgid "long int"
-msgstr "дуги целобројни"
-
-msgid "long long int"
-msgstr "дуги дуги целобројни"
-
-msgid "unsigned int"
-msgstr "неозначени целобројни"
-
-msgid "unsigned long int"
-msgstr "неозначени дуги целобројни"
-
-msgid "unsigned long long int"
-msgstr "неозначени дуги дуги целобројни"
-
 msgid "pointer"
 msgstr "показивач"
 
 msgid "percent"
 msgstr "проценат"
 
-msgid "char"
-msgstr "карактер"
-
 msgid "string"
 msgstr "стринг"
-
-msgid "float"
-msgstr "покретни"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "претрага је достигла ВРХ, наставља се од ДНА"

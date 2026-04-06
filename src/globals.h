@@ -1737,17 +1737,17 @@ EXTERN win_T	*cmdwin_win INIT(= NULL); // window of cmdline window or NULL
 EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 
 EXTERN char typename_unknown[]	INIT(= N_("unknown"));
-EXTERN char typename_int[]	INIT(= N_("int"));
-EXTERN char typename_longint[]	INIT(= N_("long int"));
-EXTERN char typename_longlongint[]	INIT(= N_("long long int"));
-EXTERN char typename_unsignedint[]	INIT(= N_("unsigned int"));
-EXTERN char typename_unsignedlongint[]	INIT(= N_("unsigned long int"));
-EXTERN char typename_unsignedlonglongint[]	INIT(= N_("unsigned long long int"));
+EXTERN char typename_int[]	INIT(= "int");
+EXTERN char typename_longint[]	INIT(= "long int");
+EXTERN char typename_longlongint[]	INIT(= "long long int");
+EXTERN char typename_unsignedint[]	INIT(= "unsigned int");
+EXTERN char typename_unsignedlongint[]	INIT(= "unsigned long int");
+EXTERN char typename_unsignedlonglongint[]	INIT(= "unsigned long long int");
 EXTERN char typename_pointer[]	INIT(= N_("pointer"));
 EXTERN char typename_percent[]	INIT(= N_("percent"));
-EXTERN char typename_char[] INIT(= N_("char"));
+EXTERN char typename_char[] INIT(= "char");
 EXTERN char typename_string[]	INIT(= N_("string"));
-EXTERN char typename_float[]	INIT(= N_("float"));
+EXTERN char typename_float[]	INIT(= "float");
 
 /*
  * When ":global" is used to number of substitutions and changed lines is
