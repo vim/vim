@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 03
+*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5212,7 +5212,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	command line has no uppercase characters, the added character is
 	converted to lowercase.
 	CTRL-R CTRL-W can be used to add the word at the end of the current
-	match, excluding the characters that were already typed.
+	match, excluding the characters that were already typed (starting from
+	the beginning of the word).
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'indentexpr'* *'inde'*
