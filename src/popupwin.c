@@ -4103,6 +4103,11 @@ popup_update_mask(win_T *wp, int width, int height)
 	return;  // cache is still valid
 
     vim_free(wp->w_popup_mask_cells);
+    if (width > 0 && (size_t)height > SIZE_MAX / (size_t)width)
+    {
+	wp->w_popup_mask_cells = NULL;
+	return;
+    }
     wp->w_popup_mask_cells = alloc_clear((size_t)width * height);
     if (wp->w_popup_mask_cells == NULL)
 	return;

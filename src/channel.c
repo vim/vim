@@ -2290,6 +2290,8 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
     readq_T *node = head->rq_next;
     char_u *buf = node->rq_buffer;
 
+    if (len < 0 || (long_u)len > node->rq_buflen)
+	return;
     mch_memmove(buf, buf + len, node->rq_buflen - len);
     node->rq_buflen -= len;
     node->rq_buffer[node->rq_buflen] = NUL;

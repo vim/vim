@@ -5525,7 +5525,7 @@ regprop(char_u *op)
       case MOPEN + 7:
       case MOPEN + 8:
       case MOPEN + 9:
-	buflen += sprintf(buf + buflen, "MOPEN%d", OP(op) - MOPEN);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "MOPEN%d", OP(op) - MOPEN);
 	p = NULL;
 	break;
       case MCLOSE + 0:
@@ -5540,7 +5540,7 @@ regprop(char_u *op)
       case MCLOSE + 7:
       case MCLOSE + 8:
       case MCLOSE + 9:
-	buflen += sprintf(buf + buflen, "MCLOSE%d", OP(op) - MCLOSE);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "MCLOSE%d", OP(op) - MCLOSE);
 	p = NULL;
 	break;
       case BACKREF + 1:
@@ -5552,7 +5552,7 @@ regprop(char_u *op)
       case BACKREF + 7:
       case BACKREF + 8:
       case BACKREF + 9:
-	buflen += sprintf(buf + buflen, "BACKREF%d", OP(op) - BACKREF);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "BACKREF%d", OP(op) - BACKREF);
 	p = NULL;
 	break;
       case NOPEN:
@@ -5571,7 +5571,7 @@ regprop(char_u *op)
       case ZOPEN + 7:
       case ZOPEN + 8:
       case ZOPEN + 9:
-	buflen += sprintf(buf + buflen, "ZOPEN%d", OP(op) - ZOPEN);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "ZOPEN%d", OP(op) - ZOPEN);
 	p = NULL;
 	break;
       case ZCLOSE + 1:
@@ -5583,7 +5583,7 @@ regprop(char_u *op)
       case ZCLOSE + 7:
       case ZCLOSE + 8:
       case ZCLOSE + 9:
-	buflen += sprintf(buf + buflen, "ZCLOSE%d", OP(op) - ZCLOSE);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "ZCLOSE%d", OP(op) - ZCLOSE);
 	p = NULL;
 	break;
       case ZREF + 1:
@@ -5595,7 +5595,7 @@ regprop(char_u *op)
       case ZREF + 7:
       case ZREF + 8:
       case ZREF + 9:
-	buflen += sprintf(buf + buflen, "ZREF%d", OP(op) - ZREF);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "ZREF%d", OP(op) - ZREF);
 	p = NULL;
 	break;
 # endif
@@ -5636,7 +5636,7 @@ regprop(char_u *op)
       case BRACE_COMPLEX + 7:
       case BRACE_COMPLEX + 8:
       case BRACE_COMPLEX + 9:
-	buflen += sprintf(buf + buflen, "BRACE_COMPLEX%d", OP(op) - BRACE_COMPLEX);
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "BRACE_COMPLEX%d", OP(op) - BRACE_COMPLEX);
 	p = NULL;
 	break;
       case MULTIBYTECODE:
@@ -5646,12 +5646,12 @@ regprop(char_u *op)
 	p = "NEWL";
 	break;
       default:
-	buflen += sprintf(buf + buflen, "corrupt %d", OP(op));
+	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "corrupt %d", OP(op));
 	p = NULL;
 	break;
     }
     if (p != NULL)
-	STRCPY(buf + buflen, p);
+	vim_strncpy((char_u *)buf + buflen, (char_u *)p, sizeof(buf) - buflen - 1);
     return (char_u *)buf;
 }
 #endif	    // DEBUG
