@@ -704,7 +704,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tlz4")
-   let extractcmd= substitute(extractcmd,"-","--use-compress-program=lz4 -","")
+   let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
    call system(extractcmd." ".shellescape(tarbase).".tlz4 ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tlz4 {fname}: failed!")
@@ -713,7 +713,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tar.lz4")
-   let extractcmd= substitute(extractcmd,"-","--use-compress-program=lz4 -","")
+   let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
    call system(extractcmd." ".shellescape(tarbase).".tar.lz4 ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tar.lz4 {fname}: failed!")
