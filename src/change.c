@@ -321,6 +321,9 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     buf_T	*buf = curbuf;
     int		unbuffered = 0;
 
+    if (check_secure())
+	return;
+
     if (recursive)
     {
 	emsg(_(e_cannot_add_listener_in_listener_callback));
@@ -386,6 +389,9 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf = curbuf;
 
+    if (check_secure())
+	return;
+
     if (recursive)
 	return;
 
@@ -438,6 +444,9 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
     listener_T	*prev;
     int		id;
     buf_T	*buf;
+
+    if (check_secure())
+	return;
 
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
