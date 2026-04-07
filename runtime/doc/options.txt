@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
+*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6886,6 +6886,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Defines a border and optional decorations for the popup menu in
 	completion.  The value is a comma-separated list of keywords.
+	See |'pumopt'| for a consolidated alternative.
 
 	Border styles (at most one):
 	"single"	use thin box-drawing characters
@@ -6921,6 +6922,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Determines the maximum number of items to show in the popup menu for
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
+	See |'pumopt'| for a consolidated alternative.
 
 						*'pummaxwidth'* *'pmw'*
 'pummaxwidth' 'pmw'	number	(default 0)
@@ -6932,12 +6934,67 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This option takes precedence over 'pumwidth'.
 	|ins-completion-menu|.
+	See |'pumopt'| for a consolidated alternative.
+
+						*'pumopt'*
+'pumopt'		string	(default "")
+			global
+	Configures the popup menu used for Insert mode completion.
+	The value is a comma-separated list of key:value pairs and flags.
+
+	Keys with values:
+	  border:{style}	set a border style (at most one):
+				"single"  thin box-drawing characters
+				"double"  double-line box-drawing characters
+				"round"   rounded corners
+				"ascii"   ASCII characters (-, |, +)
+				"custom:X;X;X;X;X;X;X;X"
+					  eight characters separated by
+					  semicolons, in the order: top, right,
+					  bottom, left, topleft, topright,
+					  botright, botleft
+	  height:{n}		maximum number of items to show (default 0,
+				meaning as much space as available)
+	  width:{n}		minimum width (default 15)
+	  maxwidth:{n}		maximum width (default 0, meaning no limit).
+				This takes precedence over width.
+				Truncated text is indicated by "trunc" value
+				of 'fillchars' option.
+	  opacity:{n}		opacity percentage 0-100 (default 100).
+				When less than 100, background content shows
+				through the popup menu.
+
+	Flags (no value):
+	  margin		adds one-cell spacing inside the left and
+				right border.  Requires a border style.
+	  shadow		draws a shadow at the right and bottom edges.
+
+	Border styles using box-drawing characters ("single", "double",
+	"round") are only available when 'encoding' is "utf-8" and
+	'ambiwidth' is "single".
+
+	Highlight groups:
+	|hl-PmenuBorder|	used for the border characters
+	|hl-PmenuShadow|	used for the shadow
+
+	Note: When 'pumopt' is set, all values are reset to their defaults
+	first, then the specified keys are applied.  Unspecified keys get
+	their default values.
+
+	Examples: >
+		:set pumopt=border:single
+		:set pumopt=border:double,margin,shadow
+		:set pumopt=height:10,width:20,opacity:80
+		:set pumopt=border:custom:─;│;─;│;┌;┐;┘;└,shadow
+<
+	See also: |ins-completion-menu|.
 
 						*'pumwidth'* *'pw'*
 'pumwidth' 'pw'		number	(default 15)
 			global
 	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
+	See |'pumopt'| for a consolidated alternative.
 
 						*'pythondll'*
 'pythondll'		string	(default depends on the build)

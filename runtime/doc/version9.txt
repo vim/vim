@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52641,6 +52641,7 @@ Autocommands: ~
 
 Options: ~
 
+'pumopt'		Additional options for the popup menu
 'statuslineopt'		Extra window-local options for the 'statusline', to
 			configure the height.
 't_BS'			Begin synchronized update.

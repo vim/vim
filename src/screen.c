@@ -2653,6 +2653,34 @@ screen_fill(
 		}
 skip_opacity_fill:
 #endif
+		// For pum opacity: blend pum background with underlying.
+		// Only for space cells; text cells are handled normally.
+		if (screen_pum_blend > 0 && c == ' '
+			&& pum_bg_attrs != NULL
+			&& row >= pum_bg_top && row < pum_bg_bot
+			&& col < pum_bg_cols)
+		{
+		    int soff = (row - pum_bg_top) * pum_bg_cols + col;
+		    int underlying_attr = pum_bg_attrs[soff];
+
+		    // Restore underlying character so text shows through.
+		    ScreenLines[off] = pum_bg_lines[soff];
+		    if (enc_utf8 && pum_bg_linesUC != NULL
+						&& ScreenLinesUC != NULL)
+		    {
+			int k;
+			ScreenLinesUC[off] = pum_bg_linesUC[soff];
+			for (k = 0; k < MAX_MCO; ++k)
+			    if (pum_bg_linesC[k] != NULL
+						    && ScreenLinesC[k] != NULL)
+				ScreenLinesC[k][off] = pum_bg_linesC[k][soff];
+		    }
+		    // Keep underlying fg, blend bg only.
+		    ScreenAttrs[off] = hl_pum_blend_attr(underlying_attr,
+					    attr, screen_pum_blend);
+		    screen_char(off, row, col);
+		    goto next_col;
+		}
 #if defined(FEAT_GUI) || defined(UNIX)
 		// The bold trick may make a single row of pixels appear in
 		// the next character.  When a bold character is removed, the
@@ -2699,9 +2727,7 @@ skip_opacity_fill:
 		if (!did_delete || c != ' ')
 		    screen_char(off, row, col);
 	    }
-#ifdef FEAT_PROP_POPUP
 next_col:
-#endif
 	    ScreenCols[off] = -1;
 	    ++off;
 	    if (col == start_col)
