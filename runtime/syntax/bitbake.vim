@@ -62,9 +62,9 @@ syn match bbVarFlagDef          "^\([a-zA-Z0-9\-_\.]\+\)\(\[[a-zA-Z0-9\-_\.+]\+\
 syn region bbVarFlagFlag        matchgroup=bbArrayBrackets start="\[" end="\]\s*\(:=\|=\|.=\|=.|+=\|=+\|?=\)\@=" contained contains=bbIdentifier nextgroup=bbVarEq
 
 " Includes and requires
-syn keyword bbInclude           inherit include include_all require contained
+syn keyword bbInclude           inherit inherit_defer include include_all require contained
 syn match bbIncludeRest         ".*$" contained contains=bbString,bbVarDeref
-syn match bbIncludeLine         "^\(inherit\|include\|include_all\|require\)\s\+" contains=bbInclude nextgroup=bbIncludeRest
+syn match bbIncludeLine         "^\(inherit\|inherit_defer\|include\|include_all\|require\)\s\+" contains=bbInclude nextgroup=bbIncludeRest
 
 " Add taks and similar
 syn keyword bbStatement         addtask deltask addhandler after before EXPORT_FUNCTIONS contained
