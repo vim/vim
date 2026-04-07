@@ -685,8 +685,7 @@ text_prop_position(
     int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
     int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
     int	    wrap = tp->tp_col < MAXCOL || (tp->tp_flags & TP_FLAG_WRAP);
-    int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
-							  ? tp->tp_len - 1 : 0;
+    int	    padding = tp->tp_col == MAXCOL ? tp->tp_padleft : 0;
     int	    col_with_padding = scr_col + (below ? 0 : padding);
     int	    room = wp->w_width - col_with_padding;
     int	    before = room;	// spaces before the text
@@ -1705,8 +1704,28 @@ win_line(
 	else
 	    text_props = ALLOC_MULT(textprop_T, text_prop_count);
 	if (text_props != NULL)
+	{
 	    mch_memmove(text_props, prop_start,
 				     text_prop_count * sizeof(textprop_T));
+
+	    // Convert tp_text_offset to tp_text pointer for virtual
+	    // text properties.  prop_start points into the memline
+	    // after the prop_count field.
+	    char_u *count_ptr = prop_start - PROP_COUNT_SIZE;
+
+	    for (int i = 0; i < text_prop_count; ++i)
+	    {
+		if (text_props[i].tp_id < 0
+				&& text_props[i].u.tp_text_offset > 0)
+		{
+		    text_props[i].u.tp_text =
+			    count_ptr + text_props[i].u.tp_text_offset;
+		    text_props[i].tp_flags |= TP_FLAG_VTEXT_PTR;
+		}
+		else
+		    text_props[i].u.tp_text = NULL;
+	    }
+	}
 
 	// Allocate an array for the indexes.
 	if (text_prop_count <= WIN_LINE_TEXT_PROP_STACK_LEN)
@@ -2301,13 +2320,10 @@ win_line(
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
-			    && -text_prop_id
-				      <= wp->w_buffer->b_textprop_text.ga_len)
+				 && text_props[used_tpi].u.tp_text != NULL)
 		    {
 			textprop_T  *tp = &text_props[used_tpi];
-			char_u	    *p = ((char_u **)wp->w_buffer
-						   ->b_textprop_text.ga_data)[
-							   -text_prop_id - 1];
+			char_u	    *p = tp->u.tp_text;
 			int	    above = (tp->tp_flags
 							& TP_FLAG_ALIGN_ABOVE);
 			int	    bail_out = FALSE;
@@ -2325,8 +2341,7 @@ win_line(
 			    int	    wrap = tp->tp_col < MAXCOL
 					      || (tp->tp_flags & TP_FLAG_WRAP);
 			    int	    padding = tp->tp_col == MAXCOL
-						 && tp->tp_len > 1
-							  ? tp->tp_len - 1 : 0;
+							  ? tp->tp_padleft : 0;
 
 			    // Insert virtual text before the current
 			    // character, or add after the end of the line.

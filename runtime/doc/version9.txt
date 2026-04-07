@@ -52625,6 +52625,8 @@ Changed~
 - |json_decode()| is stricter: keywords must be lowercase, lone surrogates are
   now invalid
 - |js_decode()| rejects lone surrogates
+- virtual text properties on lines deleted by a multi-line substitute
+  are moved to the resulting joined line instead of being dropped.
 
 							*added-9.3*
 Added ~

@@ -2930,13 +2930,19 @@ add_text_props_for_append(
     {
 	if (round == 2)
 	{
+	    uint16_t pc;
+
 	    if (new_prop_count == 0)
 		return;  // nothing to do
-	    new_len = *len + new_prop_count * sizeof(textprop_T);
+	    new_len = *len + (int)PROP_COUNT_SIZE
+			     + new_prop_count * (int)sizeof(textprop_T);
 	    new_line = alloc(new_len);
 	    if (new_line == NULL)
 		return;
 	    mch_memmove(new_line, *line, *len);
+	    // Write prop_count header.
+	    pc = (uint16_t)new_prop_count;
+	    mch_memmove(new_line + *len, &pc, PROP_COUNT_SIZE);
 	    new_prop_count = 0;
 	}
 
@@ -2954,8 +2960,10 @@ add_text_props_for_append(
 		    prop.tp_flags |= TP_FLAG_CONT_PREV;
 		    prop.tp_col = 1;
 		    prop.tp_len = *len;  // not exactly the right length
-		    mch_memmove(new_line + *len + new_prop_count
-			      * sizeof(textprop_T), &prop, sizeof(textprop_T));
+		    prop.u.tp_text_offset = 0;
+		    mch_memmove(new_line + *len + (int)PROP_COUNT_SIZE
+			    + new_prop_count * sizeof(textprop_T),
+			    &prop, sizeof(textprop_T));
 		}
 		++new_prop_count;
 	    }
@@ -3772,34 +3780,48 @@ adjust_text_props_for_delete(
 		textlen = STRLEN(text) + 1;
 		if ((long)textlen >= line_size)
 		{
+		    // No properties on this line.
 		    if (above)
 			internal_error("no text property above deleted line");
 		    else
 			internal_error("no text property below deleted line");
 		    return;
 		}
-		this_props_len = line_size - (int)textlen;
+		if ((long)textlen + (long)PROP_COUNT_SIZE > line_size)
+		{
+		    internal_error("text property data too short");
+		    return;
+		}
+
+		uint16_t pc;
+
+		mch_memmove(&pc, text + textlen, PROP_COUNT_SIZE);
+		this_props_len = pc * (int)sizeof(textprop_T);
 	    }
 
 	    found = FALSE;
-	    for (done_this = 0; done_this < this_props_len;
-					       done_this += sizeof(textprop_T))
 	    {
-		int	    flag = above ? TP_FLAG_CONT_NEXT
-							   : TP_FLAG_CONT_PREV;
-		textprop_T  prop_this;
+		char_u *props_start = text + textlen + PROP_COUNT_SIZE;
 
-		mch_memmove(&prop_this, text + textlen + done_this,
-							   sizeof(textprop_T));
-		if ((prop_this.tp_flags & flag)
-			&& prop_del.tp_id == prop_this.tp_id
-			&& prop_del.tp_type == prop_this.tp_type)
+		for (done_this = 0; done_this < this_props_len;
+					       done_this += sizeof(textprop_T))
 		{
-		    found = TRUE;
-		    prop_this.tp_flags &= ~flag;
-		    mch_memmove(text + textlen + done_this, &prop_this,
+		    int		flag = above ? TP_FLAG_CONT_NEXT
+							   : TP_FLAG_CONT_PREV;
+		    textprop_T	prop_this;
+
+		    mch_memmove(&prop_this, props_start + done_this,
 							   sizeof(textprop_T));
-		    break;
+		    if ((prop_this.tp_flags & flag)
+			    && prop_del.tp_id == prop_this.tp_id
+			    && prop_del.tp_type == prop_this.tp_type)
+		    {
+			found = TRUE;
+			prop_this.tp_flags &= ~flag;
+			mch_memmove(props_start + done_this, &prop_this,
+							   sizeof(textprop_T));
+			break;
+		    }
 		}
 	    }
 	    if (!found)
@@ -4003,13 +4025,23 @@ theend:
 #ifdef FEAT_PROP_POPUP
     if (textprop_save != NULL)
     {
+	// textprop_save is [prop_count][textprop_T...][vtext...].
+	// Skip prop_count header and pass only the textprop_T part.
+	uint16_t    pc;
+	char_u	    *props_data;
+	int	    props_bytes;
+
+	mch_memmove(&pc, textprop_save, PROP_COUNT_SIZE);
+	props_data = textprop_save + PROP_COUNT_SIZE;
+	props_bytes = pc * (int)sizeof(textprop_T);
+
 	// Adjust text properties in the line above and below.
 	if (lnum > 1)
-	    adjust_text_props_for_delete(buf, lnum - 1, textprop_save,
-						      (int)textprop_len, TRUE);
+	    adjust_text_props_for_delete(buf, lnum - 1,
+					     props_data, props_bytes, TRUE);
 	if (lnum <= buf->b_ml.ml_line_count)
-	    adjust_text_props_for_delete(buf, lnum, textprop_save,
-						     (int)textprop_len, FALSE);
+	    adjust_text_props_for_delete(buf, lnum,
+					    props_data, props_bytes, FALSE);
     }
     vim_free(textprop_save);
 #endif

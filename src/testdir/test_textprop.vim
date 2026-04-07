@@ -3565,7 +3565,7 @@ func Test_props_with_text_after_nowrap()
   let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 12, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
 
-  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3 cursorline\<CR>")
+  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3 cursorline\<CR>\<C-L>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_2', {})
 
   call term_sendkeys(buf, "j")
@@ -3975,15 +3975,15 @@ func Test_removed_prop_with_text_cleans_up_array()
   call setline(1, 'some text here')
   call prop_type_add('some', #{highlight: 'ErrorMsg'})
   let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
+  call assert_true(id1 < 0)
   let id2 = prop_add(1, 10, #{type: 'some', text: "HERE"})
-  call assert_equal(-2, id2)
+  call assert_true(id2 < id1)
 
-  " removing the props resets the index
+  " IDs are not recycled after removal; new IDs keep decreasing.
   call prop_remove(#{id: id1})
   call prop_remove(#{id: id2})
-  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
-  call assert_equal(-1, id1)
+  let id3 = prop_add(1, 5, #{type: 'some', text: "SOME"})
+  call assert_true(id3 < id2)
 
   call prop_type_delete('some')
   bwipe!
@@ -4672,7 +4672,7 @@ func Test_error_when_using_negative_id()
 
   " Negative id is always rejected.  Before the fix, prop_add() with a negative
   " id succeeded when no virtual text existed, then prop_list() would dereference
-  " a NULL pointer (b_textprop_text.ga_data) and crash.
+  " a NULL pointer and crash.
   call assert_fails("call prop_add(1, 1, #{type: 'test1', length: 1, id: -1})", 'E1293:')
   call assert_equal([], prop_list(1))
 

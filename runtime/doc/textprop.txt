@@ -1,4 +1,4 @@
-*textprop.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
+*textprop.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -511,7 +511,9 @@ will move accordingly.
 
 When text is deleted and a text property no longer includes any text, it is
 deleted.  However, a text property that was defined as zero-width will remain,
-unless the whole line is deleted.
+unless the whole line is deleted.  When lines are joined by a multi-line
+substitute command, virtual text properties on the deleted lines are moved to
+the resulting joined line.
 								*E275*
 When a buffer is unloaded, all the text properties are gone.  There is no way
 to store the properties in a file.  You can only re-create them.  When a

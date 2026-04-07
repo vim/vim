@@ -4895,15 +4895,27 @@ ex_substitute(exarg_T *eap)
 							      text_prop_count);
 			    if (text_props != NULL)
 			    {
-				int pi;
-
 				mch_memmove(text_props, prop_start,
 					 text_prop_count * sizeof(textprop_T));
-				// After joining the text prop columns will
-				// increase.
-				for (pi = 0; pi < text_prop_count; ++pi)
-				    text_props[pi].tp_col +=
-					 regmatch.startpos[0].col + sublen - 1;
+				// Filter out virtual text and continuation
+				// properties from deleted lines, convert
+				// offsets to pointers, and adjust columns.
+				int wi = 0;
+				for (int pi = 0; pi < text_prop_count; ++pi)
+				{
+				    // Skip virtual text and continuation
+				    // properties from the deleted line.
+				    if (text_props[pi].tp_id < 0
+					    || (text_props[pi].tp_flags
+							& TP_FLAG_CONT_PREV))
+					continue;
+				    text_props[wi] = text_props[pi];
+				    text_props[wi].tp_col +=
+					regmatch.startpos[0].col + sublen - 1;
+				    text_props[wi].u.tp_text = NULL;
+				    ++wi;
+				}
+				text_prop_count = wi;
 			    }
 			}
 		    }
@@ -5142,7 +5154,14 @@ skip:
 				break;
 			    for (i = 0; i < nmatch_tl; ++i)
 				ml_delete(lnum);
-			    mark_adjust(lnum, lnum + nmatch_tl - 1,
+			    if (copycol > 0)
+				mark_adjust(lnum, lnum + nmatch_tl - 1,
+						   (long)MAXLNUM, -nmatch_tl);
+			    else
+				// The entire last matched line was consumed,
+				// so the first line was effectively replaced
+				// by lines below.
+				mark_adjust(lnum - 1, lnum - 1,
 						   (long)MAXLNUM, -nmatch_tl);
 			    if (subflags.do_ask)
 				deleted_lines(lnum, nmatch_tl);
