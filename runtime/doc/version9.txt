@@ -52614,12 +52614,16 @@ Other ~
 - |system()| and |systemlist()| functions accept a list as first argument,
   bypassing the shell completely.
 
+Platform specific ~
+-----------------
+- support OpenType font features in 'guifont' for DirectWrite (Win32)
+
 xxd ~
 ---
 Add "-t" option to append a terminating NUL byte to C include output (-i).
 
 							*changed-9.3*
-Changed~
+Changed ~
 -------
 - Support for NeXTStep was dropped with patch v9.2.0122
 - |json_decode()| is stricter: keywords must be lowercase, lone surrogates are

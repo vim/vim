@@ -1,4 +1,4 @@
-*gui.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*gui.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1150,11 +1150,22 @@ For the Win32 GUI					*E244* *E245*
 	      NONANTIALIASED, CLEARTYPE and DEFAULT.  Normally you would use
 	      "qDEFAULT".
 	      Some quality values are not supported in legacy OSs.
+	fXX - OpenType font feature.  Specify a single feature as
+	      tag=value, where tag is a 4-character OpenType feature
+	      tag and value is the parameter (0 to disable, 1 or
+	      higher to enable/select variant).  Multiple features
+	      can be specified by repeating the ":f" option.
+	      This only takes effect when 'renderoptions' is set to use
+	      DirectWrite (type:directx).  Default features (calt, liga,
+	      etc.) are preserved unless explicitly overridden.
+	      Example: ":fss19=1:fcalt=0" enables Stylistic Set 19
+	      and disables Contextual Alternates.
 - A '_' can be used in the place of a space, so you don't need to use
   backslashes to escape the spaces.
 Examples: >
     :set guifont=courier_new:h12:w5:b:cRUSSIAN
     :set guifont=Andale_Mono:h7.5:w4.5
+    :set guifont=Cascadia_Code:h14:fss19=1:fcalt=1:fliga=1
 
 See also |font-sizes|.
 
