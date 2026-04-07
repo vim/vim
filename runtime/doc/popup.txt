@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 Mar 02
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -254,7 +254,7 @@ popup_clear([{force}])
 		when it is the current window.  If a terminal is running in a
 		popup it is killed.
 
-		Return type: |Number|
+		Return type: void
 
 
 popup_close({id} [, {result}])				*popup_close()*
@@ -269,7 +269,7 @@ popup_close({id} [, {result}])				*popup_close()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_close()
 <
-		Return type: |Number|
+		Return type: void
 
 
 popup_create({what}, {options})				*popup_create()*
@@ -351,7 +351,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		To add shortcut keys, see the example here:
 		|popup_menu-shortcut-example|
 
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
@@ -363,7 +363,7 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		keys are ignored.
 		See the example here: |popup_dialog-example|
 
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 popup_findecho()					*popup_findecho()*
@@ -471,7 +471,7 @@ popup_hide({id})						*popup_hide()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()
 <
-		Return type: |Number|
+		Return type: void
 
 
 popup_list()						 *popup_list()*
@@ -542,7 +542,7 @@ popup_move({id}, {options})					*popup_move()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_move(options)
 <
-		Return type: |Number|
+		Return type: void
 
 
 popup_notification({what}, {options})			 *popup_notification()*
@@ -624,7 +624,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_setoptions(options)
 <
-		Return type: |Number|
+		Return type: void
 
 
 popup_settext({id}, {text})				*popup_settext()*
@@ -636,7 +636,7 @@ popup_settext({id}, {text})				*popup_settext()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_settext('hello')
 <
-		Return type: |Number|
+		Return type: void
 
 
 popup_show({id})						*popup_show()*

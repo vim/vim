@@ -404,7 +404,7 @@ set_init_xdg_rtp(void)
     char_u	*vimrc2 = NULL;
     char_u	*xdg_dir = NULL;
     char_u	*xdg_rtp = NULL;
-    char_u	*vimrc_xdg = NULL;
+    string_T	vimrc_xdg = {NULL, 0};
 
     // initialize chartab, so we can expand $HOME
     (void)init_chartab();
@@ -418,10 +418,11 @@ set_init_xdg_rtp(void)
 	should_free_xdg_dir = TRUE;
 	has_xdg_env = FALSE;
     }
-    vimrc_xdg = concat_fnames(xdg_dir, (char_u *)"vim/vimrc", TRUE);
+    concat_fnames(xdg_dir, STRLEN(xdg_dir),
+	(char_u *)"vim/vimrc", STRLEN_LITERAL("vim/vimrc"), TRUE, &vimrc_xdg);
 
     if (file_is_readable(vimrc1) || file_is_readable(vimrc2) ||
-	    !file_is_readable(vimrc_xdg))
+	    !file_is_readable(vimrc_xdg.string))
 	goto theend;
 
     xdg_rtp = has_xdg_env ? (char_u *)XDG_RUNTIMEPATH
@@ -450,7 +451,7 @@ set_init_xdg_rtp(void)
 theend:
     vim_free(vimrc1);
     vim_free(vimrc2);
-    vim_free(vimrc_xdg);
+    vim_free(vimrc_xdg.string);
     if (should_free_xdg_dir)
 	vim_free(xdg_dir);
 }

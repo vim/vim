@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Mar 12
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -596,7 +596,7 @@ term_dumpwrite({buf}, {filename} [, {options}])		*term_dumpwrite()*
 		name: >
 			GetFilename()->term_dumpwrite(bufnr)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_getaltscreen({buf})				*term_getaltscreen()*
@@ -817,7 +817,7 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_sendkeys(keys)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
@@ -852,7 +852,7 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setansicolors(colors)
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available with GUI enabled and/or the |+termguicolors|
 		feature}
@@ -870,7 +870,7 @@ term_setapi({buf}, {expr})				*term_setapi()*
 		When used as a method the base is used for {buf}: >
 			GetBufnr()->term_setapi({expr})
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setkill({buf}, {how})				*term_setkill()*
@@ -888,7 +888,7 @@ term_setkill({buf}, {how})				*term_setkill()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setkill(how)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setrestore({buf}, {command})			*term_setrestore()*
@@ -903,7 +903,7 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setrestore(command)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
@@ -919,7 +919,7 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		Can also be used as a |method|: >
 			GetBufnr()->term_setsize(rows, cols)
 <
-		Return type: |Number|
+		Return type: void
 
 
 term_start({cmd} [, {options}])			*term_start()*
@@ -944,9 +944,26 @@ term_start({cmd} [, {options}])			*term_start()*
 		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
 		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
 		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
-		However, at least one of stdin, stdout or stderr must be
-		connected to the terminal.  When I/O is connected to the
-		terminal then the callback function for that part is not used.
+		On Unix:
+		stdin, stdout, and stderr are connected to a pty by default,
+		since bidirectional communication with the terminal is
+		required.  Setting "out_cb" does not switch stdout from the
+		pty to a pipe.  Only setting "err_cb" switches stderr to a
+		pipe.
+		Note: Since a pty is line-buffered and a pipe is
+		block-buffered, the order of output between stdout and stderr
+		may not be preserved.  Without "err_cb", stderr uses the same
+		pty as stdout, so the output order is preserved but stdout and
+		stderr cannot be distinguished.
+
+		On MS-Windows with |ConPTY|:
+		stdin, stdout, and stderr are always connected through pipes
+		to the pseudo console, regardless of callback settings.
+		Since stdout and stderr share the same pipe, they cannot be
+		separated by "err_cb".
+		This is because the CreatePseudoConsole() API only accepts one
+		input and one output handle, with no separate handle for
+		stderr.
 
 		There are extra options:
 		   "term_name"	     name to use for the buffer name, instead
@@ -1010,7 +1027,7 @@ term_wait({buf} [, {time}])					*term_wait()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_wait()
 <
-		Return type: |Number|
+		Return type: void
 
 ==============================================================================
 3. Terminal communication			 *terminal-communication*

@@ -42,7 +42,7 @@ static void	set_cmdspos(void);
 static void	set_cmdspos_cursor(void);
 static void	correct_cmdspos(int idx, int cells);
 static void	dealloc_cmdbuff(void);
-static void	alloc_cmdbuff(int len);
+static void	alloc_cmdbuff(size_t len);
 static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
@@ -1537,7 +1537,7 @@ cmdline_browse_history(
 		}
 		if (i == 0)
 		{
-		    alloc_cmdbuff((int)len);
+		    alloc_cmdbuff(len);
 		    if (ccline.cmdbuff == NULL)
 		    {
 			res = GOTO_NORMAL_MODE;
@@ -1550,7 +1550,7 @@ cmdline_browse_history(
 	}
 	else
 	{
-	    alloc_cmdbuff((int)plen);
+	    alloc_cmdbuff(plen);
 	    if (ccline.cmdbuff == NULL)
 	    {
 		res = GOTO_NORMAL_MODE;
@@ -3491,7 +3491,7 @@ dealloc_cmdbuff(void)
  * Assigns the new buffer to ccline.cmdbuff and ccline.cmdbufflen.
  */
     static void
-alloc_cmdbuff(int len)
+alloc_cmdbuff(size_t len)
 {
     /*
      * give some extra space to avoid having to allocate all the time
@@ -3502,7 +3502,7 @@ alloc_cmdbuff(int len)
 	len += 20;
 
     ccline.cmdbuff = alloc(len);    // caller should check for out-of-memory
-    ccline.cmdbufflen = len;
+    ccline.cmdbufflen = (int)len;
 }
 
 /*

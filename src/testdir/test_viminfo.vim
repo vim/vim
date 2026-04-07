@@ -1371,4 +1371,29 @@ func Test_viminfo_len_one()
   let &viminfofile = _viminfofile
 endfunc
 
+func Test_viminfo_len_overflow()
+  let _viminfofile = &viminfofile
+  let &viminfofile=''
+  let viminfo_file = tempname()
+  defer delete(viminfo_file)
+
+  " Craft a viminfo entry with size_t length overflow
+  call writefile(['# Viminfo',
+        \ '|1,4', '|2,>4294967311',
+        \ '|<"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        \ '|<BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+        \ '|<CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+        \ '|<DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD'], viminfo_file, 'b')
+
+  " Should not crash or cause memory errors.
+  " E342 (out of memory) may be thrown depending on the platform's memory
+  " allocation behavior, which is an acceptable outcome.
+  try
+    exe 'rviminfo! ' .. viminfo_file
+  catch /E342/
+  endtry
+
+  let &viminfofile = _viminfofile
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

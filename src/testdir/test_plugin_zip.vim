@@ -257,6 +257,7 @@ def g:Test_zip_fname_evil_path()
   # needed for writing the zip file
   CheckExecutable zip
 
+  messages clear
   CopyZipFile("evil.zip")
   defer delete("X.zip")
   e X.zip
@@ -273,4 +274,47 @@ def g:Test_zip_fname_evil_path()
   :w
   assert_match('zipfile://.*::etc/ax-pwn', @%)
   bw
+enddef
+
+def g:Test_zip_fname_evil_path2()
+  CheckNotMSWindows
+  # needed for writing the zip file
+  CheckExecutable zip
+
+  messages clear
+  CopyZipFile("evil.zip")
+  defer delete("X.zip")
+  e X.zip
+
+  :1
+  var fname = 'foobar'
+  search('\V' .. fname)
+  exe "normal \<cr>"
+  normal x
+  assert_false(filereadable('/tmp/foobar'))
+  :w
+  var mess  = execute(':mess')
+  assert_match('Path Traversal Attack', mess)
+  assert_match('zipfile://.*::.*tmp/foobar', @%)
+  bw!
+enddef
+
+def g:Test_zip_fname_evil_path3()
+  CheckNotMSWindows
+  # needed for writing the zip file
+  CheckExecutable zip
+
+  messages clear
+  CopyZipFile("evil.zip")
+  defer delete("X.zip")
+  e X.zip
+
+  :1
+  var fname = 'payload.txt'
+  search('\V' .. fname)
+  exe "normal \<cr>"
+  :w!
+  var mess  = execute(':mess')
+  assert_match('Path Traversal Attack', mess)
+  bw!
 enddef

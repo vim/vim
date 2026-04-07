@@ -214,11 +214,11 @@ set_mousemoved_columns(win_T *wp, int flags)
     // convert text column to mouse column
     pos.col = col;
     pos.coladd = 0;
-    getvcol(textwp, &pos, &mcol, NULL, NULL);
+    getvcol(textwp, &pos, &mcol, NULL, NULL, 0);
     wp->w_popup_mouse_mincol = mcol;
 
     pos.col = col + (colnr_T)STRLEN(text) - 1;
-    getvcol(textwp, &pos, NULL, NULL, &mcol);
+    getvcol(textwp, &pos, NULL, NULL, &mcol, 0);
     wp->w_popup_mouse_maxcol = mcol;
     vim_free(text);
 }
@@ -4176,6 +4176,11 @@ popup_update_mask(win_T *wp, int width, int height)
 	return;  // cache is still valid
 
     vim_free(wp->w_popup_mask_cells);
+    if (width > 0 && (size_t)height > SIZE_MAX / (size_t)width)
+    {
+	wp->w_popup_mask_cells = NULL;
+	return;
+    }
     wp->w_popup_mask_cells = alloc_clear((size_t)width * height);
     if (wp->w_popup_mask_cells == NULL)
 	return;
@@ -5937,7 +5942,7 @@ popup_set_title(win_T *wp)
 
     vim_free(wp->w_popup_title);
     len = STRLEN(wp->w_buffer->b_fname) + 3;
-    wp->w_popup_title = alloc((int)len);
+    wp->w_popup_title = alloc(len);
     if (wp->w_popup_title != NULL)
 	vim_snprintf((char *)wp->w_popup_title, len, " %s ",
 		wp->w_buffer->b_fname);

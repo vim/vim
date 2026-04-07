@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2026-02-04 20:00+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
@@ -9134,38 +9134,14 @@ msgstr "E1571: redraw_listener_add için en az bir geri çağrı belirtilmelidir
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
 
-msgid "int"
-msgstr "tamsayı"
-
-msgid "long int"
-msgstr "uzun tamsayı"
-
-msgid "long long int"
-msgstr "uzun uzun tamsayı"
-
-msgid "unsigned int"
-msgstr "imzalanmamış tamsayı"
-
-msgid "unsigned long int"
-msgstr "imzalanmamış uzun tamsayı"
-
-msgid "unsigned long long int"
-msgstr "imzalanmamış uzun uzun tamsayı"
-
 msgid "pointer"
 msgstr "işaretçi"
 
 msgid "percent"
 msgstr "yüzde"
 
-msgid "char"
-msgstr "karakter"
-
 msgid "string"
 msgstr "dizi"
-
-msgid "float"
-msgstr "kayan noktalı değer"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Arama dosyanın BAŞINI geçti, dosyanın SONUNDAN sürüyor"

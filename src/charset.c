@@ -905,7 +905,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
     {
-	vcol += win_lbr_chartabsize(cts, NULL);
+	vcol += win_lbr_chartabsize(cts, NULL, NULL);
 	if (vcol > MAXCOL)
 	{
 	    cts->cts_vcol = MAXCOL;
@@ -919,7 +919,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     if (len == MAXCOL && cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
 	int head = 0;
-	(void)win_lbr_chartabsize(cts, &head);
+	(void)win_lbr_chartabsize(cts, &head, NULL);
 	vcol += cts->cts_cur_text_width + head;
 	// when properties are above or below the empty line must also be
 	// counted
@@ -1186,7 +1186,7 @@ lbr_chartabsize(chartabsize_T *cts)
 	RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, cts->cts_ptr, cts->cts_vcol)
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     }
-    return win_lbr_chartabsize(cts, NULL);
+    return win_lbr_chartabsize(cts, NULL, NULL);
 #endif
 }
 
@@ -1209,19 +1209,24 @@ lbr_chartabsize_adv(chartabsize_T *cts)
  * inserts text.
  * This function is used very often, keep it fast!!!!
  *
- * If "headp" not NULL, set "*headp" to the size of 'showbreak'/'breakindent'
+ * If "headp" isn't NULL, set "*headp" to the size of 'showbreak'/'breakindent'
  * included in the return value.
  * When "cts->cts_max_head_vcol" is positive, only count in "*headp" the size
  * of 'showbreak'/'breakindent' before "cts->cts_max_head_vcol".
  * When "cts->cts_max_head_vcol" is negative, only count in "*headp" the size
  * of 'showbreak'/'breakindent' before where cursor should be placed.
  *
- * Warning: "*headp" may not be set if it's 0, init to 0 before calling.
+ * If "tailp" isn't NULL, set "*tailp" to the size of 'linebreak' included in
+ * the return value.
+ *
+ * Warning: "*headp" and "*tailp" may not be set if the value is 0, init to 0
+ * before calling.
  */
     int
 win_lbr_chartabsize(
 	chartabsize_T	*cts,
-	int		*headp UNUSED)
+	int		*headp UNUSED,
+	int		*tailp UNUSED)
 {
     win_T	*wp = cts->cts_win;
 #if defined(FEAT_PROP_POPUP) || defined(FEAT_LINEBREAK)
@@ -1470,6 +1475,7 @@ win_lbr_chartabsize(
     if (headp != NULL)
 	*headp = head;
 
+    int size_before_lbr = size;
     int need_lbr = FALSE;
     /*
      * If 'linebreak' set check at a blank before a non-blank if the line
@@ -1521,6 +1527,9 @@ win_lbr_chartabsize(
 	    }
 	}
     }
+
+    if (tailp != NULL)
+	*tailp = size - size_before_lbr;
 
 #  ifdef FEAT_PROP_POPUP
     size += cts->cts_first_char;
@@ -1598,6 +1607,10 @@ in_win_border(win_T *wp, colnr_T vcol)
  * cursor: where the cursor is on this character (first char, except for TAB)
  *    end: on the last position of this character (TAB, ctrl)
  *
+ * When 'linebreak' follows this character, "end" is set to the position before
+ * 'linebreak' if "flags" contains GETVCOL_END_EXCL_LBR, otherwise it's set to
+ * the end of 'linebreak'.
+ *
  * This is used very often, keep it fast!
  */
     void
@@ -1606,13 +1619,15 @@ getvcol(
     pos_T	*pos,
     colnr_T	*start,
     colnr_T	*cursor,
-    colnr_T	*end)
+    colnr_T	*end,
+    int		flags)
 {
     colnr_T	vcol;
     char_u	*ptr;		// points to current char
     char_u	*line;		// start of the line
     int		incr;
     int		head;
+    int		tail;
 #ifdef FEAT_VARTABS
     int		*vts = wp->w_buffer->b_p_vts_array;
 #endif
@@ -1693,6 +1708,8 @@ getvcol(
 	    vcol += incr;
 	    ptr = next_ptr;
 	}
+
+	tail = 0;
     }
     else
     {
@@ -1701,7 +1718,8 @@ getvcol(
 	    // A tab gets expanded, depending on the current column.
 	    // Other things also take up space.
 	    head = 0;
-	    incr = win_lbr_chartabsize(&cts, &head);
+	    tail = 0;
+	    incr = win_lbr_chartabsize(&cts, &head, &tail);
 	    // make sure we don't go past the end of the line
 	    if (*cts.cts_ptr == NUL)
 	    {
@@ -1736,7 +1754,7 @@ getvcol(
     if (start != NULL)
 	*start = vcol + head;
     if (end != NULL)
-	*end = vcol + incr - 1;
+	*end = vcol + incr - (flags & GETVCOL_END_EXCL_LBR ? tail : 0) - 1;
     if (cursor != NULL)
     {
 	if (*ptr == TAB
@@ -1746,6 +1764,7 @@ getvcol(
 		&& !(VIsual_active
 				&& (*p_sel == 'e' || LTOREQ_POS(*pos, VIsual)))
 		)
+	    // TODO: subtracting "tail" may lead to better cursor position
 	    *cursor = vcol + incr - 1;	    // cursor at end
 	else
 	{
@@ -1775,9 +1794,9 @@ getvcol_nolist(pos_T *posp)
 
     curwin->w_p_list = FALSE;
     if (posp->coladd)
-	getvvcol(curwin, posp, NULL, &vcol, NULL);
+	getvvcol(curwin, posp, NULL, &vcol, NULL, 0);
     else
-	getvcol(curwin, posp, NULL, &vcol, NULL);
+	getvcol(curwin, posp, NULL, &vcol, NULL, 0);
     curwin->w_p_list = list_save;
     return vcol;
 }
@@ -1791,7 +1810,8 @@ getvvcol(
     pos_T	*pos,
     colnr_T	*start,
     colnr_T	*cursor,
-    colnr_T	*end)
+    colnr_T	*end,
+    int		flags)
 {
     colnr_T	col;
     colnr_T	coladd;
@@ -1801,7 +1821,7 @@ getvvcol(
     if (virtual_active())
     {
 	// For virtual mode, only want one value
-	getvcol(wp, pos, &col, NULL, NULL);
+	getvcol(wp, pos, &col, NULL, NULL, flags);
 
 	coladd = pos->coladd;
 	endadd = 0;
@@ -1829,7 +1849,7 @@ getvvcol(
 	    *end = col + endadd;
     }
     else
-	getvcol(wp, pos, start, cursor, end);
+	getvcol(wp, pos, start, cursor, end, flags);
 }
 
 /*
@@ -1842,19 +1862,20 @@ getvcols(
     pos_T	*pos1,
     pos_T	*pos2,
     colnr_T	*left,
-    colnr_T	*right)
+    colnr_T	*right,
+    int		flags)
 {
     colnr_T	from1, from2, to1, to2;
 
     if (LT_POSP(pos1, pos2))
     {
-	getvvcol(wp, pos1, &from1, NULL, &to1);
-	getvvcol(wp, pos2, &from2, NULL, &to2);
+	getvvcol(wp, pos1, &from1, NULL, &to1, flags);
+	getvvcol(wp, pos2, &from2, NULL, &to2, flags);
     }
     else
     {
-	getvvcol(wp, pos2, &from1, NULL, &to1);
-	getvvcol(wp, pos1, &from2, NULL, &to2);
+	getvvcol(wp, pos2, &from1, NULL, &to1, flags);
+	getvvcol(wp, pos1, &from2, NULL, &to2, flags);
     }
     if (from2 < from1)
 	*left = from2;

@@ -43,7 +43,7 @@ getviscol(void)
 {
     colnr_T	x;
 
-    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL);
+    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, 0);
     return (int)x;
 }
 
@@ -77,7 +77,7 @@ getviscol2(colnr_T col, colnr_T coladd)
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
     pos.coladd = coladd;
-    getvvcol(curwin, &pos, &x, NULL, NULL);
+    getvvcol(curwin, &pos, &x, NULL, NULL, 0);
     return (int)x;
 }
 
@@ -185,7 +185,7 @@ coladvance2(
 #endif
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
-	    csize = win_lbr_chartabsize(&cts, &head);
+	    csize = win_lbr_chartabsize(&cts, &head, NULL);
 	    MB_PTR_ADV(cts.cts_ptr);
 #else
 	    csize = lbr_chartabsize_adv(&cts);
@@ -298,7 +298,7 @@ coladvance2(
 	    {
 		colnr_T	    scol, ecol;
 
-		getvcol(curwin, pos, &scol, NULL, &ecol);
+		getvcol(curwin, pos, &scol, NULL, &ecol, 0);
 		pos->coladd = ecol - scol;
 	    }
 	}
@@ -606,7 +606,7 @@ check_cursor_col_win(win_T *win)
 	    {
 		int cs, ce;
 
-		getvcol(win, &win->w_cursor, &cs, NULL, &ce);
+		getvcol(win, &win->w_cursor, &cs, NULL, &ce, 0);
 		if (win->w_cursor.coladd > ce - cs)
 		    win->w_cursor.coladd = ce - cs;
 	    }
@@ -702,7 +702,7 @@ set_leftcol(colnr_T leftcol)
     // advance the cursor one more char.  If this fails (last char of the
     // line) adjust the scrolling.
     colnr_T	s, e;
-    getvvcol(curwin, &curwin->w_cursor, &s, NULL, &e);
+    getvvcol(curwin, &curwin->w_cursor, &s, NULL, &e, 0);
     if (e > (colnr_T)lastcol)
     {
 	retval = TRUE;

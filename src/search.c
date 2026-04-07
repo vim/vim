@@ -2858,7 +2858,7 @@ showmatch(
 	return;
 
     if (!curwin->w_p_wrap)
-	getvcol(curwin, lpos, NULL, &vcol, NULL);
+	getvcol(curwin, lpos, NULL, &vcol, NULL, 0);
 
     int col_visible = (curwin->w_p_wrap
 	    || (vcol >= curwin->w_leftcol

@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Simplified Chinese)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-20 20:44+0800\n"
+"POT-Creation-Date: 2026-04-05 23:26+0800\n"
 "PO-Revision-Date: 2025-12-28 14:27+0800\n"
 "Last-Translator: Mao-Yining\n"
 "Language-Team: Simplified Chinese\n"
@@ -55,7 +55,7 @@ msgid "auto-removing autocommand: %s <buffer=%d>"
 msgstr "自动删除自动命令： %s <buffer=%d>"
 
 msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: 删除依旧在使用中的自动组"
+msgstr "W19: 删除仍在使用中的自动命令组"
 
 msgid ""
 "\n"
@@ -600,11 +600,11 @@ msgstr "警告: 意外地进入了其它缓冲区 (请检查自动命令)"
 
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
-msgstr "W20: 不支持需要的 Python 2.x 版本，忽略文件：%s"
+msgstr "W20: 所需的 Python 2.x 版本不受支持，忽略文件：%s"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
-msgstr "W21: 不支持需要的 Python 3.x 版本，忽略文件：%s"
+msgstr "W21: 所需的 Python 3.x 版本不受支持，忽略文件：%s"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "进入 Ex 模式。输入 \"visual\" 回到正常模式。"
@@ -743,7 +743,7 @@ msgid "[character special]"
 msgstr "[字符设备]"
 
 msgid "[CR missing]"
-msgstr "[缺少 CR]'"
+msgstr "[缺少 CR]"
 
 msgid "[long lines split]"
 msgstr "[长行分割]"
@@ -824,7 +824,7 @@ msgstr "请参阅 \":help W11\" 以获取更多信息。"
 
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
-msgstr "W16: 警告: 编辑开始后，文件 \"%s\" 的模式已变动"
+msgstr "W16: 警告: 编辑开始后，文件 \"%s\" 的权限模式已变动"
 
 msgid "See \":help W16\" for more info."
 msgstr "请参阅 \":help W16\" 以获取更多信息。"
@@ -1137,7 +1137,7 @@ msgid "cs_create_connection setpgid failed"
 msgstr "cs_create_connection setpgid 失败"
 
 msgid "cs_create_connection exec failed"
-msgstr "cs_create_connection 执行失败"
+msgstr "cs_create_connection exec 失败"
 
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen to_fp 失败"
@@ -2348,6 +2348,10 @@ msgid "Beep!"
 msgstr "Beep!"
 
 #, c-format
+msgid "Executing directly: \"%s\""
+msgstr "直接执行：%s"
+
+#, c-format
 msgid "Calling shell to execute: \"%s\""
 msgstr "调用 shell 执行: \"%s\""
 
@@ -3279,7 +3283,7 @@ msgstr "查找 tag 文件 %s"
 
 #, c-format
 msgid "Duplicate field name: %s"
-msgstr "重复的字段名：%s"
+msgstr "重复的字段名称：%s"
 
 msgid "' not known. Available builtin terminals are:"
 msgstr "' 未知。可用的内建终端有:"
@@ -4325,7 +4329,7 @@ msgstr "E127: 函数 %s 正在使用中，不能重新定义"
 
 #, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr "E128: 函数名必须以大写字母或 \"s:\" 开头: %s"
+msgstr "E128: 函数名必须以大写字母或 \"s:\" 开头：%s"
 
 msgid "E129: Function name required"
 msgstr "E129: 需要函数名"
@@ -4351,7 +4355,7 @@ msgstr "E136: viminfo: 错误过多，忽略文件的剩余部分"
 
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
-msgstr "E137: Viminfo 文件不可写入: %s"
+msgstr "E137: Viminfo 文件不可写入：%s"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
@@ -5257,7 +5261,7 @@ msgid "E418: Illegal value: %s"
 msgstr "E418: 不合法的值: %s"
 
 msgid "E418: I'm a teapot"
-msgstr "E418: 我是茶壶，不煮咖啡（彩蛋）"
+msgstr "E418: 我是茶壶"
 
 msgid "E419: FG color unknown"
 msgstr "E419: 错误的前景颜色"
@@ -5564,7 +5568,7 @@ msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: \"%s\" 不是文件或可写的设备"
 
 msgid "E503: Coffee is currently not available"
-msgstr "E503: 当前无法提供咖啡（彩蛋）"
+msgstr "E503: 咖啡当前不可用"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "只读 (不能强制执行：'cpoptions' 中包含 \"W\")"
@@ -6047,7 +6051,7 @@ msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: 符号连接过多(循环？)"
 
 msgid "NetBeans disallows writes of unmodified buffers"
-msgstr "NetBeans 不允许未修改的缓冲区写入"
+msgstr "NetBeans 不允许写入未修改的缓冲区"
 
 msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "NetBeans 不允许缓冲区部分写入"
@@ -8920,8 +8924,8 @@ msgstr "E1545: Quickfix 列表栈不可用"
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr "E1546: 不能切换到正在关闭的缓冲区"
 
-msgid "E1547: This version of Vim does support :redrawtabpanel"
-msgstr "E1547: 此版本的 Vim 支持 :redrawtabpanel"
+msgid "E1547: This version of Vim does not support :redrawtabpanel"
+msgstr "E1547: 此版本的 Vim 不支持 :redrawtabpanel"
 
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Wayland 连接不可用"
@@ -9017,26 +9021,11 @@ msgstr "E1573: 无法监听端口"
 msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
 msgstr "E1574: gethostbyname()：无法在 channel_listen() 中解析主机名"
 
+msgid "E1575: Cannot create pipes"
+msgstr "E1575: 无法建立管道"
+
 msgid "--No lines in buffer--"
 msgstr "--缓冲区无内容--"
-
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
 
 msgid "pointer"
 msgstr "pointer"
@@ -9044,14 +9033,8 @@ msgstr "pointer"
 msgid "percent"
 msgstr "percent"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "string"
-
-msgid "float"
-msgstr "float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "已查找到文件开头，再从结尾继续查找"
@@ -9320,7 +9303,7 @@ msgid ""
 "You should now append vim.VIM_SPECIAL_PATH to sys.path"
 msgstr ""
 "路径设置失败：sys.path 不是列表\n"
-"你应该现在添加 vim.VIM_SPECIAL_PATH 到 sys.path"
+"你现在应该添加 vim.VIM_SPECIAL_PATH 到 sys.path"
 
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -82,7 +82,7 @@ browsedir({title}, {initdir})	String	put up a directory requester
 bufadd({name})			Number	add a buffer to the buffer list
 bufexists({buf})		Number	|TRUE| if buffer {buf} exists
 buflisted({buf})		Number	|TRUE| if buffer {buf} is listed
-bufload({buf})			Number	load buffer {buf} if not loaded yet
+bufload({buf})			none	load buffer {buf} if not loaded yet
 bufloaded({buf})		Number	|TRUE| if buffer {buf} is loaded
 bufname([{buf}])		String	name of the buffer {buf}
 bufnr([{buf} [, {create}]])	Number	number of the buffer {buf}
@@ -105,7 +105,7 @@ ch_evalraw({handle}, {string} [, {options}])
 				any	evaluate {string} on raw {handle}
 ch_getbufnr({handle}, {what})	Number	get buffer number for {handle}/{what}
 ch_getjob({channel})		Job	get the Job of {channel}
-ch_info({handle})		String	info about channel {handle}
+ch_info({handle})		Dict	info about channel {handle}
 ch_listen({address} [, {options}])
 				Channel	listen on {address}
 ch_log({msg} [, {handle}])	none	write {msg} in the channel log file
@@ -120,7 +120,7 @@ ch_readraw({handle} [, {options}])
 ch_sendexpr({handle}, {expr} [, {options}])
 				any	send {expr} over JSON {handle}
 ch_sendraw({handle}, {expr} [, {options}])
-				any	send {expr} over raw {handle}
+				none	send {expr} over raw {handle}
 ch_setoptions({handle}, {options})
 				none	set options for {handle}
 ch_status({handle} [, {options}])
@@ -192,7 +192,7 @@ extendnew({expr1}, {expr2} [, {expr3}])
 				List/Dict
 					like |extend()| but creates a new List
 					or Dictionary
-feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
+feedkeys({string} [, {mode}])	none	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
 filereadable({file})		Number	|TRUE| if {file} is a readable file
@@ -219,7 +219,7 @@ foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
 foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
-foreground()			Number	bring the Vim window to the foreground
+foreground()			none	bring the Vim window to the foreground
 fullcommand({name} [, {vim9}])	String	get full command from {name}
 funcref({name} [, {arglist}] [, {dict}])
 				Funcref	reference to function {name}
@@ -351,7 +351,7 @@ inputsecret({prompt} [, {text}])
 insert({object}, {item} [, {idx}])
 				List	insert {item} in {object}
 					[before {idx}]
-instanceof({object}, {class})	Number	|TRUE| if {object} is an instance of
+instanceof({object}, {class})	Bool	|TRUE| if {object} is an instance of
 					{class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
@@ -391,7 +391,7 @@ list2tuple({list})		Tuple	turn {list} of items into a tuple
 listener_add({callback} [, {buf} [, {unbuffered}]])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
-listener_remove({id})		none	remove a listener callback
+listener_remove({id})		Number	remove a listener callback
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
@@ -455,8 +455,8 @@ popup_clear()			none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
-popup_filter_menu({id}, {key})  Number	filter for a menu popup window
-popup_filter_yesno({id}, {key}) Number	filter for a dialog popup window
+popup_filter_menu({id}, {key})  Bool	filter for a menu popup window
+popup_filter_yesno({id}, {key}) Bool	filter for a dialog popup window
 popup_findecho()		Number	get window ID of popup for `:echowin`
 popup_findinfo()		Number	get window ID of info popup window
 popup_findpreview()		Number	get window ID of preview popup window
@@ -486,7 +486,7 @@ prompt_setinterrupt({buf}, {text})
 				none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
 prop_add({lnum}, {col}, {props})
-				none	add one text property
+				Number	add one text property
 prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
 				none	add multiple text properties
 prop_clear({lnum} [, {lnum-end} [, {props}]])
@@ -531,7 +531,7 @@ reltimefloat({time})		Float	turn the time value into a Float
 reltimestr({time})		String	turn time value into a String
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 				String	send expression
-remote_foreground({server})	Number	bring Vim server to the foreground
+remote_foreground({server})	none	bring Vim server to the foreground
 remote_peek({serverid} [, {retvar}])
 				Number	check for reply string
 remote_read({serverid} [, {timeout}])
@@ -581,7 +581,7 @@ setbufvar({buf}, {varname}, {val})
 				none	set {varname} in buffer {buf} to {val}
 setcellwidths({list})		none	set character cell width overrides
 setcharpos({expr}, {list})	Number	set the {expr} position to {list}
-setcharsearch({dict})		Dict	set character search from {dict}
+setcharsearch({dict})		none	set character search from {dict}
 setcmdline({str} [, {pos}])	Number	set command-line
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
@@ -642,7 +642,7 @@ sound_playfile({path} [, {callback}])
 				Number	play sound file {path}
 sound_stop({id})		none	stop playing sound {id}
 soundfold({word})		String	sound-fold {word}
-spellbadword()			String	badly spelled word at cursor
+spellbadword()			List	badly spelled word at cursor
 spellsuggest({word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split({expr} [, {pat} [, {keepempty}]])
@@ -699,8 +699,7 @@ synconcealed({lnum}, {col})	List	info about concealing
 synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and
 					{col}
 system({expr} [, {input}])	String	output of shell command/filter {expr}
-systemlist({expr} [, {input}])
-				List	output of shell command/filter {expr}
+systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
 tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg} [, {arg}])
@@ -739,7 +738,7 @@ term_setrestore({buf}, {command})
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
 term_start({cmd} [, {options}])	Number	open a terminal window and run a job
-term_wait({buf} [, {time}])	Number  wait for screen to be updated
+term_wait({buf} [, {time}])	none    wait for screen to be updated
 terminalprops()			Dict	properties of the terminal
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
@@ -747,11 +746,11 @@ test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_garbagecollect_soon()	none	free memory soon for testing
-test_getvalue({string})		any	get value of an internal variable
+test_getvalue({string})		Number	get value of an internal variable
 test_gui_event({event}, {args})	bool	generate a GUI event for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_mswin_event({event}, {args})
-				bool	generate MS-Windows event for testing
+				Bool	generate MS-Windows event for testing
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
@@ -768,7 +767,7 @@ test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
 test_srand_seed([{seed}])	none	set seed for testing srand()
 test_unknown()			any	unknown value for testing
-test_void()			any	void value for testing
+test_void()			none	void value for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
 timer_start({time}, {callback} [, {options}])
@@ -788,7 +787,7 @@ tuple2list({tuple})		List	turn {tuple} of items into a list
 type({expr})			Number	type of value {expr}
 typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
-undotree([{buf}])		List	undo file tree for buffer {buf}
+undotree([{buf}])		Dict	undo file tree for buffer {buf}
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
 uri_decode({string})		String	URI-decode a string
@@ -803,7 +802,7 @@ virtcol2col({winid}, {lnum}, {col})
 				Number  byte index of a character on screen
 visualmode([{expr}])		String	last visual mode used
 wildmenumode()			Number	whether 'wildmenu' mode is active
-wildtrigger()			Number	start wildcard expansion
+wildtrigger()			none	start wildcard expansion
 win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
@@ -1273,7 +1272,7 @@ balloon_show({expr})					*balloon_show()*
 		{only available when compiled with the |+balloon_eval| or
 		|+balloon_eval_term| feature}
 
-		Return type: |Number|
+		Return type: void
 
 
 balloon_split({msg})					*balloon_split()*
@@ -1500,7 +1499,7 @@ bufload({buf})						*bufload()*
 		Can also be used as a |method|: >
 			eval 'somename'->bufload()
 <
-		Return type: |Number|
+		Return type: void
 
 
 bufloaded({buf})					*bufloaded()*
@@ -1895,7 +1894,7 @@ clearmatches([{win}])					*clearmatches()*
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
 <
-		Return type: |Number|
+		Return type: void
 
 
 cmdcomplete_info()					*cmdcomplete_info()*
@@ -2015,7 +2014,7 @@ complete({startcol}, {matches})				*complete()* *E785*
 		second argument: >
 			GetMatches()->complete(col('.'))
 <
-		Return type: |Number|
+		Return type: void
 
 
 complete_add({expr})					*complete_add()*
@@ -2659,7 +2658,7 @@ echoraw({string})					*echoraw()*
 			call echoraw(&t_TI)
 <		Use with care, you can mess up the terminal this way.
 
-		Return type: |Number|
+		Return type: void
 
 
 empty({expr})						*empty()*
@@ -2702,7 +2701,7 @@ err_teapot([{expr}])					*err_teapot()*
 		indicating that coffee is temporarily not available.
 		If {expr} is present it must be a String.
 
-		Return type: |Number|
+		Return type: void
 
 
 escape({string}, {chars})				*escape()*
@@ -3219,7 +3218,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		Can also be used as a |method|: >
 			GetInput()->feedkeys()
 <
-		Return type: |Number|
+		Return type: void
 
 
 filecopy({from}, {to})					*filecopy()*
@@ -3656,7 +3655,7 @@ foreground()						*foreground()*
 		allow a window to bring itself to the foreground.  Use
 		|remote_foreground()| instead.
 
-		Return type: |Number|
+		Return type: void
 		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
@@ -3808,7 +3807,7 @@ garbagecollect([{atexit}])				*garbagecollect()*
 		type a character.  To force garbage collection immediately use
 		|test_garbagecollect_now()|.
 
-		Return type: |String|
+		Return type: void
 
 
 get({list}, {idx} [, {default}])			*get()* *get()-list*
@@ -6269,7 +6268,7 @@ instanceof({object}, {class})			*instanceof()* *E614* *E616* *E693*
 <		Can also be used as a |method|: >
 			myobj->instanceof(mytype)
 <
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 interrupt()						*interrupt()*
@@ -6877,7 +6876,7 @@ listener_flush([{buf}])					*listener_flush()*
 		Can also be used as a |method|: >
 			GetBuffer()->listener_flush()
 <
-		Return type: |Number|
+		Return type: void
 
 
 listener_remove({id})					*listener_remove()*
@@ -7221,7 +7220,7 @@ mapset({dict})
 			    mapset(d)
 			endfor
 <
-		Return type: |Number|
+		Return type: void
 
 
 match({expr}, {pat} [, {start} [, {count}]])		*match()*
@@ -8484,8 +8483,10 @@ prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 
 <		Can also be used as a |method|: >
 			GetBuffer()->prompt_setcallback(callback)
+<
+		Return type: void
 
-<		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+channel| feature}
 
 prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Set a callback for buffer {buf} to {expr}.  When {expr} is an
@@ -8499,7 +8500,7 @@ prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setinterrupt(callback)
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+channel| feature}
 
@@ -8513,7 +8514,7 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+channel| feature}
 
@@ -8876,7 +8877,7 @@ redraw_listener_remove({id})			*redraw_listener_remove()*
 		Can also be used as a |method|: >
 			GetRedrawListenerId()->redraw_listener_remove()
 <
-		Return type: |Number|
+		Return type: void
 
 
 reduce({object}, {func} [, {initial}])			*reduce()* *E998*
@@ -9048,7 +9049,7 @@ remote_foreground({server})				*remote_foreground()*
 		Can also be used as a |method|: >
 			ServerName()->remote_foreground()
 <
-		Return type: |Number|
+		Return type: void
 
 		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
@@ -9132,7 +9133,7 @@ remote_startserver({name})		*remote_startserver()* *E941* *E942*
 		Can also be used as a |method|: >
 			ServerName()->remote_startserver()
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+clientserver| feature}
 
@@ -9880,7 +9881,7 @@ setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		third argument: >
 			GetValue()->setbufvar(buf, varname)
 <
-		Return type: |Number|
+		Return type: void
 
 
 setcellwidths({list})					*setcellwidths()*
@@ -9917,7 +9918,7 @@ setcellwidths({list})					*setcellwidths()*
 		match with what Vim knows about each emoji.  If it doesn't
 		look right you need to adjust the {list} argument.
 
-		Return type: |Number|
+		Return type: void
 
 
 setcharpos({expr}, {list})				*setcharpos()*
@@ -9960,7 +9961,7 @@ setcharsearch({dict})					*setcharsearch()*
 		Can also be used as a |method|: >
 			SavedSearch()->setcharsearch()
 <
-		Return type: dict<any>
+		Return type: void
 
 
 setcmdline({str} [, {pos}])				*setcmdline()*
@@ -10027,7 +10028,7 @@ setenv({name}, {val})					*setenv()*
 		second argument: >
 			GetPath()->setenv('PATH')
 <
-		Return type: |Number|
+		Return type: void
 
 
 setfperm({fname}, {mode})				*setfperm()* *chmod*
@@ -10386,7 +10387,7 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		third argument: >
 			GetValue()->settabvar(tab, name)
 <
-		Return type: |Number|
+		Return type: void
 
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
@@ -10411,7 +10412,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		fourth argument: >
 			GetValue()->settabwinvar(tab, winnr, name)
 <
-		Return type: |Number|
+		Return type: void
 
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
@@ -10464,7 +10465,7 @@ setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 		third argument: >
 			GetValue()->setwinvar(winnr, name)
 <
-		Return type: |Number|
+		Return type: void
 
 
 sha256({expr})						*sha256()*
@@ -10704,7 +10705,7 @@ sound_clear()						*sound_clear()*
 		On some Linux systems you may need the libcanberra-pulse
 		package, otherwise sound may not stop.
 
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+sound| feature}
 
@@ -10774,7 +10775,7 @@ sound_stop({id})					*sound_stop()*
 		Can also be used as a |method|: >
 			soundid->sound_stop()
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+sound| feature}
 
@@ -12059,7 +12060,7 @@ timer_pause({timer}, {paused})				*timer_pause()*
 		Can also be used as a |method|: >
 			GetTimer()->timer_pause(1)
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+timers| feature}
 
@@ -12119,7 +12120,7 @@ timer_stop({timer})					*timer_stop()*
 		Can also be used as a |method|: >
 			GetTimer()->timer_stop()
 <
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+timers| feature}
 
@@ -12129,7 +12130,7 @@ timer_stopall()						*timer_stopall()*
 		invoked.  Useful if a timer is misbehaving.  If there are no
 		timers there is no error.
 
-		Return type: |Number|
+		Return type: void
 
 		{only available when compiled with the |+timers| feature}
 
@@ -12619,7 +12620,7 @@ wildtrigger()						*wildtrigger()*
 
 		Return value is always 0.
 
-		Return type: |Number|
+		Return type: void
 
 
 win_execute({id}, {command} [, {silent}])		*win_execute()*
@@ -12971,7 +12972,7 @@ winrestview({dict})					*winrestview()*
 		Can also be used as a |method|: >
 			GetView()->winrestview()
 <
-		Return type: |Number|
+		Return type: void
 
 
 winsaveview()						*winsaveview()*

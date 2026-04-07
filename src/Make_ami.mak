@@ -1,5 +1,5 @@
 #
-# Makefile for AROS, AmigaOS4 and MorphOS.
+# Makefile for AROS, AmigaOS 3.x, AmigaOS 4 and MorphOS.
 #
 BIN = vim
 CC ?= gcc
@@ -52,6 +52,7 @@ endif
 
 # OS specific compiler flags
 ifeq ($(UNM),AmigaOS)
+# AmigaOS 4 (PowerPC)
 LDFLAGS = -lauto
 CFLAGS += -DHAVE_FSYNC -D__USE_INLINE__
 else
@@ -61,6 +62,12 @@ else
 ifeq ($(UNM),MorphOS)
 CFLAGS += -noixemul
 LDFLAGS = -ldebug -lm -noixemul
+else
+# Classic AmigaOS 3.x (68k) with bebbo-gcc and libnix.
+# Build: make -f Make_ami.mak UNM=AmigaOS3 CC=m68k-amigaos-gcc BUILD=normal
+CFLAGS += -noixemul -std=gnu99 -DWORDS_BIGENDIAN -DHAVE_ERRNO_H
+LDFLAGS = -noixemul -lm
+endif
 endif
 endif
 endif
@@ -150,6 +157,7 @@ SRC += \
 	option.c \
 	optionstr.c \
 	os_amiga.c \
+	os_amiga_stubs.c \
 	popupmenu.c \
 	popupwin.c \
 	quickfix.c \

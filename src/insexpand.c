@@ -4538,6 +4538,8 @@ fuzzy_longest_match(void)
 	return;
     }
 
+    if ((size_t)compl_num_bests > SIZE_MAX / sizeof(compl_T *))
+	return;
     compl_best_matches = (compl_T **)alloc(compl_num_bests * sizeof(compl_T *));
     if (compl_best_matches == NULL)
 	return;

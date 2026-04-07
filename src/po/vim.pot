@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-25 21:51+0000\n"
+"POT-Creation-Date: 2026-04-06 13:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8756,7 +8756,7 @@ msgstr ""
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr ""
 
-msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgid "E1547: This version of Vim does not support :redrawtabpanel"
 msgstr ""
 
 msgid "E1548: Wayland connection is unavailable"
@@ -8863,37 +8863,13 @@ msgstr ""
 msgid "--No lines in buffer--"
 msgstr ""
 
-msgid "int"
-msgstr ""
-
-msgid "long int"
-msgstr ""
-
-msgid "long long int"
-msgstr ""
-
-msgid "unsigned int"
-msgstr ""
-
-msgid "unsigned long int"
-msgstr ""
-
-msgid "unsigned long long int"
-msgstr ""
-
 msgid "pointer"
 msgstr ""
 
 msgid "percent"
 msgstr ""
 
-msgid "char"
-msgstr ""
-
 msgid "string"
-msgstr ""
-
-msgid "float"
 msgstr ""
 
 #.
