@@ -687,7 +687,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tzst")
-   let extractcmd= substitute(extractcmd,"-","--zstd","")
+   let extractcmd= substitute(extractcmd,"-","--zstd -","")
    call system(extractcmd." ".shellescape(tarbase).".tzst ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tzst {fname}: failed!")
@@ -696,7 +696,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tar.zst")
-   let extractcmd= substitute(extractcmd,"-","--zstd","")
+   let extractcmd= substitute(extractcmd,"-","--zstd -","")
    call system(extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tar.zst {fname}: failed!")
