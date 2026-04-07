@@ -36,8 +36,9 @@ typedef union {
 #if defined(MSWIN)
   // MS-Windows is always little endian
 #else
-# ifdef HAVE_CONFIG_H
-   // in configure.ac AC_C_BIGENDIAN() defines WORDS_BIGENDIAN when needed
+# if defined(HAVE_CONFIG_H) || defined(WORDS_BIGENDIAN) || defined(AMIGA)
+   // Endianness determined by configure, explicit define, or known platform.
+   // Amiga (68k) is always big-endian.
 # else
 #  error Please change this code to define WORDS_BIGENDIAN for big-endian machines.
 # endif

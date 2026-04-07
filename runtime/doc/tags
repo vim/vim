@@ -4772,6 +4772,7 @@ E1571	builtin.txt	/*E1571*
 E1572	options.txt	/*E1572*
 E1573	channel.txt	/*E1573*
 E1574	channel.txt	/*E1574*
+E1575	builtin.txt	/*E1575*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
@@ -6342,6 +6343,7 @@ b:rust_cargo_check_benches	ft_rust.txt	/*b:rust_cargo_check_benches*
 b:rust_cargo_check_examples	ft_rust.txt	/*b:rust_cargo_check_examples*
 b:rust_cargo_check_tests	ft_rust.txt	/*b:rust_cargo_check_tests*
 b:rustfmt_autosave	ft_rust.txt	/*b:rustfmt_autosave*
+b:rustfmt_autosave_if_config_present	ft_rust.txt	/*b:rustfmt_autosave_if_config_present*
 b:tex_stylish	syntax.txt	/*b:tex_stylish*
 b:var	eval.txt	/*b:var*
 b:yaml_schema	syntax.txt	/*b:yaml_schema*
@@ -8037,7 +8039,6 @@ g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vim_json_conceal	syntax.txt	/*g:vim_json_conceal*
 g:vim_json_warnings	syntax.txt	/*g:vim_json_warnings*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
-g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
 g:vimsyn_comment_strings	syntax.txt	/*g:vimsyn_comment_strings*
 g:vimsyn_embed	syntax.txt	/*g:vimsyn_embed*
 g:vimsyn_folding	syntax.txt	/*g:vimsyn_folding*

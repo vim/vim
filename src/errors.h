@@ -3737,7 +3737,7 @@ EXTERN char e_no_quickfix_stack[]
 EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
 EXTERN char e_cannot_not_support_redrawtabpanel[]
-	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));
+	INIT(= N_("E1547: This version of Vim does not support :redrawtabpanel"));
 #ifdef FEAT_WAYLAND
 EXTERN char e_wayland_connection_unavailable[]
 	INIT(= N_("E1548: Wayland connection is unavailable"));
@@ -3795,8 +3795,6 @@ EXTERN char e_osc_response_timed_out[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_add_listener_in_listener_callback[]
 	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
-#endif
-#ifdef FEAT_EVAL
 EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
 	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
 EXTERN char e_no_redraw_listener_callbacks_defined[]
@@ -3809,4 +3807,8 @@ EXTERN char e_cannot_listen_on_port[]
 	INIT(= N_("E1573: Cannot listen on port"));
 EXTERN char e_gethostbyname_in_channel_listen[]
 	INIT(= N_("E1574: gethostbyname(): cannot resolve hostname in channel_listen()"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_create_pipes[]
+	INIT(= N_("E1575: Cannot create pipes"));
 #endif

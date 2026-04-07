@@ -804,7 +804,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 {
     char_u	*dirp;
     char_u	dir_name[IOSIZE + 1];
-    char_u	*munged_name = NULL;
+    string_T	munged_name = {NULL, 0};
     char_u	*undo_file_name = NULL;
     int		dir_len;
     char_u	*p;
@@ -862,16 +862,20 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 	    dir_name[dir_len] = NUL;
 	    if (mch_isdir(dir_name))
 	    {
-		if (munged_name == NULL)
+		string_T    ret;
+
+		if (munged_name.string == NULL)
 		{
-		    munged_name = vim_strnsave(ffname, ffnamelen);
-		    if (munged_name == NULL)
+		    munged_name.string = vim_strnsave(ffname, ffnamelen);
+		    if (munged_name.string == NULL)
 			return NULL;
-		    for (p = munged_name; *p != NUL; MB_PTR_ADV(p))
+		    munged_name.length = ffnamelen;
+		    for (p = munged_name.string; *p != NUL; MB_PTR_ADV(p))
 			if (vim_ispathsep(*p))
 			    *p = '%';
 		}
-		undo_file_name = concat_fnames(dir_name, munged_name, TRUE);
+		undo_file_name = concat_fnames(dir_name, (size_t)dir_len,
+		    munged_name.string, munged_name.length, TRUE, &ret);
 	    }
 	}
 
@@ -882,7 +886,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 	VIM_CLEAR(undo_file_name);
     }
 
-    vim_free(munged_name);
+    vim_free(munged_name.string);
     return undo_file_name;
 }
 

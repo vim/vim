@@ -467,7 +467,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (*cts.cts_ptr != NUL && --column >= 0)
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
 	MB_PTR_ADV(cts.cts_ptr);
     }
 
@@ -481,7 +481,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     col = cts.cts_vcol;
     if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
-	col += win_lbr_chartabsize(&cts, NULL) - 1;
+	col += win_lbr_chartabsize(&cts, NULL, NULL) - 1;
     clear_chartabsize_arg(&cts);
 
     /*
@@ -1752,32 +1752,39 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     static char_u *
 vim_version_dir(char_u *vimdir)
 {
-    char_u	*p;
+    string_T	p;
+    size_t	vimdir_len;
 
     if (vimdir == NULL || *vimdir == NUL)
 	return NULL;
-    p = concat_fnames(vimdir, (char_u *)VIM_VERSION_NODOT, TRUE);
-    if (p != NULL && mch_isdir(p))
-	return p;
-    vim_free(p);
-    p = concat_fnames(vimdir, (char_u *)RUNTIME_DIRNAME, TRUE);
-    if (p != NULL && mch_isdir(p))
+    vimdir_len = STRLEN(vimdir);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)VIM_VERSION_NODOT, STRLEN_LITERAL(VIM_VERSION_NODOT), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
+	return p.string;
+    vim_free(p.string);
+    concat_fnames(vimdir, vimdir_len,
+	(char_u *)RUNTIME_DIRNAME, STRLEN_LITERAL(RUNTIME_DIRNAME), TRUE, &p);
+    if (p.string != NULL && mch_isdir(p.string))
     {
-	char_u *fname = concat_fnames(p, (char_u *)"defaults.vim", TRUE);
+	string_T    fname;
+
+	concat_fnames(p.string, p.length,
+	    (char_u *)"defaults.vim", STRLEN_LITERAL("defaults.vim"), TRUE, &fname);
 
 	// Check that "defaults.vim" exists in this directory, to avoid picking
 	// up a stray "runtime" directory, it would make many tests fail in
 	// mysterious ways.
-	if (fname != NULL)
+	if (fname.string != NULL)
 	{
-	    int exists = file_is_readable(fname);
+	    int exists = file_is_readable(fname.string);
 
-	    vim_free(fname);
+	    vim_free(fname.string);
 	    if (exists)
-		return p;
+		return p.string;
 	}
     }
-    vim_free(p);
+    vim_free(p.string);
     return NULL;
 }
 
@@ -2511,6 +2518,9 @@ get_cmd_output_as_rettv(
     FILE	*fd;
     list_T	*list = NULL;
     int		flags = SHELL_SILENT;
+    int		use_argv = FALSE;
+    char	**argv = NULL;
+    int		argc = 0;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -2518,7 +2528,7 @@ get_cmd_output_as_rettv(
 	goto errret;
 
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
 		|| check_for_opt_string_or_number_or_list_arg(argvars, 1)
 								      == FAIL))
 	return;
@@ -2598,6 +2608,47 @@ get_cmd_output_as_rettv(
 	}
     }
 
+    // When the command is a List, execute directly without the shell.
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	list_T	*l = argvars[0].vval.v_list;
+
+	if (l == NULL || l->lv_len < 1)
+	{
+	    emsg(_(e_invalid_argument));
+	    goto errret;
+	}
+	if (build_argv_from_list(l, &argv, &argc) == FAIL)
+	    goto errret;
+	if (argc == 0 || *skipwhite((char_u *)argv[0]) == NUL)
+	{
+	    emsg(_(e_invalid_argument));
+	    goto errret;
+	}
+	use_argv = TRUE;
+
+	if (p_verbose > 3)
+	{
+	    int		i;
+	    garray_T	ga;
+
+	    verbose_enter();
+	    ga_init2(&ga, 1, 200);
+	    for (i = 0; i < argc; ++i)
+	    {
+		if (i > 0)
+		    ga_append(&ga, ' ');
+		ga_concat(&ga, (char_u *)argv[i]);
+	    }
+	    ga_append(&ga, NUL);
+	    smsg(_("Executing directly: \"%s\""), (char *)ga.ga_data);
+	    msg_putchar_attr('\n', 0);
+	    cursor_on();
+	    verbose_leave();
+	    ga_clear(&ga);
+	}
+    }
+
     // Omit SHELL_COOKED when invoked with ":silent".  Avoids that the shell
     // echoes typeahead, that messes up the display.
     if (!msg_silent)
@@ -2612,7 +2663,10 @@ get_cmd_output_as_rettv(
 	char_u		*end;
 	int		i;
 
-	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, &len);
+	if (use_argv)
+	    res = mch_get_cmd_output_direct(argv, infile, flags, &len);
+	else
+	    res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, &len);
 	if (res == NULL)
 	    goto errret;
 
@@ -2652,7 +2706,10 @@ get_cmd_output_as_rettv(
     }
     else
     {
-	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
+	if (use_argv)
+	    res = mch_get_cmd_output_direct(argv, infile, flags, NULL);
+	else
+	    res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
 #  ifdef USE_CRNL
 	// translate <CR><NL> into <NL>
 	if (res != NULL)
@@ -2674,6 +2731,13 @@ get_cmd_output_as_rettv(
     }
 
 errret:
+    if (argv != NULL)
+    {
+	int i;
+	for (i = 0; argv[i] != NULL; i++)
+	    vim_free(argv[i]);
+	vim_free(argv);
+    }
     if (infile != NULL)
     {
 	mch_remove(infile);

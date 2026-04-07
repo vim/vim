@@ -1213,13 +1213,19 @@ win_line(
     int		save_did_emsg;
 #endif
 #ifdef FEAT_PROP_POPUP
+# define WIN_LINE_TEXT_PROP_STACK_LEN 32
     int		did_line = FALSE;	// set to TRUE when line text done
     int		text_prop_count;
     int		last_textprop_text_idx = -1;
     int		text_prop_next = 0;	// next text property to use
+    textprop_T	text_props_buf[WIN_LINE_TEXT_PROP_STACK_LEN];
+    int		text_prop_idxs_buf[WIN_LINE_TEXT_PROP_STACK_LEN];
+    char_u	text_prop_suffix_flags_buf[WIN_LINE_TEXT_PROP_STACK_LEN + 1];
     textprop_T	*text_props = NULL;
     int		*text_prop_idxs = NULL;
+    char_u	*text_prop_suffix_flags = NULL;
     int		text_props_active = 0;
+    int		text_props_need_sort = FALSE;
     proptype_T  *text_prop_type = NULL;
     int		text_prop_attr = 0;
     int		text_prop_attr_comb = 0;  // text_prop_attr combined with
@@ -1418,7 +1424,7 @@ win_line(
 			wlv.fromcol = 0;
 		    else
 		    {
-			getvvcol(wp, top, (colnr_T *)&wlv.fromcol, NULL, NULL);
+			getvvcol(wp, top, &wlv.fromcol, NULL, NULL, 0);
 			if (gchar_pos(top) == NUL)
 			    wlv.tocol = wlv.fromcol + 1;
 		    }
@@ -1436,12 +1442,10 @@ win_line(
 		    {
 			pos = *bot;
 			if (*p_sel == 'e')
-			    getvvcol(wp, &pos, (colnr_T *)&wlv.tocol,
-								   NULL, NULL);
+			    getvvcol(wp, &pos, &wlv.tocol, NULL, NULL, 0);
 			else
 			{
-			    getvvcol(wp, &pos, NULL, NULL,
-							(colnr_T *)&wlv.tocol);
+			    getvvcol(wp, &pos, NULL, NULL, &wlv.tocol, 0);
 			    ++wlv.tocol;
 			}
 		    }
@@ -1480,14 +1484,14 @@ win_line(
 	{
 	    if (lnum == curwin->w_cursor.lnum)
 		getvcol(curwin, &(curwin->w_cursor),
-					  (colnr_T *)&wlv.fromcol, NULL, NULL);
+						&wlv.fromcol, NULL, NULL, 0);
 	    else
 		wlv.fromcol = 0;
 	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
 	    {
 		pos.lnum = lnum;
 		pos.col = search_match_endcol;
-		getvcol(curwin, &pos, (colnr_T *)&wlv.tocol, NULL, NULL);
+		getvcol(curwin, &pos, &wlv.tocol, NULL, NULL, 0);
 	    }
 	    else
 		wlv.tocol = MAXCOL;
@@ -1696,15 +1700,40 @@ win_line(
     {
 	// Make a copy of the properties, so that they are properly
 	// aligned.
-	text_props = ALLOC_MULT(textprop_T, text_prop_count);
+	if (text_prop_count <= WIN_LINE_TEXT_PROP_STACK_LEN)
+	    text_props = text_props_buf;
+	else
+	    text_props = ALLOC_MULT(textprop_T, text_prop_count);
 	if (text_props != NULL)
 	    mch_memmove(text_props, prop_start,
 				     text_prop_count * sizeof(textprop_T));
 
 	// Allocate an array for the indexes.
-	text_prop_idxs = ALLOC_MULT(int, text_prop_count);
+	if (text_prop_count <= WIN_LINE_TEXT_PROP_STACK_LEN)
+	    text_prop_idxs = text_prop_idxs_buf;
+	else
+	    text_prop_idxs = ALLOC_MULT(int, text_prop_count);
 	if (text_prop_idxs == NULL)
-	    VIM_CLEAR(text_props);
+	{
+	    if (text_props != text_props_buf)
+		VIM_CLEAR(text_props);
+	    else
+		text_props = NULL;
+	}
+	if (text_prop_count <= WIN_LINE_TEXT_PROP_STACK_LEN)
+	    text_prop_suffix_flags = text_prop_suffix_flags_buf;
+	else
+	    text_prop_suffix_flags = ALLOC_MULT(char_u, text_prop_count + 1);
+	if (text_prop_suffix_flags == NULL)
+	{
+	    if (text_prop_idxs != text_prop_idxs_buf)
+		vim_free(text_prop_idxs);
+	    text_prop_idxs = NULL;
+	    if (text_props != text_props_buf)
+		VIM_CLEAR(text_props);
+	    else
+		text_props = NULL;
+	}
 
 	if (text_props != NULL)
 	{
@@ -1738,6 +1767,20 @@ win_line(
 		    else
 			++wlv.text_prop_above_count;
 		}
+
+	    text_prop_suffix_flags[text_prop_count] = 0;
+	    for (int i = text_prop_count - 1; i >= 0; --i)
+	    {
+		int flags = text_prop_suffix_flags[i + 1];
+
+		if (text_props[i].tp_col == MAXCOL)
+		{
+		    flags |= 1;
+		    if (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)
+			flags |= 2;
+		}
+		text_prop_suffix_flags[i] = flags;
+	    }
 	}
     }
 
@@ -1747,8 +1790,12 @@ win_line(
 	wlv.row += wlv.text_prop_above_count;
 	if (wlv.row >= endrow)
 	{
-	    vim_free(text_props);
-	    vim_free(text_prop_idxs);
+	    if (text_props != text_props_buf)
+		vim_free(text_props);
+	    if (text_prop_idxs != text_prop_idxs_buf)
+		vim_free(text_prop_idxs);
+	    if (text_prop_suffix_flags != text_prop_suffix_flags_buf)
+		vim_free(text_prop_suffix_flags);
 	    return wlv.row;
 	}
 	wlv.screen_row += wlv.text_prop_above_count;
@@ -1761,7 +1808,7 @@ win_line(
     {
 	chartabsize_T cts;
 	init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
-	(void)win_lbr_chartabsize(&cts, NULL);
+	(void)win_lbr_chartabsize(&cts, NULL, NULL);
 	vcol_first_char = cts.cts_first_char;
 	clear_chartabsize_arg(&cts);
     }
@@ -1785,7 +1832,7 @@ win_line(
 	while (cts.cts_vcol < v)
 	{
 	    head = 0;
-	    charsize = win_lbr_chartabsize(&cts, &head);
+	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
 	    cts.cts_vcol += charsize;
 	    prev_ptr = cts.cts_ptr;
 	    if (*prev_ptr == NUL)
@@ -2124,6 +2171,7 @@ win_line(
 					sizeof(int)
 					     * (text_props_active - (pi + 1)));
 			--text_props_active;
+			text_props_need_sort = TRUE;
 			--pi;
 # ifdef FEAT_LINEBREAK
 			// not exactly right but should work in most cases
@@ -2166,7 +2214,10 @@ win_line(
 		    }
 
 		    if (active)
+		    {
 			text_prop_idxs[text_props_active++] = text_prop_next;
+			text_props_need_sort = TRUE;
+		    }
 		    ++text_prop_next;
 		}
 
@@ -2192,10 +2243,14 @@ win_line(
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
 
-		    // Sort the properties on priority and/or starting last.
-		    // Then combine the attributes, highest priority last.
-		    sort_text_props(wp->w_buffer, text_props,
-					    text_prop_idxs, text_props_active);
+		    if (text_props_need_sort)
+		    {
+			// The active set only changes when a property starts
+			// or ends, so avoid sorting again for every column.
+			sort_text_props(wp->w_buffer, text_props,
+					text_prop_idxs, text_props_active);
+			text_props_need_sort = FALSE;
+		    }
 
 		    for (pi = 0; pi < text_props_active; ++pi)
 		    {
@@ -2404,19 +2459,10 @@ win_line(
 		    // Or when not wrapping and at the rightmost column.
 
 		    int only_below_follows = !wp->w_p_wrap && wlv.col == wp->w_width - 1;
-		    // TODO: Store "after"/"right"/"below" text properties in order
-		    //       in the buffer so only `text_props[text_prop_count - 1]`
-		    //       needs to be checked for following "below" virtual text
-		    for (int i = text_prop_next; i < text_prop_count; ++i)
-		    {
-			if (text_props[i].tp_col == MAXCOL
-				&& (!only_below_follows
-				    || (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)))
-			{
-			    text_prop_follows = TRUE;
-			    break;
-			}
-		    }
+		    int suffix_flags = text_prop_suffix_flags[text_prop_next];
+
+		    text_prop_follows = (suffix_flags
+					& (only_below_follows ? 2 : 1)) != 0;
 		}
 	    }
 
@@ -3120,7 +3166,8 @@ win_line(
 		    // do not want virtual text counted here
 		    cts.cts_has_prop_with_text = FALSE;
 # endif
-		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
+		    // TODO: consider using "tailp" here
+		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
 
 		    if (on_last_col && c != TAB)
@@ -3780,7 +3827,7 @@ win_line(
 	    colnr_T tcol;
 
 	    if (preedit_end_col == MAXCOL)
-		getvcol(curwin, &(wp->w_cursor), &tcol, NULL, NULL);
+		getvcol(curwin, &(wp->w_cursor), &tcol, NULL, NULL, 0);
 	    else
 		tcol = preedit_end_col;
 	    if ((long)preedit_start_col <= wlv.vcol && wlv.vcol < (long)tcol)
@@ -4501,8 +4548,12 @@ win_line(
 
     }	// for every character in the line
 #ifdef FEAT_PROP_POPUP
-    vim_free(text_props);
-    vim_free(text_prop_idxs);
+    if (text_props != text_props_buf)
+	vim_free(text_props);
+    if (text_prop_idxs != text_prop_idxs_buf)
+	vim_free(text_prop_idxs);
+    if (text_prop_suffix_flags != text_prop_suffix_flags_buf)
+	vim_free(text_prop_suffix_flags);
     vim_free(p_extra_free2);
 #endif
 

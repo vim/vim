@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Apr 05
 
 				+====================+
 				| Zip File Interface |
@@ -32,6 +32,10 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    the desired file, then hit the <return> key.  After editing, one may
    also write to the file.  Currently, one may not make a new file in
    zip archives via the plugin.
+
+   The zip plugin tries to detect some common path traversal attack
+   patterns, but it may not catch all possible cases.  Please be very
+   careful when using this plugin with untrusted input.
 
    COMMANDS~
 								*zip-x*

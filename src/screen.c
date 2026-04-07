@@ -2498,6 +2498,7 @@ screen_fill(
     if (end_col > screen_Columns)	// safety check
 	end_col = screen_Columns;
     if (ScreenLines == NULL
+	    || start_row < 0		// should not happen
 	    || start_row >= end_row
 	    || start_col >= end_col)	// nothing to do
 	return;
@@ -3870,6 +3871,13 @@ win_do_lines(
      */
     if (!no_win_do_lines_ins)
 	clear_cmdline = TRUE;
+
+#if defined(FEAT_TABPANEL)
+    // Terminal scroll operations affect the full screen width, which would
+    // corrupt the vertical tabpanel area and cause flicker.
+    if (tabpanel_width() > 0)
+	return FAIL;
+#endif
 
     /*
      * If the terminal can set a scroll region, use that.

@@ -3074,8 +3074,12 @@ check_for_cryptkey(
 
 	    header_len = crypt_get_header_len(method);
 	    if (*sizep < header_len)
+	    {
 		// invalid header, buffer can't be encrypted
+		if (cryptkey != curbuf->b_p_key)
+		    vim_free(cryptkey);
 		return NULL;
+	    }
 
 	    curbuf->b_cryptstate = crypt_create_from_header(
 							method, cryptkey, ptr);
@@ -3828,6 +3832,14 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     char	*eof;
 #define FGETS_SIZE 200
     char	tbuf[FGETS_SIZE];
+
+    // safety check
+    if (size < 2)
+    {
+	if (size == 1)
+	    buf[0] = NUL;
+	return TRUE;
+    }
 
     buf[size - 2] = NUL;
     eof = fgets((char *)buf, size, fp);

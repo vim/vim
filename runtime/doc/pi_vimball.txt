@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*pi_vimball.txt*	For Vim version 9.2.  Last change: 2026 Apr 05
 
 			       ----------------
 			       Vimball Archiver
@@ -91,21 +91,6 @@ MAKING A VIMBALL						*:MkVimball*
 	The tip at http://vim.wikia.com/wiki/Using_VimBall_with_%27Make%27
 	has a good idea on how to automate the production of vimballs using
 	make.
-
-
-MAKING DIRECTORIES VIA VIMBALLS				*g:vimball_mkdir*
-
-	First, the |mkdir()| command is tried (not all systems support it).
-
-	If it doesn't exist, then if g:vimball_mkdir doesn't exist, it is set
-	as follows: >
-	  |g:netrw_localmkdir|, if it exists
-	  "mkdir"             , if it is executable
-	  "makedir"           , if it is executable
-	  Otherwise           , it is undefined.
-<	One may explicitly specify the directory making command using
-	g:vimball_mkdir.  This command is used to make directories that
-	are needed as indicated by the vimball.
 
 
 CONTROLLING THE VIMBALL EXTRACTION DIRECTORY		*g:vimball_home*

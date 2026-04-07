@@ -1855,9 +1855,9 @@ do_put(
 	if (dir == FORWARD && c != NUL)
 	{
 	    if (cur_ve_flags == VE_ALL)
-		getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
+		getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2, 0);
 	    else
-		getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
+		getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col, 0);
 
 	    if (has_mbyte)
 		// move to start of next multi-byte character
@@ -1868,7 +1868,7 @@ do_put(
 	    ++col;
 	}
 	else
-	    getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
+	    getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2, 0);
 
 	col += curwin->w_cursor.coladd;
 	if (cur_ve_flags == VE_ALL
@@ -2021,7 +2021,7 @@ do_put(
 		curwin->w_cursor.col += bd.startspaces;
 	}
 
-	changed_lines(lnum, 0, curwin->w_cursor.lnum, nr_lines);
+	changed_lines(lnum, 0, curwin->w_cursor.lnum - nr_lines, nr_lines);
 
 	// Set '[ mark.
 	curbuf->b_op_start = curwin->w_cursor;
@@ -2112,7 +2112,7 @@ do_put(
 		    pos.lnum = lnum;
 		    pos.col = col;
 		    pos.coladd = 0;
-		    getvcol(curwin, &pos, NULL, &vcol, NULL);
+		    getvcol(curwin, &pos, NULL, &vcol, NULL, 0);
 		}
 	    }
 

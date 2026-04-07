@@ -2746,6 +2746,9 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     int		dict_only;
     mapblock_T	*mp_result[2] = {NULL, NULL};
 
+    if (check_secure())
+	return;
+
     // If first arg is a dict, then that's the only arg permitted.
     dict_only = argvars[0].v_type == VAR_DICT;
     if (in_vim9script()

@@ -663,8 +663,8 @@ do_mouse(
 			else if (VIsual_mode == Ctrl_V)
 			{
 			    getvcols(curwin, &curwin->w_cursor, &VIsual,
-						     &leftcol, &rightcol);
-			    getvcol(curwin, &m_pos, NULL, &m_pos.col, NULL);
+						     &leftcol, &rightcol, 0);
+			    getvcol(curwin, &m_pos, NULL, &m_pos.col, NULL, 0);
 			    if (m_pos.col < leftcol || m_pos.col > rightcol)
 				jump_flags = MOUSE_MAY_STOP_VIS;
 			}
@@ -831,7 +831,8 @@ do_mouse(
 	// that is in the quarter that the cursor is in.
 	if (VIsual_mode == Ctrl_V)
 	{
-	    getvcols(curwin, &start_visual, &end_visual, &leftcol, &rightcol);
+	    getvcols(curwin, &start_visual, &end_visual,
+						    &leftcol, &rightcol, 0);
 	    if (curwin->w_curswant > (leftcol + rightcol) / 2)
 		end_visual.col = leftcol;
 	    else
@@ -3250,7 +3251,7 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol, colnr_T *coladdp)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	int size = win_lbr_chartabsize(&cts, NULL);
+	int size = win_lbr_chartabsize(&cts, NULL, NULL);
 	if (cts.cts_vcol + size > vcol)
 	    break;
 	cts.cts_vcol += size;

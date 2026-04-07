@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Mar 24
+# Last Change:		2026 Apr 03
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -14,7 +14,13 @@ var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
 def IsObjectScriptRoutine(): bool
   var line1 = getline(1)
   line1 = substitute(line1, '^\ufeff', '', '')
-  return line1 =~? '^\s*routine\>\s\+[%A-Za-z][%A-Za-z0-9_.]*\%(\s*\[\|\s*;\|$\)'
+  if line1 =~? '^\s*routine\>'
+    return true
+  endif
+  if line1 =~? '\<iris\>'
+    return true
+  endif
+  return join(getline(1, 3), '') =~# '%RO'
 enddef
 
 export def Check_inp()
@@ -2669,6 +2675,8 @@ const ft_from_ext = {
   "rst": "rst",
   # RTF
   "rtf": "rtf",
+  # ObjectScript Routine
+  "rtn": "objectscript_routine",
   # Ruby
   "rb": "ruby",
   "rbw": "ruby",

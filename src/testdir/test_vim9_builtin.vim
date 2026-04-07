@@ -402,7 +402,7 @@ enddef
 
 def Test_bufload()
   assert_fails('bufload([])', 'E1220:')
-  bufload('')->assert_equal(0)
+  bufload('')
 enddef
 
 def Test_bufloaded()
@@ -647,7 +647,7 @@ def Test_ch_logfile()
   else
     assert_fails('ch_logfile(true)', 'E1174:')
     assert_fails('ch_logfile("foo", true)', 'E1174:')
-    ch_logfile('', '')->assert_equal(0)
+    ch_logfile('', '')
 
     v9.CheckSourceDefAndScriptFailure(['ch_logfile(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
     v9.CheckSourceDefAndScriptFailure(['ch_logfile("a", true)'], ['E1013: Argument 2: type mismatch, expected string but got bool', 'E1174: String required for argument 2'])
@@ -4089,8 +4089,8 @@ enddef
 
 def Test_setenv()
   v9.CheckSourceDefAndScriptFailure(['setenv(1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  assert_equal(0, setenv('', ''))
-  assert_equal(0, setenv('', v:null))
+  setenv('', '')
+  setenv('', v:null)
 enddef
 
 def Test_setfperm()
@@ -4658,13 +4658,13 @@ def Test_synstack()
 enddef
 
 def Test_system()
-  v9.CheckSourceDefAndScriptFailure(['system(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['system(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['system("a", {})'], ['E1013: Argument 2: type mismatch, expected string but got dict<any>', 'E1224: String, Number or List required for argument 2'])
   assert_equal("123\n", system('echo 123'))
 enddef
 
 def Test_systemlist()
-  v9.CheckSourceDefAndScriptFailure(['systemlist(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['systemlist(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['systemlist("a", {})'], ['E1013: Argument 2: type mismatch, expected string but got dict<any>', 'E1224: String, Number or List required for argument 2'])
   if has('win32')
     call assert_equal(["123\r"], systemlist('echo 123'))
@@ -4939,7 +4939,7 @@ enddef
 
 def Test_timer_stop()
   v9.CheckSourceDefAndScriptFailure(['timer_stop("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
-  assert_equal(0, timer_stop(100))
+  timer_stop(100)
 enddef
 
 def Test_tolower()

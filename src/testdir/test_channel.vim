@@ -2763,10 +2763,17 @@ endfunc
 
 let g:server_received_addr = ''
 let g:server_received_msg = ''
+let g:server_received_input = ''
+
+func s:test_listen_input(ch, msg)
+    let g:server_received_input = a:msg
+endfunc
 
 func s:test_listen_accept(ch, addr)
     let g:server_received_addr = a:addr
     let g:server_received_msg = ch_readraw(a:ch)
+
+    call ch_setoptions(a:ch, #{mode: "raw", callback: function('s:test_listen_input')})
 endfunction
 
 func Test_listen()
@@ -2782,7 +2789,10 @@ func Test_listen()
         return
     endif
     call ch_sendraw(handle, 'hello')
-    call WaitFor('"" != g:server_received_msg')
+    call WaitFor('"hello" == g:server_received_msg')
+    call ch_sendraw(handle, 'notify')
+    call WaitFor('"notify" == g:server_received_input')
+
     call ch_close(handle)
     call ch_close(server)
     call assert_equal('hello', g:server_received_msg)

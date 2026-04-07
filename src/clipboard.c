@@ -452,6 +452,10 @@ clip_auto_select(void)
     int
 clip_isautosel_star(void)
 {
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	return false;
+# endif
 # ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASEL) != NULL
@@ -467,6 +471,10 @@ clip_isautosel_star(void)
     int
 clip_isautosel_plus(void)
 {
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    if (clipmethod == CLIPMETHOD_PROVIDER)
+	return false;
+# endif
 # ifdef FEAT_GUI
     if (gui.in_use)
 	return vim_strchr(p_go, GO_ASELPLUS) != NULL;
@@ -3781,8 +3789,6 @@ clip_provider_get_callback(
 
     // func_tv owns the function name, so we must make a copy for the callback
     set_callback(callback, &cb);
-    if (cb.cb_free_name)
-	vim_free(cb.cb_name);
     clear_tv(&func_tv);
     return OK;
 }

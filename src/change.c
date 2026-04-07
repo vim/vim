@@ -373,8 +373,6 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     }
 
     set_callback(&lnr->lr_callback, &callback);
-    if (callback.cb_free_name)
-	vim_free(callback.cb_name);
 
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;
@@ -1265,7 +1263,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	    // characters (zero if it's a TAB).  Count the number of bytes to
 	    // be deleted to make room for the new character, counting screen
 	    // cells.  May result in adding spaces to fill a gap.
-	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL);
+	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL, 0);
 	    new_vcol = vcol + chartabsize(buf, vcol);
 	    while (oldp[col + oldlen] != NUL && vcol < new_vcol)
 	    {

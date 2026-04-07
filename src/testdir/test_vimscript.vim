@@ -7689,7 +7689,7 @@ func Test_catch_pattern_trailing_chars()
   bw!
 endfunc
 
-" Test for long gerneric type name {{{1
+" Test for long generic type name {{{1
 func Test_function_long_generic_name()
   func TestFunc()
     return

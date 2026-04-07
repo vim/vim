@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-06 12:15+0000\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -9427,38 +9427,14 @@ msgstr "E1571: Es muss mindestens ein Callback für redraw_listener_add angegeben
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
 
-msgid "int"
-msgstr "int"
-
-msgid "long int"
-msgstr "long int"
-
-msgid "long long int"
-msgstr "long long int"
-
-msgid "unsigned int"
-msgstr "unsigned int"
-
-msgid "unsigned long int"
-msgstr "unsigned long int"
-
-msgid "unsigned long long int"
-msgstr "unsigned long long int"
-
 msgid "pointer"
 msgstr "pointer"
 
 msgid "percent"
 msgstr "Prozent"
 
-msgid "char"
-msgstr "char"
-
 msgid "string"
 msgstr "Zeichenkette"
-
-msgid "float"
-msgstr "Float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Suche erreichte den ANFANG und wurde am ENDE fortgesetzt"

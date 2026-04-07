@@ -4856,9 +4856,9 @@ eval8(
 
     res = eval9(arg, rettv, evalarg, want_string);
 
-    if (want_type != NULL && evaluate)
+    if (want_type != NULL)
     {
-	if (res == OK)
+	if (evaluate && res == OK)
 	{
 	    type_T *actual = typval2type(rettv, get_copyID(), &type_list,
 							       TVTT_DO_MEMBER);
@@ -7566,7 +7566,13 @@ handle_subscript(
 		*arg = skipwhite(p + 2);
 	    else
 		*arg = p + 2;
-	    if (VIM_ISWHITE(**arg))
+	    if (ret == OK && evaluate && rettv->v_type == VAR_VOID)
+	    {
+		if (verbose)
+		    emsg(_(e_cannot_use_void_value));
+		ret = FAIL;
+	    }
+	    else if (VIM_ISWHITE(**arg))
 	    {
 		emsg(_(e_no_white_space_allowed_before_parenthesis));
 		ret = FAIL;

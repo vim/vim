@@ -377,7 +377,7 @@ static int	reg_strict;	// "[abc" is illegal
  */
 
 // META[] is used often enough to justify turning it into a table.
-static char_u META_flags[] = {
+static const char_u META_flags[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 //		   %  &     (  )  *  +	      .
@@ -1464,8 +1464,8 @@ reg_match_visual(void)
     }
     else if (mode == Ctrl_V)
     {
-	getvvcol(wp, &top, &start, NULL, &end);
-	getvvcol(wp, &bot, &start2, NULL, &end2);
+	getvvcol(wp, &top, &start, NULL, &end, 0);
+	getvvcol(wp, &bot, &start2, NULL, &end2, 0);
 	if (start2 < start)
 	    start = start2;
 	if (end2 > end)
@@ -2908,7 +2908,7 @@ static regengine_T nfa_regengine =
 static int regexp_engine = 0;
 
 #ifdef DEBUG
-static char_u regname[][30] = {
+static const char_u regname[][30] = {
 		    "AUTOMATIC Regexp Engine",
 		    "BACKTRACKING Regexp Engine",
 		    "NFA Regexp Engine"

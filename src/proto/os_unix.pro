@@ -63,6 +63,7 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int unix_build_argv(char_u *cmd, char ***argvp, char_u **sh_tofree, char_u **shcf_tofree);
 int mch_call_shell(char_u *cmd, int options);
+char_u *mch_get_cmd_output_direct(char **argv, char_u *infile, int flags, int *ret_len);
 void mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal);
 char *mch_job_status(job_T *job);
 job_T *mch_detect_ended_job(job_T *job_list);

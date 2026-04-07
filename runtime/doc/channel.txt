@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.2.  Last change: 2026 Mar 13
+*channel.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -549,7 +549,7 @@ ch_close({handle})						*ch_close()*
 		Can also be used as a |method|: >
 			GetChannel()->ch_close()
 <
-		Return type: |Number|
+		Return type: void
 
 ch_close_in({handle})						*ch_close_in()*
 		Close the "in" part of {handle}.  See |channel-close-in|.
@@ -559,7 +559,7 @@ ch_close_in({handle})						*ch_close_in()*
 		Can also be used as a |method|: >
 			GetChannel()->ch_close_in()
 <
-		Return type: |Number|
+		Return type: void
 
 
 ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
@@ -674,7 +674,9 @@ ch_listen({address} [, {options}])		*E1573* *E1574* *ch_listen()*
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} is a String, see |channel-address| for the possible
-		accepted forms.  Note: IPv6 is not yet supported.
+		accepted forms, however binding to all interfaces is not
+		allowed for security reasons.
+		Note: IPv6 is not yet supported.
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
@@ -708,7 +710,7 @@ ch_log({msg} [, {handle}])					*ch_log()*
 		Can also be used as a |method|: >
 			'did something'->ch_log()
 <
-		Return type: dict<any>
+		Return type: void
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
@@ -736,7 +738,7 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Can also be used as a |method|: >
 			'logfile'->ch_logfile('w')
 <
-		Return type: |Number|
+		Return type: void
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -825,7 +827,7 @@ ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendraw(rawexpr)
 <
-		Return type: dict<any> or |String|
+		Return type: void
 
 ch_setoptions({handle}, {options})			*ch_setoptions()*
 		Set options on {handle}:
@@ -844,7 +846,7 @@ ch_setoptions({handle}, {options})			*ch_setoptions()*
 		Can also be used as a |method|: >
 			GetChannel()->ch_setoptions(options)
 <
-		Return type: |Number|
+		Return type: void
 
 ch_status({handle} [, {options}])				*ch_status()*
 		Return the status of {handle}:
@@ -1038,7 +1040,7 @@ job_setoptions({job}, {options})			*job_setoptions()*
 		Can also be used as a |method|: >
 			GetJob()->job_setoptions(options)
 <
-		Return type: |Number|
+		Return type: void
 
 
 job_start({command} [, {options}])			*job_start()*

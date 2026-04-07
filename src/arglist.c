@@ -200,7 +200,7 @@ alist_add(
     if (check_arglist_locked() == FAIL)
 	return;
     arglist_locked = TRUE;
-    wp->w_locked = TRUE;
+    ++wp->w_locked;
 
 #ifdef BACKSLASH_IN_FILENAME
     slash_adjust(fname);
@@ -212,7 +212,7 @@ alist_add(
     ++al->al_ga.ga_len;
 
     arglist_locked = FALSE;
-    wp->w_locked = FALSE;
+    --wp->w_locked;
 }
 
 #if defined(BACKSLASH_IN_FILENAME)
@@ -373,7 +373,7 @@ alist_add_list(
 	    mch_memmove(&(ARGLIST[after + count]), &(ARGLIST[after]),
 				       (ARGCOUNT - after) * sizeof(aentry_T));
 	arglist_locked = TRUE;
-	wp->w_locked = TRUE;
+	++wp->w_locked;
 	for (i = 0; i < count; ++i)
 	{
 	    int flags = BLN_LISTED | (will_edit ? BLN_CURBUF : 0);
@@ -382,7 +382,7 @@ alist_add_list(
 	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], flags);
 	}
 	arglist_locked = FALSE;
-	wp->w_locked = FALSE;
+	--wp->w_locked;
 	ALIST(wp)->al_ga.ga_len += count;
 	if (old_argcount > 0 && wp->w_arg_idx >= after)
 	    wp->w_arg_idx += count;

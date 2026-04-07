@@ -769,7 +769,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	if (wp->w_p_list && wp->w_lcs_chars.tab1 == NUL)
 	{
 	    wp->w_p_list = FALSE;
-	    getvvcol(wp, &wp->w_cursor, NULL, &virtcol, NULL);
+	    getvvcol(wp, &wp->w_cursor, NULL, &virtcol, NULL, 0);
 	    wp->w_p_list = TRUE;
 	}
 
@@ -2078,17 +2078,10 @@ win_update(win_T *wp)
 	    if (VIsual_mode == Ctrl_V)
 	    {
 		colnr_T	    fromc, toc;
-#if defined(FEAT_LINEBREAK)
-		int	    save_ve_flags = curwin->w_ve_flags;
 
-		if (curwin->w_p_lbr)
-		    curwin->w_ve_flags = VE_ALL;
-#endif
-		getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc);
+		getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc,
+							 GETVCOL_END_EXCL_LBR);
 		++toc;
-#if defined(FEAT_LINEBREAK)
-		curwin->w_ve_flags = save_ve_flags;
-#endif
 		// Highlight to the end of the line, unless 'virtualedit' has
 		// "block".
 		if (curwin->w_curswant == MAXCOL)
@@ -2110,7 +2103,7 @@ win_update(win_T *wp)
 			    colnr_T t;
 
 			    pos.col = (int)ml_get_buf_len(wp->w_buffer, pos.lnum);
-			    getvvcol(wp, &pos, NULL, NULL, &t);
+			    getvvcol(wp, &pos, NULL, NULL, &t, 0);
 			    if (toc < t)
 				toc = t;
 			}
