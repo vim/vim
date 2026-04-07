@@ -67,9 +67,9 @@ syn match bbIncludeRest         ".*$" contained contains=bbString,bbVarDeref
 syn match bbIncludeLine         "^\(inherit\|inherit_defer\|include\|include_all\|require\)\s\+" contains=bbInclude nextgroup=bbIncludeRest
 
 " Add taks and similar
-syn keyword bbStatement         addtask deltask addhandler after before EXPORT_FUNCTIONS contained
+syn keyword bbStatement         addtask deltask addhandler after before EXPORT_FUNCTIONS addpylib contained
 syn match bbStatementRest       ".*$" skipwhite contained contains=bbStatement
-syn match bbStatementLine       "^\(addtask\|deltask\|addhandler\|after\|before\|EXPORT_FUNCTIONS\)\s\+" contains=bbStatement nextgroup=bbStatementRest
+syn match bbStatementLine       "^\(addtask\|deltask\|addhandler\|after\|before\|EXPORT_FUNCTIONS\|addpylib\)\s\+" contains=bbStatement nextgroup=bbStatementRest
 
 " OE Important Functions
 syn keyword bbOEFunctions       do_fetch do_unpack do_patch do_configure do_compile do_stage do_install do_package contained
