@@ -1664,7 +1664,8 @@ EXTERN char e_invalid_buffer_identifier_in_setdot[]
 	INIT(= N_("E647: Invalid buffer identifier in setDot"));
 EXTERN char e_invalid_buffer_identifier_in_close[]
 	INIT(= N_("E648: Invalid buffer identifier in close"));
-// E649 unused
+EXTERN char e_invalid_identifier_in_defineannotype[]
+	INIT(= N_("E649: Invalid identifier name in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
 	INIT(= N_("E650: Invalid buffer identifier in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_addanno[]

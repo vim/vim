@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-06 13:30+0000\n"
+"POT-Creation-Date: 2026-04-07 18:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5865,6 +5865,9 @@ msgid "E647: Invalid buffer identifier in setDot"
 msgstr ""
 
 msgid "E648: Invalid buffer identifier in close"
+msgstr ""
+
+msgid "E649: Invalid identifier name in defineAnnoType"
 msgstr ""
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
