@@ -1312,7 +1312,7 @@ au BufNewFile,BufRead *Xmodmap			setf xmodmap
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
 " Yaml
-au BufNewFile,BufRead */.kube/config,*/.kube/kuberc	setf yaml
+au BufNewFile,BufRead buf.lock,*/.kube/config,*/.kube/kuberc	setf yaml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
