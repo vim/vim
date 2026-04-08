@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Mar 24
+" Last Change:		2026 Apr 08
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -1312,7 +1312,7 @@ au BufNewFile,BufRead *Xmodmap			setf xmodmap
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
 " Yaml
-au BufNewFile,BufRead */.kube/config,*/.kube/kuberc	setf yaml
+au BufNewFile,BufRead buf.lock,*/.kube/config,*/.kube/kuberc	setf yaml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
