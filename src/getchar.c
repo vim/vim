@@ -4283,6 +4283,13 @@ getcmdkeycmd(
 	    // to a single Esc here.
 	    if (c1 == K_ESC)
 		c1 = ESC;
+
+#ifdef FEAT_GUI
+	    // Translate K_CSI to CSI.  The special key is only used to
+	    // avoid it being recognized as the start of a special key.
+	    if (c1 == K_CSI)
+		c1 = CSI;
+#endif
 	}
 
 	if (got_int)
