@@ -2736,10 +2736,12 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			char_u	buf[MAXLINELEN];
 
 			aff_entry->ae_cond = getroom_save(spin, items[4]);
+			// Note: this silently truncates the buffer, but this should
+			// not happen in practice
 			if (*items[0] == 'P')
-			    sprintf((char *)buf, "^%s", items[4]);
+			    vim_snprintf((char *)buf, sizeof(buf), "^%s", items[4]);
 			else
-			    sprintf((char *)buf, "%s$", items[4]);
+			    vim_snprintf((char *)buf, sizeof(buf), "%s$", items[4]);
 			aff_entry->ae_prog = vim_regcomp(buf,
 					    RE_MAGIC + RE_STRING + RE_STRICT);
 			if (aff_entry->ae_prog == NULL)
@@ -3906,7 +3908,9 @@ store_aff_word(
 				else
 				    p += STRLEN(ae->ae_chop);
 			    }
-			    STRCAT(newword, p);
+			    // Note: this silently truncates the buffer, but this should
+			    // not happen in practice
+			    STRNCAT(newword, p, MAXWLEN - STRLEN(newword) - 1);
 			}
 			else
 			{
@@ -3922,7 +3926,9 @@ store_aff_word(
 				*p = NUL;
 			    }
 			    if (ae->ae_add != NULL)
-				STRCAT(newword, ae->ae_add);
+				// Note: this silently truncates the buffer, but this should
+				// not happen in practice
+				STRNCAT(newword, ae->ae_add, MAXWLEN - STRLEN(newword) - 1);
 			}
 
 			use_flags = flags;
