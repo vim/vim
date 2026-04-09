@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
-" Last Change:		2025 Nov 13
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last Change:		2025 Nov 13
+" 2026 Apr 09 by Vim project: improve pattern for translated syntaxt.txt #19942
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -306,7 +307,7 @@ hi def link helpDiffAdded	Added
 hi def link helpDiffChanged	Changed
 hi def link helpDiffRemoved	Removed
 
-if has('textprop') && expand('%:p') =~ '[/\\]doc[/\\]syntax.txt'
+if has('textprop') && expand('%:p') =~? '[/\\]doc[/\\]syntax.\(txt\|\a\ax\)$'
   " highlight groups with their respective color
   import 'dist/vimhelp.vim'
   call vimhelp.HighlightGroups()
