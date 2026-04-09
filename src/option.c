@@ -1543,6 +1543,44 @@ get_opt_op(char_u *arg)
     return op;
 }
 
+// Options that are allowed in a modeline when 'modelinestrict' is on.
+static char *modeline_whitelist[] =
+{
+    "autoindent",
+    "cindent",
+    "commentstring",
+    "expandtab",
+    "filetype",
+    "foldcolumn",
+    "foldenable",
+    "foldmethod",
+    "modifiable",
+    "readonly",
+    "rightleft",
+    "shiftwidth",
+    "smartindent",
+    "softtabstop",
+    "spell",
+    "spelllang",
+    "tabstop",
+    "textwidth",
+    "varsofttabstop",
+    "vartabstop",
+    NULL
+};
+
+/*
+ * Return TRUE if option "name" is in the modeline whitelist.
+ */
+    static bool
+is_modeline_whitelisted(char *name)
+{
+    for (int i = 0; modeline_whitelist[i] != NULL; i++)
+	if (STRCMP(name, modeline_whitelist[i]) == 0)
+	    return true;
+    return false;
+}
+
 /*
  * Validate whether the value of the option in "opt_idx" can be changed.
  * Returns FAIL if the option can be skipped or cannot be changed. Returns OK
@@ -1575,6 +1613,11 @@ validate_opt_idx(int opt_idx, int opt_flags, long_u flags, char **errmsg)
 	    *errmsg = e_not_allowed_in_modeline_when_modelineexpr_is_off;
 	    return FAIL;
 	}
+	// When 'modelinestrict' is on, only whitelisted options may be
+	// set from a modeline.  Silently skip others.
+	if (p_mlstr && opt_idx >= 0
+		&& !is_modeline_whitelisted(options[opt_idx].fullname))
+	    return FAIL;
 #ifdef FEAT_DIFF
 	// In diff mode some options are overruled.  This avoids that
 	// 'foldmethod' becomes "marker" instead of "diff" and that

@@ -79,4 +79,4 @@ test = UR"""Raw Unicode string with quotes ' and "
 and literal \t and \040 and \xFF
 and escapes \u00A1 and \U00010605"""
 
-# vim: syntax=python2
+# vim: ft=python2

@@ -1766,7 +1766,7 @@ func Test_foldtext_in_modeline()
     bw!
   endfunc
 
-  set modeline modelineexpr
+  set modeline modelineexpr nomodelinestrict
   call Check_foldtext_in_modeline('setlocal')
   call Check_foldtext_in_modeline('set')
 
@@ -1792,7 +1792,7 @@ func Test_foldtext_in_modeline()
   call assert_equal(['after'], readfile('Xmodelinefoldtext_write'))
   bwipe!
 
-  set modeline& modelineexpr&
+  set modeline& modelineexpr& modelinestrict&
   delfunc ModelineFoldText
   delfunc Check_foldtext_in_modeline
 endfunc
@@ -1849,7 +1849,7 @@ func Test_foldexpr_in_modeline()
     bw!
   endfunc
 
-  set modeline modelineexpr
+  set modeline modelineexpr nomodelinestrict
   call Check_foldexpr_in_modeline('setlocal')
   call Check_foldexpr_in_modeline('set')
 
@@ -1875,7 +1875,7 @@ func Test_foldexpr_in_modeline()
   call assert_equal(['after'], readfile('Xmodelinefoldexpr_write'))
   bwipe!
 
-  set modeline& modelineexpr&
+  set modeline& modelineexpr& modelinestrict&
   delfunc ModelineFoldExpr
   delfunc Check_foldexpr_in_modeline
 endfunc

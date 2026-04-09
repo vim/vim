@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -823,6 +823,7 @@ Short explanation of each option:		*option-list*
 'modeline'	  'ml'	    recognize modelines at start or end of file
 'modelineexpr'	  'mle'	    allow setting expression options from a modeline
 'modelines'	  'mls'     number of lines checked for modelines
+'modelinestrict'  'mlst'    only allow safe options in modelines
 'modifiable'	  'ma'	    changes to the text are not possible
 'modified'	  'mod'     buffer has been modified
 'more'			    pause listings when the whole screen is filled

@@ -2271,7 +2271,7 @@ func Test_switchbuf()
 
   " If opening a file changes 'switchbuf', then the new value should be
   " retained.
-  set modeline&vim
+  set modeline&vim nomodelinestrict
   call writefile(["vim: switchbuf=split"], 'Xqftestfile1', 'D')
   enew | only
   set switchbuf&vim
@@ -2290,7 +2290,7 @@ func Test_switchbuf()
 
   call delete('Xqftestfile2')
   call delete('Xqftestfile3')
-  set switchbuf&vim
+  set switchbuf&vim modelinestrict
 
   enew | only
 endfunc
