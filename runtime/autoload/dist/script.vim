@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Dec 22
+# Last Change:	2026 Apr 09
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -115,7 +115,7 @@ export def Exe2filetype(name: string, line1: string): string
     return 'php'
 
     # Python
-  elseif name =~ 'python'
+  elseif name =~ 'python' || (name == 'uv' && line1 =~ '\<uv run\>')
     return 'python'
 
     # Groovy
