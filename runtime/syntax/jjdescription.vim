@@ -3,14 +3,15 @@
 " Maintainer:	Gregory Anders <greg@gpanders.com>
 " Last Change:	2024 May 8
 " 2025 Apr 17 by Vim Project (don't require space to start comments, #17130)
+" 2026 Apr 09 by Vim Project (anchor status regex to beginning of line, #19879)
 
 if exists('b:current_syntax')
   finish
 endif
 
-syn match jjAdded "A .*" contained
-syn match jjRemoved "D .*" contained
-syn match jjChanged "M .*" contained
+syn match jjAdded "^JJ:\s\+\zsA\s.*" contained
+syn match jjRemoved "^JJ:\s\+\zsD\s.*" contained
+syn match jjChanged "^JJ:\s\+\zsM\s.*" contained
 
 syn region jjComment start="^JJ:" end="$" contains=jjAdded,jjRemoved,jjChanged
 
