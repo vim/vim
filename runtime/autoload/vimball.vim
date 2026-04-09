@@ -6,7 +6,8 @@
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 "  Last Change:
 "   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
-"   2026 Apr 05 by Vim Project: Detect Path Traversal Attacks
+"   2026 Apr 05 by Vim Project: Detect path traversal attacks
+"   2026 Apr 09 by Vim Project: Detect more path traversal attacks
 " Copyright: (c) 2004-2011 by Charles E. Campbell
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 "            (see |copyright|) except use "Vimball" instead of "Vim".
@@ -229,7 +230,8 @@ fun! vimball#Vimball(really,...)
    let fsize   = substitute(getline(linenr+1),'^\(\d\+\).\{-}$','\1','')+0
    let fenc    = substitute(getline(linenr+1),'^\d\+\s*\(\S\{-}\)$','\1','')
    let filecnt = filecnt + 1
-   if fname =~ '\.\.'
+   " Do not allow a leading / or .. anywhere in the file name
+   if fname =~ '\.\.' || fname =~ '^/'
      echomsg "(Vimball) Path Traversal Attack detected, aborting..."
      exe "tabn ".curtabnr
      bw! Vimball
