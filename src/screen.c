@@ -2260,11 +2260,28 @@ screen_char(unsigned off, int row, int col)
     // output the final blended result.
     // Also suppress if this is a wide character whose second cell
     // is under an opacity popup.
-    if (popup_is_under_opacity(row, col)
-	    || (enc_utf8 && ScreenLinesUC[off] != 0
+    if (popup_is_under_opacity(row, col))
+    {
+	// If this is a wide character whose left half is under an opacity
+	// popup but right half is not, clear the right half so the old
+	// blended value doesn't remain as a ghost after popup_move().
+	if (enc_utf8 && ScreenLinesUC[off] != 0
 		&& utf_char2cells(ScreenLinesUC[off]) == 2
 		&& col + 1 < screen_Columns
-		&& popup_is_under_opacity(row, col + 1)))
+		&& !popup_is_under_opacity(row, col + 1))
+	{
+	    int off2 = off + 1;
+	    ScreenLines[off2] = ' ';
+	    ScreenLinesUC[off2] = 0;
+	    screen_char(off2, row, col + 1);
+	}
+	screen_cur_col = 9999;
+	return;
+    }
+    if (enc_utf8 && ScreenLinesUC[off] != 0
+	    && utf_char2cells(ScreenLinesUC[off]) == 2
+	    && col + 1 < screen_Columns
+	    && popup_is_under_opacity(row, col + 1))
     {
 	screen_cur_col = 9999;
 	return;
