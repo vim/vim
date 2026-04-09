@@ -263,3 +263,53 @@ def g:Test_extraction()
     bw!
   endfor
 enddef
+
+def g:Test_extract_with_dotted_dir()
+  delete('X.txt')
+  writefile(['when they kiss they spit white noise'], 'X.txt')
+
+  var dirname = tempname()
+  mkdir(dirname, 'R')
+  dirname = dirname .. '/foo.bar'
+  mkdir(dirname, 'R')
+  var tarpath = dirname .. '/Xarchive.tar.gz'
+  system('tar -czf ' .. tarpath .. ' X.txt')
+  assert_true(filereadable(tarpath))
+  assert_equal(0, v:shell_error)
+
+  delete('X.txt')
+  defer delete(tarpath)
+
+  execute 'e ' .. tarpath
+  assert_match('X.txt', getline(5))
+  :5
+  normal x
+  assert_true(filereadable('X.txt'))
+  assert_equal(['when they kiss they spit white noise'], readfile('X.txt'))
+  delete('X.txt')
+  bw!
+enddef
+
+def g:Test_extract_with_dotted_filename()
+  delete('X.txt')
+  writefile(['holiday inn'], 'X.txt')
+
+  var dirname = tempname()
+  mkdir(dirname, 'R')
+  var tarpath = dirname .. '/Xarchive.foo.tar.gz'
+  system('tar -czf ' .. tarpath .. ' X.txt')
+  assert_true(filereadable(tarpath))
+  assert_equal(0, v:shell_error)
+
+  delete('X.txt')
+  defer delete(tarpath)
+
+  execute 'e ' .. tarpath
+  assert_match('X.txt', getline(5))
+  :5
+  normal x
+  assert_true(filereadable('X.txt'))
+  assert_equal(['holiday inn'], readfile('X.txt'))
+  delete('X.txt')
+  bw!
+enddef
