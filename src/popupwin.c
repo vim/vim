@@ -4439,6 +4439,37 @@ popup_is_under_opacity(int row, int col)
 }
 
 /*
+ * Return TRUE if cell (row, col) is covered by a lower-zindex opacity popup.
+ */
+    int
+popup_is_over_opacity(int row, int col)
+{
+    win_T *wp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if ((wp->w_popup_flags & POPF_OPACITY)
+		&& wp->w_popup_blend > 0
+		&& !(wp->w_popup_flags & POPF_HIDDEN)
+		&& wp->w_zindex < screen_zindex
+		&& row >= wp->w_winrow
+		&& row < wp->w_winrow + popup_height(wp)
+		&& col >= wp->w_wincol
+		&& col < wp->w_wincol + popup_width(wp))
+	    return TRUE;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	if ((wp->w_popup_flags & POPF_OPACITY)
+		&& wp->w_popup_blend > 0
+		&& !(wp->w_popup_flags & POPF_HIDDEN)
+		&& wp->w_zindex < screen_zindex
+		&& row >= wp->w_winrow
+		&& row < wp->w_winrow + popup_height(wp)
+		&& col >= wp->w_wincol
+		&& col < wp->w_wincol + popup_width(wp))
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Return TRUE if any cell in row "row" from "start_col" to "end_col"
  * (exclusive) is covered by a higher-zindex opacity popup.
  */
