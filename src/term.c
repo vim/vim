@@ -1539,8 +1539,10 @@ typedef struct {
 #define TPR_MOUSE		    3
 // term response indicates kitty
 #define TPR_KITTY		    4
+// can send DECRQM requests to terminal
+#define TPR_DECRQM		    5
 // table size
-#define TPR_COUNT		    5
+#define TPR_COUNT		    6
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1564,6 +1566,8 @@ init_term_props(int all)
     term_props[TPR_MOUSE].tpr_set_by_termresponse = TRUE;
     term_props[TPR_KITTY].tpr_name = "kitty";
     term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
+    term_props[TPR_DECRQM].tpr_name = "decrqm";
+    term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -5171,21 +5175,27 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		may_adjust_color_count(256);
 	    // Libvterm can handle SGR mouse reporting.
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	if (version == 95)
 	{
 	    // Mac Terminal.app sends 1;95;0
+	    //
+	    // Terminal.app doesn't seem to handle DECRQM sequences
+	    // properly, see issue #19852.
 	    if (arg[0] == 1 && arg[2] == 0)
 	    {
 		term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+		term_props[TPR_DECRQM].tpr_status = TPR_NO;
 	    }
 	    // iTerm2 sends 0;95;0
 	    else if (arg[0] == 0 && arg[2] == 0)
 	    {
 		// iTerm2 can do SGR mouse reporting
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+		term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	    }
 	    // old iTerm2 sends 0;95;
 	    else if (arg[0] == 0 && arg[2] == -1)
@@ -5211,6 +5221,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	    else if (version >= 95)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_XTERM2;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	// Detect terminals that set $TERM to something like
@@ -5223,11 +5234,15 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// Assuming any version number over 2500 is not an
 	// xterm (without the limit for rxvt and screen).
 	if (arg[1] >= 2500)
+	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
+	}
 
 	else if (version == 136 && arg[2] == 0)
 	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 
 	    // PuTTY sends 0;136;0
 	    if (arg[0] == 0)
@@ -5251,6 +5266,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	    // Kitty can handle SGR mouse reporting.
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
@@ -5261,6 +5277,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	{
 	    term_props[TPR_CURSOR_STYLE].tpr_status = TPR_NO;
 	    term_props[TPR_CURSOR_BLINK].tpr_status = TPR_NO;
+	    term_props[TPR_DECRQM].tpr_status = TPR_NO; // screen doesn't seem
+							// to handle DECRQM
+							// sequences
 	}
 
 	// Xterm first responded to this request at patch level
@@ -5308,9 +5327,20 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 				    ? (char_u *)"sgr" : (char_u *)"xterm2", 0);
 	}
 
-#ifdef FEAT_TERMRESPONSE
 	int need_flush = FALSE;
 
+	// Send DECRQM sequences conditionally
+	if (term_props[TPR_DECRQM].tpr_status == TPR_YES)
+	{
+	    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+	    {
+		vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+		out_str(IObuff);
+	    }
+	    need_flush = TRUE;
+	}
+
+#ifdef FEAT_TERMRESPONSE
 	// Only request the cursor style if t_SH and t_RS are
 	// set. Only supported properly by xterm since version
 	// 279 (otherwise it returns 0x18).
@@ -5343,10 +5373,10 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    termrequest_sent(&rbm_status);
 	    need_flush = TRUE;
 	}
+#endif
 
 	if (need_flush)
 	    out_flush();
-#endif
     }
 }
 
@@ -7984,24 +8014,6 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
     return len;
-}
-
-/*
- * Query the settings for the DEC modes we support
- */
-    void
-send_decrqm_modes(void)
-{
-    if (termcap_active && cur_tmode == TMODE_RAW)
-    {
-	// Request setting of relevant DEC modes via DECRQM
-	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
-	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
-	    out_str(IObuff);
-	}
-	out_flush();
-    }
 }
 
 /*

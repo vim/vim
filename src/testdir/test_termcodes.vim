@@ -1720,6 +1720,7 @@ func Test_xx01_term_style_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   set t_RV=
@@ -1755,6 +1756,7 @@ func Test_xx02_iTerm2_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   set t_RV=
@@ -1775,6 +1777,7 @@ func Run_libvterm_konsole_response(code)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 endfunc
 
@@ -1818,6 +1821,7 @@ func Test_xx04_Mac_Terminal_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'n'
         \ }, terminalprops())
   call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
 
@@ -1849,6 +1853,7 @@ func Test_xx05_mintty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   set t_RV=
@@ -1885,6 +1890,7 @@ func Test_xx06_screen_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'n'
         \ }, terminalprops())
 
   set t_RV=
@@ -1910,6 +1916,7 @@ func Do_check_t_8u_set_reset(set_by_user)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
   call assert_equal(a:set_by_user ? default_value : '', &t_8u)
 endfunc
@@ -1949,6 +1956,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'y',
         \ mouse: 'u',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   " xterm >= 95 < 277 "xterm2"
@@ -1965,6 +1973,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: '2',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   " xterm >= 277: "sgr"
@@ -1981,6 +1990,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
@@ -2010,6 +2020,7 @@ func Test_xx08_kitty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'y',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   call feedkeys("\<Esc>[?1u") " simulate the kitty keyboard protocol is enabled
