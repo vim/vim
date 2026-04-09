@@ -3126,9 +3126,9 @@ get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
 	// Allocation hasn't been updated yet (widget just became visible,
 	// e.g. tab bar shown asynchronously on Wayland).  Query the preferred
 	// height so the caller gets a valid value before the layout pass
-	// runs.  Use minimum height: GTK may allocate min_h even when
-	// natural_h is smaller (e.g. GtkNotebook tab bar has min_h >
-	// natural_h due to CSS).
+	// runs.  Use the maximum of minimum and natural height: GTK may
+	// allocate min_h even when natural_h is smaller (e.g. GtkNotebook
+	// tab bar has min_h > natural_h due to CSS).
 #  if GTK_CHECK_VERSION(3,0,0)
 	{
 	    gint min_h = 0, natural_h = 0;
