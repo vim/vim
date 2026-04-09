@@ -4840,8 +4840,10 @@ draw_opacity_padding_cell(
 			screen_char(base_off, row, base_col);
 
 			// Draw padding in the right half.
+			// Use left half's attr since the right half of a
+			// wide char may have an unreliable attr value.
 			ScreenLines[off] = ' ';
-			ScreenAttrs[off] = saved_screenattrs[save_off];
+			ScreenAttrs[off] = saved_screenattrs[base_save_off];
 			if (enc_utf8)
 			    ScreenLinesUC[off] = 0;
 			int popup_attr_val =
@@ -4857,8 +4859,10 @@ draw_opacity_padding_cell(
 		    }
 
 		    // Draw padding in the right half.
+		    // Use left half's attr since the right half of a
+		    // wide char may have an unreliable attr value.
 		    ScreenLines[off] = ' ';
-		    ScreenAttrs[off] = saved_screenattrs[save_off];
+		    ScreenAttrs[off] = saved_screenattrs[base_save_off];
 		    if (enc_utf8 && ScreenLinesUC != NULL)
 			ScreenLinesUC[off] = 0;
 		    int popup_attr_val = get_win_attr(screen_opacity_popup);
