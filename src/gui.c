@@ -3841,7 +3841,7 @@ get_tabline_label(
 
 	// Can't use NameBuff directly, build_stl_str_hl() uses it.
 	build_stl_str_hl(curwin, res, MAXPATHL, *opt, opt_name, 0,
-						 0, (int)Columns, NULL, NULL);
+					   0, (int)Columns, NULL, NULL, NULL);
 	STRCPY(NameBuff, res);
 
 	// Back to the original curtab.

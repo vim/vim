@@ -1524,6 +1524,7 @@ $quote	eval.txt	/*$quote*
 +spell	various.txt	/*+spell*
 +startuptime	various.txt	/*+startuptime*
 +statusline	various.txt	/*+statusline*
++statusline_click	various.txt	/*+statusline_click*
 +sun_workshop	various.txt	/*+sun_workshop*
 +syntax	various.txt	/*+syntax*
 +system()	various.txt	/*+system()*
@@ -10547,6 +10548,7 @@ status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
 stl-%!	options.txt	/*stl-%!*
 stl-%@	options.txt	/*stl-%@*
+stl-%[FuncName]	options.txt	/*stl-%[FuncName]*
 stl-%{	options.txt	/*stl-%{*
 str2blob()	builtin.txt	/*str2blob()*
 str2float()	builtin.txt	/*str2float()*

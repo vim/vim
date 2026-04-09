@@ -671,8 +671,30 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
+	if (*s == STL_CLICKFUNC)
+	{
+	    if (s[1] == ']')
+	    {
+		// %[] - end click region
+		s += 2;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
+	    {
+		// %[FuncName] - start click region
+		char_u *rb = vim_strchr(s + 2, ']');
+		if (rb != NULL)
+		{
+		    s = rb + 1;
+		    continue;
+		}
+	    }
+	    // Bare %[ is invalid
+	    return illegal_char(errbuf, errbuflen, *s);
+	}
 	if (*s == STL_LINEBREAK)
 	{
+	    // Plain %@ - line break
 	    s++;
 	    continue;
 	}
@@ -694,6 +716,32 @@ check_stl_option(char_u *s)
 	    s++;
 	if (*s == STL_USER_HL)
 	    continue;
+	if (*s == STL_CLICKFUNC)
+	{
+	    // %N[FuncName] or %N[]
+	    if (s[1] == ']')
+	    {
+		s += 2;
+		continue;
+	    }
+	    if (ASCII_ISALPHA(s[1]) || s[1] == '_')
+	    {
+		char_u *rb = vim_strchr(s + 2, ']');
+		if (rb != NULL)
+		{
+		    s = rb + 1;
+		    continue;
+		}
+	    }
+	    // Bare %N[ is invalid
+	    return illegal_char(errbuf, errbuflen, *s);
+	}
+	if (*s == STL_LINEBREAK)
+	{
+	    // %N@ - line break
+	    s++;
+	    continue;
+	}
 	if (*s == '.')
 	{
 	    s++;

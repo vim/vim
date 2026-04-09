@@ -1436,6 +1436,25 @@ typedef struct
     int		userhl;		// 0: no HL, 1-9: User HL, < 0 for syn ID
 } stl_hlrec_T;
 
+/*
+ * Used for statusline click function regions.
+ */
+typedef struct {
+    char_u	*start;		// position in output buffer where region starts
+    char_u	*funcname;	// function name (NULL = end/close marker)
+    int		minwid;		// minwid value from %N@Func@
+} stl_clickrec_T;
+
+/*
+ * Per-window resolved click regions (screen column based).
+ */
+typedef struct {
+    int		col_start;	// screen column where region starts
+    int		col_end;	// screen column where region ends
+    char_u	*funcname;	// function name (allocated copy)
+    int		minwid;		// minwid value
+} stl_click_region_T;
+
 
 /*
  * Syntax items - usually buffer-specific.
@@ -4117,6 +4136,8 @@ struct window_S
     int		w_prev_height;	    // previous height used for 'splitkeep'
     int		w_stl_rendered_height; // rendered height of window-local 'stl'
 				    // (number of "%@" + 1)
+    stl_click_region_T *w_stl_click;  // statusline click regions
+    int		w_stl_click_count;  // number of click regions
     int		w_status_height;    // number of status lines.
 				    // If 'statuslineopt' was changed, this
 				    // member holds the previous value until

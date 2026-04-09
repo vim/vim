@@ -6045,6 +6045,14 @@ win_free(
     remove_highlight_overrides(wp->w_hl);
     vim_free(wp->w_hl);
 
+    // Free statusline click regions.
+    if (wp->w_stl_click != NULL)
+    {
+	for (i = 0; i < wp->w_stl_click_count; i++)
+	    vim_free(wp->w_stl_click[i].funcname);
+	vim_free(wp->w_stl_click);
+    }
+
     clear_winopt(&wp->w_onebuf_opt);
     clear_winopt(&wp->w_allbuf_opt);
 

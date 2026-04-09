@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52613,6 +52613,8 @@ Other ~
   pairs individually (e.g. 'listchars', 'fillchars', 'diffopt').
 - |system()| and |systemlist()| functions accept a list as first argument,
   bypassing the shell completely.
+- Allow mouse clickable regions in the |status-line| using the
+  |stl-%[FuncName]| atom.
 
 Platform specific ~
 -----------------
