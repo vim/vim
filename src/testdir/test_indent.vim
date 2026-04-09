@@ -29,7 +29,7 @@ func Test_preserveindent()
   call assert_equal("\t    \t    l", getline(1))
   set sw& et& pi&
 
-  close!
+  bw!
 endfunc
 
 " Test for indent()
@@ -42,7 +42,7 @@ func Test_indent_func()
   call assert_equal(4, indent(1))
   call setline(1, "    \t    abc")
   call assert_equal(12, indent(1))
-  close!
+  bw!
 endfunc
 
 " Test for reindenting a line using the '=' operator
@@ -56,7 +56,7 @@ func Test_reindent()
   call setline(1, ['foo', 'bar'])
   call feedkeys('ggVG=', 'xt')
   call assert_equal(['foo', 'bar'], getline(1, 2))
-  close!
+  bw!
 endfunc
 
 " Test indent operator creating one undo entry
@@ -103,7 +103,7 @@ func Test_preproc_indent()
   call assert_equal('#define FOO 1', getline(1))
   set cindent&
 
-  close!
+  bw!
 endfunc
 
 func Test_userlabel_indent()
@@ -116,7 +116,7 @@ func Test_userlabel_indent()
   normal GV=
   call assert_equal('läbél:', getline(2))
 
-  close!
+  bw!
 endfunc
 
 " Test that struct members are aligned
@@ -141,7 +141,7 @@ func Test_struct_indent()
   call setline(1, 'return (struct a) {')
   normal gg=G
   call assert_equal(getline(2), getline(3))
-  close!
+  bw!
 endfunc
 
 " Test for 'copyindent'
@@ -156,7 +156,7 @@ func Test_copyindent()
   call feedkeys("ol", 'xt')
   call assert_equal("    \t    l", getline(2))
   set sw& ai& et& ci&
-  close!
+  bw!
 endfunc
 
 " Test for changing multiple lines with lisp indent
@@ -166,7 +166,7 @@ func Test_lisp_indent_change_multiline()
   call setline(1, ['(if a', '  (if b', '    (return 5)))'])
   normal! jc2j(return 4))
   call assert_equal('  (return 4))', getline(2))
-  close!
+  bw!
 endfunc
 
 func Test_lisp_indent()
@@ -179,7 +179,7 @@ func Test_lisp_indent()
   normal! jostr1"
   normal! jostr2"
   call assert_equal(['  ;; comment', '  ;; comment', '  \ abc', '  \ abc', '', '  ;; ret', '  " str1\', '  str1"', '  " st\b', '  str2"'], getline(2, 11))
-  close!
+  bw!
 endfunc
 
 func Test_lisp_indent_quoted()
@@ -209,7 +209,7 @@ func Test_modeline_indent_expr()
   set modelineexpr&
   delfunc GetIndent
   let &modeline = modeline
-  close!
+  bw!
 endfunc
 
 func Test_indent_func_with_gq()
@@ -321,7 +321,7 @@ func Test_indent_overflow_count()
   norm! V2147483647>
   " indents by INT_MAX
   call assert_equal(2147483647, indent(1))
-  close!
+  bw!
 endfunc
 
 func Test_indent_overflow_count2()
@@ -335,7 +335,7 @@ func Test_indent_overflow_count2()
   call setline(1, "\tabc")
   norm! <<
   call assert_equal(0, indent(1))
-  close!
+  bw!
 endfunc
 
 " Test that mouse shape is restored to Normal mode after using "gq" when
