@@ -5474,6 +5474,10 @@ find_linebreak:
 
     if (mode == STL_MODE_GET_RENDERED_HEIGHT)
     {
+	// Free click function names that were allocated during parsing.
+	for (l = 0; l < itemcnt; l++)
+	    if (stl_items[l].stl_type == ClickFunc)
+		vim_free(stl_items[l].stl_clickfunc);
 	if (rendered_height != NULL)
 	    *rendered_height = rheight;
 	return 0;
