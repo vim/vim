@@ -667,7 +667,7 @@ func Test_set_completion_string_values()
 
   " highlight: special parsing, including auto-completing highlight groups
   " after ':'
-  call assert_equal([&hl, '8'], getcompletion('set hl=', 'cmdline')[0:1])
+  call assert_equal([escape(&hl, '|'), '8'], getcompletion('set hl=', 'cmdline')[0:1])
   call assert_equal('8', getcompletion('set hl+=', 'cmdline')[0])
   call assert_equal(['8:', '8b', '8i'], getcompletion('set hl+=8', 'cmdline')[0:2])
   call assert_equal('8bi', getcompletion('set hl+=8b', 'cmdline')[0])

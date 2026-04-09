@@ -9016,6 +9016,7 @@ ex_redrawstatus(exarg_T *eap UNUSED)
 	status_redraw_all();
     else
 	status_redraw_curbuf();
+    redraw_vseps = TRUE;
     if (msg_scrolled && (State & MODE_CMDLINE))
 	return;  // redraw later
 

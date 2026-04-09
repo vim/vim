@@ -272,6 +272,7 @@ static char *(highlight_init_both[]) = {
     "default link EndOfBuffer NonText",
     CENT("VertSplit term=reverse cterm=reverse",
 	 "VertSplit term=reverse cterm=reverse gui=reverse"),
+    "default link VertSplitNC VertSplit",
 #ifdef FEAT_CLIPBOARD
     CENT("VisualNOS term=underline,bold cterm=underline,bold",
 	 "VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold"),

@@ -1680,4 +1680,82 @@ func Test_winhighlight_occasion()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_VertSplitNC()
+  CheckScreendump
+
+  let lines =<< trim END
+  hi StatusLine ctermfg=White ctermbg=DarkBlue cterm=NONE
+  hi StatusLineNC ctermfg=Black ctermbg=Gray cterm=NONE
+  hi VertSplit ctermfg=Green ctermbg=NONE cterm=NONE
+  hi VertSplitNC ctermfg=DarkGray ctermbg=NONE cterm=NONE
+  call setline(1, repeat(['VertSplitNC test'], 20))
+  vsplit
+  vsplit
+  redrawstatus!
+  END
+  call writefile(lines, 'Xtest_vertsplitNC', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_vertsplitNC', {'rows': 12})
+  call TermWait(buf)
+
+  " Left window is current: left separator is VertSplit, right is VertSplitNC
+  call term_sendkeys(buf, ":redrawstatus!\<CR>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_1', {})
+
+  " Move to middle window: both separators should be VertSplit
+  call term_sendkeys(buf, "\<C-W>l:redrawstatus!\<CR>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_2', {})
+
+  " Move to right window: right separator is VertSplitNC, left is VertSplit
+  call term_sendkeys(buf, "\<C-W>l:redrawstatus!\<CR>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_VertSplitNC_multiline_stl()
+  CheckScreendump
+
+  let lines =<< trim END
+  hi StatusLine ctermfg=White ctermbg=DarkBlue cterm=NONE
+  hi StatusLineNC ctermfg=Black ctermbg=Gray cterm=NONE
+  hi VertSplit ctermfg=Green ctermbg=NONE cterm=NONE
+  hi VertSplitNC ctermfg=DarkGray ctermbg=NONE cterm=NONE
+  set statuslineopt=maxheight:4,fixedheight
+  set statusline=%f%=%l,%c\ %P
+  call setline(1, repeat(['multi stl test'], 20))
+  vsplit
+  wincmd l
+  sp
+  sp
+  wincmd k
+  wincmd =
+  redrawstatus!
+  END
+  call writefile(lines, 'Xtest_vertsplitNC_stl', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_vertsplitNC_stl', {'rows': 20})
+  call TermWait(buf)
+
+  " Right-top window is current: its status line row in the left
+  " separator should use StatusLine fillchar.  Other status line rows
+  " should use StatusLineNC.
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_stl_1', {})
+
+  " Move to right-middle window
+  call term_sendkeys(buf, "\<C-W>j:redrawstatus!\<CR>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_stl_2', {})
+
+  " Move to right-bottom window
+  call term_sendkeys(buf, "\<C-W>j:redrawstatus!\<CR>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_stl_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
