@@ -21,6 +21,7 @@
 "   2026 Feb 06 by Vim Project: consider 'nowrapscan' (#19333)
 "   2026 Feb 07 by Vim Project: make the path traversal detection more robust (#19341)
 "   2026 Apr 06 by Vim Project: fix bugs with lz4 support (#19925)
+"   2026 Apr 09 by Vim Project: fix bugs with zstd support (#19930)
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -687,7 +688,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tzst")
-   let extractcmd= substitute(extractcmd,"-","--zstd","")
+   let extractcmd= substitute(extractcmd,"-","--zstd -","")
    call system(extractcmd." ".shellescape(tarbase).".tzst ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tzst {fname}: failed!")
@@ -696,7 +697,7 @@ fun! tar#Extract()
    endif
 
   elseif filereadable(tarbase.".tar.zst")
-   let extractcmd= substitute(extractcmd,"-","--zstd","")
+   let extractcmd= substitute(extractcmd,"-","--zstd -","")
    call system(extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarbase}.tar.zst {fname}: failed!")
