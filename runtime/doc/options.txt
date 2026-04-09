@@ -6886,7 +6886,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Defines a border and optional decorations for the popup menu in
 	completion.  The value is a comma-separated list of keywords.
-	See |'pumopt'| for a consolidated alternative.
+	See 'pumopt' for a consolidated alternative.
 
 	Border styles (at most one):
 	"single"	use thin box-drawing characters
@@ -6922,7 +6922,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Determines the maximum number of items to show in the popup menu for
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
-	See |'pumopt'| for a consolidated alternative.
+	See 'pumopt' for a consolidated alternative.
 
 						*'pummaxwidth'* *'pmw'*
 'pummaxwidth' 'pmw'	number	(default 0)
@@ -6934,13 +6934,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This option takes precedence over 'pumwidth'.
 	|ins-completion-menu|.
-	See |'pumopt'| for a consolidated alternative.
+	See 'pumopt' for a consolidated alternative.
 
 						*'pumopt'*
 'pumopt'		string	(default "")
 			global
 	Configures the popup menu used for Insert mode completion.
-	The value is a comma-separated list of key:value pairs and flags.
+	The value is a comma-separated list of "key:value" pairs and flags.
 
 	Keys with values:
 	  border:{style}	set a border style (at most one):
@@ -6970,8 +6970,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  shadow		draws a shadow at the right and bottom edges.
 
 	Border styles using box-drawing characters ("single", "double",
-	"round") are only available when 'encoding' is "utf-8" and
-	'ambiwidth' is "single".
+	"round") are only available when 'encoding' is "utf-8" and 'ambiwidth'
+	is "single".
 
 	Highlight groups:
 	|hl-PmenuBorder|	used for the border characters
@@ -6994,7 +6994,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
-	See |'pumopt'| for a consolidated alternative.
+	See 'pumopt' for a consolidated alternative.
 
 						*'pythondll'*
 'pythondll'		string	(default depends on the build)
