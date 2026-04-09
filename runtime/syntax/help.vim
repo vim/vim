@@ -306,7 +306,7 @@ hi def link helpDiffAdded	Added
 hi def link helpDiffChanged	Changed
 hi def link helpDiffRemoved	Removed
 
-if has('textprop') && expand('%:p') =~ '[/\\]doc[/\\]syntax.txt'
+if has('textprop') && expand('%:p') =~? '[/\\]doc[/\\]syntax.\(txt\|\a\ax\)$'
   " highlight groups with their respective color
   import 'dist/vimhelp.vim'
   call vimhelp.HighlightGroups()
