@@ -595,7 +595,7 @@ syn_sync(
     int		found_flags = 0;
     int		found_match_idx = 0;
     linenr_T	found_current_lnum = 0;
-    int		found_current_col= 0;
+    int		found_current_col = 0;
     lpos_T	found_m_endpos;
     colnr_T	prev_current_col;
 
@@ -817,6 +817,8 @@ syn_sync(
 		 */
 		if (found_flags & HL_SYNC_HERE)
 		{
+		    current_lnum = found_m_endpos.lnum;
+		    current_col = found_m_endpos.col;
 		    if (current_state.ga_len)
 		    {
 			cur_si = &CUR_STATE(current_state.ga_len - 1);
@@ -825,8 +827,6 @@ syn_sync(
 			update_si_end(cur_si, (int)current_col, TRUE);
 			check_keepend();
 		    }
-		    current_col = found_m_endpos.col;
-		    current_lnum = found_m_endpos.lnum;
 		    (void)syn_finish_line(FALSE);
 		    ++current_lnum;
 		}

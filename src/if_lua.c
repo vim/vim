@@ -215,7 +215,11 @@ static void luaV_call_lua_func_free(void *state);
 #  define luaopen_os dll_luaopen_os
 #  define luaopen_package dll_luaopen_package
 #  define luaopen_debug dll_luaopen_debug
-#  define luaL_openlibs dll_luaL_openlibs
+#  if LUA_VERSION_NUM >= 505
+#   define luaL_openselectedlibs dll_luaL_openselectedlibs
+#  else
+#   define luaL_openlibs dll_luaL_openlibs
+#  endif
 
 // lauxlib
 #  if LUA_VERSION_NUM <= 501
@@ -331,7 +335,11 @@ int (*dll_luaopen_io) (lua_State *L);
 int (*dll_luaopen_os) (lua_State *L);
 int (*dll_luaopen_package) (lua_State *L);
 int (*dll_luaopen_debug) (lua_State *L);
+#  if LUA_VERSION_NUM >= 505
+void (*dll_luaL_openselectedlibs) (lua_State *L, int load, int preload);
+#  else
 void (*dll_luaL_openlibs) (lua_State *L);
+#  endif
 
 typedef void **luaV_function;
 typedef struct {
@@ -439,7 +447,11 @@ static const luaV_Reg luaV_dll[] = {
     {"luaopen_os", (luaV_function) &dll_luaopen_os},
     {"luaopen_package", (luaV_function) &dll_luaopen_package},
     {"luaopen_debug", (luaV_function) &dll_luaopen_debug},
+#  if LUA_VERSION_NUM >= 505
+    {"luaL_openselectedlibs", (luaV_function) &dll_luaL_openselectedlibs},
+#  else
     {"luaL_openlibs", (luaV_function) &dll_luaL_openlibs},
+#  endif
     {NULL, NULL}
 };
 
@@ -2570,7 +2582,11 @@ luaopen_vim(lua_State *L)
 luaV_newstate(void)
 {
     lua_State *L = luaL_newstate();
+# if LUA_VERSION_NUM >= 505
+    luaL_openselectedlibs(L, ~0, 0); // core libs
+# else
     luaL_openlibs(L); // core libs
+# endif
     lua_pushcfunction(L, luaopen_vim); // vim
     lua_call(L, 0, 0);
     return L;

@@ -1218,4 +1218,27 @@ func Test_term_getpos()
   bw
 endfunc
 
+func Test_term_autowrite()
+  set autowrite
+  new termautowritetestfile
+  call setline(1, 'test content')
+  term echo "test"
+  call assert_equal(['test content'], readfile('termautowritetestfile'))
+  call delete('termautowritetestfile')
+  bwipe!
+  set noautowrite
+endfunc
+
+" Test that CSI sequences with more than CSI_ARGS_MAX arguments do not crash
+func Test_terminal_csi_args_overflow()
+  CheckExecutable printf
+  let seq = "\033[" .. repeat('1;', 49) .. '1m'
+  let seq ..= "\033[1111111111111111111m"
+  let buf = term_start([&shell, &shellcmdflag, 'printf "' .. seq .. '"'])
+
+  " If we get here without a crash, the fix works
+  call assert_equal('running', term_getstatus(buf))
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

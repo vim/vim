@@ -255,6 +255,7 @@ NEW_TESTS = \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
 	test_plugin_tutor \
+	test_plugin_vimball \
 	test_plugin_zip \
 	test_plus_arg_edit \
 	test_popup \
@@ -336,6 +337,7 @@ NEW_TESTS = \
 	test_textformat \
 	test_textobjects \
 	test_textprop \
+	test_textprop2 \
 	test_timers \
 	test_true_false \
 	test_trycatch \
@@ -531,6 +533,7 @@ NEW_TESTS_RES = \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
 	test_plugin_tutor.res \
+	test_plugin_vimball.res \
 	test_plugin_zip.res \
 	test_plus_arg_edit.res \
 	test_popup.res \
@@ -599,6 +602,7 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_textprop2.res \
 	test_timers.res \
 	test_true_false.res \
 	test_trycatch.res \

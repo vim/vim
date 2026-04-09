@@ -2441,4 +2441,14 @@ func Test_term_TextChangedT_close()
   augroup END
 endfunc
 
+func Test_terminal_disable_kitty_keyboard()
+  CheckRunVimInTerminal
+  let cmd = ['sh', '-c', 'printf ''\033[>1u\033[?u\033[<u\033[?u''; sleep 1']
+  let buf = term_start(cmd)
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call WaitForAssert({-> assert_equal('^[[?1u^[[?0u', term_getline(buf, 1))})
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

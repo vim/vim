@@ -313,6 +313,9 @@ struct DWriteContext {
 
     D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
 
+    DWriteFontFeature mFontFeatures[DWRITE_MAX_FONT_FEATURES];
+    int mFontFeatureCount;
+
     // METHODS
 
     DWriteContext();
@@ -357,6 +360,8 @@ struct DWriteContext {
 
     DWriteRenderingParams *GetRenderingParams(
 	    DWriteRenderingParams *params);
+
+    void SetFontFeatures(const DWriteFontFeature *features, int count);
 };
 
 class AdjustedGlyphRun : public DWRITE_GLYPH_RUN
@@ -648,8 +653,10 @@ DWriteContext::DWriteContext() :
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
     mFontSize(0.0f),
     mFontAscent(0.0f),
-    mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
+    mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT),
+    mFontFeatureCount(0)
 {
+    ZeroMemory(mFontFeatures, sizeof(mFontFeatures));
     HRESULT hr;
 
     hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
@@ -1086,6 +1093,56 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
+	if (mFontFeatureCount > 0)
+	{
+	    // Default OpenType features that DirectWrite normally enables.
+	    // SetTypography() overrides all defaults, so we must
+	    // re-add them here explicitly.
+	    static const DWRITE_FONT_FEATURE defaultFeatures[] = {
+		{ DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_ALTERNATES, 1 },
+		{ DWRITE_FONT_FEATURE_TAG_STANDARD_LIGATURES, 1 },
+		{ DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_LIGATURES, 1 },
+		{ DWRITE_FONT_FEATURE_TAG_REQUIRED_LIGATURES, 1 },
+		{ DWRITE_FONT_FEATURE_TAG_KERNING, 1 },
+	    };
+	    static const int numDefaults = sizeof(defaultFeatures)
+		/ sizeof(defaultFeatures[0]);
+
+	    IDWriteTypography *typography = NULL;
+	    hr = mDWriteFactory->CreateTypography(&typography);
+	    if (SUCCEEDED(hr))
+	    {
+		// Add default features, skipping any that the user
+		// has explicitly specified (either + or -).
+		for (int d = 0; d < numDefaults; ++d)
+		{
+		    int overridden = 0;
+		    for (int u = 0; u < mFontFeatureCount; ++u)
+		    {
+			if ((DWRITE_FONT_FEATURE_TAG)mFontFeatures[u].tag
+				== defaultFeatures[d].nameTag)
+			{
+			    overridden = 1;
+			    break;
+			}
+		    }
+		    if (!overridden)
+			typography->AddFontFeature(defaultFeatures[d]);
+		}
+		// Add user-specified features.
+		for (int i = 0; i < mFontFeatureCount; ++i)
+		{
+		    DWRITE_FONT_FEATURE ff = {
+			(DWRITE_FONT_FEATURE_TAG)mFontFeatures[i].tag,
+			mFontFeatures[i].parameter
+		    };
+		    typography->AddFontFeature(ff);
+		}
+		textLayout->SetTypography(typography, textRange);
+		SafeRelease(&typography);
+	    }
+	}
+
 	// Calculate baseline using font ascent from font metrics.
 	// Do NOT use GetLineMetrics() because it returns different values
 	// depending on text content (e.g., when CJK characters trigger
@@ -1412,4 +1469,25 @@ DWriteContext_GetRenderingParams(
 	return ctx->GetRenderingParams(params);
     else
 	return NULL;
+}
+
+    void
+DWriteContext::SetFontFeatures(
+	const DWriteFontFeature *features, int count)
+{
+    if (count > DWRITE_MAX_FONT_FEATURES)
+	count = DWRITE_MAX_FONT_FEATURES;
+    mFontFeatureCount = count;
+    if (count > 0 && features != NULL)
+	memcpy(mFontFeatures, features, sizeof(DWriteFontFeature) * count);
+}
+
+    void
+DWriteContext_SetFontFeatures(
+	DWriteContext *ctx,
+	const DWriteFontFeature *features,
+	int count)
+{
+    if (ctx != NULL)
+	ctx->SetFontFeatures(features, count);
 }

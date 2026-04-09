@@ -321,6 +321,9 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     buf_T	*buf = curbuf;
     int		unbuffered = 0;
 
+    if (check_secure())
+	return;
+
     if (recursive)
     {
 	emsg(_(e_cannot_add_listener_in_listener_callback));
@@ -386,6 +389,9 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf = curbuf;
 
+    if (check_secure())
+	return;
+
     if (recursive)
 	return;
 
@@ -438,6 +444,9 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
     listener_T	*prev;
     int		id;
     buf_T	*buf;
+
+    if (check_secure())
+	return;
 
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
@@ -1263,7 +1272,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	    // characters (zero if it's a TAB).  Count the number of bytes to
 	    // be deleted to make room for the new character, counting screen
 	    // cells.  May result in adding spaces to fill a gap.
-	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL);
+	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL, 0);
 	    new_vcol = vcol + chartabsize(buf, vcol);
 	    while (oldp[col + oldlen] != NUL && vcol < new_vcol)
 	    {
@@ -2561,7 +2570,7 @@ truncate_line(int fixpos)
  * Saves the lines for undo first if "undo" is TRUE.
  */
     void
-del_lines(long nlines,	int undo)
+del_lines(long nlines, int undo)
 {
     long	n;
     linenr_T	first = curwin->w_cursor.lnum;

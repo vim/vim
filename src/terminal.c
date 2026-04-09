@@ -810,6 +810,11 @@ ex_terminal(exarg_T *eap)
     int		opt_shell = FALSE;
     char_u	*cmd;
     char_u	*tofree = NULL;
+    int		scroll_save = msg_scroll;
+
+    msg_scroll = FALSE;		// don't scroll here
+    autowrite_all();
+    msg_scroll = scroll_save;
 
     init_job_options(&opt);
 
@@ -3326,7 +3331,9 @@ handle_movecursor(
 	    position_cursor(wp, &pos);
     }
     if (term->tl_buffer == curbuf && !term->tl_normal_mode)
-	update_cursor(term, term->tl_cursor_visible);
+	// Don't redraw here, it will be done after
+	// vterm_input_write() is finished.
+	update_cursor(term, FALSE);
 
     return 1;
 }
@@ -4956,6 +4963,7 @@ create_vterm(term_T *term, int rows, int cols)
     }
 
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    vterm_screen_set_damage_merge(screen, VTERM_DAMAGE_SCROLL);
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
@@ -5689,7 +5697,7 @@ get_separator(int text_width, char_u *fname)
     int	    i;
     size_t  off;
 
-    textline = alloc(width + (int)STRLEN(fname) + 1);
+    textline = alloc(width + STRLEN(fname) + 1);
     if (textline == NULL)
 	return NULL;
 

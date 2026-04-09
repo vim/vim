@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -865,6 +865,7 @@ Short explanation of each option:		*option-list*
 'printoptions'	  'popt'    controls the format of :hardcopy output
 'prompt'	  'prompt'  enable prompt in Ex mode
 'pumheight'	  'ph'	    maximum height of the popup menu
+'pumopt'	  'pumopt'  additional options for the popup menu
 'pumwidth'	  'pw'	    minimum width of the popup menu
 'pythondll'		    name of the Python 2 dynamic library
 'pythonhome'		    name of the Python 2 home directory

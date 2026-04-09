@@ -689,7 +689,7 @@ static tcap_entry_T builtin_sync_output[] = {
 /*
  * List of DECRQM modes that Vim supports
  */
-static int dec_modes[] = {
+static const int dec_modes[] = {
     2026,   // Synchronized output
 #ifdef UNIX
     2048    // In-band terminal resize events
@@ -2807,7 +2807,7 @@ termcapinit(char_u *name)
 /*
  * The number of calls to ui_write is reduced by using "out_buf".
  */
-#define OUT_SIZE	2047
+#define OUT_SIZE	8191
 
 // add one to allow mch_write() in os_win32.c to append a NUL
 static char_u		out_buf[OUT_SIZE + 1];
@@ -7209,6 +7209,13 @@ find_term_bykeys(char_u *src, int *matchlen)
     int         slen, modslen;
     int         thislen;
 
+    // Most input bytes cannot start a terminal code.  Reuse the same leader
+    // table as check_termcode() to avoid scanning termcodes[] unnecessarily.
+    if (need_gather)
+	gather_termleader();
+    if (*src == NUL || vim_strchr(termleader, *src) == NULL)
+	return -1;
+
     // find longest match
     // borrows part of check_termcode
     for (i = 0; i < tc_len; ++i)
@@ -7827,11 +7834,11 @@ swap_tcap(void)
 
 
 #if (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))) || defined(FEAT_TERMINAL)
-static int cube_value[] = {
+static const int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
 };
 
-static int grey_ramp[] = {
+static const int grey_ramp[] = {
     0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
@@ -8059,12 +8066,19 @@ term_set_win_resize(bool state)
  * Enable or disable synchronized output if possible. Specification can be found
  * here:
  * https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+ *
+ * BSU/ESU do not need to bypass out_buf and go straight to ui_write().
+ * What matters is the order in which they reach the terminal:
+ * - BSU must be emitted before the batched redraw bytes.
+ * - ESU must be emitted after those redraw bytes.
+ * - A FLUSH must emit ESU and BSU together, then flush immediately.
+ * As long as out_flush() is done at those boundaries, putting BSU/ESU in
+ * out_buf reduces small writes without changing the observable protocol.
  */
     void
 term_set_sync_output(int flags)
 {
     bool    allowed;
-    char_u  *str;
 #ifdef FEAT_GUI
     bool    in_gui = gui.in_use;
 #else
@@ -8075,12 +8089,13 @@ term_set_sync_output(int flags)
 
     if (flags & TERM_SYNC_OUTPUT_FLUSH)
     {
-	// Tell terminal to display screen contents
+	// Tell terminal to display screen contents, then resume batching.
 	if (allowed && !in_gui && sync_output_state > 0 && *T_ESU != NUL &&
 		*T_BSU != NUL)
 	{
-	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
-	    ui_write((char_u *)T_BSU, (int)STRLEN(T_BSU), true);
+	    out_str_nf(T_ESU);
+	    out_str_nf(T_BSU);
+	    out_flush();
 	}
 	return;
     }
@@ -8090,7 +8105,8 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state > 0 && *T_ESU != NUL)
 	{
-	    ui_write((char_u *)T_ESU, (int)STRLEN(T_ESU), true);
+	    out_str_nf(T_ESU);
+	    out_flush();
 	    sync_output_state = 0;
 	}
 	return;
@@ -8105,7 +8121,7 @@ term_set_sync_output(int flags)
     {
 	if (sync_output_state++ > 0)
 	    return;
-	str = T_BSU;
+	out_str_nf(T_BSU);
     }
     else if (flags & TERM_SYNC_OUTPUT_DISABLE)
     {
@@ -8115,15 +8131,12 @@ term_set_sync_output(int flags)
 	// all drawing output is sent to the terminal within the
 	// BSU..ESU window.  Without this, the drawing data remaining in
 	// out_buf would be sent after ESU, outside the sync batch.
+	out_str_nf(T_ESU);
 	out_flush();
-	str = T_ESU;
     }
     else
     {
 	siemsg("Unknown sync output value %d", flags);
 	return;
     }
-
-    // Directly write to terminal instead of using output buffer
-    ui_write((char_u *)str, (int)STRLEN(str), true);
 }

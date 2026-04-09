@@ -1240,6 +1240,8 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	    }
 	vim_free(line);
 	retp = *tofree = ga_concat_strings(&ga, "\n");
+	if (retp == NULL)
+	    retp = p;
 	ga_clear_strings(&ga);
 	*flags |= UC_VIM9;
     }

@@ -1,4 +1,4 @@
-*textprop.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*textprop.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -270,6 +270,8 @@ prop_add_list({props}, [{item}, ...])			*prop_add_list()*
 <
 		Can also be used as a |method|: >
 			GetProp()->prop_add_list([[1, 1, 1, 2], [1, 4, 1, 8]])
+<
+		Return type: void
 
 
 prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
@@ -283,7 +285,7 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
-		Return type: |Number|
+		Return type: void
 
 
 prop_find({props} [, {direction}])			*prop_find()*
@@ -444,7 +446,7 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
 <
-		Return type: |Number|
+		Return type: void
 
 
 prop_type_change({name}, {props})			*prop_type_change()*
@@ -455,7 +457,7 @@ prop_type_change({name}, {props})			*prop_type_change()*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
 <
-		Return type: |Number|
+		Return type: void
 
 
 prop_type_delete({name} [, {props}])			*prop_type_delete()*
@@ -472,7 +474,7 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 <
-		Return type: |Number|
+		Return type: void
 
 
 prop_type_get({name} [, {props}])			*prop_type_get()*
@@ -509,7 +511,9 @@ will move accordingly.
 
 When text is deleted and a text property no longer includes any text, it is
 deleted.  However, a text property that was defined as zero-width will remain,
-unless the whole line is deleted.
+unless the whole line is deleted.  When lines are joined by a multi-line
+substitute command, virtual text properties on the deleted lines are moved to
+the resulting joined line.
 								*E275*
 When a buffer is unloaded, all the text properties are gone.  There is no way
 to store the properties in a file.  You can only re-create them.  When a

@@ -181,18 +181,17 @@ INTERNAL void vterm_push_output_bytes(VTerm *vt, const char *bytes, size_t len)
 INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list args)
 {
   size_t len;
-#ifndef VSNPRINTF
-  // When vsnprintf() is not available (C90) fall back to vsprintf().
-  char buffer[1024]; // 1Kbyte is enough for everybody, right?
-#endif
-
 #ifdef VSNPRINTF
   len = VSNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len, format, args);
-  vterm_push_output_bytes(vt, vt->tmpbuffer, len);
 #else
-  len = vsprintf(buffer, format, args);
-  vterm_push_output_bytes(vt, buffer, len);
+  // When vsnprintf() is not available (C90) fall back to vsprintf().
+  // Use the heap-allocated tmpbuffer (default 4096 bytes) instead of a small
+  // stack buffer to reduce the risk of overflow.
+  len = vsprintf(vt->tmpbuffer, format, args);
+  if (len >= vt->tmpbuffer_len)
+    len = vt->tmpbuffer_len - 1;
 #endif
+  vterm_push_output_bytes(vt, vt->tmpbuffer, len);
 }
 
 INTERNAL void vterm_push_output_sprintf(VTerm *vt, const char *format, ...)

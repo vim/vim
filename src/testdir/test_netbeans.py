@@ -113,8 +113,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'endAtomic_Test' : '0:endAtomic!95\n',
                   'AnnoScale_Test' : "".join(['2:defineAnnoType!60 ' + str(i) + ' "s' + str(i) + '" "x" "=>" blue none\n' for i in range(2, 26)]),
                   'detach_Test' : '2:close!96\n1:close!97\nDETACH\n',
-                  'specialKeys_overflow_Test' : '0:specialKeys!200 "' + 'A'*80 + '-X"\n'
-
+                  'specialKeys_overflow_Test' : '0:specialKeys!200 "' + 'A'*80 + '-X"\n',
+                  'defineAnnoType_injection_Test': '1:defineAnnoType!1 "MySign guifg=red|call writefile([\'inject\'],\'Xinject\')|" "tooltip" "glyphFile" 1 2\n'
                 }
                 # execute the specified test
                 if cmd not in testmap:

@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Mar 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52614,17 +52614,23 @@ Other ~
 - |system()| and |systemlist()| functions accept a list as first argument,
   bypassing the shell completely.
 
+Platform specific ~
+-----------------
+- support OpenType font features in 'guifont' for DirectWrite (Win32)
+
 xxd ~
 ---
 Add "-t" option to append a terminating NUL byte to C include output (-i).
 
 							*changed-9.3*
-Changed~
+Changed ~
 -------
 - Support for NeXTStep was dropped with patch v9.2.0122
 - |json_decode()| is stricter: keywords must be lowercase, lone surrogates are
   now invalid
 - |js_decode()| rejects lone surrogates
+- virtual text properties on lines deleted by a multi-line substitute
+  are moved to the resulting joined line instead of being dropped.
 
 							*added-9.3*
 Added ~
@@ -52641,6 +52647,7 @@ Autocommands: ~
 
 Options: ~
 
+'pumopt'		Additional options for the popup menu
 'statuslineopt'		Extra window-local options for the 'statusline', to
 			configure the height.
 't_BS'			Begin synchronized update.

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 9.2\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-01-06 14:41+0000\n"
+"POT-Creation-Date: 2026-03-30 11:05+0900\n"
 "PO-Revision-Date: 2026-02-16 22:09+0530\n"
 "Last-Translator: தமிழ்நேரம் <TamilNeram247@gmail.com>\n"
 "Language-Team: தமிழ்நேரம் <TamilNeram247@gmail.com>\n"
@@ -9024,38 +9024,14 @@ msgstr "E1571: redraw_listener_add க்கு குறைந்தது ஒ�
 msgid "--No lines in buffer--"
 msgstr "--பஃபரில் கோடுகள் இல்லை--"
 
-msgid "int"
-msgstr "முழு எண்ணாக"
-
-msgid "long int"
-msgstr "நீண்ட எண்ணாக"
-
-msgid "long long int"
-msgstr "நீண்ட நீண்ட எண்ணாக"
-
-msgid "unsigned int"
-msgstr "கையொப்பமிடப்படாத முழு எண்ணாக"
-
-msgid "unsigned long int"
-msgstr "கையொப்பமிடப்படாத நீண்ட எண்ணாக"
-
-msgid "unsigned long long int"
-msgstr "கையொப்பமிடப்படாத நீண்ட நீண்ட எண்ணாக"
-
 msgid "pointer"
 msgstr "சுட்டி"
 
 msgid "percent"
 msgstr "விழுக்காடு"
 
-msgid "char"
-msgstr "கரி"
-
 msgid "string"
 msgstr "சரம்"
-
-msgid "float"
-msgstr "மிதவை"
 
 #.
 #. * Some messages that can be shared are included here.

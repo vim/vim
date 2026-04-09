@@ -1664,7 +1664,8 @@ EXTERN char e_invalid_buffer_identifier_in_setdot[]
 	INIT(= N_("E647: Invalid buffer identifier in setDot"));
 EXTERN char e_invalid_buffer_identifier_in_close[]
 	INIT(= N_("E648: Invalid buffer identifier in close"));
-// E649 unused
+EXTERN char e_invalid_identifier_in_defineannotype[]
+	INIT(= N_("E649: Invalid identifier name in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
 	INIT(= N_("E650: Invalid buffer identifier in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_addanno[]
@@ -3430,9 +3431,8 @@ EXTERN char e_internal_error_shortmess_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_variable_str_not_found_in_class_str[]
 	INIT(= N_("E1337: Class variable \"%s\" not found in class \"%s\""));
-// E1338 unused
 #endif
-// E1339 unused
+// E1338 and E1339 unused
 #ifdef FEAT_EVAL
 EXTERN char e_argument_already_declared_in_class_str[]
 	INIT(= N_("E1340: Argument already declared in the class: %s"));
@@ -3737,7 +3737,7 @@ EXTERN char e_no_quickfix_stack[]
 EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
 EXTERN char e_cannot_not_support_redrawtabpanel[]
-	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));
+	INIT(= N_("E1547: This version of Vim does not support :redrawtabpanel"));
 #ifdef FEAT_WAYLAND
 EXTERN char e_wayland_connection_unavailable[]
 	INIT(= N_("E1548: Wayland connection is unavailable"));

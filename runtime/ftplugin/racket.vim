@@ -4,6 +4,8 @@
 " Previous Maintainer:  Will Langstroth <will@langstroth.com>
 " URL:                  https://github.com/benknoble/vim-racket
 " Last Change:          2025 Aug 09
+" 2026 Mar 31 by Vim project: use shellescape for the K mapping
+" 2026 Apr 01 by Vim project: make K mapping more robust for shell injection
 
 if exists("b:did_ftplugin")
   finish
@@ -51,7 +53,7 @@ if !exists("no_plugin_maps") && !exists("no_racket_maps")
     try
       let l:old_a = @a
       normal! gv"ay
-      call system("raco docs '". @a . "'")
+      call system("raco docs -- ". string(shellescape(@a)))
       redraw!
       return @a
     finally

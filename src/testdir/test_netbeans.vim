@@ -1024,4 +1024,42 @@ func Test_nb_specialKeys_overflow()
   call s:run_server('Nb_specialKeys_overflow')
 endfunc
 
+func Nb_defineAnnoType_injection(port)
+  call writefile([], "Xnetbeans", 'D')
+  let g:last = 0
+
+  exe 'nbstart :localhost:' .. a:port .. ':bunny'
+  call assert_true(has("netbeans_enabled"))
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let g:last += 3
+
+  split Xcmdbuf
+  let cmdbufnr = bufnr()
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let g:last += 3
+  hide
+
+  sleep 1m
+
+  call delete('Xinject')
+  call appendbufline(cmdbufnr, '$', 'defineAnnoType_injection_Test')
+  " E475 from :sign is expected — catch it before RunServer sees it.
+  " give it a bit of time to process it
+  try
+    sleep 500m
+  catch /E475/
+  catch /E649/
+  endtry
+
+  " Injected call must not have created this file
+  call assert_false(filereadable('Xinject'))
+  call delete('Xinject')
+  bwipe! Xcmdbuf
+  nbclose
+endfunc
+
+func Test_nb_defineAnnoType_injection()
+  call ch_log('Test_nb_defineAnnoType_injection')
+  call s:run_server('Nb_defineAnnoType_injection')
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

@@ -124,8 +124,8 @@ func Test_clipreset_switches()
   " hang.
 
   " This will only happen for commands given from the command line, which
-  " is why we cannot just directly call Vim or use the actual Vim instance thats
-  " doing all the testing, since main_loop() is never executed.
+  " is why we cannot just directly call Vim or use the actual Vim instance
+  " that's doing all the testing, since main_loop() is never executed.
 
   " Therefore we should start a separate Vim instance and communicate with it
   " remotely, so we can execute the actual testing stuff with main_loop()
