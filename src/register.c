@@ -352,6 +352,16 @@ get_register(
 	    {
 		reg->y_array[i].string = vim_strnsave(y_current->y_array[i].string,
 					    y_current->y_array[i].length);
+		if (reg->y_array[i].string == NULL)
+		{
+		    // The allocation failed so clean up and exit
+		    while (--i >= 0)
+			vim_free(reg->y_array[i].string);
+		    vim_free(reg->y_array);
+		    vim_free(reg);
+		    return (void *)NULL;
+		}
+
 		reg->y_array[i].length = y_current->y_array[i].length;
 	    }
 	}
