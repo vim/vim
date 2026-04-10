@@ -945,27 +945,36 @@ skip_opacity:
 
 		popup_get_base_screen_cell(row, col + coloff,
 						NULL, &underlying_attr, NULL);
-		ScreenAttrs[off_to] = hl_blend_attr(underlying_attr,
-						combined, blend, FALSE);
 
-		// For double-wide characters, the second cell may have a
-		// different underlying attr (e.g. at popup boundary),
-		// so blend it independently.
+		// For double-wide characters, a terminal cannot render
+		// different background colors for the left and right
+		// halves.  When one half is over a lower opacity popup
+		// and the other is not, use the non-popup side's
+		// underlying attr for both to avoid color leaking.
 		if (char_cells == 2)
 		{
 		    int underlying_attr2 = 0;
+		    int scol1 = col + coloff;
+		    int over1 = popup_is_over_opacity(row, scol1);
+		    int over2 = popup_is_over_opacity(row, scol1 + 1);
 
-		    popup_get_base_screen_cell(row, col + coloff + 1,
+		    popup_get_base_screen_cell(row, scol1 + 1,
 						NULL, &underlying_attr2, NULL);
+		    if (over1 != over2)
+		    {
+			// One half is over a lower popup, the other is
+			// not.  Use the non-popup side for both.
+			if (over1)
+			    underlying_attr = underlying_attr2;
+			else
+			    underlying_attr2 = underlying_attr;
+		    }
 		    ScreenAttrs[off_to + 1] = hl_blend_attr(
 					underlying_attr2, combined, blend,
 					FALSE);
-		    if (blend == 100)
-			resolve_wide_char_opacity_attrs(row,
-				col + coloff, col + coloff + 1,
-				&ScreenAttrs[off_to],
-				&ScreenAttrs[off_to + 1]);
 		}
+		ScreenAttrs[off_to] = hl_blend_attr(underlying_attr,
+						combined, blend, FALSE);
 	    }
 	    else
 #endif
@@ -2330,11 +2339,28 @@ screen_char(unsigned off, int row, int col)
     // output the final blended result.
     // Also suppress if this is a wide character whose second cell
     // is under an opacity popup.
-    if (popup_is_under_opacity(row, col)
-	    || (enc_utf8 && ScreenLinesUC[off] != 0
+    if (popup_is_under_opacity(row, col))
+    {
+	// If this is a wide character whose left half is under an opacity
+	// popup but right half is not, clear the right half so the old
+	// blended value doesn't remain as a ghost after popup_move().
+	if (enc_utf8 && ScreenLinesUC[off] != 0
 		&& utf_char2cells(ScreenLinesUC[off]) == 2
 		&& col + 1 < screen_Columns
-		&& popup_is_under_opacity(row, col + 1)))
+		&& !popup_is_under_opacity(row, col + 1))
+	{
+	    int off2 = off + 1;
+	    ScreenLines[off2] = ' ';
+	    ScreenLinesUC[off2] = 0;
+	    screen_char(off2, row, col + 1);
+	}
+	screen_cur_col = 9999;
+	return;
+    }
+    if (enc_utf8 && ScreenLinesUC[off] != 0
+	    && utf_char2cells(ScreenLinesUC[off]) == 2
+	    && col + 1 < screen_Columns
+	    && popup_is_under_opacity(row, col + 1))
     {
 	screen_cur_col = 9999;
 	return;

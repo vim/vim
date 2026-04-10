@@ -4439,6 +4439,37 @@ popup_is_under_opacity(int row, int col)
 }
 
 /*
+ * Return TRUE if cell (row, col) is covered by a lower-zindex opacity popup.
+ */
+    int
+popup_is_over_opacity(int row, int col)
+{
+    win_T *wp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if ((wp->w_popup_flags & POPF_OPACITY)
+		&& wp->w_popup_blend > 0
+		&& !(wp->w_popup_flags & POPF_HIDDEN)
+		&& wp->w_zindex < screen_zindex
+		&& row >= wp->w_winrow
+		&& row < wp->w_winrow + popup_height(wp)
+		&& col >= wp->w_wincol
+		&& col < wp->w_wincol + popup_width(wp))
+	    return TRUE;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	if ((wp->w_popup_flags & POPF_OPACITY)
+		&& wp->w_popup_blend > 0
+		&& !(wp->w_popup_flags & POPF_HIDDEN)
+		&& wp->w_zindex < screen_zindex
+		&& row >= wp->w_winrow
+		&& row < wp->w_winrow + popup_height(wp)
+		&& col >= wp->w_wincol
+		&& col < wp->w_wincol + popup_width(wp))
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Return TRUE if any cell in row "row" from "start_col" to "end_col"
  * (exclusive) is covered by a higher-zindex opacity popup.
  */
@@ -4840,8 +4871,10 @@ draw_opacity_padding_cell(
 			screen_char(base_off, row, base_col);
 
 			// Draw padding in the right half.
+			// Use left half's attr since the right half of a
+			// wide char may have an unreliable attr value.
 			ScreenLines[off] = ' ';
-			ScreenAttrs[off] = saved_screenattrs[save_off];
+			ScreenAttrs[off] = saved_screenattrs[base_save_off];
 			if (enc_utf8)
 			    ScreenLinesUC[off] = 0;
 			int popup_attr_val =
@@ -4855,10 +4888,53 @@ draw_opacity_padding_cell(
 			screen_char(off, row, col);
 			return;
 		    }
+		    // The content drawing cleared the left half to a
+		    // space (wide char didn't fit at content edge),
+		    // but the saved data has a wide char.  Restore it
+		    // spanning both the content cell and padding cell.
+		    if (base_save_off >= 0
+			    && saved_screenlinesuc[base_save_off] != 0
+			    && utf_char2cells(
+				saved_screenlinesuc[base_save_off]) == 2
+			    && ScreenLines[base_off] == ' '
+			    && ScreenLinesUC[base_off] == 0)
+		    {
+			int popup_attr_val =
+				    get_win_attr(screen_opacity_popup);
+			int blend =
+				    screen_opacity_popup->w_popup_blend;
+
+			ScreenLines[base_off] =
+				    saved_screenlines[base_save_off];
+			ScreenLinesUC[base_off] =
+				    saved_screenlinesuc[base_save_off];
+			ScreenAttrs[base_off] =
+				    saved_screenattrs[base_save_off];
+			ScreenAttrs[base_off] = hl_blend_attr(
+				    ScreenAttrs[base_off],
+				    popup_attr_val, blend, TRUE);
+
+			ScreenLines[off] = 0;
+			ScreenLinesUC[off] = 0;
+			ScreenAttrs[off] = ScreenAttrs[base_off];
+
+			popup_set_base_screen_cell(row, base_col,
+				    ScreenLines[base_off],
+				    ScreenAttrs[base_off],
+				    ScreenLinesUC[base_off]);
+			popup_set_base_screen_cell(row, col,
+				    ScreenLines[off],
+				    ScreenAttrs[off],
+				    ScreenLinesUC[off]);
+			screen_char(base_off, row, base_col);
+			return;
+		    }
 
 		    // Draw padding in the right half.
+		    // Use left half's attr since the right half of a
+		    // wide char may have an unreliable attr value.
 		    ScreenLines[off] = ' ';
-		    ScreenAttrs[off] = saved_screenattrs[save_off];
+		    ScreenAttrs[off] = saved_screenattrs[base_save_off];
 		    if (enc_utf8 && ScreenLinesUC != NULL)
 			ScreenLinesUC[off] = 0;
 		    int popup_attr_val = get_win_attr(screen_opacity_popup);

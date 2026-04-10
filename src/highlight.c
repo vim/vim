@@ -3125,6 +3125,32 @@ hl_combine_attr(int char_attr, int prim_attr)
 }
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+
+# ifdef FEAT_TERMGUICOLORS
+/*
+ * Convert a cterm color number (1-16) to an RGB value.
+ * Used as a fallback when 'termguicolors' is set but only cterm colors are
+ * specified (no guifg/guibg).
+ * Returns INVALCOLOR if the color number is out of range.
+ */
+    static guicolor_T
+cterm_color_to_rgb(int color_nr)
+{
+    // ANSI color order: Black, Red, Green, Yellow, Blue, Magenta,
+    // Cyan, White, then bright variants.
+    static const guicolor_T cterm_color_16[16] = {
+	0x000000, 0xc00000, 0x008000, 0x808000,
+	0x0000c0, 0xc000c0, 0x004080, 0xc0c0c0,
+	0x808080, 0xff8080, 0x00ff00, 0xffff00,
+	0x6060ff, 0xff40ff, 0x00ffff, 0xffffff
+    };
+
+    if (color_nr < 1 || color_nr > 16)
+	return INVALCOLOR;
+    return cterm_color_16[color_nr - 1];
+}
+# endif
+
 /*
  * Blend two RGB colors based on blend value (0-100).
  * blend: 0=use popup color, 100=use background color
@@ -3273,32 +3299,47 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		if (popup_aep->ae_u.cterm.bg_color > 0)
 		    new_en.ae_u.cterm.bg_color = popup_aep->ae_u.cterm.bg_color;
 #ifdef FEAT_TERMGUICOLORS
-		// Blend RGB colors for termguicolors mode
-		if (blend_fg)
+		// Blend RGB colors for termguicolors mode.
+		// Fall back to cterm color converted to RGB when
+		// gui color is not set.
 		{
-		    // blend_fg=TRUE: fade underlying text toward popup bg.
-		    if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+		    guicolor_T popup_bg = popup_aep->ae_u.cterm.bg_rgb;
+		    guicolor_T popup_fg = popup_aep->ae_u.cterm.fg_rgb;
+
+		    if (COLOR_INVALID(popup_bg)
+				    && popup_aep->ae_u.cterm.bg_color > 0)
+			popup_bg = cterm_color_to_rgb(
+					popup_aep->ae_u.cterm.bg_color);
+		    if (COLOR_INVALID(popup_fg)
+				    && popup_aep->ae_u.cterm.fg_color > 0)
+			popup_fg = cterm_color_to_rgb(
+					popup_aep->ae_u.cterm.fg_color);
+
+		    if (blend_fg)
 		    {
-			int base_fg = 0xFFFFFF;
-			if (char_aep != NULL
-				&& char_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
-			    base_fg = char_aep->ae_u.cterm.fg_rgb;
-			new_en.ae_u.cterm.fg_rgb = blend_colors(
-				base_fg, popup_aep->ae_u.cterm.bg_rgb, blend);
+			// blend_fg=TRUE: fade underlying text toward popup bg.
+			if (popup_bg != INVALCOLOR)
+			{
+			    int base_fg = 0xFFFFFF;
+			    if (char_aep != NULL
+				    && char_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+				base_fg = char_aep->ae_u.cterm.fg_rgb;
+			    new_en.ae_u.cterm.fg_rgb = blend_colors(
+				    base_fg, popup_bg, blend);
+			}
 		    }
-		}
-		else if (popup_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
-		    // blend_fg=FALSE: use popup foreground
-		    new_en.ae_u.cterm.fg_rgb = popup_aep->ae_u.cterm.fg_rgb;
-		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
-		{
-		    // Blend popup bg toward underlying bg
-		    guicolor_T underlying_bg = INVALCOLOR;
-		    if (char_aep != NULL)
-			underlying_bg = char_aep->ae_u.cterm.bg_rgb;
-		    new_en.ae_u.cterm.bg_rgb = blend_colors(
-			    popup_aep->ae_u.cterm.bg_rgb,
-			    underlying_bg, blend);
+		    else if (popup_fg != INVALCOLOR)
+			// blend_fg=FALSE: use popup foreground
+			new_en.ae_u.cterm.fg_rgb = popup_fg;
+		    if (popup_bg != INVALCOLOR)
+		    {
+			// Blend popup bg toward underlying bg
+			guicolor_T underlying_bg = INVALCOLOR;
+			if (char_aep != NULL)
+			    underlying_bg = char_aep->ae_u.cterm.bg_rgb;
+			new_en.ae_u.cterm.bg_rgb = blend_colors(
+				popup_bg, underlying_bg, blend);
+		    }
 		}
 #endif
 	    }
