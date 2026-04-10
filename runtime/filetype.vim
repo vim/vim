@@ -890,7 +890,7 @@ au BufNewFile,BufRead requirements/*.txt	setf requirements
 au BufNewFile,BufRead requires/*.txt		setf requirements
 
 " Pkl
-au BufNewFile,BufRead *.pkl,*.pcf,pkl-lsp://*	setf pkl
+au BufNewFile,BufRead PklProject,*.pkl,*.pcf,pkl-lsp://*	setf pkl
 
 " WIC kickstarter files
 au BufNewFile,BufRead *.wks,*.wks.in,*.wks.inc	setf wks
