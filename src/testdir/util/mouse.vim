@@ -265,6 +265,24 @@ func MouseLeftDrag(row, col)
   endif
 endfunc
 
+func MouseAltLeftDragCode(row, col)
+  let alt = 0x8
+  if &ttymouse ==# 'dec'
+    return DecEscapeCode(1, 4, a:row, a:col)
+  else
+    return TerminalEscapeCode(0x20 + alt, a:row, a:col, 'M')
+  endif
+endfunc
+
+func MouseAltLeftDrag(row, col)
+  if has('win32')
+    call MSWinMouseEvent(s:MOUSE_CODE.BTN_LEFT, a:row, a:col, 1, 0,
+                                                       \ s:MOUSE_CODE.MOD_ALT)
+  else
+    call feedkeys(MouseAltLeftDragCode(a:row, a:col), 'Lx!')
+  endif
+endfunc
+
 func MouseWheelUpCode(row, col)
   return TerminalEscapeCode(0x40, a:row, a:col, 'M')
 endfunc

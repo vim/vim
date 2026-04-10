@@ -704,8 +704,7 @@ do_mouse(
 	    return FALSE;
 #endif
 	}
-	if (which_button == MOUSE_LEFT
-				&& (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_ALT)))
+	if (which_button == MOUSE_LEFT && (mod_mask & MOD_MASK_SHIFT))
 	{
 	    which_button = MOUSE_RIGHT;
 	    mod_mask &= ~MOD_MASK_SHIFT;
