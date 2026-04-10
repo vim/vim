@@ -496,7 +496,6 @@ N  *+spell*		spell checking support, see |spell|
 N  *+startuptime*	|--startuptime| argument
 N  *+statusline*	Options 'statusline', 'rulerformat' and special
 			formats of 'titlestring' and 'iconstring'
-N  *+statusline_click*	Click handlers in 'statusline' |stl-%[FuncName]|
 -  *+sun_workshop*	Removed: |workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|

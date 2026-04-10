@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13300,6 +13300,7 @@ spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
+statusline_click	Click handlers in 'statusline' |stl-%[FuncName]|
 sun			SunOS version of Vim.
 sun_workshop		Support for Sun |workshop| has been removed.
 syntax			Compiled with syntax highlighting support |syntax|.
