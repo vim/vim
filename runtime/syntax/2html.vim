@@ -282,17 +282,18 @@ endif
 #
 # Build the function line by line containing only what is needed for the options
 # in use for maximum code sharing with minimal branch logic for greater speed.
-#
-# Note, 'exec' commands do not recognize line continuations, so must concatenate
-# lines rather than continue them.
-var wrapperfunc_lines: list<string>
 if settings.use_css
   # save CSS to a list of rules to add to the output at the end of processing
 
+  # Note, 'exec' commands do not recognize line continuations, so must concatenate
+  # lines rather than continue them.
+  var wrapperfunc_lines: list<string>
   # first, get the style names we need
   wrapperfunc_lines =<< trim eval ENDLET
     def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, make_unselectable: bool, unformatted: string): string
       var style_name = synIDattr(style_id, "name", whatterm)
+      var saved_style: string
+      var saved_style_tmp: any
   ENDLET
   if &diff
     trim_tmp =<< trim eval ENDLET
@@ -307,7 +308,7 @@ if settings.use_css
     # (always succeeds because we pre-populate it)
     trim_tmp =<< trim eval ENDLET
       if style_id == DIFF_D_ID || style_id == DIFF_A_ID || style_id == DIFF_C_ID || style_id == DIFF_T_ID
-	var saved_style = get(diffstylelist, style_id)
+	saved_style_tmp = get(diffstylelist, style_id)
       else
     ENDLET
     wrapperfunc_lines += trim_tmp
@@ -315,13 +316,15 @@ if settings.use_css
 
   # get primary style info from cache or build it on the fly if not found
   trim_tmp =<< trim ENDLET
-	var saved_style = get(stylelist, style_id)
-	if type(saved_style) == type(0)
+	saved_style_tmp = get(stylelist, style_id)
+	if type(saved_style_tmp) == type(0)
 	  saved_style = CSS1(style_id)
 	  if saved_style != ""
 	    saved_style = "." .. style_name .. " { " .. saved_style .. "}"
 	  endif
 	  stylelist[style_id] = saved_style
+	else
+	  saved_style = saved_style_tmp
 	endif
   ENDLET
   wrapperfunc_lines += trim_tmp
@@ -447,35 +450,30 @@ if settings.use_css
     enddef
   ENDLET
   wrapperfunc_lines += trim_tmp
+
+  # create the function we built line by line above
+  execute join(wrapperfunc_lines, "\n")
 else
   # Non-CSS method just needs the wrapper.
   #
   # Functions used to get opening/closing automatically return null strings if
   # no styles exist.
   if &diff
-    wrapperfunc_lines =<< trim ENDLET
-      def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, unusedarg: bool, unusedarg2: string): string
-	if diff_style_id <= 0
-	  var diff_opening = HtmlOpening(diff_style_id, "")
-	  var diff_closing = HtmlClosing(diff_style_id, false)
-	else
-	  var diff_opening = ""
-	  var diff_closing = ""
-	endif
-	return HtmlOpening(style_id, extra_attrs) .. diff_opening .. text .. diff_closing .. HtmlClosing(style_id, !empty(extra_attrs))
-      enddef
-    ENDLET
+    def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, unusedarg: bool, unusedarg2: string): string
+      var diff_opening: string
+      var diff_closing: string
+      if diff_style_id <= 0
+	diff_opening = HtmlOpening(diff_style_id, "")
+	diff_closing = HtmlClosing(diff_style_id, false)
+      endif
+      return HtmlOpening(style_id, extra_attrs) .. diff_opening .. text .. diff_closing .. HtmlClosing(style_id, !empty(extra_attrs))
+    enddef
   else
-    wrapperfunc_lines =<< trim ENDLET
-      def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, unusedarg: bool, unusedarg2: string): string
-	return HtmlOpening(style_id, extra_attrs) .. text .. HtmlClosing(style_id, !empty(extra_attrs))
-      enddef
-    ENDLET
+    def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, unusedarg: bool, unusedarg2: string): string
+      return HtmlOpening(style_id, extra_attrs) .. text .. HtmlClosing(style_id, !empty(extra_attrs))
+    enddef
   endif
 endif
-
-# create the function we built line by line above
-execute join(wrapperfunc_lines, "\n")
 
 var diff_mode = &diff
 
@@ -1248,64 +1246,43 @@ if !settings.no_progress
 endif
 
 var build_fun_lines: list<string>
-build_fun_lines =<< trim ENDLET
-  def Add_diff_fill(_lnum: number)
-    var filler = diff_filler(_lnum)
-    if filler > 0
-      var to_insert = filler
-      while to_insert > 0
-	var new = repeat(difffillchar, 3)
+def Add_diff_fill(_lnum: number)
+  var filler = diff_filler(_lnum)
+  if filler > 0
+    var to_insert = filler
+    while to_insert > 0
+      var new = repeat(difffillchar, 3)
 
-	if to_insert > 2 && to_insert < filler && !settings.whole_filler
-	  new = new .. " " .. filler .. " inserted lines "
-	  to_insert = 2
-	endif
-ENDLET
-if !settings.no_pre
-  trim_tmp =<< trim ENDLET
+      if to_insert > 2 && to_insert < filler && !settings.whole_filler
+	new = new .. " " .. filler .. " inserted lines "
+	to_insert = 2
+      endif
+      if !settings.no_pre
 	# HTML line wrapping is off--go ahead and fill to the margin
 	# TODO: what about when CSS wrapping is turned on?
 	new = new .. repeat(difffillchar, &columns - strlen(new) - margin)
-  ENDLET
-  build_fun_lines += trim_tmp
-else
-  trim_tmp =<< trim ENDLET
+      else
 	new = new .. repeat(difffillchar, 3)
-  ENDLET
-  build_fun_lines += trim_tmp
-endif
-trim_tmp =<< trim ENDLET
-	new = HtmlFormat_d(new, DIFF_D_ID, 0)
-ENDLET
-build_fun_lines += trim_tmp
-if settings.number_lines
-  trim_tmp =<< trim ENDLET
+      endif
+      new = HtmlFormat_d(new, DIFF_D_ID, 0)
+      if settings.number_lines
 	# Indent if line numbering is on. Indent gets style of line number
 	# column.
 	new = HtmlFormat_n(repeat(' ', margin), LINENR_ID, 0, 0) .. new
-  ENDLET
-  build_fun_lines += trim_tmp
-endif
-if settings.dynamic_folds && !settings.no_foldcolumn
-  trim_tmp =<< trim ENDLET
+      endif
+      if settings.dynamic_folds && !settings.no_foldcolumn
 	if foldcolumn > 0
 	  # Indent for foldcolumn if there is one. Assume it's empty, there should
 	  # not be a fold for deleted lines in diff mode.
 	  new = FoldColumn_fill() .. new
 	endif
-  ENDLET
-  build_fun_lines += trim_tmp
-endif
-# Ignore this comment, just bypassing a highlighting issue: if
-trim_tmp =<< trim ENDLET
-	add(lines, new .. HtmlEndline)
-	to_insert -= 1
-      endwhile
-    endif
-  enddef
-ENDLET
-build_fun_lines += trim_tmp
-execute join(build_fun_lines, "\n")
+      endif
+      build_fun_lines += trim_tmp
+      add(lines, new .. HtmlEndline)
+      to_insert -= 1
+    endwhile
+  endif
+enddef
 
 # First do some preprocessing for dynamic folding. Do this for the entire file
 # so we don't accidentally start within a closed fold or something.
@@ -1674,7 +1651,7 @@ def ProcessLines()
       # most of the time we won't use the diff_id, initialize to zero
       var diff_id = 0
 
-      while col <= len || (col == 1 && diffattr)
+      while col <= len || (col == 1 && diffattr != 0)
 	var id: number
 	var startcol = col # The start column for processing text
 	if !settings.ignore_conceal && has('conceal')
@@ -1687,7 +1664,7 @@ def ProcessLines()
 	  # the specific concealed region) or until there are no more concealed
 	  # characters.
 	  while col <= len && concealinfo == synconcealed(lnum, col) | col = col + 1 | endwhile
-	elseif diffattr
+	elseif diffattr != 0
 	  diff_id = diff_hlID(lnum, col)
 	  id = synID(lnum, col, 1)
 	  col = col + 1

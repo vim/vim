@@ -299,14 +299,13 @@ export def Convert2HTML(line1: number, line2: number)
     endif
     runtime syntax/2html.vim #}}}
   else #{{{
-    var win_list = []
-    var buf_list = []
-    windo if &diff | add(win_list, winbufnr(0)) | endif
+    var win_list = range(1, winnr('$'))->mapnew((_, w) => winbufnr(w))
+    var buf_list: list<number>
     settings.whole_filler = 1
     g:html_diff_win_num = 0
     for window in win_list
       # switch to the next buffer to convert
-      exe ":" .. bufwinnr(window) .. "wincmd w"
+      win_gotoid(bufwinid(window))
 
       # figure out whether current charset and encoding will work, if not
       # default to UTF-8
@@ -400,13 +399,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>)
     add(html, '<meta name="settings" content="' ..
       join(filter(keys(settings), (_, k) => {
 	var v = settings[k]
-	if type(v) == v:t_number
-	  return v != 0
-	elseif type(v) == v:t_bool
-	  return !empty(v)
-	else
-	  return false
-	endif
+	return type(v) == v:t_number ? v == 1 : false
       }), ',') ..
       ',prevent_copy=' .. settings.prevent_copy ..
       ',use_input_for_pc=' .. settings.use_input_for_pc ..
@@ -433,7 +426,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>)
 
   for buf in buf_list
     var temp = []
-    execute $':{bufwinnr(buf)}wincmd w'
+    win_gotoid(bufwinid(buf))
 
     # If text is folded because of user foldmethod settings, etc. we don't want
     # to act on everything in a fold by mistake.
@@ -948,4 +941,3 @@ enddef #}}}
 
 # Make sure any patches will probably use consistent indent
 #   vim: ts=8 sw=2 sts=2 noet fdm=marker
-defcompile
