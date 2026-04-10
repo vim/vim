@@ -22,7 +22,7 @@ def g:Test_zip_basic()
 
   ### Check header
   assert_match('^" zip\.vim version v\d\+', getline(1))
-  assert_match('^" Browsing zipfile .*/X.zip', getline(2))
+  assert_match('^" Browsing zipfile .*/X\.zip', getline(2))
   assert_match('^" Select a file with cursor and press ENTER', getline(3))
   assert_match('^$', getline(4))
 
@@ -43,7 +43,7 @@ def g:Test_zip_basic()
   :1
   search('file.txt')
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::Xzip/file.txt', @%)
+  assert_match('zipfile://.*/X\.zip::Xzip/file\.txt', @%)
   assert_equal('one', getline(1))
 
   ### Check editing file
@@ -68,7 +68,7 @@ def g:Test_zip_basic()
   assert_true(filereadable("Xzip/file.txt"))
 
   ## Check not overwriting existing file
-  assert_match('<Xzip/file.txt> .* not overwriting!', execute("normal x"))
+  assert_match('<Xzip/file\.txt> .* not overwriting!', execute("normal x"))
 
   delete("Xzip", "rf")
 
@@ -118,7 +118,7 @@ def g:Test_zip_basic()
   ### Check when "zip" report failure
   if executable("false")
     g:zip_zipcmd = "false"
-    assert_match('sorry, unable to update .*/X.zip with Xzip/file.txt',
+    assert_match('sorry, unable to update .*/X\.zip with Xzip/file\.txt',
                   execute("write"))
   endif
   bw!|bw
@@ -189,7 +189,7 @@ def g:Test_zip_glob_fname()
   fname = 'a[a].txt'
   search('\V' .. fname)
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::zipglob/a\[a\].txt', @%)
+  assert_match('zipfile://.*/X\.zip::zipglob/a\[a\]\.txt', @%)
   assert_equal('a test file with []', getline(1))
   bw
 
@@ -198,7 +198,7 @@ def g:Test_zip_glob_fname()
   fname = 'a*.txt'
   search('\V' .. fname)
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::zipglob/a\*.txt', @%)
+  assert_match('zipfile://.*/X\.zip::zipglob/a\*\.txt', @%)
   assert_equal('a test file with a*', getline(1))
   bw
 
@@ -207,7 +207,7 @@ def g:Test_zip_glob_fname()
   fname = 'a?.txt'
   search('\V' .. fname)
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::zipglob/a?.txt', @%)
+  assert_match('zipfile://.*/X\.zip::zipglob/a?\.txt', @%)
   assert_equal('a test file with a?', getline(1))
   bw
 
@@ -216,7 +216,7 @@ def g:Test_zip_glob_fname()
   fname = 'a\.txt'
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::zipglob/a\\.txt', @%)
+  assert_match('zipfile://.*/X\.zip::zipglob/a\\\.txt', @%)
   assert_equal('a test file with a\', getline(1))
   bw
 
@@ -225,7 +225,7 @@ def g:Test_zip_glob_fname()
   fname = 'a\\.txt'
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
-  assert_match('zipfile://.*/X.zip::zipglob/a\\\\.txt', @%)
+  assert_match('zipfile://.*/X\.zip::zipglob/a\\\\\.txt', @%)
   assert_equal('a test file with a double \', getline(1))
   bw
 

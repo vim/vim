@@ -22,8 +22,8 @@ def g:Test_tar_basic()
   assert_match('^" Browsing tarfile .*/X.tar', getline(2))
   assert_match('^" Select a file with cursor and press ENTER, "x" to extract a file', getline(3))
   assert_match('^$', getline(4))
-  assert_match('testtar/', getline(5))
-  assert_match('testtar/file1.txt', getline(6))
+  assert_equal('testtar/', getline(5))
+  assert_equal('testtar/file1.txt', getline(6))
 
   ### Check ENTER on header
   :1
@@ -78,7 +78,7 @@ def g:Test_tar_evil()
   assert_match('^" Select a file with cursor and press ENTER, "x" to extract a file', getline(3))
   assert_match('^" Note: Path Traversal Attack detected', getline(4))
   assert_match('^$', getline(5))
-  assert_match('/etc/ax-pwn', getline(6))
+  assert_equal('/etc/ax-pwn', getline(6))
 
   ### Check ENTER on header
   :1
@@ -141,7 +141,7 @@ def g:Test_tar_path_traversal_with_nowrapscan()
   assert_match('^" Select a file with cursor and press ENTER, "x" to extract a file', getline(3))
   assert_match('^" Note: Path Traversal Attack detected', getline(4))
   assert_match('^$', getline(5))
-  assert_match('/etc/ax-pwn', getline(6))
+  assert_equal('/etc/ax-pwn', getline(6))
 
   assert_equal(1, b:leading_slash)
 
@@ -252,7 +252,7 @@ def g:Test_extraction()
 
     delete('X.txt')
     execute 'edit ' .. dir .. '/' .. c.archive
-    assert_match('X.txt', getline(5), 'line 5 wrong in archive: ' .. c.archive)
+    assert_equal('X.txt', getline(5), 'line 5 wrong in archive: ' .. c.archive)
     :5
     normal x
     assert_equal(0, v:shell_error, 'vshell error not 0')
@@ -281,7 +281,7 @@ def g:Test_extract_with_dotted_dir()
   defer delete(tarpath)
 
   execute 'e ' .. tarpath
-  assert_match('X.txt', getline(5))
+  assert_equal('X.txt', getline(5))
   :5
   normal x
   assert_true(filereadable('X.txt'))
@@ -305,7 +305,7 @@ def g:Test_extract_with_dotted_filename()
   defer delete(tarpath)
 
   execute 'e ' .. tarpath
-  assert_match('X.txt', getline(5))
+  assert_equal('X.txt', getline(5))
   :5
   normal x
   assert_true(filereadable('X.txt'))
