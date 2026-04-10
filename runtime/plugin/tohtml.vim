@@ -1,7 +1,7 @@
 vim9script
 # Vim plugin for converting a syntax highlighted file to HTML.
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026 Apr 4
+# Last Change: 2026 Apr 9
 #
 # The core of the code is in $VIMRUNTIME/autoload/tohtml.vim and
 # $VIMRUNTIME/syntax/2html.vim
@@ -13,7 +13,15 @@ g:loaded_2html_plugin = 'vim9.2_v1'
 
 #
 # Changelog: {{{
-#   9.0_v2  (this version): - Warn if using deprecated g:use_xhtml option
+#   9.2_v1  (this version): - mao-yining: Convert main script to vim9script
+#                             (SourceForge issue #28/Vim Github PR #19915).
+#
+#   Unspecified version:    - Inherit links colors from colorsheme styles for
+#                             auto-generated links in HTML output (Vim Github
+#                             issue #10191).
+#
+#   9.0 updates: {{{
+#   9.0_v2  (Vim 9.0.1885): - Warn if using deprecated g:use_xhtml option
 #                           - Change default g:html_use_input_for_pc to "none"
 #                             instead of "fallback". All modern browsers support
 #                             the "user-select: none" and "content:" CSS
@@ -42,6 +50,7 @@ g:loaded_2html_plugin = 'vim9.2_v1'
 #                           - Updates for new Vim9 string append style (i.e. use
 #                             ".." instead of "."). Requires Vim version
 #                             8.1.1114 or higher.
+#}}}
 #
 #   8.1 updates: {{{
 #   8.1_v2  (Vim 8.1.2312): - Fix SourceForge issue #19: fix calculation of tab
