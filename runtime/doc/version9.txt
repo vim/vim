@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52615,6 +52615,7 @@ Other ~
   bypassing the shell completely.
 - Allow mouse clickable regions in the |status-line| using the
   |stl-%[FuncName]| atom.
+- Enable reflow support in the |:terminal|.
 
 Platform specific ~
 -----------------
