@@ -1659,9 +1659,11 @@ again:
 gui_may_resize_shell(void)
 {
     if (new_pixel_height)
+    {
 	// careful: gui_resize_shell() may postpone the resize again if we
 	// were called indirectly by it
 	gui_resize_shell(new_pixel_width, new_pixel_height);
+    }
 }
 
     int
@@ -3737,12 +3739,24 @@ gui_init_which_components(char_u *oldval UNUSED)
 	// Don't do this while starting up though.
 	// Don't change Rows when adding menu/toolbar/tabline.
 	// Don't change Columns when adding vertical toolbar.
-	if (!gui.starting && need_set_size != (RESIZE_VERT | RESIZE_HOR))
-	    (void)char_avail();
-	if ((need_set_size & RESIZE_VERT) == 0)
-	    Rows = prev_Rows;
-	if ((need_set_size & RESIZE_HOR) == 0)
-	    Columns = prev_Columns;
+	{
+	    // Save the size gui_set_shellsize() determined before
+	    // char_avail() processes spurious configure events that may
+	    // corrupt Rows/Columns.
+	    long    post_Rows = Rows;
+	    long    post_Columns = Columns;
+
+	    if (!gui.starting && need_set_size != (RESIZE_VERT | RESIZE_HOR))
+		(void)char_avail();
+	    if ((need_set_size & RESIZE_VERT) == 0)
+		Rows = prev_Rows;
+	    else
+		Rows = post_Rows;
+	    if ((need_set_size & RESIZE_HOR) == 0)
+		Columns = prev_Columns;
+	    else
+		Columns = post_Columns;
+	}
 #endif
     }
     // When the console tabline appears or disappears the window positions
@@ -3793,14 +3807,29 @@ gui_update_tabline(void)
 	out_flush();
 
 	if (!showit != !shown)
+	{
+	    // Save Rows/Columns before showing/hiding the tabline.
+	    // gui_mch_show_tabline() processes GTK events (via
+	    // gui_mch_update) which may trigger a spurious configure event
+	    // that temporarily corrupts Rows.  Restore the original values so
+	    // that gui_set_shellsize() uses the correct row/column count.
+	    int save_Rows = Rows;
+	    int save_Columns = Columns;
+
 	    gui_mch_show_tabline(showit);
+	    Rows = save_Rows;
+	    Columns = save_Columns;
+
+	    // Resize the outer window to compensate for the tabline height
+	    // change.  This is also needed when called from draw_tabline()
+	    // (e.g. after :tabclose), where no caller will do the resize.
+	    // When called from gui_init_which_components() the subsequent
+	    // gui_set_shellsize() call will redo this to the same dimensions,
+	    // which is harmless.
+	    gui_set_shellsize(FALSE, showit, RESIZE_VERT);
+	}
 	if (showit != 0)
 	    gui_mch_update_tabline();
-
-	// When the tabs change from hidden to shown or from shown to
-	// hidden the size of the text area should remain the same.
-	if (!showit != !shown)
-	    gui_set_shellsize(FALSE, showit, RESIZE_VERT);
     }
 }
 
