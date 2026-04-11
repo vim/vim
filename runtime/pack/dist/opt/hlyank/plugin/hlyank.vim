@@ -1,7 +1,7 @@
 vim9script
 
 # Highlight Yank plugin
-# Last Change: 2025 Mar 22
+# Last Change: 2026 Apr 11
 
 def HighlightedYank()
 
@@ -28,7 +28,11 @@ def HighlightedYank()
       return [v[0][1], col_beg, col_end - col_beg]
     }))
     var winid = win_getid()
-    timer_start(duration, (_) => m->matchdelete(winid))
+    timer_start(duration, (_) => {
+      if winbufnr(winid) != -1
+        m->matchdelete(winid)
+      endif
+    })
   endif
 enddef
 
