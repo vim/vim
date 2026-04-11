@@ -399,7 +399,13 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>)
     add(html, '<meta name="settings" content="' ..
       join(filter(keys(settings), (_, k) => {
 	var v = settings[k]
-	return type(v) == v:t_number ? v == 1 : false
+	if type(v) == v:t_number
+	  return v != 0
+	elseif type(v) == v:t_bool
+	  return !empty(v)
+	else
+	  return false
+	endif
       }), ',') ..
       ',prevent_copy=' .. settings.prevent_copy ..
       ',use_input_for_pc=' .. settings.use_input_for_pc ..
@@ -538,14 +544,14 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>)
 
   var ei_sav = &eventignore
   set eventignore+=FileType
-  execute "topleft new " .. name
+  execute "topleft new" name
   &eventignore = ei_sav
 
   setlocal modifiable
 
   # just in case some user autocmd creates content in the new buffer, make sure
   # it is empty before proceeding
-  :%d
+  deletebufline(bufnr(), 1, '$')
 
   # set the fileencoding to match the charset we'll be using
   &fileencoding = settings.vim_encoding
