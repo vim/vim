@@ -1326,7 +1326,7 @@ if settings.dynamic_folds
     endwhile
 
     # close all folds to get info for originally open folds
-    silent! %foldclose!
+    silent! :%foldclose!
     lnum = 1
 
     # the originally open folds will be all folds we encounter that aren't
@@ -1364,7 +1364,7 @@ if settings.dynamic_folds
     &l:foldtext = foldtext_save
 
     # close all folds again so we can get the fold text as we go
-    silent! %foldclose!
+    silent! :%foldclose!
 
     # Go through and remove folds we don't need to (or cannot) process in the
     # current conversion range
