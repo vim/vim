@@ -293,7 +293,6 @@ if settings.use_css
     def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, make_unselectable: bool, unformatted: string): string
       var style_name = synIDattr(style_id, "name", whatterm)
       var saved_style: string
-      var saved_style_tmp: any
   ENDLET
   if &diff
     trim_tmp =<< trim eval ENDLET
@@ -308,7 +307,7 @@ if settings.use_css
     # (always succeeds because we pre-populate it)
     trim_tmp =<< trim eval ENDLET
       if style_id == DIFF_D_ID || style_id == DIFF_A_ID || style_id == DIFF_C_ID || style_id == DIFF_T_ID
-	saved_style_tmp = get(diffstylelist, style_id)
+	saved_style = get(diffstylelist, style_id)
       else
     ENDLET
     wrapperfunc_lines += trim_tmp
@@ -316,16 +315,14 @@ if settings.use_css
 
   # get primary style info from cache or build it on the fly if not found
   trim_tmp =<< trim ENDLET
-	saved_style_tmp = get(stylelist, style_id)
-	if type(saved_style_tmp) == type(0)
-	  saved_style = CSS1(style_id)
-	  if saved_style != ""
+	saved_style = get(stylelist, style_id, () => {
+	  var res = CSS1(style_id)
+	  if !empty(res)
 	    saved_style = "." .. style_name .. " { " .. saved_style .. "}"
 	  endif
-	  stylelist[style_id] = saved_style
-	else
-	  saved_style = saved_style_tmp
-	endif
+	  stylelist[style_id] = res
+	  return res
+	}())
   ENDLET
   wrapperfunc_lines += trim_tmp
   if &diff
@@ -1068,10 +1065,10 @@ else
   stylelist = {}
 endif
 var diffstylelist: dict<string> = {
-  DIFF_A_ID: ".DiffAdd { " .. CSS1(DIFF_A_ID) .. "}",
-  DIFF_C_ID: ".DiffChange { " .. CSS1(DIFF_C_ID) .. "}",
-  DIFF_D_ID: ".DiffDelete { " .. CSS1(DIFF_D_ID) .. "}",
-  DIFF_T_ID: ".DiffText { " .. CSS1(DIFF_T_ID) .. "}"
+  [DIFF_A_ID]: ".DiffAdd { " .. CSS1(DIFF_A_ID) .. "}",
+  [DIFF_C_ID]: ".DiffChange { " .. CSS1(DIFF_C_ID) .. "}",
+  [DIFF_D_ID]: ".DiffDelete { " .. CSS1(DIFF_D_ID) .. "}",
+  [DIFF_T_ID]: ".DiffText { " .. CSS1(DIFF_T_ID) .. "}"
 }
 
 var last_colors_name: string
