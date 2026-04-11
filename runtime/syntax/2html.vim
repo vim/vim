@@ -1493,12 +1493,12 @@ endif
 
 var foldfillchar: string
 if has('folding') && !settings.ignore_folding
-  foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
+  foldfillchar = &fillchars[charidx(&fillchars, matchend(&fillchars, 'fold:'))]
   if foldfillchar == ''
     foldfillchar = '-'
   endif
 endif
-var difffillchar = &fillchars[matchend(&fillchars, 'diff:')]
+var difffillchar = &fillchars[charidx(&fillchars, matchend(&fillchars, 'diff:'))]
 if difffillchar == ''
   difffillchar = '-'
 endif
