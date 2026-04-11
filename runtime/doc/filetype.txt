@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
+*filetype.txt*	For Vim version 9.2.  Last change: 2026 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -806,6 +806,14 @@ To enable the recognition of Markdown comments each time after removing
 re-source "javaformat.vim" for Vim versions greater than `8.2.1397`: >
 	runtime autoload/javaformat.vim
 <
+JUJUTSU DESCRIPTION				*ft-jjdescription-plugin*
+
+The length of the first line of the commit message used for syntax
+highlighting can be configured via `g:jjcommit_summary_length`, and will
+fallback to `g:gitcommit_summary_length`.  The default is 50.  Example: >
+
+        let g:jjcommit_summary_length = 70
+<
 JSON-FORMAT						*ft-json-plugin*
 
 JSON filetype can be extended to use 'formatexpr' and "json.FormatExpr()"
@@ -816,7 +824,7 @@ Add following lines to $HOME/.vim/ftplugin/json.vim: >
 	vim9script
 	import autoload 'dist/json.vim'
 	setl formatexpr=json.FormatExpr()
-
+<
 LUA					*ft-lua-plugin* *g:lua_folding*
 
 You can enable folding of Lua functions using |fold-expr| by: >

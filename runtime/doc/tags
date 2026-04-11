@@ -7601,6 +7601,7 @@ ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-jjdescription-plugin	filetype.txt	/*ft-jjdescription-plugin*
 ft-jq-syntax	syntax.txt	/*ft-jq-syntax*
 ft-json-plugin	filetype.txt	/*ft-json-plugin*
 ft-json-syntax	syntax.txt	/*ft-json-syntax*
