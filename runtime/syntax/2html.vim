@@ -1246,43 +1246,64 @@ if !settings.no_progress
 endif
 
 var build_fun_lines: list<string>
-def Add_diff_fill(_lnum: number)
-  var filler = diff_filler(_lnum)
-  if filler > 0
-    var to_insert = filler
-    while to_insert > 0
-      var new = repeat(difffillchar, 3)
+build_fun_lines =<< trim ENDLET
+  def Add_diff_fill(_lnum: number)
+    var filler = diff_filler(_lnum)
+    if filler > 0
+      var to_insert = filler
+      while to_insert > 0
+	var new = repeat(difffillchar, 3)
 
-      if to_insert > 2 && to_insert < filler && !settings.whole_filler
-	new = new .. " " .. filler .. " inserted lines "
-	to_insert = 2
-      endif
-      if !settings.no_pre
+	if to_insert > 2 && to_insert < filler && !settings.whole_filler
+	  new = new .. " " .. filler .. " inserted lines "
+	  to_insert = 2
+	endif
+ENDLET
+if !settings.no_pre
+  trim_tmp =<< trim ENDLET
 	# HTML line wrapping is off--go ahead and fill to the margin
 	# TODO: what about when CSS wrapping is turned on?
 	new = new .. repeat(difffillchar, &columns - strlen(new) - margin)
-      else
+  ENDLET
+  build_fun_lines += trim_tmp
+else
+  trim_tmp =<< trim ENDLET
 	new = new .. repeat(difffillchar, 3)
-      endif
-      new = HtmlFormat_d(new, DIFF_D_ID, 0)
-      if settings.number_lines
+  ENDLET
+  build_fun_lines += trim_tmp
+endif
+trim_tmp =<< trim ENDLET
+	new = HtmlFormat_d(new, DIFF_D_ID, 0)
+ENDLET
+build_fun_lines += trim_tmp
+if settings.number_lines
+  trim_tmp =<< trim ENDLET
 	# Indent if line numbering is on. Indent gets style of line number
 	# column.
 	new = HtmlFormat_n(repeat(' ', margin), LINENR_ID, 0, 0) .. new
-      endif
-      if settings.dynamic_folds && !settings.no_foldcolumn
+  ENDLET
+  build_fun_lines += trim_tmp
+endif
+if settings.dynamic_folds && !settings.no_foldcolumn
+  trim_tmp =<< trim ENDLET
 	if foldcolumn > 0
 	  # Indent for foldcolumn if there is one. Assume it's empty, there should
 	  # not be a fold for deleted lines in diff mode.
 	  new = FoldColumn_fill() .. new
 	endif
-      endif
-      build_fun_lines += trim_tmp
-      add(lines, new .. HtmlEndline)
-      to_insert -= 1
-    endwhile
-  endif
-enddef
+  ENDLET
+  build_fun_lines += trim_tmp
+endif
+# Ignore this comment, just bypassing a highlighting issue: if
+trim_tmp =<< trim ENDLET
+	add(lines, new .. HtmlEndline)
+	to_insert -= 1
+      endwhile
+    endif
+  enddef
+ENDLET
+build_fun_lines += trim_tmp
+execute join(build_fun_lines, "\n")
 
 # First do some preprocessing for dynamic folding. Do this for the entire file
 # so we don't accidentally start within a closed fold or something.
