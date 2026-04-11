@@ -953,6 +953,10 @@ pum_redraw(void)
     // Use current window for highlight overrides when using 'winhighlight'
     override_success = push_highlight_overrides(curwin->w_hl, curwin->w_hl_len);
 
+    // Batch the underlying screen update and the pum drawing into a single
+    // synchronized output frame to avoid flicker.
+    term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
+
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
     // "word"/"abbr"
@@ -1187,6 +1191,8 @@ pum_redraw(void)
 
     if (override_success)
 	pop_highlight_overrides();
+
+    term_set_sync_output(TERM_SYNC_OUTPUT_DISABLE);
 }
 
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
