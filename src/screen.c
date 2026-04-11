@@ -1486,23 +1486,41 @@ win_redr_custom(
 	    TabPageIdxs[col++] = fillchar;
     }
 
-    // Resolve click function regions for statusline.
-    if (wp != NULL && !draw_ruler)
+    // Resolve click function regions for statusline or tabline.
+    if (!draw_ruler)
     {
-	int	click_count = 0;
+	stl_click_region_T  **out_regions;
+	int		    *out_count;
+	int		    base_col;
+	int		    click_count = 0;
+
+	if (wp != NULL)
+	{
+	    out_regions = &wp->w_stl_click;
+	    out_count = &wp->w_stl_click_count;
+	    base_col = wp->w_wincol;
+	}
+	else
+	{
+	    // 'tabline': store regions in global state since there is no
+	    // associated window.
+	    out_regions = &tabline_stl_click;
+	    out_count = &tabline_stl_click_count;
+	    base_col = firstwin->w_wincol;
+	}
 
 	// Count the click regions.
 	for (n = 0; clicktab[n].start != NULL; n++)
 	    click_count++;
 
 	// Free old click regions.
-	if (wp->w_stl_click != NULL)
+	if (*out_regions != NULL)
 	{
-	    for (n = 0; n < wp->w_stl_click_count; n++)
-		vim_free(wp->w_stl_click[n].funcname);
-	    VIM_CLEAR(wp->w_stl_click);
+	    for (n = 0; n < *out_count; n++)
+		vim_free((*out_regions)[n].funcname);
+	    VIM_CLEAR(*out_regions);
 	}
-	wp->w_stl_click_count = 0;
+	*out_count = 0;
 
 	if (click_count > 0)
 	{
@@ -1514,7 +1532,7 @@ win_redr_custom(
 	    {
 		char_u	*cur_funcname = NULL;
 		int	cur_minwid = 0;
-		int	region_start = wp->w_wincol;
+		int	region_start = base_col;
 
 		// Walk through click records converting buffer positions
 		// to screen columns.
@@ -1530,7 +1548,7 @@ win_redr_custom(
 		    if (cur_funcname != NULL)
 		    {
 			regions[rcount].col_start = region_start;
-			regions[rcount].col_end = wp->w_wincol + len;
+			regions[rcount].col_end = base_col + len;
 			regions[rcount].funcname =
 					    vim_strsave(cur_funcname);
 			regions[rcount].minwid = cur_minwid;
@@ -1539,22 +1557,22 @@ win_redr_custom(
 
 		    cur_funcname = clicktab[n].funcname;
 		    cur_minwid = clicktab[n].minwid;
-		    region_start = wp->w_wincol + len;
+		    region_start = base_col + len;
 		}
 
 		// Close final region if it extends to the end.
 		if (cur_funcname != NULL)
 		{
 		    regions[rcount].col_start = region_start;
-		    regions[rcount].col_end = wp->w_wincol + maxwidth;
+		    regions[rcount].col_end = base_col + maxwidth;
 		    regions[rcount].funcname =
 					vim_strsave(cur_funcname);
 		    regions[rcount].minwid = cur_minwid;
 		    rcount++;
 		}
 
-		wp->w_stl_click = regions;
-		wp->w_stl_click_count = rcount;
+		*out_regions = regions;
+		*out_count = rcount;
 	    }
 	}
 

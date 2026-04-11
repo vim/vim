@@ -104,6 +104,10 @@ EXTERN int redrawing_for_callback INIT(= 0);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
+// Click regions for 'tabline' (%[FuncName]).
+EXTERN stl_click_region_T *tabline_stl_click INIT(= NULL);
+EXTERN int	tabline_stl_click_count INIT(= 0);
+
 #ifdef FEAT_PROP_POPUP
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);

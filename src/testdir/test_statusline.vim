@@ -752,6 +752,7 @@ func Test_statusline_click_handler()
   call assert_equal(1, g:stl_click_info.nclicks)
   call assert_equal(0, g:stl_click_info.minwid)
   call assert_equal(win_getid(), g:stl_click_info.winid)
+  call assert_equal('statusline', g:stl_click_info.area)
   unlet! g:stl_click_info
 
   " Click outside click region (on the filename part)
@@ -871,6 +872,62 @@ func Test_statusline_click_linebreak_still_works()
 
   let &statusline = save_stl
   let &laststatus = save_ls
+endfunc
+
+func Test_tabline_click_handler()
+  let save_mouse = &mouse
+  let save_tal = &tabline
+  let save_stal = &showtabline
+  if has('gui')
+    let save_go = &guioptions
+    set guioptions-=e
+  endif
+  set mouse=a
+  set showtabline=2
+
+  " Two adjacent click regions in 'tabline' with different minwid.
+  set tabline=%1[StlClickTestFunc][AAA]%[]%2[StlClickTestFunc][BBB]%[]
+  redraw!
+
+  " Click on [AAA] region (tabline is row 1).
+  call test_setmouse(1, 2)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal('l', g:stl_click_info.button)
+  call assert_equal(1, g:stl_click_info.nclicks)
+  call assert_equal(1, g:stl_click_info.minwid)
+  " winid is 0 for tabline clicks (no associated window).
+  call assert_equal(0, g:stl_click_info.winid)
+  call assert_equal('tabline', g:stl_click_info.area)
+  unlet! g:stl_click_info
+
+  " Click on [BBB] region.
+  call test_setmouse(1, 7)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(2, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  " Middle click on [AAA].
+  call test_setmouse(1, 2)
+  call feedkeys("\<MiddleMouse>\<MiddleRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal('m', g:stl_click_info.button)
+  unlet! g:stl_click_info
+
+  " Click outside any %[...] region: no callback, no error.
+  set tabline=xxx%1[StlClickTestFunc][YYY]%[]
+  redraw!
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call assert_false(exists('g:stl_click_info'))
+
+  let &mouse = save_mouse
+  let &tabline = save_tal
+  let &showtabline = save_stal
+  if has('gui')
+    let &guioptions = save_go
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

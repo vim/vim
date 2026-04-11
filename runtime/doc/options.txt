@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
+*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8626,7 +8626,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*stl-%[FuncName]*
 	%[ defines clickable regions in the statusline.  When the user clicks
-	on a region with the mouse, the specified function is called.
+	on a region with the mouse, the specified function is called.  The
+	same syntax can also be used in 'tabline'.
 
 	  %[FuncName]	Start of a clickable region.  "FuncName" is the name
 			of a Vim function to call when the region is clicked.
@@ -8644,11 +8645,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  "button"	Mouse button: "l" (left), "m" (middle), "r" (right).
 	  "mods"	Modifier keys: combination of "s" (shift), "c" (ctrl),
 			"a" (alt).  Empty string if no modifiers.
-	  "winid"	|window-ID| of the window whose statusline was clicked.
+	  "winid"	|window-ID| of the window whose statusline was clicked,
+			or 0 when the click was in 'tabline'.
+	  "area"	"statusline" or "tabline".  Indicates which option the
+			clicked region belongs to.  Useful when a single
+			callback is shared between 'statusline' and 'tabline'.
 
 	If the function returns non-zero, the statusline is redrawn.
 	Dragging the statusline to resize the window still works even when
-	click handlers are defined.
+	click handlers are defined.  When used in 'tabline', clicks in
+	%[FuncName] regions are dispatched to the callback instead of the
+	default tab-selection behavior.
 
 	Example: >
 	    func! ClickFile(info)
