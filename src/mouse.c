@@ -1727,6 +1727,12 @@ stl_click_handler_regions(
 
     dict_add_number(info, "winid", winid);
 
+    // "area": which option the clicked region belongs to.  Lets a shared
+    // dispatcher distinguish 'statusline' from 'tabline' (and future areas)
+    // without having to overload winid == 0.
+    dict_add_string(info, "area",
+	    winid == 0 ? (char_u *)"tabline" : (char_u *)"statusline");
+
     // Call the function with the info dict as argument.
     argvars[0].v_type = VAR_DICT;
     argvars[0].vval.v_dict = info;

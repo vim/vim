@@ -8647,6 +8647,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			"a" (alt).  Empty string if no modifiers.
 	  "winid"	|window-ID| of the window whose statusline was clicked,
 			or 0 when the click was in 'tabline'.
+	  "area"	"statusline" or "tabline".  Indicates which option the
+			clicked region belongs to.  Useful when a single
+			callback is shared between 'statusline' and 'tabline'.
 
 	If the function returns non-zero, the statusline is redrawn.
 	Dragging the statusline to resize the window still works even when

@@ -752,6 +752,7 @@ func Test_statusline_click_handler()
   call assert_equal(1, g:stl_click_info.nclicks)
   call assert_equal(0, g:stl_click_info.minwid)
   call assert_equal(win_getid(), g:stl_click_info.winid)
+  call assert_equal('statusline', g:stl_click_info.area)
   unlet! g:stl_click_info
 
   " Click outside click region (on the filename part)
@@ -897,6 +898,7 @@ func Test_tabline_click_handler()
   call assert_equal(1, g:stl_click_info.minwid)
   " winid is 0 for tabline clicks (no associated window).
   call assert_equal(0, g:stl_click_info.winid)
+  call assert_equal('tabline', g:stl_click_info.area)
   unlet! g:stl_click_info
 
   " Click on [BBB] region.
