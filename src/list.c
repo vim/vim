@@ -1368,7 +1368,8 @@ list_slice_or_index(
     {
 	// copy the item to "var1" to avoid that freeing the list makes it
 	// invalid.
-	listitem_T *li = check_range_index_one(list, (long *)&n1, TRUE, TRUE);
+	long index = n1;
+	listitem_T *li = check_range_index_one(list, &index, TRUE, TRUE);
 	if (li == NULL)
 	    return FAIL;
 	copy_tv(&li->li_tv, &var1);
