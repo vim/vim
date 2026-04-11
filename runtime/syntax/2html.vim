@@ -411,7 +411,7 @@ if settings.use_css
     # uses the number of unique codepoints for its limit.
     trim_tmp =<< trim eval ENDLET
 	if make_unselectable
-	  var return_span = "<span " .. extra_attrs .. 'class="' .. style_name .. diffstyle .. '"'
+	  var return_span = "<span " .. extra_attrs .. 'class="' .. style_name .. {diffstyle}'"'
     ENDLET
     wrapperfunc_lines += trim_tmp
     if settings.use_input_for_pc !=# 'all'
@@ -426,7 +426,7 @@ if settings.use_css
     wrapperfunc_lines += trim_tmp
     if settings.use_input_for_pc !=# 'none'
       trim_tmp =<< trim eval ENDLET
-	  return_span ..= '<input' .. unselInputType .. ' class="' .. style_name .. diffstyle .. '"'
+	  return_span ..= '<input' .. unselInputType .. ' class="' .. style_name .. {diffstyle}'"'
 	  return_span ..= ' value="' .. substitute(unformatted, '\s\+$', "", "") .. '"'
 	  return_span ..= " onselect='this.blur(); return false;'"
 	  return_span ..= " onmousedown='this.blur(); return false;'"
@@ -440,7 +440,7 @@ if settings.use_css
     trim_tmp =<< trim eval ENDLET
 	  return return_span .. '</span>'
 	else
-	  return "<span " .. extra_attrs .. 'class="' .. style_name .. diffstyle .. '">' .. text .. "</span>"
+	  return "<span " .. extra_attrs .. 'class="' .. style_name .. {diffstyle}'">' .. text .. "</span>"
 	endif
     ENDLET
     wrapperfunc_lines += trim_tmp
