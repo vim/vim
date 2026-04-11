@@ -239,22 +239,22 @@ if !settings.use_css
     if synIDattr(translated_ID, "inverse") == '1'
       # For inverse, we always must set both colors (and exchange them)
       var x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
-      a = a .. '<span ' .. extra_attrs .. 'style="background-color: ' .. (x != "" ? x : fgc) .. '">'
+      a ..= '<span ' .. extra_attrs .. 'style="background-color: ' .. (x != "" ? x : fgc) .. '">'
       x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
-      a = a .. '<font color="' .. (x != "" ? x : bgc) .. '">'
+      a ..= '<font color="' .. (x != "" ? x : bgc) .. '">'
     else
       var x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
       if x != ""
-	a = a .. '<span ' .. extra_attrs .. 'style="background-color: ' .. x .. '">'
+	a ..= '<span ' .. extra_attrs .. 'style="background-color: ' .. x .. '">'
       elseif !empty(extra_attrs)
-	a = a .. '<span ' .. extra_attrs .. '>'
+	a ..= '<span ' .. extra_attrs .. '>'
       endif
       x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
-      if x != "" | a = a .. '<font color="' .. x .. '">' | endif
+      if x != "" | a ..= '<font color="' .. x .. '">' | endif
     endif
-    if synIDattr(translated_ID, "bold") == '1' | a = a .. "<b>" | endif
-    if synIDattr(translated_ID, "italic") == '1' | a = a .. "<i>" | endif
-    if synIDattr(translated_ID, "underline") == '1' | a = a .. "<u>" | endif
+    if synIDattr(translated_ID, "bold") == '1' | a ..= "<b>" | endif
+    if synIDattr(translated_ID, "italic") == '1' | a ..= "<i>" | endif
+    if synIDattr(translated_ID, "underline") == '1' | a ..= "<u>" | endif
     return a
   enddef
 
@@ -262,16 +262,16 @@ if !settings.use_css
   def HtmlClosing(id: number, has_extra_attrs: bool): string
     var a = ""
     var translated_ID = synIDtrans(id)
-    if synIDattr(translated_ID, "underline") == '1' | a = a .. "</u>" | endif
-    if synIDattr(translated_ID, "italic") == '1' | a = a .. "</i>" | endif
-    if synIDattr(translated_ID, "bold") == '1' | a = a .. "</b>" | endif
+    if synIDattr(translated_ID, "underline") == '1' | a ..= "</u>" | endif
+    if synIDattr(translated_ID, "italic") == '1' | a ..= "</i>" | endif
+    if synIDattr(translated_ID, "bold") == '1' | a ..= "</b>" | endif
     if synIDattr(translated_ID, "inverse") == '1'
-      a = a .. '</font></span>'
+      a ..= '</font></span>'
     else
       var x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
-      if x != "" | a = a .. '</font>' | endif
+      if x != "" | a ..= '</font>' | endif
       x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
-      if x != "" || has_extra_attrs | a = a .. '</span>' | endif
+      if x != "" || has_extra_attrs | a ..= '</span>' | endif
     endif
     return a
   enddef
@@ -662,26 +662,26 @@ def CSS1(id: number): string
   if synIDattr(translated_ID, "inverse") == '1'
     # For inverse, we always must set both colors (and exchange them)
     var x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
-    a = a .. "color: " .. (x != "" ? x : bgc) .. "; "
+    a ..= "color: " .. (x != "" ? x : bgc) .. "; "
     x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
-    a = a .. "background-color: " .. (x != "" ? x : fgc) .. "; "
+    a ..= "background-color: " .. (x != "" ? x : fgc) .. "; "
   else
     var x = HtmlColor(synIDattr(translated_ID, "fg#", whatterm))
-    if x != "" | a = a .. "color: " .. x .. "; " | endif
+    if x != "" | a ..= "color: " .. x .. "; " | endif
     x = HtmlColor(synIDattr(translated_ID, "bg#", whatterm))
     if x != ""
-      a = a .. "background-color: " .. x .. "; "
+      a ..= "background-color: " .. x .. "; "
       # stupid hack because almost every browser seems to have at least one font
       # which shows 1px gaps between lines which have background
-      a = a .. "padding-bottom: 1px; "
+      a ..= "padding-bottom: 1px; "
     elseif (translated_ID == FOLDED_ID || translated_ID == LINENR_ID || translated_ID == FOLD_C_ID) && !empty(settings.prevent_copy)
       # input elements default to a different color than the rest of the page
-      a = a .. "background-color: " .. bgc .. "; "
+      a ..= "background-color: " .. bgc .. "; "
     endif
   endif
-  if synIDattr(translated_ID, "bold") == '1' | a = a .. "font-weight: bold; " | endif
-  if synIDattr(translated_ID, "italic") == '1' | a = a .. "font-style: italic; " | endif
-  if synIDattr(translated_ID, "underline") == '1' | a = a .. "text-decoration: underline; " | endif
+  if synIDattr(translated_ID, "bold") == '1' | a ..= "font-weight: bold; " | endif
+  if synIDattr(translated_ID, "italic") == '1' | a ..= "font-style: italic; " | endif
+  if synIDattr(translated_ID, "underline") == '1' | a ..= "text-decoration: underline; " | endif
   return a
 enddef
 
@@ -864,7 +864,7 @@ if !settings.no_doc
   endif
   extend(lines, [
     ("<title>" .. expand("%:p:~") .. "</title>"),
-    ("<meta name=\"Generator\" content=\"Vim/" .. v:version / 100 .. "." .. v:version % 100 .. '"' .. tag_close),
+    ($'<meta name="Generator" content="Vim/{v:version / 100}.{v:version % 100}"{tag_close}'),
     ("<meta name=\"plugin-version\" content=\"" .. pluginversion .. '"' .. tag_close)
   ])
   add(lines, '<meta name="syntax" content="' .. current_syntax .. '"' .. tag_close)
