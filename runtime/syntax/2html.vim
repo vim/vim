@@ -754,12 +754,12 @@ else
   if !exists("g:unloaded_tohtml_plugin")
     var main_plugin_path = expand("<sfile>:p:h:h") .. "/plugin/tohtml.vim"
     if filereadable(main_plugin_path)
-      var lines = readfile(main_plugin_path, "", 20)
-      filter(lines, (_, val) => val =~ "loaded_2html_plugin = ")
-      if empty(lines)
+      var plugin_lines = readfile(main_plugin_path, "", 20)
+      filter(plugin_lines, (_, val) => val =~ "loaded_2html_plugin = ")
+      if empty(plugin_lines)
 	g:unloaded_tohtml_plugin = "unknown"
       else
-	g:unloaded_tohtml_plugin = substitute(lines[0], '.*loaded_2html_plugin = \([''"]\)\(\%(\1\@!.\)\+\)\1', '\2', '')
+	g:unloaded_tohtml_plugin = substitute(plugin_lines[0], '.*loaded_2html_plugin = \([''"]\)\(\%(\1\@!.\)\+\)\1', '\2', '')
       endif
     else
       g:unloaded_tohtml_plugin = "unknown"
