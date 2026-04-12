@@ -5797,9 +5797,21 @@ nfa_regmatch(
     // Allocate memory for the lists of nodes.
     size = (prog->nstate + 1) * sizeof(nfa_thread_T);
 
-    list[0].t = alloc(size);
+    // Reuse cached list buffers from prog when available (top-level call).
+    // Recursive calls must allocate their own buffers.
+    if (toplevel && prog->listbuf[0] != NULL)
+    {
+	list[0].t = (nfa_thread_T *)prog->listbuf[0];
+	list[1].t = (nfa_thread_T *)prog->listbuf[1];
+	prog->listbuf[0] = NULL;
+	prog->listbuf[1] = NULL;
+    }
+    else
+    {
+	list[0].t = alloc(size);
+	list[1].t = alloc(size);
+    }
     list[0].len = prog->nstate + 1;
-    list[1].t = alloc(size);
     list[1].len = prog->nstate + 1;
     if (list[0].t == NULL || list[1].t == NULL)
 	goto theend;
@@ -7287,9 +7299,18 @@ nextchar:
 #endif
 
 theend:
-    // Free memory
-    vim_free(list[0].t);
-    vim_free(list[1].t);
+    // Cache list buffers in prog for reuse, or free if prog already has
+    // cached buffers (recursive call case).
+    if (prog->listbuf[0] == NULL && list[0].t != NULL && list[1].t != NULL)
+    {
+	prog->listbuf[0] = list[0].t;
+	prog->listbuf[1] = list[1].t;
+    }
+    else
+    {
+	vim_free(list[0].t);
+	vim_free(list[1].t);
+    }
     vim_free(listids);
 #undef ADD_STATE_IF_MATCH
 #ifdef NFA_REGEXP_DEBUG_LOG
@@ -7644,6 +7665,8 @@ nfa_regcomp(char_u *expr, int re_flags)
 	goto fail;
     state_ptr = prog->state;
     prog->re_in_use = FALSE;
+    prog->listbuf[0] = NULL;
+    prog->listbuf[1] = NULL;
 
     /*
      * PASS 2
@@ -7707,6 +7730,8 @@ nfa_regfree(regprog_T *prog)
 
     vim_free(((nfa_regprog_T *)prog)->match_text);
     vim_free(((nfa_regprog_T *)prog)->pattern);
+    vim_free(((nfa_regprog_T *)prog)->listbuf[0]);
+    vim_free(((nfa_regprog_T *)prog)->listbuf[1]);
     vim_free(prog);
 }
 

@@ -123,6 +123,8 @@ typedef struct
     char_u		*pattern;
     int			nsubexp;	// number of ()
     int			nstate;
+    void		*listbuf[2];	// cached list buffers for
+					// nfa_regmatch()
     nfa_state_T		state[1];	// actually longer..
 } nfa_regprog_T;
 
