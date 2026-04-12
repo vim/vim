@@ -2947,6 +2947,8 @@ const ft_from_ext = {
   "vv": "v",
   # Vala
   "vala": "vala",
+  # (Varnish|Vinyl) Configuration Language
+  "vcl": "vcl",
   # VDF
   "vdf": "vdf",
   # VDM
