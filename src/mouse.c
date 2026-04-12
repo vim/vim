@@ -1780,10 +1780,10 @@ stl_click_handler_regions(
 	// refreshed.
 	if (winid == 0)
 	    redraw_tabline = TRUE;
-#ifdef FEAT_TABPANEL
+# ifdef FEAT_TABPANEL
 	if (STRCMP(area_name, "tabpanel") == 0)
 	    redraw_all_later(UPD_NOT_VALID);
-#endif
+# endif
 	redraw_statuslines();
     }
 
