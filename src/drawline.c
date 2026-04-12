@@ -2053,12 +2053,19 @@ win_line(
 		wlv.draw_state = WL_CMDLINE;
 		if (wp == cmdwin_win)
 		{
-		    // Draw the cmdline character.
 		    wlv.n_extra = 1;
-		    wlv.c_extra = cmdwin_type;
 		    wlv.c_final = NUL;
-		    wlv.char_attr =
-				hl_combine_attr(get_win_attr(wp), HL_ATTR(HLF_AT));
+		    if (wlv.row == wlv.startrow)
+		    {
+			wlv.c_extra = cmdwin_type;
+			wlv.char_attr = hl_combine_attr(
+				    get_win_attr(wp), HL_ATTR(HLF_AT));
+		    }
+		    else
+		    {
+			wlv.c_extra = ' ';
+			wlv.char_attr = get_win_attr(wp);
+		    }
 		}
 	    }
 #ifdef FEAT_FOLDING

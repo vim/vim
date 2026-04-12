@@ -4867,6 +4867,7 @@ open_cmdwin(void)
     exmode_active = 0;
 
     State = MODE_NORMAL;
+    check_cursor();
     setmouse();
     clear_showcmd();
 
