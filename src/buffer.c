@@ -5028,7 +5028,7 @@ build_stl_str_hl_local(
 	    if (*s != '}')	// missing '}' or out of space
 		break;
 	    s++;
-	    if (reevaluate)
+	    if (reevaluate && p > out)
 		p[-1] = NUL; // remove the % at the end of %{% expr %}
 	    else
 		*p = NUL;

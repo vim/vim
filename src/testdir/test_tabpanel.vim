@@ -923,4 +923,14 @@ func Test_tabpanel_variable_height()
   %bwipeout!
 endfunc
 
+func Test_tabpanel_empty()
+  set showtabpanel=2 tabpanel=%!'%{}%'
+  try
+  redraw!
+  catch
+  endtry
+  set showtabpanel&
+  set tabpanel&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
