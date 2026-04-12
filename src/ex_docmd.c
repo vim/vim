@@ -8366,7 +8366,7 @@ do_sleep(long msec, int hide_cursor)
 	// actual time passed
 	done = ELAPSED_FUNC(start_tv);
 #else
-	// guestimate time passed (will actually be more)
+	// guesstimate time passed (will actually be more)
 	done += wait_now;
 #endif
     }

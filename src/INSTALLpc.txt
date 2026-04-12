@@ -183,7 +183,7 @@ src/INSTALLpc.txt file for instructions.
 2. MSYS2 with MinGW
 ===================
 
-2.1 Buidling x86 32bit or 64bit versions.
+2.1 Building x86 32bit or 64bit versions.
 
 2.1.1. Setup the basic msys2 environment
 
@@ -303,7 +303,7 @@ To build Vim with the address sanitizer (ASAN), execute the following command:
     CXX=clang++
     make -f Make_ming.mak DEBUG=yes ASAN=yes
 
-2.2 Buidling an Arch64 version of Vim
+2.2 Building an Arch64 version of Vim
 
 2.2.1. Setup the basic msys2 environment
 
