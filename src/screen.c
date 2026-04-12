@@ -1492,7 +1492,12 @@ win_redr_custom(
 	stl_click_region_T  **out_regions;
 	int		    *out_count;
 	int		    base_col;
+	int		    base_row;
 	int		    click_count = 0;
+
+	// clicktab reflects the last iteration of the draw loop above, so
+	// the regions belong to the last drawn row.
+	base_row = row + stlh_cnt - 1;
 
 	if (wp != NULL)
 	{
@@ -1547,11 +1552,13 @@ win_redr_custom(
 		    // Close previous region if there was one.
 		    if (cur_funcname != NULL)
 		    {
+			regions[rcount].row = base_row;
 			regions[rcount].col_start = region_start;
 			regions[rcount].col_end = base_col + len;
 			regions[rcount].funcname =
 					    vim_strsave(cur_funcname);
 			regions[rcount].minwid = cur_minwid;
+			regions[rcount].tabnr = 0;
 			rcount++;
 		    }
 
@@ -1563,11 +1570,13 @@ win_redr_custom(
 		// Close final region if it extends to the end.
 		if (cur_funcname != NULL)
 		{
+		    regions[rcount].row = base_row;
 		    regions[rcount].col_start = region_start;
 		    regions[rcount].col_end = base_col + maxwidth;
 		    regions[rcount].funcname =
 					vim_strsave(cur_funcname);
 		    regions[rcount].minwid = cur_minwid;
+		    regions[rcount].tabnr = 0;
 		    rcount++;
 		}
 
