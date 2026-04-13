@@ -8620,11 +8620,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      applied to StatusLineNC for the statusline of non-current
 	      windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
-								*stl-%@*
+							*stl-%@*
 	@ -   Inserts a newline.  This only takes effect when the "maxheight"
 	      value of 'statuslineopt' is greater than 1, or for |tabpanel|.
 
-						*stl-%[FuncName]*
+							*stl-%[FuncName]*
 	%[ defines clickable regions in the statusline.  When the user clicks
 	on a region with the mouse, the specified function is called.  The
 	same syntax can also be used in 'tabline'.
@@ -8655,7 +8655,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Dragging the statusline to resize the window still works even when
 	click handlers are defined.  When used in 'tabline', clicks in
 	%[FuncName] regions are dispatched to the callback instead of the
-	default tab-selection behavior.
+	default tab page selection behavior.
 
 	Example: >
 	    func! ClickFile(info)
