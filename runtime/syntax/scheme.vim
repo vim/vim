@@ -115,6 +115,7 @@ syn keyword schemeSyntax let*-values
 syn keyword schemeSyntax let-values
 syn keyword schemeSyntax letrec
 syn keyword schemeSyntax letrec*
+syn keyword schemeSyntax named-lambda
 syn keyword schemeSyntax or
 syn keyword schemeSyntax parameterize
 syn keyword schemeSyntax quasiquote
