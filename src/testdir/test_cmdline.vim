@@ -2947,7 +2947,7 @@ func Test_wildmenu_pum()
 
   " When the popup is open, entering the cmdline window should close the popup
   call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-F>")
-  call WaitForTermCurPosAndLinesToMatch(buf, [6, (strlen(':sign define') + 1)], g:test_timeout, (rows, '^You discovered the command-line window! You can close it with ":q"\.'))
+  call WaitForTermCurPosAndLinesToMatch(buf, [6, strlen(':sign define')], g:test_timeout, (rows, '^You discovered the command-line window! You can close it with ":q"\.'))
   call WaitFor({buf_ -> {-> term_scrape(buf, 6)->slice(1, 5)->filter({_, v -> v.fg == '#af5f00'})->len() == 4}}(buf), g:test_timeout)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_22', {})
   call term_sendkeys(buf, ":q\<CR>")
