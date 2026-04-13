@@ -2956,7 +2956,7 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	    want_cindent = FALSE;	// don't do it again
 	}
     }
-    else
+    else if (!compl_autocomplete || compl_used_match)
     {
 	int prev_col = curwin->w_cursor.col;
 
