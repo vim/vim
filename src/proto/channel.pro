@@ -9,7 +9,7 @@ void free_unused_channels(int copyID, int mask);
 void channel_gui_register_all(void);
 channel_T *channel_open(const char *hostname, int port, int waittime, void (*nb_close_cb)(void));
 channel_T *channel_listen_func(typval_T *argvars);
-channel_T *channel_listen(char *hostname, int port_in, void (*nb_close_cb)(void));
+channel_T *channel_listen(int port_in, void (*nb_close_cb)(void));
 channel_T *channel_listen_unix(char *path, void (*nb_close_cb)(void));
 void ch_close_part(channel_T *channel, ch_part_T part);
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);

@@ -1400,8 +1400,7 @@ theend:
     channel_T *
 channel_listen_func(typval_T *argvars)
 {
-    char_u	*address;
-    char_u	*p;
+    char_u	*arg;
     char	*rest;
     int		port;
     int		is_unix = FALSE;
@@ -1409,62 +1408,31 @@ channel_listen_func(typval_T *argvars)
     channel_T	*channel = NULL;
 
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	    && check_for_string_arg(argvars, 0) == FAIL)
 	return NULL;
 
-    address = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type != VAR_UNKNOWN
-	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
-	return NULL;
-
-    if (*address == NUL)
+    arg = tv_get_string(&argvars[0]);
+    if (*arg == NUL)
     {
-	semsg(_(e_invalid_argument_str), address);
+	semsg(_(e_invalid_argument_str), arg);
 	return NULL;
     }
 
-    if (!STRNCMP(address, "unix:", 5))
+    if (!STRNCMP(arg, "unix:", 5))
     {
 	is_unix = TRUE;
-	address += 5;
+	arg += 5;
 	port = 0;
-    }
-    else if (*address == '[')
-    {
-	// ipv6 address
-	p = vim_strchr(address + 1, ']');
-	if (p == NULL || *++p != ':')
-	{
-	    semsg(_(e_invalid_argument_str), address);
-	    return NULL;
-	}
-	port = strtol((char *)(p + 1), &rest, 10);
-	if (port < 0 || port >= 65536 || *rest != NUL)
-	{
-	    semsg(_(e_invalid_argument_str), address);
-	    return NULL;
-	}
-	// strip '[' and ']'
-	++address;
-	*(p - 1) = NUL;
     }
     else
     {
-	// ipv4 address
-	p = vim_strchr(address, ':');
-	if (p == NULL)
-	{
-	    semsg(_(e_invalid_argument_str), address);
-	    return NULL;
-	}
-	port = strtol((char *)(p + 1), &rest, 10);
+	port = strtol((char *)(arg), &rest, 10);
 	if (port < 0 || port >= 65536 || *rest != NUL)
 	{
-	    semsg(_(e_invalid_argument_str), address);
+	    semsg(_(e_invalid_argument_str), arg);
 	    return NULL;
 	}
-	*p = NUL;
+	*arg = NUL;
     }
 
     // parse options
@@ -1481,9 +1449,9 @@ channel_listen_func(typval_T *argvars)
     }
 
     if (is_unix)
-	channel = channel_listen_unix((char *)address, NULL);
+	channel = channel_listen_unix((char *)arg, NULL);
     else
-	channel = channel_listen((char *)address, port, NULL);
+	channel = channel_listen(port, NULL);
     if (channel != NULL)
     {
 	opt.jo_set = JO_ALL;
@@ -1501,7 +1469,6 @@ theend:
  */
     channel_T *
 channel_listen(
-	char *hostname,
 	int port_in,
 	void (*nb_close_cb)(void))
 {
@@ -1512,12 +1479,6 @@ channel_listen(
 #endif
     int			val = 1;
     channel_T		*channel;
-
-    if (hostname == NULL || *hostname == NUL)
-    {
-	ch_error(NULL, "Hostname/address not defined.");
-	return NULL;
-    }
 
 #ifdef MSWIN
     channel_init_winsock();
@@ -1535,42 +1496,7 @@ channel_listen(
     vim_memset((char *)&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(port_in);
-
-#ifdef FEAT_IPV6
-    struct addrinfo	hints;
-    struct addrinfo	*res = NULL;
-    int		err;
-
-    CLEAR_FIELD(hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
-    {
-	ch_error(channel, "in getaddrinfo() in channel_listen()");
-	PERROR(_(e_gethostbyname_in_channel_listen));
-	channel_free(channel);
-	return NULL;
-    }
-    memcpy(&server.sin_addr,
-	&((struct sockaddr_in *)res->ai_addr)->sin_addr,
-	sizeof(server.sin_addr));
-    freeaddrinfo(res);
-#else
-    if ((host = gethostbyname(hostname)) == NULL)
-    {
-	ch_error(channel, "in gethostbyname() in channel_listen()");
-	PERROR(_(e_gethostbyname_in_channel_listen));
-	channel_free(channel);
-	return NULL;
-    }
-
-    char		*p;
-
-    // When using host->h_addr_list[0] directly ubsan warns for it to
-    // not be aligned.  First copy the pointer to avoid that.
-    memcpy(&p, &host->h_addr_list[0], sizeof(p));
-    memcpy((char *)&server.sin_addr, p, host->h_length);
-#endif
+    server.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
     sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1)
@@ -1632,7 +1558,7 @@ channel_listen(
     channel->ch_listen = TRUE;
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
-    channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
+    channel->ch_hostname = (char *)vim_strsave((char_u *)"");
     channel->ch_port = port_in;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
@@ -3796,10 +3722,7 @@ channel_info(channel_T *channel, dict_T *dict)
     if (channel->ch_hostname != NULL)
     {
 	if (channel->ch_port)
-	{
-	    dict_add_string(dict, "hostname", (char_u *)channel->ch_hostname);
 	    dict_add_number(dict, "port", channel->ch_port);
-	}
 	else
 	    // Unix-domain socket.
 	    dict_add_string(dict, "path", (char_u *)channel->ch_hostname);

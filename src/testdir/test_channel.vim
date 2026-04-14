@@ -2778,7 +2778,7 @@ endfunction
 
 func Test_listen()
     call ch_log('Test_listen()')
-    let server = ch_listen('127.0.0.1:12345', {'callback': function('s:test_listen_accept')})
+    let server = ch_listen('12345', {'callback': function('s:test_listen_accept')})
     if ch_status(server) == 'fail'
         call assert_report("Can't listen channel")
         return
@@ -2799,35 +2799,29 @@ func Test_listen()
     call assert_match('127.0.0.1:', g:server_received_addr)
 endfunc
 
-func Test_listen_invalid_address()
-    call ch_log('Test_listen_invalid_address()')
-
-    " empty address
-    call assert_fails("call ch_listen('')", 'E475:')
+func Test_listen_invalid_port()
+    call ch_log('Test_listen_invalid_port()')
 
     " missing port
-    call assert_fails("call ch_listen('localhost')", 'E475:')
+    call assert_fails("call ch_listen('')", 'E475:')
 
     " port number too large
-    call assert_fails("call ch_listen('localhost:99999')", 'E475:')
+    call assert_fails("call ch_listen('99999')", 'E475:')
 
     " port number zero should let the OS assign an available port
-    let ch = ch_listen('localhost:0')
+    let ch = ch_listen('0')
     call assert_equal('open', ch_status(ch))
     call assert_notequal(0, ch_info(ch).port)
     call ch_close(ch)
 
     " port number negative
-    call assert_fails("call ch_listen('localhost:-1')", 'E475:')
+    call assert_fails("call ch_listen('-1')", 'E475:')
+endfunc
 
-    " invalid ipv6 format (missing closing bracket)
-    call assert_fails("call ch_listen('[::1:8765')", 'E475:')
-
-    " invalid ipv6 format (missing port)
-    call assert_fails("call ch_listen('[::1]')", 'E475:')
-
-    " TODO: IPv6 should actually work
-    call assert_fails("call ch_listen('[::1]:9999')", 'E1574:')
+func Test_listen_info_no_hostname()
+    let ch = ch_listen('0')
+    call assert_fails("call ch_info(ch).hostname", 'E716:')
+    call ch_close(ch)
 endfunc
 
 func Test_channel_lsp_mode()
