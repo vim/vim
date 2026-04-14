@@ -1,0 +1,324 @@
+name: Build Vim on Linux
+description: Build Vim on Linux
+
+inputs:
+  features:
+    description: Vim features
+    required: true
+  compiler:
+    description: Compiler
+    required: true
+  architecture:
+    description: Architecture
+    required: false
+  extra:
+    description: Extra flags
+    required: true
+  shadow:
+    description: Shadow directory
+    required: false
+  interface:
+    description: Interface of language interpreter
+    required: false
+  lua_ver:
+    description: Lua version
+    required: false
+  python3:
+    description: Python3 ABI type
+    required: false
+  coverage:
+    description: Enable coverage
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Filelist (for packaging)
+      shell: bash
+      run: |
+        echo '::group::Check Filelist (for packaging)'
+        # If any files in the repository are not listed in Filelist this will
+        # exit with an error code and list the missing entries.
+        make -f ci/unlisted.make
+        echo '::endgroup::'
+
+    - name: Check hlgroups (are any new hlgroups added, but not handled in highlight.c)
+      shell: bash
+      run: |
+        echo '::group::Check hlgroups (are any new hlgroups added, but not handled in highlight.c)'
+        # If any highlight groups have been documented, but not handled in
+        # highlight.c, nor listed as 'intentionally left out' in hlgroups.ignore,
+        # exit with an error code and list the missing entries.
+        make -C ci -f hlgroups.make
+        echo '::endgroup::'
+
+    - name: Report executable syntax tests
+      if: contains(fromJSON(inputs.extra), 'syn_test_execs')
+      shell: bash
+      run: |
+        echo '::group::Report executable syntax tests'
+        # Search and list all found executable syntax tests, and exit with
+        # an error code.
+        make -C runtime/syntax executables
+        echo '::endgroup::'
+
+    - name: Add i386 packages to dpkg
+      if: inputs.architecture == 'i386'
+      shell: bash
+      run: |
+        echo '::group::Add i386 packages to dpkg'
+        sudo dpkg --add-architecture i386
+        echo '::endgroup::'
+
+    - name: Uninstall snap
+      shell: bash
+      run: |
+        echo '::group::Uninstall snap'
+        sudo bash ci/remove_snap.sh
+        echo '::endgroup::'
+
+    - name: Enable debug packages
+      shell: bash
+      run: |
+        echo '::group::Enable debug packages'
+        # Some of the ASAN suppressions are in libraries linked with dlopen
+        # and symbolization of them requires these debug packages.
+        sudo apt install ubuntu-dbgsym-keyring
+        sudo cp ci/ddebs.list /etc/apt/sources.list.d/ddebs.list
+        sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
+        echo '::endgroup::'
+
+    - name: Install packages
+      shell: bash
+      run: |
+        echo '::group::Install packages'
+        # This is added by default, and it is often broken, but we don't need anything from it
+        sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+        PKGS=( \
+          gettext \
+          x11-utils \
+          labwc \
+          wl-clipboard \
+          wayland-utils \
+          libgtk-3-dev:${{ inputs.architecture }} \
+          libgtk-3-bin:${{ inputs.architecture }} \
+          desktop-file-utils \
+          libc6-dbgsym:${{ inputs.architecture }} \
+          libtool-bin \
+          libncurses-dev:${{ inputs.architecture }} \
+          libxt-dev:${{ inputs.architecture }} \
+          libegl-mesa0:${{ inputs.architecture }} \
+          libegl1:${{ inputs.architecture }} \
+          libegl1-mesa-dev:${{ inputs.architecture }} \
+          libepoxy-dev:${{ inputs.architecture }} \
+          libwayland-egl1:${{ inputs.architecture }} \
+          libwayland-client0:${{ inputs.architecture }} \
+          libwayland-cursor0:${{ inputs.architecture }} \
+          locales-all \
+          software-properties-common \
+        )
+        if ${{ contains(fromJSON(inputs.extra), 'asan') }} && ${{ contains(inputs.architecture, 'native') }}; then
+        PKGS+=( \
+          libepoxy0-dbgsym:${{ inputs.architecture }} \
+          libxdamage1-dbgsym:${{ inputs.architecture }} \
+          libxcb1-dbgsym:${{ inputs.architecture }} \
+          libgtk-3-bin-dbgsym:${{ inputs.architecture }} \
+          libgtk-3-0t64-dbgsym:${{ inputs.architecture }} \
+          libglib2.0-0t64-dbgsym:${{ inputs.architecture }} \
+          libglib2.0-bin-dbgsym:${{ inputs.architecture }} \
+          libglib2.0-dev-bin-dbgsym:${{ inputs.architecture }} \
+        )
+        fi
+        if ${{ inputs.features == 'huge' }}; then
+          LUA_VER=${{ inputs.lua_ver || '5.4' }}
+          PKGS+=( \
+            autoconf \
+            gdb \
+            lcov \
+            libcanberra-dev \
+            libperl-dev \
+            python3-dev \
+            liblua${LUA_VER}-dev \
+            lua${LUA_VER} \
+            ruby-dev \
+            tcl-dev \
+            cscope \
+            libsodium-dev \
+            attr \
+            libattr1-dev
+          )
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'proto') }}; then
+          PKGS+=( python3-clang )
+        fi
+        sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
+
+    - name: Install gcc-${{ env.GCC_VER }}
+      if: inputs.compiler == 'gcc'
+      shell: bash
+      run: |
+        echo '::group::Install gcc-${{ env.GCC_VER }}'
+        # ubuntu-toolchain-r/test PPA for gcc-13 compiler
+        # disabled because the installation failed, causing test failures
+        # sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update -y
+        sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ inputs.architecture }}
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+        sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
+        echo '::endgroup::'
+
+    - name: Install clang-${{ env.CLANG_VER }}
+      if: inputs.compiler == 'clang'
+      shell: bash
+      run: |
+        echo '::group::Install clang-${{ env.CLANG_VER }}'
+        . /etc/lsb-release
+        curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg > /dev/null
+        echo "Types: deb
+        URIs: https://apt.llvm.org/${DISTRIB_CODENAME}/
+        Suites: llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
+        Components: main
+        Signed-By: /usr/share/keyrings/llvm-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/llvm-toolchain.sources > /dev/null
+        sudo apt-get update -y
+        sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
+        sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
+        sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${{ env.CLANG_VER }} 100
+        sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-${{ env.CLANG_VER }} 100
+        echo '::endgroup::'
+
+    - name: Set up environment
+      shell: bash
+      run: |
+        echo '::group::Set up environment'
+        mkdir -p "${LOG_DIR}"
+        mkdir -p "${HOME}/bin"
+        echo "${HOME}/bin" >> $GITHUB_PATH
+        (
+        echo "LINUX_VERSION=$(uname -r)"
+        echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+        echo "TMPDIR=$(mktemp -d -p /tmp)"
+
+        case "${{ inputs.features }}" in
+        tiny)
+          echo "TEST=testtiny"
+          if ${{ contains(fromJSON(inputs.extra), 'nogui') }}; then
+            CONFOPT="--disable-gui"
+          fi
+          ;;
+        normal)
+          ;;
+        huge)
+          echo "TEST=scripttests test_libvterm indenttest syntaxtest"
+          INTERFACE=${{ inputs.interface || 'yes' }}
+          if ${{ inputs.python3 == 'stable-abi' }}; then
+            PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
+          fi
+          # The ubuntu-24.04 CI runner does not provide a python2 package.
+          CONFOPT="--enable-perlinterp=${INTERFACE} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
+          ;;
+        esac
+
+        if ${{ contains(fromJSON(inputs.extra), 'no_x11_wl') }}; then
+          CONFOPT="${CONFOPT} --without-x --disable-gui --without-wayland --enable-socketserver"
+        fi
+        if ${{ inputs.coverage == true }}; then
+          CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
+          echo "LDFLAGS=--coverage"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'uchar') }}; then
+          CFLAGS="${CFLAGS} -funsigned-char"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'testgui') }}; then
+          echo "TEST=-C src testgui"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'unittests') }}; then
+          echo "TEST=unittests"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'asan') }}; then
+          echo "SANITIZER_CFLAGS=-g -O0 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
+          echo "ASAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/asan"
+          echo "UBSAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/ubsan"
+          echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/src/testdir/lsan-suppress.txt"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'vimtags') }}; then
+          echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
+        fi
+        if ${{ contains(fromJSON(inputs.extra), 'proto') }}; then
+          echo "TEST=-C src protoclean proto"
+        fi
+        echo "CFLAGS=${CFLAGS}"
+        echo "CONFOPT=${CONFOPT}"
+        # Disables GTK attempt to integrate with the accessibility service that does run in CI.
+        echo "NO_AT_BRIDGE=1"
+        ) >> $GITHUB_ENV
+        echo '::endgroup::'
+
+    - name: Set up system
+      shell: bash
+      run: |
+        echo '::group::Set up system'
+        if [[ ${CC} = clang ]]; then
+          # Use llvm-cov instead of gcov when compiler is clang.
+          ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
+        fi
+        sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
+        sudo usermod -a -G audio "${USER}"
+        sudo bash ci/setup-xvfb.sh
+        echo '::endgroup::'
+
+    - name: Check autoconf
+      if: contains(fromJSON(inputs.extra), 'unittests')
+      shell: bash
+      run: |
+        echo '::group::Check autoconf'
+        make -C src autoconf
+        echo '::endgroup::'
+
+    - name: Set up shadow dir
+      if: inputs.shadow
+      shell: bash
+      run: |
+        echo '::group::Set up shadow dir'
+        make -C src shadow
+        echo "SRCDIR=${{ inputs.shadow }}" >> $GITHUB_ENV
+        echo "SHADOWOPT=-C ${{ inputs.shadow }}" >> $GITHUB_ENV
+        echo '::endgroup::'
+
+    - name: Configure
+      shell: bash
+      run: |
+        echo '::group::Configure'
+        ./configure --with-features=${{ inputs.features }} ${CONFOPT} --enable-fail-if-missing
+        # Append various warning flags to CFLAGS.
+        sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+        sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+        if [[ ${CC} = clang ]]; then
+          # Suppress some warnings produced by clang 12 and later.
+          sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+        fi
+        echo '::endgroup::'
+
+    - name: Build
+      if: (!contains(fromJSON(inputs.extra), 'unittests'))
+      shell: bash
+      run: |
+        echo '::group::Build'
+        make ${SHADOWOPT} -j${NPROC}
+        echo '::endgroup::'
+
+    - name: Check version
+      if: (!contains(fromJSON(inputs.extra), 'unittests'))
+      shell: bash
+      run: |
+        echo '::group::Check version'
+        "${SRCDIR}"/vim --version
+        "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+        "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+        if ${{ inputs.features == 'huge' }}; then
+          # Also check that optional and dynamic features are configured and working
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+            -c "let g:required=['gettext', 'sodium', 'sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+            -S ci/if_feat_check.vim -c quit
+        fi
+        echo '::endgroup::'

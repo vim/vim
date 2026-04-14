@@ -2,7 +2,7 @@ name: GitHub CI
 
 on:
   push:
-    branches: ['**']
+    branches: ["**"]
   pull_request:
 
 # Cancels all previous workflow runs for pull requests that have not completed.
@@ -28,7 +28,7 @@ jobs:
       LEAK_CFLAGS: -DEXITFREE
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
-      DISPLAY: ':99'
+      DISPLAY: ":99"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -68,12 +68,6 @@ jobs:
             interface: dynamic
             extra: [uchar, testgui]
           - features: huge
-            compiler: clang
-            # Lua5.1 is the most widely used version (since it's what LuaJIT is
-            # compatible with), so ensure it works
-            lua_ver: '5.1'
-            extra: [asan]
-          - features: huge
             compiler: gcc
             coverage: true
             extra: [unittests]
@@ -90,254 +84,26 @@ jobs:
             extra: [no_x11_wl]
 
     steps:
-      - name: Checkout repository from github
+      - name: Checkout repository from GitHub
         uses: actions/checkout@v6
 
-      - name: Check Filelist (for packaging)
-        run: |
-          # If any files in the repository are not listed in Filelist this will
-          # exit with an error code and list the missing entries.
-          make -f ci/unlisted.make
-
-      - name: Check hlgroups (are any new hlgroups added, but not handled in highlight.c)
-        run: |
-          # If any highlight groups have been documented, but not handled in
-          # highlight.c, nor listed as 'intentionally left out' in hlgroups.ignore,
-          # exit with an error code and list the missing entries.
-          make -C ci -f hlgroups.make
-
-      - name: Report executable syntax tests
-        if: contains(matrix.extra, 'syn_test_execs')
-        run: |
-          # Search and list all found executable syntax tests, and exit with
-          # an error code.
-          make -C runtime/syntax executables
-
-      - run: sudo dpkg --add-architecture i386
-        if: matrix.architecture == 'i386'
-
-      - name: Uninstall snap
-        run: |
-          sudo bash ci/remove_snap.sh
-
-      - name: Enable debug packages
-        run: |
-          # Some of the ASAN suppressions are in libraries linked with dlopen
-          # and symbolization of them requires these debug packages.
-          sudo apt install ubuntu-dbgsym-keyring
-          sudo cp ci/ddebs.list /etc/apt/sources.list.d/ddebs.list
-          sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
-
-      - name: Install packages
-        run: |
-          # This is added by default, and it is often broken, but we don't need anything from it
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          PKGS=( \
-            gettext \
-            x11-utils \
-            labwc \
-            wl-clipboard \
-            wayland-utils \
-            libgtk-3-dev:${{ matrix.architecture }} \
-            libgtk-3-bin:${{ matrix.architecture }} \
-            desktop-file-utils \
-            libc6-dbgsym:${{ matrix.architecture }} \
-            libtool-bin \
-            libncurses-dev:${{ matrix.architecture }} \
-            libxt-dev:${{ matrix.architecture }} \
-            libegl-mesa0:${{ matrix.architecture }} \
-            libegl1:${{ matrix.architecture }} \
-            libegl1-mesa-dev:${{ matrix.architecture }} \
-            libepoxy-dev:${{ matrix.architecture }} \
-            libwayland-egl1:${{ matrix.architecture }} \
-            libwayland-client0:${{ matrix.architecture }} \
-            libwayland-cursor0:${{ matrix.architecture }} \
-            locales-all \
-            software-properties-common \
-          )
-          if ${{ contains(matrix.extra, 'asan') }} && ${{ contains(matrix.architecture, 'native') }}; then
-          PKGS+=( \
-            libepoxy0-dbgsym:${{ matrix.architecture }} \
-            libxdamage1-dbgsym:${{ matrix.architecture }} \
-            libxcb1-dbgsym:${{ matrix.architecture }} \
-            libgtk-3-bin-dbgsym:${{ matrix.architecture }} \
-            libgtk-3-0t64-dbgsym:${{ matrix.architecture }} \
-            libglib2.0-0t64-dbgsym:${{ matrix.architecture }} \
-            libglib2.0-bin-dbgsym:${{ matrix.architecture }} \
-            libglib2.0-dev-bin-dbgsym:${{ matrix.architecture }} \
-          )
-          fi
-          if ${{ matrix.features == 'huge' }}; then
-            LUA_VER=${{ matrix.lua_ver || '5.4' }}
-            PKGS+=( \
-              autoconf \
-              gdb \
-              lcov \
-              libcanberra-dev \
-              libperl-dev \
-              python3-dev \
-              liblua${LUA_VER}-dev \
-              lua${LUA_VER} \
-              ruby-dev \
-              tcl-dev \
-              cscope \
-              libsodium-dev \
-              attr \
-              libattr1-dev
-            )
-          fi
-          if ${{ contains(matrix.extra, 'proto') }}; then
-            PKGS+=( python3-clang )
-          fi
-          sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
-
-      - name: Install gcc-${{ env.GCC_VER }}
-        if:  matrix.compiler == 'gcc'
-        run: |
-          # ubuntu-toolchain-r/test PPA for gcc-13 compiler
-          # disabled because the installation failed, causing test failures
-          # sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update -y
-          sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
-
-      - name: Install clang-${{ env.CLANG_VER }}
-        if: matrix.compiler == 'clang'
-        run: |
-          . /etc/lsb-release
-          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg > /dev/null
-          echo "Types: deb
-          URIs: https://apt.llvm.org/${DISTRIB_CODENAME}/
-          Suites: llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
-          Components: main
-          Signed-By: /usr/share/keyrings/llvm-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/llvm-toolchain.sources > /dev/null
-          sudo apt-get update -y
-          sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
-          sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${{ env.CLANG_VER }} 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-${{ env.CLANG_VER }} 100
-
-      - name: Set up environment
-        run: |
-          mkdir -p "${LOG_DIR}"
-          mkdir -p "${HOME}/bin"
-          echo "${HOME}/bin" >> $GITHUB_PATH
-          (
-          echo "LINUX_VERSION=$(uname -r)"
-          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "TMPDIR=$(mktemp -d -p /tmp)"
-
-          case "${{ matrix.features }}" in
-          tiny)
-            echo "TEST=testtiny"
-            if ${{ contains(matrix.extra, 'nogui') }}; then
-              CONFOPT="--disable-gui"
-            fi
-            ;;
-          normal)
-            ;;
-          huge)
-            echo "TEST=scripttests test_libvterm indenttest syntaxtest"
-            INTERFACE=${{ matrix.interface || 'yes' }}
-            if ${{ matrix.python3 == 'stable-abi' }}; then
-              PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
-            fi
-            # The ubuntu-24.04 CI runner does not provide a python2 package.
-            CONFOPT="--enable-perlinterp=${INTERFACE} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
-            ;;
-          esac
-
-          if ${{ contains(matrix.extra, 'no_x11_wl') }}; then
-            CONFOPT="${CONFOPT} --without-x --disable-gui --without-wayland --enable-socketserver"
-          fi
-          if ${{ matrix.coverage == true }}; then
-            CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
-            echo "LDFLAGS=--coverage"
-          fi
-          if ${{ contains(matrix.extra, 'uchar') }}; then
-            CFLAGS="${CFLAGS} -funsigned-char"
-          fi
-          if ${{ contains(matrix.extra, 'testgui') }}; then
-            echo "TEST=-C src testgui"
-          fi
-          if ${{ contains(matrix.extra, 'unittests') }}; then
-            echo "TEST=unittests"
-          fi
-          if ${{ contains(matrix.extra, 'asan') }}; then
-            echo "SANITIZER_CFLAGS=-g -O0 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
-            echo "ASAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/asan"
-            echo "UBSAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/ubsan"
-            echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/src/testdir/lsan-suppress.txt"
-          fi
-          if ${{ contains(matrix.extra, 'vimtags') }}; then
-            echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
-          fi
-          if ${{ contains(matrix.extra, 'proto') }}; then
-            echo "TEST=-C src protoclean proto"
-          fi
-          echo "CFLAGS=${CFLAGS}"
-          echo "CONFOPT=${CONFOPT}"
-          # Disables GTK attempt to integrate with the accessibility service that does run in CI.
-          echo "NO_AT_BRIDGE=1"
-          ) >> $GITHUB_ENV
-
-      - name: Set up system
-        run: |
-          if [[ ${CC} = clang ]]; then
-            # Use llvm-cov instead of gcov when compiler is clang.
-            ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
-          fi
-          sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
-          sudo usermod -a -G audio "${USER}"
-          sudo bash ci/setup-xvfb.sh
-
-      - name: Check autoconf
-        if: contains(matrix.extra, 'unittests')
-        run: |
-          make -C src autoconf
-
-      - name: Set up shadow dir
-        if: matrix.shadow
-        run: |
-          make -C src shadow
-          echo "SRCDIR=${{ matrix.shadow }}" >> $GITHUB_ENV
-          echo "SHADOWOPT=-C ${{ matrix.shadow }}" >> $GITHUB_ENV
-
-      - name: Configure
-        run: |
-          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
-          # Append various warning flags to CFLAGS.
-          sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-          sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
-          if [[ ${CC} = clang ]]; then
-            # Suppress some warnings produced by clang 12 and later.
-            sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
-          fi
-
       - name: Build
-        if: (!contains(matrix.extra, 'unittests'))
-        run: |
-          make ${SHADOWOPT} -j${NPROC}
-
-      - name: Check version
-        if: (!contains(matrix.extra, 'unittests'))
-        run: |
-          "${SRCDIR}"/vim --version
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
-          if ${{ matrix.features == 'huge' }}; then
-            # Also check that optional and dynamic features are configured and working
-            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
-              -c "let g:required=['gettext', 'sodium', 'sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
-              -S ci/if_feat_check.vim -c quit
-          fi
+        timeout-minutes: 15
+        uses: ./.github/actions/build_vim_on_linux
+        with:
+          features: ${{ matrix.features }}
+          compiler: ${{ matrix.compiler }}
+          architecture: ${{ matrix.architecture }}
+          extra: ${{ toJSON(matrix.extra) }}
+          shadow: ${{ matrix.shadow }}
+          interface: ${{ matrix.interface }}
+          lua_ver: ${{ matrix.lua_ver }}
+          python3: ${{ matrix.python3 }}
+          coverage: ${{ matrix.coverage }}
 
       - name: Test
-        timeout-minutes: 45
-        run: |
-          make ${SHADOWOPT} ${TEST}
+        timeout-minutes: 20
+        run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners
       # - name: Setup tmate session
@@ -346,7 +112,8 @@ jobs:
       #   with:
       #     limit-access-to-actor: true
 
-      - if: ${{ !cancelled() }}
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
         uses: ./.github/actions/test_artifacts
 
       - name: Vim tags
@@ -410,14 +177,72 @@ jobs:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ join(matrix.extra, '-') }}
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  linux-asan:
+    runs-on: ubuntu-24.04
+
+    env:
+      CC: clang
+      CLANG_VER: 21
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      LOG_DIR: ${{ github.workspace }}/logs
+      TERM: xterm
+      DISPLAY: ":99"
+      DEBIAN_FRONTEND: noninteractive
+
+    strategy:
+      fail-fast: false
+      matrix:
+        testset:
+          - tinytests
+          - newtests.1
+          - newtests.2
+
+    steps:
+      - name: Checkout repository from GitHub
+        uses: actions/checkout@v6
+
+      - name: Build
+        timeout-minutes: 15
+        uses: ./.github/actions/build_vim_on_linux
+        with:
+          features: huge
+          compiler: clang
+          extra: '["asan"]'
+          # Lua5.1 is the most widely used version (since it's what LuaJIT is
+          # compatible with), so ensure it works
+          lua_ver: "5.1"
+
+      - name: Test (tinytests)
+        if: matrix.testset == 'tinytests'
+        timeout-minutes: 20
+        run: make ${TEST} NEW_TESTS_RES=
+
+      - name: Test (newtests)
+        if: startsWith(matrix.testset, 'newtests')
+        timeout-minutes: 20
+        env:
+          JOB_INDEX: ${{ strategy.job-index }}
+          JOB_TOTAL: ${{ strategy.job-total }}
+        run: |
+          set -x
+          make -C src/testdir SCRIPTS_TINY_OUT= \
+            NEW_TESTS_RES="$(python3 ci/gen_testset.py $((JOB_TOTAL-1)) | jq -r --argjson i $((JOB_INDEX-1)) '.[$i]|join(" ")')"
+
       - name: ASan logs
-        if: contains(matrix.extra, 'asan') && !cancelled()
+        if: ${{ !cancelled() }}
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
-            echo "$f"
-            asan_symbolize -l "$f"
+            (
+              echo "$f"
+              asan_symbolize -l "$f"
+            ) | tee "$f".symbolized
             false # in order to fail a job
           done
+
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test_artifacts
 
   macos:
     runs-on: ${{ matrix.runner }}
@@ -436,7 +261,7 @@ jobs:
         runner: [macos-15-intel, macos-26]
 
     steps:
-      - name: Checkout repository from github
+      - name: Checkout repository from GitHub
         uses: actions/checkout@v6
 
       - name: Install packages
@@ -503,7 +328,8 @@ jobs:
         run: |
           make ${TEST}
 
-      - if: ${{ !cancelled() }}
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
         uses: ./.github/actions/test_artifacts
 
   windows:
@@ -513,7 +339,7 @@ jobs:
       # Interfaces
       # Lua
       LUA_VER: 54
-      LUA_VER_DOT: '5.4'
+      LUA_VER_DOT: "5.4"
       LUA_RELEASE: 5.4.2
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
@@ -522,16 +348,16 @@ jobs:
       LUA_DIR_SLASH: D:/Lua
       # Python 2
       PYTHON_VER: 27
-      PYTHON_VER_DOT: '2.7'
+      PYTHON_VER_DOT: "2.7"
       PYTHON_DIR: 'C:\Python27'
       # Python 3
       PYTHON3_VER: 313
-      PYTHON3_VER_DOT: '3.13'
+      PYTHON3_VER_DOT: "3.13"
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
-      SODIUM_VER: '1.0.20'
+      SODIUM_VER: "1.0.20"
       # SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
       SODIUM_MSVC_URL: https://github.com/jedisct1/libsodium/releases/download/%SODIUM_VER%-RELEASE/libsodium-%SODIUM_VER%-msvc.zip
       SODIUM_MSVC_VER: v143
@@ -619,7 +445,7 @@ jobs:
           msystem: ${{ env.MSYSTEM }}
           release: false
 
-      - name: Checkout repository from github
+      - name: Checkout repository from GitHub
         uses: actions/checkout@v6
 
       - name: Create a list of download URLs
@@ -833,7 +659,8 @@ jobs:
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
 
-      - if: ${{ !cancelled() }}
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
         uses: ./.github/actions/test_artifacts
 
       - name: Generate gcov files

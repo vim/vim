@@ -13,6 +13,7 @@ SRC_ALL =	\
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
 		.github/workflows/link-check.yml \
+		.github/actions/build_vim_on_linux/action.yml \
 		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
 		.gitignore \
@@ -23,6 +24,7 @@ SRC_ALL =	\
 		.editorconfig \
 		ci/appveyor.bat \
 		ci/config.mk*.sed \
+		ci/gen_testset.py \
 		ci/if_ver*.vim \
 		ci/if_feat_check.vim \
 		ci/lychee.toml \

@@ -1,4 +1,4 @@
-name: 'test_artifacts'
+name: "test_artifacts"
 description: "Upload failed test artifacts"
 runs:
   using: "composite"
@@ -40,9 +40,10 @@ runs:
         # A file, directory or wildcard pattern that describes what
         # to upload.
         path: |
-         ${{ github.workspace }}/runtime/indent/testdir/*.fail
-         ${{ github.workspace }}/runtime/syntax/testdir/failed/*
-         ${{ github.workspace }}/src/testdir/failed/*
+          ${{ github.workspace }}/logs/**/*.symbolized
+          ${{ github.workspace }}/runtime/indent/testdir/*.fail
+          ${{ github.workspace }}/runtime/syntax/testdir/failed/*
+          ${{ github.workspace }}/src/testdir/failed/*
         # The desired behavior if no files are found using the
         # provided path.
         if-no-files-found: ignore
