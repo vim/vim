@@ -823,6 +823,9 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    if (check_secure())
+	return;
+
     if (argvars[0].v_type != VAR_STRING)
     {
 	// Returning an empty string means it failed.
@@ -1727,6 +1730,8 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+    if (check_secure())
+	return;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -1779,6 +1784,8 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     int		sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (check_secure())
 	return;
 
     if (in_vim9script()
@@ -2051,6 +2058,9 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     void
 f_readblob(typval_T *argvars, typval_T *rettv)
 {
+    if (check_secure())
+	return;
+
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_number_arg(argvars, 1) == FAIL
@@ -2067,6 +2077,9 @@ f_readblob(typval_T *argvars, typval_T *rettv)
     void
 f_readfile(typval_T *argvars, typval_T *rettv)
 {
+    if (check_secure())
+	return;
+
     if (in_vim9script()
 	    && (check_for_nonempty_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_string_arg(argvars, 1) == FAIL
