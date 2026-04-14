@@ -1316,9 +1316,6 @@ f_glob(typval_T *argvars, typval_T *rettv)
     expand_T	xpc;
     int		error = FALSE;
 
-    if (check_secure())
-	return;
-
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_bool_arg(argvars, 1) == FAIL
@@ -1399,9 +1396,6 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
     garray_T	ga;
     int		i;
-
-    if (check_secure())
-	return;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL

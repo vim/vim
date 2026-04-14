@@ -679,8 +679,6 @@ func Sandbox_tests()
   call assert_fails("call readblob('Xsomefile')", 'E48:')
   call assert_fails("call readdir('.')", 'E48:')
   call assert_fails("call readdirex('.')", 'E48:')
-  call assert_fails("call glob('*')", 'E48:')
-  call assert_fails("call globpath('.', '*')", 'E48:')
   call assert_fails("call chdir('.')", 'E48:')
   " some options cannot be changed in a sandbox
   call assert_fails('set exrc', 'E48:')
