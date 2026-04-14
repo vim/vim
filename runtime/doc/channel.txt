@@ -666,15 +666,16 @@ ch_info({handle})						*ch_info()*
 <
 		Return type: dict<any>
 
-ch_listen({port} [, {options}])		*E1573* *E1574* *ch_listen()*
-		Listen on loopback at {port} for incoming channel connections.
-		This creates a server-side channel, unlike |ch_open()|
-		which connects to an existing server.
+ch_listen({address} [, {options}])		*E1573* *E1574* *ch_listen()*
+		Listen on {address} - port on loopback or UNIX domain socket
+		for incoming channel connections. This creates a server-side
+		channel, unlike |ch_open()|which connects to an existing server.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} is a String, see |channel-address| for the possible
-		accepted forms, however binding to all interfaces is not
-		allowed for security reasons.
+		accepted forms, however in case of TCP sockets it allows to
+		set only a port and binds to loopback address for
+		security reasons.
 		Note: IPv6 is not yet supported.
 
 		If {options} is given it must be a |Dictionary|.

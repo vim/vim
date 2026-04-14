@@ -52642,7 +52642,7 @@ Various syntax, indent and other plugins were added.
 
 Functions: ~
 
-|ch_listen()|		listen on loopback at specified port
+|ch_listen()|		listen on {address}
 
 Autocommands: ~
 
