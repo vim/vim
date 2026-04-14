@@ -1788,4 +1788,28 @@ func Test_VertSplitNC_fillchars()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test that 'winhighlight' of window left of separator does not apply when
+" drawing the window to the right of the separator.
+func Test_VertSplitNC_winhighlight()
+  CheckScreendump
+
+  let lines =<< trim END
+    vsplit
+    set winhighlight=StatusLine:ErrorMsg
+  END
+  call writefile(lines, 'Xtest_vertsplitNC_winhighlight', 'D')
+
+  let buf = RunVimInTerminal('-S Xtest_vertsplitNC_winhighlight', {'rows': 12})
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_whl1', {})
+
+  call term_sendkeys(buf, "\<C-w>\<C-l>") " Go to window with empty winhighlight
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_VertSplitNC_whl2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -184,7 +184,8 @@ typedef struct
 typedef struct hl_overrides_S hl_overrides_T;
 struct hl_overrides_S
 {
-    hl_override_T   *arr;   // May be NULL if "arr" was freed
+    hl_override_T   *arr;   // May be NULL if "arr" was freed or no highlight
+			    // overrides (all values set to default)
     int		    len;
     hl_overrides_T  *next;  // Used to handle recursive calls
 
@@ -5804,9 +5805,10 @@ set_highlight_attr(hl_override_T *arr, int len, bool update_ids)
     bool
 push_highlight_overrides(hl_override_T *arr, int len)
 {
-    // Don't want to do anything if "arr" is NULL or if "arr" is already the
-    // current override.
-    if (arr == NULL || (overrides != NULL && overrides->arr == arr))
+    // Don't want to do anything if "arr" is already the current override. If
+    // "arr" is NULL (but overrides->arr is not), then still push an override,
+    // but "->arr" will just be NULL so any previous overrides are cleared.
+    if (overrides != NULL && overrides->arr == arr)
 	return false;
 
     hl_overrides_T *set;
@@ -5831,7 +5833,8 @@ push_highlight_overrides(hl_override_T *arr, int len)
     memcpy(highlight_attr, highlight_attr_raw, sizeof(highlight_attr));
 
     // Update highlight_attr[] array
-    set_highlight_attr(arr, len, false);
+    if (arr != NULL)
+	set_highlight_attr(arr, len, false);
 
     return true;
 }
