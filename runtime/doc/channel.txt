@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
+*channel.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -132,7 +132,7 @@ Start Vim and create a listening channel: >
 	endfunc
 
 	" Start listening on port 8765
-	let server = ch_listen('localhost:8765', {"callback": "OnAccept"})
+	let server = ch_listen('8765', {"callback": "OnAccept"})
 
 From another Vim instance (or any program) you can connect to it: >
 	let channel = ch_open('localhost:8765')
@@ -637,8 +637,7 @@ ch_info({handle})						*ch_info()*
 		   "status"	  "open", "buffered" or "closed", like
 				  ch_status()
 		When opened with ch_open():
-		   "hostname"	  the hostname of the address
-		   "port"	  the port of the address
+		   "port"	  the port on loopback
 		   "path"	  the path of the Unix-domain socket
 		   "sock_status"  "open" or "closed"
 		   "sock_mode"	  "NL", "RAW", "JSON" or "JS"
@@ -668,14 +667,15 @@ ch_info({handle})						*ch_info()*
 		Return type: dict<any>
 
 ch_listen({address} [, {options}])		*E1573* *E1574* *ch_listen()*
-		Listen on {address} for incoming channel connections.
-		This creates a server-side channel, unlike |ch_open()|
-		which connects to an existing server.
+		Listen on {address} - port on loopback or UNIX domain socket
+		for incoming channel connections. This creates a server-side
+		channel, unlike |ch_open()|which connects to an existing server.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} is a String, see |channel-address| for the possible
-		accepted forms, however binding to all interfaces is not
-		allowed for security reasons.
+		accepted forms, however in case of TCP sockets it allows to
+		set only a port and binds to loopback address for
+		security reasons.
 		Note: IPv6 is not yet supported.
 
 		If {options} is given it must be a |Dictionary|.
