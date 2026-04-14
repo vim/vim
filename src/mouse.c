@@ -1276,6 +1276,17 @@ ins_mousescroll(int dir)
     cap.oap = &oa;
     cap.arg = dir;
 
+#ifdef FEAT_TABPANEL
+    if (mouse_row >= 0 && mouse_col >= 0
+	    && (dir == MSCR_UP || dir == MSCR_DOWN)
+	    && mouse_on_tabpanel())
+    {
+	(void)tabpanel_scroll(dir == MSCR_UP ? 1 : -1,
+		mouse_vert_step > 0 ? mouse_vert_step : 3);
+	return;
+    }
+#endif
+
     switch (dir)
     {
 	case MSCR_UP:
@@ -2408,6 +2419,17 @@ do_mousescroll_horiz(long_u leftcol)
 nv_mousescroll(cmdarg_T *cap)
 {
     win_T   *old_curwin = curwin;
+
+#ifdef FEAT_TABPANEL
+    if (mouse_row >= 0 && mouse_col >= 0
+	    && (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
+	    && mouse_on_tabpanel())
+    {
+	(void)tabpanel_scroll(cap->arg == MSCR_UP ? 1 : -1,
+		mouse_vert_step > 0 ? mouse_vert_step : 3);
+	return;
+    }
+#endif
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {

@@ -20,6 +20,7 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 static void tabpanel_free_click_regions(void);
 static void tabpanel_append_click_regions(stl_clickrec_T *clicktab,
 	char_u *buf, int row, int col_start, int col_end, int tabnr);
+static void draw_tabpanel_scrollbar(int screen_col);
 
 // set pcurtab_row. don't redraw tabpanel.
 #define TPLMODE_GET_CURTAB_ROW	0
@@ -31,6 +32,7 @@ static void tabpanel_append_click_regions(stl_clickrec_T *clicktab,
 #define TPL_FILLCHAR		' '
 
 #define VERT_LEN		1
+#define SCROLL_LEN		1
 
 // tpl_align's values
 #define ALIGN_LEFT		0
@@ -41,6 +43,10 @@ static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
 static int tpl_is_vert = FALSE;
+static int tpl_scroll = FALSE;
+static int tpl_scrollbar = FALSE;
+static int tpl_scroll_offset = 0;
+static int tpl_total_rows = 0;
 
 typedef struct {
     win_T   *wp;
@@ -62,6 +68,8 @@ tabpanelopt_changed(void)
     int		new_align = ALIGN_LEFT;
     long	new_columns = 20;
     int		new_is_vert = FALSE;
+    int		new_scroll = FALSE;
+    int		new_scrollbar = FALSE;
 
     p = p_tplo;
     while (*p != NUL)
@@ -94,6 +102,17 @@ tabpanelopt_changed(void)
 	    p += 4;
 	    new_is_vert = TRUE;
 	}
+	else if (STRNCMP(p, "scrollbar", 9) == 0)
+	{
+	    p += 9;
+	    new_scrollbar = TRUE;
+	    new_scroll = TRUE;
+	}
+	else if (STRNCMP(p, "scroll", 6) == 0)
+	{
+	    p += 6;
+	    new_scroll = TRUE;
+	}
 
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
@@ -104,6 +123,10 @@ tabpanelopt_changed(void)
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_is_vert = new_is_vert;
+    if (tpl_scroll != new_scroll)
+	tpl_scroll_offset = 0;
+    tpl_scroll = new_scroll;
+    tpl_scrollbar = new_scrollbar;
 
     shell_new_columns();
     return OK;
@@ -266,38 +289,63 @@ draw_tabpanel(void)
     // Reset got_int to avoid build_stl_str_hl() isn't evaluated.
     got_int = FALSE;
 
+    int sb_len = tpl_scrollbar ? SCROLL_LEN : 0;
+    int sb_screen_col = -1;
+
     if (tpl_is_vert)
     {
 	if (is_right)
 	{
 	    // draw main contents in tabpanel
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, VERT_LEN,
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, VERT_LEN + sb_len,
 		    maxwidth - VERT_LEN, &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN, maxwidth, &curtab_row,
-		    NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN + sb_len, maxwidth,
+		    &curtab_row, NULL);
 	    // draw vert separator in tabpanel
 	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			topframe->fr_width, vs_attr);
+	    if (tpl_scrollbar)
+		sb_screen_col = topframe->fr_width + VERT_LEN;
 	}
 	else
 	{
 	    // draw main contents in tabpanel
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - VERT_LEN,
-		    &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN,
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0,
+		    maxwidth - VERT_LEN - sb_len, &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN - sb_len,
 		    &curtab_row, NULL);
 	    // draw vert separator in tabpanel
 	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			maxwidth - VERT_LEN, vs_attr);
+	    if (tpl_scrollbar)
+		sb_screen_col = maxwidth - VERT_LEN - SCROLL_LEN;
 	}
     }
     else
     {
-	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
-	do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth, &curtab_row, NULL);
+	if (is_right)
+	{
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, sb_len, maxwidth,
+		    &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, sb_len, maxwidth, &curtab_row, NULL);
+	    if (tpl_scrollbar)
+		sb_screen_col = topframe->fr_width;
+	}
+	else
+	{
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - sb_len,
+		    &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - sb_len,
+		    &curtab_row, NULL);
+	    if (tpl_scrollbar)
+		sb_screen_col = maxwidth - SCROLL_LEN;
+	}
     }
+
+    if (sb_screen_col >= 0)
+	draw_tabpanel_scrollbar(sb_screen_col);
 
     got_int |= saved_got_int;
 
@@ -556,8 +604,13 @@ do_by_tplmode(
     args.col_end = col_end;
 
     if (tplmode != TPLMODE_GET_CURTAB_ROW && args.maxrow > 0)
-	while (args.offsetrow + args.maxrow <= *pcurtab_row)
-	    args.offsetrow += args.maxrow;
+    {
+	if (tpl_scroll)
+	    args.offsetrow = tpl_scroll_offset;
+	else
+	    while (args.offsetrow + args.maxrow <= *pcurtab_row)
+		args.offsetrow += args.maxrow;
+    }
 
     tp = first_tabpage;
 
@@ -579,8 +632,13 @@ do_by_tplmode(
 	    if (tplmode == TPLMODE_GET_CURTAB_ROW)
 	    {
 		*pcurtab_row = row;
-		do_unlet((char_u *)"g:actual_curtabpage", TRUE);
-		break;
+		// When scroll mode is active keep iterating so tpl_total_rows
+		// receives the true content height; otherwise bail out early.
+		if (!tpl_scroll)
+		{
+		    do_unlet((char_u *)"g:actual_curtabpage", TRUE);
+		    break;
+		}
 	    }
 	}
 	else
@@ -608,7 +666,8 @@ do_by_tplmode(
 		stl_hlrec_T	*tabtab;
 		stl_clickrec_T	*clicktab = NULL;
 
-		if (args.maxrow <= row - args.offsetrow)
+		if (tplmode != TPLMODE_GET_CURTAB_ROW
+			&& args.maxrow <= row - args.offsetrow)
 		    break;
 
 		buf[0] = NUL;
@@ -677,6 +736,89 @@ do_by_tplmode(
     // fill the area of TabPanelFill.
     screen_fill_tailing_area(tplmode, MAX(row - args.offsetrow, 0), args.maxrow,
 	    args.col_start, args.col_end, attr_tplf);
+
+    // Capture the true content height during the GET_CURTAB_ROW pass, which
+    // ignores maxrow and therefore walks every tab.  REDRAW stops at the
+    // visible edge so its "row" is clamped and unusable here.
+    if (tplmode == TPLMODE_GET_CURTAB_ROW && tpl_scroll)
+	tpl_total_rows = row;
+}
+
+/*
+ * Draw the tabpanel scrollbar (track + thumb) at screen column 'screen_col'.
+ * The scrollbar spans the full screen height.  The thumb position and size
+ * are derived from tpl_scroll_offset, tpl_total_rows and Rows.
+ */
+    static void
+draw_tabpanel_scrollbar(int screen_col)
+{
+    int attr_sb = HL_ATTR(HLF_PSB);
+    int attr_thumb = HL_ATTR(HLF_PST);
+    int thumb_top = 0;
+    int thumb_height = 0;
+
+    if (tpl_total_rows > Rows && Rows > 0)
+    {
+	thumb_height = Rows * Rows / tpl_total_rows;
+	if (thumb_height < 1)
+	    thumb_height = 1;
+	thumb_top = Rows * tpl_scroll_offset / tpl_total_rows;
+	if (thumb_top + thumb_height > Rows)
+	    thumb_top = Rows - thumb_height;
+	if (thumb_top < 0)
+	    thumb_top = 0;
+    }
+
+    for (int r = 0; r < Rows; r++)
+    {
+	int on_thumb = thumb_height > 0
+	    && r >= thumb_top && r < thumb_top + thumb_height;
+	screen_putchar(TPL_FILLCHAR, r, screen_col,
+		on_thumb ? attr_thumb : attr_sb);
+    }
+}
+
+/*
+ * Return TRUE if the mouse is currently positioned over the tabpanel area.
+ */
+    int
+mouse_on_tabpanel(void)
+{
+    if (tabpanel_width() == 0)
+	return FALSE;
+    return mouse_col < firstwin->w_wincol
+	|| mouse_col >= firstwin->w_wincol + topframe->fr_width;
+}
+
+/*
+ * Scroll the tabpanel by 'count' rows in direction 'dir' (1 = down, -1 = up).
+ * Returns TRUE if the offset changed and a redraw was scheduled.
+ * Has no effect unless 'tabpanelopt' contains "scroll".
+ */
+    int
+tabpanel_scroll(int dir, int count)
+{
+    int max_offset;
+    int new_offset;
+
+    if (!tpl_scroll || tabpanel_width() == 0)
+	return FALSE;
+
+    max_offset = tpl_total_rows - Rows;
+    if (max_offset < 0)
+	max_offset = 0;
+
+    new_offset = tpl_scroll_offset + (dir > 0 ? count : -count);
+    if (new_offset < 0)
+	new_offset = 0;
+    if (new_offset > max_offset)
+	new_offset = max_offset;
+    if (new_offset == tpl_scroll_offset)
+	return FALSE;
+
+    tpl_scroll_offset = new_offset;
+    redraw_tabpanel = TRUE;
+    return TRUE;
 }
 
 #endif // FEAT_TABPANEL
