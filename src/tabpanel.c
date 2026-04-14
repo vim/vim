@@ -47,6 +47,7 @@ static int tpl_scroll = FALSE;
 static int tpl_scrollbar = FALSE;
 static int tpl_scroll_offset = 0;
 static int tpl_total_rows = 0;
+static int tpl_scrollbar_col = -1;	// screen column of scrollbar, -1 if none
 
 typedef struct {
     win_T   *wp;
@@ -344,6 +345,7 @@ draw_tabpanel(void)
 	}
     }
 
+    tpl_scrollbar_col = sb_screen_col;
     if (sb_screen_col >= 0)
 	draw_tabpanel_scrollbar(sb_screen_col);
 
@@ -788,6 +790,59 @@ mouse_on_tabpanel(void)
 	return FALSE;
     return mouse_col < firstwin->w_wincol
 	|| mouse_col >= firstwin->w_wincol + topframe->fr_width;
+}
+
+/*
+ * Return TRUE if the mouse is currently on the scrollbar column.
+ * The scrollbar column is tracked by draw_tabpanel() and is -1 when the
+ * scrollbar is not enabled or not yet drawn.
+ */
+    int
+mouse_on_tabpanel_scrollbar(void)
+{
+    return tpl_scrollbar && tpl_scrollbar_col >= 0
+	&& mouse_col == tpl_scrollbar_col;
+}
+
+/*
+ * Move the scrollbar thumb so it is vertically centred on screen row
+ * 'screen_row', updating tpl_scroll_offset accordingly.  Used for both
+ * initial clicks and subsequent drag events.
+ * Returns TRUE if the event was consumed (offset changed or not).
+ */
+    int
+tabpanel_drag_scrollbar(int screen_row)
+{
+    int thumb_height;
+    int max_offset;
+    int track_range;
+    int thumb_top;
+    int new_offset;
+
+    if (!tpl_scrollbar || Rows <= 0 || tpl_total_rows <= Rows)
+	return FALSE;
+
+    thumb_height = Rows * Rows / tpl_total_rows;
+    if (thumb_height < 1)
+	thumb_height = 1;
+    track_range = Rows - thumb_height;
+    if (track_range <= 0)
+	return TRUE;
+
+    max_offset = tpl_total_rows - Rows;
+    thumb_top = screen_row - thumb_height / 2;
+    if (thumb_top < 0)
+	thumb_top = 0;
+    if (thumb_top > track_range)
+	thumb_top = track_range;
+
+    new_offset = thumb_top * max_offset / track_range;
+    if (new_offset != tpl_scroll_offset)
+    {
+	tpl_scroll_offset = new_offset;
+	redraw_tabpanel = TRUE;
+    }
+    return TRUE;
 }
 
 /*
