@@ -52634,6 +52634,8 @@ Changed ~
 - |js_decode()| rejects lone surrogates
 - virtual text properties on lines deleted by a multi-line substitute
   are moved to the resulting joined line instead of being dropped.
+- Only a few whitelisted options are allowed to be set by a modeline to
+  improve overall security, see for details: 'modelinestrict'
 
 							*added-9.3*
 Added ~
@@ -52650,6 +52652,7 @@ Autocommands: ~
 
 Options: ~
 
+'modelinestrict'	Only allow safe options to be set from a modeline.
 'pumopt'		Additional options for the popup menu
 'statuslineopt'		Extra window-local options for the 'statusline', to
 			configure the height.

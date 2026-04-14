@@ -531,6 +531,7 @@ $quote	eval.txt	/*$quote*
 'ml'	options.txt	/*'ml'*
 'mle'	options.txt	/*'mle'*
 'mls'	options.txt	/*'mls'*
+'mlst'	options.txt	/*'mlst'*
 'mm'	options.txt	/*'mm'*
 'mmd'	options.txt	/*'mmd'*
 'mmp'	options.txt	/*'mmp'*
@@ -539,6 +540,7 @@ $quote	eval.txt	/*$quote*
 'modeline'	options.txt	/*'modeline'*
 'modelineexpr'	options.txt	/*'modelineexpr'*
 'modelines'	options.txt	/*'modelines'*
+'modelinestrict'	options.txt	/*'modelinestrict'*
 'modifiable'	options.txt	/*'modifiable'*
 'modified'	options.txt	/*'modified'*
 'mopt'	options.txt	/*'mopt'*
@@ -706,9 +708,11 @@ $quote	eval.txt	/*$quote*
 'nomh'	options.txt	/*'nomh'*
 'noml'	options.txt	/*'noml'*
 'nomle'	options.txt	/*'nomle'*
+'nomlst'	options.txt	/*'nomlst'*
 'nomod'	options.txt	/*'nomod'*
 'nomodeline'	options.txt	/*'nomodeline'*
 'nomodelineexpr'	options.txt	/*'nomodelineexpr'*
+'nomodelinestrict'	options.txt	/*'nomodelinestrict'*
 'nomodifiable'	options.txt	/*'nomodifiable'*
 'nomodified'	options.txt	/*'nomodified'*
 'nomore'	options.txt	/*'nomore'*

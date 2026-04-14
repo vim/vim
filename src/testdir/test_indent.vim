@@ -195,7 +195,7 @@ endfunc
 " Test for setting the 'indentexpr' from a modeline
 func Test_modeline_indent_expr()
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   func GetIndent()
     return line('.') * 2
   endfunc
@@ -206,7 +206,7 @@ func Test_modeline_indent_expr()
   exe "normal Oa\nb\n"
   call assert_equal(['  a', '    b'], getline(1, 2))
 
-  set modelineexpr&
+  set modelineexpr& modelinestrict&
   delfunc GetIndent
   let &modeline = modeline
   bw!

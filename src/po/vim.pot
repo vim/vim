@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-07 19:50+0000\n"
+"POT-Creation-Date: 2026-04-09 20:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -10221,6 +10221,9 @@ msgid "enable using settings from modelines when reading a file"
 msgstr ""
 
 msgid "allow setting expression options from a modeline"
+msgstr ""
+
+msgid "only allow safe options to be set from a modeline"
 msgstr ""
 
 msgid "number of lines to check for modelines"

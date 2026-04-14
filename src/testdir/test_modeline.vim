@@ -47,7 +47,7 @@ endfunc
 func Test_modeline_syntax()
   call writefile(['vim: set syn=c :', 'nothing'], 'Xmodeline_syntax', 'D')
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   syntax enable
   split Xmodeline_syntax
   call assert_equal("c", &syntax)
@@ -55,6 +55,7 @@ func Test_modeline_syntax()
 
   bwipe!
   let &modeline = modeline
+  set modelinestrict
   syntax off
 endfunc
 
@@ -62,13 +63,14 @@ func Test_modeline_keymap()
   CheckFeature keymap
   call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap', 'D')
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   split Xmodeline_keymap
   call assert_equal("greek", &keymap)
   call assert_match('greek\|grk', b:keymap_name)
 
   bwipe!
   let &modeline = modeline
+  set modelinestrict
   set keymap= iminsert=0 imsearch=-1
 endfunc
 
@@ -145,7 +147,8 @@ endfunc
 
 func Test_modeline_colon()
   let modeline = &modeline
-  set modeline
+  let modelinestrict = &modelinestrict
+  set modeline nomodelinestrict
 
   call writefile(['// vim: set showbreak=\: ts=2: sw=2'], 'Xmodeline_colon', 'D')
   edit Xmodeline_colon
@@ -159,6 +162,7 @@ func Test_modeline_colon()
   call assert_equal(8, &sw)
 
   let &modeline = modeline
+  let &modelinestrict = modelinestrict
 endfunc
 
 func s:modeline_fails(what, text, error)
@@ -170,7 +174,8 @@ func s:modeline_fails(what, text, error)
   let fname = "Xmodeline_fails_" . a:what
   call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname, 'D')
   let modeline = &modeline
-  set modeline
+  let modelinestrict = &modelinestrict
+  set modeline nomodelinestrict
   filetype plugin on
   syntax enable
   call assert_fails('split ' . fname, a:error)
@@ -179,6 +184,7 @@ func s:modeline_fails(what, text, error)
 
   bwipe!
   let &modeline = modeline
+  let &modelinestrict = modelinestrict
   filetype plugin off
   syntax off
 endfunc
@@ -348,20 +354,23 @@ endfunc
 
 " Some options cannot be set from the modeline when 'diff' option is set
 func Test_modeline_diff_buffer()
+  set nomodelinestrict
   call writefile(['vim: diff foldmethod=marker wrap'], 'Xmdifile', 'D')
   set foldmethod& nowrap
   new Xmdifile
   call assert_equal('manual', &foldmethod)
   call assert_false(&wrap)
   set wrap&
+  set modelinestrict
   bw
 endfunc
 
 func Test_modeline_disable()
-  set modeline
+  set modeline nomodelinestrict
   call writefile(['vim: sw=2', 'vim: nomodeline', 'vim: sw=3'], 'Xmodeline_disable', 'D')
   edit Xmodeline_disable
   call assert_equal(2, &sw)
+  set modelinestrict
 endfunc
 
 " If 'nowrap' is set from a modeline, '>' is used forcibly as lcs-extends.
@@ -373,6 +382,7 @@ func Test_modeline_nowrap_lcs_extends()
         \ 'ddd                    vim: nowrap',
         \ ], 'Xmodeline_nowrap', 'D')
   set noequalalways
+  set nomodelinestrict
   11new | 20vsplit
 
   func Check_modeline_nowrap(expect_insecure, expect_secure, set_cmd)
@@ -491,6 +501,113 @@ func Test_modeline_nowrap_lcs_extends()
   bwipe!
   delfunc Check_modeline_nowrap
   set equalalways&
+endfunc
+
+func Test_modeline_strict_allowed()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " Whitelisted options should work
+  call writefile(['vim: set ts=2 sw=4 et :'], 'Xmodeline_strict', 'D')
+  split Xmodeline_strict
+  call assert_equal(2, &ts)
+  call assert_equal(4, &sw)
+  call assert_equal(1, &et)
+  bwipe!
+
+  " 'filetype' should work
+  call writefile(['vim: set ft=python :'], 'Xmodeline_strict')
+  filetype plugin on
+  split Xmodeline_strict
+  call assert_equal("python", &filetype)
+  bwipe!
+  filetype plugin off
+
+  " 'spell' and 'spelllang' should work
+  call writefile(['vim: set spell spelllang=de :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(1, &spell)
+  call assert_equal("de", &spelllang)
+  bwipe!
+
+  " 'foldmethod' should work
+  call writefile(['vim: set fdm=marker :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal("marker", &foldmethod)
+  bwipe!
+
+  " 'autoindent' and 'cindent' should work
+  call writefile(['vim: set ai cin :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(1, &ai)
+  call assert_equal(1, &cin)
+  bwipe!
+
+  " 'textwidth'
+  call writefile(['vim: set tw=10 :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(10, &textwidth)
+  bwipe!
+
+  let &modeline = modeline
+  set modelinestrict
+endfunc
+
+func Test_modeline_strict_blocked()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " 'wrap' is not whitelisted, should be silently skipped
+  set wrap
+  call writefile(['vim: set nowrap :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(1, &wrap)
+  bwipe!
+
+  " 'number' is not whitelisted, should be silently skipped
+  set nonumber
+  call writefile(['vim: set number :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(0, &number)
+  bwipe!
+
+  " Whitelisted options still work alongside blocked ones
+  set wrap nonumber
+  call writefile(['vim: set nowrap ts=3 number :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(1, &wrap)
+  call assert_equal(3, &ts)
+  call assert_equal(0, &number)
+  bwipe!
+
+  let &modeline = modeline
+endfunc
+
+func Test_modeline_strict_off()
+  let modeline = &modeline
+  set modeline nomodelinestrict
+
+  " With modelinestrict off, non-whitelisted options should work
+  call writefile(['vim: set number :'], 'Xmodeline_strict_off', 'D')
+  split Xmodeline_strict_off
+  call assert_equal(1, &number)
+  bwipe!
+
+  let &modeline = modeline
+  set modelinestrict&
+endfunc
+
+func Test_modeline_strict_cannot_be_set_from_modeline()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " 'modelinestrict' itself cannot be set from a modeline (P_SECURE)
+  call writefile(['vim: set nomodelinestrict :'], 'Xmodeline_strict_ml', 'D')
+  call assert_fails('split Xmodeline_strict_ml', 'E520:')
+  call assert_equal(1, &modelinestrict)
+  bwipe!
+
+  let &modeline = modeline
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
