@@ -674,6 +674,7 @@ func Sandbox_tests()
     call assert_fails('cd `pwd`', 'E48:')
   endif
   call assert_fails("call echoraw('test')", 'E48:')
+  call assert_fails("echoconsole 'test'", 'E48:')
   call assert_fails("call readfile('Xsomefile')", 'E48:')
   call assert_fails("call readblob('Xsomefile')", 'E48:')
   call assert_fails("call readdir('.')", 'E48:')
