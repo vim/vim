@@ -5759,6 +5759,28 @@ def Test_multikey_dict_in_block()
   unlet g:TestDict
 enddef
 
+" Test for overriding a block level variable with a new script level variable
+" and referring to it in a function.
+def Test_block_var_override_with_script_var()
+  var lines =<< trim END
+    vim9script
+
+    if true
+      var lines = ['a']
+      lines->filter((_, _) => true)
+    endif
+
+    var lines = []
+
+    def Fx()
+      lines->add('b')
+    enddef
+    Fx()
+    assert_equal(['b'], lines)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using the type() function with void
 def Test_type_func_with_void()
   var lines =<< trim END

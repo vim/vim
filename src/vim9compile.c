@@ -253,6 +253,11 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
     {
 	int idx;
 
+	if (ufunc->uf_block_depth == 0 && sav->sav_block_id == 0)
+	    // If the function was defined at the script level (not inside a
+	    // block), script-scope variables are always visible.
+	    return sav;
+
 	// Go over the blocks that this function was defined in.  If the
 	// variable block ID matches it was visible to the function.
 	for (idx = 0; idx < ufunc->uf_block_depth; ++idx)
