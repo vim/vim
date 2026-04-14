@@ -4391,6 +4391,9 @@ f_echoraw(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u *str;
 
+    if (check_secure())
+	return;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
