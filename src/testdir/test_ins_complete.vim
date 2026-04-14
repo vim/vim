@@ -6289,4 +6289,20 @@ func Test_ins_register_preinsert_autocomplete()
   delfunc TestOmni
 endfunc
 
+func Test_autocomplete_with_auto_format()
+  call test_override("char_avail", 1)
+  new
+  setlocal formatoptions=tcq textwidth=9 autocomplete noautoindent
+  call feedkeys("ia b c d\<Esc>ie f g\<Esc>", 'tx')
+  call assert_equal(['a b c e f', 'gd'], getline(1, '$'))
+
+  %delete
+  setlocal autoindent
+  call feedkeys("ia b c d\<Esc>ie f g\<Esc>", 'tx')
+  call assert_equal(['a b c e f', 'gd'], getline(1, '$'))
+
+  bw!
+  call test_override("char_avail", 0)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
