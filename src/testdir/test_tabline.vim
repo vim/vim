@@ -250,4 +250,14 @@ func Test_tabline_mouse_enable()
   endfor
 endfunc
 
+func Test_tabline_empty()
+  set showtabline=2 tabline=%!'%{}%'
+  try
+    redraw!
+  catch
+  endtry
+  set showtabline&
+  set tabline&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

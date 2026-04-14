@@ -930,4 +930,14 @@ func Test_tabline_click_handler()
   endif
 endfunc
 
+func Test_statusline_empty()
+  set laststatus=2 statusline=%!'%{}%'
+  try
+  redraw!
+  catch
+  endtry
+  set laststatus&
+  set statusline&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
