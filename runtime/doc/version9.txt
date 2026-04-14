@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 10
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52658,6 +52658,10 @@ Options: ~
 'termresize'		Method for handling terminal resize events.
 'termsync'		Enable support for terminal DEC 2026 sync mode.
 'winhighlight'		Window-local highlight group mappings.
+
+Highlighting: ~
+
+|hl-VertSplitNC|	Column separator of non-current window.
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*

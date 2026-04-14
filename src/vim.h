@@ -1533,6 +1533,7 @@ typedef enum
     , HLF_S	    // status lines
     , HLF_SNC	    // status lines of not-current windows
     , HLF_C	    // column to separate vertically split windows
+    , HLF_CNC	    // column separator for not-current windows
     , HLF_T	    // Titles for output from ":set all", ":autocmd" etc.
     , HLF_V	    // Visual mode
     , HLF_VNC	    // Visual mode, autoselecting and not clipboard owner
@@ -1584,7 +1585,7 @@ typedef enum
 // The HL_FLAGS must be in the same order as the HLF_ enums!
 // When changing this also adjust the default for 'highlight'.
 #define HL_FLAGS {'8', '~', '@', 'd', 'e', 'h', 'i', 'l', 'y', 'm', 'M', \
-		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
+		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', '|', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', 'E', '-', '>', \
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', 'j', 'H', \

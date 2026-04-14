@@ -5825,6 +5825,14 @@ win_enter_ext(win_T *wp, int flags)
 	redraw_mode = TRUE;
 #endif
     redraw_tabline = TRUE;
+    redraw_vseps = TRUE;
+    // Need to redraw all status lines so that the vsep character at
+    // status line rows is updated for the new current window.
+    {
+	win_T *ww;
+	FOR_ALL_WINDOWS(ww)
+	    ww->w_redr_status = TRUE;
+    }
 #if defined(FEAT_TABPANEL)
     redraw_tabpanel = TRUE;
 #endif
@@ -7878,6 +7886,8 @@ frame_change_statusline_height(void)
 {
     tabpage_T	*tp;
     int		global_stlh;
+
+    redraw_vseps = TRUE;
 
     // First pass: find space-constrained global height.
     global_stlh = stlo_mh;

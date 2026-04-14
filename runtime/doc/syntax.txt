@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Mar 22
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5978,7 +5978,14 @@ EndOfBuffer	Filler lines (~) after the last line in the buffer.
 							*hl-ErrorMsg*
 ErrorMsg	Error messages on the command line.
 							*hl-VertSplit*
-VertSplit	Column separating vertically split windows.
+VertSplit	Column separating vertically split windows that are adjacent
+		to the current window.  On the current window's status line
+		rows, the separator cell is drawn as a space with the
+		|hl-StatusLine| highlight so it blends into the status line
+		without a stray fillchar glyph.
+							*hl-VertSplitNC*
+VertSplitNC	Column separating vertically split windows of non-current
+		windows.  By default, highlighted like |hl-VertSplit|.
 							*hl-Folded*
 Folded		Line used for closed folds.
 							*hl-FoldColumn*

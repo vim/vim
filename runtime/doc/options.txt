@@ -4757,7 +4757,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,
 				     a:LineNrAbove,b:LineNrBelow,
 				     N:CursorLineNr,r:Question,s:StatusLine,
-				     S:StatusLineNC,c:VertSplit,t:Title,
+				     S:StatusLineNC,c:VertSplit,
+				     |:VertSplitNC,t:Title,
 				     v:Visual,V:VisualNOS,w:WarningMsg,
 				     W:WildMenu,f:Folded,F:FoldColumn,
 				     A:DiffAdd,C:DiffChange,D:DiffDelete,
@@ -4805,6 +4806,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-StatusLineNC|  S  status lines of not-current windows
 	|hl-Title|	 t  Titles for output from ":set all", ":autocmd" etc.
 	|hl-VertSplit|	 c  column used to separate vertically split windows
+	|hl-VertSplitNC| |  column separating non-current vertically split
+			    windows
 	|hl-Visual|	 v  Visual mode
 	|hl-VisualNOS|	 V  Visual mode when Vim is "Not Owning the
 			    Selection" Only X11 Gui's |gui-x11|,

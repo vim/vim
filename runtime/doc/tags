@@ -8487,6 +8487,7 @@ hl-User1	syntax.txt	/*hl-User1*
 hl-User1..9	syntax.txt	/*hl-User1..9*
 hl-User9	syntax.txt	/*hl-User9*
 hl-VertSplit	syntax.txt	/*hl-VertSplit*
+hl-VertSplitNC	syntax.txt	/*hl-VertSplitNC*
 hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
 hl-WarningMsg	syntax.txt	/*hl-WarningMsg*

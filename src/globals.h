@@ -1090,6 +1090,7 @@ EXTERN tabpage_T    *first_tabpage;
 EXTERN tabpage_T    *curtab;
 EXTERN tabpage_T    *lastused_tabpage;
 EXTERN int	    redraw_tabline INIT(= FALSE);  // need to redraw tabline
+EXTERN int	    redraw_vseps INIT(= FALSE);	   // need to redraw vseps
 
 #if defined(FEAT_TABPANEL)
 EXTERN int	    redraw_tabpanel INIT(= FALSE);  // need to redraw tabpanel
