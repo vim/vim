@@ -406,8 +406,8 @@ fun! zip#Write(fname)
   else
     let zipfile = substitute(a:fname,'^.\{-}zipfile://\(.\{-}\)::[^\\].*$','\1','')
     let fname   = substitute(a:fname,'^.\{-}zipfile://.\{-}::\([^\\].*\)$','\1','')
-    " fname should not start with drive leter or a UNC path
-    if fname =~ '^\%(\%(\a:[\\/]\)\|[\\/]\{2}\)'
+    " fname should not start with drive letter, UNC path, or leading slash
+    if fname =~ '^\%(\a:[\\/]\|[\\/]\)'
       call s:Mess('Error', "***error*** (zip#Write) Path Traversal Attack detected, not writing!")
       call s:ChgDir(curdir,s:WARNING,"(zip#Write) unable to return to ".curdir."!")
       return
@@ -504,6 +504,18 @@ fun! zip#Extract()
   elseif fname =~ '^[.]\?[.]/' || simplify(fname) =~ '\.\.[/\\]'
     call s:Mess('Error', "***error*** (zip#Browse) Path Traversal Attack detected, not extracting!")
     return
+  endif
+  " block absolute paths
+  if has("unix")
+    if fname =~ '^/'
+      call s:Mess('Error', "***error*** (zip#Extract) Path Traversal Attack detected, not extracting!")
+      return
+    endif
+  else
+    if fname =~ '^\%(\a:[\\/]\|[\\/]\)'
+      call s:Mess('Error', "***error*** (zip#Extract) Path Traversal Attack detected, not extracting!")
+      return
+    endif
   endif
   if filereadable(fname)
     call s:Mess('Error', "***error*** (zip#Extract) <" .. fname .."> already exists in directory, not overwriting!")
