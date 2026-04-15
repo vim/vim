@@ -1777,7 +1777,7 @@ func Run_libvterm_konsole_response(code)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'y'
         \ }, terminalprops())
 endfunc
 
@@ -3065,6 +3065,11 @@ func Test_term_win_resize()
   defer delete("XTestWinResizeResult")
 
   let buf = RunVimInTerminal('-S XTestWinResize', #{rows: 15, cols: 20})
+
+  " Must add a delay, since status report is sent internally by vim only when
+  " version response is received, which may come after we send the status report
+  " here.
+  sleep 100m
 
   " Send status report
   call term_sendkeys(buf, "\<Esc>[?2048;1$y")
