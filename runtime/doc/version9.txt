@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52654,6 +52654,7 @@ Options: ~
 
 'modelinestrict'	Only allow safe options to be set from a modeline.
 'pumopt'		Additional options for the popup menu
+'scrolloffpad'		Keep 'scrolloff' context at end of file
 'statuslineopt'		Extra window-local options for the 'statusline', to
 			configure the height.
 't_BS'			Begin synchronized update.

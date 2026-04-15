@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-09 20:33+0000\n"
+"POT-Creation-Date: 2026-04-15 19:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9381,6 +9381,9 @@ msgid "scroll by screen line"
 msgstr ""
 
 msgid "number of screen lines to show around the cursor"
+msgstr ""
+
+msgid "keep 'scrolloff' context even at end of file"
 msgstr ""
 
 msgid "long lines wrap"

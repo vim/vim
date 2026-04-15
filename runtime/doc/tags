@@ -953,6 +953,7 @@ $quote	eval.txt	/*$quote*
 'scrollfocus'	options.txt	/*'scrollfocus'*
 'scrolljump'	options.txt	/*'scrolljump'*
 'scrolloff'	options.txt	/*'scrolloff'*
+'scrolloffpad'	options.txt	/*'scrolloffpad'*
 'scrollopt'	options.txt	/*'scrollopt'*
 'scs'	options.txt	/*'scs'*
 'sect'	options.txt	/*'sect'*
@@ -1011,6 +1012,7 @@ $quote	eval.txt	/*$quote*
 'so'	options.txt	/*'so'*
 'softtabstop'	options.txt	/*'softtabstop'*
 'sol'	options.txt	/*'sol'*
+'sop'	options.txt	/*'sop'*
 'sourceany'	vi_diff.txt	/*'sourceany'*
 'sp'	options.txt	/*'sp'*
 'spc'	options.txt	/*'spc'*
