@@ -1,4 +1,4 @@
-*channel.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
+*channel.txt*	For Vim version 9.2.  Last change: 2026 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -668,22 +668,22 @@ ch_info({handle})						*ch_info()*
 
 ch_listen({address} [, {options}])		*E1573* *E1574* *ch_listen()*
 		Listen on {address} - port on loopback or UNIX domain socket
-		for incoming channel connections. This creates a server-side
-		channel, unlike |ch_open()|which connects to an existing server.
+		for incoming channel connections.  This creates a server-side
+		channel, unlike |ch_open()| which connects to an existing
+		server.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} is a String, see |channel-address| for the possible
 		accepted forms, however in case of TCP sockets it allows to
-		set only a port and binds to loopback address for
-		security reasons.
+		set only a port and binds to loopback address for security
+		reasons.
 		Note: IPv6 is not yet supported.
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
-		The "callback" in {options} is invoked when a new
-		connection is accepted.  It receives two arguments: the
-		new Channel and the client address as a String (e.g.
-		"127.0.0.1:12345").
+		The "callback" in {options} is invoked when a new connection
+		is accepted.  It receives two arguments: the new Channel and
+		the client address as a String (e.g. "127.0.0.1:12345").
 
 		Use |ch_open()| to connect to an existing server instead.
 
