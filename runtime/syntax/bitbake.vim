@@ -59,7 +59,7 @@ syn match bbVarValue            ".*$" contained contains=bbString,bbVarDeref,bbV
 syn region bbVarPyValue         start=+${@+ skip=+\\$+ end=+}+ contained contains=@python
 
 " Vars metadata flags
-syn match bbVarFlagDef          "^\([a-zA-Z0-9\-_\.]\+\)\(\[[a-zA-Z0-9\-_\.+]\+\]\)\@=" contains=bbIdentifier nextgroup=bbVarFlagFlag
+syn match bbVarFlagDef          "^\([a-zA-Z0-9\-_\.+/]\+\)\(\[[a-zA-Z0-9\-_\.+/]\+\]\)\@=" contains=bbIdentifier nextgroup=bbVarFlagFlag
 syn region bbVarFlagFlag        matchgroup=bbArrayBrackets start="\[" end="\]\s*\(:=\|=\|.=\|=.|+=\|=+\|?=\)\@=" contained contains=bbIdentifier nextgroup=bbVarEq
 
 " Includes and requires
