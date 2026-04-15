@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Apr 03
+# Last Change:		2026 Apr 15
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -915,7 +915,7 @@ export def FTinc()
       elseif line =~ '^\s*\%({\|(\*\)' || line =~? ft_pascal_keywords
         setf pascal
         return
-      elseif line =~# '\<\%(require\|inherit\)\>' || line =~# '[A-Z][A-Za-z0-9_:${}/]*\s\+\%(??\|[?:+.]\)\?=.\? '
+      elseif line =~# '\<\%(require\|inherit\)\>' || line =~# '[A-Z][A-Za-z0-9_:${}/]*\(\[[A-Za-z0-9_:/]\+\]\)*\s\+\%(??\|[?:+.]\)\?=.\? '
         setf bitbake
         return
       endif
