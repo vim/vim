@@ -41954,7 +41954,7 @@ Vim Arguments: ~
 
 Configure Switches: ~
 --with-wayland			Enable the |wayland| feature.
---enable-wayland-focus-steal	Enable the |wayland-focus-steal| feature.
+--enable-wayland-focus-steal	Enable the wayland-focus-steal feature.
 --enable-socketserver		Enable the |socketserver-clientserver|
 				feature.
 

@@ -31,31 +31,6 @@ func s:PreTest()
   set cpm=wayland
 endfunc
 
-func s:SetupFocusStealing()
-  CheckFeature wayland_focus_steal
-  if !executable('wayland-info')
-    throw "Skipped: wayland-info program not available"
-  endif
-
-  " Starting a headless compositor won't expose a keyboard capability for its
-  " seat, so we must use the user's existing Wayland session if they are in one.
-  let $WAYLAND_DISPLAY = s:old_wayland_display
-
-  exe 'wlrestore! ' .. $WAYLAND_DISPLAY
-
-  " Check if we have keyboard capability for seat
-  if system("wayland-info -i wl_seat | grep capabilities") !~? "keyboard"
-    throw "Skipped: seat does not have keyboard"
-  endif
-
-  let $VIM_WAYLAND_FORCE_FS=1
-  wlrestore!
-endfunc
-
-func s:UnsetupFocusStealing()
-  unlet $VIM_WAYLAND_FORCE_FS
-endfunc
-
 func s:CheckClientserver()
   CheckFeature clientserver
 
@@ -487,31 +462,6 @@ func Test_wayland_seat()
   set wlseat&
 endfunc
 
-" Test focus stealing
-func Test_wayland_focus_steal()
-  CheckFeature wayland_focus_steal
-  call s:PreTest()
-  call s:SetupFocusStealing()
-
-  call system('wl-copy regular')
-
-  call assert_equal('regular', getreg('+'))
-
-  call system('wl-copy -p primary')
-
-  call assert_equal('primary', getreg('*'))
-
-  call setreg('+', 'REGULAR')
-
-  call assert_equal('REGULAR', system('wl-paste -n'))
-
-  call setreg('*', 'PRIMARY')
-
-  call assert_equal('PRIMARY', system('wl-paste -p -n'))
-
-  call s:UnsetupFocusStealing()
-endfunc
-
 " Test when environment is not suitable for Wayland
 func Test_wayland_bad_environment()
   call s:PreTest()
@@ -562,32 +512,6 @@ func Test_wayland_lost_selection()
   call assert_equal('regular', getreg('+'))
   call assert_equal('primary', getreg('*'))
 
-endfunc
-
-" Same as above but for the focus stealing method
-func Test_wayland_lost_selection_focus_steal()
-  call s:PreTest()
-  call s:SetupFocusStealing()
-
-  call setreg('+', 'regular')
-  call setreg('*', 'primary')
-
-  call assert_equal('regular', getreg('+'))
-  call assert_equal('primary', getreg('*'))
-
-  call system('wl-copy overwrite')
-  call system('wl-copy -p overwrite')
-
-  call assert_equal('overwrite', getreg('+'))
-  call assert_equal('overwrite-primary', getreg('*'))
-
-  call setreg('+', 'regular')
-  call setreg('*', 'primary')
-
-  call assert_equal('regular', getreg('+'))
-  call assert_equal('primary', getreg('*'))
-
-  call s:UnsetupFocusStealing()
 endfunc
 
 " Test when there are no supported mime types for the selection

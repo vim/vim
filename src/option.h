@@ -1153,9 +1153,6 @@ EXTERN long	p_wmw;		// 'winminwidth'
 EXTERN long	p_wiw;		// 'winwidth'
 #ifdef FEAT_WAYLAND
 EXTERN char_u	*p_wse;		// 'wlseat'
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-EXTERN int	p_wst;		// 'wlsteal'
-# endif
 EXTERN long     p_wtm;		// 'wltimeoutlen'
 #endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)

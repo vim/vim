@@ -1616,8 +1616,6 @@ genwaylandproto:
 # Needed for parallel jobs to work
 auto/wayland/ext-data-control-v1.h: auto/wayland/ext-data-control-v1.c
 auto/wayland/wlr-data-control-unstable-v1.h: auto/wayland/wlr-data-control-unstable-v1.c
-auto/wayland/primary-selection-unstable-v1.h: auto/wayland/primary-selection-unstable-v1.c
-auto/wayland/xdg-shell.h: auto/wayland/xdg-shell.c
 
 # Unittest files
 JSON_TEST_SRC = json_test.c
@@ -3674,12 +3672,6 @@ objects/wlr-data-control-unstable-v1.o: auto/wayland/wlr-data-control-unstable-v
 objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
 	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
 
-objects/xdg-shell.o: auto/wayland/xdg-shell.c
-	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/xdg-shell.c
-
-objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
-
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
 
@@ -4561,17 +4553,13 @@ objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
 objects/wlr-data-control-unstable-v1.o: \
  auto/wayland/wlr-data-control-unstable-v1.c
 objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
-objects/xdg-shell.o: auto/wayland/xdg-shell.c
-objects/primary-selection-unstable-v1.o: \
- auto/wayland/primary-selection-unstable-v1.c
 objects/wayland.o: auto/osdef.h wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h wayland.h \
  auto/wayland/wlr-data-control-unstable-v1.h \
- auto/wayland/ext-data-control-v1.h auto/wayland/xdg-shell.h \
- auto/wayland/primary-selection-unstable-v1.h
+ auto/wayland/ext-data-control-v1.h
 objects/vterm_encoding.o: auto/osdef.h libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/encoding/DECdrawing.inc libvterm/src/encoding/uk.inc
