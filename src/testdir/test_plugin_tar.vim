@@ -86,6 +86,11 @@ def g:Test_tar_evil()
   assert_equal("X.tar", @%)
   assert_equal(1, b:leading_slash)
 
+  ### Press x to extract
+  :6
+  var mess = execute(":normal x", '')
+  assert_match('(tar#Extract) Path Traversal Attack detected, not extracting!', mess)
+
   ### Check ENTER on file
   :6
   exe ":normal \<cr>"
