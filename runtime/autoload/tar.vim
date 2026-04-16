@@ -24,6 +24,7 @@
 "   2026 Apr 09 by Vim Project: fix bugs with zstd support (#19930)
 "   2026 Apr 09 by Vim Project: fix bug with dotted filename (#19930)
 "   2026 Apr 15 by Vim Project: fix more path traversal issues (#19981)
+"   2026 Apr 16 by Vim Project: use g:tar_secure in tar#Extract()
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -640,7 +641,7 @@ fun! tar#Extract()
   endif
 
   if tarball =~# "\.tar$"
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -649,7 +650,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tgz$"
    let extractcmd= substitute(extractcmd,"-","-z","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -658,7 +659,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tar\.gz$"
    let extractcmd= substitute(extractcmd,"-","-z","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -667,7 +668,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tbz$"
    let extractcmd= substitute(extractcmd,"-","-j","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -676,7 +677,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tar\.bz2$"
    let extractcmd= substitute(extractcmd,"-","-j","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -685,7 +686,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tar\.bz3$"
    let extractcmd= substitute(extractcmd,"-","-j","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -694,7 +695,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.txz$"
    let extractcmd= substitute(extractcmd,"-","-J","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -703,7 +704,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tar\.xz$"
    let extractcmd= substitute(extractcmd,"-","-J","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -712,7 +713,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tzst$"
    let extractcmd= substitute(extractcmd,"-","--zstd -","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -721,7 +722,7 @@ fun! tar#Extract()
 
   elseif tarball =~# "\.tar\.zst$"
    let extractcmd= substitute(extractcmd,"-","--zstd -","")
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -732,7 +733,7 @@ fun! tar#Extract()
    if has("linux")
     let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
    endif
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -743,7 +744,7 @@ fun! tar#Extract()
    if has("linux")
     let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
    endif
-   call system(extractcmd." ".shellescape(tarball)." ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
