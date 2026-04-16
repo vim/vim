@@ -17,6 +17,9 @@
 
 static void do_by_tplmode(int tplmode, int col_start, int col_end,
 	int *pcurtab_row, int *ptabpagenr);
+static void tabpanel_free_click_regions(void);
+static void tabpanel_append_click_regions(stl_clickrec_T *clicktab,
+	char_u *buf, int row, int col_start, int col_end, int tabnr);
 
 // set pcurtab_row. don't redraw tabpanel.
 #define TPLMODE_GET_CURTAB_ROW	0
@@ -136,6 +139,108 @@ tabpanel_leftcol(void)
 }
 
 /*
+ * Free previously resolved 'tabpanel' click regions.
+ */
+    static void
+tabpanel_free_click_regions(void)
+{
+    int n;
+
+    if (tabpanel_stl_click != NULL)
+    {
+	for (n = 0; n < tabpanel_stl_click_count; n++)
+	    vim_free(tabpanel_stl_click[n].funcname);
+	VIM_CLEAR(tabpanel_stl_click);
+    }
+    tabpanel_stl_click_count = 0;
+}
+
+/*
+ * Convert click records produced by build_stl_str_hl() for one line of
+ * 'tabpanel' into screen-column based regions and append them to the global
+ * tabpanel_stl_click array.  The caller keeps ownership of the funcname
+ * strings inside "clicktab" — this function makes its own copies.
+ */
+    static void
+tabpanel_append_click_regions(
+	stl_clickrec_T	*clicktab,
+	char_u		*buf,
+	int		row,
+	int		col_start,
+	int		col_end,
+	int		tabnr)
+{
+    int		count = 0;
+    int		n;
+    int		base_col;
+    int		acc_width = 0;
+    int		max_w = col_end - col_start;
+    char_u	*p;
+    char_u	*cur_funcname = NULL;
+    int		cur_minwid = 0;
+    int		region_start_col;
+    stl_click_region_T *new_arr;
+    int		limit;
+
+    if (clicktab == NULL)
+	return;
+
+    for (n = 0; clicktab[n].start != NULL; n++)
+	count++;
+    if (count == 0)
+	return;
+
+    base_col = (tpl_align == ALIGN_RIGHT ? topframe->fr_width : 0) + col_start;
+    region_start_col = base_col;
+
+    // Grow the global array to make room for up to "count" more regions
+    // (one close for each record plus a possible trailing region).
+    new_arr = vim_realloc(tabpanel_stl_click,
+	    sizeof(stl_click_region_T) * (tabpanel_stl_click_count + count + 1));
+    if (new_arr == NULL)
+	return;
+    tabpanel_stl_click = new_arr;
+
+    p = buf;
+    for (n = 0; clicktab[n].start != NULL; n++)
+    {
+	acc_width += vim_strnsize(p, (int)(clicktab[n].start - p));
+	p = clicktab[n].start;
+	limit = acc_width < max_w ? acc_width : max_w;
+
+	if (cur_funcname != NULL)
+	{
+	    stl_click_region_T *r =
+				&tabpanel_stl_click[tabpanel_stl_click_count];
+	    r->row = row;
+	    r->col_start = region_start_col;
+	    r->col_end = base_col + limit;
+	    r->funcname = vim_strsave(cur_funcname);
+	    r->minwid = cur_minwid;
+	    r->tabnr = tabnr;
+	    tabpanel_stl_click_count++;
+	}
+
+	cur_funcname = clicktab[n].funcname;
+	cur_minwid = clicktab[n].minwid;
+	region_start_col = base_col + limit;
+    }
+
+    // Close the final region if it extends to the end.
+    if (cur_funcname != NULL)
+    {
+	stl_click_region_T *r = &tabpanel_stl_click[tabpanel_stl_click_count];
+	r->row = row;
+	r->col_start = region_start_col;
+	r->col_end = base_col + max_w;
+	r->funcname = vim_strsave(cur_funcname);
+	r->minwid = cur_minwid;
+	r->tabnr = tabnr;
+	tabpanel_stl_click_count++;
+    }
+}
+
+/*
  * draw the tabpanel.
  */
     void
@@ -150,7 +255,13 @@ draw_tabpanel(void)
     int is_right = tpl_align == ALIGN_RIGHT;
 
     if (maxwidth == 0)
+    {
+	tabpanel_free_click_regions();
 	return;
+    }
+
+    // Discard old click regions — they'll be rebuilt during redraw below.
+    tabpanel_free_click_regions();
 
     // Reset got_int to avoid build_stl_str_hl() isn't evaluated.
     got_int = FALSE;
@@ -495,6 +606,7 @@ do_by_tplmode(
 		char_u	buf[IOSIZE];
 		stl_hlrec_T	*hltab;
 		stl_hlrec_T	*tabtab;
+		stl_clickrec_T	*clicktab = NULL;
 
 		if (args.maxrow <= row - args.offsetrow)
 		    break;
@@ -508,12 +620,30 @@ do_by_tplmode(
 			(args.cwp, buf, sizeof(buf),
 			&usefmt, opt_name, opt_scope, TPL_FILLCHAR,
 			args.col_end - args.col_start, &hltab, &tabtab,
-			NULL);
+			tplmode == TPLMODE_REDRAW ? &clicktab : NULL);
 
 		args.prow = &row;
 		args.pcol = &col;
 
 		draw_tabpanel_with_highlight(tplmode, buf, hltab, &args);
+
+		// Record any %[FuncName] click regions for this line once
+		// the text has been drawn.  Only visible rows participate.
+		if (tplmode == TPLMODE_REDRAW && clicktab != NULL)
+		{
+		    int screen_row = row - args.offsetrow;
+		    int m;
+
+		    if (screen_row >= 0 && screen_row < args.maxrow)
+			tabpanel_append_click_regions(clicktab, buf,
+				screen_row, args.col_start, args.col_end,
+				(int)v.vval.v_number);
+		    // We took ownership of the click records — free the
+		    // function names (matches the non-NULL clicktab path in
+		    // build_stl_str_hl()).
+		    for (m = 0; clicktab[m].start != NULL; m++)
+			vim_free(clicktab[m].funcname);
+		}
 
 		// Move to next line for %@
 		if (*usefmt != NUL)

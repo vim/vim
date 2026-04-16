@@ -20,9 +20,11 @@
 static long mouse_hor_step = 6;
 static long mouse_vert_step = 3;
 static win_T *dragwin = NULL;	// window being dragged
-static int stl_click_handler(win_T *wp, int mcol, int which_button, int mods);
+static int stl_click_handler(win_T *wp, int mrow, int mcol, int which_button,
+								    int mods);
 static int stl_click_handler_regions(stl_click_region_T *regions,
-				    int region_count, int winid, int mcol,
+				    int region_count, int winid,
+				    char_u *area_name, int mrow, int mcol,
 				    int which_button, int mods);
 
     void
@@ -492,6 +494,17 @@ do_mouse(
     if (mouse_col < firstwin->w_wincol
 		|| mouse_col >= firstwin->w_wincol + topframe->fr_width)
     {
+	// Dispatch 'tabpanel' %[FuncName] click regions before falling through
+	// to tab-page selection.  On drag events fall through to the normal
+	// tab-drag handling.
+	if (is_click && !is_drag
+		&& stl_click_handler_regions(tabpanel_stl_click,
+					    tabpanel_stl_click_count,
+					    0, (char_u *)"tabpanel",
+					    mouse_row, mouse_col,
+					    which_button, mod_mask))
+	    return FALSE;
+
 	tp_label.is_panel = true;
 	tp_label.just_in = true;
 	tp_label.nr = get_tabpagenr_on_tabpanel();
@@ -511,8 +524,9 @@ do_mouse(
 	if (is_click && !is_drag
 		&& stl_click_handler_regions(tabline_stl_click,
 					    tabline_stl_click_count,
-					    0, mouse_col, which_button,
-					    mod_mask))
+					    0, (char_u *)"tabline",
+					    mouse_row, mouse_col,
+					    which_button, mod_mask))
 	    return FALSE;
 
 	tp_label.just_in = true;
@@ -778,7 +792,7 @@ do_mouse(
     // Check for statusline click handler early, before visual mode or
     // other button-specific handling can interfere.
     if (in_status_line && is_click && !is_drag
-	    && stl_click_handler(dragwin, mouse_col,
+	    && stl_click_handler(dragwin, mouse_row, mouse_col,
 						which_button, mod_mask))
     {
 #ifdef FEAT_MOUSESHAPE
@@ -1663,6 +1677,8 @@ stl_click_handler_regions(
 	stl_click_region_T  *regions,
 	int		    region_count,
 	int		    winid,
+	char_u		    *area_name,
+	int		    mrow,
 	int		    mcol,
 	int		    which_button,
 	int		    mods)
@@ -1682,10 +1698,12 @@ stl_click_handler_regions(
     if (regions == NULL || region_count == 0)
 	return FALSE;
 
-    // Find the click region at the given column.
+    // Find the click region at the given row and column.
     for (n = 0; n < region_count; n++)
     {
-	if (col >= regions[n].col_start && col < regions[n].col_end)
+	if (regions[n].row == mrow
+		&& col >= regions[n].col_start
+		&& col < regions[n].col_end)
 	    break;
     }
     if (n >= region_count || regions[n].funcname == NULL)
@@ -1728,10 +1746,13 @@ stl_click_handler_regions(
     dict_add_number(info, "winid", winid);
 
     // "area": which option the clicked region belongs to.  Lets a shared
-    // dispatcher distinguish 'statusline' from 'tabline' (and future areas)
-    // without having to overload winid == 0.
-    dict_add_string(info, "area",
-	    winid == 0 ? (char_u *)"tabline" : (char_u *)"statusline");
+    // dispatcher distinguish 'statusline', 'tabline' and 'tabpanel' without
+    // having to overload winid == 0.
+    dict_add_string(info, "area", area_name);
+
+    // Expose tab page number for 'tabpanel' regions.
+    if (regions[n].tabnr > 0)
+	dict_add_number(info, "tabnr", regions[n].tabnr);
 
     // Call the function with the info dict as argument.
     argvars[0].v_type = VAR_DICT;
@@ -1755,9 +1776,14 @@ stl_click_handler_regions(
     {
 	// Make sure the tabline gets redrawn too when the callback asks for
 	// a redraw (redraw_statuslines() only redraws the tabline when
-	// redraw_tabline is set).
+	// redraw_tabline is set).  For tabpanel the whole screen needs to be
+	// refreshed.
 	if (winid == 0)
 	    redraw_tabline = TRUE;
+# ifdef FEAT_TABPANEL
+	if (STRCMP(area_name, "tabpanel") == 0)
+	    redraw_all_later(UPD_NOT_VALID);
+# endif
 	redraw_statuslines();
     }
 
@@ -1766,6 +1792,8 @@ stl_click_handler_regions(
     (void)regions;
     (void)region_count;
     (void)winid;
+    (void)area_name;
+    (void)mrow;
     (void)mcol;
     (void)which_button;
     (void)mods;
@@ -1778,12 +1806,13 @@ stl_click_handler_regions(
  * Returns TRUE if the function was called and handled the click.
  */
     static int
-stl_click_handler(win_T *wp, int mcol, int which_button, int mods)
+stl_click_handler(win_T *wp, int mrow, int mcol, int which_button, int mods)
 {
     if (wp == NULL)
 	return FALSE;
     return stl_click_handler_regions(wp->w_stl_click, wp->w_stl_click_count,
-					wp->w_id, mcol, which_button, mods);
+				wp->w_id, (char_u *)"statusline",
+				mrow, mcol, which_button, mods);
 }
 
 // dragwin is declared near the top of the file

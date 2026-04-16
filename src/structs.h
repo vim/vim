@@ -1451,10 +1451,12 @@ typedef struct {
  * Per-window resolved click regions (screen column based).
  */
 typedef struct {
+    int		row;		// screen row where region lives
     int		col_start;	// screen column where region starts
     int		col_end;	// screen column where region ends
     char_u	*funcname;	// function name (allocated copy)
     int		minwid;		// minwid value
+    int		tabnr;		// tab page number (tabpanel only, 0 otherwise)
 } stl_click_region_T;
 
 
