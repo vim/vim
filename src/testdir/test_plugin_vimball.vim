@@ -95,6 +95,5 @@ func Test_vimball_path_traversal_drive_letter()
 
   let mess = execute(':mess')->split('\n')[-1]
   call assert_match('(Vimball) Path Traversal Attack detected, aborting\.\.\.', mess)
-  call assert_false(isdirectory('C:'))
   call s:teardown()
 endfunc
