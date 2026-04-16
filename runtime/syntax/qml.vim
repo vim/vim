@@ -3,7 +3,7 @@
 " Previous Maintainer: Peter Hoeg <peter@hoeg.com>
 " Maintainer:   Chase Knowlden <haroldknowlden@gmail.com>
 " Changes:      `git log` is your friend
-" Last Change:  2023 Aug 16
+" Last Change:  2026 Apr 16
 "
 " This file is bassed on the original work done by Warwick Allison
 " <warwick.allison@nokia.com> whose did about 99% of the work here.
@@ -44,6 +44,7 @@ syn match   qmlObjectLiteralType "[A-Za-z][_A-Za-z0-9]*\s*\({\)\@="
 syn region  qmlTernaryColon   start="?" end=":" contains=@qmlExpr,qmlBraces,qmlParens,qmlLineComment
 syn match   qmlBindingProperty   "\<[A-Za-z][_A-Za-z.0-9]*\s*:"
 syn match  qmlNullishCoalescing    "??"
+syn match   qmlOptionalChaining  "?\."
 
 syn keyword qmlConditional       if else switch
 syn keyword qmlRepeat            while for do in
