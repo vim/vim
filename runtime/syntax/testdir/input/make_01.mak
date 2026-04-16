@@ -14,3 +14,6 @@ endef
 
 default:
 	$(call say,"Hello (world)!")
+
+foo:
+	echo "bar$$" baz
