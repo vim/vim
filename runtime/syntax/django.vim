@@ -31,7 +31,7 @@ syn keyword djangoStatement contained openbrace closebrace opencomment
 syn keyword djangoStatement contained closecomment widthratio url with endwith
 syn keyword djangoStatement contained get_current_language trans noop blocktrans
 syn keyword djangoStatement contained endblocktrans get_available_languages
-syn keyword djangoStatement contained get_current_language_bidi plural
+syn keyword djangoStatement contained get_current_language_bidi get_language_info plural
 syn keyword djangoStatement contained translate blocktranslate endblocktranslate
 syn keyword djangoStatement contained partialdef endpartialdef partial
 syn keyword djangoStatement contained querystring lorem verbatim
