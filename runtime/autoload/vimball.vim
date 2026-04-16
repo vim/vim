@@ -1,13 +1,10 @@
 " vimball.vim : construct a file containing both paths and files
 " Maintainer: This runtime file is looking for a new maintainer.
 " Original Author:	Charles E. Campbell
-" Date:			Apr 11, 2016
+" Date:			Apr 16, 2026
 " Version:	37 (with modifications from the Vim Project)
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 "  Last Change:
-"   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
-"   2026 Apr 05 by Vim Project: Detect path traversal attacks
-"   2026 Apr 09 by Vim Project: Detect more path traversal attacks
 " Copyright: (c) 2004-2011 by Charles E. Campbell
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 "            (see |copyright|) except use "Vimball" instead of "Vim".
@@ -230,8 +227,11 @@ fun! vimball#Vimball(really,...)
    let fsize   = substitute(getline(linenr+1),'^\(\d\+\).\{-}$','\1','')+0
    let fenc    = substitute(getline(linenr+1),'^\d\+\s*\(\S\{-}\)$','\1','')
    let filecnt = filecnt + 1
-   " Do not allow a leading / or .. anywhere in the file name
-   if fname =~ '\.\.' || fname =~ '^/'
+   " Do not allow a leading /, .. anywhere, or a Windows drive letter
+   " (e.g. C:/foo) in the file name.  Backslashes were already converted
+   " to forward slashes above, so this also catches \\server\share UNC
+   " paths via the leading-slash check.
+   if fname =~ '\.\.' || fname =~ '^/' || fname =~ '^\a:'
      echomsg "(Vimball) Path Traversal Attack detected, aborting..."
      exe "tabn ".curtabnr
      bw! Vimball
