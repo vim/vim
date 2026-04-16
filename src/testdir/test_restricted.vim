@@ -220,4 +220,49 @@ func Test_restricted_cscope()
   call delete('XResult_cscope')
 endfunc
 
+func Test_vim9_storeenv_sandbox()
+  let lines =<< trim END
+    vim9script
+
+    function g:LegacySetEnv()
+      let $VIM_SANDBOX_TEST = 'legacy'
+    endfunc
+
+    def Vim9SetEnv()
+      $VIM_SANDBOX_TEST = 'vim9_bypass'
+    enddef
+
+    # Legacy path should be blocked by check_secure()
+    var legacy_blocked = false
+    try
+      legacy sandbox call LegacySetEnv()
+    catch /E48/
+      legacy_blocked = true
+    endtry
+    assert_true(legacy_blocked, 'legacy $ENV assignment should be blocked in sandbox')
+    assert_false(exists('$VIM_SANDBOX_TEST'))
+
+    # Vim9 path should also be blocked by check_secure()
+    var vim9_blocked = false
+    try
+      sandbox Vim9SetEnv()
+    catch /E48/
+      vim9_blocked = true
+    endtry
+    assert_true(vim9_blocked, 'Vim9 ISN_STOREENV should be blocked in sandbox')
+    assert_false(exists('$VIM_SANDBOX_TEST'))
+    writefile([
+    legacy_blocked,
+    vim9_blocked,
+    string(v:errors)], 'XResult_storeenv')
+    qa
+  END
+  call writefile(lines, 'Xtest_storeenv_sandbox.vim', 'D')
+  let expected = ['true', 'true', '[]']
+  if RunVim([], [], '-u NONE -N -i NONE --not-a-term -S Xtest_storeenv_sandbox.vim')
+    call assert_equal(expected, readfile('XResult_storeenv'))
+  endif
+  call delete('XResult_storeenv')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
