@@ -5129,9 +5129,9 @@ vsep_row_is_curwin(win_T *wp, int row)
 	return true;
 
     // Check if curwin is immediately to the right of wp's separator and
-    // "row" is within curwin's row range.
+    // "row" is within curwin's row range (including the winbar).
     if (curwin->w_wincol == W_ENDCOL(wp) + wp->w_vsep_width
-	    && row >= W_WINROW(curwin)
+	    && row >= curwin->w_winrow
 	    && row < W_WINROW(curwin) + curwin->w_height)
 	return true;
 
@@ -5173,7 +5173,7 @@ right_neighbor_at_row(win_T *wp, int row)
 
     FOR_ALL_WINDOWS(rn)
 	if (rn->w_wincol == rcol
-		&& row >= W_WINROW(rn)
+		&& row >= rn->w_winrow
 		&& row < W_WINROW(rn) + rn->w_height + rn->w_status_height)
 	    return rn;
     return NULL;
