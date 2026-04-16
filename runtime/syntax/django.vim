@@ -22,15 +22,13 @@ syn keyword djangoStatement contained autoescape csrf_token empty
 syn keyword djangoStatement contained and as block endblock by cycle debug else elif
 syn keyword djangoStatement contained extends filter endfilter firstof for
 syn keyword djangoStatement contained endfor if endif ifchanged endifchanged
-syn keyword djangoStatement contained ifequal endifequal ifnotequal
-syn keyword djangoStatement contained endifnotequal in include load not now or
-syn keyword djangoStatement contained parsed regroup reversed spaceless
-syn keyword djangoStatement contained endspaceless ssi templatetag openblock
+syn keyword djangoStatement contained in include load not now
+syn keyword djangoStatement contained regroup reversed spaceless
+syn keyword djangoStatement contained endspaceless templatetag openblock
 syn keyword djangoStatement contained closeblock openvariable closevariable
-syn keyword djangoStatement contained openbrace closebrace opencomment
+syn keyword djangoStatement contained openbrace closebrace opencomment or
 syn keyword djangoStatement contained closecomment widthratio url with endwith
-syn keyword djangoStatement contained get_current_language trans noop blocktrans
-syn keyword djangoStatement contained endblocktrans get_available_languages
+syn keyword djangoStatement contained get_current_language noop get_available_languages
 syn keyword djangoStatement contained get_current_language_bidi get_language_info plural
 syn keyword djangoStatement contained translate blocktranslate endblocktranslate
 syn keyword djangoStatement contained partialdef endpartialdef partial
@@ -40,7 +38,7 @@ syn keyword djangoStatement contained querystring lorem verbatim
 syn keyword djangoFilter contained add addslashes capfirst center cut date
 syn keyword djangoFilter contained default default_if_none dictsort
 syn keyword djangoFilter contained dictsortreversed divisibleby escape escapejs
-syn keyword djangoFilter contained filesizeformat first fix_ampersands
+syn keyword djangoFilter contained filesizeformat first
 syn keyword djangoFilter contained floatformat get_digit join last length length_is
 syn keyword djangoFilter contained linebreaks linebreaksbr linenumbers ljust
 syn keyword djangoFilter contained lower make_list phone2numeric pluralize
