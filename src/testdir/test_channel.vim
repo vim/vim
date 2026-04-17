@@ -2799,8 +2799,8 @@ func Test_listen()
     call assert_match('127.0.0.1:', g:server_received_addr)
 endfunc
 
-func Test_listen_invalid_port()
-    call ch_log('Test_listen_invalid_port()')
+func Test_listen_invalid_argument()
+    call ch_log('Test_listen_invalid_argument()')
 
     " missing port
     call assert_fails("call ch_listen('')", 'E475:')
@@ -2816,6 +2816,13 @@ func Test_listen_invalid_port()
 
     " port number negative
     call assert_fails("call ch_listen('-1')", 'E475:')
+
+    " make sure we don't accept hostname/IP address
+    call assert_fails("call ch_listen('127.0.0.1:4500')", 'E475:')
+    call assert_fails("call ch_listen('127.0.0.1')", 'E475:')
+    call assert_fails("call ch_listen('localhost:4500')", 'E475:')
+    call assert_fails("call ch_listen('localhost')", 'E475:')
+    call assert_fails("call ch_listen('[::1]')", 'E475:')
 endfunc
 
 func Test_listen_info_no_hostname()
