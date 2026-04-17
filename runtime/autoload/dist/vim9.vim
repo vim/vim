@@ -139,7 +139,11 @@ export def Open(file: string)
     setlocal shell&
     defer setbufvar('%', '&shell', shell)
   endif
-  Launch($"{Viewer()} {shellescape(file, 1)}")
+  if has('unix') && !has('win32unix') && !exists('$WSL_DISTRO_NAME')
+    Launch($"{Viewer()} {shellescape(file)}")
+  else
+    Launch($"{Viewer()} {shellescape(file, 1)}")
+  endif
 enddef
 
 # Uncomment this line to check for compilation errors early
