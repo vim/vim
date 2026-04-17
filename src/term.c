@@ -154,6 +154,9 @@ static termrequest_T rcs_status = TERMREQUEST_INIT;
 // Request window's position report:
 static termrequest_T winpos_status = TERMREQUEST_INIT;
 
+// Request DECRQM (DEC mode) report:
+static termrequest_T decrqm_status = TERMREQUEST_INIT;
+
 static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
@@ -165,6 +168,7 @@ static termrequest_T *all_termrequests[] = {
     &rbm_status,
     &rcs_status,
     &winpos_status,
+    &decrqm_status,
     NULL
 };
 
@@ -4307,6 +4311,36 @@ may_req_bg_color(void)
     }
 }
 
+/*
+ * Query the settings for the DEC modes we support via DECRQM.
+ * Only sent once, and only when the terminal is known not to dislike it
+ * (i.e. TPR_DECRQM is TPR_YES, or still TPR_UNKNOWN when the version response
+ * has not yet been received).
+ * The DECRPM responses are caught in handle_csi().
+ */
+    void
+may_req_decrqm(void)
+{
+    if (decrqm_status.tr_progress == STATUS_GET
+	    && term_props[TPR_DECRQM].tpr_status != TPR_NO
+	    && can_get_termresponse()
+	    && starting == 0)
+    {
+	MAY_WANT_TO_LOG_THIS;
+	LOG_TR1("Sending DECRQM requests");
+	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+	    out_str(IObuff);
+	}
+	termrequest_sent(&decrqm_status);
+	// check for the characters now, otherwise they might be eaten by
+	// get_keystroke()
+	out_flush();
+	(void)vpeekc_nomap();
+    }
+}
+
 #endif
 
 /*
@@ -5327,20 +5361,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 				    ? (char_u *)"sgr" : (char_u *)"xterm2", 0);
 	}
 
+#ifdef FEAT_TERMRESPONSE
 	int need_flush = FALSE;
 
-	// Send DECRQM sequences conditionally
-	if (term_props[TPR_DECRQM].tpr_status == TPR_YES)
-	{
-	    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
-	    {
-		vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
-		out_str(IObuff);
-	    }
-	    need_flush = TRUE;
-	}
-
-#ifdef FEAT_TERMRESPONSE
 	// Only request the cursor style if t_SH and t_RS are
 	// set. Only supported properly by xterm since version
 	// 279 (otherwise it returns 0x18).
@@ -5373,10 +5396,10 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    termrequest_sent(&rbm_status);
 	    need_flush = TRUE;
 	}
-#endif
 
 	if (need_flush)
 	    out_flush();
+#endif
     }
 }
 
@@ -5781,6 +5804,13 @@ handle_csi(
 	*slen = csi_len;
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+
+#ifdef FEAT_TERMRESPONSE
+	// Mark the DECRQM request as answered so it is not sent again and
+	// stoptermcap() does not wait for it.
+	if (decrqm_status.tr_progress == STATUS_SENT)
+	    decrqm_status.tr_progress = STATUS_GOT;
+#endif
 
 	if (setting >= 0 && setting <= 4)
 	{
