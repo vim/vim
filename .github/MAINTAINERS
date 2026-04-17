@@ -18,6 +18,7 @@ runtime/autoload/javascriptcomplete.vim			@jsit
 runtime/autoload/modula2.vim				@dkearns
 runtime/autoload/rubycomplete.vim			@segfault @dkearns
 runtime/autoload/rust.vim				@lilyball
+runtime/autoload/tohtml.vim				@fritzophrenic
 runtime/autoload/typeset.vim				@lifepillar
 runtime/autoload/xmlformat.vim				@chrisbra
 runtime/autoload/dist/json.vim				@habamax
@@ -468,7 +469,8 @@ runtime/pack/dist/opt/helptoc/				@kennypete
 runtime/pack/dist/opt/matchit/				@chrisbra
 runtime/pack/dist/opt/nohlsearch/			@habamax
 runtime/plugin/manpager.vim				@Konfekt
-runtime/syntax/shared/hgcommitDiff.vim			@vegerot
+runtime/plugin/tohtml.vim				@fritzophrenic
+runtime/syntax/2html.vim				@fritzophrenic
 runtime/syntax/abaqus.vim				@costerwi
 runtime/syntax/abnf.vim					@A4-Tacks
 runtime/syntax/aidl.vim					@dpelle
@@ -578,17 +580,17 @@ runtime/syntax/java.vim					@zzzyxwvut
 runtime/syntax/javascript.vim				@fleiner
 runtime/syntax/jinja.vim				@gpanders
 runtime/syntax/jjdescription.vim			@gpanders
+runtime/syntax/jq.vim					@vito-c
 runtime/syntax/json.vim					@vito-c
 runtime/syntax/jsonc.vim				@izhakjakov
 runtime/syntax/julia.vim				@carlobaldassi
 runtime/syntax/just.vim					@pbnj
-runtime/syntax/jq.vim					@vito-c
 runtime/syntax/karel.vim				@kirillmorozov
 runtime/syntax/kconfig.vim				@chrisbra
+runtime/syntax/kdl.vim					@imsnif @jiangyinzuo
 runtime/syntax/kitty.vim				@OXY2DEV
 runtime/syntax/kivy.vim					@prophittcorey
 runtime/syntax/kotlin.vim				@udalov
-runtime/syntax/kdl.vim					@imsnif @jiangyinzuo
 runtime/syntax/krl.vim					@KnoP-01
 runtime/syntax/leex.vim					@jparise
 runtime/syntax/less.vim					@genoma
@@ -605,8 +607,8 @@ runtime/syntax/m3quake.vim				@dkearns
 runtime/syntax/mailcap.vim				@dkearns
 runtime/syntax/mallard.vim				@jhradilek
 runtime/syntax/markdown.vim				@tpope
-runtime/syntax/mbsync.vim				@fymyte
 runtime/syntax/mason.vim				@petdance
+runtime/syntax/mbsync.vim				@fymyte
 runtime/syntax/mediawiki.vim				@avidseeker
 runtime/syntax/meson.vim				@Liambeguin
 runtime/syntax/mf.vim					@lifepillar
@@ -655,8 +657,8 @@ runtime/syntax/qml.vim					@ChaseKnowlden
 runtime/syntax/racket.vim				@benknoble
 runtime/syntax/raml.vim					@in3d
 runtime/syntax/rapid.vim				@KnoP-01
-runtime/syntax/ratpoison.vim				@trapd00r
 runtime/syntax/rasi.vim					@fymyte
+runtime/syntax/ratpoison.vim				@trapd00r
 runtime/syntax/rc.vim					@chrisbra
 runtime/syntax/rcs.vim					@hdima
 runtime/syntax/rebol.vim				@mrdubya
@@ -672,8 +674,9 @@ runtime/syntax/scala.vim				@derekwyatt
 runtime/syntax/scheme.vim				@evhan
 runtime/syntax/scss.vim					@tpope
 runtime/syntax/sed.vim					@dkearns
-runtime/syntax/shared/debversions.vim			@jamessan
 runtime/syntax/shaderslang.vim				@mTvare6
+runtime/syntax/shared/debversions.vim			@jamessan
+runtime/syntax/shared/hgcommitDiff.vim			@vegerot
 runtime/syntax/skhd.vim					@kiyoon
 runtime/syntax/solidity.vim				@coti-z
 runtime/syntax/spajson.vim				@dseomn
