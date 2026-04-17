@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2026 Apr 06
+# Last Change:  2026 Apr 17
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -139,7 +139,11 @@ export def Open(file: string)
     setlocal shell&
     defer setbufvar('%', '&shell', shell)
   endif
-  Launch($"{Viewer()} {shellescape(file, 1)}")
+  if has('unix') && !has('win32unix') && !exists('$WSL_DISTRO_NAME')
+    Launch($"{Viewer()} {shellescape(file)}")
+  else
+    Launch($"{Viewer()} {shellescape(file, 1)}")
+  endif
 enddef
 
 # Uncomment this line to check for compilation errors early
