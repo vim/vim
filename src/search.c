@@ -1216,6 +1216,109 @@ first_submatch(regmmatch_T *rp)
 #endif
 
 /*
+ * Parse a search pattern followed by an optional offset (e.g. "pat/e+1").
+ * On entry "*pat" points at the start of the pattern and "*patlen" is its
+ * length.  Updates the in/out parameters:
+ *    *pat / *patlen	   - moved past the pattern and offset
+ *    *strcopy		   - allocated copy if "\?" or "\/" was unescaped
+ *			     (caller must vim_free() it)
+ *    *searchstr and *searchstrlen - pointer/length of the search pattern only
+ *    *dircp		   - location of the trailing delimiter that was
+ *			     replaced with NUL (or NULL); caller may restore
+ *			     it
+ *    *offset		   - parsed offset (line/end/off)
+ *
+ * Returns the length of the parsed pattern + offset (used by get_address()
+ * to know how much of the command line was consumed).
+ */
+    int
+parse_search_pattern_offset(
+    char_u	**pat,
+    size_t	*patlen,
+    int		search_delim,
+    int		options,
+    char_u	**strcopy,
+    char_u	**searchstr,
+    size_t	*searchstrlen,
+    char_u	**dircp,
+    soffset_T	*offset)
+{
+    int		cmdlen = 0;
+    char_u	*p;
+    char_u	*ps;
+
+    if (*pat == NULL || **pat == NUL)
+	return 0;
+
+    ps = *strcopy;
+    *searchstr = *pat;
+    *searchstrlen = *patlen;
+    *dircp = NULL;
+
+    /*
+     * Find end of regular expression.
+     * If there is a matching '/' or '?', toss it.
+     */
+    p = skip_regexp_ex(*pat, search_delim, magic_isset(),
+						    strcopy, NULL, NULL);
+    if (*strcopy != ps)
+    {
+	size_t len = STRLEN(*strcopy);
+	// made a copy of "pat" to change "\?" to "?"
+	cmdlen += (int)(*patlen - len);
+	*pat = *strcopy;
+	*patlen = len;
+	*searchstr = *strcopy;
+	*searchstrlen = len;
+    }
+    if (*p == search_delim)
+    {
+	*searchstrlen = p - *pat;
+	*dircp = p;	// remember where we put the NUL
+	*p++ = NUL;
+    }
+
+    offset->line = FALSE;
+    offset->end = FALSE;
+    offset->off = 0;
+    /*
+     * Check for a line offset or a character offset.
+     * For get_address (echo off) we don't check for a character
+     * offset, because it is meaningless and the 's' could be a
+     * substitute command.
+     */
+    if (*p == '+' || *p == '-' || VIM_ISDIGIT(*p))
+	offset->line = TRUE;
+    else if ((options & SEARCH_OPT)
+				  && (*p == 'e' || *p == 's' || *p == 'b'))
+    {
+	if (*p == 'e')		// end
+	    offset->end = SEARCH_END;
+	++p;
+    }
+    if (VIM_ISDIGIT(*p) || *p == '+' || *p == '-')  // got an offset
+    {
+				    // 'nr' or '+nr' or '-nr'
+	if (VIM_ISDIGIT(*p) || VIM_ISDIGIT(*(p + 1)))
+	    offset->off = atol((char *)p);
+	else if (*p == '-')	    // single '-'
+	    offset->off = -1;
+	else			    // single '+'
+	    offset->off = 1;
+	++p;
+	while (VIM_ISDIGIT(*p))	    // skip number
+	    ++p;
+    }
+
+    // compute length of search command for get_address()
+    cmdlen += (int)(p - *pat);
+    *patlen -= p - *pat;
+    *pat = p;			    // put pat after search command
+
+    return cmdlen;
+}
+
+/*
  * Highest level string search function.
  * Search for the 'count'th occurrence of pattern 'pat' in direction 'dirc'
  *		  If 'dirc' is 0: use previous dir.
@@ -1257,7 +1360,6 @@ do_search(
     long	    c;
     char_u	    *dircp;
     char_u	    *strcopy = NULL;
-    char_u	    *ps;
     int		    show_search_stats;
     char_u	    *msgbuf = NULL;
     size_t	    msgbuflen = 0;
@@ -1369,66 +1471,9 @@ do_search(
 
 	if (pat != NULL && *pat != NUL)	// look for (new) offset
 	{
-	    /*
-	     * Find end of regular expression.
-	     * If there is a matching '/' or '?', toss it.
-	     */
-	    ps = strcopy;
-	    p = skip_regexp_ex(pat, search_delim, magic_isset(),
-							&strcopy, NULL, NULL);
-	    if (strcopy != ps)
-	    {
-		size_t len = STRLEN(strcopy);
-		// made a copy of "pat" to change "\?" to "?"
-		searchcmdlen += (int)(patlen - len);
-		pat = strcopy;
-		patlen = len;
-		searchstr = strcopy;
-		searchstrlen = len;
-	    }
-	    if (*p == search_delim)
-	    {
-		searchstrlen = p - pat;
-		dircp = p;	// remember where we put the NUL
-		*p++ = NUL;
-	    }
-	    spats[0].off.line = FALSE;
-	    spats[0].off.end = FALSE;
-	    spats[0].off.off = 0;
-	    /*
-	     * Check for a line offset or a character offset.
-	     * For get_address (echo off) we don't check for a character
-	     * offset, because it is meaningless and the 's' could be a
-	     * substitute command.
-	     */
-	    if (*p == '+' || *p == '-' || VIM_ISDIGIT(*p))
-		spats[0].off.line = TRUE;
-	    else if ((options & SEARCH_OPT)
-				      && (*p == 'e' || *p == 's' || *p == 'b'))
-	    {
-		if (*p == 'e')		// end
-		    spats[0].off.end = SEARCH_END;
-		++p;
-	    }
-	    if (VIM_ISDIGIT(*p) || *p == '+' || *p == '-')  // got an offset
-	    {
-					    // 'nr' or '+nr' or '-nr'
-		if (VIM_ISDIGIT(*p) || VIM_ISDIGIT(*(p + 1)))
-		    spats[0].off.off = atol((char *)p);
-		else if (*p == '-')	    // single '-'
-		    spats[0].off.off = -1;
-		else			    // single '+'
-		    spats[0].off.off = 1;
-		++p;
-		while (VIM_ISDIGIT(*p))	    // skip number
-		    ++p;
-	    }
-
-	    // compute length of search command for get_address()
-	    searchcmdlen += (int)(p - pat);
-
-	    patlen -= p - pat;
-	    pat = p;			    // put pat after search command
+	    searchcmdlen += parse_search_pattern_offset(&pat, &patlen,
+				search_delim, options, &strcopy, &searchstr,
+				&searchstrlen, &dircp, &spats[0].off);
 	}
 
 	show_search_stats = FALSE;
