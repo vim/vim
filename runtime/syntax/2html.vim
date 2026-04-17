@@ -318,7 +318,7 @@ if settings.use_css
 	saved_style = get(stylelist, style_id, () => {
 	  var res = CSS1(style_id)
 	  if !empty(res)
-	    saved_style = "." .. style_name .. " { " .. saved_style .. "}"
+	    res = "." .. style_name .. " { " .. res .. "}"
 	  endif
 	  stylelist[style_id] = res
 	  return res
