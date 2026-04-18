@@ -2464,7 +2464,7 @@ term_enter_normal_mode(void)
     check_cursor();
     if (coladvance(col) == FAIL)
 	coladvance(MAXCOL);
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
     curwin->w_topline = term->tl_buffer_scrolled + 1;
 }
 
@@ -3562,7 +3562,7 @@ handle_settermprop(
 	    if (term == curbuf->b_term)
 	    {
 		maketitle();
-		curwin->w_redr_status = TRUE;
+		curwin->w_redr_status = true;
 	    }
 	    break;
 

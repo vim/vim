@@ -7917,7 +7917,7 @@ ex_syncbind(exarg_T *eap UNUSED)
 	    curwin->w_scbind_pos = topline;
 	    redraw_later(UPD_VALID);
 	    cursor_correct();
-	    curwin->w_redr_status = TRUE;
+	    curwin->w_redr_status = true;
 	}
     }
     curwin = save_curwin;

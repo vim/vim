@@ -724,7 +724,7 @@ wingotofile:
 			Prenum1, ACTION_SPLIT, (linenr_T)1, (linenr_T)MAXLNUM,
 			FALSE, FALSE);
 		vim_free(ptr);
-		curwin->w_set_curswant = TRUE;
+		curwin->w_set_curswant = true;
 		break;
 #endif
 
@@ -5777,7 +5777,7 @@ win_enter_ext(win_T *wp, int flags)
     if (curwin_invalid == 0)
     {
 	prevwin = curwin;	// remember for CTRL-W p
-	curwin->w_redr_status = TRUE;
+	curwin->w_redr_status = true;
     }
     curwin = wp;
     curbuf = wp->w_buffer;
@@ -5818,7 +5818,7 @@ win_enter_ext(win_T *wp, int flags)
     }
 
     maketitle();
-    curwin->w_redr_status = TRUE;
+    curwin->w_redr_status = true;
 #ifdef FEAT_TERMINAL
     if (bt_terminal(curwin->w_buffer))
 	// terminal is likely in another mode
@@ -5831,7 +5831,7 @@ win_enter_ext(win_T *wp, int flags)
     {
 	win_T *ww;
 	FOR_ALL_WINDOWS(ww)
-	    ww->w_redr_status = TRUE;
+	    ww->w_redr_status = true;
     }
 #if defined(FEAT_TABPANEL)
     redraw_tabpanel = TRUE;
@@ -6513,7 +6513,7 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
 	    wp->w_winrow = *row;
 	    wp->w_wincol = *col;
 	    redraw_win_later(wp, UPD_NOT_VALID);
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	}
 	// WinBar will not show if the window height is zero
 	h = VISIBLE_HEIGHT(wp) + wp->w_status_height;
@@ -7257,7 +7257,7 @@ win_fix_scroll(int resize)
 	{
 	    // Cursor position in this window may now be invalid.  It is kept
 	    // potentially invalid until the window is made the current window.
-	    wp->w_do_win_fix_cursor = TRUE;
+	    wp->w_do_win_fix_cursor = true;
 
 	    // If window has moved update botline to keep the same screenlines.
 	    if (*p_spk == 's' && wp->w_winrow != wp->w_prev_winrow
@@ -7315,7 +7315,7 @@ win_fix_cursor(int normal)
 	    || wp->w_buffer->b_ml.ml_line_count < wp->w_height)
 	return;
 
-    wp->w_do_win_fix_cursor = FALSE;
+    wp->w_do_win_fix_cursor = false;
     // Determine valid cursor range.
     long so = MIN(wp->w_height / 2, get_scrolloff_value());
     linenr_T lnum = wp->w_cursor.lnum;
@@ -7385,7 +7385,7 @@ win_new_height(win_T *wp, int height)
     }
 
     wp->w_height = height;
-    wp->w_redr_status = TRUE;
+    wp->w_redr_status = true;
     win_comp_scroll(wp);
 
     // There is no point in adjusting the scroll position when exiting.  Some
@@ -7531,7 +7531,7 @@ win_new_width(win_T *wp, int width)
 	curs_columns(TRUE);	// validate w_wrow
 
     redraw_win_later(wp, UPD_NOT_VALID);
-    wp->w_redr_status = TRUE;
+    wp->w_redr_status = true;
 }
 
     void

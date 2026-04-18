@@ -650,7 +650,7 @@ update_curswant_force(void)
 	- curwin->w_virtcol_first_char
 #endif
 	;
-    curwin->w_set_curswant = FALSE;
+    curwin->w_set_curswant = false;
 }
 
 /*
@@ -766,7 +766,7 @@ set_topline(win_T *wp, linenr_T lnum)
     if (wp->w_botline > wp->w_buffer->b_ml.ml_line_count + 1)
 	wp->w_botline = wp->w_buffer->b_ml.ml_line_count + 1;
     wp->w_topline = lnum;
-    wp->w_topline_was_set = TRUE;
+    wp->w_topline_was_set = true;
 #ifdef FEAT_DIFF
     if (lnum != prev_topline)
 	// Keep the filler lines when the topline didn't change.
@@ -3044,7 +3044,7 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #ifdef FEAT_DIFF
     curwin->w_topfill = topfill;
     if (old_topline > curwin->w_topline + curwin->w_height)
-	curwin->w_botfill = FALSE;
+	curwin->w_botfill = false;
     check_topfill(curwin, FALSE);
 #endif
     curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
@@ -3458,7 +3458,7 @@ do_check_cursorbind(void)
 	    // Only scroll when 'scrollbind' hasn't done this.
 	    if (!curwin->w_p_scb)
 		update_topline();
-	    curwin->w_redr_status = TRUE;
+	    curwin->w_redr_status = true;
 	}
     }
 

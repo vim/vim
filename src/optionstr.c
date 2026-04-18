@@ -1416,7 +1416,7 @@ did_set_buftype(optset_T *args UNUSED)
 
     if (curwin->w_status_height)
     {
-	curwin->w_redr_status = TRUE;
+	curwin->w_redr_status = true;
 	redraw_later(UPD_VALID);
     }
     curbuf->b_help = (curbuf->b_p_bt[0] == 'h');
@@ -5553,7 +5553,7 @@ did_set_string_option(
     if (curwin->w_curswant != MAXCOL
 		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0
 				&& (get_option_flags(opt_idx) & P_HLONLY) == 0)
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 
     if ((opt_flags & OPT_NO_REDRAW) == 0)
     {

@@ -476,7 +476,7 @@ do_tag(
 		    curwin->w_cursor.lnum = saved_fmark.mark.lnum;
 		}
 		curwin->w_cursor.col = saved_fmark.mark.col;
-		curwin->w_set_curswant = TRUE;
+		curwin->w_set_curswant = true;
 		check_cursor();
 #ifdef FEAT_FOLDING
 		if ((fdo_flags & FDO_TAG) && old_KeyTyped)
@@ -3898,7 +3898,7 @@ jumpto_tag(
 
     if (GETFILE_SUCCESS(getfile_result))	// got to the right file
     {
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 	postponed_split = 0;
 
 	save_magic_overruled = magic_overruled;

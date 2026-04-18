@@ -212,7 +212,7 @@ update_screen(int type_arg)
 			    wp->w_redr_type = UPD_NOT_VALID;
 			    if (W_WINROW(wp) + wp->w_height
 					 + wp->w_status_height <= msg_scrolled)
-				wp->w_redr_status = TRUE;
+				wp->w_redr_status = true;
 			}
 		    }
 		}
@@ -489,7 +489,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 
     row = statusline_row(wp);
 
-    wp->w_redr_status = FALSE;
+    wp->w_redr_status = false;
     if (wp->w_status_height == 0)
     {
 	// no status line, can only be last window
@@ -501,7 +501,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    || (!ignore_pum && pum_visible()))
     {
 	// Don't redraw right now, do it later.
-	wp->w_redr_status = TRUE;
+	wp->w_redr_status = true;
     }
 #ifdef FEAT_STL_OPT
     else if (*p_stl != NUL || *wp->w_p_stl != NUL)
@@ -653,7 +653,7 @@ showruler(int always)
     if (pum_visible())
     {
 	// Don't redraw right now, do it later.
-	curwin->w_redr_status = TRUE;
+	curwin->w_redr_status = true;
 	return;
     }
 #if defined(FEAT_STL_OPT)
@@ -1442,7 +1442,7 @@ fold_line(
     {
 	curwin->w_cline_row = row;
 	curwin->w_cline_height = 1;
-	curwin->w_cline_folded = TRUE;
+	curwin->w_cline_folded = true;
 	curwin->w_valid |= (VALID_CHEIGHT|VALID_CROW);
     }
 
@@ -1563,7 +1563,7 @@ win_update(win_T *wp)
 
     if (type == UPD_NOT_VALID)
     {
-	wp->w_redr_status = TRUE;
+	wp->w_redr_status = true;
 	wp->w_lines_valid = 0;
     }
 
@@ -3370,7 +3370,7 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 	if (wp->w_buffer == buf)
 	{
 	    redraw_win_later(wp, type);
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	}
     }
 }
@@ -3387,7 +3387,7 @@ status_redraw_all(void)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_status_height)
 	{
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	    redraw_later(UPD_VALID);
 	}
 }
@@ -3403,7 +3403,7 @@ status_redraw_curbuf(void)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_status_height != 0 && wp->w_buffer == curbuf)
 	{
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	    redraw_later(UPD_VALID);
 	}
 }
@@ -3447,7 +3447,7 @@ redraw_statuslines(void)
 win_redraw_last_status(frame_T *frp)
 {
     if (frp->fr_layout == FR_LEAF)
-	frp->fr_win->w_redr_status = TRUE;
+	frp->fr_win->w_redr_status = true;
     else if (frp->fr_layout == FR_ROW)
     {
 	FOR_ALL_FRAMES(frp, frp->fr_child)

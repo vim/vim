@@ -6234,7 +6234,7 @@ goto_byte(long cnt)
 	curwin->w_cursor.lnum = lnum;
 	curwin->w_cursor.col = (colnr_T)boff;
 	curwin->w_cursor.coladd = 0;
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     }
     check_cursor();
 

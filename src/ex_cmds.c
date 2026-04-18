@@ -3430,7 +3430,7 @@ do_ecmd(
 		curwin->w_cursor.col = solcol;
 		check_cursor_col();
 		curwin->w_cursor.coladd = 0;
-		curwin->w_set_curswant = TRUE;
+		curwin->w_set_curswant = true;
 	    }
 	    else
 		beginline(BL_SOL | BL_FIX);

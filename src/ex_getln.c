@@ -584,7 +584,7 @@ may_do_incsearch_highlighting(
 
     // May redraw the status line to show the cursor position.
     if (p_ru && curwin->w_status_height > 0)
-	curwin->w_redr_status = TRUE;
+	curwin->w_redr_status = true;
 
     update_screen(UPD_SOME_VALID);
     highlight_match = FALSE;
@@ -1829,7 +1829,7 @@ getcmdline_int(
 	FOR_ALL_WINDOWS(wp)
 	    if (*p_stl != NUL || *wp->w_p_stl != NUL)
 	    {
-		wp->w_redr_status = TRUE;
+		wp->w_redr_status = true;
 		found_one = TRUE;
 	    }
 
