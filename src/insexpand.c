@@ -67,7 +67,7 @@ static char *ctrl_x_msgs[] =
 };
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
-#define STRING_INIT(s) \
+# define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
 static string_T ctrl_x_mode_names[] = {
     STRING_INIT("keyword"),
@@ -90,7 +90,7 @@ static string_T ctrl_x_mode_names[] = {
     STRING_INIT("cmdline"),
     STRING_INIT("register"),
 };
-#undef STRING_INIT
+# undef STRING_INIT
 #endif
 
 /*

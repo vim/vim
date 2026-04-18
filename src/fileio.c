@@ -4861,7 +4861,6 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
 {
     dict_T	*item;
     char_u	*p;
-    int		plen;
     varnumber_T	size, time;
     char_u	permbuf[] = "---------";
     string_T	s;
@@ -4871,10 +4870,10 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
 	return NULL;
     item->dv_refcount++;
 
-    p = utf16_to_enc(wfd->cFileName, &plen);
+    p = utf16_to_enc(wfd->cFileName, NULL);
     if (p == NULL)
 	goto theend;
-    if (dict_add_string_len(item, "name", p, plen) == FAIL)
+    if (dict_add_string(item, "name", p) == FAIL)
     {
 	vim_free(p);
 	goto theend;
