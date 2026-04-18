@@ -3898,7 +3898,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 
     if (wp->w_popup_close == POPCLOSE_BUTTON)
 	dict_add_string_len(dict, "close", (char_u *)"button", STRLEN_LITERAL("button"));
-    else if (wp->w_popup_close == POPCLOSE_BUTTON)
+    else if (wp->w_popup_close == POPCLOSE_CLICK)
 	dict_add_string_len(dict, "close", (char_u *)"click", STRLEN_LITERAL("click"));
     else
 	dict_add_string_len(dict, "close", (char_u *)"none", STRLEN_LITERAL("none"));
