@@ -2284,7 +2284,7 @@ prepare_to_exit(void)
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
-	gui.dying = TRUE;
+	gui.dying = true;
 	out_trash();	// trash any pending output
     }
     else
