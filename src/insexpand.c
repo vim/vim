@@ -85,7 +85,7 @@ static string_T ctrl_x_mode_names[] = {
     STRING_INIT("function"),
     STRING_INIT("omni"),
     STRING_INIT("spell"),
-    {NULL, 0},		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+    {NULL, 0},		    // CTRL_X_LOCAL_MSG is only used in "ctrl_x_msgs"
     STRING_INIT("eval"),
     STRING_INIT("cmdline"),
     STRING_INIT("register"),
