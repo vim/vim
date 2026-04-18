@@ -341,7 +341,6 @@ typedef struct Gui
     Bool	rsrc_rev_video;	    // Use reverse video?
 
     char_u	*geom;		    // Geometry, eg "80x24"
-    Bool	color_approx;	    // Some color was approximated
 #endif
 
 #ifdef FEAT_GUI_GTK

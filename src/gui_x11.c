@@ -1419,9 +1419,6 @@ gui_mch_init(void)
 #endif
     }
 
-    if (gui.color_approx)
-	emsg(_(e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect));
-
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
 #endif

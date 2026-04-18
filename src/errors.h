@@ -1138,10 +1138,7 @@ EXTERN char e_cant_find_postscript_resource_file_str_ps[]
 EXTERN char e_cant_read_postscript_resource_file_str[]
 	INIT(= N_("E457: Can't read PostScript resource file \"%s\""));
 #endif
-#ifdef FEAT_GUI_X11
-EXTERN char e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect[]
-	INIT(= N_("E458: Cannot allocate colormap entry, some colors may be incorrect"));
-#endif
+// E458 unused
 #if defined(UNIX) || defined(FEAT_SESSION)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));
