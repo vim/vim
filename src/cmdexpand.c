@@ -36,7 +36,7 @@ static int compl_match_arraysize;
 static int compl_startcol;
 static int compl_selected;
 // cmdline before expansion
-static char_u *cmdline_orig = NULL;
+static string_T cmdline_orig = {NULL, 0};
 
 #define SHOW_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
 
@@ -338,8 +338,12 @@ nextwild(
     // Save cmdline before inserting selected item
     if (!wild_navigate && ccline->cmdbuff != NULL)
     {
-	vim_free(cmdline_orig);
-	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+	vim_free(cmdline_orig.string);
+	cmdline_orig.string = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+	if (cmdline_orig.string == NULL)
+	    cmdline_orig.length = 0;
+	else
+	    cmdline_orig.length = ccline->cmdlen;
     }
 
     if (p != NULL && !got_int && !(options & WILD_NOSELECT))
@@ -1188,7 +1192,7 @@ ExpandCleanup(expand_T *xp)
     void
 clear_cmdline_orig(void)
 {
-    VIM_CLEAR(cmdline_orig);
+    VIM_CLEAR_STRING(cmdline_orig);
 }
 
 /*
@@ -4715,7 +4719,8 @@ f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
 	    || ccline->xpc == NULL || ccline->xpc->xp_files == NULL)
 	return;
     retdict = rettv->vval.v_dict;
-    ret = dict_add_string(retdict, "cmdline_orig", cmdline_orig);
+    ret = dict_add_string_len(retdict, "cmdline_orig",
+	cmdline_orig.string, (int)cmdline_orig.length);
     if (ret == OK)
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
     if (ret == OK)

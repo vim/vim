@@ -67,27 +67,30 @@ static char *ctrl_x_msgs[] =
 };
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
-static char *ctrl_x_mode_names[] = {
-    "keyword",
-    "ctrl_x",
-    "scroll",
-    "whole_line",
-    "files",
-    "tags",
-    "path_patterns",
-    "path_defines",
-    "unknown",		    // CTRL_X_FINISHED
-    "dictionary",
-    "thesaurus",
-    "cmdline",
-    "function",
-    "omni",
-    "spell",
-    NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
-    "eval",
-    "cmdline",
-    "register",
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+static string_T ctrl_x_mode_names[] = {
+    STRING_INIT("keyword"),
+    STRING_INIT("ctrl_x"),
+    STRING_INIT("scroll"),
+    STRING_INIT("whole_line"),
+    STRING_INIT("files"),
+    STRING_INIT("tags"),
+    STRING_INIT("path_patterns"),
+    STRING_INIT("path_defines"),
+    STRING_INIT("unknown"),		    // CTRL_X_FINISHED
+    STRING_INIT("dictionary"),
+    STRING_INIT("thesaurus"),
+    STRING_INIT("cmdline"),
+    STRING_INIT("function"),
+    STRING_INIT("omni"),
+    STRING_INIT("spell"),
+    {NULL, 0},		    // CTRL_X_LOCAL_MSG only used in STRING_INIT("ctrl_x_msgs")
+    STRING_INIT("eval"),
+    STRING_INIT("cmdline"),
+    STRING_INIT("register"),
 };
+#undef STRING_INIT
 #endif
 
 /*
@@ -1386,13 +1389,13 @@ ins_compl_dict_alloc(compl_T *match)
     if (dict == NULL)
 	return NULL;
 
-    dict_add_string(dict, "word", match->cp_str.string);
+    dict_add_string_len(dict, "word", match->cp_str.string, (int)match->cp_str.length);
     dict_add_string(dict, "abbr", match->cp_text[CPT_ABBR]);
     dict_add_string(dict, "menu", match->cp_text[CPT_MENU]);
     dict_add_string(dict, "kind", match->cp_text[CPT_KIND]);
     dict_add_string(dict, "info", match->cp_text[CPT_INFO]);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
-	dict_add_string(dict, "user_data", (char_u *)"");
+	dict_add_string_len(dict, "user_data", (char_u *)"", 0);
     else
 	dict_add_tv(dict, "user_data", &match->cp_user_data);
 
@@ -2887,21 +2890,21 @@ set_ctrl_x_mode(int c)
  * Trigger CompleteDone event and adds relevant information to v:event
  */
     static void
-trigger_complete_done_event(int mode UNUSED, char_u *word UNUSED)
+trigger_complete_done_event(int mode UNUSED, string_T *word UNUSED)
 {
 #if defined(FEAT_EVAL)
     save_v_event_T	save_v_event;
     dict_T		*v_event = get_v_event(&save_v_event);
-    char_u		*mode_str = NULL;
+    string_T		*mode_str;
 
-    mode = mode & ~CTRL_X_WANT_IDENT;
-    if (ctrl_x_mode_names[mode])
-	mode_str = (char_u *)ctrl_x_mode_names[mode];
+    if (word == NULL || word->string == NULL)
+	(void)dict_add_string_len(v_event, "complete_word", (char_u *)"", 0);
+    else
+	(void)dict_add_string_len(v_event, "complete_word", word->string, (int)word->length);
 
-    (void)dict_add_string(v_event, "complete_word",
-				word == NULL ? (char_u *)"" : word);
-    (void)dict_add_string(v_event, "complete_type",
-				mode_str != NULL ? mode_str : (char_u *)"");
+    mode_str = &ctrl_x_mode_names[mode & ~CTRL_X_WANT_IDENT];
+    (void)dict_add_string_len(v_event, "complete_type",
+	(mode_str->string == NULL) ? (char_u *)"" : mode_str->string, (int)mode_str->length);
 
     dict_set_items_ro(v_event);
 #endif
@@ -2919,7 +2922,7 @@ trigger_complete_done_event(int mode UNUSED, char_u *word UNUSED)
 ins_compl_stop(int c, int prev_mode, int retval)
 {
     int		want_cindent;
-    char_u	*word = NULL;
+    string_T	word = {NULL, 0};
 
     // Remove pre-inserted text when present.
     if (ins_compl_preinsert_effect() && ins_compl_win_active(curwin))
@@ -2978,7 +2981,12 @@ ins_compl_stop(int c, int prev_mode, int retval)
 		    && (c == CAR || c == K_KENTER || c == NL)))
 	    && pum_visible())
     {
-	word = vim_strsave(compl_shown_match->cp_str.string);
+	word.string = vim_strnsave(compl_shown_match->cp_str.string,
+	    compl_shown_match->cp_str.length);
+	if (word.string == NULL)
+	    word.length = 0;
+	else
+	    word.length = compl_shown_match->cp_str.length;
 	retval = TRUE;
     }
 
@@ -3044,8 +3052,8 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	do_c_expr_indent();
     // Trigger the CompleteDone event to give scripts a chance to act
     // upon the end of completion.
-    trigger_complete_done_event(prev_mode, word);
-    vim_free(word);
+    trigger_complete_done_event(prev_mode, &word);
+    vim_free(word.string);
 
     return retval;
 }
@@ -3955,13 +3963,22 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 /*
  * Return Insert completion mode name string
  */
-    static char_u *
-ins_compl_mode(void)
+    static void
+ins_compl_mode(string_T *ret)
 {
     if (ctrl_x_mode_not_defined_yet() || ctrl_x_mode_scroll() || compl_started)
-	return (char_u *)ctrl_x_mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+    {
+	string_T    *mode;
 
-    return (char_u *)"";
+	mode = &ctrl_x_mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+	ret->string = (mode->string == NULL) ? (char_u *)"" : mode->string;
+	ret->length = mode->length;
+    }
+    else
+    {
+	ret->string = (char_u *)"";
+	ret->length = 0;
+    }
 }
 
 /*
@@ -4024,7 +4041,7 @@ ins_compl_update_sequence_numbers(void)
     static void
 fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
 {
-    dict_add_string(di, "word", match->cp_str.string);
+    dict_add_string_len(di, "word", match->cp_str.string, (int)match->cp_str.length);
     dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
     dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
     dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
@@ -4033,7 +4050,7 @@ fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
 	dict_add_bool(di, "match", match->cp_in_match_array);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
 	// Add an empty string for backwards compatibility
-	dict_add_string(di, "user_data", (char_u *)"");
+	dict_add_string_len(di, "user_data", (char_u *)"", 0);
     else
 	dict_add_tv(di, "user_data", &match->cp_user_data);
 }
@@ -4084,7 +4101,12 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     }
 
     if (ret == OK && (what_flag & CI_WHAT_MODE))
-	ret = dict_add_string(retdict, "mode", ins_compl_mode());
+    {
+	string_T    mode;
+
+	ins_compl_mode(&mode);
+	ret = dict_add_string_len(retdict, "mode", mode.string, (int)mode.length);
+    }
 
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());

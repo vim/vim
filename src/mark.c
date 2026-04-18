@@ -1454,7 +1454,7 @@ get_namedfm(void)
  * Add information about mark 'mname' to list 'l'
  */
     static int
-add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
+add_mark(list_T *l, char_u *mname, size_t mnamelen, pos_T *pos, int bufnr, char_u *fname)
 {
     dict_T	*d;
     list_T	*lpos;
@@ -1481,7 +1481,7 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
     list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
-    if (dict_add_string(d, "mark", mname) == FAIL
+    if (dict_add_string_len(d, "mark", mname, (int)mnamelen) == FAIL
 	    || dict_add_list(d, "pos", lpos) == FAIL
 	    || (fname != NULL && dict_add_string(d, "file", fname) == FAIL))
     {
@@ -1500,25 +1500,26 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 get_buf_local_marks(buf_T *buf, list_T *l)
 {
     char_u	mname[3] = "' ";
+    size_t	mnamelen = STRLEN_LITERAL("' ");
     int		i;
 
     // Marks 'a' to 'z'
     for (i = 0; i < NMARKS; ++i)
     {
 	mname[1] = 'a' + i;
-	add_mark(l, mname, &buf->b_namedm[i], buf->b_fnum, NULL);
+	add_mark(l, mname, mnamelen, &buf->b_namedm[i], buf->b_fnum, NULL);
     }
 
     // Mark '' is a window local mark and not a buffer local mark
-    add_mark(l, (char_u *)"''", &curwin->w_pcmark, curbuf->b_fnum, NULL);
+    add_mark(l, (char_u *)"''", STRLEN_LITERAL("''"), &curwin->w_pcmark, curbuf->b_fnum, NULL);
 
-    add_mark(l, (char_u *)"'\"", &buf->b_last_cursor, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'[", &buf->b_op_start, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"']", &buf->b_op_end, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'^", &buf->b_last_insert, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'.", &buf->b_last_change, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'<", &buf->b_visual.vi_start, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'>", &buf->b_visual.vi_end, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'\"", STRLEN_LITERAL("'\""), &buf->b_last_cursor, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'[", STRLEN_LITERAL("'["), &buf->b_op_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"']", STRLEN_LITERAL("']"), &buf->b_op_end, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'^", STRLEN_LITERAL("'^"), &buf->b_last_insert, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'.", STRLEN_LITERAL("'."), &buf->b_last_change, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'<", STRLEN_LITERAL("'<"), &buf->b_visual.vi_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'>", STRLEN_LITERAL("'>"), &buf->b_visual.vi_end, buf->b_fnum, NULL);
 }
 
 /*
@@ -1528,6 +1529,7 @@ get_buf_local_marks(buf_T *buf, list_T *l)
 get_global_marks(list_T *l)
 {
     char_u	mname[3] = "' ";
+    size_t	mnamelen = STRLEN_LITERAL("' ");
     int		i;
     char_u	*name;
 
@@ -1541,7 +1543,7 @@ get_global_marks(list_T *l)
 	if (name != NULL)
 	{
 	    mname[1] = i >= NMARKS ? i - NMARKS + '0' : i + 'A';
-	    add_mark(l, mname, &namedfm[i].fmark.mark,
+	    add_mark(l, mname, mnamelen, &namedfm[i].fmark.mark,
 		    namedfm[i].fmark.fnum, name);
 	    if (namedfm[i].fmark.fnum != 0)
 		vim_free(name);

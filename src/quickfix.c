@@ -7176,6 +7176,7 @@ get_qfline_items(qfline_T *qfp, list_T *list)
     int		bufnum;
     dict_T	*dict;
     char_u	buf[2];
+    size_t	buflen;
 
     // Handle entries with a non-existing buffer number.
     bufnum = qfp->qf_fnum;
@@ -7189,6 +7190,7 @@ get_qfline_items(qfline_T *qfp, list_T *list)
 
     buf[0] = qfp->qf_type;
     buf[1] = NUL;
+    buflen = (buf[0] == NUL) ? 0 : 1;
     if (dict_add_number(dict, "bufnr", (long)bufnum) == FAIL
 	    || dict_add_number(dict, "lnum",     (long)qfp->qf_lnum) == FAIL
 	    || dict_add_number(dict, "end_lnum", (long)qfp->qf_end_lnum) == FAIL
@@ -7199,7 +7201,7 @@ get_qfline_items(qfline_T *qfp, list_T *list)
 	    || dict_add_string(dict, "module", qfp->qf_module) == FAIL
 	    || dict_add_string(dict, "pattern", qfp->qf_pattern) == FAIL
 	    || dict_add_string(dict, "text", qfp->qf_text) == FAIL
-	    || dict_add_string(dict, "type", buf) == FAIL
+	    || dict_add_string_len(dict, "type", buf, (int)buflen) == FAIL
 	    || (qfp->qf_user_data.v_type != VAR_UNKNOWN
 		&& dict_add_tv(dict, "user_data", &qfp->qf_user_data) == FAIL )
 	    || dict_add_number(dict, "valid", (long)qfp->qf_valid) == FAIL)
@@ -7484,7 +7486,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
     int		status = OK;
 
     if (flags & QF_GETLIST_TITLE)
-	status = dict_add_string(retdict, "title", (char_u *)"");
+	status = dict_add_string_len(retdict, "title", (char_u *)"", 0);
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
     {
 	list_T	*l = list_alloc();
@@ -7498,7 +7500,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_WINID))
 	status = dict_add_number(retdict, "winid", qf_winid(qi));
     if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
-	status = dict_add_string(retdict, "context", (char_u *)"");
+	status = dict_add_string_len(retdict, "context", (char_u *)"", 0);
     if ((status == OK) && (flags & QF_GETLIST_ID))
 	status = dict_add_number(retdict, "id", 0);
     if ((status == OK) && (flags & QF_GETLIST_IDX))
@@ -7512,7 +7514,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_QFBUFNR))
 	status = qf_getprop_qfbufnr(qi, retdict);
     if ((status == OK) && (flags & QF_GETLIST_QFTF))
-	status = dict_add_string(retdict, "quickfixtextfunc", (char_u *)"");
+	status = dict_add_string_len(retdict, "quickfixtextfunc", (char_u *)"", 0);
 
     return status;
 }
@@ -7589,7 +7591,7 @@ qf_getprop_ctx(qf_list_T *qfl, dict_T *retdict)
 	    status = FAIL;
     }
     else
-	status = dict_add_string(retdict, "context", (char_u *)"");
+	status = dict_add_string_len(retdict, "context", (char_u *)"", 0);
 
     return status;
 }
@@ -7628,7 +7630,7 @@ qf_getprop_qftf(qf_list_T *qfl, dict_T *retdict)
 	clear_tv(&tv);
     }
     else
-	status = dict_add_string(retdict, "quickfixtextfunc", (char_u *)"");
+	status = dict_add_string_len(retdict, "quickfixtextfunc", (char_u *)"", 0);
 
     return status;
 }

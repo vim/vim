@@ -4811,8 +4811,8 @@ getfpermwfd(WIN32_FIND_DATAW *wfd, char_u *perm)
     return getfpermst(&st, perm);
 }
 
-    static char_u *
-getftypewfd(WIN32_FIND_DATAW *wfd)
+    static void
+getftypewfd(WIN32_FIND_DATAW *wfd, string_T *ret)
 {
     DWORD flag = wfd->dwFileAttributes;
     DWORD tag = wfd->dwReserved0;
@@ -4820,20 +4820,40 @@ getftypewfd(WIN32_FIND_DATAW *wfd)
     if (flag & FILE_ATTRIBUTE_REPARSE_POINT)
     {
 	if (tag == IO_REPARSE_TAG_MOUNT_POINT)
-	    return (char_u*)"junction";
+	{
+	    ret->string = (char_u *)"junction";
+	    ret->length = STRLEN_LITERAL("junction");
+	    return;
+	}
 	if (tag == IO_REPARSE_TAG_SYMLINK)
 	{
 	    if (flag & FILE_ATTRIBUTE_DIRECTORY)
-		return (char_u*)"linkd";
+	    {
+		ret->string = (char_u *)"linkd";
+		ret->length = STRLEN_LITERAL("linkd");
+		return;
+	    }
 
-	    return (char_u*)"link";
+	    ret->string = (char_u *)"link";
+	    ret->length = STRLEN_LITERAL("link");
+	    return;
 	}
-	return (char_u*)"reparse";	// unknown reparse point type
-    }
-    if (flag & FILE_ATTRIBUTE_DIRECTORY)
-	return (char_u*)"dir";
 
-    return (char_u*)"file";
+	// unknown reparse point type
+	ret->string = (char_u *)"reparse";
+	ret->length = STRLEN_LITERAL("reparse");
+	return;
+    }
+
+    if (flag & FILE_ATTRIBUTE_DIRECTORY)
+    {
+	ret->string = (char_u *)"dir";
+	ret->length = STRLEN_LITERAL("dir");
+	return;
+    }
+
+    ret->string = (char_u *)"file";
+    ret->length = STRLEN_LITERAL("file");
 }
 
     static dict_T *
@@ -4841,18 +4861,20 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
 {
     dict_T	*item;
     char_u	*p;
+    int		plen;
     varnumber_T	size, time;
     char_u	permbuf[] = "---------";
+    string_T	s;
 
     item = dict_alloc();
     if (item == NULL)
 	return NULL;
     item->dv_refcount++;
 
-    p = utf16_to_enc(wfd->cFileName, NULL);
+    p = utf16_to_enc(wfd->cFileName, &plen);
     if (p == NULL)
 	goto theend;
-    if (dict_add_string(item, "name", p) == FAIL)
+    if (dict_add_string_len(item, "name", p, plen) == FAIL)
     {
 	vim_free(p);
 	goto theend;
@@ -4870,14 +4892,15 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
     if (dict_add_number(item, "time", time) == FAIL)
 	goto theend;
 
-    if (dict_add_string(item, "type", getftypewfd(wfd)) == FAIL)
+    getftypewfd(wfd, &s);
+    if (dict_add_string_len(item, "type", s.string, (int)s.length) == FAIL)
 	goto theend;
     if (dict_add_string(item, "perm", getfpermwfd(wfd, permbuf)) == FAIL)
 	goto theend;
 
-    if (dict_add_string(item, "user", (char_u*)"") == FAIL)
+    if (dict_add_string_len(item, "user", (char_u *)"", 0) == FAIL)
 	goto theend;
-    if (dict_add_string(item, "group", (char_u*)"") == FAIL)
+    if (dict_add_string_len(item, "group", (char_u *)"", 0) == FAIL)
 	goto theend;
 
     return item;
@@ -4893,11 +4916,12 @@ create_readdirex_item(char_u *path, char_u *name)
     dict_T	*item;
     char	*p;
     size_t	pathlen, len;
+    size_t	namelen;
     stat_T	st;
     int		ret, link = FALSE;
     varnumber_T	size;
     char_u	permbuf[] = "---------";
-    char_u	*q = NULL;
+    string_T	q = {NULL, 0};
     struct passwd *pw;
     struct group  *gr;
 
@@ -4907,7 +4931,8 @@ create_readdirex_item(char_u *path, char_u *name)
     item->dv_refcount++;
 
     pathlen = STRLEN(path);
-    len = pathlen + 1 + STRLEN(name) + 1;
+    namelen = STRLEN(name);
+    len = pathlen + 1 + namelen + 1;
     p = alloc(len);
     if (p == NULL)
 	goto theend;
@@ -4921,11 +4946,14 @@ create_readdirex_item(char_u *path, char_u *name)
 	link = TRUE;
 	ret = mch_stat(p, &st);
 	if (ret < 0)
-	    q = (char_u*)"link";
+	{
+	    q.string = (char_u *)"link";
+	    q.length = STRLEN_LITERAL("link");
+	}
     }
     vim_free(p);
 
-    if (dict_add_string(item, "name", name) == FAIL)
+    if (dict_add_string_len(item, "name", name, (int)namelen) == FAIL)
 	goto theend;
 
     if (ret >= 0)
@@ -4944,32 +4972,53 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (link)
 	{
 	    if (S_ISDIR(st.st_mode))
-		q = (char_u*)"linkd";
+	    {
+		q.string = (char_u *)"linkd";
+		q.length = STRLEN_LITERAL("linkd");
+	    }
 	    else
-		q = (char_u*)"link";
+	    {
+		q.string = (char_u *)"link";
+		q.length = STRLEN_LITERAL("link");
+	    }
 	}
 	else
-	    q = getftypest(&st);
-	if (dict_add_string(item, "type", q) == FAIL)
+	{
+	    q.string = getftypest(&st);
+	    q.length = STRLEN(q.string);
+	}
+	if (dict_add_string_len(item, "type", q.string, (int)q.length) == FAIL)
 	    goto theend;
 	if (dict_add_string(item, "perm", getfpermst(&st, permbuf)) == FAIL)
 	    goto theend;
 
 	pw = getpwuid(st.st_uid);
 	if (pw == NULL)
-	    q = (char_u*)"";
+	{
+	    q.string = (char_u *)"";
+	    q.length = 0;
+	}
 	else
-	    q = (char_u*)pw->pw_name;
-	if (dict_add_string(item, "user", q) == FAIL)
+	{
+	    q.string = (char_u *)pw->pw_name;
+	    q.length = STRLEN(q.string);
+	}
+	if (dict_add_string_len(item, "user", q.string, (int)q.length) == FAIL)
 	    goto theend;
 #  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
 	gr = getgrgid(st.st_gid);
 	if (gr == NULL)
-	    q = (char_u*)"";
+	{
+	    q.string = (char_u *)"";
+	    q.length = 0;
+	}
 	else
-	    q = (char_u*)gr->gr_name;
+	{
+	    q.string = (char_u *)gr->gr_name;
+	    q.length = STRLEN(q.string);
+	}
 #  endif
-	if (dict_add_string(item, "group", q) == FAIL)
+	if (dict_add_string_len(item, "group", q.string, (int)q.length) == FAIL)
 	    goto theend;
     }
     else
@@ -4978,13 +5027,21 @@ create_readdirex_item(char_u *path, char_u *name)
 	    goto theend;
 	if (dict_add_number(item, "time", -1) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "type", q == NULL ? (char_u*)"" : q) == FAIL)
+	if (q.string == NULL)
+	{
+	    if (dict_add_string_len(item, "type", (char_u *)"", 0) == FAIL)
+		goto theend;
+	}
+	else
+	{
+	    if (dict_add_string_len(item, "type", q.string, (int)q.length) == FAIL)
+		goto theend;
+	}
+	if (dict_add_string_len(item, "perm", (char_u *)"", 0) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "perm", (char_u*)"") == FAIL)
+	if (dict_add_string_len(item, "user", (char_u *)"", 0) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "user", (char_u*)"") == FAIL)
-	    goto theend;
-	if (dict_add_string(item, "group", (char_u*)"") == FAIL)
+	if (dict_add_string_len(item, "group", (char_u *)"", 0) == FAIL)
 	    goto theend;
     }
     return item;

@@ -2225,9 +2225,11 @@ get_b0_dict(char_u *fname, dict_T *d)
 	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 	{
 	    if (ml_check_b0_id(&b0) == FAIL)
-		dict_add_string(d, "error", (char_u *)"Not a swap file");
+		dict_add_string_len(d, "error",
+		    (char_u *)"Not a swap file", STRLEN_LITERAL("Not a swap file"));
 	    else if (b0_magic_wrong(&b0))
-		dict_add_string(d, "error", (char_u *)"Magic number mismatch");
+		dict_add_string_len(d, "error",
+		    (char_u *)"Magic number mismatch", STRLEN_LITERAL("Magic number mismatch"));
 	    else
 	    {
 		// we have swap information
@@ -2245,11 +2247,11 @@ get_b0_dict(char_u *fname, dict_T *d)
 	    }
 	}
 	else
-	    dict_add_string(d, "error", (char_u *)"Cannot read file");
+	    dict_add_string_len(d, "error", (char_u *)"Cannot read file", STRLEN_LITERAL("Cannot read file"));
 	close(fd);
     }
     else
-	dict_add_string(d, "error", (char_u *)"Cannot open file");
+	dict_add_string_len(d, "error", (char_u *)"Cannot open file", STRLEN_LITERAL("Cannot open file"));
 }
 #endif
 

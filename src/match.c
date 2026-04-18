@@ -1048,10 +1048,12 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #  if defined(FEAT_CONCEAL)
 	if (cur->mit_conceal_char)
 	{
-	    char_u buf[MB_MAXBYTES + 1];
+	    char_u  buf[MB_MAXBYTES + 1];
+	    int	    buflen;
 
-	    buf[(*mb_char2bytes)(cur->mit_conceal_char, buf)] = NUL;
-	    dict_add_string(dict, "conceal", (char_u *)&buf);
+	    buflen = (*mb_char2bytes)(cur->mit_conceal_char, buf);
+	    buf[buflen] = NUL;
+	    dict_add_string_len(dict, "conceal", (char_u *)&buf, buflen);
 	}
 #  endif
 	list_append_dict(rettv->vval.v_list, dict);
