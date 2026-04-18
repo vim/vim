@@ -1618,7 +1618,9 @@ au BufNewFile,BufRead *.txt
 	\| endif
 
 " Ghostty configuration
-au BufNewFile,BufRead */ghostty/config*        call s:StarSetf('ghostty')
+au BufNewFile,BufRead */ghostty/config                      call s:StarSetf('ghostty')
+au BufNewFile,BufRead */ghostty/themes/*                    call s:StarSetf('ghostty')
+au BufNewFile,BufRead */com.mitchellh.ghostty/config        call s:StarSetf('ghostty')
 
 
 " Generic log file

@@ -3113,7 +3113,9 @@ const ft_from_ext = {
   "bp": "bp",
   # Tiltfile
   "Tiltfile": "tiltfile",
-  "tiltfile": "tiltfile"
+  "tiltfile": "tiltfile",
+  # Ghostty
+  "ghostty": "ghostty",
 }
 # Key: file name (the final path component, excluding the drive and root)
 # Value: filetype
