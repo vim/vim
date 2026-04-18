@@ -327,6 +327,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     gedcom: ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
     gel: ['file.gel'],
     gemtext: ['file.gmi', 'file.gemini'],
+    ghostty: ['ghostty/config', 'ghostty/config.keymaps', '/.config/ghostty/config', '/.config/ghostty/config.keymaps'],
     gift: ['file.gift'],
     gitattributes: ['file.git/info/attributes', '.gitattributes', '/.config/git/attributes', '/etc/gitattributes', '/usr/local/etc/gitattributes', 'some.git/info/attributes'] + WhenConfigHome('$XDG_CONFIG_HOME/git/attributes'),
     gitcommit: ['COMMIT_EDITMSG', 'MERGE_MSG', 'TAG_EDITMSG', 'NOTES_EDITMSG', 'EDIT_DESCRIPTION'],
