@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Collect matrix properties for naming
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       id: matrix-props
       env:
         MATRIX_PROPS: ${{ toJSON(matrix) }}
