@@ -497,10 +497,6 @@ has_compl_option(int dict_opt)
     int
 vim_is_ctrl_x_key(int c)
 {
-    // Always allow ^R - let its results then be checked
-    if (c == Ctrl_R && ctrl_x_mode != CTRL_X_REGISTER)
-	return TRUE;
-
     // Accept <PageUp> and <PageDown> if the popup menu is visible.
     if (ins_compl_pum_key(c))
 	return TRUE;
@@ -3158,7 +3154,7 @@ ins_compl_prep(int c)
     else if (ctrl_x_mode_not_default())
     {
 	// We're already in CTRL-X mode, do we stay in it?
-	if (!vim_is_ctrl_x_key(c))
+	if (c != Ctrl_R && !vim_is_ctrl_x_key(c))
 	{
 	    ctrl_x_mode = ctrl_x_mode_scroll() ? CTRL_X_NORMAL : CTRL_X_FINISHED;
 	    edit_submode = NULL;
@@ -3186,7 +3182,7 @@ ins_compl_prep(int c)
 
     // reset continue_* if we left expansion-mode, if we stay they'll be
     // (re)set properly in ins_complete()
-    if (!vim_is_ctrl_x_key(c))
+    if (c != Ctrl_R && !vim_is_ctrl_x_key(c))
     {
 	compl_cont_status = 0;
 	compl_cont_mode = 0;
