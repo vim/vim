@@ -10489,7 +10489,7 @@ return_register(int regname, typval_T *rettv)
 
     buf[0] = (char_u)regname;
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strnsave(buf, 1);
+    rettv->vval.v_string = vim_strnsave(buf, (buf[0] == NUL) ? 0 : 1);
 }
 
 /*
