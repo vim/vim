@@ -261,6 +261,55 @@ func TearDown()
   call delete('Untitled')
 endfunc
 
+" Resizing to "textoff" after 'smoothscroll' skips part of a wrapped line must
+" not crash.
+func Test_crash_textoff_showbreak()
+  CheckOption smoothscroll
+
+  let donefile = 'XTest_crash_textoff_showbreak_done'
+  let lines =<< trim END
+    set noswapfile
+
+    set scrolloff=0
+    set lines=12 columns=40
+
+    call setline(1, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    set number wrap smoothscroll showbreak=>
+    vsplit
+
+    let textoff = getwininfo(win_getid())[0].textoff
+    execute "normal! 0\<C-E>"
+    redraw
+    execute 'vertical resize' textoff
+    redraw
+    call writefile(['done'], 'XTest_crash_textoff_showbreak_done')
+  END
+  call writefile(lines, 'XTest_crash_textoff_showbreak', 'D')
+  call delete(donefile)
+
+  let buf = 0
+  try
+    let buf = term_start([GetVimProg(), '--clean'], #{term_rows: 24, term_cols: 80})
+    call TermWait(buf, 200)
+    call term_sendkeys(buf, ":source XTest_crash_textoff_showbreak\<CR>")
+    call WaitFor({-> filereadable(donefile)
+          \ || term_getstatus(buf) !=# 'running'}, 1000)
+
+    let status = term_getstatus(buf)
+    call assert_equal('running', status)
+    call assert_true(filereadable(donefile))
+  finally
+    if buf > 0 && bufexists(buf)
+      if term_getstatus(buf) ==# 'running'
+        call StopVimInTerminal(buf)
+      else
+        exe buf .. 'bwipe!'
+      endif
+    endif
+    call delete(donefile)
+  endtry
+endfunc
+
 func Test_crash_bufwrite()
   let lines =<< trim END
     w! ++enc=ucs4 Xoutput
