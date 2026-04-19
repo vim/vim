@@ -623,6 +623,13 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	return p;
     }
 
+    if (scope->se_skip_save == SKIP_YES)
+    {
+	// Enclosing outer block is dead, skip this elseif
+	skip_expr_cctx(&p, cctx);
+	return p;
+    }
+
     if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
 	int	    moved_cmdmod = FALSE;
