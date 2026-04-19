@@ -236,7 +236,7 @@ readfile(
 #endif
     size_t	fnamelen = 0;
 
-    curbuf->b_au_did_filetype = FALSE; // reset before triggering any autocommands
+    curbuf->b_au_did_filetype = false; // reset before triggering any autocommands
 
     curbuf->b_no_eol_lnum = 0;	// in case it was set by the previous read
 
@@ -4664,7 +4664,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 	    int old_msg_silent = msg_silent;
 
 	    curbuf->b_flags |= BF_CHECK_RO;	// check for RO again
-	    curbuf->b_keep_filetype = TRUE;	// don't detect 'filetype'
+	    curbuf->b_keep_filetype = true;	// don't detect 'filetype'
 
 	    if (shortmess(SHM_FILEINFO))
 		msg_silent = 1;
@@ -4721,7 +4721,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 	curwin->w_cursor = old_cursor;
 	check_cursor();
 	update_topline();
-	curbuf->b_keep_filetype = FALSE;
+	curbuf->b_keep_filetype = false;
 #ifdef FEAT_FOLDING
 	{
 	    win_T	*wp;

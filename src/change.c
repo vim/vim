@@ -61,7 +61,7 @@ change_warning(int col)
 	out_flush();
 	ui_delay(1002L, TRUE); // give the user time to think about it
     }
-    curbuf->b_did_warn = TRUE;
+    curbuf->b_did_warn = true;
     redraw_cmdline = FALSE;	// don't redraw and erase the message
     if (msg_row < Rows - 1)
 	showmode();
@@ -702,7 +702,7 @@ changed_common(
 		// This is the first of a new sequence of undo-able changes
 		// and it's at some distance of the last change.  Use a new
 		// position in the changelist.
-		curbuf->b_new_change = FALSE;
+		curbuf->b_new_change = false;
 
 		if (curbuf->b_changelistlen == JUMPLISTSIZE)
 		{
@@ -897,7 +897,7 @@ changedOneline(buf_T *buf, linenr_T lnum)
     else
     {
 	// set the area that must be redisplayed to one line
-	buf->b_mod_set = TRUE;
+	buf->b_mod_set = true;
 	buf->b_mod_top = lnum;
 	buf->b_mod_bot = lnum + 1;
 	buf->b_mod_xlines = 0;
@@ -1035,7 +1035,7 @@ changed_lines_buf(
     else
     {
 	// set the area that must be redisplayed
-	buf->b_mod_set = TRUE;
+	buf->b_mod_set = true;
 	buf->b_mod_top = lnum;
 	buf->b_mod_bot = lnume + xtra;
 	buf->b_mod_xlines = xtra;

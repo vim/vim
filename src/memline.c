@@ -305,9 +305,9 @@ ml_open(buf_T *buf)
      * When 'updatecount' is non-zero swap file may be opened later.
      */
     if (p_uc && buf->b_p_swf)
-	buf->b_may_swap = TRUE;
+	buf->b_may_swap = true;
     else
-	buf->b_may_swap = FALSE;
+	buf->b_may_swap = false;
 
     /*
      * Open the memfile.  No swap file is created yet.
@@ -793,7 +793,7 @@ ml_open_file(buf_T *buf)
 	fname = vim_tempname('s', FALSE);
 	if (fname != NULL)
 	    (void)mf_open_file(mfp, fname);	// consumes fname!
-	buf->b_may_swap = FALSE;
+	buf->b_may_swap = false;
 	return;
     }
 #endif
@@ -851,7 +851,7 @@ ml_open_file(buf_T *buf)
     }
 
     // don't try to open a swap file again
-    buf->b_may_swap = FALSE;
+    buf->b_may_swap = false;
 }
 
 /*
@@ -2442,9 +2442,9 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
     char_u	*p;
     int		i;
 #ifndef MSWIN
-    int	    shortname = curbuf->b_shortname;
+    bool    shortname = curbuf->b_shortname;
 
-    curbuf->b_shortname = FALSE;
+    curbuf->b_shortname = false;
 #endif
     string_T	ret;
 
@@ -2493,7 +2493,7 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
     /*
      * Also try with 'shortname' set, in case the file is on a DOS filesystem.
      */
-    curbuf->b_shortname = TRUE;
+    curbuf->b_shortname = true;
 # ifdef VMS
     names[num_names] = modname(path, (char_u *)"_sw%", FALSE);
 # else
@@ -5108,7 +5108,7 @@ findswapname(
 		    vim_free(fname2);
 		    if (same)
 		    {
-			buf->b_shortname = TRUE;
+			buf->b_shortname = true;
 			vim_free(fname);
 			fname = makeswapname(buf_fname, buf->b_ffname,
 							       buf, dir_name);
@@ -5178,7 +5178,7 @@ findswapname(
 		fname[n - 1] = 'p';
 		if (r >= 0)		    // "file.swx" seems to exist
 		{
-		    buf->b_shortname = TRUE;
+		    buf->b_shortname = true;
 		    vim_free(fname);
 		    fname = makeswapname(buf_fname, buf->b_ffname,
 							       buf, dir_name);

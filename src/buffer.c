@@ -259,7 +259,7 @@ open_buffer(
     // The autocommands in readfile() may change the buffer, but only AFTER
     // reading the file.
     set_bufref(&old_curbuf, curbuf);
-    curbuf->b_modified_was_set = FALSE;
+    curbuf->b_modified_was_set = false;
 
     // mark cursor position as being invalid
     curwin->w_valid = 0;
@@ -278,7 +278,7 @@ open_buffer(
     {
 	int old_msg_silent = msg_silent;
 #ifdef UNIX
-	int save_bin = curbuf->b_p_bin;
+	int	save_bin = curbuf->b_p_bin;
 	int perm;
 #endif
 #ifdef FEAT_NETBEANS_INTG
@@ -824,7 +824,7 @@ aucmd_abort:
 	    buf->b_flags = BF_CHECK_RO | BF_NEVERLOADED;
 
 	    // Init the options when loaded again.
-	    buf->b_p_initialized = FALSE;
+	    buf->b_p_initialized = false;
 	}
 	buf_clear_file(buf);
 	if (del_buf)
@@ -847,7 +847,7 @@ buf_clear_file(buf_T *buf)
 {
     buf->b_ml.ml_line_count = 1;
     unchanged(buf, TRUE, TRUE);
-    buf->b_shortname = FALSE;
+    buf->b_shortname = false;
     buf->b_p_eof = FALSE;
     buf->b_start_eof = FALSE;
     buf->b_p_eol = TRUE;
@@ -2014,7 +2014,7 @@ enter_buffer(buf_T *buf)
 	// ":ball" used in an autocommand.  If there already is a filetype we
 	// might prefer to keep it.
 	if (*curbuf->b_p_ft == NUL)
-	    curbuf->b_did_filetype = FALSE;
+	    curbuf->b_did_filetype = false;
 
 	open_buffer(FALSE, NULL, 0);
     }
@@ -2294,7 +2294,7 @@ buflist_new(
 	free_buffer_stuff(buf, FALSE);	// delete local variables et al.
 
 	// Init the options.
-	buf->b_p_initialized = FALSE;
+	buf->b_p_initialized = false;
 	buf_copy_options(buf, BCO_ENTER);
 
 #ifdef FEAT_KEYMAP
@@ -2374,15 +2374,15 @@ buflist_new(
     buf->b_fname = buf->b_sfname;
 #ifdef UNIX
     if (st.st_dev == (dev_T)-1)
-	buf->b_dev_valid = FALSE;
+	buf->b_dev_valid = false;
     else
     {
-	buf->b_dev_valid = TRUE;
+	buf->b_dev_valid = true;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
 #endif
-    buf->b_u_synced = TRUE;
+    buf->b_u_synced = true;
     buf->b_flags = BF_CHECK_RO | BF_NEVERLOADED;
     if (flags & BLN_DUMMY)
 	buf->b_flags |= BF_DUMMY;
@@ -3671,16 +3671,16 @@ setfname(
     buf->b_fname = buf->b_sfname;
 #ifdef UNIX
     if (st.st_dev == (dev_T)-1)
-	buf->b_dev_valid = FALSE;
+	buf->b_dev_valid = false;
     else
     {
-	buf->b_dev_valid = TRUE;
+	buf->b_dev_valid = true;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
 #endif
 
-    buf->b_shortname = FALSE;
+    buf->b_shortname = false;
 
     buf_name_changed(buf);
     return OK;
@@ -3894,12 +3894,12 @@ buf_setino(buf_T *buf)
 
     if (buf->b_fname != NULL && mch_stat((char *)buf->b_fname, &st) >= 0)
     {
-	buf->b_dev_valid = TRUE;
+	buf->b_dev_valid = true;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
     else
-	buf->b_dev_valid = FALSE;
+	buf->b_dev_valid = false;
 }
 
 /*

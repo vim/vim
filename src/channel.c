@@ -1754,7 +1754,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 	{
 	    // Special mode: send last-but-one line when appending a line
 	    // to the buffer.
-	    in_part->ch_bufref.br_buf->b_write_to_channel = TRUE;
+	    in_part->ch_bufref.br_buf->b_write_to_channel = true;
 	    in_part->ch_buf_append = TRUE;
 	    in_part->ch_buf_top =
 		in_part->ch_bufref.br_buf->b_ml.ml_line_count + 1;
@@ -2054,7 +2054,7 @@ channel_write_new_lines(buf_T *buf)
 	}
     }
     if (!found_one)
-	buf->b_write_to_channel = FALSE;
+	buf->b_write_to_channel = false;
 }
 
 /*
@@ -3069,7 +3069,7 @@ append_to_buffer(
 {
     aco_save_T	aco;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
-    int		save_write_to = buffer->b_write_to_channel;
+    bool	save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
     int		save_p_ma = buffer->b_p_ma;
     int		empty = (buffer->b_ml.ml_flags & ML_EMPTY) ? 1 : 0;
@@ -3089,7 +3089,7 @@ append_to_buffer(
     if (save_write_to)
     {
 	--lnum;
-	buffer->b_write_to_channel = FALSE;
+	buffer->b_write_to_channel = false;
     }
 
     // Append to the buffer
@@ -3168,7 +3168,7 @@ append_to_buffer(
 
 	// Find channels reading from this buffer and adjust their
 	// next-to-read line number.
-	buffer->b_write_to_channel = TRUE;
+	buffer->b_write_to_channel = true;
 	FOR_ALL_CHANNELS(ch)
 	{
 	    chanpart_T  *in_part = &ch->ch_part[PART_IN];

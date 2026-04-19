@@ -5402,7 +5402,7 @@ ins_compl_get_exp(pos_T *ini)
 	buf_T *buf;
 
 	FOR_ALL_BUFFERS(buf)
-	    buf->b_scanned = 0;
+	    buf->b_scanned = false;
 	if (!st_cleared)
 	{
 	    CLEAR_FIELD(st);
@@ -5526,7 +5526,7 @@ ins_compl_get_exp(pos_T *ini)
 	{
 	    // Mark a buffer scanned when it has been scanned completely
 	    if (buf_valid(st.ins_buf) && (type == 0 || type == CTRL_X_PATH_PATTERNS))
-		st.ins_buf->b_scanned = TRUE;
+		st.ins_buf->b_scanned = true;
 
 	    compl_started = FALSE;
 	}

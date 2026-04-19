@@ -2589,7 +2589,7 @@ open_spellbuf(void)
     if (buf == NULL)
 	return NULL;
 
-    buf->b_spell = TRUE;
+    buf->b_spell = true;
     buf->b_p_swf = TRUE;	// may create a swap file
 #ifdef FEAT_CRYPT
     buf->b_p_key = empty_option;

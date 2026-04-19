@@ -2533,7 +2533,7 @@ check_marks_read(void)
 
     // Always set b_marks_read; needed when 'viminfo' is changed to include
     // the ' parameter after opening a buffer.
-    curbuf->b_marks_read = TRUE;
+    curbuf->b_marks_read = true;
 }
 
     static int
