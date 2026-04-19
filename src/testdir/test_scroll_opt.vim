@@ -2095,6 +2095,7 @@ endfunc
 " not crash.
 func Test_smoothscroll_textoff_showbreak()
   CheckOption smoothscroll
+  CheckRunVimInTerminal
 
   let donefile = 'XTest_crash_textoff_showbreak_done'
   defer delete(donefile)
