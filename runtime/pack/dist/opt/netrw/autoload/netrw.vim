@@ -530,8 +530,8 @@ function netrw#Explore(indx,dosplit,style,...)
   NetrwKeepj norm! 0
 
   if a:0 > 0
-    if a:1 =~ '^\~' && (has("unix") || g:netrw_cygwin)
-      let dirname= simplify(substitute(a:1,'\~',expand("$HOME"),''))
+    if a:1 =~ '^\~' && (has("unix") || has("win32") || g:netrw_cygwin)
+      let dirname= simplify(substitute(a:1,'^\~',escape(expand("$HOME"),'\&~'),''))
     elseif a:1 == '.'
       let dirname= simplify(exists("b:netrw_curdir")? b:netrw_curdir : getcwd())
       if dirname !~ '/$'
