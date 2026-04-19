@@ -946,7 +946,7 @@ compile_load(
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
-				       && (find_func(name, FALSE) != NULL
+				       && (find_func(name, TRUE) != NULL
 					   || gfatab.gfat_args.ga_len > 0))
 				  res = generate_funcref(cctx, name, &gfatab,
 								TRUE);
