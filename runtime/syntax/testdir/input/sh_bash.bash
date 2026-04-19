@@ -14,7 +14,7 @@ echo ${ echo 'six'
 echo ${	echo 'seven'	;}
 echo ${ echo 'eight';	}
 typeset nine=${ pwd; }
-echo ${ echo 'nine' ; 
+echo ${ echo 'nine' ;
  }
 
 valsubfunc() {
@@ -25,9 +25,13 @@ echo "${|valsubfunc eleven; }"
 printf '%s\n' "${|valsubfunc twelve	;}"
 unlucky=${|valsubfunc thirteen
 }
-typeset notafloat=${|valsubfunc notanumber	; 
+typeset notafloat=${|valsubfunc notanumber	;
  }
 echo $unlucky $notanumber
 ${|echo fourteen;}
 ${|echo fifteen
 }
+
+echo "${!#}"		# last positional argument
+echo "${!@}"		# deref
+echo "${#PATH}"		# length
