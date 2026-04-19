@@ -2827,6 +2827,24 @@ skip_opacity_fill:
 
 		    int underlying_attr = pum_bg_attrs[soff];
 
+		    // If restoring the leading cell of a wide background char
+		    // would extend past the end of the fill range (e.g. into a
+		    // popup border cell on the right edge), render a blended
+		    // space instead so the border at col+1 is preserved.
+		    if (enc_utf8 && pum_bg_linesUC != NULL
+			    && pum_bg_linesUC[soff] != 0
+			    && utf_char2cells(pum_bg_linesUC[soff]) == 2
+			    && col + 1 >= end_col)
+		    {
+			ScreenLines[off] = ' ';
+			if (ScreenLinesUC != NULL)
+			    ScreenLinesUC[off] = 0;
+			ScreenAttrs[off] = hl_pum_blend_attr(underlying_attr,
+						attr, screen_pum_blend);
+			screen_char(off, row, col);
+			goto next_col;
+		    }
+
 		    // Restore underlying character so text shows through.
 		    ScreenLines[off] = pum_bg_lines[soff];
 		    if (enc_utf8 && pum_bg_linesUC != NULL
