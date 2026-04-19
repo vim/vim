@@ -609,4 +609,10 @@ func Test_netrw_RFC2396()
   call assert_equal('a b', netrw#RFC2396(fname))
 endfunc
 
+func Test_netrw_Home_tilde()
+  Explore ~
+  call assert_match('Netrw Directory Listing', getline(2))
+  bw!
+endfunc
+
 " vim:ts=8 sts=2 sw=2 et
