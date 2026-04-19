@@ -373,6 +373,9 @@
 	s.length = 0; \
     } while (0)
 
+#define STR_LITERAL_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+
 // Whether a command index indicates a user command.
 #define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
 
