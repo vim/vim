@@ -2793,6 +2793,23 @@ skip_opacity_fill:
 			&& col < pum_bg_cols)
 		{
 		    int soff = (row - pum_bg_top) * pum_bg_cols + col;
+
+		    // Skip the trailing cell of a wide background char: its
+		    // leading cell already emitted the full wide glyph via
+		    // screen_char(); drawing here would clobber the right half.
+		    if (enc_utf8 && pum_bg_linesUC != NULL
+			    && col > 0
+			    && pum_bg_linesUC[soff] == 0
+			    && pum_bg_linesUC[soff - 1] != 0
+			    && utf_char2cells(pum_bg_linesUC[soff - 1]) == 2)
+		    {
+			ScreenLines[off] = 0;
+			if (ScreenLinesUC != NULL)
+			    ScreenLinesUC[off] = 0;
+			ScreenAttrs[off] = ScreenAttrs[off - 1];
+			goto next_col;
+		    }
+
 		    int underlying_attr = pum_bg_attrs[soff];
 
 		    // Restore underlying character so text shows through.
