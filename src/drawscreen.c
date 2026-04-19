@@ -384,7 +384,7 @@ update_screen(int type_arg)
     // Reset b_mod_set flags.  Going through all windows is probably faster
     // than going through all buffers (there could be many buffers).
     FOR_ALL_WINDOWS(wp)
-	wp->w_buffer->b_mod_set = FALSE;
+	wp->w_buffer->b_mod_set = false;
 
 #ifdef FEAT_PROP_POPUP
     // Display popup windows on top of the windows and command line.
@@ -2846,13 +2846,13 @@ win_update(win_T *wp)
 	    if (wp->w_redr_type != 0)
 	    {
 		// Don't update for changes in buffer again.
-		i = curbuf->b_mod_set;
-		curbuf->b_mod_set = FALSE;
+		bool b = curbuf->b_mod_set;
+		curbuf->b_mod_set = false;
 		j = curbuf->b_mod_xlines;
 		curbuf->b_mod_xlines = 0;
 		curs_columns(TRUE);
 		win_update(curwin);
-		curbuf->b_mod_set = i;
+		curbuf->b_mod_set = b;
 		curbuf->b_mod_xlines = j;
 	    }
 	    // Other windows might have w_redr_type raised in update_topline().

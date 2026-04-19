@@ -254,7 +254,7 @@ insert_sign(buf_T *buf, // buffer to store sign in
         buf->b_signlist = newsign;
 # ifdef FEAT_NETBEANS_INTG
         if (netbeans_active())
-            buf->b_has_sign_column = TRUE;
+            buf->b_has_sign_column = true;
 # endif
     }
     else

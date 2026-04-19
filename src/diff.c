@@ -820,7 +820,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
 	// Allocating memory failed.  This can happen, because we try to read
 	// the whole buffer text into memory.  Set the failed flag, the diff
 	// will be retried with external diff.  The flag is never reset.
-	buf->b_diff_failed = TRUE;
+	buf->b_diff_failed = true;
 	if (p_verbose > 0)
 	{
 	    verbose_enter();

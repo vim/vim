@@ -486,7 +486,7 @@ nb_parse_cmd(char_u *cmd)
 	buf_T	*buf;
 
 	FOR_ALL_BUFFERS(buf)
-	    buf->b_has_sign_column = FALSE;
+	    buf->b_has_sign_column = false;
 
 	// The IDE is breaking the connection.
 	netbeans_close();
@@ -595,8 +595,8 @@ nb_free(void)
 	vim_free(buf.signmap);
 	if (buf.bufp != NULL && buf_valid(buf.bufp))
 	{
-	    buf.bufp->b_netbeans_file = FALSE;
-	    buf.bufp->b_was_netbeans_file = FALSE;
+	    buf.bufp->b_netbeans_file = false;
+	    buf.bufp->b_was_netbeans_file = false;
 	}
     }
     VIM_CLEAR(buf_list);
@@ -2211,11 +2211,11 @@ nb_do_cmd(
 	    }
 	    if (*args == 'T')
 	    {
-		buf->bufp->b_netbeans_file = TRUE;
-		buf->bufp->b_was_netbeans_file = TRUE;
+		buf->bufp->b_netbeans_file = true;
+		buf->bufp->b_was_netbeans_file = true;
 	    }
 	    else
-		buf->bufp->b_netbeans_file = FALSE;
+		buf->bufp->b_netbeans_file = false;
 // =====================================================================
 	}
 	else if (streq((char *)cmd, "specialKeys"))

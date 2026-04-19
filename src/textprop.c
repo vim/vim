@@ -965,7 +965,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     // This must be done _before_ we start adding properties because property
     // changes trigger buffer (memline) reorganisation, which needs this flag
     // to be correctly set.
-    buf->b_has_textprop = TRUE;  // this is never reset
+    buf->b_has_textprop = true;  // this is never reset
     FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
     {
 	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
@@ -1187,7 +1187,7 @@ prop_add_common(
     // This must be done _before_ we add the property because property changes
     // trigger buffer (memline) reorganisation, which needs this flag to be
     // correctly set.
-    buf->b_has_textprop = TRUE;  // this is never reset
+    buf->b_has_textprop = true;  // this is never reset
 
     prop_add_one(buf, type_name, id, text, text_padding_left, flags,
 				    start_lnum, end_lnum, start_col, end_col);

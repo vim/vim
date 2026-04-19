@@ -5271,12 +5271,12 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 						0L, (char_u *)"qf", OPT_LOCAL);
 	curbuf->b_p_ma = FALSE;
 
-	curbuf->b_keep_filetype = TRUE;	// don't detect 'filetype'
+	curbuf->b_keep_filetype = true;	// don't detect 'filetype'
 	apply_autocmds(EVENT_BUFREADPOST, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
 	apply_autocmds(EVENT_BUFWINENTER, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
-	curbuf->b_keep_filetype = FALSE;
+	curbuf->b_keep_filetype = false;
 	--curbuf_lock;
 
 	// make sure it will be redrawn

@@ -1160,7 +1160,7 @@ buf_write(
     got_int = FALSE;
 
     // Mark the buffer as 'being saved' to prevent changed buffer warnings
-    buf->b_saving = TRUE;
+    buf->b_saving = true;
 
     // If we are not appending or filtering, the file exists, and the
     // 'writebackup', 'backup' or 'patchmode' option is set, need a backup.
@@ -1407,13 +1407,13 @@ buf_write(
 			    // may try again with 'shortname' set
 			    if (!(buf->b_shortname || buf->b_p_sn))
 			    {
-				buf->b_shortname = TRUE;
+				buf->b_shortname = true;
 				did_set_shortname = TRUE;
 				continue;
 			    }
 				// setting shortname didn't help
 			    if (did_set_shortname)
-				buf->b_shortname = FALSE;
+				buf->b_shortname = false;
 			    break;
 			}
 #endif
@@ -2543,7 +2543,7 @@ fail:
 nofail:
 
     // Done saving, we accept changed buffer warnings again
-    buf->b_saving = FALSE;
+    buf->b_saving = false;
 
     vim_free(backup);
     if (buffer != smallbuf)
@@ -2661,7 +2661,7 @@ nofail:
 #ifdef FEAT_VIMINFO
     // Make sure marks will be written out to the viminfo file later, even when
     // the file is new.
-    curbuf->b_marks_read = TRUE;
+    curbuf->b_marks_read = true;
 #endif
 
     got_int |= prev_got_int;

@@ -10368,7 +10368,7 @@ ex_setfiletype(exarg_T *eap)
 
     set_option_value_give_err((char_u *)"filetype", 0L, arg, OPT_LOCAL);
     if (arg != eap->arg)
-	curbuf->b_did_filetype = FALSE;
+	curbuf->b_did_filetype = false;
 }
 
     static void

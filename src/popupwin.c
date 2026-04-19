@@ -2395,7 +2395,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	buf->b_locked = TRUE;	// prevent deleting the buffer
 
 	// Avoid that 'buftype' is reset when this buffer is entered.
-	buf->b_p_initialized = TRUE;
+	buf->b_p_initialized = true;
     }
     wp->w_p_wrap = TRUE;	// 'wrap' is default on
     wp->w_p_so = 0;		// 'scrolloff' zero
