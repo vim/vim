@@ -1814,6 +1814,21 @@ screen_puts_len(
 	force_redraw_this = force_redraw_next;
 	force_redraw_next = FALSE;
 
+	// When drawing pum text with opacity, blend the popup bg with the
+	// saved underlying bg so text cells match the padding cells that
+	// use hl_pum_blend_attr.  Without this, popup text appears on a
+	// solid bg while padding shows a blended bg, creating a visible
+	// seam.
+	int cell_attr = attr;
+	if (screen_pum_blend > 0 && pum_bg_attrs != NULL
+		&& row >= pum_bg_top && row < pum_bg_bot
+		&& col < pum_bg_cols)
+	{
+	    int soff = (row - pum_bg_top) * pum_bg_cols + col;
+	    cell_attr = hl_blend_attr(pum_bg_attrs[soff], attr,
+					    screen_pum_blend, FALSE);
+	}
+
 	need_redraw = ScreenLines[off] != c
 		|| (mbyte_cells == 2
 		    && ScreenLines[off + 1] != (enc_dbcs ? ptr[1] : 0))
@@ -1825,7 +1840,7 @@ screen_puts_len(
 				(u8char_T)(c < 0x80 && u8cc[0] == 0 ? 0 : u8c)
 			|| (ScreenLinesUC[off] != 0
 					  && screen_comp_differs(off, u8cc))))
-		|| ScreenAttrs[off] != attr
+		|| ScreenAttrs[off] != cell_attr
 		|| exmode_active;
 
 	if ((need_redraw || force_redraw_this) && !skip_for_popup(row, col))
@@ -1886,7 +1901,7 @@ screen_puts_len(
 			    && (*mb_off2cells)(off + 1, max_off) > 1)))
 		ScreenLines[off + mbyte_blen] = 0;
 	    ScreenLines[off] = c;
-	    ScreenAttrs[off] = attr;
+	    ScreenAttrs[off] = cell_attr;
 	    ScreenCols[off] = -1;
 	    if (enc_utf8)
 	    {
@@ -1907,7 +1922,7 @@ screen_puts_len(
 		if (mbyte_cells == 2)
 		{
 		    ScreenLines[off + 1] = 0;
-		    ScreenAttrs[off + 1] = attr;
+		    ScreenAttrs[off + 1] = cell_attr;
 		    ScreenCols[off + 1] = -1;
 		}
 		screen_char(off, row, col);
@@ -1915,7 +1930,7 @@ screen_puts_len(
 	    else if (mbyte_cells == 2)
 	    {
 		ScreenLines[off + 1] = ptr[1];
-		ScreenAttrs[off + 1] = attr;
+		ScreenAttrs[off + 1] = cell_attr;
 		ScreenCols[off + 1] = -1;
 		screen_char_2(off, row, col);
 	    }
