@@ -198,7 +198,6 @@ syn match cabalName contained /:\@<=.*/
 syn match cabalNameRegion
 	\ contains=cabalStatementRegion,cabalName
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*name\s*:.*$/
 
 " author region
@@ -206,7 +205,6 @@ syn match cabalAuthor contained /:\@<=.*/
 syn match cabalAuthorRegion
 	\ contains=cabalStatementRegion,cabalStatement,cabalAuthor
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*author\s*:.*$/
 
 " maintainer region
@@ -214,7 +212,6 @@ syn match cabalMaintainer contained /:\@<=.*/
 syn match cabalMaintainerRegion
 	\ contains=cabalStatementRegion,cabalStatement,cabalMaintainer
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*maintainer\s*:.*$/
 
 " license region
@@ -222,7 +219,6 @@ syn match cabalLicense contained /:\@<=.*/
 syn match cabalLicenseRegion
 	\ contains=cabalStatementRegion,cabalStatement,cabalLicense
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*license\s*:.*$/
 
 " license-file region
@@ -230,7 +226,6 @@ syn match cabalLicenseFile contained /:\@<=.*/
 syn match cabalLicenseFileRegion
 	\ contains=cabalStatementRegion,cabalStatement,cabalLicenseFile
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*license-file\s*:.*$/
 
 " tested-with region with compilers and versions
@@ -238,7 +233,6 @@ syn keyword cabalCompiler contained ghc nhc yhc hugs hbc helium jhc lhc
 syn match cabalTestedWithRegion
 	\ contains=cabalStatementRegion,cabalStatement,cabalCompiler,cabalVersionRegionA
 	\ nextgroup=cabalStatementRegion
-	\ oneline
 	\ /^\c\s*tested-with\s*:.*$/
 
 " build type keywords

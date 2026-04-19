@@ -35,7 +35,6 @@ syn region autohotkeyString
 
 syn match autohotkeyVariable
       \ display
-      \ oneline
       \ contains=autohotkeyBuiltinVariable
       \ keepend
       \ '%\S\{-}%'
