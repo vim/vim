@@ -1828,8 +1828,9 @@ ins_compl_show_pum(void)
     if (!pum_wanted() || !pum_enough_matches())
 	return;
 
-    // Update the screen later, before drawing the popup menu over it.
-    pum_call_update_screen();
+    // Avoid redrawing the screen under a pum that stays in place.
+    if (!pum_redraw_in_same_position())
+	pum_call_update_screen();
 
     if (compl_match_array == NULL)
 	// Need to build the popup menu list.
