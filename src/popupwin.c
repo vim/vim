@@ -16,17 +16,20 @@
 #if defined(FEAT_PROP_POPUP)
 
 typedef struct {
-    char	*pp_name;
+    string_T	pp_name;
     poppos_T	pp_val;
 } poppos_entry_T;
 
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
 static poppos_entry_T poppos_entries[] = {
-    {"botleft", POPPOS_BOTLEFT},
-    {"topleft", POPPOS_TOPLEFT},
-    {"botright", POPPOS_BOTRIGHT},
-    {"topright", POPPOS_TOPRIGHT},
-    {"center", POPPOS_CENTER}
+    {STRING_INIT("botleft"), POPPOS_BOTLEFT},
+    {STRING_INIT("topleft"), POPPOS_TOPLEFT},
+    {STRING_INIT("botright"), POPPOS_BOTRIGHT},
+    {STRING_INIT("topright"), POPPOS_TOPRIGHT},
+    {STRING_INIT("center"), POPPOS_CENTER}
 };
+#undef STRING_INIT
 
 #ifdef HAS_MESSAGE_WINDOW
 // Window used for ":echowindow"
@@ -474,7 +477,7 @@ get_pos_entry(dict_T *d, int give_error)
 	return POPPOS_NONE;
 
     for (nr = 0; nr < (int)ARRAY_LENGTH(poppos_entries); ++nr)
-	if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
+	if (STRCMP(str, poppos_entries[nr].pp_name.string) == 0)
 	    return poppos_entries[nr].pp_val;
 
     if (give_error)
@@ -3887,14 +3890,18 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     for (i = 0; i < (int)ARRAY_LENGTH(poppos_entries); ++i)
 	if (wp->w_popup_pos == poppos_entries[i].pp_val)
 	{
-	    dict_add_string(dict, "pos",
-		    (char_u *)poppos_entries[i].pp_name);
+	    dict_add_string_len(dict, "pos",
+		poppos_entries[i].pp_name.string,
+		(int)poppos_entries[i].pp_name.length);
 	    break;
 	}
 
-    dict_add_string(dict, "close", (char_u *)(
-		wp->w_popup_close == POPCLOSE_BUTTON ? "button"
-		: wp->w_popup_close == POPCLOSE_CLICK ? "click" : "none"));
+    if (wp->w_popup_close == POPCLOSE_BUTTON)
+	dict_add_string_len(dict, "close", (char_u *)"button", STRLEN_LITERAL("button"));
+    else if (wp->w_popup_close == POPCLOSE_CLICK)
+	dict_add_string_len(dict, "close", (char_u *)"click", STRLEN_LITERAL("click"));
+    else
+	dict_add_string_len(dict, "close", (char_u *)"none", STRLEN_LITERAL("none"));
 
 #if defined(FEAT_TIMERS)
     dict_add_number(dict, "time", wp->w_popup_timer != NULL

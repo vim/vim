@@ -1731,7 +1731,7 @@ stl_click_handler_regions(
     else
 	button_str[0] = 'm';
     button_str[1] = NUL;
-    dict_add_string(info, "button", button_str);
+    dict_add_string_len(info, "button", button_str, 1);
 
     // Modifiers.
     if (mods & MOD_MASK_SHIFT)
@@ -1741,7 +1741,7 @@ stl_click_handler_regions(
     if (mods & MOD_MASK_ALT)
 	mods_str[mi++] = 'a';
     mods_str[mi] = NUL;
-    dict_add_string(info, "mods", mods_str);
+    dict_add_string_len(info, "mods", mods_str, mi);
 
     dict_add_number(info, "winid", winid);
 

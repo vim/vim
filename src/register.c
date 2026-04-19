@@ -1093,6 +1093,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     list_T	    *list;
     int		    n;
     char_u	    buf[NUMBUFLEN + 2];
+    size_t	    buflen;
     long	    reglen = 0;
     save_v_event_T  save_v_event;
 
@@ -1114,7 +1115,8 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     // register name or empty string for unnamed operation
     buf[0] = (char_u)oap->regname;
     buf[1] = NUL;
-    (void)dict_add_string(v_event, "regname", buf);
+    buflen = (buf[0] == NUL) ? 0 : 1;
+    (void)dict_add_string_len(v_event, "regname", buf, (int)buflen);
 
     // motion type: inclusive or exclusive
     (void)dict_add_bool(v_event, "inclusive", oap->inclusive);
@@ -1123,21 +1125,32 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     buf[0] = get_op_char(oap->op_type);
     buf[1] = get_extra_op_char(oap->op_type);
     buf[2] = NUL;
-    (void)dict_add_string(v_event, "operator", buf);
+    buflen = (buf[0] == NUL) ? 0 : (buf[1] == NUL) ? 1 : 2;
+    (void)dict_add_string_len(v_event, "operator", buf, (int)buflen);
 
     // register type
-    buf[0] = NUL;
-    buf[1] = NUL;
     switch (get_reg_type(oap->regname, &reglen))
     {
-	case MLINE: buf[0] = 'V'; break;
-	case MCHAR: buf[0] = 'v'; break;
+	case MLINE:
+	    buf[0] = 'V';
+	    buf[1] = NUL;
+	    buflen = 1;
+	    break;
+	case MCHAR:
+	    buf[0] = 'v';
+	    buf[1] = NUL;
+	    buflen = 1;
+	    break;
 	case MBLOCK:
-		vim_snprintf((char *)buf, sizeof(buf), "%c%ld", Ctrl_V,
-			     reglen + 1);
-		break;
+	    buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		"%c%ld", Ctrl_V, reglen + 1);
+	    break;
+	default:
+	    buf[0] = NUL;
+	    buflen = 0;
+	    break;
     }
-    (void)dict_add_string(v_event, "regtype", buf);
+    (void)dict_add_string_len(v_event, "regtype", buf, (int)buflen);
 
     // selection type - visual or not
     (void)dict_add_bool(v_event, "visual", oap->is_VIsual);

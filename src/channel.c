@@ -3668,46 +3668,98 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
     chanpart_T *chanpart = &channel->ch_part[part];
     char	namebuf[20];  // longest is "sock_timeout"
     size_t	tail;
-    char	*status;
-    char	*s = "";
+    string_T	s;
 
     vim_strncpy((char_u *)namebuf, (char_u *)name, 4);
-    STRCAT(namebuf, "_");
     tail = STRLEN(namebuf);
+    STRCPY(namebuf + tail, "_");
+    tail += STRLEN_LITERAL("_");
 
     STRCPY(namebuf + tail, "status");
     if (chanpart->ch_fd != INVALID_FD)
-	status = "open";
+    {
+	s.string = (char_u *)"open";
+	s.length = STRLEN_LITERAL("open");
+    }
     else if (channel_has_readahead(channel, part))
-	status = "buffered";
+    {
+	s.string = (char_u *)"buffered";
+	s.length = STRLEN_LITERAL("buffered");
+    }
     else
-	status = "closed";
-    dict_add_string(dict, namebuf, (char_u *)status);
+    {
+	s.string = (char_u *)"closed";
+	s.length = STRLEN_LITERAL("closed");
+    }
+    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
 
     STRCPY(namebuf + tail, "mode");
     switch (chanpart->ch_mode)
     {
-	case CH_MODE_NL: s = "NL"; break;
-	case CH_MODE_RAW: s = "RAW"; break;
-	case CH_MODE_JSON: s = "JSON"; break;
-	case CH_MODE_JS: s = "JS"; break;
-	case CH_MODE_LSP: s = "LSP"; break;
-	case CH_MODE_DAP: s = "DAP"; break;
+	case CH_MODE_NL:
+	    s.string = (char_u *)"NL";
+	    s.length = STRLEN_LITERAL("NL");
+	    break;
+	case CH_MODE_RAW:
+	    s.string = (char_u *)"RAW";
+	    s.length = STRLEN_LITERAL("RAW");
+	    break;
+	case CH_MODE_JSON:
+	    s.string = (char_u *)"JSON";
+	    s.length = STRLEN_LITERAL("JSON");
+	    break;
+	case CH_MODE_JS:
+	    s.string = (char_u *)"JS";
+	    s.length = STRLEN_LITERAL("JS");
+	    break;
+	case CH_MODE_LSP:
+	    s.string = (char_u *)"LSP";
+	    s.length = STRLEN_LITERAL("LSP");
+	    break;
+	case CH_MODE_DAP:
+	    s.string = (char_u *)"DAP";
+	    s.length = STRLEN_LITERAL("DAP");
+	    break;
+	default:
+	    s.string = (char_u *)"";
+	    s.length = 0;
+	    break;
     }
-    dict_add_string(dict, namebuf, (char_u *)s);
+    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
 
     STRCPY(namebuf + tail, "io");
     if (part == PART_SOCK)
-	s = "socket";
+    {
+	s.string = (char_u *)"socket";
+	s.length = STRLEN_LITERAL("socket");
+    }
     else switch (chanpart->ch_io)
     {
-	case JIO_NULL: s = "null"; break;
-	case JIO_PIPE: s = "pipe"; break;
-	case JIO_FILE: s = "file"; break;
-	case JIO_BUFFER: s = "buffer"; break;
-	case JIO_OUT: s = "out"; break;
+	case JIO_NULL:
+	    s.string = (char_u *)"null";
+	    s.length = STRLEN_LITERAL("null");
+	    break;
+	case JIO_PIPE:
+	    s.string = (char_u *)"pipe";
+	    s.length = STRLEN_LITERAL("pipe");
+	    break;
+	case JIO_FILE:
+	    s.string = (char_u *)"file";
+	    s.length = STRLEN_LITERAL("file");
+	    break;
+	case JIO_BUFFER:
+	    s.string = (char_u *)"buffer";
+	    s.length = STRLEN_LITERAL("buffer");
+	    break;
+	case JIO_OUT:
+	    s.string = (char_u *)"out";
+	    s.length = STRLEN_LITERAL("out");
+	    break;
+	default:
+	    s.string = (char_u *)"";
+	    s.length = 0;
     }
-    dict_add_string(dict, namebuf, (char_u *)s);
+    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
 
     STRCPY(namebuf + tail, "timeout");
     dict_add_number(dict, namebuf, chanpart->ch_timeout);
@@ -5066,7 +5118,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
-	    dict_add_string(d, "jsonrpc", (char_u *)"2.0");
+	    dict_add_string_len(d, "jsonrpc", (char_u *)"2.0", STRLEN_LITERAL("2.0"));
 	text = json_encode_lsp_msg(&argvars[1]);
     }
     else

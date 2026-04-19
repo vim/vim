@@ -6784,14 +6784,14 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	VTermScreenCellAttrs attrs;
 	VTermColor	fg, bg;
 	char_u		rgb[8];
+	size_t		rgblen;
 	char_u		mbs[MB_MAXBYTES * VTERM_MAX_CHARS_PER_CELL + 1];
-	int		off = 0;
+	size_t		mbslen;
 	int		i;
 
 	if (screen == NULL)
 	{
 	    cellattr_T	*cellattr;
-	    int		len;
 
 	    // vterm has finished, get the cell from scrollback
 	    if (pos.col >= line->sb_cols)
@@ -6801,10 +6801,10 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    attrs = cellattr->attrs;
 	    fg = cellattr->fg;
 	    bg = cellattr->bg;
-	    len = mb_ptr2len(p);
-	    mch_memmove(mbs, p, len);
-	    mbs[len] = NUL;
-	    p += len;
+	    mbslen = mb_ptr2len(p);
+	    mch_memmove(mbs, p, mbslen);
+	    mbs[mbslen] = NUL;
+	    p += mbslen;
 	}
 	else
 	{
@@ -6812,13 +6812,15 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		break;
+
+	    mbslen = 0;
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
 	    {
 		if (cell.chars[i] == 0)
 		    break;
-		off += (*utf_char2bytes)((int)cell.chars[i], mbs + off);
+		mbslen += (*utf_char2bytes)((int)cell.chars[i], mbs + mbslen);
 	    }
-	    mbs[off] = NUL;
+	    mbs[mbslen] = NUL;
 	    width = cell.width;
 	    attrs = cell.attrs;
 	    fg = cell.fg;
@@ -6829,14 +6831,14 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    break;
 	list_append_dict(l, dcell);
 
-	dict_add_string(dcell, "chars", mbs);
+	dict_add_string_len(dcell, "chars", mbs, (int)mbslen);
 
-	vim_snprintf((char *)rgb, 8, "#%02x%02x%02x",
-				     fg.red, fg.green, fg.blue);
-	dict_add_string(dcell, "fg", rgb);
-	vim_snprintf((char *)rgb, 8, "#%02x%02x%02x",
-				     bg.red, bg.green, bg.blue);
-	dict_add_string(dcell, "bg", rgb);
+	rgblen = vim_snprintf_safelen((char *)rgb, sizeof(rgb),
+	    "#%02x%02x%02x", fg.red, fg.green, fg.blue);
+	dict_add_string_len(dcell, "fg", rgb, (int)rgblen);
+	rgblen = vim_snprintf_safelen((char *)rgb, sizeof(rgb),
+	    "#%02x%02x%02x", bg.red, bg.green, bg.blue);
+	dict_add_string_len(dcell, "bg", rgb, (int)rgblen);
 
 	dict_add_number(dcell, "attr",
 				      cell2attr(term, NULL, &attrs, &fg, &bg));
