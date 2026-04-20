@@ -675,7 +675,7 @@ gui_mch_prepare(int *argc, char **argv)
 		    break;
 #ifdef FEAT_NETBEANS_INTG
 		case ARG_NETBEANS:
-		    gui.dofork = FALSE; // don't fork() when starting GUI
+		    gui.dofork = false; // don't fork() when starting GUI
 		    netbeansArg = argv[i];
 		    break;
 #endif
@@ -689,7 +689,7 @@ gui_mch_prepare(int *argc, char **argv)
 	// Only when the GUI can start.
 	if ((option->flags & ARG_NEEDS_GUI)
 				      && gui_mch_early_init_check(FALSE) == OK)
-	    gui.starting = TRUE;
+	    gui.starting = true;
 
 	if (option->flags & ARG_KEEP)
 	    ++i;
@@ -1710,7 +1710,7 @@ gui_mch_early_init_check(int give_message)
     q = mch_getenv((char_u *)"WAYLAND_DISPLAY");
     if ((p == NULL || *p == NUL) && (q == NULL || *q == NUL))
     {
-	gui.dying = TRUE;
+	gui.dying = true;
 	if (give_message)
 	    emsg(_((char *)e_cannot_open_display));
 	return FAIL;
@@ -1751,7 +1751,7 @@ gui_mch_init_check(void)
     // Don't use gtk_init() or gnome_init(), it exits on failure.
     if (!gtk_init_check(&gui_argc, &gui_argv))
     {
-	gui.dying = TRUE;
+	gui.dying = true;
 	emsg(_((char *)e_cannot_open_display));
 	return FAIL;
     }
@@ -4224,7 +4224,7 @@ gui_mch_init(void)
 		     G_CALLBACK(scroll_event), NULL);
 
     // Pretend we don't have input focus, we will get an event if we do.
-    gui.in_focus = FALSE;
+    gui.in_focus = false;
 
     // Handle changes to the "Xft/DPI" setting.
     {
@@ -5299,7 +5299,7 @@ get_styled_font_variants(void)
     PangoFont		    *plain_font;
     PangoFont		    *bold_font;
 
-    gui.font_can_bold = FALSE;
+    gui.font_can_bold = false;
 
     plain_font = pango_context_load_font(gui.text_context, gui.norm_font);
 

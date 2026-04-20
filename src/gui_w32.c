@@ -3731,7 +3731,7 @@ gui_mch_delete_lines(
     // scrolling such that the cursor ends up in the top-left character on
     // the screen...   But why?  (Webb)
     // It's probably fixed by disabling drawing the cursor while scrolling.
-    // gui.cursor_is_valid = FALSE;
+    // gui.cursor_is_valid = false;
 
     gui_clear_block(gui.scroll_region_bot - num_lines + 1,
 						       gui.scroll_region_left,

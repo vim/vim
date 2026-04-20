@@ -198,7 +198,7 @@ gui_attempt_start(void)
     static int recursive = 0;
 
     ++recursive;
-    gui.starting = TRUE;
+    gui.starting = true;
 
 #ifdef FEAT_GUI_GTK
     gui.event_time = GDK_CURRENT_TIME;
@@ -388,8 +388,8 @@ gui_read_child_pipe(int fd)
     void
 gui_prepare(int *argc, char **argv)
 {
-    gui.in_use = FALSE;		    // No GUI yet (maybe later)
-    gui.starting = FALSE;	    // No GUI yet (maybe later)
+    gui.in_use = false;		    // No GUI yet (maybe later)
+    gui.starting = false;	    // No GUI yet (maybe later)
     gui_mch_prepare(argc, argv);
 }
 
@@ -412,17 +412,17 @@ gui_init_check(void)
     }
 
     gui.shell_created = false;
-    gui.dying = FALSE;
-    gui.in_focus = TRUE;		// so the guicursor setting works
+    gui.dying = false;
+    gui.in_focus = true;		// so the guicursor setting works
     gui.dragged_sb = SBAR_NONE;
     gui.dragged_wp = NULL;
-    gui.pointer_hidden = FALSE;
+    gui.pointer_hidden = false;
     gui.col = 0;
     gui.row = 0;
     gui.num_cols = Columns;
     gui.num_rows = Rows;
 
-    gui.cursor_is_valid = FALSE;
+    gui.cursor_is_valid = false;
     gui.scroll_region_top = 0;
     gui.scroll_region_bot = Rows - 1;
     gui.scroll_region_left = 0;
@@ -457,7 +457,7 @@ gui_init_check(void)
     gui.menu_font = NOFONT;
 #  endif
 # endif
-    gui.menu_is_active = TRUE;	    // default: include menu
+    gui.menu_is_active = true;	    // default: include menu
 # ifndef FEAT_GUI_GTK
     gui.menu_height = MENU_DEFAULT_HEIGHT;
     gui.menu_width = 0;
@@ -674,7 +674,7 @@ gui_init(void)
     /*
      * Create the GUI shell.
      */
-    gui.in_use = TRUE;		// Must be set after menus have been set up
+    gui.in_use = true;		// Must be set after menus have been set up
     if (gui_mch_init() == FAIL)
 	goto error;
 
@@ -780,9 +780,11 @@ gui_init(void)
 	// It was still there to make F10 work.
 	if (vim_strchr(p_go, GO_MENUS) == NULL)
 	{
-	    --gui.starting;
+	    bool save_starting = gui.starting;
+
+	    gui.starting = false;
 	    gui_mch_enable_menu(FALSE);
-	    ++gui.starting;
+	    gui.starting = save_starting;
 	    gui_mch_update();
 	}
 # endif
@@ -855,7 +857,7 @@ error2:
 #endif
 
 error:
-    gui.in_use = FALSE;
+    gui.in_use = false;
     clip_init(FALSE);
 }
 
@@ -866,7 +868,7 @@ gui_exit(int rc)
     // don't free the fonts, it leads to a BUS error
     // richard@whitequeen.com Jul 99
     free_highlight_fonts();
-    gui.in_use = FALSE;
+    gui.in_use = false;
     gui_mch_exit(rc);
 }
 
@@ -1163,7 +1165,7 @@ gui_check_pos(void)
     if (gui.col >= screen_Columns)
 	gui.col = screen_Columns - 1;
     if (gui.cursor_row >= screen_Rows || gui.cursor_col >= screen_Columns)
-	gui.cursor_is_valid = FALSE;
+	gui.cursor_is_valid = false;
 }
 
 /*
@@ -1229,7 +1231,7 @@ gui_update_cursor(
     if (gui.row >= screen_Rows || gui.col >= screen_Columns)
 	return;
 
-    gui.cursor_is_valid = TRUE;
+    gui.cursor_is_valid = true;
 
     /*
      * How the cursor is drawn depends on the current mode.
@@ -1850,7 +1852,7 @@ gui_clear_block(
     // Invalidate cursor if it was in this block
     if (       gui.cursor_row >= row1 && gui.cursor_row <= row2
 	    && gui.cursor_col >= col1 && gui.cursor_col <= col2)
-	gui.cursor_is_valid = FALSE;
+	gui.cursor_is_valid = false;
 }
 
 /*
@@ -1922,7 +1924,7 @@ gui_write(
 		case 'C':	// Clear screen
 		    clip_scroll_selection(9999);
 		    gui_mch_clear_all();
-		    gui.cursor_is_valid = FALSE;
+		    gui.cursor_is_valid = false;
 		    force_scrollbar = TRUE;
 		    break;
 		case 'M':	// Move cursor
@@ -2691,7 +2693,7 @@ gui_outstr_nowrap(
 	if (gui.cursor_row == gui.row
 		&& gui.cursor_col >= col
 		&& gui.cursor_col < col + len)
-	    gui.cursor_is_valid = FALSE;
+	    gui.cursor_is_valid = false;
     }
 
 #ifdef FEAT_SIGN_ICONS
@@ -2731,7 +2733,7 @@ gui_undraw_cursor(void)
 
     // Cursor_is_valid is reset when the cursor is undrawn, also reset it
     // here in case it wasn't needed to undraw it.
-    gui.cursor_is_valid = FALSE;
+    gui.cursor_is_valid = false;
 }
 
     void
@@ -2943,7 +2945,7 @@ gui_delete_lines(int row, int count)
 		&& gui.cursor_col <= gui.scroll_region_right)
 	{
 	    if (gui.cursor_row < row + count)
-		gui.cursor_is_valid = FALSE;
+		gui.cursor_is_valid = false;
 	    else if (gui.cursor_row <= gui.scroll_region_bot)
 		gui.cursor_row -= count;
 	}
@@ -2971,7 +2973,7 @@ gui_insert_lines(int row, int count)
 	    if (gui.cursor_row <= gui.scroll_region_bot - count)
 		gui.cursor_row += count;
 	    else if (gui.cursor_row <= gui.scroll_region_bot)
-		gui.cursor_is_valid = FALSE;
+		gui.cursor_is_valid = false;
 	}
     }
 }
@@ -3545,30 +3547,30 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    p_go = temp;
 	}
     }
-    gui.menu_is_active = FALSE;
+    gui.menu_is_active = false;
 #endif
 
     for (i = 0; i < 3; i++)
-	gui.which_scrollbars[i] = FALSE;
+	gui.which_scrollbars[i] = false;
     for (p = p_go; *p; p++)
 	switch (*p)
 	{
 	    case GO_LEFT:
-		gui.which_scrollbars[SBAR_LEFT] = TRUE;
+		gui.which_scrollbars[SBAR_LEFT] = true;
 		break;
 	    case GO_RIGHT:
-		gui.which_scrollbars[SBAR_RIGHT] = TRUE;
+		gui.which_scrollbars[SBAR_RIGHT] = true;
 		break;
 	    case GO_VLEFT:
 		if (win_hasvertsplit())
-		    gui.which_scrollbars[SBAR_LEFT] = TRUE;
+		    gui.which_scrollbars[SBAR_LEFT] = true;
 		break;
 	    case GO_VRIGHT:
 		if (win_hasvertsplit())
-		    gui.which_scrollbars[SBAR_RIGHT] = TRUE;
+		    gui.which_scrollbars[SBAR_RIGHT] = true;
 		break;
 	    case GO_BOT:
-		gui.which_scrollbars[SBAR_BOTTOM] = TRUE;
+		gui.which_scrollbars[SBAR_BOTTOM] = true;
 		break;
 #ifdef FEAT_GUI_DARKTHEME
 	    case GO_DARKTHEME:
@@ -3577,7 +3579,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 #endif
 #ifdef FEAT_MENU
 	    case GO_MENUS:
-		gui.menu_is_active = TRUE;
+		gui.menu_is_active = true;
 		break;
 #endif
 	    case GO_GREY:

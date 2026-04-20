@@ -578,7 +578,7 @@ gui_x11_create_widgets(void)
     gui_x11_callbacks(textArea, vimForm);
 
     // Pretend we don't have input focus, we will get an event if we do.
-    gui.in_focus = FALSE;
+    gui.in_focus = false;
 }
 
 /*

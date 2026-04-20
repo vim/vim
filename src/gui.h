@@ -231,23 +231,23 @@ typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
 
 typedef struct Gui
 {
-    int		in_focus;	    // Vim has input focus
-    int		in_use;		    // Is the GUI being used?
-    int		starting;	    // GUI will start in a little while
+    bool	in_focus;	    // Vim has input focus
+    bool	in_use;		    // Is the GUI being used?
+    bool	starting;	    // GUI will start in a little while
     bool	shell_created;	    // Has the shell been created yet?
-    int		dying;		    // Is vim dying? Then output to terminal
-    int		dofork;		    // Use fork() when GUI is starting
+    bool	dying;		    // Is vim dying? Then output to terminal
+    bool	dofork;		    // Use fork() when GUI is starting
 #ifdef GUI_MAY_SPAWN
-    int		dospawn;	    // Use spawn() when GUI is starting
+    bool	dospawn;	    // Use spawn() when GUI is starting
 #endif
     int		dragged_sb;	    // Which scrollbar being dragged, if any?
     win_T	*dragged_wp;	    // Which WIN's sb being dragged, if any?
-    int		pointer_hidden;	    // Is the mouse pointer hidden?
+    bool	pointer_hidden;	    // Is the mouse pointer hidden?
     int		col;		    // Current cursor column in GUI display
     int		row;		    // Current cursor row in GUI display
     int		cursor_col;	    // Physical cursor column in GUI display
     int		cursor_row;	    // Physical cursor row in GUI display
-    char	cursor_is_valid;    // There is a cursor at cursor_row/col
+    bool	cursor_is_valid;    // There is a cursor at cursor_row/col
     int		num_cols;	    // Number of columns
     int		num_rows;	    // Number of rows
     int		scroll_region_top;  // Top (first) line of scroll region
@@ -259,9 +259,9 @@ typedef struct Gui
     int		scrollbar_height;   // Height of horizontal scrollbar
     int		left_sbar_x;	    // Calculated x coord for left scrollbar
     int		right_sbar_x;	    // Calculated x coord for right scrollbar
-    int         force_redraw;       // Force a redraw even e.g. not resized
+    bool	force_redraw;       // Force a redraw even e.g. not resized
 #ifdef FEAT_DIRECTX
-    int		directx_enabled;    // DirectX (DirectWrite) rendering active
+    bool	directx_enabled;    // DirectX (DirectWrite) rendering active
 #endif
 
 #ifdef FEAT_MENU
@@ -269,11 +269,11 @@ typedef struct Gui
     int		menu_height;	    // Height of the menu bar
     int		menu_width;	    // Width of the menu bar
 # endif
-    char	menu_is_active;	    // TRUE if menu is present
+    bool	menu_is_active;	    // true if menu is present
 #endif
 
     scrollbar_T bottom_sbar;	    // Bottom scrollbar
-    int		which_scrollbars[3];// Which scrollbar boxes are active?
+    bool	which_scrollbars[3];// Which scrollbar boxes are active?
     int		prev_wrap;	    // For updating the horizontal scrollbar
     int		char_width;	    // Width of char cell in pixels
     int		char_height;	    // Height of char cell in pixels, includes
@@ -288,7 +288,7 @@ typedef struct Gui
     GuiFont	ital_font;	    // Italic font
     GuiFont	boldital_font;	    // Bold-Italic font
 #else
-    int		font_can_bold;	    // Whether norm_font supports bold weight.
+    bool	font_can_bold;	    // Whether norm_font supports bold weight.
 				    // The styled font variants are not used.
 #endif
 
