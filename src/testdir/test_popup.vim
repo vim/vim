@@ -2474,6 +2474,41 @@ func Test_pumopt_opacity_wide_bg()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test pumopt opacity when every other background line is shifted by one
+" narrow cell, so the background's wide-character boundaries do not align
+" with the popup's wide-character grid.  Exercises the blend path when:
+" - pum_bg has the trailing half of a wide character at col == start_col
+"   (its leading half was overwritten by the popup text's clear_next_cell
+"   narrow space), where restoring the trailing alone would emit a stray
+"   NUL; a blended space must be rendered instead.
+" - clearing of ScreenLinesUC[off + 1] when screen_puts_len writes a wide
+"   character on a cell whose trailing previously held a different wide
+"   char's leading codepoint.
+func Test_pumopt_opacity_wide_bg_shifted()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:50,border:round
+    set completeopt=menu
+    call setline(1, '')
+    let base = 'ほげほげほげ漢字テストあいうえおカタカナ'
+    for i in range(20)
+      call append(line('$'), (i % 2 == 0 ? '' : 'a') .. base)
+    endfor
+    normal gg
+    inoremap <F5> <Cmd>call complete(col('.'),
+          \ ['ほげ', 'ふが漢字', 'カタカナ候補'])<CR>
+  END
+  call writefile(lines, 'Xpumoptopacityshifted', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacityshifted', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_wide_bg_shifted', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test that opaque popup text uses the popup's own attributes (fg and flags
 " like italic) rather than inheriting them from the syntax-highlighted
 " multibyte background cell underneath.  Without this guard, popup text
