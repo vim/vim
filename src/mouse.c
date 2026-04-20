@@ -241,7 +241,7 @@ do_mouse(
     static int	in_tab_line = FALSE; // mouse clicked in tab line
     static int	in_tabpanel = FALSE; // mouse clicked in tabpanel
 #ifdef FEAT_TABPANEL
-    static int	in_tabpanel_scrollbar = FALSE; // dragging tabpanel scrollbar
+    static bool	in_tabpanel_scrollbar = false; // dragging tabpanel scrollbar
 #endif
     int		in_sep_line;	// mouse in vertical separator line
     int		c1, c2;
@@ -350,7 +350,7 @@ do_mouse(
 	in_tab_line = FALSE;
 	in_tabpanel = FALSE;
 #ifdef FEAT_TABPANEL
-	in_tabpanel_scrollbar = FALSE;
+	in_tabpanel_scrollbar = false;
 #endif
     }
     else
@@ -369,7 +369,7 @@ do_mouse(
 		in_tab_line = FALSE;
 		in_tabpanel = FALSE;
 #ifdef FEAT_TABPANEL
-		in_tabpanel_scrollbar = FALSE;
+		in_tabpanel_scrollbar = false;
 #endif
 		return FALSE;
 	    }

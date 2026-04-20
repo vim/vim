@@ -42,9 +42,9 @@ static char_u *opt_name = (char_u *)"tabpanel";
 static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
-static int tpl_is_vert = FALSE;
-static int tpl_scroll = FALSE;
-static int tpl_scrollbar = FALSE;
+static bool tpl_is_vert = false;
+static bool tpl_scroll = false;
+static bool tpl_scrollbar = false;
 static int tpl_scroll_offset = 0;
 static int tpl_total_rows = 0;
 static int tpl_scrollbar_col = -1;	// screen column of scrollbar, -1 if none
@@ -68,9 +68,9 @@ tabpanelopt_changed(void)
     char_u	*p;
     int		new_align = ALIGN_LEFT;
     long	new_columns = 20;
-    int		new_is_vert = FALSE;
-    int		new_scroll = FALSE;
-    int		new_scrollbar = FALSE;
+    bool	new_is_vert = false;
+    bool	new_scroll = false;
+    bool	new_scrollbar = false;
 
     p = p_tplo;
     while (*p != NUL)
@@ -101,18 +101,18 @@ tabpanelopt_changed(void)
 	else if (STRNCMP(p, "vert", 4) == 0)
 	{
 	    p += 4;
-	    new_is_vert = TRUE;
+	    new_is_vert = true;
 	}
 	else if (STRNCMP(p, "scrollbar", 9) == 0)
 	{
 	    p += 9;
-	    new_scrollbar = TRUE;
-	    new_scroll = TRUE;
+	    new_scrollbar = true;
+	    new_scroll = true;
 	}
 	else if (STRNCMP(p, "scroll", 6) == 0)
 	{
 	    p += 6;
-	    new_scroll = TRUE;
+	    new_scroll = true;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -773,7 +773,7 @@ draw_tabpanel_scrollbar(int screen_col)
 
     for (int r = 0; r < Rows; r++)
     {
-	int on_thumb = thumb_height > 0
+	bool on_thumb = thumb_height > 0
 	    && r >= thumb_top && r < thumb_top + thumb_height;
 	screen_putchar(TPL_FILLCHAR, r, screen_col,
 		on_thumb ? attr_thumb : attr_sb);
@@ -783,11 +783,11 @@ draw_tabpanel_scrollbar(int screen_col)
 /*
  * Return TRUE if the mouse is currently positioned over the tabpanel area.
  */
-    int
+    bool
 mouse_on_tabpanel(void)
 {
     if (tabpanel_width() == 0)
-	return FALSE;
+	return false;
     return mouse_col < firstwin->w_wincol
 	|| mouse_col >= firstwin->w_wincol + topframe->fr_width;
 }
@@ -797,7 +797,7 @@ mouse_on_tabpanel(void)
  * The scrollbar column is tracked by draw_tabpanel() and is -1 when the
  * scrollbar is not enabled or not yet drawn.
  */
-    int
+    bool
 mouse_on_tabpanel_scrollbar(void)
 {
     return tpl_scrollbar && tpl_scrollbar_col >= 0
@@ -810,7 +810,7 @@ mouse_on_tabpanel_scrollbar(void)
  * initial clicks and subsequent drag events.
  * Returns TRUE if the event was consumed (offset changed or not).
  */
-    int
+    bool
 tabpanel_drag_scrollbar(int screen_row)
 {
     int thumb_height;
@@ -820,14 +820,14 @@ tabpanel_drag_scrollbar(int screen_row)
     int new_offset;
 
     if (!tpl_scrollbar || Rows <= 0 || tpl_total_rows <= Rows)
-	return FALSE;
+	return false;
 
     thumb_height = Rows * Rows / tpl_total_rows;
     if (thumb_height < 1)
 	thumb_height = 1;
     track_range = Rows - thumb_height;
     if (track_range <= 0)
-	return TRUE;
+	return true;
 
     max_offset = tpl_total_rows - Rows;
     thumb_top = screen_row - thumb_height / 2;
@@ -842,7 +842,7 @@ tabpanel_drag_scrollbar(int screen_row)
 	tpl_scroll_offset = new_offset;
 	redraw_tabpanel = TRUE;
     }
-    return TRUE;
+    return true;
 }
 
 /*
@@ -850,14 +850,14 @@ tabpanel_drag_scrollbar(int screen_row)
  * Returns TRUE if the offset changed and a redraw was scheduled.
  * Has no effect unless 'tabpanelopt' contains "scroll".
  */
-    int
+    bool
 tabpanel_scroll(int dir, int count)
 {
     int max_offset;
     int new_offset;
 
     if (!tpl_scroll || tabpanel_width() == 0)
-	return FALSE;
+	return false;
 
     max_offset = tpl_total_rows - Rows;
     if (max_offset < 0)
@@ -869,11 +869,11 @@ tabpanel_scroll(int dir, int count)
     if (new_offset > max_offset)
 	new_offset = max_offset;
     if (new_offset == tpl_scroll_offset)
-	return FALSE;
+	return false;
 
     tpl_scroll_offset = new_offset;
     redraw_tabpanel = TRUE;
-    return TRUE;
+    return true;
 }
 
 #endif // FEAT_TABPANEL
