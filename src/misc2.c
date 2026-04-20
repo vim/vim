@@ -719,7 +719,7 @@ set_leftcol(colnr_T leftcol)
     }
 
     if (retval)
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     redraw_later(UPD_NOT_VALID);
     return retval;
 }

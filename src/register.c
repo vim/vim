@@ -2388,7 +2388,7 @@ error:
     }
 
     msgmore(nr_lines);
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
 
     // Make sure the cursor is not after the NUL.
     int len = ml_get_curline_len();

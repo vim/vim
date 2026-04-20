@@ -1758,7 +1758,7 @@ do_search(
     if (options & SEARCH_MARK)
 	setpcmark();
     curwin->w_cursor = pos;
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
 
 end_do_search:
     if ((options & SEARCH_KEEP) || (cmdmod.cmod_flags & CMOD_KEEPPATTERNS))
@@ -4003,7 +4003,7 @@ search_line:
 		if (action != ACTION_SHOW)
 		{
 		    curwin->w_cursor.col = (colnr_T)(startp - line);
-		    curwin->w_set_curswant = TRUE;
+		    curwin->w_set_curswant = true;
 		}
 
 # if defined(FEAT_QUICKFIX)

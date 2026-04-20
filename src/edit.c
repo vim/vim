@@ -468,7 +468,7 @@ edit(
 
 	// set curwin->w_curswant for next K_DOWN or K_UP
 	if (!arrow_used)
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 
 	// If there is no typeahead may check for timestamps (e.g., for when a
 	// menu invoked a shell command).
@@ -2740,7 +2740,7 @@ beginline(int flags)
 			       && !((flags & BL_FIX) && ptr[1] == NUL); ++ptr)
 		++curwin->w_cursor.col;
 	}
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     }
     adjust_skipcol();
 }
@@ -2768,7 +2768,7 @@ oneright(void)
 	coladvance(getviscol() + ((*ptr != TAB
 					  && vim_isprintc((*mb_ptr2char)(ptr)))
 		    ? ptr2cells(ptr) : 1));
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 	// Return OK if the cursor moved, FAIL otherwise (at window edge).
 	return (prevpos.col != curwin->w_cursor.col
 		    || prevpos.coladd != curwin->w_cursor.coladd) ? OK : FAIL;
@@ -2789,7 +2789,7 @@ oneright(void)
 	return FAIL;
     curwin->w_cursor.col += l;
 
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
     adjust_skipcol();
     return OK;
 }
@@ -2836,7 +2836,7 @@ oneleft(void)
 		curwin->w_cursor.coladd = 0;
 	}
 
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 	adjust_skipcol();
 	return OK;
     }
@@ -2844,7 +2844,7 @@ oneleft(void)
     if (curwin->w_cursor.col == 0)
 	return FAIL;
 
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
     --curwin->w_cursor.col;
 
     // if the character on the left of the current cursor is a multi-byte
@@ -3791,7 +3791,7 @@ ins_esc(
     // When an autoindent was removed, curswant stays after the
     // indent
     if (restart_edit == NUL && (colnr_T)temp == curwin->w_cursor.col)
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 
     // Remember the last Insert position in the '^ mark.
     if ((cmdmod.cmod_flags & CMOD_KEEPJUMPS) == 0)
@@ -4740,7 +4740,7 @@ ins_left(void)
 	start_arrow(&tpos);
 	--(curwin->w_cursor.lnum);
 	coladvance((colnr_T)MAXCOL);
-	curwin->w_set_curswant = TRUE;	// so we stay at the end
+	curwin->w_set_curswant = true;	// so we stay at the end
     }
     else
 	vim_beep(BO_CRSR);
@@ -4800,7 +4800,7 @@ ins_s_left(void)
 	if (!end_change)
 	    AppendCharToRedobuff(K_S_LEFT);
 	(void)bck_word(1L, FALSE, FALSE);
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     }
     else
 	vim_beep(BO_CRSR);
@@ -4822,7 +4822,7 @@ ins_right(void)
 	start_arrow_with_change(&curwin->w_cursor, end_change);
 	if (!end_change)
 	    AppendCharToRedobuff(K_RIGHT);
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 	if (virtual_active())
 	    oneright();
 	else
@@ -4845,7 +4845,7 @@ ins_right(void)
 	    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
     {
 	start_arrow(&curwin->w_cursor);
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 	++curwin->w_cursor.lnum;
 	curwin->w_cursor.col = 0;
     }
@@ -4870,7 +4870,7 @@ ins_s_right(void)
 	if (!end_change)
 	    AppendCharToRedobuff(K_S_RIGHT);
 	(void)fwd_word(1L, FALSE, 0);
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     }
     else
 	vim_beep(BO_CRSR);

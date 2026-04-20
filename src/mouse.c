@@ -1123,7 +1123,7 @@ do_mouse(
 		    find_end_of_word(&curwin->w_cursor);
 		}
 	    }
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 	}
 	if (is_click)
 	    redraw_curbuf_later(UPD_INVERTED);	// update the inversion
@@ -1329,7 +1329,7 @@ ins_mousescroll(int dir)
     int did_scroll = (orig_topline != curwin->w_topline
 		   || orig_leftcol != curwin->w_leftcol);
 
-    curwin->w_redr_status = TRUE;
+    curwin->w_redr_status = true;
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 
@@ -2346,7 +2346,7 @@ retnomove:
     }
 
     curwin->w_curswant = col;
-    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+    curwin->w_set_curswant = false;	// May still have been TRUE
     if (coladvance(col) == FAIL)	// Mouse click beyond end of line
     {
 	if (inclusive != NULL)
@@ -2436,7 +2436,7 @@ nv_mousescroll(cmdarg_T *cap)
     // Call the common mouse scroll function shared with other modes.
     do_mousescroll(cap);
 
-    curwin->w_redr_status = TRUE;
+    curwin->w_redr_status = true;
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 }

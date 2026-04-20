@@ -4034,7 +4034,7 @@ win_line(
 		    curwin->w_cline_row = startrow;
 		    curwin->w_cline_height = wlv.row - startrow;
 #ifdef FEAT_FOLDING
-		    curwin->w_cline_folded = FALSE;
+		    curwin->w_cline_folded = false;
 #endif
 		    curwin->w_valid |= (VALID_CHEIGHT|VALID_CROW);
 		}

@@ -10863,7 +10863,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     if (flags & SP_NOMOVE)
 	curwin->w_cursor = save_cursor;
     else
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 theend:
     p_ws = save_p_ws;
 
@@ -11455,7 +11455,7 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 	if (curswant >= 0)
 	{
 	    curwin->w_curswant = curswant - 1;
-	    curwin->w_set_curswant = FALSE;
+	    curwin->w_set_curswant = false;
 	}
 	check_cursor();
 	rettv->vval.v_number = 0;
@@ -12006,7 +12006,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 	if (len != 0)
 	{
 	    word = ml_get_cursor();
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 	}
     }
     else if (*curbuf->b_s.b_p_spl != NUL)

@@ -2001,8 +2001,8 @@ enter_buffer(buf_T *buf)
     curwin->w_cursor.lnum = 1;
     curwin->w_cursor.col = 0;
     curwin->w_cursor.coladd = 0;
-    curwin->w_set_curswant = TRUE;
-    curwin->w_topline_was_set = FALSE;
+    curwin->w_set_curswant = true;
+    curwin->w_topline_was_set = false;
 
     // mark cursor position as being invalid
     curwin->w_valid = 0;
@@ -2625,7 +2625,7 @@ buflist_getfile(
 	    curwin->w_cursor.col = col;
 	    check_cursor_col();
 	    curwin->w_cursor.coladd = 0;
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 	}
 	retval = OK;
     }
@@ -2655,7 +2655,7 @@ buflist_getfpos(void)
 	curwin->w_cursor.col = fpos->col;
 	check_cursor_col();
 	curwin->w_cursor.coladd = 0;
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     }
 }
 
@@ -3344,7 +3344,7 @@ get_winopts(buf_T *buf)
 #endif
 #ifdef FEAT_FOLDING
 	curwin->w_fold_manual = wp->w_fold_manual;
-	curwin->w_foldinvalid = TRUE;
+	curwin->w_foldinvalid = true;
 	cloneFoldGrowArray(&wp->w_folds, &curwin->w_folds);
 #endif
     }
@@ -3354,7 +3354,7 @@ get_winopts(buf_T *buf)
 	copy_winopt(&wip->wi_opt, &curwin->w_onebuf_opt);
 #ifdef FEAT_FOLDING
 	curwin->w_fold_manual = wip->wi_fold_manual;
-	curwin->w_foldinvalid = TRUE;
+	curwin->w_foldinvalid = true;
 	cloneFoldGrowArray(&wip->wi_folds, &curwin->w_folds);
 #endif
     }

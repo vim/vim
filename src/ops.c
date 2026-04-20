@@ -1719,7 +1719,7 @@ op_insert(oparg_T *oap, long count1)
 	if (oap->block_mode && curwin->w_cursor.coladd == 0)
 	{
 	    // Move the cursor to the character right of the block.
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 	    while (*ml_get_cursor() != NUL
 		    && (curwin->w_cursor.col < bd.textcol + bd.textlen))
 		++curwin->w_cursor.col;
@@ -2390,7 +2390,7 @@ do_join(
     check_cursor_col();
 
     curwin->w_cursor.coladd = 0;
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
 
 theend:
     vim_free(spaces);
@@ -3273,7 +3273,7 @@ theend:
     if (visual)
 	curwin->w_cursor = save_cursor;
     else if (did_change)
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     else if (virtual_active())
 	curwin->w_cursor.coladd = save_coladd;
 
@@ -4270,7 +4270,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    if (l > 1)
 		oap->end.col += l - 1;
 	}
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
 
 	// oap->empty is set when start and end are the same.  The inclusive
 	// flag affects this too, unless yanking and the end is on a NUL.

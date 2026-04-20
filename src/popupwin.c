@@ -880,7 +880,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    int		i;
 
 	    CHECK_LIST_MATERIALIZE(list);
-	    wp->w_border_highlight_isset = TRUE;
+	    wp->w_border_highlight_isset = true;
 	    // Clear all highlights if list is empty
 	    if (list->lv_len == 0)
 	    {
@@ -1566,7 +1566,7 @@ popup_adjust_position(win_T *wp)
     if (wp->w_buffer->b_term != NULL && !term_is_finished(wp->w_buffer))
 	// Terminal window with running job never has a scrollbar, adjusts to
 	// window height.
-	wp->w_has_scrollbar = FALSE;
+	wp->w_has_scrollbar = false;
 #endif
     maxwidth_no_scrollbar = maxwidth;
     if (wp->w_has_scrollbar)
@@ -1736,7 +1736,7 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_buffer->b_term == NULL || term_is_finished(wp->w_buffer))
 #endif
 	{
-	    wp->w_has_scrollbar = TRUE;
+	    wp->w_has_scrollbar = true;
 	    if (width_with_scrollbar > 0)
 		wp->w_width = width_with_scrollbar;
 	}
@@ -3385,7 +3385,7 @@ redraw_under_popup_area(int winrow, int wincol, int height, int width, int lefto
 		    redrawWinline(twp, lnum);
 		}
 		else if (line_cp == twp->w_height)
-		    twp->w_redr_status = TRUE;
+		    twp->w_redr_status = true;
 	    }
 	}
     }
@@ -4423,7 +4423,7 @@ redraw_win_under_opacity_popup(win_T *wp)
 		else if (line_cp == twp->w_height)
 		    // Status bar line: mark for redraw to prevent
 		    // opacity blend accumulation.
-		    twp->w_redr_status = TRUE;
+		    twp->w_redr_status = true;
 	    }
 	}
     }
@@ -4707,7 +4707,7 @@ may_update_popup_mask(int type)
 
 				if (line_cp >= wp->w_height)
 				    // In (or below) status line
-				    wp->w_redr_status = TRUE;
+				    wp->w_redr_status = true;
 				else
 				{
 				    // compute the position in the buffer line

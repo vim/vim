@@ -1454,7 +1454,7 @@ change_indent(
 	curwin->w_cursor.col = 0;
     else
 	curwin->w_cursor.col = (colnr_T)new_cursor_col;
-    curwin->w_set_curswant = TRUE;
+    curwin->w_set_curswant = true;
     changed_cline_bef_curs();
 
     // May have to adjust the start of the insert.

@@ -4062,7 +4062,7 @@ struct window_S
 				    // used to try to stay in the same column
 				    // for up/down cursor motions.
 
-    int		w_set_curswant;	    // If set, then update w_curswant the next
+    bool	w_set_curswant;	    // If set, then update w_curswant the next
 				    // time through cursupdate() to the
 				    // current virtual column
 
@@ -4093,7 +4093,7 @@ struct window_S
      */
     linenr_T	w_topline;	    // buffer line number of the line at the
 				    // top of the window
-    char	w_topline_was_set;  // flag set to TRUE when topline is set,
+    bool	w_topline_was_set;  // flag set to true when topline is set,
 				    // e.g. by winrestview()
 
     linenr_T	w_botline;	    // number of the line below the bottom of
@@ -4102,9 +4102,9 @@ struct window_S
 #ifdef FEAT_DIFF
     int		w_topfill;	    // number of filler lines above w_topline
     int		w_old_topfill;	    // w_topfill at last redraw
-    int		w_botfill;	    // TRUE when filler lines are actually
+    bool	w_botfill;	    // true when filler lines are actually
 				    // below w_topline (at end of file)
-    int		w_old_botfill;	    // w_botfill at last redraw
+    bool	w_old_botfill;	    // w_botfill at last redraw
 #endif
     colnr_T	w_leftcol;	    // screen column number of the left most
 				    // character in the window; used when
@@ -4151,7 +4151,7 @@ struct window_S
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
 
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
-    int		w_do_win_fix_cursor;// if TRUE cursor may be invalid
+    bool	w_do_win_fix_cursor;// if true cursor may be invalid
 
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
@@ -4159,7 +4159,7 @@ struct window_S
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
     char_u	*w_popup_title;
     poppos_T	w_popup_pos;
-    int		w_popup_fixed;	    // do not shift popup to fit on screen
+    bool	w_popup_fixed;	    // do not shift popup to fit on screen
     int		w_popup_prop_type;  // when not zero: textprop type ID
     win_T	*w_popup_prop_win;  // window to search for textprop
     int		w_popup_prop_id;    // when not zero: textprop ID
@@ -4173,13 +4173,13 @@ struct window_S
     int		w_wantcol;	    // "col" for popup window
     int		w_firstline;	    // "firstline" for popup window
     int		w_want_scrollbar;   // when zero don't use a scrollbar
-    int		w_has_scrollbar;    // 1 if scrollbar displayed, 0 otherwise
+    bool	w_has_scrollbar;    // true if scrollbar displayed
     char_u	*w_scrollbar_highlight; // "scrollbarhighlight"
     char_u	*w_thumb_highlight; // "thumbhighlight"
     int		w_popup_padding[4]; // popup padding top/right/bot/left
     int		w_popup_border[4];  // popup border top/right/bot/left
     char_u	*w_border_highlight[4];  // popup border highlight
-    int		w_border_highlight_isset; // borderhighlight was explicitly set
+    bool	w_border_highlight_isset; // borderhighlight was explicitly set
     int		w_border_char[8];   // popup border characters
     int		w_popup_shadow;     // popup shadow (right and bottom edges)
 
@@ -4246,7 +4246,7 @@ struct window_S
      */
     int		w_cline_height;	    // current size of cursor line
 #ifdef FEAT_FOLDING
-    int		w_cline_folded;	    // cursor line is folded
+    bool	w_cline_folded;	    // cursor line is folded
 #endif
 
     int		w_cline_row;	    // starting row of the cursor line
@@ -4285,9 +4285,9 @@ struct window_S
 
 #ifdef FEAT_FOLDING
     garray_T	w_folds;	    // array of nested folds
-    char	w_fold_manual;	    // when TRUE: some folds are opened/closed
+    bool	w_fold_manual;	    // when true: some folds are opened/closed
 				    // manually
-    char	w_foldinvalid;	    // when TRUE: folding needs to be
+    bool	w_foldinvalid;	    // when true: folding needs to be
 				    // recomputed
 #endif
 #ifdef FEAT_LINEBREAK
@@ -4307,7 +4307,7 @@ struct window_S
 				    // w_redr_type is UPD_REDRAW_TOP
     linenr_T	w_redraw_top;	    // when != 0: first line needing redraw
     linenr_T	w_redraw_bot;	    // when != 0: last line needing redraw
-    int		w_redr_status;	    // if TRUE status line must be redrawn
+    bool	w_redr_status;	    // if true status line must be redrawn
 
     // remember what is shown in the ruler for this window (if 'ruler' set)
     pos_T	w_ru_cursor;	    // cursor position shown in ruler
@@ -4317,14 +4317,14 @@ struct window_S
 #ifdef FEAT_DIFF
     int		w_ru_topfill;	    // topfill shown in ruler
 #endif
-    char	w_ru_empty;	    // TRUE if ruler shows 0-1 (empty line)
+    bool	w_ru_empty;	    // true if ruler shows 0-1 (empty line)
 
     int		w_alt_fnum;	    // alternate file (for # and CTRL-^)
 
     alist_T	*w_alist;	    // pointer to arglist for this window
     int		w_arg_idx;	    // current index in argument list (can be
 				    // out of range!)
-    int		w_arg_idx_invalid;  // editing another file than w_arg_idx
+    bool	w_arg_idx_invalid;  // editing another file than w_arg_idx
 
     char_u	*w_localdir;	    // absolute path of local directory or
 				    // NULL

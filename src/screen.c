@@ -3938,7 +3938,7 @@ win_ins_lines(
      */
     if (!did_delete)
     {
-	wp->w_redr_status = TRUE;
+	wp->w_redr_status = true;
 	redraw_cmdline = TRUE;
 	nextrow = W_WINROW(wp) + wp->w_height + wp->w_status_height;
 	lastrow = nextrow + line_count;
@@ -3954,7 +3954,7 @@ win_ins_lines(
 	// deletion will have messed up other windows
 	if (did_delete)
 	{
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	    win_rest_invalid(W_NEXT(wp));
 	}
 	return FAIL;
@@ -4004,7 +4004,7 @@ win_del_lines(
 	if (screen_ins_lines(0, W_WINROW(wp) + wp->w_height - line_count,
 			      line_count, (int)Rows, clear_attr, NULL) == FAIL)
 	{
-	    wp->w_redr_status = TRUE;
+	    wp->w_redr_status = true;
 	    win_rest_invalid(wp->w_next);
 	}
     }
@@ -4120,7 +4120,7 @@ win_rest_invalid(win_T *wp)
     while (wp != NULL)
     {
 	redraw_win_later(wp, UPD_NOT_VALID);
-	wp->w_redr_status = TRUE;
+	wp->w_redr_status = true;
 	wp = wp->w_next;
     }
     redraw_cmdline = TRUE;

@@ -541,7 +541,7 @@ check_arg_idx(win_T *win)
     {
 	// We are not editing the current entry in the argument list.
 	// Set "arg_had_last" if we are editing the last one.
-	win->w_arg_idx_invalid = TRUE;
+	win->w_arg_idx_invalid = true;
 	if (win->w_arg_idx != WARGCOUNT(win) - 1
 		&& arg_had_last == FALSE
 		&& ALIST(win) == &global_alist
@@ -557,7 +557,7 @@ check_arg_idx(win_T *win)
     {
 	// We are editing the current entry in the argument list.
 	// Set "arg_had_last" if it's also the last one
-	win->w_arg_idx_invalid = FALSE;
+	win->w_arg_idx_invalid = false;
 	if (win->w_arg_idx == WARGCOUNT(win) - 1
 					      && win->w_alist == &global_alist)
 	    arg_had_last = TRUE;

@@ -3649,7 +3649,7 @@ qf_jump_goto_line(
 		coladvance(qf_col - 1);
 	    else
 		curwin->w_cursor.col = qf_col - 1;
-	    curwin->w_set_curswant = TRUE;
+	    curwin->w_set_curswant = true;
 	    check_cursor();
 	}
 	else
@@ -4768,7 +4768,7 @@ qf_win_goto(win_T *win, linenr_T lnum)
     curwin->w_curswant = 0;
     update_topline();		// scroll to show the line
     redraw_later(UPD_VALID);
-    curwin->w_redr_status = TRUE;	// update ruler
+    curwin->w_redr_status = true;	// update ruler
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 }

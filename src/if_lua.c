@@ -1687,7 +1687,7 @@ luaV_window_newindex(lua_State *L)
 	luaV_checksandbox(L);
 # endif
 	w->w_cursor.col = v - 1;
-	w->w_set_curswant = TRUE;
+	w->w_set_curswant = true;
 	update_screen(UPD_VALID);
     }
     else if (strncmp(s, "width", 5) == 0)
