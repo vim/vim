@@ -2730,10 +2730,7 @@ executable_exists(
     {
 	pathext.string = mch_getenv("PATHEXT");
 	if (pathext.string == NULL)
-	{
-	    pathext.string = (char_u *)".com;.exe;.bat;.cmd";
-	    pathext.length = 19;
-	}
+	    STR_LITERAL_SET(pathext, ".com;.exe;.bat;.cmd");
 	else
 	    pathext.length = STRLEN(pathext.string);
 
@@ -2774,10 +2771,7 @@ executable_exists(
 
     // Prepend single "." to pathext, it means no extension added.
     if (pathext.string == NULL)
-    {
-	pathext.string = (char_u *)".";
-	pathext.length = 1;
-    }
+	STR_LITERAL_SET(pathext, ".");
     else if (noext == TRUE)
     {
 	char_u  *tmp;
@@ -2828,10 +2822,7 @@ executable_exists(
      * is an executable file.
      */
     if (pathbuf.string == NULL)
-    {
-	pathbuf.string = (char_u *)".";
-	pathbuf.length = 1;
-    }
+	STR_LITERAL_SET(pathbuf, ".");
     p = pathbuf.string;
     while (*p)
     {

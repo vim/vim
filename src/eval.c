@@ -6579,15 +6579,9 @@ class_tv2string(typval_T *tv, char_u **tofree)
 	class_name.string = cl->class_name.string;
 	class_name.length = cl->class_name.length;
 	if (IS_INTERFACE(cl))
-	{
-	    s.string = (char_u *)"interface";
-	    s.length = 9;
-	}
+	    STR_LITERAL_SET(s, "interface");
 	else if (IS_ENUM(cl))
-	{
-	    s.string = (char_u *)"enum";
-	    s.length = 4;
-	}
+	    STR_LITERAL_SET(s, "enum");
     }
 
     rsize = s.length + 1 + class_name.length + 1;

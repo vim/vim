@@ -1734,20 +1734,11 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 
 	// text_align
 	if (prop->tp_flags & TP_FLAG_ALIGN_RIGHT)
-	{
-	    text_align.string = (char_u *)"right";
-	    text_align.length = STRLEN_LITERAL("right");
-	}
+	    STR_LITERAL_SET(text_align, "right");
 	else if (prop->tp_flags & TP_FLAG_ALIGN_ABOVE)
-	{
-	    text_align.string = (char_u *)"above";
-	    text_align.length = STRLEN_LITERAL("above");
-	}
+	    STR_LITERAL_SET(text_align, "above");
 	else if (prop->tp_flags & TP_FLAG_ALIGN_BELOW)
-	{
-	    text_align.string = (char_u *)"below";
-	    text_align.length = STRLEN_LITERAL("below");
-	}
+	    STR_LITERAL_SET(text_align, "below");
 	if (text_align.string != NULL)
 	    dict_add_string_len(dict, "text_align",
 		text_align.string, (int)text_align.length);

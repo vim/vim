@@ -3677,52 +3677,36 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 
     STRCPY(namebuf + tail, "status");
     if (chanpart->ch_fd != INVALID_FD)
-    {
-	s.string = (char_u *)"open";
-	s.length = STRLEN_LITERAL("open");
-    }
+	STR_LITERAL_SET(s, "open");
     else if (channel_has_readahead(channel, part))
-    {
-	s.string = (char_u *)"buffered";
-	s.length = STRLEN_LITERAL("buffered");
-    }
+	STR_LITERAL_SET(s, "buffered");
     else
-    {
-	s.string = (char_u *)"closed";
-	s.length = STRLEN_LITERAL("closed");
-    }
+	STR_LITERAL_SET(s, "closed");
     dict_add_string_len(dict, namebuf, s.string, (int)s.length);
 
     STRCPY(namebuf + tail, "mode");
     switch (chanpart->ch_mode)
     {
 	case CH_MODE_NL:
-	    s.string = (char_u *)"NL";
-	    s.length = STRLEN_LITERAL("NL");
+	    STR_LITERAL_SET(s, "NL");
 	    break;
 	case CH_MODE_RAW:
-	    s.string = (char_u *)"RAW";
-	    s.length = STRLEN_LITERAL("RAW");
+	    STR_LITERAL_SET(s, "RAW");
 	    break;
 	case CH_MODE_JSON:
-	    s.string = (char_u *)"JSON";
-	    s.length = STRLEN_LITERAL("JSON");
+	    STR_LITERAL_SET(s, "JSON");
 	    break;
 	case CH_MODE_JS:
-	    s.string = (char_u *)"JS";
-	    s.length = STRLEN_LITERAL("JS");
+	    STR_LITERAL_SET(s, "JS");
 	    break;
 	case CH_MODE_LSP:
-	    s.string = (char_u *)"LSP";
-	    s.length = STRLEN_LITERAL("LSP");
+	    STR_LITERAL_SET(s, "LSP");
 	    break;
 	case CH_MODE_DAP:
-	    s.string = (char_u *)"DAP";
-	    s.length = STRLEN_LITERAL("DAP");
+	    STR_LITERAL_SET(s, "DAP");
 	    break;
 	default:
-	    s.string = (char_u *)"";
-	    s.length = 0;
+	    STR_LITERAL_SET(s, "");
 	    break;
     }
     dict_add_string_len(dict, namebuf, s.string, (int)s.length);

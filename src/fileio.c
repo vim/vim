@@ -4945,10 +4945,7 @@ create_readdirex_item(char_u *path, char_u *name)
 	link = TRUE;
 	ret = mch_stat(p, &st);
 	if (ret < 0)
-	{
-	    q.string = (char_u *)"link";
-	    q.length = STRLEN_LITERAL("link");
-	}
+	    STR_LITERAL_SET(q, "link");
     }
     vim_free(p);
 
@@ -4971,15 +4968,9 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (link)
 	{
 	    if (S_ISDIR(st.st_mode))
-	    {
-		q.string = (char_u *)"linkd";
-		q.length = STRLEN_LITERAL("linkd");
-	    }
+		STR_LITERAL_SET(q, "linkd");
 	    else
-	    {
-		q.string = (char_u *)"link";
-		q.length = STRLEN_LITERAL("link");
-	    }
+		STR_LITERAL_SET(q, "link");
 	}
 	else
 	{
@@ -4993,10 +4984,7 @@ create_readdirex_item(char_u *path, char_u *name)
 
 	pw = getpwuid(st.st_uid);
 	if (pw == NULL)
-	{
-	    q.string = (char_u *)"";
-	    q.length = 0;
-	}
+	    STR_LITERAL_SET(q, "");
 	else
 	{
 	    q.string = (char_u *)pw->pw_name;
@@ -5007,10 +4995,7 @@ create_readdirex_item(char_u *path, char_u *name)
 #  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
 	gr = getgrgid(st.st_gid);
 	if (gr == NULL)
-	{
-	    q.string = (char_u *)"";
-	    q.length = 0;
-	}
+	    STR_LITERAL_SET(q, "");
 	else
 	{
 	    q.string = (char_u *)gr->gr_name;

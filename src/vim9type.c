@@ -2658,10 +2658,7 @@ type_name_class_or_obj(char *name, type_T *type, char **tofree)
 	    name = "enum";
     }
     else
-    {
-	class_name.string = (char_u *)"any";
-	class_name.length = 3;
-    }
+	STR_LITERAL_SET(class_name, "any");
 
     size_t len = STRLEN(name) + class_name.length + 3;
     *tofree = alloc(len);
@@ -2695,10 +2692,7 @@ type_name_func(type_T *type, char **tofree)
 	string_T    arg_type;
 
 	if (type->tt_args == NULL)
-	{
-	    arg_type.string = (char_u *)"[unknown]";
-	    arg_type.length = 9;
-	}
+	    STR_LITERAL_SET(arg_type, "[unknown]");
 	else
 	{
 	    arg_type.string = (char_u *)type_name(type->tt_args[i], &arg_free);
