@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Apr 08
+" Last Change:		2026 Apr 20
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -1617,6 +1617,10 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
+" Ghostty configuration
+au BufNewFile,BufRead */ghostty/config                      setf ghostty
+au BufNewFile,BufRead */ghostty/themes/*                    call s:StarSetf('ghostty')
+au BufNewFile,BufRead */com.mitchellh.ghostty/config        setf ghostty
 
 
 " Generic log file
