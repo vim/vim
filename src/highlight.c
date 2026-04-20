@@ -3250,9 +3250,13 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 				base_fg, popup_aep->ae_u.gui.bg_color, blend);
 		    }
 		}
-		else if (popup_aep->ae_u.gui.fg_color != INVALCOLOR)
+		else
 		{
-		    // blend_fg=FALSE: use popup foreground
+		    // blend_fg=FALSE: popup text is opaque.  Replace the
+		    // underlying cell's attribute flags and fg with the
+		    // popup's, so the underlying syntax highlighting does
+		    // not bleed through.
+		    new_en.ae_attr = popup_aep->ae_attr;
 		    new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
 		}
 		// Blend background color: blend popup bg toward underlying bg
@@ -3294,8 +3298,17 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    popup_aep = syn_cterm_attr2entry(popup_attr);
 	    if (popup_aep != NULL)
 	    {
-		// Blend foreground color
-		if (popup_aep->ae_u.cterm.fg_color > 0)
+		if (!blend_fg)
+		{
+		    // blend_fg=FALSE: popup text is opaque.  Replace the
+		    // underlying cell's attribute flags and fg with the
+		    // popup's, so the underlying syntax highlighting does
+		    // not bleed through.
+		    new_en.ae_attr = popup_aep->ae_attr;
+		    new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
+		}
+		else if (popup_aep->ae_u.cterm.fg_color > 0)
+		    // Blend foreground color
 		    new_en.ae_u.cterm.fg_color = popup_aep->ae_u.cterm.fg_color;
 		// Use popup background color (cterm colors don't support blending)
 		if (popup_aep->ae_u.cterm.bg_color > 0)
@@ -3330,8 +3343,11 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 				    base_fg, popup_bg, blend);
 			}
 		    }
-		    else if (popup_fg != INVALCOLOR)
-			// blend_fg=FALSE: use popup foreground
+		    else
+			// blend_fg=FALSE: popup text is opaque.  Replace fg
+			// with popup's (even INVALCOLOR) so the underlying
+			// syntax highlighting fg does not bleed.  ae_attr
+			// was already set above for this branch.
 			new_en.ae_u.cterm.fg_rgb = popup_fg;
 		    if (popup_bg != INVALCOLOR)
 		    {

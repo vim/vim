@@ -2443,6 +2443,106 @@ func Test_pumopt_opacity_screendump()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test pumopt opacity with multibyte background text and multibyte popup
+" items.  Exercises the wide-character alignment in the blend path:
+" - a wide background character whose trailing cell falls inside the pum
+"   fill range must not be re-emitted after screen_char() has already drawn
+"   the full glyph (would clobber the right half);
+" - a wide background character at the right edge of the fill range must
+"   not spill into the adjacent border cell.
+func Test_pumopt_opacity_wide_bg()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:50,border:round
+    set completeopt=menu
+    call setline(1, '')
+    for i in range(20)
+      call append(line('$'), 'ほげほげほげ漢字テストあいうえおカタカナ')
+    endfor
+    normal gg
+    inoremap <F5> <Cmd>call complete(col('.'),
+          \ ['ほげ', 'ふが漢字', 'カタカナ候補'])<CR>
+  END
+  call writefile(lines, 'Xpumoptopacitywide', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacitywide', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_wide_bg', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test pumopt opacity when every other background line is shifted by one
+" narrow cell, so the background's wide-character boundaries do not align
+" with the popup's wide-character grid.  Exercises the blend path when:
+" - pum_bg has the trailing half of a wide character at col == start_col
+"   (its leading half was overwritten by the popup text's clear_next_cell
+"   narrow space), where restoring the trailing alone would emit a stray
+"   NUL; a blended space must be rendered instead.
+" - clearing of ScreenLinesUC[off + 1] when screen_puts_len writes a wide
+"   character on a cell whose trailing previously held a different wide
+"   char's leading codepoint.
+func Test_pumopt_opacity_wide_bg_shifted()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:50,border:round
+    set completeopt=menu
+    call setline(1, '')
+    let base = 'ほげほげほげ漢字テストあいうえおカタカナ'
+    for i in range(20)
+      call append(line('$'), (i % 2 == 0 ? '' : 'a') .. base)
+    endfor
+    normal gg
+    inoremap <F5> <Cmd>call complete(col('.'),
+          \ ['ほげ', 'ふが漢字', 'カタカナ候補'])<CR>
+  END
+  call writefile(lines, 'Xpumoptopacityshifted', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacityshifted', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_wide_bg_shifted', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test that opaque popup text uses the popup's own attributes (fg and flags
+" like italic) rather than inheriting them from the syntax-highlighted
+" multibyte background cell underneath.  Without this guard, popup text
+" picks up the fg/italic of whatever buffer text happened to sit under
+" each cell.
+func Test_pumopt_opacity_text_attrs()
+  CheckScreendump
+  let lines =<< trim END
+    set pumopt=opacity:50
+    set completeopt=menu
+    hi clear
+    hi Pmenu    guifg=#ffffff guibg=#004488 ctermfg=white ctermbg=darkblue
+    hi PmenuSel guifg=#000000 guibg=#ffcc00 ctermfg=black ctermbg=yellow
+    hi Special  guifg=#ff66cc cterm=italic gui=italic
+    call setline(1, '')
+    for i in range(20)
+      call append(line('$'), 'ほげほげほげ漢字テストあいうえおカタカナ')
+    endfor
+    call matchadd('Special', '漢字\|テスト')
+    normal gg
+    inoremap <F5> <Cmd>call complete(col('.'),
+          \ ['ほげ', 'ふが漢字', 'カタカナ候補'])<CR>
+  END
+  call writefile(lines, 'Xpumoptopacityattrs', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacityattrs', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_text_attrs', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test pumopt opacity:100 (fully opaque, same as default)
 func Test_pumopt_opacity_100()
   CheckScreendump
