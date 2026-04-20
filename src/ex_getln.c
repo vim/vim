@@ -614,14 +614,18 @@ may_adjust_incsearch_highlighting(
 	incsearch_state_T	*is_state,
 	int			c)
 {
-    int	    skiplen, patlen;
-    pos_T   t;
-    char_u  *pat;
-    int	    search_flags = SEARCH_NOOF;
-    int	    i;
-    int	    save;
-    int	    bslsh = FALSE;
-    int	    search_delim;
+    int		skiplen, patlen;
+    pos_T	t;
+    char_u	*pat;
+    char_u	*dircp = NULL;
+    char_u	*searchstr;
+    char_u	*strcopy = NULL;
+    size_t	searchstrlen;
+    size_t	patlen_s;
+    soffset_T	offset;
+    int		search_flags = SEARCH_NOOF;
+    int		i;
+    int		search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
@@ -639,31 +643,16 @@ may_adjust_incsearch_highlighting(
 	return FAIL;
     }
 
-    if (search_delim == ccline.cmdbuff[skiplen])
-    {
-	pat = last_search_pattern();
-	if (pat == NULL)
-	{
-	    restore_last_search_pattern();
-	    return FAIL;
-	}
-	skiplen = 0;
-	patlen = (int)last_search_pattern_len();
-    }
-    else
-	pat = ccline.cmdbuff + skiplen;
+    pat = ccline.cmdbuff + skiplen;
+    searchstr = pat;
+    searchstrlen = (size_t)patlen;
+    patlen_s = (size_t)(ccline.cmdlen - skiplen);
 
     // do not search for the search end delimiter,
     // unless it is part of the pattern
-    if (patlen > 2 && firstc == pat[patlen - 1])
-    {
-	patlen--;
-	if (pat[patlen - 1] == '\\')
-	{
-	    pat[patlen - 1] = firstc;
-	    bslsh = TRUE;
-	}
-    }
+    (void)parse_search_pattern_offset(&pat, &patlen_s, search_delim,
+				    SEARCH_OPT, &strcopy, &searchstr,
+				    &searchstrlen, &dircp, &offset);
 
     cursor_off();
     out_flush();
@@ -681,18 +670,39 @@ may_adjust_incsearch_highlighting(
     if (!p_hls)
 	search_flags += SEARCH_KEEP;
     ++emsg_off;
-    save = pat[patlen];
-    pat[patlen] = NUL;
     i = searchit(curwin, curbuf, &t, NULL,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
-		 pat, patlen, count, search_flags, RE_SEARCH, NULL);
+		 searchstr, searchstrlen, count, search_flags, RE_SEARCH, NULL);
     --emsg_off;
-    pat[patlen] = save;
-    if (bslsh)
-	pat[patlen - 1] = '\\';
+    if (dircp != NULL)
+	*dircp = search_delim;
     if (i)
     {
-	is_state->search_start = is_state->match_start;
+	pos_T	match_start = is_state->match_start;
+	pos_T	match_end = is_state->match_end;
+	long	off = offset.off;
+
+	is_state->search_start = match_start;
+	if (!offset.line && (offset.end || off != 0))
+	{
+	    if (offset.end)
+	    {
+		is_state->search_start = match_end;
+		(void)decl(&is_state->search_start);
+	    }
+	    while (off > 0)
+	    {
+		if (incl(&is_state->search_start) == -1)
+		    break;
+		--off;
+	    }
+	    while (off < 0)
+	    {
+		if (decl(&is_state->search_start) == -1)
+		    break;
+		++off;
+	    }
+	}
 	is_state->match_end = t;
 	is_state->match_start = t;
 	if (c == Ctrl_T && firstc != '?')
@@ -733,6 +743,7 @@ may_adjust_incsearch_highlighting(
     }
     else
 	vim_beep(BO_ERROR);
+    vim_free(strcopy);
     restore_last_search_pattern();
     return FAIL;
 }
