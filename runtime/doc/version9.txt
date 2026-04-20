@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 16
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41954,7 +41954,7 @@ Vim Arguments: ~
 
 Configure Switches: ~
 --with-wayland			Enable the |wayland| feature.
---enable-wayland-focus-steal	Enable the |wayland-focus-steal| feature.
+--enable-wayland-focus-steal	Enable the wayland-focus-steal feature.
 --enable-socketserver		Enable the |socketserver-clientserver|
 				feature.
 
@@ -52636,6 +52636,9 @@ Changed ~
   are moved to the resulting joined line instead of being dropped.
 - Only a few whitelisted options are allowed to be set by a modeline to
   improve overall security, see for details: 'modelinestrict'
+- Removed the Wayland focus steal feature 'wlsteal', since it causes too many
+  issues and can now be re-implemted using the |clipboard-providers| feature
+  if needed, see |wayland-primary-selection| for an example.
 
 							*added-9.3*
 Added ~

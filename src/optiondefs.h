@@ -3039,14 +3039,9 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"wlsteal",	    "wst",  P_BOOL|P_VI_DEF,
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-			    (char_u *)&p_wst, PV_NONE, did_set_wlsteal, NULL,
-			    {(char_u *)FALSE, (char_u *)0L}
-#else
+    {"wlsteal",	    "wst",  P_BOOL|P_VI_DEF, // Deprecated
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"wltimeoutlen", "wtm", P_NUM|P_VI_DEF,
 #ifdef FEAT_WAYLAND

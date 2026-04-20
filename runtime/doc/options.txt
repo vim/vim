@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 17
+*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10669,11 +10669,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*
 'wlsteal' 'wst'		boolean  (default off)
 			global
-			{only when the |+wayland_focus_steal| feature is
-			included}
+	DEPRECATED: This option is no longer used; changing it has no effect.
+
 	When enabled, then allow Vim to steal focus by creating a temporary
-	surface, in order to access the clipboard.  For more information see
-	|wayland-focus-steal|.
+	surface, in order to access the clipboard.
 
 						*'wltimeoutlen'* *'wtm'*
 'wltimeoutlen' 'wtm'	number	(default 500)
@@ -10685,9 +10684,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	setting this to a lower value may make Vim feel more responsive in
 	some cases.  On the other hand, it may also mean you receive errors
 	when the compositor takes more time to respond than usual.
-
-	Additionally, this option is also used as the maximum timeout when
-	waiting for a surface to gain focus, see |wayland-focus-steal|.
 
 						*'wrap'* *'nowrap'*
 'wrap'			boolean	(default on)

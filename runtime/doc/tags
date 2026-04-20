@@ -1562,7 +1562,6 @@ $quote	eval.txt	/*$quote*
 +vtp	various.txt	/*+vtp*
 +wayland	various.txt	/*+wayland*
 +wayland_clipboard	various.txt	/*+wayland_clipboard*
-+wayland_focus_steal	various.txt	/*+wayland_focus_steal*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
@@ -11805,8 +11804,6 @@ waittime	channel.txt	/*waittime*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 wayland	wayland.txt	/*wayland*
 wayland-and-x11	wayland.txt	/*wayland-and-x11*
-wayland-focus-steal	wayland.txt	/*wayland-focus-steal*
-wayland-gnome	wayland.txt	/*wayland-gnome*
 wayland-gui	wayland.txt	/*wayland-gui*
 wayland-persist	wayland.txt	/*wayland-persist*
 wayland-primary-selection	wayland.txt	/*wayland-primary-selection*

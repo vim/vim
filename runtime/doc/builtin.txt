@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13354,8 +13354,6 @@ vtp			Compiled for vcon support |+vtp| (check vcon to find
 			out if it works in the current console).
 wayland			Compiled with Wayland protocol support.
 wayland_clipboard	Compiled with support for Wayland clipboard.
-wayland_focus_steal	Compiled with support for Wayland clipboard focus
-			stealing.
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
 win16			old version for MS-Windows 3.1 (always false)

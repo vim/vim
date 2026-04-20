@@ -22,12 +22,6 @@
  *	      times, and saves new selections/offers as events come in. When we
  *	      want retrieve the selection, the currently saved data offer is
  *	      used from the respective data device.
- *
- *	      The focus stealing code is implemented in clipboard.c, and is
- *	      based off of wl-clipboard's implementation. The idea using of
- *	      extensive macros to reduce boilerplate code also comes from
- *	      wl-clipboard as well. The project page for wl-clipboard can be
- *	      found here: https://github.com/bugaevc/wl-clipboard
  */
 
 #include "vim.h"
@@ -336,38 +330,6 @@ wl_registry_listener_event_global(
 	ct->gobjects.ext_data_control_manager_v1 =
 	    wl_registry_bind(registry, name,
 		    &ext_data_control_manager_v1_interface, 1);
-
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    else if (p_wst)
-    {
-	if (STRCMP(interface, wl_data_device_manager_interface.name) == 0)
-	    ct->gobjects.wl_data_device_manager =
-		wl_registry_bind(registry, name,
-			&wl_data_device_manager_interface, 1);
-
-	else if (STRCMP(interface, wl_shm_interface.name) == 0)
-	    ct->gobjects.wl_shm =
-		wl_registry_bind(registry, name,
-			&wl_shm_interface, 1);
-
-	else if (STRCMP(interface, wl_compositor_interface.name) == 0)
-	    ct->gobjects.wl_compositor =
-		wl_registry_bind(registry, name,
-			&wl_compositor_interface, 1);
-
-	else if (STRCMP(interface, xdg_wm_base_interface.name) == 0)
-	    ct->gobjects.xdg_wm_base =
-		wl_registry_bind(registry, name,
-			&xdg_wm_base_interface, 1);
-
-	else if (STRCMP(interface,
-		    zwp_primary_selection_device_manager_v1_interface.name)
-		    == 0)
-	    ct->gobjects.zwp_primary_selection_device_manager_v1 =
-		wl_registry_bind(registry, name,
-			&zwp_primary_selection_device_manager_v1_interface, 1);
-    }
-# endif // FEAT_WAYLAND_CLIPBOARD_FS
 #endif // FEAT_WAYLAND_CLIPBOARD
 
 }
@@ -386,27 +348,10 @@ wl_registry_listener_event_global_remove(
 {
 }
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    static void
-xdg_wm_base_listener_event_ping(
-	void *data UNUSED,
-	struct xdg_wm_base *xdg_base,
-	uint32_t serial)
-{
-    xdg_wm_base_pong(xdg_base, serial);
-}
-#endif
-
 static const struct wl_registry_listener wl_registry_listener = {
     .global = wl_registry_listener_event_global,
     .global_remove = wl_registry_listener_event_global_remove
 };
-
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-static const struct xdg_wm_base_listener xdg_wm_base_listener  = {
-    .ping = xdg_wm_base_listener_event_ping
-};
-#endif
 
 static void vwl_connection_destroy(vwl_connection_T *self);
 
@@ -428,10 +373,7 @@ static void vwl_connection_destroy(vwl_connection_T *self);
 vwl_connection_new(const char *display)
 {
     vwl_connection_T	*ct;
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    const char_u	*env;
-    bool		force_fs;
-#endif
+
     if (wayland_no_connect)
 	return NULL;
 
@@ -469,45 +411,11 @@ vwl_connection_new(const char *display)
 
     wl_registry_add_listener(ct->registry.proxy, &wl_registry_listener, ct);
 
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    env = mch_getenv("VIM_WAYLAND_FORCE_FS");
-    force_fs = (env != NULL && STRCMP(env, "1") == 0);
-
-    if (force_fs)
-	p_wst = TRUE;
-#endif
-
     if (vwl_connection_roundtrip(ct) == FAIL)
     {
 	vwl_connection_destroy(ct);
 	return NULL;
     }
-
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    if (force_fs)
-    {
-	// Force using focus stealing method
-	VWL_DESTROY_GOBJECT(ct, ext_data_control_manager_v1)
-	VWL_DESTROY_GOBJECT(ct, zwlr_data_control_manager_v1)
-    }
-
-    // If data control protocols are available, we don't need the other global
-    // objects.
-    else if (VWL_GOBJECT_AVAIL(ct, ext_data_control_manager_v1)
-	    || VWL_GOBJECT_AVAIL(ct, zwlr_data_control_manager_v1))
-    {
-	VWL_DESTROY_GOBJECT(ct, wl_data_device_manager)
-	VWL_DESTROY_GOBJECT(ct, wl_shm)
-	VWL_DESTROY_GOBJECT(ct, wl_compositor)
-	VWL_DESTROY_GOBJECT(ct, xdg_wm_base)
-	VWL_DESTROY_GOBJECT(ct, zwp_primary_selection_device_manager_v1)
-    }
-
-    // Start responding to pings from the compositor if we have xdg_wm_base
-    if (VWL_GOBJECT_AVAIL(ct, xdg_wm_base))
-	xdg_wm_base_add_listener(ct->gobjects.xdg_wm_base,
-		&xdg_wm_base_listener, NULL);
-#endif
 
     return ct;
 }
@@ -544,13 +452,6 @@ vwl_connection_destroy(vwl_connection_T *self)
 # ifdef FEAT_WAYLAND_CLIPBOARD
     VWL_DESTROY_GOBJECT(self, ext_data_control_manager_v1)
     VWL_DESTROY_GOBJECT(self, zwlr_data_control_manager_v1)
-#  ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    VWL_DESTROY_GOBJECT(self, wl_data_device_manager)
-    VWL_DESTROY_GOBJECT(self, wl_shm)
-    VWL_DESTROY_GOBJECT(self, wl_compositor)
-    VWL_DESTROY_GOBJECT(self, xdg_wm_base)
-    VWL_DESTROY_GOBJECT(self, zwp_primary_selection_device_manager_v1)
-#  endif
 # endif
 
     for (int i = 0; i < self->gobjects.seats.ga_len; i++)
@@ -591,21 +492,6 @@ vwl_connection_get_seat(vwl_connection_T *self, const char *label)
     }
     return NULL;
 }
-
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-/*
- * Get keyboard object from seat and return it. NULL is returned on
- * failure such as when a keyboard is not available for seat.
- */
-    struct wl_keyboard *
-vwl_seat_get_keyboard(vwl_seat_T *self)
-{
-    if (!(self->capabilities & WL_SEAT_CAPABILITY_KEYBOARD))
-	return NULL;
-
-    return wl_seat_get_keyboard(self->proxy);
-}
-# endif
 
 #endif
 
@@ -896,27 +782,6 @@ vwl_connection_get_data_device_manager(
 	if (zwlr_data_control_manager_v1_get_version(manager->proxy) >= 2)
 	    *supported |= WAYLAND_SELECTION_PRIMARY;
     }
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    else if (self->gobjects.wl_data_device_manager != NULL
-	    && req_sel == WAYLAND_SELECTION_REGULAR)
-    {
-	manager->proxy = self->gobjects.wl_data_device_manager;
-	manager->protocol = VWL_DATA_PROTOCOL_CORE;
-
-	*supported |= WAYLAND_SELECTION_REGULAR;
-    }
-
-    if (req_sel == WAYLAND_SELECTION_PRIMARY
-	    && !(*supported & WAYLAND_SELECTION_PRIMARY))
-	if (self->gobjects.zwp_primary_selection_device_manager_v1 != NULL)
-	{
-	    manager->proxy =
-		self->gobjects.zwp_primary_selection_device_manager_v1;
-	    manager->protocol = VWL_DATA_PROTOCOL_PRIMARY;
-
-	    *supported |= WAYLAND_SELECTION_PRIMARY;
-	}
-# endif
 
     if (!(*supported & req_sel))
     {
@@ -944,16 +809,6 @@ vwl_data_device_manager_get_data_device(
 	    device->proxy = zwlr_data_control_manager_v1_get_data_device(
 		    self->proxy, seat->proxy);
 	    break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	case VWL_DATA_PROTOCOL_CORE:
-	    device->proxy = wl_data_device_manager_get_data_device(
-		    self->proxy, seat->proxy);
-	    break;
-	case VWL_DATA_PROTOCOL_PRIMARY:
-	    device->proxy = zwp_primary_selection_device_manager_v1_get_device(
-		    self->proxy, seat->proxy);
-	    break;
-# endif
 	default:
 	    vim_free(device);
 	    return NULL;
@@ -978,17 +833,6 @@ vwl_data_device_manager_create_data_source(vwl_data_device_manager_T *self)
 	    source->proxy = zwlr_data_control_manager_v1_create_data_source(
 		    self->proxy);
 	    break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	case VWL_DATA_PROTOCOL_CORE:
-	    source->proxy = wl_data_device_manager_create_data_source(
-		    self->proxy);
-	    break;
-	case VWL_DATA_PROTOCOL_PRIMARY:
-	    source->proxy =
-		zwp_primary_selection_device_manager_v1_create_source(
-			self->proxy);
-	    break;
-# endif
 	default:
 	    vim_free(source);
 	    return NULL;
@@ -1018,18 +862,6 @@ vwl_data_device_wrap_offer_proxy(vwl_data_device_T *self, void *proxy)
     return offer;
 }
 
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-#  define VWL_CODE_DATA_PROXY_FS_DESTROY(type) \
-    case VWL_DATA_PROTOCOL_CORE: \
-	wl_data_##type##_destroy(self->proxy); \
-	break; \
-    case VWL_DATA_PROTOCOL_PRIMARY: \
-	zwp_primary_selection_##type##_v1_destroy(self->proxy); \
-	break;
-# else
-#  define VWL_CODE_DATA_PROXY_FS_DESTROY(type)
-# endif
-
 # define VWL_FUNC_DATA_PROXY_DESTROY(type) \
 	void \
     vwl_data_##type##_destroy(vwl_data_##type##_T *self) \
@@ -1044,7 +876,6 @@ vwl_data_device_wrap_offer_proxy(vwl_data_device_T *self, void *proxy)
 	    case VWL_DATA_PROTOCOL_WLR: \
 		zwlr_data_control_##type##_v1_destroy(self->proxy); \
 		break; \
-	    VWL_CODE_DATA_PROXY_FS_DESTROY(type) \
 	    default: \
 		break; \
 	} \
@@ -1067,14 +898,6 @@ vwl_data_offer_destroy(vwl_data_offer_T *self)
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_offer_v1_destroy(self->proxy);
 	    break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	case VWL_DATA_PROTOCOL_CORE:
-	    wl_data_offer_destroy(self->proxy);
-	    break;
-	case VWL_DATA_PROTOCOL_PRIMARY:
-	    zwp_primary_selection_offer_v1_destroy(self->proxy);
-	    break;
-# endif
 	default:
 	    break;
     }
@@ -1147,11 +970,6 @@ VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
     ext_data_control_device_v1, ext_data_control_offer_v1)
 VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
     zwlr_data_control_device_v1, zwlr_data_control_offer_v1)
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(wl_data_device, wl_data_offer)
-VWL_FUNC_DATA_DEVICE_EVENT_DATA_OFFER(
-	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1)
-# endif
 
 VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(
     ext_data_control_device_v1, ext_data_control_offer_v1
@@ -1165,13 +983,6 @@ VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
 VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
     zwlr_data_control_device_v1, zwlr_data_control_offer_v1
 )
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-VWL_FUNC_DATA_DEVICE_EVENT_SELECTION(
-    wl_data_device, wl_data_offer
-)
-VWL_FUNC_DATA_DEVICE_EVENT_PRIMARY_SELECTION(
-	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1)
-# endif
 
 VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(ext_data_control_device_v1)
 VWL_FUNC_DATA_DEVICE_EVENT_FINISHED(zwlr_data_control_device_v1)
@@ -1192,18 +1003,6 @@ static const struct zwlr_data_control_device_v1_listener
 	    zwlr_data_control_device_v1_listener_event_primary_selection,
 	.finished = zwlr_data_control_device_v1_listener_event_finished
 };
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-static const struct wl_data_device_listener wl_data_device_listener = {
-    .data_offer = wl_data_device_listener_event_data_offer,
-    .selection = wl_data_device_listener_event_selection,
-};
-static const struct zwp_primary_selection_device_v1_listener
-    zwp_primary_selection_device_v1_listener = {
-	.data_offer = zwp_primary_selection_device_v1_listener_event_data_offer,
-	.selection =
-	    zwp_primary_selection_device_v1_listener_event_primary_selection,
-};
-# endif
 
 # define VWL_FUNC_DATA_SOURCE_EVENT_SEND(source_type) \
 	static void \
@@ -1226,17 +1025,9 @@ static const struct zwp_primary_selection_device_v1_listener
 
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_EVENT_SEND(zwlr_data_control_source_v1)
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-VWL_FUNC_DATA_SOURCE_EVENT_SEND(wl_data_source)
-VWL_FUNC_DATA_SOURCE_EVENT_SEND(zwp_primary_selection_source_v1)
-# endif
 
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(zwlr_data_control_source_v1)
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(wl_data_source)
-VWL_FUNC_DATA_SOURCE_EVENT_CANCELLED(zwp_primary_selection_source_v1)
-# endif
 
 static const struct ext_data_control_source_v1_listener
     ext_data_control_source_v1_listener = {
@@ -1248,17 +1039,6 @@ static const struct zwlr_data_control_source_v1_listener
 	.send = zwlr_data_control_source_v1_listener_event_send,
 	.cancelled = zwlr_data_control_source_v1_listener_event_cancelled
 };
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-static const struct wl_data_source_listener wl_data_source_listener = {
-    .send = wl_data_source_listener_event_send,
-    .cancelled = wl_data_source_listener_event_cancelled
-};
-static const struct zwp_primary_selection_source_v1_listener
-    zwp_primary_selection_source_v1_listener = {
-	.send = zwp_primary_selection_source_v1_listener_event_send,
-	.cancelled = zwp_primary_selection_source_v1_listener_event_cancelled
-};
-# endif
 
 # define VWL_FUNC_DATA_OFFER_EVENT_OFFER(offer_type) \
 	static void \
@@ -1282,10 +1062,6 @@ static const struct zwp_primary_selection_source_v1_listener
 
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(ext_data_control_offer_v1)
 VWL_FUNC_DATA_OFFER_EVENT_OFFER(zwlr_data_control_offer_v1)
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-VWL_FUNC_DATA_OFFER_EVENT_OFFER(wl_data_offer)
-VWL_FUNC_DATA_OFFER_EVENT_OFFER(zwp_primary_selection_offer_v1)
-# endif
 
 static const struct ext_data_control_offer_v1_listener
     ext_data_control_offer_v1_listener = {
@@ -1295,30 +1071,6 @@ static const struct zwlr_data_control_offer_v1_listener
     zwlr_data_control_offer_v1_listener = {
 	.offer = zwlr_data_control_offer_v1_listener_event_offer
 };
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-static const struct wl_data_offer_listener
-    wl_data_offer_listener = {
-	.offer = wl_data_offer_listener_event_offer
-};
-static const struct zwp_primary_selection_offer_v1_listener
-    zwp_primary_selection_offer_v1_listener = {
-	.offer = zwp_primary_selection_offer_v1_listener_event_offer
-};
-# endif
-
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-#  define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type) \
-    case VWL_DATA_PROTOCOL_CORE: \
-	wl_data_##type##_add_listener(self->proxy, \
-		&wl_data_##type##_listener, self); \
-	break; \
-    case VWL_DATA_PROTOCOL_PRIMARY: \
-	zwp_primary_selection_##type##_v1_add_listener(self->proxy, \
-		&zwp_primary_selection_##type##_v1_listener, self); \
-	break;
-# else
-#  define VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type)
-# endif
 
 # define VWL_FUNC_DATA_PROXY_ADD_LISTENER(type) \
 	void \
@@ -1341,7 +1093,6 @@ static const struct zwp_primary_selection_offer_v1_listener
 		zwlr_data_control_##type##_v1_add_listener(self->proxy, \
 			&zwlr_data_control_##type##_v1_listener, self); \
 		break; \
-	    VWL_CODE_DATA_PROXY_FS_ADD_LISTENER(type) \
 	    default: \
 		break; \
 	} \
@@ -1350,7 +1101,6 @@ static const struct zwp_primary_selection_offer_v1_listener
 VWL_FUNC_DATA_PROXY_ADD_LISTENER(device)
 VWL_FUNC_DATA_PROXY_ADD_LISTENER(source)
 VWL_FUNC_DATA_PROXY_ADD_LISTENER(offer)
-
 /*
  * Set the given selection to source. If a data control protocol is being used,
  * "serial" is ignored.
@@ -1375,11 +1125,6 @@ vwl_data_device_set_selection(
 	    case VWL_DATA_PROTOCOL_WLR:
 		zwlr_data_control_device_v1_set_selection(self->proxy, proxy);
 		break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	    case VWL_DATA_PROTOCOL_CORE:
-		wl_data_device_set_selection(self->proxy, proxy, serial);
-		break;
-# endif
 	    default:
 		break;
 	}
@@ -1398,12 +1143,6 @@ vwl_data_device_set_selection(
 			self->proxy, proxy
 			);
 		break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	    case VWL_DATA_PROTOCOL_PRIMARY:
-		zwp_primary_selection_device_v1_set_selection(
-			self->proxy, proxy, serial);
-		break;
-# endif
 	    default:
 		break;
 	}
@@ -1421,14 +1160,6 @@ vwl_data_source_offer(vwl_data_source_T *self, const char *mime_type)
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_source_v1_offer(self->proxy, mime_type);
 	    break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	case VWL_DATA_PROTOCOL_CORE:
-	    wl_data_source_offer(self->proxy, mime_type);
-	    break;
-	case VWL_DATA_PROTOCOL_PRIMARY:
-	    zwp_primary_selection_source_v1_offer(self->proxy, mime_type);
-	    break;
-# endif
 	default:
 	    break;
     }
@@ -1448,14 +1179,6 @@ vwl_data_offer_receive(
 	case VWL_DATA_PROTOCOL_WLR:
 	    zwlr_data_control_offer_v1_receive(self->proxy, mime_type, fd);
 	    break;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	case VWL_DATA_PROTOCOL_CORE:
-	    wl_data_offer_receive(self->proxy, mime_type, fd);
-	    break;
-	case VWL_DATA_PROTOCOL_PRIMARY:
-	    zwp_primary_selection_offer_v1_receive(self->proxy, mime_type, fd);
-	    break;
-# endif
 	default:
 	    break;
     }

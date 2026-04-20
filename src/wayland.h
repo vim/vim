@@ -19,10 +19,6 @@
 #ifdef FEAT_WAYLAND_CLIPBOARD
 # include "auto/wayland/wlr-data-control-unstable-v1.h"
 # include "auto/wayland/ext-data-control-v1.h"
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-#  include "auto/wayland/xdg-shell.h"
-#  include "auto/wayland/primary-selection-unstable-v1.h"
-# endif
 #endif
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
@@ -32,10 +28,6 @@ typedef enum {
     VWL_DATA_PROTOCOL_NONE,
     VWL_DATA_PROTOCOL_EXT,
     VWL_DATA_PROTOCOL_WLR,
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-    VWL_DATA_PROTOCOL_CORE,
-    VWL_DATA_PROTOCOL_PRIMARY
-# endif
 } vwl_data_protocol_T;
 
 #endif // FEAT_WAYLAND_CLIPBOARD
@@ -68,14 +60,6 @@ struct vwl_connection_S {
 #ifdef FEAT_WAYLAND_CLIPBOARD
 	struct zwlr_data_control_manager_v1 *zwlr_data_control_manager_v1;
 	struct ext_data_control_manager_v1  *ext_data_control_manager_v1;
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-	struct wl_data_device_manager	    *wl_data_device_manager;
-	struct wl_shm			    *wl_shm;
-	struct wl_compositor		    *wl_compositor;
-	struct xdg_wm_base		    *xdg_wm_base;
-	struct zwp_primary_selection_device_manager_v1
-	    *zwp_primary_selection_device_manager_v1;
-# endif
 #endif
     } gobjects;
 };
@@ -148,61 +132,6 @@ struct vwl_data_device_manager_S {
     void		*proxy;
     vwl_data_protocol_T protocol;
 };
-
-# ifdef FEAT_WAYLAND_CLIPBOARD_FS
-
-// Dummy functions to handle keyboard events we don't care about.
-
-#  define VWL_FUNCS_DUMMY_KEYBOARD_EVENTS() \
-    static void \
-clip_wl_fs_keyboard_listener_keymap( \
-    void		*data UNUSED, \
-    struct wl_keyboard	*keyboard UNUSED, \
-    uint32_t		format UNUSED, \
-    int			fd, \
-    uint32_t		size UNUSED) \
-{ \
-    close(fd); \
-} \
-    static void \
-clip_wl_fs_keyboard_listener_leave( \
-    void		*data UNUSED, \
-    struct wl_keyboard	*keyboard UNUSED, \
-    uint32_t		serial UNUSED, \
-    struct wl_surface	*surface UNUSED) \
-{ \
-} \
-    static void \
-clip_wl_fs_keyboard_listener_key( \
-    void		*data UNUSED, \
-    struct wl_keyboard	*keyboard UNUSED, \
-    uint32_t		serial UNUSED, \
-    uint32_t		time UNUSED, \
-    uint32_t		key UNUSED, \
-    uint32_t		state UNUSED) \
-{ \
-} \
-    static void \
-clip_wl_fs_keyboard_listener_modifiers( \
-    void		*data UNUSED, \
-    struct wl_keyboard	*keyboard UNUSED, \
-    uint32_t		serial UNUSED, \
-    uint32_t		mods_depressed UNUSED, \
-    uint32_t		mods_latched UNUSED, \
-    uint32_t		mods_locked UNUSED, \
-    uint32_t		group UNUSED) \
-{ \
-} \
-    static void \
-clip_wl_fs_keyboard_listener_repeat_info( \
-    void		*data UNUSED, \
-    struct wl_keyboard	*keyboard UNUSED, \
-    int32_t		rate UNUSED, \
-    int32_t		delay UNUSED) \
-{ \
-}
-
-# endif
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
