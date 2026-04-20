@@ -1967,12 +1967,16 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	    // after `col`, depending on the search direction.
 	    if (lnum == lnum_start)
 	    {
+		bool is_floating_vtext = prop.tp_id < 0
+		    && prop.tp_col == MAXCOL;
 		if (dir == BACKWARD)
 		{
-		    if (prop.tp_col > col)
+		    // Virtual text with MAXCOL always matches any column
+		    if (!is_floating_vtext && prop.tp_col > col)
 			continue;
 		}
-		else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
+		else if (!is_floating_vtext
+		    && prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
 		    continue;
 	    }
 	    if (both ? prop.tp_id == id && prop.tp_type == type_id

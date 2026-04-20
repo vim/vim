@@ -4907,4 +4907,38 @@ func Test_textprop_materialize_list()
 	call assert_equal([], prop_list(1, #{ids: 3->range()}))
 endfunc
 
+func Test_prop_find_floating_vtext()
+  new
+  call setline(1, ['111', '222', '333'])
+  let tn = 'test'
+  call prop_type_add(tn, {'highlight': 'Search'})
+  for ln in range(1, 3)
+    call prop_add(ln, 0, {'type': tn, 'text': '-----', 'text_align': 'above'})
+  endfor
+  " forward search must find the virtual text on the starting line
+  let found = prop_find({'type': tn, 'lnum': 1, 'col': 1})
+  call assert_equal(1, found.lnum)
+  call assert_equal('-----', found.text)
+  " backward search must also find the virtual text on the starting line
+  let found = prop_find({'type': tn, 'lnum': 1, 'col': 1}, 'b')
+  call assert_equal(1, found.lnum)
+  call assert_equal('-----', found.text)
+  bwipe!
+  call prop_type_delete(tn)
+  " Also cover 'below' and 'right' aligned virtual text (also tp_col==MAXCOL)
+  for align in ['below', 'right']
+    new
+    call setline(1, ['aaa', 'bbb'])
+    call prop_type_add(tn, {'highlight': 'Search'})
+    call prop_add(1, 0, {'type': tn, 'text': 'VT', 'text_align': align})
+    let found = prop_find({'type': tn, 'lnum': 1, 'col': 1})
+    call assert_equal(1, found.lnum, 'forward, align=' .. align)
+    call assert_equal('VT', found.text, 'forward, align=' .. align)
+    let found = prop_find({'type': tn, 'lnum': 1, 'col': 1}, 'b')
+    call assert_equal(1, found.lnum, 'backward, align=' .. align)
+    call assert_equal('VT', found.text, 'backward, align=' .. align)
+    bwipe!
+    call prop_type_delete(tn)
+  endfor
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
