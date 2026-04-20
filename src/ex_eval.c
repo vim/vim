@@ -275,7 +275,7 @@ cause_errthrow(
 		    {
 			char	    *tmsg;
 
-			// Skip the extra "Vim " prefix for message "E458".
+			// Skip the extra "Vim " prefix for message "E457".
 			tmsg = elem->msg;
 			if (STRNCMP(tmsg, "Vim E", 5) == 0
 				&& VIM_ISDIGIT(tmsg[5])

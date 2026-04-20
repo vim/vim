@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-15 19:10+0000\n"
+"POT-Creation-Date: 2026-04-20 17:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5220,9 +5220,6 @@ msgstr ""
 
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr ""
-
-msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
 
 msgid "E459: Cannot go back to previous directory"
