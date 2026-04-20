@@ -1922,6 +1922,9 @@ screen_puts_len(
 		if (mbyte_cells == 2)
 		{
 		    ScreenLines[off + 1] = 0;
+		    ScreenLinesUC[off + 1] = 0;
+		    for (int ci = 0; ci < Screen_mco; ++ci)
+			ScreenLinesC[ci][off + 1] = 0;
 		    ScreenAttrs[off + 1] = cell_attr;
 		    ScreenCols[off + 1] = -1;
 		}
@@ -2812,8 +2815,13 @@ skip_opacity_fill:
 		    // Skip the trailing cell of a wide background char: its
 		    // leading cell already emitted the full wide glyph via
 		    // screen_char(); drawing here would clobber the right half.
+		    // Only applies when the previous cell was actually processed
+		    // in this fill range -- if the fill starts here (col ==
+		    // start_col), the "wide lead" is outside our range (e.g.,
+		    // popup text wrote a narrow cell there), so we fall through
+		    // to the regular blend path which renders a blended space.
 		    if (enc_utf8 && pum_bg_linesUC != NULL
-			    && col > 0
+			    && col > start_col
 			    && pum_bg_linesUC[soff] == 0
 			    && pum_bg_linesUC[soff - 1] != 0
 			    && utf_char2cells(pum_bg_linesUC[soff - 1]) == 2)
@@ -2831,10 +2839,20 @@ skip_opacity_fill:
 		    // would extend past the end of the fill range (e.g. into a
 		    // popup border cell on the right edge), render a blended
 		    // space instead so the border at col+1 is preserved.
+		    // Likewise, if this cell is the trailing half of a wide
+		    // background char whose leading cell is outside the fill
+		    // range (e.g., popup text wrote a narrow cell there),
+		    // restoring the trailing alone would emit a stray NUL.
 		    if (enc_utf8 && pum_bg_linesUC != NULL
-			    && pum_bg_linesUC[soff] != 0
-			    && utf_char2cells(pum_bg_linesUC[soff]) == 2
-			    && col + 1 >= end_col)
+			    && ((pum_bg_linesUC[soff] != 0
+				    && utf_char2cells(pum_bg_linesUC[soff]) == 2
+				    && col + 1 >= end_col)
+				|| (col == start_col
+				    && pum_bg_linesUC[soff] == 0
+				    && col > 0
+				    && pum_bg_linesUC[soff - 1] != 0
+				    && utf_char2cells(pum_bg_linesUC[soff - 1])
+								       == 2)))
 		    {
 			ScreenLines[off] = ' ';
 			if (ScreenLinesUC != NULL)
