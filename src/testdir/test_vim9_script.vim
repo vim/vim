@@ -5933,4 +5933,65 @@ def Test_g_variable_shadow_multi_context()
   unlet g:F
 enddef
 
+" Test that dead elseif conditions are skipped without errors inside a :def function
+def Test_skip_elseif_dead_branch()
+  var lines =<< trim END
+    vim9script
+    def CompileTest()
+      if true
+        echo 'ok'
+      else
+        var x = 0
+        if x > 0
+          echo 'pos'
+        elseif x < 0
+          echo 'neg'
+        endif
+      endif
+    enddef
+    CompileTest()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Another variation: using has() in a dead branch that would fail if compiled
+def Test_skip_elseif_with_has_in_dead_branch()
+  var lines =<< trim END
+    vim9script
+    def HasTest()
+      if true
+        echo 'ok'
+      else
+        var x = 0
+        if x > 0
+          echo 'pos'
+        elseif has('clipboard')
+          echo 'neg'
+        endif
+      endif
+    enddef
+    HasTest()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_if_false_elseif_true_still_takes_elseif()
+  var lines =<< trim END
+    vim9script
+    var result = ''
+    def F()
+      if false
+        result = 'A'
+      elseif true
+        result = 'B'
+      else
+        result = 'C'
+      endif
+    enddef
+    F()
+    assert_equal('B', result)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
