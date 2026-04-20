@@ -3444,10 +3444,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 
 	    group_name.string = get_augroup_name(NULL, ap->group);
 	    if (group_name.string == NULL)
-	    {
-		group_name.string = (char_u *)"";
-		group_name.length = 0;
-	    }
+		STR_LITERAL_SET(group_name, "");
 	    else
 		group_name.length = STRLEN(group_name.string);
 

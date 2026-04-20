@@ -1601,10 +1601,7 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	string_T    str = {li->li_tv.vval.v_string, 0};
 
 	if (str.string == NULL)
-	{
-	    str.string = (char_u *)"";
-	    str.length = 0;
-	}
+	    STR_LITERAL_SET(str, "");
 	else
 	    str.length = STRLEN(str.string);
 

@@ -199,12 +199,10 @@ estack_sfile(estack_arg_T which UNUSED)
 		switch (entry->es_type)
 		{
 		    case ETYPE_SCRIPT:
-			type_name.string = (char_u *)"script ";
-			type_name.length = 7;
+			STR_LITERAL_SET(type_name, "script ");
 			break;
 		    case ETYPE_UFUNC:
-			type_name.string = (char_u *)"function ";
-			type_name.length = 9;
+			STR_LITERAL_SET(type_name, "function ");
 			break;
 		    default:
 			break;
