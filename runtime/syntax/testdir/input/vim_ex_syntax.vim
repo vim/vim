@@ -375,3 +375,15 @@ syntax cluster typstCodeKeywords
 syn match   slrnrcColorInit	contained "^\s*color\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Obj\|ObjStr\)\=
 syn region  slrnrcCmdLine       matchgroup=slrnrcCmd start="\<\(autobaud\|...\|visible_headers\)\>" end="$" oneline contains=slrnrc\(String\|Comment\)
 
+" :syntax keyword — oneline accepted but meaningless
+syntax keyword TestKw foo bar oneline
+syntax keyword TestKw2 oneline baz quux
+
+" :syntax match — oneline accepted but meaningless
+syntax match TestMatch /\<foo\>/ oneline
+syntax match TestMatch2 oneline /\<bar\>/
+
+" :syntax region — oneline is meaningful here
+syntax region TestRegion start=/{/ end=/}/ oneline
+syntax region TestRegion2 oneline start=/"/ end=/"/
+syntax region TestRegion3 start=/\/\*/ end=/\*\// oneline containedin=ALL
