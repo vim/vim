@@ -67,30 +67,27 @@ static char *ctrl_x_msgs[] =
 };
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
-# define STRING_INIT(s) \
-    {(char_u *)(s), STRLEN_LITERAL(s)}
 static string_T ctrl_x_mode_names[] = {
-    STRING_INIT("keyword"),
-    STRING_INIT("ctrl_x"),
-    STRING_INIT("scroll"),
-    STRING_INIT("whole_line"),
-    STRING_INIT("files"),
-    STRING_INIT("tags"),
-    STRING_INIT("path_patterns"),
-    STRING_INIT("path_defines"),
-    STRING_INIT("unknown"),		    // CTRL_X_FINISHED
-    STRING_INIT("dictionary"),
-    STRING_INIT("thesaurus"),
-    STRING_INIT("cmdline"),
-    STRING_INIT("function"),
-    STRING_INIT("omni"),
-    STRING_INIT("spell"),
+    STR_LITERAL_INIT("keyword"),
+    STR_LITERAL_INIT("ctrl_x"),
+    STR_LITERAL_INIT("scroll"),
+    STR_LITERAL_INIT("whole_line"),
+    STR_LITERAL_INIT("files"),
+    STR_LITERAL_INIT("tags"),
+    STR_LITERAL_INIT("path_patterns"),
+    STR_LITERAL_INIT("path_defines"),
+    STR_LITERAL_INIT("unknown"),		    // CTRL_X_FINISHED
+    STR_LITERAL_INIT("dictionary"),
+    STR_LITERAL_INIT("thesaurus"),
+    STR_LITERAL_INIT("cmdline"),
+    STR_LITERAL_INIT("function"),
+    STR_LITERAL_INIT("omni"),
+    STR_LITERAL_INIT("spell"),
     {NULL, 0},		    // CTRL_X_LOCAL_MSG is only used in "ctrl_x_msgs"
-    STRING_INIT("eval"),
-    STRING_INIT("cmdline"),
-    STRING_INIT("register"),
+    STR_LITERAL_INIT("eval"),
+    STR_LITERAL_INIT("cmdline"),
+    STR_LITERAL_INIT("register"),
 };
-# undef STRING_INIT
 #endif
 
 /*

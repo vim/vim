@@ -20,16 +20,13 @@ typedef struct {
     poppos_T	pp_val;
 } poppos_entry_T;
 
-#define STRING_INIT(s) \
-    {(char_u *)(s), STRLEN_LITERAL(s)}
 static poppos_entry_T poppos_entries[] = {
-    {STRING_INIT("botleft"), POPPOS_BOTLEFT},
-    {STRING_INIT("topleft"), POPPOS_TOPLEFT},
-    {STRING_INIT("botright"), POPPOS_BOTRIGHT},
-    {STRING_INIT("topright"), POPPOS_TOPRIGHT},
-    {STRING_INIT("center"), POPPOS_CENTER}
+    {STR_LITERAL_INIT("botleft"), POPPOS_BOTLEFT},
+    {STR_LITERAL_INIT("topleft"), POPPOS_TOPLEFT},
+    {STR_LITERAL_INIT("botright"), POPPOS_BOTRIGHT},
+    {STR_LITERAL_INIT("topright"), POPPOS_TOPRIGHT},
+    {STR_LITERAL_INIT("center"), POPPOS_CENTER}
 };
-#undef STRING_INIT
 
 #ifdef HAS_MESSAGE_WINDOW
 // Window used for ":echowindow"

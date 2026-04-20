@@ -7260,13 +7260,10 @@ mch_expand_wildcards(
     int		check_spaces;
     static int	did_find_nul = FALSE;
     int		ampersand = FALSE;
-# define STRING_INIT(s) \
-		{(char_u *)(s), STRLEN_LITERAL(s)}
 				// vimglob() function to define for Posix shell
-    static string_T sh_vimglob_func = STRING_INIT("vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >");
+    static string_T sh_vimglob_func = STR_LITERAL_INIT("vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >");
 				// vimglob() function with globstar setting enabled, only for bash >= 4.X
-    static string_T sh_globstar_opt = STRING_INIT("[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ");
-# undef STRING_INIT
+    static string_T sh_globstar_opt = STR_LITERAL_INIT("[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ");
 
 
     *num_file = 0;	// default: no files found
