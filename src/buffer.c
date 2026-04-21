@@ -4946,6 +4946,9 @@ build_stl_str_hl_local(
 		    maxwid = 50;
 	    }
 	}
+	// Keep the uncapped value for %N[FuncName] click-region IDs; the 50
+	// cap below applies only when minwid is used as a padding width.
+	int raw_minwid = minwid * l;
 	minwid = (minwid > 50 ? 50 : minwid) * l;
 	if (*s == '(')
 	{
@@ -5306,7 +5309,11 @@ build_stl_str_hl_local(
 		{
 		    stl_items[curitem].stl_type = ClickFunc;
 		    stl_items[curitem].stl_start = p;
-		    stl_items[curitem].stl_minwid = minwid;
+		    // The stl_minwid field is overloaded: it may be the
+		    // "min" part of %<min>.<max> used for padding, or an
+		    // identifier passed to the %N[FuncName] callback.  Store
+		    // the uncapped value so IDs above 50 are preserved.
+		    stl_items[curitem].stl_minwid = raw_minwid;
 		    stl_items[curitem].stl_clickfunc =
 					      vim_strnsave(s, rb - s);
 		    s = rb + 1;

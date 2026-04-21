@@ -10889,6 +10889,7 @@ tabpagebuflist()	builtin.txt	/*tabpagebuflist()*
 tabpagenr()	builtin.txt	/*tabpagenr()*
 tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
 tabpanel	tabpage.txt	/*tabpanel*
+tabpanel-scroll	tabpage.txt	/*tabpanel-scroll*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*

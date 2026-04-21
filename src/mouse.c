@@ -240,6 +240,9 @@ do_mouse(
     int		in_status_line;	// mouse in status line
     static int	in_tab_line = FALSE; // mouse clicked in tab line
     static int	in_tabpanel = FALSE; // mouse clicked in tabpanel
+#ifdef FEAT_TABPANEL
+    static bool	in_tabpanel_scrollbar = false; // dragging tabpanel scrollbar
+#endif
     int		in_sep_line;	// mouse in vertical separator line
     int		c1, c2;
 #if defined(FEAT_FOLDING)
@@ -346,6 +349,9 @@ do_mouse(
 	got_click = TRUE;
 	in_tab_line = FALSE;
 	in_tabpanel = FALSE;
+#ifdef FEAT_TABPANEL
+	in_tabpanel_scrollbar = false;
+#endif
     }
     else
     {
@@ -354,14 +360,30 @@ do_mouse(
 	if (!is_drag)			// release, reset got_click
 	{
 	    got_click = FALSE;
-	    if (in_tab_line || in_tabpanel)
+	    if (in_tab_line || in_tabpanel
+#ifdef FEAT_TABPANEL
+		    || in_tabpanel_scrollbar
+#endif
+		    )
 	    {
 		in_tab_line = FALSE;
 		in_tabpanel = FALSE;
+#ifdef FEAT_TABPANEL
+		in_tabpanel_scrollbar = false;
+#endif
 		return FALSE;
 	    }
 	}
     }
+
+#ifdef FEAT_TABPANEL
+    // Continue a scrollbar drag before any tab-selection handling.
+    if (is_drag && in_tabpanel_scrollbar)
+    {
+	tabpanel_drag_scrollbar(mouse_row);
+	return FALSE;
+    }
+#endif
 
     // CTRL right mouse button does CTRL-T
     if (is_click && (mod_mask & MOD_MASK_CTRL) && which_button == MOUSE_RIGHT)
@@ -494,6 +516,15 @@ do_mouse(
     if (mouse_col < firstwin->w_wincol
 		|| mouse_col >= firstwin->w_wincol + topframe->fr_width)
     {
+	// A click on the scrollbar column starts a drag interaction and
+	// preempts tab-selection.
+	if (is_click && !is_drag && mouse_on_tabpanel_scrollbar())
+	{
+	    in_tabpanel_scrollbar = TRUE;
+	    tabpanel_drag_scrollbar(mouse_row);
+	    return FALSE;
+	}
+
 	// Dispatch 'tabpanel' %[FuncName] click regions before falling through
 	// to tab-page selection.  On drag events fall through to the normal
 	// tab-drag handling.
@@ -1275,6 +1306,17 @@ ins_mousescroll(int dir)
     clear_oparg(&oa);
     cap.oap = &oa;
     cap.arg = dir;
+
+#ifdef FEAT_TABPANEL
+    if (mouse_row >= 0 && mouse_col >= 0
+	    && (dir == MSCR_UP || dir == MSCR_DOWN)
+	    && mouse_on_tabpanel())
+    {
+	(void)tabpanel_scroll(dir == MSCR_UP ? 1 : -1,
+		mouse_vert_step > 0 ? mouse_vert_step : 3);
+	return;
+    }
+#endif
 
     switch (dir)
     {
@@ -2408,6 +2450,17 @@ do_mousescroll_horiz(long_u leftcol)
 nv_mousescroll(cmdarg_T *cap)
 {
     win_T   *old_curwin = curwin;
+
+#ifdef FEAT_TABPANEL
+    if (mouse_row >= 0 && mouse_col >= 0
+	    && (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
+	    && mouse_on_tabpanel())
+    {
+	(void)tabpanel_scroll(cap->arg == MSCR_UP ? 1 : -1,
+		mouse_vert_step > 0 ? mouse_vert_step : 3);
+	return;
+    }
+#endif
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
