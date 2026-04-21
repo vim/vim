@@ -1132,6 +1132,10 @@ doESCkey:
 	case K_COMMAND:		    // <Cmd>command<CR>
 	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
 	    {
+		bufref_T    save_curbuf;
+		varnumber_T tick = CHANGEDTICK(curbuf);
+
+		set_bufref(&save_curbuf, curbuf);
 		do_cmdkey_command(c, 0);
 
 #ifdef FEAT_TERMINAL
@@ -1139,10 +1143,15 @@ doESCkey:
 		    // Started a terminal that gets the input, exit Insert mode.
 		    goto doESCkey;
 #endif
-		if (curbuf->b_u_synced)
-		    // The command caused undo to be synced.  Need to save the
-		    // line for undo before inserting the next char.
+		if (curbuf->b_u_synced
+			|| (bufref_valid(&save_curbuf)
+			    && curbuf == save_curbuf.br_buf
+			    && tick != CHANGEDTICK(curbuf)))
+		{
+		    // The command synced undo or changed this buffer.
+		    // Save the cursor line before the next typed edit.
 		    ins_need_undo = TRUE;
+		}
 	    }
 	    break;
 
@@ -2503,7 +2512,9 @@ stop_arrow(void)
     {
 	if (u_save_cursor() == OK)
 	{
-	    // A command or event may have moved the cursor after syncing undo.
+	    // A command or event may have moved the cursor or edited the
+	    // buffer. Update Insstart so that later edits can properly decide
+	    // whether an extra undo entry is needed.
 	    Insstart = curwin->w_cursor;
 	    Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
 	    ins_need_undo = FALSE;
