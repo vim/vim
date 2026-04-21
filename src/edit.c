@@ -2502,7 +2502,12 @@ stop_arrow(void)
     else if (ins_need_undo)
     {
 	if (u_save_cursor() == OK)
+	{
+	    // A command or event may have moved the cursor after syncing undo.
+	    Insstart = curwin->w_cursor;
+	    Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
 	    ins_need_undo = FALSE;
+	}
     }
 
 #ifdef FEAT_FOLDING
