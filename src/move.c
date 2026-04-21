@@ -1184,9 +1184,9 @@ curwin_col_off2(void)
 curs_columns(
     int		may_scroll)	// when TRUE, may scroll horizontally
 {
-    int		diff;
+    long	diff;
     int		extra;		// offset for first screen line
-    int		off_left, off_right;
+    long	off_left, off_right;
     int		n;
     int		p_lines;
     int		width1;		// text width for first screen line
@@ -1306,13 +1306,12 @@ curs_columns(
 #endif
 	/*
 	 * If Cursor is left of the screen, scroll rightwards.
-	 * If Cursor is right of the screen, scroll leftwards
+	 * If Cursor is right of the screen, scroll leftwards.
 	 * If we get closer to the edge than 'sidescrolloff', scroll a little
-	 * extra
+	 * extra.
 	 */
-	off_left = (int)startcol - (int)curwin->w_leftcol - siso;
-	off_right = (int)endcol - (int)(curwin->w_leftcol + curwin->w_width
-								- siso) + 1;
+	off_left = startcol - curwin->w_leftcol - siso;
+	off_right = endcol - curwin->w_leftcol - (curwin->w_width - siso) + 1;
 	if (off_left < 0 || off_right > 0)
 	{
 	    if (off_left < 0)
@@ -1329,9 +1328,9 @@ curs_columns(
 		if (diff < p_ss)
 		    diff = p_ss;
 		if (off_left < 0)
-		    new_leftcol = curwin->w_leftcol - diff;
+		    new_leftcol = curwin->w_leftcol - (int)diff;
 		else
-		    new_leftcol = curwin->w_leftcol + diff;
+		    new_leftcol = curwin->w_leftcol + (int)diff;
 	    }
 	    if (new_leftcol < 0)
 		new_leftcol = 0;

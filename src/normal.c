@@ -2791,8 +2791,10 @@ nv_zet(cmdarg_T *cap)
 		    n = curwin->w_width - curwin_col_off();
 		    if ((long)col + siso < n)
 			col = 0;
+		    else if (siso - n < INT_MAX - col)
+			col = (int)(col + siso - n + 1);
 		    else
-			col = col + siso - n + 1;
+			col = INT_MAX;
 		    if (curwin->w_leftcol != col)
 		    {
 			curwin->w_leftcol = col;
