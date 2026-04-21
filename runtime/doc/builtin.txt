@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 20
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11990,6 +11990,7 @@ terminalprops()						*terminalprops()*
 		   underline_rgb	whether |t_8u| works **
 		   mouse		mouse type supported
 		   kitty		whether Kitty terminal was detected
+		   decrqm		whether sending DECRQM sequences work
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12008,6 +12009,9 @@ terminalprops()						*terminalprops()*
 		This avoids sending it to xterm, which would clear the colors.
 
 		For "mouse" the value 'u' is unknown
+
+		If "decrqm" is 'y', then Vim will query support for the
+		'termsync' and 'termresize' ("inband") options.
 
 		Also see:
 		- 'ambiwidth' - detected by using |t_u7|.

@@ -154,6 +154,9 @@ static termrequest_T rcs_status = TERMREQUEST_INIT;
 // Request window's position report:
 static termrequest_T winpos_status = TERMREQUEST_INIT;
 
+// Request DECRQM (DEC mode) report:
+static termrequest_T decrqm_status = TERMREQUEST_INIT;
+
 static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
@@ -165,6 +168,7 @@ static termrequest_T *all_termrequests[] = {
     &rbm_status,
     &rcs_status,
     &winpos_status,
+    &decrqm_status,
     NULL
 };
 
@@ -1539,8 +1543,10 @@ typedef struct {
 #define TPR_MOUSE		    3
 // term response indicates kitty
 #define TPR_KITTY		    4
+// can send DECRQM requests to terminal
+#define TPR_DECRQM		    5
 // table size
-#define TPR_COUNT		    5
+#define TPR_COUNT		    6
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1564,6 +1570,8 @@ init_term_props(int all)
     term_props[TPR_MOUSE].tpr_set_by_termresponse = TRUE;
     term_props[TPR_KITTY].tpr_name = "kitty";
     term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
+    term_props[TPR_DECRQM].tpr_name = "decrqm";
+    term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -4304,6 +4312,36 @@ may_req_bg_color(void)
     }
 }
 
+/*
+ * Query the settings for the DEC modes we support via DECRQM.
+ * Only sent once, and only when the terminal is known not to dislike it
+ * (i.e. TPR_DECRQM is TPR_YES, or still TPR_UNKNOWN when the version response
+ * has not yet been received).
+ * The DECRPM responses are caught in handle_csi().
+ */
+    void
+may_req_decrqm(void)
+{
+    if (decrqm_status.tr_progress == STATUS_GET
+	    && term_props[TPR_DECRQM].tpr_status != TPR_NO
+	    && can_get_termresponse()
+	    && starting == 0)
+    {
+	MAY_WANT_TO_LOG_THIS;
+	LOG_TR1("Sending DECRQM requests");
+	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
+	    out_str(IObuff);
+	}
+	termrequest_sent(&decrqm_status);
+	// check for the characters now, otherwise they might be eaten by
+	// get_keystroke()
+	out_flush();
+	(void)vpeekc_nomap();
+    }
+}
+
 #endif
 
 /*
@@ -5172,21 +5210,27 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		may_adjust_color_count(256);
 	    // Libvterm can handle SGR mouse reporting.
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	if (version == 95)
 	{
 	    // Mac Terminal.app sends 1;95;0
+	    //
+	    // Terminal.app doesn't seem to handle DECRQM sequences
+	    // properly, see issue #19852.
 	    if (arg[0] == 1 && arg[2] == 0)
 	    {
 		term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+		term_props[TPR_DECRQM].tpr_status = TPR_NO;
 	    }
 	    // iTerm2 sends 0;95;0
 	    else if (arg[0] == 0 && arg[2] == 0)
 	    {
 		// iTerm2 can do SGR mouse reporting
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+		term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	    }
 	    // old iTerm2 sends 0;95;
 	    else if (arg[0] == 0 && arg[2] == -1)
@@ -5212,6 +5256,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	    else if (version >= 95)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_XTERM2;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	// Detect terminals that set $TERM to something like
@@ -5224,11 +5269,15 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// Assuming any version number over 2500 is not an
 	// xterm (without the limit for rxvt and screen).
 	if (arg[1] >= 2500)
+	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
+	}
 
 	else if (version == 136 && arg[2] == 0)
 	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 
 	    // PuTTY sends 0;136;0
 	    if (arg[0] == 0)
@@ -5252,6 +5301,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	    // Kitty can handle SGR mouse reporting.
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
@@ -5262,6 +5312,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	{
 	    term_props[TPR_CURSOR_STYLE].tpr_status = TPR_NO;
 	    term_props[TPR_CURSOR_BLINK].tpr_status = TPR_NO;
+	    term_props[TPR_DECRQM].tpr_status = TPR_NO; // screen doesn't seem
+							// to handle DECRQM
+							// sequences
 	}
 
 	// Xterm first responded to this request at patch level
@@ -5752,6 +5805,13 @@ handle_csi(
 	*slen = csi_len;
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+
+#ifdef FEAT_TERMRESPONSE
+	// Mark the DECRQM request as answered so it is not sent again and
+	// stoptermcap() does not wait for it.
+	if (decrqm_status.tr_progress == STATUS_SENT)
+	    decrqm_status.tr_progress = STATUS_GOT;
+#endif
 
 	if (setting >= 0 && setting <= 4)
 	{
@@ -7985,24 +8045,6 @@ term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
     return len;
-}
-
-/*
- * Query the settings for the DEC modes we support
- */
-    void
-send_decrqm_modes(void)
-{
-    if (termcap_active && cur_tmode == TMODE_RAW)
-    {
-	// Request setting of relevant DEC modes via DECRQM
-	for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
-	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
-	    out_str(IObuff);
-	}
-	out_flush();
-    }
 }
 
 /*
