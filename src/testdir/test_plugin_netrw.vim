@@ -604,6 +604,36 @@ func Test_netrw_FileUrlEdit_pipe_injection()
   call assert_false(filereadable(fname), 'Command injection via pipe in file URL')
 endfunc
 
+" The remote filename after '.' was allowed to contain shell metacharacters
+" and rode unescaped into the tempfile name passed to sftp/file_cmd, giving a
+" shell injection on :e sftp://host/foo.txt;<cmd>.
+func Test_netrw_tempfile_suffix_injection()
+  CheckUnix
+  CheckExecutable id
+  let save_sftp = g:netrw_sftp_cmd
+  let save_file = exists('g:netrw_file_cmd') ? g:netrw_file_cmd : v:null
+  let g:netrw_sftp_cmd = 'true'
+  let g:netrw_file_cmd = 'true'
+  let fname = 'Xrce_marker'
+  try
+    call delete(fname)
+    sil! call netrw#NetRead(2, 'sftp://localhost/foo.txt;id>'..fname)
+    call assert_false(filereadable(fname), 'Command injection via sftp:// tempfile suffix')
+
+    call delete(fname)
+    sil! call netrw#NetRead(2, 'file://localhost/foo.txt;id>'..fname)
+    call assert_false(filereadable(fname), 'Command injection via file:// tempfile suffix')
+  finally
+    call delete(fname)
+    let g:netrw_sftp_cmd = save_sftp
+    if save_file is v:null
+      unlet! g:netrw_file_cmd
+    else
+      let g:netrw_file_cmd = save_file
+    endif
+  endtry
+endfunc
+
 func Test_netrw_RFC2396()
   let fname = 'a%20b'
   call assert_equal('a b', netrw#RFC2396(fname))

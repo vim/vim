@@ -26,6 +26,8 @@
 " 2026 Apr 05 by Vim Project Fix netrw#RFC2396() #19913
 " 2026 Apr 15 by Vim Project Add missing escape()
 " 2026 Apr 19 by Vim Project expand ~ on Windows #20003
+" 2026 Apr 21 by Vim Project fix shell-injection via tempfile suffix (sftp://, file://)
+" 2026 Apr 21 by Vim Project drop unused g:netrw_tmpfile_escape
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -400,7 +402,6 @@ else
   call s:NetrwInit("g:netrw_glob_escape",'*[]?`{~$\')
 endif
 call s:NetrwInit("g:netrw_menu_escape",'.&? \')
-call s:NetrwInit("g:netrw_tmpfile_escape",' &;')
 call s:NetrwInit("s:netrw_map_escape","<|\n\r\\\<C-V>\"")
 if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
   let s:treedepthstring= "│ "
@@ -1821,14 +1822,14 @@ function netrw#NetRead(mode,...)
             ".........................................
         " NetRead: (sftp) NetRead Method #9 {{{3
         elseif     b:netrw_method  == 9
-            call netrw#os#Execute(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".netrw#os#Escape(g:netrw_machine.":".b:netrw_fname,1)." ".tmpfile)
+            call netrw#os#Execute(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".netrw#os#Escape(g:netrw_machine.":".b:netrw_fname,1)." ".netrw#os#Escape(tmpfile,1))
             let result          = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
             let b:netrw_lastfile = choice
 
             ".........................................
         " NetRead: (file) NetRead Method #10 {{{3
         elseif      b:netrw_method == 10 && exists("g:netrw_file_cmd")
-            call netrw#os#Execute(s:netrw_silentxfer."!".g:netrw_file_cmd." ".netrw#os#Escape(b:netrw_fname,1)." ".tmpfile)
+            call netrw#os#Execute(s:netrw_silentxfer."!".g:netrw_file_cmd." ".netrw#os#Escape(b:netrw_fname,1)." ".netrw#os#Escape(tmpfile,1))
             let result           = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
             let b:netrw_lastfile = choice
 
@@ -8965,14 +8966,17 @@ function s:GetTempfile(fname)
     endif
 
     " use fname's suffix for the temporary file
+    " Restrict the suffix to word characters so shell metacharacters in a
+    " remote filename (e.g. sftp://host/foo.txt;id) cannot ride along into
+    " the tempfile name and out into a downstream shell command.
     if a:fname != ""
-        if a:fname =~ '\.[^./]\+$'
+        if a:fname =~ '\.\w\+$'
             if a:fname =~ '\.tar\.gz$' || a:fname =~ '\.tar\.bz2$' || a:fname =~ '\.tar\.xz$'
-                let suffix = ".tar".substitute(a:fname,'^.*\(\.[^./]\+\)$','\1','e')
+                let suffix = ".tar".substitute(a:fname,'^.*\(\.\w\+\)$','\1','e')
             elseif a:fname =~ '.txz$'
-                let suffix = ".txz".substitute(a:fname,'^.*\(\.[^./]\+\)$','\1','e')
+                let suffix = ".txz".substitute(a:fname,'^.*\(\.\w\+\)$','\1','e')
             else
-                let suffix = substitute(a:fname,'^.*\(\.[^./]\+\)$','\1','e')
+                let suffix = substitute(a:fname,'^.*\(\.\w\+\)$','\1','e')
             endif
             let tmpfile= substitute(tmpfile,'\.tmp$','','e')
             let tmpfile .= suffix
