@@ -1798,6 +1798,7 @@ const ft_from_ext = {
   # BDF font
   "bdf": "bdf",
   # Beancount
+  "bean": "beancount",
   "beancount": "beancount",
   # BibTeX bibliography database file
   "bib": "bib",
