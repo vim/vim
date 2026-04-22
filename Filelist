@@ -1198,6 +1198,7 @@ IGNORE = \
 		.github/FUNDING.yml \
 		.github/labeler.yml \
 		.github/workflows/label.yml \
+		AGENTS.md \
 		SECURITY.md \
 		ci/unlisted.make \
 		ci/hlgroups.make \
