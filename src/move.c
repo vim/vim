@@ -477,39 +477,40 @@ update_topline(void)
 	{
 	    if (curwin->w_cursor.lnum < curwin->w_botline)
 	    {
-	      if (((long)curwin->w_cursor.lnum
+		if (((long)curwin->w_cursor.lnum
 					   >= (long)curwin->w_botline - *so_ptr
 #ifdef FEAT_FOLDING
 			|| hasAnyFolding(curwin)
 #endif
 			))
-	      {
-		lineoff_T	loff;
-
-		// Cursor is (a few lines) above botline, check if there are
-		// 'scrolloff' window lines below the cursor.  If not, need to
-		// scroll.
-		n = eof_pressure ? 0 : curwin->w_empty_rows;
-		loff.lnum = curwin->w_cursor.lnum;
-#ifdef FEAT_FOLDING
-		// In a fold go to its last line.
-		(void)hasFolding(loff.lnum, NULL, &loff.lnum);
-#endif
-#ifdef FEAT_DIFF
-		loff.fill = 0;
-		n += curwin->w_filler_rows;
-#endif
-		loff.height = 0;
-		while (loff.lnum < curwin->w_botline
-#ifdef FEAT_DIFF
-			&& (loff.lnum + 1 < curwin->w_botline || loff.fill == 0)
-#endif
-			)
 		{
-		    n += loff.height;
-		    if (n >= *so_ptr)
-			break;
-		    botline_forw(&loff);
+		    lineoff_T	loff;
+
+		    // Cursor is (a few lines) above botline, check if there
+		    // are 'scrolloff' window lines below the cursor.
+		    // If not, need to scroll.
+		    n = eof_pressure ? 0 : curwin->w_empty_rows;
+		    loff.lnum = curwin->w_cursor.lnum;
+#ifdef FEAT_FOLDING
+		    // In a fold go to its last line.
+		    (void)hasFolding(loff.lnum, NULL, &loff.lnum);
+#endif
+#ifdef FEAT_DIFF
+		    loff.fill = 0;
+		    n += curwin->w_filler_rows;
+#endif
+		    loff.height = 0;
+		    while (loff.lnum < curwin->w_botline
+#ifdef FEAT_DIFF
+			    && (loff.lnum + 1 < curwin->w_botline
+							     || loff.fill == 0)
+#endif
+			    )
+		    {
+			n += loff.height;
+			if (n >= *so_ptr)
+			    break;
+			botline_forw(&loff);
 		    }
 		    if (n >= *so_ptr && !eof_pressure)
 			// sufficient context, no need to scroll
