@@ -892,10 +892,6 @@ vim_main2(void)
     may_req_termresponse();
 
     may_req_bg_color();
-
-    // Same reason as for termresponse: don't want the terminal sending out
-    // the DECRPM response after Vim has exited.
-    may_req_decrqm();
 # endif
 
     // start in insert mode
