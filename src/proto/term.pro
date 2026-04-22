@@ -60,7 +60,6 @@ void stoptermcap(void);
 void may_req_termresponse(void);
 void check_terminal_behavior(void);
 void may_req_bg_color(void);
-void may_req_decrqm(void);
 int swapping_screen(void);
 void scroll_start(void);
 void cursor_on_force(void);
