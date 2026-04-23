@@ -1465,7 +1465,7 @@ win_line(
 		area_highlighting = TRUE;
 		vi_attr = HL_ATTR(HLF_V);
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-		if (X_DISPLAY &&
+		if ((clipmethod != CLIPMETHOD_PROVIDER) &&
 			((clip_star.available && !clip_star.owned
 						    && clip_isautosel_star())
 			    || (clip_plus.available && !clip_plus.owned
