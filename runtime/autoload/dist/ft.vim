@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Apr 20
+# Last Change:		2026 Apr 23
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1798,6 +1798,7 @@ const ft_from_ext = {
   # BDF font
   "bdf": "bdf",
   # Beancount
+  "bean": "beancount",
   "beancount": "beancount",
   # BibTeX bibliography database file
   "bib": "bib",
