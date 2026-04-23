@@ -3510,46 +3510,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		// invoke the channel callback
 		ch_log(channel, "Invoking channel callback %s",
 						    (char *)callback->cb_name);
-#ifdef FEAT_TERMINAL
-		// For a terminal job in RAW mode (term_start()), split msg on
-		// NL and invoke the callback once per line with trailing CR
-		// stripped.  This ensures out_cb/err_cb receive one line at a
-		// time regardless of how much data arrives in a single read.
-		if (ch_mode == CH_MODE_RAW && msg != NULL
-			&& channel->ch_job != NULL
-			&& channel->ch_job->jv_tty_out != NULL)
-		{
-		    char_u *cp = msg;
-		    char_u *nl;
-
-		    while ((nl = vim_strchr(cp, NL)) != NULL)
-		    {
-			long_u len = (long_u)(nl - cp);
-
-			if (len > 0 && cp[len - 1] == CAR)
-			    --len;
-			argv[1].vval.v_string = vim_strnsave(cp, len);
-			if (argv[1].vval.v_string != NULL)
-			    invoke_callback(channel, callback, argv);
-			vim_free(argv[1].vval.v_string);
-			cp = nl + 1;
-		    }
-		    if (*cp != NUL)
-		    {
-			long_u len = STRLEN(cp);
-
-			if (len > 0 && cp[len - 1] == CAR)
-			    --len;
-			argv[1].vval.v_string = vim_strnsave(cp, len);
-			if (argv[1].vval.v_string != NULL)
-			    invoke_callback(channel, callback, argv);
-			vim_free(argv[1].vval.v_string);
-		    }
-		    argv[1].vval.v_string = msg;
-		}
-		else
-#endif
-		    invoke_callback(channel, callback, argv);
+		invoke_callback(channel, callback, argv);
 	    }
 	}
     }

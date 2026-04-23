@@ -2933,13 +2933,15 @@ func Test_error_callback_terminal()
   unlet! g:out g:error
 endfunc
 
-" Verify that term_start() with out_cb/err_cb delivers one line per callback
-" call (no embedded newlines, no trailing CR), matching the user's expectation.
-func Test_term_start_cb_per_line()
+" Verify that term_start() with out_cb/err_cb delivers data in RAW mode,
+" preserving embedded newlines in the raw chunk received from read().  If
+" per-line handling is desired, it is the callback's responsibility to split
+" on NL and strip the trailing CR.
+func Test_term_start_cb_raw_chunk()
   CheckUnix
   CheckFeature terminal
   let g:Ch_msgs = []
-  let script_file = 'Xterm_cb_per_line.sh'
+  let script_file = 'Xterm_cb_raw_chunk.sh'
   call writefile(["#!/bin/sh",
         \         "printf 'err:1\\nerr:2\\n' >&2",
         \         "printf 'out:3\\n'"], script_file, 'D')
@@ -2947,10 +2949,16 @@ func Test_term_start_cb_per_line()
   let ptybuf = term_start('./' .. script_file, {
         \ 'out_cb': {ch, msg -> add(g:Ch_msgs, msg)},
         \ 'err_cb': {ch, msg -> add(g:Ch_msgs, msg)}})
-  call WaitForAssert({-> assert_equal(3, len(g:Ch_msgs))}, 5000)
-  " Each line must arrive as a separate callback call with no embedded CR/NL.
-  call assert_equal(['err:1', 'err:2', 'out:3'], g:Ch_msgs)
+  " Wait until both the raw stderr chunk and a stdout chunk have arrived.
+  call WaitForAssert({-> assert_true(
+        \ index(g:Ch_msgs, "err:1\nerr:2\n") >= 0
+        \ && match(g:Ch_msgs, 'out:3') >= 0)}, 5000)
+  " stderr (via pipe) arrives as a single raw chunk with embedded NL,
+  " not split per line.  stdout (via PTY) is delivered, but its exact
+  " CR/LF shape depends on the PTY line discipline, so we only check that
+  " 'out:3' appears somewhere in the received chunks.
   call job_stop(term_getjob(ptybuf))
+  exe 'bwipe! ' .. ptybuf
   unlet g:Ch_msgs
 endfunc
 
