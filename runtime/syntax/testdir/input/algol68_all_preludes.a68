@@ -1,0 +1,2117 @@
+#
+    VIM_TEST_SETUP let g:algol68_symbolic_operators = 1
+#
+#
+    Algol 68 prelude identifier from the Genie source code files.
+    
+    Provided as a base to verify the correct syntax highlighting
+    of the algol68.vim syntax file for the Vim editor.
+    
+    There's four sections, each representing an original file,
+    that are enclosed in the Unix-'more' form to stand out.
+    
+    Some informal comments from the source code left intact as
+    a comment in Algol 68 syntax.
+    
+    Depending on the language context there's duplicates in the
+    list, that are kept for clarity given the associated informal
+    comment associated with them.
+    
+    Some entries deliberately contain two identifier variants that
+    may be used as alternative form in an Algol 68 Genie program.
+    
+    The identifiers are presented in two variants separated by a
+    tabulator; first with spaces, then in canonical form without
+    spaces. Variants with spaces are supported by the Vim syntax
+    file as the Algol 68 language does.
+    But note that while Algol 68 allows arbitrary spacing within
+    identifiers - even as extreme as writing one character per
+    line! - the Vim syntax file for Algol 68 had deliberately
+    been defined in a way restricting the highlighted options;
+    spacing can usually be inserted where "natural words" would
+    allow a separation (say for 'intwidth' you may write, e.g.,
+    'int width' but not 'int wid th'; the latter would not get
+    highlighted).
+    
+    Modelines are set to simply inspect the correct highlighting
+    in this file.
+    
+    Janis Papanagnou, 2026-04-23
+#
+
+#:::::::::::::
+prelude.c
+:::::::::::::#
+
+# Primitive A68 moids. #
+  VOID	VOID
+# Standard precision. #
+  INT	INT
+  REAL	REAL
+  COMPLEX	COMPLEX
+  COMPL	COMPL
+  BITS	BITS
+  BYTES	BYTES
+# Multiple precision. #
+  INT	INT
+  REAL	REAL
+  COMPLEX	COMPLEX
+  COMPL	COMPL
+  BITS	BITS
+  BYTES	BYTES
+  REAL	REAL
+  INT	INT
+  COMPLEX	COMPLEX
+  COMPL	COMPL
+  BITS	BITS
+# Other. #
+  BOOL	BOOL
+  CHAR	CHAR
+  STRING	STRING
+  FILE	FILE
+  CHANNEL	CHANNEL
+  PIPE	PIPE
+  FORMAT	FORMAT
+  SEMA	SEMA
+  SOUND	SOUND
+# Identifiers. #
+  long long pi;  qpi;	longlongpi;  qpi
+# #
+  bits lengths;	bitslengths
+  bits shorths;	bitsshorths
+  bits width;	bitswidth
+  bytes lengths;	byteslengths
+  bytes shorths;	bytesshorths
+  bytes width;	byteswidth
+  compl lengths;	compllengths
+  compl shorths;	complshorths
+  exp width;	expwidth
+  infinity;	infinity
+  inf;	inf
+  int lengths;	intlengths
+  int shorths;	intshorths
+  int width;	intwidth
+  long bits width;	longbitswidth
+  long bytes width;	longbyteswidth
+  long exp width;	longexpwidth
+  long int width;	longintwidth
+  long long expwidth;	longlongexpwidth
+  long long infinity;	longlonginfinity
+  long long inf;	longlonginf
+  long long intwidth;	longlongintwidth
+  long long maxint;	longlongmaxint
+  long long maxreal;	longlongmaxreal
+  long long mininf;	longlongmininf
+  long long minreal;	longlongminreal
+  long long minus infinity;	longlongminusinfinity
+  long long real width;	longlongrealwidth
+  long long small real;	longlongsmallreal
+  long real width;	longrealwidth
+  max abs char;	maxabschar
+  max bits;	maxbits
+  max int;	maxint
+  max real;	maxreal
+  min inf;	mininf
+  min real;	minreal
+  minus infinity;	minusinfinity
+  mpradix;	mpradix
+  nan;	nan
+  pi;	pi
+  real lengths;	reallengths
+  real shorths;	realshorths
+  real width;	realwidth
+  small real;	smallreal
+  clock;	clock
+  cpu time;	cputime
+  seconds;	seconds
+  wall clock;	wallclock
+  wall seconds;	wallseconds
+  wall time;	walltime
+  blocks;	blocks
+  collections;	collections
+  collect seconds;	collectseconds
+  garbage;	garbage
+  garbage collections;	garbagecollections
+  garbage freed;	garbagefreed
+  garbage refused;	garbagerefused
+  garbage seconds;	garbageseconds
+  on gc event;	ongcevent
+  sweeps;	sweeps
+  sweeps refused;	sweepsrefused
+  stack pointer;	stackpointer
+  system stack pointer;	systemstackpointer
+  system stack size;	systemstacksize
+  actual stack size;	actualstacksize
+  heap pointer;	heappointer
+  system heap pointer;	systemheappointer
+  gc heap;	gcheap
+  sweep heap;	sweepheap
+  preemptive gc;	preemptivegc
+  preemptive sweep;	preemptivesweep
+  preemptive sweepheap;	preemptivesweepheap
+  backtrace;	backtrace
+  break;	break
+  debug;	debug
+  monitor;	monitor
+  abend;	abend
+  evaluate;	evaluate
+  system;	system
+  sleep;	sleep
+# Machine environ parameters. #
+  i32mach;	i32mach
+  r64mach;	r64mach
+  i64mach;	i64mach
+  r128mach;	r128mach
+# BITS procedures. #
+  bits pack;	bitspack
+# RNG procedures. #
+  first random;	firstrandom
+  next random;	nextrandom
+  random;	random
+  rnd;	rnd
+  long long nextrandom;	longlongnextrandom
+  long long random;	longlongrandom
+# Priorities. #
+# INT ops. #
+  +	+
+  -	-
+  ABS	ABS
+  SIGN	SIGN
+  ODD	ODD
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >	>
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GT	GT
+  GE	GE
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  %	%
+  MOD	MOD
+  %*	%*
+  **	**
+  UP	UP
+  ^	^
+  /	/
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  %:=	%:=
+  %*:=	%*:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  OVERAB	OVERAB
+  MODAB	MODAB
+# REAL ops. #
+  +	+
+  -	-
+  ABS	ABS
+  SIGN	SIGN
+  ROUND	ROUND
+  ENTIER	ENTIER
+  FLOOR	FLOOR
+  CEIL	CEIL
+  NINT	NINT
+  TRUNC	TRUNC
+  FRAC	FRAC
+  FIX	FIX
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >	>
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GT	GT
+  GE	GE
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+# Procedures #
+  arc cos dg;  acos dg;	arccosdg;  acosdg
+  arc cosh;  acosh;	arccosh;  acosh
+  arc cot;  acot;	arccot;  acot
+  arc cot dg;  acot dg;	arccotdg;  acotdg
+  arc csc;  acsc;	arccsc;  acsc
+  arc csc dg;  acsc dg;	arccscdg;  acscdg
+  arc sec;  asec;	arcsec;  asec
+  arc sec dg;  asec dg;	arcsecdg;  asecdg
+  arc sin dg;  asin dg;	arcsindg;  asindg
+  arc sinh;  asinh;	arcsinh;  asinh
+  arc tan dg;  atan dg;	arctandg;  atandg
+  arc tanh;  atanh;	arctanh;  atanh
+  arc cos;  acos;	arccos;  acos
+  arc sin;  asin;	arcsin;  asin
+  arc tan;  atan;	arctan;  atan
+  cas;	cas
+  cbrt;	cbrt
+  cos dg;	cosdg
+  cosh;	cosh
+  cos pi;	cospi
+  cot dg;	cotdg
+  cot;	cot
+  cot pi;	cotpi
+  csc dg;	cscdg
+  csc;	csc
+  curt;	curt
+  erfc;	erfc
+  erf;	erf
+  gamma;	gamma
+  inv erfc;	inverfc
+  inv erf;	inverf
+  inverse erfc;	inverseerfc
+  inverse erf;	inverseerf
+  ln1p;	ln1p
+  ln gamma;	lngamma
+  sec dg;	secdg
+  sec;	sec
+  sin dg;	sindg
+  sinh;	sinh
+  sin pi;	sinpi
+  tan dg;	tandg
+  tanh;	tanh
+  tan pi;	tanpi
+  cos;	cos
+  exp;	exp
+  ln;	ln
+  log;	log
+  sin;	sin
+  sqrt;	sqrt
+  tan;	tan
+# Miscellaneous. #
+  arc tan2;  atan2;	arctan2;  atan2
+  arc tan2 dg;  atan2 dg;	arctan2dg;  atan2dg
+  beta;	beta
+  betainc;	betainc
+  choose;	choose
+  fact;	fact
+  gamma inc;	gammainc
+  gamma incf;	gammaincf
+  gamma incg;	gammaincg
+  gamma incgf;	gammaincgf
+  lje126;	lje126
+  ljf126;	ljf126
+  ln beta;	lnbeta
+  ln choose;	lnchoose
+  ln fact;	lnfact
+# COMPLEX ops. #
+  I	I
+  +*	+*
+  I	I
+  +*	+*
+  RE	RE
+  IM	IM
+  ABS	ABS
+  ARG	ARG
+  +	+
+  -	-
+  CONJ	CONJ
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  EQ	EQ
+  NE	NE
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  complex arccosh;  cacosh;	complexarccosh;  cacosh
+  complex arccos;  cacos;	complexarccos;  cacos
+  complex arcsinh;  casinh;	complexarcsinh;  casinh
+  complex arcsin;  casin;	complexarcsin;  casin
+  complex arctanh;  catanh;	complexarctanh;  catanh
+  complex arctan;  catan;	complexarctan;  catan
+  complex cosh;  ccosh;	complexcosh;  ccosh
+  complex cos;  ccos;	complexcos;  ccos
+  complex exp;  cexp;	complexexp;  cexp
+  complex ln;  cln;	complexln;  cln
+  complex sinh;  csinh;	complexsinh;  csinh
+  complex sin;  csin;	complexsin;  csin
+  complex sqrt;  csqrt;	complexsqrt;  csqrt
+  complex tanh;  ctanh;	complextanh;  ctanh
+  complex tan;  ctan;	complextan;  ctan
+# BOOL ops. #
+  NOT	NOT
+  ~	~
+  ABS	ABS
+  OR	OR
+  AND	AND
+  &	&
+  XOR	XOR
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  EQ	EQ
+  NE	NE
+# CHAR ops. #
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >	>
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GT	GT
+  GE	GE
+  ABS	ABS
+  REPR	REPR
+  is alnum;	isalnum
+  is alpha;	isalpha
+  is cntrl;	iscntrl
+  is digit;	isdigit
+  is graph;	isgraph
+  is lower;	islower
+  is print;	isprint
+  is punct;	ispunct
+  is space;	isspace
+  is upper;	isupper
+  is xdigit;	isxdigit
+  to lower;	tolower
+  to upper;	toupper
+# BITS ops. #
+  ABS	ABS
+  BIN	BIN
+  NOT	NOT
+  ~	~
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <=	<=
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LE	LE
+  GE	GE
+  <	<
+  >	>
+  LT	LT
+  GT	GT
+  AND	AND
+  &	&
+  OR	OR
+  XOR	XOR
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  MOD	MOD
+  SHL	SHL
+  UP	UP
+  SHR	SHR
+  DOWN	DOWN
+  ROL	ROL
+  ROR	ROR
+  ELEM	ELEM
+  SET	SET
+  CLEAR	CLEAR
+# LONG LONG INT in software #
+  +	+
+  -	-
+  ABS	ABS
+  SIGN	SIGN
+  ODD	ODD
+  ENTIER	ENTIER
+  ROUND	ROUND
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  %	%
+  MOD	MOD
+  %*	%*
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  %:=	%:=
+  %*:=	%*:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  OVERAB	OVERAB
+  MODAB	MODAB
+  /	/
+  EQ	EQ
+  NE	NE
+  GE	GE
+  GT	GT
+  LE	LE
+  LT	LT
+  =	=
+  >=	>=
+  >	>
+  <=	<=
+  <	<
+  /=	/=
+  ^=	^=
+  ~=	~=
+  **	**
+  UP	UP
+  ^	^
+  I	I
+  +*	+*
+# LONG LONG REAL in software #
+  ABS	ABS
+  +	+
+  -	-
+  SIGN	SIGN
+  long long arccosdg;  qacos dg;	longlongarccosdg;  qacosdg
+  long long arccosh;  qacosh;	longlongarccosh;  qacosh
+  long long arccotdg;  qacot dg;	longlongarccotdg;  qacotdg
+  long long arccot;  qacot;	longlongarccot;  qacot
+  long long arccscdg;  qacsc dg;	longlongarccscdg;  qacscdg
+  long long arccsc;  qacsc;	longlongarccsc;  qacsc
+  long long arcsecdg;  qasec dg;	longlongarcsecdg;  qasecdg
+  long long arcsec;  qasec;	longlongarcsec;  qasec
+  long long arcsindg;  qasin dg;	longlongarcsindg;  qasindg
+  long long arcsinh;  qasinh;	longlongarcsinh;  qasinh
+  long long arctandg;  qatan dg;	longlongarctandg;  qatandg
+  long long arctanh;  qatanh;	longlongarctanh;  qatanh
+  long long cas;  qcas;	longlongcas;  qcas
+  long long cbrt;  qcbrt;	longlongcbrt;  qcbrt
+  long long cosdg;  qcos dg;	longlongcosdg;  qcosdg
+  long long cosh;  qcosh;	longlongcosh;  qcosh
+  long long cospi;  qcos pi;	longlongcospi;  qcospi
+  long long cotdg;  qcot dg;	longlongcotdg;  qcotdg
+  long long cotpi;  qcot pi;	longlongcotpi;  qcotpi
+  long long cot;  qcot;	longlongcot;  qcot
+  long long cscdg;  qcsc dg;	longlongcscdg;  qcscdg
+  long long csc;  qcsc;	longlongcsc;  qcsc
+  long long curt;  qcurt;	longlongcurt;  qcurt
+  long long erfc;  qerfc;	longlongerfc;  qerfc
+  long long erf;  qerf;	longlongerf;  qerf
+  long long gamma;  qgamma;	longlonggamma;  qgamma
+  long long inverfc;  qinverfc;	longlonginverfc;  qinverfc
+  long long inverf;  qinverf;	longlonginverf;  qinverf
+  long long lngamma;  qlngamma;	longlonglngamma;  qlngamma
+  long long secdg;  qsec dg;	longlongsecdg;  qsecdg
+  long long sec;  qsec;	longlongsec;  qsec
+  long long sindg;  qsin dg;	longlongsindg;  qsindg
+  long long sinh;  qsinh;	longlongsinh;  qsinh
+  long long sinpi;  qsin pi;	longlongsinpi;  qsinpi
+  long long tandg;  qtan dg;	longlongtandg;  qtandg
+  long long tanh;  qtanh;	longlongtanh;  qtanh
+  long long tanpi;  qtan pi;	longlongtanpi;  qtanpi
+  long long arccos;  qacos;	longlongarccos;  qacos
+  long long arcsin;  qasin;	longlongarcsin;  qasin
+  long long arctan;  qatan;	longlongarctan;  qatan
+  long long cos;  qcos;	longlongcos;  qcos
+  long long exp;  qexp;	longlongexp;  qexp
+  long long ln;  qln;	longlongln;  qln
+  long long log;  qlog;	longlonglog;  qlog
+  long long sin;  qsin;	longlongsin;  qsin
+  long long sqrt;  qsqrt;	longlongsqrt;  qsqrt
+  long long tan;  qtan;	longlongtan;  qtan
+  long long arctan2dg;  qatan2dg;	longlongarctan2dg;  qatan2dg
+  long long arctan2;  qatan2;	longlongarctan2;  qatan2
+  long long beta;  qbeta;	longlongbeta;  qbeta
+  long long gamma incf;  qgammaincf;	longlonggammaincf;  qgammaincf
+  long long gamma incgf;  qgammaincgf;	longlonggammaincgf;  qgammaincgf
+  long long gamma inc;  qgammainc;	longlonggammainc;  qgammainc
+  long long ln beta;  qlnbeta;	longlonglnbeta;  qlnbeta
+  long long beta inc;  qbetainc;	longlongbetainc;  qbetainc
+  long long gamma incg;  qgammaincg;	longlonggammaincg;  qgammaincg
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <	<
+  LT	LT
+  <=	<=
+  LE	LE
+  >	>
+  GT	GT
+  >=	>=
+  GE	GE
+  **	**
+  UP	UP
+  ^	^
+  I	I
+  +*	+*
+# LONG LONG COMPLEX in software #
+  RE	RE
+  IM	IM
+  ARG	ARG
+  ABS	ABS
+  +	+
+  -	-
+  CONJ	CONJ
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  long long complex arc cosh;  qcacosh;	longlongcomplexarccosh;  qcacosh
+  long long complex arc cos;  qcacos;	longlongcomplexarccos;  qcacos
+  long long complex arc sinh;  qcasinh;	longlongcomplexarcsinh;  qcasinh
+  long long complex arc sin;  qcasin;	longlongcomplexarcsin;  qcasin
+  long long complex arc tanh;  qcatanh;	longlongcomplexarctanh;  qcatanh
+  long long complex arc tan;  qcatan;	longlongcomplexarctan;  qcatan
+  long long complex cosh;  qccosh;	longlongcomplexcosh;  qccosh
+  long long complex cos;  qccos;	longlongcomplexcos;  qccos
+  long long complex exp;  qcexp;	longlongcomplexexp;  qcexp
+  long long complex ln;  qcln;	longlongcomplexln;  qcln
+  long long complex sinh;  qcsinh;	longlongcomplexsinh;  qcsinh
+  long long complex sin;  qcsin;	longlongcomplexsin;  qcsin
+  long long complex sqrt;  qcsqrt;	longlongcomplexsqrt;  qcsqrt
+  long long complex tanh;  qctanh;	longlongcomplextanh;  qctanh
+  long long complex tan;  qctan;	longlongcomplextan;  qctan
+# BYTES ops. #
+  bytespack;	bytespack
+  ELEM	ELEM
+  +	+
+  +:=	+:=
+  PLUSAB	PLUSAB
+  +=:	+=:
+  PLUSTO	PLUSTO
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >	>
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GT	GT
+  GE	GE
+# LONG BYTES ops. #
+  LENG	LENG
+  SHORTEN	SHORTEN
+  long bytes pack;	longbytespack
+  ELEM	ELEM
+  +	+
+  +:=	+:=
+  PLUSAB	PLUSAB
+  +=:	+=:
+  PLUSTO	PLUSTO
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >	>
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GT	GT
+  GE	GE
+# STRING ops. #
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <	<
+  <=	<=
+  >=	>=
+  >	>
+  EQ	EQ
+  NE	NE
+  LT	LT
+  LE	LE
+  GE	GE
+  GT	GT
+  +	+
+  +:=	+:=
+  PLUSAB	PLUSAB
+  *:=	*:=
+  TIMESAB	TIMESAB
+  +=:	+=:
+  PLUSTO	PLUSTO
+  *	*
+  ELEM	ELEM
+  real path;	realpath
+# SEMA ops. #
+  LEVEL	LEVEL
+  UP	UP
+  DOWN	DOWN
+  LEVEL	LEVEL
+  UP	UP
+  DOWN	DOWN
+# ROWS ops. #
+  ELEMS	ELEMS
+  LWB	LWB
+  UPB	UPB
+  ELEMS	ELEMS
+  LWB	LWB
+  UPB	UPB
+  SORT	SORT
+# Some "terminators #
+  LENG	LENG
+  SHORTEN	SHORTEN
+# SOUND/RIFF procs. #
+  newsound;	newsound
+  getsound;	getsound
+  setsound;	setsound
+  RESOLUTION	RESOLUTION
+  CHANNELS	CHANNELS
+  RATE	RATE
+  SAMPLES	SAMPLES
+# Set up standenv - transput. #
+  long pi;  dpi;	longpi;  dpi
+  long max bits;	longmaxbits
+  long max int;	longmaxint
+  long small real;	longsmallreal
+  long max real;	longmaxreal
+  long min real;	longminreal
+  long infinity;	longinfinity
+  long minus infinity;	longminusinfinity
+  long inf;	longinf
+  long min inf;	longmininf
+# LONG INT in software #
+  +	+
+  -	-
+  ABS	ABS
+  LENG	LENG
+  SHORTEN	SHORTEN
+  SIGN	SIGN
+  LENG	LENG
+  SHORTEN	SHORTEN
+  LENG	LENG
+  SHORTEN	SHORTEN
+  ODD	ODD
+  ENTIER	ENTIER
+  ROUND	ROUND
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  %	%
+  MOD	MOD
+  %*	%*
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  %:=	%:=
+  %*:=	%*:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  OVERAB	OVERAB
+  MODAB	MODAB
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <	<
+  LT	LT
+  <=	<=
+  LE	LE
+  >	>
+  GT	GT
+  >=	>=
+  GE	GE
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  I	I
+  +*	+*
+  LENG	LENG
+  SHORTEN	SHORTEN
+# LONG REAL in software #
+  +	+
+  -	-
+  ABS	ABS
+  long arc cos dg;  dacos dg;	longarccosdg;  dacosdg
+  long arc cosh;  dacosh;	longarccosh;  dacosh
+  long arc cot;  dacot;	longarccot;  dacot
+  long arc cot dg;  dacot dg;	longarccotdg;  dacotdg
+  long arc csc;  dacsc;	longarccsc;  dacsc
+  long arc csc dg;  dacsc dg;	longarccscdg;  dacscdg
+  long arc sec;  dasec;	longarcsec;  dasec
+  long arc sec dg;  dasec dg;	longarcsecdg;  dasecdg
+  long arc sin dg;  dasin dg;	longarcsindg;  dasindg
+  long arc sinh;  dasinh;	longarcsinh;  dasinh
+  long arc tan dg;  datan dg;	longarctandg;  datandg
+  long arc tanh;  datanh;	longarctanh;  datanh
+  long cas;  dcas;	longcas;  dcas
+  long cbrt;  dcbrt;	longcbrt;  dcbrt
+  long cos dg;  dcos dg;	longcosdg;  dcosdg
+  long cosh;  dcosh;	longcosh;  dcosh
+  long cos pi;  dcos pi;	longcospi;  dcospi
+  long cot;  dcot;	longcot;  dcot
+  long cot dg;  dcot dg;	longcotdg;  dcotdg
+  long cot pi;  dcot pi;	longcotpi;  dcotpi
+  long csc;  dcsc;	longcsc;  dcsc
+  long csc dg;  dcsc dg;	longcscdg;  dcscdg
+  long curt;  dcurt;	longcurt;  dcurt
+  long erfc;  derfc;	longerfc;  derfc
+  long erf;  derf;	longerf;  derf
+  long gamma;  dgamma;	longgamma;  dgamma
+  long inv erfc;  dinverfc;	longinverfc;  dinverfc
+  long inv erf;  dinverf;	longinverf;  dinverf
+  long ln gamma;  dlngamma;	longlngamma;  dlngamma
+  long sec dg;  dsec dg;	longsecdg;  dsecdg
+  long sec;  dsec;	longsec;  dsec
+  long sin dg;  dsin dg;	longsindg;  dsindg
+  long sinh;  dsinh;	longsinh;  dsinh
+  long sin pi;  dsin pi;	longsinpi;  dsinpi
+  long tan dg;  dtan dg;	longtandg;  dtandg
+  long tanh;  dtanh;	longtanh;  dtanh
+  long tan pi;  dtan pi;	longtanpi;  dtanpi
+# RR. #
+  long arc cos;  dacos;	longarccos;  dacos
+  long arc sin;  dasin;	longarcsin;  dasin
+  long arc tan;  datan;	longarctan;  datan
+  long cos;  dcos;	longcos;  dcos
+  long exp;  dexp;	longexp;  dexp
+  long ln;  dln;	longln;  dln
+  long log;  dlog;	longlog;  dlog
+  long sin;  dsin;	longsin;  dsin
+  long sqrt;  dsqrt;	longsqrt;  dsqrt
+  long tan;  dtan;	longtan;  dtan
+  long next random;	longnextrandom
+  long random;	longrandom
+  long arc tan2;  datan2;	longarctan2;  datan2
+  long arc tan2 dg;  datan2dg;	longarctan2dg;  datan2dg
+  long beta;  dbeta;	longbeta;  dbeta
+  long gamma inc;  dgammainc;	longgammainc;  dgammainc
+  long gamma incf;  dgammaincf;	longgammaincf;  dgammaincf
+  long gamma incgf;  dgammaincgf;	longgammaincgf;  dgammaincgf
+  long ln beta;  dlnbeta;	longlnbeta;  dlnbeta
+  long beta inc;  dbetainc;	longbetainc;  dbetainc
+  long gamma incg;  dgammaincg;	longgammaincg;  dgammaincg
+  SIGN	SIGN
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <	<
+  LT	LT
+  <=	<=
+  LE	LE
+  >	>
+  GT	GT
+  >=	>=
+  GE	GE
+  **	**
+  UP	UP
+  ^	^
+  I	I
+  +*	+*
+# LONG COMPLEX in software #
+  LENG	LENG
+  SHORTEN	SHORTEN
+  LENG	LENG
+  SHORTEN	SHORTEN
+  RE	RE
+  IM	IM
+  ARG	ARG
+  ABS	ABS
+  +	+
+  -	-
+  CONJ	CONJ
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  long complex arc cos;  dcacos;	longcomplexarccos;  dcacos
+  long complex arc cosh;  dcacosh;	longcomplexarccosh;  dcacosh
+  long complex arc sin;  dcasin;	longcomplexarcsin;  dcasin
+  long complex arc sinh;  dcasinh;	longcomplexarcsinh;  dcasinh
+  long complex arc tan;  dcatan;	longcomplexarctan;  dcatan
+  long complex arc tanh;  dcatanh;	longcomplexarctanh;  dcatanh
+  long complex cos;  dccos;	longcomplexcos;  dccos
+  long complex cosh;  dccosh;	longcomplexcosh;  dccosh
+  long complex exp;  dcexp;	longcomplexexp;  dcexp
+  long complex ln;  dcln;	longcomplexln;  dcln
+  long complex sin;  dcsin;	longcomplexsin;  dcsin
+  long complex sinh;  dcsin;	longcomplexsinh;  dcsin
+  long complex sqrt;  dcsqrt;	longcomplexsqrt;  dcsqrt
+  long complex tan;  dctan;	longcomplextan;  dctan
+  long complex tanh;  dctanh;	longcomplextanh;  dctanh
+# LONG BITS in software #
+  longbitspack;	longbitspack
+  ABS	ABS
+  BIN	BIN
+  SHORTEN	SHORTEN
+  LENG	LENG
+  NOT	NOT
+  ~	~
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <=	<=
+  LE	LE
+  >=	>=
+  GE	GE
+  AND	AND
+  &	&
+  OR	OR
+  XOR	XOR
+  SHL	SHL
+  UP	UP
+  SHR	SHR
+  DOWN	DOWN
+  ELEM	ELEM
+  SET	SET
+  CLEAR	CLEAR
+  long pi;  dpi;	longpi;  dpi
+  long max bits;	longmaxbits
+  long max int;	longmaxint
+  long small real;	longsmallreal
+  long max real;	longmaxreal
+  long min real;	longminreal
+  long infinity;	longinfinity
+  long minus infinity;	longminusinfinity
+  long inf;	longinf
+  long min inf;	longmininf
+# LONG INT as 128 bit #
+  +	+
+  -	-
+  ABS	ABS
+  LENG	LENG
+  SHORTEN	SHORTEN
+  SIGN	SIGN
+  ODD	ODD
+  ENTIER	ENTIER
+  ROUND	ROUND
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  %	%
+  MOD	MOD
+  %*	%*
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  %:=	%:=
+  %*:=	%*:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  OVERAB	OVERAB
+  MODAB	MODAB
+  /	/
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <	<
+  LT	LT
+  <=	<=
+  LE	LE
+  >	>
+  GT	GT
+  >=	>=
+  GE	GE
+# LONG REAL as 128 bit #
+  +	+
+  -	-
+  ABS	ABS
+  SIGN	SIGN
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  **	**
+  UP	UP
+  ^	^
+  LENG	LENG
+  SHORTEN	SHORTEN
+  LENG	LENG
+  SHORTEN	SHORTEN
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <	<
+  LT	LT
+  <=	<=
+  LE	LE
+  >	>
+  GT	GT
+  >=	>=
+  GE	GE
+  long arc cos dg;  dacos dg;	longarccosdg;  dacosdg
+  long arc cosh;  dacosh;	longarccosh;  dacosh
+  long arc cot dg;  dacot dg;	longarccotdg;  dacotdg
+  long arc cot;  dacot;	longarccot;  dacot
+  long arc csc;  dacsc;	longarccsc;  dacsc
+  long arc csc dg;  dacsc dg;	longarccscdg;  dacscdg
+  long arc sec dg;  dasec dg;	longarcsecdg;  dasecdg
+  long arc sin dg;  dasin dg;	longarcsindg;  dasindg
+  long arc sinh;  dasinh;	longarcsinh;  dasinh
+  long arc tan dg;  datan dg;	longarctandg;  datandg
+  long arc tanh;  datanh;	longarctanh;  datanh
+  long cbrt;  dcbrt;	longcbrt;  dcbrt
+  long cos dg;  dcos dg;	longcosdg;  dcosdg
+  long cosh;  dcosh;	longcosh;  dcosh
+  long cos pi;  dcos pi;	longcospi;  dcospi
+  long cot dg;  dcot dg;	longcotdg;  dcotdg
+  long cot;  dcot;	longcot;  dcot
+  long cot pi;  dcot pi;	longcotpi;  dcotpi
+  long csc;  dcsc;	longcsc;  dcsc
+  long csc dg;  dcsc dg;	longcscdg;  dcscdg
+  long curt;  dcurt;	longcurt;  dcurt
+  long erfc;  derfc;	longerfc;  derfc
+  long erf;  derf;	longerf;  derf
+  long inv erfc;  dinverfc;	longinverfc;  dinverfc
+  long inv erf;  dinverf;	longinverf;  dinverf
+  long gamma;  dgamma;	longgamma;  dgamma
+  long ln gamma;  dlngamma;	longlngamma;  dlngamma
+  long sec;  dsec;	longsec;  dsec
+  long sec dg;  dsec dg;	longsecdg;  dsecdg
+  long sin dg;  dsin dg;	longsindg;  dsindg
+  long sinh;  dsinh;	longsinh;  dsinh
+  long sin pi;  dsin pi;	longsinpi;  dsinpi
+  long tan dg;  dtan dg;	longtandg;  dtandg
+  long tanh;  dtanh;	longtanh;  dtanh
+  long tan pi;  dtan pi;	longtanpi;  dtanpi
+  long arc cos;  dacos;	longarccos;  dacos
+  long arc sin;  dasin;	longarcsin;  dasin
+  long arc tan;  datan;	longarctan;  datan
+  long cas;  dcas;	longcas;  dcas
+  long cos;  dcos;	longcos;  dcos
+  long exp;  dexp;	longexp;  dexp
+  long ln;  dln;	longln;  dln
+  long log;  dlog;	longlog;  dlog
+  long sin;  dsin;	longsin;  dsin
+  long sqrt;  dsqrt;	longsqrt;  dsqrt
+  long tan;  dtan;	longtan;  dtan
+  long next random;	longnextrandom
+  long random;	longrandom
+  long arc tan2 dg;  datan2dg;	longarctan2dg;  datan2dg
+  long arc tan2;  datan2;	longarctan2;  datan2
+  long beta;  dbeta;	longbeta;  dbeta
+  long gamma incgf;  dgammaincgf;	longgammaincgf;  dgammaincgf
+  long gamma incf;  dgammaincf;	longgammaincf;  dgammaincf
+  long gamma inc;  dgammainc;	longgammainc;  dgammainc
+  long ln beta;  dlnbeta;	longlnbeta;  dlnbeta
+  long beta inc;  dbetainc;	longbetainc;  dbetainc
+  long gamma incg;  dgammaincg;	longgammaincg;  dgammaincg
+# LONG BITS as 128 bit #
+  long bits pack;	longbitspack
+  SHORTEN	SHORTEN
+  LENG	LENG
+  ABS	ABS
+  BIN	BIN
+  NOT	NOT
+  ~	~
+  AND	AND
+  &	&
+  OR	OR
+  XOR	XOR
+  +	+
+  -	-
+  *	*
+  OVER	OVER
+  MOD	MOD
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  <=	<=
+  >=	>=
+  EQ	EQ
+  NE	NE
+  LE	LE
+  GE	GE
+  <	<
+  >	>
+  LT	LT
+  GT	GT
+  ELEM	ELEM
+  SET	SET
+  CLEAR	CLEAR
+  SHL	SHL
+  UP	UP
+  SHR	SHR
+  DOWN	DOWN
+  ROL	ROL
+  ROR	ROR
+# LONG COMPLEX as 2 x 128 bit. #
+  LENG	LENG
+  SHORTEN	SHORTEN
+  I	I
+  +*	+*
+  I	I
+  +*	+*
+  RE	RE
+  IM	IM
+  ABS	ABS
+  ARG	ARG
+  +	+
+  -	-
+  CONJ	CONJ
+  =	=
+  /=	/=
+  ~=	~=
+  ^=	^=
+  EQ	EQ
+  NE	NE
+  +	+
+  -	-
+  *	*
+  /	/
+  **	**
+  UP	UP
+  ^	^
+  +:=	+:=
+  -:=	-:=
+  *:=	*:=
+  /:=	/:=
+  PLUSAB	PLUSAB
+  MINUSAB	MINUSAB
+  TIMESAB	TIMESAB
+  DIVAB	DIVAB
+  long complex arc cosh;  dcacosh;	longcomplexarccosh;  dcacosh
+  long complex arc cos;  dcacos;	longcomplexarccos;  dcacos
+  long complex arc sinh;  dcasinh;	longcomplexarcsinh;  dcasinh
+  long complex arc sin;  dcasin;	longcomplexarcsin;  dcasin
+  long complex arc tanh;  dcatanh;	longcomplexarctanh;  dcatanh
+  long complex arc tan;  dcatan;	longcomplexarctan;  dcatan
+  long complex atanh;  dcatanh;	longcomplexatanh;  dcatanh
+  long complex cosh;  dccosh;	longcomplexcosh;  dccosh
+  long complex cos;  dccos;	longcomplexcos;  dccos
+  long complex exp;  dcexp;	longcomplexexp;  dcexp
+  long complex ln;  dcln;	longcomplexln;  dcln
+  long complex sinh;  dcsinh;	longcomplexsinh;  dcsinh
+  long complex sin;  dcsin;	longcomplexsin;  dcsin
+  long complex sqrt;  dcsqrt;	longcomplexsqrt;  dcsqrt
+  long complex tanh;  dctanh;	longcomplextanh;  dctanh
+  long complex tan;  dctan;	longcomplextan;  dctan
+  mpfr long gamma inc;  mpfr dgammainc;	mpfrlonggammainc;  mpfrdgammainc
+  mpfr long long beta;  mpfr qbeta;	mpfrlonglongbeta;  mpfrqbeta
+  mpfr long long gammainc;  mpfr qgammainc;	mpfrlonglonggammainc;  mpfrqgammainc
+  mpfr long long lnbeta;  mpfr qlnbeta;	mpfrlonglonglnbeta;  mpfrqlnbeta
+  mpfr long long betainc;  mpfr qbetainc;	mpfrlonglongbetainc;  mpfrqbetainc
+  mpfr long long erfc;  mpfr qerfc;	mpfrlonglongerfc;  mpfrqerfc
+  mpfr long long erf;  mpfr qerf;	mpfrlonglongerf;  mpfrqerf
+  mpfr long long gamma;  mpfr qgamma;	mpfrlonglonggamma;  mpfrqgamma
+  mpfr long long inverfc;  mpfr qinverfc;	mpfrlonglonginverfc;  mpfrqinverfc
+  mpfr long long inverf;  mpfr qinverf;	mpfrlonglonginverf;  mpfrqinverf
+  mpfr long long lngamma;  mpfr qlngamma;	mpfrlonglonglngamma;  mpfrqlngamma
+  mpfr mp;	mpfrmp
+  blank character;	blankcharacter
+  formfeed character;	formfeedcharacter
+  formfeed char;	formfeedchar
+  newline character;	newlinecharacter
+  newline char;	newlinechar
+  null character;	nullcharacter
+  tab character;	tabcharacter
+  tab char;	tabchar
+  blank char;	blankchar
+  blank;	blank
+  eof character;	eofcharacter
+  eof char;	eofchar
+  error char;	errorchar
+  exp char;	expchar
+  flip;	flip
+  flop;	flop
+  null char;	nullchar
+  bits;	bits
+  whole;	whole
+  fixed;	fixed
+  float;	float
+  real;	real
+  stand in;	standin
+  stand out;	standout
+  stand back;	standback
+  stand error;	standerror
+  stand in channel;	standinchannel
+  stand out channel;	standoutchannel
+  stand draw channel;	standdrawchannel
+  stand back channel;	standbackchannel
+  stand error channel;	standerrorchannel
+  make term;	maketerm
+  char in string;	charinstring
+  last char in string;	lastcharinstring
+  string in string;	stringinstring
+  idf;	idf
+  term;	term
+  program idf;	programidf
+# Event routines. #
+  on file end;	onfileend
+  on page end;	onpageend
+  on line end;	onlineend
+  on logical file end;	onlogicalfileend
+  on physical file end;	onphysicalfileend
+  on format end;	onformatend
+  on format error;	onformaterror
+  on value error;	onvalueerror
+  on open error;	onopenerror
+  on transput error;	ontransputerror
+# Enquiries on files. #
+  draw possible;	drawpossible
+  end of file;	endoffile
+  end of line;	endofline
+  eof;	eof
+  eoln;	eoln
+  rewind possible;	rewindpossible
+  bin possible;	binpossible
+  compressible;	compressible
+  get possible;	getpossible
+  put possible;	putpossible
+  reidf possible;	reidfpossible
+  reset possible;	resetpossible
+  set possible;	setpossible
+# Handling of files. #
+  open;	open
+  append;	append
+  establish;	establish
+  associate;	associate
+  cooked;	cooked
+  raw;	raw
+  rewind;	rewind
+  backspace;	backspace
+  close;	close
+  create;	create
+  erase;	erase
+  lock;	lock
+  newline;	newline
+  newpage;	newpage
+  reset;	reset
+  scratch;	scratch
+  space;	space
+  set;	set
+  seek;	seek
+  read;	read
+  read bin;	readbin
+  readf;	readf
+  print bin;	printbin
+  printf;	printf
+  print;	print
+  write bin;	writebin
+  writef;	writef
+  write;	write
+  get;	get
+  getf;	getf
+  get bin;	getbin
+  put;	put
+  putf;	putf
+  put bin;	putbin
+  gets;	gets
+  getsf;	getsf
+  puts;	puts
+  putsf;	putsf
+  string;	string
+  stringf;	stringf
+  read line;	readline
+# Set up standenv - extensions. #
+# UNIX things. #
+  rows;	rows
+  columns;	columns
+  argc;	argc
+  a68g argc;	a68gargc
+  errno;	errno
+  fork;	fork
+  get pwd;	getpwd
+  set pwd;	setpwd
+  file is directory;	fileisdirectory
+  file is block device;	fileisblockdevice
+  file is char device;	fileischardevice
+  file is regular;	fileisregular
+  file is fifo;	fileisfifo
+  file is link;	fileislink
+  file mode;	filemode
+  argv;	argv
+  a68g argv;	a68gargv
+  reset errno;	reseterrno
+  str error;	strerror
+  exec;	exec
+  execve;	execve
+  create pipe;	createpipe
+  exec sub;	execsub
+  execve child;	execvechild
+  exec sub pipeline;	execsubpipeline
+  execve childpipe;	execvechildpipe
+  exec sub output;	execsuboutput
+  execve output;	execveoutput
+  get env;	getenv
+  wait pid;	waitpid
+  utc time;	utctime
+  local time;	localtime
+  grep in string;	grepinstring
+  grep in substring;	grepinsubstring
+  sub in string;	subinstring
+  peek char;	peekchar
+  get directory;	getdirectory
+  http timeout;	httptimeout
+  https timeout;	httpstimeout
+  http content;	httpcontent
+  https content;	httpscontent
+# Drawing. #
+  draw device;	drawdevice
+  make device;	makedevice
+  draw aspect;	drawaspect
+  draw clear;	drawclear
+  draw erase;	drawerase
+  draw flush;	drawflush
+  draw show;	drawshow
+  draw fill style;	drawfillstyle
+  draw get colour name;	drawgetcolourname
+  draw get color name;	drawgetcolorname
+  draw color;	drawcolor
+  draw colour;	drawcolour
+  draw background color;	drawbackgroundcolor
+  draw background colour;	drawbackgroundcolour
+  draw circle;	drawcircle
+  draw ball;	drawball
+  draw star;	drawstar
+  draw point;	drawpoint
+  draw line;	drawline
+  draw move;	drawmove
+  draw rect;	drawrect
+  draw text;	drawtext
+  draw linestyle;	drawlinestyle
+  draw font name;	drawfontname
+  draw linewidth;	drawlinewidth
+  draw font size;	drawfontsize
+  draw text angle;	drawtextangle
+  draw color name;	drawcolorname
+  draw colour name;	drawcolourname
+  draw background color name;	drawbackgroundcolorname
+  draw background colour name;	drawbackgroundcolourname
+  curses start;	cursesstart
+  curses end;	cursesend
+  curses clear;	cursesclear
+  curses refresh;	cursesrefresh
+  curses green;	cursesgreen
+  curses cyan;	cursescyan
+  curses red;	cursesred
+  curses yellow;	cursesyellow
+  curses magenta;	cursesmagenta
+  curses blue;	cursesblue
+  curses white;	curseswhite
+  curses green inverse;	cursesgreeninverse
+  curses cyan inverse;	cursescyaninverse
+  curses red inverse;	cursesredinverse
+  curses yellow inverse;	cursesyellowinverse
+  curses magenta inverse;	cursesmagentainverse
+  curses blue inverse;	cursesblueinverse
+  curses white inverse;	curseswhiteinverse
+  curses get char;	cursesgetchar
+  curses put char;	cursesputchar
+  curses move;	cursesmove
+  curses lines;	curseslines
+  curses columns;	cursescolumns
+  curses delchar;	cursesdelchar
+  pq connect db;	pqconnectdb
+  pq finish;	pqfinish
+  pq reset;	pqreset
+  pq parameter status;	pqparameterstatus
+  pq exec;	pqexec
+  pq fnumber;	pqfnumber
+  pq ntuples;	pqntuples
+  pq nfields;	pqnfields
+  pq cmd status;	pqcmdstatus
+  pq cmd tuples;	pqcmdtuples
+  pq error message;	pqerrormessage
+  pq result error message;	pqresulterrormessage
+  pq db;	pqdb
+  pq user;	pquser
+  pq pass;	pqpass
+  pq host;	pqhost
+  pq port;	pqport
+  pq tty;	pqtty
+  pq options;	pqoptions
+  pq protocol version;	pqprotocolversion
+  pq server version;	pqserverversion
+  pq socket;	pqsocket
+  pq backend pid;	pqbackendpid
+  pq fname;	pqfname
+  pq fformat;	pqfformat
+  pq get value;	pqgetvalue
+  pq get is null;	pqgetisnull
+  sig segv;	sigsegv
+
+#:::::::::::::
+prelude-bits.c
+:::::::::::::#
+
+# Multiple precision BITS. #
+  long long bits width;	longlongbitswidth
+  long long max bits;	longlongmaxbits
+  long long bits pack;	longlongbitspack
+  LENG	LENG
+  ABS	ABS
+  BIN	BIN
+  NOT	NOT
+  ~	~
+  SHORTEN	SHORTEN
+  =	=
+  EQ	EQ
+  /=	/=
+  ~=	~=
+  ^=	^=
+  NE	NE
+  <=	<=
+  LE	LE
+  >=	>=
+  GE	GE
+  AND	AND
+  &	&
+  OR	OR
+  XOR	XOR
+  SHL	SHL
+  UP	UP
+  SHR	SHR
+  DOWN	DOWN
+  ELEM	ELEM
+  SET	SET
+  CLEAR	CLEAR
+
+#:::::::::::::
+prelude-mathlib.c
+:::::::::::::#
+
+# R specific special functions #
+  r di gamma;	rdigamma
+  r tri gamma;	rtrigamma
+  r tetra gamma;	rtetragamma
+  r penta gamma;	rpentagamma
+  r psi gamma;	rpsigamma
+# R distribution related functions #
+  r r t;	rrt
+  r r chisq;	rrchisq
+  r r exp;	rrexp
+  r r geom;	rrgeom
+  r r pois;	rrpois
+  r r signrank;	rrsignrank
+  r r beta;	rrbeta
+  r r binom;	rrbinom
+  r r cauchy;	rrcauchy
+  r r f;	rrf
+  r r logis;	rrlogis
+  r r lnorm;	rrlnorm
+  r rn binom;	rrnbinom
+  r r norm;	rrnorm
+  r r unif;	rrunif
+  r r weibull;	rrweibull
+  r r wilcox;	rrwilcox
+  r d t;	rdt
+  r d chisq;	rdchisq
+  r d exp;	rdexp
+  r d geom;	rdgeom
+  r d pois;	rdpois
+  r d norm;	rdnorm
+  r d beta;	rdbeta
+  r d binom;	rdbinom
+  r dn chisq;	rdnchisq
+  r d cauchy;	rdcauchy
+  r d f;	rdf
+  r d logis;	rdlogis
+  r d lnorm;	rdlnorm
+  r dn binom;	rdnbinom
+  r d nt;	rdnt
+  r d unif;	rdunif
+  r d weibull;	rdweibull
+  r d nf;	rdnf
+  r d hyper;	rdhyper
+  r r hyper;	rrhyper
+  r p t;	rpt
+  r q t;	rqt
+  r p chisq;	rpchisq
+  r q chisq;	rqchisq
+  r p exp;	rpexp
+  r q exp;	rqexp
+  r p geom;	rpgeom
+  r q geom;	rqgeom
+  r p pois;	rppois
+  r q pois;	rqpois
+  r p norm;	rpnorm
+  r q norm;	rqnorm
+  r p beta;	rpbeta
+  r q beta;	rqbeta
+  r p binom;	rpbinom
+  r q binom;	rqbinom
+  r pn chisq;	rpnchisq
+  r qn chisq;	rqnchisq
+  r p cauchy;	rpcauchy
+  r q cauchy;	rqcauchy
+  r p f;	rpf
+  r q f;	rqf
+  r p logis;	rplogis
+  r q logis;	rqlogis
+  r p l norm;	rplnorm
+  r q l norm;	rqlnorm
+  r pn binom;	rpnbinom
+  r qn binom;	rqnbinom
+  r p nt;	rpnt
+  r q nt;	rqnt
+  r p unif;	rpunif
+  r q unif;	rqunif
+  r p weibull;	rpweibull
+  r q weibull;	rqweibull
+  r p tukey;	rptukey
+  r q tukey;	rqtukey
+  r p nf;	rpnf
+  r q nf;	rqnf
+  r p hyper;	rphyper
+  r q hyper;	rqhyper
+  r d sign rank;	rdsignrank
+  r d wilcox;	rdwilcox
+  r p sign rank;	rpsignrank
+  r q sign rank;	rqsignrank
+  r p wilcox;	rpwilcox
+  r q wilcox;	rqwilcox
+
+#:::::::::::::
+prelude-gsl.c
+:::::::::::::#
+
+# Standard prelude definitions from GSL. #
+  airy ai;	airyai
+  airy ai scaled;	airyaiscaled
+  airy bi;	airybi
+  airy bi scaled;	airybiscaled
+  bessel in0;	besselin0
+  bessel in1;	besselin1
+  bessel in0 scaled;	besselin0scaled
+  bessel in1 scaled;	besselin1scaled
+  bessel jn0;	besseljn0
+  bessel jn1;	besseljn1
+  bessel kn0;	besselkn0
+  bessel kn1;	besselkn1
+  bessel kn0 scaled;	besselkn0scaled
+  bessel kn1 scaled;	besselkn1scaled
+  bessel yn0;	besselyn0
+  bessel yn1;	besselyn1
+  expinte1;	expinte1
+  expintei;	expintei
+  dawson;	dawson
+  exprel;	exprel
+  beta inc gsl;	betaincgsl
+  poch;	poch
+  digamma;	digamma
+  airy ai derivative;	airyaiderivative
+  airy ai deriv;	airyaideriv
+  airy ai deriv scaled;	airyaiderivscaled
+  airy bi derivative;	airybiderivative
+  airy bi deriv;	airybideriv
+  airy bi deriv scaled;	airybiderivscaled
+  airy zero ai deriv;	airyzeroaideriv
+  airy zero ai;	airyzeroai
+  airy zero bi deriv;	airyzerobideriv
+  airy zero bi;	airyzerobi
+  angle restrict pos;	anglerestrictpos
+  angle restrict symm;	anglerestrictsymm
+  atan int;	atanint
+  bessel il0 scaled;	besselil0scaled
+  bessel il1 scaled;	besselil1scaled
+  bessel il2 scaled;	besselil2scaled
+  bessel il scaled;	besselilscaled
+  bessel in;	besselin
+  bessel in scaled;	besselinscaled
+  bessel inu;	besselinu
+  bessel inu scaled;	besselinuscaled
+  bessel jl0;	besseljl0
+  bessel jl1;	besseljl1
+  bessel jl2;	besseljl2
+  bessel jl;	besseljl
+  bessel jn;	besseljn
+  bessel kl0 scaled;	besselkl0scaled
+  bessel kl1 scaled;	besselkl1scaled
+  bessel kl2 scaled;	besselkl2scaled
+  bessel kl scaled;	besselklscaled
+  bessel kn;	besselkn
+  bessel kn scaled;	besselknscaled
+  bessel kn_scaled;	besselkn_scaled
+  bessel knu;	besselknu
+  bessel knu scaled;	besselknuscaled
+  bessel ln knu;	bessellnknu
+  bessel yl0;	besselyl0
+  bessel yl1;	besselyl1
+  bessel yl2;	besselyl2
+  bessel yl;	besselyl
+  bessel yn;	besselyn
+  bessel ynu;	besselynu
+  bessel zero j0;	besselzeroj0
+  bessel zero j1;	besselzeroj1
+  bessel zero jnu;	besselzerojnu
+  chi;	chi
+  ci;	ci
+  clausen;	clausen
+  conical p0;	conicalp0
+  conical p1;	conicalp1
+  conical pcylreg;	conicalpcylreg
+  conical phalf;	conicalphalf
+  conical pmhalf;	conicalpmhalf
+  conical psphreg;	conicalpsphreg
+  debye 1;	debye1
+  debye 2;	debye2
+  debye 3;	debye3
+  debye 4;	debye4
+  debye 5;	debye5
+  debye 6;	debye6
+  dilog;	dilog
+  doublefact;	doublefact
+  ellint d;	ellintd
+  ellint ecomp;	ellintecomp
+  ellint e;	ellinte
+  ellint f;	ellintf
+  ellint kcomp;	ellintkcomp
+  ellint pcomp;	ellintpcomp
+  ellint p;	ellintp
+  ellint rc;	ellintrc
+  ellint rd;	ellintrd
+  ellint rf;	ellintrf
+  ellint rj;	ellintrj
+  etaint;	etaint
+  eta;	eta
+  expint 3;	expint3
+  expint e2;	expinte2
+  expint en;	expinten
+  expm1;	expm1
+  exprel2;	exprel2
+  expreln;	expreln
+  fermi dirac 0;	fermidirac0
+  fermi dirac 1;	fermidirac1
+  fermi dirac 2;	fermidirac2
+  fermi dirac 3half;	fermidirac3half
+  fermi dirac half;	fermidirachalf
+  fermi dirac inc0;	fermidiracinc0
+  fermi dirac int;	fermidiracint
+  fermi dirac m1;	fermidiracm1
+  fermi dirac mhalf;	fermidiracmhalf
+  gamma inc gsl;	gammaincgsl
+  gamma inc p;	gammaincp
+  gamma inc q;	gammaincq
+  gamma inv;	gammainv
+  gamma star;	gammastar
+  gegenpoly 1 real;	gegenpoly1real
+  gegenpoly 2 real;	gegenpoly2real
+  gegenpoly 3 real;	gegenpoly3real
+  gegenpoly n real;	gegenpolynreal
+  hermite func;	hermitefunc
+  hypot;	hypot
+  hzeta;	hzeta
+  laguerre 1 real;	laguerre1real
+  laguerre 2 real;	laguerre2real
+  laguerre 3 real;	laguerre3real
+  laguerre n real;	laguerrenreal
+  lambert w0;	lambertw0
+  lambert wm1;	lambertwm1
+  legendre h3d0;	legendreh3d0
+  legendre h3d1;	legendreh3d1
+  legendre h3d;	legendreh3d
+  legendre p1;	legendrep1
+  legendre p2;	legendrep2
+  legendre p3;	legendrep3
+  legendre pl;	legendrepl
+  legendre q0;	legendreq0
+  legendre q1;	legendreq1
+  legendre ql;	legendreql
+  ln cosh;	lncosh
+  ln doublefact;	lndoublefact
+  ln poch;	lnpoch
+  ln sinh;	lnsinh
+  ln1 plusxmx;	ln1plusxmx
+  ln1 plusx;	ln1plusx
+  ln abs;	lnabs
+  poch rel;	pochrel
+  psi 1 int;	psi1int
+  psi 1 piy;	psi1piy
+  psi 1;	psi1
+  psi int;	psiint
+  psin;	psin
+  psi;	psi
+  shi;	shi
+  sinc;	sinc
+  si;	si
+  synchrotron 1;	synchrotron1
+  synchrotron 2;	synchrotron2
+  taylor coeff;	taylorcoeff
+  transport 2;	transport2
+  transport 3;	transport3
+  transport 4;	transport4
+  transport 5;	transport5
+  zeta int;	zetaint
+  zeta m1 int;	zetam1int
+  zeta m1;	zetam1
+  zeta;	zeta
+# Vector and matrix pretty print. #
+  print vector;	printvector
+  print matrix;	printmatrix
+# Vector and matrix monadic. #
+  +	+
+  -	-
+  CV	CV
+  RV	RV
+  +	+
+  -	-
+  T	T
+  INV	INV
+  PINV	PINV
+  MEAN	MEAN
+  DET	DET
+  TRACE	TRACE
+  +	+
+  -	-
+  +	+
+  -	-
+  T	T
+  INV	INV
+  DET	DET
+  TRACE	TRACE
+# Vector and matrix dyadic. #
+  =	=
+  /=	/=
+  +	+
+  -	-
+  +:=	+:=
+  PLUSAB	PLUSAB
+  -:=	-:=
+  MINUSAB	MINUSAB
+  =	=
+  /-	/-
+  +	+
+  -	-
+  BEFORE	BEFORE
+  ABOVE	ABOVE
+  +:=	+:=
+  PLUSAB	PLUSAB
+  -:=	-:=
+  MINUSAB	MINUSAB
+  =	=
+  /=	/=
+  +	+
+  -	-
+  +:=	+:=
+  PLUSAB	PLUSAB
+  -:=	-:=
+  MINUSAB	MINUSAB
+  =	=
+  /=	/=
+  +	+
+  -	-
+  +:=	+:=
+  PLUSAB	PLUSAB
+  -:=	-:=
+  MINUSAB	MINUSAB
+# Vector and matrix scaling. #
+  *	*
+  /	/
+  *	*
+  /	/
+  *	*
+  /	/
+  *	*
+  /	/
+  *:=	*:=
+  /:=	/:=
+  *:=	*:=
+  /:=	/:=
+  *:=	*:=
+  /:=	/:=
+  *:=	*:=
+  /:=	/:=
+  *	*
+# Matrix times vector or matrix. #
+  *	*
+# Vector and matrix miscellaneous. #
+  vector echo;	vectorecho
+  matrix echo;	matrixecho
+  compl vector echo;	complvectorecho
+  compl matrix echo;	complmatrixecho
+  *	*
+  NORM	NORM
+  DYAD	DYAD
+# Principle Component Analysis. #
+  pcacv;	pcacv
+  pcasvd;	pcasvd
+# Total Least Square regression. #
+  ols;	ols
+  tls;	tls
+# Partial Least Squares regression. #
+  pcr;	pcr
+  pls1;	pls1
+  pls2;	pls2
+# Routine left columns, a GSL alternative to trimming columns. #
+  left columns;	leftcolumns
+# Moore-Penrose pseudo inverse. #
+  pseudo inv;	pseudoinv
+# LU decomposition. #
+  lu decomp;	ludecomp
+  lu det;	ludet
+  lu inv;	luinv
+  lu solve;	lusolve
+  complex lu decomp;	complexludecomp
+  complex lu det;	complexludet
+  complex lu inv;	complexluinv
+  complex lu solve;	complexlusolve
+# SVD decomposition. #
+  svd decomp;	svddecomp
+  svd solve;	svdsolve
+# QR decomposition. #
+  qr decomp;	qrdecomp
+  qr solve;	qrsolve
+  qr lssolve;	qrlssolve
+# Cholesky decomposition. #
+  cholesky decomp;	choleskydecomp
+  cholesky solve;	choleskysolve
+# Constants ex GSL. #
+  cgs speed of light;	cgsspeedoflight
+  cgs gravitational constant;	cgsgravitationalconstant
+  cgs planck constant;	cgsplanckconstant
+  cgs planck constant bar;	cgsplanckconstantbar
+  cgs astronomical unit;	cgsastronomicalunit
+  cgs light year;	cgslightyear
+  cgs parsec;	cgsparsec
+  cgs grav accel;	cgsgravaccel
+  cgs electron volt;	cgselectronvolt
+  cgs mass electron;	cgsmasselectron
+  cgs mass muon;	cgsmassmuon
+  cgs mass proton;	cgsmassproton
+  cgs mass neutron;	cgsmassneutron
+  cgs rydberg;	cgsrydberg
+  cgs boltzmann;	cgsboltzmann
+  cgs bohr magneton;	cgsbohrmagneton
+  cgs nuclear magneton;	cgsnuclearmagneton
+  cgs electron magnetic moment;	cgselectronmagneticmoment
+  cgs proton magnetic moment;	cgsprotonmagneticmoment
+  cgs molar gas;	cgsmolargas
+  cgs standard gas volume;	cgsstandardgasvolume
+  cgs minute;	cgsminute
+  cgs hour;	cgshour
+  cgs day;	cgsday
+  cgs week;	cgsweek
+  cgs inch;	cgsinch
+  cgs foot;	cgsfoot
+  cgs yard;	cgsyard
+  cgs mile;	cgsmile
+  cgs nautical mile;	cgsnauticalmile
+  cgs fathom;	cgsfathom
+  cgs mil;	cgsmil
+  cgs point;	cgspoint
+  cgs texpoint;	cgstexpoint
+  cgs micron;	cgsmicron
+  cgs angstrom;	cgsangstrom
+  cgs hectare;	cgshectare
+  cgs acre;	cgsacre
+  cgs barn;	cgsbarn
+  cgs liter;	cgsliter
+  cgs us gallon;	cgsusgallon
+  cgs quart;	cgsquart
+  cgs pint;	cgspint
+  cgs cup;	cgscup
+  cgs fluid ounce;	cgsfluidounce
+  cgs table spoon;	cgstablespoon
+  cgs tea spoon;	cgsteaspoon
+  cgs canadian gallon;	cgscanadiangallon
+  cgs uk gallon;	cgsukgallon
+  cgs miles per hour;	cgsmilesperhour
+  cgs kilometers per hour;	cgskilometersperhour
+  cgs knot;	cgsknot
+  cgs pound mass;	cgspoundmass
+  cgs ounce mass;	cgsouncemass
+  cgs ton;	cgston
+  cgs metricton;	cgsmetricton
+  cgs ukton;	cgsukton
+  cgs troy ounce;	cgstroyounce
+  cgs carat;	cgscarat
+  cgs unified atomic mass;	cgsunifiedatomicmass
+  cgs gram force;	cgsgramforce
+  cgs pound force;	cgspoundforce
+  cgs kilo pound force;	cgskilopoundforce
+  cgs poundal;	cgspoundal
+  cgs calorie;	cgscalorie
+  cgs btu;	cgsbtu
+  cgs therm;	cgstherm
+  cgs horsepower;	cgshorsepower
+  cgs bar;	cgsbar
+  cgs std atmosphere;	cgsstdatmosphere
+  cgs torr;	cgstorr
+  cgs meter of mercury;	cgsmeterofmercury
+  cgs inch of mercury;	cgsinchofmercury
+  cgs inch of water;	cgsinchofwater
+  cgs psi;	cgspsi
+  cgs poise;	cgspoise
+  cgs stokes;	cgsstokes
+  cgs faraday;	cgsfaraday
+  cgs electron charge;	cgselectroncharge
+  cgs gauss;	cgsgauss
+  cgs stilb;	cgsstilb
+  cgs lumen;	cgslumen
+  cgs lux;	cgslux
+  cgs phot;	cgsphot
+  cgs foot candle;	cgsfootcandle
+  cgs lambert;	cgslambert
+  cgs foot lambert;	cgsfootlambert
+  cgs curie;	cgscurie
+  cgs roentgen;	cgsroentgen
+  cgs rad;	cgsrad
+  cgs solar mass;	cgssolarmass
+  cgs bohr radius;	cgsbohrradius
+  cgs newton;	cgsnewton
+  cgs dyne;	cgsdyne
+  cgs joule;	cgsjoule
+  cgs erg;	cgserg
+  mksa speed of light;	mksaspeedoflight
+  mksa gravitational constant;	mksagravitationalconstant
+  mksa planck constant;	mksaplanckconstant
+  mksa planck constant bar;	mksaplanckconstantbar
+  mksa vacuum permeability;	mksavacuumpermeability
+  mksa astronomical unit;	mksaastronomicalunit
+  mksa light year;	mksalightyear
+  mksa parsec;	mksaparsec
+  mksa grav accel;	mksagravaccel
+  mksa electron volt;	mksaelectronvolt
+  mksa mass electron;	mksamasselectron
+  mksa mass muon;	mksamassmuon
+  mksa mass proton;	mksamassproton
+  mksa mass neutron;	mksamassneutron
+  mksa rydberg;	mksarydberg
+  mksa boltzmann;	mksaboltzmann
+  mksa bohr magneton;	mksabohrmagneton
+  mksa nuclear magneton;	mksanuclearmagneton
+  mksa electron magnetic moment;	mksaelectronmagneticmoment
+  mksa proton magnetic moment;	mksaprotonmagneticmoment
+  mksa molar gas;	mksamolargas
+  mksa standard gas volume;	mksastandardgasvolume
+  mksa minute;	mksaminute
+  mksa hour;	mksahour
+  mksa day;	mksaday
+  mksa week;	mksaweek
+  mksa inch;	mksainch
+  mksa foot;	mksafoot
+  mksa yard;	mksayard
+  mksa mile;	mksamile
+  mksa nautical mile;	mksanauticalmile
+  mksa fathom;	mksafathom
+  mksa mil;	mksamil
+  mksa point;	mksapoint
+  mksa texpoint;	mksatexpoint
+  mksa micron;	mksamicron
+  mksa angstrom;	mksaangstrom
+  mksa hectare;	mksahectare
+  mksa acre;	mksaacre
+  mksa barn;	mksabarn
+  mksa liter;	mksaliter
+  mksa us gallon;	mksausgallon
+  mksa quart;	mksaquart
+  mksa pint;	mksapint
+  mksa cup;	mksacup
+  mksa fluid ounce;	mksafluidounce
+  mksa table spoon;	mksatablespoon
+  mksa tea spoon;	mksateaspoon
+  mksa canadian gallon;	mksacanadiangallon
+  mksa uk gallon;	mksaukgallon
+  mksa miles per hour;	mksamilesperhour
+  mksa kilometers per hour;	mksakilometersperhour
+  mksa knot;	mksaknot
+  mksa pound mass;	mksapoundmass
+  mksa ounce mass;	mksaouncemass
+  mksa ton;	mksaton
+  mksa metricton;	mksametricton
+  mksa ukton;	mksaukton
+  mksa troy ounce;	mksatroyounce
+  mksa carat;	mksacarat
+  mksa unified atomic mass;	mksaunifiedatomicmass
+  mksa gram force;	mksagramforce
+  mksa pound force;	mksapoundforce
+  mksa kilo pound force;	mksakilopoundforce
+  mksa poundal;	mksapoundal
+  mksa calorie;	mksacalorie
+  mksa btu;	mksabtu
+  mksa therm;	mksatherm
+  mksa horsepower;	mksahorsepower
+  mksa bar;	mksabar
+  mksa stdatmosphere;	mksastdatmosphere
+  mksa torr;	mksatorr
+  mksa meter of mercury;	mksameterofmercury
+  mksa inch of mercury;	mksainchofmercury
+  mksa inch of water;	mksainchofwater
+  mksa psi;	mksapsi
+  mksa poise;	mksapoise
+  mksa stokes;	mksastokes
+  mksa faraday;	mksafaraday
+  mksa electron charge;	mksaelectroncharge
+  mksa gauss;	mksagauss
+  mksa stilb;	mksastilb
+  mksa lumen;	mksalumen
+  mksa lux;	mksalux
+  mksa phot;	mksaphot
+  mksa foot candle;	mksafootcandle
+  mksa lambert;	mksalambert
+  mksa foot lambert;	mksafootlambert
+  mksa curie;	mksacurie
+  mksa roentgen;	mksaroentgen
+  mksa rad;	mksarad
+  mksa solar mass;	mksasolarmass
+  mksa bohr radius;	mksabohrradius
+  mksa vacuum permittivity;	mksavacuumpermittivity
+  mksa newton;	mksanewton
+  mksa dyne;	mksadyne
+  mksa joule;	mksajoule
+  mksa erg;	mksaerg
+  num fine structure;	numfinestructure
+  num avogadro;	numavogadro
+  num yotta;	numyotta
+  num zetta;	numzetta
+  num exa;	numexa
+  num peta;	numpeta
+  num tera;	numtera
+  num giga;	numgiga
+  num mega;	nummega
+  num kilo;	numkilo
+  num milli;	nummilli
+  num micro;	nummicro
+  num nano;	numnano
+  num pico;	numpico
+  num femto;	numfemto
+  num atto;	numatto
+  num zepto;	numzepto
+  num yocto;	numyocto
+# FFT. #
+  primefactors;	primefactors
+  fft complex forward;	fftcomplexforward
+  fft complex backward;	fftcomplexbackward
+  fft complex inverse;	fftcomplexinverse
+  fft forward;	fftforward
+  fft backward;	fftbackward
+  fft inverse;	fftinverse
+# Laplace. #
+  laplace;	laplace
+
+
+# vim: syntax=algol68 ts=48
+#

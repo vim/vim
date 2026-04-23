@@ -1,0 +1,115 @@
+# Algol 68 Denotations #
+
+
+# BOOL #
+
+BOOL x = TRUE
+BOOL x = FALSE
+
+
+# INT #
+
+INT x = 0
+INT x = 42
+
+# whitespace #
+INT x = 1 000 000
+
+# monadic operators #
+INT x = -42
+INT x = +42
+
+
+# REAL #
+
+REAL x = .42
+REAL x = 42.42
+
+REAL x = 42e42
+REAL x = 42E42
+REAL x = 42\42
+REAL x = 42⏨42
+
+REAL x = 42e-42
+REAL x = 42E-42
+REAL x = 42\-42
+REAL x = 42⏨-42
+
+REAL x = 42e+42
+REAL x = 42E+42
+REAL x = 42\+42
+REAL x = 42⏨+42
+
+REAL x = .42e42
+REAL x = .42E42
+REAL x = .42\42
+REAL x = .42⏨42
+
+REAL x = .42e-42
+REAL x = .42E-42
+REAL x = .42\-42
+REAL x = .42⏨-42
+
+REAL x = .42e+42
+REAL x = .42E+42
+REAL x = .42\+42
+REAL x = .42⏨+42
+
+REAL x = 42.42e42
+REAL x = 42.42E42
+REAL x = 42.42\42
+REAL x = 42.42⏨42
+
+REAL x = 42.42e-42
+REAL x = 42.42E-42
+REAL x = 42.42\-42
+REAL x = 42.42⏨-42
+
+REAL x = 42.42e+42
+REAL x = 42.42E+42
+REAL x = 42.42\+42
+REAL x = 42.42⏨+42
+
+# whitespace #
+REAL x = 4 2 . 4 2 e + 4 2
+REAL x = 4 2 . 4 2 \ + 4 2
+REAL x = 4 2 . 4 2 ⏨ + 4 2
+
+# monadic operators #
+REAL x = -42.42
+REAL x = +42.42
+
+
+# BITS #
+
+BITS x = 2r101010
+BITS x = 4r222
+BITS x = 8r52
+BITS x = 16r2a
+
+# whitespace #
+BITS x = 2r 1010 1010
+
+# unmatched by bad pattern in legacy versions of syntax file #
+BITS x = 16r99
+
+
+# STRING #
+
+STRING s = "Foo Bar"
+
+# quote escape #
+STRING s = """"
+STRING s = " "" "
+STRING s = "Foo"""
+STRING s = """Bar"
+STRING s = "Foo""Bar"
+
+# line continuation #
+STRING s = "Foo\
+ Bar"
+STRING s = "Foo""\
+Bar"
+STRING s = "Foo\
+""Bar"
+

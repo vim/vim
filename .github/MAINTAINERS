@@ -133,6 +133,7 @@ runtime/doc/xxd-ru.1					@RestorerZ
 runtime/doc/xxd-ru.UTF-8.1				@RestorerZ
 runtime/ftplugin/abaqus.vim				@costerwi
 runtime/ftplugin/abnf.vim				@A4-Tacks
+runtime/ftplugin/algol68.vim				@dkearns
 runtime/ftplugin/antlr4.vim				@jiangyinzuo
 runtime/ftplugin/apache.vim				@dubgeiser
 runtime/ftplugin/arduino.vim				@k-takata
@@ -472,6 +473,7 @@ runtime/syntax/shared/hgcommitDiff.vim			@vegerot
 runtime/syntax/abaqus.vim				@costerwi
 runtime/syntax/abnf.vim					@A4-Tacks
 runtime/syntax/aidl.vim					@dpelle
+runtime/syntax/algol68.vim				@dkearns
 runtime/syntax/amiga.vim				@sodero
 runtime/syntax/ant.vim					@dkearns
 runtime/syntax/antlr4.vim				@jiangyinzuo

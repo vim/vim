@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 14
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -847,6 +847,20 @@ abel_cpp_comments_illegal	do not interpret '//' as inline comment leader
 ADA
 
 See |ft-ada-syntax|
+
+
+ALGOL 68					*algol68* *ft-algol68-syntax*
+
+This syntax file currently targets the Algol 68 Genie project using the
+default UPPER stropping regime.  It should also be usuable in other
+environments using the UPPER stropping regime, though somewhat less complete.
+
+Highlighting can be further configured with the following variables.
+
+Variable			Highlight ~
+*algol68_no_preludes*		no prelude identifiers, procedures or
+				bold word operators
+*algol68_symbolic_operators*	all prelude symbolic operators
 
 
 ANT						*ant.vim* *ft-ant-syntax*
