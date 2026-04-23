@@ -3097,4 +3097,17 @@ long elapsed(DWORD start_tick);
 // Flags used by getvcol()
 #define GETVCOL_END_EXCL_LBR	1
 
+// Used by expand_env_esc() callers that feed the result to
+// wildcard expansion, so that such characters embedded in
+// environment variable values are treated as literal.
+#ifdef VMS
+# define PATH_ESC_WILDCARDS	"*?%"
+#else
+# ifdef MSWIN
+#  define PATH_ESC_WILDCARDS	"*?["
+# else
+#  define PATH_ESC_WILDCARDS	"*?[{"
+# endif
+#endif
+
 #endif // VIM__H

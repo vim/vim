@@ -4158,7 +4158,7 @@ gen_expand_wildcards(
 	     */
 	    if ((has_env_var(p) && !(flags & EW_NOTENV)) || *p == '~')
 	    {
-		p = expand_env_save_opt(p, TRUE);
+		p = expand_env_save_opt(p, TRUE, (char_u *)PATH_ESC_WILDCARDS);
 		if (p == NULL)
 		    p = pat[i];
 #ifdef UNIX

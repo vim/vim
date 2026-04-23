@@ -1808,7 +1808,7 @@ find_file_in_path_option(
 	// copy file name into NameBuff, expanding environment variables
 	save_char = ptr[len];
 	ptr[len] = NUL;
-	file_to_findlen = expand_env_esc(ptr, NameBuff, MAXPATHL, FALSE, TRUE, NULL);
+	file_to_findlen = expand_env_esc(ptr, NameBuff, MAXPATHL, NULL, TRUE, NULL);
 	ptr[len] = save_char;
 
 	vim_free(*file_to_find);
