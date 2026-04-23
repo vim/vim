@@ -500,12 +500,16 @@ To additionally show a vertical scrollbar indicating the current scroll
 position, use "scrollbar": >
 	:set tabpanelopt+=scrollbar
 
-The "scrollbar" value implies "scroll".  A one-column scrollbar is reserved at
-the edge of the tabpanel; clicking on the scrollbar column moves the thumb to
-the click position, and the thumb can be dragged to scroll continuously.
+The "scrollbar" value implies "scroll".  A one-column scrollbar is always
+reserved at the right edge of the tabpanel, regardless of 'align'.  For
+|'tabpanelopt'|=align:left this is the edge adjacent to the buffer windows;
+for align:right it is the right edge of the screen.  Clicking on the
+scrollbar column moves the thumb to the click position, and the thumb can
+be dragged to scroll continuously.
 
-When "vert" is combined with "scrollbar", the scrollbar is drawn next to the
-vertical separator, on the panel side.
+When "vert" is combined with "scrollbar", the vertical separator is drawn
+at the tabpanel's boundary with the buffer area and the scrollbar stays at
+the tabpanel's right edge.
 
 The scrollbar uses the |hl-PmenuSbar| highlight group for the track and
 |hl-PmenuThumb| for the thumb.
