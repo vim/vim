@@ -47,8 +47,8 @@ static bool tpl_scroll = false;
 static bool tpl_scrollbar = false;
 static int tpl_scroll_offset = 0;
 static int tpl_total_rows = 0;
-static int tpl_scrollbar_col = -1;	// screen column of scrollbar, -1 if none
-static tabpage_T *tpl_last_curtab = NULL;  // last curtab seen by draw_tabpanel
+static int tpl_scrollbar_col = -1;  // screen column of scrollbar, -1 if none
+static tabpage_T *tpl_last_curtab = NULL;   // last curtab seen by draw_tabpanel
 
 typedef struct {
     win_T   *wp;
@@ -130,8 +130,22 @@ tabpanelopt_changed(void)
     tpl_scroll = new_scroll;
     tpl_scrollbar = new_scrollbar;
 
+    // Re-center the current tab on the next redraw.
+    tpl_last_curtab = NULL;
+
     shell_new_columns();
     return OK;
+}
+
+/*
+ * Drop any internal reference to "tp", so draw_tabpanel() never compares
+ * against a dangling pointer after the tabpage has been freed.
+ */
+    void
+tabpanel_forget_tabpage(const tabpage_T *tp)
+{
+    if (tpl_last_curtab == tp)
+	tpl_last_curtab = NULL;
 }
 
 /*
@@ -282,11 +296,12 @@ follow_curtab_if_needed(int curtab_row)
     else if (curtab_row >= tpl_scroll_offset + Rows)
 	tpl_scroll_offset = curtab_row - Rows + 1;
 
+    int max_offset = tpl_total_rows > Rows ? tpl_total_rows - Rows : 0;
+
     if (tpl_scroll_offset < 0)
 	tpl_scroll_offset = 0;
-    if (tpl_total_rows > Rows
-	    && tpl_scroll_offset > tpl_total_rows - Rows)
-	tpl_scroll_offset = tpl_total_rows - Rows;
+    else if (tpl_scroll_offset > max_offset)
+	tpl_scroll_offset = max_offset;
 }
 
 /*
