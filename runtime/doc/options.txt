@@ -4810,7 +4810,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    windows
 	|hl-Visual|	 v  Visual mode
 	|hl-VisualNOS|	 V  Visual mode when Vim is "Not Owning the
-			    Selection" Only X11 Gui's |gui-x11|,
+			    Selection" Only X11 or Wayland GUI's |gui-x11|,
 			    |xterm-clipboard| and |wayland-selections|
 	|hl-WarningMsg|	 w  warning messages
 	|hl-WildMenu|	 W  wildcard matches displayed for 'wildmenu'
