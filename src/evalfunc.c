@@ -1934,6 +1934,11 @@ typedef struct
 #else
 # define TERM_FUNC(name) NULL
 #endif
+#ifdef FEAT_TABPANEL
+# define TABPANEL_FUNC(name) name
+#else
+# define TABPANEL_FUNC(name) NULL
+#endif
 
 static const funcentry_T global_functions[] =
 {
@@ -2991,6 +2996,10 @@ static const funcentry_T global_functions[] =
 			ret_number,	    f_tabpagenr},
     {"tabpagewinnr",	1, 2, FEARG_1,	    arg2_number_string,
 			ret_number,	    f_tabpagewinnr},
+    {"tabpanel_getinfo", 0, 0, 0,	    NULL,
+			ret_dict_any,	    TABPANEL_FUNC(f_tabpanel_getinfo)},
+    {"tabpanel_scroll",	1, 2, FEARG_1,	    arg2_number_dict_any,
+			ret_bool,	    TABPANEL_FUNC(f_tabpanel_scroll)},
     {"tagfiles",	0, 0, 0,	    NULL,
 			ret_list_string,    f_tagfiles},
     {"taglist",		1, 2, FEARG_1,	    arg2_string,

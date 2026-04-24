@@ -1129,4 +1129,58 @@ func Test_tabpanel_empty()
   set tabpanel&
 endfunc
 
+func Test_tabpanel_getinfo_and_scroll()
+  set showtabpanel=2 tabpanelopt=scroll,columns:20
+  for i in range(40)
+    tabnew
+  endfor
+  redraw
+
+  let info = tabpanel_getinfo()
+  call assert_equal('left', info.align)
+  call assert_equal(20, info.columns)
+  call assert_true(info.scroll)
+  call assert_equal(0, info.offset)
+  call assert_true(info.total > 0)
+  call assert_true(info.max_offset >= 0)
+
+  " relative scroll down
+  if info.max_offset > 0
+    call assert_true(tabpanel_scroll(1))
+    redraw
+    call assert_equal(1, tabpanel_getinfo().offset)
+  endif
+
+  " relative scroll up, clamped at 0
+  call tabpanel_scroll(-10)
+  redraw
+  call assert_equal(0, tabpanel_getinfo().offset)
+
+  " absolute set
+  let max = tabpanel_getinfo().max_offset
+  if max > 0
+    call tabpanel_scroll(max, #{absolute: 1})
+    redraw
+    call assert_equal(max, tabpanel_getinfo().offset)
+  endif
+
+  " clamp past the end
+  call tabpanel_scroll(99999, #{absolute: 1})
+  redraw
+  call assert_equal(max, tabpanel_getinfo().offset)
+
+  " clamp negative absolute
+  call tabpanel_scroll(-5, #{absolute: 1})
+  redraw
+  call assert_equal(0, tabpanel_getinfo().offset)
+
+  " no change returns false
+  call assert_false(tabpanel_scroll(0, #{absolute: 1}))
+  call assert_false(tabpanel_scroll(-1))
+
+  set showtabpanel& tabpanelopt&
+  tabonly!
+  %bwipeout!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

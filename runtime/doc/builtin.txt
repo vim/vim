@@ -705,6 +705,8 @@ tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg} [, {arg}])
 				Number	number of current window in tab page
+tabpanel_getinfo()		Dict	get current state of the tabpanel
+tabpanel_scroll({n} [, {opts}])	Number	scroll the tabpanel
 tagfiles()			List	tags files used
 taglist({expr} [, {filename}])	List	list of tags matching {expr}
 tan({expr})			Float	tangent of {expr}
@@ -11881,6 +11883,39 @@ tabpagewinnr({tabarg} [, {arg}])			*tabpagewinnr()*
 		Can also be used as a |method|: >
 			GetTabpage()->tabpagewinnr()
 <
+		Return type: |Number|
+
+
+tabpanel_getinfo()					*tabpanel_getinfo()*
+		Return a |Dictionary| describing the current state of the
+		tabpanel (see |tabpanel|).  The dictionary has these keys:
+			align		"left" or "right"
+			columns		width in screen columns
+			scroll		|TRUE| if 'tabpanelopt' contains "scroll"
+			scrollbar	|TRUE| if a scrollbar is shown
+			offset		current scroll offset in rows
+			total		total number of rows rendered
+			max_offset	largest valid value for "offset"
+
+		The "total" and "max_offset" values are only accurate after
+		the tabpanel has been drawn at least once.
+
+		Return type: dict<any>
+
+
+tabpanel_scroll({n} [, {opts}])				*tabpanel_scroll()*
+		Scroll the tabpanel by {n} rows.  Positive values scroll down
+		(later tabs become visible), negative values scroll up.  The
+		new offset is clamped to the valid range.
+
+		When {opts} is a |Dictionary| and its "absolute" entry is
+		|TRUE|, {n} is used as the new absolute scroll offset
+		instead of a delta.
+
+		Returns |TRUE| if the scroll offset changed, |FALSE|
+		otherwise (for example when 'tabpanelopt' does not contain
+		"scroll", or the offset is already at the requested value).
+
 		Return type: |Number|
 
 
