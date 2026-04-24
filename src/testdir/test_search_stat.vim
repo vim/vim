@@ -411,6 +411,7 @@ func Test_search_stat_and_incsearch()
   call writefile(lines, 'Xsearchstat_inc', 'D')
 
   let buf = RunVimInTerminal('-S Xsearchstat_inc', #{rows: 10})
+  call TermWait(buf, 100)
   call term_sendkeys(buf, "/abc")
   call TermWait(buf)
   " The first 3 chars on line 2 should have highlighting, but the following not
