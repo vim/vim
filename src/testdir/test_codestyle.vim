@@ -46,7 +46,7 @@ def Test_source_files()
     PerformCheck(fname, ';;\+$', 'double semicolon', '')
 
     # some files don't stick to the Vim style rules
-    if fname =~ 'iscygpty.c'
+    if fname =~ 'iscygpty.c' || fname =~ 'strptime.c'
       continue
     endif
 
