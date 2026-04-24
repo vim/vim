@@ -1172,7 +1172,7 @@ main(int argc, char *argv[])
     {
       if (p == 0)
 	{
-	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
+	  addrlen = sprintf(l, decimal_offset ? "%08lu:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
 	  for (c = addrlen; c < LLEN_NO_COLOR; l[c++] = ' ')
 	    ;
