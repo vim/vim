@@ -6325,4 +6325,26 @@ func Test_completion_with_mapped_ctrl_r()
   bwipe!
 endfunc
 
+func Test_ins_complete_ctrl_u_ctrl_o_fall_through()
+  new
+  func! F(findstart, base)
+    return a:findstart ? 0 : ['foobar']
+  endfunc
+  set completefunc=F omnifunc=F completeopt=menuone,noselect
+  inoremap <buffer> <C-U> <C-U>
+  inoremap <buffer> <C-O> <C-O>
+
+  call feedkeys("ihello\<C-X>\<C-U>\<C-U>\<Esc>", 'tx')
+  call assert_equal('', getline(1))
+
+  let g:n = 0
+  call feedkeys("ihi\<C-X>\<C-O>\<C-O>:let g:n=1\<CR>\<Esc>", 'tx')
+  call assert_equal(1, g:n)
+
+  bwipe!
+  set completefunc& omnifunc& completeopt&
+  delfunc F
+  unlet g:n
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
