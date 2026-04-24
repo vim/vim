@@ -1491,6 +1491,27 @@ popup_adjust_position(win_T *wp)
     // backwards.
     // TODO: more accurate wrapping
     wp->w_width = 1;
+    // Pre-scan every buffer line to find the widest one, so the popup width
+    // stays stable when scrolling changes which lines are visible.
+    {
+	linenr_T ln;
+	int saved_w_width = wp->w_width;
+
+	if (wp->w_width < maxwidth)
+	    wp->w_width = maxwidth;
+	for (ln = 1; ln <= wp->w_buffer->b_ml.ml_line_count; ++ln)
+	{
+	    int len = linetabsize(wp, ln) + margin_width;
+
+	    if (wp->w_maxwidth > 0 && len > wp->w_maxwidth)
+		len = wp->w_maxwidth;
+	    if (saved_w_width < len)
+		saved_w_width = len;
+	    if (wp->w_maxwidth > 0 && saved_w_width >= wp->w_maxwidth)
+		break;
+	}
+	wp->w_width = saved_w_width;
+    }
     if (wp->w_firstline < 0)
 	lnum = wp->w_buffer->b_ml.ml_line_count;
     else
