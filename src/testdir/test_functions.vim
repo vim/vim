@@ -328,9 +328,12 @@ func Test_strptime()
 
   call assert_equal(1484653763, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
 
-  " Force DST and check that it's considered
-  let $TZ = 'WINTER0SUMMER,J1,J365'
-  call assert_equal(1484653763 - 3600, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
+  " Force DST and check that it's considered.
+  " MS-Windows CRT tzset() does not parse POSIX TZ strings with DST rules.
+  if !has('win32')
+    let $TZ = 'WINTER0SUMMER,J1,J365'
+    call assert_equal(1484653763 - 3600, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
+  endif
 
   call assert_fails('call strptime()', 'E119:')
   call assert_fails('call strptime("xxx")', 'E119:')

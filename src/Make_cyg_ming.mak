@@ -890,6 +890,7 @@ OBJ = \
 	$(OUTDIR)/textobject.o \
 	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/time.o \
+	$(OUTDIR)/strptime.o \
 	$(OUTDIR)/tuple.o \
 	$(OUTDIR)/typval.o \
 	$(OUTDIR)/ui.o \

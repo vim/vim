@@ -785,6 +785,7 @@ OBJ = \
 	$(OUTDIR)\textobject.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\time.obj \
+	$(OUTDIR)\strptime.obj \
 	$(OUTDIR)\tuple.obj \
 	$(OUTDIR)\typval.obj \
 	$(OUTDIR)\ui.obj \
@@ -1791,6 +1792,8 @@ $(OUTDIR)/textobject.obj: $(OUTDIR) textobject.c $(INCL)
 $(OUTDIR)/textprop.obj: $(OUTDIR) textprop.c $(INCL)
 
 $(OUTDIR)/time.obj: $(OUTDIR) time.c $(INCL)
+
+$(OUTDIR)/strptime.obj: $(OUTDIR) strptime.c $(INCL)
 
 $(OUTDIR)/tuple.obj: $(OUTDIR) tuple.c $(INCL)
 
