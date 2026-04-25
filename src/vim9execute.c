@@ -742,6 +742,9 @@ call_dfunc(
     else
 	ectx->ec_outer_ref = NULL;
 
+    if (ufunc->uf_flags & FC_SANDBOX)
+	++sandbox;
+
     ++ufunc->uf_calls;
 
     // Set execution state to the start of the called function.
@@ -1289,6 +1292,9 @@ func_return(ectx_T *ectx)
 
     if (dfunc->df_defer_var_idx > 0)
 	invoke_defer_funcs(ectx);
+
+    if (dfunc->df_ufunc->uf_flags & FC_SANDBOX)
+	--sandbox;
 
     // No check for uf_refcount being zero, cannot think of a way that would
     // happen.

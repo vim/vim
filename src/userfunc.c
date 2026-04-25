@@ -3038,6 +3038,11 @@ call_user_func(
 
     if (fp->uf_def_status != UF_NOT_COMPILED)
     {
+	if (fp->uf_flags & FC_SANDBOX)
+	{
+	    using_sandbox = TRUE;
+	    ++sandbox;
+	}
 #ifdef FEAT_PROFILE
 	ufunc_T *caller = fc->fc_caller == NULL ? NULL : fc->fc_caller->fc_func;
 #endif
@@ -3050,6 +3055,8 @@ call_user_func(
 	if (call_def_function(fp, argcount, argvars, 0,
 		   funcexe->fe_partial, funcexe->fe_object, fc, rettv) == FAIL)
 	    retval = FCERR_FAILED;
+	if (using_sandbox)
+	    --sandbox;
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
