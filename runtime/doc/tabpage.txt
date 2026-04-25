@@ -1,4 +1,4 @@
-*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Apr 21
+*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Apr 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -484,15 +484,15 @@ groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|
 
 SCROLLING IN THE TABPANEL:				*tabpanel-scroll*
 
-When the total height of the tab list exceeds the visible screen height, the
-tabpanel by default displays the "page" that contains the current tab and
-offers no way to view tabs outside that page.
+When the total height of the tab page list exceeds the visible screen height,
+the tabpanel by default displays the "page" that contains the current tab page
+and offers no way to view tab pages outside that page.
 
 To make the tabpanel scrollable, add "scroll" to 'tabpanelopt': >
 	:set tabpanelopt+=scroll
 
 With "scroll" enabled, mouse wheel events over the tabpanel area scroll the
-tab list up or down.  The scroll step follows the 'mousescroll' setting.
+tab page list up or down.  The scroll step follows the 'mousescroll' setting.
 Wheel events inside the tabpanel area are consumed by the tabpanel and do not
 trigger |<ScrollWheelUp>| or |<ScrollWheelDown>| mappings.
 

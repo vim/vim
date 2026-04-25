@@ -801,4 +801,15 @@ func Test_listener_blockwise_paste()
   bwipe!
 endfunc
 
+func Test_listener_add_in_sandbox()
+  call assert_fails(
+    \ 'sandbox call redraw_listener_add({"on_start": function("tr")})',
+    \ 'E48:')
+  call assert_fails(
+    \ 'sandbox call listener_add({"on_start": function("tr")})',
+    \ 'E48:')
+  call assert_fails('sandbox call listener_flush()', 'E48:')
+  call assert_fails('sandbox call listener_remove(1)', 'E48:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

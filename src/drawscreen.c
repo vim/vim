@@ -3506,6 +3506,9 @@ f_redraw_listener_add(typval_T *argvars, typval_T *rettv)
     bool		got_one = false;
     static int		id;
 
+    if (check_secure())
+	return;
+
     if (redraw_cb_in_progress)
     {
 	emsg(_(e_cannot_add_redraw_listener_in_listener_callback));
