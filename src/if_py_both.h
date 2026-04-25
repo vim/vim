@@ -2230,7 +2230,7 @@ DictionaryAssItem(
 
     if (di == NULL)
     {
-	if (!(di = dictitem_alloc(key)))
+	if (!(di = dictitem_alloc(key, STRLEN(key))))
 	{
 	    Py_XDECREF(todecref);
 	    PyErr_NoMemory();
@@ -2429,7 +2429,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 		    return NULL;
 		}
 
-		di = dictitem_alloc(key);
+		di = dictitem_alloc(key, STRLEN(key));
 
 		Py_XDECREF(todecref);
 
@@ -6704,7 +6704,7 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    return -1;
 	}
 
-	di = dictitem_alloc(key);
+	di = dictitem_alloc(key, STRLEN(key));
 
 	Py_XDECREF(todecref);
 
@@ -6798,7 +6798,7 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    return -1;
 	}
 
-	di = dictitem_alloc(key);
+	di = dictitem_alloc(key, STRLEN(key));
 
 	Py_DECREF(keyObject);
 	Py_XDECREF(todecref);
