@@ -1844,6 +1844,9 @@ getout(int exitval)
 #ifdef FEAT_NETBEANS_INTG
     netbeans_end();
 #endif
+#ifdef FEAT_SOCKETSERVER
+    socketserver_stop();
+#endif
 #ifdef FEAT_CSCOPE
     cs_end();
 #endif
@@ -1910,7 +1913,7 @@ early_arg_scan(mparm_T *parmp UNUSED)
 		gui.dofork = false;
 #  endif
 	}
-#  if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+#  ifdef FEAT_CLIENTSERVER_BACKENDS
 	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
 	{
 	    char_u *arg;
@@ -1920,8 +1923,14 @@ early_arg_scan(mparm_T *parmp UNUSED)
 
 	    if (STRICMP(arg, "socket") == 0)
 		clientserver_method = CLIENTSERVER_METHOD_SOCKET;
+#   ifdef FEAT_X11
 	    else if (STRICMP(arg, "x11") == 0)
 		clientserver_method = CLIENTSERVER_METHOD_X11;
+#   endif
+#   ifdef MSWIN
+	    else if (STRICMP(arg, "mswin") == 0)
+		clientserver_method = CLIENTSERVER_METHOD_MSWIN;
+#   endif
 	    else
 		mainerr(ME_UNKNOWN_OPTION, arg);
 	}
@@ -2247,9 +2256,9 @@ command_line_scan(mparm_T *parmp)
 		    ; // already processed -- no arg
 		else if (STRNICMP(argv[0] + argv_idx, "servername", 10) == 0
 		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0
-#  if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+		       // Don't put this under FEAT_CLIENTSERVER_BACKENDS, just
+		       // let it be ignored. Makes tests less complicated
 		       || STRNICMP(argv[0] + argv_idx, "clientserver", 12) == 0
-#  endif
 		       )
 		{
 		    // already processed -- snatch the following arg
@@ -3747,8 +3756,8 @@ usage(void)
     main_msg(_("-Y\t\t\tDo not connect to Wayland compositor"));
 # endif
 # ifdef FEAT_CLIENTSERVER
-#  if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
-    main_msg(_("--clientserver <socket|x11> Backend for clientserver communication"));
+#  ifdef FEAT_CLIENTSERVER_BACKENDS
+    main_msg(_("--clientserver <socket|x11|mswin> Backend for clientserver communication"));
 #  endif
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));
     main_msg(_("--remote-silent <files>  Same, don't complain if there is no server"));

@@ -402,7 +402,6 @@ func Test_CmdCompletion()
     exe 'delcommand ' .. cmd
   endfor
   delcommand MissingFeature
-  delcommand RunSocketServer
 
   command! DoCmd1 :
   command! DoCmd2 :

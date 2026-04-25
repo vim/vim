@@ -953,9 +953,16 @@
 #endif
 
 /*
- * +socketserver	 Use UNIX domain sockets for clientserver communication
+ * The +channel feature requires +eval.
  */
-#if defined(UNIX) && defined(WANT_SOCKETSERVER)
+#if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
+# undef FEAT_JOB_CHANNEL
+#endif
+
+/*
+ * +socketserver	 Use channels for clientserver communication
+ */
+#if (defined(UNIX) || defined(MSWIN)) && defined(FEAT_JOB_CHANNEL)
 # define FEAT_SOCKETSERVER
 #endif
 
@@ -966,6 +973,9 @@
 #if (defined(MSWIN) || defined(FEAT_XCLIPBOARD) || defined(FEAT_SOCKETSERVER)) \
     && defined(FEAT_EVAL)
 # define FEAT_CLIENTSERVER
+# if defined(FEAT_SOCKETSERVER) && (defined(FEAT_XCLIPBOARD) || defined(MSWIN))
+#  define FEAT_CLIENTSERVER_BACKENDS
+# endif
 #endif
 
 /*
@@ -1052,14 +1062,6 @@
  * +terminfo
  * +tgetent
  */
-
-
-/*
- * The +channel feature requires +eval.
- */
-#if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
-# undef FEAT_JOB_CHANNEL
-#endif
 
 /*
  * The Netbeans feature requires +eval and +job_channel

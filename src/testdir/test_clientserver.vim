@@ -1,5 +1,6 @@
 " Tests for the +clientserver feature.
 
+source util/screendump.vim
 CheckFeature job
 
 if !has('clientserver')
@@ -9,10 +10,6 @@ endif
 CheckFeature clientserver
 
 source util/shared.vim
-
-" Unlike X11, we need the socket server running if we want to send commands to
-" a server via sockets.
-RunSocketServer
 
 func Check_X11_Connection()
   if has('x11')
@@ -192,9 +189,9 @@ func Test_client_server()
 
   " When using socket server, server id is not a number, but the path to the
   " socket.
-  if has('socketserver') && !has('X11')
-    call assert_fails("let x = remote_read('vim/10')", ['E573:.*vim/10'])
-    call assert_fails("call server2client('a/b/c', 'xyz')", ['E573:.*a/b/c'])
+  if (has('socketserver') && !has('X11') && !has('win32')) || index(v:argv, "socket") != -1
+    call assert_fails("let x = remote_read('vim/10')", ['E1564:'])
+    call assert_fails("call server2client('x/b/c', 'xyz')", ['E1564:'])
   else
     call assert_fails("let x = remote_read('vim10')",
           \ has('unix') ? ['E573:.*vim10'] : 'E277:')
@@ -246,89 +243,65 @@ func Test_client_server_stopinsert()
   endtry
 endfunc
 
-" Test if socket server and X11 backends can be chosen and work properly.
-func Test_client_server_x11_and_socket_server()
-  CheckNotMSWindows
-  CheckFeature socketserver
-  CheckFeature x11
+" Test if socket server, X11, and mswin backends can be chosen and work properly.
+func Test_client_server_multiple_backends()
+    CheckFeature socketserver
 
-  let g:test_is_flaky = 1
-  let cmd = GetVimCommand()
+    let g:test_is_flaky = 1
+    let cmd = GetVimCommand()
 
-  if cmd == ''
-    throw 'GetVimCommand() failed'
-  endif
-  call Check_X11_Connection()
-
-  let types = ['socket', 'x11']
-
-  for type in types
-    let name = 'VIMTEST_' .. toupper(type)
-    let actual_cmd = cmd .. ' --clientserver ' .. type
-    let actual_cmd .= ' --servername ' .. name
-    let job = job_start(actual_cmd, {'stoponexit': 'kill', 'out_io': 'null'})
-
-    call WaitForAssert({-> assert_equal("run", job_status(job))})
-    call WaitForAssert({-> assert_match(name, system(cmd .. ' --clientserver ' .. type .. ' --serverlist'))})
-
-    call assert_match(name, system(actual_cmd .. ' --remote-expr "v:servername"'))
-
-    call system(actual_cmd .. " --remote-expr 'execute(\"qa!\")'")
-    try
-      call WaitForAssert({-> assert_equal("dead", job_status(job))})
-    finally
-      if job_status(job) != 'dead'
-        call assert_report('Server did not exit')
-        call job_stop(job, 'kill')
-      endif
-    endtry
-  endfor
-endfunc
-
-" Test if socket server works in the GUI
-func Test_client_server_socket_server_gui()
-  CheckNotMSWindows
-  CheckFeature socketserver
-  CheckFeature gui_gtk
-
-  let g:test_is_flaky = 1
-  let cmd = GetVimCommand()
-
-  if cmd == ''
-    throw 'GetVimCommand() failed'
-  endif
-  call Check_X11_Connection()
-
-  let name = 'VIMTESTSOCKET'
-  let cmd .= ' --clientserver socket'
-  let cmd .= ' --servername ' .. name
-
-  let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
-
-  call WaitForAssert({-> assert_equal("run", job_status(job))})
-  call WaitForAssert({-> assert_match(name, system(cmd .. ' --serverlist'))})
-
-  call system(cmd .. " --remote-expr 'execute(\"gui\")'")
-
-  call assert_match('1', system(cmd .. " --remote-expr 'has(\"gui_running\")'"))
-  call assert_match(name, system(cmd .. ' --remote-expr "v:servername"'))
-
-  call system(cmd .. " --remote-expr 'execute(\"qa!\")'")
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(job))})
-  finally
-    if job_status(job) != 'dead'
-      call assert_report('Server did not exit')
-      call job_stop(job, 'kill')
+    if cmd == ''
+      throw 'GetVimCommand() failed'
     endif
-  endtry
-endfunc
+    call Check_X11_Connection()
+
+    let types = [
+          \ ['socket', "channel:2000"],
+          \ ['x11', "TEST"],
+          \ ['mswin', "TEST"],
+          \ ]
+
+    for [type, expected] in types
+      if (type == 'x11' && (!has('x11') || !empty($WAYLAND_DISPLAY) || empty($DISPLAY))
+            \ || (type == 'mswin' && !has('win32')))
+        continue
+      endif
+      if has('win32') && has('gui_running')
+        " Windows gVim --remote-expr shows a dialog window, which blocks tests
+        " from running. Using --gui-dialog-file does not seem to work either.
+        continue
+      endif
+
+      let actual_cmd = cmd .. ' --clientserver ' .. type
+      let actual_cmd ..= ' --servername ' .. expected
+      let job = job_start(actual_cmd, {'stoponexit': 'kill', 'out_io': 'null'})
+
+      call WaitForAssert({-> assert_equal("run", job_status(job))})
+      call assert_match(expected, system(actual_cmd .. ' --remote-expr "v:servername"'))
+
+      " On Windows using --remote-expr causes E282, possibly due to some shell
+      " escaping quirk? When gtk gui is running, using system() seems to cause a
+      " deadlock when using the x11 backend only... don't use it for now...
+      if has('win32') || has('gui_running')
+        call job_stop(job, 'kill')
+      else
+        call system(actual_cmd .. " --remote-expr 'execute(\"qa!\")'")
+      endif
+      try
+        call WaitForAssert({-> assert_equal("dead", job_status(job))})
+      finally
+        if job_status(job) != 'dead'
+          call assert_report('Server did not exit')
+          call job_stop(job, 'kill')
+        endif
+      endtry
+    endfor
+  endfunc
 
 " Test if custom paths work for socketserver
-func Test_client_socket_server_custom_path()
-  CheckNotMSWindows
+func Test_client_server_socketserver_custom_path()
   CheckFeature socketserver
-  CheckNotFeature x11
+  CheckNotMSWindows
 
   let g:test_is_flaky = 1
   let cmd = GetVimCommand()
@@ -342,7 +315,7 @@ func Test_client_socket_server_custom_path()
   let paths = ['./' .. name, '../testdir/' .. name, getcwd(-1) .. '/' .. name]
 
   for path in paths
-    let actual = cmd .. ' --servername ' .. path
+    let actual = cmd .. ' --clientserver socket --servername ' .. path
 
     let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
 
@@ -359,6 +332,170 @@ func Test_client_socket_server_custom_path()
       endif
     endtry
   endfor
+endfunc
+
+" Test if "channel:" prefix works correctly to use channel address for
+" socketserver.
+func Test_client_server_socketserver_address()
+  CheckFeature socketserver
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --clientserver socket --servername channel:2000'
+
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  if !has('win32') || !has('gui_running')
+    " Does not work with gVim on Windows because it shows an OK dialog box which
+    " blocks tests from running
+      call assert_match('channel:2000', system(actual .. ' --remote-expr "v:servername"'))
+  endif
+
+  if has('win32')
+    call job_stop(job, 'kill')
+  else
+    call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  endif
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
+" Test if --remote-wait works properly with multiple files
+func Test_client_server_multiple_remote_wait()
+  CheckRunVimInTerminal
+
+  call Check_X11_Connection()
+
+  let buf = RunVimInTerminal('--servername TEST', {'rows': 8})
+  call TermWait(buf)
+
+  call writefile(["1"], 'XRemoteOne', 'D')
+  call writefile(["2"], 'XRemoteTwo', 'D')
+
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' -n --servername TEST  --remote-wait ./XRemoteOne ./XRemoteTwo'
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+
+  sleep 500m " Wait for server to receive request
+  call assert_equal("run", job_status(job))
+
+  call term_sendkeys(buf, "\<Esc>:next\<CR>")
+  call TermWait(buf)
+  call assert_equal("run", job_status(job))
+
+  call term_sendkeys(buf, "\<Esc>:q!\<CR>") " Don't use qa! because we only want to quit one file
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+endfunc
+
+" Check if socket is removed even if Vim changes directory
+func Test_client_server_socketserver_chdir()
+  CheckFeature socketserver
+  CheckRunVimInTerminal
+  CheckNotMSWindows
+
+  let buf = RunVimInTerminal('--clientserver socket --servername ./TEST',
+        \ {'rows': 8})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:cd ../\<CR>")
+  call StopVimInTerminal(buf)
+
+  call assert_equal("", glob("./TEST"))
+endfunc
+
+func DummyServerCallback(ch, addr)
+  let msg = json_encode(#{type: "ver"}) .. "\n"
+  call ch_sendraw(a:ch, msg)
+endfunc
+
+" Test if commands with different version are ignored and handled properly.
+func Test_client_server_socketserver_version_mismatch()
+  CheckFeature socketserver
+  CheckRunVimInTerminal
+  CheckScreendump
+
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let buf = RunVimInTerminal('--clientserver socket --servername
+        \ channel:2000', {'rows': 8})
+  call TermWait(buf)
+
+  let ch = ch_open('localhost:2000', #{mode: 'nl'})
+  let msg = json_encode(#{
+        \ type: "expr",
+        \ str: "v:servername",
+        \ version: 999999999
+        \ }) .. "\n"
+
+  call ch_sendraw(ch, msg)
+  let resp = ch_readraw(ch)
+
+  call assert_equal(#{type: "ver"}, json_decode(resp))
+
+  call StopVimInTerminal(buf)
+
+  let ch = ch_listen("2000", #{
+        \ mode: 'nl',
+        \ callback: function('DummyServerCallback')
+        \ })
+
+  let buf = RunVimInTerminal('--clientserver socket --servername channel:3000', {'rows': 8})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>:echo remote_expr('channel:2000', 'v:servername', '', 1)\<CR>")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_clientserver_1', #{wait: 3000})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test if invalid messages do not crash Vim socketserver.
+func Test_clientserver_socketserver_invalid_msg()
+  CheckFeature socketserver
+  CheckRunVimInTerminal
+
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let buf = RunVimInTerminal('--clientserver socket --servername
+        \ channel:3000', {'rows': 8})
+  call TermWait(buf)
+
+  let ch = ch_open('localhost:3000', #{mode: 'nl'})
+
+  call ch_sendraw(ch, "wjdaljdsjalsj\n")
+  call ch_sendraw(ch, "{\"type\": \"unknown\"}\n")
+
+  call assert_match("channel:3000", system(cmd .. " --clientserver socket --servername channel:3000 --remote-expr 'v:servername'"))
+  call assert_equal("running", term_getstatus(buf))
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " Uncomment this line to get a debugging log
