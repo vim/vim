@@ -322,6 +322,7 @@ dict_copy(dict_T *orig, int deep, int top, int copyID)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    --todo;
+
 	    di = dictitem_alloc(hi->hi_key, STRLEN(hi->hi_key));
 	    if (di == NULL)
 		break;

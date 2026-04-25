@@ -5099,7 +5099,11 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
-	    DICT_ADD_STRING_LEN(d, "jsonrpc", (char_u *)"2.0", STRLEN_LITERAL("2.0"));
+	{
+	    string_T	s = STR_LITERAL_INIT("2.0");
+
+	    DICT_ADD_STRING_LEN(d, "jsonrpc", s.string, (int)s.length);
+	}
 	text = json_encode_lsp_msg(&argvars[1]);
     }
     else
