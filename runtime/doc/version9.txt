@@ -52616,9 +52616,8 @@ Other ~
 - Allow mouse clickable regions in the 'statusline', 'tabline' and the
   'tabpanel' using the |stl-%[FuncName]| atom.
 - Enable reflow support in the |:terminal|.
-- Added "scroll" and "scrollbar" sub-options to 'tabpanelopt' so the
-  tabpanel can scroll when the tab list exceeds the visible screen
-  height.
+- Added "scroll" and "scrollbar" sub-options to 'tabpanelopt' so the tabpanel
+  can scroll when the tab page list exceeds the visible screen height.
 
 Platform specific ~
 -----------------
