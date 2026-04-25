@@ -2103,8 +2103,8 @@ def s:check_previewpopup(expected_title: string)
   set previewpopup&
 enddef
 
-" Test for the 'previewpopup' option
 def Test_previewpopup()
+  # Test for the 'previewpopup' option
   CheckFeature quickfix
   set previewpopup=height:10,width:60
   pedit Xppfile
