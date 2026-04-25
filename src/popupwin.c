@@ -3619,22 +3619,22 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     dict = rettv->vval.v_dict;
     hash_lock_size(&dict->dv_hashtab, 11);
 
-    dict_add_number(dict, "line", wp->w_winrow + 1);
-    dict_add_number(dict, "col", wp->w_wincol + 1);
-    dict_add_number(dict, "width", wp->w_width + left_extra
+    DICT_ADD_NUMBER(dict, "line", wp->w_winrow + 1);
+    DICT_ADD_NUMBER(dict, "col", wp->w_wincol + 1);
+    DICT_ADD_NUMBER(dict, "width", wp->w_width + left_extra
 	    + wp->w_popup_border[1] + wp->w_popup_padding[1]);
-    dict_add_number(dict, "height", wp->w_height + top_extra
+    DICT_ADD_NUMBER(dict, "height", wp->w_height + top_extra
 	    + wp->w_popup_border[2] + wp->w_popup_padding[2]);
 
-    dict_add_number(dict, "core_line", wp->w_winrow + 1 + top_extra);
-    dict_add_number(dict, "core_col", wp->w_wincol + 1 + left_extra);
-    dict_add_number(dict, "core_width", wp->w_width);
-    dict_add_number(dict, "core_height", wp->w_height);
+    DICT_ADD_NUMBER(dict, "core_line", wp->w_winrow + 1 + top_extra);
+    DICT_ADD_NUMBER(dict, "core_col", wp->w_wincol + 1 + left_extra);
+    DICT_ADD_NUMBER(dict, "core_width", wp->w_width);
+    DICT_ADD_NUMBER(dict, "core_height", wp->w_height);
 
-    dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
-    dict_add_number(dict, "firstline", wp->w_topline);
-    dict_add_number(dict, "lastline", wp->w_botline - 1);
-    dict_add_number(dict, "visible",
+    DICT_ADD_NUMBER(dict, "scrollbar", wp->w_has_scrollbar);
+    DICT_ADD_NUMBER(dict, "firstline", wp->w_topline);
+    DICT_ADD_NUMBER(dict, "lastline", wp->w_botline - 1);
+    DICT_ADD_NUMBER(dict, "visible",
 	    win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
 
     hash_unlock(&dict->dv_hashtab);
@@ -3684,7 +3684,7 @@ f_popup_locate(typval_T *argvars, typval_T *rettv)
  * For popup_getoptions(): add a "border" or "padding" entry to "dict".
  */
     static void
-get_padding_border(dict_T *dict, int *array, char *name)
+get_padding_border(dict_T *dict, int *array, char_u *name, size_t namelen)
 {
     list_T  *list;
     int	    i;
@@ -3696,7 +3696,7 @@ get_padding_border(dict_T *dict, int *array, char *name)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, name, list);
+    dict_add_list(dict, name, namelen, list);
     if (array[0] != 1 || array[1] != 1 || array[2] != 1 || array[3] != 1)
 	for (i = 0; i < 4; ++i)
 	    list_append_number(list, array[i]);
@@ -3723,7 +3723,7 @@ get_borderhighlight(dict_T *dict, win_T *wp)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "borderhighlight", list);
+    DICT_ADD_LIST(dict, "borderhighlight", list);
     // When all highlights are NULL (cleared to empty list), return empty list.
     if (i == 4)
 	return;
@@ -3752,7 +3752,7 @@ get_borderchars(dict_T *dict, win_T *wp)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "borderchars", list);
+    DICT_ADD_LIST(dict, "borderchars", list);
     for (i = 0; i < 8; ++i)
     {
 	len = mb_char2bytes(wp->w_border_char[i], buf);
@@ -3771,7 +3771,7 @@ get_moved_list(dict_T *dict, win_T *wp)
     list = list_alloc();
     if (list != NULL)
     {
-	dict_add_list(dict, "moved", list);
+	DICT_ADD_LIST(dict, "moved", list);
 	list_append_number(list, wp->w_popup_lnum);
 	list_append_number(list, wp->w_popup_mincol);
 	list_append_number(list, wp->w_popup_maxcol);
@@ -3780,7 +3780,7 @@ get_moved_list(dict_T *dict, win_T *wp)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "mousemoved", list);
+    DICT_ADD_LIST(dict, "mousemoved", list);
     list_append_number(list, wp->w_popup_mouse_row);
     list_append_number(list, wp->w_popup_mouse_mincol);
     list_append_number(list, wp->w_popup_mouse_maxcol);
@@ -3797,6 +3797,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
     tabpage_T	*tp;
     int		i;
+    string_T	name;
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
@@ -3810,16 +3811,16 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	return;
 
     dict = rettv->vval.v_dict;
-    dict_add_number(dict, "line", wp->w_wantline);
-    dict_add_number(dict, "col", wp->w_wantcol);
-    dict_add_number(dict, "minwidth", wp->w_minwidth);
-    dict_add_number(dict, "minheight", wp->w_minheight);
-    dict_add_number(dict, "maxheight", wp->w_maxheight);
-    dict_add_number(dict, "maxwidth", wp->w_maxwidth);
-    dict_add_number(dict, "firstline", wp->w_firstline);
-    dict_add_number(dict, "scrollbar", wp->w_want_scrollbar);
-    dict_add_number(dict, "zindex", wp->w_zindex);
-    dict_add_number(dict, "fixed", wp->w_popup_fixed);
+    DICT_ADD_NUMBER(dict, "line", wp->w_wantline);
+    DICT_ADD_NUMBER(dict, "col", wp->w_wantcol);
+    DICT_ADD_NUMBER(dict, "minwidth", wp->w_minwidth);
+    DICT_ADD_NUMBER(dict, "minheight", wp->w_minheight);
+    DICT_ADD_NUMBER(dict, "maxheight", wp->w_maxheight);
+    DICT_ADD_NUMBER(dict, "maxwidth", wp->w_maxwidth);
+    DICT_ADD_NUMBER(dict, "firstline", wp->w_firstline);
+    DICT_ADD_NUMBER(dict, "scrollbar", wp->w_want_scrollbar);
+    DICT_ADD_NUMBER(dict, "zindex", wp->w_zindex);
+    DICT_ADD_NUMBER(dict, "fixed", wp->w_popup_fixed);
     if (wp->w_popup_prop_type && win_valid_any_tab(wp->w_popup_prop_win))
     {
 	proptype_T *pt = text_prop_type_by_id(
@@ -3827,32 +3828,32 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 		wp->w_popup_prop_type);
 
 	if (pt != NULL)
-	    dict_add_string(dict, "textprop", pt->pt_name);
-	dict_add_number(dict, "textpropwin", wp->w_popup_prop_win->w_id);
-	dict_add_number(dict, "textpropid", wp->w_popup_prop_id);
+	    DICT_ADD_STRING(dict, "textprop", pt->pt_name);
+	DICT_ADD_NUMBER(dict, "textpropwin", wp->w_popup_prop_win->w_id);
+	DICT_ADD_NUMBER(dict, "textpropid", wp->w_popup_prop_id);
     }
-    dict_add_string(dict, "title", wp->w_popup_title);
-    dict_add_number(dict, "wrap", wp->w_p_wrap);
-    dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
-    dict_add_number(dict, "dragall",
+    DICT_ADD_STRING(dict, "title", wp->w_popup_title);
+    DICT_ADD_NUMBER(dict, "wrap", wp->w_p_wrap);
+    DICT_ADD_NUMBER(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
+    DICT_ADD_NUMBER(dict, "dragall",
 	    (wp->w_popup_flags & POPF_DRAGALL) != 0);
-    dict_add_number(dict, "mapping",
+    DICT_ADD_NUMBER(dict, "mapping",
 	    (wp->w_popup_flags & POPF_MAPPING) != 0);
-    dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
-    dict_add_number(dict, "posinvert",
+    DICT_ADD_NUMBER(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
+    DICT_ADD_NUMBER(dict, "posinvert",
 	    (wp->w_popup_flags & POPF_POSINVERT) != 0);
     // Return opacity (0-100) by converting from internal blend value
-    dict_add_number(dict, "opacity",
+    DICT_ADD_NUMBER(dict, "opacity",
 	    (wp->w_popup_flags & POPF_OPACITY) ? 100 - wp->w_popup_blend : 100);
-    dict_add_number(dict, "cursorline",
+    DICT_ADD_NUMBER(dict, "cursorline",
 	    (wp->w_popup_flags & POPF_CURSORLINE) != 0);
-    dict_add_string(dict, "highlight", syn_id2name(hlf_get_id(wp, HLF_WIN)));
-    dict_add_string(dict, "highlights", wp->w_p_whl);
+    DICT_ADD_STRING(dict, "highlight", syn_id2name(hlf_get_id(wp, HLF_WIN)));
+    DICT_ADD_STRING(dict, "highlights", wp->w_p_whl);
     if (wp->w_scrollbar_highlight != NULL)
-	dict_add_string(dict, "scrollbarhighlight",
+	DICT_ADD_STRING(dict, "scrollbarhighlight",
 		wp->w_scrollbar_highlight);
     if (wp->w_thumb_highlight != NULL)
-	dict_add_string(dict, "thumbhighlight", wp->w_thumb_highlight);
+	DICT_ADD_STRING(dict, "thumbhighlight", wp->w_thumb_highlight);
 
     // find the tabpage that holds this popup
     i = 1;
@@ -3871,37 +3872,40 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	i = -1;  // must be global
     else if (tp == curtab)
 	i = 0;
-    dict_add_number(dict, "tabpage", i);
+    DICT_ADD_NUMBER(dict, "tabpage", i);
 
-    get_padding_border(dict, wp->w_popup_padding, "padding");
-    get_padding_border(dict, wp->w_popup_border, "border");
+    STR_LITERAL_SET(name, "padding");
+    get_padding_border(dict, wp->w_popup_padding, name.string, name.length);
+    STR_LITERAL_SET(name, "border");
+    get_padding_border(dict, wp->w_popup_border, name.string, name.length);
     get_borderhighlight(dict, wp);
     get_borderchars(dict, wp);
     get_moved_list(dict, wp);
 
     if (wp->w_filter_cb.cb_name != NULL)
-	dict_add_callback(dict, "filter", &wp->w_filter_cb);
+	DICT_ADD_CALLBACK(dict, "filter", &wp->w_filter_cb);
     if (wp->w_close_cb.cb_name != NULL)
-	dict_add_callback(dict, "callback", &wp->w_close_cb);
+	DICT_ADD_CALLBACK(dict, "callback", &wp->w_close_cb);
 
     for (i = 0; i < (int)ARRAY_LENGTH(poppos_entries); ++i)
 	if (wp->w_popup_pos == poppos_entries[i].pp_val)
 	{
-	    dict_add_string_len(dict, "pos",
+	    DICT_ADD_STRING_LEN(dict, "pos",
 		poppos_entries[i].pp_name.string,
 		(int)poppos_entries[i].pp_name.length);
 	    break;
 	}
 
     if (wp->w_popup_close == POPCLOSE_BUTTON)
-	dict_add_string_len(dict, "close", (char_u *)"button", STRLEN_LITERAL("button"));
+	STR_LITERAL_SET(name, "button");
     else if (wp->w_popup_close == POPCLOSE_CLICK)
-	dict_add_string_len(dict, "close", (char_u *)"click", STRLEN_LITERAL("click"));
+	STR_LITERAL_SET(name, "click");
     else
-	dict_add_string_len(dict, "close", (char_u *)"none", STRLEN_LITERAL("none"));
+	STR_LITERAL_SET(name, "none");
+    DICT_ADD_STRING_LEN(dict, "close", name.string, (int)name.length);
 
 #if defined(FEAT_TIMERS)
-    dict_add_number(dict, "time", wp->w_popup_timer != NULL
+    DICT_ADD_NUMBER(dict, "time", wp->w_popup_timer != NULL
 	    ?  (long)wp->w_popup_timer->tr_interval : 0L);
 #endif
 }

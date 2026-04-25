@@ -1372,7 +1372,8 @@ item_end:
 
 		if (cur_item != NULL)
 		{
-		    dictitem_T *di = dictitem_alloc(top_item->jd_key);
+		    dictitem_T *di = dictitem_alloc(top_item->jd_key,
+			STRLEN(top_item->jd_key));
 
 		    clear_tv(&top_item->jd_key_tv);
 		    if (di == NULL)

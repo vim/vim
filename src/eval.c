@@ -2496,7 +2496,7 @@ set_var_lval(
 		return;
 
 	    // Need to add an item to the Dictionary.
-	    di = dictitem_alloc(lp->ll_newkey);
+	    di = dictitem_alloc(lp->ll_newkey, STRLEN(lp->ll_newkey));
 	    if (di == NULL)
 		return;
 	    if (dict_add(lp->ll_tv->vval.v_dict, di) == FAIL)

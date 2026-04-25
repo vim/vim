@@ -37,13 +37,13 @@ static hashtab_T	compat_hashtab;
 #define VV_RO		2	// read-only
 #define VV_RO_SBX	4	// read-only in the sandbox
 
-#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}
+#define VV_NAME(s, t)	STR_LITERAL_INIT(s), {{t, 0, {0}}, 0, STRLEN_LITERAL(s), {(s)}}
 
 typedef struct vimvar vimvar_T;
 
 static struct vimvar
 {
-    char	*vv_name;	// name of variable, without v:
+    string_T	vv_name;	// name of variable, without v:
     dictitem16_T vv_di;		// value and name for key (max 16 chars!)
     type_T	*vv_type;	// type or NULL
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
@@ -216,12 +216,11 @@ evalvars_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
-	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
+	if (p->vv_name.length > DICTITEM16_KEY_LEN)
 	{
 	    iemsg("Name too long, increase size of dictitem16_T");
 	    getout(1);
 	}
-	STRCPY(p->vv_di.di_key, p->vv_name);
 	if (p->vv_flags & VV_RO)
 	    p->vv_di.di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	else if (p->vv_flags & VV_RO_SBX)
@@ -2667,7 +2666,7 @@ get_user_var_name(expand_T *xp, int idx)
 
     // v: variables
     if (vidx < VV_LEN)
-	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name);
+	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name.string);
 
     VIM_CLEAR(varnamebuf);
     varnamebuflen = 0;
@@ -2755,7 +2754,7 @@ set_vim_var_nr(int idx, varnumber_T val)
     char *
 get_vim_var_name(int idx)
 {
-    return vimvars[idx].vv_name;
+    return (char *)vimvars[idx].vv_name.string;
 }
 
 /*
@@ -2791,12 +2790,12 @@ set_vim_var_tv(int idx, typval_T *tv)
     // VV_RO is also checked when compiling, but let's check here as well.
     if (vimvars[idx].vv_flags & VV_RO)
     {
-	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name);
+	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name.string);
 	return FAIL;
     }
     if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
     {
-	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name);
+	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name.string);
 	return FAIL;
     }
     clear_tv(&vimvars[idx].vv_di.di_tv);
@@ -3838,6 +3837,7 @@ init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope)
     dict_var->di_tv.v_type = VAR_DICT;
     dict_var->di_tv.v_lock = VAR_FIXED;
     dict_var->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+    dict_var->di_keylen = 0;
     dict_var->di_key[0] = NUL;
 }
 
@@ -4289,6 +4289,8 @@ set_var_const(
     }
     else
     {
+	size_t	varnamelen;
+
 	// Item not found, check if a function already exists.
 	if (is_script_local && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
 	       && lookup_scriptitem(name, STRLEN(name), FALSE, NULL) == OK)
@@ -4321,10 +4323,12 @@ set_var_const(
 			|| STRNCMP(name, "g:", 2) == 0 || var_in_autoload))
 	    goto failed;
 
-	di = alloc(offsetof(dictitem_T, di_key) + STRLEN(varname) + 1);
+	varnamelen = STRLEN(varname);
+	di = alloc(offsetof(dictitem_T, di_key) + varnamelen + 1);
 	if (di == NULL)
 	    goto failed;
 	STRCPY(di->di_key, varname);
+	di->di_keylen = varnamelen;
 	if (hash_add(ht, DI2HIKEY(di), "add variable") == FAIL)
 	{
 	    vim_free(di);

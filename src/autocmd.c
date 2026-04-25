@@ -3460,18 +3460,18 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		    return;
 		}
 
-		if (dict_add_string_len(event_dict, "event",
+		if (DICT_ADD_STRING_LEN(event_dict, "event",
 			event_name.string, (int)event_name.length) == FAIL
-			|| dict_add_string_len(event_dict, "group",
+			|| DICT_ADD_STRING_LEN(event_dict, "group",
 			    group_name.string, (int)group_name.length) == FAIL
 			|| (ap->buflocal_nr != 0
-				&& (dict_add_number(event_dict, "bufnr",
+				&& (DICT_ADD_NUMBER(event_dict, "bufnr",
 						    ap->buflocal_nr) == FAIL))
-			|| dict_add_string(event_dict, "pattern",
+			|| DICT_ADD_STRING(event_dict, "pattern",
 							      ap->pat) == FAIL
-			|| dict_add_string(event_dict, "cmd", ac->cmd) == FAIL
-			|| dict_add_bool(event_dict, "once", ac->once) == FAIL
-			|| dict_add_bool(event_dict, "nested",
+			|| DICT_ADD_STRING(event_dict, "cmd", ac->cmd) == FAIL
+			|| DICT_ADD_BOOL(event_dict, "once", ac->once) == FAIL
+			|| DICT_ADD_BOOL(event_dict, "nested",
 							   ac->nested) == FAIL)
 		{
 		    vim_free(pat);

@@ -3599,15 +3599,21 @@ cursor_pos_info(dict_T *dict)
 #if defined(FEAT_EVAL)
     if (dict != NULL)
     {
-	dict_add_number(dict, "words", word_count);
-	dict_add_number(dict, "chars", char_count);
-	dict_add_number(dict, "bytes", byte_count + bom_count);
-	dict_add_number(dict, VIsual_active ? "visual_bytes" : "cursor_bytes",
-		byte_count_cursor);
-	dict_add_number(dict, VIsual_active ? "visual_chars" : "cursor_chars",
-		char_count_cursor);
-	dict_add_number(dict, VIsual_active ? "visual_words" : "cursor_words",
-		word_count_cursor);
+	DICT_ADD_NUMBER(dict, "words", word_count);
+	DICT_ADD_NUMBER(dict, "chars", char_count);
+	DICT_ADD_NUMBER(dict, "bytes", byte_count + bom_count);
+	if (VIsual_active)
+	{
+	    DICT_ADD_NUMBER(dict, "visual_bytes", byte_count_cursor);
+	    DICT_ADD_NUMBER(dict, "visual_chars", char_count_cursor);
+	    DICT_ADD_NUMBER(dict, "visual_words", word_count_cursor);
+	}
+	else
+	{
+	    DICT_ADD_NUMBER(dict, "cursor_bytes", byte_count_cursor);
+	    DICT_ADD_NUMBER(dict, "cursor_chars", char_count_cursor);
+	    DICT_ADD_NUMBER(dict, "cursor_words", word_count_cursor);
+	}
     }
 #endif
 }

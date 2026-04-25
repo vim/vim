@@ -1864,6 +1864,7 @@ struct dictitem_S
 {
     typval_T	di_tv;		// type and value of the variable
     char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
+    size_t	di_keylen;	// length of di_key (excluding the NUL)
     char_u	di_key[1];	// key (actually longer!)
 };
 typedef struct dictitem_S dictitem_T;
@@ -1877,6 +1878,7 @@ struct dictitem16_S
 {
     typval_T	di_tv;		// type and value of the variable
     char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
+    size_t	di_keylen;	// length of di_key (excluding the NUL)
     char_u	di_key[DICTITEM16_KEY_LEN + 1];	// key
 };
 typedef struct dictitem16_S dictitem16_T;

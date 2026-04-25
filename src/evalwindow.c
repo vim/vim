@@ -414,34 +414,34 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     // make sure w_botline is valid
     validate_botline_win(wp);
 
-    dict_add_number(dict, "tabnr", tpnr);
-    dict_add_number(dict, "winnr", winnr);
-    dict_add_number(dict, "winid", wp->w_id);
-    dict_add_number(dict, "height", wp->w_height);
-    dict_add_number(dict, "status_height", wp->w_status_height);
-    dict_add_number(dict, "winrow", wp->w_winrow + 1);
-    dict_add_number(dict, "topline", wp->w_topline);
-    dict_add_number(dict, "botline", wp->w_botline - 1);
+    DICT_ADD_NUMBER(dict, "tabnr", tpnr);
+    DICT_ADD_NUMBER(dict, "winnr", winnr);
+    DICT_ADD_NUMBER(dict, "winid", wp->w_id);
+    DICT_ADD_NUMBER(dict, "height", wp->w_height);
+    DICT_ADD_NUMBER(dict, "status_height", wp->w_status_height);
+    DICT_ADD_NUMBER(dict, "winrow", wp->w_winrow + 1);
+    DICT_ADD_NUMBER(dict, "topline", wp->w_topline);
+    DICT_ADD_NUMBER(dict, "botline", wp->w_botline - 1);
 # ifdef FEAT_MENU
-    dict_add_number(dict, "winbar", wp->w_winbar_height);
+    DICT_ADD_NUMBER(dict, "winbar", wp->w_winbar_height);
 # endif
-    dict_add_number(dict, "width", wp->w_width);
-    dict_add_number(dict, "wincol", wp->w_wincol + 1);
-    dict_add_number(dict, "textoff", win_col_off(wp));
-    dict_add_number(dict, "bufnr", wp->w_buffer->b_fnum);
-    dict_add_number(dict, "leftcol", wp->w_leftcol);
+    DICT_ADD_NUMBER(dict, "width", wp->w_width);
+    DICT_ADD_NUMBER(dict, "wincol", wp->w_wincol + 1);
+    DICT_ADD_NUMBER(dict, "textoff", win_col_off(wp));
+    DICT_ADD_NUMBER(dict, "bufnr", wp->w_buffer->b_fnum);
+    DICT_ADD_NUMBER(dict, "leftcol", wp->w_leftcol);
 
 # ifdef FEAT_TERMINAL
-    dict_add_number(dict, "terminal", bt_terminal(wp->w_buffer));
+    DICT_ADD_NUMBER(dict, "terminal", bt_terminal(wp->w_buffer));
 # endif
 # ifdef FEAT_QUICKFIX
-    dict_add_number(dict, "quickfix", bt_quickfix(wp->w_buffer));
-    dict_add_number(dict, "loclist",
+    DICT_ADD_NUMBER(dict, "quickfix", bt_quickfix(wp->w_buffer));
+    DICT_ADD_NUMBER(dict, "loclist",
 		      (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL));
 # endif
 
     // Add a reference to window variables
-    dict_add_dict(dict, "variables", wp->w_vars);
+    DICT_ADD_DICT(dict, "variables", wp->w_vars);
 
     return dict;
 }
@@ -461,18 +461,18 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     if (dict == NULL)
 	return NULL;
 
-    dict_add_number(dict, "tabnr", tp_idx);
+    DICT_ADD_NUMBER(dict, "tabnr", tp_idx);
 
     l = list_alloc();
     if (l != NULL)
     {
 	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    list_append_number(l, (varnumber_T)wp->w_id);
-	dict_add_list(dict, "windows", l);
+	DICT_ADD_LIST(dict, "windows", l);
     }
 
     // Make a reference to tabpage variables
-    dict_add_dict(dict, "variables", tp->tp_vars);
+    DICT_ADD_DICT(dict, "variables", tp->tp_vars);
 
     return dict;
 }
@@ -1296,18 +1296,18 @@ f_winsaveview(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     dict = rettv->vval.v_dict;
 
-    dict_add_number(dict, "lnum", (long)curwin->w_cursor.lnum);
-    dict_add_number(dict, "col", (long)curwin->w_cursor.col);
-    dict_add_number(dict, "coladd", (long)curwin->w_cursor.coladd);
+    DICT_ADD_NUMBER(dict, "lnum", (long)curwin->w_cursor.lnum);
+    DICT_ADD_NUMBER(dict, "col", (long)curwin->w_cursor.col);
+    DICT_ADD_NUMBER(dict, "coladd", (long)curwin->w_cursor.coladd);
     update_curswant();
-    dict_add_number(dict, "curswant", (long)curwin->w_curswant);
+    DICT_ADD_NUMBER(dict, "curswant", (long)curwin->w_curswant);
 
-    dict_add_number(dict, "topline", (long)curwin->w_topline);
+    DICT_ADD_NUMBER(dict, "topline", (long)curwin->w_topline);
 # ifdef FEAT_DIFF
-    dict_add_number(dict, "topfill", (long)curwin->w_topfill);
+    DICT_ADD_NUMBER(dict, "topfill", (long)curwin->w_topfill);
 # endif
-    dict_add_number(dict, "leftcol", (long)curwin->w_leftcol);
-    dict_add_number(dict, "skipcol", (long)curwin->w_skipcol);
+    DICT_ADD_NUMBER(dict, "leftcol", (long)curwin->w_leftcol);
+    DICT_ADD_NUMBER(dict, "skipcol", (long)curwin->w_skipcol);
 }
 
 /*

@@ -222,16 +222,16 @@ dict_free_items(int copyID)
  * Returns NULL when out of memory.
  */
     dictitem_T *
-dictitem_alloc(char_u *key)
+dictitem_alloc(char_u *key, size_t keylen)
 {
     dictitem_T *di;
-    size_t len = STRLEN(key);
 
-    di = alloc(offsetof(dictitem_T, di_key) + len + 1);
+    di = alloc(offsetof(dictitem_T, di_key) + keylen + 1);
     if (di == NULL)
 	return NULL;
 
-    mch_memmove(di->di_key, key, len + 1);
+    mch_memmove(di->di_key, key, keylen + 1);
+    di->di_keylen = keylen;
     di->di_flags = DI_FLAGS_ALLOC;
     di->di_tv.v_lock = 0;
     di->di_tv.v_type = VAR_UNKNOWN;
@@ -245,13 +245,13 @@ dictitem_alloc(char_u *key)
 dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
-    size_t	len = STRLEN(org->di_key);
 
-    di = alloc(offsetof(dictitem_T, di_key) + len + 1);
+    di = alloc(offsetof(dictitem_T, di_key) + org->di_keylen + 1);
     if (di == NULL)
 	return NULL;
 
-    mch_memmove(di->di_key, org->di_key, len + 1);
+    mch_memmove(di->di_key, org->di_key, org->di_keylen + 1);
+    di->di_keylen = org->di_keylen;
     di->di_flags = DI_FLAGS_ALLOC;
     copy_tv(&org->di_tv, &di->di_tv);
     return di;
@@ -322,8 +322,7 @@ dict_copy(dict_T *orig, int deep, int top, int copyID)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    --todo;
-
-	    di = dictitem_alloc(hi->hi_key);
+	    di = dictitem_alloc(hi->hi_key, STRLEN(hi->hi_key));
 	    if (di == NULL)
 		break;
 	    if (deep)
@@ -389,13 +388,14 @@ dict_add(dict_T *d, dictitem_T *item)
     static int
 dict_add_number_special(
     dict_T	*d,
-    char	*key,
+    char_u	*key,
+    size_t	keylen,
     varnumber_T	nr,
     vartype_T	vartype)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = vartype;
@@ -413,9 +413,9 @@ dict_add_number_special(
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_number(dict_T *d, char *key, varnumber_T nr)
+dict_add_number(dict_T *d, char_u *key, size_t keylen, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, VAR_NUMBER);
+    return dict_add_number_special(d, key, keylen, nr, VAR_NUMBER);
 }
 
 /*
@@ -423,9 +423,9 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_bool(dict_T *d, char *key, varnumber_T nr)
+dict_add_bool(dict_T *d, char_u *key, size_t keylen, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, VAR_BOOL);
+    return dict_add_number_special(d, key, keylen, nr, VAR_BOOL);
 }
 
 /*
@@ -433,9 +433,9 @@ dict_add_bool(dict_T *d, char *key, varnumber_T nr)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_string(dict_T *d, char *key, char_u *str)
+dict_add_string(dict_T *d, char_u *key, size_t keylen, char_u *str)
 {
-    return dict_add_string_len(d, key, str, -1);
+    return dict_add_string_len(d, key, keylen, str, -1);
 }
 
 /*
@@ -445,12 +445,12 @@ dict_add_string(dict_T *d, char *key, char_u *str)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_string_len(dict_T *d, char *key, char_u *str, int len)
+dict_add_string_len(dict_T *d, char_u *key, size_t keylen, char_u *str, int len)
 {
     dictitem_T	*item;
     char_u	*val = NULL;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_STRING;
@@ -475,11 +475,11 @@ dict_add_string_len(dict_T *d, char *key, char_u *str, int len)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_list(dict_T *d, char *key, list_T *list)
+dict_add_list(dict_T *d, char_u *key, size_t keylen, list_T *list)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_LIST;
@@ -498,11 +498,11 @@ dict_add_list(dict_T *d, char *key, list_T *list)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_tv(dict_T *d, char *key, typval_T *tv)
+dict_add_tv(dict_T *d, char_u *key, size_t keylen, typval_T *tv)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     copy_tv(tv, &item->di_tv);
@@ -519,11 +519,11 @@ dict_add_tv(dict_T *d, char *key, typval_T *tv)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_callback(dict_T *d, char *key, callback_T *cb)
+dict_add_callback(dict_T *d, char_u *key, size_t keylen, callback_T *cb)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     put_callback(cb, &item->di_tv);
@@ -540,11 +540,11 @@ dict_add_callback(dict_T *d, char *key, callback_T *cb)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_func(dict_T *d, char *key, ufunc_T *fp)
+dict_add_func(dict_T *d, char_u *key, size_t keylen, ufunc_T *fp)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_FUNC;
@@ -612,11 +612,11 @@ dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_dict(dict_T *d, char *key, dict_T *dict)
+dict_add_dict(dict_T *d, char_u *key, size_t keylen, dict_T *dict)
 {
     dictitem_T	*item;
 
-    item = dictitem_alloc((char_u *)key);
+    item = dictitem_alloc(key, keylen);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_DICT;
@@ -1058,7 +1058,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		clear_tv(&tv);
 		goto failret;
 	    }
-	    item = dictitem_alloc(key);
+	    item = dictitem_alloc(key, STRLEN(key));
 	    if (item != NULL)
 	    {
 		item->di_tv = tv;
@@ -1451,7 +1451,7 @@ dict_filter_map(
 			|| var_check_ro(di->di_flags,
 			    arg_errmsg, TRUE)))
 		break;
-	    set_vim_var_string(VV_KEY, di->di_key, -1);
+	    set_vim_var_string(VV_KEY, di->di_key, (int)di->di_keylen);
 	    r = filter_map_one(&di->di_tv, expr, filtermap, fc, &newtv, &rem);
 	    clear_tv(get_vim_var_tv(VV_KEY));
 	    if (r == FAIL || did_emsg)
@@ -1475,7 +1475,7 @@ dict_filter_map(
 	    else if (filtermap == FILTERMAP_MAPNEW)
 	    {
 		// mapnew(): add the item value to the new dict
-		r = dict_add_tv(d_ret, (char *)di->di_key, &newtv);
+		r = dict_add_tv(d_ret, di->di_key, di->di_keylen, &newtv);
 		clear_tv(&newtv);
 		if (r == FAIL)
 		    break;
@@ -1584,7 +1584,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 		// keys()
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = vim_strsave(di->di_key);
+		li->li_tv.vval.v_string = vim_strnsave(di->di_key, di->di_keylen);
 	    }
 	    else if (what == DICT2LIST_VALUES)
 	    {
@@ -1602,7 +1602,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 		    break;
 		++l2->lv_refcount;
 
-		if (list_append_string(l2, di->di_key, -1) == FAIL
+		if (list_append_string(l2, di->di_key, (int)di->di_keylen) == FAIL
 			|| list_append_tv(l2, &di->di_tv) == FAIL)
 		    break;
 	    }

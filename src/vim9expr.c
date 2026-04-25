@@ -1962,7 +1962,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		semsg(_(e_duplicate_key_in_dictionary_str), key);
 		goto failret;
 	    }
-	    item = dictitem_alloc(key);
+	    item = dictitem_alloc(key, STRLEN(key));
 	    if (item != NULL)
 	    {
 		item->di_tv.v_type = VAR_UNKNOWN;

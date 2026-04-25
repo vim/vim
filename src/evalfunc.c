@@ -4535,7 +4535,7 @@ f_environ(typval_T *argvars UNUSED, typval_T *rettv)
 	    continue;
 	}
 	*value++ = NUL;
-	dict_add_string(rettv->vval.v_dict, (char *)entry, value);
+	dict_add_string(rettv->vval.v_dict, entry, (size_t)((value - 1) - entry), value);
 	vim_free(entry);
     }
 #endif
@@ -5636,9 +5636,9 @@ f_get(typval_T *argvars, typval_T *rettv)
 		    else
 			required -= pt->pt_argc;
 
-		    dict_add_number(dict, "required", required);
-		    dict_add_number(dict, "optional", optional);
-		    dict_add_bool(dict, "varargs", varargs);
+		    DICT_ADD_NUMBER(dict, "required", required);
+		    DICT_ADD_NUMBER(dict, "optional", optional);
+		    DICT_ADD_BOOL(dict, "varargs", varargs);
 		}
 	    }
 	    else
@@ -5764,9 +5764,9 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
 	    return;
-	dict_add_number(d, "lnum", (long)buf->b_changelist[i].lnum);
-	dict_add_number(d, "col", (long)buf->b_changelist[i].col);
-	dict_add_number(d, "coladd", (long)buf->b_changelist[i].coladd);
+	DICT_ADD_NUMBER(d, "lnum", (long)buf->b_changelist[i].lnum);
+	DICT_ADD_NUMBER(d, "col", (long)buf->b_changelist[i].col);
+	DICT_ADD_NUMBER(d, "coladd", (long)buf->b_changelist[i].coladd);
     }
 }
 
@@ -5866,9 +5866,9 @@ f_getcharsearch(typval_T *argvars UNUSED, typval_T *rettv)
 
     dict_T *dict = rettv->vval.v_dict;
 
-    dict_add_string(dict, "char", last_csearch());
-    dict_add_number(dict, "forward", last_csearch_forward());
-    dict_add_number(dict, "until", last_csearch_until());
+    DICT_ADD_STRING(dict, "char", last_csearch());
+    DICT_ADD_NUMBER(dict, "forward", last_csearch_forward());
+    DICT_ADD_NUMBER(dict, "until", last_csearch_until());
 }
 
 /*
@@ -5982,12 +5982,12 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
 	    return;
-	dict_add_number(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum);
-	dict_add_number(d, "col", (long)wp->w_jumplist[i].fmark.mark.col);
-	dict_add_number(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd);
-	dict_add_number(d, "bufnr", (long)wp->w_jumplist[i].fmark.fnum);
+	DICT_ADD_NUMBER(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum);
+	DICT_ADD_NUMBER(d, "col", (long)wp->w_jumplist[i].fmark.mark.col);
+	DICT_ADD_NUMBER(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd);
+	DICT_ADD_NUMBER(d, "bufnr", (long)wp->w_jumplist[i].fmark.fnum);
 	if (wp->w_jumplist[i].fname != NULL)
-	    dict_add_string(d, "filename", wp->w_jumplist[i].fname);
+	    DICT_ADD_STRING(d, "filename", wp->w_jumplist[i].fname);
     }
 }
 
@@ -9374,14 +9374,22 @@ get_matches_in_str(
 	if (list_append_dict(mlist, d) == FAIL)
 	    return FAIL;
 
-	if (dict_add_number(d, matchbuf ? "lnum" : "idx", idx) == FAIL)
-	    return FAIL;
+	if (matchbuf)
+	{
+	    if (DICT_ADD_NUMBER(d, "lnum", idx) == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    if (DICT_ADD_NUMBER(d, "idx", idx) == FAIL)
+		return FAIL;
+	}
 
-	if (dict_add_number(d, "byteidx",
+	if (DICT_ADD_NUMBER(d, "byteidx",
 		    (colnr_T)(rmp->startp[0] - str)) == FAIL)
 	    return FAIL;
 
-	if (dict_add_string_len(d, "text", rmp->startp[0],
+	if (DICT_ADD_STRING_LEN(d, "text", rmp->startp[0],
 		    (int)(rmp->endp[0] - rmp->startp[0])) == FAIL)
 	    return FAIL;
 
@@ -9391,7 +9399,7 @@ get_matches_in_str(
 	    if (sml == NULL)
 		return FAIL;
 
-	    if (dict_add_list(d, "submatches", sml) == FAIL)
+	    if (DICT_ADD_LIST(d, "submatches", sml) == FAIL)
 		return FAIL;
 
 	    // return a list with the submatches
@@ -10431,7 +10439,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
 	return;
-    (void)dict_add_list(dict, "regcontents", list);
+    (void)DICT_ADD_LIST(dict, "regcontents", list);
 
     switch (get_reg_type(regname, &reglen))
     {
@@ -10454,16 +10462,16 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	    buflen = 0;
 	    break;
     }
-    (void)dict_add_string_len(dict, (char *)"regtype", buf, (int)buflen);
+    (void)DICT_ADD_STRING_LEN(dict, "regtype", buf, (int)buflen);
 
     buf[0] = get_register_name(get_unname_register());
     buf[1] = NUL;
     buflen = (buf[0] == NUL) ? 0 : 1;
     if (regname == '"')
-	(void)dict_add_string_len(dict, (char *)"points_to", buf, (int)buflen);
+	(void)DICT_ADD_STRING_LEN(dict, "points_to", buf, (int)buflen);
     else
     {
-	dictitem_T	*item = dictitem_alloc((char_u *)"isunnamed");
+	dictitem_T	*item = DICTITEM_ALLOC("isunnamed");
 
 	if (item != NULL)
 	{

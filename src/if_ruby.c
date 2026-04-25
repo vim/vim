@@ -1818,9 +1818,11 @@ vim_ruby_init(void *stack_start)
 convert_hash2dict(VALUE key, VALUE val, VALUE arg)
 {
     dict_T *d = (dict_T *)arg;
+    char_u *s;
     dictitem_T *di;
 
-    di = dictitem_alloc((char_u *)RSTRING_PTR(rb_obj_as_string(key)));
+    s = (char_u *)RSTRING_PTR(rb_obj_as_string(key));
+    di = dictitem_alloc(s, STRLEN(s));
     if (di == NULL || ruby_convert_to_vim_value(val, &di->di_tv) != OK
 						     || dict_add(d, di) != OK)
     {

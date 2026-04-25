@@ -1019,7 +1019,8 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    for (i = 0; i < cur->mit_pos_count; ++i)
 	    {
 		llpos_T	*llpos;
-		char	buf[30];  // use 30 to avoid compiler warning
+		char_u	buf[30];  // use 30 to avoid compiler warning
+		size_t	buflen;
 		list_T	*l;
 
 		llpos = &cur->mit_pos_array[i];
@@ -1034,17 +1035,17 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		    list_append_number(l, (varnumber_T)llpos->col);
 		    list_append_number(l, (varnumber_T)llpos->len);
 		}
-		sprintf(buf, "pos%d", i + 1);
-		dict_add_list(dict, buf, l);
+		buflen = vim_snprintf_safelen((char *)buf, sizeof(buf), "pos%d", i + 1);
+		dict_add_list(dict, buf, buflen, l);
 	    }
 	}
 	else
 	{
-	    dict_add_string(dict, "pattern", cur->mit_pattern);
+	    DICT_ADD_STRING(dict, "pattern", cur->mit_pattern);
 	}
-	dict_add_string(dict, "group", syn_id2name(cur->mit_hlg_id));
-	dict_add_number(dict, "priority", (long)cur->mit_priority);
-	dict_add_number(dict, "id", (long)cur->mit_id);
+	DICT_ADD_STRING(dict, "group", syn_id2name(cur->mit_hlg_id));
+	DICT_ADD_NUMBER(dict, "priority", (long)cur->mit_priority);
+	DICT_ADD_NUMBER(dict, "id", (long)cur->mit_id);
 #  if defined(FEAT_CONCEAL)
 	if (cur->mit_conceal_char)
 	{
@@ -1053,7 +1054,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 	    buflen = (*mb_char2bytes)(cur->mit_conceal_char, buf);
 	    buf[buflen] = NUL;
-	    dict_add_string_len(dict, "conceal", (char_u *)&buf, buflen);
+	    DICT_ADD_STRING_LEN(dict, "conceal", (char_u *)&buf, buflen);
 	}
 #  endif
 	list_append_dict(rettv->vval.v_list, dict);

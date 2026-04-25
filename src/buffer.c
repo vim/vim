@@ -1062,7 +1062,10 @@ init_changedtick(buf_T *buf)
     di->di_tv.vval.v_number = 0;
 
 #ifdef FEAT_EVAL
-    STRCPY(buf->b_ct_di.di_key, "changedtick");
+    string_T    s = STR_LITERAL_INIT("changedtick");
+
+    STRCPY(buf->b_ct_di.di_key, s.string);
+    buf->b_ct_di.di_keylen = s.length;
     (void)dict_add(buf->b_vars, di);
 #endif
 }

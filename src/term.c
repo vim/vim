@@ -1597,7 +1597,8 @@ f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
 
 	value[0] = term_props[i].tpr_status;
 	value[1] = NUL;
-	dict_add_string_len(rettv->vval.v_dict, term_props[i].tpr_name,
+	dict_add_string_len(rettv->vval.v_dict,
+	    (char_u *)term_props[i].tpr_name, STRLEN(term_props[i].tpr_name),
 	    value, (value[0] == NUL) ? 0 : 1);
     }
 # endif

@@ -3373,9 +3373,10 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	    {
 		if (((Scheme_Hash_Table *) obj)->vals[i] != NULL)
 		{
+		    char_u  *s = (char_u *)string_to_line(((Scheme_Hash_Table *) obj)->keys[i]);
+
 		    // generate item for `display'ed Scheme key
-		    dictitem_T  *item = dictitem_alloc((char_u *)string_to_line(
-				((Scheme_Hash_Table *) obj)->keys[i]));
+		    dictitem_T  *item = dictitem_alloc(s, STRLEN(s));
 		    // convert Scheme val to Vim and add it to the dict
 		    if (mzscheme_to_vim_impl(((Scheme_Hash_Table *) obj)->vals[i],
 				    &item->di_tv, depth + 1, visited) == FAIL

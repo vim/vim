@@ -1274,11 +1274,11 @@ add_llist_tags(
 	    continue;
 	}
 
-	dict_add_string(dict, "text", tag_name);
-	dict_add_string(dict, "filename", fname);
-	dict_add_number(dict, "lnum", lnum);
+	DICT_ADD_STRING(dict, "text", tag_name);
+	DICT_ADD_STRING(dict, "filename", fname);
+	DICT_ADD_NUMBER(dict, "lnum", lnum);
 	if (lnum == 0)
-	    dict_add_string(dict, "pattern", cmd);
+	    DICT_ADD_STRING(dict, "pattern", cmd);
     }
 
     vim_snprintf((char *)IObuff, IOSIZE, "ltag %s", tag);
@@ -1464,9 +1464,9 @@ find_tagfunc_tags(
     if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
 	return FAIL;
     if (!(flags & TAG_INS_COMP) && tag->user_data != NULL)
-	dict_add_string(d, "user_data", tag->user_data);
+	DICT_ADD_STRING(d, "user_data", tag->user_data);
     if (buf_ffname != NULL)
-	dict_add_string(d, "buf_ffname", buf_ffname);
+	DICT_ADD_STRING(d, "buf_ffname", buf_ffname);
 
     ++d->dv_refcount;
     args[2].v_type = VAR_DICT;
@@ -4357,7 +4357,8 @@ expand_tags(
     static int
 add_tag_field(
     dict_T  *dict,
-    char    *field_name,
+    char_u  *field_name,
+    size_t  field_namelen,
     char_u  *start,		// start of the value
     char_u  *end)		// after the value; can be NULL
 {
@@ -4366,7 +4367,7 @@ add_tag_field(
     int		retval;
 
     // check that the field name doesn't exist yet
-    if (dict_has_key(dict, field_name))
+    if (dict_has_key(dict, (char *)field_name))
     {
 	if (p_verbose > 0)
 	{
@@ -4393,7 +4394,7 @@ add_tag_field(
 	vim_strncpy(buf, start, len);
     }
     buf[len] = NUL;
-    retval = dict_add_string(dict, field_name, buf);
+    retval = dict_add_string_len(dict, field_name, field_namelen, buf, len);
     vim_free(buf);
     return retval;
 }
@@ -4406,7 +4407,7 @@ add_tag_field(
 get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 {
     int		num_matches, i, ret;
-    char_u	**matches, *p;
+    char_u	**matches;
     char_u	*full_fname;
     dict_T	*dict;
     tagptrs_T	tp;
@@ -4419,6 +4420,8 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 
     for (i = 0; i < num_matches; ++i)
     {
+	string_T    field;
+
 	if (parse_match(matches[i], &tp) == FAIL)
 	{
 	    vim_free(matches[i]);
@@ -4434,30 +4437,55 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    continue;
 	}
 
-	if ((dict = dict_alloc()) == NULL)
+	if ((dict = dict_alloc()) == NULL ||
+	    list_append_dict(list, dict) == FAIL)
 	{
 	    ret = FAIL;
-	    vim_free(matches[i]);
 	    break;
 	}
-	if (list_append_dict(list, dict) == FAIL)
-	    ret = FAIL;
 
 	full_fname = tag_full_fname(&tp);
-	if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
-		|| add_tag_field(dict, "filename", full_fname,
-		    NULL) == FAIL
-		|| add_tag_field(dict, "cmd", tp.command,
-		    tp.command_end) == FAIL
-		|| add_tag_field(dict, "kind", tp.tagkind,
-		    tp.tagkind_end) == FAIL
-		|| dict_add_number(dict, "static", is_static) == FAIL)
+	STR_LITERAL_SET(field, "name");
+	if (add_tag_field(dict, field.string, field.length, tp.tagname, tp.tagname_end) == FAIL)
+	{
 	    ret = FAIL;
+	    vim_free(full_fname);
+	    break;
+	}
 
+	STR_LITERAL_SET(field, "filename");
+	if (add_tag_field(dict, field.string, field.length, full_fname, NULL) == FAIL)
+	{
+	    ret = FAIL;
+	    vim_free(full_fname);
+	    break;
+	}
 	vim_free(full_fname);
+
+	STR_LITERAL_SET(field, "cmd");
+	if (add_tag_field(dict, field.string, field.length, tp.command, tp.command_end) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+
+	STR_LITERAL_SET(field, "kind");
+	if (add_tag_field(dict, field.string, field.length, tp.tagkind, tp.tagkind_end) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+
+	if (DICT_ADD_NUMBER(dict, "static", is_static) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
 
 	if (tp.command_end != NULL)
 	{
+	    char_u  *p;
+
 	    for (p = tp.command_end + 3;
 		    *p != NUL && *p != '\n' && *p != '\r'; MB_PTR_ADV(p))
 	    {
@@ -4470,24 +4498,24 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 		    p += 4;
 		else if (!VIM_ISWHITE(*p))
 		{
-		    char_u	*s, *n;
-		    int	len;
+		    char_u	*value_start;
 
 		    // Add extra field as a dict entry.  Fields are
 		    // separated by Tabs.
-		    n = p;
+		    field.string = p;
+		    field.length = 0;
 		    while (*p != NUL && *p >= ' ' && *p < 127 && *p != ':')
 			++p;
-		    len = (int)(p - n);
-		    if (*p == ':' && len > 0)
+		    field.length = (size_t)(p - field.string);
+		    if (*p == ':' && field.length > 0)
 		    {
-			s = ++p;
+			value_start = ++p;
 			while (*p != NUL && *p >= ' ')
 			    ++p;
-			n[len] = NUL;
-			if (add_tag_field(dict, (char *)n, s, p) == FAIL)
+			field.string[field.length] = NUL;
+			if (add_tag_field(dict, field.string, field.length, value_start, p) == FAIL)
 			    ret = FAIL;
-			n[len] = ':';
+			field.string[field.length] = ':';
 		    }
 		    else
 			// Skip field without colon.
@@ -4514,15 +4542,15 @@ get_tag_details(taggy_T *tag, dict_T *retdict)
     list_T	*pos;
     fmark_T	*fmark;
 
-    dict_add_string(retdict, "tagname", tag->tagname);
-    dict_add_number(retdict, "matchnr", tag->cur_match + 1);
-    dict_add_number(retdict, "bufnr", tag->cur_fnum);
+    DICT_ADD_STRING(retdict, "tagname", tag->tagname);
+    DICT_ADD_NUMBER(retdict, "matchnr", tag->cur_match + 1);
+    DICT_ADD_NUMBER(retdict, "bufnr", tag->cur_fnum);
     if (tag->user_data)
-	dict_add_string(retdict, "user_data", tag->user_data);
+	DICT_ADD_STRING(retdict, "user_data", tag->user_data);
 
     if ((pos = list_alloc_id(aid_tagstack_from)) == NULL)
 	return;
-    dict_add_list(retdict, "from", pos);
+    DICT_ADD_LIST(retdict, "from", pos);
 
     fmark = &tag->fmark;
     list_append_number(pos,
@@ -4544,12 +4572,12 @@ get_tagstack(win_T *wp, dict_T *retdict)
     int		i;
     dict_T	*d;
 
-    dict_add_number(retdict, "length", wp->w_tagstacklen);
-    dict_add_number(retdict, "curidx", wp->w_tagstackidx + 1);
+    DICT_ADD_NUMBER(retdict, "length", wp->w_tagstacklen);
+    DICT_ADD_NUMBER(retdict, "curidx", wp->w_tagstackidx + 1);
     l = list_alloc_id(aid_tagstack_items);
     if (l == NULL)
 	return;
-    dict_add_list(retdict, "items", l);
+    DICT_ADD_LIST(retdict, "items", l);
 
     for (i = 0; i < wp->w_tagstacklen; i++)
     {

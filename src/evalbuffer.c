@@ -647,21 +647,21 @@ get_buffer_info(buf_T *buf)
     if (dict == NULL)
 	return NULL;
 
-    dict_add_number(dict, "bufnr", buf->b_fnum);
-    dict_add_string(dict, "name", buf->b_ffname);
-    dict_add_number(dict, "lnum", buf == curbuf ? curwin->w_cursor.lnum
+    DICT_ADD_NUMBER(dict, "bufnr", buf->b_fnum);
+    DICT_ADD_STRING(dict, "name", buf->b_ffname);
+    DICT_ADD_NUMBER(dict, "lnum", buf == curbuf ? curwin->w_cursor.lnum
 						     : buflist_findlnum(buf));
-    dict_add_number(dict, "linecount", buf->b_ml.ml_line_count);
-    dict_add_number(dict, "loaded", buf->b_ml.ml_mfp != NULL);
-    dict_add_number(dict, "listed", buf->b_p_bl);
-    dict_add_number(dict, "changed", bufIsChanged(buf));
-    dict_add_number(dict, "changedtick", CHANGEDTICK(buf));
-    dict_add_number(dict, "hidden",
+    DICT_ADD_NUMBER(dict, "linecount", buf->b_ml.ml_line_count);
+    DICT_ADD_NUMBER(dict, "loaded", buf->b_ml.ml_mfp != NULL);
+    DICT_ADD_NUMBER(dict, "listed", buf->b_p_bl);
+    DICT_ADD_NUMBER(dict, "changed", bufIsChanged(buf));
+    DICT_ADD_NUMBER(dict, "changedtick", CHANGEDTICK(buf));
+    DICT_ADD_NUMBER(dict, "hidden",
 			    buf->b_ml.ml_mfp != NULL && buf->b_nwindows == 0);
-    dict_add_number(dict, "command", buf == cmdwin_buf);
+    DICT_ADD_NUMBER(dict, "command", buf == cmdwin_buf);
 
     // Get a reference to buffer variables
-    dict_add_dict(dict, "variables", buf->b_vars);
+    DICT_ADD_DICT(dict, "variables", buf->b_vars);
 
     // List of windows displaying this buffer
     windows = list_alloc();
@@ -670,7 +670,7 @@ get_buffer_info(buf_T *buf)
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
 		list_append_number(windows, (varnumber_T)wp->w_id);
-	dict_add_list(dict, "windows", windows);
+	DICT_ADD_LIST(dict, "windows", windows);
     }
 
 # ifdef FEAT_PROP_POPUP
@@ -686,7 +686,7 @@ get_buffer_info(buf_T *buf)
 		if (wp->w_buffer == buf)
 		    list_append_number(windows, (varnumber_T)wp->w_id);
 
-	dict_add_list(dict, "popups", windows);
+	DICT_ADD_LIST(dict, "popups", windows);
     }
 # endif
 
@@ -698,13 +698,13 @@ get_buffer_info(buf_T *buf)
 	if (signs != NULL)
 	{
 	    get_buffer_signs(buf, signs);
-	    dict_add_list(dict, "signs", signs);
+	    DICT_ADD_LIST(dict, "signs", signs);
 	}
     }
 # endif
 
 # ifdef FEAT_VIMINFO
-    dict_add_number(dict, "lastused", buf->b_last_used);
+    DICT_ADD_NUMBER(dict, "lastused", buf->b_last_used);
 # endif
 
     return dict;

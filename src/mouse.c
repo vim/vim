@@ -1756,14 +1756,14 @@ stl_click_handler_regions(
     if (info == NULL)
 	return FALSE;
 
-    dict_add_number(info, "minwid", regions[n].minwid);
+    DICT_ADD_NUMBER(info, "minwid", regions[n].minwid);
 
     // Determine number of clicks.
     // MOD_MASK_2CLICK=0x20, MOD_MASK_3CLICK=0x40, MOD_MASK_4CLICK=0x60
     nclicks = ((mods & MOD_MASK_MULTI_CLICK) >> 5) + 1;
     if (nclicks > 3)
 	nclicks = 3;
-    dict_add_number(info, "nclicks", nclicks);
+    DICT_ADD_NUMBER(info, "nclicks", nclicks);
 
     // Button.
     if (which_button == MOUSE_LEFT)
@@ -1773,7 +1773,7 @@ stl_click_handler_regions(
     else
 	button_str[0] = 'm';
     button_str[1] = NUL;
-    dict_add_string_len(info, "button", button_str, 1);
+    DICT_ADD_STRING_LEN(info, "button", button_str, 1);
 
     // Modifiers.
     if (mods & MOD_MASK_SHIFT)
@@ -1783,18 +1783,18 @@ stl_click_handler_regions(
     if (mods & MOD_MASK_ALT)
 	mods_str[mi++] = 'a';
     mods_str[mi] = NUL;
-    dict_add_string_len(info, "mods", mods_str, mi);
+    DICT_ADD_STRING_LEN(info, "mods", mods_str, mi);
 
-    dict_add_number(info, "winid", winid);
+    DICT_ADD_NUMBER(info, "winid", winid);
 
     // "area": which option the clicked region belongs to.  Lets a shared
     // dispatcher distinguish 'statusline', 'tabline' and 'tabpanel' without
     // having to overload winid == 0.
-    dict_add_string(info, "area", area_name);
+    DICT_ADD_STRING(info, "area", area_name);
 
     // Expose tab page number for 'tabpanel' regions.
     if (regions[n].tabnr > 0)
-	dict_add_number(info, "tabnr", regions[n].tabnr);
+	DICT_ADD_NUMBER(info, "tabnr", regions[n].tabnr);
 
     // Call the function with the info dict as argument.
     argvars[0].v_type = VAR_DICT;
@@ -3534,8 +3534,8 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     d = rettv->vval.v_dict;
 
-    dict_add_number(d, "screenrow", (varnumber_T)mouse_row + 1);
-    dict_add_number(d, "screencol", (varnumber_T)mouse_col + 1);
+    DICT_ADD_NUMBER(d, "screenrow", (varnumber_T)mouse_row + 1);
+    DICT_ADD_NUMBER(d, "screencol", (varnumber_T)mouse_col + 1);
 
     wp = mouse_find_win(&row, &col, FIND_POPUP);
     if (wp != NULL)
@@ -3567,11 +3567,11 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    }
 	}
     }
-    dict_add_number(d, "winid", winid);
-    dict_add_number(d, "winrow", winrow);
-    dict_add_number(d, "wincol", wincol);
-    dict_add_number(d, "line", (varnumber_T)lnum);
-    dict_add_number(d, "column", column);
-    dict_add_number(d, "coladd", coladd);
+    DICT_ADD_NUMBER(d, "winid", winid);
+    DICT_ADD_NUMBER(d, "winrow", winrow);
+    DICT_ADD_NUMBER(d, "wincol", wincol);
+    DICT_ADD_NUMBER(d, "line", (varnumber_T)lnum);
+    DICT_ADD_NUMBER(d, "column", column);
+    DICT_ADD_NUMBER(d, "coladd", coladd);
 }
 #endif

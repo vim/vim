@@ -308,7 +308,7 @@ exe_newdict(int count, ectx_T *ectx)
 		dict_unref(dict);
 		return MAYBE;
 	    }
-	    item = dictitem_alloc(key);
+	    item = dictitem_alloc(key, STRLEN(key));
 	    clear_tv(tv);
 	    if (unlikely(item == NULL))
 	    {
@@ -2537,7 +2537,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		if (error_if_locked(dict->dv_lock, e_cannot_change_dict))
 		    return FAIL;
 		// add to dict, only fails when out of memory
-		if (dict_add_tv(dict, (char *)key, tv) == FAIL)
+		if (dict_add_tv(dict, key, STRLEN(key), tv) == FAIL)
 		    return NOTDONE;
 		clear_tv(tv);
 	    }

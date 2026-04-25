@@ -4873,7 +4873,7 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
     p = utf16_to_enc(wfd->cFileName, NULL);
     if (p == NULL)
 	goto theend;
-    if (dict_add_string(item, "name", p) == FAIL)
+    if (DICT_ADD_STRING(item, "name", p) == FAIL)
     {
 	vim_free(p);
 	goto theend;
@@ -4881,25 +4881,25 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
     vim_free(p);
 
     size = (((varnumber_T)wfd->nFileSizeHigh) << 32) | wfd->nFileSizeLow;
-    if (dict_add_number(item, "size", size) == FAIL)
+    if (DICT_ADD_NUMBER(item, "size", size) == FAIL)
 	goto theend;
 
     // Convert FILETIME to unix time.
     time = (((((varnumber_T)wfd->ftLastWriteTime.dwHighDateTime) << 32) |
 		wfd->ftLastWriteTime.dwLowDateTime)
 	    - 116444736000000000) / 10000000;
-    if (dict_add_number(item, "time", time) == FAIL)
+    if (DICT_ADD_NUMBER(item, "time", time) == FAIL)
 	goto theend;
 
     getftypewfd(wfd, &s);
-    if (dict_add_string_len(item, "type", s.string, (int)s.length) == FAIL)
+    if (DICT_ADD_STRING_LEN(item, "type", s.string, (int)s.length) == FAIL)
 	goto theend;
-    if (dict_add_string(item, "perm", getfpermwfd(wfd, permbuf)) == FAIL)
+    if (DICT_ADD_STRING(item, "perm", getfpermwfd(wfd, permbuf)) == FAIL)
 	goto theend;
 
-    if (dict_add_string_len(item, "user", (char_u *)"", 0) == FAIL)
+    if (DICT_ADD_STRING_LEN(item, "user", (char_u *)"", 0) == FAIL)
 	goto theend;
-    if (dict_add_string_len(item, "group", (char_u *)"", 0) == FAIL)
+    if (DICT_ADD_STRING_LEN(item, "group", (char_u *)"", 0) == FAIL)
 	goto theend;
 
     return item;
@@ -4949,7 +4949,7 @@ create_readdirex_item(char_u *path, char_u *name)
     }
     vim_free(p);
 
-    if (dict_add_string_len(item, "name", name, (int)namelen) == FAIL)
+    if (DICT_ADD_STRING_LEN(item, "name", name, (int)namelen) == FAIL)
 	goto theend;
 
     if (ret >= 0)
@@ -4960,9 +4960,9 @@ create_readdirex_item(char_u *path, char_u *name)
 	// non-perfect check for overflow
 	else if ((off_T)size != (off_T)st.st_size)
 	    size = -2;
-	if (dict_add_number(item, "size", size) == FAIL)
+	if (DICT_ADD_NUMBER(item, "size", size) == FAIL)
 	    goto theend;
-	if (dict_add_number(item, "time", (varnumber_T)st.st_mtime) == FAIL)
+	if (DICT_ADD_NUMBER(item, "time", (varnumber_T)st.st_mtime) == FAIL)
 	    goto theend;
 
 	if (link)
@@ -4977,9 +4977,9 @@ create_readdirex_item(char_u *path, char_u *name)
 	    q.string = getftypest(&st);
 	    q.length = STRLEN(q.string);
 	}
-	if (dict_add_string_len(item, "type", q.string, (int)q.length) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "type", q.string, (int)q.length) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "perm", getfpermst(&st, permbuf)) == FAIL)
+	if (DICT_ADD_STRING(item, "perm", getfpermst(&st, permbuf)) == FAIL)
 	    goto theend;
 
 	pw = getpwuid(st.st_uid);
@@ -4990,7 +4990,7 @@ create_readdirex_item(char_u *path, char_u *name)
 	    q.string = (char_u *)pw->pw_name;
 	    q.length = STRLEN(q.string);
 	}
-	if (dict_add_string_len(item, "user", q.string, (int)q.length) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "user", q.string, (int)q.length) == FAIL)
 	    goto theend;
 #  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
 	gr = getgrgid(st.st_gid);
@@ -5002,30 +5002,30 @@ create_readdirex_item(char_u *path, char_u *name)
 	    q.length = STRLEN(q.string);
 	}
 #  endif
-	if (dict_add_string_len(item, "group", q.string, (int)q.length) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "group", q.string, (int)q.length) == FAIL)
 	    goto theend;
     }
     else
     {
-	if (dict_add_number(item, "size", -1) == FAIL)
+	if (DICT_ADD_NUMBER(item, "size", -1) == FAIL)
 	    goto theend;
-	if (dict_add_number(item, "time", -1) == FAIL)
+	if (DICT_ADD_NUMBER(item, "time", -1) == FAIL)
 	    goto theend;
 	if (q.string == NULL)
 	{
-	    if (dict_add_string_len(item, "type", (char_u *)"", 0) == FAIL)
+	    if (DICT_ADD_STRING_LEN(item, "type", (char_u *)"", 0) == FAIL)
 		goto theend;
 	}
 	else
 	{
-	    if (dict_add_string_len(item, "type", q.string, (int)q.length) == FAIL)
+	    if (DICT_ADD_STRING_LEN(item, "type", q.string, (int)q.length) == FAIL)
 		goto theend;
 	}
-	if (dict_add_string_len(item, "perm", (char_u *)"", 0) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "perm", (char_u *)"", 0) == FAIL)
 	    goto theend;
-	if (dict_add_string_len(item, "user", (char_u *)"", 0) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "user", (char_u *)"", 0) == FAIL)
 	    goto theend;
-	if (dict_add_string_len(item, "group", (char_u *)"", 0) == FAIL)
+	if (DICT_ADD_STRING_LEN(item, "group", (char_u *)"", 0) == FAIL)
 	    goto theend;
     }
     return item;

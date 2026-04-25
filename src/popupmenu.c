@@ -1688,12 +1688,12 @@ pum_set_event_info(dict_T *dict)
 {
     if (!pum_visible())
 	return;
-    (void)dict_add_number(dict, "height", pum_height);
-    (void)dict_add_number(dict, "width", pum_width);
-    (void)dict_add_number(dict, "row", pum_row);
-    (void)dict_add_number(dict, "col", pum_col);
-    (void)dict_add_number(dict, "size", pum_size);
-    (void)dict_add_bool(dict, "scrollbar",
+    (void)DICT_ADD_NUMBER(dict, "height", pum_height);
+    (void)DICT_ADD_NUMBER(dict, "width", pum_width);
+    (void)DICT_ADD_NUMBER(dict, "row", pum_row);
+    (void)DICT_ADD_NUMBER(dict, "col", pum_col);
+    (void)DICT_ADD_NUMBER(dict, "size", pum_size);
+    (void)DICT_ADD_BOOL(dict, "scrollbar",
 				       pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
 #endif

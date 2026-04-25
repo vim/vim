@@ -2482,10 +2482,12 @@ cat_func_name(char_u *buf, size_t bufsize, ufunc_T *fp)
 add_nr_var(
     dict_T	*dp,
     dictitem_T	*v,
-    char	*name,
+    char_u	*name,
+    size_t	namelen,
     varnumber_T nr)
 {
     STRCPY(v->di_key, name);
+    v->di_keylen = namelen;
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     hash_add(&dp->dv_hashtab, DI2HIKEY(v), "add variable");
     v->di_tv.v_type = VAR_NUMBER;
@@ -3003,8 +3005,7 @@ call_user_func(
     int		ai;
     int		islambda = FALSE;
     char_u	numbuf[NUMBUFLEN];
-    char_u	*name;
-    size_t	namelen;
+    string_T	name;
     typval_T	*tv_to_free[MAX_FUNC_ARGS];
     int		tv_to_free_len = 0;
 #ifdef FEAT_PROFILE
@@ -3074,11 +3075,15 @@ call_user_func(
     init_var_dict(&fc->fc_l_vars, &fc->fc_l_vars_var, VAR_DEF_SCOPE);
     if (selfdict != NULL)
     {
-	// Set l:self to "selfdict".  Use "name" to avoid a warning from
-	// some compiler that checks the destination size.
+	char_u	*p;
+
+	// Set l:self to "selfdict".  Use "p" to avoid a warning from
+	// some compilers that check the destination size.
 	v = &fc->fc_fixvar[fixvar_idx++].var;
-	name = v->di_key;
-	STRCPY(name, "self");
+	STR_LITERAL_SET(name, "self");
+	p = v->di_key;
+	STRCPY(p, name.string);
+	v->di_keylen = name.length;
 	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	hash_add(&fc->fc_l_vars.dv_hashtab, DI2HIKEY(v), "set self dictionary");
 	v->di_tv.v_type = VAR_DICT;
@@ -3094,17 +3099,24 @@ call_user_func(
      */
     init_var_dict(&fc->fc_l_avars, &fc->fc_l_avars_var, VAR_SCOPE);
     if ((fp->uf_flags & FC_NOARGS) == 0)
-	add_nr_var(&fc->fc_l_avars, &fc->fc_fixvar[fixvar_idx++].var, "0",
-				(varnumber_T)(argcount >= fp->uf_args.ga_len
+    {
+	STR_LITERAL_SET(name, "0");
+	add_nr_var(&fc->fc_l_avars, &fc->fc_fixvar[fixvar_idx++].var,
+	    name.string, name.length, (varnumber_T)(argcount >= fp->uf_args.ga_len
 				    ? argcount - fp->uf_args.ga_len : 0));
+    }
     fc->fc_l_avars.dv_lock = VAR_FIXED;
     if ((fp->uf_flags & FC_NOARGS) == 0)
     {
-	// Use "name" to avoid a warning from some compiler that checks the
+	char_u	*p;
+
+	// Use "p" to avoid a warning from some compilers that check the
 	// destination size.
 	v = &fc->fc_fixvar[fixvar_idx++].var;
-	name = v->di_key;
-	STRCPY(name, "000");
+	STR_LITERAL_SET(name, "000");
+	p = v->di_key;
+	STRCPY(p, name.string);
+	v->di_keylen = name.length;
 	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	hash_add(&fc->fc_l_avars.dv_hashtab, DI2HIKEY(v), "function argument");
 	v->di_tv.v_type = VAR_LIST;
@@ -3123,10 +3135,12 @@ call_user_func(
      */
     if ((fp->uf_flags & FC_NOARGS) == 0)
     {
+	STR_LITERAL_SET(name, "firstline");
 	add_nr_var(&fc->fc_l_avars, &fc->fc_fixvar[fixvar_idx++].var,
-			      "firstline", (varnumber_T)funcexe->fe_firstline);
+	    name.string, name.length, (varnumber_T)funcexe->fe_firstline);
+	STR_LITERAL_SET(name, "lastline");
 	add_nr_var(&fc->fc_l_avars, &fc->fc_fixvar[fixvar_idx++].var,
-				"lastline", (varnumber_T)funcexe->fe_lastline);
+	    name.string, name.length, (varnumber_T)funcexe->fe_lastline);
     }
     for (i = 0; i < argcount || i < fp->uf_args.ga_len; ++i)
     {
@@ -3138,7 +3152,7 @@ call_user_func(
 	if (ai < 0)
 	{
 	    // named argument a:name
-	    name = FUNCARG(fp, i);
+	    name.string = FUNCARG(fp, i);
 	    if (islambda)
 		addlocal = TRUE;
 
@@ -3162,7 +3176,7 @@ call_user_func(
 		}
 	    }
 
-	    namelen = STRLEN(name);
+	    name.length = STRLEN(name.string);
 	}
 	else
 	{
@@ -3171,18 +3185,19 @@ call_user_func(
 		break;
 
 	    // "..." argument a:1, a:2, etc.
-	    namelen = vim_snprintf((char *)numbuf, sizeof(numbuf), "%d", ai + 1);
-	    name = numbuf;
+	    name.length = vim_snprintf_safelen((char *)numbuf, sizeof(numbuf), "%d", ai + 1);
+	    name.string = numbuf;
 	}
-	if (fixvar_idx < FIXVAR_CNT && namelen <= VAR_SHORT_LEN)
+	if (fixvar_idx < FIXVAR_CNT && name.length <= VAR_SHORT_LEN)
 	{
 	    v = &fc->fc_fixvar[fixvar_idx++].var;
 	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-	    STRCPY(v->di_key, name);
+	    STRCPY(v->di_key, name.string);
+	    v->di_keylen = name.length;
 	}
 	else
 	{
-	    v = dictitem_alloc(name);
+	    v = dictitem_alloc(name.string, name.length);
 	    if (v == NULL)
 		break;
 	    v->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
@@ -5608,7 +5623,7 @@ define_function(
 	    if (fudi.fd_di == NULL)
 	    {
 		// add new dict entry
-		fudi.fd_di = dictitem_alloc(fudi.fd_newkey);
+		fudi.fd_di = dictitem_alloc(fudi.fd_newkey, STRLEN(fudi.fd_newkey));
 		if (fudi.fd_di == NULL)
 		{
 		    VIM_CLEAR(fp);

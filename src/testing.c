@@ -205,12 +205,14 @@ fill_assert_error(
 		    if (item2 == NULL || !tv_equal(&HI2DI(hi)->di_tv,
 						  &item2->di_tv, FALSE))
 		    {
+			size_t	keylen = STRLEN(hi->hi_key);
+
 			// item of exp_d not present in got_d or values differ.
 			dict_add_tv(exp_tv->vval.v_dict,
-					(char *)hi->hi_key, &HI2DI(hi)->di_tv);
+			    hi->hi_key, keylen, &HI2DI(hi)->di_tv);
 			if (item2 != NULL)
 			    dict_add_tv(got_tv->vval.v_dict,
-					    (char *)hi->hi_key, &item2->di_tv);
+				hi->hi_key, keylen, &item2->di_tv);
 		    }
 		    else
 			++omitted;
@@ -228,7 +230,7 @@ fill_assert_error(
 		    if (item2 == NULL)
 			// item of got_d not present in exp_d
 			dict_add_tv(got_tv->vval.v_dict,
-					(char *)hi->hi_key, &HI2DI(hi)->di_tv);
+			    hi->hi_key, STRLEN(hi->hi_key), &HI2DI(hi)->di_tv);
 		    --todo;
 		}
 	    }

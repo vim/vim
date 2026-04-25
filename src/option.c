@@ -9185,11 +9185,14 @@ get_winbuf_options(int bufopt)
 	    if (varp != NULL)
 	    {
 		if (opt->flags & P_STRING)
-		    dict_add_string(d, opt->fullname, *(char_u **)varp);
+		    dict_add_string(d, (char_u *)opt->fullname, STRLEN(opt->fullname),
+			*(char_u **)varp);
 		else if (opt->flags & P_NUM)
-		    dict_add_number(d, opt->fullname, *(long *)varp);
+		    dict_add_number(d, (char_u *)opt->fullname, STRLEN(opt->fullname),
+			*(long *)varp);
 		else
-		    dict_add_number(d, opt->fullname, *(int *)varp);
+		    dict_add_number(d, (char_u *)opt->fullname, STRLEN(opt->fullname),
+			*(int *)varp);
 	    }
 	}
     }

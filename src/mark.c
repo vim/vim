@@ -1481,9 +1481,9 @@ add_mark(list_T *l, char_u *mname, size_t mnamelen, pos_T *pos, int bufnr, char_
     list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
-    if (dict_add_string_len(d, "mark", mname, (int)mnamelen) == FAIL
-	    || dict_add_list(d, "pos", lpos) == FAIL
-	    || (fname != NULL && dict_add_string(d, "file", fname) == FAIL))
+    if (DICT_ADD_STRING_LEN(d, "mark", mname, (int)mnamelen) == FAIL
+	    || DICT_ADD_LIST(d, "pos", lpos) == FAIL
+	    || (fname != NULL && DICT_ADD_STRING(d, "file", fname) == FAIL))
     {
 	if (lpos->lv_refcount == 0)
 	    list_free(lpos);

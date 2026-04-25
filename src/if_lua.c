@@ -1171,7 +1171,7 @@ luaV_dict_newindex(lua_State *L)
     {
 	if (lua_isnil(L, 3))
 	    return 0;
-	di = dictitem_alloc(key);
+	di = dictitem_alloc(key, STRLEN(key));
 	if (di == NULL)
 	{
 	    clear_tv(&tv);
@@ -1895,7 +1895,7 @@ luaV_setvar(lua_State *L)
 	if (di == NULL)
 	{
 	    // Need to create an entry
-	    di = dictitem_alloc((char_u *)name);
+	    di = dictitem_alloc((char_u *)name, STRLEN(name));
 	    if (di == NULL)
 	    {
 		clear_tv(&tv);
@@ -2063,7 +2063,7 @@ luaV_dict(lua_State *L)
 	if (*key == NUL)
 	    luaL_error(L, "table has empty key");
 	luaV_checktypval(L, -2, &v, "vim.dict"); // value
-	di = dictitem_alloc(key);
+	di = dictitem_alloc(key, STRLEN(key));
 	if (di == NULL || dict_add(d, di) == FAIL)
 	{
 	    vim_free(di);

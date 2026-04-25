@@ -724,19 +724,19 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 	return;
     list_append_dict(list, dict);
 
-    dict_add_number(dict, "id", timer->tr_id);
-    dict_add_number(dict, "time", (long)timer->tr_interval);
+    DICT_ADD_NUMBER(dict, "id", timer->tr_id);
+    DICT_ADD_NUMBER(dict, "time", (long)timer->tr_interval);
 
     profile_start(&now);
     remaining = proftime_time_left(&timer->tr_due, &now);
-    dict_add_number(dict, "remaining", (long)remaining);
+    DICT_ADD_NUMBER(dict, "remaining", (long)remaining);
 
-    dict_add_number(dict, "repeat",
+    DICT_ADD_NUMBER(dict, "repeat",
 	    (long)(timer->tr_repeat < 0 ? -1
 			     : timer->tr_repeat + (timer->tr_firing ? 0 : 1)));
-    dict_add_number(dict, "paused", (long)(timer->tr_paused));
+    DICT_ADD_NUMBER(dict, "paused", (long)(timer->tr_paused));
 
-    di = dictitem_alloc((char_u *)"callback");
+    di = DICTITEM_ALLOC("callback");
     if (di != NULL)
     {
 	if (dict_add(dict, di) == FAIL)

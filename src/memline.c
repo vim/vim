@@ -2219,39 +2219,50 @@ get_b0_dict(char_u *fname, dict_T *d)
 {
     int fd;
     struct block0 b0;
+    string_T s;
 
     if ((fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0)) >= 0)
     {
 	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 	{
 	    if (ml_check_b0_id(&b0) == FAIL)
-		dict_add_string_len(d, "error",
-		    (char_u *)"Not a swap file", STRLEN_LITERAL("Not a swap file"));
+	    {
+		STR_LITERAL_SET(s, "Not a swap file");
+		DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+	    }
 	    else if (b0_magic_wrong(&b0))
-		dict_add_string_len(d, "error",
-		    (char_u *)"Magic number mismatch", STRLEN_LITERAL("Magic number mismatch"));
+	    {
+		STR_LITERAL_SET(s, "Magic number mismatch");
+		DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+	    }
 	    else
 	    {
 		// we have swap information
-		dict_add_string_len(d, "version", b0.b0_version, 10);
-		dict_add_string_len(d, "user", b0.b0_uname, B0_UNAME_SIZE);
-		dict_add_string_len(d, "host", b0.b0_hname, B0_HNAME_SIZE);
-		dict_add_string_len(d, "fname", b0.b0_fname, B0_FNAME_SIZE_ORG);
+		DICT_ADD_STRING_LEN(d, "version", b0.b0_version, 10);
+		DICT_ADD_STRING_LEN(d, "user", b0.b0_uname, B0_UNAME_SIZE);
+		DICT_ADD_STRING_LEN(d, "host", b0.b0_hname, B0_HNAME_SIZE);
+		DICT_ADD_STRING_LEN(d, "fname", b0.b0_fname, B0_FNAME_SIZE_ORG);
 
-		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
-		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
-		dict_add_number(d, "dirty", b0.b0_dirty ? 1 : 0);
+		DICT_ADD_NUMBER(d, "pid", char_to_long(b0.b0_pid));
+		DICT_ADD_NUMBER(d, "mtime", char_to_long(b0.b0_mtime));
+		DICT_ADD_NUMBER(d, "dirty", b0.b0_dirty ? 1 : 0);
 # ifdef CHECK_INODE
-		dict_add_number(d, "inode", char_to_long(b0.b0_ino));
+		DICT_ADD_NUMBER(d, "inode", char_to_long(b0.b0_ino));
 # endif
 	    }
 	}
 	else
-	    dict_add_string_len(d, "error", (char_u *)"Cannot read file", STRLEN_LITERAL("Cannot read file"));
+	{
+	    STR_LITERAL_SET(s, "Cannot read file");
+	    DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+	}
 	close(fd);
     }
     else
-	dict_add_string_len(d, "error", (char_u *)"Cannot open file", STRLEN_LITERAL("Cannot open file"));
+    {
+	STR_LITERAL_SET(s, "Cannot open file");
+	DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+    }
 }
 #endif
 

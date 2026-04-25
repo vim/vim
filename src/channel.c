@@ -3666,8 +3666,9 @@ channel_status(channel_T *channel, int req_part)
 channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 {
     chanpart_T *chanpart = &channel->ch_part[part];
-    char	namebuf[20];  // longest is "sock_timeout"
+    char_u	namebuf[20];  // longest is "sock_timeout"
     size_t	tail;
+    string_T	basename;
     string_T	s;
 
     vim_strncpy((char_u *)namebuf, (char_u *)name, 4);
@@ -3675,16 +3676,18 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
     STRCPY(namebuf + tail, "_");
     tail += STRLEN_LITERAL("_");
 
-    STRCPY(namebuf + tail, "status");
+    STR_LITERAL_SET(basename, "status");
+    STRCPY(namebuf + tail, basename.string);
     if (chanpart->ch_fd != INVALID_FD)
 	STR_LITERAL_SET(s, "open");
     else if (channel_has_readahead(channel, part))
 	STR_LITERAL_SET(s, "buffered");
     else
 	STR_LITERAL_SET(s, "closed");
-    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
+    dict_add_string_len(dict, namebuf, tail + basename.length, s.string, (int)s.length);
 
-    STRCPY(namebuf + tail, "mode");
+    STR_LITERAL_SET(basename, "mode");
+    STRCPY(namebuf + tail, basename.string);
     switch (chanpart->ch_mode)
     {
 	case CH_MODE_NL:
@@ -3709,59 +3712,53 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 	    STR_LITERAL_SET(s, "");
 	    break;
     }
-    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
+    dict_add_string_len(dict, namebuf, tail + basename.length, s.string, (int)s.length);
 
-    STRCPY(namebuf + tail, "io");
+    STR_LITERAL_SET(basename, "io");
+    STRCPY(namebuf + tail, basename.string);
     if (part == PART_SOCK)
-    {
-	s.string = (char_u *)"socket";
-	s.length = STRLEN_LITERAL("socket");
-    }
+	STR_LITERAL_SET(s, "socket");
     else switch (chanpart->ch_io)
     {
 	case JIO_NULL:
-	    s.string = (char_u *)"null";
-	    s.length = STRLEN_LITERAL("null");
+	    STR_LITERAL_SET(s, "null");
 	    break;
 	case JIO_PIPE:
-	    s.string = (char_u *)"pipe";
-	    s.length = STRLEN_LITERAL("pipe");
+	    STR_LITERAL_SET(s, "pipe");
 	    break;
 	case JIO_FILE:
-	    s.string = (char_u *)"file";
-	    s.length = STRLEN_LITERAL("file");
+	    STR_LITERAL_SET(s, "file");
 	    break;
 	case JIO_BUFFER:
-	    s.string = (char_u *)"buffer";
-	    s.length = STRLEN_LITERAL("buffer");
+	    STR_LITERAL_SET(s, "buffer");
 	    break;
 	case JIO_OUT:
-	    s.string = (char_u *)"out";
-	    s.length = STRLEN_LITERAL("out");
+	    STR_LITERAL_SET(s, "out");
 	    break;
 	default:
-	    s.string = (char_u *)"";
-	    s.length = 0;
+	    STR_LITERAL_SET(s, "");
+	    break;
     }
-    dict_add_string_len(dict, namebuf, s.string, (int)s.length);
+    dict_add_string_len(dict, namebuf, tail + basename.length, s.string, (int)s.length);
 
-    STRCPY(namebuf + tail, "timeout");
-    dict_add_number(dict, namebuf, chanpart->ch_timeout);
+    STR_LITERAL_SET(basename, "timeout");
+    STRCPY(namebuf + tail, basename.string);
+    dict_add_number(dict, namebuf, tail + basename.length, chanpart->ch_timeout);
 }
 
     static void
 channel_info(channel_T *channel, dict_T *dict)
 {
-    dict_add_number(dict, "id", channel->ch_id);
-    dict_add_string(dict, "status", (char_u *)channel_status(channel, -1));
+    DICT_ADD_NUMBER(dict, "id", channel->ch_id);
+    DICT_ADD_STRING(dict, "status", (char_u *)channel_status(channel, -1));
 
     if (channel->ch_hostname != NULL)
     {
 	if (channel->ch_port)
-	    dict_add_number(dict, "port", channel->ch_port);
+	    DICT_ADD_NUMBER(dict, "port", channel->ch_port);
 	else
 	    // Unix-domain socket.
-	    dict_add_string(dict, "path", (char_u *)channel->ch_hostname);
+	    DICT_ADD_STRING(dict, "path", (char_u *)channel->ch_hostname);
 	channel_part_info(channel, dict, "sock", PART_SOCK);
     }
     else
@@ -5079,7 +5076,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // DAP message always has a sequence number (id)
 	    id = ++channel->ch_last_msg_id;
 	    if (di == NULL)
-		dict_add_number(d, "seq", id);
+		DICT_ADD_NUMBER(d, "seq", id);
 	    else
 		di->di_tv.vval.v_number = id;
 	}
@@ -5089,7 +5086,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // callback, always assign a generated ID
 	    id = ++channel->ch_last_msg_id;
 	    if (di == NULL)
-		dict_add_number(d, "id", id);
+		DICT_ADD_NUMBER(d, "id", id);
 	    else
 		di->di_tv.vval.v_number = id;
 	}
@@ -5102,7 +5099,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
-	    dict_add_string_len(d, "jsonrpc", (char_u *)"2.0", STRLEN_LITERAL("2.0"));
+	    DICT_ADD_STRING_LEN(d, "jsonrpc", (char_u *)"2.0", STRLEN_LITERAL("2.0"));
 	text = json_encode_lsp_msg(&argvars[1]);
     }
     else
@@ -5150,7 +5147,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     {
 	// A DAP message always has a sequence number.
 	if (rettv->vval.v_dict != NULL)
-	    dict_add_number(rettv->vval.v_dict, "seq", id);
+	    DICT_ADD_NUMBER(rettv->vval.v_dict, "seq", id);
     }
     else if (ch_mode == CH_MODE_LSP && !eval && callback_present)
     {
@@ -5158,7 +5155,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	// function is specified, then return the generated identifier for the
 	// message.  The user can use this to cancel the request (if needed).
 	if (rettv->vval.v_dict != NULL)
-	    dict_add_number(rettv->vval.v_dict, "id", id);
+	    DICT_ADD_NUMBER(rettv->vval.v_dict, "id", id);
     }
 }
 

@@ -2862,7 +2862,7 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	if (l == NULL)
 	    return FAIL;
 
-	dict_add_list(dict, "submenus", l);
+	DICT_ADD_LIST(dict, "submenus", l);
 	// get all the children.  Skip PopUp[nvoci].
 	for (topmenu = menu; topmenu != NULL; topmenu = topmenu->next)
 	    if (!menu_is_hidden(topmenu->dname))
@@ -2873,21 +2873,21 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
     if (menu_is_tearoff(menu->dname))		// skip tearoff menu item
 	return OK;
 
-    status = dict_add_string(dict, "name", menu->name);
+    status = DICT_ADD_STRING(dict, "name", menu->name);
     if (status == OK)
-	status = dict_add_string(dict, "display", menu->dname);
+	status = DICT_ADD_STRING(dict, "display", menu->dname);
     if (status == OK && menu->actext != NULL)
-	status = dict_add_string(dict, "accel", menu->actext);
+	status = DICT_ADD_STRING(dict, "accel", menu->actext);
     if (status == OK)
-	status = dict_add_number(dict, "priority", menu->priority);
+	status = DICT_ADD_NUMBER(dict, "priority", menu->priority);
     if (status == OK)
-	status = dict_add_string(dict, "modes",
+	status = DICT_ADD_STRING(dict, "modes",
 					get_menu_mode_str(menu->modes));
 #ifdef FEAT_TOOLBAR
     if (status == OK && menu->iconfile != NULL)
-	status = dict_add_string(dict, "icon", menu->iconfile);
+	status = DICT_ADD_STRING(dict, "icon", menu->iconfile);
     if (status == OK && menu->iconidx >= 0)
-	status = dict_add_number(dict, "iconidx", menu->iconidx);
+	status = DICT_ADD_NUMBER(dict, "iconidx", menu->iconidx);
 #endif
     if (status == OK)
     {
@@ -2902,7 +2902,7 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	    buflen = (buf[0] == NUL) ? 0 : 1;
 	}
 	buf[buflen] = NUL;
-	status = dict_add_string_len(dict, "shortcut", buf, buflen);
+	status = DICT_ADD_STRING_LEN(dict, "shortcut", buf, buflen);
     }
     if (status == OK && menu->children == NULL)
     {
@@ -2916,27 +2916,27 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	    if (menu->strings[bit] != NULL)
 	    {
 		if (*menu->strings[bit] == NUL)
-		    status = dict_add_string_len(dict, "rhs",
+		    status = DICT_ADD_STRING_LEN(dict, "rhs",
 			(char_u *)"<Nop>", STRLEN_LITERAL("<Nop>"));
 		else
 		{
 		    char_u *tofree = NULL;
 
-		    status = dict_add_string(dict, "rhs",
+		    status = DICT_ADD_STRING(dict, "rhs",
 			tofree = str2special_save(menu->strings[bit], FALSE, FALSE));
 		    vim_free(tofree);
 		}
 	    }
 	    if (status == OK)
-		status = dict_add_bool(dict, "noremenu",
+		status = DICT_ADD_BOOL(dict, "noremenu",
 					     menu->noremap[bit] == REMAP_NONE);
 	    if (status == OK)
-		status = dict_add_bool(dict, "script",
+		status = DICT_ADD_BOOL(dict, "script",
 					   menu->noremap[bit] == REMAP_SCRIPT);
 	    if (status == OK)
-		status = dict_add_bool(dict, "silent", menu->silent[bit]);
+		status = DICT_ADD_BOOL(dict, "silent", menu->silent[bit]);
 	    if (status == OK)
-		status = dict_add_bool(dict, "enabled",
+		status = DICT_ADD_BOOL(dict, "enabled",
 					  ((menu->enabled & (1 << bit)) != 0));
 	}
     }
@@ -2950,7 +2950,7 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	if (l == NULL)
 	    return FAIL;
 
-	dict_add_list(dict, "submenus", l);
+	DICT_ADD_LIST(dict, "submenus", l);
 	child = menu->children;
 	while (child)
 	{

@@ -1609,10 +1609,10 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     pos.coladd = 0;
     textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
 
-    dict_add_number(dict, "row", row);
-    dict_add_number(dict, "col", scol);
-    dict_add_number(dict, "curscol", ccol);
-    dict_add_number(dict, "endcol", ecol);
+    DICT_ADD_NUMBER(dict, "row", row);
+    DICT_ADD_NUMBER(dict, "col", scol);
+    DICT_ADD_NUMBER(dict, "curscol", ccol);
+    DICT_ADD_NUMBER(dict, "endcol", ecol);
 }
 
 /*
