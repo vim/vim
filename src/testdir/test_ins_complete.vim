@@ -674,7 +674,7 @@ func Test_scroll_info_window()
   call ScrollInfoWindowTest("", 0, 1)
   call ScrollInfoWindowTest("pagedown", 1, 4)
   call ScrollInfoWindowTest("pagedown", 2, 7)
-  call ScrollInfoWindowTest("pagedown", 3, 11)
+  call ScrollInfoWindowTest("pagedown", 3, 10)
   call ScrollInfoWindowTest("pageup", 3, 1)
 endfunc
 
