@@ -4135,6 +4135,15 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
     char_u	*expanded_fname = NULL;
     expand_T	xpc;
 
+    // Refuse to follow URLs from tag files.  Tag entries are expected
+    // to reference local source files; a URL would otherwise be passed
+    // to netrw and trigger a network request.
+    if (path_with_url(fname))
+    {
+       emsg(_(e_tag_file_entry_must_not_be_url));
+       return NULL;
+    }
+
     /*
      * Expand file name (for environment variables) when needed.
      * Disallow backticks, they could execute arbitrary shell
