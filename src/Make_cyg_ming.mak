@@ -744,7 +744,7 @@ XPM = no
  endif
  ifdef XPM
   ifneq ($(XPM),no)
-CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include -I $(XPM)/../include
+CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include -I $(XPM)/include/X11 -I $(XPM)/../include
   endif
  endif
 
