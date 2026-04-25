@@ -968,22 +968,21 @@ func Test_tabpanel_scroll_many_tabs()
   let save_showtabpanel = &showtabpanel
   let save_tabpanelopt = &tabpanelopt
 
-  " Make the screen short so the tab list exceeds the visible height.
+  " Make the screen short so the tab page list exceeds the visible height.
   set lines=8
   set showtabpanel=2
-  set tabpanelopt=scroll
+  set tabpanelopt=
   for i in range(20)
     tabnew
   endfor
 
-  " Should not crash with many tabs and scroll enabled.
+  " Should not crash with many tabs (scroll behaviour is always on).
   redraw!
 
-  " Switching to scrollbar resets the offset but must also not crash.
+  " Toggling scrollbar must also not crash.
   set tabpanelopt=scrollbar
   redraw!
 
-  " Disabling scroll returns to normal behavior.
   set tabpanelopt=
   redraw!
 

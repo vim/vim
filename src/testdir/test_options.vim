@@ -594,7 +594,7 @@ func Test_set_completion_string_values()
     call assert_equal('left uselast', join(sort(getcompletion('set tabclose=', 'cmdline'))), ' ')
   endif
   if has('tabpanel')
-    call assert_equal(['align:', 'columns:', 'scroll', 'scrollbar', 'vert'],
+    call assert_equal(['align:', 'columns:', 'scrollbar', 'vert'],
           \ getcompletion('set tabpanelopt=', 'cmdline'))
     call assert_equal(['left', 'right'],
           \ getcompletion('set tabpanelopt=align:', 'cmdline'))

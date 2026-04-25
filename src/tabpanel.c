@@ -43,7 +43,6 @@ static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
 static bool tpl_is_vert = false;
-static bool tpl_scroll = false;
 static bool tpl_scrollbar = false;
 static int tpl_scroll_offset = 0;
 static int tpl_total_rows = 0;
@@ -70,7 +69,6 @@ tabpanelopt_changed(void)
     int		new_align = ALIGN_LEFT;
     long	new_columns = 20;
     bool	new_is_vert = false;
-    bool	new_scroll = false;
     bool	new_scrollbar = false;
 
     p = p_tplo;
@@ -108,12 +106,6 @@ tabpanelopt_changed(void)
 	{
 	    p += 9;
 	    new_scrollbar = true;
-	    new_scroll = true;
-	}
-	else if (STRNCMP(p, "scroll", 6) == 0)
-	{
-	    p += 6;
-	    new_scroll = true;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -125,9 +117,6 @@ tabpanelopt_changed(void)
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_is_vert = new_is_vert;
-    if (tpl_scroll != new_scroll)
-	tpl_scroll_offset = 0;
-    tpl_scroll = new_scroll;
     tpl_scrollbar = new_scrollbar;
 
     // Re-center the current tab on the next redraw.
@@ -288,7 +277,7 @@ tabpanel_append_click_regions(
     static void
 follow_curtab_if_needed(int curtab_row)
 {
-    if (!tpl_scroll || Rows <= 0 || curtab == tpl_last_curtab)
+    if (Rows <= 0 || curtab == tpl_last_curtab)
 	return;
 
     if (curtab_row < tpl_scroll_offset)
@@ -657,13 +646,7 @@ do_by_tplmode(
     args.col_end = col_end;
 
     if (tplmode != TPLMODE_GET_CURTAB_ROW && args.maxrow > 0)
-    {
-	if (tpl_scroll)
-	    args.offsetrow = tpl_scroll_offset;
-	else
-	    while (args.offsetrow + args.maxrow <= *pcurtab_row)
-		args.offsetrow += args.maxrow;
-    }
+	args.offsetrow = tpl_scroll_offset;
 
     tp = first_tabpage;
 
@@ -683,16 +666,9 @@ do_by_tplmode(
 	{
 	    args.attr = attr_tpls;
 	    if (tplmode == TPLMODE_GET_CURTAB_ROW)
-	    {
+		// Capture the row of the current tab and keep iterating so
+		// tpl_total_rows receives the true content height below.
 		*pcurtab_row = row;
-		// When scroll mode is active keep iterating so tpl_total_rows
-		// receives the true content height; otherwise bail out early.
-		if (!tpl_scroll)
-		{
-		    do_unlet((char_u *)"g:actual_curtabpage", TRUE);
-		    break;
-		}
-	    }
 	}
 	else
 	    args.attr = attr_tpl;
@@ -793,7 +769,7 @@ do_by_tplmode(
     // Capture the true content height during the GET_CURTAB_ROW pass, which
     // ignores maxrow and therefore walks every tab.  REDRAW stops at the
     // visible edge so its "row" is clamped and unusable here.
-    if (tplmode == TPLMODE_GET_CURTAB_ROW && tpl_scroll)
+    if (tplmode == TPLMODE_GET_CURTAB_ROW)
 	tpl_total_rows = row;
 }
 
@@ -910,7 +886,6 @@ tabpanel_drag_scrollbar(int screen_row)
 /*
  * Scroll the tabpanel by 'count' rows in direction 'dir' (1 = down, -1 = up).
  * Returns true if the offset changed and a redraw was scheduled.
- * Has no effect unless 'tabpanelopt' contains "scroll".
  */
     bool
 tabpanel_scroll(int dir, int count)
@@ -918,7 +893,7 @@ tabpanel_scroll(int dir, int count)
     int max_offset;
     int new_offset;
 
-    if (!tpl_scroll || tabpanel_width() == 0)
+    if (tabpanel_width() == 0)
 	return false;
 
     max_offset = tpl_total_rows - Rows;
