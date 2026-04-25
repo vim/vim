@@ -551,6 +551,7 @@ function Test_tabpanel_visual()
 
   let buf = RunVimInTerminal('-S XTest_tabpanel_visual', {'rows': 10, 'cols': 45})
   call term_sendkeys(buf, "v2w")
+  call WaitForAssert({-> assert_match('VISUAL.*\d', term_getline(buf, 10))}, 1000)
   call VerifyScreenDump(buf, 'Test_tabpanel_visual_0', {})
   call term_sendkeys(buf, "\<Esc>0jw")
   call term_sendkeys(buf, "v2wge")
