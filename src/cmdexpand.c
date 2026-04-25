@@ -436,6 +436,8 @@ cmdline_pum_create(
     void
 cmdline_pum_display(void)
 {
+    if (!pum_redraw_in_same_position())
+	pum_call_update_screen();
     pum_display(compl_match_array, compl_match_arraysize, compl_selected);
 }
 
