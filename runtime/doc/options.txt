@@ -9062,16 +9062,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 		columns:{n}	Number of columns of the tabpanel.
 				If this value is 0 or less than 'columns', the
-				tab panel will not be displayed.
+				tabpanel will not be displayed.
 				(default 20)
 
 		scroll		Enable mouse wheel scrolling over the tabpanel
-				area when the tab list exceeds the visible
-				screen height.  The scroll step is controlled
-				by 'mousescroll'.  When disabled (the default),
-				the tabpanel shows the page containing the
-				current tab, with no way to view tabs outside
-				that page.
+				area when the tab page list exceeds the
+				visible screen height.  The scroll step is
+				controlled by 'mousescroll'.  When disabled
+				(the default), the tabpanel shows the page
+				containing the current tab page, with no way
+				to view tab pages outside that page.
 
 		scrollbar	Reserve a one-column scrollbar in the tabpanel
 				showing the current scroll position.  The
