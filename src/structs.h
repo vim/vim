@@ -2784,6 +2784,13 @@ struct channel_S {
     void	(*ch_nb_close_cb)(void);
 				// callback for Netbeans when channel is
 				// closed
+#ifdef FEAT_SOCKETSERVER
+    bool	ch_socketserver; // If channel is used by socketserver
+    void	(*ch_ss_close_cb)(channel_T *);
+    void	(*ch_ss_accept_cb)(channel_T *);
+    channel_T	*ch_ss_next;
+    channel_T	*ch_ss_prev;
+#endif
 
 #ifdef MSWIN
     int		ch_named_pipe;	// using named pipe instead of pty

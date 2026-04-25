@@ -504,9 +504,10 @@ socketserver backend is being used, if the name starts with "/", "./", or "../",
 it is taken as either an absolute, relative or relative path to the socket.
 .TP
 \-\-clientserver {backend}
-Use {backend} as the backend for clientserver functionality, either "socket" or
-"x11" respectively.  Only available when compiled with both socketserver and X11
-features present
+Use {backend} as the backend for clientserver functionality, either "socket",
+"x11", or "mswin" respectively.  Only available when compiled with both
+socketserver and X11 features present, or if compiled with socketserver on
+MS-Windows.
 .TP
 \-\-socketid {id}
 GTK GUI only: Use the GtkPlug mechanism to run gVim in another window.

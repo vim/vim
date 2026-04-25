@@ -277,6 +277,9 @@ void mbyte_im_set_active(int active_arg);
 #  include "job.pro"
 #  include "channel.pro"
 # endif
+# ifdef FEAT_SOCKETSERVER
+#  include "socketserver.pro"
+# endif
 
 # ifdef FEAT_EVAL
 // Not generated automatically so that we can add an extra attribute.

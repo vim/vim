@@ -51,6 +51,8 @@ json_encode(typval_T *val, int options)
     // Store bytes in the growarray.
     ga_init2(&ga, 1, 4000);
     json_encode_gap(&ga, val, options);
+    if (options & JSON_NL)
+	ga_append(&ga, NL);
     ga_append(&ga, NUL);
     return ga.ga_data;
 }

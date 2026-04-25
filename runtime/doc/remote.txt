@@ -79,9 +79,10 @@ The following command line arguments are available:
 								*--clientserver*
    --clientserver {method}	Use the specified method {method} as the
 				backend for clientserver functionality.  Can
-				either be "socket" or "x11".
+				either be "socket", "x11", or "mswin".
 				{only available when compiled with both |+X11|
-				and |+socketserver| features}
+				and |+socketserver| features, or
+				|+socketserver| on MS-Windows}
 
 
 Examples ~
@@ -220,12 +221,16 @@ When using gvim, the --remote-wait only works properly this way: >
 <
 ==============================================================================
 4. Socket server specific items			    *socketserver-clientserver*
-				    *E1563* *E1564* *E1565* *E1566* *E1567*
+						    *E1564* *E1565* *E1566*
 
-The communication between client and server is done using Unix domain sockets.
-These sockets are either placed in these directories in the following order of
+NOTE: Vim version before patch <...> use a different socketserver backend
+which is incompatible with the new one, which is based on channels and JSON.
+
+The communication between client and server is done using channels internally.
+When using the traditional/generic clientserver naming (only available on
+Unix), sockets are placed in these directories in the following order of
 availability:
-    1. "$XDG_RUTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
+    1. "$XDG_RUNTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
     2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user.  This
        directory will have the access permissions set to 700 so only the user
        can read or write from/to it.  If $TMPDIR is not set, "/tmp" is used.
@@ -237,45 +242,54 @@ absolute or relative path.  If the server id starts with either a "/"
 Otherwise the server id will be the filename of the socket which will be
 placed in the above common directories.  Note that a server id/name can only
 contain slashes "/" if it is taken as a path, so names such as "abc/dir" will
-be invalid.
+be invalid.  This feature is only available on Unix.
 
-Socket server functionality is available in both GTK GUI and terminal versions
-of Vim.  Unless Vim is compiled with |+autoservername| feature, the socket
-server will have to started explicitly, just like X11, even in the GUI.
+						    *socketserver-address*
+In addition, the socketserver can also be created as a |channel-address|. To
+do this, prefix the address with "channel:" (which will be ignored).  This is
+available on both Unix and MS-Windows, and is the only available naming for the
+socketserver backend on Windows.
+
+If the name is prefixed with "name:", then the legacy servername behaviour is
+used, so "name:VIM" is the same as "VIM".
+
+Unless Vim is compiled with |+autoservername| feature, the socket server will
+have to started explicitly, similar to X11. This is unless a X11 GUI Vim is
+being used.
 
 If Vim crashes or does not exit cleanly, the socket server will not remove the
 socket file and it will be left around.  This is generally not a problem,
 because if a socket name is taken, Vim checks if the socket in its place is
 dead (not attached to any process), and can replace it instead of finding a
-new name.
-
-To send commands to a Vim socket server from another application, read the
-source file src/os_unix.c, there is detailed description of the protocol used.
+new name.  This is only relevant for Unix.
 
 						    *socketserver-differences*
-Most of the functionality is the same as X11, however unlike X11, where the
-client does not need to be a server in order to communicate with another
-server, the socket server requires the server to be running even as a client.
-The exception is |serverlist()| or the |--serverlist| argument, which does not
-require the server to be running.
+Most of the functionality is the same as the other clientserver backends.
 
-Additionally, the server id or client id will not be a number like X11 or
+However, the server id or client id will not be a number like X11 or
 MS-Windows (shown in hex representation), instead it is the absolute path to
-the socket.  This can be seen via the |v:servername| variable.
+the socket.  This can be seen via the |v:servername| variable.  If the name is
+a channel address, then it will be the address with the "a/" prefix as well.
 
-The |--serverlist| argument will act just like X11, however it only checks the
-given common directories above.  If a custom path is used for a socket, it
-will not be detected, such as a path either not in $XDG_RUNTIME_DIR or
-<$TMPDIR or /tmp>/vim of the |--serverlist| Vim process.
+Note when using |--remote-wait|, the client id will look like "t/<some
+number>". This naming is specifically for this command, and attempting to use
+it as an address will fail.
 
-If you have both |+socketserver| and |+X11| compiled, you will need to add
-|--clientserver| set to "socket" in combination with |--serverlist| to list
-the available servers.  You cannot list both types of backends in one command.
+If on Unix, the |--serverlist| argument will act just like X11, however it
+only checks the given common directories above.  If a custom path is used for
+a socket, it will not be detected, such as a path either not in
+$XDG_RUNTIME_DIR or <$TMPDIR or /tmp>/vim of the |--serverlist| Vim process.
+If on MS-Windows, then the |--serverlist| argument will output nothing.
+
+The |+socketserver| feature is automatically enabled when on Unix or
+MS-Windows, and the |+channel| feature is enabled
 
 						    *socketserver-x11*
-If Vim is compiled with both |+X11| and |+socketserver|, then deciding which
-backend to use is done at startup time, via the |--clientserver| argument.  By
-default if it is not specified, then X11 will be used.  A Vim instance using a
-socket server cannot communicate with one using X11.
+If Vim is compiled with |+socketserver| and another clientserver backend, then
+deciding which backend to use is done at startup time, via the
+|--clientserver| argument.  By default if it is not specified, then the native
+backend (X11 or MS-Window messages) will be used, if available.  A Vim
+instance using a socket server cannot communicate with one using another
+clientserver backend.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
