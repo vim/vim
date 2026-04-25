@@ -1188,12 +1188,13 @@ perl_to_vim(SV *sv, typval_T *rettv)
 	case SVt_PVHV:	/* dictionary */
 	{
 	    HE *		entry;
-	    I32			key_len;
+	    I32			len;
 	    char *		key;
 	    dictitem_T *	item;
 	    SV *		item2;
 	    dict_T *		dict;
 	    struct ref_map_S *	refs;
+	    size_t		keylen;
 
 	    if ((refs = ref_map_find_SV(sv)) == NULL)
 		return FAIL;
@@ -1211,15 +1212,16 @@ perl_to_vim(SV *sv, typval_T *rettv)
 
 		for (entry = hv_iternext((HV *)sv); entry; entry = hv_iternext((HV *)sv))
 		{
-		    key_len = 0;
-		    key = hv_iterkey(entry, &key_len);
+		    len = 0;
+		    key = hv_iterkey(entry, &len);
 
-		    if (!key || !key_len || strlen(key) < (size_t)key_len) {
+		    keylen = strlen(key);
+		    if (!key || !len || keylen < (size_t)len) {
 			semsg("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
 			break;
 		    }
 
-		    if ((item = dictitem_alloc((char_u *)key)) == NULL)
+		    if ((item = dictitem_alloc((char_u *)key, keylen)) == NULL)
 			break;
 		    item->di_tv.v_type = VAR_NUMBER;
 		    item->di_tv.vval.v_number = 0;
