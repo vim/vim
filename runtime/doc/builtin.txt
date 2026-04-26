@@ -706,7 +706,7 @@ tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg} [, {arg}])
 				Number	number of current window in tab page
 tabpanel_getinfo()		Dict	get current state of the tabpanel
-tabpanel_scroll({n} [, {opts}])	Number	scroll the tabpanel
+tabpanel_scroll({n} [, {opts}])	Bool	scroll the tabpanel
 tagfiles()			List	tags files used
 taglist({expr} [, {filename}])	List	list of tags matching {expr}
 tan({expr})			Float	tangent of {expr}
