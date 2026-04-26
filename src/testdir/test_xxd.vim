@@ -476,7 +476,7 @@ func Test_xxd_buffer_overflow()
   endif
   new
   let input = repeat('A', 256)
-  call writefile(['-9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . "\e[1;32m" . repeat('A', 256) . "\e[0m"], 'Xxdexpected', 'D')
+  call writefile(['9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . "\e[1;32m" . repeat('A', 256) . "\e[0m"], 'Xxdexpected', 'D')
   exe 'r! printf ' . input . '| ' . s:xxd_cmd . ' -Ralways -g1 -c256 -d -o 9223372036854775808 > Xxdout'
   call assert_equalfile('Xxdexpected', 'Xxdout')
   call delete('Xxdout')
