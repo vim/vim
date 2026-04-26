@@ -2922,11 +2922,11 @@ func Test_error_callback_terminal()
   call assert_equal('RAW', dict.err_mode)
   call assert_equal('pipe', dict.err_io)
   call term_sendkeys(buf, "XXXX\<cr>")
-  call term_wait(buf)
+  " term_wait() does not wait for the err_io 'pipe' callback to fire, so use
+  " WaitForAssert() to poll until sh has written the error message.
+  call WaitForAssert({-> assert_match('sh:.*XXXX:.*not found', g:error)}, 5000)
   call term_sendkeys(buf, "exit\<cr>")
-  call term_wait(buf)
-  call assert_match('XXX.*exit', g:out)
-  call assert_match('sh:.*XXXX:.*not found', g:error)
+  call WaitForAssert({-> assert_match('XXX.*exit', g:out)}, 5000)
 
   delfunc s:Out
   delfunc s:Err
