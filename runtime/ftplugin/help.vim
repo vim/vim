@@ -24,7 +24,7 @@ if has("conceal")
   setlocal cole=2 cocu=nc
 endif
 
-if !exists('HelpComplete')
+if !exists('*HelpComplete')
   func HelpComplete(findstart, base)
     if a:findstart
       let colnr = col('.') - 1 " Get the column number before the cursor
