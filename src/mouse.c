@@ -591,9 +591,13 @@ do_mouse(
 	    c1 = tp_label.nr;
 	    if (c1 >= 0)
 	    {
-		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
+		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK
+						    && !tp_label.is_panel)
 		{
-		    // double click opens new page
+		    // Double-click on the tabline opens a new, empty tab page.
+		    // The tabpanel has no "empty area" (every row maps to a tab)
+		    // and this behavior is not documented for tabpanel, so fall
+		    // through to the regular tab-switch path there.
 		    end_visual_mode_keep_button();
 		    tabpage_new();
 		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
