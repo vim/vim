@@ -961,7 +961,6 @@ f_tabpanel_getinfo(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_string(d, "align",
 	    (char_u *)(tpl_align == ALIGN_RIGHT ? "right" : "left"));
     dict_add_number(d, "columns", tabpanel_width());
-    dict_add_bool(d, "scroll", tpl_scroll);
     dict_add_bool(d, "scrollbar", tpl_scrollbar);
     dict_add_number(d, "offset", tpl_scroll_offset);
     dict_add_number(d, "total", tpl_total_rows);

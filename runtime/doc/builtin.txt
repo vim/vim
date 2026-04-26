@@ -11891,7 +11891,6 @@ tabpanel_getinfo()					*tabpanel_getinfo()*
 		tabpanel (see |tabpanel|).  The dictionary has these keys:
 			align		"left" or "right"
 			columns		width in screen columns
-			scroll		|TRUE| if 'tabpanelopt' contains "scroll"
 			scrollbar	|TRUE| if a scrollbar is shown
 			offset		current scroll offset in rows
 			total		total number of rows rendered
@@ -11913,10 +11912,10 @@ tabpanel_scroll({n} [, {opts}])				*tabpanel_scroll()*
 		instead of a delta.
 
 		Returns |TRUE| if the scroll offset changed, |FALSE|
-		otherwise (for example when 'tabpanelopt' does not contain
-		"scroll", or the offset is already at the requested value).
+		otherwise (for example when the tabpanel is not shown, or
+		the offset is already at the requested value).
 
-		Return type: |Number|
+		Return type: |vim9-boolean|
 
 
 tagfiles()						*tagfiles()*
