@@ -958,6 +958,7 @@ cmdline_wildchar_complete(
     int		cmdpos_before;
     int		options = WILD_NO_BEEP;
     int		wim_noselect = p_wmnu && (wim_flags[0] & WIM_NOSELECT);
+    int		wim_noinsert = p_wmnu && (wim_flags[0] & WIM_NOINSERT);
 
     if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 	options |= WILD_BUFLASTUSED;
@@ -968,7 +969,8 @@ cmdline_wildchar_complete(
 		&& !*did_wild_list
 		&& (wim_flags[wim_index] & WIM_LIST))
 	{
-	    (void)showmatches(xp, FALSE, TRUE, wim_noselect);
+	    (void)showmatches(xp, FALSE, TRUE,
+		    p_wmnu ? wim_flags[wim_index] : 0);
 	    redrawcmd();
 	    *did_wild_list = TRUE;
 	}
@@ -1006,6 +1008,8 @@ cmdline_wildchar_complete(
 	{
 	    if (wim_noselect || wim_list)
 		options |= WILD_NOSELECT;
+	    if (wim_noinsert)
+		options |= WILD_NOINSERT;
 	    res = nextwild(xp, WILD_EXPAND_KEEP, options, escape);
 	}
 
@@ -1028,26 +1032,28 @@ cmdline_wildchar_complete(
 	}
 
 	// Display matches
-	if (res == OK && xp->xp_numfiles > (wim_noselect ? 0 : 1))
+	if (res == OK && xp->xp_numfiles > ((wim_noselect || wim_noinsert) ? 0 : 1))
 	{
 	    if (wim_longest)
 	    {
 		int found_longest_prefix = (ccline.cmdpos != cmdpos_before);
 		if (wim_list || (p_wmnu && wim_full))
-		    (void)showmatches(xp, p_wmnu, wim_list, TRUE);
+		    (void)showmatches(xp, p_wmnu, wim_list, WIM_NOSELECT);
 		else if (!found_longest_prefix)
 		{
 		    int wim_list_next = (wim_flags[1] & WIM_LIST);
 		    int wim_full_next = (wim_flags[1] & WIM_FULL);
 		    int wim_noselect_next = (wim_flags[1] & WIM_NOSELECT);
+		    int wim_noinsert_next = (wim_flags[1] & WIM_NOINSERT);
 		    if (wim_list_next || (p_wmnu && (wim_full_next
-				    || wim_noselect_next)))
+				    || wim_noselect_next || wim_noinsert_next)))
 		    {
-			if (wim_full_next && !wim_noselect_next)
+			if (wim_full_next && !wim_noselect_next && !wim_noinsert_next)
 			    nextwild(xp, WILD_NEXT, options, escape);
 			else
 			    (void)showmatches(xp, p_wmnu, wim_list_next,
-				    wim_noselect_next);
+				    p_wmnu ? wim_flags[1] : 0);
+
 			if (wim_list_next)
 			    *did_wild_list = TRUE;
 		    }
@@ -1055,8 +1061,10 @@ cmdline_wildchar_complete(
 	    }
 	    else
 	    {
-		if (wim_list || (p_wmnu && (wim_full || wim_noselect)))
-		    (void)showmatches(xp, p_wmnu, wim_list, wim_noselect);
+		if (wim_list || (p_wmnu && (wim_full || wim_noselect
+				|| wim_noinsert)))
+		    (void)showmatches(xp, p_wmnu, wim_list,
+			    p_wmnu ? wim_flags[0] : 0);
 		else
 		    vim_beep(BO_WILD);
 	    }
@@ -2181,7 +2189,7 @@ getcmdline_int(
 		{
 		    // Trigger the popup menu when wildoptions=pum
 		    showmatches(&xpc, p_wmnu, wim_flags[wim_index] & WIM_LIST,
-			    wim_flags[0] & WIM_NOSELECT);
+			    p_wmnu ? wim_flags[0] : 0);
 		}
 		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
 			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
@@ -2296,7 +2304,7 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_D:
-		if (showmatches(&xpc, FALSE, TRUE, wim_flags[0] & WIM_NOSELECT)
+		if (showmatches(&xpc, FALSE, TRUE, p_wmnu ? wim_flags[0] : 0)
 			== EXPAND_NOTHING)
 		    break;	// Use ^D as normal char instead
 
@@ -2900,6 +2908,8 @@ check_opt_wim(void)
 	    new_wim_flags[idx] |= WIM_BUFLASTUSED;
 	else if (i == 8 && STRNCMP(p, "noselect", 8) == 0)
 	    new_wim_flags[idx] |= WIM_NOSELECT;
+	else if (i == 8 && STRNCMP(p, "noinsert", 8) == 0)
+	    new_wim_flags[idx] |= WIM_NOINSERT;
 	else
 	    return FAIL;
 	p += i;

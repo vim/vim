@@ -346,7 +346,7 @@ nextwild(
 	    cmdline_orig.length = ccline->cmdlen;
     }
 
-    if (p != NULL && !got_int && !(options & WILD_NOSELECT))
+    if (p != NULL && !got_int && !(options & (WILD_NOSELECT | WILD_NOINSERT)))
     {
 	size_t	plen = STRLEN(p);
 	int	difflen;
@@ -380,7 +380,8 @@ nextwild(
 
     if (xp->xp_numfiles <= 0 && p == NULL)
 	beep_flush();
-    else if (xp->xp_numfiles == 1 && !(options & WILD_NOSELECT)
+    else if (xp->xp_numfiles == 1
+	    && !(options & (WILD_NOSELECT | WILD_NOINSERT))
 	    && !wild_navigate)
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
@@ -1295,7 +1296,11 @@ showmatches_oneline(
  *   inserted as a normal character.
  */
     int
-showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
+showmatches(
+    expand_T	*xp,
+    int		display_wildmenu,
+    int		display_list,
+    int		wim_flags_arg)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
     int		numMatches;
@@ -1306,6 +1311,9 @@ showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
     int		columns;
     int		attr;
     int		showtail;
+    int		noselect = (wim_flags_arg & WIM_NOSELECT);
+    int		noinsert = (wim_flags_arg & WIM_NOINSERT);
+    int		cmdline_unchanged = noselect || noinsert;
 
     if (xp->xp_numfiles == -1)
     {
@@ -1328,7 +1336,7 @@ showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 	    && vim_strchr(p_wop, WOP_PUM) != NULL)
     {
 	int retval = cmdline_pum_create(ccline, xp, matches, numMatches,
-		showtail && !noselect);
+		showtail && !cmdline_unchanged);
 	if (retval == EXPAND_OK)
 	{
 	    compl_selected = noselect ? -1 : 0;
