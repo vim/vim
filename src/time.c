@@ -381,6 +381,10 @@ f_strptime(typval_T *argvars, typval_T *rettv)
     convert_setup(&conv, p_enc, enc);
     if (conv.vc_type != CONV_NONE)
 	fmt = string_convert(&conv, fmt, NULL);
+#  ifdef HAVE_TZSET
+    // Pick up any change to $TZ so mktime() uses the requested timezone.
+    tzset();
+#  endif
     if (fmt == NULL
 	    || strptime((char *)str, (char *)fmt, &tmval) == NULL
 	    || (rettv->vval.v_number = mktime(&tmval)) == -1)

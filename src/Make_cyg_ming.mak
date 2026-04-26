@@ -881,6 +881,7 @@ OBJ = \
 	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/spellsuggest.o \
 	$(OUTDIR)/strings.o \
+	$(OUTDIR)/strptime.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tabpanel.o \
 	$(OUTDIR)/tag.o \

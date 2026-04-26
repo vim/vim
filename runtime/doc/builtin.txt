@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 21
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11317,7 +11317,12 @@ strptime({format}, {timestring})			*strptime()*
 		can try different {format} values until you get a non-zero
 		result.
 
+		Note: On MS-Windows, where the C runtime does not provide
+		strptime(), Vim uses a built-in fallback that always uses
+		English locale names regardless of the active locale.
+
 		See also |strftime()|.
+
 		Examples: >
 		  :echo strptime("%Y %b %d %X", "1997 Apr 27 11:49:23")
 <		  862156163 >

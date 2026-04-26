@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52622,6 +52622,7 @@ Other ~
 Platform specific ~
 -----------------
 - support OpenType font features in 'guifont' for DirectWrite (Win32)
+- Include strptime() fallback for MS-Windows
 
 xxd ~
 ---
