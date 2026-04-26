@@ -6233,6 +6233,9 @@ added-win32-GUI	version5.txt	/*added-win32-GUI*
 aff-dic-format	spell.txt	/*aff-dic-format*
 after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
+algol68	syntax.txt	/*algol68*
+algol68_no_preludes	syntax.txt	/*algol68_no_preludes*
+algol68_symbolic_operators	syntax.txt	/*algol68_symbolic_operators*
 alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
@@ -7519,6 +7522,7 @@ ft-ada-options	ft_ada.txt	/*ft-ada-options*
 ft-ada-plugin	ft_ada.txt	/*ft-ada-plugin*
 ft-ada-syntax	ft_ada.txt	/*ft-ada-syntax*
 ft-ada-variables	ft_ada.txt	/*ft-ada-variables*
+ft-algol68-syntax	syntax.txt	/*ft-algol68-syntax*
 ft-ant-syntax	syntax.txt	/*ft-ant-syntax*
 ft-apache-syntax	syntax.txt	/*ft-apache-syntax*
 ft-arduino-plugin	filetype.txt	/*ft-arduino-plugin*
