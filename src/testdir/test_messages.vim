@@ -439,7 +439,7 @@ func Test_mode_cleared_after_silent_message()
   let buf = RunVimInTerminal('-S XsilentMessageMode', {'rows': 10})
 
   call term_sendkeys(buf, 'v')
-  call TermWait(buf)
+  call WaitForAssert({-> assert_match('VISUAL.*\d\+\s\+\d', term_getline(buf, 10))}, 1000)
   call VerifyScreenDump(buf, 'Test_mode_cleared_after_silent_message_1', {})
 
   call term_sendkeys(buf, 'd')
