@@ -435,7 +435,7 @@ jobs:
           echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
           echo "GETTEXT_PATH=D:\gettext${{ matrix.arch == 'x64' && '64' || '32' }}" >> $GITHUB_ENV
 
-      - uses: msys2/setup-msys2@v2.31.0
+      - uses: msys2/setup-msys2@v2.31.1
         if: matrix.toolchain == 'mingw'
         with:
           update: true
@@ -459,7 +459,7 @@ jobs:
           echo %GETTEXT64_URL%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v5.0.4
+        uses: actions/cache@v5.0.5
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
