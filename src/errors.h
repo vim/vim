@@ -3809,3 +3809,5 @@ EXTERN char e_gethostbyname_in_channel_listen[]
 EXTERN char e_cannot_create_pipes[]
 	INIT(= N_("E1575: Cannot create pipes"));
 #endif
+EXTERN char e_tag_file_entry_must_not_be_url[]
+	INIT(= N_("E1576: Tag file entry must not be a URL"));

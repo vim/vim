@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-21 19:33+0000\n"
+"POT-Creation-Date: 2026-04-27 18:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8854,6 +8854,9 @@ msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
 msgstr ""
 
 msgid "E1575: Cannot create pipes"
+msgstr ""
+
+msgid "E1576: Tag file entry must not be a URL"
 msgstr ""
 
 #. type of cmdline window or 0
