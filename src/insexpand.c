@@ -3631,6 +3631,9 @@ expand_by_function(int type, char_u *base, callback_T *cb)
     int		save_State = State;
     int		retval;
     int		is_cpt_function = (cb != NULL);
+    int		use_sandbox = is_cpt_function
+			    && was_set_insecurely(curwin,
+					(char_u *)"complete", OPT_LOCAL);
 
     if (!is_cpt_function)
     {
@@ -3652,8 +3655,12 @@ expand_by_function(int type, char_u *base, callback_T *cb)
     // switching to another window, it should not be needed and may end up in
     // Insert mode in another buffer.
     ++textlock;
+    if (use_sandbox)
+	++sandbox;
 
     retval = call_callback(cb, 0, &rettv, 2, args);
+    if (use_sandbox)
+	--sandbox;
 
     // Call a function, which returns a list or dict.
     if (retval == OK)
@@ -6760,6 +6767,9 @@ get_userdefined_compl_info(
     pos_T	pos;
     int		save_State = State;
     int		is_cpt_function = (cb != NULL);
+    int		use_sandbox = is_cpt_function
+			    && was_set_insecurely(curwin,
+					(char_u *)"complete", OPT_LOCAL);
 
     if (!is_cpt_function)
     {
@@ -6782,7 +6792,11 @@ get_userdefined_compl_info(
     args[2].v_type = VAR_UNKNOWN;
     pos = curwin->w_cursor;
     ++textlock;
+    if (use_sandbox)
+	++sandbox;
     col = call_callback_retnr(cb, 2, args);
+    if (use_sandbox)
+	--sandbox;
     --textlock;
 
     State = save_State;
