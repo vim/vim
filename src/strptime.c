@@ -70,9 +70,13 @@
 #define isleap_sum(a, b) \
 			isleap(((unsigned)(a) + (unsigned)(b)) % 400)
 
-#ifdef _MSC_VER
-# define timezone   _timezone
-# define tzname	    _tzname
+/*
+ * _get_tzname() is provided by the UCRT and by the MSVC CRT.  Older MinGW
+ * builds linking against msvcrt.dll fall back to the deprecated tzname[]
+ * global (mingw-w64 already exposes the POSIX-named tzname[]).
+ */
+#if defined(_UCRT) || defined(_MSC_VER)
+# define USE_GET_TZNAME
 #endif
 
 /* Locale tables (English / "C" locale). */
@@ -571,10 +575,27 @@ namedzone:
 		    continue;
 		}
 		/*
-		 * Our current timezone
+		 * Our current timezone.  Prefer _get_tzname() over the
+		 * tzname[] global, which UCRT marks deprecated because it
+		 * may be inaccurate after locale changes.
 		 */
+#ifdef USE_GET_TZNAME
+		{
+		    char tzbuf[2][32];
+		    const char *tznames[2] = { tzbuf[0], tzbuf[1] };
+		    size_t tzlen;
+
+		    _tzset();
+		    if (_get_tzname(&tzlen, tzbuf[0], sizeof(tzbuf[0]), 0) != 0)
+			tzbuf[0][0] = NUL;
+		    if (_get_tzname(&tzlen, tzbuf[1], sizeof(tzbuf[1]), 1) != 0)
+			tzbuf[1][0] = NUL;
+		    ep = find_string(bp, &i, tznames, NULL, 2);
+		}
+#else
 		ep = find_string(bp, &i,
 			(const char *const *)tzname, NULL, 2);
+#endif
 		if (ep != NULL)
 		{
 		    tm->tm_isdst = i;
