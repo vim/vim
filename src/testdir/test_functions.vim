@@ -4629,4 +4629,41 @@ func Test_uriencoding()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+" Note: legacy func, not vim9 def, to avoid the test file being vim9script
+func Test_vim9_def_fc_sandbox()
+  sandbox def! g:Bad()
+    system('echo unsafe')
+  enddef
+
+  call assert_fails('call g:Bad()', 'E48:')
+  delfunction g:Bad
+endfunc
+
+func Test_vim9_def_call_dfunc_fc_sandbox()
+  " Inner has FC_SANDBOX, outer does not.
+  " Calling outer goes through call_dfunc into inner, exercising
+  " the sandbox handling in call_dfunc and func_return.
+  sandbox def! g:Inner()
+    system('echo unsafe')
+  enddef
+
+  def! g:Outer()
+    g:Inner()
+  enddef
+
+  call assert_fails('call g:Outer()', 'E48:')
+  delfunction g:Inner
+  delfunction g:Outer
+endfunc
+
+" Deferred body inside a sandboxed def function must still run sandboxed.
+func Test_vim9_def_defer_fc_sandbox()
+  sandbox def! g:BadDefer()
+    defer system('echo unsafe')
+  enddef
+
+  call assert_fails('call g:BadDefer()', 'E48:')
+  delfunction g:BadDefer
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
