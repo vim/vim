@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 23
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6155,7 +6155,8 @@ TitleBarNC	Title bar for inactive Gui's window.
 Visual		Visual mode selection.
 							*hl-VisualNOS*
 VisualNOS	Visual mode selection when vim is "Not Owning the Selection".
-		Only X11 Gui's |gui-x11| and |xterm-clipboard| supports this.
+		Only X11 Gui's |gui-x11|, |xterm-clipboard| and |wayland-selections|
+		supports this.
 							*hl-WarningMsg*
 WarningMsg	Warning messages.
 							*hl-WildMenu*
