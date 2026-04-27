@@ -372,7 +372,7 @@ function Test_tabpanel_drawing_2()
   END
   call writefile(lines, 'XTest_tabpanel_drawing_2', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_drawing_2', {'rows': 10, 'cols': 78})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_drawing_2', {'rows': 10, 'cols': 65})
   call term_sendkeys(buf, "ggo")
   call VerifyScreenDump(buf, 'Test_tabpanel_drawing_2_0', {})
 
