@@ -1617,8 +1617,12 @@ pum_visible(void)
     static int
 pum_in_same_position(void)
 {
+    int	    row = (State & MODE_CMDLINE)
+			? cmdline_row
+			: curwin->w_wrow + W_WINROW(curwin);
+
     return pum_window != curwin
-	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
+	    || (pum_win_row == row
 		&& pum_win_height == curwin->w_height
 		&& pum_win_col == curwin->w_wincol
 		&& pum_win_width == curwin->w_width);
