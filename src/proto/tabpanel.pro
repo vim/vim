@@ -1,5 +1,6 @@
 /* tabpanel.c */
 int tabpanelopt_changed(void);
+void tabpanel_forget_tabpage(const tabpage_T *tp);
 int tabpanel_width(void);
 int tabpanel_leftcol(void);
 void draw_tabpanel(void);

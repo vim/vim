@@ -593,6 +593,12 @@ func Test_set_completion_string_values()
   if exists('+tabclose')
     call assert_equal('left uselast', join(sort(getcompletion('set tabclose=', 'cmdline'))), ' ')
   endif
+  if has('tabpanel')
+    call assert_equal(['align:', 'columns:', 'scrollbar', 'vert'],
+          \ getcompletion('set tabpanelopt=', 'cmdline'))
+    call assert_equal(['left', 'right'],
+          \ getcompletion('set tabpanelopt=align:', 'cmdline'))
+  endif
   if exists('+termwintype')
     call assert_equal('conpty', getcompletion('set termwintype=', 'cmdline')[1])
   endif

@@ -4784,6 +4784,9 @@ free_tabpage(tabpage_T *tp)
 
     if (tp == lastused_tabpage)
 	lastused_tabpage = NULL;
+#ifdef FEAT_TABPANEL
+    tabpanel_forget_tabpage(tp);
+#endif
 
     vim_free(tp->tp_localdir);
     vim_free(tp->tp_prevdir);

@@ -43,11 +43,11 @@ static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
 static bool tpl_is_vert = false;
-static bool tpl_scroll = false;
 static bool tpl_scrollbar = false;
 static int tpl_scroll_offset = 0;
 static int tpl_total_rows = 0;
-static int tpl_scrollbar_col = -1;	// screen column of scrollbar, -1 if none
+static int tpl_scrollbar_col = -1;  // screen column of scrollbar, -1 if none
+static tabpage_T *tpl_last_curtab = NULL;   // last curtab seen by draw_tabpanel
 
 typedef struct {
     win_T   *wp;
@@ -69,7 +69,6 @@ tabpanelopt_changed(void)
     int		new_align = ALIGN_LEFT;
     long	new_columns = 20;
     bool	new_is_vert = false;
-    bool	new_scroll = false;
     bool	new_scrollbar = false;
 
     p = p_tplo;
@@ -107,12 +106,6 @@ tabpanelopt_changed(void)
 	{
 	    p += 9;
 	    new_scrollbar = true;
-	    new_scroll = true;
-	}
-	else if (STRNCMP(p, "scroll", 6) == 0)
-	{
-	    p += 6;
-	    new_scroll = true;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -124,13 +117,24 @@ tabpanelopt_changed(void)
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_is_vert = new_is_vert;
-    if (tpl_scroll != new_scroll)
-	tpl_scroll_offset = 0;
-    tpl_scroll = new_scroll;
     tpl_scrollbar = new_scrollbar;
+
+    // Re-center the current tab on the next redraw.
+    tpl_last_curtab = NULL;
 
     shell_new_columns();
     return OK;
+}
+
+/*
+ * Drop any internal reference to "tp", so draw_tabpanel() never compares
+ * against a dangling pointer after the tabpage has been freed.
+ */
+    void
+tabpanel_forget_tabpage(const tabpage_T *tp)
+{
+    if (tpl_last_curtab == tp)
+	tpl_last_curtab = NULL;
 }
 
 /*
@@ -265,6 +269,31 @@ tabpanel_append_click_regions(
 }
 
 /*
+ * Ensure the current tab is visible by adjusting tpl_scroll_offset when
+ * the selected tab has changed since the previous redraw.  Mouse wheel or
+ * scrollbar drag operations leave curtab unchanged, so the user's chosen
+ * offset is preserved in those cases.
+ */
+    static void
+follow_curtab_if_needed(int curtab_row)
+{
+    if (Rows <= 0 || curtab == tpl_last_curtab)
+	return;
+
+    if (curtab_row < tpl_scroll_offset)
+	tpl_scroll_offset = curtab_row;
+    else if (curtab_row >= tpl_scroll_offset + Rows)
+	tpl_scroll_offset = curtab_row - Rows + 1;
+
+    int max_offset = tpl_total_rows > Rows ? tpl_total_rows - Rows : 0;
+
+    if (tpl_scroll_offset < 0)
+	tpl_scroll_offset = 0;
+    else if (tpl_scroll_offset > max_offset)
+	tpl_scroll_offset = max_offset;
+}
+
+/*
  * draw the tabpanel.
  */
     void
@@ -293,30 +322,36 @@ draw_tabpanel(void)
     int sb_len = tpl_scrollbar ? SCROLL_LEN : 0;
     int sb_screen_col = -1;
 
+    // The scrollbar is always placed at the right edge of the tabpanel,
+    // regardless of 'align'.  The vertical separator sits at the panel's
+    // boundary with the buffer area (left edge for align:right, right edge
+    // for align:left).
     if (tpl_is_vert)
     {
 	if (is_right)
 	{
-	    // draw main contents in tabpanel
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, VERT_LEN + sb_len,
-		    maxwidth - VERT_LEN, &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN + sb_len, maxwidth,
+	    // Panel on the right: vert at panel's left edge, scrollbar at
+	    // panel's right edge (= screen's right edge).
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, VERT_LEN,
+		    maxwidth - sb_len, &curtab_row, NULL);
+	    follow_curtab_if_needed(curtab_row);
+	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN, maxwidth - sb_len,
 		    &curtab_row, NULL);
-	    // draw vert separator in tabpanel
 	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			topframe->fr_width, vs_attr);
 	    if (tpl_scrollbar)
-		sb_screen_col = topframe->fr_width + VERT_LEN;
+		sb_screen_col = topframe->fr_width + maxwidth - SCROLL_LEN;
 	}
 	else
 	{
-	    // draw main contents in tabpanel
+	    // Panel on the left: scrollbar just left of vert, vert at
+	    // panel's right edge (boundary with buffer).
 	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0,
 		    maxwidth - VERT_LEN - sb_len, &curtab_row, NULL);
+	    follow_curtab_if_needed(curtab_row);
 	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN - sb_len,
 		    &curtab_row, NULL);
-	    // draw vert separator in tabpanel
 	    for (vsrow = 0; vsrow < Rows; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			maxwidth - VERT_LEN, vs_attr);
@@ -328,16 +363,20 @@ draw_tabpanel(void)
     {
 	if (is_right)
 	{
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, sb_len, maxwidth,
+	    // Panel on the right, no vert: scrollbar at screen's right edge.
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - sb_len,
 		    &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, sb_len, maxwidth, &curtab_row, NULL);
+	    follow_curtab_if_needed(curtab_row);
+	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - sb_len,
+		    &curtab_row, NULL);
 	    if (tpl_scrollbar)
-		sb_screen_col = topframe->fr_width;
+		sb_screen_col = topframe->fr_width + maxwidth - SCROLL_LEN;
 	}
 	else
 	{
 	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - sb_len,
 		    &curtab_row, NULL);
+	    follow_curtab_if_needed(curtab_row);
 	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - sb_len,
 		    &curtab_row, NULL);
 	    if (tpl_scrollbar)
@@ -354,6 +393,7 @@ draw_tabpanel(void)
     // A user function may reset KeyTyped, restore it.
     KeyTyped = saved_KeyTyped;
 
+    tpl_last_curtab = curtab;
     redraw_tabpanel = FALSE;
 }
 
@@ -606,13 +646,7 @@ do_by_tplmode(
     args.col_end = col_end;
 
     if (tplmode != TPLMODE_GET_CURTAB_ROW && args.maxrow > 0)
-    {
-	if (tpl_scroll)
-	    args.offsetrow = tpl_scroll_offset;
-	else
-	    while (args.offsetrow + args.maxrow <= *pcurtab_row)
-		args.offsetrow += args.maxrow;
-    }
+	args.offsetrow = tpl_scroll_offset;
 
     tp = first_tabpage;
 
@@ -632,16 +666,9 @@ do_by_tplmode(
 	{
 	    args.attr = attr_tpls;
 	    if (tplmode == TPLMODE_GET_CURTAB_ROW)
-	    {
+		// Capture the row of the current tab and keep iterating so
+		// tpl_total_rows receives the true content height below.
 		*pcurtab_row = row;
-		// When scroll mode is active keep iterating so tpl_total_rows
-		// receives the true content height; otherwise bail out early.
-		if (!tpl_scroll)
-		{
-		    do_unlet((char_u *)"g:actual_curtabpage", TRUE);
-		    break;
-		}
-	    }
 	}
 	else
 	    args.attr = attr_tpl;
@@ -742,7 +769,7 @@ do_by_tplmode(
     // Capture the true content height during the GET_CURTAB_ROW pass, which
     // ignores maxrow and therefore walks every tab.  REDRAW stops at the
     // visible edge so its "row" is clamped and unusable here.
-    if (tplmode == TPLMODE_GET_CURTAB_ROW && tpl_scroll)
+    if (tplmode == TPLMODE_GET_CURTAB_ROW)
 	tpl_total_rows = row;
 }
 
@@ -761,10 +788,21 @@ draw_tabpanel_scrollbar(int screen_col)
 
     if (tpl_total_rows > Rows && Rows > 0)
     {
+	int max_offset = tpl_total_rows - Rows;
+	int track_range;
+
 	thumb_height = Rows * Rows / tpl_total_rows;
 	if (thumb_height < 1)
 	    thumb_height = 1;
-	thumb_top = Rows * tpl_scroll_offset / tpl_total_rows;
+
+	// Map tpl_scroll_offset onto the track: at offset 0 the thumb's top
+	// is at row 0, at the maximum offset its bottom reaches the last
+	// row.  This is the exact inverse of tabpanel_drag_scrollbar().
+	track_range = Rows - thumb_height;
+	if (track_range > 0 && max_offset > 0)
+	    thumb_top = track_range * tpl_scroll_offset / max_offset;
+	else
+	    thumb_top = 0;
 	if (thumb_top + thumb_height > Rows)
 	    thumb_top = Rows - thumb_height;
 	if (thumb_top < 0)
@@ -848,7 +886,6 @@ tabpanel_drag_scrollbar(int screen_row)
 /*
  * Scroll the tabpanel by 'count' rows in direction 'dir' (1 = down, -1 = up).
  * Returns true if the offset changed and a redraw was scheduled.
- * Has no effect unless 'tabpanelopt' contains "scroll".
  */
     bool
 tabpanel_scroll(int dir, int count)
@@ -856,7 +893,7 @@ tabpanel_scroll(int dir, int count)
     int max_offset;
     int new_offset;
 
-    if (!tpl_scroll || tabpanel_width() == 0)
+    if (tabpanel_width() == 0)
 	return false;
 
     max_offset = tpl_total_rows - Rows;
