@@ -1800,6 +1800,18 @@ popup_adjust_position(win_T *wp)
 	wp->w_width = avail > 0 ? avail : 0;
     }
 
+    // Same for the bottom edge: shift up so the border/padding/shadow stays
+    // on screen, and clip the height if the popup is taller than the screen.
+    if (wp->w_winrow + wp->w_height + extra_height > Rows)
+	wp->w_winrow = Rows - wp->w_height - extra_height;
+    if (wp->w_winrow < 0)
+	wp->w_winrow = 0;
+    if (wp->w_winrow + wp->w_height + extra_height > Rows)
+    {
+	int avail = Rows - wp->w_winrow - extra_height;
+	wp->w_height = avail > 0 ? avail : 0;
+    }
+
     if (wp->w_height != org_height)
 	win_comp_scroll(wp);
 
