@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 26
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6863,6 +6863,8 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		second argument: >
 			GetBuffer()->listener_add(callback)
 <
+		This function is not available in the |sandbox|.
+
 		Return type: |Number|
 
 
@@ -6877,6 +6879,8 @@ listener_flush([{buf}])					*listener_flush()*
 		Can also be used as a |method|: >
 			GetBuffer()->listener_flush()
 <
+		This function is not available in the |sandbox|.
+
 		Return type: void
 
 
@@ -6888,6 +6892,8 @@ listener_remove({id})					*listener_remove()*
 		Can also be used as a |method|: >
 			GetListenerId()->listener_remove()
 <
+		This function is not available in the |sandbox|.
+
 		Return type: |Number|
 
 
@@ -8867,6 +8873,8 @@ redraw_listener_add({opts})				*redraw_listener_add()*
 		Can also be used as a |method|: >
 			GetOpts()->redraw_listener_add()
 <
+		This function is not available in the |sandbox|.
+
 		Return type: |Number|
 
 
