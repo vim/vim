@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Apr 26
+*various.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -184,8 +184,8 @@ g8			Print the hex values of the bytes used in the
 			If the mark is "=", a line of dashes is printed
 			around the current line.
 
-			If the 'number' or 'relativenumber' option is set,
-			absolute line numbers will be included in the output.
+			If the 'number' option is set, absolute line numbers
+			will be included in the output.
 
 							*:z!*
 :[range]z![+-^.=][count]
