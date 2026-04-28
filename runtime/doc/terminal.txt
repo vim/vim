@@ -965,6 +965,20 @@ term_start({cmd} [, {options}])			*term_start()*
 		input and one output handle, with no separate handle for
 		stderr.
 
+		Note: term_start() always uses RAW mode for its callbacks.
+		"out_cb" and "err_cb" receive the raw chunk of data as read
+		from the OS.  A single callback invocation may contain
+		multiple lines separated by NL, and (for stdout via a pty)
+		each line may have a trailing CR from the line discipline
+		(ONLCR).  If per-line handling is desired, the callback must
+		split "msg" on NL and strip the trailing CR itself.
+		Example: >
+			func Handle(ch, msg)
+			  for line in split(a:msg, "\n")
+			    echom substitute(line, '\r$', '', '')
+			  endfor
+			endfunc
+<
 		There are extra options:
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
