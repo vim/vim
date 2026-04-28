@@ -7591,6 +7591,7 @@ command_height(void)
     }
     if (p_ch < old_p_ch && command_frame_height && frp != NULL)
 	frame_add_height(frp, (int)(old_p_ch - p_ch));
+    win_fix_scroll(true);
 
     // Recompute window positions.
     win_comp_pos();
