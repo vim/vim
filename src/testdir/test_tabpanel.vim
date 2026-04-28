@@ -1129,4 +1129,81 @@ func Test_tabpanel_empty()
   set tabpanel&
 endfunc
 
+func Test_tabpanel_getinfo_and_scroll()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2 tabpanelopt=columns:20
+    set showtabline=0
+    for i in range(40)
+      tabnew
+    endfor
+    tabfirst
+    redraw
+    func WriteResult(label)
+      call writefile([a:label, string(tabpanel_getinfo())], 'Xresult', 'a')
+    endfunc
+    call delete('Xresult')
+    call WriteResult('initial')
+    let g:r1 = tabpanel_scroll(1)
+    redraw
+    call WriteResult('after_scroll_1')
+    call tabpanel_scroll(-10)
+    redraw
+    call WriteResult('after_scroll_minus10')
+    let g:max = tabpanel_getinfo().max_offset
+    call tabpanel_scroll(g:max, #{absolute: 1})
+    redraw
+    call WriteResult('after_abs_max')
+    call tabpanel_scroll(99999, #{absolute: 1})
+    redraw
+    call WriteResult('after_abs_overflow')
+    call tabpanel_scroll(-5, #{absolute: 1})
+    redraw
+    call WriteResult('after_abs_negative')
+    let g:r_zero = tabpanel_scroll(0, #{absolute: 1})
+    let g:r_neg_at_zero = tabpanel_scroll(-1)
+    call writefile([
+          \ 'r1=' .. g:r1,
+          \ 'max=' .. g:max,
+          \ 'r_zero=' .. g:r_zero,
+          \ 'r_neg_at_zero=' .. g:r_neg_at_zero,
+          \ ], 'Xflags')
+  END
+  call writefile(lines, 'XTest_tabpanel_getinfo', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_getinfo', {'rows': 10, 'cols': 45})
+  call WaitForAssert({-> assert_true(filereadable('Xflags'))})
+  call StopVimInTerminal(buf)
+
+  let results = readfile('Xresult')
+  let flags = readfile('Xflags')
+  call delete('Xresult')
+  call delete('Xflags')
+
+  " Parse [label, dict] pairs.
+  let info = {}
+  for i in range(0, len(results) - 1, 2)
+    let info[results[i]] = eval(results[i + 1])
+  endfor
+
+  call assert_equal('left', info.initial.align)
+  call assert_equal(20, info.initial.columns)
+  call assert_false(has_key(info.initial, 'scroll'))
+  call assert_equal(0, info.initial.offset)
+  call assert_true(info.initial.total > 0)
+  call assert_true(info.initial.max_offset > 0)
+
+  call assert_equal(1, info.after_scroll_1.offset)
+  call assert_equal(0, info.after_scroll_minus10.offset)
+
+  let max = info.initial.max_offset
+  call assert_equal(max, info.after_abs_max.offset)
+  call assert_equal(max, info.after_abs_overflow.offset)
+  call assert_equal(0, info.after_abs_negative.offset)
+
+  call assert_equal(['r1=v:true', 'max=' .. max,
+        \ 'r_zero=v:false', 'r_neg_at_zero=v:false'], flags)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

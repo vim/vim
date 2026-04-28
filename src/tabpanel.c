@@ -913,4 +913,102 @@ tabpanel_scroll(int dir, int count)
     return true;
 }
 
+/*
+ * Set the tabpanel scroll offset to "offset" (clamped to the valid range).
+ * Returns true if the offset changed and a redraw was scheduled.
+ */
+    bool
+tabpanel_set_offset(int offset)
+{
+    int max_offset;
+
+    if (tabpanel_width() == 0)
+	return false;
+
+    max_offset = tpl_total_rows - Rows;
+    if (max_offset < 0)
+	max_offset = 0;
+
+    if (offset < 0)
+	offset = 0;
+    if (offset > max_offset)
+	offset = max_offset;
+    if (offset == tpl_scroll_offset)
+	return false;
+
+    tpl_scroll_offset = offset;
+    redraw_tabpanel = TRUE;
+    return true;
+}
+
+/*
+ * "tabpanel_getinfo()" function
+ */
+    void
+f_tabpanel_getinfo(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    dict_T	*d;
+    int		max_offset;
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+    d = rettv->vval.v_dict;
+
+    max_offset = tpl_total_rows - Rows;
+    if (max_offset < 0)
+	max_offset = 0;
+
+    dict_add_string(d, "align",
+	    (char_u *)(tpl_align == ALIGN_RIGHT ? "right" : "left"));
+    dict_add_number(d, "columns", tabpanel_width());
+    dict_add_bool(d, "scrollbar", tpl_scrollbar);
+    dict_add_number(d, "offset", tpl_scroll_offset);
+    dict_add_number(d, "total", tpl_total_rows);
+    dict_add_number(d, "max_offset", max_offset);
+}
+
+/*
+ * "tabpanel_scroll()" function
+ */
+    void
+f_tabpanel_scroll(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T	n;
+    int		absolute = 0;
+    bool	changed;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    n = tv_get_number_chk(&argvars[0], NULL);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
+	{
+	    emsg(_(e_dictionary_required));
+	    return;
+	}
+	absolute = dict_get_bool(argvars[1].vval.v_dict, "absolute", FALSE);
+    }
+
+    // Clamp to int range to avoid signed overflow when casting and negating.
+    if (n > INT_MAX)
+	n = INT_MAX;
+    else if (n < -INT_MAX)
+	n = -INT_MAX;
+
+    if (absolute)
+	changed = tabpanel_set_offset((int)n);
+    else
+	changed = tabpanel_scroll(n >= 0 ? 1 : -1,
+				  (int)(n >= 0 ? n : -n));
+
+    rettv->vval.v_number = changed ? VVAL_TRUE : VVAL_FALSE;
+}
+
 #endif // FEAT_TABPANEL

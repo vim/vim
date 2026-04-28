@@ -52651,6 +52651,8 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |ch_listen()|		listen on {address}
+|tabpanel_getinfo()|	get current state of the |tabpanel|
+|tabpanel_scroll()|	scroll the |tabpanel|
 
 Autocommands: ~
 

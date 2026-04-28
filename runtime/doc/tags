@@ -10896,6 +10896,8 @@ tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
 tabpanel	tabpage.txt	/*tabpanel*
 tabpanel-mouse	tabpage.txt	/*tabpanel-mouse*
 tabpanel-scroll	tabpage.txt	/*tabpanel-scroll*
+tabpanel_getinfo()	builtin.txt	/*tabpanel_getinfo()*
+tabpanel_scroll()	builtin.txt	/*tabpanel_scroll()*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
