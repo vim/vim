@@ -2671,6 +2671,7 @@ typedef enum
 {
     CH_MODE_NL = 0,
     CH_MODE_RAW,
+    CH_MODE_BLOB,
     CH_MODE_JSON,
     CH_MODE_JS,
     CH_MODE_LSP,	// Language Server Protocol (http + json)

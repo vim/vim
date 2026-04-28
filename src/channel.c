@@ -1372,7 +1372,8 @@ channel_open_func(typval_T *argvars)
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
-		+ (is_unix? 0 : JO_WAITTIME), 0) == FAIL)
+		+ (is_unix? 0 : JO_WAITTIME),
+	    0) == FAIL)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
@@ -1440,7 +1441,8 @@ channel_listen_func(typval_T *argvars)
     opt.jo_mode = CH_MODE_JSON;
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
-	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL, 0) == FAIL)
+	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL,
+	    0) == FAIL)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
@@ -3213,6 +3215,7 @@ channel_use_json_head(channel_T *channel, ch_part_T part)
 may_invoke_callback(channel_T *channel, ch_part_T part)
 {
     char_u	*msg = NULL;
+    blob_T	*blob = NULL;
     typval_T	*listtv = NULL;
     typval_T	argv[CH_JSON_MAX_ARGS];
     int		seq_nr = -1;
@@ -3224,6 +3227,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     buf_T	*buffer = NULL;
     char_u	*p;
     int		called_otc;		// one time callbackup
+    int		raw_len = 0;
 
     if (channel->ch_nb_close_cb != NULL)
 	// this channel is handled elsewhere (netbeans)
@@ -3384,15 +3388,42 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	{
 	    // For a raw channel we don't know where the message ends, just
 	    // get everything we have.
-	    // Convert NUL to NL, the internal representation.
-	    msg = channel_get_all(channel, part, NULL);
+	    raw_len = 0;
+	    msg = channel_get_all(channel, part,
+			ch_mode == CH_MODE_BLOB ? &raw_len : NULL);
 	}
 
 	if (msg == NULL)
 	    return FALSE; // out of memory (and avoids Coverity warning)
 
-	argv[1].v_type = VAR_STRING;
-	argv[1].vval.v_string = msg;
+	if (ch_mode == CH_MODE_BLOB)
+	{
+	    blob = blob_alloc();
+	    if (blob == NULL)
+	    {
+		vim_free(msg);
+		return FALSE;
+	    }
+	    if (ga_grow(&blob->bv_ga, raw_len) == FAIL)
+	    {
+		blob_free(blob);
+		vim_free(msg);
+		return FALSE;
+	    }
+	    if (raw_len > 0)
+	    {
+		mch_memmove(blob->bv_ga.ga_data, msg, (size_t)raw_len);
+		blob->bv_ga.ga_len = raw_len;
+	    }
+	    argv[1].v_type = VAR_BLOB;
+	    argv[1].vval.v_blob = blob;
+	    ++blob->bv_refcount;
+	}
+	else
+	{
+	    argv[1].v_type = VAR_STRING;
+	    argv[1].vval.v_string = msg;
+	}
     }
 
     called_otc = FALSE;
@@ -3519,6 +3550,8 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 
     if (listtv != NULL)
 	free_tv(listtv);
+    if (blob != NULL)
+	blob_unref(blob);
     vim_free(msg);
 
     return TRUE;
@@ -3653,6 +3686,9 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 	    break;
 	case CH_MODE_RAW:
 	    STR_LITERAL_SET(s, "RAW");
+	    break;
+	case CH_MODE_BLOB:
+	    STR_LITERAL_SET(s, "BLOB");
 	    break;
 	case CH_MODE_JSON:
 	    STR_LITERAL_SET(s, "JSON");
@@ -4317,14 +4353,16 @@ channel_read_block(
     readq_T	*node;
 
     ch_log(channel, "Blocking %s read, timeout: %d msec",
-				  mode == CH_MODE_RAW ? "RAW" : "NL", timeout);
+				  mode == CH_MODE_RAW ? "RAW"
+				: mode == CH_MODE_BLOB ? "BLOB" : "NL", timeout);
 
     while (TRUE)
     {
 	node = channel_peek(channel, part);
 	if (node != NULL)
 	{
-	    if (mode == CH_MODE_RAW || (mode == CH_MODE_NL
+	    if (mode == CH_MODE_RAW || mode == CH_MODE_BLOB
+		    || (mode == CH_MODE_NL
 					   && channel_first_nl(node) != NULL))
 		// got a complete message
 		break;
@@ -4348,7 +4386,7 @@ channel_read_block(
     }
 
     // We have a complete message now.
-    if (mode == CH_MODE_RAW || outlen != NULL)
+    if (mode == CH_MODE_RAW || mode == CH_MODE_BLOB || outlen != NULL)
     {
 	msg = channel_get_all(channel, part, outlen);
     }
@@ -4384,7 +4422,8 @@ channel_read_block(
 	}
     }
     if (ch_log_active())
-	ch_log(channel, "Returning %d bytes", (int)STRLEN(msg));
+	ch_log(channel, "Returning %d bytes",
+		outlen != NULL ? *outlen : (int)STRLEN(msg));
     return msg;
 }
 
@@ -4618,7 +4657,8 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 	    vim_free(p);
 	}
     }
-    else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_NL)
+    else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_BLOB
+	    || mode == CH_MODE_NL)
 	rettv->vval.v_string = channel_read_block(channel, part,
 		timeout, raw, NULL);
     else
@@ -5000,7 +5040,8 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     part_send = channel_part_send(channel);
 
     ch_mode = channel_get_mode(channel, part_send);
-    if (ch_mode == CH_MODE_RAW || ch_mode == CH_MODE_NL)
+    if (ch_mode == CH_MODE_RAW || ch_mode == CH_MODE_BLOB
+	    || ch_mode == CH_MODE_NL)
     {
 	emsg(_(e_cannot_use_evalexpr_sendexpr_with_raw_or_nl_channel));
 	return;
@@ -5830,7 +5871,8 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     clear_job_options(&opt);
     if (get_job_options(&argvars[1], &opt,
-			    JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL, 0) == OK)
+			    JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL,
+			    0) == OK)
 	channel_set_options(channel, &opt);
     free_job_options(&opt);
 }

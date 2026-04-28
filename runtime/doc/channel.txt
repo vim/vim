@@ -170,6 +170,7 @@ unreachable on the network.
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
+	"blob" - Use raw messages and pass callback data as a |Blob|
 	"lsp"  - Use language server protocol encoding
 	"dap"  - Use debug adapter protocol encoding
 						*channel-callback* *E921*
@@ -189,6 +190,8 @@ unreachable on the network.
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
 		as a string.
+		When "mode" is "blob" the "msg" argument is the whole message
+		as a |Blob|.
 
 		For all callbacks: Use |function()| to bind it to arguments
 		and/or a Dictionary.  Or use the form "dict.function" to bind
