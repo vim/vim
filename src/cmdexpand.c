@@ -4771,7 +4771,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     segment_len = is_single_line ? (end->col - start->col)
 			: (int)(ml_get_len(start->lnum) - start->col);
     if (ga_grow(&ga, segment_len + 2) != OK)
-	return FAIL;
+	goto fail;
 
     ga_concat_len(&ga, start_ptr, segment_len);
     if (!is_single_line)
@@ -4806,13 +4806,13 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     word_end = find_word_end(end_line + end->col);
     segment_len = (int)(word_end - end_line);
     if (ga_grow(&ga, segment_len) != OK)
-	return FAIL;
+	goto fail;
     ga_concat_len(&ga, end_line + (is_single_line ? end->col : 0),
 	    segment_len - (is_single_line ? end->col : 0));
 
     // Null-terminate
     if (ga_grow(&ga, 1) != OK)
-	return FAIL;
+	goto fail;
     ga_append(&ga, NUL);
 
     *match = (char_u *)ga.ga_data;
@@ -4820,6 +4820,10 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     match_end->col = segment_len;
 
     return OK;
+
+fail:
+    ga_clear(&ga);
+    return FAIL;
 }
 
 /*
