@@ -2908,11 +2908,22 @@ func Test_python3_chdir()
     os.chdir('..')
     path = fnamemodify('.', ':p:h:t')
     if path != b'src' and path != b'src2':
-      # Running tests from a shadow directory, so move up another level
-      # This will result in @% looking like shadow/testdir/Xp3cdfile, hence the
-      # slicing to remove the leading path and path separator
+      # Running tests from a shadow directory or workdir, so move up
+      # another level.
+      # This will result in @% looking like shadow/testdir/Xp3cdfile, hence
+      # the slicing to remove the leading path and path separator.
       os.chdir('..')
-      cb.append(str(fnamemodify('.', ':p:h:t')))
+      parent = fnamemodify('.', ':p:h:t')
+      if parent == b'workdir':
+        # Per-test workdir (make -j): real src/ is two levels above
+        # workdir/.  Navigate there for the directory name, then return
+        # so that @% is read from the right level.
+        os.chdir('../..')
+        cb.append(str(fnamemodify('.', ':p:h:t').replace(b'src2', b'src')))
+        os.chdir('testdir/workdir')
+      else:
+        cb.append(str(parent))
+      del parent
       cb.append(vim.eval('@%')[len(path)+1:].replace(os.path.sep, '/'))
       os.chdir(path)
     else:

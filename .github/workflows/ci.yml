@@ -103,7 +103,7 @@ jobs:
 
       - name: Test
         timeout-minutes: 20
-        run: make ${SHADOWOPT} ${TEST}
+        run: make -j$(getconf _NPROCESSORS_ONLN) ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners
       # - name: Setup tmate session
@@ -326,7 +326,7 @@ jobs:
       - name: Test
         timeout-minutes: 25
         run: |
-          make ${TEST}
+          make -j${NPROC} ${TEST}
 
       - name: Upload failed test artifacts
         if: ${{ !cancelled() }}

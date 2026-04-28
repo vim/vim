@@ -302,6 +302,10 @@ func s:GetJustBuildVimExe()
     endif
     return '..\vim.exe'
   endif
+  " Use g:testdir if available, so this works from a workdir too.
+  if exists('g:testdir')
+    return g:testdir .. '/../vim'
+  endif
   return '../vim'
 endfunc
 
@@ -309,8 +313,12 @@ endfunc
 " The Makefile writes it as the first line in the "vimcmd" file.
 " Falls back to the Vim executable in the src directory.
 func GetVimProg()
+  " When running in a workdir, look for vimcmd there first, then in testdir.
   if filereadable('vimcmd')
     return readfile('vimcmd')[0]
+  endif
+  if exists('g:testdir') && filereadable(g:testdir .. '/vimcmd')
+    return readfile(g:testdir .. '/vimcmd')[0]
   endif
   echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
 
@@ -326,6 +334,8 @@ let g:valgrind_cnt = 1
 func GetVimCommand(...)
   if filereadable('vimcmd')
     let lines = readfile('vimcmd')
+  elseif exists('g:testdir') && filereadable(g:testdir .. '/vimcmd')
+    let lines = readfile(g:testdir .. '/vimcmd')
   else
     echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
     let lines = [s:GetJustBuildVimExe()]
