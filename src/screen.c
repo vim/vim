@@ -445,6 +445,20 @@ skip_for_popup(int row, int col)
 #endif
 	    )
 	return TRUE;
+    // Also skip when the pum is visible and the cell is geometrically under
+    // it, regardless of pum_will_redraw.  This protects against background
+    // draws (e.g. vsep at cursor row, status line) that are not part of a
+    // pum_redraw cycle.  The pum's own draw uses screen_zindex ==
+    // POPUPMENU_ZINDEX, so this check excludes it.
+#ifdef FEAT_PROP_POPUP
+    if (screen_zindex < POPUPMENU_ZINDEX
+	    && pum_visible()
+	    && pum_under_menu(row, col, FALSE))
+	return TRUE;
+#else
+    if (pum_visible() && pum_under_menu(row, col, FALSE))
+	return TRUE;
+#endif
 #ifdef FEAT_PROP_POPUP
     if (blocked_by_popup(row, col))
 	return TRUE;
