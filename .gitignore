@@ -91,6 +91,8 @@ src/testdir/viminfo
 src/testdir/opt_test.vim
 src/testdir/failed
 src/testdir/starttime
+src/testdir/workdir/
+src/testdir/XfakeHOME/
 runtime/indent/testdir/*.out
 runtime/indent/testdir/*.fail
 src/memfile_test

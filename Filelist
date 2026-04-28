@@ -538,6 +538,7 @@ SRC_UNIX =	\
 		src/proto/pty.pro \
 		src/pty.c \
 		src/testdir/Makefile \
+		src/testdir/setup_workdir.sh \
 		src/testdir/util/unix.vim \
 		src/toolcheck \
 		src/vim_icon.xbm \

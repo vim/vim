@@ -84,16 +84,21 @@ if &lines < 24 || &columns < 80
   qa!
 endif
 
+" g:testdir is the directory containing the test scripts and utilities.
+" When running in a workdir ($TEST_WORKDIR), this is needed to locate
+" resources like dumps/ and samples/.
+let g:testdir = getcwd()
+
 if has('reltime')
   let s:run_start_time = reltime()
 
-  if !filereadable('starttime')
-    " first test, store the overall test starting time
-    let s:test_start_time = localtime()
-    call writefile([string(s:test_start_time)], 'starttime')
+  let s:starttime_file = g:testdir .. '/starttime'
+  if filereadable(s:starttime_file)
+    let s:test_start_time = readfile(s:starttime_file)[0]->str2nr()
   else
-    " second or later test, read the overall test starting time
-    let s:test_start_time = readfile('starttime')[0]->str2nr()
+    " Fallback if starttime was not created by the Makefile (e.g. when
+    " running runtest.vim manually).
+    let s:test_start_time = localtime()
   endif
 endif
 
@@ -551,7 +556,8 @@ endfunc
 
 " Source the test script.  First grab the file name, in case the script
 " navigates away.  g:testname can be used by the tests.
-let g:testname = expand('%')
+" Use the absolute path so the .res file is created in testdir, not workdir.
+let g:testname = expand('%:p')
 let s:done = 0
 let s:fail = 0
 let s:fail_expected = 0
@@ -559,6 +565,9 @@ let s:errors = []
 let s:errors_expected = []
 let s:messages = []
 let s:skipped = []
+
+" Source the test file while cwd is still testdir, so that source
+" commands for utility scripts (screendump.vim, etc.) resolve correctly.
 if expand('%') =~ 'test_vimscript.vim'
   " this test has intentional errors, don't use try/catch.
   source %
@@ -572,6 +581,15 @@ else
     let s:fail += 1
     call add(s:errors, 'Caught exception: ' . v:exception . ' @ ' . v:throwpoint)
   endtry
+endif
+
+" If $TEST_WORKDIR is set, cd into it so that temp files (X*, test.log,
+" messages) are isolated per-test.  This must happen after sourcing the
+" test file (which may source utility scripts via relative paths) but
+" before running Test_ functions (which create temp files).
+if $TEST_WORKDIR != ''
+  let s:abs_workdir = fnamemodify($TEST_WORKDIR, ':p')
+  exe 'cd' fnameescape(s:abs_workdir)
 endif
 
 " Delete the .res file, it may change behavior for completion
