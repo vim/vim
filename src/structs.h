@@ -4197,6 +4197,14 @@ struct window_S
 
     int		w_popup_leftoff;    // columns left of the screen
     int		w_popup_rightoff;   // columns right of the screen
+    int		w_popup_topoff;	    // rows above the host window's top
+				    // when "clipwindow" is set
+    int		w_popup_bottomoff;  // rows below the host window's bottom
+				    // when "clipwindow" is set
+    int		w_popup_leftclip;   // columns left of the host window's left
+				    // when "clipwindow" is set
+    int		w_popup_rightclip;  // columns right of the host window's right
+				    // when "clipwindow" is set
     varnumber_T	w_popup_last_changedtick; // b:changedtick of popup buffer
 					  // when position was computed
     varnumber_T	w_popup_prop_changedtick; // b:changedtick of buffer with
@@ -4205,6 +4213,14 @@ struct window_S
     int		w_popup_prop_topline; // w_topline of window with
 				      // w_popup_prop_type when position was
 				      // computed
+    int		w_popup_prop_winrow;  // w_winrow of host window when
+				      // position was computed
+    int		w_popup_prop_wincol;  // w_wincol of host window when
+				      // position was computed
+    int		w_popup_prop_width;   // w_width of host window when
+				      // position was computed
+    int		w_popup_prop_winheight; // w_height of host window when
+				      // position was computed
     linenr_T	w_popup_last_curline; // last known w_cursor.lnum of window
 				      // with "cursorline" set
     callback_T	w_close_cb;	    // popup close callback

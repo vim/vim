@@ -1396,25 +1396,28 @@ sort_text_props(
 }
 
 /*
- * Find text property "type_id" in the visible lines of window "wp".
- * Match "id" when it is > 0.
- * Returns false when not found.
+ * Find text property "type_id" in lines [first_lnum, last_lnum] of window
+ * "wp"'s buffer.  Match "id" when it is > 0.  Returns false when not found.
  */
     bool
-find_visible_prop(
+find_prop_in_lines(
 	win_T	    *wp,
 	int	    type_id,
 	int	    id,
 	textprop_T  *prop,
-	linenr_T    *found_lnum)
+	linenr_T    *found_lnum,
+	linenr_T    first_lnum,
+	linenr_T    last_lnum)
 {
-    // return when "type_id" no longer exists
     if (text_prop_type_by_id(wp->w_buffer, type_id) == NULL)
 	return false;
 
-    // w_botline may not have been updated yet.
-    validate_botline_win(wp);
-    for (linenr_T lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
+    if (first_lnum < 1)
+	first_lnum = 1;
+    if (last_lnum > wp->w_buffer->b_ml.ml_line_count)
+	last_lnum = wp->w_buffer->b_ml.ml_line_count;
+
+    for (linenr_T lnum = first_lnum; lnum <= last_lnum; ++lnum)
     {
 	char_u	*props;
 	int	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
@@ -1430,6 +1433,25 @@ find_visible_prop(
 	}
     }
     return false;
+}
+
+/*
+ * Find text property "type_id" in the visible lines of window "wp".
+ * Match "id" when it is > 0.
+ * Returns false when not found.
+ */
+    bool
+find_visible_prop(
+	win_T	    *wp,
+	int	    type_id,
+	int	    id,
+	textprop_T  *prop,
+	linenr_T    *found_lnum)
+{
+    // w_botline may not have been updated yet.
+    validate_botline_win(wp);
+    return find_prop_in_lines(wp, type_id, id, prop, found_lnum,
+					  wp->w_topline, wp->w_botline - 1);
 }
 
 /*

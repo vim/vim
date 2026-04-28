@@ -16,6 +16,7 @@ int get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change);
 int prop_count_above_below(buf_T *buf, linenr_T lnum);
 int count_props(linenr_T lnum, int only_starting, int last_line);
 void sort_text_props(buf_T *buf, textprop_T *props, int *idxs, int count);
+bool find_prop_in_lines(win_T *wp, int type_id, int id, textprop_T *prop, linenr_T *found_lnum, linenr_T first_lnum, linenr_T last_lnum);
 bool find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop, linenr_T *found_lnum);
 char_u *props_add_count_header(char_u *line, int line_len, int textlen, int *new_len);
 void add_text_props(linenr_T lnum, textprop_T *text_props, int text_prop_count);
