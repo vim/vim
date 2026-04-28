@@ -36,6 +36,12 @@ echo
      "\ comment
       \ 42
 
+echo "Foo"
+      \| echo "bar"
+
+echo "Foo"|
+      \ echo "bar"
+
 
 " Trailing bar and comments
 
