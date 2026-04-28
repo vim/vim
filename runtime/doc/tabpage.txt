@@ -1,4 +1,4 @@
-*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
+*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -482,42 +482,37 @@ The vertical separator character is taken from "tpl_vert" in 'fillchars'.
 You can customize the appearance of the tab page labels using the highlight
 groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|
 
-SCROLLING IN THE TABPANEL:				*tabpanel-scroll*
+SCROLLING IN THE TABPANEL				*tabpanel-scroll*
 
 When the total height of the tab page list exceeds the visible screen height,
-mouse wheel events over the tabpanel area scroll the tab page list up or
-down.  The scroll step follows the 'mousescroll' setting.  Wheel events
-inside the tabpanel area are consumed by the tabpanel and do not trigger
+mouse wheel events over the tabpanel area scroll the tab page list up or down.
+The scroll step follows the 'mousescroll' setting.  Wheel events inside the
+tabpanel area are consumed by the tabpanel and do not trigger
 |<ScrollWheelUp>| or |<ScrollWheelDown>| mappings.
 
-The current tab page is always brought into view: when the selected tab
-page changes (by |gt|, |gT|, |:tabnext| etc.), the panel scrolls so the
-current entry is visible.
+The current tab page is always brought into view: when the selected tab page
+changes (by |gt|, |gT|, |:tabnext| etc.), the panel scrolls so the current
+entry is visible.
 
 To show a vertical scrollbar indicating the current scroll position, add
 "scrollbar" to 'tabpanelopt': >
 	:set tabpanelopt+=scrollbar
 
-A one-column scrollbar is always reserved at the right edge of the
-tabpanel, regardless of 'align'.  For |'tabpanelopt'|=align:left this is
-the edge adjacent to the buffer windows; for align:right it is the right
-edge of the screen.  Clicking on the scrollbar column moves the thumb to
-the click position, and the thumb can be dragged to scroll continuously.
-
-When "vert" is combined with "scrollbar", the vertical separator is drawn
-at the tabpanel's boundary with the buffer area and the scrollbar stays at
-the tabpanel's right edge.
+A one-column scrollbar is always displayed at the right edge of the tabpanel,
+regardless of the "align:" setting in 'tabpanelopt'.  Clicking on the
+scrollbar column moves the thumb to the click position, and the thumb can be
+dragged to scroll continuously.
 
 The scrollbar uses the |hl-PmenuSbar| highlight group for the track and
 |hl-PmenuThumb| for the thumb.
 
 The scroll offset is remembered across redraws.
 
-MOUSE CLICKS IN THE TABPANEL:				*tabpanel-mouse*
+MOUSE CLICKS IN THE TABPANEL				*tabpanel-mouse*
 
 A left click on a row in the tabpanel selects the tab page that the row
-belongs to.  Unlike the tabline, a double click in the tabpanel does not
-open a new, empty tab page; it is treated the same as a single click.
+belongs to.  Unlike the tabline, a double click in the tabpanel does not open
+a new, empty tab page; it is treated the same as a single click.
 
 For finer-grained control, the 'tabpanel' value may contain |stl-%[FuncName]|
 click regions.  Clicks on those regions are dispatched to the callback
