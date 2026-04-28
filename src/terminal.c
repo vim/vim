@@ -6413,11 +6413,11 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
     if (d == NULL)
 	return;
 
-    DICT_ADD_NUMBER(d, "visible", term->tl_cursor_visible);
-    DICT_ADD_NUMBER(d, "blink", blink_state_is_inverted()
+    DICT_ADD_NUMBER_KEYLITERAL(d, "visible", term->tl_cursor_visible);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "blink", blink_state_is_inverted()
 	    ? !term->tl_cursor_blink : term->tl_cursor_blink);
-    DICT_ADD_NUMBER(d, "shape", term->tl_cursor_shape);
-    DICT_ADD_STRING(d, "color", cursor_color_get(term->tl_cursor_color));
+    DICT_ADD_NUMBER_KEYLITERAL(d, "shape", term->tl_cursor_shape);
+    DICT_ADD_STRING_KEYLITERAL(d, "color", cursor_color_get(term->tl_cursor_color));
     list_append_dict(l, d);
 }
 
@@ -6831,18 +6831,18 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    break;
 	list_append_dict(l, dcell);
 
-	DICT_ADD_STRING_LEN(dcell, "chars", mbs, (int)mbslen);
+	DICT_ADD_STRING_LEN_KEYLITERAL(dcell, "chars", mbs, (int)mbslen);
 
 	rgblen = vim_snprintf_safelen((char *)rgb, sizeof(rgb),
 	    "#%02x%02x%02x", fg.red, fg.green, fg.blue);
-	DICT_ADD_STRING_LEN(dcell, "fg", rgb, (int)rgblen);
+	DICT_ADD_STRING_LEN_KEYLITERAL(dcell, "fg", rgb, (int)rgblen);
 	rgblen = vim_snprintf_safelen((char *)rgb, sizeof(rgb),
 	    "#%02x%02x%02x", bg.red, bg.green, bg.blue);
-	DICT_ADD_STRING_LEN(dcell, "bg", rgb, (int)rgblen);
+	DICT_ADD_STRING_LEN_KEYLITERAL(dcell, "bg", rgb, (int)rgblen);
 
-	DICT_ADD_NUMBER(dcell, "attr",
+	DICT_ADD_NUMBER_KEYLITERAL(dcell, "attr",
 				      cell2attr(term, NULL, &attrs, &fg, &bg));
-	DICT_ADD_NUMBER(dcell, "width", width);
+	DICT_ADD_NUMBER_KEYLITERAL(dcell, "width", width);
 
 	++pos.col;
 	if (width == 2)

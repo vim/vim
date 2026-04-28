@@ -1702,14 +1702,14 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
     int buflocal = TRUE;
     int virtualtext_prop = prop->tp_id < 0;
 
-    DICT_ADD_NUMBER(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
     if (!virtualtext_prop)
     {
-	DICT_ADD_NUMBER(dict, "length", prop->tp_len);
-	DICT_ADD_NUMBER(dict, "id", prop->tp_id);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "length", prop->tp_len);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "id", prop->tp_id);
     }
-    DICT_ADD_NUMBER(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
-    DICT_ADD_NUMBER(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
 
     pt = find_type_by_id(buf->b_proptypes, &buf->b_proparray, prop->tp_type);
     if (pt == NULL)
@@ -1719,18 +1719,18 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 	buflocal = FALSE;
     }
     if (pt != NULL)
-	DICT_ADD_STRING(dict, "type", pt->pt_name);
+	DICT_ADD_STRING_KEYLITERAL(dict, "type", pt->pt_name);
 
     if (buflocal)
-	DICT_ADD_NUMBER(dict, "type_bufnr", buf->b_fnum);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "type_bufnr", buf->b_fnum);
     else
-	DICT_ADD_NUMBER(dict, "type_bufnr", 0);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "type_bufnr", 0);
     if (virtualtext_prop)
     {
 	string_T    text_align = {NULL, 0};
 
 	// virtual text property - u.tp_text must be set by caller
-	DICT_ADD_STRING(dict, "text", prop->u.tp_text);
+	DICT_ADD_STRING_KEYLITERAL(dict, "text", prop->u.tp_text);
 
 	// text_align
 	if (prop->tp_flags & TP_FLAG_ALIGN_RIGHT)
@@ -1740,15 +1740,15 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 	else if (prop->tp_flags & TP_FLAG_ALIGN_BELOW)
 	    STR_LITERAL_SET(text_align, "below");
 	if (text_align.string != NULL)
-	    DICT_ADD_STRING_LEN(dict, "text_align",
+	    DICT_ADD_STRING_LEN_KEYLITERAL(dict, "text_align",
 		text_align.string, (int)text_align.length);
 
 	// text_wrap
 	if (prop->tp_flags & TP_FLAG_WRAP)
-	    DICT_ADD_STRING_LEN(dict, "text_wrap",
+	    DICT_ADD_STRING_LEN_KEYLITERAL(dict, "text_wrap",
 		(char_u *)"wrap", STRLEN_LITERAL("wrap"));
 	if (prop->tp_padleft != 0)
-	    DICT_ADD_NUMBER(dict, "text_padding_left", prop->tp_padleft);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "text_padding_left", prop->tp_padleft);
     }
 }
 
@@ -2018,7 +2018,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		}
 
 		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
-		DICT_ADD_NUMBER(rettv->vval.v_dict, "lnum", lnum);
+		DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "lnum", lnum);
 
 		return;
 	    }
@@ -2106,7 +2106,7 @@ get_props_in_line(
 		break;
 	    prop_fill_dict(d, &prop, buf);
 	    if (add_lnum)
-		DICT_ADD_NUMBER(d, "lnum", lnum);
+		DICT_ADD_NUMBER_KEYLITERAL(d, "lnum", lnum);
 	    list_append_dict(retlist, d);
 	}
     }
@@ -2722,16 +2722,16 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv)
     dict_T *d = rettv->vval.v_dict;
 
     if (prop->pt_hl_id > 0)
-	DICT_ADD_STRING(d, "highlight", syn_id2name(prop->pt_hl_id));
-    DICT_ADD_NUMBER(d, "priority", prop->pt_priority);
-    DICT_ADD_NUMBER(d, "combine",
+	DICT_ADD_STRING_KEYLITERAL(d, "highlight", syn_id2name(prop->pt_hl_id));
+    DICT_ADD_NUMBER_KEYLITERAL(d, "priority", prop->pt_priority);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "combine",
 	    (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
-    DICT_ADD_NUMBER(d, "start_incl",
+    DICT_ADD_NUMBER_KEYLITERAL(d, "start_incl",
 	    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
-    DICT_ADD_NUMBER(d, "end_incl",
+    DICT_ADD_NUMBER_KEYLITERAL(d, "end_incl",
 	    (prop->pt_flags & PT_FLAG_INS_END_INCL) ? 1 : 0);
     if (buf != NULL)
-	DICT_ADD_NUMBER(d, "bufnr", buf->b_fnum);
+	DICT_ADD_NUMBER_KEYLITERAL(d, "bufnr", buf->b_fnum);
 }
 
     static void

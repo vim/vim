@@ -37,13 +37,13 @@ static hashtab_T	compat_hashtab;
 #define VV_RO		2	// read-only
 #define VV_RO_SBX	4	// read-only in the sandbox
 
-#define VV_NAME(s, t)	STR_LITERAL_INIT(s), {{t, 0, {0}}, 0, STRLEN_LITERAL(s), {(s)}}
+#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, STRLEN_LITERAL(s), {s}}
 
 typedef struct vimvar vimvar_T;
 
 static struct vimvar
 {
-    string_T	vv_name;	// name of variable, without v:
+    char	*vv_name;	// name of variable, without v:
     dictitem16_T vv_di;		// value and name for key (max 16 chars!)
     type_T	*vv_type;	// type or NULL
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
@@ -216,11 +216,6 @@ evalvars_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
-	if (p->vv_name.length > DICTITEM16_KEY_LEN)
-	{
-	    iemsg("Name too long, increase size of dictitem16_T");
-	    getout(1);
-	}
 	if (p->vv_flags & VV_RO)
 	    p->vv_di.di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	else if (p->vv_flags & VV_RO_SBX)
@@ -2666,7 +2661,7 @@ get_user_var_name(expand_T *xp, int idx)
 
     // v: variables
     if (vidx < VV_LEN)
-	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name.string);
+	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name);
 
     VIM_CLEAR(varnamebuf);
     varnamebuflen = 0;
@@ -2754,7 +2749,7 @@ set_vim_var_nr(int idx, varnumber_T val)
     char *
 get_vim_var_name(int idx)
 {
-    return (char *)vimvars[idx].vv_name.string;
+    return vimvars[idx].vv_name;
 }
 
 /*
@@ -2790,12 +2785,12 @@ set_vim_var_tv(int idx, typval_T *tv)
     // VV_RO is also checked when compiling, but let's check here as well.
     if (vimvars[idx].vv_flags & VV_RO)
     {
-	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name.string);
+	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
     {
-	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name.string);
+	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     clear_tv(&vimvars[idx].vv_di.di_tv);

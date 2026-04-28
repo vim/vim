@@ -5055,10 +5055,10 @@ get_diff_hunk_indices(diffhunk_T *hunk)
     if (hunk_dict == NULL)
 	return NULL;
 
-    DICT_ADD_NUMBER(hunk_dict, "from_idx", hunk->lnum_orig - 1);
-    DICT_ADD_NUMBER(hunk_dict, "from_count", hunk->count_orig);
-    DICT_ADD_NUMBER(hunk_dict, "to_idx", hunk->lnum_new  - 1);
-    DICT_ADD_NUMBER(hunk_dict, "to_count", hunk->count_new);
+    DICT_ADD_NUMBER_KEYLITERAL(hunk_dict, "from_idx", hunk->lnum_orig - 1);
+    DICT_ADD_NUMBER_KEYLITERAL(hunk_dict, "from_count", hunk->count_orig);
+    DICT_ADD_NUMBER_KEYLITERAL(hunk_dict, "to_idx", hunk->lnum_new  - 1);
+    DICT_ADD_NUMBER_KEYLITERAL(hunk_dict, "to_count", hunk->count_new);
 
     return hunk_dict;
 }

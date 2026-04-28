@@ -3749,16 +3749,16 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
     static void
 channel_info(channel_T *channel, dict_T *dict)
 {
-    DICT_ADD_NUMBER(dict, "id", channel->ch_id);
-    DICT_ADD_STRING(dict, "status", (char_u *)channel_status(channel, -1));
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "id", channel->ch_id);
+    DICT_ADD_STRING_KEYLITERAL(dict, "status", (char_u *)channel_status(channel, -1));
 
     if (channel->ch_hostname != NULL)
     {
 	if (channel->ch_port)
-	    DICT_ADD_NUMBER(dict, "port", channel->ch_port);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "port", channel->ch_port);
 	else
 	    // Unix-domain socket.
-	    DICT_ADD_STRING(dict, "path", (char_u *)channel->ch_hostname);
+	    DICT_ADD_STRING_KEYLITERAL(dict, "path", (char_u *)channel->ch_hostname);
 	channel_part_info(channel, dict, "sock", PART_SOCK);
     }
     else
@@ -5076,7 +5076,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // DAP message always has a sequence number (id)
 	    id = ++channel->ch_last_msg_id;
 	    if (di == NULL)
-		DICT_ADD_NUMBER(d, "seq", id);
+		DICT_ADD_NUMBER_KEYLITERAL(d, "seq", id);
 	    else
 		di->di_tv.vval.v_number = id;
 	}
@@ -5086,7 +5086,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // callback, always assign a generated ID
 	    id = ++channel->ch_last_msg_id;
 	    if (di == NULL)
-		DICT_ADD_NUMBER(d, "id", id);
+		DICT_ADD_NUMBER_KEYLITERAL(d, "id", id);
 	    else
 		di->di_tv.vval.v_number = id;
 	}
@@ -5099,11 +5099,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
-	{
-	    string_T	s = STR_LITERAL_INIT("2.0");
-
-	    DICT_ADD_STRING_LEN(d, "jsonrpc", s.string, (int)s.length);
-	}
+	    DICT_ADD_STRING_LEN_KEYLITERAL(d, "jsonrpc", (char_u *)"2.0", STRLEN_LITERAL("2.0"));
 	text = json_encode_lsp_msg(&argvars[1]);
     }
     else
@@ -5151,7 +5147,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     {
 	// A DAP message always has a sequence number.
 	if (rettv->vval.v_dict != NULL)
-	    DICT_ADD_NUMBER(rettv->vval.v_dict, "seq", id);
+	    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "seq", id);
     }
     else if (ch_mode == CH_MODE_LSP && !eval && callback_present)
     {
@@ -5159,7 +5155,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	// function is specified, then return the generated identifier for the
 	// message.  The user can use this to cancel the request (if needed).
 	if (rettv->vval.v_dict != NULL)
-	    DICT_ADD_NUMBER(rettv->vval.v_dict, "id", id);
+	    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "id", id);
     }
 }
 

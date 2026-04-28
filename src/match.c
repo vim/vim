@@ -1041,11 +1041,11 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	}
 	else
 	{
-	    DICT_ADD_STRING(dict, "pattern", cur->mit_pattern);
+	    DICT_ADD_STRING_KEYLITERAL(dict, "pattern", cur->mit_pattern);
 	}
-	DICT_ADD_STRING(dict, "group", syn_id2name(cur->mit_hlg_id));
-	DICT_ADD_NUMBER(dict, "priority", (long)cur->mit_priority);
-	DICT_ADD_NUMBER(dict, "id", (long)cur->mit_id);
+	DICT_ADD_STRING_KEYLITERAL(dict, "group", syn_id2name(cur->mit_hlg_id));
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "priority", (long)cur->mit_priority);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "id", (long)cur->mit_id);
 #  if defined(FEAT_CONCEAL)
 	if (cur->mit_conceal_char)
 	{
@@ -1054,7 +1054,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 	    buflen = (*mb_char2bytes)(cur->mit_conceal_char, buf);
 	    buf[buflen] = NUL;
-	    DICT_ADD_STRING_LEN(dict, "conceal", (char_u *)&buf, buflen);
+	    DICT_ADD_STRING_LEN_KEYLITERAL(dict, "conceal", (char_u *)&buf, buflen);
 	}
 #  endif
 	list_append_dict(rettv->vval.v_list, dict);

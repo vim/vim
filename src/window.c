@@ -3149,26 +3149,26 @@ make_win_info_dict(
 	tv.v_type = VAR_NUMBER;
 
 	tv.vval.v_number = width;
-	if (DICT_ADD_TV(d, "width", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "width", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = height;
-	if (DICT_ADD_TV(d, "height", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "height", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = topline;
-	if (DICT_ADD_TV(d, "topline", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "topline", &tv) == FAIL)
 	    break;
 # ifdef FEAT_DIFF
 	tv.vval.v_number = topfill;
 # else
 	tv.vval.v_number = 0;
 # endif
-	if (DICT_ADD_TV(d, "topfill", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "topfill", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = leftcol;
-	if (DICT_ADD_TV(d, "leftcol", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "leftcol", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = skipcol;
-	if (DICT_ADD_TV(d, "skipcol", &tv) == FAIL)
+	if (DICT_ADD_TV_KEYLITERAL(d, "skipcol", &tv) == FAIL)
 	    break;
 	return d;
     }
@@ -3309,7 +3309,7 @@ check_window_scroll_resize(
 						    tot_leftcol, tot_skipcol);
 	if (alldict != NULL)
 	{
-	    if (DICT_ADD_DICT(v_event, "all", alldict) == FAIL)
+	    if (DICT_ADD_DICT_KEYLITERAL(v_event, "all", alldict) == FAIL)
 		dict_unref(alldict);
 	    else
 		--alldict->dv_refcount;
@@ -3389,7 +3389,7 @@ may_trigger_win_scrolled_resized(void)
 	save_v_event_T  save_v_event;
 	dict_T		*v_event = get_v_event(&save_v_event);
 
-	if (DICT_ADD_LIST(v_event, "windows", windows_list) == OK)
+	if (DICT_ADD_LIST_KEYLITERAL(v_event, "windows", windows_list) == OK)
 	{
 	    dict_set_items_ro(v_event);
 #endif

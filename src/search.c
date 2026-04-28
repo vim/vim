@@ -4315,11 +4315,11 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 
     update_search_stat(0, &pos, &pos, &stat, recompute, maxcount, timeout);
 
-    DICT_ADD_NUMBER(rettv->vval.v_dict, "current", stat.cur);
-    DICT_ADD_NUMBER(rettv->vval.v_dict, "total", stat.cnt);
-    DICT_ADD_NUMBER(rettv->vval.v_dict, "exact_match", stat.exact_match);
-    DICT_ADD_NUMBER(rettv->vval.v_dict, "incomplete", stat.incomplete);
-    DICT_ADD_NUMBER(rettv->vval.v_dict, "maxcount", stat.last_maxcount);
+    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "current", stat.cur);
+    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "total", stat.cnt);
+    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "exact_match", stat.exact_match);
+    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "incomplete", stat.incomplete);
+    DICT_ADD_NUMBER_KEYLITERAL(rettv->vval.v_dict, "maxcount", stat.last_maxcount);
 
 the_end:
     restore_last_search_pattern();

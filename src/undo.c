@@ -3658,14 +3658,14 @@ u_eval_tree(buf_T *buf, u_header_T *first_uhp, list_T *list)
 	dict = dict_alloc();
 	if (dict == NULL)
 	    return;
-	DICT_ADD_NUMBER(dict, "seq", uhp->uh_seq);
-	DICT_ADD_NUMBER(dict, "time", (long)uhp->uh_time);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "seq", uhp->uh_seq);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "time", (long)uhp->uh_time);
 	if (uhp == buf->b_u_newhead)
-	    DICT_ADD_NUMBER(dict, "newhead", 1);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "newhead", 1);
 	if (uhp == buf->b_u_curhead)
-	    DICT_ADD_NUMBER(dict, "curhead", 1);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "curhead", 1);
 	if (uhp->uh_save_nr > 0)
-	    DICT_ADD_NUMBER(dict, "save", uhp->uh_save_nr);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "save", uhp->uh_save_nr);
 
 	if (uhp->uh_alt_next.ptr != NULL)
 	{
@@ -3675,7 +3675,7 @@ u_eval_tree(buf_T *buf, u_header_T *first_uhp, list_T *list)
 	    {
 		// Recursive call to add alternate undo tree.
 		u_eval_tree(buf, uhp->uh_alt_next.ptr, alt_list);
-		DICT_ADD_LIST(dict, "alt", alt_list);
+		DICT_ADD_LIST_KEYLITERAL(dict, "alt", alt_list);
 	    }
 	}
 
@@ -3758,18 +3758,18 @@ f_undotree(typval_T *argvars, typval_T *rettv)
 
     dict_T *dict = rettv->vval.v_dict;
 
-    DICT_ADD_NUMBER(dict, "synced", (long)buf->b_u_synced);
-    DICT_ADD_NUMBER(dict, "seq_last", buf->b_u_seq_last);
-    DICT_ADD_NUMBER(dict, "save_last", buf->b_u_save_nr_last);
-    DICT_ADD_NUMBER(dict, "seq_cur", buf->b_u_seq_cur);
-    DICT_ADD_NUMBER(dict, "time_cur", (long)buf->b_u_time_cur);
-    DICT_ADD_NUMBER(dict, "save_cur", buf->b_u_save_nr_cur);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "synced", (long)buf->b_u_synced);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "seq_last", buf->b_u_seq_last);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "save_last", buf->b_u_save_nr_last);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "seq_cur", buf->b_u_seq_cur);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "time_cur", (long)buf->b_u_time_cur);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "save_cur", buf->b_u_save_nr_cur);
 
     list_T *list = list_alloc();
     if (list != NULL)
     {
 	u_eval_tree(buf, buf->b_u_oldhead, list);
-	DICT_ADD_LIST(dict, "entries", list);
+	DICT_ADD_LIST_KEYLITERAL(dict, "entries", list);
     }
 }
 

@@ -1832,9 +1832,9 @@ job_info(job_T *job, dict_T *dict)
     list_T	*l;
     int		i;
 
-    DICT_ADD_STRING(dict, "status", (char_u *)job_status(job));
+    DICT_ADD_STRING_KEYLITERAL(dict, "status", (char_u *)job_status(job));
 
-    item = DICTITEM_ALLOC("channel");
+    item = DICTITEM_ALLOC_KEYLITERAL("channel");
     if (item == NULL)
 	return;
     item->di_tv.v_type = VAR_CHANNEL;
@@ -1849,25 +1849,25 @@ job_info(job_T *job, dict_T *dict)
 #else
     nr = job->jv_proc_info.dwProcessId;
 #endif
-    DICT_ADD_NUMBER(dict, "process", nr);
-    DICT_ADD_STRING(dict, "tty_in", job->jv_tty_in);
-    DICT_ADD_STRING(dict, "tty_out", job->jv_tty_out);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "process", nr);
+    DICT_ADD_STRING_KEYLITERAL(dict, "tty_in", job->jv_tty_in);
+    DICT_ADD_STRING_KEYLITERAL(dict, "tty_out", job->jv_tty_out);
 
-    DICT_ADD_NUMBER(dict, "exitval", job->jv_exitval);
-    DICT_ADD_STRING(dict, "exit_cb", job->jv_exit_cb.cb_name);
-    DICT_ADD_STRING(dict, "stoponexit", job->jv_stoponexit);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "exitval", job->jv_exitval);
+    DICT_ADD_STRING_KEYLITERAL(dict, "exit_cb", job->jv_exit_cb.cb_name);
+    DICT_ADD_STRING_KEYLITERAL(dict, "stoponexit", job->jv_stoponexit);
 #ifdef UNIX
-    DICT_ADD_STRING(dict, "termsig", job->jv_termsig);
+    DICT_ADD_STRING_KEYLITERAL(dict, "termsig", job->jv_termsig);
 #endif
 #ifdef MSWIN
-    DICT_ADD_STRING(dict, "tty_type", job->jv_tty_type);
+    DICT_ADD_STRING_KEYLITERAL(dict, "tty_type", job->jv_tty_type);
 #endif
 
     l = list_alloc();
     if (l == NULL)
 	return;
 
-    DICT_ADD_LIST(dict, "cmd", l);
+    DICT_ADD_LIST_KEYLITERAL(dict, "cmd", l);
     if (job->jv_argv != NULL)
 	for (i = 0; job->jv_argv[i] != NULL; i++)
 	    list_append_string(l, (char_u *)job->jv_argv[i], -1);

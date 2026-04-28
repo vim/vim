@@ -1215,8 +1215,12 @@ perl_to_vim(SV *sv, typval_T *rettv)
 		    len = 0;
 		    key = hv_iterkey(entry, &len);
 
+		    if (key == NULL || len <= 0)
+			semsg("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
+			break;
+		    }
 		    keylen = strlen(key);
-		    if (!key || !len || keylen < (size_t)len) {
+		    if (keylen < (size_t)len) {
 			semsg("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
 			break;
 		    }

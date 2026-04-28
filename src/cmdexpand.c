@@ -4719,18 +4719,18 @@ f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
 	    || ccline->xpc == NULL || ccline->xpc->xp_files == NULL)
 	return;
     retdict = rettv->vval.v_dict;
-    ret = DICT_ADD_STRING_LEN(retdict, "cmdline_orig",
+    ret = DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "cmdline_orig",
 	cmdline_orig.string, (int)cmdline_orig.length);
     if (ret == OK)
-	ret = DICT_ADD_NUMBER(retdict, "pum_visible", pum_visible());
+	ret = DICT_ADD_NUMBER_KEYLITERAL(retdict, "pum_visible", pum_visible());
     if (ret == OK)
-	ret = DICT_ADD_NUMBER(retdict, "selected", ccline->xpc->xp_selected);
+	ret = DICT_ADD_NUMBER_KEYLITERAL(retdict, "selected", ccline->xpc->xp_selected);
     if (ret == OK)
     {
 	li = list_alloc();
 	if (li == NULL)
 	    return;
-	ret = DICT_ADD_LIST(retdict, "matches", li);
+	ret = DICT_ADD_LIST_KEYLITERAL(retdict, "matches", li);
 	for (idx = 0; ret == OK && idx < ccline->xpc->xp_numfiles; idx++)
 	    list_append_string(li, ccline->xpc->xp_files[idx], -1);
     }

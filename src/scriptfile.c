@@ -281,11 +281,11 @@ stacktrace_push_item(
     tv.vval.v_dict = d;
 
     if (fp != NULL)
-	DICT_ADD_FUNC(d, "funcref", fp);
+	DICT_ADD_FUNC_KEYLITERAL(d, "funcref", fp);
     if (event != NULL)
-	DICT_ADD_STRING(d, "event", event);
-    DICT_ADD_NUMBER(d, "lnum", lnum);
-    DICT_ADD_STRING(d, "filepath", filepath);
+	DICT_ADD_STRING_KEYLITERAL(d, "event", event);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "lnum", lnum);
+    DICT_ADD_STRING_KEYLITERAL(d, "filepath", filepath);
 
     list_append_tv(l, &tv);
 }
@@ -2343,11 +2343,11 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 
 	if ((d = dict_alloc()) == NULL
 		|| list_append_dict(l, d) == FAIL
-		|| DICT_ADD_STRING(d, "name", si->sn_name) == FAIL
-		|| DICT_ADD_NUMBER(d, "sid", i) == FAIL
-		|| DICT_ADD_NUMBER(d, "sourced", si->sn_sourced_sid) == FAIL
-		|| DICT_ADD_NUMBER(d, "version", si->sn_version) == FAIL
-		|| DICT_ADD_BOOL(d, "autoload",
+		|| DICT_ADD_STRING_KEYLITERAL(d, "name", si->sn_name) == FAIL
+		|| DICT_ADD_NUMBER_KEYLITERAL(d, "sid", i) == FAIL
+		|| DICT_ADD_NUMBER_KEYLITERAL(d, "sourced", si->sn_sourced_sid) == FAIL
+		|| DICT_ADD_NUMBER_KEYLITERAL(d, "version", si->sn_version) == FAIL
+		|| DICT_ADD_BOOL_KEYLITERAL(d, "autoload",
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;
 
@@ -2360,8 +2360,8 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	    var_dict = dict_copy(&si->sn_vars->sv_dict, TRUE, TRUE,
 								get_copyID());
 	    if (var_dict == NULL
-		    || DICT_ADD_DICT(d, "variables", var_dict) == FAIL
-		    || DICT_ADD_LIST(d, "functions",
+		    || DICT_ADD_DICT_KEYLITERAL(d, "variables", var_dict) == FAIL
+		    || DICT_ADD_LIST_KEYLITERAL(d, "functions",
 					get_script_local_funcs(sid)) == FAIL)
 		return;
 	}

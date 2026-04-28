@@ -5250,9 +5250,9 @@ highlight_get_info(int hl_idx, int resolve_link)
     // highlight group id is 1-based
     hlgid = hl_idx + 1;
 
-    if (DICT_ADD_STRING(dict, "name", sgp->sg_name) == FAIL)
+    if (DICT_ADD_STRING_KEYLITERAL(dict, "name", sgp->sg_name) == FAIL)
 	goto error;
-    if (DICT_ADD_NUMBER(dict, "id", hlgid) == FAIL)
+    if (DICT_ADD_NUMBER_KEYLITERAL(dict, "id", hlgid) == FAIL)
 	goto error;
 
     if (resolve_link)
@@ -5269,60 +5269,60 @@ highlight_get_info(int hl_idx, int resolve_link)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_term);
 	if (attr_dict != NULL)
-	    if (DICT_ADD_DICT(dict, "term", attr_dict) == FAIL)
+	    if (DICT_ADD_DICT_KEYLITERAL(dict, "term", attr_dict) == FAIL)
 		goto error;
     }
     if (sgp->sg_start != NULL)
-	if (DICT_ADD_STRING(dict, "start", sgp->sg_start) == FAIL)
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "start", sgp->sg_start) == FAIL)
 	    goto error;
     if (sgp->sg_stop != NULL)
-	if (DICT_ADD_STRING(dict, "stop", sgp->sg_stop) == FAIL)
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "stop", sgp->sg_stop) == FAIL)
 	    goto error;
     if (sgp->sg_cterm != 0)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_cterm);
 	if (attr_dict != NULL)
-	    if (DICT_ADD_DICT(dict, "cterm", attr_dict) == FAIL)
+	    if (DICT_ADD_DICT_KEYLITERAL(dict, "cterm", attr_dict) == FAIL)
 		goto error;
     }
     if (sgp->sg_cterm_fg != 0)
-	if (DICT_ADD_STRING(dict, "ctermfg",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "ctermfg",
 		    highlight_color(hlgid, (char_u *)"fg", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_cterm_bg != 0)
-	if (DICT_ADD_STRING(dict, "ctermbg",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "ctermbg",
 			highlight_color(hlgid, (char_u *)"bg", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_cterm_ul != 0)
-	if (DICT_ADD_STRING(dict, "ctermul",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "ctermul",
 			highlight_color(hlgid, (char_u *)"ul", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_cterm_font != 0)
-	if (DICT_ADD_STRING(dict, "ctermfont",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "ctermfont",
 			highlight_color(hlgid, (char_u *)"font", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_gui != 0)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_gui);
 	if (attr_dict != NULL)
-	    if (DICT_ADD_DICT(dict, "gui", attr_dict) == FAIL)
+	    if (DICT_ADD_DICT_KEYLITERAL(dict, "gui", attr_dict) == FAIL)
 		goto error;
     }
     if (sgp->sg_gui_fg_name != NULL)
-	if (DICT_ADD_STRING(dict, "guifg",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "guifg",
 			highlight_color(hlgid, (char_u *)"fg", 'g')) == FAIL)
 	    goto error;
     if (sgp->sg_gui_bg_name != NULL)
-	if (DICT_ADD_STRING(dict, "guibg",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "guibg",
 			highlight_color(hlgid, (char_u *)"bg", 'g')) == FAIL)
 	    goto error;
     if (sgp->sg_gui_sp_name != NULL)
-	if (DICT_ADD_STRING(dict, "guisp",
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "guisp",
 			highlight_color(hlgid, (char_u *)"sp", 'g')) == FAIL)
 	    goto error;
 # ifdef FEAT_GUI
     if (sgp->sg_font_name != NULL)
-	if (DICT_ADD_STRING(dict, "font", sgp->sg_font_name) == FAIL)
+	if (DICT_ADD_STRING_KEYLITERAL(dict, "font", sgp->sg_font_name) == FAIL)
 	    goto error;
 # endif
     if (sgp->sg_link)
@@ -5330,15 +5330,15 @@ highlight_get_info(int hl_idx, int resolve_link)
 	char_u	*link;
 
 	link = HL_TABLE()[sgp->sg_link - 1].sg_name;
-	if (link != NULL && DICT_ADD_STRING(dict, "linksto", link) == FAIL)
+	if (link != NULL && DICT_ADD_STRING_KEYLITERAL(dict, "linksto", link) == FAIL)
 	    goto error;
 
 	if (sgp->sg_deflink)
-	    DICT_ADD_BOOL(dict, "default", VVAL_TRUE);
+	    DICT_ADD_BOOL_KEYLITERAL(dict, "default", VVAL_TRUE);
     }
     if (dict_len(dict) == 2)
 	// If only 'name' is present, then the highlight group is cleared.
-	DICT_ADD_BOOL(dict, "cleared", VVAL_TRUE);
+	DICT_ADD_BOOL_KEYLITERAL(dict, "cleared", VVAL_TRUE);
 
     return dict;
 

@@ -2920,8 +2920,8 @@ may_trigger_modechanged(void)
 	return;
 
     v_event = get_v_event(&save_v_event);
-    (void)DICT_ADD_STRING(v_event, "new_mode", curr_mode);
-    (void)DICT_ADD_STRING(v_event, "old_mode", last_mode);
+    (void)DICT_ADD_STRING_KEYLITERAL(v_event, "new_mode", curr_mode);
+    (void)DICT_ADD_STRING_KEYLITERAL(v_event, "old_mode", last_mode);
     dict_set_items_ro(v_event);
 
     // concatenate modes in format "old_mode:new_mode"

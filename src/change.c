@@ -302,10 +302,10 @@ may_record_change(
     dict = dict_alloc();
     if (dict == NULL)
 	return;
-    DICT_ADD_NUMBER(dict, "lnum", (varnumber_T)lnum);
-    DICT_ADD_NUMBER(dict, "end", (varnumber_T)lnume);
-    DICT_ADD_NUMBER(dict, "added", (varnumber_T)xtra);
-    DICT_ADD_NUMBER(dict, "col", (varnumber_T)col + 1);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "lnum", (varnumber_T)lnum);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "end", (varnumber_T)lnume);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "added", (varnumber_T)xtra);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "col", (varnumber_T)col + 1);
 
     list_append_dict(curbuf->b_recorded_changes, dict);
 }
@@ -569,10 +569,10 @@ invoke_sync_listeners(
 	return;
     }
 
-    DICT_ADD_NUMBER(dict, "lnum", (varnumber_T)start);
-    DICT_ADD_NUMBER(dict, "end", (varnumber_T)end);
-    DICT_ADD_NUMBER(dict, "added", (varnumber_T)added);
-    DICT_ADD_NUMBER(dict, "col", (varnumber_T)col + 1);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "lnum", (varnumber_T)start);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "end", (varnumber_T)end);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "added", (varnumber_T)added);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "col", (varnumber_T)col + 1);
     list_append_dict(recorded_changes, dict);
 
     invoke_listener_set(

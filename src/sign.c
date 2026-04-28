@@ -321,14 +321,14 @@ sign_get_info(sign_entry_T *sign)
     if (d == NULL)
         return NULL;
 
-    DICT_ADD_NUMBER(d, "id", sign->se_id);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "id", sign->se_id);
     if (sign->se_group == NULL)
-        DICT_ADD_STRING_LEN(d, "group", (char_u *)"", 0);
+        DICT_ADD_STRING_LEN_KEYLITERAL(d, "group", (char_u *)"", 0);
     else
-        DICT_ADD_STRING(d, "group", sign->se_group->sg_name);
-    DICT_ADD_NUMBER(d, "lnum", sign->se_lnum);
-    DICT_ADD_STRING(d, "name", sign_typenr2name(sign->se_typenr));
-    DICT_ADD_NUMBER(d, "priority", sign->se_priority);
+        DICT_ADD_STRING_KEYLITERAL(d, "group", sign->se_group->sg_name);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "lnum", sign->se_lnum);
+    DICT_ADD_STRING_KEYLITERAL(d, "name", sign_typenr2name(sign->se_typenr));
+    DICT_ADD_NUMBER_KEYLITERAL(d, "priority", sign->se_priority);
 
     return d;
 }
@@ -1763,55 +1763,55 @@ ex_sign(exarg_T *eap)
 static void
 sign_getinfo(sign_T *sp, dict_T *retdict)
 {
-    DICT_ADD_STRING(retdict, "name", sp->sn_name);
+    DICT_ADD_STRING_KEYLITERAL(retdict, "name", sp->sn_name);
 
     if (sp->sn_icon != NULL)
-        DICT_ADD_STRING(retdict, "icon", sp->sn_icon);
+        DICT_ADD_STRING_KEYLITERAL(retdict, "icon", sp->sn_icon);
 
     if (sp->sn_text != NULL)
-        DICT_ADD_STRING(retdict, "text", sp->sn_text);
+        DICT_ADD_STRING_KEYLITERAL(retdict, "text", sp->sn_text);
 
     if (sp->sn_priority > 0)
-        DICT_ADD_NUMBER(retdict, "priority", sp->sn_priority);
+        DICT_ADD_NUMBER_KEYLITERAL(retdict, "priority", sp->sn_priority);
 
     if (sp->sn_line_hl > 0)
     {
         char_u *p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
         if (p == NULL)
-            DICT_ADD_STRING_LEN(retdict, "linehl",
+            DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "linehl",
                 (char_u *)"NONE", STRLEN_LITERAL("NONE"));
         else
-            DICT_ADD_STRING(retdict, "linehl", p);
+            DICT_ADD_STRING_KEYLITERAL(retdict, "linehl", p);
     }
 
     if (sp->sn_text_hl > 0)
     {
         char_u *p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
         if (p == NULL)
-            DICT_ADD_STRING_LEN(retdict, "texthl",
+            DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "texthl",
                 (char_u *)"NONE", STRLEN_LITERAL("NONE"));
         else
-            DICT_ADD_STRING(retdict, "texthl", p);
+            DICT_ADD_STRING_KEYLITERAL(retdict, "texthl", p);
     }
 
     if (sp->sn_cul_hl > 0)
     {
         char_u *p = get_highlight_name_ext(NULL, sp->sn_cul_hl - 1, FALSE);
         if (p == NULL)
-            DICT_ADD_STRING_LEN(retdict, "culhl",
+            DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "culhl",
                 (char_u *)"NONE", STRLEN_LITERAL("NONE"));
         else
-            DICT_ADD_STRING(retdict, "culhl", p);
+            DICT_ADD_STRING_KEYLITERAL(retdict, "culhl", p);
     }
 
     if (sp->sn_num_hl > 0)
     {
         char_u *p = get_highlight_name_ext(NULL, sp->sn_num_hl - 1, FALSE);
         if (p == NULL)
-            DICT_ADD_STRING_LEN(retdict, "numhl",
+            DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "numhl",
                 (char_u *)"NONE", STRLEN_LITERAL("NONE"));
         else
-            DICT_ADD_STRING(retdict, "numhl", p);
+            DICT_ADD_STRING_KEYLITERAL(retdict, "numhl", p);
     }
 }
 
@@ -1878,13 +1878,13 @@ sign_get_placed_in_buf(buf_T *buf,
 
     list_append_dict(retlist, d);
 
-    DICT_ADD_NUMBER(d, "bufnr", (long)buf->b_fnum);
+    DICT_ADD_NUMBER_KEYLITERAL(d, "bufnr", (long)buf->b_fnum);
 
     list_T *l = list_alloc_id(aid_sign_getplaced_list);
     if (l == NULL)
         return;
 
-    DICT_ADD_LIST(d, "signs", l);
+    DICT_ADD_LIST_KEYLITERAL(d, "signs", l);
 
     sign_entry_T *sign = NULL;
     FOR_ALL_SIGNS_IN_BUF(buf, sign)

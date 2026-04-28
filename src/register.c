@@ -1110,23 +1110,23 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     for (n = 0; n < reg->y_size; n++)
 	list_append_string(list, reg->y_array[n].string, (int)reg->y_array[n].length);
     list->lv_lock = VAR_FIXED;
-    (void)DICT_ADD_LIST(v_event, "regcontents", list);
+    (void)DICT_ADD_LIST_KEYLITERAL(v_event, "regcontents", list);
 
     // register name or empty string for unnamed operation
     buf[0] = (char_u)oap->regname;
     buf[1] = NUL;
     buflen = (buf[0] == NUL) ? 0 : 1;
-    (void)DICT_ADD_STRING_LEN(v_event, "regname", buf, (int)buflen);
+    (void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "regname", buf, (int)buflen);
 
     // motion type: inclusive or exclusive
-    (void)DICT_ADD_BOOL(v_event, "inclusive", oap->inclusive);
+    (void)DICT_ADD_BOOL_KEYLITERAL(v_event, "inclusive", oap->inclusive);
 
     // kind of operation (yank, delete, change)
     buf[0] = get_op_char(oap->op_type);
     buf[1] = get_extra_op_char(oap->op_type);
     buf[2] = NUL;
     buflen = (buf[0] == NUL) ? 0 : (buf[1] == NUL) ? 1 : 2;
-    (void)DICT_ADD_STRING_LEN(v_event, "operator", buf, (int)buflen);
+    (void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "operator", buf, (int)buflen);
 
     // register type
     switch (get_reg_type(oap->regname, &reglen))
@@ -1150,10 +1150,10 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 	    buflen = 0;
 	    break;
     }
-    (void)DICT_ADD_STRING_LEN(v_event, "regtype", buf, (int)buflen);
+    (void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "regtype", buf, (int)buflen);
 
     // selection type - visual or not
-    (void)DICT_ADD_BOOL(v_event, "visual", oap->is_VIsual);
+    (void)DICT_ADD_BOOL_KEYLITERAL(v_event, "visual", oap->is_VIsual);
 
     // Lock the dictionary and its keys
     dict_set_items_ro(v_event);

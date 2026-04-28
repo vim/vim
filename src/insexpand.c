@@ -1382,15 +1382,15 @@ ins_compl_dict_alloc(compl_T *match)
     if (dict == NULL)
 	return NULL;
 
-    DICT_ADD_STRING_LEN(dict, "word", match->cp_str.string, (int)match->cp_str.length);
-    DICT_ADD_STRING(dict, "abbr", match->cp_text[CPT_ABBR]);
-    DICT_ADD_STRING(dict, "menu", match->cp_text[CPT_MENU]);
-    DICT_ADD_STRING(dict, "kind", match->cp_text[CPT_KIND]);
-    DICT_ADD_STRING(dict, "info", match->cp_text[CPT_INFO]);
+    DICT_ADD_STRING_LEN_KEYLITERAL(dict, "word", match->cp_str.string, (int)match->cp_str.length);
+    DICT_ADD_STRING_KEYLITERAL(dict, "abbr", match->cp_text[CPT_ABBR]);
+    DICT_ADD_STRING_KEYLITERAL(dict, "menu", match->cp_text[CPT_MENU]);
+    DICT_ADD_STRING_KEYLITERAL(dict, "kind", match->cp_text[CPT_KIND]);
+    DICT_ADD_STRING_KEYLITERAL(dict, "info", match->cp_text[CPT_INFO]);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
-	DICT_ADD_STRING_LEN(dict, "user_data", (char_u *)"", 0);
+	DICT_ADD_STRING_LEN_KEYLITERAL(dict, "user_data", (char_u *)"", 0);
     else
-	DICT_ADD_TV(dict, "user_data", &match->cp_user_data);
+	DICT_ADD_TV_KEYLITERAL(dict, "user_data", &match->cp_user_data);
 
     return dict;
 }
@@ -1414,7 +1414,7 @@ trigger_complete_changed_event(int cur)
     if (item == NULL)
 	return;
     v_event = get_v_event(&save_v_event);
-    DICT_ADD_DICT(v_event, "completed_item", item);
+    DICT_ADD_DICT_KEYLITERAL(v_event, "completed_item", item);
     pum_set_event_info(v_event);
     dict_set_items_ro(v_event);
 
@@ -2892,12 +2892,12 @@ trigger_complete_done_event(int mode UNUSED, string_T *word UNUSED)
     string_T		*mode_str;
 
     if (word == NULL || word->string == NULL)
-	(void)DICT_ADD_STRING_LEN(v_event, "complete_word", (char_u *)"", 0);
+	(void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "complete_word", (char_u *)"", 0);
     else
-	(void)DICT_ADD_STRING_LEN(v_event, "complete_word", word->string, (int)word->length);
+	(void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "complete_word", word->string, (int)word->length);
 
     mode_str = &ctrl_x_mode_names[mode & ~CTRL_X_WANT_IDENT];
-    (void)DICT_ADD_STRING_LEN(v_event, "complete_type",
+    (void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "complete_type",
 	(mode_str->string == NULL) ? (char_u *)"" : mode_str->string, (int)mode_str->length);
 
     dict_set_items_ro(v_event);
@@ -4035,18 +4035,18 @@ ins_compl_update_sequence_numbers(void)
     static void
 fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
 {
-    DICT_ADD_STRING_LEN(di, "word", match->cp_str.string, (int)match->cp_str.length);
-    DICT_ADD_STRING(di, "abbr", match->cp_text[CPT_ABBR]);
-    DICT_ADD_STRING(di, "menu", match->cp_text[CPT_MENU]);
-    DICT_ADD_STRING(di, "kind", match->cp_text[CPT_KIND]);
-    DICT_ADD_STRING(di, "info", match->cp_text[CPT_INFO]);
+    DICT_ADD_STRING_LEN_KEYLITERAL(di, "word", match->cp_str.string, (int)match->cp_str.length);
+    DICT_ADD_STRING_KEYLITERAL(di, "abbr", match->cp_text[CPT_ABBR]);
+    DICT_ADD_STRING_KEYLITERAL(di, "menu", match->cp_text[CPT_MENU]);
+    DICT_ADD_STRING_KEYLITERAL(di, "kind", match->cp_text[CPT_KIND]);
+    DICT_ADD_STRING_KEYLITERAL(di, "info", match->cp_text[CPT_INFO]);
     if (add_match)
-	DICT_ADD_BOOL(di, "match", match->cp_in_match_array);
+	DICT_ADD_BOOL_KEYLITERAL(di, "match", match->cp_in_match_array);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
 	// Add an empty string for backwards compatibility
-	DICT_ADD_STRING_LEN(di, "user_data", (char_u *)"", 0);
+	DICT_ADD_STRING_LEN_KEYLITERAL(di, "user_data", (char_u *)"", 0);
     else
-	DICT_ADD_TV(di, "user_data", &match->cp_user_data);
+	DICT_ADD_TV_KEYLITERAL(di, "user_data", &match->cp_user_data);
 }
 
 /*
@@ -4099,18 +4099,18 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	string_T    mode;
 
 	ins_compl_mode(&mode);
-	ret = DICT_ADD_STRING_LEN(retdict, "mode", mode.string, (int)mode.length);
+	ret = DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "mode", mode.string, (int)mode.length);
     }
 
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
-	ret = DICT_ADD_NUMBER(retdict, "pum_visible", pum_visible());
+	ret = DICT_ADD_NUMBER_KEYLITERAL(retdict, "pum_visible", pum_visible());
 
     if (ret == OK && (what_flag & CI_WHAT_PREINSERTED_TEXT))
     {
 	char_u	*line = ml_get_curline();
 	int	len = compl_ins_end_col - curwin->w_cursor.col;
 
-	ret = DICT_ADD_STRING_LEN(retdict, "preinserted_text",
+	ret = DICT_ADD_STRING_LEN_KEYLITERAL(retdict, "preinserted_text",
 		(len > 0) ? line + curwin->w_cursor.col : (char_u *)"", (len > 0) ? len : 0);
     }
 
@@ -4131,9 +4131,9 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	    if (li == NULL)
 		return;
 	    if (has_matches && !has_items)
-		ret = DICT_ADD_LIST(retdict, "matches", li);
+		ret = DICT_ADD_LIST_KEYLITERAL(retdict, "matches", li);
 	    else
-		ret = DICT_ADD_LIST(retdict, "items", li);
+		ret = DICT_ADD_LIST_KEYLITERAL(retdict, "items", li);
 	}
 	if (ret == OK && what_flag & CI_WHAT_SELECTED)
 	    if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
@@ -4168,7 +4168,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	    while (match != NULL && !is_first_match(match));
 	}
 	if (ret == OK && (what_flag & CI_WHAT_SELECTED))
-	    ret = DICT_ADD_NUMBER(retdict, "selected", selected_idx);
+	    ret = DICT_ADD_NUMBER_KEYLITERAL(retdict, "selected", selected_idx);
 
 	if (ret == OK && selected_idx != -1 && has_completed)
 	{
@@ -4176,7 +4176,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	    if (di == NULL)
 		return;
 	    fill_complete_info_dict(di, compl_curr_match, FALSE);
-	    ret = DICT_ADD_DICT(retdict, "completed", di);
+	    ret = DICT_ADD_DICT_KEYLITERAL(retdict, "completed", di);
 	}
     }
 }

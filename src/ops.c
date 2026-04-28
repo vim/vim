@@ -3599,20 +3599,20 @@ cursor_pos_info(dict_T *dict)
 #if defined(FEAT_EVAL)
     if (dict != NULL)
     {
-	DICT_ADD_NUMBER(dict, "words", word_count);
-	DICT_ADD_NUMBER(dict, "chars", char_count);
-	DICT_ADD_NUMBER(dict, "bytes", byte_count + bom_count);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "words", word_count);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "chars", char_count);
+	DICT_ADD_NUMBER_KEYLITERAL(dict, "bytes", byte_count + bom_count);
 	if (VIsual_active)
 	{
-	    DICT_ADD_NUMBER(dict, "visual_bytes", byte_count_cursor);
-	    DICT_ADD_NUMBER(dict, "visual_chars", char_count_cursor);
-	    DICT_ADD_NUMBER(dict, "visual_words", word_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "visual_bytes", byte_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "visual_chars", char_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "visual_words", word_count_cursor);
 	}
 	else
 	{
-	    DICT_ADD_NUMBER(dict, "cursor_bytes", byte_count_cursor);
-	    DICT_ADD_NUMBER(dict, "cursor_chars", char_count_cursor);
-	    DICT_ADD_NUMBER(dict, "cursor_words", word_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "cursor_bytes", byte_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "cursor_chars", char_count_cursor);
+	    DICT_ADD_NUMBER_KEYLITERAL(dict, "cursor_words", word_count_cursor);
 	}
     }
 #endif

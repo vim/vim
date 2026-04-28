@@ -2245,8 +2245,8 @@ do_key_input_pre(int c)
     set_vim_var_string(VV_CHAR, buf, (int)buflen);  // set v:char
 
     v_event = get_v_event(&save_v_event);
-    (void)DICT_ADD_BOOL(v_event, "typed", KeyTyped);
-    (void)DICT_ADD_STRING_LEN(v_event, "typedchar", typedchars, typedchars_pos);
+    (void)DICT_ADD_BOOL_KEYLITERAL(v_event, "typed", KeyTyped);
+    (void)DICT_ADD_STRING_LEN_KEYLITERAL(v_event, "typedchar", typedchars, typedchars_pos);
 
     if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf))
     {

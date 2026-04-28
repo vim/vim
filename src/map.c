@@ -2454,27 +2454,27 @@ mapblock2dict(
     char_u	    *lhs = str2special_save(mp->m_keys, TRUE, FALSE);
     char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
 
-    DICT_ADD_STRING(dict, "lhs", lhs);
+    DICT_ADD_STRING_KEYLITERAL(dict, "lhs", lhs);
     vim_free(lhs);
-    DICT_ADD_STRING(dict, "lhsraw", mp->m_keys);
+    DICT_ADD_STRING_KEYLITERAL(dict, "lhsraw", mp->m_keys);
     if (lhsrawalt)
 	// Also add the value for the simplified entry.
-	DICT_ADD_STRING(dict, "lhsrawalt", lhsrawalt);
-    DICT_ADD_STRING(dict, "rhs", mp->m_orig_str);
-    DICT_ADD_NUMBER(dict, "noremap", mp->m_noremap ? 1L : 0L);
-    DICT_ADD_NUMBER(dict, "script", mp->m_noremap == REMAP_SCRIPT
+	DICT_ADD_STRING_KEYLITERAL(dict, "lhsrawalt", lhsrawalt);
+    DICT_ADD_STRING_KEYLITERAL(dict, "rhs", mp->m_orig_str);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "noremap", mp->m_noremap ? 1L : 0L);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "script", mp->m_noremap == REMAP_SCRIPT
 		    ? 1L : 0L);
-    DICT_ADD_NUMBER(dict, "expr", mp->m_expr ? 1L : 0L);
-    DICT_ADD_NUMBER(dict, "silent", mp->m_silent ? 1L : 0L);
-    DICT_ADD_NUMBER(dict, "sid", (long)mp->m_script_ctx.sc_sid);
-    DICT_ADD_NUMBER(dict, "scriptversion",
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "expr", mp->m_expr ? 1L : 0L);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "silent", mp->m_silent ? 1L : 0L);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "sid", (long)mp->m_script_ctx.sc_sid);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "scriptversion",
 		    (long)mp->m_script_ctx.sc_version);
-    DICT_ADD_NUMBER(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
-    DICT_ADD_NUMBER(dict, "buffer", (long)buffer_local);
-    DICT_ADD_NUMBER(dict, "nowait", mp->m_nowait ? 1L : 0L);
-    DICT_ADD_STRING(dict, "mode", mapmode);
-    DICT_ADD_NUMBER(dict, "abbr", abbr ? 1L : 0L);
-    DICT_ADD_NUMBER(dict, "mode_bits", mp->m_mode);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "buffer", (long)buffer_local);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "nowait", mp->m_nowait ? 1L : 0L);
+    DICT_ADD_STRING_KEYLITERAL(dict, "mode", mapmode);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "abbr", abbr ? 1L : 0L);
+    DICT_ADD_NUMBER_KEYLITERAL(dict, "mode_bits", mp->m_mode);
 
     vim_free(mapmode);
 }

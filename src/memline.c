@@ -2228,40 +2228,40 @@ get_b0_dict(char_u *fname, dict_T *d)
 	    if (ml_check_b0_id(&b0) == FAIL)
 	    {
 		STR_LITERAL_SET(s, "Not a swap file");
-		DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "error", s.string, (int)s.length);
 	    }
 	    else if (b0_magic_wrong(&b0))
 	    {
 		STR_LITERAL_SET(s, "Magic number mismatch");
-		DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "error", s.string, (int)s.length);
 	    }
 	    else
 	    {
 		// we have swap information
-		DICT_ADD_STRING_LEN(d, "version", b0.b0_version, 10);
-		DICT_ADD_STRING_LEN(d, "user", b0.b0_uname, B0_UNAME_SIZE);
-		DICT_ADD_STRING_LEN(d, "host", b0.b0_hname, B0_HNAME_SIZE);
-		DICT_ADD_STRING_LEN(d, "fname", b0.b0_fname, B0_FNAME_SIZE_ORG);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "version", b0.b0_version, 10);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "user", b0.b0_uname, B0_UNAME_SIZE);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "host", b0.b0_hname, B0_HNAME_SIZE);
+		DICT_ADD_STRING_LEN_KEYLITERAL(d, "fname", b0.b0_fname, B0_FNAME_SIZE_ORG);
 
-		DICT_ADD_NUMBER(d, "pid", char_to_long(b0.b0_pid));
-		DICT_ADD_NUMBER(d, "mtime", char_to_long(b0.b0_mtime));
-		DICT_ADD_NUMBER(d, "dirty", b0.b0_dirty ? 1 : 0);
+		DICT_ADD_NUMBER_KEYLITERAL(d, "pid", char_to_long(b0.b0_pid));
+		DICT_ADD_NUMBER_KEYLITERAL(d, "mtime", char_to_long(b0.b0_mtime));
+		DICT_ADD_NUMBER_KEYLITERAL(d, "dirty", b0.b0_dirty ? 1 : 0);
 # ifdef CHECK_INODE
-		DICT_ADD_NUMBER(d, "inode", char_to_long(b0.b0_ino));
+		DICT_ADD_NUMBER_KEYLITERAL(d, "inode", char_to_long(b0.b0_ino));
 # endif
 	    }
 	}
 	else
 	{
 	    STR_LITERAL_SET(s, "Cannot read file");
-	    DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+	    DICT_ADD_STRING_LEN_KEYLITERAL(d, "error", s.string, (int)s.length);
 	}
 	close(fd);
     }
     else
     {
 	STR_LITERAL_SET(s, "Cannot open file");
-	DICT_ADD_STRING_LEN(d, "error", s.string, (int)s.length);
+	DICT_ADD_STRING_LEN_KEYLITERAL(d, "error", s.string, (int)s.length);
     }
 }
 #endif
