@@ -27,6 +27,8 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 	*modep = CH_MODE_NL;
     else if (STRCMP(val, "raw") == 0)
 	*modep = CH_MODE_RAW;
+    else if (STRCMP(val, "blob") == 0)
+	*modep = CH_MODE_BLOB;
     else if (STRCMP(val, "js") == 0)
 	*modep = CH_MODE_JS;
     else if (STRCMP(val, "json") == 0)

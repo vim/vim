@@ -1390,6 +1390,64 @@ func Test_out_cb_lambda()
   endtry
 endfunc
 
+func Test_out_cb_blob_mode()
+  let g:Ch_blob_bytes = []
+  func OutBlobCb(chan, msg)
+    call assert_equal(v:t_blob, type(a:msg))
+    let g:Ch_blob_bytes += blob2list(a:msg)
+  endfunc
+
+  let cmd = [s:python, '-c',
+        \ 'import sys,time;'
+        \ .. 'sys.stdout.buffer.write(bytes([0, 1, 2, 10, 255]));'
+        \ .. 'sys.stdout.flush();'
+        \ .. 'time.sleep(0.1)']
+  let job = job_start(cmd, #{
+        \ out_mode: 'blob',
+        \ out_cb: 'OutBlobCb',
+        \ })
+  try
+    call WaitForAssert({-> assert_equal([0, 1, 2, 10, 255], g:Ch_blob_bytes)})
+  finally
+    call job_stop(job)
+    delfunc OutBlobCb
+    unlet g:Ch_blob_bytes
+  endtry
+endfunc
+
+func Test_pty_out_cb_blob_mode()
+  CheckUnix
+
+  let g:Ch_blob_bytes = []
+  func PtyBlobCb(chan, msg)
+    call assert_equal(v:t_blob, type(a:msg))
+    let g:Ch_blob_bytes += blob2list(a:msg)
+  endfunc
+
+  " Put the pty in raw mode so the line discipline does not translate LF
+  " to CRLF or strip NUL bytes, then write bytes that include NULs on
+  " both sides of an embedded LF.
+  let cmd = [s:python, '-c',
+        \ 'import os,sys,time;'
+        \ .. 'os.system("stty raw -echo");'
+        \ .. 'sys.stdout.buffer.write(bytes([65, 0, 66, 10, 67, 0, 68]));'
+        \ .. 'sys.stdout.flush();'
+        \ .. 'time.sleep(0.1)']
+  let job = job_start(cmd, #{
+        \ pty: 1,
+        \ out_mode: 'blob',
+        \ out_cb: 'PtyBlobCb',
+        \ })
+  try
+    call WaitForAssert({-> assert_equal(
+          \ [65, 0, 66, 10, 67, 0, 68], g:Ch_blob_bytes)})
+  finally
+    call job_stop(job)
+    delfunc PtyBlobCb
+    unlet g:Ch_blob_bytes
+  endtry
+endfunc
+
 func Test_close_and_exit_cb()
   let g:test_is_flaky = 1
   let g:retdict = {'ret': {}}

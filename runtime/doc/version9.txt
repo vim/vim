@@ -52620,6 +52620,7 @@ Other ~
   height.  Also added the "scrollbar" sub-option to 'tabpanelopt'.
 - Added the "noinsert" value to the 'wildmode' option for symmetry with the
   'completeopt' option
+- Channel can handle |Blob| messages |channel-open-options|.
 
 Platform specific ~
 -----------------
