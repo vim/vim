@@ -1326,8 +1326,7 @@ job_start(
 	if (get_job_options(&argvars[1], &opt,
 		    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
 			 + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE,
-		     JO2_ENV + JO2_CWD)
-								      == FAIL)
+		     JO2_ENV + JO2_CWD) == FAIL)
 	    goto theend;
     }
 

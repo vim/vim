@@ -4634,7 +4634,7 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
     if (opt.jo_set & JO_TIMEOUT)
 	timeout = opt.jo_timeout;
 
-    if (blob)
+    if (blob || mode == CH_MODE_BLOB)
     {
 	int	    outlen = 0;
 	char_u  *p = channel_read_block(channel, part,
@@ -4657,8 +4657,7 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 	    vim_free(p);
 	}
     }
-    else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_BLOB
-	    || mode == CH_MODE_NL)
+    else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_NL)
 	rettv->vval.v_string = channel_read_block(channel, part,
 		timeout, raw, NULL);
     else
@@ -5043,7 +5042,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     if (ch_mode == CH_MODE_RAW || ch_mode == CH_MODE_BLOB
 	    || ch_mode == CH_MODE_NL)
     {
-	emsg(_(e_cannot_use_evalexpr_sendexpr_with_raw_or_nl_channel));
+	emsg(_(e_cannot_use_evalexpr_sendexpr_with_raw_nl_or_blob_channel));
 	return;
     }
 
