@@ -445,6 +445,21 @@ skip_for_popup(int row, int col)
 #endif
 	    )
 	return TRUE;
+    // Protect cells under the pum from background draws (vsep, status line).
+    // Excluded for wildmenu pum (MODE_CMDLINE): pum_row can be stale while
+    // the cmdline grows.
+#ifdef FEAT_PROP_POPUP
+    if (screen_zindex < POPUPMENU_ZINDEX
+	    && pum_visible()
+	    && (State & MODE_CMDLINE) == 0
+	    && pum_under_menu(row, col, FALSE))
+	return TRUE;
+#else
+    if (pum_visible()
+	    && (State & MODE_CMDLINE) == 0
+	    && pum_under_menu(row, col, FALSE))
+	return TRUE;
+#endif
 #ifdef FEAT_PROP_POPUP
     if (blocked_by_popup(row, col))
 	return TRUE;
