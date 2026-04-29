@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 28
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52618,6 +52618,8 @@ Other ~
 - Enable reflow support in the |:terminal|.
 - Enabled scrolling for the tabpanel when the tab page list exceeds the screen
   height.  Also added the "scrollbar" sub-option to 'tabpanelopt'.
+- Added the "noinsert" value to the 'wildmode' option for symmetry with the
+  'completeopt' option
 
 Platform specific ~
 -----------------

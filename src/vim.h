@@ -904,6 +904,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_NOSELECT		    0x4000
 #define WILD_MAY_EXPAND_PATTERN	    0x8000
 #define WILD_FUNC_TRIGGER	    0x10000 // called from wildtrigger()
+#define WILD_NOINSERT		    0x20000
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
