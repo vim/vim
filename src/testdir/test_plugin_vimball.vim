@@ -97,3 +97,16 @@ func Test_vimball_path_traversal_drive_letter()
   call assert_match('(Vimball) Path Traversal Attack detected, aborting\.\.\.', mess)
   call s:teardown()
 endfunc
+
+func Test_vimball_evil_filenames()
+  call s:Mkvimball()
+  call delete('XVimball', 'rf')
+  sp Xtest.vmb
+  4s#XVimball#pwn')#
+  so %
+  call feedkeys("\<cr>", "it")
+
+  let mess = execute(':mess')->split('\n')[-1]
+  call assert_match('(Vimball) Forbidding strange filename:.* aborting\.\.\.', mess)
+  call s:teardown()
+endfunc
