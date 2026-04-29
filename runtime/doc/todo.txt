@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -420,8 +420,6 @@ more information.
 ":filter set termcap" only filters terminal codes, not keys. (#9297)
 
 Add an option to restrict 'incsearch' to not scroll the view. (Tavis Ormandy)
-
-Remove SPACE_IN_FILENAME ? It is only used for completion.
 
 When 'term' starts with "foot" then default t_TI and t_TE to the values used
 for the builtin xterm termcap.

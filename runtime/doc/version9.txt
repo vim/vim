@@ -52642,6 +52642,9 @@ Changed ~
 - Removed the Wayland focus steal feature 'wlsteal', since it causes too many
   issues and can now be re-implemted using the |clipboard-providers| feature
   if needed, see |wayland-primary-selection| for an example.
+- On Unix, filename completion for single-file Ex commands now treats embedded
+  whitespace as part of the filename, like on other platforms.
+
 
 							*added-9.3*
 Added ~

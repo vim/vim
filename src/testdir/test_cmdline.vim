@@ -5400,4 +5400,20 @@ func Test_rulerformat_empty()
   set rulerformat&
 endfunc
 
+func Test_cmdline_complete_with_space()
+  call mkdir('Xspc', 'R')
+  let save_cwd = getcwd()
+  cd Xspc
+  call writefile([], 'foo bar')
+  call writefile([], 'baz')
+  call writefile([], 'bz')
+
+  " This should expand to foo\ bar, not add 3 space separated
+  " files: foo baz bz
+  call feedkeys(":badd foo b\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"badd foo\ bar', @:)
+
+  call chdir(save_cwd)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
