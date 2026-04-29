@@ -1832,9 +1832,7 @@ set_context_for_wildcard_arg(
 	// An argument can contain just about everything, except
 	// characters that end the command and white space.
 	else if (c == '|' || c == '\n' || c == '"' || (VIM_ISWHITE(c)
-#ifdef SPACE_IN_FILENAME
 		    && (!(eap != NULL && (eap->argt & EX_NOSPC)) || usefilter)
-#endif
 		    ))
 	{
 	    len = 0;  // avoid getting stuck when space is in 'isfname'

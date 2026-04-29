@@ -74,7 +74,6 @@
 
 #define USE_EXE_NAME		    // to find  $VIM
 #define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
-#define SPACE_IN_FILENAME
 
 #define USE_FNAME_CASE		// make ":e os_Mac.c" open the file in its
 				// original case, as "os_mac.c"

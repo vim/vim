@@ -12,7 +12,6 @@
 #include <decc$types.h>             // Required early for large-file support
 
 #define CASE_INSENSITIVE_FILENAME   // Open VMS is case insensitive
-#define SPACE_IN_FILENAME           // There could be space between user and passwd
 #define FNAME_ILLEGAL "|*#?%"       // Illegal characters in a file name
 #define BINARY_FILE_IO              // Use binary fileio
 #define USE_GETCWD

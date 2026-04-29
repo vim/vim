@@ -421,8 +421,6 @@ more information.
 
 Add an option to restrict 'incsearch' to not scroll the view. (Tavis Ormandy)
 
-Remove SPACE_IN_FILENAME ? It is only used for completion.
-
 When 'term' starts with "foot" then default t_TI and t_TE to the values used
 for the builtin xterm termcap.
 

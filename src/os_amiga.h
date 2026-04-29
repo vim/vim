@@ -11,7 +11,6 @@
  */
 
 #define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
-#define SPACE_IN_FILENAME
 #define USE_FNAME_CASE		    // adjust case of file names
 #define USE_TERM_CONSOLE
 #define HAVE_AVAIL_MEM
