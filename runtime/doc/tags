@@ -11761,6 +11761,7 @@ viminfo-r	options.txt	/*viminfo-r*
 viminfo-read	starting.txt	/*viminfo-read*
 viminfo-read-write	starting.txt	/*viminfo-read-write*
 viminfo-s	options.txt	/*viminfo-s*
+viminfo-security	starting.txt	/*viminfo-security*
 viminfo-timestamp	starting.txt	/*viminfo-timestamp*
 viminfo-write	starting.txt	/*viminfo-write*
 vimrc	starting.txt	/*vimrc*
