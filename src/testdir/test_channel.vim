@@ -1411,6 +1411,7 @@ func Test_out_cb_blob_mode()
   finally
     call job_stop(job)
     delfunc OutBlobCb
+    unlet g:Ch_blob_bytes
   endtry
 endfunc
 
