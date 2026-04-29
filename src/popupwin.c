@@ -1410,16 +1410,26 @@ popup_adjust_position(win_T *wp)
 		|| wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    wp->w_wincol = wantcol - 1;
-	    // Need to see at least one character after the decoration.
-	    if (wp->w_wincol > firstwin->w_wincol + topframe->fr_width - left_extra - 1)
-		wp->w_wincol = firstwin->w_wincol + topframe->fr_width - left_extra - 1;
+	    // Need to see at least one character of content plus the right
+	    // border/padding/shadow after the decoration.
+	    if (wp->w_wincol > firstwin->w_wincol + topframe->fr_width
+						- left_extra - right_extra - 1)
+		wp->w_wincol = firstwin->w_wincol + topframe->fr_width
+						- left_extra - right_extra - 1;
 	}
     }
+
+    // Keep the popup out of the tabpanel area so the available width is
+    // computed correctly below.
+    if (wp->w_wincol < firstwin->w_wincol)
+	wp->w_wincol = firstwin->w_wincol;
 
     // When centering or right aligned, use maximum width.
     // When left aligned use the space available, but shift to the left when we
     // hit the right of the screen.
-    maxspace = firstwin->w_wincol + topframe->fr_width - wp->w_wincol - left_extra;
+    // Reserve room for the right border/padding/shadow so the popup fits.
+    maxspace = firstwin->w_wincol + topframe->fr_width
+					- wp->w_wincol - left_extra - right_extra;
     maxwidth = maxspace;
     if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
     {
@@ -1481,6 +1491,27 @@ popup_adjust_position(win_T *wp)
     // backwards.
     // TODO: more accurate wrapping
     wp->w_width = 1;
+    // Pre-scan every buffer line to find the widest one, so the popup width
+    // stays stable when scrolling changes which lines are visible.
+    {
+	linenr_T ln;
+	int saved_w_width = wp->w_width;
+
+	if (wp->w_width < maxwidth)
+	    wp->w_width = maxwidth;
+	for (ln = 1; ln <= wp->w_buffer->b_ml.ml_line_count; ++ln)
+	{
+	    int len = linetabsize(wp, ln) + margin_width;
+
+	    if (wp->w_maxwidth > 0 && len > wp->w_maxwidth)
+		len = wp->w_maxwidth;
+	    if (saved_w_width < len)
+		saved_w_width = len;
+	    if (wp->w_maxwidth > 0 && saved_w_width >= wp->w_maxwidth)
+		break;
+	}
+	wp->w_width = saved_w_width;
+    }
     if (wp->w_firstline < 0)
 	lnum = wp->w_buffer->b_ml.ml_line_count;
     else
@@ -1615,9 +1646,10 @@ popup_adjust_position(win_T *wp)
     }
     if (center_hor)
     {
-	wp->w_wincol = (firstwin->w_wincol + topframe->fr_width - wp->w_width - extra_width) / 2;
-	if (wp->w_wincol < 0)
-	    wp->w_wincol = 0;
+	wp->w_wincol = firstwin->w_wincol
+		    + (topframe->fr_width - wp->w_width - extra_width) / 2;
+	if (wp->w_wincol < firstwin->w_wincol)
+	    wp->w_wincol = firstwin->w_wincol;
     }
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
 	    || wp->w_popup_pos == POPPOS_TOPRIGHT)
@@ -1748,12 +1780,37 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_winrow < 0)
 	wp->w_winrow = 0;
 
-    if (wp->w_wincol + wp->w_width > firstwin->w_wincol + topframe->fr_width)
-	wp->w_wincol = firstwin->w_wincol + topframe->fr_width - wp->w_width;
-    else if (wp->w_wincol < firstwin->w_wincol)
+    if (wp->w_wincol + wp->w_width + extra_width
+				    > firstwin->w_wincol + topframe->fr_width)
+	wp->w_wincol = firstwin->w_wincol + topframe->fr_width
+						- wp->w_width - extra_width;
+    if (wp->w_wincol < firstwin->w_wincol)
 	wp->w_wincol = firstwin->w_wincol;
     if (wp->w_wincol < 0)
 	wp->w_wincol = 0;
+    // If the popup is wider than the available area (e.g. minwidth larger than
+    // the work area between tabpanels), clip the content width so the right
+    // border/padding/shadow stays visible instead of being pushed off the
+    // screen or into the tabpanel.
+    if (wp->w_wincol + wp->w_width + extra_width
+				    > firstwin->w_wincol + topframe->fr_width)
+    {
+	int avail = firstwin->w_wincol + topframe->fr_width
+						- wp->w_wincol - extra_width;
+	wp->w_width = avail > 0 ? avail : 0;
+    }
+
+    // Same for the bottom edge: shift up so the border/padding/shadow stays
+    // on screen, and clip the height if the popup is taller than the screen.
+    if (wp->w_winrow + wp->w_height + extra_height > Rows)
+	wp->w_winrow = Rows - wp->w_height - extra_height;
+    if (wp->w_winrow < 0)
+	wp->w_winrow = 0;
+    if (wp->w_winrow + wp->w_height + extra_height > Rows)
+    {
+	int avail = Rows - wp->w_winrow - extra_height;
+	wp->w_height = avail > 0 ? avail : 0;
+    }
 
     if (wp->w_height != org_height)
 	win_comp_scroll(wp);

@@ -3115,7 +3115,7 @@ func Test_popupwin_with_buffer_and_filter()
   call assert_equal(1, popup_getpos(winid).firstline)
   redraw
   call feedkeys("G", 'xt')
-  call assert_equal(99, popup_getpos(winid).firstline)
+  call assert_equal(96, popup_getpos(winid).firstline)
 
   call popup_close(winid)
   exe 'bwipe! ' .. bufnr
