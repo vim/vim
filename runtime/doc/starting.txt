@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Mar 17
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1572,6 +1572,24 @@ viminfo file.  Session files are used to save the state of a specific editing
 Session.  You could have several Session files, one for each project you are
 working on.  Viminfo and Session files together can be used to effectively
 enter Vim and directly start working in your desired setup. |session-file|
+
+							*viminfo-security*
+A viminfo file written by Vim is plain text and contains Vim expressions for
+|List|, |Dictionary| and |Tuple| values.  When "!" is in 'viminfo' at the time
+Vim processes the file as a viminfo file, those expressions are evaluated.
+
+The default value of 'viminfo' does not include "!", so by default no
+expression evaluation happens.
+
+Opening a viminfo file in a buffer (e.g. with |:edit|) is harmless; Vim only
+displays the file contents.  The risk is letting Vim process an untrusted file
+through the viminfo machinery, which happens when:
+- |:rviminfo| is used on the file, or
+- 'viminfofile' is set to point at it, or
+- the file is placed at the path Vim already reads as viminfo
+  |viminfo-file-name|
+
+In any of those cases, do not have "!" in 'viminfo' if you do not trust it.
 
 							*viminfo-read*
 When Vim is started and the 'viminfo' option is non-empty, the contents of
