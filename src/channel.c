@@ -1440,8 +1440,7 @@ channel_listen_func(typval_T *argvars)
     opt.jo_mode = CH_MODE_JSON;
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
-	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL,
-	    0) == FAIL)
+	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL, 0) == FAIL)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
