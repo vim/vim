@@ -5249,6 +5249,32 @@ func Test_wildtrigger_update_screen()
   call StopVimInTerminal(buf)
 endfunc
 
+" Wrapped cmdline must not be truncated when wildtrigger() redraws on every
+" keystroke.
+func Test_wildtrigger_wrapped_cmdline()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildmode=noselect:lastused,full wildoptions=pum
+    cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildtrigger_wrap', 'D')
+  let rows = 8
+  let cols = 30
+  let buf = RunVimInTerminal('-S XTest_wildtrigger_wrap', {'rows': rows, 'cols': cols})
+
+  call term_sendkeys(buf, ":e ")
+  for i in range(40)
+    call term_sendkeys(buf, "x\<F8>")
+  endfor
+
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, ((3 + 40) - cols + 1)])
+  call VerifyScreenDump(buf, 'Test_wildtrigger_wrapped_cmdline_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " Issue #17969: With 'noselect', the popup menu should appear next to the
 " environment variable being expanded. Disable 'showtail' when completing
 " file paths when 'noselect' is present.
