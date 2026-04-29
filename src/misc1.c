@@ -1398,7 +1398,7 @@ init_vimdir(void)
     char_u *
 expand_env_save(char_u *src)
 {
-    return expand_env_save_opt(src, FALSE);
+    return expand_env_save_opt(src, FALSE, NULL);
 }
 
 /*
@@ -1406,13 +1406,13 @@ expand_env_save(char_u *src)
  * expand "~" at the start.
  */
     char_u *
-expand_env_save_opt(char_u *src, int one)
+expand_env_save_opt(char_u *src, int one, char_u *esc_chars)
 {
     char_u	*p;
 
     p = alloc(MAXPATHL);
     if (p != NULL)
-	expand_env_esc(src, p, MAXPATHL, FALSE, one, NULL);
+	expand_env_esc(src, p, MAXPATHL, esc_chars, one, NULL);
     return p;
 }
 
@@ -1428,7 +1428,7 @@ expand_env(
     char_u	*dst,		// where to put the result
     int		dstlen)		// maximum length of the result
 {
-    return expand_env_esc(src, dst, dstlen, FALSE, FALSE, NULL);
+    return expand_env_esc(src, dst, dstlen, NULL, FALSE, NULL);
 }
 
     size_t
@@ -1436,7 +1436,7 @@ expand_env_esc(
     char_u	*srcp,		// input string e.g. "$HOME/vim.hlp"
     char_u	*dst,		// where to put the result
     int		dstlen,		// maximum length of the result
-    int		esc,		// escape spaces in expanded variables
+    char_u	*esc_chars,	// chars to escape in expanded vars
     int		one,		// "srcp" is one file name
     char_u	*startstr)	// start again after this (can be NULL)
 {
@@ -1655,11 +1655,13 @@ expand_env_esc(
 	    }
 #endif
 
-	    // If "var" contains white space, escape it with a backslash.
-	    // Required for ":e ~/tt" when $HOME includes a space.
-	    if (esc && var != NULL && vim_strpbrk(var, (char_u *)" \t") != NULL)
+	    // If "var" contains any character from "esc_chars", escape it
+	    // with a backslash.  The historical use is escaping spaces so
+	    // that ":e ~/tt" works when $HOME contains a space.
+	    if (esc_chars != NULL && var != NULL
+		    && vim_strpbrk(var, esc_chars) != NULL)
 	    {
-		char_u	*p = vim_strsave_escaped(var, (char_u *)" \t");
+		char_u	*p = vim_strsave_escaped(var, esc_chars);
 
 		if (p != NULL)
 		{

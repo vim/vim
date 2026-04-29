@@ -3264,7 +3264,8 @@ option_expand(int opt_idx, char_u *val)
     char_u ** var = (char_u **)options[opt_idx].var;
     int esc = var == &p_tags || var == &p_path;
 
-    expand_env_esc(val, NameBuff, MAXPATHL, esc, FALSE,
+    expand_env_esc(val, NameBuff, MAXPATHL,
+	    esc ? (char_u *)" \t" : NULL, FALSE,
 #ifdef FEAT_SPELL
 	    var == &p_sps ? (char_u *)"file:" :
 #endif

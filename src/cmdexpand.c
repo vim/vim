@@ -1254,7 +1254,7 @@ showmatches_oneline(
 		// Expansion was done before and special characters
 		// were escaped, need to halve backslashes.  Also
 		// $HOME has been replaced with ~/.
-		exp_path = expand_env_save_opt(matches[j], TRUE);
+		exp_path = expand_env_save_opt(matches[j], TRUE, NULL);
 		path = exp_path != NULL ? exp_path : matches[j];
 		halved_slash = backslash_halve_save(path);
 		isdir = mch_isdir(halved_slash != NULL ? halved_slash

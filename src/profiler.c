@@ -392,7 +392,7 @@ ex_profile(exarg_T *eap)
     if (len == 5 && STRNCMP(eap->arg, "start", 5) == 0 && *e != NUL)
     {
 	VIM_CLEAR(profile_fname);
-	profile_fname = expand_env_save_opt(e, TRUE);
+	profile_fname = expand_env_save_opt(e, TRUE, NULL);
 	do_profiling = PROF_YES;
 	profile_zero(&prof_wait_time);
 	set_vim_var_nr(VV_PROFILING, 1L);

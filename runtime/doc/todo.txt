@@ -2113,7 +2113,6 @@ es_ES.utf-8" gives an error and doesn't switch messages. (Dominique Pelle,
 
 When $HOME contains special characters, such as a comma, escape them when used
 in an option. (Michael Hordijk, 2009 May 5)
-Turn "esc" argument of expand_env_esc() into string of chars to be escaped.
 
 Should make 'ignorecase' global-local, so that it makes sense setting it from
 a modeline.
