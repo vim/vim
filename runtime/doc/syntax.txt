@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5993,13 +5993,28 @@ EndOfBuffer	Filler lines (~) after the last line in the buffer.
 ErrorMsg	Error messages on the command line.
 							*hl-VertSplit*
 VertSplit	Column separating vertically split windows that are adjacent
-		to the current window.  On the current window's status line
-		rows, the separator cell is drawn as a space with the
-		|hl-StatusLine| highlight so it blends into the status line
-		without a stray fillchar glyph.
+		to the current window.  The cell character and highlight at
+		each screen row depend on what is at that row on both sides
+		of the separator:
+		- On a status line row of the current window: the cell is
+		  drawn as a space with the |hl-StatusLine| highlight, so it
+		  visually merges into the current window's status line.
+		- On any other row (including a row that is a status line
+		  row of the adjacent non-current window but not of the
+		  current window): the cell is drawn with the "vert" item of
+		  'fillchars' and the VertSplit highlight.
 							*hl-VertSplitNC*
-VertSplitNC	Column separating vertically split windows of non-current
-		windows.  By default, highlighted like |hl-VertSplit|.
+VertSplitNC	Column separating vertically split windows where neither
+		adjacent window is the current window.  The cell character
+		and highlight at each screen row depend on what is at that
+		row on both sides of the separator:
+		- On a status line row of either adjacent (non-current)
+		  window: the cell is drawn as a space with the
+		  |hl-StatusLineNC| highlight of that window, so it visually
+		  merges into that window's status line.
+		- On any other row: the cell is drawn with the "vert" item
+		  of 'fillchars' and the VertSplitNC highlight.
+		By default, highlighted like |hl-VertSplit|.
 							*hl-Folded*
 Folded		Line used for closed folds.
 							*hl-FoldColumn*
@@ -6116,8 +6131,12 @@ SpellRare	Word that is recognized by the spellchecker as one that is
 		This will be combined with the highlighting used otherwise.
 							*hl-StatusLine*
 StatusLine	Status line of current window.
+		Also used for the vertical separator cell adjacent to the
+		current window's status line.  see |hl-VertSplit|.
 							*hl-StatusLineNC*
-StatusLineNC	status lines of not-current windows
+StatusLineNC	status lines of not-current windows.
+		Also used for the vertical separator cell adjacent to a
+		non-current window's status line.  see |hl-VertSplitNC|.
 		Note: If this is equal to "StatusLine", Vim will use "^^^" in
 		the status line of the current window.
 							*hl-StatusLineTerm*
