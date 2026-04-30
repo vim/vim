@@ -1091,6 +1091,26 @@ ExpandOne(
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
+	if (xp->xp_files_abbr != NULL)
+	{
+	    FreeWild(xp->xp_numfiles, xp->xp_files_abbr);
+	    xp->xp_files_abbr = NULL;
+	}
+	if (xp->xp_files_kind != NULL)
+	{
+	    FreeWild(xp->xp_numfiles, xp->xp_files_kind);
+	    xp->xp_files_kind = NULL;
+	}
+	if (xp->xp_files_menu != NULL)
+	{
+	    FreeWild(xp->xp_numfiles, xp->xp_files_menu);
+	    xp->xp_files_menu = NULL;
+	}
+	if (xp->xp_files_info != NULL)
+	{
+	    FreeWild(xp->xp_numfiles, xp->xp_files_info);
+	    xp->xp_files_info = NULL;
+	}
 	xp->xp_numfiles = -1;
 	VIM_CLEAR(xp->xp_orig);
 
