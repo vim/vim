@@ -1870,14 +1870,21 @@ popup_adjust_position(win_T *wp)
 
     // Same for the bottom edge: shift up so the border/padding/shadow stays
     // on screen, and clip the height if the popup is taller than the screen.
-    if (wp->w_winrow + wp->w_height + extra_height > Rows)
-	wp->w_winrow = Rows - wp->w_height - extra_height;
-    if (wp->w_winrow < 0)
-	wp->w_winrow = 0;
-    if (wp->w_winrow + wp->w_height + extra_height > Rows)
+    // For "clipwindow" popups the host-window clip below handles overflow, so
+    // skip these screen-edge clamps -- otherwise a synthesised negative
+    // w_winrow (popup partially above the host's top edge) would be snapped
+    // back to 0 and defeat the top-clip animation.
+    if (!(wp->w_popup_flags & POPF_CLIPWINDOW))
     {
-	int avail = Rows - wp->w_winrow - extra_height;
-	wp->w_height = avail > 0 ? avail : 0;
+	if (wp->w_winrow + wp->w_height + extra_height > Rows)
+	    wp->w_winrow = Rows - wp->w_height - extra_height;
+	if (wp->w_winrow < 0)
+	    wp->w_winrow = 0;
+	if (wp->w_winrow + wp->w_height + extra_height > Rows)
+	{
+	    int avail = Rows - wp->w_winrow - extra_height;
+	    wp->w_height = avail > 0 ? avail : 0;
+	}
     }
 
     if (wp->w_height != org_height)
