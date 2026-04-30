@@ -73,11 +73,11 @@ static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #ifdef FEAT_PROP_POPUP
 // Note: Keep this in sync with parse_popup_option()
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
-    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
-    "shadow:", "width:", NULL};
+    "borderhighlight:", "close:", "height:", "highlight:", "opacity:",
+    "resize:", "shadow:", "width:", NULL};
 static char *(p_popup_pvp_option_values[]) = {"border:",
-    "borderhighlight:", "close:", "height:", "highlight:", "resize:",
-    "shadow:", "width:", NULL};
+    "borderhighlight:", "close:", "height:", "highlight:", "opacity:",
+    "resize:", "shadow:", "width:", NULL};
 static char *(p_popup_option_on_off_values[]) = {"on", "off", NULL};
 static char *(p_popup_cpp_border_values[]) = {"single", "double", "round",
     "ascii", "on", "off", "custom:", NULL};
