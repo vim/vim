@@ -678,6 +678,9 @@ typedef struct expand
     int		xp_selected;		// selected index in completion
     char_u	*xp_orig;		// originally expanded string
     char_u	**xp_files;		// list of files
+    char_u	**xp_files_abbr;	// optional parallel array of display
+					// strings (override xp_files for the
+					// pum text); NULL if unused
     char_u	**xp_files_kind;	// optional parallel array of "kind"
 					// strings; NULL if unused
     char_u	**xp_files_menu;	// optional parallel array of "menu"

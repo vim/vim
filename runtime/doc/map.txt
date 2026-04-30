@@ -1695,7 +1695,11 @@ candidates one per line in a newline separated string.
 For the "customlist" argument, the function should return the completion
 candidates as a Vim List.  Each item may be either a string or a |Dictionary|.
 A Dictionary item may have the following keys:
-	word	(required) the completion text
+	word	(required) the text inserted into the command line when the
+		item is selected
+	abbr	alternative text shown in the popup menu in place of "word",
+		when 'wildoptions' contains "pum"; useful when the inserted
+		text and the displayed text should differ
 	kind	short kind text (one or two characters), shown in the popup
 		menu when 'wildoptions' contains "pum"
 	menu	extra text shown after the match in the popup menu

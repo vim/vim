@@ -412,7 +412,10 @@ cmdline_pum_create(
     compl_match_arraysize = numMatches;
     for (int i = 0; i < numMatches; i++)
     {
-	compl_match_array[i].pum_text = SHOW_MATCH(i);
+	compl_match_array[i].pum_text = (xp->xp_files_abbr != NULL
+				    && xp->xp_files_abbr[i] != NULL)
+					? xp->xp_files_abbr[i]
+					: SHOW_MATCH(i);
 	compl_match_array[i].pum_info = xp->xp_files_info != NULL
 					    ? xp->xp_files_info[i] : NULL;
 	compl_match_array[i].pum_extra = xp->xp_files_menu != NULL
@@ -1189,6 +1192,11 @@ ExpandCleanup(expand_T *xp)
 {
     if (xp->xp_numfiles >= 0)
     {
+	if (xp->xp_files_abbr != NULL)
+	{
+	    FreeWild(xp->xp_numfiles, xp->xp_files_abbr);
+	    xp->xp_files_abbr = NULL;
+	}
 	if (xp->xp_files_kind != NULL)
 	{
 	    FreeWild(xp->xp_numfiles, xp->xp_files_kind);
@@ -1442,6 +1450,11 @@ showmatches(
     if (xp->xp_numfiles == -1)
     {
 	FreeWild(numMatches, matches);
+	if (xp->xp_files_abbr != NULL)
+	{
+	    FreeWild(numMatches, xp->xp_files_abbr);
+	    xp->xp_files_abbr = NULL;
+	}
 	if (xp->xp_files_kind != NULL)
 	{
 	    FreeWild(numMatches, xp->xp_files_kind);
@@ -4157,6 +4170,7 @@ ExpandUserList(
     list_T      *retlist;
     listitem_T	*li;
     garray_T	ga;
+    garray_T	ga_abbr;
     garray_T	ga_kind;
     garray_T	ga_menu;
     garray_T	ga_info;
@@ -4170,6 +4184,7 @@ ExpandUserList(
 	return FAIL;
 
     ga_init2(&ga, sizeof(char *), 3);
+    ga_init2(&ga_abbr, sizeof(char *), 3);
     ga_init2(&ga_kind, sizeof(char *), 3);
     ga_init2(&ga_menu, sizeof(char *), 3);
     ga_init2(&ga_info, sizeof(char *), 3);
@@ -4177,6 +4192,7 @@ ExpandUserList(
     FOR_ALL_LIST_ITEMS(retlist, li)
     {
 	char_u	*p = NULL;
+	char_u	*abbr = NULL;
 	char_u	*kind = NULL;
 	char_u	*menu = NULL;
 	char_u	*info = NULL;
@@ -4196,10 +4212,11 @@ ExpandUserList(
 	    if (word == NULL)
 		continue;  // "word" is required
 	    p = vim_strsave(word);
+	    abbr = dict_get_string(d, "abbr", TRUE);
 	    kind = dict_get_string(d, "kind", TRUE);
 	    menu = dict_get_string(d, "menu", TRUE);
 	    info = dict_get_string(d, "info", TRUE);
-	    if (kind != NULL || menu != NULL || info != NULL)
+	    if (abbr != NULL || kind != NULL || menu != NULL || info != NULL)
 		have_extra = TRUE;
 	}
 	else
@@ -4209,11 +4226,13 @@ ExpandUserList(
 	    break;
 
 	if (ga_grow(&ga, 1) == FAIL
+		|| ga_grow(&ga_abbr, 1) == FAIL
 		|| ga_grow(&ga_kind, 1) == FAIL
 		|| ga_grow(&ga_menu, 1) == FAIL
 		|| ga_grow(&ga_info, 1) == FAIL)
 	{
 	    vim_free(p);
+	    vim_free(abbr);
 	    vim_free(kind);
 	    vim_free(menu);
 	    vim_free(info);
@@ -4221,6 +4240,7 @@ ExpandUserList(
 	}
 
 	((char_u **)ga.ga_data)[ga.ga_len++] = p;
+	((char_u **)ga_abbr.ga_data)[ga_abbr.ga_len++] = abbr;
 	((char_u **)ga_kind.ga_data)[ga_kind.ga_len++] = kind;
 	((char_u **)ga_menu.ga_data)[ga_menu.ga_len++] = menu;
 	((char_u **)ga_info.ga_data)[ga_info.ga_len++] = info;
@@ -4231,6 +4251,7 @@ ExpandUserList(
     *numMatches = ga.ga_len;
     if (have_extra && ga.ga_len > 0)
     {
+	xp->xp_files_abbr = (char_u **)ga_abbr.ga_data;
 	xp->xp_files_kind = (char_u **)ga_kind.ga_data;
 	xp->xp_files_menu = (char_u **)ga_menu.ga_data;
 	xp->xp_files_info = (char_u **)ga_info.ga_data;
@@ -4238,6 +4259,9 @@ ExpandUserList(
     else
     {
 	// No extra info collected; free the placeholder NULL entries.
+	for (i = 0; i < ga_abbr.ga_len; i++)
+	    vim_free(((char_u **)ga_abbr.ga_data)[i]);
+	vim_free(ga_abbr.ga_data);
 	for (i = 0; i < ga_kind.ga_len; i++)
 	    vim_free(((char_u **)ga_kind.ga_data)[i]);
 	vim_free(ga_kind.ga_data);

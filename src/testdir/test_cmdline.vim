@@ -4624,9 +4624,21 @@ func Test_customlist_dict_completion()
   call feedkeys(":DictCmd a\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"DictCmd apple', @:)
 
+  " "abbr" overrides display only; "word" is what gets inserted.
+  func DictCompAbbr(A, L, P)
+    return [{'word': 'apple', 'abbr': 'APPLE🍎'}]
+  endfunc
+  call assert_equal(['apple'],
+        \ getcompletion('', 'customlist,DictCompAbbr'))
+  command -nargs=1 -complete=customlist,DictCompAbbr DictAbbrCmd echo <q-args>
+  call feedkeys(":DictAbbrCmd \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"DictAbbrCmd apple', @:)
+
+  delcommand DictAbbrCmd
   delcommand DictCmd
   delfunc DictComp
   delfunc DictCompMissingWord
+  delfunc DictCompAbbr
 endfunc
 
 func Test_custom_completion_with_glob()
