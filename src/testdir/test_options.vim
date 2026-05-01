@@ -674,8 +674,10 @@ func Test_set_completion_string_values()
   set completepopup=border:on,opacity:100
   call assert_fails('set completepopup=opacity:101', 'E474:')
   call assert_fails('set completepopup=opacity:abc', 'E474:')
+  call assert_fails('set completepopup=opacity:-10', 'E474:')
   set previewpopup=opacity:30
   call assert_fails('set previewpopup=opacity:200', 'E474:')
+  call assert_fails('set previewpopup=opacity:-10', 'E474:')
 
   set previewpopup& completepopup&
 

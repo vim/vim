@@ -2167,21 +2167,11 @@ parse_popup_option(win_T *wp, int is_preview)
 		return FAIL;
 	    if (wp != NULL)
 	    {
-		if (x == 0)
-		{
+		if (x < 100)
 		    wp->w_popup_flags |= POPF_OPACITY;
-		    wp->w_popup_blend = 100;
-		}
-		else if (x < 100)
-		{
-		    wp->w_popup_flags |= POPF_OPACITY;
-		    wp->w_popup_blend = 100 - x;
-		}
 		else
-		{
 		    wp->w_popup_flags &= ~POPF_OPACITY;
-		    wp->w_popup_blend = 0;
-		}
+		wp->w_popup_blend = 100 - x;
 	    }
 	}
 	else
