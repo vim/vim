@@ -7007,7 +7007,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				of 'fillchars' option.
 	  opacity:{n}		opacity percentage 0-100 (default 100).
 				When less than 100, background content shows
-				through the popup menu.
+				through the popup menu.  Requires the GUI,
+				'termguicolors', or a 256-color terminal.
 
 	Flags (no value):
 	  margin		adds one-cell spacing inside the left and

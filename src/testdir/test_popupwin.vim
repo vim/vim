@@ -5094,6 +5094,40 @@ func Test_popup_opacity_vsplit()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_textprop_undercurl()
+  CheckScreendump
+
+  " hl_blend_attr() treated the CTERMCOLOR sentinel as a real near-white
+  " color, leaking white bg onto textprop-covered cells under an opacity
+  " popup.  Triggered by a textprop hl that only sets guisp.
+  let lines =<< trim END
+    set termguicolors
+    set t_Cs= t_Ce=
+    call setline(1, ['aaa bbb ccc ddd eee fff ggg hhh',
+          \ 'iii jjj kkk lll mmm nnn ooo ppp',
+          \ 'qqq rrr sss ttt uuu vvv www xxx',
+          \ 'yyy zzz 111 222 333 444 555 666'])
+    hi MyError guisp=#ec7279
+    call prop_type_add('mytype', #{highlight: 'MyError', combine: 1})
+    for s:l in range(1, line('$'))
+      call prop_add(s:l, 5, #{type: 'mytype', length: 20})
+    endfor
+    hi PanelBg guibg=#0b1021 guifg=#e5e9f0
+    call popup_create(['POPUP CONTENT', '             ', '   middle    '], #{
+          \ line: 1, col: 10,
+          \ minwidth: 30, minheight: 3,
+          \ opacity: 35,
+          \ highlight: 'PanelBg',
+          \ zindex: 200,
+          \ })
+  END
+  call writefile(lines, 'XtestPopupOpacityTextprop', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTextprop', #{rows: 8, cols: 50})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_textprop_undercurl', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_close_b_nwindows()
   edit Xfoo
   setlocal bufhidden=wipe
