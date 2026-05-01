@@ -263,33 +263,47 @@ write_blob(FILE *fd, blob_T *blob)
  * Convert a blob to a readable form: "0z00112233.44556677.8899"
  */
     char_u *
-blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
+blob2string(blob_T *blob, char_u **tofree, char_u *numbuf UNUSED)
 {
-    int		i;
-    garray_T    ga;
+    static const char hex_chars[] = "0123456789ABCDEF";
+    int		blen;
+    size_t	total;
+    char_u	*buf;
+    char_u	*p;
+    char_u	*src;
 
-    if (blob == NULL)
+    if (blob == NULL || (blen = blob_len(blob)) == 0)
     {
 	*tofree = NULL;
 	return (char_u *)"0z";
     }
 
-    // Store bytes in the growarray.
-    ga_init2(&ga, 1, 4000);
-    GA_CONCAT_LITERAL(&ga, "0z");
-    for (i = 0; i < blob_len(blob); i++)
+    // 2 ("0z") + 2 hex per byte + one '.' every 4 bytes + NUL terminator.
+    total = 2 + (size_t)blen * 2 + (size_t)((blen - 1) / 4) + 1;
+    buf = alloc(total);
+    if (buf == NULL)
     {
-	size_t	numbuflen;
+	*tofree = NULL;
+	return (char_u *)"0z";
+    }
+
+    p = buf;
+    *p++ = '0';
+    *p++ = 'z';
+    src = (char_u *)blob->bv_ga.ga_data;
+    for (int i = 0; i < blen; i++)
+    {
+	unsigned b;
 
 	if (i > 0 && (i & 3) == 0)
-	    GA_CONCAT_LITERAL(&ga, ".");
-	numbuflen = vim_snprintf_safelen((char *)numbuf, NUMBUFLEN,
-	    "%02X", blob_get(blob, i));
-	ga_concat_len(&ga, numbuf, numbuflen);
+	    *p++ = '.';
+	b = src[i];
+	*p++ = hex_chars[b >> 4];
+	*p++ = hex_chars[b & 0xf];
     }
-    ga_append(&ga, NUL);		// append a NUL at the end
-    *tofree = ga.ga_data;
-    return *tofree;
+    *p = NUL;
+    *tofree = buf;
+    return buf;
 }
 
 /*

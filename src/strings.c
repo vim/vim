@@ -1262,43 +1262,42 @@ blob_from_string(char_u *str, blob_T *blob)
     static int
 string_from_blob(blob_T *blob, long *start_idx, string_T *ret)
 {
-    garray_T	str_ga;
-    long	blen;
-    int		idx;
+    long	blen = blob_len(blob);
+    long	start = *start_idx;
+    char_u	*src;
+    char_u	*nl;
+    long	line_len;
 
-    ga_init2(&str_ga, sizeof(char), 80);
-
-    blen = blob_len(blob);
-
-    for (idx = *start_idx; idx < blen; idx++)
-    {
-	char_u byte = (char_u)blob_get(blob, idx);
-	if (byte == NL)
-	{
-	    idx++;
-	    break;
-	}
-
-	if (byte == NUL)
-	    byte = NL;
-
-	ga_append(&str_ga, byte);
-    }
-
-    if (str_ga.ga_data != NULL)
-    {
-	ret->string = vim_strnsave(str_ga.ga_data, str_ga.ga_len);
-	ret->length = str_ga.ga_len;
-    }
-    else
+    if (start >= blen)
     {
 	ret->string = vim_strsave((char_u *)"");
 	ret->length = 0;
+	*start_idx = blen;
+	return (ret->string == NULL) ? FAIL : OK;
     }
-    *start_idx = idx;
 
-    ga_clear(&str_ga);
-    return (ret->string == NULL) ? FAIL : OK;
+    src = (char_u *)blob->bv_ga.ga_data + start;
+    nl = (char_u *)memchr(src, NL, (size_t)(blen - start));
+    line_len = (nl == NULL) ? (blen - start) : (long)(nl - src);
+
+    ret->string = alloc(line_len + 1);
+    if (ret->string == NULL)
+    {
+	ret->length = 0;
+	return FAIL;
+    }
+    if (line_len > 0)
+	mch_memmove(ret->string, src, (size_t)line_len);
+    ret->string[line_len] = NUL;
+    ret->length = (size_t)line_len;
+
+    // A NUL byte in the blob represents a NL in the resulting string.
+    for (long i = 0; i < line_len; i++)
+	if (ret->string[i] == NUL)
+	    ret->string[i] = NL;
+
+    *start_idx = start + line_len + (nl != NULL ? 1 : 0);
+    return OK;
 }
 
 /*
@@ -1486,11 +1485,14 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	garray_T blob_ga;
 	int nul_size = (from_prop & ENC_4BYTE) ? 4 : 2;
 	ga_init2(&blob_ga, 1, blen + nul_size);
-	for (long i = 0; i < blen; i++)
-	    ga_append(&blob_ga, (int)(unsigned char)blob_get(blob, i));
-	// Add NUL terminator (2 bytes for UTF-16/UCS-2, 4 bytes for UTF-32/UCS-4)
-	for (int i = 0; i < nul_size; i++)
-	    ga_append(&blob_ga, NUL);
+	if (ga_grow(&blob_ga, blen + nul_size) == OK)
+	{
+	    if (blen > 0)
+		mch_memmove(blob_ga.ga_data, blob->bv_ga.ga_data, (size_t)blen);
+	    // NUL terminator (2 bytes for UTF-16/UCS-2, 4 bytes for UTF-32/UCS-4)
+	    vim_memset((char_u *)blob_ga.ga_data + blen, 0, (size_t)nul_size);
+	    blob_ga.ga_len = blen + nul_size;
+	}
 
 	// Convert the entire blob at once
 	vimconv_T vimconv;
