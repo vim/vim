@@ -465,6 +465,7 @@ cmdline_pum_remove(cmdline_info_T *cclp UNUSED, int defer_redraw)
 	RedrawingDisabled = 0;
 #endif
 
+    term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
     compl_match_arraysize = 0;
@@ -478,6 +479,7 @@ cmdline_pum_remove(cmdline_info_T *cclp UNUSED, int defer_redraw)
     else
 	pum_call_update_screen();
     redrawcmd();
+    term_set_sync_output(TERM_SYNC_OUTPUT_DISABLE);
 
     // When a function is called (e.g. for 'foldtext') KeyTyped might be reset
     // as a side effect.
