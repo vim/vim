@@ -2393,6 +2393,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		close		show close button: "on" (default) or "off"
 		height		maximum height of the popup
 		highlight	popup highlight group (default: PmenuSel)
+		opacity		opacity percentage 0-100 (default 100, fully
+				opaque).  When less than 100, content beneath
+				the popup shows through.
 		resize		show resize handle: "on" (default) or "off"
 		shadow		"off" (default) or "on" using |hl-PmenuShadow|
 		width		maximum width of the popup
@@ -2400,6 +2403,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Example: >
 		:set completepopup=height:10,border:single,highlight:InfoPopup
 		:set completepopup=width:60,border:custom:─;│;─;│;┌;┐;┘;└
+		:set completepopup=border:round,opacity:80
 <
 	When "align" is set to "item", the popup is positioned near the
 	selected item and moves as the selection changes.

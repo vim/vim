@@ -52587,6 +52587,7 @@ Popups ~
 - Support for transparency, see |popup-opacity|.
 - 'previewpopup' supports the same values as 'completepopup' (except for
   "align").
+- Support "opacity" setting for 'completepopup' option.
 
 Diff mode ~
 ---------

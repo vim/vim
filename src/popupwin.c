@@ -2163,6 +2163,19 @@ parse_popup_option(win_T *wp, int is_preview)
 	    if (wp != NULL && menu)
 		wp->w_popup_flags |= POPF_INFO_MENU;
 	}
+	else if (STRNCMP(s, "opacity:", 8) == 0)
+	{
+	    if (dig != p || x < 0 || x > 100)
+		return FAIL;
+	    if (wp != NULL)
+	    {
+		if (x < 100)
+		    wp->w_popup_flags |= POPF_OPACITY;
+		else
+		    wp->w_popup_flags &= ~POPF_OPACITY;
+		wp->w_popup_blend = 100 - x;
+	    }
+	}
 	else
 	    return FAIL;
     }

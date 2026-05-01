@@ -1,4 +1,4 @@
-*windows.txt*	For Vim version 9.2.  Last change: 2026 Mar 01
+*windows.txt*	For Vim version 9.2.  Last change: 2026 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -960,6 +960,9 @@ settings.  The option is a comma-separated list of values:
 			the value is "on", it must be set after border.
 	height		maximum height of the popup
 	highlight	highlight group of the popup (default is Pmenu)
+	opacity		opacity percentage 0-100 (default 100, fully opaque).
+			When less than 100, content beneath the popup shows
+			through.
 	resize		show resize handle: "on" (default) or "off"
 	shadow		"off" (default) or "on" using |hl-PmenuShadow|
 	width		maximum width of the popup
@@ -968,6 +971,7 @@ Example: >
 	:set previewpopup=height:10,width:60
 	:set previewpopup=border:single,borderhilight:PmenuBorder
 	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
+	:set previewpopup=border:round,opacity:80
 
 A few peculiarities:
 - If the file is in a buffer already, it will be re-used.  This will allow for

@@ -663,6 +663,22 @@ func Test_set_completion_string_values()
   call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set completepopup=height:10,align:item', @:)
   call assert_equal([], getcompletion('set completepopup=bogusname:', 'cmdline'))
+
+  " opacity: numeric, 0..100 only
+  call assert_true(index(getcompletion('set completepopup=', 'cmdline'),
+        \ 'opacity:') >= 0)
+  call assert_true(index(getcompletion('set previewpopup=', 'cmdline'),
+        \ 'opacity:') >= 0)
+  set completepopup=border:on,opacity:0
+  set completepopup=border:on,opacity:50
+  set completepopup=border:on,opacity:100
+  call assert_fails('set completepopup=opacity:101', 'E474:')
+  call assert_fails('set completepopup=opacity:abc', 'E474:')
+  call assert_fails('set completepopup=opacity:-10', 'E474:')
+  set previewpopup=opacity:30
+  call assert_fails('set previewpopup=opacity:200', 'E474:')
+  call assert_fails('set previewpopup=opacity:-10', 'E474:')
+
   set previewpopup& completepopup&
 
   " diffopt: special handling of algorithm:<alg_list> and inline:<inline_type>
