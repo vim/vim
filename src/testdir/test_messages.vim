@@ -837,4 +837,37 @@ func Test_fileinfo_after_last_bd()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_undo_messages()
+  enew
+
+  " Normal undo/redo messages
+  redir => result
+  call setline(1, 'foo')
+  undo
+  undo
+  redo
+  redo
+  redir END
+  let msg_list = split(result, "\n")
+  call assert_match("^1 line less; before #1", msg_list[0])
+  call assert_equal("Already at oldest change", msg_list[1])
+  call assert_match("^1 more line; after #1", msg_list[2])
+  call assert_equal("Already at newest change", msg_list[3])
+
+  " Ignore undo/redo messages
+  redir => result
+  set shortmess+=u
+  call setline(1, 'foo')
+  undo
+  undo
+  redo
+  redo
+  redir END
+  let msg_list = split(result, "\n")
+  call assert_equal([], msg_list)
+
+  bwipe!
+  set shortmess&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

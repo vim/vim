@@ -277,8 +277,9 @@ typedef enum {
 #define SHM_RECORDING	'q'		// short recording message
 #define SHM_FILEINFO	'F'		// no file info messages
 #define SHM_SEARCHCOUNT  'S'		// no search stats: '[1/10]'
+#define SHM_UNDO	'u'		// undo messages
 #define SHM_POSIX       "AS"		// POSIX value
-#define SHM_ALL		"rmfixlnwaWtToOsAIcCqFS" // all possible flags for 'shm'
+#define SHM_ALL		"rmfixlnwaWtToOsAIcCqFSu" // all possible flags for 'shm'
 #define SHM_LEN		30		// max length of all flags together
 					// plus a NUL character
 
