@@ -23,8 +23,13 @@ func Test_visual_block_scroll()
   let buf = RunVimInTerminal('-S '.filename, #{rows: 7})
   call term_sendkeys(buf, "V\<C-D>\<C-D>")
 
-  call WaitForAssert({-> assert_match('VISUAL.*\d\+\s\+\d', term_getline(buf, 7))}, 1000)
-  call VerifyScreenDump(buf, 'Test_display_visual_block_scroll', {})
+  call WaitForAssert({-> assert_equal('{', trim(term_getline(buf, 1)))}, 1000)
+  call assert_equal('}', trim(term_getline(buf, 2)))
+  call assert_equal('{', trim(term_getline(buf, 3)))
+  call assert_equal('f', trim(term_getline(buf, 4)))
+  call assert_equal('g', trim(term_getline(buf, 5)))
+  call assert_equal('}', trim(term_getline(buf, 6)))
+  call assert_match('VISUAL LINE .*1,1\s\+Bot', term_getline(buf, 7))
 
   call StopVimInTerminal(buf)
 endfunc
