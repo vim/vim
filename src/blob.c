@@ -333,23 +333,31 @@ string2blob(char_u *str)
 {
     blob_T  *blob = blob_alloc();
     char_u  *s = str;
+    char_u  *dst;
+    int	    max_bytes;
 
     if (blob == NULL)
 	return NULL;
     if (s[0] != '0' || (s[1] != 'z' && s[1] != 'Z'))
 	goto failed;
     s += 2;
+    // Upper bound on the number of bytes: every two hex chars become one byte.
+    max_bytes = (int)(STRLEN(s) / 2);
+    if (max_bytes > 0 && ga_grow(&blob->bv_ga, max_bytes) == FAIL)
+	goto failed;
+    dst = (char_u *)blob->bv_ga.ga_data;
     while (vim_isxdigit(*s))
     {
 	if (!vim_isxdigit(s[1]))
 	    goto failed;
-	ga_append(&blob->bv_ga, (hex2nr(s[0]) << 4) + hex2nr(s[1]));
+	*dst++ = (hex2nr(s[0]) << 4) + hex2nr(s[1]);
 	s += 2;
 	if (*s == '.' && vim_isxdigit(s[1]))
 	    ++s;
     }
     if (*skipwhite(s) != NUL)
 	goto failed;  // text after final digit
+    blob->bv_ga.ga_len = (int)(dst - (char_u *)blob->bv_ga.ga_data);
 
     ++blob->bv_refcount;
     return blob;

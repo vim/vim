@@ -2438,11 +2438,27 @@ eval_number(
     if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
     {
 	char_u  *bp;
+	char_u  *dst = NULL;
 	blob_T  *blob = NULL;  // init for gcc
 
 	// Blob constant: 0z0123456789abcdef
 	if (evaluate)
+	{
 	    blob = blob_alloc();
+	    if (blob != NULL)
+	    {
+		// Upper bound on the number of bytes: every two hex chars
+		// in the rest of the input become one byte.
+		int max_bytes = (int)(STRLEN(*arg + 2) / 2);
+		if (max_bytes > 0
+			&& ga_grow(&blob->bv_ga, max_bytes) == FAIL)
+		{
+		    VIM_CLEAR(blob);
+		    return FAIL;
+		}
+		dst = (char_u *)blob->bv_ga.ga_data;
+	    }
+	}
 	for (bp = *arg + 2; vim_isxdigit(bp[0]); bp += 2)
 	{
 	    if (!vim_isxdigit(bp[1]))
@@ -2456,13 +2472,15 @@ eval_number(
 		return FAIL;
 	    }
 	    if (blob != NULL)
-		ga_append(&blob->bv_ga,
-			     (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
+		*dst++ = (hex2nr(*bp) << 4) + hex2nr(*(bp + 1));
 	    if (bp[2] == '.' && vim_isxdigit(bp[3]))
 		++bp;
 	}
 	if (blob != NULL)
+	{
+	    blob->bv_ga.ga_len = (int)(dst - (char_u *)blob->bv_ga.ga_data);
 	    rettv_blob_set(rettv, blob);
+	}
 	*arg = bp;
     }
     else
