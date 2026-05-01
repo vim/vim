@@ -2563,6 +2563,32 @@ func Test_popup_settext()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_settext_scrollbar_disappear()
+  CheckScreendump
+
+  let lines =<< trim END
+    let g:p = popup_create(repeat(['hello world'], 30), #{
+          \ line: 3,
+          \ col: 5,
+          \ pos: 'topleft',
+          \ minheight: 10,
+          \ maxheight: 10,
+          \ minwidth: 30,
+          \ border: [1, 1, 1, 1],
+          \ })
+  END
+  call writefile(lines, 'XtestPopupScrollDisappear', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupScrollDisappear', #{rows: 15, cols: 50})
+  call VerifyScreenDump(buf, 'Test_popup_settext_scrollbar_disappear_1', {})
+
+  " Shrinking the buffer makes the scrollbar disappear.  The right border
+  " column must not leave stray characters where the scrollbar used to be.
+  call term_sendkeys(buf, ":call popup_settext(g:p, ['short'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_scrollbar_disappear_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_settext_getline()
   let id = popup_create('', #{ tabpage: 0 })
   call popup_settext(id, ['a','b'])

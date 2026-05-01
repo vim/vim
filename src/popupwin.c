@@ -1288,6 +1288,7 @@ popup_adjust_position(win_T *wp)
     int		org_height = wp->w_height;
     int		org_leftcol = wp->w_leftcol;
     int		org_leftoff = wp->w_popup_leftoff;
+    int		org_has_scrollbar = wp->w_has_scrollbar;
     int		minwidth, minheight;
     int		maxheight = Rows;
     int		wantline = wp->w_wantline;  // adjusted for textprop
@@ -1830,7 +1831,8 @@ popup_adjust_position(win_T *wp)
 	    || org_leftcol != wp->w_leftcol
 	    || org_leftoff != wp->w_popup_leftoff
 	    || org_width != wp->w_width
-	    || org_height != wp->w_height)
+	    || org_height != wp->w_height
+	    || org_has_scrollbar != wp->w_has_scrollbar)
     {
 	redraw_win_later(wp, UPD_NOT_VALID);
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
