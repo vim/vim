@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 Apr 06
+*popup.txt*	For Vim version 9.2.  Last change: 2026 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1067,8 +1067,9 @@ The opacity value ranges from 0 to 100:
     1-99	Partially transparent - the popup background is blended with
 		the underlying text, making both partially visible.
 
-The transparency effect requires using the GUI or having 'termguicolors'
-enabled in the terminal. Without it, the opacity setting has no effect.
+The transparency effect requires using the GUI, having 'termguicolors'
+enabled, or running in a 256-color terminal.  On terminals with fewer
+than 256 colors the opacity setting has no effect.
 
 When a popup is transparent:
 - The popup's background color is blended with the background text

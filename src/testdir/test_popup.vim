@@ -2474,6 +2474,40 @@ func Test_pumopt_opacity_wide_bg()
   call StopVimInTerminal(buf)
 endfunc
 
+" hl_pum_blend_attr() treated the CTERMCOLOR sentinel as a real near-white
+" color, leaking white bg onto textprop-covered cells under pum opacity.
+" Triggered by a textprop hl that only sets guisp.
+func Test_pumopt_opacity_textprop_undercurl()
+  CheckScreendump
+  let lines =<< trim END
+    set termguicolors
+    set t_Cs= t_Ce=
+    set pumopt=opacity:50
+    set completeopt=menu
+    call setline(1, '')
+    for i in range(8)
+      call append(line('$'), 'aaa bbb ccc ddd eee fff ggg hhh')
+    endfor
+    hi MyError guisp=#ec7279
+    call prop_type_add('mytype', #{highlight: 'MyError', combine: 1})
+    for s:l in range(2, 8)
+      call prop_add(s:l, 5, #{type: 'mytype', length: 20})
+    endfor
+    normal gg
+    inoremap <F5> <Cmd>call complete(col('.'),
+          \ ['popup-item-1', 'popup-item-2', 'popup-item-3'])<CR>
+  END
+  call writefile(lines, 'Xpumoptopacitytextprop', 'D')
+  let buf = RunVimInTerminal('-S Xpumoptopacitytextprop', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pumopt_opacity_textprop_undercurl', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test pumopt opacity when every other background line is shifted by one
 " narrow cell, so the background's wide-character boundaries do not align
 " with the popup's wide-character grid.  Exercises the blend path when:
