@@ -2532,7 +2532,8 @@ undo_time(
 
 	if (closest == closest_start)
 	{
-	    if (!shortmess(SHM_UNDO)) {
+	    if (!shortmess(SHM_UNDO))
+	    {
 		if (step < 0)
 		    msg(_("Already at oldest change"));
 		else
