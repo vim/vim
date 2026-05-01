@@ -2262,7 +2262,8 @@ u_doit(int startcount)
 		beep_flush();
 		if (count == startcount - 1)
 		{
-		    msg(_("Already at oldest change"));
+		    if (!shortmess(SHM_UNDO))
+			msg(_("Already at oldest change"));
 		    return;
 		}
 		break;
@@ -2277,7 +2278,8 @@ u_doit(int startcount)
 		beep_flush();	// nothing to redo
 		if (count == startcount - 1)
 		{
-		    msg(_("Already at newest change"));
+		    if (!shortmess(SHM_UNDO))
+			msg(_("Already at newest change"));
 		    return;
 		}
 		break;
@@ -2530,10 +2532,13 @@ undo_time(
 
 	if (closest == closest_start)
 	{
-	    if (step < 0)
-		msg(_("Already at oldest change"));
-	    else
-		msg(_("Already at newest change"));
+	    if (!shortmess(SHM_UNDO))
+	    {
+		if (step < 0)
+		    msg(_("Already at oldest change"));
+		else
+		    msg(_("Already at newest change"));
+	    }
 	    return;
 	}
 
@@ -2996,7 +3001,8 @@ u_undo_end(
 #endif
 
     if (global_busy	    // no messages now, wait until global is finished
-	    || !messaging())  // 'lazyredraw' set, don't do messages now
+	    || !messaging() // 'lazyredraw' set, don't do messages now
+	    || shortmess(SHM_UNDO))
 	return;
 
     if (curbuf->b_ml.ml_flags & ML_EMPTY)

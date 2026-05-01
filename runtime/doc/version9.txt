@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52621,6 +52621,7 @@ Other ~
 - Added the "noinsert" value to the 'wildmode' option for symmetry with the
   'completeopt' option
 - Channel can handle |Blob| messages |channel-open-options|.
+- Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
 
 Platform specific ~
 -----------------

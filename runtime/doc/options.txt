@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
+*options.txt*	For Vim version 9.2.  Last change: 2026 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8044,6 +8044,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		search count statistics.  The maximum limit can be set with
 		the 'maxsearchcount' option, see also |searchcount()|
 		function.
+	  u	don't give undo and redo messages like			*shm-u*
+		"1 line less; before #1  1 second ago", "Already at oldest
+		change" or "Already at newest change"
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as

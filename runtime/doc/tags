@@ -10331,6 +10331,7 @@ shm-q	options.txt	/*shm-q*
 shm-r	options.txt	/*shm-r*
 shm-s	options.txt	/*shm-s*
 shm-t	options.txt	/*shm-t*
+shm-u	options.txt	/*shm-u*
 shm-w	options.txt	/*shm-w*
 shm-x	options.txt	/*shm-x*
 short-name-changed	version4.txt	/*short-name-changed*
