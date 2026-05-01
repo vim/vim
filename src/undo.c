@@ -3001,7 +3001,7 @@ u_undo_end(
 
     if (global_busy	    // no messages now, wait until global is finished
 	    || !messaging() // 'lazyredraw' set, don't do messages now
-            || shortmess(SHM_UNDO))
+	    || shortmess(SHM_UNDO))
 	return;
 
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
