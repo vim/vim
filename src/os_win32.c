@@ -7104,9 +7104,19 @@ cursor_visible(BOOL fVisible)
     s_cursor_visible = fVisible;
 
     if (vtp_working)
+    {
+	// In vtp mode, visibility is controlled solely by DECTCEM.  Skip
+	// mch_update_cursor() since shape is independent of visibility and
+	// re-emitting DECSCUSR can cause the terminal to briefly redisplay
+	// the cursor while a redraw is in progress.
 	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
+	return;
+    }
 
 # ifdef MCH_CURSOR_SHAPE
+    // Non-vtp Windows console: SetConsoleCursorInfo() consults
+    // s_cursor_visible inside mch_set_cursor_shape(), so the call is needed
+    // to apply the new visibility.
     mch_update_cursor();
 # endif
 }
