@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 01
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52623,6 +52623,8 @@ Other ~
   'completeopt' option
 - Channel can handle |Blob| messages |channel-open-options|.
 - Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
+- |:command-completion-customlist| can return a list of dictionaries with
+  kind/menu/info/abbr for the popup menu.
 
 Platform specific ~
 -----------------
