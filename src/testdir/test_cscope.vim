@@ -288,6 +288,13 @@ func Test_cscopeWithCscopeConnections()
 
     call assert_equal(cscope_connection(5, 'out'), 0)
     call assert_equal(cscope_connection(-1, 'out'), 0)
+    cscope kill -1
+
+    " Test: cscope file with shell meta chars
+    call writefile([], 'Xcscope2.out`id>Xid`', 'D')
+    call assert_fails('cscope add Xcscope2.out`id>Xid`', 'E609:')
+    call assert_false(filereadable('Xid'))
+    cscope kill -1
 
     call CscopeSetupOrClean(0)
 endfunc
