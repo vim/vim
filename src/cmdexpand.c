@@ -1025,6 +1025,31 @@ find_longest_match(expand_T *xp, int options)
     return ss;
 }
 
+    static void
+free_xp_files_extra(expand_T *xp, int numfiles)
+{
+    if (xp->xp_files_abbr != NULL)
+    {
+	FreeWild(numfiles, xp->xp_files_abbr);
+	xp->xp_files_abbr = NULL;
+    }
+    if (xp->xp_files_kind != NULL)
+    {
+	FreeWild(numfiles, xp->xp_files_kind);
+	xp->xp_files_kind = NULL;
+    }
+    if (xp->xp_files_menu != NULL)
+    {
+	FreeWild(numfiles, xp->xp_files_menu);
+	xp->xp_files_menu = NULL;
+    }
+    if (xp->xp_files_info != NULL)
+    {
+	FreeWild(numfiles, xp->xp_files_info);
+	xp->xp_files_info = NULL;
+    }
+}
+
 /*
  * Do wildcard expansion on the string "str".
  * Chars that should not be expanded must be preceded with a backslash.
@@ -1091,26 +1116,7 @@ ExpandOne(
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
-	if (xp->xp_files_abbr != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_abbr);
-	    xp->xp_files_abbr = NULL;
-	}
-	if (xp->xp_files_kind != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_kind);
-	    xp->xp_files_kind = NULL;
-	}
-	if (xp->xp_files_menu != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_menu);
-	    xp->xp_files_menu = NULL;
-	}
-	if (xp->xp_files_info != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_info);
-	    xp->xp_files_info = NULL;
-	}
+	free_xp_files_extra(xp, xp->xp_numfiles);
 	xp->xp_numfiles = -1;
 	VIM_CLEAR(xp->xp_orig);
 
@@ -1212,26 +1218,7 @@ ExpandCleanup(expand_T *xp)
 {
     if (xp->xp_numfiles >= 0)
     {
-	if (xp->xp_files_abbr != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_abbr);
-	    xp->xp_files_abbr = NULL;
-	}
-	if (xp->xp_files_kind != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_kind);
-	    xp->xp_files_kind = NULL;
-	}
-	if (xp->xp_files_menu != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_menu);
-	    xp->xp_files_menu = NULL;
-	}
-	if (xp->xp_files_info != NULL)
-	{
-	    FreeWild(xp->xp_numfiles, xp->xp_files_info);
-	    xp->xp_files_info = NULL;
-	}
+	free_xp_files_extra(xp, xp->xp_numfiles);
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
     }
@@ -1470,26 +1457,7 @@ showmatches(
     if (xp->xp_numfiles == -1)
     {
 	FreeWild(numMatches, matches);
-	if (xp->xp_files_abbr != NULL)
-	{
-	    FreeWild(numMatches, xp->xp_files_abbr);
-	    xp->xp_files_abbr = NULL;
-	}
-	if (xp->xp_files_kind != NULL)
-	{
-	    FreeWild(numMatches, xp->xp_files_kind);
-	    xp->xp_files_kind = NULL;
-	}
-	if (xp->xp_files_menu != NULL)
-	{
-	    FreeWild(numMatches, xp->xp_files_menu);
-	    xp->xp_files_menu = NULL;
-	}
-	if (xp->xp_files_info != NULL)
-	{
-	    FreeWild(numMatches, xp->xp_files_info);
-	    xp->xp_files_info = NULL;
-	}
+	free_xp_files_extra(xp, numMatches);
     }
 
     return EXPAND_OK;
@@ -4242,10 +4210,8 @@ ExpandUserList(
 	else
 	    continue;  // Skip other types
 
-	if (p == NULL)
-	    break;
-
-	if (ga_grow(&ga, 1) == FAIL
+	if (p == NULL
+		|| ga_grow(&ga, 1) == FAIL
 		|| ga_grow(&ga_abbr, 1) == FAIL
 		|| ga_grow(&ga_kind, 1) == FAIL
 		|| ga_grow(&ga_menu, 1) == FAIL
