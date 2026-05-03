@@ -1951,7 +1951,9 @@ list_version(void)
 #if !defined(FEAT_GUI)
     msg_puts(_("without GUI."));
 #elif defined(FEAT_GUI_GTK)
-# if defined(USE_GTK3)
+# if defined(USE_GTK4)
+    msg_puts(_("with GTK4 GUI."));
+# elif defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)
     msg_puts(_("with GTK2-GNOME GUI."));

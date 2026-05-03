@@ -16,7 +16,9 @@
 #if !defined(FEAT_GUI_MSWIN)
 
 # ifdef FEAT_GUI_GTK
-#  if GTK_CHECK_VERSION(3,0,0)
+#  ifdef USE_GTK4
+#   include <gdk/gdkkeysyms.h>
+#  elif GTK_CHECK_VERSION(3,0,0)
 #   include <gdk/gdkkeysyms-compat.h>
 #  else
 #   include <gdk/gdkkeysyms.h>
@@ -390,7 +392,11 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	beval->x = x;
 	beval->y = y;
 
+#  ifdef USE_GTK4
+	if (state & (int)GDK_ALT_MASK)
+#  else
 	if (state & (int)GDK_MOD1_MASK)
+#  endif
 	{
 	    /*
 	     * Alt is pressed -- enter super-evaluate-mode,
@@ -416,14 +422,24 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
     {
 	switch (keyval)
 	{
+#  ifdef USE_GTK4
+	    case GDK_KEY_Shift_L:
+	    case GDK_KEY_Shift_R:
+#  else
 	    case GDK_Shift_L:
 	    case GDK_Shift_R:
+#  endif
 		beval->showState = ShS_UPDATE_PENDING;
 		(*beval->msgCB)(beval, (is_keypress)
 						   ? (int)GDK_SHIFT_MASK : 0);
 		break;
+#  ifdef USE_GTK4
+	    case GDK_KEY_Control_L:
+	    case GDK_KEY_Control_R:
+#  else
 	    case GDK_Control_L:
 	    case GDK_Control_R:
+#  endif
 		beval->showState = ShS_UPDATE_PENDING;
 		(*beval->msgCB)(beval, (is_keypress)
 						 ? (int)GDK_CONTROL_MASK : 0);
