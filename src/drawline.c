@@ -3811,19 +3811,31 @@ win_line(
 	// highlighting, unless text property overrides.
 	// Don't use "wlv.extra_attr" until wlv.n_attr_skip is zero.
 	if (wlv.n_attr_skip == 0 && n_attr > 0
-		&& wlv.draw_state == WL_LINE
-		&& (!attr_pri
+		&& wlv.draw_state == WL_LINE)
+	{
+	    if (!attr_pri
 #ifdef FEAT_PROP_POPUP
 		    || (text_prop_flags & PT_FLAG_OVERRIDE)
 #endif
-		   ))
-	{
+		   )
+	    {
 #ifdef LINE_ATTR
-	    if (wlv.line_attr)
-		wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.extra_attr);
-	    else
+		if (wlv.line_attr)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.extra_attr);
+		else
 #endif
-		wlv.char_attr = wlv.extra_attr;
+		    wlv.char_attr = wlv.extra_attr;
+	    }
+	    else
+	    {
+#ifdef LINE_ATTR
+		if (wlv.line_attr)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr,
+				hl_combine_attr(wlv.extra_attr, wlv.char_attr));
+		else
+#endif
+		    wlv.char_attr = hl_combine_attr(wlv.extra_attr, wlv.char_attr);
+	    }
 #ifdef FEAT_PROP_POPUP
 	    if (reset_extra_attr)
 	    {
