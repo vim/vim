@@ -1412,7 +1412,6 @@ qf_parse_file_pfx(
 	*fields->namebuf = NUL;
 	if (tail && *tail)
 	{
-	    STRMOVE(IObuff, skipwhite(tail));
 	    qfl->qf_multiscan = TRUE;
 	    return QF_MULTISCAN;
 	}
@@ -1579,7 +1578,15 @@ restofline:
 	{				// global file names
 	    status = qf_parse_file_pfx(idx, fields, qfl, tail);
 	    if (status == QF_MULTISCAN)
+	    {
+		char_u *s = skipwhite(tail);
+		int new_linelen = (int)STRLEN(s);
+		if (new_linelen >= linelen)
+		    return QF_IGNORE_LINE;
+		linebuf = s;
+		linelen = new_linelen;
 		goto restofline;
+	    }
 	}
 	if (fmt_ptr->flags == '-')	// generally exclude this line
 	{
