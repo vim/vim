@@ -3210,11 +3210,15 @@ update_window_manager_hints(int force_width, int force_height)
     static int old_min_height = 0;
     static int old_char_width  = 0;
     static int old_char_height = 0;
+    static int old_csd_height = 0;
+    static int old_csd_width = 0;
 
     int width;
     int height;
     int min_width;
     int min_height;
+    int csd_height = 0;
+    int csd_width = 0;
 
     // At start-up, don't try to set the hints until the initial
     // values have been used (those that dictate our initial size)
@@ -3230,6 +3234,18 @@ update_window_manager_hints(int force_width, int force_height)
     // otherwise the hints don't work.
     width  = gui_get_base_width();
     height = gui_get_base_height();
+
+#ifdef GDK_WINDOWING_WAYLAND
+    if (gui.is_wayland && gtk_widget_get_realized(gui.mainwin)
+	    && (!old_csd_height || !old_csd_width))
+    {
+	GtkAllocation mainwin_alloc, formwin_alloc;
+	gtk_widget_get_allocation(gui.mainwin, &mainwin_alloc);
+	gtk_widget_get_allocation(gui.formwin, &formwin_alloc);
+	csd_height = mainwin_alloc.height - formwin_alloc.height;
+	csd_width = mainwin_alloc.width - formwin_alloc.width;
+    }
+#endif
 #ifdef FEAT_MENU
     height += tabline_height() * gui.char_height;
 #endif
@@ -3258,15 +3274,17 @@ update_window_manager_hints(int force_width, int force_height)
 	    || min_width != old_min_width
 	    || min_height != old_min_height
 	    || gui.char_width != old_char_width
-	    || gui.char_height != old_char_height)
+	    || gui.char_height != old_char_height
+	    || csd_width != old_csd_width
+	    || csd_height != old_csd_height)
     {
 	GdkGeometry	geometry;
 	GdkWindowHints	geometry_mask;
 
 	geometry.width_inc   = gui.char_width;
 	geometry.height_inc  = gui.char_height;
-	geometry.base_width  = width;
-	geometry.base_height = height;
+	geometry.base_width  = width + csd_width;
+	geometry.base_height = height + csd_height;
 	geometry.min_width   = min_width;
 	geometry.min_height  = min_height;
 	geometry_mask	     = GDK_HINT_BASE_SIZE|GDK_HINT_RESIZE_INC
@@ -3284,6 +3302,8 @@ update_window_manager_hints(int force_width, int force_height)
 	old_min_height  = min_height;
 	old_char_width  = gui.char_width;
 	old_char_height = gui.char_height;
+	old_csd_width   = csd_width;
+	old_csd_height  = csd_height;
     }
 }
 
