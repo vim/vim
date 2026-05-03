@@ -6348,7 +6348,7 @@ function s:NetrwUnMarkFile(islocal)
     endif
 
     let ibuf= 1
-    while ibuf < bufnr("$")
+    while ibuf <= bufnr("$")
         if exists("s:netrwmarkfilelist_".ibuf)
             unlet s:netrwmarkfilelist_{ibuf}
             unlet s:netrwmarkfilemtch_{ibuf}
