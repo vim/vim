@@ -6,11 +6,11 @@ let s:thisfile = expand('%:p')
 let s:testdir = s:thisfile->fnamemodify(':h')
 
 func Filepath(name)
-  return s:testdir .. '/' .. a:name
+  return getcwd() .. '/' .. a:name
 endfunc
 
 func AssertStacktrace(expect, actual)
-  call assert_equal(Filepath('runtest.vim'), a:actual[0]['filepath'])
+  call assert_equal(s:testdir .. '/runtest.vim', a:actual[0]['filepath'])
   call assert_equal(a:expect, a:actual[-len(a:expect):])
 endfunc
 
