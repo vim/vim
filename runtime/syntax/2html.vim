@@ -1060,7 +1060,7 @@ execute $":{orgwin}wincmd w"
 # initialize to include line numbers if using them
 var stylelist: dict<string>
 if settings.number_lines
-  stylelist = { LINENR_ID: ".LineNr { " .. CSS1(LINENR_ID) .. "}" }
+  stylelist = { [LINENR_ID]: ".LineNr { " .. CSS1(LINENR_ID) .. "}" }
 else
   stylelist = {}
 endif
