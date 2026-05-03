@@ -706,7 +706,7 @@ runtime/syntax/tt2html.vim				@petdance
 runtime/syntax/tt2js.vim				@petdance
 runtime/syntax/typescript.vim				@HerringtonDarkholme @rhysd
 runtime/syntax/typescriptreact.vim			@HerringtonDarkholme @rhysd
-runtime/syntax/typst.vim				@gpanders
+runtime/syntax/typst.vim				@habamax
 runtime/syntax/shared/typescriptcommon.vim		@HerringtonDarkholme @rhysd
 runtime/syntax/unison.vim				@chuwy
 runtime/syntax/vdf.vim					@ObserverOfTime
