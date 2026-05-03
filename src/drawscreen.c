@@ -160,6 +160,11 @@ update_screen(int type_arg)
     }
     updating_screen = TRUE;
 
+    // Hide the cursor while redrawing when sync output is not active, to
+    // avoid visible cursor flicker on terminals like Windows ConPTY.
+    int hid_cursor = !sync_output_active();
+    if (hid_cursor)
+	cursor_off();
     term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
 
 #ifdef FEAT_PROP_POPUP
@@ -447,6 +452,8 @@ update_screen(int type_arg)
 #endif
 
     term_set_sync_output(TERM_SYNC_OUTPUT_DISABLE);
+    if (hid_cursor)
+	cursor_on();
 
     return OK;
 }
