@@ -2165,7 +2165,7 @@ find_mps_values(
  * flags: FM_BACKWARD	search backwards (when initc is '/', '*' or '#')
  *	  FM_FORWARD	search forwards (when initc is '/', '*' or '#')
  *	  FM_BLOCKSTOP	stop at start/end of block ({ or } in column 0)
- *	  FM_SKIPCOMM	skip comments (not implemented yet!)
+ *	  FM_SKIPCOMM	skip over line comments
  *
  * "oap" is only used to set oap->motion_type for a linewise motion, it can be
  * NULL
@@ -2429,7 +2429,7 @@ findmatchlimit(
     CLEAR_POS(&match_pos);
 
     // backward search: Check if this line contains a single-line comment
-    if ((backwards && comment_dir) || lisp)
+    if ((backwards && comment_dir) || lisp || (flags & FM_SKIPCOMM))
 	comment_col = check_linecomment(linep);
     if (lisp && comment_col != MAXCOL && pos.col > (colnr_T)comment_col)
 	lispcomm = TRUE;    // find match inside this comment
@@ -2460,10 +2460,11 @@ findmatchlimit(
 		line_breakcheck();
 
 		// Check if this line contains a single-line comment
-		if (comment_dir || lisp)
+		if (comment_dir || lisp || (flags & FM_SKIPCOMM))
 		    comment_col = check_linecomment(linep);
 		// skip comment
-		if (lisp && comment_col != MAXCOL)
+		if ((lisp || (flags & FM_SKIPCOMM))
+						   && comment_col != MAXCOL)
 		    pos.col = comment_col;
 	    }
 	    else
