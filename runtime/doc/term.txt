@@ -1067,7 +1067,8 @@ Normal Mode:
 event	      position	   selection	  change  action	~
 	       cursor			  window		~
 <S-LeftMouse>	yes	start or extend (1) no
-<A-LeftMouse>   yes start or extend blockw. no		      *<A-LeftMouse>*
+<A-LeftMouse>   yes	end		    no		      *<A-LeftMouse>*
+<A-LeftDrag>    yes start or extend blockw. no		      *<A-LeftDrag>*
 <RightMouse>	no	popup menu	    no
 
 Insert or Replace Mode:
