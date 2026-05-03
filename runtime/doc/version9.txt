@@ -52612,6 +52612,8 @@ Other ~
 - New "leadtab" value for the 'listchars' setting.
 - Improved |:set+=|, |:set^=| and |:set-=| handling of comma-separated "key:value"
   pairs individually (e.g. 'listchars', 'fillchars', 'diffopt').
+- The |:TOhtml| command has been completely rewritten in Vim9 script, improving
+  performance and maintainability.
 - |system()| and |systemlist()| functions accept a list as first argument,
   bypassing the shell completely.
 - Allow mouse clickable regions in the 'statusline', 'tabline' and the
