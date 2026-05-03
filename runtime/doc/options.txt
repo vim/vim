@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 May 01
+*options.txt*	For Vim version 9.2.  Last change: 2026 May 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6798,6 +6798,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:let &path = &path .. "," .. substitute($INCL, ';', ',', 'g')
 <	Replace the ';' with a ':' or whatever separator is used.  Note that
 	this doesn't work when $INCL contains a comma or white space.
+
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'perldll'*
 'perldll'		string	(default depends on the build)

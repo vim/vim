@@ -665,4 +665,18 @@ func Test_modeline_strict_cannot_be_set_from_modeline()
   let &modeline = modeline
 endfunc
 
+" Verify that backticks in 'path' set from a modeline are not executed
+func Test_path_modeline()
+  let lines =<< trim END
+    // vim: set path+=foobar :
+  END
+  call writefile(lines, 'Xpoc.c', 'D')
+
+  set nomodelinestrict modeline
+  call assert_fails('split Xpoc.c', 'E520:')
+
+  bwipe!
+  set modelinestrict& modeline&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
