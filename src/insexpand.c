@@ -3062,6 +3062,25 @@ ins_compl_cancel(void)
 }
 
 /*
+ * Return TRUE if key "c" has a user-defined insert-mode mapping.
+ */
+    static int
+ins_compl_has_imap(int c)
+{
+    // Only Ctrl_U (CTRL_X_FUNCTION) and Ctrl_O (CTRL_X_OMNI) are
+    // simultaneously ctrl-x keys and common insert-mode map targets.
+    if (c != Ctrl_U && c != Ctrl_O)
+        return FALSE;
+
+#ifdef FEAT_EVAL
+    char_u  key[2] = {(char_u)c, NUL};
+    return check_map(key, MODE_INSERT, TRUE, FALSE, FALSE, NULL, NULL) != NULL;
+#else
+    return FALSE;
+#endif
+}
+
+/*
  * Prepare for Insert mode completion, or stop it.
  * Called just after typing a character in Insert mode.
  * Returns TRUE when the character is not to be inserted;
@@ -3151,7 +3170,7 @@ ins_compl_prep(int c)
     else if (ctrl_x_mode_not_default())
     {
 	// We're already in CTRL-X mode, do we stay in it?
-	if (c != Ctrl_R && !vim_is_ctrl_x_key(c))
+	if (c != Ctrl_R && (!vim_is_ctrl_x_key(c) || ins_compl_has_imap(c)))
 	{
 	    ctrl_x_mode = ctrl_x_mode_scroll() ? CTRL_X_NORMAL : CTRL_X_FINISHED;
 	    edit_submode = NULL;
@@ -6328,7 +6347,8 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 #endif
        )
     {
-	if (vim_is_ctrl_x_key(c) && c != Ctrl_X && c != Ctrl_R)
+	if (vim_is_ctrl_x_key(c) && c != Ctrl_X && c != Ctrl_R
+		&& !ins_compl_has_imap(c))
 	{
 	    c = safe_vgetc();	// Eat the character
 	    compl_shows_dir = ins_compl_key2dir(c);
