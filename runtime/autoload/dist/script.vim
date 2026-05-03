@@ -241,6 +241,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^vim\>'
     return 'vim'
 
+    # ed(1)
+  elseif name =~ '^ed\>'
+    return 'ed'
+
   endif
 
   return ''

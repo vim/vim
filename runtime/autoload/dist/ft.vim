@@ -2014,6 +2014,8 @@ const ft_from_ext = {
   "its": "dts",
   "keymap": "dts",
   "overlay": "dts",
+  # ed(1)
+  "ed": "ed",
   # Embedix Component Description
   "ecd": "ecd",
   # ERicsson LANGuage; Yaws is erlang too
