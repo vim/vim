@@ -820,7 +820,7 @@ channel_connect(
  * Returns the channel for success.
  * Returns NULL for failure.
  */
-    static channel_T *
+    channel_T *
 channel_open_unix(
 	const char *path,
 	void (*nb_close_cb)(void))
@@ -1291,6 +1291,63 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 }
 
 /*
+ * Parse the address and return final address/hostname, port in "port" (if any),
+ * and true in "is_unix" if it is a Unix domain socket address. Returns NULL on
+ * failure.
+ */
+    char_u *
+channel_parse_address(
+	char_u	*address,
+	int	*port,
+	bool	*is_unix,
+	bool	listen,
+	bool	quiet)
+{
+    char_u  *p;
+    char    *rest;
+    bool    is_ipv6 = false;
+
+    if (*address == NUL)
+	goto fail;
+
+    if (!STRNCMP(address, "unix:", 5))
+    {
+	*is_unix = TRUE;
+	return vim_strsave(address + 5);
+    }
+    else if (*address == '[')
+    {
+	// ipv6 address
+	is_ipv6 = TRUE;
+	p = vim_strchr(address + 1, ']');
+	if (p == NULL || *++p != ':')
+	    goto fail;
+    }
+    else
+    {
+	// ipv4 address
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	    goto fail;
+    }
+
+    *port = strtol((char *)(p + 1), &rest, 10);
+    if ((listen && *port < 0) || (!listen && *port <= 0)
+	    || *port >= 65536 || *rest != NUL)
+	goto fail;
+
+    if (is_ipv6)
+	// strip '[' and ']'
+	return vim_strnsave(address + 1, (p -address) - 2);
+
+    return vim_strnsave(address, p - address);
+fail:
+    if (!quiet)
+	semsg(_(e_invalid_argument_str), address);
+    return NULL;
+}
+
+/*
  * Implements ch_open().
  */
     static channel_T *
@@ -1449,7 +1506,7 @@ channel_listen_func(typval_T *argvars)
     }
 
     if (is_unix)
-	channel = channel_listen_unix((char *)arg, NULL);
+	channel = channel_listen_unix((char *)arg, NULL, true);
     else
 	channel = channel_listen(port, NULL);
     if (channel != NULL)
@@ -1571,13 +1628,15 @@ channel_listen(
 
 /*
  * Listen to a Unix domain socket channel.
+ * If "replace" is true, then unlink the path first beforehand.
  * Returns the channel for success.
  * Returns NULL for failure.
  */
     channel_T *
 channel_listen_unix(
 	char *path,
-	void (*nb_close_cb)(void))
+	void (*nb_close_cb)(void),
+	bool replace)
 {
     int			sd = -1;
     struct sockaddr_un	server;
@@ -1619,8 +1678,9 @@ channel_listen_unix(
 	return NULL;
     }
 
-    // Unlink the socket in case it already exists
-    unlink(server.sun_path);
+    if (replace)
+	// Unlink the socket in case it already exists
+	unlink(server.sun_path);
 
     // Bind the socket to the path
     server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
@@ -1983,7 +2043,7 @@ channel_buffer_free(buf_T *buf)
 /*
  * Write any lines waiting to be written to "channel".
  */
-    static void
+    void
 channel_write_input(channel_T *channel)
 {
     chanpart_T	*in_part = &channel->ch_part[PART_IN];
@@ -2364,7 +2424,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
  * Try to fill the buffer of "reader".
  * Returns FALSE when nothing was added.
  */
-    static int
+    int
 channel_fill(js_read_T *reader)
 {
     channel_T	*channel = (channel_T *)reader->js_cookie;
@@ -2484,11 +2544,12 @@ channel_process_lspdap_http_hdr(js_read_T *reader)
 
 /*
  * Use the read buffer of "channel"/"part" and parse a JSON message that is
- * complete.  The messages are added to the queue.
+ * complete.  The messages are added to the queue. If "socketserver" is true,
+ * then ignore the channel mode.
  * Return TRUE if there is more to read.
  */
-    static int
-channel_parse_json(channel_T *channel, ch_part_T part)
+    int
+channel_parse_json(channel_T *channel, ch_part_T part, bool socketserver)
 {
     js_read_T	reader;
     typval_T	listtv;
@@ -2507,8 +2568,8 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     reader.js_cookie = channel;
     reader.js_cookie_arg = part;
 
-    if (chanpart->ch_mode == CH_MODE_LSP
-	    || chanpart->ch_mode == CH_MODE_DAP)
+    if (!socketserver && (chanpart->ch_mode == CH_MODE_LSP
+	    || chanpart->ch_mode == CH_MODE_DAP))
 	status = channel_process_lspdap_http_hdr(&reader);
 
     // When a message is incomplete we wait for a short while for more to
@@ -2526,14 +2587,16 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     {
 	// Only accept the response when it is a list with at least two
 	// items.
-	if ((chanpart->ch_mode == CH_MODE_LSP || chanpart->ch_mode == CH_MODE_DAP)
+	if (!socketserver && (chanpart->ch_mode == CH_MODE_LSP
+		    || chanpart->ch_mode == CH_MODE_DAP)
 		&& listtv.v_type != VAR_DICT)
 	{
 	    ch_error(channel, "Did not receive a LSP dict, discarding");
 	    clear_tv(&listtv);
 	}
-	else if (chanpart->ch_mode != CH_MODE_LSP && chanpart->ch_mode != CH_MODE_DAP
-	      && (listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2))
+	else if (!socketserver && chanpart->ch_mode != CH_MODE_LSP
+		&& chanpart->ch_mode != CH_MODE_DAP
+		&& (listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2))
 	{
 	    if (listtv.v_type != VAR_LIST)
 		ch_error(channel, "Did not receive a list, discarding");
@@ -2668,7 +2731,7 @@ remove_cb_node(cbq_T *head, cbq_T *node)
  * Remove "node" from the queue that it is in and free it.
  * Caller should have freed or used node->jq_value.
  */
-    static void
+    void
 remove_json_node(jsonq_T *head, jsonq_T *node)
 {
     if (node->jq_prev == NULL)
@@ -3227,8 +3290,12 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     int		called_otc;		// one time callbackup
     int		raw_len = 0;
 
-    if (channel->ch_nb_close_cb != NULL)
-	// this channel is handled elsewhere (netbeans)
+    if (channel->ch_nb_close_cb != NULL
+#ifdef FEAT_SOCKETSERVER
+	    || channel->ch_socketserver
+#endif
+	    )
+	// this channel is handled elsewhere (netbeans or socketserver)
 	return FALSE;
 
     // Use a message-specific callback, part callback or channel callback
@@ -3267,7 +3334,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		(void)channel_collapse(channel, part, FALSE);
 
 	    // Parse readahead, return when there is still no message.
-	    channel_parse_json(channel, part);
+	    channel_parse_json(channel, part, false);
 	    if (channel_get_json(channel, part, -1, FALSE, &listtv) == FAIL)
 		return FALSE;
 	}
@@ -3595,7 +3662,7 @@ channel_readahead_pointer(channel_T *channel, ch_part_T part)
 	if (head->jq_next == NULL)
 	    // Parse json from readahead, there might be a complete message to
 	    // process.
-	    channel_parse_json(channel, part);
+	    channel_parse_json(channel, part, false);
 
 	return head->jq_next;
     }
@@ -3850,6 +3917,11 @@ channel_close(channel_T *channel, int invoke_close_cb)
     }
 
     channel->ch_nb_close_cb = NULL;
+#ifdef FEAT_SOCKETSERVER
+    channel->ch_socketserver = false;
+    channel->ch_ss_accept_cb = NULL;
+    channel->ch_ss_close_cb = NULL;
+#endif
 
 #ifdef FEAT_TERMINAL
     term_channel_closed(channel);
@@ -4189,6 +4261,10 @@ channel_close_now(channel_T *channel)
     ch_log(channel, "Closing channel because all readable fds are closed");
     if (channel->ch_nb_close_cb != NULL)
 	(*channel->ch_nb_close_cb)();
+#ifdef FEAT_SOCKETSERVER
+    if (channel->ch_ss_close_cb != NULL)
+	channel->ch_ss_close_cb(channel);
+#endif
     channel_close(channel, TRUE);
 }
 
@@ -4258,6 +4334,14 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 
 #ifdef FEAT_GUI
 	    channel_gui_register_one(newchannel, PART_SOCK);
+#endif
+
+#ifdef FEAT_SOCKETSERVER
+	    if (channel->ch_ss_accept_cb != NULL)
+	    {
+		channel->ch_ss_accept_cb(newchannel);
+		return;
+	    }
 #endif
 
 	    if (client.ss_family == AF_INET)
@@ -4330,6 +4414,16 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	gtk_main_quit();
 #endif
 }
+
+#ifdef FEAT_SOCKETSERVER
+
+    void
+channel_check(channel_T *channel, ch_part_T part)
+{
+    channel_read(channel, part, "channel_check");
+}
+
+#endif
 
 /*
  * Read from RAW or NL "channel"/"part".  Blocks until there is something to
@@ -4473,7 +4567,7 @@ channel_read_json_block(
 	    // received messages.
 	    (void)channel_collapse(channel, part, FALSE);
 
-	more = channel_parse_json(channel, part);
+	more = channel_parse_json(channel, part, false);
 
 	// search for message "id"
 	if (channel_get_json(channel, part, id, TRUE, rettv) == OK)
@@ -5921,6 +6015,19 @@ channel_to_string_buf(typval_T *varp, char_u *buf)
 	vim_snprintf((char *)buf, NUMBUFLEN,
 				      "channel %d %s", channel->ch_id, status);
     return buf;
+}
+
+/*
+ * Return the channel with the given ID. Returns NULL if not found.
+ */
+    channel_T *
+channel_find(int ch_id)
+{
+    channel_T *ch;
+    FOR_ALL_CHANNELS(ch)
+	if (ch->ch_id == ch_id)
+	    return ch;
+    return NULL;
 }
 
 #endif // FEAT_JOB_CHANNEL
