@@ -5894,6 +5894,10 @@ popup_hide_info(void)
     {
 	popup_on_cmdline = wp->w_popup_flags & POPF_ON_CMDLINE;
 	popup_hide(wp);
+	if (State & MODE_CMDLINE)
+	    // Cmdline mode doesn't normally call update_screen(), so it's
+	    // necessary to use pum_call_update_screen() here.
+	    pum_call_update_screen();
     }
 }
 
