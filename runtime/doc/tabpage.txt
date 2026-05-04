@@ -1,4 +1,4 @@
-*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Apr 28
+*tabpage.txt*	For Vim version 9.2.  Last change: 2026 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -516,7 +516,7 @@ a new, empty tab page; it is treated the same as a single click.
 
 For finer-grained control, the 'tabpanel' value may contain |stl-%[FuncName]|
 click regions.  Clicks on those regions are dispatched to the callback
-function instead of falling through to tab selection.
+function instead of falling through to tab page selection.
 
 ==============================================================================
 6. Setting 'guitablabel'				*setting-guitablabel*

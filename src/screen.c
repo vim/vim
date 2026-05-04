@@ -1414,6 +1414,36 @@ win_redr_custom(
     char_u *stl_tmp = (stl == NULL) ? (char_u *)"" : stl;
     int col_save = col;
 
+    // Determine where click regions for this draw will be stored, and reset
+    // the destination so each row in the loop below can append.  This must
+    // be done before the loop because for a multi-line statusline each row
+    // contributes its own click regions.
+    stl_click_region_T  **out_regions = NULL;
+    int			*out_count = NULL;
+    int			region_base_col = 0;
+    if (!draw_ruler)
+    {
+	if (wp != NULL)
+	{
+	    out_regions = &wp->w_stl_click;
+	    out_count = &wp->w_stl_click_count;
+	    region_base_col = wp->w_wincol;
+	}
+	else
+	{
+	    // 'tabline': store regions in global state since there is no
+	    // associated window.
+	    out_regions = &tabline_stl_click;
+	    out_count = &tabline_stl_click_count;
+	    region_base_col = firstwin->w_wincol;
+	}
+
+	for (n = 0; n < *out_count; n++)
+	    vim_free((*out_regions)[n].funcname);
+	VIM_CLEAR(*out_regions);
+	*out_count = 0;
+    }
+
     for (int i = 0; i < stlh_cnt; i++)
     {
 	col = col_save;
@@ -1472,6 +1502,76 @@ win_redr_custom(
 		curattr = highlight_user[hltab[n].userhl - 1];
 	}
 	screen_puts(p, row + i, col, curattr);
+
+	// Append click regions for this row.  clicktab reflects the line
+	// just rendered, so each row of a multi-line statusline contributes
+	// its own regions.
+	if (out_regions != NULL)
+	{
+	    int click_count = 0;
+	    for (n = 0; clicktab[n].start != NULL; n++)
+		click_count++;
+
+	    if (click_count > 0)
+	    {
+		stl_click_region_T *new_arr = vim_realloc(*out_regions,
+			sizeof(stl_click_region_T)
+				    * (*out_count + click_count));
+		if (new_arr != NULL)
+		{
+		    char_u  *cur_funcname = NULL;
+		    int	    cur_minwid = 0;
+		    int	    region_start = region_base_col;
+
+		    *out_regions = new_arr;
+
+		    len = 0;
+		    p = buf;
+		    for (n = 0; clicktab[n].start != NULL; n++)
+		    {
+			len += vim_strnsize(p,
+					    (int)(clicktab[n].start - p));
+			p = clicktab[n].start;
+
+			if (cur_funcname != NULL)
+			{
+			    stl_click_region_T *r =
+					&(*out_regions)[*out_count];
+			    r->row = row + i;
+			    r->col_start = region_start;
+			    r->col_end = region_base_col + len;
+			    r->funcname = vim_strsave(cur_funcname);
+			    r->minwid = cur_minwid;
+			    r->tabnr = 0;
+			    (*out_count)++;
+			}
+
+			cur_funcname = clicktab[n].funcname;
+			cur_minwid = clicktab[n].minwid;
+			region_start = region_base_col + len;
+		    }
+
+		    // Close final region if it extends to the end.
+		    if (cur_funcname != NULL)
+		    {
+			stl_click_region_T *r =
+					&(*out_regions)[*out_count];
+			r->row = row + i;
+			r->col_start = region_start;
+			r->col_end = region_base_col + maxwidth;
+			r->funcname = vim_strsave(cur_funcname);
+			r->minwid = cur_minwid;
+			r->tabnr = 0;
+			(*out_count)++;
+		    }
+		}
+	    }
+	}
+
+	// Free the funcname strings allocated by build_stl_str_hl_local()
+	// for this line.  They have been copied into the region array above.
+	for (n = 0; clicktab[n].start != NULL; n++)
+	    vim_free(clicktab[n].funcname);
     }
     ewp->w_p_crb = p_crb_save;
 
@@ -1499,110 +1599,6 @@ win_redr_custom(
 	}
 	while (col < firstwin->w_wincol + topframe->fr_width)
 	    TabPageIdxs[col++] = fillchar;
-    }
-
-    // Resolve click function regions for statusline or tabline.
-    if (!draw_ruler)
-    {
-	stl_click_region_T  **out_regions;
-	int		    *out_count;
-	int		    base_col;
-	int		    base_row;
-	int		    click_count = 0;
-
-	// clicktab reflects the last iteration of the draw loop above, so
-	// the regions belong to the last drawn row.
-	base_row = row + stlh_cnt - 1;
-
-	if (wp != NULL)
-	{
-	    out_regions = &wp->w_stl_click;
-	    out_count = &wp->w_stl_click_count;
-	    base_col = wp->w_wincol;
-	}
-	else
-	{
-	    // 'tabline': store regions in global state since there is no
-	    // associated window.
-	    out_regions = &tabline_stl_click;
-	    out_count = &tabline_stl_click_count;
-	    base_col = firstwin->w_wincol;
-	}
-
-	// Count the click regions.
-	for (n = 0; clicktab[n].start != NULL; n++)
-	    click_count++;
-
-	// Free old click regions.
-	if (*out_regions != NULL)
-	{
-	    for (n = 0; n < *out_count; n++)
-		vim_free((*out_regions)[n].funcname);
-	    VIM_CLEAR(*out_regions);
-	}
-	*out_count = 0;
-
-	if (click_count > 0)
-	{
-	    stl_click_region_T *regions;
-	    int		    rcount = 0;
-
-	    regions = ALLOC_MULT(stl_click_region_T, click_count);
-	    if (regions != NULL)
-	    {
-		char_u	*cur_funcname = NULL;
-		int	cur_minwid = 0;
-		int	region_start = base_col;
-
-		// Walk through click records converting buffer positions
-		// to screen columns.
-		len = 0;
-		p = buf;
-		for (n = 0; clicktab[n].start != NULL; n++)
-		{
-		    len += vim_strnsize(p,
-				       (int)(clicktab[n].start - p));
-		    p = clicktab[n].start;
-
-		    // Close previous region if there was one.
-		    if (cur_funcname != NULL)
-		    {
-			regions[rcount].row = base_row;
-			regions[rcount].col_start = region_start;
-			regions[rcount].col_end = base_col + len;
-			regions[rcount].funcname =
-					    vim_strsave(cur_funcname);
-			regions[rcount].minwid = cur_minwid;
-			regions[rcount].tabnr = 0;
-			rcount++;
-		    }
-
-		    cur_funcname = clicktab[n].funcname;
-		    cur_minwid = clicktab[n].minwid;
-		    region_start = base_col + len;
-		}
-
-		// Close final region if it extends to the end.
-		if (cur_funcname != NULL)
-		{
-		    regions[rcount].row = base_row;
-		    regions[rcount].col_start = region_start;
-		    regions[rcount].col_end = base_col + maxwidth;
-		    regions[rcount].funcname =
-					vim_strsave(cur_funcname);
-		    regions[rcount].minwid = cur_minwid;
-		    regions[rcount].tabnr = 0;
-		    rcount++;
-		}
-
-		*out_regions = regions;
-		*out_count = rcount;
-	    }
-	}
-
-	// Free the funcname strings allocated by build_stl_str_hl_local().
-	for (n = 0; clicktab[n].start != NULL; n++)
-	    vim_free(clicktab[n].funcname);
     }
 
 theend:

@@ -817,6 +817,44 @@ func Test_statusline_click_multiple_regions()
   let &laststatus = save_ls
 endfunc
 
+" Click on a region in any row of a multi-line statusline (issue #20116).
+func Test_statusline_click_multiline()
+  let save_mouse = &mouse
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  let save_stlo = &statuslineopt
+  set mouse=a
+  set laststatus=2
+
+  " First row contains the click region, second row is filled with fillchar.
+  set statusline=%[StlClickTestFunc][Click]%[]%@\ \ \ \
+  set statuslineopt=maxheight:2,fixedheight
+  redraw!
+
+  let stl_row = win_screenpos(0)[0] + winheight(0)
+
+  " Click on [Click] in the first row of the multi-line statusline.
+  call test_setmouse(stl_row, 2)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(0, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  " A click region on the second row should also be recognized.
+  set statusline=row1%@%2[StlClickTestFunc][Click2]%[]
+  redraw!
+  call test_setmouse(stl_row + 1, 2)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call assert_true(exists('g:stl_click_info'))
+  call assert_equal(2, g:stl_click_info.minwid)
+  unlet! g:stl_click_info
+
+  let &mouse = save_mouse
+  let &statusline = save_stl
+  let &laststatus = save_ls
+  let &statuslineopt = save_stlo
+endfunc
+
 func Test_statusline_click_region_extends_to_end()
   let save_mouse = &mouse
   let save_stl = &statusline

@@ -1,4 +1,4 @@
-*ft_mp.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*ft_mp.txt*	For Vim version 9.2.  Last change: 2026 May 04
 
 This is the documentation for the METAFONT and MetaPost filetype plugins.
 Unless otherwise specified, the commands, settings and mappings defined below
@@ -25,7 +25,7 @@ MetaPost documents, including syntax coloring, indentation, and completion.
 Defining indentation rules for METAFONT and MetaPost code is tricky and
 somewhat subjective, because the syntax is quite liberal. The plugin uses some
 heuristics that work well most of the time, but in particular cases you may
-want to to override the automatic rules, so that the manually defined
+want to override the automatic rules, so that the manually defined
 indentation is preserved by commands like `gg=G`.
 
 This can be achieved by appending `%>`, `%<`, `%=` or `%!` to a line to

@@ -8094,6 +8094,17 @@ term_set_win_resize(bool state)
 }
 #endif
 
+    int
+sync_output_active(void)
+{
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	return TRUE;
+#endif
+    return p_tsy && (sync_output_setting == 1 || sync_output_setting == 2)
+	&& *T_BSU != NUL && *T_ESU != NUL;
+}
+
 /*
  * Enable or disable synchronized output if possible. Specification can be found
  * here:

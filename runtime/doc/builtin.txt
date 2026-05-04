@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Apr 28
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11904,16 +11904,16 @@ tabpanel_getinfo()					*tabpanel_getinfo()*
 
 tabpanel_scroll({n} [, {opts}])				*tabpanel_scroll()*
 		Scroll the tabpanel by {n} rows.  Positive values scroll down
-		(later tabs become visible), negative values scroll up.  The
-		new offset is clamped to the valid range.
+		(later tab pages become visible), negative values scroll up.
+		The new offset is clamped to the valid range.
 
 		When {opts} is a |Dictionary| and its "absolute" entry is
-		|TRUE|, {n} is used as the new absolute scroll offset
-		instead of a delta.
+		|TRUE|, {n} is used as the new absolute scroll offset instead
+		of a delta.
 
-		Returns |TRUE| if the scroll offset changed, |FALSE|
-		otherwise (for example when the tabpanel is not shown, or
-		the offset is already at the requested value).
+		Returns |TRUE| if the scroll offset changed, |FALSE| otherwise
+		(for example when the tabpanel is not shown, or the offset is
+		already at the requested value).
 
 		Return type: |vim9-boolean|
 

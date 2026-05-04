@@ -162,10 +162,10 @@ func Test_termdebug_basic()
   Break 9
   call term_wait(gdb_buf)
   redraw!
-  call assert_equal([
+  call WaitForAssert({-> assert_equal([
         \ {'lnum': 9, 'id': 1014, 'name': 'debugBreakpoint1.0',
         \  'priority': 110, 'group': 'TermDebug'}],
-        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
   Run
   call term_wait(gdb_buf, 400)
   redraw!
@@ -324,12 +324,12 @@ func Test_termdebug_tbreak()
   call term_wait(gdb_buf)
   redraw!
   " both temporary and normal breakpoint signs were displayed...
-  call assert_equal([
+  call WaitForAssert({-> assert_equal([
         \ {'lnum': temp_bp_line, 'id': 1014, 'name': 'debugBreakpoint1.0',
         \  'priority': 110, 'group': 'TermDebug'},
         \ {'lnum': bp_line, 'id': 2014, 'name': 'debugBreakpoint2.0',
         \  'priority': 110, 'group': 'TermDebug'}],
-        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
 
   Run
   call term_wait(gdb_buf, 400)
@@ -717,10 +717,10 @@ func Test_termdebug_toggle_break()
 
   call term_wait(gdb_buf)
   redraw!
-  call assert_equal([
+  call WaitForAssert({-> assert_equal([
         \ {'lnum': bp_line, 'id': 1014, 'name': 'debugBreakpoint1.0',
         \  'priority': 110, 'group': 'TermDebug'}],
-        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
 
   RunOrContinue
   call term_wait(gdb_buf, 400)

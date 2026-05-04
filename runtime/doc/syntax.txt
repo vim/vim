@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Apr 30
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6135,15 +6135,16 @@ StatusLine	Status line of current window.
 		current window's status line.  see |hl-VertSplit|.
 							*hl-StatusLineNC*
 StatusLineNC	status lines of not-current windows.
-		Also used for the vertical separator cell adjacent to a
+		Also used for the vertical separator cell adjacent to the
 		non-current window's status line.  see |hl-VertSplitNC|.
 		Note: If this is equal to "StatusLine", Vim will use "^^^" in
 		the status line of the current window.
 							*hl-StatusLineTerm*
 StatusLineTerm	Status line of current window, if it is a |terminal| window.
 							*hl-StatusLineTermNC*
-StatusLineTermNC	Status lines of not-current windows that is a
-			|terminal| window.
+StatusLineTermNC
+		Status lines of not-current windows that is a |terminal|
+		window.
 							*hl-TabLine*
 TabLine		Tab pages line, not active tab page label.
 							*hl-TabLineFill*
@@ -6163,19 +6164,19 @@ Title		Titles for output from ":set all", ":autocmd" etc.
 							*hl-TitleBar*
 TitleBar	Title bar for the active Gui's window.
 		This feature is supported only in the MS-Windows GUI.
-		See |gui-w32-title-bar| for details
+		See |gui-w32-title-bar| for details.
 		Only the `guibg` and `guifg` highlight arguments are effective.
 							*hl-TitleBarNC*
 TitleBarNC	Title bar for inactive Gui's window.
 		This feature is supported only in the MS-Windows GUI.
-		See |gui-w32-title-bar| for details
+		See |gui-w32-title-bar| for details.
 		Only the `guibg` and `guifg` highlight arguments are effective.
 							*hl-Visual*
 Visual		Visual mode selection.
 							*hl-VisualNOS*
 VisualNOS	Visual mode selection when vim is "Not Owning the Selection".
-		Only X11 Gui's |gui-x11|, |xterm-clipboard| and |wayland-selections|
-		supports this.
+		Only X11 Gui's |gui-x11|, |xterm-clipboard| and
+		|wayland-selections| supports this.
 							*hl-WarningMsg*
 WarningMsg	Warning messages.
 							*hl-WildMenu*
@@ -6195,10 +6196,9 @@ Menu		Current font, background and foreground colors of the menus.
 		Also used for the toolbar.
 		Applicable highlight arguments: font, guibg, guifg.
 
-		NOTE: For Motif the font argument actually
-		specifies a fontset at all times, no matter if 'guifontset' is
-		empty, and as such it is tied to the current |:language| when
-		set.
+		NOTE: For Motif the font argument actually specifies a fontset
+		at all times, no matter if 'guifontset' is empty, and as such
+		it is tied to the current |:language| when set.
 
 							*hl-Scrollbar*
 Scrollbar	Current background and foreground of the main window's
@@ -6209,10 +6209,9 @@ Scrollbar	Current background and foreground of the main window's
 Tooltip		Current font, background and foreground of the tooltips.
 		Applicable highlight arguments: font, guibg, guifg.
 
-		NOTE: For Motif the font argument actually
-		specifies a fontset at all times, no matter if 'guifontset' is
-		empty, and as such it is tied to the current |:language| when
-		set.
+		NOTE: For Motif the font argument actually specifies a fontset
+		at all times, no matter if 'guifontset' is empty, and as such
+		it is tied to the current |:language| when set.
 
 ==============================================================================
 15. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
