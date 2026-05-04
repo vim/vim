@@ -939,7 +939,11 @@ typedef struct textprop_S
 					// unpacked_memline_T
 #define TP_FLAG_VTEXT_PTR	0x400	// u.tp_text access is valid
 
-#define PROP_COUNT_SIZE	sizeof(uint16_t)    // size of prop_count in memline
+#ifdef HAS_STDINT_H
+# define PROP_COUNT_SIZE	sizeof(uint16_t)    // size of prop_count in memline
+#else
+# define PROP_COUNT_SIZE	sizeof(UINT16_T)
+#endif
 
 #define PROP_TEXT_MIN_CELLS	4	// minimum number of cells to use for
 					// the text, even when truncating
