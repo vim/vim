@@ -1438,12 +1438,9 @@ win_redr_custom(
 	    region_base_col = firstwin->w_wincol;
 	}
 
-	if (*out_regions != NULL)
-	{
-	    for (n = 0; n < *out_count; n++)
-		vim_free((*out_regions)[n].funcname);
-	    VIM_CLEAR(*out_regions);
-	}
+	for (n = 0; n < *out_count; n++)
+	    vim_free((*out_regions)[n].funcname);
+	VIM_CLEAR(*out_regions);
 	*out_count = 0;
     }
 
