@@ -2947,9 +2947,9 @@ add_text_props_for_append(
 		return;
 	    mch_memmove(new_line, *line, *len);
 	    // Write prop_count header.
-# ifdef HAVE_STDINT_H
+# ifdef HAVE_STDINT_H                                                                                                                                         
 	    pc = (uint16_t)new_prop_count;
-# else
+# else                                                                                                                        
 	    pc = (UINT16_T)new_prop_count;
 # endif
 	    mch_memmove(new_line + *len, &pc, PROP_COUNT_SIZE);
