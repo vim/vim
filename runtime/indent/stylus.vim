@@ -97,7 +97,7 @@ function! GetStylusIndent()
   let line     = substitute(getline(lnum),'[\s()]\+$','','')  " get last line strip ending whitespace
   let cline    = substitute(substitute(getline(v:lnum),'\s\+$','',''),'^\s\+','','')  " get current line, trimmed
   let lastcol  = strlen(line)  " get last col in prev line
-  let line     = substitute(line,'^\s\+','','')  " then remove preceeding whitespace
+  let line     = substitute(line,'^\s\+','','')  " then remove preceding whitespace
   let indent   = indent(lnum)  " get indent on prev line
   let cindent  = indent(v:lnum)  " get indent on current line
   let increase = indent + &sw  " increase indent by the shift width

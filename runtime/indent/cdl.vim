@@ -71,7 +71,7 @@ fun! CdlGetIndent(lnum)
   " One 'closing' element at the beginning of the line has already reduced the
   " indent, but 'else', 'elseif' & 'then' increment it for the next line.
   " '=' at the beginning already has the right indent (increased for
-  " asignments).
+  " assignments).
   let f = -1
   let inicio = matchend(line, '^\c\s*\(else\a*\|then\|endif\|/[*/]\|[);={]\)')
   if inicio > 0

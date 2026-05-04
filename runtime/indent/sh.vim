@@ -233,7 +233,7 @@ function! s:is_array(line)
 endfunction
 
 function! s:is_in_block(line)
-  " checks whether a:line is whithin a 
+  " checks whether a:line is within a
   " block e.g. a shell function
   " foo() {
   " ..
