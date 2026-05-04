@@ -188,7 +188,7 @@
 # endif
 
 # if defined(X86_64)
-#  define HAVE_FSEEKO 
+#  define HAVE_FSEEKO
 #  define HAVE_STDINT_H
 #  define HAVE_XOS_R_H
 # endif

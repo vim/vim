@@ -858,12 +858,12 @@ RealWaitForChar(
  * appropriate time conversion function accordingly.
  */
 #if __IEEE_FLOAT
-// allow fallback fon older Alphas
+// allow fallback for older Alphas
 # ifdef lib$cvts_to_internal_time
 #  define LIB_CVTX_TO_INTERNAL_TIME lib$cvts_to_internal_time // IEEE
 # else
 #  define LIB_CVTX_TO_INTERNAL_TIME lib$cvtf_to_internal_time
-# endif	
+# endif
 #else
 # define LIB_CVTX_TO_INTERNAL_TIME lib$cvtf_to_internal_time // VAX
 #endif // __IEEE_FLOAT CVTS
