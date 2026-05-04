@@ -3548,7 +3548,7 @@ put_folds(FILE *fd, win_T *wp)
     {
 	if (put_line(fd, "silent! normal! zE") == FAIL
 		|| put_folds_recurse(fd, &wp->w_folds, (linenr_T)0) == FAIL
-		|| put_line(fd, "let &fdl = &fdl") == FAIL)
+		|| put_line(fd, "&fdl = &fdl") == FAIL)
 	    return FAIL;
     }
 
@@ -3576,7 +3576,7 @@ put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off)
 	// Do nested folds first, they will be created closed.
 	if (put_folds_recurse(fd, &fp->fd_nested, off + fp->fd_top) == FAIL)
 	    return FAIL;
-	if (fprintf(fd, "sil! %ld,%ldfold", fp->fd_top + off,
+	if (fprintf(fd, "sil! :%ld,%ldfold", fp->fd_top + off,
 					fp->fd_top + off + fp->fd_len - 1) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
@@ -3610,7 +3610,7 @@ put_foldopen_recurse(
 	    {
 		// open nested folds while this fold is open
 		// ignore errors
-		if (fprintf(fd, "%ld", fp->fd_top + off) < 0
+		if (fprintf(fd, ":%ld", fp->fd_top + off) < 0
 			|| put_eol(fd) == FAIL
 			|| put_line(fd, "sil! normal! zo") == FAIL)
 		    return FAIL;
@@ -3651,7 +3651,7 @@ put_foldopen_recurse(
     static int
 put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 {
-    if (fprintf(fd, "%ld", fp->fd_top + off) < 0
+    if (fprintf(fd, ":%ld", fp->fd_top + off) < 0
 	    || put_eol(fd) == FAIL
 	    || fprintf(fd, "sil! normal! z%c",
 			   fp->fd_flags == FD_CLOSED ? 'c' : 'o') < 0

@@ -281,7 +281,7 @@ map_add(
 	    mp->m_script_ctx.sc_version = 1;
 	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
 
-        // allow :legacy and :vim9cmd override the expression evaluation
+	// allow :legacy and :vim9cmd override the expression evaluation
 	if (expr)
 	{
 	    if (cmdmod.cmod_flags & CMOD_LEGACY)
@@ -2096,13 +2096,19 @@ makemap(
 					did_cpo = TRUE;
 			if (did_cpo)
 			{
-			    if (fprintf(fd, "let s:cpo_save=&cpo") < 0
+			    if (fprintf(fd, "const cpo_save: string = &cpo") < 0
 				    || put_eol(fd) < 0
 				    || fprintf(fd, "set cpo&vim") < 0
 				    || put_eol(fd) < 0)
 				return FAIL;
 			}
 		    }
+#ifdef FEAT_EVAL
+		    // If it is not vim9 use legacy
+		    if (mp->m_expr && mp->m_script_ctx.sc_version < SCRIPT_VERSION_VIM9
+			    && fputs("legacy ", fd) < 0)
+			return FAIL;
+#endif
 		    if (c1 && putc(c1, fd) < 0)
 			return FAIL;
 		    if (mp->m_noremap != REMAP_YES && fprintf(fd, "nore") < 0)
@@ -2137,9 +2143,7 @@ makemap(
 	}
 
     if (did_cpo)
-	if (fprintf(fd, "let &cpo=s:cpo_save") < 0
-		|| put_eol(fd) < 0
-		|| fprintf(fd, "unlet s:cpo_save") < 0
+	if (fprintf(fd, "&cpo = cpo_save") < 0
 		|| put_eol(fd) < 0)
 	    return FAIL;
     return OK;
