@@ -2932,11 +2932,7 @@ add_text_props_for_append(
     {
 	if (round == 2)
 	{
-# ifdef HAVE_STDINT_H
 	    uint16_t pc;
-# else
-	    UINT16_T pc;
-# endif
 
 	    if (new_prop_count == 0)
 		return;  // nothing to do
@@ -2947,11 +2943,7 @@ add_text_props_for_append(
 		return;
 	    mch_memmove(new_line, *line, *len);
 	    // Write prop_count header.
-# ifdef HAVE_STDINT_H                                                                                                                                         
 	    pc = (uint16_t)new_prop_count;
-# else                                                                                                                        
-	    pc = (UINT16_T)new_prop_count;
-# endif
 	    mch_memmove(new_line + *len, &pc, PROP_COUNT_SIZE);
 	    new_prop_count = 0;
 	}
@@ -3803,11 +3795,7 @@ adjust_text_props_for_delete(
 		    return;
 		}
 
-# ifdef HAVE_STDINT_H
 		uint16_t pc;
-# else
-		UINT16_T pc;
-# endif
 
 		mch_memmove(&pc, text + textlen, PROP_COUNT_SIZE);
 		this_props_len = pc * (int)sizeof(textprop_T);
@@ -4041,11 +4029,7 @@ theend:
     {
 	// textprop_save is [prop_count][textprop_T...][vtext...].
 	// Skip prop_count header and pass only the textprop_T part.
-# ifdef HAVE_STDINT_H
-	uint16_t pc;
-# else
-	UINT16_T pc;
-# endif
+	uint16_t    pc;
 	char_u	    *props_data;
 	int	    props_bytes;
 

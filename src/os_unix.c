@@ -5950,11 +5950,7 @@ mch_get_cmd_output_direct(
     }
 
     BLOCK_SIGNALS(&curset);
-# ifdef VMS
-    pid = 0; // VMS does not have fork
-# else
     pid = fork();
-# endif
     if (pid == -1)
     {
 	UNBLOCK_SIGNALS(&curset);

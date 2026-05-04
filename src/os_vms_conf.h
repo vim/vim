@@ -58,9 +58,7 @@
 // Define to `int' if <sys/types.h> doesn't define.
 // #undef uid_t
 
-// Define some types from stdint - older VMS do not have stdint.h
-#define UINT8_T  unsigned char
-#define UINT16_T unsigned short
+// Define to `unsigned int' or other type that is 32 bit.
 #define UINT32_T unsigned int
 
 // Define to `int' if <sys/types.h> doesn't define.
@@ -171,6 +169,7 @@
 # define ULONG_LONG_MAX (4294967295U)
 
 #else // ALPHA, IA64, X86_64
+# define HAVE_FSEEKO             /* Use off_t. */
 # define HAVE_GETTIMEOFDAY
 # define HAVE_USLEEP
 # define HAVE_STRCASECMP
@@ -187,11 +186,7 @@
 #  define HAVE_ISNAN
 # endif
 
-# if defined(X86_64)
-#  define HAVE_FSEEKO 
-#  define HAVE_STDINT_H
-#  define HAVE_XOS_R_H
-# endif
+# define HAVE_XOS_R_H
 
 #endif /* VAX [else] */
 
@@ -213,7 +208,7 @@
 # define HAVE_LOCALE_H
 # define BROKEN_LOCALE
 # undef  DYNAMIC_ICONV
-# define HAVE_STRFTIME
+# define	HAVE_STRFTIME
 #endif
 
 #if defined(USE_ICONV)

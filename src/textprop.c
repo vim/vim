@@ -103,13 +103,10 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
 	um->buf = NULL;
 	return false;
     }
-#ifdef HAVE_STDINT_H
-    uint16_t	prop_count;
-#else
-    UINT16_T    prop_count;
-#endif
-    char_u	*count_ptr = line + textlen;
-    char_u	*props_start;
+
+    uint16_t    prop_count;
+    char_u	    *count_ptr = line + textlen;
+    char_u	    *props_start;
 
     mch_memmove(&prop_count, count_ptr, PROP_COUNT_SIZE);
     proplen = (int)prop_count;
@@ -395,11 +392,7 @@ um_delete_prop(unpacked_memline_T *um, int index)
     static char_u *
 um_pack(unpacked_memline_T *um, int *packed_len)
 {
-#ifdef HAVE_STDINT_H
-    uint16_t    live_count = 0;
-#else
-    UINT16_T    live_count = 0;
-#endif
+    uint16_t	live_count = 0;
     int		vtext_size = 0;
     int		total_len;
     char_u	*buf;
@@ -814,11 +807,7 @@ prop_add_one(
 
 	// Compute the sizes for the new memline format:
 	//   [text][NUL][prop_count][textprop_T...][vtext...]
-#ifdef HAVE_STDINT_H
 	uint16_t	new_propcount = (uint16_t)(proplen + 1);
-#else
-	UINT16_T	new_propcount = (UINT16_T)(proplen + 1);
-#endif
 	int		vtext_total = 0;
 	int		new_line_len;
 	char_u	*count_dest;
@@ -1223,11 +1212,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     char_u	*text;
     size_t	textlen;
     size_t	propdata_len;
-#ifdef HAVE_STDINT_H
-    uint16_t    prop_count;
-#else
-    UINT16_T    prop_count;
-#endif
+    uint16_t	prop_count;
 
     // Be quick when no text property types have been defined for the buffer,
     // unless we are adding one.
@@ -1480,11 +1465,7 @@ set_text_props(linenr_T lnum, textprop_T *tps, int count)
     else
     {
 	// Build new format: [text][NUL][prop_count][props...][vtext...]
-#ifdef HAVE_STDINT_H
 	uint16_t    prop_count = (uint16_t)count;
-#else
-	UINT16_T    prop_count = (UINT16_T)count;
-#endif
 	int	    vtext_size = 0;
 	int	    total_len;
 	char_u	    *count_dest;
@@ -1551,11 +1532,7 @@ set_text_props(linenr_T lnum, textprop_T *tps, int count)
 props_add_count_header(char_u *line, int line_len, int textlen, int *new_len)
 {
     int		prop_bytes = line_len - textlen;
-#ifdef HAVE_STDINT_H
-    uint16_t    prop_count;
-#else
-    UINT16_T    prop_count;
-#endif
+    uint16_t	prop_count;
     int		vtext_size = 0;
     int		total;
     char_u	*newline;
@@ -1569,11 +1546,7 @@ props_add_count_header(char_u *line, int line_len, int textlen, int *new_len)
 	*new_len = line_len;
 	return NULL;
     }
-#ifdef HAVE_STDINT_H
     prop_count = (uint16_t)(prop_bytes / sizeof(textprop_T));
-#else
-    prop_count = (UINT16_T)(prop_bytes / sizeof(textprop_T));
-#endif
 
     // Calculate total vtext size.
     for (i = 0; i < (int)prop_count; ++i)

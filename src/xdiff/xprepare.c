@@ -193,13 +193,7 @@ void xdl_free_env(xdfenv_t *xe) {
 }
 
 
-static bool xdl_clean_mmatch(
-#ifdef HAVE_STDINT_H
-		uint8_t const *action,
-#else
-		UINT8_T const *action,
-#endif
-		long i, long s, long e) {
+static bool xdl_clean_mmatch(uint8_t const *action, long i, long s, long e) {
 	long r, rdis0, rpdis0, rdis1, rpdis1;
 
 	/*
@@ -273,11 +267,7 @@ static int xdl_cleanup_records(xdlclassifier_t *cf, xdfile_t *xdf1, xdfile_t *xd
 	long i, nm, nreff, mlim;
 	xrecord_t *recs;
 	xdlclass_t *rcrec;
-#ifdef HAVE_STDINT_H
 	uint8_t *action1 = NULL, *action2 = NULL;
-#else
-	UINT8_T *action1 = NULL, *action2 = NULL;
-#endif
 	bool need_min = !!(cf->flags & XDF_NEED_MINIMAL);
 	int ret = 0;
 
