@@ -939,7 +939,7 @@ typedef struct textprop_S
 					// unpacked_memline_T
 #define TP_FLAG_VTEXT_PTR	0x400	// u.tp_text access is valid
 
-#ifdef HAVE_STDINT_H
+#ifdef HAS_STDINT_H
 # define PROP_COUNT_SIZE	sizeof(uint16_t)    // size of prop_count in memline
 #else
 # define PROP_COUNT_SIZE	sizeof(UINT16_T)
