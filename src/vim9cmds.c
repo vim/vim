@@ -215,7 +215,7 @@ compile_lock_unlock(
 	// These checks are reminiscent of the variable_exists function.
 	// But most of the matches require special handling.
 
-	// If bare name is is locally accessible, except for local var,
+	// If bare name is locally accessible, except for local var,
 	// then put it on the stack to use with ISN_LOCKUNLOCK.
 	// This could be v.memb, v[idx_key]; bare class variable,
 	// function arg. The item on the stack, will be passed
