@@ -2818,7 +2818,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
      * Otherwise put it at 1/2 of the screen.
      */
     if (line_count >= curwin->w_height && line_count > min_scroll)
-	scroll_cursor_halfway(FALSE, TRUE);
+	scroll_cursor_halfway(use_scrolloffpad(), TRUE);
     else if (line_count > 0)
     {
 	if (do_sms)
