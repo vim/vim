@@ -3599,7 +3599,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	}
 	*curval++ = NULL;
 
-	if (*reg_type != NUL && (STRLEN(reg_type) <= 0
+	if (*reg_type != NUL && (STRLEN(reg_type) == 0
 		|| get_yank_type(&reg_type, &yank_type, &block_len) == FAIL))
 	{
 	    emsg(e_invalid_argument);
