@@ -1027,7 +1027,7 @@ find_longest_match(expand_T *xp, int options)
     return ss;
 }
 
-    static void
+    void
 free_xp_files_extra(expand_T *xp, int numfiles)
 {
     if (xp->xp_files_abbr != NULL)

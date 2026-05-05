@@ -8,6 +8,7 @@ void cmdline_pum_cleanup(cmdline_info_T *cclp);
 int cmdline_compl_startcol(void);
 char_u *cmdline_compl_pattern(void);
 int cmdline_compl_is_fuzzy(void);
+void free_xp_files_extra(expand_T *xp, int numfiles);
 char_u *ExpandOne(expand_T *xp, char_u *str, char_u *orig, int options, int mode);
 void ExpandInit(expand_T *xp);
 void ExpandCleanup(expand_T *xp);
