@@ -72,23 +72,23 @@ func Test_mksession_utf8()
     normal! 016|
     normal! 016|
     normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 8 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 8 .. '|'
       normal! 08|
-      exe 'normal! ' . s:c . '|zs' . 8 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 8 .. '|'
       normal! 08|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
-      exe 'normal! ' . s:c . '|zs' . 16 . '|'
+    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'
       normal! 016|
   [DATA]
 

@@ -135,23 +135,23 @@ func Test_mksession()
     \   'normal! 016|',
     \   'normal! 016|',
     \   'normal! $',
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 8 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
     \   "  normal! 08|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 8 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
     \   "  normal! 08|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|",
-    \   "  exe 'normal! ' . s:c . '|zs' . 16 . '|'",
+    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
     \   "  normal! 016|"
     \ ]
   call assert_equal(expected, li)
@@ -1066,7 +1066,7 @@ func Test_mksession_winminheight()
   let found_restore = 0
   let lines = readfile('Xtest_mks.out')
   for line in lines
-    if line =~ '= s:save_winmin\(width\|height\)'
+    if line =~ '= save_winmin\(width\|height\)'
       let found_restore += 1
     endif
   endfor
@@ -1088,11 +1088,11 @@ func Test_mksession_shortmess()
   for line in lines
     let line = trim(line)
 
-    if line ==# 'let s:shortmess_save = &shortmess'
+    if line ==# 'shortmess_save = &shortmess'
       let found_save += 1
     endif
 
-    if found_save !=# 0 && line ==# 'let &shortmess = s:shortmess_save'
+    if found_save !=# 0 && line ==# '&shortmess = shortmess_save'
       let found_restore += 1
     endif
   endfor
@@ -1109,7 +1109,7 @@ func Test_mksession_shortmess()
   let found_restore = 0
   let lines = readfile('Xtest_mks.out')
   for line in lines
-    if line =~# 's:shortmess_save'
+    if line =~# '\(var \)\@<!shortmess_save'
       let found_restore += 1
     endif
   endfor
