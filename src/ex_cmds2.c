@@ -141,7 +141,7 @@ browse_save_fname(buf_T *buf)
     char_u *fname;
 
     fname = do_browse(BROWSE_SAVE, (char_u *)_("Save As"),
-	    NULL, NULL, NULL, NULL, buf);
+	    (char_u *)"Untitled", NULL, NULL, NULL, buf);
     if (fname == NULL)
 	return;
 
@@ -182,6 +182,10 @@ dialog_changed(
 # ifdef FEAT_BROWSE
 	// May get file name, when there is none
 	browse_save_fname(buf);
+
+	// User cancelled the file dialog; keep the buffer modified.
+	if (buf->b_fname == NULL)
+	    return;
 # endif
 	empty_bufname = buf->b_fname == NULL ? TRUE : FALSE;
 	if (empty_bufname)
@@ -194,13 +198,12 @@ dialog_changed(
 		return;
 	}
 
-	// restore to empty when write failed
+	// restore to empty when write failed or was cancelled
 	if (empty_bufname)
 	{
 	    buf->b_fname = NULL;
 	    VIM_CLEAR(buf->b_ffname);
 	    VIM_CLEAR(buf->b_sfname);
-	    unchanged(buf, TRUE, FALSE);
 	}
     }
     else if (ret == VIM_NO)
