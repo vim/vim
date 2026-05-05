@@ -195,6 +195,8 @@ static keyvalue_T event_tab[NUM_EVENTS] = {
     KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDI, "TextChangedI"),
     KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDP, "TextChangedP"),
     KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDT, "TextChangedT"),
+    KEYVALUE_ENTRY(-EVENT_TEXTPUTPOST, "TextPutPost"),
+    KEYVALUE_ENTRY(-EVENT_TEXTPUTPRE, "TextPutPre"),
     KEYVALUE_ENTRY(-EVENT_TEXTYANKPOST, "TextYankPost"),
     KEYVALUE_ENTRY(EVENT_USER, "User"),
     KEYVALUE_ENTRY(EVENT_VIMENTER, "VimEnter"),
@@ -2023,6 +2025,25 @@ has_cmdundefined(void)
 }
 
 #if defined(FEAT_EVAL)
+
+/*
+ * Return TRUE when there is a TextPutPost autocommand defined.
+ */
+    int
+has_textputpost(void)
+{
+    return (first_autopat[(int)EVENT_TEXTPUTPOST] != NULL);
+}
+
+/*
+ * Return TRUE when there is a TextPutPre autocommand defined.
+ */
+    int
+has_textputpre(void)
+{
+    return (first_autopat[(int)EVENT_TEXTPUTPRE] != NULL);
+}
+
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */

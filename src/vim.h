@@ -1483,6 +1483,8 @@ enum auto_event
     EVENT_TEXTCHANGEDI,		// text was modified in Insert mode
     EVENT_TEXTCHANGEDP,		// TextChangedI with popup menu visible
     EVENT_TEXTCHANGEDT,		// text was modified in Terminal mode
+    EVENT_TEXTPUTPOST,		// after some text was put
+    EVENT_TEXTPUTPRE,		// before some text was put
     EVENT_TEXTYANKPOST,		// after some text was yanked
     EVENT_USER,			// user defined autocommand
     EVENT_VIMENTER,		// after starting Vim

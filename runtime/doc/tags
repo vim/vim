@@ -5968,6 +5968,8 @@ TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 TextChangedP	autocmd.txt	/*TextChangedP*
 TextChangedT	autocmd.txt	/*TextChangedT*
+TextPutPost	autocmd.txt	/*TextPutPost*
+TextPutPre	autocmd.txt	/*TextPutPre*
 TextYankPost	autocmd.txt	/*TextYankPost*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
 Tuple	eval.txt	/*Tuple*

@@ -29,6 +29,8 @@ int has_textchangedP(void);
 int has_insertcharpre(void);
 int has_keyinputpre(void);
 int has_cmdundefined(void);
+int has_textputpost(void);
+int has_textputpre(void);
 int has_textyankpost(void);
 int has_completechanged(void);
 int has_modechanged(void);

@@ -2165,3 +2165,11 @@ EXTERN bool inside_redraw_on_start_cb INIT(= false);
 
 // If greater than zero, then silence the W23/W24 warning.
 EXTERN int silence_w23_w24_msg INIT( = 0);
+
+#ifdef FEAT_EVAL
+// Used by TextPutPost/TextPutPre autocommands for the '.' register. If
+// "add_last_insert" is == 1, then "stuff_inserted" will add the last inserted
+// text to "last_insert_ga".
+EXTERN garray_T last_insert_ga INIT5(0, 0, 1, 64, NULL);
+EXTERN int	add_last_insert INIT(= 0);
+#endif

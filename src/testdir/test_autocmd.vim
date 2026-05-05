@@ -5967,4 +5967,129 @@ func Test_autocmd_add_secure()
   call assert_fails('sandbox call autocmd_delete([{"event": "BufRead"}])', 'E48:')
 endfunc
 
+func Test_TextPutX()
+  enew!
+
+  let g:pre_event = []
+  let g:post_event = []
+  au TextPutPre * let g:pre_event = copy(v:event)
+  au TextPutPost * let g:post_event = copy(v:event)
+
+  call setreg('a', ['foo'], 'v')
+  norm "ap
+  call assert_equal(
+        \ #{regcontents: ['foo'], regname: 'a', operator: 'p',
+        \ visual: v:false, regtype: 'v'},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+
+  call setreg('', ['hello'], 'V')
+  norm P
+  call assert_equal(
+        \ #{regcontents: ['hello'], regname: '',  operator: 'P',
+        \ visual: v:false, regtype: 'V'},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+
+  call setreg('', ['maybe', 'true'], 'V')
+  norm Vp
+  call assert_equal(
+        \ #{regcontents: ['maybe', 'true'], regname: '',  operator: 'P',
+        \ regtype: 'V', visual: v:true},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+  call assert_equal({}, v:event)
+
+  call feedkeys("iinserted text\<CR>below\<Esc>", 'x')
+  norm ".p
+  call assert_equal(
+        \ #{regcontents: ["inserted text\nbelow"], regname: '.',
+        \ operator: 'p', regtype: 'v', visual: v:false},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+
+  call feedkeys("\"=201\<CR>p", 'x')
+  call assert_equal(
+        \ #{regcontents: ["201"], regname: '=',
+        \ operator: 'p', regtype: 'v', visual: v:false},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+
+  vsplit some.txt
+  wincmd l
+  norm "#p
+  call assert_equal(
+        \ #{regcontents: ["some.txt"], regname: '#',
+        \ operator: 'p', regtype: 'v', visual: v:false},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+  wincmd h
+  bw!
+
+  if has('clipboard_working')
+    let @+ = 'clipboard'
+
+    norm "+p
+    call assert_equal(
+          \ #{regcontents: ["clipboard"], regname: '+',
+          \ operator: 'p', regtype: 'v', visual: v:false},
+          \ g:pre_event)
+    call assert_equal(g:pre_event, g:post_event)
+  endif
+
+  %delete " Clear buffer
+
+  au! TextPutPre
+  au! TextPutPost
+  let g:pre_event = []
+  let g:post_event = []
+
+  au TextPutPre * call setreg(v:event['regname'],
+        \ getreg('', 0, v:true) + ['!']) " Unnamed register should be same as regname
+
+  call setreg('', ['hello', 'world'])
+  norm p
+  call assert_equal(['', 'hello', 'world', '!'], getline(1, '$'))
+
+  au! TextPutPre
+
+  " Test that special registers cannot be modified
+  %delete
+  au TextPutPre * call setreg('=', '"modified"') | let g:pre_event = copy(v:event)
+
+  " Set up the expression register to evaluate to a known value.
+  call feedkeys("\"=\"original\"\<CR>p", 'x')
+
+  " The original value is what got put, not the modified one.
+  call assert_equal(['original'], getline(1, '$'))
+
+  " v:event still reports the original value.
+  call assert_equal(['original'], g:pre_event['regcontents'])
+
+  au! TextPutPre
+  let g:pre_event = []
+
+  " Test that recursive ". register calls have the same contents for post and
+  " pre
+  au TextPutPre * put . | let g:pre_event = copy(v:event)
+  au TextPutPost * let g:post_event = copy(v:event)
+
+  call feedkeys("iinserted\<Esc>", 'x')
+  norm! ".p
+
+  call assert_equal(
+        \ #{regcontents: ["inserted"], regname: '.',
+        \ operator: 'p', regtype: 'v', visual: v:false},
+        \ g:pre_event)
+  call assert_equal(g:pre_event, g:post_event)
+
+  au! TextPutPre
+  au! TextPutPost
+
+  unlet g:post_event
+  unlet g:pre_event
+  bwipe!
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
