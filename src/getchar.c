@@ -2205,7 +2205,7 @@ vgetc(void)
 
 #ifdef FEAT_EVAL
 /*
- * Handle the InsertCharPre autocommand.
+ * Handle the KeyInputPre autocommand.
  * "c" is the character that was typed.
  * Return new input character.
  */
