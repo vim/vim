@@ -31,10 +31,10 @@ syn match autopkgtestTests contained "[a-z0-9][a-z0-9+.-]\+\%(,\=\s*[a-z0-9][a-z
 syn match autopkgtestArbitrary contained "[^#]*"
 syn keyword autopkgtestRestrictions contained
       \ allow-stderr
-      \ breaks-testbe
-      \ build-neede
+      \ breaks-testbed
+      \ build-needed
       \ flaky
-      \ hint-testsuite-trigger
+      \ hint-testsuite-triggers
       \ isolation-container
       \ isolation-machine
       \ needs-internet
@@ -43,10 +43,11 @@ syn keyword autopkgtestRestrictions contained
       \ needs-sudo
       \ rw-build-tree
       \ skip-foreign-architecture
-      \ skip-not-installable
       \ skippable
       \ superficial
-syn keyword autopkgtestDeprecatedRestrictions contained needs-recommends
+syn keyword autopkgtestDeprecatedRestrictions contained
+      \ needs-recommends
+      \ skip-not-installable
 syn match autopkgtestFeatures contained 'test-name=[^, ]*\%([, ]*[^, #]\)*,\='
 syn match autopkgtestDepends contained '\%(@builddeps@\|@recommends@\|@\)'
 
