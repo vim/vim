@@ -2152,7 +2152,9 @@ proto/%.pro: %.c
 	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
 
 proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
-	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
+	@if test -n "$(GLIB_COMPILE_RESOURCES)"; then \
+		$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG) ; \
+	fi
 
 notags:
 	-rm -f tags
@@ -3175,7 +3177,9 @@ GUI_GTK_RES_INPUTS = \
 	../pixmaps/stock_vim_window_split_vertical.png
 
 auto/gui_gtk_gresources.c: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
-	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml
+	if test -z "$(GLIB_COMPILE_RESOURCES)"; then touch $@; else \
+		$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml; \
+	fi
 auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 	if test -z "$(GLIB_COMPILE_RESOURCES)"; then touch $@; else \
 		$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml; \
