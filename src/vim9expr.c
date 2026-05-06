@@ -1742,6 +1742,29 @@ compile_tuple(
 }
 
 /*
+ * Restore "*arg" from a temporary cmdline copy.
+ */
+    static void
+restore_cmdline_arg(evalarg_T *evalarg, char_u **arg, cctx_T *cctx)
+{
+    garray_T    *gap;
+    char_u	*line;
+    size_t	off;
+
+    if (!evalarg->eval_using_cmdline || cctx == NULL)
+	return;
+
+    gap = &evalarg->eval_tofree_ga;
+    if (gap->ga_len == 0)
+	return;
+
+    off = *arg - ((char_u **)gap->ga_data)[gap->ga_len - 1];
+    line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
+    *arg = line + off;
+    evalarg->eval_using_cmdline = FALSE;
+}
+
+/*
  * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '('.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
@@ -1803,18 +1826,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	    compile_def_function(ufunc, FALSE, compile_type, cctx);
     }
 
-    // The last entry in evalarg.eval_tofree_ga is a copy of the last line and
-    // "*arg" may point into it.  Point into the original line to avoid a
-    // dangling pointer.
-    if (evalarg.eval_using_cmdline)
-    {
-	garray_T    *gap = &evalarg.eval_tofree_ga;
-	size_t	    off = *arg - ((char_u **)gap->ga_data)[gap->ga_len - 1];
-
-	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
-									 + off;
-	evalarg.eval_using_cmdline = FALSE;
-    }
+    restore_cmdline_arg(&evalarg, arg, cctx);
 
     clear_evalarg(&evalarg, NULL);
 
@@ -2348,6 +2360,7 @@ skip_expr_cctx(char_u **arg, cctx_T *cctx)
     init_evalarg(&evalarg);
     evalarg.eval_cctx = cctx;
     skip_expr(arg, &evalarg);
+    restore_cmdline_arg(&evalarg, arg, cctx);
     clear_evalarg(&evalarg, NULL);
 }
 
