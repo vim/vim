@@ -612,7 +612,7 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 
 term_getansicolors({buf})				*term_getansicolors()*
 		Get the ANSI color palette in use by terminal {buf}.
-		Returns a List of length 16 where each element is a String
+		Returns a |List| of length 16 where each element is a String
 		representing a color in hexadecimal "#rrggbb" format.
 		Also see |term_setansicolors()| and |g:terminal_ansi_colors|.
 		If neither was used returns the default colors.
@@ -644,7 +644,7 @@ term_getattr({attr}, {what})				*term_getattr()*
 
 
 term_getcursor({buf})					*term_getcursor()*
-		Get the cursor position of terminal {buf}.  Returns a list
+		Get the cursor position of terminal {buf}.  Returns a |List|
 		with two numbers and a dictionary: [row, col, dict].
 
 		"row" and "col" are one based, the first screen cell is row
@@ -716,7 +716,7 @@ term_getscrolled({buf})					*term_getscrolled()*
 
 
 term_getsize({buf})					*term_getsize()*
-		Get the size of terminal {buf}.  Returns a list with two
+		Get the size of terminal {buf}.  Returns a |List| with two
 		numbers: [rows, cols].  This is the size of the terminal, not
 		the window containing the terminal.
 
@@ -777,7 +777,7 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 
 
 term_list()						*term_list()*
-		Return a list with the buffer numbers of all buffers for
+		Return a |List| with the buffer numbers of all buffers for
 		terminal windows.
 
 		Return type: list<number> or list<any>
@@ -791,7 +791,7 @@ term_scrape({buf}, {row})				*term_scrape()*
 		line is used.  When {row} is invalid an empty string is
 		returned.
 
-		Return a List containing a Dict for each screen cell:
+		Return a |List| containing a |Dict| for each screen cell:
 		    "chars"	character(s) at the cell
 		    "fg"	foreground color as #rrggbb
 		    "bg"	background color as #rrggbb
