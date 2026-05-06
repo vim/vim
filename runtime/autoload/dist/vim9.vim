@@ -51,7 +51,7 @@ if has('unix')
         execute $'silent !cmd /c start "" /b {args} {Redir()}' | redraw!
       enddef
     endif
-  elseif exists('$WSL_DISTRO_NAME') # use cmd.exe to start GUI apps in WSL
+  elseif exists('$WSL_DISTRO_NAME') && executable('cmd.exe') # use cmd.exe to start GUI apps in WSL
     export def Launch(args: string)
       const command = (args =~? '\v<\f+\.(exe|com|bat|cmd)>')
         ? $'cmd.exe /c start /b {args} {Redir()}'
