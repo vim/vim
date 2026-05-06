@@ -68,7 +68,7 @@ typedef struct {
     clip_wl_selection_T primary;
 } clip_wl_T;
 
-// Mime types we support sending and receiving
+// Mime types we support sending and receiving, as the default format.
 // Mimes with a lower index in the array are prioritized first when we are
 // receiving data.
 static const char *supported_mimes[] = {
@@ -83,8 +83,8 @@ static const char *supported_mimes[] = {
 
 clip_wl_T clip_wl;
 
-static void
-clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd);
+static int clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd, garray_T *ga);
+static int clip_wl_request_format(Clipboard_T *cbd, const char *format, garray_T *ga, bool roundtrip);
 static void clip_wl_request_selection(Clipboard_T *cbd);
 static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
@@ -126,6 +126,8 @@ clip_init(int can_use)
 	cb->end.lnum   = 0;
 	cb->end.col    = 0;
 	cb->state      = SELECT_CLEARED;
+	clip_clear_formats(cb);
+	ga_init2(&cb->formats, sizeof(clipformat_T), 2);
 
 skip:
 	if (cb == &clip_plus)
@@ -2271,6 +2273,143 @@ may_set_selection(void)
     }
 }
 
+# ifdef FEAT_EVAL
+
+/*
+ * Get the corresponding Clipboard_T struct based on "regname". Returns NULL if
+ * "regname" is not a clipboad register.
+ */
+    Clipboard_T *
+clip_get_clipboard(int regname)
+{
+    if (regname == '+')
+	return &clip_plus;
+    else if (regname == '*')
+	return &clip_star;
+    else
+	return NULL;
+}
+
+/*
+ * Add the given format to the clipboard. If "blob" is not NULL, then it is
+ * copied and placed with the format.
+ */
+    void
+clip_add_format(Clipboard_T *cbd, char_u *format, blob_T *blob)
+{
+    char_u *str;
+
+    if (ga_grow(&cbd->formats, 1) == FAIL)
+	return;
+
+    str = vim_strsave(format);
+
+    if (str != NULL)
+    {
+	clipformat_T *fmt =
+	    &((clipformat_T *)cbd->formats.ga_data)[cbd->formats.ga_len++];
+
+	if (blob != NULL && blob->bv_ga.ga_data != NULL)
+	{
+	    fmt->data = vim_memsave(blob->bv_ga.ga_data, blob->bv_ga.ga_len);
+	    fmt->len = blob->bv_ga.ga_len;
+	}
+	else
+	    fmt->data = NULL;
+	fmt->name = str;
+    }
+}
+
+    void
+clip_clear_formats(Clipboard_T *cbd)
+{
+    for (int i = 0; i <cbd->formats.ga_len; i++)
+    {
+	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
+
+	vim_free(fmt->data);
+	vim_free(fmt->name);
+    }
+    ga_clear(&cbd->formats);
+}
+
+    static int
+clip_gen_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
+{
+# if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+#  ifdef FEAT_GUI
+    if (gui.in_use)
+	/* clip_mch_request_selection(cbd); */
+    else
+#  endif
+    {
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#  ifdef FEAT_WAYLAND_CLIPBOARD
+	    return clip_wl_request_format(cbd, (char *)format, ga, true);
+#  endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#  ifdef FEAT_XCLIPBOARD
+	    /* clip_xterm_request_selection(cbd); */
+#  endif
+	}
+    }
+# else
+    /* clip_mch_request_selection(cbd); */
+# endif
+    return FAIL;
+}
+
+/*
+ * Get the contents of the given format from the clipboard. Returns NULL on
+ * failure or if format is not available.
+ */
+    blob_T *
+clip_get_selection_format(Clipboard_T *cbd, char_u *format)
+{
+    blob_T	*blob;
+    garray_T	ga;
+
+    blob = blob_alloc();
+    if(blob == NULL)
+	return NULL;
+
+    ga_init2(&ga, 1, 512);
+
+    // Check if we already have the contents, from setreg(). TODO
+    for (int i = 0; i <cbd->formats.ga_len; i++)
+    {
+	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
+
+	if (STRCMP(format, fmt->name) == 0 && fmt->data != NULL)
+	{
+	    ga_concat_len(&ga, fmt->data, fmt->len);
+	    break;
+	}
+    }
+    if (ga.ga_data == NULL)
+    {
+	// Try requesting the contents now
+	if (clip_gen_request_format(cbd, format, &ga) == FAIL)
+	    goto fail;
+    }
+
+    if (ga.ga_data == NULL)
+	goto fail;
+
+    blob->bv_ga = ga;
+    blob->bv_refcount++;
+
+    return blob;
+fail:
+    blob_free(blob);
+    return NULL;
+}
+
+# endif
+
 # if defined(FEAT_WAYLAND_CLIPBOARD)
 
     static clip_wl_selection_T *
@@ -2322,12 +2461,14 @@ clip_wl_get_selection_type(clip_wl_selection_T *sel)
 
     static bool
 wl_data_offer_listener_event_offer(
-    void *data UNUSED,
+    void *data,
     vwl_data_offer_T *offer UNUSED,
     const char *mime_type
 )
 {
-    // Only accept mime type if we support it
+    clip_add_format(data, (char_u *)mime_type, NULL);
+
+    // Only accept mime type if we support it for the default format
     for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes); i++)
 	if (STRCMP(mime_type, supported_mimes[i]) == 0)
 	    return true;
@@ -2340,12 +2481,13 @@ static const vwl_data_offer_listener_T vwl_data_offer_listener = {
 
     static void
 vwl_data_device_listener_event_data_offer(
-	void *data UNUSED,
+	void *data,
 	vwl_data_device_T *device UNUSED,
 	vwl_data_offer_T *offer)
 {
+    clip_clear_formats(data);
     // Immediately start listening for offer events from the data offer
-    vwl_data_offer_add_listener(offer, &vwl_data_offer_listener, NULL);
+    vwl_data_offer_add_listener(offer, &vwl_data_offer_listener, data);
 }
 
     static void
@@ -2492,12 +2634,12 @@ clip_init_wayland(void)
     // Start listening for selection updates
     if (clip_wl.regular.device != NULL)
 	vwl_data_device_add_listener(clip_wl.regular.device,
-		&vwl_data_device_listener, NULL);
+		&vwl_data_device_listener, &clip_plus);
     // Don't want to listen to the same data device twice
     if (clip_wl.primary.device != NULL
 	    && clip_wl.primary.device != clip_wl.regular.device)
 	vwl_data_device_add_listener(clip_wl.primary.device,
-		&vwl_data_device_listener, NULL);
+		&vwl_data_device_listener, &clip_star);
 
     return OK;
 }
@@ -2554,14 +2696,17 @@ clip_reset_wayland(void)
 }
 
 /*
- * Read data from a file descriptor and write it to the given clipboard.
+ * Read data from a file descriptor and write it to given grow array (which will
+ * be initialized first). Returns OK on success and FAIL on failure.
  */
-    static void
-clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
+    static int
+clip_wl_receive_data(
+	Clipboard_T *cbd,
+	const char *mime_type,
+	int fd,
+	garray_T *buf)
 {
-    char_u	*start, *final, *enc;
-    garray_T	buf;
-    int		motion_type = MAUTO;
+    char_u	*start;
     ssize_t	r = 0;
 #  ifndef HAVE_SELECT
     struct pollfd   pfd;
@@ -2578,16 +2723,16 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 
     // Make pipe (read end) non-blocking
     if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) == -1)
-	return;
+	return FAIL;
 
-    ga_init2(&buf, 1, 4096);
+    ga_init2(buf, 1, 4096);
 
     // 4096 bytes seems reasonable for initial buffer size, memory is cheap
     // anyways.
-    if (ga_grow(&buf, 4096) == FAIL)
-	return;
+    if (ga_grow(buf, 4096) == FAIL)
+	return FAIL;
 
-    start = buf.ga_data;
+    start = buf->ga_data;
 
 #  ifndef HAVE_SELECT
     while (poll(&pfd, 1, p_wtm) > 0)
@@ -2596,98 +2741,96 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 	    select(fd + 1, &rfds, NULL, NULL, &tv) > 0)
 #  endif
     {
-	r = read(fd, start, buf.ga_maxlen - 1 - buf.ga_len);
+	r = read(fd, start, buf->ga_maxlen - 1 - buf->ga_len);
 
 	if (r == 0)
 	    break;
 	else if (r < 0)
 	{
-	    if (errno == EAGAIN || errno == EINTR)
+	    if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
+	    {
+		if (got_int)
+		    break;
 		continue;
+	    }
 	    break;
 	}
 
 	start += r;
-	buf.ga_len += r;
+	buf->ga_len += r;
 
 	// Realloc if we are at the end of the buffer
-	if (buf.ga_len >= buf.ga_maxlen - 1)
+	if (buf->ga_len >= buf->ga_maxlen - 1)
 	{
-	    if (ga_grow(&buf, 8192) == FAIL)
+	    if (ga_grow(buf, 8192) == FAIL)
 		break;
-	    start = (char_u *)buf.ga_data + buf.ga_len;
+	    start = (char_u *)buf->ga_data + buf->ga_len;
 	}
     }
 
-    if (buf.ga_len == 0)
-    {
-	clip_free_selection(cbd); // Nothing received, clear register
-	ga_clear(&buf);
-	return;
-    }
+    return OK;
+}
 
-    final = buf.ga_data;
+/*
+ * Request the selection data for the given format (mime type). "ga" will be
+ * initialized. Returns OK on success and FAIL on failure.
+ */
+    static int
+clip_wl_request_format(
+	Clipboard_T *cbd,
+	const char  *format,
+	garray_T    *ga,
+	bool	    roundtrip)
+{
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+    int			fds[2];
+    int			ret = FAIL;
 
-    if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
-    {
-	motion_type = *final++;
-	buf.ga_len--;
-    }
-    else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)
-    {
-	vimconv_T   conv;
-	int	    convlen;
+    if (!sel->available)
+	return FAIL;
 
-	// first byte is motion type
-	motion_type = *final++;
-	buf.ga_len--;
+    // Dispatch any events that still queued up before checking for a data
+    // offer.
+    if (roundtrip && vwl_connection_roundtrip(wayland_ct) == FAIL)
+	return FAIL;
 
-	// Get encoding of selection
-	enc = final;
+    if (sel->offer == NULL)
+	return FAIL;
 
-	// Skip the encoding type including null terminator in final text
-	final += STRLEN(final) + 1;
+    if (pipe(fds) == -1)
+	return FAIL;
 
-	// Subtract pointers to get length of encoding;
-	buf.ga_len -= final - enc;
+    vwl_data_offer_receive(sel->offer, format, fds[1]);
 
-	conv.vc_type = CONV_NONE;
-	convert_setup(&conv, enc, p_enc);
-	if (conv.vc_type != CONV_NONE)
-	{
-	   char_u *tmp;
+    close(fds[1]); // Close before we read data so that when the source client
+		   // closes their end we receive an EOF.
 
-	   convlen = buf.ga_len;
-	   tmp = string_convert(&conv, final, &convlen);
-	   buf.ga_len = convlen;
-	   if (tmp != NULL)
-		final = tmp;
-	   convert_setup(&conv, NULL, NULL);
-	}
-    }
+    if (vwl_connection_flush(wayland_ct) >= 0)
+	ret = clip_wl_receive_data(cbd, format, fds[0], ga);
 
-    clip_yank_selection(motion_type, final, (long)buf.ga_len, cbd);
-    ga_clear(&buf);
+    close(fds[0]);
+
+    return ret;
 }
 
 /*
  * Get the current selection and fill the respective register for cbd with the
- * data.
+ * data. If "format" is not NULL, request data for that specific format.
  */
     static void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
-    int			fds[2];
     int			mime_types_len;
     const char		**mime_types;
     const char		*chosen_mime = NULL;
+    garray_T		buf;
+    char_u		*final, *enc;
+    int			motion_type = MAUTO;
 
     if (!sel->available)
 	goto clear;
 
-    // Dispatch any events that still queued up before checking for a data
-    // offer.
     if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	goto clear;
 
@@ -2707,18 +2850,59 @@ clip_wl_request_selection(Clipboard_T *cbd)
 		chosen_mime = supported_mimes[i];
     }
 
-    if (chosen_mime == NULL || pipe(fds) == -1)
+    if (chosen_mime == NULL
+	    || clip_wl_request_format(cbd, chosen_mime, &buf, false) == FAIL)
 	goto clear;
 
-    vwl_data_offer_receive(sel->offer, chosen_mime, fds[1]);
+    if (buf.ga_len == 0)
+    {
+	// Nothing received, clear register
+	ga_clear(&buf);
+	goto clear;
+    }
 
-    close(fds[1]); // Close before we read data so that when the source client
-		   // closes their end we receive an EOF.
+    final = buf.ga_data;
 
-    if (vwl_connection_flush(wayland_ct) >= 0)
-	clip_wl_receive_data(cbd, chosen_mime, fds[0]);
+    if (STRCMP(chosen_mime, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
+    {
+	motion_type = *final++;
+	buf.ga_len--;
+    }
+    else if (STRCMP(chosen_mime, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)
+    {
+	vimconv_T   conv;
+	int	    convlen;
 
-    close(fds[0]);
+	// First byte is motion type
+	motion_type = *final++;
+	buf.ga_len--;
+
+	// Get encoding of selection
+	enc = final;
+
+	// Skip the encoding type including null terminator in final text
+	final += STRLEN(final) + 1;
+
+	// Subtract pointers to get length of encoding;
+	buf.ga_len -= final - enc;
+
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, enc, p_enc);
+	if (conv.vc_type != CONV_NONE)
+	{
+	    char_u *tmp;
+
+	    convlen = buf.ga_len;
+	    tmp = string_convert(&conv, final, &convlen);
+	    buf.ga_len = convlen;
+	    if (tmp != NULL)
+		final = tmp;
+	    convert_setup(&conv, NULL, NULL);
+	}
+    }
+
+    clip_yank_selection(motion_type, final, (long)buf.ga_len, cbd);
+    ga_clear(&buf);
 
     return;
 clear:

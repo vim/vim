@@ -2330,6 +2330,13 @@ typedef enum {
 #  endif
 # endif
 
+typedef struct
+{
+    char_u  *data;  // Binary data, may be NULL
+    int	    len;
+    char_u  *name;
+} clipformat_T;
+
 // Info about selected text
 typedef struct
 {
@@ -2371,6 +2378,10 @@ typedef struct
 # endif
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?
+# endif
+# ifdef FEAT_EVAL
+    // Array of possible formats for this selection, if any.
+    garray_T	formats;
 # endif
 } Clipboard_T;
 #else
