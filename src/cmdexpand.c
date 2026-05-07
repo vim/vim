@@ -3156,7 +3156,7 @@ expand_files_and_dirs(
     if (xp->xp_context == EXPAND_FINDFUNC)
     {
 #ifdef FEAT_EVAL
-	ret = expand_findfunc(pat, matches, numMatches);
+	ret = expand_findfunc(xp, pat, matches, numMatches);
 #endif
     }
     else
@@ -4148,16 +4148,13 @@ ExpandUserDefined(
     return OK;
 }
 
-/*
- * Expand names with a list returned by a function defined by the user.
- */
-    static int
-ExpandUserList(
-    expand_T	*xp,
+    void
+expand_process_user_list(
+    list_T	*retlist,
     char_u	***matches,
-    int		*numMatches)
+    int		*numMatches,
+    expand_T	*xp)
 {
-    list_T      *retlist;
     listitem_T	*li;
     garray_T	ga;
     garray_T	ga_abbr;
@@ -4166,12 +4163,6 @@ ExpandUserList(
     garray_T	ga_info;
     int		have_extra = FALSE;
     int		i;
-
-    *matches = NULL;
-    *numMatches = 0;
-    retlist = call_user_expand_func(call_func_retlist, xp);
-    if (retlist == NULL)
-	return FAIL;
 
     ga_init2(&ga, sizeof(char *), 3);
     ga_init2(&ga_abbr, sizeof(char *), 3);
@@ -4190,7 +4181,7 @@ ExpandUserList(
 	if (li->li_tv.v_type == VAR_STRING)
 	{
 	    if (li->li_tv.vval.v_string == NULL)
-		continue;  // Skip empty strings
+		continue;  // Skip NULL strings
 	    p = vim_strsave(li->li_tv.vval.v_string);
 	}
 	else if (li->li_tv.v_type == VAR_DICT
@@ -4233,7 +4224,6 @@ ExpandUserList(
 	((char_u **)ga_menu.ga_data)[ga_menu.ga_len++] = menu;
 	((char_u **)ga_info.ga_data)[ga_info.ga_len++] = info;
     }
-    list_unref(retlist);
 
     *matches = ga.ga_data;
     *numMatches = ga.ga_len;
@@ -4260,6 +4250,27 @@ ExpandUserList(
 	    vim_free(((char_u **)ga_info.ga_data)[i]);
 	vim_free(ga_info.ga_data);
     }
+}
+
+/*
+ * Expand names with a list returned by a function defined by the user.
+ */
+    static int
+ExpandUserList(
+    expand_T	*xp,
+    char_u	***matches,
+    int		*numMatches)
+{
+    list_T      *retlist;
+
+    *matches = NULL;
+    *numMatches = 0;
+    retlist = call_user_expand_func(call_func_retlist, xp);
+    if (retlist == NULL)
+	return FAIL;
+
+    expand_process_user_list(retlist, matches, numMatches, xp);
+    list_unref(retlist);
     return OK;
 }
 #endif

@@ -4705,6 +4705,38 @@ func Test_customlist_dict_completion_info_popup()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_cmdline_complete_findfunc_dict()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildmenu wildoptions=pum completeopt=menu,popup
+    func FindComplete(cmdarg, cmdcomplete)
+      return [
+            \ 'Xplain',
+            \ {'word': 'Xfile1', 'kind': 'F', 'menu': 'file', 'info': '1st file'},
+            \ {'word': 'Xfile2', 'kind': 'F', 'menu': 'file', 'info': '2nd file'},
+            \ {'word': 'Xdir1',  'kind': 'D', 'menu': 'dir',  'info': '1st dir'},
+            \ {'word': 'Xdir2',  'kind': 'D', 'menu': 'dir',  'info': '2nd dir'},
+            \ ]
+    endfunc
+    set findfunc=FindComplete
+  END
+  call writefile(lines, 'XTest_compl_findfunc_dict', 'D')
+  let rows = 12
+  let buf = RunVimInTerminal('-S XTest_compl_findfunc_dict', {'rows': rows})
+
+  call term_sendkeys(buf, ":find \<Tab>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':find Xplain') + 1)], g:test_timeout, ((rows - 5), '^\~\s\+Xplain\s\+$'))
+  call VerifyScreenDump(buf, 'Test_compl_findfunc_dict_01', {})
+
+  call term_sendkeys(buf, "\<PageDown>")
+  call WaitForTermCurPosAndLinesToMatch(buf, [rows, (strlen(':find Xdir1') + 1)], g:test_timeout, ((rows - 2), '1st dir'))
+  call VerifyScreenDump(buf, 'Test_compl_findfunc_dict_02', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_custom_completion_with_glob()
   func TestGlobComplete(A, L, P)
     return split(glob('Xglob*'), "\n")
