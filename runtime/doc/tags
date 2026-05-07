@@ -6734,6 +6734,7 @@ clipboard-autoselect	options.txt	/*clipboard-autoselect*
 clipboard-autoselectml	options.txt	/*clipboard-autoselectml*
 clipboard-autoselectplus	options.txt	/*clipboard-autoselectplus*
 clipboard-exclude	options.txt	/*clipboard-exclude*
+clipboard-format	builtin.txt	/*clipboard-format*
 clipboard-format-naming	builtin.txt	/*clipboard-format-naming*
 clipboard-html	options.txt	/*clipboard-html*
 clipboard-providers	eval.txt	/*clipboard-providers*

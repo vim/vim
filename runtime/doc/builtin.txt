@@ -5040,12 +5040,21 @@ getreg([{regname} [, 1 [, {list} [, {format}]]]])			*getreg()*
 		(see |NL-used-for-Nul|).
 		When the register was not set an empty list is returned.
 
+							*clipboard-format*
 		If {regname} is a clipboard register ("+" or "*"), then
 		{format} is allowed, which specifies the which clipboard
 		format to return as a |Blob|.  If {format} is specified, then
-		the other optional arguments are ignored.  To see what formats
-		are available, see |getreginfo()|.  To see how formats are
-		named, see |clipboard-format-naming|.
+		the other optional arguments are ignored.
+
+		If Vim is the owner of the selection (only relevant for X11,
+		Wayland, and GTK GUI versions of Vim), then some formats are
+		not supported fully, such as "TIMESTAMP" or "TARGETS".  If
+		|getreg()| is called on them, then regular text will be
+		returned.  However the Vim specific formats, "_VIM_TEXT" and
+		"_VIMENC_TEXT" are supported.
+
+		To see what formats are available, see |getreginfo()|.  To see
+		how formats are named, see |clipboard-format-naming|.
 		{only available when compiled with the |+clipboard_formats|
 		feature}
 
@@ -10358,7 +10367,8 @@ setreg({regname}, {value} [, {options}])		*setreg()*
 		{regname} must be one character.
 
 		{value} may be any value returned by |getreg()| or
-		|getreginfo()|, including a |List| or |Dict|.
+		|getreginfo()|, including a |List| or |Dict|.  However the
+		"formats" entry in |getreginfo()| is currently not supported.
 		If {options} contains "a" or {regname} is upper case,
 		then the value is appended.
 

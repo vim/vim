@@ -2536,22 +2536,44 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
 	    /* break; */
 	/* } */
     /* } */
-    /* if (ga.ga_data == NULL) */
 
-    // Try requesting the contents now
-    if (clip_gen_request_format(cbd, format, &ga) == FAIL)
-	goto fail;
+    // If we own the clipboard, then just access the register directly. For our
+    // special formats, also handle them too.
+    if (cbd->owned)
+    {
+	char_u	*str;
+	long_u	len;
+	int	motion;
 
-    if (ga.ga_data == NULL)
-	goto fail;
+	clip_update_supported_formats(cbd);
+	if (!clip_format_is_supported(cbd, format))
+	    goto exit;
 
+	motion = clip_convert_selection(&str, &len, cbd);
+	if (str == NULL)
+	    goto exit;
+
+	if (STRCMP(format, VIM_ATOM_NAME) == 0)
+	    ga_append(&ga, motion);
+	else if (STRCMP(format, VIMENC_ATOM_NAME) == 0)
+	{
+	    ga_append(&ga, motion);
+	    ga_concat(&ga, p_enc);
+	    ga_append(&ga, NUL);
+	}
+	ga_concat_len(&ga, str, len);
+	vim_free(str);
+    }
+    else
+	// Try requesting the contents now. Just return empty blob if error
+	// occurs or if cleared.
+	clip_gen_request_format(cbd, format, &ga);
+
+exit:
     blob->bv_ga = ga;
     blob->bv_refcount++;
 
     return blob;
-fail:
-    blob_free(blob);
-    return NULL;
 }
 
 /*
@@ -2968,7 +2990,6 @@ clip_wl_receive_data(int fd, garray_T *buf)
     return OK;
 }
 
-#  ifdef FEAT_CLIPBOARD_FORMATS
 /*
  * Request the selection data for the given format (mime type). Returns OK on
  * success and FAIL on failure.
@@ -2978,19 +2999,21 @@ clip_wl_request_format(
 	Clipboard_T *cbd,
 	const char  *format,
 	garray_T    *ga,
-	bool	    roundtrip)
+	bool	    for_formats UNUSED)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
     int			fds[2];
     int			ret = FAIL;
 
-    if (!sel->available)
-	return FAIL;
-
     // Dispatch any events that still queued up before checking for a data
     // offer.
-    if (roundtrip)
+#  ifdef FEAT_CLIPBOARD_FORMATS
+    if (for_formats)
+#  endif
     {
+	if (!sel->available)
+	    return FAIL;
+
 	if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	    return FAIL;
 
@@ -3008,7 +3031,7 @@ clip_wl_request_format(
     vwl_data_offer_receive(sel->offer, format, fds[1]);
 
     close(fds[1]); // Close before we read data so that when the source client
-		   // closes their end we receive an EOF.
+		   // closes theirs end we receive an EOF.
 
     if (vwl_connection_flush(wayland_ct) >= 0)
 	ret = clip_wl_receive_data(fds[0], ga);
@@ -3017,7 +3040,6 @@ clip_wl_request_format(
 
     return ret;
 }
-#  endif
 
 /*
  * Get the current selection and fill the respective register for cbd with the

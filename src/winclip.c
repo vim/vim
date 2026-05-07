@@ -508,7 +508,8 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     static const WCHAR *
 get_standard_name(UINT fmt)
 {
-    switch (fmt) {
+    switch (fmt)
+    {
 	case CF_TEXT:            return L"CF_TEXT";
 	case CF_BITMAP:          return L"CF_BITMAP";
 	case CF_METAFILEPICT:    return L"CF_METAFILEPICT";
@@ -536,7 +537,8 @@ get_standard_name(UINT fmt)
 }
 
 static const WCHAR *
-get_format_name(UINT fmt) {
+get_format_name(UINT fmt)
+{
     const WCHAR	    *standard;
     static WCHAR    name[256];
 
