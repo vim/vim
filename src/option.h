@@ -1030,6 +1030,7 @@ EXTERN unsigned tc_flags;       // flags from 'tagcase'
 EXTERN long	p_tl;		// 'taglength'
 EXTERN int	p_tr;		// 'tagrelative'
 EXTERN char_u	*p_tags;	// 'tags'
+EXTERN int	p_tagsecure;    // 'tagsecure'
 EXTERN int	p_tgst;		// 'tagstack'
 #if defined(DYNAMIC_TCL)
 EXTERN char_u	*p_tcldll;	// 'tcldll'
