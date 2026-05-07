@@ -2483,7 +2483,7 @@ clip_gen_request_format(Clipboard_T *cbd UNUSED, char_u *format UNUSED, garray_T
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #  ifdef FEAT_GUI
     if (gui.in_use)
-	/* clip_mch_request_selection(cbd); */;
+	return clip_mch_request_format(cbd, format, ga);
     else
 #  endif
     {
@@ -2520,25 +2520,24 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
     if (blob == NULL)
 	return NULL;
 
-    ga_init2(&ga, 1, 512);
+    ga_init2(&ga, 1, 4096);
 
-    // Check if we already have the contents, from setreg(). TODO
-    for (int i = 0; i <cbd->formats.ga_len; i++)
-    {
-	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
+    // Check if we already have the contents,from setreg(). TODO
+    /* for (int i = 0; i <cbd->formats.ga_len; i++) */
+    /* { */
+	/* clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i]; */
 
-	if (STRCMP(format, fmt->name) == 0 && fmt->data != NULL)
-	{
-	    ga_concat_len(&ga, fmt->data, fmt->len);
-	    break;
-	}
-    }
-    if (ga.ga_data == NULL)
-    {
-	// Try requesting the contents now
-	if (clip_gen_request_format(cbd, format, &ga) == FAIL)
-	    goto fail;
-    }
+	/* if (STRCMP(format, fmt->name) == 0 && fmt->data != NULL) */
+	/* { */
+	    /* ga_concat_len(&ga, fmt->data, fmt->len); */
+	    /* break; */
+	/* } */
+    /* } */
+    /* if (ga.ga_data == NULL) */
+
+    // Try requesting the contents now
+    if (clip_gen_request_format(cbd, format, &ga) == FAIL)
+	goto fail;
 
     if (ga.ga_data == NULL)
 	goto fail;
@@ -2578,7 +2577,7 @@ clip_update_supported_formats(Clipboard_T *cbd UNUSED)
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #  ifdef FEAT_GUI
     if (gui.in_use)
-	/* clip_mch_request_selection(cbd); */;
+	clip_mch_update_formats(cbd);
     else
 #  endif
     {
@@ -2897,8 +2896,8 @@ clip_reset_wayland(void)
 }
 
 /*
- * Read data from a file descriptor and write it to given grow array (which will
- * be initialized first). Returns OK on success and FAIL on failure.
+ * Read data from a file descriptor and write it to given grow array. Returns OK
+ * on success and FAIL on failure.
  */
     static int
 clip_wl_receive_data(int fd, garray_T *buf)
@@ -2921,8 +2920,6 @@ clip_wl_receive_data(int fd, garray_T *buf)
     // Make pipe (read end) non-blocking
     if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) == -1)
 	return FAIL;
-
-    ga_init2(buf, 1, 4096);
 
     // 4096 bytes seems reasonable for initial buffer size, memory is cheap
     // anyways.
@@ -2970,8 +2967,8 @@ clip_wl_receive_data(int fd, garray_T *buf)
 
 #ifdef FEAT_EVAL
 /*
- * Request the selection data for the given format (mime type). "ga" will be
- * initialized. Returns OK on success and FAIL on failure.
+ * Request the selection data for the given format (mime type). Returns OK on
+ * success and FAIL on failure.
  */
     static int
 clip_wl_request_format(
@@ -3056,6 +3053,7 @@ clip_wl_request_selection(Clipboard_T *cbd)
 		chosen_mime = supported_mimes[i];
     }
 
+    ga_init2(&buf, 1, 4096);
     if (chosen_mime == NULL
 	    || clip_wl_request_format(cbd, chosen_mime, &buf, false) == FAIL)
 	goto clear;

@@ -2332,7 +2332,7 @@ typedef enum {
 
 typedef struct
 {
-    char_u  *data;  // Binary data, may be NULL
+    char_u  *data;  // Binary data, may be NULL, currently unused
     int	    len;
     char_u  *name;
 } clipformat_T;

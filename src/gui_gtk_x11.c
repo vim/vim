@@ -7253,6 +7253,66 @@ clip_mch_request_selection(Clipboard_T *cbd)
 		cbd);
 }
 
+#ifdef FEAT_EVAL
+/*
+ * Request the data of the given format from the clipboard
+ */
+    int
+clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
+{
+    GtkClipboard	*cb;
+    GdkAtom		target;
+    GtkSelectionData	*data;
+    const guchar	*content;
+    int			len;
+
+    cb = gtk_clipboard_get(cbd->gtk_sel_atom);
+    target = gdk_atom_intern((char *)format, FALSE);
+    data = gtk_clipboard_wait_for_contents(cb, target);
+
+    if (data != NULL)
+    {
+	content = gtk_selection_data_get_data_with_length(data, &len);
+	ga_concat_len(ga, (char_u *)content, len);
+
+	gtk_selection_data_free(data);
+	return OK;
+    }
+
+    return FAIL;
+}
+
+/*
+ * Get the currently supported formats for the selection and place it in
+ * "cbd->formats"
+ */
+    void
+clip_mch_update_formats(Clipboard_T *cbd)
+{
+    GtkClipboard    *cb;
+    GdkAtom	    *targets;
+    gint	    n_targets;
+
+    cb = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+
+    clip_clear_formats(cbd);
+    if (gtk_clipboard_wait_for_targets(
+		cb,
+		&targets,
+		&n_targets))
+    {
+	for (gint i = 0; i < n_targets; i++)
+	{
+	    const gchar *name = gdk_atom_name(targets[i]);
+
+	    clip_add_format(cbd, (char_u *)name, NULL);
+	}
+
+	g_free(targets);
+    }
+}
+#endif
+
 /*
  * Disown the selection.
  */

@@ -65,6 +65,8 @@ void gui_mch_clear_all(void);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
 void clip_mch_request_selection(Clipboard_T *cbd);
+int clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga);
+void clip_mch_update_formats(Clipboard_T *cbd);
 void clip_mch_lose_selection(Clipboard_T *cbd);
 int clip_mch_own_selection(Clipboard_T *cbd);
 void clip_mch_set_selection(Clipboard_T *cbd);
