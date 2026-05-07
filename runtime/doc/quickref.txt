@@ -960,6 +960,7 @@ Short explanation of each option:		*option-list*
 'taglength'	  'tl'	    number of significant characters for a tag
 'tagrelative'	  'tr'	    file names in tag file are relative
 'tags'		  'tag'     list of file names used by the tag command
+'tagsecure'	  'tsc'	    do not open remote files using tag commands
 'tagstack'	  'tgst'    push tags onto the tag stack
 'tcldll'		    name of the Tcl dynamic library
 'term'			    name of the terminal

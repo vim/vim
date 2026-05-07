@@ -785,6 +785,7 @@ $quote	eval.txt	/*$quote*
 'nota'	options.txt	/*'nota'*
 'notagbsearch'	options.txt	/*'notagbsearch'*
 'notagrelative'	options.txt	/*'notagrelative'*
+'notagsecure'	options.txt	/*'notagsecure'*
 'notagstack'	options.txt	/*'notagstack'*
 'notbi'	options.txt	/*'notbi'*
 'notbidi'	options.txt	/*'notbidi'*
@@ -803,6 +804,7 @@ $quote	eval.txt	/*$quote*
 'noto'	options.txt	/*'noto'*
 'notop'	options.txt	/*'notop'*
 'notr'	options.txt	/*'notr'*
+'notsc'	options.txt	/*'notsc'*
 'nottimeout'	options.txt	/*'nottimeout'*
 'nottybuiltin'	options.txt	/*'nottybuiltin'*
 'nottyfast'	options.txt	/*'nottyfast'*
@@ -1229,6 +1231,7 @@ $quote	eval.txt	/*$quote*
 'taglength'	options.txt	/*'taglength'*
 'tagrelative'	options.txt	/*'tagrelative'*
 'tags'	options.txt	/*'tags'*
+'tagsecure'	options.txt	/*'tagsecure'*
 'tagstack'	options.txt	/*'tagstack'*
 'tal'	options.txt	/*'tal'*
 'tb'	options.txt	/*'tb'*
@@ -1279,6 +1282,7 @@ $quote	eval.txt	/*$quote*
 'tr'	options.txt	/*'tr'*
 'trz'	options.txt	/*'trz'*
 'ts'	options.txt	/*'ts'*
+'tsc'	options.txt	/*'tsc'*
 'tsl'	options.txt	/*'tsl'*
 'tsr'	options.txt	/*'tsr'*
 'tsrfu'	options.txt	/*'tsrfu'*
