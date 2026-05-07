@@ -52,6 +52,7 @@
 
 #define USE_FNAME_CASE		// adjust case of file names
 #if !defined(FEAT_CLIPBOARD)
+# define FEAT_CLIPBOARD_FORMATS // include support for arbitrary formats
 # define FEAT_CLIPBOARD		// include clipboard support
 #endif
 #if defined(__DATE__) && defined(__TIME__)

@@ -431,6 +431,153 @@ clip_mch_request_selection(Clipboard_T *cbd)
     vim_free(to_free);
 }
 
+#ifdef FEAT_CLIPBOARD_FORMATS
+/*
+ * Get the format id associated with "name". Returns zero on failure.
+ */
+UINT
+get_format_id(char_u *name)
+{
+    static const struct
+    {
+	const char  *name;
+	UINT	    fmt;
+    } standard_formats[] = {
+        {"CF_TEXT",            CF_TEXT},
+        {"CF_BITMAP",          CF_BITMAP},
+        {"CF_METAFILEPICT",    CF_METAFILEPICT},
+        {"CF_SYLK",            CF_SYLK},
+        {"CF_DIF",             CF_DIF},
+        {"CF_TIFF",            CF_TIFF},
+        {"CF_OEMTEXT",         CF_OEMTEXT},
+        {"CF_DIB",             CF_DIB},
+        {"CF_PALETTE",         CF_PALETTE},
+        {"CF_PENDATA",         CF_PENDATA},
+        {"CF_RIFF",            CF_RIFF},
+        {"CF_WAVE",            CF_WAVE},
+        {"CF_UNICODETEXT",     CF_UNICODETEXT},
+        {"CF_ENHMETAFILE",     CF_ENHMETAFILE},
+        {"CF_HDROP",           CF_HDROP},
+        {"CF_LOCALE",          CF_LOCALE},
+        {"CF_DIBV5",           CF_DIBV5},
+        {"CF_OWNERDISPLAY",    CF_OWNERDISPLAY},
+        {"CF_DSPTEXT",         CF_DSPTEXT},
+        {"CF_DSPBITMAP",       CF_DSPBITMAP},
+        {"CF_DSPMETAFILEPICT", CF_DSPMETAFILEPICT},
+        {"CF_DSPENHMETAFILE",  CF_DSPENHMETAFILE},
+    };
+
+    for (int i = 0; i < ARRAY_LENGTH(standard_formats); i++)
+        if (STRCMP(standard_formats[i].name, name) == 0)
+            return standard_formats[i].fmt;
+
+    // Not a standard format, try registered formats
+    return RegisterClipboardFormat((char *)name);
+}
+
+    int
+clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
+{
+    HGLOBAL hMemW;
+    UINT    fmt;
+
+    if (!vim_open_clipboard())
+	return FAIL;
+
+    fmt = get_format_id(format);
+    if (fmt == 0 || !IsClipboardFormatAvailable(fmt))
+    {
+	CloseClipboard();
+	return FAIL;
+    }
+
+    if ((hMemW = GetClipboardData(fmt)) != NULL)
+    {
+	int	len = (int)GlobalSize(hMemW);
+	WCHAR	*hMemWstr = (WCHAR *)GlobalLock(hMemW);
+
+	ga_concat_len(ga, (char_u *)hMemWstr, len);
+	GlobalUnlock(hMemW);
+    }
+
+    CloseClipboard();
+
+    return OK;
+}
+
+    const WCHAR *
+get_standard_name(UINT fmt) {
+    switch (fmt) {
+        case CF_TEXT:            return L"CF_TEXT";
+        case CF_BITMAP:          return L"CF_BITMAP";
+        case CF_METAFILEPICT:    return L"CF_METAFILEPICT";
+        case CF_SYLK:            return L"CF_SYLK";
+        case CF_DIF:             return L"CF_DIF";
+        case CF_TIFF:            return L"CF_TIFF";
+        case CF_OEMTEXT:         return L"CF_OEMTEXT";
+        case CF_DIB:             return L"CF_DIB";
+        case CF_PALETTE:         return L"CF_PALETTE";
+        case CF_PENDATA:         return L"CF_PENDATA";
+        case CF_RIFF:            return L"CF_RIFF";
+        case CF_WAVE:            return L"CF_WAVE";
+        case CF_UNICODETEXT:     return L"CF_UNICODETEXT";
+        case CF_ENHMETAFILE:     return L"CF_ENHMETAFILE";
+        case CF_HDROP:           return L"CF_HDROP";
+        case CF_LOCALE:          return L"CF_LOCALE";
+        case CF_DIBV5:           return L"CF_DIBV5";
+        case CF_OWNERDISPLAY:    return L"CF_OWNERDISPLAY";
+        case CF_DSPTEXT:         return L"CF_DSPTEXT";
+        case CF_DSPBITMAP:       return L"CF_DSPBITMAP";
+        case CF_DSPMETAFILEPICT: return L"CF_DSPMETAFILEPICT";
+        case CF_DSPENHMETAFILE:  return L"CF_DSPENHMETAFILE";
+        default:                 return NULL;
+    }
+}
+
+    const WCHAR *
+get_format_name(UINT fmt) {
+    const WCHAR	    *standard;
+    static WCHAR    name[256];
+
+    // Try standard formats first
+    standard  = get_standard_name(fmt);
+    if (standard != NULL)
+	return standard;
+
+    // Try registered formats
+    if (GetClipboardFormatNameW(fmt, name, 256) > 0)
+        return name;
+
+    // Unknown clipboard format or private
+    vim_snprintf((char *)name, 256, "%x", fmt);
+    return name;
+}
+
+    void
+clip_mch_update_formats(Clipboard_T *cbd)
+{
+    UINT fmt = 0;
+
+    clip_clear_formats(cbd);
+    if (!vim_open_clipboard())
+	return;
+
+    while ((fmt = EnumClipboardFormats(fmt)) != 0)
+    {
+        const WCHAR *wname = get_format_name(fmt);
+        char_u      *name = utf16_to_enc((short_u *)wname, NULL);
+
+        if (name != NULL)
+        {
+            clip_add_format(cbd, name, NULL);
+            vim_free(name);
+        }
+    }
+
+    CloseClipboard();
+}
+#endif
+
 /*
  * Send the current selection to the clipboard.
  */

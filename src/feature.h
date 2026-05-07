@@ -900,9 +900,13 @@
 
 #ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
 # define FEAT_CLIPBOARD
+# define FEAT_CLIPBOARD_FORMATS
 #endif
 
 #ifdef FEAT_GUI
+# ifdef FEAT_GUI_GTK
+#  define FEAT_CLIPBOARD_FORMATS
+# endif
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
 # endif
@@ -915,6 +919,7 @@
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
 # endif
+# define FEAT_CLIPBOARD_FORMATS
 #endif
 
 #if defined(FEAT_NORMAL) && defined(UNIX) \
@@ -923,15 +928,17 @@
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
 # endif
+# define FEAT_CLIPBOARD_FORMATS
 #endif
 
 /*
  * +clipboard_formats	Support for handling arbitrary formats from the
  *			clipboard.
  */
-#if defined(FEAT_CLIPBOARD) && (defined(FEAT_WAYLAND_CLIPBOARD) || \
-	defined(FEAT_GUI_GTK) || defined(FEAT_XCLIPBOARD))
-# define FEAT_CLIPBOARD_FORMATS
+#if !defined(FEAT_CLIPBOARD) || !defined(FEAT_EVAL)
+# ifdef FEAT_CLIPBOARD_FORMATS
+#  undef FEAT_CLIPBOARD_FORMATS
+# endif
 #endif
 
 /*

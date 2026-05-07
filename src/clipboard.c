@@ -2598,7 +2598,7 @@ clip_update_supported_formats(Clipboard_T *cbd UNUSED)
 	}
     }
 #  else
-    clip_mch_request_selection(cbd);
+    clip_mch_update_formats(cbd);
 #  endif
 }
 

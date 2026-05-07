@@ -7,6 +7,8 @@ void win_clip_init(void);
 int clip_mch_own_selection(Clipboard_T *cbd);
 void clip_mch_lose_selection(Clipboard_T *cbd);
 void clip_mch_request_selection(Clipboard_T *cbd);
+int clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga);
+void clip_mch_update_formats(Clipboard_T *cbd);
 void clip_mch_set_selection(Clipboard_T *cbd);
 short_u *enc_to_utf16(char_u *str, int *lenp);
 char_u *utf16_to_enc(short_u *str, int *lenp);
