@@ -447,7 +447,7 @@ func Test_statusline()
   set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
   vsplit
   set statusline=x%=y
-  call assert_match('^x^\+y x=\+y$', s:get_statusline())
+  call assert_match('^x^\+y^x=\+y$', s:get_statusline())
   set fillchars&
   close
 
@@ -548,9 +548,9 @@ func Test_statusline_mbyte_fillchar()
   set statusline=a%=b
   call assert_match('^a\+━\+b$', s:get_statusline())
   vnew
-  call assert_match('^a\+━\+b a\+═\+b$', s:get_statusline())
+  call assert_match('^a\+━\+b━a\+═\+b$', s:get_statusline())
   wincmd w
-  call assert_match('^a\+═\+b a\+━\+b$', s:get_statusline())
+  call assert_match('^a\+═\+b═a\+━\+b$', s:get_statusline())
   set statusline& fillchars&
   %bw!
 endfunc

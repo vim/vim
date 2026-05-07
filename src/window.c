@@ -5829,16 +5829,13 @@ win_enter_ext(win_T *wp, int flags)
 #endif
     redraw_tabline = TRUE;
     redraw_vseps = TRUE;
-    // Need to redraw all status lines so that the vsep character at
-    // status line rows is updated for the new current window.
-    {
-	win_T *ww;
-	FOR_ALL_WINDOWS(ww)
-	    ww->w_redr_status = true;
-    }
 #if defined(FEAT_TABPANEL)
     redraw_tabpanel = TRUE;
 #endif
+    // Need to schedule a redraw so that the vertical separator highlight is
+    // updated for the new current window.  The status line redraw of curwin
+    // is already requested via "curwin->w_redr_status".
+    redraw_later(UPD_VALID);
     if (restart_edit)
 	redraw_later(UPD_VALID);	// causes status line redraw
 
@@ -7891,8 +7888,6 @@ frame_change_statusline_height(void)
 {
     tabpage_T	*tp;
     int		global_stlh;
-
-    redraw_vseps = TRUE;
 
     // First pass: find space-constrained global height.
     global_stlh = stlo_mh;

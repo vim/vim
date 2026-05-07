@@ -620,7 +620,10 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	for (i = 0; i < wp->w_status_height; i++)
 	{
 	    int r = row + i;
-	    fillchar = sep_cell_at_row(&attr, wp, r);
+	    if (stl_connected(wp))
+		fillchar = fillchar_status(&attr, wp);
+	    else
+		fillchar = fillchar_vsep(&attr, wp, r);
 	    screen_putchar(fillchar, r, W_ENDCOL(wp), attr);
 	}
     }
@@ -3431,13 +3434,6 @@ redraw_statuslines(void)
 	    if (ret)
 		pop_highlight_overrides();
 	}
-    if (redraw_vseps)
-    {
-	redraw_vseps = FALSE;
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_vsep_width > 0)
-		draw_vsep_win(wp, 0);
-    }
     if (redraw_tabline)
 	draw_tabline();
 
