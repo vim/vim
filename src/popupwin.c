@@ -1281,6 +1281,77 @@ popup_get_clipwin(win_T *wp)
     return NULL;
 }
 
+// Per-popup clip geometry derived from w_popup_{top,bottom}off and
+// w_popup_{left,right}clip.  Filled by popup_compute_clip().
+//
+//   *_extra        : original border+padding at each edge.
+//   clip_*_content : how many *content* rows/cols are clipped at each edge
+//                    (border/padding is consumed first; the rest comes off
+//                    w_height/w_width).  >= 0.
+//   eff_*_extra    : 0 when that edge is clipped (border+padding gone),
+//                    otherwise the original *_extra.
+//   eff_height     : drawn extent = eff_top_extra + visible content + eff_bot_extra.
+//   eff_width      : drawn extent = eff_left_extra + visible content + eff_right_extra
+//                    (does NOT include w_leftcol or scrollbar; see callers).
+typedef struct {
+    int top_extra;
+    int bot_extra;
+    int left_extra;
+    int right_extra;
+
+    int clip_top_content;
+    int clip_bot_content;
+    int clip_left_content;
+    int clip_right_content;
+
+    int eff_top_extra;
+    int eff_bot_extra;
+    int eff_left_extra;
+    int eff_right_extra;
+
+    int eff_height;
+    int eff_width;
+} popup_clip_T;
+
+    static void
+popup_compute_clip(win_T *wp, popup_clip_T *cl)
+{
+    int h, w;
+
+    cl->top_extra = popup_top_extra(wp);
+    cl->bot_extra = wp->w_popup_padding[2] + wp->w_popup_border[2];
+    cl->left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
+    cl->right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1];
+
+    cl->clip_top_content = wp->w_popup_topoff - cl->top_extra;
+    if (cl->clip_top_content < 0)
+	cl->clip_top_content = 0;
+    cl->clip_bot_content = wp->w_popup_bottomoff - cl->bot_extra;
+    if (cl->clip_bot_content < 0)
+	cl->clip_bot_content = 0;
+    cl->clip_left_content = wp->w_popup_leftclip - cl->left_extra;
+    if (cl->clip_left_content < 0)
+	cl->clip_left_content = 0;
+    cl->clip_right_content = wp->w_popup_rightclip - cl->right_extra;
+    if (cl->clip_right_content < 0)
+	cl->clip_right_content = 0;
+
+    cl->eff_top_extra = wp->w_popup_topoff > 0 ? 0 : cl->top_extra;
+    cl->eff_bot_extra = wp->w_popup_bottomoff > 0 ? 0 : cl->bot_extra;
+    cl->eff_left_extra = wp->w_popup_leftclip > 0 ? 0 : cl->left_extra;
+    cl->eff_right_extra = wp->w_popup_rightclip > 0 ? 0 : cl->right_extra;
+
+    h = wp->w_height - cl->clip_top_content - cl->clip_bot_content;
+    if (h < 0)
+	h = 0;
+    cl->eff_height = cl->eff_top_extra + h + cl->eff_bot_extra;
+
+    w = wp->w_width - cl->clip_left_content - cl->clip_right_content;
+    if (w < 0)
+	w = 0;
+    cl->eff_width = cl->eff_left_extra + w + cl->eff_right_extra;
+}
+
 /*
  * Adjust the position and size of the popup to fit on the screen.
  */
@@ -4867,23 +4938,10 @@ may_update_popup_mask(int type)
 	// background window can draw through them.
 	if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
 	{
-	    int top_extra = popup_top_extra(wp);
-	    int orig_bot_extra = wp->w_popup_padding[2] + wp->w_popup_border[2];
-	    int clipped_top_content = wp->w_popup_topoff - top_extra;
-	    int clipped_bot_content = wp->w_popup_bottomoff - orig_bot_extra;
-	    int eff_w_height;
-	    int eff_top_extra = wp->w_popup_topoff > 0 ? 0 : top_extra;
-	    int eff_bot_extra = wp->w_popup_bottomoff > 0 ? 0 : orig_bot_extra;
+	    popup_clip_T cl;
 
-	    if (clipped_top_content < 0)
-		clipped_top_content = 0;
-	    if (clipped_bot_content < 0)
-		clipped_bot_content = 0;
-	    eff_w_height = wp->w_height - clipped_top_content
-						    - clipped_bot_content;
-	    if (eff_w_height < 0)
-		eff_w_height = 0;
-	    height = eff_top_extra + eff_w_height + eff_bot_extra;
+	    popup_compute_clip(wp, &cl);
+	    height = cl.eff_height;
 	}
 	else
 	    height = popup_height(wp);
@@ -5510,25 +5568,16 @@ update_popups(void (*win_update)(win_T *wp))
 	    // geometry via popup_getoptions/popup_getpos.
 	    if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
 	    {
-		int top_extra = popup_top_extra(wp);
-		int orig_bot_extra = wp->w_popup_padding[2]
-						    + wp->w_popup_border[2];
-		int clipped_top_content = wp->w_popup_topoff - top_extra;
-		int clipped_bot_content =
-				    wp->w_popup_bottomoff - orig_bot_extra;
+		popup_clip_T cl;
 
-		if (clipped_top_content < 0)
-		    clipped_top_content = 0;
-		if (clipped_bot_content < 0)
-		    clipped_bot_content = 0;
-
-		wp->w_height -= clipped_top_content + clipped_bot_content;
+		popup_compute_clip(wp, &cl);
+		wp->w_height -= cl.clip_top_content + cl.clip_bot_content;
 		if (wp->w_height < 0)
 		    wp->w_height = 0;
-		if (clipped_top_content > 0)
+		if (cl.clip_top_content > 0)
 		{
-		    wp->w_topline += clipped_top_content;
-		    wp->w_winrow += clipped_top_content;
+		    wp->w_topline += cl.clip_top_content;
+		    wp->w_winrow += cl.clip_top_content;
 		}
 	    }
 	    if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
@@ -5540,20 +5589,10 @@ update_popups(void (*win_update)(win_T *wp))
 		// hidden buffer columns are scrolled off, and shift w_wincol
 		// right so the first visible buffer column lands on the
 		// host's left edge.
-		int left_extra2 = wp->w_popup_border[3]
-						 + wp->w_popup_padding[3];
-		int right_extra2 = wp->w_popup_border[1]
-						 + wp->w_popup_padding[1];
-		int clipped_left_content = wp->w_popup_leftclip - left_extra2;
-		int clipped_right_content =
-				    wp->w_popup_rightclip - right_extra2;
+		popup_clip_T cl;
 
-		if (clipped_left_content < 0)
-		    clipped_left_content = 0;
-		if (clipped_right_content < 0)
-		    clipped_right_content = 0;
-
-		if (clipped_right_content > 0 || clipped_left_content > 0)
+		popup_compute_clip(wp, &cl);
+		if (cl.clip_left_content > 0 || cl.clip_right_content > 0)
 		{
 		    // Disable wrap so shrinking w_width does not reflow
 		    // wrapped lines: the popup's logical width is unchanged,
@@ -5561,17 +5600,17 @@ update_popups(void (*win_update)(win_T *wp))
 		    // the host window at draw time.
 		    wp->w_p_wrap = FALSE;
 		}
-		if (clipped_right_content > 0)
+		if (cl.clip_right_content > 0)
 		{
-		    wp->w_width -= clipped_right_content;
+		    wp->w_width -= cl.clip_right_content;
 		    if (wp->w_width < 0)
 			wp->w_width = 0;
 		}
-		if (clipped_left_content > 0)
+		if (cl.clip_left_content > 0)
 		{
-		    wp->w_leftcol += clipped_left_content;
-		    wp->w_wincol += clipped_left_content;
-		    wp->w_width -= clipped_left_content;
+		    wp->w_leftcol += cl.clip_left_content;
+		    wp->w_wincol += cl.clip_left_content;
+		    wp->w_width -= cl.clip_left_content;
 		    if (wp->w_width < 0)
 			wp->w_width = 0;
 		}
@@ -5618,23 +5657,10 @@ update_popups(void (*win_update)(win_T *wp))
 
 	if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
 	{
-	    int left_extra2 = wp->w_popup_border[3] + wp->w_popup_padding[3];
-	    int right_extra2 = wp->w_popup_border[1] + wp->w_popup_padding[1];
-	    int clipped_left_content = wp->w_popup_leftclip - left_extra2;
-	    int clipped_right_content = wp->w_popup_rightclip - right_extra2;
-	    int eff_w_width;
-	    int eff_left_extra = wp->w_popup_leftclip > 0 ? 0 : left_extra2;
-	    int eff_right_extra = wp->w_popup_rightclip > 0 ? 0 : right_extra2;
+	    popup_clip_T cl;
 
-	    if (clipped_left_content < 0)
-		clipped_left_content = 0;
-	    if (clipped_right_content < 0)
-		clipped_right_content = 0;
-	    eff_w_width = wp->w_width - clipped_left_content
-						    - clipped_right_content;
-	    if (eff_w_width < 0)
-		eff_w_width = 0;
-	    total_width = eff_left_extra + eff_w_width + eff_right_extra;
+	    popup_compute_clip(wp, &cl);
+	    total_width = cl.eff_width;
 	}
 	else
 	    total_width = popup_width(wp) - wp->w_popup_rightoff;
@@ -5646,23 +5672,10 @@ update_popups(void (*win_update)(win_T *wp))
 	// and starts on the first visible row when top-clipped.
 	if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
 	{
-	    int top_extra = popup_top_extra(wp);
-	    int orig_bot_extra = wp->w_popup_padding[2] + wp->w_popup_border[2];
-	    int clipped_top_content = wp->w_popup_topoff - top_extra;
-	    int clipped_bot_content = wp->w_popup_bottomoff - orig_bot_extra;
-	    int eff_w_height;
-	    int eff_top_extra = wp->w_popup_topoff > 0 ? 0 : top_extra;
-	    int eff_bot_extra = wp->w_popup_bottomoff > 0 ? 0 : orig_bot_extra;
+	    popup_clip_T cl;
 
-	    if (clipped_top_content < 0)
-		clipped_top_content = 0;
-	    if (clipped_bot_content < 0)
-		clipped_bot_content = 0;
-	    eff_w_height = wp->w_height - clipped_top_content
-						    - clipped_bot_content;
-	    if (eff_w_height < 0)
-		eff_w_height = 0;
-	    total_height = eff_top_extra + eff_w_height + eff_bot_extra;
+	    popup_compute_clip(wp, &cl);
+	    total_height = cl.eff_height;
 	}
 	else
 	{
