@@ -469,6 +469,52 @@ skip_for_popup(int row, int col)
 
 #ifdef FEAT_PROP_POPUP
 /*
+ * Cached attributes of the current opacity popup, computed once per
+ * screen_line() to avoid recomputing them inside the per-cell loop.
+ */
+typedef struct {
+    int		popup_attr;	// get_win_attr(screen_opacity_popup)
+    int		blend;		// screen_opacity_popup->w_popup_blend
+} popup_opacity_T;
+
+    static inline void
+popup_opacity_init(popup_opacity_T *po)
+{
+    po->popup_attr = get_win_attr(screen_opacity_popup);
+    po->blend = screen_opacity_popup->w_popup_blend;
+}
+
+/*
+ * Read the underlying base screen attribute at (row, col), falling back
+ * to "fallback" when the position is outside base_screenattrs.
+ */
+    static inline int
+popup_base_attr_or(int row, int col, int fallback)
+{
+    int		base = fallback;
+
+    popup_get_base_screen_cell(row, col, NULL, &base, NULL);
+    return base;
+}
+
+/*
+ * Blend "char_attr" through the cached opacity popup over "base_attr".
+ * "blend_fg" is TRUE when both fg and bg should blend (space cells), FALSE
+ * when only bg should blend so the popup fg is preserved (text cells).
+ */
+    static inline int
+popup_blend_with_base(
+	const popup_opacity_T	*po,
+	int			char_attr,
+	int			base_attr,
+	int			blend_fg)
+{
+    int		combined = hl_combine_attr(po->popup_attr, char_attr);
+
+    return hl_blend_attr(base_attr, combined, po->blend, blend_fg);
+}
+
+/*
  * For a double-wide character at a popup boundary with opacity:0
  * (blend==100), the two cells may have different underlying attrs.
  * Pick the one without a background color to prevent color leaking.
@@ -558,6 +604,14 @@ screen_line(
 					// 2: occupies two display cells
     bool	    override_success =
 	push_highlight_overrides(wp->w_hl, wp->w_hl_len);
+#ifdef FEAT_PROP_POPUP
+    popup_opacity_T po;			// cached when drawing an opacity popup
+    int		    drawing_opacity_popup =
+				screen_opacity_popup != NULL
+				&& (flags & SLF_POPUP);
+    if (drawing_opacity_popup)
+	popup_opacity_init(&po);
+#endif
 
     // Check for illegal row and col, just in case.
     if (row >= Rows)
@@ -674,128 +728,100 @@ screen_line(
 	// For popup with opacity windows: if drawing a space, show the
 	// underlying character with the popup's attributes blended in.
 	int opacity_blank = FALSE;
-	// Check if the popup is drawing a space and the background is the
-	// second cell of a wide character. Skip drawing to preserve the
-	// wide character that was drawn in the previous cell.
-	if (screen_opacity_popup != NULL
-		&& (flags & SLF_POPUP)
+	// Popup with opacity: when drawing a space, blend the popup attrs
+	// onto whatever is underneath instead of overwriting it.
+	if (drawing_opacity_popup
 		&& ScreenLines[off_from] == ' '
-		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
-		&& ScreenLines[off_to] == 0
-		&& (!enc_utf8 || ScreenLinesUC[off_to] == 0)
-		&& off_to > 0
-		&& enc_utf8 && ScreenLinesUC[off_to - 1] != 0
-		&& utf_char2cells(ScreenLinesUC[off_to - 1]) == 2)
+		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0))
 	{
-	    // This is the second cell of a wide character. Don't overwrite it.
-	    opacity_blank = TRUE;
-	    redraw_this = FALSE;
-	}
-	else if (screen_opacity_popup != NULL
-		&& (flags & SLF_POPUP)
-		&& ScreenLines[off_from] == ' '
-		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
-		&& (ScreenLines[off_to] != 0
-		    || (enc_utf8 && ScreenLinesUC[off_to] != 0)))
-	{
-	    int bg_char_cells = 1;
-	    if (enc_utf8 && ScreenLinesUC[off_to] != 0)
-		bg_char_cells = utf_char2cells(ScreenLinesUC[off_to]);
+	    int popup_src_attr = ScreenAttrs[off_from];
+	    int bg_is_empty = ScreenLines[off_to] == 0
+				&& (!enc_utf8 || ScreenLinesUC[off_to] == 0);
 
-	    // For wide background character, check if the next popup cell
-	    // is also a space.  If not, the wide char would be partially
-	    // covered by a popup character, so don't show it.
-	    if (bg_char_cells == 2)
+	    // Case A: target cell is the second half of a wide char from a
+	    // previous draw.  Don't overwrite it.
+	    if (bg_is_empty
+		    && off_to > 0
+		    && enc_utf8 && ScreenLinesUC[off_to - 1] != 0
+		    && utf_char2cells(ScreenLinesUC[off_to - 1]) == 2)
 	    {
-		if (col + 1 >= endcol || off_from + 1 >= max_off_from
-						   || off_to + 1 >= max_off_to)
-		{
-		    // Wide char doesn't fit at the edge.  Replace with a
-		    // blended space so opacity is still applied.
-		    int char_attr = ScreenAttrs[off_from];
-		    int popup_attr = get_win_attr(screen_opacity_popup);
-		    int combined = hl_combine_attr(popup_attr, char_attr);
-		    int blend = screen_opacity_popup->w_popup_blend;
-		    ScreenLines[off_to] = ' ';
-		    if (enc_utf8)
-			ScreenLinesUC[off_to] = 0;
-		    int base_attr = ScreenAttrs[off_to];
-		    popup_get_base_screen_cell(row, col + coloff,
-						NULL, &base_attr, NULL);
-		    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
-						    combined, blend, TRUE);
-		    screen_char(off_to, row, col + coloff);
-		    opacity_blank = TRUE;
-		    redraw_this = FALSE;
-		    goto skip_opacity;
-		}
-		int next_off_from = off_from + 1;
-		if (!(ScreenLines[next_off_from] == ' '
-			&& (!enc_utf8 || ScreenLinesUC[next_off_from] == 0)))
-		{
-		    // Next cell is not a space, don't show the wide char.
-		    goto skip_opacity;
-		}
+		opacity_blank = TRUE;
+		redraw_this = FALSE;
 	    }
+	    // Case B: target cell holds a real character — blend popup attrs
+	    // over it, preserving the underlying glyph.
+	    else if (ScreenLines[off_to] != 0
+		    || (enc_utf8 && ScreenLinesUC[off_to] != 0))
+	    {
+		int bg_char_cells = (enc_utf8 && ScreenLinesUC[off_to] != 0)
+				? utf_char2cells(ScreenLinesUC[off_to]) : 1;
 
-	    opacity_blank = TRUE;
-	    // Keep the underlying character and blend its foreground color
-	    // from popup background color to original color.
-	    // Combine the popup window color with the character's own
-	    // attribute (e.g. match highlight) so that its background
-	    // color is preserved on blank cells.
-	    int char_attr = ScreenAttrs[off_from];
-	    int popup_attr = get_win_attr(screen_opacity_popup);
-	    int combined = hl_combine_attr(popup_attr, char_attr);
-	    int blend = screen_opacity_popup->w_popup_blend;
-	    int base_attr = ScreenAttrs[off_to];
-	    popup_get_base_screen_cell(row, col + coloff,
-					    NULL, &base_attr, NULL);
-	    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
-					    combined, blend, TRUE);
-	    screen_char(off_to, row, col + coloff);
-	    // For wide background character, also update the second cell
-	    // with its own base attr (it may be outside the popup area).
-	    if (bg_char_cells == 2)
-	    {
-		int base_attr2 = ScreenAttrs[off_to + 1];
-		popup_get_base_screen_cell(row, col + coloff + 1,
-						NULL, &base_attr2, NULL);
-		ScreenAttrs[off_to + 1] = hl_blend_attr(base_attr2,
-						combined, blend, TRUE);
-		if (blend == 100)
-		    resolve_wide_char_opacity_attrs(row,
-			    col + coloff, col + coloff + 1,
-			    &ScreenAttrs[off_to], &ScreenAttrs[off_to + 1]);
+		if (bg_char_cells == 2)
+		{
+		    if (col + 1 >= endcol || off_from + 1 >= max_off_from
+						       || off_to + 1 >= max_off_to)
+		    {
+			// Wide char doesn't fit at the edge.  Replace with a
+			// blended space so opacity is still applied.
+			int base_attr;
+			ScreenLines[off_to] = ' ';
+			if (enc_utf8)
+			    ScreenLinesUC[off_to] = 0;
+			base_attr = popup_base_attr_or(row, col + coloff,
+							     ScreenAttrs[off_to]);
+			ScreenAttrs[off_to] = popup_blend_with_base(&po,
+					    popup_src_attr, base_attr, TRUE);
+			screen_char(off_to, row, col + coloff);
+			opacity_blank = TRUE;
+			redraw_this = FALSE;
+			goto skip_opacity;
+		    }
+		    // Wide bg char must be followed by a popup space, otherwise
+		    // a popup glyph would corrupt its right half.
+		    if (!(ScreenLines[off_from + 1] == ' '
+			    && (!enc_utf8 || ScreenLinesUC[off_from + 1] == 0)))
+			goto skip_opacity;
+		}
+
+		// Keep the underlying character and blend the popup attrs over
+		// it.  blend_fg=TRUE because we're drawing a space, so the
+		// foreground (the underlying glyph) should also blend.
+		opacity_blank = TRUE;
+		int base_attr = popup_base_attr_or(row, col + coloff,
+							     ScreenAttrs[off_to]);
+		ScreenAttrs[off_to] = popup_blend_with_base(&po,
+					    popup_src_attr, base_attr, TRUE);
+		screen_char(off_to, row, col + coloff);
+		// For wide bg char also blend the second cell; its base may be
+		// outside the popup area.
+		if (bg_char_cells == 2)
+		{
+		    int base_attr2 = popup_base_attr_or(row, col + coloff + 1,
+							 ScreenAttrs[off_to + 1]);
+		    ScreenAttrs[off_to + 1] = popup_blend_with_base(&po,
+					    popup_src_attr, base_attr2, TRUE);
+		    if (po.blend == 100)
+			resolve_wide_char_opacity_attrs(row,
+				col + coloff, col + coloff + 1,
+				&ScreenAttrs[off_to], &ScreenAttrs[off_to + 1]);
+		}
+		redraw_this = FALSE;
 	    }
-	    redraw_this = FALSE;
-	}
-	// When a popup space overlaps the second half of a destroyed wide
-	// character (e.g., the first half was overwritten by popup content),
-	// the underlying cell has ScreenLines == 0 and no valid wide char
-	// at the previous cell.  Apply opacity blending so that the cell
-	// matches surrounding opacity-blended cells instead of appearing
-	// as a solid-colored gap.
-	else if (screen_opacity_popup != NULL
-		&& (flags & SLF_POPUP)
-		&& ScreenLines[off_from] == ' '
-		&& (!enc_utf8 || ScreenLinesUC[off_from] == 0)
-		&& ScreenLines[off_to] == 0
-		&& (!enc_utf8 || ScreenLinesUC[off_to] == 0))
-	{
-	    int char_attr = ScreenAttrs[off_from];
-	    int popup_attr = get_win_attr(screen_opacity_popup);
-	    int combined = hl_combine_attr(popup_attr, char_attr);
-	    int blend = screen_opacity_popup->w_popup_blend;
-	    ScreenLines[off_to] = ' ';
-	    int base_attr = ScreenAttrs[off_to];
-	    popup_get_base_screen_cell(row, col + coloff,
-					    NULL, &base_attr, NULL);
-	    ScreenAttrs[off_to] = hl_blend_attr(base_attr,
-					    combined, blend, TRUE);
-	    screen_char(off_to, row, col + coloff);
-	    opacity_blank = TRUE;
-	    redraw_this = FALSE;
+	    // Case C: popup space overlaps the second half of a destroyed wide
+	    // character.  Blend so the cell matches its neighbors instead of
+	    // appearing as a solid-colored gap.
+	    else if (bg_is_empty)
+	    {
+		int base_attr;
+		ScreenLines[off_to] = ' ';
+		base_attr = popup_base_attr_or(row, col + coloff,
+							     ScreenAttrs[off_to]);
+		ScreenAttrs[off_to] = popup_blend_with_base(&po,
+					    popup_src_attr, base_attr, TRUE);
+		screen_char(off_to, row, col + coloff);
+		opacity_blank = TRUE;
+		redraw_this = FALSE;
+	    }
 	}
 skip_opacity:
 #endif
@@ -947,49 +973,37 @@ skip_opacity:
 
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
 #ifdef FEAT_PROP_POPUP
-	    // For popup with opacity text: blend background with underlying.
-	    if (screen_opacity_popup != NULL
-		    && (flags & SLF_POPUP)
-		    && screen_opacity_popup->w_popup_blend > 0)
+	    // For popup with opacity text: blend popup attrs over the underlying
+	    // base.  blend_fg=FALSE so the popup foreground (the real glyph) is
+	    // preserved while only the background blends.
+	    if (drawing_opacity_popup && po.blend > 0)
 	    {
-		int char_attr = ScreenAttrs[off_from];
-		int popup_attr = get_win_attr(screen_opacity_popup);
-		int blend = screen_opacity_popup->w_popup_blend;
-		int combined = hl_combine_attr(popup_attr, char_attr);
-		int underlying_attr = 0;
+		int popup_src_attr = ScreenAttrs[off_from];
+		int scol1 = col + coloff;
+		int base1 = popup_base_attr_or(row, scol1, 0);
 
-		popup_get_base_screen_cell(row, col + coloff,
-						NULL, &underlying_attr, NULL);
-
-		// For double-wide characters, a terminal cannot render
-		// different background colors for the left and right
-		// halves.  When one half is over a lower opacity popup
-		// and the other is not, use the non-popup side's
-		// underlying attr for both to avoid color leaking.
 		if (char_cells == 2)
 		{
-		    int underlying_attr2 = 0;
-		    int scol1 = col + coloff;
+		    int base2 = popup_base_attr_or(row, scol1 + 1, 0);
+
+		    // Terminals can't render different bg colors for the two
+		    // halves of a wide char.  If one half is over a lower
+		    // opacity popup and the other isn't, use the non-popup
+		    // side for both halves to avoid color leaking.
 		    int over1 = popup_is_over_opacity(row, scol1);
 		    int over2 = popup_is_over_opacity(row, scol1 + 1);
-
-		    popup_get_base_screen_cell(row, scol1 + 1,
-						NULL, &underlying_attr2, NULL);
 		    if (over1 != over2)
 		    {
-			// One half is over a lower popup, the other is
-			// not.  Use the non-popup side for both.
 			if (over1)
-			    underlying_attr = underlying_attr2;
+			    base1 = base2;
 			else
-			    underlying_attr2 = underlying_attr;
+			    base2 = base1;
 		    }
-		    ScreenAttrs[off_to + 1] = hl_blend_attr(
-					underlying_attr2, combined, blend,
-					FALSE);
+		    ScreenAttrs[off_to + 1] = popup_blend_with_base(&po,
+					    popup_src_attr, base2, FALSE);
 		}
-		ScreenAttrs[off_to] = hl_blend_attr(underlying_attr,
-						combined, blend, FALSE);
+		ScreenAttrs[off_to] = popup_blend_with_base(&po,
+					    popup_src_attr, base1, FALSE);
 	    }
 	    else
 #endif
