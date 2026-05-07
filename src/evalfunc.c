@@ -6567,7 +6567,10 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 
 		if (fmt == NULL)
 		    return;
+
 		blob = clip_get_selection_format(cbd, fmt);
+		if (blob == NULL)
+		    blob = blob_alloc();
 
 		if (blob == NULL)
 		    return;

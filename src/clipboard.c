@@ -2334,7 +2334,7 @@ clip_clear_formats(Clipboard_T *cbd)
 }
 
     static int
-clip_gen_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
+clip_gen_request_format(Clipboard_T *cbd UNUSED, char_u *format UNUSED, garray_T *ga UNUSED)
 {
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #  ifdef FEAT_GUI
