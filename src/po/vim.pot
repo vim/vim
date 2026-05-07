@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-29 19:49+0000\n"
+"POT-Creation-Date: 2026-05-07 19:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8858,6 +8858,10 @@ msgid "E1575: Cannot create pipes"
 msgstr ""
 
 msgid "E1576: Tag file entry must not be a URL"
+msgstr ""
+
+#, c-format
+msgid "E1577: Invalid format string, only one \"%s\" is allowed"
 msgstr ""
 
 #. type of cmdline window or 0

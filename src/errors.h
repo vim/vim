@@ -3811,3 +3811,5 @@ EXTERN char e_cannot_create_pipes[]
 #endif
 EXTERN char e_tag_file_entry_must_not_be_url[]
 	INIT(= N_("E1576: Tag file entry must not be a URL"));
+EXTERN char e_invalid_format_string_single_percent_s[]
+	INIT(= N_("E1577: Invalid format string, only one \"%s\" is allowed"));
