@@ -6549,7 +6549,7 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 
 	if (!error && argvars[2].v_type != VAR_UNKNOWN)
 	{
-#ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD_FORMATS
 	    Clipboard_T *cbd = clip_get_clipboard(regname);
 #endif
 
@@ -6557,7 +6557,7 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 
 	    if (argvars[3].v_type != VAR_UNKNOWN)
 	    {
-#ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD_FORMATS
 		if (cbd == NULL)
 		{
 		    emsg(_(e_invalid_argument));
@@ -10462,7 +10462,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     long	reglen = 0;
     dict_T	*dict;
     list_T	*list;
-#ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD_FORMATS
     Clipboard_T *cbd;
 #endif
 
@@ -10526,7 +10526,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-#ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD_FORMATS
     cbd = clip_get_clipboard(regname);
     if (cbd != NULL)
     {

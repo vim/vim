@@ -7253,7 +7253,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
 		cbd);
 }
 
-#ifdef FEAT_EVAL
+#ifdef FEAT_CLIPBOARD_FORMATS
 /*
  * Request the data of the given format from the clipboard
  */

@@ -8716,7 +8716,7 @@ clip_xterm_request_selection(Clipboard_T *cbd)
 	clip_x11_request_selection(xterm_Shell, xterm_dpy, cbd);
 }
 
-# ifdef FEAT_EVAL
+# ifdef FEAT_CLIPBOARD_FORMATS
     void
 clip_xterm_update_formats(Clipboard_T *cbd)
 {

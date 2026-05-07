@@ -926,6 +926,15 @@
 #endif
 
 /*
+ * +clipboard_formats	Support for handling arbitrary formats from the
+ *			clipboard.
+ */
+#if defined(FEAT_CLIPBOARD) && (defined(FEAT_WAYLAND_CLIPBOARD) || \
+	defined(FEAT_GUI_GTK) || defined(FEAT_XCLIPBOARD))
+# define FEAT_CLIPBOARD_FORMATS
+#endif
+
+/*
  * +dnd		Drag'n'drop support.  Always used for the GTK+ GUI.
  */
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_GUI_GTK)

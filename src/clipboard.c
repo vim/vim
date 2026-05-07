@@ -84,7 +84,7 @@ static const char *supported_mimes[] = {
 clip_wl_T clip_wl;
 
 static int clip_wl_receive_data(int fd, garray_T *ga);
-#  ifdef FEAT_EVAL
+#  ifdef FEAT_CLIPBOARD_FORMATS
 static int clip_wl_request_format(Clipboard_T *cbd, const char *format, garray_T *ga, bool roundtrip);
 #  endif
 static void clip_wl_request_selection(Clipboard_T *cbd);
@@ -128,10 +128,10 @@ clip_init(int can_use)
 	cb->end.lnum   = 0;
 	cb->end.col    = 0;
 	cb->state      = SELECT_CLEARED;
-#ifdef FEAT_EVAL
+# ifdef FEAT_CLIPBOARD_FORMATS
 	clip_clear_formats(cb);
 	ga_init2(&cb->formats, sizeof(clipformat_T), 2);
-#endif
+# endif
 
 skip:
 	if (cb == &clip_plus)
@@ -1859,7 +1859,7 @@ clip_x11_request_selection(
     yank_cut_buffer0(dpy, cbd);
 }
 
-#  ifdef FEAT_EVAL
+#  ifdef FEAT_CLIPBOARD_FORMATS
 
     static void
 clip_x11_update_formats_cb(
@@ -1989,7 +1989,7 @@ clip_x11_request_format(
     return FAIL;
 }
 
-#  endif // FEAT_EVAL
+#  endif // FEAT_CLIPBOARD_FORMATS
 
     void
 clip_x11_lose_selection(Widget myShell, Clipboard_T *cbd)
@@ -2417,7 +2417,7 @@ may_set_selection(void)
     }
 }
 
-# ifdef FEAT_EVAL
+# ifdef FEAT_CLIPBOARD_FORMATS
 
 /*
  * Get the corresponding Clipboard_T struct based on "regname". Returns NULL if
@@ -2478,31 +2478,34 @@ clip_clear_formats(Clipboard_T *cbd)
 }
 
     static int
-clip_gen_request_format(Clipboard_T *cbd UNUSED, char_u *format UNUSED, garray_T *ga UNUSED)
+clip_gen_request_format(
+	Clipboard_T *cbd UNUSED,
+	char_u	    *format UNUSED,
+	garray_T    *ga UNUSED)
 {
-# if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
-#  ifdef FEAT_GUI
+#  if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+#   ifdef FEAT_GUI
     if (gui.in_use)
 	return clip_mch_request_format(cbd, format, ga);
     else
-#  endif
+#   endif
     {
 	if (clipmethod == CLIPMETHOD_WAYLAND)
 	{
-#  ifdef FEAT_WAYLAND_CLIPBOARD
+#   ifdef FEAT_WAYLAND_CLIPBOARD
 	    return clip_wl_request_format(cbd, (char *)format, ga, true);
-#  endif
+#   endif
 	}
 	else if (clipmethod == CLIPMETHOD_X11)
 	{
-#  ifdef FEAT_XCLIPBOARD
+#   ifdef FEAT_XCLIPBOARD
 	    return clip_xterm_request_format(cbd, format, ga);
-#  endif
+#   endif
 	}
     }
-# else
-    /* clip_mch_request_selection(cbd); */
-# endif
+#  else
+    return clip_mch_request_format(cbd, format, ga);
+#  endif
     return FAIL;
 }
 
@@ -2574,32 +2577,32 @@ clip_format_is_supported(Clipboard_T *cbd, char_u *format)
     void
 clip_update_supported_formats(Clipboard_T *cbd UNUSED)
 {
-# if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
-#  ifdef FEAT_GUI
+#  if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+#   ifdef FEAT_GUI
     if (gui.in_use)
 	clip_mch_update_formats(cbd);
     else
-#  endif
+#   endif
     {
 	if (clipmethod == CLIPMETHOD_WAYLAND)
 	{
-#  ifdef FEAT_WAYLAND_CLIPBOARD
+#   ifdef FEAT_WAYLAND_CLIPBOARD
 	    vwl_connection_roundtrip(wayland_ct);
-#  endif
+#   endif
 	}
 	else if (clipmethod == CLIPMETHOD_X11)
 	{
-#  ifdef FEAT_XCLIPBOARD
+#   ifdef FEAT_XCLIPBOARD
 	    clip_xterm_update_formats(cbd);
-#  endif
+#   endif
 	}
     }
-# else
-    /* clip_mch_request_selection(cbd); */
-# endif
+#  else
+    clip_mch_request_selection(cbd);
+#  endif
 }
 
-# endif
+# endif // FEAT_CLIPBOARD_FORMATS
 
 # if defined(FEAT_WAYLAND_CLIPBOARD)
 
@@ -2687,7 +2690,7 @@ vwl_data_device_listener_event_selection(
     // Destroy previous offer if any, it is now invalid
     vwl_data_offer_destroy(sel->offer);
 
-#ifdef FEAT_EVAL
+#ifdef FEAT_CLIPBOARD_FORMATS
     // Add formats (aka mime types) to clipboard
     clip_clear_formats(cbd);
     if (offer != NULL)
@@ -2965,7 +2968,7 @@ clip_wl_receive_data(int fd, garray_T *buf)
     return OK;
 }
 
-#ifdef FEAT_EVAL
+#  ifdef FEAT_CLIPBOARD_FORMATS
 /*
  * Request the selection data for the given format (mime type). Returns OK on
  * success and FAIL on failure.
@@ -3014,7 +3017,7 @@ clip_wl_request_format(
 
     return ret;
 }
-#endif
+#  endif
 
 /*
  * Get the current selection and fill the respective register for cbd with the

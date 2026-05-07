@@ -2379,7 +2379,7 @@ typedef struct
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?
 # endif
-# ifdef FEAT_EVAL
+# ifdef FEAT_CLIPBOARD_FORMATS
     // Array of possible formats for this selection, if any.
     garray_T	formats;
 # endif
