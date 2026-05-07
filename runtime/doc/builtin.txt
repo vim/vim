@@ -5019,7 +5019,7 @@ getqflist([{what}])					*getqflist()*
 		Return type: list<dict<any>> or dict<any>
 
 
-getreg([{regname} [, 1 [, {list}]]])			*getreg()*
+getreg([{regname} [, 1 [, {list} [, {format}]]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
 			:let cliptext = getreg('*')
@@ -5040,6 +5040,15 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		(see |NL-used-for-Nul|).
 		When the register was not set an empty list is returned.
 
+		If {regname} is a clipboard register ("+" or "*"), then
+		{format} is allowed, which specifies the which clipboard
+		format to return as a |Blob|.  If {format} is specified, then
+		the other optional arguments are ignored.  To see what formats
+		are available, see |getreginfo()|.  To see how formats are
+		named, see |clipboard-format-naming|.
+		{only available when compiled with the |+clipboard_formats|
+		feature}
+
 		If {regname} is "", the unnamed register '"' is used.
 		If {regname} is not specified, |v:register| is used.
 		In |Vim9-script| {regname} must be one character.
@@ -5047,7 +5056,8 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		Can also be used as a |method|: >
 			GetRegname()->getreg()
 <
-		Return type: |String| or list<string> depending on {list}
+		Return type: |String| or list<string> or |Blob| depending on
+			     {list} and {format}
 
 
 getreginfo([{regname}])					*getreginfo()*
@@ -5068,6 +5078,13 @@ getreginfo([{regname}])					*getreginfo()*
 					with `dd`, this field will be "1",
 					which is the register that got the
 					deleted text.
+			formats		If {regname} is a clipboard register
+					("+" or "*"), then this will be added
+					to the dictionary, containing a list
+					of all formats supported by the
+					clipboard.
+					{only available when compiled with the
+					|+clipboard_formats| feature}
 
 		The {regname} argument is a string.  If {regname} is invalid
 		or not set, an empty Dictionary will be returned.
@@ -5075,6 +5092,18 @@ getreginfo([{regname}])					*getreginfo()*
 		If {regname} is not specified, |v:register| is used.
 		The returned Dictionary can be passed to |setreg()|.
 		In |Vim9-script| {regname} must be one character.
+
+							*clipboard-format-naming*
+		Note that how the clipboard formats are named (for "formats"),
+		is system dependent:
+		    wayland		Usually a mime type.
+		    x11			Mime types or UPPERCASE style names.
+		    win32		Capitalized name (e.g. "HTML Format").
+					However, for standard clipboard
+					formats, which do not have a
+					registered name, it will be the same as
+					its enumeration. For example, the
+					format CF_TEXT will be "CF_TEXT".
 
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()

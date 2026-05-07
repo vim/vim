@@ -6974,6 +6974,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"clipboard_formats",
+#ifdef FEAT_CLIPBOARD_FORMATS
+		1
+#else
+		0
+#endif
+		},
 	{"clipboard_provider",
 #ifdef FEAT_CLIPBOARD_PROVIDER
 		1
