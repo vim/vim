@@ -1352,6 +1352,73 @@ popup_compute_clip(win_T *wp, popup_clip_T *cl)
     cl->eff_width = cl->eff_left_extra + w + cl->eff_right_extra;
 }
 
+// Snapshot of the popup window geometry that update_popups() temporarily
+// mutates so that win_update() draws within the host-window clip rectangle.
+// Saved before the clip is applied, restored after win_update() returns so
+// callers continue to see the popup's logical geometry.
+// Field names omit the "w_" prefix to avoid clashing with struct-field
+// macros like w_p_wrap (= w_onebuf_opt.wo_wrap).
+typedef struct {
+    int		height;
+    int		width;
+    int		winrow;
+    int		wincol;
+    int		leftcol;
+    int		p_wrap;
+    linenr_T	topline;
+} popup_geom_save_T;
+
+    static void
+popup_geom_save(win_T *wp, popup_geom_save_T *sv)
+{
+    sv->height  = wp->w_height;
+    sv->width   = wp->w_width;
+    sv->winrow  = wp->w_winrow;
+    sv->wincol  = wp->w_wincol;
+    sv->leftcol = wp->w_leftcol;
+    sv->p_wrap  = wp->w_p_wrap;
+    sv->topline = wp->w_topline;
+}
+
+    static void
+popup_geom_restore(win_T *wp, popup_geom_save_T *sv)
+{
+    wp->w_p_wrap  = sv->p_wrap;
+    wp->w_leftcol = sv->leftcol;
+    wp->w_wincol  = sv->wincol;
+    wp->w_winrow  = sv->winrow;
+    wp->w_topline = sv->topline;
+    wp->w_width   = sv->width;
+    wp->w_height  = sv->height;
+}
+
+/*
+ * Compute a screen row for a textprop that has scrolled above the host
+ * window's top.  textpos2screenpos() cannot return a row above topline, so we
+ * probe at topline to fill the screen_{scol,ccol,ecol} column mapping, then
+ * extrapolate a (possibly-negative) row by counting how many buffer lines lie
+ * between the prop and topline.  The popup_topoff clip path then turns the
+ * negative row into a top-clip animation as the prop rolls off the top edge.
+ */
+    static void
+popup_screenpos_above_top(
+	win_T	    *prop_win,
+	pos_T	    *pos,
+	linenr_T    prop_lnum,
+	int	    *screen_row,
+	int	    *screen_scol,
+	int	    *screen_ccol,
+	int	    *screen_ecol)
+{
+    pos_T   probe = *pos;
+
+    probe.lnum = prop_win->w_topline;
+    textpos2screenpos(prop_win, &probe,
+			    screen_row, screen_scol, screen_ccol, screen_ecol);
+    *screen_row = prop_win->w_winrow + 1
+				 - (int)(prop_win->w_topline - prop_lnum);
+}
+
 /*
  * Adjust the position and size of the popup to fit on the screen.
  */
@@ -1462,19 +1529,8 @@ popup_adjust_position(win_T *wp)
 		|| wp->w_popup_pos == POPPOS_BOTLEFT)
 	    pos.col += prop.tp_len - 1;
 	if (prop_above_top)
-	{
-	    // textpos2screenpos cannot return a row above the window's first
-	    // visible line.  Probe at topline to read the correct column
-	    // mapping, then synthesise a negative screen_row by counting how
-	    // many lines lie between the prop and topline.
-	    pos_T   probe = pos;
-
-	    probe.lnum = prop_win->w_topline;
-	    textpos2screenpos(prop_win, &probe, &screen_row,
+	    popup_screenpos_above_top(prop_win, &pos, prop_lnum, &screen_row,
 				     &screen_scol, &screen_ccol, &screen_ecol);
-	    screen_row = prop_win->w_winrow + 1
-				 - (int)(prop_win->w_topline - prop_lnum);
-	}
 	else
 	    textpos2screenpos(prop_win, &pos, &screen_row,
 				     &screen_scol, &screen_ccol, &screen_ecol);
@@ -5546,13 +5602,9 @@ update_popups(void (*win_update)(win_T *wp))
 	// Draw the popup text, unless it's off screen.
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
 	{
-	    int		saved_w_height = wp->w_height;
-	    int		saved_w_width = wp->w_width;
-	    int		saved_winrow = wp->w_winrow;
-	    int		saved_wincol = wp->w_wincol;
-	    int		saved_leftcol = wp->w_leftcol;
-	    int		saved_p_wrap = wp->w_p_wrap;
-	    linenr_T	saved_topline = wp->w_topline;
+	    popup_geom_save_T saved;
+
+	    popup_geom_save(wp, &saved);
 
 	    // May need to update the "cursorline" highlighting, which may also
 	    // change "topline"
@@ -5618,13 +5670,7 @@ update_popups(void (*win_update)(win_T *wp))
 
 	    win_update(wp);
 
-	    wp->w_p_wrap = saved_p_wrap;
-	    wp->w_leftcol = saved_leftcol;
-	    wp->w_wincol = saved_wincol;
-	    wp->w_winrow = saved_winrow;
-	    wp->w_topline = saved_topline;
-	    wp->w_width = saved_w_width;
-	    wp->w_height = saved_w_height;
+	    popup_geom_restore(wp, &saved);
 
 	    // move the cursor into the visible lines, otherwise executing
 	    // commands with win_execute() may cause the text to jump.
