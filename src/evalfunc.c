@@ -6549,12 +6549,15 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 
 	if (!error && argvars[2].v_type != VAR_UNKNOWN)
 	{
+#ifdef FEAT_CLIPBOARD
 	    Clipboard_T *cbd = clip_get_clipboard(regname);
+#endif
 
 	    return_list = (int)tv_get_bool_chk(&argvars[2], &error);
 
 	    if (argvars[3].v_type != VAR_UNKNOWN)
 	    {
+#ifdef FEAT_CLIPBOARD
 		if (cbd == NULL)
 		{
 		    emsg(_(e_invalid_argument));
@@ -6579,6 +6582,10 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 		rettv->vval.v_blob = blob;
 
 		return;
+#else
+		emsg(_(e_invalid_argument));
+		return;
+#endif
 	    }
 	}
 	if (error)
@@ -10455,7 +10462,9 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     long	reglen = 0;
     dict_T	*dict;
     list_T	*list;
+#ifdef FEAT_CLIPBOARD
     Clipboard_T *cbd;
+#endif
 
     if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
 	return;
@@ -10517,6 +10526,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+#ifdef FEAT_CLIPBOARD
     cbd = clip_get_clipboard(regname);
     if (cbd != NULL)
     {
@@ -10526,13 +10536,16 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	if (flist == NULL)
 	    return;
 
-        for (int i = 0; i < cbd->formats.ga_len; i++)
-            list_append_string(flist,
+	clip_update_supported_formats(cbd);
+
+	for (int i = 0; i < cbd->formats.ga_len; i++)
+	    list_append_string(flist,
 		    ((clipformat_T *)cbd->formats.ga_data)[i].name, -1);
 
-        list->lv_refcount++;
+	list->lv_refcount++;
 	(void)dict_add_list(dict, "formats", flist);
     }
+#endif
 }
 
     static void

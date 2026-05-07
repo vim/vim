@@ -83,8 +83,10 @@ static const char *supported_mimes[] = {
 
 clip_wl_T clip_wl;
 
-static int clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd, garray_T *ga);
+static int clip_wl_receive_data(int fd, garray_T *ga);
+#  ifdef FEAT_EVAL
 static int clip_wl_request_format(Clipboard_T *cbd, const char *format, garray_T *ga, bool roundtrip);
+#  endif
 static void clip_wl_request_selection(Clipboard_T *cbd);
 static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
@@ -126,8 +128,10 @@ clip_init(int can_use)
 	cb->end.lnum   = 0;
 	cb->end.col    = 0;
 	cb->state      = SELECT_CLEARED;
+#ifdef FEAT_EVAL
 	clip_clear_formats(cb);
 	ga_init2(&cb->formats, sizeof(clipformat_T), 2);
+#endif
 
 skip:
 	if (cb == &clip_plus)
@@ -1754,17 +1758,62 @@ clip_x11_request_selection_cb(
     *(int *)success = TRUE;
 }
 
+    static void
+clip_x11_common_wait(Display *dpy, int *success, int *timed_out)
+{
+    XEvent	event;
+    time_t	start_time;
+
+    // Make sure the request for the selection goes out before waiting for a
+    // response.
+    XFlush(dpy);
+
+    start_time = time(NULL);
+
+    while (*success == MAYBE)
+    {
+	if (XCheckTypedEvent(dpy, PropertyNotify, &event)
+		|| XCheckTypedEvent(dpy, SelectionNotify, &event)
+		|| XCheckTypedEvent(dpy, SelectionRequest, &event))
+	{
+	    // This is where clip_x11_request_selection_cb() should be
+	    // called.  It may actually happen a bit later, so we loop
+	    // until "success" changes.
+	    // We may get a SelectionRequest here and if we don't handle
+	    // it we hang.  KDE klipper does this, for example.
+	    // We need to handle a PropertyNotify for large selections.
+	    XtDispatchEvent(&event);
+	    continue;
+	}
+
+	// Time out after 2 to 3 seconds to avoid that we hang when the
+	// other process doesn't respond.  Note that the SelectionNotify
+	// event may still come later when the selection owner comes back
+	// to life and the text gets inserted unexpectedly.  Don't know
+	// why that happens or how to avoid that :-(.
+	if (time(NULL) > start_time + 2)
+	{
+	    *timed_out = TRUE;
+	    break;
+	}
+
+	// Do we need this?  Probably not.
+	XSync(dpy, False);
+
+	// Wait for 1 msec to avoid that we eat up all CPU time.
+	ui_delay(1L, TRUE);
+    }
+}
+
     void
 clip_x11_request_selection(
     Widget	myShell,
     Display	*dpy,
     Clipboard_T	*cbd)
 {
-    XEvent	event;
     Atom	type;
     static int	success;
     int		i;
-    time_t	start_time;
     int		timed_out = FALSE;
 
     for (i = 0; i < 6; i++)
@@ -1790,49 +1839,12 @@ clip_x11_request_selection(
 	XtGetSelectionValue(myShell, cbd->sel_atom, type,
 	    clip_x11_request_selection_cb, (XtPointer)&success, CurrentTime);
 
-	// Make sure the request for the selection goes out before waiting for
-	// a response.
-	XFlush(dpy);
-
 	/*
 	 * Wait for result of selection request, otherwise if we type more
 	 * characters, then they will appear before the one that requested the
 	 * paste!  Don't worry, we will catch up with any other events later.
 	 */
-	start_time = time(NULL);
-	while (success == MAYBE)
-	{
-	    if (XCheckTypedEvent(dpy, PropertyNotify, &event)
-		    || XCheckTypedEvent(dpy, SelectionNotify, &event)
-		    || XCheckTypedEvent(dpy, SelectionRequest, &event))
-	    {
-		// This is where clip_x11_request_selection_cb() should be
-		// called.  It may actually happen a bit later, so we loop
-		// until "success" changes.
-		// We may get a SelectionRequest here and if we don't handle
-		// it we hang.  KDE klipper does this, for example.
-		// We need to handle a PropertyNotify for large selections.
-		XtDispatchEvent(&event);
-		continue;
-	    }
-
-	    // Time out after 2 to 3 seconds to avoid that we hang when the
-	    // other process doesn't respond.  Note that the SelectionNotify
-	    // event may still come later when the selection owner comes back
-	    // to life and the text gets inserted unexpectedly.  Don't know
-	    // why that happens or how to avoid that :-(.
-	    if (time(NULL) > start_time + 2)
-	    {
-		timed_out = TRUE;
-		break;
-	    }
-
-	    // Do we need this?  Probably not.
-	    XSync(dpy, False);
-
-	    // Wait for 1 msec to avoid that we eat up all CPU time.
-	    ui_delay(1L, TRUE);
-	}
+	clip_x11_common_wait(dpy, &success, &timed_out);
 
 	if (success == TRUE)
 	    return;
@@ -1846,6 +1858,138 @@ clip_x11_request_selection(
     // Final fallback position - use the X CUT_BUFFER0 store
     yank_cut_buffer0(dpy, cbd);
 }
+
+#  ifdef FEAT_EVAL
+
+    static void
+clip_x11_update_formats_cb(
+    Widget	w UNUSED,
+    XtPointer	success,
+    Atom	*sel_atom,
+    Atom	*type,
+    XtPointer	value,
+    long_u	*length,
+    int		*format)
+{
+    Display	*dpy = XtDisplay(w);
+    Clipboard_T	*cbd;
+    Atom	*targets = (Atom *)value;
+
+    if (*sel_atom == clip_plus.sel_atom)
+	cbd = &clip_plus;
+    else
+	cbd = &clip_star;
+
+    if (value == NULL || *length == 0
+	    || *type == XT_CONVERT_FAIL || *type != XA_ATOM)
+    {
+	clip_clear_formats(cbd);
+	*(int *)success = FALSE;
+	return;
+    }
+
+    for (long_u i = 0; i < *length; i++)
+    {
+	char *name = XGetAtomName(dpy, targets[i]);
+
+	if (format != NULL)
+	{
+	    clip_add_format(cbd, (char_u *)name, NULL);
+	    XFree(name);
+	}
+    }
+    *(int *)success = TRUE;
+
+    XtFree(value);
+}
+
+/*
+ * Do a roundtrip for the TARGETS request to get the formats supported for the
+ * current selection/clipboard, and store it in "cbd->formats".
+ */
+    void
+clip_x11_update_formats(Widget myShell, Display *dpy, Clipboard_T *cbd)
+{
+    static int	success;
+    int		timed_out = FALSE;
+
+    clip_clear_formats(cbd);
+
+    success = MAYBE;
+    XtGetSelectionValue(myShell, cbd->sel_atom, targets_atom,
+	    clip_x11_update_formats_cb, &success, CurrentTime);
+
+    clip_x11_common_wait(dpy, &success, &timed_out);
+
+    if (success == TRUE)
+	return;
+
+    clip_clear_formats(cbd);
+}
+
+typedef struct
+{
+    garray_T	*buf;
+    int		*success;
+} request_format_data_T;
+
+    static void
+clip_x11_request_format_cb(
+    Widget	w UNUSED,
+    XtPointer	ptr,
+    Atom	*sel_atom UNUSED,
+    Atom	*type UNUSED,
+    XtPointer	value,
+    long_u	*length,
+    int		*format UNUSED)
+{
+    int		*success = ((request_format_data_T *)ptr)->success;
+    garray_T	*buf = ((request_format_data_T *)ptr)->buf;
+    char_u	*p = (char_u *)value;
+    long_u	len = *length;
+
+    ga_concat_len(buf, p, len);
+    *success = TRUE;
+    XtFree(value);
+}
+
+    int
+clip_x11_request_format(
+    Widget	myShell,
+    Display	*dpy,
+    Clipboard_T	*cbd,
+    char_u	*format,
+    garray_T	*ga)
+{
+    Atom	type;
+    static int	success;
+    int		timed_out = FALSE;
+
+    request_format_data_T udata;
+
+    // Check if format is supported
+    clip_x11_update_formats(myShell, dpy, cbd);
+    if (!clip_format_is_supported(cbd, format))
+	return FAIL;
+
+    type = XInternAtom(dpy, (char *)format, False);
+
+    success = MAYBE;
+    udata.success = &success;
+    udata.buf = ga;
+
+    XtGetSelectionValue(myShell, cbd->sel_atom, type,
+	    clip_x11_request_format_cb, (XtPointer)&udata, CurrentTime);
+
+    clip_x11_common_wait(dpy, &success, &timed_out);
+
+    if (success == TRUE)
+	return OK;
+
+    return FAIL;
+}
+
+#  endif // FEAT_EVAL
 
     void
 clip_x11_lose_selection(Widget myShell, Clipboard_T *cbd)
@@ -2339,7 +2483,7 @@ clip_gen_request_format(Clipboard_T *cbd UNUSED, char_u *format UNUSED, garray_T
 # if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #  ifdef FEAT_GUI
     if (gui.in_use)
-	/* clip_mch_request_selection(cbd); */
+	/* clip_mch_request_selection(cbd); */;
     else
 #  endif
     {
@@ -2352,7 +2496,7 @@ clip_gen_request_format(Clipboard_T *cbd UNUSED, char_u *format UNUSED, garray_T
 	else if (clipmethod == CLIPMETHOD_X11)
 	{
 #  ifdef FEAT_XCLIPBOARD
-	    /* clip_xterm_request_selection(cbd); */
+	    return clip_xterm_request_format(cbd, format, ga);
 #  endif
 	}
     }
@@ -2373,7 +2517,7 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
     garray_T	ga;
 
     blob = blob_alloc();
-    if(blob == NULL)
+    if (blob == NULL)
 	return NULL;
 
     ga_init2(&ga, 1, 512);
@@ -2406,6 +2550,54 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
 fail:
     blob_free(blob);
     return NULL;
+}
+
+/*
+ * Note that a roundtrip or an update should be done before this, so everything
+ * is up to date.
+ */
+    bool
+clip_format_is_supported(Clipboard_T *cbd, char_u *format)
+{
+    for (int i = 0; i <cbd->formats.ga_len; i++)
+    {
+	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
+
+	if (STRCMP(fmt->name, format) == 0)
+	    return true;
+    }
+    return false;
+}
+
+/*
+ * Update the list of supported mime types for cbd.
+ */
+    void
+clip_update_supported_formats(Clipboard_T *cbd UNUSED)
+{
+# if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
+#  ifdef FEAT_GUI
+    if (gui.in_use)
+	/* clip_mch_request_selection(cbd); */;
+    else
+#  endif
+    {
+	if (clipmethod == CLIPMETHOD_WAYLAND)
+	{
+#  ifdef FEAT_WAYLAND_CLIPBOARD
+	    vwl_connection_roundtrip(wayland_ct);
+#  endif
+	}
+	else if (clipmethod == CLIPMETHOD_X11)
+	{
+#  ifdef FEAT_XCLIPBOARD
+	    clip_xterm_update_formats(cbd);
+#  endif
+	}
+    }
+# else
+    /* clip_mch_request_selection(cbd); */
+# endif
 }
 
 # endif
@@ -2461,18 +2653,12 @@ clip_wl_get_selection_type(clip_wl_selection_T *sel)
 
     static bool
 wl_data_offer_listener_event_offer(
-    void *data,
+    void *data UNUSED,
     vwl_data_offer_T *offer UNUSED,
-    const char *mime_type
+    const char *mime_type UNUSED
 )
 {
-    clip_add_format(data, (char_u *)mime_type, NULL);
-
-    // Only accept mime type if we support it for the default format
-    for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes); i++)
-	if (STRCMP(mime_type, supported_mimes[i]) == 0)
-	    return true;
-    return FALSE;
+    return true;
 }
 
 static const vwl_data_offer_listener_T vwl_data_offer_listener = {
@@ -2485,7 +2671,6 @@ vwl_data_device_listener_event_data_offer(
 	vwl_data_device_T *device UNUSED,
 	vwl_data_offer_T *offer)
 {
-    clip_clear_formats(data);
     // Immediately start listening for offer events from the data offer
     vwl_data_offer_add_listener(offer, &vwl_data_offer_listener, data);
 }
@@ -2498,9 +2683,25 @@ vwl_data_device_listener_event_selection(
 	wayland_selection_T selection)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection(selection);
+    Clipboard_T		*cbd = clip_wl_get_cbd_from_selection(sel);
 
     // Destroy previous offer if any, it is now invalid
     vwl_data_offer_destroy(sel->offer);
+
+#ifdef FEAT_EVAL
+    // Add formats (aka mime types) to clipboard
+    clip_clear_formats(cbd);
+    if (offer != NULL)
+    {
+	for (int i = 0; i < offer->mime_types.ga_len; i++)
+	{
+	    char_u *fmt = ((char_u **)offer->mime_types.ga_data)[i];
+	    clip_add_format(cbd, fmt, NULL);
+	}
+    }
+#else
+    (void)cbd;
+#endif
 
     // There are two cases when sel->offer is NULL
     // 1. No one owns the selection
@@ -2634,12 +2835,12 @@ clip_init_wayland(void)
     // Start listening for selection updates
     if (clip_wl.regular.device != NULL)
 	vwl_data_device_add_listener(clip_wl.regular.device,
-		&vwl_data_device_listener, &clip_plus);
+		&vwl_data_device_listener, NULL);
     // Don't want to listen to the same data device twice
     if (clip_wl.primary.device != NULL
 	    && clip_wl.primary.device != clip_wl.regular.device)
 	vwl_data_device_add_listener(clip_wl.primary.device,
-		&vwl_data_device_listener, &clip_star);
+		&vwl_data_device_listener, NULL);
 
     return OK;
 }
@@ -2700,11 +2901,7 @@ clip_reset_wayland(void)
  * be initialized first). Returns OK on success and FAIL on failure.
  */
     static int
-clip_wl_receive_data(
-	Clipboard_T *cbd,
-	const char *mime_type,
-	int fd,
-	garray_T *buf)
+clip_wl_receive_data(int fd, garray_T *buf)
 {
     char_u	*start;
     ssize_t	r = 0;
@@ -2771,6 +2968,7 @@ clip_wl_receive_data(
     return OK;
 }
 
+#ifdef FEAT_EVAL
 /*
  * Request the selection data for the given format (mime type). "ga" will be
  * initialized. Returns OK on success and FAIL on failure.
@@ -2791,8 +2989,15 @@ clip_wl_request_format(
 
     // Dispatch any events that still queued up before checking for a data
     // offer.
-    if (roundtrip && vwl_connection_roundtrip(wayland_ct) == FAIL)
-	return FAIL;
+    if (roundtrip)
+    {
+	if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	    return FAIL;
+
+	// Check if mime type is advertised by the source client
+	if (!clip_format_is_supported(cbd, (char_u *)format))
+	    return FAIL;
+    }
 
     if (sel->offer == NULL)
 	return FAIL;
@@ -2806,12 +3011,13 @@ clip_wl_request_format(
 		   // closes their end we receive an EOF.
 
     if (vwl_connection_flush(wayland_ct) >= 0)
-	ret = clip_wl_receive_data(cbd, format, fds[0], ga);
+	ret = clip_wl_receive_data(fds[0], ga);
 
     close(fds[0]);
 
     return ret;
 }
+#endif
 
 /*
  * Get the current selection and fill the respective register for cbd with the

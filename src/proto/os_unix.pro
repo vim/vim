@@ -88,6 +88,8 @@ void xterm_update(void);
 int clip_xterm_own_selection(Clipboard_T *cbd);
 void clip_xterm_lose_selection(Clipboard_T *cbd);
 void clip_xterm_request_selection(Clipboard_T *cbd);
+void clip_xterm_update_formats(Clipboard_T *cbd);
+int clip_xterm_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga);
 void clip_xterm_set_selection(Clipboard_T *cbd);
 int xsmp_handle_requests(void);
 void xsmp_init(void);

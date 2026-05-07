@@ -8716,6 +8716,27 @@ clip_xterm_request_selection(Clipboard_T *cbd)
 	clip_x11_request_selection(xterm_Shell, xterm_dpy, cbd);
 }
 
+# ifdef FEAT_EVAL
+    void
+clip_xterm_update_formats(Clipboard_T *cbd)
+{
+    if (xterm_Shell != (Widget)0)
+	clip_x11_update_formats(xterm_Shell, xterm_dpy, cbd);
+}
+
+    int
+clip_xterm_request_format(
+	Clipboard_T *cbd,
+	char_u	    *format,
+	garray_T    *ga)
+{
+    if (xterm_Shell != (Widget)0)
+	return clip_x11_request_format(xterm_Shell, xterm_dpy, cbd,
+		format, ga);
+    return FAIL;
+}
+# endif
+
     void
 clip_xterm_set_selection(Clipboard_T *cbd)
 {
