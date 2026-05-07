@@ -5182,7 +5182,6 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		may_adjust_color_count(256);
 	    // Libvterm can handle SGR mouse reporting.
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
-	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	if (version == 95)
@@ -5228,7 +5227,6 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	    else if (version >= 95)
 		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_XTERM2;
-	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	// Detect terminals that set $TERM to something like
@@ -5243,13 +5241,11 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	if (arg[1] >= 2500)
 	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
-	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
 	else if (version == 136 && arg[2] == 0)
 	{
 	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
-	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 
 	    // PuTTY sends 0;136;0
 	    if (arg[0] == 0)
