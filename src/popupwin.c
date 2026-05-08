@@ -1290,6 +1290,13 @@ popup_get_clipwin(win_T *wp)
 //                    w_height/w_width).  >= 0.
 //   eff_*_extra    : 0 when that edge is clipped (border+padding gone),
 //                    otherwise the original *_extra.
+//   eff_border[],
+//   eff_padding[]  : per-edge border/padding sizes (indexed [top,right,bot,left]
+//                    matching wp->w_popup_border / wp->w_popup_padding).  At a
+//                    clipped edge they collapse to 0; elsewhere they keep the
+//                    original size.  Drawing code can replace
+//                    `wp->w_popup_border[N] > 0 && wp->w_popup_*clip == 0`
+//                    with a single `cl.eff_border[N] > 0` test.
 //   eff_height     : drawn extent = eff_top_extra + visible content + eff_bot_extra.
 //   eff_width      : drawn extent = eff_left_extra + visible content + eff_right_extra
 //                    (does NOT include w_leftcol or scrollbar; see callers).
@@ -1308,6 +1315,9 @@ typedef struct {
     int eff_bot_extra;
     int eff_left_extra;
     int eff_right_extra;
+
+    int eff_border[4];
+    int eff_padding[4];
 
     int eff_height;
     int eff_width;
@@ -1340,6 +1350,16 @@ popup_compute_clip(win_T *wp, popup_clip_T *cl)
     cl->eff_bot_extra = wp->w_popup_bottomoff > 0 ? 0 : cl->bot_extra;
     cl->eff_left_extra = wp->w_popup_leftclip > 0 ? 0 : cl->left_extra;
     cl->eff_right_extra = wp->w_popup_rightclip > 0 ? 0 : cl->right_extra;
+
+    cl->eff_border[0] = wp->w_popup_topoff > 0 ? 0 : wp->w_popup_border[0];
+    cl->eff_border[1] = wp->w_popup_rightclip > 0 ? 0 : wp->w_popup_border[1];
+    cl->eff_border[2] = wp->w_popup_bottomoff > 0 ? 0 : wp->w_popup_border[2];
+    cl->eff_border[3] = wp->w_popup_leftclip > 0 ? 0 : wp->w_popup_border[3];
+
+    cl->eff_padding[0] = wp->w_popup_topoff > 0 ? 0 : wp->w_popup_padding[0];
+    cl->eff_padding[1] = wp->w_popup_rightclip > 0 ? 0 : wp->w_popup_padding[1];
+    cl->eff_padding[2] = wp->w_popup_bottomoff > 0 ? 0 : wp->w_popup_padding[2];
+    cl->eff_padding[3] = wp->w_popup_leftclip > 0 ? 0 : wp->w_popup_padding[3];
 
     h = wp->w_height - cl->clip_top_content - cl->clip_bot_content;
     if (h < 0)
@@ -1420,6 +1440,146 @@ popup_screenpos_above_top(
 }
 
 /*
+ * Hide popup "wp" because its anchoring textprop is no longer reachable.
+ * Marks the popup as POPF_HIDDEN (no-op when already hidden) and schedules a
+ * redraw of the host window so any leftover decorations are cleared.
+ */
+    static void
+popup_hide_for_textprop(win_T *wp)
+{
+    if ((wp->w_popup_flags & POPF_HIDDEN) != 0)
+	return;
+    wp->w_popup_flags |= POPF_HIDDEN;
+    if (win_valid(wp->w_popup_prop_win))
+	redraw_win_later(wp->w_popup_prop_win, UPD_SOME_VALID);
+}
+
+/*
+ * For "clipwindow" popups: search the lines above prop_win->w_topline for the
+ * popup's anchoring textprop and report whether one was found.  When
+ * "max_reach" is > 0, only the last "max_reach" lines before topline are
+ * scanned; pass 0 to scan all lines from line 1.  Returns false when the
+ * popup is not "clipwindow", topline is already at line 1, or no prop matches.
+ */
+    static bool
+popup_find_prop_above_top(
+	win_T	    *wp,
+	win_T	    *prop_win,
+	int	    max_reach,
+	textprop_T  *prop,
+	linenr_T    *found_lnum)
+{
+    linenr_T	first;
+
+    if (!(wp->w_popup_flags & POPF_CLIPWINDOW) || prop_win->w_topline <= 1)
+	return false;
+
+    first = max_reach > 0 ? prop_win->w_topline - max_reach : 1;
+    if (first < 1)
+	first = 1;
+    return find_prop_in_lines(prop_win,
+		    wp->w_popup_prop_type, wp->w_popup_prop_id,
+		    prop, found_lnum, first, prop_win->w_topline - 1);
+}
+
+/*
+ * Compute and assign w_popup_topoff/bottomoff/leftclip/rightclip from the
+ * host (textprop) window's content rectangle when POPF_CLIPWINDOW is set.
+ * The popup's logical geometry (w_winrow, w_height, w_width) is preserved;
+ * only the *off/clip fields record how much of each edge falls outside.
+ * Returns TRUE when the popup has scrolled completely past one of the host
+ * edges, in which case the caller must hide it.
+ */
+    static int
+popup_compute_clipwindow_offsets(win_T *wp)
+{
+    win_T   *cw = popup_get_clipwin(wp);
+    int	    extra_h, extra_w;
+    int	    popup_top, popup_bottom, popup_left, popup_right;
+    int	    total_h, total_w;
+
+    if (cw == NULL)
+	return FALSE;
+
+    extra_h = popup_top_extra(wp)
+		    + wp->w_popup_padding[2] + wp->w_popup_border[2];
+    extra_w = popup_extra_width(wp);
+
+    popup_top = wp->w_winrow;
+    popup_bottom = wp->w_winrow + wp->w_height + extra_h;
+    popup_left = wp->w_wincol;
+    popup_right = wp->w_wincol + wp->w_width + extra_w;
+    total_h = wp->w_height + extra_h;
+    total_w = wp->w_width + extra_w;
+
+    if (popup_top < cw->w_winrow)
+	wp->w_popup_topoff = cw->w_winrow - popup_top;
+    if (popup_bottom > cw->w_winrow + cw->w_height)
+	wp->w_popup_bottomoff = popup_bottom - (cw->w_winrow + cw->w_height);
+    if (popup_left < cw->w_wincol)
+	wp->w_popup_leftclip = cw->w_wincol - popup_left;
+    if (popup_right > cw->w_wincol + cw->w_width)
+	wp->w_popup_rightclip = popup_right - (cw->w_wincol + cw->w_width);
+
+    return wp->w_popup_topoff >= total_h
+	|| wp->w_popup_bottomoff >= total_h
+	|| wp->w_popup_leftclip >= total_w
+	|| wp->w_popup_rightclip >= total_w;
+}
+
+/*
+ * Mutate "wp"'s window geometry so win_update() draws only the rows/columns
+ * that fit within the host-window clip rectangle for "clipwindow" popups.
+ * The caller must save the original geometry with popup_geom_save() before
+ * this call and restore it with popup_geom_restore() after win_update().
+ *
+ * Vertical clip: shrink w_height by the clipped content rows; advance
+ * w_topline and w_winrow when rows are cut off the top so the first visible
+ * content row lands on the host's top edge.
+ *
+ * Horizontal clip: when the right side is clipped, just shrink w_width.
+ * When the left side is clipped, advance w_leftcol so the hidden buffer
+ * columns scroll off and shift w_wincol so the first visible column lands on
+ * the host's left edge.  Disable wrap so the transient w_width reduction does
+ * not reflow wrapped lines: the popup's logical width is unchanged, we just
+ * want to truncate cells that fall outside the host at draw time.
+ */
+    static void
+popup_apply_winupdate_clip(win_T *wp, popup_clip_T *cl)
+{
+    if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
+    {
+	wp->w_height -= cl->clip_top_content + cl->clip_bot_content;
+	if (wp->w_height < 0)
+	    wp->w_height = 0;
+	if (cl->clip_top_content > 0)
+	{
+	    wp->w_topline += cl->clip_top_content;
+	    wp->w_winrow += cl->clip_top_content;
+	}
+    }
+    if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
+    {
+	if (cl->clip_left_content > 0 || cl->clip_right_content > 0)
+	    wp->w_p_wrap = FALSE;
+	if (cl->clip_right_content > 0)
+	{
+	    wp->w_width -= cl->clip_right_content;
+	    if (wp->w_width < 0)
+		wp->w_width = 0;
+	}
+	if (cl->clip_left_content > 0)
+	{
+	    wp->w_leftcol += cl->clip_left_content;
+	    wp->w_wincol += cl->clip_left_content;
+	    wp->w_width -= cl->clip_left_content;
+	    if (wp->w_width < 0)
+		wp->w_width = 0;
+	}
+    }
+}
+
+/*
  * Adjust the position and size of the popup to fit on the screen.
  */
     static void
@@ -1489,34 +1649,22 @@ popup_adjust_position(win_T *wp)
 	int	    screen_ccol;
 	int	    screen_ecol;
 
-	// Popup window is positioned relative to a text property.
+	// Popup window is positioned relative to a text property.  With
+	// "clipwindow", keep the popup visible while the textprop has just
+	// scrolled above the host's top: extrapolate a negative screen_row
+	// from a prop above topline so the top-clip path can roll the popup
+	// off the top edge.  Unhiding is done in check_popup_unhidden().
 	int prop_above_top = FALSE;
 	if (!find_visible_prop(prop_win,
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
 				&prop, &prop_lnum))
 	{
-	    // With "clipwindow", keep the popup visible while the textprop
-	    // scrolls just above the host window's top: search the lines
-	    // above topline so we can extrapolate a negative screen_row and
-	    // let the top-clip logic gradually roll the popup off the top.
-	    if ((wp->w_popup_flags & POPF_CLIPWINDOW)
-		    && prop_win->w_topline > 1
-		    && find_prop_in_lines(prop_win,
-				wp->w_popup_prop_type, wp->w_popup_prop_id,
-				&prop, &prop_lnum,
-				1, prop_win->w_topline - 1))
+	    if (popup_find_prop_above_top(wp, prop_win, 0,
+							    &prop, &prop_lnum))
 		prop_above_top = TRUE;
 	    else
 	    {
-		// Text property is no longer visible, hide the popup.
-		// Unhiding the popup is done in check_popup_unhidden().
-		if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
-		{
-		    wp->w_popup_flags |= POPF_HIDDEN;
-		    if (win_valid(wp->w_popup_prop_win))
-			redraw_win_later(wp->w_popup_prop_win,
-							    UPD_SOME_VALID);
-		}
+		popup_hide_for_textprop(wp);
 		return;
 	    }
 	}
@@ -2017,56 +2165,16 @@ popup_adjust_position(win_T *wp)
     if (wp->w_height != org_height)
 	win_comp_scroll(wp);
 
-    // Compute the host-window clip offset for "clipwindow".  The popup's
-    // logical geometry (w_winrow, w_height, w_width) stays untouched -- only
-    // w_popup_bottomoff/rightoff record how many trailing rows/columns of
-    // the popup must be skipped during drawing so the popup looks "cut off"
-    // at the host window's edge while continuing to track the textprop on
-    // scroll without resizing.
+    // Confine the popup to its host window for "clipwindow".  The popup's
+    // logical geometry stays untouched; only w_popup_topoff/bottomoff/
+    // leftclip/rightclip record how many rows/columns of each edge fall
+    // outside the host so the drawing code can skip them.  When the popup
+    // has fully scrolled past one of the host edges, hide it instead of
+    // leaving stray decorations behind.
+    if (popup_compute_clipwindow_offsets(wp))
     {
-	win_T *cw = popup_get_clipwin(wp);
-
-	if (cw != NULL)
-	{
-	    int extra_h = popup_top_extra(wp)
-				+ wp->w_popup_padding[2] + wp->w_popup_border[2];
-	    int extra_w = popup_extra_width(wp);
-	    int top = cw->w_winrow;
-	    int bottom = cw->w_winrow + cw->w_height;
-	    int left = cw->w_wincol;
-	    int right = cw->w_wincol + cw->w_width;
-	    int popup_top = wp->w_winrow;
-	    int popup_bottom = wp->w_winrow + wp->w_height + extra_h;
-	    int popup_left = wp->w_wincol;
-	    int popup_right = wp->w_wincol + wp->w_width + extra_w;
-	    int total = wp->w_height + extra_h;
-	    int total_w = wp->w_width + extra_w;
-
-	    if (popup_top < top)
-		wp->w_popup_topoff = top - popup_top;
-	    if (popup_bottom > bottom)
-		wp->w_popup_bottomoff = popup_bottom - bottom;
-	    if (popup_left < left)
-		wp->w_popup_leftclip = left - popup_left;
-	    if (popup_right > right)
-		wp->w_popup_rightclip = popup_right - right;
-
-	    // The popup has fully scrolled past the clip rectangle: hide it
-	    // instead of leaving stray decorations at the host's edge.
-	    if (wp->w_popup_topoff >= total
-				 || wp->w_popup_bottomoff >= total
-				 || wp->w_popup_leftclip >= total_w
-				 || wp->w_popup_rightclip >= total_w)
-	    {
-		if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
-		{
-		    wp->w_popup_flags |= POPF_HIDDEN;
-		    if (win_valid(wp->w_popup_prop_win))
-			redraw_win_later(wp->w_popup_prop_win, UPD_SOME_VALID);
-		}
-		return;
-	    }
-	}
+	popup_hide_for_textprop(wp);
+	return;
     }
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
@@ -4651,23 +4759,14 @@ check_popup_unhidden(win_T *wp)
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
 						       &prop, &lnum))
 	    found = TRUE;
-	else if ((wp->w_popup_flags & POPF_CLIPWINDOW)
-		    && wp->w_popup_prop_win->w_topline > 1)
-	{
-	    // The textprop has scrolled just above the host window's top.
-	    // Unhide the popup so popup_adjust_position() can roll it
-	    // partially onto the host's top edge via the top-clip path.
-	    int reach = popup_height(wp);
-	    linenr_T first = wp->w_popup_prop_win->w_topline - reach;
-
-	    if (first < 1)
-		first = 1;
-	    if (find_prop_in_lines(wp->w_popup_prop_win,
-				wp->w_popup_prop_type, wp->w_popup_prop_id,
-				&prop, &lnum,
-				first, wp->w_popup_prop_win->w_topline - 1))
-		found = TRUE;
-	}
+	// The textprop may have scrolled just above the host window's top.
+	// Unhide the popup so popup_adjust_position() can roll it partially
+	// onto the host's top edge via the top-clip path.  Limit the search
+	// to the popup's own height so we do not resurrect a popup whose
+	// prop is already further off-screen than the popup can extend.
+	else if (popup_find_prop_above_top(wp, wp->w_popup_prop_win,
+					    popup_height(wp), &prop, &lnum))
+	    found = TRUE;
 	if (found)
 	{
 	    wp->w_popup_flags &= ~POPF_HIDDEN;
@@ -5463,6 +5562,14 @@ update_popups(void (*win_update)(win_T *wp))
     {
 	int	    title_len = 0;
 	int	    title_wincol;
+	popup_clip_T cl;
+
+	// Compute the clip geometry once per iteration; w_popup_*off/clip,
+	// w_height, w_width, w_popup_border and w_popup_padding are stable
+	// for the duration of this iteration (popup_apply_winupdate_clip()
+	// mutates w_height/w_width temporarily but the result is restored
+	// before any code below reads cl again).
+	popup_compute_clip(wp, &cl);
 
 	override_success = push_highlight_overrides(wp->w_hl, wp->w_hl_len);
 
@@ -5612,61 +5719,10 @@ update_popups(void (*win_update)(win_T *wp))
 		popup_highlight_curline(wp);
 
 	    // Clip the buffer's drawn extent to the host window when
-	    // "clipwindow" is set: shrink w_height transiently so win_update
-	    // does not write content past the host's edges, advance w_topline
-	    // when content rows at the top are clipped, and shift w_winrow so
-	    // the first visible content lands at the host's top.  All values
-	    // are restored after, so callers continue to see the logical
-	    // geometry via popup_getoptions/popup_getpos.
-	    if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
-	    {
-		popup_clip_T cl;
-
-		popup_compute_clip(wp, &cl);
-		wp->w_height -= cl.clip_top_content + cl.clip_bot_content;
-		if (wp->w_height < 0)
-		    wp->w_height = 0;
-		if (cl.clip_top_content > 0)
-		{
-		    wp->w_topline += cl.clip_top_content;
-		    wp->w_winrow += cl.clip_top_content;
-		}
-	    }
-	    if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
-	    {
-		// Horizontal clip: when the right side is clipped, just
-		// shrink w_width so win_update writes fewer cells.  When the
-		// left side is clipped, do NOT shrink w_width (that would
-		// reflow wrapped lines); instead advance w_leftcol so the
-		// hidden buffer columns are scrolled off, and shift w_wincol
-		// right so the first visible buffer column lands on the
-		// host's left edge.
-		popup_clip_T cl;
-
-		popup_compute_clip(wp, &cl);
-		if (cl.clip_left_content > 0 || cl.clip_right_content > 0)
-		{
-		    // Disable wrap so shrinking w_width does not reflow
-		    // wrapped lines: the popup's logical width is unchanged,
-		    // we just want to truncate the cells that fall outside
-		    // the host window at draw time.
-		    wp->w_p_wrap = FALSE;
-		}
-		if (cl.clip_right_content > 0)
-		{
-		    wp->w_width -= cl.clip_right_content;
-		    if (wp->w_width < 0)
-			wp->w_width = 0;
-		}
-		if (cl.clip_left_content > 0)
-		{
-		    wp->w_leftcol += cl.clip_left_content;
-		    wp->w_wincol += cl.clip_left_content;
-		    wp->w_width -= cl.clip_left_content;
-		    if (wp->w_width < 0)
-			wp->w_width = 0;
-		}
-	    }
+	    // "clipwindow" is set.  The transient mutations are reverted by
+	    // popup_geom_restore() so callers continue to see the popup's
+	    // logical geometry via popup_getoptions/popup_getpos.
+	    popup_apply_winupdate_clip(wp, &cl);
 
 	    win_update(wp);
 
@@ -5701,32 +5757,22 @@ update_popups(void (*win_update)(win_T *wp))
 	    wp->w_flags |= WFLAG_WROW_OFF_ADDED;
 	}
 
+	// When clipped by "clipwindow", drop the border/padding slot at the
+	// clipped edge that we will not render, so the popup ends exactly on
+	// the last visible content row (no empty trailing side-border row)
+	// and starts on the first visible row when top-clipped.  When
+	// unclipped, fall back to the full popup geometry (cl.eff_width
+	// excludes w_leftcol and the scrollbar, which popup_width() folds in).
 	if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
-	{
-	    popup_clip_T cl;
-
-	    popup_compute_clip(wp, &cl);
 	    total_width = cl.eff_width;
-	}
 	else
 	    total_width = popup_width(wp) - wp->w_popup_rightoff;
 	if (total_width < 0)
 	    total_width = 0;
-	// When clipped by "clipwindow", drop the border/padding slot at the
-	// clipped edge that we will not render, so the popup ends exactly on
-	// the last visible content row (no empty trailing side-border row)
-	// and starts on the first visible row when top-clipped.
 	if (wp->w_popup_topoff > 0 || wp->w_popup_bottomoff > 0)
-	{
-	    popup_clip_T cl;
-
-	    popup_compute_clip(wp, &cl);
 	    total_height = cl.eff_height;
-	}
 	else
-	{
 	    total_height = popup_height(wp);
-	}
 	popup_attr = get_win_attr(wp);
 
 	if (wp->w_winrow + total_height > cmdline_row)
@@ -5806,16 +5852,15 @@ update_popups(void (*win_update)(win_T *wp))
 	}
 
 	wincol = wp->w_wincol - wp->w_popup_leftoff + wp->w_popup_leftclip;
-	top_padding = wp->w_popup_padding[0];
-	if (wp->w_popup_border[0] > 0 && wp->w_popup_topoff == 0)
+	top_padding = cl.eff_padding[0];
+	if (cl.eff_border[0] > 0)
 	{
 	    // top border; do not draw over the title
 	    if (title_len > 0)
 	    {
 		screen_fill(wp->w_winrow, wp->w_winrow + 1,
 			wincol < 0 ? 0 : wincol, title_wincol,
-			wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
-				    && wp->w_popup_leftclip == 0
+			cl.eff_border[3] != 0 && wp->w_popup_leftoff == 0
 					     ? border_char[4] : border_char[0],
 			border_char[0], border_attr[0]);
 		screen_fill(wp->w_winrow, wp->w_winrow + 1,
@@ -5826,23 +5871,20 @@ update_popups(void (*win_update)(win_T *wp))
 	    {
 		screen_fill(wp->w_winrow, wp->w_winrow + 1,
 			wincol < 0 ? 0 : wincol, wincol + total_width,
-			wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
-				    && wp->w_popup_leftclip == 0
+			cl.eff_border[3] != 0 && wp->w_popup_leftoff == 0
 					     ? border_char[4] : border_char[0],
 			border_char[0], border_attr[0]);
 	    }
-	    if (wp->w_popup_border[1] > 0 && wp->w_popup_rightclip == 0)
+	    if (cl.eff_border[1] > 0)
 	    {
 		buf[mb_char2bytes(border_char[5], buf)] = NUL;
 		screen_puts(buf, wp->w_winrow,
 			       wincol + total_width - 1, border_attr[1]);
 	    }
 	}
-	else if (wp->w_popup_padding[0] == 0 && popup_top_extra(wp) > 0
+	else if (cl.eff_padding[0] == 0 && popup_top_extra(wp) > 0
 						    && wp->w_popup_topoff == 0)
 	    top_padding = 1;
-	if (wp->w_popup_topoff > 0)
-	    top_padding = 0;	    // top padding is clipped together with border
 
 	if (top_padding > 0 || wp->w_popup_padding[2] > 0)
 	{
@@ -5938,38 +5980,26 @@ update_popups(void (*win_update)(win_T *wp))
 		attr_thumb = highlight_attr[HLF_PST];
 	}
 
-	// When the popup is clipped by its host window ("clipwindow"), the
-	// border/padding at the clipped edge falls outside the drawn extent.
-	// Treat those sizes as zero so the side-border loop covers the full
-	// drawn extent without leaving an empty trailing row.
-	int eff_border_top = (wp->w_popup_topoff > 0)
-					    ? 0 : wp->w_popup_border[0];
-	int eff_padding_top = (wp->w_popup_topoff > 0)
-					    ? 0 : wp->w_popup_padding[0];
-	int eff_border_bot = (wp->w_popup_bottomoff > 0)
-					    ? 0 : wp->w_popup_border[2];
-	int eff_padding_bot = (wp->w_popup_bottomoff > 0)
-					    ? 0 : wp->w_popup_padding[2];
-
-	for (i = eff_border_top; i < total_height - eff_border_bot; ++i)
+	// The side-border loop spans the popup's drawn extent.  cl.eff_border
+	// and cl.eff_padding collapse the clipped edges to 0 so the loop
+	// covers the full visible area without leaving an empty trailing row.
+	for (i = cl.eff_border[0]; i < total_height - cl.eff_border[2]; ++i)
 	{
 	    int	pad_left;
 	    // left and right padding only needed next to the body
 	    int do_padding =
-		    i >= eff_border_top + eff_padding_top
-		    && i < total_height - eff_border_bot - eff_padding_bot;
+		    i >= cl.eff_border[0] + cl.eff_padding[0]
+		    && i < total_height - cl.eff_border[2] - cl.eff_padding[2];
 
 	    row = wp->w_winrow + i;
 
 	    // left border
-	    if (wp->w_popup_border[3] > 0 && wincol >= 0
-					    && wp->w_popup_leftclip == 0)
+	    if (cl.eff_border[3] > 0 && wincol >= 0)
 	    {
 		buf[mb_char2bytes(border_char[3], buf)] = NUL;
 		screen_puts(buf, row, wincol, border_attr[3]);
 	    }
-	    if (do_padding && wp->w_popup_padding[3] > 0
-					    && wp->w_popup_leftclip == 0)
+	    if (do_padding && cl.eff_padding[3] > 0)
 	    {
 		int col = wincol + wp->w_popup_border[3];
 
@@ -6008,14 +6038,13 @@ update_popups(void (*win_update)(win_T *wp))
 		    screen_putchar(' ', row, scroll_col, popup_attr);
 	    }
 	    // right border
-	    if (wp->w_popup_border[1] > 0 && wp->w_popup_rightclip == 0)
+	    if (cl.eff_border[1] > 0)
 	    {
 		buf[mb_char2bytes(border_char[1], buf)] = NUL;
 		screen_puts(buf, row, wincol + total_width - 1, border_attr[1]);
 	    }
 	    // right padding
-	    if (do_padding && wp->w_popup_padding[1] > 0
-					    && wp->w_popup_rightclip == 0)
+	    if (do_padding && cl.eff_padding[1] > 0)
 	    {
 		int pad_col_start = wincol + wp->w_popup_border[3]
 			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol;
@@ -6044,7 +6073,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    }
 	}
 
-	if (wp->w_popup_padding[2] > 0 && wp->w_popup_bottomoff == 0)
+	if (cl.eff_padding[2] > 0)
 	{
 	    // bottom padding
 	    row = wp->w_winrow + wp->w_popup_border[0]
@@ -6059,18 +6088,17 @@ update_popups(void (*win_update)(win_T *wp))
 					   padcol, padendcol, ' ', ' ', popup_attr);
 	}
 
-	if (wp->w_popup_border[2] > 0 && wp->w_popup_bottomoff == 0)
+	if (cl.eff_border[2] > 0)
 	{
 	    // bottom border
 	    row = wp->w_winrow + total_height - 1;
 	    screen_fill(row, row + 1,
 		    wincol < 0 ? 0 : wincol,
 		    wincol + total_width,
-		    wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
-				    && wp->w_popup_leftclip == 0
+		    cl.eff_border[3] != 0 && wp->w_popup_leftoff == 0
 					     ? border_char[7] : border_char[2],
 		    border_char[2], border_attr[2]);
-	    if (wp->w_popup_border[1] > 0 && wp->w_popup_rightclip == 0)
+	    if (cl.eff_border[1] > 0)
 	    {
 		buf[mb_char2bytes(border_char[6], buf)] = NUL;
 		screen_puts(buf, row, wincol + total_width - 1, border_attr[2]);
