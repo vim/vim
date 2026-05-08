@@ -5086,12 +5086,14 @@ getreginfo([{regname}])					*getreginfo()*
 					which is the register that got the
 					deleted text.
 			formats		If {regname} is a clipboard register
-					("+" or "*"), then this will be added
-					to the dictionary, containing a list
-					of all formats supported by the
+					("+" or "*"), then this will contain a
+					list of all formats supported by the
 					clipboard.  Note that this will not
 					exist for X11 if Vim uses the
-					|x11-cut-buffer|.
+					|x11-cut-buffer|.  Even if X11 is not
+					being used, it is still a good idea to
+					check if this exists in the dictionary
+					before using.
 					{only available when compiled with the
 					|+clipboard_formats| feature}
 

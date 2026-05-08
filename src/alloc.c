@@ -853,7 +853,7 @@ ga_concat(garray_T *gap, char_u *s)
 }
 
 /*
- * Concatenate an arbitrary block of memory to growarray. 
+ * Concatenate an arbitrary block of memory to growarray.
  * When "s" is NULL does not do anything.
  */
     void
