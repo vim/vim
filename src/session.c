@@ -1320,7 +1320,7 @@ ex_mkrc(exarg_T	*eap)
 	    {
 		si = SCRIPT_ITEM(sid);
 		if (si->sn_autoload_prefix &&
-		    (fprintf(fd, "import autoload '%s'", si->sn_name) == FAIL ||
+		    (fprintf(fd, "import autoload '%s'", si->sn_name) < 0 ||
 			put_eol(fd) == FAIL))
 		    failed = TRUE;
 	    }
