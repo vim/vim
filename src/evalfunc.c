@@ -10544,18 +10544,24 @@ formats:
     {
 	// Add a list of supported formats if register is a clipboard register.
 	list_T *flist = list_alloc();
+	int	i;
 
 	if (flist == NULL)
 	    return;
 
 	clip_update_supported_formats(cbd);
 
-	for (int i = 0; i < cbd->formats.ga_len; i++)
+	for (i = 0; i < cbd->formats.ga_len; i++)
 	    list_append_string(flist,
 		    ((clipformat_T *)cbd->formats.ga_data)[i].name, -1);
 
-	flist->lv_refcount++;
-	(void)dict_add_list(dict, "formats", flist);
+	if (i == 0)
+	    list_free(flist);
+	else
+	{
+	    flist->lv_refcount++;
+	    (void)dict_add_list(dict, "formats", flist);
+	}
     }
 #endif
 }

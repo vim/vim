@@ -496,7 +496,7 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
 	int	len = (int)GlobalSize(hMemW);
 	WCHAR	*hMemWstr = (WCHAR *)GlobalLock(hMemW);
 
-	ga_concat_len(ga, (char_u *)hMemWstr, len);
+	ga_concat_mem(ga, (char_u *)hMemWstr, len);
 	GlobalUnlock(hMemW);
     }
 

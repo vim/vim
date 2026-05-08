@@ -7273,7 +7273,7 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     if (data != NULL)
     {
 	content = gtk_selection_data_get_data_with_length(data, &len);
-	ga_concat_len(ga, (char_u *)content, len);
+	ga_concat_mem(ga, (char_u *)content, len);
 
 	gtk_selection_data_free(data);
 	return OK;

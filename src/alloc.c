@@ -853,19 +853,32 @@ ga_concat(garray_T *gap, char_u *s)
 }
 
 /*
+ * Concatenate an arbitrary block of memory to growarray. 
+ * When "s" is NULL does not do anything.
+ */
+    void
+ga_concat_mem(garray_T *gap, char_u *mem, size_t len)
+{
+    if (mem == NULL || len == 0)
+	return;
+    if (ga_grow(gap, (int)len) == OK)
+    {
+	mch_memmove((char *)gap->ga_data + gap->ga_len, mem, len);
+	gap->ga_len += (int)len;
+    }
+}
+
+
+/*
  * Concatenate 'len' bytes from string 's' to a growarray.
  * When "s" is NULL does not do anything.
  */
     void
 ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
-    if (s == NULL || *s == NUL || len == 0)
+    if (*s == NUL)
 	return;
-    if (ga_grow(gap, (int)len) == OK)
-    {
-	mch_memmove((char *)gap->ga_data + gap->ga_len, s, len);
-	gap->ga_len += (int)len;
-    }
+    ga_concat_mem(gap, s, len);
 }
 
 /*

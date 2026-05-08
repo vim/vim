@@ -2574,7 +2574,7 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
 	    ga_concat(&ga, p_enc);
 	    ga_append(&ga, NUL);
 	}
-	ga_concat_len(&ga, str, len);
+	ga_concat_mem(&ga, str, len);
 	vim_free(str);
     }
     else
