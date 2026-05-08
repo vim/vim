@@ -10489,7 +10489,11 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
+#ifdef FEAT_CLIPBOARD_FORMATS
+	goto formats;
+#else
 	return;
+#endif
     (void)dict_add_list(dict, "regcontents", list);
 
     switch (get_reg_type(regname, &reglen))
@@ -10534,6 +10538,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     }
 
 #ifdef FEAT_CLIPBOARD_FORMATS
+formats:
     cbd = clip_get_clipboard(regname);
     if (cbd != NULL)
     {
@@ -10549,7 +10554,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	    list_append_string(flist,
 		    ((clipformat_T *)cbd->formats.ga_data)[i].name, -1);
 
-	list->lv_refcount++;
+	flist->lv_refcount++;
 	(void)dict_add_list(dict, "formats", flist);
     }
 #endif

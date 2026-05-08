@@ -5046,13 +5046,6 @@ getreg([{regname} [, 1 [, {list} [, {format}]]]])			*getreg()*
 		format to return as a |Blob|.  If {format} is specified, then
 		the other optional arguments are ignored.
 
-		If Vim is the owner of the selection (only relevant for X11,
-		Wayland, and GTK GUI versions of Vim), then some formats are
-		not supported fully, such as "TIMESTAMP" or "TARGETS".  If
-		|getreg()| is called on them, then regular text will be
-		returned.  However the Vim specific formats, "_VIM_TEXT" and
-		"_VIMENC_TEXT" are supported.
-
 		To see what formats are available, see |getreginfo()|.  To see
 		how formats are named, see |clipboard-format-naming|.
 		{only available when compiled with the |+clipboard_formats|

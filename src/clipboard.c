@@ -2604,8 +2604,8 @@ clip_update_supported_formats(Clipboard_T *cbd UNUSED)
     if (cbd->owned)
     {
 	clip_clear_formats(cbd);
-	clip_add_format(cbd, (char_u *)VIM_ATOM_NAME, NULL);
 	clip_add_format(cbd, (char_u *)VIMENC_ATOM_NAME, NULL);
+	clip_add_format(cbd, (char_u *)VIM_ATOM_NAME, NULL);
 	clip_add_format(cbd, (char_u *)"text/plain", NULL);
 	clip_add_format(cbd, (char_u *)"text/plain;charset=utf-8", NULL);
 	return;
