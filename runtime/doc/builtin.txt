@@ -5046,6 +5046,11 @@ getreg([{regname} [, 1 [, {list} [, {format}]]]])			*getreg()*
 		format to return as a |Blob|.  If {format} is specified, then
 		the other optional arguments are ignored.
 
+		Note that for X11, if Vim is using the |x11-cut-buffer|, then
+		any {format} will return an empty blob, however excluding
+		{format} will return the text from the cut-buffer.  This is
+		because |x11-cut-buffer| only supports text.
+
 		To see what formats are available, see |getreginfo()|.  To see
 		how formats are named, see |clipboard-format-naming|.
 		{only available when compiled with the |+clipboard_formats|
@@ -5084,7 +5089,9 @@ getreginfo([{regname}])					*getreginfo()*
 					("+" or "*"), then this will be added
 					to the dictionary, containing a list
 					of all formats supported by the
-					clipboard.
+					clipboard.  Note that this will not
+					exist for X11 if Vim uses the
+					|x11-cut-buffer|.
 					{only available when compiled with the
 					|+clipboard_formats| feature}
 
