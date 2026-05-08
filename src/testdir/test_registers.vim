@@ -1319,13 +1319,12 @@ func Test_writing_readonly_regs()
   call assert_fails('let @~ = "foo"', 'E354:')
 endfunc
 
-let $TEST_NO_RETRY = 'yes'
-
 " Test if arbitrary clipboard formats are handled correctly (on X11 and GTK GUI)
 " Most of the bulk common logic is actually done in test_wayland, so just test
 " the x11 + gtk gui logic here.
 func Test_clipboard_formats_x11_gtk()
   CheckFeature clipboard_working
+  CheckFeature clipboard_formats
   CheckRunVimInTerminal
   CheckX11
 
@@ -1365,21 +1364,29 @@ endfunc
 " Test if arbitrary clipboard formats are handled correctly (on Windows)
 func Test_clipboard_formats_win32()
   CheckFeature clipboard_working
+  CheckFeature clipboard_formats
   CheckMSWindows
 
   " Windows clipboard doesn't have the concept of owning the selection, so we
   " can just use ourselves as the clipboard "source".
-  let @+ = "Windows"
+  let @* = "Windows"
 
-  let arr = ['VimClipboard2', 'CF_UNICODETEXT', 'CF_TEXT', 'CF_LOCALE', 'CF_OEMTEXT']
+  call WaitForAssert({-> assert_true(has_key(getreginfo('*'), "formats"))})
+
+  let arr = [
+        \ 'VimClipboard2', 'CF_UNICODETEXT',
+        \ 'CF_TEXT', 'CF_LOCALE', 'CF_OEMTEXT'
+        \ ]
 
   for fmt in arr
-    call assert_notequal(-1, index(getreginfo('+').formats, fmt))
+    call assert_notequal(-1, index(getreginfo('*').formats, fmt))
   endfor
 
-  call assert_equal(["Windows\n"], blob2str(getreg("+", 0, 0, "CF_TEXT")))
   call assert_equal(["Windows\n"], blob2str(getreg("*", 0, 0, "CF_TEXT")))
-  call assert_equal(0z00000000.07000000.07000000.0D000000, getreg("*", 0, 0, "VimClipboard2"))
+  call assert_equal(0z00000000.07000000.07000000.0D000000,
+        \ getreg("*", 0, 0, "VimClipboard2"))
+
+  call assert_equal(0z, getreg("*", 0, 0, "UNKNOWN"))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

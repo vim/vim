@@ -551,10 +551,11 @@ func Test_wayland_protocol_error_overflow()
   endtry
 endfunc
 
-let $TEST_NO_RETRY = 'yes'
 " Test if handling arbitrary clipboard formats works with Wayland. Also tests
 " the common clipboard formats code in general.
 func Test_wayland_clipboard_formats()
+  CheckFeature clipboard_formats
+
   call s:PreTest()
 
   let @+ = "test"

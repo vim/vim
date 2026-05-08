@@ -432,6 +432,84 @@ clip_mch_request_selection(Clipboard_T *cbd)
 }
 
 # ifdef FEAT_CLIPBOARD_FORMATS
+    static const WCHAR *
+get_standard_name(UINT fmt)
+{
+    switch (fmt)
+    {
+	case CF_TEXT:            return L"CF_TEXT";
+	case CF_BITMAP:          return L"CF_BITMAP";
+	case CF_METAFILEPICT:    return L"CF_METAFILEPICT";
+	case CF_SYLK:            return L"CF_SYLK";
+	case CF_DIF:             return L"CF_DIF";
+	case CF_TIFF:            return L"CF_TIFF";
+	case CF_OEMTEXT:         return L"CF_OEMTEXT";
+	case CF_DIB:             return L"CF_DIB";
+	case CF_PALETTE:         return L"CF_PALETTE";
+	case CF_PENDATA:         return L"CF_PENDATA";
+	case CF_RIFF:            return L"CF_RIFF";
+	case CF_WAVE:            return L"CF_WAVE";
+	case CF_UNICODETEXT:     return L"CF_UNICODETEXT";
+	case CF_ENHMETAFILE:     return L"CF_ENHMETAFILE";
+	case CF_HDROP:           return L"CF_HDROP";
+	case CF_LOCALE:          return L"CF_LOCALE";
+	case CF_DIBV5:           return L"CF_DIBV5";
+	case CF_OWNERDISPLAY:    return L"CF_OWNERDISPLAY";
+	case CF_DSPTEXT:         return L"CF_DSPTEXT";
+	case CF_DSPBITMAP:       return L"CF_DSPBITMAP";
+	case CF_DSPMETAFILEPICT: return L"CF_DSPMETAFILEPICT";
+	case CF_DSPENHMETAFILE:  return L"CF_DSPENHMETAFILE";
+	default:                 return NULL;
+    }
+}
+
+    static const WCHAR *
+get_format_name(UINT fmt)
+{
+    const WCHAR	    *standard;
+    static WCHAR    name[256];
+
+    // Try standard formats first
+    standard = get_standard_name(fmt);
+    if (standard != NULL)
+	return standard;
+
+    // Try registered formats
+    if (GetClipboardFormatNameW(fmt, name, 256) > 0)
+	return name;
+
+    // Unknown clipboard format or private
+    return NULL;
+}
+
+    static void
+clip_update_formats(Clipboard_T *cbd, bool open)
+{
+    UINT fmt = 0;
+
+    clip_clear_formats(cbd);
+    if (open && !vim_open_clipboard())
+	return;
+
+    while ((fmt = EnumClipboardFormats(fmt)) != 0)
+    {
+	const WCHAR *wname = get_format_name(fmt);
+	char_u      *name;
+
+	if (wname == NULL)
+	    continue;
+	name = utf16_to_enc((short_u *)wname, NULL);
+
+	if (name != NULL)
+	{
+	    (void)clip_add_format(cbd, name, NULL);
+	    vim_free(name);
+	}
+    }
+    if (open)
+	CloseClipboard();
+}
+
 /*
  * Get the format id associated with "name". Returns zero on failure.
  */
@@ -484,6 +562,13 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     if (!vim_open_clipboard())
 	return FAIL;
 
+    // Check if format exists first. This is to prevent unavailable formats from
+    // being queried via the API, and be registered into the global formats
+    // table, polluting it.
+    clip_update_formats(cbd, false);
+    if (!clip_format_is_supported(cbd, format))
+	return FAIL;
+
     fmt = get_format_id(format);
     if (fmt == 0 || !IsClipboardFormatAvailable(fmt))
     {
@@ -494,9 +579,9 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     if ((hMemW = GetClipboardData(fmt)) != NULL)
     {
 	int	len = (int)GlobalSize(hMemW);
-	WCHAR	*hMemWstr = (WCHAR *)GlobalLock(hMemW);
+	char_u	*str = (char_u *)GlobalLock(hMemW);
 
-	ga_concat_mem(ga, (char_u *)hMemWstr, len);
+	ga_concat_mem(ga, str, len);
 	GlobalUnlock(hMemW);
     }
 
@@ -505,79 +590,10 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     return OK;
 }
 
-    static const WCHAR *
-get_standard_name(UINT fmt)
-{
-    switch (fmt)
-    {
-	case CF_TEXT:            return L"CF_TEXT";
-	case CF_BITMAP:          return L"CF_BITMAP";
-	case CF_METAFILEPICT:    return L"CF_METAFILEPICT";
-	case CF_SYLK:            return L"CF_SYLK";
-	case CF_DIF:             return L"CF_DIF";
-	case CF_TIFF:            return L"CF_TIFF";
-	case CF_OEMTEXT:         return L"CF_OEMTEXT";
-	case CF_DIB:             return L"CF_DIB";
-	case CF_PALETTE:         return L"CF_PALETTE";
-	case CF_PENDATA:         return L"CF_PENDATA";
-	case CF_RIFF:            return L"CF_RIFF";
-	case CF_WAVE:            return L"CF_WAVE";
-	case CF_UNICODETEXT:     return L"CF_UNICODETEXT";
-	case CF_ENHMETAFILE:     return L"CF_ENHMETAFILE";
-	case CF_HDROP:           return L"CF_HDROP";
-	case CF_LOCALE:          return L"CF_LOCALE";
-	case CF_DIBV5:           return L"CF_DIBV5";
-	case CF_OWNERDISPLAY:    return L"CF_OWNERDISPLAY";
-	case CF_DSPTEXT:         return L"CF_DSPTEXT";
-	case CF_DSPBITMAP:       return L"CF_DSPBITMAP";
-	case CF_DSPMETAFILEPICT: return L"CF_DSPMETAFILEPICT";
-	case CF_DSPENHMETAFILE:  return L"CF_DSPENHMETAFILE";
-	default:                 return NULL;
-    }
-}
-
-static const WCHAR *
-get_format_name(UINT fmt)
-{
-    const WCHAR	    *standard;
-    static WCHAR    name[256];
-
-    // Try standard formats first
-    standard  = get_standard_name(fmt);
-    if (standard != NULL)
-	return standard;
-
-    // Try registered formats
-    if (GetClipboardFormatNameW(fmt, name, 256) > 0)
-	return name;
-
-    // Unknown clipboard format or private
-    vim_snprintf((char *)name, 256, "%x", fmt);
-    return name;
-}
-
     void
 clip_mch_update_formats(Clipboard_T *cbd)
 {
-    UINT fmt = 0;
-
-    clip_clear_formats(cbd);
-    if (!vim_open_clipboard())
-	return;
-
-    while ((fmt = EnumClipboardFormats(fmt)) != 0)
-    {
-	const WCHAR *wname = get_format_name(fmt);
-	char_u      *name = utf16_to_enc((short_u *)wname, NULL);
-
-	if (name != NULL)
-	{
-	    clip_add_format(cbd, name, NULL);
-	    vim_free(name);
-	}
-    }
-
-    CloseClipboard();
+    clip_update_formats(cbd, true);
 }
 # endif
 

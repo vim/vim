@@ -1876,7 +1876,7 @@ clip_x11_update_formats_cb(
     Atom	*type,
     XtPointer	value,
     long_u	*length,
-    int		*format)
+    int		*format UNUSED)
 {
     Display	*dpy = XtDisplay(w);
     Clipboard_T	*cbd;
@@ -1895,6 +1895,8 @@ clip_x11_update_formats_cb(
     {
 	clip_clear_formats(cbd);
 	*(int *)success = FALSE;
+	if (value != NULL)
+	    XtFree(value);
 	return;
     }
 
@@ -1902,9 +1904,9 @@ clip_x11_update_formats_cb(
     {
 	char *name = XGetAtomName(dpy, targets[i]);
 
-	if (format != NULL)
+	if (name != NULL)
 	{
-	    clip_add_format(cbd, (char_u *)name, NULL);
+	    (void)clip_add_format(cbd, (char_u *)name, NULL);
 	    XFree(name);
 	}
     }
@@ -1960,7 +1962,11 @@ clip_x11_request_format_cb(
     long_u	len = *length;
 
     if (*success != MAYBE)
+    {
+	if (value != NULL)
+	    XtFree(value);
 	return;
+    }
 
     ga_concat_mem(buf, p, len);
     *success = TRUE;
@@ -2434,7 +2440,7 @@ may_set_selection(void)
 
 /*
  * Get the corresponding Clipboard_T struct based on "regname". Returns NULL if
- * "regname" is not a clipboad register.
+ * "regname" is not a clipboard register.
  */
     Clipboard_T *
 clip_get_clipboard(int regname)
@@ -2449,15 +2455,15 @@ clip_get_clipboard(int regname)
 
 /*
  * Add the given format to the clipboard. If "blob" is not NULL, then it is
- * copied and placed with the format.
+ * copied and placed with the format. Returns OK on success and FAIL on failure.
  */
-    void
+    int
 clip_add_format(Clipboard_T *cbd, char_u *format, blob_T *blob)
 {
     char_u *str;
 
     if (ga_grow(&cbd->formats, 1) == FAIL)
-	return;
+	return FAIL;
 
     str = vim_strsave(format);
 
@@ -2475,12 +2481,13 @@ clip_add_format(Clipboard_T *cbd, char_u *format, blob_T *blob)
 	    fmt->data = NULL;
 	fmt->name = str;
     }
+    return OK;
 }
 
     void
 clip_clear_formats(Clipboard_T *cbd)
 {
-    for (int i = 0; i <cbd->formats.ga_len; i++)
+    for (int i = 0; i < cbd->formats.ga_len; i++)
     {
 	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
 
@@ -2538,18 +2545,6 @@ clip_get_selection_format(Clipboard_T *cbd, char_u *format)
 
     ga_init2(&ga, 1, 4096);
 
-    // Check if we already have the contents,from setreg(). TODO
-    /* for (int i = 0; i <cbd->formats.ga_len; i++) */
-    /* { */
-	/* clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i]; */
-
-	/* if (STRCMP(format, fmt->name) == 0 && fmt->data != NULL) */
-	/* { */
-	    /* ga_concat_len(&ga, fmt->data, fmt->len); */
-	    /* break; */
-	/* } */
-    /* } */
-
     // If we own the clipboard, then just access the register directly. For our
     // special formats, also handle them too.
     if (cbd->owned)
@@ -2596,7 +2591,7 @@ exit:
     bool
 clip_format_is_supported(Clipboard_T *cbd, char_u *format)
 {
-    for (int i = 0; i <cbd->formats.ga_len; i++)
+    for (int i = 0; i < cbd->formats.ga_len; i++)
     {
 	clipformat_T *fmt = &((clipformat_T *)cbd->formats.ga_data)[i];
 
@@ -2617,10 +2612,10 @@ clip_update_supported_formats(Clipboard_T *cbd UNUSED)
     if (cbd->owned)
     {
 	clip_clear_formats(cbd);
-	clip_add_format(cbd, (char_u *)VIMENC_ATOM_NAME, NULL);
-	clip_add_format(cbd, (char_u *)VIM_ATOM_NAME, NULL);
-	clip_add_format(cbd, (char_u *)"text/plain", NULL);
-	clip_add_format(cbd, (char_u *)"text/plain;charset=utf-8", NULL);
+	(void)clip_add_format(cbd, (char_u *)VIMENC_ATOM_NAME, NULL);
+	(void)clip_add_format(cbd, (char_u *)VIM_ATOM_NAME, NULL);
+	(void)clip_add_format(cbd, (char_u *)"text/plain", NULL);
+	(void)clip_add_format(cbd, (char_u *)"text/plain;charset=utf-8", NULL);
 	return;
     }
 #  if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
@@ -2744,7 +2739,7 @@ vwl_data_device_listener_event_selection(
 	for (int i = 0; i < offer->mime_types.ga_len; i++)
 	{
 	    char_u *fmt = ((char_u **)offer->mime_types.ga_data)[i];
-	    clip_add_format(cbd, fmt, NULL);
+	    (void)clip_add_format(cbd, fmt, NULL);
 	}
     }
 #  else
@@ -3029,11 +3024,8 @@ clip_wl_request_format(
     int			fds[2];
     int			ret = FAIL;
 
-    // Dispatch any events that still queued up before checking for a data
-    // offer.
 #  ifdef FEAT_CLIPBOARD_FORMATS
     if (for_formats)
-#  endif
     {
 	if (!sel->available)
 	    return FAIL;
@@ -3045,6 +3037,7 @@ clip_wl_request_format(
 	if (!clip_format_is_supported(cbd, (char_u *)format))
 	    return FAIL;
     }
+#  endif
 
     if (sel->offer == NULL)
 	return FAIL;
@@ -3055,7 +3048,7 @@ clip_wl_request_format(
     vwl_data_offer_receive(sel->offer, format, fds[1]);
 
     close(fds[1]); // Close before we read data so that when the source client
-		   // closes theirs end we receive an EOF.
+		   // closes their end we receive an EOF.
 
     if (vwl_connection_flush(wayland_ct) >= 0)
 	ret = clip_wl_receive_data(fds[0], ga);
@@ -3083,6 +3076,8 @@ clip_wl_request_selection(Clipboard_T *cbd)
     if (!sel->available)
 	goto clear;
 
+    // Dispatch any events that still queued up before checking for a data
+    // offer.
     if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	goto clear;
 

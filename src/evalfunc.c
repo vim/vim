@@ -1328,7 +1328,7 @@ static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, a
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_string_bool_bool_blob[] = {arg_string, arg_bool, arg_bool, arg_blob};
+static argcheck_T arg4_string_bool_bool_string[] = {arg_string, arg_bool, arg_bool, arg_string};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
@@ -2355,7 +2355,7 @@ static const funcentry_T global_functions[] =
 			ret_list_number,    f_getpos},
     {"getqflist",	0, 1, 0,	    arg1_dict_any,
 			ret_list_or_dict_0, f_getqflist},
-    {"getreg",		0, 4, FEARG_1,	    arg4_string_bool_bool_blob,
+    {"getreg",		0, 4, FEARG_1,	    arg4_string_bool_bool_string,
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
@@ -10558,10 +10558,7 @@ formats:
 	if (i == 0)
 	    list_free(flist);
 	else
-	{
-	    flist->lv_refcount++;
 	    (void)dict_add_list(dict, "formats", flist);
-	}
     }
 #endif
 }

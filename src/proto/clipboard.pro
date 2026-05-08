@@ -36,7 +36,7 @@ int clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd);
 int may_get_selection(int regname);
 void may_set_selection(void);
 Clipboard_T *clip_get_clipboard(int regname);
-void clip_add_format(Clipboard_T *cbd, char_u *format, blob_T *blob);
+int clip_add_format(Clipboard_T *cbd, char_u *format, blob_T *blob);
 void clip_clear_formats(Clipboard_T *cbd);
 blob_T *clip_get_selection_format(Clipboard_T *cbd, char_u *format);
 bool clip_format_is_supported(Clipboard_T *cbd, char_u *format);

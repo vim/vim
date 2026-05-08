@@ -7305,7 +7305,7 @@ clip_mch_update_formats(Clipboard_T *cbd)
 	{
 	    const gchar *name = gdk_atom_name(targets[i]);
 
-	    clip_add_format(cbd, (char_u *)name, NULL);
+	    (void)clip_add_format(cbd, (char_u *)name, NULL);
 	}
 
 	g_free(targets);

@@ -5042,14 +5042,16 @@ getreg([{regname} [, 1 [, {list} [, {format}]]]])			*getreg()*
 
 							*clipboard-format*
 		If {regname} is a clipboard register ("+" or "*"), then
-		{format} is allowed, which specifies the which clipboard
-		format to return as a |Blob|.  If {format} is specified, then
-		the other optional arguments are ignored.
+		{format} is allowed, which specifies which clipboard
+		format to return as a |Blob|.  When an unavailable format is
+		used, an empty |Blob| is returned.  If {format} is specified,
+		then the other optional arguments are ignored.
 
-		Note that for X11, if Vim is using the |x11-cut-buffer|, then
-		any {format} will return an empty blob, however excluding
-		{format} will return the text from the cut-buffer.  This is
-		because |x11-cut-buffer| only supports text.
+		Note On X11, when no application currently owns the selection,
+		Vim falls back to the |x11-cut-buffer|, which holds plain text
+		only.  In that case |getreg()| without {format} still returns
+		the cut-buffer text, but any call with {format} returns an
+		empty |Blob| and |getreginfo()| omits the "formats" entry.
 
 		To see what formats are available, see |getreginfo()|.  To see
 		how formats are named, see |clipboard-format-naming|.
@@ -5105,7 +5107,7 @@ getreginfo([{regname}])					*getreginfo()*
 		In |Vim9-script| {regname} must be one character.
 
 							*clipboard-format-naming*
-		Note that how the clipboard formats are named (for "formats"),
+		Note that how the clipboard formats are named (for "formats")
 		is system dependent:
 		    wayland		Usually a mime type.
 		    x11			Mime types or UPPERCASE style names.
