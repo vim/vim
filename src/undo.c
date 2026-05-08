@@ -2081,38 +2081,54 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 		corruption_error("duplicate uh_seq", file_name);
 		goto error;
 	    }
-	for (j = 0; j < num_head; j++)
-	    if (uhp_table[j] != NULL
-				  && uhp_table[j]->uh_seq == uhp->uh_next.seq)
-	    {
-		uhp->uh_next.ptr = uhp_table[j];
-		SET_FLAG(j);
-		break;
-	    }
-	for (j = 0; j < num_head; j++)
-	    if (uhp_table[j] != NULL
-				  && uhp_table[j]->uh_seq == uhp->uh_prev.seq)
-	    {
-		uhp->uh_prev.ptr = uhp_table[j];
-		SET_FLAG(j);
-		break;
-	    }
-	for (j = 0; j < num_head; j++)
-	    if (uhp_table[j] != NULL
-			      && uhp_table[j]->uh_seq == uhp->uh_alt_next.seq)
-	    {
-		uhp->uh_alt_next.ptr = uhp_table[j];
-		SET_FLAG(j);
-		break;
-	    }
-	for (j = 0; j < num_head; j++)
-	    if (uhp_table[j] != NULL
-			      && uhp_table[j]->uh_seq == uhp->uh_alt_prev.seq)
-	    {
-		uhp->uh_alt_prev.ptr = uhp_table[j];
-		SET_FLAG(j);
-		break;
-	    }
+	{
+	    int seq = uhp->uh_next.seq;
+	    uhp->uh_next.ptr = NULL;
+	    for (j = 0; j < num_head; j++)
+		if (uhp_table[j] != NULL && i != j
+				    && uhp_table[j]->uh_seq == seq)
+		{
+		    uhp->uh_next.ptr = uhp_table[j];
+		    SET_FLAG(j);
+		    break;
+		}
+	}
+	{
+	    int seq = uhp->uh_prev.seq;
+	    uhp->uh_prev.ptr = NULL;
+	    for (j = 0; j < num_head; j++)
+		if (uhp_table[j] != NULL && i != j
+				    && uhp_table[j]->uh_seq == seq)
+		{
+		    uhp->uh_prev.ptr = uhp_table[j];
+		    SET_FLAG(j);
+		    break;
+		}
+	}
+	{
+	    int seq = uhp->uh_alt_next.seq;
+	    uhp->uh_alt_next.ptr = NULL;
+	    for (j = 0; j < num_head; j++)
+		if (uhp_table[j] != NULL && i != j
+				&& uhp_table[j]->uh_seq == seq)
+		{
+		    uhp->uh_alt_next.ptr = uhp_table[j];
+		    SET_FLAG(j);
+		    break;
+		}
+	}
+	{
+	    int seq = uhp->uh_alt_prev.seq;
+	    uhp->uh_alt_prev.ptr = NULL;
+	    for (j = 0; j < num_head; j++)
+		if (uhp_table[j] != NULL && i != j
+				&& uhp_table[j]->uh_seq == seq)
+		{
+		    uhp->uh_alt_prev.ptr = uhp_table[j];
+		    SET_FLAG(j);
+		    break;
+		}
+	}
 	if (old_header_seq > 0 && old_idx < 0 && uhp->uh_seq == old_header_seq)
 	{
 	    old_idx = i;
