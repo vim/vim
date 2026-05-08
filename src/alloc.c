@@ -876,7 +876,7 @@ ga_concat_mem(garray_T *gap, char_u *mem, size_t len)
     void
 ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
-    if (*s == NUL)
+    if (s == NULL || *s == NUL)
 	return;
     ga_concat_mem(gap, s, len);
 }
