@@ -551,4 +551,51 @@ func Test_wayland_protocol_error_overflow()
   endtry
 endfunc
 
+let $TEST_NO_RETRY = 'yes'
+" Test if handling arbitrary clipboard formats works with Wayland. Also tests
+" the common clipboard formats code in general.
+func Test_wayland_clipboard_formats()
+  call s:PreTest()
+
+  let @+ = "test"
+
+  call assert_equal([
+        \ '_VIMENC_TEXT',
+        \ '_VIM_TEXT',
+        \ 'text/plain',
+        \ 'text/plain;charset=utf-8'
+        \ ], getreginfo('+').formats)
+
+  call assert_equal(0z74657374, getreg('+', 0, 0, "text/plain"))
+  call assert_equal(0z, getreg('+', 0, 0, "unknown"))
+  call assert_equal(0z00757466.2D380074.657374,
+        \ getreg('+', 0, 0, "_VIMENC_TEXT"))
+  call assert_equal(0z0074.657374,
+        \ getreg('+', 0, 0, "_VIM_TEXT"))
+
+  " Must also test with external source client, above only tests when Vim is the
+  " source client.
+  call system('wl-copy -t image/png "an image"')
+
+  " May take a while for wl-copy to set clipboard initially
+  call WaitForAssert({-> assert_equal('image/png', getreginfo('+').formats[0])})
+  call assert_equal(["an image"], blob2str(getreg("+", 0, 0, "image/png")))
+  call assert_equal(0z, getreg('+', 0, 0, "unknown"))
+
+  call system('wl-copy -p -t image/jpeg "another"')
+
+  call WaitForAssert({-> assert_equal('image/jpeg', getreginfo('*').formats[0])})
+  call assert_equal(["another"], blob2str(getreg("*", 0, 0, "image/jpeg")))
+  call WaitForAssert({-> assert_equal('image/png', getreginfo('+').formats[0])})
+  call assert_equal(["an image"], blob2str(getreg("+", 0, 0, "image/png")))
+
+  call system("wl-copy -c")
+  call WaitForAssert({-> assert_equal({}, getreginfo('+'))})
+
+  call WaitForAssert({-> assert_equal('image/jpeg', getreginfo('*').formats[0])})
+  call assert_equal(["another"], blob2str(getreg("*", 0, 0, "image/jpeg")))
+  call system("wl-copy -c -p")
+  call WaitForAssert({-> assert_equal({}, getreginfo('*'))})
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

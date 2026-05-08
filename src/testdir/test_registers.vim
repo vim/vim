@@ -1319,4 +1319,53 @@ func Test_writing_readonly_regs()
   call assert_fails('let @~ = "foo"', 'E354:')
 endfunc
 
+let $TEST_NO_RETRY = 'yes'
+
+" Test if arbitrary clipboard formats are handled correctly (on X11 and GTK GUI)
+" Most of the bulk common logic is actually done in test_wayland, so just test
+" the x11 (and windows, gtk gui) logic here.
+func Test_clipboard_formats_x11_gtk()
+  CheckFeature clipboard_working
+  CheckRunVimInTerminal
+  CheckX11
+
+  if !has('x11') && !has("GUI_GTK") && !has('gui_running')
+    throw 'Skipped: X11 or GTK gui not running'
+  endif
+
+  let lines =<< trim END
+      set clipmethod=x11
+  END
+  call writefile(lines, 'XTest_clipboard_formats', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_clipboard_formats', #{rows: 10})
+  call TermWait(buf)
+
+  set clipmethod=x11
+
+  call term_sendkeys(buf, "\<Esc>:let @+ = 'vim text'\<CR>")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(
+        \ ['TARGETS', '_VIMENC_TEXT', '_VIM_TEXT', 'UTF8_STRING',
+        \ 'STRING', 'TEXT', 'COMPOUND_TEXT'],
+        \ getreginfo('+').formats)})
+  call assert_equal(["vim text"], blob2str(getreg("+", 0, 0, "TEXT")))
+  call assert_equal(0z0076696D.20746578.74, getreg("+", 0, 0, "_VIM_TEXT"))
+
+  call StopVimInTerminal(buf)
+
+  call WaitForAssert({-> assert_false(has_key(getreginfo('+'), "formats"))})
+  call assert_equal(0z, getreg("+", 0, 0, "_VIM_TEXT"))
+  call assert_equal('vim text', getreg("+", 0, 0)) " Cut buffer
+
+  set clipmethod&
+endfunc
+
+" Test if arbitrary clipboard formats are handled correctly (on Windows)
+func Test_clipboard_formats_win32()
+  CheckFeature clipboard_working
+  CheckMSWindows
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
