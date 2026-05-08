@@ -712,6 +712,14 @@ The second argument of |popup_create()| is a dictionary with options:
 			when "textprop" is present.
 	textpropid	Used to identify the text property when "textprop" is
 			present.  Use zero to reset.
+	clipwindow	When TRUE and "textprop" is set, confine the popup to
+			the window that contains the text property (the host
+			window).  As the text property scrolls past the host
+			window's top, bottom, left or right edge the popup is
+			clipped to the visible portion of that window instead
+			of extending outside it.  When the popup has scrolled
+			entirely past an edge it is hidden.  Default is FALSE.
+			See |popup-clipwindow|.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
 			 - the popup would be truncated at the right edge of
@@ -948,6 +956,31 @@ If the window for which the popup was defined is closed, the popup is closed.
 
 If the popup cannot fit in the desired position, it may show at a nearby
 position.
+
+
+CLIP TEXTPROP POPUP TO HOST WINDOW			*popup-clipwindow*
+
+When the popup is anchored to a text property in a split window, the popup is
+by default drawn relative to the whole screen and may extend past the edges of
+the window that contains the text property (the "host window").  Setting
+"clipwindow" to TRUE confines the popup to the host window's content area:
+parts of the popup that fall outside the window are clipped, and the popup is
+hidden once the text property has scrolled entirely past one of the edges.
+
+Example: a tall popup anchored above the cursor that should never spill into
+the window below the split: >
+	call popup_create(body, #{
+		\ textprop: 'marker',
+		\ textpropid: id,
+		\ pos: 'topleft',
+		\ line: -1, col: 0,
+		\ posinvert: v:false,
+		\ clipwindow: v:true,
+		\ })
+<
+With "posinvert" left at its default (TRUE) the popup may be flipped to the
+opposite side of the text property when there is no room; set it to FALSE to
+keep the requested side and rely on "clipwindow" to clip the overflow.
 
 Some hints:
 - To avoid collision with other plugins the text property type name has to be
