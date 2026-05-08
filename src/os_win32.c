@@ -8100,7 +8100,8 @@ mch_fopen(const char *name, const char *mode)
     vim_free(wm);
 
 #if defined(DEBUG) && _MSC_VER >= 1400
-    _set_fmode(oldMode);
+    if (oldMode != 0)
+	_set_fmode(oldMode);
 #endif
     return f;
 }
