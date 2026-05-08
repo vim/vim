@@ -1674,6 +1674,9 @@ clip_x11_request_selection_cb(
     Clipboard_T	*cbd;
     char_u	*tmpbuf = NULL;
 
+    if (*(int *)success != MAYBE)
+	return;
+
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
     else
@@ -1852,9 +1855,13 @@ clip_x11_request_selection(
 	// don't do a retry with another type after timing out, otherwise we
 	// hang for 15 seconds.
 	if (timed_out)
+	{
+	    success = FALSE;
 	    break;
+	}
     }
 
+    success = FALSE;
     // Final fallback position - use the X CUT_BUFFER0 store
     yank_cut_buffer0(dpy, cbd);
 }
@@ -1874,6 +1881,9 @@ clip_x11_update_formats_cb(
     Display	*dpy = XtDisplay(w);
     Clipboard_T	*cbd;
     Atom	*targets = (Atom *)value;
+
+    if (*(int *)success != MAYBE)
+	return;
 
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
@@ -1924,13 +1934,14 @@ clip_x11_update_formats(Widget myShell, Display *dpy, Clipboard_T *cbd)
     if (success == TRUE)
 	return;
 
+    success = FALSE;
     clip_clear_formats(cbd);
 }
 
 typedef struct
 {
     garray_T	*buf;
-    int		*success;
+    int		success;
 } request_format_data_T;
 
     static void
@@ -1943,12 +1954,15 @@ clip_x11_request_format_cb(
     long_u	*length,
     int		*format UNUSED)
 {
-    int		*success = ((request_format_data_T *)ptr)->success;
+    int		*success = &((request_format_data_T *)ptr)->success;
     garray_T	*buf = ((request_format_data_T *)ptr)->buf;
     char_u	*p = (char_u *)value;
     long_u	len = *length;
 
-    ga_concat_len(buf, p, len);
+    if (*success != MAYBE)
+	return;
+
+    ga_concat_mem(buf, p, len);
     *success = TRUE;
     XtFree(value);
 }
@@ -1962,10 +1976,9 @@ clip_x11_request_format(
     garray_T	*ga)
 {
     Atom	type;
-    static int	success;
     int		timed_out = FALSE;
 
-    request_format_data_T udata;
+    static request_format_data_T udata;
 
     // Check if format is supported
     clip_x11_update_formats(myShell, dpy, cbd);
@@ -1974,18 +1987,18 @@ clip_x11_request_format(
 
     type = XInternAtom(dpy, (char *)format, False);
 
-    success = MAYBE;
-    udata.success = &success;
+    udata.success = MAYBE;
     udata.buf = ga;
 
     XtGetSelectionValue(myShell, cbd->sel_atom, type,
 	    clip_x11_request_format_cb, (XtPointer)&udata, CurrentTime);
 
-    clip_x11_common_wait(dpy, &success, &timed_out);
+    clip_x11_common_wait(dpy, &udata.success, &timed_out);
 
-    if (success == TRUE)
+    if (udata.success == TRUE)
 	return OK;
 
+    udata.success = FALSE;
     return FAIL;
 }
 
