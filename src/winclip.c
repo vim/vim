@@ -431,7 +431,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
     vim_free(to_free);
 }
 
-#ifdef FEAT_CLIPBOARD_FORMATS
+# ifdef FEAT_CLIPBOARD_FORMATS
 /*
  * Get the format id associated with "name". Returns zero on failure.
  */
@@ -579,7 +579,7 @@ clip_mch_update_formats(Clipboard_T *cbd)
 
     CloseClipboard();
 }
-#endif
+# endif
 
 /*
  * Send the current selection to the clipboard.

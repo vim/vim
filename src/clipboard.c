@@ -2594,11 +2594,22 @@ clip_format_is_supported(Clipboard_T *cbd, char_u *format)
 }
 
 /*
- * Update the list of supported mime types for cbd.
+ * Update the list of supported mime types for clipboard. If we own the
+ * clipboard, then only expose the VIM and VIMENC formats + "text/plain" +
+ * "text/plain;charset=utf-8".
  */
     void
 clip_update_supported_formats(Clipboard_T *cbd UNUSED)
 {
+    if (cbd->owned)
+    {
+	clip_clear_formats(cbd);
+	clip_add_format(cbd, (char_u *)VIM_ATOM_NAME, NULL);
+	clip_add_format(cbd, (char_u *)VIMENC_ATOM_NAME, NULL);
+	clip_add_format(cbd, (char_u *)"text/plain", NULL);
+	clip_add_format(cbd, (char_u *)"text/plain;charset=utf-8", NULL);
+	return;
+    }
 #  if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #   ifdef FEAT_GUI
     if (gui.in_use)
@@ -2609,7 +2620,7 @@ clip_update_supported_formats(Clipboard_T *cbd UNUSED)
 	if (clipmethod == CLIPMETHOD_WAYLAND)
 	{
 #   ifdef FEAT_WAYLAND_CLIPBOARD
-	    vwl_connection_roundtrip(wayland_ct);
+		vwl_connection_roundtrip(wayland_ct);
 #   endif
 	}
 	else if (clipmethod == CLIPMETHOD_X11)
@@ -2712,7 +2723,7 @@ vwl_data_device_listener_event_selection(
     // Destroy previous offer if any, it is now invalid
     vwl_data_offer_destroy(sel->offer);
 
-#ifdef FEAT_CLIPBOARD_FORMATS
+#  ifdef FEAT_CLIPBOARD_FORMATS
     // Add formats (aka mime types) to clipboard
     clip_clear_formats(cbd);
     if (offer != NULL)
@@ -2723,9 +2734,9 @@ vwl_data_device_listener_event_selection(
 	    clip_add_format(cbd, fmt, NULL);
 	}
     }
-#else
+#  else
     (void)cbd;
-#endif
+#  endif
 
     // There are two cases when sel->offer is NULL
     // 1. No one owns the selection
