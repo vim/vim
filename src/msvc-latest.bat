@@ -39,18 +39,16 @@ if "%VSVEROPT%"=="" (
 )
 
 rem Search Visual Studio Community, Professional or above.
+set InstallDir=
 for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" %VSVEROPT% -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
 	set InstallDir=%%i
 )
-if exist "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
-	call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %*
-	goto done
-)
-
-rem Search Visual Studio 2017 Express.
-rem (Visual Studio 2017 Express uses different component IDs.)
-for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" %VSVEROPT% -products Microsoft.VisualStudio.Product.WDExpress -property installationPath`) do (
-	set InstallDir=%%i
+if not defined InstallDir (
+	rem Search Visual Studio 2017 Express.
+	rem (Visual Studio 2017 Express uses different component IDs.)
+	for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" %VSVEROPT% -products Microsoft.VisualStudio.Product.WDExpress -property installationPath`) do (
+		set InstallDir=%%i
+	)
 )
 if exist "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
 	call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %*
@@ -60,7 +58,14 @@ if exist "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
 	call
 )
 
-:done
+if defined VCToolsVersion (
+	if "%VSVEROPT%"=="-latest" (
+		echo VCTools %VCToolsVersion% %VSCMD_ARG_TGT_ARCH%
+		for /f "tokens=1,2 delims=." %%I in ("%VCToolsVersion%") do (
+			title VCTools %%I.%%J %VSCMD_ARG_TGT_ARCH%
+		)
+	)
+)
 if "%VSWHERE_SET%"=="yes" (
 	set VSWHERE=
 	set VSWHERE_SET=

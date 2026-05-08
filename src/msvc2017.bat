@@ -11,3 +11,7 @@ rem     msvc2017 x86_amd64
 set "VSVEROPT=-version [15.0^,16.0^)"
 call "%~dp0msvc-latest.bat" %*
 set VSVEROPT=
+if defined VCToolsVersion (
+	echo VS 2017 ^(%VCToolsVersion%^) %VSCMD_ARG_TGT_ARCH%
+	title VS 2017 %VSCMD_ARG_TGT_ARCH%
+)
