@@ -5526,5 +5526,85 @@ def Test_find_brace_backwards()
   bwipe!
 enddef
 
+" Brackets inside comments must not affect C indent calculation (FM_SKIPCOMM)
+def Test_cindent_comment_brackets()
+  # stray } in inline block comment must not confuse enclosing-brace search
+  new
+  setl cindent sw=4
+  var code =<< trim [CODE]
+  int foo() {
+      /* } */
+      int bar;
+  }
+  [CODE]
+  setline(1, code)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # stray } in // line comment: same
+  new
+  setl cindent sw=4
+  var code2 =<< trim [CODE]
+  int foo() {
+      // }
+      int bar;
+  }
+  [CODE]
+  setline(1, code2)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # stray } on continuation line inside multi-line block comment
+  new
+  setl cindent sw=4
+  var code3 =<< trim [CODE]
+  int foo() {
+      /*
+         }
+      */
+      int bar;
+  }
+  [CODE]
+  setline(1, code3)
+  cursor(5, 1)
+  normal ==
+  assert_equal('    int bar;', getline(5))
+  bwipe!
+
+  # { in inline block comment must not be treated as enclosing brace
+  new
+  setl cindent sw=4
+  var code4 =<< trim [CODE]
+  int foo() {
+      /* { */
+      int bar;
+  }
+  [CODE]
+  setline(1, code4)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # ) in inline block comment must not be treated as enclosing brace
+  new
+  setl cindent sw=4
+  var code5 =<< trim [CODE]
+  some_func(arg1,
+      /* ) */ arg2,
+      arg3);
+  [CODE]
+  setline(1, code5)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    arg3);', getline(3))
+  bwipe!
+
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab

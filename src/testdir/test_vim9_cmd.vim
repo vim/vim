@@ -2094,6 +2094,24 @@ def Test_lambda_crash()
   v9.CheckScriptFailureList(lines, ["E1356:", "E1405:"])
 enddef
 
+def Test_skipped_lambda_after_else()
+  var lines =<< trim END
+    vim9script
+    def g:Warn(msg: string)
+      if has('patch-9.0.0321')
+        echo msg
+      else
+        timer_start(100, (_) => {
+          echohl WarningMsg | echom msg | echohl None
+        }, {repeat: 0})
+      endif
+    enddef
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc! g:Warn
+enddef
+
 def s:check_previewpopup(expected_title: string)
   var id = popup_findpreview()
   assert_notequal(id, 0)

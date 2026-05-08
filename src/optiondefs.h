@@ -1958,7 +1958,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_pm, PV_NONE,
 			    did_set_backupext_or_patchmode, NULL,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"path",	    "pa",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE|P_COMMA|P_NODUP,
+    {"path",	    "pa",   P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_path, PV_PATH, NULL, NULL,
 			    {
 #if defined(AMIGA) || defined(MSWIN)

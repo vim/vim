@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2026 Apr 17
+# Last Change:  2026 May 06
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -51,7 +51,7 @@ if has('unix')
         execute $'silent !cmd /c start "" /b {args} {Redir()}' | redraw!
       enddef
     endif
-  elseif exists('$WSL_DISTRO_NAME') # use cmd.exe to start GUI apps in WSL
+  elseif exists('$WSL_DISTRO_NAME') && executable('cmd.exe') # use cmd.exe to start GUI apps in WSL
     export def Launch(args: string)
       const command = (args =~? '\v<\f+\.(exe|com|bat|cmd)>')
         ? $'cmd.exe /c start /b {args} {Redir()}'

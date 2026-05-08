@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52625,6 +52625,7 @@ Other ~
 - Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
 - |:command-completion-customlist| can return a list of dictionaries with
   kind/menu/info/abbr for the popup menu.
+- |C-indenting| detects comments better.
 
 Platform specific ~
 -----------------

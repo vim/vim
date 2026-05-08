@@ -290,6 +290,9 @@
 #define CF_WORD		0x01
 #define CF_UPPER	0x02
 
+// Max allowed length for COMPOUND section
+#define COMPOUND_MAX_LEN	100000
+
 /*
  * Loop through all the siblings of a node (including the node)
  */
@@ -1219,6 +1222,8 @@ read_compound(FILE *fd, slang_T *slang, int len)
     char_u	*crp;
     int		cnt;
     garray_T	*gap;
+    size_t	patsize;
+    size_t	flagsize;
 
     if (todo < 2)
 	return SP_FORMERROR;	// need at least two bytes
@@ -1275,16 +1280,19 @@ read_compound(FILE *fd, slang_T *slang, int len)
     // "a[bc]/a*b+" -> "^\(a[bc]\|a*b\+\)$".
     // Inserting backslashes may double the length, "^\(\)$<Nul>" is 7 bytes.
     // Conversion to utf-8 may double the size.
-    c = todo * 2 + 7;
+    if ((size_t)todo > COMPOUND_MAX_LEN)
+	return SP_FORMERROR;
+    patsize = (size_t)todo * 2 + 7;
     if (enc_utf8)
-	c += todo * 2;
-    pat = alloc(c);
+	patsize += (size_t)todo * 2;
+    flagsize = (size_t)todo + 1;
+    pat = alloc(patsize);
     if (pat == NULL)
 	return SP_OTHERERROR;
 
     // We also need a list of all flags that can appear at the start and one
     // for all flags.
-    cp = alloc(todo + 1);
+    cp = alloc(flagsize);
     if (cp == NULL)
     {
 	vim_free(pat);
@@ -1293,7 +1301,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
     slang->sl_compstartflags = cp;
     *cp = NUL;
 
-    ap = alloc(todo + 1);
+    ap = alloc(flagsize);
     if (ap == NULL)
     {
 	vim_free(pat);
@@ -1305,7 +1313,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
     // And a list of all patterns in their original form, for checking whether
     // compounding may work in match_compoundrule().  This is freed when we
     // encounter a wildcard, the check doesn't work then.
-    crp = alloc(todo + 1);
+    crp = alloc(flagsize);
     slang->sl_comprules = crp;
 
     pp = pat;
