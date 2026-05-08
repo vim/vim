@@ -4172,22 +4172,22 @@ expand_process_user_list(
     // Loop over the items in the list.
     FOR_ALL_LIST_ITEMS(retlist, li)
     {
+	typval_T *tv = &li->li_tv;
 	char_u	*p = NULL;
 	char_u	*abbr = NULL;
 	char_u	*kind = NULL;
 	char_u	*menu = NULL;
 	char_u	*info = NULL;
 
-	if (li->li_tv.v_type == VAR_STRING)
+	if (tv->v_type == VAR_STRING)
 	{
-	    if (li->li_tv.vval.v_string == NULL)
+	    if (tv->vval.v_string == NULL)
 		continue;  // Skip NULL strings
 	    p = vim_strsave(li->li_tv.vval.v_string);
 	}
-	else if (li->li_tv.v_type == VAR_DICT
-				    && li->li_tv.vval.v_dict != NULL)
+	else if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
 	{
-	    dict_T	*d = li->li_tv.vval.v_dict;
+	    dict_T	*d = tv->vval.v_dict;
 	    char_u	*word = dict_get_string(d, "word", FALSE);
 
 	    if (word == NULL)
