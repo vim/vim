@@ -8989,11 +8989,10 @@ function s:MakeBookmark(fname)
     if index(g:netrw_bookmarklist,a:fname) == -1
         " curdir not currently in g:netrw_bookmarklist, so include it
         if isdirectory(s:NetrwFile(a:fname)) && a:fname !~ '/$'
-            call add(g:netrw_bookmarklist,a:fname.'/')
-        elseif a:fname !~ '/'
-            call add(g:netrw_bookmarklist,getcwd()."/".a:fname)
+            " Directory without a trailing slash
+            call add(g:netrw_bookmarklist, s:NetrwFile(a:fname) . '/')
         else
-            call add(g:netrw_bookmarklist,a:fname)
+            call add(g:netrw_bookmarklist, s:NetrwFile(a:fname))
         endif
         call sort(g:netrw_bookmarklist)
     endif
