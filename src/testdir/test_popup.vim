@@ -2604,7 +2604,7 @@ endfunc
 " into the old area must blend against the restored background, not the stale
 " contents of the closed popup.
 func Test_popup_opacity_move_after_close()
-  CheckRunVimInTerminal
+  CheckScreendump
   let lines =<< trim END
     call setline(1, repeat(['abcdefghijklmnopqrstuvwxyz'], 8))
     let g:popup_a = popup_create('A', #{
@@ -2622,8 +2622,9 @@ func Test_popup_opacity_move_after_close()
   END
 
   call writefile(lines, 'Xpopupopacitymove', 'D')
-  let buf = RunVimInTerminal('-S Xpopupopacitymove', {})
-  call WaitForAssert({-> assert_equal('Amnop', term_getline(buf, 3)[11 : 15])})
+  let buf = RunVimInTerminal('-S Xpopupopacitymove', #{rows: 8, cols: 25})
+  call TermWait(buf, 150)
+  call VerifyScreenDump(buf, 'Test_popup_opacity_move_after_close', {})
   call StopVimInTerminal(buf)
 endfunc
 

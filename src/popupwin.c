@@ -60,6 +60,18 @@ typedef struct {
     char_u	*border_highlight[4];
 } popup_style_snapshot_T;
 
+// Snapshot of popup layout fields used by popup_adjust_position() to detect
+// whether the position or size changed and the popup mask must be refreshed.
+typedef struct {
+    int		winrow;
+    int		wincol;
+    int		width;
+    int		height;
+    int		leftcol;
+    int		leftoff;
+    int		has_scrollbar;
+} popup_layout_T;
+
 static poppos_entry_T poppos_entries[] = {
     {STR_LITERAL_INIT("botleft"), POPPOS_BOTLEFT},
     {STR_LITERAL_INIT("topleft"), POPPOS_TOPLEFT},
@@ -92,8 +104,10 @@ static void popup_save_area(win_T *wp, popup_area_T *area);
 static void popup_free_saved_screen(popup_saved_screen_T *saved_screen);
 static void popup_save_padding_screen(win_T *wp,
 	popup_saved_screen_T *saved_screen);
+static int popup_layout_changed(win_T *wp, popup_layout_T *layout);
 static int popup_style_changed(win_T *wp, popup_style_snapshot_T *style);
 static void popup_save_style(win_T *wp, popup_style_snapshot_T *style);
+static void popup_save_layout(win_T *wp, popup_layout_T *layout);
 static void redraw_under_popup_area(int winrow, int wincol, int height,
 	int width, int leftoff);
 static void redraw_overlapped_opacity_popups(int winrow, int wincol,
@@ -1332,19 +1346,15 @@ popup_adjust_position(win_T *wp)
     int		extra_height = top_extra + bot_extra;
     int		extra_width = left_extra + right_extra;
     int		w_height_before_limit;
-    int		org_winrow = wp->w_winrow;
-    int		org_wincol = wp->w_wincol;
-    int		org_width = wp->w_width;
-    int		org_height = wp->w_height;
-    int		org_leftcol = wp->w_leftcol;
-    int		org_leftoff = wp->w_popup_leftoff;
-    int		org_has_scrollbar = wp->w_has_scrollbar;
+    popup_layout_T org_layout;
     int		minwidth, minheight;
     int		maxheight = Rows;
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
     int		adjust_height_for_top_aligned = FALSE;
+
+    popup_save_layout(wp, &org_layout);
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -1863,7 +1873,7 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = avail > 0 ? avail : 0;
     }
 
-    if (wp->w_height != org_height)
+    if (wp->w_height != org_layout.height)
 	win_comp_scroll(wp);
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
@@ -1876,13 +1886,7 @@ popup_adjust_position(win_T *wp)
 
     // Need to update popup_mask if the position or size changed.
     // And redraw windows and statuslines that were behind the popup.
-    if (org_winrow != wp->w_winrow
-	    || org_wincol != wp->w_wincol
-	    || org_leftcol != wp->w_leftcol
-	    || org_leftoff != wp->w_popup_leftoff
-	    || org_width != wp->w_width
-	    || org_height != wp->w_height
-	    || org_has_scrollbar != wp->w_has_scrollbar)
+    if (popup_layout_changed(wp, &org_layout))
     {
 	redraw_win_later(wp, UPD_NOT_VALID);
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
@@ -3529,6 +3533,36 @@ popup_style_changed(win_T *wp, popup_style_snapshot_T *style)
 	if (style->border_highlight[i] != wp->w_border_highlight[i])
 	    return TRUE;
     return FALSE;
+}
+
+/*
+ * Save popup layout fields that affect mask refresh and local redraw.
+ */
+    static void
+popup_save_layout(win_T *wp, popup_layout_T *layout)
+{
+    layout->winrow = wp->w_winrow;
+    layout->wincol = wp->w_wincol;
+    layout->width = wp->w_width;
+    layout->height = wp->w_height;
+    layout->leftcol = wp->w_leftcol;
+    layout->leftoff = wp->w_popup_leftoff;
+    layout->has_scrollbar = wp->w_has_scrollbar;
+}
+
+/*
+ * Return TRUE when the popup layout changed.
+ */
+    static int
+popup_layout_changed(win_T *wp, popup_layout_T *layout)
+{
+    return layout->winrow != wp->w_winrow
+	|| layout->wincol != wp->w_wincol
+	|| layout->leftcol != wp->w_leftcol
+	|| layout->leftoff != wp->w_popup_leftoff
+	|| layout->width != wp->w_width
+	|| layout->height != wp->w_height
+	|| layout->has_scrollbar != wp->w_has_scrollbar;
 }
 
 /*
