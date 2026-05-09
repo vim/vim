@@ -963,7 +963,7 @@ CLIP TEXTPROP POPUP TO HOST WINDOW			*popup-clipwindow*
 When the popup is anchored to a text property in a split window, the popup is
 by default drawn relative to the whole screen and may extend past the edges of
 the window that contains the text property (the "host window").  Setting
-"clipwindow" to TRUE confines the popup to the host window's content area:
+"clipwindow" to TRUE keeps the popup within window's content area:
 parts of the popup that fall outside the window are clipped, and the popup is
 hidden once the text property has scrolled entirely past one of the edges.
 
