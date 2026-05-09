@@ -2145,5 +2145,16 @@ def Test_syntax_enable_clear()
   syntax clear
 enddef
 
+" Test for using legacy expression evaluation in a vim9script map
+def Test_map_legacy_expr()
+  var lines =<< trim END
+    legacy inoremap <expr> <F2> 'hello' . 'world'
+    new
+    feedkeys("a\<F2>", 'xt')
+    assert_equal(['helloworld'], getline(1, '$'))
+    bw!
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -277,6 +277,8 @@ map_add(
     else
     {
 	mp->m_script_ctx = current_sctx;
+	if (cmdmod.cmod_flags & CMOD_LEGACY)
+	    mp->m_script_ctx.sc_version = 1;
 	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
     }
 #endif
@@ -871,6 +873,8 @@ do_map(
 #ifdef FEAT_EVAL
 				    mp->m_expr = expr;
 				    mp->m_script_ctx = current_sctx;
+				    if (cmdmod.cmod_flags & CMOD_LEGACY)
+					mp->m_script_ctx.sc_version = 1;
 				    mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
 				    mp_result[keyround - 1] = mp;
@@ -1822,11 +1826,10 @@ eval_map_expr(
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
+
+    current_sctx.sc_version = mp->m_script_ctx.sc_version;
     if (mp->m_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
-    {
 	current_sctx.sc_sid = mp->m_script_ctx.sc_sid;
-	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
-    }
 
     // Note: the evaluation may make "mp" invalid.
     p = eval_to_string(expr, FALSE, FALSE);
