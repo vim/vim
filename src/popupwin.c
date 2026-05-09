@@ -34,6 +34,32 @@ typedef struct {
     int		zindex;
 } popup_area_T;
 
+// Snapshot of the screen cells under an opacity popup's padding, captured
+// before win_update() overwrites them so the padding can be re-blended
+// against the original background.  "lines" is NULL when no snapshot was
+// taken; popup_free_saved_screen() releases all owned buffers.
+typedef struct {
+    schar_T	*lines;
+    int		*attrs;
+    u8char_T	*linesuc;
+    int		start_row;
+    int		start_col;
+    int		rows;
+    int		cols;
+} popup_saved_screen_T;
+
+// Snapshot of popup style/option fields used by popup_setoptions() to detect
+// which option changes require a redraw or reposition.
+typedef struct {
+    linenr_T	firstline;
+    int		blend;
+    int		flags;
+    int		zindex;
+    char_u	*scrollbar_highlight;
+    char_u	*thumb_highlight;
+    char_u	*border_highlight[4];
+} popup_style_snapshot_T;
+
 static poppos_entry_T poppos_entries[] = {
     {STR_LITERAL_INIT("botleft"), POPPOS_BOTLEFT},
     {STR_LITERAL_INIT("topleft"), POPPOS_TOPLEFT},
@@ -63,6 +89,11 @@ static void popup_adjust_position(win_T *wp);
 static int popup_area_changed(win_T *wp, popup_area_T *area);
 static void popup_redraw_exposed_area(popup_area_T *area);
 static void popup_save_area(win_T *wp, popup_area_T *area);
+static void popup_free_saved_screen(popup_saved_screen_T *saved_screen);
+static void popup_save_padding_screen(win_T *wp,
+	popup_saved_screen_T *saved_screen);
+static int popup_style_changed(win_T *wp, popup_style_snapshot_T *style);
+static void popup_save_style(win_T *wp, popup_style_snapshot_T *style);
 static void redraw_under_popup_area(int winrow, int wincol, int height,
 	int width, int leftoff);
 static void redraw_overlapped_opacity_popups(int winrow, int wincol,
@@ -3464,6 +3495,43 @@ popup_save_area(win_T *wp, popup_area_T *area)
 }
 
 /*
+ * Save popup style-related fields that affect redraw/reposition decisions.
+ */
+    static void
+popup_save_style(win_T *wp, popup_style_snapshot_T *style)
+{
+    int i;
+
+    style->firstline = wp->w_firstline;
+    style->blend = wp->w_popup_blend;
+    style->flags = wp->w_popup_flags;
+    style->zindex = wp->w_zindex;
+    style->scrollbar_highlight = wp->w_scrollbar_highlight;
+    style->thumb_highlight = wp->w_thumb_highlight;
+    for (i = 0; i < 4; i++)
+	style->border_highlight[i] = wp->w_border_highlight[i];
+}
+
+/*
+ * Return TRUE if style changes require at least a popup redraw.
+ */
+    static int
+popup_style_changed(win_T *wp, popup_style_snapshot_T *style)
+{
+    int i;
+
+    if (style->firstline != wp->w_firstline
+	    || style->flags != wp->w_popup_flags
+	    || style->scrollbar_highlight != wp->w_scrollbar_highlight
+	    || style->thumb_highlight != wp->w_thumb_highlight)
+	return TRUE;
+    for (i = 0; i < 4; i++)
+	if (style->border_highlight[i] != wp->w_border_highlight[i])
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Return TRUE when the popup no longer covers the saved area.
  */
     static int
@@ -3538,6 +3606,82 @@ popup_redraw_exposed_area(popup_area_T *area)
 	    area->width, area->leftoff);
     redraw_overlapped_opacity_popups(area->winrow, area->wincol,
 	    area->height, area->width, area->leftoff, area->zindex);
+}
+
+/*
+ * Release saved screen data used for opacity padding redraw.
+ */
+    static void
+popup_free_saved_screen(popup_saved_screen_T *saved_screen)
+{
+    vim_free(saved_screen->lines);
+    vim_free(saved_screen->attrs);
+    vim_free(saved_screen->linesuc);
+    vim_memset(saved_screen, 0, sizeof(*saved_screen));
+}
+
+/*
+ * Save the screen area that opacity padding may need to blend against.
+ * On entry "saved_screen" must be zero-initialised.  When the snapshot is
+ * unavailable (no opacity popup, no padding, allocation failure) "lines" is
+ * left NULL and callers should fall back to plain screen_fill().  The caller
+ * must always release the snapshot with popup_free_saved_screen().
+ */
+    static void
+popup_save_padding_screen(win_T *wp, popup_saved_screen_T *saved_screen)
+{
+    if (screen_opacity_popup == NULL
+	    || (wp->w_popup_padding[0] == 0 && wp->w_popup_padding[1] == 0
+		&& wp->w_popup_padding[2] == 0 && wp->w_popup_padding[3] == 0))
+	return;
+
+    saved_screen->start_row = wp->w_winrow + wp->w_popup_border[0];
+    saved_screen->start_col = wp->w_wincol + wp->w_popup_border[3];
+    saved_screen->rows = wp->w_popup_padding[0] + wp->w_height
+						    + wp->w_popup_padding[2];
+    saved_screen->cols = wp->w_popup_padding[3] + wp->w_width
+						    + wp->w_popup_padding[1];
+
+    // Include one column to the left to handle wide chars that overlap the
+    // padding boundary.
+    if (saved_screen->start_col > 0)
+    {
+	--saved_screen->start_col;
+	++saved_screen->cols;
+    }
+
+    saved_screen->lines = ALLOC_MULT(schar_T,
+				  saved_screen->rows * saved_screen->cols);
+    saved_screen->attrs = ALLOC_MULT(int,
+				  saved_screen->rows * saved_screen->cols);
+    if (enc_utf8)
+	saved_screen->linesuc = ALLOC_MULT(u8char_T,
+				  saved_screen->rows * saved_screen->cols);
+
+    if (saved_screen->lines == NULL || saved_screen->attrs == NULL)
+	return;
+
+    for (int r = 0; r < saved_screen->rows; r++)
+    {
+	int screen_row = saved_screen->start_row + r;
+
+	if (screen_row >= 0 && screen_row < screen_Rows)
+	    for (int c = 0; c < saved_screen->cols; c++)
+	    {
+		int screen_col = saved_screen->start_col + c;
+
+		if (screen_col >= 0 && screen_col < screen_Columns)
+		{
+		    int off = LineOffset[screen_row] + screen_col;
+		    int save_off = r * saved_screen->cols + c;
+
+		    saved_screen->lines[save_off] = ScreenLines[off];
+		    saved_screen->attrs[save_off] = ScreenAttrs[off];
+		    if (enc_utf8 && saved_screen->linesuc != NULL)
+			saved_screen->linesuc[save_off] = ScreenLinesUC[off];
+		}
+	    }
+    }
 }
 
 /*
@@ -3638,16 +3782,10 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     dict_T	*dict;
     int		id;
     win_T	*wp;
-    linenr_T	old_firstline;
-    int		old_blend;
     popup_area_T	old_area;
-    int		old_popup_flags;
-    char_u	*old_scrollbar_highlight;
-    char_u	*old_thumb_highlight;
-    char_u	*old_border_highlight[4];
+    popup_style_snapshot_T old_style;
     int		need_redraw = FALSE;
     int		need_reposition = FALSE;
-    int		i;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3662,14 +3800,8 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return;
     dict = argvars[1].vval.v_dict;
-    old_firstline = wp->w_firstline;
-    old_blend = wp->w_popup_blend;
     popup_save_area(wp, &old_area);
-    old_popup_flags = wp->w_popup_flags;
-    old_scrollbar_highlight = wp->w_scrollbar_highlight;
-    old_thumb_highlight = wp->w_thumb_highlight;
-    for (i = 0; i < 4; i++)
-	old_border_highlight[i] = wp->w_border_highlight[i];
+    popup_save_style(wp, &old_style);
 
     (void)apply_options(wp, dict, FALSE);
 
@@ -3680,28 +3812,16 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	wp->w_topline = wp->w_firstline;
 
     // Check if visual options changed and redraw if needed
-    if (old_firstline != wp->w_firstline)
-	need_redraw = TRUE;
-    if (old_area.zindex != wp->w_zindex)
+    if (old_style.zindex != wp->w_zindex)
     {
 	need_redraw = TRUE;
 	need_reposition = TRUE;
     }
-    if (old_popup_flags != wp->w_popup_flags)
-    {
+    else if (popup_style_changed(wp, &old_style))
 	need_redraw = TRUE;
+
+    if (old_style.flags != wp->w_popup_flags)
 	need_reposition = TRUE;
-    }
-    if (old_scrollbar_highlight != wp->w_scrollbar_highlight)
-	need_redraw = TRUE;
-    if (old_thumb_highlight != wp->w_thumb_highlight)
-	need_redraw = TRUE;
-    for (i = 0; i < 4; i++)
-	if (old_border_highlight[i] != wp->w_border_highlight[i])
-	{
-	    need_redraw = TRUE;
-	    break;
-	}
 
     if (need_reposition)
     {
@@ -3721,7 +3841,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Force redraw if opacity value changed
-    if (old_blend != wp->w_popup_blend)
+    if (old_style.blend != wp->w_popup_blend)
     {
 	redraw_win_later(wp, UPD_NOT_VALID);
 	// Also redraw windows below the popup
@@ -4958,26 +5078,20 @@ static void
 draw_opacity_padding_cell(
 	int		row,
 	int		col,
-	schar_T		*saved_screenlines,
-	int		*saved_screenattrs,
-	u8char_T	*saved_screenlinesuc,
-	int		save_start_row,
-	int		save_start_col,
-	int		save_rows,
-	int		save_cols,
+	popup_saved_screen_T *saved_screen,
 	int		pad_start_col,
 	int		pad_end_col)
 {
     int off = LineOffset[row] + col;
-    int r = row - save_start_row;
-    int c = col - save_start_col;
+    int r = row - saved_screen->start_row;
+    int c = col - saved_screen->start_col;
 
-    if (r >= 0 && r < save_rows && c >= 0 && c < save_cols)
+    if (r >= 0 && r < saved_screen->rows && c >= 0 && c < saved_screen->cols)
     {
-	int save_off = r * save_cols + c;
+	int save_off = r * saved_screen->cols + c;
 	// If this is the second cell of a wide background character, blend
 	// the wide character instead of overwriting it.
-	if (enc_utf8 && saved_screenlinesuc != NULL)
+	if (enc_utf8 && saved_screen->linesuc != NULL)
 	{
 	    int base_col = col - 1;
 	    int base_off = off - 1;
@@ -4996,9 +5110,9 @@ draw_opacity_padding_cell(
 	    }
 	    if (!wide_prev && save_off > 0)
 	    {
-		if (saved_screenlinesuc[save_off - 1] != 0
-			&& utf_char2cells(saved_screenlinesuc[save_off - 1]) == 2
-			&& saved_screenlines[save_off] == 0)
+		if (saved_screen->linesuc[save_off - 1] != 0
+			&& utf_char2cells(saved_screen->linesuc[save_off - 1]) == 2
+			&& saved_screen->lines[save_off] == 0)
 		    wide_prev = TRUE;
 	    }
 
@@ -5017,7 +5131,7 @@ draw_opacity_padding_cell(
 			// covered by the popup background.
 			ScreenLines[base_off] = ' ';
 			ScreenLinesUC[base_off] = 0;
-			ScreenAttrs[base_off] = saved_screenattrs[base_save_off];
+			ScreenAttrs[base_off] = saved_screen->attrs[base_save_off];
 			popup_set_base_screen_cell(row, base_col,
 				ScreenLines[base_off],
 				ScreenAttrs[base_off],
@@ -5028,7 +5142,7 @@ draw_opacity_padding_cell(
 			// Use left half's attr since the right half of a
 			// wide char may have an unreliable attr value.
 			ScreenLines[off] = ' ';
-			ScreenAttrs[off] = saved_screenattrs[base_save_off];
+			ScreenAttrs[off] = saved_screen->attrs[base_save_off];
 			if (enc_utf8)
 			    ScreenLinesUC[off] = 0;
 			int popup_attr_val =
@@ -5047,9 +5161,9 @@ draw_opacity_padding_cell(
 		    // but the saved data has a wide char.  Restore it
 		    // spanning both the content cell and padding cell.
 		    if (base_save_off >= 0
-			    && saved_screenlinesuc[base_save_off] != 0
+			    && saved_screen->linesuc[base_save_off] != 0
 			    && utf_char2cells(
-				saved_screenlinesuc[base_save_off]) == 2
+				saved_screen->linesuc[base_save_off]) == 2
 			    && ScreenLines[base_off] == ' '
 			    && ScreenLinesUC[base_off] == 0)
 		    {
@@ -5059,11 +5173,11 @@ draw_opacity_padding_cell(
 				    screen_opacity_popup->w_popup_blend;
 
 			ScreenLines[base_off] =
-				    saved_screenlines[base_save_off];
+				    saved_screen->lines[base_save_off];
 			ScreenLinesUC[base_off] =
-				    saved_screenlinesuc[base_save_off];
+				    saved_screen->linesuc[base_save_off];
 			ScreenAttrs[base_off] =
-				    saved_screenattrs[base_save_off];
+				    saved_screen->attrs[base_save_off];
 			ScreenAttrs[base_off] = hl_blend_attr(
 				    ScreenAttrs[base_off],
 				    popup_attr_val, blend, TRUE);
@@ -5088,7 +5202,7 @@ draw_opacity_padding_cell(
 		    // Use left half's attr since the right half of a
 		    // wide char may have an unreliable attr value.
 		    ScreenLines[off] = ' ';
-		    ScreenAttrs[off] = saved_screenattrs[base_save_off];
+		    ScreenAttrs[off] = saved_screen->attrs[base_save_off];
 		    if (enc_utf8 && ScreenLinesUC != NULL)
 			ScreenLinesUC[off] = 0;
 		    int popup_attr_val = get_win_attr(screen_opacity_popup);
@@ -5104,12 +5218,12 @@ draw_opacity_padding_cell(
 		// Base cell is inside the saved area, redraw the wide char.
 		if (save_off > 0)
 		{
-		    ScreenLines[base_off] = saved_screenlines[base_save_off];
-		    ScreenAttrs[base_off] = saved_screenattrs[base_save_off];
-		    ScreenLines[off] = saved_screenlines[save_off];
-		    ScreenAttrs[off] = saved_screenattrs[save_off];
-		    ScreenLinesUC[base_off] = saved_screenlinesuc[base_save_off];
-		    ScreenLinesUC[off] = saved_screenlinesuc[save_off];
+		    ScreenLines[base_off] = saved_screen->lines[base_save_off];
+		    ScreenAttrs[base_off] = saved_screen->attrs[base_save_off];
+		    ScreenLines[off] = saved_screen->lines[save_off];
+		    ScreenAttrs[off] = saved_screen->attrs[save_off];
+		    ScreenLinesUC[base_off] = saved_screen->linesuc[base_save_off];
+		    ScreenLinesUC[off] = saved_screen->linesuc[save_off];
 
 		    int popup_attr_val = get_win_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
@@ -5125,10 +5239,10 @@ draw_opacity_padding_cell(
 		return;
 	    }
 	}
-	ScreenLines[off] = saved_screenlines[save_off];
-	ScreenAttrs[off] = saved_screenattrs[save_off];
-	if (enc_utf8 && saved_screenlinesuc != NULL)
-	    ScreenLinesUC[off] = saved_screenlinesuc[save_off];
+	ScreenLines[off] = saved_screen->lines[save_off];
+	ScreenAttrs[off] = saved_screen->attrs[save_off];
+	if (enc_utf8 && saved_screen->linesuc != NULL)
+	    ScreenLinesUC[off] = saved_screen->linesuc[save_off];
 
 	// If the saved character is wide and would extend past the padding
 	// area into the content area, replace with a space to avoid
@@ -5160,19 +5274,11 @@ fill_opacity_padding(
 	int		end_row,
 	int		start_col,
 	int		end_col,
-	schar_T		*saved_screenlines,
-	int		*saved_screenattrs,
-	u8char_T	*saved_screenlinesuc,
-	int		save_start_row,
-	int		save_start_col,
-	int		save_rows,
-	int		save_cols)
+	popup_saved_screen_T *saved_screen)
 {
     for (int pad_row = start_row; pad_row < end_row; pad_row++)
 	for (int pad_col = start_col; pad_col < end_col; pad_col++)
-	    draw_opacity_padding_cell(pad_row, pad_col,
-		    saved_screenlines, saved_screenattrs, saved_screenlinesuc,
-		    save_start_row, save_start_col, save_rows, save_cols,
+	    draw_opacity_padding_cell(pad_row, pad_col, saved_screen,
 		    start_col, end_col);
 }
 
@@ -5297,65 +5403,11 @@ update_popups(void (*win_update)(win_T *wp))
 	}
 #endif
 
-	// Save background ScreenLines for padding opacity.
-	// We need to save it before win_update() overwrites it.
-	schar_T *saved_screenlines = NULL;
-	int *saved_screenattrs = NULL;
-	u8char_T *saved_screenlinesuc = NULL;
-	int save_start_row = 0;
-	int save_start_col = 0;
-	int save_rows = 0;
-	int save_cols = 0;
+	// Save background ScreenLines for padding opacity before win_update()
+	// overwrites them.
+	popup_saved_screen_T saved_screen = { 0 };
 
-	if (screen_opacity_popup != NULL
-		&& (wp->w_popup_padding[0] > 0 || wp->w_popup_padding[1] > 0
-		    || wp->w_popup_padding[2] > 0 || wp->w_popup_padding[3] > 0))
-	{
-	    // Calculate the area to save (all padding regions including top/bottom)
-	    save_start_row = wp->w_winrow + wp->w_popup_border[0];
-	    save_start_col = wp->w_wincol + wp->w_popup_border[3];
-	    save_rows = wp->w_popup_padding[0] + wp->w_height + wp->w_popup_padding[2];
-	    save_cols = wp->w_popup_padding[3] + wp->w_width + wp->w_popup_padding[1];
-
-	    // Include one column to the left to handle wide chars that overlap
-	    // the padding boundary.
-	    if (save_start_col > 0)
-	    {
-		--save_start_col;
-		++save_cols;
-	    }
-
-	    // Allocate buffers
-	    saved_screenlines = ALLOC_MULT(schar_T, save_rows * save_cols);
-	    saved_screenattrs = ALLOC_MULT(int, save_rows * save_cols);
-	    if (enc_utf8)
-		saved_screenlinesuc = ALLOC_MULT(u8char_T, save_rows * save_cols);
-
-	    // Save the background
-	    if (saved_screenlines != NULL && saved_screenattrs != NULL)
-	    {
-		for (int r = 0; r < save_rows; r++)
-		{
-		    int screen_row = save_start_row + r;
-		    if (screen_row >= 0 && screen_row < screen_Rows)
-		    {
-			for (int c = 0; c < save_cols; c++)
-			{
-			    int screen_col = save_start_col + c;
-			    if (screen_col >= 0 && screen_col < screen_Columns)
-			    {
-				int off = LineOffset[screen_row] + screen_col;
-				int save_off = r * save_cols + c;
-				saved_screenlines[save_off] = ScreenLines[off];
-				saved_screenattrs[save_off] = ScreenAttrs[off];
-				if (enc_utf8 && saved_screenlinesuc != NULL)
-				    saved_screenlinesuc[save_off] = ScreenLinesUC[off];
-			    }
-			}
-		    }
-		}
-	    }
-	}
+	popup_save_padding_screen(wp, &saved_screen);
 
 	// Set flags in popup_transparent[] for masked cells.
 	update_popup_transparent(wp, 1);
@@ -5534,19 +5586,14 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (title_len > 0 && row == wp->w_winrow)
 	    {
 		// top padding and no border; do not draw over the title
-		if (screen_opacity_popup != NULL && saved_screenlines != NULL)
+		if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
 		{
 		    // Left of title
 		    fill_opacity_padding(row, row + 1, padcol, title_wincol,
-			    saved_screenlines, saved_screenattrs,
-			    saved_screenlinesuc, save_start_row, save_start_col,
-			    save_rows, save_cols);
+			    &saved_screen);
 		    // Right of title
 		    fill_opacity_padding(row, row + 1,
-			    title_wincol + title_len, padendcol,
-			    saved_screenlines, saved_screenattrs,
-			    saved_screenlinesuc, save_start_row, save_start_col,
-			    save_rows, save_cols);
+			    title_wincol + title_len, padendcol, &saved_screen);
 		}
 		else
 		{
@@ -5559,12 +5606,10 @@ update_popups(void (*win_update)(win_T *wp))
 		top_padding -= 1;
 	    }
 	    // Draw remaining top padding rows
-	    if (screen_opacity_popup != NULL && saved_screenlines != NULL)
+	    if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
 	    {
 		fill_opacity_padding(row, row + top_padding, padcol, padendcol,
-			saved_screenlines, saved_screenattrs,
-			saved_screenlinesuc, save_start_row, save_start_col,
-			save_rows, save_cols);
+			&saved_screen);
 	    }
 	    else
 	    {
@@ -5642,11 +5687,9 @@ update_popups(void (*win_update)(win_T *wp))
 		}
 		if (pad_left > 0)
 		{
-		    if (screen_opacity_popup != NULL && saved_screenlines != NULL)
+		    if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
 			fill_opacity_padding(row, row + 1, col, col + pad_left,
-				saved_screenlines, saved_screenattrs,
-				saved_screenlinesuc, save_start_row,
-				save_start_col, save_rows, save_cols);
+				&saved_screen);
 		    else
 			screen_fill(row, row + 1, col, col + pad_left,
 							 ' ', ' ', popup_attr);
@@ -5680,11 +5723,9 @@ update_popups(void (*win_update)(win_T *wp))
 			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol;
 		int pad_col_end = pad_col_start + wp->w_popup_padding[1];
 
-		if (screen_opacity_popup != NULL && saved_screenlines != NULL)
+		if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
 		    fill_opacity_padding(row, row + 1, pad_col_start, pad_col_end,
-			    saved_screenlines, saved_screenattrs,
-			    saved_screenlinesuc, save_start_row, save_start_col,
-			    save_rows, save_cols);
+			    &saved_screen);
 		else
 		    screen_fill(row, row + 1, pad_col_start, pad_col_end,
 							     ' ', ' ', popup_attr);
@@ -5708,11 +5749,9 @@ update_popups(void (*win_update)(win_T *wp))
 	    // bottom padding
 	    row = wp->w_winrow + wp->w_popup_border[0]
 				       + wp->w_popup_padding[0] + wp->w_height;
-	    if (screen_opacity_popup != NULL && saved_screenlines != NULL)
+	    if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
 		fill_opacity_padding(row, row + wp->w_popup_padding[2],
-			padcol, padendcol, saved_screenlines, saved_screenattrs,
-			saved_screenlinesuc, save_start_row, save_start_col,
-			save_rows, save_cols);
+			padcol, padendcol, &saved_screen);
 	    else
 		screen_fill(row, row + wp->w_popup_padding[2],
 					   padcol, padendcol, ' ', ' ', popup_attr);
@@ -5754,13 +5793,7 @@ update_popups(void (*win_update)(win_T *wp))
 
 	update_popup_transparent(wp, 0);
 
-	// Free saved background data
-	if (saved_screenlines != NULL)
-	    vim_free(saved_screenlines);
-	if (saved_screenattrs != NULL)
-	    vim_free(saved_screenattrs);
-	if (saved_screenlinesuc != NULL)
-	    vim_free(saved_screenlinesuc);
+	popup_free_saved_screen(&saved_screen);
 
 	// Clear popup with opacity context.
 	screen_opacity_popup = NULL;
