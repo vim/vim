@@ -3298,9 +3298,10 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_popup_setbuf(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		id;
-    win_T	*wp;
-    buf_T	*buf;
+    int			id;
+    win_T		*wp;
+    buf_T		*buf;
+    popup_area_T	old_area;
 
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = VVAL_FALSE;
@@ -3328,6 +3329,8 @@ f_popup_setbuf(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (wp->w_buffer != buf)
     {
+	popup_save_area(wp, &old_area);
+
 	wp->w_buffer->b_nwindows--;
 	win_init_popup_win(wp, buf);
 	set_local_options_default(wp, FALSE);
@@ -3336,6 +3339,9 @@ f_popup_setbuf(typval_T *argvars, typval_T *rettv UNUSED)
 	swap_exists_action = SEA_NONE;
 	redraw_win_later(wp, UPD_NOT_VALID);
 	popup_adjust_position(wp);
+
+	if (popup_area_changed(wp, &old_area))
+	    popup_redraw_exposed_area(&old_area);
     }
     rettv->vval.v_number = VVAL_TRUE;
 }
