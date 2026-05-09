@@ -1311,7 +1311,8 @@ ex_mkrc(exarg_T	*eap)
 	    if (eap->cmdidx == CMD_mksession && (*flagp & SSOP_SKIP_RTP))
 		flags |= OPT_SKIPRTP;
 #endif
-	    failed |= (makemap(fd, NULL) == FAIL
+	    failed |= (put_line(fd, "var cpo_save: string = null_string") == FAIL
+					 || makemap(fd, NULL) == FAIL
 					 || makeset(fd, flags, FALSE) == FAIL);
 
 #if defined(FEAT_EVAL)
@@ -1372,6 +1373,8 @@ ex_mkrc(exarg_T	*eap)
 	    }
 	    else
 	    {
+		failed |= put_line(fd, "var cpo_save: string = null_string")
+								       == FAIL;
 		failed |= (put_view(fd, curwin, curtab, !using_vdir, flagp, -1,
 								NULL) == FAIL);
 	    }

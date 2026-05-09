@@ -2096,7 +2096,7 @@ makemap(
 					did_cpo = TRUE;
 			if (did_cpo)
 			{
-			    if (fprintf(fd, "const cpo_save: string = &cpo") < 0
+			    if (fprintf(fd, "cpo_save = &cpo") < 0
 				    || put_eol(fd) < 0
 				    || fprintf(fd, "set cpo&vim") < 0
 				    || put_eol(fd) < 0)
