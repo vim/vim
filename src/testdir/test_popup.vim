@@ -2600,4 +2600,31 @@ func Test_pumopt_opacity_100()
   call StopVimInTerminal(buf)
 endfunc
 
+" When an opacity popup above another one is closed, moving the lower popup
+" into the old area must blend against the restored background, not the stale
+" contents of the closed popup.
+func Test_popup_opacity_move_after_close()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    call setline(1, repeat(['abcdefghijklmnopqrstuvwxyz'], 8))
+    let g:popup_a = popup_create('A', #{
+          \ line: 3, col: 5, padding: [0, 4, 0, 0], border: [],
+          \ opacity: 50, zindex: 10
+          \ })
+    let g:popup_b = popup_create('BBBB', #{
+          \ line: 3, col: 12, border: [], opacity: 50, zindex: 20
+          \ })
+    func MovePopupA(timer) abort
+      call popup_close(g:popup_b)
+      call popup_move(g:popup_a, #{col: 12})
+    endfunc
+    call timer_start(100, 'MovePopupA')
+  END
+
+  call writefile(lines, 'Xpopupopacitymove', 'D')
+  let buf = RunVimInTerminal('-S Xpopupopacitymove', {})
+  call WaitForAssert({-> assert_equal('Amnop', term_getline(buf, 3)[11 : 15])})
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

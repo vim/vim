@@ -20,6 +20,20 @@ typedef struct {
     poppos_T	pp_val;
 } poppos_entry_T;
 
+// Snapshot of the popup's drawn rectangle.  Used to redraw what becomes
+// exposed when the popup moves, resizes, hides or closes.  "active" is TRUE
+// when the popup is an opacity popup that contributes to the blended
+// background; non-opacity popups rely on popup_mask instead.
+typedef struct {
+    int		active;
+    int		winrow;
+    int		wincol;
+    int		height;
+    int		width;
+    int		leftoff;
+    int		zindex;
+} popup_area_T;
+
 static poppos_entry_T poppos_entries[] = {
     {STR_LITERAL_INIT("botleft"), POPPOS_BOTLEFT},
     {STR_LITERAL_INIT("topleft"), POPPOS_TOPLEFT},
@@ -46,8 +60,13 @@ static void may_start_message_win_timer(win_T *wp);
 static int popup_on_cmdline = FALSE;
 
 static void popup_adjust_position(win_T *wp);
+static int popup_area_changed(win_T *wp, popup_area_T *area);
+static void popup_redraw_exposed_area(popup_area_T *area);
+static void popup_save_area(win_T *wp, popup_area_T *area);
 static void redraw_under_popup_area(int winrow, int wincol, int height,
 	int width, int leftoff);
+static void redraw_overlapped_opacity_popups(int winrow, int wincol,
+	int height, int width, int leftoff, int zindex);
 
 /*
  * Get option value for "key", which is "line" or "col".
@@ -3096,6 +3115,8 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     void
 popup_hide(win_T *wp)
 {
+    popup_area_T	old_area;
+
 #ifdef FEAT_TERMINAL
     if (error_if_term_popup_window())
 	return;
@@ -3103,13 +3124,21 @@ popup_hide(win_T *wp)
     if ((wp->w_popup_flags & POPF_HIDDEN) != 0)
 	return;
 
+    popup_save_area(wp, &old_area);
+
     wp->w_popup_flags |= POPF_HIDDEN;
     // Do not decrement b_nwindows, we still reference the buffer.
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
-    redraw_all_later(UPD_NOT_VALID);
+
+    if (old_area.active)
+	popup_redraw_exposed_area(&old_area);
+    else
+	redraw_all_later(UPD_NOT_VALID);
+
     status_redraw_all();
-    popup_mask_refresh = TRUE;
+    if (!old_area.active)
+	popup_mask_refresh = TRUE;
 }
 
 /*
@@ -3136,12 +3165,25 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
     void
 popup_show(win_T *wp)
 {
+    int popup_active;
+
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 	return;
 
+    popup_active = (wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0;
     wp->w_popup_flags &= ~POPF_HIDDEN;
-    redraw_all_later(UPD_NOT_VALID);
-    popup_mask_refresh = TRUE;
+    if (popup_active)
+    {
+	wp->w_redr_type = UPD_NOT_VALID;
+	wp->w_lines_valid = 0;
+	if (must_redraw < UPD_VALID)
+	    must_redraw = UPD_VALID;
+    }
+    else
+    {
+	redraw_all_later(UPD_NOT_VALID);
+	popup_mask_refresh = TRUE;
+    }
 }
 
 /*
@@ -3182,14 +3224,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int		id;
     win_T	*wp;
-#ifdef FEAT_PROP_POPUP
-    int		old_popup_active;
-#endif
-    int		old_winrow;
-    int		old_wincol;
-    int		old_popup_height;
-    int		old_popup_width;
-    int		old_popup_leftoff;
+    popup_area_T	old_area;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3201,15 +3236,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp == NULL)
 	return;
 
-#ifdef FEAT_PROP_POPUP
-    old_popup_active = (wp->w_popup_flags & POPF_OPACITY)
-						    && wp->w_popup_blend > 0;
-#endif
-    old_winrow = wp->w_winrow;
-    old_wincol = wp->w_wincol;
-    old_popup_height = popup_height(wp);
-    old_popup_width = popup_width(wp);
-    old_popup_leftoff = wp->w_popup_leftoff;
+    popup_save_area(wp, &old_area);
 
     if (check_for_string_or_list_arg(argvars, 1) == FAIL)
 	return;
@@ -3226,16 +3253,8 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 	must_redraw = UPD_VALID;
     popup_adjust_position(wp);
 
-#ifdef FEAT_PROP_POPUP
-    if (old_popup_active
-	    && (old_winrow != wp->w_winrow
-		|| old_wincol != wp->w_wincol
-		|| old_popup_height != popup_height(wp)
-		|| old_popup_width != popup_width(wp)
-		|| old_popup_leftoff != wp->w_popup_leftoff))
-	redraw_under_popup_area(old_winrow, old_wincol,
-		old_popup_height, old_popup_width, old_popup_leftoff);
-#endif
+    if (popup_area_changed(wp, &old_area))
+	popup_redraw_exposed_area(&old_area);
 }
 
 /*
@@ -3289,10 +3308,17 @@ f_popup_setbuf(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 popup_free(win_T *wp)
 {
+    popup_area_T	old_area;
+
+    popup_save_area(wp, &old_area);
+
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
+
+    popup_redraw_exposed_area(&old_area);
+
     win_free_popup(wp);
 
 #ifdef HAS_MESSAGE_WINDOW
@@ -3300,9 +3326,11 @@ popup_free(win_T *wp)
 	message_win = NULL;
 #endif
 
-    redraw_all_later(UPD_NOT_VALID);
+    if (!old_area.active)
+	redraw_all_later(UPD_NOT_VALID);
     status_redraw_all();
-    popup_mask_refresh = TRUE;
+    if (!old_area.active)
+	popup_mask_refresh = TRUE;
 }
 
     static void
@@ -3421,6 +3449,98 @@ close_all_popups(int force)
 }
 
 /*
+ * Save the current popup area that may need to be restored later.
+ */
+    static void
+popup_save_area(win_T *wp, popup_area_T *area)
+{
+    area->active = (wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0;
+    area->winrow = wp->w_winrow;
+    area->wincol = wp->w_wincol;
+    area->height = popup_height(wp);
+    area->width = popup_width(wp);
+    area->leftoff = wp->w_popup_leftoff;
+    area->zindex = wp->w_zindex;
+}
+
+/*
+ * Return TRUE when the popup no longer covers the saved area.
+ */
+    static int
+popup_area_changed(win_T *wp, popup_area_T *area)
+{
+    return area->winrow != wp->w_winrow
+	|| area->wincol != wp->w_wincol
+	|| area->height != popup_height(wp)
+	|| area->width != popup_width(wp)
+	|| area->leftoff != wp->w_popup_leftoff;
+}
+
+/*
+ * If "wp" is a visible opacity popup at or below "zindex" whose drawn area
+ * overlaps the rectangle, mark it for full redraw so its blended background
+ * is recomputed.
+ */
+    static void
+mark_overlapped_opacity_popup(win_T *wp, int area_top, int area_bot,
+	int area_left, int area_right, int zindex)
+{
+    if ((wp->w_popup_flags & POPF_HIDDEN)
+	    || (wp->w_popup_flags & POPF_OPACITY) == 0
+	    || wp->w_popup_blend == 0
+	    || wp->w_zindex > zindex
+	    || wp->w_winrow >= area_bot
+	    || wp->w_winrow + popup_height(wp) <= area_top
+	    || wp->w_wincol >= area_right
+	    || wp->w_wincol + popup_width(wp) - wp->w_popup_leftoff
+							      <= area_left)
+	return;
+
+    wp->w_redr_type = UPD_NOT_VALID;
+    wp->w_lines_valid = 0;
+}
+
+/*
+ * Mark lower or equal zindex opacity popups that overlap with a popup area
+ * for redraw.  Their blended background may have included the old popup.
+ */
+    static void
+redraw_overlapped_opacity_popups(int winrow, int wincol, int height, int width,
+	int leftoff, int zindex)
+{
+    win_T	*wp;
+    int		area_top = winrow;
+    int		area_bot = winrow + height;
+    int		area_left = wincol;
+    int		area_right = wincol + width - leftoff;
+
+    FOR_ALL_POPUPWINS(wp)
+	mark_overlapped_opacity_popup(wp, area_top, area_bot, area_left,
+		area_right, zindex);
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	mark_overlapped_opacity_popup(wp, area_top, area_bot, area_left,
+		area_right, zindex);
+
+    if (must_redraw < UPD_VALID)
+	must_redraw = UPD_VALID;
+}
+
+/*
+ * Redraw what becomes exposed when an opacity popup moves, resizes or closes.
+ */
+    static void
+popup_redraw_exposed_area(popup_area_T *area)
+{
+    if (!area->active)
+	return;
+
+    redraw_under_popup_area(area->winrow, area->wincol, area->height,
+	    area->width, area->leftoff);
+    redraw_overlapped_opacity_popups(area->winrow, area->wincol,
+	    area->height, area->width, area->leftoff, area->zindex);
+}
+
+/*
  * Force windows under a popup area to redraw.
  */
     static void
@@ -3472,13 +3592,7 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     dict_T	*dict;
     int		id;
     win_T	*wp;
-    int		old_winrow;
-    int		old_wincol;
-    int		old_height;
-    int		old_width;
-    int		old_popup_height;
-    int		old_popup_width;
-    int		old_popup_leftoff;
+    popup_area_T	old_area;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -3494,14 +3608,7 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     dict = argvars[1].vval.v_dict;
 
-    // Save old position for redrawing
-    old_winrow = wp->w_winrow;
-    old_wincol = wp->w_wincol;
-    old_height = wp->w_height;
-    old_width = wp->w_width;
-    old_popup_height = popup_height(wp);
-    old_popup_width = popup_width(wp);
-    old_popup_leftoff = wp->w_popup_leftoff;
+    popup_save_area(wp, &old_area);
 
     apply_move_options(wp, dict);
 
@@ -3514,14 +3621,11 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     // redrawing the affected lines in regular windows to clear the old
     // position.  Transparent popups don't participate in popup_mask, so
     // we need to manually mark the old area's lines for redraw.
-    if (old_winrow != wp->w_winrow || old_wincol != wp->w_wincol
-	    || old_height != wp->w_height || old_width != wp->w_width)
+    if (popup_area_changed(wp, &old_area))
     {
 	redraw_win_later(wp, UPD_NOT_VALID);
 
-	if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
-	    redraw_under_popup_area(old_winrow, old_wincol,
-		    old_popup_height, old_popup_width, old_popup_leftoff);
+	popup_redraw_exposed_area(&old_area);
     }
 }
 
@@ -3535,16 +3639,8 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     int		id;
     win_T	*wp;
     linenr_T	old_firstline;
-#ifdef FEAT_PROP_POPUP
     int		old_blend;
-    int		old_popup_active;
-#endif
-    int		old_winrow;
-    int		old_wincol;
-    int		old_popup_height;
-    int		old_popup_width;
-    int		old_popup_leftoff;
-    int		old_zindex;
+    popup_area_T	old_area;
     int		old_popup_flags;
     char_u	*old_scrollbar_highlight;
     char_u	*old_thumb_highlight;
@@ -3567,17 +3663,8 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     dict = argvars[1].vval.v_dict;
     old_firstline = wp->w_firstline;
-#ifdef FEAT_PROP_POPUP
     old_blend = wp->w_popup_blend;
-    old_popup_active = (wp->w_popup_flags & POPF_OPACITY)
-						    && wp->w_popup_blend > 0;
-#endif
-    old_winrow = wp->w_winrow;
-    old_wincol = wp->w_wincol;
-    old_popup_height = popup_height(wp);
-    old_popup_width = popup_width(wp);
-    old_popup_leftoff = wp->w_popup_leftoff;
-    old_zindex = wp->w_zindex;
+    popup_save_area(wp, &old_area);
     old_popup_flags = wp->w_popup_flags;
     old_scrollbar_highlight = wp->w_scrollbar_highlight;
     old_thumb_highlight = wp->w_thumb_highlight;
@@ -3595,7 +3682,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     // Check if visual options changed and redraw if needed
     if (old_firstline != wp->w_firstline)
 	need_redraw = TRUE;
-    if (old_zindex != wp->w_zindex)
+    if (old_area.zindex != wp->w_zindex)
     {
 	need_redraw = TRUE;
 	need_reposition = TRUE;
@@ -3633,7 +3720,6 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	    must_redraw = UPD_VALID;
     }
 
-#ifdef FEAT_PROP_POPUP
     // Force redraw if opacity value changed
     if (old_blend != wp->w_popup_blend)
     {
@@ -3642,7 +3728,6 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
-#endif
 
     // Always recalculate popup position/size: other options like border,
     // close, padding may have changed without affecting w_popup_flags.
@@ -3650,16 +3735,8 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     // position or size actually changed.
     popup_adjust_position(wp);
 
-#ifdef FEAT_PROP_POPUP
-    if (old_popup_active
-	    && (old_winrow != wp->w_winrow
-		|| old_wincol != wp->w_wincol
-		|| old_popup_height != popup_height(wp)
-		|| old_popup_width != popup_width(wp)
-		|| old_popup_leftoff != wp->w_popup_leftoff))
-	redraw_under_popup_area(old_winrow, old_wincol,
-		old_popup_height, old_popup_width, old_popup_leftoff);
-#endif
+    if (popup_area_changed(wp, &old_area))
+	popup_redraw_exposed_area(&old_area);
 }
 
 /*
