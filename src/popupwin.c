@@ -98,14 +98,14 @@ static void may_start_message_win_timer(win_T *wp);
 static int popup_on_cmdline = FALSE;
 
 static void popup_adjust_position(win_T *wp);
-static int popup_area_changed(win_T *wp, popup_area_T *area);
+static bool popup_area_changed(win_T *wp, popup_area_T *area);
 static void popup_redraw_exposed_area(popup_area_T *area);
 static void popup_save_area(win_T *wp, popup_area_T *area);
 static void popup_free_saved_screen(popup_saved_screen_T *saved_screen);
 static void popup_save_padding_screen(win_T *wp,
 	popup_saved_screen_T *saved_screen);
-static int popup_layout_changed(win_T *wp, popup_layout_T *layout);
-static int popup_style_changed(win_T *wp, popup_style_snapshot_T *style);
+static bool popup_layout_changed(win_T *wp, popup_layout_T *layout);
+static bool popup_style_changed(win_T *wp, popup_style_snapshot_T *style);
 static void popup_save_style(win_T *wp, popup_style_snapshot_T *style);
 static void popup_save_layout(win_T *wp, popup_layout_T *layout);
 static void redraw_under_popup_area(int winrow, int wincol, int height,
@@ -3200,7 +3200,7 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
     void
 popup_show(win_T *wp)
 {
-    int popup_active;
+    bool popup_active;
 
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 	return;
@@ -3523,9 +3523,9 @@ popup_save_style(win_T *wp, popup_style_snapshot_T *style)
 }
 
 /*
- * Return TRUE if style changes require at least a popup redraw.
+ * Return true if style changes require at least a popup redraw.
  */
-    static int
+    static bool
 popup_style_changed(win_T *wp, popup_style_snapshot_T *style)
 {
     int i;
@@ -3534,11 +3534,11 @@ popup_style_changed(win_T *wp, popup_style_snapshot_T *style)
 	    || style->flags != wp->w_popup_flags
 	    || style->scrollbar_highlight != wp->w_scrollbar_highlight
 	    || style->thumb_highlight != wp->w_thumb_highlight)
-	return TRUE;
+	return true;
     for (i = 0; i < 4; i++)
 	if (style->border_highlight[i] != wp->w_border_highlight[i])
-	    return TRUE;
-    return FALSE;
+	    return true;
+    return false;
 }
 
 /*
@@ -3557,9 +3557,9 @@ popup_save_layout(win_T *wp, popup_layout_T *layout)
 }
 
 /*
- * Return TRUE when the popup layout changed.
+ * Return true when the popup layout changed.
  */
-    static int
+    static bool
 popup_layout_changed(win_T *wp, popup_layout_T *layout)
 {
     return layout->winrow != wp->w_winrow
@@ -3572,9 +3572,9 @@ popup_layout_changed(win_T *wp, popup_layout_T *layout)
 }
 
 /*
- * Return TRUE when the popup no longer covers the saved area.
+ * Return true when the popup no longer covers the saved area.
  */
-    static int
+    static bool
 popup_area_changed(win_T *wp, popup_area_T *area)
 {
     return area->winrow != wp->w_winrow
@@ -3805,7 +3805,7 @@ popup_free_saved_screen(popup_saved_screen_T *saved_screen)
     vim_free(saved_screen->lines);
     vim_free(saved_screen->attrs);
     vim_free(saved_screen->linesuc);
-    vim_memset(saved_screen, 0, sizeof(*saved_screen));
+    CLEAR_POINTER(saved_screen);
 }
 
 /*
