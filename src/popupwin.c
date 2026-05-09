@@ -1487,10 +1487,10 @@ popup_find_prop_above_top(
  * host (textprop) window's content rectangle when POPF_CLIPWINDOW is set.
  * The popup's logical geometry (w_winrow, w_height, w_width) is preserved;
  * only the *off/clip fields record how much of each edge falls outside.
- * Returns TRUE when the popup has scrolled completely past one of the host
+ * Returns true when the popup has scrolled completely past one of the host
  * edges, in which case the caller must hide it.
  */
-    static int
+    static bool
 popup_compute_clipwindow_offsets(win_T *wp)
 {
     win_T   *cw = popup_get_clipwin(wp);
@@ -1499,7 +1499,7 @@ popup_compute_clipwindow_offsets(win_T *wp)
     int	    total_h, total_w;
 
     if (cw == NULL)
-	return FALSE;
+	return false;
 
     extra_h = popup_top_extra(wp)
 		    + wp->w_popup_padding[2] + wp->w_popup_border[2];
@@ -1654,14 +1654,14 @@ popup_adjust_position(win_T *wp)
 	// scrolled above the host's top: extrapolate a negative screen_row
 	// from a prop above topline so the top-clip path can roll the popup
 	// off the top edge.  Unhiding is done in check_popup_unhidden().
-	int prop_above_top = FALSE;
+	bool prop_above_top = false;
 	if (!find_visible_prop(prop_win,
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
 				&prop, &prop_lnum))
 	{
 	    if (popup_find_prop_above_top(wp, prop_win, 0,
 							    &prop, &prop_lnum))
-		prop_above_top = TRUE;
+		prop_above_top = true;
 	    else
 	    {
 		popup_hide_for_textprop(wp);
@@ -4751,14 +4751,14 @@ check_popup_unhidden(win_T *wp)
     {
 	textprop_T  prop;
 	linenr_T    lnum;
-	int	    found = FALSE;
+	bool	    found = false;
 
 	if ((wp->w_popup_flags & POPF_HIDDEN_FORCE) != 0)
 	    return FALSE;
 	if (find_visible_prop(wp->w_popup_prop_win,
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
 						       &prop, &lnum))
-	    found = TRUE;
+	    found = true;
 	// The textprop may have scrolled just above the host window's top.
 	// Unhide the popup so popup_adjust_position() can roll it partially
 	// onto the host's top edge via the top-clip path.  Limit the search
@@ -4766,7 +4766,7 @@ check_popup_unhidden(win_T *wp)
 	// prop is already further off-screen than the popup can extend.
 	else if (popup_find_prop_above_top(wp, wp->w_popup_prop_win,
 					    popup_height(wp), &prop, &lnum))
-	    found = TRUE;
+	    found = true;
 	if (found)
 	{
 	    wp->w_popup_flags &= ~POPF_HIDDEN;
