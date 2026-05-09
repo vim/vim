@@ -1393,8 +1393,9 @@ func Test_mksession_vim9_expr_mappings()
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
   defer delete('XDummyOutput')
-  sleep 100m
-  call assert_true(filereadable('XDummyOutput'), 'Expected output file was not created by Vim9 plugin')
+  call WaitForAssert({->
+        \ assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 plugin')})
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
@@ -1458,8 +1459,9 @@ func Test_mksession_legacy_expr_mappings()
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
   defer delete('XDummyOutput')
-  sleep 100m
-  call assert_true(filereadable('XDummyOutput'), 'Expected output file was not created by legacy vim plugin')
+  call WaitForAssert({->
+        \ assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by legacy vim plugin')})
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
