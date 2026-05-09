@@ -17,6 +17,6 @@ jobs:
       pull-requests: write
 
     steps:
-    - uses: actions/labeler@v6
+    - uses: actions/labeler@v6.0.1
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
