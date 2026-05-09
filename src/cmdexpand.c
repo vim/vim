@@ -4183,7 +4183,7 @@ expand_process_user_list(
 	{
 	    if (tv->vval.v_string == NULL)
 		continue;  // Skip NULL strings
-	    p = vim_strsave(li->li_tv.vval.v_string);
+	    p = vim_strsave(tv->vval.v_string);
 	}
 	else if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
 	{
