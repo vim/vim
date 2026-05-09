@@ -712,13 +712,14 @@ The second argument of |popup_create()| is a dictionary with options:
 			when "textprop" is present.
 	textpropid	Used to identify the text property when "textprop" is
 			present.  Use zero to reset.
-	clipwindow	When TRUE and "textprop" is set, confine the popup to
-			the window that contains the text property (the host
-			window).  As the text property scrolls past the host
-			window's top, bottom, left or right edge the popup is
-			clipped to the visible portion of that window instead
-			of extending outside it.  When the popup has scrolled
-			entirely past an edge it is hidden.  Default is FALSE.
+	clipwindow	Only used when "textprop" is set.  When TRUE the popup
+			is kept within the window containing the text
+			property: if the text property scrolls past that
+			window's top, bottom, left or right edge, the popup
+			is clipped at that edge instead of being drawn
+			outside it.  Once the text property has scrolled out
+			of the window the popup is hidden.
+			Default FALSE.
 			See |popup-clipwindow|.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
