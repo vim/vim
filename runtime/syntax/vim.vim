@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Apr 28
+" Last Change:	   2026 May 08
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.

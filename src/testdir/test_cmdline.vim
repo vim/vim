@@ -4647,8 +4647,8 @@ func Test_customlist_dict_completion_info_popup()
   let lines =<< trim END
     func DictComp(A, L, P)
       return [
-            \ {'word': 'apple',  'kind': 'f', 'menu': 'fruit',     'info': 'A red fruit'},
-            \ {'word': 'banana', 'kind': 'f', 'menu': 'fruit',     'info': 'A yellow fruit'},
+            \ {'word': 'apple',  'kind': 'f', 'menu': 'fruit',     'info': 'A red fruit',    'abbr': '🍎'},
+            \ {'word': 'banana', 'kind': 'f', 'menu': 'fruit',     'info': 'A yellow fruit', 'abbr': '🍌'},
             \ {'word': 'carrot', 'kind': 'v', 'menu': 'vegetable', 'info': 'An orange vegetable'},
             \ 'plain',
             \ ]

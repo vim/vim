@@ -4527,6 +4527,43 @@ did_set_maxsearchcount(optset_T *args UNUSED)
 #undef MAX_SEARCH_COUNT
 }
 
+/*
+ * Validate 'shellpipe'/'shellredir' option.
+ */
+    char *
+did_set_shellpipe_redir(optset_T *args)
+{
+    char_u	*p;
+    bool	seen = false;
+
+    for (p = args->os_newval.string; *p != NUL; ++p)
+    {
+	if (*p != '%')
+	    continue;
+
+	if (p[1] == NUL)
+	    return e_invalid_format_string_single_percent_s;
+
+	if (p[1] == '%')
+	{
+	    ++p;    // skip second %
+	    continue;
+	}
+
+	if (p[1] == 's')
+	{
+	    if (seen)
+		return e_invalid_format_string_single_percent_s;
+
+	    seen = true;
+	    ++p;    // consume 's'
+	    continue;
+	}
+	return e_invalid_format_string_single_percent_s;
+    }
+    return NULL;
+}
+
 
 #if defined(BACKSLASH_IN_FILENAME)
 /*

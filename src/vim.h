@@ -1534,7 +1534,7 @@ typedef enum
     , HLF_S	    // status lines
     , HLF_SNC	    // status lines of not-current windows
     , HLF_C	    // column to separate vertically split windows
-    , HLF_CNC	    // column separator for not-current windows
+    , HLF_CNC	    // column to separate vertically split non-current windows
     , HLF_T	    // Titles for output from ":set all", ":autocmd" etc.
     , HLF_V	    // Visual mode
     , HLF_VNC	    // Visual mode, autoselecting and not clipboard owner

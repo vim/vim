@@ -609,6 +609,7 @@ screen_line(
     int		    drawing_opacity_popup =
 				screen_opacity_popup != NULL
 				&& (flags & SLF_POPUP);
+    CLEAR_FIELD(po);
     if (drawing_opacity_popup)
 	popup_opacity_init(&po);
 #endif
@@ -1155,7 +1156,9 @@ skip_opacity:
 	{
 	    if (!skip_for_popup(row, col + coloff))
 	    {
-		int c = sep_cell_at_row(&hl, wp, row);
+		int c;
+
+		c = fillchar_vsep(&hl, wp, row);
 		if (ScreenLines[off_to] != (schar_T)c
 			|| (enc_utf8 && (int)ScreenLinesUC[off_to]
 							!= (c >= 0x80 ? c : 0))
@@ -1207,21 +1210,39 @@ rl_mirror(char_u *str)
 
 /*
  * Draw the vertical separator right of window "wp" starting with line "row".
+ * Includes status line rows so the VertSplit/VertSplitNC highlight is
+ * refreshed after a current window change even for non-current windows
+ * whose status lines are not redrawn.
  */
     void
 draw_vsep_win(win_T *wp, int row)
 {
-    int		hl;
-
     if (!wp->w_vsep_width)
 	return;
 
-    // Draw the vertical separator right of this window, row by row, so
-    // that the cell can differ per row depending on adjacent windows.
-    for (int r = W_WINROW(wp) + row; r < W_WINROW(wp) + wp->w_height; ++r)
+    int content_end = W_WINROW(wp) + wp->w_height;
+
+    // Content rows: VertSplit/VertSplitNC based on adjacency.
+    for (int r = W_WINROW(wp) + row; r < content_end; ++r)
     {
-	int c = sep_cell_at_row(&hl, wp, r);
+	int hl;
+	int c = fillchar_vsep(&hl, wp, r);
 	screen_fill(r, r + 1, W_ENDCOL(wp), W_ENDCOL(wp) + 1, c, ' ', hl);
+    }
+
+    // Status line rows: when the status line is connected with the right
+    // neighbour the separator cell is the status line fillchar; otherwise
+    // it is the vsep char.
+    if (wp->w_status_height != 0)
+    {
+	int hl;
+	int c;
+	if (stl_connected(wp))
+	    c = fillchar_status(&hl, wp);
+	else
+	    c = fillchar_vsep(&hl, wp, content_end);
+	for (int r = content_end; r < content_end + wp->w_status_height; ++r)
+	    screen_fill(r, r + 1, W_ENDCOL(wp), W_ENDCOL(wp) + 1, c, ' ', hl);
     }
 }
 
@@ -5231,10 +5252,11 @@ vsep_row_is_curwin(win_T *wp, int row)
 	return true;
 
     // Check if curwin is immediately to the right of wp's separator and
-    // "row" is within curwin's row range (including the winbar).
+    // "row" is within curwin's row range (winbar + content + status line).
     if (curwin->w_wincol == W_ENDCOL(wp) + wp->w_vsep_width
 	    && row >= curwin->w_winrow
-	    && row < W_WINROW(curwin) + curwin->w_height)
+	    && row < W_WINROW(curwin) + curwin->w_height
+						   + curwin->w_status_height)
 	return true;
 
     return false;
@@ -5243,7 +5265,8 @@ vsep_row_is_curwin(win_T *wp, int row)
 /*
  * Get the character to use in a separator between vertically split windows.
  * Get its attributes in "*attr".
- * "row" is the screen row number used to determine VertSplit or VertSplitNC.
+ * Use VertSplit when the separator is adjacent to the current window,
+ * VertSplitNC otherwise.
  */
     int
 fillchar_vsep(int *attr, win_T *wp, int row)
@@ -5261,81 +5284,6 @@ fillchar_vsep(int *attr, win_T *wp, int row)
 	return '|';
     else
 	return wp->w_fill_chars.vert;
-}
-
-/*
- * Find the window immediately to the right of "wp"'s right separator at
- * screen row "row".  Returns NULL if there is none.
- */
-    static win_T *
-right_neighbor_at_row(win_T *wp, int row)
-{
-    win_T   *rn;
-    int	    rcol = W_ENDCOL(wp) + wp->w_vsep_width;
-
-    FOR_ALL_WINDOWS(rn)
-	if (rn->w_wincol == rcol
-		&& row >= rn->w_winrow
-		&& row < W_WINROW(rn) + rn->w_height + rn->w_status_height)
-	    return rn;
-    return NULL;
-}
-
-/*
- * Return true if window "wn" has its status line at screen row "row".
- */
-    static bool
-win_status_at(win_T *wn, int row)
-{
-    return wn != NULL && wn->w_status_height > 0
-	&& row >= W_WINROW(wn) + wn->w_height
-	&& row < W_WINROW(wn) + wn->w_height + wn->w_status_height;
-}
-
-/*
- * Decide the character and highlight to draw at the separator cell on the
- * right edge of window "wp" at screen row "row".  Returns the character via
- * the return value and sets "*attr" to the highlight attribute.
- *
- * Rule:
- * 1. If curwin is on either side of the separator at this row:
- *    - At curwin's status line row: draw a space with StatusLine highlight
- *      so curwin's status line extends across the separator.
- *    - Otherwise (curwin's content row): draw the vsep char with VertSplit.
- * 2. If curwin is not adjacent here:
- *    - If the right neighbor has its status line at this row: draw a space
- *      with the right neighbor's StatusLineNC.
- *    - Else if "wp" has its status line at this row: draw a space with
- *      wp's StatusLineNC.
- *    - Else (both sides have content): draw the vsep char with VertSplitNC.
- */
-    int
-sep_cell_at_row(int *attr, win_T *wp, int row)
-{
-    win_T   *rn = right_neighbor_at_row(wp, row);
-    bool    curwin_adjacent = (wp == curwin) || (rn == curwin);
-
-    if (curwin_adjacent)
-    {
-	if (win_status_at(curwin, row))
-	{
-	    (void)fillchar_status(attr, curwin);
-	    return ' ';
-	}
-	return fillchar_vsep(attr, wp, row);
-    }
-
-    if (win_status_at(rn, row))
-    {
-	(void)fillchar_status(attr, rn);
-	return ' ';
-    }
-    if (win_status_at(wp, row))
-    {
-	(void)fillchar_status(attr, wp);
-	return ' ';
-    }
-    return fillchar_vsep(attr, wp, row);
 }
 
 /*

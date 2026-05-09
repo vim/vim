@@ -7119,8 +7119,16 @@ findfunc_find_file(char_u *findarg, int findarg_len, int count)
 	else
 	{
 	    listitem_T *li = list_find(fname_list, count - 1);
-	    if (li != NULL && li->li_tv.v_type == VAR_STRING)
-		ret_fname = vim_strsave(li->li_tv.vval.v_string);
+
+	    if (li != NULL)
+	    {
+		typval_T *tv = &li->li_tv;
+
+		if (tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
+		    ret_fname = vim_strsave(tv->vval.v_string);
+		else if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+		    ret_fname = dict_get_string(tv->vval.v_dict, "word", TRUE);
+	    }
 	}
     }
 
