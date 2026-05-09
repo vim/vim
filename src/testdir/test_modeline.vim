@@ -563,11 +563,12 @@ func Test_modeline_strict_allowed()
   set modeline modelinestrict
 
   " Whitelisted options should work
-  call writefile(['vim: set ts=2 sw=4 et :'], 'Xmodeline_strict', 'D')
+  call writefile(['vim: set ts=2 sw=4 et foldmarker=[,]:'], 'Xmodeline_strict', 'D')
   split Xmodeline_strict
   call assert_equal(2, &ts)
   call assert_equal(4, &sw)
   call assert_equal(1, &et)
+  call assert_equal('[,]', &foldmarker)
   bwipe!
 
   " 'filetype' should work

@@ -1554,6 +1554,7 @@ static char *modeline_whitelist[] =
     "filetype",
     "foldcolumn",
     "foldenable",
+    "foldmarker",
     "foldmethod",
     "modifiable",
     "readonly",

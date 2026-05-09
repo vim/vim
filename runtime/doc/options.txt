@@ -6216,6 +6216,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		'filetype'
 		'foldcolumn'
 		'foldenable'
+		'foldmarker'
 		'foldmethod'
 		'modifiable'
 		'readonly'
