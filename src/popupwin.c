@@ -3628,6 +3628,130 @@ redraw_overlapped_opacity_popups(int winrow, int wincol, int height, int width,
 }
 
 /*
+ * Replace pum_bg_* cells [left, right) of screen row "r" with the underlying
+ * buffer text, so the pum's opacity padding shows the buffer through.  Cells
+ * outside any window (or past the end of the buffer line) become spaces.
+ *
+ * Used after an opacity popup that overlapped pum_bg_* is dismissed: the
+ * stale popup content held in pum_bg_* would otherwise leak through the
+ * pum's opacity blend as a ghost.  This walks the buffer line and writes
+ * the displayed character at each visual column directly into pum_bg_*.
+ *
+ * Limitations: handles plain text and tabs; folds, conceal, virtual text and
+ * other rendering features fall back to a space, which still beats showing a
+ * stale popup char.
+ */
+    static void
+refill_pum_bg_row_from_buffer(int r, int left, int right)
+{
+    int		line_cp = r;
+    int		col_cp = left;
+    win_T	*wp;
+    linenr_T	lnum;
+    int		row_for_lnum;
+    int		col_for_lnum = 0;
+    char_u	*line;
+    char_u	*p;
+    int		win_text_col;
+    int		screen_col;
+    int		soff_base = (r - pum_bg_top) * pum_bg_cols;
+    int		c;
+
+    // Default: fill the range with spaces so trailing/empty cells render as
+    // plain pum bg through opacity.
+    for (c = left; c < right; ++c)
+    {
+	pum_bg_lines[soff_base + c] = ' ';
+	if (pum_bg_attrs != NULL)
+	    pum_bg_attrs[soff_base + c] = 0;
+	if (enc_utf8 && pum_bg_linesUC != NULL)
+	    pum_bg_linesUC[soff_base + c] = 0;
+	if (enc_utf8)
+	{
+	    int k;
+	    for (k = 0; k < MAX_MCO; ++k)
+		if (pum_bg_linesC[k] != NULL)
+		    pum_bg_linesC[k][soff_base + c] = 0;
+	}
+    }
+
+    wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
+    if (wp == NULL || line_cp < 0 || line_cp >= wp->w_height)
+	return;
+    if (wp->w_buffer == NULL || wp->w_buffer->b_ml.ml_mfp == NULL)
+	return;
+
+    // Compute the buffer line for this screen row.
+    row_for_lnum = line_cp;
+    if (mouse_comp_pos(wp, &row_for_lnum, &col_for_lnum, &lnum, NULL))
+	return;	// past end of buffer
+    if (lnum < 1 || lnum > wp->w_buffer->b_ml.ml_line_count)
+	return;
+
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    if (line == NULL)
+	return;
+
+    // Walk the buffer line and write each displayed cell into pum_bg_*.
+    // win_text_col is the screen column where the buffer text starts inside
+    // the window (after sign/number/fold columns and horizontal scroll).
+    win_text_col = wp->w_wincol + win_col_off(wp);
+    if (!wp->w_p_wrap)
+	win_text_col -= wp->w_leftcol;
+    screen_col = win_text_col;
+    p = line;
+    while (*p != NUL && screen_col < right)
+    {
+	int char_cells;
+	int byte_count;
+	int soff = soff_base + screen_col;
+	int in_range = (screen_col >= left && screen_col < right);
+
+	if (*p == '\t')
+	{
+	    int ts = (int)wp->w_buffer->b_p_ts;
+	    char_cells = ts > 0 ? ts - ((screen_col - win_text_col) % ts) : 1;
+	    byte_count = 1;
+	    if (in_range)
+	    {
+		pum_bg_lines[soff] = ' ';
+		if (enc_utf8 && pum_bg_linesUC != NULL)
+		    pum_bg_linesUC[soff] = 0;
+	    }
+	}
+	else if (has_mbyte)
+	{
+	    char_cells = mb_ptr2cells(p);
+	    byte_count = mb_ptr2len(p);
+	    if (in_range)
+	    {
+		pum_bg_lines[soff] = *p;
+		if (enc_utf8 && pum_bg_linesUC != NULL)
+		    pum_bg_linesUC[soff] = (*p < 0x80) ? 0 : mb_ptr2char(p);
+	    }
+	}
+	else
+	{
+	    char_cells = (*p < 0x20) ? 1 : 1;
+	    byte_count = 1;
+	    if (in_range)
+	    {
+		pum_bg_lines[soff] = (*p < 0x20) ? ' ' : *p;
+		if (enc_utf8 && pum_bg_linesUC != NULL)
+		    pum_bg_linesUC[soff] = 0;
+	    }
+	}
+	if (in_range && pum_bg_attrs != NULL)
+	    pum_bg_attrs[soff] = 0;
+
+	// For wide chars / tabs the trailing cells are zeroed already (by the
+	// initial space fill we did above).  Just skip past them.
+	p += byte_count;
+	screen_col += char_cells;
+    }
+}
+
+/*
  * Redraw what becomes exposed when an opacity popup moves, resizes or closes.
  */
     static void
@@ -3640,6 +3764,30 @@ popup_redraw_exposed_area(popup_area_T *area)
 	    area->width, area->leftoff);
     redraw_overlapped_opacity_popups(area->winrow, area->wincol,
 	    area->height, area->width, area->leftoff, area->zindex);
+
+    // If the closing/moving popup overlapped the pum's saved background,
+    // pum_bg_* still holds the dismissed popup's content.  When the pum
+    // next blends opacity it would restore those stale chars at padding
+    // cells, leaving a ghost.
+    //
+    // We can't re-snapshot via update_screen from here: the surrounding
+    // update_screen has updating_screen set, so a nested call would no-op.
+    // Instead, replace the overlapping pum_bg_* cells with the actual
+    // underlying buffer text so the pum's opacity padding shows the buffer
+    // through, just as it would if the popup had never been there.
+    if (pum_bg_lines != NULL
+	    && area->winrow < pum_bg_bot
+	    && area->winrow + area->height > pum_bg_top)
+    {
+	int top = MAX(area->winrow, pum_bg_top);
+	int bot = MIN(area->winrow + area->height, pum_bg_bot);
+	int left = MAX(area->wincol, 0);
+	int right = MIN(area->wincol + area->width, pum_bg_cols);
+	int r;
+
+	for (r = top; r < bot; ++r)
+	    refill_pum_bg_row_from_buffer(r, left, right);
+    }
 }
 
 /*
