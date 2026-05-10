@@ -4645,7 +4645,7 @@ func Test_popup_clipwindow_left_clip()
 
   let lines =<< trim END
       vim9script
-      set nowrap
+      set nowrap laststatus=0
       :vert botright new
       :vert resize 22
       setline(1, repeat(['host content line abcdef'], 20))
@@ -4676,7 +4676,7 @@ func Test_popup_clipwindow_right_clip()
 
   let lines =<< trim END
       vim9script
-      set nowrap
+      set nowrap laststatus=0
       :vert topleft new
       :vert resize 22
       setline(1, repeat(['host content line abcdef'], 20))
