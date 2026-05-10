@@ -2696,7 +2696,17 @@ cmdline_changed:
 		&& (ccline.cmdpos != prev_cmdpos
 		    || (prev_cmdbuff != NULL &&
 			STRCMP(prev_cmdbuff, ccline.cmdbuff) != 0)))
+	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+#ifdef FEAT_PROP_POPUP
+	    // Show popup updates from the autocmd without a manual :redraw.
+	    if (popup_need_redraw())
+	    {
+		update_screen(0);
+		redrawcmd();
+	    }
+#endif
+	}
 
 	// Trigger CursorMovedC autocommands.
 	if (ccline.cmdpos != prev_cmdpos)
