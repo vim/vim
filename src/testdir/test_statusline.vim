@@ -978,4 +978,40 @@ func Test_statusline_empty()
   set statusline&
 endfunc
 
+func Test_statusline_vsep_borrow_hl()
+  CheckScreendump
+
+  " borrow_stl_vsep_hl(): vsep cells adjacent to a status line should
+  " borrow the highlight of the neighbouring window's status line edge so
+  " that custom highlights flow into the separator column.
+  "  - vsep next to curwin: curwin's edge hl is borrowed.
+  "  - vsep between two non-current windows: the left window's right-edge
+  "    hl is borrowed when the status fillchar is a space.
+  let lines =<< trim END
+    hi User1 ctermfg=Red ctermbg=Yellow
+    hi User2 ctermfg=Blue ctermbg=Green
+    set laststatus=2
+    set statusline=%1*L%=%2*R
+    vsplit
+    vsplit
+    vsplit
+    " curwin is now the leftmost window; move to the second one so the
+    " layout becomes: NC | cur | NC | NC.
+    2wincmd w
+  END
+  call writefile(lines, 'XTest_statusline_vsep_borrow_hl', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_statusline_vsep_borrow_hl',
+        \ {'rows': 6, 'cols': 78})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_01', {})
+
+  " Move curwin to the third window: NC | NC | cur | NC.
+  " Now the leftmost vsep is between two non-current windows.
+  call term_sendkeys(buf, "\<C-w>l\<C-L>")
+  call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

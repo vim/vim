@@ -69,6 +69,7 @@ static void win_update(win_T *wp);
 #ifdef FEAT_STL_OPT
 static void redraw_custom_statusline(win_T *wp);
 #endif
+static void borrow_stl_vsep_hl(void);
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
 static int  did_update_one_window;
 #endif
@@ -386,6 +387,8 @@ update_screen(int type_arg)
 		draw_vsep_win(wp, 0);
     }
 
+    borrow_stl_vsep_hl();
+
     // Reset b_mod_set flags.  Going through all windows is probably faster
     // than going through all buffers (there could be many buffers).
     FOR_ALL_WINDOWS(wp)
@@ -628,6 +631,83 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	}
     }
     busy = FALSE;
+}
+
+/*
+ * Borrow status line edge highlight to adjacent vsep cells.
+ *  - When the pair involves curwin: borrow curwin's edge attr so custom
+ *    statusline highlights flow into the vsep cell.
+ *  - When both windows are non-current: borrow the left window's right-edge
+ *    attr only if the status fillchar is a space, so StatusLineNC blends
+ *    over the join without changing visible characters.
+ *  - Cells where the vsep char is drawn (stl_connected == FALSE) are left
+ *    untouched so the VertSplit highlight is preserved.
+ */
+    static void
+borrow_stl_vsep_hl(void)
+{
+    win_T   *left = NULL;
+    win_T   *right = NULL;
+
+    if (!redrawing())
+	return;
+
+    FOR_ALL_WINDOWS(left)
+    {
+	if (left->w_status_height == 0 || left->w_vsep_width == 0)
+	    continue;
+	if (!stl_connected(left))
+	    continue;
+
+	// Find a right neighbour whose status line rows overlap.
+	win_T	*neighbour = NULL;
+	int start = 0;
+	int end = 0;
+
+	FOR_ALL_WINDOWS(right)
+	{
+	    if (right == left || right->w_status_height == 0)
+		continue;
+	    if (right->w_wincol != W_ENDCOL(left) + 1)
+		continue;
+	    int l_stl_row = W_WINROW(left) + left->w_height;
+	    int r_stl_row = W_WINROW(right) + right->w_height;
+
+	    start = l_stl_row > r_stl_row ? l_stl_row : r_stl_row;
+	    end = l_stl_row + left->w_status_height
+				< r_stl_row + right->w_status_height
+		? l_stl_row + left->w_status_height
+		: r_stl_row + right->w_status_height;
+	    if (start < end)
+	    {
+		neighbour = right;
+		break;
+	    }
+	}
+	if (neighbour == NULL)
+	    continue;
+
+	// For non-current pairs only borrow when the status fillchar is a
+	// space; otherwise the visible character would be repainted with a
+	// foreign highlight.
+	int	hl;
+	if (left != curwin && neighbour != curwin
+		&& fillchar_status(&hl, left) != ' ')
+	    continue;
+
+	// Source: prefer curwin's side; otherwise left window's right edge.
+	int dst_col = W_ENDCOL(left);
+	int src_col = (neighbour == curwin)
+				? neighbour->w_wincol : W_ENDCOL(left) - 1;
+
+	for (int r = start; r < end; r++)
+	{
+	    unsigned dst_off = LineOffset[r] + dst_col;
+
+	    ScreenAttrs[dst_off] = ScreenAttrs[LineOffset[r] + src_col];
+	    screen_char(dst_off, r, dst_col);
+	}
+    }
 }
 
 #ifdef FEAT_STL_OPT
@@ -3434,6 +3514,7 @@ redraw_statuslines(void)
 	    if (ret)
 		pop_highlight_overrides();
 	}
+    borrow_stl_vsep_hl();
     if (redraw_tabline)
 	draw_tabline();
 

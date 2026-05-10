@@ -6115,9 +6115,14 @@ SpellRare	Word that is recognized by the spellchecker as one that is
 		hardly ever used. |spell|
 		This will be combined with the highlighting used otherwise.
 							*hl-StatusLine*
-StatusLine	Status line of current window.
+StatusLine	Status line of current window.  The highlight at the status
+		line's edge (StatusLine, or any %#... / %N* in 'statusline')
+		also extends into the adjacent vertical separator cell when
+		the status lines are connected (no 'vert' character drawn).
 							*hl-StatusLineNC*
-StatusLineNC	status lines of not-current windows.
+StatusLineNC	status lines of not-current windows.  Like |hl-StatusLine|,
+		the edge highlight also extends into the adjacent vertical
+		separator cell.
 		Note: If this is equal to "StatusLine", Vim will use "^^^" in
 		the status line of the current window.
 							*hl-StatusLineTerm*
