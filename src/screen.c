@@ -1479,6 +1479,7 @@ win_redr_custom(
 	*out_count = 0;
     }
 
+    int carry_hl = 0;
     for (int i = 0; i < stlh_cnt; i++)
     {
 	col = col_save;
@@ -1487,7 +1488,8 @@ win_redr_custom(
 			&stl_tmp,
 			opt_name, opt_scope,
 			fillchar, maxwidth, &hltab, &tabtab,
-			&clicktab);
+			&clicktab,
+			&carry_hl);
 
 	// Make all characters printable.
 	p = transstr(buf);

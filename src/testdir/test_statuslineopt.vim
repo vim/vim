@@ -235,6 +235,35 @@ func Test_multistatusline_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_multistatusline_carry_hl()
+  CheckScreendump
+
+  " %#XX# / %N* set on one row should persist on subsequent rows until %*
+  " (or another %# / %*) changes it.
+  let lines =<< trim END
+    func MyStatusLine()
+      return 'L1A%=%#Search#L1B%@'
+        \ .. 'L2 carried Search%@'
+        \ .. '%*L3 reset%@'
+        \ .. '%2*L4 user2%@'
+        \ .. 'L5 carried user2%@'
+        \ .. '%*L6 reset'
+    endfunc
+
+    hi User2 ctermfg=Yellow ctermbg=Blue
+    set laststatus=2
+    set statuslineopt=maxheight:6
+    set statusline=%!MyStatusLine()
+  END
+  call writefile(lines, 'XTest_multistatusline_carry_hl', 'D')
+
+  let buf = g:RunVimInTerminal('-S XTest_multistatusline_carry_hl', {'rows': 9})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_multistatusline_carry_hl_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_statuslineopt_default_stl()
   CheckScreendump
 

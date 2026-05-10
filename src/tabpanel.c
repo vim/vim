@@ -688,6 +688,8 @@ do_by_tplmode(
 
 	if (usefmt != NULL && *usefmt != NUL)
 	{
+	    int	carry_hl = 0;
+
 	    while (*usefmt != NUL)
 	    {
 		char_u	buf[IOSIZE];
@@ -708,7 +710,8 @@ do_by_tplmode(
 			(args.cwp, buf, sizeof(buf),
 			&usefmt, opt_name, opt_scope, TPL_FILLCHAR,
 			args.col_end - args.col_start, &hltab, &tabtab,
-			tplmode == TPLMODE_REDRAW ? &clicktab : NULL);
+			tplmode == TPLMODE_REDRAW ? &clicktab : NULL,
+			&carry_hl);
 
 		args.prow = &row;
 		args.pcol = &col;

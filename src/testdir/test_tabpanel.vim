@@ -1129,6 +1129,36 @@ func Test_tabpanel_empty()
   set tabpanel&
 endfunc
 
+func Test_tabpanel_carry_hl()
+  CheckScreendump
+
+  " %#XX# / %N* set on one row of a tabpanel should persist on subsequent
+  " rows until %* (or another %# / %*) changes it.  Both "%@" and "\n" are
+  " accepted as line breaks in 'tabpanel'.
+  let lines =<< trim END
+    func MyTabPanel()
+      return "L1A\n"
+        \ .. "%#Search#L1B\n"
+        \ .. "L2 carried Search\n"
+        \ .. "%*L3 reset\n"
+        \ .. "%2*L4 user2\n"
+        \ .. "L5 carried\n"
+        \ .. "%*L6 reset"
+    endfunc
+
+    hi User2 ctermfg=Yellow ctermbg=Blue
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set tabpanel=%!MyTabPanel()
+  END
+  call writefile(lines, 'XTest_tabpanel_carry_hl', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_carry_hl', {'rows': 9, 'cols': 60})
+  call VerifyScreenDump(buf, 'Test_tabpanel_carry_hl_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_tabpanel_getinfo_and_scroll()
   CheckScreendump
 
