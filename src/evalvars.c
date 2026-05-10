@@ -37,7 +37,7 @@ static hashtab_T	compat_hashtab;
 #define VV_RO		2	// read-only
 #define VV_RO_SBX	4	// read-only in the sandbox
 
-#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}
+#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {s}}
 
 typedef struct vimvar vimvar_T;
 
@@ -216,12 +216,6 @@ evalvars_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
-	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
-	{
-	    iemsg("Name too long, increase size of dictitem16_T");
-	    getout(1);
-	}
-	STRCPY(p->vv_di.di_key, p->vv_name);
 	if (p->vv_flags & VV_RO)
 	    p->vv_di.di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	else if (p->vv_flags & VV_RO_SBX)
