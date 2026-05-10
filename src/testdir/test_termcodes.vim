@@ -1720,7 +1720,7 @@ func Test_xx01_term_style_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1777,7 +1777,7 @@ func Run_libvterm_konsole_response(code)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 endfunc
 
@@ -1853,7 +1853,7 @@ func Test_xx05_mintty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1916,7 +1916,7 @@ func Do_check_t_8u_set_reset(set_by_user)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
   call assert_equal(a:set_by_user ? default_value : '', &t_8u)
 endfunc
@@ -1956,7 +1956,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'y',
         \ mouse: 'u',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 95 < 277 "xterm2"
@@ -1973,7 +1973,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: '2',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 277: "sgr"
@@ -1990,7 +1990,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
