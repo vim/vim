@@ -396,7 +396,7 @@ OPTIONS
        --startuptime {file}
                    During startup write timing messages to the file {fname}.
 
-       --ttyfail   When  stdin  or  stdout is not a a terminal (tty) then exit
+       --ttyfail   When  stdin  or  stdout is not a terminal (tty) then exit
                    right away.
 
        --version   Print version information and exit.
