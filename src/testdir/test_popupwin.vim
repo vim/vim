@@ -4645,9 +4645,10 @@ func Test_popup_clipwindow_left_clip()
 
   let lines =<< trim END
       vim9script
-      set nowrap laststatus=0
+      set nowrap
       :vert botright new
       :vert resize 22
+      set laststatus=0
       setline(1, repeat(['host content line abcdef'], 20))
       prop_type_add('clipprop', {})
       prop_add(5, 6, {type: 'clipprop', length: 4})
@@ -4676,9 +4677,10 @@ func Test_popup_clipwindow_right_clip()
 
   let lines =<< trim END
       vim9script
-      set nowrap laststatus=0
+      set nowrap
       :vert topleft new
       :vert resize 22
+      set laststatus=0
       setline(1, repeat(['host content line abcdef'], 20))
       prop_type_add('clipprop', {})
       prop_add(5, 14, {type: 'clipprop', length: 4})
