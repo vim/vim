@@ -280,15 +280,6 @@ map_add(
 	if (cmdmod.cmod_flags & CMOD_LEGACY)
 	    mp->m_script_ctx.sc_version = 1;
 	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
-
-	// allow :legacy and :vim9cmd override the expression evaluation
-	if (expr)
-	{
-	    if (cmdmod.cmod_flags & CMOD_LEGACY)
-		mp->m_script_ctx.sc_version = SCRIPT_VERSION_MAX;
-	    else if (cmdmod.cmod_flags & CMOD_VIM9CMD)
-		mp->m_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
-	}
     }
 #endif
 
