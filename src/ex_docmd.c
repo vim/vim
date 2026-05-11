@@ -4025,6 +4025,11 @@ find_ex_command(
     if (eap->cmdidx == CMD_final && p - eap->cmd == 4 && !vim9)
 	eap->cmdidx = CMD_finally;
 
+    // ":hor" is documented as the minimum abbreviation of ":horizontal";
+    // ":ho" must not be recognized as ":horizontal".
+    if (eap->cmdidx == CMD_horizontal && p - eap->cmd == 2)
+	eap->cmdidx = CMD_SIZE;
+
 #ifdef FEAT_EVAL
     if (eap->cmdidx < CMD_SIZE
 	    && vim9

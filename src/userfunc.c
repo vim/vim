@@ -1132,7 +1132,7 @@ get_function_body(
 	    {
 		if (!nesting_inline[nesting] && nesting_def[nesting]
 								&& p < cmd + 6)
-		    semsg(_(e_command_cannot_be_shortened_str), "enddef");
+		    semsg(_(e_command_cannot_be_shortened_str), cmd);
 		if (nesting-- == 0)
 		{
 		    char_u *nextcmd = NULL;

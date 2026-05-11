@@ -1,4 +1,4 @@
-*tagsrch.txt*	For Vim version 9.2.  Last change: 2026 May 17
+*tagsrch.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -833,8 +833,9 @@ CTRL-W i		Open a new window, with the cursor on the first line
 			Like `[D`  and `]D`, but search in [range] lines
 			(default: whole file).
 			See |:search-args| for [/] and [!].
-			Note that `:dl` works like `:delete` with the "l"
-			flag, not `:dlist`.
+			Note: In legacy Vim script, `:dl` works like
+			`:delete` with the "l" flag, not `:dlist`, whereas in
+			|Vim9| script `:dl` does work like `:dlist`.
 
 							*[_CTRL-D*
 [ CTRL-D		Jump to the first macro definition that contains the

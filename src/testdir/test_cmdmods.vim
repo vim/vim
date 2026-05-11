@@ -50,12 +50,18 @@ def Test_cmdmods_array()
 enddef
 
 def Test_keep_cmdmods_names()
-  # :k only available in legacy script
-  legacy call assert_equal('k', fullcommand(':k'))
-  legacy call assert_equal('k', fullcommand(':ke'))
-  # single character commands not supported in Vim9
-  assert_equal('', fullcommand(':k'))
-  assert_equal('keepmarks', fullcommand(':ke'))
+  # :k is only available in legacy Vim script
+  assert_equal('k', fullcommand(':k', false))
+  # many single character commands are not supported in Vim9 script, incl. :k
+  assert_equal('', fullcommand(':k', true))
+  # :k{a-zA-Z'} in legacy Vim script
+  assert_equal('k', fullcommand(':ka', false))
+  assert_equal('', fullcommand(':ka', true))
+  # :ke is an exception - it is 'keepmarks', not 'k', in Vim9 script
+  assert_equal('k', fullcommand(':ke', false))
+  assert_equal('keepmarks', fullcommand(':ke', true))
+  # :kee* shortenings
+  assert_equal('keepmarks', fullcommand(':kee', false))
   assert_equal('keepmarks', fullcommand(':kee'))
   assert_equal('keepmarks', fullcommand(':keep'))
   assert_equal('keepmarks', fullcommand(':keepm'))
@@ -63,14 +69,17 @@ def Test_keep_cmdmods_names()
   assert_equal('keepmarks', fullcommand(':keepmar'))
   assert_equal('keepmarks', fullcommand(':keepmark'))
   assert_equal('keepmarks', fullcommand(':keepmarks'))
+  assert_equal('keepalt', fullcommand(':keepa', false))
   assert_equal('keepalt', fullcommand(':keepa'))
   assert_equal('keepalt', fullcommand(':keepal'))
   assert_equal('keepalt', fullcommand(':keepalt'))
+  assert_equal('keepjumps', fullcommand(':keepj', false))
   assert_equal('keepjumps', fullcommand(':keepj'))
   assert_equal('keepjumps', fullcommand(':keepju'))
   assert_equal('keepjumps', fullcommand(':keepjum'))
   assert_equal('keepjumps', fullcommand(':keepjump'))
   assert_equal('keepjumps', fullcommand(':keepjumps'))
+  assert_equal('keeppatterns', fullcommand(':keepp', false))
   assert_equal('keeppatterns', fullcommand(':keepp'))
   assert_equal('keeppatterns', fullcommand(':keeppa'))
   assert_equal('keeppatterns', fullcommand(':keeppat'))

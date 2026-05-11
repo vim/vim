@@ -42,7 +42,8 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, 'E475: Invalid argument: classy Something', 2)
 
-  # The complete "endclass" should be specified.
+  # Test for "endclass" cannot be shortened.  Test_shortened_invalid_vim9() in
+  # test_vim9_script.vim has complete coverage (:endc to :endclas)
   lines =<< trim END
     vim9script
     class Something
@@ -50,7 +51,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endcl', 3)
 
-  # "endclass" cannot be shortened (variant incl. whitespace and colon)
+  # "endclass" cannot be shortened (variant incl. colon-whitespace)
   lines =<< trim END
     vim9script
     class Something
@@ -1361,13 +1362,14 @@ def Test_instance_variable_access()
     echo Foo.new()
           .Add(1).Add(2).x
     echo Foo.new()
-          .Add(1) 
+          .Add(1)
           .Add(2)
           .x
   END
   v9.CheckSourceSuccess(lines)
 
-  # Test for "public" cannot be abbreviated
+  # Test for "public" cannot be shortened.  Test_shortened_invalid_vim9() in
+  # test_vim9_script.vim has complete coverage (:pub to :publi)
   lines =<< trim END
     vim9script
     class Something
@@ -1460,7 +1462,8 @@ enddef
 
 " Test for class variable access
 def Test_class_variable_access()
-  # Test for "static" cannot be abbreviated
+  # Test for "static" cannot be shortened.  Test_shortened_invalid_vim9() in
+  # test_vim9_script.vim has complete coverage (:stat and :stati)
   var lines =<< trim END
     vim9script
     class Something
@@ -2951,7 +2954,8 @@ def Test_abstract_class()
   END
   v9.CheckSourceFailure(lines, 'E1316: Class can only be defined in Vim9 script', 1)
 
-  # Test for "abstract" cannot be abbreviated
+  # Test for "abstract" cannot be shortened.  Test_shortened_invalid_vim9() in
+  # test_vim9_script.vim has complete coverage (:abs to :abstrac)
   lines =<< trim END
     vim9script
     abs class A
@@ -5579,15 +5583,6 @@ def Test_abstract_method()
     endinterface
   END
   v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
-
-  # Abbreviate the "abstract" keyword
-  lines =<< trim END
-    vim9script
-    class A
-      abs def Foo()
-    endclass
-  END
-  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: abs def Foo()', 3)
 
   # Use "abstract" with a member variable
   lines =<< trim END
