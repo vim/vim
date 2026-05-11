@@ -60,6 +60,7 @@
 #define EX_EXPR_ARG    0x8000000  // argument is an expression
 #define EX_WHOLE      0x10000000  // command name cannot be shortened in Vim9
 #define EX_EXPORT     0x20000000  // command can be used after :export
+#define EX_ARGSPACE   0x40000000  // allow spaces in user command with -nargs=_
 
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file

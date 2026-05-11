@@ -344,15 +344,18 @@ set_context_in_user_cmdarg(
 	return set_context_in_map_cmd(xp, (char_u *)"map", arg, forceit, FALSE,
 							FALSE, CMD_map);
     // Find start of last argument.
-    p = arg;
-    while (*p)
+    if (!(argt & EX_ARGSPACE))
     {
-	if (*p == ' ')
-	    // argument starts after a space
-	    arg = p + 1;
-	else if (*p == '\\' && *(p + 1) != NUL)
-	    ++p; // skip over escaped character
-	MB_PTR_ADV(p);
+	p = arg;
+	while (*p)
+	{
+	    if (*p == ' ')
+		// argument starts after a space
+		arg = p + 1;
+	    else if (*p == '\\' && *(p + 1) != NUL)
+		++p; // skip over escaped character
+	    MB_PTR_ADV(p);
+	}
     }
     xp->xp_pattern = arg;
     xp->xp_context = context;
@@ -975,6 +978,8 @@ uc_scan_attr(
 		    *argt |= (EX_EXTRA | EX_NOSPC);
 		else if (*val == '+')
 		    *argt |= (EX_EXTRA | EX_NEEDARG);
+		else if (*val == '_')
+		    *argt |= (EX_EXTRA | EX_NEEDARG | EX_ARGSPACE);
 		else
 		    goto wrong_nargs;
 	    }
