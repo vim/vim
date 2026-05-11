@@ -1482,11 +1482,15 @@ popup_geom_restore(win_T *wp, popup_geom_save_T *sv)
 
 /*
  * Compute a screen row for a textprop that has scrolled above the host
- * window's top.  textpos2screenpos() cannot return a row above topline, so we
- * probe at topline to fill the screen_{scol,ccol,ecol} column mapping, then
- * extrapolate a (possibly-negative) row by counting how many buffer lines lie
- * between the prop and topline.  The popup_topoff clip path then turns the
+ * window's top.  textpos2screenpos() cannot return a row above topline, so
+ * compute the virtual column directly from the prop's *own* line and then
+ * extrapolate a (possibly-negative) row by counting how many buffer lines
+ * lie between the prop and topline.  The popup_topoff clip path turns the
  * negative row into a top-clip animation as the prop rolls off the top edge.
+ *
+ * Probing at topline with the prop's tp_col would inherit topline's tab
+ * stops / multi-byte widths, so the popup's wincol would jitter every time
+ * a wider/narrower line scrolled into the topmost position.
  */
     static void
 popup_screenpos_above_top(
@@ -1499,10 +1503,16 @@ popup_screenpos_above_top(
 	int	    *screen_ecol)
 {
     pos_T   probe = *pos;
+    colnr_T scol = 0, ccol = 0, ecol = 0;
+    int	    coloff;
 
-    probe.lnum = prop_win->w_topline;
-    textpos2screenpos(prop_win, &probe,
-			    screen_row, screen_scol, screen_ccol, screen_ecol);
+    probe.lnum = prop_lnum;
+    getvcol(prop_win, &probe, &scol, &ccol, &ecol, 0);
+    coloff = (int)win_col_off(prop_win) - (int)prop_win->w_leftcol
+					+ prop_win->w_wincol + 1;
+    *screen_scol = (int)scol + coloff;
+    *screen_ccol = (int)ccol + coloff;
+    *screen_ecol = (int)ecol + coloff;
     *screen_row = prop_win->w_winrow + 1
 				 - (int)(prop_win->w_topline - prop_lnum);
 }
