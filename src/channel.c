@@ -3708,35 +3708,27 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 
     STRCPY(namebuf + tail, "io");
     if (part == PART_SOCK)
-    {
-	s.string = (char_u *)"socket";
-	s.length = STRLEN_LITERAL("socket");
-    }
+	STR_LITERAL_SET(s, "socket");
     else switch (chanpart->ch_io)
     {
 	case JIO_NULL:
-	    s.string = (char_u *)"null";
-	    s.length = STRLEN_LITERAL("null");
+	    STR_LITERAL_SET(s, "null");
 	    break;
 	case JIO_PIPE:
-	    s.string = (char_u *)"pipe";
-	    s.length = STRLEN_LITERAL("pipe");
+	    STR_LITERAL_SET(s, "pipe");
 	    break;
 	case JIO_FILE:
-	    s.string = (char_u *)"file";
-	    s.length = STRLEN_LITERAL("file");
+	    STR_LITERAL_SET(s, "file");
 	    break;
 	case JIO_BUFFER:
-	    s.string = (char_u *)"buffer";
-	    s.length = STRLEN_LITERAL("buffer");
+	    STR_LITERAL_SET(s, "buffer");
 	    break;
 	case JIO_OUT:
-	    s.string = (char_u *)"out";
-	    s.length = STRLEN_LITERAL("out");
+	    STR_LITERAL_SET(s, "out");
 	    break;
 	default:
-	    s.string = (char_u *)"";
-	    s.length = 0;
+	    STR_LITERAL_SET(s, "");
+	    break;
     }
     dict_add_string_len(dict, namebuf, s.string, (int)s.length);
 
