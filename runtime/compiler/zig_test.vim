@@ -13,8 +13,6 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 CompilerSet makeprg=zig\ test\ \%:S\ \$*
-" CompilerSet errorformat=%f:%l:%c: %t%*[^:]: %m, %f:%l:%c: %m, %f:%l: %m
-CompilerSet errorformat&
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

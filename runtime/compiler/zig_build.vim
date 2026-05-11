@@ -18,8 +18,6 @@ else
 	CompilerSet makeprg=zig\ build\ $*
 endif
 
-" TODO: anything to add to errorformat for zig build specifically?
-
 let &cpo = s:save_cpo
 unlet s:save_cpo
 " vim: tabstop=8 shiftwidth=4 softtabstop=4 expandtab

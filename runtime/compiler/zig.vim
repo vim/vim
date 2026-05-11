@@ -17,7 +17,27 @@ else
     CompilerSet makeprg=zig\ \$*\ \"%\"
 endif
 
-" TODO: improve errorformat as needed.
+CompilerSet errorformat=
+            \%-G,
+            \%-G\ %#+-\ %.%#,
+            \%-Ginstall,
+            \%-Ginstall\ transitive\ failure,
+            \%-Grun,
+            \%-Grun\ transitive\ failure,
+            \%-Gtest,
+            \%-Gtest\ transitive\ failure,
+            \%-Gfailed\ command:\ %.%#,
+            \%-Gerror:\ %*\\d\ compilation\ errors,
+            \%-GBuild\ Summary:\ %.%#,
+            \%-Gerror:\ the\ following\ build\ command\ failed\ with\ exit\ code\ %*\\d:,
+            \%-G.zig-cache%.%#,
+            \%E%f:%l:%c:\ error:\ %m,
+            \%I%f:%l:%c:\ note:\ %m
+
+" zig has no warnings, but zig cc and zig c++ do
+CompilerSet errorformat+=
+            \%W%f:%l:%c:\ warning:\ %m,
+            \%-G%*\\d\ warnings\ generated.
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
