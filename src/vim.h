@@ -868,6 +868,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_FILETYPECMD	63
 #define EXPAND_PATTERN_IN_BUF	64
 #define EXPAND_RETAB		65
+#define EXPAND_USER_COMPLETEOPT	66
 
 
 // Values for exmode_active (0 is no exmode)
@@ -3085,6 +3086,9 @@ long elapsed(DWORD start_tick);
 // flags used by user commands and :autocmd
 #define UC_BUFFER	1	// -buffer: local to current buffer
 #define UC_VIM9		2	// {} argument: Vim9 syntax.
+
+// flags for the -completeopt= attribute of :command
+#define UCC_ESCAPE	0x1	// escape spaces and backslashes in matches
 
 // flags used by vim_strsave_fnameescape()
 #define VSE_NONE	0
