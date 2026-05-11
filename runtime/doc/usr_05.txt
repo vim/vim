@@ -509,6 +509,14 @@ To highlight in visual mode, use: >
 To disable the effect of the plugin after it has been loaded: >
 	au! hlyank
 
+Additionally, the plugin can also highlight regions that are put using the
+|TextPutPost| autocommand.  This is by default disabled and can be enabled
+using: >
+	:let g:hlput_enable = v:true
+<
+The following configuration variables can be used are "g:hlput_hlgroup" and
+"g:hlput_duration", which have the same effect as their yank counterparts.
+
 ------------------------------------------------------------------------------
 Adding the osc52 package		*osc52-install* *package-osc52*
 ------------------------------------------------------------------------------
