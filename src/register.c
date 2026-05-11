@@ -1736,7 +1736,8 @@ do_put(
 	    stuffcharReadbuff(VIsual_mode);
 
 #ifdef FEAT_EVAL
-	if (has_textputpre() || has_textputpost())
+	bool has_textput_events = has_textputpre() || has_textputpost();
+	if (has_textput_events)
 	    add_last_insert++;
 #endif
 
@@ -1748,11 +1749,10 @@ do_put(
 	// TextPutPost after TextPutPre.
 	if (has_textputpre())
 	    put_do_autocmd('.', NULL, NULL, false, dir);
-
 	if (has_textputpost())
 	    put_do_autocmd('.', NULL, NULL, true, dir);
 
-	if (--add_last_insert == 0)
+	if (has_textput_events && --add_last_insert == 0)
 	    ga_clear(&last_insert_ga);
 #endif
 

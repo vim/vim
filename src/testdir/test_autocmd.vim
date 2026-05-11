@@ -6069,22 +6069,27 @@ func Test_TextPutX()
   au! TextPutPre
   let g:pre_event = []
 
-  " Test that recursive ". register calls have the same contents for post and
-  " pre
-  au TextPutPre * put . | let g:pre_event = copy(v:event)
-  au TextPutPost * let g:post_event = copy(v:event)
+  for round in range(2)
+    " Recursive ". register calls have the same contents for post and pre.
+    au TextPutPre * put . | let g:pre_event = copy(v:event)
+    au TextPutPost * let g:post_event = copy(v:event)
 
-  call feedkeys("iinserted\<Esc>", 'x')
-  norm! ".p
+    call feedkeys("iinserted\<Esc>", 'x')
+    norm! ".p
 
-  call assert_equal(
-        \ #{regcontents: ["inserted"], regname: '.',
-        \ operator: 'p', regtype: 'v', visual: v:false},
-        \ g:pre_event)
-  call assert_equal(g:pre_event, g:post_event)
+    call assert_equal(
+          \ #{regcontents: ["inserted"], regname: '.',
+          \ operator: 'p', regtype: 'v', visual: v:false},
+          \ g:pre_event)
+    call assert_equal(g:pre_event, g:post_event)
 
-  au! TextPutPre
-  au! TextPutPost
+    au! TextPutPre
+    au! TextPutPost
+
+    " Pasting ". register without TextPutPre/TextPutPost autocommands should
+    " not interfere with these autocommands in the next round.
+    norm! ".p
+  endfor
 
   unlet g:post_event
   unlet g:pre_event
