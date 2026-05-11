@@ -13,5 +13,6 @@ let b:did_ftplugin = 1
 setlocal iskeyword+=-
 setlocal comments=n:#
 setlocal commentstring=#\ %s
+setlocal suffixesadd=.just
 
-let b:undo_ftplugin = "setlocal iskeyword< comments< commentstring<"
+let b:undo_ftplugin = "setlocal iskeyword< comments< commentstring< suffixesadd<"
