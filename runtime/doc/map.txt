@@ -1608,14 +1608,21 @@ Arguments are considered to be separated by (unescaped) spaces or tabs in this
 context, except when there is one argument, then the white space is part of
 the argument. The difference between the "-nargs=1" and "-nargs=_": >
 
-	func MyCommandComplete(ArgLead, CmdLine, CursorPos)
-	  return ["one value", "two values", "three values"]->matchfuzzy(a:ArgLead)
+	func MyComplete(ArgLead, CmdLine, CursorPos)
+	  return ["one value", "two values", "three values"]
+		\->matchfuzzy(a:ArgLead)
 	endfunc
-	:command -nargs=1 -complete=customlist,MyCommandComplete MyCommand1 echo <q-args>
-	:command -nargs=_ -complete=customlist,MyCommandComplete MyCommand2 echo <q-args>
+	:command -nargs=1 -complete=customlist,MyComplete MyCmd1 echo <q-args>
+	:command -nargs=_ -complete=customlist,MyComplete MyCmd2 echo <q-args>
 
-Completing ":MyCommand1 two va<tab>" will complete with "MyCommand1 two one value".
-Completing ":MyCommand2 two va<tab>" will complete with "MyCommand2 two values".
+Completing ":MyCmd1 two va<tab>" will complete with: >
+
+	:MyCmd1 two one value
+
+Completing ":MyCmd2 two va<tab>" will complete with: >
+
+	:MyCmd2 two values
+
 
 Note that arguments are used as text, not as expressions.  Specifically,
 "s:var" will use the script-local variable in the script where the command was
