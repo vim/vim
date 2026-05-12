@@ -339,6 +339,9 @@ func Test_CmdErrors()
   com! -nargs=1 DoCmd :
   call assert_fails('DoCmd', 'E471:')
 
+  com! -nargs=_ DoCmd :
+  call assert_fails('DoCmd', 'E471:')
+
   com! -nargs=+ DoCmd :
   call assert_fails('DoCmd', 'E471:')
 
@@ -426,7 +429,15 @@ func Test_CmdCompletion()
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd mswin xterm', @:)
 
+  com! -nargs=_ -complete=behave DoCmd :
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd mswin xterm', @:)
+
   com! -nargs=1 -complete=retab DoCmd :
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd -indentonly', @:)
+
+  com! -nargs=_ -complete=retab DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd -indentonly', @:)
 
@@ -435,8 +446,21 @@ func Test_CmdCompletion()
   call feedkeys(":DoCmd READM\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd README.txt', @:)
 
+  com! -nargs=_ -complete=file DoCmd :
+  call feedkeys(":DoCmd READM\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd README.txt', @:)
+
   " Test for buffer name completion
   com! -nargs=1 -complete=buffer DoCmd :
+  let bnum = bufadd('BufForUserCmd')
+  call setbufvar(bnum, '&buflisted', 1)
+  call feedkeys(":DoCmd BufFor\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd BufForUserCmd', @:)
+  bwipe BufForUserCmd
+  call feedkeys(":DoCmd BufFor\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd BufFor', @:)
+
+  com! -nargs=_ -complete=buffer DoCmd :
   let bnum = bufadd('BufForUserCmd')
   call setbufvar(bnum, '&buflisted', 1)
   call feedkeys(":DoCmd BufFor\<Tab>\<C-B>\"\<CR>", 'tx')
@@ -614,6 +638,10 @@ func Test_command_list()
   call assert_equal("\n    Name              Args Address Complete    Definition"
         \        .. "\n    DoCmd             1            arglist     :",
         \           execute('command DoCmd'))
+  command! -nargs=_ -complete=arglist DoCmd :
+  call assert_equal("\n    Name              Args Address Complete    Definition"
+        \        .. "\n    DoCmd             _            arglist     :",
+        \           execute('command DoCmd'))
   command! -nargs=* -complete=augroup DoCmd :
   call assert_equal("\n    Name              Args Address Complete    Definition"
         \        .. "\n    DoCmd             *            augroup     :",
@@ -635,6 +663,10 @@ func Test_command_list()
   command! -nargs=1 DoCmd :
   call assert_equal("\n    Name              Args Address Complete    Definition"
         \        .. "\n    DoCmd             1                        :",
+        \           execute('command DoCmd'))
+  command! -nargs=_ DoCmd :
+  call assert_equal("\n    Name              Args Address Complete    Definition"
+        \        .. "\n    DoCmd             _                        :",
         \           execute('command DoCmd'))
   command! -nargs=* DoCmd :
   call assert_equal("\n    Name              Args Address Complete    Definition"
