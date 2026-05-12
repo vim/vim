@@ -3512,10 +3512,38 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 	popup_close_and_callback(wp, &argvars[1]);
 }
 
+/*
+ * Clear popup_mask entries for the cells covered by "wp" so that
+ * screen_fill / screen_puts calls made before the next update_screen()
+ * (e.g. msg_clr_eos triggered by a status message) are not silently
+ * dropped by skip_for_popup().  Without this the popup's chars survive
+ * on screen until may_update_popup_mask() runs and the affected cells
+ * happen to be redrawn.
+ */
+    static void
+popup_clear_mask_for(win_T *wp)
+{
+    int r, c;
+    int row_start, col_start, row_end, col_end;
+
+    if (popup_mask == NULL || !popup_visible)
+	return;
+
+    row_start = MAX(wp->w_winrow, 0);
+    col_start = MAX(wp->w_wincol, 0);
+    row_end = MIN(wp->w_winrow + popup_height(wp), (int)screen_Rows);
+    col_end = MIN(wp->w_wincol + popup_width(wp), (int)screen_Columns);
+
+    for (r = row_start; r < row_end; ++r)
+	for (c = col_start; c < col_end; ++c)
+	    popup_mask[r * screen_Columns + c] = 0;
+}
+
     void
 popup_hide(win_T *wp)
 {
     popup_area_T	old_area;
+    int			was_visible = (wp->w_popup_flags & POPF_HIDDEN) == 0;
 
 #ifdef FEAT_TERMINAL
     if (error_if_term_popup_window())
@@ -3530,6 +3558,9 @@ popup_hide(win_T *wp)
     // Do not decrement b_nwindows, we still reference the buffer.
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
+
+    if (was_visible)
+	popup_clear_mask_for(wp);
 
     if (old_area.active)
 	popup_redraw_exposed_area(&old_area);
@@ -3715,6 +3746,7 @@ f_popup_setbuf(typval_T *argvars, typval_T *rettv UNUSED)
 popup_free(win_T *wp)
 {
     popup_area_T	old_area;
+    int			was_visible = (wp->w_popup_flags & POPF_HIDDEN) == 0;
 
     popup_save_area(wp, &old_area);
 
@@ -3722,6 +3754,9 @@ popup_free(win_T *wp)
     wp->w_buffer->b_locked = FALSE;
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
+
+    if (was_visible)
+	popup_clear_mask_for(wp);
 
     popup_redraw_exposed_area(&old_area);
 
