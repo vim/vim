@@ -690,7 +690,12 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
     {
 	if (!VIM_ISWHITE(PTR2CHAR(p)))
 	{
-	    ga_grow(match_positions, 1);
+	    if (ga_grow(match_positions, 1) == FAIL)
+	    {
+		ga_clear(match_positions);
+		vim_free(match_positions);
+		return NULL;
+	    }
 	    ((int_u *)match_positions->ga_data)[match_positions->ga_len] =
 								    matches[j];
 	    match_positions->ga_len++;

@@ -4914,7 +4914,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 	    line = ml_get(lnum);
 	    linelen = (int)ml_get_len(lnum);
 	    if (ga_grow(&ga, linelen + 2) != OK)
-		return FAIL;
+		goto fail;
 	    ga_concat_len(&ga, line, linelen);
 	    if (exacttext)
 		GA_CONCAT_LITERAL(&ga, "\\n");
@@ -5141,8 +5141,8 @@ expand_pattern_in_buf(
 	}
 
 	// Extract the matching text prepended to completed word
-	if (!copy_substring_from_pos(&cur_match_pos, &end_match_pos, &full_match,
-		    &word_end_pos))
+	if (copy_substring_from_pos(&cur_match_pos, &end_match_pos, &full_match,
+		    &word_end_pos) == FAIL)
 	    break;
 
 	if (exacttext)
@@ -5183,7 +5183,10 @@ expand_pattern_in_buf(
 	if (match != NULL)
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
+	    {
+		VIM_CLEAR(match);
 		goto cleanup;
+	    }
 	    ((char_u **)ga.ga_data)[ga.ga_len++] = match;
 	    if (ga.ga_len > TAG_MANY)
 		break;
