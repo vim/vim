@@ -454,7 +454,7 @@ get_user_cmd_flags(expand_T *xp UNUSED, int idx)
     char_u *
 get_user_cmd_nargs(expand_T *xp UNUSED, int idx)
 {
-    static char *user_cmd_nargs[] = {"0", "1", "*", "?", "+"};
+    static char *user_cmd_nargs[] = {"0", "1", "_", "*", "?", "+"};
 
     if (idx < 0 || idx >= (int)ARRAY_LENGTH(user_cmd_nargs))
 	return NULL;
@@ -643,13 +643,14 @@ uc_list(char_u *name, size_t name_len)
 	    len = 0;
 
 	    // Arguments
-	    switch ((int)(a & (EX_EXTRA|EX_NOSPC|EX_NEEDARG)))
+	    switch ((int)(a & (EX_EXTRA|EX_NOSPC|EX_NEEDARG|EX_ARGSPACE)))
 	    {
 		case 0:				IObuff[len++] = '0'; break;
 		case (EX_EXTRA):		IObuff[len++] = '*'; break;
 		case (EX_EXTRA|EX_NOSPC):	IObuff[len++] = '?'; break;
 		case (EX_EXTRA|EX_NEEDARG):	IObuff[len++] = '+'; break;
 		case (EX_EXTRA|EX_NOSPC|EX_NEEDARG): IObuff[len++] = '1'; break;
+		case (EX_EXTRA|EX_NEEDARG|EX_ARGSPACE): IObuff[len++] = '_'; break;
 	    }
 
 	    do
