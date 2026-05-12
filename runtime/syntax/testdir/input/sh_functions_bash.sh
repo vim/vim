@@ -47,9 +47,50 @@ if :; then
         }
         @α! "$1"
     )
-    eval !?\# "$1"
+    eval !?\# "\"$1\""
 fi
 
 namespace ()
 { echo $#;
 }; namespace $@
+
+# Whether "=" belongs to a name or delimits a name depends on whether
+# the reserved word "function" is present, if so, then "=" is part of
+# the function name; else, "=" delimits the name of a variable when this
+# name is given in alphanumeric characters and "_"s before the leftmost
+# "="; otherwise, "=" is part of the function name when this name has
+# one or more supported NON-alphanumeric (or "_") characters before "=".
+xs=()
+(
+    echo $(( 1 + ${#xs[*]} ))
+    xs=()
+    {
+        echo $(( 2 + ${#xs[*]} ))
+        xs=()
+        if :; then echo $(( 3 + ${#xs[*]} )); fi
+    }
+)
+
+iδ=() (
+    =id=() {
+        ===()
+        if :; then echo $*; fi; === $*
+    }; =id= $*
+); id= iδ= iδ= iδ=
+
+function f=() (
+    function f=f {
+        function f=f=
+        if :; then echo $*; fi; f\=f\= $*
+    }; f\=f $*
+); f= f\= f= f=
+
+# Parens are not escaped, hence this is invalid variable assignment.
+f=f()
+{
+    f=f=()
+    (
+        f=f=f()
+        if :; then :; fi
+    )
+}
