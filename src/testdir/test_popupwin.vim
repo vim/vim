@@ -5408,4 +5408,52 @@ func Test_popupwin_close_status_redraw()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_close_copen_redraw()
+  CheckMSWindows
+  CheckFeature quickfix
+
+  func! s:OpenPopup()
+    call popup_create(repeat(['ZZZZZZZZZ'], 10), #{
+          \ pos: 'botright',
+          \ col: &columns,
+          \ line: &lines,
+          \ filter: function('s:PopupFilter'),
+          \ })
+  endfunc
+  func! s:PopupFilter(winid, key)
+    if a:key ==# 'q'
+      call popup_close(a:winid)
+      copen
+    endif
+    return 1
+  endfunc
+
+  enew!
+  call setline(1, range(1, 30))
+  call setqflist(map(range(1, 20),
+        \ {_, v -> {'bufnr': bufnr('%'), 'lnum': v, 'col': 1, 'text': 'item ' .. v}}))
+
+  call s:OpenPopup()
+  redraw
+  call feedkeys('q', 'xt')
+  redraw
+  cclose
+  redraw
+
+  call s:OpenPopup()
+  redraw
+  call feedkeys('q', 'xt')
+  redraw
+
+  for row in range(&lines - 9, &lines)
+    let line = join(map(range(1, &columns), 'screenstring(row, v:val)'), '')
+    call assert_notmatch('Z', line)
+  endfor
+
+  cclose
+  bwipe!
+  delfunc s:OpenPopup
+  delfunc s:PopupFilter
+endfunc
+
 " vim: shiftwidth=2 sts=2
