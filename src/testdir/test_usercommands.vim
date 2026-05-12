@@ -363,6 +363,14 @@ func CustomCompleteList(A, L, P)
   return [ "Monday", "Tuesday", "Wednesday", {}, test_null_string()]
 endfunc
 
+func CustomCompleteListWithSpaces(A, L, P)
+  return [ "Monday Here", "Tuesday There", "Wednesday OK", {}, test_null_string()]
+endfunc
+
+func CustomCompleteListFuzzy(A, L, P)
+  return [ "Monday Here", "Tuesday There", "Wednesday OK", {}, test_null_string()]->matchfuzzy(a:A)
+endfunc
+
 func Test_CmdCompletion()
   call feedkeys(":com -\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -addr bang bar buffer complete count keepscript nargs range register', @:)
@@ -371,7 +379,7 @@ func Test_CmdCompletion()
   call assert_equal('"com -nargs=0 -addr bang bar buffer complete count keepscript nargs range register', @:)
 
   call feedkeys(":com -nargs=\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"com -nargs=* + 0 1 ?', @:)
+  call assert_equal('"com -nargs=* + 0 1 ? _', @:)
 
   call feedkeys(":com -addr=\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -addr=arguments buffers lines loaded_buffers other quickfix tabs windows', @:)
@@ -476,6 +484,14 @@ func Test_CmdCompletion()
   com! -nargs=? -complete=customlist,CustomCompleteList DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd Monday Tuesday Wednesday', @:)
+
+  com! -nargs=_ -complete=customlist,CustomCompleteListWithSpaces DoCmd :
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd Monday Here Tuesday There Wednesday OK', @:)
+
+  com! -nargs=_ -complete=customlist,CustomCompleteListFuzzy DoCmd :
+  call feedkeys(":DoCmd mo he\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd Monday Here', @:)
 
   com! -nargs=+ -complete=custom,CustomCompleteList DoCmd :
   call assert_fails("call feedkeys(':DoCmd \<C-D>', 'tx')", 'E730:')
