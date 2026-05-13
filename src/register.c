@@ -1196,6 +1196,16 @@ put_do_autocmd(
     if (list == NULL)
 	return;
 
+    // Make sure regcontents will be update to date.
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
+    call_clip_provider_request(regname);
+# endif
+# ifdef FEAT_CLIPBOARD
+    if (clipmethod != CLIPMETHOD_PROVIDER)
+	regname = may_get_selection(regname);
+# endif
+
     if (regname == '.')
     {
 	if (last_insert_ga.ga_data != NULL)
@@ -1231,6 +1241,9 @@ put_do_autocmd(
     (void)dict_add_string_len(v_event, "operator", buf, (int)buflen);
 
     add_regtype_to_dict(regname, v_event, buf, sizeof(buf));
+# ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
+# endif
 
     (void)dict_add_bool(v_event, "visual", VIsual_active);
 
@@ -1713,6 +1726,7 @@ do_put(
     adjust_clip_reg(&regname);
 #endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
     call_clip_provider_request(regname);
 #endif
 #ifdef FEAT_CLIPBOARD
@@ -1749,6 +1763,11 @@ do_put(
 	// TextPutPost after TextPutPre.
 	if (has_textputpre())
 	    put_do_autocmd('.', NULL, NULL, false, dir);
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	dec_clip_provider();
+#endif
+#ifdef FEAT_EVAL
 	if (has_textputpost())
 	    put_do_autocmd('.', NULL, NULL, true, dir);
 
@@ -1771,7 +1790,12 @@ do_put(
 	insert_string.string = expr_result;
     else if (get_spec_reg(regname, &insert_string.string, &allocated, TRUE)
 		&& insert_string.string == NULL)
+    {
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	dec_clip_provider();
+#endif
 	return;
+    }
 
     // Autocommands may be executed when saving lines for undo.  This might
     // make "y_array" invalid, so we start undo now to avoid that.
@@ -2001,8 +2025,8 @@ do_put(
 		// move to start of next multi-byte character
 		curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 	    else
-	    if (c != TAB || cur_ve_flags != VE_ALL)
-		++curwin->w_cursor.col;
+		if (c != TAB || cur_ve_flags != VE_ALL)
+		    ++curwin->w_cursor.col;
 	    ++col;
 	}
 	else
@@ -2520,6 +2544,10 @@ end:
 	curbuf->b_op_start = orig_start;
 	curbuf->b_op_end = orig_end;
     }
+
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
+#endif
 
 #ifdef FEAT_EVAL
     if (has_textputpost())

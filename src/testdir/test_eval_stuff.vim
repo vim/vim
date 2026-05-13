@@ -1127,6 +1127,52 @@ func Test_clipboard_provider_accessed_once()
 
   bw!
 
+  new
+  " Emitting TextPutPre/TextPutPost/TextYankPost may cause a clipboard access
+  "
+  " Note that TextPutPost will always cause a second clipboard access, since a
+  " TextPutPre may have changed the clipboard, meaning another "paste" call is
+  " needed to make sure everything is up to date.
+  augroup TextAutocmd
+    autocmd!
+    autocmd TextPutPost * let g:putpost = 1
+    autocmd TextPutPre * let g:putpre = 1
+    autocmd TextYankPost * let g:yankpost = 1
+  augroup END
+
+  let g:putpost = 0
+  let g:putpre = 0
+  let g:yankpost = 0
+
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+
+  call setline(1, "hello world!")
+
+  yank +
+
+  yank *
+
+  put +
+
+  put *
+
+  call assert_equal(2, g:vim_paste_count['+'])
+  call assert_equal(1, g:vim_copy_count['+'])
+
+  call assert_equal(2, g:vim_paste_count['*'])
+  call assert_equal(1, g:vim_copy_count['*'])
+
+  call assert_equal(1, g:putpost)
+  call assert_equal(1, g:putpre)
+  call assert_equal(1, g:yankpost)
+
+  bw!
+  unlet g:putpost
+  unlet g:putpre
+  unlet g:yankpost
+  autocmd! TextAutocmd
+
   set clipmethod&
   set clipboard&
 endfunc
