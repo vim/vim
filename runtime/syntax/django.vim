@@ -18,8 +18,6 @@ syn match djangoError "%}\|}}\|#}"
 " Django template built-in tags and parameters
 " 'comment' doesn't appear here because it gets special treatment
 syn keyword djangoStatement contained autoescape csrf_token empty
-" FIXME ==, !=, <, >, <=, and >= should be djangoStatements:
-" syn keyword djangoStatement contained == != < > <= >=
 syn keyword djangoStatement contained and as block endblock by cycle debug else elif
 syn keyword djangoStatement contained extends filter endfilter firstof for
 syn keyword djangoStatement contained endfor if endif ifchanged endifchanged
@@ -68,6 +66,9 @@ syn region djangoVarBlock start="{{" end="}}" contains=djangoFilter,djangoArgume
 syn region djangoComment start="{%\s*comment\(\s\+.\{-}\)\?%}" end="{%\s*endcomment\s*%}" contains=djangoTodo
 syn region djangoComBlock start="{#" end="#}" contains=djangoTodo
 
+" March comparison operators within Django statements.
+syn match djangoOperator /==\|!=\| < \| > \|<=\|>=/ contained containedin=djangoTagBlock,djangoVarBlock
+
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
 
@@ -82,6 +83,7 @@ hi def link djangoError Error
 hi def link djangoComment Comment
 hi def link djangoComBlock Comment
 hi def link djangoTodo Todo
+hi def link djangoOperator Operator
 
 
 let b:current_syntax = "django"
