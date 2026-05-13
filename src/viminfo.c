@@ -1706,7 +1706,7 @@ read_viminfo_register(vir_T *virp, int force)
 	    if (size == limit)
 	    {
 		string_T *new_array = (string_T *)
-					   alloc(limit * 2 * sizeof(string_T));
+				    alloc((size_t)limit * 2 * sizeof(string_T));
 
 		if (new_array == NULL)
 		{
