@@ -85,6 +85,7 @@ fuzzy_match(
     int		complete = FALSE;
     int		score = 0;
     int		numMatches = 0;
+    int		pat_chars = 0;
     score_t	fzy_score;
 
     *outScore = 0;
@@ -118,6 +119,17 @@ fuzzy_match(
 		complete = TRUE;
 	    *p = NUL;
 	}
+	// match_positions() always writes pat_chars entries,
+	// so bail if they won't fit.
+	pat_chars = MB_CHARLEN(pat);
+	if (pat_chars > maxMatches)
+	    pat_chars = maxMatches;
+	if (numMatches > maxMatches - pat_chars)
+	{
+	    numMatches = 0;
+	    *outScore = FUZZY_SCORE_NONE;
+	    break;
+	}
 
 	score = FUZZY_SCORE_NONE;
 	if (has_match(pat, str))
@@ -143,7 +155,7 @@ fuzzy_match(
 	else
 	    *outScore += score;
 
-	numMatches += MB_CHARLEN(pat);
+	numMatches += pat_chars;
 
 	if (complete || numMatches >= maxMatches)
 	    break;
