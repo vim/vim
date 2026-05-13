@@ -44,8 +44,11 @@ A popup window can be used for such things as:
 The text in the popup window can be colored with |text-properties|.  It is
 also possible to use syntax highlighting.
 
-The default color used is "Pmenu".  If you prefer something else use the
-"highlight" argument or the 'wincolor' option, e.g.: >
+The default colors are taken from |hl-Popup| (body), |hl-PopupBorder|
+(border) and |hl-PopupTitle| (title), which all link to |hl-Pmenu| by
+default for backward compatibility.  Override them to give general popup
+windows a different look than the popup completion menu, or use the
+"highlight" argument or the 'wincolor' option for a per-popup override: >
 	hi MyPopupColor ctermbg=lightblue guibg=lightblue
 	call setwinvar(winid, '&wincolor', 'MyPopupColor')
 
@@ -760,6 +763,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			border one line of padding is added to put the title
 			on.  You might want to add one or more spaces at the
 			start and end as padding.
+			The title uses |hl-PopupTitle| by default; if
+			"borderhighlight" is set the top border highlight is
+			used instead, and if "highlight"/'wincolor' is set
+			that is used.
 	wrap		TRUE to make the lines wrap (default TRUE).
 	drag		TRUE to allow the popup to be dragged with the mouse
 			by grabbing at the border.  Has no effect if the
@@ -808,6 +815,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			the highlight for the top/right/bottom/left border.
 			Example: ['TopColor', 'RightColor', 'BottomColor,
 			'LeftColor']
+			When not given and "highlight"/'wincolor' is also not
+			set, |hl-PopupBorder| is used.
 	borderchars	List with characters, defining the character to use
 			for the top/right/bottom/left border.  Optionally
 			followed by the character to use for the

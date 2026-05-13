@@ -6077,6 +6077,18 @@ PmenuShadow	Popup menu: Used for shadow.
 ComplMatchIns	Matched text of the currently inserted completion.
 							*hl-PreInsert*
 PreInsert	Text inserted when "preinsert" is in 'completeopt'.
+							*hl-Popup*
+Popup		Popup window body, used when neither the popup's |popup-wincolor|
+		nor explicit "highlight" argument is set.  Linked to |hl-Pmenu|
+		by default.
+							*hl-PopupBorder*
+PopupBorder	Popup window border characters, used when "borderhighlight" is
+		not set and the popup's |popup-wincolor| is also not set.
+		Linked to |hl-Pmenu| by default.
+							*hl-PopupTitle*
+PopupTitle	Popup window title, used when "borderhighlight" is not set and
+		the popup's |popup-wincolor| is also not set.  Linked to
+		|hl-Pmenu| by default.
 							*hl-PopupSelected*
 PopupSelected	Popup window created with |popup_menu()|.  Linked to
 		|hl-PmenuSel| by default.

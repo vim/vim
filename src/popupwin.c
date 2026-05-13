@@ -6173,9 +6173,13 @@ update_popups(void (*win_update)(win_T *wp))
 
 	for (i = 0; i < 4; ++i)
 	{
-	    border_attr[i] = popup_attr;
 	    if (wp->w_border_highlight[i] != NULL)
 		border_attr[i] = syn_name2attr(wp->w_border_highlight[i]);
+	    else if (wp->w_hlfwin_id != 0
+				       || (wp->w_popup_flags & POPF_INFO))
+		border_attr[i] = popup_attr;
+	    else
+		border_attr[i] = syn_name2attr((char_u *)"PopupBorder");
 
 	    // Apply blend to border attributes for popup with opacitys
 	    if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
@@ -6192,6 +6196,16 @@ update_popups(void (*win_update)(win_T *wp))
 	title_wincol = wp->w_wincol + 1;
 	if (wp->w_popup_title != NULL)
 	{
+	    int	    title_attr;
+
+	    if (wp->w_popup_border[0] > 0 && wp->w_border_highlight[0] != NULL)
+		title_attr = border_attr[0];
+	    else if (wp->w_hlfwin_id != 0
+				       || (wp->w_popup_flags & POPF_INFO))
+		title_attr = popup_attr;
+	    else
+		title_attr = syn_name2attr((char_u *)"PopupTitle");
+
 	    title_len = vim_strsize(wp->w_popup_title);
 
 	    // truncate the title if too long
@@ -6205,8 +6219,7 @@ update_popups(void (*win_update)(win_T *wp))
 		    trunc_string(wp->w_popup_title, title_text,
 					  total_width - 2, title_byte_len + 1);
 		    screen_puts(title_text, wp->w_winrow, title_wincol,
-				  wp->w_popup_border[0] > 0
-						? border_attr[0] : popup_attr);
+								   title_attr);
 		    vim_free(title_text);
 		}
 
@@ -6214,7 +6227,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    }
 	    else
 		screen_puts(wp->w_popup_title, wp->w_winrow, title_wincol,
-		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
+								   title_attr);
 	}
 
 	wincol = wp->w_wincol - wp->w_popup_leftoff + wp->w_popup_leftclip;
