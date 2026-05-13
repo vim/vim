@@ -16,11 +16,18 @@ def OSCMessage(id: number)
   sent_message = true
 enddef
 
-export def Paste(reg: string): tuple<string, list<string>>
+var loop_timerid: number = -1
+
+export def Paste(reg: string): any
   # Check if user has indicated that the terminal does not support OSC 52 paste
   # (or has disabled it)
   if get(g:, 'osc52_disable_paste', 0)
     return ("c", [])
+  endif
+
+  if loop_timerid != -1
+    # This will result in the register being unchanged
+    return null
   endif
 
   # Some terminals like Kitty respect the selection type parameter on both X11
@@ -60,6 +67,14 @@ export def Paste(reg: string): tuple<string, list<string>>
       :redraw!
     endif
   endtry
+
+  # A TextPutPost autocmd may cause this function to be called twice, which is
+  # technically intended behaviour, however it is not necessary for this plugin.
+  # To prevent this, return immediately if we have not returned back to the main
+  # loop since the last "paste" call.
+  loop_timerid = timer_start(0, (_) => {
+    loop_timerid = -1
+  })
 
   if interrupt
     echo "Interrupted while waiting for OSC 52 response"
