@@ -3428,12 +3428,16 @@ clip_provider_get_callback(
     static void
 clip_provider_copy(char_u *reg, char_u *provider)
 {
+    static bool	recursive = false;
     callback_T	callback;
     typval_T	rettv;
     typval_T	argvars[4];
     yankreg_T	*y_ptr;
     char_u	type[2 + NUMBUFLEN] = {0};
     list_T	*list = NULL;
+
+    if (recursive)
+	return;
 
     if (clip_provider_get_callback(
 		reg,
@@ -3497,7 +3501,9 @@ clip_provider_copy(char_u *reg, char_u *provider)
     argvars[3].v_type = VAR_UNKNOWN;
 
     textlock++;
+    recursive = true;
     call_callback(&callback, -1, &rettv, 3, argvars);
+    recursive = false;
     clear_tv(&rettv);
     textlock--;
 
@@ -3508,12 +3514,16 @@ clip_provider_copy(char_u *reg, char_u *provider)
     static void
 clip_provider_paste(char_u *reg, char_u *provider)
 {
+    static bool	recursive = false;
     callback_T	callback;
     typval_T	argvars[2];
     typval_T	rettv;
     int		ret;
     char_u	*reg_type;
     list_T	*lines;
+
+    if (recursive)
+	return;
 
     if (clip_provider_get_callback(
 		reg,
@@ -3528,7 +3538,9 @@ clip_provider_paste(char_u *reg, char_u *provider)
     argvars[1].v_type = VAR_UNKNOWN;
 
     textlock++;
+    recursive = true;
     ret = call_callback(&callback, -1, &rettv, 1, argvars);
+    recursive = false;
     textlock--;
 
     if (ret == FAIL)

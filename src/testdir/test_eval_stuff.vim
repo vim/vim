@@ -765,13 +765,19 @@ func s:Paste(reg)
     else
       return ("c", [])
     endif
+  endif
 
+  if exists("g:vim_paste_recursive")
+    call getreg(a:reg)
   endif
 endfunc
 
 func s:Copy(reg, type, lines)
   if exists("g:vim_copy_count")
     let g:vim_copy_count[a:reg] += 1
+  endif
+  if exists("g:vim_copy_recursive")
+    call setreg(a:reg, a:lines)
   endif
 
   let g:vim_copy = {
@@ -1301,6 +1307,36 @@ func Test_clipboard_provider_clipboard_option()
 
   set clipmethod&
   set clipboard&
+endfunc
+
+" Test that callback aren't called recursively
+func Test_clipboard_provider_recursive()
+  let v:clipproviders["test"] = {
+        \ "paste": {
+        \       '+': function("s:Paste"),
+        \       '*': function("s:Paste")
+        \   },
+        \ "copy": {
+        \       '+': function("s:Copy"),
+        \       '*': function("s:Copy")
+        \   }
+        \ }
+  set clipmethod=test
+
+  let g:vim_paste = "count"
+  let g:vim_paste_count = {'*': 0, '+': 0}
+  let g:vim_copy_count = {'*': 0, '+': 0}
+  let g:vim_paste_recursive = 1
+  let g:vim_copy_recursive = 1
+
+  call getreg('+')
+  call assert_equal(1, g:vim_paste_count['+'])
+  call setreg('+', 'test')
+  call assert_equal(1, g:vim_copy_count['+'])
+
+  set clipmethod&
+  unlet g:vim_paste_recursive
+  unlet g:vim_copy_recursive
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

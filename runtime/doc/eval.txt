@@ -5346,6 +5346,9 @@ a |lambda| expression.
 With the exception of the "available" callback if a callback is not provided,
 Vim will not invoke anything, and this is not an error.
 
+If the "paste" or "copy" callbacks are triggered recursively, then they will
+not be called.
+
 						*clipboard-providers-textlock*
 In both the "paste" and "copy" callbacks, it is not allowed to change the
 buffer text, see |textlock|.
