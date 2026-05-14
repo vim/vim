@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Apr 23
+# Last Change:		2026 May 14
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -798,6 +798,11 @@ export def FTnroff(): number
 enddef
 
 export def FTmm()
+  if exists("g:filetype_mm")
+    exe "setf " .. g:filetype_mm
+    return
+  endif
+
   var n = 1
   while n < 20
     if getline(n) =~ '^\s*\(#\s*\(include\|import\)\>\|@import\>\|/\*\)'
