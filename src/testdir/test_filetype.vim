@@ -2068,6 +2068,37 @@ func Test_m4_file()
   endtry
 endfunc
 
+func Test_mm_file()
+  filetype on
+
+  call writefile(['#import "test.h"'], 'Xfile.mm', 'D')
+  split Xfile.mm
+  call assert_equal('objcpp', &filetype)
+  bwipe!
+
+  call writefile(['// Objective-C++ line comment'], 'Xfile.mm', 'D')
+  split Xfile.mm
+  call assert_equal('objcpp', &filetype)
+  bwipe!
+
+  call writefile(['.TH VIM 1 "YYYY Mth DD"'], 'Xfile.mm', 'D')
+  split Xfile.mm
+  call assert_equal('nroff', &filetype)
+  bwipe!
+
+  try
+    let g:filetype_mm = 'objcpp'
+    call writefile(['.TH VIM 1 "YYYY Mth DD"'], 'Xfile_override.mm', 'D')
+    split Xfile_override.mm
+    call assert_equal('objcpp', &filetype)
+    bwipe!
+  finally
+    unlet! g:filetype_mm
+  endtry
+
+  filetype off
+endfunc
+
 func Test_mod_file()
   filetype on
 

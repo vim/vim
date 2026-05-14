@@ -798,9 +798,14 @@ export def FTnroff(): number
 enddef
 
 export def FTmm()
+  if exists("g:filetype_mm")
+    exe "setf " .. g:filetype_mm
+    return
+  endif
+
   var n = 1
   while n < 20
-    if getline(n) =~ '^\s*\(#\s*\(include\|import\)\>\|@import\>\|/\*\)'
+    if getline(n) =~ '^\s*\(//\|#\s*\(include\|import\)\>\|@import\>\|/\*\)'
       setf objcpp
       return
     endif
