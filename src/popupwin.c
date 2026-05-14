@@ -5311,7 +5311,9 @@ redraw_win_under_opacity_popup(win_T *wp)
 		    linenr_T lnum;
 
 		    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
-		    redrawWinline(twp, lnum);
+		    // Called from inside update_screen(); raising must_redraw
+		    // would loop the outer redraw indefinitely.
+		    redraw_win_range_now(twp, lnum, lnum);
 		}
 		else if (line_cp == twp->w_height)
 		    // Status bar line: mark for redraw to prevent

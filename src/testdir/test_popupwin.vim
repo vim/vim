@@ -5180,6 +5180,32 @@ func Test_popup_opacity_zero()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_terminal_no_freeze()
+  CheckFeature terminal
+  CheckUnix
+  let g:test_is_flaky = 1
+
+  let origwin = win_getid()
+  let termbuf = term_start(&shell, #{hidden: 1})
+  let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10,
+        \ border: [1, 1, 1, 1], opacity: 10})
+  call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
+  call WaitForAssert({-> assert_equal(' ', screenstring(screenrow(), screencol() - 1))})
+
+  " Before the fix typing froze Vim: redraw under an opacity popup raised
+  " must_redraw every cycle, trapping terminal_loop in its redraw loop.
+  call feedkeys('x', 'xt')
+  call term_wait(termbuf)
+  redraw
+  call WaitForAssert({-> assert_equal('x', screenstring(screenrow(), screencol() - 1))})
+
+  call feedkeys("\<BS>", 'xt')
+  call feedkeys("exit\<CR>", 'xt')
+  call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
+  call feedkeys(":quit\<CR>", 'xt')
+  call assert_equal(origwin, win_getid())
+endfunc
+
 func Test_popup_getwininfo_tabnr()
   tab split
   let winid1 = popup_create('sup', #{tabpage: 1})

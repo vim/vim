@@ -3497,6 +3497,28 @@ redraw_win_range_later(
     }
 }
 
+/*
+ * Like redraw_win_range_later() but do not raise the global must_redraw.
+ * Use this from inside an update_screen() pass (where the redraw will be
+ * picked up this cycle), to avoid triggering an extra full redraw cycle.
+ */
+    void
+redraw_win_range_now(
+    win_T	*wp,
+    linenr_T	first,
+    linenr_T	last)
+{
+    if (last >= wp->w_topline && first < wp->w_botline)
+    {
+	if (wp->w_redraw_top == 0 || wp->w_redraw_top > first)
+	    wp->w_redraw_top = first;
+	if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < last)
+	    wp->w_redraw_bot = last;
+	if (wp->w_redr_type < UPD_VALID)
+	    wp->w_redr_type = UPD_VALID;
+    }
+}
+
 #ifdef FEAT_EVAL
 static bool redraw_cb_in_progress = false;
 
