@@ -1,7 +1,7 @@
 vim9script
 # Vim autoload file for the tohtml plugin.
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026 Apr 4
+# Last Change: 2026-05-15
 #
 # Additional contributors:
 #
@@ -10,7 +10,6 @@ vim9script
 #
 #         See Mercurial change logs for more!
 
-# this file uses line continuations (but in vim9script we avoid them)
 # Automatically find charsets from all encodings supported natively by Vim. With
 # the 8bit- and 2byte- prefixes, Vim can actually support more encodings than
 # this. Let the user specify these however since they won't be supported on
@@ -286,7 +285,7 @@ export const charset_to_encoding = {
 
 var settings: dict<any>
 
-export def Convert2HTML(line1: number, line2: number)
+export def Convert2HTML(line1: number, line2: number) #{{{
   settings = GetUserSettings()
 
   if !&diff || settings.diff_one_file #{{{
@@ -300,6 +299,7 @@ export def Convert2HTML(line1: number, line2: number)
     runtime syntax/2html.vim #}}}
   else #{{{
     var win_list = range(1, winnr('$'))->mapnew((_, w) => winbufnr(w))
+      ->filter((_, b) => b->getbufvar('&diff'))
     var buf_list: list<number>
     settings.whole_filler = 1
     g:html_diff_win_num = 0
@@ -333,13 +333,13 @@ export def Convert2HTML(line1: number, line2: number)
     endfor
     unlet g:html_diff_win_num
     Diff2HTML(win_list, buf_list)
-  endif
+  endif #}}}
   unlet g:html_start_line
   unlet g:html_end_line
   settings = null_dict
-enddef
+enddef #}}}
 
-export def Diff2HTML(win_list: list<number>, buf_list: list<number>)
+export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
   var xml_line = ''
   var tag_close = '>'
 
