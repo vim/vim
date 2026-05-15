@@ -31,7 +31,7 @@ syn keyword djangoStatement contained get_current_language noop get_available_la
 syn keyword djangoStatement contained get_current_language_bidi get_language_info plural
 syn keyword djangoStatement contained translate blocktranslate endblocktranslate
 syn keyword djangoStatement contained partialdef endpartialdef partial
-syn keyword djangoStatement contained querystring lorem verbatim
+syn keyword djangoStatement contained querystring lorem verbatim localize endlocalize
 
 " Django templete built-in filters
 syn keyword djangoFilter contained add addslashes capfirst center cut date
@@ -47,6 +47,7 @@ syn keyword djangoFilter contained time timesince timeuntil title truncatechars
 syn keyword djangoFilter contained truncatewords truncatewords_html unordered_list upper urlencode
 syn keyword djangoFilter contained urlize urlizetrunc wordcount wordwrap yesno
 syn keyword djangoFilter contained force_escape iriencode json_script truncatechars_html
+syn keyword djangoFilter contained localize unlocalize
 
 " Keywords to highlight within comments
 syn keyword djangoTodo contained TODO FIXME XXX
