@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*eval.txt*	For Vim version 9.2.  Last change: 2026 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5366,6 +5366,9 @@ order:
 	1. Register type (and optional width) conforming to |setreg()|.  If it
 	   is an empty string, then the type is automatically chosen.
 	2. A |list| of strings to return to Vim, each representing a line.
+
+If an invalid value is returned, then this is not an error.  Instead the
+register will be left unchanged (not cleared).
 
 						*clipboard-providers-copy*
 The "copy" callback returns nothing and takes the following arguments in the

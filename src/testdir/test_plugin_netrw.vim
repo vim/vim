@@ -725,4 +725,39 @@ func Test_netrw_bookmark_marked_file()
   bw!
 endfunc
 
+func Test_netrw_mf_command_injection()
+  CheckUnix
+  CheckExecutable touch
+  let path = tempname()
+  let fname = 'x" . execute("silent! !touch poc") . "'
+  call mkdir(path, 'R')
+  let _cwd = getcwd()
+  exe "cd " path
+  call writefile([], fname)
+  Explore .
+  call search('^x')
+  :norm mf
+  :norm mf
+  call assert_false(filereadable('poc'), 'Command injection via mf command')
+  exe "cd " _cwd
+  bw!
+endfunc
+
+function Test_netrw_NetrwMaps_CR_dirname()
+  CheckNotMSWindows
+
+  let tmpdir = tempname() . '/evil<CR>:let g:netrw_pwn=1<CR>'
+  call mkdir(tmpdir, 'pR')
+  call assert_true(isdirectory(tmpdir))
+  exe ":Explore " tmpdir
+  " Fire D
+  " If the commands are injected successfully,
+  " this fails with
+  "  Vim(let):E488: Trailing characters: \ @ command line script
+  call feedkeys("D\<C-c>\<C-c>", "xt")
+  call assert_false(exists("g:netrw_pwn"))
+
+  unlet! g:netrw_pwn
+  bw!
+endfunction
 " vim:ts=8 sts=2 sw=2 et

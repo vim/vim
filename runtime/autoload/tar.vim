@@ -25,6 +25,7 @@
 "   2026 Apr 09 by Vim Project: fix bug with dotted filename (#19930)
 "   2026 Apr 15 by Vim Project: fix more path traversal issues (#19981)
 "   2026 Apr 16 by Vim Project: use g:tar_secure in tar#Extract()
+"   2026 May 14 by Vim Project: use correct shellescape() call in Vimuntar()
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -832,9 +833,9 @@ fun! tar#Vimuntar(...)
   " if necessary, decompress the tarball; then, extract it
   if tartail =~ '\.tgz'
    if executable("gunzip")
-    silent exe "!gunzip ".shellescape(tartail)
+    silent exe "!gunzip ".shellescape(tartail, 1)
    elseif executable("gzip")
-    silent exe "!gzip -d ".shellescape(tartail)
+    silent exe "!gzip -d ".shellescape(tartail, 1)
    else
     echoerr "unable to decompress<".tartail."> on this system"
     if simplify(curdir) != simplify(tarhome)

@@ -90,6 +90,20 @@ func Test_osc52_paste()
 
   call VerifyScreenDump(buf, 'Test_osc52_paste_04', {})
 
+  " Test that TextPutPost (e.g. from hlyank plugin) doesn't make "paste"
+  " callback be called twice for osc52.
+  call term_sendkeys(buf, "\<Esc>:au TextPutPost * let g:test = 1\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\"+p")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>]52;c;" ..
+        \ base64_encode(str2blob(["test"])) .. "\<Esc>\\")
+  call TermWait(buf)
+
+  call VerifyScreenDump(buf, 'Test_osc52_paste_05', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
