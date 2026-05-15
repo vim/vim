@@ -5367,7 +5367,7 @@ order:
 	   is an empty string, then the type is automatically chosen.
 	2. A |list| of strings to return to Vim, each representing a line.
 
-If an invalid value is returned, then this is not an error. Instead the
+If an invalid value is returned, then this is not an error.  Instead the
 register will be left unchanged (not cleared).
 
 						*clipboard-providers-copy*
