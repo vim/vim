@@ -3049,7 +3049,7 @@ def Test_for_loop_fails()
         echo item
       endfor
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<number> but got dict<any>')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<number> but got dict<number | string>')
 
   lines =<< trim END
       var l: list<dict<any>> = [{n: 1}]
@@ -5992,6 +5992,39 @@ def Test_if_false_elseif_true_still_takes_elseif()
     assert_equal('B', result)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test that union types can be declared
+def Test_declare_union_type()
+  var lines =<< trim END
+      var a: string | number = 1
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var a: list<string | number>
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var a: list<string | number> | string = []
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var a: list<dict<string> | number | list<number | string>> | string | list<blob | dict<number>> = []
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    for x: number | string in [1, 2, ""]
+    endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" Test that types can be enclosed by parentheses
+def Test_type_parentheses()
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

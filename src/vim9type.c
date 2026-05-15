@@ -22,26 +22,31 @@
 
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
- * be easily freed later.
+ * be easily freed later. If "type_gap" is NULL, then don't add it to a
+ * type_gap.
  */
     type_T *
 get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
 
-    if (ga_grow(type_gap, 1) == FAIL)
+    if (type_gap != NULL && ga_grow(type_gap, 1) == FAIL)
 	return NULL;
     type = ALLOC_CLEAR_ONE(type_T);
     if (type == NULL)
 	return NULL;
 
-    ((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
-    ++type_gap->ga_len;
+    if (type_gap != NULL)
+    {
+	((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
+	++type_gap->ga_len;
+    }
     return type;
 }
 
 /*
  * Make a shallow copy of "type".
+ * If "type_gap" is NULL, don't add it to "type_gap".
  * When allocation fails returns "type".
  */
     type_T *
@@ -132,7 +137,7 @@ clear_func_type_list(garray_T *gap, type_T **func_type)
 
 /*
  * Take a type that is using entries in a growarray and turn it into a type
- * with allocated entries.
+ * with allocated entries. Return NULL on allocation failure.
  */
     type_T *
 alloc_type(type_T *type)
@@ -147,6 +152,8 @@ alloc_type(type_T *type)
 	return type;
 
     ret = ALLOC_ONE(type_T);
+    if (ret == NULL)
+	return NULL;
     *ret = *type;
 
     if (ret->tt_member != NULL)
@@ -329,6 +336,20 @@ tuple_type_add_types(
 }
 
 /*
+ * Return true if "type" is a union type.
+ */
+    bool
+type_is_union(type_T *type)
+{
+    if (type->tt_flags & TTFLAG_UNION)
+	return true;
+
+    if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
+	return type->tt_member->tt_flags & TTFLAG_UNION;
+    return false;
+}
+
+/*
  * Get a list type, based on the member item type in "member_type".
  */
     type_T *
@@ -336,21 +357,28 @@ get_list_type(type_T *member_type, garray_T *type_gap)
 {
     type_T *type;
 
-    // recognize commonly used types
-    // A generic type is t_any initially before being set to a concrete type
-    // later.  So don't use the static t_list_any for a generic type.
-    if (member_type == NULL || (member_type->tt_type == VAR_ANY
-					&& !IS_GENERIC_TYPE(member_type)))
+    if (member_type == NULL)
 	return &t_list_any;
-    if (member_type->tt_type == VAR_VOID
-	    || member_type->tt_type == VAR_UNKNOWN)
-	return &t_list_empty;
-    if (member_type->tt_type == VAR_BOOL)
-	return &t_list_bool;
-    if (member_type->tt_type == VAR_NUMBER)
-	return &t_list_number;
-    if (member_type->tt_type == VAR_STRING)
-	return &t_list_string;
+
+    // If member_type is a union, then do not generalize the type
+    if (!type_is_union(member_type))
+    {
+	// recognize commonly used types
+	// A generic type is t_any initially before being set to a concrete type
+	// later.  So don't use the static t_list_any for a generic type.
+	if (member_type->tt_type == VAR_ANY
+		    && !IS_GENERIC_TYPE(member_type))
+	    return &t_list_any;
+	if (member_type->tt_type == VAR_VOID
+		|| member_type->tt_type == VAR_UNKNOWN)
+	    return &t_list_empty;
+	if (member_type->tt_type == VAR_BOOL)
+	    return &t_list_bool;
+	if (member_type->tt_type == VAR_NUMBER)
+	    return &t_list_number;
+	if (member_type->tt_type == VAR_STRING)
+	    return &t_list_string;
+    }
 
     // Not a common type, create a new entry.
     type = get_type_ptr(type_gap);
@@ -404,18 +432,25 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
 {
     type_T *type;
 
-    // recognize commonly used types
-    if (member_type == NULL || member_type->tt_type == VAR_ANY)
+    if (member_type == NULL)
 	return &t_dict_any;
-    if (member_type->tt_type == VAR_VOID
-	    || member_type->tt_type == VAR_UNKNOWN)
-	return &t_dict_empty;
-    if (member_type->tt_type == VAR_BOOL)
-	return &t_dict_bool;
-    if (member_type->tt_type == VAR_NUMBER)
-	return &t_dict_number;
-    if (member_type->tt_type == VAR_STRING)
-	return &t_dict_string;
+
+    // If member_type is a union, then do not generalize the type
+    if (!type_is_union(member_type))
+    {
+	// recognize commonly used types
+	if (member_type->tt_type == VAR_ANY)
+	    return &t_dict_any;
+	if (member_type->tt_type == VAR_VOID
+		|| member_type->tt_type == VAR_UNKNOWN)
+	    return &t_dict_empty;
+	if (member_type->tt_type == VAR_BOOL)
+	    return &t_dict_bool;
+	if (member_type->tt_type == VAR_NUMBER)
+	    return &t_dict_number;
+	if (member_type->tt_type == VAR_STRING)
+	    return &t_dict_string;
+    }
 
     // Not a common type, create a new entry.
     type = get_type_ptr(type_gap);
@@ -509,7 +544,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 
 /*
  * For a function type, reserve space for "argcount" argument types (including
- * vararg).
+ * vararg). If "type_gap" is NULL, then it will not be added to it.
  */
     int
 func_type_add_arg_types(
@@ -519,14 +554,17 @@ func_type_add_arg_types(
 {
     // To make it easy to free the space needed for the argument types, add the
     // pointer to type_gap.
-    if (ga_grow(type_gap, 1) == FAIL)
+    if (type_gap != NULL && ga_grow(type_gap, 1) == FAIL)
 	return FAIL;
     functype->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
     if (functype->tt_args == NULL)
 	return FAIL;
-    ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
-						     (void *)functype->tt_args;
-    ++type_gap->ga_len;
+    if (type_gap != NULL)
+    {
+	((type_T **)type_gap->ga_data)[type_gap->ga_len] =
+	    (void *)functype->tt_args;
+	++type_gap->ga_len;
+    }
     return OK;
 }
 
@@ -562,6 +600,52 @@ special_typval2type(typval_T *tv)
 	default:
 	    return &t_unknown;
     }
+}
+
+/*
+ * Construct a union type by going through all possible types. "first" should be
+ * initialized to "init_value". If "type_gap" is NULL, then the types will be
+ * allocated without it. Returns true if loop should be stopped because an "any"
+ * type was found
+ */
+    bool
+construct_union_type(
+	type_T	    **first,
+	type_T	    *init_value,
+	type_T	    **cur,
+	type_T	    *type,
+	garray_T    *type_gap)
+{
+    if (type == NULL)
+	return false;
+
+    if (equal_type(type, &t_any, 0))
+    {
+	*first = *cur = &t_any;
+	return true;
+    }
+
+    if (*first == init_value)
+    {
+	*first = *cur = copy_type(type, type_gap);
+	return false;
+    }
+
+    // Check if type is already in union
+    for (type_T *t = *cur; t != NULL; t = t->tt_unext)
+	if (equal_type(type, t, 0))
+	    return false;
+
+    (*cur)->tt_unext = copy_type(type, type_gap);
+    *cur = (*cur)->tt_unext;
+    return false;
+}
+
+    void
+check_union_type(type_T *type)
+{
+    if (type->tt_unext != NULL)
+	type->tt_flags |= TTFLAG_UNION;
 }
 
 /*
@@ -605,12 +689,31 @@ list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
     l->lv_copyID = copyID;
 
-    // Use the common type of all members.
-    member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap,
-							TVTT_DO_MEMBER);
-    for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
-	common_type(typval2type(&li->li_tv, copyID, type_gap, TVTT_DO_MEMBER),
-					member_type, &member_type, type_gap);
+    if (flags & TVTT_DO_UNION)
+    {
+	// Instead of finding a common type, chain all the types in the list
+	// together into one union type, skipping duplicate types.
+	type_T *cur;
+
+	FOR_ALL_LIST_ITEMS(l, li)
+	{
+	    type_T  *type = typval2type(&li->li_tv, copyID, type_gap,
+		    TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC | TVTT_DO_UNION);
+
+	    if (construct_union_type(&member_type, NULL, &cur, type, type_gap))
+		break;
+	}
+	check_union_type(member_type);
+    }
+    else
+    {
+	// Use the common type of all members.
+	member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap,
+		TVTT_DO_MEMBER);
+	for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
+	    common_type(typval2type(&li->li_tv, copyID, type_gap, TVTT_DO_MEMBER),
+		    member_type, &member_type, type_gap);
+    }
 
     // Reset copyID so that a shared reference to this list (not a circular
     // reference) can be processed again to get the correct type.
@@ -720,12 +823,30 @@ dict_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
     // Use the common type of all values.
     dict_iterate_start(tv, &iter);
-    dict_iterate_next(&iter, &value);
-    member_type = typval2type(value, copyID, type_gap, TVTT_DO_MEMBER);
 
-    while (dict_iterate_next(&iter, &value) != NULL)
-	common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
-					member_type, &member_type, type_gap);
+    if (flags & TVTT_DO_UNION)
+    {
+	type_T *cur;
+
+	while (dict_iterate_next(&iter, &value) != NULL)
+	{
+	    type_T *t = typval2type(value, copyID, type_gap,
+		    TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC | TVTT_DO_UNION);
+
+	    if (construct_union_type(&member_type, NULL, &cur, t, type_gap))
+		break;
+	}
+	check_union_type(member_type);
+    }
+    else
+    {
+	dict_iterate_next(&iter, &value);
+	member_type = typval2type(value, copyID, type_gap, TVTT_DO_MEMBER);
+
+	while (dict_iterate_next(&iter, &value) != NULL)
+	    common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
+		    member_type, &member_type, type_gap);
+    }
 
     // Reset copyID so that a shared reference to this dict (not a circular
     // reference) can be processed again to get the correct type.
@@ -754,9 +875,13 @@ partial_typval2type(typval_T *tv, ufunc_T *ufunc, garray_T *type_gap)
 	type->tt_min_argcount -= pt->pt_argc;
 	if (type->tt_argcount > 0 && func_type_add_arg_types(type,
 		    type->tt_argcount, type_gap) == OK)
+	{
 	    for (int i = 0; i < type->tt_argcount; ++i)
 		type->tt_args[i] =
 		    ufunc->uf_func_type->tt_args[i + pt->pt_argc];
+	}
+	else if (type->tt_argcount == 0)
+	    type->tt_args = NULL;
     }
     if (pt->pt_func != NULL)
 	type->tt_member = pt->pt_func->uf_ret_type;
@@ -1072,7 +1197,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 	// When the actual type is list<any> or dict<any> go through the values
 	// to possibly get a more specific type.
 	actual_type = typval2type(actual_tv, get_copyID(), &type_list,
-					  TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC);
+		TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC | TVTT_DO_UNION);
     if (actual_type != NULL)
     {
 	res = check_type_maybe(expected, actual_type, TRUE, where);
@@ -1348,12 +1473,8 @@ check_type(
     return ret == MAYBE ? OK : ret;
 }
 
-/*
- * As check_type() but return MAYBE when a runtime type check should be used
- * when compiling.
- */
-    int
-check_type_maybe(
+    static int
+check_type_maybe_int(
 	type_T	*expected,
 	type_T	*actual,
 	int	give_msg,
@@ -1392,6 +1513,7 @@ check_type_maybe(
 		    && (expected->tt_flags & TTFLAG_TUPLE_OK))
 		// Using a tuple where a list is expected is OK here.
 		return OK;
+
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
 	    return FAIL;
@@ -1421,6 +1543,59 @@ check_type_maybe(
 	ret = MAYBE;
 
     return ret;
+}
+
+/*
+ * As check_type() but return MAYBE when a runtime type check should be used
+ * when compiling.
+ */
+    int
+check_type_maybe(
+	type_T	*expected,
+	type_T	*actual,
+	int	give_msg,
+	where_T where)
+{
+    // Check if union type, if so, then must check all types in union.
+    if (expected->tt_flags & TTFLAG_UNION
+	    || actual->tt_flags & TTFLAG_UNION)
+    {
+	if (expected == &t_any)
+	    return OK;
+
+	// For each type in "actual", check that there is a
+	// corresponding type in "expected" that matches it.
+	for (type_T *a = actual; a != NULL; a = a->tt_unext)
+	{
+	    int ret = FAIL;
+
+	    for (type_T *e = expected; e != NULL; e = e->tt_unext)
+	    {
+		int r;
+
+		// null_function matches any function
+		if (a->tt_type == VAR_FUNC && a->tt_argcount == -1
+			&& a->tt_member == &t_unknown)
+		    r = e->tt_type == VAR_FUNC
+			|| e->tt_type == VAR_PARTIAL ? OK : FAIL;
+		else
+		    r = check_type_maybe_int(e, a, FALSE, where);
+
+		if (r == OK)
+		{
+		    ret = OK;
+		    break;
+		}
+		else if (r == MAYBE)
+		    ret = MAYBE;
+	    }
+	    if (ret == FAIL || ret == MAYBE)
+		return ret;
+	}
+	return OK;
+    }
+    else
+	return check_type_maybe_int(expected, actual, give_msg, where);
 }
 
 /*
@@ -1587,6 +1762,24 @@ skip_type(char_u *start, int optional)
     if (optional && *p == '?')
 	++p;
 
+    if (*p == '(')
+    {
+	char_u *prev = p;
+
+	p = skip_type(skipwhite(p + 1), optional);  // Skip inner type
+
+	// Assume "()" as an error
+	if (prev + 1 == p)
+	    return start;
+	p = skipwhite(p);
+	if (*p == ')')
+	    ++p;
+
+	if (*skipwhite(p) == '|')
+	    p = skip_type(skipwhite(skipwhite(p) + 1), optional);
+	return p;
+    }
+
     // Also skip over "." for imported classes: "import.ClassName".
     while (ASCII_ISALNUM(*p) || *p == '_' || *p == '.')
 	++p;
@@ -1606,6 +1799,11 @@ skip_type(char_u *start, int optional)
 	if (syn_error)
 	    return p;
     }
+
+    if (*skipwhite(p) == '|')
+	// Union type separator, just skip over it (and the whitespace
+	// surrounding it), then skip the type.
+	p = skip_type(skipwhite(skipwhite(p) + 1), optional);
 
     return p;
 }
@@ -2052,12 +2250,10 @@ parse_type_user_defined(
 }
 
 /*
- * Parse a type at "arg" and advance over it.
- * When "give_error" is TRUE give error messages, otherwise be quiet.
- * Return NULL for failure.
+ * Same as parse_type() but does not handle union types.
  */
-    type_T *
-parse_type(
+    static type_T *
+parse_type_int(
     char_u	**arg,
     garray_T	*type_gap,
     ufunc_T	*ufunc,
@@ -2066,6 +2262,37 @@ parse_type(
 {
     char_u  *p = *arg;
     size_t  len;
+
+    // Check if type is surrounded by parentheses. If so, then parse the stuff
+    // inside it. A union outside the parentheses should not be reached, since a
+    // ')' will be blocking it.
+    if (*p == '(')
+    {
+	type_T *type;
+
+	// Check if type is just "()"
+	if (p[1] == ')')
+	{
+	    if (give_error)
+		emsg(_(e_cannot_have_empty_type));
+	    return NULL;
+	}
+
+	*arg = skipwhite(p + 1);
+	type = parse_type(arg, type_gap, ufunc, cctx, give_error);
+	if (type == NULL)
+	    return NULL;
+
+	p = skipwhite(*arg);
+	if (*p != ')')
+	{
+	    if (give_error)
+		emsg(_(e_missing_closing_paren));
+	    return NULL;
+	}
+	*arg = ++p;
+	return type;
+    }
 
     // Skip over the first word.
     while (ASCII_ISALNUM(*p) || *p == '_')
@@ -2176,6 +2403,135 @@ parse_type(
     // User defined type
     return parse_type_user_defined(arg, len, type_gap, give_error, ufunc,
 									cctx);
+}
+
+/*
+ * Makes a shallow copy of "type". However if "type" is a type is a generic
+ * type, then also map the copy to "type" in a separate array for use when
+ * finding concrete types from generic types. Returns NULL on failure.
+ */
+    static type_T *
+copy_type_generic(type_T *type, garray_T *type_gap, ufunc_T *ufunc)
+{
+    type_T *copy;
+
+    copy = copy_type(type, type_gap);
+    if (copy == type)
+	return NULL;
+
+    if (type->tt_flags & TTFLAG_GENERIC)
+    {
+	generic_type_map_T *map;
+
+	if (ga_grow(&ufunc->uf_generic_type_map, 1) == FAIL)
+	    return NULL;
+
+	map = &((generic_type_map_T *)ufunc->uf_generic_type_map.ga_data)
+				    [ufunc->uf_generic_type_map.ga_len++];
+	map->type = copy;
+	map->gen_type = type;
+    }
+
+    return copy;
+}
+
+/*
+ * Parse a union type and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    static type_T *
+parse_union_type(
+    char_u	**arg,
+    garray_T	*type_gap,
+    ufunc_T	*ufunc,
+    cctx_T	*cctx,
+    int		give_error,
+    type_T	*start)
+{
+    type_T  *type = start == NULL ? NULL : copy_type_generic(start,
+						    type_gap, ufunc);
+    type_T  *first = type;
+
+    // Loop over all entries in union, creating a linked list
+    while (true)
+    {
+	type_T *cur = parse_type_int(arg, type_gap, ufunc, cctx, give_error);
+	char_u *p = *arg;
+
+	if (cur == NULL)
+	    return NULL;
+
+	if (equal_type(type, &t_any, 0) && !(type->tt_flags & TTFLAG_GENERIC))
+	{
+	    if (give_error)
+		emsg(_(e_cannot_use_any_in_union_type));
+	    return NULL;
+	}
+
+	// Must copy type since we will modify it.
+	cur = copy_type_generic(cur, type_gap, ufunc);
+	if (cur == NULL)
+	    return NULL;
+
+	if (first == NULL)
+	    first = type = cur;
+	else
+	{
+	    type->tt_unext = cur;
+	    type = cur;
+	}
+
+	p = skipwhite(p);
+
+	// Go to next type in union if there is another pipe.
+	if (*p == '|')
+	{
+	    p++;
+	    *arg = skipwhite(p);
+	    continue;
+	}
+	break;
+    }
+    if (first->tt_unext != NULL)
+	first->tt_flags |= TTFLAG_UNION;
+
+    return first;
+}
+
+
+/*
+ * Parse a type at "arg" and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    type_T *
+parse_type(
+    char_u	**arg,
+    garray_T	*type_gap,
+    ufunc_T	*ufunc,
+    cctx_T	*cctx,
+    int		give_error)
+{
+    char_u  *p = *arg;
+    type_T  *type;
+
+    // Skip over the first word.
+    while (ASCII_ISALNUM(*p) || *p == '_')
+	++p;
+    if (*p != ')' && *skipwhite(p) == '|')
+	return parse_union_type(arg, type_gap, ufunc, cctx, give_error, NULL);
+
+    type = parse_type_int(arg, type_gap, ufunc, cctx, give_error);
+
+    // Must check if "type" is actually part of a union
+    p = skipwhite(*arg);
+    if (*p == '|')
+    {
+	*arg = skipwhite(p + 1);
+	return parse_union_type(arg, type_gap, ufunc, cctx, give_error, type);
+    }
+    return type;
 }
 
 /*
@@ -2470,22 +2826,41 @@ get_member_type_from_stack(
     type2_T	*typep;
     garray_T    *type_gap = cctx->ctx_type_list;
     int		i;
-    type_T	*result;
+    type_T	*result, *cur;
     type_T	*type;
 
     // Use "unknown" for an empty list or dict.
     if (count == 0)
 	return &t_unknown;
-    // Find the common type from following items.
+
     typep = ((type2_T *)stack->ga_data) + stack->ga_len;
     result = &t_unknown;
-    for (i = 0; i < count; ++i)
+
+    if (cctx->ctx_lhs_explicit)
     {
-	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
-	if (check_type_is_value(type) == FAIL)
-	    return NULL;
-	if (result != &t_any)
-	    common_type(type, result, &result, type_gap);
+	// Create a union type from the following items
+	for (i = 0; i < count; ++i)
+	{
+	    type = (typep -((count - i) * skip) + skip - 1)->type_curr;
+
+	    if (check_type_is_value(type) == FAIL)
+		return NULL;
+	    if (construct_union_type(&result, &t_unknown, &cur, type, type_gap))
+		break;
+	}
+	check_union_type(result);
+    }
+    else
+    {
+	// Find the common type from following items.
+	for (i = 0; i < count; ++i)
+	{
+	    type = (typep -((count - i) * skip) + skip - 1)->type_curr;
+	    if (check_type_is_value(type) == FAIL)
+		return NULL;
+	    if (result != &t_any)
+		common_type(type, result, &result, type_gap);
+	}
     }
 
     return result;
@@ -2748,6 +3123,7 @@ failed:
 type_name(type_T *type, char **tofree)
 {
     char *name;
+    char *tofree2 = NULL;
 
     *tofree = NULL;
     if (type == NULL)
@@ -2758,21 +3134,38 @@ type_name(type_T *type, char **tofree)
     {
 	case VAR_LIST:
 	case VAR_DICT:
-	    return type_name_list_or_dict(name, type, tofree);
-
+	    name = type_name_list_or_dict(name, type, &tofree2);
+	    break;
 	case VAR_TUPLE:
-	    return type_name_tuple(type, tofree);
-
+	    name = type_name_tuple(type, &tofree2);
+	    break;
 	case VAR_CLASS:
 	case VAR_OBJECT:
-	    return type_name_class_or_obj(name, type, tofree);
-
+	    name = type_name_class_or_obj(name, type, &tofree2);
+	    break;
 	case VAR_FUNC:
-	    return type_name_func(type, tofree);
-
+	    name = type_name_func(type, &tofree2);
+	    break;
 	default:
 	    break;
     }
+
+    if (type->tt_unext != NULL)
+    {
+	// Name union type in format of "type1 | type2 | ..."
+	char	*tofree3 = NULL;
+	char	*other = type_name(type->tt_unext, &tofree3);
+	int	len = (int)STRLEN(name) + (int)STRLEN(other) + 4;
+
+	*tofree = alloc(len);
+	sprintf(*tofree, "%s | %s", name, other);
+	vim_free(tofree2);
+	vim_free(tofree3);
+
+	return *tofree;
+    }
+    else
+	*tofree = tofree2;
 
     return name;
 }

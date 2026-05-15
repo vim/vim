@@ -2736,8 +2736,10 @@ EXTERN char e_invalid_command_after_export[]
 	INIT(= N_("E1043: Invalid command after :export"));
 EXTERN char e_export_with_invalid_argument[]
 	INIT(= N_("E1044: Export with invalid argument"));
-// E1045 not used
-// E1046 not used
+EXTERN char e_cannot_use_any_in_union_type[]
+	INIT(= N_("E1045: Cannot use type \"any\" in a union type"));
+EXTERN char e_cannot_have_empty_type[]
+	INIT(= N_("E1046: Cannot have empty type \"()\""));
 EXTERN char e_syntax_error_in_import_str[]
 	INIT(= N_("E1047: Syntax error in import: %s"));
 EXTERN char e_item_not_found_in_script_str[]

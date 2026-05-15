@@ -496,7 +496,7 @@ check_defined(
 
 /*
  * Return TRUE if "actual" could be "expected" and a runtime typecheck is to be
- * used.  Return FALSE if the types will never match.
+ * used. Return FALSE if the types will never match.
  */
     static int
 use_typecheck(type_T *actual, type_T *expected)
@@ -547,7 +547,7 @@ need_type_where(
 	int	silent,
 	int	actual_is_const)
 {
-    int ret;
+    int	    ret;
 
     if (expected->tt_type != VAR_CLASS && expected->tt_type != VAR_TYPEALIAS)
     {
@@ -3208,7 +3208,13 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
 	return FAIL;
     }
 
+    // If lhs does not have a type explicitly specified, then don't infer rhs
+    // into a union type.
+    cctx->ctx_lhs_explicit = cac->cac_lhs.lhs_has_type;
+
     ret = compile_expr0_ext(&cac->cac_nextc, cctx, &cac->cac_is_const);
+    cctx->ctx_lhs_explicit = false;
+
     if (lhs->lhs_new_local)
     {
 	// Restore the local variable value.  Update lhs_lvar as the index of

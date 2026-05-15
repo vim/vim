@@ -875,6 +875,9 @@ struct cctx_S {
 
     lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
 				    // lhs_name is not NULL
+    bool	ctx_lhs_explicit;  // If lhs has a type explicitly declared.
+				   // Only used for determining if a union type
+				   // should be compiled.
 };
 
 /*
@@ -889,6 +892,7 @@ typedef enum {
 // flags for typval2type()
 #define TVTT_DO_MEMBER	    1
 #define TVTT_MORE_SPECIFIC  2	// get most specific type for member
+#define TVTT_DO_UNION	    4	// return a union type
 
 // flags for call_def_function()
 #define DEF_USE_PT_ARGV	    1	// use the partial arguments
