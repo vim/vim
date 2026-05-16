@@ -4008,7 +4008,8 @@ gui_mch_dialog(
 
     if (dfltbutton > 0 && dfltbutton <= butcount)
 	gtk_alert_dialog_set_default_button(dlg, dfltbutton - 1);
-    gtk_alert_dialog_set_cancel_button(dlg, butcount - 1);
+    if (butcount > 0)
+	gtk_alert_dialog_set_cancel_button(dlg, butcount - 1);
 
     add.response = -1;
     add.done = FALSE;
