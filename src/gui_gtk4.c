@@ -2024,13 +2024,17 @@ gui_mch_wait_for_chars(long wtime)
 # endif
 #endif
 
-	// If the GUI was destroyed or main loop quit requested, bail out.
-	if (gui.mainwin == NULL || gtk4_main_loop_quit)
+	if (gui.mainwin == NULL)
 	    goto theend;
 
-	// Loop processing until a timeout or input occurs.  Bump the
-	// nesting level so gtk_main_level() reflects that Vim is inside
-	// its GTK input loop (the GTK3 code relied on the real gtk_main).
+	// gtk_main_quit() is a wake-up request; consume it so later
+	// waits resume.
+	if (gtk4_main_loop_quit)
+	{
+	    gtk4_main_loop_quit = FALSE;
+	    goto theend;
+	}
+
 	if (!input_available())
 	{
 	    ++gtk4_main_loop_level;
