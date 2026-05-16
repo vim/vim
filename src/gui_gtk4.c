@@ -1061,8 +1061,7 @@ get_styled_font_variants(void)
     }
 
     pango_font_description_free(bold_font_desc);
-    if (bold_font != NULL && gui.font_can_bold)
-	g_object_unref(plain_font);
+    g_object_unref(plain_font);
 }
 
     int
