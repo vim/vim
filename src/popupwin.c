@@ -6179,7 +6179,7 @@ update_popups(void (*win_update)(win_T *wp))
 				       || (wp->w_popup_flags & POPF_INFO))
 		border_attr[i] = popup_attr;
 	    else
-		border_attr[i] = syn_name2attr((char_u *)"PopupBorder");
+		border_attr[i] = HL_ATTR(HLF_POPB);
 
 	    // Apply blend to border attributes for popup with opacitys
 	    if ((wp->w_popup_flags & POPF_OPACITY) && wp->w_popup_blend > 0)
@@ -6204,7 +6204,7 @@ update_popups(void (*win_update)(win_T *wp))
 				       || (wp->w_popup_flags & POPF_INFO))
 		title_attr = popup_attr;
 	    else
-		title_attr = syn_name2attr((char_u *)"PopupTitle");
+		title_attr = HL_ATTR(HLF_POPT);
 
 	    title_len = vim_strsize(wp->w_popup_title);
 

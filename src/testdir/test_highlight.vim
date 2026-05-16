@@ -821,6 +821,8 @@ endfunc
 " Test for 'highlight' option
 func Test_highlight_opt()
   let save_hl = &highlight
+  " "K" is intentionally an unused 'highlight' flag character; if you add a
+  " new HLF_ entry, pick a different letter or update this test.
   call assert_fails('set highlight=K:b', 'E474:')
   set highlight=f\ r
   call assert_equal('f r', &highlight)
@@ -1622,7 +1624,7 @@ func Test_winhighlight_popupwin()
   hi B ctermbg=blue ctermfg=white
 
   redraw! # Remove intro message
-  win_execute(g:id, "set filetype=c whl=Pmenu:A,cType:B")
+  win_execute(g:id, "set filetype=c whl=Popup:A,PopupBorder:A,cType:B")
   END
   call writefile(lines, 'Xtest_winhighlight_popupwin', 'D')
 

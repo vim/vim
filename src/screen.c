@@ -134,7 +134,7 @@ get_win_attr(win_T *wp)
 	if (wp->w_popup_flags & POPF_INFO)
 	    win_attr = HL_ATTR(HLF_PSI);    // PmenuSel
 	else
-	    win_attr = syn_name2attr((char_u *)"Popup");
+	    win_attr = HL_ATTR(HLF_POP);    // Popup
     }
 #endif
 

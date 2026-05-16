@@ -4774,7 +4774,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     [:PmenuKind,]:PmenuKindSel,
 				     {:PmenuExtra,}:PmenuExtraSel,
 				     x:PmenuSbar,X:PmenuThumb,j:PmenuBorder,
-				     H:PmenuShadow,*:TabLine,
+				     H:PmenuShadow,p:Popup,J:PopupBorder,
+				     Q:PopupTitle,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
 				     z:StatusLineTerm,Z:StatusLineTermNC,
@@ -4845,6 +4846,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuMatchSel| <  popup menu matched text in selected line
 	|hl-PmenuBorder|   j  popup menu border characters
 	|hl-PmenuShadow|   H  popup menu shadow
+	|hl-Popup|	 p  popup window body
+	|hl-PopupBorder|   J  popup window border characters
+	|hl-PopupTitle|	 Q  popup window title
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
 	|hl-Normal|	 (  Window color (supersedes 'wincolor' option)
 

@@ -41880,6 +41880,9 @@ Highlighting: ~
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
 |hl-PmenuShadow|	Popup menu: highlighting of the popup shadow
+|hl-Popup|		Popup window: body, default link |hl-Pmenu|
+|hl-PopupBorder|	Popup window: border characters, default link |hl-Pmenu|
+|hl-PopupTitle|		Popup window: title, default link |hl-Pmenu|
 |hl-PreInsert|		highlighting for completion preinserted text
 |hl-TabPanel|		|tabpanel|: not active tab page label
 |hl-TabPanelFill|	|tabpanel|: filler space
