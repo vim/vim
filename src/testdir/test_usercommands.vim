@@ -595,6 +595,27 @@ func Test_addr_all()
   delcommand DoSomething
 endfunc
 
+func Test_nargs_underscore_fargs()
+  " -nargs=_ must behave like -nargs=1 for <f-args>/<q-args>:
+  " the whole argument is one token, whitespace is part of it.
+  let g:res = []
+  com! -nargs=1 DoCmd1 call add(g:res, [<f-args>])
+  com! -nargs=_ DoCmdU call add(g:res, [<f-args>])
+  DoCmd1 a b c
+  DoCmdU a b c
+  call assert_equal([['a b c'], ['a b c']], g:res)
+
+  let g:res = []
+  com! -nargs=_ DoCmdQ call add(g:res, <q-args>)
+  DoCmdQ a b c
+  call assert_equal(['a b c'], g:res)
+
+  delcom DoCmd1
+  delcom DoCmdU
+  delcom DoCmdQ
+  unlet g:res
+endfunc
+
 func Test_command_list()
   command! DoCmd :
   call assert_equal("\n    Name              Args Address Complete    Definition"

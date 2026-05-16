@@ -650,7 +650,7 @@ uc_list(char_u *name, size_t name_len)
 		case (EX_EXTRA|EX_NOSPC):	IObuff[len++] = '?'; break;
 		case (EX_EXTRA|EX_NEEDARG):	IObuff[len++] = '+'; break;
 		case (EX_EXTRA|EX_NOSPC|EX_NEEDARG): IObuff[len++] = '1'; break;
-		case (EX_EXTRA|EX_NEEDARG|EX_ARGSPACE): IObuff[len++] = '_'; break;
+		case (EX_EXTRA|EX_NOSPC|EX_NEEDARG|EX_ARGSPACE): IObuff[len++] = '_'; break;
 	    }
 
 	    do
@@ -980,7 +980,7 @@ uc_scan_attr(
 		else if (*val == '+')
 		    *argt |= (EX_EXTRA | EX_NEEDARG);
 		else if (*val == '_')
-		    *argt |= (EX_EXTRA | EX_NEEDARG | EX_ARGSPACE);
+		    *argt |= (EX_EXTRA | EX_NOSPC | EX_NEEDARG | EX_ARGSPACE);
 		else
 		    goto wrong_nargs;
 	    }

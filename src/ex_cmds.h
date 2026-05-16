@@ -31,7 +31,8 @@
 #define EX_BANG		0x002	// allow a ! after the command name
 #define EX_EXTRA	0x004	// allow extra args after command name
 #define EX_XFILE	0x008	// expand wildcards in extra part
-#define EX_NOSPC	0x010	// no spaces allowed in the extra part
+#define EX_NOSPC	0x010	// extra part is a single argument (no split on
+				// whitespace)
 #define	EX_DFLALL	0x020	// default file range is 1,$
 #define EX_WHOLEFOLD	0x040	// extend range to include whole fold also
 				// when less than two numbers given
@@ -60,7 +61,7 @@
 #define EX_EXPR_ARG    0x8000000  // argument is an expression
 #define EX_WHOLE      0x10000000  // command name cannot be shortened in Vim9
 #define EX_EXPORT     0x20000000  // command can be used after :export
-#define EX_ARGSPACE   0x40000000  // allow spaces in user command with -nargs=_
+#define EX_ARGSPACE   0x40000000  // completion: keep spaces in arg lead
 
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file
