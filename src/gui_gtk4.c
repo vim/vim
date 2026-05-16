@@ -1793,17 +1793,18 @@ scroll_event(GtkEventControllerScroll *controller UNUSED,
 focus_in_event(GtkEventControllerFocus *controller UNUSED,
 	gpointer data UNUSED)
 {
-    if (blink_state != BLINK_NONE)
-	gui_mch_stop_blink(TRUE);
     gui_focus_change(TRUE);
+    if (blink_state == BLINK_NONE)
+	gui_mch_start_blink();
 }
 
     static void
 focus_out_event(GtkEventControllerFocus *controller UNUSED,
 	gpointer data UNUSED)
 {
-    gui_mch_stop_blink(TRUE);
     gui_focus_change(FALSE);
+    if (blink_state != BLINK_NONE)
+	gui_mch_stop_blink(TRUE);
 }
 
     static void
