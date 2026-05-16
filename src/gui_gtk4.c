@@ -4066,7 +4066,7 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     gboolean		direction_down;
     SharedFindReplace	*sfr;
 
-    flags = (int)(long)data;
+    flags = GPOINTER_TO_INT(data);
 
     if (flags == FRD_FINDNEXT)
     {
