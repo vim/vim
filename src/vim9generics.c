@@ -879,8 +879,8 @@ update_generic_union(
 	}
 
 	// Don't care about return value, doesn't matter
-	(void)construct_union_type(&first, NULL, &cur, actual, NULL);
-
+	(void)construct_union_type(&first, NULL, &cur, actual,
+		&new_ufunc->uf_type_list);
     }
     check_union_type(first);
 

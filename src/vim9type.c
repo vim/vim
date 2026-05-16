@@ -22,31 +22,26 @@
 
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
- * be easily freed later. If "type_gap" is NULL, then don't add it to a
- * type_gap.
+ * be easily freed later.
  */
     type_T *
 get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
 
-    if (type_gap != NULL && ga_grow(type_gap, 1) == FAIL)
+    if (ga_grow(type_gap, 1) == FAIL)
 	return NULL;
     type = ALLOC_CLEAR_ONE(type_T);
     if (type == NULL)
 	return NULL;
 
-    if (type_gap != NULL)
-    {
-	((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
-	++type_gap->ga_len;
-    }
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
+    ++type_gap->ga_len;
     return type;
 }
 
 /*
  * Make a shallow copy of "type".
- * If "type_gap" is NULL, don't add it to "type_gap".
  * When allocation fails returns "type".
  */
     type_T *
@@ -544,7 +539,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 
 /*
  * For a function type, reserve space for "argcount" argument types (including
- * vararg). If "type_gap" is NULL, then it will not be added to it.
+ * vararg).
  */
     int
 func_type_add_arg_types(
@@ -554,17 +549,14 @@ func_type_add_arg_types(
 {
     // To make it easy to free the space needed for the argument types, add the
     // pointer to type_gap.
-    if (type_gap != NULL && ga_grow(type_gap, 1) == FAIL)
+    if (ga_grow(type_gap, 1) == FAIL)
 	return FAIL;
     functype->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
     if (functype->tt_args == NULL)
 	return FAIL;
-    if (type_gap != NULL)
-    {
-	((type_T **)type_gap->ga_data)[type_gap->ga_len] =
-	    (void *)functype->tt_args;
-	++type_gap->ga_len;
-    }
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
+	(void *)functype->tt_args;
+    ++type_gap->ga_len;
     return OK;
 }
 
@@ -604,9 +596,8 @@ special_typval2type(typval_T *tv)
 
 /*
  * Construct a union type by going through all possible types. "first" should be
- * initialized to "init_value". If "type_gap" is NULL, then the types will be
- * allocated without it. Returns true if loop should be stopped because an "any"
- * type was found
+ * initialized to "init_value". Returns true if loop should be stopped because
+ * an "any" type was found
  */
     bool
 construct_union_type(
