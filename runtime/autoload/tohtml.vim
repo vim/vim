@@ -1,7 +1,7 @@
 vim9script
 # Vim autoload file for the tohtml plugin.
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026-05-15
+# Last Change: 2026-05-16
 #
 # Additional contributors:
 #
@@ -554,7 +554,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
   deletebufline(bufnr(), 1, '$')
 
   # set the fileencoding to match the charset we'll be using
-  &fileencoding = settings.vim_encoding
+  &l:fileencoding = settings.vim_encoding
 
   # According to http://www.w3.org/TR/html4/charset.html#doc-char-set, the byte
   # order mark is highly recommend on the web when using multibyte encodings. But,
@@ -574,7 +574,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
       var style_start = search('^</head>') - 1
 
       # add required javascript in reverse order so we can just call append again
-      # and again without adjusting #{{{
+      # and again without adjusting {{{
 
       var uses_script = settings.dynamic_folds || settings.line_ids
 
@@ -651,7 +651,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
 	"    for (win_num = 1; win_num <= " .. len(buf_list) .. "; win_num++)",
 	"    {",
 	"      var fold;",
-	"      fold = document.getElementById(\"win\"+win_num+objID);",
+	'      fold = document.getElementById("win"+win_num+objID);',
 	"      if(fold.className == 'closed-fold')",
 	"      {",
 	"        fold.className = 'open-fold';",
@@ -676,6 +676,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
       # for the table-based layout of the side-by-side diff. The diff should take
       # up the full browser window (but not more), and be static in size,
       # horizontally scrollable when the lines are too long. Otherwise, the diff
+      # is pretty useless for really long lines. {{{
       if settings.use_css
 	append(style_start,
 	  ['<style' .. (html5 ? '' : 'type="text/css"') .. '>'] +
@@ -696,7 +697,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
 
   &paste = old_paste
   &magic = old_magic
-enddef
+enddef #}}}
 
 # Gets a single user option and sets it in the passed-in Dict, or gives it the
 # default value if the option doesn't actually exist.
