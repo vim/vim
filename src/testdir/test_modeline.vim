@@ -666,4 +666,56 @@ func Test_modeline_strict_cannot_be_set_from_modeline()
   let &modeline = modeline
 endfunc
 
+func Test_modeline_nomodeline_with_modelinestrict()
+	let modeline = &modeline
+	let modelinestrict = &modelinestrict
+	let modelines = &modelines
+	set modelinestrict modeline modelines=5
+	let ml_before = &g:modeline
+
+	call writefile(['# vim: set nomodeline:', 'line2'], 'Xnoml', 'D')
+	split Xnoml
+	call assert_equal(0, &l:modeline, 'b_p_ml should be off')
+	call assert_equal(ml_before, &g:modeline, 'global p_ml must not change')
+	bwipe!
+
+	" A fresh buffer must still inherit the unchanged global default
+	new
+	call assert_equal(ml_before, &l:modeline,
+				\ 'new buffer should inherit unchanged global')
+	bwipe!
+
+	let &modeline = modeline
+	let &modelinestrict = modelinestrict
+	let &modelines = modelines
+endfunc
+
+func Test_modeline_nomodeline_skips_trailing_modelines()
+	let modeline = &modeline
+	let modelinestrict = &modelinestrict
+	let ts_save = &ts
+	set modeline modelinestrict ts=8
+
+	" Line 1 disables modelines; the trailing modeline must therefore
+	" never execute even though 'tabstop' is whitelisted.
+	call writefile([
+				\ '# vim: set nomodeline :',
+				\ 'middle line 1',
+				\ 'middle line 2',
+				\ 'middle line 3',
+				\ '# vim: set ts=99 :',
+				\ ], 'Xmodeline_disable_top', 'D')
+	split Xmodeline_disable_top
+
+	call assert_equal(0, &l:modeline,
+				\ 'top modeline must have disabled b_p_ml')
+	call assert_equal(8, &ts,
+				\ 'trailing modeline must not have run after nomodeline')
+
+	bwipe!
+	let &modeline = modeline
+	let &modelinestrict = modelinestrict
+	let &ts = ts_save
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
