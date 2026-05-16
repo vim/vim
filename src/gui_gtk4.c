@@ -48,6 +48,7 @@ vim_parse_geometry(const char *str, int *x, int *y,
 {
     int mask = NoValue;
     char *end;
+    long val;
 
     if (str == NULL || *str == NUL)
 	return mask;
@@ -55,9 +56,10 @@ vim_parse_geometry(const char *str, int *x, int *y,
     // Parse width
     if (*str != '+' && *str != '-')
     {
-	*width = (unsigned int)strtol(str, &end, 10);
+	val = strtol(str, &end, 10);
 	if (end != str)
 	{
+	    *width = (unsigned int)val;
 	    mask |= WidthValue;
 	    str = end;
 	}
@@ -67,9 +69,10 @@ vim_parse_geometry(const char *str, int *x, int *y,
     if (*str == 'x' || *str == 'X')
     {
 	str++;
-	*height = (unsigned int)strtol(str, &end, 10);
+	val = strtol(str, &end, 10);
 	if (end != str)
 	{
+	    *height = (unsigned int)val;
 	    mask |= HeightValue;
 	    str = end;
 	}
@@ -78,15 +81,15 @@ vim_parse_geometry(const char *str, int *x, int *y,
     // Parse x offset
     if (*str == '+' || *str == '-')
     {
-	if (*str == '-')
-	    mask |= XNegative;
+	int negative = (*str == '-');
 	str++;
-	*x = (int)strtol(str, &end, 10);
-	if (mask & XNegative)
-	    *x = -*x;
+	val = strtol(str, &end, 10);
 	if (end != str)
 	{
+	    *x = negative ? -(int)val : (int)val;
 	    mask |= XValue;
+	    if (negative)
+		mask |= XNegative;
 	    str = end;
 	}
     }
@@ -94,14 +97,16 @@ vim_parse_geometry(const char *str, int *x, int *y,
     // Parse y offset
     if (*str == '+' || *str == '-')
     {
-	if (*str == '-')
-	    mask |= YNegative;
+	int negative = (*str == '-');
 	str++;
-	*y = (int)strtol(str, &end, 10);
-	if (mask & YNegative)
-	    *y = -*y;
+	val = strtol(str, &end, 10);
 	if (end != str)
+	{
+	    *y = negative ? -(int)val : (int)val;
 	    mask |= YValue;
+	    if (negative)
+		mask |= YNegative;
+	}
     }
 
     return mask;
