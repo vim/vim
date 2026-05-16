@@ -1,7 +1,7 @@
 vim9script
 # Vim syntax support file
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026 Apr 4
+# Last Change: 2026-05-16
 #
 # Additional contributors:
 #
@@ -1129,8 +1129,7 @@ def SetProgbarColor()
   endif
 enddef
 
-# ProgressBar object
-class ProgressBar
+class ProgressBar #{{{
   public var title: string
   public var max_value: number
   public var winnr: number
@@ -1230,7 +1229,7 @@ class ProgressBar
     this.cur_value = (this.cur_value > this.max_value ? this.max_value : this.cur_value)
     this.Paint()
   enddef
-endclass
+endclass #}}}
 
 var pgb: ProgressBar
 if !settings.no_progress
