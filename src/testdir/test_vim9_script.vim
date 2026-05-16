@@ -5999,28 +5999,28 @@ def Test_declare_union_type()
   var lines =<< trim END
       var a: string | number = 1
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckSourceDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var a: list<string | number>
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckSourceDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var a: list<string | number> | string = []
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckSourceDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var a: list<dict<string> | number | list<number | string>> | string | list<blob | dict<number>> = []
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckSourceDefAndScriptSuccess(lines)
 
   lines =<< trim END
     for x: number | string in [1, 2, ""]
     endfor
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckSourceDefAndScriptSuccess(lines)
 enddef
 
 " Test that types can be enclosed by parentheses
