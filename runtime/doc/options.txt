@@ -9216,7 +9216,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	uses another default.
 
 			*'tagsecure'* *'tsc'* *'notagsecure'* *'notsc'*
-'tagsecure' 'tsc'	boolean	(Vim default: on, Vi default: on)
+'tagsecure' 'tsc'	boolean	(default on)
 			global
 	If on, accessing tags associated with remote files (RFC 3986 URIs)
 	leads to an error (E1576).

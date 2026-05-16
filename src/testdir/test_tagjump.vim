@@ -1729,7 +1729,7 @@ func Test_tagjump_refuse_url()
   set tsc
   call assert_fails('tag XTagURL', 'E1576:')
 
-  " E429: File does not exists
+  " E429: File does not exist
   set notagsecure
   call assert_fails('tag XTagURL', 'E429:')
   set notsc
