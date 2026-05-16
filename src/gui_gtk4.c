@@ -3035,6 +3035,11 @@ gtk4_get_clipboard(Clipboard_T *cbd)
 	return gdk_display_get_primary_clipboard(display);
 }
 
+typedef struct {
+    Clipboard_T *cbd;
+    gboolean	done;
+} ClipReadData;
+
 /*
  * Callback for gdk_clipboard_read_text_async().
  */
@@ -3042,7 +3047,8 @@ gtk4_get_clipboard(Clipboard_T *cbd)
 clip_read_text_cb(GObject *source, GAsyncResult *result, gpointer user_data)
 {
     GdkClipboard	*clipboard = GDK_CLIPBOARD(source);
-    Clipboard_T		*cbd = (Clipboard_T *)user_data;
+    ClipReadData	*crd = (ClipReadData *)user_data;
+    Clipboard_T		*cbd = crd->cbd;
     char		*text;
     GError		*error = NULL;
 
@@ -3081,6 +3087,7 @@ clip_read_text_cb(GObject *source, GAsyncResult *result, gpointer user_data)
 	if (error != NULL)
 	    g_error_free(error);
     }
+    crd->done = TRUE;
 }
 
 /*
@@ -3090,26 +3097,22 @@ clip_read_text_cb(GObject *source, GAsyncResult *result, gpointer user_data)
 clip_mch_request_selection(Clipboard_T *cbd)
 {
     GdkClipboard	*clipboard;
+    ClipReadData	crd;
     time_t		start;
 
     clipboard = gtk4_get_clipboard(cbd);
     if (clipboard == NULL)
 	return;
 
-    gdk_clipboard_read_text_async(clipboard, NULL, clip_read_text_cb, cbd);
+    crd.cbd = cbd;
+    crd.done = FALSE;
+    gdk_clipboard_read_text_async(clipboard, NULL, clip_read_text_cb, &crd);
 
-    // Wait up to three seconds for the clipboard response.
+    // Spin until the async callback fires, with a 3-second wall-clock
+    // timeout as a safety net.
     start = time(NULL);
-    while (time(NULL) < start + 3)
-    {
+    while (!crd.done && time(NULL) < start + 3)
 	g_main_context_iteration(NULL, TRUE);
-	// Check if the clipboard content was already yanked by the callback.
-	// The callback calls clip_yank_selection() which sets cbd->owned.
-	// We break out once an iteration completes without pending events,
-	// giving the async callback time to fire.
-	if (!g_main_context_pending(NULL))
-	    break;
-    }
 }
 
 /*
