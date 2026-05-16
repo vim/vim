@@ -2028,9 +2028,15 @@ gui_mch_wait_for_chars(long wtime)
 	if (gui.mainwin == NULL || gtk4_main_loop_quit)
 	    goto theend;
 
-	// Loop processing until a timeout or input occurs.
+	// Loop processing until a timeout or input occurs.  Bump the
+	// nesting level so gtk_main_level() reflects that Vim is inside
+	// its GTK input loop (the GTK3 code relied on the real gtk_main).
 	if (!input_available())
+	{
+	    ++gtk4_main_loop_level;
 	    g_main_context_iteration(NULL, TRUE);
+	    --gtk4_main_loop_level;
+	}
 
 	if (input_available())
 	{
