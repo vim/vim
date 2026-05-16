@@ -3429,9 +3429,7 @@ menu_action_cb(GSimpleAction *action UNUSED, GVariant *parameter UNUSED,
 		    child = gtk_widget_get_next_sibling(child))
 	    {
 		if (GTK_IS_POPOVER(child))
-		{
-		    gtk_widget_unrealize(child);
-		}
+		    gtk_popover_popdown(GTK_POPOVER(child));
 	    }
 	}
     }
@@ -3622,6 +3620,12 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     }
 }
 
+    static void
+popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
+{
+    gtk_widget_unparent(GTK_WIDGET(popover));
+}
+
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
 {
@@ -3634,6 +3638,8 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     gmenu = (GMenu *)(gpointer)menu->submenu_id;
     popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
     gtk_widget_set_parent(popover, gui.drawarea);
+    g_signal_connect(popover, "closed",
+	    G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(popover));
 }
 
