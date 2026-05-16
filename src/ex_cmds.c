@@ -1776,87 +1776,6 @@ find_pipe(char_u *cmd)
 #endif
 
 /*
- * Function to escape shell metacharacters in a command string
- */
-static char_u *escape_shell_command(char_u *cmd)
-{
-    char_u	*p;
-    char_u	*escaped_cmd;
-    int		escaped_len = 0;
-    
-    // Calculate the length needed for the escaped command
-    // Each special character needs an extra backslash
-    for (p = cmd; *p; p++) {
-	switch (*p) {
-	case '\'':
-	case '"':
-	case '\\':
-	case ';':
-	case '&':
-	case '|':
-	case '$':
-	case '`':
-	case '(':
-	case ')':
-	case '{':
-	case '}':
-	case '[':
-	case ']':
-	case '<':
-	case '>':
-	case '*':
-	case '?':
-	case '~':
-	case '#':
-	    escaped_len += 2; // Original char + escape char
-	    break;
-	default:
-	    escaped_len++;
-	    break;
-	}
-    }
-    
-    escaped_cmd = alloc(escaped_len + 1);
-    if (escaped_cmd == NULL)
-	return vim_strsave(cmd); // Fallback to original if allocation fails
-    
-    char_u *dest = escaped_cmd;
-    for (p = cmd; *p; p++) {
-	switch (*p) {
-	case '\'':
-	case '"':
-	case '\\':
-	case ';':
-	case '&':
-	case '|':
-	case '$':
-	case '`':
-	case '(':
-	case ')':
-	case '{':
-	case '}':
-	case '[':
-	case ']':
-	case '<':
-	case '>':
-	case '*':
-	case '?':
-	case '~':
-	case '#':
-	    *dest++ = '\\'; // Add backslash escape
-	    *dest++ = *p;
-	    break;
-	default:
-	    *dest++ = *p;
-	    break;
-	}
-    }
-    *dest = NUL;
-    
-    return escaped_cmd;
-}
-
-/*
  * Create a shell command from a command string, input redirection file and
  * output redirection file.
  * Returns an allocated string with the shell command, or NULL for failure.
@@ -1880,126 +1799,200 @@ make_filter_cmd(
 	return NULL;
 
     // Escape the command to prevent injection
-    escaped_cmd = escape_shell_command(cmd);
-    if (escaped_cmd == NULL) {
-	vim_free(shell_name);
-	return NULL;
+    {
+        char_u	*p;
+        int		escaped_len = 0;
+
+        // Calculate the length needed for the escaped command
+        // Each special character needs an extra backslash
+        for (p = cmd; *p; p++) {
+            switch (*p) {
+            case '\'':
+            case '"':
+            case '\\':
+            case ';':
+            case '&':
+            case '|':
+            case '$':
+            case '`':
+            case '(':
+            case ')':
+            case '{':
+            case '}':
+            case '[':
+            case ']':
+            case '<':
+            case '>':
+            case '*':
+            case '?':
+            case '~':
+            case '#':
+                escaped_len += 2; // Original char + escape char
+                break;
+            default:
+                escaped_len++;
+                break;
+            }
+        }
+
+        escaped_cmd = alloc(escaped_len + 1);
+        if (escaped_cmd != NULL) {
+            char_u *dest = escaped_cmd;
+            for (p = cmd; *p; p++) {
+                switch (*p) {
+                case '\'':
+                case '"':
+                case '\\':
+                case ';':
+                case '&':
+                case '|':
+                case '$':
+                case '`':
+                case '(':
+                case ')':
+                case '{':
+                case '}':
+                case '[':
+                case ']':
+                case '<':
+                case '>':
+                case '*':
+                case '?':
+                case '~':
+                case '#':
+                    *dest++ = '\\'; // Add backslash escape
+                    *dest++ = *p;
+                    break;
+                default:
+                    *dest++ = *p;
+                    break;
+                }
+            }
+            *dest = NUL;
+        } else {
+            // Fallback: use original command if allocation fails
+            escaped_cmd = vim_strsave(cmd);
+            if (escaped_cmd == NULL) {
+                vim_free(shell_name);
+                return NULL;
+            }
+        }
     }
 
 #if defined(UNIX)
     // Account for fish's different syntax for subshells
     is_fish_shell = fnamecmp(shell_name, "fish") == 0;
     if (is_fish_shell)
-	len = (long_u)STRLEN(escaped_cmd) + 13;		// "begin; " + "; end" + NUL
+        len = (long_u)STRLEN(escaped_cmd) + 13;		// "begin; " + "; end" + NUL
     else
 #endif
     {
-	is_powershell = (shell_name[0] == 'p')
-			&& (fnamecmp(shell_name, "powershell") == 0
-				|| fnamecmp(shell_name, "powershell.exe") == 0
-				|| fnamecmp(shell_name, "pwsh") == 0
-				|| fnamecmp(shell_name, "pwsh.exe") == 0);
-	if (is_powershell)
-	    len = (long_u)STRLEN(escaped_cmd) + 7; // "& { " + " }" + NUL
-	else
-	    len = (long_u)STRLEN(escaped_cmd) + 3; // "()" + NUL
+        is_powershell = (shell_name[0] == 'p')
+                        && (fnamecmp(shell_name, "powershell") == 0
+                            || fnamecmp(shell_name, "powershell.exe") == 0
+                            || fnamecmp(shell_name, "pwsh") == 0
+                            || fnamecmp(shell_name, "pwsh.exe") == 0);
+        if (is_powershell)
+            len = (long_u)STRLEN(escaped_cmd) + 7; // "& { " + " }" + NUL
+        else
+            len = (long_u)STRLEN(escaped_cmd) + 3; // "()" + NUL
     }
 
     if (itmp != NULL)
     {
-	if (is_powershell)
-	    // "Get-Content " + " | & "
-	    len += (long_u)STRLEN(itmp) + 17;
-	else
-	    len += (long_u)STRLEN(itmp) + 9;	// " { < " + " } "
+        if (is_powershell)
+            // "Get-Content " + " | & "
+            len += (long_u)STRLEN(itmp) + 17;
+        else
+            len += (long_u)STRLEN(itmp) + 9;	// " { < " + " } "
     }
     if (otmp != NULL)
-	len += (long_u)STRLEN(otmp) + (long_u)STRLEN(p_srr) + 2; // "  "
+        len += (long_u)STRLEN(otmp) + (long_u)STRLEN(p_srr) + 2; // "  "
 
     vim_free(shell_name);
 
     buf = alloc(len);
     if (buf == NULL) {
-	vim_free(escaped_cmd);
-	return NULL;
+        vim_free(escaped_cmd);
+        return NULL;
     }
 
     if (is_powershell)
     {
-	if (itmp != NULL)
-	    vim_snprintf((char *)buf, len, "& { Get-Content %s | & %s }",
-								itmp, escaped_cmd);
-	else
-	    vim_snprintf((char *)buf, len, "& { %s }", escaped_cmd);
+        if (itmp != NULL)
+            vim_snprintf((char *)buf, len, "& { Get-Content %s | & %s }",
+                                itmp, escaped_cmd);
+        else
+            vim_snprintf((char *)buf, len, "& { %s }", escaped_cmd);
     }
     else
     {
 #if defined(UNIX)
-	// Put braces around the command (for concatenated commands) when
-	// redirecting input and/or output.
-	if (itmp != NULL || otmp != NULL)
-	{
-	    if (is_fish_shell)
-		vim_snprintf((char *)buf, len, "begin; %s; end", (char *)escaped_cmd);
-	    else
-		vim_snprintf((char *)buf, len, "(%s)", (char *)escaped_cmd);
-	}
-	else
-	    STRCPY(buf, escaped_cmd);
-	if (itmp != NULL)
-	{
-	    STRCAT(buf, " < ");
-	    STRCAT(buf, itmp);
-	}
+        // Put braces around the command (for concatenated commands) when
+        // redirecting input and/or output.
+        if (itmp != NULL || otmp != NULL)
+        {
+            if (is_fish_shell)
+                vim_snprintf((char *)buf, len, "begin; %s; end", (char *)escaped_cmd);
+            else
+                vim_snprintf((char *)buf, len, "(%s)", (char *)escaped_cmd);
+        }
+        else
+            STRCPY(buf, escaped_cmd);
+        if (itmp != NULL)
+        {
+            STRCAT(buf, " < ");
+            STRCAT(buf, itmp);
+        }
 #else
-	// For shells that don't understand braces around commands, at least
-	// allow the use of commands in a pipe.
-	if (*p_sxe != NUL && *p_sxq == '(')
-	{
-	    if (itmp != NULL || otmp != NULL)
-		vim_snprintf((char *)buf, len, "(%s)", (char *)escaped_cmd);
-	    else
-		STRCPY(buf, escaped_cmd);
-	    if (itmp != NULL)
-	    {
-		STRCAT(buf, " < ");
-		STRCAT(buf, itmp);
-	    }
-	}
-	else
-	{
-	    STRCPY(buf, escaped_cmd);
-	    if (itmp != NULL)
-	    {
-		char_u	*p;
+        // For shells that don't understand braces around commands, at least
+        // allow the use of commands in a pipe.
+        if (*p_sxe != NUL && *p_sxq == '(')
+        {
+            if (itmp != NULL || otmp != NULL)
+                vim_snprintf((char *)buf, len, "(%s)", (char *)escaped_cmd);
+            else
+                STRCPY(buf, escaped_cmd);
+            if (itmp != NULL)
+            {
+                STRCAT(buf, " < ");
+                STRCAT(buf, itmp);
+            }
+        }
+        else
+        {
+            STRCPY(buf, escaped_cmd);
+            if (itmp != NULL)
+            {
+                char_u	*p;
 
-		// If there is a pipe, we have to put the '<' in front of it.
-		// Don't do this when 'shellquote' is not empty, otherwise the
-		// redirection would be inside the quotes.
-		if (*p_shq == NUL)
-		{
-		    p = find_pipe(buf);
-		    if (p != NULL)
-			*p = NUL;
-		}
-		STRCAT(buf, " <");	// " < " causes problems on Amiga
-		STRCAT(buf, itmp);
-		if (*p_shq == NUL)
-		{
-		    p = find_pipe(escaped_cmd);
-		    if (p != NULL)
-		    {
-			// insert a space before the '|' for DOS
-			STRCAT(buf, " ");
-			STRCAT(buf, p);
-		    }
-		}
-	    }
-	}
+                // If there is a pipe, we have to put the '<' in front of it.
+                // Don't do this when 'shellquote' is not empty, otherwise the
+                // redirection would be inside the quotes.
+                if (*p_shq == NUL)
+                {
+                    p = find_pipe(buf);
+                    if (p != NULL)
+                        *p = NUL;
+                }
+                STRCAT(buf, " <");	// " < " causes problems on Amiga
+                STRCAT(buf, itmp);
+                if (*p_shq == NUL)
+                {
+                    p = find_pipe(escaped_cmd);
+                    if (p != NULL)
+                    {
+                        // insert a space before the '|' for DOS
+                        STRCAT(buf, " ");
+                        STRCAT(buf, p);
+                    }
+                }
+            }
+        }
 #endif
     }
     if (otmp != NULL)
-	append_redir(buf, (int)len, p_srr, otmp);
+        append_redir(buf, (int)len, p_srr, otmp);
 
     vim_free(escaped_cmd);
     return buf;
