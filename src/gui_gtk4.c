@@ -7,8 +7,8 @@
  * See README.txt for an overview of the Vim source code.
  *
  * GTK4 GUI implementation: main window, events, drawing, menus,
- * This is a clean implementation for GTK4, separate from gui_gtk_x11.c
- * which handles GTK2/GTK3. Also includes scrollbars, dialogs, and toolbar.
+ * scrollbars, dialogs, and toolbar.  This is a clean implementation for
+ * GTK4, separate from gui_gtk_x11.c which handles GTK2/GTK3.
  *
  * GTK4 differences from GTK3:
  * - No GdkWindow (use GdkSurface for top-level only)
