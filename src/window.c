@@ -682,9 +682,21 @@ wingotofile:
 			if (do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
 						   ECMD_HIDE, NULL) == FAIL)
 			{
+			    /*
+			     * Note: if FEAT_EVAL is defined and do_ecmd() is aborted resulting
+			     * in got_int be true, win_close() unconditionally fails. In such
+			     * case, the window split for do_ecmd() is left unclosed, i.e. the
+			     * current window is just duplicated. To avoid this, save and load
+			     * got_int value before and after closing the window.
+			     */
+			    sig_atomic_t    old_got_int = got_int;
+			    got_int = FALSE;
+
 			    // Failed to open the file, close the window
 			    // opened for it.
 			    win_close(curwin, FALSE);
+			    got_int = got_int || old_got_int;
+
 			    goto_tabpage_win(oldtab, oldwin);
 			}
 			else
