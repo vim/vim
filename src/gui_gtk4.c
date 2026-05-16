@@ -299,10 +299,6 @@ static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpoi
     void
 gui_mch_prepare(int *argc, char **argv)
 {
-    // Suppress noisy EGL warnings when GL is not available.
-    if (g_getenv("EGL_LOG_LEVEL") == NULL)
-	setenv("EGL_LOG_LEVEL", "fatal", 0);
-
     // Don't call gtk_init() here.  It will be called in
     // gui_mch_init_check() after the fork.  Calling it before fork
     // breaks the display connection in the child process, causing gvim
@@ -414,6 +410,12 @@ gui_mch_init_check(void)
     // shipped gvim.desktop so that Vim's windows can be associated with this
     // file.  Also sets WM_CLASS on X11.
     g_set_prgname("gvim");
+
+    // Suppress noisy EGL warnings when GL is not available.  Only set
+    // this when actually starting the GUI, so non-GUI invocations are
+    // not affected.
+    if (g_getenv("EGL_LOG_LEVEL") == NULL)
+	setenv("EGL_LOG_LEVEL", "fatal", 0);
 
     // Call gtk_init() here after fork().  Calling it before fork() breaks
     // the display connection in the child process.
