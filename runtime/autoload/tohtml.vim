@@ -701,14 +701,14 @@ enddef #}}}
 
 # Gets a single user option and sets it in the passed-in Dict, or gives it the
 # default value if the option doesn't actually exist.
-export def GetOption(_settings: dict<any>, option: string, default: any)
+export def GetOption(_settings: dict<any>, option: string, default: any) #{{{
   _settings[option] = get(g:, $'html_{option}', default)
-enddef
+enddef #}}}
 
 # returns a Dict containing the values of all user options for 2html, including
 # default values for those not given an explicit value by the user. Discards the
 # html_ prefix of the option for nicer looking code.
-export def GetUserSettings(): dict<any>
+export def GetUserSettings(): dict<any> #{{{
   if !empty(settings)
     # just restore the known options if we've already retrieved them
     return settings
@@ -904,7 +904,7 @@ export def GetUserSettings(): dict<any>
 
     return user_settings
   endif
-enddef
+enddef #}}}
 
 # get the proper HTML charset name from a Vim encoding option.
 export def CharsetFromEncoding(_settings: dict<any>) #{{{
