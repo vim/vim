@@ -908,7 +908,7 @@ gui_mch_font_dialog(char_u *oldval)
 	else
 	    oldname = oldval;
 
-	if (!vim_isdigit(oldname[STRLEN(oldname) - 1]))
+	if (STRLEN(oldname) > 0 && !vim_isdigit(oldname[STRLEN(oldname) - 1]))
 	{
 	    char_u *p = vim_strnsave(oldname, STRLEN(oldname) + 3);
 	    if (p != NULL)
