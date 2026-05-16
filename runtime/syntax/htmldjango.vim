@@ -23,4 +23,8 @@ syn region djangoVarBlock start="{{" end="}}" contains=djangoFilter,djangoArgume
 syn region djangoComment start="{%\s*comment\(\s\+.\{-}\)\?%}" end="{%\s*endcomment\s*%}" contains=djangoTodo containedin=ALLBUT,@djangoBlocks
 syn region djangoComBlock start="{#" end="#}" contains=djangoTodo containedin=ALLBUT,@djangoBlocks
 
+" Use djangoTagBlockNaive to limit the djangoOperator matched characters to avoid spill-over with HTML, JS and CSS.
+syn region djangoTagBlockNaive start="{%" end="%}" contains=djangoTagBlock,djangoVarBlock,djangoComment,djangoComBlock
+syn match djangoOperator "==\|!=\|<=\|>=\|<\|>" contained containedin=CONTAINS,@djangoTagBlockNaive
+
 let b:current_syntax = "htmldjango"
