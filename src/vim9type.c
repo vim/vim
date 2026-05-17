@@ -2829,7 +2829,7 @@ get_member_type_from_stack(
     typep = ((type2_T *)stack->ga_data) + stack->ga_len;
     result = &t_unknown;
 
-    if (cctx->ctx_lhs_explicit)
+    if (cctx->ctx_infer_union)
     {
 	// Create a union type from the following items
 	for (i = 0; i < count; ++i)

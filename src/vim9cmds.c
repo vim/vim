@@ -1033,11 +1033,14 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     // compile "expr", it remains on the stack until "endfor"
     arg = p;
+    cctx->ctx_infer_union = true; // ALways infer a union typre for a for loop
     if (compile_expr0(&arg, cctx) == FAIL)
     {
+	cctx->ctx_infer_union = false;
 	drop_scope(cctx);
 	return NULL;
     }
+    cctx->ctx_infer_union = false;
     arg_end = arg;
 
     if (cctx->ctx_skip != SKIP_YES)

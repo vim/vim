@@ -875,9 +875,8 @@ struct cctx_S {
 
     lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
 				    // lhs_name is not NULL
-    bool	ctx_lhs_explicit;  // If lhs has a type explicitly declared.
-				   // Only used for determining if a union type
-				   // should be compiled.
+    bool	ctx_infer_union;    // If union type should be inferred from an
+				    // expression
 };
 
 /*
