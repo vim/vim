@@ -90,7 +90,7 @@ Unicode true  ; !include defaults to UTF-8 after Unicode True since 3.0 Alpha 2
 # ----------- No configurable settings below this line -----------
 
 ##########################################################
-# Installer Attributes, Including headers, Plugins and etc. 
+# Installer Attributes, Including headers, Plugins and etc.
 
 CRCCheck force
 
@@ -638,21 +638,23 @@ SectionGroupEnd
 	!undef LIBRARY_X64
       ${EndIf}
 
-      # Install DLLs for 32-bit gvimext.dll into the GvimExt32 directory.
-      SetOutPath $0\GvimExt32
-      ClearErrors
-      !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-	  "${GETTEXT}\gettext32\libintl-8.dll" \
-	  "$0\GvimExt32\libintl-8.dll" "$0\GvimExt32"
-      !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-	  "${GETTEXT}\gettext32\libiconv-2.dll" \
-	  "$0\GvimExt32\libiconv-2.dll" "$0\GvimExt32"
-      # Install libgcc_s_sjlj-1.dll only if it is needed.
-      !if ${INCLUDE_LIBGCC}
-	!if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
-	    !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-		"${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
-		"$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
+      !if !${ARM64}
+	# Install DLLs for 32-bit gvimext.dll into the GvimExt32 directory.
+	SetOutPath $0\GvimExt32
+	ClearErrors
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext32\libintl-8.dll" \
+	    "$0\GvimExt32\libintl-8.dll" "$0\GvimExt32"
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext32\libiconv-2.dll" \
+	    "$0\GvimExt32\libiconv-2.dll" "$0\GvimExt32"
+	# Install libgcc_s_sjlj-1.dll only if it is needed.
+	!if ${INCLUDE_LIBGCC}
+	  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+	      !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		  "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
+		  "$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
+	  !endif
 	!endif
       !endif
     ${EndIf}
