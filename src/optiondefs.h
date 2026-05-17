@@ -2638,7 +2638,7 @@ static struct vimoption options[] =
 			    (char_u *)"./tags,tags",
 #endif
 				(char_u *)0L} SCTX_INIT},
-    {"tagsecure",   "tsc",   P_BOOL|P_VIM|P_SECURE,
+    {"tagsecure",   "tsc",   P_BOOL|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_tagsecure, PV_NONE, NULL, NULL,
 			    {(char_u *)TRUE, (char_u *)TRUE} SCTX_INIT},
     {"tagstack",    "tgst", P_BOOL|P_VI_DEF,
