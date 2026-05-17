@@ -299,7 +299,8 @@ parse_generic_func_type_args(
     {
 	p = skipwhite(p);
 
-	if (!ASCII_ISALNUM(*p))
+	// Allow '(', since types can be contained in parentheses.
+	if (!ASCII_ISALNUM(*p) && *p != '(')
 	{
 	    semsg(_(e_missing_type_after_str), start);
 	    return NULL;
