@@ -331,16 +331,16 @@ tuple_type_add_types(
 }
 
 /*
- * Return true if "type" is a union type.
+ * Return true if "type" contains a union type
  */
     bool
-type_is_union(type_T *type)
+type_contains_union(type_T *type)
 {
     if (type->tt_flags & TTFLAG_UNION)
 	return true;
 
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
-	return type->tt_member->tt_flags & TTFLAG_UNION;
+	return type_contains_union(type->tt_member);
     return false;
 }
 
@@ -356,7 +356,7 @@ get_list_type(type_T *member_type, garray_T *type_gap)
 	return &t_list_any;
 
     // If member_type is a union, then do not generalize the type
-    if (!type_is_union(member_type))
+    if (!type_contains_union(member_type))
     {
 	// recognize commonly used types
 	// A generic type is t_any initially before being set to a concrete type
@@ -431,7 +431,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
 	return &t_dict_any;
 
     // If member_type is a union, then do not generalize the type
-    if (!type_is_union(member_type))
+    if (!type_contains_union(member_type))
     {
 	// recognize commonly used types
 	if (member_type->tt_type == VAR_ANY)

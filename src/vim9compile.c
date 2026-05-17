@@ -3209,8 +3209,10 @@ compile_assign_single_eval_expr(cctx_T *cctx, cac_T *cac)
     }
 
     // If lhs does not have a type explicitly specified, then don't infer rhs
-    // into a union type.
-    cctx->ctx_lhs_explicit = cac->cac_lhs.lhs_has_type;
+    // into a union type. Except if lhs is already a union type
+    cctx->ctx_lhs_explicit = cac->cac_lhs.lhs_has_type
+	|| (cac->cac_lhs.lhs_type != NULL
+		&& type_contains_union(cac->cac_lhs.lhs_type));
 
     ret = compile_expr0_ext(&cac->cac_nextc, cctx, &cac->cac_is_const);
     cctx->ctx_lhs_explicit = false;
