@@ -1580,6 +1580,8 @@ check_type_maybe(
 		else if (r == MAYBE)
 		    ret = MAYBE;
 	    }
+	    if (ret == FAIL && give_msg)
+		type_mismatch_where(expected, actual, where);
 	    if (ret == FAIL || ret == MAYBE)
 		return ret;
 	}
