@@ -1,7 +1,7 @@
 vim9script
 # Vim syntax support file
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026-05-16
+# Last Change: 2026-05-17
 #
 # Additional contributors:
 #
@@ -563,6 +563,9 @@ else
 endif
 if settings.prevent_copy =~# 'f'
   if settings.use_input_for_pc ==# 'none'
+    # If not using the method at all, define functions that will simply
+    # space-pad to the desired width inside the generated content (note that
+    # the FoldColumn definition includes a whitespace:pre rule)
     def FoldColumn_build(char: string, len: number, numfill: number, char2: string, class: string, click: string): string
       return "<a href='#' class='" .. class .. "' onclick='" .. click .. "' data-FoldColumn-content='" ..
 	repeat(char, len) .. char2 .. repeat(' ', numfill) ..
