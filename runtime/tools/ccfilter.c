@@ -250,13 +250,12 @@ int main( int argc, char *argv[] )
 	    stay = (echogets(Line2, echo) != NULL);
 	    while ( stay && (Line2[0] == '|') )
 	      { for (p=&Line2[2]; (*p) && (isspace((unsigned char)*p)); p++);
-		strcat( Reason, ": " );
-		strcat( Reason, p );
+		snprintf( Reason + strlen(Reason), LINELENGTH - strlen(Reason), ": %s", p );
 		Line2[0] = 0;
 		stay = (echogets(Line2, echo) != NULL);
 	      }
 	    prefetch = 1;
-	    strcpy( Line, Line2 );
+	    snprintf( Line, LINELENGTH, "%s", Line2 );
 	    break;
 	  case COMPILER_IRIX:
 	    Col       = 1;
@@ -291,8 +290,7 @@ int main( int argc, char *argv[] )
 			prefetch = 0;
 		      }
 		     else
-		      { strcat( Line, "\n" );
-			strcat( Line, Line2 );
+		      { snprintf( Line + strlen(Line), LINELENGTH - strlen(Line), "\n%s", Line2 );
 		      }
 		  }
 	      }
