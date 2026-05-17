@@ -3048,9 +3048,19 @@ type_name_func(type_T *type, char **tofree)
     char	*arg_free = NULL;
 
     ga_init2(&ga, 1, 100);
-    if (ga_grow(&ga, 20) == FAIL)
+    if (ga_grow(&ga, 21) == FAIL)
 	goto failed;
-    STRCPY(ga.ga_data, "func(");
+
+    // If there func is part of a union and there is another type after it in
+    // the union, make sure to put brackets around the type to clarify that the
+    // return value is not part of the union
+    if (type->tt_unext != NULL && type->tt_member != &t_void)
+    {
+	((char *)ga.ga_data)[0] = '(';
+	ga.ga_len++;
+    }
+
+    STRCPY((char *)ga.ga_data + ga.ga_len, "func(");
     ga.ga_len += 5;
 
     for (i = 0; i < type->tt_argcount; ++i)
@@ -3089,12 +3099,13 @@ type_name_func(type_T *type, char **tofree)
 	char *ret_free;
 	char *ret_name = type_name(type->tt_member, &ret_free);
 	int  len;
+	char *paren = type->tt_unext == NULL ? "" : ")";
 
-	len = (int)STRLEN(ret_name) + 4;
+	len = (int)STRLEN(ret_name) + 5;
 	if (ga_grow(&ga, len) == FAIL)
 	    goto failed;
 	STRCPY((char *)ga.ga_data + ga.ga_len, "): ");
-	STRCPY((char *)ga.ga_data + ga.ga_len + 3, ret_name);
+	sprintf((char *)ga.ga_data + ga.ga_len + 3, "%s%s", ret_name, paren);
 	vim_free(ret_free);
     }
     *tofree = ga.ga_data;
