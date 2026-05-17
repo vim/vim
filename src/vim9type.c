@@ -2455,7 +2455,7 @@ parse_union_type(
 	if (cur == NULL)
 	    return NULL;
 
-	if (equal_type(type, &t_any, 0) && !(type->tt_flags & TTFLAG_GENERIC))
+	if (equal_type(cur, &t_any, 0) && !(cur->tt_flags & TTFLAG_GENERIC))
 	{
 	    if (give_error)
 		emsg(_(e_cannot_use_any_in_union_type));
