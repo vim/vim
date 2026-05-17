@@ -1333,7 +1333,7 @@ server_parse_message(
 
 			// Initialize the result property.
 			ga_init2(&reply, 1, 100);
-			(void)ga_grow(&reply, 50 + STRLEN(p_enc));
+			(void)ga_grow(&reply, 50 + STRLEN(p_enc) + STRLEN(serial));
 			sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
 			reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
