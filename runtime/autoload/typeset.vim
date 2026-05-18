@@ -5,6 +5,7 @@ vim9script
 # Latest Revision:    2026 Feb 19
 # Last Change:
 # 2026 Mar 30 by Vim project: Use fnameescape for the ProcessOutput command
+# 2026 May 19 by Vim project: missing space in :lcd command #20244
 
 # Constants and helpers {{{
 const SLASH = !exists("+shellslash") || &shellslash ? '/' : '\'
@@ -62,7 +63,7 @@ def ProcessOutput(qfid: number, wd: string, efm: string, ch: channel, msg: strin
   endif
 
   # Make sure the working directory is correct
-  silent execute "lcd" .. fnameescape(wd)
+  silent execute "lcd" fnameescape(wd)
   setqflist([], 'a', {'id': qfid, 'lines': [msg], 'efm': efm})
   silent lcd -
 enddef
