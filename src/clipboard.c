@@ -1675,7 +1675,7 @@ clip_x11_request_selection_cb(
     char_u	*tmpbuf = NULL;
 
     if (*(int *)success != MAYBE)
-	return;
+	goto exit;
 
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
@@ -1686,7 +1686,7 @@ clip_x11_request_selection_cb(
     {
 	clip_free_selection(cbd);	// nothing received, clear register
 	*(int *)success = FALSE;
-	return;
+	goto exit;
     }
     p = (char_u *)value;
     len = *length;
@@ -1747,7 +1747,7 @@ clip_x11_request_selection_cb(
 	if (status != Success || n_text < 1)
 	{
 	    *(int *)success = FALSE;
-	    return;
+	    goto exit;
 	}
 	p = (char_u *)text_list[0];
 	len = STRLEN(p);
@@ -1757,8 +1757,9 @@ clip_x11_request_selection_cb(
     if (text_list != NULL)
 	XFreeStringList(text_list);
     vim_free(tmpbuf);
-    XtFree((char *)value);
     *(int *)success = TRUE;
+exit:
+    XtFree((char *)value);
 }
 
     static void
@@ -1883,7 +1884,7 @@ clip_x11_update_formats_cb(
     Atom	*targets = (Atom *)value;
 
     if (*(int *)success != MAYBE)
-	return;
+	goto exit;
 
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
@@ -1895,9 +1896,7 @@ clip_x11_update_formats_cb(
     {
 	clip_clear_formats(cbd);
 	*(int *)success = FALSE;
-	if (value != NULL)
-	    XtFree(value);
-	return;
+	goto exit;
     }
 
     for (long_u i = 0; i < *length; i++)
@@ -1911,7 +1910,7 @@ clip_x11_update_formats_cb(
 	}
     }
     *(int *)success = TRUE;
-
+exit:
     XtFree(value);
 }
 
@@ -2701,6 +2700,8 @@ wl_data_offer_listener_event_offer(
     const char *mime_type UNUSED
 )
 {
+    // Any formats(mime types) are supported, meaning we can't ignore mime
+    // types, since that would exclude them from getreginfo()'s "formats"
     return true;
 }
 

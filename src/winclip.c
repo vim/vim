@@ -567,14 +567,11 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     // table, polluting it.
     clip_update_formats(cbd, false);
     if (!clip_format_is_supported(cbd, format))
-	return FAIL;
+	goto fail;
 
     fmt = get_format_id(format);
     if (fmt == 0 || !IsClipboardFormatAvailable(fmt))
-    {
-	CloseClipboard();
-	return FAIL;
-    }
+	goto fail;
 
     if ((hMemW = GetClipboardData(fmt)) != NULL)
     {
@@ -588,6 +585,9 @@ clip_mch_request_format(Clipboard_T *cbd, char_u *format, garray_T *ga)
     CloseClipboard();
 
     return OK;
+fail:
+    CloseClipboard();
+    return FAIL;
 }
 
     void
