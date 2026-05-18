@@ -61,6 +61,10 @@ To build Vim on Ubuntu from scratch on a clean system using git:
 	% sudo apt install libxt-dev
 	% make reconfig
 
+	Add Wayland clipboard support:
+	% sudo apt install libwayland-dev
+	% make reconfig
+
 	Add GUI support:
 	% sudo apt install libgtk-3-dev
 	% make reconfig
