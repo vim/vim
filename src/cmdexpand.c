@@ -4959,21 +4959,17 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     {
 	char_u	*pat_src = xpc.xp_pattern;
 	int	pat_len = xpc.xp_pattern_len;
-#if defined(FEAT_EVAL)
 	char_u	*unesc = unescape_user_completeopt_pat(&xpc, pat_src, pat_len,
 								  &pat_len);
 	if (unesc != NULL)
 	    pat_src = unesc;
-#endif
 
 	if (cmdline_fuzzy_completion_supported(&xpc))
 	    // when fuzzy matching, don't modify the search string
 	    pat = vim_strnsave(pat_src, pat_len);
 	else
 	    pat = addstar(pat_src, pat_len, xpc.xp_context);
-#if defined(FEAT_EVAL)
 	vim_free(unesc);
-#endif
     }
 
     if (rettv_list_alloc(rettv) == OK && pat != NULL)
