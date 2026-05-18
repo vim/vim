@@ -10,7 +10,7 @@ enddef
 def TryChangingLastJumpMark(marks: dict<list<number>>)
   const pos: list<number> = get(marks, line('.'), [])
   if !empty(pos)
-    setpos("'`", pos)
+    setcharpos("'`", pos)
   endif
 enddef
 
@@ -56,7 +56,7 @@ def FoldAndMarkDumpDiffParts(letters: list<string>)
 	var marks: dict<list<number>> = {}
 	for idx in range(parts[1]->len())
 	  if !empty(letters)
-	    setpos(("'" .. remove(letters, 0)), parts[1][idx])
+	    setcharpos(("'" .. remove(letters, 0)), parts[1][idx])
 	  endif
 	  # Point "bs" to "cs", "cs" to "as", "as" to "cs".
 	  marks[parts[1][idx][1]] = parts[2][idx]
