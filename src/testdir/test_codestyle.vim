@@ -1,19 +1,22 @@
-" Test for checking the source code style.
+vim9script
+# Tests for checking the source code style.
 
-let s:list_of_c_files = []
+var list_of_c_files = []
 
-def s:ReportError(fname: string, lnum: number, msg: string)
+def ReportError(fname: string, lnum: number, msg: string)
   if lnum > 0
     assert_report(fname .. ' line ' .. lnum .. ': ' .. msg)
   endif
 enddef
 
-def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
+def PerformCheck(fname: string, pattern: string, msg: string,
+  Skip: func(string, string): bool = (_, _) => false)
+
   var prev_lnum = 1
   var lnum = 1
   while (lnum > 0)
     cursor(lnum, 1)
-    lnum = search(pattern, 'W', 0, 0, skip)
+    lnum = search(pattern, 'W', 0, 0, () => Skip(fname, getline('.')))
     if (prev_lnum == lnum)
       break
     endif
@@ -24,7 +27,7 @@ def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
   endwhile
 enddef
 
-def s:Get_C_source_files(): list<string>
+def Get_C_source_files(): list<string>
   if empty(list_of_c_files)
     var list = glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
     # Some files are auto-generated and may contain space errors, so skip those
@@ -33,15 +36,17 @@ def s:Get_C_source_files(): list<string>
   return list_of_c_files
 enddef
 
-def Test_source_files()
+def g:Test_source_files()
+  var Skip: func(string, string): bool
+
   for fname in Get_C_source_files()
     bwipe!
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
 
-    PerformCheck(fname, ' \t', 'space before Tab', '')
+    PerformCheck(fname, ' \t', 'space before Tab')
 
-    PerformCheck(fname, '\s$', 'trailing white space', '')
+    PerformCheck(fname, '\s$', 'trailing white space')
 
     PerformCheck(fname, ';;\+$', 'double semicolon', '')
 
@@ -50,23 +55,30 @@ def Test_source_files()
       continue
     endif
 
-    var skip = 'getline(".") =~ "condition) {" || getline(".") =~ "vimglob_func" || getline(".") =~ "{\"" || getline(".") =~ "{\\d" || getline(".") =~ "{{{"'
-    PerformCheck(fname, ')\s*{', 'curly after closing paren', skip)
+    Skip = (_: string, line: string) =>
+      line =~ 'condition) {'
+        || line =~ 'vimglob_func'
+        || line =~ '{"'
+        || line =~ '{\d'
+        || line =~ '{{{'
+
+    PerformCheck(fname, ')\s*{', 'curly after closing paren', Skip)
 
     # Examples in comments use double quotes.
-    skip = "getline('.') =~ '\"'"
+    # skip = "getline('.') =~ '\"'"
+    Skip = (_: string, line: string) => line =~ '"'
 
-    PerformCheck(fname, '}\s*else', 'curly before "else"', skip)
+    PerformCheck(fname, '}\s*else', 'curly before "else"', Skip)
 
-    PerformCheck(fname, 'else\s*{', 'curly after "else"', skip)
+    PerformCheck(fname, 'else\s*{', 'curly after "else"', Skip)
 
-    PerformCheck(fname, '\<\(if\|while\|for\)(', 'missing white space after "if"/"while"/"for"', skip)
+    PerformCheck(fname, '\<\(if\|while\|for\)(', 'missing white space after "if"/"while"/"for"', Skip)
   endfor
 
   bwipe!
 enddef
 
-def Test_test_files()
+def g:Test_test_files()
   for fname in glob('*.vim', 0, 1)
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
@@ -82,7 +94,7 @@ def Test_test_files()
         && fname !~ 'test_visual.vim'
       cursor(1, 1)
       var skip = 'getline(".") =~ "codestyle: ignore"'
-      var lnum = search(fname =~ "test_regexp_latin" ? '[^á] \t' : ' \t', 'W', 0, 0, skip)
+      var lnum = search(fname =~ 'test_regexp_latin' ? '[^á] \t' : ' \t', 'W', 0, 0, skip)
       ReportError('testdir/' .. fname, lnum, 'space before Tab')
     endif
 
@@ -106,15 +118,14 @@ def Test_test_files()
   bwipe!
 enddef
 
-def Test_help_files()
-  var lnum: number
-  set nowrapscan
+def g:Test_help_files()
+  var Skip: func(string, string): bool
 
   for fpath in glob('../../runtime/doc/*.txt', 0, 1)
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fpath
 
-    var fname = fnamemodify(fpath, ":t")
+    var fname = fnamemodify(fpath, ':t')
 
     # todo.txt is for developers, it's not need a strictly check
     # version*.txt is a history and large size, so it's not checked
@@ -122,54 +133,45 @@ def Test_help_files()
       continue
     endif
 
-    # Check for mixed tabs and spaces
-    cursor(1, 1)
-    while 1
-      lnum = search('[^/] \t')
-      if fname == 'visual.txt' && getline(lnum) =~ "STRING  \tjkl"
-        || fname == 'usr_27.txt' && getline(lnum) =~ "\[^\? \t\]"
-        continue
-      endif
-      ReportError(fpath, lnum, 'space before tab')
-      if lnum == 0
-        break
-      endif
-    endwhile
+    Skip = (file: string, line: string): bool =>
+      # :help v_b_I_example
+      file == 'visual.txt' && line =~# 'STRING  \tjkl'
+      # :help 12.7
+      || file == 'usr_12.txt' && line =~ '/ \t'
+      # :help 27.6
+      || file == 'usr_27.txt' && line =~ '\[^\? \t\]'
 
-    # Check for unnecessary whitespace at the end of a line
-    cursor(1, 1)
-    while 1
-      lnum = search('\%([^/~\\]\|^\)\s\+$')
-      # skip line that are known to have trailing white space
-      if fname == 'map.txt' && getline(lnum) =~ "unmap @@ $"
-        || fname == 'usr_12.txt' && getline(lnum) =~ "^\t/ \t$"
-        || fname == 'usr_41.txt' && getline(lnum) =~ "map <F4> o#include  $"
-        || fname == 'change.txt' && getline(lnum) =~ "foobar bla $"
-        continue
-      endif
-      ReportError('testdir' .. fpath, lnum, 'trailing white space')
-      if lnum == 0
-        break
-      endif
-    endwhile
+    PerformCheck(fname, ' \t', 'space before Tab', Skip)
 
-#    # TODO: Check for line over 80 columns
-#    cursor(1, 1)
-#    while 1
-#      lnum = search('\%>80v.*$')
-#      ReportError(fpath, lnum, 'line over 80 columns')
-#      if lnum == 0
-#        break
-#      endif
-#    endwhile
+    Skip = (file: string, line: string): bool =>
+      # :help registers (two lines)
+      file == 'change.txt' && line =~# 'drop registers "\*, "+ and "\~ $'
+      # :help definitions (two lines)
+      || file == 'intro.txt' && line =~# '\%(6\|11\). \~ $'
+      # :help map-trailing-white
+      || file == 'map.txt' && line =~# 'unmap @@ $'
+      # :help 'list' and :help 'showbreak'
+      || file == 'options.txt' && line =~# ':set \%(list lcs=tab:\\ \\\|showbreak=>\\\) $'
+      # :help 12.7
+      || file == 'usr_12.txt' && line =~ '^\t/ \t$'
+      # :help 41.11
+      || file == 'usr_41.txt' && line =~# 'map <F4> o#include  $'
+      # :help autoformat
+      || file == 'change.txt' && line =~# 'foobar bla $'
+
+    PerformCheck(fname, '\s$', 'trailing white space', Skip)
+
+    # TODO: Check for line over 78 columns
+    # Skip = (_, line: string): bool =>
+    #   synIDattr(synID(line('.'), col('.'), 1), 'name') =~# 'helpExample' || line =~# 'https\=://'
+    # PerformCheck(fname, '\%>78v.', 'line over 78 columns', Skip)
 
   endfor
 
-  set wrapscan&vim
   bwipe!
 enddef
 
-def Test_indent_of_source_files()
+def g:Test_indent_of_source_files()
   for fname in Get_C_source_files()
     execute 'tabnew ' .. fname
     if &expandtab
@@ -195,4 +197,4 @@ def Test_indent_of_source_files()
   endfor
 enddef
 
-" vim: shiftwidth=2 sts=2 expandtab nofoldenable
+# vim: shiftwidth=2 sts=2 expandtab nofoldenable
