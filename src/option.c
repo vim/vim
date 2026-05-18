@@ -1589,7 +1589,12 @@ is_modeline_whitelisted(char *name)
  * if it can be changed.
  */
     static int
-validate_opt_idx(int opt_idx, int opt_flags, long_u flags, char **errmsg)
+validate_opt_idx(
+	int opt_idx,
+	int opt_flags,
+	long_u flags,
+	char **errmsg,
+	set_prefix_T prefix)
 {
     // Skip all options that are not window-local (used when showing
     // an already loaded buffer in a window).
@@ -1617,9 +1622,14 @@ validate_opt_idx(int opt_idx, int opt_flags, long_u flags, char **errmsg)
 	}
 	// When 'modelinestrict' is on, only whitelisted options may be
 	// set from a modeline.  Silently skip others.
-	if (p_mlstr && opt_idx >= 0
-		&& !is_modeline_whitelisted(options[opt_idx].fullname))
-	    return FAIL;
+	if (p_mlstr && opt_idx >= 0)
+	{
+	    // special case: allow disabling modeline
+	    if (options[opt_idx].indir == PV_ML && prefix == PREFIX_NO)
+		return OK;
+	    else if (!is_modeline_whitelisted(options[opt_idx].fullname))
+		return FAIL;
+	}
 #ifdef FEAT_DIFF
 	// In diff mode some options are overruled.  This avoids that
 	// 'foldmethod' becomes "marker" instead of "diff" and that
@@ -2864,7 +2874,7 @@ do_set_option(
     }
 
     // Make sure the option value can be changed.
-    if (validate_opt_idx(opt_idx, opt_flags, flags, &errmsg) == FAIL)
+    if (validate_opt_idx(opt_idx, opt_flags, flags, &errmsg, prefix) == FAIL)
 	goto skip;
 
     int cp_val = p_cp;

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 May 17
+*options.txt*	For Vim version 9.2.  Last change: 2026 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6238,6 +6238,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Any other option set from a modeline will be silently ignored.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
+
+	As an exception, `set nomodeline` is honored from within a modeline
+	even when 'modelinestrict' is on.  Other forms (`set modeline=0`,
+	`set modeline!`, `set invmodeline`) are still silently ignored.
+	This lets a file disable further modeline processing for itself.
 
 	The behaviour of 'modeline', 'modelinestrict' and 'modelineexpr' is
 	as follows:
