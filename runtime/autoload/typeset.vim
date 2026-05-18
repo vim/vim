@@ -62,7 +62,7 @@ def ProcessOutput(qfid: number, wd: string, efm: string, ch: channel, msg: strin
   endif
 
   # Make sure the working directory is correct
-  silent execute "lcd" .. fnameescape(wd)
+  silent execute "lcd" fnameescape(wd)
   setqflist([], 'a', {'id': qfid, 'lines': [msg], 'efm': efm})
   silent lcd -
 enddef
