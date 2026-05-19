@@ -442,27 +442,29 @@ repeat:
 
 	if (p != NULL)
 	{
+	    size_t  dirnamelen = 0;
+
 	    if (c == '.')
 	    {
-		size_t	namelen;
-
 		mch_dirname(dirname, MAXPATHL);
 		if (has_homerelative)
 		{
 		    s = vim_strsave(dirname);
 		    if (s != NULL)
 		    {
-			home_replace(NULL, s, dirname, MAXPATHL, TRUE);
+			dirnamelen = home_replace(NULL, s, dirname, MAXPATHL, TRUE);
 			vim_free(s);
 		    }
 		}
-		namelen = STRLEN(dirname);
+
+		if (dirnamelen == 0)
+		    dirnamelen = STRLEN(dirname);
 
 		// Do not call shorten_fname() here since it removes the prefix
 		// even though the path does not have a prefix.
-		if (fnamencmp(p, dirname, namelen) == 0)
+		if (fnamencmp(p, dirname, dirnamelen) == 0)
 		{
-		    p += namelen;
+		    p += dirnamelen;
 		    if (vim_ispathsep(*p))
 		    {
 			while (*p && vim_ispathsep(*p))
@@ -480,11 +482,11 @@ repeat:
 	    }
 	    else
 	    {
-		home_replace(NULL, p, dirname, MAXPATHL, TRUE);
+		dirnamelen = home_replace(NULL, p, dirname, MAXPATHL, TRUE);
 		// Only replace it when it starts with '~'
 		if (*dirname == '~')
 		{
-		    s = vim_strsave(dirname);
+		    s = vim_strnsave(dirname, dirnamelen);
 		    if (s != NULL)
 		    {
 			*fnamep = s;
@@ -2724,7 +2726,7 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
  * 'src'.
  * If anything fails (except when out of space) dst equals src.
  */
-    void
+    size_t
 home_replace(
     buf_T	*buf,	// when not NULL, check for help files
     char_u	*src,	// input file name
@@ -2737,21 +2739,19 @@ home_replace(
     size_t	len;
     char_u	*homedir_env, *homedir_env_orig;
     char_u	*p;
+    char_u	*dst_start;
 
     if (src == NULL)
     {
 	*dst = NUL;
-	return;
+	return 0;
     }
 
     /*
      * If the file is a help file, remove the path completely.
      */
     if (buf != NULL && buf->b_help)
-    {
-	vim_snprintf((char *)dst, dstlen, "%s", gettail(src));
-	return;
-    }
+	return vim_snprintf_safelen((char *)dst, dstlen, "%s", gettail(src));
 
     /*
      * We check both the value of the $HOME environment variable and the
@@ -2793,6 +2793,7 @@ home_replace(
 
     if (!one)
 	src = skipwhite(src);
+    dst_start = dst;		// remember the start
     while (*src && dstlen > 0)
     {
 	/*
@@ -2842,6 +2843,8 @@ home_replace(
 
     if (homedir_env != homedir_env_orig)
 	vim_free(homedir_env);
+
+    return (size_t)(dst - dst_start);
 }
 
 /*
