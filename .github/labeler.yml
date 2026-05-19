@@ -8,7 +8,6 @@ CI:
         - '.github/dependabot.yml'
         - '.github/labeler.yml'
         - '.github/workflows/*'
-        - '.appveyor.yml'
         - '.codecov.yml'
 
 documentation:

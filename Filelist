@@ -18,11 +18,9 @@ SRC_ALL =	\
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
-		.appveyor.yml \
 		.clang-format \
 		.codecov.yml \
 		.editorconfig \
-		ci/appveyor.bat \
 		ci/config.mk*.sed \
 		ci/gen_testset.py \
 		ci/if_ver*.vim \
@@ -1195,7 +1193,6 @@ LANG_DOS = \
 # be excluded from distribution tarballs and the like.
 # This excludes them from the CI check for unlisted files.
 IGNORE = \
-		.appveyor.yml \
 		.github/FUNDING.yml \
 		.github/labeler.yml \
 		.github/workflows/label.yml \
