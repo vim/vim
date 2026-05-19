@@ -65,7 +65,11 @@ To build Vim on Ubuntu from scratch on a clean system using git:
 	% sudo apt install libwayland-dev
 	% make reconfig
 
-	Add GUI support:
+	Add GUI (GTK3) support:
+	% sudo apt install libgtk-3-dev
+	% make reconfig
+
+	Add GUI (GTK4) support:
 	% sudo apt install libgtk-3-dev
 	% make reconfig
 

@@ -88,6 +88,7 @@ runs:
         sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
         echo '::endgroup::'
 
+    # TODO: switch to GTK4 GUI
     - name: Install packages
       shell: bash
       run: |

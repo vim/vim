@@ -560,6 +560,16 @@ ex_hardcopy(exarg_T *eap)
     CLEAR_FIELD(settings);
     settings.has_color = TRUE;
 
+#ifdef FEAT_GUI_GTK_PRINT
+    // Use the native GTK print dialog only for interactive printing;
+    // ":hardcopy >file" must fall through to the PostScript writer.
+    if (gui.in_use && *eap->arg != '>')
+    {
+	gui_gtk4_hardcopy(eap);
+	return;
+    }
+#endif
+
 #ifdef FEAT_POSTSCRIPT
     if (*eap->arg == '>')
     {
