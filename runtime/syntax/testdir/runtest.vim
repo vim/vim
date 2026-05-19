@@ -76,7 +76,14 @@ let s:vimcmdSyntaxFname = fnameescape(syntaxDir .. '/testdir/vimcmd')
 if filereadable(s:vimcmdSyntaxFname)
   call delete('vimcmd')
   call filecopy(s:vimcmdSyntaxFname, 'vimcmd')
-  exe 'au ExitPre <buffer> call delete("' .. fnameescape(getcwd() .. '/vimcmd') .. '")'
+  " Work around uneventful support for ":cquit".
+  exe printf("%s\n%s\n%s",
+      \ 'def s:DeleteVimcmdCopy()',
+      \ 'delete("' .. fnameescape(getcwd() .. '/vimcmd') .. '")',
+      \ 'enddef')
+else
+  def s:DeleteVimcmdCopy()
+  enddef
 endif
 
 source util/screendump.vim
@@ -87,6 +94,7 @@ exe 'cd ' .. fnameescape(syntaxDir)
 " MS-Windows the console only has 16 colors and the GUI can't run in a
 " terminal.
 if !CanRunVimInTerminal()
+  call s:DeleteVimcmdCopy()
   call Fatal('Cannot make screendumps, aborting')
 endif
 
@@ -240,6 +248,7 @@ def s:TermWaitAndPollRuler(buf: number, in_name_and_out_name: string): list<stri
 enddef
 
 func RunTest()
+  defer s:DeleteVimcmdCopy()
   let XTESTSCRIPT =<< trim END
     " Track the cursor progress through a syntax test file so that any
     " degenerate input can be reported.  Each file will have its own cursor.
