@@ -5345,7 +5345,7 @@ findswapname(
 						  && choice == SEA_CHOICE_NONE)
 		    {
 			string_T    prefix = {(char_u *)_("Swap file \""), 0};
-			string_T    suffix = {(char_u *)_("\" already exists"), 0};
+			string_T    suffix = {(char_u *)_("\" already exists!"), 0};
 			size_t	    message_size;
 			string_T    message;
 			char_u	    *tofree;
