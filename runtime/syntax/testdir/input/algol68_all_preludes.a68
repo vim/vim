@@ -1,7 +1,4 @@
 #
-    VIM_TEST_SETUP let g:algol68_symbolic_operators = 1
-#
-#
     Algol 68 prelude identifier from the Genie source code files.
     
     Provided as a base to verify the correct syntax highlighting
@@ -36,7 +33,7 @@
     Modelines are set to simply inspect the correct highlighting
     in this file.
     
-    Janis Papanagnou, 2026-04-23
+    Janis Papanagnou, 2026-05-19
 #
 
 #:::::::::::::
@@ -1802,7 +1799,7 @@ prelude-gsl.c
   -:=	-:=
   MINUSAB	MINUSAB
   =	=
-  /-	/-
+  /=	/=
   +	+
   -	-
   BEFORE	BEFORE
