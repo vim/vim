@@ -489,13 +489,12 @@ put_view(
 		|| put_line(fd, "  keepjumps exe $\":{l}\"") == FAIL
 		|| put_line(fd, "  normal! zt") == FAIL
 		|| fprintf(fd, "  keepjumps :%ld", (long)wp->w_cursor.lnum) < 0
-		|| put_eol(fd) == FAIL
-		|| put_line(fd, "}") == FAIL)
+		|| put_eol(fd) == FAIL)
 	    return FAIL;
 	// Restore the cursor column and left offset when not wrapping.
 	if (wp->w_cursor.col == 0)
 	{
-	    if (put_line(fd, "normal! 0") == FAIL)
+	    if (put_line(fd, "  normal! 0") == FAIL)
 		return FAIL;
 	}
 	else
@@ -503,24 +502,27 @@ put_view(
 	    if (!wp->w_p_wrap && wp->w_leftcol > 0 && wp->w_width > 0)
 	    {
 		if (fprintf(fd,
-			  "var c: number = %ld - ((%ld * winwidth(0) + %ld) / %ld)",
+			  "  var c: number = %ld - ((%ld * winwidth(0) + %ld) / %ld)",
 			    (long)wp->w_virtcol + 1,
 			    (long)(wp->w_virtcol - wp->w_leftcol),
 			    (long)wp->w_width / 2, (long)wp->w_width) < 0
 			|| put_eol(fd) == FAIL
-			|| put_line(fd, "if c > 0") == FAIL
+			|| put_line(fd, "  if c > 0") == FAIL
 			|| fprintf(fd,
-			    "exe 'normal! ' .. c .. '|zs' .. %ld .. '|'",
+			    "    exe 'normal! ' .. c .. '|zs' .. %ld .. '|'",
 			    (long)wp->w_virtcol + 1) < 0
 			|| put_eol(fd) == FAIL
-			|| put_line(fd, "else") == FAIL
-			|| put_view_curpos(fd, wp, "  ") == FAIL
-			|| put_line(fd, "endif") == FAIL)
+			|| put_line(fd, "  else") == FAIL
+			|| put_view_curpos(fd, wp, "    ") == FAIL
+			|| put_line(fd, "  endif") == FAIL)
 		    return FAIL;
 	    }
-	    else if (put_view_curpos(fd, wp, "") == FAIL)
+	    else if (put_view_curpos(fd, wp, "  ") == FAIL)
 		return FAIL;
 	}
+
+	if (put_line(fd, "}") == FAIL)
+	    return FAIL;
     }
 
     // Local directory, if the current flag is not view options or the "curdir"

@@ -126,33 +126,33 @@ func Test_mksession()
   mksession! Xtest_mks.out
   let li = filter(readfile('Xtest_mks.out'), 'v:val =~# "\\(^ *normal! [0$]\\|^ *exe ''normal!\\)"')
   let expected = [
-    \   'normal! 016|',
-    \   'normal! 016|',
-    \   'normal! 016|',
-    \   'normal! 08|',
-    \   'normal! 08|',
-    \   'normal! 016|',
-    \   'normal! 016|',
-    \   'normal! 016|',
-    \   'normal! $',
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
-    \   "  normal! 08|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
-    \   "  normal! 08|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|",
-    \   "exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
-    \   "  normal! 016|"
+    \   '  normal! 016|',
+    \   '  normal! 016|',
+    \   '  normal! 016|',
+    \   '  normal! 08|',
+    \   '  normal! 08|',
+    \   '  normal! 016|',
+    \   '  normal! 016|',
+    \   '  normal! 016|',
+    \   '  normal! $',
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
+    \   "    normal! 08|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 8 .. '|'",
+    \   "    normal! 08|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|",
+    \   "    exe 'normal! ' .. c .. '|zs' .. 16 .. '|'",
+    \   "    normal! 016|"
     \ ]
   call assert_equal(expected, li)
   tabclose!
@@ -1464,6 +1464,42 @@ func Test_mksession_legacy_expr_mappings()
         \ 'Expected output file was not created by legacy vim plugin')})
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
+endfunc
+
+" Test sessions cursor position management
+func Test_mksession_cursor_position()
+
+  " Set windows test scenario
+  let files = []
+  for i in range(10)
+      let file = $'Xfile{i}'
+      exe $"{i ? 'split' : 'edit'} {file}"
+      call append(0, "Session file cursor position testing {i}")
+      " Force cursor position restoring commands
+      setlocal nowrap
+      normal dd29zl
+      " Check expected position
+      call assert_equal([0, 1, 30, 0], getpos('.'), "Fail to set cursor position for {file}")
+      write!
+      let files += [file]
+  endfor
+
+  " Save session
+  mksession! Xtest_curpos
+
+  " Test restoring session
+  %bwipe!
+  try
+      source Xtest_curpos
+  catch
+      call assert_report("Failure sourcing session file")
+  endtry
+
+  " Check cursor position
+  for file in files
+      exe $"drop {file}"
+      call assert_equal([0, 1, 30, 0], getpos('.'), "Cursor position not restored correctly for {file}")
+  endfor
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
