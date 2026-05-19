@@ -5362,7 +5362,7 @@ findswapname(
 			    STRCPY(message.string, prefix.string);
 			    message.length = prefix.length;
 			    message.length += home_replace(NULL, fname,
-				message.string + message.length, message_size - message.length, TRUE);
+				message.string + message.length, (int)(message_size - message.length), TRUE);
 			    STRCPY(message.string + message.length, suffix.string);
 			}
 			else
