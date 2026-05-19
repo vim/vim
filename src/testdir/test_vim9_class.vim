@@ -1,4 +1,4 @@
-" Test Vim9 classes
+" Tests for Vim9 script classes
 
 import './util/vim9.vim' as v9
 
@@ -49,6 +49,14 @@ def Test_class_basic()
     endcl
   END
   v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endcl', 3)
+
+  # "endclass" cannot be shortened (variant incl. whitespace and colon)
+  lines =<< trim END
+    vim9script
+    class Something
+    : 	endcla
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endcla', 3)
 
   # Additional words after "endclass"
   lines =<< trim END
@@ -11868,5 +11876,20 @@ func Test_class_member_lambda()
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
+
+" Test for colon and whitespace before class, endclass, static, and abstract
+def Test_colon_whitespace()
+  var lines =<< trim END
+    : 	vim9script
+    : 	class C
+       # TODO: Fix :public - gives E1065
+       # : 	public var p = true
+       : 	static var s = true
+    : 	endclass
+    : 	abstract class A
+    : 	endclass
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

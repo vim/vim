@@ -2230,10 +2230,14 @@ early_ret:
 	    fullen = 12;
 	}
 
+	// skip ':' and blanks
+	for (; VIM_ISWHITE(*p) || *p == ':'; ++p)
+	    ;
+	char_u *cmd_start = p;
 	if (checkforcmd(&p, end_name, shortlen))
 	{
-	    if (STRNCMP(line, end_name, fullen) != 0)
-		semsg(_(e_command_cannot_be_shortened_str), line);
+	    if (STRNCMP(cmd_start, end_name, fullen) != 0)
+		semsg(_(e_command_cannot_be_shortened_str), cmd_start);
 	    else if (*p == '|' || !ends_excmd2(line, p))
 		semsg(_(e_trailing_characters_str), p);
 	    else
