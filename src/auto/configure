@@ -5193,7 +5193,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
             CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
-               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3 -a "X$enable_gui" != Xgtk4; then
       with_x=no
      fi
   fi
@@ -10469,7 +10469,7 @@ if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
     as_fn_error $? "could not configure X" "$LINENO" 5
 fi
 
-test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != xgtk4 && enable_gui=no
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-gui argument" >&5
 printf %s "checking --enable-gui argument... " >&6; }
