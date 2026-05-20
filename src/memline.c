@@ -1021,7 +1021,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	forward_slash(b0p->b0_fname);
 # endif
 #else
-	size_t	flen, ulen;
+	size_t	flen;
 	char_u	uname[B0_UNAME_SIZE];
 
 	/*
@@ -1031,11 +1031,12 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	 * First replace home dir path with "~/" with home_replace().
 	 * Then insert the user name to get "~user/".
 	 */
-	home_replace(NULL, buf->b_ffname, b0p->b0_fname,
+	flen = home_replace(NULL, buf->b_ffname, b0p->b0_fname,
 						   B0_FNAME_SIZE_CRYPT, TRUE);
 	if (b0p->b0_fname[0] == '~')
 	{
-	    flen = STRLEN(b0p->b0_fname);
+	    size_t  ulen;
+
 	    // If there is no user name or it is too long, don't use "~/"
 	    if (get_user_name(uname, B0_UNAME_SIZE) == FAIL
 		   || (ulen = STRLEN(uname)) + flen > B0_FNAME_SIZE_CRYPT - 1)
@@ -5343,24 +5344,32 @@ findswapname(
 		    if (swap_exists_action != SEA_NONE
 						  && choice == SEA_CHOICE_NONE)
 		    {
-			char_u	*name;
-			int	dialog_result;
-			size_t  len = STRLEN(_("Swap file \""));
+			string_T    prefix = {(char_u *)_("Swap file \""), 0};
+			string_T    suffix = {(char_u *)_("\" already exists!"), 0};
+			size_t	    message_size;
+			string_T    message;
+			char_u	    *tofree;
+			int	    dialog_result;
 
-			name = alloc(STRLEN(fname)
-				+ len
-				+ STRLEN(_("\" already exists!")) + 5);
-			if (name != NULL)
+			prefix.length = STRLEN(prefix.string);
+			suffix.length = STRLEN(suffix.string);
+			message_size = prefix.length
+				+ STRLEN(fname)
+				+ suffix.length + 5;
+			message.string = tofree = alloc(message_size);
+			if (message.string != NULL)
 			{
-			    STRCPY(name, _("Swap file \""));
-			    home_replace(NULL, fname, name + len, 1000, TRUE);
-			    STRCAT(name, _("\" already exists!"));
+			    STRCPY(message.string, prefix.string);
+			    message.length = prefix.length;
+			    message.length += home_replace(NULL, fname,
+				message.string + message.length, (int)(message_size - message.length), TRUE);
+			    STRCPY(message.string + message.length, suffix.string);
 			}
+			else
+			    message.string = (char_u *)_("Swap file already exists!");
 			dialog_result = do_dialog(VIM_WARNING,
 				    (char_u *)_("VIM - ATTENTION"),
-				    name == NULL
-					?  (char_u *)_("Swap file already exists!")
-					: name,
+				    message.string,
 # ifdef HAVE_PROCESS_STILL_RUNNING
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
@@ -5373,7 +5382,7 @@ findswapname(
 			    dialog_result++;
 # endif
 			choice = dialog_result;
-			vim_free(name);
+			vim_free(tofree);
 
 			// pretend screen didn't scroll, need redraw anyway
 			msg_scrolled = 0;

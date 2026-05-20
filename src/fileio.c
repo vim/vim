@@ -3200,11 +3200,13 @@ set_rw_fname(char_u *fname, char_u *sfname)
     void
 msg_add_fname(buf_T *buf, char_u *fname)
 {
+    size_t  IObufflen = 0;
+
     if (fname == NULL)
 	fname = (char_u *)"-stdin-";
-    home_replace(buf, fname, IObuff + 1, IOSIZE - 4, TRUE);
-    IObuff[0] = '"';
-    STRCAT(IObuff, "\" ");
+    IObuff[IObufflen++] = '"';
+    IObufflen += home_replace(buf, fname, IObuff + IObufflen, IOSIZE - 4, TRUE);
+    STRCPY(IObuff + IObufflen, "\" ");
 }
 
 /*

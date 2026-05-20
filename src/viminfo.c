@@ -435,6 +435,8 @@ write_viminfo_bufferlist(FILE *fp)
     fputs(_("\n# Buffer list:\n"), fp);
     FOR_ALL_BUFFERS(buf)
     {
+	size_t	linelen;
+
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
 		|| bt_quickfix(buf)
@@ -445,8 +447,8 @@ write_viminfo_bufferlist(FILE *fp)
 	if (max_buffers-- == 0)
 	    break;
 	putc('%', fp);
-	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
-	vim_snprintf_add((char *)line, LINE_BUF_LEN, "\t%ld\t%d",
+	linelen = home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
+	vim_snprintf((char *)line + linelen, LINE_BUF_LEN - linelen, "\t%ld\t%d",
 			(long)buf->b_last_cursor.lnum,
 			buf->b_last_cursor.col);
 	viminfo_writestring(fp, line);
