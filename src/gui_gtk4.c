@@ -290,6 +290,8 @@ static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
+static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
+static cairo_surface_t *create_backing_surface(int width, int height);
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -523,6 +525,8 @@ gui_mch_init(void)
 		     G_CALLBACK(drawarea_unrealize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "resize",
 		     G_CALLBACK(drawarea_resize_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
+		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
 
     // Set up event controllers.
     {
@@ -1302,6 +1306,34 @@ set_cairo_source_from_pixel(cairo_t *cr, guicolor_T pixel)
 	    (pixel & 0xff) / 255.0);
 }
 
+    static int
+get_drawarea_scale(void)
+{
+    int scale = 1;
+
+    if (gui.drawarea != NULL)
+	scale = gtk_widget_get_scale_factor(gui.drawarea);
+    if (scale < 1)
+	scale = 1;
+    return scale;
+}
+
+    static cairo_surface_t *
+create_backing_surface(int width, int height)
+{
+    cairo_surface_t *surf;
+    int		    scale;
+
+    if (width <= 0 || height <= 0)
+	return NULL;
+
+    scale = get_drawarea_scale();
+    surf = cairo_image_surface_create(
+	    CAIRO_FORMAT_ARGB32, width * scale, height * scale);
+    cairo_surface_set_device_scale(surf, (double)scale, (double)scale);
+    return surf;
+}
+
     void
 gui_mch_clear_block(int row1, int col1, int row2, int col2)
 {
@@ -1352,7 +1384,9 @@ surface_copy_rect(int dest_x, int dest_y,
 	return;
 
     // Use a temporary surface to avoid overlap issues
-    tmp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    tmp = create_backing_surface(width, height);
+    if (tmp == NULL)
+	return;
     cr = cairo_create(tmp);
     cairo_set_source_surface(cr, gui.surface, -src_x, -src_y);
     cairo_paint(cr);
@@ -1829,7 +1863,7 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 
     if (gui.surface != NULL)
 	cairo_surface_destroy(gui.surface);
-    gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+    gui.surface = create_backing_surface(w, h);
 
     gui_mch_new_colors();
 
@@ -1853,14 +1887,15 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 	gpointer data UNUSED)
 {
     cairo_t *cr;
+    int	    scale = get_drawarea_scale();
 
     if (width <= 0 || height <= 0)
 	return;
 
     if (gui.surface != NULL)
     {
-	int sw = cairo_image_surface_get_width(gui.surface);
-	int sh = cairo_image_surface_get_height(gui.surface);
+	int sw = cairo_image_surface_get_width(gui.surface) / scale;
+	int sh = cairo_image_surface_get_height(gui.surface) / scale;
 
 	if (sw == width && sh == height)
 	    return;
@@ -1872,8 +1907,7 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
     // Do not copy old surface content: gui_resize_shell() will trigger
     // a full redraw, and stale content (e.g. intro screen text) would
     // otherwise remain as ghost artifacts.
-    gui.surface = cairo_image_surface_create(
-	    CAIRO_FORMAT_ARGB32, width, height);
+    gui.surface = create_backing_surface(width, height);
     cr = cairo_create(gui.surface);
     set_cairo_source_from_pixel(cr, gui.back_pixel);
     cairo_paint(cr);
@@ -1881,6 +1915,36 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 
     // Notify Vim about the new size - this will cause a full redraw
     gui_resize_shell(width, height);
+}
+
+    static void
+drawarea_scale_factor_cb(GObject *object UNUSED,
+	GParamSpec *pspec UNUSED, gpointer data UNUSED)
+{
+    int	w, h;
+
+    if (gui.drawarea == NULL)
+	return;
+
+    w = gtk_widget_get_width(gui.drawarea);
+    h = gtk_widget_get_height(gui.drawarea);
+    if (w <= 0 || h <= 0)
+	return;
+
+    if (gui.surface != NULL)
+	cairo_surface_destroy(gui.surface);
+    gui.surface = create_backing_surface(w, h);
+
+    if (gui.surface != NULL)
+    {
+	cairo_t *cr = cairo_create(gui.surface);
+	set_cairo_source_from_pixel(cr, gui.back_pixel);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+    }
+    gtk_widget_queue_draw(gui.drawarea);
+    if (gui.in_use)
+	redraw_all_later(UPD_CLEAR);
 }
 
 #ifdef FEAT_DND
@@ -3791,15 +3855,17 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     // Update surface to match new text area size
     if (w > 0 && h > 0)
     {
+	int scale = get_drawarea_scale();
+
 	if (gui.surface != NULL)
 	{
-	    int sw = cairo_image_surface_get_width(gui.surface);
-	    int sh = cairo_image_surface_get_height(gui.surface);
+	    int sw = cairo_image_surface_get_width(gui.surface) / scale;
+	    int sh = cairo_image_surface_get_height(gui.surface) / scale;
 	    if (sw == w && sh == h)
 		return;
 	    cairo_surface_destroy(gui.surface);
 	}
-	gui.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+	gui.surface = create_backing_surface(w, h);
     }
 }
 
