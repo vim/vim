@@ -3,9 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2026 Feb 03
-# Last Change:
-# 2026 Mar 30 by Vim project: Use fnameescape for the Log command
+# Latest Revision:    2026 May 20
 
 # Typesetting {{{
 import autoload './typeset.vim'
@@ -35,7 +33,7 @@ export def Log(bufname: string)
   var logpath = typeset.LogPath(bufname)
 
   if filereadable(logpath)
-    execute 'edit' .. fnameescape(typeset.LogPath(bufname))
+    execute 'edit' fnameescape(typeset.LogPath(bufname))
     return
   endif
 
