@@ -2,10 +2,7 @@ vim9script
 
 # Language:           Generic TeX typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
-# Latest Revision:    2026 Feb 19
-# Last Change:
-# 2026 Mar 30 by Vim project: Use fnameescape for the ProcessOutput command
-# 2026 May 19 by Vim project: missing space in :lcd command #20244
+# Latest Revision:    2026 May 20
 
 # Constants and helpers {{{
 const SLASH = !exists("+shellslash") || &shellslash ? '/' : '\'
