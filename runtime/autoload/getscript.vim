@@ -15,6 +15,7 @@
 "   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
 "   2025 May 11 by Vim Project: check network connectivity (#17249)
 "   2025 Dec 21 by Vim Project: make the wget check more robust (#18987)
+"   2026 May 20 by Vim Project: use correct shellescape() with ! command
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -433,9 +434,9 @@ fun! s:GetOneScript(...)
   let itry= 1
   while itry <= 3
    if has("win32") || has("win16") || has("win95")
-    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile).' '.shellescape(scriptaddr)|bw!
+    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile,1).' '.shellescape(scriptaddr,1)|bw!
    else
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile)." ".shellescape(scriptaddr)
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile,1)." ".shellescape(scriptaddr,1)
    endif
    if itry == 1
     exe "silent vsplit ".fnameescape(tmpfile)
@@ -503,9 +504,9 @@ fun! s:GetOneScript(...)
    " -----------------------------------------------------------------------------
    echomsg ".downloading new <".sname.">"
    if has("win32") || has("win16") || has("win95")
-    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)|bw!
+    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname,1)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid,1)|bw!
    else
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname,1)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid,1)
    endif
 
    " --------------------------------------------------------------------------
@@ -513,7 +514,7 @@ fun! s:GetOneScript(...)
    " --------------------------------------------------------------------------
    if doautoinstall
     if filereadable(sname)
-     exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".shellescape(s:autoinstall)
+     exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname,1)." ".shellescape(s:autoinstall,1)
      let curdir    = fnameescape(substitute(getcwd(),'\','/','ge'))
      let installdir= curdir."/Installed"
      if !isdirectory(installdir)
@@ -532,33 +533,33 @@ fun! s:GetOneScript(...)
 
      " decompress
      if sname =~ '\.bz2$'
-      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname,1)
       let sname= substitute(sname,'\.bz2$','','')
      elseif sname =~ '\.bz3$'
-      exe "sil !".g:GetLatestVimScripts_bunzip3." ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip3." ".shellescape(sname,1)
       let sname= substitute(sname,'\.bz3$','','')
      elseif sname =~ '\.gz$'
-      exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname,1)
       let sname= substitute(sname,'\.gz$','','')
      elseif sname =~ '\.xz$'
-      exe "sil !".g:GetLatestVimScripts_unxz." ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_unxz." ".shellescape(sname,1)
       let sname= substitute(sname,'\.xz$','','')
      else
      endif
 
      " distribute archive(.zip, .tar, .vba, .vmb, ...) contents
      if sname =~ '\.zip$'
-      exe "silent !".g:GetLatestVimScripts_unzip." -o ".shellescape(sname)
+      exe "silent !".g:GetLatestVimScripts_unzip." -o ".shellescape(sname,1)
      elseif sname =~ '\.tar$'
-      exe "silent !tar -xvf ".shellescape(sname)
+      exe "silent !tar -xvf ".shellescape(sname,1)
      elseif sname =~ '\.tgz$'
-      exe "silent !tar -zxvf ".shellescape(sname)
+      exe "silent !tar -zxvf ".shellescape(sname,1)
      elseif sname =~ '\.taz$'
-      exe "silent !tar -Zxvf ".shellescape(sname)
+      exe "silent !tar -Zxvf ".shellescape(sname,1)
      elseif sname =~ '\.tbz$'
-      exe "silent !tar -jxvf ".shellescape(sname)
+      exe "silent !tar -jxvf ".shellescape(sname,1)
      elseif sname =~ '\.txz$'
-      exe "silent !tar -Jxvf ".shellescape(sname)
+      exe "silent !tar -Jxvf ".shellescape(sname,1)
      elseif sname =~ '\.vba$\|\.vmb$'
       silent 1split
       if exists("g:vimball_home")
@@ -579,12 +580,12 @@ fun! s:GetOneScript(...)
      " move plugin to plugin/ or AsNeeded/ directory
      " ---------------------------------------------
      if sname =~ '.vim$'
-      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".tgtdir
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname,1)." ".tgtdir
      else
-      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".installdir
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname,1)." ".installdir
      endif
      if tgtdir != "plugin"
-      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname)." ".tgtdir
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname,1)." ".tgtdir
      endif
 
      " helptags step

@@ -1,10 +1,9 @@
 " vimball.vim : construct a file containing both paths and files
 " Maintainer: This runtime file is looking for a new maintainer.
 " Original Author:	Charles E. Campbell
-" Date:			Apr 16, 2026
+" Date:			May 20, 2026
 " Version:	37 (with modifications from the Vim Project)
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
-"  Last Change:
 " Copyright: (c) 2004-2011 by Charles E. Campbell
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 "            (see |copyright|) except use "Vimball" instead of "Vim".
@@ -427,7 +426,7 @@ fun! vimball#Decompress(fname,...)
   " decompression:
   if     expand("%") =~ '.*\.gz'  && executable("gunzip")
    " handle *.gz with gunzip
-   silent exe "!gunzip ".shellescape(a:fname)
+   silent exe "!gunzip ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) gunzip may have failed with <".a:fname.">")
    endif
@@ -437,7 +436,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.gz' && executable("gzip")
    " handle *.gz with gzip -d
-   silent exe "!gzip -d ".shellescape(a:fname)
+   silent exe "!gzip -d ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "gzip -d" may have failed with <'.a:fname.">")
    endif
@@ -447,7 +446,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.bz2' && executable("bunzip2")
    " handle *.bz2 with bunzip2
-   silent exe "!bunzip2 ".shellescape(a:fname)
+   silent exe "!bunzip2 ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip2 may have failed with <".a:fname.">")
    endif
@@ -457,7 +456,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.bz2' && executable("bzip2")
    " handle *.bz2 with bzip2 -d
-   silent exe "!bzip2 -d ".shellescape(a:fname)
+   silent exe "!bzip2 -d ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip2 -d" may have failed with <'.a:fname.">")
    endif
@@ -467,7 +466,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.bz3' && executable("bunzip3")
    " handle *.bz3 with bunzip3
-   silent exe "!bunzip3 ".shellescape(a:fname)
+   silent exe "!bunzip3 ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip3 may have failed with <".a:fname.">")
    endif
@@ -477,7 +476,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.bz3' && executable("bzip3")
    " handle *.bz3 with bzip3 -d
-   silent exe "!bzip3 -d ".shellescape(a:fname)
+   silent exe "!bzip3 -d ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip3 -d" may have failed with <'.a:fname.">")
    endif
@@ -487,7 +486,7 @@ fun! vimball#Decompress(fname,...)
 
   elseif expand("%") =~ '.*\.zip' && executable("unzip")
    " handle *.zip with unzip
-   silent exe "!unzip ".shellescape(a:fname)
+   silent exe "!unzip ".shellescape(a:fname,1)
    if v:shell_error != 0
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) unzip may have failed with <".a:fname.">")
    endif
