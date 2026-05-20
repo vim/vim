@@ -2158,12 +2158,58 @@ gui_mch_set_foreground(void)
     gtk_window_present(GTK_WINDOW(gui.mainwin));
 }
 
+    static int
+query_pointer_pos(int *x, int *y)
+{
+    GtkNative	    *native;
+    GdkSurface	    *surface;
+    GdkDisplay	    *display;
+    GdkSeat	    *seat;
+    GdkDevice	    *pointer;
+    double	     sx, sy, nx, ny;
+    graphene_point_t src, dst;
+
+    if (gui.drawarea == NULL)
+	return FALSE;
+    native = gtk_widget_get_native(gui.drawarea);
+    if (native == NULL)
+	return FALSE;
+    surface = gtk_native_get_surface(native);
+    if (surface == NULL)
+	return FALSE;
+    display = gtk_widget_get_display(gui.drawarea);
+    if (display == NULL)
+	return FALSE;
+    seat = gdk_display_get_default_seat(display);
+    if (seat == NULL)
+	return FALSE;
+    pointer = gdk_seat_get_pointer(seat);
+    if (pointer == NULL)
+	return FALSE;
+
+    if (!gdk_surface_get_device_position(surface, pointer, &sx, &sy, NULL))
+	return FALSE;
+
+    gtk_native_get_surface_transform(native, &nx, &ny);
+    src.x = (float)(sx - nx);
+    src.y = (float)(sy - ny);
+    if (!gtk_widget_compute_point(GTK_WIDGET(native), gui.drawarea,
+		&src, &dst))
+	return FALSE;
+
+    *x = (int)dst.x;
+    *y = (int)dst.y;
+    return TRUE;
+}
+
     void
 gui_mch_getmouse(int *x, int *y)
 {
-    *x = 0;
-    *y = 0;
-    // GTK4: No reliable way to query pointer position synchronously.
+    if (!query_pointer_pos(x, y))
+    {
+	*x = 0;
+	*y = 0;
+    }
 }
 
     void
@@ -3654,8 +3700,9 @@ popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
 {
-    GMenu *gmenu;
-    GtkWidget *popover;
+    GMenu	    *gmenu;
+    GtkWidget	    *popover;
+    GdkRectangle    rect;
 
     if (menu == NULL || menu->submenu_id == NULL)
 	return;
@@ -3663,6 +3710,18 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     gmenu = (GMenu *)(gpointer)menu->submenu_id;
     popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
     gtk_widget_set_parent(popover, gui.drawarea);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+    if (!query_pointer_pos(&rect.x, &rect.y))
+    {
+	rect.x = 0;
+	rect.y = 0;
+    }
+    rect.width = 1;
+    rect.height = 1;
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+
     g_signal_connect(popover, "closed",
 	    G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(popover));
