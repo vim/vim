@@ -287,6 +287,9 @@ static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpoi
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
+#ifdef FEAT_MENU
+static void show_menubar_popover(void);
+#endif
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -1577,6 +1580,19 @@ key_press_event(GtkEventControllerKey *controller UNUSED,
 		GTK_EVENT_CONTROLLER(controller));
 	if (event != NULL && gtk_im_context_filter_keypress(xic, event))
 	    return TRUE;
+    }
+#endif
+
+#ifdef FEAT_MENU
+    if (key_sym == GDK_KEY_F10 && gui.menubar != NULL)
+    {
+	static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
+
+	if (check_map(k10, State, FALSE, TRUE, FALSE, NULL, NULL) == NULL)
+	{
+	    show_menubar_popover();
+	    return TRUE;
+	}
     }
 #endif
 
@@ -3929,6 +3945,33 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     rect.height = 1;
     gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
 
+    g_signal_connect(popover, "closed",
+	    G_CALLBACK(popupmenu_closed_cb), NULL);
+    gtk_popover_popup(GTK_POPOVER(popover));
+}
+
+    static void
+show_menubar_popover(void)
+{
+    GMenu	    *gmenu;
+    GtkWidget	    *popover;
+    GdkRectangle    rect;
+
+    if (gui.menubar == NULL || gui.drawarea == NULL)
+	return;
+    gmenu = (GMenu *)g_object_get_data(G_OBJECT(gui.menubar), "vim-gmenu");
+    if (gmenu == NULL || g_menu_model_get_n_items(G_MENU_MODEL(gmenu)) == 0)
+	return;
+
+    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
+    gtk_widget_set_parent(popover, gui.drawarea);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = 1;
+    rect.height = 1;
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
     g_signal_connect(popover, "closed",
 	    G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(popover));
