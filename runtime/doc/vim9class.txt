@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Mar 07
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -110,14 +110,14 @@ referred to with the "this." prefix.  This is different from languages like
 Java and TypeScript.  The naming convention makes the object members easy to
 spot.  Also, when a variable does not have the "this." prefix you know it is
 not an object variable.
-								*E1411*
+							*E1411*
 From outside the class definition, access an object's methods and variables by
 using the object name followed by a dot following by the member: >
 
 	pos.lnum
 	pos.SetCol(10)
 <
-							*E1405* *E1406*
+							*E1405*
 A class name cannot be used as an expression.  A class name cannot be used in
 the left-hand-side of an assignment.
 
@@ -921,7 +921,7 @@ methods defined in a class: >
 
 7.  Type definition				*typealias* *Vim9-type* *:type*
 
-					*E1393* *E1395* *E1396* *E1397* *E1398*
+						*E1393* *E1396* *E1397* *E1398*
 A type definition is giving a name to a type specification.  This is also
 known as a "type alias".  The type alias can be used wherever a built-in type
 can be used.  Example: >
@@ -942,7 +942,7 @@ types can be aliased.
 A type alias can be created only at the script level and not inside a
 function.  A type alias can be exported and used across scripts.
 
-					*E1400* *E1401* *E1402* *E1403* *E1407*
+							*E1403* *E1407*
 A type alias cannot be used as an expression.  A type alias cannot be used in
 the left-hand-side of an assignment.
 

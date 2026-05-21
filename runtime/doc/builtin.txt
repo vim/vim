@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 May 04
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6259,7 +6259,7 @@ insert({object}, {item} [, {idx}])			*insert()*
 		Return type: |Number|
 
 
-instanceof({object}, {class})			*instanceof()* *E614* *E616* *E693*
+instanceof({object}, {class})			*instanceof()* *E616* *E693*
 		The result is a Number, which is |TRUE| when the {object}
 		argument is a direct or indirect instance of a |Class|,
 		|Interface|, or class |:type| alias specified by {class}.
