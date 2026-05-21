@@ -198,6 +198,10 @@ static unsigned int  im_activatekey_state  = 0;
 
 static GtkWidget *preedit_window = NULL;
 static GtkWidget *preedit_label = NULL;
+#  ifdef USE_GTK4
+static int preedit_label_width = 0;	// last measured popover natural width
+static int preedit_popover_height = 0;	// last measured popover natural height
+#  endif
 
 static void im_preedit_window_set_position(void);
 
@@ -238,6 +242,21 @@ im_set_position(int row, int col)
     area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
     area.height = gui.char_height;
 
+#  ifdef USE_GTK4
+    // Stretch the cursor rect height to cover the preedit popover so the
+    // IM's candidate window is placed below the popover rather than on
+    // top of it.  Coordinates stay in client-widget (drawarea) space;
+    // GTK4's IM module translates to the surface internally.
+    if (p_imst == IM_OVER_THE_SPOT)
+    {
+	int popover_h = preedit_popover_height;
+	if (popover_h <= 0)
+	    popover_h = gui.char_height;
+	if (popover_h > area.height)
+	    area.height = popover_h;
+    }
+#  endif
+
     gtk_im_context_set_cursor_location(xic, &area);
 
     if (p_imst == IM_OVER_THE_SPOT)
@@ -274,25 +293,40 @@ im_add_to_input(char_u *str, int len)
     static void
 im_preedit_window_set_position(void)
 {
-    int x, y, width, height;
-    int screen_x, screen_y, screen_width, screen_height;
-
     if (preedit_window == NULL)
 	return;
 
 #  ifdef USE_GTK4
-    // GTK4: positioning popup windows is limited.
-    // Use a simpler approach - just place near the cursor.
-    x = FILL_X(gui.col);
-    y = FILL_Y(gui.row) + gui.char_height;
-    width = 0;
-    height = 0;
-    screen_x = 0;
-    screen_y = 0;
-    screen_width = 0;
-    screen_height = 0;
-    // GTK4 doesn't have gtk_window_move; preedit is shown in-place.
+    // GTK4: The popover is parented to gui.mainwin (the toplevel) rather
+    // than gui.drawarea, because GtkDrawingArea is a leaf widget that does
+    // not support children and causes snapshot/redraw artifacts when used
+    // as a popover parent.  Translate the cursor cell coordinates from
+    // drawarea space to mainwin space, and use the cached label width as
+    // the anchor rect width so the popover's left edge aligns with the
+    // cursor cell:
+    //   popup_origin.x = anchor.x + anchor.w/2 - popup_w/2
+    // With anchor.w == label_w and popup_w ≈ label_w (after CSS zeroing
+    // popover frame padding), popup_origin.x ≈ anchor.x.
+    GdkRectangle rect;
+    graphene_point_t pt_in, pt_out;
+
+    pt_in.x = FILL_X(gui.col);
+    pt_in.y = FILL_Y(gui.row);
+    if (!gtk_widget_compute_point(gui.drawarea, gui.mainwin,
+						&pt_in, &pt_out))
+    {
+	pt_out.x = pt_in.x;
+	pt_out.y = pt_in.y;
+    }
+    rect.x = (int)pt_out.x;
+    rect.y = (int)pt_out.y;
+    rect.width = preedit_label_width;
+    rect.height = 0;
+    gtk_popover_set_pointing_to(GTK_POPOVER(preedit_window), &rect);
 #  else
+    int x, y, width, height;
+    int screen_x, screen_y, screen_width, screen_height;
+
     gui_gtk_get_screen_geom_of_win(gui.drawarea, 0, 0,
 			  &screen_x, &screen_y, &screen_width, &screen_height);
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
@@ -310,11 +344,6 @@ im_preedit_window_set_position(void)
     static void
 im_preedit_window_open(void)
 {
-#  ifdef USE_GTK4
-    // A separate toplevel here steals Wayland keyboard focus and tears
-    // down the text-input-v3 session; leave preedit to the IM framework.
-    return;
-#  else
     char *preedit_string;
 #  if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
@@ -333,27 +362,81 @@ im_preedit_window_open(void)
     if (preedit_window == NULL)
     {
 #  ifdef USE_GTK4
-	preedit_window = gtk_window_new();
+	// GTK4: use GtkPopover (xdg_popup) so the compositor keeps keyboard
+	// focus on the drawing area and does not disable text-input-v3.
+	// See issue #20257.  Parent the popover to gui.mainwin (a real
+	// container) rather than gui.drawarea: GtkDrawingArea is a leaf
+	// widget and using it as a popover parent causes snapshot artifacts
+	// (white-out) on the drawing area.
+	preedit_window = gtk_popover_new();
+	gtk_popover_set_autohide(GTK_POPOVER(preedit_window), FALSE);
+	gtk_popover_set_has_arrow(GTK_POPOVER(preedit_window), FALSE);
+	gtk_widget_set_can_focus(preedit_window, FALSE);
+	gtk_widget_set_focusable(preedit_window, FALSE);
+	gtk_widget_set_can_target(preedit_window, FALSE);
+	gtk_widget_set_parent(preedit_window, gui.mainwin);
 #  else
 	preedit_window = gtk_window_new(GTK_WINDOW_POPUP);
-#  endif
 	gtk_window_set_transient_for(GTK_WINDOW(preedit_window),
 						     GTK_WINDOW(gui.mainwin));
+#  endif
 	preedit_label = gtk_label_new("");
 	gtk_widget_set_name(preedit_label, "vim-gui-preedit-area");
 #  ifdef USE_GTK4
-	gtk_window_set_child(GTK_WINDOW(preedit_window), preedit_label);
+	gtk_label_set_xalign(GTK_LABEL(preedit_label), 0.0);
+	gtk_widget_set_halign(preedit_label, GTK_ALIGN_START);
+	gtk_widget_set_valign(preedit_label, GTK_ALIGN_START);
+	// Tag the popover with a CSS class so the minimal frame CSS below
+	// (no border, no rounded corners, no shadow, no padding) applies
+	// only to our preedit popover and not other popovers in the app.
+	gtk_widget_add_css_class(preedit_window, "vim-preedit-popover");
+	gtk_popover_set_child(GTK_POPOVER(preedit_window), preedit_label);
+
+	{
+	    static int preedit_css_loaded = FALSE;
+	    if (!preedit_css_loaded)
+	    {
+		GtkCssProvider *provider = gtk_css_provider_new();
+		// The theme normally draws rounded corners, a border and a
+		// drop shadow around popovers.  Strip those off so the
+		// preedit popup looks like a flat rectangle aligned with
+		// the cursor cell.  Background of the inner contents node
+		// is left at theme default; per-character colors are set
+		// by the PangoAttributes (foreground/background) below.
+		const char *css =
+		    "popover.vim-preedit-popover,\n"
+		    "popover.vim-preedit-popover > contents {\n"
+		    "  border: none;\n"
+		    "  border-radius: 0;\n"
+		    "  box-shadow: none;\n"
+		    "  padding: 0;\n"
+		    "  margin: 0;\n"
+		    "  min-width: 0;\n"
+		    "  min-height: 0;\n"
+		    "  background: transparent;\n"
+		    "}\n"
+		    "popover.vim-preedit-popover > arrow {\n"
+		    "  background: transparent;\n"
+		    "  border: none;\n"
+		    "}\n";
+		gtk_css_provider_load_from_string(provider, css);
+		gtk_style_context_add_provider_for_display(
+			gdk_display_get_default(),
+			GTK_STYLE_PROVIDER(provider), G_MAXUINT);
+		g_object_unref(provider);
+		preedit_css_loaded = TRUE;
+	    }
+	}
 #  else
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
 #  endif
     }
 
-#  if GTK_CHECK_VERSION(3,16,0)
+#  ifndef USE_GTK4
+#   if GTK_CHECK_VERSION(3,16,0)
     {
-#   ifndef USE_GTK4
 	GtkStyleContext * const context
 				  = gtk_widget_get_style_context(preedit_label);
-#   endif
 	GtkCssProvider * const provider = gtk_css_provider_new();
 	gchar		   *css = NULL;
 	const char * const fontname
@@ -366,15 +449,10 @@ im_preedit_window_open(void)
 	{
 	    // fontsize was given in points.  Convert it into that in pixels
 	    // to use with CSS.
-#   ifdef USE_GTK4
-	    // GTK4: assume 96 DPI as default
-	    fontsize = 96 * fontsize / 72;
-#   else
 	    GdkScreen * const screen
 		  = gdk_window_get_screen(gtk_widget_get_window(gui.mainwin));
 	    const gdouble dpi = gdk_screen_get_resolution(screen);
 	    fontsize = dpi * fontsize / 72;
-#   endif
 	}
 	if (fontsize > 0)
 	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
@@ -397,22 +475,15 @@ im_preedit_window_open(void)
 		(gui.back_pixel >> 8) & 0xff,
 		gui.back_pixel & 0xff);
 
-#   ifdef USE_GTK4
-	gtk_css_provider_load_from_string(provider, css);
-	gtk_style_context_add_provider_for_display(
-		gdk_display_get_default(),
-		GTK_STYLE_PROVIDER(provider), G_MAXUINT);
-#   else
 	gtk_css_provider_load_from_data(provider, css, -1, NULL);
 	gtk_style_context_add_provider(context,
 				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
-#   endif
 
 	g_free(css);
 	g_free(fontsize_propval);
 	g_object_unref(provider);
     }
-#  elif GTK_CHECK_VERSION(3,0,0)
+#   elif GTK_CHECK_VERSION(3,0,0)
     gtk_widget_override_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
@@ -423,7 +494,7 @@ im_preedit_window_open(void)
     gdk_rgba_parse(&color, buf);
     gtk_widget_override_background_color(preedit_label, GTK_STATE_FLAG_NORMAL,
 								      &color);
-#  else
+#   else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.norm_pixel);
@@ -433,12 +504,50 @@ im_preedit_window_open(void)
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
-#  endif
+#   endif
+#  endif // !USE_GTK4
 
     gtk_im_context_get_preedit_string(xic, &preedit_string, &attr_list, NULL);
 
     if (preedit_string[0] != NUL)
     {
+#  ifdef USE_GTK4
+	// GTK4: drive all styling (font + foreground + background) via
+	// PangoAttributes on the label rather than CSS.  This pins the
+	// preedit text to gui.norm_font (family + weight + style + size)
+	// and the editor colors without going through CSS DPI conversion
+	// or selector matching.  These attributes are merged with whatever
+	// the IM gave us (e.g. underline for composing range).
+	PangoAttribute *pa;
+	int popup_w = 0;
+
+	if (attr_list == NULL)
+	    attr_list = pango_attr_list_new();
+
+	if (gui.norm_font != NULL)
+	{
+	    pa = pango_attr_font_desc_new(gui.norm_font);
+	    pa->start_index = 0;
+	    pa->end_index = G_MAXUINT;
+	    pango_attr_list_insert(attr_list, pa);
+	}
+
+	pa = pango_attr_foreground_new(
+		((gui.norm_pixel >> 16) & 0xff) * 257,
+		((gui.norm_pixel >> 8) & 0xff) * 257,
+		(gui.norm_pixel & 0xff) * 257);
+	pa->start_index = 0;
+	pa->end_index = G_MAXUINT;
+	pango_attr_list_insert(attr_list, pa);
+
+	pa = pango_attr_background_new(
+		((gui.back_pixel >> 16) & 0xff) * 257,
+		((gui.back_pixel >> 8) & 0xff) * 257,
+		(gui.back_pixel & 0xff) * 257);
+	pa->start_index = 0;
+	pa->end_index = G_MAXUINT;
+	pango_attr_list_insert(attr_list, pa);
+#  endif
 	gtk_label_set_text(GTK_LABEL(preedit_label), preedit_string);
 	gtk_label_set_attributes(GTK_LABEL(preedit_label), attr_list);
 
@@ -446,29 +555,74 @@ im_preedit_window_open(void)
 	pango_layout_get_pixel_size(layout, &w, &h);
 	h = MAX(h, gui.char_height);
 #  ifdef USE_GTK4
-	gtk_window_set_default_size(GTK_WINDOW(preedit_window), w, h);
-	gtk_widget_set_visible(preedit_window, TRUE);
+	// Force the popover to recompute its size based on the new label
+	// content before we measure it.  Without this, GtkPopover may
+	// return a stale natural width from the previous preedit step.
+	gtk_widget_queue_resize(preedit_window);
+
+	// Pop up first so the widget tree gets allocated; measurement on
+	// an un-mapped popover returns 0 or a stale value.
+	gtk_popover_popup(GTK_POPOVER(preedit_window));
+
+	// Measure the popover's actual natural width including whatever
+	// theme padding the frame imposes.  Using this width as the anchor
+	// rect width makes GtkPopover's center-on-anchor positioning land
+	// the popover's left edge exactly on the anchor x:
+	//   popup_left = anchor.x + anchor.w/2 - popup_w/2
+	//              = anchor.x + popup_w/2 - popup_w/2
+	//              = anchor.x      (when anchor.w == popup_w)
+	gtk_widget_measure(preedit_window, GTK_ORIENTATION_HORIZONTAL, -1,
+				    NULL, &popup_w, NULL, NULL);
+	if (popup_w <= 0)
+	    popup_w = w;	// fallback if measure failed
+	preedit_label_width = popup_w;
+
+	{
+	    int popup_h = 0;
+	    gtk_widget_measure(preedit_window, GTK_ORIENTATION_VERTICAL, -1,
+					NULL, &popup_h, NULL, NULL);
+	    if (popup_h <= 0)
+		popup_h = h;	// fallback to label height
+	    preedit_popover_height = popup_h;
+	}
+
+	// Report an enlarged cursor rectangle that covers both the cursor
+	// cell and the preedit popover.  This way the IM (e.g. fcitx5)
+	// places its candidate window below the popover instead of on top
+	// of it.  Coordinates are in client-widget (drawarea) space.
+	if (xic != NULL)
+	{
+	    GdkRectangle area;
+
+	    area.x = FILL_X(gui.col);
+	    area.y = FILL_Y(gui.row);
+	    area.width = preedit_label_width;
+	    area.height = MAX(gui.char_height, preedit_popover_height);
+	    gtk_im_context_set_cursor_location(xic, &area);
+	}
+
+	im_preedit_window_set_position();
 #  else
 	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show_all(preedit_window);
-#  endif
 
 	im_preedit_window_set_position();
+#  endif
     }
 
     g_free(preedit_string);
     pango_attr_list_unref(attr_list);
-#  endif // USE_GTK4
 }
 
     static void
 im_preedit_window_close(void)
 {
+    if (preedit_window == NULL)
+	return;
 #  ifdef USE_GTK4
-    return;	// no preedit toplevel on GTK4; see im_preedit_window_open()
+    gtk_popover_popdown(GTK_POPOVER(preedit_window));
 #  else
-    if (preedit_window != NULL)
-	gtk_widget_hide(preedit_window);
+    gtk_widget_hide(preedit_window);
 #  endif
 }
 
@@ -950,6 +1104,15 @@ xim_init(void)
 
 #  ifdef USE_GTK4
     gtk_im_context_set_client_widget(xic, gui.drawarea);
+
+    // Seed the cursor location immediately.  GTK4's Wayland IM module
+    // batches text-input-v3 state and sends it on the next commit cycle
+    // (typically triggered by focus_in).  Without this seed the very
+    // first commit would carry the protocol default (0, 0, 0, 0) for the
+    // cursor rectangle, and the IM's candidate window for the very first
+    // composition would appear at the top-left of the surface instead of
+    // next to the cursor.
+    im_set_position(gui.row, gui.col);
 #  else
     gtk_im_context_set_client_window(xic, gtk_widget_get_window(gui.drawarea));
 #  endif
@@ -968,6 +1131,17 @@ im_shutdown(void)
 	g_object_unref(xic);
 	xic = NULL;
     }
+#  ifdef USE_GTK4
+    // GTK4: a widget added via gtk_widget_set_parent() must be detached
+    // with gtk_widget_unparent() before its parent is finalized, otherwise
+    // GTK prints "Finalizing ..., but it still has children left".
+    if (preedit_window != NULL)
+    {
+	gtk_widget_unparent(preedit_window);
+	preedit_window = NULL;
+	preedit_label = NULL;
+    }
+#  endif
     im_is_active = FALSE;
     im_commit_handler_id = 0;
     if (p_imst == IM_ON_THE_SPOT)
