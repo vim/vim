@@ -5999,7 +5999,7 @@ check_for_color_response(char_u *resp, int len)
 			char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
 					     *tp_b) ? "light" : "dark";
 
-			LOG_TRN("Received RBG response: %s", tp);
+			LOG_TRN("Received RBG response: r=%d g=%d b=%d", rval, gval, bval);
 #ifdef FEAT_TERMRESPONSE
 			rbg_status.tr_progress = STATUS_GOT;
 # ifdef FEAT_TERMINAL
@@ -6021,7 +6021,7 @@ check_for_color_response(char_u *resp, int len)
 #if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
 		    else
 		    {
-			LOG_TRN("Received RFG response: %s", tp);
+			LOG_TRN("Received RFG response: r=%d g=%d b=%d", rval, gval, bval);
 			rfg_status.tr_progress = STATUS_GOT;
 			fg_r = rval;
 			fg_g = gval;
