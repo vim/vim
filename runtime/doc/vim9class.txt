@@ -635,7 +635,7 @@ once.  They can appear in any order, although this order is recommended: >
 <
 The "specifies" feature is currently not implemented.
 
-							*E1355* *E1369*
+						*E1355* *E1369* *E1406*
 Each variable and method name can be used only once.  It is not possible to
 define a method with the same name and different type of arguments.  It is not
 possible to use a public and protected member variable with the same name.  An

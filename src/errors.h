@@ -3564,7 +3564,8 @@ EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
 EXTERN char e_using_class_as_value_str[]
 	INIT(= N_("E1405: Class \"%s\" cannot be used as a value"));
-// E1406 unused
+EXTERN char e_public_and_protected_member_have_same_name_str_str[]
+	INIT(= N_("E1406: Public and protected member have the same name: %s and _%s"));
 EXTERN char e_using_typealias_as_var_val[]
 	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
 EXTERN char e_final_variable_not_supported_in_interface[]

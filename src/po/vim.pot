@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-05-20 18:41+0000\n"
+"POT-Creation-Date: 2026-05-21 19:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8486,6 +8486,10 @@ msgstr ""
 
 #, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr ""
+
+#, c-format
+msgid "E1406: Public and protected member have the same name: %s and _%s"
 msgstr ""
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
