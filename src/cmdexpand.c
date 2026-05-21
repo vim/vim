@@ -1761,7 +1761,8 @@ set_cmd_index(char_u *cmd, exarg_T *eap, expand_T *xp, int *complp)
     // - the 'k' command can directly be followed by any character, but do
     // accept "keepmarks", "keepalt" and "keepjumps". Bypass also when
     // 'ignorecase' is set so a lowercase ":kz" still completes a user
-    // command like :Kz (#20241), and for fuzzy matching as before.
+    // command like :Kz (#20241), and for fuzzy matching as that can find
+    // matches anywhere in the command name.
     // - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
     if (!fuzzy && !p_ic && (*cmd == 'k' && cmd[1] != 'e'))
     {
