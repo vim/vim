@@ -2635,9 +2635,7 @@ auto_next_pat(
     int		stop_at_last)	    // stop when 'last' flag is set
 {
     AutoPat	*ap;
-    AutoCmd	*cp;
     estack_T	*entry;
-    char_u	*namep;
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
 
@@ -2663,6 +2661,8 @@ auto_next_pat(
 	    {
 		string_T    *event_name;
 		char	    *fmt;
+		char_u	    *namep;
+		AutoCmd	    *cp;
 
 		event_name = event_nr2name(apc->event);
 		fmt = _("%s Autocommands for \"%s\"");
