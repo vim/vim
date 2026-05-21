@@ -310,6 +310,11 @@ im_preedit_window_set_position(void)
     static void
 im_preedit_window_open(void)
 {
+#  ifdef USE_GTK4
+    // A separate toplevel here steals Wayland keyboard focus and tears
+    // down the text-input-v3 session; leave preedit to the IM framework.
+    return;
+#  else
     char *preedit_string;
 #  if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
@@ -453,15 +458,16 @@ im_preedit_window_open(void)
 
     g_free(preedit_string);
     pango_attr_list_unref(attr_list);
+#  endif // USE_GTK4
 }
 
     static void
 im_preedit_window_close(void)
 {
-    if (preedit_window != NULL)
 #  ifdef USE_GTK4
-	gtk_widget_set_visible(preedit_window, FALSE);
+    return;	// no preedit toplevel on GTK4; see im_preedit_window_open()
 #  else
+    if (preedit_window != NULL)
 	gtk_widget_hide(preedit_window);
 #  endif
 }
