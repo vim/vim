@@ -462,6 +462,31 @@ func Test_fold_fillchars()
         \ ]
   call assert_equal(expected, lines)
 
+  " check fdc >= 3
+  normal! 4ggzo
+  set fdc=3 foldmethod=manual
+  let lines = ScreenLines([1, 6], 26)
+  let expected = [
+        \ '   one                  ',
+        \ '▼          two          ',
+        \ '‖          two          ',
+        \ '‖▼                 three',
+        \ '‖‖                 three',
+        \ '   four                 ',
+        \ ]
+
+  normal! 3ggzf2j
+  let lines = ScreenLines([1, 6], 26)
+  let expected = [
+        \ '   one                  ',
+        \ '▼          two          ',
+        \ '‖▼         two          ',
+        \ '2▼                 three',
+        \ '2‖                 three',
+        \ '   four                 ',
+        \ ]
+
+
   %bw!
   set fillchars& fdc& foldmethod& foldenable&
 endfunc

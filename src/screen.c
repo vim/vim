@@ -300,14 +300,15 @@ fill_foldcolumn(
 	if (win_foldinfo.fi_lnum == lnum
 		&& first_level + i >= win_foldinfo.fi_low_level)
 	    symbol = wp->w_fill_chars.foldopen;
-	else if (first_level == 1)
-	    symbol = wp->w_fill_chars.foldsep;
-	else if (wp->w_fill_chars.foldinner != NUL)
-	    symbol = wp->w_fill_chars.foldinner;
-	else if (first_level + i <= 9)
-	    symbol = '0' + first_level + i;
+	else if (i == 0 && first_level > 1)
+	    if (wp->w_fill_chars.foldinner != NUL)
+		symbol = wp->w_fill_chars.foldinner;
+	    else if (first_level <= 9)
+		symbol = '0' + first_level;
+	    else
+		symbol = '>';
 	else
-	    symbol = '>';
+	    symbol = wp->w_fill_chars.foldsep;
 
 	len = utf_char2bytes(symbol, &p[byte_counter]);
 	byte_counter += len;

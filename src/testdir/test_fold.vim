@@ -1228,7 +1228,7 @@ func s:mbyte_fillchar_tests(fo, fc, fs)
         \ a:fo .. '  one    ',
         \ a:fs .. a:fo .. ' two    ',
         \ '2' .. a:fo .. ' three  ',
-        \ '23 four   ',
+        \ '2' .. a:fs .. ' four   ',
         \ a:fs .. a:fs .. ' five   ',
         \ a:fs .. '  six    ',
         \ ], ScreenLines([1, 6], 10))
@@ -1283,7 +1283,7 @@ func s:mbyte_fillchar_tests(fo, fc, fs)
         \ a:fo .. '      1 one  ',
         \ a:fs .. a:fo .. '     2 two  ',
         \ '2' .. a:fo .. ' ->  3 three',
-        \ '23     4 four ',
+        \ '2' .. a:fs ..     '     4 four ',
         \ a:fs .. a:fs .. '     5 five ',
         \ a:fs .. '      6 six  '
         \ ], ScreenLines([1, 6], 14))
@@ -1298,7 +1298,7 @@ func s:mbyte_fillchar_tests(fo, fc, fs)
           \  strcharpart(lines[1], strchars(lines[1]) - 10, 10))
     call assert_equal('t 3  >- ' .. a:fo .. '2',
           \  strcharpart(lines[2], strchars(lines[2]) - 10, 10))
-    call assert_equal('f 4     32',
+    call assert_equal('f 4     ' .. a:fs .. '2',
           \  strcharpart(lines[3], strchars(lines[3]) - 10, 10))
     call assert_equal('f 5     ' .. a:fs .. a:fs,
           \  strcharpart(lines[4], strchars(lines[4]) - 10, 10))
@@ -1313,20 +1313,20 @@ func s:mbyte_fillchar_tests(fo, fc, fs)
 
   " Add a test with more than 9 folds (and then delete some folds)
   normal zE
-  for i in range(1, 10)
+  for i in range(1, 11)
     normal zfGzo
   endfor
   normal zR
   call assert_equal([
         \ a:fo .. a:fo .. ' one ',
-        \ '9> two '
+        \ '>' .. a:fs .. ' two '
         \ ], ScreenLines([1, 2], 7))
   normal 1Gzd
   call assert_equal([
         \ a:fo .. a:fo .. ' one ',
-        \ '89 two '
+        \ '9' .. a:fs .. ' two '
         \ ], ScreenLines([1, 2], 7))
-  normal 1Gzdzdzdzdzdzdzd
+  normal 1Gzdzdzdzdzdzdzdzd
   call assert_equal([
         \ a:fo .. a:fo .. ' one ',
         \ a:fs .. a:fs .. ' two '
