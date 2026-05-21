@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Apr 27
+*various.txt*	For Vim version 9.2.  Last change: 2026 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -296,7 +296,7 @@ g8			Print the hex values of the bytes used in the
 			name does not contain a single quote: >
 				:!ls '%'
 <			This should always work, but it's more typing: >
-				:exe "!ls " .. shellescape(expand("%"))
+				:exe "!ls " .. shellescape(expand("%"),1)
 <			To get a literal "%" or "#" prepend it with a
 			backslash.  For example, to list all files starting
 			with "%": >
