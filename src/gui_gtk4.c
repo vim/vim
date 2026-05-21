@@ -776,15 +776,9 @@ gui_mch_set_shellsize(int width, int height,
 	int base_width UNUSED, int base_height UNUSED,
 	int direction UNUSED)
 {
-    // Only set window size if it hasn't been shown yet (initial sizing).
-    // After that, the window size is controlled by the user/WM and
-    // Vim adapts to it via form_size_allocate -> gui_resize_shell.
-    if (!gtk_widget_get_realized(gui.mainwin))
-    {
-	width += get_menu_tool_width();
-	height += get_menu_tool_height();
-	gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
-    }
+    width += get_menu_tool_width();
+    height += get_menu_tool_height();
+    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
 }
 
     void
