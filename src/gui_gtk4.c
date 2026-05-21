@@ -3695,6 +3695,8 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
 {
     gtk_widget_unparent(GTK_WIDGET(popover));
+    if (gui.drawarea != NULL)
+	gtk_widget_queue_draw(gui.drawarea);
 }
 
     void
@@ -3702,14 +3704,24 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 {
     GMenu	    *gmenu;
     GtkWidget	    *popover;
+    GtkWidget	    *parent;
     GdkRectangle    rect;
+    int		    natural_width = 0;
 
     if (menu == NULL || menu->submenu_id == NULL)
 	return;
 
+    // Attach the popover to drawarea's parent (the GtkOverlay) rather than
+    // to drawarea itself. GtkDrawingArea is a leaf widget whose snapshot
+    // does not iterate children, and parenting a popover to it has been
+    // observed to leave the drawing area blank while the popover is open.
+    parent = gtk_widget_get_parent(gui.drawarea);
+    if (parent == NULL)
+	parent = gui.drawarea;
+
     gmenu = (GMenu *)(gpointer)menu->submenu_id;
     popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
-    gtk_widget_set_parent(popover, gui.drawarea);
+    gtk_widget_set_parent(popover, parent);
     gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
     gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
 
@@ -3718,7 +3730,13 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	rect.x = 0;
 	rect.y = 0;
     }
-    rect.width = 1;
+    // GtkPopover with GTK_POS_BOTTOM anchors its horizontal centre to the
+    // centre of the pointing-to rectangle. Set the rect width to the
+    // popover's natural width so the popover's left edge aligns with the
+    // cursor instead of being centred on it.
+    gtk_widget_measure(popover, GTK_ORIENTATION_HORIZONTAL, -1,
+	    NULL, &natural_width, NULL, NULL);
+    rect.width = natural_width > 0 ? natural_width : 1;
     rect.height = 1;
     gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
 
