@@ -239,7 +239,11 @@ im_set_position(int row, int col)
 
     area.x = FILL_X(col);
     area.y = FILL_Y(row);
-    area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
+    // The screen buffer may not be allocated yet when this is called from
+    // xim_init() during gui_mch_init() to seed the IM's initial cursor
+    // location, so guard mb_lefthalve() against a NULL LineOffset[].
+    area.width  = gui.char_width
+		    * ((ScreenLines != NULL && mb_lefthalve(row, col)) ? 2 : 1);
     area.height = gui.char_height;
 
 #  ifdef USE_GTK4
