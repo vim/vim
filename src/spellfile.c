@@ -635,7 +635,7 @@ tree_count_words(char_u *byts, long byts_len, idx_T *idxs)
 		++wordcount[depth];
 
 		// Skip over any other NUL bytes (same word with different
-		// flags).  But don't go over the end
+		// flags).  But don't go over the end.
 		while (n + 1 < byts_len && byts[n + 1] == 0)
 		{
 		    ++n;
@@ -1650,7 +1650,7 @@ read_tree_node(
     idx_T	startidx,	    // current index in "byts" and "idxs"
     int		prefixtree,	    // TRUE for reading PREFIXTREE
     int		maxprefcondnr,	    // maximum for <prefcondnr>
-    int		depth)		    // recursiong level
+    int		depth)		    // recursion level
 {
     int		len;
     int		i;
@@ -5663,7 +5663,7 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 		spin->si_blocks_cnt = 0;
 
 		// Skip over any other NUL bytes (same word with different
-		// flags).  But don't go over the end
+		// flags).  But don't go over the end.
 		while (n + 1 < slang->sl_fbyts_len && byts[n + 1] == 0)
 		{
 		    ++n;
