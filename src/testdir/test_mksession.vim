@@ -1409,6 +1409,10 @@ func Test_mksession_legacy_expr_mappings()
   const base = getcwd() . '/rtdir'
   const root = base . '/pack/test/opt/dummy'
   call mkdir(root . '/plugin', 'p')
+
+  " clean up later
+  defer delete(base, 'rf')
+
   let plugin_sources =<< trim END
     nnoremap <expr> dummy-test dummy#Test() . "<CR>"
   END
@@ -1423,9 +1427,6 @@ func Test_mksession_legacy_expr_mappings()
     endfunc
   END
   call writefile(auto_sources, root . '/autoload/dummy.vim')
-
-  " clean up later
-  defer delete(base, 'rf')
 
   " Load and check the plugin
   const ref_txt = 'Hello from good old dummy plugin!'

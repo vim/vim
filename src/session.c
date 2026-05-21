@@ -1313,7 +1313,7 @@ ex_mkrc(exarg_T	*eap)
 	    if (eap->cmdidx == CMD_mksession && (*flagp & SSOP_SKIP_RTP))
 		flags |= OPT_SKIPRTP;
 #endif
-	    failed |= (put_line(fd, "var cpo_save: string = null_string") == FAIL
+	    failed |= (put_line(fd, "var cpo_save: string") == FAIL
 					 || makemap(fd, NULL) == FAIL
 					 || makeset(fd, flags, FALSE) == FAIL);
 
