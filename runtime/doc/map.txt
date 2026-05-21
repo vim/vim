@@ -1,4 +1,4 @@
-*map.txt*	For Vim version 9.2.  Last change: 2026 May 17
+*map.txt*	For Vim version 9.2.  Last change: 2026 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -208,7 +208,7 @@ be effective in the current buffer only.  Example: >
 Then you can map ",w" to something else in another buffer: >
 	:map <buffer>  ,w  /[#&!]<CR>
 The local buffer mappings are used before the global ones.  See <nowait> below
-to make a short local mapping not taking effect when a longer global one
+to make a short local mapping taking effect when a longer global one
 exists.
 The "<buffer>" argument can also be used to clear mappings: >
 	:unmap <buffer> ,w
