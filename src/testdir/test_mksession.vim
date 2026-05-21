@@ -75,9 +75,9 @@ func Test_mksession()
     \   '    four leadinG spaces',
     \   'two		consecutive tabs',
     \   'two	tabs	in one line',
-    \   'one ä multibyteCharacter',
-    \   'aä Ä  two multiByte characters',
-    \   'Aäöü  three mulTibyte characters',
+    \   'one Ã¤ multibyteCharacter',
+    \   'aÃ¤ Ã„  two multiByte characters',
+    \   'AÃ¤Ã¶Ã¼  three mulTibyte characters',
     \   'short line',
     \ ])
   let tmpfile = 'Xtemp'
@@ -1474,12 +1474,12 @@ func Test_mksession_cursor_position()
   for i in range(10)
       let file = $'Xfile{i}'
       exe $"{i ? 'split' : 'edit'} {file}"
-      call append(0, "Session file cursor position testing {i}")
+      call append(0, $"Session file cursor position testing {i}")
       " Force cursor position restoring commands
       setlocal nowrap
       normal dd29zl
       " Check expected position
-      call assert_equal([0, 1, 30, 0], getpos('.'), "Fail to set cursor position for {file}")
+      call assert_equal([0, 1, 30, 0], getpos('.'), $"Fail to set cursor position for {file}")
       write!
       let files += [file]
   endfor
@@ -1498,7 +1498,7 @@ func Test_mksession_cursor_position()
   " Check cursor position
   for file in files
       exe $"drop {file}"
-      call assert_equal([0, 1, 30, 0], getpos('.'), "Cursor position not restored correctly for {file}")
+      call assert_equal([0, 1, 30, 0], getpos('.'), $"Cursor position not restored correctly for {file}")
   endfor
 endfunc
 
