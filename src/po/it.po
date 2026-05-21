@@ -4,18 +4,19 @@
 # Vlad Sandrini <vlad.gently@gmail.com>, 2002
 # Luciano Montanaro <mikelima@cirulla.net>, 2006
 #
-# Ogni commento è benvenuto...
 # Every remark is very welcome...
+# Ogni commento è benvenuto...
 #
-# Translation done under Linux and using an Italian keyboard.
-# English words left in the text are unmodified at plural.
-# Option names are mostly left untouched.
+# Traduzione fatta in ambiebte Linux, usnado una tastiera italiana.
+# Le parole inglesi presenti nel testo sono sempre al singolare.
+# I nomi delle opzioni sono quasi sempre lasciati in inglese.
+# I nomi dei modi di Vim sono lasciati in inglese.
 #
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-02 17:32+0200\n"
-"PO-Revision-Date: 2026-04-02 20:20+0100\n"
+"POT-Creation-Date: 2026-05-21 07:38+0200\n"
+"PO-Revision-Date: 2026-05-21 08:20+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -344,7 +345,7 @@ msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
 msgstr "xchacha20v2: uso algoritmo predefinito \"%d\" per ricavare la Chiave."
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Entro modalità Debug.  Batti \"cont\" per continuare."
+msgstr "Entro modo Debug.  Batti \"cont\" per continuare."
 
 #, c-format
 msgid "Oldval = \"%s\""
@@ -634,7 +635,7 @@ msgstr ""
 "W21: Versione richiesta di python 3.x non supportata, ignoro il file: %s"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
-msgstr "Entro modalità Ex.  Batti \"visual\" per tornare a modalità Normale."
+msgstr "Entro modo Ex.  Batti \"visual\" per tornare a modo Normal."
 
 #, c-format
 msgid "Executing: %s"
@@ -959,9 +960,11 @@ msgstr "VIM - Sostituisci..."
 msgid "VIM - Search..."
 msgstr "VIM - Cerca..."
 
+#. "Find what:" label + entry
 msgid "Find what:"
 msgstr "Trovare:"
 
+#. "Replace with:" label + entry
 msgid "Replace with:"
 msgstr "Sostituire con:"
 
@@ -994,6 +997,12 @@ msgstr "Sostituisci Tutto"
 
 msgid "_Close"
 msgstr "_Chiudi"
+
+msgid "Direction:"
+msgstr "Direzione:"
+
+msgid "Close"
+msgstr "Chiudi"
 
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Ricevuta richiesta \"die\" dal Session Manager\n"
@@ -1076,7 +1085,7 @@ msgstr "Font%d: %s"
 
 #, c-format
 msgid "Font%d width is not twice that of font0"
-msgstr "La larghezza di font%d non è doppia di quella di font0"
+msgstr "La larghezza di font%d non è doppia di quella di Font0"
 
 #, c-format
 msgid "Font0 width: %d"
@@ -1648,19 +1657,19 @@ msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr "-f opp. --nofork\tForeground: Non usare 'fork' inizializzando GUI"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
-msgstr "-v\t\t\tModalità Vi (come \"vi\")"
+msgstr "-v\t\t\tModo Vi (come \"vi\")"
 
 msgid "-e\t\t\tEx mode (like \"ex\")"
-msgstr "-e\t\t\tModalità Ex (come \"ex\")"
+msgstr "-e\t\t\tModo Ex (come \"ex\")"
 
 msgid "-E\t\t\tImproved Ex mode"
-msgstr "-E\t\t\tModalità Ex migliorata"
+msgstr "-E\t\t\tModo Ex migliorata"
 
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
-msgstr "-s\t\t\tModalità Silenziosa (batch) (solo per \"ex\")"
+msgstr "-s\t\t\tModo Silenzioso (batch) (solo per \"ex\")"
 
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
-msgstr "-d\t\t\tModalità Diff (come \"vimdiff\")"
+msgstr "-d\t\t\tModo Diff (come \"vimdiff\")"
 
 msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
 msgstr "-y\t\t\tModo Facile (come \"evim\", senza modi)"
@@ -1669,7 +1678,7 @@ msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\tModo Sola-Lettura (come \"view\")"
 
 msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
-msgstr "-Z\t\t\tModalità Ristretta (come \"rvim\")"
+msgstr "-Z\t\t\tModo Restricted (come \"rvim\")"
 
 msgid "-m\t\t\tModifications (writing files) not allowed"
 msgstr "-m\t\t\tModifiche (riscritture file) non consentita"
@@ -1678,7 +1687,7 @@ msgid "-M\t\t\tModifications in text not allowed"
 msgstr "-M\t\t\tModifiche nel testo non consentite"
 
 msgid "-b\t\t\tBinary mode"
-msgstr "-b\t\t\tModalità Binaria"
+msgstr "-b\t\t\tModo Bynary"
 
 msgid "-l\t\t\tLisp mode"
 msgstr "-l\t\t\tModo Lisp"
@@ -1693,7 +1702,7 @@ msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
 msgstr "-V[N][fname]\t\tVerbosità [livello N] [log su file fname]"
 
 msgid "-D\t\t\tDebugging mode"
-msgstr "-D\t\t\tModalità Debug"
+msgstr "-D\t\t\tModo Debug"
 
 msgid "-n\t\t\tNo swap file, use memory only"
 msgstr "-n\t\t\tNiente file di swap, usa solo memoria"
@@ -1714,10 +1723,10 @@ msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <dispositivo>\t\tUsa <dispositivo> per I/O"
 
 msgid "-A\t\t\tStart in Arabic mode"
-msgstr "-A\t\t\tComincia in modalità Araba"
+msgstr "-A\t\t\tComincia in modo Arabic"
 
 msgid "-H\t\t\tStart in Hebrew mode"
-msgstr "-H\t\t\tComincia in modalità Ebraica"
+msgstr "-H\t\t\tComincia in modo Hebrew"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminale>\tImposta tipo terminale a <terminale>"
@@ -1767,7 +1776,7 @@ msgstr ""
 "-S <sessione>\tEsegui comandi in file <sessione> dopo caricamento primo file"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
-msgstr "-s <scriptin>\tLeggi comandi in modalità normale da file <scriptin>"
+msgstr "-s <scriptin>\tLeggi comandi in modo Normal da file <scriptin>"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <scriptout>\tAggiungi tutti i comandi immessi a file <scriptout>"
@@ -1987,8 +1996,8 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Forse non ci sono state modifiche oppure Vim non ha aggiornato il file di "
-" swap."
+"Forse non ci sono state modifiche oppure Vim non ha aggiornato il file di  "
+"swap."
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " impossibile da usare con questa versione di Vim.\n"
@@ -2073,6 +2082,9 @@ msgstr "???BLOCCO MANCANTE"
 
 msgid "??? from here until ???END lines may be messed up"
 msgstr "??? da qui fino a ???END le righe possono essere fuori ordine"
+
+msgid "??? block header corrupted"
+msgstr "??? intestazione di blocco non valida"
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
@@ -2209,7 +2221,7 @@ msgid ""
 "         [not usable on this computer]"
 msgstr ""
 "\n"
-"         [not utilizzabile su questo computer]"
+"         [non utilizzabile su questo computer]"
 
 msgid "         [cannot be read]"
 msgstr "          [non leggibile]"
@@ -2293,11 +2305,11 @@ msgstr "File di swap \""
 msgid "\" already exists!"
 msgstr "\" già esistente!"
 
-msgid "VIM - ATTENTION"
-msgstr "VIM - ATTENZIONE"
-
 msgid "Swap file already exists!"
 msgstr "Il file di swap esiste già!"
+
+msgid "VIM - ATTENTION"
+msgstr "VIM - ATTENZIONE"
 
 msgid ""
 "&Open Read-Only\n"
@@ -2426,6 +2438,7 @@ msgstr " (Interrotto)"
 msgid "Beep!"
 msgstr "Beep!"
 
+#, c-format
 msgid "Executing directly: \"%s\""
 msgstr "Eseguo direttamente: \"%s\""
 
@@ -2559,7 +2572,7 @@ msgid "Vim exiting with %d\n"
 msgstr "Vim esce con %d\n"
 
 msgid "cannot change console mode ?!\n"
-msgstr "non posso modificare modalità console ?!\n"
+msgstr "non posso modificare modo Console ?!\n"
 
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: non una console??\n"
@@ -3702,6 +3715,9 @@ msgstr ""
 msgid "without GUI."
 msgstr "senza GUI."
 
+msgid "with GTK4 GUI."
+msgstr "con GUI GTK4."
+
 msgid "with GTK3 GUI."
 msgstr "con GUI GTK3."
 
@@ -3811,7 +3827,7 @@ msgid "type  :help version9<Enter>   for version info"
 msgstr "batti :help version9<Invio>   per informazioni su versione"
 
 msgid "Running in Vi compatible mode"
-msgstr "Eseguo in modalità compatibile Vi"
+msgstr "Eseguo in modo compatibile Vi"
 
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr "batti :set nocp<Invio>        per valori predefiniti Vim"
@@ -3823,7 +3839,7 @@ msgid "menu  Help->Orphans           for information    "
 msgstr "menu  Aiuto->Orfani           per informazioni   "
 
 msgid "Running modeless, typed text is inserted"
-msgstr "Esecuzione senza modalità: solo inserimento"
+msgstr "Esecuzione senza modo: il testo immesso viene inserito"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr "menu Modifica->Impost.Globali->Modal.Inser. Sì/No"
@@ -5081,7 +5097,7 @@ msgstr ""
 "E327: Parte del percorso di questo elemento di Menù non è un sotto-Menù"
 
 msgid "E328: Menu only exists in another mode"
-msgstr "E328: I Menù esistono solo in un'altra modalità"
+msgstr "E328: I Menù esistono solo in un altro Modo"
 
 #, c-format
 msgid "E329: No menu \"%s\""
@@ -5106,7 +5122,7 @@ msgstr "E334: Menù non trovato: %s"
 
 #, c-format
 msgid "E335: Menu not defined for %s mode"
-msgstr "E335: Menù non definito per la modalità %s"
+msgstr "E335: Menù non definito per il modo %s"
 
 msgid "E336: Menu path must lead to a sub-menu"
 msgstr "E336: Il percorso Menù deve condurre ad un sotto-Menù"
@@ -5115,7 +5131,7 @@ msgid "E337: Menu not found - check menu names"
 msgstr "E337: Menù non trovato - controlla nomi Menù"
 
 msgid "E338: Sorry, no file browser in console mode"
-msgstr "E338: Spiacente, niente esplorazione file in modalità console"
+msgstr "E338: Spiacente, niente esplorazione file in modo Console"
 
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
@@ -5187,7 +5203,7 @@ msgid "E358: 'langmap': Extra characters after semicolon: %s"
 msgstr "E358: 'langmap': Caratteri in più dopo il ';': %s"
 
 msgid "E359: Screen mode setting not supported"
-msgstr "E359: Impostazione modalità schermo non supportata"
+msgstr "E359: Impostazione modo schermo non supportata"
 
 msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Non posso eseguire la shell con l'opzione -f"
@@ -5524,11 +5540,6 @@ msgstr "E456: Non trovo file risorse PostScript \"%s.ps\""
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Non riesco a leggere file risorse PostScript \"%s\""
-
-msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
-msgstr ""
-"E458: Non riesco ad allocare elemento di colormap, alcuni colori possono "
-"essere errati"
 
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Non posso tornare alla directory precedente"
@@ -5869,7 +5880,7 @@ msgid "E545: Missing colon"
 msgstr "E545: Manca ':'"
 
 msgid "E546: Illegal mode"
-msgstr "E546: Modalità non consentita"
+msgstr "E546: Modo non consentito"
 
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Forma del mouse non consentita"
@@ -6191,6 +6202,9 @@ msgstr "E647: Identificativo buffer non valido in setDot"
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Identificativo buffer non valido in close"
+
+msgid "E649: Invalid identifier name in defineAnnoType"
+msgstr "E649: Nome identificativo non valido in defineAnnoType"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Identificativo buffer non valido in defineAnnoType"
@@ -6654,7 +6668,7 @@ msgid "E784: Cannot close last tab page"
 msgstr "E784: Non posso chiudere l'ultima pagina di schede"
 
 msgid "E785: complete() can only be used in Insert mode"
-msgstr "E785: complete() può essere usata solo in modalità inserimento"
+msgstr "E785: complete() può essere usata solo in modo Insert"
 
 msgid "E786: Range not allowed"
 msgstr "E786: Intervallo non consentito"
@@ -7121,8 +7135,10 @@ msgstr "E910: Uso di un Job come un Numero"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Uso di un Job come un Numero-a-virgola-mobile"
 
-msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
-msgstr "E912: Impossibile usare ch_evalexpr() con un canale grezzo o nl"
+msgid ""
+"E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw, nl or blob channel"
+msgstr "E912: Impossibile usare ch_evalexpr()/ch_sendexpr con un canale "
+"grezzo o nl o blob"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Uso di un Canale come un Numero"
@@ -9208,11 +9224,11 @@ msgstr "E1545: Stack delle Liste quickfix non disponibile"
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr "E1546: Non posso passare a un buffer che si sta chiudendo"
 
-msgid "E1547: This version of Vim does support :redrawtabpanel"
-msgstr "E1547: Questa versione di Vim supporta :redrawtabpanel"
+msgid "E1547: This version of Vim does not support :redrawtabpanel"
+msgstr "E1547: Questa versione di Vim non supporta :redrawtabpanel"
 
 msgid "E1548: Wayland connection is unavailable"
-msgstr "E1548: Connession a Wayland non disponibile"
+msgstr "E1548: Connessione a Wayland non disponibile"
 
 #, c-format
 msgid "E1549: Cannot have more than %d diff anchors"
@@ -9320,6 +9336,13 @@ msgstr ""
 
 msgid "E1575: Cannot create pipes"
 msgstr "E1575: Non posso create delle pipe"
+
+msgid "E1576: Tag file entry must not be a URL"
+msgstr "E1576: Il puntatore nel file di tag non dev'essere un URL"
+
+#, c-format
+msgid "E1577: Invalid format string, only one \"%s\" is allowed"
+msgstr "E1577: Stringa di formato non valida, solo un \"%s\" è consentito"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -9863,6 +9886,9 @@ msgstr ""
 "i nomi di file in un file di tag sono espressi a partire dalla\n"
 "posizione del file di tag"
 
+msgid "a :tag command cannot access remote files"
+msgstr "un comando :tag non può accedere a file remoti"
+
 msgid "a :tag command will use the tagstack"
 msgstr "un comando :tag userà la pila dei tag (tagstack)"
 
@@ -9910,6 +9936,9 @@ msgid "number of screen lines to show around the cursor"
 msgstr ""
 "numero di righe dello schermo da mostrare attorno alla riga che contiene\n"
 "il cursore"
+
+msgid "vertically center cursor even at end of file"
+msgstr "centrare il cursore verticalmente anche a fine file"
 
 msgid "long lines wrap"
 msgstr "mandare a capo righe lunghe"
@@ -10516,11 +10545,6 @@ msgstr ""
 msgid "Wayland seat to use"
 msgstr "Seggio Wayland da usare"
 
-msgid ""
-"Enable wayland focus stealing functionality in order to access the clipboard"
-msgstr ""
-"Abilita funzionalità cattura focus in Wayland per accedere agli appunti"
-
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" e/o \"stopsel\"; cosa fare usando tasti speciali"
 
@@ -10639,6 +10663,9 @@ msgstr "larghezza massima del menù dinamico"
 
 msgid "popup border style"
 msgstr "stile bordo menù dinamico"
+
+msgid "additional options for the popup menu"
+msgstr "impostazioni opzionali per il menù dinamico (popup)"
 
 msgid "user defined function for Insert mode completion"
 msgstr "funzione definita dall'utente per il completamento in modo Insert"
@@ -10876,6 +10903,11 @@ msgid "allow setting expression options from a modeline"
 msgstr ""
 "consentire impostazione di opzioni tramite espressioni\n"
 "da modeline"
+
+msgid "only allow safe options to be set from a modeline"
+msgstr ""
+"consentire solo impostazione di opzioni non pericolose tramite "
+"modeline"
 
 msgid "number of lines to check for modelines"
 msgstr "numero di righe da controllare per modeline"
