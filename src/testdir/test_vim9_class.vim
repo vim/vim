@@ -5143,7 +5143,7 @@ def Test_dup_member_variable()
       var _val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val', 4)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: val and _val', 4)
 
   # Duplicate public and protected member variable
   lines =<< trim END
@@ -5153,7 +5153,7 @@ def Test_dup_member_variable()
       public var val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 4)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: val and _val', 4)
 
   # Duplicate class member variable
   lines =<< trim END
@@ -5163,7 +5163,7 @@ def Test_dup_member_variable()
       static var _s: string = "def"
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _s', 4)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: s and _s', 4)
 
   # Duplicate public and protected class member variable
   lines =<< trim END
@@ -5173,7 +5173,7 @@ def Test_dup_member_variable()
       static var _s: string = "def"
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _s', 4)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: s and _s', 4)
 
   # Duplicate class and object member variable
   lines =<< trim END
@@ -5230,7 +5230,7 @@ def Test_dup_member_variable()
       var _val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val', 9)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: val and _val', 9)
 
   # Duplicate object member variable in a derived class
   lines =<< trim END
@@ -5244,7 +5244,7 @@ def Test_dup_member_variable()
       var val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 9)
+  v9.CheckSourceFailure(lines, 'E1406: Public and protected member have the same name: val and _val', 9)
 
   # Two member variables with a common prefix
   lines =<< trim END

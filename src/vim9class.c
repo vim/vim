@@ -461,13 +461,14 @@ extends_check_dup_members(
     {
 	class_T	    *p_cl = extends_cl;
 	ocmember_T  *c_m = members + c_i;
-	char_u	    *pstr = (*c_m->ocm_name.string == '_')
-				    ? c_m->ocm_name.string + 1 : c_m->ocm_name.string;
+	bool	    c_protected = (*c_m->ocm_name.string == '_');
+	char_u	    *pstr = c_m->ocm_name.string + c_protected;
 
 	// Check in all the parent classes in the lineage
 	while (p_cl != NULL)
 	{
 	    int p_member_count = p_cl->class_obj_member_count;
+
 	    if (p_member_count == 0)
 	    {
 		p_cl = p_cl->class_extends;
@@ -478,12 +479,17 @@ extends_check_dup_members(
 	    // Compare against all the members in the parent class
 	    for (int p_i = 0; p_i < p_member_count; p_i++)
 	    {
-		ocmember_T	*p_m = p_members + p_i;
-		char_u	*qstr = (*p_m->ocm_name.string == '_')
-		    ? p_m->ocm_name.string + 1 : p_m->ocm_name.string;
+		ocmember_T  *p_m = p_members + p_i;
+		bool	    p_protected = (*p_m->ocm_name.string == '_');
+		char_u	    *qstr = p_m->ocm_name.string + p_protected;
 		if (STRCMP(pstr, qstr) == 0)
 		{
-		    semsg(_(e_duplicate_variable_str), c_m->ocm_name.string);
+		    if (c_protected != p_protected)
+			semsg(_(e_public_and_protected_member_have_same_name_str_str),
+				pstr, pstr);
+		    else
+			semsg(_(e_duplicate_variable_str),
+				c_m->ocm_name.string);
 		    return FALSE;
 		}
 	    }
@@ -1040,18 +1046,18 @@ is_duplicate_variable(
     char_u	*varname,
     char_u	*varname_end)
 {
-    string_T	pstr = {varname, (size_t)(varname_end - varname)};  // Note: the .string field may
-								    // point to a string longer
-								    // than the .length field.
-								    // So we need to use STRNCMP()
-								    // to compare it.
+    // Note: the .string field may point to a string longer than the .length
+    // field.  So we need to use STRNCMP() to compare it.
+    string_T	pstr = {varname, (size_t)(varname_end - varname)};
     int		dup = FALSE;
+    bool	p_protected = false;
 
     // Step over a leading '_'.
     if (*pstr.string == '_')
     {
 	pstr.string++;
 	pstr.length--;
+	p_protected = true;
     }
 
     // loop == 1: class variables, loop == 2: object variables
@@ -1062,12 +1068,14 @@ is_duplicate_variable(
 	{
 	    ocmember_T *m = ((ocmember_T *)vgap->ga_data) + i;
 	    string_T	qstr = {m->ocm_name.string, m->ocm_name.length};
+	    bool	q_protected = false;
 
 	    // Step over a leading '_'.
 	    if (*qstr.string == '_')
 	    {
 		qstr.string++;
 		qstr.length--;
+		q_protected = true;
 	    }
 
 	    if (pstr.length == qstr.length
@@ -1076,7 +1084,11 @@ is_duplicate_variable(
 		char_u	save_c = *varname_end;
 
 		*varname_end = NUL;
-		semsg(_(e_duplicate_variable_str), varname);
+		if (p_protected != q_protected)
+		    semsg(_(e_public_and_protected_member_have_same_name_str_str),
+					       pstr.string, pstr.string);
+		else
+		    semsg(_(e_duplicate_variable_str), varname);
 		*varname_end = save_c;
 		dup = TRUE;
 		break;
