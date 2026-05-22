@@ -1,4 +1,4 @@
-*visual.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*visual.txt*	For Vim version 9.2.  Last change: 2026 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -156,6 +156,9 @@ gN			Like |gn| but searches backward, like with `N`.
 <LeftReleaseNM>		line to focus a window.  NM stands for non-mappable.
 			You cannot use these, but they might show up in some
 			places.
+
+<A-LeftMouse>		Starts or extends the Visual area blockwise, see
+			|<A-LeftMouse>|.
 
 If Visual mode is not active and the "v", "V" or CTRL-V is preceded with a
 count, the size of the previously highlighted area is used for a start.  You
