@@ -9296,8 +9296,11 @@ CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
 fi
 
+if test "x$enable_gui" = "xgtk4"; then
+  with_x=no
+fi
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != "xgtk4" && with_x=yes
 if test "$with_x" = no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: defaulting to: don't HAVE_X11" >&5
 printf "%s\n" "defaulting to: don't HAVE_X11" >&6; }
@@ -10465,7 +10468,7 @@ printf "%s\n" "#define SIZEOF_WCHAR_T $ac_cv_sizeof_wchar_t" >>confdefs.h
   fi
 fi
 
-if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
+if test "x$with_x" = xno -a "x$with_x_arg" = xyes -a "x$enable_gui" != "xgtk4"; then
     as_fn_error $? "could not configure X" "$LINENO" 5
 fi
 
@@ -11921,7 +11924,7 @@ printf "%s\n" "$NARROW_PROTO" >&6; }
 
 fi
 
-if test "$enable_xsmp" = "yes"; then
+if test "$enable_xsmp" = "yes" -a "x$with_x" != "xno"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   ac_fn_c_check_header_compile "$LINENO" "X11/SM/SMlib.h" "ac_cv_header_X11_SM_SMlib_h" "$ac_includes_default"
