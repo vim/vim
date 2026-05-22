@@ -1139,7 +1139,7 @@ EXTERN char e_cant_read_postscript_resource_file_str[]
 	INIT(= N_("E457: Can't read PostScript resource file \"%s\""));
 #endif
 // E458 unused
-#if defined(UNIX) || defined(FEAT_SESSION)
+#if defined(UNIX) || defined(FEAT_SESSION) || defined(FEAT_SOCKETSERVER)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));
 #endif
@@ -3777,16 +3777,14 @@ EXTERN char e_diff_anchors_with_hidden_windows[]
 	INIT(= N_("E1562: Diff anchors cannot be used with hidden diff windows"));
 #endif
 #ifdef FEAT_SOCKETSERVER
-EXTERN char e_socket_path_too_big[]
-	INIT(= N_("E1563: Socket path is too big"));
 EXTERN char e_socket_name_no_slashes[]
-	INIT(= N_("E1564: Socket name cannot have slashes in it without being a path"));
+	INIT(= N_("E1564: Socket name '%s' cannot have slashes in it without being a path"));
 EXTERN char e_socket_server_not_online[]
 	INIT(= N_("E1565: Socket server is not online, call remote_startserver() first"));
 EXTERN char e_socket_server_failed_connecting[]
-	INIT(= N_("E1566: Failed connecting to socket %s: %s"));
-EXTERN char e_socket_server_unavailable[]
-	INIT(= N_("E1567: Cannot start socket server, socket path is unavailable"));
+	INIT(= N_("E1566: Failed connecting to socket '%s'"));
+EXTERN char e_socket_server_version_mismatch[]
+	INIT(= N_("E1567: Socket server protocol version mismatch, check what Vim version you are using"));
 #endif
 EXTERN char e_osc_response_timed_out[]
 	INIT(= N_("E1568: OSC command response timed out: %.*s"));

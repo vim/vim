@@ -348,17 +348,6 @@ func CheckGithubActions()
   endif
 endfunc
 
-command RunSocketServer call RunSocketServer()
-func RunSocketServer()
-  if has("socketserver") && v:servername == ""
-    try
-      call remote_startserver('VIMSOCKETSERVERTEST')
-    catch " not possible to start a remote server
-      throw 'Skipped: Cannot start remote server'
-    endtry
-  endif
-endfunc
-
 let &cpo = s:cpo_save
 unlet s:cpo_save
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 19
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52665,6 +52665,7 @@ Changed ~
   if needed, see |wayland-primary-selection| for an example.
 - On Unix, filename completion for single-file Ex commands now treats embedded
   whitespace as part of the filename, like on other platforms.
+- Rewrite the clientserver socketserver backend to use channels and JSON.
 
 
 							*added-9.3*

@@ -208,6 +208,9 @@ garbage_collect(int testing)
 #ifdef FEAT_NETBEANS_INTG
     abort = abort || set_ref_in_nb_channel(copyID);
 #endif
+#ifdef FEAT_SOCKETSERVER
+    abort = abort || set_ref_in_socketserver_channel(copyID);
+#endif
 
 #ifdef FEAT_TIMERS
     abort = abort || set_ref_in_timer(copyID);
