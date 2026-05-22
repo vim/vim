@@ -2489,8 +2489,15 @@ CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
 fi
 
+dnl GTK4 does not use X11 APIs directly, so skip X11 detection entirely.
+dnl This avoids pulling libICE/libSM/libX11/libXt into build dependencies
+dnl for GTK4-only builds, even when --with-x=yes is passed (e.g. by a
+dnl distro's default packaging script).
+if test "x$enable_gui" = "xgtk4"; then
+  with_x=no
+fi
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != "xgtk4" && with_x=yes
 if test "$with_x" = no; then
   AC_MSG_RESULT(defaulting to: don't HAVE_X11)
 else
@@ -2605,7 +2612,8 @@ else
 fi
 
 dnl Check if --with-x was given but it doesn't work.
-if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
+dnl GTK4 always forces with_x=no above, so don't treat that as a failure.
+if test "x$with_x" = xno -a "x$with_x_arg" = xyes -a "x$enable_gui" != "xgtk4"; then
     AC_MSG_ERROR([could not configure X])
 fi
 
@@ -3275,8 +3283,9 @@ EOF
 fi
 
 dnl Look for XSMP support - but don't necessarily restrict it to X11 GUIs
-dnl use the X11 include path
-if test "$enable_xsmp" = "yes"; then
+dnl use the X11 include path.  Skip when X11 is not in use; USE_XSMP itself
+dnl requires HAVE_X11, so the header check would be wasted otherwise.
+if test "$enable_xsmp" = "yes" -a "x$with_x" != "xno"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   AC_CHECK_HEADERS(X11/SM/SMlib.h)
