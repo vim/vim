@@ -70,8 +70,6 @@ void gui_mch_destroy_sign(void *sign);
 int gui_gtk_draw_string_ext(int row, int col, char_u *s, int len, int flags, int force_pango);
 int gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags);
 int gui_get_x11_windis(Window *win, Display **dis);
-void gui_gtk_init_socket_server(void);
-void gui_gtk_uninit_socket_server(void);
 void gui_gtk_set_mnemonics(int enable);
 void gui_make_popup(char_u *path_name, int mouse_pos);
 int get_menu_tool_width(void);
