@@ -112,13 +112,6 @@ vim_parse_geometry(const char *str, int *x, int *y,
     return mask;
 }
 
-#ifdef FEAT_SOCKETSERVER
-# include <glib-unix.h>
-
-// Used to track the source for the listening socket
-static guint socket_server_source_id = 0;
-#endif
-
 #if defined(FEAT_MOUSESHAPE)
 // Last set mouse pointer shape
 static int last_shape = 0;
@@ -2989,59 +2982,6 @@ gui_get_x11_windis(Window *win UNUSED, Display **dis UNUSED)
 {
     // GTK4: not applicable
     return FAIL;
-}
-
-#if defined(FEAT_SOCKETSERVER)
-
-/*
- * Callback for new events from the socket server listening socket.
- */
-    static int
-socket_server_poll_in(int fd UNUSED, GIOCondition cond,
-		      void *user_data UNUSED)
-{
-    if (cond & G_IO_IN)
-	socket_server_accept_client();
-    else if (cond & (G_IO_ERR | G_IO_HUP))
-    {
-	socket_server_uninit();
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-#endif // FEAT_SOCKETSERVER
-
-/*
- * Initialize socket server for use in the GUI (does not actually initialize
- * the socket server, only attaches a source).
- */
-    void
-gui_gtk_init_socket_server(void)
-{
-#if defined(FEAT_SOCKETSERVER)
-    if (socket_server_source_id > 0)
-	return;
-    // Register source for file descriptor to global default context
-    socket_server_source_id = g_unix_fd_add(socket_server_get_fd(),
-	    G_IO_IN | G_IO_ERR | G_IO_HUP, socket_server_poll_in, NULL);
-#endif
-}
-
-/*
- * Remove the source for the socket server listening socket.
- */
-    void
-gui_gtk_uninit_socket_server(void)
-{
-#if defined(FEAT_SOCKETSERVER)
-    if (socket_server_source_id > 0)
-    {
-	g_source_remove(socket_server_source_id);
-	socket_server_source_id = 0;
-    }
-#endif
 }
 
     void
