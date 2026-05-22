@@ -546,7 +546,6 @@ im_preedit_window_open(void)
 	// or selector matching.  These attributes are merged with whatever
 	// the IM gave us (e.g. underline for composing range).
 	PangoAttribute *pa;
-	int popup_w = 0;
 
 	if (attr_list == NULL)
 	    attr_list = pango_attr_list_new();
@@ -582,36 +581,13 @@ im_preedit_window_open(void)
 	pango_layout_get_pixel_size(layout, &w, &h);
 	h = MAX(h, gui.char_height);
 #  ifdef USE_GTK4
-	// Force the popover to recompute its size based on the new label
-	// content before we measure it.  Without this, GtkPopover may
-	// return a stale natural width from the previous preedit step.
-	gtk_widget_queue_resize(preedit_window);
-
-	// Pop up first so the widget tree gets allocated; measurement on
-	// an un-mapped popover returns 0 or a stale value.
-	gtk_popover_popup(GTK_POPOVER(preedit_window));
-
-	// Measure the popover's actual natural width including whatever
-	// theme padding the frame imposes.  Using this width as the anchor
-	// rect width makes GtkPopover's center-on-anchor positioning land
-	// the popover's left edge exactly on the anchor x:
-	//   popup_left = anchor.x + anchor.w/2 - popup_w/2
-	//              = anchor.x + popup_w/2 - popup_w/2
-	//              = anchor.x      (when anchor.w == popup_w)
-	gtk_widget_measure(preedit_window, GTK_ORIENTATION_HORIZONTAL, -1,
-				    NULL, &popup_w, NULL, NULL);
-	if (popup_w <= 0)
-	    popup_w = w;	// fallback if measure failed
-	preedit_label_width = popup_w;
-
-	{
-	    int popup_h = 0;
-	    gtk_widget_measure(preedit_window, GTK_ORIENTATION_VERTICAL, -1,
-					NULL, &popup_h, NULL, NULL);
-	    if (popup_h <= 0)
-		popup_h = h;	// fallback to label height
-	    preedit_popover_height = popup_h;
-	}
+	// Cache label/popover size derived from the Pango layout, which is
+	// available without mapping the popover.  Using these for positioning
+	// avoids calling gtk_popover_set_pointing_to() after popup, which
+	// triggers a GDK "compositor doesn't support moving popups" warning
+	// on compositors without xdg_popup.reposition (e.g. Weston).
+	preedit_label_width = w;
+	preedit_popover_height = h;
 
 	// Report an enlarged cursor rectangle that covers both the cursor
 	// cell and the preedit popover.  This way the IM (e.g. fcitx5)
@@ -628,7 +604,18 @@ im_preedit_window_open(void)
 	    gtk_im_context_set_cursor_location(xic, &area);
 	}
 
+	// Pop down before re-anchoring: on compositors that lack
+	// xdg_popup.reposition (e.g. Weston), calling set_pointing_to() on
+	// a mapped popover triggers GDK's remap fallback and a warning.
+	// Doing the popdown ourselves makes the next popup land at the new
+	// anchor cleanly without that warning.
+	if (gtk_widget_get_mapped(preedit_window))
+	    gtk_popover_popdown(GTK_POPOVER(preedit_window));
+
 	im_preedit_window_set_position();
+
+	gtk_widget_queue_resize(preedit_window);
+	gtk_popover_popup(GTK_POPOVER(preedit_window));
 #  else
 	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show_all(preedit_window);
