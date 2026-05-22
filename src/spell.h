@@ -119,6 +119,7 @@ struct slang_S
     // Info from the .sug file.  Loaded on demand.
     time_t	sl_sugtime;	// timestamp for .sug file
     char_u	*sl_sbyts;	// soundfolded word bytes
+    long	sl_sbyts_len;	// length of sl_sbyts
     idx_T	*sl_sidxs;	// soundfolded word indexes
     buf_T	*sl_sugbuf;	// buffer with word number table
     int		sl_sugloaded;	// TRUE when .sug file was loaded or failed to

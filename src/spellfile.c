@@ -313,7 +313,7 @@ static int set_sofo(slang_T *lp, char_u *from, char_u *to);
 static void set_sal_first(slang_T *lp);
 static int *mb_str2wide(char_u *s);
 static int spell_read_tree(FILE *fd, char_u **bytsp, long *bytsp_len, idx_T **idxsp, int prefixtree, int prefixcnt);
-static idx_T read_tree_node(FILE *fd, char_u *byts, idx_T *idxs, int maxidx, idx_T startidx, int prefixtree, int maxprefcondnr);
+static idx_T read_tree_node(FILE *fd, char_u *byts, idx_T *idxs, int maxidx, idx_T startidx, int prefixtree, int maxprefcondnr, int depth);
 static void set_spell_charflags(char_u *flags, int cnt, char_u *upp);
 static int set_spell_chartab(char_u *fol, char_u *low, char_u *upp);
 static void set_map_str(slang_T *lp, char_u *map);
@@ -597,7 +597,7 @@ endOK:
  * Returns the total number of words.
  */
     static void
-tree_count_words(char_u *byts, idx_T *idxs)
+tree_count_words(char_u *byts, long byts_len, idx_T *idxs)
 {
     int		depth;
     idx_T	arridx[MAXWLEN];
@@ -635,8 +635,8 @@ tree_count_words(char_u *byts, idx_T *idxs)
 		++wordcount[depth];
 
 		// Skip over any other NUL bytes (same word with different
-		// flags).
-		while (byts[n + 1] == 0)
+		// flags).  But don't go over the end
+		while (n + 1 < byts_len && byts[n + 1] == 0)
 		{
 		    ++n;
 		    ++curi[depth];
@@ -732,8 +732,8 @@ suggest_load_files(void)
 	     * <SUGWORDTREE>: <wordtree>
 	     * Read the trie with the soundfolded words.
 	     */
-	    if (spell_read_tree(fd, &slang->sl_sbyts, NULL, &slang->sl_sidxs,
-							       FALSE, 0) != 0)
+	    if (spell_read_tree(fd, &slang->sl_sbyts, &slang->sl_sbyts_len,
+			&slang->sl_sidxs, FALSE, 0) != 0)
 	    {
 someerror:
 		semsg(_(e_error_while_reading_sug_file_str),
@@ -782,8 +782,10 @@ someerror:
 	     * Need to put word counts in the word tries, so that we can find
 	     * a word by its number.
 	     */
-	    tree_count_words(slang->sl_fbyts, slang->sl_fidxs);
-	    tree_count_words(slang->sl_sbyts, slang->sl_sidxs);
+	    tree_count_words(slang->sl_fbyts, slang->sl_fbyts_len,
+		    slang->sl_fidxs);
+	    tree_count_words(slang->sl_sbyts, slang->sl_sbyts_len,
+		    slang->sl_sidxs);
 
 nextone:
 	    if (fd != NULL)
@@ -1603,8 +1605,11 @@ spell_read_tree(
     if (len <= 0)
 	return 0;
 
-    // Allocate the byte array.
-    bp = alloc(len);
+    // Allocate the byte array.  Zero-initialize so that any position the
+    // tree does not visit reads as 0; a stray BY_INDEX shared reference
+    // into such a slot then behaves as end-of-word in spellsuggest()
+    // instead of consuming an arbitrary heap byte as a siblingcount.
+    bp = alloc_clear(len);
     if (bp == NULL)
 	return SP_OTHERERROR;
     *bytsp = bp;
@@ -1618,9 +1623,11 @@ spell_read_tree(
     *idxsp = ip;
 
     // Recursively read the tree and store it in the array.
-    idx = read_tree_node(fd, bp, ip, len, 0, prefixtree, prefixcnt);
+    idx = read_tree_node(fd, bp, ip, len, 0, prefixtree, prefixcnt, 0);
     if (idx < 0)
 	return idx;
+    if (idx != len)
+	return SP_FORMERROR;
     return 0;
 }
 
@@ -1642,7 +1649,8 @@ read_tree_node(
     int		maxidx,		    // size of arrays
     idx_T	startidx,	    // current index in "byts" and "idxs"
     int		prefixtree,	    // TRUE for reading PREFIXTREE
-    int		maxprefcondnr)	    // maximum for <prefcondnr>
+    int		maxprefcondnr,	    // maximum for <prefcondnr>
+    int		depth)		    // recursiong level
 {
     int		len;
     int		i;
@@ -1651,6 +1659,12 @@ read_tree_node(
     int		c;
     int		c2;
 #define SHARED_MASK	0x8000000
+
+    // Bail out on a crafted .spl whose tree recurses beyond the maximum
+    // word length: each tree level corresponds to one byte of a word, so
+    // any well-formed file has depth <= MAXWLEN.
+    if (depth > MAXWLEN)
+	return SP_FORMERROR;
 
     len = getc(fd);					// <siblingcount>
     if (len <= 0)
@@ -1737,7 +1751,7 @@ read_tree_node(
 	    {
 		idxs[startidx + i] = idx;
 		idx = read_tree_node(fd, byts, idxs, maxidx, idx,
-						     prefixtree, maxprefcondnr);
+					prefixtree, maxprefcondnr, depth + 1);
 		if (idx < 0)
 		    break;
 	    }
@@ -5649,7 +5663,7 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 		spin->si_blocks_cnt = 0;
 
 		// Skip over any other NUL bytes (same word with different
-		// flags).  But don't go over the end.
+		// flags).  But don't go over the end
 		while (n + 1 < slang->sl_fbyts_len && byts[n + 1] == 0)
 		{
 		    ++n;
