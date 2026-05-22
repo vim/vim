@@ -2613,34 +2613,45 @@ stop_insert(
 	{
 	    pos_T	tpos = curwin->w_cursor;
 	    colnr_T	prev_col = end_insert_pos->col;
+	    colnr_T	strip_col;
 
 	    curwin->w_cursor = *end_insert_pos;
 	    check_cursor_col();  // make sure it is not past the line
-	    for (;;)
-	    {
-		if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
-		    --curwin->w_cursor.col;
-		cc = gchar_cursor();
-		if (!VIM_ISWHITE(cc))
-		    break;
-		if (del_char(TRUE) == FAIL)
-		    break;  // should not happen
-	    }
-	    if (curwin->w_cursor.lnum != tpos.lnum)
-		curwin->w_cursor = tpos;
-	    else if (curwin->w_cursor.col < prev_col)
-	    {
-		// reset tpos, could have been invalidated in the loop above
-		tpos = curwin->w_cursor;
-		tpos.col++;
-		if (cc != NUL && gchar_pos(&tpos) == NUL)
-		    ++curwin->w_cursor.col;	// put cursor back on the NUL
-	    }
 
-	    // <C-S-Right> may have started Visual mode, adjust the position for
-	    // deleted characters.
-	    if (VIsual_active)
-		check_visual_pos();
+	    // Where the loop would actually start (back up if on NUL).
+	    strip_col = curwin->w_cursor.col;
+	    if (gchar_cursor() == NUL && strip_col > 0)
+		--strip_col;
+
+	    // Don't strip if non-whitespace follows: setline() from a <Cmd>
+	    // mapping or CursorHoldI autocmd may have inserted content.
+	    if (*skipwhite(ml_get_curline() + strip_col) == NUL)
+	    {
+		curwin->w_cursor.col = strip_col;
+		for (;;)
+		{
+		    cc = gchar_cursor();
+		    if (!VIM_ISWHITE(cc))
+			break;
+		    if (del_char(TRUE) == FAIL)
+			break;  // should not happen
+		}
+		if (curwin->w_cursor.lnum != tpos.lnum)
+		    curwin->w_cursor = tpos;
+		else if (curwin->w_cursor.col < prev_col)
+		{
+		    // reset tpos, could have been invalidated in the loop above
+		    tpos = curwin->w_cursor;
+		    tpos.col++;
+		    if (cc != NUL && gchar_pos(&tpos) == NUL)
+			++curwin->w_cursor.col;	// put cursor back on the NUL
+		}
+
+		// <C-S-Right> may have started Visual mode, adjust the position for
+		// deleted characters.
+		if (VIsual_active)
+		    check_visual_pos();
+	    }
 	}
     }
     did_ai = FALSE;
