@@ -1,7 +1,7 @@
 vim9script
 # Vim autoload file for the tohtml plugin.
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026-05-16
+# Last Change: 2026-05-22
 #
 # Additional contributors:
 #
@@ -298,8 +298,9 @@ export def Convert2HTML(line1: number, line2: number) #{{{
     endif
     runtime syntax/2html.vim #}}}
   else #{{{
-    var win_list = range(1, winnr('$'))->mapnew((_, w) => winbufnr(w))
-      ->filter((_, b) => b->getbufvar('&diff'))
+    var win_list = range(1, winnr('$'))
+      ->filter((_, w) => getwinvar(w, '&diff'))
+      ->mapnew((_, w) => winbufnr(w))
     var buf_list: list<number>
     settings.whole_filler = 1
     g:html_diff_win_num = 0
@@ -512,7 +513,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
 
     # Close this buffer
     # TODO: the comment above says we're going to allow saving the file
-    # later .. .but here we discard it?
+    # later...but here we discard it?
     quit!
   endfor
 
@@ -679,7 +680,7 @@ export def Diff2HTML(win_list: list<number>, buf_list: list<number>) #{{{
       # is pretty useless for really long lines. {{{
       if settings.use_css
 	append(style_start,
-	  ['<style' .. (html5 ? '' : 'type="text/css"') .. '>'] +
+	  ['<style' .. (html5 ? '' : ' type="text/css"') .. '>'] +
 	  style +
 	  [ settings.use_xhtml ? '' : '<!--',
 	    'table { table-layout: fixed; }',

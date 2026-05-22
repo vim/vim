@@ -1,7 +1,7 @@
 vim9script
 # Vim syntax support file
 # Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-# Last Change: 2026-05-17
+# Last Change: 2026-05-22
 #
 # Additional contributors:
 #
@@ -315,14 +315,15 @@ if settings.use_css
 
   # get primary style info from cache or build it on the fly if not found
   trim_tmp =<< trim ENDLET
-	saved_style = get(stylelist, style_id, () => {
-	  var res = CSS1(style_id)
-	  if !empty(res)
-	    res = "." .. style_name .. " { " .. res .. "}"
-	  endif
-	  stylelist[style_id] = res
-	  return res
-	}())
+    if has_key(stylelist, style_id)
+	saved_style = stylelist[style_id]
+    else
+	saved_style = CSS1(style_id)
+	if !empty(saved_style)
+	    saved_style = "." .. style_name .. " { " .. saved_style .. "}"
+	endif
+	stylelist[style_id] = saved_style
+    endif
   ENDLET
   wrapperfunc_lines += trim_tmp
   if &diff
@@ -459,7 +460,7 @@ else
     def BuildStyleWrapper(style_id: number, diff_style_id: number, extra_attrs: string, text: string, unusedarg: bool, unusedarg2: string): string
       var diff_opening: string
       var diff_closing: string
-      if diff_style_id <= 0
+      if diff_style_id > 0
 	diff_opening = HtmlOpening(diff_style_id, "")
 	diff_closing = HtmlClosing(diff_style_id, false)
       endif
