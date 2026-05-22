@@ -63,7 +63,7 @@ static channel_T    *client_channels = NULL;
 
 static void socketserver_cleanup(void);
 static char_u *socketserver_create_path(char_u *name, bool quiet);
-static char_u *socketserver_get_path(char_u *name, bool new, bool quiet, bool *fatal);
+static char_u *socketserver_get_path(char_u *name, bool new, bool quiet, bool ignore, bool *fatal);
 static void socketserver_accept(channel_T *channel);
 static void socketserver_close(channel_T *channel);
 static ss_reply_T *socketserver_add_reply(char_u *sender);
@@ -339,10 +339,10 @@ socketserver_create_path(char_u *name, bool quiet)
 	if (buf != NULL)
 	{
 	    vim_snprintf((char *)buf, buflen, "%s%d", name, i);
-	    path = socketserver_get_path(buf, true, quiet, &fatal);
+	    path = socketserver_get_path(buf, true, quiet, true, &fatal);
 	}
 	else
-	    path = socketserver_get_path(name, true, quiet, &fatal);
+	    path = socketserver_get_path(name, true, quiet, true, &fatal);
 
 	if (fatal)
 	    break;
@@ -378,12 +378,20 @@ socketserver_create_path(char_u *name, bool quiet)
  * If "new" is true, then return a path if the name does not exist in the known
  * location.
  *
+ * If "ignore" is true, then don't emit an error message if a suitable path
+ * could not be found.
+ *
  * If "fatal" is not NULL, then it is set to true if error is fatal.
  *
  * Returns path on success and NULL on failure.
  */
     static char_u *
-socketserver_get_path(char_u *name, bool new UNUSED, bool quiet, bool *fatal)
+socketserver_get_path(
+	char_u *name,
+	bool new UNUSED,
+	bool quiet,
+	bool ignore UNUSED,
+	bool *fatal)
 {
 # ifdef MSWIN
     // Only support channel addresses on Windows
@@ -507,7 +515,7 @@ socketserver_get_path(char_u *name, bool new UNUSED, bool quiet, bool *fatal)
     {
 	if (!res)
 	    semsg(_("Failed creating socket directory: %s"), strerror(errno));
-	else
+	else if (!ignore)
 	    semsg(_(e_invalid_server_id_used_str), name);
     }
     if (!res && fatal != NULL)
@@ -1011,7 +1019,7 @@ socketserver_get_channel(char_u *name, bool quiet, bool *wait)
     }
     else
     {
-	address = socketserver_get_path(name, false, quiet, NULL);
+	address = socketserver_get_path(name, false, quiet, false, NULL);
 	if (address == NULL)
 	    return NULL;
 	is_unix = true;
@@ -1324,7 +1332,7 @@ socketserver_read_reply(
 	return FAIL;
     }
 
-    actual = socketserver_get_path(client, false, false, NULL);
+    actual = socketserver_get_path(client, false, false, false, NULL);
     if (actual == NULL)
 	return FAIL;
 
@@ -1385,7 +1393,7 @@ socketserver_peek_reply(char_u *sender, char_u **str)
 	return FAIL;
     }
 
-    actual = socketserver_get_path(sender, false, false, NULL);
+    actual = socketserver_get_path(sender, false, false, false, NULL);
     if (actual == NULL)
 	return FAIL;
 
