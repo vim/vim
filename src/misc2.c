@@ -24,15 +24,16 @@ virtual_active(void)
 {
     unsigned int cur_ve_flags = get_ve_flags();
 
+    if (cur_ve_flags == VE_ALL
+	    || ((cur_ve_flags & VE_INSERT) && (State & MODE_INSERT)))
+	return TRUE;
+
     // While an operator is being executed we return "virtual_op", because
     // VIsual_active has already been reset, thus we can't check for "block"
     // being used.
     if (virtual_op != MAYBE)
 	return virtual_op;
-    return (cur_ve_flags == VE_ALL
-	    || ((cur_ve_flags & VE_BLOCK) && VIsual_active
-						      && VIsual_mode == Ctrl_V)
-	    || ((cur_ve_flags & VE_INSERT) && (State & MODE_INSERT)));
+    return (cur_ve_flags & VE_BLOCK) && VIsual_active && VIsual_mode == Ctrl_V;
 }
 
 /*
