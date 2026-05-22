@@ -201,6 +201,11 @@ static GtkWidget *preedit_label = NULL;
 #  ifdef USE_GTK4
 static int preedit_label_width = 0;	// last measured popover natural width
 static int preedit_popover_height = 0;	// last measured popover natural height
+// CSS provider that styles the preedit popover frame; rebuilt whenever
+// gui.back_pixel changes so the popover background matches the editor's
+// background colour and fully covers the cursor cell.
+static GtkCssProvider *preedit_css_provider = NULL;
+static guicolor_T preedit_css_cached_bg = INVALCOLOR;
 #  endif
 
 static void im_preedit_window_set_position(void);
@@ -375,6 +380,12 @@ im_preedit_window_open(void)
 	preedit_window = gtk_popover_new();
 	gtk_popover_set_autohide(GTK_POPOVER(preedit_window), FALSE);
 	gtk_popover_set_has_arrow(GTK_POPOVER(preedit_window), FALSE);
+	// Pin the popover below the anchor.  Together with anchor.h == 0 in
+	// im_preedit_window_set_position() this lands the popover's top edge
+	// exactly on FILL_Y(row), so the popover covers the cursor cell rather
+	// than landing above it (the default GTK_POS_TOP would do that and
+	// only flip to bottom when there is no room above, which is flaky).
+	gtk_popover_set_position(GTK_POPOVER(preedit_window), GTK_POS_BOTTOM);
 	gtk_widget_set_can_focus(preedit_window, FALSE);
 	gtk_widget_set_focusable(preedit_window, FALSE);
 	gtk_widget_set_can_target(preedit_window, FALSE);
@@ -395,46 +406,58 @@ im_preedit_window_open(void)
 	// only to our preedit popover and not other popovers in the app.
 	gtk_widget_add_css_class(preedit_window, "vim-preedit-popover");
 	gtk_popover_set_child(GTK_POPOVER(preedit_window), preedit_label);
-
-	{
-	    static int preedit_css_loaded = FALSE;
-	    if (!preedit_css_loaded)
-	    {
-		GtkCssProvider *provider = gtk_css_provider_new();
-		// The theme normally draws rounded corners, a border and a
-		// drop shadow around popovers.  Strip those off so the
-		// preedit popup looks like a flat rectangle aligned with
-		// the cursor cell.  Background of the inner contents node
-		// is left at theme default; per-character colors are set
-		// by the PangoAttributes (foreground/background) below.
-		const char *css =
-		    "popover.vim-preedit-popover,\n"
-		    "popover.vim-preedit-popover > contents {\n"
-		    "  border: none;\n"
-		    "  border-radius: 0;\n"
-		    "  box-shadow: none;\n"
-		    "  padding: 0;\n"
-		    "  margin: 0;\n"
-		    "  min-width: 0;\n"
-		    "  min-height: 0;\n"
-		    "  background: transparent;\n"
-		    "}\n"
-		    "popover.vim-preedit-popover > arrow {\n"
-		    "  background: transparent;\n"
-		    "  border: none;\n"
-		    "}\n";
-		gtk_css_provider_load_from_string(provider, css);
-		gtk_style_context_add_provider_for_display(
-			gdk_display_get_default(),
-			GTK_STYLE_PROVIDER(provider), G_MAXUINT);
-		g_object_unref(provider);
-		preedit_css_loaded = TRUE;
-	    }
-	}
 #  else
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
 #  endif
     }
+
+#  ifdef USE_GTK4
+    // Build (or rebuild on background-colour change) the CSS that flattens
+    // the popover frame and paints its background with gui.back_pixel.
+    // Using a solid background instead of `background: transparent` makes
+    // the popover surface fully cover the cursor cell even when the popover
+    // surface is allocated a pixel or two larger than the glyph bounding
+    // box (e.g. due to residual theme insets) -- otherwise the blinking
+    // text cursor at the cell origin shows through the popover frame.
+    if (preedit_css_provider == NULL || preedit_css_cached_bg != gui.back_pixel)
+    {
+	GdkDisplay *display = gdk_display_get_default();
+	gchar *css;
+
+	if (preedit_css_provider != NULL)
+	{
+	    gtk_style_context_remove_provider_for_display(display,
+				    GTK_STYLE_PROVIDER(preedit_css_provider));
+	    g_object_unref(preedit_css_provider);
+	}
+	preedit_css_provider = gtk_css_provider_new();
+	css = g_strdup_printf(
+		"popover.vim-preedit-popover,\n"
+		"popover.vim-preedit-popover > contents,\n"
+		"popover.vim-preedit-popover label {\n"
+		"  border: none;\n"
+		"  border-radius: 0;\n"
+		"  box-shadow: none;\n"
+		"  padding: 0;\n"
+		"  margin: 0;\n"
+		"  min-width: 0;\n"
+		"  min-height: 0;\n"
+		"  background-color: #%02lx%02lx%02lx;\n"
+		"}\n"
+		"popover.vim-preedit-popover > arrow {\n"
+		"  background: transparent;\n"
+		"  border: none;\n"
+		"}\n",
+		(unsigned long)((gui.back_pixel >> 16) & 0xff),
+		(unsigned long)((gui.back_pixel >> 8) & 0xff),
+		(unsigned long)(gui.back_pixel & 0xff));
+	gtk_css_provider_load_from_string(preedit_css_provider, css);
+	g_free(css);
+	gtk_style_context_add_provider_for_display(display,
+			    GTK_STYLE_PROVIDER(preedit_css_provider), G_MAXUINT);
+	preedit_css_cached_bg = gui.back_pixel;
+    }
+#  endif
 
 #  ifndef USE_GTK4
 #   if GTK_CHECK_VERSION(3,16,0)
@@ -1144,6 +1167,14 @@ im_shutdown(void)
 	gtk_widget_unparent(preedit_window);
 	preedit_window = NULL;
 	preedit_label = NULL;
+    }
+    if (preedit_css_provider != NULL)
+    {
+	gtk_style_context_remove_provider_for_display(gdk_display_get_default(),
+				GTK_STYLE_PROVIDER(preedit_css_provider));
+	g_object_unref(preedit_css_provider);
+	preedit_css_provider = NULL;
+	preedit_css_cached_bg = INVALCOLOR;
     }
 #  endif
     im_is_active = FALSE;
