@@ -4144,6 +4144,8 @@ ex_substitute(exarg_T *eap)
 	pat = NULL;		// search_regcomp() will use previous pattern
 	patlen = 0;
 	sub = vim_strsave(old_sub);
+	if (sub == NULL)
+	    return;
 
 	// Vi compatibility quirk: repeating with ":s" keeps the cursor in the
 	// last column after using "$".
