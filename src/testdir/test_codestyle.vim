@@ -195,4 +195,27 @@ def Test_indent_of_source_files()
   endfor
 enddef
 
+def Test_runtime_wrong_shellescape()
+  # Check that shellescape() is called with the {special} argument (a second,
+  # non-zero argument) when its result is used in a ":!" ex command.
+  # This could cause code injection!
+  var pattern = '\<shellescape(\%([^,()]\|([^()]*)\)\+)'
+
+  var q = "['" .. '"]'
+  var bang_exe = '\<\%(exe\%[cute]\|sil\%[ent]\)\>.*' .. q .. '[^"' .. "']*!"
+
+  var skip = 'getline(".") !~ ' .. string(bang_exe)
+    .. ' || getline(".") =~ ' .. string('\<system\%(list\)\=(')
+    .. ' || getline(".") =~ ' .. string('^\s*"')
+
+  for fpath in glob('../../runtime/**/*.vim', 0, 1)
+    g:ignoreSwapExists = 'e'
+    exe 'edit ' .. fpath
+    PerformCheck(fpath, pattern,
+      'shellescape() without {special} flag used in ":!" command', skip)
+  endfor
+
+  :%bwipe!
+enddef
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
