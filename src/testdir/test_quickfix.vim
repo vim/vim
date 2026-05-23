@@ -7028,4 +7028,17 @@ func Test_efm_overlongline()
   call setqflist([], 'f')
 endfunc
 
+" Setting 'quickfixtextfunc' via setqflist()/setloclist() registers a
+" callback that fires later outside the sandbox, so the registration
+" itself must be blocked when in the sandbox.
+func Test_setqflist_qftf_sandbox()
+  call setqflist([{'filename': 'F1', 'lnum': 1, 'text': 'x'}])
+  let qfid = getqflist({'id': 0}).id
+  call assert_fails("sandbox call setqflist([], 'a', {'id': qfid, 'quickfixtextfunc': 'tr'})", 'E48:')
+  new
+  call assert_fails("sandbox call setloclist(0, [], 'a', {'quickfixtextfunc': 'tr'})", 'E48:')
+  bwipe!
+  call setqflist([], 'f')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
