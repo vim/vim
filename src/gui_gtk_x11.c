@@ -3581,7 +3581,7 @@ gui_mch_update_tabline(void)
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page,
 		    event_box,
-		    nr++);
+		    nr);
 # if GTK_CHECK_VERSION(2,10,0)
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
 		    page,

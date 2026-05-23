@@ -477,7 +477,7 @@ gui_mch_init(void)
 #ifdef FEAT_GUI_TABLINE
     gui.tabline = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
+    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_widget_set_visible(gui.tabline, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.tabline);
@@ -2322,7 +2322,7 @@ gui_mch_update_tabline(void)
 	    gtk_box_append(GTK_BOX(event_box), label);
 	    gtk_widget_set_visible(label, TRUE);
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
-		    page, event_box, nr++);
+		    page, event_box, nr);
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
 		    page, TRUE);
 	}
