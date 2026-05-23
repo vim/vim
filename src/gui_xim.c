@@ -1111,7 +1111,6 @@ xim_init(void)
 #  endif
 
     xic = gtk_im_multicontext_new();
-    g_object_ref(xic);
 
     im_commit_handler_id = g_signal_connect(G_OBJECT(xic), "commit",
 					    G_CALLBACK(&im_commit_cb), NULL);
