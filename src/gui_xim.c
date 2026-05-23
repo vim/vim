@@ -331,6 +331,12 @@ im_preedit_window_set_position(void)
     rect.y = (int)pt_out.y;
     rect.width = preedit_label_width;
     rect.height = 0;
+    // make up for the difference between GVim's line height and GtkLabel's line height
+    int offset = gui.char_height - preedit_popover_height;
+    gtk_popover_set_offset(GTK_POPOVER(preedit_window), 0, offset);
+    // make the arrow pointer at start so that it only starts sliding
+    // horizontally when screen border is reached
+    gtk_widget_set_halign(preedit_window, GTK_ALIGN_START);
     gtk_popover_set_pointing_to(GTK_POPOVER(preedit_window), &rect);
 #  else
     int x, y, width, height;
