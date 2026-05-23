@@ -538,9 +538,6 @@ gui_mch_init(void)
 	gtk_widget_add_controller(gui.drawarea, key_ctrl);
 #ifdef FEAT_XIM
 	xim_init();
-	if (xic != NULL)
-	    gtk_event_controller_key_set_im_context(
-		    GTK_EVENT_CONTROLLER_KEY(key_ctrl), xic);
 #endif
     }
 
@@ -1547,9 +1544,17 @@ key_press_event(GtkEventControllerKey *controller UNUSED,
     int		key;
     char_u	*s, *d;
 
-    // Input method filtering is handled by GTK4 automatically via
-    // gtk_event_controller_key_set_im_context(); key-pressed is suppressed
-    // when the IM consumes the key, so no manual filter_keypress call here.
+#ifdef FEAT_XIM
+    // Let the input method have a go at the key event.
+    // If it consumed the event, we're done.
+    if (xic != NULL)
+    {
+	GdkEvent *event = gtk_event_controller_get_current_event(
+		GTK_EVENT_CONTROLLER(controller));
+	if (event != NULL && gtk_im_context_filter_keypress(xic, event))
+	    return TRUE;
+    }
+#endif
 
     len = keyval_to_string(key_sym, string2);
 
