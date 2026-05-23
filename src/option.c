@@ -1549,6 +1549,7 @@ static char *modeline_whitelist[] =
 {
     "autoindent",
     "cindent",
+    "colorcolumn",
     "commentstring",
     "expandtab",
     "filetype",
