@@ -5003,6 +5003,12 @@ ex_substitute(exarg_T *eap)
 		    vim_free(sub_firstline);
 		    sub_firstline = vim_strnsave(ml_get(sub_firstlnum),
 						    ml_get_len(sub_firstlnum));
+		    if (sub_firstline == NULL)
+		    {
+			vim_free(new_start);
+			goto outofmem;
+		    }
+
 		    // When going beyond the last line, stop substituting.
 		    if (sub_firstlnum <= line2)
 			do_again = TRUE;
@@ -5019,6 +5025,11 @@ ex_substitute(exarg_T *eap)
 		    // less than what it ought to be.
 		    vim_free(sub_firstline);
 		    sub_firstline = vim_strsave((char_u *)"");
+		    if (sub_firstline == NULL)
+		    {
+			vim_free(new_start);
+			goto outofmem;
+		    }
 		    copycol = 0;
 		}
 
