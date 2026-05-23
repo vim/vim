@@ -3812,3 +3812,7 @@ EXTERN char e_tag_file_entry_must_not_be_url[]
 	INIT(= N_("E1576: Tag file entry must not be a URL"));
 EXTERN char e_invalid_format_string_single_percent_s[]
 	INIT(= N_("E1577: Invalid format string, only one \"%s\" is allowed"));
+#ifdef FEAT_SPELL
+EXTERN char e_too_many_postponed_prefixes_spell[]
+	INIT(= N_("E1578: Too many postponed prefixes and/or compound flags"));
+#endif
