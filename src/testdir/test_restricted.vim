@@ -95,6 +95,7 @@ func Test_restricted_mode()
     if has('unix')
       call assert_fails('cd `pwd`', 'E145:')
     endif
+    call assert_fails("call setqflist([], 'a', {'id': 1, 'quickfixtextfunc': 'tr'})", 'E145:')
 
     call writefile(v:errors, 'Xresult')
     qa!

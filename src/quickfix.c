@@ -8173,12 +8173,15 @@ qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
 }
 
 /*
- * Set the current index in the specified quickfix list
+ * Set the 'quickfixtextfunc' in the specified quickfix/location list
  */
     static int
 qf_setprop_qftf(qf_info_T *qi UNUSED, qf_list_T *qfl, dictitem_T *di)
 {
     callback_T	cb;
+
+    if (check_restricted() || check_secure())
+	return FAIL;
 
     free_callback(&qfl->qf_qftf_cb);
     cb = get_callback(&di->di_tv);
