@@ -1873,6 +1873,9 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     static void
 drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#ifdef FEAT_XIM
+    im_shutdown();
+#endif
     if (gui.surface != NULL)
     {
 	cairo_surface_destroy(gui.surface);
