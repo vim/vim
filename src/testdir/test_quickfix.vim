@@ -7040,7 +7040,7 @@ func Xtest_set_qftf_in_sandbox(cchar)
 
   let g:caught_exception = v:false
   try
-    sandbox call setqflist([], 'a', #{quickfixtextfunc: 'g:Qftf_Fn'})
+    sandbox call g:Xsetlist([], 'a', #{quickfixtextfunc: 'g:Qftf_Fn'})
   catch /E48:/
     let g:caught_exception = v:true
   endtry
