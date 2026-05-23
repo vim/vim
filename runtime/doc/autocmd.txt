@@ -1,4 +1,4 @@
-*autocmd.txt*	For Vim version 9.2.  Last change: 2026 May 10
+*autocmd.txt*	For Vim version 9.2.  Last change: 2026 May 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1393,8 +1393,9 @@ TextPutPre			Before text has been put in the current buffer.
 				is valid to call |setreg()| in this
 				autocommand, allowing you to process and
 				modify the text in "regcontents" before it is
-				put.  However this does not apply to |quote_#|,
-				|quote_=|, |quote_%|, |quote_:|, |quote_/| or |quote_.|.
+				put.  However this does not apply to
+				|quote_#|, |quote_=|, |quote_%|, |quote_:|,
+				|quote_/| or |quote_.|.
 				Not triggered when |quote_| is used nor when
 				called recursively.
 				It is not allowed to change the buffer text,
