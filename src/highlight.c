@@ -533,6 +533,9 @@ highlight_link_id(int id)
 }
 #endif
 
+static void resolve_fallback_fg_to_rgb();
+static void resolve_fallback_bg_to_rgb();
+
     void
 init_highlight(
     int		both,	    // include groups where 'bg' doesn't matter
@@ -616,6 +619,8 @@ init_highlight(
 	}
     }
 #endif
+    resolve_fallback_fg_to_rgb();
+    resolve_fallback_bg_to_rgb();
 }
 
 #if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
@@ -1611,9 +1616,6 @@ highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
     }
     return TRUE;
 }
-
-static void resolve_fallback_fg_to_rgb();
-static void resolve_fallback_bg_to_rgb();
 
 /*
  * Handle the ":highlight .." command.
