@@ -698,7 +698,7 @@ socketserver_exec(channel_T *channel, dict_T *message)
 	    vim_free(result);
 	}
 	else
-	    // Error occured, return error message
+	    // Error occurred, return error message
 	    dict_add_string(dict, "str",
 		    (char_u *)_(e_invalid_expression_received));
 
