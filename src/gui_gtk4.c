@@ -528,7 +528,10 @@ gui_mch_init(void)
 			 G_CALLBACK(key_press_event), NULL);
 	g_signal_connect(key_ctrl, "key-released",
 			 G_CALLBACK(key_release_event), NULL);
-	gtk_widget_add_controller(gui.mainwin, key_ctrl);
+	gtk_widget_add_controller(gui.drawarea, key_ctrl);
+#ifdef FEAT_XIM
+	xim_init();
+#endif
     }
 
     {
@@ -1102,6 +1105,10 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 
     get_styled_font_variants();
     ascii_glyph_table_init();
+
+    // im window position depends on cursor size which depends on font metrics
+    // update the position after we've initialized font
+    im_set_position(gui.row, gui.col);
 
     return OK;
 }
@@ -1859,15 +1866,14 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     gui.surface = create_backing_surface(w, h);
 
     gui_mch_new_colors();
-
-#ifdef FEAT_XIM
-    xim_init();
-#endif
 }
 
     static void
 drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#ifdef FEAT_XIM
+    im_shutdown();
+#endif
     if (gui.surface != NULL)
     {
 	cairo_surface_destroy(gui.surface);
