@@ -519,10 +519,11 @@ Quando si sta usando il server a socket [socketserver backend], se il nome
 inizia con "/", "./", o "../", è considerato come il percorso, assoluto o
 relativo per arrivare al socket.
 .TP
-\-\-clientserver {backend}
-Usare {backend} come interfaccia per la funzionalità client/server,
-rispettivamente, o "socket" o "x11".  Disponibile solo se Vim è stato
-compilato con le due funzionalità socketserver e X11.
+\-\-clientserver {metodo}
+Usare {metodo} come interfaccia per la funzionalità client/server. Può valere
+"socket" o "x11" o "mswin".  Disponibile solo se Vim è stato compilato sia con
+la funzionalità socketserver che con quella X11, o se compilato con la
+funzionalità socketserver in ambiente MS-Windows.
 .TP
 \-\-socketid {id}
 Solo per GUI GTK: Usare meccanismo GtkPlug per eseguire gVim in un'altra
