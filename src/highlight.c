@@ -1612,6 +1612,9 @@ highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
     return TRUE;
 }
 
+static void resolve_fallback_fg_to_rgb();
+static void resolve_fallback_bg_to_rgb();
+
 /*
  * Handle the ":highlight .." command.
  * When using ":hi clear" this is called recursively for each group with
@@ -1977,6 +1980,8 @@ do_highlight(
 		redraw_all_later(UPD_NOT_VALID);
 	    }
 #endif
+	    resolve_fallback_fg_to_rgb();
+	    resolve_fallback_bg_to_rgb();
 #ifdef FEAT_VTP
 	    control_console_color_rgb();
 #endif
@@ -2091,6 +2096,8 @@ restore_cterm_colors(void)
     cterm_normal_bg_gui_color = INVALCOLOR;
     cterm_normal_ul_gui_color = INVALCOLOR;
 # endif
+    fallback_fg_rgb = INVALCOLOR;
+    fallback_bg_rgb = INVALCOLOR;
 #endif
 }
 
@@ -3260,6 +3267,50 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
 }
 
 /*
+ * get a RGB fallback foreground color from guifg, ctermrg or deduced form background
+ */
+    static void
+resolve_fallback_fg_to_rgb()
+{
+    int ffr, ffg, ffb;
+    guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_color;
+    #ifdef FEAT_GUI
+    if (gui.in_use)
+	fgcolor_or_gui_fgcolor = gui.norm_pixel;
+    #endif
+    if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb)) {
+	if (*p_bg == 'l')
+	    fallback_fg_rgb = 0x000000;
+	else
+	    fallback_fg_rgb = 0xFFFFFF;
+    } else {
+	fallback_fg_rgb = (ffr << 16) + (ffg << 8) + ffb;
+    }
+}
+
+/*
+ * get a RGB fallback background color from guifg, ctermrg or deduced form background
+ */
+    static void
+resolve_fallback_bg_to_rgb()
+{
+    int fbr, fbg, fbb;
+    guicolor_T bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
+    #ifdef FEAT_GUI
+    if (gui.in_use)
+	bgcolor_or_gui_bgcolor = gui.back_pixel;
+    #endif
+    if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, &fbr, &fbg, &fbb)) {
+	if (*p_bg == 'l')
+	    fallback_bg_rgb = 0xFFFFFF;
+	else
+	    fallback_bg_rgb = 0x000000;
+    } else {
+	fallback_bg_rgb = (fbr << 16) + (fbg << 8) + fbb;
+    }
+}
+
+/*
  * Blend two colors expressed as (cterm 256 index, gui RGB) pairs and
  * return the nearest 1-based cterm 256-color index.  Prefers the gui
  * RGB so highlight definitions like "guibg=#2D2A3D" without ctermbg
@@ -3326,22 +3377,6 @@ blend_colors(guicolor_T popup_color, guicolor_T bg_color, int blend_val)
 
     if (COLOR_INVALID(bg_color))
     {
-	// RGB fallback background color from guibg, ctermbg or deduced form background
-	guicolor_T fallback_bg_rgb = INVALCOLOR;
-	int fbr, fbg, fbb;
-	guicolor_T bgcolor_or_gui_bcolor = cterm_normal_bg_gui_color;
- #ifdef FEAT_GUI
-	if (gui.in_use)
-	    bgcolor_or_gui_bcolor = gui.back_pixel;
- #endif
-	if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bcolor, &fbr, &fbg, &fbb)) {
-	    if (*p_bg == 'l')
-		fallback_bg_rgb = 0xFFFFFF;
-	    else
-		fallback_bg_rgb = 0x000000;
-	} else {
-	    fallback_bg_rgb = (fbr << 16) + (fbg << 8) + fbb;
-	}
 	bg_color = fallback_bg_rgb;
     }
 
@@ -3376,45 +3411,6 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
     if (blend >= 100 && blend_fg)
 	return char_attr;  // Fully transparent for both fg and bg
 
-    // TODO maybe calculate once after initialisation
-    // RGB fallback foreground color from guifg, ctermrg or deduced form background
-    guicolor_T fallback_fg_rgb = INVALCOLOR;
-    // RGB fallback background color from guibg, ctermbg or deduced form background
-    guicolor_T fallback_bg_rgb = INVALCOLOR;
-    {
-	int ffr, ffg, ffb;
-	guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_color;
- #ifdef FEAT_GUI
-	if (gui.in_use)
-	    fgcolor_or_gui_fgcolor = gui.norm_pixel;
- #endif
-	if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb)) {
-	    if (*p_bg == 'l')
-		fallback_fg_rgb = 0x000000;
-	    else
-		fallback_fg_rgb = 0xFFFFFF;
-	} else {
-	    fallback_fg_rgb = (ffr << 16) + (ffg << 8) + ffb;
-	}
-    }
-    {
-	int fbr, fbg, fbb;
-	guicolor_T bgcolor_or_gui_bcolor = cterm_normal_bg_gui_color;
- #ifdef FEAT_GUI
-	if (gui.in_use)
-	    bgcolor_or_gui_bcolor = gui.back_pixel;
- #endif
-	/* printf("calling resolve_color_to_rgb(cterm_normal_bg_color #%x, cterm_normal_bg_gui_color #%lx, gui.back_pixel #%lx) =>", cterm_normal_bg_color, cterm_normal_bg_gui_color, gui.back_pixel); */
-	if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bcolor, &fbr, &fbg, &fbb)) {
-	    if (*p_bg == 'l')
-		fallback_bg_rgb = 0xFFFFFF;
-	    else
-		fallback_bg_rgb = 0x000000;
-	} else {
-	    fallback_bg_rgb = (fbr << 16) + (fbg << 8) + fbb;
-	}
-	/* printf(" #%lx\r\n", fallback_bg_rgb); */
-    }
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
