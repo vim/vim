@@ -1750,7 +1750,8 @@ xim_real_init(Window x11_window, Display *x11_display)
 
     if (gui.rsrc_input_method != NULL && *gui.rsrc_input_method != NUL)
     {
-	strcpy(tmp, gui.rsrc_input_method);
+	vim_strncpy((char_u *)tmp, (char_u *)gui.rsrc_input_method,
+	    sizeof(tmp) - 1);
 	for (ns = s = tmp; ns != NULL && *s != NUL;)
 	{
 	    s = (char *)skipwhite((char_u *)s);
@@ -1817,7 +1818,8 @@ xim_real_init(Window x11_window, Display *x11_display)
     }
 
     found = False;
-    strcpy(tmp, gui.rsrc_preedit_type_name);
+    vim_strncpy((char_u *)tmp, (char_u *)gui.rsrc_preedit_type_name,
+	    sizeof(tmp) - 1);
     for (s = tmp; s && !found; )
     {
 	while (*s && SAFE_isspace(*s))
