@@ -765,6 +765,16 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 }
 
 static int in_set_shellsize = FALSE;
+static guint clear_drawarea_size_request_id = 0;
+
+    static gboolean
+clear_drawarea_size_request_cb(gpointer data UNUSED)
+{
+    clear_drawarea_size_request_id = 0;
+    if (gui.drawarea != NULL)
+	gtk_widget_set_size_request(gui.drawarea, -1, -1);
+    return G_SOURCE_REMOVE;
+}
 
     void
 gui_mch_set_shellsize(int width, int height,
@@ -772,9 +782,24 @@ gui_mch_set_shellsize(int width, int height,
 	int base_width UNUSED, int base_height UNUSED,
 	int direction UNUSED)
 {
-    width += get_menu_tool_width();
-    height += get_menu_tool_height();
-    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+    int total_width = width + get_menu_tool_width();
+    int total_height = height + get_menu_tool_height();
+
+    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
+	    total_width, total_height);
+
+    // gtk_window_set_default_size() alone only takes effect at first show;
+    // some window managers (e.g. xfwm4 on X11) ignore subsequent updates
+    // because gui.drawarea has no natural size to drive a grow. Push the
+    // window via a temporary size request on the drawing area, then clear
+    // it on idle so the user can still shrink the window manually.
+    if (gui.drawarea != NULL && gtk_widget_get_realized(gui.mainwin))
+    {
+	gtk_widget_set_size_request(gui.drawarea, width, height);
+	if (clear_drawarea_size_request_id == 0)
+	    clear_drawarea_size_request_id =
+		g_idle_add(clear_drawarea_size_request_cb, NULL);
+    }
 }
 
     void
@@ -1906,7 +1931,10 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
     cairo_paint(cr);
     cairo_destroy(cr);
 
-    // Notify Vim about the new size - this will cause a full redraw
+    // Notify Vim about the new size. Force a redraw even if Rows/Columns
+    // don't change (e.g. font change keeps the cell count): the surface
+    // was just wiped and would otherwise stay blank.
+    gui.force_redraw = TRUE;
     gui_resize_shell(width, height);
 }
 
