@@ -3235,8 +3235,12 @@ clip_mch_lose_selection(Clipboard_T *cbd)
     if (clipboard == NULL)
 	return;
 
-    // Setting NULL content provider releases ownership.
-    gdk_clipboard_set_content(clipboard, NULL);
+    // Only release ownership if we still own it.  Otherwise we would
+    // clobber another application's clipboard content with NULL, which
+    // happens when this is called from clipboard_changed_cb after a
+    // foreign app took the selection.
+    if (gdk_clipboard_is_local(clipboard))
+	gdk_clipboard_set_content(clipboard, NULL);
 }
 
 // Balloon eval - use GTK4 tooltip
