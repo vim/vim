@@ -490,7 +490,7 @@ im_preedit_window_open(void)
 	    fontsize = dpi * fontsize / 72;
 	}
 	if (fontsize > 0)
-	    fontsize_propval = g_strdup_printf("%dpx", (gint)fontsize);
+	    fontsize_propval = g_strdup_printf("%dpx", (gint)(fontsize + 0.5));
 	else
 	    fontsize_propval = g_strdup_printf("inherit");
 
