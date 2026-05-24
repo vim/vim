@@ -2157,10 +2157,8 @@ fill_partial_and_closure(
 	// and local variables) so that the closure can use it later.
 	// Store a reference to the partial so we can handle that.
 	if (GA_GROW_FAILS(&ectx->ec_funcrefs, 1))
-	{
-	    vim_free(pt);
+	    // caller needs to free pt
 	    return FAIL;
-	}
 	// Extra variable keeps the count of closures created in the current
 	// function call.
 	++(((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx
@@ -5123,7 +5121,10 @@ exec_instructions(ectx_T *ectx)
 		    if (fill_partial_and_closure(pt, ufunc,
 			       extra == NULL ? NULL : &extra->fre_loopvar_info,
 								 ectx) == FAIL)
+		    {
+			vim_free(pt);
 			goto theend;
+		    }
 		    tv = STACK_TV_BOT(0);
 		    ++ectx->ec_stack.ga_len;
 		    tv->vval.v_partial = pt;
