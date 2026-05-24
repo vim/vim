@@ -157,6 +157,36 @@ func Test_winbar_not_visible_custom_statusline()
   call StopVimInTerminal(buf)
 endfunction
 
+" The vertical separator on the WinBar row must follow VertSplit/VertSplitNC
+" when the current window changes.
+func Test_winbar_vsep_highlight_after_focus_change()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      wincmd s
+      wincmd v
+      wincmd v
+      wincmd j
+      wincmd v
+      nnoremenu 1.10 WinBar.Step :Step<CR>
+      nnoremenu 1.20 WinBar.Next :Next<CR>
+      nnoremenu 1.30 WinBar.Finish :Finish<CR>
+      nnoremenu 1.40 WinBar.Cont :Continue<CR>
+      hi Vertsplit term=reverse ctermfg=111
+      hi VertsplitNC term=reverse ctermfg=16
+  END
+  call writefile(lines, 'XtestWinbarVsep', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarVsep', #{rows: 20, cols: 60})
+
+  call VerifyScreenDump(buf, 'Test_winbar_vsep_active', {})
+
+  call term_sendkeys(buf, "\<C-W>k")
+  call VerifyScreenDump(buf, 'Test_winbar_vsep_inactive', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_drag_statusline_with_winbar()
   call SetupWinbar()
   let save_mouse = &mouse

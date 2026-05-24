@@ -1222,8 +1222,11 @@ draw_vsep_win(win_T *wp, int row)
 
     int content_end = W_WINROW(wp) + wp->w_height;
 
-    // Content rows: VertSplit/VertSplitNC based on adjacency.
-    for (int r = W_WINROW(wp) + row; r < content_end; ++r)
+    // Content rows: VertSplit/VertSplitNC based on adjacency.  Include the
+    // WinBar row (above the content) when redrawing from the top so that
+    // the separator highlight is updated on current-window changes.
+    int start_row = (row == 0) ? wp->w_winrow : W_WINROW(wp) + row;
+    for (int r = start_row; r < content_end; ++r)
     {
 	int hl;
 	int c = fillchar_vsep(&hl, wp, r);
