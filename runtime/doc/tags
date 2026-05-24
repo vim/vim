@@ -1591,6 +1591,7 @@ $quote	eval.txt	/*$quote*
 --clean	starting.txt	/*--clean*
 --clientserver	remote.txt	/*--clientserver*
 --cmd	starting.txt	/*--cmd*
+--display	starting.txt	/*--display*
 --echo-wid	starting.txt	/*--echo-wid*
 --gui-dialog-file	starting.txt	/*--gui-dialog-file*
 --help	starting.txt	/*--help*
@@ -1649,6 +1650,7 @@ $quote	eval.txt	/*$quote*
 -d	starting.txt	/*-d*
 -dev	starting.txt	/*-dev*
 -display	gui_x11.txt	/*-display*
+-display	starting.txt	/*-display*
 -e	starting.txt	/*-e*
 -f	starting.txt	/*-f*
 -fg	gui_x11.txt	/*-fg*
