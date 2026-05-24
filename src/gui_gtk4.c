@@ -285,6 +285,7 @@ static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
+static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -588,6 +589,19 @@ gui_mch_init(void)
 
     // Create a blank (invisible) cursor for hiding the mouse pointer.
     gui.blank_pointer = gdk_cursor_new_from_name("none", NULL);
+
+    {
+	GdkDisplay   *display = gtk_widget_get_display(gui.mainwin);
+	GdkClipboard *primary = gdk_display_get_primary_clipboard(display);
+	GdkClipboard *board = gdk_display_get_clipboard(display);
+
+	if (primary != NULL)
+	    g_signal_connect(primary, "changed",
+		    G_CALLBACK(clipboard_changed_cb), &clip_star);
+	if (board != NULL)
+	    g_signal_connect(board, "changed",
+		    G_CALLBACK(clipboard_changed_cb), &clip_plus);
+    }
 
     return OK;
 }
@@ -3130,6 +3144,8 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	g_main_context_iteration(NULL, TRUE);
 }
 
+static int in_clipboard_set = FALSE;
+
 /*
  * Send the current selection to the clipboard.
  */
@@ -3174,12 +3190,26 @@ clip_mch_set_selection(Clipboard_T *cbd)
 	{
 	    mch_memmove(nul_str, str, len);
 	    nul_str[len] = NUL;
+	    in_clipboard_set = TRUE;
 	    gdk_clipboard_set_text(clipboard, (const char *)nul_str);
+	    in_clipboard_set = FALSE;
 	    vim_free(nul_str);
 	}
     }
 
     vim_free(str);
+}
+
+    static void
+clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data)
+{
+    Clipboard_T *cbd = (Clipboard_T *)user_data;
+
+    if (in_clipboard_set)
+	return;
+    if (gdk_clipboard_is_local(clipboard))
+	return;
+    clip_lose_selection(cbd);
 }
 
 /*
@@ -3205,8 +3235,12 @@ clip_mch_lose_selection(Clipboard_T *cbd)
     if (clipboard == NULL)
 	return;
 
-    // Setting NULL content provider releases ownership.
-    gdk_clipboard_set_content(clipboard, NULL);
+    // Only release ownership if we still own it.  Otherwise we would
+    // clobber another application's clipboard content with NULL, which
+    // happens when this is called from clipboard_changed_cb after a
+    // foreign app took the selection.
+    if (gdk_clipboard_is_local(clipboard))
+	gdk_clipboard_set_content(clipboard, NULL);
 }
 
 // Balloon eval - use GTK4 tooltip
