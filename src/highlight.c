@@ -533,8 +533,8 @@ highlight_link_id(int id)
 }
 #endif
 
-static void resolve_fallback_fg_to_rgb();
-static void resolve_fallback_bg_to_rgb();
+static void resolve_fallback_fg_to_rgb(void);
+static void resolve_fallback_bg_to_rgb(void);
 
     void
 init_highlight(
@@ -3269,29 +3269,29 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
 }
 
 /*
- * get a RGB fallback foreground color from guifg, ctermrg or deduced form background
+ * get a RGB fallback foreground color from guifg, ctermfg or deduced from background
  */
     static void
 resolve_fallback_fg_to_rgb()
 {
     int ffr, ffg, ffb;
-    guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_color;
+    guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
     #ifdef FEAT_GUI
     if (gui.in_use)
 	fgcolor_or_gui_fgcolor = gui.norm_pixel;
     #endif
-    if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb)) {
+    if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb))
+    {
 	if (*p_bg == 'l')
 	    fallback_fg_rgb = 0x000000;
 	else
 	    fallback_fg_rgb = 0xFFFFFF;
-    } else {
-	fallback_fg_rgb = (ffr << 16) + (ffg << 8) + ffb;
-    }
+    } else
+	fallback_fg_rgb = (ffr << 16) | (ffg << 8) | ffb;
 }
 
 /*
- * get a RGB fallback background color from guifg, ctermrg or deduced form background
+ * get a RGB fallback background color from guifg, ctermbg or deduced from background
  */
     static void
 resolve_fallback_bg_to_rgb()
@@ -3302,14 +3302,14 @@ resolve_fallback_bg_to_rgb()
     if (gui.in_use)
 	bgcolor_or_gui_bgcolor = gui.back_pixel;
     #endif
-    if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, &fbr, &fbg, &fbb)) {
+    if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, &fbr, &fbg, &fbb))
+    {
 	if (*p_bg == 'l')
 	    fallback_bg_rgb = 0xFFFFFF;
 	else
 	    fallback_bg_rgb = 0x000000;
-    } else {
-	fallback_bg_rgb = (fbr << 16) + (fbg << 8) + fbb;
-    }
+    } else
+	fallback_bg_rgb = (fbr << 16) | (fbg << 8) | fbb;
 }
 
 /*
@@ -3697,7 +3697,6 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
     }
 #endif
 
-    // TODO  use fallback_bg_rgb when notermguicolors
     if (IS_CTERM)
     {
 	if (char_attr > HL_ALL)
