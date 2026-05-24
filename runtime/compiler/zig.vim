@@ -13,7 +13,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 " a subcommand must be provided for the this compiler (test, build-exe, etc)
-CompilerSet makeprg=zig\ \$*\ \%:S
+CompilerSet makeprg=zig\ $*\ %:S
 
 CompilerSet errorformat=
             \%-G,

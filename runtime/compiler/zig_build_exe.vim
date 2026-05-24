@@ -13,7 +13,7 @@ let current_compiler = 'zig_build_exe'
 let s:save_cpo = &cpo
 set cpo&vim
 
-CompilerSet makeprg=zig\ build-exe\ \%:S\ \$*
+CompilerSet makeprg=zig\ build-exe\ %:S\ $*
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
