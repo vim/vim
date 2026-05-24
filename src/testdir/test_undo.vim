@@ -967,6 +967,20 @@ func Test_undo_line_backspace_after_insert_cmd_edit()
   bwipe!
 endfunc
 
+" Issue #20130: '[ must mark the start of the paste after CTRL-R CTRL-P + edit.
+func Test_open_square_mark_after_ctrl_r_ctrl_p_paste()
+  new
+  call setline(1, ['a', 'b', 'c', 'd'])
+  call cursor(4, 1)
+
+  call feedkeys("Vggyjo\<C-r>\<C-p>\"\<BS>\<Esc>", 'xt')
+
+  call assert_equal(['a', 'b', 'a', 'b', 'c', 'd', 'c', 'd'],
+        \ getline(1, '$'))
+  call assert_equal([0, 3, 1, 0], getpos("'["))
+  bwipe!
+endfunc
+
 " Corrupted undo file via cyclic cross-references caused
 " double free
 func Test_corrupted_undofile()
