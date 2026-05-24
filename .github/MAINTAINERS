@@ -700,6 +700,7 @@ runtime/syntax/thrift.vim				@jiangyinzuo
 runtime/syntax/tiasm.vim				@Freed-Wu
 runtime/syntax/tidy.vim					@dkearns
 runtime/syntax/tmux.vim					@ericpruitt
+runtime/syntax/tolk.vim					@redavy
 runtime/syntax/toml.vim					@averms
 runtime/syntax/tt2.vim					@petdance
 runtime/syntax/tt2html.vim				@petdance
