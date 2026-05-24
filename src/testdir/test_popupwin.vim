@@ -5482,4 +5482,43 @@ func Test_popupwin_close_copen_redraw()
   delfunc s:PopupFilter
 endfunc
 
+func Test_popup_opacity_fade_to_background()
+  CheckScreendump
+
+  " Opacity popup spanning a vertical split should redraw both windows
+  " underneath, not just the left one (blend accumulation bug).
+  let lines =<< trim END
+    call setline(1, repeat(['X   X   X   X   X'], 4))
+    hi PopupColor guibg=blue
+    let g:pop_id = popup_create(['Popup'], #{
+        \ line: 2, col: 3,
+        \ minwidth: 10,
+        \ minheight: 2,
+        \ highlight: 'PopupColor',
+        \ opacity: 60,
+        \ zindex: 50,
+        \})
+  END
+  call writefile(lines, 'XtestPopupOpacityFadeToBackground', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityFadeToBackground', #{rows: 12, cols: 60})
+  " light background without Normal color set
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_fade_to_background_1', {})
+
+  " dark background without Normal color set
+  call term_sendkeys(buf, ":set background=dark\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_fade_to_background_2', {})
+
+  " light background with Normal cterm color set
+  call term_sendkeys(buf, ":set background=light\<CR>")
+  call term_sendkeys(buf, ":highlight Normal ctermfg=16 ctermbg=223\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_fade_to_background_3', {})
+
+  " light background with Normal gui color set
+  call term_sendkeys(buf, ":set termguicolors\<CR>")
+  call term_sendkeys(buf, ":highlight Normal ctermfg=NONE ctermbg=NONE guifg=#000000 guibg=#ffdab9\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_fade_to_background_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
