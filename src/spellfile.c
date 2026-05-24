@@ -3704,6 +3704,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 								      == FAIL)
 		{
 		    retval = FAIL;
+		    vim_free(pc);
 		    break;
 		}
 		pfxlen = totlen;
@@ -3717,6 +3718,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 								      == FAIL)
 		{
 		    retval = FAIL;
+		    vim_free(pc);
 		    break;
 		}
 	    }
