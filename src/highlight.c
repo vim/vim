@@ -3275,7 +3275,10 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
 resolve_fallback_fg_to_rgb()
 {
     int ffr, ffg, ffb;
-    guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
+    guicolor_T fgcolor_or_gui_fgcolor = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+    fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
+#endif
 #ifdef FEAT_GUI
     if (gui.in_use)
 	fgcolor_or_gui_fgcolor = gui.norm_pixel;
@@ -3298,7 +3301,10 @@ resolve_fallback_fg_to_rgb()
 resolve_fallback_bg_to_rgb()
 {
     int fbr, fbg, fbb;
-    guicolor_T bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
+    guicolor_T bgcolor_or_gui_bgcolor = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+    bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
+#endif
 #ifdef FEAT_GUI
     if (gui.in_use)
 	bgcolor_or_gui_bgcolor = gui.back_pixel;
