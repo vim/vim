@@ -474,8 +474,10 @@ im_preedit_window_open(void)
 	gchar		   *css = NULL;
 	const char * const fontname
 			   = pango_font_description_get_family(gui.norm_font);
-	gint	fontsize
-		= pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
+	// Since font sizes can be specified as non-integer values like 10.5,
+	// they must be handled as floating-point (gdouble).
+	gdouble	fontsize
+		= (gdouble)pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
 	gchar	*fontsize_propval = NULL;
 
 	if (!pango_font_description_get_size_is_absolute(gui.norm_font))
@@ -488,7 +490,7 @@ im_preedit_window_open(void)
 	    fontsize = dpi * fontsize / 72;
 	}
 	if (fontsize > 0)
-	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
+	    fontsize_propval = g_strdup_printf("%dpx", (gint)(fontsize + 0.5));
 	else
 	    fontsize_propval = g_strdup_printf("inherit");
 
