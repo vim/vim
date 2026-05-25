@@ -9,6 +9,10 @@ SRC_ALL =	\
 		.github/MAINTAINERS \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
 		.github/ISSUE_TEMPLATE/feature_request.md \
+		.github/workflows/ci-linux.yml \
+		.github/workflows/ci-linux_asan.yml \
+		.github/workflows/ci-macos.yml \
+		.github/workflows/ci-windows.yml \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
