@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
+*starting.txt*	For Vim version 9.2.  Last change: 2026 May 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -641,6 +641,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		which can be used to run gvim in a kpart widget.  The format
 		of the output is: >
 			WID: 12345\n
+
+--display {display}					*--display*
+		Run Vim on {display}, connecting to that X server instead of
+		the one in $DISPLAY.  The "--display" long form is accepted
+		only by the GTK+ 2 or GTK+ 3 GUI, see also |-display|.
+		{requires the |+xterm_clipboard| feature}
 
 --role {role}						*--role*
 		GTK+ 2 GUI only.  Set the role of the main window to {role}.

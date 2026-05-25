@@ -1,4 +1,4 @@
-.TH VIM 1 "2025 Jun 27"
+.TH VIM 1 "2026 May 22"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -193,6 +193,17 @@ script.
 Start
 .B Vim
 in Ex mode, just like the executable was called "ex".
+.TP
+\-display {display}
+Run
+.B Vim
+on
+.IR {display} ,
+connecting to that X server instead of the one in $DISPLAY.
+The "\-\-display" long form is accepted only by the GTK+ 2 or GTK+ 3 GUI.
+Both forms require the
+.B +xterm_clipboard
+feature.
 .TP
 \-E
 Start
