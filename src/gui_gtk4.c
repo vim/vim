@@ -1894,6 +1894,7 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 	gpointer data UNUSED)
 {
     cairo_t *cr;
+    cairo_surface_t *old_surface;
     int	    scale = get_drawarea_scale();
 
     if (width <= 0 || height <= 0)
@@ -1906,22 +1907,38 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 
 	if (sw == width && sh == height)
 	    return;
-
-	cairo_surface_destroy(gui.surface);
     }
 
-    // Create a fresh surface filled with the background color.
-    // Do not copy old surface content: gui_resize_shell() will trigger
-    // a full redraw, and stale content (e.g. intro screen text) would
-    // otherwise remain as ghost artifacts.
+    // Create a new surface filled with the background color, then
+    // preserve the old contents on top. If the follow-up redraw is
+    // delayed (e.g. when this callback fires while Vim is waiting in
+    // gui_mch_wait_for_chars()), the user keeps seeing the previous
+    // frame instead of a blank window.
+    old_surface = gui.surface;
     gui.surface = create_backing_surface(width, height);
-    cr = cairo_create(gui.surface);
-    set_cairo_source_from_pixel(cr, gui.back_pixel);
-    cairo_paint(cr);
-    cairo_destroy(cr);
+    if (gui.surface != NULL)
+    {
+	cr = cairo_create(gui.surface);
+	set_cairo_source_from_pixel(cr, gui.back_pixel);
+	cairo_paint(cr);
+	if (old_surface != NULL)
+	{
+	    cairo_set_source_surface(cr, old_surface, 0, 0);
+	    cairo_paint(cr);
+	}
+	cairo_destroy(cr);
+    }
+    if (old_surface != NULL)
+	cairo_surface_destroy(old_surface);
 
-    // Notify Vim about the new size - this will cause a full redraw
+    // Force shell_resized() to run even when Rows/Columns are unchanged
+    // (a sub-cell pixel resize). Also queue a full redraw so the surface
+    // is repainted once Vim returns from waiting for input, even if
+    // set_shellsize_inner() bails out because updating_screen is set.
+    gui.force_redraw = TRUE;
     gui_resize_shell(width, height);
+    if (gui.in_use)
+	redraw_all_later(UPD_CLEAR);
 }
 
     static void
