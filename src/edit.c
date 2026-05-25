@@ -2513,8 +2513,10 @@ stop_arrow(void)
 	if (u_save_cursor() == OK)
 	{
 	    // A command or event may have moved the cursor before the next
-	    // edit. Pull Insstart back only when the cursor moved above it.
-	    // Advancing Insstart would mis-place '[ after a register paste.
+	    // edit. Pull Insstart back only when the cursor moved above it,
+	    // so that later edits can properly decide whether an extra undo
+	    // entry is needed. Advancing Insstart would mis-place '[ after a
+	    // register paste.
 	    if (LT_POS(curwin->w_cursor, Insstart))
 	    {
 		Insstart = curwin->w_cursor;
