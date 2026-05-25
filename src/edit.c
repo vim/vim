@@ -2512,11 +2512,16 @@ stop_arrow(void)
     {
 	if (u_save_cursor() == OK)
 	{
-	    // A command or event may have moved the cursor or edited the
-	    // buffer. Update Insstart so that later edits can properly decide
-	    // whether an extra undo entry is needed.
-	    Insstart = curwin->w_cursor;
-	    Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
+	    // A command or event may have moved the cursor before the next
+	    // edit. Pull Insstart back only when the cursor moved above it,
+	    // so that later edits can properly decide whether an extra undo
+	    // entry is needed. Advancing Insstart would mis-place '[ after a
+	    // register paste.
+	    if (LT_POS(curwin->w_cursor, Insstart))
+	    {
+		Insstart = curwin->w_cursor;
+		Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
+	    }
 	    ins_need_undo = FALSE;
 	}
     }
