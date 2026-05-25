@@ -3269,12 +3269,26 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
 }
 
 /*
+ * get a RGB fallback color from gui, cterm or default color
+ */
+    static guicolor_T
+resolve_fallback_color(int cterm_c, guicolor_T rgb, guicolor_T default_rgb)
+{
+    int red, green, blue;
+    if (!resolve_color_to_rgb(cterm_c, rgb, &red, &green, &blue))
+    {
+	return default_rgb;
+    }
+    else
+	return (red << 16) | (green << 8) | blue;
+}
+
+/*
  * get a RGB fallback foreground color from guifg, ctermfg or deduced from background
  */
     static void
 resolve_fallback_fg_to_rgb(void)
 {
-    int ffr, ffg, ffb;
     guicolor_T fgcolor_or_gui_fgcolor = INVALCOLOR;
 #ifdef FEAT_TERMGUICOLORS
     fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
@@ -3283,15 +3297,7 @@ resolve_fallback_fg_to_rgb(void)
     if (gui.in_use)
 	fgcolor_or_gui_fgcolor = gui.norm_pixel;
 #endif
-    if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb))
-    {
-	if (*p_bg == 'l')
-	    fallback_fg_rgb = 0x000000;
-	else
-	    fallback_fg_rgb = 0xFFFFFF;
-    }
-    else
-	fallback_fg_rgb = (ffr << 16) | (ffg << 8) | ffb;
+    fallback_fg_rgb = resolve_fallback_color(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, (*p_bg == 'l') ? 0x000000 : 0xFFFFFF);
 }
 
 /*
@@ -3300,7 +3306,6 @@ resolve_fallback_fg_to_rgb(void)
     static void
 resolve_fallback_bg_to_rgb(void)
 {
-    int fbr, fbg, fbb;
     guicolor_T bgcolor_or_gui_bgcolor = INVALCOLOR;
 #ifdef FEAT_TERMGUICOLORS
     bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
@@ -3309,15 +3314,7 @@ resolve_fallback_bg_to_rgb(void)
     if (gui.in_use)
 	bgcolor_or_gui_bgcolor = gui.back_pixel;
 #endif
-    if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, &fbr, &fbg, &fbb))
-    {
-	if (*p_bg == 'l')
-	    fallback_bg_rgb = 0xFFFFFF;
-	else
-	    fallback_bg_rgb = 0x000000;
-    }
-    else
-	fallback_bg_rgb = (fbr << 16) | (fbg << 8) | fbb;
+    fallback_bg_rgb = resolve_fallback_color(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, (*p_bg == 'l') ? 0xFFFFFF : 0x000000);
 }
 
 /*
