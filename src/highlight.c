@@ -3276,17 +3276,18 @@ resolve_fallback_fg_to_rgb()
 {
     int ffr, ffg, ffb;
     guicolor_T fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
-    #ifdef FEAT_GUI
+#ifdef FEAT_GUI
     if (gui.in_use)
 	fgcolor_or_gui_fgcolor = gui.norm_pixel;
-    #endif
+#endif
     if (!resolve_color_to_rgb(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, &ffr, &ffg, &ffb))
     {
 	if (*p_bg == 'l')
 	    fallback_fg_rgb = 0x000000;
 	else
 	    fallback_fg_rgb = 0xFFFFFF;
-    } else
+    }
+    else
 	fallback_fg_rgb = (ffr << 16) | (ffg << 8) | ffb;
 }
 
@@ -3298,17 +3299,18 @@ resolve_fallback_bg_to_rgb()
 {
     int fbr, fbg, fbb;
     guicolor_T bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
-    #ifdef FEAT_GUI
+#ifdef FEAT_GUI
     if (gui.in_use)
 	bgcolor_or_gui_bgcolor = gui.back_pixel;
-    #endif
+#endif
     if (!resolve_color_to_rgb(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, &fbr, &fbg, &fbb))
     {
 	if (*p_bg == 'l')
 	    fallback_bg_rgb = 0xFFFFFF;
 	else
 	    fallback_bg_rgb = 0x000000;
-    } else
+    }
+    else
 	fallback_bg_rgb = (fbr << 16) | (fbg << 8) | fbb;
 }
 
