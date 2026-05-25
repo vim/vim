@@ -1,0 +1,82 @@
+name: CI for Linux ASan
+
+on:
+  workflow_call:
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-linux_asan-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  linux-asan:
+    runs-on: ubuntu-24.04
+
+    env:
+      CC: clang
+      CLANG_VER: 21
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      LOG_DIR: ${{ github.workspace }}/logs
+      TERM: xterm
+      DISPLAY: ":99"
+      DEBIAN_FRONTEND: noninteractive
+
+    strategy:
+      fail-fast: false
+      matrix:
+        testset:
+          - tinytests
+          - newtests.1
+          - newtests.2
+
+    steps:
+      - name: Checkout repository from GitHub
+        uses: actions/checkout@v6
+
+      - name: Build
+        timeout-minutes: 15
+        uses: ./.github/actions/build_vim_on_linux
+        with:
+          features: huge
+          compiler: clang
+          extra: '["asan"]'
+          # Lua5.1 is the most widely used version (since it's what LuaJIT is
+          # compatible with), so ensure it works
+          lua_ver: "5.1"
+
+      - name: Test (tinytests)
+        if: matrix.testset == 'tinytests'
+        timeout-minutes: 20
+        run: make ${TEST} NEW_TESTS_RES=
+
+      - name: Test (newtests)
+        if: startsWith(matrix.testset, 'newtests')
+        timeout-minutes: 20
+        env:
+          JOB_INDEX: ${{ strategy.job-index }}
+          JOB_TOTAL: ${{ strategy.job-total }}
+        run: |
+          set -x
+          make -C src/testdir SCRIPTS_TINY_OUT= \
+            NEW_TESTS_RES="$(python3 ci/gen_testset.py $((JOB_TOTAL-1)) | jq -r --argjson i $((JOB_INDEX-1)) '.[$i]|join(" ")')"
+
+      - name: ASan logs
+        if: ${{ !cancelled() }}
+        run: |
+          for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
+            (
+              echo "$f"
+              asan_symbolize -l "$f"
+            ) | tee "$f".symbolized
+            false # in order to fail a job
+          done
+
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test_artifacts

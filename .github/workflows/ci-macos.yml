@@ -1,0 +1,103 @@
+name: CI for macOS
+
+on:
+  workflow_call:
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-macos-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  macos:
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      CC: clang
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      TERM: xterm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, normal, huge]
+        runner: [macos-15-intel, macos-26]
+
+    steps:
+      - name: Checkout repository from GitHub
+        uses: actions/checkout@v6
+
+      - name: Install packages
+        if: matrix.features == 'huge'
+        run: |
+          brew install lua libtool
+          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+
+      - name: Set up environment
+        run: |
+          (
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+          case "${{ matrix.features }}" in
+          tiny)
+            echo "TEST=testtiny"
+            echo "CONFOPT=--disable-gui"
+            ;;
+          normal)
+            ;;
+          huge)
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            ;;
+          esac
+          ) >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          # Append various warning flags to CFLAGS.
+          # BSD sed needs backup extension specified.
+          sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+          # On macOS, the entity of gcc is clang.
+          sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+          # Suppress some warnings produced by clang 12 and later.
+          if clang --version | grep -qs 'Apple clang version \(1[3-9]\|[2-9]\)\.'; then
+            sed -i.bak -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
+
+      - name: Build
+        env:
+          LC_ALL: C
+        run: |
+          make -j${NPROC}
+
+      - name: Check version
+        run: |
+          "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          if ${{ matrix.features == 'huge' }}; then
+            # Also check that optional and dynamic features are configured and working
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -c "let g:required=['sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+              -S ci/if_feat_check.vim -c quit
+          fi
+
+      - name: Install packages for testing
+        run: |
+          # Apple diff is broken. Use GNU diff instead. See #14032.
+          brew install diffutils
+
+      - name: Test
+        timeout-minutes: 25
+        run: |
+          make ${TEST}
+
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test_artifacts
