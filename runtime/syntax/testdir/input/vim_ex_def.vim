@@ -124,3 +124,10 @@ enddef
 silent! def Foo()
 enddef
 
+
+" Unreported issue (return type colon must follow immediately after closing parameter-list paren)
+
+def Foo()
+: echo "not a mismatched return type"
+enddef
+
