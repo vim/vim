@@ -1,4 +1,4 @@
-*gui.txt*	For Vim version 9.2.  Last change: 2026 Apr 07
+*gui.txt*	For Vim version 9.2.  Last change: 2026 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1253,6 +1253,32 @@ This section describes other features which are related to the GUI.
 A recommended Japanese font is MS Mincho.  You can find info here:
 https://learn.microsoft.com/en-us/typography/font-list/ms-mincho
 It should be distributed with Windows.
+
+
+Full Screen						*gui-fullscreen*
+
+Fullscreen mode is currently only supported in the Windows and GTK GUI
+versions of Vim.
+
+To enable fullscreen mode in the GUI version of Vim, add the 's' flag
+to the 'guioptions' setting.
+
+For convenience, you can define a command or mapping to toggle fullscreen
+mode:
+>
+	command ToggleFullscreen {
+	  if &guioptions =~# 's'
+	    set guioptions-=s
+	  else
+	    set guioptions+=s
+	  endif
+	}
+
+	map <expr> <F11> &go =~# 's' ? ":se go-=s<CR>" : ":se go+=s<CR>"
+
+The fullscreen mode will occupy the entire screen area while hiding window
+decorations such as the title bar and borders.
+
 
 ==============================================================================
 8. Shell Commands					*gui-shell*

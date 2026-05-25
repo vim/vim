@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 22
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52589,6 +52589,7 @@ GUI ~
 -----
 - Added support for the GTK 4 GUI (via patch 9.2.0501).  Enable with
   `--enable-gui=gtk4` configure switch at build time.
+- Add support for fullscreen mode in the GTK UI |'go-s'|.
 
 Popups ~
 ------

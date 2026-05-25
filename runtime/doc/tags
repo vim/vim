@@ -8257,6 +8257,7 @@ gui-font	gui.txt	/*gui-font*
 gui-fontwide	gui.txt	/*gui-fontwide*
 gui-footer	debugger.txt	/*gui-footer*
 gui-fork	gui_x11.txt	/*gui-fork*
+gui-fullscreen	gui.txt	/*gui-fullscreen*
 gui-functions	usr_41.txt	/*gui-functions*
 gui-gnome	gui_x11.txt	/*gui-gnome*
 gui-gnome-session	gui_x11.txt	/*gui-gnome-session*
@@ -8286,7 +8287,6 @@ gui-vert-scroll	gui.txt	/*gui-vert-scroll*
 gui-w32	gui_w32.txt	/*gui-w32*
 gui-w32-cmdargs	gui_w32.txt	/*gui-w32-cmdargs*
 gui-w32-dialogs	gui_w32.txt	/*gui-w32-dialogs*
-gui-w32-fullscreen	gui_w32.txt	/*gui-w32-fullscreen*
 gui-w32-printing	gui_w32.txt	/*gui-w32-printing*
 gui-w32-start	gui_w32.txt	/*gui-w32-start*
 gui-w32-title-bar	gui_w32.txt	/*gui-w32-title-bar*
