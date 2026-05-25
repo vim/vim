@@ -11,4 +11,12 @@ let b:did_ftplugin = 1
 
 setlocal commentstring=//\ %s
 
-let b:undo_ftplugin = "setlocal commentstring<"
+if get(g:, 'tolk_recommended_style', get(g:, 'recommended_style', 1))
+  setlocal tabstop=2
+  setlocal shiftwidth=2
+  setlocal expandtab
+  setlocal softtabstop=2
+  setlocal cindent
+endif
+
+let b:undo_ftplugin = "setlocal commentstring< tabstop< shiftwidth< expandtab< softtabstop< cindent<"

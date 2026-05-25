@@ -1182,9 +1182,6 @@ au BufNewFile,BufRead *.tf			call dist#ft#FTtf()
 " tmux configuration
 au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
 
-" Tolk
-au BufNewFile,BufRead *.tolk                    setf tolk
-
 " TOML
 au BufNewFile,BufRead *.toml,uv.lock		setf toml
 

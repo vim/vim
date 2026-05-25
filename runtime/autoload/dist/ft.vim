@@ -2743,6 +2743,8 @@ const ft_from_ext = {
   "sieve": "sieve",
   # TriG
   "trig": "trig",
+  # Tolk
+  "tolk": "tolk",
   # Zig and Zig Object Notation (ZON)
   "zig": "zig",
   "zon": "zig",
