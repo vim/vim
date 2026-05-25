@@ -16,6 +16,7 @@ int gui_mch_get_winpos(int *x, int *y);
 void gui_mch_set_winpos(int x, int y);
 int gui_mch_maximized(void);
 void gui_mch_unmaximize(void);
+void gui_mch_set_fullscreen(int flag);
 void gui_mch_newfont(void);
 void gui_mch_settitle(char_u *title, char_u *icon);
 void gui_mch_set_shellsize(int width, int height, int min_width, int min_height, int base_width, int base_height, int direction);

@@ -280,6 +280,7 @@ static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, do
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
+static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
@@ -449,6 +450,8 @@ gui_mch_init(void)
 
     g_signal_connect(G_OBJECT(gui.mainwin), "close-request",
 		     G_CALLBACK(delete_event_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.mainwin), "notify::fullscreened",
+		     G_CALLBACK(mainwin_fullscreened_cb), NULL);
 
     // A vertical box holds the menubar, toolbar and main text window.
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -745,6 +748,26 @@ gui_mch_unmaximize(void)
 {
     if (gui.mainwin != NULL)
 	gtk_window_unmaximize(GTK_WINDOW(gui.mainwin));
+}
+
+    void
+gui_mch_set_fullscreen(int flag)
+{
+    if (gui.mainwin == NULL)
+	return;
+    if (flag)
+	gtk_window_fullscreen(GTK_WINDOW(gui.mainwin));
+    else
+	gtk_window_unfullscreen(GTK_WINDOW(gui.mainwin));
+}
+
+    static void
+mainwin_fullscreened_cb(GObject *obj,
+	GParamSpec *pspec UNUSED, gpointer user_data UNUSED)
+{
+    // Force a redraw of the drawing area when entering fullscreen mode.
+    if (gtk_window_is_fullscreen(GTK_WINDOW(obj)))
+	gui_focus_change(TRUE);
 }
 
 /*
