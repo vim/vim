@@ -52640,6 +52640,8 @@ Other ~
   well.
 - New argument handling for user commands |:command-nargs| using the "-nars=_"
   attribute to handle completion of single arguments with spaces as expected.
+- Support %0{} in 'statusline' to insert the expression result verbatim and
+  not drop leading spaces |stl-%0{|.
 
 Platform specific ~
 -----------------

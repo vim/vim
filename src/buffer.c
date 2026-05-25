@@ -5041,7 +5041,8 @@ build_stl_str_hl_local(
 
 	    if (reevaluate)
 		s++;
-	    itemisflag = TRUE;
+	    // %0{} keeps the result verbatim
+	    itemisflag = zeropad ? FALSE : TRUE;
 	    t = p;
 	    while ((*s != '}' || (reevaluate && s[-1] != '%'))
 					  && *s != NUL && p + 1 < out + outlen)
@@ -5078,7 +5079,7 @@ build_stl_str_hl_local(
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
-	    if (str != NULL && *str != NUL)
+	    if (!zeropad && str != NULL && *str != NUL)
 	    {
 		if (*skipdigits(str) == NUL)
 		{
