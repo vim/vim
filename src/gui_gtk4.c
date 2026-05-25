@@ -3699,16 +3699,43 @@ popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
 	gtk_widget_queue_draw(gui.drawarea);
 }
 
+typedef struct {
+    GtkPopover *popover;
+    vimmenu_T  *menu;
+} popup_item_data_T;
+
+    static void
+popup_item_clicked_cb(GtkButton *button UNUSED, gpointer data)
+{
+    popup_item_data_T *d = data;
+
+    if (d->popover != NULL)
+	gtk_popover_popdown(d->popover);
+    if (d->menu != NULL)
+    {
+	gui_menu_cb(d->menu);
+	gui_mch_flush();
+    }
+}
+
+    static void
+popup_item_data_free(gpointer data, GClosure *closure UNUSED)
+{
+    g_free(data);
+}
+
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
 {
-    GMenu	    *gmenu;
     GtkWidget	    *popover;
+    GtkWidget	    *box;
     GtkWidget	    *parent;
     GdkRectangle    rect;
+    vimmenu_T	    *child;
+    int		    mode;
     int		    natural_width = 0;
 
-    if (menu == NULL || menu->submenu_id == NULL)
+    if (menu == NULL || menu->children == NULL)
 	return;
 
     // Attach the popover to drawarea's parent (the GtkOverlay) rather than
@@ -3719,22 +3746,72 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     if (parent == NULL)
 	parent = gui.drawarea;
 
-    gmenu = (GMenu *)(gpointer)menu->submenu_id;
-    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
+    // Build the popover by hand instead of using gtk_popover_menu_new_from_model.
+    // GtkPopoverMenu relies on the "menu.<name>" action-group lookup walking up
+    // the parent chain, which has been observed to silently fail on some
+    // compositors when the popover is parented via gtk_widget_set_parent. Wiring
+    // each menu item to a plain "clicked" signal sidesteps that entirely.
+    popover = gtk_popover_new();
     gtk_widget_set_parent(popover, parent);
     gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
     gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    gtk_widget_add_css_class(popover, "menu");
+
+    box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_popover_set_child(GTK_POPOVER(popover), box);
+
+    mode = get_menu_mode_flag();
+
+    for (child = menu->children; child != NULL; child = child->next)
+    {
+	GtkWidget	    *item;
+	char_u		    *label;
+	popup_item_data_T   *cb_data;
+
+	if (menu_is_separator(child->name))
+	{
+	    item = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	    gtk_box_append(GTK_BOX(box), item);
+	    continue;
+	}
+
+	label = CONVERT_TO_UTF8(child->dname);
+	item = gtk_button_new_with_mnemonic(
+		label != NULL ? (const char *)label : "");
+	CONVERT_TO_UTF8_FREE(label);
+
+	gtk_widget_add_css_class(item, "flat");
+	gtk_widget_add_css_class(item, "model");
+	gtk_button_set_has_frame(GTK_BUTTON(item), FALSE);
+	gtk_widget_set_halign(item, GTK_ALIGN_FILL);
+	{
+	    GtkWidget *btn_label = gtk_button_get_child(GTK_BUTTON(item));
+	    if (GTK_IS_LABEL(btn_label))
+		gtk_label_set_xalign(GTK_LABEL(btn_label), 0.0);
+	}
+
+	if (!(child->modes & child->enabled & mode))
+	    gtk_widget_set_sensitive(item, FALSE);
+
+	cb_data = g_new0(popup_item_data_T, 1);
+	cb_data->popover = GTK_POPOVER(popover);
+	cb_data->menu = child;
+	g_signal_connect_data(item, "clicked",
+		G_CALLBACK(popup_item_clicked_cb),
+		cb_data, popup_item_data_free, 0);
+
+	gtk_box_append(GTK_BOX(box), item);
+    }
 
     if (!query_pointer_pos(&rect.x, &rect.y))
     {
 	rect.x = 0;
 	rect.y = 0;
     }
-    // GtkPopover with GTK_POS_BOTTOM anchors its horizontal centre to the
-    // centre of the pointing-to rectangle. Set the rect width to the
-    // popover's natural width so the popover's left edge aligns with the
-    // cursor instead of being centred on it.
-    gtk_widget_measure(popover, GTK_ORIENTATION_HORIZONTAL, -1,
+    // GtkPopover with GTK_POS_BOTTOM centres horizontally on the pointing-to
+    // rectangle. Use the box's natural width so the popover's left edge ends
+    // up at the cursor (down-and-to-the-right of the pointer).
+    gtk_widget_measure(box, GTK_ORIENTATION_HORIZONTAL, -1,
 	    NULL, &natural_width, NULL, NULL);
     rect.width = natural_width > 0 ? natural_width : 1;
     rect.height = 1;
