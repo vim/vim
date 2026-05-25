@@ -3272,7 +3272,7 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
  * get a RGB fallback foreground color from guifg, ctermfg or deduced from background
  */
     static void
-resolve_fallback_fg_to_rgb()
+resolve_fallback_fg_to_rgb(void)
 {
     int ffr, ffg, ffb;
     guicolor_T fgcolor_or_gui_fgcolor = INVALCOLOR;
@@ -3298,7 +3298,7 @@ resolve_fallback_fg_to_rgb()
  * get a RGB fallback background color from guifg, ctermbg or deduced from background
  */
     static void
-resolve_fallback_bg_to_rgb()
+resolve_fallback_bg_to_rgb(void)
 {
     int fbr, fbg, fbb;
     guicolor_T bgcolor_or_gui_bgcolor = INVALCOLOR;
