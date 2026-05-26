@@ -90,7 +90,7 @@ def Test_interface_basics()
   lines =<< trim END
     vim9script
     interface Short
-    : 	endint
+    :   endint
   END
   v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endint', 3)
 
