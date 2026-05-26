@@ -1,4 +1,4 @@
-.TH VIM 1 "27 giugno 2025"
+.TH VIM 1 "22 maggio 2026"
 .SH NOME
 vim \- VI Migliorato, un editor di testi per programmatori
 .SH SINTASSI
@@ -195,6 +195,17 @@ comando di uno script.
 Eseguire
 .B Vim
 in Modo Ex, come se il programma eseguito sia "ex".
+.TP
+\-display {display}
+Eseguire
+.B Vim
+sul terminale
+.IR {display} ,
+connettendosi al server X indicato, invece che a quello specificato
+dalla variabile d'ambiente $DISPLAY.
+La forma lunga "\-\-display" è accettata solo dalle GUI GTK+ 2 e GTK+ 3.
+In ogni caso, Vim dev'essere stato compilato con la funzionalità
+.B +xterm_clipboard.
 .TP
 \-E
 Eseguire
