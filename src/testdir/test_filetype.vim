@@ -2894,6 +2894,11 @@ func Test_inc_file()
   call assert_equal('bitbake', &filetype)
   bwipe!
 
+  call writefile(['MACHINE ?= "qemu"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
   call writefile(['MACHINE ??= "qemu"'], 'Xfile.inc')
   split Xfile.inc
   call assert_equal('bitbake', &filetype)
