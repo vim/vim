@@ -7746,6 +7746,7 @@ ft_hare.txt	ft_hare.txt	/*ft_hare.txt*
 ft_mp.txt	ft_mp.txt	/*ft_mp.txt*
 ft_ps1.txt	ft_ps1.txt	/*ft_ps1.txt*
 ft_raku.txt	ft_raku.txt	/*ft_raku.txt*
+ft_recommended_style	usr_51.txt	/*ft_recommended_style*
 ft_rust.txt	ft_rust.txt	/*ft_rust.txt*
 ft_sql.txt	ft_sql.txt	/*ft_sql.txt*
 ftdetect	filetype.txt	/*ftdetect*
