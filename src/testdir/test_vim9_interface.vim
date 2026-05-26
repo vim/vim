@@ -1,8 +1,8 @@
-" Tests for Vim9 interface
+" Tests for Vim9 script interfaces
 
 import './util/vim9.vim' as v9
 
-" Tests for basic interface declaration and errors
+" Test for basic interface declaration and errors {{{1
 def Test_interface_basics()
   var lines =<< trim END
     vim9script
@@ -10,6 +10,14 @@ def Test_interface_basics()
       var ro_var: list<number>
       def GetCount(): number
     endinterface
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # ":interface" and ":endinterface"
+  lines =<< trim END
+    vim9script
+    :interface I
+    :endinterface
   END
   v9.CheckSourceSuccess(lines)
 
@@ -78,6 +86,14 @@ def Test_interface_basics()
   END
   v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endin', 3)
 
+  # "endinterface" cannot be shortened (variant incl. whitespace and colon)
+  lines =<< trim END
+    vim9script
+    interface Short
+    : 	endint
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endint', 3)
+
   # Additional commands after "interface name"
   lines =<< trim END
     vim9script
@@ -85,6 +101,14 @@ def Test_interface_basics()
     endinterface
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = 10", 2)
+
+  # Additional command after "endinterface"
+  lines =<< trim END
+    vim9script
+    interface NoTrailingCmd
+    endinterface | echo 'no'
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'no'", 3)
 
   lines =<< trim END
     vim9script
@@ -124,6 +148,7 @@ def Test_interface_basics()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for mismatched end command for class and interface {{{1
 def Test_class_interface_wrong_end()
   var lines =<< trim END
     vim9script
@@ -142,7 +167,7 @@ def Test_class_interface_wrong_end()
   v9.CheckSourceFailure(lines, 'E476: Invalid command: endclass, expected endinterface', 4)
 enddef
 
-" Test for using string() with an interface
+" Test for using string() with an interface {{{1
 def Test_interface_to_string()
   var lines =<< trim END
     vim9script
@@ -154,6 +179,7 @@ def Test_interface_to_string()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for a class implementing an interface {{{1
 def Test_class_implements_interface()
   var lines =<< trim END
     vim9script
@@ -281,13 +307,21 @@ def Test_class_implements_interface()
   END
   v9.CheckSourceFailure(lines, 'E1315: White space required after name: A"', 4)
 
-  # Trailing characters after a class name
+  # Trailing characters after an interface name
   lines =<< trim END
     vim9script
-    class A bbb
-    endclass
+    interface I nah
+    endinterface
   END
-  v9.CheckSourceFailure(lines, 'E488: Trailing characters: bbb', 2)
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: nah', 2)
+
+  # Additional words after "endinterface"
+  lines =<< trim END
+    vim9script
+    interface NoTrailingChars
+    endinterface nah
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: nah", 3)
 
   # using "implements" with a non-existing class
   lines =<< trim END
@@ -519,6 +553,7 @@ def Test_class_implements_interface()
   v9.CheckSourceFailure(lines, 'E1389: Missing name after implements', 2)
 enddef
 
+" Test for calling a method via an interface-typed variable {{{1
 def Test_call_interface_method()
   var lines =<< trim END
     vim9script
@@ -639,7 +674,7 @@ def Test_call_interface_method()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for implementing an imported interface
+" Test for implementing an imported interface {{{1
 def Test_implement_imported_interface()
   var lines =<< trim END
     vim9script
@@ -671,7 +706,7 @@ def Test_implement_imported_interface()
   v9.CheckScriptSuccess(lines)
 enddef
 
-" Test for changing the member access of an interface in a implementation class
+" Test for changing the member access of an interface in a implementation class {{{1
 def Test_change_interface_member_access()
   var lines =<< trim END
     vim9script
@@ -696,7 +731,7 @@ def Test_change_interface_member_access()
   v9.CheckSourceFailure(lines, 'E1367: Access level of variable "val" of interface "A" is different', 7)
 enddef
 
-" Test for using a interface method using a child object
+" Test for using a interface method using a child object {{{1
 def Test_interface_method_from_child()
   var lines =<< trim END
     vim9script
@@ -732,8 +767,8 @@ def Test_interface_method_from_child()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using an interface method using a child object when it is overridden
-" by the child class.
+" Test for using an interface method using a child object when ... {{{1
+" it is overridden by the child class.
 def Test_interface_overridden_method_from_child()
   var lines =<< trim END
     vim9script
@@ -772,7 +807,7 @@ def Test_interface_overridden_method_from_child()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for interface inheritance
+" Test for interface inheritance {{{1
 def Test_interface_inheritance()
   var lines =<< trim END
     vim9script
@@ -880,8 +915,8 @@ def Test_interface_inheritance()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" A interface cannot have a static variable or a static method or a protected
-" variable or a protected method or a public variable
+" Test for an interface cannot have a static variable/method ... {{{1
+" a protected variable/method, or a public variable
 def Test_interface_with_unsupported_members()
   var lines =<< trim END
     vim9script
@@ -956,7 +991,7 @@ def Test_interface_with_unsupported_members()
   v9.CheckSourceFailure(lines, 'E1380: Protected method not supported in an interface', 3)
 enddef
 
-" Test for extending an interface
+" Test for extending an interface {{{1
 def Test_extend_interface()
   var lines =<< trim END
     vim9script
@@ -1079,8 +1114,8 @@ def Test_extend_interface()
   v9.CheckSourceFailure(lines, 'E1382: Variable "val1": type mismatch, expected number but got string', 11)
 enddef
 
-" Test for a child class implementing an interface when some of the methods are
-" defined in the parent class.
+" Test for a child class implementing an interface when some ... {{{1
+" of the methods are defined in the parent class
 def Test_child_class_implements_interface()
   var lines =<< trim END
     vim9script
@@ -1263,7 +1298,7 @@ def Test_child_class_implements_interface()
   v9.CheckSourceFailure(lines, 'E1382: Variable "var3": type mismatch, expected list<dict<number>> but got list<dict<string>>', 22)
 enddef
 
-" Test for extending an interface with duplicate variables and methods
+" Test for extending an interface with duplicate variables and methods {{{1
 def Test_interface_extends_with_dup_members()
   var lines =<< trim END
     vim9script
@@ -1304,8 +1339,8 @@ def Test_interface_extends_with_dup_members()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for implementing an interface with different ordering for the interface
-" member variables.
+" Test for implementing an interface with different ordering for {{{1
+" the interface member variables
 def Test_implement_interface_with_different_variable_order()
   var lines =<< trim END
     vim9script
@@ -1329,7 +1364,7 @@ def Test_implement_interface_with_different_variable_order()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for inheriting interfaces from an imported super class
+" Test for inheriting interfaces from an imported super class {{{1
 def Test_interface_inheritance_with_imported_super()
   var lines =<< trim END
     vim9script
@@ -1367,7 +1402,7 @@ def Test_interface_inheritance_with_imported_super()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for defining an interface in a function
+" Test for defining an interface in a function {{{1
 def Test_interface_defined_in_function()
   var lines =<< trim END
     vim9script
@@ -1381,8 +1416,8 @@ def Test_interface_defined_in_function()
   v9.CheckScriptFailure(lines, 'E1436: Interface can only be used in a script', 2)
 enddef
 
-" Test for using "any" type for a variable in a sub-class while it has a
-" concrete type in the interface
+" Test for using "any" type for a variable in a sub-class while ... {{{1
+" it has a concrete type in the interface
 def Test_implements_using_var_type_any()
   var lines =<< trim END
     vim9script
@@ -1411,7 +1446,7 @@ def Test_implements_using_var_type_any()
   v9.CheckSourceFailure(lines, 'E1382: Variable "val": type mismatch, expected list<dict<string>> but got dict<number>', 1)
 enddef
 
-" Test interface garbage collection
+" Test interface garbage collection {{{1
 func Test_interface_garbagecollect()
   let lines =<< trim END
     vim9script
@@ -1455,5 +1490,5 @@ func Test_interface_garbagecollect()
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
-
+" }}}
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

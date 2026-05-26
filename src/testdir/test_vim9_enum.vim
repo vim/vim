@@ -1,8 +1,8 @@
-" Test Vim9 enums
+" Tests for Vim9 script enums
 
 import './util/vim9.vim' as v9
 
-" Test for parsing an enum definition
+" Test for parsing an enum definition {{{1
 def Test_enum_parse()
   # enum supported only in a Vim9 script
   var lines =<< trim END
@@ -10,6 +10,14 @@ def Test_enum_parse()
     endenum
   END
   v9.CheckSourceFailure(lines, 'E1414: Enum can only be defined in Vim9 script', 1)
+
+  # ":enum" and ":endenum"
+  lines =<< trim END
+    vim9script
+    :enum Foo
+    :endenum
+  END
+  v9.CheckSourceSuccess(lines)
 
   # First character in an enum name should be capitalized.
   lines =<< trim END
@@ -46,10 +54,10 @@ def Test_enum_parse()
   # The complete "enum" should be specified.
   lines =<< trim END
     vim9script
-    enu Something
+    enu Nah
     endenum
   END
-  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: enu', 2)
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: enu Nah', 2)
 
   # The complete "endenum" should be specified.
   lines =<< trim END
@@ -58,6 +66,14 @@ def Test_enum_parse()
     enden
   END
   v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: enden', 3)
+
+  # "endenum" cannot be shortened (variant incl. whitespace and colon)
+  lines =<< trim END
+    vim9script
+    enum NoAbbrev
+    :	endenu
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endenu', 3)
 
   # Only the complete word "endenum" should be recognized
   lines =<< trim END
@@ -271,6 +287,16 @@ def Test_enum_parse()
   END
   v9.CheckSourceFailure(lines, 'E1418: Invalid enum value declaration: $%@', 4)
 
+  # Additional command after "enumvalue"
+  lines =<< trim END
+    vim9script
+    enum NoAdditionalCmd
+      One, | var y = 10
+      Two
+    endenum
+  END
+  v9.CheckSourceFailure(lines, "E1418: Invalid enum value declaration: | var y = 10", 3)
+
   # Duplicate enum value
   lines =<< trim END
     vim9script
@@ -352,6 +378,7 @@ def Test_enum_parse()
   v9.CheckSourceFailure(lines, 'E1123: Missing comma before argument: n: number = 10', 3)
 enddef
 
+" Test for basic enum declaration and errors {{{1
 def Test_basic_enum()
   # Declare a simple enum
   var lines =<< trim END
@@ -493,7 +520,7 @@ def Test_basic_enum()
   v9.CheckSourceFailure(lines, 'E1421: Enum "Fruit" cannot be used as a value', 6)
 enddef
 
-" Test for type() and typename() of an enum
+" Test for type() and typename() of an enum {{{1
 def Test_enum_type()
   var lines =<< trim END
     vim9script
@@ -525,7 +552,7 @@ def Test_enum_type()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Try modifying an enum or an enum item
+" Test for trying to modify an enum or an enum item {{{1
 def Test_enum_modify()
   # Try assigning an unsupported value to an enum
   var lines =<< trim END
@@ -652,7 +679,7 @@ def Test_enum_modify()
   v9.CheckSourceFailure(lines, 'E1423: Enum value "Foo.Apple" cannot be modified', 1)
 enddef
 
-" Test for using enum in an expression
+" Test for using enum in an expression {{{1
 def Test_enum_expr()
   var lines =<< trim END
     vim9script
@@ -691,7 +718,7 @@ def Test_enum_expr()
   v9.CheckSourceFailure(lines, 'E1425: Using an Enum "Color" as a String', 5)
 enddef
 
-" Using an enum in a lambda function
+" Test for using an enum in a lambda function {{{1
 def Test_enum_lambda()
   var lines =<< trim END
     vim9script
@@ -708,7 +735,7 @@ def Test_enum_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Comparison using enums
+" Test for comparison using enums {{{1
 def Test_enum_compare()
   var lines =<< trim END
     vim9script
@@ -761,7 +788,7 @@ def Test_enum_compare()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using an enum as a default argument to a function
+" Test for using an enum as a default argument to a function {{{1
 def Test_enum_default_arg()
   var lines =<< trim END
     vim9script
@@ -777,7 +804,7 @@ def Test_enum_default_arg()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for enum garbage collection
+" Test for enum garbage collection {{{1
 func Test_enum_garbagecollect()
   let lines =<< trim END
     vim9script
@@ -826,7 +853,7 @@ func Test_enum_garbagecollect()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
-" Test for the enum values class variable
+" Test for the enum values class variable {{{1
 def Test_enum_values()
   var lines =<< trim END
     vim9script
@@ -912,7 +939,7 @@ def Test_enum_values()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test comments in enums
+" Test for using comments in enums {{{1
 def Test_enum_comments()
   var lines =<< trim END
     vim9script
@@ -951,7 +978,7 @@ def Test_enum_comments()
   v9.CheckSourceFailure(lines, 'E1170: Cannot use #{ to start a comment', 4)
 enddef
 
-" Test trailing whitespace after enum values
+" Test for trailing whitespace after enum values {{{1
 def Test_enum_whitespace()
   var lines =<< trim END
     vim9script
@@ -966,7 +993,7 @@ def Test_enum_whitespace()
   lines =<< trim END
     vim9script
     enum Car
-      Honda(), 
+      Honda(),	
       Ford()   
     endenum
     defcompile
@@ -974,7 +1001,7 @@ def Test_enum_whitespace()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test string() with enums
+" Test for using string() with enums {{{1
 def Test_enum_string()
   var lines =<< trim END
     vim9script
@@ -1004,7 +1031,7 @@ def Test_enum_string()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for importing an enum
+" Test for importing an enum {{{1
 def Test_enum_import()
   var lines =<< trim END
     vim9script
@@ -1040,7 +1067,7 @@ def Test_enum_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
-" Test for using test_refcount() with enum
+" Test for using test_refcount() with enum {{{1
 def Test_enum_refcount()
   var lines =<< trim END
     vim9script
@@ -1099,7 +1126,7 @@ def Test_enum_refcount()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for defining an enum with additional object variables and methods
+" Test for defining an enum with additional object variables and methods {{{1
 def Test_enum_enhanced()
   var lines =<< trim END
     vim9script
@@ -1140,7 +1167,7 @@ def Test_enum_enhanced()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for the enum value 'name' variable
+" Test for the enum value 'name' variable {{{1
 def Test_enum_name()
   # Check the names of enum values
   var lines =<< trim END
@@ -1221,7 +1248,7 @@ def Test_enum_name()
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: name', 4)
 enddef
 
-" Test for the enum value 'ordinal' variable
+" Test for the enum value 'ordinal' variable {{{1
 def Test_enum_ordinal()
   # Check the ordinal values of enum items
   var lines =<< trim END
@@ -1302,7 +1329,7 @@ def Test_enum_ordinal()
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: ordinal', 4)
 enddef
 
-" Test for trying to create a new enum object using the constructor
+" Test for trying to create a new enum object using the constructor {{{1
 def Test_enum_invoke_constructor()
   var lines =<< trim END
     vim9script
@@ -1360,7 +1387,7 @@ def Test_enum_invoke_constructor()
   v9.CheckSourceFailureList(lines, ['E1100:', 'E1100:'], 1)
 enddef
 
-" Test for checking "this" in an enum constructor
+" Test for checking "this" in an enum constructor {{{1
 def Test_enum_this_in_constructor()
   var lines =<< trim END
     vim9script
@@ -1378,7 +1405,7 @@ def Test_enum_this_in_constructor()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using member variables in an enum object
+" Test for using member variables in an enum object {{{1
 def Test_enum_object_variable()
   var lines =<< trim END
     vim9script
@@ -1483,7 +1510,7 @@ def Test_enum_object_variable()
   v9.CheckSourceFailure(lines, 'E119: Not enough arguments for function: new', 8)
 enddef
 
-" Test for using a custom constructor with an enum
+" Test for using a custom constructor with an enum {{{1
 def Test_enum_custom_constructor()
   # space before "("
   var lines =<< trim END
@@ -1556,7 +1583,7 @@ def Test_enum_custom_constructor()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using class variables in an enum class
+" Test for using class variables in an enum class {{{1
 def Test_enum_class_variable()
   var lines =<< trim END
     vim9script
@@ -1571,7 +1598,7 @@ def Test_enum_class_variable()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for converting a string to an enum value
+" Test for converting a string to an enum value {{{1
 def Test_enum_eval()
   var lines =<< trim END
     vim9script
@@ -1588,7 +1615,7 @@ def Test_enum_eval()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using "values" in an enum class variable
+" Test for using "values" in an enum class variable {{{1
 def Test_use_enum_values_in_class_variable()
   var lines =<< trim END
     vim9script
@@ -1601,7 +1628,7 @@ def Test_use_enum_values_in_class_variable()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for using lambda block in enums
+" Test for using lambda block in enums {{{1
 def Test_lambda_block_in_enum()
   # This used to crash Vim
   var lines =<< trim END
@@ -1632,7 +1659,7 @@ def Test_lambda_block_in_enum()
   v9.CheckScriptSuccess(lines)
 enddef
 
-" Echo an enum
+" Test for echoing an enum {{{1
 def Test_enum_echo()
   var lines =<< trim END
     vim9script
@@ -1647,8 +1674,8 @@ def Test_enum_echo()
   v9.CheckScriptSuccess(lines)
 enddef
 
-" Test for garbage collecting an enum with a complex member variables.
-func Test_class_selfref_gc()
+" Test for garbage collecting an enum with a complex member variables {{{1
+func Test_enum_selfref_gc()
   let lines =<< trim END
     vim9script
     enum Foo
@@ -1664,7 +1691,7 @@ func Test_class_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
-" Test for defining an enum in a function
+" Test for defining an enum in a function {{{1
 def Test_enum_defined_in_function()
   var lines =<< trim END
     vim9script
@@ -1678,5 +1705,5 @@ def Test_enum_defined_in_function()
   END
   v9.CheckScriptFailure(lines, 'E1435: Enum can only be used in a script', 2)
 enddef
-
+" }}}
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
