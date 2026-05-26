@@ -2831,7 +2831,13 @@ endfunc
 func Test_inc_file()
   filetype on
 
+  " pov
   call writefile(['this is the fallback'], 'Xfile.inc', 'D')
+  split Xfile.inc
+  call assert_equal('pov', &filetype)
+  bwipe!
+
+  call writefile(['!Comment with formular a = b/c'], 'Xfile.inc')
   split Xfile.inc
   call assert_equal('pov', &filetype)
   bwipe!
@@ -2884,6 +2890,11 @@ func Test_inc_file()
   bwipe!
 
   call writefile(['DEPENDS:append = " somedep"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['MACHINE ?= "qemu"'], 'Xfile.inc')
   split Xfile.inc
   call assert_equal('bitbake', &filetype)
   bwipe!
