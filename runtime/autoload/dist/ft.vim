@@ -920,7 +920,7 @@ export def FTinc()
       elseif line =~ '^\s*\%({\|(\*\)' || line =~? ft_pascal_keywords
         setf pascal
         return
-      elseif line =~# '\<\%(require\|inherit\)\>' || line =~# '[A-Z][A-Za-z0-9_:${}/]*\(\[[A-Za-z0-9_:/]\+\]\)*\s\+\%(??\|[?:+.]\)\?=.\? '
+      elseif line =~# '^\s*\<\%(require\|inherit\)\>' || line =~# '^\s*[A-Z][A-Za-z0-9_:${}/]*\%(\[[A-Za-z0-9_:/]\+\]\)*\s\+\%(??=\|[?:+.]=\|=[+.]\?\)\s\+'
         setf bitbake
         return
       endif
