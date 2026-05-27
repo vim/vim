@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2025 Sep 08
+" Last Change:	2026 May 27
 " 2025 Sep 25 by Vim Project: fix wrong type highlighting #18394
 " 2025 Dec 03 by Vim Project: highlight t-strings #18679
 " 2026 Jan 26 by Vim Project: highlight constants #18922
 " 2026 Mar 11 by Vim Project: fix number performance #19630
+" 2026 May 27 by Vim Project: highlight `lazy` soft keyword (PEP 810)
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "		Rob B
@@ -120,6 +121,7 @@ syn keyword pythonAsync		async await
 " for more on this.
 syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
+syn match   pythonInclude       "^\s*\zslazy\ze\s\+\%(from\|import\)\>"
 syn match   pythonStatement     "\<type\ze\s\+\h\w*" nextgroup=pythonType skipwhite
 
 " These names are special by convention. While they aren't real keywords,
