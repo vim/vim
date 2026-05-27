@@ -4086,15 +4086,9 @@ ex_substitute(exarg_T *eap)
 	    pat.string = cmd;		    // remember start of search pat
 	    cmd = skip_regexp_ex(cmd, delimiter, magic_isset(),
 							&eap->arg, NULL, NULL);
+	    pat.length = (size_t)(cmd - pat.string);
 	    if (cmd[0] == delimiter)	    // end delimiter found
-	    {
-		pat.length = (size_t)(cmd - pat.string);
 		*cmd++ = NUL;		    // replace it with a NUL
-	    }
-	    else if (cmd[0] == NUL)
-		pat.length = (size_t)(cmd - pat.string);
-	    else
-		pat.length = STRLEN(pat.string);
 	}
 
 	/*
