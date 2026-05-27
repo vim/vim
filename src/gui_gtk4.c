@@ -1912,39 +1912,94 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     }
 }
 
+// Debounced resize: drawarea_resize_cb only resizes the backing surface
+// (preserving old content) and (re)arms a short timeout. The actual
+// gui_resize_shell() runs from drawarea_resize_apply_cb once the user has
+// stopped dragging for ~100 ms, by which time no input is pending and
+// update_screen() will not bail in screenclear()'s wake.
+static guint drawarea_resize_timeout_id = 0;
+static int drawarea_resize_pending_w = 0;
+static int drawarea_resize_pending_h = 0;
+
+    static gboolean
+drawarea_resize_apply_cb(gpointer data UNUSED)
+{
+    int width = drawarea_resize_pending_w;
+    int height = drawarea_resize_pending_h;
+
+    drawarea_resize_timeout_id = 0;
+
+    if (width <= 0 || height <= 0)
+	return G_SOURCE_REMOVE;
+    if (updating_screen)
+    {
+	drawarea_resize_timeout_id = g_timeout_add(50,
+		drawarea_resize_apply_cb, NULL);
+	return G_SOURCE_REMOVE;
+    }
+
+    gui.force_redraw = TRUE;
+    gui_resize_shell(width, height);
+    if (gui.in_use)
+	redraw_all_later(UPD_CLEAR);
+    return G_SOURCE_REMOVE;
+}
+
     static void
 drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 	gpointer data UNUSED)
 {
     cairo_t *cr;
-    int	    scale = get_drawarea_scale();
+    cairo_surface_t *old_surface;
+    int scale = get_drawarea_scale();
 
     if (width <= 0 || height <= 0)
 	return;
 
+    drawarea_resize_pending_w = width;
+    drawarea_resize_pending_h = height;
+
+    // Keep the backing surface in sync with the drawing area so GTK keeps
+    // showing the previous frame. Re-creating it preserves the old
+    // contents.
     if (gui.surface != NULL)
     {
 	int sw = cairo_image_surface_get_width(gui.surface) / scale;
 	int sh = cairo_image_surface_get_height(gui.surface) / scale;
-
-	if (sw == width && sh == height)
-	    return;
-
-	cairo_surface_destroy(gui.surface);
+	if (sw != width || sh != height)
+	{
+	    old_surface = gui.surface;
+	    gui.surface = create_backing_surface(width, height);
+	    if (gui.surface != NULL)
+	    {
+		cr = cairo_create(gui.surface);
+		set_cairo_source_from_pixel(cr, gui.back_pixel);
+		cairo_paint(cr);
+		cairo_set_source_surface(cr, old_surface, 0, 0);
+		cairo_paint(cr);
+		cairo_destroy(cr);
+	    }
+	    cairo_surface_destroy(old_surface);
+	}
+    }
+    else
+    {
+	gui.surface = create_backing_surface(width, height);
+	if (gui.surface != NULL)
+	{
+	    cr = cairo_create(gui.surface);
+	    set_cairo_source_from_pixel(cr, gui.back_pixel);
+	    cairo_paint(cr);
+	    cairo_destroy(cr);
+	}
     }
 
-    // Create a fresh surface filled with the background color.
-    // Do not copy old surface content: gui_resize_shell() will trigger
-    // a full redraw, and stale content (e.g. intro screen text) would
-    // otherwise remain as ghost artifacts.
-    gui.surface = create_backing_surface(width, height);
-    cr = cairo_create(gui.surface);
-    set_cairo_source_from_pixel(cr, gui.back_pixel);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-
-    // Notify Vim about the new size - this will cause a full redraw
-    gui_resize_shell(width, height);
+    // Debounce: (re)arm the apply timeout, so gui_resize_shell() only
+    // runs once the resize stream settles.
+    if (drawarea_resize_timeout_id != 0)
+	g_source_remove(drawarea_resize_timeout_id);
+    drawarea_resize_timeout_id = g_timeout_add(100,
+	    drawarea_resize_apply_cb, NULL);
 }
 
     static void
@@ -4003,21 +4058,11 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     // form_size_allocate which gives drawarea the formwin's full size.
     gui_gtk_form_move(GTK_FORM(gui.formwin), gui.drawarea, x, y);
 
-    // Update surface to match new text area size
-    if (w > 0 && h > 0)
-    {
-	int scale = get_drawarea_scale();
-
-	if (gui.surface != NULL)
-	{
-	    int sw = cairo_image_surface_get_width(gui.surface) / scale;
-	    int sh = cairo_image_surface_get_height(gui.surface) / scale;
-	    if (sw == w && sh == h)
-		return;
-	    cairo_surface_destroy(gui.surface);
-	}
-	gui.surface = create_backing_surface(w, h);
-    }
+    // Surface sizing is owned by drawarea_resize_cb; don't recreate it
+    // here. Recreating on every text-area change wiped any preserved
+    // content whenever a sub-cell resize shifted the cell grid, and
+    // update_screen() may bail (char_avail()) during a drag and leave
+    // the fresh surface blank.
 }
 
 /*
