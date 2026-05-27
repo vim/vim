@@ -4472,6 +4472,7 @@ ex_substitute(exarg_T *eap)
 	    {
 		string_T    tmp;
 		char_u	    *p1;
+		size_t	    n;
 
 		// Advance "lnum" to the line where the match starts.  The
 		// match does not start in the first line when there is a line
@@ -4866,7 +4867,7 @@ ex_substitute(exarg_T *eap)
 			    apc_flags &= ~APC_SAVE_FOR_UNDO;
 			// Offset for column byte number of the text property
 			// in the resulting buffer afterwards.
-			total_added += bytes_added;
+			total_added += (colnr_T)bytes_added;
 		    }
 #endif
 		}
@@ -4884,7 +4885,7 @@ ex_substitute(exarg_T *eap)
 						       -MAXCOL, apc_flags))
 			    apc_flags &= ~APC_SAVE_FOR_UNDO;
 			total_added -=
-			    (colnr_T)sub_firstline.length - regmatch.startpos[0].col;
+			    (colnr_T)(sub_firstline.length - regmatch.startpos[0].col);
 
 			// Props in the last line may be moved or deleted
 			if (adjust_prop_columns(lastlnum,
@@ -4996,12 +4997,13 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_EVAL
 		++textlock;
 #endif
-		new_start.length += (size_t)vim_regsub_multi(&regmatch,
+		n = (size_t)vim_regsub_multi(&regmatch,
 		    sub_firstlnum - regmatch.startpos[0].lnum,
 		    sub, new_end, (int)sublen,
 		    REGSUB_COPY | REGSUB_BACKSLASH | (magic_isset() ? REGSUB_MAGIC : 0));
 
-		--new_start.length;	// remove 1 for the NUL
+		if (n > 0)
+		    new_start.length += n - 1;	    // remove 1 for the NUL
 
 #ifdef FEAT_EVAL
 		--textlock;
@@ -5062,8 +5064,6 @@ ex_substitute(exarg_T *eap)
 		 */
 		for (p1 = new_end; *p1; ++p1)
 		{
-		    size_t  n;
-
 		    if (p1[0] == '\\' && p1[1] != NUL)  // remove backslash
 		    {
 			n = (size_t)(new_start.length - (p1 - new_start.string));
