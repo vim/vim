@@ -3131,6 +3131,28 @@ def Test_type_specification_in_assignment()
     Foo()
   END
   v9.CheckSourceFailure(lines, "E476: Invalid command: MyVar: string = 'abc'", 1)
+
+  # redeclare an existing def local variable with a type
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var n: number = 10
+      var n: number = 20
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1017: Variable already declared: n', 2)
+
+  # redeclare an existing def local constant with a type
+  lines =<< trim END
+    vim9script
+    def Foo()
+      const x: number = 1
+      const x: number = 2
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1017: Variable already declared: x', 2)
 enddef
 
 let g:someVar = 'X'
