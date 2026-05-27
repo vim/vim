@@ -193,6 +193,7 @@ char *did_set_toolbar(optset_T *args);
 int expand_set_toolbar(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_toolbariconsize(optset_T *args);
 int expand_set_toolbariconsize(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_chtraceopt(optset_T *args);
 char *did_set_ttymouse(optset_T *args);
 int expand_set_ttymouse(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_varsofttabstop(optset_T *args);

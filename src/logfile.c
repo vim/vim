@@ -23,6 +23,9 @@ static char_u *log_name = NULL;
 static proftime_T log_start;
 #endif
 
+// Re-entry guard for ch_log() calling trace_ingest().
+static int ch_log_tracing = FALSE;
+
     void
 ch_logfile(char_u *fname, char_u *opt)
 {
@@ -104,16 +107,34 @@ ch_log_lead(const char *what, channel_T *ch UNUSED, ch_part_T part UNUSED)
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {
+    va_list ap;
+    char msg_buf[1024];
+
+    // Fast path: nothing to do — no log file and no tracing.
+    if (log_fd == NULL && !trace_is_active())
+	return;
+
+    // Format the message — needed for both log file writing and
+    // TRACE-prefix detection.
+    va_start(ap, fmt);
+    vim_vsnprintf(msg_buf, sizeof(msg_buf), fmt, ap);
+    va_end(ap);
+
+#if defined(FEAT_JOB_CHANNEL)
+    if (STRNCMP(msg_buf, "TRACE|", 6) == 0 && !ch_log_tracing)
+    {
+	ch_log_tracing = TRUE;
+	trace_ingest((char_u *)msg_buf);
+	ch_log_tracing = FALSE;
+	return;  // Don't write TRACE events to the log file.
+    }
+#endif
+
     if (log_fd == NULL)
 	return;
 
-    va_list ap;
-
     ch_log_lead("", ch, PART_COUNT);
-    va_start(ap, fmt);
-    vfprintf(log_fd, fmt, ap);
-    va_end(ap);
-    fputc('\n', log_fd);
+    fprintf(log_fd, "%s\n", msg_buf);
     fflush(log_fd);
     did_repeated_msg = 0;
 }

@@ -372,6 +372,9 @@ free_all_mem(void)
     // Don't want to trigger autocommands from here on.
     block_autocmds();
 
+    // Don't trace further during teardown.
+    // The trace ring buffer will be freed below.
+
     // Close all tabs and windows.  Reset 'equalalways' to avoid redraws.
     p_ea = FALSE;
     if (first_tabpage != NULL && first_tabpage->tp_next != NULL)
@@ -533,6 +536,9 @@ free_all_mem(void)
     // Machine-specific free.
     mch_free_mem();
 # endif
+
+    // Free trace event ring buffers
+    trace_clear_all();
 
     // message history
     for (;;)

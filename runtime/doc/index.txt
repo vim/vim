@@ -1732,6 +1732,7 @@ tag		command		action ~
 |:topleft|	:to[pleft]	make split window appear at top or far left
 |:tprevious|	:tp[revious]	jump to previous matching tag
 |:trewind|	:tr[ewind]	jump to first matching tag
+|trace.txt|	trace		trace event inspection
 |:try|		:try		execute commands, abort on error or exception
 |:tselect|	:ts[elect]	list matching tags and select one
 |:tunmap|	:tunma[p]	like ":unmap" but for Terminal-Job mode

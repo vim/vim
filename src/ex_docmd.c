@@ -2607,12 +2607,21 @@ do_one_cmd(
 	emsg_silent -= cmdmod.cmod_did_esilent;
 	if (emsg_silent < 0)
 	    emsg_silent = 0;
-	cmdmod.cmod_did_esilent = 0;
+    cmdmod.cmod_did_esilent = 0;
     }
 
-/*
- * 7. Execute the command.
- */
+#ifdef FEAT_JOB_CHANNEL
+    if (trace_is_active())
+    {
+	char_u *__payload = trace_format_ex(&ea);
+	ch_log(NULL, "TRACE|EX||%s|%d",
+	       (char *)__payload, 0);
+	vim_free(__payload);
+    }
+#endif
+    /*
+     * 7. Execute the command.
+     */
 
     if (IS_USER_CMDIDX(ea.cmdidx))
     {

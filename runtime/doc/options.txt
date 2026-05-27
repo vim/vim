@@ -9509,6 +9509,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 'timeout' 'to'		boolean (default on)
 			global
 
+					*'tracefilter'* *'trf'*
+'tracefilter' 'trf'	string (default "")
+			globally local
+	Comma-separated list of event categories to record.  See
+	|trace.txt| for details.
+
+					*'traceringsize'* *'trs'*
+'traceringsize' 'trs'	number (default 512)
+			global
+	Size of the trace event ring buffer, in entries.  Minimum 16.
+	See |trace.txt| for details.
+
+				*'traceverbosity'* *'trv'*
+'traceverbosity' 'trv'	string (default "normal")
+			global
+	How much detail to record for each trace event.
+	See |trace.txt| for details.
+
 						*'ttimeout'* *'nottimeout'*
 'ttimeout'		boolean (default off, set in |defaults.vim|)
 			global

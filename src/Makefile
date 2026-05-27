@@ -1747,6 +1747,7 @@ OBJ_COMMON = \
 	objects/textobject.o \
 	objects/textprop.o \
 	objects/time.o \
+	objects/trace.o \
 	objects/tuple.o \
 	objects/typval.o \
 	objects/ui.o \
@@ -1953,6 +1954,7 @@ PROTO_FILES = \
 	proto/textobject.pro \
 	proto/textprop.pro \
 	proto/time.pro \
+	proto/trace.pro \
 	proto/tuple.pro \
 	proto/typval.pro \
 	proto/ui.pro \
@@ -3609,6 +3611,9 @@ objects/textprop.o: textprop.c
 objects/time.o: time.c
 	$(CCC) -o $@ time.c
 
+objects/trace.o: trace.c
+	$(CCC) -o $@ trace.c
+
 objects/tuple.o: tuple.c
 	$(CCC) -o $@ tuple.c
 
@@ -4314,6 +4319,11 @@ objects/time.o: auto/osdef.h time.c vim.h protodef.h auto/config.h feature.h os_
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/trace.o: auto/osdef.h trace.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
 objects/tuple.o: auto/osdef.h tuple.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4771,6 +4781,7 @@ proto/textformat.pro: textformat.c
 proto/textobject.pro: textobject.c
 proto/textprop.pro: textprop.c
 proto/time.pro: time.c
+proto/trace.pro: trace.c
 proto/tuple.pro: tuple.c
 proto/typval.pro: typval.c
 proto/ui.pro: ui.c

@@ -126,6 +126,8 @@ ch_setoptions({handle}, {options})
 				none	set options for {handle}
 ch_status({handle} [, {options}])
 				String	status of channel {handle}
+ch_traceclear()			none	clear the channel trace log
+ch_traceget([{count}])		List	return the channel trace log
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in
 					{expr}

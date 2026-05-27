@@ -587,6 +587,12 @@ static struct vimoption options[] =
 			    (char_u *)&p_cedit, PV_NONE, did_set_cedit, NULL,
 			    {(char_u *)"", (char_u *)CTRL_F_STR}
 			    SCTX_INIT},
+#if defined(FEAT_JOB_CHANNEL)
+    {"chtraceopt", "chto", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA,
+			    (char_u *)&p_chtraceopt, PV_NONE,
+			    did_set_chtraceopt, NULL,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+#endif
     {"charconvert",  "ccv", P_STRING|P_VI_DEF|P_SECURE,
 #if defined(FEAT_EVAL)
 			    (char_u *)&p_ccv, PV_NONE, did_set_optexpr, NULL,

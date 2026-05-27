@@ -5425,3 +5425,56 @@ typedef enum
     TERM_SYNC_OUTPUT_OFF = 1 << 2,
     TERM_SYNC_OUTPUT_FLUSH = 1 << 3,
 } term_sync_output_T;
+
+/*
+ * Event kind identifiers for trace recording.
+ */
+typedef enum {
+    TRACE_INPUT,
+    TRACE_COMMAND,
+    TRACE_CMD,
+    TRACE_OPERATOR_BEGIN,
+    TRACE_OPERATOR_EXECUTE,
+    TRACE_OPERATOR_CANCEL,
+    TRACE_EX,
+    TRACE_MAPPING,
+    TRACE_AUTOCMD,
+    TRACE_TYPEBUF,
+    TRACE_SCRIPT,
+    TRACE_MODE,
+} trace_event_kind_T;
+
+typedef enum {
+    TRACE_VERBOSITY_MINIMAL = 0,
+    TRACE_VERBOSITY_NORMAL,
+    TRACE_VERBOSITY_VERBOSE,
+    TRACE_VERBOSITY_DEBUG,
+} trace_verbosity_T;
+
+typedef enum {
+    TRACE_FILTER_INPUT        = 1 << 0,
+    TRACE_FILTER_COMMAND      = 1 << 1,
+    TRACE_FILTER_OPERATOR     = 1 << 2,
+    TRACE_FILTER_EX           = 1 << 3,
+    TRACE_FILTER_MAPPING      = 1 << 4,
+    TRACE_FILTER_AUTOCMD      = 1 << 5,
+    TRACE_FILTER_SCRIPT       = 1 << 6,
+    TRACE_FILTER_MODE         = 1 << 7,
+} trace_filter_T;
+
+/*
+ * Ring buffer entry for trace events.
+ */
+typedef struct {
+    uint64_t            seq;
+    trace_event_kind_T  kind;
+    char_u              mode[MODE_MAX_LENGTH];
+    char_u              *message;
+    char_u              *payload;
+    int                 repeat_count;
+    int                 in_use;
+    int                 injected;
+    int                 depth;
+} trace_entry_T;
+
+

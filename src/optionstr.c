@@ -4927,6 +4927,18 @@ expand_set_toolbariconsize(
 }
 #endif
 
+#if defined(FEAT_JOB_CHANNEL)
+
+    char *
+did_set_chtraceopt(optset_T *args UNUSED)
+{
+    trace_apply_opt(p_chtraceopt);
+    return NULL;
+}
+#endif
+
+
+
 #if defined(UNIX) || defined(VMS)
 /*
  * The 'ttymouse' option is changed.

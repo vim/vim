@@ -871,6 +871,15 @@ ch_status({handle} [, {options}])				*ch_status()*
 <
 		Return type: |String|
 
+ch_traceclear()						*ch_traceclear()*
+		Clear the channel trace ring buffer.
+		Return type: void
+
+ch_traceget([{count}])						*ch_traceget()*
+		Return the last {count} trace events as a list of strings.
+		When {count} is omitted, up to 20 events are returned.
+		Return type: list<string>
+
 ==============================================================================
 9. Starting a job with a channel			*job-start* *job*
 

@@ -952,6 +952,16 @@ normal_cmd(
     // Execute the command!
     // Call the command function found in the commands table.
     ca.arg = nv_cmds[idx].cmd_arg;
+
+#ifdef FEAT_JOB_CHANNEL
+    if (trace_is_active())
+    {
+	char_u *__payload = trace_format_command(&ca);
+	ch_log(NULL, "TRACE|COMMAND||%s|%d",
+	       (char *)__payload, !KeyTyped);
+	vim_free(__payload);
+    }
+#endif
     (nv_cmds[idx].cmd_func)(&ca);
 
     // If we didn't start or finish an operator, reset oap->regname, unless we

@@ -1307,6 +1307,8 @@ Inter-process communication:		    *channel-functions*
 	ch_sendraw()		send a raw message over a channel
 	ch_setoptions()		set channel options
 	ch_status()		get status of a channel
+	ch_traceclear()	clear the channel trace log
+	ch_traceget()		return the channel trace log
 	json_encode()		encode an expression to a JSON string
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string

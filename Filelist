@@ -167,6 +167,7 @@ SRC_ALL =	\
 		src/textobject.c \
 		src/textprop.c \
 		src/time.c \
+		src/trace.c \
 		src/tuple.c \
 		src/typval.c \
 		src/ui.c \
@@ -362,6 +363,7 @@ SRC_ALL =	\
 		src/proto/textobject.pro \
 		src/proto/textprop.pro \
 		src/proto/time.pro \
+		src/proto/trace.pro \
 		src/proto/tuple.pro \
 		src/proto/typval.pro \
 		src/proto/ui.pro \

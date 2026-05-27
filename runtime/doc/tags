@@ -3624,6 +3624,8 @@ $quote	eval.txt	/*$quote*
 :tp	tagsrch.txt	/*:tp*
 :tprevious	tagsrch.txt	/*:tprevious*
 :tr	tagsrch.txt	/*:tr*
+
+
 :trewind	tagsrch.txt	/*:trewind*
 :try	eval.txt	/*:try*
 :ts	tagsrch.txt	/*:ts*
@@ -11198,6 +11200,13 @@ toolbar-icon	gui.txt	/*toolbar-icon*
 tooltips	gui.txt	/*tooltips*
 toupper()	builtin.txt	/*toupper()*
 tr()	builtin.txt	/*tr()*
+trace	trace.txt	/*trace*
+trace-events	trace.txt	/*trace-events*
+trace-options	trace.txt	/*trace-options*
+trace.txt	trace.txt	/*trace.txt*
+trace-commands	trace.txt	/*trace-commands*
+traceopt	trace.txt	/*'traceopt'*
+
 trim()	builtin.txt	/*trim()*
 trojan-horse	starting.txt	/*trojan-horse*
 true	vim9.txt	/*true*

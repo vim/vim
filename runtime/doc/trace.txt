@@ -1,0 +1,70 @@
+*trace.txt*	For Vim version 9.2.  Last change: 2026 Jun 23
+
+
+		  VIM REFERENCE MANUAL	  by Siddarth Balaji
+
+
+Trace event recording and inspection			*trace* *trace-events*
+
+Vim can record internal events (keystrokes, Ex commands, autocommands,
+mappings, etc.) in a ring buffer and retrieve them with |ch_traceget()|
+|channel.txt|.  This is useful for debugging what Vim did, especially when
+something unexpected occurs.
+
+Recording is controlled by the |'chtraceopt'| option, which combines the
+filter, verbosity, and ring size into a single comma-separated string.
+
+These options and functions are always available.
+
+Related functions:
+- |ch_traceget()|	in |channel.txt| (retrieve trace events)
+- |ch_traceclear()|	in |channel.txt| (clear trace events)
+
+==============================================================================
+1. Options						*trace-options*
+
+
+2.1 chtraceopt					*'chtraceopt'*
+
+'chto'	'chtraceopt'			string (default "")
+				globally local
+
+Comma-separated list of event categories and key:value settings that
+control trace recording.  When set to an empty string (the default) no
+events are recorded and tracing is disabled.
+
+Valid categories:
+  "input"		Raw keyboard input events
+  "command"		Normal mode commands and operators
+  "operator"		Operator begin/execute/cancel events (TODO)
+  "ex"			Ex commands (":" commands)
+  "mapping"		Key mapping expansions
+  "autocmd"		Autocommand execution (TODO)
+  "script"		Script sourcing and evaluation (TODO)
+  "mode"		Mode transitions
+
+Key:value parameters:
+  "verbosity:{level}"	Record detail level:
+			"minimal" (least detail)
+			"normal"
+			"verbose"
+			"debug" (most detail, shows raw key codes)
+  "ringsize:{N}"	Ring buffer capacity; minimum 16 (default 512).
+			When the buffer is full the oldest event is
+			overwritten.  Resizing preserves recent events.
+
+The verbosity defaults to "normal" and ringsize to 512 when not
+specified.  Unknown category names are silently ignored.
+
+Examples: >
+	set chtraceopt=input,command,ex,verbosity:debug
+	set chtraceopt=ex,mapping,ringsize:1024
+	set chtraceopt=verbosity:verbose
+	set chtraceopt&
+
+To test whether recording is truly restricted by the filter: with
+'chtraceopt' set to "ex", only Ex commands are recorded; normal mode
+commands like "normal! gg" are skipped unless "command" is included.
+
+------------------------------------------------------------------------------
+ vim:tw=78:ts=8:noet:ft=help:norl:

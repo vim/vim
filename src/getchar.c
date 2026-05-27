@@ -1073,6 +1073,15 @@ ins_typebuf(
     state_no_longer_safe("ins_typebuf()");
 
     addlen = (int)STRLEN(str);
+#ifdef FEAT_JOB_CHANNEL
+    if (trace_is_active())
+    {
+	char_u *__payload = trace_format_typebuf(str, (size_t)addlen);
+	ch_log(NULL, "TRACE|TYPEBUF||%s|%d",
+	       (char *)__payload, nottyped ? 1 : 0);
+	vim_free(__payload);
+    }
+#endif
 
     if (offset == 0 && addlen <= typebuf.tb_off)
     {
@@ -2200,6 +2209,15 @@ vgetc(void)
     if (c != K_IGNORE)
 	state_no_longer_safe("key typed");
 
+#ifdef FEAT_JOB_CHANNEL
+    if (trace_is_active())
+    {
+	char_u *__payload = trace_format_input(c);
+	ch_log(NULL, "TRACE|INPUT||%s|%d",
+	       (char *)__payload, !KeyTyped);
+	vim_free(__payload);
+    }
+#endif
     return c;
 }
 
@@ -3384,6 +3402,15 @@ handle_mapping(
 		noremap = REMAP_SKIP;
 	    else
 		noremap = REMAP_YES;
+#ifdef FEAT_JOB_CHANNEL
+	    if (trace_is_active())
+	    {
+		char_u *__payload = trace_format_mapping(mp);
+		ch_log(NULL, "TRACE|MAPPING||%s|%d",
+		       (char *)__payload, 0);
+		vim_free(__payload);
+	    }
+#endif
 	    i = ins_typebuf(map_str, noremap,
 					 0, TRUE, cmd_silent || save_m_silent);
 #ifdef FEAT_EVAL
