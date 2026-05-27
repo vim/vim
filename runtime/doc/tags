@@ -6236,7 +6236,6 @@ after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
 algol68	syntax.txt	/*algol68*
 algol68_no_preludes	syntax.txt	/*algol68_no_preludes*
-algol68_symbolic_operators	syntax.txt	/*algol68_symbolic_operators*
 alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
