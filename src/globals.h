@@ -853,6 +853,8 @@ EXTERN guicolor_T cterm_normal_fg_gui_color INIT(= INVALCOLOR);
 EXTERN guicolor_T cterm_normal_bg_gui_color INIT(= INVALCOLOR);
 EXTERN guicolor_T cterm_normal_ul_gui_color INIT(= INVALCOLOR);
 #endif
+EXTERN guicolor_T fallback_fg_rgb INIT(= INVALCOLOR); // RGB fallback foreground color from guifg, ctermfg or deduced from 'background'
+EXTERN guicolor_T fallback_bg_rgb INIT(= INVALCOLOR); // RGB fallback background color from guibg, ctermbg or deduced from 'background'
 #ifdef FEAT_TERMRESPONSE
 EXTERN int	is_mac_terminal INIT(= FALSE);  // recognized Terminal.app
 #endif

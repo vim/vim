@@ -533,6 +533,9 @@ highlight_link_id(int id)
 }
 #endif
 
+static void resolve_fallback_fg_to_rgb(void);
+static void resolve_fallback_bg_to_rgb(void);
+
     void
 init_highlight(
     int		both,	    // include groups where 'bg' doesn't matter
@@ -616,6 +619,8 @@ init_highlight(
 	}
     }
 #endif
+    resolve_fallback_fg_to_rgb();
+    resolve_fallback_bg_to_rgb();
 }
 
 #if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
@@ -1977,6 +1982,8 @@ do_highlight(
 		redraw_all_later(UPD_NOT_VALID);
 	    }
 #endif
+	    resolve_fallback_fg_to_rgb();
+	    resolve_fallback_bg_to_rgb();
 #ifdef FEAT_VTP
 	    control_console_color_rgb();
 #endif
@@ -2091,6 +2098,8 @@ restore_cterm_colors(void)
     cterm_normal_bg_gui_color = INVALCOLOR;
     cterm_normal_ul_gui_color = INVALCOLOR;
 # endif
+    fallback_fg_rgb = INVALCOLOR;
+    fallback_bg_rgb = INVALCOLOR;
 #endif
 }
 
@@ -3260,6 +3269,53 @@ resolve_color_to_rgb(int cterm_c, guicolor_T rgb UNUSED, int *r, int *g, int *b)
 }
 
 /*
+ * get a RGB fallback color from gui, cterm or default color
+ */
+    static guicolor_T
+resolve_fallback_color(int cterm_c, guicolor_T rgb, guicolor_T default_rgb)
+{
+    int red, green, blue;
+    if (!resolve_color_to_rgb(cterm_c, rgb, &red, &green, &blue))
+	return default_rgb;
+    else
+	return (red << 16) | (green << 8) | blue;
+}
+
+/*
+ * get a RGB fallback foreground color from guifg, ctermfg or deduced from background
+ */
+    static void
+resolve_fallback_fg_to_rgb(void)
+{
+    guicolor_T fgcolor_or_gui_fgcolor = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+    fgcolor_or_gui_fgcolor = cterm_normal_fg_gui_color;
+#endif
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	fgcolor_or_gui_fgcolor = gui.norm_pixel;
+#endif
+    fallback_fg_rgb = resolve_fallback_color(cterm_normal_fg_color, fgcolor_or_gui_fgcolor, (*p_bg == 'l') ? 0x000000 : 0xFFFFFF);
+}
+
+/*
+ * get a RGB fallback background color from guifg, ctermbg or deduced from background
+ */
+    static void
+resolve_fallback_bg_to_rgb(void)
+{
+    guicolor_T bgcolor_or_gui_bgcolor = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+    bgcolor_or_gui_bgcolor = cterm_normal_bg_gui_color;
+#endif
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	bgcolor_or_gui_bgcolor = gui.back_pixel;
+#endif
+    fallback_bg_rgb = resolve_fallback_color(cterm_normal_bg_color, bgcolor_or_gui_bgcolor, (*p_bg == 'l') ? 0xFFFFFF : 0x000000);
+}
+
+/*
  * Blend two colors expressed as (cterm 256 index, gui RGB) pairs and
  * return the nearest 1-based cterm 256-color index.  Prefers the gui
  * RGB so highlight definitions like "guibg=#2D2A3D" without ctermbg
@@ -3325,14 +3381,7 @@ blend_colors(guicolor_T popup_color, guicolor_T bg_color, int blend_val)
     b1 = popup_color & 0xFF;
 
     if (COLOR_INVALID(bg_color))
-    {
-	// Background color unknown: fade popup color to black as blend increases
-	// This makes background text more visible at high blend values
-	r = r1 * (100 - blend_val) / 100;
-	g = g1 * (100 - blend_val) / 100;
-	b = b1 * (100 - blend_val) / 100;
-	return (r << 16) | (g << 8) | b;
-    }
+	bg_color = fallback_bg_rgb;
 
     r2 = (bg_color >> 16) & 0xFF;
     g2 = (bg_color >> 8) & 0xFF;
@@ -3392,7 +3441,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    // blend_fg=TRUE: fade underlying text toward popup bg.
 		    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 		    {
-			int base_fg = 0xFFFFFF;
+			int base_fg = fallback_fg_rgb;
 			if (char_aep != NULL
 				&& char_aep->ae_u.gui.fg_color != INVALCOLOR)
 			    base_fg = char_aep->ae_u.gui.fg_color;
@@ -3414,7 +3463,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		// Blend background color: blend popup bg toward underlying bg
 		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 		{
-		    guicolor_T underlying_bg = INVALCOLOR;
+		    guicolor_T underlying_bg = fallback_bg_rgb;
 		    if (char_aep != NULL)
 			underlying_bg = char_aep->ae_u.gui.bg_color;
 		    new_en.ae_u.gui.bg_color = blend_colors(
@@ -3489,7 +3538,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 #endif
 		    new_en.ae_u.cterm.fg_color = blend_cterm_colors(
 			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_fg, under_fg_rgb, 0xFFFFFF, blend);
+			    under_fg, under_fg_rgb, fallback_fg_rgb, blend);
 		}
 		// Approximate cterm bg by blending with the underlying bg
 		// in the 256-color palette and mapping to the nearest entry.
@@ -3505,7 +3554,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 #endif
 		    new_en.ae_u.cterm.bg_color = blend_cterm_colors(
 			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_bg, under_bg_rgb, 0x000000, blend);
+			    under_bg, under_bg_rgb, fallback_bg_rgb, blend);
 		}
 #ifdef FEAT_TERMGUICOLORS
 		// Blend RGB colors for termguicolors mode.
@@ -3529,7 +3578,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 			// blend_fg=TRUE: fade underlying text toward popup bg.
 			if (popup_bg != INVALCOLOR)
 			{
-			    int base_fg = 0xFFFFFF;
+			    int base_fg = fallback_fg_rgb;
 			    // CTERMCOLOR is a sentinel meaning "use the cterm
 			    // color"; treat it as no underlying color so it is
 			    // not blended in as a real near-white pixel.
@@ -3554,12 +3603,12 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 			else if (!COLOR_INVALID(cterm_normal_fg_gui_color))
 			    new_en.ae_u.cterm.fg_rgb = cterm_normal_fg_gui_color;
 			else
-			    new_en.ae_u.cterm.fg_rgb = 0xFFFFFF;
+			    new_en.ae_u.cterm.fg_rgb = fallback_fg_rgb;
 		    }
 		    if (popup_bg != INVALCOLOR)
 		    {
 			// Blend popup bg toward underlying bg
-			guicolor_T underlying_bg = INVALCOLOR;
+			guicolor_T underlying_bg = fallback_bg_rgb;
 			if (char_aep != NULL
 				&& !COLOR_INVALID(char_aep->ae_u.cterm.bg_rgb))
 			    underlying_bg = char_aep->ae_u.cterm.bg_rgb;
@@ -3626,7 +3675,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 		// blend=100 (transparent): fg = underlying_fg (text visible)
 		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 		{
-		    int base_fg = 0xFFFFFF;
+		    int base_fg = fallback_fg_rgb;
 		    if (char_aep != NULL
 			    && char_aep->ae_u.gui.fg_color != INVALCOLOR)
 			base_fg = char_aep->ae_u.gui.fg_color;
@@ -3636,7 +3685,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 		// Blend bg: popup bg toward underlying bg.
 		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 		{
-		    guicolor_T underlying_bg = INVALCOLOR;
+		    guicolor_T underlying_bg = fallback_bg_rgb;
 		    if (char_aep != NULL)
 			underlying_bg = char_aep->ae_u.gui.bg_color;
 		    new_en.ae_u.gui.bg_color = blend_colors(
@@ -3685,7 +3734,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 #endif
 		    new_en.ae_u.cterm.fg_color = blend_cterm_colors(
 			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_fg, under_fg_rgb, 0xFFFFFF, blend);
+			    under_fg, under_fg_rgb, fallback_fg_rgb, blend);
 		}
 		// Approximate cterm bg by blending with the underlying bg
 		// in the 256-color palette and mapping to the nearest entry.
@@ -3701,7 +3750,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 #endif
 		    new_en.ae_u.cterm.bg_color = blend_cterm_colors(
 			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_bg, under_bg_rgb, 0x000000, blend);
+			    under_bg, under_bg_rgb, fallback_bg_rgb, blend);
 		}
 #ifdef FEAT_TERMGUICOLORS
 		// Blend fg_rgb: pum_bg toward underlying_fg.
@@ -3710,7 +3759,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 		// as a real near-white pixel.
 		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		{
-		    int base_fg = 0xFFFFFF;
+		    int base_fg = fallback_fg_rgb;
 		    if (char_aep != NULL
 			    && !COLOR_INVALID(char_aep->ae_u.cterm.fg_rgb))
 			base_fg = char_aep->ae_u.cterm.fg_rgb;
@@ -3720,7 +3769,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 		// Blend bg_rgb.
 		if (popup_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		{
-		    guicolor_T underlying_bg = INVALCOLOR;
+		    guicolor_T underlying_bg = fallback_bg_rgb;
 		    if (char_aep != NULL
 			    && !COLOR_INVALID(char_aep->ae_u.cterm.bg_rgb))
 			underlying_bg = char_aep->ae_u.cterm.bg_rgb;
