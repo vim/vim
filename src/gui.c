@@ -1408,7 +1408,10 @@ gui_update_cursor(
 	    --gui.col;
 #endif
 
-#ifndef FEAT_GUI_MSWIN	    // doesn't seem to work for MSWindows
+	// Doesn't seem to work for MSWindows. Not necessary when using
+	// GtkSnapshot, because everything is drawn in order in the snapshot
+	// vfunc.
+#if !defined(FEAT_GUI_MSWIN) && !defined(USE_GTK4_SNAPSHOT)
 	gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	(void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		GUI_MON_TRS_CURSOR | GUI_MON_NOCLEAR,
@@ -1601,6 +1604,9 @@ again:
     gui.num_cols = (pixel_width - gui_get_base_width()) / gui.char_width;
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
+#ifdef USE_GTK4_SNAPSHOT
+    gui_gtk_set_size(gui.num_rows, gui.num_cols);
+#endif
     gui_position_components(pixel_width);
     gui_reset_scroll_region();
 
@@ -2738,6 +2744,13 @@ gui_undraw_cursor(void)
 #endif
     gui_redraw_block(gui.cursor_row, startcol,
 	    gui.cursor_row, endcol, GUI_MON_NOCLEAR);
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+    // For GtkSnapshot, we keep a special render node for the part and hollow
+    // cursor styles, make sure they are cleared. This is necessary because
+    // unfocusing then focusing the window does not seem to clear the hollow
+    // cursor for some reason.
+    gui_gtk_undraw_cursor();
+#endif
 
     // Cursor_is_valid is reset when the cursor is undrawn, also reset it
     // here in case it wasn't needed to undraw it.

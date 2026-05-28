@@ -2710,8 +2710,21 @@ if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" != "gtk4"; then
 	[  --enable-gtk4-check     If auto-select GUI, check for GTK 4 [default=yes]],
 	, enable_gtk4_check="yes")
   AC_MSG_RESULT($enable_gtk4_check)
+
   if test "x$enable_gtk4_check" = "xno"; then
     SKIP_GTK4=YES
+  fi
+fi
+
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" == "gtk4"; then
+  AC_MSG_CHECKING(--enable-gtk4-snapshot argument)
+  AC_ARG_ENABLE(gtk4-snapshot,
+	[  --enable-gtk4-snapshot  Use hardware accelerated rendering backend for GTK4 [default=no]],
+	, enable_gtk4_snapshot="no")
+  AC_MSG_RESULT($enable_gtk4_snapshot)
+
+  if test "x$enable_gtk4_snapshot" = "xyes"; then
+    AC_DEFINE(USE_GTK4_SNAPSHOT)
   fi
 fi
 
@@ -2756,19 +2769,24 @@ AC_DEFUN(AM_PATH_GTK,
 	    [3.*], [gtk_pkg_name="gtk+-3.0"],
 	    [4.*], [gtk_pkg_name="gtk4"],
 		   [AC_MSG_FAILURE([The configure script does not know which pkg-config name to use for GTK $min_gtk_version"])])
+    gtk_pkgs="$gtk_pkg_name"
 
-    AC_MSG_CHECKING([for pkg-config $gtk_pkg_name])
-    AS_IF(["$PKG_CONFIG" --exists "$gtk_pkg_name"],
+    if test "x$enable_gtk4_snapshot" = "xyes"; then
+      gtk_pkgs="gtk4 glycin-2 glycin-gtk4-2"
+    fi
+
+    AC_MSG_CHECKING([for pkg-config $gtk_pkgs])
+    AS_IF(["$PKG_CONFIG" --exists "$gtk_pkgs"],
 	  [
 	     AC_MSG_RESULT(found)
 	     AC_MSG_CHECKING([for GTK - version >= $min_gtk_version])
 dnl We should be using PKG_CHECK_MODULES() instead of this hack.
 dnl But I guess the dependency on pkgconfig.m4 is not wanted or
 dnl something like that.
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkgs`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkgs`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkgs`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkgs`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
 	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
