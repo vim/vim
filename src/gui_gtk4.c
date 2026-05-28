@@ -1774,6 +1774,9 @@ button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
     gui_send_mouse_event(MOUSE_RELEASE, (int)x, (int)y, FALSE, vim_modifiers);
 }
 
+static double prev_mouse_x = -1.0;
+static double prev_mouse_y = -1.0;
+
     static void
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x, double y, gpointer data UNUSED)
@@ -1793,8 +1796,14 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	}
     }
 
-    if (p_mh)
+    // Only unhide if mouse actually moved. GTK seems to send a motion event
+    // when switching tabs, causing the cursor to unhide.
+    if (p_mh && fabs(prev_mouse_x - x) > 0.05
+	    && fabs(prev_mouse_y - y) > 0.05)
 	gui_mch_mousehide(FALSE);
+
+    prev_mouse_x = x;
+    prev_mouse_y = y;
 }
 
     static void
@@ -1803,6 +1812,9 @@ enter_notify_event(GtkEventControllerMotion *controller UNUSED,
 {
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
+
+    prev_mouse_x = x;
+    prev_mouse_y = y;
 
     // Make sure keyboard input goes to the drawing area.
     if (!gtk_widget_has_focus(gui.drawarea))
