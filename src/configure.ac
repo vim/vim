@@ -2986,7 +2986,7 @@ if test -z "$SKIP_GTK4"; then
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
-    AM_PATH_GTK(4.0.0,
+    AM_PATH_GTK(4.10.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
 		 GUI_INC_LOC="$GTK_CPPFLAGS"])

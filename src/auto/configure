@@ -10853,7 +10853,7 @@ printf "%s\n" "gtk test disabled" >&6; }
 
   if test "x$PKG_CONFIG" != "xno"; then
 
-      min_gtk_version="4.0.0"
+      min_gtk_version="4.10.0"
 
     if test "$PKG_CONFIG" != "no"; then
     case $min_gtk_version in #(
