@@ -2132,6 +2132,18 @@ gui_mch_update(void)
 	g_main_context_iteration(NULL, TRUE);
 }
 
+#ifdef FEAT_JOB_CHANNEL
+    static timeout_cb_type
+channel_poll_cb(gpointer data UNUSED)
+{
+    // Using an event handler for a channel that may be disconnected does
+    // not work, it hangs.  Instead poll for messages.
+    channel_handle_events(TRUE);
+    parse_queued_messages();
+    return TRUE; // Keep repeating
+}
+#endif
+
     int
 gui_mch_wait_for_chars(long wtime)
 {
@@ -2139,6 +2151,9 @@ gui_mch_wait_for_chars(long wtime)
     guint	timer;
     static int	timed_out;
     int		retval = FAIL;
+#ifdef FEAT_JOB_CHANNEL
+    guint	channel_timer = 0;
+#endif
 
     timed_out = FALSE;
 
@@ -2147,6 +2162,13 @@ gui_mch_wait_for_chars(long wtime)
 						   input_timer_cb, &timed_out);
     else
 	timer = 0;
+
+#ifdef FEAT_JOB_CHANNEL
+    // If there is a channel with the keep_open flag we need to poll for input
+    // on them.
+    if (channel_any_keep_open())
+	channel_timer = timeout_add(20, channel_poll_cb, NULL);
+#endif
 
     focus = gui.in_focus;
 
@@ -2203,6 +2225,10 @@ gui_mch_wait_for_chars(long wtime)
 theend:
     if (timer != 0 && !timed_out)
 	timeout_remove(timer);
+#ifdef FEAT_JOB_CHANNEL
+    if (channel_timer != 0)
+	timeout_remove(channel_timer);
+#endif
 
     return retval;
 }
