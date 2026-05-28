@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 May 18
+# Last Change:		2026 May 28
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2743,6 +2743,8 @@ const ft_from_ext = {
   "sieve": "sieve",
   # TriG
   "trig": "trig",
+  # Tolk
+  "tolk": "tolk",
   # Zig and Zig Object Notation (ZON)
   "zig": "zig",
   "zon": "zig",
