@@ -61,10 +61,10 @@ hi def link karelFunction    Function
 syn keyword karelClause      EVAL FROM IN WHEN WITH
 hi def link karelClause      Keyword
 
-syn keyword karelConditional IF THEN ELSE ENDIF SELECT ENDSELECT CASE
+syn keyword karelConditional IF THEN ELSE ENDIF SELECT ENDSELECT CASE OF
 hi def link karelConditional Conditional
 
-syn keyword karelRepeat      WHILE DO ENDWHILE FOR
+syn keyword karelRepeat      WHILE DO ENDWHILE FOR TO DOWNTO
 hi def link karelRepeat      Repeat
 
 syn keyword karelProcedure   ABORT_TASK ACT_SCREEN ACT_TBL ADD_BYNAMEPC ADD_DICT ADD_INTPC ADD_REALPC ADD_STRINGPC APPEND_NODE APPEND_QUEUE
