@@ -1,6 +1,6 @@
-" vim: set ft=karel sw=2 :
+-- vim: set ft=karel sw=2 :
 
-" START_INDENT
+-- START_INDENT
 
 -- upper case
 PROGRAM UcKarelPrg
@@ -191,4 +191,4 @@ Begin
   EndSelect
 End LcKarelPrg
 
-" END_INDENT
+-- END_INDENT
