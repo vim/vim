@@ -36,6 +36,7 @@ static void form_measure(GtkWidget *widget, GtkOrientation orientation,
 static void form_size_allocate(GtkWidget *widget, int width, int height,
 	int baseline);
 static void form_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
+static gboolean form_contains(GtkWidget *widget, double x, double y);
 static void form_dispose(GObject *object);
 static void form_position_child(GtkForm *form, GtkFormChild *child,
 	gboolean force_allocate);
@@ -173,6 +174,7 @@ gui_gtk_form_class_init(GtkFormClass *klass)
     widget_class->measure = form_measure;
     widget_class->size_allocate = form_size_allocate;
     widget_class->snapshot = form_snapshot;
+    widget_class->contains = form_contains;
 }
 
     static void
@@ -263,6 +265,14 @@ form_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 		&& gtk_widget_get_parent(child->widget) == widget)
 	    gtk_widget_snapshot_child(widget, child->widget, snapshot);
     }
+}
+
+// Make the form itself input-transparent so clicks on its empty area fall
+// through to the drawarea below, while the scrollbar children stay pickable.
+    static gboolean
+form_contains(GtkWidget *widget UNUSED, double x UNUSED, double y UNUSED)
+{
+    return FALSE;
 }
 
     static void
