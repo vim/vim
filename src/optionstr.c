@@ -2804,6 +2804,20 @@ expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
+#ifdef FEAT_GUI_STYLE
+/*
+ * The 'guistyle' option is changed
+ */
+    char *
+did_set_guistyle(optset_T *args UNUSED)
+{
+# ifdef USE_GTK4
+    gui_gtk_set_style(p_gs);
+# endif
+    return NULL;
+}
+#endif
+
 #if defined(FEAT_GUI_TABLINE)
 /*
  * The 'guitablabel' option is changed.

@@ -1295,4 +1295,40 @@ careful!
 For the Win32 GUI the external commands are executed in a separate window.
 See |gui-shell-win32|.
 
- vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
+==============================================================================
+8. Custom Styling					*gui-styling*
+
+For the GTK4 GUI, you may style the GUI components using custom CSS. This is
+done via the 'guistyle' option.
+
+Vim exposes the following CSS names for specific elements:
+    "vim-main-window"	    Main GUI window (GtkWindow)
+    "vim-menubar"	    Menubar (GtkPopoverMenuBar)
+    "vim-toolbar"	    Toolbar (GtkBox)
+    "vim-tabline"	    Tabline (GtkNotebook)
+
+To see how to style these components, look at the online GTK documentation for
+the widgets they are based upon (the names in the parentheses). You may also
+set the environment variable $GTK_DEBUG to "interactive", which opens up a
+separate window, which allows you to view a tree of widgets and the CSS
+classes/names they use. It also provides a text area to input live CSS which
+will be applied immediately.
+
+For example, this changes each tab of the GUI tabline to have rounded borders
+at the top, and a black background: >
+    let css =<< trim END
+	#vim-tabline > header > tabs > tab {
+	    background-color: black;
+	    border-radius: 0.75em 0.75em 0em 0em;
+	    margin: 0.1em 0.2em 0em 0.2em;
+	    padding: 0.3em 1em;
+	}
+	/* Currently focused tab */
+	#vim-tabline > header > tabs > tab:checked {
+	    ...
+	}
+    END
+
+    let &guistyle = css->join("\n")
+<
+vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

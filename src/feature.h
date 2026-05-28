@@ -1027,6 +1027,11 @@
 # define CURSOR_SHAPE
 #endif
 
+// User defined styling for GUI elements
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+# define FEAT_GUI_STYLE
+#endif
+
 #if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
 	|| defined(FEAT_GUI_MOTIF))
 # define MZSCHEME_GUI_THREADS

@@ -385,6 +385,7 @@ $quote	eval.txt	/*$quote*
 'graphic'	vi_diff.txt	/*'graphic'*
 'grepformat'	options.txt	/*'grepformat'*
 'grepprg'	options.txt	/*'grepprg'*
+'gs'	options.txt	/*'gs'*
 'gtl'	options.txt	/*'gtl'*
 'gtt'	options.txt	/*'gtt'*
 'guicursor'	options.txt	/*'guicursor'*
@@ -395,6 +396,7 @@ $quote	eval.txt	/*$quote*
 'guiligatures'	options.txt	/*'guiligatures'*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
+'guistyle	options.txt	/*'guistyle*
 'guitablabel'	options.txt	/*'guitablabel'*
 'guitabtooltip'	options.txt	/*'guitabtooltip'*
 'hardtabs'	vi_diff.txt	/*'hardtabs'*
@@ -8283,6 +8285,7 @@ gui-selections	gui.txt	/*gui-selections*
 gui-shell	gui.txt	/*gui-shell*
 gui-shell-win32	gui_w32.txt	/*gui-shell-win32*
 gui-start	gui.txt	/*gui-start*
+gui-styling	gui.txt	/*gui-styling*
 gui-toolbar	gui.txt	/*gui-toolbar*
 gui-vert-scroll	gui.txt	/*gui-vert-scroll*
 gui-w32	gui_w32.txt	/*gui-w32*

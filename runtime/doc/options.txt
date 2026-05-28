@@ -4665,6 +4665,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only in the GUI: If on, an attempt is made to open a pseudo-tty for
 	I/O to/from shell commands.  See |gui-pty|.
 
+						*'guistyle* *'gs'*
+'guistyle'		string	(default empty)
+			global
+			{only available when compiled with GTK 4 GUI enabled}
+	GUI specific string that styles the GUI interface. When running the
+	GTK 4 GUI, it is a GTK CSS string. See |gui-styling| for more
+	information.
+
 						*'guitablabel'* *'gtl'*
 'guitablabel' 'gtl'	string	(default empty)
 			global

@@ -287,6 +287,9 @@ static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpoi
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
+#ifdef FEAT_GUI_STYLE
+static void gui_gtk_try_css(void);
+#endif
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -442,7 +445,10 @@ gui_mch_init(void)
 
     // Create the main window.
     gui.mainwin = gtk_window_new();
+#ifdef FEAT_GUI_STYLE
     gtk_widget_set_name(gui.mainwin, "vim-main-window");
+    gui_gtk_try_css();
+#endif
 
     // Create the PangoContext used for drawing all text.
     gui.text_context = gtk_widget_create_pango_context(gui.mainwin);
@@ -465,7 +471,9 @@ gui_mch_init(void)
 		G_MENU_MODEL(gmenu));
 	g_object_set_data_full(G_OBJECT(gui.menubar), "vim-gmenu",
 		gmenu, g_object_unref);
+# ifdef FEAT_GUI_STYLE
 	gtk_widget_set_name(gui.menubar, "vim-menubar");
+# endif
 	gtk_widget_set_visible(gui.menubar, FALSE);
 	gtk_box_append(GTK_BOX(vbox), gui.menubar);
     }
@@ -473,13 +481,18 @@ gui_mch_init(void)
 
 #ifdef FEAT_TOOLBAR
     gui.toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+# ifdef FEAT_GUI_STYLE
     gtk_widget_set_name(gui.toolbar, "vim-toolbar");
+# endif
     gtk_widget_set_visible(gui.toolbar, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.toolbar);
 #endif
 
 #ifdef FEAT_GUI_TABLINE
     gui.tabline = gtk_notebook_new();
+# ifdef FEAT_GUI_STYLE
+    gtk_widget_set_name(GTK_WIDGET(gui.tabline), "vim-tabline");
+# endif
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
@@ -489,7 +502,9 @@ gui_mch_init(void)
 
     // The form widget manages absolute positioning of scrollbars.
     gui.formwin = gui_gtk_form_new();
+# ifdef FEAT_GUI_STYLE
     gtk_widget_set_name(gui.formwin, "vim-gtk-form");
+# endif
     // formwin is overlaid on top of drawarea for scrollbar positioning.
     // Disable input targeting so mouse events pass through to drawarea.
     gtk_widget_set_can_target(gui.formwin, FALSE);
@@ -4896,5 +4911,36 @@ gui_gtk4_hardcopy(exarg_T *eap)
 }
 
 #endif // FEAT_GUI_GTK_PRINT
+
+#ifdef FEAT_GUI_STYLE
+
+    static void
+gui_gtk_try_css(void)
+{
+    GdkDisplay	    *display;
+    GtkCssProvider  *provider = gui.css_provider;
+
+    if (gui.mainwin == NULL || gui.style == NULL)
+	return;
+
+    display = gtk_widget_get_display(gui.mainwin);
+    if (provider == NULL)
+	gui.css_provider = provider = gtk_css_provider_new();
+
+    gtk_css_provider_load_from_string(provider, gui.style);
+    gtk_style_context_add_provider_for_display(
+        display, GTK_STYLE_PROVIDER(provider),
+        GTK_STYLE_PROVIDER_PRIORITY_USER);
+    g_clear_pointer(&gui.style, g_free);
+}
+
+    void
+gui_gtk_set_style(char_u *str)
+{
+    gui.style = g_strdup((char *)str);
+    gui_gtk_try_css();
+}
+
+#endif
 
 #endif // FEAT_GUI_GTK

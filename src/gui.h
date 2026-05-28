@@ -475,6 +475,13 @@ typedef struct Gui
     char	*rsrc_input_method;
     char	*rsrc_preedit_type_name;
 #endif
+#ifdef FEAT_GUI_STYLE
+# ifdef USE_GTK4
+    GtkCssProvider *css_provider;
+# endif
+    char	    *style; // Set when mainwin has not been initialized yet, but
+			    // 'guistyle' option is set.
+#endif
 } gui_T;
 
 extern gui_T gui;			// this is defined in gui.c

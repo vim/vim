@@ -698,6 +698,9 @@ EXTERN char_u	*p_mouseshape;	// 'mouseshape'
 #if defined(FEAT_GUI)
 EXTERN char_u	*p_go;		// 'guioptions'
 #endif
+#ifdef FEAT_GUI_STYLE
+EXTERN char_u	*p_gs;		// 'guistyle'
+#endif
 #if defined(FEAT_GUI_TABLINE)
 EXTERN char_u	*p_gtl;		// 'guitablabel'
 EXTERN char_u	*p_gtt;		// 'guitabtooltip'
