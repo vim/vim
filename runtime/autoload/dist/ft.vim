@@ -3368,6 +3368,8 @@ const ft_from_name = {
   ".Rprofile": "r",
   "Rprofile": "r",
   "Rprofile.site": "r",
+  # Popcap Reanimation files
+  "reanim": "xml",
   # Resolv.conf
   "resolv.conf": "resolv",
   # Robots.txt
