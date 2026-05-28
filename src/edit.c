@@ -2657,6 +2657,9 @@ stop_insert(
 		if (VIsual_active)
 		    check_visual_pos();
 	    }
+	    else
+		// Non-whitespace follows, keep original cursor.
+		curwin->w_cursor = tpos;
 	}
     }
     did_ai = FALSE;
