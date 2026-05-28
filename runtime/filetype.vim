@@ -1013,6 +1013,9 @@ au BufNewFile,BufRead */etc/slp.spi		setf slpspi
 " Setserial config
 au BufNewFile,BufRead */etc/serial.conf		setf setserial
 
+" SGF, Smart Game Format
+au BufNewFile,BufRead *.sgf		setf sgf
+
 " SGML
 au BufNewFile,BufRead *.sgm,*.sgml
 	\ if getline(1).getline(2).getline(3).getline(4).getline(5) =~? 'linuxdoc' |
