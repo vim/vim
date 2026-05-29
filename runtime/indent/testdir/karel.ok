@@ -1,0 +1,211 @@
+-- vim: set ft=karel sw=2 :
+
+-- START_INDENT
+-- upper case
+-- test karelIndentBetweenPrg not existing
+-- test karelCommentIndent not existing
+PROGRAM UcKarelPrg
+  %CMOSVARS
+TYPE
+  Array4OfInt = ARRAY[4] OF integer
+CONST
+  Success = 0
+TYPE
+  sub_struct = STRUCTURE
+    subs_field_1: INTEGER
+    subs_field_2: BOOLEAN
+  ENDSTRUCTURE
+  MyStruct = STRUCTURE
+    subs_field_1: INTEGER
+    subs_field_2: sub_struct
+  ENDSTRUCTURE
+VAR
+  i1 :integer
+  b1 :boolean
+  fhCh :file
+  ROUTINE prg1()
+  VAR
+    i :integer
+  BEGIN
+    --
+  END prg1
+  ROUTINE fcnt1( s :string ) :string
+  VAR
+    i :integer
+  BEGIN
+    RETURN ' '
+  END fcnt1
+BEGIN
+  IF b1 THEN
+    --
+  ENDIF
+  IF b1 THEN
+    --
+  ELSE
+    --
+  ENDIF
+  WHILE b1 DO
+    --
+  ENDWHILE
+  FOR i1 = 1 TO 10 DO
+    --
+  ENDFOR
+  FOR i1 = 10 DOWNTO 1 DO
+    --
+  ENDFOR
+  USING sub_struct, MyStruct DO
+    --
+  ENDUSING
+  CONDITION[1]:
+    WHEN DIN[1] DO DOUT[1] = TRUE
+  ENDCONDITION
+  SELECT i1 OF
+  CASE (1):
+    --
+  CASE (2,3):
+--
+  ELSE:
+    --
+  ENDSELECT
+END UcKarelPrg
+-- END_INDENT
+
+-- START_INDENT
+-- lower case
+-- INDENT_EXE let g:karelIndentBetweenPrg = 0
+-- INDENT_EXE let g:karelCommentIndent = 0
+program LcKarelPrg
+%CMOSVARS
+type
+  Array4OfInt = ARRAY[4] OF integer
+const
+  Success = 0
+type
+  sub_struct = structure
+    subs_field_1: INTEGER
+    subs_field_2: BOOLEAN
+  endstructure
+  MyStruct = structure
+    subs_field_1: INTEGER
+    subs_field_2: sub_struct
+  endstructure
+var
+  i1 :integer
+  b1 :boolean
+  fhCh :file
+  routine prg1()
+  var
+    i :integer
+  begin
+    --
+  end prg1
+  routine fcnt1( s :string ) :string
+  var
+    i :integer
+  begin
+    return ' '
+  end fcnt1
+begin
+  if b1 then
+    --
+  endif
+  if b1 then
+    --
+  else
+    --
+  endif
+  while b1 do
+    --
+  endwhile
+  for i1 = 1 to 10 do
+    --
+  endfor
+  for i1 = 10 downto 1 do
+    --
+  endfor
+  using sub_struct, MyStruct do
+    --
+  endusing
+  condition[1]:
+    when DIN[1] do DOUT[1] = TRUE
+  endcondition
+  select i1 of
+  case (1):
+    --
+  case (2,3):
+--
+  else:
+    --
+  endselect
+end LcKarelPrg
+-- END_INDENT
+
+-- START_INDENT
+-- mixed case
+-- INDENT_EXE let g:karelIndentBetweenPrg = 1
+-- INDENT_EXE let g:karelCommentIndent = 1
+Program McKarelPrg
+  %CMOSVARS
+Type
+  Array4OfInt = ARRAY[4] OF integer
+Const
+  Success = 0
+Type
+  sub_struct = Structure
+    subs_field_1: INTEGER
+    subs_field_2: BOOLEAN
+  EndStructure
+  MyStruct = Structure
+    subs_field_1: INTEGER
+    subs_field_2: sub_struct
+  EndStructure
+Var
+  i1 :integer
+  b1 :boolean
+  fhCh :file
+  Routine prg1()
+  Var
+    i :integer
+  Begin
+    --
+  End prg1
+  Routine fcnt1( s :string ) :string
+  Var
+    i :integer
+  Begin
+    Return ' '
+  End fcnt1
+Begin
+  If b1 Then
+    --
+  EndIf
+  If b1 Then
+    --
+  Else
+    --
+  EndIf
+  While b1 Do
+    --
+  EndWhile
+  For i1 = 1 To 10 Do
+    --
+  EndFor
+  For i1 = 10 DownTo 1 Do
+    --
+  EndFor
+  Using sub_struct, MyStruct Do
+    --
+  EndUsing
+  Condition[1]:
+    When DIN[1] Do DOUT[1] = TRUE
+  EndCondition
+  Select i1 Of
+  Case (1):
+    --
+  Case (2,3):
+    --
+  Else:
+    --
+  EndSelect
+End McKarelPrg
+-- END_INDENT

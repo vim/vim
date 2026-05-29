@@ -405,6 +405,7 @@ runtime/indent/json.vim					@elzr
 runtime/indent/jsonc.vim				@izhakjakov
 runtime/indent/julia.vim				@carlobaldassi
 runtime/indent/just.vim					@pbnj
+runtime/indent/karel.vim				@KnoP-01
 runtime/indent/kdl.vim					@imsnif @jiangyinzuo
 runtime/indent/kotlin.vim				@udalov
 runtime/indent/krl.vim					@KnoP-01
