@@ -2,7 +2,10 @@
 
 -- START_INDENT
 
+
 -- upper case
+-- test karelIndentBetweenPrg not existing
+-- test karelCommentIndent not existing
 PROGRAM UcKarelPrg
 %CMOSVARS
 TYPE
@@ -26,7 +29,7 @@ ROUTINE prg1()
 VAR
 i :integer
 BEGIN
---
+        --
 END prg1
 ROUTINE fcnt1( s :string ) :string
 VAR
@@ -36,36 +39,42 @@ RETURN ' '
 END fcnt1
 BEGIN
 IF b1 THEN
---
+        --
 ENDIF
 IF b1 THEN
---
+        --
 ELSE
---
+        --
 ENDIF
 WHILE b1 DO
---
+        --
 ENDWHILE
 FOR i1 = 1 TO 10 DO
---
+        --
+ENDFOR
+FOR i1 = 10 DOWNTO 1 DO
+        --
 ENDFOR
 USING sub_struct, MyStruct DO
---
+        --
 ENDUSING
 CONDITION[1]:
 WHEN DIN[1] DO DOUT[1] = TRUE
 ENDCONDITION
 SELECT i1 OF
 CASE (1):
---
+        --
 CASE (2,3):
 --
 ELSE:
---
+        --
 ENDSELECT
 END UcKarelPrg
 
+
 -- lower case
+-- INDENT_EXE let g:karelIndentBetweenPrg = 0
+-- INDENT_EXE let g:karelCommentIndent = 0
 program LcKarelPrg
 %CMOSVARS
 type
@@ -89,7 +98,7 @@ routine prg1()
 var
 i :integer
 begin
---
+        --
 end prg1
 routine fcnt1( s :string ) :string
 var
@@ -99,37 +108,42 @@ return ' '
 end fcnt1
 begin
 if b1 then
---
+        --
 endif
 if b1 then
---
+        --
 else
---
+        --
 endif
 while b1 do
---
+        --
 endwhile
 for i1 = 1 to 10 do
---
+        --
+endfor
+for i1 = 10 downto 1 do
+        --
 endfor
 using sub_struct, MyStruct do
---
+        --
 endusing
 condition[1]:
 when DIN[1] do DOUT[1] = TRUE
 endcondition
 select i1 of
 case (1):
---
+        --
 case (2,3):
 --
 else:
---
+        --
 endselect
 end LcKarelPrg
 
 -- mixed case
-Program LcKarelPrg
+-- INDENT_EXE let g:karelIndentBetweenPrg = 1
+-- INDENT_EXE let g:karelCommentIndent = 1
+Program McKarelPrg
 %CMOSVARS
 Type
 Array4OfInt = ARRAY[4] OF integer
@@ -152,7 +166,7 @@ Routine prg1()
 Var
 i :integer
 Begin
---
+        --
 End prg1
 Routine fcnt1( s :string ) :string
 Var
@@ -162,33 +176,36 @@ Return ' '
 End fcnt1
 Begin
 If b1 Then
---
+        --
 EndIf
 If b1 Then
---
+        --
 Else
---
+        --
 EndIf
 While b1 Do
---
+        --
 EndWhile
 For i1 = 1 To 10 Do
---
+        --
+EndFor
+For i1 = 10 DownTo 1 Do
+        --
 EndFor
 Using sub_struct, MyStruct Do
---
-Endusing
+        --
+EndUsing
 Condition[1]:
-When DIN[1] do DOUT[1] = TRUE
+When DIN[1] Do DOUT[1] = TRUE
 EndCondition
 Select i1 Of
 Case (1):
---
+        --
 Case (2,3):
 --
 Else:
---
+        --
 EndSelect
-End LcKarelPrg
+End McKarelPrg
 
 -- END_INDENT
