@@ -1088,6 +1088,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/dash'],
             ['#!/path/ksh'],
             ['#!/path/ksh93'],
+            ['#!/path/ash'],
             ['#!/path/busybox ash'],
             ['#!/path/busybox sh']],
     csh:    [['#!/path/csh']],
