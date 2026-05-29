@@ -1,8 +1,6 @@
 -- vim: set ft=karel sw=2 :
 
 -- START_INDENT
-
-
 -- upper case
 -- test karelIndentBetweenPrg not existing
 -- test karelCommentIndent not existing
@@ -70,8 +68,9 @@ BEGIN
     --
   ENDSELECT
 END UcKarelPrg
+-- END_INDENT
 
-
+-- START_INDENT
 -- lower case
 -- INDENT_EXE let g:karelIndentBetweenPrg = 0
 -- INDENT_EXE let g:karelCommentIndent = 0
@@ -139,7 +138,9 @@ begin
     --
   endselect
 end LcKarelPrg
+-- END_INDENT
 
+-- START_INDENT
 -- mixed case
 -- INDENT_EXE let g:karelIndentBetweenPrg = 1
 -- INDENT_EXE let g:karelCommentIndent = 1
@@ -207,5 +208,4 @@ Begin
     --
   EndSelect
 End McKarelPrg
-
 -- END_INDENT
