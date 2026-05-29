@@ -278,6 +278,10 @@ static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
 #ifdef FEAT_DND
 static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data);
 #endif
+#ifdef FEAT_GUI_TABLINE
+static void on_select_tab(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
+static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
+#endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
@@ -488,6 +492,11 @@ gui_mch_init(void)
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_widget_set_visible(gui.tabline, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.tabline);
+
+    g_signal_connect(G_OBJECT(gui.tabline), "switch-page",
+		     G_CALLBACK(on_select_tab), NULL);
+    g_signal_connect(G_OBJECT(gui.tabline), "page-reordered",
+		     G_CALLBACK(on_tab_reordered), NULL);
 #endif
 
     // The form widget manages absolute positioning of scrollbars.
@@ -2549,6 +2558,39 @@ gui_mch_set_curtab(int nr)
 {
     if (gui.tabline != NULL)
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(gui.tabline), nr - 1);
+}
+
+/*
+ * Handle selecting one of the tabs.
+ */
+    static void
+on_select_tab(
+	GtkNotebook	*notebook UNUSED,
+	gpointer	*page UNUSED,
+	gint		idx,
+	gpointer	data UNUSED)
+{
+    if (!ignore_tabline_evt)
+	send_tabline_event(idx + 1);
+}
+
+/*
+ * Handle reordering the tabs (using D&D).
+ */
+    static void
+on_tab_reordered(
+	GtkNotebook	*notebook UNUSED,
+	gpointer	*page UNUSED,
+	gint		idx,
+	gpointer	data UNUSED)
+{
+    if (ignore_tabline_evt)
+	return;
+
+    if ((tabpage_index(curtab) - 1) < idx)
+	tabpage_move(idx + 1);
+    else
+	tabpage_move(idx);
 }
 #endif
 
