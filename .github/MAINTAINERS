@@ -339,6 +339,7 @@ runtime/ftplugin/thrift.vim				@jiangyinzuo
 runtime/ftplugin/tiasm.vim				@Freed-Wu
 runtime/ftplugin/tidy.vim				@dkearns
 runtime/ftplugin/tmux.vim				@ericpruitt
+runtime/ftplugin/tolk.vim				@redavy
 runtime/ftplugin/toml.vim				@averms
 runtime/ftplugin/tt2html.vim				@petdance
 runtime/ftplugin/twig.vim				@ribru17
@@ -700,6 +701,7 @@ runtime/syntax/thrift.vim				@jiangyinzuo
 runtime/syntax/tiasm.vim				@Freed-Wu
 runtime/syntax/tidy.vim					@dkearns
 runtime/syntax/tmux.vim					@ericpruitt
+runtime/syntax/tolk.vim					@redavy
 runtime/syntax/toml.vim					@averms
 runtime/syntax/tt2.vim					@petdance
 runtime/syntax/tt2html.vim				@petdance

@@ -287,6 +287,9 @@ static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpoi
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
+#ifdef FEAT_MENU
+static void show_menubar_popover(void);
+#endif
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -1580,6 +1583,19 @@ key_press_event(GtkEventControllerKey *controller UNUSED,
     }
 #endif
 
+#ifdef FEAT_MENU
+    if (key_sym == GDK_KEY_F10 && gui.menubar != NULL)
+    {
+	static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
+
+	if (check_map(k10, State, FALSE, TRUE, FALSE, NULL, NULL) == NULL)
+	{
+	    show_menubar_popover();
+	    return TRUE;
+	}
+    }
+#endif
+
     len = keyval_to_string(key_sym, string2);
 
     if (len > 1 && input_conv.vc_type != CONV_NONE)
@@ -1774,6 +1790,9 @@ button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
     gui_send_mouse_event(MOUSE_RELEASE, (int)x, (int)y, FALSE, vim_modifiers);
 }
 
+static double prev_mouse_x = -1.0;
+static double prev_mouse_y = -1.0;
+
     static void
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x, double y, gpointer data UNUSED)
@@ -1793,8 +1812,14 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	}
     }
 
-    if (p_mh)
+    // Only unhide if mouse actually moved. GTK seems to send a motion event
+    // when switching tabs, causing the cursor to unhide.
+    if (p_mh && fabs(prev_mouse_x - x) > 0.05
+	    && fabs(prev_mouse_y - y) > 0.05)
 	gui_mch_mousehide(FALSE);
+
+    prev_mouse_x = x;
+    prev_mouse_y = y;
 }
 
     static void
@@ -1803,6 +1828,9 @@ enter_notify_event(GtkEventControllerMotion *controller UNUSED,
 {
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
+
+    prev_mouse_x = x;
+    prev_mouse_y = y;
 
     // Make sure keyboard input goes to the drawing area.
     if (!gtk_widget_has_focus(gui.drawarea))
@@ -2132,6 +2160,18 @@ gui_mch_update(void)
 	g_main_context_iteration(NULL, TRUE);
 }
 
+#ifdef FEAT_JOB_CHANNEL
+    static timeout_cb_type
+channel_poll_cb(gpointer data UNUSED)
+{
+    // Using an event handler for a channel that may be disconnected does
+    // not work, it hangs.  Instead poll for messages.
+    channel_handle_events(TRUE);
+    parse_queued_messages();
+    return TRUE; // Keep repeating
+}
+#endif
+
     int
 gui_mch_wait_for_chars(long wtime)
 {
@@ -2139,6 +2179,9 @@ gui_mch_wait_for_chars(long wtime)
     guint	timer;
     static int	timed_out;
     int		retval = FAIL;
+#ifdef FEAT_JOB_CHANNEL
+    guint	channel_timer = 0;
+#endif
 
     timed_out = FALSE;
 
@@ -2147,6 +2190,13 @@ gui_mch_wait_for_chars(long wtime)
 						   input_timer_cb, &timed_out);
     else
 	timer = 0;
+
+#ifdef FEAT_JOB_CHANNEL
+    // If there is a channel with the keep_open flag we need to poll for input
+    // on them.
+    if (channel_any_keep_open())
+	channel_timer = timeout_add(20, channel_poll_cb, NULL);
+#endif
 
     focus = gui.in_focus;
 
@@ -2203,6 +2253,10 @@ gui_mch_wait_for_chars(long wtime)
 theend:
     if (timer != 0 && !timed_out)
 	timeout_remove(timer);
+#ifdef FEAT_JOB_CHANNEL
+    if (channel_timer != 0)
+	timeout_remove(channel_timer);
+#endif
 
     return retval;
 }
@@ -3929,6 +3983,33 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     rect.height = 1;
     gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
 
+    g_signal_connect(popover, "closed",
+	    G_CALLBACK(popupmenu_closed_cb), NULL);
+    gtk_popover_popup(GTK_POPOVER(popover));
+}
+
+    static void
+show_menubar_popover(void)
+{
+    GMenu	    *gmenu;
+    GtkWidget	    *popover;
+    GdkRectangle    rect;
+
+    if (gui.menubar == NULL || gui.drawarea == NULL)
+	return;
+    gmenu = (GMenu *)g_object_get_data(G_OBJECT(gui.menubar), "vim-gmenu");
+    if (gmenu == NULL || g_menu_model_get_n_items(G_MENU_MODEL(gmenu)) == 0)
+	return;
+
+    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(gmenu));
+    gtk_widget_set_parent(popover, gui.drawarea);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = 1;
+    rect.height = 1;
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
     g_signal_connect(popover, "closed",
 	    G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(popover));

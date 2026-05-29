@@ -1074,6 +1074,10 @@ free_menu(vimmenu_T **menup)
     // Also may rebuild a tearoff'ed menu
     if (gui.in_use)
 	gui_mch_destroy_menu(menu);
+# ifdef USE_GTK4
+    // GTK4 uses "menu->label" for action name
+    vim_free((char_u *)menu->label);
+# endif
 #endif
 
     // Don't change *menup until after calling gui_mch_destroy_menu(). The
