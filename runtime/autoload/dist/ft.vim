@@ -2715,6 +2715,8 @@ const ft_from_ext = {
   "mill": "scala",
   # SBT - Scala Build Tool
   "sbt": "sbt",
+  # SGF, Smart Game Format
+  "sgf": "sgf",
   # Slang Shading Language
   "slang": "shaderslang",
   # Slint
@@ -3390,8 +3392,6 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
-  # SGF, Smart Game Format
-  "sgf": "sgf",
   # skhd (simple hotkey daemon for macOS)
   ".skhdrc": "skhd",
   "skhdrc": "skhd",
