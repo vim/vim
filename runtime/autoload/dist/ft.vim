@@ -3390,6 +3390,8 @@ const ft_from_name = {
   # Screen RC
   ".screenrc": "screen",
   "screenrc": "screen",
+  # SGF, Smart Game Format
+  "sgf": "sgf",
   # skhd (simple hotkey daemon for macOS)
   ".skhdrc": "skhd",
   "skhdrc": "skhd",
