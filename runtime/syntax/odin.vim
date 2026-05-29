@@ -4,14 +4,14 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2026-02-02
+# Last Change: 2026-05-28
 
 if exists("b:current_syntax")
   finish
 endif
 
-syntax keyword odinKeyword using transmute cast auto_cast distinct opaque where dynamic
-syntax keyword odinKeyword struct enum union const bit_field bit_set
+syntax keyword odinKeyword using transmute cast auto_cast distinct where dynamic
+syntax keyword odinKeyword struct enum union bit_field bit_set
 syntax keyword odinKeyword package proc map import export foreign
 syntax keyword odinKeyword size_of offset_of type_info_of typeid_of type_of align_of
 syntax keyword odinKeyword return defer
