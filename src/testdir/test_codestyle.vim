@@ -50,7 +50,17 @@ def Test_source_files()
       continue
     endif
 
-    var skip = 'getline(".") =~ "condition) {" || getline(".") =~ "vimglob_func" || getline(".") =~ "{\"" || getline(".") =~ "{\\d" || getline(".") =~ "{{{"'
+    # ignore patterns:
+    #                  - condition) {
+    #                  - vimglob_func
+    #                  - struct initializer: {"
+    #                  - numeric initializer: {\d
+    #                  - fold marker {{{
+    #                  - compound literals: (\w\+) *{
+
+
+    var skip = 'getline(".") =~ "condition) {" || getline(".") =~ "vimglob_func" || getline(".") =~ "{\"" ||'
+        skip ..= ' getline(".") =~ "{\\d" || getline(".") =~ "{{{" || getline(".") =~ "(\\w\\+) *{"'
     PerformCheck(fname, ')\s*{', 'curly after closing paren', skip)
 
     # Examples in comments use double quotes.
