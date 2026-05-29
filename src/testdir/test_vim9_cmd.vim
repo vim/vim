@@ -2178,4 +2178,23 @@ def Test_call_dict_funcref()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" :delfunction on a funcref stored in a dict member used to fail with E1017 in
+" Vim9 script for the same reason as :call.
+def Test_delfunction_dict_funcref()
+  var lines =<< trim END
+      vim9script
+      func g:LegacyFunc()
+      endfunc
+      var d: dict<any> = {}
+      d.key = g:LegacyFunc
+      d['k2'] = g:LegacyFunc
+      delfunction d.key
+      assert_false(has_key(d, 'key'))
+      delfunction d['k2']
+      assert_false(has_key(d, 'k2'))
+      delfunction g:LegacyFunc
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
