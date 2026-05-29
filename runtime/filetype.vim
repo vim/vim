@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Apr 20
+" Last Change:		2026 May 29
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -90,6 +90,9 @@ au BufNewFile,BufRead */.aptitude/config       setf aptconf
 
 " Arch Inventory file
 au BufNewFile,BufRead .arch-inventory,=tagging-method	setf arch
+
+" atlas or kawasaki_as
+au BufNewFile,BufRead *.as call dist#ft#FTas()
 
 " Active Server Pages (with Visual Basic Script)
 au BufNewFile,BufRead *.asa
