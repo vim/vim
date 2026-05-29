@@ -434,6 +434,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     julia: ['file.jl'],
     just: ['justfile', 'Justfile', '.justfile', 'config.just'],
     karel: ['file.kl', 'file.KL'],
+    kawasaki_as: ['file.pg'],
     kconfig: ['Kconfig', 'Kconfig.debug', 'Kconfig.file', 'Config.in', 'Config.in.host'],
     kdl: ['file.kdl'],
     kerml: ['file.kerml'],
@@ -3538,6 +3539,21 @@ func Test_cucumber_code_injection()
   call assert_false(filereadable(marker), 'Ruby injection executed')
   bwipe!
   filetype plugin off
+endfunc
+
+func Test_as_file()
+  filetype on
+
+  call writefile([], 'Xfile.as', 'D')
+  split Xfile.as
+  call assert_equal('atlas', &filetype)
+  bwipe!
+  call writefile(['', '.NETCONF'], 'Xfile.as', 'D')
+  split Xfile.as
+  call assert_equal('kawasaki_as', &filetype)
+  bwipe!
+
+  filetype off
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
