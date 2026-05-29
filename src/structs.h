@@ -3193,6 +3193,9 @@ typedef struct {
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
     short_u	b_sst_lasttick;	// last display tick
+
+    // Cache for in_id_list(); see idl_cache_T in syntax.c.
+    void	*b_idlist_cache;
 #endif // FEAT_SYN_HL
 
 #ifdef FEAT_SPELL

@@ -345,6 +345,7 @@ static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
+static void idl_cache_clear(synblock_T *block);
 
 /*
  * Start the syntax recognition for a line.  This function is normally called
@@ -1026,6 +1027,9 @@ syn_update_ends(int startofline)
 syn_stack_free_block(synblock_T *block)
 {
     synstate_T	*p;
+
+    // Syntax definitions may have changed: drop the in_id_list() cache.
+    idl_cache_clear(block);
 
     if (block->b_sst_array == NULL)
 	return;
@@ -6111,6 +6115,194 @@ copy_id_list(short *list)
 }
 
 /*
+ * Cache for in_id_list() {{{
+ *
+ * A "contains"/cluster list is otherwise scanned with recursive cluster
+ * expansion on every check.  Each distinct list is resolved once into a
+ * cluster-expanded, sorted set of group IDs so membership becomes a binary
+ * search.  The cache lives in the synblock and is cleared by
+ * syn_stack_free_block() when syntax definitions change (which also covers
+ * list pointer reuse).
+ */
+#define IDL_CACHE_SIZE 16
+
+typedef struct
+{
+    short	*idl_key;	// the list this entry resolves (NULL when empty)
+    short	*idl_ids;	// sorted, cluster-expanded group IDs (allocated)
+    int		idl_count;	// number of IDs in idl_ids
+    short	idl_marker;	// leading ALLBUT/TOP/CONTAINED item, or 0
+    bool	idl_usable;	// false: not cacheable, use the slow path
+} idl_entry_T;
+
+typedef struct
+{
+    idl_entry_T	ent[IDL_CACHE_SIZE];
+    int		round;		// round-robin replacement index
+    int		last;		// index of the last returned entry (fast path)
+} idl_cache_T;
+
+/*
+ * Collect the explicit group IDs of "list" into "ga", expanding clusters.
+ * "seen" records visited clusters to break cycles and avoid duplicate work.
+ * Return false when the list cannot be represented as a plain set (a nested
+ * ALLBUT/TOP/CONTAINED marker) or on out of memory.
+ */
+    static bool
+idl_collect(short *list, garray_T *ga, garray_T *seen)
+{
+    if (list == NULL || list == ID_LIST_ALL)
+	return false;
+    for (short item = *list; item != 0; item = *++list)
+    {
+	if (item >= SYNID_ALLBUT && item < SYNID_CLUSTER)
+	    return false;	// nested ALLBUT/TOP/CONTAINED: not cacheable
+	if (item >= SYNID_CLUSTER)
+	{
+	    short	*scl_list;
+	    bool	seen_it = false;
+
+	    for (int i = 0; i < seen->ga_len; ++i)
+		if (((short *)seen->ga_data)[i] == item)
+		{
+		    seen_it = true;
+		    break;
+		}
+	    if (seen_it)
+		continue;
+	    if (ga_grow(seen, 1) == FAIL)
+		return false;
+	    ((short *)seen->ga_data)[seen->ga_len++] = item;
+	    // Record the cluster id itself, not just its members: the slow
+	    // path matches "item == id" for a cluster id present in the list.
+	    if (ga_grow(ga, 1) == FAIL)
+		return false;
+	    ((short *)ga->ga_data)[ga->ga_len++] = item;
+	    scl_list = SYN_CLSTR(syn_block)[item - SYNID_CLUSTER].scl_list;
+	    if (scl_list != NULL && !idl_collect(scl_list, ga, seen))
+		return false;
+	}
+	else
+	{
+	    if (ga_grow(ga, 1) == FAIL)
+		return false;
+	    ((short *)ga->ga_data)[ga->ga_len++] = item;
+	}
+    }
+    return true;
+}
+
+    static int
+idl_id_cmp(const void *a, const void *b)
+{
+    return (int)*(const short *)a - (int)*(const short *)b;
+}
+
+/*
+ * Get the cache entry that resolves "list", building it if needed.
+ * Returns NULL only on allocation failure.
+ */
+    static idl_entry_T *
+idl_get_entry(short *list)
+{
+    idl_cache_T	*cache = (idl_cache_T *)syn_block->b_idlist_cache;
+    idl_entry_T	*e;
+    garray_T	ga, seen;
+
+    if (cache == NULL)
+    {
+	cache = ALLOC_CLEAR_ONE(idl_cache_T);
+	if (cache == NULL)
+	    return NULL;
+	syn_block->b_idlist_cache = cache;
+    }
+    // Fast path: the same list is usually queried many times in a row.
+    if (cache->ent[cache->last].idl_key == list)
+	return &cache->ent[cache->last];
+    for (int i = 0; i < IDL_CACHE_SIZE; ++i)
+	if (cache->ent[i].idl_key == list)
+	{
+	    cache->last = i;
+	    return &cache->ent[i];
+	}
+
+    // Build a new entry, replacing one in round-robin order.
+    cache->last = cache->round;
+    e = &cache->ent[cache->round];
+    cache->round = (cache->round + 1) % IDL_CACHE_SIZE;
+    VIM_CLEAR(e->idl_ids);
+    e->idl_count = 0;
+    e->idl_key = list;
+    e->idl_marker = 0;
+    e->idl_usable = true;
+
+    // A leading ALLBUT/TOP/CONTAINED marker is kept aside; the rest is the set.
+    if (*list >= SYNID_ALLBUT && *list < SYNID_CLUSTER)
+    {
+	e->idl_marker = *list;
+	++list;
+    }
+
+    ga_init2(&ga, sizeof(short), 50);
+    ga_init2(&seen, sizeof(short), 10);
+    if (!idl_collect(list, &ga, &seen))
+    {
+	e->idl_usable = false;
+	ga_clear(&ga);
+	ga_clear(&seen);
+	return e;
+    }
+    ga_clear(&seen);
+    if (ga.ga_len > 0)
+    {
+	qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(short), idl_id_cmp);
+	e->idl_ids = (short *)ga.ga_data;	// take ownership
+	e->idl_count = ga.ga_len;
+    }
+    else
+	ga_clear(&ga);
+    return e;
+}
+
+/*
+ * Return true if "id" is in the resolved set of cache entry "e".
+ */
+    static bool
+idl_contains(idl_entry_T *e, short id)
+{
+    int	lo = 0;
+    int	hi = e->idl_count - 1;
+
+    while (lo <= hi)
+    {
+	int	mid = (lo + hi) / 2;
+	short	v = e->idl_ids[mid];
+
+	if (v == id)
+	    return true;
+	if (v < id)
+	    lo = mid + 1;
+	else
+	    hi = mid - 1;
+    }
+    return false;
+}
+
+    static void
+idl_cache_clear(synblock_T *block)
+{
+    idl_cache_T	*cache = (idl_cache_T *)block->b_idlist_cache;
+
+    if (cache == NULL)
+	return;
+    for (int i = 0; i < IDL_CACHE_SIZE; ++i)
+	vim_free(cache->ent[i].idl_ids);
+    vim_free(cache);
+    block->b_idlist_cache = NULL;
+}
+// }}}
+
+/*
  * Check if syntax group "ssp" is in the ID list "list" of "cur_si".
  * "cur_si" can be NULL if not checking the "containedin" list.
  * Used to check if a syntax item is in the "contains" or "nextgroup" list of
@@ -6131,6 +6323,7 @@ in_id_list(
     static int	depth = 0;
     int		r;
     int		toplevel;
+    idl_entry_T	*e;
 
     // If ssp has a "containedin" list and "cur_si" is in it, return TRUE.
     if (cur_si != NULL && ssp->cont_in_list != NULL
@@ -6166,6 +6359,42 @@ in_id_list(
     toplevel = !(flags & HL_CONTAINED) || (flags & HL_INCLUDED_TOPLEVEL);
 
     /*
+     * Fast path: use the resolved, sorted set cached for this list.  Only the
+     * leading ALLBUT/TOP/CONTAINED gate depends on "ssp"/"flags", so it is
+     * applied here; membership itself is a binary search.  Can be turned off
+     * with test_override('syn_idlist_cache', 1) to verify the result matches
+     * the slow path.
+     */
+    e = disable_syn_idlist_cache_for_testing ? NULL : idl_get_entry(list);
+    if (e != NULL && e->idl_usable)
+    {
+	if (e->idl_marker != 0)
+	{
+	    item = e->idl_marker;
+	    if (item < SYNID_TOP)
+	    {
+		if (item - SYNID_ALLBUT != ssp->inc_tag)
+		    return FALSE;
+	    }
+	    else if (item < SYNID_CONTAINED)
+	    {
+		if (item - SYNID_TOP != ssp->inc_tag || !toplevel)
+		    return FALSE;
+	    }
+	    else
+	    {
+		if (item - SYNID_CONTAINED != ssp->inc_tag || toplevel)
+		    return FALSE;
+	    }
+	    retval = FALSE;
+	}
+	else
+	    retval = TRUE;
+	return idl_contains(e, id) ? retval : !retval;
+    }
+
+    /*
+     * Slow path (uncacheable list, e.g. a nested ALLBUT).
      * If the first item is "ALLBUT", return TRUE if "id" is NOT in the
      * contains list.  We also require that "id" is at the same ":syn include"
      * level as the list.
