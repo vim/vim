@@ -2637,6 +2637,8 @@ const ft_from_ext = {
   "qmd": "quarto",
   # QuickBms
   "bms": "quickbms",
+  # Popcap Reanimation files
+  "reanim": "xml",
   # Racket (formerly detected as "scheme")
   "rkt": "racket",
   "rktd": "racket",
