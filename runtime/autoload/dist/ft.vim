@@ -2336,6 +2336,8 @@ const ft_from_ext = {
   "kts": "kotlin",
   # KDE script
   "ks": "kscript",
+  # Kaitai struct
+  "ksy": "yaml",
   # Kyaml
   "kyaml": "yaml",
   "kyml": "yaml",
