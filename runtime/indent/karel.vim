@@ -38,7 +38,7 @@ set cpo&vim
 function GetKarelIndent() abort
 
   let currentLine = getline(v:lnum)
-  if  currentLine =~? '\v^-- && !get(g:, 'karelCommentIndent', 0)
+  if  currentLine =~? '\v^--' && !get(g:, 'karelCommentIndent', 0)
     " If current line has a -- in column 1, keep zero indent.
     " This may be useful if code is commented out at the first column.
     return 0
