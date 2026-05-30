@@ -1501,6 +1501,12 @@ func Test_mksession_cursor_position()
       exe $"drop {file}"
       call assert_equal([0, 1, 30, 0], getpos('.'), $"Cursor position not restored correctly for {file}")
   endfor
+
+  " Clean up
+  call delete('Xtest_curpos')
+  for file in files
+      call delete(file)
+  endfor
 endfunc
 
 " Test sessions global and local mappings
@@ -1512,6 +1518,7 @@ func Test_mksession_localmappings()
   " localoptions requires a buffer
   setlocal noswapfile
   silent write XDummy
+  defer delete('XDummy')
 
   for option in ["&", "=options", "=localoptions"]
     for global in [0, 1]
@@ -1564,6 +1571,7 @@ func Test_mksession_localmappings()
           \ assert_true(filereadable('XDummyOutput'),
           \ $"Expected map not defined in session file {session}")})
     call delete('XDummyOutput')
+    call delete(session)
 
   endfor
 
@@ -1587,6 +1595,7 @@ func Test_mksession_localmappings()
     if filereadable('XDummyOutput')
       call delete('XDummyOutput')
     endif
+    call delete(session)
   endfor
 
 endfunc
