@@ -3435,6 +3435,17 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	if (bevent->button == 3)
 	{
 # if GTK_CHECK_VERSION(3,22,2)
+#  ifdef GDK_WINDOWING_WAYLAND
+	    if (gui.is_wayland)
+	    {
+		int x2, y2;
+		gui_gtk_get_pointer(gui.mainwin, &x2, &y2, NULL);
+		gtk_menu_popup_at_rect(GTK_MENU(widget),
+			gtk_widget_get_window(gui.mainwin), &(GdkRectangle){x2, y2, 1, 1},
+			GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
+	    }
+	    else
+#  endif
 	    gtk_menu_popup_at_pointer(GTK_MENU(widget), event);
 # else
 	    gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,

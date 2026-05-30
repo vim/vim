@@ -2336,6 +2336,8 @@ const ft_from_ext = {
   "kts": "kotlin",
   # KDE script
   "ks": "kscript",
+  # Kaitai struct
+  "ksy": "yaml",
   # Kyaml
   "kyaml": "yaml",
   "kyml": "yaml",
@@ -2637,6 +2639,8 @@ const ft_from_ext = {
   "qmd": "quarto",
   # QuickBms
   "bms": "quickbms",
+  # Popcap Reanimation files
+  "reanim": "xml",
   # Racket (formerly detected as "scheme")
   "rkt": "racket",
   "rktd": "racket",
@@ -2731,6 +2735,8 @@ const ft_from_ext = {
   "mill": "scala",
   # SBT - Scala Build Tool
   "sbt": "sbt",
+  # SGF, Smart Game Format
+  "sgf": "sgf",
   # Slang Shading Language
   "slang": "shaderslang",
   # Slint

@@ -434,6 +434,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     julia: ['file.jl'],
     just: ['justfile', 'Justfile', '.justfile', 'config.just'],
     karel: ['file.kl', 'file.KL'],
+    kawasaki_as: ['file.pg'],
     kconfig: ['Kconfig', 'Kconfig.debug', 'Kconfig.file', 'Config.in', 'Config.in.host'],
     kdl: ['file.kdl'],
     kerml: ['file.kerml'],
@@ -740,6 +741,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     services: ['/etc/services', 'any/etc/services'],
     setserial: ['/etc/serial.conf', 'any/etc/serial.conf'],
     sexplib: ['file.sexp'],
+    sgf: ['file.sgf'],
     sh: ['.bashrc', '.bash_profile', '.bash-profile', '.bash_logout', '.bash-logout', '.bash_aliases', '.bash-aliases', '.bash_history', '.bash-history',
          '/tmp/bash-fc-3Ozjlw', '/tmp/bash-fc.3Ozjlw', 'PKGBUILD', 'file.bash', '/usr/share/doc/bash-completion/filter.sh',
          '/etc/udev/cdsymlinks.conf', 'any/etc/udev/cdsymlinks.conf', 'file.bats', '.ash_history', 'any/etc/neofetch/config.conf', '.xprofile',
@@ -985,7 +987,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     xml: ['/etc/blkid.tab', '/etc/blkid.tab.old', 'file.xmi', 'file.csproj', 'file.csproj.user', 'file.fsproj', 'file.fsproj.user', 'file.vbproj', 'file.vbproj.user', 'file.ui',
           'file.tpm', '/etc/xdg/menus/file.menu', 'fglrxrc', 'file.xlf', 'file.xliff', 'file.xul', 'file.wsdl', 'file.wpl', 'any/etc/blkid.tab', 'any/etc/blkid.tab.old',
           'any/etc/xdg/menus/file.menu', 'file.atom', 'file.rss', 'file.cdxml', 'file.psc1', 'file.mpd', 'fonts.conf', 'file.xcu', 'file.xlb', 'file.xlc', 'file.xba', 'file.xpr',
-          'file.xpfm', 'file.spfm', 'file.bxml', 'file.mmi', 'file.slnx', 'Directory.Packages.props', 'Directory.Build.targets', 'Directory.Build.props'],
+          'file.xpfm', 'file.spfm', 'file.bxml', 'file.mmi', 'file.slnx', 'Directory.Packages.props', 'Directory.Build.targets', 'Directory.Build.props', 'file.reanim'],
     xmodmap: ['anyXmodmap', 'Xmodmap', 'some-Xmodmap', 'some-xmodmap', 'some-xmodmap-file', 'xmodmap', 'xmodmap-file'],
     xpm: ['file.xpm'],
     xpm2: ['file.xpm2'],
@@ -995,7 +997,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     xslt: ['file.xsl', 'file.xslt'],
     yacc: ['file.yy', 'file.yxx', 'file.y++'],
     yaml: ['file.yaml', 'file.yml', 'file.eyaml', 'file.kyaml', 'file.kyml', 'any/.bundle/config', '.clangd', '.clang-format', '.clang-tidy', 'file.mplstyle', 'matplotlibrc', 'yarn.lock',
-           '/home/user/.kube/config', '/home/user/.kube/kuberc', '.condarc', 'condarc', '.mambarc', 'mambarc', 'pixi.lock', 'buf.lock'],
+           '/home/user/.kube/config', '/home/user/.kube/kuberc', '.condarc', 'condarc', '.mambarc', 'mambarc', 'pixi.lock', 'buf.lock', 'file.ksy'],
     yang: ['file.yang'],
     yara: ['file.yara', 'file.yar'],
     yuck: ['file.yuck'],
@@ -1088,7 +1090,10 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/bash2'],
             ['#!/path/dash'],
             ['#!/path/ksh'],
-            ['#!/path/ksh93']],
+            ['#!/path/ksh93'],
+            ['#!/path/ash'],
+            ['#!/path/busybox ash'],
+            ['#!/path/busybox sh']],
     csh:    [['#!/path/csh']],
     tcsh:   [['#!/path/tcsh']],
     zsh:    [['#!/path/zsh']],
@@ -3538,6 +3543,21 @@ func Test_cucumber_code_injection()
   call assert_false(filereadable(marker), 'Ruby injection executed')
   bwipe!
   filetype plugin off
+endfunc
+
+func Test_as_file()
+  filetype on
+
+  call writefile([], 'Xfile.as', 'D')
+  split Xfile.as
+  call assert_equal('atlas', &filetype)
+  bwipe!
+  call writefile(['', '.NETCONF'], 'Xfile.as', 'D')
+  split Xfile.as
+  call assert_equal('kawasaki_as', &filetype)
+  bwipe!
+
+  filetype off
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

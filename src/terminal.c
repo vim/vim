@@ -2265,7 +2265,8 @@ update_snapshot(term_T *term)
 			    int	    i;
 			    int	    c;
 
-			    for (i = 0; (c = cell.chars[i]) > 0 || i == 0; ++i)
+			    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL &&
+				    ((c = cell.chars[i]) > 0 || i == 0); ++i)
 				ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
 			}

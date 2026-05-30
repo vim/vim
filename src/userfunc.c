@@ -5612,18 +5612,27 @@ define_function(
 
 	if (fudi.fd_dict != NULL)
 	{
+	    char_u *func_name = vim_strnsave(name, namelen);
+
+	    if (func_name == NULL)
+	    {
+		VIM_CLEAR(fp);
+		goto erret;
+	    }
 	    if (fudi.fd_di == NULL)
 	    {
 		// add new dict entry
 		fudi.fd_di = dictitem_alloc(fudi.fd_newkey);
 		if (fudi.fd_di == NULL)
 		{
+		    vim_free(func_name);
 		    VIM_CLEAR(fp);
 		    goto erret;
 		}
 		if (dict_add(fudi.fd_dict, fudi.fd_di) == FAIL)
 		{
 		    vim_free(fudi.fd_di);
+		    vim_free(func_name);
 		    VIM_CLEAR(fp);
 		    goto erret;
 		}
@@ -5632,7 +5641,7 @@ define_function(
 		// overwrite existing dict entry
 		clear_tv(&fudi.fd_di->di_tv);
 	    fudi.fd_di->di_tv.v_type = VAR_FUNC;
-	    fudi.fd_di->di_tv.vval.v_string = vim_strnsave(name, namelen);
+	    fudi.fd_di->di_tv.vval.v_string = func_name;
 
 	    // behave like "dict" was used
 	    flags |= FC_DICT;
