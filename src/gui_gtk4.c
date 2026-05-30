@@ -499,30 +499,21 @@ gui_mch_init(void)
 		     G_CALLBACK(on_tab_reordered), NULL);
 #endif
 
-    // The form widget manages absolute positioning of scrollbars.
-    gui.formwin = gui_gtk_form_new();
+    // The form widget manages absolute positioning of scrollbars and the draw
+    // area.
+    gui.formwin = vim_form_new();
     gtk_widget_set_name(gui.formwin, "vim-gtk-form");
-    // formwin is overlaid on top of drawarea for scrollbar positioning.
-    // GtkForm's contains() returns FALSE so empty-area clicks fall through
-    // to the drawarea, while the scrollbar children still receive events.
+    gtk_widget_set_vexpand(gui.formwin, TRUE);
+    gtk_widget_set_hexpand(gui.formwin, TRUE);
+    gtk_box_append(GTK_BOX(vbox), gui.formwin);
 
     // The drawing area for the editor content.
-    // Placed in an overlay so it fills the formwin, with scrollbars on top.
     gui.drawarea = gtk_drawing_area_new();
     gui.surface = NULL;
     gtk_widget_set_focusable(gui.drawarea, TRUE);
     gtk_widget_set_vexpand(gui.drawarea, TRUE);
     gtk_widget_set_hexpand(gui.drawarea, TRUE);
-
-    {
-	// Use GtkOverlay: drawarea as the main child, formwin as overlay
-	GtkWidget *overlay = gtk_overlay_new();
-	gtk_overlay_set_child(GTK_OVERLAY(overlay), gui.drawarea);
-	gtk_overlay_add_overlay(GTK_OVERLAY(overlay), gui.formwin);
-	gtk_widget_set_vexpand(overlay, TRUE);
-	gtk_widget_set_hexpand(overlay, TRUE);
-	gtk_box_append(GTK_BOX(vbox), overlay);
-    }
+    vim_form_put(VIM_FORM(gui.formwin), gui.drawarea, 0, 0);
 
     // Set up drawing.
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
@@ -813,8 +804,6 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
     if (title != NULL && gui.mainwin != NULL)
 	gtk_window_set_title(GTK_WINDOW(gui.mainwin), (const char *)title);
 }
-
-static int in_set_shellsize = FALSE;
 
 /*
  * Get height of window decorations, that we cannot determine directly. For
@@ -2985,8 +2974,8 @@ gui_gtk_draw_string_ext(
 	column_offset = len;
     }
     else
-not_ascii:
     {
+not_ascii:;
 	PangoAttrList	*attr_list;
 	GList		*item_list;
 	int		cluster_width;
@@ -4207,10 +4196,7 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
 {
     if (sb->id != NULL)
-    {
-	gtk_widget_set_size_request(sb->id, w, h);
-	gui_gtk_form_move(GTK_FORM(gui.formwin), sb->id, x, y);
-    }
+	vim_form_move_resize(VIM_FORM(gui.formwin), sb->id, x, y, w, h);
 }
 
     int
@@ -4255,24 +4241,21 @@ adjustment_value_changed(GtkAdjustment *adj, gpointer data UNUSED)
     void
 gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
 {
+    GtkAdjustment *adj;
     if (orient == SBAR_HORIZ)
 	sb->id = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, NULL);
     else
 	sb->id = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);
 
-    if (sb->id != NULL && GTK_IS_SCROLLBAR(sb->id))
-    {
-	GtkAdjustment *adj = gtk_scrollbar_get_adjustment(GTK_SCROLLBAR(sb->id));
+    gtk_widget_add_css_class(sb->id, "vim-scrollbar");
+    adj = gtk_scrollbar_get_adjustment(GTK_SCROLLBAR(sb->id));
 
-	gtk_widget_set_visible(sb->id, FALSE);
-	gui_gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
-	if (adj != NULL && G_IS_OBJECT(adj))
-	{
-	    g_object_set_data(G_OBJECT(adj), "vim-sb", (gpointer)sb);
-	    g_signal_connect(G_OBJECT(adj), "value-changed",
-		    G_CALLBACK(adjustment_value_changed), NULL);
-	}
-    }
+    gtk_widget_set_visible(sb->id, FALSE);
+    vim_form_put(VIM_FORM(gui.formwin), sb->id, 0, 0);
+
+    g_object_set_data(G_OBJECT(adj), "vim-sb", (gpointer)sb);
+    g_signal_connect(G_OBJECT(adj), "value-changed",
+	    G_CALLBACK(adjustment_value_changed), NULL);
 }
 
     void
@@ -4280,9 +4263,66 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
     if (sb->id != NULL)
     {
-	gui_gtk_form_remove(GTK_FORM(gui.formwin), sb->id);
+	vim_form_remove(VIM_FORM(gui.formwin), sb->id);
 	sb->id = NULL;
     }
+}
+
+/*
+ * Try getting the actual size of the scrollbar, and update gui.scrollbar_width
+ * and gui.scrollbar_height.
+ */
+    void
+gui_mch_update_scrollbar_size(void)
+{
+    win_T	*wp;
+    int		w = -1, h = -1;
+    GtkWidget	*sbar;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	sbar = wp->w_scrollbars[SBAR_LEFT].id;
+
+	if (sbar == NULL || !gtk_widget_get_visible(sbar)
+		|| (!gui.which_scrollbars[SBAR_LEFT]
+		    && wp->w_scrollbars[SBAR_RIGHT].id != NULL))
+	    sbar = wp->w_scrollbars[SBAR_RIGHT].id;
+
+	if (sbar != NULL && gtk_widget_get_visible(sbar))
+	{
+	    GtkRequisition  min, nat;
+	    int		    sw;
+
+	    // Use preferred size, since widget may not have its size allocated
+	    // yet.
+	    gtk_widget_get_preferred_size(sbar, &min, &nat);
+	    sw = MAX(min.width, nat.width);
+	    if (sw > 0)
+	    {
+		w = sw;
+		break;
+	    }
+	}
+
+    }
+
+    sbar = gui.bottom_sbar.id;
+    if (sbar != NULL && gtk_widget_get_visible(sbar))
+    {
+	GtkRequisition min, nat;
+	int		    sh;
+
+	gtk_widget_get_preferred_size(sbar, &min, &nat);
+	sh = MAX(min.height, nat.height);
+
+	if (sh > 0)
+	    h = sh;
+    }
+
+    if (w != -1)
+	gui.scrollbar_width = w;
+    if (h != -1)
+	gui.scrollbar_height = h;
 }
 
 /*
@@ -4296,11 +4336,11 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
     last_text_area_w = w;
     last_text_area_h = h;
-    // Don't use gui_gtk_form_move_resize for drawarea because its
+    // Don't use vim_form_move_resize for drawarea because its
     // set_size_request would prevent the window from shrinking.
     // Just update position; the actual allocation is handled by
-    // form_size_allocate which gives drawarea the formwin's full size.
-    gui_gtk_form_move(GTK_FORM(gui.formwin), gui.drawarea, x, y);
+    // vim_form_size_allocate which gives drawarea the formwin's full size.
+    vim_form_move(VIM_FORM(gui.formwin), gui.drawarea, x, y);
 
     // Surface sizing is owned by drawarea_resize_cb; don't recreate it
     // here. Recreating on every text-area change wiped any preserved
@@ -4642,7 +4682,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     char_u		*entry_text;
     int			wword = FALSE;
     int			mcase = !p_ic;
-    GtkWidget		*vbox, *grid, *hbox, *tmp, *btn;
+    GtkWidget		*vertbox, *grid, *hbox, *tmp, *btn;
     gboolean		sensitive;
 
     frdp = do_replace ? &repl_widgets : &find_widgets;
@@ -4686,18 +4726,18 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     g_signal_connect(frdp->dialog, "destroy",
 	    G_CALLBACK(dialog_destroyed_cb), &frdp->dialog);
 
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-    gtk_widget_set_margin_start(vbox, 12);
-    gtk_widget_set_margin_end(vbox, 12);
-    gtk_widget_set_margin_top(vbox, 12);
-    gtk_widget_set_margin_bottom(vbox, 12);
-    gtk_window_set_child(GTK_WINDOW(frdp->dialog), vbox);
+    vertbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
+    gtk_widget_set_margin_start(vertbox, 12);
+    gtk_widget_set_margin_end(vertbox, 12);
+    gtk_widget_set_margin_top(vertbox, 12);
+    gtk_widget_set_margin_bottom(vertbox, 12);
+    gtk_window_set_child(GTK_WINDOW(frdp->dialog), vertbox);
 
     // Grid for labels + entries
     grid = gtk_grid_new();
     gtk_grid_set_row_spacing(GTK_GRID(grid), 6);
     gtk_grid_set_column_spacing(GTK_GRID(grid), 6);
-    gtk_box_append(GTK_BOX(vbox), grid);
+    gtk_box_append(GTK_BOX(vertbox), grid);
 
     // "Find what:" label + entry
     tmp = gtk_label_new(_("Find what:"));
@@ -4725,7 +4765,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 
     // Checkboxes
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-    gtk_box_append(GTK_BOX(vbox), hbox);
+    gtk_box_append(GTK_BOX(vertbox), hbox);
 
     frdp->wword = gtk_check_button_new_with_label(_("Match whole word only"));
     gtk_check_button_set_active(GTK_CHECK_BUTTON(frdp->wword),
@@ -4739,7 +4779,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 
     // Direction radio buttons
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-    gtk_box_append(GTK_BOX(vbox), hbox);
+    gtk_box_append(GTK_BOX(vertbox), hbox);
 
     tmp = gtk_label_new(_("Direction:"));
     gtk_box_append(GTK_BOX(hbox), tmp);
@@ -4756,7 +4796,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     // Action buttons
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
     gtk_widget_set_halign(hbox, GTK_ALIGN_END);
-    gtk_box_append(GTK_BOX(vbox), hbox);
+    gtk_box_append(GTK_BOX(vertbox), hbox);
 
     btn = gtk_button_new_with_label(_("Find Next"));
     gtk_widget_set_sensitive(btn, sensitive);
