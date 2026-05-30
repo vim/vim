@@ -573,7 +573,8 @@ gui_mch_init(void)
 
     {
 	GtkEventController *scroll = gtk_event_controller_scroll_new(
-		GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES);
+		GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+		| GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
 	g_signal_connect(scroll, "scroll",
 			 G_CALLBACK(scroll_event), NULL);
 	gtk_widget_add_controller(gui.drawarea, scroll);
@@ -1860,6 +1861,7 @@ scroll_event(GtkEventControllerScroll *controller UNUSED,
 {
     int button;
     int_u vim_modifiers;
+    int x, y;
     GdkModifierType state;
     GdkEvent *event;
 
@@ -1882,11 +1884,8 @@ scroll_event(GtkEventControllerScroll *controller UNUSED,
 
     vim_modifiers = modifiers_gdk2mouse(state);
 
-    {
-	double mx, my;
-	gdk_event_get_position(event, &mx, &my);
-	gui_send_mouse_event(button, (int)mx, (int)my, FALSE, vim_modifiers);
-    }
+    gui_mch_getmouse(&x, &y);
+    gui_send_mouse_event(button, x, y, FALSE, vim_modifiers);
 
     return TRUE;
 }
