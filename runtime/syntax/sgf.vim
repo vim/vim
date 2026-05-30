@@ -8,11 +8,6 @@ if exists("b:current_syntax")
   finish
 endif
 
-let s:cpo_save = &cpo
-set cpo&vim
-
-syn case match
-
 syn match sgfDelimiter "[();]"
 
 syn keyword sgfMoveProp B W nextgroup=sgfValue skipwhite
@@ -25,8 +20,8 @@ syn keyword sgfCommentProp C nextgroup=sgfCommentValue skipwhite
 syn match sgfProperty "\<[A-Za-z]\+\ze\s*\[" nextgroup=sgfValue skipwhite
 
 syn match sgfEscape "\\." contained
-syn region sgfValue matchgroup=sgfBracket start="\[" end="\]" skip="\\\\\|\\\]" contains=sgfEscape keepend nextgroup=sgfValue skipwhite
-syn region sgfCommentValue matchgroup=sgfBracket start="\[" end="\]" skip="\\\\\|\\\]" contains=sgfEscape,@Spell keepend nextgroup=sgfCommentValue skipwhite
+syn region sgfValue contained matchgroup=sgfBracket start="\[" end="\]" skip="\\\\\|\\\]" contains=sgfEscape keepend nextgroup=sgfValue skipwhite
+syn region sgfCommentValue contained matchgroup=sgfBracket start="\[" end="\]" skip="\\\\\|\\\]" contains=sgfEscape,@Spell keepend nextgroup=sgfCommentValue skipwhite
 
 hi def link sgfDelimiter Delimiter
 hi def link sgfMoveProp Statement
@@ -42,8 +37,5 @@ hi def link sgfValue String
 hi def link sgfCommentValue Comment
 
 let b:current_syntax = "sgf"
-
-let &cpo = s:cpo_save
-unlet s:cpo_save
 
 " vim: ts=8
