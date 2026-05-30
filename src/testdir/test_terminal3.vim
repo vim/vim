@@ -1241,4 +1241,19 @@ func Test_terminal_csi_args_overflow()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_terminal_output_combining_chars()
+  CheckUnix
+  new
+  let cmd = "cat samples/combining_chars.txt"
+  let buf = term_start(cmd, {'curwin': 1, 'term_finish': 'open', 'term_rows': 10, 'term_cols': 30})
+  call WaitForAssert({-> assert_match('finished', term_getstatus(buf))})
+  call TermWait(buf)
+  let lines = getbufline(buf, 1, '$')
+  " get byte lengths to confirm combining chars present
+  let lens = map(copy(lines), 'len(v:val)')
+  let expected = repeat([11], 190) + repeat([14], 10)
+  call assert_equal(expected, lens)
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
