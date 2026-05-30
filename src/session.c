@@ -486,7 +486,7 @@ put_view(
 
 	if (put_eol(fd) == FAIL
 		|| put_line(fd, "  if l < 1 | l = 1 | endif") == FAIL
-		|| put_line(fd, "  keepjumps exe $\":{l}\"") == FAIL
+		|| put_line(fd, "  keepjumps exe \":\" .. l") == FAIL
 		|| put_line(fd, "  normal! zt") == FAIL
 		|| fprintf(fd, "  keepjumps :%ld", (long)wp->w_cursor.lnum) < 0
 		|| put_eol(fd) == FAIL)
@@ -1304,22 +1304,33 @@ ex_mkrc(exarg_T	*eap)
 #ifdef FEAT_SESSION
 	if (!view_session
 		|| (eap->cmdidx == CMD_mksession
-		    && (*flagp & SSOP_OPTIONS)))
+		    && (*flagp & (SSOP_OPTIONS | SSOP_LOCALOPTIONS))))
 #endif
 	{
+	    bool do_mappings = true;
 	    int flags = OPT_GLOBAL;
 
 #ifdef FEAT_SESSION
-	    if (eap->cmdidx == CMD_mksession && (*flagp & SSOP_SKIP_RTP))
-		flags |= OPT_SKIPRTP;
+	    failed |= put_line(fd, "var cpo_save: string") == FAIL;
+
+	    if (eap->cmdidx == CMD_mksession)
+	    {
+		if (*flagp & SSOP_SKIP_RTP)
+		    flags |= OPT_SKIPRTP;
+
+		// SSOP_LOCALOPTIONS requires only local mappings
+		do_mappings = *flagp & SSOP_OPTIONS;
+	    }
 #endif
-	    failed |= (put_line(fd, "var cpo_save: string") == FAIL
-					 || makemap(fd, NULL) == FAIL
+
+	    if (do_mappings)
+		failed |= (makemap(fd, NULL) == FAIL
 					 || makeset(fd, flags, FALSE) == FAIL);
 
 #if defined(FEAT_EVAL)
-	    // save delay load import modules
-	    for (sid = script_items.ga_len; sid > 0; --sid)
+	    // Save delay load import modules.
+	    // Either SSOP_LOCALOPTIONS or SSOP_OPTIONS require them
+	    for (sid = 1; sid <= script_items.ga_len; ++sid)
 	    {
 		si = SCRIPT_ITEM(sid);
 		if (si->sn_autoload_prefix &&
@@ -1375,8 +1386,7 @@ ex_mkrc(exarg_T	*eap)
 	    }
 	    else
 	    {
-		failed |= put_line(fd, "var cpo_save: string = null_string")
-								       == FAIL;
+		failed |= put_line(fd, "var cpo_save: string") == FAIL;
 		failed |= (put_view(fd, curwin, curtab, !using_vdir, flagp, -1,
 								NULL) == FAIL);
 	    }

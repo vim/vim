@@ -1503,4 +1503,92 @@ func Test_mksession_cursor_position()
   endfor
 endfunc
 
+" Test sessions global and local mappings
+func Test_mksession_localmappings()
+
+  " Create sessions. Mapping execution is tested running a file
+  let valid_sessions = [] " keep map info
+  let invalid_sessions = [] " do not keep map info
+  " localoptions requires a buffer
+  setlocal noswapfile
+  silent write XDummy
+
+  for option in ["&", "=options", "=localoptions"]
+    for global in [0, 1]
+
+      " select options
+      exe "set sessionoptions" .. option
+
+      " mapping
+      exe "nnoremap" . (global ? " " : " <buffer> ")
+            \ . "dummy-test <Cmd>silent write XDummyOutput<CR>"
+      let case = $"mapping_{global ? "global" : "local"}_{option}"
+
+      " test mapping
+      normal dummy-test
+      call assert_true(filereadable("XDummyOutput"), $"Output file was not created by {case}")
+      call delete("XDummyOutput")
+
+      " session
+      let sessionfile = "XSession_" . case
+      exe $"mksession {sessionfile}"
+
+      if global && option =~ "localoptions"
+        let invalid_sessions += [sessionfile]
+      else
+        let valid_sessions += [sessionfile]
+      endif
+
+      " clear mappings
+      nmapclear
+      nmapclear <buffer>
+
+    endfor
+  endfor
+
+  " Check the session files are operational
+  for session in valid_sessions
+
+    let test_sources =<< trim eval END
+      " load session
+      silent source {session}
+      " execute legacy vimscript expression mapping
+      normal dummy-test
+      " on my way
+      cq
+    END
+
+    call writefile(test_sources, 'XTest.vim')
+    call system(GetVimCommand('XTest.vim'))
+    call WaitForAssert({->
+          \ assert_true(filereadable('XDummyOutput'),
+          \ $"Expected map not defined in session file {session}")})
+    call delete('XDummyOutput')
+
+  endfor
+
+  for session in invalid_sessions
+
+    let test_sources =<< trim eval END
+      " load session
+      silent source {session}
+      " execute legacy vimscript expression mapping
+      normal dummy-test
+      " on my way
+      cq
+    END
+
+    call writefile(test_sources, 'XTest.vim')
+    call system(GetVimCommand('XTest.vim'))
+    call WaitForAssert({->
+          \ assert_false(filereadable('XDummyOutput'),
+          \ $"Unexpected map defined in session file {session}")},
+          \ 100)
+    if filereadable('XDummyOutput')
+      call delete('XDummyOutput')
+    endif
+  endfor
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
