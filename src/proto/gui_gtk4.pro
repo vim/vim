@@ -19,6 +19,7 @@ void gui_mch_unmaximize(void);
 void gui_mch_set_fullscreen(int flag);
 void gui_mch_newfont(void);
 void gui_mch_settitle(char_u *title, char_u *icon);
+void gui_gtk_init_decor_height(void);
 void gui_mch_set_shellsize(int width, int height, int min_width, int min_height, int base_width, int base_height, int direction);
 void gui_mch_get_screen_dimensions(int *screen_w, int *screen_h);
 void gui_mch_enable_menu(int showit);

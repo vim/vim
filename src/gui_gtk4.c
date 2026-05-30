@@ -815,6 +815,28 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 
 static int in_set_shellsize = FALSE;
 
+/*
+ * Get height of window decorations, that we cannot determine directly. For
+ * example, the GtkHeaderBar widget. This is called in gui_resize_shell(), we
+ * cannot call it in gui_set_shellsize(), because that may be called before the
+ * drawarea/formwin is resized, which may cause the drawarea to be bigger than
+ * it actually is (while the window size is up to date), causing a negative
+ * "decor_height".
+ */
+    void
+gui_gtk_init_decor_height(void)
+{
+    int h = gtk_widget_get_height(gui.mainwin);
+
+    if (h == 0)
+	return;
+
+    h -= get_menu_tool_height();
+    h -= gtk_widget_get_height(gui.formwin);
+
+    gui.decor_height = h;
+}
+
     void
 gui_mch_set_shellsize(int width, int height,
 	int min_width UNUSED, int min_height UNUSED,
@@ -823,6 +845,11 @@ gui_mch_set_shellsize(int width, int height,
 {
     width += get_menu_tool_width();
     height += get_menu_tool_height();
+
+    // GtkWindow default size also includes client side decorations, so must
+    // include it also.
+    height += gui.decor_height;
+
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
 }
 
@@ -3241,24 +3268,46 @@ get_menu_tool_width(void)
     int
 get_menu_tool_height(void)
 {
-    int height = 0;
-
+    GtkWidget *widgets[] = {
 #ifdef FEAT_MENU
-    if (gui.menubar != NULL && gtk_widget_get_visible(gui.menubar))
-    {
-	GtkRequisition req;
-	gtk_widget_get_preferred_size(gui.menubar, &req, NULL);
-	height += req.height;
-    }
+	gui.menubar,
 #endif
 #ifdef FEAT_TOOLBAR
-    if (gui.toolbar != NULL && gtk_widget_get_visible(gui.toolbar))
-    {
-	GtkRequisition req;
-	gtk_widget_get_preferred_size(gui.toolbar, &req, NULL);
-	height += req.height;
-    }
+	gui.toolbar,
 #endif
+#ifdef FEAT_GUI_TABLINE
+	gui.tabline
+#endif
+    };
+
+    int height = 0;
+
+    for (int i = 0; i < ARRAY_LENGTH(widgets); i++)
+    {
+	GtkRequisition	min;
+	GtkRequisition	nat;
+	int		h;
+
+	if (widgets[i] == NULL || !gtk_widget_get_visible(widgets[i]))
+	    continue;
+
+	h = gtk_widget_get_height(widgets[i]);
+
+	if (h == 0)
+	{
+	    // Allocation hasn't been updated yet (widget just became visible).
+	    // Query the preferred height so the caller gets a valid value
+	    // before the layout pass runs.  Use the maximum of minimum and
+	    // natural height: GTK may allocate min_h even when natural_h is
+	    // smaller (e.g. GtkNotebook tab bar has min_h > natural_h due to
+	    // CSS).
+	    gtk_widget_get_preferred_size(widgets[i], &min, &nat);
+	    height += MAX(min.height, nat.height);
+	}
+	else
+	    height += h;
+
+    }
     return height;
 }
 
