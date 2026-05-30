@@ -1170,9 +1170,15 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	lvar = reserve_local(cctx, func_name, name_end - name_start,
 					    ASSIGN_CONST, ufunc->uf_func_type);
 	if (lvar == NULL)
+	{
+	    func_ptr_unref(ufunc);
 	    goto theend;
+	}
 	if (generate_FUNCREF(cctx, ufunc, NULL, FALSE, 0, &funcref_isn_idx) == FAIL)
+	{
+	    func_ptr_unref(ufunc);
 	    goto theend;
+	}
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
     }
 
