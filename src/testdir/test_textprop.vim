@@ -3574,6 +3574,56 @@ func Test_props_with_text_after_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_props_with_text_after_wide_char_at_end()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  " The buffer line ends with a double-width character exactly at the window
+  " width and has wrapping "after" virtual text.  This must not leave blank
+  " lines or "@@@", see issue #20384.
+  let lines =<< trim END
+      vim9script
+      set nowrap
+      setline(1, [repeat('x', 43) .. '口', 'second line', 'third line'])
+      prop_type_add('errtype', {highlight: 'WarningMsg', text_wrap: 'wrap'})
+      prop_add(1, 0, {type: 'errtype', text_padding_left: 3, text: 'E>'})
+  END
+  call writefile(lines, 'XscriptPropsAfterWideChar', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterWideChar', #{rows: 8, cols: 45})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_wide_char_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_props_with_text_after_wide_char_overflow()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  " Like above, but the last character reaches the rightmost column without
+  " starting on it: a double-width character that does not fit in the last
+  " column, and a <Tab> that expands up to the window width.  Both must be
+  " detected as filling the line so the wrapping "after" text does not cause
+  " blank lines, "@@@" or a spurious wrap with 'nowrap'.
+  let lines =<< trim END
+      vim9script
+      set nowrap tabstop=8 noexpandtab
+      setline(1, [
+          repeat('x', 39) .. '口',
+          'between line',
+          repeat('x', 32) .. "\t",
+          'last line',
+      ])
+      prop_type_add('errtype', {highlight: 'WarningMsg', text_wrap: 'wrap'})
+      prop_add(1, 0, {type: 'errtype', text_padding_left: 3, text: 'E>'})
+      prop_add(3, 0, {type: 'errtype', text_padding_left: 3, text: 'E>'})
+  END
+  call writefile(lines, 'XscriptPropsAfterWideOverflow', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterWideOverflow', #{rows: 8, cols: 40})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_wide_char_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_below_cul()
   CheckScreendump
   CheckRunVimInTerminal

@@ -2479,7 +2479,11 @@ win_line(
 		    // displaying that character.
 		    // Or when not wrapping and at the rightmost column.
 
-		    int only_below_follows = !wp->w_p_wrap && wlv.col == wp->w_width - 1;
+		    // Use the displayed width so a double-width or <Tab> last
+		    // character filling the rightmost column is detected too.
+		    int only_below_follows = !wp->w_p_wrap
+				 && wlv.col + win_chartabsize(wp, ptr, wlv.vcol)
+								>= wp->w_width;
 		    int suffix_flags = text_prop_suffix_flags[text_prop_next];
 
 		    text_prop_follows = (suffix_flags
