@@ -6273,7 +6273,7 @@ ex_delfunction(exarg_T *eap)
     int		is_global = FALSE;
 
     p = eap->arg;
-    name = trans_function_name_ext(&p, &is_global, eap->skip, 0, &fudi,
+    name = trans_function_name_ext(&p, &is_global, eap->skip, TFN_NO_DECL, &fudi,
 							     NULL, NULL, NULL);
     vim_free(fudi.fd_newkey);
     if (name == NULL)
@@ -6823,7 +6823,7 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT,
+    tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT | TFN_NO_DECL,
 			   &fudi, &partial, vim9script ? &type : NULL, &ufunc);
     if (fudi.fd_newkey != NULL)
     {

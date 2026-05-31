@@ -2157,4 +2157,25 @@ def Test_map_legacy_expr()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" :call on a funcref stored in a dict member used to fail with E1017 in Vim9
+" script because get_lval() treated the subscript as a re-declaration.
+def Test_call_dict_funcref()
+  var lines =<< trim END
+      vim9script
+      var d: dict<any> = {}
+      var marker = ''
+      def F()
+        marker = 'called'
+      enddef
+      d.key = F
+      d['k2'] = F
+      call d.key()
+      assert_equal('called', marker)
+      marker = ''
+      call d['k2']()
+      assert_equal('called', marker)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
