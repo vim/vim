@@ -2864,6 +2864,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     dict_T	*d = NULL;
     int		i;
 
+    if (check_secure())
+	return NULL;
+
     if (argvars != NULL)
     {
 	if (in_vim9script()
