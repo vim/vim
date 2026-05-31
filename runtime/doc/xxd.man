@@ -101,11 +101,12 @@ OPTIONS
               instead of a hex dump.
 
        -R when
-              In the output the hex-value and the value are both colored  with
-              the  same  color  depending  on the hex-value. Mostly helping to
-              differentiate printable and non-printable characters.   when  is
-              never,  always, or auto (default: auto).  When the $NO_COLOR en‐
-              vironment variable is set, colorization will be disabled.
+              In the output both the data column (hex, or bits  with  -b)  and
+              the  character  column are colored with the same color depending
+              on the byte value. Mostly helping to differentiate printable and
+              non-printable characters.  when is never, always, or  auto  (de‐
+              fault:  auto).   When the $NO_COLOR environment variable is set,
+              colorization will be disabled.
 
        -seek offset
               When used after -r: revert with <offset> added to file positions

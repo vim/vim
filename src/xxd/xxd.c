@@ -75,6 +75,7 @@
  * 19.03.2026  Add -t option to end output with terminating null
  * 25.03.2026  Fix color output issues
  * 26.04.2026  Use unsigned long for printing offsets
+ * 31.05.2026  Colorize binary output
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -155,7 +156,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2026-04-26 by Juergen Weigert et al.";
+char version[] = "xxd 2026-05-31 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -1194,8 +1195,15 @@ main(int argc, char *argv[])
 	}
       else /* hextype == HEX_BITS */
 	{
+	  if (color)
+	    cur_color = get_color_char(e, ebcdic);
+
 	  for (i = 7; i >= 0; i--)
-	    l[c++] = (e & (1 << i)) ? '1' : '0';
+	    {
+	      if (color)
+		colors[c] = cur_color;
+	      l[c++] = (e & (1 << i)) ? '1' : '0';
+	    }
 	}
       if (e)
 	nonzero++;
