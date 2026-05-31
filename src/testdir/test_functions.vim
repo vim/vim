@@ -1267,7 +1267,7 @@ func Test_matchstrlist()
     enddef
     Foo()
   END
-  call v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected list<string> but got list<any>', 2)
+  call v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected list<string> but got list<blob | dict<string>>', 2)
 endfunc
 
 " Test for matchbufline()

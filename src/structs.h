@@ -1621,6 +1621,9 @@ struct type_S {
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
+    type_T	    *tt_unext;	    // Next type if this is a union, otherwise
+				    // NULL if it isn't (or if this is the last
+				    // type in the union).
 };
 
 typedef struct {
@@ -1637,6 +1640,7 @@ typedef struct {
 #define TTFLAG_SUPER	    0x40    // object from "super".
 #define TTFLAG_GENERIC	    0x80    // generic type
 #define TTFLAG_TUPLE_OK	    0x100   // tuple can be used for a list
+#define	TTFLAG_UNION	    0x200   // First type in union type
 
 #define IS_GENERIC_TYPE(type)	\
     ((type->tt_flags & TTFLAG_GENERIC) == TTFLAG_GENERIC)
@@ -2005,6 +2009,16 @@ typedef enum {
 } def_status_T;
 
 /*
+ * Maps a copied union type to its original type in the generic params table.
+ * This is because pointer equality is used in get_generic_type_index().
+ */
+typedef struct
+{
+    type_T *type;
+    type_T *gen_type;
+} generic_type_map_T;
+
+/*
  * Structure to hold info for a user function.
  * When adding a field check copy_lambda_to_global_func().
  */
@@ -2052,6 +2066,8 @@ struct ufunc_S
     type_T	*uf_generic_param_types; // list of allocated generic types
     garray_T	uf_generic_arg_types; // list of allocated type arguments
     hashtab_T	uf_generic_functab; // generic function table
+    garray_T	uf_generic_type_map; // Map of copied union types to param types
+				     // in "uf_generic_param_types".
 
     garray_T	uf_lines;	// function lines
 

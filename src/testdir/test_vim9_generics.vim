@@ -3574,4 +3574,34 @@ def Test_generic_max_type_args()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test generic types work with union types
+def Test_generic_union_type()
+  var lines =<< trim END
+    vim9script
+    def Foo<A, B>(x: A | B | string, y: B | list<A>): A | B
+      return y
+    enddef
+    Foo<string, number>("test", 1)
+  END
+  v9.CheckSourceFailure(lines, "E1012: Type mismatch; expected string | number but got number | list<string>", 1)
+
+  lines =<< trim END
+    vim9script
+    def Foo<A, B>(x: A | B | string, y: B | A): A | B
+      return y
+    enddef
+    defcompile Foo<string, number>
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Foo<A, B>(x: dict<list<A> | B>): dict<list<string> | number>
+      return x
+    enddef
+    defcompile Foo<string, number>
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

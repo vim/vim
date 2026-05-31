@@ -29,6 +29,7 @@ struct gfitem_S
 #define GFITEM_KEY_OFF	offsetof(gfitem_T, gfi_name)
 #define HI2GFITEM(hi)	((gfitem_T *)((hi)->hi_key - GFITEM_KEY_OFF))
 
+static void update_generic_type(ufunc_T *ufunc, ufunc_T *new_ufunc, type_T *generic_type, type_T **specific_type, type_T **func_type, bool handle_union);
 static type_T *find_generic_type_in_cctx(char_u *gt_name, size_t len, cctx_T *cctx);
 
 /*
@@ -298,7 +299,8 @@ parse_generic_func_type_args(
     {
 	p = skipwhite(p);
 
-	if (!ASCII_ISALNUM(*p))
+	// Allow '(', since types can be contained in parentheses.
+	if (!ASCII_ISALNUM(*p) && *p != '(')
 	{
 	    semsg(_(e_missing_type_after_str), start);
 	    return NULL;
@@ -612,6 +614,7 @@ generic_func_init(ufunc_T *fp, gfargs_tab_T *gfatab)
     fp->uf_generic_param_types = (type_T *)gfatab->gfat_param_types.ga_data;
     ga_init(&gfatab->gfat_param_types);	// remove the reference to the types
     ga_init(&fp->uf_generic_arg_types);
+    ga_init2(&fp->uf_generic_type_map, sizeof(generic_type_map_T), 1);
     hash_init(&fp->uf_generic_functab);
 }
 
@@ -660,6 +663,7 @@ copy_generic_function(ufunc_T *fp, ufunc_T *new_fp)
 {
     int		i;
     int		sz;
+    void	*ptr = NULL;
 
     if (!IS_GENERIC_FUNC(fp))
 	return;
@@ -689,6 +693,19 @@ copy_generic_function(ufunc_T *fp, ufunc_T *new_fp)
 	    &new_fp->uf_generic_param_types[i];
 
     ga_init(&new_fp->uf_generic_arg_types);
+
+    if (fp->uf_generic_type_map.ga_maxlen > 0)
+	ptr = vim_memsave(fp->uf_generic_type_map.ga_data,
+		(size_t)fp->uf_generic_type_map.ga_maxlen *
+		(size_t)fp->uf_generic_type_map.ga_itemsize);
+    if (ptr != NULL)
+    {
+	memcpy(&new_fp->uf_generic_type_map, &fp->uf_generic_type_map,
+		sizeof(garray_T));
+	new_fp->uf_generic_type_map.ga_data = ptr;
+    }
+    else
+	ga_init2(&fp->uf_generic_type_map, sizeof(generic_type_map_T), 1);
     hash_init(&new_fp->uf_generic_functab);
 }
 
@@ -797,6 +814,76 @@ generic_func_call(char_u **argp)
 }
 
 /*
+ * Same as update_generic_type(), but only handles union types, which must be
+ * handled differently. This is because types are always a copied when
+ * being added to the union, meaning pointer equality won't work. To handle
+ * this, have an array that maps copied generic types to the actual original
+ * generic type.
+ *
+ * Returns true if handled, otherwise false.
+ */
+    static bool
+update_generic_union(
+    ufunc_T	*ufunc,
+    ufunc_T	*new_ufunc,
+    type_T	*generic_type,
+    type_T	**specific_type,
+    type_T	**func_type)
+{
+    type_T *first = NULL;
+    type_T *cur;
+
+    if (!(generic_type->tt_flags & TTFLAG_UNION))
+	return false;
+
+    for (type_T *t = generic_type; t != NULL; t = t->tt_unext)
+    {
+	type_T *actual = t;
+	type_T *update_type = NULL;
+
+	if (t->tt_flags & TTFLAG_GENERIC)
+	{
+	    // Generic type, must first find the actual generic type that
+	    // this copy maps to. Then we can find the concrete type for
+	    // this generic type.
+
+	    for (int i = 0; i < ufunc->uf_generic_type_map.ga_len; i++)
+	    {
+		generic_type_map_T *tm = &((generic_type_map_T *)
+			ufunc->uf_generic_type_map.ga_data)[i];
+
+		if (tm->type == t )
+		{
+		    update_type = tm->gen_type;
+		    break;
+		}
+	    }
+	    if (update_type == NULL)
+		continue;
+	}
+	else
+	    update_type = t;
+	// Don't want to handle union types, since that would cause an recursion
+	// loop.
+	update_generic_type(ufunc, new_ufunc, update_type, &actual,
+		func_type, false);
+
+	// Don't care about return value, doesn't matter
+	(void)construct_union_type(&first, NULL, &cur, actual,
+		&new_ufunc->uf_type_list);
+    }
+    if (first == NULL)
+	return true;
+    check_union_type(first);
+
+    *specific_type = first;
+    if (func_type != NULL)
+	*func_type = first;
+
+    return true;
+}
+
+/*
  * Recursively replaces all occurrences of the generic type "generic_type" in a
  * type structure with the corresponding concrete type from "new_ufunc", based
  * on the mapping from the original generic function "ufunc".
@@ -813,6 +900,7 @@ generic_func_call(char_u **argp)
  *   specific_type - pointer to the location where the concrete type should be
  *		     set
  *   func_type     - pointer to the function type to update (may be NULL)
+ *   handle_union  - If union types should be handled
  */
     static void
 update_generic_type(
@@ -820,9 +908,14 @@ update_generic_type(
     ufunc_T	*new_ufunc,
     type_T	*generic_type,
     type_T	**specific_type,
-    type_T	**func_type)
+    type_T	**func_type,
+    bool	handle_union)
 {
     int	idx;
+
+    if (handle_union && update_generic_union(ufunc, new_ufunc, generic_type,
+		specific_type, func_type))
+	return;
 
     switch (generic_type->tt_type)
     {
@@ -839,25 +932,27 @@ update_generic_type(
 	case VAR_DICT:
 	    update_generic_type(ufunc, new_ufunc, generic_type->tt_member,
 		    &(*specific_type)->tt_member,
-		    func_type != NULL ? &(*func_type)->tt_member : NULL);
+		    func_type != NULL ? &(*func_type)->tt_member : NULL, true);
 	    break;
 	case VAR_TUPLE:
 	    for (int i = 0; i < generic_type->tt_argcount; i++)
 		update_generic_type(ufunc, new_ufunc,
 			generic_type->tt_args[i],
 			&(*specific_type)->tt_args[i],
-			func_type != NULL ? &(*func_type)->tt_args[i] : NULL);
+			func_type != NULL ? &(*func_type)->tt_args[i] : NULL,
+			true);
 	    break;
 	case VAR_FUNC:
 	    for (int i = 0; i < generic_type->tt_argcount; i++)
 		update_generic_type(ufunc, new_ufunc,
 			generic_type->tt_args[i],
 			&(*specific_type)->tt_args[i],
-			func_type != NULL ? &(*func_type)->tt_args[i] : NULL);
+			func_type != NULL ? &(*func_type)->tt_args[i] : NULL,
+			true);
 	    update_generic_type(ufunc, new_ufunc,
 		    generic_type->tt_member,
 		    &(*specific_type)->tt_member,
-		    func_type != NULL ? &(*func_type)->tt_member : NULL);
+		    func_type != NULL ? &(*func_type)->tt_member : NULL, true);
 	    break;
 	default:
 	    break;
@@ -984,17 +1079,17 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
     for (i = 0; i < fp->uf_args.ga_len; i++)
 	update_generic_type(fp, new_fp, fp->uf_arg_types[i],
 			    &new_fp->uf_arg_types[i],
-			    &new_fp->uf_func_type->tt_args[i]);
+			    &new_fp->uf_func_type->tt_args[i], true);
 
     // Update the vararg type if it uses generic types
     if (fp->uf_va_type != NULL)
 	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
-			    NULL);
+			    NULL, true);
 
     // Update the return type if it is a generic type
     if (fp->uf_ret_type != NULL)
 	update_generic_type(fp, new_fp, fp->uf_ret_type, &new_fp->uf_ret_type,
-			    &new_fp->uf_func_type->tt_member);
+			    &new_fp->uf_func_type->tt_member, true);
 
     hash_add_item(ht, hi, gfitem->gfi_name, hash);
 
@@ -1305,6 +1400,7 @@ generic_func_clear_items(ufunc_T *fp)
     for (int i = 0; i < fp->uf_generic_argcount; i++)
 	VIM_CLEAR(fp->uf_generic_args[i].gt_name);
     VIM_CLEAR(fp->uf_generic_args);
+    ga_clear(&fp->uf_generic_type_map);
     free_generic_functab(fp);
     fp->uf_flags &= ~FC_GENERIC;
 }

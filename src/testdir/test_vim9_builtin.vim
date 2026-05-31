@@ -1190,7 +1190,7 @@ def Test_extend_arg_types()
   v9.CheckSourceDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<any> but got number')
   v9.CheckSourceDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 
-  v9.CheckSourceScriptFailure(['vim9script', 'var l = [1]', 'extend(l, ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
+  v9.CheckSourceScriptFailure(['vim9script', 'var l = [1]', 'extend(l, ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string | number> in extend()')
 enddef
 
 func g:ExtendDict(d)
