@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52644,6 +52644,8 @@ Other ~
   attribute to handle completion of single arguments with spaces as expected.
 - Support %0{} in 'statusline' to insert the expression result verbatim and
   not drop leading spaces |stl-%0{|.
+- Generated Session and View files are written in Vim9 script, see |:mksession|,
+  |:mkview| and |:mkvimrc|
 
 Platform specific ~
 -----------------
