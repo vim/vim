@@ -638,7 +638,7 @@ SectionGroupEnd
 	!undef LIBRARY_X64
       ${EndIf}
 
-      !if !${ARM64}
+      !if ! ${ARM64}
 	# Install DLLs for 32-bit gvimext.dll into the GvimExt32 directory.
 	SetOutPath $0\GvimExt32
 	ClearErrors
