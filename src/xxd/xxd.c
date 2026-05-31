@@ -1194,8 +1194,15 @@ main(int argc, char *argv[])
 	}
       else /* hextype == HEX_BITS */
 	{
+	  if (color)
+	    cur_color = get_color_char(e, ebcdic);
+
 	  for (i = 7; i >= 0; i--)
-	    l[c++] = (e & (1 << i)) ? '1' : '0';
+	    {
+	      if (color)
+		colors[c] = cur_color;
+	      l[c++] = (e & (1 << i)) ? '1' : '0';
+	    }
 	}
       if (e)
 	nonzero++;
