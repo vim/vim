@@ -5485,8 +5485,6 @@ endfunc
 func Test_popup_opacity_fade_to_background()
   CheckScreendump
 
-  " Opacity popup spanning a vertical split should redraw both windows
-  " underneath, not just the left one (blend accumulation bug).
   let lines =<< trim END
     call setline(1, repeat(['X   X   X   X   X'], 4))
     hi PopupColor guibg=blue
@@ -5494,7 +5492,7 @@ func Test_popup_opacity_fade_to_background()
         \ line: 2, col: 3,
         \ minwidth: 10,
         \ minheight: 2,
-        \ highlight: 'PopupColor',
+        \ highlights: 'Normal:PopupColor',
         \ opacity: 60,
         \ zindex: 50,
         \})
@@ -5517,6 +5515,73 @@ func Test_popup_opacity_fade_to_background()
   call term_sendkeys(buf, ":set termguicolors\<CR>")
   call term_sendkeys(buf, ":highlight Normal ctermfg=NONE ctermbg=NONE guifg=#000000 guibg=#ffdab9\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_opacity_fade_to_background_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_opacity_undefined_popup_highlight()
+  CheckScreendump
+
+  let lines =<< trim END
+  highlight clear PopupColor
+  highlight red ctermfg=red guifg=red
+  highlight revred ctermbg=red guibg=red
+  highlight blue ctermfg=blue guifg=blue
+  highlight revblue ctermbg=blue guibg=blue
+  highlight green ctermfg=green guifg=green
+  highlight revgreen ctermbg=green guibg=green
+  highlight reverse cterm=reverse
+  call matchadd('red', 'red')
+  call matchadd('revred', 'RED')
+  call matchadd('blue', 'blue')
+  call matchadd('revblue', 'BLUE')
+  call matchadd('green', 'green')
+  call matchadd('revgreen', 'GREEN')
+  call matchadd('reverse', 'REVERSE')
+  call setline(1, repeat(['red RED green GREEN blue BLUE normal REVERSE'], 5))
+  call popup_create('Popup Popup Popup Popup Popup Popup Popup', #{
+            \ line: 2, col: 3,
+            \ border: [1, 1, 1, 1],
+            \ minwidth: 10,
+            \ minheight: 2,
+            \ highlights: 'Normal:PopupColor',
+            \ opacity: 60,
+            \ })
+  END
+  call writefile(lines, 'XtestPopupOpacityUndefinedPopupHighlight', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityUndefinedPopupHighlight', #{rows: 12, cols: 60})
+  " light background without Normal color set
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_1', {})
+
+  " dark background without Normal color set
+  call term_sendkeys(buf, ":set background=dark\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_2', {})
+
+  " dark termguicolors
+  call term_sendkeys(buf, ":set termguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_3', {})
+
+  " light termguicolors
+  call term_sendkeys(buf, ":set background=light\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_4', {})
+
+  " PopupColor only have fg color defined
+  call term_sendkeys(buf, ":highlight PopupColor ctermfg=DarkMagenta guifg=DarkMagenta\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_5', {})
+
+  " termguicolors PopupColor only have fg color defined
+  call term_sendkeys(buf, ":set termguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_6', {})
+
+  " termguicolors PopupColor only have bg color defined
+  call term_sendkeys(buf, ":highlight clear PopupColor\<CR>")
+  call TermWait(buf, 25)
+  call term_sendkeys(buf, ":highlight PopupColor ctermbg=DarkCyan guibg=DarkCyan\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_7', {})
+
+  " PopupColor only have bg color defined
+  call term_sendkeys(buf, ":set notermguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_undefined_popup_highlight_8', {})
 
   call StopVimInTerminal(buf)
 endfunc
