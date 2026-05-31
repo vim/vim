@@ -389,6 +389,12 @@ def Test_endfunc_enddef()
     enddef there
   END
   v9.CheckScriptFailure(lines, 'E1173: Text found after enddef: there', 6)
+
+  lines =<< trim END
+    def ShortEnddef()
+    endd
+  END
+  v9.CheckScriptFailure(lines, 'E1065: Command cannot be shortened: endd', 2)
 enddef
 
 def Test_missing_endfunc_enddef()

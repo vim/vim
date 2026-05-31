@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*eval.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3384,7 +3384,7 @@ text...
 			  s:	script-local variables
 			  l:	local function variables
 			  v:	Vim variables.
-			This does not work in Vim9 script. |vim9-declaration|
+			This does not work in Vim9 script.  |vim9-declaration|
 
 :let			List the values of all variables.  The type of the
 			variable is indicated before the value:
@@ -3660,7 +3660,7 @@ text...
 			all nested `:try`s inside the loop.  The outermost
 			`:endtry` then jumps back to the start of the loop.
 
-			In |Vim9| script `:cont` is the shortest form, to
+			In |Vim9| script `:continue` cannot be shortened, to
 			improve script readability.
 						*:break* *:brea* *E587*
 :brea[k]		When used inside a `:while` or `:for` loop, skips to

@@ -3,6 +3,7 @@
 import './util/vim9.vim' as v9
 source util/screendump.vim
 
+" Test for has('vim9script')
 def Test_vim9script_feature()
   # example from the help, here the feature is always present
   var lines =<< trim END
@@ -1216,7 +1217,7 @@ def Test_error_in_catch()
   v9.CheckDefExecFailure(lines, 'E684:', 4)
 enddef
 
-" :while at the very start of a function that :continue jumps to
+" Test for :while at the very start of a function that :continue jumps to
 def s:TryContinueFunc()
  while g:Count < 2
    g:sequence ..= 't'
@@ -1330,8 +1331,8 @@ def Test_nocatch_throw_silenced()
   source XthrowSilenced
 enddef
 
-" g:DeletedFunc() is found when compiling Test_try_catch_throw() and then
-" deleted, this should give a runtime error.
+" Test for g:DeletedFunc() is found when compiling Test_try_catch_throw() and
+" then deleted, this should give a runtime error.
 def DeletedFunc(): list<any>
   return ['delete me']
 enddef
@@ -1522,7 +1523,7 @@ def Try_catch_skipped()
   endif
 enddef
 
-" The skipped try/endtry was updating the wrong instruction.
+" Test for when the skipped try/endtry was updating the wrong instruction.
 def Test_try_catch_skipped()
   var instr = execute('disassemble Try_catch_skipped')
   assert_match("NEWLIST size 0\n", instr)
@@ -4376,62 +4377,144 @@ def Run_test_reject_declaration()
   g:StopVimInTerminal(buf)
 enddef
 
-def Test_minimal_command_name_length()
-  var names = [
-       'cons',
-       'brea',
-       'cat',
-       'catc',
-       'con',
-       'cont',
-       'conti',
-       'contin',
-       'continu',
-       'el',
-       'els',
-       'elsei',
-       'endfo',
-       'en',
-       'end',
-       'endi',
-       'endw',
-       'endt',
-       'endtr',
-       'exp',
-       'expo',
-       'expor',
-       'fina',
-       'finall',
-       'fini',
-       'finis',
-       'imp',
-       'impo',
-       'impor',
-       'retu',
-       'retur',
-       'th',
-       'thr',
-       'thro',
-       'wh',
-       'whi',
-       'whil',
-      ]
-  for name in names
-    v9.CheckDefAndScriptFailure([name .. ' '], 'E1065:')
+" Test shortened commands that are invalid in Vim9 script
+def Test_shortened_invalid_vim9()
+  # Many Vim9 script commands cannot be shortened/abbreviated.
+  # SHORTENED is a list of dicts, each with a single key (the exact shortened
+  # command) and a list value with four items:
+  # [0] list<string>	Lines passed to the check function (without 'vim9script'
+  #			for SourceFailure lines)
+  # [1] number		Line number where the error is expected ('vimscript',
+  #			which is not in the list, is line 1 in the
+  #			'SourceFailure' and 'DefFailure lines, so needs to be
+  #			included in the count)
+  # [2] string		'DefAndScriptFailure', 'SourceFailure', or 'DefFailure'
+  #			specifying the applicable 'Check' function to call
+  const SHORTENED: list<dict<list<any>>> = [
+    # abstract
+    {abs: [['abs class A'], 1, 'DefAndScriptFailure']},
+    {abst: [['abst class A'], 1, 'DefAndScriptFailure']},
+    {abstr: [['abstr class A'], 1, 'DefAndScriptFailure']},
+    {abstra: [['abstra class A'], 1, 'DefAndScriptFailure']},
+    {abstrac: [['abstrac class A'], 1, 'DefAndScriptFailure']},
+    # break
+    {brea: [['for k in range(0, 2)', 'brea', 'endfor'], 2, 'DefAndScriptFailure']},
+    # catch
+    {cat: [['try', 'echo 0', 'cat'], 3, 'DefAndScriptFailure']},
+    {catc: [['try', 'echo 0', 'catc'], 3, 'DefAndScriptFailure']},
+    # class - n/a because :clas is :clast
+    # const
+    {cons: [['cons C = 0'], 1, 'DefAndScriptFailure']},
+    # continue
+    {con: [['var n: number', 'while n < 9', '++n', 'con'], 4, 'DefAndScriptFailure']},
+    {cont: [['var n: number', 'while n < 9', '++n', 'cont'], 4, 'DefAndScriptFailure']},
+    {conti: [['var n: number', 'while n < 9', '++n', 'conti'], 4, 'DefAndScriptFailure']},
+    {contin: [['var n: number', 'while n < 9', '++n', 'contin'], 4, 'DefAndScriptFailure']},
+    {continu: [['var n: number', 'while n < 9', '++n', 'continu'], 4, 'DefAndScriptFailure']},
+    # def has no applicable shortened form (:de is :delete)
+    # else
+    {els: [['if true', 'els'], 2, 'DefAndScriptFailure']},
+    # elseif
+    {elsei: [['if true', 'elsei false'], 2, 'DefAndScriptFailure']},
+    # endclass
+    {endc: [['class C', 'endc'], 3, 'SourceFailure']},
+    {endcl: [['class C', 'endcl'], 3, 'SourceFailure']},
+    {endcla: [['class C', 'endcla'], 3, 'SourceFailure']},
+    {endclas: [['class C', 'endclas'], 3, 'SourceFailure']},
+    # enddef
+    # (NB: The separate DefFailure check tests them nested -
+    #      DefAndScriptFailure cannot be used for testing :endd[e])
+    {endd: [['def D()', 'endd'], 3, 'SourceFailure']},
+    {endde: [['def D()', 'endde'], 3, 'SourceFailure']},
+    {endd: [['var R: func = (): bool => {', 'def D()', 'endd', '}'], 4, 'DefFailure']}, 
+    {endde: [['var R: func = (): bool => {', 'def D()', 'endde', '}'], 4, 'DefFailure']}, 
+    # endenum
+    {ende: [['enum E', 'ende'], 3, 'SourceFailure']},
+    {enden: [['enum E', 'enden'], 3, 'SourceFailure']},
+    {endenu: [['enum E', 'endenu'], 3, 'SourceFailure']},
+    # endfor
+    {endfo: [['for n in range(0, 2)', 'endfo'], 2, 'DefAndScriptFailure']},
+    # endif
+    {en: [['if true', 'en'], 2, 'DefAndScriptFailure']},
+    {end: [['if true', 'end'], 2, 'DefAndScriptFailure']},
+    {endi: [['if true', 'endi'], 2, 'DefAndScriptFailure']},
+    # endinterface
+    {endin: [['interface I', 'endin'], 3, 'SourceFailure']},
+    {endint: [['interface I', 'endint'], 3, 'SourceFailure']},
+    {endinte: [['interface I', 'endinte'], 3, 'SourceFailure']},
+    {endinter: [['interface I', 'endinter'], 3, 'SourceFailure']},
+    {endinterf: [['interface I', 'endinterf'], 3, 'SourceFailure']},
+    {endinterfa: [['interface I', 'endinterfa'], 3, 'SourceFailure']},
+    {endinterfac: [['interface I', 'endinterfac'], 3, 'SourceFailure']},
+    # endtry
+    {endt: [['try', 'echo 0', 'endt'], 3, 'DefAndScriptFailure']},
+    {endtr: [['try', 'echo 0', 'endtr'], 3, 'DefAndScriptFailure']},
+    # endwhile
+    {endw: [['var n = 9', 'while n > 0', '--n', 'endw'], 4, 'DefAndScriptFailure']},
+    {endwh: [['var n = 9', 'while n > 0', '--n', 'endwh'], 4, 'DefAndScriptFailure']},
+    {endwhi: [['var n = 9', 'while n > 0', '--n', 'endwhi'], 4, 'DefAndScriptFailure']},
+    {endwhil: [['var n = 9', 'while n > 0', '--n', 'endwhil'], 4, 'DefAndScriptFailure']},
+    # enum
+    {enu: [['enu E', 'endenum'], 2, 'SourceFailure']},
+    # export
+    {exp: [['exp var b: bool'], 2, 'SourceFailure']},
+    {expo: [['expo var b: bool'], 2, 'SourceFailure']},
+    {expor: [['expor var b: bool'], 2, 'SourceFailure']},
+    # final has no applicable shortened form (because :fina is short for :finally)
+    # finally
+    {fina: [['try', '# Do something', 'fina'], 3, 'DefAndScriptFailure']},
+    # finish
+    {fini: [['fini'], 1, 'DefAndScriptFailure']},
+    # import
+    {imp: [['imp $"{$VIMRUNTIME}/autoload/ccomplete.vim"'], 2, 'SourceFailure']},
+    {impo: [['impo $"{$VIMRUNTIME}/autoload/ccomplete.vim"'], 2, 'SourceFailure']},
+    {impor: [['impor $"{$VIMRUNTIME}/autoload/ccomplete.vim"'], 2, 'SourceFailure']},
+    # interface
+    {inte: [['inte I', 'endinterface'], 2, 'SourceFailure']},
+    {inter: [['inter I', 'endinterface'], 2, 'SourceFailure']},
+    {interf: [['interf I', 'endinterface'], 2, 'SourceFailure']},
+    {interfa: [['interfa I', 'endinterface'], 2, 'SourceFailure']},
+    {interfac: [['interfac I', 'endinterface'], 2, 'SourceFailure']},
+    # public
+    {pub: [['class P', 'pub var b: bool', 'endclass'], 3, 'SourceFailure']},
+    {publ: [['class P', 'publ var b: bool', 'endclass'], 3, 'SourceFailure']},
+    {publi: [['class P', 'publi var b: bool', 'endclass'], 3, 'SourceFailure']},
+    # return (NB: line is 0 - for CheckDefAndScriptFailure the first line of the Vim9 script lambda function is considered 0)
+    {retu:  [['var R: func = (): bool => {', 'retu false', '}'], 0, 'DefAndScriptFailure']},
+    {retur: [['var R: func = (): bool => {', 'retur false', '}'], 0, 'DefAndScriptFailure']}, 
+    # static
+    {stat: [['class S', 'stat var b: bool', 'endclass'], 3, 'SourceFailure']},
+    {stati: [['class S', 'stati var b: bool', 'endclass'], 3, 'SourceFailure']},
+    # this
+    {thi: [['thi'], 1, 'DefAndScriptFailure']},
+    # throw
+    {th: [['try', 'th 9', 'catch 9', 'echo "Should give E1065"', 'thr'], 2, 'DefAndScriptFailure']},
+    {thr: [['try', 'thr 9', 'catch 9', 'echo "Should give E1065"', 'thr'], 2, 'DefAndScriptFailure']},
+    {thro: [['try', 'thro 9', 'catch 9', 'echo "Should give E1065"', 'thro'], 2, 'DefAndScriptFailure']},
+    # type
+    {ty: [['ty ListOfBools = list<bool>'], 1, 'DefAndScriptFailure']},
+    {typ: [['typ ListOfBools = list<bool>'], 1, 'DefAndScriptFailure']},
+    # var
+    {va: [['va b: bool'], 1, 'DefAndScriptFailure']},
+    # while
+    {wh: [['var n = 9', 'wh n > 0', '--n', 'endwhile'], 2, 'DefAndScriptFailure']},
+    {whi: [['var n = 9', 'whi n > 0', '--n', 'endwhile'], 2, 'DefAndScriptFailure']},
+    {whil: [['var n = 9', 'whil n > 0', '--n', 'endwhile'], 2, 'DefAndScriptFailure']},
+  ]
+  for short in SHORTENED
+    const CMD: string = short->keys()[0]
+    const LINES: list<string> = short[CMD][0]
+    const E1065: string = "E1065: Command cannot be shortened: " .. CMD
+    const LNUM: number = short[CMD][1]
+    const CHECK: string = short[CMD][2]
+    if CHECK == 'SourceFailure'
+      v9.CheckSourceFailure(['vim9script', LINES]->flattennew(), E1065, LNUM)
+    elseif CHECK == 'DefAndScriptFailure'
+      v9.CheckDefAndScriptFailure(LINES, E1065, LNUM)
+    elseif CHECK == 'DefFailure'
+      v9.CheckDefFailure(LINES, E1065, LNUM)
+    endif
   endfor
-
-  var lines =<< trim END
-      vim9script
-      def SomeFunc()
-      endd
-  END
-  v9.CheckScriptFailure(lines, 'E1065:')
-  lines =<< trim END
-      vim9script
-      def SomeFunc()
-      endde
-  END
-  v9.CheckScriptFailure(lines, 'E1065:')
 enddef
 
 def Test_unset_any_variable()
@@ -5792,27 +5875,6 @@ def Test_type_func_with_void()
   v9.CheckSourceFailure(lines, 'E1031: Cannot use void value', 4)
 enddef
 
-" Keep this last, it messes up highlighting.
-def Test_substitute_cmd()
-  new
-  setline(1, 'something')
-  :substitute(some(other(
-  assert_equal('otherthing', getline(1))
-  bwipe!
-
-  # also when the context is Vim9 script
-  var lines =<< trim END
-    vim9script
-    new
-    setline(1, 'something')
-    :substitute(some(other(
-    assert_equal('otherthing', getline(1))
-    bwipe!
-  END
-  writefile(lines, 'Xvim9lines', 'D')
-  source Xvim9lines
-enddef
-
 def Test_call_stack_string()
   CheckScreendump
   var lines =<< trim END
@@ -5992,6 +6054,68 @@ def Test_if_false_elseif_true_still_takes_elseif()
     assert_equal('B', result)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for correct fullcommand() outputs: return the correct command (or '')
+def Test_builtin_fullcommand()
+  # :hor is the minimum abbreviation of :horizontal; :ho is invalid
+  assert_equal('', fullcommand('ho', true))
+  assert_equal('horizontal', fullcommand('hor', true))
+
+  # :k is an invalid one-letter command in Vim9 script
+  assert_equal('', fullcommand('k', true))
+  assert_equal('', fullcommand(':k', true))
+  assert_equal('', fullcommand('karrrrrgh!', true))
+  assert_equal('k', fullcommand('k', false))
+  assert_equal('k', fullcommand(':k', false))
+  assert_equal('k', fullcommand('karrrrrgh!', false))
+
+  # :dl is "delete and list" in legacy Vim script but, because :dl itself is
+  # invalid in Vim9 script, :dl is 'dlist' in Vim9 script
+  assert_equal('delete', fullcommand('dl', v:false))
+  assert_equal('dlist', fullcommand('dl', v:true))
+
+  # Substitute :s two and three letter commands in legacy Vim script are
+  # invalid in Vim9 script
+  assert_equal('', fullcommand('sIr', true))
+  assert_equal('', fullcommand('sIrarrrrrgh!', true))
+  assert_equal('substitute', fullcommand('sIr', false))
+  assert_equal('substitute', fullcommand('sIrarrrrrgh!', false))
+
+  # Three :s? commands are exceptionss, returning different commands depending
+  # on whether the scope is legacy Vim script or Vim9 script
+  assert_equal('scriptnames', fullcommand('sc', true))
+  assert_equal('simalt', fullcommand('si', true))
+  assert_equal('srewind', fullcommand('sr', true))
+  assert_equal('substitute', fullcommand('sc', false))
+  assert_equal('substitute', fullcommand('si', false))
+  assert_equal('substitute', fullcommand('sr', false))
+
+  # :finally cannot be shortened in Vim9 script but :final should return 'final'
+  assert_equal('', fullcommand('fina', true))
+  assert_equal('final', fullcommand('final', true))
+  assert_equal('', fullcommand('finall', true))
+enddef
+
+" Keep this last, it messes up highlighting.
+def Test_substitute_cmd()
+  new
+  setline(1, 'something')
+  :substitute(some(other(
+  assert_equal('otherthing', getline(1))
+  bwipe!
+
+  # also when the context is Vim9 script
+  var lines =<< trim END
+    vim9script
+    new
+    setline(1, 'something')
+    :substitute(some(other(
+    assert_equal('otherthing', getline(1))
+    bwipe!
+  END
+  writefile(lines, 'Xvim9lines', 'D')
+  source Xvim9lines
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

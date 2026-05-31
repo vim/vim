@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3672,14 +3672,22 @@ fullcommand({name} [, {vim9}])				*fullcommand()*
 		ambiguous (for user-defined commands) or cannot be shortened
 		this way. |vim9-no-shorten|
 
-		Without the {vim9} argument uses the current script version.
-		If {vim9} is present and FALSE then legacy script rules are
-		used.  When {vim9} is present and TRUE then Vim9 rules are
-		used, e.g. "en" is not a short form of "endif".
+		Without the {vim9} argument, the current script version is
+		used.  When {vim9} is present and FALSE, legacy script rules
+		are used.  When {vim9} is present and TRUE, Vim9 rules are
+		used (e.g., "en" is not a short form of "endif").
 
-		For example `fullcommand('s')`, `fullcommand('sub')`,
-		`fullcommand(':%substitute')` all return "substitute".
-
+		Note: Command validation is not performed.  Results depend on
+		Vim's internal command-specific identification rules.
+		Examples:
+>vim
+		  echo [fullcommand('s')]		|" ['substitute']
+		  echo [fullcommand('sub')]		|" ['substitute']
+		  echo [fullcommand(': mark word')]	|" ['mark']
+		  echo [fullcommand(': markword')]	|" ['']
+		  echo [fullcommand('en')]		|" ['endif']
+		  echo [fullcommand('en', v:true)]	|" ['']
+<
 		Can also be used as a |method|: >
 			GetName()->fullcommand()
 <

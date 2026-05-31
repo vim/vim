@@ -4025,6 +4025,13 @@ find_ex_command(
     if (eap->cmdidx == CMD_final && p - eap->cmd == 4 && !vim9)
 	eap->cmdidx = CMD_finally;
 
+     // Force ":ho" to be unresolved.  Without this, find_ex_command()
+     // matches it to CMD_horizontal (the only "ho*" entry), which makes
+     // fullcommand("ho") return "horizontal" even though ":ho" cannot be
+     // used as the modifier (cmdmods[] requires 3 chars, "hor").
+    if (eap->cmdidx == CMD_horizontal && p - eap->cmd == 2)
+	eap->cmdidx = CMD_SIZE;
+
 #ifdef FEAT_EVAL
     if (eap->cmdidx < CMD_SIZE
 	    && vim9

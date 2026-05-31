@@ -1,4 +1,4 @@
-*repeat.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*repeat.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -453,6 +453,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			are executed first.  This process applies to all
 			nested ":try"s in the script.  The outermost ":endtry"
 			then stops sourcing the script.
+
+			In |Vim9| script `:finish` cannot be shortened, to
+			improve script readability.
 
 All commands and command sequences can be repeated by putting them in a named
 register and then executing it.  There are two ways to get the commands in the

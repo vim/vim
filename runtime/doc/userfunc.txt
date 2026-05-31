@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*userfunc.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,13 +27,13 @@ make them script-local.  If you do use a global function then avoid obvious,
 short names.  A good habit is to start the function name with the name of the
 script, e.g., "HTMLcolor()".
 
-In legacy script it is also possible to use curly braces, see
+In legacy Vim script it is also possible to use curly braces, see
 |curly-braces-names|.
 
 The |autoload| facility is useful to define a function only when it's called.
 
 							*local-function*
-A function local to a legacy script must start with "s:".  A local script
+A function local to a legacy Vim script must start with "s:".  A local script
 function can only be called from within the script and from functions, user
 commands and autocommands defined in the script.  It is also possible to call
 the function from a mapping defined in the script, but then |<SID>| must be
@@ -195,9 +195,19 @@ See |:verbose-cmd| for more information.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
 
-			In a :def function *E1095* is given if unreachable
-			code follows after the `:return`.
-			In legacy script there is no check for unreachable
+			In |Vim9| script:
+			- `:return` cannot be shortened, and
+			- *E1095* is given if unreachable code follows after
+			  the `:return`.  For example:
+>vim9
+			  vim9script
+			  var L: func = (): bool => {
+			    return false
+			    echo 'no'  # E1095: Unreachable code after :return
+			  }
+			  echo L()
+<
+			In legacy Vim script there is no check for unreachable
 			lines, thus there is no warning if commands follow
 			`:return`.  Also, there is no check if the following
 			line contains a valid command.  Forgetting the line
