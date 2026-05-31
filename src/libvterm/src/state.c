@@ -420,6 +420,9 @@ static int on_text(const char bytes[], size_t len, void *user)
 	width = this_width;  // TODO: should be += ?
     }
 
+    if (width < 0)
+      width = 0;
+
     while(i < npoints && vterm_unicode_is_combining(codepoints[i]))
       i++;
 
@@ -1640,7 +1643,9 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   case 0x74:
     switch(CSI_ARG(args[0])) {
       case 8: // CSI 8 ; rows ; cols t  set size
-	if (argcount == 3)
+        if (argcount == 3 &&
+            !CSI_ARG_IS_MISSING(args[1]) && !CSI_ARG_IS_MISSING(args[2]) &&
+            CSI_ARG(args[1]) > 0 && CSI_ARG(args[2]) > 0)
 	  on_resize(CSI_ARG(args[1]), CSI_ARG(args[2]), state);
 	break;
       default:

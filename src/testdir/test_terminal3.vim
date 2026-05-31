@@ -1256,4 +1256,65 @@ func Test_terminal_output_combining_chars()
   bw!
 endfunc
 
+" This caused a Crash
+func Test_terminal_csi_resize_oob()
+  return
+  CheckUnix
+  CheckExecutable printf
+
+  " CSI 8 ; rows ; cols t with missing, zero or negative dimensions reached
+  " on_resize()/resize_buffer() unvalidated, causing a negative-size memmove()
+  " and out-of-bounds set_lineinfo()/DECALN accesses in libvterm.  Rendering
+  " these must not crash Vim.
+
+  " Sequences:
+  " 1 resize_buffer negative-size memmove
+  " 2 set_lineinfo OOB after corrupt resize
+  " 3 DECALN putglyph OOB after corrupt resize
+  let seqs = ["\<ESC>[8;0;t",
+        \ "\<ESC>[8;;t\<ESC>[J",
+        \ "\<ESC>[8;;0t\<ESC>#8"]
+
+  for seq in seqs
+    let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape(seq)],
+          \ #{term_rows: 10, term_cols: 40})
+    call TermWait(buf)
+    " Getting here without a crash (and no ASAN report) is the test.
+    call assert_true(bufexists(buf))
+    exe 'bwipe! ' .. buf
+  endfor
+endfunc
+
+" This caused a Crash, but Vim builds libvterm using -DWCWIDTH_FUNCTION=utf_uint2cells
+" which wouldn't return -1 and therefore does not reproduce here
+func Test_terminal_negative_col_oob()
+  CheckUnix
+  CheckExecutable printf
+
+  " A wcwidth() == -1 codepoint (U+0087, \302\207 in UTF-8) drove
+  " state->pos.col negative, then used as an array index in the tabstop
+  " helpers and moverect_internal().  These are single-byte / single-bit
+  " out-of-bounds accesses that do not crash a normal build, so this test
+  " is only meaningful under a sanitizer build; otherwise it just confirms
+  " Vim does not crash.
+
+  " Sequences:
+  " 1. clear_col_tabstop OOB read
+  " 2. is_col_tabstop OOB read
+  " 3. set_col_tabstop OOB write (HTS)
+  " 4. moverect_internal memmove (insert mode)
+
+  let seqs = ["\302\207\<ESC>[g",
+        \ "\302\207\302\207\t",
+        \ "\302\207\<ESC>H",
+        \ "\<ESC>[4h\302\2070"]
+  for seq in seqs
+    let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape(seq)],
+          \ #{term_rows: 10, term_cols: 40})
+    call TermWait(buf)
+    call assert_true(bufexists(buf))
+    exe 'bwipe! ' .. buf
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
