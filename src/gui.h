@@ -475,6 +475,9 @@ typedef struct Gui
     char	*rsrc_input_method;
     char	*rsrc_preedit_type_name;
 #endif
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+    int decor_height;
+#endif
 } gui_T;
 
 extern gui_T gui;			// this is defined in gui.c
