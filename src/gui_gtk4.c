@@ -3919,29 +3919,103 @@ gui_mch_menu_set_tip(vimmenu_T *menu UNUSED)
 {
 }
 
+/*
+ * Return TRUE if "menu" has a corresponding entry in its parent's GMenu.
+ * Popup menus, toolbar children and orphaned submenus do not.
+ */
+    static int
+menu_has_gmenu_slot(vimmenu_T *menu)
+{
+    if (menu == NULL || menu->name == NULL)
+	return FALSE;
+    if (menu->name[0] == ']' || menu_is_popup(menu->name))
+	return FALSE;
+    if (menu->parent != NULL)
+    {
+	if (menu_is_toolbar(menu->parent->name))
+	    return FALSE;
+	if (menu->parent->submenu_id == NULL)
+	    return FALSE;
+	return TRUE;
+    }
+    return menu_is_menubar(menu->name);
+}
+
+/*
+ * Find the parent GMenu containing the entry for "menu" and the position of
+ * that entry.  Returns TRUE on success.
+ */
+    static int
+get_gmenu_pos_in_parent(vimmenu_T *menu, GMenu **parent_out, int *pos_out)
+{
+    GMenu	*parent_gmenu;
+    vimmenu_T	*first_sibling;
+    vimmenu_T	*sib;
+    int		pos = 0;
+
+    if (!menu_has_gmenu_slot(menu))
+	return FALSE;
+
+    if (menu->parent != NULL)
+    {
+	parent_gmenu = (GMenu *)(gpointer)menu->parent->submenu_id;
+	first_sibling = menu->parent->children;
+    }
+    else
+    {
+	if (gui.menubar == NULL)
+	    return FALSE;
+	parent_gmenu = (GMenu *)(gpointer)g_object_get_data(
+		G_OBJECT(gui.menubar), "vim-gmenu");
+	first_sibling = root_menu;
+    }
+    if (parent_gmenu == NULL)
+	return FALSE;
+
+    for (sib = first_sibling; sib != NULL && sib != menu; sib = sib->next)
+	if (menu_has_gmenu_slot(sib))
+	    pos++;
+    if (sib != menu)
+	return FALSE;
+
+    *parent_out = parent_gmenu;
+    *pos_out = pos;
+    return TRUE;
+}
+
     void
 gui_mch_destroy_menu(vimmenu_T *menu)
 {
-    // For toolbar buttons, remove from toolbar
+    GMenu	*parent_gmenu = NULL;
+    int		pos = 0;
+
+    // For toolbar buttons and separators, remove from the toolbar box.
     if (menu->id != NULL && menu->id != (GtkWidget *)1)
     {
 	GtkWidget *parent_widget = gtk_widget_get_parent(menu->id);
+
 	if (parent_widget != NULL)
 	    gtk_box_remove(GTK_BOX(parent_widget), menu->id);
-	menu->id = NULL;
     }
-    else
-	menu->id = NULL;
+    menu->id = NULL;
 
-    // Free stored action name
-    vim_free(menu->label);
-    menu->label = NULL;
+    // Remove the entry from the parent GMenu so the visible menu updates.
+    if (get_gmenu_pos_in_parent(menu, &parent_gmenu, &pos))
+	g_menu_remove(parent_gmenu, pos);
 
-    // GMenu items cannot be individually removed easily.
-    // The submenu GMenu is unreffed if present.
+    // Remove the GAction created for this item and free its name.
+    if (menu->label != NULL)
+    {
+	if (menu_action_group != NULL)
+	    g_action_map_remove_action(G_ACTION_MAP(menu_action_group),
+		    (const char *)menu->label);
+	VIM_CLEAR(menu->label);
+    }
+
+    // Release our reference on the submenu GMenu (if any).
     if (menu->submenu_id != NULL)
     {
-	// Don't unref - GMenu may be referenced by the model
+	g_object_unref(menu->submenu_id);
 	menu->submenu_id = NULL;
     }
 }
