@@ -1190,6 +1190,11 @@ put_do_autocmd(
     if (recursive || regname == '_')
 	return;
 
+    if (regname != '.' && insert == NULL
+	    && reg == NULL)
+	// Can happen when pasting text in normal mode in a terminal buffer
+	return;
+
     v_event = get_v_event(&save_v_event);
 
     list = list_alloc();
@@ -1219,7 +1224,6 @@ put_do_autocmd(
     }
     else
     {
-	assert(reg != NULL);
 	for (n = 0; n < reg->y_size; n++)
 	    list_append_string(list, reg->y_array[n].string,
 		    (int)reg->y_array[n].length);
