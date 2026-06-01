@@ -444,6 +444,10 @@
 # else
 // #  define FEAT_XFONTSET
 # endif
+#else
+# if defined(USE_GTK4)
+#  undef FEAT_XFONTSET
+# endif
 #endif
 
 /*
