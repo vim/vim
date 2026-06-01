@@ -4434,6 +4434,9 @@ qf_mark_adjust(
 		if (qfp->qf_fnum == curbuf->b_fnum)
 		{
 		    found_one = TRUE;
+		    if (qfp->qf_cleared)
+			continue;
+
 		    if (qfp->qf_lnum >= line1 && qfp->qf_lnum <= line2)
 		    {
 			if (amount == MAXLNUM)
