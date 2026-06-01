@@ -678,6 +678,7 @@ runtime/syntax/scala.vim				@derekwyatt
 runtime/syntax/scheme.vim				@evhan
 runtime/syntax/scss.vim					@tpope
 runtime/syntax/sed.vim					@dkearns
+runtime/syntax/sgf.vim					@lykahb
 runtime/syntax/shaderslang.vim				@mTvare6
 runtime/syntax/shared/debversions.vim			@jamessan
 runtime/syntax/shared/hgcommitDiff.vim			@vegerot
