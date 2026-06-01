@@ -1,4 +1,4 @@
-*gui.txt*	For Vim version 9.2.  Last change: 2026 May 25
+*gui.txt*	For Vim version 9.2.  Last change: 2026 Jun 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1260,8 +1260,8 @@ Full Screen						*gui-fullscreen*
 Fullscreen mode is currently only supported in the Windows and GTK GUI
 versions of Vim.
 
-To enable fullscreen mode in the GUI version of Vim, add the 's' flag
-to the 'guioptions' setting.
+To enable fullscreen mode in the GUI version of Vim, add the "s" flag to the
+'guioptions' setting.
 
 For convenience, you can define a command or mapping to toggle fullscreen
 mode:

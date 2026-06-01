@@ -1,6 +1,8 @@
-*usr_20.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*usr_20.txt*	For Vim version 9.2.  Last change: 2026 Jun 02
+
 
 		     VIM USER MANUAL	by Bram Moolenaar
+
 
 		     Typing command-line commands quickly
 
