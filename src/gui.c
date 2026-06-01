@@ -4141,6 +4141,8 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 	// Keep the "dragged_wp" value until after the scrolling, for when the
 	// mouse button is released.  GTK2 doesn't send the button-up event.
 	gui.dragged_wp = NULL;
+	// WinScrolled event
+	gui_focus_change(TRUE);
 #endif
     }
 
