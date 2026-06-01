@@ -814,8 +814,6 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 	gtk_window_set_title(GTK_WINDOW(gui.mainwin), (const char *)title);
 }
 
-static int in_set_shellsize = FALSE;
-
 /*
  * Get height of window decorations, that we cannot determine directly. For
  * example, the GtkHeaderBar widget. This is called in gui_resize_shell(), we
@@ -2480,17 +2478,41 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     }
 }
 
+#if defined(FEAT_MENU)
+/*
+ * Make menu item hidden or not hidden.
+ */
     void
-gui_mch_menu_hidden(vimmenu_T *menu UNUSED, int hidden UNUSED)
+gui_mch_menu_hidden(vimmenu_T *menu, int hidden)
 {
-    // No-op: menu system not yet implemented for GTK4.
+    if (menu->id == 0)
+	return;
+
+    if (hidden)
+    {
+	if (gtk_widget_get_visible(menu->id))
+	{
+	    gtk_widget_set_visible(menu->id, FALSE);
+	    gui_mch_update();
+	}
+    }
+    else
+    {
+	if (!gtk_widget_get_visible(menu->id))
+	{
+	    gtk_widget_set_visible(menu->id, TRUE);
+	    gui_mch_update();
+	}
+    }
 }
 
     void
 gui_mch_draw_menubar(void)
 {
-    // No-op: menu system not yet implemented for GTK4.
+    // Just make sure that the visual changes get effect immediately
+    gui_mch_update();
 }
+#endif
 
 /*
  * ============================================================
@@ -3244,19 +3266,181 @@ gui_get_x11_windis(Window *win UNUSED, Display **dis UNUSED)
     return FAIL;
 }
 
+#if defined(FEAT_MENU)
     void
 gui_gtk_set_mnemonics(int enable UNUSED)
 {
-    // No-op: menu mnemonics depend on menu system, not yet implemented
-    // for GTK4.
+    // TODO: implement?
+}
+
+    static void
+popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
+{
+    gtk_widget_unparent(GTK_WIDGET(popover));
+    if (gui.drawarea != NULL)
+	gtk_widget_queue_draw(gui.drawarea);
+}
+
+typedef struct {
+    GtkPopover *popover;
+    vimmenu_T  *menu;
+} popup_item_data_T;
+
+    static void
+popup_item_clicked_cb(GtkButton *button UNUSED, gpointer data)
+{
+    popup_item_data_T *d = data;
+
+    if (d->popover != NULL)
+	gtk_popover_popdown(d->popover);
+    if (d->menu != NULL)
+    {
+	gui_menu_cb(d->menu);
+	gui_mch_flush();
+    }
+}
+
+    static void
+popup_item_data_free(gpointer data, GClosure *closure UNUSED)
+{
+    g_free(data);
+}
+
+/*
+ * Open a popup for the given menu at point (x, y).
+ */
+    static void
+gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
+{
+    GtkWidget	    *popover;
+    GtkWidget	    *box;
+    GtkWidget	    *parent;
+    GdkRectangle    rect;
+    vimmenu_T	    *child;
+    int		    mode;
+    int		    natural_width = 0;
+
+    if (menu == NULL || menu->children == NULL)
+	return;
+
+    // Attach the popover to drawarea's parent rather than to drawarea itself.
+    // GtkDrawingArea is a leaf widget whose snapshot does not iterate children,
+    // and parenting a popover to it has been observed to leave the drawing area
+    // blank while the popover is open.
+    parent = gtk_widget_get_parent(gui.drawarea);
+    if (parent == NULL)
+	parent = gui.drawarea;
+
+    // Build the popover by hand instead of using gtk_popover_menu_new_from_model.
+    // GtkPopoverMenu relies on the "menu.<name>" action-group lookup walking up
+    // the parent chain, which has been observed to silently fail on some
+    // compositors when the popover is parented via gtk_widget_set_parent. Wiring
+    // each menu item to a plain "clicked" signal sidesteps that entirely.
+    popover = gtk_popover_new();
+    gtk_widget_set_parent(popover, parent);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    gtk_widget_add_css_class(popover, "menu");
+
+    box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_popover_set_child(GTK_POPOVER(popover), box);
+
+    mode = get_menu_mode_flag();
+
+    for (child = menu->children; child != NULL; child = child->next)
+    {
+	GtkWidget	    *item;
+	char_u		    *label;
+	popup_item_data_T   *cb_data;
+
+	if (menu_is_separator(child->name))
+	{
+	    item = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	    gtk_box_append(GTK_BOX(box), item);
+	    continue;
+	}
+
+	label = CONVERT_TO_UTF8(child->dname);
+	item = gtk_button_new_with_mnemonic(
+		label != NULL ? (const char *)label : "");
+	CONVERT_TO_UTF8_FREE(label);
+
+	gtk_widget_add_css_class(item, "flat");
+	gtk_widget_add_css_class(item, "model");
+	gtk_button_set_has_frame(GTK_BUTTON(item), FALSE);
+	gtk_widget_set_halign(item, GTK_ALIGN_FILL);
+	{
+	    GtkWidget *btn_label = gtk_button_get_child(GTK_BUTTON(item));
+	    if (GTK_IS_LABEL(btn_label))
+		gtk_label_set_xalign(GTK_LABEL(btn_label), 0.0);
+	}
+
+	if (!(child->modes & child->enabled & mode))
+	    gtk_widget_set_sensitive(item, FALSE);
+
+	cb_data = g_new0(popup_item_data_T, 1);
+	cb_data->popover = GTK_POPOVER(popover);
+	cb_data->menu = child;
+	g_signal_connect_data(item, "clicked",
+		G_CALLBACK(popup_item_clicked_cb),
+		cb_data, popup_item_data_free, 0);
+
+	gtk_box_append(GTK_BOX(box), item);
+    }
+
+    rect.x = x;
+    rect.y = y;
+    // GtkPopover with GTK_POS_BOTTOM centres horizontally on the pointing-to
+    // rectangle. Use the box's natural width so the popover's left edge ends
+    // up at the cursor (down-and-to-the-right of the pointer).
+    gtk_widget_measure(box, GTK_ORIENTATION_HORIZONTAL, -1,
+	    NULL, &natural_width, NULL, NULL);
+    rect.width = natural_width > 0 ? natural_width : 1;
+    rect.height = 1;
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+
+    g_signal_connect(popover, "closed",
+	    G_CALLBACK(popupmenu_closed_cb), NULL);
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 
     void
-gui_make_popup(char_u *path_name UNUSED, int mouse_pos UNUSED)
+gui_make_popup(char_u *path_name, int mouse_pos)
 {
-    // No-op: popup menus depend on menu system, not yet implemented
-    // for GTK4.
+    vimmenu_T	*menu;
+    int		x, y;
+
+    menu = gui_find_menu(path_name);
+    if (menu == NULL || menu->submenu_id == NULL)
+	return;
+
+    if (mouse_pos)
+	gui_mch_getmouse(&x, &y);
+    else
+    {
+	// Find the cursor position relative to parent of drawarea
+	GtkWidget *parent = gtk_widget_get_parent(gui.drawarea);
+	graphene_point_t point;
+	if (parent == NULL)
+	    parent = gui.drawarea;
+
+	if (!gtk_widget_compute_point(gui.drawarea, parent,
+		&GRAPHENE_POINT_INIT(0, 0), &point))
+	    x = y = 0;
+	else
+	{
+	    x = point.x;
+	    y = point.y;
+	}
+
+	x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
+	y += FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
+    }
+
+    gui_gtk_popup_at(menu, x, y);
+
 }
+#endif // FEAT_MENU
 
     int
 get_menu_tool_width(void)
@@ -4020,135 +4204,13 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     }
 }
 
-    static void
-popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
-{
-    gtk_widget_unparent(GTK_WIDGET(popover));
-    if (gui.drawarea != NULL)
-	gtk_widget_queue_draw(gui.drawarea);
-}
-
-typedef struct {
-    GtkPopover *popover;
-    vimmenu_T  *menu;
-} popup_item_data_T;
-
-    static void
-popup_item_clicked_cb(GtkButton *button UNUSED, gpointer data)
-{
-    popup_item_data_T *d = data;
-
-    if (d->popover != NULL)
-	gtk_popover_popdown(d->popover);
-    if (d->menu != NULL)
-    {
-	gui_menu_cb(d->menu);
-	gui_mch_flush();
-    }
-}
-
-    static void
-popup_item_data_free(gpointer data, GClosure *closure UNUSED)
-{
-    g_free(data);
-}
-
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
 {
-    GtkWidget	    *popover;
-    GtkWidget	    *box;
-    GtkWidget	    *parent;
-    GdkRectangle    rect;
-    vimmenu_T	    *child;
-    int		    mode;
-    int		    natural_width = 0;
+    int x, y;
 
-    if (menu == NULL || menu->children == NULL)
-	return;
-
-    // Attach the popover to drawarea's parent (the GtkOverlay) rather than
-    // to drawarea itself. GtkDrawingArea is a leaf widget whose snapshot
-    // does not iterate children, and parenting a popover to it has been
-    // observed to leave the drawing area blank while the popover is open.
-    parent = gtk_widget_get_parent(gui.drawarea);
-    if (parent == NULL)
-	parent = gui.drawarea;
-
-    // Build the popover by hand instead of using gtk_popover_menu_new_from_model.
-    // GtkPopoverMenu relies on the "menu.<name>" action-group lookup walking up
-    // the parent chain, which has been observed to silently fail on some
-    // compositors when the popover is parented via gtk_widget_set_parent. Wiring
-    // each menu item to a plain "clicked" signal sidesteps that entirely.
-    popover = gtk_popover_new();
-    gtk_widget_set_parent(popover, parent);
-    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
-    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
-    gtk_widget_add_css_class(popover, "menu");
-
-    box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_popover_set_child(GTK_POPOVER(popover), box);
-
-    mode = get_menu_mode_flag();
-
-    for (child = menu->children; child != NULL; child = child->next)
-    {
-	GtkWidget	    *item;
-	char_u		    *label;
-	popup_item_data_T   *cb_data;
-
-	if (menu_is_separator(child->name))
-	{
-	    item = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	    gtk_box_append(GTK_BOX(box), item);
-	    continue;
-	}
-
-	label = CONVERT_TO_UTF8(child->dname);
-	item = gtk_button_new_with_mnemonic(
-		label != NULL ? (const char *)label : "");
-	CONVERT_TO_UTF8_FREE(label);
-
-	gtk_widget_add_css_class(item, "flat");
-	gtk_widget_add_css_class(item, "model");
-	gtk_button_set_has_frame(GTK_BUTTON(item), FALSE);
-	gtk_widget_set_halign(item, GTK_ALIGN_FILL);
-	{
-	    GtkWidget *btn_label = gtk_button_get_child(GTK_BUTTON(item));
-	    if (GTK_IS_LABEL(btn_label))
-		gtk_label_set_xalign(GTK_LABEL(btn_label), 0.0);
-	}
-
-	if (!(child->modes & child->enabled & mode))
-	    gtk_widget_set_sensitive(item, FALSE);
-
-	cb_data = g_new0(popup_item_data_T, 1);
-	cb_data->popover = GTK_POPOVER(popover);
-	cb_data->menu = child;
-	g_signal_connect_data(item, "clicked",
-		G_CALLBACK(popup_item_clicked_cb),
-		cb_data, popup_item_data_free, 0);
-
-	gtk_box_append(GTK_BOX(box), item);
-    }
-
-    if (!query_pointer_pos(&rect.x, &rect.y))
-    {
-	rect.x = 0;
-	rect.y = 0;
-    }
-    // GtkPopover with GTK_POS_BOTTOM centres horizontally on the pointing-to
-    // rectangle. Use the box's natural width so the popover's left edge ends
-    // up at the cursor (down-and-to-the-right of the pointer).
-    gtk_widget_measure(box, GTK_ORIENTATION_HORIZONTAL, -1,
-	    NULL, &natural_width, NULL, NULL);
-    rect.width = natural_width > 0 ? natural_width : 1;
-    rect.height = 1;
-    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
-
-    g_signal_connect(popover, "closed",
-	    G_CALLBACK(popupmenu_closed_cb), NULL);
-    gtk_popover_popup(GTK_POPOVER(popover));
+    gui_mch_getmouse(&x, &y);
+    gui_gtk_popup_at(menu, x, y);
 }
 
     static void
