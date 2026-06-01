@@ -865,11 +865,15 @@ search_for_fuzzy_match(
 		}
 		else
 		{
-		    if (fuzzy_match_str(*ptr, pattern) != FUZZY_SCORE_NONE)
+		    char_u *line = *ptr;
+		    char_u *p = skipwhite(line);
+		    if (fuzzy_match_str(p, pattern) != FUZZY_SCORE_NONE)
 		    {
 			found_new_match = TRUE;
 			*pos = current_pos;
-			*len = (int)ml_get_buf_len(buf, current_pos.lnum);
+			*ptr = p;
+			*len = (int)ml_get_buf_len(buf, current_pos.lnum) -
+								(int)(p - line);
 			break;
 		    }
 		}
