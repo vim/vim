@@ -80,9 +80,6 @@ The following command line arguments are available:
    --clientserver {method}	Use the specified method {method} as the
 				backend for clientserver functionality.  Can
 				either be "socket", "x11", or "mswin".
-				{only available when compiled with both |+X11|
-				and |+socketserver| features, or
-				|+socketserver| on MS-Windows}
 							    *$VIM_CLIENTSERVER*
 				If the "$VIM_CLIENTSERVER" environment
 				variable is set, then Vim will interpret the
@@ -90,6 +87,9 @@ The following command line arguments are available:
 				If it is set and --clientserver is provided in
 				the command line, then --clientserver takes
 				priority.
+				{only available when compiled with both |+X11|
+				and |+socketserver| features, or
+				|+socketserver| on MS-Windows}
 
 Examples ~
 
