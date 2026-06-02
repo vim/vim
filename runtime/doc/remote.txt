@@ -83,7 +83,13 @@ The following command line arguments are available:
 				{only available when compiled with both |+X11|
 				and |+socketserver| features, or
 				|+socketserver| on MS-Windows}
-
+							    *$VIM_CLIENTSERVER*
+				If the "$VIM_CLIENTSERVER" environment
+				variable is set, then Vim will interpret the
+				value just like the --clientserver argument.
+				If it is set and --clientserver is provided in
+				the command line, then --clientserver takes
+				priority.
 
 Examples ~
 

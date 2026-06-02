@@ -13,6 +13,7 @@ $NoDefaultCurrentDirectoryInExePath	builtin.txt	/*$NoDefaultCurrentDirectoryInEx
 $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
+$VIM_CLIENTSERVER	remote.txt	/*$VIM_CLIENTSERVER*
 $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 $XDG_CONFIG_HOME	starting.txt	/*$XDG_CONFIG_HOME*
 $quote	eval.txt	/*$quote*

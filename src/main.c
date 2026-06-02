@@ -1038,6 +1038,13 @@ common_init_2(mparm_T *paramp)
     gui.dofork = true;		    // default is to use fork()
 #endif
 
+#ifdef FEAT_CLIENTSERVER_BACKENDS
+    /*
+     * Check the $VIM_CLIENTSERVER env before we handle the --clientserver arg
+     */
+    check_clientserver_method_env();
+#endif
+
     /*
      * Do a first scan of the arguments in "argv[]":
      *   -display or --display
