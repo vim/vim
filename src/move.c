@@ -291,20 +291,6 @@ use_scrolloffpad(void)
 }
 
 /*
- * Return TRUE when there are not enough real buffer lines below "lnum" to
- * satisfy the requested "so" context.
- */
-    static bool
-scrolloffpad_eof_pressure(linenr_T lnum, long so)
-{
-    if (!use_scrolloffpad() || so <= 0)
-	return false;
-
-    // Use subtraction to avoid signed overflow in "lnum + so".
-    return lnum > curbuf->b_ml.ml_line_count - so;
-}
-
-/*
  * Update curwin->w_topline to move the cursor onto the screen.
  */
     void
@@ -320,7 +306,6 @@ update_topline(void)
     int		check_botline = FALSE;
     long	*so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
     int		save_so = *so_ptr;
-    bool	eof_pressure;
 
     // Cursor is updated instead when this is TRUE for 'splitkeep'.
     if (skip_update_topline)
@@ -344,7 +329,6 @@ update_topline(void)
     // When dragging with the mouse, don't scroll that quickly
     if (mouse_dragging > 0)
 	*so_ptr = mouse_dragging - 1;
-    eof_pressure = scrolloffpad_eof_pressure(curwin->w_cursor.lnum, *so_ptr);
 
     linenr_T old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -432,21 +416,11 @@ update_topline(void)
 	    // cursor in the middle of the window.  Otherwise put the cursor
 	    // near the top of the window.
 	    if (n >= halfheight)
-	    {
-		if (eof_pressure)
-		    scroll_cursor_halfway(TRUE, TRUE);
-		else
-		    scroll_cursor_halfway(FALSE, FALSE);
-	    }
+		scroll_cursor_halfway(use_scrolloffpad(), FALSE);
 	    else
 	    {
-		if (eof_pressure)
-		    scroll_cursor_halfway(TRUE, TRUE);
-		else
-		{
-		    scroll_cursor_top(scrolljump_value(), FALSE);
-		    check_botline = TRUE;
-		}
+		scroll_cursor_top(scrolljump_value(), FALSE);
+		check_botline = TRUE;
 	    }
 	}
 
@@ -489,7 +463,7 @@ update_topline(void)
 		    // Cursor is (a few lines) above botline, check if there
 		    // are 'scrolloff' window lines below the cursor.
 		    // If not, need to scroll.
-		    n = eof_pressure ? 0 : curwin->w_empty_rows;
+		    n = curwin->w_empty_rows;
 		    loff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
 		    // In a fold go to its last line.
@@ -512,7 +486,7 @@ update_topline(void)
 			    break;
 			botline_forw(&loff);
 		    }
-		    if (n >= *so_ptr && !eof_pressure)
+		    if (n >= *so_ptr)
 			// sufficient context, no need to scroll
 			check_botline = FALSE;
 		}
@@ -544,14 +518,9 @@ update_topline(void)
 		    line_count = curwin->w_cursor.lnum - curwin->w_botline
 								 + 1 + *so_ptr;
 		if (line_count <= curwin->w_height + 1)
-		{
-		    if (eof_pressure)
-			scroll_cursor_halfway(TRUE, TRUE);
-		    else
-			scroll_cursor_bot(scrolljump_value(), FALSE);
-		}
+		    scroll_cursor_bot(scrolljump_value(), use_scrolloffpad());
 		else
-		    scroll_cursor_halfway(eof_pressure, eof_pressure);
+		    scroll_cursor_halfway(FALSE, FALSE);
 	    }
 	}
     }
@@ -2388,7 +2357,7 @@ botline_forw(lineoff_T *lp)
 	lp->fill = 0;
 #endif
 	if (lp->lnum > curbuf->b_ml.ml_line_count)
-	    lp->height = MAXCOL;
+	    lp->height = use_scrolloffpad() ? 1 : MAXCOL;
 	else
 #ifdef FEAT_FOLDING
 	    if (hasFolding(lp->lnum, NULL, &lp->lnum))
@@ -2755,7 +2724,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	// context for 'scrolloff' and counted all lines below the window.
 	if ((((scrolled <= 0 || scrolled >= min_scroll)
 		    && extra >= (mouse_dragging > 0 ? mouse_dragging - 1 : so))
-		    || boff.lnum + 1 > curbuf->b_ml.ml_line_count)
+		    || (!use_scrolloffpad() && boff.lnum + 1 > curbuf->b_ml.ml_line_count))
 		&& loff.lnum <= curwin->w_botline
 #ifdef FEAT_DIFF
 		&& (loff.lnum < curwin->w_botline
@@ -2789,7 +2758,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		scrolled -= curwin->w_empty_rows;
 	}
 
-	if (boff.lnum < curbuf->b_ml.ml_line_count)
+	if (boff.lnum < curbuf->b_ml.ml_line_count || use_scrolloffpad())
 	{
 	    // Add one line below
 	    botline_forw(&boff);
@@ -2848,9 +2817,8 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
      * Scroll up if the cursor is off the bottom of the screen a bit.
      * Otherwise put it at 1/2 of the screen.
      */
-    bool eof_pressure = scrolloffpad_eof_pressure(cln, so);
     if (line_count >= curwin->w_height && line_count > min_scroll)
-	scroll_cursor_halfway(eof_pressure, TRUE);
+	scroll_cursor_halfway(use_scrolloffpad(), TRUE);
     else if (line_count > 0)
     {
 	if (do_sms)
@@ -3091,8 +3059,7 @@ cursor_correct(void)
     if (curwin->w_botline == curbuf->b_ml.ml_line_count + 1
 	    && mouse_dragging == 0)
     {
-	if (!use_scrolloffpad())
-		below_wanted = 0;
+	below_wanted = 0;
 	max_off = (curwin->w_height - 1) / 2;
 	if (above_wanted > max_off)
 	    above_wanted = max_off;
