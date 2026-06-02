@@ -250,8 +250,8 @@ difference between using <SID> and <Plug>:
 	only conventions to keep the name readable and unlikely to clash with
 	other plugins.  None of them are required: all that matters is that
 	the sequence starts with "<Plug>" and is unique.
-	Note: when <Plug> appears in the {rhs} of a mapping, this part is
-	always applied even if remapping is disallowed. |:nore|
+	When starts the {rhs} of a mapping, the {rhs} is always recursively
+	resolved even if remapping is explicitly disallowed. |:nore|
 
 <SID>	is the script ID, a unique identifier for a script.
 	Internally Vim translates <SID> to "<SNR>123_", where "123" can be any
