@@ -5586,4 +5586,40 @@ func Test_popup_opacity_undefined_popup_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_only_cterm_or_gui_set()
+  CheckScreendump
+
+  let lines =<< trim END
+  call setline(1, repeat(['X   X   X   X   X'], 4))
+  highlight clear PopupColor
+  let g:pop_id = popup_create(['Popup'], #{
+        \ line: 2, col: 3,
+        \ minwidth: 10,
+        \ minheight: 2,
+        \ highlights: 'Normal:PopupColor',
+        \ opacity: 60,
+        \ zindex: 50,
+        \})
+  highlight PopupColor ctermbg=red
+  END
+  call writefile(lines, 'XtestPopupOpacityOnlyCtermOrGuiSet', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityOnlyCtermOrGuiSet', #{rows: 12, cols: 60})
+  " cterm set and notermguicolors
+  call VerifyScreenDump(buf, 'Test_popup_opacity_only_cterm_or_gui_set_1', {})
+
+  " ctermbg set and termguicolors
+  call term_sendkeys(buf, ":set termguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_only_cterm_or_gui_set_2', {})
+
+  " guibg set and termguicolors
+  call term_sendkeys(buf, ":highlight PopupColor ctermbg=NONE guibg=red\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_only_cterm_or_gui_set_3', {})
+
+  " guibg set and notermguicolors
+  call term_sendkeys(buf, ":set notermguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_only_cterm_or_gui_set_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
