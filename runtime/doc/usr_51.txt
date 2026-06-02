@@ -1,4 +1,4 @@
-*usr_51.txt*	For Vim version 9.2.  Last change: 2026 May 28
+*usr_51.txt*	For Vim version 9.2.  Last change: 2026 Jun 02
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -220,11 +220,11 @@ case only one item is used.  When adding more items, creating a submenu is
 recommended.  For example, "Plugin.CVS" could be used for a plugin that offers
 CVS operations "Plugin.CVS.checkin", "Plugin.CVS.checkout", etc.
 
-Note that in line 28 ":noremap" is used to avoid that any other mappings cause
-trouble.  Someone may have remapped ":call", for example.  In line 24 we also
+Note that in line 26 ":noremap" is used to avoid that any other mappings cause
+trouble.  Someone may have remapped ":call", for example.  In line 22 we also
 use ":noremap", but we do want "<SID>Add" to be remapped.  This is why
 "<script>" is used here.  This only allows mappings which are local to the
-script. |:map-<script>|  The same is done in line 26 for ":noremenu".
+script. |:map-<script>|  The same is done in line 24 for ":noremenu".
 |:menu-<script>|
 
 
