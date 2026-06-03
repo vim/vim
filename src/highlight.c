@@ -3409,10 +3409,6 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
     attrentry_T new_en;
     attrentry_T tmp_en;
 
-    // If both attrs are 0, return 0
-    // Skipped, otherwise does not blend default text under popup without bg defined
-    /* if (char_attr == 0 && popup_attr == 0) */
-	/* return 0; */
     if (blend >= 100 && blend_fg)
 	return char_attr;  // Fully transparent for both fg and bg
 
