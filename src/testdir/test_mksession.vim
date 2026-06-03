@@ -581,17 +581,20 @@ func Test_mksession_terminal_shared_windows()
   let lines = readfile('Xtest_mks.out')
   let found_creation = 0
   let found_use = 0
+  let found_var = 0
 
   for line in lines
     if line =~ '^terminal'
       let found_creation = 1
       call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+', line)
-    elseif line =~ "^execute 'buffer ' . s:term_buf_" . term_buf . "$"
+    elseif line =~ $"^var term_buf_{term_buf}: number = bufnr()$"
+      let found_var = 1
+    elseif line =~ "^execute 'buffer ' . term_buf_" . term_buf . "$"
       let found_use = 1
     endif
   endfor
 
-  call assert_true(found_creation && found_use)
+  call assert_true(found_creation && found_use && found_var)
 
   call StopShellInTerminal(term_buf)
   call delete('Xtest_mks.out')
