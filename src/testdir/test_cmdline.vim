@@ -4768,6 +4768,56 @@ func Test_customlist_dict_completion_info_popup()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test that the mouse scroll wheel scrolls the info popup of the command line
+" completion popup menu when the mouse pointer is on top of it.
+func Test_wildmenu_pum_info_mouse_scroll()
+  CheckFeature quickfix
+  CheckFeature mouse
+
+  func DictComp(A, L, P)
+    let info = join(map(range(1, 30), '"info line " .. v:val'), "\n")
+    return [
+          \ {'word': 'apple',  'kind': 'f', 'menu': 'fruit', 'info': info},
+          \ {'word': 'banana', 'kind': 'f', 'menu': 'fruit', 'info': info},
+          \ ]
+  endfunc
+  command -nargs=1 -complete=customlist,DictComp DictCmd echo <q-args>
+  set wildmenu wildoptions=pum completeopt=menu,popup mouse=a
+
+  " Place the mouse on top of the info popup.
+  func PrepMouse()
+    let pos = popup_getpos(popup_findinfo())
+    call test_setmouse(pos.line + 1, pos.col + 1)
+  endfunc
+  cnoremap <F6> <Cmd>call PrepMouse()<CR>
+  cnoremap <F7> <Cmd>let g:fl = popup_getoptions(popup_findinfo()).firstline<CR>
+
+  " Scrolling down with the wheel scrolls the info popup down without closing
+  " the completion popup menu.
+  let g:fl = 0
+  call feedkeys(":DictCmd \<Tab>\<F6>"
+        \ .. "\<ScrollWheelDown>\<ScrollWheelDown>\<ScrollWheelDown>"
+        \ .. "\<F7>\<Esc>", 'xt')
+  call assert_true(g:fl > 1)
+  let scrolled_down = g:fl
+
+  " Scrolling back up scrolls the info popup up again.
+  call feedkeys(":DictCmd \<Tab>\<F6>"
+        \ .. "\<ScrollWheelDown>\<ScrollWheelDown>\<ScrollWheelDown>"
+        \ .. "\<ScrollWheelUp>\<ScrollWheelUp>"
+        \ .. "\<F7>\<Esc>", 'xt')
+  call assert_true(g:fl > 1)
+  call assert_true(g:fl < scrolled_down)
+
+  cunmap <F6>
+  cunmap <F7>
+  delcommand DictCmd
+  delfunc DictComp
+  delfunc PrepMouse
+  unlet g:fl
+  set wildmenu& wildoptions& completeopt& mouse&
+endfunc
+
 func Test_cmdline_complete_findfunc_dict()
   CheckScreendump
 

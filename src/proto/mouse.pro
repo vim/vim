@@ -4,6 +4,7 @@ void mouse_set_hor_scroll_step(long step);
 int do_mouse(oparg_T *oap, int c, int dir, long count, int fixindent);
 void ins_mouse(int c);
 void ins_mousescroll(int dir);
+int cmdline_mousescroll(int dir);
 int is_mouse_key(int c);
 int get_mouse_button(int code, int *is_click, int *is_drag);
 int get_pseudo_mouse_code(int button, int is_click, int is_drag);

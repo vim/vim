@@ -2064,12 +2064,15 @@ getcmdline_int(
 	// navigating the wild menu (i.e. the key is not 'wildchar' or
 	// 'wildcharm' or Ctrl-N or Ctrl-P or Ctrl-A or Ctrl-L).
 	// If the popup menu is displayed, then PageDown and PageUp keys are
-	// also used to navigate the menu.
+	// also used to navigate the menu, and the mouse scroll wheel keys
+	// scroll the info popup.
 	end_wildmenu = (!key_is_wc
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
 	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
 			    (c != K_PAGEDOWN && c != K_PAGEUP
-			     && c != K_KPAGEDOWN && c != K_KPAGEUP));
+			     && c != K_KPAGEDOWN && c != K_KPAGEUP
+			     && c != K_MOUSEDOWN && c != K_MOUSEUP
+			     && c != K_MOUSELEFT && c != K_MOUSERIGHT));
 
 	// free expanded names when finished walking through matches
 	if (end_wildmenu)
@@ -2413,11 +2416,21 @@ getcmdline_int(
 		cmdline_left_right_mouse(c, &ignore_drag_release);
 		goto cmdline_not_changed;
 
-	// Mouse scroll wheel: ignored here
+	// Mouse scroll wheel: scroll the completion info popup when the mouse
+	// is on top of it, otherwise ignored here.
 	case K_MOUSEDOWN:
 	case K_MOUSEUP:
 	case K_MOUSELEFT:
 	case K_MOUSERIGHT:
+#ifdef FEAT_PROP_POPUP
+		if (cmdline_pum_active())
+		    cmdline_mousescroll(c == K_MOUSEDOWN ? MSCR_DOWN
+				      : c == K_MOUSEUP ? MSCR_UP
+				      : c == K_MOUSELEFT ? MSCR_LEFT
+				      : MSCR_RIGHT);
+#endif
+		goto cmdline_not_changed;
+
 	// Alternate buttons ignored here
 	case K_X1MOUSE:
 	case K_X1DRAG:
