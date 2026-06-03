@@ -431,22 +431,15 @@ update_topline(void)
 	    // If we weren't very close to begin with, we scroll to put the
 	    // cursor in the middle of the window.  Otherwise put the cursor
 	    // near the top of the window.
-	    if (n >= halfheight)
-	    {
-		if (eof_pressure)
-		    scroll_cursor_halfway(TRUE, TRUE);
-		else
-		    scroll_cursor_halfway(FALSE, FALSE);
-	    }
+	    int min_scroll = scrolljump_value();
+	    if (eof_pressure)
+		scroll_cursor_halfway(TRUE, TRUE);
+	    else if (n >= halfheight && min_scroll < halfheight)
+		scroll_cursor_halfway(FALSE, FALSE);
 	    else
 	    {
-		if (eof_pressure)
-		    scroll_cursor_halfway(TRUE, TRUE);
-		else
-		{
-		    scroll_cursor_top(scrolljump_value(), FALSE);
-		    check_botline = TRUE;
-		}
+		scroll_cursor_top(min_scroll, FALSE);
+		check_botline = TRUE;
 	    }
 	}
 
