@@ -46,7 +46,7 @@ syn keyword kittyMapName nextgroup=kittyMapValue skipwhite contained map
 syn region kittyMapValue start="\S" skip="[\r\n][ \t]*\\" end="\ze[\r\n]" contains=kittyMapSeq,kittyMapAction contained
 
 syn region kittyMapAction start="\S" skip="[\r\n][ \t]*\\" end="\ze[\r\n]" contains=@kittyPrimitive contained
-syn region kittyMapSeq start="\S" end="\ze\s\|^\ze[ \t]*\\" nextgroup=kittyMapAction,kittyMouseMapType skipwhite contains=kittyCtrl,kittyAlt,kittyShift,kittySuper,kittyAnd,kittyWith,kittyKey contained
+syn region kittyMapSeq start="\S" end="\ze\s\|^\ze[ \t]*\\\|\ze$" nextgroup=kittyMapAction,kittyMouseMapType skipwhite contains=kittyCtrl,kittyAlt,kittyShift,kittySuper,kittyAnd,kittyWith,kittyKey contained
 
 " Mouse shortcut """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Format: `mouse_map <keys> <type> <grabbed> <action>?`
