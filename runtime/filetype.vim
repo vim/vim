@@ -1038,6 +1038,7 @@ au BufNewFile,BufRead *.decl,*.dcl,*.dec
 " Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
 au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,.bash[_-]history,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,*.bats,*.cygport call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead ~/.x{init,server}rc,/etc/X11/xinit/x{initrc{,.d/*},serverrc} setf sh
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.envrc,.envrc.* call dist#ft#SetFileTypeSH(getline(1))
 " Shell script (Arch Linux) or PHP file (Drupal)
