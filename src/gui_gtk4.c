@@ -271,13 +271,9 @@ static void button_press_event(GtkGestureClick *gesture, int n_press, double x, 
 static void button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer data);
 static void motion_notify_event(GtkEventControllerMotion *controller, double x, double y, gpointer data);
 static void enter_notify_event(GtkEventControllerMotion *controller, double x, double y, gpointer data);
-static void leave_notify_event(GtkEventControllerMotion *controller, gpointer data);
 static gboolean scroll_event(GtkEventControllerScroll *controller, double dx, double dy, gpointer data);
 static void focus_in_event(GtkEventControllerFocus *controller, gpointer data);
 static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
-#ifdef FEAT_MENU
-static gboolean menubar_popover_closed_hook(GSignalInvocationHint *ihint, guint n_param_values, const GValue *param_values, gpointer data);
-#endif
 #ifdef FEAT_DND
 static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data);
 #endif
@@ -479,20 +475,6 @@ gui_mch_init(void)
 	gtk_widget_set_visible(gui.menubar, FALSE);
 	gtk_box_append(GTK_BOX(vbox), gui.menubar);
     }
-    // Return keyboard focus to the drawing area when a menubar popover
-    // closes (issue #20274).  GtkPopoverMenuBar owns its popovers
-    // privately, so attach via an emission hook on GtkPopover::closed
-    // and filter for popovers under our menubar inside the callback.
-    {
-	GTypeClass *cls = g_type_class_ref(GTK_TYPE_POPOVER);
-	guint sig_id = g_signal_lookup("closed", GTK_TYPE_POPOVER);
-
-	if (sig_id != 0)
-	    g_signal_add_emission_hook(sig_id, 0,
-		    menubar_popover_closed_hook, NULL, NULL);
-	if (cls != NULL)
-	    g_type_class_unref(cls);
-    }
 #endif
 
 #ifdef FEAT_TOOLBAR
@@ -574,8 +556,6 @@ gui_mch_init(void)
 			 G_CALLBACK(motion_notify_event), NULL);
 	g_signal_connect(motion, "enter",
 			 G_CALLBACK(enter_notify_event), NULL);
-	g_signal_connect(motion, "leave",
-			 G_CALLBACK(leave_notify_event), NULL);
 	gtk_widget_add_controller(gui.drawarea, motion);
     }
 
@@ -1869,23 +1849,12 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 enter_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x UNUSED, double y UNUSED, gpointer data UNUSED)
 {
-    if (blink_state == BLINK_NONE)
-	gui_mch_start_blink();
-
     prev_mouse_x = x;
     prev_mouse_y = y;
 
     // Make sure keyboard input goes to the drawing area.
     if (!gtk_widget_has_focus(gui.drawarea))
 	gtk_widget_grab_focus(gui.drawarea);
-}
-
-    static void
-leave_notify_event(GtkEventControllerMotion *controller UNUSED,
-	gpointer data UNUSED)
-{
-    if (blink_state != BLINK_NONE)
-	gui_mch_stop_blink(TRUE);
 }
 
     static gboolean
@@ -1927,61 +1896,25 @@ scroll_event(GtkEventControllerScroll *controller UNUSED,
 focus_in_event(GtkEventControllerFocus *controller UNUSED,
 	gpointer data UNUSED)
 {
-    gui_focus_change(TRUE);
-    if (blink_state == BLINK_NONE)
-	gui_mch_start_blink();
+    if (gtk_window_is_active(GTK_WINDOW(gui.mainwin)))
+    {
+	gui_focus_change(TRUE);
+	if (blink_state == BLINK_NONE)
+	    gui_mch_start_blink();
+    }
 }
 
     static void
 focus_out_event(GtkEventControllerFocus *controller UNUSED,
 	gpointer data UNUSED)
 {
-    gui_focus_change(FALSE);
-    if (blink_state != BLINK_NONE)
-	gui_mch_stop_blink(TRUE);
-}
-
-#ifdef FEAT_MENU
-    static gboolean
-grab_drawarea_focus_idle(gpointer data UNUSED)
-{
-    if (gui.drawarea != NULL && !gtk_widget_has_focus(gui.drawarea))
-	gtk_widget_grab_focus(gui.drawarea);
-    return G_SOURCE_REMOVE;
-}
-
-    static gboolean
-menubar_popover_closed_hook(GSignalInvocationHint *ihint UNUSED,
-	guint n_param_values, const GValue *param_values,
-	gpointer data UNUSED)
-{
-    GObject	*obj;
-    GtkWidget	*popover;
-    GtkWidget	*parent;
-
-    if (n_param_values < 1 || gui.menubar == NULL || gui.drawarea == NULL)
-	return TRUE;
-    obj = g_value_get_object(&param_values[0]);
-    if (!GTK_IS_POPOVER(obj))
-	return TRUE;
-    popover = GTK_WIDGET(obj);
-
-    // Only react to popovers that descend from the menubar.
-    for (parent = gtk_widget_get_parent(popover);
-	    parent != NULL;
-	    parent = gtk_widget_get_parent(parent))
+    if (!gtk_window_is_active(GTK_WINDOW(gui.mainwin)))
     {
-	if (parent != gui.menubar)
-	    continue;
-	// Defer the grab to the next main loop iteration; calling it
-	// synchronously while GTK is still completing the popover close
-	// has no effect (issue #20274).
-	g_idle_add(grab_drawarea_focus_idle, NULL);
-	break;
+	gui_focus_change(FALSE);
+	if (blink_state != BLINK_NONE)
+	    gui_mch_stop_blink(TRUE);
     }
-    return TRUE;	// keep the emission hook installed
 }
-#endif
 
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
