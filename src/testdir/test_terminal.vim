@@ -1334,7 +1334,7 @@ endfunc
 
 " Run Vim, start a terminal in that Vim with the kill argument,
 " :qall works.
-func Run_terminal_qall_kill(line1, line2)
+func Run_terminal_qall_kill_int(line1, line2, cmd)
   " 1. Open a terminal window and wait for the prompt to appear
   " 2. set kill using term_setkill()
   " 3. make Vim exit, it will kill the shell
@@ -1346,13 +1346,18 @@ func Run_terminal_qall_kill(line1, line2)
 	\ 'endwhile',
 	\ a:line2,
 	\ 'au VimLeavePre * call writefile(["done"], "Xdone")',
-	\ 'qall',
+	\ a:cmd,
 	\ ]
   if !RunVim([], after, '')
     return
   endif
   call assert_equal("done", readfile("Xdone")[0])
   call delete("Xdone")
+endfunc
+
+func Run_terminal_qall_kill(line1, line2)
+  call Run_terminal_qall_kill_int(a:line1, a:line2, 'qall')
+  call Run_terminal_qall_kill_int(a:line1, a:line2, 'wqall')
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim with a kill

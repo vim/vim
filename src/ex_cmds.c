@@ -2515,8 +2515,11 @@ do_wqall(exarg_T *eap)
 #ifdef FEAT_TERMINAL
 	if (exiting && !eap->forceit && term_job_running(buf->b_term))
 	{
-	    no_write_message_buf(buf);
-	    ++error;
+	    if (term_try_stop_job(buf) == FAIL)
+	    {
+		no_write_message_buf(buf);
+		++error;
+	    }
 	}
 	else
 #endif
