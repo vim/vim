@@ -2515,11 +2515,17 @@ do_wqall(exarg_T *eap)
 #ifdef FEAT_TERMINAL
 	if (exiting && !eap->forceit && term_job_running(buf->b_term))
 	{
+	    bufref_T	bufref;
+
+	    set_bufref(&bufref, buf);
 	    if (term_try_stop_job(buf) == FAIL)
 	    {
 		no_write_message_buf(buf);
 		++error;
 	    }
+	    // Stopping the job may have freed the terminal buffer.
+	    else if (!bufref_valid(&bufref))
+		buf = firstbuf;
 	}
 	else
 #endif
