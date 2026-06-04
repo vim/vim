@@ -16,6 +16,8 @@
 
 #include "gvimext.h"
 
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
+
 static char *searchpath(char *name);
 
 // Always get an error while putting the following stuff to the
@@ -849,7 +851,7 @@ STDMETHODIMP CShellExt::InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi)
 		    // If execution reaches this point we likely have an
 		    // inconsistency between the code that setup the menus
 		    // and this code that determines what the user
-		    // selected.  This should be detected and fixed during 
+		    // selected.  This should be detected and fixed during
 		    // development.
 		    return E_FAIL;
 	    }
@@ -1002,7 +1004,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	DragQueryFileW((HDROP)medium.hGlobal,
 		i,
 		m_szFileUserClickedOn,
-		sizeof(m_szFileUserClickedOn));
+		ARRAY_LENGTH(m_szFileUserClickedOn));
 
 	len = wcslen(cmdStrW) + wcslen(m_szFileUserClickedOn) + 4;
 	if (len > cmdlen)
