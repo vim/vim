@@ -1396,6 +1396,62 @@ ins_mousescroll(int dir)
     }
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+/*
+ * Command-line mode implementation for scrolling in direction "dir", which is
+ * one of the MSCR_ values.  Scrolls the completion info popup when the mouse
+ * pointer is on top of it.
+ * Returns TRUE when the info popup was scrolled.
+ */
+    int
+cmdline_mousescroll(int dir)
+{
+    cmdarg_T	cap;
+    oparg_T	oa;
+
+    CLEAR_FIELD(cap);
+    clear_oparg(&oa);
+    cap.oap = &oa;
+    cap.arg = dir;
+
+    switch (dir)
+    {
+	case MSCR_UP:	 cap.cmdchar = K_MOUSEUP; break;
+	case MSCR_DOWN:	 cap.cmdchar = K_MOUSEDOWN; break;
+	case MSCR_LEFT:	 cap.cmdchar = K_MOUSELEFT; break;
+	case MSCR_RIGHT: cap.cmdchar = K_MOUSERIGHT; break;
+    }
+
+    if (mouse_row < 0 || mouse_col < 0)
+	return FALSE;
+
+    int	    row = mouse_row;
+    int	    col = mouse_col;
+    win_T   *wp;
+
+    // Only scroll when the mouse is on top of the info popup.
+    wp = mouse_find_win(&row, &col, FIND_POPUP);
+    if (wp == NULL || !WIN_IS_POPUP(wp) || !(wp->w_popup_flags & POPF_INFO)
+							|| !wp->w_has_scrollbar)
+	return FALSE;
+
+    win_T   *old_curwin = curwin;
+
+    curwin = wp;
+    curbuf = wp->w_buffer;
+    // Call the common mouse scroll function shared with other modes.
+    do_mousescroll(&cap);
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
+
+    // Cmdline mode doesn't normally call update_screen(), so redraw the
+    // completion popup menu, which also repaints the info popup.
+    if (cmdline_pum_active())
+	cmdline_pum_display();
+    return TRUE;
+}
+#endif
+
 /*
  * Return TRUE if "c" is a mouse key.
  */
