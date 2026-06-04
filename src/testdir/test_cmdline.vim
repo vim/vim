@@ -4771,51 +4771,47 @@ endfunc
 " Test that the mouse scroll wheel scrolls the info popup of the command line
 " completion popup menu when the mouse pointer is on top of it.
 func Test_wildmenu_pum_info_mouse_scroll()
+  CheckScreendump
   CheckFeature quickfix
-  CheckFeature mouse
 
-  func DictComp(A, L, P)
-    let info = join(map(range(1, 30), '"info line " .. v:val'), "\n")
-    return [
-          \ {'word': 'apple',  'kind': 'f', 'menu': 'fruit', 'info': info},
-          \ {'word': 'banana', 'kind': 'f', 'menu': 'fruit', 'info': info},
-          \ ]
-  endfunc
-  command -nargs=1 -complete=customlist,DictComp DictCmd echo <q-args>
-  set wildmenu wildoptions=pum completeopt=menu,popup mouse=a
+  let lines =<< trim END
+    func DictComp(A, L, P)
+      let info = join(map(range(1, 30), '"info line " .. v:val'), "\n")
+      return [
+            \ {'word': 'apple',  'kind': 'f', 'menu': 'fruit', 'info': info},
+            \ {'word': 'banana', 'kind': 'f', 'menu': 'fruit', 'info': info},
+            \ ]
+    endfunc
+    command -nargs=1 -complete=customlist,DictComp DictCmd echo <q-args>
+    set wildmenu wildoptions=pum completeopt=menu,popup mouse=a
 
-  " Place the mouse on top of the info popup.
-  func PrepMouse()
-    let pos = popup_getpos(popup_findinfo())
-    call test_setmouse(pos.line + 1, pos.col + 1)
-  endfunc
-  cnoremap <F6> <Cmd>call PrepMouse()<CR>
-  cnoremap <F7> <Cmd>let g:fl = popup_getoptions(popup_findinfo()).firstline<CR>
+    " Put the mouse on top of the info popup and turn the scroll wheel.
+    func ScrollInfo(keys)
+      let pos = popup_getpos(popup_findinfo())
+      call test_setmouse(pos.line + 1, pos.col + 1)
+      call feedkeys(a:keys, 'nt')
+    endfunc
+    cnoremap <F6> <Cmd>call ScrollInfo(repeat("\<ScrollWheelDown>", 3))<CR>
+    cnoremap <F7> <Cmd>call ScrollInfo(repeat("\<ScrollWheelUp>", 2))<CR>
+  END
+  call writefile(lines, 'XtestWildmenuMouseScroll', 'D')
+  let buf = RunVimInTerminal('-S XtestWildmenuMouseScroll', #{rows: 12})
 
-  " Scrolling down with the wheel scrolls the info popup down without closing
-  " the completion popup menu.
-  let g:fl = 0
-  call feedkeys(":DictCmd \<Tab>\<F6>"
-        \ .. "\<ScrollWheelDown>\<ScrollWheelDown>\<ScrollWheelDown>"
-        \ .. "\<F7>\<Esc>", 'xt')
-  call assert_true(g:fl > 1)
-  let scrolled_down = g:fl
+  " The info popup is shown next to the completion popup menu.
+  call term_sendkeys(buf, ":DictCmd \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_info_mouse_scroll_1', {})
+
+  " Scrolling down with the wheel scrolls the info popup without closing the
+  " completion popup menu.
+  call term_sendkeys(buf, "\<F6>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_info_mouse_scroll_2', {})
 
   " Scrolling back up scrolls the info popup up again.
-  call feedkeys(":DictCmd \<Tab>\<F6>"
-        \ .. "\<ScrollWheelDown>\<ScrollWheelDown>\<ScrollWheelDown>"
-        \ .. "\<ScrollWheelUp>\<ScrollWheelUp>"
-        \ .. "\<F7>\<Esc>", 'xt')
-  call assert_true(g:fl > 1)
-  call assert_true(g:fl < scrolled_down)
+  call term_sendkeys(buf, "\<F7>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_info_mouse_scroll_3', {})
 
-  cunmap <F6>
-  cunmap <F7>
-  delcommand DictCmd
-  delfunc DictComp
-  delfunc PrepMouse
-  unlet g:fl
-  set wildmenu& wildoptions& completeopt& mouse&
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_cmdline_complete_findfunc_dict()
