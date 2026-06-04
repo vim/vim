@@ -30,6 +30,9 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
 #include "gui_gtk4_cb.h"
+#ifdef USE_GTK4_SNAPSHOT
+# include "gui_gtk4_da.h"
+#endif
 
 /*
  * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
@@ -265,7 +268,9 @@ modifiers_gdk2vim(guint state)
 static GtkWidget *vbox;		// the main vertical box
 
 // Forward declarations for event callbacks
+#ifndef USE_GTK4_SNAPSHOT
 static void draw_event(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data);
+#endif
 static gboolean key_press_event(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer data);
 static void key_release_event(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer data);
 static void button_press_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer data);
@@ -287,9 +292,11 @@ static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
+#ifndef USE_GTK4_SNAPSHOT
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
+#endif
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -508,25 +515,31 @@ gui_mch_init(void)
     gtk_box_append(GTK_BOX(vbox), gui.formwin);
 
     // The drawing area for the editor content.
+#ifdef USE_GTK4_SNAPSHOT
+    gui.drawarea = vim_draw_area_new();
+#else
     gui.drawarea = gtk_drawing_area_new();
     gui.surface = NULL;
+#endif
     gtk_widget_set_focusable(gui.drawarea, TRUE);
     gtk_widget_set_vexpand(gui.drawarea, TRUE);
     gtk_widget_set_hexpand(gui.drawarea, TRUE);
     vim_form_put(VIM_FORM(gui.formwin), gui.drawarea, 0, 0);
 
+#ifndef USE_GTK4_SNAPSHOT
     // Set up drawing.
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
 	    (GtkDrawingAreaDrawFunc)draw_event, NULL, NULL);
 
-    g_signal_connect(G_OBJECT(gui.drawarea), "realize",
-		     G_CALLBACK(drawarea_realize_cb), NULL);
-    g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
-		     G_CALLBACK(drawarea_unrealize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "resize",
 		     G_CALLBACK(drawarea_resize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
 		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
+#endif
+    g_signal_connect(G_OBJECT(gui.drawarea), "realize",
+		     G_CALLBACK(drawarea_realize_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
+		     G_CALLBACK(drawarea_unrealize_cb), NULL);
 
     // Set up event controllers.
     {
@@ -614,6 +627,7 @@ gui_mch_init(void)
     return OK;
 }
 
+#ifndef USE_GTK4_SNAPSHOT
 /*
  * Called when the foreground or background color has been changed.
  */
@@ -630,11 +644,16 @@ surface_fill_bg(void)
 	cairo_destroy(cr);
     }
 }
+#endif
 
     void
 gui_mch_new_colors(void)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     surface_fill_bg();
+#endif
     if (gui.drawarea != NULL && gtk_widget_get_realized(gui.drawarea))
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1336,6 +1355,14 @@ gui_mch_get_rgb(guicolor_T pixel)
  * ============================================================
  */
 
+#ifdef USE_GTK4_SNAPSHOT
+    void
+gui_gtk_update_size(void)
+{
+    vim_draw_area_set_size(VIM_DRAW_AREA(gui.drawarea),
+	    gui.num_rows, gui.num_cols);
+}
+#else // USE_GTK4_SNAPSHOT
 static void set_cairo_source_from_pixel(cairo_t *cr, guicolor_T pixel);
 
     static void
@@ -1394,10 +1421,15 @@ create_backing_surface(int width, int height)
     cairo_surface_set_device_scale(surf, (double)scale, (double)scale);
     return surf;
 }
+#endif // !USE_GTK4_SNAPSHOT
 
     void
 gui_mch_clear_block(int row1, int col1, int row2, int col2)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    vim_draw_area_clear_block(VIM_DRAW_AREA(gui.drawarea), row1,
+	    col1, row2, col2);
+#else
     cairo_t *cr;
 
     if (gui.surface == NULL)
@@ -1411,6 +1443,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
 	    (row2 - row1 + 1) * gui.char_height);
     cairo_fill(cr);
     cairo_destroy(cr);
+#endif
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
@@ -1419,6 +1452,9 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
     void
 gui_mch_clear_all(void)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    vim_draw_area_clear(VIM_DRAW_AREA(gui.drawarea));
+#else
     cairo_t *cr;
 
     if (gui.surface == NULL)
@@ -1428,6 +1464,7 @@ gui_mch_clear_all(void)
     set_cairo_source_from_pixel(cr, gui.back_pixel);
     cairo_paint(cr);
     cairo_destroy(cr);
+#endif
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
@@ -1461,19 +1498,27 @@ gui_mch_draw_popup_image(
     if (wp->w_popup_image_data == NULL
 	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
 	    || draw_w <= 0 || draw_h <= 0
-	    || gui.surface == NULL)
+# ifndef USE_GTK4_SNAPSHOT
+	    || gui.surface == NULL
+# endif
+	    )
 	return;
 
     x = FILL_X(col);
     y = FILL_Y(row);
+# ifdef USE_GTK4_SNAPSHOT
+    // TODO
+# else
     cairo_popup_image_paint(wp, gui.surface, x, y,
 					    src_x, src_y, draw_w, draw_h);
+# endif
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
 #endif // FEAT_IMAGE_CAIRO
 
+#ifndef USE_GTK4_SNAPSHOT
     static void
 surface_copy_rect(int dest_x, int dest_y,
 	int src_x, int src_y,
@@ -1500,10 +1545,14 @@ surface_copy_rect(int dest_x, int dest_y,
     cairo_destroy(cr);
     cairo_surface_destroy(tmp);
 }
+#endif
 
     void
 gui_mch_delete_lines(int row, int num_lines)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
     int nrows = gui.scroll_region_bot - row + 1;
     int src_nrows = nrows - num_lines;
@@ -1512,6 +1561,7 @@ gui_mch_delete_lines(int row, int num_lines)
 	    FILL_X(gui.scroll_region_left), FILL_Y(row),
 	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
 	    gui.char_width * ncols + 1, gui.char_height * src_nrows);
+#endif
     gui_clear_block(
 	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
 	    gui.scroll_region_bot, gui.scroll_region_right);
@@ -1522,6 +1572,9 @@ gui_mch_delete_lines(int row, int num_lines)
     void
 gui_mch_insert_lines(int row, int num_lines)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
     int nrows = gui.scroll_region_bot - row + 1;
     int src_nrows = nrows - num_lines;
@@ -1533,6 +1586,7 @@ gui_mch_insert_lines(int row, int num_lines)
     gui_clear_block(
 	    row, gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
+#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1540,6 +1594,9 @@ gui_mch_insert_lines(int row, int num_lines)
     void
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     cairo_t *cr;
     int i = 1;
 
@@ -1559,6 +1616,7 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 	    i * gui.char_width - 1, gui.char_height - 1);
     cairo_stroke(cr);
     cairo_destroy(cr);
+#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1566,6 +1624,9 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     void
 gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     cairo_t *cr;
 
     if (gui.surface == NULL)
@@ -1584,6 +1645,7 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 	    w, h);
     cairo_fill(cr);
     cairo_destroy(cr);
+#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1592,8 +1654,10 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 gui_mch_flash(int msec)
 {
     // Invert the screen, wait, then invert back
+#ifndef USE_GTK4_SNAPSHOT
     if (gui.surface == NULL)
 	return;
+#endif
 
     gui_mch_invert_rectangle(0, 0, (int)Rows - 1, (int)Columns - 1);
     gui_mch_flush();
@@ -1604,6 +1668,9 @@ gui_mch_flash(int msec)
     void
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     cairo_t *cr;
 
     if (gui.surface == NULL)
@@ -1617,6 +1684,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 	    (nc + 1) * gui.char_width, (nr + 1) * gui.char_height);
     cairo_fill(cr);
     cairo_destroy(cr);
+#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1981,9 +2049,13 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     if (w <= 0) w = 800;
     if (h <= 0) h = 600;
 
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     if (gui.surface != NULL)
 	cairo_surface_destroy(gui.surface);
     gui.surface = create_backing_surface(w, h);
+#endif
 
     gui_mch_new_colors();
 }
@@ -1994,13 +2066,18 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 #ifdef FEAT_XIM
     im_shutdown();
 #endif
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     if (gui.surface != NULL)
     {
 	cairo_surface_destroy(gui.surface);
 	gui.surface = NULL;
     }
+#endif
 }
 
+#ifndef USE_GTK4_SNAPSHOT
 // Debounced resize: drawarea_resize_cb only resizes the backing surface
 // (preserving old content) and (re)arms a short timeout. The actual
 // gui_resize_shell() runs from drawarea_resize_apply_cb once the user has
@@ -2120,6 +2197,7 @@ drawarea_scale_factor_cb(GObject *object UNUSED,
     if (gui.in_use)
 	redraw_all_later(UPD_CLEAR);
 }
+#endif
 
 #ifdef FEAT_DND
 /*
@@ -2683,6 +2761,9 @@ on_tab_reordered(
     void
 gui_mch_drawsign(int row, int col, int typenr)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    // TODO
+#else
     GdkPixbuf	*sign;
     cairo_t	*cr;
     int		width, height;
@@ -2717,6 +2798,7 @@ gui_mch_drawsign(int row, int col, int typenr)
 
     cairo_paint(cr);
     cairo_destroy(cr);
+#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -2726,8 +2808,12 @@ gui_mch_register_sign(char_u *signfile)
 {
     if (signfile[0] != NUL && signfile[0] != '-' && gui.in_use)
     {
-	GdkPixbuf   *sign;
-	GError	    *error = NULL;
+	GError *error = NULL;
+#ifdef USE_GTK4_SNAPSHOT
+	// TODO
+	(void)error;
+#else
+	GdkPixbuf *sign;
 
 	sign = gdk_pixbuf_new_from_file((const char *)signfile, &error);
 	if (error == NULL)
@@ -2735,6 +2821,7 @@ gui_mch_register_sign(char_u *signfile)
 
 	semsg("E255: %s", error->message);
 	g_error_free(error);
+#endif
     }
     return NULL;
 }
@@ -2743,7 +2830,12 @@ gui_mch_register_sign(char_u *signfile)
 gui_mch_destroy_sign(void *sign)
 {
     if (sign != NULL)
+    {
+#ifdef USE_GTK4_SNAPSHOT
+	// TODO
+#endif
 	g_object_unref(sign);
+    }
 }
 #endif
 
@@ -2887,6 +2979,7 @@ setup_zero_width_cluster(PangoItem *item, PangoGlyphInfo *glyph,
 	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
 }
 
+#ifndef USE_GTK4_SNAPSHOT
 /*
  * Draw a single glyph string segment: background, foreground, and fake bold.
  */
@@ -2972,6 +3065,7 @@ draw_under(int flags, int row, int col, int cells, cairo_t *cr)
 	cairo_stroke(cr);
     }
 }
+#endif
 
 /*
  * Draw a string of characters on the screen.
@@ -2988,15 +3082,22 @@ gui_gtk_draw_string_ext(
 	int	flags,
 	int	force_pango)
 {
-    GdkRectangle	area;
     PangoGlyphString	*glyphs;
     int			column_offset = 0;
     int			i;
+#ifndef USE_GTK4_SNAPSHOT
+    GdkRectangle	area;
     cairo_t		*cr;
+#endif
 
-    if (gui.text_context == NULL || gui.surface == NULL)
+    if (gui.text_context == NULL
+#ifndef USE_GTK4_SNAPSHOT
+	    || gui.surface == NULL
+#endif
+	    )
 	return len;
 
+#ifndef USE_GTK4_SNAPSHOT
     // Restrict all drawing to the current screen line.
     area.x = gui.border_offset;
     area.y = FILL_Y(row);
@@ -3006,6 +3107,7 @@ gui_gtk_draw_string_ext(
     cr = cairo_create(gui.surface);
     cairo_rectangle(cr, area.x, area.y, area.width, area.height);
     cairo_clip(cr);
+#endif
 
     glyphs = pango_glyph_string_new();
 
@@ -3030,7 +3132,12 @@ gui_gtk_draw_string_ext(
 	    glyphs->log_clusters[i] = i;
 	}
 
+#ifdef USE_GTK4_SNAPSHOT
+        vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
+		flags, gui.ascii_font, glyphs);
+#else
 	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
+#endif
 
 	column_offset = len;
     }
@@ -3139,8 +3246,14 @@ not_ascii:;
 		}
 	    }
 
+#ifdef USE_GTK4_SNAPSHOT
+        vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
+		row, col + column_offset, item_cells,
+		flags, item->analysis.font, glyphs);
+#else
 	    draw_glyph_string(row, col + column_offset, item_cells,
 			      flags, item->analysis.font, glyphs, cr);
+#endif
 
 	    pango_item_free(item);
 
@@ -3151,11 +3264,13 @@ not_ascii:;
     }
 
 skipitall:
+#ifndef USE_GTK4_SNAPSHOT
     draw_under(flags, row, col, column_offset, cr);
+    cairo_destroy(cr);
+#endif
 
     pango_glyph_string_free(glyphs);
 
-    cairo_destroy(cr);
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
@@ -3185,7 +3300,11 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     int		is_utf8;
     char_u	backup_ch;
 
-    if (gui.text_context == NULL || gui.surface == NULL)
+    if (gui.text_context == NULL
+#ifndef USE_GTK4_SNAPSHOT
+	    || gui.surface == NULL
+#endif
+	    )
 	return len;
 
     if (output_conv.vc_type != CONV_NONE)
@@ -3895,6 +4014,7 @@ toolbar_button_clicked_cb(GtkWidget *widget UNUSED, gpointer data)
     gui_menu_cb((vimmenu_T *)data);
 }
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     static GtkWidget *
 create_toolbar_icon(vimmenu_T *menu)
 {
@@ -3935,6 +4055,7 @@ create_toolbar_icon(vimmenu_T *menu)
 
     return image;
 }
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 /*
  * GTK4 Menu system using GMenu + GSimpleActionGroup + GtkPopoverMenuBar.
@@ -5220,7 +5341,6 @@ print_draw_page_cb(
     linenr_T	    lnum;
     linenr_T	    first;
     linenr_T	    last;
-    int		    page_line;
     double	    y;
 
     cr = gtk_print_context_get_cairo_context(context);
@@ -5231,9 +5351,8 @@ print_draw_page_cb(
 	last = pd->last_line;
 
     y = 0;
-    page_line = 0;
 
-    for (lnum = first; lnum <= last; ++lnum, ++page_line)
+    for (lnum = first; lnum <= last; ++lnum)
     {
 	char_u		*line;
 	PangoLayout	*layout;

@@ -38,6 +38,7 @@ void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
 guicolor_T gui_mch_get_rgb(guicolor_T pixel);
+void gui_gtk_update_size(void);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_clear_all(void);
 void gui_mch_free_popup_image(win_T *wp);

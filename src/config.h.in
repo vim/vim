@@ -499,6 +499,9 @@
 /* Define if GTK GUI is to be linked against GTK 4 */
 #undef USE_GTK4
 
+/* Define if GTK4 GUI should use hardware accelerated backend */
+#undef USE_GTK4_SNAPSHOT
+
 /* Define if we have isinf() */
 #undef HAVE_ISINF
 

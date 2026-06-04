@@ -1605,6 +1605,10 @@ again:
     gui.num_cols = (pixel_width - gui_get_base_width()) / gui.char_width;
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
+#ifdef USE_GTK4_SNAPSHOT
+    gui_gtk_update_size();
+#endif
+
     gui_position_components(pixel_width);
     gui_reset_scroll_region();
 
