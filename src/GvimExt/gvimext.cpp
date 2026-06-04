@@ -16,6 +16,8 @@
 
 #include "gvimext.h"
 
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
+
 static char *searchpath(char *name);
 
 // Always get an error while putting the following stuff to the
@@ -849,7 +851,7 @@ STDMETHODIMP CShellExt::InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi)
 		    // If execution reaches this point we likely have an
 		    // inconsistency between the code that setup the menus
 		    // and this code that determines what the user
-		    // selected.  This should be detected and fixed during 
+		    // selected.  This should be detected and fixed during
 		    // development.
 		    return E_FAIL;
 	    }
@@ -957,16 +959,14 @@ BOOL CShellExt::LoadMenuIcon()
 searchpath(char *name)
 {
     static char widename[2 * BUFSIZE];
-    static char location[2 * BUFSIZE + 2];
+    WCHAR location[BUFSIZE + 1];
 
     // There appears to be a bug in FindExecutableA() on Windows NT.
     // Use FindExecutableW() instead...
-    MultiByteToWideChar(CP_ACP, 0, (LPCSTR)name, -1,
-	    (LPWSTR)widename, BUFSIZE);
-    if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
-		(LPWSTR)location) > (HINSTANCE)32)
+    MultiByteToWideChar(CP_ACP, 0, name, -1, (LPWSTR)widename, BUFSIZE);
+    if (FindExecutableW((LPCWSTR)widename, L"", location) > (HINSTANCE)32)
     {
-	WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
+	WideCharToMultiByte(CP_ACP, 0, location, -1,
 		(LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
 	return widename;
     }
@@ -1002,7 +1002,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	DragQueryFileW((HDROP)medium.hGlobal,
 		i,
 		m_szFileUserClickedOn,
-		sizeof(m_szFileUserClickedOn));
+		ARRAY_LENGTH(m_szFileUserClickedOn));
 
 	len = wcslen(cmdStrW) + wcslen(m_szFileUserClickedOn) + 4;
 	if (len > cmdlen)
