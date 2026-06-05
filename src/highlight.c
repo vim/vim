@@ -3472,6 +3472,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		// highlighting and any decoration (textprop undercurl,
 		// ...) do not bleed through.
 		new_en.ae_attr = popup_aep->ae_attr;
+		// fallback correctly to Normal fg color if fg_color == INVALCOLOR
 		new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
 		new_en.ae_u.gui.sp_color = popup_aep->ae_u.gui.sp_color;
 	    }
