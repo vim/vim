@@ -5622,4 +5622,40 @@ func Test_popup_opacity_only_cterm_or_gui_set()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_attr()
+  CheckScreendump
+
+  let lines =<< trim END
+  highlight PopupBold cterm=bold gui=bold
+  highlight PopupBoldColor  cterm=bold gui=bold ctermfg=red guifg=red
+  call setline(1, repeat(['X X X X X X X X X X'], 10))
+  call popup_create('bold', #{
+        \ line: 2, col: 3,
+        \ border: [1, 1, 1, 1],
+        \ minwidth: 20,
+        \ minheight: 2,
+        \ opacity: 60,
+        \ highlights: 'Normal:PopupBold',
+        \ })
+  call popup_create('boldcolor', #{
+        \ line: 6, col: 3,
+        \ border: [1, 1, 1, 1],
+        \ minwidth: 20,
+        \ minheight: 2,
+        \ opacity: 60,
+        \ highlights: 'Normal:PopupBoldColor',
+        \ })
+  END
+  call writefile(lines, 'XtestPopupOpacityAttr', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityAttr', #{rows: 12, cols: 60})
+  " cterm set and notermguicolors
+  call VerifyScreenDump(buf, 'Test_popup_opacity_attr_1', {})
+
+  " ctermbg set and termguicolors
+  call term_sendkeys(buf, ":set termguicolors\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_opacity_attr_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2

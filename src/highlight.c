@@ -3436,6 +3436,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    tmp_en.ae_u.gui.fg_color = INVALCOLOR;
 	    tmp_en.ae_u.gui.bg_color = INVALCOLOR;
 	    tmp_en.ae_u.gui.sp_color = INVALCOLOR;
+	    // preserve attributes other than color
+	    tmp_en.ae_attr = popup_attr;
 	    popup_aep = &tmp_en;
 
 	    popup_aep->ae_u.gui.bg_color = fallback_bg_rgb;
@@ -3516,6 +3518,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    // allow blending with termguicolors
 	    tmp_en.ae_u.cterm.bg_rgb = fallback_bg_rgb;
 #endif
+	    // preserve attributes other than color
+	    tmp_en.ae_attr = popup_attr;
 	    popup_aep = &tmp_en;
 
 	    // allow blending with notermguicolors
