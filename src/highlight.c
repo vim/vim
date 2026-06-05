@@ -3447,14 +3447,13 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 
 	if (popup_aep != NULL)
 	{
+	    guicolor_T popup_bg_rgb = popup_aep->ae_u.gui.bg_color;
+	    if (COLOR_INVALID(popup_bg_rgb))
+		popup_bg_rgb = fallback_bg_rgb;
+
 	    if (blend_fg)
 	    {
 		// blend_fg=TRUE: fade underlying text toward popup bg.
-		guicolor_T popup_bg_rgb = INVALCOLOR;
-		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
-		    popup_bg_rgb = popup_aep->ae_u.gui.bg_color;
-		else
-		    popup_bg_rgb = fallback_bg_rgb;
 		{
 		    int base_fg = fallback_fg_rgb;
 		    if (char_aep != NULL
@@ -3477,13 +3476,13 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		new_en.ae_u.gui.sp_color = popup_aep->ae_u.gui.sp_color;
 	    }
 	    // Blend background color: blend popup bg toward underlying bg
-	    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
 	    {
 		guicolor_T underlying_bg = fallback_bg_rgb;
-		if (char_aep != NULL)
+		if (char_aep != NULL
+			&& !COLOR_INVALID(char_aep->ae_u.gui.bg_color))
 		    underlying_bg = char_aep->ae_u.gui.bg_color;
 		new_en.ae_u.gui.bg_color = blend_colors(
-			popup_aep->ae_u.gui.bg_color,
+			popup_bg_rgb,
 			underlying_bg, blend);
 	    }
 	}
