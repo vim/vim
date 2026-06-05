@@ -356,6 +356,12 @@ for more information.
 If you are using GTK3 and Vim appears to be slow, try setting the environment
 variable $GDK_RENDERING to "image".
 
+							*gtk4-slow*
+If you are using GTK4 and Vim appears to be slow, or keyboard input is not
+accepted right after startup, the default renderer may be using software
+OpenGL because no usable GPU was found.  Try selecting the cairo renderer by
+setting the environment variable $GSK_RENDERER to "cairo".
+
 
 Tooltip Colors ~
 							*gtk-tooltip-colors*
