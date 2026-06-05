@@ -15,6 +15,7 @@
  */
 
 #include "gvimext.h"
+#include "../version.h"
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -52,7 +53,7 @@ UINT cbFiles = 0;
 // Returns the path in name[BUFSIZE].  It's empty when it fails.
 //
     static void
-getGvimName(char *name, int runtime)
+getGvimName(char *name, BOOL runtime)
 {
     HKEY	keyhandle;
     DWORD	hlen;
@@ -102,9 +103,9 @@ getGvimName(char *name, int runtime)
 }
 
     static void
-getGvimInvocation(char *name, int runtime)
+getGvimInvocation(char *name)
 {
-    getGvimName(name, runtime);
+    getGvimName(name, FALSE);
     // avoid that Vim tries to expand wildcards in the file names
     strcat(name, " --literal");
 }
@@ -115,9 +116,18 @@ getGvimInvocationW(wchar_t *nameW)
     char *name;
 
     name = (char *)malloc(BUFSIZE);
-    getGvimInvocation(name, 0);
+    getGvimInvocation(name);
     mbstowcs(nameW, name, BUFSIZE);
     free(name);
+}
+
+    static BOOL
+FileExists(LPCTSTR szPath)
+{
+    DWORD dwAttrib = GetFileAttributes(szPath);
+
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES
+	    && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 //
@@ -130,21 +140,47 @@ getRuntimeDir(char *buf)
 {
     int		idx;
 
-    getGvimName(buf, 1);
-    if (buf[0] != 0)
-    {
-	// When no path found, use the search path to expand it.
-	if (strchr(buf, '/') == NULL && strchr(buf, '\\') == NULL)
-	    strcpy(buf, searchpath(buf));
+    getGvimName(buf, TRUE);
+    if (buf[0] == 0)
+	return;
 
-	// remove "gvim.exe" from the end
-	for (idx = (int)strlen(buf) - 1; idx >= 0; idx--)
-	    if (buf[idx] == '\\' || buf[idx] == '/')
-	    {
-		buf[idx + 1] = 0;
-		break;
-	    }
+    // When no path found, use the search path to expand it.
+    if (strchr(buf, '/') == NULL && strchr(buf, '\\') == NULL)
+	strcpy(buf, searchpath(buf));
+
+    // remove "gvim.exe" from the end
+    for (idx = (int)strlen(buf) - 1; idx >= 0; idx--)
+	if (buf[idx] == '\\' || buf[idx] == '/')
+	{
+	    buf[++idx] = 0;
+	    break;
+	}
+
+    // Check the existence of defaults.vim
+    char *p = buf + idx;
+    strcpy(p, "defaults.vim");
+    if (FileExists(buf))
+    {
+	*p = 0;		// Cut "defaults.vim"
+	return;
     }
+    // Check the existence of vimXX\defaults.vim
+    strcpy(p, VIM_VERSION_NODOT "\\" "defaults.vim");
+    if (FileExists(buf))
+    {
+	p[ARRAY_LENGTH(VIM_VERSION_NODOT)] = 0;	// Cut "defaults.vim"
+	return;
+    }
+    // Check the existence of runtime\defaults.vim
+    strcpy(p, "runtime" "\\" "defaults.vim");
+    if (FileExists(buf))
+    {
+	p[ARRAY_LENGTH("runtime")] = 0;		// Cut "defaults.vim"
+	return;
+    }
+    // Not found
+    buf[0] = 0;
+    return;
 }
 
     WCHAR *
@@ -923,10 +959,10 @@ BOOL CALLBACK CShellExt::EnumWindowsProc(HWND hWnd, LPARAM lParam)
     // No child window ???
     // if (GetParent(hWnd)) return TRUE;
     // Class name should be Vim, if failed to get class name, return
-    if (GetClassName(hWnd, temp, sizeof(temp)) == 0)
+    if (GetClassName(hWnd, temp, ARRAY_LENGTH(temp)) == 0)
 	return TRUE;
     // Compare class name to that of vim, if not, return
-    if (_strnicmp(temp, "vim", sizeof("vim")) != 0)
+    if (_strnicmp(temp, "vim", ARRAY_LENGTH("vim")) != 0)
 	return TRUE;
     // First check if the number of vim instance exceeds MAX_HWND
     CShellExt *cs = (CShellExt*) lParam;
@@ -942,7 +978,7 @@ BOOL CALLBACK CShellExt::EnumWindowsProc(HWND hWnd, LPARAM lParam)
 BOOL CShellExt::LoadMenuIcon()
 {
     char vimExeFile[BUFSIZE];
-    getGvimName(vimExeFile, 1);
+    getGvimName(vimExeFile, TRUE);
     if (vimExeFile[0] == '\0')
 	return FALSE;
     HICON hVimIcon;
