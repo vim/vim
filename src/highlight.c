@@ -3543,7 +3543,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		else if (cterm_normal_fg_color > 0)
 		    new_en.ae_u.cterm.fg_color = cterm_normal_fg_color;
 		else
-		    new_en.ae_u.cterm.fg_color = (*p_bg == 'l') ? 1 : 16;  // black-ish or white-ish
+		    // black-ish or white-ish
+		    new_en.ae_u.cterm.fg_color = (*p_bg == 'l') ? 1 : 16;
 		new_en.ae_u.cterm.ul_color = popup_aep->ae_u.cterm.ul_color;
 #ifdef FEAT_TERMGUICOLORS
 		new_en.ae_u.cterm.ul_rgb = popup_aep->ae_u.cterm.ul_rgb;
@@ -3563,8 +3564,9 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    under_fg_rgb = char_aep->ae_u.cterm.fg_rgb;
 		popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
 #endif
-		// assign default color if guigb and ctermbg are not set for popup
-		if (COLOR_INVALID(popup_bg_rgb) && popup_aep->ae_u.cterm.bg_color == 0)
+		// assign default color if guibg and ctermbg are not set for popup
+		if (COLOR_INVALID(popup_bg_rgb)
+			&& popup_aep->ae_u.cterm.bg_color == 0)
 		    popup_bg_rgb = fallback_bg_rgb;
 		new_en.ae_u.cterm.fg_color = blend_cterm_colors(
 			popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
@@ -3582,8 +3584,9 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    under_bg_rgb = char_aep->ae_u.cterm.bg_rgb;
 		popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
 #endif
-		// assign default color if guigb and ctermbg are not set for popup
-		if (COLOR_INVALID(popup_bg_rgb) && popup_aep->ae_u.cterm.bg_color == 0)
+		// assign default color if guibg and ctermbg are not set for popup
+		if (COLOR_INVALID(popup_bg_rgb)
+			&& popup_aep->ae_u.cterm.bg_color == 0)
 		    popup_bg_rgb = fallback_bg_rgb;
 		new_en.ae_u.cterm.bg_color = blend_cterm_colors(
 			popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
@@ -3601,7 +3604,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 			&& popup_aep->ae_u.cterm.bg_color > 0)
 		    popup_bg = cterm_color_to_rgb(
 			    popup_aep->ae_u.cterm.bg_color);
-		// assign default color if guibg and ctermgb are not set for popup
+		// assign default color if guibg and ctermbg are not set for popup
 		if (COLOR_INVALID(popup_bg))
 		    popup_bg = fallback_bg_rgb;
 		if (COLOR_INVALID(popup_fg)
@@ -3627,13 +3630,12 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		}
 		else
 		{
-		    // blend_fg=FALSE: popup text is opaque.  Replace fg
-		    // with popup's so the underlying syntax highlighting
-		    // fg does not bleed.  ae_attr was already set above
-		    // for this branch.  When the popup has no fg fall
-		    // back to Normal's fg, then to white, so the text
-		    // stays readable instead of rendering as default
-		    // (which can be black on dark themes).
+		    // blend_fg=FALSE: popup text is opaque.  Replace fg with
+		    // popup's so the underlying syntax highlighting fg does
+		    // not bleed.  ae_attr was already set above for this
+		    // branch.  When the popup has no fg fall back to Normal's
+		    // fg, then to white, so the text stays readable instead of
+		    // rendering as default (which can be black on dark themes).
 		    if (!COLOR_INVALID(popup_fg))
 			new_en.ae_u.cterm.fg_rgb = popup_fg;
 		    else if (!COLOR_INVALID(cterm_normal_fg_gui_color))
