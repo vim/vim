@@ -13,4 +13,5 @@ void f_remote_send(typval_T *argvars, typval_T *rettv);
 void f_remote_startserver(typval_T *argvars, typval_T *rettv);
 void f_server2client(typval_T *argvars, typval_T *rettv);
 void f_serverlist(typval_T *argvars, typval_T *rettv);
+void check_clientserver_method_env(void);
 /* vim: set ft=c : */

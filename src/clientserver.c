@@ -1276,3 +1276,28 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_string = r;
 }
 #endif
+
+#ifdef FEAT_CLIENTSERVER_BACKENDS
+/*
+ * Check the $VIM_CLIENTSERVER environment variable and set the method
+ */
+    void
+check_clientserver_method_env(void)
+{
+    char_u *env = mch_getenv("VIM_CLIENTSERVER");
+
+    if (env == NULL)
+	return;
+
+    if (STRICMP(env, "socket") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_SOCKET;
+# ifdef FEAT_X11
+    else if (STRICMP(env, "x11") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_X11;
+# endif
+# ifdef MSWIN
+    else if (STRICMP(env, "mswin") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_MSWIN;
+# endif
+}
+#endif

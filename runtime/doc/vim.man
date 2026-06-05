@@ -390,11 +390,13 @@ OPTIONS
                    to the socket.
 
        --clientserver {backend}
-                   Use {backend} as the backend for  clientserver  functional‐
+                   Use  {backend}  as the backend for clientserver functional‐
                    ity, either "socket", "x11", or "mswin" respectively.  Only
                    available when compiled with both socketserver and X11 fea‐
-                   tures  present, or if compiled with socketserver on MS-Win‐
-                   dows.
+                   tures present, or if compiled with socketserver on  MS-Win‐
+                   dows.  The  $VIM_CLIENTSERVER environment variable may also
+                   be set which will be interpreted in the same way,  but  the
+                   --clientserver argument will always take priority.
 
        --socketid {id}
                    GTK  GUI only: Use the GtkPlug mechanism to run gVim in an‐
@@ -493,4 +495,4 @@ BUGS
        vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
        'cpoptions' options.
 
-                                  2026 May 22                           VIM(1)
+                                  2026 Jun 05                           VIM(1)

@@ -1,4 +1,4 @@
-.TH VIM 1 "2026 May 22"
+.TH VIM 1 "2026 Jun 05"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -518,7 +518,9 @@ it is taken as either an absolute, relative or relative path to the socket.
 Use {backend} as the backend for clientserver functionality, either "socket",
 "x11", or "mswin" respectively.  Only available when compiled with both
 socketserver and X11 features present, or if compiled with socketserver on
-MS-Windows.
+MS-Windows. The $VIM_CLIENTSERVER environment variable may also be set which
+will be interpreted in the same way, but the --clientserver argument will always
+take priority.
 .TP
 \-\-socketid {id}
 GTK GUI only: Use the GtkPlug mechanism to run gVim in another window.

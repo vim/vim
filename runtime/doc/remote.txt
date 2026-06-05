@@ -1,4 +1,4 @@
-*remote.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*remote.txt*	For Vim version 9.2.  Last change: 2026 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -80,10 +80,16 @@ The following command line arguments are available:
    --clientserver {method}	Use the specified method {method} as the
 				backend for clientserver functionality.  Can
 				either be "socket", "x11", or "mswin".
+							    *$VIM_CLIENTSERVER*
+				If the "$VIM_CLIENTSERVER" environment
+				variable is set, then Vim will interpret the
+				value just like the --clientserver argument.
+				If it is set and --clientserver is provided in
+				the command line, then --clientserver takes
+				priority.
 				{only available when compiled with both |+X11|
 				and |+socketserver| features, or
 				|+socketserver| on MS-Windows}
-
 
 Examples ~
 
