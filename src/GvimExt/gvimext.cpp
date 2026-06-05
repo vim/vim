@@ -994,17 +994,20 @@ BOOL CShellExt::LoadMenuIcon()
     static char *
 searchpath(char *name)
 {
-    static char widename[2 * BUFSIZE];
-    WCHAR location[BUFSIZE + 1];
+    static union {
+	char	location[2 * BUFSIZE];
+	WCHAR	wname[BUFSIZE];
+    };
+    WCHAR wlocation[BUFSIZE + 1];
 
     // There appears to be a bug in FindExecutableA() on Windows NT.
     // Use FindExecutableW() instead...
-    MultiByteToWideChar(CP_ACP, 0, name, -1, (LPWSTR)widename, BUFSIZE);
-    if (FindExecutableW((LPCWSTR)widename, L"", location) > (HINSTANCE)32)
+    MultiByteToWideChar(CP_ACP, 0, name, -1, wname, BUFSIZE);
+    if (FindExecutableW(wname, L"", wlocation) > (HINSTANCE)32)
     {
-	WideCharToMultiByte(CP_ACP, 0, location, -1,
-		(LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
-	return widename;
+	WideCharToMultiByte(CP_ACP, 0, wlocation, -1,
+		location, sizeof(location), NULL, NULL);
+	return location;
     }
     return (char *)"";
 }
