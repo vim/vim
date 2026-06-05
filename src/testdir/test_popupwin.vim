@@ -1753,6 +1753,27 @@ func Test_popup_set_firstline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_setoptions_title_redraw()
+  CheckScreendump
+
+  " Changing the title with popup_setoptions() must redraw the popup right
+  " away, without waiting for a later event such as a cursor movement.
+  let lines =<< trim END
+      let g:id = popup_create('hello', #{title: 'title-1', border: []})
+      redraw
+  END
+  call writefile(lines, 'XtestPopupTitleRedraw', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupTitleRedraw', #{rows: 10})
+
+  call VerifyScreenDump(buf, 'Test_popupwin_setoptions_title_1', {})
+
+  " No other event happens between popup_setoptions() and the dump.
+  call term_sendkeys(buf, ":call popup_setoptions(g:id, #{title: 'title-2'})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_setoptions_title_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " this tests that we don't get stuck with an error in "win_execute()"
 func Test_popup_filter_win_execute_error()
   CheckScreendump

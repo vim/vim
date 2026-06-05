@@ -55,6 +55,7 @@ typedef struct {
     int		blend;
     int		flags;
     int		zindex;
+    char_u	*title;
     char_u	*scrollbar_highlight;
     char_u	*thumb_highlight;
     char_u	*border_highlight[4];
@@ -808,8 +809,13 @@ apply_general_options(win_T *wp, dict_T *dict)
     str = dict_get_string(dict, "title", FALSE);
     if (str != NULL)
     {
-	vim_free(wp->w_popup_title);
-	wp->w_popup_title = vim_strsave(str);
+	char_u	*title = vim_strsave(str);
+
+	if (title != NULL)
+	{
+	    vim_free(wp->w_popup_title);
+	    wp->w_popup_title = title;
+	}
     }
 
     nr = dict_get_bool(dict, "wrap", -1);
@@ -975,16 +981,25 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    str = tv_get_string(&li->li_tv);
 		    if (*str != NUL)
 		    {
-			vim_free(wp->w_border_highlight[i]);
-			wp->w_border_highlight[i] = vim_strsave(str);
+			char_u	*hl = vim_strsave(str);
+
+			if (hl != NULL)
+			{
+			    vim_free(wp->w_border_highlight[i]);
+			    wp->w_border_highlight[i] = hl;
+			}
 		    }
 		}
 		if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
 		    for (i = 1; i < 4; ++i)
 		    {
-			vim_free(wp->w_border_highlight[i]);
-			wp->w_border_highlight[i] =
-					vim_strsave(wp->w_border_highlight[0]);
+			char_u	*hl = vim_strsave(wp->w_border_highlight[0]);
+
+			if (hl != NULL)
+			{
+			    vim_free(wp->w_border_highlight[i]);
+			    wp->w_border_highlight[i] = hl;
+			}
 		    }
 	    }
 	}
@@ -4007,6 +4022,7 @@ popup_save_style(win_T *wp, popup_style_snapshot_T *style)
     style->blend = wp->w_popup_blend;
     style->flags = wp->w_popup_flags;
     style->zindex = wp->w_zindex;
+    style->title = wp->w_popup_title;
     style->scrollbar_highlight = wp->w_scrollbar_highlight;
     style->thumb_highlight = wp->w_thumb_highlight;
     for (i = 0; i < 4; i++)
@@ -4023,6 +4039,7 @@ popup_style_changed(win_T *wp, popup_style_snapshot_T *style)
 
     if (style->firstline != wp->w_firstline
 	    || style->flags != wp->w_popup_flags
+	    || style->title != wp->w_popup_title
 	    || style->scrollbar_highlight != wp->w_scrollbar_highlight
 	    || style->thumb_highlight != wp->w_thumb_highlight)
 	return true;
