@@ -3,7 +3,6 @@
 
 # Source files for all source archives.
 SRC_ALL =	\
-		.cirrus.yml \
 		.gitattributes \
 		.git-blame-ignore-revs \
 		.github/MAINTAINERS \
@@ -15,7 +14,6 @@ SRC_ALL =	\
 		.github/workflows/ci-windows.yml \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
-		.github/workflows/coverity.yml \
 		.github/workflows/link-check.yml \
 		.github/actions/build_vim_on_linux/action.yml \
 		.github/actions/test_artifacts/action.yml \
