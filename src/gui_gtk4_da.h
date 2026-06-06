@@ -24,6 +24,9 @@ void vim_draw_area_set_size(VimDrawArea *self, int rows, int cols);
 void vim_draw_area_add_glyphs(VimDrawArea *self, int row, int col, int num_cells, int flags, PangoFont *font, PangoGlyphString *glyphs);
 void vim_draw_area_clear_block(VimDrawArea *self, int row1, int col1, int row2, int col2);
 void vim_draw_area_clear(VimDrawArea *self);
+void vim_draw_area_move_block(VimDrawArea *self, int to, int row1, int row2, int col1, int col2);
+void vim_draw_area_set_hollow_cursor(VimDrawArea *self);
+void vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h);
 
 #endif
 

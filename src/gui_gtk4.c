@@ -1551,7 +1551,9 @@ surface_copy_rect(int dest_x, int dest_y,
 gui_mch_delete_lines(int row, int num_lines)
 {
 #ifdef USE_GTK4_SNAPSHOT
-    // TODO
+    vim_draw_area_move_block(VIM_DRAW_AREA(gui.drawarea),
+	    row, row + num_lines, gui.scroll_region_bot,
+	    gui.scroll_region_left, gui.scroll_region_right);
 #else
     int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
     int nrows = gui.scroll_region_bot - row + 1;
@@ -1573,7 +1575,9 @@ gui_mch_delete_lines(int row, int num_lines)
 gui_mch_insert_lines(int row, int num_lines)
 {
 #ifdef USE_GTK4_SNAPSHOT
-    // TODO
+    vim_draw_area_move_block(VIM_DRAW_AREA(gui.drawarea),
+	    row + num_lines, row, gui.scroll_region_bot - num_lines,
+	    gui.scroll_region_left, gui.scroll_region_right);
 #else
     int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
     int nrows = gui.scroll_region_bot - row + 1;
@@ -1595,7 +1599,8 @@ gui_mch_insert_lines(int row, int num_lines)
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
 #ifdef USE_GTK4_SNAPSHOT
-    // TODO
+    gui_mch_set_fg_color(color);
+    vim_draw_area_set_hollow_cursor(VIM_DRAW_AREA(gui.drawarea));
 #else
     cairo_t *cr;
     int i = 1;
@@ -1625,7 +1630,8 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 {
 #ifdef USE_GTK4_SNAPSHOT
-    // TODO
+    gui_mch_set_fg_color(color);
+    vim_draw_area_set_part_cursor(VIM_DRAW_AREA(gui.drawarea), w, h);
 #else
     cairo_t *cr;
 
@@ -3085,7 +3091,9 @@ gui_gtk_draw_string_ext(
     PangoGlyphString	*glyphs;
     int			column_offset = 0;
     int			i;
-#ifndef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4_SNAPSHOT
+    gboolean		s_alloced = FALSE;
+#else
     GdkRectangle	area;
     cairo_t		*cr;
 #endif
@@ -3153,8 +3161,17 @@ not_ascii:;
 	// Safety check: pango crashes with invalid utf-8.
 	if (!utf_valid_string(s, s + len))
 	{
+#ifdef USE_GTK4_SNAPSHOT
+	    // vim_draw_area_add_glyphs() also handles under decorations. Make
+	    // "str" a string of spaces so that under decorations are still
+	    // applied.
+	    s = g_malloc(len);
+	    memset(s, ' ', len);
+	    s_alloced = TRUE;
+#else
 	    column_offset = len;
 	    goto skipitall;
+#endif
 	}
 
 	cluster_width = PANGO_SCALE * gui.char_width;
@@ -3247,9 +3264,9 @@ not_ascii:;
 	    }
 
 #ifdef USE_GTK4_SNAPSHOT
-        vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
-		row, col + column_offset, item_cells,
-		flags, item->analysis.font, glyphs);
+	    vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
+		    row, col + column_offset, item_cells,
+		    flags, item->analysis.font, glyphs);
 #else
 	    draw_glyph_string(row, col + column_offset, item_cells,
 			      flags, item->analysis.font, glyphs, cr);
@@ -3263,8 +3280,11 @@ not_ascii:;
 	pango_attr_list_unref(attr_list);
     }
 
+#ifdef USE_GTK4_SNAPSHOT
+    if (s_alloced)
+	g_free(s);
+#else
 skipitall:
-#ifndef USE_GTK4_SNAPSHOT
     draw_under(flags, row, col, column_offset, cr);
     cairo_destroy(cr);
 #endif

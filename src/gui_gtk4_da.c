@@ -14,22 +14,28 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_da.h"
 
+#define DRAW_NODE_DIRTY 1   // Draw node is dirty
+#define DRAW_NODE_NOBG 2    // Don't create background node
+#define DRAW_NODE_NOINK 4   // Draw node has no ink
+#define DRAW_NODE_UNDER 8   // Has under decorations (for convenience)
+
 typedef struct
 {
     int refcount;
 
-    GskRenderNode *text_node; // May be NULL if no ink
-    GskRenderNode *bg_node;
-    GskRenderNode *decor_node;
+    PangoGlyphInfo  *glyphs;
+    int		    n_glyphs;
+    char_u	    dnode_flags; // DRAW_NODE_* flags
+    GskRenderNode   *node;  // This should never be NULL. Is a text node, or a
+			    // container node (if there is more than one node).
 
-    // Saved values at creation time
+
     PangoFont	*font;
     GdkRGBA	fg_color;
     GdkRGBA 	bg_color;
     GdkRGBA 	sp_color;
     int	    	flags;	    // DRAW_* flags
 
-    int row;
     int start_col;
     int n_cells;
 } DrawNode;
@@ -52,6 +58,10 @@ struct _VimDrawArea
     DrawCell	*cells; // May be NULL, always check!
     int         n_rows;
     int		n_cols;
+
+    // Used for hollow and part style cursors. For the block cursor, that is
+    // simply rendered as a cell using vim_draw_area_add_glyphs(). May be NULL.
+    GskRenderNode *cursor_node;
 
     // See vim_draw_area_size_allocate()
     guint   resize_timeout_id;
@@ -116,7 +126,7 @@ vim_draw_area_set_size(VimDrawArea *self, int rows, int cols)
 
     self->n_rows = rows;
     self->n_cols = cols;
-    self->cells = g_realloc_n(self->cells, rows, sizeof(DrawCell) * cols);
+    self->cells = g_realloc_n(self->cells, rows * cols, sizeof(DrawCell));
     memset(self->cells, 0, rows * (sizeof(DrawCell) * cols));
 }
 
@@ -127,24 +137,63 @@ node_unref(GskRenderNode *node)
 	gsk_render_node_unref(node);
 }
 
-    static DrawNode *
-draw_node_ref(DrawNode *dnode)
+/*
+ * Return TRUE if "glyphs" take up space (not entirely whitespace).
+ */
+    static gboolean
+glyphs_has_ink(PangoFont *font, const PangoGlyphInfo *glyphs, int n_glyphs)
 {
-    dnode->refcount++;
-    return dnode;
+    for (int i = 0; i < n_glyphs; i++)
+    {
+	PangoRectangle glyph_ink;
+
+	pango_font_get_glyph_extents (font, glyphs[i].glyph, &glyph_ink, NULL);
+
+	if (glyph_ink.width != 0 || glyph_ink.height != 0)
+	    return TRUE;
+    }
+    return FALSE;
 }
 
-    static void
-draw_node_unref(DrawNode *dnode)
+/*
+ * Realloc "glyphs" to "n_glyphs" and return the new reallocated pointer.
+ */
+    static PangoGlyphInfo *
+glyphs_resize(PangoGlyphInfo *glyphs, int n_glyphs)
 {
-    if (--dnode->refcount <= 0)
+    return g_realloc_n(glyphs, n_glyphs, sizeof(PangoGlyphInfo));
+}
+
+/*
+ * Return TRUE if "bg" is the same as the default background color.
+ */
+    static gboolean
+color_is_default_bg(const GdkRGBA *bg)
+{
+    guicolor_T bgc = ((guicolor_T)(bg->red   * 255) << 16)
+	| ((guicolor_T)(bg->green * 255) << 8)
+	|  (guicolor_T)(bg->blue  * 255);
+    return bgc == gui.back_pixel;
+}
+
+/*
+ * Convert the given cell offset into an index in the "glyphs" array.
+ */
+    static int
+cell_offset_to_glyph(const PangoGlyphInfo *glyphs, int n_glyphs, int cell_offset)
+{
+    int cells_seen = 0;
+
+    for (int i = 0; i < n_glyphs; i++)
     {
-	node_unref(dnode->text_node);
-	node_unref(dnode->bg_node);
-	node_unref(dnode->decor_node);
-	g_object_unref(dnode->font);
-	g_free(dnode);
+	const PangoGlyphInfo *glyph = glyphs + i;
+
+	if (cells_seen >= cell_offset)
+	    return i;
+
+	cells_seen += glyph->geometry.width / (gui.char_width * PANGO_SCALE);
     }
+    return n_glyphs;
 }
 
 /*
@@ -152,7 +201,7 @@ draw_node_unref(DrawNode *dnode)
  * under decorations are needed.
  */
     static GskRenderNode *
-create_decor_node(
+create_under_decor_node(
 	int		row,
 	int 	    	start_col,
 	int 	    	n_cells,
@@ -160,9 +209,9 @@ create_decor_node(
 	const GdkRGBA	*fg_color,
 	const GdkRGBA   *sp_color)
 {
-    static GskRenderNode    *nodes[3];
-    int			    n_nodes = 0;
-    GskRenderNode	    *container;
+    GskRenderNode   *nodes[3];
+    int		    n_nodes = 0;
+    GskRenderNode   *container;
 
     if (flags & DRAW_UNDERL)
 	nodes[n_nodes++] = gsk_color_node_new(fg_color,
@@ -265,227 +314,276 @@ create_decor_node(
 }
 
 /*
- * Create the render nodes for the background and under decorations. Remove
- * existing ones if any.
- */
-    static void
-draw_node_reset(DrawNode *dnode)
-{
-    node_unref(dnode->bg_node);
-    node_unref(dnode->decor_node);
-
-    if (dnode->flags & DRAW_TRANSP)
-	dnode->bg_node = NULL;
-    else
-    {
-        GdkRGBA prev_bg = *gui.bgcolor;
-	gboolean bg_is_def;
-
-        gui_mch_set_bg_color(gui.back_pixel);
-	bg_is_def = gdk_rgba_equal(&dnode->bg_color, gui.bgcolor);
-        *gui.bgcolor = prev_bg;
-
-        dnode->bg_node = bg_is_def ? NULL : gsk_color_node_new(
-            &dnode->bg_color,
-            &GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(dnode->row),
-                                dnode->n_cells * gui.char_width,
-                                gui.char_height));
-    }
-
-    dnode->decor_node =
-        create_decor_node(dnode->row, dnode->start_col, dnode->n_cells,
-                          dnode->flags, &dnode->fg_color, &dnode->sp_color);
-}
-
-/*
- * If "node" is NULL and "bg" is the same as the default background
- * color return TRUE, then return FALSE.
- */
-    static gboolean
-node_is_needed(GskRenderNode *node, const GdkRGBA *bg, int flags)
-{
-    if (node == NULL)
-    {
-	GdkRGBA prev_bg = *gui.bgcolor;
-	GdkRGBA target_bg = *bg; // Must copy "bg", because it may be a pointer
-				 // to "gui.bgcolor".
-	bool	equal;
-
-	if (flags & DRAW_TRANSP)
-	    // No background color
-	    return FALSE;
-
-	gui_mch_set_bg_color(gui.back_pixel);
-	equal = gdk_rgba_equal(&target_bg, gui.bgcolor);
-	*gui.bgcolor = prev_bg;
-	return !equal;
-    }
-    return TRUE;
-}
-
-/*
- * Create a new draw node and return it with reference count of 1. Note that
- * NULL may be returned. Note that ownership of "node" (which may be NULL) is
- * taken.
+ * Create a new draw node with a reference count of 1. Note that this may be
+ * NULL if creating a new draw node is not necessary.
  */
     static DrawNode *
-draw_node_new_node(
-	int		row,
-	int 		start_col,
-	int 		n_cells,
-	PangoFont	*font,
-	GskRenderNode	*node,
-	int		flags,
-	const GdkRGBA	*bg_color,
-	const GdkRGBA	*fg_color,
-	const GdkRGBA	*sp_color)
+draw_node_new(
+	PangoFont		*font,
+	const PangoGlyphInfo	*glyphs,
+	int			n_glyphs, 
+	const GdkRGBA		*bg_color,
+	const GdkRGBA		*fg_color,
+	const GdkRGBA		*sp_color,
+	int			flags,
+	int			start_col,
+	int			n_cells)
 {
-    DrawNode *dnode;
+    DrawNode	*dnode;
+    gboolean	has_ink = glyphs_has_ink(font, glyphs, n_glyphs);
+    gboolean	is_def_bg = color_is_default_bg(bg_color);
+    gboolean	has_under = flags & (DRAW_UNDERL | DRAW_UNDERC | DRAW_STRIKE);
 
-    // If text node has no ink (NULL), and bg color is same as default bg color,
-    // then return NULL, because there is nothing unique to show anyways.
-    if (!node_is_needed(node, bg_color, flags))
-    {
-	node_unref(node);
+    // If there is no ink to be displayed, and the background color is the same
+    // as the default background color (the color that will be displayed behind
+    // everything), then there is no point in creating a new draw node.
+    if (!has_ink && !has_under && (flags & DRAW_TRANSP || is_def_bg))
 	return NULL;
-    }
 
     dnode = g_new0(DrawNode, 1);
 
     dnode->refcount = 1;
-    dnode->text_node = node;
 
+    dnode->glyphs = g_memdup2(glyphs, sizeof(PangoGlyphInfo) * n_glyphs);
+    dnode->n_glyphs = n_glyphs;
+    dnode->dnode_flags |= DRAW_NODE_DIRTY;
+    if (is_def_bg || flags & DRAW_TRANSP)
+	dnode->dnode_flags |= DRAW_NODE_NOBG;
+    if (!has_ink)
+	dnode->dnode_flags |= DRAW_NODE_NOINK;
+    if (has_under)
+	dnode->dnode_flags |= DRAW_NODE_UNDER;
+
+    dnode->font = g_object_ref(font);
     dnode->bg_color = *bg_color;
     dnode->fg_color = *fg_color;
     dnode->sp_color = *sp_color;
     dnode->flags = flags;
-    dnode->font = g_object_ref(font);
 
-    dnode->row = row;
     dnode->start_col = start_col;
     dnode->n_cells = n_cells;
-
-    draw_node_reset(dnode);
 
     return dnode;
 }
 
-/*
- * Same as draw_node_new_node() but creates the text node using the given
- * glyphs. May return NULL.
- */
     static DrawNode *
-draw_node_new(
-	int		    row,
-	int 		    start_col,
-	int 		    n_cells,
-	PangoFont	    *font,
-	PangoGlyphString    *string,
-	int		    flags)
+draw_node_ref(DrawNode *dnode)
 {
-    GskRenderNode *text_node;
-
-    text_node = gsk_text_node_new(font, string, gui.fgcolor,
-	    &GRAPHENE_POINT_INIT(TEXT_X(start_col), TEXT_Y(row)));
-    return draw_node_new_node(row, start_col, n_cells, font, text_node, flags,
-	    gui.bgcolor, gui.fgcolor, gui.spcolor);
+    dnode->refcount++;
+    return dnode;
 }
 
-/*
- * Convert the given cell offset into an index in the "glyphs" array.
- */
-    static int
-cell_offset_to_glyph(const PangoGlyphInfo *glyphs, int n_glyphs, int cell_offset)
+    static void
+draw_node_unref(DrawNode *dnode)
 {
-    int cells_seen = 0;
-
-    for (int i = 0; i < n_glyphs; i++)
+    if (dnode != NULL && --dnode->refcount <= 0)
     {
-	const PangoGlyphInfo *glyph = glyphs + i;
-
-	if (cells_seen >= cell_offset)
-	    return i;
-
-	cells_seen += glyph->geometry.width / (gui.char_width * PANGO_SCALE);
+	g_free(dnode->glyphs);
+	node_unref(dnode->node);
+	g_object_unref(dnode->font);
+	g_free(dnode);
     }
-    return n_glyphs;
 }
 
 /*
- * Extract the left and right glyphs on the sides of the region between "start"
- * and "end" (inclusive) relative to the start column. 
+ * Dirty the draw node. This will remove the render node if any, and mark it to
+ * have a new render node created for it on the next snapshot vfunc call.
+ * Returns TRUE if draw node is not necessary anymore.
+ */
+    static gboolean
+draw_node_make_dirty(DrawNode *dnode)
+{
+    int flags = dnode->dnode_flags;
+
+    g_clear_pointer(&dnode->node, gsk_render_node_unref);
+    dnode->dnode_flags |= DRAW_NODE_DIRTY;
+
+    return (flags & DRAW_NODE_NOINK) && !(flags & (DRAW_NODE_UNDER))
+	&& flags & DRAW_NODE_NOBG;
+}
+
+    static DrawNode *
+draw_node_copy(DrawNode *dnode)
+{
+    return draw_node_new(
+	    dnode->font, dnode->glyphs, dnode->n_glyphs,
+	    &dnode->bg_color, &dnode->fg_color, &dnode->sp_color,
+	    dnode->flags, dnode->start_col, dnode->n_cells
+	    );
+}
+
+
+/*
+ * Split the draw node at the given cell offset in place (exclusive). If
+ * "keep_left" is TRUE, then keep the left halve (discard right halve), and vice
+ * versa. This will dirty the draw node.
+ *
+ * Returns TRUE if the new split draw node is not nessecary anymore (see
+ * draw_node_new()), otherwise FALSE.
+ */
+    static gboolean
+draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
+{
+    const PangoGlyphInfo    *glyphs = dnode->glyphs;
+    int			    n_glyphs = dnode->n_glyphs;
+    int			    glyph_offset;
+
+    glyph_offset = cell_offset_to_glyph(glyphs, n_glyphs, cell_offset);
+
+    if (keep_left)
+    {
+	dnode->n_glyphs = glyph_offset;
+	dnode->n_cells = cell_offset;
+    }
+    else
+    {
+	// If this results in zero, then glyph_has_ink() will return FALSE so it
+	// is fine.
+	dnode->n_glyphs = n_glyphs - glyph_offset;
+
+	dnode->n_cells -= cell_offset;
+	dnode->start_col += cell_offset;
+	// Shift glyphs after offset to beginning
+	memmove(dnode->glyphs, dnode->glyphs + glyph_offset,
+		sizeof(PangoGlyphInfo) * dnode->n_glyphs);
+    }
+
+    dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs);
+
+    // Recheck if new split glyphs has ink
+    if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
+	dnode->dnode_flags &= ~DRAW_NODE_NOINK;
+    else
+	dnode->dnode_flags |= DRAW_NODE_NOINK;
+
+    return draw_node_make_dirty(dnode);
+}
+
+/*
+ * If "dnode" is dirty, create a new render node for it at the given row and
+ * store it, then undirty it.
  */
     static void
-draw_node_extract(
-	const DrawNode	*dnode,
-	int		row,
-	int		start,
-	int		end,
-	GskRenderNode	**out_left,
-	GskRenderNode	**out_right)
+draw_node_render(DrawNode *dnode, int row)
 {
-    GskRenderNode	    *text_node = dnode->text_node;
-    PangoFont		    *font = gsk_text_node_get_font(text_node);
-    const PangoGlyphInfo    *glyphs;
-    guint		    n_glyphs;
-    const GdkRGBA	    *color;
-    int			    dnode_end = dnode->start_col + dnode->n_cells - 1;
-    PangoGlyphString	    *glyph_str = pango_glyph_string_new();
+    GskRenderNode	*nodes[3];
+    int		    	n_nodes = 0;
+    GskRenderNode	*decor_node;
 
-    glyphs = gsk_text_node_get_glyphs(text_node, &n_glyphs);
-    color = gsk_text_node_get_color(text_node);
+    if (!(dnode->dnode_flags & DRAW_NODE_DIRTY))
+	return;
+    
+    if (!(dnode->dnode_flags & DRAW_NODE_NOBG))
+        nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
+		&GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
+		    dnode->n_cells * gui.char_width, gui.char_height));
 
-    if (out_left != NULL && start > 0)
+    if (!(dnode->dnode_flags & DRAW_NODE_NOINK))
     {
-	// Extract left part from glyphs.
-	int glyph_offset = cell_offset_to_glyph(glyphs, n_glyphs, start);
+	GskRenderNode	    *text_node;
+	PangoGlyphString    glyphs_str;
 
-	// We don't need to set "log_clusters" array, since GskTextNode does not
-	// use it.
-	pango_glyph_string_set_size(glyph_str, glyph_offset);
-	memcpy(glyph_str->glyphs, glyphs, glyph_offset * sizeof(PangoGlyphInfo));
-
-	*out_left = gsk_text_node_new(font, glyph_str, color,
+	// gsk_text_node_new() only uses the "glyphs" field, don't need to worry
+	// about the "log_clusters" array.
+	glyphs_str.glyphs = dnode->glyphs;
+	glyphs_str.num_glyphs = dnode->n_glyphs;
+	text_node = gsk_text_node_new(dnode->font, &glyphs_str, &dnode->fg_color,
 		&GRAPHENE_POINT_INIT(TEXT_X(dnode->start_col), TEXT_Y(row)));
+	// Should never be NULL since we check beforehand if there is ink.
+	assert(text_node != NULL);
+	nodes[n_nodes++] = text_node;
     }
-    else if (out_left != NULL)
-	*out_left = NULL;
 
-    if (out_right != NULL && dnode->start_col + end < dnode_end)
+    decor_node = create_under_decor_node(row, dnode->start_col, dnode->n_cells,
+	    dnode->flags, &dnode->fg_color, &dnode->sp_color);
+    if (decor_node != NULL)
+	nodes[n_nodes++] = decor_node;
+
+    // Should never be zero
+    assert(n_nodes > 0);
+
+    if (likely(n_nodes == 1))
+	dnode->node = nodes[0];
+    else
     {
-	// Extract right part from glyphs
-	int glyph_offset = cell_offset_to_glyph(glyphs, n_glyphs, end + 1);
-	int n_right_glyphs = n_glyphs - glyph_offset;
-
-	pango_glyph_string_set_size(glyph_str, n_right_glyphs);
-        memcpy(glyph_str->glyphs, glyphs + glyph_offset,
-		n_right_glyphs * sizeof(PangoGlyphInfo));
-
-	*out_right = gsk_text_node_new(font, glyph_str, color,
-		&GRAPHENE_POINT_INIT(TEXT_X(dnode->start_col + end + 1),
-		    TEXT_Y(row)));
+	dnode->node = gsk_container_node_new(nodes, n_nodes);
+	// gsk_container_node_new() takes its own reference
+	for (int i = 0; i < n_nodes; i++)
+	    gsk_render_node_unref(nodes[i]);
     }
-    else if (out_right != NULL)
-	*out_right = NULL;
 
-    pango_glyph_string_free(glyph_str);
+    dnode->dnode_flags &= ~DRAW_NODE_DIRTY;
 }
 
 /*
- * Set the cell to the draw node (which may be NULL), adding a new reference.
- * Remove existing draw node if any.
+ * Returns true if "dnode" matches "font" + "flags" in terms of
+ * color/visual attributes.
+ */
+    static gboolean
+draw_node_match(DrawNode *dnode, PangoFont *font, int flags)
+{
+    if (dnode->flags != flags)
+	return FALSE;
+
+    if (!(flags & DRAW_TRANSP)
+	    && !gdk_rgba_equal(&dnode->bg_color, gui.bgcolor))
+	return FALSE;
+
+    if (!gdk_rgba_equal(&dnode->fg_color, gui.fgcolor))
+	return FALSE;
+
+    // Special color is only used for undercurls
+    if (flags & DRAW_UNDERC && !gdk_rgba_equal(&dnode->sp_color, gui.spcolor))
+	return FALSE;
+
+    // This may not work all the time, but creating two PangoFontDescription
+    // each time to compare equality seems slow...
+    return dnode->font == font;
+}
+
+/*
+ * Append or prepend the given glyphs to the draw node. If "start" is TRUE, then
+ * prepend, otherwise append. This will invalidate the draw node. Note that
+ * prepending does not update "start_col" or "n_cells".
+ */
+    static void
+draw_node_extend(DrawNode *dnode, const PangoGlyphInfo *glyphs, int n_glyphs, bool start)
+{
+    dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs + n_glyphs);
+
+    if (start)
+    {
+	// Move the existing glyphs forward first
+	memmove(dnode->glyphs + n_glyphs, dnode->glyphs, dnode->n_glyphs * sizeof(PangoGlyphInfo));
+	memcpy(dnode->glyphs, glyphs, n_glyphs * sizeof(PangoGlyphInfo));
+    }
+    else
+	memcpy(dnode->glyphs + dnode->n_glyphs, glyphs, n_glyphs * sizeof(PangoGlyphInfo));
+
+    dnode->n_glyphs += n_glyphs;
+
+    if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
+	dnode->dnode_flags &= ~DRAW_NODE_NOINK;
+    else
+	dnode->dnode_flags |= DRAW_NODE_NOINK;
+    (void)draw_node_make_dirty(dnode);
+}
+
+/*
+ * Set the given cell to the draw node (which may be NULL), adding a new
+ * reference to it.
  */
     static void
 draw_cell_set(DrawCell *dcell, DrawNode *dnode)
 {
-    if (dcell->dnode != NULL)
-	draw_node_unref(dcell->dnode);
+    draw_node_unref(dcell->dnode);
     dcell->dnode = dnode == NULL ? NULL : draw_node_ref(dnode);
     dcell->inverted = FALSE;
 }
 
 /*
- * Set the cells between "col1" and "col2" (inclusive) for "row" to "dnode".
+ * Set the cells between "col1" and "col2" (inclusive) to "dnode" (which may be
+ * NULL).
  */
     static void
 draw_row_fill(DrawCell *drow, int col1, int col2, DrawNode *dnode)
@@ -495,105 +593,128 @@ draw_row_fill(DrawCell *drow, int col1, int col2, DrawNode *dnode)
 }
 
 /*
- * Similar to draw_row_fill(), but clip any nodes on the edges that overlap with
- * the region between "col1" and "col2".
+ * Same as draw_row_fill(), but also handle truncating/splitting any draw nodes
+ * that overlap onto the set region. If "split" is TRUE, then only
+ * truncating/splitting is done.
+ *
+ * If "copy" is TRUE, then "dnode" is ignored and instead any draw nodes in the
+ * region that overlap outside of it are copied and clipped in addition to
+ * truncating draw nodes outside the region.
  */
     static void
-draw_row_set(DrawCell *drow, int row, int col1, int col2, DrawNode *dnode)
+draw_row_set(
+	DrawCell    *drow,
+	int	    col1,
+	int	    col2,
+	DrawNode    *dnode,
+	gboolean    copy,
+	gboolean    split)
 {
-    DrawNode *ldnode = NULL, *rdnode = NULL;
-
-    ldnode = drow[col1].dnode;
-    rdnode = drow[col2].dnode;
+    DrawNode	*ldnode = drow[col1].dnode;
+    DrawNode	*rdnode = drow[col2].dnode;
+    DrawNode	*new_dnode = NULL;
 
     if (ldnode != NULL && ldnode == rdnode
-	    && (ldnode->start_col < col1 || END_COL(rdnode) > col2))
+	    && (ldnode->start_col != col1 || END_COL(ldnode) > col2))
     {
-	// Set region is completely within a single draw node. Split the draw
-	// node into left and right parts.
-	GskRenderNode	*lnode = NULL;
-	GskRenderNode	*rnode = NULL;
-	DrawNode	*right;
-	int		end_col = END_COL(ldnode);
+	// Region in completely inside a single draw node. Truncate the existing
+	// draw node, and create a new draw node to be used as the right split.
+	rdnode = draw_node_copy(ldnode);
+	draw_row_fill(drow, col2 + 1, END_COL(rdnode), rdnode);
+	draw_node_unref(new_dnode);
 
-	// If the text node is NULL, then still split, there may be under
-	// decorations or a different bg color.
-	if (ldnode->text_node != NULL)
-	    draw_node_extract(ldnode, row, col1 - ldnode->start_col,
-		    col2 - ldnode->start_col, &lnode, &rnode);
-
-	if (node_is_needed(lnode, &ldnode->bg_color, ldnode->flags))
-	{
-	    node_unref(ldnode->text_node);
-	    ldnode->text_node = lnode;
-	    ldnode->n_cells = col1 - ldnode->start_col;
-	    draw_node_reset(ldnode);
-	}
-	else
-	{
-	    // Draw node is not needed anymore, remove it from the row.
-	    node_unref(lnode);
-	    draw_row_fill(drow, ldnode->start_col, col1 - 1, NULL);
-	}
-
-        right = draw_node_new_node(row, col2 + 1,
-		end_col - col2, ldnode->font, rnode, ldnode->flags,
-		&ldnode->bg_color, &ldnode->fg_color, &ldnode->sp_color);
-
-	draw_row_fill(drow, col2 + 1, end_col, right);
-	if (right != NULL)
-	    draw_node_unref(right);
+	if (copy)
+	    // Make another copy for the new draw node inside the set region.
+	    // Must fill it in the row after, since "ldnode" may be unreferenced
+	    // fully.
+	    new_dnode = draw_node_copy(ldnode);
     }
 
-    // Check if left node (if any) overlaps with the set region. If so, then
-    // split it and discard right halve.
     if (ldnode != NULL && ldnode->start_col != col1)
     {
-	GskRenderNode *lnode = NULL;
-
-	if (ldnode->text_node != NULL)
-	    draw_node_extract(ldnode, row, col1 - ldnode->start_col,
-		    END_COL(ldnode) - ldnode->start_col, &lnode, NULL);
-
-	if (node_is_needed(lnode, &ldnode->bg_color, ldnode->flags))
+	if (copy && new_dnode != NULL)
 	{
-	    node_unref(ldnode->text_node);
-	    ldnode->text_node = lnode;
-	    ldnode->n_cells = col1 - ldnode->start_col;
-	    draw_node_reset(ldnode);
+	    // Make a copy for the right halve.
+	    DrawNode *new_right = draw_node_copy(ldnode);
+
+	    if (draw_node_split(new_right,  col1 - ldnode->start_col, FALSE))
+		g_clear_pointer(&new_right, draw_node_unref);
+	    draw_row_fill(drow, col1, END_COL(ldnode), new_right);
+	    draw_node_unref(new_right);
 	}
-	else
-	{
-	    node_unref(lnode);
+
+	// Leftmost draw node overlaps onto region, split it and discard right
+	// halve.
+	if (draw_node_split(ldnode, col1 - ldnode->start_col, TRUE))
+	    // Draw node is not necessary anymore, clear it from the row.
 	    draw_row_fill(drow, ldnode->start_col, col1 - 1, NULL);
-	}
     }
-
-    // Check if right node (if any) overlaps with the set region. If so, then
-    // split it and discard left halve.
     if (rdnode != NULL && END_COL(rdnode) > col2)
     {
-	GskRenderNode *rnode = NULL;
-
-	if (rdnode->text_node != NULL)
-	    draw_node_extract(rdnode, row, 0, col2 - rdnode->start_col, NULL, &rnode);
-
-	if (node_is_needed(rnode, &rdnode->bg_color, rdnode->flags))
+	if (copy && new_dnode != NULL)
 	{
-	    node_unref(rdnode->text_node);
-	    rdnode->text_node = rnode;
-	    rdnode->n_cells = END_COL(rdnode) - col2;
-	    rdnode->start_col = col2 + 1;
-	    draw_node_reset(rdnode);
+	    // Make a copy for the left halve.
+	    DrawNode *new_left = draw_node_copy(rdnode);
+
+	    if (draw_node_split(new_left,  col2 - rdnode->start_col, FALSE))
+		g_clear_pointer(&new_left, draw_node_unref);
+	    draw_row_fill(drow, rdnode->start_col, col2, new_left);
+	    draw_node_unref(new_left);
 	}
-	else
-	{
-	    node_unref(rnode);
+
+	// Rightmost draw node overlaps onto region, split it and discard left
+	// halve.
+	if (draw_node_split(rdnode, col2 - rdnode->start_col + 1, FALSE))
 	    draw_row_fill(drow, col2 + 1, END_COL(rdnode), NULL);
-	}
     }
 
-    draw_row_fill(drow, col1, col2, dnode);
+    if (copy)
+    {
+	if (new_dnode != NULL)
+	{
+	    if (draw_node_split(new_dnode, col1 - new_dnode->start_col, FALSE)
+		    || draw_node_split(new_dnode, col2 - new_dnode->start_col, TRUE))
+		g_clear_pointer(&new_dnode, draw_node_unref);
+
+	    draw_row_fill(drow, col1, col2, new_dnode);
+	    draw_node_unref(new_dnode);
+	}
+    }
+    else if (!split)
+	draw_row_fill(drow, col1, col2, dnode);
+}
+
+/*
+ * Move the cells between "col1" and "col2" from "src" to "dest", overwriting
+ * the existing cells. This will handle clipping any draw nodes.
+ */
+    static void
+draw_row_move_to(DrawCell *dest_row, DrawCell *src_row, int col1, int col2)
+{
+    int move_size = (col2 - col1 + 1) * sizeof(DrawCell);
+
+    // Make sure that we free/truncate any draw nodes before we overwrite
+    // them.
+    draw_row_set(dest_row, col1, col2, NULL, FALSE, FALSE);
+
+    // Make sure that draw nodes at the "col1" and "col2" of "src_row" are
+    // clipped so that they all fit in the region being moved.
+    draw_row_set(src_row, col1, col2, NULL, TRUE, FALSE);
+
+    memmove(dest_row + col1, src_row + col1, move_size);
+
+    // Dirty the moved cells
+    for (int c = col1; c <= col2;)
+	if (dest_row[c].dnode != NULL)
+	{
+	    (void)draw_node_make_dirty(dest_row[c].dnode);
+	    c += dest_row[c].dnode->n_cells;
+	}
+	else
+	    c++;
+
+    // NULL the draw nodes so we don't double unreference.
+    memset(src_row + col1, 0, (col2 - col1 + 1) * sizeof(DrawCell));
 }
 
 /*
@@ -612,7 +733,8 @@ vim_draw_area_add_glyphs(
 	PangoGlyphString *glyphs)
 {
     DrawCell	*drow;
-    DrawNode	*dnode;
+    DrawNode	*dnode = NULL;
+    int		end_col = col + num_cells - 1;
 
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
@@ -622,10 +744,64 @@ vim_draw_area_add_glyphs(
 
     drow = GET_ROW(self, row);
 
-    dnode = draw_node_new(row, col, num_cells, font, glyphs, flags);
-    draw_row_set(drow, row, col, col + num_cells - 1, dnode);
+    draw_row_set(drow, col, end_col, NULL, FALSE, TRUE);
+
+    // Check if leftmost draw node (if any) has the same visual
+    // attributes/colours as the glyph string being added. If so, then just
+    // extend that draw node with the new glyphs.
+    if (col > 0)
+    {
+	DrawNode *ldnode = drow[col - 1].dnode;
+
+	if (ldnode != NULL && draw_node_match(ldnode, font, flags))
+	{
+	    draw_node_extend(ldnode, glyphs->glyphs, glyphs->num_glyphs, FALSE);
+	    draw_row_fill(drow, col, end_col, ldnode);
+	    ldnode->n_cells += num_cells;
+	    dnode = ldnode;
+	}
+    }
+
+    // Check if we can use the existing draw node on the right. If so, then shift
+    // "rdnode" to the "col", and extend it. If we merged the left draw node, then
+    // instead extend it normally and unreference the right draw node.
+    if (col + num_cells < self->n_cols)
+    {
+	DrawNode *rdnode = drow[col + num_cells].dnode;
+
+	if (rdnode != NULL && draw_node_match(rdnode, font, flags))
+	{
+	    if (dnode != NULL)
+	    {
+		assert(rdnode->start_col == col + num_cells);
+		draw_node_extend(dnode, rdnode->glyphs, rdnode->n_glyphs, FALSE);
+		dnode->n_cells += rdnode->n_cells;
+		draw_row_fill(drow, rdnode->start_col, END_COL(rdnode), dnode);
+	    }
+	    else
+	    {
+		draw_node_extend(rdnode, glyphs->glyphs, glyphs->num_glyphs, TRUE);
+		draw_row_fill(drow, col, end_col, rdnode);
+		rdnode->start_col = col;
+		rdnode->n_cells += num_cells;
+		dnode = rdnode;
+	    }
+	}
+    }
+
     if (dnode != NULL)
-	draw_node_unref(dnode);
+	return;
+
+    dnode = draw_node_new(
+	    font, glyphs->glyphs, glyphs->num_glyphs, gui.bgcolor,
+	    gui.fgcolor, gui.spcolor, flags, col, num_cells
+	    );
+    draw_row_fill(drow, col, end_col, dnode);
+    draw_node_unref(dnode);
+
+    if (self->cursor_node != NULL && gui.row == row
+	    && gui.col >= col && gui.col < col + num_cells)
+	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
 }
 
 /*
@@ -639,7 +815,6 @@ vim_draw_area_clear_block(
 	int		row2,
 	int		col2)
 {
-
     if (unlikely(self->cells == NULL
 		|| row1 >= self->n_rows
 		|| col1 >= self->n_cols
@@ -648,7 +823,15 @@ vim_draw_area_clear_block(
 	return;
 
     for (int r = row1; r <= row2; r++)
-	draw_row_set(GET_ROW(self, r), r, col1, col2, NULL);
+	draw_row_set(GET_ROW(self, r), col1, col2, NULL, FALSE, FALSE);
+
+    if (self->cursor_node != NULL)
+	// Check if cursor node is within the the cleared region. If so, then
+	// remove the render node. This only applies to the part and hollow
+	// cursor, the block cursor will be cleared in draw_row_make_space().
+	if (gui.row >= row1 && gui.row <= row2
+		&& gui.col >= col1 && gui.col <= col2)
+	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
 }
 
 /*
@@ -659,6 +842,102 @@ vim_draw_area_clear(VimDrawArea *self)
 {
     vim_draw_area_clear_block(self, 0, 0, self->n_rows - 1, self->n_cols - 1);
 }
+
+/*
+ * Move the given rows between "row1" and "row2", within the column "col1" and
+ * "col2" (making a rectangle region), to the row "to". The previous region that
+ * was moved is cleared.
+ */
+    void
+vim_draw_area_move_block(
+	VimDrawArea *self,
+	int	    to,
+	int 	    row1,
+	int 	    row2,
+	int 	    col1,
+	int 	    col2)
+{
+
+    int offset = row2 - row1;
+
+    if (unlikely(self->cells == NULL
+		|| row1 >= self->n_rows
+		|| row2 >= self->n_rows
+		|| to >= self->n_rows
+		|| col1 >= self->n_cols
+		|| col2 >= self->n_cols))
+	return;
+
+    assert(row2 >= row1);
+    assert(col2 >= col1);
+    assert(row1 != to);
+
+    if (row1 > to)
+    {
+	// "row1" is below "to", start moving rows starting at "row1". Rows are
+	// being shifted upwards.
+	for (int o = 0; o <= offset; o++)
+	    draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o), col1, col2);
+    }
+    else
+    {
+	// "row1" is above "to", must start moving rows starting at "row2". Rows
+	// are being shifted downwards.
+	for (int o = offset; o >= 0; o--)
+	    if (to + o >= self->n_rows)
+		// "src_row" is being "moved" off the screen, no need to move
+		// it physically.
+		gui_clear_block(row1 + o, col1, row1 + o, col2);
+	    else
+		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o), col1, col2);
+    }
+}
+
+/*
+ * Draw a hollow cursor at the cursor position using the current foreground
+ * color. Note that this does not queue a redraw
+ */
+    void
+vim_draw_area_set_hollow_cursor(VimDrawArea *self)
+{
+    GskRoundedRect	outline;
+    int			i = 1;
+    static const float	border[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    const GdkRGBA color[4] = {
+	*gui.fgcolor, *gui.fgcolor,
+	*gui.fgcolor, *gui.fgcolor
+    } ;
+
+    // Double cursor width if double width character
+    if (mb_lefthalve(gui.row, gui.col))
+	i = 2;
+
+    gsk_rounded_rect_init_from_rect(&outline,
+	    &GRAPHENE_RECT_INIT(FILL_X(gui.col), FILL_Y(gui.row),
+		i * gui.char_width, gui.char_height),
+	    0.0f);
+
+    node_unref(self->cursor_node);
+    self->cursor_node = gsk_border_node_new(&outline, border, color);
+}
+
+/*
+ * Draw a part cursor with width "w" and height "h". Note that this does not
+ * queue a redraw
+ */
+    void
+vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h)
+{
+    node_unref(self->cursor_node);
+    self->cursor_node = gsk_color_node_new(gui.fgcolor,
+	    &GRAPHENE_RECT_INIT(
+#ifdef FEAT_RIGHTLEFT
+		CURSOR_BAR_RIGHT ? FILL_X(gui.col + 1) - w :
+#endif
+		FILL_X(gui.col), FILL_Y(gui.row) + gui.char_height - h,
+		w, h));
+}
+
 
     static void
 vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
@@ -679,7 +958,6 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     for (int r = 0; r < self->n_rows; r++)
     {
 	DrawCell    *drow = GET_ROW(self, r);
-	DrawNode    *last_dnode = NULL;
 
 	for (int c = 0; c < self->n_cols; c++)
 	{
@@ -689,18 +967,17 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	    if (dnode == NULL)
 		continue;
 
-	    if (dnode != last_dnode)
+	    if (dnode->start_col == c)
 	    {
-		if (dnode->bg_node != NULL)
-		    gtk_snapshot_append_node(snapshot, dnode->bg_node);
-		if (dnode->text_node != NULL)
-		    gtk_snapshot_append_node(snapshot, dnode->text_node);
-		if (dnode->decor_node != NULL)
-		    gtk_snapshot_append_node(snapshot, dnode->decor_node);
-		last_dnode = dnode;
+		draw_node_render(dnode, r);
+		assert(dnode->node != NULL);
+		gtk_snapshot_append_node(snapshot, dnode->node);
 	    }
 	}
     }
+
+    if (self->cursor_node != NULL)
+	gtk_snapshot_append_node(snapshot, self->cursor_node);
 }
 
     static gboolean
@@ -734,8 +1011,7 @@ vim_draw_area_size_allocate(
     self->pending_width = width;
     self->pending_height = height;
 
-    // Don't resize immediately, add a debounce. This seems to prevent the
-    // current shell size from being outdated.
+    // Don't resize immediately, add a debounce.
     if (self->resize_timeout_id != 0)
 	g_source_remove(self->resize_timeout_id);
     else
