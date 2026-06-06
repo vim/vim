@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Checkout repository from GitHub
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Build
         timeout-minutes: 15
