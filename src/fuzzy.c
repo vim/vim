@@ -135,10 +135,10 @@ fuzzy_match(
 	if (has_match(pat, str))
 	{
 	    fzy_score = match_positions(pat, str, matches + numMatches);
-	    score = (fzy_score == SCORE_MIN) ? INT_MIN + 1
-		: (fzy_score == SCORE_MAX) ? INT_MAX
-		: (fzy_score < 0) ? (int)ceil(fzy_score * SCORE_SCALE - 0.5)
-		: (int)floor(fzy_score * SCORE_SCALE + 0.5);
+	    if (fzy_score != SCORE_MIN)
+		score = (fzy_score == SCORE_MAX) ? INT_MAX
+		    : (fzy_score < 0) ? (int)ceil(fzy_score * SCORE_SCALE - 0.5)
+		    : (int)floor(fzy_score * SCORE_SCALE + 0.5);
 	}
 
 	if (score == FUZZY_SCORE_NONE)
