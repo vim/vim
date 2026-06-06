@@ -357,10 +357,15 @@ If you are using GTK3 and Vim appears to be slow, try setting the environment
 variable $GDK_RENDERING to "image".
 
 							*gtk4-slow*
-If you are using GTK4 and Vim appears to be slow, or keyboard input is not
-accepted right after startup, the default renderer may be using software
-OpenGL because no usable GPU was found.  Try selecting the cairo renderer by
-setting the environment variable $GSK_RENDERER to "cairo".
+If the GTK4 GUI is slow, freezes, or does not accept keyboard input right
+after startup, it may be caused by the OpenGL renderer or GPU driver.  Try
+starting gvim with one of the following environment variables.  Setting
+$GSK_RENDERER to "cairo" disables the GSK OpenGL renderer.  Setting
+$LIBGL_ALWAYS_SOFTWARE to "true" retains the OpenGL renderer but forces Mesa
+to use software rendering: >
+
+    $ GSK_RENDERER=cairo gvim
+    $ LIBGL_ALWAYS_SOFTWARE=true gvim
 
 
 Tooltip Colors ~
