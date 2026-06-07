@@ -4491,7 +4491,7 @@ ex_substitute(exarg_T *eap)
 	    for (;;)
 	    {
 		string_T    tmp;
-		size_t	    match_size;		// size of the match (length + NUL)
+		size_t	    sub_size;		// size of the substitution (length + NUL)
 
 		// Advance "lnum" to the line where the match starts.  The
 		// match does not start in the first line when there is a line
@@ -4830,8 +4830,8 @@ ex_substitute(exarg_T *eap)
 		++textlock;
 #endif
 		// Get length of substitution part, including the NUL.
-		// When it fails match_size is zero.
-		match_size = (size_t)vim_regsub_multi(&regmatch,
+		// When it fails sub_size is zero.
+		sub_size = (size_t)vim_regsub_multi(&regmatch,
 		    sub_firstlnum - regmatch.startpos[0].lnum,
 		    sub.string, sub_firstline.string, 0,
 		    REGSUB_BACKSLASH | (magic_isset() ? REGSUB_MAGIC : 0));
@@ -4842,7 +4842,7 @@ ex_substitute(exarg_T *eap)
 		// the replacement.
 		// Don't keep flags set by a recursive call.
 		subflags = subflags_save;
-		if (match_size == 0 || aborting() || subflags.do_count)
+		if (sub_size == 0 || aborting() || subflags.do_count)
 		{
 		    curbuf->b_p_ma = save_ma;
 		    sandbox = save_sandbox;
@@ -4875,7 +4875,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 		    if (curbuf->b_has_textprop)
 		    {
-			int bytes_added = match_size - 1 - (regmatch.endpos[0].col
+			int bytes_added = sub_size - 1 - (regmatch.endpos[0].col
 						   - regmatch.startpos[0].col);
 
 			// When text properties are changed, need to save for
@@ -4941,7 +4941,7 @@ ex_substitute(exarg_T *eap)
 					continue;
 				    text_props[wi] = text_props[pi];
 				    text_props[wi].tp_col +=
-					regmatch.startpos[0].col + match_size - 1;
+					regmatch.startpos[0].col + sub_size - 1;
 				    text_props[wi].u.tp_text = NULL;
 				    ++wi;
 				}
@@ -4962,7 +4962,7 @@ ex_substitute(exarg_T *eap)
 
 		copy_len = (size_t)(regmatch.startpos[0].col - copycol);
 		needed_size = copy_len
-		    + (tmp.length - (size_t)regmatch.endpos[0].col) + match_size + 1;
+		    + (tmp.length - (size_t)regmatch.endpos[0].col) + sub_size + 1;
 
 		if (new_start.string == NULL)
 		{
@@ -4974,7 +4974,6 @@ ex_substitute(exarg_T *eap)
 		    new_start_size = needed_size + EXTRA_SIZE;
 		    if ((new_start.string = alloc_clear(new_start_size)) == NULL)
 			goto outofmem;
-		    new_start.length = 0;
 		}
 		else
 		{
@@ -5010,19 +5009,19 @@ ex_substitute(exarg_T *eap)
 		// new text added here
 		new_end = new_start.string + new_start.length;
 
-		if (new_start_size - copy_len < match_size)
-		    match_size = new_start_size - copy_len - 1;
+		if (new_start_size - copy_len < sub_size)
+		    sub_size = new_start_size - copy_len - 1;
 
 #ifdef FEAT_EVAL
 		++textlock;
 #endif
-		match_size = (size_t)vim_regsub_multi(&regmatch,
+		sub_size = (size_t)vim_regsub_multi(&regmatch,
 		    sub_firstlnum - regmatch.startpos[0].lnum,
-		    sub.string, new_end, (int)match_size,
+		    sub.string, new_end, (int)sub_size,
 		    REGSUB_COPY | REGSUB_BACKSLASH | (magic_isset() ? REGSUB_MAGIC : 0));
 
-		if (match_size > 0)
-		    new_start.length += match_size - 1;	    // remove 1 for the NUL
+		if (sub_size > 0)
+		    new_start.length += sub_size - 1;	    // remove 1 for the NUL
 
 #ifdef FEAT_EVAL
 		--textlock;
