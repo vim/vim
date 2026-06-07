@@ -42,7 +42,8 @@ typedef struct
 #define END_COL(dn) ((dn)->start_col + (dn)->n_cells - 1)
 
 /*
- * Each cell holds its own reference to a draw node if any.
+ * Each cell holds its own reference to a draw node if any. A draw node may span
+ * multiple cells, which represents how many cells it takes up on screen.
  */
 typedef struct
 {
@@ -446,7 +447,6 @@ draw_node_copy(DrawNode *dnode)
 	    );
 }
 
-
 /*
  * Split the draw node at the given cell offset in place (exclusive). If
  * "keep_left" is TRUE, then keep the left halve (discard right halve), and vice
@@ -581,18 +581,24 @@ draw_node_match(DrawNode *dnode, PangoFont *font, int flags)
  * prepending does not update "start_col" or "n_cells".
  */
     static void
-draw_node_extend(DrawNode *dnode, const PangoGlyphInfo *glyphs, int n_glyphs, bool start)
+draw_node_extend(
+	DrawNode		*dnode,
+	const PangoGlyphInfo	*glyphs,
+	int			n_glyphs,
+	bool			start)
 {
     dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs + n_glyphs);
 
     if (start)
     {
 	// Move the existing glyphs forward first
-	memmove(dnode->glyphs + n_glyphs, dnode->glyphs, dnode->n_glyphs * sizeof(PangoGlyphInfo));
+	memmove(dnode->glyphs + n_glyphs, dnode->glyphs,
+		dnode->n_glyphs * sizeof(PangoGlyphInfo));
 	memcpy(dnode->glyphs, glyphs, n_glyphs * sizeof(PangoGlyphInfo));
     }
     else
-	memcpy(dnode->glyphs + dnode->n_glyphs, glyphs, n_glyphs * sizeof(PangoGlyphInfo));
+	memcpy(dnode->glyphs + dnode->n_glyphs, glyphs,
+		n_glyphs * sizeof(PangoGlyphInfo));
 
     dnode->n_glyphs += n_glyphs;
 
@@ -660,7 +666,7 @@ draw_row_set(
 	    draw_node_unref(rdnode);
 	}
 	else
-	    // "ldnode" does not extend pas "col2", no point in creating a new
+	    // "ldnode" does not extend past "col2", no point in creating a new
 	    // draw node on the right.
 	    rdnode = NULL;
 
@@ -714,7 +720,8 @@ draw_row_set(
 	if (new_dnode != NULL)
 	{
 	    if (draw_node_split(new_dnode, col1 - new_dnode->start_col, FALSE)
-		    || draw_node_split(new_dnode, col2 - new_dnode->start_col, TRUE))
+		    || draw_node_split(new_dnode,
+			col2 - new_dnode->start_col, TRUE))
 		g_clear_pointer(&new_dnode, draw_node_unref);
 
 	    draw_row_fill(drow, col1, col2, new_dnode);
@@ -761,8 +768,13 @@ draw_row_move_to(DrawCell *dest_row, DrawCell *src_row, int col1, int col2)
 /*
  * Should be called after modifying draw nodes within the given region.
  */
-    static void
-vim_draw_area_check_bounds(VimDrawArea *self, int row1, int row2, int col1, int col2)
+static void
+vim_draw_area_check_bounds(
+	VimDrawArea *self,
+	int	    row1,
+	int	    row2,
+	int	    col1,
+	int	    col2)
 {
     if (self->cursor_node != NULL)
 	// Check if cursor node is within the the cleared region. If so, then
@@ -957,7 +969,8 @@ vim_draw_area_move_block(
 	// "row1" is below "to", start moving rows starting at "row1". Rows are
 	// being shifted upwards.
 	for (int o = 0; o <= offset; o++)
-	    draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o), col1, col2);
+	    draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o),
+		    col1, col2);
     }
     else
     {
@@ -969,7 +982,8 @@ vim_draw_area_move_block(
 		// it physically.
 		gui_clear_block(row1 + o, col1, row1 + o, col2);
 	    else
-		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o), col1, col2);
+		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o),
+			col1, col2);
     }
     vim_draw_area_check_bounds(self, to, to + (row2 - row1), col1, col2);
 }
@@ -1023,7 +1037,12 @@ vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h)
  * Invert the rectangle in the draw area.
  */
     void
-vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int ncols)
+vim_draw_area_invert_block(
+	VimDrawArea	*self,
+	int		row,
+	int		col,
+	int		nrows,
+	int		ncols)
 {
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
