@@ -98,7 +98,9 @@ enum
     TARGET_TEXT_URI_LIST,
     TARGET_TEXT_PLAIN,
     TARGET_TEXT_PLAIN_UTF8,
+    TARGET_VIM_MT,
     TARGET_VIM,
+    TARGET_VIMENC_MT,
     TARGET_VIMENC
 };
 
@@ -110,6 +112,8 @@ static const GtkTargetEntry selection_targets[] =
 {
     {VIMENC_ATOM_NAME,	0, TARGET_VIMENC},
     {VIM_ATOM_NAME,	0, TARGET_VIM},
+    {VIMENC_MIMETYPE_NAME,  0, TARGET_VIMENC_MT},
+    {VIM_MIMETYPE_NAME,	    0, TARGET_VIM_MT},
     {"text/html",	0, TARGET_HTML},
     {"UTF8_STRING",	0, TARGET_UTF8_STRING},
     {"COMPOUND_TEXT",	0, TARGET_COMPOUND_TEXT},
@@ -163,6 +167,10 @@ static GdkAtom html_atom = GDK_NONE;
 static GdkAtom utf8_string_atom = GDK_NONE;
 static GdkAtom vim_atom = GDK_NONE;	// Vim's own special selection format
 static GdkAtom vimenc_atom = GDK_NONE;	// Vim's extended selection format
+static GdkAtom vim_mt_atom = GDK_NONE;	// Vim's own special selection format
+					// (in mime type format)
+static GdkAtom vimenc_mt_atom = GDK_NONE;	// Vim's extended selection
+						// format (in mime type format)
 
 /*
  * Keycodes recognized by vim.
@@ -1452,12 +1460,14 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 	return;
     }
 
-    if (gtk_selection_data_get_data_type(data) == vim_atom)
+    if (gtk_selection_data_get_data_type(data) == vim_atom
+	    || gtk_selection_data_get_data_type(data) == vim_mt_atom)
     {
 	motion_type = *text++;
 	--len;
     }
-    else if (gtk_selection_data_get_data_type(data) == vimenc_atom)
+    else if (gtk_selection_data_get_data_type(data) == vimenc_atom
+	    || gtk_selection_data_get_data_type(data) == vimenc_mt_atom)
     {
 	char_u		*enc;
 	vimconv_T	conv;
@@ -1562,6 +1572,8 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	    && info != (guint)TARGET_UTF8_STRING
 	    && info != (guint)TARGET_VIMENC
 	    && info != (guint)TARGET_VIM
+	    && info != (guint)TARGET_VIMENC_MT
+	    && info != (guint)TARGET_VIM_MT
 	    && info != (guint)TARGET_COMPOUND_TEXT
 	    && info != (guint)TARGET_TEXT_PLAIN
 	    && info != (guint)TARGET_TEXT_PLAIN_UTF8
@@ -1579,7 +1591,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     // (Not that pasting 2G of text is ever going to work, but... ;-)
     length = MIN(tmplen, (long_u)(G_MAXINT - 1));
 
-    if (info == (guint)TARGET_VIM)
+    if (info == (guint)TARGET_VIM || info == (guint)TARGET_VIM_MT)
     {
 	tmpbuf = alloc(length + 1);
 	if (tmpbuf != NULL)
@@ -1591,7 +1603,10 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	++length;
 	vim_free(string);
 	string = tmpbuf;
-	type = vim_atom;
+	if (info == (guint)TARGET_VIM)
+	    type = vim_atom;
+	else
+	    type = vim_mt_atom;
     }
 
     else if (info == (guint)TARGET_HTML)
@@ -1635,7 +1650,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	}
 	return;
     }
-    else if (info == (guint)TARGET_VIMENC)
+    else if (info == (guint)TARGET_VIMENC || info == (guint)TARGET_VIMENC_MT)
     {
 	int l = STRLEN(p_enc);
 
@@ -1650,7 +1665,10 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	    vim_free(string);
 	    string = tmpbuf;
 	}
-	type = vimenc_atom;
+	if (info == (guint)TARGET_VIMENC)
+	    type = vimenc_atom;
+	else
+	    type = vimenc_mt_atom;
     }
 
     // gtk_selection_data_set_text() handles everything for us.  This is
@@ -4131,6 +4149,8 @@ gui_mch_init(void)
      */
     vim_atom = gdk_atom_intern(VIM_ATOM_NAME, FALSE);
     vimenc_atom = gdk_atom_intern(VIMENC_ATOM_NAME, FALSE);
+    vim_mt_atom = gdk_atom_intern(VIM_MIMETYPE_NAME, FALSE);
+    vimenc_mt_atom = gdk_atom_intern(VIMENC_MIMETYPE_NAME, FALSE);
     clip_star.gtk_sel_atom = GDK_SELECTION_PRIMARY;
     clip_plus.gtk_sel_atom = gdk_atom_intern("CLIPBOARD", FALSE);
 

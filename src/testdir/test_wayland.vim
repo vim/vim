@@ -229,14 +229,15 @@ func Test_wayland_mime_types_correct()
   call s:PreTest()
 
   let l:mimes = [
+        \ 'application/x-vim-enc-text',
         \ '_VIMENC_TEXT',
         \ '_VIM_TEXT',
+        \ 'application/x-vim-text',
         \ 'text/plain;charset=utf-8',
         \ 'text/plain',
         \ 'UTF8_STRING',
         \ 'STRING',
         \ 'TEXT',
-        \ 'application/x-vim-instance-' .. getpid()
         \ ]
 
   call setreg('+', 'text', 'c')

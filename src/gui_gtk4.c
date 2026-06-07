@@ -29,6 +29,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
+#include "gui_gtk4_cb.h"
 
 /*
  * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
@@ -606,6 +607,9 @@ gui_mch_init(void)
 	    g_signal_connect(board, "changed",
 		    G_CALLBACK(clipboard_changed_cb), &clip_plus);
     }
+
+    gui.regular_provider = vim_content_provider_new(&clip_plus);
+    gui.primary_provider = vim_content_provider_new(&clip_star);
 
     return OK;
 }
@@ -3477,11 +3481,11 @@ get_menu_tool_height(void)
 }
 
 /*
- * Get the GdkClipboard for the given Clipboard_T.
+ * Get the GdkClipboard and GdkContentProvider for the given Clipboard_T.
  * clip_star (*) uses PRIMARY, clip_plus (+) uses CLIPBOARD.
  */
     static GdkClipboard *
-gtk4_get_clipboard(Clipboard_T *cbd)
+gtk4_get_clipboard(Clipboard_T *cbd, GdkContentProvider **provider)
 {
     GdkDisplay *display;
 
@@ -3493,9 +3497,17 @@ gtk4_get_clipboard(Clipboard_T *cbd)
 	return NULL;
 
     if (cbd == &clip_plus)
+    {
+	if (provider != NULL)
+	    *provider = gui.regular_provider;
 	return gdk_display_get_clipboard(display);
+    }
     else
+    {
+	if (provider != NULL)
+	    *provider = gui.primary_provider;
 	return gdk_display_get_primary_clipboard(display);
+    }
 }
 
 typedef struct {
@@ -3504,52 +3516,52 @@ typedef struct {
 } ClipReadData;
 
 /*
- * Callback for gdk_clipboard_read_text_async().
+ * Callback for gdk_clipboard_read_async().
  */
     static void
-clip_read_text_cb(GObject *source, GAsyncResult *result, gpointer user_data)
+clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
 {
-    GdkClipboard	*clipboard = GDK_CLIPBOARD(source);
-    ClipReadData	*crd = (ClipReadData *)user_data;
-    Clipboard_T		*cbd = crd->cbd;
-    char		*text;
-    GError		*error = NULL;
+    Clipboard_T	    *cbd = crd->cbd;
+    GError	    *error = NULL;
+    GInputStream    *in_stream;
+    const char	    *mime_type;
+    GByteArray	    *arr;
+    static char	    buf[512];
+    ssize_t	    r;
+    char_u	    *actual, *final;
+    long	    len;
+    int		    motion_type = MAUTO;
 
-    text = gdk_clipboard_read_text_finish(clipboard, result, &error);
-    if (text != NULL)
+    in_stream = gdk_clipboard_read_finish(cb, result, &mime_type, &error);
+    if (in_stream == NULL)
     {
-	char_u	*tmpbuf = NULL;
-	char_u	*p;
-	int	len;
-	int	motion_type = MAUTO;
-
-	len = (int)STRLEN(text);
-
-	// Convert from UTF-8 to 'encoding' if needed.
-	if (input_conv.vc_type != CONV_NONE)
-	{
-	    tmpbuf = string_convert(&input_conv, (char_u *)text, &len);
-	    if (tmpbuf != NULL)
-		p = tmpbuf;
-	    else
-		p = (char_u *)text;
-	}
-	else
-	    p = (char_u *)text;
-
-	// Chop off any trailing NUL bytes.
-	while (len > 0 && p[len - 1] == NUL)
-	    --len;
-
-	clip_yank_selection(motion_type, p, (long)len, cbd);
-	vim_free(tmpbuf);
-	g_free(text);
+	g_error_free(error);
+	goto exit;
     }
-    else
+
+    arr = g_byte_array_new();
+
+    while ((r = g_input_stream_read(in_stream, buf, 512, NULL, NULL)) > 0)
+	g_byte_array_append(arr, (uint8_t *)buf, r);
+
+    if (r == -1)
     {
-	if (error != NULL)
-	    g_error_free(error);
+	g_byte_array_free(arr, TRUE);
+	goto exit;
     }
+    assert(r == 0);
+
+    len = (long)arr->len;
+    actual = final = g_byte_array_free(arr, FALSE);
+
+    clip_convert_data(&final, &len, &motion_type,
+	    STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
+	    STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0);
+
+    clip_yank_selection(motion_type, final, len, cbd);
+    g_free(actual);
+
+exit:
     crd->done = TRUE;
 }
 
@@ -3563,13 +3575,15 @@ clip_mch_request_selection(Clipboard_T *cbd)
     ClipReadData	crd;
     time_t		start;
 
-    clipboard = gtk4_get_clipboard(cbd);
+    clipboard = gtk4_get_clipboard(cbd, NULL);
     if (clipboard == NULL)
 	return;
 
     crd.cbd = cbd;
     crd.done = FALSE;
-    gdk_clipboard_read_text_async(clipboard, NULL, clip_read_text_cb, &crd);
+
+    gdk_clipboard_read_async(clipboard, supported_mimes,
+	    G_PRIORITY_HIGH, NULL, (GAsyncReadyCallback)clip_read_cb, &crd);
 
     // Spin until the async callback fires, with a 3-second wall-clock
     // timeout as a safety net.
@@ -3581,57 +3595,12 @@ clip_mch_request_selection(Clipboard_T *cbd)
 static int in_clipboard_set = FALSE;
 
 /*
- * Send the current selection to the clipboard.
+ * Send the current selection to the clipboard. Do nothing for because we
+ * subclass GdkContentProvider which will provide the data only when needed.
  */
     void
-clip_mch_set_selection(Clipboard_T *cbd)
+clip_mch_set_selection(Clipboard_T *cbd UNUSED)
 {
-    GdkClipboard	*clipboard;
-    char_u		*str = NULL;
-    long_u		len;
-    int			motion_type;
-
-    clipboard = gtk4_get_clipboard(cbd);
-    if (clipboard == NULL)
-	return;
-
-    // Get the selection text from the register.
-    clip_get_selection(cbd);
-    motion_type = clip_convert_selection(&str, &len, cbd);
-    if (motion_type < 0 || str == NULL)
-	return;
-
-    // Convert from 'encoding' to UTF-8 if needed.
-    if (output_conv.vc_type != CONV_NONE)
-    {
-	char_u	*conv_str;
-	int	conv_len = (int)len;
-
-	conv_str = string_convert(&output_conv, str, &conv_len);
-	if (conv_str != NULL)
-	{
-	    vim_free(str);
-	    str = conv_str;
-	    len = conv_len;
-	}
-    }
-
-    // Ensure NUL-terminated string for GTK.
-    {
-	char_u *nul_str = alloc(len + 1);
-
-	if (nul_str != NULL)
-	{
-	    mch_memmove(nul_str, str, len);
-	    nul_str[len] = NUL;
-	    in_clipboard_set = TRUE;
-	    gdk_clipboard_set_text(clipboard, (const char *)nul_str);
-	    in_clipboard_set = FALSE;
-	    vim_free(nul_str);
-	}
-    }
-
-    vim_free(str);
 }
 
     static void
@@ -3647,13 +3616,23 @@ clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data)
 }
 
 /*
- * Own the selection.  In GTK4, ownership is implicit when content is set
- * on the clipboard.  Return OK to indicate we can own it.
+ * Own the selection.
  */
     int
-clip_mch_own_selection(Clipboard_T *cbd UNUSED)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
-    return OK;
+    GdkContentProvider	*cp;
+    GdkClipboard	*cb = gtk4_get_clipboard(cbd, &cp);
+    int			ret;
+
+    if (cb == NULL)
+	return FAIL;
+
+    in_clipboard_set = TRUE;
+    ret = gdk_clipboard_set_content(cb, cp);
+    in_clipboard_set = FALSE;
+
+    return ret ? OK : FAIL;
 }
 
 /*
@@ -3665,14 +3644,12 @@ clip_mch_lose_selection(Clipboard_T *cbd)
 {
     GdkClipboard *clipboard;
 
-    clipboard = gtk4_get_clipboard(cbd);
+    clipboard = gtk4_get_clipboard(cbd, NULL);
     if (clipboard == NULL)
 	return;
 
-    // Only release ownership if we still own it.  Otherwise we would
-    // clobber another application's clipboard content with NULL, which
-    // happens when this is called from clipboard_changed_cb after a
-    // foreign app took the selection.
+    // Only release ownership if we still own it. We don't want to clear the
+    // current selection when we aren't actually the source.
     if (gdk_clipboard_is_local(clipboard))
 	gdk_clipboard_set_content(clipboard, NULL);
 }

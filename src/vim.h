@@ -2319,6 +2319,11 @@ typedef enum {
 # define VIM_ATOM_NAME "_VIM_TEXT"
 # define VIMENC_ATOM_NAME "_VIMENC_TEXT"
 
+// These are used for the GTK4 GUI, since GTK4 only supports conforming mime
+// types, see gui_gtk4_cb.c for more information.
+# define VIM_MIMETYPE_NAME "application/x-vim-text"
+# define VIMENC_MIMETYPE_NAME "application/x-vim-enc-text"
+
 // Selection states for modeless selection
 # define SELECT_CLEARED		0
 # define SELECT_IN_PROGRESS	1
