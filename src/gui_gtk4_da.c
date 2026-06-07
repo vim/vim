@@ -47,8 +47,8 @@ typedef struct
  */
 typedef struct
 {
-    DrawNode	*dnode;	    // May be NULL
-    gboolean	inverted;   // If this cell is inverted
+    DrawNode	*dnode;	// May be NULL
+    gboolean	invert; // If this cell is inverted
 } DrawCell;
 
 struct _VimDrawArea
@@ -578,7 +578,7 @@ draw_cell_set(DrawCell *dcell, DrawNode *dnode)
 {
     draw_node_unref(dcell->dnode);
     dcell->dnode = dnode == NULL ? NULL : draw_node_ref(dnode);
-    dcell->inverted = FALSE;
+    dcell->invert = FALSE;
 }
 
 /*
@@ -938,16 +938,69 @@ vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h)
 		w, h));
 }
 
+/*
+ * Invert the rectangle in the draw area.
+ */
+    void
+vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int ncols)
+{
+    if (unlikely(self->cells == NULL
+		|| row >= self->n_rows
+		|| col >= self->n_cols
+		|| row + nrows - 1 >= self->n_rows
+		|| col + ncols - 1 >= self->n_cols))
+	return;
+
+    for (int r = row; r < row + nrows; r++)
+    {
+	DrawCell *drow = GET_ROW(self, r);
+
+	for (int c = col; c < col + ncols; c++)
+	{
+	    DrawCell *dcell = drow + c;
+
+	    dcell->invert = !dcell->invert;
+	}
+    }
+}
+
+    static void
+flush_invert_ga(garray_T *invert_ga, int row, int start, int len)
+{
+    if (ga_grow(invert_ga, 1) == OK)
+    {
+	graphene_rect_t *arr = (graphene_rect_t *)invert_ga->ga_data;
+
+	graphene_rect_init(arr + invert_ga->ga_len++,
+		FILL_X(start), FILL_Y(row),
+		len * gui.char_width, gui.char_height);
+    }
+}
 
     static void
 vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 {
     VimDrawArea		    *self = VIM_DRAW_AREA(widget);
     int			    height, width;
+    static const GdkRGBA    white = {1, 1, 1, 1};
+    garray_T		    invert_ga;
 
     gui_mch_set_bg_color(gui.back_pixel);
     height = gtk_widget_get_height(widget);
     width = gtk_widget_get_width(widget);
+
+    if (self->cells == NULL)
+    {
+	gtk_snapshot_append_color(snapshot, gui.bgcolor,
+		&GRAPHENE_RECT_INIT(0, 0, width, height));
+	return;
+    }
+
+    // For inverted cells, we first build an array of bounds that represent
+    // blocks of inverted cells. Then we apply a white color to each of those
+    // bounds and then finish the blend.
+    gtk_snapshot_push_blend(snapshot, GSK_BLEND_MODE_DIFFERENCE);
+    ga_init2(&invert_ga, sizeof(graphene_rect_t), 8);
 
     gtk_snapshot_append_color(snapshot, gui.bgcolor,
 	    &GRAPHENE_RECT_INIT(0, 0, width, height));
@@ -958,11 +1011,26 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     for (int r = 0; r < self->n_rows; r++)
     {
 	DrawCell    *drow = GET_ROW(self, r);
+	int	    inv_len = 0;
+	int	    inv_start;
 
 	for (int c = 0; c < self->n_cols; c++)
 	{
 	    DrawCell	*dcell = drow + c;
 	    DrawNode	*dnode = dcell->dnode;
+
+	    // Batch inverted cells as single row rectangles.
+	    if (dcell->invert)
+	    {
+		if (inv_len == 0)
+		    inv_start = c;
+		inv_len++;
+	    }
+	    else if (!dcell->invert && inv_len > 0)
+	    {
+		flush_invert_ga(&invert_ga, r, inv_start, inv_len);
+		inv_len = 0;
+	    }
 
 	    if (dnode == NULL)
 		continue;
@@ -974,10 +1042,23 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 		gtk_snapshot_append_node(snapshot, dnode->node);
 	    }
 	}
+	// Flush trailing inverted blocks at end of row loop
+	if (inv_len > 0)
+	    flush_invert_ga(&invert_ga, r, inv_start, inv_len);
     }
 
     if (self->cursor_node != NULL)
 	gtk_snapshot_append_node(snapshot, self->cursor_node);
+
+    gtk_snapshot_pop(snapshot);
+    for (int i = 0; i < invert_ga.ga_len; i++)
+    {
+	graphene_rect_t *rect = &((graphene_rect_t *)invert_ga.ga_data)[i];
+	gtk_snapshot_append_color(snapshot, &white, rect);
+    }
+    gtk_snapshot_pop(snapshot);
+
+    ga_clear(&invert_ga);
 }
 
     static gboolean

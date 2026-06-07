@@ -1675,7 +1675,7 @@ gui_mch_flash(int msec)
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
 #ifdef USE_GTK4_SNAPSHOT
-    // TODO
+    vim_draw_area_invert_block(VIM_DRAW_AREA(gui.drawarea), r, c, nr, nc);
 #else
     cairo_t *cr;
 
