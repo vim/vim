@@ -14,9 +14,9 @@
 
 #ifdef USE_GTK4_SNAPSHOT
 
-#include <gtk/gtk.h>
+# include <gtk/gtk.h>
 
-#define VIM_TYPE_DRAW_AREA (vim_draw_area_get_type())
+# define VIM_TYPE_DRAW_AREA (vim_draw_area_get_type())
 G_DECLARE_FINAL_TYPE(VimDrawArea, vim_draw_area, VIM, DRAW_AREA, GtkWidget)
 
 GtkWidget *vim_draw_area_new(void);

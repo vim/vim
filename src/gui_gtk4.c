@@ -1656,9 +1656,9 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 	    gui.fgcolor->red, gui.fgcolor->green,
 	    gui.fgcolor->blue, gui.fgcolor->alpha);
     cairo_rectangle(cr,
-#ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 	    CURSOR_BAR_RIGHT ? FILL_X(gui.col + 1) - w :
-#endif
+# endif
 	    FILL_X(gui.col), FILL_Y(gui.row) + gui.char_height - h,
 	    w, h);
     cairo_fill(cr);

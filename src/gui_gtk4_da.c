@@ -798,7 +798,7 @@ vim_draw_area_check_bounds(VimDrawArea *self, int row1, int row2, int col1, int 
 	if (graphene_rect_contains_rect(&rect, &bounds))
 	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
     }
-# endif
+#endif
 }
 
 /*
