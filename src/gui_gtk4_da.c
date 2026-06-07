@@ -96,8 +96,12 @@ vim_draw_area_finalize(GObject *obj)
 {
     VimDrawArea *self = VIM_DRAW_AREA(obj);
 
+    // "multisign_node" and "cursor_node" will be freed in
+    // vim_draw_area_clear_block().
     vim_draw_area_clear(self);
+
     g_free(self->cells);
+    g_array_free(self->signs, TRUE);
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
 }
@@ -669,7 +673,7 @@ draw_row_set(
 
     if (ldnode != NULL && ldnode->start_col != col1)
     {
-	if (copy && new_dnode != NULL)
+	if (copy && new_dnode == NULL)
 	{
 	    // Make a copy for the right halve.
 	    DrawNode *new_right = draw_node_copy(ldnode);
@@ -688,7 +692,7 @@ draw_row_set(
     }
     if (rdnode != NULL && END_COL(rdnode) > col2)
     {
-	if (copy && new_dnode != NULL)
+	if (copy && new_dnode == NULL)
 	{
 	    // Make a copy for the left halve.
 	    DrawNode *new_left = draw_node_copy(rdnode);
