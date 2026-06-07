@@ -3407,10 +3407,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
     attrentry_T *char_aep = NULL;
     attrentry_T *popup_aep;
     attrentry_T new_en;
+    attrentry_T tmp_en;
 
-    // If both attrs are 0, return 0
-    if (char_attr == 0 && popup_attr == 0)
-	return 0;
     if (blend >= 100 && blend_fg)
 	return char_attr;  // Fully transparent for both fg and bg
 
@@ -3431,45 +3429,61 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		new_en.ae_attr = char_attr;
 	}
 
-	if (popup_attr > HL_ALL)
+	// initialize an empty entry if no highlight set for popup
+	if (popup_attr <= HL_ALL)
 	{
+	    CLEAR_FIELD(tmp_en);
+	    tmp_en.ae_u.gui.fg_color = INVALCOLOR;
+	    tmp_en.ae_u.gui.bg_color = INVALCOLOR;
+	    tmp_en.ae_u.gui.sp_color = INVALCOLOR;
+	    // preserve attributes other than color
+	    tmp_en.ae_attr = popup_attr;
+	    popup_aep = &tmp_en;
+
+	    popup_aep->ae_u.gui.bg_color = fallback_bg_rgb;
+	}
+	else
 	    popup_aep = syn_gui_attr2entry(popup_attr);
-	    if (popup_aep != NULL)
+
+	if (popup_aep != NULL)
+	{
+	    guicolor_T popup_bg_rgb = popup_aep->ae_u.gui.bg_color;
+	    if (COLOR_INVALID(popup_bg_rgb))
+		popup_bg_rgb = fallback_bg_rgb;
+
+	    if (blend_fg)
 	    {
-		if (blend_fg)
+		// blend_fg=TRUE: fade underlying text toward popup bg.
 		{
-		    // blend_fg=TRUE: fade underlying text toward popup bg.
-		    if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
-		    {
-			int base_fg = fallback_fg_rgb;
-			if (char_aep != NULL
-				&& char_aep->ae_u.gui.fg_color != INVALCOLOR)
-			    base_fg = char_aep->ae_u.gui.fg_color;
-			new_en.ae_u.gui.fg_color = blend_colors(
-				popup_aep->ae_u.gui.bg_color, base_fg, blend);
-		    }
+		    int base_fg = fallback_fg_rgb;
+		    if (char_aep != NULL
+			    && char_aep->ae_u.gui.fg_color != INVALCOLOR)
+			base_fg = char_aep->ae_u.gui.fg_color;
+		    new_en.ae_u.gui.fg_color = blend_colors(
+			    popup_bg_rgb, base_fg, blend);
 		}
-		else
-		{
-		    // blend_fg=FALSE: popup text is opaque.  Replace the
-		    // underlying cell's attribute flags, fg and special
-		    // color with the popup's, so the underlying syntax
-		    // highlighting and any decoration (textprop undercurl,
-		    // ...) do not bleed through.
-		    new_en.ae_attr = popup_aep->ae_attr;
-		    new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
-		    new_en.ae_u.gui.sp_color = popup_aep->ae_u.gui.sp_color;
-		}
-		// Blend background color: blend popup bg toward underlying bg
-		if (popup_aep->ae_u.gui.bg_color != INVALCOLOR)
-		{
-		    guicolor_T underlying_bg = fallback_bg_rgb;
-		    if (char_aep != NULL)
-			underlying_bg = char_aep->ae_u.gui.bg_color;
-		    new_en.ae_u.gui.bg_color = blend_colors(
-			    popup_aep->ae_u.gui.bg_color,
-			    underlying_bg, blend);
-		}
+	    }
+	    else
+	    {
+		// blend_fg=FALSE: popup text is opaque.  Replace the
+		// underlying cell's attribute flags, fg and special
+		// color with the popup's, so the underlying syntax
+		// highlighting and any decoration (textprop undercurl,
+		// ...) do not bleed through.
+		new_en.ae_attr = popup_aep->ae_attr;
+		// fallback correctly to Normal fg color if fg_color == INVALCOLOR
+		new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
+		new_en.ae_u.gui.sp_color = popup_aep->ae_u.gui.sp_color;
+	    }
+	    // Blend background color: blend popup bg toward underlying bg
+	    {
+		guicolor_T underlying_bg = fallback_bg_rgb;
+		if (char_aep != NULL
+			&& !COLOR_INVALID(char_aep->ae_u.gui.bg_color))
+		    underlying_bg = char_aep->ae_u.gui.bg_color;
+		new_en.ae_u.gui.bg_color = blend_colors(
+			popup_bg_rgb,
+			underlying_bg, blend);
 	    }
 	}
 	return get_attr_entry(&gui_attr_table, &new_en);
@@ -3494,130 +3508,151 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		new_en.ae_attr = char_attr;
 	}
 
-	if (popup_attr > HL_ALL)
+	// initialize an empty entry if no highlight set for popup
+	if (popup_attr <= HL_ALL)
 	{
-	    popup_aep = syn_cterm_attr2entry(popup_attr);
-	    if (popup_aep != NULL)
-	    {
-		if (!blend_fg)
-		{
-		    // blend_fg=FALSE: popup text is opaque.  Replace the
-		    // underlying cell's attribute flags, fg and underline
-		    // color with the popup's, so the underlying syntax
-		    // highlighting and any decoration (textprop undercurl,
-		    // ...) do not bleed through.  When the popup has no fg
-		    // (e.g. "guifg=NONE") fall back to Normal's fg so the
-		    // text is still readable instead of taking on whatever
-		    // the underlying cell happened to have.
-		    new_en.ae_attr = popup_aep->ae_attr;
-		    if (popup_aep->ae_u.cterm.fg_color > 0)
-			new_en.ae_u.cterm.fg_color =
-				    popup_aep->ae_u.cterm.fg_color;
-		    else if (cterm_normal_fg_color > 0)
-			new_en.ae_u.cterm.fg_color = cterm_normal_fg_color;
-		    else
-			new_en.ae_u.cterm.fg_color = 16;  // white-ish
-		    new_en.ae_u.cterm.ul_color = popup_aep->ae_u.cterm.ul_color;
+	    CLEAR_FIELD(tmp_en);
 #ifdef FEAT_TERMGUICOLORS
-		    new_en.ae_u.cterm.ul_rgb = popup_aep->ae_u.cterm.ul_rgb;
+	    tmp_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    tmp_en.ae_u.cterm.ul_rgb = INVALCOLOR;
+	    // allow blending with termguicolors
+	    tmp_en.ae_u.cterm.bg_rgb = fallback_bg_rgb;
 #endif
+	    // preserve attributes other than color
+	    tmp_en.ae_attr = popup_attr;
+	    popup_aep = &tmp_en;
+
+	    // allow blending with notermguicolors
+	    popup_aep->ae_u.cterm.bg_color = cterm_normal_bg_color;
+	}
+	else
+	    popup_aep = syn_cterm_attr2entry(popup_attr);
+
+	if (popup_aep != NULL)
+	{
+	    guicolor_T popup_bg_rgb = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+	    // Fall back to cterm color converted to RGB when gui color is not set.
+	    popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
+	    if (COLOR_INVALID(popup_bg_rgb)
+		    && popup_aep->ae_u.cterm.bg_color > 0)
+		popup_bg_rgb = cterm_color_to_rgb(
+			popup_aep->ae_u.cterm.bg_color);
+#endif
+	    // assign default color if guibg and ctermbg are not set for popup
+	    if (COLOR_INVALID(popup_bg_rgb)
+		    && popup_aep->ae_u.cterm.bg_color == 0)
+		popup_bg_rgb = fallback_bg_rgb;
+
+	    if (!blend_fg)
+	    {
+		// blend_fg=FALSE: popup text is opaque.  Replace the
+		// underlying cell's attribute flags, fg and underline
+		// color with the popup's, so the underlying syntax
+		// highlighting and any decoration (textprop undercurl,
+		// ...) do not bleed through.  When the popup has no fg
+		// (e.g. "guifg=NONE") fall back to Normal's fg so the
+		// text is still readable instead of taking on whatever
+		// the underlying cell happened to have.
+		new_en.ae_attr = popup_aep->ae_attr;
+		if (popup_aep->ae_u.cterm.fg_color > 0)
+		    new_en.ae_u.cterm.fg_color =
+			popup_aep->ae_u.cterm.fg_color;
+		else if (cterm_normal_fg_color > 0)
+		    new_en.ae_u.cterm.fg_color = cterm_normal_fg_color;
+		else
+		    // black-ish or white-ish
+		    new_en.ae_u.cterm.fg_color = (*p_bg == 'l') ? 1 : 16;
+		new_en.ae_u.cterm.ul_color = popup_aep->ae_u.cterm.ul_color;
+#ifdef FEAT_TERMGUICOLORS
+		new_en.ae_u.cterm.ul_rgb = popup_aep->ae_u.cterm.ul_rgb;
+#endif
+	    }
+	    else
+	    {
+		// blend_fg=TRUE: fade underlying fg toward popup bg in
+		// the 256-color palette.  Used when the popup is over a
+		// cell rendered with cterm colors (no termguicolors RGB).
+		int under_fg = (char_aep != NULL)
+		    ? char_aep->ae_u.cterm.fg_color : 0;
+		guicolor_T under_fg_rgb = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+		if (char_aep != NULL)
+		    under_fg_rgb = char_aep->ae_u.cterm.fg_rgb;
+#endif
+		new_en.ae_u.cterm.fg_color = blend_cterm_colors(
+			popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
+			under_fg, under_fg_rgb, fallback_fg_rgb, blend);
+	    }
+	    // Approximate cterm bg by blending with the underlying bg
+	    // in the 256-color palette and mapping to the nearest entry.
+	    {
+		int under_bg = (char_aep != NULL)
+		    ? char_aep->ae_u.cterm.bg_color : 0;
+		guicolor_T under_bg_rgb = INVALCOLOR;
+#ifdef FEAT_TERMGUICOLORS
+		if (char_aep != NULL)
+		    under_bg_rgb = char_aep->ae_u.cterm.bg_rgb;
+#endif
+		new_en.ae_u.cterm.bg_color = blend_cterm_colors(
+			popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
+			under_bg, under_bg_rgb, fallback_bg_rgb, blend);
+	    }
+#ifdef FEAT_TERMGUICOLORS
+	    // Blend RGB colors for termguicolors mode.
+	    // Fall back to cterm color converted to RGB when
+	    // gui color is not set.
+	    {
+		guicolor_T popup_fg = popup_aep->ae_u.cterm.fg_rgb;
+
+		if (COLOR_INVALID(popup_fg)
+			&& popup_aep->ae_u.cterm.fg_color > 0)
+		    popup_fg = cterm_color_to_rgb(
+			    popup_aep->ae_u.cterm.fg_color);
+
+		if (blend_fg)
+		{
+		    // blend_fg=TRUE: fade underlying text toward popup bg.
+		    if (popup_bg_rgb != INVALCOLOR)
+		    {
+			int base_fg = fallback_fg_rgb;
+			// CTERMCOLOR is a sentinel meaning "use the cterm
+			// color"; treat it as no underlying color so it is
+			// not blended in as a real near-white pixel.
+			if (char_aep != NULL
+				&& !COLOR_INVALID(char_aep->ae_u.cterm.fg_rgb))
+			    base_fg = char_aep->ae_u.cterm.fg_rgb;
+			new_en.ae_u.cterm.fg_rgb = blend_colors(
+				popup_bg_rgb, base_fg, blend);
+		    }
 		}
 		else
 		{
-		    // blend_fg=TRUE: fade underlying fg toward popup bg in
-		    // the 256-color palette.  Used when the popup is over a
-		    // cell rendered with cterm colors (no termguicolors RGB).
-		    int under_fg = (char_aep != NULL)
-				    ? char_aep->ae_u.cterm.fg_color : 0;
-		    guicolor_T under_fg_rgb = INVALCOLOR;
-		    guicolor_T popup_bg_rgb = INVALCOLOR;
-#ifdef FEAT_TERMGUICOLORS
-		    if (char_aep != NULL)
-			under_fg_rgb = char_aep->ae_u.cterm.fg_rgb;
-		    popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
-#endif
-		    new_en.ae_u.cterm.fg_color = blend_cterm_colors(
-			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_fg, under_fg_rgb, fallback_fg_rgb, blend);
-		}
-		// Approximate cterm bg by blending with the underlying bg
-		// in the 256-color palette and mapping to the nearest entry.
-		{
-		    int under_bg = (char_aep != NULL)
-				    ? char_aep->ae_u.cterm.bg_color : 0;
-		    guicolor_T under_bg_rgb = INVALCOLOR;
-		    guicolor_T popup_bg_rgb = INVALCOLOR;
-#ifdef FEAT_TERMGUICOLORS
-		    if (char_aep != NULL)
-			under_bg_rgb = char_aep->ae_u.cterm.bg_rgb;
-		    popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
-#endif
-		    new_en.ae_u.cterm.bg_color = blend_cterm_colors(
-			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
-			    under_bg, under_bg_rgb, fallback_bg_rgb, blend);
-		}
-#ifdef FEAT_TERMGUICOLORS
-		// Blend RGB colors for termguicolors mode.
-		// Fall back to cterm color converted to RGB when
-		// gui color is not set.
-		{
-		    guicolor_T popup_bg = popup_aep->ae_u.cterm.bg_rgb;
-		    guicolor_T popup_fg = popup_aep->ae_u.cterm.fg_rgb;
-
-		    if (COLOR_INVALID(popup_bg)
-				    && popup_aep->ae_u.cterm.bg_color > 0)
-			popup_bg = cterm_color_to_rgb(
-					popup_aep->ae_u.cterm.bg_color);
-		    if (COLOR_INVALID(popup_fg)
-				    && popup_aep->ae_u.cterm.fg_color > 0)
-			popup_fg = cterm_color_to_rgb(
-					popup_aep->ae_u.cterm.fg_color);
-
-		    if (blend_fg)
-		    {
-			// blend_fg=TRUE: fade underlying text toward popup bg.
-			if (popup_bg != INVALCOLOR)
-			{
-			    int base_fg = fallback_fg_rgb;
-			    // CTERMCOLOR is a sentinel meaning "use the cterm
-			    // color"; treat it as no underlying color so it is
-			    // not blended in as a real near-white pixel.
-			    if (char_aep != NULL
-				    && !COLOR_INVALID(char_aep->ae_u.cterm.fg_rgb))
-				base_fg = char_aep->ae_u.cterm.fg_rgb;
-			    new_en.ae_u.cterm.fg_rgb = blend_colors(
-				    popup_bg, base_fg, blend);
-			}
-		    }
+		    // blend_fg=FALSE: popup text is opaque.  Replace fg with
+		    // popup's so the underlying syntax highlighting fg does
+		    // not bleed.  ae_attr was already set above for this
+		    // branch.  When the popup has no fg fall back to Normal's
+		    // fg, then to white, so the text stays readable instead of
+		    // rendering as default (which can be black on dark themes).
+		    if (!COLOR_INVALID(popup_fg))
+			new_en.ae_u.cterm.fg_rgb = popup_fg;
+		    else if (!COLOR_INVALID(cterm_normal_fg_gui_color))
+			new_en.ae_u.cterm.fg_rgb = cterm_normal_fg_gui_color;
 		    else
-		    {
-			// blend_fg=FALSE: popup text is opaque.  Replace fg
-			// with popup's so the underlying syntax highlighting
-			// fg does not bleed.  ae_attr was already set above
-			// for this branch.  When the popup has no fg fall
-			// back to Normal's fg, then to white, so the text
-			// stays readable instead of rendering as default
-			// (which can be black on dark themes).
-			if (!COLOR_INVALID(popup_fg))
-			    new_en.ae_u.cterm.fg_rgb = popup_fg;
-			else if (!COLOR_INVALID(cterm_normal_fg_gui_color))
-			    new_en.ae_u.cterm.fg_rgb = cterm_normal_fg_gui_color;
-			else
-			    new_en.ae_u.cterm.fg_rgb = fallback_fg_rgb;
-		    }
-		    if (popup_bg != INVALCOLOR)
-		    {
-			// Blend popup bg toward underlying bg
-			guicolor_T underlying_bg = fallback_bg_rgb;
-			if (char_aep != NULL
-				&& !COLOR_INVALID(char_aep->ae_u.cterm.bg_rgb))
-			    underlying_bg = char_aep->ae_u.cterm.bg_rgb;
-			new_en.ae_u.cterm.bg_rgb = blend_colors(
-				popup_bg, underlying_bg, blend);
-		    }
+			new_en.ae_u.cterm.fg_rgb = fallback_fg_rgb;
 		}
-#endif
+		if (popup_bg_rgb != INVALCOLOR)
+		{
+		    // Blend popup bg toward underlying bg
+		    guicolor_T underlying_bg = fallback_bg_rgb;
+		    if (char_aep != NULL
+			    && !COLOR_INVALID(char_aep->ae_u.cterm.bg_rgb))
+			underlying_bg = char_aep->ae_u.cterm.bg_rgb;
+		    new_en.ae_u.cterm.bg_rgb = blend_colors(
+			    popup_bg_rgb, underlying_bg, blend);
+		}
 	    }
+#endif
 	}
 	return get_attr_entry(&cterm_attr_table, &new_en);
     }
