@@ -231,15 +231,14 @@ create_under_decor_node(
 						 // upwards by one pixel.
 	int             x_start = FILL_X(start_col);
 	int             x_end = FILL_X(start_col + n_cells);
-	GskRenderNode	*color_node;
-
-	color_node = gsk_color_node_new(sp_color, &GRAPHENE_RECT_INIT(0, 0, 1, 1));
 
 	// GskPath was added in GSK 4.14, otherwise use cairo
 #if GTK_CHECK_VERSION(4, 14, 0)
 	GskPathBuilder	*builder;
 	GskPath		*path;
 	GskStroke	*stroke;
+	GskRenderNode	*color_node;
+	graphene_rect_t bounds;
 
 	const int	half_wave = 4;  // Half-cycle width (e.g., 4px up, 4px
 					// down)
@@ -272,9 +271,14 @@ create_under_decor_node(
 	path = gsk_path_builder_free_to_path(builder);
 	stroke = gsk_stroke_new(1.0f);
 
+	// To be hone
+	gsk_path_get_stroke_bounds (path, stroke, &bounds);
+	color_node = gsk_color_node_new(sp_color, &bounds);
+
 	nodes[n_nodes++] = gsk_stroke_node_new(color_node, path, stroke);
 	gsk_stroke_free(stroke);
 	gsk_path_unref(path);
+	gsk_render_node_unref(color_node);
 #else
 	static const int    val[8] = {1, 0, 0, 0, 1, 2, 2, 2};
 	cairo_t		    *cr;
@@ -300,7 +304,6 @@ create_under_decor_node(
 	cairo_destroy(cr);
 	nodes[n_nodes++] = node;
 #endif
-	gsk_render_node_unref(color_node);
     }
 
     if (n_nodes == 0)
