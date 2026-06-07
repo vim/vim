@@ -33,6 +33,9 @@
 #ifdef USE_GTK4_SNAPSHOT
 # include "gui_gtk4_da.h"
 #endif
+#ifdef HAVE_GLYCIN_GTK4
+# include <glycin-gtk4-2/glycin-gtk4.h>
+#endif
 
 /*
  * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
@@ -2754,6 +2757,33 @@ on_tab_reordered(
 }
 #endif
 
+#ifdef HAVE_GLYCIN_GTK4
+    static GdkTexture *
+get_texture_from_file(char_u *path, GError **error)
+{
+    GFile	    *file;
+    GlyLoader   *loader;
+    GlyImage    *image;
+    GlyFrame    *frame;
+
+    file = g_file_new_for_path((const char *)path);
+
+    loader = gly_loader_new(file);
+
+    image = gly_loader_load(loader, error);
+    if (image != NULL)
+    {
+	frame = gly_image_next_frame(image, error);
+	if (frame != NULL)
+	{
+	    GdkTexture *texture = gly_gtk_frame_get_texture(frame);
+	    return texture;
+	}
+    }
+    return NULL;
+}
+#endif
+
 /*
  * ============================================================
  * Sign support
@@ -2767,9 +2797,16 @@ on_tab_reordered(
     void
 gui_mch_drawsign(int row, int col, int typenr)
 {
-#ifdef USE_GTK4_SNAPSHOT
-    // TODO
-#else
+# ifdef USE_GTK4_SNAPSHOT
+    GdkTexture *sign;
+
+    sign = (GdkTexture *)sign_get_image(typenr);
+    if (sign == NULL)
+	return;
+
+    vim_draw_area_add_sign(VIM_DRAW_AREA(gui.drawarea), sign,
+	    row, col, SIGN_WIDTH, SIGN_HEIGHT);
+# else
     GdkPixbuf	*sign;
     cairo_t	*cr;
     int		width, height;
@@ -2804,7 +2841,7 @@ gui_mch_drawsign(int row, int col, int typenr)
 
     cairo_paint(cr);
     cairo_destroy(cr);
-#endif
+# endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -2815,19 +2852,22 @@ gui_mch_register_sign(char_u *signfile)
     if (signfile[0] != NUL && signfile[0] != '-' && gui.in_use)
     {
 	GError *error = NULL;
-#ifdef USE_GTK4_SNAPSHOT
-	// TODO
-	(void)error;
-#else
+# ifdef USE_GTK4_SNAPSHOT
+	GdkTexture  *sign;
+
+	sign = get_texture_from_file(signfile, &error);
+	if (sign != NULL)
+	    return sign;
+# else
 	GdkPixbuf *sign;
 
 	sign = gdk_pixbuf_new_from_file((const char *)signfile, &error);
 	if (error == NULL)
 	    return sign;
+# endif
 
 	semsg("E255: %s", error->message);
 	g_error_free(error);
-#endif
     }
     return NULL;
 }
@@ -2837,9 +2877,10 @@ gui_mch_destroy_sign(void *sign)
 {
     if (sign != NULL)
     {
-#ifdef USE_GTK4_SNAPSHOT
-	// TODO
-#endif
+# ifdef USE_GTK4_SNAPSHOT
+	if (gui.drawarea != NULL)
+	    vim_draw_area_remove_sign(VIM_DRAW_AREA(gui.drawarea), sign);
+# endif
 	g_object_unref(sign);
     }
 }
@@ -3141,7 +3182,7 @@ gui_gtk_draw_string_ext(
 	}
 
 #ifdef USE_GTK4_SNAPSHOT
-        vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
+	vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
 		flags, gui.ascii_font, glyphs);
 #else
 	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
@@ -4034,7 +4075,6 @@ toolbar_button_clicked_cb(GtkWidget *widget UNUSED, gpointer data)
     gui_menu_cb((vimmenu_T *)data);
 }
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     static GtkWidget *
 create_toolbar_icon(vimmenu_T *menu)
 {
@@ -4047,6 +4087,17 @@ create_toolbar_icon(vimmenu_T *menu)
 	expand_env(menu->iconfile, buf, MAXPATHL);
 	if (vim_fexists(buf))
 	{
+#ifdef HAVE_GLYCIN_GTK4
+	    GdkTexture *texture = get_texture_from_file(buf, NULL);
+
+	    if (texture != NULL)
+	    {
+		image = gtk_image_new_from_paintable(
+			GDK_PAINTABLE(texture));
+		gtk_widget_set_size_request(image, 24, 24);
+		g_object_unref(texture);
+	    }
+#else
 	    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(
 		    (const char *)buf, 24, 24, TRUE, NULL);
 	    if (pixbuf != NULL)
@@ -4058,6 +4109,7 @@ create_toolbar_icon(vimmenu_T *menu)
 		g_object_unref(texture);
 		g_object_unref(pixbuf);
 	    }
+#endif
 	}
     }
 
@@ -4075,7 +4127,6 @@ create_toolbar_icon(vimmenu_T *menu)
 
     return image;
 }
-G_GNUC_END_IGNORE_DEPRECATIONS
 
 /*
  * GTK4 Menu system using GMenu + GSimpleActionGroup + GtkPopoverMenuBar.

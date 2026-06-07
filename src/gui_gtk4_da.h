@@ -28,6 +28,8 @@ void vim_draw_area_move_block(VimDrawArea *self, int to, int row1, int row2, int
 void vim_draw_area_set_hollow_cursor(VimDrawArea *self);
 void vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h);
 void vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int ncols);
+void vim_draw_area_add_sign(VimDrawArea *self, GdkTexture *sign, int row, int col, int width, int height);
+void vim_draw_area_remove_sign(VimDrawArea *self, GdkTexture *sign);
 
 #endif
 

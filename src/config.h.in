@@ -502,6 +502,9 @@
 /* Define if GTK4 GUI should use hardware accelerated backend */
 #undef USE_GTK4_SNAPSHOT
 
+/* Define unless glycin-gtk4 library not found */
+#undef HAVE_GLYCIN_GTK4
+
 /* Define if we have isinf() */
 #undef HAVE_ISINF
 

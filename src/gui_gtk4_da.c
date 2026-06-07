@@ -26,15 +26,14 @@ typedef struct
     PangoGlyphInfo  *glyphs;
     int		    n_glyphs;
     char_u	    dnode_flags; // DRAW_NODE_* flags
-    GskRenderNode   *node;  // This should never be NULL. Is a text node, or a
-			    // container node (if there is more than one node).
-
+    GskRenderNode   *node;  // This is either a text node, or a container node
+			    // (if there is more than one node).
 
     PangoFont	*font;
     GdkRGBA	fg_color;
-    GdkRGBA 	bg_color;
-    GdkRGBA 	sp_color;
-    int	    	flags;	    // DRAW_* flags
+    GdkRGBA	bg_color;
+    GdkRGBA	sp_color;
+    int		flags;	    // DRAW_* flags
 
     int start_col;
     int n_cells;
@@ -50,6 +49,13 @@ typedef struct
     DrawNode	*dnode;	// May be NULL
     gboolean	invert; // If this cell is inverted
 } DrawCell;
+
+typedef struct
+{
+    int		    row;
+    int		    col;
+    GskRenderNode   *node;
+} DrawSign;
 
 struct _VimDrawArea
 {
@@ -67,12 +73,16 @@ struct _VimDrawArea
     guint   resize_timeout_id;
     int	    pending_width;
     int	    pending_height;
+
+    // Array of sign icon render nodes (DrawSign)
+    GArray *signs;
 };
 
 #define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))
 
 G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 
+static void draw_sign_clear(DrawSign *dsign);
 static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 static void vim_draw_area_size_allocate(GtkWidget *widget, int width, int height, int baseline);
 
@@ -100,9 +110,12 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 
 }
 
+
     static void
-vim_draw_area_init(VimDrawArea *class)
+vim_draw_area_init(VimDrawArea *self)
 {
+    self->signs = g_array_new(FALSE, FALSE, sizeof(DrawSign));
+    g_array_set_clear_func(self->signs, (GDestroyNotify)draw_sign_clear);
 }
 
     GtkWidget *
@@ -203,9 +216,9 @@ cell_offset_to_glyph(const PangoGlyphInfo *glyphs, int n_glyphs, int cell_offset
     static GskRenderNode *
 create_under_decor_node(
 	int		row,
-	int 	    	start_col,
-	int 	    	n_cells,
-	int	    	flags,
+	int		start_col,
+	int		n_cells,
+	int		flags,
 	const GdkRGBA	*fg_color,
 	const GdkRGBA   *sp_color)
 {
@@ -318,6 +331,13 @@ create_under_decor_node(
     return container;
 }
 
+    static void
+draw_sign_clear(DrawSign *dsign)
+{
+    gsk_render_node_unref(dsign->node);
+}
+
+
 /*
  * Create a new draw node with a reference count of 1. Note that this may be
  * NULL if creating a new draw node is not necessary.
@@ -326,7 +346,7 @@ create_under_decor_node(
 draw_node_new(
 	PangoFont		*font,
 	const PangoGlyphInfo	*glyphs,
-	int			n_glyphs, 
+	int			n_glyphs,
 	const GdkRGBA		*bg_color,
 	const GdkRGBA		*fg_color,
 	const GdkRGBA		*sp_color,
@@ -472,14 +492,14 @@ draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
 draw_node_render(DrawNode *dnode, int row)
 {
     GskRenderNode	*nodes[3];
-    int		    	n_nodes = 0;
+    int			n_nodes = 0;
     GskRenderNode	*decor_node;
 
     if (!(dnode->dnode_flags & DRAW_NODE_DIRTY))
 	return;
-    
+
     if (!(dnode->dnode_flags & DRAW_NODE_NOBG))
-        nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
+	nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
 		&GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
 		    dnode->n_cells * gui.char_width, gui.char_height));
 
@@ -814,6 +834,19 @@ vim_draw_area_add_glyphs(
     if (self->cursor_node != NULL && gui.row == row
 	    && gui.col >= col && gui.col < col + num_cells)
 	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
+
+#if defined(FEAT_SIGN_ICONS)
+    for (guint i = 0; i < self->signs->len;)
+    {
+	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+
+	if (dsign->row == row && dsign->col >= col
+		&& dsign->col < col + num_cells)
+	    g_array_remove_index_fast(self->signs, i);
+	else
+	    i++;
+    }
+#endif
 }
 
 /*
@@ -844,6 +877,22 @@ vim_draw_area_clear_block(
 	if (gui.row >= row1 && gui.row <= row2
 		&& gui.col >= col1 && gui.col <= col2)
 	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
+
+#if defined(FEAT_SIGN_ICONS)
+    // Clear any sign icons within the cleared block if any
+    for (guint i = 0; i < self->signs->len;)
+    {
+	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+
+	if (dsign->row >= row1 && dsign->row <= row2
+		&& dsign->col >= col1 && dsign->col <= col2)
+	    // Keep going in case there are multiple sign icons within this
+	    // blokc. I don't think that can happen, but just do it anyways.
+	    g_array_remove_index_fast(self->signs, i);
+	else
+	    i++;
+    }
+#endif
 }
 
 /*
@@ -864,10 +913,10 @@ vim_draw_area_clear(VimDrawArea *self)
 vim_draw_area_move_block(
 	VimDrawArea *self,
 	int	    to,
-	int 	    row1,
-	int 	    row2,
-	int 	    col1,
-	int 	    col2)
+	int	    row1,
+	int	    row2,
+	int	    col1,
+	int	    col2)
 {
 
     int offset = row2 - row1;
@@ -976,6 +1025,70 @@ vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int n
     }
 }
 
+#if defined(FEAT_SIGN_ICONS)
+/*
+ * Add a sign texture at the given row and column, and scale it to "width" and
+ * "height".
+ */
+    void
+vim_draw_area_add_sign(
+	VimDrawArea *self,
+	GdkTexture *sign,
+	int row,
+	int col,
+	int width,
+	int height)
+{
+    GskRenderNode   *node;
+    DrawSign	    new_dsign;
+
+    if (unlikely(self->cells == NULL
+		|| row >= self->n_rows
+		|| col >= self->n_cols))
+	return;
+
+    node = gsk_texture_scale_node_new(sign,
+	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), width, height),
+	    GSK_SCALING_FILTER_TRILINEAR);
+
+    for (guint i = 0; i < self->signs->len; i++)
+    {
+	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+
+	if (dsign->row == row && dsign->col == col)
+	{
+	    gsk_render_node_unref(dsign->node);
+	    dsign->node = node;
+	    return;
+	}
+    }
+
+    new_dsign.row = row;
+    new_dsign.col = col;
+    new_dsign.node = node;
+
+    g_array_append_val(self->signs, new_dsign);
+}
+
+/*
+ * Remove the sign texture if it exists.
+ */
+    void
+vim_draw_area_remove_sign(VimDrawArea *self, GdkTexture *sign)
+{
+    for (guint i = 0; i < self->signs->len; i++)
+    {
+	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+
+	if (gsk_texture_scale_node_get_texture(dsign->node) == sign)
+	{
+	    g_array_remove_index_fast(self->signs, i);
+	    return;
+	}
+    }
+}
+#endif
+
     static void
 flush_invert_ga(garray_T *invert_ga, int row, int start, int len)
 {
@@ -1055,6 +1168,13 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	if (inv_len > 0)
 	    flush_invert_ga(&invert_ga, r, inv_start, inv_len);
     }
+
+    // Order of where the sign icon should be placed shouldn't matter,
+    // since caller will add whitespace padding in the region it covers.
+    // Probably should put it behind cursor though.
+    for (guint i = 0; i < self->signs->len; i++)
+	gtk_snapshot_append_node(snapshot,
+		g_array_index(self->signs, DrawSign, i).node);
 
     if (self->cursor_node != NULL)
 	gtk_snapshot_append_node(snapshot, self->cursor_node);

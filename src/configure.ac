@@ -2769,6 +2769,20 @@ AC_DEFUN(AM_PATH_GTK,
 	    [3.*], [gtk_pkg_name="gtk+-3.0"],
 	    [4.*], [gtk_pkg_name="gtk4"],
 		   [AC_MSG_FAILURE([The configure script does not know which pkg-config name to use for GTK $min_gtk_version"])])
+    gtk_pkgs="$gtk_pkg_name"
+
+    if test "$gtk_pkg_name" == "gtk4"; then
+      AC_MSG_CHECKING([for pkg-config glycin-gtk4-2])
+      AS_IF(["$PKG_CONFIG" --exists "glycin-gtk4-2"],
+            [
+             AC_MSG_RESULT(found)
+             AC_DEFINE(HAVE_GLYCIN_GTK4)
+             gtk_pkgs="$gtk_pkgs glycin-2 glycin-gtk4-2"
+             ],
+             [
+              AC_MSG_RESULT([no])
+              ])
+    fi
 
     AC_MSG_CHECKING([for pkg-config $gtk_pkg_name])
     AS_IF(["$PKG_CONFIG" --exists "$gtk_pkg_name"],
@@ -2778,10 +2792,10 @@ AC_DEFUN(AM_PATH_GTK,
 dnl We should be using PKG_CHECK_MODULES() instead of this hack.
 dnl But I guess the dependency on pkgconfig.m4 is not wanted or
 dnl something like that.
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkgs`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkgs`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkgs`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkgs`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
 	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \

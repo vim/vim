@@ -10710,6 +10710,28 @@ printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
 as_fn_error $? "The configure script does not know which pkg-config name to use for GTK $min_gtk_version\"
 See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
+    gtk_pkgs="$gtk_pkg_name"
+
+    if test "$gtk_pkg_name" == "gtk4"; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
+printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
+      if "$PKG_CONFIG" --exists "glycin-gtk4-2"
+then :
+
+             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found" >&5
+printf "%s\n" "found" >&6; }
+             printf "%s\n" "#define HAVE_GLYCIN_GTK4 1" >>confdefs.h
+
+             gtk_pkgs="$gtk_pkgs glycin-2 glycin-gtk4-2"
+
+else case e in #(
+  e)
+              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+               ;;
+esac
+fi
+    fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config $gtk_pkg_name" >&5
 printf %s "checking for pkg-config $gtk_pkg_name... " >&6; }
@@ -10720,10 +10742,10 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkgs`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkgs`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkgs`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkgs`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
 	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -10893,6 +10915,28 @@ printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
 as_fn_error $? "The configure script does not know which pkg-config name to use for GTK $min_gtk_version\"
 See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
+    gtk_pkgs="$gtk_pkg_name"
+
+    if test "$gtk_pkg_name" == "gtk4"; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
+printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
+      if "$PKG_CONFIG" --exists "glycin-gtk4-2"
+then :
+
+             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found" >&5
+printf "%s\n" "found" >&6; }
+             printf "%s\n" "#define HAVE_GLYCIN_GTK4 1" >>confdefs.h
+
+             gtk_pkgs="$gtk_pkgs glycin-2 glycin-gtk4-2"
+
+else case e in #(
+  e)
+              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+               ;;
+esac
+fi
+    fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config $gtk_pkg_name" >&5
 printf %s "checking for pkg-config $gtk_pkg_name... " >&6; }
@@ -10903,10 +10947,10 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkgs`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkgs`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkgs`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkgs`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
 	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -11083,6 +11127,28 @@ printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
 as_fn_error $? "The configure script does not know which pkg-config name to use for GTK $min_gtk_version\"
 See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
+    gtk_pkgs="$gtk_pkg_name"
+
+    if test "$gtk_pkg_name" == "gtk4"; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
+printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
+      if "$PKG_CONFIG" --exists "glycin-gtk4-2"
+then :
+
+             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found" >&5
+printf "%s\n" "found" >&6; }
+             printf "%s\n" "#define HAVE_GLYCIN_GTK4 1" >>confdefs.h
+
+             gtk_pkgs="$gtk_pkgs glycin-2 glycin-gtk4-2"
+
+else case e in #(
+  e)
+              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+               ;;
+esac
+fi
+    fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config $gtk_pkg_name" >&5
 printf %s "checking for pkg-config $gtk_pkg_name... " >&6; }
@@ -11093,10 +11159,10 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkgs`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkgs`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkgs`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkgs`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
 	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
