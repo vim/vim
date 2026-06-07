@@ -1449,6 +1449,20 @@ CTRL-E		  End completion, go back to what was there before selecting a
 		  insert it.
 <Down>		  Select the next match, as if CTRL-N was used, but don't
 		  insert it.
+CTRL-SHIFT-<Up>
+		  Scroll the info popup up one line, when it is shown, see
+		  |complete-popup|.
+CTRL-SHIFT-<Down>
+		  Scroll the info popup down one line.
+CTRL-SHIFT-<PageUp>
+		  Scroll the info popup up one page.
+CTRL-SHIFT-<PageDown>
+		  Scroll the info popup down one page.
+CTRL-SHIFT-P	  Like CTRL-SHIFT-<Up>, scroll the info popup up one line.
+CTRL-SHIFT-N	  Like CTRL-SHIFT-<Down>, scroll the info popup down one line.
+		  Note: these two keys require the terminal to report
+		  modifiers for letter keys, see |modifyOtherKeys|.  The keys
+		  above work without this.
 <Space> or <Tab>  Stop completion without changing the match and insert the
 		  typed character.
 

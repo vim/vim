@@ -2064,15 +2064,18 @@ getcmdline_int(
 	// navigating the wild menu (i.e. the key is not 'wildchar' or
 	// 'wildcharm' or Ctrl-N or Ctrl-P or Ctrl-A or Ctrl-L).
 	// If the popup menu is displayed, then PageDown and PageUp keys are
-	// also used to navigate the menu, and the mouse scroll wheel keys
-	// scroll the info popup.
+	// also used to navigate the menu, the mouse scroll wheel keys scroll
+	// the info popup, and CTRL-SHIFT-<Up>/<Down> scroll it with the
+	// keyboard.
 	end_wildmenu = (!key_is_wc
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
 	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
 			    (c != K_PAGEDOWN && c != K_PAGEUP
 			     && c != K_KPAGEDOWN && c != K_KPAGEUP
 			     && c != K_MOUSEDOWN && c != K_MOUSEUP
-			     && c != K_MOUSELEFT && c != K_MOUSERIGHT));
+			     && c != K_MOUSELEFT && c != K_MOUSERIGHT
+			     && !((c == K_S_UP || c == K_S_DOWN)
+				 && (mod_mask & MOD_MASK_CTRL))));
 
 	// free expanded names when finished walking through matches
 	if (end_wildmenu)
@@ -2518,6 +2521,15 @@ getcmdline_int(
 
 	case Ctrl_N:	    // next match
 	case Ctrl_P:	    // previous match
+#ifdef FEAT_PROP_POPUP
+		// CTRL-SHIFT-P/N scroll the info popup one line.
+		if (cmdline_pum_active() && (mod_mask & MOD_MASK_SHIFT))
+		{
+		    if (popup_scroll_info(c == Ctrl_P ? -1 : 1, false))
+			cmdline_pum_display();
+		    goto cmdline_not_changed;
+		}
+#endif
 		if (xpc.xp_numfiles > 0)
 		{
 		    wild_type = (c == Ctrl_P) ? WILD_PREV : WILD_NEXT;
@@ -2534,6 +2546,27 @@ getcmdline_int(
 	case K_KPAGEUP:
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
+#ifdef FEAT_PROP_POPUP
+		// CTRL-SHIFT-<Up>/<Down> scroll the info popup a line,
+		// CTRL-SHIFT-<PageUp>/<PageDown> a page.  Shift is folded into
+		// K_S_UP/K_S_DOWN but stays in mod_mask for the Page keys.
+		if (cmdline_pum_active()
+			&& ((c == K_S_UP || c == K_S_DOWN)
+			    ? (mod_mask & MOD_MASK_CTRL)
+			    : ((c == K_PAGEUP || c == K_KPAGEUP
+				    || c == K_PAGEDOWN || c == K_KPAGEDOWN)
+				&& (mod_mask & MOD_MASK_CTRL)
+				&& (mod_mask & MOD_MASK_SHIFT))))
+		{
+		    int	up = c == K_S_UP || c == K_PAGEUP
+							|| c == K_KPAGEUP;
+
+		    if (popup_scroll_info(up ? -1 : 1,
+					     c != K_S_UP && c != K_S_DOWN))
+			cmdline_pum_display();
+		    goto cmdline_not_changed;
+		}
+#endif
 		if (cmdline_pum_active()
 			&& (c == K_PAGEUP || c == K_PAGEDOWN ||
 			    c == K_KPAGEUP || c == K_KPAGEDOWN))

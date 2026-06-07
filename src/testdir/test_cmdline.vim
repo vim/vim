@@ -4814,6 +4814,68 @@ func Test_wildmenu_pum_info_mouse_scroll()
   call StopVimInTerminal(buf)
 endfunc
 
+func s:ReadCmdlineInfo()
+  let l = filereadable('Xclinfo') ? map(readfile('Xclinfo'), 'str2nr(v:val)') : []
+  return len(l) == 2 ? l : [-1, -1]
+endfunc
+
+func Test_wildmenu_pum_info_scroll_keys()
+  CheckRunVimInTerminal
+  CheckFeature quickfix
+
+  let lines =<< trim END
+    func DictComp(A, L, P)
+      let info = join(map(range(1, 40), '"info line " .. v:val'), "\n")
+      return [{'word': 'apple', 'info': info}, {'word': 'banana', 'info': info}]
+    endfunc
+    command -nargs=1 -complete=customlist,DictComp DictCmd echo <q-args>
+    set wildmenu wildoptions=pum completeopt=menu,popup
+    func InfoState()
+      let id = popup_findinfo()
+      call writefile([id ? popup_getpos(id).firstline : -1, wildmenumode()],
+            \ 'Xclinfo')
+    endfunc
+    " A <Cmd> mapping runs without closing the wildmenu, so it can report the
+    " info popup state while completion is active.
+    cnoremap <F4> <Cmd>call InfoState()<CR>
+  END
+  call writefile(lines, 'XtestCmdlineScroll', 'D')
+  let buf = RunVimInTerminal('-S XtestCmdlineScroll', #{rows: 12})
+  call TermWait(buf, 50)
+
+  " Show the completion popup menu with the info popup next to it.
+  call term_sendkeys(buf, ":DictCmd \<Tab>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1], s:ReadCmdlineInfo())})
+
+  " Ctrl-Shift-Down then Ctrl-Shift-Up scroll the info popup by a line without
+  " closing the wildmenu.
+  call term_sendkeys(buf, "\<Esc>[1;6B")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([2, 1], s:ReadCmdlineInfo())})
+  call term_sendkeys(buf, "\<Esc>[1;6A")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1], s:ReadCmdlineInfo())})
+
+  " Ctrl-Shift-N then Ctrl-Shift-P scroll like the arrows.
+  call term_sendkeys(buf, "\<Esc>[27;6;110~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([2, 1], s:ReadCmdlineInfo())})
+  call term_sendkeys(buf, "\<Esc>[27;6;112~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1], s:ReadCmdlineInfo())})
+
+  " Ctrl-Shift-PageDown scrolls down by a page (more than one line).
+  call term_sendkeys(buf, "\<Esc>[6;6~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_true(s:ReadCmdlineInfo()[0] > 2)})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xclinfo')
+endfunc
+
 func Test_cmdline_complete_findfunc_dict()
   CheckScreendump
 

@@ -6719,6 +6719,40 @@ popup_find_info_window(void)
 }
 #endif
 
+/*
+ * Scroll the completion info popup one line (by_page false) or one page
+ * (by_page true); "dir" negative scrolls up, positive down.
+ * Returns true when an info popup was found.
+ */
+    bool
+popup_scroll_info(int dir, bool by_page)
+{
+#ifdef FEAT_QUICKFIX
+    win_T	*wp = popup_find_info_window();
+    int		by;
+    linenr_T	new_topline;
+
+    if (wp == NULL)
+	return false;
+
+    by = by_page ? (wp->w_height > 2 ? wp->w_height - 1 : 1) : 1;
+    new_topline = wp->w_topline + (dir < 0 ? -by : by);
+    if (new_topline < 1)
+	new_topline = 1;
+    if (new_topline > wp->w_buffer->b_ml.ml_line_count)
+	new_topline = wp->w_buffer->b_ml.ml_line_count;
+    if (new_topline != wp->w_topline)
+    {
+	set_topline(wp, new_topline);
+	popup_set_firstline(wp);
+	redraw_win_later(wp, UPD_NOT_VALID);
+    }
+    return true;
+#else
+    return false;
+#endif
+}
+
     void
 f_popup_findecho(typval_T *argvars UNUSED, typval_T *rettv)
 {
