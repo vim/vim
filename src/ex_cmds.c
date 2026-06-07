@@ -4036,6 +4036,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
     textprop_T	*text_props = NULL;
 #endif
+    enum	{EXTRA_SIZE = 50};
 
     cmd = eap->arg;
     if (!global_busy)
@@ -4490,8 +4491,7 @@ ex_substitute(exarg_T *eap)
 	    for (;;)
 	    {
 		string_T    tmp;
-		char_u	    *p;
-		size_t	    match_size;		// size of the match (includes a NUL)
+		size_t	    match_size;		// size of the match (length + NUL)
 
 		// Advance "lnum" to the line where the match starts.  The
 		// match does not start in the first line when there is a line
@@ -4971,7 +4971,7 @@ ex_substitute(exarg_T *eap)
 		     * substitution into (and some extra space to avoid
 		     * too many calls to alloc()/free()).
 		     */
-		    new_start_size = needed_size + 50;
+		    new_start_size = needed_size + EXTRA_SIZE;
 		    if ((new_start.string = alloc_clear(new_start_size)) == NULL)
 			goto outofmem;
 		    new_start.length = 0;
@@ -4986,7 +4986,9 @@ ex_substitute(exarg_T *eap)
 		    needed_size += new_start.length;
 		    if (needed_size > new_start_size)
 		    {
-			new_start_size = needed_size + 50;
+			char_u	*p;
+
+			new_start_size = needed_size + EXTRA_SIZE;
 			if ((p = alloc_clear(new_start_size)) == NULL)
 			{
 			    vim_free(new_start.string);
@@ -5079,14 +5081,14 @@ ex_substitute(exarg_T *eap)
 		 * they must be doubled in the string and are halved here.
 		 * That is Vi compatible.
 		 */
-		for (p = new_end; *p; ++p)
+		for (; *new_end; ++new_end)
 		{
-		    size_t  n;				// scratch
+		    size_t  n;				// scratch value
 
-		    if (p[0] == '\\' && p[1] != NUL)  // remove backslash
+		    if (new_end[0] == '\\' && new_end[1] != NUL)  // remove backslash
 		    {
-			n = (size_t)(new_start.length - (p - new_start.string));
-			mch_memmove(p, p + 1, n + 1);
+			n = (size_t)(new_start.length - (new_end - new_start.string));
+			mch_memmove(new_end, new_end + 1, n + 1);
 			--new_start.length;
 #ifdef FEAT_PROP_POPUP
 			if (curbuf->b_has_textprop)
@@ -5094,20 +5096,20 @@ ex_substitute(exarg_T *eap)
 			    // When text properties are changed, need to save
 			    // for undo first, unless done already.
 			    if (adjust_prop_columns(lnum,
-					(colnr_T)(p - new_start.string), -1,
+					(colnr_T)(new_end - new_start.string), -1,
 					apc_flags))
 				apc_flags &= ~APC_SAVE_FOR_UNDO;
 			}
 #endif
 		    }
-		    else if (*p == CAR)
+		    else if (*new_end == CAR)
 		    {
 			if (u_inssub(lnum) == OK)   // prepare for undo
 			{
-			    colnr_T	plen = (colnr_T)(p - new_start.string + 1);
+			    colnr_T	len = (colnr_T)(new_end - new_start.string + 1);
 
-			    *p = NUL;		    // truncate up to the CR
-			    ml_append(lnum - 1, new_start.string, plen, FALSE);
+			    *new_end = NUL;		    // truncate up to the CR
+			    ml_append(lnum - 1, new_start.string, len, FALSE);
 			    mark_adjust(lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 			    if (subflags.do_ask)
 				appended_lines(lnum - 1, 1L);
@@ -5119,7 +5121,7 @@ ex_substitute(exarg_T *eap)
 			    }
 #ifdef FEAT_PROP_POPUP
 			    adjust_props_for_split(lnum + 1, lnum,
-							       plen, 1, FALSE);
+							       len, 1, FALSE);
 #endif
 			    // all line numbers increase
 			    ++sub_firstlnum;
@@ -5128,14 +5130,14 @@ ex_substitute(exarg_T *eap)
 			    // move the cursor to the new line, like Vi
 			    ++curwin->w_cursor.lnum;
 			    // copy the rest
-			    n = new_start.length - (size_t)plen;
-			    mch_memmove(new_start.string, p + 1, n + 1);
+			    n = new_start.length - (size_t)len;
+			    mch_memmove(new_start.string, new_end + 1, n + 1);
 			    new_start.length = n;
-			    p = new_start.string - 1;
+			    new_end = new_start.string - 1;
 			}
 		    }
 		    else if (has_mbyte)
-			p += (*mb_ptr2len)(p) - 1;
+			new_end += (*mb_ptr2len)(new_end) - 1;
 		}
 
 		/*
