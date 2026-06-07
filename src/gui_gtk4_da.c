@@ -305,6 +305,8 @@ create_under_decor_node(
 
     if (n_nodes == 0)
 	return NULL;
+    if (n_nodes == 1)
+	return nodes[0];
 
     container = gsk_container_node_new(nodes, n_nodes);
     for (int i = 0; i < n_nodes; i++)
@@ -619,9 +621,16 @@ draw_row_set(
     {
 	// Region in completely inside a single draw node. Truncate the existing
 	// draw node, and create a new draw node to be used as the right split.
-	rdnode = draw_node_copy(ldnode);
-	draw_row_fill(drow, col2 + 1, END_COL(rdnode), rdnode);
-	draw_node_unref(new_dnode);
+	if (END_COL(ldnode) > col2)
+	{
+	    rdnode = draw_node_copy(ldnode);
+	    draw_row_fill(drow, col2 + 1, END_COL(rdnode), rdnode);
+	    draw_node_unref(rdnode);
+	}
+	else
+	    // "ldnode" does not extend pas "col2", no point in creating a new
+	    // draw node on the right.
+	    rdnode = NULL;
 
 	if (copy)
 	    // Make another copy for the new draw node inside the set region.
@@ -656,7 +665,7 @@ draw_row_set(
 	    // Make a copy for the left halve.
 	    DrawNode *new_left = draw_node_copy(rdnode);
 
-	    if (draw_node_split(new_left,  col2 - rdnode->start_col, FALSE))
+	    if (draw_node_split(new_left,  col2 - rdnode->start_col, TRUE))
 		g_clear_pointer(&new_left, draw_node_unref);
 	    draw_row_fill(drow, rdnode->start_col, col2, new_left);
 	    draw_node_unref(new_left);
@@ -1004,9 +1013,6 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 
     gtk_snapshot_append_color(snapshot, gui.bgcolor,
 	    &GRAPHENE_RECT_INIT(0, 0, width, height));
-
-    if (self->cells == NULL)
-	return;
 
     for (int r = 0; r < self->n_rows; r++)
     {
