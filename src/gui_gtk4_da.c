@@ -76,6 +76,11 @@ struct _VimDrawArea
 
     // Array of sign icon render nodes (DrawSign)
     GArray *signs;
+
+#ifdef FEAT_NETBEANS_INTG
+    // Cairo render node for multi sign indicator for Netbeans. May be NULL
+    GskRenderNode *multisign_node;
+#endif
 };
 
 #define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))
@@ -750,6 +755,53 @@ draw_row_move_to(DrawCell *dest_row, DrawCell *src_row, int col1, int col2)
 }
 
 /*
+ * Should be called after modifying draw nodes within the given region.
+ */
+    static void
+vim_draw_area_check_bounds(VimDrawArea *self, int row1, int row2, int col1, int col2)
+{
+    if (self->cursor_node != NULL)
+	// Check if cursor node is within the the cleared region. If so, then
+	// remove the render node. This only applies to the part and hollow
+	// cursor, the block cursor will be cleared in draw_row_make_space().
+	if (gui.row >= row1 && gui.row <= row2
+		&& gui.col >= col1 && gui.col <= col2)
+	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
+
+#if defined(FEAT_SIGN_ICONS)
+    // Clear any sign icons within the modified block if any
+    for (guint i = 0; i < self->signs->len;)
+    {
+	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+
+	if (dsign->row >= row1 && dsign->row <= row2
+		&& dsign->col >= col1 && dsign->col <= col2)
+	    // Keep going in case there are multiple sign icons within this
+	    // blokc. I don't think that can happen, but just do it anyways.
+	    g_array_remove_index_fast(self->signs, i);
+	else
+	    i++;
+    }
+#endif
+#ifdef FEAT_NETBEANS_INTG
+    // Remove multi sign indicator if it is within the modified region.
+    if (self->multisign_node != NULL)
+    {
+	graphene_rect_t rect;
+	graphene_rect_t bounds;
+
+	graphene_rect_init(&rect, FILL_X(col1), FILL_Y(row1),
+		gui.char_width * (col2 - col1 + 1),
+		gui.char_height * (row1 - row2 + 1));
+
+	gsk_render_node_get_bounds(self->multisign_node, &bounds);
+	if (graphene_rect_contains_rect(&rect, &bounds))
+	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
+    }
+# endif
+}
+
+/*
  * Add the glyph string starting at column "col" in row "row". This will handle
  * any background colours, fake bold, and under decorations. This does not queue
  * a redraw for the widget.
@@ -831,22 +883,7 @@ vim_draw_area_add_glyphs(
     draw_row_fill(drow, col, end_col, dnode);
     draw_node_unref(dnode);
 
-    if (self->cursor_node != NULL && gui.row == row
-	    && gui.col >= col && gui.col < col + num_cells)
-	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
-
-#if defined(FEAT_SIGN_ICONS)
-    for (guint i = 0; i < self->signs->len;)
-    {
-	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
-
-	if (dsign->row == row && dsign->col >= col
-		&& dsign->col < col + num_cells)
-	    g_array_remove_index_fast(self->signs, i);
-	else
-	    i++;
-    }
-#endif
+    vim_draw_area_check_bounds(self, row, row, col, col + num_cells - 1);
 }
 
 /*
@@ -870,29 +907,7 @@ vim_draw_area_clear_block(
     for (int r = row1; r <= row2; r++)
 	draw_row_set(GET_ROW(self, r), col1, col2, NULL, FALSE, FALSE);
 
-    if (self->cursor_node != NULL)
-	// Check if cursor node is within the the cleared region. If so, then
-	// remove the render node. This only applies to the part and hollow
-	// cursor, the block cursor will be cleared in draw_row_make_space().
-	if (gui.row >= row1 && gui.row <= row2
-		&& gui.col >= col1 && gui.col <= col2)
-	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
-
-#if defined(FEAT_SIGN_ICONS)
-    // Clear any sign icons within the cleared block if any
-    for (guint i = 0; i < self->signs->len;)
-    {
-	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
-
-	if (dsign->row >= row1 && dsign->row <= row2
-		&& dsign->col >= col1 && dsign->col <= col2)
-	    // Keep going in case there are multiple sign icons within this
-	    // blokc. I don't think that can happen, but just do it anyways.
-	    g_array_remove_index_fast(self->signs, i);
-	else
-	    i++;
-    }
-#endif
+    vim_draw_area_check_bounds(self, row1, row2, col1, col2);
 }
 
 /*
@@ -952,6 +967,7 @@ vim_draw_area_move_block(
 	    else
 		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o), col1, col2);
     }
+    vim_draw_area_check_bounds(self, to, to + (row2 - row1), col1, col2);
 }
 
 /*
@@ -1086,6 +1102,17 @@ vim_draw_area_remove_sign(VimDrawArea *self, GdkTexture *sign)
 	    return;
 	}
     }
+}
+#endif
+
+#ifdef FEAT_NETBEANS_INTG
+    cairo_t *
+vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h)
+{
+    node_unref(self->multisign_node);
+    self->multisign_node = gsk_cairo_node_new(
+	    &GRAPHENE_RECT_INIT( x, y, w, h));
+    return gsk_cairo_node_get_draw_context(self->multisign_node);
 }
 #endif
 

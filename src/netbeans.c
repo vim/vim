@@ -3092,39 +3092,40 @@ netbeans_draw_multisign_indicator(int row)
     void
 netbeans_draw_multisign_indicator(int row)
 {
-# ifdef USE_GTK4_SNAPSHOT
-    // TODO
-# else
     int i;
     int y;
     int x;
-#  if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_t *cr = NULL;
-#  else
+# else
     GdkDrawable *drawable = gui.drawarea->window;
-#  endif
+# endif
 
     if (!NETBEANS_OPEN)
 	return;
 
-#  if GTK_CHECK_VERSION(3,0,0)
-    cr = cairo_create(gui.surface);
-    cairo_set_source_rgba(cr,
-	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
-	    gui.fgcolor->alpha);
-#  endif
-
     x = 0;
     y = row * gui.char_height + 2;
 
-    for (i = 0; i < gui.char_height - 3; i++)
-#  if GTK_CHECK_VERSION(3,0,0)
-	cairo_rectangle(cr, x+2, y++, 1, 1);
+# if GTK_CHECK_VERSION(3,0,0)
+#  ifdef USE_GTK4_SNAPSHOT
+    cr = gui_gtk_get_multisign_context(x, y, 5, gui.char_height);
 #  else
-    gdk_draw_point(drawable, gui.text_gc, x+2, y++);
+    cr = cairo_create(gui.surface);
 #  endif
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+	    gui.fgcolor->alpha);
+# endif
 
-#  if GTK_CHECK_VERSION(3,0,0)
+    for (i = 0; i < gui.char_height - 3; i++)
+# if GTK_CHECK_VERSION(3,0,0)
+	cairo_rectangle(cr, x+2, y++, 1, 1);
+# else
+    gdk_draw_point(drawable, gui.text_gc, x+2, y++);
+# endif
+
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_rectangle(cr, x+0, y, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+4, y++, 1, 1);
@@ -3132,7 +3133,7 @@ netbeans_draw_multisign_indicator(int row)
     cairo_rectangle(cr, x+2, y, 1, 1);
     cairo_rectangle(cr, x+3, y++, 1, 1);
     cairo_rectangle(cr, x+2, y, 1, 1);
-#  else
+# else
     gdk_draw_point(drawable, gui.text_gc, x+0, y);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+4, y++);
@@ -3140,11 +3141,10 @@ netbeans_draw_multisign_indicator(int row)
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
     gdk_draw_point(drawable, gui.text_gc, x+3, y++);
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
-#  endif
+# endif
 
-#  if GTK_CHECK_VERSION(3,0,0)
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-#  endif
 # endif
 }
 #endif // FEAT_GUI_GTK
