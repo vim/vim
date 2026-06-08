@@ -188,7 +188,7 @@ else
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cErrInBracket,cParen,cBracket,cString,@Spell
     syn match	cParenError	display "[\])]"
-    syn match	cErrInParen	display contained "[\]{}]\|<%\|%>"
+    syn match	cErrInParen	display contained "[\]]\|<%\|%>"
     syn region	cBracket	transparent start='\[\|<::\@!' end=']\|:>' end='}'me=s-1 contains=ALLBUT,cBlock,@cParenGroup,cErrInParen,cCppParen,cCppBracket,@cStringGroup,@Spell
   endif
   " cCppBracket: same as cParen but ends at end-of-line; used in cDefine
@@ -197,6 +197,7 @@ else
 endif
 
 if s:ft ==# 'c' || exists("cpp_no_cpp11")
+  syn region cCompoundLiteral start="([a-z[:space:]]\{3,}\[[0-9]*\])\s*{" end="}" contained containedin=cParen,cBlock contains=cType,cNumbers,cString,cCharacter transparent
   syn region	cBadBlock	keepend start="{" end="}" contained containedin=cParen,cBracket,cBadBlock transparent fold
 endif
 
