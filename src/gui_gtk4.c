@@ -4567,97 +4567,249 @@ gui_mch_browsedir(char_u *title, char_u *initdir)
  * ============================================================
  */
 
-typedef struct {
-    int		response;
-    gboolean	done;
-} AlertDialogData;
+/*
+ * Split up button_string into individual button labels by inserting
+ * NUL bytes.  Also replace the Vim-style mnemonic accelerator prefix
+ * '&' with '_'.  button_string must point to allocated memory!
+ * Return an allocated array of pointers into button_string.
+ */
+    static char **
+split_button_string(char_u *button_string, int *n_buttons, char **tofree)
+{
+    char	    **array;
+    char_u	    *p;
+    unsigned int    count = 1;
+
+    button_string = (char_u *)g_strdup((const char *)button_string);
+
+    for (p = button_string; *p != NUL; ++p)
+	if (*p == DLG_BUTTON_SEP)
+	    ++count;
+
+    array = g_malloc_n(count, sizeof(char *));
+    count = 0;
+
+    if (array != NULL)
+    {
+	array[count++] = (char *)button_string;
+	for (p = button_string; *p != NUL; )
+	{
+	    if (*p == DLG_BUTTON_SEP)
+	    {
+		*p++ = NUL;
+		array[count++] = (char *)p;
+	    }
+	    else if (*p == DLG_HOTKEY_CHAR)
+		*p++ = '_';
+	    else
+		MB_PTR_ADV(p);
+	}
+    }
+
+    *tofree = (char *)button_string;
+    *n_buttons = count;
+    return array;
+}
+
+/*
+ * Convert VIM_GENERIC, VIM_ERROR, etc into an icon name. Returns NULL for
+ * VIM_GENERIC.
+ */
+    static const char *
+dialog_type_to_icon(int type)
+{
+    switch (type)
+    {
+	case VIM_ERROR:
+	    return "dialog-error-symbolic";
+	case VIM_WARNING:
+	    return "dialog-warning-symbolic";
+	case VIM_INFO:
+	    return "dialog-information-symbolic";
+	case VIM_QUESTION:
+	    return "dialog-question-symbolic";
+	    break;
+	default:
+	    break;
+    }
+    return NULL;
+}
+
+// Data associated with each button in the dialog
+typedef struct
+{
+    int		but_idx;
+    int		*response;
+    gboolean	*done;
+} DialogButtonState;
 
     static void
-alert_dialog_cb(GObject *source, GAsyncResult *res, gpointer data)
+dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
 {
-    AlertDialogData *add = (AlertDialogData *)data;
-    add->response = gtk_alert_dialog_choose_finish(
-		    GTK_ALERT_DIALOG(source), res, NULL);
-    add->done = TRUE;
+    *state->response = state->but_idx;
+    *state->done = TRUE;
+}
+
+    static gboolean
+dialog_key_pressed_cb(
+	GtkEventControllerKey	*controller,
+	guint			keyval,
+	guint			keycode,
+	GdkModifierType		state,
+	gboolean		*done)
+{
+    if (keyval == GDK_KEY_Escape)
+    {
+	*done = TRUE;
+	return TRUE;
+    }
+    return FALSE;
 }
 
     int
 gui_mch_dialog(
-	int	type UNUSED,
+	int	type,
 	char_u	*title,
 	char_u	*message,
 	char_u	*buttons,
-	int	dfltbutton,
-	char_u	*textfield UNUSED,
+	int	def_but,
+	char_u	*textfield,
 	int	ex_cmd UNUSED)
 {
-    GtkAlertDialog	*dlg;
-    AlertDialogData	add;
-    char_u		*p;
-    char_u		*buf = NULL;
-    int			butcount = 0;
-    int			i;
-    const char		*btn_labels[64];
-    char_u		*btn_conv[64];
+    GtkWindow		*win = GTK_WINDOW(gtk_window_new());
+    GtkWidget		*vertbox;
+    GtkWidget		*message_box;
+    const char		*icon_name;
+    GtkWidget		*icon;
+    GtkWidget		*label;
+    GtkWidget		*entry = NULL;
+    char_u		*utf8_title;
+    char_u		*utf8_message;
+    GtkEventController *key_controller;
+    DialogButtonState	*but_states = NULL;
+    char		*tofree = NULL;
+    int			response = -1;
+    gboolean		done = FALSE;
 
-    title = CONVERT_TO_UTF8(title);
-    message = CONVERT_TO_UTF8(message);
+    utf8_title = CONVERT_TO_UTF8(title);
+    if (utf8_title != NULL)
+	gtk_window_set_title(win, (const char *)utf8_title);
+    CONVERT_TO_UTF8_FREE(utf8_title);
 
-    // Parse button labels from the "&Yes\n&No\n&Cancel" format
+    gtk_window_set_transient_for(win, GTK_WINDOW(gui.mainwin));
+    gtk_window_set_modal(win, TRUE);
+    gtk_window_set_default_size(win, 300, -1);
+    gtk_window_set_destroy_with_parent(win, TRUE);
+
+    // Create main vertical layout container
+    vertbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 16);
+    gtk_window_set_child(win, vertbox);
+    gtk_widget_set_margin_top(vertbox, 24);
+    gtk_widget_set_margin_bottom(vertbox, 24);
+    gtk_widget_set_margin_start(vertbox, 12);
+    gtk_widget_set_margin_end(vertbox, 12);
+
+    // Add the message label
+    message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_widget_set_halign(message_box, GTK_ALIGN_CENTER);
+    gtk_box_append(GTK_BOX(vertbox), message_box);
+
+    // If type is not VIM_GENERIC, add an icon to make the dialog look nicer :)
+    icon_name = dialog_type_to_icon(type);
+    if (icon_name != NULL)
+    {
+	icon = gtk_image_new_from_icon_name(icon_name);
+	gtk_image_set_icon_size(GTK_IMAGE(icon), GTK_ICON_SIZE_LARGE);
+	gtk_box_append(GTK_BOX(message_box), icon);
+    }
+
+    utf8_message = CONVERT_TO_UTF8(message);
+    label = gtk_label_new((const char *)utf8_message);
+    CONVERT_TO_UTF8_FREE(utf8_message);
+    gtk_label_set_wrap(GTK_LABEL(label), TRUE);
+    gtk_label_set_max_width_chars(GTK_LABEL(label), 40);
+    gtk_box_append(GTK_BOX(message_box), label);
+
+    // Close the dialog when the <Esc> key is pressed. the GTK3 GUI also allows
+    // mnemonics without <Alt> key, but that behaviour comes from GTK+ 1.2 (from
+    // 1999!), so most users probably don't care...
+    key_controller = gtk_event_controller_key_new();
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(dialog_key_pressed_cb), &done);
+    gtk_widget_add_controller(GTK_WIDGET(win), key_controller);
+
+    if (textfield != NULL)
+    {
+	// Add text entry so user can enter text
+	entry = gtk_entry_new();
+	gtk_editable_set_text(GTK_EDITABLE(entry), (const char *)textfield);
+	// Make it so that pressing enter key will activate "def_but" button
+	// (which is set as the default widget).
+	gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+	gtk_box_append(GTK_BOX(vertbox), entry);
+    }
+
     if (buttons != NULL)
     {
-	buf = vim_strsave(buttons);
-	if (buf != NULL)
+	GtkWidget   *but_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+	char	    **buttons_arr; // Note that array is allocated, not strings
+	int	    n_buttons;
+
+	gtk_widget_set_halign(but_box, GTK_ALIGN_CENTER);
+	gtk_box_set_homogeneous(GTK_BOX(but_box), TRUE);
+	gtk_box_append(GTK_BOX(vertbox), but_box);
+
+	buttons_arr = split_button_string(buttons, &n_buttons, &tofree);
+
+	but_states = g_malloc_n(n_buttons, sizeof(DialogButtonState));
+
+	for (int i = 0; i < n_buttons; i++)
 	{
-	    p = buf;
-	    while (*p != NUL && butcount < 63)
-	    {
-		char_u *start = p;
-		while (*p != NUL && *p != '\n')
-		    ++p;
-		if (*p == '\n')
-		    *p++ = NUL;
-		// Skip '&' mnemonic marker
-		if (*start == '&')
-		    ++start;
-		btn_conv[butcount] = CONVERT_TO_UTF8(start);
-		btn_labels[butcount] = (const char *)btn_conv[butcount];
-		butcount++;
-	    }
+	    char_u		*but_label;
+	    GtkWidget		*but;
+	    DialogButtonState	*but_state = but_states + i;
+
+	    but_label = CONVERT_TO_UTF8((char_u *)buttons_arr[i]);
+	    if (but_label == NULL)
+		continue;
+
+	    but = gtk_button_new_with_mnemonic((char *)but_label);
+	    if (i == def_but - 1)
+		gtk_window_set_default_widget(win, but);
+	    gtk_box_append(GTK_BOX(but_box), but);
+	    CONVERT_TO_UTF8_FREE(but_label);
+
+	    but_state->but_idx = i;
+	    but_state->response = &response;
+	    but_state->done = &done;
+
+	    g_signal_connect(but, "clicked",
+		    G_CALLBACK(dialog_button_clicked_cb), but_state);
 	}
+	g_free(buttons_arr);
     }
-    btn_labels[butcount] = NULL;
 
-    dlg = gtk_alert_dialog_new("%s", message ? (char *)message : "");
-    if (title != NULL)
-	gtk_alert_dialog_set_detail(dlg, (const char *)title);
-    gtk_alert_dialog_set_buttons(dlg, btn_labels);
-    gtk_alert_dialog_set_modal(dlg, TRUE);
+    gtk_window_present(win);
 
-    if (dfltbutton > 0 && dfltbutton <= butcount)
-	gtk_alert_dialog_set_default_button(dlg, dfltbutton - 1);
-    if (butcount > 0)
-	gtk_alert_dialog_set_cancel_button(dlg, butcount - 1);
-
-    add.response = -1;
-    add.done = FALSE;
-
-    gtk_alert_dialog_choose(dlg, GTK_WINDOW(gui.mainwin), NULL,
-	    alert_dialog_cb, &add);
-
-    while (!add.done)
+    while (!done)
 	g_main_context_iteration(NULL, TRUE);
 
-    g_object_unref(dlg);
+    if (textfield != NULL)
+    {
+	// Get the text the user entered
+	char_u *text;
 
-    for (i = 0; i < butcount; i++)
-	CONVERT_TO_UTF8_FREE(btn_conv[i]);
-    vim_free(buf);
-    CONVERT_TO_UTF8_FREE(title);
-    CONVERT_TO_UTF8_FREE(message);
+	text = (char_u *)gtk_editable_get_text(GTK_EDITABLE(entry));
+	text = CONVERT_FROM_UTF8(text);
+	vim_strncpy(textfield, text, IOSIZE - 1);
+	CONVERT_FROM_UTF8_FREE(text);
+    }
 
-    // GTK returns 0-based index, Vim wants 1-based
-    return add.response >= 0 ? add.response + 1 : 0;
+    gtk_window_destroy(win);
+    g_free(but_states);
+    g_free(tofree);
+
+    // Vim buttons are indexed starting from one.
+    return response == -1 ? 0 : response + 1;
 }
 
 /*
