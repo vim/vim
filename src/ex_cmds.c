@@ -4961,42 +4961,34 @@ ex_substitute(exarg_T *eap)
 		}
 
 		copy_len = (size_t)(regmatch.startpos[0].col - copycol);
-		needed_size = copy_len
-		    + (tmp.length - (size_t)regmatch.endpos[0].col) + sub_size + 1;
+		needed_size = new_start.length		// length already copied
+		    + copy_len				// length up the match
+		    + (sub_size - 1)			// length of the substitution
+		    + (tmp.length - (size_t)regmatch.endpos[0].col)	// length after the match
+		    + 1;				// the NUL
 
-		if (new_start.string == NULL)
+		/*
+		 * Check if the temporary buffer is long enough to do the
+		 * substitution into.  If not, make it larger (with a bit
+		 * extra to avoid too many calls to alloc()/free()).
+		 */
+		if (new_start_size < needed_size)
 		{
-		    /*
-		     * Get some space for a temporary buffer to do the
-		     * substitution into (and some extra space to avoid
-		     * too many calls to alloc()/free()).
-		     */
+		    char_u  *p;
+
 		    new_start_size = needed_size + EXTRA_SIZE;
-		    if ((new_start.string = alloc_clear(new_start_size)) == NULL)
-			goto outofmem;
-		}
-		else
-		{
-		    /*
-		     * Check if the temporary buffer is long enough to do the
-		     * substitution into.  If not, make it larger (with a bit
-		     * extra to avoid too many calls to alloc()/free()).
-		     */
-		    needed_size += new_start.length;
-		    if (needed_size > new_start_size)
+		    if ((p = alloc_clear(new_start_size)) == NULL)
 		    {
-			char_u	*p;
+			vim_free(new_start.string);
+			goto outofmem;
+		    }
 
-			new_start_size = needed_size + EXTRA_SIZE;
-			if ((p = alloc_clear(new_start_size)) == NULL)
-			{
-			    vim_free(new_start.string);
-			    goto outofmem;
-			}
+		    if (new_start.string != NULL)
+		    {
 			mch_memmove(p, new_start.string, new_start.length + 1);
 			vim_free(new_start.string);
-			new_start.string = p;
 		    }
+		    new_start.string = p;
 		}
 
 		/*
@@ -5245,6 +5237,7 @@ skip:
 			sub_firstline.length = new_start.length;
 			new_start.string = NULL;
 			new_start.length = 0;
+			new_start_size = 0;
 			matchcol = (colnr_T)(sub_firstline.length - matchcol);
 			prev_matchcol = (colnr_T)(sub_firstline.length
 							      - prev_matchcol);
