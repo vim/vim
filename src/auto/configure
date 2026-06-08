@@ -10606,7 +10606,7 @@ printf "%s\n" "$enable_gtk4_check" >&6; }
   fi
 fi
 
-if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" == "gtk4"; then
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-gtk4-hwaccel argument" >&5
 printf %s "checking --enable-gtk4-hwaccel argument... " >&6; }
   # Check whether --enable-gtk4-hwaccel was given.
@@ -10712,7 +10712,7 @@ See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
     gtk_pkgs="$gtk_pkg_name"
 
-    if test "$gtk_pkg_name" == "gtk4"; then
+    if test "$gtk_pkg_name" = "gtk4"; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
 printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
       if "$PKG_CONFIG" --exists "glycin-gtk4-2"
@@ -10917,7 +10917,7 @@ See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
     gtk_pkgs="$gtk_pkg_name"
 
-    if test "$gtk_pkg_name" == "gtk4"; then
+    if test "$gtk_pkg_name" = "gtk4"; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
 printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
       if "$PKG_CONFIG" --exists "glycin-gtk4-2"
@@ -11129,7 +11129,7 @@ See 'config.log' for more details" "$LINENO" 5; } ;;
 esac
     gtk_pkgs="$gtk_pkg_name"
 
-    if test "$gtk_pkg_name" == "gtk4"; then
+    if test "$gtk_pkg_name" = "gtk4"; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config glycin-gtk4-2" >&5
 printf %s "checking for pkg-config glycin-gtk4-2... " >&6; }
       if "$PKG_CONFIG" --exists "glycin-gtk4-2"

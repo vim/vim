@@ -193,9 +193,9 @@ glyphs_resize(PangoGlyphInfo *glyphs, int n_glyphs)
     static gboolean
 color_is_default_bg(const GdkRGBA *bg)
 {
-    guicolor_T bgc = ((guicolor_T)(bg->red   * 255) << 16)
+    guicolor_T bgc = ((guicolor_T)(bg->red * 255) << 16)
 	| ((guicolor_T)(bg->green * 255) << 8)
-	|  (guicolor_T)(bg->blue  * 255);
+	|  (guicolor_T)(bg->blue * 255);
     return bgc == gui.back_pixel;
 }
 
@@ -347,7 +347,6 @@ draw_sign_clear(DrawSign *dsign)
     gsk_render_node_unref(dsign->node);
 }
 
-
 /*
  * Create a new draw node with a reference count of 1. Note that this may be
  * NULL if creating a new draw node is not necessary.
@@ -471,7 +470,7 @@ draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
     }
     else
     {
-	// If this results in zero, then glyph_has_ink() will return FALSE so it
+	// If this results in zero, then glyphs_has_ink() will return FALSE so it
 	// is fine.
 	dnode->n_glyphs = n_glyphs - glyph_offset;
 
@@ -793,7 +792,7 @@ vim_draw_area_check_bounds(
 	if (dsign->row >= row1 && dsign->row <= row2
 		&& dsign->col >= col1 && dsign->col <= col2)
 	    // Keep going in case there are multiple sign icons within this
-	    // blokc. I don't think that can happen, but just do it anyways.
+	    // block.
 	    g_array_remove_index_fast(self->signs, i);
 	else
 	    i++;
@@ -808,7 +807,7 @@ vim_draw_area_check_bounds(
 
 	graphene_rect_init(&rect, FILL_X(col1), FILL_Y(row1),
 		gui.char_width * (col2 - col1 + 1),
-		gui.char_height * (row1 - row2 + 1));
+		gui.char_height * (row2 - row1 + 1));
 
 	gsk_render_node_get_bounds(self->multisign_node, &bounds);
 	if (graphene_rect_contains_rect(&rect, &bounds))

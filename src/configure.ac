@@ -2715,7 +2715,7 @@ if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" != "gtk4"; then
   fi
 fi
 
-if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" == "gtk4"; then
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
   AC_MSG_CHECKING(--enable-gtk4-hwaccel argument)
   AC_ARG_ENABLE(gtk4-hwaccel,
 	[  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 [default=no]],
@@ -2771,7 +2771,7 @@ AC_DEFUN(AM_PATH_GTK,
 		   [AC_MSG_FAILURE([The configure script does not know which pkg-config name to use for GTK $min_gtk_version"])])
     gtk_pkgs="$gtk_pkg_name"
 
-    if test "$gtk_pkg_name" == "gtk4"; then
+    if test "$gtk_pkg_name" = "gtk4"; then
       AC_MSG_CHECKING([for pkg-config glycin-gtk4-2])
       AS_IF(["$PKG_CONFIG" --exists "glycin-gtk4-2"],
             [
