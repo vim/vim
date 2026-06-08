@@ -3378,6 +3378,13 @@ give_up:
     screen_Rows = Rows;
     screen_Columns = Columns;
 
+#ifdef FEAT_GUI
+    // Cursor position may now be out of bounds after resize
+    if (gui.in_use && (gui.cursor_row >= screen_Rows
+		|| gui.cursor_col >= screen_Columns))
+	gui.cursor_is_valid = false;
+#endif
+
     set_must_redraw(UPD_CLEAR);	// need to clear the screen later
     if (doclear)
 	screenclear2(TRUE);
