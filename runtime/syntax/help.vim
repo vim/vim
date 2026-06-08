@@ -2,8 +2,7 @@
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:		2025 Nov 13
-" 2026 Apr 09 by Vim project: improve pattern for translated syntaxt.txt #19942
+" Last Change:		2026 May 18
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -59,7 +58,7 @@ if has_key(g:help_example_languages, "vim9")
   syn region vim9LegacyHeader_HelpExample
 	\ start=+" legacy Vim script comments may go here+
 	\ end="^\ze\s*vim9s\%[cript]\>"
-	\ contains=@vimLegacyTop,vimComment,vimLineComment
+	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
   syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
 endif
 

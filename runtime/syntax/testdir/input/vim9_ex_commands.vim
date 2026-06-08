@@ -2,17 +2,23 @@ vim9script
 # Vim9 Ex commands
 
 
-# START NOT MATCHED
-:Next
-:X
-# END NOT MATCHED
-
 :help
  :help
 : help
- : help # FIXME
+ : help
 
+:&
+:~
 :@
+# :*
+:>
+:<
+:#
+:=
+:!
+
+:Next
+:X
 
 :abbreviate
 :abclear
@@ -91,6 +97,7 @@ vim9script
 :checktime
 :chistory
 :class
+endclass
 :clast
 :clearjumps
 :clist
@@ -130,7 +137,6 @@ vim9script
 :debuggreedy
 :def
 :defcompile
-:defcompile
 :defer
 :delcommand
 :delete
@@ -145,14 +151,11 @@ vim9script
 :diffupdate
 :digraphs
 :disassemble
-:disassemble
 :display
 :djump
-:dl
 :dlist
 :doautoall
 :doautocmd
-:dp
 :drop
 :dsearch
 :dsplit
@@ -168,22 +171,22 @@ vim9script
 :else
 :elseif
 :emenu
-:endclass
+# :endclass
 :enddef
-:endenum
+# :endenum
 :endfor
 :endfunction
 :endif
-:endinterface
+# :endinterface
 :endtry
 :endwhile
 :enew
 :enum
+endenum
 :eval
 :ex
 :execute
 :exit
-:export
 :export
 :exusage
 :file
@@ -203,7 +206,7 @@ vim9script
 :foldopen
 :for foo in bar | endfor
 :function
-:global/.../
+:global
 :goto
 :grep
 :grepadd
@@ -232,6 +235,7 @@ vim9script
 :inoremap
 :inoremenu
 :interface
+endinterface
 :intro
 :isearch
 :isplit
@@ -240,7 +244,6 @@ vim9script
 :iunmenu
 :join
 :jumps
-:k
 :keepalt
 :keepjumps
 :keepmarks
@@ -308,8 +311,8 @@ vim9script
 :lvimgrepadd
 :lwindow
 :make
-:mapclear
 :map
+:mapclear
 :mark
 :marks
 :match
@@ -446,7 +449,6 @@ vim9script
 :simalt
 :slast
 :sleep
-:sleep!
 :smagic
 :smap
 :smapclear
@@ -533,12 +535,12 @@ vim9script
 :tunmenu
 :type
 :unabbreviate
-:unabbreviate
 :undo
 :undojoin
 :undolist
 :unhide
 :uniq
+:unlet
 :unlockvar
 :unmap
 :unmenu
@@ -548,7 +550,7 @@ vim9script
 :verbose
 :version
 :vertical
-:vglobal/.../
+:vglobal
 :view
 :vim9cmd
 # :vim9script
@@ -592,9 +594,28 @@ vim9script
 :z
 
 Foo()|help
-Foo() | help
 Foo() |help
 Foo()| help
+Foo() | help
+
+Foo() |:help
+Foo() | :help
+Foo() |: help
+Foo() | : help
+
+Foo() | &
+Foo() | ~
+Foo() | @
+# Foo() | *
+Foo() | >
+Foo() | <
+Foo() | #
+Foo() | =
+Foo() | !
+
+
+Foo() | Next
+Foo() | X
 
 Foo() | abbreviate
 Foo() | abclear
@@ -613,7 +634,8 @@ Foo() | arglocal
 Foo() | args
 Foo() | argument
 Foo() | ascii
-Foo() | augroup Foo | augroup END
+Foo() | augroup Foo
+Foo() | augroup END
 Foo() | aunmenu
 Foo() | autocmd
 Foo() | badd
@@ -672,6 +694,7 @@ Foo() | checkpath
 Foo() | checktime
 Foo() | chistory
 Foo() | class
+endclass
 Foo() | clast
 Foo() | clearjumps
 Foo() | clist
@@ -711,7 +734,6 @@ Foo() | debug
 Foo() | debuggreedy
 Foo() | def
 Foo() | defcompile
-Foo() | defcompile
 Foo() | defer
 Foo() | delcommand
 Foo() | delete
@@ -726,14 +748,11 @@ Foo() | diffthis
 Foo() | diffupdate
 Foo() | digraphs
 Foo() | disassemble
-Foo() | disassemble
 Foo() | display
 Foo() | djump
-Foo() | dl
 Foo() | dlist
 Foo() | doautoall
 Foo() | doautocmd
-Foo() | dp
 Foo() | drop
 Foo() | dsearch
 Foo() | dsplit
@@ -749,22 +768,22 @@ Foo() | edit
 Foo() | else
 Foo() | elseif
 Foo() | emenu
-Foo() | endclass
+# :endclass
 Foo() | enddef
-Foo() | endenum
+# :endenum
 Foo() | endfor
 Foo() | endfunction
 Foo() | endif
-Foo() | endinterface
+# :endinterface
 Foo() | endtry
 Foo() | endwhile
 Foo() | enew
 Foo() | enum
+endenum
 Foo() | eval
 Foo() | ex
 Foo() | execute
 Foo() | exit
-Foo() | export
 Foo() | export
 Foo() | exusage
 Foo() | file
@@ -784,7 +803,7 @@ Foo() | folddoopen
 Foo() | foldopen
 Foo() | for foo in bar | endfor
 Foo() | function
-Foo() | global/.../
+Foo() | global
 Foo() | goto
 Foo() | grep
 Foo() | grepadd
@@ -813,6 +832,7 @@ Foo() | inoreabbrev
 Foo() | inoremap
 Foo() | inoremenu
 Foo() | interface
+endinterface
 Foo() | intro
 Foo() | isearch
 Foo() | isplit
@@ -869,7 +889,7 @@ Foo() | lNext
 Foo() | lnfile
 Foo() | lNfile
 Foo() | lnoremap
-# Foo() | loadkeymap # disabled - runs until EOF
+# :loadkeymap # disabled - runs until EOF
 Foo() | loadview
 Foo() | lockmarks
 Foo() | lockvar
@@ -888,10 +908,9 @@ Foo() | lvimgrep
 Foo() | lvimgrepadd
 Foo() | lwindow
 Foo() | make
-Foo() | mark
-Foo() | move
 Foo() | map
 Foo() | mapclear
+Foo() | mark
 Foo() | marks
 Foo() | match
 Foo() | menu
@@ -902,6 +921,7 @@ Foo() | mksession
 Foo() | mkspell
 Foo() | mkview
 Foo() | mkvimrc
+Foo() | move
 Foo() | mzfile
 Foo() | mzscheme
 Foo() | nbclose
@@ -1026,7 +1046,6 @@ Foo() | silent
 Foo() | simalt
 Foo() | slast
 Foo() | sleep
-Foo() | sleep!
 Foo() | smagic
 Foo() | smap
 Foo() | smapclear
@@ -1113,12 +1132,12 @@ Foo() | tunmap
 Foo() | tunmenu
 Foo() | type
 Foo() | unabbreviate
-Foo() | unabbreviate
 Foo() | undo
 Foo() | undojoin
 Foo() | undolist
 Foo() | unhide
 Foo() | uniq
+Foo() | unlet
 Foo() | unlockvar
 Foo() | unmap
 Foo() | unmenu
@@ -1128,14 +1147,14 @@ Foo() | var
 Foo() | verbose
 Foo() | version
 Foo() | vertical
-Foo() | vglobal/.../
+Foo() | vglobal
+Foo() | view
 Foo() | vim9cmd
-# call Foo() | vim9script
+# :vim9script
 Foo() | vimgrep
 Foo() | vimgrepadd
 Foo() | visual
 Foo() | viusage
-Foo() | view
 Foo() | vmap
 Foo() | vmapclear
 Foo() | vmenu
@@ -1145,32 +1164,30 @@ Foo() | vnoremenu
 Foo() | vsplit
 Foo() | vunmap
 Foo() | vunmenu
-Foo() | windo
-Foo() | write
-Foo() | wNext
 Foo() | wall
 Foo() | while
-Foo() | winsize
 Foo() | wincmd
+Foo() | windo
 Foo() | winpos
+Foo() | winsize
 Foo() | wnext
+Foo() | wNext
 Foo() | wprevious
 Foo() | wq
 Foo() | wqall
+Foo() | write
 Foo() | wundo
 Foo() | wviminfo
 Foo() | xall
-Foo() | xmapclear
 Foo() | xmap
+Foo() | xmapclear
 Foo() | xmenu
-Foo() | xrestore
 Foo() | xnoremap
 Foo() | xnoremenu
+Foo() | xrestore
 Foo() | xunmap
 Foo() | xunmenu
 Foo() | yank
-Foo() | z
-
 
 # Legacy-script only
 
@@ -1189,23 +1206,52 @@ Foo() | z
 :mode
 :open
 :t
-:unlet
 :xit
 
-Foo() | append
+call Foo() | append
     text
 .
-Foo() | change
+call Foo() | change
     text
 .
-Foo() | insert
+call Foo() | insert
     text
 .
-Foo() | k
-Foo() | let
-Foo() | mode
-Foo() | open
-Foo() | t
-Foo() | unlet
-Foo() | xit
+call Foo() | k
+call Foo() | let
+call Foo() | mode
+call Foo() | open
+call Foo() | t
+call Foo() | xit
+
+
+# User commands
+
+Foobar
+Foobar!
+Foobar123
+Foobar123!
+Foo123bar
+Foo123bar!
+
+:Foobar
+:Foobar!
+:Foobar123
+:Foobar123!
+:Foo123bar
+:Foo123bar!
+
+Foo() | Foobar
+Foo() | Foobar!
+Foo() | Foobar123
+Foo() | Foobar123!
+Foo() | Foo123bar
+Foo() | Foo123bar!
+
+Foo() | :Foobar
+Foo() | :Foobar!
+Foo() | :Foobar123
+Foo() | :Foobar123!
+Foo() | :Foo123bar
+Foo() | :Foo123bar!
 
