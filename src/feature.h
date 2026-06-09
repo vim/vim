@@ -1103,6 +1103,39 @@
 #endif
 
 /*
+ * +image		RGB image rendering inside popup windows.
+ * +image_sixel		terminal backend: emit DEC sixel DCS sequences.
+ * +image_kitty		terminal backend: emit kitty graphics protocol APC
+ *			sequences.  Selected at runtime when the host
+ *			terminal advertises kitty graphics support and
+ *			falls back to sixel otherwise.
+ * +image_gdi		Windows GUI backend: BitBlt a cached DIB section onto
+ *			the GUI canvas.
+ * +image_cairo		Cairo GUI backend: composite a cairo_image_surface_t
+ *			onto gui.surface; covers GTK2/3/4 today.
+ *
+ * The parent FEAT_IMAGE flag enables the popup "image" attribute and the
+ * shared RGB plumbing; at least one backend has to be enabled to actually
+ * paint anything.
+ */
+#if defined(FEAT_HUGE) && defined(FEAT_PROP_POPUP)
+# define FEAT_IMAGE
+#endif
+
+#if defined(FEAT_IMAGE) && !defined(ALWAYS_USE_GUI)
+# define FEAT_IMAGE_SIXEL
+# define FEAT_IMAGE_KITTY
+#endif
+
+#if defined(FEAT_IMAGE) && defined(FEAT_GUI_MSWIN)
+# define FEAT_IMAGE_GDI
+#endif
+
+#if defined(FEAT_IMAGE) && defined(FEAT_GUI_GTK)
+# define FEAT_IMAGE_CAIRO
+#endif
+
+/*
  * +message_window	use a popup for messages when 'cmdheight' is zero
  */
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TIMERS)

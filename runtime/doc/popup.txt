@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 May 17
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -23,6 +23,7 @@ Displaying text in a popup window.	*popup* *popup-window* *popupwin*
    Popup scrollbar		|popup-scrollbar|
    Popup opacity		|popup-opacity|
    Popup mask			|popup-mask|
+   Popup image			|popup-image|
 4. Examples			|popup-examples|
 
 
@@ -798,6 +799,18 @@ The second argument of |popup_create()| is a dictionary with options:
 			underlying text, making it partially transparent.
 			Requires 'termguicolors' to be set.
 			Also see |popup-opacity|.
+	image		Dictionary describing a raw RGB or RGBA pixel buffer
+			to render inside the popup.  When set the popup
+			auto-sizes its cell box from the image's pixel
+			dimensions, so "minwidth" / "minheight" / "maxwidth" /
+			"maxheight" do not need to be set by hand.  Keys:
+			    data    |Blob| of bytes; length must equal
+				    width*height*3 (RGB) or width*height*4
+				    (RGBA).
+			    width   image width in pixels.
+			    height  image height in pixels.
+			Use an empty dictionary to remove a previously set
+			image.  See |popup-image|.
 	padding		List with numbers, defining the padding
 			above/right/below/left of the popup (similar to CSS).
 			An empty list uses a padding of 1 all around.  The
@@ -1154,6 +1167,76 @@ For example, to make the last 10 columns of the last line transparent:
 
 To make the four corners transparent:
 	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
+
+POPUP IMAGE						*popup-image*
+
+A popup window can render an image instead of (or on top of) text by passing
+an "image" dictionary to |popup_create()| or |popup_setoptions()|.  The
+caller supplies an already-decoded raw pixel buffer and Vim emits it through
+whichever backend is available at runtime:
+
+    sixel   DEC sixel DCS sequence on a sixel-capable terminal.
+	    |+image_sixel|.  Detected automatically; the buffer is also
+	    cropped one cell above the screen edge to avoid sixel-induced
+	    terminal scrolling.
+    kitty   kitty graphics protocol APC sequence on terminals that support
+	    it (kitty, ghostty, WezTerm, Konsole, ...).  |+image_kitty|.
+	    Detected by actively querying the terminal.
+    GDI     StretchDIBits onto the GUI canvas on the MS-Windows GUI.
+	    |+image_gdi|.
+    Cairo   composite onto a cairo_image_surface_t on the GTK GUI
+	    (covers GTK 2 and GTK 3).  |+image_cairo|.
+
+Vim itself does NOT link against libpng, libjpeg, libwebp or any image
+decoder.  Format decoding is left to the caller, who can pipe the file
+through any external tool (GraphicsMagick, ImageMagick, ffmpeg, a custom
+converter, ...) and pass the resulting bytes via a |Blob|.
+
+The "image" dictionary accepts:
+    data	|Blob| of bytes.  Length must equal width*height*3 for RGB,
+		or width*height*4 for RGBA.  RGBA buffers are alpha-composited
+		over the popup's background.
+    width	image width in pixels.
+    height	image height in pixels.
+
+The popup's cell box is derived from the pixel dimensions and the terminal /
+GUI cell metrics, so the caller does not normally have to set "minwidth" /
+"minheight" / "maxwidth" / "maxheight".
+
+For RGBA buffers that need to blend cleanly into the editor's actual
+backdrop the script can call |getbgcolor()| to obtain the current background
+colour as [r, g, b] and pre-composite anti-aliased edges against it.
+
+Minimal RGB example - a 4x4 red square popped at the cursor: >
+	let pixels = repeat([0xff, 0x00, 0x00], 4 * 4)->list2blob()
+	call popup_create('', #{
+	      \ image: #{ data: pixels, width: 4, height: 4 },
+	      \ line: 'cursor+1', col: 'cursor',
+	      \ })
+
+Real-world example - pipe a PNG through GraphicsMagick and pop the resulting
+raw RGB bytes: >
+	let png = 'cat.png'
+	let dim = split(system('gm identify -format "%w %h" '
+		\ .. shellescape(png)))
+	let [w, h] = [str2nr(dim[0]), str2nr(dim[1])]
+	call system('gm convert ' .. shellescape(png)
+		\ .. ' -depth 8 rgb:/tmp/cat.rgb')
+	let blob = readblob('/tmp/cat.rgb')
+	call popup_create('', #{
+	      \ image: #{ data: blob, width: w, height: h },
+	      \ line: 1, col: 1, border: [], padding: [0, 0, 0, 0],
+	      \ })
+
+The image can be replaced at runtime via |popup_setoptions()|.  When the new
+buffer has the same width and height as the current one the pixels are
+swapped in place, which is fast enough to drive frame-by-frame animation
+from a |timer|.  |popup_getoptions()| returns the same dictionary back; the
+"data" entry is a fresh blob copy independent of the popup's internal
+buffer.
+
+To remove a previously set image pass an empty dictionary: >
+	call popup_setoptions(winid, #{image: {}})
 
 ==============================================================================
 4. Examples						*popup-examples*

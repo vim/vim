@@ -52600,6 +52600,8 @@ Popups ~
 - Support for clipping textproperty popups |popup-clipwindow|.
 - Completion popup menu can be scrolled with the mouse or using keys
   |popupmenu-keys|.
+- Support for loading images in popups using the cairo, GDI, kitty, or sixel
+  backend |popup-image|.
 
 Diff mode ~
 ---------
@@ -52685,6 +52687,7 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |ch_listen()|		listen on {address}
+|getbgcolor()|		return background color as RGB value
 |tabpanel_getinfo()|	get current state of the |tabpanel|
 |tabpanel_scroll()|	scroll the |tabpanel|
 

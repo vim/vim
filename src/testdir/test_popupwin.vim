@@ -5751,4 +5751,248 @@ func Test_popup_opacity_attr()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_image_update()
+  CheckFeature image
+
+  " 2x2 RGB = 12 bytes per image (4 pixels x 3 bytes).
+  let image1 = 0zff000000ff000000ffffffff
+  let image2 = 0z112233445566778899aabbcc
+  let image3 = repeat([0xff, 0x00, 0x00], 40 * 32)->list2blob()
+
+  let winid = popup_create('', #{
+        \ image: #{data: image1, width: 2, height: 2},
+        \ line: 1,
+        \ col: 1,
+        \ border: [],
+        \ padding: [0, 0, 0, 0],
+        \ })
+  let pos1 = popup_getpos(winid)
+
+  call popup_setoptions(winid, #{image: #{data: image2, width: 2, height: 2}})
+  let pos2 = popup_getpos(winid)
+  call assert_equal(pos1.width, pos2.width)
+  call assert_equal(pos1.height, pos2.height)
+
+  call popup_setoptions(winid, #{image: #{data: image3, width: 40, height: 32}})
+  let pos3 = popup_getpos(winid)
+  call assert_true(pos3.width > pos2.width || pos3.height > pos2.height)
+
+  call popup_close(winid)
+endfunc
+
+func Test_popup_image_clear_with_empty_dict()
+  CheckFeature image
+
+  " Documented sentinel: popup_setoptions(winid, #{image: {}}) removes a
+  " previously set image.  After the empty-dict call, popup_getoptions()
+  " must not expose an "image" key any more.
+  let blob = repeat([0xff, 0x00, 0x00], 2 * 2)->list2blob()
+  let winid = popup_create('', #{
+        \ image: #{data: blob, width: 2, height: 2},
+        \ line: 1, col: 1,
+        \ })
+  call assert_true(has_key(popup_getoptions(winid), 'image'))
+
+  call popup_setoptions(winid, #{image: {}})
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+
+  " Passing #{image: {}} again on a popup with no image is a harmless no-op.
+  call popup_setoptions(winid, #{image: {}})
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+
+  " The same popup can be re-armed with a fresh image after clearing.
+  call popup_setoptions(winid, #{image: #{data: blob, width: 2, height: 2}})
+  call assert_true(has_key(popup_getoptions(winid), 'image'))
+
+  call popup_close(winid)
+endfunc
+
+func Test_popup_image_set_and_getoptions()
+  CheckFeature image
+
+  " RGB image: 4x4 cells, 3 bytes per pixel.
+  let blob = repeat([0xff, 0x00, 0x00], 4 * 4)->list2blob()
+  let winid = popup_create('', #{
+        \ image: #{data: blob, width: 4, height: 4},
+        \ line: 1, col: 1,
+        \ })
+  let opt = popup_getoptions(winid)
+  call assert_true(has_key(opt, 'image'),
+        \ 'popup_getoptions() should expose the image dict')
+  call assert_equal(['alpha', 'data', 'height', 'width'], sort(keys(opt.image)))
+  call assert_equal(4, opt.image.width)
+  call assert_equal(4, opt.image.height)
+  call assert_equal(0, opt.image.alpha)
+  call assert_equal(v:t_blob, type(opt.image.data))
+  call assert_equal(4 * 4 * 3, len(opt.image.data))
+  call assert_equal(blob, opt.image.data)
+  " The returned blob must be an independent copy: mutating it does not
+  " affect the popup's stored pixel buffer.
+  let saved = copy(opt.image.data)
+  let opt.image.data[0] = 0
+  let opt2 = popup_getoptions(winid)
+  call assert_equal(saved, opt2.image.data)
+  call popup_close(winid)
+
+  " RGBA image: 4 bytes per pixel, alpha flag should round-trip true.
+  let rgba = repeat([0x11, 0x22, 0x33, 0x80], 2 * 2)->list2blob()
+  let winid = popup_create('', #{
+        \ image: #{data: rgba, width: 2, height: 2},
+        \ line: 1, col: 1,
+        \ })
+  let opt = popup_getoptions(winid)
+  call assert_equal(1, opt.image.alpha)
+  call assert_equal(2 * 2 * 4, len(opt.image.data))
+  call assert_equal(rgba, opt.image.data)
+  call popup_close(winid)
+
+  " No image set -> getoptions must not expose an "image" key.
+  let winid = popup_create('plain', #{line: 1, col: 1})
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+  call popup_close(winid)
+endfunc
+
+func Test_popup_image_required_params()
+  CheckFeature image
+
+  let blob = repeat([0xff, 0x00, 0x00], 2 * 2)->list2blob()
+
+  " Wrong data length is rejected with a clear error and the popup is not
+  " created, so there is nothing to clean up.
+  call assert_fails(
+        \ "call popup_create('', #{image: #{data: 0z00, width: 2, height: 2}})",
+        \ 'E475:')
+  call assert_equal([], popup_list())
+
+  " Missing/zero required keys are silently ignored: the popup is created
+  " without an image, so popup_getoptions() should not expose "image".
+  let winid = popup_create('', #{
+        \ image: #{width: 2, height: 2},
+        \ line: 1, col: 1,
+        \ })
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+  call popup_close(winid)
+
+  let winid = popup_create('', #{
+        \ image: #{data: blob, height: 2},
+        \ line: 1, col: 1,
+        \ })
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+  call popup_close(winid)
+
+  let winid = popup_create('', #{
+        \ image: #{data: blob, width: 2},
+        \ line: 1, col: 1,
+        \ })
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+  call popup_close(winid)
+
+  let winid = popup_create('', #{
+        \ image: #{data: blob, width: 0, height: 2},
+        \ line: 1, col: 1,
+        \ })
+  call assert_false(has_key(popup_getoptions(winid), 'image'))
+  call popup_close(winid)
+endfunc
+
+func Test_popup_image_move()
+  CheckFeature image
+
+  let img = repeat([0xff, 0x00, 0x00], 8 * 8)->list2blob()
+  let id = popup_create('', #{
+        \ image: #{data: img, width: 8, height: 8},
+        \ line: 3, col: 5,
+        \ })
+  redraw
+  call assert_equal(1, popup_getpos(id).visible)
+  call assert_equal(8, popup_getoptions(id).image.width)
+  call assert_equal(8, popup_getoptions(id).image.height)
+  let saved = popup_getoptions(id).image.data
+
+  " Moving the popup updates its position and keeps the pixel buffer intact.
+  for [l, c] in [[1, 1], [5, 10], [8, 20], [2, 3]]
+    call popup_move(id, #{line: l, col: c})
+    redraw
+    let pos = popup_getpos(id)
+    call assert_equal(l, pos.line)
+    call assert_equal(c, pos.col)
+    call assert_equal(1, pos.visible)
+    call assert_equal(saved, popup_getoptions(id).image.data)
+  endfor
+
+  call popup_close(id)
+endfunc
+
+func Test_popup_image_opacity_overlay()
+  CheckFeature image
+
+  " Bottom popup carries an image.
+  let img = repeat([0x00, 0xff, 0x00], 16 * 16)->list2blob()
+  let img_id = popup_create('', #{
+        \ image: #{data: img, width: 16, height: 16},
+        \ line: 3, col: 3, zindex: 50,
+        \ })
+  " Top popup overlaps it with some opacity.
+  let top_id = popup_create(['XXXX', 'XXXX'], #{
+        \ line: 3, col: 3, zindex: 100,
+        \ minwidth: 6, minheight: 2,
+        \ opacity: 50,
+        \ })
+  redraw
+
+  call assert_equal(1, popup_getpos(img_id).visible)
+  call assert_equal(1, popup_getpos(top_id).visible)
+  " The semi-transparent popup is drawn above the image popup.
+  call assert_true(popup_getoptions(top_id).zindex > popup_getoptions(img_id).zindex)
+  call assert_equal(50, popup_getoptions(top_id).opacity)
+  " The image popup keeps its pixel buffer while something is drawn on top.
+  call assert_equal(16, popup_getoptions(img_id).image.width)
+  call assert_equal(len(img), len(popup_getoptions(img_id).image.data))
+
+  call popup_close(top_id)
+  call popup_close(img_id)
+endfunc
+
+func Test_popup_image_clipwindow_scroll()
+  CheckFeature image
+
+  " An image popup anchored to a textprop with "clipwindow" set stays visible
+  " (clipped) while the prop is in reach, hides when the host scrolls the prop
+  " out of view, and keeps its pixel buffer when it comes back.
+  call prop_type_add('imgclipprop', {})
+  new
+  call setline(1, range(1, 200)->mapnew({_, v -> 'line ' .. v}))
+  call prop_add(5, 1, #{type: 'imgclipprop', length: 4})
+  let host = win_getid()
+
+  let img = repeat([0x00, 0x00, 0xff], 24 * 24)->list2blob()
+  let id = popup_create('', #{
+        \ image: #{data: img, width: 24, height: 24},
+        \ textprop: 'imgclipprop',
+        \ textpropwin: host,
+        \ line: -1, col: 1,
+        \ wrap: v:false, fixed: v:true,
+        \ clipwindow: v:true,
+        \ })
+  redraw
+  call assert_equal(1, popup_getoptions(id).clipwindow)
+  call assert_equal(1, popup_getpos(id).visible)
+  let saved = popup_getoptions(id).image.data
+
+  " Scroll the host so the prop is far below topline: the popup hides.
+  call win_execute(host, 'normal! Gzb')
+  redraw
+  call assert_equal(0, popup_getpos(id).visible)
+
+  " Scroll back: the popup reappears and still carries its image.
+  call win_execute(host, 'normal! ggzt')
+  redraw
+  call assert_equal(1, popup_getpos(id).visible)
+  call assert_equal(saved, popup_getoptions(id).image.data)
+
+  call popup_close(id)
+  bwipe!
+  call prop_type_delete('imgclipprop')
+endfunc
+
 " vim: shiftwidth=2 sts=2

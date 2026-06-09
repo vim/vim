@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Apr 28
+*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -1203,6 +1203,7 @@ Interactive:					*interactive-functions*
 	inputrestore()		restore typeahead
 
 GUI:						*gui-functions*
+	getbgcolor()		get current background colour as [r, g, b]
 	getfontname()		get name of current font being used
 	getwinpos()		position of the Vim window
 	getwinposx()		X position of the Vim window

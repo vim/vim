@@ -582,6 +582,9 @@ SRC = \
  session.c \
  sha256.c \
  sign.c \
+ sixel.c \
+ kitty.c \
+ cairo.c \
  sound.c \
  spell.c \
  spellfile.c \
@@ -720,6 +723,9 @@ OBJ = \
  [.$(DEST)]session.obj \
  [.$(DEST)]sha256.obj \
  [.$(DEST)]sign.obj \
+ [.$(DEST)]sixel.obj \
+ [.$(DEST)]kitty.obj \
+ [.$(DEST)]cairo.obj \
  [.$(DEST)]sound.obj \
  [.$(DEST)]spell.obj \
  [.$(DEST)]spellfile.obj \
@@ -1326,6 +1332,18 @@ lua_env :
  beval.h alloc.h ex_cmds.h spell.h proto.h \
  errors.h globals.h
 [.$(DEST)]sign.obj : sign.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
+ beval.h alloc.h ex_cmds.h spell.h proto.h \
+ errors.h globals.h
+[.$(DEST)]sixel.obj : sixel.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
+ beval.h alloc.h ex_cmds.h spell.h proto.h \
+ errors.h globals.h
+[.$(DEST)]kitty.obj : kitty.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
+ beval.h alloc.h ex_cmds.h spell.h proto.h \
+ errors.h globals.h
+[.$(DEST)]cairo.obj : cairo.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
  beval.h alloc.h ex_cmds.h spell.h proto.h \
  errors.h globals.h

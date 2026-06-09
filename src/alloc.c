@@ -475,6 +475,10 @@ free_all_mem(void)
     free_quickfix();
 # endif
 
+# ifdef FEAT_IMAGE_SIXEL
+    sixel_free_all();
+# endif
+
     // Close all script inputs.
     close_all_scripts();
 

@@ -4370,8 +4370,27 @@ func Test_slice()
 endfunc
 
 
+" Test for getbgcolor()
+" The actual value depends on terminal capability and highlight settings, so
+" only verify the documented shape: either [] or [r, g, b] with each
+" component an integer in 0..255.
+func Test_getbgcolor()
+  let bg = getbgcolor()
+  call assert_equal(v:t_list, type(bg))
+  if !empty(bg)
+    call assert_equal(3, len(bg))
+    for c in bg
+      call assert_equal(v:t_number, type(c))
+      call assert_true(c >= 0 && c <= 255, $'component out of range: {c}')
+    endfor
+  endif
+endfunc
+
 " Test for getcellpixels() for unix system
-" Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
+" Pixel size of a cell is terminal-dependent.  When the host terminal of the
+" RunVimInTerminal vterm exposes neither ws_xpixel/ws_ypixel via TIOCGWINSZ
+" nor a CSI 14 t reply, getcellpixels() returns an empty list -- accept
+" both shapes here, just verify the syntax is a (possibly empty) list.
 func Test_getcellpixels_for_unix()
   CheckNotMSWindows
   CheckRunVimInTerminal
@@ -4384,7 +4403,7 @@ func Test_getcellpixels_for_unix()
   call term_sendkeys(buf, ":redi END\<CR>")
   call term_sendkeys(buf, "P")
 
-  call WaitForAssert({-> assert_match("\[\d+, \d+\]", term_getline(buf, 3))}, 1000)
+  call WaitForAssert({-> assert_match('\[\(\d\+,\s*\d\+\)\?\]', term_getline(buf, 3))}, 1000)
 
   call StopVimInTerminal(buf)
 endfunc
