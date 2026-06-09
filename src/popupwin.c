@@ -4474,6 +4474,9 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     int		need_redraw = FALSE;
     int		need_reposition = FALSE;
 
+    if (check_secure())
+	return;
+
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
 		|| check_for_dict_arg(argvars, 1) == FAIL))

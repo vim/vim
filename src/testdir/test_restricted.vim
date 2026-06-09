@@ -70,6 +70,7 @@ func Test_restricted_mode()
     if has('channel')
       call assert_fails("call ch_logfile('Xlog')", 'E145:')
       call assert_fails("call ch_open('localhost:8765')", 'E145:')
+      call assert_fails("call ch_setoptions('localhost:8765', {})", 'E145:')
     endif
 
     if has('job')

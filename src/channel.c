@@ -5927,6 +5927,9 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T	*channel;
     jobopt_T	opt;
 
+    if (check_restricted() || check_secure())
+	return;
+
     if (in_vim9script()
 	    && (check_for_chan_or_job_arg(argvars, 0) == FAIL
 		|| check_for_dict_arg(argvars, 1) == FAIL))
