@@ -4568,10 +4568,10 @@ gui_mch_browsedir(char_u *title, char_u *initdir)
  */
 
 /*
- * Split up button_string into individual button labels by inserting
- * NUL bytes.  Also replace the Vim-style mnemonic accelerator prefix
- * '&' with '_'.  button_string must point to allocated memory!
- * Return an allocated array of pointers into button_string.
+ * Split up button_string into individual button labels by inserting NUL bytes.
+ * Also replace the Vim-style mnemonic accelerator prefix '&' with '_'.
+ * "button_string" is duplicated; caller must free the duplicated string via
+ * *tofree.
  */
     static char **
 split_button_string(char_u *button_string, int *n_buttons, char **tofree)
@@ -4628,7 +4628,6 @@ dialog_type_to_icon(int type)
 	    return "dialog-information-symbolic";
 	case VIM_QUESTION:
 	    return "dialog-question-symbolic";
-	    break;
 	default:
 	    break;
     }
@@ -4666,6 +4665,13 @@ dialog_key_pressed_cb(
     return FALSE;
 }
 
+    static gboolean
+dialog_close_request_cb(GtkWindow *win, gboolean *win_closed)
+{
+    *win_closed = TRUE;
+    return FALSE;
+}
+
     int
 gui_mch_dialog(
 	int	type,
@@ -4690,6 +4696,7 @@ gui_mch_dialog(
     char		*tofree = NULL;
     int			response = -1;
     gboolean		done = FALSE;
+    gboolean		win_closed = FALSE;
 
     utf8_title = CONVERT_TO_UTF8(title);
     if (utf8_title != NULL)
@@ -4700,6 +4707,8 @@ gui_mch_dialog(
     gtk_window_set_modal(win, TRUE);
     gtk_window_set_default_size(win, 300, -1);
     gtk_window_set_destroy_with_parent(win, TRUE);
+    g_signal_connect(win, "close-request",
+	    G_CALLBACK(dialog_close_request_cb), &win_closed);
 
     // Create main vertical layout container
     vertbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 16);
@@ -4740,8 +4749,16 @@ gui_mch_dialog(
     if (textfield != NULL)
     {
 	// Add text entry so user can enter text
+	char_u *utf8_text = CONVERT_TO_UTF8(textfield);
+
 	entry = gtk_entry_new();
-	gtk_editable_set_text(GTK_EDITABLE(entry), (const char *)textfield);
+
+	if (utf8_text != NULL)
+	    gtk_editable_set_text(GTK_EDITABLE(entry), (const char *)utf8_text);
+	else
+	    gtk_editable_set_text(GTK_EDITABLE(entry), "");
+	CONVERT_TO_UTF8_FREE(utf8_text);
+
 	// Make it so that pressing enter key will activate "def_but" button
 	// (which is set as the default widget).
 	gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
@@ -4790,21 +4807,24 @@ gui_mch_dialog(
 
     gtk_window_present(win);
 
-    while (!done)
+    while (!done && !win_closed)
 	g_main_context_iteration(NULL, TRUE);
 
-    if (textfield != NULL)
+    if (done)
     {
-	// Get the text the user entered
-	char_u *text;
+	if (textfield != NULL)
+	{
+	    // Get the text the user entered
+	    char_u *text;
 
-	text = (char_u *)gtk_editable_get_text(GTK_EDITABLE(entry));
-	text = CONVERT_FROM_UTF8(text);
-	vim_strncpy(textfield, text, IOSIZE - 1);
-	CONVERT_FROM_UTF8_FREE(text);
+	    text = (char_u *)gtk_editable_get_text(GTK_EDITABLE(entry));
+	    text = CONVERT_FROM_UTF8(text);
+	    vim_strncpy(textfield, text, IOSIZE - 1);
+	    CONVERT_FROM_UTF8_FREE(text);
+	}
+
+	gtk_window_destroy(win);
     }
-
-    gtk_window_destroy(win);
     g_free(but_states);
     g_free(tofree);
 
