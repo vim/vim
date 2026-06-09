@@ -1520,6 +1520,8 @@ gui_mch_draw_popup_image(
     y = FILL_Y(row);
 # ifdef USE_GTK4_SNAPSHOT
     // TODO
+    (void)x;
+    (void)y;
 # else
     cairo_popup_image_paint(wp, gui.surface, x, y,
 					    src_x, src_y, draw_w, draw_h);

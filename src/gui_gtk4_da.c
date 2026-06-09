@@ -75,8 +75,10 @@ struct _VimDrawArea
     int	    pending_width;
     int	    pending_height;
 
+#if defined(FEAT_SIGN_ICONS)
     // Array of sign icon render nodes (DrawSign)
     GArray *signs;
+#endif
 
 #ifdef FEAT_NETBEANS_INTG
     // Cairo render node for multi sign indicator for Netbeans. May be NULL
@@ -102,7 +104,9 @@ vim_draw_area_finalize(GObject *obj)
     vim_draw_area_clear(self);
 
     g_free(self->cells);
+#if defined(FEAT_SIGN_ICONS)
     g_array_free(self->signs, TRUE);
+#endif
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
 }
@@ -120,12 +124,13 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 
 }
 
-
     static void
 vim_draw_area_init(VimDrawArea *self)
 {
+#if defined(FEAT_SIGN_ICONS)
     self->signs = g_array_new(FALSE, FALSE, sizeof(DrawSign));
     g_array_set_clear_func(self->signs, (GDestroyNotify)draw_sign_clear);
+#endif
 }
 
     GtkWidget *
@@ -450,7 +455,7 @@ draw_node_copy(DrawNode *dnode)
  * "keep_left" is TRUE, then keep the left halve (discard right halve), and vice
  * versa. This will dirty the draw node.
  *
- * Returns TRUE if the new split draw node is not nessecary anymore (see
+ * Returns TRUE if the new split draw node is not necessary anymore (see
  * draw_node_new()), otherwise FALSE.
  */
     static gboolean
