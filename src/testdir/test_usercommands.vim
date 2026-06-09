@@ -543,6 +543,11 @@ func Test_command_completeopt_escape()
     let g:EscArgLead = a:A
     return "hello world"
   endfunc
+  func! EscMulti(A, L, P)
+    let g:EscArgLead = a:A
+    return filter(['one value', 'two values', 'three values'],
+          \       {_, v -> stridx(v, a:A) == 0})
+  endfunc
 
   " customlist + -completeopt=escape: spaces and backslashes are escaped.
   com! -nargs=1 -complete=customlist,EscOne -completeopt=escape DoCmd echo <q-args>
@@ -596,6 +601,17 @@ func Test_command_completeopt_escape()
   call assert_equal('hello wo', g:EscArgLead)
   delcom DoCmd
 
+  " Multi-argument case: with -nargs=+ the argument splitter still runs, so an
+  " escaped match stays a single argument and <f-args> splits the line on the
+  " unescaped spaces.  This is the scenario -nargs=_ cannot express.
+  com! -nargs=+ -complete=customlist,EscMulti -completeopt=escape DoCmd
+        \ let g:EscArgs = [<f-args>]
+  let g:EscArgs = []
+  call feedkeys(":DoCmd one\<Tab> two\<Tab>\<CR>", 'tx')
+  call assert_equal(['one value', 'two values'], g:EscArgs)
+  delcom DoCmd
+  unlet g:EscArgs
+
   " Tab-completion on the attribute value.
   call feedkeys(":com -completeopt=esc\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -completeopt=escape', @:)
@@ -606,10 +622,16 @@ func Test_command_completeopt_escape()
   call assert_fails('com! -nargs=1 -complete=customlist,EscOne -completeopt= DoCmd :',
         \ 'E179:')
 
+  " -completeopt=escape is meaningless with -nargs=_ (the splitter is disabled),
+  " so the combination is rejected at command-definition time.
+  call assert_fails('com! -nargs=_ -complete=customlist,EscOne -completeopt=escape DoCmd :',
+        \ 'E1579:')
+
   delfunc EscOne
   delfunc EscBs
   delfunc EscBoth
   delfunc EscCustom
+  delfunc EscMulti
   unlet g:EscArgLead
 endfunc
 

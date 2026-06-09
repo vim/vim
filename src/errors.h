@@ -3816,3 +3816,5 @@ EXTERN char e_invalid_format_string_single_percent_s[]
 EXTERN char e_too_many_postponed_prefixes_spell[]
 	INIT(= N_("E1578: Too many postponed prefixes and/or compound flags"));
 #endif
+EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
+	INIT(= N_("E1579: -completeopt=escape cannot be used with -nargs=_"));

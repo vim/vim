@@ -1620,6 +1620,11 @@ Completing ":MyCmd2 two va<tab>" will complete with: >
 
 	:MyCmd2 two values
 
+Use -nargs=_ when the whole argument area should be taken as a single value
+as-is.  When you need several arguments and an individual argument may itself
+contain spaces (so the splitter must keep running), use -nargs=+/* together
+with |:command-completeopt| (-completeopt=escape) instead.
+
 
 Note that arguments are used as text, not as expressions.  Specifically,
 "s:var" will use the script-local variable in the script where the command was
@@ -1790,6 +1795,15 @@ logical `hello world`.
 Without -completeopt=escape the literal string `hello world` would be inserted
 into the command line, so Vim's argument splitter would treat it as two
 arguments.
+
+-completeopt=escape and -nargs=_ (see |:command-nargs|) target different
+shapes, they are not competing solutions for the same one:
+	"whole line as one argument, no escaping"
+				use -nargs=_
+	"multiple arguments, each may contain spaces"
+				use -nargs=+ or -nargs=* with -completeopt=escape
+Because -nargs=_ disables the argument splitter, escaping has no effect there,
+so combining -nargs=_ with -completeopt=escape is an error (E1579).
 
 
 Range handling ~

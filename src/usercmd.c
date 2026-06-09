@@ -1442,6 +1442,13 @@ ex_command(exarg_T *eap)
 		       (char_u *)_(e_complete_used_without_allowing_arguments),
 								   TRUE, TRUE);
     }
+    else if ((compl_opt & UCC_ESCAPE) && (argt & EX_ARGSPACE))
+    {
+	// -nargs=_ disables the argument splitter, so escaping spaces in
+	// inserted matches has no effect.  Reject the combination instead of
+	// silently ignoring it.
+	emsg(_(e_completeopt_escape_cannot_be_used_with_nargs_underscore));
+    }
     else
     {
 	char_u *tofree = NULL;
