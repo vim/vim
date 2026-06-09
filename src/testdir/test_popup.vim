@@ -2632,8 +2632,9 @@ func Test_popup_opacity_move_after_close()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_popup_create_sandbox()
+func Test_popup_sandbox()
   call assert_fails('sandbox call popup_create("hello", {})', 'E48:')
+  call assert_fails('sandbox call popup_setoptions(1, {})', 'E48:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
