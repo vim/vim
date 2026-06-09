@@ -477,6 +477,10 @@ typedef struct Gui
 #endif
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     int decor_height;
+
+    // Used for clipboard functionality in GTK4 GUI
+    GdkContentProvider *regular_provider;
+    GdkContentProvider *primary_provider;
 #endif
 } gui_T;
 

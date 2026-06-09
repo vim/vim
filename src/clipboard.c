@@ -72,7 +72,9 @@ typedef struct {
 // Mimes with a lower index in the array are prioritized first when we are
 // receiving data.
 static const char *supported_mimes[] = {
+    VIMENC_MIMETYPE_NAME,
     VIMENC_ATOM_NAME,
+    VIM_MIMETYPE_NAME,
     VIM_ATOM_NAME,
     "text/plain;charset=utf-8",
     "text/plain",
@@ -1424,6 +1426,10 @@ open_app_context(void)
 
 static Atom	vim_atom;	// Vim's own special selection format
 static Atom	vimenc_atom;	// Vim's extended selection format
+static Atom	vim_mt_atom;	// Vim's own special selection format (in mime
+				// type format)
+static Atom	vimenc_mt_atom;	// Vim's extended selection format (in mime type
+				// format)
 static Atom	utf8_atom;
 static Atom	compound_text_atom;
 static Atom	text_atom;
@@ -1435,6 +1441,8 @@ x11_setup_atoms(Display *dpy)
 {
     vim_atom	       = XInternAtom(dpy, VIM_ATOM_NAME,   False);
     vimenc_atom	       = XInternAtom(dpy, VIMENC_ATOM_NAME,False);
+    vim_mt_atom	       = XInternAtom(dpy, VIM_MIMETYPE_NAME,   False);
+    vimenc_mt_atom     = XInternAtom(dpy, VIMENC_MIMETYPE_NAME,False);
     utf8_atom	       = XInternAtom(dpy, "UTF8_STRING",   False);
     compound_text_atom = XInternAtom(dpy, "COMPOUND_TEXT", False);
     text_atom	       = XInternAtom(dpy, "TEXT",	   False);
@@ -1476,13 +1484,15 @@ clip_x11_convert_selection_cb(
     // requestor wants to know what target types we support
     if (*target == targets_atom)
     {
-	static Atom array[7];
+	static Atom array[9];
 
 	*value = (XtPointer)array;
 	i = 0;
 	array[i++] = targets_atom;
 	array[i++] = vimenc_atom;
 	array[i++] = vim_atom;
+	array[i++] = vimenc_mt_atom;
+	array[i++] = vim_mt_atom;
 	if (enc_utf8)
 	    array[i++] = utf8_atom;
 	array[i++] = XA_STRING;
@@ -1499,8 +1509,10 @@ clip_x11_convert_selection_cb(
 
     if (       *target != XA_STRING
 	    && *target != vimenc_atom
+	    && *target != vimenc_mt_atom
 	    && (*target != utf8_atom || !enc_utf8)
 	    && *target != vim_atom
+	    && *target != vim_mt_atom
 	    && *target != text_atom
 	    && *target != compound_text_atom)
 	return False;
@@ -1511,11 +1523,11 @@ clip_x11_convert_selection_cb(
 	return False;
 
     // For our own format, the first byte contains the motion type
-    if (*target == vim_atom)
+    if (*target == vim_atom || *target == vim_mt_atom)
 	(*length)++;
 
     // Our own format with encoding: motion 'encoding' NUL text
-    if (*target == vimenc_atom)
+    if (*target == vimenc_atom || *target == vimenc_mt_atom)
 	*length += STRLEN(p_enc) + 2;
 
     if (save_length < *length || save_length / 2 >= *length)
@@ -1558,20 +1570,26 @@ clip_x11_convert_selection_cb(
 	save_result = (char_u *)*value;
 	save_length = *length;
     }
-    else if (*target == vimenc_atom)
+    else if (*target == vimenc_atom || *target == vimenc_mt_atom)
     {
 	int l = STRLEN(p_enc);
 
 	save_result[0] = motion_type;
 	STRCPY(save_result + 1, p_enc);
 	mch_memmove(save_result + l + 2, string, (size_t)(*length - l - 2));
-	*type = vimenc_atom;
+	if (*target == vimenc_atom)
+	    *type = vimenc_atom;
+	else
+	    *type = vimenc_mt_atom;
     }
     else
     {
 	save_result[0] = motion_type;
 	mch_memmove(save_result + 1, string, (size_t)(*length - 1));
-	*type = vim_atom;
+	if (*target == vim_atom)
+	    *type = vim_atom;
+	else
+	    *type = vim_mt_atom;
     }
     *format = 8;	    // 8 bits per char
     vim_free(string);
@@ -1681,13 +1699,13 @@ clip_x11_request_selection_cb(
     }
     p = (char_u *)value;
     len = *length;
-    if (*type == vim_atom)
+    if (*type == vim_atom || *type == vim_mt_atom)
     {
 	motion_type = *p++;
 	len--;
     }
 
-    else if (*type == vimenc_atom)
+    else if (*type == vimenc_atom || *type == vimenc_mt_atom)
     {
 	char_u		*enc;
 	vimconv_T	conv;
@@ -1765,15 +1783,17 @@ clip_x11_request_selection(
     time_t	start_time;
     int		timed_out = FALSE;
 
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 8; i++)
     {
 	switch (i)
 	{
-	    case 0:  type = vimenc_atom;	break;
-	    case 1:  type = vim_atom;		break;
-	    case 2:  type = utf8_atom;		break;
-	    case 3:  type = compound_text_atom; break;
-	    case 4:  type = text_atom;		break;
+	    case 0:  type = vimenc_mt_atom;	break;
+	    case 1:  type = vimenc_atom;	break;
+	    case 2:  type = vim_mt_atom;	break;
+	    case 3:  type = vim_atom;		break;
+	    case 4:  type = utf8_atom;		break;
+	    case 5:  type = compound_text_atom; break;
+	    case 6:  type = text_atom;		break;
 	    default: type = XA_STRING;
 	}
 	if (type == utf8_atom
@@ -2155,7 +2175,7 @@ clip_yank_selection(
     str_to_reg(y_ptr, type, str, len, -1, FALSE);
 }
 
-    static int
+    int
 clip_convert_selection_offset(
 	char_u	    **str,
 	long_u	    *len,
@@ -2555,15 +2575,84 @@ clip_reset_wayland(void)
 }
 
 /*
+ * If "vim" is TRUE, then get the motion type. If "vimenc" is TRUE, then get the
+ * motion type and also convert "*buf". "buf" and "len_store" will be updated to
+ * reflect the actual contents, but should be set beforehand with the initial
+ * contents. Returns OK on success and FAIL on failure.
+ */
+    int
+clip_convert_data(
+	char_u	**buf,
+	long	*len_store,
+	int	*motion,
+	bool	vim,
+	bool	vimenc,
+	char_u	**tofree)
+{
+    char_u  *final = *buf;
+    char_u  *enc;
+    long    len = *len_store;
+
+    if (vim && len >= 2)
+    {
+	*motion = *final++;
+	len--;
+    }
+    else if (vimenc && len >= 3)
+    {
+	vimconv_T   conv;
+	int	    convlen;
+
+	// First byte is motion type
+	*motion = *final++;
+	len--;
+
+	// Get encoding of selection
+	enc = final;
+
+	// Skip the encoding type including null terminator in final text
+	final = memchr(final, NUL, len);
+	if (final == NULL)
+	    return FAIL;
+	final++; // Skip NUL
+
+	// Subtract pointers to get length of encoding;
+	len -= final - enc;
+
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, enc, p_enc);
+	if (conv.vc_type != CONV_NONE)
+	{
+	   char_u *tmp;
+
+	   convlen = len;
+	   tmp = string_convert(&conv, final, &convlen);
+	   len = convlen;
+	   if (tmp != NULL)
+	   {
+		final = tmp;
+		*tofree = final;
+	   }
+	   convert_setup(&conv, NULL, NULL);
+	}
+    }
+    *buf = final;
+    *len_store = len;
+    return OK;
+}
+
+/*
  * Read data from a file descriptor and write it to the given clipboard.
  */
     static void
 clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 {
-    char_u	*start, *final, *enc;
+    char_u	*start, *final;
+    long	len;
     garray_T	buf;
     int		motion_type = MAUTO;
     ssize_t	r = 0;
+    char_u	*tofree = NULL;
 #  ifndef HAVE_SELECT
     struct pollfd   pfd;
 
@@ -2628,47 +2717,16 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     }
 
     final = buf.ga_data;
+    len = buf.ga_len;
 
-    if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
-    {
-	motion_type = *final++;
-	buf.ga_len--;
-    }
-    else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)
-    {
-	vimconv_T   conv;
-	int	    convlen;
-
-	// first byte is motion type
-	motion_type = *final++;
-	buf.ga_len--;
-
-	// Get encoding of selection
-	enc = final;
-
-	// Skip the encoding type including null terminator in final text
-	final += STRLEN(final) + 1;
-
-	// Subtract pointers to get length of encoding;
-	buf.ga_len -= final - enc;
-
-	conv.vc_type = CONV_NONE;
-	convert_setup(&conv, enc, p_enc);
-	if (conv.vc_type != CONV_NONE)
-	{
-	   char_u *tmp;
-
-	   convlen = buf.ga_len;
-	   tmp = string_convert(&conv, final, &convlen);
-	   buf.ga_len = convlen;
-	   if (tmp != NULL)
-		final = tmp;
-	   convert_setup(&conv, NULL, NULL);
-	}
-    }
-
-    clip_yank_selection(motion_type, final, (long)buf.ga_len, cbd);
+    if (clip_convert_data(&final, &len, &motion_type,
+	    STRCMP(mime_type, VIM_ATOM_NAME) == 0
+	    || STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
+	    STRCMP(mime_type, VIMENC_ATOM_NAME) == 0
+	    || STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0, &tofree) == OK)
+	clip_yank_selection(motion_type, final, len, cbd);
     ga_clear(&buf);
+    vim_free(tofree);
 }
 
 /*
@@ -2772,8 +2830,10 @@ vwl_data_source_listener_event_send(
     // format, after the first byte is the encoding type, which is null
     // terminated.
 
-    is_vimenc = STRCMP(mime_type, VIMENC_ATOM_NAME) == 0;
-    is_vim = STRCMP(mime_type, VIM_ATOM_NAME) == 0;
+    is_vimenc = STRCMP(mime_type, VIMENC_ATOM_NAME) == 0
+	|| STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0;
+    is_vim = STRCMP(mime_type, VIM_ATOM_NAME) == 0
+	|| STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0;
 
     if (is_vimenc)
 	offset += 2 + STRLEN(p_enc);
