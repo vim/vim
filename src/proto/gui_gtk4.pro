@@ -103,7 +103,7 @@ void gui_mch_update_scrollbar_size(void);
 void gui_mch_set_text_area_pos(int x, int y, int w, int h);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
 char_u *gui_mch_browsedir(char_u *title, char_u *initdir);
-int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd);
+int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int def_but, char_u *textfield, int ex_cmd);
 void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
