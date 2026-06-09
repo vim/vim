@@ -72,8 +72,8 @@ vim_content_provider_new(Clipboard_T *cbd)
     static GdkContentFormats *
 vim_content_provider_ref_formats(GdkContentProvider *cp UNUSED)
 {
-    // We support text formats + our own _VIM_TEXT and _VIMENC_TEXT formats.
-    // Also expose html if user specified 'html' in 'clipboard' option.
+    // We support text formats + our own Vim specific mime types. Also expose
+    // html if user specified 'html' in 'clipboard' option.
     GdkContentFormatsBuilder *builder = gdk_content_formats_builder_new();
 
     for (int i = 0; i < SUPPORTED_MIMES_LEN; i++)
@@ -180,7 +180,8 @@ vim_content_provider_write_mime_type_async(
     else if (is_vim)
 	string[0] = (char_u)motion_type;
 
-    g_task_set_task_data(task, string, g_free);
+    // "string" is allocated using vim's allocation functions
+    g_task_set_task_data(task, string, vim_free);
 
     g_output_stream_write_all_async(
 	    stream, string, length, io_priority, cancellable,

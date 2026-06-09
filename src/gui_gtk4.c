@@ -3531,6 +3531,7 @@ clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
     char_u	    *actual, *final;
     long	    len;
     int		    motion_type = MAUTO;
+    char_u	    *tofree = NULL;
 
     in_stream = gdk_clipboard_read_finish(cb, result, &mime_type, &error);
     if (in_stream == NULL)
@@ -3554,14 +3555,16 @@ clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
     len = (long)arr->len;
     actual = final = g_byte_array_free(arr, FALSE);
 
-    clip_convert_data(&final, &len, &motion_type,
+    if (clip_convert_data(&final, &len, &motion_type,
 	    STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
-	    STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0);
-
-    clip_yank_selection(motion_type, final, len, cbd);
+	    STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0, &tofree) == OK)
+	clip_yank_selection(motion_type, final, len, cbd);
     g_free(actual);
+    vim_free(tofree);
 
 exit:
+    if (in_stream != NULL)
+	g_object_unref(in_stream);
     crd->done = TRUE;
 }
 
@@ -3571,6 +3574,13 @@ exit:
     void
 clip_mch_request_selection(Clipboard_T *cbd)
 {
+    static const char	*mimes_no_html[] = {
+	VIMENC_MIMETYPE_NAME,
+	VIM_MIMETYPE_NAME,
+	"text/plain;charset=utf-8",
+	"text/plain",
+	NULL
+    };
     GdkClipboard	*clipboard;
     ClipReadData	crd;
     time_t		start;
@@ -3582,7 +3592,8 @@ clip_mch_request_selection(Clipboard_T *cbd)
     crd.cbd = cbd;
     crd.done = FALSE;
 
-    gdk_clipboard_read_async(clipboard, supported_mimes,
+    gdk_clipboard_read_async(
+	    clipboard, clip_html ? supported_mimes : mimes_no_html,
 	    G_PRIORITY_HIGH, NULL, (GAsyncReadyCallback)clip_read_cb, &crd);
 
     // Spin until the async callback fires, with a 3-second wall-clock

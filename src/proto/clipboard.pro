@@ -37,7 +37,7 @@ void may_set_selection(void);
 int clip_init_wayland(void);
 void clip_uninit_wayland(void);
 int clip_reset_wayland(void);
-void clip_convert_data(char_u **buf, long *len_store, int *motion, bool vim, bool vimenc);
+int clip_convert_data(char_u **buf, long *len_store, int *motion, bool vim, bool vimenc, char_u **tofree);
 char *choose_clipmethod(void);
 void ex_clipreset(exarg_T *eap);
 void adjust_clip_reg(int *rp);

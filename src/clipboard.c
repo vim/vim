@@ -2578,15 +2578,16 @@ clip_reset_wayland(void)
  * If "vim" is TRUE, then get the motion type. If "vimenc" is TRUE, then get the
  * motion type and also convert "*buf". "buf" and "len_store" will be updated to
  * reflect the actual contents, but should be set beforehand with the initial
- * contents.
+ * contents. Returns OK on success and FAIL on failure.
  */
-    void
+    int
 clip_convert_data(
 	char_u	**buf,
 	long	*len_store,
 	int	*motion,
 	bool	vim,
-	bool	vimenc)
+	bool	vimenc,
+	char_u	**tofree)
 {
     char_u  *final = *buf;
     char_u  *enc;
@@ -2597,12 +2598,12 @@ clip_convert_data(
 	*motion = *final++;
 	len--;
     }
-    if (vimenc && len >= 3)
+    else if (vimenc && len >= 3)
     {
 	vimconv_T   conv;
 	int	    convlen;
 
-	// first byte is motion type
+	// First byte is motion type
 	*motion = *final++;
 	len--;
 
@@ -2610,7 +2611,10 @@ clip_convert_data(
 	enc = final;
 
 	// Skip the encoding type including null terminator in final text
-	final += STRLEN(final) + 1;
+	final = memchr(final, NUL, len);
+	if (final == NULL)
+	    return FAIL;
+	final++; // Skip NUL
 
 	// Subtract pointers to get length of encoding;
 	len -= final - enc;
@@ -2625,12 +2629,16 @@ clip_convert_data(
 	   tmp = string_convert(&conv, final, &convlen);
 	   len = convlen;
 	   if (tmp != NULL)
+	   {
 		final = tmp;
+		*tofree = final;
+	   }
 	   convert_setup(&conv, NULL, NULL);
 	}
     }
     *buf = final;
     *len_store = len;
+    return OK;
 }
 
 /*
@@ -2644,6 +2652,7 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     garray_T	buf;
     int		motion_type = MAUTO;
     ssize_t	r = 0;
+    char_u	*tofree = NULL;
 #  ifndef HAVE_SELECT
     struct pollfd   pfd;
 
@@ -2710,14 +2719,14 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     final = buf.ga_data;
     len = buf.ga_len;
 
-    clip_convert_data(&final, &len, &motion_type,
+    if (clip_convert_data(&final, &len, &motion_type,
 	    STRCMP(mime_type, VIM_ATOM_NAME) == 0
 	    || STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
 	    STRCMP(mime_type, VIMENC_ATOM_NAME) == 0
-	    || STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0);
-
-    clip_yank_selection(motion_type, final, len, cbd);
+	    || STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0, &tofree) == OK)
+	clip_yank_selection(motion_type, final, len, cbd);
     ga_clear(&buf);
+    vim_free(tofree);
 }
 
 /*
