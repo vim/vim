@@ -1160,9 +1160,6 @@
 #  define FEAT_SIGN_ICONS
 # endif
 #endif
-#if defined(USE_GTK4_SNAPSHOT) && !defined(HAVE_GLYCIN_GTK4)
-# undef FEAT_SIGN_ICONS
-#endif
 
 /*
  * +balloon_eval	Allow balloon expression evaluation. Used with a

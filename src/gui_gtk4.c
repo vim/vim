@@ -33,9 +33,6 @@
 #ifdef USE_GTK4_SNAPSHOT
 # include "gui_gtk4_da.h"
 #endif
-#ifdef HAVE_GLYCIN_GTK4
-# include <glycin-gtk4-2/glycin-gtk4.h>
-#endif
 
 /*
  * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
@@ -2768,33 +2765,6 @@ on_tab_reordered(
 }
 #endif
 
-#ifdef HAVE_GLYCIN_GTK4
-    static GdkTexture *
-get_texture_from_file(char_u *path, GError **error)
-{
-    GFile	    *file;
-    GlyLoader   *loader;
-    GlyImage    *image;
-    GlyFrame    *frame;
-
-    file = g_file_new_for_path((const char *)path);
-
-    loader = gly_loader_new(file);
-
-    image = gly_loader_load(loader, error);
-    if (image != NULL)
-    {
-	frame = gly_image_next_frame(image, error);
-	if (frame != NULL)
-	{
-	    GdkTexture *texture = gly_gtk_frame_get_texture(frame);
-	    return texture;
-	}
-    }
-    return NULL;
-}
-#endif
-
 /*
  * ============================================================
  * Sign support
@@ -2866,7 +2836,8 @@ gui_mch_register_sign(char_u *signfile)
 # ifdef USE_GTK4_SNAPSHOT
 	GdkTexture  *sign;
 
-	sign = get_texture_from_file(signfile, &error);
+	sign = gdk_texture_new_from_filename((const char *)signfile,
+							    &error);
 	if (sign != NULL)
 	    return sign;
 # else
@@ -4098,8 +4069,8 @@ create_toolbar_icon(vimmenu_T *menu)
 	expand_env(menu->iconfile, buf, MAXPATHL);
 	if (vim_fexists(buf))
 	{
-#ifdef HAVE_GLYCIN_GTK4
-	    GdkTexture *texture = get_texture_from_file(buf, NULL);
+	    GdkTexture *texture = gdk_texture_new_from_filename(
+		    (const char *)buf, NULL);
 
 	    if (texture != NULL)
 	    {
@@ -4108,19 +4079,6 @@ create_toolbar_icon(vimmenu_T *menu)
 		gtk_widget_set_size_request(image, 24, 24);
 		g_object_unref(texture);
 	    }
-#else
-	    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(
-		    (const char *)buf, 24, 24, TRUE, NULL);
-	    if (pixbuf != NULL)
-	    {
-		GdkTexture *texture =
-			gdk_texture_new_for_pixbuf(pixbuf);
-		image = gtk_image_new_from_paintable(
-			GDK_PAINTABLE(texture));
-		g_object_unref(texture);
-		g_object_unref(pixbuf);
-	    }
-#endif
 	}
     }
 
