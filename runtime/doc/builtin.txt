@@ -231,6 +231,7 @@ garbagecollect([{atexit}])	none	free memory, breaking cyclic
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
+getbgcolor()			List	get background colour as [r, g, b]
 getbufinfo([{buf}])		List	information about buffers
 getbufline({buf}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {buf}
@@ -4032,6 +4033,25 @@ getbufvar({buf}, {varname} [, {def}])			*getbufvar()*
 			GetBufnr()->getbufvar(varname)
 <
 		Return type: any, depending on {varname}
+
+
+getbgcolor()						*getbgcolor()*
+		Returns a |List| describing the current background colour
+		as [red, green, blue], each component in the range 0..255.
+
+		In the GUI (or with 'termguicolors' set) the value comes
+		from the |hl-Normal| highlight group's background.  In a
+		terminal it comes from the OSC 11 response (also available
+		as |v:termrbgresp|).
+		Returns [] when no value is available, e.g. before the
+		terminal has answered the OSC 11 query, or when |hl-Normal|
+		has no background colour set.
+
+		Useful when manually crafting RGB image data and you want
+		to flatten alpha onto the same colour the terminal will
+		actually display behind the image.
+
+		Return type: list<any>
 
 
 getcellpixels()						*getcellpixels()*
@@ -13280,6 +13300,13 @@ hangul_input		Compiled with Hangul input support. |hangul|
 hpux			HP-UX version of Vim.
 hurd			GNU/Hurd version of Vim
 iconv			Can use iconv() for conversion.
+image			Compiled with the popup window "image" attribute.
+			See |popup-image|.
+image_cairo		Compiled with the Cairo image backend (GTK GUI).
+image_gdi		Compiled with the GDI image backend (Windows GUI).
+image_kitty		Compiled with the kitty graphics protocol image backend
+			(terminal).
+image_sixel		Compiled with the DEC sixel image backend (terminal).
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
 job			Compiled with support for |channel| and |job|

@@ -449,6 +449,14 @@ update_screen(int type_arg)
     }
 #endif
 
+#ifdef FEAT_IMAGE
+    // Popup images are blitted by update_popups(), but later steps in
+    // update_screen() such as the intro message, GUI cursor redraw, and other
+    // final overlays may paint on top of them.  Re-emit the popup images once
+    // here at the end of every redraw so the image layer is restored.
+    update_popup_images();
+#endif
+
 #ifdef FEAT_EVAL
     invoke_redraw_listener_start_or_end(false);
     redraw_listener_cleanup();

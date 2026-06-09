@@ -4248,6 +4248,51 @@ struct window_S
     char_u	*w_popup_mask_cells; // cached mask cells
     int		w_popup_mask_height; // height of w_popup_mask_cells
     int		w_popup_mask_width;  // width of w_popup_mask_cells
+
+# ifdef FEAT_IMAGE
+    char_u	*w_popup_image_data;	// RGB pixels (w*h*3) or RGBA (w*h*4)
+    int		w_popup_image_w;	// source pixel width
+    int		w_popup_image_h;	// source pixel height
+    int		w_popup_image_alpha;	// TRUE when data is RGBA, not RGB
+    // Last screen rectangle (in cells) where the image was emitted.  Used
+    // to invalidate ScreenLines under the previous image when the popup
+    // moves or the clip changes; otherwise screen_fill() skips the paint
+    // for cells whose desired space+attr already matches what was drawn
+    // before (e.g. body -> top padding both write ' '+popup_attr), leaving
+    // image pixels stranded in the terminal (sixel/kitty) or on gui.surface
+    // (GDI/Cairo).  cells_h == 0 means "no previous emit".
+    int		w_popup_image_emit_row;
+    int		w_popup_image_emit_col;
+    int		w_popup_image_emit_cells_w;
+    int		w_popup_image_emit_cells_h;
+#  ifdef FEAT_IMAGE_SIXEL
+    char_u	*w_popup_image_seq;	// cached sixel DCS sequence (terminal)
+    int		w_popup_image_seq_w;	// pixel width of cached seq
+    int		w_popup_image_seq_h;	// pixel height used for cached seq;
+					// -1 means cache is invalid
+    int		w_popup_image_seq_crop_x; // pixel offset (left) into source
+    int		w_popup_image_seq_crop_y; // pixel offset (top) into source
+    int		w_popup_image_seq_cells_w; // cell width  spanning seq pixels
+    int		w_popup_image_seq_cells_h; // cell height spanning seq pixels
+#  endif
+#  ifdef FEAT_IMAGE_GDI
+    // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down
+    // DIB section, the DC keeps it selected for fast BitBlt, and the bits
+    // pointer is updated in place on same-size frame swaps.  Stored as
+    // void* so structs.h does not have to pull in <windows.h>.
+    void	*w_popup_image_hbitmap;
+    void	*w_popup_image_hdc;
+    void	*w_popup_image_bits;
+#  endif
+#  ifdef FEAT_IMAGE_CAIRO
+    // Pre-built Cairo GUI image cache.  Holds a cairo_image_surface_t*
+    // with the popup's pixel data converted to ARGB32 / RGB24 (BGRA byte
+    // order expected by cairo on little-endian).  Composited onto
+    // gui.surface by gui_mch_draw_popup_image().  Stored as void* so
+    // structs.h does not have to pull in <cairo.h>.
+    void	*w_popup_image_surface;
+#  endif
+# endif
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
@@ -5412,6 +5457,28 @@ struct cellsize {
     int cs_xpixel;
     int cs_ypixel;
 };
+#endif
+
+#if defined(FEAT_IMAGE) || defined(PROTO)
+// RGB(A) image input shared by all popup image backends.
+// "data" points to width*height*3 bytes of tightly packed R,G,B triples
+// when has_alpha is FALSE, or width*height*4 R,G,B,A quadruples otherwise.
+// Backends that cannot represent partial alpha (e.g. sixel) flatten the
+// alpha channel onto the terminal background before encoding.
+typedef struct {
+    char_u  *data;
+    int	     width;
+    int	     height;
+    int	     has_alpha;
+} image_rgb_T;
+
+// Terminal-side image backend selected at runtime by popup_image_backend().
+// IMAGE_BACKEND_SIXEL emits DEC sixel DCS sequences via sixel_encode();
+// IMAGE_BACKEND_KITTY emits kitty graphics protocol APC sequences via
+// kitty_encode().  GUI builds use a separate FEAT_IMAGE_GDI path and never
+// consult this enum.
+# define IMAGE_BACKEND_SIXEL  0
+# define IMAGE_BACKEND_KITTY  1
 #endif
 
 #ifdef FEAT_WAYLAND

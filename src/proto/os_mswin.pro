@@ -17,6 +17,7 @@ void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
+void mch_calc_cell_size(struct cellsize *cs_out);
 void mch_suspend(void);
 void display_errors(void);
 int mch_has_exp_wildcard(char_u *p);

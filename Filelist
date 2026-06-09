@@ -149,6 +149,9 @@ SRC_ALL =	\
 		src/session.c \
 		src/sha256.c \
 		src/sign.c \
+		src/sixel.c \
+		src/kitty.c \
+		src/cairo.c \
 		src/socketserver.c \
 		src/sound.c \
 		src/spell.c \
@@ -349,6 +352,9 @@ SRC_ALL =	\
 		src/proto/session.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \
+		src/proto/sixel.pro \
+		src/proto/kitty.pro \
+		src/proto/cairo.pro \
 		src/proto/socketserver.pro \
 		src/proto/sound.pro \
 		src/proto/spell.pro \

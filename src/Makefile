@@ -1571,6 +1571,9 @@ BASIC_SRC = \
 	session.c \
 	sha256.c \
 	sign.c \
+	sixel.c \
+	kitty.c \
+	cairo.c \
 	socketserver.c \
 	sound.c \
 	spell.c \
@@ -1750,6 +1753,9 @@ OBJ_COMMON = \
 	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
+	objects/sixel.o \
+	objects/kitty.o \
+	objects/cairo.o \
 	objects/socketserver.o \
 	objects/sound.o \
 	objects/spell.o \
@@ -1956,6 +1962,9 @@ PROTO_FILES = \
 	proto/session.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
+	proto/sixel.pro \
+	proto/kitty.pro \
+	proto/cairo.pro \
 	proto/sound.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
@@ -3594,6 +3603,15 @@ objects/sha256.o: sha256.c
 objects/sign.o: sign.c
 	$(CCC) -o $@ sign.c
 
+objects/sixel.o: sixel.c
+	$(CCC) -o $@ sixel.c
+
+objects/kitty.o: kitty.c
+	$(CCC) -o $@ kitty.c
+
+objects/cairo.o: cairo.c
+	$(CCC) -o $@ cairo.c
+
 objects/socketserver.o: socketserver.c
 	$(CCC) -o $@ socketserver.c
 
@@ -4272,6 +4290,21 @@ objects/sign.o: auto/osdef.h sign.c vim.h protodef.h auto/config.h feature.h os_
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/sixel.o: auto/osdef.h sixel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/kitty.o: auto/osdef.h kitty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/cairo.o: auto/osdef.h cairo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
 objects/socketserver.o: socketserver.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4803,6 +4836,9 @@ proto/search.pro: search.c
 proto/session.pro: session.c
 proto/sha256.pro: sha256.c
 proto/sign.pro: sign.c
+proto/sixel.pro: sixel.c
+proto/kitty.pro: kitty.c
+proto/cairo.pro: cairo.c
 proto/socketserver.pro: socketserver.c
 proto/sound.pro: sound.c
 proto/spell.pro: spell.c

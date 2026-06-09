@@ -6981,6 +6981,53 @@ gui_mch_clear_all(void)
 	gui_gtk_window_clear(gtk_widget_get_window(gui.drawarea));
 }
 
+#ifdef FEAT_IMAGE_CAIRO
+/*
+ * Thin GTK wrappers around the shared cairo backend in src/cairo.c.
+ * The heavy lifting (surface build / pixel conversion / composite)
+ * is generic Cairo code so a future GTK4 port can reuse the same
+ * src/cairo.c without copy-pasting.
+ */
+    void
+gui_mch_free_popup_image(win_T *wp)
+{
+    cairo_popup_image_free(wp);
+}
+
+    bool
+gui_mch_update_popup_image_pixels(win_T *wp)
+{
+    return cairo_popup_image_update(wp);
+}
+
+    void
+gui_mch_draw_popup_image(
+	win_T	*wp,
+	int	 row,
+	int	 col,
+	int	 src_x,
+	int	 src_y,
+	int	 draw_w,
+	int	 draw_h)
+{
+    int x, y;
+
+    if (wp->w_popup_image_data == NULL
+	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
+	    || draw_w <= 0 || draw_h <= 0
+	    || gui.surface == NULL)
+	return;
+
+    x = FILL_X(col);
+    y = FILL_Y(row);
+    cairo_popup_image_paint(wp, gui.surface, x, y,
+					    src_x, src_y, draw_w, draw_h);
+
+    if (gui.drawarea != NULL)
+	gtk_widget_queue_draw_area(gui.drawarea, x, y, draw_w, draw_h);
+}
+#endif // FEAT_IMAGE_CAIRO
+
 #if !GTK_CHECK_VERSION(3,0,0)
 /*
  * Redraw any text revealed by scrolling up/down.

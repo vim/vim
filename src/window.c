@@ -6212,6 +6212,15 @@ win_free_popup(win_T *win)
     if (timer_valid(win->w_popup_timer))
 	stop_timer(win->w_popup_timer);
 # endif
+# ifdef FEAT_IMAGE
+    vim_free(win->w_popup_image_data);
+#  ifdef FEAT_IMAGE_SIXEL
+    vim_free(win->w_popup_image_seq);
+#  endif
+#  if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+    gui_mch_free_popup_image(win);
+#  endif
+# endif
     vim_free(win->w_frame);
     win_free(win, NULL);
 }

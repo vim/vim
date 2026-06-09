@@ -63,6 +63,7 @@ static void f_funcref(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
+static void f_getbgcolor(typval_T *argvars, typval_T *rettv);
 static void f_getcellpixels(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
@@ -2270,6 +2271,8 @@ static const funcentry_T global_functions[] =
 			ret_void,	    f_garbagecollect},
     {"get",		2, 3, FEARG_1,	    arg23_get,
 			ret_any,	    f_get},
+    {"getbgcolor",	0, 0, 0,	    NULL,
+			ret_list_any,	    f_getbgcolor},
     {"getbufinfo",	0, 1, FEARG_1,	    arg1_buffer_or_dict_any,
 			ret_list_dict_any,  f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
@@ -5672,6 +5675,71 @@ f_get(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "getbgcolor()" function
+ *
+ * Returns a list [r, g, b] (0..255) describing the current background
+ * colour: in GUI mode the "Normal" highlight group's bg, in terminal
+ * mode the value reported by the OSC 11 response (see v:termrbgresp).
+ * Returns an empty list when no value is available, e.g. before the
+ * terminal has answered the query, or when "Normal" has no bg colour.
+ */
+    static void
+f_getbgcolor(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    {
+	bool try_hl = false;
+
+# ifdef FEAT_GUI
+	if (gui.in_use)
+	    try_hl = true;
+# endif
+# ifdef FEAT_TERMGUICOLORS
+	if (p_tgc)
+	    try_hl = true;
+# endif
+	if (try_hl)
+	{
+	    guicolor_T	fg, bg;
+	    int		hl_id = syn_name2id((char_u *)"Normal");
+
+	    if (hl_id > 0)
+	    {
+		(void)syn_id2colors(hl_id, &fg, &bg);
+		if (bg != INVALCOLOR)
+		{
+		    long_u  rgb = GUI_MCH_GET_RGB(bg);
+
+		    list_append_number(rettv->vval.v_list,
+					    (varnumber_T)((rgb >> 16) & 0xff));
+		    list_append_number(rettv->vval.v_list,
+					    (varnumber_T)((rgb >> 8) & 0xff));
+		    list_append_number(rettv->vval.v_list,
+					    (varnumber_T)(rgb & 0xff));
+		    return;
+		}
+	    }
+	}
+    }
+#endif
+#ifdef FEAT_TERMRESPONSE
+    {
+	char_u	r = 0, g = 0, b = 0;
+
+	if (term_get_bg_color(&r, &g, &b) == OK)
+	{
+	    list_append_number(rettv->vval.v_list, (varnumber_T)r);
+	    list_append_number(rettv->vval.v_list, (varnumber_T)g);
+	    list_append_number(rettv->vval.v_list, (varnumber_T)b);
+	}
+    }
+#endif
+}
+
+/*
  * "getcellpixels()" function
  */
     static void
@@ -5691,7 +5759,7 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
     {
 	struct cellsize cs;
-#if defined(UNIX)
+#if defined(UNIX) || defined(MSWIN)
 	mch_calc_cell_size(&cs);
 #else
 	// Non-Unix CUIs are not supported, so set this to -1x-1.
@@ -7180,6 +7248,41 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"iconv",
 #if defined(HAVE_ICONV_H) && defined(USE_ICONV)
+		1
+#else
+		0
+#endif
+		},
+	{"image",
+#ifdef FEAT_IMAGE
+		1
+#else
+		0
+#endif
+		},
+	{"image_cairo",
+#ifdef FEAT_IMAGE_CAIRO
+		1
+#else
+		0
+#endif
+		},
+	{"image_gdi",
+#ifdef FEAT_IMAGE_GDI
+		1
+#else
+		0
+#endif
+		},
+	{"image_kitty",
+#ifdef FEAT_IMAGE_KITTY
+		1
+#else
+		0
+#endif
+		},
+	{"image_sixel",
+#ifdef FEAT_IMAGE_SIXEL
 		1
 #else
 		0

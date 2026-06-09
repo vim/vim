@@ -59,6 +59,8 @@ void may_update_popup_mask(int type);
 void may_update_popup_position(void);
 int popup_get_base_screen_cell(int row, int col, schar_T *linep, int *attrp, u8char_T *ucp);
 void popup_set_base_screen_cell(int row, int col, schar_T line, int attr, u8char_T uc);
+void update_popup_images(void);
+void update_popup_images_rect(int left, int top, int right, int bottom);
 void update_popups(void (*win_update)(win_T *wp));
 int set_ref_in_popups(int copyID);
 int popup_is_popup(win_T *wp);

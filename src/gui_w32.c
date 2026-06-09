@@ -25,6 +25,10 @@
 
 #include "vim.h"
 
+#if defined(FEAT_IMAGE_GDI)
+void update_popup_images_rect(int left, int top, int right, int bottom);
+#endif
+
 #if defined(FEAT_DIRECTX)
 # include "gui_dwrite.h"
 #endif
@@ -2728,6 +2732,207 @@ gui_mch_clear_block(
     clear_rect(&rc);
 }
 
+#ifdef FEAT_IMAGE_GDI
+/*
+ * Convert the popup's RGB(A) pixel buffer into a 32-bit BGRX buffer.
+ * "dst" must be large enough for iw * ih * 4 bytes.  When has_alpha is
+ * true, the source has 4 bytes per pixel and the alpha channel is
+ * flattened onto the GUI window background colour (pre-multiplied blend).
+ */
+    static bool
+upload_popup_image_pixels(char_u *dst, char_u *src, int iw, int ih,
+								bool has_alpha)
+{
+    int		y, x;
+    int		stride = iw * 4;
+    int		src_bpp = has_alpha ? 4 : 3;
+    COLORREF	bg = has_alpha ? gui_mch_get_rgb(gui.back_pixel) : 0;
+    int		bg_r = GetRValue(bg);
+    int		bg_g = GetGValue(bg);
+    int		bg_b = GetBValue(bg);
+
+    if (dst == NULL || src == NULL || iw <= 0 || ih <= 0)
+	return false;
+
+    for (y = 0; y < ih; y++)
+    {
+	char_u *s = src + (size_t)y * iw * src_bpp;
+	char_u *d = dst + (size_t)y * stride;
+
+	for (x = 0; x < iw; x++)
+	{
+	    if (has_alpha)
+	    {
+		int a = s[3];
+
+		if (a == 255)
+		{
+		    d[0] = s[2];
+		    d[1] = s[1];
+		    d[2] = s[0];
+		}
+		else if (a == 0)
+		{
+		    d[0] = (char_u)bg_b;
+		    d[1] = (char_u)bg_g;
+		    d[2] = (char_u)bg_r;
+		}
+		else
+		{
+		    d[0] = (char_u)((s[2] * a + bg_b * (255 - a)) / 255);
+		    d[1] = (char_u)((s[1] * a + bg_g * (255 - a)) / 255);
+		    d[2] = (char_u)((s[0] * a + bg_r * (255 - a)) / 255);
+		}
+	    }
+	    else
+	    {
+		d[0] = s[2];	// B
+		d[1] = s[1];	// G
+		d[2] = s[0];	// R
+	    }
+	    d[3] = 0;
+	    s += src_bpp;
+	    d += 4;
+	}
+    }
+    return true;
+}
+
+/*
+ * Build a top-down 32-bit DIB section for the popup's RGB buffer and cache
+ * both the bitmap and a memory DC on the window for fast BitBlt redraws.
+ */
+    static bool
+build_popup_image_hbitmap(win_T *wp)
+{
+    int		iw = wp->w_popup_image_w;
+    int		ih = wp->w_popup_image_h;
+    char_u	*src = wp->w_popup_image_data;
+    BITMAPINFO	bmi;
+    HBITMAP	hbm;
+    HDC		mem_dc;
+    void	*bits = NULL;
+
+    if (src == NULL || iw <= 0 || ih <= 0 || s_hdc == NULL)
+	return false;
+
+    CLEAR_FIELD(bmi);
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = iw;
+    bmi.bmiHeader.biHeight = -ih;	// top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    hbm = CreateDIBSection(s_hdc, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+    if (hbm == NULL)
+	return false;
+
+    mem_dc = CreateCompatibleDC(s_hdc);
+    if (mem_dc == NULL)
+    {
+	DeleteObject(hbm);
+	return false;
+    }
+
+    SelectObject(mem_dc, hbm);
+    if (!upload_popup_image_pixels((char_u *)bits, src, iw, ih,
+						    wp->w_popup_image_alpha))
+    {
+	DeleteDC(mem_dc);
+	DeleteObject(hbm);
+	return false;
+    }
+
+    wp->w_popup_image_hbitmap = (void *)hbm;
+    wp->w_popup_image_hdc = (void *)mem_dc;
+    wp->w_popup_image_bits = bits;
+    return true;
+}
+
+/*
+ * Release any HBITMAP cached on this popup window.
+ */
+    void
+gui_mch_free_popup_image(win_T *wp)
+{
+    if (wp->w_popup_image_hdc != NULL)
+    {
+	DeleteDC((HDC)wp->w_popup_image_hdc);
+	wp->w_popup_image_hdc = NULL;
+    }
+    if (wp->w_popup_image_hbitmap != NULL)
+    {
+	DeleteObject((HBITMAP)wp->w_popup_image_hbitmap);
+	wp->w_popup_image_hbitmap = NULL;
+    }
+    wp->w_popup_image_bits = NULL;
+}
+
+    bool
+gui_mch_update_popup_image_pixels(win_T *wp)
+{
+    if (wp->w_popup_image_hbitmap == NULL
+	    || wp->w_popup_image_bits == NULL
+	    || wp->w_popup_image_data == NULL)
+	return false;
+
+    return upload_popup_image_pixels((char_u *)wp->w_popup_image_bits,
+	    wp->w_popup_image_data,
+	    wp->w_popup_image_w, wp->w_popup_image_h,
+	    wp->w_popup_image_alpha);
+}
+
+/*
+ * Paint the popup image cached in "wp" onto the GUI canvas.
+ * (row, col) is the top-left text cell of the image area inside the popup
+ * (i.e. inside borders and padding).  The image is drawn at native pixel
+ * size starting at FILL_X(col), FILL_Y(row); the popup auto-sizes itself
+ * to a cell box that fully encloses the image, so any leftover slack is
+ * already filled by the popup background.
+ *
+ * The DIB section is built once on first paint and BitBlt'd thereafter.
+ */
+    void
+gui_mch_draw_popup_image(
+	win_T	*wp,
+	int	 row,
+	int	 col,
+	int	 src_x,
+	int	 src_y,
+	int	 draw_w,
+	int	 draw_h)
+{
+    if (wp->w_popup_image_data == NULL || s_hdc == NULL
+	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
+	    || draw_w <= 0 || draw_h <= 0)
+	return;
+
+    if (wp->w_popup_image_hbitmap == NULL
+	    && !build_popup_image_hbitmap(wp))
+	return;
+
+# if defined(FEAT_DIRECTX)
+    // Commit any pending DirectWrite output so popup text and borders are on
+    // s_hdc before we blit on top.
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+# endif
+
+    if (wp->w_popup_image_hdc == NULL)
+	return;
+
+    // BitBlt only the visible sub-rect: src offset (src_x, src_y) into the
+    // cached DIB, size (draw_w, draw_h) pixels.  The caller (popupwin.c)
+    // computes these from popup_compute_clip() so a "clipwindow" popup that
+    // overhangs its host window does not paint past the host's content edge.
+    BitBlt(s_hdc,
+	    FILL_X(col), FILL_Y(row),
+	    draw_w, draw_h,
+	    (HDC)wp->w_popup_image_hdc, src_x, src_y, SRCCOPY);
+}
+#endif
+
 /*
  * Clear the whole text window.
  */
@@ -3468,6 +3673,10 @@ _OnPaint(
 	gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		ps.rcPaint.right - ps.rcPaint.left + 1,
 		ps.rcPaint.bottom - ps.rcPaint.top + 1);
+#if defined(FEAT_IMAGE_GDI)
+	update_popup_images_rect(ps.rcPaint.left, ps.rcPaint.top,
+		ps.rcPaint.right, ps.rcPaint.bottom);
+#endif
     }
 
     EndPaint(hwnd, &ps);

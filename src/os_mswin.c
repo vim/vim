@@ -579,6 +579,12 @@ mch_new_shellsize(void)
     // never used
 }
 
+    void
+mch_calc_cell_size(struct cellsize *cs_out UNUSED)
+{
+    // never used
+}
+
 #endif
 
 /*
