@@ -2728,7 +2728,10 @@ at_ins_compl_key(void)
     if (typebuf.tb_len > 3
 	    && (c == K_SPECIAL || c == CSI)  // CSI is used by the GUI
 	    && p[1] == KS_MODIFIER
-	    && (p[2] & MOD_MASK_CTRL))
+	    && (p[2] & MOD_MASK_CTRL)
+	    // CTRL-SHIFT-N/P scroll the info popup, so they must not be folded
+	    // to the CTRL-N/CTRL-P completion keys here.
+	    && !(p[2] & MOD_MASK_SHIFT))
 	c = p[3] & 0x1f;
     return (ctrl_x_mode_not_default() && vim_is_ctrl_x_key(c))
 		|| (compl_status_local() && (c == Ctrl_N || c == Ctrl_P));

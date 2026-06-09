@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52598,6 +52598,8 @@ Popups ~
   "align").
 - Support "opacity" setting for 'completepopup' option.
 - Support for clipping textproperty popups |popup-clipwindow|.
+- Completion popup menu can be scrolled with the mouse or using keys
+  |popupmenu-keys|.
 
 Diff mode ~
 ---------

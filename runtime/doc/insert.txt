@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Jun 02
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1449,6 +1449,22 @@ CTRL-E		  End completion, go back to what was there before selecting a
 		  insert it.
 <Down>		  Select the next match, as if CTRL-N was used, but don't
 		  insert it.
+CTRL-SHIFT-<Up>
+		  Scroll the info popup up one line, when it is shown, see
+		  |complete-popup|.
+		  Note: these CTRL-SHIFT keys need the GUI or a terminal that
+		  reports key modifiers; the Linux console does not.
+CTRL-SHIFT-<Down>
+		  Scroll the info popup down one line.
+CTRL-SHIFT-<PageUp>
+		  Scroll the info popup up one page.
+CTRL-SHIFT-<PageDown>
+		  Scroll the info popup down one page.
+CTRL-SHIFT-P	  Like CTRL-SHIFT-<Up>, scroll the info popup up one line.
+CTRL-SHIFT-N	  Like CTRL-SHIFT-<Down>, scroll the info popup down one line.
+		  Note: CTRL-SHIFT-N and CTRL-SHIFT-P additionally need the
+		  terminal to report modifiers for letter keys, see
+		  |modifyOtherKeys|.
 <Space> or <Tab>  Stop completion without changing the match and insert the
 		  typed character.
 

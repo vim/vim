@@ -3998,6 +3998,78 @@ func Test_popupmenu_info_border_mouse()
   call StopVimInTerminal(buf)
 endfunc
 
+func s:ReadInfoState()
+  let l = filereadable('Xinfofl') ? map(readfile('Xinfofl'), 'str2nr(v:val)') : []
+  return len(l) == 3 ? l : [-1, -1, -1]
+endfunc
+
+func Test_popupmenu_info_scroll_keys()
+  CheckRunVimInTerminal
+  CheckFeature quickfix
+
+  let lines =<< trim END
+      func Omni_test(findstart, base)
+        if a:findstart
+          return col(".")
+        endif
+        return [#{word: "scrollme",
+              \ info: join(map(range(1, 40), '"info line " .. v:val'), "\n")},
+              \ #{word: "another", info: "short"}]
+      endfunc
+      set completeopt=menu,menuone,popup
+      set omnifunc=Omni_test
+      func InfoState()
+        let id = popup_findinfo()
+        call writefile([id ? popup_getpos(id).firstline : -1, pumvisible(),
+              \ get(complete_info(['selected']), 'selected', -1)], 'Xinfofl')
+      endfunc
+      " A <Cmd> mapping runs without closing the completion menu, so it can
+      " report the info popup state while completion is active.
+      inoremap <F4> <Cmd>call InfoState()<CR>
+  END
+  call writefile(lines, 'XtestInfoScroll', 'D')
+  let buf = RunVimInTerminal('-S XtestInfoScroll', #{rows: 14})
+  call TermWait(buf, 50)
+
+  " Open insert-mode completion; the info popup is shown, first item selected.
+  call term_sendkeys(buf, "i\<C-X>\<C-O>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1, 0], s:ReadInfoState())})
+
+  " Ctrl-Shift-Down then Ctrl-Shift-Up scroll the info popup by a line; the
+  " menu stays open and the selected item does not change.
+  call term_sendkeys(buf, "\<Esc>[1;6B")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([2, 1, 0], s:ReadInfoState())})
+  call term_sendkeys(buf, "\<Esc>[1;6A")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1, 0], s:ReadInfoState())})
+
+  " Ctrl-Shift-N then Ctrl-Shift-P scroll like the arrows, again without
+  " moving the selection.
+  call term_sendkeys(buf, "\<Esc>[27;6;110~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([2, 1, 0], s:ReadInfoState())})
+  call term_sendkeys(buf, "\<Esc>[27;6;112~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal([1, 1, 0], s:ReadInfoState())})
+
+  " Ctrl-Shift-PageDown scrolls down by a page (more than one line).
+  call term_sendkeys(buf, "\<Esc>[6;6~")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_true(s:ReadInfoState()[0] > 2)})
+
+  " Plain Ctrl-N still moves the selection to the next item.
+  call term_sendkeys(buf, "\<C-N>")
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_equal(1, s:ReadInfoState()[2])})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xinfofl')
+endfunc
+
 func Test_popupmenu_info_align_menu()
   CheckScreendump
   CheckFeature quickfix
