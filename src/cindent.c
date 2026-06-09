@@ -1217,6 +1217,8 @@ find_last_paren(char_u *l, int start, int end)
     for (i = 0; l[i] != NUL; i++)
     {
 	i = (int)(cin_skipcomment(l + i) - l); // ignore parens in comments
+	if (l[i] == NUL)
+	    break;
 	i = (int)(skip_string(l + i) - l);    // ignore parens in quotes
 	if (l[i] == start)
 	    ++open_count;
