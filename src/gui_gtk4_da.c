@@ -294,7 +294,6 @@ create_under_decor_node(
 	path = gsk_path_builder_free_to_path(builder);
 	stroke = gsk_stroke_new(1.0f);
 
-	// To be hone
 	gsk_path_get_stroke_bounds (path, stroke, &bounds);
 	color_node = gsk_color_node_new(sp_color, &bounds);
 
@@ -497,7 +496,7 @@ draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
  * store it, then undirty it.
  */
     static void
-draw_node_render(DrawNode *dnode, int row)
+draw_node_render(DrawNode *dnode, int row, VimDrawArea *da)
 {
     GskRenderNode	*nodes[3];
     int			n_nodes = 0;
@@ -507,9 +506,21 @@ draw_node_render(DrawNode *dnode, int row)
 	return;
 
     if (!(dnode->dnode_flags & DRAW_NODE_NOBG))
+    {
+	int width = dnode->n_cells * gui.char_width;
+	int bleed = gtk_widget_get_width(GTK_WIDGET(da)) - FILL_X(da->n_cols);
+
+	// If this draw node touches the end of the draw area. Bleed its
+	// background to the right if the space the draw area covers is slightly
+	// bigger than its actual visible area (that all cells cover). This just
+	// makes things like status bars look a bit nicer
+	if (END_COL(dnode) == da->n_cols - 1 && bleed > 0)
+	    width += bleed;
+
 	nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
 		&GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
-		    dnode->n_cells * gui.char_width, gui.char_height));
+		    width, gui.char_height));
+    }
 
     if (!(dnode->dnode_flags & DRAW_NODE_NOINK))
     {
@@ -1208,7 +1219,7 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 
 	    if (dnode->start_col == c)
 	    {
-		draw_node_render(dnode, r);
+		draw_node_render(dnode, r, self);
 		assert(dnode->node != NULL);
 		gtk_snapshot_append_node(snapshot, dnode->node);
 	    }
