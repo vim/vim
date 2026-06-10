@@ -428,11 +428,13 @@ plines_win_has_conceal(win_T *wp, linenr_T lnum)
 
 /*
  * Return the screen width of line "lnum" up to "column" while taking
- * zero-width 'conceallevel' 3 text into account.
+ * zero-width 'conceallevel' 3 text into account.  When "vcol_off_cop" is not
+ * NULL, store the concealed screen width before "column" in it.
  * When "column" is MAXCOL, count the whole line.
  */
     static long
-plines_win_col_conceal(win_T *wp, linenr_T lnum, long column)
+plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
+							long *vcol_off_cop)
 {
     char_u	*line;
     char_u	*ptr;
@@ -561,6 +563,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column)
 # endif
 
     clear_chartabsize_arg(&cts);
+    if (vcol_off_cop != NULL)
+	*vcol_off_cop = vcol_off_co;
     return vcol;
 }
 #endif
@@ -587,7 +591,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	return 1; // be quick for an empty line
 #ifdef FEAT_CONCEAL
     if (plines_win_has_conceal(wp, lnum))
-	col = plines_win_col_conceal(wp, lnum, MAXCOL);
+	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL);
     else
 #endif
     {
@@ -626,6 +630,9 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     int		width;
     char_u	*line;
     chartabsize_T cts;
+#ifdef FEAT_CONCEAL
+    long	vcol_off_co = 0;
+#endif
 
 #ifdef FEAT_DIFF
     // Check for filler lines above this buffer line.  When folded the result
@@ -645,7 +652,8 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 #ifdef FEAT_CONCEAL
     if (plines_win_has_conceal(wp, lnum))
     {
-	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column);
+	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
+							     &vcol_off_co);
 	while (*cts.cts_ptr != NUL && --column >= 0)
 	    MB_PTR_ADV(cts.cts_ptr);
     }
@@ -667,7 +675,14 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     col = cts.cts_vcol;
     if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
+    {
+#ifdef FEAT_CONCEAL
+	cts.cts_vcol += (int)vcol_off_co;
+	col += win_lbr_chartabsize(&cts, NULL, NULL) + vcol_off_co - 1;
+#else
 	col += win_lbr_chartabsize(&cts, NULL, NULL) - 1;
+#endif
+    }
     clear_chartabsize_arg(&cts);
 
     /*
