@@ -216,6 +216,21 @@ func Test_screenpos()
   call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(0, 1, -v:maxcol))
 endfunc
 
+func Test_screenpos_conceallevel_three_multibyte()
+  CheckFeature conceal
+
+  new
+  setlocal wrap conceallevel=3 concealcursor=nvic
+  call setline(1, "x\u00e9Y")
+  call matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
+  redraw
+
+  call assert_equal(#{col: 2, row: 1, endcol: 2, curscol: 2},
+	\ screenpos(win_getid(), 1, 4))
+
+  bwipe!
+endfunc
+
 func Test_screenpos_fold()
   CheckFeature folding
 

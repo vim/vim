@@ -481,7 +481,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     cts.cts_ptr = ptr;
 # endif
 
-    while (*ptr != NUL && (column == MAXCOL || --column >= 0))
+    while (*ptr != NUL && (column == MAXCOL || ptr - line < column))
     {
 	colnr_T	col = (colnr_T)(ptr - line);
 	int	is_concealing = FALSE;
@@ -707,7 +707,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	cts.cts_line = line;
 	cts.cts_ptr = line;
-	while (*cts.cts_ptr != NUL && --column >= 0)
+	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < column)
 	    MB_PTR_ADV(cts.cts_ptr);
     }
     else
