@@ -691,6 +691,12 @@ func Test_conceallevel_three_wrap()
   call cursor(1, winwidth(0) + 1)
   call assert_equal(2, screenpos(0, 1, col('.')).row)
 
+  setlocal linebreak showbreak=++
+  call setline(1, repeat('X', winwidth(0)) .. repeat('Y', winwidth(0) - 1))
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+  setlocal nolinebreak showbreak=
+
   call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
   call cursor(1, 1)
   call feedkeys("i" .. repeat("\<ScrollWheelRight>", 5) .. "\<Esc>", 'tx')

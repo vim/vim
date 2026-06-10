@@ -507,7 +507,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    int charsize;
 
 	    cts.cts_ptr = ptr;
-	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    cts.cts_vcol = *ptr == TAB
+				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
 	    if (*ptr == TAB && vcol_off_co > 0)
 	    {
