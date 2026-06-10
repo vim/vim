@@ -768,6 +768,17 @@ func Test_conceallevel_three_wrap()
     setlocal foldmethod& foldenable&
   endif
 
+  call setline(1, "X\tY")
+  call setline(2, 'after')
+  call cursor(1, 2)
+  redraw
+  call assert_equal(win_screenpos(0)[1] + 6, screencol())
+
+  call setline(1, "X\u3042Y")
+  call cursor(1, 2)
+  redraw
+  call assert_equal(win_screenpos(0)[1] + 1, screencol())
+
   syntax clear test
   call CloseWindow()
 endfunc

@@ -1238,7 +1238,8 @@ curs_columns(
     extra = curwin_col_off();
 #ifdef FEAT_CONCEAL
     if (concealed_vcol >= 0 && curwin->w_p_wrap)
-	curwin->w_wcol = concealed_vcol + extra;
+	curwin->w_wcol = curwin->w_virtcol + concealed_vcol - startcol
+								       + extra;
     else
 #endif
     curwin->w_wcol = curwin->w_virtcol + extra;
@@ -1547,7 +1548,13 @@ textpos2screenpos(
 								pos->col);
 
 	    if (concealed_vcol >= 0 && wp->w_p_wrap)
-		scol = ccol = ecol = concealed_vcol;
+	    {
+		long conceal_delta = concealed_vcol - scol;
+
+		scol += conceal_delta;
+		ccol += conceal_delta;
+		ecol += conceal_delta;
+	    }
 # endif
 
 	    // similar to what is done in validate_cursor_col()

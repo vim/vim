@@ -228,6 +228,16 @@ func Test_screenpos_conceallevel_three_multibyte()
   call assert_equal(#{col: 2, row: 1, endcol: 2, curscol: 2},
 	\ screenpos(win_getid(), 1, 4))
 
+  call setline(1, "x\tY")
+  redraw
+  call assert_equal(#{col: 1, row: 1, endcol: 7, curscol: 7},
+	\ screenpos(win_getid(), 1, 2))
+
+  call setline(1, "x\u3042Y")
+  redraw
+  call assert_equal(#{col: 1, row: 1, endcol: 2, curscol: 2},
+	\ screenpos(win_getid(), 1, 2))
+
   bwipe!
 endfunc
 
