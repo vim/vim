@@ -50,7 +50,7 @@ CPU = ARM64
 cc = cl
 link = link
 rc = rc
-cflags = -nologo -c
+cflags = -nologo -c -GF
 lflags = -incremental:no -nologo
 rcflags = /r
 olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
@@ -84,7 +84,7 @@ gvimext.dll: gvimext.obj gvimext.res
 		-out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib \
 		-subsystem:$(SUBSYSTEM)
 
-gvimext.obj: gvimext.h
+gvimext.obj: gvimext.h ../version.h
 
 .cpp.obj:
 	$(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
