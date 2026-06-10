@@ -833,6 +833,12 @@ func Test_conceallevel_three_wrap_virtual_text()
   call cursor(2, 1)
   call assert_equal(4, screenpos(0, 2, 1).row)
 
+  call prop_clear(1)
+  call setline(1, [repeat('X', winwidth(0) * 2 + 3) .. 'Y', 'after'])
+  call prop_add(1, col([1, '$']), #{type: 'test', text: 'V'})
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
   call prop_type_delete('test')
   syntax clear test
   call CloseWindow()

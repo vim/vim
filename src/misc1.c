@@ -534,8 +534,13 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = (int)(vcol + vcol_off_co);
 	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
-	    vcol += cts.cts_cur_text_width + head;
-	    vcol_off_co += charsize - cts.cts_cur_text_width - head;
+	    if (cts.cts_cur_text_width > 0)
+	    {
+		vcol += cts.cts_cur_text_width + head;
+		vcol_off_co += charsize - cts.cts_cur_text_width - head;
+	    }
+	    else
+		vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
 	}
 # endif
 	else
@@ -3213,4 +3218,3 @@ trim_to_int(vimlong_T x)
 {
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
-
