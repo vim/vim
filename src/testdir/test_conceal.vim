@@ -831,6 +831,20 @@ func Test_conceallevel_three_wrap_matchadd_multiline()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_wrap_visible_screenpos()
+  call NewWindow(6, 10)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+
+  call setline(1, repeat('X', 5) .. repeat('Y', 15))
+  redraw
+  call assert_equal(#{col: 5, row: 2, endcol: 5, curscol: 5},
+        \ screenpos(0, 1, 20))
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 

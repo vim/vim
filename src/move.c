@@ -1564,6 +1564,7 @@ textpos2screenpos(
 # ifdef FEAT_CONCEAL
 	    long concealed_vcol;
 	    long conceal_delta = 0;
+	    int conceal_tab_wrap = FALSE;
 
 	    concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
 								pos->col);
@@ -1573,6 +1574,10 @@ textpos2screenpos(
 		colnr_T vcol_width = ecol - scol;
 
 		conceal_delta = concealed_vcol - scol;
+		if (conceal_delta != 0
+			&& pos->col < ml_get_buf_len(wp->w_buffer, lnum)
+			&& ml_get_buf(wp->w_buffer, lnum, FALSE)[pos->col] == TAB)
+		    conceal_tab_wrap = TRUE;
 		scol += conceal_delta;
 		ccol += conceal_delta;
 		ecol += conceal_delta;
@@ -1584,7 +1589,7 @@ textpos2screenpos(
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
 # ifdef FEAT_CONCEAL
-	    if (conceal_delta != 0 && wp->w_p_wrap)
+	    if (conceal_tab_wrap && wp->w_p_wrap)
 	    {
 		int concealed_row = plines_win_col(wp, lnum, pos->col) - 1;
 
