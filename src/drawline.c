@@ -4242,7 +4242,7 @@ win_line(
 	    if (wlv.n_extra > 0)
 		wlv.vcol_off_co += wlv.n_extra;
 
-	    if (wp->w_p_wrap)
+	    if (wp->w_p_wrap && wp->w_p_cole != 3)
 	    {
 		// Special voodoo required if 'wrap' is on.
 		//
@@ -4339,7 +4339,6 @@ win_line(
 		    n_attr = 0;
 		}
 	    }
-
 	}
 #endif // FEAT_CONCEAL
 	else

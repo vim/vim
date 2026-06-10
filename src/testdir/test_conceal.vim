@@ -656,6 +656,45 @@ func Test_conceal_double_width()
   call Run_test_conceal_double_width(0)
 endfunc
 
+func Test_conceallevel_three_wrap()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+
+  call setline(1, ['', repeat('X', winwidth(0) - 3) .. 'YYYY', 'after'])
+  call cursor(1, 1)
+  call assert_equal([
+        \ repeat(' ', winwidth(0)),
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call setline(2, 'after')
+  call cursor(1, 1)
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  call feedkeys("i" .. repeat("\<ScrollWheelRight>", 5) .. "\<Esc>", 'tx')
+  redraw
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  call feedkeys("\<Esc>", 'tx')
+  redraw
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 " Test that line wrapping is correct when double-width chars are concealed.
 func Test_conceal_double_width_wrap()
   CheckScreendump
