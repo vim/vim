@@ -706,6 +706,15 @@ func Test_conceallevel_three_wrap()
   call setline(2, 'after')
   call cursor(2, 1)
   call assert_equal(3, screenpos(0, 2, 1).row)
+
+  syntax clear test
+  syntax match test /\t/ conceal
+  call setline(1, "abc\tY")
+  call setline(2, 'after')
+  call cursor(1, 4)
+  redraw
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
   setlocal showbreak=
   call CloseWindow()
   call NewWindow(6, 80)
