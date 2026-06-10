@@ -981,9 +981,13 @@ apply_general_options(win_T *wp, dict_T *dict)
 	{
 	    blob_T  *b = id->di_tv.vval.v_blob;
 	    long     blen = blob_len(b);
-	    int	     has_alpha = (blen == (long)iw * ih * 4);
+	    // Compute the expected size in a 64-bit type: "iw * ih * 4" can
+	    // overflow a 32-bit "long" (MS-Windows) and wrap to a value that
+	    // matches a short blob, which would later be read out of bounds.
+	    varnumber_T	 npixels = (varnumber_T)iw * ih;
+	    int	     has_alpha = (blen == npixels * 4);
 
-	    if (has_alpha || blen == (long)iw * ih * 3)
+	    if (has_alpha || blen == npixels * 3)
 	    {
 		// Detect "same-size image swap": replacing the pixel buffer
 		// without changing the popup's pixel dimensions or pixel
@@ -5433,7 +5437,10 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 		++b->bv_refcount;
 		if (dict_add(idict, item) == FAIL)
 		{
+		    // dictitem_free() unref's and frees the blob; clear "b" so
+		    // the cleanup below does not touch the freed memory.
 		    dictitem_free(item);
+		    b = NULL;
 		    ok = FALSE;
 		}
 	    }
