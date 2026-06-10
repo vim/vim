@@ -604,6 +604,18 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	*vcol_off_cop = vcol_off_co;
     return vcol;
 }
+
+/*
+ * Return the displayed virtual column up to "column" while taking zero-width
+ * 'conceallevel' 3 text into account, or -1 when conceal is not active.
+ */
+    long
+plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
+{
+    if (!plines_win_has_conceal(wp, lnum))
+	return -1;
+    return plines_win_col_conceal(wp, lnum, column, NULL, NULL);
+}
 #endif
 
 /*

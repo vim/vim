@@ -691,8 +691,26 @@ func Test_conceallevel_three_wrap()
   call cursor(1, winwidth(0) + 1)
   call assert_equal(2, screenpos(0, 1, col('.')).row)
 
+  call setline(1, 'hello, world ' .. repeat('X', winwidth(0) + 5)
+        \ .. 'YYYY hello, world')
+  call deletebufline(bufnr(), 2, '$')
+  call cursor(1, winwidth(0) + 1)
+  redraw
+  call assert_equal(1, screenpos(0, 1, col('.')).row)
+  call feedkeys("o\<Esc>", 'tx')
+  redraw
+  call assert_equal(2, screenpos(0, 2, 1).row)
+  call assert_equal([
+        \ 'hello, world YYYY hello, world'
+        \ .. repeat(' ', winwidth(0) - 30),
+        \ repeat(' ', winwidth(0)),
+        \ '~' .. repeat(' ', winwidth(0) - 1),
+        \ ], ScreenLines([1, 3], winwidth(0)))
+  call deletebufline(bufnr(), 2, '$')
+
   setlocal linebreak showbreak=++
   call setline(1, repeat('X', winwidth(0)) .. repeat('Y', winwidth(0) - 1))
+  call setline(2, 'after')
   call cursor(2, 1)
   call assert_equal(2, screenpos(0, 2, 1).row)
   setlocal nolinebreak showbreak=

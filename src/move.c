@@ -1192,6 +1192,9 @@ curs_columns(
     long	so = get_scrolloff_value();
     long	siso = get_sidescrolloff_value();
     int		did_sub_skipcol = FALSE;
+#ifdef FEAT_CONCEAL
+    long	concealed_vcol = -1;
+#endif
 
     /*
      * First make sure that w_topline is valid (after moving the cursor).
@@ -1220,12 +1223,21 @@ curs_columns(
 #endif
 	getvvcol(curwin, &curwin->w_cursor,
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
+#ifdef FEAT_CONCEAL
+    concealed_vcol = plines_win_col_conceal_vcol(curwin,
+				   curwin->w_cursor.lnum, curwin->w_cursor.col);
+#endif
 
     // remove '$' from change command when cursor moves onto it
     if (startcol > dollar_vcol)
 	dollar_vcol = -1;
 
     extra = curwin_col_off();
+#ifdef FEAT_CONCEAL
+    if (concealed_vcol >= 0 && curwin->w_p_wrap)
+	curwin->w_wcol = concealed_vcol + extra;
+    else
+#endif
     curwin->w_wcol = curwin->w_virtcol + extra;
     endcol += extra;
 
@@ -1527,6 +1539,13 @@ textpos2screenpos(
 # endif
 	{
 	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);
+# ifdef FEAT_CONCEAL
+	    long concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+								pos->col);
+
+	    if (concealed_vcol >= 0 && wp->w_p_wrap)
+		scol = ccol = ecol = concealed_vcol;
+# endif
 
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
