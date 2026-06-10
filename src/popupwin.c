@@ -957,6 +957,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		wp->w_popup_image_seq_crop_y = 0;
 		wp->w_popup_image_seq_cells_w = 0;
 		wp->w_popup_image_seq_cells_h = 0;
+		wp->w_popup_image_emit_valid = FALSE;
 # endif
 # if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
 #  ifdef FEAT_GUI
@@ -1014,6 +1015,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 # ifdef FEAT_IMAGE_SIXEL
 		VIM_CLEAR(wp->w_popup_image_seq);
 		wp->w_popup_image_seq_h = -1;
+		wp->w_popup_image_emit_valid = FALSE;
 # endif
 		if (wp->w_popup_image_data != NULL)
 		{
@@ -1951,6 +1953,7 @@ popup_encode_image(win_T *wp)
     {
 	VIM_CLEAR(wp->w_popup_image_seq);
 	wp->w_popup_image_seq_h = 0;
+	wp->w_popup_image_emit_valid = FALSE;
 	return;
     }
 
@@ -2002,16 +2005,19 @@ popup_encode_image(win_T *wp)
     {
 	VIM_CLEAR(wp->w_popup_image_seq);
 	wp->w_popup_image_seq_h = 0;
+	wp->w_popup_image_emit_valid = FALSE;
 	return;
     }
     if (wp->w_popup_image_seq != NULL
 	    && wp->w_popup_image_seq_w == target_w
 	    && wp->w_popup_image_seq_h == target_h
 	    && wp->w_popup_image_seq_crop_x == crop_left_px
-	    && wp->w_popup_image_seq_crop_y == crop_top_px)
-	return;	    // already encoded for this geometry
+	    && wp->w_popup_image_seq_crop_y == crop_top_px
+	    && wp->w_popup_image_seq_zindex == wp->w_zindex)
+	return;	    // already encoded for this geometry and zindex
 
     VIM_CLEAR(wp->w_popup_image_seq);
+    wp->w_popup_image_emit_valid = FALSE;
 
     // The sixel/kitty encoders read data tightly packed as width*height
     // pixels.  When the source row width changes (left or right clipped),
@@ -2051,7 +2057,7 @@ popup_encode_image(win_T *wp)
 	// Use the popup's window-id as the kitty image id so that
 	// popup_image_clear_kitty() can target the placement when the
 	// popup is later hidden or closed.
-	wp->w_popup_image_seq = kitty_encode(&si, wp->w_id);
+	wp->w_popup_image_seq = kitty_encode(&si, wp->w_id, wp->w_zindex);
     else
 # endif
 	wp->w_popup_image_seq = sixel_encode(&si);
@@ -2066,6 +2072,7 @@ popup_encode_image(win_T *wp)
 	wp->w_popup_image_seq_crop_y = crop_top_px;
 	wp->w_popup_image_seq_cells_w = (target_w + cell_x - 1) / cell_x;
 	wp->w_popup_image_seq_cells_h = (target_h + cell_y - 1) / cell_y;
+	wp->w_popup_image_seq_zindex = wp->w_zindex;
     }
     else
     {
@@ -6912,6 +6919,18 @@ popup_emit_image(win_T *wp)
     }
     if (row < 0 || col < 0)
 	return;
+#  ifdef FEAT_IMAGE_KITTY
+    // A kitty placement persists on the terminal and is drawn above the
+    // text layer, so when it is already showing at this position there is
+    // nothing to repair: skip the (potentially multi-MB) retransmission.
+    // The flag is reset when the image is re-encoded, the placement is
+    // deleted, or the terminal screen is cleared.
+    if (popup_image_backend() == IMAGE_BACKEND_KITTY
+	    && wp->w_popup_image_emit_valid
+	    && wp->w_popup_image_emit_row == row
+	    && wp->w_popup_image_emit_col == col)
+	return;
+#  endif
     // Hide the cursor across the move + image emit, then restore it to
     // the current text-cursor position before showing it; otherwise the
     // cursor can briefly flicker below its scrolled-to position because
@@ -6929,6 +6948,43 @@ popup_emit_image(win_T *wp)
     out_str((char_u *)"\033[?25h");
     out_flush();
 
+    // The sixel bytes just painted over every cell of the emitted rectangle,
+    // including cells that a higher zindex popup draws on top of this image.
+    // Invalidate those cells in ScreenLines so the higher popup's draw,
+    // later in this same update_popups() walk, actually rewrites them to
+    // the terminal instead of skipping them as unchanged.  Not needed for
+    // kitty, where the placement is layered by its z= value instead.
+#  ifdef FEAT_IMAGE_KITTY
+    if (popup_image_backend() != IMAGE_BACKEND_KITTY)
+#  endif
+    {
+	int	rr;
+
+	for (rr = row; rr < row + wp->w_popup_image_seq_cells_h; ++rr)
+	{
+	    int	off_base;
+	    int	cc;
+
+	    if (rr < 0 || rr >= screen_Rows)
+		continue;
+	    off_base = LineOffset[rr];
+	    for (cc = col; cc < col + wp->w_popup_image_seq_cells_w; ++cc)
+	    {
+		int off;
+
+		if (cc < 0 || cc >= screen_Columns)
+		    continue;
+		if (popup_mask[rr * screen_Columns + cc] <= wp->w_zindex)
+		    continue;
+		off = off_base + cc;
+		ScreenLines[off] = ' ';
+		if (enc_utf8 && ScreenLinesUC != NULL)
+		    ScreenLinesUC[off] = 0;
+		ScreenAttrs[off] = -1;
+	    }
+	}
+    }
+
     // Remember where the image was emitted so the next redraw can invalidate
     // ScreenLines/ScreenAttrs for cells that move out from under the image
     // (e.g. body -> top padding when the clip shrinks).  Otherwise screen_fill
@@ -6938,6 +6994,7 @@ popup_emit_image(win_T *wp)
     wp->w_popup_image_emit_col = col;
     wp->w_popup_image_emit_cells_w = wp->w_popup_image_seq_cells_w;
     wp->w_popup_image_emit_cells_h = wp->w_popup_image_seq_cells_h;
+    wp->w_popup_image_emit_valid = TRUE;
 # endif
 }
 
@@ -6964,24 +7021,55 @@ popup_image_clear_kitty(win_T *wp)
     out_str(seq);
     out_flush();
     vim_free(seq);
+    wp->w_popup_image_emit_valid = FALSE;
+}
+# endif
+
+# if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
+/*
+ * Called after the terminal screen has been cleared: kitty deletes
+ * placements that intersect the erased area, so the cached "already on
+ * screen" state no longer holds and the next popup_emit_image() must
+ * retransmit.
+ */
+    void
+popup_images_invalidate(void)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    FOR_ALL_POPUPWINS(wp)
+	wp->w_popup_image_emit_valid = FALSE;
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    wp->w_popup_image_emit_valid = FALSE;
 }
 # endif
 
 /*
  * Re-paint every popup's image after the rest of the screen update has
- * settled.  Called from update_screen() after the intro message and the
- * GUI cursor have had their say, otherwise those would clobber the image
- * we just blitted onto the canvas.
+ * settled.  Only needed for the GUI, where the cursor redraw and other
+ * late blits paint directly onto the canvas and can damage the images.
+ * Walk the popups in zindex order, lowest first, so that where images
+ * overlap the higher zindex popup's image ends up on top.
+ * In terminal mode there is nothing to repair: everything drawn after
+ * update_popups() goes through ScreenLines writers that respect
+ * popup_mask, so the images emitted there are still intact.  Re-emitting
+ * here would instead paint a lower zindex image over the cells of a
+ * higher zindex popup drawn on top of it.
  */
     void
 update_popup_images(void)
 {
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
     win_T   *wp;
 
-    FOR_ALL_POPUPWINS(wp)
+    if (!gui.in_use)
+	return;
+    popup_reset_handled(POPUP_HANDLED_5);
+    while ((wp = find_next_popup(TRUE, POPUP_HANDLED_5)) != NULL)
 	popup_emit_image(wp);
-    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
-	popup_emit_image(wp);
+# endif
 }
 
 # ifdef FEAT_IMAGE_GDI
@@ -7644,12 +7732,12 @@ update_popups(void (*win_update)(win_T *wp))
 
 #ifdef FEAT_IMAGE
 	// Emit the popup image right after this popup's decorations land in
-	// ScreenLines: the image must sit on top of its own border/padding so
-	// it is visible while update_popups() walks the remaining popups.
-	// A second pass from update_popup_images() runs at the end of redraw
-	// to re-emit on top of any late overlays (intro message, cursor, ...);
-	// the cost there is one out_str() per image -- correctness wins over
-	// shaving a redundant write that only happens once per redraw cycle.
+	// ScreenLines.  Popups are walked in zindex order, so a higher
+	// zindex popup drawn later paints its cells over this image where
+	// they overlap, and its own image lands on top of those again:
+	// correct layering at cell granularity.  This is the only emit pass
+	// in terminal mode; update_popup_images() at the end of redraw is a
+	// GUI-only repair.
 	// The topoff shift is undone above so popup_emit_image() sees the
 	// popup's logical winrow.  Otherwise the clip-top adjustment
 	// overshoots by topoff and the image lands below its correct row.

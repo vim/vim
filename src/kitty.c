@@ -86,9 +86,11 @@ kitty_b64_append(garray_T *ga, char_u *src, long len)
  * via `m=1`/`m=0` so the per-envelope payload stays under kitty's
  * 4096-byte limit.  When "id" is non-zero it is sent as `i=<id>` so
  * the resulting placement can later be removed via kitty_delete().
+ * "zindex" is sent as `z=<zindex>` so overlapping placements stack in
+ * popup zindex order no matter in which order they were (re)created.
  */
     char_u *
-kitty_encode(image_rgb_T *img, int id)
+kitty_encode(image_rgb_T *img, int id, int zindex)
 {
     garray_T	ga;
     long	pix_bytes;
@@ -125,12 +127,13 @@ kitty_encode(image_rgb_T *img, int id)
 	{
 	    if (id != 0)
 		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,i=%d,q=2,m=%d;",
-			fmt, img->width, img->height, id, more ? 1 : 0);
+			"\033_Ga=T,f=%d,s=%d,v=%d,i=%d,z=%d,q=2,m=%d;",
+			fmt, img->width, img->height, id, zindex,
+			more ? 1 : 0);
 	    else
 		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,q=2,m=%d;",
-			fmt, img->width, img->height, more ? 1 : 0);
+			"\033_Ga=T,f=%d,s=%d,v=%d,z=%d,q=2,m=%d;",
+			fmt, img->width, img->height, zindex, more ? 1 : 0);
 	    first = FALSE;
 	}
 	else

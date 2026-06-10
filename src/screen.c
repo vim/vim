@@ -3629,6 +3629,11 @@ screenclear2(int doclear)
 	    vim_memset(suppressed_cells, 0,
 			       (size_t)suppressed_rows * suppressed_cols);
 #endif
+#if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
+	// Clearing the display removes kitty image placements; force the
+	// next redraw to retransmit popup images.
+	popup_images_invalidate();
+#endif
     }
     else
     {

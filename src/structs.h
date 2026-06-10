@@ -4274,6 +4274,10 @@ struct window_S
     int		w_popup_image_seq_crop_y; // pixel offset (top) into source
     int		w_popup_image_seq_cells_w; // cell width  spanning seq pixels
     int		w_popup_image_seq_cells_h; // cell height spanning seq pixels
+    int		w_popup_image_seq_zindex;  // zindex encoded into seq (kitty z=)
+    int		w_popup_image_emit_valid;  // TRUE while the kitty placement
+					   // emitted at w_popup_image_emit_*
+					   // is still on the terminal
 #  endif
 #  ifdef FEAT_IMAGE_GDI
     // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down
