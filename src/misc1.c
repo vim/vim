@@ -654,6 +654,9 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     {
 	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
 							     &vcol_off_co);
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	cts.cts_line = line;
+	cts.cts_ptr = line;
 	while (*cts.cts_ptr != NUL && --column >= 0)
 	    MB_PTR_ADV(cts.cts_ptr);
     }

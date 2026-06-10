@@ -682,6 +682,11 @@ func Test_conceallevel_three_wrap()
   call cursor(2, 1)
   call assert_equal(3, screenpos(0, 2, 1).row)
 
+  let matchid = matchadd('Search', 'Y\nafter')
+  redraw
+  call assert_equal(3, screenpos(0, 2, 1).row)
+  call matchdelete(matchid)
+
   call setline(1, repeat('X', winwidth(0) - 4) .. 'YYYY' .. "\tZ")
   call cursor(1, winwidth(0) + 1)
   call assert_equal(2, screenpos(0, 1, col('.')).row)
