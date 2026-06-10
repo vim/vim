@@ -1624,8 +1624,12 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	ga_init2(&str_ga, 1, 256);
 	FOR_ALL_LIST_ITEMS(list, li)
 	{
-	    char_u *s = (li->li_tv.v_type == VAR_STRING)
-					    ? li->li_tv.vval.v_string : NULL;
+	    char_u *s;
+
+	    if (li->li_tv.v_type != VAR_STRING)
+		continue;
+
+	    s = li->li_tv.vval.v_string;
 
 	    // Each list string item is separated by a newline in the blob
 	    if (li != list->lv_first)
@@ -1680,44 +1684,45 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	}
 	else
 	    ga_clear(&str_ga);
-	goto done;
     }
-
-    FOR_ALL_LIST_ITEMS(list, li)
+    else
     {
-	if (li->li_tv.v_type != VAR_STRING)
-	    continue;
-
-	string_T    str = {li->li_tv.vval.v_string, 0};
-
-	if (str.string == NULL)
-	    STR_LITERAL_SET(str, "");
-	else
-	    str.length = STRLEN(str.string);
-
-	if (to_encoding != NULL)
+	FOR_ALL_LIST_ITEMS(list, li)
 	{
-	    int		res;
-	    string_T	converted;
+	    if (li->li_tv.v_type != VAR_STRING)
+		continue;
 
-	    res = convert_string(&str, p_enc, to_encoding, &converted);
-	    if (res != OK)
+	    string_T	str = {li->li_tv.vval.v_string, 0};
+
+	    if (str.string == NULL)
+		STR_LITERAL_SET(str, "");
+	    else
+		str.length = STRLEN(str.string);
+
+	    if (to_encoding != NULL)
 	    {
-		semsg(_(e_str_encoding_to_failed), to_encoding);
-		goto done;
+		int	    res;
+		string_T    converted;
+
+		res = convert_string(&str, p_enc, to_encoding, &converted);
+		if (res != OK)
+		{
+		    semsg(_(e_str_encoding_to_failed), to_encoding);
+		    goto done;
+		}
+		str.string = converted.string;
+		str.length = converted.length;
 	    }
-	    str.string = converted.string;
-	    str.length = converted.length;
+
+	    if (li != list->lv_first)
+		// Each list string item is separated by a newline in the blob
+		ga_append(&blob->bv_ga, NL);
+
+	    blob_from_string(str.string, blob);
+
+	    if (to_encoding != NULL)
+		vim_free(str.string);
 	}
-
-	if (li != list->lv_first)
-	    // Each list string item is separated by a newline in the blob
-	    ga_append(&blob->bv_ga, NL);
-
-	blob_from_string(str.string, blob);
-
-	if (to_encoding != NULL)
-	    vim_free(str.string);
     }
 
 done:
