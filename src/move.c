@@ -1097,12 +1097,22 @@ validate_cursor_col(void)
     colnr_T off;
     colnr_T col;
     int     width;
+#ifdef FEAT_FOLDING
+    int	    cline_folded;
+#endif
 
     validate_virtcol();
 
     if (curwin->w_valid & VALID_WCOL)
 	return;
 
+#ifdef FEAT_FOLDING
+    cline_folded = curwin->w_cline_folded
+		    || hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    if (cline_folded)
+	col = curwin->w_leftcol;
+    else
+#endif
     col = curwin->w_virtcol;
     off = curwin_col_off();
     col += off;
@@ -1110,6 +1120,9 @@ validate_cursor_col(void)
 
     // long line wrapping, adjust curwin->w_wrow
     if (curwin->w_p_wrap
+#ifdef FEAT_FOLDING
+	    && !cline_folded
+#endif
 	    && col >= (colnr_T)curwin->w_width
 	    && width > 0)
 	// use same formula as what is used in curs_columns()
@@ -1192,6 +1205,9 @@ curs_columns(
     long	so = get_scrolloff_value();
     long	siso = get_sidescrolloff_value();
     int		did_sub_skipcol = FALSE;
+#ifdef FEAT_FOLDING
+    int		cline_folded;
+#endif
 #ifdef FEAT_CONCEAL
     long	concealed_vcol = -1;
 #endif
@@ -1216,7 +1232,9 @@ curs_columns(
      * Compute the number of virtual columns.
      */
 #ifdef FEAT_FOLDING
-    if (curwin->w_cline_folded)
+    cline_folded = curwin->w_cline_folded
+		    || hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    if (cline_folded)
 	// In a folded line the cursor is always in the first column
 	startcol = curwin->w_virtcol = endcol = curwin->w_leftcol;
     else
@@ -1225,7 +1243,7 @@ curs_columns(
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
 #ifdef FEAT_CONCEAL
 #ifdef FEAT_FOLDING
-    if (!curwin->w_cline_folded)
+    if (!cline_folded)
 #endif
 	concealed_vcol = plines_win_col_conceal_vcol(curwin,
 				   curwin->w_cursor.lnum, curwin->w_cursor.col);
@@ -1544,21 +1562,37 @@ textpos2screenpos(
 	{
 	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);
 # ifdef FEAT_CONCEAL
-	    long concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+	    long concealed_vcol;
+	    long conceal_delta = 0;
+
+	    concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
 								pos->col);
 
 	    if (concealed_vcol >= 0 && wp->w_p_wrap)
 	    {
-		long conceal_delta = concealed_vcol - scol;
+		colnr_T vcol_width = ecol - scol;
 
+		conceal_delta = concealed_vcol - scol;
 		scol += conceal_delta;
 		ccol += conceal_delta;
 		ecol += conceal_delta;
+		if (vcol_width > 0 && ccol == scol)
+		    ccol = ecol;
 	    }
 # endif
 
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
+# ifdef FEAT_CONCEAL
+	    if (conceal_delta != 0 && wp->w_p_wrap)
+	    {
+		int concealed_row = plines_win_col(wp, lnum, pos->col) - 1;
+
+		if (concealed_row > 0)
+		    col += concealed_row * (wp->w_width - off
+							+ win_col_off2(wp));
+	    }
+# endif
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 

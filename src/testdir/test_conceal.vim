@@ -762,27 +762,30 @@ func Test_conceallevel_three_wrap()
         \ ], ScreenLines([1, 2], winwidth(0)))
 
   if has('folding')
-    setlocal foldmethod=manual foldenable
+    setlocal foldmethod=manual foldenable foldlevel=0
     call setline(1, repeat('A', winwidth(0) * 2) .. 'X folded text')
     call setline(2, 'inside')
     call setline(3, 'after')
     1,2fold
+    call cursor(1, 1)
+    normal! zM
     call cursor(1, winwidth(0) * 2 + 1)
-    redraw
-    call assert_equal(win_screenpos(0), [screenrow(), screencol()])
-    setlocal foldmethod& foldenable&
+    redraw!
+    call assert_equal([1, 1], [winline(), wincol()])
+    normal! zE
+    setlocal foldmethod& foldenable& foldlevel&
   endif
 
   call setline(1, "X\tY")
   call setline(2, 'after')
   call cursor(1, 2)
   redraw
-  call assert_equal(win_screenpos(0)[1] + 6, screencol())
+  call assert_equal(7, screenpos(0, 1, col('.')).curscol)
 
   call setline(1, "X\u3042Y")
   call cursor(1, 2)
   redraw
-  call assert_equal(win_screenpos(0)[1] + 1, screencol())
+  call assert_equal(2, screenpos(0, 1, col('.')).curscol)
 
   syntax clear test
   call CloseWindow()
@@ -810,7 +813,7 @@ func Test_conceallevel_three_wrap_matchadd_multiline()
   call NewWindow(6, 4)
   setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
 
-  let matchid = matchadd('Conceal', "x\nXXXXX", 10, -1, #{conceal: ''})
+  let matchid = matchadd('Conceal', 'x\nXXXXX', 10, -1, #{conceal: ''})
   call setline(1, ['x', 'XXXXXYY', 'after'])
   call cursor(3, 1)
   redraw
@@ -822,7 +825,7 @@ func Test_conceallevel_three_wrap_matchadd_multiline()
   call deletebufline(bufnr(), 2, '$')
   call cursor(1, 5)
   redraw
-  call assert_equal(win_screenpos(0)[0] + 1, screenrow())
+  call assert_equal(2, winline())
 
   syntax clear test
   call CloseWindow()

@@ -489,6 +489,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	int	is_concealing = FALSE;
 
 # ifdef FEAT_SEARCH_EXTRA
+	has_match_conc = 0;
+	match_conc = 0;
 	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
 		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
 	ptr = line + col;	// "line" may have been changed
@@ -522,8 +524,16 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
-	    if (*ptr == TAB)
+	    if (*ptr == TAB && vcol_off_co > 0)
+	    {
+# ifdef FEAT_LINEBREAK
+		if (vcol == 0 && *get_showbreak_value(wp) != NUL)
+		    charsize = wp->w_width - win_col_off(wp) - (int)vcol - 1;
+		else
+# endif
+		charsize += vcol_off_co;
 		vcol_off_co = 0;
+	    }
 	    vcol += charsize;
 	}
 # ifdef FEAT_PROP_POPUP
@@ -567,6 +577,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	colnr_T	col = (colnr_T)(ptr - line);
 
 # ifdef FEAT_SEARCH_EXTRA
+	has_match_conc = 0;
+	match_conc = 0;
 	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
 		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
 	ptr = line + col;	// "line" may have been changed
