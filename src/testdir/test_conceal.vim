@@ -695,6 +695,38 @@ func Test_conceallevel_three_wrap()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_cursor_moved_redraw()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match test /X\+/ conceal
+    call setline(1, ['', repeat('X', &columns - 3) .. 'YYYY', 'after'])
+    call cursor(1, 1)
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_cursor_moved_redraw', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_cursor_moved_redraw',
+        \ {'rows': 6, 'cols': 80})
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call term_sendkeys(buf, 'j')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call assert_equal('after', term_getline(buf, 3))
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+
+  call term_sendkeys(buf, ":set concealcursor=\<CR>")
+  call term_sendkeys(buf, 'j')
+  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+        \ term_getline(buf, 2))})
+  call assert_equal('Y', term_getline(buf, 3))
+  call assert_equal('after', term_getline(buf, 4))
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call assert_equal('after', term_getline(buf, 3))
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test that line wrapping is correct when double-width chars are concealed.
 func Test_conceal_double_width_wrap()
   CheckScreendump

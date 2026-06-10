@@ -99,9 +99,6 @@ conceal_check_cursor_line(int was_concealed)
     int wcol = curwin->w_wcol;
 
     need_cursor_line_redraw = TRUE;
-    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-	redraw_later(UPD_SOME_VALID);
-
     // Need to recompute cursor column, e.g., when starting Visual mode
     // without concealing.
     curs_columns(TRUE);
