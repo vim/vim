@@ -695,6 +695,38 @@ func Test_conceallevel_three_wrap()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_wrap_virtual_text()
+  CheckFeature textprop
+
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+  call prop_type_add('test', #{highlight: 'Search'})
+
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, col([1, '$']),
+        \ #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  call prop_clear(1)
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  setlocal showbreak=++
+  call prop_clear(1)
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) * 2 - 1)})
+  call cursor(2, 1)
+  call assert_equal(4, screenpos(0, 2, 1).row)
+
+  call prop_type_delete('test')
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_cursor_moved_redraw()
   CheckRunVimInTerminal
 
