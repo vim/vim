@@ -534,7 +534,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	{
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = (int)(vcol + vcol_off_co);
-	    vcol_off_co += win_lbr_chartabsize(&cts, NULL, NULL);
+	    vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
 	}
 	if (vcol > MAXCOL)
 	{

@@ -697,6 +697,22 @@ func Test_conceallevel_three_wrap()
   call assert_equal(2, screenpos(0, 2, 1).row)
   setlocal nolinebreak showbreak=
 
+  call CloseWindow()
+  call NewWindow(6, 4)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber showbreak=++
+  syntax match test /X\+/ conceal
+  call setline(1, repeat('X', winwidth(0) * 2 + 3)
+        \ .. repeat('Y', winwidth(0) + 1))
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+  setlocal showbreak=
+  call CloseWindow()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+  call setline(2, 'after')
+
   call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
   call cursor(1, 1)
   call feedkeys("i" .. repeat("\<ScrollWheelRight>", 5) .. "\<Esc>", 'tx')
