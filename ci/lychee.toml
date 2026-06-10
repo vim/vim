@@ -26,7 +26,6 @@ exclude = [
   '^file://.*',
   '^https?://(www\.)?badges\.debian\.net/.*$',
   '^https?://(www\.)?repology\.org/.*$',
-  '^https?://scan\.coverity\.com/.*$',
   '^https?://(www\.)?img\.shields\.io/.*$',
   '^https?://(www\.)?fossies\.org/.*$',
   '^https?://(www\.)?adobe\.com.*$',

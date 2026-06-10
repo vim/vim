@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Apr 29
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1998,9 +1998,6 @@ Dominique can't reproduce it.
 
 ":function f(x) keepjumps" creates a function where every command is executed
 like it has ":keepjumps" before it.
-
-Coverity: Check if there are new reported defects:
-https://scan.coverity.com/projects/241
 
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 

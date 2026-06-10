@@ -4,7 +4,6 @@ CI:
   - all:
     - changed-files:
       - any-glob-to-any-file:
-        - '.cirrus.yml'
         - '.github/dependabot.yml'
         - '.github/labeler.yml'
         - '.github/workflows/*'
