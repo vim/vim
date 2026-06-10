@@ -756,6 +756,18 @@ func Test_conceallevel_three_wrap()
         \ 'after' .. repeat(' ', winwidth(0) - 5),
         \ ], ScreenLines([1, 2], winwidth(0)))
 
+  if has('folding')
+    setlocal foldmethod=manual foldenable
+    call setline(1, repeat('A', winwidth(0) * 2) .. 'X folded text')
+    call setline(2, 'inside')
+    call setline(3, 'after')
+    1,2fold
+    call cursor(1, winwidth(0) * 2 + 1)
+    redraw
+    call assert_equal(win_screenpos(0), [screenrow(), screencol()])
+    setlocal foldmethod& foldenable&
+  endif
+
   syntax clear test
   call CloseWindow()
 endfunc

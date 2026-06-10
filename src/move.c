@@ -1224,7 +1224,10 @@ curs_columns(
 	getvvcol(curwin, &curwin->w_cursor,
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
 #ifdef FEAT_CONCEAL
-    concealed_vcol = plines_win_col_conceal_vcol(curwin,
+#ifdef FEAT_FOLDING
+    if (!curwin->w_cline_folded)
+#endif
+	concealed_vcol = plines_win_col_conceal_vcol(curwin,
 				   curwin->w_cursor.lnum, curwin->w_cursor.col);
 #endif
 
