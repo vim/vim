@@ -521,11 +521,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
-	    if (*ptr == TAB && vcol_off_co > 0)
-	    {
-		charsize += vcol_off_co;
+	    if (*ptr == TAB)
 		vcol_off_co = 0;
-	    }
 	    vcol += charsize;
 	}
 # ifdef FEAT_PROP_POPUP

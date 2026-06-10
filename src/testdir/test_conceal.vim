@@ -725,6 +725,11 @@ func Test_conceallevel_three_wrap()
   call cursor(2, 1)
   call assert_equal(3, screenpos(0, 2, 1).row)
 
+  call setline(1, "X\tY")
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
   syntax clear test
   syntax match test /\t/ conceal
   call setline(1, "abc\tY")
