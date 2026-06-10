@@ -437,6 +437,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column)
     char_u	*line;
     char_u	*ptr;
     long	vcol = 0;
+    long	vcol_off_co = 0;
     chartabsize_T cts;
 # ifdef FEAT_PROP_POPUP
     int		with_trailing = column == MAXCOL;
@@ -501,26 +502,44 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column)
 # endif
 	if (!is_concealing)
 	{
+	    int charsize;
+
 	    cts.cts_ptr = ptr;
-	    cts.cts_vcol = (int)vcol;
-	    vcol += win_lbr_chartabsize(&cts, NULL, NULL);
+	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
+	    if (*ptr == TAB && vcol_off_co > 0)
+	    {
+		charsize += vcol_off_co;
+		vcol_off_co = 0;
+	    }
+	    vcol += charsize;
 	}
 # ifdef FEAT_PROP_POPUP
 	else if (cts.cts_has_prop_with_text)
 	{
+	    int charsize;
 	    int head = 0;
 
 	    cts.cts_ptr = ptr;
-	    cts.cts_vcol = (int)vcol;
-	    (void)win_lbr_chartabsize(&cts, &head, NULL);
+	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
 	    vcol += cts.cts_cur_text_width + head;
+	    vcol_off_co += charsize - cts.cts_cur_text_width - head;
 	}
 # endif
+	else
+	{
+	    cts.cts_ptr = ptr;
+	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    vcol_off_co += win_lbr_chartabsize(&cts, NULL, NULL);
+	}
 	if (vcol > MAXCOL)
 	{
 	    vcol = MAXCOL;
 	    break;
 	}
+	if (vcol_off_co > MAXCOL - vcol)
+	    vcol_off_co = MAXCOL - vcol;
 	MB_PTR_ADV(ptr);
     }
 

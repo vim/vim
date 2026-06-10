@@ -677,6 +677,13 @@ func Test_conceallevel_three_wrap()
         \ 'after' .. repeat(' ', winwidth(0) - 5),
         \ ], ScreenLines([1, 2], winwidth(0)))
 
+  call setline(1, repeat('X', winwidth(0) - 3) .. "\tY")
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call cursor(1, 1)
   call feedkeys("i" .. repeat("\<ScrollWheelRight>", 5) .. "\<Esc>", 'tx')
   redraw
   call assert_equal([
