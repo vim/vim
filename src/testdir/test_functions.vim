@@ -4513,6 +4513,18 @@ func Test_str2blob()
     call assert_equal(0zABBB0AABBB, str2blob(['«»', '«»'], {'encoding': 'latin1'}))
     call assert_equal(0zC2ABC2BB, str2blob(['«»'], {'encoding': 'utf8'}))
 
+    call assert_equal(0z480065006C006C006F00, str2blob(['Hello'], {'encoding': 'utf-16le'}))
+    call assert_equal(0z480065006C006C006F00, str2blob(['Hello'], {'encoding': 'utf16le'}))
+    call assert_equal(0z00480065006C006C006F, str2blob(['Hello'], {'encoding': 'utf-16be'}))
+    call assert_equal(0z48006900.0A004200.79006500, str2blob(['Hi', 'Bye'], {'encoding': 'utf-16le'}))
+    call assert_equal(0z61000A006200, str2blob(["a\nb"], {'encoding': 'utf-16le'}))
+    call assert_equal(0z, str2blob([''], {'encoding': 'utf-16le'}))
+    call assert_equal(0z0A00, str2blob(['', ''], {'encoding': 'utf-16le'}))
+    for enc in ['utf-16le', 'utf-16be', 'ucs-2le', 'utf-32le', 'utf-32be']
+      call assert_equal(['Hello', 'World'],
+            \ blob2str(str2blob(['Hello', 'World'], {'encoding': enc}), {'encoding': enc}), enc)
+    endfor
+
     call assert_equal(0z62, str2blob(["b"], test_null_dict()))
     call assert_equal(0z63, str2blob(["c"], {'encoding': test_null_string()}))
 
