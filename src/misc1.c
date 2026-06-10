@@ -444,8 +444,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     long	vcol_off_co = 0;
     chartabsize_T cts;
     int		check_concealed = concealedp != NULL && column != MAXCOL;
+    int		full_line = column == MAXCOL;
 # ifdef FEAT_PROP_POPUP
-    int		with_trailing = column == MAXCOL;
+    int		with_trailing = full_line;
 # endif
 # ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp) && !wp->w_s->b_syn_error
@@ -497,7 +498,10 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	{
 	    int	    syntax_seqnr;
 
-	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+	    if (full_line)
+		(void)get_syntax_attr(col, NULL, FALSE);
+	    else
+		(void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    cts.cts_line = line;

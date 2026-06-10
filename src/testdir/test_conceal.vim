@@ -772,6 +772,24 @@ func Test_conceallevel_three_wrap()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_wrap_single_char_syntax()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X/ conceal
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 
