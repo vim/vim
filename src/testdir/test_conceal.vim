@@ -806,6 +806,28 @@ func Test_conceallevel_three_wrap_single_char_syntax()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_wrap_matchadd_multiline()
+  call NewWindow(6, 4)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+
+  let matchid = matchadd('Conceal', "x\nXXXXX", 10, -1, #{conceal: ''})
+  call setline(1, ['x', 'XXXXXYY', 'after'])
+  call cursor(3, 1)
+  redraw
+  call assert_equal(3, screenpos(0, 3, 1).row)
+  call matchdelete(matchid)
+
+  syntax match test /Z/ conceal
+  call setline(1, 'abcdEZ')
+  call deletebufline(bufnr(), 2, '$')
+  call cursor(1, 5)
+  redraw
+  call assert_equal(win_screenpos(0)[0] + 1, screenrow())
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 

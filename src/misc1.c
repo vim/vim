@@ -475,6 +475,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # endif
 # ifdef FEAT_SEARCH_EXTRA
     init_search_hl(wp, &screen_search_hl);
+    prepare_search_hl(wp, &screen_search_hl, lnum);
     (void)prepare_search_hl_line(wp, lnum, 0, &line, &screen_search_hl,
 							     &search_attr);
     ptr = line;
@@ -708,12 +709,14 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 #ifdef FEAT_CONCEAL
     if (plines_win_has_conceal(wp, lnum))
     {
-	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
+	long measure_column = column == MAXCOL ? MAXCOL : column + 1;
+
+	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, measure_column,
 						 &vcol_off_co, &concealed);
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	cts.cts_line = line;
 	cts.cts_ptr = line;
-	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < column)
+	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < measure_column)
 	    MB_PTR_ADV(cts.cts_ptr);
     }
     else
