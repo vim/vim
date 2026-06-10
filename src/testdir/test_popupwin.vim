@@ -5273,6 +5273,34 @@ func Test_popup_opacity_zero()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_settext_no_leftover()
+  CheckScreendump
+
+  " Growing a no-highlight opacity popup with popup_settext() used to leave
+  " cells of the old, smaller popup on the screen: the background redraw
+  " under an opacity popup suppresses terminal output, so a later draw must
+  " not skip cells that look unchanged in ScreenLines.
+  let lines =<< trim END
+    call setline(1, ['some text here', '', '', '', '', '', 'more text'])
+    let g:winid = popup_create(['abc', 'ABC', '123', '456'],
+        \ #{line: 2, col: 2, border: [], highlight: 'None', opacity: 50})
+  END
+  call writefile(lines, 'XtestPopupOpacitySettext', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacitySettext', #{rows: 12})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_settext_1', {})
+
+  " Replace with larger content: no cells of the small popup may remain.
+  call term_sendkeys(buf, ":call popup_settext(g:winid,"
+	\ .. " ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', '', '', '', '', '.'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_settext_2', {})
+
+  " After closing the popup the screen must be fully restored.
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_settext_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal
   CheckUnix
