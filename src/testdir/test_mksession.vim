@@ -246,8 +246,8 @@ func Test_mksession_rtp()
 
   " determine expected value
   let expected=split(&rtp, ',')
-  let expected = map(expected, '"set runtimepath+=".v:val')
-  let expected = ['set runtimepath='] + expected
+  let expected = map(expected, '"legacy set runtimepath+=".v:val')
+  let expected = ['legacy set runtimepath='] + expected
   let expected = map(expected, {v,w -> substitute(w, $HOME, "~", "g")})
 
   mksession! Xtest_mks.out
@@ -1297,9 +1297,10 @@ func Test_mkvimrc()
   set wildcharm=<F7>
   call assert_fails('mkvimrc Xtestvimrc', 'E189: "Xtestvimrc" exists')
   mkvimrc! Xtestvimrc
-  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set pastetoggle=<F5>'))
-  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set wildchar=<F6>'))
-  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set wildcharm=<F7>'))
+  let content = readfile('Xtestvimrc')
+  call assert_notequal(-1, index(content, 'legacy set pastetoggle=<F5>'))
+  call assert_notequal(-1, index(content, 'set wildchar=<F6>'))
+  call assert_notequal(-1, index(content, 'set wildcharm=<F7>'))
   set pastetoggle& wildchar& wildcharm&
 
   call delete('Xtestvimrc')
@@ -1808,6 +1809,139 @@ func Test_mksession_vim9_duplicate_import()
   defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
+endfunc
+
+" Make sure options are marked as legacy in the session file when they are set
+" by the user from the command execution interface.  Only applies to string
+" options.
+func Test_mksession_preserve_option_script_version_set_manually()
+
+  let orig_includeexpr = &includeexpr
+  defer execute('let &includeexpr = orig_includeexpr')
+
+  " Using "execute()" to simulate input from the user, rather than the option
+  " being set directly by the test script itself.
+  execute('set includeexpr=FooDefault(v:fname)')
+
+  " Try a few options, to make sure they all work correctly.
+  new
+  execute('legacy set includeexpr=FooLegacy(v:fname)')
+
+  new
+  execute('vim9 set includeexpr=FooVim9(v:fname)')
+
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+
+  let session_content = readfile('XDummySession.vim')
+  " We expect that without an explicit script version specification the command
+  " line input is treated as legacy input.
+  call assert_notequal(-1, index(session_content,
+        \ 'legacy setlocal includeexpr=FooDefault(v:fname)'))
+  call assert_notequal(-1, index(session_content,
+        \ 'legacy setlocal includeexpr=FooLegacy(v:fname)'))
+  call assert_notequal(-1, index(session_content,
+        \ 'setlocal includeexpr=FooVim9(v:fname)'))
+endfunc
+
+" Make sure options preserve legacy/Vim9 script version when written into the
+" session file based on the original script that set those options.  Only
+" applies to string options.
+func Test_mksession_preserve_option_script_version_set_from_script()
+
+  CheckFeature packages
+
+  const base = getcwd() . '/rtdir'
+  " clean up later
+  defer delete(base, 'rf')
+  let orig_packpath = &packpath
+  let &packpath .= ',' . base
+  defer execute('let &packpath = orig_packpath')
+
+  " Is used to disable file type plugins.
+  let g:Global_run_ftplugins = 1
+  defer execute('unlet g:Global_run_ftplugins')
+
+  " We are going to create two simple file type plugins - one Vim9 and one
+  " legacy.  Each will just set the "includeexpr" locally in the buffer to some
+  " value.
+  const root = base . '/pack/test/opt/test_option_script_version'
+  call mkdir(root . '/ftplugin', 'p')
+
+  let vim9_ftplugin_sources =<< trim END
+    vim9script
+
+    if !get(g:, 'Global_run_ftplugins')
+      finish
+    endif
+
+    &l:include = 'vim9include'
+    &l:includeexpr = 'vim9fn(v:fname, 1)'
+  END
+  call writefile(vim9_ftplugin_sources, root . '/ftplugin/vim9test_lang.vim')
+
+  let legacy_ftplugin_sources =<< trim END
+    if !get(g:, 'Global_run_ftplugins')
+      finish
+    endif
+
+    setlocal include=legacyimport
+    setlocal includeexpr=legacyfn(v:fname,\".\")
+  END
+  call writefile(legacy_ftplugin_sources, root . '/ftplugin/legacytest_lang.vim')
+
+  let orig_runtimepath = &runtimepath
+  packadd test_option_script_version
+  defer execute('let &runtimepath = orig_runtimepath')
+
+  " Next we will create two buffers, and set "filetype" in each to match our two
+  " file type plugin names.  The expectation is that "includeexpr" will be set
+  " to the correct value and a ":legacy" prefix will be used only when the
+  " original value was set by a legacy script.
+  filetype plugin on
+  set filetype=vim9test_lang
+
+  new
+  set filetype=legacytest_lang
+
+  mksession! XDummySession1.vim
+  defer delete('XDummySession1.vim')
+
+  " Check that the session file indeed contains correctly set "includeexpr"
+  " values.
+  let session1_content = readfile('XDummySession1.vim')
+  call assert_notequal(-1, index(session1_content,
+        \ 'setlocal include=vim9include'))
+  call assert_notequal(-1, index(session1_content,
+        \ 'setlocal includeexpr=vim9fn(v:fname,\ 1)'))
+  call assert_notequal(-1, index(session1_content,
+        \ 'legacy setlocal include=legacyimport'))
+  call assert_notequal(-1, index(session1_content,
+        \ 'legacy setlocal includeexpr=legacyfn(v:fname,\".\")'))
+
+  " Now disable our filetype plugins, restore the session file, save session
+  " again, and make sure that the options are still stored with correct Vim
+  " script version prefixes.
+
+  let g:Global_run_ftplugins = 0
+  %bwipe!
+
+  source XDummySession1.vim
+
+  mksession! XDummySession2.vim
+  defer delete('XDummySession2.vim')
+
+  " Check that the session file indeed contains correctly set "includeexpr"
+  " values.
+  let session2_content = readfile('XDummySession2.vim')
+  call assert_notequal(-1, index(session2_content,
+        \ 'setlocal include=vim9include'))
+  call assert_notequal(-1, index(session2_content,
+        \ 'setlocal includeexpr=vim9fn(v:fname,\ 1)'))
+  call assert_notequal(-1, index(session2_content,
+        \ 'legacy setlocal include=legacyimport'))
+  call assert_notequal(-1, index(session2_content,
+        \ 'legacy setlocal includeexpr=legacyfn(v:fname,\".\")'))
 endfunc
 
 " 'winminwidth' restore must not fail when the session's saved 'winwidth' is
