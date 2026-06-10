@@ -5433,7 +5433,9 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 		++b->bv_refcount;
 		if (dict_add(idict, item) == FAIL)
 		{
+		    // dictitem_free() already freed the blob
 		    dictitem_free(item);
+		    b = NULL;
 		    ok = FALSE;
 		}
 	    }
