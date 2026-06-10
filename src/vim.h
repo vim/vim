@@ -3088,7 +3088,8 @@ long elapsed(DWORD start_tick);
 #define UC_VIM9		2	// {} argument: Vim9 syntax.
 
 // flags for the -completeopt= attribute of :command
-#define UCC_ESCAPE	0x1	// escape spaces and backslashes in matches
+#define UCC_ESCAPE	0x1	// escape spaces, tabs and backslashes in
+				// matches
 
 // flags used by vim_strsave_fnameescape()
 #define VSE_NONE	0

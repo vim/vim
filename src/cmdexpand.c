@@ -823,8 +823,8 @@ win_redr_status_matches(
  * Apply -completeopt=escape to a string about to be inserted into the command
  * line as a completion result.  If "str" is non-NULL and the active expansion
  * context is a customlist/custom user command with UCC_ESCAPE set, free "str"
- * and return a newly-allocated copy with spaces and backslashes prefixed by a
- * backslash.  Otherwise return "str" unchanged.
+ * and return a newly-allocated copy with spaces, tabs and backslashes prefixed
+ * by a backslash.  Otherwise return "str" unchanged.
  */
     static char_u *
 apply_user_completeopt_escape(expand_T *xp, char_u *str)
@@ -837,7 +837,7 @@ apply_user_completeopt_escape(expand_T *xp, char_u *str)
 		&& xp->xp_context != EXPAND_USER_LIST)
 	    || !(xp->xp_complete_opt & UCC_ESCAPE))
 	return str;
-    p = vim_strsave_escaped(str, (char_u *)" \\");
+    p = vim_strsave_escaped(str, (char_u *)" \t\\");
     if (p == NULL)
 	return str;
     vim_free(str);
@@ -846,8 +846,8 @@ apply_user_completeopt_escape(expand_T *xp, char_u *str)
 
 /*
  * For -completeopt=escape on a user command, build the "logical" ArgLead by
- * collapsing backslash-space and backslash-backslash in the typed text.  The
- * completion function then sees "foo bar" instead of "foo\ bar".
+ * collapsing a backslash before a space, tab or backslash in the typed text.
+ * The completion function then sees "foo bar" instead of "foo\ bar".
  * Returns a newly-allocated string and stores its length in "*new_lenp", or
  * NULL when no unescape is applicable (caller should keep the original).
  */
@@ -873,7 +873,8 @@ unescape_user_completeopt_pat(
     end = src + srclen;
     for (p = src; p < end; ++p)
     {
-	if (*p == '\\' && p + 1 < end && (p[1] == ' ' || p[1] == '\\'))
+	if (*p == '\\' && p + 1 < end
+			   && (p[1] == ' ' || p[1] == TAB || p[1] == '\\'))
 	    ++p;
 	*d++ = *p;
     }
@@ -1278,7 +1279,7 @@ ExpandOne(
 		for (i = 0; i < xp->xp_numfiles; ++i)
 		{
 		    escaped[i] = vim_strsave_escaped(xp->xp_files[i],
-						       (char_u *)" \\");
+						       (char_u *)" \t\\");
 		    if (escaped[i] == NULL)
 		    {
 			while (--i >= 0)

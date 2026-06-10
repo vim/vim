@@ -1946,6 +1946,11 @@ uc_check_code(
 		STRCPY(buf, eap->arg);
 	    break;
 	case 1: // Quote, but don't split
+	{
+	    // For -completeopt=escape give <q-args> the logical value: a
+	    // backslash before a space, tab or backslash is collapsed.
+	    int	unesc = (cmd->uc_compl_opt & UCC_ESCAPE) != 0;
+
 	    result = STRLEN(eap->arg) + 2;
 	    for (p = eap->arg; *p; ++p)
 	    {
@@ -1953,6 +1958,13 @@ uc_check_code(
 		    // DBCS can contain \ in a trail byte, skip the
 		    // double-byte character.
 		    ++p;
+		else if (unesc && *p == '\\'
+				     && (VIM_ISWHITE(p[1]) || p[1] == '\\'))
+		{
+		    if (VIM_ISWHITE(p[1]))
+			--result;
+		    ++p;
+		}
 		else
 		     if (*p == '\\' || *p == '"')
 		    ++result;
@@ -1967,6 +1979,13 @@ uc_check_code(
 			// DBCS can contain \ in a trail byte, copy the
 			// double-byte character to avoid escaping.
 			*buf++ = *p++;
+		    else if (unesc && *p == '\\'
+				     && (VIM_ISWHITE(p[1]) || p[1] == '\\'))
+		    {
+			++p;	// drop the escaping backslash
+			if (*p == '\\')
+			    *buf++ = '\\';	// re-escape for the quotes
+		    }
 		    else
 			 if (*p == '\\' || *p == '"')
 			*buf++ = '\\';
@@ -1976,6 +1995,7 @@ uc_check_code(
 	    }
 
 	    break;
+	}
 	case 2: // Quote and split (<f-args>)
 	    // This is hard, so only do it once, and cache the result
 	    if (*split_buf == NULL)

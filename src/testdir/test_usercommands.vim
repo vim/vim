@@ -520,7 +520,7 @@ func Test_CmdCompletion()
   delcom DoCmd
 endfunc
 
-" Test for -completeopt=escape: spaces and backslashes returned by a
+" Test for -completeopt=escape: spaces, tabs and backslashes returned by a
 " customlist/custom completion function are backslash-escaped when inserted
 " into the command line, so the value survives as a single argument.  The
 " ArgLead passed to the function and the matches shown in the popup menu
@@ -539,6 +539,10 @@ func Test_command_completeopt_escape()
     let g:EscArgLead = a:A
     return ['foo bar\baz']
   endfunc
+  func! EscTab(A, L, P)
+    let g:EscArgLead = a:A
+    return ["foo\tbar"]
+  endfunc
   func! EscCustom(A, L, P)
     let g:EscArgLead = a:A
     return "hello world"
@@ -550,9 +554,14 @@ func Test_command_completeopt_escape()
   endfunc
 
   " customlist + -completeopt=escape: spaces and backslashes are escaped.
-  com! -nargs=1 -complete=customlist,EscOne -completeopt=escape DoCmd echo <q-args>
+  com! -nargs=1 -complete=customlist,EscOne -completeopt=escape DoCmd
+        \ let g:EscQargs = <q-args>
   call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd hello\ world', @:)
+  " <q-args> yields the unescaped value.
+  let g:EscQargs = ''
+  call feedkeys(":DoCmd \<Tab>\<CR>", 'tx')
+  call assert_equal('hello world', g:EscQargs)
   delcom DoCmd
 
   com! -nargs=1 -complete=customlist,EscBs -completeopt=escape DoCmd echo <q-args>
@@ -564,6 +573,24 @@ func Test_command_completeopt_escape()
   call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd foo\ bar\\baz', @:)
   delcom DoCmd
+
+  " A tab in a match is escaped like a space (the argument splitter also
+  " splits on tabs) and <q-args> yields the literal tab again.
+  com! -nargs=1 -complete=customlist,EscTab -completeopt=escape DoCmd
+        \ let g:EscQargs = <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"DoCmd foo\\\tbar", @:)
+  " CTRL-A (insert all matches) escapes each match too.
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"DoCmd foo\\\tbar", @:)
+  let g:EscQargs = ''
+  call feedkeys(":DoCmd \<Tab>\<CR>", 'tx')
+  call assert_equal("foo\tbar", g:EscQargs)
+  let g:EscArgLead = ''
+  call assert_equal(["foo\tbar"], getcompletion("DoCmd foo\\\tb", 'cmdline'))
+  call assert_equal("foo\tb", g:EscArgLead)
+  delcom DoCmd
+  unlet g:EscQargs
 
   " custom (newline-separated) + -completeopt=escape.
   com! -nargs=1 -complete=custom,EscCustom -completeopt=escape DoCmd echo <q-args>
@@ -584,8 +611,8 @@ func Test_command_completeopt_escape()
   delcom DoCmd
 
   " ArgLead passed to the completion function is unescaped: the user typed
-  " `foo\ b` (logical "foo b"), so the function should see "foo b" — not
-  " "foo\ b" — and `getcompletion()` should find the "foo bar\baz" match.
+  " `foo\ b` (logical "foo b"), so the function should see "foo b", not
+  " "foo\ b", and `getcompletion()` should find the "foo bar\baz" match.
   com! -nargs=1 -complete=customlist,EscBoth -completeopt=escape DoCmd echo <q-args>
   let g:EscArgLead = ''
   call assert_equal(['foo bar\baz'], getcompletion('DoCmd foo\ b', 'cmdline'))
@@ -630,6 +657,7 @@ func Test_command_completeopt_escape()
   delfunc EscOne
   delfunc EscBs
   delfunc EscBoth
+  delfunc EscTab
   delfunc EscCustom
   delfunc EscMulti
   unlet g:EscArgLead
