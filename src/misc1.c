@@ -445,7 +445,11 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     int		with_trailing = column == MAXCOL;
 # endif
 # ifdef FEAT_SYN_HL
-    int		has_syntax = syntax_present(wp);
+    int		has_syntax = syntax_present(wp) && !wp->w_s->b_syn_error
+#  ifdef SYN_TIME_LIMIT
+						&& !wp->w_s->b_syn_slow
+#  endif
+						;
 # endif
 # ifdef FEAT_SEARCH_EXTRA
     int		search_attr = 0;
