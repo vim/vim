@@ -1670,7 +1670,7 @@ read_tree_node(
     if (len <= 0)
 	return SP_TRUNCERROR;
 
-    if (startidx + len >= maxidx)
+    if (len >= maxidx - startidx)
 	return SP_FORMERROR;
     byts[idx++] = len;
 
