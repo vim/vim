@@ -120,6 +120,9 @@ static void redraw_overlapped_opacity_popups(int winrow, int wincol,
 #ifdef FEAT_IMAGE_KITTY
 static void popup_image_clear_kitty(win_T *wp);
 #endif
+#ifdef FEAT_IMAGE
+static int popup_image_composites_frames(void);
+#endif
 
 /*
  * Get option value for "key", which is "line" or "col".
@@ -949,6 +952,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		wp->w_popup_image_w = 0;
 		wp->w_popup_image_h = 0;
 		wp->w_popup_image_alpha = FALSE;
+		wp->w_popup_image_px_dirty = FALSE;
 # ifdef FEAT_IMAGE_SIXEL
 		VIM_CLEAR(wp->w_popup_image_seq);
 		wp->w_popup_image_seq_w = 0;
@@ -1011,6 +1015,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    wp->w_popup_image_h = ih;
 		    wp->w_popup_image_alpha = has_alpha;
 		}
+		// The next redraw must clear the previously emitted frame
+		// before re-emitting; see popup_invalidate_prev_image_rect().
+		wp->w_popup_image_px_dirty = TRUE;
 # ifdef FEAT_IMAGE_SIXEL
 		VIM_CLEAR(wp->w_popup_image_seq);
 		wp->w_popup_image_seq_h = -1;
@@ -1039,8 +1046,14 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    // Only the image overlay needs refreshing, which happens from
 		    // update_popup_images() at the end of redraw and from the
 		    // targeted GUI repair paths for cursor/WM_PAINT damage.
-		    redraw_win_later(wp,
-			    same_size_update ? UPD_VALID : UPD_NOT_VALID);
+		    // Exception: an RGBA frame swap on a backend that
+		    // composites onto the previous emit needs the popup's
+		    // text rows redrawn so the cells under the image are
+		    // repainted before the re-emit, clearing the previous
+		    // frame; see popup_invalidate_prev_image_rect().
+		    redraw_win_later(wp, same_size_update
+			    && !(has_alpha && popup_image_composites_frames())
+			    ? UPD_VALID : UPD_NOT_VALID);
 		    if (must_redraw < UPD_VALID)
 			must_redraw = UPD_VALID;
 
@@ -2074,6 +2087,79 @@ popup_encode_image(win_T *wp)
 	wp->w_popup_image_seq_cells_h = 0;
     }
 }
+#endif
+
+#ifdef FEAT_IMAGE
+/*
+ * Return TRUE when the active image backend composites a new frame on top
+ * of the previously emitted one instead of replacing it: sixel uses P2=1
+ * transparency (unpainted pixels keep their previous on-screen contents)
+ * and cairo paints with OPERATOR_OVER.  For an RGBA image this leaves the
+ * previous frame visible under the new frame's transparent pixels, so the
+ * cells underneath must be repainted between frame swaps.  Kitty replaces
+ * the whole placement and GDI blits with SRCCOPY; neither leaves residue.
+ */
+    static int
+popup_image_composites_frames(void)
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+#  ifdef FEAT_IMAGE_CAIRO
+	// Cairo paints the image with OPERATOR_OVER onto gui.surface, so
+	// a swapped-in RGBA frame needs the cells repainted underneath.
+	// The surface is composed off-screen before it is exposed, so the
+	// repaint cannot flicker there.
+	return TRUE;
+#  else
+	// GDI blits with SRCCOPY: a full replace, no residue.
+	return FALSE;
+#  endif
+# endif
+# ifdef FEAT_IMAGE_SIXEL
+    // Sixel P2=1 transparency: unpainted pixels keep their previous
+    // on-screen contents, so the cells under the image must be repainted
+    // between frame swaps.  Kitty replaces the whole placement.
+    return popup_image_backend() == IMAGE_BACKEND_SIXEL;
+# else
+    return FALSE;
+# endif
+}
+
+# if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
+// TRUE while a DEC synchronized-update block (DECSET 2026) is open around
+// a popup image residue clear + re-emit.
+static int popup_sync_update_open = FALSE;
+
+/*
+ * Begin a synchronized update before the cells under a popup image are
+ * repainted for an RGBA frame swap.  Without it the terminal can render
+ * the freshly painted background cells before the new sixel frame
+ * arrives, making the animation flicker.  Terminals that do not support
+ * mode 2026 ignore it.
+ */
+    static void
+popup_sync_update_start(void)
+{
+    if (popup_sync_update_open)
+	return;
+#  ifdef FEAT_GUI
+    if (gui.in_use)
+	return;
+#  endif
+    out_str((char_u *)"\033[?2026h");
+    popup_sync_update_open = TRUE;
+}
+
+    static void
+popup_sync_update_end(void)
+{
+    if (!popup_sync_update_open)
+	return;
+    out_str((char_u *)"\033[?2026l");
+    out_flush();
+    popup_sync_update_open = FALSE;
+}
+# endif
 #endif
 
 // Snapshot of the popup window geometry that update_popups() temporarily
@@ -6814,7 +6900,31 @@ popup_invalidate_prev_image_rect(win_T *wp, popup_clip_T *cl)
     old_col = wp->w_popup_image_emit_col;
     if (new_row == old_row && new_col == old_col
 	    && new_cells_w == old_cells_w && new_cells_h == old_cells_h)
-	return;
+    {
+	int need_clear = FALSE;
+
+	// Unchanged rectangle: normally the previous emit still matches what
+	// the popup is about to draw and nothing needs invalidating.
+	// Exception: the pixel buffer was swapped (animation frame) and the
+	// image has an alpha channel.  Sixel uses P2=1 transparency
+	// (unpainted pixels keep their previous on-screen contents) and
+	// cairo composites with OPERATOR_OVER, so the previous frame would
+	// stay visible under the new frame's transparent pixels.  Repaint
+	// the cells underneath so the residue is cleared before the new
+	// frame is emitted.  Kitty replaces the whole placement and GDI
+	// blits with SRCCOPY; neither leaves residue.
+	if (wp->w_popup_image_px_dirty && wp->w_popup_image_alpha)
+	    need_clear = popup_image_composites_frames();
+	if (!need_clear)
+	    return;
+#  if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
+	// Make the repaint-then-re-emit atomic on terminals that support
+	// synchronized updates, so the background never shows through
+	// between animation frames.  Closed right after this popup's
+	// image is re-emitted in update_popups().
+	popup_sync_update_start();
+#  endif
+    }
 
     for (rr = old_row; rr < old_row + old_cells_h; ++rr)
     {
@@ -6886,6 +6996,7 @@ popup_emit_image(win_T *wp)
 	wp->w_popup_image_emit_col = col;
 	wp->w_popup_image_emit_cells_w = (draw_w + cell_x - 1) / cell_x;
 	wp->w_popup_image_emit_cells_h = (draw_h + cell_y - 1) / cell_y;
+	wp->w_popup_image_px_dirty = FALSE;
 	return;
     }
 # endif
@@ -6938,6 +7049,7 @@ popup_emit_image(win_T *wp)
     wp->w_popup_image_emit_col = col;
     wp->w_popup_image_emit_cells_w = wp->w_popup_image_seq_cells_w;
     wp->w_popup_image_emit_cells_h = wp->w_popup_image_seq_cells_h;
+    wp->w_popup_image_px_dirty = FALSE;
 # endif
 }
 
@@ -7656,7 +7768,14 @@ update_popups(void (*win_update)(win_T *wp))
 # ifdef FEAT_GUI
 	if (!gui.in_use)
 # endif
+	{
 	    popup_emit_image(wp);
+# if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
+	    // Close the synchronized-update block a residue clear for this
+	    // popup may have opened in popup_invalidate_prev_image_rect().
+	    popup_sync_update_end();
+# endif
+	}
 #endif
     }
 

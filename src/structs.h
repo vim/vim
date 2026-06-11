@@ -4265,6 +4265,12 @@ struct window_S
     int		w_popup_image_emit_col;
     int		w_popup_image_emit_cells_w;
     int		w_popup_image_emit_cells_h;
+    // TRUE when the pixel buffer was replaced after the last emit.  For
+    // RGBA images the backends that composite onto the previous emit
+    // instead of replacing it (sixel P2=1 transparency, cairo OPERATOR_OVER)
+    // must repaint the cells underneath first, or the old frame stays
+    // visible under the new frame's transparent pixels.
+    int		w_popup_image_px_dirty;
 #  ifdef FEAT_IMAGE_SIXEL
     char_u	*w_popup_image_seq;	// cached sixel DCS sequence (terminal)
     int		w_popup_image_seq_w;	// pixel width of cached seq
