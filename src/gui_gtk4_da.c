@@ -75,7 +75,7 @@ struct _VimDrawArea
     int         n_rows;
     int		n_cols;
 
-    int		resize_count;
+    int		bleed_right;
 
     // Used for hollow and part style cursors. For the block cursor, that is
     // simply rendered as a cell using vim_draw_area_add_glyphs(). May be NULL.
@@ -107,7 +107,6 @@ G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 static void draw_image_free(DrawImage *dimg);
 #endif
 static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
-static void vim_draw_area_size_allocate(GtkWidget *widget, int width, int height, int baseline);
 
     static void
 vim_draw_area_finalize(GObject *obj)
@@ -138,10 +137,10 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
     GObjectClass    *obj_class = G_OBJECT_CLASS(class);
 
     widget_class->snapshot = vim_draw_area_snapshot;
-    widget_class->size_allocate = vim_draw_area_size_allocate;
 
     obj_class->finalize = vim_draw_area_finalize;
 
+    gtk_widget_class_set_layout_manager_type(widget_class, GTK_TYPE_BIN_LAYOUT);
 }
 
     static void
@@ -178,7 +177,6 @@ vim_draw_area_set_size(VimDrawArea *self, int rows, int cols)
     self->n_cols = cols;
     self->cells = g_realloc_n(self->cells, rows * cols, sizeof(DrawCell));
     memset(self->cells, 0, rows * (sizeof(DrawCell) * cols));
-    self->resize_count++;
 }
 
     static void
@@ -574,14 +572,17 @@ draw_node_render(DrawNode *dnode, int row, VimDrawArea *da)
     if (!(dnode->dnode_flags & DRAW_NODE_NOBG))
     {
 	int width = dnode->n_cells * gui.char_width;
-	int bleed = gtk_widget_get_width(GTK_WIDGET(da)) - FILL_X(da->n_cols);
 
 	// If this draw node touches the end of the draw area. Bleed its
 	// background to the right if the space the draw area covers is slightly
 	// bigger than its actual visible area (that all cells cover). This just
 	// makes things like status bars look a bit nicer
-	if (END_COL(dnode) == da->n_cols - 1 && bleed > 0)
-	    width += bleed;
+	//
+	// Don't do this for the bottom, because that will make the cursor in
+	// the cmdline look weird. Instead only bleed downwards when drawing the
+	// global background color (see vim_draw_area_snapshot())
+	if (END_COL(dnode) == da->n_cols - 1)
+	    width += gui.bleed_right;
 
 	nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
 		&GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
@@ -1475,14 +1476,31 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     garray_T		    invert_ga;
 
     gui_mch_set_bg_color(gui.back_pixel);
-    height = gtk_widget_get_height(widget);
-    width = gtk_widget_get_width(widget);
+    height = gtk_widget_get_height(widget) + gui.bleed_bot;
+    width = gtk_widget_get_width(widget) + gui.bleed_right;
 
     if (self->cells == NULL)
     {
 	gtk_snapshot_append_color(snapshot, gui.bgcolor,
 		&GRAPHENE_RECT_INIT(0, 0, width, height));
 	return;
+    }
+
+    // If number of pixels to bleed has changed, then dirty the nodes at the
+    // right edge of the draw area.
+    if (self->bleed_right != gui.bleed_right)
+    {
+	self->bleed_right = gui.bleed_right;
+	for (int r = 0; r < self->n_rows; r++)
+	{
+	    DrawCell *dcell = &GET_ROW(self, r)[self->n_cols - 1];
+
+	    if (dcell->dnode != NULL)
+	    {
+		(void)draw_node_make_dirty(dcell->dnode);
+		draw_node_render(dcell->dnode, r, self);
+	    }
+	}
     }
 
     // For inverted cells, we first build an array of bounds that represent
@@ -1563,38 +1581,6 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	    gtk_snapshot_append_node(snapshot, dimg->node);
     }
 #endif
-}
-
-    static void
-vim_draw_area_size_allocate(
-	GtkWidget   *widget,
-	int	    width,
-	int	    height,
-	int	    baseline UNUSED)
-{
-    VimDrawArea *self = VIM_DRAW_AREA(widget);
-    int		old_count = self->resize_count;
-
-    gui_resize_shell(width, height);
-
-    if (old_count == self->resize_count)
-    {
-	// Number of columns or rows hasn't changed. However still re render the
-	// draw nodes at the right edge of the draw area, so that they can
-	// update their background bleed (see draw_node_render()).
-	for (int r = 0; r < self->n_rows; r++)
-	{
-	    DrawCell *dcell = &GET_ROW(self, r)[self->n_cols - 1];
-
-	    if (dcell->dnode != NULL)
-	    {
-		(void)draw_node_make_dirty(dcell->dnode);
-		draw_node_render(dcell->dnode, r, self);
-	    }
-	}
-    }
-
-    return;
 }
 
 #endif // USE_GTK4_SNAPSHOT

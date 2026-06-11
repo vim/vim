@@ -273,6 +273,10 @@ typedef struct Gui
 #ifdef FEAT_DIRECTX
     bool	directx_enabled;    // DirectX (DirectWrite) rendering active
 #endif
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+    int		bleed_right;	    // Number of pixels to bleed bg color right
+    int		bleed_bot;	    // Number of pixels to bleed bg color down
+#endif
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
