@@ -270,6 +270,17 @@ call module.foo().bar()
 call module.foo().substitute()
 
 
+" Dict-key only
+
+echo module.42()
+echo module[0].42()
+echo module.foo().42()
+
+echo module.42life()
+echo module[0].42life()
+echo module.foo().42life()
+
+
 " Issue #17766 (valid function call highlighted as error)
 
 call module[0].foo()
