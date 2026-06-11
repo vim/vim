@@ -253,6 +253,8 @@ func RunTest()
     " Track the cursor progress through a syntax test file so that any
     " degenerate input can be reported.  Each file will have its own cursor.
     let s:cursor = 1
+    " Give a new name to a file-associated buffer on demand.
+    let s:new_fname = ''
 
     " extra info for shell variables
     func ShellInfo()
@@ -294,13 +296,49 @@ func RunTest()
 	exe substitute(getline(lnum), '\C.*\<VIM_TEST_SETUP\>', '', '')
       endfor
       call cursor(1, 1)
+      let [old_name, new_name] = s:ResolveFilenames()
+      call s:ChangeFilenameTo(new_name)
       " BEGIN [runtime/defaults.vim]
       " Also, disable italic highlighting to avoid issues on some terminals.
       set display=lastline ruler scrolloff=5 t_ZH= t_ZR=
       syntax on
       " END [runtime/defaults.vim]
+      call s:RestoreFilename(new_name, old_name)
       redraw!
     endfunc
+
+    def s:ChangeFilenameTo(name: string)
+      if !empty(name)
+	exe 'saveas! ' .. name
+      endif
+    enddef
+
+    def s:RestoreFilename(new_name: string, old_name: string)
+      if !empty(new_name) && !empty(old_name)
+	exe 'saveas! ' .. old_name
+	delete(new_name)
+      endif
+    enddef
+
+    def s:ResolveFilenames(): tuple<string, string>
+      if !empty(new_fname)
+	const old_name: string = fnamemodify(bufname(), ':.')
+	# Get a platform-independent pathname prefix, cf. "expand('%:p:h') .. '/'".
+	const new_name: string = strpart(
+	    old_name,
+	    0,
+	    strridx(old_name, fnamemodify(bufname(), ':t'))) ..
+	  new_fname
+	return (old_name, new_name)
+      else
+	return ("", "")
+      endif
+    enddef
+
+    def DeferRenamingTestFileTo(name: string)
+      # Strip any leading pathname and mask the filenames of '.' and '..'.
+      new_fname = substitute(fnamemodify(name, ':t'), '^\.\.\=$', '', '')
+    enddef
 
     def s:AssertCursorForwardProgress(): bool
       const curnum: number = line('.')
