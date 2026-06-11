@@ -53,12 +53,14 @@ typedef struct
     gboolean	invert; // If this cell is inverted
 } DrawCell;
 
+#if defined(FEAT_SIGN_ICONS)
 typedef struct
 {
     int		    row;
     int		    col;
     GskRenderNode   *node;
 } DrawSign;
+#endif
 
 struct _VimDrawArea
 {
@@ -92,7 +94,9 @@ struct _VimDrawArea
 
 G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 
+#if defined(FEAT_SIGN_ICONS)
 static void draw_sign_clear(DrawSign *dsign);
+#endif
 static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 static void vim_draw_area_size_allocate(GtkWidget *widget, int width, int height, int baseline);
 
@@ -347,11 +351,13 @@ create_under_decor_node(
     return container;
 }
 
+#if defined(FEAT_SIGN_ICONS)
     static void
 draw_sign_clear(DrawSign *dsign)
 {
     gsk_render_node_unref(dsign->node);
 }
+#endif
 
 /*
  * Create a new draw node with a reference count of 1. Note that this may be
