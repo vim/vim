@@ -3109,7 +3109,7 @@ netbeans_draw_multisign_indicator(int row)
 
 # if GTK_CHECK_VERSION(3,0,0)
 #  ifdef USE_GTK4_SNAPSHOT
-    cr = gui_gtk_get_multisign_context(x, y, 5, gui.char_height);
+    cr = gui_gtk4_get_multisign_context(x, y, 5, gui.char_height);
 #  else
     cr = cairo_create(gui.surface);
 #  endif

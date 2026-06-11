@@ -1357,7 +1357,7 @@ gui_mch_get_rgb(guicolor_T pixel)
 
 #ifdef USE_GTK4_SNAPSHOT
     void
-gui_gtk_update_size(void)
+gui_gtk4_update_size(void)
 {
     vim_draw_area_set_size(VIM_DRAW_AREA(gui.drawarea),
 	    gui.num_rows, gui.num_cols);
@@ -1365,7 +1365,7 @@ gui_gtk_update_size(void)
 
 # ifdef FEAT_NETBEANS_INTG
     cairo_t *
-gui_gtk_get_multisign_context(int x, int y, int w, int h)
+gui_gtk4_get_multisign_context(int x, int y, int w, int h)
 {
     return vim_draw_area_get_multisign_cairo(
 	    VIM_DRAW_AREA(gui.drawarea), x, y, w, h);
