@@ -957,7 +957,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		wp->w_popup_image_seq_crop_y = 0;
 		wp->w_popup_image_seq_cells_w = 0;
 		wp->w_popup_image_seq_cells_h = 0;
-		wp->w_popup_image_emit_valid = FALSE;
+		wp->w_popup_image_emit_valid = false;
 # endif
 # if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
 #  ifdef FEAT_GUI
@@ -1015,7 +1015,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 # ifdef FEAT_IMAGE_SIXEL
 		VIM_CLEAR(wp->w_popup_image_seq);
 		wp->w_popup_image_seq_h = -1;
-		wp->w_popup_image_emit_valid = FALSE;
+# endif
+# ifdef FEAT_IMAGE_KITTY
+		wp->w_popup_image_emit_valid = false;
 # endif
 		if (wp->w_popup_image_data != NULL)
 		{
@@ -1953,7 +1955,7 @@ popup_encode_image(win_T *wp)
     {
 	VIM_CLEAR(wp->w_popup_image_seq);
 	wp->w_popup_image_seq_h = 0;
-	wp->w_popup_image_emit_valid = FALSE;
+	wp->w_popup_image_emit_valid = false;
 	return;
     }
 
@@ -2005,7 +2007,7 @@ popup_encode_image(win_T *wp)
     {
 	VIM_CLEAR(wp->w_popup_image_seq);
 	wp->w_popup_image_seq_h = 0;
-	wp->w_popup_image_emit_valid = FALSE;
+	wp->w_popup_image_emit_valid = false;
 	return;
     }
     if (wp->w_popup_image_seq != NULL
@@ -2017,7 +2019,7 @@ popup_encode_image(win_T *wp)
 	return;	    // already encoded for this geometry and zindex
 
     VIM_CLEAR(wp->w_popup_image_seq);
-    wp->w_popup_image_emit_valid = FALSE;
+    wp->w_popup_image_emit_valid = false;
 
     // The sixel/kitty encoders read data tightly packed as width*height
     // pixels.  When the source row width changes (left or right clipped),
@@ -6958,25 +6960,22 @@ popup_emit_image(win_T *wp)
     if (popup_image_backend() != IMAGE_BACKEND_KITTY)
 #  endif
     {
-	int	rr;
-
-	for (rr = row; rr < row + wp->w_popup_image_seq_cells_h; ++rr)
+	for (int rr = row; rr < row + wp->w_popup_image_seq_cells_h; ++rr)
 	{
-	    int	off_base;
-	    int	cc;
-
 	    if (rr < 0 || rr >= screen_Rows)
 		continue;
-	    off_base = LineOffset[rr];
-	    for (cc = col; cc < col + wp->w_popup_image_seq_cells_w; ++cc)
-	    {
-		int off;
 
+	    int off_base = LineOffset[rr];
+
+	    for (int cc = col; cc < col + wp->w_popup_image_seq_cells_w; ++cc)
+	    {
 		if (cc < 0 || cc >= screen_Columns)
 		    continue;
 		if (popup_mask[rr * screen_Columns + cc] <= wp->w_zindex)
 		    continue;
-		off = off_base + cc;
+
+		int off = off_base + cc;
+
 		ScreenLines[off] = ' ';
 		if (enc_utf8 && ScreenLinesUC != NULL)
 		    ScreenLinesUC[off] = 0;
@@ -6994,7 +6993,7 @@ popup_emit_image(win_T *wp)
     wp->w_popup_image_emit_col = col;
     wp->w_popup_image_emit_cells_w = wp->w_popup_image_seq_cells_w;
     wp->w_popup_image_emit_cells_h = wp->w_popup_image_seq_cells_h;
-    wp->w_popup_image_emit_valid = TRUE;
+    wp->w_popup_image_emit_valid = true;
 # endif
 }
 
@@ -7021,7 +7020,7 @@ popup_image_clear_kitty(win_T *wp)
     out_str(seq);
     out_flush();
     vim_free(seq);
-    wp->w_popup_image_emit_valid = FALSE;
+    wp->w_popup_image_emit_valid = false;
 }
 # endif
 
@@ -7039,10 +7038,10 @@ popup_images_invalidate(void)
     tabpage_T	*tp;
 
     FOR_ALL_POPUPWINS(wp)
-	wp->w_popup_image_emit_valid = FALSE;
+	wp->w_popup_image_emit_valid = false;
     FOR_ALL_TABPAGES(tp)
 	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
-	    wp->w_popup_image_emit_valid = FALSE;
+	    wp->w_popup_image_emit_valid = false;
 }
 # endif
 
@@ -7058,10 +7057,10 @@ popup_images_invalidate(void)
  * here would instead paint a lower zindex image over the cells of a
  * higher zindex popup drawn on top of it.
  */
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
     void
 update_popup_images(void)
 {
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
     win_T   *wp;
 
     if (!gui.in_use)
@@ -7069,8 +7068,8 @@ update_popup_images(void)
     popup_reset_handled(POPUP_HANDLED_5);
     while ((wp = find_next_popup(TRUE, POPUP_HANDLED_5)) != NULL)
 	popup_emit_image(wp);
-# endif
 }
+# endif
 
 # ifdef FEAT_IMAGE_GDI
     static void

@@ -449,7 +449,7 @@ update_screen(int type_arg)
     }
 #endif
 
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
     // GUI only: the cursor redraw and other late blits paint directly onto
     // the canvas and may damage the popup images blitted by update_popups();
     // restore the image layer.  No-op in terminal mode.
