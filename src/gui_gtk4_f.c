@@ -254,15 +254,20 @@ vim_form_size_allocate(
     static void
 vim_form_measure(
 	GtkWidget	*widget UNUSED,
-	GtkOrientation	orientation UNUSED,
+	GtkOrientation	orientation,
 	int		for_size UNUSED,
 	int		*minimum,
 	int		*natural,
 	int		*minimum_baseline,
 	int		*natural_baseline)
 {
-    *minimum = 1;
-    *natural = 1;
+    if (orientation == GTK_ORIENTATION_VERTICAL)
+	// Set minimum height of form widget to 4 rows.
+	*minimum = *natural = gui.char_height * 4;
+    else
+	// Set minimum width of form widget to 10 columns.
+	*minimum = *natural = gui.char_width * 10;
+
     *minimum_baseline = -1;
     *natural_baseline = -1;
 }
