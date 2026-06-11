@@ -52642,6 +52642,8 @@ Other ~
 - |:command-completion-customlist| can return a list of dictionaries with
   kind/menu/info/abbr for the popup menu.
 - |C-indenting| detects comments better.
+- The |%| command skips parens inside comments when 'comments' defines
+  C-style "//" or "/*" comments.
 - The |package-hlyank| can now optionally highlight the last put region as
   well.
 - New argument handling for user commands |:command-nargs| using the "-nars=_"
