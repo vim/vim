@@ -18,6 +18,7 @@
 #define DRAW_NODE_NOBG 2    // Don't create background node
 #define DRAW_NODE_NOINK 4   // Draw node has no ink
 #define DRAW_NODE_UNDER 8   // Has under decorations (for convenience)
+#define DRAW_NODE_CLIP 16   // Text node should be clipped to draw node bounds.
 
 typedef struct
 {
@@ -40,6 +41,7 @@ typedef struct
 } DrawNode;
 
 #define END_COL(dn) ((dn)->start_col + (dn)->n_cells - 1)
+#define HAS_INK(r) ((r)->width != 0 || (r)->height != 0)
 
 /*
  * Each cell holds its own reference to a draw node if any. A draw node may span
@@ -177,7 +179,7 @@ glyphs_has_ink(PangoFont *font, const PangoGlyphInfo *glyphs, int n_glyphs)
 
 	pango_font_get_glyph_extents (font, glyphs[i].glyph, &glyph_ink, NULL);
 
-	if (glyph_ink.width != 0 || glyph_ink.height != 0)
+	if (HAS_INK(&glyph_ink))
 	    return TRUE;
     }
     return FALSE;
@@ -443,11 +445,16 @@ draw_node_make_dirty(DrawNode *dnode)
     static DrawNode *
 draw_node_copy(DrawNode *dnode)
 {
-    return draw_node_new(
+    DrawNode *copy = draw_node_new(
 	    dnode->font, dnode->glyphs, dnode->n_glyphs,
 	    &dnode->bg_color, &dnode->fg_color, &dnode->sp_color,
 	    dnode->flags, dnode->start_col, dnode->n_cells
 	    );
+
+    if (dnode->dnode_flags & DRAW_NODE_CLIP)
+	copy->dnode_flags |= DRAW_NODE_CLIP;
+
+    return copy;
 }
 
 /*
@@ -461,37 +468,75 @@ draw_node_copy(DrawNode *dnode)
     static gboolean
 draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
 {
-    const PangoGlyphInfo    *glyphs = dnode->glyphs;
-    int			    n_glyphs = dnode->n_glyphs;
-    int			    glyph_offset;
+    int		glyph_offset;
+    gboolean	split = TRUE;
+    gboolean	clip = FALSE;
 
-    glyph_offset = cell_offset_to_glyph(glyphs, n_glyphs, cell_offset);
+    glyph_offset = cell_offset_to_glyph(dnode->glyphs,
+	    dnode->n_glyphs, cell_offset);
+
+    // Some fonts emulate ligatures by having spacer glyphs followed by a glyph
+    // that contains all the ink. If we tried splitting this type of ligature,
+    // then one side will incorrectly be empty.
+    //
+    // To handle this case, always clip the draw node so that the extra ink does
+    // not bleed out. If we are keeping the left side, then do not split,
+    // because we want to keep the glyph with all the ink. If we are keeping the
+    // right side, then we can split because the glyph with the ink will be on
+    // the right side always anyways.
+    for (int i = glyph_offset; i < dnode->n_glyphs; i++)
+    {
+	PangoRectangle ink;
+
+	pango_font_get_glyph_extents(dnode->font, dnode->glyphs[i].glyph,
+		&ink, NULL);
+
+	if (HAS_INK(&ink))
+	{
+	    if (ink.x < 0)
+	    {
+		split = !keep_left;
+		clip = TRUE;
+	    }
+	    break;
+	}
+    }
+
+    if (unlikely(clip))
+	dnode->dnode_flags |= DRAW_NODE_CLIP;
 
     if (keep_left)
     {
-	dnode->n_glyphs = glyph_offset;
+	if (likely(split))
+	    dnode->n_glyphs = glyph_offset;
 	dnode->n_cells = cell_offset;
     }
     else
     {
-	// If this results in zero, then glyphs_has_ink() will return FALSE so it
-	// is fine.
-	dnode->n_glyphs = n_glyphs - glyph_offset;
+	if (likely(split))
+	{
+	    // If this results in zero, then glyphs_has_ink() will return FALSE
+	    // so it is fine.
+	    dnode->n_glyphs -= glyph_offset;
+	    // Shift glyphs after offset to beginning
+	    memmove(dnode->glyphs, dnode->glyphs + glyph_offset,
+		    sizeof(PangoGlyphInfo) * dnode->n_glyphs);
+	}
 
 	dnode->n_cells -= cell_offset;
 	dnode->start_col += cell_offset;
-	// Shift glyphs after offset to beginning
-	memmove(dnode->glyphs, dnode->glyphs + glyph_offset,
-		sizeof(PangoGlyphInfo) * dnode->n_glyphs);
     }
 
-    dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs);
+    if (likely(split))
+    {
+	dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs);
 
-    // Recheck if new split glyphs has ink
-    if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
-	dnode->dnode_flags &= ~DRAW_NODE_NOINK;
-    else
-	dnode->dnode_flags |= DRAW_NODE_NOINK;
+	// Recheck if new split glyphs has ink
+	if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
+	    dnode->dnode_flags &= ~DRAW_NODE_NOINK;
+	else
+	    dnode->dnode_flags |= DRAW_NODE_NOINK;
+    }
 
     return draw_node_make_dirty(dnode);
 }
@@ -540,6 +585,12 @@ draw_node_render(DrawNode *dnode, int row, VimDrawArea *da)
 		&GRAPHENE_POINT_INIT(TEXT_X(dnode->start_col), TEXT_Y(row)));
 	// Should never be NULL since we check beforehand if there is ink.
 	assert(text_node != NULL);
+
+	if (dnode->dnode_flags & DRAW_NODE_CLIP)
+	    text_node = gsk_clip_node_new(text_node,
+		    &GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
+			dnode->n_cells * gui.char_width, gui.char_height));
+
 	nodes[n_nodes++] = text_node;
     }
 
@@ -868,7 +919,11 @@ vim_draw_area_add_glyphs(
     {
 	DrawNode *ldnode = drow[col - 1].dnode;
 
-	if (ldnode != NULL && draw_node_match(ldnode, font, flags))
+	// Don't want to try merging draw nodes that are clipped, because the
+	// glyphs in them may not match one to one with the actual bounds of the
+	// draw node.
+	if (ldnode != NULL && !(ldnode->dnode_flags & DRAW_NODE_CLIP)
+		&& draw_node_match(ldnode, font, flags))
 	{
 	    draw_node_extend(ldnode, glyphs->glyphs, glyphs->num_glyphs, FALSE);
 	    draw_row_fill(drow, col, end_col, ldnode);
@@ -884,7 +939,8 @@ vim_draw_area_add_glyphs(
     {
 	DrawNode *rdnode = drow[col + num_cells].dnode;
 
-	if (rdnode != NULL && draw_node_match(rdnode, font, flags))
+	if (rdnode != NULL && !(rdnode->dnode_flags & DRAW_NODE_CLIP)
+		&& draw_node_match(rdnode, font, flags))
 	{
 	    if (dnode != NULL)
 	    {
