@@ -306,11 +306,14 @@ sixel_resize_rgb(char_u *src, int sw, int sh, int dw, int dh)
  * (indices 1..npal; 0 is reserved as transparent).
  *
  * Handles both RGB (3 bytes/pixel, has_alpha == FALSE) and RGBA (4 bytes/
- * pixel, has_alpha == TRUE).  For RGBA, alpha == 0 pixels are mapped to
- * palette index 0 -- which the sixel emitter never writes to the bitmask,
- * leaving the cell's underlying terminal contents visible (transparency).
- * Pixels with alpha != 0 are deduplicated by their R,G,B triple, ignoring
- * the alpha value (sixel cannot represent partial transparency anyway).
+ * pixel, has_alpha == TRUE).  Sixel cannot represent partial transparency,
+ * so RGBA pixels are split at half coverage: alpha < 128 pixels are mapped
+ * to palette index 0 -- which the sixel emitter never writes to the
+ * bitmask, leaving the cell's underlying terminal contents visible
+ * (transparency).  Rendering them opaque instead would show the image's
+ * anti-aliased edge fringe (mostly-transparent, often light-colored
+ * pixels) as bright dots around the image.  Pixels with alpha >= 128 are
+ * deduplicated by their R,G,B triple, ignoring the alpha value.
  *
  * Returns OK on success, FAIL when colors exceed max_colors (caller may
  * fall back to a fixed palette) or on OOM.
@@ -354,7 +357,7 @@ rgb_to_paletted_fast(
 	unsigned int	 h;
 	int		 slot;
 
-	if (has_alpha && p[3] == 0)
+	if (has_alpha && p[3] < 128)
 	{
 	    idx[i] = 0;	    // transparent -- terminal leaves cell as-is
 	    continue;
@@ -403,9 +406,10 @@ too_many:
  * Always succeeds; produces 240 palette entries.
  *
  * Handles both RGB (3 bytes/pixel, has_alpha == FALSE) and RGBA (4 bytes/
- * pixel, has_alpha == TRUE).  For RGBA, alpha == 0 pixels are mapped to
+ * pixel, has_alpha == TRUE).  For RGBA, alpha < 128 pixels are mapped to
  * palette index 0 -- which the sixel emitter never writes to the bitmask,
- * leaving the cell's underlying terminal contents visible (transparency).
+ * leaving the cell's underlying terminal contents visible (transparency);
+ * see rgb_to_paletted_fast() for why the cut is at half coverage.
  */
     static int
 rgb_to_paletted_fixed(
@@ -433,7 +437,7 @@ rgb_to_paletted_fixed(
 	char_u	*p = pixels + (size_t)n * bpp;
 	int	 ri, gi, bi;
 
-	if (has_alpha && p[3] == 0)
+	if (has_alpha && p[3] < 128)
 	{
 	    idx[n] = 0;
 	    continue;
@@ -518,9 +522,9 @@ sixel_encode(image_rgb_T *img)
     // P2=1 means pixel positions left unspecified by any colour register
     // keep their previous on-screen contents instead of being painted with
     // colour register 0.  That gives true transparency for RGBA images:
-    // alpha==0 pixels are emitted as palette index 0 (which we never write
-    // to the bitmask), so the terminal leaves the popup's underlying cell
-    // colour visible there -- no flatten, no colour-match drift.
+    // alpha < 128 pixels are emitted as palette index 0 (which we never
+    // write to the bitmask), so the terminal leaves the popup's underlying
+    // cell colour visible there -- no flatten, no colour-match drift.
     if (ga_concat_bytes(&ga, "\033P0;1;8q\"1;1;", 13) == FAIL
 	    || ga_concat_int(&ga, width) == FAIL
 	    || ga_append(&ga, ';') == FAIL
