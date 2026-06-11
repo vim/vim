@@ -53,15 +53,6 @@ typedef struct
     gboolean	invert; // If this cell is inverted
 } DrawCell;
 
-#if defined(FEAT_SIGN_ICONS)
-typedef struct
-{
-    int		    row;
-    int		    col;
-    GskRenderNode   *node;
-} DrawSign;
-#endif
-
 struct _VimDrawArea
 {
     GtkWidget parent;
@@ -80,8 +71,9 @@ struct _VimDrawArea
     int	    pending_height;
 
 #if defined(FEAT_SIGN_ICONS)
-    // Array of sign icon render nodes (DrawSign)
-    GArray *signs;
+    // Queue of sign icon render nodes. Icons at the end of the queue are drawn
+    // ontop of earlier ones.
+    GQueue *signs;
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
@@ -94,9 +86,6 @@ struct _VimDrawArea
 
 G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 
-#if defined(FEAT_SIGN_ICONS)
-static void draw_sign_clear(DrawSign *dsign);
-#endif
 static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 static void vim_draw_area_size_allocate(GtkWidget *widget, int width, int height, int baseline);
 
@@ -110,8 +99,10 @@ vim_draw_area_finalize(GObject *obj)
     vim_draw_area_clear(self);
 
     g_free(self->cells);
-#if defined(FEAT_SIGN_ICONS)
-    g_array_free(self->signs, TRUE);
+#ifdef FEAT_SIGN_ICONS
+    // vim_draw_area_clear_block() should have removed all the sign icons
+    assert(g_queue_is_empty(self->signs));
+    g_queue_free_full(self->signs, (GDestroyNotify)gsk_render_node_unref);
 #endif
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
@@ -133,9 +124,8 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
     static void
 vim_draw_area_init(VimDrawArea *self)
 {
-#if defined(FEAT_SIGN_ICONS)
-    self->signs = g_array_new(FALSE, FALSE, sizeof(DrawSign));
-    g_array_set_clear_func(self->signs, (GDestroyNotify)draw_sign_clear);
+#ifdef FEAT_SIGN_ICONS
+    self->signs = g_queue_new();
 #endif
 }
 
@@ -350,14 +340,6 @@ create_under_decor_node(
 	gsk_render_node_unref(nodes[i]);
     return container;
 }
-
-#if defined(FEAT_SIGN_ICONS)
-    static void
-draw_sign_clear(DrawSign *dsign)
-{
-    gsk_render_node_unref(dsign->node);
-}
-#endif
 
 /*
  * Create a new draw node with a reference count of 1. Note that this may be
@@ -848,27 +830,35 @@ vim_draw_area_check_bounds(
 	int	    col1,
 	int	    col2)
 {
+#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
+    graphene_rect_t bounds = GRAPHENE_RECT_INIT(
+	    FILL_X(col1), FILL_Y(row1),
+	    gui.char_width * (col2 - col1 + 1),
+	    gui.char_height * (row2 - row1 + 1));
+#endif
+
     if (self->cursor_node != NULL)
-	// Check if cursor node is within the the cleared region. If so, then
+	// Check if cursor node is within the the updated region. If so, then
 	// remove the render node. This only applies to the part and hollow
 	// cursor, the block cursor will be cleared in draw_row_make_space().
 	if (gui.row >= row1 && gui.row <= row2
 		&& gui.col >= col1 && gui.col <= col2)
 	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
 
-#if defined(FEAT_SIGN_ICONS)
+#ifdef FEAT_SIGN_ICONS
     // Clear any sign icons within the modified block if any
-    for (guint i = 0; i < self->signs->len;)
+    for (GList *s = self->signs->head; s != NULL;)
     {
-	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
+	GList		*next = s->next;
+	graphene_rect_t rect;
 
-	if (dsign->row >= row1 && dsign->row <= row2
-		&& dsign->col >= col1 && dsign->col <= col2)
+	gsk_render_node_get_bounds(s->data, &rect);
+
+	if (graphene_rect_contains_rect(&bounds, &rect))
 	    // Keep going in case there are multiple sign icons within this
 	    // block.
-	    g_array_remove_index_fast(self->signs, i);
-	else
-	    i++;
+	    g_queue_delete_link(self->signs, s);
+	s = next;
     }
 #endif
 #ifdef FEAT_NETBEANS_INTG
@@ -876,14 +866,9 @@ vim_draw_area_check_bounds(
     if (self->multisign_node != NULL)
     {
 	graphene_rect_t rect;
-	graphene_rect_t bounds;
 
-	graphene_rect_init(&rect, FILL_X(col1), FILL_Y(row1),
-		gui.char_width * (col2 - col1 + 1),
-		gui.char_height * (row2 - row1 + 1));
-
-	gsk_render_node_get_bounds(self->multisign_node, &bounds);
-	if (graphene_rect_contains_rect(&rect, &bounds))
+	gsk_render_node_get_bounds(self->multisign_node, &rect);
+	if (graphene_rect_contains_rect(&bounds, &rect))
 	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
     }
 #endif
@@ -1027,7 +1012,14 @@ vim_draw_area_move_block(
 	int	    col2)
 {
 
-    int offset = row2 - row1;
+    int		    offset = row2 - row1;
+#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
+    graphene_rect_t bounds = GRAPHENE_RECT_INIT(
+	    FILL_X(col1), FILL_Y(row1),
+	    gui.char_width * (col2 - col1 + 1),
+	    gui.char_height * (row2 - row1 + 1));
+    graphene_rect_t dest_only;
+#endif
 
     if (unlikely(self->cells == NULL
 		|| row1 >= self->n_rows
@@ -1062,7 +1054,63 @@ vim_draw_area_move_block(
 		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o),
 			col1, col2);
     }
-    vim_draw_area_check_bounds(self, to, to + (row2 - row1), col1, col2);
+
+    // Do not call vim_draw_area_check_bounds(), because we moved cells, not
+    // modified them.
+
+    // Move sign icons if they are in the moved region
+#ifdef FEAT_SIGN_ICONS
+    if (row1 > to)
+        dest_only = GRAPHENE_RECT_INIT(
+            FILL_X(col1), FILL_Y(to),
+            gui.char_width * (col2 - col1 + 1),
+            gui.char_height * (row1 - to));
+    else
+        dest_only = GRAPHENE_RECT_INIT(
+            FILL_X(col1), FILL_Y(row2 + 1),
+            gui.char_width * (col2 - col1 + 1),
+            gui.char_height * (to - row1));
+
+    for (GList *s = self->signs->head; s != NULL;)
+    {
+        GList           *next = s->next;
+        GskRenderNode   *node = s->data;
+        graphene_rect_t  rect;
+
+        gsk_render_node_get_bounds(node, &rect);
+
+	// Check if icon moved off screen, if so then remove it.
+        if (graphene_rect_contains_rect(&dest_only, &rect))
+        {
+            g_queue_delete_link(self->signs, s);
+            s = next;
+            continue;
+        }
+
+        if (graphene_rect_contains_rect(&bounds, &rect))
+        {
+            GdkTexture    *texture;
+            GskRenderNode *new;
+            float          new_y;
+
+            texture = gsk_texture_scale_node_get_texture(node);
+            new_y = graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
+            new_y += FILL_Y(to);
+
+            if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
+            {
+                rect.origin.y = new_y;
+                new = gsk_texture_scale_node_new(texture, &rect,
+                        GSK_SCALING_FILTER_TRILINEAR);
+                gsk_render_node_unref(node);
+                s->data = new;
+            }
+            else
+                g_queue_delete_link(self->signs, s);
+        }
+        s = next;
+    }
+#endif
 }
 
 /*
@@ -1156,7 +1204,6 @@ vim_draw_area_add_sign(
 	int height)
 {
     GskRenderNode   *node;
-    DrawSign	    new_dsign;
 
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
@@ -1166,42 +1213,7 @@ vim_draw_area_add_sign(
     node = gsk_texture_scale_node_new(sign,
 	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), width, height),
 	    GSK_SCALING_FILTER_TRILINEAR);
-
-    for (guint i = 0; i < self->signs->len; i++)
-    {
-	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
-
-	if (dsign->row == row && dsign->col == col)
-	{
-	    gsk_render_node_unref(dsign->node);
-	    dsign->node = node;
-	    return;
-	}
-    }
-
-    new_dsign.row = row;
-    new_dsign.col = col;
-    new_dsign.node = node;
-
-    g_array_append_val(self->signs, new_dsign);
-}
-
-/*
- * Remove the sign texture if it exists.
- */
-    void
-vim_draw_area_remove_sign(VimDrawArea *self, GdkTexture *sign)
-{
-    for (guint i = 0; i < self->signs->len; i++)
-    {
-	DrawSign *dsign = &g_array_index(self->signs, DrawSign, i);
-
-	if (gsk_texture_scale_node_get_texture(dsign->node) == sign)
-	{
-	    g_array_remove_index_fast(self->signs, i);
-	    return;
-	}
-    }
+    g_queue_push_tail(self->signs, node);
 }
 #endif
 
@@ -1299,9 +1311,8 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     // Order of where the sign icon should be placed shouldn't matter,
     // since caller will add whitespace padding in the region it covers.
     // Probably should put it behind cursor though.
-    for (guint i = 0; i < self->signs->len; i++)
-	gtk_snapshot_append_node(snapshot,
-		g_array_index(self->signs, DrawSign, i).node);
+    for (GList *s = self->signs->head; s != NULL; s = s->next)
+	gtk_snapshot_append_node(snapshot, s->data);
 
     if (self->cursor_node != NULL)
 	gtk_snapshot_append_node(snapshot, self->cursor_node);

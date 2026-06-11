@@ -29,7 +29,6 @@ void vim_draw_area_set_hollow_cursor(VimDrawArea *self);
 void vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h);
 void vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int ncols);
 void vim_draw_area_add_sign(VimDrawArea *self, GdkTexture *sign, int row, int col, int width, int height);
-void vim_draw_area_remove_sign(VimDrawArea *self, GdkTexture *sign);
 cairo_t *vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h);
 
 #endif

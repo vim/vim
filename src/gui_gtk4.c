@@ -2858,13 +2858,7 @@ gui_mch_register_sign(char_u *signfile)
 gui_mch_destroy_sign(void *sign)
 {
     if (sign != NULL)
-    {
-# ifdef USE_GTK4_SNAPSHOT
-	if (gui.drawarea != NULL)
-	    vim_draw_area_remove_sign(VIM_DRAW_AREA(gui.drawarea), sign);
-# endif
 	g_object_unref(sign);
-    }
 }
 #endif
 
