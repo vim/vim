@@ -1144,12 +1144,26 @@ match_positions(char_u *needle, char_u *haystack, int_u *positions)
 	// Since this method can only be called with a haystack which
 	// matches needle. If the lengths of the strings are equal the
 	// strings themselves must also be equal (ignoring case).
-	if (positions)
+	// After truncation to MATCH_MAX_LEN n == m can also happen for
+	// unequal strings, so check before taking the shortcut.
+	bool equal = true;
+	for (int i = 0; i < n; i++)
 	{
-	    for (int i = 0; i < n; i++)
-		positions[i] = i;
+	    if (match.lower_needle[i] != match.lower_haystack[i])
+	    {
+		equal = false;
+		break;
+	    }
 	}
-	return SCORE_MAX;
+	if (equal)
+	{
+	    if (positions)
+	    {
+		for (int i = 0; i < n; i++)
+		    positions[i] = i;
+	    }
+	    return SCORE_MAX;
+	}
     }
 
     // ensure n * MATCH_MAX_LEN * 2 won't overflow
