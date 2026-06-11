@@ -1074,9 +1074,9 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		    // Get length of text, excluding |< and NL chars.
 		    n = STRLEN(virp->vir_line);
 		    while (n > 0 && (virp->vir_line[n - 1] == NL
-				     || virp->vir_line[n - 1] == CAR))
+					 || virp->vir_line[n - 1] == CAR))
 			--n;
-		    if (n <= 2)
+		    if (n < 2)
 		    {
 			// Invalid continuation line: no usable content
 			// between "|<" and the newline.
