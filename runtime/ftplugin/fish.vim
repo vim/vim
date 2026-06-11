@@ -6,6 +6,7 @@
 "               2023 Aug 28 by Vim Project (undo_ftplugin)
 "               2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 "               2026 Mar 16 by Phạm Bình An (add matchit support)
+"               2026 Jun 11 by Kirill Morozov (configure indentation)
 
 if exists("b:did_ftplugin")
     finish
@@ -20,6 +21,11 @@ setlocal iskeyword=@,48-57,_,192-255,-,.
 setlocal comments=:#
 setlocal commentstring=#\ %s
 setlocal formatoptions+=crjq
+
+setlocal expandtab
+setlocal formatprg=fish_indent
+setlocal shiftwidth=4
+setlocal softtabstop=4
 
 let b:undo_ftplugin = "setl cms< com< fo< isk<"
 
