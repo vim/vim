@@ -14,6 +14,7 @@ int ctrl_x_mode_cmdline(void);
 int ctrl_x_mode_function(void);
 int ctrl_x_mode_omni(void);
 int ctrl_x_mode_spell(void);
+int ctrl_x_mode_eval(void);
 int ctrl_x_mode_line_or_eval(void);
 int ctrl_x_mode_register(void);
 int ctrl_x_mode_not_default(void);

@@ -359,7 +359,7 @@ int ctrl_x_mode_omni(void)
     { return ctrl_x_mode == CTRL_X_OMNI; }
 int ctrl_x_mode_spell(void)
     { return ctrl_x_mode == CTRL_X_SPELL; }
-static int ctrl_x_mode_eval(void)
+int ctrl_x_mode_eval(void)
     { return ctrl_x_mode == CTRL_X_EVAL; }
 int ctrl_x_mode_line_or_eval(void)
     { return ctrl_x_mode == CTRL_X_WHOLE_LINE || ctrl_x_mode == CTRL_X_EVAL; }
