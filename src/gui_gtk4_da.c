@@ -1018,7 +1018,7 @@ vim_draw_area_move_block(
 	    FILL_X(col1), FILL_Y(row1),
 	    gui.char_width * (col2 - col1 + 1),
 	    gui.char_height * (row2 - row1 + 1));
-    graphene_rect_t dest_only;
+    graphene_rect_t clear_rect;
 #endif
 
     if (unlikely(self->cells == NULL
@@ -1058,57 +1058,98 @@ vim_draw_area_move_block(
     // Do not call vim_draw_area_check_bounds(), because we moved cells, not
     // modified them.
 
-    // Move sign icons if they are in the moved region
-#ifdef FEAT_SIGN_ICONS
+#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
     if (row1 > to)
-        dest_only = GRAPHENE_RECT_INIT(
+        clear_rect = GRAPHENE_RECT_INIT(
             FILL_X(col1), FILL_Y(to),
             gui.char_width * (col2 - col1 + 1),
             gui.char_height * (row1 - to));
     else
-        dest_only = GRAPHENE_RECT_INIT(
+        clear_rect = GRAPHENE_RECT_INIT(
             FILL_X(col1), FILL_Y(row2 + 1),
             gui.char_width * (col2 - col1 + 1),
             gui.char_height * (to - row1));
+#endif
 
+#ifdef FEAT_SIGN_ICONS
+    // Move sign icons if they are in the moved region
     for (GList *s = self->signs->head; s != NULL;)
     {
-        GList           *next = s->next;
-        GskRenderNode   *node = s->data;
-        graphene_rect_t  rect;
+	GList           *next = s->next;
+	GskRenderNode   *node = s->data;
+	graphene_rect_t  rect;
 
-        gsk_render_node_get_bounds(node, &rect);
+	gsk_render_node_get_bounds(node, &rect);
 
 	// Check if icon moved off screen, if so then remove it.
-        if (graphene_rect_contains_rect(&dest_only, &rect))
-        {
-            g_queue_delete_link(self->signs, s);
-            s = next;
-            continue;
-        }
+	if (graphene_rect_contains_rect(&clear_rect, &rect))
+	{
+	    g_queue_delete_link(self->signs, s);
+	    s = next;
+	    continue;
+	}
 
-        if (graphene_rect_contains_rect(&bounds, &rect))
-        {
-            GdkTexture    *texture;
-            GskRenderNode *new;
-            float          new_y;
+	if (graphene_rect_contains_rect(&bounds, &rect))
+	{
+	    GdkTexture    *texture;
+	    GskRenderNode *new;
+	    float          new_y;
 
-            texture = gsk_texture_scale_node_get_texture(node);
-            new_y = graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
-            new_y += FILL_Y(to);
+	    texture = gsk_texture_scale_node_get_texture(node);
+	    new_y = graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
+	    new_y += FILL_Y(to);
 
-            if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
-            {
-                rect.origin.y = new_y;
-                new = gsk_texture_scale_node_new(texture, &rect,
-                        GSK_SCALING_FILTER_TRILINEAR);
-                gsk_render_node_unref(node);
-                s->data = new;
-            }
-            else
-                g_queue_delete_link(self->signs, s);
-        }
-        s = next;
+	    if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
+	    {
+		rect.origin.y = new_y;
+		new = gsk_texture_scale_node_new(texture, &rect,
+			GSK_SCALING_FILTER_TRILINEAR);
+		gsk_render_node_unref(node);
+		s->data = new;
+	    }
+	    else
+		g_queue_delete_link(self->signs, s);
+	}
+	s = next;
+    }
+#endif
+#ifdef FEAT_NETBEANS_INTG
+    // Move multisign indicator node if needed
+    if (self->multisign_node != NULL)
+    {
+	graphene_rect_t rect;
+
+	gsk_render_node_get_bounds(self->multisign_node, &rect);
+
+	if (graphene_rect_contains_rect(&clear_rect, &rect))
+	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
+	else if (graphene_rect_contains_rect(&bounds, &rect))
+	{
+	    float new_y =
+		graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
+
+	    new_y += FILL_Y(to);
+
+	    if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
+	    {
+		cairo_surface_t *surface;
+		GskRenderNode   *new;
+		cairo_t         *cr;
+
+		surface = gsk_cairo_node_get_surface(self->multisign_node);
+		rect.origin.y = new_y;
+		new = gsk_cairo_node_new(&rect);
+		cr = gsk_cairo_node_get_draw_context(new);
+		cairo_set_source_surface(cr, surface, 0, 0);
+		cairo_paint(cr);
+		cairo_destroy(cr);
+
+		gsk_render_node_unref(self->multisign_node);
+		self->multisign_node = new;
+	    }
+	    else
+		g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
+	}
     }
 #endif
 }
@@ -1213,6 +1254,8 @@ vim_draw_area_add_sign(
     node = gsk_texture_scale_node_new(sign,
 	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), width, height),
 	    GSK_SCALING_FILTER_TRILINEAR);
+    if (node == NULL)
+	return;
     g_queue_push_tail(self->signs, node);
 }
 #endif
